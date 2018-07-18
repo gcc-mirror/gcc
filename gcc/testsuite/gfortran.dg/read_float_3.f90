@@ -15,7 +15,7 @@ write (output, 100) c1, c2, c3, c4
 print *, output
 if (output /= should_be) then
   print *, should_be
-  call abort ()
+  STOP 1
 end if
 
 end

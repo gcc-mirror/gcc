@@ -1,5 +1,5 @@
 /* Declarations for rtx-reader support for gen* routines.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -199,7 +199,8 @@ struct pattern_stats
   /* The largest match_dup, match_op_dup or match_par_dup number found.  */
   int max_dup_opno;
 
-  /* The largest match_scratch number found.  */
+  /* The smallest and largest match_scratch number found.  */
+  int min_scratch_opno;
   int max_scratch_opno;
 
   /* The number of times match_dup, match_op_dup or match_par_dup appears

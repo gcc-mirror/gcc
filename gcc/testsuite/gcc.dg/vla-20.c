@@ -9,4 +9,4 @@ void foo11d(int x[sizeof(int *[*])]); /* { dg-warning "not in a declaration" } *
    constant expression if not evaluated.  */
 
 void foo11e(int x[1 ? 0 : sizeof(int *[*])]); /* { dg-warning "not in a declaration" } */
-/* { dg-error "zero-size array" "correct zero size" { target *-*-* } 11 } */
+/* { dg-error "zero-size array" "correct zero size" { target *-*-* } .-1 } */

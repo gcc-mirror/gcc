@@ -6,12 +6,12 @@ program bracket_array_constructor
 
     a = [ 1, 2, 3, 4 ]
     do i = 1, size(a)
-        if (a(i) /= i) call abort()
+        if (a(i) /= i) STOP 1
     end do
 
     a = [ (/ 1, 2, 3, 4 /) ]
     do i = 1, size(a)
-        if (a(i) /= i) call abort()
+        if (a(i) /= i) STOP 2
     end do
 
 end program bracket_array_constructor

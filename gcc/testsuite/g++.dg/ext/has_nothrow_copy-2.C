@@ -2,8 +2,21 @@
 // { dg-do run }
 #include <cassert>
 
-struct A { template <class T> A (T) throw (int); };
-struct B { B (B&) throw (); template <class T> B (T) throw (int); };
+struct A {
+  template <class T> A (T)
+#if __cplusplus <= 201402L
+  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+  ;
+};
+struct B {
+  B (B&) throw ();
+  template <class T> B (T)
+#if __cplusplus <= 201402L
+  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+  ;
+};
 
 int main ()
 {

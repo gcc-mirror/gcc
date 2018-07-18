@@ -4,7 +4,13 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 9
+#if VECTOR_BITS > 256
+#define NINTS (VECTOR_BITS / 32)
+#else
+#define NINTS 8
+#endif
+
+#define N (NINTS + 1)
 
 struct extraction
 {
@@ -14,8 +20,6 @@ struct extraction
 
 static int a[N] = {1,2,3,4,5,6,7,8,9};
 static int b[N] = {17,24,7,0,2,3,4,31,82};
-static int c[N] = {9,17,24,7,0,2,3,4,31};
-volatile int foo;
 
 __attribute__ ((noinline))
 int main1 (int x, int y) {
@@ -25,24 +29,22 @@ int main1 (int x, int y) {
 
   for (i = 0; i < N; i++)
     {
-       p->a[i] = a[i];
-       p->b[i] = b[i];
-       if (foo == 135)
-	 abort (); /* to avoid vectorization  */
+      p->a[i] = a[i];
+      p->b[i] = b[i];
+      asm volatile ("" ::: "memory");
     }
 
   /* Vectorizable: distance > VF.  */
   for (i = 0; i < N; i++)
-    {
-       *((int *)p + x + i) = *((int *)p + x + i + 8);
-    }
+    *((int *)p + x + i) = *((int *)p + x + i + NINTS);
 
   /* check results: */
-  for (i = 0; i < N; i++)
-    {
-       if (p->a[i] != c[i])
-         abort();
-    }
+  if (p->a[0] != a[N - 1])
+    abort ();
+  for (i = 1; i < N; i++)
+    if (p->a[i] != b[i - 1])
+      abort ();
+
   return 0;
 }
 
@@ -50,10 +52,9 @@ int main (void)
 { 
   check_vect ();
 
-  foo = 0;
   return main1 (0, N);
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "dependence distance modulo vf == 0" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "accesses have the same alignment" 1 "vect" } } */
 

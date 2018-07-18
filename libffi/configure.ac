@@ -358,6 +358,9 @@ fi
 # Check linker support.
 LIBAT_ENABLE_SYMVERS
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 AC_CONFIG_COMMANDS(include, [test -d include || mkdir include])
 AC_CONFIG_COMMANDS(src, [
 test -d src || mkdir src

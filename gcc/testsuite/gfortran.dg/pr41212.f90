@@ -3,7 +3,7 @@
 program m
    double precision :: y,z
    call b(1.0d0,y,z)
-   if (ABS (z - 1.213) > 0.1) call abort
+   if (ABS (z - 1.213) > 0.1) STOP 1
 contains
      subroutine b( x, y, z)
        implicit none

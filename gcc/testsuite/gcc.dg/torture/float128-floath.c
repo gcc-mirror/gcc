@@ -53,10 +53,6 @@
 # error "FLT128_TRUE_MIN undefined"
 #endif
 
-#if FLT128_DECIMAL_DIG > DECIMAL_DIG
-# error "FLT128_DECIMAL_DIG > DECIMAL_DIG"
-#endif
-
 #if FLT128_MANT_DIG != 113 || FLT128_MAX_EXP != 16384 || FLT128_MIN_EXP != -16381
 # error "_Float128 bad format"
 #endif

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -298,10 +298,10 @@ package Atree is
    ------------------
 
    --  The following variables denote the count of errors of various kinds
-   --  detected in the tree. Note that these might be more logically located
-   --  in Err_Vars, but we put it to deal with licensing issues (we need this
-   --  to have the GPL exception licensing, since Check_Error_Detected can
-   --  be called from units with this licensing).
+   --  detected in the tree. Note that these might be more logically located in
+   --  Err_Vars, but we put it here to deal with licensing issues (we need this
+   --  to have the GPL exception licensing, since Check_Error_Detected can be
+   --  called from units with this licensing).
 
    Serious_Errors_Detected : Nat := 0;
    --  This is a count of errors that are serious enough to stop expansion,
@@ -320,9 +320,15 @@ package Atree is
    --  compilation. Initialized for -gnatVa use, see comment above. This
    --  count includes the count of style and info messages.
 
-   Info_Messages : Nat := 0;
-   --  Number of info messages generated. Info messages are neved treated as
-   --  errors (whether from use of the pragma, or the compiler switch -gnatwe).
+   Warning_Info_Messages : Nat := 0;
+   --  Number of info messages generated as warnings. Info messages are never
+   --  treated as errors (whether from use of the pragma, or the compiler
+   --  switch -gnatwe).
+
+   Report_Info_Messages : Nat := 0;
+   --  Number of info messages generated as reports. Info messages are never
+   --  treated as errors (whether from use of the pragma, or the compiler
+   --  switch -gnatwe). Used under Spark_Mode to report proved checks.
 
    Check_Messages : Nat := 0;
    --  Number of check messages generated. Check messages are neither warnings
@@ -405,8 +411,17 @@ package Atree is
    --  Called before the back end is invoked to lock the nodes table
    --  Also called after Unlock to relock???
 
+   procedure Lock_Nodes;
+   --  Called to lock node modifications when assertions are enabled; without
+   --  assertions calling this subprogram has no effect. The initial state of
+   --  the lock is unlocked.
+
    procedure Unlock;
    --  Unlocks nodes table, in cases where the back end needs to modify it
+
+   procedure Unlock_Nodes;
+   --  Called to unlock entity modifications when assertions are enabled; if
+   --  assertions are not enabled calling this subprogram has no effect.
 
    procedure Tree_Read;
    --  Initializes internal tables from current tree file using the relevant
@@ -555,11 +570,23 @@ package Atree is
    --  are appropriately updated. This function is used only by Sinfo.CN to
    --  change nodes into their corresponding entities.
 
+   type Ignored_Ghost_Record_Proc is access procedure (N : Node_Or_Entity_Id);
+
+   procedure Set_Ignored_Ghost_Recording_Proc
+     (Proc : Ignored_Ghost_Record_Proc);
+   --  Register a procedure that is invoked when an ignored Ghost node or
+   --  entity is created.
+
    type Report_Proc is access procedure (Target : Node_Id; Source : Node_Id);
 
-   procedure Set_Reporting_Proc (P : Report_Proc);
+   procedure Set_Reporting_Proc (Proc : Report_Proc);
    --  Register a procedure that is invoked when a node is allocated, replaced
    --  or rewritten.
+
+   type Rewrite_Proc is access procedure (Target : Node_Id; Source : Node_Id);
+
+   procedure Set_Rewriting_Proc (Proc : Rewrite_Proc);
+   --  Register a procedure that is invoked when a node is rewritten
 
    type Traverse_Result is (Abandon, OK, OK_Orig, Skip);
    --  This is the type of the result returned by the Process function passed
@@ -725,6 +752,33 @@ package Atree is
       V7 : Node_Kind;
       V8 : Node_Kind;
       V9 : Node_Kind) return Boolean;
+
+   function Nkind_In
+     (N   : Node_Id;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind) return Boolean;
+
+   function Nkind_In
+     (N   : Node_Id;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind;
+      V11 : Node_Kind) return Boolean;
 
    pragma Inline (Nkind_In);
    --  Inline all above functions
@@ -1475,6 +1529,9 @@ package Atree is
 
       function Elist29 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist29);
+
+      function Elist30 (N : Node_Id) return Elist_Id;
+      pragma Inline (Elist30);
 
       function Elist36 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist36);
@@ -2842,6 +2899,9 @@ package Atree is
       procedure Set_Elist29 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist29);
 
+      procedure Set_Elist30 (N : Node_Id; Val : Elist_Id);
+      pragma Inline (Set_Elist30);
+
       procedure Set_Elist36 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist36);
 
@@ -3922,7 +3982,7 @@ package Atree is
       --  The nodes of the tree are stored in a table (i.e. an array). In the
       --  case of extended nodes six consecutive components in the array are
       --  used. There are thus two formats for array components. One is used
-      --  for non-extended nodes, and for the first component of extended
+      --  for nonextended nodes, and for the first component of extended
       --  nodes. The other is used for the extension parts (second, third,
       --  fourth, fifth, and sixth components) of an extended node. A variant
       --  record structure is used to distinguish the two formats.
@@ -4012,7 +4072,7 @@ package Atree is
          --    Pflag2            used as Flag63,Flag64,Flag151,Flag238,Flag309
 
          Nkind : Node_Kind;
-         --  For a non-extended node, or the initial section of an extended
+         --  For a nonextended node, or the initial section of an extended
          --  node, this field holds the Node_Kind value. For an extended node,
          --  The Nkind field is used as follows:
          --
@@ -4023,11 +4083,11 @@ package Atree is
          --     Sixth entry:   holds 8 additional flags (Flag310-317)
          --     Seventh entry: currently unused
 
-         --  Now finally (on an 32-bit boundary) comes the variant part
+         --  Now finally (on a 32-bit boundary) comes the variant part
 
          case Is_Extension is
 
-            --  Non-extended node, or first component of extended node
+            --  Nonextended node, or first component of extended node
 
             when False =>
 
@@ -4061,7 +4121,7 @@ package Atree is
                Field10 : Union_Id;
                Field11 : Union_Id;
                Field12 : Union_Id;
-               --  Seven additional general fields available only for entities
+               --  Seven additional general fields available only for entities.
                --  See package Einfo for details of their use (which depends
                --  on the value in the Ekind field).
 
@@ -4216,25 +4276,26 @@ package Atree is
       --  for extending components are completely unused.
 
       type Flags_Byte is record
-         Flag0  : Boolean;
+         Flag0 : Boolean;
          --  Note: we don't use Flag0 at the moment. To put Flag0 into use
          --  requires some awkward work in Treeprs (treeprs.adt), so for the
          --  moment we don't use it.
 
-         Flag1  : Boolean;
-         Flag2  : Boolean;
-         Flag3  : Boolean;
+         Flag1 : Boolean;
+         Flag2 : Boolean;
+         Flag3 : Boolean;
          --  These flags are used in the usual manner in Sinfo and Einfo
 
-         Is_Ignored_Ghost_Node : Boolean;
-         --  Flag denoting whether the node is subject to pragma Ghost with
-         --  policy Ignore. The name of the flag should be Flag4, however this
-         --  requires changing the names of all remaining 300+ flags.
+         --  The flags listed below use explicit names because following the
+         --  FlagXXX convention would mean reshuffling of over 300+ flags.
 
          Check_Actuals : Boolean;
          --  Flag set to indicate that the marked node is subject to the check
-         --  for writable actuals. See xxx for more details. Again it would be
-         --  more uniform to use some Flagx here, but that would be disruptive.
+         --  for writable actuals.
+
+         Is_Ignored_Ghost_Node : Boolean;
+         --  Flag denoting whether the node is subject to pragma Ghost with
+         --  policy Ignore.
 
          Spare2 : Boolean;
          Spare3 : Boolean;

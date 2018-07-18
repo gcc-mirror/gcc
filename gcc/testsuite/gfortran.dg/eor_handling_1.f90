@@ -9,6 +9,6 @@ program main
   i = 42
   j = 42
   read(77,'(/2i2)') i,j
-  if (i /= 0 .or. j /= 0) call abort
+  if (i /= 0 .or. j /= 0) STOP 1
   close(77)
 end program main

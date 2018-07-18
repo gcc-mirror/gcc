@@ -5,7 +5,7 @@
 
 // We should we able to diagnostic this without instantiating the template
 template <int a1>
-int f()
+void f()
 {
   typedef int& T;
   T a = T();  // { dg-error "value-initialization of reference" }

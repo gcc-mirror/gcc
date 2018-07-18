@@ -5,5 +5,5 @@
  time = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
  call date_and_time (date, time)
  if (index (date, 'a') /= 0 .or. index (time, 'a') /= 0) &
-   call abort
+   STOP 1
 end

@@ -33,26 +33,26 @@ contains
 
   subroutine d (x)
     real :: x
-    if (abs(x-3.0)>1E-3) call abort()
+    if (abs(x-3.0)>1E-3) STOP 1
   end subroutine
 
   subroutine s (x)
     class(t) :: x
     real :: r
     r = x%a (1.1)       ! worked
-    if (r .ne. a (1.1)) call abort
+    if (r .ne. a (1.1)) STOP 1
 
     r = x%a (b (1.2))   ! worked
-    if (r .ne. a(b (1.2))) call abort
+    if (r .ne. a(b (1.2))) STOP 2
 
     r = b ( x%a (1.3))  ! worked
-    if (r .ne. b(a (1.3))) call abort
+    if (r .ne. b(a (1.3))) STOP 3
 
     r = x%a(x%b (1.4))   ! failed
-    if (r .ne. a(b (1.4))) call abort
+    if (r .ne. a(b (1.4))) STOP 4
 
     r = x%a(x%c ())   ! failed
-    if (r .ne. a(c (x))) call abort
+    if (r .ne. a(c (x))) STOP 5
 
     call x%d (x%a(1.5))  ! failed
 

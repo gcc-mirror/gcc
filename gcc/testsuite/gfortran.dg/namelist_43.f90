@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "NaN not supported" { spu-*-* } }
 !
 ! PR fortran/34427
 !
@@ -40,8 +40,8 @@ PROGRAM TEST
   rewind (10)
   READ (10, NML = nl)
   CLOSE (10)
-  if(infinity /= 1) call abort
+  if(infinity /= 1) STOP 1
   if(any(foo(1:3) /= [5.0, 5.0, 5.0]) .or. .not.isnan(foo(4)) &
      .or. (foo(5) <= huge(foo)) .or. any(foo(6:10) /= -1.0)) &
-    call abort
+    STOP 2
 END PROGRAM TEST

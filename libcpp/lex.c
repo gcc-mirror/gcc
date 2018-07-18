@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -568,7 +568,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
     {
       vc m_nl, m_cr, m_bs, m_qm;
 
-      data = *((const vc *)s);
+      data = __builtin_vec_vsx_ld (0, s);
       s += 16;
 
       m_nl = (vc) __builtin_vec_cmpeq(data, repl_nl);
@@ -752,6 +752,101 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   }
 }
 
+#elif defined (__ARM_NEON) && defined (__ARM_64BIT_STATE)
+#include "arm_neon.h"
+
+/* This doesn't have to be the exact page size, but no system may use
+   a size smaller than this.  ARMv8 requires a minimum page size of
+   4k.  The impact of being conservative here is a small number of
+   cases will take the slightly slower entry path into the main
+   loop.  */
+
+#define AARCH64_MIN_PAGE_SIZE 4096
+
+static const uchar *
+search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
+{
+  const uint8x16_t repl_nl = vdupq_n_u8 ('\n');
+  const uint8x16_t repl_cr = vdupq_n_u8 ('\r');
+  const uint8x16_t repl_bs = vdupq_n_u8 ('\\');
+  const uint8x16_t repl_qm = vdupq_n_u8 ('?');
+  const uint8x16_t xmask = (uint8x16_t) vdupq_n_u64 (0x8040201008040201ULL);
+
+#ifdef __ARM_BIG_ENDIAN
+  const int16x8_t shift = {8, 8, 8, 8, 0, 0, 0, 0};
+#else
+  const int16x8_t shift = {0, 0, 0, 0, 8, 8, 8, 8};
+#endif
+
+  unsigned int found;
+  const uint8_t *p;
+  uint8x16_t data;
+  uint8x16_t t;
+  uint16x8_t m;
+  uint8x16_t u, v, w;
+
+  /* Align the source pointer.  */
+  p = (const uint8_t *)((uintptr_t)s & -16);
+
+  /* Assuming random string start positions, with a 4k page size we'll take
+     the slow path about 0.37% of the time.  */
+  if (__builtin_expect ((AARCH64_MIN_PAGE_SIZE
+			 - (((uintptr_t) s) & (AARCH64_MIN_PAGE_SIZE - 1)))
+			< 16, 0))
+    {
+      /* Slow path: the string starts near a possible page boundary.  */
+      uint32_t misalign, mask;
+
+      misalign = (uintptr_t)s & 15;
+      mask = (-1u << misalign) & 0xffff;
+      data = vld1q_u8 (p);
+      t = vceqq_u8 (data, repl_nl);
+      u = vceqq_u8 (data, repl_cr);
+      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
+      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
+      t = vorrq_u8 (v, w);
+      t = vandq_u8 (t, xmask);
+      m = vpaddlq_u8 (t);
+      m = vshlq_u16 (m, shift);
+      found = vaddvq_u16 (m);
+      found &= mask;
+      if (found)
+	return (const uchar*)p + __builtin_ctz (found);
+    }
+  else
+    {
+      data = vld1q_u8 ((const uint8_t *) s);
+      t = vceqq_u8 (data, repl_nl);
+      u = vceqq_u8 (data, repl_cr);
+      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
+      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
+      t = vorrq_u8 (v, w);
+      if (__builtin_expect (vpaddd_u64 ((uint64x2_t)t) != 0, 0))
+	goto done;
+    }
+
+  do
+    {
+      p += 16;
+      data = vld1q_u8 (p);
+      t = vceqq_u8 (data, repl_nl);
+      u = vceqq_u8 (data, repl_cr);
+      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
+      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
+      t = vorrq_u8 (v, w);
+    } while (!vpaddd_u64 ((uint64x2_t)t));
+
+done:
+  /* Now that we've found the terminating substring, work out precisely where
+     we need to stop.  */
+  t = vandq_u8 (t, xmask);
+  m = vpaddlq_u8 (t);
+  m = vshlq_u16 (m, shift);
+  found = vaddvq_u16 (m);
+  return (((((uintptr_t) p) < (uintptr_t) s) ? s : (const uchar *)p)
+	  + __builtin_ctz (found));
+}
+
 #elif defined (__ARM_NEON)
 #include "arm_neon.h"
 
@@ -817,7 +912,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 
 #else
 
-/* We only have one accellerated alternative.  Use a direct call so that
+/* We only have one accelerated alternative.  Use a direct call so that
    we encourage inlining.  */
 
 #define search_line_fast  search_line_acc_char
@@ -1257,6 +1352,28 @@ forms_identifier_p (cpp_reader *pfile, int first,
   return false;
 }
 
+/* Helper function to issue error about improper __VA_OPT__ use.  */
+static void
+maybe_va_opt_error (cpp_reader *pfile)
+{
+  if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, va_opt))
+    {
+      /* __VA_OPT__ should not be accepted at all, but allow it in
+	 system headers.  */
+      if (!cpp_in_system_header (pfile))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "__VA_OPT__ is not available until C++2a");
+    }
+  else if (!pfile->state.va_args_ok)
+    {
+      /* __VA_OPT__ should only appear in the replacement list of a
+	 variadic macro.  */
+      cpp_error (pfile, CPP_DL_PEDWARN,
+		 "__VA_OPT__ can only appear in the expansion"
+		 " of a C++2a variadic macro");
+    }
+}
+
 /* Helper function to get the cpp_hashnode of the identifier BASE.  */
 static cpp_hashnode *
 lex_identifier_intern (cpp_reader *pfile, const uchar *base)
@@ -1300,6 +1417,9 @@ lex_identifier_intern (cpp_reader *pfile, const uchar *base)
 		       "__VA_ARGS__ can only appear in the expansion"
 		       " of a C99 variadic macro");
 	}
+
+      if (result == pfile->spec_nodes.n__VA_OPT__)
+	maybe_va_opt_error (pfile);
 
       /* For -Wc++-compat, warn about use of C++ named operators.  */
       if (result->flags & NODE_WARN_OPERATOR)
@@ -1389,6 +1509,11 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
 		       "__VA_ARGS__ can only appear in the expansion"
 		       " of a C99 variadic macro");
 	}
+
+      /* __VA_OPT__ should only appear in the replacement list of a
+	 variadic macro.  */
+      if (result == pfile->spec_nodes.n__VA_OPT__)
+	maybe_va_opt_error (pfile);
 
       /* For -Wc++-compat, warn about use of C++ named operators.  */
       if (result->flags & NODE_WARN_OPERATOR)
@@ -1505,6 +1630,21 @@ is_macro(cpp_reader *pfile, const uchar *base)
   return !result ? false : (result->type == NT_MACRO);
 }
 
+/* Returns true if a literal suffix does not have the expected form
+   and is defined as a macro.  */
+
+static bool
+is_macro_not_literal_suffix(cpp_reader *pfile, const uchar *base)
+{
+  /* User-defined literals outside of namespace std must start with a single
+     underscore, so assume anything of that form really is a UDL suffix.
+     We don't need to worry about UDLs defined inside namespace std because
+     their names are reserved, so cannot be used as macro names in valid
+     programs.  */
+  if (base[0] == '_' && base[1] != '_')
+    return false;
+  return is_macro (pfile, base);
+}
 
 /* Lexes a raw string.  The stored string contains the spelling, including
    double quotes, delimiter string, '(' and ')', any leading
@@ -1552,7 +1692,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 		    (const uchar *)(STR), (LEN));		\
 	    temp_buffer_len += (LEN);				\
 	  }							\
-      } while (0);
+      } while (0)
 
   orig_base = base;
   ++cur;
@@ -1775,9 +1915,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
     {
       /* If a string format macro, say from inttypes.h, is placed touching
 	 a string literal it could be parsed as a C++11 user-defined string
-	 literal thus breaking the program.
-	 Try to identify macros with is_macro. A warning is issued. */
-      if (is_macro (pfile, cur))
+	 literal thus breaking the program.  */
+      if (is_macro_not_literal_suffix (pfile, cur))
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
@@ -1905,9 +2044,8 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
     {
       /* If a string format macro, say from inttypes.h, is placed touching
 	 a string literal it could be parsed as a C++11 user-defined string
-	 literal thus breaking the program.
-	 Try to identify macros with is_macro. A warning is issued. */
-      if (is_macro (pfile, cur))
+	 literal thus breaking the program.  */
+      if (is_macro_not_literal_suffix (pfile, cur))
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
@@ -2734,10 +2872,10 @@ _cpp_lex_direct (cpp_reader *pfile)
 		   && CPP_PEDANTIC (pfile)
 		   && ! buffer->warned_cplusplus_comments)
 	    {
-	      cpp_error (pfile, CPP_DL_PEDWARN,
-			 "C++ style comments are not allowed in ISO C90");
-	      cpp_error (pfile, CPP_DL_PEDWARN,
-			 "(this will be reported only once per input file)");
+	      if (cpp_error (pfile, CPP_DL_PEDWARN,
+			     "C++ style comments are not allowed in ISO C90"))
+		cpp_error (pfile, CPP_DL_NOTE,
+			   "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;
 	    }
 	  /* Or if specifically desired via -Wc90-c99-compat.  */
@@ -2745,10 +2883,10 @@ _cpp_lex_direct (cpp_reader *pfile)
 		   && ! CPP_OPTION (pfile, cplusplus)
 		   && ! buffer->warned_cplusplus_comments)
 	    {
-	      cpp_error (pfile, CPP_DL_WARNING,
-			 "C++ style comments are incompatible with C90");
-	      cpp_error (pfile, CPP_DL_WARNING,
-			 "(this will be reported only once per input file)");
+	      if (cpp_error (pfile, CPP_DL_WARNING,
+			     "C++ style comments are incompatible with C90"))
+		cpp_error (pfile, CPP_DL_NOTE,
+			   "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;
 	    }
 	  /* In C89/C94, C++ style comments are forbidden.  */
@@ -2768,11 +2906,12 @@ _cpp_lex_direct (cpp_reader *pfile)
 		}
 	      else if (! buffer->warned_cplusplus_comments)
 		{
-		  cpp_error (pfile, CPP_DL_ERROR,
-			     "C++ style comments are not allowed in ISO C90");
-		  cpp_error (pfile, CPP_DL_ERROR,
-			     "(this will be reported only once per input "
-			     "file)");
+		  if (cpp_error (pfile, CPP_DL_ERROR,
+				 "C++ style comments are not allowed in "
+				 "ISO C90"))
+		    cpp_error (pfile, CPP_DL_NOTE,
+			       "(this will be reported only once per input "
+			       "file)");
 		  buffer->warned_cplusplus_comments = 1;
 		}
 	    }
@@ -2793,6 +2932,13 @@ _cpp_lex_direct (cpp_reader *pfile)
 
       if (fallthrough_comment_p (pfile, comment_start))
 	fallthrough_comment = true;
+
+      if (pfile->cb.comment)
+	{
+	  size_t len = pfile->buffer->cur - comment_start;
+	  pfile->cb.comment (pfile, result->src_loc, comment_start - 1,
+			     len + 1);
+	}
 
       if (!pfile->state.save_comments)
 	{
@@ -2994,18 +3140,27 @@ _cpp_lex_direct (cpp_reader *pfile)
       break;
     }
 
-  source_range tok_range;
-  tok_range.m_start = result->src_loc;
-  if (result->src_loc >= RESERVED_LOCATION_COUNT)
-    tok_range.m_finish
-      = linemap_position_for_column (pfile->line_table,
-				     CPP_BUF_COLUMN (buffer, buffer->cur));
-  else
-    tok_range.m_finish = tok_range.m_start;
+  /* Potentially convert the location of the token to a range.  */
+  if (result->src_loc >= RESERVED_LOCATION_COUNT
+      && result->type != CPP_EOF)
+    {
+      /* Ensure that any line notes are processed, so that we have the
+	 correct physical line/column for the end-point of the token even
+	 when a logical line is split via one or more backslashes.  */
+      if (buffer->cur >= buffer->notes[buffer->cur_note].pos
+	  && !pfile->overlaid_buffer)
+	_cpp_process_line_notes (pfile, false);
 
-  result->src_loc = COMBINE_LOCATION_DATA (pfile->line_table,
-					   result->src_loc,
-					   tok_range, NULL);
+      source_range tok_range;
+      tok_range.m_start = result->src_loc;
+      tok_range.m_finish
+	= linemap_position_for_column (pfile->line_table,
+				       CPP_BUF_COLUMN (buffer, buffer->cur));
+
+      result->src_loc = COMBINE_LOCATION_DATA (pfile->line_table,
+					       result->src_loc,
+					       tok_range, NULL);
+    }
 
   return result;
 }

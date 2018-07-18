@@ -1,0 +1,1 @@
+CXXFLAGS_FOR_TARGET += -D_GNU_SOURCE -fexceptions -frtti

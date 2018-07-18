@@ -1,5 +1,5 @@
 /* Names of various DWARF tags.
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
    
@@ -59,6 +59,11 @@ Boston, MA 02110-1301, USA.  */
   switch (opc) {					\
   DW_CFA (name, value)
 #define DW_END_CFA } return 0; }
+#define DW_FIRST_IDX(name, value) \
+  const char *get_DW_IDX_name (unsigned int idx) {	\
+  switch (idx) {					\
+  DW_IDX (name, value)
+#define DW_END_IDX } return 0; }
 
 #define DW_TAG(name, value) case name: return # name ;
 #define DW_TAG_DUP(name, value)
@@ -70,6 +75,9 @@ Boston, MA 02110-1301, USA.  */
 #define DW_ATE(name, value) case name: return # name ;
 #define DW_ATE_DUP(name, value)
 #define DW_CFA(name, value) case name: return # name ;
+#define DW_CFA_DUP(name, value)
+#define DW_IDX(name, value) case name: return # name ;
+#define DW_IDX_DUP(name, value)
 
 #include "dwarf2.def"
 
@@ -85,6 +93,8 @@ Boston, MA 02110-1301, USA.  */
 #undef DW_END_ATE
 #undef DW_FIRST_CFA
 #undef DW_END_CFA
+#undef DW_FIRST_IDX
+#undef DW_END_IDX
 
 #undef DW_TAG
 #undef DW_TAG_DUP
@@ -96,3 +106,6 @@ Boston, MA 02110-1301, USA.  */
 #undef DW_ATE
 #undef DW_ATE_DUP
 #undef DW_CFA
+#undef DW_CFA_DUP
+#undef DW_IDX
+#undef DW_IDX_DUP

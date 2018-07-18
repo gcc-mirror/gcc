@@ -23,15 +23,15 @@ class B
 template <class T>
 struct C
 {
-  template <class U> decltype (a.i) f() { } // #1
-  template <class U> decltype (b.i) f() { } // #2
+  template <class U> decltype (a.i) f() { return 0; } // #1
+  template <class U> decltype (b.i) f() { return 1; } // #2
 };
 
 template <class T>
 struct D
 {
-  template <class U> decltype (A::j) f() { } // #1
-  template <class U> decltype (B::j) f() { } // #2
+  template <class U> decltype (A::j) f() { return 2; } // #1
+  template <class U> decltype (B::j) f() { return 3; } // #2
 };
 
 int main()

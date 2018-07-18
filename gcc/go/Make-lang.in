@@ -1,6 +1,6 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for gcc Go frontend.
 
-# Copyright (C) 2009-2016 Free Software Foundation, Inc.
+# Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -55,6 +55,7 @@ GO_OBJS = \
 	go/expressions.o \
 	go/go-backend.o \
 	go/go-diagnostics.o \
+	go/go-encode-id.o \
 	go/go-dump.o \
 	go/go-gcc.o \
 	go/go-gcc-diagnostics.o \
@@ -67,11 +68,13 @@ GO_OBJS = \
 	go/import.o \
 	go/import-archive.o \
 	go/lex.o \
+	go/names.o \
 	go/parse.o \
 	go/runtime.o \
 	go/statements.o \
 	go/types.o \
-	go/unsafe.o
+	go/unsafe.o \
+	go/wb.o
 
 go_OBJS = $(GO_OBJS) go/gospec.o
 
@@ -230,6 +233,7 @@ CFLAGS-go/go-gcc.o += $(GOINCLUDES)
 CFLAGS-go/go-linemap.o += $(GOINCLUDES)
 CFLAGS-go/go-sha1.o += $(GOINCLUDES)
 CFLAGS-go/go-gcc-diagnostics.o += $(GOINCLUDES)
+CFLAGS-go/go-encode-id.o += $(GOINCLUDES)
 
 go/%.o: go/gofrontend/%.cc
 	$(COMPILE) $(GOINCLUDES) $<

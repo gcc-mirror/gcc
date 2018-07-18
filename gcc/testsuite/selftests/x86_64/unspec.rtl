@@ -1,0 +1,20 @@
+(function "test_unspec"
+  (insn-chain
+    (block 2
+      (edge-from entry (flags "FALLTHRU"))
+      (cinsn 1 (set (mem/v:BLK (0|scratch:DI) [0  A8])
+                    (unspec:BLK [
+                            (mem/v:BLK (reuse_rtx 0) [0  A8])
+                        ] UNSPEC_MEMORY_BLOCKAGE)) "../../src/gcc/testsuite/gcc.dg/rtl/test.c":2
+                 (nil))
+
+      (cinsn 2 (set (mem/v:BLK (1|scratch:DI) [0  A8])
+                    (unspec_volatile:BLK [
+                            (mem/v:BLK (reuse_rtx 1) [0  A8])
+                        ] UNSPECV_RDTSCP)) "../../src/gcc/testsuite/gcc.dg/rtl/test.c":2
+                 (nil))
+
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 2
+  ) ;; insn-chain
+) ;; function

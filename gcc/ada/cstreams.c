@@ -6,7 +6,7 @@
  *                                                                          *
  *              Auxiliary C functions for Interfaces.C.Streams              *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -65,10 +65,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#ifdef VMS
-#include <unixlib.h>
 #endif
 
 #ifdef __linux__
@@ -202,21 +198,17 @@ __gnat_full_name (char *nam, char *buffer)
      getcwd approach instead. */
   realpath (nam, buffer);
 
-#elif defined (VMS)
-  strncpy (buffer, __gnat_to_canonical_file_spec (nam), __gnat_max_path_len);
+#elif defined (__QNX__)
 
-  if (buffer[0] == '/' || strchr (buffer, '!'))  /* '!' means decnet node */
-    strncpy (buffer, __gnat_to_host_file_spec (buffer), __gnat_max_path_len);
+  int length;
+
+  if (__gnat_is_absolute_path (nam, strlen (nam)))
+    realpath (nam, buffer);
   else
     {
-      char *nambuffer = alloca (__gnat_max_path_len);
-
-      strncpy (nambuffer, buffer, __gnat_max_path_len);
-      strncpy
-	(buffer, getcwd (buffer, __gnat_max_path_len, 0), __gnat_max_path_len);
-      strncat (buffer, "/", __gnat_max_path_len);
-      strncat (buffer, nambuffer, __gnat_max_path_len);
-      strncpy (buffer, __gnat_to_host_file_spec (buffer), __gnat_max_path_len);
+      length = __gnat_max_path_len;
+      __gnat_get_current_dir (buffer, &length);
+      strncat (buffer, nam, __gnat_max_path_len - length - 1);
     }
 
 #elif defined (__vxworks)

@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,10 @@ load_lib target-supports-dg.exp
 load_lib scanasm.exp
 load_lib scanrtl.exp
 load_lib scantree.exp
+load_lib scanltranstree.exp
 load_lib scanipa.exp
+load_lib scanwpaipa.exp
+load_lib scanlang.exp
 load_lib timeout.exp
 load_lib timeout-dg.exp
 load_lib prune.exp
@@ -40,6 +43,15 @@ setenv LANG C
 if { [ishost "*-*-cygwin*"] } {
   setenv LC_ALL C.ASCII
   setenv LANG C.ASCII
+}
+
+# Avoid sporadic data-losses with expect
+match_max -d 10000
+
+# Ensure GCC_COLORS is unset, for the rare testcases that verify
+# how output is colorized.
+if [info exists ::env(GCC_COLORS) ] {
+    unsetenv GCC_COLORS
 }
 
 global GCC_UNDER_TEST
@@ -102,6 +114,23 @@ if [info exists ADDITIONAL_TORTURE_OPTIONS] {
 	[concat $DG_TORTURE_OPTIONS $ADDITIONAL_TORTURE_OPTIONS]
 }
 
+proc dg-final { args } {
+    upvar dg-final-code final-code
+
+    if { [llength $args] > 2 } {
+	error "[lindex $args 0]: too many arguments"
+    }
+    set line [lindex $args 0]
+    set code [lindex $args 1]
+    set directive [lindex $code 0]
+    switch $directive {
+	gdb-test {
+	    set code [linsert $code 1 $line]
+	}
+    }
+    append final-code "$code\n"
+}
+
 global orig_environment_saved
 
 # Deduce generated files from tool flags, return finalcode string
@@ -157,8 +186,8 @@ proc schedule-cleanups { opts } {
     }
     # Finally see if there are any dumps in opts, otherwise we are done
     if [regexp -- {(?=(?:^|[ \t]+)?)-fdump-[^ \t]+(?=(?:$|[ \t]+)?)} $opts] {
-        # Ipa, Rtl, Tree for simplicity
-        set ptn "{i,r,t}"
+        # Lang, Ipa, Rtl, Tree for simplicity
+        set ptn "{l,i,r,t}"
     } else {
         return $finalcode
     }
@@ -533,6 +562,8 @@ proc gcc-dg-runtest { testcases flags default-extra-flags } {
 	set nshort [file tail [file dirname $test]]/[file tail $test]
 
 	foreach flags_t $option_list {
+	    global torture_current_flags
+	    set torture_current_flags "$flags_t"
 	    verbose "Testing $nshort, $flags $flags_t" 1
 	    dg-test $test "$flags $flags_t" ${default-extra-flags}
 	}
@@ -548,7 +579,7 @@ proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
 
     if ![info exists DEBUG_TORTURE_OPTIONS] {
 	set DEBUG_TORTURE_OPTIONS ""
-	foreach type {-gdwarf-2 -gstabs -gstabs+ -gxcoff -gxcoff+ -gcoff} {
+	foreach type {-gdwarf-2 -gstabs -gstabs+ -gxcoff -gxcoff+} {
 	    set comp_output [$target_compile \
 		    "$srcdir/$subdir/$trivial" "trivial.S" assembly \
 		    "additional_flags=$type"]
@@ -900,6 +931,7 @@ if { [info procs saved-dg-test] == [list] } {
 	global keep_saved_temps_suffixes
 	global multiline_expected_outputs
 	global freeform_regexps
+	global save_linenr_varnames
 
 	set additional_files ""
 	set additional_sources ""
@@ -926,6 +958,27 @@ if { [info procs saved-dg-test] == [list] } {
 	}
 	set multiline_expected_outputs []
 	set freeform_regexps []
+
+	if { [info exists save_linenr_varnames] } {
+	    foreach varname $save_linenr_varnames {
+		# Cleanup varname
+		eval global $varname
+		eval unset $varname
+
+		# Cleanup varname_used, or generate defined-but-not-used
+		# warning.
+		set varname_used used_$varname
+		eval global $varname_used
+		eval set used [info exists $varname_used]
+		if { $used } {
+		    eval unset $varname_used
+		} else {
+		    regsub {^saved_linenr_} $varname "" org_varname
+		    warning "dg-line var $org_varname defined, but not used"
+		}
+	    }
+	    unset save_linenr_varnames
+	}
     }
 
     proc dg-test { args } {
@@ -977,6 +1030,79 @@ if { [info procs saved-dg-error] == [list] \
     }
 }
 
+# Set variable VARNAME to LINENR
+
+proc dg-line { linenr varname } {
+    set org_varname $varname
+    set varname "saved_linenr_$varname"
+    eval global $varname
+
+    # Generate defined-but-previously-defined error.
+    eval set var_defined [info exists $varname]
+    if { $var_defined } {
+	eval set deflinenr \$$varname
+	error "dg-line var $org_varname defined at line $linenr, but previously defined at line $deflinenr"
+	return
+    }
+
+    eval set $varname $linenr
+
+    # Schedule cleanup of varname by cleanup-after-saved-dg-test
+    global save_linenr_varnames
+    if { [info exists save_linenr_varnames] } {
+	lappend save_linenr_varnames $varname
+    } else {
+	set save_linenr_varnames [list $varname]
+    }
+}
+
+# Get the absolute line number corresponding to:
+# - a relative line number (a non-null useline is required), or
+# - a line number variable reference.
+# Argument 0 is the line number on which line was used
+# Argument 1 is the relative line number or line number variable reference
+#
+proc get-absolute-line { useline line } {
+    if { "$line" == "." } {
+	return $useline
+    }
+
+    if { [regsub "^\.\[+-\](\[0-9\]+)$" $line "\\1" num] && $useline != "" } {
+	# Handle relative line specification, .+1 or .-1 etc.
+	set num [expr $useline [string index $line 1] $num]
+	return $num
+    }
+
+    if { ! [regsub "^(\[a-zA-Z\]\[a-zA-Z0-9_\]*)$" $line "\\1" varname] } {
+	return $line
+    }
+
+    # Handle linenr variable defined by dg-line
+    set org_varname $varname
+    set varname "saved_linenr_$varname"
+    eval global $varname
+
+    # Generate used-but-not-defined error.
+    eval set var_defined [info exists $varname]
+    if { ! $var_defined } {
+	if { "$useline" != "" } {
+	    error "dg-line var $org_varname used at line $useline, but not defined"
+	} else {
+	    error "dg-line var $org_varname used, but not defined"
+	}
+	return
+    }
+
+    # Note that varname has been used.
+    set varname_used "used_$varname"
+    eval global $varname_used
+    eval set $varname_used 1
+
+    # Get line number from var and use it.
+    eval set num \$$varname
+    set line $num
+}
+
 # Modify the regular expression saved by a DejaGnu message directive to
 # include a prefix and to force the expression to match a single line.
 # MSGPROC is the procedure to call.
@@ -986,10 +1112,8 @@ if { [info procs saved-dg-error] == [list] \
 proc process-message { msgproc msgprefix dgargs } {
     upvar dg-messages dg-messages
 
-    # Handle relative line specification, .+1 or .-1 etc.
-    if { [llength $dgargs] == 5
-	 && [regsub "^\.\[+-\](\[0-9\])$" [lindex $dgargs 4] "\\1" num] } {
-	set num [expr [lindex $dgargs 0] [string index [lindex $dgargs 4] 1] $num]
+    if { [llength $dgargs] == 5 } {
+	set num [get-absolute-line [lindex $dgargs 0] [lindex $dgargs 4]]
 	set dgargs [lreplace $dgargs 4 4 $num]
     }
 
@@ -1008,24 +1132,28 @@ proc process-message { msgproc msgprefix dgargs } {
     set newentry [lindex ${dg-messages} end]
     set expmsg [lindex $newentry 2]
 
+    set column ""
     # Handle column numbers from the specified expression (if there is
     # one) and set up the search expression that will be used by DejaGnu.
-    if [regexp "^(\[0-9\]+):" $expmsg "" column] {
+    if [regexp {^-:} $expmsg] {
+	# The expected column is -, so shouldn't appear.
+	set expmsg [string range $expmsg 2 end]
+    } elseif [regexp {^[0-9]+:} $expmsg column] {
 	# The expression in the directive included a column number.
-	# Remove "COLUMN:" from the original expression and move it
+	# Remove it from the original expression and move it
 	# to the proper place in the search expression.
-	regsub "^\[0-9\]+:" $expmsg "" expmsg
-	set expmsg "$column: $msgprefix\[^\n\]*$expmsg"
+	set expmsg [string range $expmsg [string length $column] end]
+	set column "$column "
     } elseif [string match "" [lindex $newentry 0]] {
 	# The specified line number is 0; don't expect a column number.
-	set expmsg "$msgprefix\[^\n\]*$expmsg"
     } else {
 	# There is no column number in the search expression, but we
 	# should expect one in the message itself.
-	set expmsg "\[0-9\]+: $msgprefix\[^\n\]*$expmsg"
+	set column {[0-9]+: }
     }
-
+    set expmsg "$column$msgprefix\[^\n\]*$expmsg"
     set newentry [lreplace $newentry 2 2 $expmsg]
+
     set dg-messages [lreplace ${dg-messages} end end $newentry]
     verbose "process-message:\n${dg-messages}" 2
 }

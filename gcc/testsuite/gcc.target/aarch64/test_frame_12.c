@@ -14,5 +14,5 @@ t_frame_run (test12)
 /* { dg-final { scan-assembler-times "sub\tsp, sp, #\[0-9\]+" 1 } } */
 
 /* Check epilogue using no write-back.  */
-/* { dg-final { scan-assembler-times "ldp\tx29, x30, \\\[sp, \[0-9\]+\\\]" 1 } } */
+/* { dg-final { scan-assembler "ldp\tx29, x30, \\\[sp, \[0-9\]+\\\]" } } */
 

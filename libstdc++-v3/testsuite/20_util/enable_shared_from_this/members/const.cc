@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,9 +32,9 @@ test01()
 {
   struct X : public std::enable_shared_from_this<X> { };
   using CX = const X;
-  std::shared_ptr<CX> p(new X);
+  std::shared_ptr<CX> p(new CX);
   VERIFY( share_ownership(p->shared_from_this(), p) );
-  p.reset(new CX);
+  p.reset(new X);
   VERIFY( share_ownership(p->shared_from_this(), p) );
   auto p2 = std::const_pointer_cast<X>(p)->shared_from_this();
   VERIFY( share_ownership(p2, p) );

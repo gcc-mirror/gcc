@@ -12,7 +12,7 @@ struct A
 
 struct B
 {
-  virtual void foo ();  // { dg-error "" } of this function
+  virtual void foo ();  // { dg-message "" } of this function
 };
 
 struct C : A , B

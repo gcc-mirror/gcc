@@ -882,7 +882,7 @@ Lex::gather_identifier()
 	      && (cc < '0' || cc > '9'))
 	    {
 	      // Check for an invalid character here, as we get better
-	      // error behavior if we swallow them as part of the
+	      // error behaviour if we swallow them as part of the
 	      // identifier we are building.
 	      if ((cc >= ' ' && cc < 0x7f)
 		  || cc == '\t'
@@ -923,7 +923,7 @@ Lex::gather_identifier()
 	    {
 	      // There is no valid place for a non-ASCII character
 	      // other than an identifier, so we get better error
-	      // handling behavior if we swallow this character after
+	      // handling behaviour if we swallow this character after
 	      // giving an error.
 	      if (!issued_error)
 		go_error_at(this->location(),
@@ -1897,6 +1897,11 @@ Lex::skip_cpp_comment()
       // Applies to the next function.  Do not inline the function.
       this->pragmas_ |= GOPRAGMA_NOINLINE;
     }
+  else if (verb == "go:notinheap")
+    {
+      // Applies to the next type.  The type does not live in the heap.
+      this->pragmas_ |= GOPRAGMA_NOTINHEAP;
+    }
   else if (verb == "go:systemstack")
     {
       // Applies to the next function.  It must run on the system stack.
@@ -1909,7 +1914,6 @@ Lex::skip_cpp_comment()
       // Applies to the next function.  If the function needs to use
       // any write barriers, it should emit an error instead.
       // FIXME: Should only work when compiling the runtime package.
-      // FIXME: Not implemented.
       this->pragmas_ |= GOPRAGMA_NOWRITEBARRIER;
     }
   else if (verb == "go:nowritebarrierrec")
@@ -1918,7 +1922,7 @@ Lex::skip_cpp_comment()
       // function that it calls, needs to use any write barriers, it
       // should emit an error instead.
       // FIXME: Should only work when compiling the runtime package.
-      // FIXME: Not implemented.
+      // FIXME: currently treated the same as go:nowritebarrier
       this->pragmas_ |= GOPRAGMA_NOWRITEBARRIERREC;
     }
   else if (verb == "go:cgo_unsafe_args")
@@ -2757,16 +2761,19 @@ bool
 Lex::is_exported_name(const std::string& name)
 {
   unsigned char c = name[0];
-  if (c != '$')
+  if (c != '.')
     return c >= 'A' && c <= 'Z';
   else
     {
       const char* p = name.data();
       size_t len = name.length();
-      if (len < 2 || p[1] != 'U')
+      if (len < 4 || p[1] != '.' || (p[2] != 'u' && p[2] != 'U'))
 	return false;
       unsigned int ci = 0;
-      for (size_t i = 2; i < len && p[i] != '$'; ++i)
+      size_t want = (p[2] == 'u' ? 4 : 8);
+      if (len < want + 3)
+	return false;
+      for (size_t i = 3; i < want; ++i)
 	{
 	  c = p[i];
 	  if (!Lex::is_hex_digit(c))

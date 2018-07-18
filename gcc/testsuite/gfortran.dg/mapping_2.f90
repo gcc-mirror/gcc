@@ -27,5 +27,5 @@ program len_test
    implicit none
    real x(7)
 
-   if (my_string(x) .ne. "01234567890") call abort ()
+   if (my_string(x) .ne. "01234567890") STOP 1
 end program len_test

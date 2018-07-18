@@ -15,4 +15,4 @@ v2di bar3 (v2di a) { return foo1 (1, a); }
 v2di bar4 (v2di a) { return foo3 (1, a); }
 
 int bar5 (int a)  { return foo4 (1, a); }
-int bar6 (v2di a) { return foo4 (1, a); } /* { dg-error "Vector argument passed to unprototyped function" } */
+int bar6 (v2di a) { return foo4 (1, a); } /* { dg-error "vector argument passed to unprototyped function" } */

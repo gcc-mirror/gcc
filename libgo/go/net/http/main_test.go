@@ -6,6 +6,8 @@ package http_test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"runtime"
@@ -14,6 +16,8 @@ import (
 	"testing"
 	"time"
 )
+
+var quietLog = log.New(ioutil.Discard, "", 0)
 
 func TestMain(m *testing.M) {
 	v := m.Run()
@@ -33,6 +37,8 @@ func interestingGoroutines() (gs []string) {
 		}
 		stack := strings.TrimSpace(sl[1])
 		if stack == "" ||
+			strings.Contains(stack, "testing.(*M).before.func1") ||
+			strings.Contains(stack, "os/signal.signal_recv") ||
 			strings.Contains(stack, "created by net.startServer") ||
 			strings.Contains(stack, "created by testing.RunTests") ||
 			strings.Contains(stack, "closeWriteAndWait") ||
@@ -52,8 +58,9 @@ func interestingGoroutines() (gs []string) {
 
 // Verify the other tests didn't leave any goroutines running.
 func goroutineLeaked() bool {
-	if testing.Short() {
-		// not counting goroutines for leakage in -short mode
+	if testing.Short() || runningBenchmarks() {
+		// Don't worry about goroutine leaks in -short mode or in
+		// benchmark mode. Too distracting when there are false positives.
 		return false
 	}
 
@@ -86,6 +93,18 @@ func setParallel(t *testing.T) {
 	if testing.Short() {
 		t.Parallel()
 	}
+}
+
+func runningBenchmarks() bool {
+	for i, arg := range os.Args {
+		if strings.HasPrefix(arg, "-test.bench=") && !strings.HasSuffix(arg, "=") {
+			return true
+		}
+		if arg == "-test.bench" && i < len(os.Args)-1 && os.Args[i+1] != "" {
+			return true
+		}
+	}
+	return false
 }
 
 func afterTest(t testing.TB) {
@@ -133,4 +152,17 @@ func waitCondition(waitFor, checkEvery time.Duration, fn func() bool) bool {
 		time.Sleep(checkEvery)
 	}
 	return false
+}
+
+// waitErrCondition is like waitCondition but with errors instead of bools.
+func waitErrCondition(waitFor, checkEvery time.Duration, fn func() error) error {
+	deadline := time.Now().Add(waitFor)
+	var err error
+	for time.Now().Before(deadline) {
+		if err = fn(); err == nil {
+			return nil
+		}
+		time.Sleep(checkEvery)
+	}
+	return err
 }

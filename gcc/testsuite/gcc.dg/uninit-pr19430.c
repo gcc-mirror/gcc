@@ -5,7 +5,7 @@ extern void baz (int *);
 int
 foo (int i)
 {
-  int j; /* { dg-warning "'j' may be used uninitialized in this function" "uninitialized" { xfail *-*-* } 8 } */
+  int j; /* { dg-warning "'j' may be used uninitialized in this function" "uninitialized" { xfail *-*-* } } */
 
   if (bar (i)) { 
     baz (&j);
@@ -29,7 +29,7 @@ void frob(int *pi);
 int main(void)
 {
   int i; 
-  printf("i = %d\n", i); /* { dg-warning "'i' is used uninitialized in this function" "" } */
+  printf("i = %d\n", i); /* { dg-warning "'i' is used uninitialized in this function" } */
   frob(&i);
 
   return 0;

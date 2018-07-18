@@ -1,3 +1,141 @@
+2018-06-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libitm/85988
+	* config/linux/x86/tls.h (SEG_READ): Use the offset of
+	__private_tm as base.
+	(SEG_WRITE): Likewise.
+	(SEG_ENCODE_WRITE): Correct the offset of pointer_guard for x32.
+	(gtm_thr): Replace SEG_READ(10) with SEG_READ(0).
+	(set_gtm_thr): Replace SEG_WRITE(10) with SEG_WRITE(0).
+	(abi_disp): Replace SEG_DECODE_READ(11) with SEG_DECODE_READ(1).
+	(set_abi_disp): Replace SEG_ENCODE_WRITE(11) with
+
+2018-05-17  Jason Merrill  <jason@redhat.com>
+
+	* beginend.cc (save): Disable -Werror=deprecated-copy.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libitm.exp: Include scanltranstree.exp.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libitm.exp: Include scanwpaipa.exp.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/x86/sjlj.S (_ITM_beginTransaction): Add
+	(__CET__ & 2) != 0 check for shadow stack.
+	(GTM_longjmp): Likewise.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85489
+	* config/x86/sjlj.S (GTM_longjmp): Replace jle/jg with jbe/ja.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* libitm.texi: Bump @copying's copyright year.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Add enable.m4 and cet.m4.
+	* config/x86/sjlj.S: Include cet.h.
+	(_ITM_beginTransaction): Add _CET_ENDBR.
+	Save Shadow Stack pointer.
+	(GTM_longjmp): Add _CET_ENDBR. Restore Shadow Stack pointer.
+	* config/x86/target.h (struct gtm_jmpbuf):
+	Add new field for Shadow Stack pointer.
+	* configure: Regenerate.
+	* configure.ac: Set CET_FLAGS. Update XCFLAGS.
+	* configure.ac: Update libtool_VERSION for x86.
+	* testsuite/Makefile.in: Regenerate.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* libitm/config/x86/target.h: Add new field (ssp).
+	* libitm/config/x86/sjlj.S: Change offsets.
+
+2017-05-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libitm.exp: Load scanlang.exp.
+
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libitm_i.h (sutrct gtm_thread): Fix typo in comment.
+
+2017-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* testsuite/Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead
+	of cat to get version from BASE-VER file.
+	* testsuite/Makefile.in: Regenerated.
+
+2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/target.h (htm_available): Determine vendor from
+	__get_cpuid_max return.  Use signature_INTEL_ebx.  Cleanup.
+
+2017-01-18  Torvald Riegel  <triegel@redhat.com>
+
+	* config/x86/target.h (htm_available): Add check for some processors
+	on which TSX is broken.
+
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead of cat to
+	get version from BASE-VER file.
+	* testsuite/Makefile.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2017-01-04  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* libitm.texi: Bump @copying's copyright year.
+
+2016-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (LIBITM_CHECK_LINKER_FEATURES): Remove.
+	* aclocal.m4: Regenerate.
+	* configure.ac: Call GCC_CHECK_LINKER_HWCAP instead of
+	LIBITM_CHECK_LINKER_HWCAP.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2016-04-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libitm/70456
@@ -1983,7 +2121,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2008-2016 Free Software Foundation, Inc.
+Copyright (C) 2008-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

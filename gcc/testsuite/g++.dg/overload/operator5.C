@@ -8,9 +8,9 @@ class String {
    operator UnspecifiedBoolTypeA() const;
    operator UnspecifiedBoolTypeB() const;
 };
-inline bool equalIgnoringCase(const String& a, const String& b) { }
+inline bool equalIgnoringCase(const String& a, const String& b) { return true; }
 inline bool equalPossiblyIgnoringCase(const String& a, 
                                       const String& b,
                                       bool ignoreCase) {
   return ignoreCase ? equalIgnoringCase(a, b) : (a == b); } // { dg-error "ambiguous" }
-// { dg-message "note" "note" { target *-*-* } 15 }
+// { dg-message "note" "note" { target *-*-* } .-1 }

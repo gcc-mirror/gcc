@@ -1,5 +1,5 @@
 ;; Predicate definitions for Synopsys DesignWare ARC.
-;; Copyright (C) 2007-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -148,6 +148,11 @@
       {
 	rtx x = XEXP (op, 1);
 
+	if ((GET_CODE (XEXP (op, 0)) == MULT)
+	    && REG_P (XEXP (XEXP (op, 0), 0))
+	    && CONSTANT_P (x))
+	  return 1;
+
 	if (GET_CODE (x) == CONST)
 	  {
 	    x = XEXP (x, 0);
@@ -184,6 +189,19 @@
   }
 )
 
+(define_predicate "compact_hreg_operand"
+  (match_code "reg, subreg")
+  {
+     if ((GET_MODE (op) != mode) && (mode != VOIDmode))
+	 return 0;
+
+      return (GET_CODE (op) == REG)
+      && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+		|| (TARGET_V2 && REGNO (op) <= 31 && REGNO (op) != 30)
+		|| !TARGET_V2);
+  }
+)
+
 ;; Return true if OP is an acceptable memory operand for ARCompact
 ;; 16-bit store instructions
 (define_predicate "compact_store_memory_operand"
@@ -197,6 +215,10 @@
 
   /* .di instructions have no 16-bit form.  */
   if (MEM_VOLATILE_P (op) && !TARGET_VOLATILE_CACHE_SET)
+     return 0;
+
+  /* likewise for uncached types.  */
+  if (arc_is_uncached_mem_p (op))
      return 0;
 
   size = GET_MODE_SIZE (mode);
@@ -266,6 +288,7 @@
     case SYMBOL_REF :
       if (SYMBOL_REF_TLS_MODEL (op))
 	return 0;
+      return 1;
     case LABEL_REF :
       return 1;
     case CONST :
@@ -312,7 +335,7 @@
       /* (subreg (mem ...) ...) can occur here if the inner part was once a
 	 pseudo-reg and is now a stack slot.  */
       if (GET_CODE (SUBREG_REG (op)) == MEM)
-	return move_double_src_operand (SUBREG_REG (op), mode);
+	return address_operand (XEXP (SUBREG_REG (op), 0), mode);
       else
 	return register_operand (op, mode);
     case MEM :
@@ -343,6 +366,8 @@
       else if (TARGET_MUL64_SET
 	       && (REGNO (op) == 57 || REGNO(op) == 58 || REGNO(op) == 59 ))
 	return 0;
+      else if (REGNO (op) == LP_COUNT)
+        return 1;
       else
 	return dest_reg_operand (op, mode);
     case SUBREG :
@@ -391,7 +416,8 @@
 ;; and only the standard movXX patterns are set up to handle them.
 (define_predicate "nonvol_nonimm_operand"
   (and (match_code "subreg, reg, mem")
-       (match_test "(GET_CODE (op) != MEM || !MEM_VOLATILE_P (op)) && nonimmediate_operand (op, mode)"))
+       (match_test "(GET_CODE (op) != MEM || !MEM_VOLATILE_P (op)) && nonimmediate_operand (op, mode)")
+       (match_test "!arc_is_uncached_mem_p (op)"))
 )
 
 ;; Return 1 if OP is a comparison operator valid for the mode of CC.
@@ -411,37 +437,37 @@
      a peephole.  */
   switch (GET_MODE (XEXP (op, 0)))
     {
-    case CC_ZNmode:
+    case E_CC_ZNmode:
       return (code == EQ || code == NE || code == GE || code == LT
 	      || code == GT);
-    case CC_Zmode:
+    case E_CC_Zmode:
       return code == EQ || code == NE;
-    case CC_Cmode:
+    case E_CC_Cmode:
       return code == LTU || code == GEU;
-    case CC_FP_GTmode:
+    case E_CC_FP_GTmode:
       return code == GT || code == UNLE;
-    case CC_FP_GEmode:
+    case E_CC_FP_GEmode:
       return code == GE || code == UNLT;
-    case CC_FP_ORDmode:
+    case E_CC_FP_ORDmode:
       return code == ORDERED || code == UNORDERED;
-    case CC_FP_UNEQmode:
+    case E_CC_FP_UNEQmode:
       return code == UNEQ || code == LTGT;
-    case CC_FPXmode:
+    case E_CC_FPXmode:
       return (code == EQ || code == NE || code == UNEQ || code == LTGT
 	      || code == ORDERED || code == UNORDERED);
 
-    case CC_FPUmode:
+    case E_CC_FPUmode:
       return 1;
-    case CC_FPU_UNEQmode:
+    case E_CC_FPU_UNEQmode:
       return 1;
 
-    case CCmode:
-    case SImode: /* Used for BRcc.  */
+    case E_CCmode:
+    case E_SImode: /* Used for BRcc.  */
       return 1;
     /* From combiner.  */
-    case QImode: case HImode: case DImode: case SFmode: case DFmode:
+    case E_QImode: case E_HImode: case E_DImode: case E_SFmode: case E_DFmode:
       return 0;
-    case VOIDmode:
+    case E_VOIDmode:
       return 0;
     default:
       gcc_unreachable ();
@@ -451,11 +477,16 @@
 (define_predicate "equality_comparison_operator"
   (match_code "eq, ne"))
 
+(define_predicate "ge_lt_comparison_operator"
+  (match_code "ge, lt"))
+
 (define_predicate "brcc_nolimm_operator"
   (ior (match_test "REG_P (XEXP (op, 1))")
        (and (match_code "eq, ne, lt, ge, ltu, geu")
+	    (match_test "CONST_INT_P (XEXP (op, 1))")
 	    (match_test "u6_immediate_operand (XEXP (op, 1), SImode)"))
        (and (match_code "le, gt, leu, gtu")
+	    (match_test "CONST_INT_P (XEXP (op, 1))")
 	    (match_test "UNSIGNED_INT6 (INTVAL (XEXP (op, 1)) + 1)"))))
 
 ;; Return TRUE if this is the condition code register, if we aren't given
@@ -491,7 +522,7 @@
 	return FALSE;
     }
 
-  if (REGNO (op) != 61)
+  if (REGNO (op) != CC_REG)
     return FALSE;
   if (mode == rmode
       || (mode == CC_ZNmode && rmode == CC_Zmode)
@@ -513,11 +544,11 @@
     return 1;
   switch (mode)
     {
-    case CC_Zmode:
+    case E_CC_Zmode:
       if (GET_MODE (op) == CC_ZNmode)
 	return 1;
       /* Fall through.  */
-    case CC_ZNmode: case CC_Cmode:
+    case E_CC_ZNmode: case E_CC_Cmode:
       return GET_MODE (op) == CCmode;
     default:
       gcc_unreachable ();
@@ -578,7 +609,9 @@
 )
 
 (define_predicate "noncommutative_operator"
-  (ior (match_code "minus,ashift,ashiftrt,lshiftrt,rotatert")
+  (ior (and (match_code "ashift,ashiftrt,lshiftrt,rotatert")
+	    (match_test "TARGET_BARREL_SHIFTER"))
+       (match_code "minus")
        (and (match_code "ss_minus")
 	    (match_test "TARGET_ARC700 || TARGET_EA_SET")))
 )
@@ -589,6 +622,11 @@
 		 (and (match_code "ss_truncate")
 		      (match_test "GET_MODE (XEXP (op, 0)) == HImode")))
 	    (match_test "TARGET_ARC700 || TARGET_EA_SET")))
+)
+
+(define_predicate "_1_2_3_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 2 || INTVAL (op) == 3"))
 )
 
 (define_predicate "_2_4_8_operand"
@@ -672,6 +710,11 @@
 (define_predicate "mhi_operand"
   (and (match_code "reg")
        (match_test "REGNO (op) == (TARGET_BIG_ENDIAN ? 58 : 59)")))
+
+(define_predicate "accl_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == (TARGET_BIG_ENDIAN ? 59 : 58)")
+       (match_test "TARGET_V2")))
 
 ; Unfortunately, we can not allow a const_int_operand before reload, because
 ; reload needs a non-void mode to guide it how to reload the inside of a

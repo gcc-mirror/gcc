@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"math/big"
+	"strings"
 	"testing"
 	"time"
 )
@@ -58,6 +59,10 @@ type printableStringTest struct {
 	A string `asn1:"printable"`
 }
 
+type genericStringTest struct {
+	A string
+}
+
 type optionalRawValueTest struct {
 	A RawValue `asn1:"optional"`
 }
@@ -68,6 +73,15 @@ type omitEmptyTest struct {
 
 type defaultTest struct {
 	A int `asn1:"optional,default:1"`
+}
+
+type applicationTest struct {
+	A int `asn1:"application,tag:0"`
+	B int `asn1:"application,tag:1,explicit"`
+}
+
+type numericStringTest struct {
+	A string `asn1:"numeric"`
 }
 
 type testSET []int
@@ -141,6 +155,9 @@ var marshalTests = []marshalTest{
 	{optionalRawValueTest{}, "3000"},
 	{printableStringTest{"test"}, "3006130474657374"},
 	{printableStringTest{"test*"}, "30071305746573742a"},
+	{genericStringTest{"test"}, "3006130474657374"},
+	{genericStringTest{"test*"}, "30070c05746573742a"},
+	{genericStringTest{"test&"}, "30070c057465737426"},
 	{rawContentsStruct{nil, 64}, "3003020140"},
 	{rawContentsStruct{[]byte{0x30, 3, 1, 2, 3}, 64}, "3003010203"},
 	{RawValue{Tag: 1, Class: 2, IsCompound: false, Bytes: []byte{1, 2, 3}}, "8103010203"},
@@ -151,6 +168,8 @@ var marshalTests = []marshalTest{
 	{defaultTest{0}, "3003020100"},
 	{defaultTest{1}, "3000"},
 	{defaultTest{2}, "3003020102"},
+	{applicationTest{1, 2}, "30084001016103020102"},
+	{numericStringTest{"1 9"}, "30051203312039"},
 }
 
 func TestMarshal(t *testing.T) {
@@ -167,9 +186,70 @@ func TestMarshal(t *testing.T) {
 	}
 }
 
+type marshalWithParamsTest struct {
+	in     interface{}
+	params string
+	out    string // hex encoded
+}
+
+var marshalWithParamsTests = []marshalWithParamsTest{
+	{intStruct{10}, "set", "310302010a"},
+	{intStruct{10}, "application", "600302010a"},
+}
+
+func TestMarshalWithParams(t *testing.T) {
+	for i, test := range marshalWithParamsTests {
+		data, err := MarshalWithParams(test.in, test.params)
+		if err != nil {
+			t.Errorf("#%d failed: %s", i, err)
+		}
+		out, _ := hex.DecodeString(test.out)
+		if !bytes.Equal(out, data) {
+			t.Errorf("#%d got: %x want %x\n\t%q\n\t%q", i, data, out, data, out)
+
+		}
+	}
+}
+
+type marshalErrTest struct {
+	in  interface{}
+	err string
+}
+
+var marshalErrTests = []marshalErrTest{
+	{bigIntStruct{nil}, "empty integer"},
+	{numericStringTest{"a"}, "invalid character"},
+	{ia5StringTest{"\xb0"}, "invalid character"},
+	{printableStringTest{"!"}, "invalid character"},
+}
+
+func TestMarshalError(t *testing.T) {
+	for i, test := range marshalErrTests {
+		_, err := Marshal(test.in)
+		if err == nil {
+			t.Errorf("#%d should fail, but success", i)
+			continue
+		}
+
+		if !strings.Contains(err.Error(), test.err) {
+			t.Errorf("#%d got: %v want %v", i, err, test.err)
+		}
+	}
+}
+
 func TestInvalidUTF8(t *testing.T) {
 	_, err := Marshal(string([]byte{0xff, 0xff}))
 	if err == nil {
 		t.Errorf("invalid UTF8 string was accepted")
+	}
+}
+
+func BenchmarkMarshal(b *testing.B) {
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		for _, test := range marshalTests {
+			Marshal(test.in)
+		}
 	}
 }

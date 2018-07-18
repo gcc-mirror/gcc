@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2016 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2018 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -61,10 +61,10 @@ function opt_args(name, flags)
 	if (flags !~ " " name "\\(")
 		return ""
 	sub(".* " name "\\(", "", flags)
-	if (flags ~ "^{")
+	if (flags ~ "^[{]")
 	{
-		sub ("^{", "", flags)
-		sub("}\\).*", "", flags)
+		sub ("^[{]", "", flags)
+		sub ("}\\).*", "", flags)
 	}
 	else
 		sub("\\).*", "", flags)
@@ -105,7 +105,7 @@ function switch_flags (flags)
 	  test_flag("Undocumented", flags,  " | CL_UNDOCUMENTED") \
 	  test_flag("NoDWARFRecord", flags,  " | CL_NO_DWARF_RECORD") \
 	  test_flag("Warning", flags,  " | CL_WARNING") \
-	  test_flag("Optimization", flags,  " | CL_OPTIMIZATION")
+	  test_flag("(Optimization|PerFunction)", flags,  " | CL_OPTIMIZATION")
 	sub( "^0 \\| ", "", result )
 	return result
 }
@@ -136,7 +136,8 @@ function switch_bit_fields (flags)
 	  flag_init("UInteger", flags) \
 	  flag_init("Host_Wide_Int", hwi) \
 	  flag_init("ToLower", flags) \
-	  flag_init("Report", flags)
+	  flag_init("Report", flags) \
+	  flag_init("Deprecated", flags)
 
 	sub(", $", "", result)
 	return result
@@ -275,7 +276,7 @@ function var_ref(name, flags)
 		return "offsetof (struct gcc_options, x_target_flags)"
 	if (opt_args("InverseMask", flags) != "")
 		return "offsetof (struct gcc_options, x_target_flags)"
-	return "-1"
+	return "(unsigned short) -1"
 }
 
 # Given the option called NAME return a sanitized version of its name.
@@ -312,6 +313,19 @@ function search_var_name(name, opt_numbers, opts, flags, n_opts)
         }
     }
     return ""
+}
+
+function integer_range_info(range_option, init, option)
+{
+    if (range_option != "") {
+	start = nth_arg(0, range_option);
+	end = nth_arg(1, range_option);
+	if (init != "" && init != "-1" && (init < start || init > end))
+	  print "#error initial value " init " of '" option "' must be in range [" start "," end "]"
+	return start ", " end
+    }
+    else
+        return "-1, -1"
 }
 
 # Handle LangEnabledBy(ENABLED_BY_LANGS, ENABLEDBY_NAME, ENABLEDBY_POSARG,

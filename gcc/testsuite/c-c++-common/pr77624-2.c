@@ -8,8 +8,8 @@ foo (int *a)
   __atomic_is_lock_free (2, a, 2);	/* { dg-error "too many arguments" } */
   __atomic_is_lock_free (2);		/* { dg-error "too few arguments" } */
   __atomic_is_lock_free (2, b);		/* { dg-error "incompatible type" "" { target c } } */
-					/* { dg-message "expected" "" { target c } 10 } */
-					/* { dg-error "convert" "" { target c++ } 10 } */
+					/* { dg-message "expected" "" { target c } .-1 } */
+					/* { dg-error "convert" "" { target c++ } .-2 } */
   __atomic_is_lock_free (2, 0);
 }
 
@@ -20,7 +20,7 @@ bar (int *a)
   __atomic_always_lock_free (2, a, 2);	/* { dg-error "too many arguments" } */
   __atomic_always_lock_free (2);	/* { dg-error "too few arguments" } */
   __atomic_always_lock_free (2, b);	/* { dg-error "incompatible type" "" { target c } } */
-					/* { dg-message "expected" "" { target c } 22 } */
-					/* { dg-error "convert" "" { target c++ } 22 } */
+					/* { dg-message "expected" "" { target c } .-1 } */
+					/* { dg-error "convert" "" { target c++ } .-2 } */
   __atomic_always_lock_free (2, 0);
 }

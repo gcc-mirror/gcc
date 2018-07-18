@@ -13,12 +13,12 @@
 #define TEST_INTEGER(u,ukind,v,vkind) \
       ukind = u;\
       vkind = v;\
-      if (iand(u,v) /= and(ukind, vkind)) call abort;\
-      if (iand(u,v) /= and(vkind, ukind)) call abort;\
-      if (ieor(u,v) /= xor(ukind, vkind)) call abort;\
-      if (ieor(u,v) /= xor(vkind, ukind)) call abort;\
-      if (ior(u,v) /= or(ukind, vkind)) call abort;\
-      if (ior(u,v) /= or(vkind, ukind)) call abort
+      if (iand(u,v) /= and(ukind, vkind)) STOP 1;\
+      if (iand(u,v) /= and(vkind, ukind)) STOP 1;\
+      if (ieor(u,v) /= xor(ukind, vkind)) STOP 1;\
+      if (ieor(u,v) /= xor(vkind, ukind)) STOP 1;\
+      if (ior(u,v) /= or(ukind, vkind)) STOP 1;\
+      if (ior(u,v) /= or(vkind, ukind)) STOP 1
 
       TEST_INTEGER(19,i1,6,j1)
       TEST_INTEGER(19,i1,6,j2)
@@ -45,12 +45,12 @@
 #define TEST_LOGICAL(u,ukind,v,vkind) \
       ukind = u;\
       vkind = v;\
-      if ((u .and. v) .neqv. and(ukind, vkind)) call abort;\
-      if ((u .and. v) .neqv. and(vkind, ukind)) call abort;\
-      if (((u .and. .not. v) .or. (.not. u .and. v)) .neqv. xor(ukind, vkind)) call abort;\
-      if (((u .and. .not. v) .or. (.not. u .and. v)) .neqv. xor(vkind, ukind)) call abort;\
-      if ((u .or. v) .neqv. or(ukind, vkind)) call abort;\
-      if ((u .or. v) .neqv. or(vkind, ukind)) call abort
+      if ((u .and. v) .neqv. and(ukind, vkind)) STOP 1;\
+      if ((u .and. v) .neqv. and(vkind, ukind)) STOP 1;\
+      if (((u .and. .not. v) .or. (.not. u .and. v)) .neqv. xor(ukind, vkind)) STOP 1;\
+      if (((u .and. .not. v) .or. (.not. u .and. v)) .neqv. xor(vkind, ukind)) STOP 1;\
+      if ((u .or. v) .neqv. or(ukind, vkind)) STOP 1;\
+      if ((u .or. v) .neqv. or(vkind, ukind)) STOP 2
 
       TEST_LOGICAL(.true.,l1,.false.,k1)
       TEST_LOGICAL(.true.,l1,.true.,k1)

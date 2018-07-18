@@ -131,6 +131,19 @@ func (byteFormatter) Format(f State, _ rune) {
 
 var byteFormatterSlice = []byteFormatter{'h', 'e', 'l', 'l', 'o'}
 
+// Copy of io.stringWriter interface used by writeStringFormatter for type assertion.
+type stringWriter interface {
+	WriteString(s string) (n int, err error)
+}
+
+type writeStringFormatter string
+
+func (sf writeStringFormatter) Format(f State, c rune) {
+	if sw, ok := f.(stringWriter); ok {
+		sw.WriteString("***" + string(sf) + "***")
+	}
+}
+
 var fmtTests = []struct {
 	fmt string
 	val interface{}
@@ -416,6 +429,32 @@ var fmtTests = []struct {
 	{"% .3g", 1.0, " 1"},
 	{"%b", float32(1.0), "8388608p-23"},
 	{"%b", 1.0, "4503599627370496p-52"},
+	// Test sharp flag used with floats.
+	{"%#g", 1e-323, "1.00000e-323"},
+	{"%#g", -1.0, "-1.00000"},
+	{"%#g", 1.1, "1.10000"},
+	{"%#g", 123456.0, "123456."},
+	{"%#g", 1234567.0, "1.234567e+06"},
+	{"%#g", 1230000.0, "1.23000e+06"},
+	{"%#g", 1000000.0, "1.00000e+06"},
+	{"%#.0f", 1.0, "1."},
+	{"%#.0e", 1.0, "1.e+00"},
+	{"%#.0g", 1.0, "1."},
+	{"%#.0g", 1100000.0, "1.e+06"},
+	{"%#.4f", 1.0, "1.0000"},
+	{"%#.4e", 1.0, "1.0000e+00"},
+	{"%#.4g", 1.0, "1.000"},
+	{"%#.4g", 100000.0, "1.000e+05"},
+	{"%#.0f", 123.0, "123."},
+	{"%#.0e", 123.0, "1.e+02"},
+	{"%#.0g", 123.0, "1.e+02"},
+	{"%#.4f", 123.0, "123.0000"},
+	{"%#.4e", 123.0, "1.2300e+02"},
+	{"%#.4g", 123.0, "123.0"},
+	{"%#.4g", 123000.0, "1.230e+05"},
+	{"%#9.4g", 1.0, "    1.000"},
+	// The sharp flag has no effect for binary float format.
+	{"%#b", 1.0, "4503599627370496p-52"},
 	// Precision has no effect for binary float format.
 	{"%.4b", float32(1.0), "8388608p-23"},
 	{"%.4b", -1.0, "-4503599627370496p-52"},
@@ -466,8 +505,24 @@ var fmtTests = []struct {
 	{"% .3E", -1 - 2i, "(-1.000E+00-2.000E+00i)"},
 	{"%+.3g", 1 + 2i, "(+1+2i)"},
 	{"%+.3g", complex64(1 + 2i), "(+1+2i)"},
+	{"%#g", 1 + 2i, "(1.00000+2.00000i)"},
+	{"%#g", 123456 + 789012i, "(123456.+789012.i)"},
+	{"%#g", 1e-10i, "(0.00000+1.00000e-10i)"},
+	{"%#g", -1e10 - 1.11e100i, "(-1.00000e+10-1.11000e+100i)"},
+	{"%#.0f", 1.23 + 1.0i, "(1.+1.i)"},
+	{"%#.0e", 1.23 + 1.0i, "(1.e+00+1.e+00i)"},
+	{"%#.0g", 1.23 + 1.0i, "(1.+1.i)"},
+	{"%#.0g", 0 + 100000i, "(0.+1.e+05i)"},
+	{"%#.0g", 1230000 + 0i, "(1.e+06+0.i)"},
+	{"%#.4f", 1 + 1.23i, "(1.0000+1.2300i)"},
+	{"%#.4e", 123 + 1i, "(1.2300e+02+1.0000e+00i)"},
+	{"%#.4g", 123 + 1.23i, "(123.0+1.230i)"},
+	{"%#12.5g", 0 + 100000i, "(      0.0000 +1.0000e+05i)"},
+	{"%#12.5g", 1230000 - 0i, "(  1.2300e+06     +0.0000i)"},
 	{"%b", 1 + 2i, "(4503599627370496p-52+4503599627370496p-51i)"},
 	{"%b", complex64(1 + 2i), "(8388608p-23+8388608p-22i)"},
+	// The sharp flag has no effect for binary complex format.
+	{"%#b", 1 + 2i, "(4503599627370496p-52+4503599627370496p-51i)"},
 	// Precision has no effect for binary complex format.
 	{"%.4b", 1 + 2i, "(4503599627370496p-52+4503599627370496p-51i)"},
 	{"%.4b", complex64(1 + 2i), "(8388608p-23+8388608p-22i)"},
@@ -605,7 +660,10 @@ var fmtTests = []struct {
 	{"%x", I(23), `3c32333e`},
 	{"%#x", I(23), `0x3c32333e`},
 	{"%# x", I(23), `0x3c 0x32 0x33 0x3e`},
-	{"%d", I(23), `23`}, // Stringer applies only to string formats.
+	// Stringer applies only to string formats.
+	{"%d", I(23), `23`},
+	// Stringer applies to the extracted value.
+	{"%s", reflect.ValueOf(I(23)), `<23>`},
 
 	// go syntax
 	{"%#v", A{1, 2, "a", []int{1, 2}}, `fmt_test.A{i:1, j:0x2, s:"a", x:[]int{1, 2}}`},
@@ -932,6 +990,11 @@ var fmtTests = []struct {
 	// This next case seems wrong, but the docs say the Formatter wins here.
 	{"%#v", byteFormatterSlice, "[]fmt_test.byteFormatter{X, X, X, X, X}"},
 
+	// pp.WriteString
+	{"%s", writeStringFormatter(""), "******"},
+	{"%s", writeStringFormatter("xyz"), "***xyz***"},
+	{"%s", writeStringFormatter("⌘/⌘"), "***⌘/⌘***"},
+
 	// reflect.Value handled specially in Go 1.5, making it possible to
 	// see inside non-exported fields (which cannot be accessed with Interface()).
 	// Issue 8965.
@@ -1152,6 +1215,14 @@ func BenchmarkSprintfTruncateString(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			Sprintf("%.3s", "日本語日本語日本語")
+		}
+	})
+}
+
+func BenchmarkSprintfSlowParsingPath(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			Sprintf("%.v", nil)
 		}
 	})
 }
@@ -1560,18 +1631,23 @@ func TestWidthAndPrecision(t *testing.T) {
 	}
 }
 
-// Panic is a type that panics in String.
-type Panic struct {
+// PanicS is a type that panics in String.
+type PanicS struct {
 	message interface{}
 }
 
 // Value receiver.
-func (p Panic) GoString() string {
+func (p PanicS) String() string {
 	panic(p.message)
 }
 
+// PanicGo is a type that panics in GoString.
+type PanicGo struct {
+	message interface{}
+}
+
 // Value receiver.
-func (p Panic) String() string {
+func (p PanicGo) GoString() string {
 	panic(p.message)
 }
 
@@ -1591,13 +1667,15 @@ var panictests = []struct {
 	out string
 }{
 	// String
-	{"%s", (*Panic)(nil), "<nil>"}, // nil pointer special case
-	{"%s", Panic{io.ErrUnexpectedEOF}, "%!s(PANIC=unexpected EOF)"},
-	{"%s", Panic{3}, "%!s(PANIC=3)"},
+	{"%s", (*PanicS)(nil), "<nil>"}, // nil pointer special case
+	{"%s", PanicS{io.ErrUnexpectedEOF}, "%!s(PANIC=unexpected EOF)"},
+	{"%s", PanicS{3}, "%!s(PANIC=3)"},
 	// GoString
-	{"%#v", (*Panic)(nil), "<nil>"}, // nil pointer special case
-	{"%#v", Panic{io.ErrUnexpectedEOF}, "%!v(PANIC=unexpected EOF)"},
-	{"%#v", Panic{3}, "%!v(PANIC=3)"},
+	{"%#v", (*PanicGo)(nil), "<nil>"}, // nil pointer special case
+	{"%#v", PanicGo{io.ErrUnexpectedEOF}, "%!v(PANIC=unexpected EOF)"},
+	{"%#v", PanicGo{3}, "%!v(PANIC=3)"},
+	// Issue 18282. catchPanic should not clear fmtFlags permanently.
+	{"%#v", []interface{}{PanicGo{3}, PanicGo{3}}, "[]interface {}{%!v(PANIC=3), %!v(PANIC=3)}"},
 	// Format
 	{"%s", (*PanicF)(nil), "<nil>"}, // nil pointer special case
 	{"%s", PanicF{io.ErrUnexpectedEOF}, "%!s(PANIC=unexpected EOF)"},
@@ -1657,12 +1735,14 @@ func TestIsSpace(t *testing.T) {
 	}
 }
 
+func hideFromVet(s string) string { return s }
+
 func TestNilDoesNotBecomeTyped(t *testing.T) {
 	type A struct{}
 	type B struct{}
 	var a *A = nil
 	var b B = B{}
-	got := Sprintf("%s %s %s %s %s", nil, a, nil, b, nil) // go vet should complain about this line.
+	got := Sprintf(hideFromVet("%s %s %s %s %s"), nil, a, nil, b, nil)
 	const expect = "%!s(<nil>) %!s(*fmt_test.A=<nil>) %!s(<nil>) {} %!s(<nil>)"
 	if got != expect {
 		t.Errorf("expected:\n\t%q\ngot:\n\t%q", expect, got)
@@ -1736,6 +1816,29 @@ func TestFormatterFlags(t *testing.T) {
 		s := Sprintf(tt.in, tt.val)
 		if s != tt.out {
 			t.Errorf("Sprintf(%q, %T) = %q, want %q", tt.in, tt.val, s, tt.out)
+		}
+	}
+}
+
+func TestParsenum(t *testing.T) {
+	testCases := []struct {
+		s          string
+		start, end int
+		num        int
+		isnum      bool
+		newi       int
+	}{
+		{"a123", 0, 4, 0, false, 0},
+		{"1234", 1, 1, 0, false, 1},
+		{"123a", 0, 4, 123, true, 3},
+		{"12a3", 0, 4, 12, true, 2},
+		{"1234", 0, 4, 1234, true, 4},
+		{"1a234", 1, 3, 0, false, 1},
+	}
+	for _, tt := range testCases {
+		num, isnum, newi := Parsenum(tt.s, tt.start, tt.end)
+		if num != tt.num || isnum != tt.isnum || newi != tt.newi {
+			t.Errorf("parsenum(%q, %d, %d) = %d, %v, %d, want %d, %v, %d", tt.s, tt.start, tt.end, num, isnum, newi, tt.num, tt.isnum, tt.newi)
 		}
 	}
 }

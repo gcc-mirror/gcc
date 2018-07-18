@@ -10,12 +10,12 @@ c { dg-do run }
       real(kind=8)   r8, r88
       parameter (i1 = 1, i2 = 2, i4 = 4, i = 5, i8 = i + i4*i2 + i2*i1)
       parameter (r = 3.0, r4 = 4.0, r8 = 8.d0, d = i8*r + r4*i2 + r8*i1)
-      if (i8 .ne. 15   ) call abort
-      if (d  .ne. 61.d0) call abort
+      if (i8 .ne. 15   ) STOP 1
+      if (d  .ne. 61.d0) STOP 2
       i11 = 1; i22 = 2; i44 = 4; ii = 5
       i88 = i + i4*i2 + i2*i1
-      if (i88 .ne. i8) call abort
+      if (i88 .ne. i8) STOP 3
       rr = 3.0; r44 = 4.0; r88 = 8.0d0
       dd = i88*rr + r44*i22 + r88*i11
-      if (dd .ne. d) call abort
+      if (dd .ne. d) STOP 4
       end

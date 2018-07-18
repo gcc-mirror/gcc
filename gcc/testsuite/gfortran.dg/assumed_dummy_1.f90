@@ -34,7 +34,7 @@ end interface
   call foo (y, j)
   call goo (y, j)
   call roo (y, j)
-  if (any(y.ne.(/21.0, 99.0, 42.0/))) call abort ()
+  if (any(y.ne.(/21.0, 99.0, 42.0/))) STOP 1
 contains
   SUBROUTINE roo (x, i)
     REAL, DIMENSION(i:)     :: x

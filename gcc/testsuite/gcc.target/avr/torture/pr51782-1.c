@@ -4,6 +4,10 @@
 
 #include <stdlib.h>
 
+#ifndef __FLASH
+#define __flash /* empty */
+#endif
+
 struct R { char r; };
 struct RGB { char r,g,b; };
 

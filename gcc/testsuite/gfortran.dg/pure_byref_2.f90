@@ -4,7 +4,7 @@ program main
   implicit none
   integer, dimension(2) :: b
   b = fun(size(b))
-  if (b(1) /= 1 .or. b(2) /= 2) call abort()
+  if (b(1) /= 1 .or. b(2) /= 2) STOP 1
 contains
   pure function fun(n) 
     integer, intent(in) :: n

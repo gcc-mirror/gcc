@@ -76,7 +76,8 @@ import (
 )
 
 // Regexp is the representation of a compiled regular expression.
-// A Regexp is safe for concurrent use by multiple goroutines.
+// A Regexp is safe for concurrent use by multiple goroutines,
+// except for configuration methods, such as Longest.
 type Regexp struct {
 	// read-only after Compile
 	regexpRO
@@ -159,6 +160,8 @@ func CompilePOSIX(expr string) (*Regexp, error) {
 // That is, when matching against text, the regexp returns a match that
 // begins as early as possible in the input (leftmost), and among those
 // it chooses a match that is as long as possible.
+// This method modifies the Regexp and may not be called concurrently
+// with any other methods.
 func (re *Regexp) Longest() {
 	re.longest = true
 }
@@ -313,11 +316,19 @@ func (i *inputString) index(re *Regexp, pos int) int {
 
 func (i *inputString) context(pos int) syntax.EmptyOp {
 	r1, r2 := endOfText, endOfText
-	if pos > 0 && pos <= len(i.str) {
-		r1, _ = utf8.DecodeLastRuneInString(i.str[:pos])
+	// 0 < pos && pos <= len(i.str)
+	if uint(pos-1) < uint(len(i.str)) {
+		r1 = rune(i.str[pos-1])
+		if r1 >= utf8.RuneSelf {
+			r1, _ = utf8.DecodeLastRuneInString(i.str[:pos])
+		}
 	}
-	if pos < len(i.str) {
-		r2, _ = utf8.DecodeRuneInString(i.str[pos:])
+	// 0 <= pos && pos < len(i.str)
+	if uint(pos) < uint(len(i.str)) {
+		r2 = rune(i.str[pos])
+		if r2 >= utf8.RuneSelf {
+			r2, _ = utf8.DecodeRuneInString(i.str[pos:])
+		}
 	}
 	return syntax.EmptyOpContext(r1, r2)
 }
@@ -352,11 +363,19 @@ func (i *inputBytes) index(re *Regexp, pos int) int {
 
 func (i *inputBytes) context(pos int) syntax.EmptyOp {
 	r1, r2 := endOfText, endOfText
-	if pos > 0 && pos <= len(i.str) {
-		r1, _ = utf8.DecodeLastRune(i.str[:pos])
+	// 0 < pos && pos <= len(i.str)
+	if uint(pos-1) < uint(len(i.str)) {
+		r1 = rune(i.str[pos-1])
+		if r1 >= utf8.RuneSelf {
+			r1, _ = utf8.DecodeLastRune(i.str[:pos])
+		}
 	}
-	if pos < len(i.str) {
-		r2, _ = utf8.DecodeRune(i.str[pos:])
+	// 0 <= pos && pos < len(i.str)
+	if uint(pos) < uint(len(i.str)) {
+		r2 = rune(i.str[pos])
+		if r2 >= utf8.RuneSelf {
+			r2, _ = utf8.DecodeRune(i.str[pos:])
+		}
 	}
 	return syntax.EmptyOpContext(r1, r2)
 }
@@ -408,17 +427,17 @@ func (re *Regexp) LiteralPrefix() (prefix string, complete bool) {
 // MatchReader reports whether the Regexp matches the text read by the
 // RuneReader.
 func (re *Regexp) MatchReader(r io.RuneReader) bool {
-	return re.doExecute(r, nil, "", 0, 0) != nil
+	return re.doMatch(r, nil, "")
 }
 
 // MatchString reports whether the Regexp matches the string s.
 func (re *Regexp) MatchString(s string) bool {
-	return re.doExecute(nil, nil, s, 0, 0) != nil
+	return re.doMatch(nil, nil, s)
 }
 
 // Match reports whether the Regexp matches the byte slice b.
 func (re *Regexp) Match(b []byte) bool {
-	return re.doExecute(nil, b, "", 0, 0) != nil
+	return re.doMatch(nil, b, "")
 }
 
 // MatchReader checks whether a textual regular expression matches the text
@@ -502,8 +521,9 @@ func (re *Regexp) replaceAll(bsrc []byte, src string, nmatch int, repl func(dst 
 		nmatch = re.prog.NumCap
 	}
 
+	var dstCap [2]int
 	for searchPos <= endPos {
-		a := re.doExecute(nil, bsrc, src, searchPos, nmatch)
+		a := re.doExecute(nil, bsrc, src, searchPos, nmatch, dstCap[:0])
 		if len(a) == 0 {
 			break // no more matches
 		}
@@ -589,21 +609,40 @@ func (re *Regexp) ReplaceAllFunc(src []byte, repl func([]byte) []byte) []byte {
 	})
 }
 
-var specialBytes = []byte(`\.+*?()|[]{}^$`)
+// Bitmap used by func special to check whether a character needs to be escaped.
+var specialBytes [16]byte
 
+// special reports whether byte b needs to be escaped by QuoteMeta.
 func special(b byte) bool {
-	return bytes.IndexByte(specialBytes, b) >= 0
+	return b < utf8.RuneSelf && specialBytes[b%16]&(1<<(b/16)) != 0
+}
+
+func init() {
+	for _, b := range []byte(`\.+*?()|[]{}^$`) {
+		specialBytes[b%16] |= 1 << (b / 16)
+	}
 }
 
 // QuoteMeta returns a string that quotes all regular expression metacharacters
 // inside the argument text; the returned string is a regular expression matching
 // the literal text. For example, QuoteMeta(`[foo]`) returns `\[foo\]`.
 func QuoteMeta(s string) string {
-	b := make([]byte, 2*len(s))
-
 	// A byte loop is correct because all metacharacters are ASCII.
-	j := 0
-	for i := 0; i < len(s); i++ {
+	var i int
+	for i = 0; i < len(s); i++ {
+		if special(s[i]) {
+			break
+		}
+	}
+	// No meta characters found, so return original string.
+	if i >= len(s) {
+		return s
+	}
+
+	b := make([]byte, 2*len(s)-i)
+	copy(b, s[:i])
+	j := i
+	for ; i < len(s); i++ {
 		if special(s[i]) {
 			b[j] = '\\'
 			j++
@@ -611,7 +650,7 @@ func QuoteMeta(s string) string {
 		b[j] = s[i]
 		j++
 	}
-	return string(b[0:j])
+	return string(b[:j])
 }
 
 // The number of capture values in the program may correspond
@@ -641,7 +680,7 @@ func (re *Regexp) allMatches(s string, b []byte, n int, deliver func([]int)) {
 	}
 
 	for pos, i, prevMatchEnd := 0, 0, -1; i < n && pos <= end; {
-		matches := re.doExecute(nil, b, s, pos, re.prog.NumCap)
+		matches := re.doExecute(nil, b, s, pos, re.prog.NumCap, nil)
 		if len(matches) == 0 {
 			break
 		}
@@ -681,7 +720,8 @@ func (re *Regexp) allMatches(s string, b []byte, n int, deliver func([]int)) {
 // Find returns a slice holding the text of the leftmost match in b of the regular expression.
 // A return value of nil indicates no match.
 func (re *Regexp) Find(b []byte) []byte {
-	a := re.doExecute(nil, b, "", 0, 2)
+	var dstCap [2]int
+	a := re.doExecute(nil, b, "", 0, 2, dstCap[:0])
 	if a == nil {
 		return nil
 	}
@@ -693,7 +733,7 @@ func (re *Regexp) Find(b []byte) []byte {
 // b[loc[0]:loc[1]].
 // A return value of nil indicates no match.
 func (re *Regexp) FindIndex(b []byte) (loc []int) {
-	a := re.doExecute(nil, b, "", 0, 2)
+	a := re.doExecute(nil, b, "", 0, 2, nil)
 	if a == nil {
 		return nil
 	}
@@ -706,7 +746,8 @@ func (re *Regexp) FindIndex(b []byte) (loc []int) {
 // an empty string. Use FindStringIndex or FindStringSubmatch if it is
 // necessary to distinguish these cases.
 func (re *Regexp) FindString(s string) string {
-	a := re.doExecute(nil, nil, s, 0, 2)
+	var dstCap [2]int
+	a := re.doExecute(nil, nil, s, 0, 2, dstCap[:0])
 	if a == nil {
 		return ""
 	}
@@ -718,7 +759,7 @@ func (re *Regexp) FindString(s string) string {
 // itself is at s[loc[0]:loc[1]].
 // A return value of nil indicates no match.
 func (re *Regexp) FindStringIndex(s string) (loc []int) {
-	a := re.doExecute(nil, nil, s, 0, 2)
+	a := re.doExecute(nil, nil, s, 0, 2, nil)
 	if a == nil {
 		return nil
 	}
@@ -731,7 +772,7 @@ func (re *Regexp) FindStringIndex(s string) (loc []int) {
 // byte offset loc[0] through loc[1]-1.
 // A return value of nil indicates no match.
 func (re *Regexp) FindReaderIndex(r io.RuneReader) (loc []int) {
-	a := re.doExecute(r, nil, "", 0, 2)
+	a := re.doExecute(r, nil, "", 0, 2, nil)
 	if a == nil {
 		return nil
 	}
@@ -744,7 +785,8 @@ func (re *Regexp) FindReaderIndex(r io.RuneReader) (loc []int) {
 // comment.
 // A return value of nil indicates no match.
 func (re *Regexp) FindSubmatch(b []byte) [][]byte {
-	a := re.doExecute(nil, b, "", 0, re.prog.NumCap)
+	var dstCap [4]int
+	a := re.doExecute(nil, b, "", 0, re.prog.NumCap, dstCap[:0])
 	if a == nil {
 		return nil
 	}
@@ -891,7 +933,7 @@ func extract(str string) (name string, num int, rest string, ok bool) {
 // in the package comment.
 // A return value of nil indicates no match.
 func (re *Regexp) FindSubmatchIndex(b []byte) []int {
-	return re.pad(re.doExecute(nil, b, "", 0, re.prog.NumCap))
+	return re.pad(re.doExecute(nil, b, "", 0, re.prog.NumCap, nil))
 }
 
 // FindStringSubmatch returns a slice of strings holding the text of the
@@ -900,7 +942,8 @@ func (re *Regexp) FindSubmatchIndex(b []byte) []int {
 // package comment.
 // A return value of nil indicates no match.
 func (re *Regexp) FindStringSubmatch(s string) []string {
-	a := re.doExecute(nil, nil, s, 0, re.prog.NumCap)
+	var dstCap [4]int
+	a := re.doExecute(nil, nil, s, 0, re.prog.NumCap, dstCap[:0])
 	if a == nil {
 		return nil
 	}
@@ -919,7 +962,7 @@ func (re *Regexp) FindStringSubmatch(s string) []string {
 // 'Index' descriptions in the package comment.
 // A return value of nil indicates no match.
 func (re *Regexp) FindStringSubmatchIndex(s string) []int {
-	return re.pad(re.doExecute(nil, nil, s, 0, re.prog.NumCap))
+	return re.pad(re.doExecute(nil, nil, s, 0, re.prog.NumCap, nil))
 }
 
 // FindReaderSubmatchIndex returns a slice holding the index pairs
@@ -928,7 +971,7 @@ func (re *Regexp) FindStringSubmatchIndex(s string) []int {
 // by the 'Submatch' and 'Index' descriptions in the package comment. A
 // return value of nil indicates no match.
 func (re *Regexp) FindReaderSubmatchIndex(r io.RuneReader) []int {
-	return re.pad(re.doExecute(r, nil, "", 0, re.prog.NumCap))
+	return re.pad(re.doExecute(r, nil, "", 0, re.prog.NumCap, nil))
 }
 
 const startSize = 10 // The size at which to start a slice in the 'All' routines.

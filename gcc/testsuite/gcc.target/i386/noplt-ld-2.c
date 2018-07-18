@@ -1,4 +1,4 @@
-/* { dg-do run { target { *-*-linux* } } } */
+/* { dg-do run { target *-*-linux* } } */
 /* { dg-options "-O2 -fpic -fno-plt" } */
 /* { dg-additional-sources noplt-ld-1.c } */
 

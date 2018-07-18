@@ -1,4 +1,5 @@
-#ifndef NO_LABEL_VALUES
+/* { dg-require-effective-target label_values } */
+
 f (int *re)
 {
   int *loops = 0, *loope = 0;
@@ -11,6 +12,3 @@ f (int *re)
   if (dat0 & 1)
     re[(dat0 >> 2) & 3] = 0;
 }
-#else
-int x;
-#endif

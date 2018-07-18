@@ -1,5 +1,5 @@
 /* Quad-precision floating point sine and cosine on <-pi/4,pi/4>.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jj@ultra.linux.cz>
 
@@ -110,12 +110,15 @@ __quadmath_kernel_sincosq(__float128 x, __float128 y, __float128 *sinx,
       /* Argument is small enough to approximate it by a Chebyshev
 	 polynomial of degree 16(17).  */
       if (tix < 0x3fc60000)		/* |x| < 2^-57 */
-	if (!((int)x))			/* generate inexact */
-	  {
-	    *sinx = x;
-	    *cosx = ONE;
-	    return;
-	  }
+	{
+	  math_check_force_underflow (x);
+	  if (!((int)x))			/* generate inexact */
+	    {
+	      *sinx = x;
+	      *cosx = ONE;
+	      return;
+	    }
+	}
       z = x * x;
       *sinx = x + (x * (z*(SIN1+z*(SIN2+z*(SIN3+z*(SIN4+
 			z*(SIN5+z*(SIN6+z*(SIN7+z*SIN8)))))))));

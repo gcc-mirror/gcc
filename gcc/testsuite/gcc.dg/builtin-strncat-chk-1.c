@@ -24,15 +24,15 @@ test (int arg, ...)
   *p = 0;
   strncat (p, "abcdefghi", 10);
   *p = 0;
-  strncat (p, "abcdefghij", 10); /* { dg-warning "will always overflow" } */
+  strncat (p, "abcdefghij", 10); /* { dg-warning "writing 11 bytes into a region of size 10 overflows the destination" } */
   *p = 0;
   strncat (p, "abcdefgh", 11);
   *p = 0;
-  strncat (p, "abcdefghijkl", 11); /* { dg-warning "will always overflow" } */
+  strncat (p, "abcdefghijkl", 11); /* { dg-warning "specified bound 11 exceeds destination size 10" } */
   *p = 0;
   strncat (p, q, 9);
   *p = 0;
-  strncat (p, q, 10); /* { dg-warning "might overflow" } */
+  strncat (p, q, 10); /* { dg-warning "specified bound 10 equals destination size" } */
   *p = 0;
-  strncat (p, q, 11); /* { dg-warning "might overflow" } */
+  strncat (p, q, 11); /* { dg-warning "specified bound 11 exceeds destination size 10" } */
 }

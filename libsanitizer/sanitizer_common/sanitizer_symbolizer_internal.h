@@ -13,6 +13,7 @@
 #define SANITIZER_SYMBOLIZER_INTERNAL_H
 
 #include "sanitizer_symbolizer.h"
+#include "sanitizer_file.h"
 
 namespace __sanitizer {
 
@@ -26,7 +27,7 @@ const char *ExtractUptr(const char *str, const char *delims, uptr *result);
 const char *ExtractTokenUpToDelimiter(const char *str, const char *delimiter,
                                       char **result);
 
-const char *DemangleCXXABI(const char *name);
+const char *DemangleSwiftAndCXX(const char *name);
 
 // SymbolizerTool is an interface that is implemented by individual "tools"
 // that can perform symbolication (external llvm-symbolizer, libbacktrace,
@@ -122,8 +123,8 @@ class LLVMSymbolizer : public SymbolizerTool {
   bool SymbolizeData(uptr addr, DataInfo *info) override;
 
  private:
-  const char *SendCommand(bool is_data, const char *module_name,
-                          uptr module_offset);
+  const char *FormatAndSendCommand(bool is_data, const char *module_name,
+                                   uptr module_offset, ModuleArch arch);
 
   LLVMSymbolizerProcess *symbolizer_process_;
   static const uptr kBufferSize = 16 * 1024;

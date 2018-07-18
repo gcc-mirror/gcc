@@ -8,7 +8,7 @@
       INTEGER            I
       REAL               ANORM
       INTRINSIC          ABS
-            DO 20 I = 1, N
+            DO 20 I = 2, N
                ANORM = ANORM +ABS( E( I ) )+ ABS( E( I-1 ) )
    20       CONTINUE
       CLANHT = ANORM

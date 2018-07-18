@@ -9,7 +9,7 @@ struct A
 
 struct B : A
 {
-  using A::A;			// { dg-error "A::i" }
+  using A::A;			// { dg-prune-output "A::i" }
 };
 
-constexpr B b(0);		// { dg-error "B::B" }
+constexpr B b(0);		// { dg-error "" }

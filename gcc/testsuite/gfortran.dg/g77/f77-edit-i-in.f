@@ -13,12 +13,12 @@ C
       write(buf,'(A)') '1  -1'
 
       read(buf,'(I1)') i
-      if ( i.ne.1 ) call abort()
+      if ( i.ne.1 ) STOP 1
 
       read(buf,'(1X,I1)') i
-      if ( i.ne.0 ) call abort()
+      if ( i.ne.0 ) STOP 2
 
       read(buf,'(1X,I1,1X,I2)') i,j
-      if ( i.ne.0 .and. j.ne.-1 ) call abort()
+      if ( i.ne.0 .and. j.ne.-1 ) STOP 3
 
       end

@@ -22,7 +22,11 @@ struct C
 
 struct D
 {
-  D () throw (int);
+  D ()
+#if __cplusplus <= 201402L
+  throw (int)			// { dg-warning "deprecated" "" { target { ! c++17 } } }
+#endif
+  ;
 };
 
 C <D, B <D>> c;

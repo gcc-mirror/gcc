@@ -1,5 +1,5 @@
 ;; microblaze.md -- Machine description for Xilinx MicroBlaze processors.
-;; Copyright (C) 2009-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 ;; Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -41,6 +41,8 @@
   (UNSPEC_CMP		104)    ;; signed compare
   (UNSPEC_CMPU		105)    ;; unsigned compare
   (UNSPEC_TLS           106)    ;; jump table
+  (UNSPEC_SET_TEXT      107)    ;; set text start
+  (UNSPEC_TEXT          108)    ;; data text relative
 ])
 
 (define_c_enum "unspec" [
@@ -1321,7 +1323,7 @@
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(ashift:SI (match_operand:SI 1 "register_operand" "d")
                    (match_operand:SI 2 "arith_operand"    "I")))] 
-  "(INTVAL (operands[2]) == 1)"
+  "(operands[2] == const1_rtx)"
   "addk\t%0,%1,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -1482,7 +1484,7 @@
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "d")
                      (match_operand:SI 2 "arith_operand"    "I")))] 
-  "(INTVAL (operands[2]) == 1)"
+  "(operands[2] == const1_rtx)"
   "sra\t%0,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -1571,7 +1573,7 @@
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" "d")
                      (match_operand:SI 2 "arith_operand"    "I")))] 
-  "(INTVAL (operands[2]) == 1)"
+  "(operands[2] == const1_rtx)"
   "srl\t%0,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -1848,7 +1850,7 @@
   {
     gcc_assert (GET_MODE (operands[0]) == Pmode);
 
-    if (!flag_pic)
+    if (!flag_pic || TARGET_PIC_DATA_TEXT_REL)
       emit_jump_insn (gen_tablejump_internal1 (operands[0], operands[1]));
     else
       emit_jump_insn (gen_tablejump_internal3 (operands[0], operands[1]));
@@ -2053,7 +2055,8 @@
   {
     rtx addr = XEXP (operands[0], 0);
 
-    if (flag_pic == 2 && GET_CODE (addr) == SYMBOL_REF 
+    if (flag_pic == 2 && !TARGET_PIC_DATA_TEXT_REL
+    && GET_CODE (addr) == SYMBOL_REF
 	&& !SYMBOL_REF_LOCAL_P (addr)) 
       {
         rtx temp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_PLT);
@@ -2156,7 +2159,8 @@
   {
     rtx addr = XEXP (operands[1], 0);
 
-    if (flag_pic == 2 && GET_CODE (addr) == SYMBOL_REF
+    if (flag_pic == 2 && !TARGET_PIC_DATA_TEXT_REL
+    && GET_CODE (addr) == SYMBOL_REF
 	&& !SYMBOL_REF_LOCAL_P (addr)) 
       {
         rtx temp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_PLT);
@@ -2313,6 +2317,18 @@
   [(set_attr "type" "multi")
    (set_attr "length" "12")])
 
+;; The insn to set TEXT.
+;; The hardcoded number "8" accounts for $pc difference
+;; between "mfs" and "addik" instructions.
+(define_insn "set_text"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+    (unspec:SI[(const_int 0)] UNSPEC_SET_TEXT))]
+  ""
+  "mfs\t%0,rpc\n\taddik\t%0,%0,8@TXTPCREL"
+  [(set_attr "type" "multi")
+   (set_attr "length" "12")])
+
+
 ;; This insn gives the count of leading number of zeros for the second
 ;; operand and stores the result in first operand.
 (define_insn "clzsi2"
@@ -2323,5 +2339,15 @@
   [(set_attr "type"     "arith")
   (set_attr "mode"      "SI")
   (set_attr "length"    "4")])
+
+; This is used in compiling the unwind routines.
+(define_expand "eh_return"
+  [(use (match_operand 0 "general_operand" ""))]
+  ""
+  "
+{
+  microblaze_eh_return (operands[0]);
+  DONE;
+}")
 
 (include "sync.md")

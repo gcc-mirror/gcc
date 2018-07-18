@@ -1,6 +1,6 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002-2016 Free Software Foundation, Inc.
+## Copyright (C) 2002-2018 Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
 ## software; you can redistribute it and/or modify it under the
@@ -60,7 +60,7 @@ GLIBCXX_3.4 {
       std::basic_[t-z]*;
       std::ba[t-z]*;
       std::b[b-z]*;
-      std::c[a-g]*;
+      std::cerr;
 #     std::char_traits;
 #     std::c[i-z]*;
       std::c[i-n]*;
@@ -1503,6 +1503,9 @@ GLIBCXX_3.4.15 {
     _ZNSt14error_categoryC*;
     _ZNSt14error_categoryD*;
 
+#ifdef HAVE_EXCEPTION_PTR_SINCE_GCC46
+    # std::future symbols are only present in this version when
+    # atomic operations on int are always lock-free.
     _ZNSt13__future_base12_Result_baseC*;
     _ZNSt13__future_base12_Result_baseD*;
     _ZTINSt13__future_base12_Result_baseE;
@@ -1511,6 +1514,7 @@ GLIBCXX_3.4.15 {
     _ZNSt13__future_base11_State_baseD*;
     _ZTINSt13__future_base11_State_baseE;
     _ZTVNSt13__future_base11_State_baseE;
+#endif
 
 } GLIBCXX_3.4.14;
 
@@ -1687,15 +1691,46 @@ GLIBCXX_3.4.21 {
 
     # std::notify_all_at_thread_exit
     _ZSt25notify_all_at_thread_exitRSt18condition_variableSt11unique_lockISt5mutexE;
+#ifdef HAVE_EXCEPTION_PTR_SINCE_GCC46
     # std::__future_base::_State_baseV2::_Make_ready::_M_set()
     _ZNSt13__future_base13_State_baseV211_Make_ready6_M_setEv;
+#endif
 
     # ABI-tagged std::basic_string
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[01]**;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_Alloc_hiderC[12]EP[cw]RKS3_;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_M*;
-    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[3-9]*;
-    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE[2-9]*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE13*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE14_M_replace_aux*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[5-9]*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE2at*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE3end*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE4back*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE4nposE;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE4rend*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE4swap*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE5begin*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE5clear*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE5erase*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE5front*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6append*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6assign*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertI*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertE[jmy]PK[cw];
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertE[jmy]PK[cw][jmy];
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertE[jmy]RKS4_;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertE[jmy]RKS4_[jmy][jmy];
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertE[jmy][jmy][cw];
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertEN9__gnu_cxx17__normal_iteratorIP[cw]*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertEN9__gnu_cxx17__normal_iteratorIPK[cw]S4_EE[cw];
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertEN9__gnu_cxx17__normal_iteratorIPK[cw]S4_EE[jmy][cw];
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6rbegin*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6resize*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE7replace*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE7reserve*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE8pop_back*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE9push_back*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE[7-9]_[MS]_*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EPK*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKS[34]_;
@@ -1713,10 +1748,20 @@ GLIBCXX_3.4.21 {
     _ZStplI[cw]St11char_traitsI[cw]ESaI[cw]EENSt7__cxx1112basic_stringIT_T0_T1_EE*;
 
     # ABI-tagged stringstreams
-    _ZNSt7__cxx1115basic_stringbuf*;
-    _ZNSt7__cxx1118basic_stringstream*;
-    _ZNSt7__cxx1119basic_istringstream*;
-    _ZNSt7__cxx1119basic_ostringstream*;
+#   _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]*__xfer_bufptrs*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[a1346789]*;
+#   _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]*;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a34]*;
+#   _ZNSt7__cxx1119basic_istringstreamI[cw]St11char_traitsI[cw]*;
+#   _ZNSt7__cxx1119basic_ostringstreamI[cw]St11char_traitsI[cw]*;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a34]*;
     _ZNKSt7__cxx1115basic_stringbuf*;
     _ZNKSt7__cxx1118basic_stringstream*;
     _ZNKSt7__cxx1119basic_istringstream*;
@@ -1945,9 +1990,56 @@ GLIBCXX_3.4.23 {
     # basic_string<C, T, A>::basic_string(const basic_string&, size_type, const A&)
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKS4_[jmy]RKS3_;
     _ZNSsC[12]ERKSs[jmy]RKSaIcE;
+    # This should have been _[jmy]RKS1_ not _mRKS1_ (PR libstdc++/81092):
     _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_mRKS1_;
 
+#ifndef HAVE_EXCEPTION_PTR_SINCE_GCC46
+    # std::future symbols are exported in the first version to support
+    # std::exception_ptr
+    _ZNSt13__future_base12_Result_baseC*;
+    _ZNSt13__future_base12_Result_baseD*;
+    _ZTINSt13__future_base12_Result_baseE;
+    _ZTVNSt13__future_base12_Result_baseE;
+    _ZNSt13__future_base13_State_baseV211_Make_ready6_M_setEv;
+#endif
+
 } GLIBCXX_3.4.22;
+
+GLIBCXX_3.4.24 {
+
+    # These should have been in GLIBCXX_3.4.23 (PR libstdc++/81092):
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12]ERKS2_[jy]RKS1_;
+
+} GLIBCXX_3.4.23;
+
+GLIBCXX_3.4.25 {
+
+    # std::random_device::_M_getentropy() const
+    _ZNKSt13random_device13_M_getentropyEv;
+
+} GLIBCXX_3.4.24;
+
+GLIBCXX_3.4.26 {
+
+    # std::basic_string::insert(const_iterator, initializer_list)
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertEN9__gnu_cxx17__normal_iteratorIPK[cw]S4_EESt16initializer_listI[cw]E;
+
+    # std::logic_error move operations
+    _ZNSt11logic_errorC[12]EOS_;
+    _ZNSt11logic_erroraSEOS_;
+    # std::runtime_error move operations
+    _ZNSt13runtime_errorC[12]EOS_;
+    _ZNSt13runtime_erroraSEOS_;
+
+    # Default constructors for stringstreams
+    _ZNSt15basic_stringbuf[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt18basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt19basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt7__cxx1115basic_stringbuf[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+
+} GLIBCXX_3.4.25;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
@@ -2080,15 +2172,12 @@ CXXABI_1.3.3 {
     _ZTIPDi;
     _ZTIPKDi;
 
+#ifdef HAVE_EXCEPTION_PTR_SINCE_GCC46
     # exception_ptr
-    _ZNSt15__exception_ptr13exception_ptrC1Ev;
-    _ZNSt15__exception_ptr13exception_ptrC2Ev;
-    _ZNSt15__exception_ptr13exception_ptrC1ERKS0_;
-    _ZNSt15__exception_ptr13exception_ptrC2ERKS0_;
-    _ZNSt15__exception_ptr13exception_ptrC1EMS0_FvvE;
-    _ZNSt15__exception_ptr13exception_ptrC2EMS0_FvvE;
-    _ZNSt15__exception_ptr13exception_ptrD1Ev;
-    _ZNSt15__exception_ptr13exception_ptrD2Ev;
+    _ZNSt15__exception_ptr13exception_ptrC[12]Ev;
+    _ZNSt15__exception_ptr13exception_ptrC[12]ERKS0_;
+    _ZNSt15__exception_ptr13exception_ptrC[12]EMS0_FvvE;
+    _ZNSt15__exception_ptr13exception_ptrD[12]Ev;
     _ZNSt15__exception_ptr13exception_ptraSERKS0_;
     _ZNKSt15__exception_ptr13exception_ptrcvMS0_FvvEEv;
     _ZNKSt15__exception_ptr13exception_ptrntEv;
@@ -2099,6 +2188,7 @@ CXXABI_1.3.3 {
 
     _ZSt17current_exceptionv;
     _ZSt17rethrow_exceptionNSt15__exception_ptr13exception_ptrE;
+#endif
 
 } CXXABI_1.3.2;
 
@@ -2129,10 +2219,12 @@ CXXABI_1.3.5 {
     # FNV hash.
     _ZSt15_Fnv_hash_bytesPKv*;
 
+#ifdef HAVE_EXCEPTION_PTR_SINCE_GCC46
     # std::nested_exception
     _ZNSt16nested_exceptionD*;
     _ZTISt16nested_exception;
     _ZTVSt16nested_exception;
+#endif
 
 } CXXABI_1.3.4;
 
@@ -2208,6 +2300,33 @@ CXXABI_1.3.11 {
     _ZdaPvSt11align_val_t;
     _ZdaPvSt11align_val_tRKSt9nothrow_t;
     _ZdaPv[jmy]St11align_val_t;
+
+#ifndef HAVE_EXCEPTION_PTR_SINCE_GCC46
+    # exception_ptr
+    _ZNSt15__exception_ptr13exception_ptrC1Ev;
+    _ZNSt15__exception_ptr13exception_ptrC2Ev;
+    _ZNSt15__exception_ptr13exception_ptrC1ERKS0_;
+    _ZNSt15__exception_ptr13exception_ptrC2ERKS0_;
+    _ZNSt15__exception_ptr13exception_ptrC1EMS0_FvvE;
+    _ZNSt15__exception_ptr13exception_ptrC2EMS0_FvvE;
+    _ZNSt15__exception_ptr13exception_ptrD1Ev;
+    _ZNSt15__exception_ptr13exception_ptrD2Ev;
+    _ZNSt15__exception_ptr13exception_ptraSERKS0_;
+    _ZNKSt15__exception_ptr13exception_ptrcvMS0_FvvEEv;
+    _ZNKSt15__exception_ptr13exception_ptrntEv;
+    _ZNKSt15__exception_ptr13exception_ptr20__cxa_exception_typeEv;
+    _ZNSt15__exception_ptr13exception_ptr4swapERS0_;
+    _ZNSt15__exception_ptreqERKNS_13exception_ptrES2_;
+    _ZNSt15__exception_ptrneERKNS_13exception_ptrES2_;
+
+    _ZSt17current_exceptionv;
+    _ZSt17rethrow_exceptionNSt15__exception_ptr13exception_ptrE;
+
+    # std::nested_exception
+    _ZNSt16nested_exceptionD*;
+    _ZTISt16nested_exception;
+    _ZTVSt16nested_exception;
+#endif
 
 } CXXABI_1.3.10;
 

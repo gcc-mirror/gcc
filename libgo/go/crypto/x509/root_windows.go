@@ -87,12 +87,18 @@ func checkChainTrustStatus(c *Certificate, chainCtx *syscall.CertChainContext) e
 		status := chainCtx.TrustStatus.ErrorStatus
 		switch status {
 		case syscall.CERT_TRUST_IS_NOT_TIME_VALID:
-			return CertificateInvalidError{c, Expired}
+			return CertificateInvalidError{c, Expired, ""}
 		default:
 			return UnknownAuthorityError{c, nil, nil}
 		}
 	}
 	return nil
+}
+
+type _CertChainPolicyPara struct {
+	Size            uint32
+	Flags           uint32
+	ExtraPolicyPara unsafe.Pointer
 }
 
 // checkChainSSLServerPolicy checks that the certificate chain in chainCtx is valid for
@@ -108,13 +114,13 @@ func checkChainSSLServerPolicy(c *Certificate, chainCtx *syscall.CertChainContex
 	}
 	sslPara.Size = uint32(unsafe.Sizeof(*sslPara))
 
-	para := &syscall.CertChainPolicyPara{
-		ExtraPolicyPara: uintptr(unsafe.Pointer(sslPara)),
+	para := &_CertChainPolicyPara{
+		ExtraPolicyPara: unsafe.Pointer(sslPara),
 	}
 	para.Size = uint32(unsafe.Sizeof(*para))
 
 	status := syscall.CertChainPolicyStatus{}
-	err = syscall.CertVerifyCertificateChainPolicy(syscall.CERT_CHAIN_POLICY_SSL, chainCtx, para, &status)
+	err = syscall.CertVerifyCertificateChainPolicy(syscall.CERT_CHAIN_POLICY_SSL, chainCtx, (*syscall.CertChainPolicyPara)(unsafe.Pointer(para)), &status)
 	if err != nil {
 		return err
 	}
@@ -125,7 +131,7 @@ func checkChainSSLServerPolicy(c *Certificate, chainCtx *syscall.CertChainContex
 	if status.Error != 0 {
 		switch status.Error {
 		case syscall.CERT_E_EXPIRED:
-			return CertificateInvalidError{c, Expired}
+			return CertificateInvalidError{c, Expired, ""}
 		case syscall.CERT_E_CN_NO_MATCH:
 			return HostnameError{c, opts.DNSName}
 		case syscall.CERT_E_UNTRUSTEDROOT:
@@ -225,4 +231,42 @@ func (c *Certificate) systemVerify(opts *VerifyOptions) (chains [][]*Certificate
 	return chains, nil
 }
 
-func loadSystemRoots() (*CertPool, error) { return nil, nil }
+func loadSystemRoots() (*CertPool, error) {
+	// TODO: restore this functionality on Windows. We tried to do
+	// it in Go 1.8 but had to revert it. See Issue 18609.
+	// Returning (nil, nil) was the old behavior, prior to CL 30578.
+	return nil, nil
+
+	const CRYPT_E_NOT_FOUND = 0x80092004
+
+	store, err := syscall.CertOpenSystemStore(0, syscall.StringToUTF16Ptr("ROOT"))
+	if err != nil {
+		return nil, err
+	}
+	defer syscall.CertCloseStore(store, 0)
+
+	roots := NewCertPool()
+	var cert *syscall.CertContext
+	for {
+		cert, err = syscall.CertEnumCertificatesInStore(store, cert)
+		if err != nil {
+			if errno, ok := err.(syscall.Errno); ok {
+				if errno == CRYPT_E_NOT_FOUND {
+					break
+				}
+			}
+			return nil, err
+		}
+		if cert == nil {
+			break
+		}
+		// Copy the buf, since ParseCertificate does not create its own copy.
+		buf := (*[1 << 20]byte)(unsafe.Pointer(cert.EncodedCert))[:]
+		buf2 := make([]byte, cert.Length)
+		copy(buf2, buf)
+		if c, err := ParseCertificate(buf2); err == nil {
+			roots.AddCert(c)
+		}
+	}
+	return roots, nil
+}

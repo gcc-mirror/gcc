@@ -7,7 +7,7 @@
 // Subject: Bugs
 // Date: Wed, 22 Jul 92 08:29:30 EDT
 
-extern "C" void puts(const char *);
+extern "C" int puts(const char *);
 
 class foo {
 public:

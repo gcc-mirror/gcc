@@ -14,16 +14,16 @@ program ala
    v1 = v0
 
    v1(2:n-1) = v1(1:n-2) + v1(3:n)
-   if (any(v1 /= result)) call abort
+   if (any(v1 /= result)) STOP 1
    v1 = v0
    v1(2:n-1) = v0(1:n-2) + v0(3:n)
-   if (any(v1 /= result)) call abort
+   if (any(v1 /= result)) STOP 2
 
    v1 = v0
    v1(2:n-1) = v1(3:n) + v1(1:n-2)
-   if (any(v1 /= result)) call abort
+   if (any(v1 /= result)) STOP 3
    v1 = v0
    v1(2:n-1) = v0(3:n) + v0(1:n-2)
-   if (any(v1 /= result)) call abort
+   if (any(v1 /= result)) STOP 4
 
 end program ala

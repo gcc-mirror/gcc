@@ -3,4 +3,4 @@
 
 int i;
 
-/* { dg-error "-fsanitize-recover=unreachable is not supported" "" { target *-*-* } 0 } */
+/* { dg-error ".-fsanitize-recover=unreachable. is not supported" "" { target *-*-* } 0 } */

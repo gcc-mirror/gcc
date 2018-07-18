@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-O2" }
+// { dg-options "-O2 -Wno-return-type" }
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Jakub Jelinek 2 May 2001 <jakub@redhat.com>
 

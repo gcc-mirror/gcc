@@ -1,5 +1,5 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "gimple-match.h"
 #include "gimple-fold.h"
+#include "tree-ssa-loop-niter.h"
 
 
 /* The set of blocks in that at least one of the following changes happened:
@@ -73,13 +74,55 @@ remove_fallthru_edge (vec<edge, va_gc> *ev)
   return false;
 }
 
+/* Convert a SWTCH with single non-default case to gcond and replace it
+   at GSI.  */
+
+static bool
+convert_single_case_switch (gswitch *swtch, gimple_stmt_iterator &gsi)
+{
+  if (gimple_switch_num_labels (swtch) != 2)
+    return false;
+
+  tree index = gimple_switch_index (swtch);
+  tree default_label = CASE_LABEL (gimple_switch_default_label (swtch));
+  tree label = gimple_switch_label (swtch, 1);
+  tree low = CASE_LOW (label);
+  tree high = CASE_HIGH (label);
+
+  basic_block default_bb = label_to_block_fn (cfun, default_label);
+  basic_block case_bb = label_to_block_fn (cfun, CASE_LABEL (label));
+
+  basic_block bb = gimple_bb (swtch);
+  gcond *cond;
+
+  /* Replace switch statement with condition statement.  */
+  if (high)
+    {
+      tree lhs, rhs;
+      generate_range_test (bb, index, low, high, &lhs, &rhs);
+      cond = gimple_build_cond (LE_EXPR, lhs, rhs, NULL_TREE, NULL_TREE);
+    }
+  else
+    cond = gimple_build_cond (EQ_EXPR, index,
+			      fold_convert (TREE_TYPE (index), low),
+			      NULL_TREE, NULL_TREE);
+
+  gsi_replace (&gsi, cond, true);
+
+  /* Update edges.  */
+  edge case_edge = find_edge (bb, case_bb);
+  edge default_edge = find_edge (bb, default_bb);
+
+  case_edge->flags |= EDGE_TRUE_VALUE;
+  default_edge->flags |= EDGE_FALSE_VALUE;
+  return true;
+}
 
 /* Disconnect an unreachable block in the control expression starting
    at block BB.  */
 
 static bool
-cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
-			    bool first_p)
+cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
 {
   edge taken_edge;
   bool retval = false;
@@ -92,29 +135,23 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
       bool warned;
       tree val = NULL_TREE;
 
+      /* Try to convert a switch with just a single non-default case to
+	 GIMPLE condition.  */
+      if (gimple_code (stmt) == GIMPLE_SWITCH
+	  && convert_single_case_switch (as_a<gswitch *> (stmt), gsi))
+	stmt = gsi_stmt (gsi);
+
       fold_defer_overflow_warnings ();
       switch (gimple_code (stmt))
 	{
 	case GIMPLE_COND:
-	  /* During a first iteration on the CFG only remove trivially
-	     dead edges but mark other conditions for re-evaluation.  */
-	  if (first_p)
-	    {
-	      val = const_binop (gimple_cond_code (stmt), boolean_type_node,
-				 gimple_cond_lhs (stmt),
-				 gimple_cond_rhs (stmt));
-	      if (! val)
-		bitmap_set_bit (cfgcleanup_altered_bbs, bb->index);
-	    }
-	  else
-	    {
-	      code_helper rcode;
-	      tree ops[3] = {};
-	      if (gimple_simplify (stmt, &rcode, ops, NULL, no_follow_ssa_edges,
-				   no_follow_ssa_edges)
-		  && rcode == INTEGER_CST)
-		val = ops[0];
-	    }
+	  {
+	    gimple_match_op res_op;
+	    if (gimple_simplify (stmt, &res_op, NULL, no_follow_ssa_edges,
+				 no_follow_ssa_edges)
+		&& res_op.code == INTEGER_CST)
+	      val = res_op.ops[0];
+	  }
 	  break;
 
 	case GIMPLE_SWITCH:
@@ -145,7 +182,6 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
 		}
 
 	      taken_edge->probability += e->probability;
-	      taken_edge->count += e->count;
 	      remove_edge_and_dominated_blocks (e);
 	      retval = true;
 	    }
@@ -154,8 +190,6 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
 	}
       if (!warned)
 	fold_undefer_and_ignore_overflow_warnings ();
-      if (taken_edge->probability > REG_BR_PROB_BASE)
-	taken_edge->probability = REG_BR_PROB_BASE;
     }
   else
     taken_edge = single_succ_edge (bb);
@@ -188,7 +222,7 @@ cleanup_call_ctrl_altering_flag (gimple *bb_end)
    true if anything changes.  */
 
 static bool
-cleanup_control_flow_bb (basic_block bb, bool first_p)
+cleanup_control_flow_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;
   bool retval = false;
@@ -211,7 +245,7 @@ cleanup_control_flow_bb (basic_block bb, bool first_p)
       || gimple_code (stmt) == GIMPLE_SWITCH)
     {
       gcc_checking_assert (gsi_stmt (gsi_last_bb (bb)) == stmt);
-      retval |= cleanup_control_expr_graph (bb, gsi, first_p);
+      retval |= cleanup_control_expr_graph (bb, gsi);
     }
   else if (gimple_code (stmt) == GIMPLE_GOTO
 	   && TREE_CODE (gimple_goto_dest (stmt)) == ADDR_EXPR
@@ -230,6 +264,8 @@ cleanup_control_flow_bb (basic_block bb, bool first_p)
 	 edges which do not go to the right block.  For the one
 	 edge which goes to the right block, fix up its flags.  */
       label = TREE_OPERAND (gimple_goto_dest (stmt), 0);
+      if (DECL_CONTEXT (label) != cfun->decl)
+	return retval;
       target_block = label_to_block (label);
       for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
 	{
@@ -310,8 +346,11 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
       if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun) || (e->flags & EDGE_EH))
 	return false;
       /* If goto_locus of any of the edges differs, prevent removing
-	 the forwarder block for -O0.  */
-      else if (optimize == 0 && e->goto_locus != locus)
+	 the forwarder block when not optimizing.  */
+      else if (!optimize
+	       && (LOCATION_LOCUS (e->goto_locus) != UNKNOWN_LOCATION
+		   || LOCATION_LOCUS (locus) != UNKNOWN_LOCATION)
+	       && e->goto_locus != locus)
 	return false;
   }
 
@@ -326,7 +365,10 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	case GIMPLE_LABEL:
 	  if (DECL_NONLOCAL (gimple_label_label (as_a <glabel *> (stmt))))
 	    return false;
-	  if (optimize == 0 && gimple_location (stmt) != locus)
+	  if (!optimize
+	      && (gimple_has_location (stmt)
+		  || LOCATION_LOCUS (locus) != UNKNOWN_LOCATION)
+	      && gimple_location (stmt) != locus)
 	    return false;
 	  break;
 
@@ -407,7 +449,7 @@ remove_forwarder_block (basic_block bb)
 {
   edge succ = single_succ_edge (bb), e, s;
   basic_block dest = succ->dest;
-  gimple *label;
+  gimple *stmt;
   edge_iterator ei;
   gimple_stmt_iterator gsi, gsi_to;
   bool can_move_debug_stmts;
@@ -420,9 +462,9 @@ remove_forwarder_block (basic_block bb)
 
   /* If the destination block consists of a nonlocal label or is a
      EH landing pad, do not merge it.  */
-  label = first_stmt (dest);
-  if (label)
-    if (glabel *label_stmt = dyn_cast <glabel *> (label))
+  stmt = first_stmt (dest);
+  if (stmt)
+    if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
       if (DECL_NONLOCAL (gimple_label_label (label_stmt))
 	  || EH_LANDING_PAD_NR (gimple_label_label (label_stmt)) != 0)
 	return false;
@@ -503,35 +545,34 @@ remove_forwarder_block (basic_block bb)
   gsi_to = gsi_start_bb (dest);
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
     {
-      tree decl;
-      label = gsi_stmt (gsi);
-      if (is_gimple_debug (label))
+      stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
 	break;
-      decl = gimple_label_label (as_a <glabel *> (label));
+
+      /* Forwarder blocks can only contain labels and debug stmts, and
+	 labels must come first, so if we get to this point, we know
+	 we're looking at a label.  */
+      tree decl = gimple_label_label (as_a <glabel *> (stmt));
       if (EH_LANDING_PAD_NR (decl) != 0
 	  || DECL_NONLOCAL (decl)
 	  || FORCED_LABEL (decl)
 	  || !DECL_ARTIFICIAL (decl))
-	{
-	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsi_to, label, GSI_SAME_STMT);
-	}
+	gsi_move_before (&gsi, &gsi_to);
       else
 	gsi_next (&gsi);
     }
 
   /* Move debug statements if the destination has a single predecessor.  */
-  if (can_move_debug_stmts)
+  if (can_move_debug_stmts && !gsi_end_p (gsi))
     {
       gsi_to = gsi_after_labels (dest);
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); )
+      do
 	{
 	  gimple *debug = gsi_stmt (gsi);
-	  if (!is_gimple_debug (debug))
-	    break;
-	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsi_to, debug, GSI_SAME_STMT);
+	  gcc_assert (is_gimple_debug (debug));
+	  gsi_move_before (&gsi, &gsi_to);
 	}
+      while (!gsi_end_p (gsi));
     }
 
   bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
@@ -635,9 +676,22 @@ fixup_noreturn_call (gimple *stmt)
   return changed;
 }
 
+/* Return true if we want to merge BB1 and BB2 into a single block.  */
 
-/* Tries to cleanup cfg in basic block BB.  Returns true if anything
-   changes.  */
+static bool
+want_merge_blocks_p (basic_block bb1, basic_block bb2)
+{
+  if (!can_merge_blocks_p (bb1, bb2))
+    return false;
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb1);
+  if (gsi_end_p (gsi) || !stmt_can_terminate_bb_p (gsi_stmt (gsi)))
+    return true;
+  return bb1->count.ok_for_merging (bb2->count);
+}
+
+
+/* Tries to cleanup cfg in basic block BB by merging blocks.  Returns
+   true if anything changes.  */
 
 static bool
 cleanup_tree_cfg_bb (basic_block bb)
@@ -651,7 +705,7 @@ cleanup_tree_cfg_bb (basic_block bb)
      This happens when we visit BBs in a non-optimal order and
      avoids quadratic behavior with adjusting stmts BB pointer.  */
   if (single_pred_p (bb)
-      && can_merge_blocks_p (single_pred (bb), bb))
+      && want_merge_blocks_p (single_pred (bb), bb))
     /* But make sure we _do_ visit it.  When we remove unreachable paths
        ending in a backedge we fail to mark the destinations predecessors
        as changed.  */
@@ -661,7 +715,7 @@ cleanup_tree_cfg_bb (basic_block bb)
      conditional branches (due to the elimination of single-valued PHI
      nodes).  */
   else if (single_succ_p (bb)
-	   && can_merge_blocks_p (bb, single_succ (bb)))
+	   && want_merge_blocks_p (bb, single_succ (bb)))
     {
       merge_blocks (bb, single_succ (bb));
       return true;
@@ -670,72 +724,80 @@ cleanup_tree_cfg_bb (basic_block bb)
   return false;
 }
 
-/* Iterate the cfg cleanups, while anything changes.  */
+/* Do cleanup_control_flow_bb in PRE order.  */
 
 static bool
-cleanup_tree_cfg_1 (void)
+cleanup_control_flow_pre ()
 {
   bool retval = false;
-  basic_block bb;
-  unsigned i, n;
 
-  /* Prepare the worklists of altered blocks.  */
-  cfgcleanup_altered_bbs = BITMAP_ALLOC (NULL);
+  /* We want remove_edge_and_dominated_blocks to only remove edges,
+     not dominated blocks which it does when dom info isn't available.
+     Pretend so.  */
+  dom_state saved_state = dom_info_state (CDI_DOMINATORS);
+  set_dom_info_availability (CDI_DOMINATORS, DOM_NONE);
 
-  /* During forwarder block cleanup, we may redirect edges out of
-     SWITCH_EXPRs, which can get expensive.  So we want to enable
-     recording of edge to CASE_LABEL_EXPR.  */
-  start_recording_case_labels ();
+  auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
+  bitmap_clear (visited);
 
-  /* We cannot use FOR_EACH_BB_FN for the BB iterations below
-     since the basic blocks may get removed.  */
+  stack.quick_push (ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs));
 
-  /* Start by iterating over all basic blocks looking for edge removal
-     opportunities.  Do this first because incoming SSA form may be
-     invalid and we want to avoid performing SSA related tasks such
-     as propgating out a PHI node during BB merging in that state.  */
-  n = last_basic_block_for_fn (cfun);
-  for (i = NUM_FIXED_BLOCKS; i < n; i++)
+  while (! stack.is_empty ())
     {
-      bb = BASIC_BLOCK_FOR_FN (cfun, i);
-      if (bb)
-	retval |= cleanup_control_flow_bb (bb, true);
+      /* Look at the edge on the top of the stack.  */
+      edge_iterator ei = stack.last ();
+      basic_block dest = ei_edge (ei)->dest;
+
+      if (dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+	  && ! bitmap_bit_p (visited, dest->index))
+	{
+	  bitmap_set_bit (visited, dest->index);
+	  /* We only possibly remove edges from DEST here, leaving
+	     possibly unreachable code in the IL.  */
+	  retval |= cleanup_control_flow_bb (dest);
+	  if (EDGE_COUNT (dest->succs) > 0)
+	    stack.quick_push (ei_start (dest->succs));
+	}
+      else
+	{
+	  if (!ei_one_before_end_p (ei))
+	    ei_next (&stack.last ());
+	  else
+	    stack.pop ();
+	}
     }
 
-  /* After doing the above SSA form should be valid (or an update SSA
-     should be required).  */
+  set_dom_info_availability (CDI_DOMINATORS, saved_state);
 
-  /* Continue by iterating over all basic blocks looking for BB merging
-     opportunities.  */
-  n = last_basic_block_for_fn (cfun);
-  for (i = NUM_FIXED_BLOCKS; i < n; i++)
+  /* We are deleting BBs in non-reverse dominator order, make sure
+     insert_debug_temps_for_defs is prepared for that.  */
+  if (retval)
+    free_dominance_info (CDI_DOMINATORS);
+
+  /* Remove all now (and previously) unreachable blocks.  */
+  for (int i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); ++i)
     {
-      bb = BASIC_BLOCK_FOR_FN (cfun, i);
-      if (bb)
-	retval |= cleanup_tree_cfg_bb (bb);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      if (bb && !bitmap_bit_p (visited, bb->index))
+	{
+	  if (!retval)
+	    free_dominance_info (CDI_DOMINATORS);
+	  delete_basic_block (bb);
+	  retval = true;
+	}
     }
 
-  /* Now process the altered blocks, as long as any are available.  */
-  while (!bitmap_empty_p (cfgcleanup_altered_bbs))
-    {
-      i = bitmap_first_set_bit (cfgcleanup_altered_bbs);
-      bitmap_clear_bit (cfgcleanup_altered_bbs, i);
-      if (i < NUM_FIXED_BLOCKS)
-	continue;
-
-      bb = BASIC_BLOCK_FOR_FN (cfun, i);
-      if (!bb)
-	continue;
-
-      retval |= cleanup_control_flow_bb (bb, false);
-      retval |= cleanup_tree_cfg_bb (bb);
-    }
-
-  end_recording_case_labels ();
-  BITMAP_FREE (cfgcleanup_altered_bbs);
   return retval;
 }
 
+static bool
+mfb_keep_latches (edge e)
+{
+  return !((dom_info_available_p (CDI_DOMINATORS)
+	    && dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+	   || (e->flags & EDGE_DFS_BACK));
+}
 
 /* Remove unreachable blocks and other miscellaneous clean up work.
    Return true if the flowgraph was modified, false otherwise.  */
@@ -743,37 +805,148 @@ cleanup_tree_cfg_1 (void)
 static bool
 cleanup_tree_cfg_noloop (void)
 {
-  bool changed;
-
   timevar_push (TV_TREE_CLEANUP_CFG);
 
-  /* Iterate until there are no more cleanups left to do.  If any
-     iteration changed the flowgraph, set CHANGED to true.
+  /* Ensure that we have single entries into loop headers.  Otherwise
+     if one of the entries is becoming a latch due to CFG cleanup
+     (from formerly being part of an irreducible region) then we mess
+     up loop fixup and associate the old loop with a different region
+     which makes niter upper bounds invalid.  See for example PR80549.
+     This needs to be done before we remove trivially dead edges as
+     we need to capture the dominance state before the pending transform.  */
+  if (current_loops)
+    {
+      /* This needs backedges or dominators.  */
+      if (!dom_info_available_p (CDI_DOMINATORS))
+	mark_dfs_back_edges ();
 
-     If dominance information is available, there cannot be any unreachable
-     blocks.  */
+      loop_p loop;
+      unsigned i;
+      FOR_EACH_VEC_ELT (*get_loops (cfun), i, loop)
+	if (loop && loop->header)
+	  {
+	    basic_block bb = loop->header;
+	    edge_iterator ei;
+	    edge e;
+	    bool found_latch = false;
+	    bool any_abnormal = false;
+	    unsigned n = 0;
+	    /* We are only interested in preserving existing loops, but
+	       we need to check whether they are still real and of course
+	       if we need to add a preheader at all.  */
+	    FOR_EACH_EDGE (e, ei, bb->preds)
+	      {
+		if (e->flags & EDGE_ABNORMAL)
+		  {
+		    any_abnormal = true;
+		    break;
+		  }
+		if ((dom_info_available_p (CDI_DOMINATORS)
+		     && dominated_by_p (CDI_DOMINATORS, e->src, bb))
+		    || (e->flags & EDGE_DFS_BACK))
+		  {
+		    found_latch = true;
+		    continue;
+		  }
+		n++;
+	      }
+	    /* If we have more than one entry to the loop header
+	       create a forwarder.  */
+	    if (found_latch && ! any_abnormal && n > 1)
+	      {
+		edge fallthru = make_forwarder_block (bb, mfb_keep_latches,
+						      NULL);
+		loop->header = fallthru->dest;
+		if (! loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+		  {
+		    /* The loop updating from the CFG hook is incomplete
+		       when we have multiple latches, fixup manually.  */
+		    remove_bb_from_loops (fallthru->src);
+		    loop_p cloop = loop;
+		    FOR_EACH_EDGE (e, ei, fallthru->src->preds)
+		      cloop = find_common_loop (cloop, e->src->loop_father);
+		    add_bb_to_loop (fallthru->src, cloop);
+		  }
+	      }
+	  }
+    }
+
+  /* Prepare the worklists of altered blocks.  */
+  cfgcleanup_altered_bbs = BITMAP_ALLOC (NULL);
+
+  /* Start by iterating over all basic blocks in PRE order looking for
+     edge removal opportunities.  Do this first because incoming SSA form
+     may be invalid and we want to avoid performing SSA related tasks such
+     as propgating out a PHI node during BB merging in that state.  This
+     also gets rid of unreachable blocks.  */
+  bool changed = cleanup_control_flow_pre ();
+
+  /* After doing the above SSA form should be valid (or an update SSA
+     should be required).  */
+
+  /* Compute dominator info which we need for the iterative process below.  */
   if (!dom_info_available_p (CDI_DOMINATORS))
-    {
-      changed = delete_unreachable_blocks ();
-      calculate_dominance_info (CDI_DOMINATORS);
-    }
+    calculate_dominance_info (CDI_DOMINATORS);
   else
+    checking_verify_dominators (CDI_DOMINATORS);
+
+  /* During forwarder block cleanup, we may redirect edges out of
+     SWITCH_EXPRs, which can get expensive.  So we want to enable
+     recording of edge to CASE_LABEL_EXPR.  */
+  start_recording_case_labels ();
+
+  /* Continue by iterating over all basic blocks looking for BB merging
+     opportunities.  We cannot use FOR_EACH_BB_FN for the BB iteration
+     since the basic blocks may get removed.  */
+  unsigned n = last_basic_block_for_fn (cfun);
+  for (unsigned i = NUM_FIXED_BLOCKS; i < n; i++)
     {
-      checking_verify_dominators (CDI_DOMINATORS);
-      changed = false;
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      if (bb)
+	changed |= cleanup_tree_cfg_bb (bb);
     }
 
-  changed |= cleanup_tree_cfg_1 ();
+  /* Now process the altered blocks, as long as any are available.  */
+  while (!bitmap_empty_p (cfgcleanup_altered_bbs))
+    {
+      unsigned i = bitmap_first_set_bit (cfgcleanup_altered_bbs);
+      bitmap_clear_bit (cfgcleanup_altered_bbs, i);
+      if (i < NUM_FIXED_BLOCKS)
+	continue;
+
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      if (!bb)
+	continue;
+
+      /* BB merging done by cleanup_tree_cfg_bb can end up propagating
+	 out single-argument PHIs which in turn can expose
+	 cleanup_control_flow_bb opportunities so we have to repeat
+	 that here.  */
+      changed |= cleanup_control_flow_bb (bb);
+      changed |= cleanup_tree_cfg_bb (bb);
+    }
+
+  end_recording_case_labels ();
+  BITMAP_FREE (cfgcleanup_altered_bbs);
 
   gcc_assert (dom_info_available_p (CDI_DOMINATORS));
-  compact_blocks ();
+
+  /* Do not renumber blocks if the SCEV cache is active, it is indexed by
+     basic-block numbers.  */
+  if (! scev_initialized_p ())
+    compact_blocks ();
 
   checking_verify_flow_info ();
 
   timevar_pop (TV_TREE_CLEANUP_CFG);
 
   if (changed && current_loops)
-    loops_state_set (LOOPS_NEED_FIXUP);
+    {
+      /* Removing edges and/or blocks may make recorded bounds refer
+         to stale GIMPLE stmts now, so clear them.  */
+      free_numbers_of_iterations_estimates (cfun);
+      loops_state_set (LOOPS_NEED_FIXUP);
+    }
 
   return changed;
 }
@@ -882,6 +1055,19 @@ remove_forwarder_block_with_phi (basic_block bb)
 	     splitting E so that we can merge PHI arguments on E to
 	     DEST.  */
 	  e = single_succ_edge (split_edge (e));
+	}
+      else
+	{
+	  /* If we merge the forwarder into a loop header verify if we
+	     are creating another loop latch edge.  If so, reset
+	     number of iteration information of the loop.  */
+	  if (dest->loop_father->header == dest
+	      && dominated_by_p (CDI_DOMINATORS, e->src, dest))
+	    {
+	      dest->loop_father->any_upper_bound = false;
+	      dest->loop_father->any_likely_upper_bound = false;
+	      free_numbers_of_iterations_estimates (dest->loop_father);
+	    }
 	}
 
       s = redirect_edge_and_branch (e, dest);
@@ -1121,7 +1307,8 @@ execute_cleanup_cfg_post_optimizing (void)
     }
   maybe_remove_unreachable_handlers ();
   cleanup_dead_labels ();
-  group_case_labels ();
+  if (group_case_labels ())
+    todo |= TODO_cleanup_cfg;
   if ((flag_compare_debug_opt || flag_compare_debug)
       && flag_dump_final_insns)
     {
@@ -1140,7 +1327,8 @@ execute_cleanup_cfg_post_optimizing (void)
 
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
 	  fprintf (final_output, "\n");
-	  dump_enumerated_decls (final_output, dump_flags | TDF_NOUID);
+	  dump_enumerated_decls (final_output,
+				 dump_flags | TDF_SLIM | TDF_NOUID);
 	  flag_dump_noaddr = save_noaddr;
 	  flag_dump_unnumbered = save_unnumbered;
 	  if (fclose (final_output))

@@ -1,5 +1,7 @@
 /* { dg-do run } */
-/* { dg-options "-save-temps -O2 -ftree-vectorize -fno-inline" } */
+/* { dg-options "-save-temps -O2 -ftree-vectorize -fno-inline -fno-vect-cost-model" } */
+
+#pragma GCC target "+nosve"
 
 #define N 1024
 

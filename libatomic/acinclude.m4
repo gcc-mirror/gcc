@@ -96,6 +96,7 @@ AC_DEFUN([LIBAT_HAVE_ATOMIC_LOADSTORE],[
   LIBAT_DEFINE_YESNO([HAVE_ATOMIC_LDST_$2], [$libat_cv_have_at_ldst_$2],
 	[Have __atomic_load/store for $2 byte integers.])
   AH_BOTTOM([#define MAYBE_HAVE_ATOMIC_LDST_$2 HAVE_ATOMIC_LDST_$2])
+  AH_BOTTOM([#define FAST_ATOMIC_LDST_$2 HAVE_ATOMIC_LDST_$2])
 ])
 
 dnl
@@ -194,7 +195,8 @@ AC_DEFUN([LIBAT_CHECK_IFUNC], [
   CFLAGS="$CFLAGS -Werror"
   AC_TRY_LINK([
     int foo_alt(void) { return 0; }
-    void *foo_sel(void) { return foo_alt; }
+    typedef int F (void);
+    F *foo_sel(void) { return foo_alt; }
     int foo(void) __attribute__((ifunc("foo_sel")));],
     [return foo();], libat_cv_have_ifunc=yes, libat_cv_have_ifunc=no)])
   LIBAT_DEFINE_YESNO([HAVE_IFUNC], [$libat_cv_have_ifunc],
@@ -630,6 +632,8 @@ AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
 
 dnl ----------------------------------------------------------------------
 sinclude(../libtool.m4)
+sinclude(../config/enable.m4)
+sinclude(../config/cet.m4)
 dnl The lines below arrange for aclocal not to bring an installed
 dnl libtool.m4 into aclocal.m4, while still arranging for automake to
 dnl add a definition of LIBTOOL to Makefile.in.

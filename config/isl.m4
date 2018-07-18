@@ -106,27 +106,15 @@ AC_DEFUN([ISL_CHECK_VERSION],
     LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs} ${gmplibs}"
     LIBS="${_isl_saved_LIBS} -lisl -lgmp"
 
-    AC_MSG_CHECKING([for isl 0.16, 0.15, or deprecated 0.14])
-    AC_TRY_LINK([#include <isl/ctx.h>],
-                [isl_ctx_get_max_operations (isl_ctx_alloc ());],
+    AC_MSG_CHECKING([for isl 0.15 or later])
+    AC_TRY_LINK([#include <isl/schedule.h>],
+                [isl_options_set_schedule_serialize_sccs (NULL, 0);],
                 [gcc_cv_isl=yes],
                 [gcc_cv_isl=no])
     AC_MSG_RESULT([$gcc_cv_isl])
 
     if test "${gcc_cv_isl}" = no ; then
-      AC_MSG_RESULT([recommended isl version is 0.16 or 0.15, the minimum required isl version 0.14 is deprecated])
-    fi
-
-    AC_MSG_CHECKING([for isl 0.16 or 0.15])
-    AC_TRY_LINK([#include <isl/schedule.h>],
-                [isl_options_set_schedule_serialize_sccs (NULL, 0);],
-                [ac_has_isl_options_set_schedule_serialize_sccs=yes],
-                [ac_has_isl_options_set_schedule_serialize_sccs=no])
-    AC_MSG_RESULT($ac_has_isl_options_set_schedule_serialize_sccs)
-
-    if test x"$ac_has_isl_options_set_schedule_serialize_sccs" = x"yes"; then
-      islver="0.15"
-      AC_SUBST([islver])
+      AC_MSG_RESULT([required isl version is 0.15 or later])
     fi
 
     CFLAGS=$_isl_saved_CFLAGS

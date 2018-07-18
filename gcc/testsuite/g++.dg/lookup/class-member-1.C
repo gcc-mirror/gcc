@@ -7,5 +7,5 @@ struct A { };
 int main()
 {
   A a;
-  a.i = 9;           // { dg-error "no member" "" }
+  a.i = 9;           // { dg-error "no member" }
 }

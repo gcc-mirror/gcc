@@ -10,7 +10,7 @@ int foo(int x, int y, unsigned u)
 {
   /* A COMPOUND_EXPR is non-negative if the last element is known to
      be non-negative.  */
-  if (u < (bar(), -1)) /*{ dg-warning "9:signed and unsigned" "COMPOUND_EXPR" }*/
+  if (u < (bar(), -1)) /*{ dg-warning "9:different signedness" "COMPOUND_EXPR" }*/
     return x;
   if (u < (bar(), 10))
     return x;
@@ -34,7 +34,7 @@ int foo(int x, int y, unsigned u)
 
   /* A MODIFY_EXPR is non-negative if the new value is known to be
      non-negative.  */
-  if (u < (x = -1)) /* { dg-warning "9:signed and unsigned" "MODIFY_EXPR" } */
+  if (u < (x = -1)) /* { dg-warning "9:different signedness" "MODIFY_EXPR" } */
     return x;
   if (u < (x = 10))
     return x;

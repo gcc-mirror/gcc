@@ -1,0 +1,37 @@
+/* Example of a loading a CFG like this:
+       0  (entry)
+       |
+       2
+      / \
+     3   4
+      \ /
+       5
+       |
+       1  (exit).  */
+
+(function "cfg_test"
+  (insn-chain
+     (block 2
+       (edge-from entry (flags "FALLTHRU"))
+       (cnote 1 [bb 2] NOTE_INSN_BASIC_BLOCK)
+       (edge-to 3 (flags "TRUE_VALUE"))
+       (edge-to 4 (flags "FALSE_VALUE"))
+     ) ;; block 2
+     (block 3
+       (edge-from 2 (flags "TRUE_VALUE"))
+       (cnote 2 [bb 3] NOTE_INSN_BASIC_BLOCK)
+       (edge-to 5 (flags "FALLTHRU"))
+     ) ;; block 3
+     (block 4
+       (edge-from 2 (flags "FALSE_VALUE"))
+       (cnote 3 [bb 4] NOTE_INSN_BASIC_BLOCK)
+       (edge-to 5 (flags "FALLTHRU"))
+     ) ;; block 4
+     (block 5
+       (edge-from 3 (flags "FALLTHRU"))
+       (edge-from 4 (flags "FALLTHRU"))
+       (cnote 4 [bb 5] NOTE_INSN_BASIC_BLOCK)
+       (edge-to exit (flags "FALLTHRU"))
+     ) ;; block 5
+  ) ;; insn-chain
+) ;; function

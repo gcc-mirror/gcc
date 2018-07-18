@@ -1,5 +1,5 @@
 /* Dump infrastructure for optimizations and intermediate representation.
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,65 +26,103 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "dumpfile.h"
 #include "context.h"
+#include "profile-count.h"
+#include "tree-cfg.h"
+#include "langhooks.h"
+#include "backend.h" /* for gimple.h.  */
+#include "gimple.h" /* for dump_user_location_t ctor.  */
+#include "rtl.h" /* for dump_user_location_t ctor.  */
+#include "selftest.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
 #define skip_leading_substring(whole,  part) \
    (strncmp (whole, part, strlen (part)) ? NULL : whole + strlen (part))
 
-static int pflags;                   /* current dump_flags */
-static int alt_flags;                /* current opt_info flags */
+static dump_flags_t pflags;		      /* current dump_flags */
 
-static void dump_loc (int, FILE *, source_location);
+static void dump_loc (dump_flags_t, FILE *, source_location);
+
+/* Current -fopt-info output stream, if any, and flags.  */
+static FILE *alt_dump_file = NULL;
+static dump_flags_t alt_flags;
+
 static FILE *dump_open_alternate_stream (struct dump_file_info *);
 
 /* These are currently used for communicating between passes.
    However, instead of accessing them directly, the passes can use
    dump_printf () for dumps.  */
 FILE *dump_file = NULL;
-FILE *alt_dump_file = NULL;
 const char *dump_file_name;
-int dump_flags;
+dump_flags_t dump_flags;
+bool dumps_are_enabled = false;
+
+
+/* Update the "dumps_are_enabled" global; to be called whenever dump_file
+   or alt_dump_file change.  */
+
+static void
+refresh_dumps_are_enabled ()
+{
+  dumps_are_enabled = (dump_file || alt_dump_file);
+}
+
+/* Set global "dump_file" to NEW_DUMP_FILE, refreshing the "dumps_are_enabled"
+   global.  */
+
+void
+set_dump_file (FILE *new_dump_file)
+{
+  dump_file = new_dump_file;
+  refresh_dumps_are_enabled ();
+}
+
+/* Set "alt_dump_file" to NEW_ALT_DUMP_FILE, refreshing the "dumps_are_enabled"
+   global.  */
+
+static void
+set_alt_dump_file (FILE *new_alt_dump_file)
+{
+  alt_dump_file = new_alt_dump_file;
+  refresh_dumps_are_enabled ();
+}
+
+#define DUMP_FILE_INFO(suffix, swtch, dkind, num) \
+  {suffix, swtch, NULL, NULL, NULL, NULL, NULL, dkind, TDF_NONE, TDF_NONE, \
+   OPTGROUP_NONE, 0, 0, num, false, false}
 
 /* Table of tree dump switches. This must be consistent with the
    TREE_DUMP_INDEX enumeration in dumpfile.h.  */
 static struct dump_file_info dump_files[TDI_end] =
 {
-  {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, false, false},
-  {".cgraph", "ipa-cgraph", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
-   0, 0, 0, 0, 0, false, false},
-  {".type-inheritance", "ipa-type-inheritance", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
-   0, 0, 0, 0, 0, false, false},
-  {".tu", "translation-unit", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 1, false, false},
-  {".class", "class-hierarchy", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 2, false, false},
-  {".original", "tree-original", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 3, false, false},
-  {".gimple", "tree-gimple", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 4, false, false},
-  {".nested", "tree-nested", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 5, false, false},
-#define FIRST_AUTO_NUMBERED_DUMP 6
+  DUMP_FILE_INFO (NULL, NULL, DK_none, 0),
+  DUMP_FILE_INFO (".cgraph", "ipa-cgraph", DK_ipa, 0),
+  DUMP_FILE_INFO (".type-inheritance", "ipa-type-inheritance", DK_ipa, 0),
+  DUMP_FILE_INFO (".ipa-clones", "ipa-clones", DK_ipa, 0),
+  DUMP_FILE_INFO (".original", "tree-original", DK_tree, 0),
+  DUMP_FILE_INFO (".gimple", "tree-gimple", DK_tree, 0),
+  DUMP_FILE_INFO (".nested", "tree-nested", DK_tree, 0),
+  DUMP_FILE_INFO (".lto-stream-out", "ipa-lto-stream-out", DK_ipa, 0),
+#define FIRST_AUTO_NUMBERED_DUMP 1
+#define FIRST_ME_AUTO_NUMBERED_DUMP 4
 
-  {NULL, "tree-all", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 0, false, false},
-  {NULL, "rtl-all", NULL, NULL, NULL, NULL, NULL, TDF_RTL,
-   0, 0, 0, 0, 0, false, false},
-  {NULL, "ipa-all", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
-   0, 0, 0, 0, 0, false, false},
+  DUMP_FILE_INFO (NULL, "lang-all", DK_lang, 0),
+  DUMP_FILE_INFO (NULL, "tree-all", DK_tree, 0),
+  DUMP_FILE_INFO (NULL, "rtl-all", DK_rtl, 0),
+  DUMP_FILE_INFO (NULL, "ipa-all", DK_ipa, 0),
 };
 
 /* Define a name->number mapping for a dump flag value.  */
-struct dump_option_value_info
+template <typename ValueType>
+struct kv_pair
 {
   const char *const name;	/* the name of the value */
-  const int value;		/* the value of the name */
+  const ValueType value;	/* the value of the name */
 };
 
 /* Table of dump options. This must be consistent with the TDF_* flags
    in dumpfile.h and opt_info_options below. */
-static const struct dump_option_value_info dump_options[] =
+static const kv_pair<dump_flags_t> dump_options[] =
 {
   {"address", TDF_ADDRESS},
   {"asmname", TDF_ASMNAME},
@@ -102,43 +140,45 @@ static const struct dump_option_value_info dump_options[] =
   {"uid", TDF_UID},
   {"stmtaddr", TDF_STMTADDR},
   {"memsyms", TDF_MEMSYMS},
-  {"verbose", TDF_VERBOSE},
   {"eh", TDF_EH},
   {"alias", TDF_ALIAS},
   {"nouid", TDF_NOUID},
   {"enumerate_locals", TDF_ENUMERATE_LOCALS},
   {"scev", TDF_SCEV},
+  {"gimple", TDF_GIMPLE},
+  {"folding", TDF_FOLDING},
   {"optimized", MSG_OPTIMIZED_LOCATIONS},
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
   {"optall", MSG_ALL},
-  {"all", ~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_TREE | TDF_RTL | TDF_IPA
-	    | TDF_STMTADDR | TDF_GRAPH | TDF_DIAGNOSTIC | TDF_VERBOSE
-	    | TDF_RHS_ONLY | TDF_NOUID | TDF_ENUMERATE_LOCALS | TDF_SCEV)},
-  {NULL, 0}
+  {"all", dump_flags_t (~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_GRAPH
+			| TDF_STMTADDR | TDF_RHS_ONLY | TDF_NOUID
+			| TDF_ENUMERATE_LOCALS | TDF_SCEV | TDF_GIMPLE))},
+  {NULL, TDF_NONE}
 };
 
 /* A subset of the dump_options table which is used for -fopt-info
    types. This must be consistent with the MSG_* flags in dumpfile.h.
  */
-static const struct dump_option_value_info optinfo_verbosity_options[] =
+static const kv_pair<dump_flags_t> optinfo_verbosity_options[] =
 {
   {"optimized", MSG_OPTIMIZED_LOCATIONS},
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
   {"all", MSG_ALL},
-  {NULL, 0}
+  {NULL, TDF_NONE}
 };
 
 /* Flags used for -fopt-info groups.  */
-static const struct dump_option_value_info optgroup_options[] =
+static const kv_pair<optgroup_flags_t> optgroup_options[] =
 {
   {"ipa", OPTGROUP_IPA},
   {"loop", OPTGROUP_LOOP},
   {"inline", OPTGROUP_INLINE},
+  {"omp", OPTGROUP_OMP},
   {"vec", OPTGROUP_VEC},
   {"optall", OPTGROUP_ALL},
-  {NULL, 0}
+  {NULL, OPTGROUP_NONE}
 };
 
 gcc::dump_manager::dump_manager ():
@@ -173,7 +213,7 @@ gcc::dump_manager::~dump_manager ()
 unsigned int
 gcc::dump_manager::
 dump_register (const char *suffix, const char *swtch, const char *glob,
-	       int flags, int optgroup_flags,
+	       dump_kind dkind, optgroup_flags_t optgroup_flags,
 	       bool take_ownership)
 {
   int num = m_next_dump++;
@@ -183,24 +223,50 @@ dump_register (const char *suffix, const char *swtch, const char *glob,
   if (count >= m_extra_dump_files_alloced)
     {
       if (m_extra_dump_files_alloced == 0)
-	m_extra_dump_files_alloced = 32;
+	m_extra_dump_files_alloced = 512;
       else
 	m_extra_dump_files_alloced *= 2;
       m_extra_dump_files = XRESIZEVEC (struct dump_file_info,
 				       m_extra_dump_files,
 				       m_extra_dump_files_alloced);
+
+      /* Construct a new object in the space allocated above.  */
+      new (m_extra_dump_files + count) dump_file_info ();
+    }
+  else
+    {
+      /* Zero out the already constructed object.  */
+      m_extra_dump_files[count] = dump_file_info ();
     }
 
-  memset (&m_extra_dump_files[count], 0, sizeof (struct dump_file_info));
   m_extra_dump_files[count].suffix = suffix;
   m_extra_dump_files[count].swtch = swtch;
   m_extra_dump_files[count].glob = glob;
-  m_extra_dump_files[count].pflags = flags;
+  m_extra_dump_files[count].dkind = dkind;
   m_extra_dump_files[count].optgroup_flags = optgroup_flags;
   m_extra_dump_files[count].num = num;
   m_extra_dump_files[count].owns_strings = take_ownership;
 
   return count + TDI_end;
+}
+
+
+/* Allow languages and middle-end to register their dumps before the
+   optimization passes.  */
+
+void
+gcc::dump_manager::
+register_dumps ()
+{
+  lang_hooks.register_dumps (this);
+  /* If this assert fails, some FE registered more than
+     FIRST_ME_AUTO_NUMBERED_DUMP - FIRST_AUTO_NUMBERED_DUMP
+     dump files.  Bump FIRST_ME_AUTO_NUMBERED_DUMP accordingly.  */
+  gcc_assert (m_next_dump <= FIRST_ME_AUTO_NUMBERED_DUMP);
+  m_next_dump = FIRST_ME_AUTO_NUMBERED_DUMP;
+  dump_files[TDI_original].num = m_next_dump++;
+  dump_files[TDI_gimple].num = m_next_dump++;
+  dump_files[TDI_nested].num = m_next_dump++;
 }
 
 
@@ -226,7 +292,7 @@ gcc::dump_manager::
 get_dump_file_info_by_switch (const char *swtch) const
 {
   for (unsigned i = 0; i < m_extra_dump_files_in_use; i++)
-    if (0 == strcmp (m_extra_dump_files[i].swtch, swtch))
+    if (strcmp (m_extra_dump_files[i].swtch, swtch) == 0)
       return &m_extra_dump_files[i];
 
   /* Not found.  */
@@ -241,7 +307,7 @@ get_dump_file_info_by_switch (const char *swtch) const
 
 char *
 gcc::dump_manager::
-get_dump_file_name (int phase) const
+get_dump_file_name (int phase, int part) const
 {
   struct dump_file_info *dfi;
 
@@ -250,7 +316,7 @@ get_dump_file_name (int phase) const
 
   dfi = get_dump_file_info (phase);
 
-  return get_dump_file_name (dfi);
+  return get_dump_file_name (dfi, part);
 }
 
 /* Return the name of the dump file for the given dump_file_info.
@@ -260,7 +326,7 @@ get_dump_file_name (int phase) const
 
 char *
 gcc::dump_manager::
-get_dump_file_name (struct dump_file_info *dfi) const
+get_dump_file_name (struct dump_file_info *dfi, int part) const
 {
   char dump_id[10];
 
@@ -277,19 +343,43 @@ get_dump_file_name (struct dump_file_info *dfi) const
     dump_id[0] = '\0';
   else
     {
-      char suffix;
-      if (dfi->pflags & TDF_TREE)
-	suffix = 't';
-      else if (dfi->pflags & TDF_IPA)
-	suffix = 'i';
-      else
-	suffix = 'r';
-
+      /* (null), LANG, TREE, RTL, IPA.  */
+      char suffix = " ltri"[dfi->dkind];
+      
       if (snprintf (dump_id, sizeof (dump_id), ".%03d%c", dfi->num, suffix) < 0)
 	dump_id[0] = '\0';
     }
 
-  return concat (dump_base_name, dump_id, dfi->suffix, NULL);
+  if (part != -1)
+    {
+       char part_id[8];
+       snprintf (part_id, sizeof (part_id), ".%i", part);
+       return concat (dump_base_name, dump_id, part_id, dfi->suffix, NULL);
+    }
+  else
+    return concat (dump_base_name, dump_id, dfi->suffix, NULL);
+}
+
+/* Open a dump file called FILENAME.  Some filenames are special and
+   refer to the standard streams.  TRUNC indicates whether this is the
+   first open (so the file should be truncated, rather than appended).
+   An error message is emitted in the event of failure.  */
+
+static FILE *
+dump_open (const char *filename, bool trunc)
+{
+  if (strcmp ("stderr", filename) == 0)
+    return stderr;
+
+  if (strcmp ("stdout", filename) == 0
+      || strcmp ("-", filename) == 0)
+    return stdout;
+
+  FILE *stream = fopen (filename, trunc ? "w" : "a");
+
+  if (!stream)
+    error ("could not open dump file %qs: %m", filename);
+  return stream;
 }
 
 /* For a given DFI, open an alternate dump filename (which could also
@@ -299,31 +389,66 @@ get_dump_file_name (struct dump_file_info *dfi) const
 static FILE *
 dump_open_alternate_stream (struct dump_file_info *dfi)
 {
-  FILE *stream ;
   if (!dfi->alt_filename)
     return NULL;
 
   if (dfi->alt_stream)
     return dfi->alt_stream;
 
-  stream = strcmp ("stderr", dfi->alt_filename) == 0
-    ? stderr
-    : strcmp ("stdout", dfi->alt_filename) == 0
-    ? stdout
-    : fopen (dfi->alt_filename, dfi->alt_state < 0 ? "w" : "a");
+  FILE *stream = dump_open (dfi->alt_filename, dfi->alt_state < 0);
 
-  if (!stream)
-    error ("could not open dump file %qs: %m", dfi->alt_filename);
-  else
+  if (stream)
     dfi->alt_state = 1;
 
   return stream;
 }
 
+/* Construct a dump_user_location_t from STMT (using its location and
+   hotness).  */
+
+dump_user_location_t::dump_user_location_t (gimple *stmt)
+: m_count (), m_loc (UNKNOWN_LOCATION)
+{
+  if (stmt)
+    {
+      if (stmt->bb)
+	m_count = stmt->bb->count;
+      m_loc = gimple_location (stmt);
+    }
+}
+
+/* Construct a dump_user_location_t from an RTL instruction (using its
+   location and hotness).  */
+
+dump_user_location_t::dump_user_location_t (rtx_insn *insn)
+: m_count (), m_loc (UNKNOWN_LOCATION)
+{
+  if (insn)
+    {
+      basic_block bb = BLOCK_FOR_INSN (insn);
+      if (bb)
+	m_count = bb->count;
+      m_loc = INSN_LOCATION (insn);
+    }
+}
+
+/* Construct from a function declaration.  This one requires spelling out
+   to avoid accidentally constructing from other kinds of tree.  */
+
+dump_user_location_t
+dump_user_location_t::from_function_decl (tree fndecl)
+{
+  gcc_assert (fndecl);
+
+  // FIXME: profile count for function?
+  return dump_user_location_t (profile_count (),
+			       DECL_SOURCE_LOCATION (fndecl));
+}
+
 /* Print source location on DFILE if enabled.  */
 
-void
-dump_loc (int dump_kind, FILE *dfile, source_location loc)
+static void
+dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
 {
   if (dump_kind)
     {
@@ -335,6 +460,8 @@ dump_loc (int dump_kind, FILE *dfile, source_location loc)
                  DECL_SOURCE_FILE (current_function_decl),
                  DECL_SOURCE_LINE (current_function_decl),
                  DECL_SOURCE_COLUMN (current_function_decl));
+      /* Indentation based on scope depth.  */
+      fprintf (dfile, "%*s", get_dump_scope_depth (), "");
     }
 }
 
@@ -342,7 +469,8 @@ dump_loc (int dump_kind, FILE *dfile, source_location loc)
    EXTRA_DUMP_FLAGS on the dump streams if DUMP_KIND is enabled.  */
 
 void
-dump_gimple_stmt (int dump_kind, int extra_dump_flags, gimple *gs, int spc)
+dump_gimple_stmt (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
+		  gimple *gs, int spc)
 {
   if (dump_file && (dump_kind & pflags))
     print_gimple_stmt (dump_file, gs, spc, dump_flags | extra_dump_flags);
@@ -354,27 +482,65 @@ dump_gimple_stmt (int dump_kind, int extra_dump_flags, gimple *gs, int spc)
 /* Similar to dump_gimple_stmt, except additionally print source location.  */
 
 void
-dump_gimple_stmt_loc (int dump_kind, source_location loc, int extra_dump_flags,
-		      gimple *gs, int spc)
+dump_gimple_stmt_loc (dump_flags_t dump_kind, const dump_location_t &loc,
+		      dump_flags_t extra_dump_flags, gimple *gs, int spc)
 {
+  location_t srcloc = loc.get_location_t ();
   if (dump_file && (dump_kind & pflags))
     {
-      dump_loc (dump_kind, dump_file, loc);
+      dump_loc (dump_kind, dump_file, srcloc);
       print_gimple_stmt (dump_file, gs, spc, dump_flags | extra_dump_flags);
     }
 
   if (alt_dump_file && (dump_kind & alt_flags))
     {
-      dump_loc (dump_kind, alt_dump_file, loc);
+      dump_loc (dump_kind, alt_dump_file, srcloc);
       print_gimple_stmt (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
     }
 }
+
+/* Dump gimple statement GS with SPC indentation spaces and
+   EXTRA_DUMP_FLAGS on the dump streams if DUMP_KIND is enabled.
+   Do not terminate with a newline or semicolon.  */
+
+void
+dump_gimple_expr (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
+		  gimple *gs, int spc)
+{
+  if (dump_file && (dump_kind & pflags))
+    print_gimple_expr (dump_file, gs, spc, dump_flags | extra_dump_flags);
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    print_gimple_expr (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
+}
+
+/* Similar to dump_gimple_expr, except additionally print source location.  */
+
+void
+dump_gimple_expr_loc (dump_flags_t dump_kind, const dump_location_t &loc,
+		      dump_flags_t extra_dump_flags, gimple *gs, int spc)
+{
+  location_t srcloc = loc.get_location_t ();
+  if (dump_file && (dump_kind & pflags))
+    {
+      dump_loc (dump_kind, dump_file, srcloc);
+      print_gimple_expr (dump_file, gs, spc, dump_flags | extra_dump_flags);
+    }
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    {
+      dump_loc (dump_kind, alt_dump_file, srcloc);
+      print_gimple_expr (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
+    }
+}
+
 
 /* Dump expression tree T using EXTRA_DUMP_FLAGS on dump streams if
    DUMP_KIND is enabled.  */
 
 void
-dump_generic_expr (int dump_kind, int extra_dump_flags, tree t)
+dump_generic_expr (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
+		   tree t)
 {
   if (dump_file && (dump_kind & pflags))
       print_generic_expr (dump_file, t, dump_flags | extra_dump_flags);
@@ -388,18 +554,19 @@ dump_generic_expr (int dump_kind, int extra_dump_flags, tree t)
    location.  */
 
 void
-dump_generic_expr_loc (int dump_kind, source_location loc,
-                       int extra_dump_flags, tree t)
+dump_generic_expr_loc (dump_flags_t dump_kind, const dump_location_t &loc,
+		       dump_flags_t extra_dump_flags, tree t)
 {
+  location_t srcloc = loc.get_location_t ();
   if (dump_file && (dump_kind & pflags))
     {
-      dump_loc (dump_kind, dump_file, loc);
+      dump_loc (dump_kind, dump_file, srcloc);
       print_generic_expr (dump_file, t, dump_flags | extra_dump_flags);
     }
 
   if (alt_dump_file && (dump_kind & alt_flags))
     {
-      dump_loc (dump_kind, alt_dump_file, loc);
+      dump_loc (dump_kind, alt_dump_file, srcloc);
       print_generic_expr (alt_dump_file, t, dump_flags | extra_dump_flags);
     }
 }
@@ -407,7 +574,7 @@ dump_generic_expr_loc (int dump_kind, source_location loc,
 /* Output a formatted message using FORMAT on appropriate dump streams.  */
 
 void
-dump_printf (int dump_kind, const char *format, ...)
+dump_printf (dump_flags_t dump_kind, const char *format, ...)
 {
   if (dump_file && (dump_kind & pflags))
     {
@@ -429,12 +596,14 @@ dump_printf (int dump_kind, const char *format, ...)
 /* Similar to dump_printf, except source location is also printed.  */
 
 void
-dump_printf_loc (int dump_kind, source_location loc, const char *format, ...)
+dump_printf_loc (dump_flags_t dump_kind, const dump_location_t &loc,
+		 const char *format, ...)
 {
+  location_t srcloc = loc.get_location_t ();
   if (dump_file && (dump_kind & pflags))
     {
       va_list ap;
-      dump_loc (dump_kind, dump_file, loc);
+      dump_loc (dump_kind, dump_file, srcloc);
       va_start (ap, format);
       vfprintf (dump_file, format, ap);
       va_end (ap);
@@ -443,11 +612,87 @@ dump_printf_loc (int dump_kind, source_location loc, const char *format, ...)
   if (alt_dump_file && (dump_kind & alt_flags))
     {
       va_list ap;
-      dump_loc (dump_kind, alt_dump_file, loc);
+      dump_loc (dump_kind, alt_dump_file, srcloc);
       va_start (ap, format);
       vfprintf (alt_dump_file, format, ap);
       va_end (ap);
     }
+}
+
+/* Output VALUE in decimal to appropriate dump streams.  */
+
+template<unsigned int N, typename C>
+void
+dump_dec (dump_flags_t dump_kind, const poly_int<N, C> &value)
+{
+  STATIC_ASSERT (poly_coeff_traits<C>::signedness >= 0);
+  signop sgn = poly_coeff_traits<C>::signedness ? SIGNED : UNSIGNED;
+  if (dump_file && (dump_kind & pflags))
+    print_dec (value, dump_file, sgn);
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    print_dec (value, alt_dump_file, sgn);
+}
+
+template void dump_dec (dump_flags_t, const poly_uint16 &);
+template void dump_dec (dump_flags_t, const poly_int64 &);
+template void dump_dec (dump_flags_t, const poly_uint64 &);
+template void dump_dec (dump_flags_t, const poly_offset_int &);
+template void dump_dec (dump_flags_t, const poly_widest_int &);
+
+void
+dump_dec (dump_flags_t dump_kind, const poly_wide_int &value, signop sgn)
+{
+  if (dump_file && (dump_kind & pflags))
+    print_dec (value, dump_file, sgn);
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    print_dec (value, alt_dump_file, sgn);
+}
+
+/* Output VALUE in hexadecimal to appropriate dump streams.  */
+
+void
+dump_hex (dump_flags_t dump_kind, const poly_wide_int &value)
+{
+  if (dump_file && (dump_kind & pflags))
+    print_hex (value, dump_file);
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    print_hex (value, alt_dump_file);
+}
+
+/* The current dump scope-nesting depth.  */
+
+static int dump_scope_depth;
+
+/* Get the current dump scope-nesting depth.
+   For use by dump_*_loc (for showing nesting via indentation).  */
+
+unsigned int
+get_dump_scope_depth ()
+{
+  return dump_scope_depth;
+}
+
+/* Push a nested dump scope.
+   Print "=== NAME ===\n" to the dumpfile, if any, and to the -fopt-info
+   destination, if any.
+   Increment the scope depth.  */
+
+void
+dump_begin_scope (const char *name, const dump_location_t &loc)
+{
+  dump_printf_loc (MSG_NOTE, loc, "=== %s ===\n", name);
+  dump_scope_depth++;
+}
+
+/* Pop a nested dump scope.  */
+
+void
+dump_end_scope ()
+{
+  dump_scope_depth--;
 }
 
 /* Start a dump for PHASE. Store user-supplied dump flags in
@@ -458,7 +703,7 @@ dump_printf_loc (int dump_kind, source_location loc, const char *format, ...)
 
 int
 gcc::dump_manager::
-dump_start (int phase, int *flag_ptr)
+dump_start (int phase, dump_flags_t *flag_ptr)
 {
   int count = 0;
   char *name;
@@ -471,21 +716,15 @@ dump_start (int phase, int *flag_ptr)
   name = get_dump_file_name (phase);
   if (name)
     {
-      stream = strcmp ("stderr", name) == 0
-          ? stderr
-          : strcmp ("stdout", name) == 0
-          ? stdout
-          : fopen (name, dfi->pstate < 0 ? "w" : "a");
-      if (!stream)
-        error ("could not open dump file %qs: %m", name);
-      else
+      stream = dump_open (name, dfi->pstate < 0);
+      if (stream)
         {
           dfi->pstate = 1;
           count++;
         }
       free (name);
       dfi->pstream = stream;
-      dump_file = dfi->pstream;
+      set_dump_file (dfi->pstream);
       /* Initialize current dump flags. */
       pflags = dfi->pflags;
     }
@@ -495,7 +734,7 @@ dump_start (int phase, int *flag_ptr)
     {
       dfi->alt_stream = stream;
       count++;
-      alt_dump_file = dfi->alt_stream;
+      set_alt_dump_file (dfi->alt_stream);
       /* Initialize current -fopt-info flags. */
       alt_flags = dfi->alt_flags;
     }
@@ -518,38 +757,37 @@ dump_finish (int phase)
   if (phase < 0)
     return;
   dfi = get_dump_file_info (phase);
-  if (dfi->pstream && (!dfi->pfilename
-                       || (strcmp ("stderr", dfi->pfilename) != 0
-                           && strcmp ("stdout", dfi->pfilename) != 0)))
+  if (dfi->pstream && dfi->pstream != stdout && dfi->pstream != stderr)
     fclose (dfi->pstream);
 
-  if (dfi->alt_stream && strcmp ("stderr", dfi->alt_filename) != 0
-      && strcmp ("stdout", dfi->alt_filename) != 0)
+  if (dfi->alt_stream && dfi->alt_stream != stdout && dfi->alt_stream != stderr)
     fclose (dfi->alt_stream);
 
   dfi->alt_stream = NULL;
   dfi->pstream = NULL;
-  dump_file = NULL;
-  alt_dump_file = NULL;
-  dump_flags = TDI_none;
-  alt_flags = 0;
-  pflags = 0;
+  set_dump_file (NULL);
+  set_alt_dump_file (NULL);
+  dump_flags = TDF_NONE;
+  alt_flags = TDF_NONE;
+  pflags = TDF_NONE;
 }
 
 /* Begin a tree dump for PHASE. Stores any user supplied flag in
    *FLAG_PTR and returns a stream to write to. If the dump is not
    enabled, returns NULL.
-   Multiple calls will reopen and append to the dump file.  */
+   PART can be used for dump files which should be split to multiple
+   parts. PART == -1 indicates dump file with no parts.
+   If PART is -1, multiple calls will reopen and append to the dump file.  */
 
 FILE *
-dump_begin (int phase, int *flag_ptr)
+dump_begin (int phase, dump_flags_t *flag_ptr, int part)
 {
-  return g->get_dumps ()->dump_begin (phase, flag_ptr);
+  return g->get_dumps ()->dump_begin (phase, flag_ptr, part);
 }
 
 FILE *
 gcc::dump_manager::
-dump_begin (int phase, int *flag_ptr)
+dump_begin (int phase, dump_flags_t *flag_ptr, int part)
 {
   char *name;
   struct dump_file_info *dfi;
@@ -558,20 +796,15 @@ dump_begin (int phase, int *flag_ptr)
   if (phase == TDI_none || !dump_phase_enabled_p (phase))
     return NULL;
 
-  name = get_dump_file_name (phase);
+  name = get_dump_file_name (phase, part);
   if (!name)
     return NULL;
   dfi = get_dump_file_info (phase);
 
-  stream = strcmp ("stderr", name) == 0
-    ? stderr
-    : strcmp ("stdout", name) == 0
-    ? stdout
-    : fopen (name, dfi->pstate < 0 ? "w" : "a");
-
-  if (!stream)
-    error ("could not open dump file %qs: %m", name);
-  else
+  /* We do not support re-opening of dump files with parts.  This would require
+     tracking pstate per part of the dump file.  */
+  stream = dump_open (name, part != -1 || dfi->pstate < 0);
+  if (stream)
     dfi->pstate = 1;
   free (name);
 
@@ -650,15 +883,14 @@ dump_end (int phase ATTRIBUTE_UNUSED, FILE *stream)
 
 int
 gcc::dump_manager::
-dump_enable_all (int flags, const char *filename)
+dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename)
 {
-  int ir_dump_type = (flags & (TDF_TREE | TDF_RTL | TDF_IPA));
   int n = 0;
   size_t i;
 
   for (i = TDI_none + 1; i < (size_t) TDI_end; i++)
     {
-      if ((dump_files[i].pflags & ir_dump_type))
+      if ((dump_files[i].dkind == dkind))
         {
           const char *old_filename = dump_files[i].pfilename;
           dump_files[i].pstate = -1;
@@ -679,7 +911,7 @@ dump_enable_all (int flags, const char *filename)
 
   for (i = 0; i < m_extra_dump_files_in_use; i++)
     {
-      if ((m_extra_dump_files[i].pflags & ir_dump_type))
+      if ((m_extra_dump_files[i].dkind == dkind))
         {
           const char *old_filename = m_extra_dump_files[i].pfilename;
           m_extra_dump_files[i].pstate = -1;
@@ -707,7 +939,8 @@ dump_enable_all (int flags, const char *filename)
 
 int
 gcc::dump_manager::
-opt_info_enable_passes (int optgroup_flags, int flags, const char *filename)
+opt_info_enable_passes (optgroup_flags_t optgroup_flags, dump_flags_t flags,
+			const char *filename)
 {
   int n = 0;
   size_t i;
@@ -760,7 +993,7 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
 {
   const char *option_value;
   const char *ptr;
-  int flags;
+  dump_flags_t flags;
 
   if (doglob && !dfi->glob)
     return 0;
@@ -773,11 +1006,11 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
     return 0;
 
   ptr = option_value;
-  flags = 0;
+  flags = TDF_NONE;
 
   while (*ptr)
     {
-      const struct dump_option_value_info *option_ptr;
+      const struct kv_pair<dump_flags_t> *option_ptr;
       const char *end_ptr;
       const char *eq_ptr;
       unsigned length;
@@ -824,7 +1057,7 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
   /* Process -fdump-tree-all and -fdump-rtl-all, by enabling all the
      known dumps.  */
   if (dfi->suffix == NULL)
-    dump_enable_all (dfi->pflags, dfi->pfilename);
+    dump_enable_all (dfi->dkind, dfi->pflags, dfi->pfilename);
 
   return 1;
 }
@@ -859,8 +1092,8 @@ dump_switch_p (const char *arg)
    and filename.  Return non-zero if it is a recognized switch.  */
 
 static int
-opt_info_switch_p_1 (const char *arg, int *flags, int *optgroup_flags,
-                     char **filename)
+opt_info_switch_p_1 (const char *arg, dump_flags_t *flags,
+		     optgroup_flags_t *optgroup_flags, char **filename)
 {
   const char *option_value;
   const char *ptr;
@@ -869,15 +1102,14 @@ opt_info_switch_p_1 (const char *arg, int *flags, int *optgroup_flags,
   ptr = option_value;
 
   *filename = NULL;
-  *flags = 0;
-  *optgroup_flags = 0;
+  *flags = TDF_NONE;
+  *optgroup_flags = OPTGROUP_NONE;
 
   if (!ptr)
     return 1;       /* Handle '-fopt-info' without any additional options.  */
 
   while (*ptr)
     {
-      const struct dump_option_value_info *option_ptr;
       const char *end_ptr;
       const char *eq_ptr;
       unsigned length;
@@ -894,8 +1126,8 @@ opt_info_switch_p_1 (const char *arg, int *flags, int *optgroup_flags,
 	end_ptr = ptr + strlen (ptr);
       length = end_ptr - ptr;
 
-      for (option_ptr = optinfo_verbosity_options; option_ptr->name;
-           option_ptr++)
+      for (const kv_pair<dump_flags_t> *option_ptr = optinfo_verbosity_options;
+	   option_ptr->name; option_ptr++)
 	if (strlen (option_ptr->name) == length
 	    && !memcmp (option_ptr->name, ptr, length))
           {
@@ -903,7 +1135,8 @@ opt_info_switch_p_1 (const char *arg, int *flags, int *optgroup_flags,
 	    goto found;
           }
 
-      for (option_ptr = optgroup_options; option_ptr->name; option_ptr++)
+      for (const kv_pair<optgroup_flags_t> *option_ptr = optgroup_options;
+	   option_ptr->name; option_ptr++)
 	if (strlen (option_ptr->name) == length
 	    && !memcmp (option_ptr->name, ptr, length))
           {
@@ -937,8 +1170,8 @@ opt_info_switch_p_1 (const char *arg, int *flags, int *optgroup_flags,
 int
 opt_info_switch_p (const char *arg)
 {
-  int flags;
-  int optgroup_flags;
+  dump_flags_t flags;
+  optgroup_flags_t optgroup_flags;
   char *filename;
   static char *file_seen = NULL;
   gcc::dump_manager *dumps = g->get_dumps ();
@@ -969,12 +1202,28 @@ opt_info_switch_p (const char *arg)
 /* Print basic block on the dump streams.  */
 
 void
-dump_basic_block (int dump_kind, basic_block bb, int indent)
+dump_basic_block (dump_flags_t dump_kind, basic_block bb, int indent)
 {
   if (dump_file && (dump_kind & pflags))
     dump_bb (dump_file, bb, indent, TDF_DETAILS);
   if (alt_dump_file && (dump_kind & alt_flags))
     dump_bb (alt_dump_file, bb, indent, TDF_DETAILS);
+}
+
+/* Dump FUNCTION_DECL FN as tree dump PHASE.  */
+
+void
+dump_function (int phase, tree fn)
+{
+  FILE *stream;
+  dump_flags_t flags;
+
+  stream = dump_begin (phase, &flags);
+  if (stream)
+    {
+      dump_function_to_file (fn, stream, flags);
+      dump_end (phase, stream);
+    }
 }
 
 /* Print information from the combine pass on dump_file.  */
@@ -993,6 +1242,57 @@ enable_rtl_dump_file (void)
 {
   gcc::dump_manager *dumps = g->get_dumps ();
   int num_enabled =
-    dumps->dump_enable_all (TDF_RTL | TDF_DETAILS | TDF_BLOCKS, NULL);
+    dumps->dump_enable_all (DK_rtl, dump_flags_t (TDF_DETAILS) | TDF_BLOCKS,
+			    NULL);
   return num_enabled > 0;
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Verify that the dump_location_t constructors capture the source location
+   at which they were called (provided that the build compiler is sufficiently
+   recent).  */
+
+static void
+test_impl_location ()
+{
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+  /* Default ctor.  */
+  {
+    dump_location_t loc;
+    const int expected_line = __LINE__ - 1;
+    ASSERT_STR_CONTAINS (loc.get_impl_location ().m_file, "dumpfile.c");
+    ASSERT_EQ (loc.get_impl_location ().m_line, expected_line);
+  }
+
+  /* Constructing from a gimple.  */
+  {
+    dump_location_t loc ((gimple *)NULL);
+    const int expected_line = __LINE__ - 1;
+    ASSERT_STR_CONTAINS (loc.get_impl_location ().m_file, "dumpfile.c");
+    ASSERT_EQ (loc.get_impl_location ().m_line, expected_line);
+  }
+
+  /* Constructing from an rtx_insn.  */
+  {
+    dump_location_t loc ((rtx_insn *)NULL);
+    const int expected_line = __LINE__ - 1;
+    ASSERT_STR_CONTAINS (loc.get_impl_location ().m_file, "dumpfile.c");
+    ASSERT_EQ (loc.get_impl_location ().m_line, expected_line);
+  }
+#endif
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+dumpfile_c_tests ()
+{
+  test_impl_location ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */

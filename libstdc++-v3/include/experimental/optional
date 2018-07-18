@@ -1,6 +1,6 @@
 // <optional> -*- C++ -*-
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,9 +41,7 @@
  * between different GCC releases </STRONG> for these features.
  */
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <utility>
 #include <type_traits>
@@ -57,12 +55,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   /**
    * @defgroup optional Optional values
    * @ingroup experimental
@@ -134,6 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __throw_bad_optional_access(const char* __s)
   { _GLIBCXX_THROW_OR_ABORT(bad_optional_access(__s)); }
 
+#ifndef __cpp_lib_addressof_constexpr
   template<typename _Tp, typename = void>
     struct _Has_addressof_mem : std::false_type { };
 
@@ -170,16 +169,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     * overloaded addressof operator (unary operator&), in which case the call
     * will not be a constant expression.
     */
-  template<typename _Tp, enable_if_t<!_Has_addressof<_Tp>::value, int>...>
-    constexpr _Tp* __constexpr_addressof(_Tp& __t)
+  template<typename _Tp>
+    constexpr
+    enable_if_t<!_Has_addressof<_Tp>::value, _Tp*>
+    __constexpr_addressof(_Tp& __t)
     { return &__t; }
 
   /**
     * @brief Fallback overload that defers to __addressof.
     */
-  template<typename _Tp, enable_if_t<_Has_addressof<_Tp>::value, int>...>
-    inline _Tp* __constexpr_addressof(_Tp& __t)
+  template<typename _Tp>
+    inline
+    enable_if_t<_Has_addressof<_Tp>::value, _Tp*>
+    __constexpr_addressof(_Tp& __t)
     { return std::__addressof(__t); }
+#endif // __cpp_lib_addressof_constexpr
 
   /**
     * @brief Class template that holds the necessary state for @ref optional
@@ -684,7 +688,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       swap(optional& __other)
       noexcept(is_nothrow_move_constructible<_Tp>()
-               && noexcept(swap(declval<_Tp&>(), declval<_Tp&>())))
+               && __is_nothrow_swappable<_Tp>::value)
       {
         using std::swap;
 
@@ -705,7 +709,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // [X.Y.4.5] Observers.
       constexpr const _Tp*
       operator->() const
-      { return __constexpr_addressof(this->_M_get()); }
+      {
+#ifndef __cpp_lib_addressof_constexpr
+	return __constexpr_addressof(this->_M_get());
+#else
+	return std::__addressof(this->_M_get());
+#endif
+      }
 
       _Tp*
       operator->()
@@ -968,9 +978,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return optional<decay_t<_Tp>> { std::forward<_Tp>(__t) }; }
 
   // @} group optional
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v1
-}
+} // namespace experimental
 
   // [X.Y.12]
   template<typename _Tp>
@@ -989,7 +998,9 @@ _GLIBCXX_END_NAMESPACE_VERSION
         return __t ? hash<_Tp> {}(*__t) : __magic_disengaged_hash;
       }
     };
-}
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
 
 #endif // C++14
 

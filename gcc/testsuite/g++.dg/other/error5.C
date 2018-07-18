@@ -7,7 +7,7 @@ template <typename T> struct S {
 };
 
 template <typename T> struct S2 : S<T> {
-    using S<T>::operator typename S<T>::I*; // { dg-error "operator S\\<int\\>" "" }
+    using S<T>::operator typename S<T>::I*; // { dg-error "operator S\\<int\\>" }
 };
 
-template struct S2<int>;  // { dg-message "required" "" }
+template struct S2<int>;  // { dg-message "required" }

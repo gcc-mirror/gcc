@@ -19,7 +19,7 @@ module m
 contains
   subroutine fini(x)
      type(t) :: x
-     if (cnt == -1) call abort ()
+     if (cnt == -1) STOP 1
      cnt = cnt + 1
   end subroutine fini
 end module m
@@ -33,8 +33,8 @@ end
 
 ! { dg-final { scan-tree-dump-times "if \\(y.aa != 0B\\)" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "if \\(y.cc._data != 0B\\)" 2 "original" } }
-! { dg-final { scan-tree-dump-times "if \\(\\(struct t\\\[0:\\\] . restrict\\) y.bb.data != 0B\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "if \\(\\(struct t\\\[0:\\\] . restrict\\) y.dd._data.data != 0B\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "if \\(\\(struct t\\\[0:\\\] . restrict\\) y.bb.data != 0B\\)" 2 "original" } }
+! { dg-final { scan-tree-dump-times "if \\(\\(struct t\\\[0:\\\] . restrict\\) y.dd._data.data != 0B\\)" 2 "original" } }
 
 ! { dg-final { scan-tree-dump-times "desc.\[0-9\]+.data = \\(void . restrict\\) y.aa;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "desc.\[0-9\]+.data = \\(void . restrict\\) y.cc._data;" 1 "original" } }

@@ -14,27 +14,27 @@ do n=1,ibits
    i1=-1
    call mvbits(1_1, 0,n,i1,0)
    j1=-1-2_1**n+2
-   if(i1.ne.j1)call abort
+   if(i1.ne.j1)STOP 1
 enddo
 ibits=bit_size(1_2)
 do n=1,ibits
    i2=-1
    call mvbits(1_2, 0,n,i2,0)
    j2=-1-2_2**n+2
-   if(i2.ne.j2)call abort
+   if(i2.ne.j2)STOP 2
 enddo
 ibits=bit_size(1_4)
 do n=1,ibits
    i4=-1
    call mvbits(1_4, 0,n,i4,0)
    j4=-1-2_4**n+2
-   if(i4.ne.j4)call abort
+   if(i4.ne.j4)STOP 3
 enddo
 ibits=bit_size(1_8)
 do n=1,ibits
    i8=-1
    call mvbits(1_8, 0,n,i8,0)
    j8=-1-2_8**n+2
-   if(i8.ne.j8)call abort
+   if(i8.ne.j8)STOP 4
 enddo
 end

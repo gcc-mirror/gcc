@@ -1,5 +1,5 @@
 /* DDG - Data Dependence Graph implementation.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Ayal Zaks and Mustafa Hagog <zaks,mustafa@il.ibm.com>
 
 This file is part of GCC.
@@ -295,10 +295,13 @@ add_cross_iteration_register_deps (ddg_ptr g, df_ref last_def)
   /* Create inter-loop true dependences and anti dependences.  */
   for (r_use = DF_REF_CHAIN (last_def); r_use != NULL; r_use = r_use->next)
     {
-      rtx_insn *use_insn = DF_REF_INSN (r_use->ref);
-
-      if (BLOCK_FOR_INSN (use_insn) != g->bb)
+      if (DF_REF_BB (r_use->ref) != g->bb)
 	continue;
+
+      gcc_assert (!DF_REF_IS_ARTIFICIAL (r_use->ref)
+		  && DF_REF_INSN_INFO (r_use->ref) != NULL);
+
+      rtx_insn *use_insn = DF_REF_INSN (r_use->ref);
 
       /* ??? Do not handle uses with DF_REF_IN_NOTE notes.  */
       use_node = get_node_of_insn (g, use_insn);
@@ -1081,16 +1084,15 @@ free_ddg_all_sccs (ddg_all_sccs_ptr all_sccs)
 int
 find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 {
-  int answer;
   int change;
   unsigned int u = 0;
   int num_nodes = g->num_nodes;
   sbitmap_iterator sbi;
 
-  sbitmap workset = sbitmap_alloc (num_nodes);
-  sbitmap reachable_from = sbitmap_alloc (num_nodes);
-  sbitmap reach_to = sbitmap_alloc (num_nodes);
-  sbitmap tmp = sbitmap_alloc (num_nodes);
+  auto_sbitmap workset (num_nodes);
+  auto_sbitmap reachable_from (num_nodes);
+  auto_sbitmap reach_to (num_nodes);
+  auto_sbitmap tmp (num_nodes);
 
   bitmap_copy (reachable_from, from);
   bitmap_copy (tmp, from);
@@ -1150,12 +1152,7 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 	}
     }
 
-  answer = bitmap_and (result, reachable_from, reach_to);
-  sbitmap_free (workset);
-  sbitmap_free (reachable_from);
-  sbitmap_free (reach_to);
-  sbitmap_free (tmp);
-  return answer;
+  return bitmap_and (result, reachable_from, reach_to);
 }
 
 
@@ -1195,10 +1192,9 @@ longest_simple_path (struct ddg * g, int src, int dest, sbitmap nodes)
   int i;
   unsigned int u = 0;
   int change = 1;
-  int result;
   int num_nodes = g->num_nodes;
-  sbitmap workset = sbitmap_alloc (num_nodes);
-  sbitmap tmp = sbitmap_alloc (num_nodes);
+  auto_sbitmap workset (num_nodes);
+  auto_sbitmap tmp (num_nodes);
 
 
   /* Data will hold the distance of the longest path found so far from
@@ -1224,10 +1220,7 @@ longest_simple_path (struct ddg * g, int src, int dest, sbitmap nodes)
 	  change |= update_dist_to_successors (u_node, nodes, tmp);
 	}
     }
-  result = g->nodes[dest].aux.count;
-  sbitmap_free (workset);
-  sbitmap_free (tmp);
-  return result;
+  return g->nodes[dest].aux.count;
 }
 
 #endif /* INSN_SCHEDULING */

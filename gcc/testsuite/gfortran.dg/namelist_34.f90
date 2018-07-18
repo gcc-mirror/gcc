@@ -1,7 +1,7 @@
 ! { dg-do compile }
-!
+! { dg-options -std=f95 }
 ! PR fortran/32905 - accepts types with ultimate POINTER components
-!
+! updated for PR78659
 MODULE types
   type :: tp3
     real :: x
@@ -22,7 +22,7 @@ MODULE nml
 USE types
    type(tp1) :: t1
    type(tp3) :: t3
-
-   namelist /a/ t1    ! { dg-error "has ALLOCATABLE or POINTER components and thus requires a defined input/output" }
-   namelist /b/ t3    ! { dg-error "has ALLOCATABLE or POINTER components and thus requires a defined input/output" }
+! The following are allowed under f2003.
+   namelist /a/ t1    ! { dg-error "with ALLOCATABLE or POINTER components" }
+   namelist /b/ t3    ! { dg-error "with ALLOCATABLE or POINTER components" }
 END MODULE

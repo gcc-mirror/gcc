@@ -298,13 +298,6 @@ func notSpace(r rune) bool {
 	return !isSpace(r)
 }
 
-// SkipSpace provides Scan methods the ability to skip space and newline
-// characters in keeping with the current scanning mode set by format strings
-// and Scan/Scanln.
-func (s *ss) SkipSpace() {
-	s.skipSpace(false)
-}
-
 // readRune is a structure to enable reading UTF-8 encoded code points
 // from an io.Reader. It is used if the Reader given to the scanner does
 // not already implement io.RuneScanner.
@@ -421,8 +414,10 @@ func (s *ss) free(old ssave) {
 	ssFree.Put(s)
 }
 
-// skipSpace skips spaces and maybe newlines.
-func (s *ss) skipSpace(stopAtNewline bool) {
+// SkipSpace provides Scan methods the ability to skip space and newline
+// characters in keeping with the current scanning mode set by format strings
+// and Scan/Scanln.
+func (s *ss) SkipSpace() {
 	for {
 		r := s.getRune()
 		if r == eof {
@@ -432,9 +427,6 @@ func (s *ss) skipSpace(stopAtNewline bool) {
 			continue
 		}
 		if r == '\n' {
-			if stopAtNewline {
-				break
-			}
 			if s.nlIsSpace {
 				continue
 			}
@@ -453,7 +445,7 @@ func (s *ss) skipSpace(stopAtNewline bool) {
 // newlines are treated as spaces.
 func (s *ss) token(skipSpace bool, f func(rune) bool) []byte {
 	if skipSpace {
-		s.skipSpace(false)
+		s.SkipSpace()
 	}
 	// read until white space or newline
 	for {
@@ -537,7 +529,7 @@ func (s *ss) okVerb(verb rune, okVerbs, typ string) bool {
 
 // scanBool returns the value of the boolean represented by the next token.
 func (s *ss) scanBool(verb rune) bool {
-	s.skipSpace(false)
+	s.SkipSpace()
 	s.notEOF()
 	if !s.okVerb(verb, "tv", "boolean") {
 		return false
@@ -641,7 +633,7 @@ func (s *ss) scanInt(verb rune, bitSize int) int64 {
 	if verb == 'c' {
 		return s.scanRune(bitSize)
 	}
-	s.skipSpace(false)
+	s.SkipSpace()
 	s.notEOF()
 	base, digits := s.getBase(verb)
 	haveDigits := false
@@ -674,7 +666,7 @@ func (s *ss) scanUint(verb rune, bitSize int) uint64 {
 	if verb == 'c' {
 		return uint64(s.scanRune(bitSize))
 	}
-	s.skipSpace(false)
+	s.SkipSpace()
 	s.notEOF()
 	base, digits := s.getBase(verb)
 	haveDigits := false
@@ -795,7 +787,7 @@ func (s *ss) scanComplex(verb rune, n int) complex128 {
 	if !s.okVerb(verb, floatVerbs, "complex") {
 		return 0
 	}
-	s.skipSpace(false)
+	s.SkipSpace()
 	s.notEOF()
 	sreal, simag := s.complexTokens()
 	real := s.convertFloat(sreal, n/2)
@@ -809,7 +801,7 @@ func (s *ss) convertString(verb rune) (str string) {
 	if !s.okVerb(verb, "svqxX", "string") {
 		return ""
 	}
-	s.skipSpace(false)
+	s.SkipSpace()
 	s.notEOF()
 	switch verb {
 	case 'q':
@@ -973,13 +965,13 @@ func (s *ss) scanOne(verb rune, arg interface{}) {
 	// scan in high precision and convert, in order to preserve the correct error condition.
 	case *float32:
 		if s.okVerb(verb, floatVerbs, "float32") {
-			s.skipSpace(false)
+			s.SkipSpace()
 			s.notEOF()
 			*v = float32(s.convertFloat(s.floatToken(), 32))
 		}
 	case *float64:
 		if s.okVerb(verb, floatVerbs, "float64") {
-			s.skipSpace(false)
+			s.SkipSpace()
 			s.notEOF()
 			*v = s.convertFloat(s.floatToken(), 64)
 		}
@@ -1017,7 +1009,7 @@ func (s *ss) scanOne(verb rune, arg interface{}) {
 				v.Index(i).SetUint(uint64(str[i]))
 			}
 		case reflect.Float32, reflect.Float64:
-			s.skipSpace(false)
+			s.SkipSpace()
 			s.notEOF()
 			v.SetFloat(s.convertFloat(s.floatToken(), v.Type().Bits()))
 		case reflect.Complex64, reflect.Complex128:
@@ -1075,6 +1067,58 @@ func (s *ss) doScan(a []interface{}) (numProcessed int, err error) {
 func (s *ss) advance(format string) (i int) {
 	for i < len(format) {
 		fmtc, w := utf8.DecodeRuneInString(format[i:])
+
+		// Space processing.
+		// In the rest of this comment "space" means spaces other than newline.
+		// Newline in the format matches input of zero or more spaces and then newline or end-of-input.
+		// Spaces in the format before the newline are collapsed into the newline.
+		// Spaces in the format after the newline match zero or more spaces after the corresponding input newline.
+		// Other spaces in the format match input of one or more spaces or end-of-input.
+		if isSpace(fmtc) {
+			newlines := 0
+			trailingSpace := false
+			for isSpace(fmtc) && i < len(format) {
+				if fmtc == '\n' {
+					newlines++
+					trailingSpace = false
+				} else {
+					trailingSpace = true
+				}
+				i += w
+				fmtc, w = utf8.DecodeRuneInString(format[i:])
+			}
+			for j := 0; j < newlines; j++ {
+				inputc := s.getRune()
+				for isSpace(inputc) && inputc != '\n' {
+					inputc = s.getRune()
+				}
+				if inputc != '\n' && inputc != eof {
+					s.errorString("newline in format does not match input")
+				}
+			}
+			if trailingSpace {
+				inputc := s.getRune()
+				if newlines == 0 {
+					// If the trailing space stood alone (did not follow a newline),
+					// it must find at least one space to consume.
+					if !isSpace(inputc) && inputc != eof {
+						s.errorString("expected space in input to match format")
+					}
+					if inputc == '\n' {
+						s.errorString("newline in input does not match format")
+					}
+				}
+				for isSpace(inputc) && inputc != '\n' {
+					inputc = s.getRune()
+				}
+				if inputc != eof {
+					s.UnreadRune()
+				}
+			}
+			continue
+		}
+
+		// Verbs.
 		if fmtc == '%' {
 			// % at end of string is an error.
 			if i+w == len(format) {
@@ -1087,48 +1131,8 @@ func (s *ss) advance(format string) (i int) {
 			}
 			i += w // skip the first %
 		}
-		sawSpace := false
-		wasNewline := false
-		// Skip spaces in format but absorb at most one newline.
-		for isSpace(fmtc) && i < len(format) {
-			if fmtc == '\n' {
-				if wasNewline { // Already saw one; stop here.
-					break
-				}
-				wasNewline = true
-			}
-			sawSpace = true
-			i += w
-			fmtc, w = utf8.DecodeRuneInString(format[i:])
-		}
-		if sawSpace {
-			// There was space in the format, so there should be space
-			// in the input.
-			inputc := s.getRune()
-			if inputc == eof {
-				return
-			}
-			if !isSpace(inputc) {
-				// Space in format but not in input.
-				s.errorString("expected space in input to match format")
-			}
-			// Skip spaces but stop at newline.
-			for inputc != '\n' && isSpace(inputc) {
-				inputc = s.getRune()
-			}
-			if inputc == '\n' {
-				if !wasNewline {
-					s.errorString("newline in input does not match format")
-				}
-				// We've reached a newline, stop now; don't read further.
-				return
-			}
-			s.UnreadRune()
-			if wasNewline {
-				s.errorString("newline in format does not match input")
-			}
-			continue
-		}
+
+		// Literals.
 		inputc := s.mustReadRune()
 		if fmtc != inputc {
 			s.UnreadRune()

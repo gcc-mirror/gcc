@@ -1,5 +1,5 @@
 /* Natural loop functions
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -114,7 +114,8 @@ struct GTY ((chain_next ("%h.next"))) control_iv {
 
 /* Structure to hold information for each natural loop.  */
 struct GTY ((chain_next ("%h.next"))) loop {
-  /* Index into loops array.  */
+  /* Index into loops array.  Note indices will never be reused after loop
+     is destroyed.  */
   int num;
 
   /* Number of loop insns.  */
@@ -167,21 +168,6 @@ struct GTY ((chain_next ("%h.next"))) loop {
      nb_iterations.  */
   widest_int nb_iterations_estimate;
 
-  bool any_upper_bound;
-  bool any_estimate;
-  bool any_likely_upper_bound;
-
-  /* True if the loop can be parallel.  */
-  bool can_be_parallel;
-
-  /* True if -Waggressive-loop-optimizations warned about this loop
-     already.  */
-  bool warned_aggressive_loop_optimizations;
-
-  /* An integer estimation of the number of iterations.  Estimate_state
-     describes what is the state of the estimation.  */
-  enum loop_estimation estimate_state;
-
   /* If > 0, an integer, where the user asserted that for any
      I in [ 0, nb_iterations ) and for any J in
      [ I, min ( I + safelen, nb_iterations ) ), the Ith and Jth iterations
@@ -211,19 +197,50 @@ struct GTY ((chain_next ("%h.next"))) loop {
      that might result in hard to track down bugs in niter/scev consumers.  */
   unsigned constraints;
 
+  /* An integer estimation of the number of iterations.  Estimate_state
+     describes what is the state of the estimation.  */
+  ENUM_BITFIELD(loop_estimation) estimate_state : 8;
+
+  unsigned any_upper_bound : 1;
+  unsigned any_estimate : 1;
+  unsigned any_likely_upper_bound : 1;
+
+  /* True if the loop can be parallel.  */
+  unsigned can_be_parallel : 1;
+
+  /* True if -Waggressive-loop-optimizations warned about this loop
+     already.  */
+  unsigned warned_aggressive_loop_optimizations : 1;
+
   /* True if this loop should never be vectorized.  */
-  bool dont_vectorize;
+  unsigned dont_vectorize : 1;
 
   /* True if we should try harder to vectorize this loop.  */
-  bool force_vectorize;
+  unsigned force_vectorize : 1;
 
   /* True if the loop is part of an oacc kernels region.  */
-  bool in_oacc_kernels_region;
+  unsigned in_oacc_kernels_region : 1;
+
+  /* The number of times to unroll the loop.  0 means no information given,
+     just do what we always do.  A value of 1 means do not unroll the loop.
+     A value of USHRT_MAX means unroll with no specific unrolling factor.
+     Other values means unroll with the given unrolling factor.  */
+  unsigned short unroll;
 
   /* For SIMD loops, this is a unique identifier of the loop, referenced
      by IFN_GOMP_SIMD_VF, IFN_GOMP_SIMD_LANE and IFN_GOMP_SIMD_LAST_LANE
      builtins.  */
   tree simduid;
+
+  /* In loop optimization, it's common to generate loops from the original
+     loop.  This field records the index of the original loop which can be
+     used to track the original loop from newly generated loops.  This can
+     be done by calling function get_loop (cfun, orig_loop_num).  Note the
+     original loop could be destroyed for various reasons thus no longer
+     exists, as a result, function call to get_loop returns NULL pointer.
+     In this case, this field should not be used and needs to be cleared
+     whenever possible.  */
+  int orig_loop_num;
 
   /* Upper bound on number of iterations of a loop.  */
   struct nb_iter_bound *bounds;
@@ -322,9 +339,11 @@ bool mark_irreducible_loops (void);
 void release_recorded_exits (function *);
 void record_loop_exits (void);
 void rescan_loop_exit (edge, bool, bool);
+void sort_sibling_loops (function *);
 
 /* Loop data structure manipulation/querying.  */
-extern void flow_loop_tree_node_add (struct loop *, struct loop *);
+extern void flow_loop_tree_node_add (struct loop *, struct loop *,
+				     struct loop * = NULL);
 extern void flow_loop_tree_node_remove (struct loop *);
 extern bool flow_loop_nested_p	(const struct loop *, const struct loop *);
 extern bool flow_bb_inside_loop_p (const struct loop *, const_basic_block);
@@ -338,7 +357,7 @@ extern bool loop_exit_edge_p (const struct loop *, const_edge);
 extern bool loop_exits_to_bb_p (struct loop *, basic_block);
 extern bool loop_exits_from_bb_p (struct loop *, basic_block);
 extern void mark_loop_exit_edges (void);
-extern location_t get_loop_location (struct loop *loop);
+extern dump_user_location_t get_loop_location (struct loop *loop);
 
 /* Loops & cfg manipulation.  */
 extern basic_block *get_loop_body (const struct loop *);
@@ -369,7 +388,7 @@ extern void verify_loop_structure (void);
 /* Loop analysis.  */
 extern bool just_once_each_iteration_p (const struct loop *, const_basic_block);
 gcov_type expected_loop_iterations_unbounded (const struct loop *,
-					      bool *read_profile_p = NULL);
+					      bool *read_profile_p = NULL, bool by_profile_only = false);
 extern unsigned expected_loop_iterations (struct loop *);
 extern rtx doloop_condition_get (rtx_insn *);
 
@@ -410,10 +429,10 @@ struct rtx_iv
   rtx delta, mult;
 
   /* The mode it is extended to.  */
-  machine_mode extend_mode;
+  scalar_int_mode extend_mode;
 
   /* The mode the variable iterates in.  */
-  machine_mode mode;
+  scalar_int_mode mode;
 
   /* Whether the first iteration needs to be handled specially.  */
   unsigned first_special : 1;
@@ -454,19 +473,19 @@ struct GTY(()) niter_desc
   bool signed_p;
 
   /* The mode in that niter_expr should be computed.  */
-  machine_mode mode;
+  scalar_int_mode mode;
 
   /* The number of iterations of the loop.  */
   rtx niter_expr;
 };
 
 extern void iv_analysis_loop_init (struct loop *);
-extern bool iv_analyze (rtx_insn *, rtx, struct rtx_iv *);
+extern bool iv_analyze (rtx_insn *, scalar_int_mode, rtx, struct rtx_iv *);
 extern bool iv_analyze_result (rtx_insn *, rtx, struct rtx_iv *);
-extern bool iv_analyze_expr (rtx_insn *, rtx, machine_mode,
+extern bool iv_analyze_expr (rtx_insn *, scalar_int_mode, rtx,
 			     struct rtx_iv *);
 extern rtx get_iv_value (struct rtx_iv *, rtx);
-extern bool biv_p (rtx_insn *, rtx);
+extern bool biv_p (rtx_insn *, scalar_int_mode, rtx);
 extern void find_simple_exit (struct loop *, struct niter_desc *);
 extern void iv_analysis_done (void);
 
@@ -748,7 +767,7 @@ loop_iterator::~loop_iterator ()
        (LOOP) = li.next ())
 
 #define FOR_EACH_LOOP_FN(FN, LOOP, FLAGS) \
-  for (loop_iterator li(fn, &(LOOP), FLAGS); \
+  for (loop_iterator li(FN, &(LOOP), FLAGS); \
        (LOOP); \
        (LOOP) = li.next ())
 

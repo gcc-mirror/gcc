@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { ! { clmcpu } } } */
 /* { dg-options "-mcpu=nps400 -O2 -mbitops" } */
 
 struct { int a: 23, b: 9; } foo;

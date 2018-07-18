@@ -9,14 +9,14 @@ extern void* realloc (void*, size_t);
 struct vtable {
   void* (* _malloc) (size_t);
   void (* _free) (void*);
-  void* (* _realloc) (void*, size_t);
+  void* (* _realloc) (void*, size_t); /* { dg-line vtable_realloc } */
 };
 
 struct vtable mtable = {
   malloc,
   free
-}; /* { dg-warning "missing initializer" "warning regression" { target *-*-* } {18} } */
-   /* { dg-message "declared here" "warning regression 2" { target *-*-* } {12} } */
+}; /* { dg-warning "missing initializer" "warning regression" } */
+   /* { dg-message "declared here" "warning regression 2" { target *-*-* } vtable_realloc } */
 
 /* With designated initializers, we assume you meant to leave out the
    initialization of any blank fields.  */

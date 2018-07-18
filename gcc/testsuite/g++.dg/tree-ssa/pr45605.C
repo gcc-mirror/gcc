@@ -15,7 +15,11 @@ struct D : public B {
         } o; 
 
         struct Raiser { 
-            Raiser()  throw( int ) {throw 1;}; 
+            Raiser()
+#if __cplusplus <= 201402L
+	    throw( int )			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+	    {throw 1;}; 
         } raiser; 
       }; 
 }; 
@@ -33,4 +37,4 @@ int main() {
 
 
 /* We should devirtualize call to D::Run */
-/* { dg-final { scan-tree-dump-times "D::Run \\(" 1 "fre1" } } */
+/* { dg-final { scan-tree-dump-times "D::Run \\(" 3 "fre1" } } */

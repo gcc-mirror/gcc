@@ -96,10 +96,11 @@ type Context interface {
 	// a Done channel for cancelation.
 	Done() <-chan struct{}
 
-	// Err returns a non-nil error value after Done is closed. Err returns
-	// Canceled if the context was canceled or DeadlineExceeded if the
-	// context's deadline passed. No other values for Err are defined.
-	// After Done is closed, successive calls to Err return the same value.
+	// If Done is not yet closed, Err returns nil.
+	// If Done is closed, Err returns a non-nil error explaining why:
+	// Canceled if the context was canceled
+	// or DeadlineExceeded if the context's deadline passed.
+	// After Err returns a non-nil error, successive calls to Err return the same error.
 	Err() error
 
 	// Value returns the value associated with this context for key, or nil
@@ -135,7 +136,7 @@ type Context interface {
 	// 	// userKey is the key for user.User values in Contexts. It is
 	// 	// unexported; clients use user.NewContext and user.FromContext
 	// 	// instead of using this key directly.
-	// 	var userKey key = 0
+	// 	var userKey key
 	//
 	// 	// NewContext returns a new Context that carries value u.
 	// 	func NewContext(ctx context.Context, u *User) context.Context {
@@ -159,9 +160,9 @@ var DeadlineExceeded error = deadlineExceededError{}
 
 type deadlineExceededError struct{}
 
-func (deadlineExceededError) Error() string { return "context deadline exceeded" }
-
-func (deadlineExceededError) Timeout() bool { return true }
+func (deadlineExceededError) Error() string   { return "context deadline exceeded" }
+func (deadlineExceededError) Timeout() bool   { return true }
+func (deadlineExceededError) Temporary() bool { return true }
 
 // An emptyCtx is never canceled, has no values, and has no deadline. It is not
 // struct{}, since vars of this type must have distinct addresses.
@@ -234,10 +235,7 @@ func WithCancel(parent Context) (ctx Context, cancel CancelFunc) {
 
 // newCancelCtx returns an initialized cancelCtx.
 func newCancelCtx(parent Context) cancelCtx {
-	return cancelCtx{
-		Context: parent,
-		done:    make(chan struct{}),
-	}
+	return cancelCtx{Context: parent}
 }
 
 // propagateCancel arranges for child to be canceled when parent is.
@@ -252,9 +250,9 @@ func propagateCancel(parent Context, child canceler) {
 			child.cancel(false, p.err)
 		} else {
 			if p.children == nil {
-				p.children = make(map[canceler]bool)
+				p.children = make(map[canceler]struct{})
 			}
-			p.children[child] = true
+			p.children[child] = struct{}{}
 		}
 		p.mu.Unlock()
 	} else {
@@ -306,20 +304,32 @@ type canceler interface {
 	Done() <-chan struct{}
 }
 
+// closedchan is a reusable closed channel.
+var closedchan = make(chan struct{})
+
+func init() {
+	close(closedchan)
+}
+
 // A cancelCtx can be canceled. When canceled, it also cancels any children
 // that implement canceler.
 type cancelCtx struct {
 	Context
 
-	done chan struct{} // closed by the first cancel call.
-
-	mu       sync.Mutex
-	children map[canceler]bool // set to nil by the first cancel call
-	err      error             // set to non-nil by the first cancel call
+	mu       sync.Mutex            // protects following fields
+	done     chan struct{}         // created lazily, closed by first cancel call
+	children map[canceler]struct{} // set to nil by the first cancel call
+	err      error                 // set to non-nil by the first cancel call
 }
 
 func (c *cancelCtx) Done() <-chan struct{} {
-	return c.done
+	c.mu.Lock()
+	if c.done == nil {
+		c.done = make(chan struct{})
+	}
+	d := c.done
+	c.mu.Unlock()
+	return d
 }
 
 func (c *cancelCtx) Err() error {
@@ -344,7 +354,11 @@ func (c *cancelCtx) cancel(removeFromParent bool, err error) {
 		return // already canceled
 	}
 	c.err = err
-	close(c.done)
+	if c.done == nil {
+		c.done = closedchan
+	} else {
+		close(c.done)
+	}
 	for child := range c.children {
 		// NOTE: acquiring the child's lock while holding parent's lock.
 		child.cancel(false, err)
@@ -366,25 +380,25 @@ func (c *cancelCtx) cancel(removeFromParent bool, err error) {
 //
 // Canceling this context releases resources associated with it, so code should
 // call cancel as soon as the operations running in this Context complete.
-func WithDeadline(parent Context, deadline time.Time) (Context, CancelFunc) {
-	if cur, ok := parent.Deadline(); ok && cur.Before(deadline) {
+func WithDeadline(parent Context, d time.Time) (Context, CancelFunc) {
+	if cur, ok := parent.Deadline(); ok && cur.Before(d) {
 		// The current deadline is already sooner than the new one.
 		return WithCancel(parent)
 	}
 	c := &timerCtx{
 		cancelCtx: newCancelCtx(parent),
-		deadline:  deadline,
+		deadline:  d,
 	}
 	propagateCancel(parent, c)
-	d := deadline.Sub(time.Now())
-	if d <= 0 {
+	dur := time.Until(d)
+	if dur <= 0 {
 		c.cancel(true, DeadlineExceeded) // deadline has already passed
 		return c, func() { c.cancel(true, Canceled) }
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.err == nil {
-		c.timer = time.AfterFunc(d, func() {
+		c.timer = time.AfterFunc(dur, func() {
 			c.cancel(true, DeadlineExceeded)
 		})
 	}
@@ -406,7 +420,7 @@ func (c *timerCtx) Deadline() (deadline time.Time, ok bool) {
 }
 
 func (c *timerCtx) String() string {
-	return fmt.Sprintf("%v.WithDeadline(%s [%s])", c.cancelCtx.Context, c.deadline, c.deadline.Sub(time.Now()))
+	return fmt.Sprintf("%v.WithDeadline(%s [%s])", c.cancelCtx.Context, c.deadline, time.Until(c.deadline))
 }
 
 func (c *timerCtx) cancel(removeFromParent bool, err error) {
@@ -443,7 +457,13 @@ func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
 // Use context Values only for request-scoped data that transits processes and
 // APIs, not for passing optional parameters to functions.
 //
-// The provided key must be comparable.
+// The provided key must be comparable and should not be of type
+// string or any other built-in type to avoid collisions between
+// packages using context. Users of WithValue should define their own
+// types for keys. To avoid allocating when assigning to an
+// interface{}, context keys often have concrete type
+// struct{}. Alternatively, exported context key variables' static
+// type should be a pointer or interface.
 func WithValue(parent Context, key, val interface{}) Context {
 	if key == nil {
 		panic("nil key")

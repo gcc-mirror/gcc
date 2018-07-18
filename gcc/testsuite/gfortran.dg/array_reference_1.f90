@@ -20,7 +20,7 @@ contains
     b=conjg (transpose (a))
     c=transpose (a)
     c=conjg (c)
-    if (any (b .ne. c)) call abort ()
+    if (any (b .ne. c)) STOP 1
   end subroutine PR31994
   subroutine PR31994_comment6
     implicit none
@@ -30,6 +30,6 @@ contains
     b=int (transpose(a))
     c = int (a)
     c = transpose (c)
-    if (any (b .ne. c)) call abort ()
+    if (any (b .ne. c)) STOP 2
   end subroutine PR31994_comment6
 END program main

@@ -16,5 +16,5 @@ void
 foo (bool b)
 {
   b ? c : a;			// { dg-error "?:" }
-  // { dg-message "ambiguous" "" { target *-*-* } 18 }
+  // { dg-message "ambiguous" "" { target *-*-* } .-1 }
 }

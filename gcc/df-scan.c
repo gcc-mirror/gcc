@@ -1,5 +1,5 @@
 /* Scanning of rtl for dataflow analysis.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "dumpfile.h"
+#include "calls.h"
 
 
 /* The set of hard registers in eliminables[i].from. */
@@ -1161,9 +1162,6 @@ df_insn_rescan_all (void)
   basic_block bb;
   bitmap_iterator bi;
   unsigned int uid;
-  bitmap_head tmp;
-
-  bitmap_initialize (&tmp, &df_bitmap_obstack);
 
   if (df->changeable_flags & DF_NO_INSN_RESCAN)
     {
@@ -1177,15 +1175,15 @@ df_insn_rescan_all (void)
       defer_insn_rescan = true;
     }
 
-  bitmap_copy (&tmp, &df->insns_to_delete);
-  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
+  auto_bitmap tmp (&df_bitmap_obstack);
+  bitmap_copy (tmp, &df->insns_to_delete);
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
 	df_insn_info_delete (uid);
     }
 
-  bitmap_clear (&tmp);
   bitmap_clear (&df->insns_to_delete);
   bitmap_clear (&df->insns_to_rescan);
   bitmap_clear (&df->insns_to_notes_rescan);
@@ -1215,9 +1213,6 @@ df_process_deferred_rescans (void)
   bool defer_insn_rescan = false;
   bitmap_iterator bi;
   unsigned int uid;
-  bitmap_head tmp;
-
-  bitmap_initialize (&tmp, &df_bitmap_obstack);
 
   if (df->changeable_flags & DF_NO_INSN_RESCAN)
     {
@@ -1234,24 +1229,25 @@ df_process_deferred_rescans (void)
   if (dump_file)
     fprintf (dump_file, "starting the processing of deferred insns\n");
 
-  bitmap_copy (&tmp, &df->insns_to_delete);
-  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
+  auto_bitmap tmp (&df_bitmap_obstack);
+  bitmap_copy (tmp, &df->insns_to_delete);
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
 	df_insn_info_delete (uid);
     }
 
-  bitmap_copy (&tmp, &df->insns_to_rescan);
-  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
+  bitmap_copy (tmp, &df->insns_to_rescan);
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
 	df_insn_rescan (insn_info->insn);
     }
 
-  bitmap_copy (&tmp, &df->insns_to_notes_rescan);
-  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
+  bitmap_copy (tmp, &df->insns_to_notes_rescan);
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
@@ -1261,7 +1257,6 @@ df_process_deferred_rescans (void)
   if (dump_file)
     fprintf (dump_file, "ending the processing of deferred insns\n");
 
-  bitmap_clear (&tmp);
   bitmap_clear (&df->insns_to_delete);
   bitmap_clear (&df->insns_to_rescan);
   bitmap_clear (&df->insns_to_notes_rescan);
@@ -2483,7 +2478,7 @@ df_ref_create_structure (enum df_ref_class cl,
 			 int ref_flags)
 {
   df_ref this_ref = NULL;
-  int regno = REGNO (GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg);
+  unsigned int regno = REGNO (GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg);
   struct df_scan_problem_data *problem_data
     = (struct df_scan_problem_data *) df_scan->problem_data;
 
@@ -2629,24 +2624,6 @@ df_ref_record (enum df_ref_class cl,
 }
 
 
-/* A set to a non-paradoxical SUBREG for which the number of word_mode units
-   covered by the outer mode is smaller than that covered by the inner mode,
-   is a read-modify-write operation.
-   This function returns true iff the SUBREG X is such a SUBREG.  */
-
-bool
-df_read_modify_subreg_p (rtx x)
-{
-  unsigned int isize, osize;
-  if (GET_CODE (x) != SUBREG)
-    return false;
-  isize = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
-  osize = GET_MODE_SIZE (GET_MODE (x));
-  return isize > osize
-	 && isize > REGMODE_NATURAL_SIZE (GET_MODE (SUBREG_REG (x)));
-}
-
-
 /* Process all the registers defined in the rtx pointed by LOC.
    Autoincrement/decrement definitions will be picked up by df_uses_record.
    Any change here has to be matched in df_find_hard_reg_defs_1.  */
@@ -2702,7 +2679,7 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
     }
   else if (GET_CODE (dst) == SUBREG && REG_P (SUBREG_REG (dst)))
     {
-      if (df_read_modify_subreg_p (dst))
+      if (read_modify_subreg_p (dst))
 	flags |= DF_REF_READ_WRITE | DF_REF_PARTIAL;
 
       flags |= DF_REF_SUBREG;
@@ -2916,7 +2893,7 @@ df_uses_record (struct df_collection_rec *collection_rec,
 	switch (GET_CODE (dst))
 	  {
 	    case SUBREG:
-	      if (df_read_modify_subreg_p (dst))
+	      if (read_modify_subreg_p (dst))
 		{
 		  df_uses_record (collection_rec, &SUBREG_REG (dst),
 				  DF_REF_REG_USE, bb, insn_info,
@@ -3230,17 +3207,6 @@ df_insn_refs_collect (struct df_collection_rec *collection_rec,
   if (CALL_P (insn_info->insn))
     df_get_call_refs (collection_rec, bb, insn_info, flags);
 
-  if (asm_noperands (PATTERN (insn_info->insn)) >= 0)
-    for (unsigned i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (global_regs[i])
-       {
-         /* As with calls, asm statements reference all global regs. */
-         df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-                        NULL, bb, insn_info, DF_REF_REG_USE, flags);
-         df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-                        NULL, bb, insn_info, DF_REF_REG_DEF, flags);
-       }
-
   /* Record other defs.  These should be mostly for DF_REF_REGULAR, so
      that a qsort on the defs is unnecessary in most cases.  */
   df_defs_record (collection_rec,
@@ -3506,6 +3472,14 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
 
   bitmap_clear (entry_block_defs);
 
+  /* For separate shrink-wrapping we use LIVE to analyze which basic blocks
+     need a prologue for some component to be executed before that block,
+     and we do not care about any other registers.  Hence, we do not want
+     any register for any component defined in the entry block, and we can
+     just leave all registers undefined.  */
+  if (df_scan->local_flags & DF_SCAN_EMPTY_ENTRY_EXIT)
+    return;
+
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       if (global_regs[i])
@@ -3534,7 +3508,7 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
 
   /* If the function has an incoming STATIC_CHAIN, it has to show up
      in the entry def set.  */
-  r = targetm.calls.static_chain (current_function_decl, true);
+  r = rtx_for_static_chain (current_function_decl, true);
   if (r && REG_P (r))
     bitmap_set_bit (entry_block_defs, REGNO (r));
 
@@ -3620,14 +3594,13 @@ df_record_entry_block_defs (bitmap entry_block_defs)
 void
 df_update_entry_block_defs (void)
 {
-  bitmap_head refs;
   bool changed = false;
 
-  bitmap_initialize (&refs, &df_bitmap_obstack);
-  df_get_entry_block_def_set (&refs);
+  auto_bitmap refs (&df_bitmap_obstack);
+  df_get_entry_block_def_set (refs);
   if (df->entry_block_defs)
     {
-      if (!bitmap_equal_p (df->entry_block_defs, &refs))
+      if (!bitmap_equal_p (df->entry_block_defs, refs))
 	{
 	  struct df_scan_bb_info *bb_info = df_scan_get_bb_info (ENTRY_BLOCK);
 	  df_ref_chain_delete_du_chain (bb_info->artificial_defs);
@@ -3647,11 +3620,10 @@ df_update_entry_block_defs (void)
 
   if (changed)
     {
-      df_record_entry_block_defs (&refs);
-      bitmap_copy (df->entry_block_defs, &refs);
+      df_record_entry_block_defs (refs);
+      bitmap_copy (df->entry_block_defs, refs);
       df_set_bb_dirty (BASIC_BLOCK_FOR_FN (cfun, ENTRY_BLOCK));
     }
-  bitmap_clear (&refs);
 }
 
 
@@ -3664,6 +3636,14 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
   unsigned int picreg = PIC_OFFSET_TABLE_REGNUM;
 
   bitmap_clear (exit_block_uses);
+
+  /* For separate shrink-wrapping we use LIVE to analyze which basic blocks
+     need an epilogue for some component to be executed after that block,
+     and we do not care about any other registers.  Hence, we do not want
+     any register for any component seen as used in the exit block, and we
+     can just say no registers at all are used.  */
+  if (df_scan->local_flags & DF_SCAN_EMPTY_ENTRY_EXIT)
+    return;
 
   /* Stack pointer is always live at the exit.  */
   bitmap_set_bit (exit_block_uses, STACK_POINTER_REGNUM);
@@ -3788,14 +3768,13 @@ df_record_exit_block_uses (bitmap exit_block_uses)
 void
 df_update_exit_block_uses (void)
 {
-  bitmap_head refs;
   bool changed = false;
 
-  bitmap_initialize (&refs, &df_bitmap_obstack);
-  df_get_exit_block_use_set (&refs);
+  auto_bitmap refs (&df_bitmap_obstack);
+  df_get_exit_block_use_set (refs);
   if (df->exit_block_uses)
     {
-      if (!bitmap_equal_p (df->exit_block_uses, &refs))
+      if (!bitmap_equal_p (df->exit_block_uses, refs))
 	{
 	  struct df_scan_bb_info *bb_info = df_scan_get_bb_info (EXIT_BLOCK);
 	  df_ref_chain_delete_du_chain (bb_info->artificial_uses);
@@ -3815,11 +3794,10 @@ df_update_exit_block_uses (void)
 
   if (changed)
     {
-      df_record_exit_block_uses (&refs);
-      bitmap_copy (df->exit_block_uses,& refs);
+      df_record_exit_block_uses (refs);
+      bitmap_copy (df->exit_block_uses, refs);
       df_set_bb_dirty (BASIC_BLOCK_FOR_FN (cfun, EXIT_BLOCK));
     }
-  bitmap_clear (&refs);
 }
 
 static bool initialized = false;
@@ -4097,23 +4075,30 @@ df_insn_refs_verify (struct df_collection_rec *collection_rec,
                      rtx_insn *insn,
 		     bool abort_if_fail)
 {
-  bool ret1, ret2, ret3, ret4;
+  bool ret1, ret2, ret3;
   unsigned int uid = INSN_UID (insn);
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
 
   df_insn_refs_collect (collection_rec, bb, insn_info);
 
   /* Unfortunately we cannot opt out early if one of these is not
-     right because the marks will not get cleared.  */
+     right and abort_if_fail is set because the marks will not get cleared.  */
   ret1 = df_refs_verify (&collection_rec->def_vec, DF_INSN_UID_DEFS (uid),
 			 abort_if_fail);
+  if (!ret1 && !abort_if_fail)
+    return false;
   ret2 = df_refs_verify (&collection_rec->use_vec, DF_INSN_UID_USES (uid),
 			 abort_if_fail);
+  if (!ret2 && !abort_if_fail)
+    return false;
   ret3 = df_refs_verify (&collection_rec->eq_use_vec, DF_INSN_UID_EQ_USES (uid),
 			 abort_if_fail);
-  ret4 = df_mws_verify (&collection_rec->mw_vec, DF_INSN_UID_MWS (uid),
-		       abort_if_fail);
-  return (ret1 && ret2 && ret3 && ret4);
+  if (!ret3 && !abort_if_fail)
+    return false;
+  if (! df_mws_verify (&collection_rec->mw_vec, DF_INSN_UID_MWS (uid),
+		       abort_if_fail))
+    return false;
+  return (ret1 && ret2 && ret3);
 }
 
 
@@ -4155,24 +4140,21 @@ df_bb_verify (basic_block bb)
 static bool
 df_entry_block_bitmap_verify (bool abort_if_fail)
 {
-  bitmap_head entry_block_defs;
   bool is_eq;
 
-  bitmap_initialize (&entry_block_defs, &df_bitmap_obstack);
-  df_get_entry_block_def_set (&entry_block_defs);
+  auto_bitmap entry_block_defs (&df_bitmap_obstack);
+  df_get_entry_block_def_set (entry_block_defs);
 
-  is_eq = bitmap_equal_p (&entry_block_defs, df->entry_block_defs);
+  is_eq = bitmap_equal_p (entry_block_defs, df->entry_block_defs);
 
   if (!is_eq && abort_if_fail)
     {
       fprintf (stderr, "entry_block_defs = ");
-      df_print_regset (stderr, &entry_block_defs);
+      df_print_regset (stderr, entry_block_defs);
       fprintf (stderr, "df->entry_block_defs = ");
       df_print_regset (stderr, df->entry_block_defs);
       gcc_assert (0);
     }
-
-  bitmap_clear (&entry_block_defs);
 
   return is_eq;
 }
@@ -4184,24 +4166,21 @@ df_entry_block_bitmap_verify (bool abort_if_fail)
 static bool
 df_exit_block_bitmap_verify (bool abort_if_fail)
 {
-  bitmap_head exit_block_uses;
   bool is_eq;
 
-  bitmap_initialize (&exit_block_uses, &df_bitmap_obstack);
-  df_get_exit_block_use_set (&exit_block_uses);
+  auto_bitmap exit_block_uses (&df_bitmap_obstack);
+  df_get_exit_block_use_set (exit_block_uses);
 
-  is_eq = bitmap_equal_p (&exit_block_uses, df->exit_block_uses);
+  is_eq = bitmap_equal_p (exit_block_uses, df->exit_block_uses);
 
   if (!is_eq && abort_if_fail)
     {
       fprintf (stderr, "exit_block_uses = ");
-      df_print_regset (stderr, &exit_block_uses);
+      df_print_regset (stderr, exit_block_uses);
       fprintf (stderr, "df->exit_block_uses = ");
       df_print_regset (stderr, df->exit_block_uses);
       gcc_assert (0);
     }
-
-  bitmap_clear (&exit_block_uses);
 
   return is_eq;
 }
@@ -4215,8 +4194,6 @@ df_scan_verify (void)
 {
   unsigned int i;
   basic_block bb;
-  bitmap_head regular_block_artificial_uses;
-  bitmap_head eh_block_artificial_uses;
 
   if (!df)
     return;
@@ -4237,23 +4214,20 @@ df_scan_verify (void)
   /* (2) There are various bitmaps whose value may change over the
      course of the compilation.  This step recomputes them to make
      sure that they have not slipped out of date.  */
-  bitmap_initialize (&regular_block_artificial_uses, &df_bitmap_obstack);
-  bitmap_initialize (&eh_block_artificial_uses, &df_bitmap_obstack);
+  auto_bitmap regular_block_artificial_uses (&df_bitmap_obstack);
+  auto_bitmap eh_block_artificial_uses (&df_bitmap_obstack);
 
-  df_get_regular_block_artificial_uses (&regular_block_artificial_uses);
-  df_get_eh_block_artificial_uses (&eh_block_artificial_uses);
+  df_get_regular_block_artificial_uses (regular_block_artificial_uses);
+  df_get_eh_block_artificial_uses (eh_block_artificial_uses);
 
-  bitmap_ior_into (&eh_block_artificial_uses,
-		   &regular_block_artificial_uses);
+  bitmap_ior_into (eh_block_artificial_uses,
+		   regular_block_artificial_uses);
 
   /* Check artificial_uses bitmaps didn't change. */
-  gcc_assert (bitmap_equal_p (&regular_block_artificial_uses,
+  gcc_assert (bitmap_equal_p (regular_block_artificial_uses,
 			      &df->regular_block_artificial_uses));
-  gcc_assert (bitmap_equal_p (&eh_block_artificial_uses,
+  gcc_assert (bitmap_equal_p (eh_block_artificial_uses,
 			      &df->eh_block_artificial_uses));
-
-  bitmap_clear (&regular_block_artificial_uses);
-  bitmap_clear (&eh_block_artificial_uses);
 
   /* Verify entry block and exit block. These only verify the bitmaps,
      the refs are verified in df_bb_verify.  */

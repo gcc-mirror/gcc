@@ -6,4 +6,4 @@ namespace N
     template<typename> struct X { };
 }
 
-struct A : N::X { }; // { dg-error "expected class-name" "" }
+struct A : N::X { }; // { dg-error "expected class-name" }

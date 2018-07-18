@@ -98,6 +98,7 @@ main ()
 				  depend(sink: i - 1, j - 2, k - 2 E(m))
 	      if (k <= 4)
 		{
+		  #pragma omp atomic read
 		  l = c[i][j][k + 2];
 		  if (l < 2)
 		    abort ();
@@ -106,12 +107,14 @@ main ()
 	      c[i][j][k] = 2;
 	      if (i >= 4 && j < 7 && k >= 4)
 		{
+		  #pragma omp atomic read
 		  l = c[i - 2][j + 1][k - 4];
 		  if (l < 2)
 		    abort ();
 		}
 	      if (i >= 3 && j >= 4 && k >= 2)
 		{
+		  #pragma omp atomic read
 		  l = c[i - 1][j - 2][k - 2];
 		  if (l < 2)
 		    abort ();

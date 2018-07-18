@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=f2008 -fall-intrinsics" }
+! { dg-options "-std=f2008 " }
 
 ! Check for correct placement (on the stack) of local variables with BLOCK
 ! and recursive container procedures.
@@ -13,7 +13,7 @@ RECURSIVE SUBROUTINE myproc (i)
       INTEGER :: x
       x = i
       IF (i > 0) CALL myproc (i - 1)
-      IF (x /= i) CALL abort ()
+      IF (x /= i) STOP 1
     END BLOCK
     EXIT
   END DO

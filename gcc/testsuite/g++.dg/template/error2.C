@@ -13,16 +13,16 @@ template<class T> struct X
 template<class T >
 struct Derived
 {
-  class Nested : public X<T> // { dg-message "required" "" }
+  class Nested : public X<T> // { dg-message "required" }
   {
   };
   
-  Nested m; // { dg-message "required" "" }
+  Nested m; // { dg-message "required" }
   
   void Foo ();
 };
 
 void Foo (Derived<void> &x)
 {
-  x.Foo (); // { dg-message "required" "" }
+  x.Foo (); // { dg-message "required" }
 }

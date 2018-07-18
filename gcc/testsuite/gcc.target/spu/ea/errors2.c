@@ -60,7 +60,7 @@ struct foo ea_struct3 = {
 
 struct foo ea_struct4 = {
   40,
-  (__ea char *)lm_str,	/* { dg-error "(initializer element is not constant)|(near initialization)" "" } */
+  (__ea char *)lm_str,	/* { dg-error "(initializer element is not constant)|(near initialization)" } */
   41,
 };
 

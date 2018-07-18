@@ -41,7 +41,7 @@ bar (void)
   return k;
 }
 
-/* { dg-final { scan-assembler "\tla\t" } } */
+/* { dg-final { scan-assembler "\tdla\t" } } */
 /* { dg-final { scan-assembler "\t\\.half\t" } } */
 /* { dg-final { scan-assembler-not "%hi\\(\[^)\]*L" } } */
 /* { dg-final { scan-assembler-not "%lo\\(\[^)\]*L" } } */

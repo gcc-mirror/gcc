@@ -58,16 +58,34 @@ struct Egeneric {
 };
 
 struct infinint {
-    void detruit() throw(Egeneric);
-    template<class T> void infinint_from(T a) throw(Egeneric);
-    infinint(long a = 0) throw(Egeneric) {
+    void detruit()
+#if __cplusplus <= 201402L
+    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+    ;
+    template<class T> void infinint_from(T a)
+#if __cplusplus <= 201402L
+    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+    ;
+    infinint(long a = 0)
+#if __cplusplus <= 201402L
+    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+    {
 	try {
 	    infinint_from(a);
 	} catch(Egeneric& e) {
 	    e.stack("infinint::infinint", "long");
 	}
     }
-    ~infinint() throw(Egeneric) {
+    ~infinint()
+#if __cplusplus <= 201402L
+    throw(Egeneric)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#else
+    noexcept(false)
+#endif
+    {
 	try {
 	    detruit();
 	} catch(Egeneric& e) { }

@@ -1,5 +1,5 @@
 /* PR target/56348 */
-/* { dg-do compile { target { ia32 } } } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -fPIC -mfpmath=sse -msse2" } */
 
 typedef unsigned int size_t;

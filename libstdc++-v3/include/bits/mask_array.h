@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- mask_array class.
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -131,13 +131,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _Array<bool> _M_mask;
       const _Array<_Tp>  _M_array;
 
+#if __cplusplus < 201103L
       // not implemented
       mask_array();
+#else
+    public:
+      mask_array() = delete;
+#endif
     };
 
   template<typename _Tp>
-    inline mask_array<_Tp>::mask_array(const mask_array<_Tp>& a)
-    : _M_sz(a._M_sz), _M_mask(a._M_mask), _M_array(a._M_array) {}
+    inline mask_array<_Tp>::mask_array(const mask_array<_Tp>& __a)
+    : _M_sz(__a._M_sz), _M_mask(__a._M_mask), _M_array(__a._M_array) {}
 
   template<typename _Tp>
     inline

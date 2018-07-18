@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options -O2 } */
+/* { dg-options "-O2 -fno-ipa-icf" } */
 
 extern void do_something_usefull();
 /* Check that we finish compiling even if instructed to

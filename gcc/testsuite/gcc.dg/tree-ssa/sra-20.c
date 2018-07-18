@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target int32plus } } */
 /* { dg-options "-O1 -Wall" } */
 /* PR/70013, SRA of constant-pool loads removes initialization of part of d.  */
 #pragma pack (1)

@@ -21,6 +21,13 @@ void seq (void)
 
 int main ()
 {
+#pragma acc kernels num_gangs (32) num_workers (32) vector_length (32)
+  {
+    gang ();
+    worker ();
+    vector ();
+    seq ();
+  }
 
 #pragma acc parallel num_gangs (32) num_workers (32) vector_length (32)
   {

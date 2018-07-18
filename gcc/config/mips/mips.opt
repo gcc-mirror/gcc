@@ -1,6 +1,6 @@
 ; Options for the MIPS port of the compiler
 ;
-; Copyright (C) 2005-2016 Free Software Foundation, Inc.
+; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -388,6 +388,14 @@ mlra
 Target Report Var(mips_lra_flag) Init(1) Save
 Use LRA instead of reload.
 
+mlxc1-sxc1
+Target Report Var(mips_lxc1_sxc1) Init(1)
+Use lwxc1/swxc1/ldxc1/sdxc1 instructions where applicable.
+
+mmadd4
+Target Report Var(mips_madd4) Init(1)
+Use 4-operand madd.s/madd.d and related instructions where applicable.
+
 mtune=
 Target RejectNegative Joined Var(mips_tune_option) ToLower Enum(mips_arch_opt_value)
 -mtune=PROCESSOR	Optimize the output for PROCESSOR.
@@ -398,11 +406,19 @@ Put uninitialized constants in ROM (needs -membedded-data).
 
 mvirt
 Target Report Var(TARGET_VIRT)
-Use Virtualization Application Specific instructions.
+Use Virtualization (VZ) instructions.
 
 mxpa
 Target Report Var(TARGET_XPA)
 Use eXtended Physical Address (XPA) instructions.
+
+mcrc
+Target Report Var(TARGET_CRC)
+Use Cyclic Redundancy Check (CRC) instructions.
+
+mginv
+Target Report Var(TARGET_GINV)
+Use Global INValidate (GINV) instructions.
 
 mvr4130-align
 Target Report Mask(VR4130_ALIGN)

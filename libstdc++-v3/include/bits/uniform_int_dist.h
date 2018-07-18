@@ -1,6 +1,6 @@
 // Class template uniform_int_distribution -*- C++ -*-
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,21 +36,18 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __detail
   {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
     /* Determine whether number is a power of 2.  */
     template<typename _Tp>
       inline bool
       _Power_of_2(_Tp __x)
       {
 	return ((__x - 1) & __x) == 0;
-      };
-_GLIBCXX_END_NAMESPACE_VERSION
+      }
   }
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @brief Uniform discrete distribution for random numbers.
@@ -71,9 +68,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef uniform_int_distribution<_IntType> distribution_type;
 
+	param_type() : param_type(0) { }
+
 	explicit
-	param_type(_IntType __a = 0,
-		   _IntType __b = std::numeric_limits<_IntType>::max())
+	param_type(_IntType __a,
+		   _IntType __b = numeric_limits<_IntType>::max())
 	: _M_a(__a), _M_b(__b)
 	{
 	  __glibcxx_assert(_M_a <= _M_b);
@@ -91,6 +90,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_IntType _M_a;
 	_IntType _M_b;
@@ -100,9 +103,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @brief Constructs a uniform distribution object.
        */
+      uniform_int_distribution() : uniform_int_distribution(0) { }
+
+      /**
+       * @brief Constructs a uniform distribution object.
+       */
       explicit
-      uniform_int_distribution(_IntType __a = 0,
-			   _IntType __b = std::numeric_limits<_IntType>::max())
+      uniform_int_distribution(_IntType __a,
+			       _IntType __b = numeric_limits<_IntType>::max())
       : _M_param(__a, __b)
       { }
 
@@ -362,6 +370,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  while (__f != __t)
 	    *__f++ = __uctype(__urng()) - __urngmin + __param.a();
       }
+
+  // operator!= and operator<< and operator>> are defined in <bits/random.h>
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

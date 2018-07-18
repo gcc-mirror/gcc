@@ -1,6 +1,6 @@
 /* { dg-do run { target { powerpc*-*-linux* powerpc*-ibm-aix* } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
-/* { dg-skip-if "" { powerpc*-*-*spe* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
+/* { dg-skip-if "" { powerpc*-*-*spe* } } */
 /* { dg-require-effective-target ppc_recip_hw } */
 /* { dg-options "-O3 -ftree-vectorize -ffast-math -mrecip -mpowerpc-gfxopt -mpowerpc-gpopt -mpopcntb" } */
 

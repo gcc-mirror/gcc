@@ -27,4 +27,4 @@
   return 20;
 }
 @end /* { dg-warning "incomplete implementation of class .MyObject." } */
-     /* { dg-warning "method definition for .-test3. not found" "" { target *-*-* } 29 } */
+     /* { dg-warning "method definition for .-test3. not found" "" { target *-*-* } .-1 } */

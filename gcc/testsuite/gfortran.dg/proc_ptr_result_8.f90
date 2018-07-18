@@ -37,16 +37,16 @@ procedure(interf_iabs), pointer :: pp
 procedure(foo), pointer :: pp1
 
 x%p => a     ! ok
-if (x%p(0) .ne. loc(foo)) call abort
-if (x%p(1) .ne. loc(iabs)) call abort
+if (x%p(0) .ne. loc(foo)) STOP 1
+if (x%p(1) .ne. loc(iabs)) STOP 2
 
 x%p => a(1)  ! { dg-error "PROCEDURE POINTER mismatch in function result" }
 
 pp => a(1)   ! ok
-if (pp(-99) .ne. iabs(-99)) call abort
+if (pp(-99) .ne. iabs(-99)) STOP 3
 
 pp1 => a(2)   ! ok
-if (pp1(-99) .ne. -iabs(-99)) call abort
+if (pp1(-99) .ne. -iabs(-99)) STOP 4
 
 pp => a  ! { dg-error "PROCEDURE POINTER mismatch in function result" }
 

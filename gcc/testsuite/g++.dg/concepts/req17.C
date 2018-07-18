@@ -1,5 +1,5 @@
 // PR c++/67018
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 template <typename T>
 constexpr bool Val = true;

@@ -1,5 +1,5 @@
 /* Combine stack adjustments.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -208,6 +208,7 @@ no_unhandled_cfa (rtx_insn *insn)
       case REG_CFA_SET_VDRAP:
       case REG_CFA_WINDOW_SAVE:
       case REG_CFA_FLUSH_QUEUE:
+      case REG_CFA_TOGGLE_RA_MANGLE:
 	return false;
       }
 
@@ -507,6 +508,8 @@ combine_stack_adjustments_for_block (basic_block bb)
 	continue;
 
       set = single_set_for_csa (insn);
+      if (set && find_reg_note (insn, REG_STACK_CHECK, NULL_RTX))
+	set = NULL_RTX;
       if (set)
 	{
 	  rtx dest = SET_DEST (set);
@@ -619,11 +622,11 @@ combine_stack_adjustments_for_block (basic_block bb)
 	  if (MEM_P (dest)
 	      && ((STACK_GROWS_DOWNWARD
 		   ? (GET_CODE (XEXP (dest, 0)) == PRE_DEC
-		      && last_sp_adjust
-			 == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (dest)))
+		      && known_eq (last_sp_adjust,
+				   GET_MODE_SIZE (GET_MODE (dest))))
 		   : (GET_CODE (XEXP (dest, 0)) == PRE_INC
-		      && last_sp_adjust
-		         == -(HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (dest))))
+		      && known_eq (-last_sp_adjust,
+				   GET_MODE_SIZE (GET_MODE (dest)))))
 		  || ((STACK_GROWS_DOWNWARD
 		       ? last_sp_adjust >= 0 : last_sp_adjust <= 0)
 		      && GET_CODE (XEXP (dest, 0)) == PRE_MODIFY

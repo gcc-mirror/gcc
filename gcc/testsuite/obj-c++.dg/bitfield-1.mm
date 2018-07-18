@@ -5,7 +5,7 @@
    superclasses should be removed).  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
-/* { dg-options "-Wpadded -Wabi" } */
+/* { dg-options "-Wpadded -Wabi=8" } */
 
 /* Leave blank lines here to keep warnings on the same lines.  */
 
@@ -39,10 +39,10 @@ struct Base_0 { /* { dg-warning "padding struct size to alignment boundary" } */
   signed e: 5;
   unsigned f: 4;
   enum Enum g: 3;
-}
+} /* { dg-line interface_Derived } */
 @end
 
-struct Derived_0 {
+struct Derived_0 { /* { dg-line struct_Derived_0 } */
   Class isa;
   unsigned a: 2;
   int b: 3;
@@ -56,10 +56,10 @@ struct Derived_0 {
 @interface Leaf: Derived {
 @public
   signed h: 2;
-}
+} /* { dg-line interface_Leaf } */
 @end
 
-struct Leaf_0 {
+struct Leaf_0 { /* { dg-line struct_Leaf_0 } */
   Class isa;
   unsigned a: 2;
   int b: 3;
@@ -74,8 +74,8 @@ struct Leaf_0 {
 /* Note that the semicolon after @defs(...) is optional.  */
 
 typedef struct { @defs(Base) } Base_t; /* { dg-warning "padding struct size to alignment boundary" } */
-typedef struct { @defs(Derived); } Derived_t;
-typedef struct { @defs(Leaf); } Leaf_t;
+typedef struct { @defs(Derived); } Derived_t; /* { dg-line Derived_t_def } */
+typedef struct { @defs(Leaf); } Leaf_t; /* { dg-line Leaf_t_def } */
 
 int main(void)
 {
@@ -116,9 +116,9 @@ int main(void)
 
 /* { dg-prune-output "In file included from" }  Ignore this message.  */
 /* { dg-bogus "padding struct to align" "PR23610" { target *-*-* } 0 } */
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 42 } */
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 45 } */
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 59 } */
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 62 } */
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 77 } */
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 78 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } interface_Derived } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } struct_Derived_0 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } interface_Leaf } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } struct_Leaf_0 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } Derived_t_def } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } Leaf_t_def } */

@@ -13,5 +13,5 @@ void
 bar (void)
 {
   return 1; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "with a value" "return constraint violation" { target *-*-* } 15 } */
+  /* { dg-error "with a value" "return constraint violation" { target *-*-* } .-1 } */
 }

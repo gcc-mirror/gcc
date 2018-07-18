@@ -1,4 +1,4 @@
-@c Copyright (C) 2003-2016 Free Software Foundation, Inc.
+@c Copyright (C) 2003-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -264,6 +264,11 @@ option handler.  @code{UInteger} should also be used on options like
 @code{-falign-loops}=@var{n} are supported to make sure the saved
 options are given a full integer.
 
+@item IntegerRange(@var{n}, @var{m})
+The options's arguments are integer numbers.  The option's parser
+will check that value of an option is inclusively within the
+range [@var{n}, @var{m}].
+
 @item ToLower
 The option's argument should be converted to lowercase as part of
 putting it in canonical form, and before comparing with the strings
@@ -279,6 +284,10 @@ via @option{-Wp,}; new options should not have this property.
 The state of this option should be stored in variable @var{var}
 (actually a macro for @code{global_options.x_@var{var}}).
 The way that the state is stored depends on the type of option:
+
+@item Deprecated
+The option is deprecated and every usage of such option will
+result in a warning.
 
 @itemize @bullet
 @item
@@ -429,6 +438,13 @@ This is an optimization option.  It should be shown as such in
 @option{--help} output, and any associated variable named using
 @code{Var} should be saved and restored when the optimization level is
 changed with @code{optimize} attributes.
+
+@item PerFunction
+This is an option that can be overridden on a per-function basis.
+@code{Optimization} implies @code{PerFunction}, but options that do not
+affect executable code generation may use this flag instead, so that the
+option is not taken into account in ways that might affect executable
+code generation.
 
 @item Undocumented
 The option is deliberately missing documentation and should not

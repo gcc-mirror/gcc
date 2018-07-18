@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,9 +30,8 @@
 ------------------------------------------------------------------------------
 
 with Alloc;
-with Table;
 with Hostparm; use Hostparm;
-with System;   use System;
+with Table;
 with Types;    use Types;
 
 package Namet is
@@ -149,9 +148,9 @@ package Namet is
 --  and the Boolean field is initialized to False, when a new Name table entry
 --  is created.
 
-   type Bounded_String (Max_Length : Natural := 4 * Max_Line_Length) is limited
-   --  The default here is intended to be an infinite value that ensures that
-   --  we never overflow the buffer (names this long are too absurd to worry).
+   type Bounded_String (Max_Length : Natural := 2**12) is limited
+   --  It's unlikely to have names longer than this. But we don't want to make
+   --  it too big, because we declare these on the stack in recursive routines.
    record
       Length : Natural := 0;
       Chars  : String (1 .. Max_Length);
@@ -166,7 +165,7 @@ package Namet is
    --  which is used by most of the code via the renamings. New code ought
    --  to avoid the global.
 
-   Global_Name_Buffer : Bounded_String;
+   Global_Name_Buffer : Bounded_String (Max_Length => 4 * Max_Line_Length);
    Name_Buffer        : String renames Global_Name_Buffer.Chars;
    Name_Len           : Natural renames Global_Name_Buffer.Length;
 
@@ -194,16 +193,16 @@ package Namet is
    --  The special Name_Id value No_Name is used in the parser to indicate
    --  a situation where no name is present (e.g. on a loop or block).
 
-   Error_Name : constant Name_Id := Names_Low_Bound +  1;
+   Error_Name : constant Name_Id := Names_Low_Bound + 1;
    --  The special Name_Id value Error_Name is used in the parser to
    --  indicate that some kind of error was encountered in scanning out
    --  the relevant name, so it does not have a representable label.
 
-   subtype Error_Name_Or_No_Name is Name_Id range No_Name .. Error_Name;
-   --  Used to test for either error name or no name
-
    First_Name_Id : constant Name_Id := Names_Low_Bound + 2;
    --  Subscript of first entry in names table
+
+   subtype Valid_Name_Id is Name_Id range First_Name_Id .. Name_Id'Last;
+   --  All but No_Name and Error_Name
 
    ------------------------------
    -- Name_Id Membership Tests --
@@ -311,6 +310,21 @@ package Namet is
       V10 : Name_Id;
       V11 : Name_Id) return Boolean;
 
+   function Nam_In
+     (T   : Name_Id;
+      V1  : Name_Id;
+      V2  : Name_Id;
+      V3  : Name_Id;
+      V4  : Name_Id;
+      V5  : Name_Id;
+      V6  : Name_Id;
+      V7  : Name_Id;
+      V8  : Name_Id;
+      V9  : Name_Id;
+      V10 : Name_Id;
+      V11 : Name_Id;
+      V12 : Name_Id) return Boolean;
+
    pragma Inline (Nam_In);
    --  Inline all above functions
 
@@ -323,8 +337,8 @@ package Namet is
    function "+" (Buf : Bounded_String) return String renames To_String;
 
    function Name_Find
-     (Buf : Bounded_String := Global_Name_Buffer) return Name_Id;
-   function Name_Find (S : String) return Name_Id;
+     (Buf : Bounded_String := Global_Name_Buffer) return Valid_Name_Id;
+   function Name_Find (S : String) return Valid_Name_Id;
    --  Name_Find searches the names table to see if the string has already been
    --  stored. If so, the Id of the existing entry is returned. Otherwise a new
    --  entry is created with its Name_Table_Int fields set to zero/false. Note
@@ -332,7 +346,8 @@ package Namet is
    --  name string.
 
    function Name_Enter
-     (Buf : Bounded_String := Global_Name_Buffer) return Name_Id;
+     (Buf : Bounded_String := Global_Name_Buffer) return Valid_Name_Id;
+   function Name_Enter (S : String) return Valid_Name_Id;
    --  Name_Enter is similar to Name_Find. The difference is that it does not
    --  search the table for an existing match, and also subsequent Name_Find
    --  calls using the same name will not locate the entry created by this
@@ -343,10 +358,12 @@ package Namet is
    --  names, since these are efficiently located without hashing by Name_Find
    --  in any case.
 
-   function Name_Equals (N1 : Name_Id; N2 : Name_Id) return Boolean;
+   function Name_Equals
+     (N1 : Valid_Name_Id;
+      N2 : Valid_Name_Id) return Boolean;
    --  Return whether N1 and N2 denote the same character sequence
 
-   function Get_Name_String (Id : Name_Id) return String;
+   function Get_Name_String (Id : Valid_Name_Id) return String;
    --  Returns the characters of Id as a String. The lower bound is 1.
 
    --  The following Append procedures ignore any characters that don't fit in
@@ -365,11 +382,11 @@ package Namet is
    procedure Append (Buf : in out Bounded_String; Buf2 : Bounded_String);
    --  Append Buf2 onto Buf
 
-   procedure Append (Buf : in out Bounded_String; Id : Name_Id);
+   procedure Append (Buf : in out Bounded_String; Id : Valid_Name_Id);
    --  Append the characters of Id onto Buf. It is an error to call this with
    --  one of the special name Id values (No_Name or Error_Name).
 
-   procedure Append_Decoded (Buf : in out Bounded_String; Id : Name_Id);
+   procedure Append_Decoded (Buf : in out Bounded_String; Id : Valid_Name_Id);
    --  Same as Append, except that the result is decoded, so that upper half
    --  characters and wide characters appear as originally found in the source
    --  program text, operators have their source forms (special characters and
@@ -378,7 +395,7 @@ package Namet is
 
    procedure Append_Decoded_With_Brackets
      (Buf : in out Bounded_String;
-      Id  : Name_Id);
+      Id  : Valid_Name_Id);
    --  Same as Append_Decoded, except that the brackets notation (Uhh
    --  replaced by ["hh"], Whhhh replaced by ["hhhh"], WWhhhhhhhh replaced by
    --  ["hhhhhhhh"]) is used for all non-lower half characters, regardless of
@@ -388,7 +405,8 @@ package Namet is
    --  requirement for a canonical representation not affected by the
    --  character set options (e.g. in the binder generation of symbols).
 
-   procedure Append_Unqualified (Buf : in out Bounded_String; Id : Name_Id);
+   procedure Append_Unqualified
+     (Buf : in out Bounded_String; Id : Valid_Name_Id);
    --  Same as Append, except that qualification (as defined in unit
    --  Exp_Dbug) is removed (including both preceding __ delimited names, and
    --  also the suffixes used to indicate package body entities and to
@@ -400,7 +418,7 @@ package Namet is
 
    procedure Append_Unqualified_Decoded
      (Buf : in out Bounded_String;
-      Id  : Name_Id);
+      Id  : Valid_Name_Id);
    --  Same as Append_Unqualified, but decoded as for Append_Decoded
 
    procedure Append_Encoded (Buf : in out Bounded_String; C : Char_Code);
@@ -428,41 +446,41 @@ package Namet is
    function Is_Internal_Name (Buf : Bounded_String) return Boolean;
 
    procedure Get_Last_Two_Chars
-     (N  : Name_Id;
+     (N  : Valid_Name_Id;
       C1 : out Character;
       C2 : out Character);
    --  Obtains last two characters of a name. C1 is last but one character and
    --  C2 is last character. If name is less than two characters long then both
    --  C1 and C2 are set to ASCII.NUL on return.
 
-   function Get_Name_Table_Boolean1 (Id : Name_Id) return Boolean;
-   function Get_Name_Table_Boolean2 (Id : Name_Id) return Boolean;
-   function Get_Name_Table_Boolean3 (Id : Name_Id) return Boolean;
+   function Get_Name_Table_Boolean1 (Id : Valid_Name_Id) return Boolean;
+   function Get_Name_Table_Boolean2 (Id : Valid_Name_Id) return Boolean;
+   function Get_Name_Table_Boolean3 (Id : Valid_Name_Id) return Boolean;
    --  Fetches the Boolean values associated with the given name
 
-   function Get_Name_Table_Byte (Id : Name_Id) return Byte;
+   function Get_Name_Table_Byte (Id : Valid_Name_Id) return Byte;
    pragma Inline (Get_Name_Table_Byte);
    --  Fetches the Byte value associated with the given name
 
-   function Get_Name_Table_Int (Id : Name_Id) return Int;
+   function Get_Name_Table_Int (Id : Valid_Name_Id) return Int;
    pragma Inline (Get_Name_Table_Int);
    --  Fetches the Int value associated with the given name
 
-   procedure Set_Name_Table_Boolean1 (Id : Name_Id; Val : Boolean);
-   procedure Set_Name_Table_Boolean2 (Id : Name_Id; Val : Boolean);
-   procedure Set_Name_Table_Boolean3 (Id : Name_Id; Val : Boolean);
+   procedure Set_Name_Table_Boolean1 (Id : Valid_Name_Id; Val : Boolean);
+   procedure Set_Name_Table_Boolean2 (Id : Valid_Name_Id; Val : Boolean);
+   procedure Set_Name_Table_Boolean3 (Id : Valid_Name_Id; Val : Boolean);
    --  Sets the Boolean value associated with the given name
 
-   procedure Set_Name_Table_Byte (Id : Name_Id; Val : Byte);
+   procedure Set_Name_Table_Byte (Id : Valid_Name_Id; Val : Byte);
    pragma Inline (Set_Name_Table_Byte);
    --  Sets the Byte value associated with the given name
 
-   procedure Set_Name_Table_Int (Id : Name_Id; Val : Int);
+   procedure Set_Name_Table_Int (Id : Valid_Name_Id; Val : Int);
    pragma Inline (Set_Name_Table_Int);
    --  Sets the Int value associated with the given name
 
-   function Is_Internal_Name (Id : Name_Id) return Boolean;
-   --  Returns True if the name is an internal name (i.e. contains a character
+   function Is_Internal_Name (Id : Valid_Name_Id) return Boolean;
+   --  Returns True if the name is an internal name, i.e. contains a character
    --  for which Is_OK_Internal_Letter is true, or if the name starts or ends
    --  with an underscore.
    --
@@ -485,7 +503,7 @@ package Namet is
    --  set of reserved letters is O, Q, U, W) and also returns False for the
    --  letter X, which is reserved for debug output (see Exp_Dbug).
 
-   function Is_Operator_Name (Id : Name_Id) return Boolean;
+   function Is_Operator_Name (Id : Valid_Name_Id) return Boolean;
    --  Returns True if name given is of the form of an operator (that is, it
    --  starts with an upper case O).
 
@@ -493,7 +511,7 @@ package Namet is
    --  True if Id is a valid name - points to a valid entry in the Name_Entries
    --  table.
 
-   function Length_Of_Name (Id : Name_Id) return Nat;
+   function Length_Of_Name (Id : Valid_Name_Id) return Nat;
    pragma Inline (Length_Of_Name);
    --  Returns length of given name in characters. This is the length of the
    --  encoded name, as stored in the names table.
@@ -538,22 +556,15 @@ package Namet is
    --  Writes out internal tables to current tree file using the relevant
    --  Table.Tree_Write routines.
 
-   procedure Write_Name (Id : Name_Id);
+   procedure Write_Name (Id : Valid_Name_Id);
    --  Write_Name writes the characters of the specified name using the
    --  standard output procedures in package Output. The name is written
    --  in encoded form (i.e. including Uhh, Whhh, Qx, _op as they appear in
    --  the name table). If Id is Error_Name, or No_Name, no text is output.
 
-   procedure Write_Name_Decoded (Id : Name_Id);
+   procedure Write_Name_Decoded (Id : Valid_Name_Id);
    --  Like Write_Name, except that the name written is the decoded name, as
    --  described for Append_Decoded.
-
-   function Name_Chars_Address return System.Address;
-   --  Return starting address of name characters table (used in Back_End call
-   --  to Gigi).
-
-   function Name_Entries_Address return System.Address;
-   --  Return starting address of Names table (used in Back_End call to Gigi)
 
    function Name_Entries_Count return Nat;
    --  Return current number of entries in the names table
@@ -578,17 +589,17 @@ package Namet is
 
    procedure Add_Str_To_Name_Buffer (S : String);
 
-   procedure Get_Decoded_Name_String (Id : Name_Id);
+   procedure Get_Decoded_Name_String (Id : Valid_Name_Id);
 
-   procedure Get_Decoded_Name_String_With_Brackets (Id : Name_Id);
+   procedure Get_Decoded_Name_String_With_Brackets (Id : Valid_Name_Id);
 
-   procedure Get_Name_String (Id : Name_Id);
+   procedure Get_Name_String (Id : Valid_Name_Id);
 
-   procedure Get_Name_String_And_Append (Id : Name_Id);
+   procedure Get_Name_String_And_Append (Id : Valid_Name_Id);
 
-   procedure Get_Unqualified_Decoded_Name_String (Id : Name_Id);
+   procedure Get_Unqualified_Decoded_Name_String (Id : Valid_Name_Id);
 
-   procedure Get_Unqualified_Name_String (Id : Name_Id);
+   procedure Get_Unqualified_Name_String (Id : Valid_Name_Id);
 
    procedure Insert_Str_In_Name_Buffer (S : String; Index : Positive);
 
@@ -731,12 +742,12 @@ private
    for Name_Entry'Size use 16 * 8;
    --  This ensures that we did not leave out any fields
 
-   --  This is the table that is referenced by Name_Id entries.
+   --  This is the table that is referenced by Valid_Name_Id entries.
    --  It contains one entry for each unique name in the table.
 
    package Name_Entries is new Table.Table (
      Table_Component_Type => Name_Entry,
-     Table_Index_Type     => Name_Id'Base,
+     Table_Index_Type     => Valid_Name_Id'Base,
      Table_Low_Bound      => First_Name_Id,
      Table_Initial        => Alloc.Names_Initial,
      Table_Increment      => Alloc.Names_Increment,

@@ -5,7 +5,7 @@
 
 #include <altivec.h>
 
-__vector long long int
+__vector bool long long int
 get_data_class_flags (__vector double *p)
 {
   __vector double source = *p;

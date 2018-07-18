@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,9 +30,10 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
-with Exp_Dist; use Exp_Dist;
+with Exp_Dist;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Namet;    use Namet;
@@ -468,9 +469,7 @@ package body Rtsfind is
          --  unit for inlining purposes, the body must be illegal in this
          --  mode, and there is no point in continuing.
 
-         if Is_Predefined_File_Name
-           (Unit_File_Name (Get_Source_Unit (Sloc (Current_Error_Node))))
-         then
+         if In_Predefined_Unit (Current_Error_Node) then
             Error_Msg_N
               ("construct not allowed in no run time mode!",
                  Current_Error_Node);
@@ -641,6 +640,7 @@ package body Rtsfind is
 
       for J in RTU_Id loop
          RT_Unit_Table (J).Entity := Empty;
+         RT_Unit_Table (J).First_Implicit_With := Empty;
       end loop;
 
       for J in RE_Id loop
@@ -863,6 +863,10 @@ package body Rtsfind is
    -- Load_RTU --
    --------------
 
+   --  WARNING: This routine manages Ghost and SPARK regions. Return statements
+   --  must be replaced by gotos which jump to the end of the routine in order
+   --  to restore the Ghost and SPARK modes.
+
    procedure Load_RTU
      (U_Id        : RTU_Id;
       Id          : RE_Id   := RE_Null;
@@ -925,7 +929,11 @@ package body Rtsfind is
 
       --  Local variables
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save Ghost and SPARK mode-related data to restore on exit
 
    --  Start of processing for Load_RTU
 
@@ -938,7 +946,8 @@ package body Rtsfind is
 
       --  Provide a clean environment for the unit
 
-      Ghost_Mode := None;
+      Install_Ghost_Region (None, Empty);
+      Install_SPARK_Mode   (None, Empty);
 
       --  Note if secondary stack is used
 
@@ -950,7 +959,7 @@ package body Rtsfind is
       --  from the enumeration literal name in type RTU_Id.
 
       U.Uname                := Get_Unit_Name (U_Id);
-      U. First_Implicit_With := Empty;
+      U.First_Implicit_With  := Empty;
 
       --  Now do the load call, note that setting Error_Node to Empty is
       --  a signal to Load_Unit that we will regard a failure to find the
@@ -1041,7 +1050,8 @@ package body Rtsfind is
          Set_Is_Potentially_Use_Visible (U.Entity, True);
       end if;
 
-      Ghost_Mode := Save_Ghost_Mode;
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
    end Load_RTU;
 
    --------------------
@@ -1115,15 +1125,15 @@ package body Rtsfind is
          end loop;
 
          Withn :=
-            Make_With_Clause (Standard_Location,
-              Name =>
-                Make_Unit_Name
-                  (U, Defining_Unit_Name (Specification (LibUnit))));
+           Make_With_Clause (Standard_Location,
+             Name =>
+               Make_Unit_Name
+                 (U, Defining_Unit_Name (Specification (LibUnit))));
 
-         Set_Library_Unit        (Withn, Cunit (U.Unum));
          Set_Corresponding_Spec  (Withn, U.Entity);
-         Set_First_Name          (Withn, True);
-         Set_Implicit_With       (Withn, True);
+         Set_First_Name          (Withn);
+         Set_Implicit_With       (Withn);
+         Set_Library_Unit        (Withn, Cunit (U.Unum));
          Set_Next_Implicit_With  (Withn, U.First_Implicit_With);
 
          U.First_Implicit_With := Withn;
@@ -1351,7 +1361,7 @@ package body Rtsfind is
       --  is System. If so, return the value from the already compiled
       --  declaration and otherwise do a regular find.
 
-      --  Not pleasant, but these kinds of annoying recursion when
+      --  Not pleasant, but these kinds of annoying recursion scenarios when
       --  writing an Ada compiler in Ada have to be broken somewhere.
 
       if Present (Main_Unit_Entity)
@@ -1615,7 +1625,7 @@ package body Rtsfind is
       E     : constant Entity_Id        :=
                 Defining_Entity (Unit (Cunit (Unum)));
    begin
-      pragma Assert (Is_Predefined_File_Name (Unit_File_Name (Unum)));
+      pragma Assert (Is_Predefined_Unit (Unum));
 
       --  Loop through entries in RTU table looking for matching entry
 
@@ -1644,5 +1654,20 @@ package body Rtsfind is
          end if;
       end loop;
    end Set_RTU_Loaded;
+
+   -------------------------
+   -- SPARK_Implicit_Load --
+   -------------------------
+
+   procedure SPARK_Implicit_Load (E : RE_Id) is
+      Unused : Entity_Id;
+
+   begin
+      pragma Assert (GNATprove_Mode);
+
+      --  Force loading of a predefined unit
+
+      Unused := RTE (E);
+   end SPARK_Implicit_Load;
 
 end Rtsfind;

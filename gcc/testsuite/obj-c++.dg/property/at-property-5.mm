@@ -18,17 +18,17 @@
 
 /* Test various error messages.  */
 @property id property_a;      /* { dg-warning "object property .property.a. has no .assign., .retain. or .copy. attribute" } */
-			      /* { dg-message ".assign. can be unsafe for Objective-C objects" "" { target *-*-* } 20 } */
+			      /* { dg-message ".assign. can be unsafe for Objective-C objects" "" { target *-*-* } .-1 } */
 @property int property_b = 4; /* { dg-error "expected" } */
 @property (retain) int property_c; /* { dg-error ".retain. attribute is only valid for Objective-C objects" } */
 @property (copy) int property_d; /* { dg-error ".copy. attribute is only valid for Objective-C objects" } */
 
-@property (retain) id property_e;
+@property (retain) id property_e; /* { dg-line property_e_first } */
 @property (retain) id property_f;
 @property (retain) id property_g;
 @property (retain) id property_h;
 @property (retain) id property_e; /* { dg-error "redeclaration of property .property_e." } */
-   			          /* { dg-message "originally specified here" "" { target *-*-* } 26 } */
+   			          /* { dg-message "originally specified here" "" { target *-*-* } property_e_first } */
 @end
 
 @property id test; /* { dg-error "misplaced .@property. Objective-C.. construct" } */

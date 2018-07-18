@@ -7,7 +7,6 @@
 
 package math
 
-//defined in floor_amd64.s
-func hasSSE4() bool
+import "internal/cpu"
 
-var useSSE4 = hasSSE4()
+var useSSE41 = cpu.X86.HasSSE41

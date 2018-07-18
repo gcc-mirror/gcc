@@ -50,25 +50,25 @@ program main
 ! Check that the INTENT(INOUT) of assign0 is respected and that the
 ! correct thing is done with allocatable components.
   infant0 = new_child()
-  if (infant0%parent%foo1%i .ne. 20) call abort
-  if (infant0%foo2%i .ne. 21) call abort
-  if (any (infant0%parent%foo1%j .ne. [99,199])) call abort
-  if (any (infant0%foo2%j .ne. [199,299])) call abort
-  if (infant0%foo2%i .ne. 21) call abort
-  if (any (infant0%l .ne. [299,399])) call abort
+  if (infant0%parent%foo1%i .ne. 20) STOP 1
+  if (infant0%foo2%i .ne. 21) STOP 2
+  if (any (infant0%parent%foo1%j .ne. [99,199])) STOP 3
+  if (any (infant0%foo2%j .ne. [199,299])) STOP 4
+  if (infant0%foo2%i .ne. 21) STOP 5
+  if (any (infant0%l .ne. [299,399])) STOP 6
 
 ! Now, since the defined assignment depends on whether or not the 'i'
 ! component is the default initialization value, the result will be
 ! different.
   infant0 = new_child()
-  if (infant0%parent%foo1%i .ne. 40) call abort
-  if (any (infant0%parent%foo1%j .ne. [99,199,198,398])) call abort
-  if (any (infant0%foo2%j .ne. [199,299,398,598])) call abort
-  if (infant0%foo2%i .ne. 42) call abort
-  if (any (infant0%l .ne. [299,399])) call abort
+  if (infant0%parent%foo1%i .ne. 40) STOP 7
+  if (any (infant0%parent%foo1%j .ne. [99,199,198,398])) STOP 8
+  if (any (infant0%foo2%j .ne. [199,299,398,598])) STOP 9
+  if (infant0%foo2%i .ne. 42) STOP 10
+  if (any (infant0%l .ne. [299,399])) STOP 11
 
 ! Finally, make sure that normal components of the declared type survive.
-  if (infant0%k .ne. 1001) call abort
+  if (infant0%k .ne. 1001) STOP 12
 end
 
 

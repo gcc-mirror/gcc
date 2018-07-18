@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -168,7 +168,7 @@ cpp_define_builtins (cpp_reader *pfile)
     cpp_define (pfile, "_OPENACC=201306");
 
   if (flag_openmp)
-    cpp_define (pfile, "_OPENMP=201307");
+    cpp_define (pfile, "_OPENMP=201511");
 
   /* The defines below are necessary for the TARGET_* macros.
 
@@ -683,14 +683,14 @@ gfc_cpp_add_include_path (char *path, bool user_supplied)
      include path. Fortran does not define any system include paths.  */
   int cxx_aware = 0;
 
-  add_path (path, BRACKET, cxx_aware, user_supplied);
+  add_path (path, INC_BRACKET, cxx_aware, user_supplied);
 }
 
 void
 gfc_cpp_add_include_path_after (char *path, bool user_supplied)
 {
   int cxx_aware = 0;
-  add_path (path, AFTER, cxx_aware, user_supplied);
+  add_path (path, INC_AFTER, cxx_aware, user_supplied);
 }
 
 void
@@ -1062,7 +1062,7 @@ cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
 				  richloc, dlevel);
   if (reason == CPP_W_WARNING_DIRECTIVE)
     diagnostic_override_option_index (&diagnostic, OPT_Wcpp);
-  ret = report_diagnostic (&diagnostic);
+  ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   if (level == CPP_DL_WARNING_SYSHDR)
     global_dc->dc_warn_system_headers = save_warn_system_headers;
   return ret;

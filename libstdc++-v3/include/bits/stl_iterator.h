@@ -1,6 +1,6 @@
 // Iterators -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -137,6 +137,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX17_CONSTEXPR
       reverse_iterator(const reverse_iterator& __x)
       : current(__x.current) { }
+
+#if __cplusplus >= 201103L
+      reverse_iterator& operator=(const reverse_iterator&) = default;
+#endif
 
       /**
        *  A %reverse_iterator across other types can be copied if the
@@ -721,6 +725,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @param __x  A container of arbitrary type.
+   *  @param __i  An iterator into the container.
    *  @return  An instance of insert_iterator working on @p __x.
    *
    *  This wrapper function helps in creating insert_iterator instances.
@@ -983,14 +988,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container> __it)
     { return __it.base(); }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
-
 #if __cplusplus >= 201103L
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @addtogroup iterators
@@ -1242,9 +1240,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> decltype(__miter_base(__it.base()))
     { return __miter_base(__it.base()); }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
-
 #define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) std::make_move_iterator(_Iter)
 #define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) \
   std::__make_move_if_noexcept_iterator(_Iter)
@@ -1252,6 +1247,30 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) (_Iter)
 #define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) (_Iter)
 #endif // C++11
+
+#if __cpp_deduction_guides >= 201606
+  // These helper traits are used for deduction guides
+  // of associative containers.
+  template<typename _InputIterator>
+    using __iter_key_t = remove_const_t<
+    typename iterator_traits<_InputIterator>::value_type::first_type>;
+
+  template<typename _InputIterator>
+    using __iter_val_t =
+    typename iterator_traits<_InputIterator>::value_type::second_type;
+
+  template<typename _T1, typename _T2>
+    struct pair;
+
+  template<typename _InputIterator>
+    using __iter_to_alloc_t =
+    pair<add_const_t<__iter_key_t<_InputIterator>>,
+	 __iter_val_t<_InputIterator>>;
+
+#endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/stl_iterator.h>

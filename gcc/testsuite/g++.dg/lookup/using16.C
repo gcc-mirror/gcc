@@ -15,4 +15,4 @@ using namespace M;
 using namespace N;
 
 struct ::S s; // { dg-bogus "ambiguous.*ambiguous" "duplicate error" }
-// { dg-error "reference to 'S' is ambiguous|invalid type" "" { target *-*-* } 17 }}
+// { dg-error "reference to 'S' is ambiguous|invalid type" "" { target *-*-* } .-1 }}

@@ -35,11 +35,11 @@ void exec_vmovn (void)
   TEST_VMOVN(uint, u, 32, 16, 4);
   TEST_VMOVN(uint, u, 64, 32, 2);
 
-  CHECK(TEST_MSG, int, 8, 8, PRIx32, expected, "");
-  CHECK(TEST_MSG, int, 16, 4, PRIx64, expected, "");
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, "");
-  CHECK(TEST_MSG, uint, 8, 8, PRIx32, expected, "");
-  CHECK(TEST_MSG, uint, 16, 4, PRIx64, expected, "");
+  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
 }
 

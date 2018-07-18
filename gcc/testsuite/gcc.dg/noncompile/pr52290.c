@@ -1,3 +1,3 @@
-/* { dg-error "undeclared here" "undeclared" { target *-*-* } 3 } */
-/* { dg-error "expected" "expected" { target *-*-* } 3 } */
+/* { dg-error "undeclared here" "undeclared" { target *-*-* } .+2 } */
+/* { dg-error "expected" "expected" { target *-*-* } .+1 } */
 int f()[j]

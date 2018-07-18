@@ -186,6 +186,13 @@ const (
 //	Erf(-Inf) = -1
 //	Erf(NaN) = NaN
 func Erf(x float64) float64 {
+	return libc_erf(x)
+}
+
+//extern erf
+func libc_erf(float64) float64
+
+func erf(x float64) float64 {
 	const (
 		VeryTiny = 2.848094538889218e-306 // 0x0080000000000000
 		Small    = 1.0 / (1 << 28)        // 2**-28
@@ -263,6 +270,13 @@ func Erf(x float64) float64 {
 //	Erfc(-Inf) = 2
 //	Erfc(NaN) = NaN
 func Erfc(x float64) float64 {
+	return libc_erfc(x)
+}
+
+//extern erfc
+func libc_erfc(float64) float64
+
+func erfc(x float64) float64 {
 	const Tiny = 1.0 / (1 << 56) // 2**-56
 	// special cases
 	switch {

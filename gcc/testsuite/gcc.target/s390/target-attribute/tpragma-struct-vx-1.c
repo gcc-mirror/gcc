@@ -2,7 +2,7 @@
 
 /* { dg-do run } */
 /* { dg-require-effective-target target_attribute } */
-/* { dg-require-effective-target vector } */
+/* { dg-require-effective-target s390_vx } */
 /* { dg-options "-march=z900 -mno-vx -mzarch" } */
 
 #define V16 __attribute__ ((vector_size(16)))

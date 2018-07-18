@@ -3,7 +3,10 @@
 
 struct E{};
 
-inline int bar() throw(E)
+inline int bar()
+#if __cplusplus <= 201402L
+throw(E)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
 {
   return 0;
 }

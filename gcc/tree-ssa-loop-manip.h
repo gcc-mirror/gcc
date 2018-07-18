@@ -1,5 +1,5 @@
 /* Header file for High-level loop manipulation functions.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,13 +28,13 @@ extern void rewrite_into_loop_closed_ssa_1 (bitmap, unsigned, int,
 					    struct loop *);
 extern void rewrite_into_loop_closed_ssa (bitmap, unsigned);
 extern void rewrite_virtuals_into_loop_closed_ssa (struct loop *);
-extern void verify_loop_closed_ssa (bool);
+extern void verify_loop_closed_ssa (bool, struct loop * = NULL);
 
 static inline void
-checking_verify_loop_closed_ssa (bool verify_ssa_p)
+checking_verify_loop_closed_ssa (bool verify_ssa_p, struct loop *loop = NULL)
 {
   if (flag_checking)
-    verify_loop_closed_ssa (verify_ssa_p);
+    verify_loop_closed_ssa (verify_ssa_p, loop);
 }
 
 extern basic_block split_loop_exit_edge (edge);
@@ -48,6 +48,7 @@ extern bool gimple_duplicate_loop_to_header_edge (struct loop *, edge,
 						  int);
 extern bool can_unroll_loop_p (struct loop *loop, unsigned factor,
 			       struct tree_niter_desc *niter);
+extern gcov_type niter_for_unrolled_loop (struct loop *, unsigned);
 extern void tree_transform_and_unroll_loop (struct loop *, unsigned,
 					    edge, struct tree_niter_desc *,
 					    transform_callback, void *);

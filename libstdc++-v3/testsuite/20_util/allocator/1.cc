@@ -1,6 +1,6 @@
 // 2001-06-14  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,7 @@ bool check_new = false;
 bool check_delete = false;
 
 void* 
-operator new(std::size_t n) throw(std::bad_alloc)
+operator new(std::size_t n) THROW(std::bad_alloc)
 {
   check_new = true;
   return std::malloc(n);

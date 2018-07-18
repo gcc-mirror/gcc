@@ -18,14 +18,14 @@ _Noreturn int
 f4 (void)
 {
   return 1; /* { dg-warning "has a 'return' statement" } */
-  /* { dg-warning "does return" "second warning" { target *-*-* } 20 } */
+  /* { dg-warning "does return" "second warning" { target *-*-* } .-1 } */
 }
 
 _Noreturn void
 f5 (void)
 {
   return; /* { dg-warning "has a 'return' statement" } */
-  /* { dg-warning "does return" "second warning" { target *-*-* } 27 } */
+  /* { dg-warning "does return" "second warning" { target *-*-* } .-1 } */
 }
 
 _Noreturn void

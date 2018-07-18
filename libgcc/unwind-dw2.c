@@ -1,5 +1,5 @@
 /* DWARF2 exception handling and frame unwind runtime interface routines.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -136,6 +136,8 @@ struct _Unwind_Context
 #define SIGNAL_FRAME_BIT ((~(_Unwind_Word) 0 >> 1) + 1)
   /* Context which has version/args_size/by_value fields.  */
 #define EXTENDED_CONTEXT_BIT ((~(_Unwind_Word) 0 >> 2) + 1)
+  /* Bit reserved on AArch64, return address has been signed with A key.  */
+#define RA_A_SIGNED_BIT ((~(_Unwind_Word) 0 >> 3) + 1)
   _Unwind_Word flags;
   /* 0 for now, can be increased when further fields are added to
      struct _Unwind_Context.  */
@@ -214,12 +216,12 @@ _Unwind_IsExtendedContext (struct _Unwind_Context *context)
 	  || (context->flags & EXTENDED_CONTEXT_BIT));
 }
 
-/* Get the value of register INDEX as saved in CONTEXT.  */
+/* Get the value of register REGNO as saved in CONTEXT.  */
 
 inline _Unwind_Word
-_Unwind_GetGR (struct _Unwind_Context *context, int index)
+_Unwind_GetGR (struct _Unwind_Context *context, int regno)
 {
-  int size;
+  int size, index;
   _Unwind_Context_Reg_Val val;
 
 #ifdef DWARF_ZERO_REG
@@ -227,13 +229,21 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
     return 0;
 #endif
 
-  index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  index = DWARF_REG_TO_UNWIND_COLUMN (regno);
   gcc_assert (index < (int) sizeof(dwarf_reg_size_table));
   size = dwarf_reg_size_table[index];
   val = context->reg[index];
 
   if (_Unwind_IsExtendedContext (context) && context->by_value[index])
     return _Unwind_Get_Unwind_Word (val);
+
+#ifdef DWARF_LAZY_REGISTER_VALUE
+  {
+    _Unwind_Word value;
+    if (DWARF_LAZY_REGISTER_VALUE (regno, &value))
+      return value;
+  }
+#endif
 
   /* This will segfault if the register hasn't been saved.  */
   if (size == sizeof(_Unwind_Ptr))
@@ -1185,6 +1195,11 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  break;
 
 	case DW_CFA_GNU_window_save:
+#if defined (__aarch64__) && !defined (__ILP32__)
+	  /* This CFA is multiplexed with Sparc.  On AArch64 it's used to toggle
+	     return address signing status.  */
+	  fs->regs.reg[DWARF_REGNUM_AARCH64_RA_STATE].loc.offset ^= 1;
+#else
 	  /* ??? Hardcoded for SPARC register window configuration.  */
 	  if (__LIBGCC_DWARF_FRAME_REGISTERS__ >= 32)
 	    for (reg = 16; reg < 32; ++reg)
@@ -1192,6 +1207,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 		fs->regs.reg[reg].how = REG_SAVED_OFFSET;
 		fs->regs.reg[reg].loc.offset = (reg - 16) * sizeof (void *);
 	      }
+#endif
 	  break;
 
 	case DW_CFA_GNU_args_size:
@@ -1513,10 +1529,15 @@ uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
        stack frame.  */
     context->ra = 0;
   else
-    /* Compute the return address now, since the return address column
-       can change from frame to frame.  */
-    context->ra = __builtin_extract_return_addr
-      (_Unwind_GetPtr (context, fs->retaddr_column));
+    {
+      /* Compute the return address now, since the return address column
+	 can change from frame to frame.  */
+      context->ra = __builtin_extract_return_addr
+	(_Unwind_GetPtr (context, fs->retaddr_column));
+#ifdef MD_POST_EXTRACT_FRAME_ADDR
+      context->ra = MD_POST_EXTRACT_FRAME_ADDR (context, fs, context->ra);
+#endif
+    }
 }
 
 static void
@@ -1550,6 +1571,9 @@ uw_init_context_1 (struct _Unwind_Context *context,
 		   void *outer_cfa, void *outer_ra)
 {
   void *ra = __builtin_extract_return_addr (__builtin_return_address (0));
+#ifdef MD_POST_EXTRACT_ROOT_ADDR
+  ra = MD_POST_EXTRACT_ROOT_ADDR (ra);
+#endif
   _Unwind_FrameState fs;
   _Unwind_SpTmp sp_slot;
   _Unwind_Reason_Code code;
@@ -1586,6 +1610,9 @@ uw_init_context_1 (struct _Unwind_Context *context,
      initialization context, then we can't see it in the given
      call frame data.  So have the initialization context tell us.  */
   context->ra = __builtin_extract_return_addr (outer_ra);
+#ifdef MD_POST_EXTRACT_ROOT_ADDR
+  context->ra = MD_POST_EXTRACT_ROOT_ADDR (context->ra);
+#endif
 }
 
 static void _Unwind_DebugHook (void *, void *)
@@ -1608,16 +1635,35 @@ _Unwind_DebugHook (void *cfa __attribute__ ((__unused__)),
 #endif
 }
 
+/* Frob exception handler's address kept in TARGET before installing into
+   CURRENT context.  */
+
+static inline void *
+uw_frob_return_addr (struct _Unwind_Context *current
+		     __attribute__ ((__unused__)),
+		     struct _Unwind_Context *target)
+{
+  void *ret_addr = __builtin_frob_return_addr (target->ra);
+#ifdef MD_POST_FROB_EH_HANDLER_ADDR
+  ret_addr = MD_POST_FROB_EH_HANDLER_ADDR (current, target, ret_addr);
+#endif
+  return ret_addr;
+}
+
 /* Install TARGET into CURRENT so that we can return to it.  This is a
    macro because __builtin_eh_return must be invoked in the context of
-   our caller.  */
+   our caller.  FRAMES is a number of frames to be unwind.
+   _Unwind_Frames_Extra is a macro to do additional work during unwinding
+   if needed, for example shadow stack pointer adjustment for Intel CET
+   technology.  */
 
-#define uw_install_context(CURRENT, TARGET)				\
+#define uw_install_context(CURRENT, TARGET, FRAMES)			\
   do									\
     {									\
       long offset = uw_install_context_1 ((CURRENT), (TARGET));		\
-      void *handler = __builtin_frob_return_addr ((TARGET)->ra);	\
+      void *handler = uw_frob_return_addr ((CURRENT), (TARGET));	\
       _Unwind_DebugHook ((TARGET)->cfa, handler);			\
+      _Unwind_Frames_Extra (FRAMES);					\
       __builtin_eh_return (offset, handler);				\
     }									\
   while (0)

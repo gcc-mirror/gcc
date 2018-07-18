@@ -12,17 +12,17 @@ integer, target :: t, s
 t = 1
 p => s
 ! We didn't dereference the pointer in the following line.
-p = f() ! { dg-warning "POINTER-valued function" "" }
+p = f() ! { dg-warning "POINTER-valued function" }
 p = p+1
-if (p.ne.2) call abort()
-if (p.ne.s) call abort()
+if (p.ne.2) STOP 1
+if (p.ne.s) STOP 2
 
 !!$! verify that we also dereference correctly the result of a function 
 !!$! which returns its result by reference
 !!$c = "Hallo"
 !!$d => e
 !!$d = g() !  dg-warning "POINTER valued function" "" 
-!!$if (d.ne."Hallo") call abort()
+!!$if (d.ne."Hallo") STOP 3
 
 contains
 function f()

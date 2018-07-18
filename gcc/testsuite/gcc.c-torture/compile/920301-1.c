@@ -1,4 +1,4 @@
-#ifndef NO_LABEL_VALUES
+/* { dg-require-effective-target label_values } */
+
 f(){static void*t[]={&&x};x:;}
-#endif
 g(){static unsigned p[5];}

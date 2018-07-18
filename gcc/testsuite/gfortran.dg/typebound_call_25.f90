@@ -34,5 +34,3 @@ CONTAINS
   END SUBROUTINE
 
 END MODULE
-
-! { dg-final { cleanup-modules "my_mod" } }

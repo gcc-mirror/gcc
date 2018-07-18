@@ -1,5 +1,5 @@
 /* Partial redundancy elimination / Hoisting for RTL.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -281,7 +281,7 @@ struct gcse_expr
      to keep register pressure under control.
      A value of "0" removes restrictions on how far the expression can
      travel.  */
-  int max_distance;
+  HOST_WIDE_INT max_distance;
 };
 
 /* Occurrence of an expression.
@@ -458,7 +458,7 @@ static int oprs_unchanged_p (const_rtx, const rtx_insn *, int);
 static int oprs_anticipatable_p (const_rtx, const rtx_insn *);
 static int oprs_available_p (const_rtx, const rtx_insn *);
 static void insert_expr_in_table (rtx, machine_mode, rtx_insn *, int, int,
-				  int, struct gcse_hash_table_d *);
+				  HOST_WIDE_INT, struct gcse_hash_table_d *);
 static unsigned int hash_expr (const_rtx, machine_mode, int *, int);
 static void record_last_reg_set_info (rtx_insn *, int);
 static void record_last_mem_set_info (rtx_insn *);
@@ -488,8 +488,10 @@ static void alloc_code_hoist_mem (int, int);
 static void free_code_hoist_mem (void);
 static void compute_code_hoist_vbeinout (void);
 static void compute_code_hoist_data (void);
-static int should_hoist_expr_to_dom (basic_block, struct gcse_expr *, basic_block,
-				     sbitmap, int, int *, enum reg_class,
+static int should_hoist_expr_to_dom (basic_block, struct gcse_expr *,
+				     basic_block,
+				     sbitmap, HOST_WIDE_INT, int *,
+				     enum reg_class,
 				     int *, bitmap, rtx_insn *);
 static int hoist_code (void);
 static enum reg_class get_regno_pressure_class (int regno, int *nregs);
@@ -743,7 +745,7 @@ static basic_block current_bb;
    GCSE.  */
 
 static int
-want_to_gcse_p (rtx x, machine_mode mode, int *max_distance_ptr)
+want_to_gcse_p (rtx x, machine_mode mode, HOST_WIDE_INT *max_distance_ptr)
 {
 #ifdef STACK_REGS
   /* On register stack architectures, don't GCSE constants from the
@@ -790,7 +792,7 @@ want_to_gcse_p (rtx x, machine_mode mode, int *max_distance_ptr)
 	/* PRE doesn't implement max_distance restriction.  */
 	{
 	  int cost;
-	  int max_distance;
+	  HOST_WIDE_INT max_distance;
 
 	  gcc_assert (!optimize_function_for_speed_p (cfun)
 		      && optimize_function_for_size_p (cfun));
@@ -798,7 +800,8 @@ want_to_gcse_p (rtx x, machine_mode mode, int *max_distance_ptr)
 
 	  if (cost < COSTS_N_INSNS (GCSE_UNRESTRICTED_COST))
 	    {
-	      max_distance = (GCSE_COST_DISTANCE_RATIO * cost) / 10;
+	      max_distance
+		= ((HOST_WIDE_INT)GCSE_COST_DISTANCE_RATIO * cost) / 10;
 	      if (max_distance == 0)
 		return 0;
 
@@ -1114,7 +1117,8 @@ expr_equiv_p (const_rtx x, const_rtx y)
 static void
 insert_expr_in_table (rtx x, machine_mode mode, rtx_insn *insn,
 		      int antic_p,
-		      int avail_p, int max_distance, struct gcse_hash_table_d *table)
+		      int avail_p, HOST_WIDE_INT max_distance,
+		      struct gcse_hash_table_d *table)
 {
   int found, do_not_record_p;
   unsigned int hash;
@@ -1132,7 +1136,7 @@ insert_expr_in_table (rtx x, machine_mode mode, rtx_insn *insn,
   cur_expr = table->table[hash];
   found = 0;
 
-  while (cur_expr && 0 == (found = expr_equiv_p (cur_expr->expr, x)))
+  while (cur_expr && (found = expr_equiv_p (cur_expr->expr, x)) == 0)
     {
       /* If the expression isn't found, save a pointer to the end of
 	 the list.  */
@@ -1230,7 +1234,7 @@ hash_scan_set (rtx set, rtx_insn *insn, struct gcse_hash_table_d *table)
   else if (REG_P (dest))
     {
       unsigned int regno = REGNO (dest);
-      int max_distance = 0;
+      HOST_WIDE_INT max_distance = 0;
 
       /* See if a REG_EQUAL note shows this equivalent to a simpler expression.
 
@@ -1299,7 +1303,7 @@ hash_scan_set (rtx set, rtx_insn *insn, struct gcse_hash_table_d *table)
   else if (flag_gcse_las && REG_P (src) && MEM_P (dest))
     {
       unsigned int regno = REGNO (src);
-      int max_distance = 0;
+      HOST_WIDE_INT max_distance = 0;
 
       /* Only record sets of pseudo-regs in the hash table.  */
       if (regno >= FIRST_PSEUDO_REGISTER
@@ -1411,7 +1415,8 @@ dump_hash_table (FILE *file, const char *name, struct gcse_hash_table_d *table)
     if (flat_table[i] != 0)
       {
 	expr = flat_table[i];
-	fprintf (file, "Index %d (hash value %d; max distance %d)\n  ",
+	fprintf (file, "Index %d (hash value %d; max distance "
+		 HOST_WIDE_INT_PRINT_DEC ")\n  ",
 		 expr->bitmap_index, hash_val[i], expr->max_distance);
 	print_rtl (file, expr->expr);
 	fprintf (file, "\n");
@@ -1709,7 +1714,7 @@ prune_expressions (bool pre_p)
 	      continue;
 	    }
 
-	  if (!pre_p && MEM_P (expr->expr))
+	  if (!pre_p && contains_mem_rtx_p (expr->expr))
 	    /* Note memory references that can be clobbered by a call.
 	       We do not split abnormal edges in hoisting, so would
 	       a memory reference get hoisted along an abnormal edge,
@@ -1717,15 +1722,28 @@ prune_expressions (bool pre_p)
 	       constant memory references can be hoisted along abnormal
 	       edges.  */
 	    {
-	      if (GET_CODE (XEXP (expr->expr, 0)) == SYMBOL_REF
-		  && CONSTANT_POOL_ADDRESS_P (XEXP (expr->expr, 0)))
-		continue;
+	      rtx x = expr->expr;
 
-	      if (MEM_READONLY_P (expr->expr)
-		  && !MEM_VOLATILE_P (expr->expr)
-		  && MEM_NOTRAP_P (expr->expr))
-		/* Constant memory reference, e.g., a PIC address.  */
-		continue;
+	      /* Common cases where we might find the MEM which may allow us
+		 to avoid pruning the expression.  */
+	      while (GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
+		x = XEXP (x, 0);
+
+	      /* If we found the MEM, go ahead and look at it to see if it has
+		 properties that allow us to avoid pruning its expression out
+		 of the tables.  */
+	      if (MEM_P (x))
+		{
+		  if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+		      && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
+		    continue;
+
+		  if (MEM_READONLY_P (x)
+		      && !MEM_VOLATILE_P (x)
+		      && MEM_NOTRAP_P (x))
+		    /* Constant memory reference, e.g., a PIC address.  */
+		    continue;
+		}
 
 	      /* ??? Optimally, we would use interprocedural alias
 		 analysis to determine if this mem is actually killed
@@ -2870,7 +2888,8 @@ update_bb_reg_pressure (basic_block bb, rtx_insn *from)
 
 static int
 should_hoist_expr_to_dom (basic_block expr_bb, struct gcse_expr *expr,
-			  basic_block bb, sbitmap visited, int distance,
+			  basic_block bb, sbitmap visited,
+			  HOST_WIDE_INT distance,
 			  int *bb_size, enum reg_class pressure_class,
 			  int *nregs, bitmap hoisted_bbs, rtx_insn *from)
 {
@@ -3147,7 +3166,7 @@ hoist_code (void)
 		 computes the expression.  */
 	      FOR_EACH_VEC_ELT (domby, j, dominated)
 		{
-		  int max_distance;
+		  HOST_WIDE_INT max_distance;
 
 		  /* Ignore self dominance.  */
 		  if (bb == dominated)

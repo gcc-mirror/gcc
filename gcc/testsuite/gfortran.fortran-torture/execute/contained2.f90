@@ -4,9 +4,9 @@ program contained2
    integer var1
    
    var1 = 42
-   if (f1() .ne. 1) call abort
+   if (f1() .ne. 1) STOP 1
    call f2()
-   if (var1 .ne. 42) call abort
+   if (var1 .ne. 42) STOP 2
 contains
 
 function f1 ()
@@ -22,7 +22,7 @@ end function
 
 subroutine f2()
    implicit none
-   if (f1() .ne. 1) call abort
+   if (f1() .ne. 1) STOP 3
 end subroutine
 
 end program

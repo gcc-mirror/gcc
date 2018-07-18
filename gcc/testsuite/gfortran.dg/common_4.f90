@@ -15,5 +15,5 @@ subroutine foo
   common /block/ a, b, c
   integer(kind=1) a
   integer b, c
-  if (a .ne. 1 .or. b .ne. HUGE(b) .or. c .ne. 2) call abort
+  if (a .ne. 1 .or. b .ne. HUGE(b) .or. c .ne. 2) STOP 1
 end subroutine

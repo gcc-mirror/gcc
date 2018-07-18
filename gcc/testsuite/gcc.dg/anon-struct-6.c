@@ -7,6 +7,6 @@
 struct s {
   int a;
   const;
+  /* { dg-warning "useless type qualifier in empty declaration" "empty" { target *-*-* } .-1 } */
+  /* { dg-warning "empty declaration" "empty 2" { target *-*-* } .-2 } */
 };
-/* { dg-warning "useless type qualifier in empty declaration" "empty" { target *-*-* } 9 } */
-/* { dg-warning "empty declaration" "empty 2" { target *-*-* } 9 } */

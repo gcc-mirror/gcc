@@ -129,7 +129,7 @@ void __sfp_handle_exceptions (int);
   do {						\
     if (__builtin_expect (_fex, 0))		\
       __sfp_handle_exceptions (_fex);		\
-  } while (0);
+  } while (0)
 
 /* The FP_EX_* bits track whether the exception has occurred.  This macro
    must set the FP_EX_* bits of those exceptions which are configured to

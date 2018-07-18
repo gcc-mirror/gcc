@@ -79,6 +79,10 @@
    don't. */
 #undef HAVE_DECL_SNPRINTF
 
+/* Define to 1 if you have the declaration of `strnlen', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRNLEN
+
 /* Define to 1 if you have the declaration of `strtol', and to 0 if you don't.
    */
 #undef HAVE_DECL_STRTOL

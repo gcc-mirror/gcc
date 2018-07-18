@@ -49,7 +49,7 @@ int foo(void) {
   [stupidVar boo];
   [stupidVar foo];
   [stupidVar anotherMsg]; /* { dg-warning ".\\-anotherMsg. not found in protocol" } */
-       /* { dg-warning "no .\\-anotherMsg. method found" "" { target *-*-* } 51 } */
+       /* { dg-warning "no .\\-anotherMsg. method found" "" { target *-*-* } .-1 } */
   return 0;
 }
 

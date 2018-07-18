@@ -4,9 +4,9 @@
 /* { dg-options "-fno-common -Os" } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?kallsyms_token_index" } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?kallsyms_token_table" } } */
-/* { dg-skip-if "" { x86_64-*-mingw* } { "*" } { "" } } */
+/* { dg-skip-if "" { x86_64-*-mingw* } } */
 /* NVPTX's weak is applied to the definition,  not declaration.  */
-/* { dg-skip-if "" { nvptx-*-* } { "*" } { "" } } */
+/* { dg-skip-if "" { nvptx-*-* } } */
 
 extern int kallsyms_token_index[] __attribute__((weak));
 extern int kallsyms_token_table[] __attribute__((weak));

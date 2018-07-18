@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- slice_array class.
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -192,8 +192,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const size_t      _M_stride;
       const _Array<_Tp> _M_array;
 
+#if __cplusplus < 201103L
       // not implemented
       slice_array();
+#else
+    public:
+      slice_array() = delete;
+#endif
     };
 
   template<typename _Tp>
@@ -204,8 +209,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline
-    slice_array<_Tp>::slice_array(const slice_array<_Tp>& a)
-    : _M_sz(a._M_sz), _M_stride(a._M_stride), _M_array(a._M_array) {}
+    slice_array<_Tp>::slice_array(const slice_array<_Tp>& __a)
+    : _M_sz(__a._M_sz), _M_stride(__a._M_stride), _M_array(__a._M_array) {}
 
   //    template<typename _Tp>
   //    inline slice_array<_Tp>::~slice_array () {}

@@ -1,6 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -375,7 +375,8 @@ __mulvDI3 (DWtype u, DWtype v)
 		}
 	      else
 		{
-		  if (uu.s.high == (Wtype) -1 && vv.s.high == (Wtype) - 1)
+		  if ((uu.s.high & vv.s.high) == (Wtype) -1
+		      && (uu.s.low | vv.s.low) != 0)
 		    {
 		      DWunion ww = {.ll = (UDWtype) (UWtype) uu.s.low
 				    * (UDWtype) (UWtype) vv.s.low};
@@ -680,7 +681,8 @@ __udiv_w_sdiv (UWtype *rp __attribute__ ((__unused__)),
 #endif
 
 #if (defined (L_udivdi3) || defined (L_divdi3) || \
-     defined (L_umoddi3) || defined (L_moddi3))
+     defined (L_umoddi3) || defined (L_moddi3) || \
+     defined (L_divmoddi4))
 #define L_udivmoddi4
 #endif
 
@@ -937,7 +939,8 @@ __parityDI2 (UDWtype x)
 #ifdef TARGET_HAS_NO_HW_DIVIDE
 
 #if (defined (L_udivdi3) || defined (L_divdi3) || \
-     defined (L_umoddi3) || defined (L_moddi3))
+     defined (L_umoddi3) || defined (L_moddi3) || \
+     defined (L_divmoddi4))
 static inline __attribute__ ((__always_inline__))
 #endif
 UDWtype
@@ -1004,7 +1007,8 @@ __udivmoddi4 (UDWtype n, UDWtype d, UDWtype *rp)
 #else
 
 #if (defined (L_udivdi3) || defined (L_divdi3) || \
-     defined (L_umoddi3) || defined (L_moddi3))
+     defined (L_umoddi3) || defined (L_moddi3) || \
+     defined (L_divmoddi4))
 static inline __attribute__ ((__always_inline__))
 #endif
 UDWtype
@@ -1265,6 +1269,34 @@ __moddi3 (DWtype u, DWtype v)
   if (c)
     w = -w;
 
+  return w;
+}
+#endif
+
+#ifdef L_divmoddi4
+DWtype
+__divmoddi4 (DWtype u, DWtype v, DWtype *rp)
+{
+  Wtype c1 = 0, c2 = 0;
+  DWunion uu = {.ll = u};
+  DWunion vv = {.ll = v};
+  DWtype w;
+  DWtype r;
+
+  if (uu.s.high < 0)
+    c1 = ~c1, c2 = ~c2,
+    uu.ll = -uu.ll;
+  if (vv.s.high < 0)
+    c1 = ~c1,
+    vv.ll = -vv.ll;
+
+  w = __udivmoddi4 (uu.ll, vv.ll, (UDWtype*)&r);
+  if (c1)
+    w = -w;
+  if (c2)
+    r = -r;
+
+  *rp = r;
   return w;
 }
 #endif
@@ -1643,6 +1675,11 @@ FUNC (DWtype u)
     hi = -(UWtype) hi;
 
   UWtype count, shift;
+#if !defined (COUNT_LEADING_ZEROS_0) || COUNT_LEADING_ZEROS_0 != W_TYPE_SIZE
+  if (hi == 0)
+    count = W_TYPE_SIZE;
+  else
+#endif
   count_leading_zeros (count, hi);
 
   /* No leading bits means u == minimum.  */

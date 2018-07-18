@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-dom2" } */
 
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 extern void abort (void) __attribute__ ((__noreturn__));
 union tree_node;
 typedef union tree_node *tree;

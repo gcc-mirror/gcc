@@ -44,7 +44,7 @@ end module threadprivate3
   bar3 = omp_get_thread_num () - 2
   if (omp_get_thread_num () .ne. 0) then
     deallocate (bar3)
-    if (associated (bar3)) call abort
+    if (associated (bar3)) STOP 1
   else
     bar1 => var
   end if
@@ -55,13 +55,13 @@ end module threadprivate3
   baz%b = omp_get_thread_num () * 2 + 1
 !$omp end parallel
 
-  if (l) call abort
-  if (.not.associated (bar1)) call abort
-  if (any (bar1.ne.6)) call abort
-  if (.not.associated (bar3)) call abort
-  if (any (bar3 .ne. -2)) call abort
+  if (l) STOP 2
+  if (.not.associated (bar1)) STOP 3
+  if (any (bar1.ne.6)) STOP 4
+  if (.not.associated (bar3)) STOP 5
+  if (any (bar3 .ne. -2)) STOP 6
   deallocate (bar3)
-  if (associated (bar3)) call abort
+  if (associated (bar3)) STOP 7
 
   allocate (bar3 (10))
   bar3 = 17
@@ -102,7 +102,7 @@ end module threadprivate3
   l = l.or.(baz%b .ne. omp_get_thread_num () * 3 + 5)
 !$omp end parallel
 
-  if (l) call abort
+  if (l) STOP 8
 end
 
 ! { dg-final { cleanup-modules "threadprivate3" } }

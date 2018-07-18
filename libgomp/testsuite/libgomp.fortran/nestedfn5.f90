@@ -30,7 +30,7 @@ contains
       b = b + 1
     end do
 !$omp end simd
-    if (a /= 21 .or. b /= 12) call abort
+    if (a /= 21 .or. b /= 12) STOP 1
 !$omp simd aligned(f : c_sizeof (e(1)))
     do b = 1, 64
       g(b) = f
@@ -44,15 +44,15 @@ contains
     d(2:2,4:5) = d(2:2,4:5) + 1
 !$omp end task
 !$omp task depend(in : a, d(2:2,4:5))
-    if (a /= 22) call abort
-    if (any (d(2:2,4:5) /= 5)) call abort
+    if (a /= 22) STOP 2
+    if (any (d(2:2,4:5) /= 5)) STOP 3
 !$omp end task
 !$omp end taskgroup
 !$omp end single
 !$omp end parallel
     b = 10
 !$omp target data map (tofrom: a, d(2:3,4:4), q) map (from: l)
-!$omp target map (tofrom: b, d(2:3,4:4))
+!$omp target map (tofrom: b, d(2:3,4:4)) map (alloc: a, l)
     l = .false.
     if (a /= 22 .or. any (q /= 5)) l = .true.
     if (lbound (q, 1) /= 19 .or. ubound (q, 1) /= 27) l = .true.
@@ -64,14 +64,14 @@ contains
     d(2:3,4:4) = 9
 !$omp end target
 !$omp target update from (a, q, d(2:3,4:4), l)
-    if (a /= 6 .or. l .or. b /= 11 .or. any (q /= 8)) call abort
-    if (any (d(2:3,4:4) /= 9) .or. d(2,5) /= 5 .or. d(3,5) /= 4) call abort
+    if (a /= 6 .or. l .or. b /= 11 .or. any (q /= 8)) STOP 4
+    if (any (d(2:3,4:4) /= 9) .or. d(2,5) /= 5 .or. d(3,5) /= 4) STOP 5
     a = 12
     b = 13
     q = 14
     d = 15
 !$omp target update to (a, q, d(2:3,4:4))
-!$omp target map (tofrom: b, d(2:3,4:4))
+!$omp target map (tofrom: b, d(2:3,4:4)) map (alloc: a, l)
     if (a /= 12 .or. b /= 13 .or. any (q /= 14)) l = .true.
     l = l .or. any (d(2:3,4:4) /= 15)
 !$omp end target
@@ -82,15 +82,16 @@ contains
     m = 0
     n = 64
     o = 16
-    if (l) call abort
+    if (l) STOP 6
 !$omp target teams distribute parallel do simd if (.not.l) device(a) &
 !$omp & num_teams(b) dist_schedule(static, c) num_threads (h) &
-!$omp & reduction (+: m) safelen (n) schedule(static, o)
+!$omp & reduction (+: m) safelen (n) schedule(static, o) &
+!$omp & defaultmap(tofrom: scalar)
     do p = 1, 64
       m = m + 1
     end do
 !$omp end target teams distribute parallel do simd
-    if (m /= 64) call abort
+    if (m /= 64) STOP 7
 !$omp end target data
   end subroutine foo
 end subroutine bar

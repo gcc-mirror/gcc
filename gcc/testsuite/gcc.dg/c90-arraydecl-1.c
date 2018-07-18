@@ -16,15 +16,15 @@ void foo1 (int, int [*]); /* { dg-error "ISO C90" "\[*\] not in C90" } */
    is a C99 feature.  */
 
 void bar0 (int a[const]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "ISO C90" "\[quals\] not in C90" { target *-*-* } 18 } */
+/* { dg-error "ISO C90" "\[quals\] not in C90" { target *-*-* } .-1 } */
 void bar1 (int a[const 2]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "ISO C90" "\[quals expr\] not in C90" { target *-*-* } 20 } */
+/* { dg-error "ISO C90" "\[quals expr\] not in C90" { target *-*-* } .-1 } */
 void bar2 (int a[static 2]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "ISO C90" "\[static expr\] not in C90" { target *-*-* } 22 } */
+/* { dg-error "ISO C90" "\[static expr\] not in C90" { target *-*-* } .-1 } */
 void bar3 (int a[static const 2]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "ISO C90" "\[static quals expr\] not in C90" { target *-*-* } 24 } */
+/* { dg-error "ISO C90" "\[static quals expr\] not in C90" { target *-*-* } .-1 } */
 void bar4 (int a[const static 2]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "ISO C90" "\[quals static expr\] not in C90" { target *-*-* } 26 } */
+/* { dg-error "ISO C90" "\[quals static expr\] not in C90" { target *-*-* } .-1 } */
 
 /* Because [*] isn't properly implemented and so warns, we don't test here
    for [const *] yet.  */

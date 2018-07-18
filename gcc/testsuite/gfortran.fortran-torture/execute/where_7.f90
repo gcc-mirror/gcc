@@ -28,10 +28,10 @@ program evil_where
     end where
   end forall
 
-  if (any(v(1)%p(:) .ne. (/11, 10/))) call abort
-  if (any(v(2)%p(:) .ne. (/1, 2, 3, 4, 17, 18, 19, 20/))) call abort
-  if (any(v(4)%p(:) .ne. (/1, 2, 3, 4, 5, 6, 19, 20/))) call abort
-  if (any(v(5)%p(:) .ne. (/9, 10/))) call abort
+  if (any(v(1)%p(:) .ne. (/11, 10/))) STOP 1
+  if (any(v(2)%p(:) .ne. (/1, 2, 3, 4, 17, 18, 19, 20/))) STOP 2
+  if (any(v(4)%p(:) .ne. (/1, 2, 3, 4, 5, 6, 19, 20/))) STOP 3
+  if (any(v(5)%p(:) .ne. (/9, 10/))) STOP 4
 
   v(1)%p(:) = (/9, 10/)
   v(2)%p(:) = (/1, 2, 3, 4, 5, 6, 7, 8/)
@@ -44,10 +44,10 @@ program evil_where
     end where
   end forall
 
-  if (any(v(1)%p(:) .ne. (/9, 10/))) call abort
-  if (any(v(2)%p(:) .ne. (/13, 14, 15, 16, 5, 6, 7, 8/))) call abort
-  if (any(v(4)%p(:) .ne. (/13, 14, 15, 16, 17, 18, 19, 20/))) call abort
-  if (any(v(5)%p(:) .ne. (/11, 12/))) call abort
+  if (any(v(1)%p(:) .ne. (/9, 10/))) STOP 5
+  if (any(v(2)%p(:) .ne. (/13, 14, 15, 16, 5, 6, 7, 8/))) STOP 6
+  if (any(v(4)%p(:) .ne. (/13, 14, 15, 16, 17, 18, 19, 20/))) STOP 7
+  if (any(v(5)%p(:) .ne. (/11, 12/))) STOP 8
 
   ! I should really free the memory I've allocated.
 end program

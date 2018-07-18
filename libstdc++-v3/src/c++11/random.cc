@@ -1,6 +1,6 @@
 // random -*- C++ -*-
 
-// Copyright (C) 2012-2016 Free Software Foundation, Inc.
+// Copyright (C) 2012-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,6 +36,18 @@
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
+#endif
+
+#ifdef _GLIBCXX_HAVE_SYS_IOCTL_H
+# include <sys/ioctl.h>
+#endif
+
+#ifdef _GLIBCXX_HAVE_LINUX_TYPES_H
+# include <linux/types.h>
+#endif
+
+#ifdef _GLIBCXX_HAVE_LINUX_RANDOM_H
+# include <linux/random.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -159,6 +171,34 @@ namespace std _GLIBCXX_VISIBILITY(default)
   random_device::_M_getval_pretr1()
   {
     return _M_mt();
+  }
+
+  double
+  random_device::_M_getentropy() const noexcept
+  {
+#if defined _GLIBCXX_HAVE_SYS_IOCTL_H && defined RNDGETENTCNT
+    if (!_M_file)
+      return 0.0;
+
+    const int fd = fileno(static_cast<FILE*>(_M_file));
+    if (fd < 0)
+      return 0.0;
+
+    int ent;
+    if (ioctl(fd, RNDGETENTCNT, &ent) < 0)
+      return 0.0;
+
+    if (ent < 0)
+      return 0.0;
+
+    const int max = sizeof(result_type) * __CHAR_BIT__;
+    if (ent > max)
+      ent = max;
+
+    return static_cast<double>(ent);
+#else
+    return 0.0;
+#endif
   }
 
   template class mersenne_twister_engine<

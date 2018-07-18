@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-Wpedantic" }
 !
 ! PR fortran/53692
 !
@@ -20,8 +21,8 @@ contains
       integer, optional :: arg1(:)
       integer :: arg2(:)
 !      print *, fun1 (arg1, arg2)
-      if (size (fun1 (arg1, arg2)) /= 2) call abort() ! { dg-warning "is an array and OPTIONAL" }
-      if (any (fun1 (arg1, arg2) /= [1,2])) call abort() ! { dg-warning "is an array and OPTIONAL" }
+      if (size (fun1 (arg1, arg2)) /= 2) STOP 1 ! { dg-warning "is an array and OPTIONAL" }
+      if (any (fun1 (arg1, arg2) /= [1,2])) STOP 2 ! { dg-warning "is an array and OPTIONAL" }
    end subroutine
 
    elemental function fun1 (arg1, arg2)
@@ -43,8 +44,8 @@ contains
       integer, optional :: arg1(:)
       integer, optional :: arg2(:)
 !      print *, fun2 (arg1, arg2)
-      if (size (fun2 (arg1, arg2)) /= 2) call abort() ! { dg-warning "is an array and OPTIONAL" }
-      if (any (fun2 (arg1, arg2) /= [1,2])) call abort() ! { dg-warning "is an array and OPTIONAL" }
+      if (size (fun2 (arg1, arg2)) /= 2) STOP 3 ! { dg-warning "is an array and OPTIONAL" }
+      if (any (fun2 (arg1, arg2) /= [1,2])) STOP 4 ! { dg-warning "is an array and OPTIONAL" }
    end subroutine
 
    elemental function fun2 (arg1,arg2)

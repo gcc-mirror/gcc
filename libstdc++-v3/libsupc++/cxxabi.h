@@ -1,6 +1,6 @@
 // ABI Support -*- C++ -*-
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2018 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -182,7 +182,7 @@ namespace __cxxabiv1
    *  with GNU extensions. For example, this function is used in
    *  __gnu_cxx::__verbose_terminate_handler.
    *
-   *  See http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt12ch39.html
+   *  See https://gcc.gnu.org/onlinedocs/libstdc++/manual/ext_demangling.html
    *  for other examples of use.
    *
    *  @note The same demangling functionality is available via
@@ -279,7 +279,8 @@ namespace __cxxabiv1
 	__restrict_mask = 0x4,
 	__incomplete_mask = 0x8,
 	__incomplete_class_mask = 0x10,
-	__transaction_safe_mask = 0x20
+	__transaction_safe_mask = 0x20,
+	__noexcept_mask = 0x40
       };
 
   protected:

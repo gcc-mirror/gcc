@@ -13,16 +13,16 @@
 
   if (access(n,"") /= 0 .or. access(n," ") /= 0 .or. access(n,"r") /= 0 .or. &
       access(n,"R") /= 0 .or. access(n,"w") /= 0 .or. access(n,"W") /= 0) &
-    call abort
+    STOP 1
 
   call chmod (n, "a+x", i)
   if (i == 0) then
-    if (access(n,"x") /= 0 .or. access(n,"X") /= 0) call abort
+    if (access(n,"x") /= 0 .or. access(n,"X") /= 0) STOP 2
   end if
 
   call chmod (n, "a-w", i)
   if (i == 0 .and. getuid() /= 0) then
-    if (access(n,"w") == 0 .or. access(n,"W") == 0) call abort
+    if (access(n,"w") == 0 .or. access(n,"W") == 0) STOP 3
   end if
 
   open (10,file=n)
@@ -30,6 +30,6 @@
 
   if (access(n,"") == 0 .or. access(n," ") == 0 .or. access(n,"r") == 0 .or. &
       access(n,"R") == 0 .or. access(n,"w") == 0 .or. access(n,"W") == 0) &
-    call abort
+    STOP 4
 
   end

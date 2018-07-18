@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-shouldfail "asan" } */
-/* { dg-additional-options "-O0 -fno-lto" } */
+/* { dg-skip-if "" { *-*-* }  { "*" } { "-O0" } } */
 
 #include <stdlib.h>
 

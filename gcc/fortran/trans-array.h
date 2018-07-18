@@ -1,5 +1,5 @@
 /* Header for array handling functions
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -17,9 +17,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-
-/* Generate code to free an array.  */
-tree gfc_array_deallocate (tree, tree, tree, tree, tree, gfc_expr*);
 
 /* Generate code to initialize and allocate an array.  Statements are added to
    se, which should contain an expression for the array descriptor.  */
@@ -41,8 +38,6 @@ void gfc_trans_auto_array_allocation (tree, gfc_symbol *, gfc_wrapped_block *);
 void gfc_trans_dummy_array_bias (gfc_symbol *, tree, gfc_wrapped_block *);
 /* Generate entry and exit code for g77 calling convention arrays.  */
 void gfc_trans_g77_array (gfc_symbol *, gfc_wrapped_block *);
-/* Generate code to deallocate an array, if it is allocated.  */
-tree gfc_trans_dealloc_allocated (tree, bool, gfc_expr *);
 
 tree gfc_full_array_size (stmtblock_t *, tree, int);
 
@@ -52,15 +47,21 @@ tree gfc_copy_allocatable_data (tree dest, tree src, tree type, int rank);
 
 tree gfc_duplicate_allocatable_nocopy (tree, tree, tree, int);
 
-tree gfc_nullify_alloc_comp (gfc_symbol *, tree, int);
+bool gfc_caf_is_dealloc_only (int);
 
-tree gfc_deallocate_alloc_comp (gfc_symbol *, tree, int);
+tree gfc_nullify_alloc_comp (gfc_symbol *, tree, int, int cm = 0);
+
+tree gfc_deallocate_alloc_comp (gfc_symbol *, tree, int, int cm = 0);
 tree gfc_deallocate_alloc_comp_no_caf (gfc_symbol *, tree, int);
 tree gfc_reassign_alloc_comp_caf (gfc_symbol *, tree, tree);
 
-tree gfc_copy_alloc_comp (gfc_symbol *, tree, tree, int);
+tree gfc_copy_alloc_comp (gfc_symbol *, tree, tree, int, int);
 
 tree gfc_copy_only_alloc_comp (gfc_symbol *, tree, tree, int);
+
+tree gfc_allocate_pdt_comp (gfc_symbol *, tree, int, gfc_actual_arglist *);
+tree gfc_deallocate_pdt_comp (gfc_symbol *, tree, int);
+tree gfc_check_pdt_dummy (gfc_symbol *, tree, int, gfc_actual_arglist *);
 
 tree gfc_alloc_allocatable_for_assignment (gfc_loopinfo*, gfc_expr*, gfc_expr*);
 
@@ -135,6 +136,8 @@ void gfc_conv_tmp_array_ref (gfc_se * se);
 /* Translate a reference to an array temporary.  */
 void gfc_conv_tmp_ref (gfc_se *);
 
+/* Obtain the span of an array.  */
+tree gfc_get_array_span (tree, gfc_expr *);
 /* Evaluate an array expression.  */
 void gfc_conv_expr_descriptor (gfc_se *, gfc_expr *);
 /* Convert an array for passing as an actual function parameter.  */
@@ -155,9 +158,13 @@ tree gfc_conv_array_ubound (tree, int);
 void gfc_trans_array_cobounds (tree, stmtblock_t *, const gfc_symbol *);
 
 /* Build expressions for accessing components of an array descriptor.  */
+void gfc_get_descriptor_offsets_for_info (const_tree, tree *, tree *, tree *, tree *,
+					  tree *, tree *, tree *);
+
 tree gfc_conv_descriptor_data_get (tree);
 tree gfc_conv_descriptor_data_addr (tree);
 tree gfc_conv_descriptor_offset_get (tree);
+tree gfc_conv_descriptor_span_get (tree);
 tree gfc_conv_descriptor_dtype (tree);
 tree gfc_conv_descriptor_rank (tree);
 tree gfc_get_descriptor_dimension (tree);
@@ -168,6 +175,7 @@ tree gfc_conv_descriptor_token (tree);
 
 void gfc_conv_descriptor_data_set (stmtblock_t *, tree, tree);
 void gfc_conv_descriptor_offset_set (stmtblock_t *, tree, tree);
+void gfc_conv_descriptor_span_set (stmtblock_t *, tree, tree);
 void gfc_conv_descriptor_stride_set (stmtblock_t *, tree, tree, tree);
 void gfc_conv_descriptor_lbound_set (stmtblock_t *, tree, tree, tree);
 void gfc_conv_descriptor_ubound_set (stmtblock_t *, tree, tree, tree);

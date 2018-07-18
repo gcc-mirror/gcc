@@ -128,5 +128,8 @@ fi
 AC_SUBST(link_offloadmic_host)
 AC_SUBST(link_offloadmic_target)
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 # Must be last
 AC_OUTPUT

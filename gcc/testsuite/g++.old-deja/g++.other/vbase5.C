@@ -6,7 +6,7 @@
 // vbases. Normally that's just a pessimization, unfortunately during
 // constructoring it leads to uninitialized reads.
 
-extern "C" int printf (...);
+extern "C" int printf (const char*,...);
 
 int fail = 0;
 

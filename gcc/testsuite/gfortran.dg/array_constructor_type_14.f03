@@ -19,6 +19,6 @@ PROGRAM test
   arr = (/ foo :: x, foo(0, 1.) /)
   IF (arr(1)%i /= 42 .OR. arr(1)%x /= 42. .OR. &
       arr(2)%i /= 0 .OR. arr(2)%x /= 1.) THEN
-    CALL abort()
+    STOP 1
   END IF
 END PROGRAM test

@@ -37,6 +37,13 @@ package math
 //	Asinh(±Inf) = ±Inf
 //	Asinh(NaN) = NaN
 func Asinh(x float64) float64 {
+	return libc_asinh(x)
+}
+
+//extern asinh
+func libc_asinh(float64) float64
+
+func asinh(x float64) float64 {
 	const (
 		Ln2      = 6.93147180559945286227e-01 // 0x3FE62E42FEFA39EF
 		NearZero = 1.0 / (1 << 28)            // 2**-28

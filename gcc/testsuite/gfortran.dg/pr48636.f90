@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O3 -fdump-ipa-inline-details -fno-ipa-cp" }
+! { dg-options "-O3 -fdump-ipa-inline-details -fdump-ipa-fnsummary-details -fno-ipa-cp" }
 
 module foo
   implicit none
@@ -34,5 +34,5 @@ program main
 end program main
 
 ! { dg-final { scan-ipa-dump "bar\[^\\n\]*inline copy in MAIN" "inline" } }
-! { dg-final { scan-ipa-dump-times "phi predicate:" 3 "inline" } }
-! { dg-final { scan-ipa-dump "inline hints: loop_iterations" "inline" } }
+! { dg-final { scan-ipa-dump-times "phi predicate:" 3 "fnsummary" } }
+! { dg-final { scan-ipa-dump "IPA hints: loop_iterations" "inline" } }

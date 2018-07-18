@@ -7,10 +7,12 @@
 template<typename T> int *begin(T &t)
 {
     T::fail;
+    return 0;
 }
 template<typename T> int *end(T &t)
 {
     T::fail;
+    return 0;
 }
 
 //Test for defaults

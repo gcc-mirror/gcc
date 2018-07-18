@@ -85,6 +85,12 @@ extern int class();
 #endif  /* RS6000_DOUBLE_CHECK */
 
 
+#if defined( SOLARIS_MATH_12_CHECK )
+#if __cplusplus >= 201103L
+#endif
+#endif  /* SOLARIS_MATH_12_CHECK */
+
+
 #if defined( STRICT_ANSI_NOT_CTD_CHECK )
 #if 1 && \
 && defined(mumbling) |& ( !defined(__STRICT_ANSI__)) \

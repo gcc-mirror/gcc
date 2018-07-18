@@ -2,7 +2,7 @@
 
 /* { dg-options "-Wall" } */
 
-void foo(unsigned long* ulp); /* { dg-message "note: expected '\[^\n'\]*' but argument is of type '\[^\n'\]*'" "note: expected" { target *-*-* } 5 } */
+void foo(unsigned long* ulp); /* { dg-message "note: expected '\[^\n'\]*' but argument is of type '\[^\n'\]*'" "note: expected" } */
 
 
 void bar(long* lp) {

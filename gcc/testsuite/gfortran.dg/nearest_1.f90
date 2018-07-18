@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! { dg-options "-O0 -ffloat-store" }
 ! { dg-add-options ieee }
-! { dg-skip-if "Denormals not supported" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "Denormals not supported" { spu-*-* } }
 ! PR fortran/27021
 ! Original code submitted by Dominique d'Humieres
 ! Converted to Dejagnu for the testsuite by Steven G. Kargl
@@ -15,6 +15,6 @@ program chop
   y = nearest(tiny(o),-1.0)/2.0
   ix = transfer(x,ix)
   iy = transfer(y,iy)
-  if (ix /= iy) call abort
+  if (ix /= iy) STOP 1
 end program chop
 

@@ -1,4 +1,4 @@
-! { dg-options "-O3 -fgraphite-identity -floop-interchange " }
+! { dg-options "-O3 -fgraphite-identity -floop-nest-optimize " }
 
 module mqc_m
 

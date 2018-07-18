@@ -6,4 +6,4 @@
 /* { dg-options "-std=iso9899:1999 -pedantic-errors" } */
 
 void foo (a) { } /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "defaults" "C99 implicit int parameter error" { target *-*-* } 8 } */
+/* { dg-error "defaults" "C99 implicit int parameter error" { target *-*-* } .-1 } */

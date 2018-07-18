@@ -32,5 +32,5 @@ void foo (void)
   a->v2 = 1;
   a->v3 = [a value] - a->v2;	/* { dg-warning ".v3. is @protected" } */
   a->v4 = a->v3 - 1;		/* { dg-warning ".v4. is @private" } */
-  				/* { dg-warning ".v3. is @protected" "" { target *-*-* } 35 } */
+  				/* { dg-warning ".v3. is @protected" } */
 }

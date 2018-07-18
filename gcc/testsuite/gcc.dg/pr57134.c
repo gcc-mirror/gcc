@@ -18,7 +18,7 @@ static __inline__ __attribute__((always_inline)) int64_t
 atomic64_read(const atomic64_t *v)
 {
  int64_t t;
- __asm__ __volatile__("# %0, %1" : "=r"(t) : "m"(v->counter));
+ __asm__ __volatile__("" : "=r"(t) : "m"(v->counter));
  return t;
 }
 

@@ -1,6 +1,6 @@
 /* Language specific subroutines used for code generation on IBM S/390
    and zSeries
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
 
@@ -26,6 +26,8 @@
    compiled with -DIN_GCC_FRONTEND.  With that rtl.h cannot be
    included anymore - a mechanism supposed to avoid adding frontend -
    backend dependencies.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -61,7 +63,7 @@ type_for_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1] =
 #undef OB_DEF_VAR
 #define B_DEF(...)
 #define OB_DEF(...)
-#define OB_DEF_VAR(NAME, PATTERN, FLAGS, FNTYPE) FNTYPE,
+#define OB_DEF_VAR(NAME, PATTERN, FLAGS, OPFLAGS, FNTYPE) FNTYPE,
 #include "s390-builtins.def"
     BT_OV_MAX
   };
@@ -259,6 +261,7 @@ s390_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
   if (rid_code == RID_UNSIGNED || rid_code == RID_LONG
       || rid_code == RID_SHORT || rid_code == RID_SIGNED
       || rid_code == RID_INT || rid_code == RID_CHAR
+      || (rid_code == RID_FLOAT && TARGET_VXE)
       || rid_code == RID_DOUBLE)
     {
       expand_this = C_CPP_HASHNODE (__vector_keyword);
@@ -320,14 +323,31 @@ s390_cpu_cpp_builtins_internal (cpp_reader *pfile,
 {
   s390_def_or_undef_macro (pfile, MASK_OPT_HTM, old_opts, opts,
 			   "__HTM__", "__HTM__");
+  s390_def_or_undef_macro (pfile, MASK_OPT_VX, old_opts, opts,
+			   "__VX__", "__VX__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
-			   "__VEC__=10301", "__VEC__");
+			   "__VEC__=10302", "__VEC__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
 			   "__vector=__attribute__((vector_size(16)))",
 			   "__vector__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
 			   "__bool=__attribute__((s390_vector_bool)) unsigned",
 			   "__bool");
+  {
+    char macro_def[64];
+    int arch_level;
+    gcc_assert (s390_arch != PROCESSOR_NATIVE);
+    arch_level = (int)s390_arch + 3;
+    if (s390_arch >= PROCESSOR_2094_Z9_EC)
+      /* Z9_EC has the same level as Z9_109.  */
+      arch_level--;
+    /* Review when a new arch is added and increase the value.  */
+    char dummy[(PROCESSOR_max > 12) ? -1 : 1] __attribute__((unused));
+    sprintf (macro_def, "__ARCH__=%d", arch_level);
+    cpp_undef (pfile, "__ARCH__");
+    cpp_define (pfile, macro_def);
+  }
+
   if (!flag_iso)
     {
       s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
@@ -449,16 +469,18 @@ s390_expand_overloaded_builtin (location_t loc,
     case S390_OVERLOADED_BUILTIN_s390_vec_step:
       if (TREE_CODE (TREE_TYPE ((*arglist)[0])) != VECTOR_TYPE)
 	{
-	  error_at (loc, "Builtin vec_step can only be used on vector types.");
+	  error_at (loc, "builtin vec_step can only be used on vector types.");
 	  return error_mark_node;
 	}
       return build_int_cst (NULL_TREE,
 			    TYPE_VECTOR_SUBPARTS (TREE_TYPE ((*arglist)[0])));
+    case S390_OVERLOADED_BUILTIN_s390_vec_xl:
     case S390_OVERLOADED_BUILTIN_s390_vec_xld2:
     case S390_OVERLOADED_BUILTIN_s390_vec_xlw4:
       return build2 (MEM_REF, return_type,
 		     fold_build_pointer_plus ((*arglist)[1], (*arglist)[0]),
 		     build_int_cst (TREE_TYPE ((*arglist)[1]), 0));
+    case S390_OVERLOADED_BUILTIN_s390_vec_xst:
     case S390_OVERLOADED_BUILTIN_s390_vec_xstd2:
     case S390_OVERLOADED_BUILTIN_s390_vec_xstw4:
       return build2 (MODIFY_EXPR, TREE_TYPE((*arglist)[0]),
@@ -656,10 +678,18 @@ s390_adjust_builtin_arglist (unsigned int ob_fcode, tree decl,
 	case S390_OVERLOADED_BUILTIN_s390_vec_load_bndry:
 	  {
 	    int code;
-
 	    if (dest_arg_index == 1)
 	      {
-		switch (tree_to_uhwi ((**arglist)[src_arg_index]))
+		tree arg = (**arglist)[src_arg_index];
+
+		if (TREE_CODE (arg) != INTEGER_CST)
+		  {
+		    error ("constant value required for builtin %qF argument %d",
+			   decl, src_arg_index + 1);
+		    return;
+		  }
+
+		switch (tree_to_uhwi (arg))
 		  {
 		  case 64: code = 0; break;
 		  case 128: code = 1; break;
@@ -823,9 +853,10 @@ s390_resolve_overloaded_builtin (location_t loc,
   int last_match_type = INT_MAX;
   int last_match_index = -1;
   unsigned int all_op_flags;
+  const unsigned int ob_flags = bflags_for_builtin(ob_fcode);
   int num_matches = 0;
   tree target_builtin_decl, b_arg_chain, return_type;
-  enum s390_builtin_ov_type_index last_match_fntype_index;
+  enum s390_builtin_ov_type_index last_match_fntype_index = BT_OV_MAX;
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
@@ -836,14 +867,29 @@ s390_resolve_overloaded_builtin (location_t loc,
   /* 0...S390_BUILTIN_MAX-1 is for non-overloaded builtins.  */
   if (ob_fcode < S390_BUILTIN_MAX)
     {
-      if (bflags_for_builtin(ob_fcode) & B_INT)
+      if (ob_flags & B_INT)
 	{
 	  error_at (loc,
-		    "Builtin %qF is for GCC internal use only.",
+		    "builtin %qF is for GCC internal use only.",
 		    ob_fndecl);
 	  return error_mark_node;
 	}
       return NULL_TREE;
+    }
+
+  if (ob_flags & B_DEP)
+    warning_at (loc, 0, "builtin %qF is deprecated.", ob_fndecl);
+
+  if (!TARGET_VX && (ob_flags & B_VX))
+    {
+      error_at (loc, "%qF requires -mvx", ob_fndecl);
+      return error_mark_node;
+    }
+
+  if (!TARGET_VXE && (ob_flags & B_VXE))
+    {
+      error_at (loc, "%qF requires z14 or higher", ob_fndecl);
+      return error_mark_node;
     }
 
   ob_fcode -= S390_BUILTIN_MAX;
@@ -856,7 +902,7 @@ s390_resolve_overloaded_builtin (location_t loc,
   if (ob_args_num != in_args_num)
     {
       error_at (loc,
-		"Mismatch in number of arguments for builtin %qF. "
+		"mismatch in number of arguments for builtin %qF. "
 		"Expected: %d got %d", ob_fndecl,
 		ob_args_num, in_args_num);
       return error_mark_node;
@@ -916,6 +962,20 @@ s390_resolve_overloaded_builtin (location_t loc,
       return error_mark_node;
     }
 
+  if (!TARGET_VXE
+      && bflags_overloaded_builtin_var[last_match_index] & B_VXE)
+    {
+      error_at (loc, "%qs matching variant requires z14 or higher",
+		IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
+      return error_mark_node;
+    }
+
+  if (bflags_overloaded_builtin_var[last_match_index] & B_DEP)
+    warning_at (loc, 0, "%qs matching variant is deprecated.",
+		IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
+
+  /* Overloaded variants which have MAX set as low level builtin are
+     supposed to be replaced during expansion with something else.  */
   if (bt_for_overloaded_builtin_var[last_match_index] == S390_BUILTIN_MAX)
     target_builtin_decl = ob_fndecl;
   else

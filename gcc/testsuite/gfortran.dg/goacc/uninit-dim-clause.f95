@@ -1,7 +1,6 @@
-! { dg-do compile }
 ! { dg-additional-options "-Wuninitialized" }
 
-program test
+subroutine acc_parallel
   implicit none
   integer :: i, j, k
 
@@ -13,5 +12,18 @@ program test
 
   !$acc parallel vector_length(k) ! { dg-warning "is used uninitialized in this function" }
   !$acc end parallel
+end subroutine acc_parallel
 
-end program test
+subroutine acc_kernels
+  implicit none
+  integer :: i, j, k
+
+  !$acc kernels num_gangs(i) ! { dg-warning "is used uninitialized in this function" }
+  !$acc end kernels
+
+  !$acc kernels num_workers(j) ! { dg-warning "is used uninitialized in this function" }
+  !$acc end kernels
+
+  !$acc kernels vector_length(k) ! { dg-warning "is used uninitialized in this function" }
+  !$acc end kernels
+end subroutine acc_kernels

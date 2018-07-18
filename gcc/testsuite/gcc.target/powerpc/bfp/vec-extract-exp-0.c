@@ -5,7 +5,7 @@
 
 #include <altivec.h>
 
-__vector int
+__vector unsigned int
 get_exponents (__vector float *p)
 {
   __vector float source = *p;

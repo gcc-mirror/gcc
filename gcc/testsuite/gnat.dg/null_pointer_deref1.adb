@@ -17,5 +17,5 @@ procedure Null_Pointer_Deref1 is
 begin
    Data.all := 1;
 exception
-   when Constraint_Error | Storage_Error => null;
+   when others => null;
 end;

@@ -2,15 +2,52 @@
 #include <stddef.h>
 #include <altivec.h>
 
-static void
-check (TYPE expected, TYPE got)
-{
-  if (expected != got)
-    abort ();
-}
+#ifndef RTYPE
+#define RTYPE TYPE
+#endif
 
+#ifdef DO_TRACE
+#include <stdio.h>
+
+#define TRACE(STRING, NUM)						\
+do									\
+  {									\
+    fprintf (stderr, "%s%s: %2d\n", (NUM == 0) ? "\n" : "",		\
+	     STRING, (int)NUM);						\
+    fflush (stderr);							\
+  }									\
+while (0)
+
+#ifndef FAIL_FORMAT
+#define FAIL_FORMAT "%ld"
+#define FAIL_CAST(X) ((long)(X))
+#endif
+
+#define FAIL(EXP, GOT)							\
+do									\
+  {									\
+    fprintf (stderr, "Expected: " FAIL_FORMAT ", got " FAIL_FORMAT "\n", \
+	     FAIL_CAST (EXP), FAIL_CAST (GOT));				\
+    fflush (stderr);							\
+    abort ();								\
+  }									\
+while (0)
+
+#else
+#define TRACE(STRING, NUM)
+#define FAIL(EXP, GOT) abort ()
+#endif
+
+static void	    check	   (RTYPE, RTYPE)	__attribute__((__noinline__));
 static vector TYPE  deoptimize     (vector TYPE)	__attribute__((__noinline__));
 static vector TYPE *deoptimize_ptr (vector TYPE *)	__attribute__((__noinline__));
+
+static void
+check (RTYPE expected, RTYPE got)
+{
+  if (expected != got)
+    FAIL (expected, got);
+}
 
 static vector TYPE
 deoptimize (vector TYPE a)
@@ -29,116 +66,116 @@ deoptimize_ptr (vector TYPE *p)
 
 /* Tests for the normal case of vec_extract where the vector is in a register
    and returning the result in a register as a return value.  */
-TYPE
+RTYPE
 get_auto_n (vector TYPE a, ssize_t n)
 {
-  return vec_extract (a, n);
+  return (RTYPE) vec_extract (a, n);
 }
 
-TYPE
+RTYPE
 get_auto_0 (vector TYPE a)
 {
-  return vec_extract (a, 0);
+  return (RTYPE) vec_extract (a, 0);
 }
 
-TYPE
+RTYPE
 get_auto_1 (vector TYPE a)
 {
-  return vec_extract (a, 1);
+  return (RTYPE) vec_extract (a, 1);
 }
 
 #if ELEMENTS >= 4
-TYPE
+RTYPE
 get_auto_2 (vector TYPE a)
 {
-  return vec_extract (a, 2);
+  return (RTYPE) vec_extract (a, 2);
 }
 
-TYPE
+RTYPE
 get_auto_3 (vector TYPE a)
 {
-  return vec_extract (a, 3);
+  return (RTYPE) vec_extract (a, 3);
 }
 
 #if ELEMENTS >= 8
-TYPE
+RTYPE
 get_auto_4 (vector TYPE a)
 {
-  return vec_extract (a, 4);
+  return (RTYPE) vec_extract (a, 4);
 }
 
-TYPE
+RTYPE
 get_auto_5 (vector TYPE a)
 {
-  return vec_extract (a, 5);
+  return (RTYPE) vec_extract (a, 5);
 }
 
-TYPE
+RTYPE
 get_auto_6 (vector TYPE a)
 {
-  return vec_extract (a, 6);
+  return (RTYPE) vec_extract (a, 6);
 }
 
-TYPE
+RTYPE
 get_auto_7 (vector TYPE a)
 {
-  return vec_extract (a, 7);
+  return (RTYPE) vec_extract (a, 7);
 }
 
 #if ELEMENTS >= 16
-TYPE
+RTYPE
 get_auto_8 (vector TYPE a)
 {
-  return vec_extract (a, 8);
+  return (RTYPE) vec_extract (a, 8);
 }
 
-TYPE
+RTYPE
 get_auto_9 (vector TYPE a)
 {
-  return vec_extract (a, 9);
+  return (RTYPE) vec_extract (a, 9);
 }
 
-TYPE
+RTYPE
 get_auto_10 (vector TYPE a)
 {
-  return vec_extract (a, 10);
+  return (RTYPE) vec_extract (a, 10);
 }
 
-TYPE
+RTYPE
 get_auto_11 (vector TYPE a)
 {
-  return vec_extract (a, 11);
+  return (RTYPE) vec_extract (a, 11);
 }
 
-TYPE
+RTYPE
 get_auto_12 (vector TYPE a)
 {
-  return vec_extract (a, 12);
+  return (RTYPE) vec_extract (a, 12);
 }
 
-TYPE
+RTYPE
 get_auto_13 (vector TYPE a)
 {
-  return vec_extract (a, 13);
+  return (RTYPE) vec_extract (a, 13);
 }
 
-TYPE
+RTYPE
 get_auto_14 (vector TYPE a)
 {
-  return vec_extract (a, 14);
+  return (RTYPE) vec_extract (a, 14);
 }
 
-TYPE
+RTYPE
 get_auto_15 (vector TYPE a)
 {
-  return vec_extract (a, 15);
+  return (RTYPE) vec_extract (a, 15);
 }
 
 #endif
 #endif
 #endif
 
-typedef TYPE (*auto_func_type) (vector TYPE);
+typedef RTYPE (*auto_func_type) (vector TYPE);
 
 static auto_func_type get_auto_const[] = {
   get_auto_0,
@@ -173,7 +210,10 @@ do_auto (vector TYPE a)
   size_t i;
 
   for (i = 0; i < sizeof (get_auto_const) / sizeof (get_auto_const[0]); i++)
-    check (get_auto_n (a, i),  (get_auto_const[i]) (a));
+    {
+      TRACE ("auto", i);
+      check (get_auto_n (a, i), (get_auto_const[i]) (a));
+    }
 }
 
 
@@ -182,115 +222,115 @@ do_auto (vector TYPE a)
    in the right position to use a scalar store).  */
 
 void
-get_store_n (TYPE *p, vector TYPE a, ssize_t n)
+get_store_n (RTYPE *p, vector TYPE a, ssize_t n)
 {
-  *p = vec_extract (a, n);
+  *p = (RTYPE) vec_extract (a, n);
 }
 
 void
-get_store_0 (TYPE *p, vector TYPE a)
+get_store_0 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 0);
+  *p = (RTYPE) vec_extract (a, 0);
 }
 
 void
-get_store_1 (TYPE *p, vector TYPE a)
+get_store_1 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 1);
+  *p = (RTYPE) vec_extract (a, 1);
 }
 
 #if ELEMENTS >= 4
 void
-get_store_2 (TYPE *p, vector TYPE a)
+get_store_2 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 2);
+  *p = (RTYPE) vec_extract (a, 2);
 }
 
 void
-get_store_3 (TYPE *p, vector TYPE a)
+get_store_3 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 3);
+  *p = (RTYPE) vec_extract (a, 3);
 }
 
 #if ELEMENTS >= 8
 void
-get_store_4 (TYPE *p, vector TYPE a)
+get_store_4 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 4);
+  *p = (RTYPE) vec_extract (a, 4);
 }
 
 void
-get_store_5 (TYPE *p, vector TYPE a)
+get_store_5 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 5);
+  *p = (RTYPE) vec_extract (a, 5);
 }
 
 void
-get_store_6 (TYPE *p, vector TYPE a)
+get_store_6 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 6);
+  *p = (RTYPE) vec_extract (a, 6);
 }
 
 void
-get_store_7 (TYPE *p, vector TYPE a)
+get_store_7 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 7);
+  *p = (RTYPE) vec_extract (a, 7);
 }
 
 #if ELEMENTS >= 16
 void
-get_store_8 (TYPE *p, vector TYPE a)
+get_store_8 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 8);
+  *p = (RTYPE) vec_extract (a, 8);
 }
 
 void
-get_store_9 (TYPE *p, vector TYPE a)
+get_store_9 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 9);
+  *p = (RTYPE) vec_extract (a, 9);
 }
 
 void
-get_store_10 (TYPE *p, vector TYPE a)
+get_store_10 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 10);
+  *p = (RTYPE) vec_extract (a, 10);
 }
 
 void
-get_store_11 (TYPE *p, vector TYPE a)
+get_store_11 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 11);
+  *p = (RTYPE) vec_extract (a, 11);
 }
 
 void
-get_store_12 (TYPE *p, vector TYPE a)
+get_store_12 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 12);
+  *p = (RTYPE) vec_extract (a, 12);
 }
 
 void
-get_store_13 (TYPE *p, vector TYPE a)
+get_store_13 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 13);
+  *p = (RTYPE) vec_extract (a, 13);
 }
 
 void
-get_store_14 (TYPE *p, vector TYPE a)
+get_store_14 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 14);
+  *p = (RTYPE) vec_extract (a, 14);
 }
 
 void
-get_store_15 (TYPE *p, vector TYPE a)
+get_store_15 (RTYPE *p, vector TYPE a)
 {
-  *p = vec_extract (a, 15);
+  *p = (RTYPE) vec_extract (a, 15);
 }
 
 #endif
 #endif
 #endif
 
-typedef void (*store_func_type) (TYPE *, vector TYPE);
+typedef void (*store_func_type) (RTYPE *, vector TYPE);
 
 static store_func_type get_store_const[] = {
   get_store_0,
@@ -323,10 +363,11 @@ void
 do_store (vector TYPE a)
 {
   size_t i;
-  TYPE result_var, result_const;
+  RTYPE result_var, result_const;
 
   for (i = 0; i < sizeof (get_store_const) / sizeof (get_store_const[0]); i++)
     {
+      TRACE ("store", i);
       get_store_n (&result_var, a, i);
       (get_store_const[i]) (&result_const, a);
       check (result_var, result_const);
@@ -337,116 +378,116 @@ do_store (vector TYPE a)
 /* Tests for vec_extract where the vector comes from memory (the compiler can
    optimize this by doing a scalar load without having to load the whole
    vector).  */
-TYPE
+RTYPE
 get_pointer_n (vector TYPE *p, ssize_t n)
 {
-  return vec_extract (*p, n);
+  return (RTYPE) vec_extract (*p, n);
 }
 
-TYPE
+RTYPE
 get_pointer_0 (vector TYPE *p)
 {
-  return vec_extract (*p, 0);
+  return (RTYPE) vec_extract (*p, 0);
 }
 
-TYPE
+RTYPE
 get_pointer_1 (vector TYPE *p)
 {
-  return vec_extract (*p, 1);
+  return (RTYPE) vec_extract (*p, 1);
 }
 
 #if ELEMENTS >= 4
-TYPE
+RTYPE
 get_pointer_2 (vector TYPE *p)
 {
-  return vec_extract (*p, 2);
+  return (RTYPE) vec_extract (*p, 2);
 }
 
-TYPE
+RTYPE
 get_pointer_3 (vector TYPE *p)
 {
-  return vec_extract (*p, 3);
+  return (RTYPE) vec_extract (*p, 3);
 }
 
 #if ELEMENTS >= 8
-TYPE
+RTYPE
 get_pointer_4 (vector TYPE *p)
 {
-  return vec_extract (*p, 4);
+  return (RTYPE) vec_extract (*p, 4);
 }
 
-static TYPE
+RTYPE
 get_pointer_5 (vector TYPE *p)
 {
-  return vec_extract (*p, 5);
+  return (RTYPE) vec_extract (*p, 5);
 }
 
-TYPE
+RTYPE
 get_pointer_6 (vector TYPE *p)
 {
-  return vec_extract (*p, 6);
+  return (RTYPE) vec_extract (*p, 6);
 }
 
-TYPE
+RTYPE
 get_pointer_7 (vector TYPE *p)
 {
-  return vec_extract (*p, 7);
+  return (RTYPE) vec_extract (*p, 7);
 }
 
 #if ELEMENTS >= 16
-TYPE
+RTYPE
 get_pointer_8 (vector TYPE *p)
 {
-  return vec_extract (*p, 8);
+  return (RTYPE) vec_extract (*p, 8);
 }
 
-TYPE
+RTYPE
 get_pointer_9 (vector TYPE *p)
 {
-  return vec_extract (*p, 9);
+  return (RTYPE) vec_extract (*p, 9);
 }
 
-TYPE
+RTYPE
 get_pointer_10 (vector TYPE *p)
 {
-  return vec_extract (*p, 10);
+  return (RTYPE) vec_extract (*p, 10);
 }
 
-TYPE
+RTYPE
 get_pointer_11 (vector TYPE *p)
 {
-  return vec_extract (*p, 11);
+  return (RTYPE) vec_extract (*p, 11);
 }
 
-TYPE
+RTYPE
 get_pointer_12 (vector TYPE *p)
 {
-  return vec_extract (*p, 12);
+  return (RTYPE) vec_extract (*p, 12);
 }
 
-TYPE
+RTYPE
 get_pointer_13 (vector TYPE *p)
 {
-  return vec_extract (*p, 13);
+  return (RTYPE) vec_extract (*p, 13);
 }
 
-TYPE
+RTYPE
 get_pointer_14 (vector TYPE *p)
 {
-  return vec_extract (*p, 14);
+  return (RTYPE) vec_extract (*p, 14);
 }
 
-TYPE
+RTYPE
 get_pointer_15 (vector TYPE *p)
 {
-  return vec_extract (*p, 15);
+  return (RTYPE) vec_extract (*p, 15);
 }
 
 #endif
 #endif
 #endif
 
-typedef TYPE (*pointer_func_type) (vector TYPE *);
+typedef RTYPE (*pointer_func_type) (vector TYPE *);
 
 static pointer_func_type get_pointer_const[] = {
   get_pointer_0,
@@ -481,7 +522,10 @@ do_pointer (vector TYPE *p)
   size_t i;
 
   for (i = 0; i < sizeof (get_pointer_const) / sizeof (get_pointer_const[0]); i++)
-    check (get_pointer_n (p, i),  (get_pointer_const[i]) (p));
+    {
+      TRACE ("pointer", i);
+      check (get_pointer_n (p, i),  (get_pointer_const[i]) (p));
+    }
 }
 
 
@@ -489,116 +533,116 @@ do_pointer (vector TYPE *p)
    operation.  This is to make sure that if the compiler optimizes vec_extract
    from memory to be a scalar load, the address is correctly adjusted.  */
 
-TYPE
+RTYPE
 get_indexed_n (vector TYPE *p, size_t x, ssize_t n)
 {
-  return vec_extract (p[x], n);
+  return (RTYPE) vec_extract (p[x], n);
 }
 
-TYPE
+RTYPE
 get_indexed_0 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 0);
+  return (RTYPE) vec_extract (p[x], 0);
 }
 
-TYPE
+RTYPE
 get_indexed_1 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 1);
+  return (RTYPE) vec_extract (p[x], 1);
 }
 
 #if ELEMENTS >= 4
-TYPE
+RTYPE
 get_indexed_2 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 2);
+  return (RTYPE) vec_extract (p[x], 2);
 }
 
-TYPE
+RTYPE
 get_indexed_3 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 3);
+  return (RTYPE) vec_extract (p[x], 3);
 }
 
 #if ELEMENTS >= 8
-TYPE
+RTYPE
 get_indexed_4 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 4);
+  return (RTYPE) vec_extract (p[x], 4);
 }
 
-static TYPE
+RTYPE
 get_indexed_5 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 5);
+  return (RTYPE) vec_extract (p[x], 5);
 }
 
-TYPE
+RTYPE
 get_indexed_6 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 6);
+  return (RTYPE) vec_extract (p[x], 6);
 }
 
-TYPE
+RTYPE
 get_indexed_7 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 7);
+  return (RTYPE) vec_extract (p[x], 7);
 }
 
 #if ELEMENTS >= 16
-TYPE
+RTYPE
 get_indexed_8 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 8);
+  return (RTYPE) vec_extract (p[x], 8);
 }
 
-TYPE
+RTYPE
 get_indexed_9 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 9);
+  return (RTYPE) vec_extract (p[x], 9);
 }
 
-TYPE
+RTYPE
 get_indexed_10 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 10);
+  return (RTYPE) vec_extract (p[x], 10);
 }
 
-TYPE
+RTYPE
 get_indexed_11 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 11);
+  return (RTYPE) vec_extract (p[x], 11);
 }
 
-TYPE
+RTYPE
 get_indexed_12 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 12);
+  return (RTYPE) vec_extract (p[x], 12);
 }
 
-TYPE
+RTYPE
 get_indexed_13 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 13);
+  return (RTYPE) vec_extract (p[x], 13);
 }
 
-TYPE
+RTYPE
 get_indexed_14 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 14);
+  return (RTYPE) vec_extract (p[x], 14);
 }
 
-TYPE
+RTYPE
 get_indexed_15 (vector TYPE *p, size_t x)
 {
-  return vec_extract (p[x], 15);
+  return (RTYPE) vec_extract (p[x], 15);
 }
 
 #endif
 #endif
 #endif
 
-typedef TYPE (*indexed_func_type) (vector TYPE *, size_t);
+typedef RTYPE (*indexed_func_type) (vector TYPE *, size_t);
 
 static indexed_func_type get_indexed_const[] = {
   get_indexed_0,
@@ -633,7 +677,10 @@ do_indexed (vector TYPE *p, size_t x)
   size_t i;
 
   for (i = 0; i < sizeof (get_indexed_const) / sizeof (get_indexed_const[0]); i++)
-    check (get_indexed_n (p, x, i),  (get_indexed_const[i]) (p, x));
+    {
+      TRACE ("indexed", i);
+      check (get_indexed_n (p, x, i),  (get_indexed_const[i]) (p, x));
+    }
 }
 
 
@@ -641,116 +688,116 @@ do_indexed (vector TYPE *p, size_t x)
    with a pointer and a constant offset.  This will occur in ISA 3.0 which
    added d-form memory addressing for vectors.  */
 
-TYPE
+RTYPE
 get_ptr_plus1_n (vector TYPE *p, ssize_t n)
 {
-  return vec_extract (p[1], n);
+  return (RTYPE) vec_extract (p[1], n);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_0 (vector TYPE *p)
 {
-  return vec_extract (p[1], 0);
+  return (RTYPE) vec_extract (p[1], 0);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_1 (vector TYPE *p)
 {
-  return vec_extract (p[1], 1);
+  return (RTYPE) vec_extract (p[1], 1);
 }
 
 #if ELEMENTS >= 4
-TYPE
+RTYPE
 get_ptr_plus1_2 (vector TYPE *p)
 {
-  return vec_extract (p[1], 2);
+  return (RTYPE) vec_extract (p[1], 2);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_3 (vector TYPE *p)
 {
-  return vec_extract (p[1], 3);
+  return (RTYPE) vec_extract (p[1], 3);
 }
 
 #if ELEMENTS >= 8
-TYPE
+RTYPE
 get_ptr_plus1_4 (vector TYPE *p)
 {
-  return vec_extract (p[1], 4);
+  return (RTYPE) vec_extract (p[1], 4);
 }
 
-static TYPE
+RTYPE
 get_ptr_plus1_5 (vector TYPE *p)
 {
-  return vec_extract (p[1], 5);
+  return (RTYPE) vec_extract (p[1], 5);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_6 (vector TYPE *p)
 {
-  return vec_extract (p[1], 6);
+  return (RTYPE) vec_extract (p[1], 6);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_7 (vector TYPE *p)
 {
-  return vec_extract (p[1], 7);
+  return (RTYPE) vec_extract (p[1], 7);
 }
 
 #if ELEMENTS >= 16
-TYPE
+RTYPE
 get_ptr_plus1_8 (vector TYPE *p)
 {
-  return vec_extract (p[1], 8);
+  return (RTYPE) vec_extract (p[1], 8);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_9 (vector TYPE *p)
 {
-  return vec_extract (p[1], 9);
+  return (RTYPE) vec_extract (p[1], 9);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_10 (vector TYPE *p)
 {
-  return vec_extract (p[1], 10);
+  return (RTYPE) vec_extract (p[1], 10);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_11 (vector TYPE *p)
 {
-  return vec_extract (p[1], 11);
+  return (RTYPE) vec_extract (p[1], 11);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_12 (vector TYPE *p)
 {
-  return vec_extract (p[1], 12);
+  return (RTYPE) vec_extract (p[1], 12);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_13 (vector TYPE *p)
 {
-  return vec_extract (p[1], 13);
+  return (RTYPE) vec_extract (p[1], 13);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_14 (vector TYPE *p)
 {
-  return vec_extract (p[1], 14);
+  return (RTYPE) vec_extract (p[1], 14);
 }
 
-TYPE
+RTYPE
 get_ptr_plus1_15 (vector TYPE *p)
 {
-  return vec_extract (p[1], 15);
+  return (RTYPE) vec_extract (p[1], 15);
 }
 
 #endif
 #endif
 #endif
 
-typedef TYPE (*pointer_func_type) (vector TYPE *);
+typedef RTYPE (*pointer_func_type) (vector TYPE *);
 
 static pointer_func_type get_ptr_plus1_const[] = {
   get_ptr_plus1_0,
@@ -785,7 +832,10 @@ do_ptr_plus1 (vector TYPE *p)
   size_t i;
 
   for (i = 0; i < sizeof (get_ptr_plus1_const) / sizeof (get_ptr_plus1_const[0]); i++)
-    check (get_ptr_plus1_n (p, i),  (get_ptr_plus1_const[i]) (p));
+    {
+      TRACE ("ptr_plus1", i);
+      check (get_ptr_plus1_n (p, i),  (get_ptr_plus1_const[i]) (p));
+    }
 }
 
 
@@ -793,116 +843,116 @@ do_ptr_plus1 (vector TYPE *p)
 
 static vector TYPE s;
 
-TYPE
+RTYPE
 get_static_n (ssize_t n)
 {
-  return vec_extract (s, n);
+  return (RTYPE) vec_extract (s, n);
 }
 
-TYPE
+RTYPE
 get_static_0 (void)
 {
-  return vec_extract (s, 0);
+  return (RTYPE) vec_extract (s, 0);
 }
 
-TYPE
+RTYPE
 get_static_1 (void)
 {
-  return vec_extract (s, 1);
+  return (RTYPE) vec_extract (s, 1);
 }
 
 #if ELEMENTS >= 4
-TYPE
+RTYPE
 get_static_2 (void)
 {
-  return vec_extract (s, 2);
+  return (RTYPE) vec_extract (s, 2);
 }
 
-TYPE
+RTYPE
 get_static_3 (void)
 {
-  return vec_extract (s, 3);
+  return (RTYPE) vec_extract (s, 3);
 }
 
 #if ELEMENTS >= 8
-TYPE
+RTYPE
 get_static_4 (void)
 {
-  return vec_extract (s, 4);
+  return (RTYPE) vec_extract (s, 4);
 }
 
-TYPE
+RTYPE
 get_static_5 (void)
 {
-  return vec_extract (s, 5);
+  return (RTYPE) vec_extract (s, 5);
 }
 
-TYPE
+RTYPE
 get_static_6 (void)
 {
-  return vec_extract (s, 6);
+  return (RTYPE) vec_extract (s, 6);
 }
 
-TYPE
+RTYPE
 get_static_7 (void)
 {
-  return vec_extract (s, 7);
+  return (RTYPE) vec_extract (s, 7);
 }
 
 #if ELEMENTS >= 16
-TYPE
+RTYPE
 get_static_8 (void)
 {
-  return vec_extract (s, 8);
+  return (RTYPE) vec_extract (s, 8);
 }
 
-TYPE
+RTYPE
 get_static_9 (void)
 {
-  return vec_extract (s, 9);
+  return (RTYPE) vec_extract (s, 9);
 }
 
-TYPE
+RTYPE
 get_static_10 (void)
 {
-  return vec_extract (s, 10);
+  return (RTYPE) vec_extract (s, 10);
 }
 
-TYPE
+RTYPE
 get_static_11 (void)
 {
-  return vec_extract (s, 11);
+  return (RTYPE) vec_extract (s, 11);
 }
 
-TYPE
+RTYPE
 get_static_12 (void)
 {
-  return vec_extract (s, 12);
+  return (RTYPE) vec_extract (s, 12);
 }
 
-TYPE
+RTYPE
 get_static_13 (void)
 {
-  return vec_extract (s, 13);
+  return (RTYPE) vec_extract (s, 13);
 }
 
-TYPE
+RTYPE
 get_static_14 (void)
 {
-  return vec_extract (s, 14);
+  return (RTYPE) vec_extract (s, 14);
 }
 
-TYPE
+RTYPE
 get_static_15 (void)
 {
-  return vec_extract (s, 15);
+  return (RTYPE) vec_extract (s, 15);
 }
 
 #endif
 #endif
 #endif
 
-typedef TYPE (*static_func_type) (void);
+typedef RTYPE (*static_func_type) (void);
 
 static static_func_type get_static_const[] = {
   get_static_0,
@@ -937,7 +987,10 @@ do_static (void)
   size_t i;
 
   for (i = 0; i < sizeof (get_static_const) / sizeof (get_static_const[0]); i++)
-    check (get_static_n (i),  (get_static_const[i]) ());
+    {
+      TRACE ("static", i);
+      check (get_static_n (i),  (get_static_const[i]) ());
+    }
 }
 
 
@@ -945,116 +998,116 @@ do_static (void)
 
 vector TYPE g;
 
-TYPE
+RTYPE
 get_global_n (ssize_t n)
 {
-  return vec_extract (g, n);
+  return (RTYPE) vec_extract (g, n);
 }
 
-TYPE
+RTYPE
 get_global_0 (void)
 {
-  return vec_extract (g, 0);
+  return (RTYPE) vec_extract (g, 0);
 }
 
-TYPE
+RTYPE
 get_global_1 (void)
 {
-  return vec_extract (g, 1);
+  return (RTYPE) vec_extract (g, 1);
 }
 
 #if ELEMENTS >= 4
-TYPE
+RTYPE
 get_global_2 (void)
 {
-  return vec_extract (g, 2);
+  return (RTYPE) vec_extract (g, 2);
 }
 
-TYPE
+RTYPE
 get_global_3 (void)
 {
-  return vec_extract (g, 3);
+  return (RTYPE) vec_extract (g, 3);
 }
 
 #if ELEMENTS >= 8
-TYPE
+RTYPE
 get_global_4 (void)
 {
-  return vec_extract (g, 4);
+  return (RTYPE) vec_extract (g, 4);
 }
 
-TYPE
+RTYPE
 get_global_5 (void)
 {
-  return vec_extract (g, 5);
+  return (RTYPE) vec_extract (g, 5);
 }
 
-TYPE
+RTYPE
 get_global_6 (void)
 {
-  return vec_extract (g, 6);
+  return (RTYPE) vec_extract (g, 6);
 }
 
-TYPE
+RTYPE
 get_global_7 (void)
 {
-  return vec_extract (g, 7);
+  return (RTYPE) vec_extract (g, 7);
 }
 
 #if ELEMENTS >= 16
-TYPE
+RTYPE
 get_global_8 (void)
 {
-  return vec_extract (g, 8);
+  return (RTYPE) vec_extract (g, 8);
 }
 
-TYPE
+RTYPE
 get_global_9 (void)
 {
-  return vec_extract (g, 9);
+  return (RTYPE) vec_extract (g, 9);
 }
 
-TYPE
+RTYPE
 get_global_10 (void)
 {
-  return vec_extract (g, 10);
+  return (RTYPE) vec_extract (g, 10);
 }
 
-TYPE
+RTYPE
 get_global_11 (void)
 {
-  return vec_extract (g, 11);
+  return (RTYPE) vec_extract (g, 11);
 }
 
-TYPE
+RTYPE
 get_global_12 (void)
 {
-  return vec_extract (g, 12);
+  return (RTYPE) vec_extract (g, 12);
 }
 
-TYPE
+RTYPE
 get_global_13 (void)
 {
-  return vec_extract (g, 13);
+  return (RTYPE) vec_extract (g, 13);
 }
 
-TYPE
+RTYPE
 get_global_14 (void)
 {
-  return vec_extract (g, 14);
+  return (RTYPE) vec_extract (g, 14);
 }
 
-TYPE
+RTYPE
 get_global_15 (void)
 {
-  return vec_extract (g, 15);
+  return (RTYPE) vec_extract (g, 15);
 }
 
 #endif
 #endif
 #endif
 
-typedef TYPE (*global_func_type) (void);
+typedef RTYPE (*global_func_type) (void);
 
 static global_func_type get_global_const[] = {
   get_global_0,
@@ -1089,7 +1142,10 @@ do_global (void)
   size_t i;
 
   for (i = 0; i < sizeof (get_global_const) / sizeof (get_global_const[0]); i++)
-    check (get_global_n (i),  (get_global_const[i]) ());
+    {
+      TRACE ("global", i);
+      check (get_global_n (i),  (get_global_const[i]) ());
+    }
 }
 
 

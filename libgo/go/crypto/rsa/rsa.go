@@ -18,6 +18,8 @@
 // with v1.5/OAEP and signing/verifying with v1.5/PSS. If one needs to abstract
 // over the public-key primitive, the PrivateKey struct implements the
 // Decrypter and Signer interfaces from the crypto package.
+//
+// The RSA operations in this package are not implemented using constant-time algorithms.
 package rsa
 
 import (
@@ -27,6 +29,7 @@ import (
 	"errors"
 	"hash"
 	"io"
+	"math"
 	"math/big"
 )
 
@@ -89,17 +92,19 @@ func (priv *PrivateKey) Public() crypto.PublicKey {
 	return &priv.PublicKey
 }
 
-// Sign signs msg with priv, reading randomness from rand. If opts is a
+// Sign signs digest with priv, reading randomness from rand. If opts is a
 // *PSSOptions then the PSS algorithm will be used, otherwise PKCS#1 v1.5 will
-// be used. This method is intended to support keys where the private part is
-// kept in, for example, a hardware module. Common uses should use the Sign*
-// functions in this package.
-func (priv *PrivateKey) Sign(rand io.Reader, msg []byte, opts crypto.SignerOpts) ([]byte, error) {
+// be used.
+//
+// This method implements crypto.Signer, which is an interface to support keys
+// where the private part is kept in, for example, a hardware module. Common
+// uses should use the Sign* functions in this package directly.
+func (priv *PrivateKey) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) ([]byte, error) {
 	if pssOpts, ok := opts.(*PSSOptions); ok {
-		return SignPSS(rand, priv, pssOpts.Hash, msg, pssOpts)
+		return SignPSS(rand, priv, pssOpts.Hash, digest, pssOpts)
 	}
 
-	return SignPKCS1v15(rand, priv, opts.HashFunc(), msg)
+	return SignPKCS1v15(rand, priv, opts.HashFunc(), digest)
 }
 
 // Decrypt decrypts ciphertext with priv. If opts is nil or of type
@@ -214,6 +219,21 @@ func GenerateMultiPrimeKey(random io.Reader, nprimes int, bits int) (*PrivateKey
 		return nil, errors.New("crypto/rsa: GenerateMultiPrimeKey: nprimes must be >= 2")
 	}
 
+	if bits < 64 {
+		primeLimit := float64(uint64(1) << uint(bits/nprimes))
+		// pi approximates the number of primes less than primeLimit
+		pi := primeLimit / (math.Log(primeLimit) - 1)
+		// Generated primes start with 11 (in binary) so we can only
+		// use a quarter of them.
+		pi /= 4
+		// Use a factor of two to ensure that key generation terminates
+		// in a reasonable amount of time.
+		pi /= 2
+		if pi <= float64(nprimes) {
+			return nil, errors.New("crypto/rsa: too few primes of given length to generate an RSA key")
+		}
+	}
+
 	primes := make([]*big.Int, nprimes)
 
 NextSetOfPrimes:
@@ -268,9 +288,8 @@ NextSetOfPrimes:
 
 		g := new(big.Int)
 		priv.D = new(big.Int)
-		y := new(big.Int)
 		e := big.NewInt(int64(priv.E))
-		g.GCD(priv.D, y, e, totient)
+		g.GCD(priv.D, nil, e, totient)
 
 		if g.Cmp(bigOne) == 0 {
 			if priv.D.Sign() < 0 {
@@ -347,8 +366,8 @@ func encrypt(c *big.Int, pub *PublicKey, m *big.Int) *big.Int {
 // values could be used to ensure that a ciphertext for one purpose cannot be
 // used for another by an attacker. If not required it can be empty.
 //
-// The message must be no longer than the length of the public modulus less
-// twice the hash length plus 2.
+// The message must be no longer than the length of the public modulus minus
+// twice the hash length, minus a further 2.
 func EncryptOAEP(hash hash.Hash, random io.Reader, pub *PublicKey, msg []byte, label []byte) ([]byte, error) {
 	if err := checkPub(pub); err != nil {
 		return nil, err
@@ -407,8 +426,7 @@ var ErrVerification = errors.New("crypto/rsa: verification error")
 func modInverse(a, n *big.Int) (ia *big.Int, ok bool) {
 	g := new(big.Int)
 	x := new(big.Int)
-	y := new(big.Int)
-	g.GCD(x, y, a, n)
+	g.GCD(x, nil, a, n)
 	if g.Cmp(bigOne) != 0 {
 		// In this case, a and n aren't coprime and we cannot calculate
 		// the inverse. This happens because the values of n are nearly

@@ -18,12 +18,12 @@ PROGRAM test
 
   rr=f1(aa,1)
   ! WRITE(*,*) ' rr(1)=', rr(1), '  rr(2)=', rr(2)
-  IF (ANY(rr /= (/ 110, 132 /))) CALL ABORT
+  IF (ANY(rr /= (/ 110, 132 /))) STOP 1
 
   rr=0
   rr=ff(aa,1)
   ! WRITE(*,*) ' rr(1)=', rr(1), '  rr(2)=', rr(2)
-  IF (ANY(rr /= (/ 110, 132 /))) CALL ABORT
+  IF (ANY(rr /= (/ 110, 132 /))) STOP 2
 
 
   ! WRITE(*,*) 'But only f1 works if the optional parameter is absent:'
@@ -31,12 +31,12 @@ PROGRAM test
   rr=0
   rr=f1(aa)
   ! WRITE(*,*) ' rr(1)=', rr(1), '  rr(2)=', rr(2)
-  IF (ANY(rr /= (/ 110, 132 /))) CALL ABORT
+  IF (ANY(rr /= (/ 110, 132 /))) STOP 3
 
   rr = 0
   rr=ff(aa)
   ! WRITE(*,*) ' rr(1)=', rr(1), '  rr(2)=', rr(2)
-  IF (ANY(rr /= (/ 110, 132 /))) CALL ABORT
+  IF (ANY(rr /= (/ 110, 132 /))) STOP 4
 
 
 CONTAINS 

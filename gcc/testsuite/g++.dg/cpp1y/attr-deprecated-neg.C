@@ -1,22 +1,22 @@
 // { dg-do compile { target c++11_only } }
 // { dg-options "-pedantic" }
 
-class [[deprecated]] A // { dg-warning "'deprecated' is a C..14 feature" }
+class [[deprecated]] A // { dg-bogus "'deprecated' is a C..14 feature" }
 {
 };
 
-[[deprecated]] // { dg-warning "'deprecated' is a C..14 feature" }
+[[deprecated]] // { dg-bogus "'deprecated' is a C..14 feature" }
 int
 foo(int n)
 {
   return 42 + n;
 }
 
-class [[deprecated("B has been superceded by C")]] B // { dg-warning "'deprecated' is a C..14 feature" }
+class [[deprecated("B has been superceded by C")]] B // { dg-bogus "'deprecated' is a C..14 feature" }
 {
 };
 
-[[deprecated("bar is unsafe; use foobar instead")]] // { dg-warning "'deprecated' is a C..14 feature" }
+[[deprecated("bar is unsafe; use foobar instead")]] // { dg-bogus "'deprecated' is a C..14 feature" }
 int
 bar(int n)
 {

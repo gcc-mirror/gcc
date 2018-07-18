@@ -1,5 +1,5 @@
 /* Const/Copy propagation originating from degenerate PHIs
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -298,7 +298,6 @@ propagate_rhs_into_lhs (gimple *stmt, tree lhs, tree rhs,
 
 			  te->probability += e->probability;
 
-			  te->count += e->count;
 			  remove_edge (e);
 			  cfg_altered = true;
 			}
@@ -313,8 +312,6 @@ propagate_rhs_into_lhs (gimple *stmt, tree lhs, tree rhs,
 		  te->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
 		  te->flags &= ~EDGE_ABNORMAL;
 		  te->flags |= EDGE_FALLTHRU;
-		  if (te->probability > REG_BR_PROB_BASE)
-		    te->probability = REG_BR_PROB_BASE;
 	        }
 	    }
 	}
@@ -420,10 +417,11 @@ eliminate_degenerate_phis_1 (basic_block bb, bitmap interesting_names,
   basic_block son;
   bool cfg_altered = false;
 
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);)
     {
       gphi *phi = gsi.phi ();
-
+      /* We might end up removing PHI so advance the iterator now.  */
+      gsi_next (&gsi);
       cfg_altered |= eliminate_const_or_copy (phi, interesting_names,
 					      need_eh_cleanup);
     }
@@ -497,13 +495,11 @@ public:
 unsigned int
 pass_phi_only_cprop::execute (function *fun)
 {
-  bitmap interesting_names;
-  bitmap interesting_names1;
   bool cfg_altered = false;
 
   /* Bitmap of blocks which need EH information updated.  We can not
      update it on-the-fly as doing so invalidates the dominator tree.  */
-  bitmap need_eh_cleanup = BITMAP_ALLOC (NULL);
+  auto_bitmap need_eh_cleanup;
 
   /* INTERESTING_NAMES is effectively our worklist, indexed by
      SSA_NAME_VERSION.
@@ -515,8 +511,8 @@ pass_phi_only_cprop::execute (function *fun)
 
      Experiments have show we generally get better compilation
      time behavior with bitmaps rather than sbitmaps.  */
-  interesting_names = BITMAP_ALLOC (NULL);
-  interesting_names1 = BITMAP_ALLOC (NULL);
+  auto_bitmap interesting_names;
+  auto_bitmap interesting_names1;
 
   calculate_dominance_info (CDI_DOMINATORS);
   cfg_altered = false;
@@ -570,13 +566,8 @@ pass_phi_only_cprop::execute (function *fun)
   /* Propagation of const and copies may make some EH edges dead.  Purge
      such edges from the CFG as needed.  */
   if (!bitmap_empty_p (need_eh_cleanup))
-    {
-      gimple_purge_all_dead_eh_edges (need_eh_cleanup);
-      BITMAP_FREE (need_eh_cleanup);
-    }
+    gimple_purge_all_dead_eh_edges (need_eh_cleanup);
 
-  BITMAP_FREE (interesting_names);
-  BITMAP_FREE (interesting_names1);
   return 0;
 }
 

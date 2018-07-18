@@ -20,11 +20,11 @@ program reduction
      vsum = vsum + c
   end do
 
-  if (gs .ne. vsum) call abort ()
-  if (ws .ne. vsum) call abort ()
-  if (vs .ne. vsum) call abort ()
-  if (cs .ne. vsum) call abort ()
-  if (ns .ne. vsum) call abort ()
+  if (gs .ne. vsum) STOP 1
+  if (ws .ne. vsum) STOP 2
+  if (vs .ne. vsum) STOP 3
+  if (cs .ne. vsum) STOP 4
+  if (ns .ne. vsum) STOP 5
 end program reduction
 
 subroutine redsub_gang(sum, n, c)

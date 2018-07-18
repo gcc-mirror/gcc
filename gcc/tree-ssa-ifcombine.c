@@ -1,5 +1,5 @@
 /* Combining of if-expressions on trees.
-   Copyright (C) 2007-2016 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -332,6 +332,43 @@ recognize_bits_test (gcond *cond, tree *name, tree *bits, bool inv)
   return true;
 }
 
+
+/* Update profile after code in outer_cond_bb was adjusted so
+   outer_cond_bb has no condition.  */
+
+static void
+update_profile_after_ifcombine (basic_block inner_cond_bb,
+			        basic_block outer_cond_bb)
+{
+  edge outer_to_inner = find_edge (outer_cond_bb, inner_cond_bb);
+  edge outer2 = (EDGE_SUCC (outer_cond_bb, 0) == outer_to_inner
+		 ? EDGE_SUCC (outer_cond_bb, 1)
+		 : EDGE_SUCC (outer_cond_bb, 0));
+  edge inner_taken = EDGE_SUCC (inner_cond_bb, 0);
+  edge inner_not_taken = EDGE_SUCC (inner_cond_bb, 1);
+  
+  if (inner_taken->dest != outer2->dest)
+    std::swap (inner_taken, inner_not_taken);
+  gcc_assert (inner_taken->dest == outer2->dest);
+
+  /* In the following we assume that inner_cond_bb has single predecessor.  */
+  gcc_assert (single_pred_p (inner_cond_bb));
+
+  /* Path outer_cond_bb->(outer2) needs to be merged into path
+     outer_cond_bb->(outer_to_inner)->inner_cond_bb->(inner_taken)
+     and probability of inner_not_taken updated.  */
+
+  inner_cond_bb->count = outer_cond_bb->count;
+
+  inner_taken->probability = outer2->probability + outer_to_inner->probability
+			     * inner_taken->probability;
+  inner_not_taken->probability = profile_probability::always ()
+				 - inner_taken->probability;
+
+  outer_to_inner->probability = profile_probability::always ();
+  outer2->probability = profile_probability::never ();
+}
+
 /* If-convert on a and pattern with a common else block.  The inner
    if is specified by its INNER_COND_BB, the outer by OUTER_COND_BB.
    inner_inv, outer_inv and result_inv indicate whether the conditions
@@ -394,14 +431,16 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	outer_inv ? boolean_false_node : boolean_true_node);
       update_stmt (outer_cond);
 
+      update_profile_after_ifcombine (inner_cond_bb, outer_cond_bb);
+
       if (dump_file)
 	{
 	  fprintf (dump_file, "optimizing double bit test to ");
-	  print_generic_expr (dump_file, name1, 0);
+	  print_generic_expr (dump_file, name1);
 	  fprintf (dump_file, " & T == T\nwith temporary T = (1 << ");
-	  print_generic_expr (dump_file, bit1, 0);
+	  print_generic_expr (dump_file, bit1);
 	  fprintf (dump_file, ") | (1 << ");
-	  print_generic_expr (dump_file, bit2, 0);
+	  print_generic_expr (dump_file, bit2);
 	  fprintf (dump_file, ")\n");
 	}
 
@@ -471,15 +510,16 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       gimple_cond_set_condition_from_tree (outer_cond,
 	outer_inv ? boolean_false_node : boolean_true_node);
       update_stmt (outer_cond);
+      update_profile_after_ifcombine (inner_cond_bb, outer_cond_bb);
 
       if (dump_file)
 	{
 	  fprintf (dump_file, "optimizing bits or bits test to ");
-	  print_generic_expr (dump_file, name1, 0);
+	  print_generic_expr (dump_file, name1);
 	  fprintf (dump_file, " & T != 0\nwith temporary T = ");
-	  print_generic_expr (dump_file, bits1, 0);
+	  print_generic_expr (dump_file, bits1);
 	  fprintf (dump_file, " | ");
-	  print_generic_expr (dump_file, bits2, 0);
+	  print_generic_expr (dump_file, bits2);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -516,7 +556,7 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	{
 	  tree t1, t2;
 	  gimple_stmt_iterator gsi;
-	  if (!LOGICAL_OP_NON_SHORT_CIRCUIT)
+	  if (!LOGICAL_OP_NON_SHORT_CIRCUIT || flag_sanitize_coverage)
 	    return false;
 	  /* Only do this optimization if the inner bb contains only the conditional. */
 	  if (!gsi_one_before_end_p (gsi_start_nondebug_after_labels_bb (inner_cond_bb)))
@@ -554,11 +594,12 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       gimple_cond_set_condition_from_tree (outer_cond,
 	outer_inv ? boolean_false_node : boolean_true_node);
       update_stmt (outer_cond);
+      update_profile_after_ifcombine (inner_cond_bb, outer_cond_bb);
 
       if (dump_file)
 	{
 	  fprintf (dump_file, "optimizing two comparisons to ");
-	  print_generic_expr (dump_file, t, 0);
+	  print_generic_expr (dump_file, t);
 	  fprintf (dump_file, "\n");
 	}
 

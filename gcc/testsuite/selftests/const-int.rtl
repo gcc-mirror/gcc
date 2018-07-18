@@ -1,0 +1,20 @@
+(function "const_int_examples"
+  (insn-chain
+    (block 2
+      (edge-from entry (flags "FALLTHRU"))
+      (cinsn 1
+        (set (reg:SI <0>) (const_int 0))
+        "test.c":2 (nil))
+      (cinsn 2
+        (set (reg:SI <1>) (const_int 1))
+        "test.c":2 (nil))
+      (cinsn 3
+        (set (reg:SI <2>) (const_int -1))
+        "test.c":2 (nil))
+      (cinsn 4
+        (set (reg:SI <3>) (const_int 256))
+        "test.c":2 (nil))
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 2
+  ) ;; insn-chain
+) ;; function

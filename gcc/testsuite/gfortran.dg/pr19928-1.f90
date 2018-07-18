@@ -7,5 +7,5 @@ program main
   character (len = 3), dimension (2) :: b
   a = (/ 'abcde', 'ghijk' /)
   b = a(:)(2:4)
-  if (b(1) .ne. 'bcd' .or. b(2) .ne. 'hij') call abort
+  if (b(1) .ne. 'bcd' .or. b(2) .ne. 'hij') STOP 1
 end program main

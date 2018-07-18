@@ -200,7 +200,7 @@ func nrgbaModel(c Color) Color {
 	if a == 0 {
 		return NRGBA{0, 0, 0, 0}
 	}
-	// Since Color.RGBA returns a alpha-premultiplied color, we should have r <= a && g <= a && b <= a.
+	// Since Color.RGBA returns an alpha-premultiplied color, we should have r <= a && g <= a && b <= a.
 	r = (r * 0xffff) / a
 	g = (g * 0xffff) / a
 	b = (b * 0xffff) / a
@@ -218,7 +218,7 @@ func nrgba64Model(c Color) Color {
 	if a == 0 {
 		return NRGBA64{0, 0, 0, 0}
 	}
-	// Since Color.RGBA returns a alpha-premultiplied color, we should have r <= a && g <= a && b <= a.
+	// Since Color.RGBA returns an alpha-premultiplied color, we should have r <= a && g <= a && b <= a.
 	r = (r * 0xffff) / a
 	g = (g * 0xffff) / a
 	b = (b * 0xffff) / a
@@ -246,8 +246,18 @@ func grayModel(c Color) Color {
 		return c
 	}
 	r, g, b, _ := c.RGBA()
-	y := (299*r + 587*g + 114*b + 500) / 1000
-	return Gray{uint8(y >> 8)}
+
+	// These coefficients (the fractions 0.299, 0.587 and 0.114) are the same
+	// as those given by the JFIF specification and used by func RGBToYCbCr in
+	// ycbcr.go.
+	//
+	// Note that 19595 + 38470 + 7471 equals 65536.
+	//
+	// The 24 is 16 + 8. The 16 is the same as used in RGBToYCbCr. The 8 is
+	// because the return value is 8 bit color, not 16 bit color.
+	y := (19595*r + 38470*g + 7471*b + 1<<15) >> 24
+
+	return Gray{uint8(y)}
 }
 
 func gray16Model(c Color) Color {
@@ -255,7 +265,14 @@ func gray16Model(c Color) Color {
 		return c
 	}
 	r, g, b, _ := c.RGBA()
-	y := (299*r + 587*g + 114*b + 500) / 1000
+
+	// These coefficients (the fractions 0.299, 0.587 and 0.114) are the same
+	// as those given by the JFIF specification and used by func RGBToYCbCr in
+	// ycbcr.go.
+	//
+	// Note that 19595 + 38470 + 7471 equals 65536.
+	y := (19595*r + 38470*g + 7471*b + 1<<15) >> 16
+
 	return Gray16{uint16(y)}
 }
 
@@ -295,12 +312,29 @@ func (p Palette) Index(c Color) int {
 //
 // x and y are both assumed to be in the range [0, 0xffff].
 func sqDiff(x, y uint32) uint32 {
-	var d uint32
-	if x > y {
-		d = x - y
-	} else {
-		d = y - x
-	}
+	// The canonical code of this function looks as follows:
+	//
+	//	var d uint32
+	//	if x > y {
+	//		d = x - y
+	//	} else {
+	//		d = y - x
+	//	}
+	//	return (d * d) >> 2
+	//
+	// Language spec guarantees the following properties of unsigned integer
+	// values operations with respect to overflow/wrap around:
+	//
+	// > For unsigned integer values, the operations +, -, *, and << are
+	// > computed modulo 2n, where n is the bit width of the unsigned
+	// > integer's type. Loosely speaking, these unsigned integer operations
+	// > discard high bits upon overflow, and programs may rely on ``wrap
+	// > around''.
+	//
+	// Considering these properties and the fact that this function is
+	// called in the hot paths (x,y loops), it is reduced to the below code
+	// which is slightly faster. See TestSqDiff for correctness check.
+	d := x - y
 	return (d * d) >> 2
 }
 

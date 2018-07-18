@@ -22,24 +22,24 @@ int; /* { dg-error "useless type name in empty declaration" } */
 long; /* { dg-error "useless type name in empty declaration" } */
 T; /* { dg-error "useless type name in empty declaration" } */
 static const; /* { dg-warning "useless storage class specifier in empty declaration" } */
-/* { dg-error "empty declaration" "static const" { target *-*-* } 24 } */
+/* { dg-error "empty declaration" "static const" { target *-*-* } .-1 } */
 union { long b; }; /* { dg-error "unnamed struct/union that defines no instances" } */
 
 /* Multiple type names (errors).  */
 struct s1 int; /* { dg-error "two or more data types in declaration specifiers" } */
 char union u1; /* { dg-error "two or more data types in declaration specifiers" } */
-/* { dg-error "useless type name in empty declaration" "char union" { target *-*-* } 30 } */
+/* { dg-error "useless type name in empty declaration" "char union" { target *-*-* } .-1 } */
 double enum { E2 }; /* { dg-error "two or more data types in declaration specifiers" } */
-/* { dg-error "useless type name in empty declaration" "double enum" { target *-*-* } 32 } */
+/* { dg-error "useless type name in empty declaration" "double enum" { target *-*-* } .-1 } */
 T struct s2; /* { dg-error "two or more data types in declaration specifiers" } */
-/* { dg-error "useless type name in empty declaration" "T struct" { target *-*-* } 34 } */
+/* { dg-error "useless type name in empty declaration" "T struct" { target *-*-* } .-1 } */
 long union u2; /* { dg-error "two or more data types in declaration specifiers" } */
-/* { dg-error "useless type name in empty declaration" "empty" { target *-*-* } 36 } */
+/* { dg-error "useless type name in empty declaration" "empty" { target *-*-* } .-1 } */
 struct s3 short; /* { dg-error "two or more data types in declaration specifiers" } */
 union u3 signed; /* { dg-error "two or more data types in declaration specifiers" } */
 unsigned struct s4; /* { dg-error "two or more data types in declaration specifiers" } */
-/* { dg-error "useless type name in empty declaration" "empty" { target *-*-* } 40 } */
+/* { dg-error "useless type name in empty declaration" "empty" { target *-*-* } .-1 } */
 _Complex enum { E3 }; /* { dg-error "two or more data types in declaration specifiers" } */
-/* { dg-error "useless type name in empty declaration" "empty" { target *-*-* } 42 } */
-/* { dg-error "ISO C90 does not support complex types" "C90" { target *-*-* } 42 } */
-/* { dg-error "ISO C does not support plain 'complex' meaning 'double complex'" "ISO C" { target *-*-* } 42 } */
+/* { dg-error "useless type name in empty declaration" "empty" { target *-*-* } .-1 } */
+/* { dg-error "ISO C90 does not support complex types" "C90" { target *-*-* } .-2 } */
+/* { dg-error "ISO C does not support plain 'complex' meaning 'double complex'" "ISO C" { target *-*-* } .-3 } */

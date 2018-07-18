@@ -20,7 +20,7 @@ template<template<class> class D,class E> class C
 
 template<template<class> class D,class E> int C<D,E>::f()
 {
-	return d.f();			// { dg-error "" } d not properly declared
+	return d.f();			// { dg-prune-output "was not declared" }
 }
 
 int main()

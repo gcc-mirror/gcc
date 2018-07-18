@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2008-2015, AdaCore                     *
+ *                     Copyright (C) 2008-2018, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -85,6 +85,12 @@ __gnat_setup_child_communication (void *d ATTRIBUTE_UNUSED,
 
 int
 __gnat_terminate_process (void *desc ATTRIBUTE_UNUSED)
+{
+  return -1;
+}
+
+int
+__gnat_terminate_pid (int pid ATTRIBUTE_UNUSED)
 {
   return -1;
 }
@@ -962,6 +968,47 @@ __gnat_terminate_process (struct TTY_Process* p)
     return 0;
 }
 
+typedef struct {
+  DWORD dwProcessId;
+  HANDLE hwnd;
+} pid_struct;
+
+static BOOL CALLBACK
+find_process_handle (HWND hwnd, pid_struct * ps)
+{
+  DWORD thread_id;
+  DWORD process_id;
+
+  thread_id = GetWindowThreadProcessId (hwnd, &process_id);
+  if (process_id == ps->dwProcessId)
+    {
+      ps->hwnd = hwnd;
+      return FALSE;
+    }
+  /* keep looking */
+  return TRUE;
+}
+
+int
+__gnat_terminate_pid (int pid)
+{
+  pid_struct ps;
+
+  ps.dwProcessId = pid;
+  ps.hwnd = 0;
+  EnumWindows ((WNDENUMPROC) find_process_handle, (LPARAM) &ps);
+
+  if (ps.hwnd)
+    {
+      if (!TerminateProcess (ps.hwnd, 1))
+	return -1;
+      else
+	return 0;
+    }
+
+  return -1;
+}
+
 /* wait for process pid to terminate and return the process status. This
    implementation is different from the adaint.c one for Windows as it uses
    the Win32 API instead of the C one. */
@@ -1064,7 +1111,7 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 /* On some system termio is either absent or including it will disable termios
    (HP-UX) */
 #if !defined (__hpux__) && !defined (BSD) && !defined (__APPLE__) \
-  && !defined (__rtems__)
+  && !defined (__rtems__) && !defined (__QNXNTO__)
 #   include <termio.h>
 #endif
 
@@ -1410,7 +1457,8 @@ __gnat_setup_child_communication
 
 #ifdef TIOCSCTTY
   /* make the tty the controlling terminal */
-  status = ioctl (desc->slave_fd, TIOCSCTTY, 0);
+  if ((status = ioctl (desc->slave_fd, TIOCSCTTY, 0)) == -1)
+    _exit (1);
 #endif
 
   /* adjust tty settings */
@@ -1424,14 +1472,15 @@ __gnat_setup_child_communication
   if (desc->slave_fd > 2) close (desc->slave_fd);
 
   /* adjust process group settings */
-  status = setpgid (pid, pid);
-  status = tcsetpgrp (0, pid);
+  /* ignore failures of the following two commands as the context might not
+   * allow making those changes. */
+  setpgid (pid, pid);
+  tcsetpgrp (0, pid);
 
   /* launch the program */
   execvp (new_argv[0], new_argv);
 
-  /* return the pid */
-  return pid;
+  _exit (1);
 }
 
 /* send_signal_via_characters - Send a characters that will trigger a signal
@@ -1495,6 +1544,17 @@ __gnat_interrupt_pid (int pid)
 int __gnat_terminate_process (pty_desc *desc)
 {
   return kill (desc->child_pid, SIGKILL);
+}
+
+/* __gnat_terminate_pid - kill a process
+ *
+ * PARAMETERS
+ *   pid unix process id
+ */
+int
+__gnat_terminate_pid (int pid)
+{
+  return kill (pid, SIGKILL);
 }
 
 /* __gnat_tty_waitpid - wait for the child process to die
@@ -1562,9 +1622,9 @@ pty_desc *
 __gnat_new_tty (void)
 {
   int status;
-  pty_desc* desc;
-  status = allocate_pty_desc (&desc);
-  child_setup_tty (desc->master_fd);
+  pty_desc* desc = NULL;
+  if ((status = allocate_pty_desc (&desc)))
+    child_setup_tty (desc->master_fd);
   return desc;
 }
 

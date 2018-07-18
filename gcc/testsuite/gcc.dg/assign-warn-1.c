@@ -50,63 +50,63 @@ TESTRET(dfe, void *, fp); /* { dg-warning "ISO C forbids return between function
 
 TESTARG(sua, int *, unsigned int *); /* { dg-warning "pointer targets in passing argument 1 of 'suaF' differ in signedness" } */
 TESTARP(sub, int *, unsigned int *); /* { dg-warning "pointer targets in passing argument 1 of 'subFp.x' differ in signedness" } */
-TESTASS(suc, int *, unsigned int *); /* { dg-warning "pointer targets in assignment differ in signedness" } */
-TESTINI(sud, int *, unsigned int *); /* { dg-warning "pointer targets in initialization differ in signedness" } */
-TESTRET(sue, int *, unsigned int *); /* { dg-warning "pointer targets in return differ in signedness" } */
+TESTASS(suc, int *, unsigned int *); /* { dg-warning "pointer targets in assignment from 'unsigned int \\*' to 'int \\*' differ in signedness" } */
+TESTINI(sud, int *, unsigned int *); /* { dg-warning "pointer targets in initialization of 'int \\*' from 'unsigned int \\*' differ in signedness" } */
+TESTRET(sue, int *, unsigned int *); /* { dg-warning "pointer targets in returning 'unsigned int \\*' from a function with return type 'int \\*' differ in signedness" } */
 
 TESTARG(usa, unsigned int *, int *); /* { dg-warning "pointer targets in passing argument 1 of 'usaF' differ in signedness" } */
 TESTARP(usb, unsigned int *, int *); /* { dg-warning "pointer targets in passing argument 1 of 'usbFp.x' differ in signedness" } */
-TESTASS(usc, unsigned int *, int *); /* { dg-warning "pointer targets in assignment differ in signedness" } */
-TESTINI(usd, unsigned int *, int *); /* { dg-warning "pointer targets in initialization differ in signedness" } */
-TESTRET(use, unsigned int *, int *); /* { dg-warning "pointer targets in return differ in signedness" } */
+TESTASS(usc, unsigned int *, int *); /* { dg-warning "pointer targets in assignment from 'int \\*' to 'unsigned int \\*' differ in signedness" } */
+TESTINI(usd, unsigned int *, int *); /* { dg-warning "pointer targets in initialization of 'unsigned int \\*' from 'int \\*' differ in signedness" } */
+TESTRET(use, unsigned int *, int *); /* { dg-warning "pointer targets in returning 'int \\*' from a function with return type 'unsigned int \\*' differ in signedness" } */
 
 TESTARG(cua, char *, unsigned char *); /* { dg-warning "pointer targets in passing argument 1 of 'cuaF' differ in signedness" } */
 TESTARP(cub, char *, unsigned char *); /* { dg-warning "pointer targets in passing argument 1 of 'cubFp.x' differ in signedness" } */
-TESTASS(cuc, char *, unsigned char *); /* { dg-warning "pointer targets in assignment differ in signedness" } */
-TESTINI(cud, char *, unsigned char *); /* { dg-warning "pointer targets in initialization differ in signedness" } */
-TESTRET(cue, char *, unsigned char *); /* { dg-warning "pointer targets in return differ in signedness" } */
+TESTASS(cuc, char *, unsigned char *); /* { dg-warning "pointer targets in assignment from 'unsigned char \\*' to 'char \\*' differ in signedness" } */
+TESTINI(cud, char *, unsigned char *); /* { dg-warning "pointer targets in initialization of 'char \\*' from 'unsigned char \\*' differ in signedness" } */
+TESTRET(cue, char *, unsigned char *); /* { dg-warning "pointer targets in returning 'unsigned char \\*' from a function with return type 'char \\*' differ in signedness" } */
 
 TESTARG(uca, unsigned char *, char *); /* { dg-warning "pointer targets in passing argument 1 of 'ucaF' differ in signedness" } */
 TESTARP(ucb, unsigned char *, char *); /* { dg-warning "pointer targets in passing argument 1 of 'ucbFp.x' differ in signedness" } */
-TESTASS(ucc, unsigned char *, char *); /* { dg-warning "pointer targets in assignment differ in signedness" } */
-TESTINI(ucd, unsigned char *, char *); /* { dg-warning "pointer targets in initialization differ in signedness" } */
-TESTRET(uce, unsigned char *, char *); /* { dg-warning "pointer targets in return differ in signedness" } */
+TESTASS(ucc, unsigned char *, char *); /* { dg-warning "pointer targets in assignment from 'char \\*' to 'unsigned char \\*' differ in signedness" } */
+TESTINI(ucd, unsigned char *, char *); /* { dg-warning "pointer targets in initialization of 'unsigned char \\*' from 'char \\*' differ in signedness" } */
+TESTRET(uce, unsigned char *, char *); /* { dg-warning "pointer targets in returning 'char \\*' from a function with return type 'unsigned char \\*' differ in signedness" } */
 
 TESTARG(csa, char *, signed char *); /* { dg-warning "pointer targets in passing argument 1 of 'csaF' differ in signedness" } */
 TESTARP(csb, char *, signed char *); /* { dg-warning "pointer targets in passing argument 1 of 'csbFp.x' differ in signedness" } */
-TESTASS(csc, char *, signed char *); /* { dg-warning "pointer targets in assignment differ in signedness" } */
-TESTINI(csd, char *, signed char *); /* { dg-warning "pointer targets in initialization differ in signedness" } */
-TESTRET(cse, char *, signed char *); /* { dg-warning "pointer targets in return differ in signedness" } */
+TESTASS(csc, char *, signed char *); /* { dg-warning "pointer targets in assignment from 'signed char \\*' to 'char \\*' differ in signedness" } */
+TESTINI(csd, char *, signed char *); /* { dg-warning "pointer targets in initialization of 'char \\*' from 'signed char \\*' differ in signedness" } */
+TESTRET(cse, char *, signed char *); /* { dg-warning "pointer targets in returning 'signed char \\*' from a function with return type 'char \\*' differ in signedness" } */
 
 TESTARG(sca, signed char *, char *); /* { dg-warning "pointer targets in passing argument 1 of 'scaF' differ in signedness" } */
 TESTARP(scb, signed char *, char *); /* { dg-warning "pointer targets in passing argument 1 of 'scbFp.x' differ in signedness" } */
-TESTASS(scc, signed char *, char *); /* { dg-warning "pointer targets in assignment differ in signedness" } */
-TESTINI(scd, signed char *, char *); /* { dg-warning "pointer targets in initialization differ in signedness" } */
-TESTRET(sce, signed char *, char *); /* { dg-warning "pointer targets in return differ in signedness" } */
+TESTASS(scc, signed char *, char *); /* { dg-warning "pointer targets in assignment from 'char \\*' to 'signed char \\*' differ in signedness" } */
+TESTINI(scd, signed char *, char *); /* { dg-warning "pointer targets in initialization of 'signed char \\*' from 'char \\*' differ in signedness" } */
+TESTRET(sce, signed char *, char *); /* { dg-warning "pointer targets in returning 'char \\*' from a function with return type 'signed char \\*' differ in signedness" } */
 
 TESTARG(cia, char *, int *); /* { dg-warning "passing argument 1 of 'ciaF' from incompatible pointer type" } */
 TESTARP(cib, char *, int *); /* { dg-warning "passing argument 1 of 'cibFp.x' from incompatible pointer type" } */
-TESTASS(cic, char *, int *); /* { dg-warning "assignment from incompatible pointer type" } */
-TESTINI(cid, char *, int *); /* { dg-warning "initialization from incompatible pointer type" } */
-TESTRET(cie, char *, int *); /* { dg-warning "return from incompatible pointer type" } */
+TESTASS(cic, char *, int *); /* { dg-warning "assignment to 'char \\*' from incompatible pointer type 'int \\*'" } */
+TESTINI(cid, char *, int *); /* { dg-warning "initialization of 'char \\*' from incompatible pointer type 'int \\*'" } */
+TESTRET(cie, char *, int *); /* { dg-warning "returning 'int \\*' from a function with incompatible return type 'char \\*'" } */
 
 TESTARG(ica, int *, char *); /* { dg-warning "passing argument 1 of 'icaF' from incompatible pointer type" } */
 TESTARP(icb, int *, char *); /* { dg-warning "passing argument 1 of 'icbFp.x' from incompatible pointer type" } */
-TESTASS(icc, int *, char *); /* { dg-warning "assignment from incompatible pointer type" } */
-TESTINI(icd, int *, char *); /* { dg-warning "initialization from incompatible pointer type" } */
-TESTRET(ice, int *, char *); /* { dg-warning "return from incompatible pointer type" } */
+TESTASS(icc, int *, char *); /* { dg-warning "assignment to 'int \\*' from incompatible pointer type 'char \\*'" } */
+TESTINI(icd, int *, char *); /* { dg-warning "initialization of 'int \\*' from incompatible pointer type 'char \\*'" } */
+TESTRET(ice, int *, char *); /* { dg-warning "returning 'char \\*' from a function with incompatible return type 'int \\*'" } */
 
 TESTARG(ciia, char *, int); /* { dg-warning "passing argument 1 of 'ciiaF' makes pointer from integer without a cast" } */
 TESTARP(ciib, char *, int); /* { dg-warning "passing argument 1 of 'ciibFp.x' makes pointer from integer without a cast" } */
-TESTASS(ciic, char *, int); /* { dg-warning "assignment makes pointer from integer without a cast" } */
-TESTINI(ciid, char *, int); /* { dg-warning "initialization makes pointer from integer without a cast" } */
-TESTRET(ciie, char *, int); /* { dg-warning "return makes pointer from integer without a cast" } */
+TESTASS(ciic, char *, int); /* { dg-warning "assignment to 'char \\*' from 'int' makes pointer from integer without a cast" } */
+TESTINI(ciid, char *, int); /* { dg-warning "initialization of 'char \\*' from 'int' makes pointer from integer without a cast" } */
+TESTRET(ciie, char *, int); /* { dg-warning "returning 'int' from a function with return type 'char \\*' makes pointer from integer without a cast" } */
 
 TESTARG(iica, int, char *); /* { dg-warning "passing argument 1 of 'iicaF' makes integer from pointer without a cast" } */
 TESTARP(iicb, int, char *); /* { dg-warning "passing argument 1 of 'iicbFp.x' makes integer from pointer without a cast" } */
-TESTASS(iicc, int, char *); /* { dg-warning "assignment makes integer from pointer without a cast" } */
-TESTINI(iicd, int, char *); /* { dg-warning "initialization makes integer from pointer without a cast" } */
-TESTRET(iice, int, char *); /* { dg-warning "return makes integer from pointer without a cast" } */
+TESTASS(iicc, int, char *); /* { dg-warning "assignment to 'int' from 'char \\*' makes integer from pointer without a cast" } */
+TESTINI(iicd, int, char *); /* { dg-warning "initialization of 'int' from 'char \\*' makes integer from pointer without a cast" } */
+TESTRET(iice, int, char *); /* { dg-warning "returning 'char \\*' from a function with return type 'int' makes integer from pointer without a cast" } */
 
 struct s { int a; };
 

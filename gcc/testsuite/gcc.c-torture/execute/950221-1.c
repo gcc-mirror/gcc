@@ -1,3 +1,5 @@
+/* { dg-add-options stack_size } */
+
 struct parsefile
 {
   long fd;

@@ -5,7 +5,7 @@
 template <typename... T> struct A	// { dg-warning "variadic templates" }
 {
   static T &t;				// { dg-error "not expanded with" "not expanded" }
-					// { dg-message "T" "T" { target *-*-* } 7 }
+					// { dg-message "T" "T" { target *-*-* } .-1 }
   static const int i = sizeof (++t);	// { dg-error "was not declared in this scope" }
 };
 

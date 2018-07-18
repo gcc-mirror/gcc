@@ -6,21 +6,21 @@
 
 #include <float.h>
 
-int a = DBL_MAX; /* { dg-warning "overflow in implicit constant conversion" } */
-/* { dg-error "overflow in constant expression" "constant" { target *-*-* } 9 } */
-int b = (int) DBL_MAX; /* { dg-error "overflow" "" } */
-unsigned int c = -1.0; /* { dg-warning "overflow in implicit constant conversion" } */
-/* { dg-error "overflow in constant expression" "constant" { target *-*-* } 12 } */
+int a = DBL_MAX; /* { dg-warning "overflow in conversion" } */
+/* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
+int b = (int) DBL_MAX; /* { dg-error "overflow" } */
+unsigned int c = -1.0; /* { dg-warning "overflow in conversion" } */
+/* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
 unsigned int d = (unsigned)-1.0; /* { dg-error "overflow" } */
 
 int e = 0 << 1000; /* { dg-warning "shift count" } */
-/* { dg-error "constant" "constant" { target *-*-* } 16 } */
+/* { dg-error "constant" "constant" { target *-*-* } .-1 } */
 int f = 0 << -1; /* { dg-warning "shift count" } */
-/* { dg-error "constant" "constant" { target *-*-* } 18 } */
+/* { dg-error "constant" "constant" { target *-*-* } .-1 } */
 int g = 0 >> 1000; /* { dg-warning "shift count" } */
-/* { dg-error "constant" "constant" { target *-*-* } 20 } */
+/* { dg-error "constant" "constant" { target *-*-* } .-1 } */
 int h = 0 >> -1; /* { dg-warning "shift count" } */
-/* { dg-error "constant" "constant" { target *-*-* } 22 } */
+/* { dg-error "constant" "constant" { target *-*-* } .-1 } */
 
 int b1 = (0 ? (int) DBL_MAX : 0);
 unsigned int d1 = (0 ? (unsigned int)-1.0 : 0);
@@ -31,5 +31,5 @@ int h1 = (0 ? 0 >> -1: 0);
 
 int i = -1 << 0;
 
-int j[1] = { DBL_MAX }; /* { dg-warning "overflow in implicit constant conversion" } */
-/* { dg-error "overflow in constant expression" "constant" { target *-*-* } 34 } */
+int j[1] = { DBL_MAX }; /* { dg-warning "overflow in conversion" } */
+/* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */

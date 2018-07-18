@@ -1,5 +1,5 @@
 /* ANSI-compatible clock function.
-   Copyright (C) 1994, 1995, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.  This library is free
 software; you can redistribute it and/or modify it under the

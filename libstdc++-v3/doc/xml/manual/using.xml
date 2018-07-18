@@ -99,7 +99,9 @@
       <entry><literal>-lstdc++fs</literal></entry>
       <entry>Linking to <filename class="libraryfile">libstdc++fs</filename>
         is required for use of the Filesystem library extensions in
-        <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>.
+        <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>
+        and the C++17 Filesystem library in
+        <filename class="headerfile">&lt;filesystem&gt;</filename>.
       </entry>
     </row>
 
@@ -829,20 +831,37 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
       general public.
    </para>
 
-   <para>Below is the macro which users may check for library version
+   <para>Below are the macros which users may check for library version
       information. </para>
 
     <variablelist>
     <varlistentry>
+      <term><code>_GLIBCXX_RELEASE</code></term>
+      <listitem>
+	<para>The major release number for libstdc++.  This macro is defined
+        to the GCC major version that the libstdc++ headers belong to,
+        as an integer constant.
+        When compiling with GCC it has the same value as GCC's pre-defined
+        macro <symbol>__GNUC__</symbol>.
+        This macro can be used when libstdc++ is used with a non-GNU
+        compiler where <symbol>__GNUC__</symbol> is not defined, or has a
+        different value that doesn't correspond to the libstdc++ version.
+        This macro first appeared in the GCC 7.1 release and is not defined
+        for GCC 6.x or older releases.
+      </para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
       <term><code>__GLIBCXX__</code></term>
       <listitem>
-	<para>The current version of
-    libstdc++ in compressed ISO date format, as an unsigned
-    long. For details on the value of this particular macro for a
-    particular release, please consult the <link linkend="appendix.porting.abi">
-    ABI Policy and Guidelines</link> appendix.
-    </para>
-    </listitem>
+	<para>The revision date of the libstdc++ source code,
+        in compressed ISO date format, as an unsigned
+        long. For notes about using this macro and details on the value of
+        this macro for a particular release, please consult the
+        <link linkend="abi.versioning.__GLIBCXX__">ABI History</link>
+        appendix.
+        </para>
+      </listitem>
     </varlistentry>
     </variablelist>
 
@@ -948,6 +967,15 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	mode</link>.
       </para>
     </listitem></varlistentry>
+    <varlistentry><term><code>_GLIBCXX_PARALLEL_ASSERTIONS</code></term>
+    <listitem>
+      <para>Undefined by default, but when any parallel mode header is included
+      this macro will be defined to a non-zero value if
+      <code>_GLIBCXX_ASSERTIONS</code> has a non-zero value, otherwise to zero.
+      When defined to a non-zero value, it enables extra error checking and
+      assertions in the parallel mode.
+      </para>
+    </listitem></varlistentry>
 
     <varlistentry><term><code>_GLIBCXX_PROFILE</code></term>
     <listitem>
@@ -961,6 +989,24 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
     <listitem>
       <para>Undefined by default. When defined to a non-zero integer constant,
 	enables support for ISO/IEC 29124 Special Math Functions.
+      </para>
+    </listitem></varlistentry>
+
+    <varlistentry><term><code>_GLIBCXX_SANITIZE_VECTOR</code></term>
+    <listitem>
+      <para>
+	Undefined by default. When defined, <classname>std::vector</classname>
+        operations will be annotated so that AddressSanitizer can detect
+        invalid accesses to the unused capacity of a
+        <classname>std::vector</classname>. These annotations are only
+        enabled for
+        <classname>std::vector&lt;T, std::allocator&lt;T&gt;&gt;</classname>
+        and only when <classname>std::allocator</classname> is derived from
+        <xref linkend="allocator.impl"><classname>new_allocator</classname>
+        or <classname>malloc_allocator</classname></xref>. The annotations
+        must be present on all vector operations or none, so this macro must
+        be defined to the same value for all translation units that create,
+        destroy or modify vectors.
       </para>
     </listitem></varlistentry>
     </variablelist>
@@ -990,7 +1036,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 </para>
 
 <para> The <symbol>_GLIBCXX_USE_CXX11_ABI</symbol> macro (see
-<xref linkend="manual.intro.using.macros"/>) controls whether
+  <xref linkend="manual.intro.using.macros"/>) controls whether
   the declarations in the library headers use the old or new ABI.
   So the decision of which ABI to use can be made separately for each
   source file being compiled.
@@ -1025,10 +1071,37 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 </para>
 
 <para> Although the standard exception types defined in
-  <filename class="headerfile">&lt;stdexcept&gt;</filename> use strings, they
+  <filename class="headerfile">&lt;stdexcept&gt;</filename> use strings, most
   are not defined twice, so that a <classname>std::out_of_range</classname>
   exception thrown in one file can always be caught by a suitable handler in
   another file, even if the two files are compiled with different ABIs.
+</para>
+
+<para> One exception type does change when using the new ABI, namely
+  <classname>std::ios_base::failure</classname>.
+  This is necessary because the 2011 standard changed its base class from
+  <classname>std::exception</classname> to
+  <classname>std::system_error</classname>, which causes its layout to change.
+  Exceptions due to iostream errors are thrown by a function inside
+  <filename class="libraryfile">libstdc++.so</filename>, so whether the thrown
+  exception uses the old <classname>std::ios_base::failure</classname> type
+  or the new one depends on the ABI that was active when
+  <filename class="libraryfile">libstdc++.so</filename> was built,
+  <emphasis>not</emphasis> the ABI active in the user code that is using
+  iostreams.
+  This means that for a given build of GCC the type thrown is fixed.
+  In current releases the library throws a special type that can be caught
+  by handlers for either the old or new type,
+  but for GCC 7.1, 7.2 and 7.3 the library throws the new
+  <classname>std::ios_base::failure</classname> type,
+  and for GCC 5.x and 6.x the library throws the old type.
+  Catch handlers of type <classname>std::ios_base::failure</classname>
+  will only catch the exceptions if using a newer release,
+  or if the handler is compiled with the same ABI as the type thrown by
+  the library.
+  Handlers for <classname>std::exception</classname> will always catch
+  iostreams exceptions, because the old and new type both inherit from
+  <classname>std::exception</classname>.
 </para>
 
 <section xml:id="manual.intro.using.abi.trouble" xreflabel="Dual ABI Troubleshooting"><info><title>Troubleshooting</title></info>
@@ -1463,7 +1536,7 @@ The standard places requirements on the library to ensure that no data
 races are caused by the library itself or by programs which use the
 library correctly (as described below).
 The C++11 memory model and library requirements are a more formal version
-of the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/thread_safety.html">SGI STL</link> definition of thread safety, which the library used
+of the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/thread_safety.html">SGI STL</link> definition of thread safety, which the library used
 prior to the 2011 standard.
 </para>
 
@@ -1615,9 +1688,9 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       </programlisting>
 
       <para>For further details of the C++11 memory model see Hans-J. Boehm's
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.hpl.hp.com/personal/Hans_Boehm/c++mm/user-faq.html">Threads
-      and memory model for C++</link> pages, particularly the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.hpl.hp.com/personal/Hans_Boehm/c++mm/threadsintro.html">introduction</link> 
-      and <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.hpl.hp.com/personal/Hans_Boehm/c++mm/user-faq.html">FAQ</link>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/">Threads
+      and memory model for C++</link> pages, particularly the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.hboehm.info/c++mm/threadsintro.html">introduction</link> 
+      and <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/user-faq.html">FAQ</link>.
       </para>
 
   </section>
@@ -1660,10 +1733,11 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       and efficiency.  You, the programmer, are always required to take care
       with multiple threads.
    </para>
-   <para>(As an example, the POSIX standard requires that C stdio FILE*
-       operations are atomic.  POSIX-conforming C libraries (e.g, on Solaris
-       and GNU/Linux) have an internal mutex to serialize operations on
-       FILE*s.  However, you still need to not do stupid things like calling
+   <para>(As an example, the POSIX standard requires that C stdio
+       <code>FILE*</code> operations are atomic.  POSIX-conforming C libraries
+       (e.g, on Solaris and GNU/Linux) have an internal mutex to serialize
+       operations on <code>FILE*</code>s.
+       However, you still need to not do stupid things like calling
        <code>fclose(fs)</code> in one thread followed by an access of
        <code>fs</code> in another.)
    </para>
@@ -1735,10 +1809,10 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
    </para>
    <para>Two excellent pages to read when working with the Standard C++
       containers and threads are
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/thread_safety.html">SGI's
-      http://www.sgi.com/tech/stl/thread_safety.html</link> and
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/Allocators.html">SGI's
-      http://www.sgi.com/tech/stl/Allocators.html</link>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/thread_safety.html">SGI's
+      https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/thread_safety.html</link> and
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/Allocators.html">SGI's
+      https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/Allocators.html</link>.
    </para>
    <para><emphasis>However, please ignore all discussions about the user-level
       configuration of the lock implementation inside the STL

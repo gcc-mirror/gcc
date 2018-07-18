@@ -5,10 +5,9 @@
 #ifndef foo
 #define foo	/**/
 #endif
+/* { dg-bogus "(start|end) of macro" "paste at end" { target *-*-* } .-1 } */
 
 #ifndef foo
 #define foo	/* as nothing */
 #endif
-
-/* { dg-bogus "(start|end) of macro" "paste at end" { target *-*-* } 7 } */
-/* { dg-bogus "(start|end) of macro" "comment at end" { target *-*-* } 11 } */
+/* { dg-bogus "(start|end) of macro" "comment at end" { target *-*-* } .-1 } */

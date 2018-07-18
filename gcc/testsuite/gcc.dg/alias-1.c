@@ -19,9 +19,9 @@ YYSTYPE
  addSibMacro(
          YYSTYPE  list )
  {
-     tDefEntry** ppT   = (tDefEntry**)&list; // { dg-warning "type-punned pointer will" "" }
+     tDefEntry** ppT   = (tDefEntry**)&list; // { dg-warning "type-punned pointer will" }
  
-     struct incomplete *p = (struct incomplete *)&list; // { dg-warning "type-punning to incomplete" "" }
+     struct incomplete *p = (struct incomplete *)&list; // { dg-warning "type-punning to incomplete" }
      
      return list;
  }

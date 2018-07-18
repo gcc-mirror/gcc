@@ -4,12 +4,12 @@
 
 typedef __SIZE_TYPE__ size_t; 
 
-struct A { void *operator new(size_t s){} };  // { dg-message "operator new" }
-struct B { void *operator new(size_t s){} };  // { dg-message "operator new" }
+struct A { void *operator new(size_t s){ return 0; } };  // { dg-message "operator new" }
+struct B { void *operator new(size_t s){ return 0; } };  // { dg-message "operator new" }
 
 struct C : A,B {}; 
 
-int crash() 
+void crash() 
 {
   C *c=new C();   // { dg-error "ambiguous" }
 }

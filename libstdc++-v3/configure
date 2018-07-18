@@ -602,6 +602,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+get_gcc_base_ver
 WARN_FLAGS
 OPTIMIZE_CXXFLAGS
 TOPLEVEL_INCLUDES
@@ -610,6 +611,7 @@ glibcxx_toolexeclibdir
 glibcxx_toolexecdir
 gxx_include_dir
 glibcxx_prefixdir
+EXTRA_CFLAGS
 CPU_OPT_BITS_RANDOM
 CPU_OPT_EXT_RANDOM
 ERROR_CONSTANTS_SRCDIR
@@ -619,6 +621,8 @@ CPU_DEFINES_SRCDIR
 ATOMIC_FLAGS
 ATOMIC_WORD_SRCDIR
 ATOMICITY_SRCDIR
+INCLUDE_DIR_NOTPARALLEL_FALSE
+INCLUDE_DIR_NOTPARALLEL_TRUE
 BUILD_PDF_FALSE
 BUILD_PDF_TRUE
 PDFLATEX
@@ -642,7 +646,7 @@ ENABLE_FILESYSTEM_TS_FALSE
 ENABLE_FILESYSTEM_TS_TRUE
 baseline_subdir_switch
 baseline_dir
-HWCAP_FLAGS
+HWCAP_CFLAGS
 GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
 LONG_DOUBLE_COMPAT_FLAGS
@@ -724,7 +728,8 @@ BASIC_FILE_CC
 BASIC_FILE_H
 CSTDIO_H
 SECTION_FLAGS
-WERROR
+ENABLE_FLOAT128_FALSE
+ENABLE_FLOAT128_TRUE
 thread_header
 glibcxx_PCHFLAGS
 GLIBCXX_BUILD_PCH_FALSE
@@ -895,8 +900,10 @@ enable_libstdcxx_dual_abi
 with_default_libstdcxx_abi
 enable_libstdcxx_threads
 enable_libstdcxx_filesystem_ts
+enable_cet
 with_gxx_include_dir
 enable_version_specific_runtime_libs
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1574,7 +1581,7 @@ Optional Features:
                           memory [default=no]
   --enable-extern-template
                           enable extern template [default=yes]
-  --enable-werror         turns on -Werror [default=yes]
+  --enable-werror         turns on -Werror [default=no]
   --enable-vtable-verify  enable vtable verify [default=no]
   --enable-libstdcxx-time[=KIND]
                           use KIND for check type [default=auto]
@@ -1592,6 +1599,7 @@ Optional Features:
                           enable C++11 threads support [default=auto]
   --enable-libstdcxx-filesystem-ts
                           turns on ISO/IEC TS 18822 support [default=auto]
+  --enable-cet            enable Intel CET in target libraries [default=no]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -1616,6 +1624,8 @@ Optional Packages:
                           set the std::string ABI to use by default
   --with-gxx-include-dir=DIR
                           installation directory for include files
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -11597,7 +11607,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11600 "configure"
+#line 11610 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11703,7 +11713,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11706 "configure"
+#line 11716 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12874,20 +12884,20 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	      prelink_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $objs $libobjs $compile_deplibs~
-		compile_command="$compile_command `find $tpldir -name \*.o | $NL2SP`"'
+		compile_command="$compile_command `find $tpldir -name \*.o | sort | $NL2SP`"'
 	      old_archive_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $oldobjs$old_deplibs~
-		$AR $AR_FLAGS $oldlib$oldobjs$old_deplibs `find $tpldir -name \*.o | $NL2SP`~
+		$AR $AR_FLAGS $oldlib$oldobjs$old_deplibs `find $tpldir -name \*.o | sort | $NL2SP`~
 		$RANLIB $oldlib'
 	      archive_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $predep_objects $libobjs $deplibs $convenience $postdep_objects~
-		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'
+		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | sort | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'
 	      archive_expsym_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $predep_objects $libobjs $deplibs $convenience $postdep_objects~
-		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname ${wl}-retain-symbols-file ${wl}$export_symbols -o $lib'
+		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | sort | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname ${wl}-retain-symbols-file ${wl}$export_symbols -o $lib'
 	      ;;
 	    *) # Version 6 and above use weak symbols
 	      archive_cmds_CXX='$CC -shared $pic_flag $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'
@@ -15389,7 +15399,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15392 "configure"
+#line 15402 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15424,7 +15434,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15427 "configure"
+#line 15437 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15459,7 +15469,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15462 "configure"
+#line 15472 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15495,7 +15505,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15498 "configure"
+#line 15508 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15576,7 +15586,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15579 "configure"
+#line 15589 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15618,7 +15628,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15621 "configure"
+#line 15631 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15652,7 +15662,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15655 "configure"
+#line 15665 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15674,15 +15684,13 @@ $as_echo_n "checking for __float128... " >&6; }
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-
-$as_echo "#define _GLIBCXX_USE_FLOAT128 1" >>confdefs.h
-
       enable_float128=yes
     else
       enable_float128=no
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_float128" >&5
 $as_echo "$enable_float128" >&6; }
+
     rm -f conftest*
 
   ac_ext=c
@@ -15710,13 +15718,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
-
-  # Check for maintainer-mode bits.
-  if test x"$USE_MAINTAINER_MODE" = xno; then
-    WERROR=''
-  else
-    WERROR='-Werror'
-  fi
 
   # Check for -ffunction-sections -fdata-sections
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
@@ -15756,7 +15757,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 
 
 
@@ -18095,7 +18095,7 @@ if test "${enable_werror+set}" = set; then :
       esac
 
 else
-  enable_werror=yes
+  enable_werror=no
 fi
 
 
@@ -18236,11 +18236,11 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   case "$host" in
     *-*-solaris2.*)
-      # Solaris 12 introduced the C++11 <math.h> overloads.  A backport to
-      # a Solaris 11.3 SRU is likely, maybe even a Solaris 10 patch.
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++11 <math.h> overloads" >&5
-$as_echo_n "checking for C++11 <math.h> overloads... " >&6; }
-      if test "${glibcxx_cv_math11_overload+set}" = set; then :
+      # Solaris 12 Build 86, Solaris 11.3 SRU 3.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> floating point overloads.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++11 <math.h> floating point overloads" >&5
+$as_echo_n "checking for C++11 <math.h> floating point overloads... " >&6; }
+      if test "${glibcxx_cv_math11_fp_overload+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -18255,9 +18255,9 @@ else
 
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_math11_overload=no
+  glibcxx_cv_math11_fp_overload=no
 else
-  glibcxx_cv_math11_overload=yes
+  glibcxx_cv_math11_fp_overload=yes
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
@@ -18267,12 +18267,74 @@ fi
       # autoheader cannot handle indented templates.
 
 
-      if test $glibcxx_cv_math11_overload = yes; then
-        $as_echo "#define __CORRECT_ISO_CPP11_MATH_H_PROTO 1" >>confdefs.h
+      if test $glibcxx_cv_math11_fp_overload = yes; then
+        $as_echo "#define __CORRECT_ISO_CPP11_MATH_H_PROTO_FP 1" >>confdefs.h
 
       fi
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_overload" >&5
-$as_echo "$glibcxx_cv_math11_overload" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_fp_overload" >&5
+$as_echo "$glibcxx_cv_math11_fp_overload" >&6; }
+
+      # Solaris 12 Build 90, Solaris 11.3 SRU 5.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> integral type overloads.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++11 <math.h> integral type overloads" >&5
+$as_echo_n "checking for C++11 <math.h> integral type overloads... " >&6; }
+      if test "${glibcxx_cv_math11_int_overload+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+	   namespace std {
+	     template<typename _Tp>
+	       struct __is_integer;
+	     template<>
+	       struct __is_integer<int>
+	       {
+	         enum { __value = 1 };
+	       };
+	   }
+	   namespace __gnu_cxx {
+	     template<bool, typename>
+	       struct __enable_if;
+	     template<typename _Tp>
+	       struct __enable_if<true, _Tp>
+	       { typedef _Tp __type; };
+	   }
+	   namespace std {
+	     template<typename _Tp>
+	       constexpr typename __gnu_cxx::__enable_if
+	       		 <__is_integer<_Tp>::__value, double>::__type
+	       log2(_Tp __x)
+	       { return __builtin_log2(__x); }
+	   }
+	   int
+	   main (void)
+	   {
+	     int i = 1000;
+	     return std::log2(i);
+	   }
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_math11_int_overload=no
+else
+  glibcxx_cv_math11_int_overload=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+
+      # autoheader cannot handle indented templates.
+
+
+      if test $glibcxx_cv_math11_int_overload = yes; then
+        $as_echo "#define __CORRECT_ISO_CPP11_MATH_H_PROTO_INT 1" >>confdefs.h
+
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_int_overload" >&5
+$as_echo "$glibcxx_cv_math11_int_overload" >&6; }
       ;;
     *)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
@@ -18324,7 +18386,8 @@ else
 
           cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <math.h>
+#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+             #include <math.h>
              #undef isnan
              namespace std {
                using ::isnan;
@@ -20017,12 +20080,14 @@ typedef double_t  my_double_t;
 		  lgamma(0.0);
 		  lgammaf(0.0f);
 		  lgammal(0.0l);
+		  #ifndef __APPLE__ /* see below */
 		  llrint(0.0);
 		  llrintf(0.0f);
 		  llrintl(0.0l);
 		  llround(0.0);
 		  llroundf(0.0f);
 		  llroundl(0.0l);
+		  #endif
 		  log1p(0.0);
 		  log1pf(0.0f);
 		  log1pl(0.0l);
@@ -20094,6 +20159,50 @@ $as_echo "$glibcxx_cv_c99_math_tr1" >&6; }
 
 $as_echo "#define _GLIBCXX_USE_C99_MATH_TR1 1" >>confdefs.h
 
+
+    case "${target_os}" in
+      darwin*)
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 rounding functions in <math.h>" >&5
+$as_echo_n "checking for ISO C99 rounding functions in <math.h>... " >&6; }
+        if test "${glibcxx_cv_c99_math_llround+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+int
+main ()
+{
+llrint(0.0);
+		  llrintf(0.0f);
+		  llrintl(0.0l);
+		  llround(0.0);
+		  llroundf(0.0f);
+		  llroundl(0.0l);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_math_llround=yes
+else
+  glibcxx_cv_c99_math_llround=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_math_llround" >&5
+$as_echo "$glibcxx_cv_c99_math_llround" >&6; }
+        ;;
+    esac
+    if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
+
+$as_echo "#define _GLIBCXX_NO_C99_ROUNDING_FUNCS 1" >>confdefs.h
+
+    fi
   fi
 
   # Check for the existence of <inttypes.h> functions (NB: doesn't make
@@ -20451,7 +20560,7 @@ $as_echo "$glibcxx_glibc217" >&6; }
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
         ;;
-      freebsd*|netbsd*|dragonfly*)
+      freebsd*|netbsd*|dragonfly*|rtems*)
         ac_has_clock_monotonic=yes
         ac_has_clock_realtime=yes
         ac_has_nanosleep=yes
@@ -21682,7 +21791,7 @@ for ac_header in endian.h execinfo.h float.h fp.h ieeefp.h inttypes.h \
 locale.h machine/endian.h machine/param.h nan.h stdint.h stdlib.h string.h \
 strings.h sys/ipc.h sys/isa_defs.h sys/machine.h sys/param.h \
 sys/resource.h sys/sem.h sys/stat.h sys/time.h sys/types.h unistd.h \
-wchar.h wctype.h
+wchar.h wctype.h linux/types.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -21690,6 +21799,23 @@ eval as_val=\$$as_ac_Header
    if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+for ac_header in linux/random.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "linux/random.h" "ac_cv_header_linux_random_h" "#ifdef HAVE_LINUX_TYPES_H
+# include <linux/types.h>
+#endif
+
+"
+if test "x$ac_cv_header_linux_random_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LINUX_RANDOM_H 1
 _ACEOF
 
 fi
@@ -27969,12 +28095,14 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
 
   fi
 
-  for ac_func in __cxa_thread_atexit_impl
+  for ac_func in __cxa_thread_atexit_impl __cxa_thread_atexit
 do :
-  ac_fn_c_check_func "$LINENO" "__cxa_thread_atexit_impl" "ac_cv_func___cxa_thread_atexit_impl"
-if test "x$ac_cv_func___cxa_thread_atexit_impl" = x""yes; then :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE___CXA_THREAD_ATEXIT_IMPL 1
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
 
 fi
@@ -27988,6 +28116,17 @@ eval as_val=\$$as_ac_var
    if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+  for ac_func in _wfopen
+do :
+  ac_fn_c_check_func "$LINENO" "_wfopen" "ac_cv_func__wfopen"
+if test "x$ac_cv_func__wfopen" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE__WFOPEN 1
 _ACEOF
 
 fi
@@ -28840,6 +28979,55 @@ case "${host}" in
     # This is a freestanding configuration; there is nothing to do here.
     ;;
 
+  avr*-*-*)
+    $as_echo "#define HAVE_ACOSF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_ASINF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_ATAN2F 1" >>confdefs.h
+
+    $as_echo "#define HAVE_ATANF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_CEILF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_COSF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_COSHF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_EXPF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FABSF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FLOORF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FMODF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FREXPF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SQRTF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_HYPOTF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_LDEXPF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_LOG10F 1" >>confdefs.h
+
+    $as_echo "#define HAVE_LOGF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_MODFF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_POWF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SINF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SINHF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_TANF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_TANHF 1" >>confdefs.h
+
+    ;;
+
   mips*-sde-elf*)
     # These definitions are for the SDE C library rather than newlib.
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
@@ -28857,13 +29045,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
-
-  # Check for maintainer-mode bits.
-  if test x"$USE_MAINTAINER_MODE" = xno; then
-    WERROR=''
-  else
-    WERROR='-Werror'
-  fi
 
   # Check for -ffunction-sections -fdata-sections
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
@@ -28903,7 +29084,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 
 
 
@@ -34852,13 +35032,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
 
-  # Check for maintainer-mode bits.
-  if test x"$USE_MAINTAINER_MODE" = xno; then
-    WERROR=''
-  else
-    WERROR='-Werror'
-  fi
-
   # Check for -ffunction-sections -fdata-sections
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
 $as_echo_n "checking for g++ that supports -ffunction-sections -fdata-sections... " >&6; }
@@ -34897,7 +35070,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 
 
 
@@ -53152,7 +53324,37 @@ $as_echo "$ac_ld_relro" >&6; }
       $as_echo "#define HAVE_ISNANL 1" >>confdefs.h
 
     fi
+    for ac_func in __cxa_thread_atexit
+do :
+  ac_fn_c_check_func "$LINENO" "__cxa_thread_atexit" "ac_cv_func___cxa_thread_atexit"
+if test "x$ac_cv_func___cxa_thread_atexit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE___CXA_THREAD_ATEXIT 1
+_ACEOF
+
+fi
+done
+
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
     ;;
+
+  *-fuchsia*)
+    SECTION_FLAGS='-ffunction-sections -fdata-sections'
+
+    ;;
+
   *-hpux*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
 
@@ -53567,7 +53769,7 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
 	;;
     esac
     ;;
-  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin*)
+  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin* | *-solaris*)
 
   # All these tests are for C++; save the language and the compiler flags.
   # The CXXFLAGS thing is suspicious, but based on similar bits previously
@@ -53581,13 +53783,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
-
-  # Check for maintainer-mode bits.
-  if test x"$USE_MAINTAINER_MODE" = xno; then
-    WERROR=''
-  else
-    WERROR='-Werror'
-  fi
 
   # Check for -ffunction-sections -fdata-sections
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
@@ -53627,7 +53822,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 
 
 
@@ -59764,6 +59958,19 @@ _ACEOF
 fi
 done
 
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
 
 
 
@@ -65883,8 +66090,32 @@ done
 
   CXXFLAGS="$ac_save_CXXFLAGS"
 
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+    for ac_func in _wfopen
+do :
+  ac_fn_c_check_func "$LINENO" "_wfopen" "ac_cv_func__wfopen"
+if test "x$ac_cv_func__wfopen" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE__WFOPEN 1
+_ACEOF
+
+fi
+done
+
     ;;
-  *-netbsd*)
+  *-netbsd* | *-openbsd*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
 
 
@@ -66050,6 +66281,19 @@ $as_echo "$ac_ld_relro" >&6; }
       $as_echo "#define HAVE_ISNANL 1" >>confdefs.h
 
     fi
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
     ;;
   *-qnx6.1* | *-qnx6.2*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
@@ -66233,13 +66477,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
 
-  # Check for maintainer-mode bits.
-  if test x"$USE_MAINTAINER_MODE" = xno; then
-    WERROR=''
-  else
-    WERROR='-Werror'
-  fi
-
   # Check for -ffunction-sections -fdata-sections
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
 $as_echo_n "checking for g++ that supports -ffunction-sections -fdata-sections... " >&6; }
@@ -66278,7 +66515,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 
 
 
@@ -72193,170 +72429,6 @@ done
 
 
   CXXFLAGS="$ac_save_CXXFLAGS"
-
-    ;;
-  *-solaris*)
-
-  # If we're not using GNU ld, then there's no point in even trying these
-  # tests.  Check for that first.  We should have already tested for gld
-  # by now (in libtool), but require it now just to be safe...
-  test -z "$SECTION_LDFLAGS" && SECTION_LDFLAGS=''
-  test -z "$OPT_LDFLAGS" && OPT_LDFLAGS=''
-
-
-
-  # The name set by libtool depends on the version of libtool.  Shame on us
-  # for depending on an impl detail, but c'est la vie.  Older versions used
-  # ac_cv_prog_gnu_ld, but now it's lt_cv_prog_gnu_ld, and is copied back on
-  # top of with_gnu_ld (which is also set by --with-gnu-ld, so that actually
-  # makes sense).  We'll test with_gnu_ld everywhere else, so if that isn't
-  # set (hence we're using an older libtool), then set it.
-  if test x${with_gnu_ld+set} != xset; then
-    if test x${ac_cv_prog_gnu_ld+set} != xset; then
-      # We got through "ac_require(ac_prog_ld)" and still not set?  Huh?
-      with_gnu_ld=no
-    else
-      with_gnu_ld=$ac_cv_prog_gnu_ld
-    fi
-  fi
-
-  # Start by getting the version number.  I think the libtool test already
-  # does some of this, but throws away the result.
-  glibcxx_ld_is_gold=no
-  if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
-$as_echo_n "checking for ld version... " >&6; }
-
-    if $LD --version 2>/dev/null | grep 'GNU gold' >/dev/null 2>&1; then
-      glibcxx_ld_is_gold=yes
-    fi
-    ldver=`$LD --version 2>/dev/null |
-	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
-
-    glibcxx_gnu_ld_version=`echo $ldver | \
-	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
-$as_echo "$glibcxx_gnu_ld_version" >&6; }
-  fi
-
-  # Set --gc-sections.
-  glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes"; then
-    if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
-      glibcxx_have_gc_sections=yes
-    fi
-  else
-    glibcxx_gcsections_min_ld=21602
-    if test x"$with_gnu_ld" = x"yes" &&
-	test $glibcxx_gnu_ld_version -gt $glibcxx_gcsections_min_ld ; then
-      glibcxx_have_gc_sections=yes
-    fi
-  fi
-  if test "$glibcxx_have_gc_sections" = "yes"; then
-    # Sufficiently young GNU ld it is!  Joy and bunny rabbits!
-    # NB: This flag only works reliably after 2.16.1. Configure tests
-    # for this are difficult, so hard wire a value that should work.
-
-    ac_test_CFLAGS="${CFLAGS+set}"
-    ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-Wl,--gc-sections'
-
-    # Check for -Wl,--gc-sections
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,--gc-sections" >&5
-$as_echo_n "checking for ld that supports -Wl,--gc-sections... " >&6; }
-    if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
- int one(void) { return 1; }
-     int two(void) { return 2; }
-
-int
-main ()
-{
- two();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_gcsections=yes
-else
-  ac_gcsections=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-    if test "$ac_gcsections" = "yes"; then
-      rm -f conftest.c
-      touch conftest.c
-      if $CC -c conftest.c; then
-	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
-	   grep "Warning: gc-sections option ignored" > /dev/null; then
-	  ac_gcsections=no
-	fi
-      fi
-      rm -f conftest.c conftest.o conftest
-    fi
-    if test "$ac_gcsections" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_gcsections" >&5
-$as_echo "$ac_gcsections" >&6; }
-
-    if test "$ac_test_CFLAGS" = set; then
-      CFLAGS="$ac_save_CFLAGS"
-    else
-      # this is the suspicious part
-      CFLAGS=''
-    fi
-  fi
-
-  # Set -z,relro.
-  # Note this is only for shared objects.
-  ac_ld_relro=no
-  if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
-$as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
-$as_echo "$ac_ld_relro" >&6; }
-  fi
-
-  # Set linker optimization flags.
-  if test x"$with_gnu_ld" = x"yes"; then
-    OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
-  fi
-
-
-
-
-    $as_echo "#define HAVE_MBSTATE_T 1" >>confdefs.h
-
-    $as_echo "#define HAVE_FINITE 1" >>confdefs.h
-
-    $as_echo "#define HAVE_FPCLASS 1" >>confdefs.h
-
-    # All of the dependencies for wide character support are here, so
-    # turn it on.
-    $as_echo "#define _GLIBCXX_USE_WCHAR_T 1" >>confdefs.h
-
-    # These two C99 functions are present only in Solaris >= 10
-    $as_echo "#define HAVE_STRTOF 1" >>confdefs.h
-
-    $as_echo "#define HAVE_STRTOLD 1" >>confdefs.h
-
-    $as_echo "#define HAVE_ISNAN 1" >>confdefs.h
-
-    $as_echo "#define HAVE_ISNANF 1" >>confdefs.h
-
-    $as_echo "#define HAVE_MODFF 1" >>confdefs.h
-
-    $as_echo "#define HAVE_HYPOT 1" >>confdefs.h
 
     ;;
   *-tpf)
@@ -79074,7 +79146,7 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:23:0
+libtool_VERSION=6:26:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -79088,7 +79160,7 @@ $as_echo "#define _GLIBCXX_SYMVER_GNU 1" >>confdefs.h
 
     ;;
   gnu-versioned-namespace)
-    libtool_VERSION=7:0:0
+    libtool_VERSION=8:0:0
     SYMVER_FILE=config/abi/pre/gnu-versioned-namespace.ver
 
 $as_echo "#define _GLIBCXX_SYMVER_GNU_NAMESPACE 1" >>confdefs.h
@@ -79393,7 +79465,7 @@ esac
 
 # Check if assembler supports disabling hardware capability support.
 
-  test -z "$HWCAP_FLAGS" && HWCAP_FLAGS=''
+  test -z "$HWCAP_CFLAGS" && HWCAP_CFLAGS=''
 
   # Restrict the test to Solaris, other assemblers (e.g. AIX as) have -nH
   # with a different meaning.
@@ -79422,7 +79494,7 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
       if test "$ac_hwcap_flags" = "yes"; then
-	HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
+	HWCAP_CFLAGS="-Wa,-nH $HWCAP_CFLAGS"
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_hwcap_flags" >&5
 $as_echo "$ac_hwcap_flags" >&6; }
@@ -79964,6 +80036,9 @@ $as_echo_n "checking whether to build Filesystem TS support... " >&6; }
       gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
         enable_libstdcxx_filesystem_ts=yes
         ;;
+      rtems*)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
       solaris*)
         enable_libstdcxx_filesystem_ts=yes
         ;;
@@ -79976,415 +80051,416 @@ $as_echo_n "checking whether to build Filesystem TS support... " >&6; }
 $as_echo "$enable_libstdcxx_filesystem_ts" >&6; }
 
 
+  if test $enable_libstdcxx_filesystem_ts = yes; then
 
-  ac_ext=cpp
+    ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -fno-exceptions"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct dirent.d_type" >&5
+    ac_save_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS="$CXXFLAGS -fno-exceptions"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct dirent.d_type" >&5
 $as_echo_n "checking for struct dirent.d_type... " >&6; }
-  if test "${glibcxx_cv_dirent_d_type+set}" = set; then :
+    if test "${glibcxx_cv_dirent_d_type+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-      if test x$gcc_no_link = xyes; then
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <dirent.h>
-int
-main ()
-{
-
-       struct dirent d;
-       if (sizeof d.d_type) return 0;
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_dirent_d_type=yes
-else
-  glibcxx_cv_dirent_d_type=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <dirent.h>
-int
-main ()
-{
-
-       struct dirent d;
-       if (sizeof d.d_type) return 0;
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_dirent_d_type=yes
-else
-  glibcxx_cv_dirent_d_type=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-
-fi
-
-  if test $glibcxx_cv_dirent_d_type = yes; then
-
-$as_echo "#define HAVE_STRUCT_DIRENT_D_TYPE 1" >>confdefs.h
-
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_dirent_d_type" >&5
-$as_echo "$glibcxx_cv_dirent_d_type" >&6; }
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for realpath" >&5
-$as_echo_n "checking for realpath... " >&6; }
-  if test "${glibcxx_cv_realpath+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-      if test x$gcc_no_link = xyes; then
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-       #include <limits.h>
-       #include <stdlib.h>
-       #include <unistd.h>
-
-int
-main ()
-{
-
-       #if _XOPEN_VERSION < 500
-       #error
-       #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
-       char *tmp = realpath((const char*)NULL, (char*)NULL);
-       #else
-       #error
-       #endif
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_realpath=yes
-else
-  glibcxx_cv_realpath=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-       #include <limits.h>
-       #include <stdlib.h>
-       #include <unistd.h>
-
-int
-main ()
-{
-
-       #if _XOPEN_VERSION < 500
-       #error
-       #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
-       char *tmp = realpath((const char*)NULL, (char*)NULL);
-       #else
-       #error
-       #endif
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_realpath=yes
-else
-  glibcxx_cv_realpath=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-
-fi
-
-  if test $glibcxx_cv_realpath = yes; then
-
-$as_echo "#define _GLIBCXX_USE_REALPATH 1" >>confdefs.h
-
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_realpath" >&5
-$as_echo "$glibcxx_cv_realpath" >&6; }
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for utimensat" >&5
-$as_echo_n "checking for utimensat... " >&6; }
-  if test "${glibcxx_cv_utimensat+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-      if test x$gcc_no_link = xyes; then
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-        #include <fcntl.h>
-        #include <sys/stat.h>
-
-int
-main ()
-{
-
-        struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
-        int i = utimensat(AT_FDCWD, "path", ts, 0);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_utimensat=yes
-else
-  glibcxx_cv_utimensat=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-        #include <fcntl.h>
-        #include <sys/stat.h>
-
-int
-main ()
-{
-
-        struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
-        int i = utimensat(AT_FDCWD, "path", ts, 0);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_utimensat=yes
-else
-  glibcxx_cv_utimensat=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-
-fi
-
-  if test $glibcxx_cv_utimensat = yes; then
-
-$as_echo "#define _GLIBCXX_USE_UTIMENSAT 1" >>confdefs.h
-
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_utimensat" >&5
-$as_echo "$glibcxx_cv_utimensat" >&6; }
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct stat.st_mtim.tv_nsec" >&5
-$as_echo_n "checking for struct stat.st_mtim.tv_nsec... " >&6; }
-  if test "${glibcxx_cv_st_mtim+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-      if test x$gcc_no_link = xyes; then
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
- #include <sys/stat.h>
-int
-main ()
-{
-
-        struct stat st;
-        return st.st_mtim.tv_nsec;
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_st_mtim=yes
-else
-  glibcxx_cv_st_mtim=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
- #include <sys/stat.h>
-int
-main ()
-{
-
-        struct stat st;
-        return st.st_mtim.tv_nsec;
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_st_mtim=yes
-else
-  glibcxx_cv_st_mtim=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-
-fi
-
-  if test $glibcxx_cv_st_mtim = yes; then
-
-$as_echo "#define _GLIBCXX_USE_ST_MTIM 1" >>confdefs.h
-
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_st_mtim" >&5
-$as_echo "$glibcxx_cv_st_mtim" >&6; }
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fchmod" >&5
-$as_echo_n "checking for fchmod... " >&6; }
-  if test "${glibcxx_cv_fchmod+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-      if test x$gcc_no_link = xyes; then
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/stat.h>
-int
-main ()
-{
-fchmod(1, S_IWUSR);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_fchmod=yes
-else
-  glibcxx_cv_fchmod=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/stat.h>
-int
-main ()
-{
-fchmod(1, S_IWUSR);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_fchmod=yes
-else
-  glibcxx_cv_fchmod=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-
-fi
-
-  if test $glibcxx_cv_fchmod = yes; then
-
-$as_echo "#define _GLIBCXX_USE_FCHMOD 1" >>confdefs.h
-
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_fchmod" >&5
-$as_echo "$glibcxx_cv_fchmod" >&6; }
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fchmodat" >&5
-$as_echo_n "checking for fchmodat... " >&6; }
-  if test "${glibcxx_cv_fchmodat+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-      if test x$gcc_no_link = xyes; then
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-        #include <fcntl.h>
-        #include <sys/stat.h>
-
-int
-main ()
-{
-fchmodat(AT_FDCWD, "", 0, AT_SYMLINK_NOFOLLOW);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_fchmodat=yes
-else
-  glibcxx_cv_fchmodat=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-        #include <fcntl.h>
-        #include <sys/stat.h>
-
-int
-main ()
-{
-fchmodat(AT_FDCWD, "", 0, AT_SYMLINK_NOFOLLOW);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_fchmodat=yes
-else
-  glibcxx_cv_fchmodat=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-
-fi
-
-  if test $glibcxx_cv_fchmodat = yes; then
-
-$as_echo "#define _GLIBCXX_USE_FCHMODAT 1" >>confdefs.h
-
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_fchmodat" >&5
-$as_echo "$glibcxx_cv_fchmodat" >&6; }
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sendfile that can copy files" >&5
-$as_echo_n "checking for sendfile that can copy files... " >&6; }
-  if test "${glibcxx_cv_sendfile+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-      case "${target_os}" in
-      gnu* | linux* | solaris*)
         if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <dirent.h>
+int
+main ()
+{
+
+         struct dirent d;
+         if (sizeof d.d_type) return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_dirent_d_type=yes
+else
+  glibcxx_cv_dirent_d_type=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <dirent.h>
+int
+main ()
+{
+
+         struct dirent d;
+         if (sizeof d.d_type) return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_dirent_d_type=yes
+else
+  glibcxx_cv_dirent_d_type=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_dirent_d_type = yes; then
+
+$as_echo "#define HAVE_STRUCT_DIRENT_D_TYPE 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_dirent_d_type" >&5
+$as_echo "$glibcxx_cv_dirent_d_type" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for realpath" >&5
+$as_echo_n "checking for realpath... " >&6; }
+    if test "${glibcxx_cv_realpath+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+         #include <limits.h>
+         #include <stdlib.h>
+         #include <unistd.h>
+
+int
+main ()
+{
+
+         #if _XOPEN_VERSION < 500
+         #error
+         #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
+         char *tmp = realpath((const char*)NULL, (char*)NULL);
+         #else
+         #error
+         #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_realpath=yes
+else
+  glibcxx_cv_realpath=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+         #include <limits.h>
+         #include <stdlib.h>
+         #include <unistd.h>
+
+int
+main ()
+{
+
+         #if _XOPEN_VERSION < 500
+         #error
+         #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
+         char *tmp = realpath((const char*)NULL, (char*)NULL);
+         #else
+         #error
+         #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_realpath=yes
+else
+  glibcxx_cv_realpath=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_realpath = yes; then
+
+$as_echo "#define _GLIBCXX_USE_REALPATH 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_realpath" >&5
+$as_echo "$glibcxx_cv_realpath" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for utimensat" >&5
+$as_echo_n "checking for utimensat... " >&6; }
+    if test "${glibcxx_cv_utimensat+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #include <fcntl.h>
+          #include <sys/stat.h>
+
+int
+main ()
+{
+
+          struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
+          int i = utimensat(AT_FDCWD, "path", ts, 0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_utimensat=yes
+else
+  glibcxx_cv_utimensat=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #include <fcntl.h>
+          #include <sys/stat.h>
+
+int
+main ()
+{
+
+          struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
+          int i = utimensat(AT_FDCWD, "path", ts, 0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_utimensat=yes
+else
+  glibcxx_cv_utimensat=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_utimensat = yes; then
+
+$as_echo "#define _GLIBCXX_USE_UTIMENSAT 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_utimensat" >&5
+$as_echo "$glibcxx_cv_utimensat" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct stat.st_mtim.tv_nsec" >&5
+$as_echo_n "checking for struct stat.st_mtim.tv_nsec... " >&6; }
+    if test "${glibcxx_cv_st_mtim+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+ #include <sys/stat.h>
+int
+main ()
+{
+
+          struct stat st;
+          return st.st_mtim.tv_nsec;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_st_mtim=yes
+else
+  glibcxx_cv_st_mtim=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+ #include <sys/stat.h>
+int
+main ()
+{
+
+          struct stat st;
+          return st.st_mtim.tv_nsec;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_st_mtim=yes
+else
+  glibcxx_cv_st_mtim=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_st_mtim = yes; then
+
+$as_echo "#define _GLIBCXX_USE_ST_MTIM 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_st_mtim" >&5
+$as_echo "$glibcxx_cv_st_mtim" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fchmod" >&5
+$as_echo_n "checking for fchmod... " >&6; }
+    if test "${glibcxx_cv_fchmod+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/stat.h>
+int
+main ()
+{
+fchmod(1, S_IWUSR);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_fchmod=yes
+else
+  glibcxx_cv_fchmod=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/stat.h>
+int
+main ()
+{
+fchmod(1, S_IWUSR);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_fchmod=yes
+else
+  glibcxx_cv_fchmod=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_fchmod = yes; then
+
+$as_echo "#define _GLIBCXX_USE_FCHMOD 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_fchmod" >&5
+$as_echo "$glibcxx_cv_fchmod" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fchmodat" >&5
+$as_echo_n "checking for fchmodat... " >&6; }
+    if test "${glibcxx_cv_fchmodat+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #include <fcntl.h>
+          #include <sys/stat.h>
+
+int
+main ()
+{
+fchmodat(AT_FDCWD, "", 0, AT_SYMLINK_NOFOLLOW);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_fchmodat=yes
+else
+  glibcxx_cv_fchmodat=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #include <fcntl.h>
+          #include <sys/stat.h>
+
+int
+main ()
+{
+fchmodat(AT_FDCWD, "", 0, AT_SYMLINK_NOFOLLOW);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_fchmodat=yes
+else
+  glibcxx_cv_fchmodat=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_fchmodat = yes; then
+
+$as_echo "#define _GLIBCXX_USE_FCHMODAT 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_fchmodat" >&5
+$as_echo "$glibcxx_cv_fchmodat" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sendfile that can copy files" >&5
+$as_echo_n "checking for sendfile that can copy files... " >&6; }
+    if test "${glibcxx_cv_sendfile+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+        case "${target_os}" in
+        gnu* | linux* | solaris*)
+          if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 #include <sys/sendfile.h>
 int
 main ()
@@ -80423,28 +80499,197 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
-        ;;
-      *)
-        glibcxx_cv_sendfile=no
-        ;;
-    esac
+          ;;
+        *)
+          glibcxx_cv_sendfile=no
+          ;;
+      esac
 
 fi
 
-  if test $glibcxx_cv_sendfile = yes; then
+    if test $glibcxx_cv_sendfile = yes; then
 
 $as_echo "#define _GLIBCXX_USE_SENDFILE 1" >>confdefs.h
 
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_sendfile" >&5
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_sendfile" >&5
 $as_echo "$glibcxx_cv_sendfile" >&6; }
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  ac_ext=c
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for link" >&5
+$as_echo_n "checking for link... " >&6; }
+    if test "${glibcxx_cv_link+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+link("", "");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_link=yes
+else
+  glibcxx_cv_link=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+link("", "");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_link=yes
+else
+  glibcxx_cv_link=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_link = yes; then
+
+$as_echo "#define HAVE_LINK 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_link" >&5
+$as_echo "$glibcxx_cv_link" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for readlink" >&5
+$as_echo_n "checking for readlink... " >&6; }
+    if test "${glibcxx_cv_readlink+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+char buf[32]; readlink("", buf, sizeof(buf));
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_readlink=yes
+else
+  glibcxx_cv_readlink=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+char buf[32]; readlink("", buf, sizeof(buf));
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_readlink=yes
+else
+  glibcxx_cv_readlink=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_readlink = yes; then
+
+$as_echo "#define HAVE_READLINK 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_readlink" >&5
+$as_echo "$glibcxx_cv_readlink" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for symlink" >&5
+$as_echo_n "checking for symlink... " >&6; }
+    if test "${glibcxx_cv_symlink+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+symlink("", "");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_symlink=yes
+else
+  glibcxx_cv_symlink=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+symlink("", "");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_symlink=yes
+else
+  glibcxx_cv_symlink=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    if test $glibcxx_cv_symlink = yes; then
+
+$as_echo "#define HAVE_SYMLINK 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_symlink" >&5
+$as_echo "$glibcxx_cv_symlink" >&6; }
+    CXXFLAGS="$ac_save_CXXFLAGS"
+    ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+  fi
 
 
 # For Transactional Memory TS
@@ -80514,7 +80759,25 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   glibcxx_cv_size_t_mangling=t
 else
+
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+extern __SIZE_TYPE__ x; extern __int20 unsigned x;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_size_t_mangling=u6uint20
+else
   glibcxx_cv_size_t_mangling=x
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -80538,6 +80801,55 @@ cat >>confdefs.h <<_ACEOF
 #define _GLIBCXX_MANGLE_SIZE_T $glibcxx_cv_size_t_mangling
 _ACEOF
 
+
+
+# Check which release added std::exception_ptr for the target
+
+  if test $enable_symvers != no; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for first version to support std::exception_ptr" >&5
+$as_echo_n "checking for first version to support std::exception_ptr... " >&6; }
+    case ${target} in
+      aarch64-*-* | alpha-*-* | hppa*-*-* | i?86-*-* | x86_64-*-* | \
+      m68k-*-* | powerpc*-*-* | s390*-*-* | *-*-solaris* )
+        ac_exception_ptr_since_gcc46=yes
+        ;;
+      *)
+        # If the value of this macro changes then we will need to hardcode
+        # yes/no here for additional targets based on the original value.
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+          #if __GCC_ATOMIC_INT_LOCK_FREE <= 1
+          # error atomic int not always lock free
+          #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_exception_ptr_since_gcc46=yes
+else
+  ac_exception_ptr_since_gcc46=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        ;;
+    esac
+    if test x"$ac_exception_ptr_since_gcc46" = x"yes" ; then
+
+$as_echo "#define HAVE_EXCEPTION_PTR_SINCE_GCC46 1" >>confdefs.h
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: 4.6.0" >&5
+$as_echo "4.6.0" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: 7.1.0" >&5
+$as_echo "7.1.0" >&6; }
+    fi
+  fi
 
 
 # Define documentation rules conditionally.
@@ -80958,6 +81270,18 @@ else
 fi
 
 
+case "$build" in
+ *-*-darwin* ) glibcxx_include_dir_notparallel=yes ;;
+ * ) glibcxx_include_dir_notparallel=no ;;
+esac
+ if test $glibcxx_include_dir_notparallel = "yes"; then
+  INCLUDE_DIR_NOTPARALLEL_TRUE=
+  INCLUDE_DIR_NOTPARALLEL_FALSE='#'
+else
+  INCLUDE_DIR_NOTPARALLEL_TRUE='#'
+  INCLUDE_DIR_NOTPARALLEL_FALSE=
+fi
+
 
 # Propagate the target-specific source directories through the build chain.
 ATOMICITY_SRCDIR=config/${atomicity_dir}
@@ -80980,6 +81304,93 @@ CPU_OPT_BITS_RANDOM=config/${cpu_opt_bits_random}
 
 
 
+# Add CET specific flags if Intel CET is enabled.
+ # Check whether --enable-cet was given.
+if test "${enable_cet+set}" = set; then :
+  enableval=$enable_cet;
+      case "$enableval" in
+       yes|no|auto) ;;
+       *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_cet=no
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
+$as_echo_n "checking for CET support... " >&6; }
+
+case "$host" in
+  i[34567]86-*-linux* | x86_64-*-linux*)
+    case "$enable_cet" in
+      auto)
+	# Check if target supports multi-byte NOPs
+	# and if assembler supports CET insn.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+#if !defined(__SSE2__)
+#error target does not support multi-byte NOPs
+#else
+asm ("setssbsy");
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  enable_cet=yes
+else
+  enable_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+      yes)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  as_fn_error "assembler with CET support is required for --enable-cet" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+    esac
+    ;;
+  *)
+    enable_cet=no
+    ;;
+esac
+if test x$enable_cet = xyes; then
+  CET_FLAGS="-fcf-protection -mshstk"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+EXTRA_CXX_FLAGS="$EXTRA_CXX_FLAGS $CET_FLAGS"
+EXTRA_CFLAGS="$EXTRA_CFLAGS $CET_FLAGS"
+
+
+
 # Determine cross-compile flags and AM_CONDITIONALs.
 #AC_SUBST(GLIBCXX_IS_NATIVE)
 #AM_CONDITIONAL(CANADIAN, test $CANADIAN = yes)
@@ -80998,6 +81409,15 @@ fi
 else
   GLIBCXX_BUILD_PCH_TRUE='#'
   GLIBCXX_BUILD_PCH_FALSE=
+fi
+
+
+    if test $enable_float128 = yes; then
+  ENABLE_FLOAT128_TRUE=
+  ENABLE_FLOAT128_FALSE='#'
+else
+  ENABLE_FLOAT128_TRUE='#'
+  ENABLE_FLOAT128_FALSE=
 fi
 
 
@@ -81385,7 +81805,22 @@ $as_echo "$gxx_include_dir" >&6; }
   # OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc
 
 
-  WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi'
+  WARN_FLAGS="-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi=2"
+
+
+
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
+      fi
+
+fi
+
 
 
 
@@ -81529,6 +81964,10 @@ if test -z "${GLIBCXX_BUILD_PCH_TRUE}" && test -z "${GLIBCXX_BUILD_PCH_FALSE}"; 
   as_fn_error "conditional \"GLIBCXX_BUILD_PCH\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${ENABLE_FLOAT128_TRUE}" && test -z "${ENABLE_FLOAT128_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_FLOAT128\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${ENABLE_ALLOCATOR_NEW_TRUE}" && test -z "${ENABLE_ALLOCATOR_NEW_FALSE}"; then
   as_fn_error "conditional \"ENABLE_ALLOCATOR_NEW\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -81635,6 +82074,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_PDF_TRUE}" && test -z "${BUILD_PDF_FALSE}"; then
   as_fn_error "conditional \"BUILD_PDF\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${INCLUDE_DIR_NOTPARALLEL_TRUE}" && test -z "${INCLUDE_DIR_NOTPARALLEL_FALSE}"; then
+  as_fn_error "conditional \"INCLUDE_DIR_NOTPARALLEL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -82233,7 +82676,6 @@ CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 CC="$CC"
 CXX="$CXX"
 GFORTRAN="$GFORTRAN"
-GCJ="$GCJ"
 
 
 # The HP-UX ksh and POSIX shell print the target directory to stdout

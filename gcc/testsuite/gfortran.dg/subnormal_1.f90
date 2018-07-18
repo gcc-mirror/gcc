@@ -6,6 +6,6 @@ program chop
   real x
   x = 1.
   if (tiny(x)/2. /= tiny(x)/2. - (nearest(tiny(x),1.) - tiny(x))/2.) then
-    call abort
+    STOP 1
   end if
 end program chop

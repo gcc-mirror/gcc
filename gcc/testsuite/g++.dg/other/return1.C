@@ -7,7 +7,7 @@
 struct wxString;
 struct wxString* wxGetEmptyString();
 
-struct wxString GetHeader() // { dg-error "return type" "" }
+struct wxString GetHeader() // { dg-error "return type" }
 {
   return *wxGetEmptyString();
 }

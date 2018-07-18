@@ -8,4 +8,4 @@ int f(void)
  __imag__ t = 2;
 }
 
-/* { dg-final { scan-tree-dump-times "__complex__" 0 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "__complex__" 0 "optimized" } } */

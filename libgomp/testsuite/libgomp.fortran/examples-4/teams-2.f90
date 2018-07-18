@@ -15,7 +15,8 @@ function dotprod (B, C, N, block_size, num_teams, block_threads) result (sum)
   real :: B(N), C(N), sum
   integer :: N, block_size, num_teams, block_threads, i, i0
   sum = 0.0e0
-  !$omp target map(to: B, C, block_size, num_teams, block_threads)
+  !$omp target map(to: B, C, block_size, num_teams, block_threads) &
+  !$omp& map(tofrom: sum)
     !$omp teams num_teams(num_teams) thread_limit(block_threads) &
     !$omp& reduction(+:sum)
       !$omp distribute
@@ -48,7 +49,7 @@ subroutine check (a, b)
   else
     err = (a - b) / b
   end if
-  if (err > EPS .or. err < -EPS) call abort
+  if (err > EPS .or. err < -EPS) STOP 1
 end subroutine
 
 program e_54_1

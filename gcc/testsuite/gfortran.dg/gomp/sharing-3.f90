@@ -25,7 +25,7 @@ subroutine foo (vara, varb, varc, vard, n)
     vard(1) = 1
     vare(1) = 1
   !$omp end parallel
-  !$omp parallel default(none)	! { dg-error "enclosing parallel" }
+  !$omp parallel default(none)	! { dg-error "enclosing 'parallel'" }
     !$omp master
       vara(1) = 1		! { dg-error "not specified" }
       varb(1) = 1		! Assumed-size is predetermined

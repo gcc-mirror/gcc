@@ -1,5 +1,7 @@
 // PR c++/70001
-// { dg-do compile { target c++11 } }
+
+// This is still slow to compile, only run it once.
+// { dg-do compile { target c++14_only } }
 
 #include <array>
 #include <complex>

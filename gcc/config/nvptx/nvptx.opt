@@ -1,5 +1,5 @@
 ; Options for the NVPTX port
-; Copyright (C) 2014-2016 Free Software Foundation, Inc.
+; Copyright (C) 2014-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -32,3 +32,19 @@ Link in code for a __main kernel.
 moptimize
 Target Report Var(nvptx_optimize) Init(-1)
 Optimize partition neutering.
+
+msoft-stack
+Target Report Mask(SOFT_STACK)
+Use custom stacks instead of local memory for automatic storage.
+
+msoft-stack-reserve-local
+Target Report Joined RejectNegative UInteger Var(nvptx_softstack_size) Init(128)
+Specify size of .local memory used for stack when the exact amount is not known.
+
+muniform-simt
+Target Report Mask(UNIFORM_SIMT)
+Generate code that can keep local state uniform across all lanes.
+
+mgomp
+Target Report Mask(GOMP)
+Generate code for OpenMP offloading: enables -msoft-stack and -muniform-simt.

@@ -1,6 +1,6 @@
 // unique_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,6 +36,7 @@
 #include <utility>
 #include <tuple>
 #include <bits/stl_function.h>
+#include <bits/functional_hash.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -47,7 +48,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template<typename> class auto_ptr;
+#pragma GCC diagnostic pop
 #endif
 
   /// Primary template of default_delete, used by unique_ptr
@@ -129,6 +133,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	};
 
     public:
+      using _DeleterConstraint = enable_if<
+        __and_<__not_<is_pointer<_Dp>>,
+	       is_default_constructible<_Dp>>::value>;
+
       using pointer = typename _Ptr<_Tp, _Dp>::type;
 
       __uniq_ptr_impl() = default;
@@ -151,6 +159,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp, typename _Dp = default_delete<_Tp>>
     class unique_ptr
     {
+      template <class _Up>
+      using _DeleterConstraint =
+	typename __uniq_ptr_impl<_Tp, _Up>::_DeleterConstraint::type;
+
       __uniq_ptr_impl<_Tp, _Dp> _M_t;
 
     public:
@@ -174,10 +186,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Constructors.
 
       /// Default constructor, creates a unique_ptr that owns nothing.
-      constexpr unique_ptr() noexcept
-      : _M_t()
-      { static_assert(!is_pointer<deleter_type>::value,
-		     "constructed with null function pointer deleter"); }
+      template <typename _Up = _Dp,
+		typename = _DeleterConstraint<_Up>>
+	constexpr unique_ptr() noexcept
+	: _M_t()
+        { }
 
       /** Takes ownership of a pointer.
        *
@@ -185,11 +198,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * The deleter will be value-initialized.
        */
-      explicit
-      unique_ptr(pointer __p) noexcept
-      : _M_t(__p)
-      { static_assert(!is_pointer<deleter_type>::value,
-		     "constructed with null function pointer deleter"); }
+      template <typename _Up = _Dp,
+		typename = _DeleterConstraint<_Up>>
+	explicit
+	unique_ptr(pointer __p) noexcept
+	: _M_t(__p)
+        { }
 
       /** Takes ownership of a pointer.
        *
@@ -217,7 +231,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      "rvalue deleter bound to reference"); }
 
       /// Creates a unique_ptr that owns nothing.
-      constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
+      template <typename _Up = _Dp,
+		typename = _DeleterConstraint<_Up>>
+	constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
 
       // Move constructors.
 
@@ -241,10 +257,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       /// Converting constructor from @c auto_ptr
       template<typename _Up, typename = _Require<
 	       is_convertible<_Up*, _Tp*>, is_same<_Dp, default_delete<_Tp>>>>
 	unique_ptr(auto_ptr<_Up>&& __u) noexcept;
+#pragma GCC diagnostic pop
 #endif
 
       /// Destructor, invokes the deleter if the stored pointer is not null.
@@ -383,6 +402,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Dp>
     class unique_ptr<_Tp[], _Dp>
     {
+      template <typename _Up>
+      using _DeleterConstraint =
+	typename __uniq_ptr_impl<_Tp, _Up>::_DeleterConstraint::type;
+
       __uniq_ptr_impl<_Tp, _Dp> _M_t;
 
       template<typename _Up>
@@ -431,10 +454,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Constructors.
 
       /// Default constructor, creates a unique_ptr that owns nothing.
-      constexpr unique_ptr() noexcept
-      : _M_t()
-      { static_assert(!std::is_pointer<deleter_type>::value,
-		      "constructed with null function pointer deleter"); }
+      template <typename _Up = _Dp,
+		typename = _DeleterConstraint<_Up>>
+	constexpr unique_ptr() noexcept
+	: _M_t()
+        { }
 
       /** Takes ownership of a pointer.
        *
@@ -444,13 +468,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * The deleter will be value-initialized.
        */
       template<typename _Up,
-               typename = typename enable_if<
+	       typename _Vp = _Dp,
+	       typename = _DeleterConstraint<_Vp>,
+	       typename = typename enable_if<
                  __safe_conversion_raw<_Up>::value, bool>::type>
-      explicit
-      unique_ptr(_Up __p) noexcept
-      : _M_t(__p)
-      { static_assert(!is_pointer<deleter_type>::value,
-		      "constructed with null function pointer deleter"); }
+	explicit
+	unique_ptr(_Up __p) noexcept
+	: _M_t(__p)
+        { }
 
       /** Takes ownership of a pointer.
        *
@@ -490,7 +515,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter())) { }
 
       /// Creates a unique_ptr that owns nothing.
-      constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
+      template <typename _Up = _Dp,
+		typename = _DeleterConstraint<_Up>>
+	constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
 
       template<typename _Up, typename _Ep,
 	       typename = _Require<__safe_conversion_up<_Up, _Ep>>>
@@ -649,6 +676,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 unique_ptr<_Tp, _Dp>& __y) noexcept
     { __x.swap(__y); }
 
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+  template<typename _Tp, typename _Dp>
+    typename enable_if<!__is_swappable<_Dp>::value>::type
+    swap(unique_ptr<_Tp, _Dp>&,
+	 unique_ptr<_Tp, _Dp>&) = delete;
+#endif
+
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     inline bool
@@ -763,7 +797,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// std::hash specialization for unique_ptr.
   template<typename _Tp, typename _Dp>
     struct hash<unique_ptr<_Tp, _Dp>>
-    : public __hash_base<size_t, unique_ptr<_Tp, _Dp>>
+    : public __hash_base<size_t, unique_ptr<_Tp, _Dp>>,
+    private __poison_hash<typename unique_ptr<_Tp, _Dp>::pointer>
     {
       size_t
       operator()(const unique_ptr<_Tp, _Dp>& __u) const noexcept

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -253,6 +253,7 @@ package body Comperr is
          --  we use the contents of this file at this point.
 
          declare
+            FD  : File_Descriptor;
             Lo  : Source_Ptr;
             Hi  : Source_Ptr;
             Src : Source_Buffer_Ptr;
@@ -261,11 +262,11 @@ package body Comperr is
             Namet.Unlock;
             Name_Buffer (1 .. 12) := "gnat_bug.box";
             Name_Len := 12;
-            Read_Source_File (Name_Enter, 0, Hi, Src);
+            Read_Source_File (Name_Enter, 0, Hi, Src, FD);
 
             --  If we get a Src file, we use it
 
-            if Src /= null then
+            if not Null_Source_Buffer_Ptr (Src) then
                Lo := 0;
 
                Outer : while Lo < Hi loop
@@ -294,7 +295,7 @@ package body Comperr is
                if Is_FSF_Version then
                   Write_Str
                     ("| Please submit a bug report; see" &
-                     " http://gcc.gnu.org/bugs.html.");
+                     " https://gcc.gnu.org/bugs/ .");
                   End_Line;
 
                elsif Is_GPL_Version then
@@ -457,7 +458,7 @@ package body Comperr is
       --  If parsing was not successful, no Main_Unit is available, so return
       --  immediately.
 
-      if Main_Source_File = No_Source_File then
+      if Main_Source_File <= No_Source_File then
          return;
       end if;
 
@@ -467,20 +468,25 @@ package body Comperr is
       Main := Unit (Cunit (Main_Unit));
 
       case Nkind (Main) is
-         when N_Package_Declaration    |
-              N_Subprogram_Body        |
-              N_Subprogram_Declaration =>
+         when N_Package_Declaration
+            | N_Subprogram_Body
+            | N_Subprogram_Declaration
+         =>
             Unit_Name := Defining_Unit_Name (Specification (Main));
 
          when N_Package_Body =>
             Unit_Name := Corresponding_Spec (Main);
 
-         when N_Package_Renaming_Declaration =>
+         when N_Package_Instantiation
+            | N_Package_Renaming_Declaration
+         =>
             Unit_Name := Defining_Unit_Name (Main);
 
          --  No SCIL file generated for generic package declarations
 
-         when N_Generic_Package_Declaration =>
+         when N_Generic_Package_Declaration
+            | N_Generic_Package_Renaming_Declaration
+         =>
             return;
 
          --  Should never happen, but can be ignored in production

@@ -1,5 +1,5 @@
 /* C6X ABI compliant unwinding routines
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
  
    This file is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -449,7 +449,7 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 
       if ((op & 0xf0) == 0xe0)
 	{
-	  /* B3 = reg.  RETURN case alreadh handled above.  */
+	  /* B3 = reg.  RETURN case already handled above.  */
 	  int regno = unwind_frame_regs[op & 0xf];
 
 	  _Unwind_VRS_Get (context, _UVRSC_CORE, regno, _UVRSD_UINT32, &reg);

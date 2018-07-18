@@ -1,5 +1,5 @@
 /* Target Definitions for NVPTX.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -31,6 +31,10 @@
       builtin_assert ("machine=nvptx");		\
       builtin_assert ("cpu=nvptx");		\
       builtin_define ("__nvptx__");		\
+      if (TARGET_SOFT_STACK)			\
+        builtin_define ("__nvptx_softstack__");	\
+      if (TARGET_UNIFORM_SIMT)			\
+        builtin_define ("__nvptx_unisimt__");	\
     } while (0)
 
 /* Avoid the default in ../../gcc.c, which adds "-pthread", which is not
@@ -48,12 +52,14 @@
 
 /* Alignments in bits.  */
 #define PARM_BOUNDARY 32
-#define STACK_BOUNDARY 64
+#define STACK_BOUNDARY 128
 #define FUNCTION_BOUNDARY 32
-#define BIGGEST_ALIGNMENT 64
+#define BIGGEST_ALIGNMENT 128
 #define STRICT_ALIGNMENT 1
 
 #define MAX_STACK_ALIGNMENT (1024 * 8)
+
+#define DATA_ALIGNMENT nvptx_data_alignment
 
 /* Copied from elf.h and other places.  We'd otherwise use
    BIGGEST_ALIGNMENT and fail a number of testcases.  */
@@ -79,21 +85,15 @@
 
 #define POINTER_SIZE (TARGET_ABI64 ? 64 : 32)
 #define Pmode (TARGET_ABI64 ? DImode : SImode)
+#define STACK_SIZE_MODE Pmode
 
 /* Registers.  Since ptx is a virtual target, we just define a few
    hard registers for special purposes and leave pseudos unallocated.
    We have to have some available hard registers, to keep gcc setup
    happy.  */
 #define FIRST_PSEUDO_REGISTER 16
-#define FIXED_REGISTERS	    { 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+#define FIXED_REGISTERS	    { 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 #define CALL_USED_REGISTERS { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
-
-#define HARD_REGNO_NREGS(REG, MODE)		\
-  ((void)(REG), (void)(MODE), 1)
-#define CANNOT_CHANGE_MODE_CLASS(M1, M2, CLS)	\
-  ((void)(M1), (void)(M2), (void)(CLS), true)
-#define HARD_REGNO_MODE_OK(REG, MODE)		\
-     ((void)(REG), (void)(MODE), true)
 
 /* Register Classes.  */
 enum reg_class             {  NO_REGS,    ALL_REGS,	LIM_REG_CLASSES };
@@ -112,8 +112,6 @@ enum reg_class             {  NO_REGS,    ALL_REGS,	LIM_REG_CLASSES };
 #define CLASS_MAX_NREGS(class, mode) \
   ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-#define MODES_TIEABLE_P(M1, M2) false
-
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE)		\
   if ((MODE) == QImode || (MODE) == HImode)		\
     {							\
@@ -124,7 +122,6 @@ enum reg_class             {  NO_REGS,    ALL_REGS,	LIM_REG_CLASSES };
 
 /* Stack and Calling.  */
 
-#define STARTING_FRAME_OFFSET 0
 #define FRAME_GROWS_DOWNWARD 0
 #define STACK_GROWS_DOWNWARD 1
 
@@ -133,10 +130,17 @@ enum reg_class             {  NO_REGS,    ALL_REGS,	LIM_REG_CLASSES };
 #define FRAME_POINTER_REGNUM 2
 #define ARG_POINTER_REGNUM 3
 #define STATIC_CHAIN_REGNUM 4
+/* This register points to the shared memory location with the current warp's
+   soft stack pointer (__nvptx_stacks[tid.y]).  */
+#define SOFTSTACK_SLOT_REGNUM 5
+/* This register is used to save the previous value of the soft stack pointer
+   in the prologue and restore it when returning.  */
+#define SOFTSTACK_PREV_REGNUM 6
 
 #define REGISTER_NAMES							\
   {									\
-    "%value", "%stack", "%frame", "%args", "%chain", "%hr5", "%hr6", "%hr7", \
+    "%value", "%stack", "%frame", "%args",                              \
+    "%chain", "%sspslot", "%sspprev", "%hr7",                           \
     "%hr8", "%hr9", "%hr10", "%hr11", "%hr12", "%hr13", "%hr14", "%hr15" \
   }
 
@@ -200,10 +204,19 @@ struct GTY(()) machine_function
   bool is_varadic;  /* This call is varadic  */
   bool has_varadic;  /* Current function has a varadic call.  */
   bool has_chain; /* Current function has outgoing static chain.  */
+  bool has_softstack; /* Current function has a soft stack frame.  */
+  bool has_simtreg; /* Current function has an OpenMP SIMD region.  */
   int num_args;	/* Number of args of current call.  */
   int return_mode; /* Return mode of current fn.
 		      (machine_mode not defined yet.) */
   rtx axis_predicate[2]; /* Neutering predicates.  */
+  rtx unisimt_master; /* 'Master lane index' for -muniform-simt.  */
+  rtx unisimt_predicate; /* Predicate for -muniform-simt.  */
+  rtx unisimt_location; /* Mask location for -muniform-simt.  */
+  /* The following two fields hold the maximum size resp. alignment required
+     for per-lane storage in OpenMP SIMD regions.  */
+  unsigned HOST_WIDE_INT simt_stack_size;
+  unsigned HOST_WIDE_INT simt_stack_align;
 };
 #endif
 
@@ -296,7 +309,6 @@ struct GTY(()) machine_function
 #define CASE_VECTOR_MODE SImode
 #define MOVE_MAX 8
 #define MOVE_RATIO(SPEED) 4
-#define TRULY_NOOP_TRUNCATION(outprec, inprec) 1
 #define FUNCTION_MODE QImode
 #define HAS_INIT_SECTION 1
 

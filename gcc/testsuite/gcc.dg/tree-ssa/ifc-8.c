@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-ifcvt-details -ftree-loop-if-convert-stores" } */
+/* { dg-options "-Ofast -fdump-tree-ifcvt-details-blocks -ftree-loop-if-convert-stores" } */
 /* { dg-require-visibility "" } */
 
 #define LEN 4096
@@ -16,3 +16,10 @@ void test ()
 }
 
 /* { dg-final { scan-tree-dump-times "Applying if-conversion" 1 "ifcvt" } } */
+
+/* We insert into code
+   if (LOOP_VECTORIZED (...))
+   which is folded by vectorizer.  Both outgoing edges must have probability
+   100% so the resulting profile match after folding.  */
+/* { dg-final { scan-tree-dump-times "Invalid sum of outgoing probabilities 200.0" 1 "ifcvt" } } */
+/* { dg-final { scan-tree-dump-times "Invalid sum of incoming counts" 1 "ifcvt" } } */

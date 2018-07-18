@@ -22,5 +22,5 @@ int main()
   return 2;
 }
 
-/* { dg-final { scan-ipa-dump "Semantic equality hit:bar->foo" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:foo->bar" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */

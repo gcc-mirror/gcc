@@ -16,7 +16,7 @@
    older versions of glibc when a SIGPROF signal arrives while
    collecting a backtrace.  */
 
-uint32 runtime_in_callers;
+static uint32 runtime_in_callers;
 
 /* Argument passed to callback function.  */
 
@@ -68,13 +68,14 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
     {
       const char *p;
 
-      p = __builtin_strchr (function, '.');
-      if (p != NULL && __builtin_strncmp (p + 1, "$thunk", 6) == 0)
+      p = function + __builtin_strlen (function);
+      while (p > function && p[-1] >= '0' && p[-1] <= '9')
+	--p;
+      if (p - function > 7 && __builtin_strncmp (p - 7, "..thunk", 7) == 0)
 	return 0;
-      p = __builtin_strrchr (function, '$');
-      if (p != NULL && __builtin_strcmp(p, "$recover") == 0)
+      if (p - function > 3 && __builtin_strcmp (p - 3, "..r") == 0)
 	return 0;
-      if (p != NULL && __builtin_strncmp(p, "$stub", 5) == 0)
+      if (p - function > 6 && __builtin_strcmp (p - 6, "..stub") == 0)
 	return 0;
     }
 
@@ -127,15 +128,34 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
 	    p = filename;
 	  if (__builtin_strcmp (p, "/proc.c") == 0)
 	    {
-	      if (__builtin_strcmp (function, "kickoff") == 0
-		  || __builtin_strcmp (function, "runtime_mstart") == 0
-		  || __builtin_strcmp (function, "runtime_main") == 0)
+	      if (__builtin_strcmp (function, "runtime_mstart") == 0)
+		return 1;
+	    }
+	  else if (__builtin_strcmp (p, "/proc.go") == 0)
+	    {
+	      if (__builtin_strcmp (function, "runtime.kickoff") == 0
+		  || __builtin_strcmp (function, "runtime.main") == 0)
 		return 1;
 	    }
 	}
     }
 
   return arg->index >= arg->max;
+}
+
+/* Syminfo callback.  */
+
+void
+__go_syminfo_fnname_callback (void *data,
+			      uintptr_t pc __attribute__ ((unused)),
+			      const char *symname,
+			      uintptr_t address __attribute__ ((unused)),
+			      uintptr_t size __attribute__ ((unused)))
+{
+  String* strptr = (String*) data;
+
+  if (symname != NULL)
+    *strptr = runtime_gostringnocopy ((const byte *) symname);
 }
 
 /* Error callback.  */
@@ -154,22 +174,65 @@ error_callback (void *data __attribute__ ((unused)),
   runtime_throw (msg);
 }
 
+/* Return whether we are already collecting a stack trace. This is
+   called from the signal handler.  */
+
+bool alreadyInCallers(void)
+  __attribute__ ((no_split_stack));
+bool alreadyInCallers(void)
+  __asm__ (GOSYM_PREFIX "runtime.alreadyInCallers");
+
+bool
+alreadyInCallers()
+{
+  return runtime_atomicload(&runtime_in_callers) > 0;
+}
+
 /* Gather caller PC's.  */
 
 int32
 runtime_callers (int32 skip, Location *locbuf, int32 m, bool keep_thunks)
 {
   struct callers_data data;
+  struct backtrace_state* state;
+  int32 i;
 
   data.locbuf = locbuf;
   data.skip = skip + 1;
   data.index = 0;
   data.max = m;
   data.keep_thunks = keep_thunks;
+  state = __go_get_backtrace_state ();
   runtime_xadd (&runtime_in_callers, 1);
-  backtrace_full (__go_get_backtrace_state (), 0, callback, error_callback,
-		  &data);
+  backtrace_full (state, 0, callback, error_callback, &data);
   runtime_xadd (&runtime_in_callers, -1);
+
+  /* For some reason GCC sometimes loses the name of a thunk function
+     at the top of the stack.  If we are skipping thunks, skip that
+     one too.  */
+  if (!keep_thunks
+      && data.index > 2
+      && locbuf[data.index - 2].function.len == 0
+      && locbuf[data.index - 1].function.str != NULL
+      && __builtin_strcmp ((const char *) locbuf[data.index - 1].function.str,
+			   "runtime.kickoff") == 0)
+    {
+      locbuf[data.index - 2] = locbuf[data.index - 1];
+      --data.index;
+    }
+
+  /* Try to use backtrace_syminfo to fill in any missing function
+     names.  This can happen when tracing through an object which has
+     no debug info; backtrace_syminfo will look at the symbol table to
+     get the name.  This should only happen when tracing through code
+     that is not written in Go and is not part of libgo.  */
+  for (i = 0; i < data.index; ++i)
+    {
+      if (locbuf[i].function.len == 0 && locbuf[i].pc != 0)
+	backtrace_syminfo (state, locbuf[i].pc, __go_syminfo_fnname_callback,
+			   error_callback, &locbuf[i].function);
+    }
+
   return data.index;
 }
 
@@ -183,7 +246,10 @@ Callers (int skip, struct __go_open_array pc)
   int ret;
   int i;
 
-  locbuf = (Location *) runtime_mal (pc.__count * sizeof (Location));
+  /* Note that calling mallocgc here assumes that we are not going to
+     store any allocated Go pointers in the slice.  */
+  locbuf = (Location *) runtime_mallocgc (pc.__count * sizeof (Location),
+					  nil, false);
 
   /* In the Go 1 release runtime.Callers has an off-by-one error,
      which we can not correct because it would break backward

@@ -28,5 +28,3 @@ contains
   end subroutine go
 
 end module m
-
-! { dg-final { cleanup-modules "m" } }

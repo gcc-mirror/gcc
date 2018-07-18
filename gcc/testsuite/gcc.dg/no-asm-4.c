@@ -7,5 +7,5 @@
 
 int asm;	/* { dg-bogus "before .asm." } */
 int inline;	/* { dg-warning "empty declaration" } */
-/* { dg-error "empty declaration" "" { target *-*-* } 9 } */
+/* { dg-error "empty declaration" "" { target *-*-* } .-1 } */
 int typeof;	/* { dg-bogus "before .typeof." } */

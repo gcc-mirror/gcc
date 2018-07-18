@@ -82,8 +82,8 @@ f1 (int x)
     for (j = i + 3; j < 16; j += 2) /* { dg-error "initializer expression refers to iteration variable" } */
       ;
   #pragma omp for collapse(2)
-  for (i = 0; i < 16; i++) /* { dg-error "initializer expression refers to iteration variable" } */
-    for (j = baz (&i); j < 16; j += 2)
+  for (i = 0; i < 16; i++)
+    for (j = baz (&i); j < 16; j += 2) /* { dg-error "initializer expression refers to iteration variable" } */
       ;
   #pragma omp for collapse(2)
   for (i = 0; i < 16; i++)
@@ -215,8 +215,8 @@ f2 (int x)
     for (int j = i + 3; j < 16; j += 2) /* { dg-error "initializer expression refers to iteration variable" } */
       ;
   #pragma omp for collapse(2)
-  for (int i = 0; i < 16; i++) /* { dg-error "initializer expression refers to iteration variable" } */
-    for (int j = baz (&i); j < 16; j += 2)
+  for (int i = 0; i < 16; i++)
+    for (int j = baz (&i); j < 16; j += 2) /* { dg-error "initializer expression refers to iteration variable" } */
       ;
   #pragma omp for collapse(2)
   for (int i = 0; i < 16; i++)

@@ -65,8 +65,10 @@ functions to each simple action pipeline, so given the excerpt
 At parse time each {{.}} is overwritten to add escaping functions as necessary.
 In this case it becomes
 
-  <a href="/search?q={{. | urlquery}}">{{. | html}}</a>
+  <a href="/search?q={{. | urlescaper | attrescaper}}">{{. | htmlescaper}}</a>
 
+where urlescaper, attrescaper, and htmlescaper are aliases for internal escaping
+functions.
 
 Errors
 
@@ -129,7 +131,7 @@ then the template output is
 
   <script>var pair = {"A": "foo", "B": "bar"};</script>
 
-See package json to understand how non-string content is marshalled for
+See package json to understand how non-string content is marshaled for
 embedding in JavaScript contexts.
 
 

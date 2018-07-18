@@ -13,5 +13,5 @@ int main()
 {
   long long m;
   
-  (void (QObject::*)()) m;    // { dg-error "invalid cast" "" }
+  (void (QObject::*)()) m;    // { dg-error "invalid cast" }
 }

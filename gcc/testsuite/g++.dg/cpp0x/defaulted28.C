@@ -9,7 +9,7 @@ private:
   A(A const&) = default;	// { dg-message "private" }
 };
 
-int f(...) { }
+int f(...) { return 0; }
 int main() {
   A a;
   f(a); 			// { dg-error "this context" }

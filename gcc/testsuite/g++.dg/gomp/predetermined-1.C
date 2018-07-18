@@ -19,15 +19,15 @@ const A foo (const A d, const C e)
     bar (&a);
   #pragma omp parallel default (none)
     bar (&b);
-  #pragma omp parallel default (none)	// { dg-error "enclosing parallel" }
+  #pragma omp parallel default (none)	// { dg-error "enclosing 'parallel'" }
     bar (&c);				// { dg-error "not specified" }
   #pragma omp parallel default (none)
     bar (&d);
-  #pragma omp parallel default (none)	// { dg-error "enclosing parallel" }
+  #pragma omp parallel default (none)	// { dg-error "enclosing 'parallel'" }
     bar (&e);				// { dg-error "not specified" }
   #pragma omp parallel default (none)
     bar (&f);
-  #pragma omp parallel default (none)	// { dg-error "enclosing parallel" }
+  #pragma omp parallel default (none)	// { dg-error "enclosing 'parallel'" }
     bar (&g);				// { dg-error "not specified" }
   return f;
 }

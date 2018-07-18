@@ -28,20 +28,20 @@ struct B {
 
 
 // We should emit a warning for these
-struct C1 {		// { dg-warning "" "" }
+struct C1 {		// { dg-warning "" }
   int *ptr;
   C1();
   ~C1();
 };
 
-struct C2 {		// { dg-warning "" "" }
+struct C2 {		// { dg-warning "" }
   int *ptr;
   C2();
   C2(const C2&);
   ~C2();
 };
 
-struct C3 {		// { dg-warning "" "" }
+struct C3 {		// { dg-warning "" }
   int *ptr;
   C3();
   ~C3();

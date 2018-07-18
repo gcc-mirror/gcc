@@ -7,7 +7,7 @@ void g(int);
 int
 main (void)
 {
-  register int reg asm ("esi") = 1; /* { dg-warning "might be clobbered" "" } */
+  register int reg asm ("esi") = 1; /* { dg-warning "might be clobbered" } */
 
   if (!newsetjmp ())
     {

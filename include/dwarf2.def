@@ -1,7 +1,7 @@
 /* -*- c -*-
    Declarations and definitions of codes relating to the DWARF2 and
    DWARF3 symbolic debugging information formats.
-   Copyright (C) 1992-2015 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
    Office (AJPO), Florida State University and Silicon Graphics Inc.
@@ -212,13 +212,22 @@ DW_FORM (DW_FORM_ref_sig8, 0x20)
 /* DWARF 5.  */
 DW_FORM (DW_FORM_strx, 0x1a)
 DW_FORM (DW_FORM_addrx, 0x1b)
-DW_FORM (DW_FORM_ref_sup, 0x1c)
+DW_FORM (DW_FORM_ref_sup4, 0x1c)
 DW_FORM (DW_FORM_strp_sup, 0x1d)
 DW_FORM (DW_FORM_data16, 0x1e)
 DW_FORM (DW_FORM_line_strp, 0x1f)
 DW_FORM (DW_FORM_implicit_const, 0x21)
 DW_FORM (DW_FORM_loclistx, 0x22)
 DW_FORM (DW_FORM_rnglistx, 0x23)
+DW_FORM (DW_FORM_ref_sup8, 0x24)
+DW_FORM (DW_FORM_strx1, 0x25)
+DW_FORM (DW_FORM_strx2, 0x26)
+DW_FORM (DW_FORM_strx3, 0x27)
+DW_FORM (DW_FORM_strx4, 0x28)
+DW_FORM (DW_FORM_addrx1, 0x29)
+DW_FORM (DW_FORM_addrx2, 0x2a)
+DW_FORM (DW_FORM_addrx3, 0x2b)
+DW_FORM (DW_FORM_addrx4, 0x2c)
 /* Extensions for Fission.  See http://gcc.gnu.org/wiki/DebugFission.  */
 DW_FORM (DW_FORM_GNU_addr_index, 0x1f01)
 DW_FORM (DW_FORM_GNU_str_index, 0x1f02)
@@ -442,6 +451,8 @@ DW_AT (DW_AT_GNU_pubtypes, 0x2135)
 /* Attribute for discriminator.
    See http://gcc.gnu.org/wiki/Discriminator  */
 DW_AT (DW_AT_GNU_discriminator, 0x2136)
+DW_AT (DW_AT_GNU_locviews, 0x2137)
+DW_AT (DW_AT_GNU_entry_view, 0x2138)
 /* VMS extensions.  */
 DW_AT (DW_AT_VMS_rtnbeg_pd_address, 0x2201)
 /* GNAT extensions.  */
@@ -674,6 +685,9 @@ DW_OP (DW_OP_GNU_parameter_ref, 0xfa)
 /* Extensions for Fission.  See http://gcc.gnu.org/wiki/DebugFission.  */
 DW_OP (DW_OP_GNU_addr_index, 0xfb)
 DW_OP (DW_OP_GNU_const_index, 0xfc)
+/* The GNU variable value extension.
+   See http://dwarfstd.org/ShowIssue.php?issue=161109.2 . */
+DW_OP (DW_OP_GNU_variable_value, 0xfd)
 /* HP extensions.  */
 DW_OP_DUP (DW_OP_HP_unknown, 0xe0) /* Ouch, the same as GNU_push_tls_address.  */
 DW_OP (DW_OP_HP_is_value, 0xe1)
@@ -684,6 +698,12 @@ DW_OP (DW_OP_HP_unmod_range, 0xe5)
 DW_OP (DW_OP_HP_tls, 0xe6)
 /* PGI (STMicroelectronics) extensions.  */
 DW_OP (DW_OP_PGI_omp_thread_num, 0xf8)
+/* AARCH64 extensions.
+   DW_OP_AARCH64_operation takes one mandatory unsigned LEB128 operand.
+   Bits[6:0] of this operand is the action code, all others bits are initialized
+   to 0 except explicitly documented for one action.  Please refer AArch64 DWARF
+   ABI documentation for details.  */
+DW_OP (DW_OP_AARCH64_operation, 0xea)
 DW_END_OP
 
 DW_FIRST_ATE (DW_ATE_void, 0x0)
@@ -765,9 +785,23 @@ DW_CFA (DW_CFA_hi_user, 0x3f)
 
 /* SGI/MIPS specific.  */
 DW_CFA (DW_CFA_MIPS_advance_loc8, 0x1d)
-/* GNU extensions.  */
+/* GNU extensions.
+   NOTE: DW_CFA_GNU_window_save is multiplexed on Sparc and AArch64.  */
 DW_CFA (DW_CFA_GNU_window_save, 0x2d)
+DW_CFA_DUP (DW_CFA_AARCH64_negate_ra_state, 0x2d)
 DW_CFA (DW_CFA_GNU_args_size, 0x2e)
 DW_CFA (DW_CFA_GNU_negative_offset_extended, 0x2f)
 
 DW_END_CFA
+
+/* Index attributes in the Abbreviations Table.  */
+DW_FIRST_IDX (DW_IDX_compile_unit, 1)
+DW_IDX (DW_IDX_type_unit, 2)
+DW_IDX (DW_IDX_die_offset, 3)
+DW_IDX (DW_IDX_parent, 4)
+DW_IDX (DW_IDX_type_hash, 5)
+DW_IDX_DUP (DW_IDX_lo_user, 0x2000)
+DW_IDX (DW_IDX_hi_user, 0x3fff)
+DW_IDX (DW_IDX_GNU_internal, 0x2000)
+DW_IDX (DW_IDX_GNU_external, 0x2001)
+DW_END_IDX

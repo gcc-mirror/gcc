@@ -10,12 +10,12 @@ program intrinsic_unpack
    a = reshape ((/1, 0, 0, 0, 1, 0, 0, 0, 1/), (/3, 3/));
    b = unpack ((/2, 3, 4/), mask, a)
    if (any (b .ne. reshape ((/1, 2, 0, 3, 1, 0, 0, 0, 4/), (/3, 3/)))) &
-      call abort
+      STOP 1
    write (line1,'(10I4)') b
    write (line2,'(10I4)') unpack((/2, 3, 4/), mask, a)
-   if (line1 .ne. line2) call abort
+   if (line1 .ne. line2) STOP 2
    b = -1
    b = unpack ((/2, 3, 4/), mask, 0)
    if (any (b .ne. reshape ((/0, 2, 0, 3, 0, 0, 0, 0, 4/), (/3, 3/)))) &
-      call abort
+      STOP 3
 end program

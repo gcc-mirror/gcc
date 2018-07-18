@@ -19,7 +19,7 @@ contains
     do k = 1, cols
       do i = 1, rows
         diff = P(i,k) - Q(i,k)
-        if (diff > EPS .or. -diff > EPS) call abort
+        if (diff > EPS .or. -diff > EPS) STOP 1
       end do
     end do
   end subroutine
@@ -45,7 +45,7 @@ contains
     !$omp target data map(Q)
       do k = 1, cols
         tmp = 0.0d0
-        !$omp target
+        !$omp target map(tofrom: tmp)
           !$omp parallel do reduction(+:tmp)
           do i = 1, rows
             tmp = tmp + (Q(i,k) * Q(i,k))

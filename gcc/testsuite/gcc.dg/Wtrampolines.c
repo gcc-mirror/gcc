@@ -5,8 +5,6 @@
 /* { dg-require-effective-target trampolines } */
 /* { dg-options "-O2 -Wtrampolines" } */
 
-#ifndef NO_TRAMPOLINES
-
 /* This used to fail on various versions of Solaris 2 because the
    trampoline couldn't be made executable.  */
 
@@ -28,7 +26,7 @@ void foo (void)
 
   double a (int k, pfun x1, pfun x2, pfun x3, pfun x4, pfun x5)
   {
-    double b (void)  /* { dg-warning "trampoline generated for nested function 'b'" "standard descriptors" { xfail ia64-*-* powerpc64-*-* } } */
+    double b (void)  /* { dg-warning "trampoline generated for nested function 'b'" "standard descriptors" { xfail { { ia64-*-* *-*-aix* } || { powerpc*-*-* && lp64 } } } } */
     { 
       k = k - 1;
       return a (k, b, x1, x2, x3, x4 );
@@ -46,12 +44,10 @@ void foo (void)
       abort();
   }
 }
-#endif
 
 int main (void)
 {
-#ifndef NO_TRAMPOLINES
   foo ();
-#endif
+
   return 0;
 }

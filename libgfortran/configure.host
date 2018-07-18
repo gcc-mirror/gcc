@@ -40,7 +40,11 @@ fi
 # the x86 denormal exception.
 case "${host_cpu}" in
   i?86 | x86_64)
-    fpu_host='fpu-387'
+    if test "x${have_soft_float}" = "xyes"; then
+      fpu_host='fpu-generic'
+    else
+      fpu_host='fpu-387'
+    fi
     ieee_support='yes'
     ;;
 esac

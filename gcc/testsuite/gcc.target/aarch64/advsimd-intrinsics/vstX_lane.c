@@ -460,14 +460,14 @@ void exec_vstX_lane (void)
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_st2_0, CMT);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_st2_0, CMT);
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_st2_0, CMT);
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_st2_0, CMT);
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_st2_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_st2_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_st2_0, CMT);
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected_st2_0, CMT);
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_st2_0, CMT);
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_st2_0, CMT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_st2_0, CMT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_st2_0, CMT);
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_st2_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_st2_0, CMT);
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_st2_0, CMT);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected_st2_0, CMT);
@@ -483,14 +483,14 @@ void exec_vstX_lane (void)
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_st2_1, CMT);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_st2_1, CMT);
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_st2_1, CMT);
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_st2_1, CMT);
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_st2_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_st2_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_st2_1, CMT);
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected_st2_1, CMT);
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_st2_1, CMT);
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_st2_1, CMT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_st2_1, CMT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_st2_1, CMT);
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_st2_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_st2_1, CMT);
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_st2_1, CMT);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected_st2_1, CMT);
@@ -512,14 +512,14 @@ void exec_vstX_lane (void)
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_st3_0, CMT);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_st3_0, CMT);
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_st3_0, CMT);
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_st3_0, CMT);
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_st3_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_st3_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_st3_0, CMT);
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected_st3_0, CMT);
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_st3_0, CMT);
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_st3_0, CMT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_st3_0, CMT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_st3_0, CMT);
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_st3_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_st3_0, CMT);
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_st3_0, CMT);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected_st3_0, CMT);
@@ -536,14 +536,14 @@ void exec_vstX_lane (void)
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_st3_1, CMT);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_st3_1, CMT);
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_st3_1, CMT);
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_st3_1, CMT);
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_st3_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_st3_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_st3_1, CMT);
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected_st3_1, CMT);
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_st3_1, CMT);
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_st3_1, CMT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_st3_1, CMT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_st3_1, CMT);
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_st3_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_st3_1, CMT);
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_st3_1, CMT);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected_st3_1, CMT);
@@ -560,14 +560,14 @@ void exec_vstX_lane (void)
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_st3_2, CMT);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_st3_2, CMT);
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_st3_2, CMT);
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_st3_2, CMT);
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_st3_2, CMT);
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_st3_2, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_st3_2, CMT);
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected_st3_2, CMT);
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_st3_2, CMT);
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_st3_2, CMT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_st3_2, CMT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_st3_2, CMT);
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_st3_2, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_st3_2, CMT);
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_st3_2, CMT);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected_st3_2, CMT);
@@ -589,14 +589,14 @@ void exec_vstX_lane (void)
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_st4_0, CMT);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_st4_0, CMT);
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_st4_0, CMT);
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_st4_0, CMT);
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_st4_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_st4_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_st4_0, CMT);
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected_st4_0, CMT);
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_st4_0, CMT);
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_st4_0, CMT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_st4_0, CMT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_st4_0, CMT);
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_st4_0, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_st4_0, CMT);
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_st4_0, CMT);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected_st4_0, CMT);
@@ -613,14 +613,14 @@ void exec_vstX_lane (void)
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_st4_1, CMT);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_st4_1, CMT);
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_st4_1, CMT);
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_st4_1, CMT);
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_st4_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_st4_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_st4_1, CMT);
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected_st4_1, CMT);
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_st4_1, CMT);
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_st4_1, CMT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_st4_1, CMT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_st4_1, CMT);
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_st4_1, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_st4_1, CMT);
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_st4_1, CMT);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected_st4_1, CMT);
@@ -637,14 +637,14 @@ void exec_vstX_lane (void)
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_st4_2, CMT);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_st4_2, CMT);
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_st4_2, CMT);
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_st4_2, CMT);
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_st4_2, CMT);
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_st4_2, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_st4_2, CMT);
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected_st4_2, CMT);
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_st4_2, CMT);
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_st4_2, CMT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_st4_2, CMT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_st4_2, CMT);
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_st4_2, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_st4_2, CMT);
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_st4_2, CMT);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected_st4_2, CMT);
@@ -661,14 +661,14 @@ void exec_vstX_lane (void)
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_st4_3, CMT);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_st4_3, CMT);
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_st4_3, CMT);
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_st4_3, CMT);
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_st4_3, CMT);
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_st4_3, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_st4_3, CMT);
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected_st4_3, CMT);
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_st4_3, CMT);
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_st4_3, CMT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_st4_3, CMT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_st4_3, CMT);
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_st4_3, CMT);
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_st4_3, CMT);
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_st4_3, CMT);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected_st4_3, CMT);

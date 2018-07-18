@@ -24,7 +24,7 @@ CONTAINS
     if (.not.associated(e%info)) e%info => i      ! used to ICE
     select type (z => e%info)
       type is (integer)
-        if (z .ne.i) call abort
+        if (z .ne.i) STOP 1
     end select
   END SUBROUTINE
 

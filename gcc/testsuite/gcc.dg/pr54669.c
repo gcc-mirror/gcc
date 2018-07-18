@@ -1,7 +1,7 @@
 /* PR tree-optimization/54669 */
 /* Testcase by Zdenek Sojka <zsojka@seznam.cz> */
 
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -fexceptions -fnon-call-exceptions" } */
 
 int a[10];

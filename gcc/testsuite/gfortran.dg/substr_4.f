@@ -19,13 +19,13 @@
         zsymel(3)(lenstr(zsymel(3))+1:)='X'
         write (buf,10) (trim(zsymelr(isym)),isym=1,znsymelr)
 10      format(3(a,:,','))
-        if (trim(buf) /= 'X,Y') call abort
+        if (trim(buf) /= 'X,Y') STOP 1
       end subroutine check_zsymel
 
       function lenstr(s)
         character(len=*),intent(in) :: s
         integer :: lenstr
-        if (len_trim(s) /= 0) call abort
+        if (len_trim(s) /= 0) STOP 2
         lenstr = len_trim(s)
       end function lenstr
 
@@ -51,13 +51,13 @@
         zsymel(3)(:lenstr(zsymel(3))+1)='X'
         write (buf,20) (trim(zsymelr(isym)),isym=1,znsymelr)
 20      format(3(a,:,','))
-        if (trim(buf) /= 'X,Y') call abort
+        if (trim(buf) /= 'X,Y') STOP 3
       end subroutine check_zsymel
 
       function lenstr(s)
         character(len=*),intent(in) :: s
         integer :: lenstr
-        if (len_trim(s) /= 0) call abort
+        if (len_trim(s) /= 0) STOP 4
         lenstr = len_trim(s)
       end function lenstr
 

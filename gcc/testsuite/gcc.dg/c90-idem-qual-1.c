@@ -5,4 +5,4 @@
 
 typedef const int cint;
 const cint foo; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "duplicate" "duplicate type qualifier error" { target *-*-* } 7 } */
+/* { dg-error "duplicate" "duplicate type qualifier error" { target *-*-* } .-1 } */

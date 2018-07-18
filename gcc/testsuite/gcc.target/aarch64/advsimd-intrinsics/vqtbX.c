@@ -318,13 +318,13 @@ void exec_vqtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vqtbl1, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vqtbl1, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbl1, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbl1, "");
 
 #undef TEST_MSG
 #define TEST_MSG "VQTBL1Q"
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_vqtbl1q, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_vqtbl1q, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbl1q, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbl1q, "");
 
   /* Check vqtbl2.  */
   clean_results ();
@@ -334,13 +334,13 @@ void exec_vqtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vqtbl2, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vqtbl2, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbl2, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbl2, "");
 
 #undef TEST_MSG
 #define TEST_MSG "VQTBL2Q"
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_vqtbl2q, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_vqtbl2q, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbl2q, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbl2q, "");
 
   /* Check vqtbl3.  */
   clean_results ();
@@ -350,13 +350,13 @@ void exec_vqtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vqtbl3, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vqtbl3, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbl3, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbl3, "");
 
 #undef TEST_MSG
 #define TEST_MSG "VQTBL3Q"
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_vqtbl3q, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_vqtbl3q, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbl3q, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbl3q, "");
 
   /* Check vqtbl4.  */
   clean_results ();
@@ -366,13 +366,13 @@ void exec_vqtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vqtbl4, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vqtbl4, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbl4, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbl4, "");
 
 #undef TEST_MSG
 #define TEST_MSG "VQTBL4Q"
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_vqtbl4q, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_vqtbl4q, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbl4q, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbl4q, "");
 
 
   /* Now test VQTBX.  */
@@ -455,13 +455,13 @@ void exec_vqtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vqtbx1, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vqtbx1, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbx1, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbx1, "");
 
 #undef TEST_MSG
 #define TEST_MSG "VQTBX1Q"
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_vqtbx1q, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_vqtbx1q, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbx1q, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbx1q, "");
 
   /* Check vqtbx2.  */
   clean_results ();
@@ -471,13 +471,13 @@ void exec_vqtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vqtbx2, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vqtbx2, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbx2, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbx2, "");
 
 #undef TEST_MSG
 #define TEST_MSG "VQTBX2Q"
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_vqtbx2q, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_vqtbx2q, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbx2q, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbx2q, "");
 
   /* Check vqtbx3.  */
   clean_results ();
@@ -487,13 +487,13 @@ void exec_vqtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vqtbx3, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vqtbx3, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbx3, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbx3, "");
 
 #undef TEST_MSG
 #define TEST_MSG "VQTBX3Q"
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_vqtbx3q, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_vqtbx3q, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbx3q, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbx3q, "");
 
   /* Check vqtbx4.  */
   clean_results ();
@@ -503,13 +503,13 @@ void exec_vqtbX (void)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_vqtbx4, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_vqtbx4, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbx4, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_vqtbx4, "");
 
 #undef TEST_MSG
 #define TEST_MSG "VQTBX4Q"
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_vqtbx4q, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_vqtbx4q, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbx4q, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_vqtbx4q, "");
 }
 
 int main (void)

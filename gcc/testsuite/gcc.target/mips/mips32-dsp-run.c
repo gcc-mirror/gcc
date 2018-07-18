@@ -1,6 +1,6 @@
 /* Test MIPS32 DSP instructions */
 /* { dg-do run } */
-/* { dg-options "-mdsp" } */
+/* { dg-options "-mdsp (REQUIRES_STDLIB)" } */
 
 #include <stdlib.h>
 #include <stdio.h>

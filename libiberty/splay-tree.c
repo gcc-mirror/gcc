@@ -1,6 +1,5 @@
 /* A splay-tree datatype.  
-   Copyright (C) 1998, 1999, 2000, 2001, 2009,
-   2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.
@@ -31,6 +30,9 @@ Boston, MA 02110-1301, USA.  */
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
 #endif
 
 #include <stdio.h>
@@ -590,4 +592,20 @@ splay_tree_compare_pointers (splay_tree_key k1, splay_tree_key k2)
     return 1;
   else 
     return 0;
+}
+
+/* Splay-tree comparison function, treating the keys as strings.  */
+
+int
+splay_tree_compare_strings (splay_tree_key k1, splay_tree_key k2)
+{
+  return strcmp ((char *) k1, (char *) k2);
+}
+
+/* Splay-tree delete function, simply using free.  */
+
+void
+splay_tree_delete_pointers (splay_tree_value value)
+{
+  free ((void *) value);
 }

@@ -91,7 +91,7 @@ typedef unsigned int UHWtype;
       impn_mul_n_basecase (prodp, up, vp, size);			\
     else								\
       impn_mul_n (prodp, up, vp, size, tspace);			\
-  } while (0);
+  } while (0)
 
 #define __MPN(x) __quadmath_mpn_##x
 

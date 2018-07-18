@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Backwards Compatibility</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, backwards" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="api.html" title="API Evolution and Deprecation History" /><link rel="next" href="appendix_free.html" title="Appendix C.  Free Software Needs Free Documentation" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Backwards Compatibility</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="api.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Backwards Compatibility</title><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><meta name="keywords" content="ISO C++, backwards" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="api.html" title="API Evolution and Deprecation History" /><link rel="next" href="appendix_free.html" title="Appendix C.  Free Software Needs Free Documentation" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Backwards Compatibility</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="api.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
   Porting and Maintenance
   
 </th><td width="20%" align="right"> <a accesskey="n" href="appendix_free.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.appendix.porting.backwards"></a>Backwards Compatibility</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="backwards.first"></a>First</h3></div></div></div><p>The first generation GNU C++ library was called libg++.  It was a
@@ -331,7 +331,7 @@ particular <span class="quote">“<span class="quote">info iostream</span>”</s
      against the gthr.h abstraction layer which is provided by gcc.  A
      minor problem that pops up every so often is different
      interpretations of what "thread-safe" means for a
-     library (not a general program).  We currently use the <a class="link" href="http://www.sgi.com/tech/stl/thread_safety.html" target="_top">same
+     library (not a general program).  We currently use the <a class="link" href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/thread_safety.html" target="_top">same
      definition that SGI</a> uses for their STL subset.  However,
      the exception for read-only containers only applies to the STL
      components. This definition is widely-used and something similar
@@ -364,75 +364,15 @@ libstdc++-v3.
 	 of the SGI STL (version 3.3), with extensive changes.
       </p><p>A more formal description of the V3 goals can be found in the
 	 official <a class="link" href="source_design_notes.html" title="Design Notes">design document</a>.
-      </p><p>Portability notes and known implementation limitations are as follows.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="backwards.third.headers"></a>Pre-ISO headers moved to backwards or removed</h4></div></div></div><p> The pre-ISO C++ headers
+      </p><p>Portability notes and known implementation limitations are as follows.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="backwards.third.headers"></a>Pre-ISO headers removed</h4></div></div></div><p> The pre-ISO C++ headers
       (<code class="filename">&lt;iostream.h&gt;</code>,
       <code class="filename">&lt;defalloc.h&gt;</code> etc.) are
-      available, unlike previous libstdc++ versions, but inclusion
-      generates a warning that you are using deprecated headers.
-</p><p>This compatibility layer is constructed by including the
-    standard C++ headers, and injecting any items in
-    <code class="code">std::</code> into the global namespace.
-   </p><p>For those of you new to ISO C++ (welcome, time travelers!), no,
-      that isn't a typo. Yes, the headers really have new names.
-      Marshall Cline's C++ FAQ Lite has a good explanation in <a class="link" href="http://www.parashift.com/c++-faq-lite/std-headers.html" target="_top">What's
+      not supported.
+</p><p>For those of you new to ISO C++ (welcome, time travelers!), the
+      ancient pre-ISO headers have new names.
+      The C++ FAQ has a good explanation in <a class="link" href="https://isocpp.org/wiki/faq/coding-standards#std-headers" target="_top">What's
       the difference between &lt;xxx&gt; and &lt;xxx.h&gt; headers?</a>.
-   </p><p> Some include adjustment may be required. What follows is an
-autoconf test that defines <code class="code">PRE_STDCXX_HEADERS</code> when they
-exist.</p><pre class="programlisting">
-# AC_HEADER_PRE_STDCXX
-AC_DEFUN([AC_HEADER_PRE_STDCXX], [
-  AC_CACHE_CHECK(for pre-ISO C++ include files,
-  ac_cv_cxx_pre_stdcxx,
-  [AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -Wno-deprecated"
-
-  # Omit defalloc.h, as compilation with newer compilers is problematic.
-  AC_TRY_COMPILE([
-  #include &lt;new.h&gt;
-  #include &lt;iterator.h&gt;
-  #include &lt;alloc.h&gt;
-  #include &lt;set.h&gt;
-  #include &lt;hashtable.h&gt;
-  #include &lt;hash_set.h&gt;
-  #include &lt;fstream.h&gt;
-  #include &lt;tempbuf.h&gt;
-  #include &lt;istream.h&gt;
-  #include &lt;bvector.h&gt;
-  #include &lt;stack.h&gt;
-  #include &lt;rope.h&gt;
-  #include &lt;complex.h&gt;
-  #include &lt;ostream.h&gt;
-  #include &lt;heap.h&gt;
-  #include &lt;iostream.h&gt;
-  #include &lt;function.h&gt;
-  #include &lt;multimap.h&gt;
-  #include &lt;pair.h&gt;
-  #include &lt;stream.h&gt;
-  #include &lt;iomanip.h&gt;
-  #include &lt;slist.h&gt;
-  #include &lt;tree.h&gt;
-  #include &lt;vector.h&gt;
-  #include &lt;deque.h&gt;
-  #include &lt;multiset.h&gt;
-  #include &lt;list.h&gt;
-  #include &lt;map.h&gt;
-  #include &lt;algobase.h&gt;
-  #include &lt;hash_map.h&gt;
-  #include &lt;algo.h&gt;
-  #include &lt;queue.h&gt;
-  #include &lt;streambuf.h&gt;
-  ],,
-  ac_cv_cxx_pre_stdcxx=yes, ac_cv_cxx_pre_stdcxx=no)
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  AC_LANG_RESTORE
-  ])
-  if test "$ac_cv_cxx_pre_stdcxx" = yes; then
-    AC_DEFINE(PRE_STDCXX_HEADERS,,[Define if pre-ISO C++ header files are present. ])
-  fi
-])
-</pre><p>Porting between pre-ISO headers and ISO headers is simple: headers
+   </p><p>Porting between pre-ISO headers and ISO headers is simple: headers
 like <code class="filename">&lt;vector.h&gt;</code> can be replaced with <code class="filename">&lt;vector&gt;</code> and a using
 directive <code class="code">using namespace std;</code> can be put at the global
 scope. This should be enough to get this code compiling, assuming the

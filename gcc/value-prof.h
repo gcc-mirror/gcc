@@ -1,5 +1,5 @@
 /* Definitions for transformations based on profile information for values.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -90,21 +90,19 @@ void gimple_move_stmt_histograms (struct function *, gimple *, gimple *);
 void verify_histograms (void);
 void free_histograms (function *);
 void stringop_block_profile (gimple *, unsigned int *, HOST_WIDE_INT *);
-gcall *gimple_ic (gcall *, struct cgraph_node *, int, gcov_type,
-		  gcov_type);
+gcall *gimple_ic (gcall *, struct cgraph_node *, profile_probability);
 bool check_ic_target (gcall *, struct cgraph_node *);
 
 
 /* In tree-profile.c.  */
-extern void gimple_init_edge_profiler (void);
+extern void gimple_init_gcov_profiler (void);
 extern void gimple_gen_edge_profiler (int, edge);
 extern void gimple_gen_interval_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_pow2_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_one_value_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_ic_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_ic_func_profiler (void);
-extern void gimple_gen_time_profiler (unsigned, unsigned,
-                                      gimple_stmt_iterator &);
+extern void gimple_gen_time_profiler (unsigned, unsigned);
 extern void gimple_gen_average_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_ior_profiler (histogram_value, unsigned, unsigned);
 extern void stream_out_histogram_value (struct output_block *, histogram_value);

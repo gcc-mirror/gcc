@@ -17,7 +17,7 @@ C
       if ((t1a - t1) < -12.0*3600.0 ) t1 = t1 - 24.0*3600.0
       if ((t1a - dat1) < -12.0*3600.0 ) dat1 = dat1 - 24.0*3600.0
       if ((dat1 < nearest(t1, -1.)) .or. (dat1  > nearest(t1a, 1.)))
-     &    call abort ()
+     &    STOP 1
       do j=1,10000
         do i=1,10000
         end do
@@ -30,5 +30,5 @@ C
       ! handle midnight shift
       if ((dat2 - dat1) < -12.0*3600.0 ) dat1 = dat1 - 24.0*3600.0
       if (((dat2 - dat1) < t2a - 0.008) .or.
-     &    ((dat2 - dat1) > t2 + 0.008)) call abort ()
+     &    ((dat2 - dat1) > t2 + 0.008)) STOP 2
       end

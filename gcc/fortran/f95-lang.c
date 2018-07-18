@@ -1,5 +1,5 @@
 /* gfortran backend interface
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
 This file is part of GCC.
@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gfortran.h"
 #include "trans.h"
+#include "stringpool.h"
 #include "diagnostic.h" /* For errorcount/warningcount */
 #include "langhooks.h"
 #include "langhooks-def.h"
@@ -88,13 +89,15 @@ gfc_handle_omp_declare_target_attribute (tree *, tree, tree, int, bool *)
 /* Table of valid Fortran attributes.  */
 static const struct attribute_spec gfc_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "omp declare target", 0, 0, true,  false, false,
-    gfc_handle_omp_declare_target_attribute, false },
-  { "oacc function", 0, -1, true,  false, false,
-    gfc_handle_omp_declare_target_attribute, false },
-  { NULL,		  0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "omp declare target", 0, 0, true,  false, false, false,
+    gfc_handle_omp_declare_target_attribute, NULL },
+  { "omp declare target link", 0, 0, true,  false, false, false,
+    gfc_handle_omp_declare_target_attribute, NULL },
+  { "oacc function", 0, -1, true,  false, false, false,
+    gfc_handle_omp_declare_target_attribute, NULL },
+  { NULL,		  0, 0, false, false, false, false, NULL, NULL }
 };
 
 #undef LANG_HOOKS_NAME
@@ -119,6 +122,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #undef LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_DTOR
 #undef LANG_HOOKS_OMP_FINISH_CLAUSE
+#undef LANG_HOOKS_OMP_SCALAR_P
 #undef LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR
 #undef LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE
 #undef LANG_HOOKS_OMP_PRIVATE_OUTER_REF
@@ -150,6 +154,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #define LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR	gfc_omp_clause_linear_ctor
 #define LANG_HOOKS_OMP_CLAUSE_DTOR		gfc_omp_clause_dtor
 #define LANG_HOOKS_OMP_FINISH_CLAUSE		gfc_omp_finish_clause
+#define LANG_HOOKS_OMP_SCALAR_P			gfc_omp_scalar_p
 #define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR	gfc_omp_disregard_value_expr
 #define LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE	gfc_omp_private_debug_clause
 #define LANG_HOOKS_OMP_PRIVATE_OUTER_REF	gfc_omp_private_outer_ref
@@ -186,7 +191,8 @@ gfc_create_decls (void)
   gfc_init_constants ();
 
   /* Build our translation-unit decl.  */
-  current_translation_unit = build_translation_unit_decl (NULL_TREE);
+  current_translation_unit
+    = build_translation_unit_decl (get_identifier (main_input_filename));
   debug_hooks->register_main_translation_unit (current_translation_unit);
 }
 
@@ -1196,6 +1202,10 @@ gfc_init_builtin_functions (void)
 #undef DEF_GOACC_BUILTIN_COMPILER
 #define DEF_GOACC_BUILTIN_COMPILER(code, name, type, attr) \
       gfc_define_builtin (name, builtin_types[type], code, name, attr);
+#undef DEF_GOACC_BUILTIN_ONLY
+#define DEF_GOACC_BUILTIN_ONLY(code, name, type, attr) \
+      gfc_define_builtin ("__builtin_" name, builtin_types[type], code, NULL, \
+			  attr);
 #undef DEF_GOMP_BUILTIN
 #define DEF_GOMP_BUILTIN(code, name, type, attr) /* ignore */
 #include "../omp-builtins.def"
@@ -1219,6 +1229,17 @@ gfc_init_builtin_functions (void)
 #undef DEF_GOACC_BUILTIN_COMPILER
 #undef DEF_GOMP_BUILTIN
     }
+
+#ifdef ENABLE_HSA
+  if (!flag_disable_hsa)
+    {
+#undef DEF_HSA_BUILTIN
+#define DEF_HSA_BUILTIN(code, name, type, attr) \
+      gfc_define_builtin ("__builtin_" name, builtin_types[type], \
+			  code, name, attr);
+#include "../hsa-builtins.def"
+    }
+#endif
 
   gfc_define_builtin ("__builtin_trap", builtin_types[BT_FN_VOID],
 		      BUILT_IN_TRAP, NULL, ATTR_NOTHROW_LEAF_LIST);

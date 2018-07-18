@@ -6,15 +6,15 @@
 #include "../objc-obj-c++-shared/TestsuiteObject.h"
 
 @protocol MyObject
-- (id)initWithData:(TestsuiteObject *)data;
+- (id)initWithData:(TestsuiteObject *)data; /* { dg-line MyObject_initWithData } */
 @end
 
 @protocol SomeOther
-- (id)initWithData:(int)data;
+- (id)initWithData:(int)data; /* { dg-line SomeOther_initWithData } */
 @end
 
 @protocol MyCoding
-- (id)initWithData:(id<MyObject, MyCoding>)data;
+- (id)initWithData:(id<MyObject, MyCoding>)data; /* { dg-line MyCoding_initWithData } */
 @end
 
 @interface NTGridDataObject: TestsuiteObject <MyCoding>
@@ -30,14 +30,14 @@
 }
 + (NTGridDataObject*)dataObject:(id<MyObject, MyCoding>)data
 {
-    NTGridDataObject *result = [[NTGridDataObject alloc] initWithData:data];
-     /* { dg-warning "multiple methods named .\\-initWithData:. found" "" { target *-*-* } 33 } */
-     /* { dg-message "using .\\-\\(id\\)initWithData:\\(TestsuiteObject \\*\\)data." "" { target *-*-* } 9 } */
-     /* { dg-message "also found .\\-\\(id\\)initWithData:\\(id <MyObject, MyCoding>\\)data." "" { target *-*-* } 17 } */
-     /* { dg-message "also found .\\-\\(id\\)initWithData:\\(int\\)data." "" { target *-*-* } 13 } */
+    NTGridDataObject *result = [[NTGridDataObject alloc] initWithData:data]; /* { dg-line result_init } */
+     /* { dg-warning "multiple methods named .\\-initWithData:. found" "" { target *-*-* } .-1 } */
+     /* { dg-message "using .\\-\\(id\\)initWithData:\\(TestsuiteObject \\*\\)data." "" { target *-*-* } MyObject_initWithData } */
+     /* { dg-message "also found .\\-\\(id\\)initWithData:\\(id <MyObject, MyCoding>\\)data." "" { target *-*-* } MyCoding_initWithData } */
+     /* { dg-message "also found .\\-\\(id\\)initWithData:\\(int\\)data." "" { target *-*-* } SomeOther_initWithData } */
 
      /* The following warning is a consequence of picking the "wrong" method signature.  */
-     /* { dg-warning "passing argument 1 of .initWithData:. from distinct Objective\\-C type" "" { target *-*-* } 33 } */
+     /* { dg-warning "passing argument 1 of .initWithData:. from distinct Objective\\-C type" "" { target *-*-* } result_init } */
     return result;
 }
 @end

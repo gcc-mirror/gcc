@@ -1,7 +1,7 @@
 ! Skip this on platforms that don't have the vectorization instructions
 ! to handle complex types.  This test is very slow on these platforms so
 ! skipping is better then running it unvectorized.
-! { dg-skip-if "" { ia64-*-* sparc*-*-* } { "*" } { "" } }
+! { dg-skip-if "" { ia64-*-* sparc*-*-* } }
 ! It can be slow on some x86 CPUs.
 ! { dg-timeout-factor 2 }
 program mymatmul

@@ -90,7 +90,10 @@ __quadmath_kernel_sinq (__float128 x, __float128 y, int iy)
       /* Argument is small enough to approximate it by a Chebyshev
 	 polynomial of degree 17.  */
       if (tix < 0x3fc60000)		/* |x| < 2^-57 */
-	if (!((int)x)) return x;	/* generate inexact */
+	{
+	  math_check_force_underflow (x);
+	  if (!((int)x)) return x;	/* generate inexact */
+	}
       z = x * x;
       return x + (x * (z*(SIN1+z*(SIN2+z*(SIN3+z*(SIN4+
 		       z*(SIN5+z*(SIN6+z*(SIN7+z*SIN8)))))))));

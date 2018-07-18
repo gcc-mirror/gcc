@@ -12,15 +12,15 @@ program main
   data res2 /158., -353./
 
   c1 = matmul(a,[29.,37.])
-  if (size(c1,1) /= 3) call abort
-  if (any(c1/=res1)) call abort
+  if (size(c1,1) /= 3) STOP 1
+  if (any(c1/=res1)) STOP 2
 
   c2 = matmul(a,pack(b,[b>20.]))
-  if (size(c1,1) /= 3) call abort
-  if (any(c1/=res1)) call abort
+  if (size(c1,1) /= 3) STOP 3
+  if (any(c1/=res1)) STOP 4
 
   c3 = matmul(pack(b,[b<0.]),a)
-  if (size(c3,1) /= 2) call abort
-  if (any(c3 /= res2)) call abort
+  if (size(c3,1) /= 2) STOP 5
+  if (any(c3 /= res2)) STOP 6
 
 end program main

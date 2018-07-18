@@ -2,6 +2,4 @@
 
 template<class T,class U=void> struct s;
 template<class T> struct s<T,typename s<T>::a> {};
-s<int> ca;  // { dg-error "depth" }
-
-// { dg-prune-output "compilation terminated" }
+s<int> ca;  // { dg-error "" }

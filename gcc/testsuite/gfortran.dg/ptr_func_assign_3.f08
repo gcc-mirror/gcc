@@ -28,13 +28,13 @@ program p
   type(dt) :: sdt = dt(1)
 
   func (arg=b) = 1         ! This was rejected as an unclassifiable statement
-  if (a /= 1) call abort
+  if (a /= 1) STOP 1
 
   func (b + b - 3) = -1
-  if (a /= -1) call abort
+  if (a /= -1) STOP 2
 
   dtfunc () = sdt          ! Check that defined assignment is resolved
-  if (tdt%data /= 2) call abort
+  if (tdt%data /= 2) STOP 3
 contains
   function func(arg) result(r)
     integer, pointer :: r

@@ -5,9 +5,9 @@
       implicit none
       character*80 line
       write(line,2070)
-      if (line.ne.'  stiffness reformed for this high step')call abort
+      if (line.ne.'  stiffness reformed for this high step')STOP 1
       write(line,2090)
-      if (line.ne.'  stiffness reformed for hello hello')call abort 
+      if (line.ne.'  stiffness reformed for hello hello')STOP 2
       stop
 
  2070  format (2x,37hstiffness reformed for this high step)

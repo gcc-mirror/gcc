@@ -1,7 +1,7 @@
 /* Routines for saving various data types to a file stream.  This deals
    with various data types like strings, integers, enums, etc.
 
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -340,7 +340,6 @@ streamer_write_hwi_stream (struct lto_output_stream *obs, HOST_WIDE_INT work)
 void
 streamer_write_gcov_count_stream (struct lto_output_stream *obs, gcov_type work)
 {
-  gcc_assert (work >= 0);
   gcc_assert ((HOST_WIDE_INT) work == work);
   streamer_write_hwi_stream (obs, work);
 }

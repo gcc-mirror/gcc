@@ -23,7 +23,7 @@ contains
        do i = 1, size (mnem_list)
           if (mnem_list(i) /= "") then
              j = j + 1
-             if (j > len (ml)/8) call abort ()
+             if (j > len (ml)/8) STOP 1
              ml((j-1)*8+1:(j-1)*8+8) = mnem_list(i)
           end if
        end do

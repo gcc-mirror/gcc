@@ -211,3 +211,5 @@ struct StructUnion9 {                       // { dg-message "in the definition" 
     } b2;                                   // { dg-warning "invalid use" }
   } a2;                                     // { dg-message "next member" }
 };
+
+// { dg-prune-output "forbids flexible array member" }

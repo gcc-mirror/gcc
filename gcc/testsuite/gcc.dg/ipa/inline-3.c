@@ -21,4 +21,4 @@ int foo (int invariant)
 }
 
 
-/* { dg-final { scan-ipa-dump "Scaling time by probability:0.100000"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "Scaling time by probability:0.099900"  "inline"  } } */

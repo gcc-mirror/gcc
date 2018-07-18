@@ -14,7 +14,7 @@ main1 ()
   unsigned int in2[N*8] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63};
   unsigned int out2[N*8];
 
-  /* Induction is not SLPable yet.  */
+  /* Induction is SLPable.  */
   for (i = 0; i < N; i++)
     {
       out[i*8] = in[i*8] + i;
@@ -41,8 +41,7 @@ main1 ()
 	abort ();
     }
 
-  /* Induction is not SLPable yet and strided group size must be a power of 2 
-     to get vectorized.  */
+  /* Induction is SLPable.  */
   for (i = 0; i < N/2; i++)
     {
       out2[i*12] = in2[i*12] + i;
@@ -126,7 +125,7 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target { vect_interleave && vect_extract_even_odd } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect" { xfail *-*-* }  } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" } } */
-  
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target { { vect_interleave && vect_extract_even_odd } && { ! vect_pack_trunc } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target { ! vect_pack_trunc } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { target { { vect_interleave && vect_extract_even_odd } && vect_pack_trunc } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect" { target vect_pack_trunc xfail vect_variable_length } } } */

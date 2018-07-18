@@ -109,8 +109,8 @@
 
 #ifndef __cpp_inheriting_constructors
 #  error "__cpp_inheriting_constructors"
-#elif  __cpp_inheriting_constructors!= 200802
-#  error "__cpp_inheriting_constructors != 200802"
+#elif  __cpp_inheriting_constructors!= 201511
+#  error "__cpp_inheriting_constructors != 201511"
 #endif
 
 #ifndef __cpp_ref_qualifiers
@@ -123,6 +123,12 @@
 #  error "__cpp_alias_templates"
 #elif __cpp_alias_templates != 200704
 #  error "__cpp_alias_templates != 200704"
+#endif
+
+#ifndef __cpp_threadsafe_static_init
+#  error "__cpp_threadsafe_static_init"
+#elif __cpp_threadsafe_static_init != 200806
+#  error "__cpp_threadsafe_static_init != 200806"
 #endif
 
 //  C++14 features allowed in C++11 in non-ANSI modes:
@@ -166,7 +172,7 @@
 
 //  C++14 attributes:
 
-//  Attribute [[deprecated]] is allowed in C++11 as an extension (with pedwarn).
+//  Attribute [[deprecated]] is allowed in C++11 as an extension.
 #ifdef __has_cpp_attribute
 #  if ! __has_cpp_attribute(deprecated)
 #    error "__has_cpp_attribute(deprecated)"

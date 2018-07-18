@@ -136,7 +136,7 @@ enum foo {
   FOO_SECOND
 };
 
-int
+void
 test_6 (enum foo f)
 {
   switch (f)

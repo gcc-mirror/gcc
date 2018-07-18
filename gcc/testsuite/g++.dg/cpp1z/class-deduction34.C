@@ -1,0 +1,13 @@
+// { dg-options -std=c++17 }
+
+template <class T>
+struct A
+{
+  template <class U>
+  static constexpr bool B = U();
+
+  template <class U, bool V = B<U>>
+  A(T, U);
+};
+
+A a (1,2);

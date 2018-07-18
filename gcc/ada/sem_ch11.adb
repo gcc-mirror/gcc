@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,6 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
-with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
@@ -66,13 +65,6 @@ package body Sem_Ch11 is
       Set_Etype                   (Id, Standard_Exception_Type);
       Set_Is_Statically_Allocated (Id);
       Set_Is_Pure                 (Id, PF);
-
-      --  An exception declared within a Ghost region is automatically Ghost
-      --  (SPARK RM 6.9(2)).
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Id);
-      end if;
 
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
@@ -173,8 +165,24 @@ package body Sem_Ch11 is
 
    begin
       Handler := First (L);
-      Check_Restriction (No_Exceptions, Handler);
-      Check_Restriction (No_Exception_Handlers, Handler);
+
+      --  Pragma Restriction_Warnings has more related semantics than pragma
+      --  Restrictions in that it flags exception handlers as violators. Note
+      --  that the compiler must still generate handlers for certain critical
+      --  scenarios such as finalization. As a result, these handlers should
+      --  not be subjected to the restriction check when in warnings mode.
+
+      if not Comes_From_Source (Handler)
+        and then (Restriction_Warnings (No_Exception_Handlers)
+                   or else Restriction_Warnings (No_Exception_Propagation)
+                   or else Restriction_Warnings (No_Exceptions))
+      then
+         null;
+
+      else
+         Check_Restriction (No_Exceptions, Handler);
+         Check_Restriction (No_Exception_Handlers, Handler);
+      end if;
 
       --  Kill current remembered values, since we don't know where we were
       --  when the exception was raised.

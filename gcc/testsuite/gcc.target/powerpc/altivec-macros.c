@@ -23,42 +23,45 @@ _Pragma ("__vector")
 
 #undef __vector
 #define __vector __new_vector
+/* { dg-message "-:location of the previous"  "prev __vector defn"  { target *-*-* } .-1 } */
 
 #undef __pixel
 #define __pixel __new_pixel
+/* { dg-message "-:location of the previous"  "prev __pixel defn"   { target *-*-* } .-1 } */
 
 #undef __bool
 #define __bool __new_bool
+/* { dg-message "-:location of the previous"  "prev __bool defn"    { target *-*-* } .-1 } */
 
 #undef vector
 #define vector new_vector
+/* { dg-message "-:location of the previous"  "prev vector defn"    { target *-*-* } .-1 } */
 
 #undef pixel
 #define pixel new_pixel
+/* { dg-message "-:location of the previous"  "prev pixel defn"     { target *-*-* } .-1 } */
 
 #undef bool
 #define bool new_bool
+/* { dg-message "-:location of the previous"  "prev bool defn"      { target *-*-* } .-1 } */
 
 /* Re-definition of "unconditional" macros.  */
 /* Warnings should be generated as usual.  */
 
 #define __vector	__newer_vector
+/* { dg-warning "-:redefined" "__vector redefined"  { target *-*-* } .-1 } */
+
 #define __pixel		__newer_pixel
+/* { dg-warning "-:redefined" "__pixel redefined"   { target *-*-* } .-1 } */
+
 #define __bool		__newer_bool
+/* { dg-warning "-:redefined" "__bool redefined"    { target *-*-* } .-1 } */
+
 #define vector		newer_vector
+/* { dg-warning "-:redefined" "vector redefined"    { target *-*-* } .-1 } */
+
 #define pixel		newer_pixel
+/* { dg-warning "-:redefined" "pixel redefined"     { target *-*-* } .-1 } */
+
 #define bool		newer_bool
-
-/* { dg-warning "redefined" "__vector redefined"  { target *-*-* } 45 } */
-/* { dg-warning "redefined" "__pixel redefined"   { target *-*-* } 46 } */
-/* { dg-warning "redefined" "__bool redefined"    { target *-*-* } 47 } */
-/* { dg-warning "redefined" "vector redefined"    { target *-*-* } 48 } */
-/* { dg-warning "redefined" "pixel redefined"     { target *-*-* } 49 } */
-/* { dg-warning "redefined" "bool redefined"      { target *-*-* } 50 } */
-
-/* { dg-message "location of the previous"  "prev __vector defn"  { target *-*-* } 25 } */
-/* { dg-message "location of the previous"  "prev __pixel defn"   { target *-*-* } 28 } */
-/* { dg-message "location of the previous"  "prev __bool defn"    { target *-*-* } 31 } */
-/* { dg-message "location of the previous"  "prev vector defn"    { target *-*-* } 34 } */
-/* { dg-message "location of the previous"  "prev pixel defn"     { target *-*-* } 37 } */
-/* { dg-message "location of the previous"  "prev bool defn"      { target *-*-* } 40 } */
+/* { dg-warning "-:redefined" "bool redefined"      { target *-*-* } .-1 } */

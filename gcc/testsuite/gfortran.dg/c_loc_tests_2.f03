@@ -36,22 +36,22 @@ contains
     my_c_ptr_1 = c_loc(xtar)
     my_c_ptr_2 = c_loc(xptr)
     if(test_scalar_address(my_c_ptr_1) .ne. 1) then
-       call abort()
+       STOP 1
     end if
     if(test_scalar_address(my_c_ptr_2) .ne. 1) then
-       call abort()
+       STOP 2
     end if
   end subroutine test0
 
   subroutine test1() bind(c)
-    integer, target, dimension(100) :: int_array_tar
+    integer(c_int), target, dimension(100) :: int_array_tar
     type(c_ptr) :: my_c_ptr_1 = c_null_ptr
     type(c_ptr) :: my_c_ptr_2 = c_null_ptr
     
-    int_array_tar = 100
+    int_array_tar = 100_c_int
     my_c_ptr_1 = c_loc(int_array_tar)
-    if(test_array_address(my_c_ptr_1, 100) .ne. 1) then
-       call abort()
+    if(test_array_address(my_c_ptr_1, 100_c_int) .ne. 1) then
+       STOP 3
     end if
   end subroutine test1
 
@@ -71,10 +71,10 @@ contains
     my_c_ptr_1 = c_loc(type_tar)
     my_c_ptr_2 = c_loc(type_ptr)
     if(test_type_address(my_c_ptr_1) .ne. 1) then
-       call abort()
+       STOP 4
     end if
     if(test_type_address(my_c_ptr_2) .ne. 1) then
-       call abort()
+       STOP 5
     end if
   end subroutine test2
 end module c_loc_tests_2

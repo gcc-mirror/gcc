@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do run }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -14,7 +14,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a moved_to of the GNU General Public License along
+// You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
@@ -75,6 +75,11 @@ int main()
     O o { std::in_place };
     o.emplace({ 'a' }, "");
     VERIFY( o && o->state == 2 );
+  }
+  {
+    O o;
+    VERIFY(&o.emplace(0) == &*o);
+    VERIFY(&o.emplace({ 'a' }, "") == &*o);
   }
 
   static_assert( !std::is_constructible<O, std::initializer_list<int>, int>(), "" );

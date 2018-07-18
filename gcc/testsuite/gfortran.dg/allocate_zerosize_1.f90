@@ -9,11 +9,11 @@ program main
   two = ' 2'
 
   allocate (a(1:-1))
-  if (size(a) /= 0) call abort
+  if (size(a) /= 0) STOP 1
   deallocate (a)
 
   allocate (b(1:-1,0:10))
-  if (size(b) /= 0) call abort
+  if (size(b) /= 0) STOP 2
   deallocate (b)
 
   ! Use variables for array bounds.  The internal reads
@@ -21,11 +21,11 @@ program main
 
   read (unit=one, fmt='(I2)') n
   allocate (a(n:-1))
-  if (size(a) /= 0) call abort
+  if (size(a) /= 0) STOP 3
   deallocate (a)
 
   read (unit=two, fmt='(I2)') m
   allocate (b(1:3, m:0))
-  if (size(b) /= 0) call abort
+  if (size(b) /= 0) STOP 4
   deallocate (b)
 end program main

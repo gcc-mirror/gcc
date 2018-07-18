@@ -4,10 +4,6 @@
 
 package strconv_test
 
-/*
-
-gccgo does not pass this.
-
 import (
 	"runtime"
 	. "strconv"
@@ -46,6 +42,9 @@ var (
 )
 
 func TestCountMallocs(t *testing.T) {
+	if runtime.Compiler == "gccgo" {
+		t.Skip("skipping on gccgo until escape analysis is turned on")
+	}
 	if testing.Short() {
 		t.Skip("skipping malloc count in short mode")
 	}
@@ -60,4 +59,33 @@ func TestCountMallocs(t *testing.T) {
 	}
 }
 
-*/
+func TestErrorPrefixes(t *testing.T) {
+	_, errInt := Atoi("INVALID")
+	_, errBool := ParseBool("INVALID")
+	_, errFloat := ParseFloat("INVALID", 64)
+	_, errInt64 := ParseInt("INVALID", 10, 64)
+	_, errUint64 := ParseUint("INVALID", 10, 64)
+
+	vectors := []struct {
+		err  error  // Input error
+		want string // Function name wanted
+	}{
+		{errInt, "Atoi"},
+		{errBool, "ParseBool"},
+		{errFloat, "ParseFloat"},
+		{errInt64, "ParseInt"},
+		{errUint64, "ParseUint"},
+	}
+
+	for _, v := range vectors {
+		nerr, ok := v.err.(*NumError)
+		if !ok {
+			t.Errorf("test %s, error was not a *NumError", v.want)
+			continue
+		}
+		if got := nerr.Func; got != v.want {
+			t.Errorf("mismatching Func: got %s, want %s", got, v.want)
+		}
+	}
+
+}

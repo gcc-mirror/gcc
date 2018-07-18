@@ -13,11 +13,11 @@
 #define HASHINCLUDE #include
 
 HASH include "somerandomfile" /*{ dg-error "stray" "non-include" }*/
-/*{ dg-bogus "No such" "don't execute non-include" { target *-*-* } 15 }*/
-int resync_parser_1; /*{ dg-error "parse|syntax|expected" "" { target *-*-* } 15 }*/
+/*{ dg-bogus "No such" "don't execute non-include" { target *-*-* } .-1 }*/
+int resync_parser_1; /*{ dg-error "parse|syntax|expected" "" { target *-*-* } .-2 }*/
 
 HASHINCLUDE <somerandomfile> /*{ dg-error "stray|expected" "non-include 2" }*/
-/*{ dg-bogus "No such" "don't execute non-include 2" { target *-*-* } 19 }*/
+/*{ dg-bogus "No such" "don't execute non-include 2" { target *-*-* } .-1 }*/
 int resync_parser_2;
 
 void g1 ()
@@ -45,4 +45,4 @@ void f ()
 #define starslash *##/
 
 slashstar starslash /* { dg-error "parse error|syntax error|expected" "not a comment" } */
-/* { dg-error "does not give" "paste warning(s)" { target *-*-* } 47 } */
+/* { dg-error "does not give" "paste warning(s)" { target *-*-* } .-1 } */

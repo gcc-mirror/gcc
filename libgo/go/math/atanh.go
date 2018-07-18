@@ -45,6 +45,13 @@ package math
 //	Atanh(x) = NaN if x < -1 or x > 1
 //	Atanh(NaN) = NaN
 func Atanh(x float64) float64 {
+	return libc_atanh(x)
+}
+
+//extern atanh
+func libc_atanh(float64) float64
+
+func atanh(x float64) float64 {
 	const NearZero = 1.0 / (1 << 28) // 2**-28
 	// special cases
 	switch {

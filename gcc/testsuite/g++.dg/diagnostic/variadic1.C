@@ -4,6 +4,6 @@
 template<int N> struct B { };
 template<typename... T> struct A
 {
-  B<sizeof...(T)> f();		// { dg-error "sizeof\\.\\.\\." }
+  B<sizeof...(T)> f();		// { dg-message "sizeof\\.\\.\\." }
   B<42> f();			// { dg-error "cannot be overloaded" }
 };

@@ -1,0 +1,11 @@
+riscv-builtins.o: $(srcdir)/config/riscv/riscv-builtins.c $(CONFIG_H) \
+  $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) $(RECOG_H) langhooks.h \
+  $(DIAGNOSTIC_CORE_H) $(OPTABS_H) $(srcdir)/config/riscv/riscv-ftypes.def \
+  $(srcdir)/config/riscv/riscv-modes.def
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/riscv/riscv-builtins.c
+
+riscv-c.o: $(srcdir)/config/riscv/riscv-c.c $(CONFIG_H) $(SYSTEM_H) \
+    coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H) $(TARGET_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/riscv/riscv-c.c

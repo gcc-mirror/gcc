@@ -14,12 +14,12 @@ foo (void)
     union u0;
     union u1 *x1;
     enum e0; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "forward" "enum forward 1" { target *-*-* } 16 } */
+    /* { dg-error "forward" "enum forward 1" { target *-*-* } .-1 } */
     enum e1 *x2; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "forward" "enum forward 2" { target *-*-* } 18 } */
+    /* { dg-error "forward" "enum forward 2" { target *-*-* } .-1 } */
     /* GCC used to fail to diagnose a use of an enum inside its definition.  */
     enum e2 { E2A = sizeof (enum e2 *) }; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "forward" "enum forward 3" { target *-*-* } 21 } */
+    /* { dg-error "forward" "enum forward 3" { target *-*-* } .-1 } */
   }
   /* A specific type shall have its content defined at most once.  But we
      may redeclare the tag in different scopes.  */
@@ -32,7 +32,7 @@ foo (void)
       union s0 { long l; };
     }
     struct s0 { int i; }; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "rede" "struct redef" { target *-*-* } 34 } */
+    /* { dg-error "rede" "struct redef" { target *-*-* } .-1 } */
     union u0 { int i; }; /* { dg-message "note: originally defined here" } */
     {
       union u0 { long l; };
@@ -41,7 +41,7 @@ foo (void)
       struct u0 { long l; };
     }
     union u0 { int i; }; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "rede" "union redef" { target *-*-* } 43 } */
+    /* { dg-error "rede" "union redef" { target *-*-* } .-1 } */
     enum e0 { E0A }; /* { dg-message "note: originally defined here" } */
     {
       enum e0 { E0B };
@@ -50,7 +50,7 @@ foo (void)
       struct e0 { long l; };
     }
     enum e0 { E0B }; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "rede" "enum redef" { target *-*-* } 52 } */
+    /* { dg-error "rede" "enum redef" { target *-*-* } .-1 } */
   }
   /* Structure, union and enumerated types have a single namespace of tags.  */
   {
@@ -68,21 +68,21 @@ foo (void)
     enum e1 { E1A };
     /* None of the following are allowed; some were not detected by GCC.  */
     union s0; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "wrong" "wrong tag type" { target *-*-* } 70 } */
+    /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
     union s1 { int i; }; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "wrong" "wrong tag type" { target *-*-* } 72 } */
+    /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
     union s2; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "wrong" "wrong tag type" { target *-*-* } 74 } */
+    /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
     union s3 { int i; }; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "wrong" "wrong tag type" { target *-*-* } 76 } */
+    /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
     enum u0 { U0A }; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "wrong" "wrong tag type" { target *-*-* } 78 } */
+    /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
     enum u2 { U2A }; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "wrong" "wrong tag type" { target *-*-* } 80 } */
+    /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
     struct e0; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "wrong" "wrong tag type" { target *-*-* } 82 } */
+    /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
     struct e1 { int i; }; /* { dg-bogus "warning" "warning in place of error" } */
-    /* { dg-error "wrong" "wrong tag type" { target *-*-* } 84 } */
+    /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
   }
   /* Explicit shadowing in inner scopes is OK, but references to the tag
      that don't explicitly shadow it must (whether in declarations or
@@ -112,24 +112,24 @@ foo (void)
     }
     {
       union s0 *x0; /* { dg-bogus "warning" "warning in place of error" } */
-      /* { dg-error "wrong" "wrong tag type" { target *-*-* } 114 } */
+      /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
       int x1[sizeof (union s1 *)]; /* { dg-bogus "warning" "warning in place of error" } */
-      /* { dg-error "wrong" "wrong tag type" { target *-*-* } 116 } */
+      /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
       struct t;
       union s2 *x2;
-      /* { dg-error "wrong" "wrong tag type" { target *-*-* } 119 } */
+      /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
       int x3[sizeof (union s3 *)]; /* { dg-bogus "warning" "warning in place of error" } */
-      /* { dg-error "wrong" "wrong tag type" { target *-*-* } 121 } */
+      /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
       struct u;
       enum u0 *y0; /* { dg-bogus "warning" "warning in place of error" } */
-      /* { dg-error "wrong|forward" "wrong tag type" { target *-*-* } 124 } */
+      /* { dg-error "wrong|forward" "wrong tag type" { target *-*-* } .-1 } */
       int y1[sizeof (enum u2 *)]; /* { dg-bogus "warning" "warning in place of error" } */
-      /* { dg-error "wrong|forward" "wrong tag type" { target *-*-* } 126 } */
+      /* { dg-error "wrong|forward" "wrong tag type" { target *-*-* } .-1 } */
       struct v;
       struct e0 *z0; /* { dg-bogus "warning" "warning in place of error" } */
-      /* { dg-error "wrong" "wrong tag type" { target *-*-* } 129 } */
+      /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
       int z1[sizeof (struct e1 *)]; /* { dg-bogus "warning" "warning in place of error" } */
-      /* { dg-error "wrong" "wrong tag type" { target *-*-* } 131 } */
+      /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
       struct w;
     }
     /* When explicitly shadowed to be a tag of a different type, references
@@ -140,12 +140,12 @@ foo (void)
       union s0 *x0;
       union s1;
       struct s1 *x1; /* { dg-bogus "warning" "warning in place of error" } */
-      /* { dg-error "wrong" "wrong tag type" { target *-*-* } 142 } */
+      /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
       union s2;
       union s2 *x2;
       union s3;
       struct s3 *x3; /* { dg-bogus "warning" "warning in place of error" } */
-      /* { dg-error "wrong" "wrong tag type" { target *-*-* } 147 } */
+      /* { dg-error "wrong" "wrong tag type" { target *-*-* } .-1 } */
     }
   }
 }

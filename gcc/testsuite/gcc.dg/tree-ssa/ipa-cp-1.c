@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-optimized -fno-inline" } */
+/* { dg-options "-O3 -fdump-tree-optimized -fno-inline --param ipa-cp-eval-threshold=100" } */
 /* { dg-add-options bind_pic_locally } */
 
 int

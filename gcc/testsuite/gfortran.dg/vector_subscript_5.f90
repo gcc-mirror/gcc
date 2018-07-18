@@ -22,5 +22,5 @@ end subroutine
   c = 2
   p = 2
   call subr (3, 2, a, b, c, d, p)
-  if (any (d .ne. reshape ((/(mod (i + 2, 3), i = 1, 6)/), (/3, 2/)))) call abort
+  if (any (d .ne. reshape ((/(mod (i + 2, 3), i = 1, 6)/), (/3, 2/)))) STOP 1
 end

@@ -1,5 +1,5 @@
 /* Header file for libgcov-*.c.
-   Copyright (C) 1996-2016 Free Software Foundation, Inc.
+   Copyright (C) 1996-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -38,10 +38,12 @@
 /* This path will be used by libgcov runtime.  */
 
 #include "tconfig.h"
+#include "auto-target.h"
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
 #include "libgcc_tm.h"
+#include "gcov.h"
 
 #if __CHAR_BIT__ == 8
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (SI)));
@@ -237,16 +239,11 @@ extern void __gcov_init (struct gcov_info *) ATTRIBUTE_HIDDEN;
 /* GCOV exit function registered via a static destructor.  */
 extern void __gcov_exit (void) ATTRIBUTE_HIDDEN;
 
-/* Called before fork, to avoid double counting.  */
-extern void __gcov_flush (void) ATTRIBUTE_HIDDEN;
-
 /* Function to reset all counters to 0.  Both externally visible (and
    overridable) and internal version.  */
-extern void __gcov_reset (void);
 extern void __gcov_reset_int (void) ATTRIBUTE_HIDDEN;
 
 /* User function to enable early write of profile information so far.  */
-extern void __gcov_dump (void);
 extern void __gcov_dump_int (void) ATTRIBUTE_HIDDEN;
 
 /* The merge function that just sums the counters.  */

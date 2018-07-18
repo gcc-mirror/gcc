@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
 
 //
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -72,6 +72,38 @@ test05()
   VERIFY(regex_match_debug("-", std::regex("[a-]")));
 }
 
+// PR libstdc++/78236
+void
+test06()
+{
+  char const s[] = "afoo";
+  std::basic_regex<char> r("(f+)");
+  {
+    std::cregex_iterator i(s, s+sizeof(s), r);
+    std::cregex_iterator j(s, s+sizeof(s), r);
+    VERIFY(i == j);
+  }
+  // The iterator manipulation code must be repeated in the same scope
+  // to expose the undefined read during the execution of the ==
+  // operator (stack location reuse)
+  {
+    std::cregex_iterator i(s, s+sizeof(s), r);
+    std::cregex_iterator j;
+    VERIFY(!(i == j));
+  }
+}
+
+// PR libstdc++/71500
+void
+test07()
+{
+  bool test [[gnu::unused]] = true;
+
+  VERIFY(regex_match_debug("abc abc", regex("([a-z]+) \\1", regex::icase)));
+  VERIFY(regex_match_debug("Abc abc", regex("([a-z]+) \\1", regex::icase)));
+  VERIFY(regex_match_debug("abc Abc", regex("([a-z]+) \\1", regex::icase)));
+}
+
 int
 main()
 {
@@ -80,6 +112,8 @@ main()
   test03();
   test04();
   test05();
+  test06();
+  test07();
   return 0;
 }
 

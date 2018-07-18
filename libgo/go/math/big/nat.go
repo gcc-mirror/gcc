@@ -9,6 +9,7 @@
 package big
 
 import (
+	"math/bits"
 	"math/rand"
 	"sync"
 )
@@ -67,24 +68,14 @@ func (z nat) setWord(x Word) nat {
 }
 
 func (z nat) setUint64(x uint64) nat {
-	// single-digit values
+	// single-word value
 	if w := Word(x); uint64(w) == x {
 		return z.setWord(w)
 	}
-
-	// compute number of words n required to represent x
-	n := 0
-	for t := x; t > 0; t >>= _W {
-		n++
-	}
-
-	// split x into n words
-	z = z.make(n)
-	for i := range z {
-		z[i] = Word(x & _M)
-		x >>= _W
-	}
-
+	// 2-word value
+	z = z.make(2)
+	z[1] = Word(x >> 32)
+	z[0] = Word(x)
 	return z
 }
 
@@ -258,7 +249,7 @@ func karatsubaSub(z, x nat, n int) {
 // Operands that are shorter than karatsubaThreshold are multiplied using
 // "grade school" multiplication; for longer operands the Karatsuba algorithm
 // is used.
-var karatsubaThreshold int = 40 // computed by calibrate.go
+var karatsubaThreshold = 40 // computed by calibrate_test.go
 
 // karatsuba multiplies x and y and leaves the result in z.
 // Both x and y must have the same length n and n must be a
@@ -482,6 +473,61 @@ func (z nat) mul(x, y nat) nat {
 	return z.norm()
 }
 
+// basicSqr sets z = x*x and is asymptotically faster than basicMul
+// by about a factor of 2, but slower for small arguments due to overhead.
+// Requirements: len(x) > 0, len(z) >= 2*len(x)
+// The (non-normalized) result is placed in z[0 : 2 * len(x)].
+func basicSqr(z, x nat) {
+	n := len(x)
+	t := make(nat, 2*n)            // temporary variable to hold the products
+	z[1], z[0] = mulWW(x[0], x[0]) // the initial square
+	for i := 1; i < n; i++ {
+		d := x[i]
+		// z collects the squares x[i] * x[i]
+		z[2*i+1], z[2*i] = mulWW(d, d)
+		// t collects the products x[i] * x[j] where j < i
+		t[2*i] = addMulVVW(t[i:2*i], x[0:i], d)
+	}
+	t[2*n-1] = shlVU(t[1:2*n-1], t[1:2*n-1], 1) // double the j < i products
+	addVV(z, z, t)                              // combine the result
+}
+
+// Operands that are shorter than basicSqrThreshold are squared using
+// "grade school" multiplication; for operands longer than karatsubaSqrThreshold
+// the Karatsuba algorithm is used.
+var basicSqrThreshold = 20      // computed by calibrate_test.go
+var karatsubaSqrThreshold = 400 // computed by calibrate_test.go
+
+// z = x*x
+func (z nat) sqr(x nat) nat {
+	n := len(x)
+	switch {
+	case n == 0:
+		return z[:0]
+	case n == 1:
+		d := x[0]
+		z = z.make(2)
+		z[1], z[0] = mulWW(d, d)
+		return z.norm()
+	}
+
+	if alias(z, x) {
+		z = nil // z is an alias for x - cannot reuse
+	}
+	z = z.make(2 * n)
+
+	if n < basicSqrThreshold {
+		basicMul(z, x, x)
+		return z.norm()
+	}
+	if n < karatsubaSqrThreshold {
+		basicSqr(z, x)
+		return z.norm()
+	}
+
+	return z.mul(x, x)
+}
+
 // mulRange computes the product of all the unsigned integers in the
 // range [a, b] inclusively. If a > b (empty range), the result is 1.
 func (z nat) mulRange(a, b uint64) nat {
@@ -542,16 +588,21 @@ func (z nat) div(z2, u, v nat) (q, r nat) {
 	return
 }
 
-// getNat returns a nat of len n. The contents may not be zero.
-func getNat(n int) nat {
-	var z nat
+// getNat returns a *nat of len n. The contents may not be zero.
+// The pool holds *nat to avoid allocation when converting to interface{}.
+func getNat(n int) *nat {
+	var z *nat
 	if v := natPool.Get(); v != nil {
-		z = v.(nat)
+		z = v.(*nat)
 	}
-	return z.make(n)
+	if z == nil {
+		z = new(nat)
+	}
+	*z = z.make(n)
+	return z
 }
 
-func putNat(x nat) {
+func putNat(x *nat) {
 	natPool.Put(x)
 }
 
@@ -570,12 +621,13 @@ func (z nat) divLarge(u, uIn, v nat) (q, r nat) {
 	// determine if z can be reused
 	// TODO(gri) should find a better solution - this if statement
 	//           is very costly (see e.g. time pidigits -s -n 10000)
-	if alias(z, uIn) || alias(z, v) {
-		z = nil // z is an alias for uIn or v - cannot reuse
+	if alias(z, u) || alias(z, uIn) || alias(z, v) {
+		z = nil // z is an alias for u or uIn or v - cannot reuse
 	}
 	q = z.make(m + 1)
 
-	qhatv := getNat(n + 1)
+	qhatvp := getNat(n + 1)
+	qhatv := *qhatvp
 	if alias(u, uIn) || alias(u, v) {
 		u = nil // u is an alias for uIn or v - cannot reuse
 	}
@@ -583,36 +635,40 @@ func (z nat) divLarge(u, uIn, v nat) (q, r nat) {
 	u.clear() // TODO(gri) no need to clear if we allocated a new u
 
 	// D1.
-	var v1 nat
+	var v1p *nat
 	shift := nlz(v[n-1])
 	if shift > 0 {
 		// do not modify v, it may be used by another goroutine simultaneously
-		v1 = getNat(n)
+		v1p = getNat(n)
+		v1 := *v1p
 		shlVU(v1, v, shift)
 		v = v1
 	}
 	u[len(uIn)] = shlVU(u[0:len(uIn)], uIn, shift)
 
 	// D2.
+	vn1 := v[n-1]
 	for j := m; j >= 0; j-- {
 		// D3.
 		qhat := Word(_M)
-		if u[j+n] != v[n-1] {
+		if ujn := u[j+n]; ujn != vn1 {
 			var rhat Word
-			qhat, rhat = divWW(u[j+n], u[j+n-1], v[n-1])
+			qhat, rhat = divWW(ujn, u[j+n-1], vn1)
 
 			// x1 | x2 = q̂v_{n-2}
-			x1, x2 := mulWW(qhat, v[n-2])
+			vn2 := v[n-2]
+			x1, x2 := mulWW(qhat, vn2)
 			// test if q̂v_{n-2} > br̂ + u_{j+n-2}
-			for greaterThan(x1, x2, rhat, u[j+n-2]) {
+			ujn2 := u[j+n-2]
+			for greaterThan(x1, x2, rhat, ujn2) {
 				qhat--
 				prevRhat := rhat
-				rhat += v[n-1]
+				rhat += vn1
 				// v[n-1] >= 0, so this tests for overflow.
 				if rhat < prevRhat {
 					break
 				}
-				x1, x2 = mulWW(qhat, v[n-2])
+				x1, x2 = mulWW(qhat, vn2)
 			}
 		}
 
@@ -628,10 +684,10 @@ func (z nat) divLarge(u, uIn, v nat) (q, r nat) {
 
 		q[j] = qhat
 	}
-	if v1 != nil {
-		putNat(v1)
+	if v1p != nil {
+		putNat(v1p)
 	}
-	putNat(qhatv)
+	putNat(qhatvp)
 
 	q = q.norm()
 	shrVU(u, u, shift)
@@ -643,47 +699,9 @@ func (z nat) divLarge(u, uIn, v nat) (q, r nat) {
 // Length of x in bits. x must be normalized.
 func (x nat) bitLen() int {
 	if i := len(x) - 1; i >= 0 {
-		return i*_W + bitLen(x[i])
+		return i*_W + bits.Len(uint(x[i]))
 	}
 	return 0
-}
-
-const deBruijn32 = 0x077CB531
-
-var deBruijn32Lookup = []byte{
-	0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
-	31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9,
-}
-
-const deBruijn64 = 0x03f79d71b4ca8b09
-
-var deBruijn64Lookup = []byte{
-	0, 1, 56, 2, 57, 49, 28, 3, 61, 58, 42, 50, 38, 29, 17, 4,
-	62, 47, 59, 36, 45, 43, 51, 22, 53, 39, 33, 30, 24, 18, 12, 5,
-	63, 55, 48, 27, 60, 41, 37, 16, 46, 35, 44, 21, 52, 32, 23, 11,
-	54, 26, 40, 15, 34, 20, 31, 10, 25, 14, 19, 9, 13, 8, 7, 6,
-}
-
-// trailingZeroBits returns the number of consecutive least significant zero
-// bits of x.
-func trailingZeroBits(x Word) uint {
-	// x & -x leaves only the right-most bit set in the word. Let k be the
-	// index of that bit. Since only a single bit is set, the value is two
-	// to the power of k. Multiplying by a power of two is equivalent to
-	// left shifting, in this case by k bits. The de Bruijn constant is
-	// such that all six bit, consecutive substrings are distinct.
-	// Therefore, if we have a left shifted version of this constant we can
-	// find by how many bits it was shifted by looking at which six bit
-	// substring ended up at the top of the word.
-	// (Knuth, volume 4, section 7.3.1)
-	switch _W {
-	case 32:
-		return uint(deBruijn32Lookup[((x&-x)*deBruijn32)>>27])
-	case 64:
-		return uint(deBruijn64Lookup[((x&-x)*(deBruijn64&_M))>>58])
-	default:
-		panic("unknown word size")
-	}
 }
 
 // trailingZeroBits returns the number of consecutive least significant zero
@@ -697,7 +715,7 @@ func (x nat) trailingZeroBits() uint {
 		i++
 	}
 	// x[i] != 0
-	return i*_W + trailingZeroBits(x[i])
+	return i*_W + uint(bits.TrailingZeros(uint(x[i])))
 }
 
 // z = x << s
@@ -950,7 +968,7 @@ func (z nat) expNN(x, y, m nat) nat {
 	// (x^2...x^15) but then reduces the number of multiply-reduces by a
 	// third. Even for a 32-bit exponent, this reduces the number of
 	// operations. Uses Montgomery method for odd moduli.
-	if len(x) > 1 && len(y) > 1 && len(m) > 0 {
+	if x.cmp(natOne) > 0 && len(y) > 1 && len(m) > 0 {
 		if m[0]&1 == 1 {
 			return z.expNNMontgomery(x, y, m)
 		}
@@ -973,7 +991,7 @@ func (z nat) expNN(x, y, m nat) nat {
 	// otherwise the arguments would alias.
 	var zz, r nat
 	for j := 0; j < w; j++ {
-		zz = zz.mul(z, z)
+		zz = zz.sqr(z)
 		zz, z = z, zz
 
 		if v&mask != 0 {
@@ -993,7 +1011,7 @@ func (z nat) expNN(x, y, m nat) nat {
 		v = y[i]
 
 		for j := 0; j < _W; j++ {
-			zz = zz.mul(z, z)
+			zz = zz.sqr(z)
 			zz, z = z, zz
 
 			if v&mask != 0 {
@@ -1026,7 +1044,7 @@ func (z nat) expNNWindowed(x, y, m nat) nat {
 	powers[1] = x
 	for i := 2; i < 1<<n; i += 2 {
 		p2, p, p1 := &powers[i/2], &powers[i], &powers[i+1]
-		*p = p.mul(*p2, *p2)
+		*p = p.sqr(*p2)
 		zz, r = zz.div(r, *p, m)
 		*p, r = r, *p
 		*p1 = p1.mul(*p, x)
@@ -1043,22 +1061,22 @@ func (z nat) expNNWindowed(x, y, m nat) nat {
 				// Unrolled loop for significant performance
 				// gain. Use go test -bench=".*" in crypto/rsa
 				// to check performance before making changes.
-				zz = zz.mul(z, z)
+				zz = zz.sqr(z)
 				zz, z = z, zz
 				zz, r = zz.div(r, z, m)
 				z, r = r, z
 
-				zz = zz.mul(z, z)
+				zz = zz.sqr(z)
 				zz, z = z, zz
 				zz, r = zz.div(r, z, m)
 				z, r = r, z
 
-				zz = zz.mul(z, z)
+				zz = zz.sqr(z)
 				zz, z = z, zz
 				zz, r = zz.div(r, z, m)
 				z, r = r, z
 
-				zz = zz.mul(z, z)
+				zz = zz.sqr(z)
 				zz, z = z, zz
 				zz, r = zz.div(r, z, m)
 				z, r = r, z
@@ -1169,96 +1187,6 @@ func (z nat) expNNMontgomery(x, y, m nat) nat {
 	return zz.norm()
 }
 
-// probablyPrime performs n Miller-Rabin tests to check whether x is prime.
-// If x is prime, it returns true.
-// If x is not prime, it returns false with probability at least 1 - ¼ⁿ.
-//
-// It is not suitable for judging primes that an adversary may have crafted
-// to fool this test.
-func (n nat) probablyPrime(reps int) bool {
-	if len(n) == 0 {
-		return false
-	}
-
-	if len(n) == 1 {
-		if n[0] < 2 {
-			return false
-		}
-
-		if n[0]%2 == 0 {
-			return n[0] == 2
-		}
-
-		// We have to exclude these cases because we reject all
-		// multiples of these numbers below.
-		switch n[0] {
-		case 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53:
-			return true
-		}
-	}
-
-	if n[0]&1 == 0 {
-		return false // n is even
-	}
-
-	const primesProduct32 = 0xC0CFD797         // Π {p ∈ primes, 2 < p <= 29}
-	const primesProduct64 = 0xE221F97C30E94E1D // Π {p ∈ primes, 2 < p <= 53}
-
-	var r Word
-	switch _W {
-	case 32:
-		r = n.modW(primesProduct32)
-	case 64:
-		r = n.modW(primesProduct64 & _M)
-	default:
-		panic("Unknown word size")
-	}
-
-	if r%3 == 0 || r%5 == 0 || r%7 == 0 || r%11 == 0 ||
-		r%13 == 0 || r%17 == 0 || r%19 == 0 || r%23 == 0 || r%29 == 0 {
-		return false
-	}
-
-	if _W == 64 && (r%31 == 0 || r%37 == 0 || r%41 == 0 ||
-		r%43 == 0 || r%47 == 0 || r%53 == 0) {
-		return false
-	}
-
-	nm1 := nat(nil).sub(n, natOne)
-	// determine q, k such that nm1 = q << k
-	k := nm1.trailingZeroBits()
-	q := nat(nil).shr(nm1, k)
-
-	nm3 := nat(nil).sub(nm1, natTwo)
-	rand := rand.New(rand.NewSource(int64(n[0])))
-
-	var x, y, quotient nat
-	nm3Len := nm3.bitLen()
-
-NextRandom:
-	for i := 0; i < reps; i++ {
-		x = x.random(rand, nm3, nm3Len)
-		x = x.add(x, natTwo)
-		y = y.expNN(x, q, n)
-		if y.cmp(natOne) == 0 || y.cmp(nm1) == 0 {
-			continue
-		}
-		for j := uint(1); j < k; j++ {
-			y = y.mul(y, y)
-			quotient, y = quotient.div(y, y, n)
-			if y.cmp(nm1) == 0 {
-				continue NextRandom
-			}
-			if y.cmp(natOne) == 0 {
-				return false
-			}
-		}
-		return false
-	}
-
-	return true
-}
-
 // bytes writes the value of z into buf using big-endian encoding.
 // len(buf) must be >= len(z)*_S. The value of z is encoded in the
 // slice buf[i:]. The number i of unused bytes at the beginning of
@@ -1302,4 +1230,38 @@ func (z nat) setBytes(buf []byte) nat {
 	}
 
 	return z.norm()
+}
+
+// sqrt sets z = ⌊√x⌋
+func (z nat) sqrt(x nat) nat {
+	if x.cmp(natOne) <= 0 {
+		return z.set(x)
+	}
+	if alias(z, x) {
+		z = nil
+	}
+
+	// Start with value known to be too large and repeat "z = ⌊(z + ⌊x/z⌋)/2⌋" until it stops getting smaller.
+	// See Brent and Zimmermann, Modern Computer Arithmetic, Algorithm 1.13 (SqrtInt).
+	// https://members.loria.fr/PZimmermann/mca/pub226.html
+	// If x is one less than a perfect square, the sequence oscillates between the correct z and z+1;
+	// otherwise it converges to the correct z and stays there.
+	var z1, z2 nat
+	z1 = z
+	z1 = z1.setUint64(1)
+	z1 = z1.shl(z1, uint(x.bitLen()/2+1)) // must be ≥ √x
+	for n := 0; ; n++ {
+		z2, _ = z2.div(nil, x, z1)
+		z2 = z2.add(z2, z1)
+		z2 = z2.shr(z2, 1)
+		if z2.cmp(z1) >= 0 {
+			// z1 is answer.
+			// Figure out whether z1 or z2 is currently aliased to z by looking at loop count.
+			if n&1 == 0 {
+				return z1
+			}
+			return z.set(z1)
+		}
+		z1, z2 = z2, z1
+	}
 }

@@ -1,5 +1,5 @@
 /* Test -mfentry */
-/* { dg-do compile { target { { *-*-linux* } && { ! ia32 } } } } */
+/* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
 /* { dg-options "-fprofile -mfentry" } */
 /* { dg-final { scan-assembler "__fentry__" } } */
 /* Origin: Andi Kleen */

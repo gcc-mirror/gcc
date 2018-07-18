@@ -1,3 +1,5 @@
+/* { dg-add-options stack_size } */
+
 /* Origin: hp@bitrange.com
    Test that return values come out right from a 1000-level call chain to
    functions without parameters that each need at least one "long"

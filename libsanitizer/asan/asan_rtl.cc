@@ -30,6 +30,7 @@
 #include "ubsan/ubsan_init.h"
 #include "ubsan/ubsan_platform.h"
 
+uptr __asan_shadow_memory_dynamic_address;  // Global interface symbol.
 int __asan_option_detect_stack_use_after_return;  // Global interface symbol.
 uptr *__asan_test_only_reported_buggy_pointer;  // Used only for testing asan.
 
@@ -43,6 +44,7 @@ static void AsanDie() {
     // Don't die twice - run a busy loop.
     while (1) { }
   }
+  if (common_flags()->print_module_map >= 1) PrintModuleMap();
   if (flags()->sleep_before_dying) {
     Report("Sleeping for %d second(s)\n", flags()->sleep_before_dying);
     SleepForSeconds(flags()->sleep_before_dying);
@@ -78,26 +80,6 @@ uptr kHighMemEnd, kMidMemBeg, kMidMemEnd;
 void ShowStatsAndAbort() {
   __asan_print_accumulated_stats();
   Die();
-}
-
-// ---------------------- mmap -------------------- {{{1
-// Reserve memory range [beg, end].
-// We need to use inclusive range because end+1 may not be representable.
-void ReserveShadowMemoryRange(uptr beg, uptr end, const char *name) {
-  CHECK_EQ((beg % GetPageSizeCached()), 0);
-  CHECK_EQ(((end + 1) % GetPageSizeCached()), 0);
-  uptr size = end - beg + 1;
-  DecreaseTotalMmap(size);  // Don't count the shadow against mmap_limit_mb.
-  void *res = MmapFixedNoReserve(beg, size, name);
-  if (res != (void*)beg) {
-    Report("ReserveShadowMemoryRange failed while trying to map 0x%zx bytes. "
-           "Perhaps you're using ulimit -v\n", size);
-    Abort();
-  }
-  if (common_flags()->no_huge_pages_for_shadow)
-    NoHugePagesInRegion(beg, size);
-  if (common_flags()->use_madv_dontdump)
-    DontDumpShadowMemory(beg, size);
 }
 
 // --------------- LowLevelAllocateCallbac ---------- {{{1
@@ -261,6 +243,7 @@ static NOINLINE void force_interface_symbols() {
   volatile int fake_condition = 0;  // prevent dead condition elimination.
   // __asan_report_* functions are noreturn, so we need a switch to prevent
   // the compiler from removing any of them.
+  // clang-format off
   switch (fake_condition) {
     case 1: __asan_report_load1(0); break;
     case 2: __asan_report_load2(0); break;
@@ -300,7 +283,14 @@ static NOINLINE void force_interface_symbols() {
     case 37: __asan_unpoison_stack_memory(0, 0); break;
     case 38: __asan_region_is_poisoned(0, 0); break;
     case 39: __asan_describe_address(0); break;
+    case 40: __asan_set_shadow_00(0, 0); break;
+    case 41: __asan_set_shadow_f1(0, 0); break;
+    case 42: __asan_set_shadow_f2(0, 0); break;
+    case 43: __asan_set_shadow_f3(0, 0); break;
+    case 44: __asan_set_shadow_f5(0, 0); break;
+    case 45: __asan_set_shadow_f8(0, 0); break;
   }
+  // clang-format on
 }
 
 static void asan_atexit() {
@@ -318,38 +308,12 @@ static void InitializeHighMemEnd() {
   kHighMemEnd = GetMaxVirtualAddress();
   // Increase kHighMemEnd to make sure it's properly
   // aligned together with kHighMemBeg:
-  kHighMemEnd |= SHADOW_GRANULARITY * GetPageSizeCached() - 1;
+  kHighMemEnd |= SHADOW_GRANULARITY * GetMmapGranularity() - 1;
 #endif  // !ASAN_FIXED_MAPPING
-  CHECK_EQ((kHighMemBeg % GetPageSizeCached()), 0);
+  CHECK_EQ((kHighMemBeg % GetMmapGranularity()), 0);
 }
 
-static void ProtectGap(uptr addr, uptr size) {
-  if (!flags()->protect_shadow_gap)
-    return;
-  void *res = MmapNoAccess(addr, size, "shadow gap");
-  if (addr == (uptr)res)
-    return;
-  // A few pages at the start of the address space can not be protected.
-  // But we really want to protect as much as possible, to prevent this memory
-  // being returned as a result of a non-FIXED mmap().
-  if (addr == kZeroBaseShadowStart) {
-    uptr step = GetPageSizeCached();
-    while (size > step && addr < kZeroBaseMaxShadowStart) {
-      addr += step;
-      size -= step;
-      void *res = MmapNoAccess(addr, size, "shadow gap");
-      if (addr == (uptr)res)
-        return;
-    }
-  }
-
-  Report("ERROR: Failed to protect the shadow gap. "
-         "ASan cannot proceed correctly. ABORTING.\n");
-  DumpProcessMap();
-  Die();
-}
-
-static void PrintAddressSpaceLayout() {
+void PrintAddressSpaceLayout() {
   Printf("|| `[%p, %p]` || HighMem    ||\n",
          (void*)kHighMemBeg, (void*)kHighMemEnd);
   Printf("|| `[%p, %p]` || HighShadow ||\n",
@@ -386,6 +350,8 @@ static void PrintAddressSpaceLayout() {
   Printf("redzone=%zu\n", (uptr)flags()->redzone);
   Printf("max_redzone=%zu\n", (uptr)flags()->max_redzone);
   Printf("quarantine_size_mb=%zuM\n", (uptr)flags()->quarantine_size_mb);
+  Printf("thread_local_quarantine_size_kb=%zuK\n",
+         (uptr)flags()->thread_local_quarantine_size_kb);
   Printf("malloc_context_size=%zu\n",
          (uptr)common_flags()->malloc_context_size);
 
@@ -413,9 +379,12 @@ static void AsanInitInternal() {
 
   AsanCheckIncompatibleRT();
   AsanCheckDynamicRTPrereqs();
+  AvoidCVE_2016_2143();
 
   SetCanPoisonMemory(flags()->poison_heap);
   SetMallocContextSize(common_flags()->malloc_context_size);
+
+  InitializePlatformExceptionHandlers();
 
   InitializeHighMemEnd();
 
@@ -429,7 +398,6 @@ static void AsanInitInternal() {
 
   __sanitizer_set_report_path(common_flags()->log_path);
 
-  // Enable UAR detection, if required.
   __asan_option_detect_stack_use_after_return =
       flags()->detect_stack_use_after_return;
 
@@ -448,55 +416,9 @@ static void AsanInitInternal() {
 
   ReplaceSystemMalloc();
 
-  uptr shadow_start = kLowShadowBeg;
-  if (kLowShadowBeg)
-    shadow_start -= GetMmapGranularity();
-  bool full_shadow_is_available =
-      MemoryRangeIsAvailable(shadow_start, kHighShadowEnd);
-
-#if SANITIZER_LINUX && defined(__x86_64__) && defined(_LP64) &&                \
-    !ASAN_FIXED_MAPPING
-  if (!full_shadow_is_available) {
-    kMidMemBeg = kLowMemEnd < 0x3000000000ULL ? 0x3000000000ULL : 0;
-    kMidMemEnd = kLowMemEnd < 0x3000000000ULL ? 0x4fffffffffULL : 0;
-  }
-#endif
-
-  if (Verbosity()) PrintAddressSpaceLayout();
-
   DisableCoreDumperIfNecessary();
 
-  if (full_shadow_is_available) {
-    // mmap the low shadow plus at least one page at the left.
-    if (kLowShadowBeg)
-      ReserveShadowMemoryRange(shadow_start, kLowShadowEnd, "low shadow");
-    // mmap the high shadow.
-    ReserveShadowMemoryRange(kHighShadowBeg, kHighShadowEnd, "high shadow");
-    // protect the gap.
-    ProtectGap(kShadowGapBeg, kShadowGapEnd - kShadowGapBeg + 1);
-    CHECK_EQ(kShadowGapEnd, kHighShadowBeg - 1);
-  } else if (kMidMemBeg &&
-      MemoryRangeIsAvailable(shadow_start, kMidMemBeg - 1) &&
-      MemoryRangeIsAvailable(kMidMemEnd + 1, kHighShadowEnd)) {
-    CHECK(kLowShadowBeg != kLowShadowEnd);
-    // mmap the low shadow plus at least one page at the left.
-    ReserveShadowMemoryRange(shadow_start, kLowShadowEnd, "low shadow");
-    // mmap the mid shadow.
-    ReserveShadowMemoryRange(kMidShadowBeg, kMidShadowEnd, "mid shadow");
-    // mmap the high shadow.
-    ReserveShadowMemoryRange(kHighShadowBeg, kHighShadowEnd, "high shadow");
-    // protect the gaps.
-    ProtectGap(kShadowGapBeg, kShadowGapEnd - kShadowGapBeg + 1);
-    ProtectGap(kShadowGap2Beg, kShadowGap2End - kShadowGap2Beg + 1);
-    ProtectGap(kShadowGap3Beg, kShadowGap3End - kShadowGap3Beg + 1);
-  } else {
-    Report("Shadow memory range interleaves with an existing memory mapping. "
-           "ASan cannot proceed correctly. ABORTING.\n");
-    Report("ASan shadow was supposed to be located in the [%p-%p] range.\n",
-           shadow_start, kHighShadowEnd);
-    DumpProcessMap();
-    Die();
-  }
+  InitializeShadowMemory();
 
   AsanTSDInit(PlatformTSDDtor);
   InstallDeadlySignalHandlers(AsanOnDeadlySignal);
@@ -527,22 +449,20 @@ static void AsanInitInternal() {
   InitTlsSize();
 
   // Create main thread.
-  AsanThread *main_thread = AsanThread::Create(
-      /* start_routine */ nullptr, /* arg */ nullptr, /* parent_tid */ 0,
-      /* stack */ nullptr, /* detached */ true);
+  AsanThread *main_thread = CreateMainThread();
   CHECK_EQ(0, main_thread->tid());
-  SetCurrentThread(main_thread);
-  main_thread->ThreadStart(internal_getpid(),
-                           /* signal_thread_is_registered */ nullptr);
   force_interface_symbols();  // no-op.
   SanitizerInitializeUnwinder();
 
-#if CAN_SANITIZE_LEAKS
-  __lsan::InitCommonLsan();
-  if (common_flags()->detect_leaks && common_flags()->leak_check_at_exit) {
-    Atexit(__lsan::DoLeakCheck);
+  if (CAN_SANITIZE_LEAKS) {
+    __lsan::InitCommonLsan();
+    if (common_flags()->detect_leaks && common_flags()->leak_check_at_exit) {
+      if (flags()->halt_on_error)
+        Atexit(__lsan::DoLeakCheck);
+      else
+        Atexit(__lsan::DoRecoverableLeakCheckVoid);
+    }
   }
-#endif  // CAN_SANITIZE_LEAKS
 
 #if CAN_SANITIZE_UB
   __ubsan::InitAsPlugin();
@@ -550,7 +470,21 @@ static void AsanInitInternal() {
 
   InitializeSuppressions();
 
+  if (CAN_SANITIZE_LEAKS) {
+    // LateInitialize() calls dlsym, which can allocate an error string buffer
+    // in the TLS.  Let's ignore the allocation to avoid reporting a leak.
+    __lsan::ScopedInterceptorDisabler disabler;
+    Symbolizer::LateInitialize();
+  } else {
+    Symbolizer::LateInitialize();
+  }
+
   VReport(1, "AddressSanitizer Init done\n");
+
+  if (flags()->sleep_after_init) {
+    Report("Sleeping for %d second(s)\n", flags()->sleep_after_init);
+    SleepForSeconds(flags()->sleep_after_init);
+  }
 }
 
 // Initialize as requested from some part of ASan runtime library (interceptors,
@@ -579,6 +513,9 @@ static AsanInitializer asan_initializer;
 using namespace __asan;  // NOLINT
 
 void NOINLINE __asan_handle_no_return() {
+  if (asan_init_is_running)
+    return;
+
   int local_stack;
   AsanThread *curr_thread = GetCurrentThread();
   uptr PageSize = GetPageSizeCached();
@@ -587,6 +524,7 @@ void NOINLINE __asan_handle_no_return() {
     top = curr_thread->stack_top();
     bottom = ((uptr)&local_stack - PageSize) & ~(PageSize - 1);
   } else {
+    CHECK(!SANITIZER_FUCHSIA);
     // If we haven't seen this thread, try asking the OS for stack bounds.
     uptr tls_addr, tls_size, stack_size;
     GetThreadStackAndTls(/*main=*/false, &bottom, &stack_size, &tls_addr,
@@ -603,7 +541,7 @@ void NOINLINE __asan_handle_no_return() {
            "stack top: %p; bottom %p; size: %p (%zd)\n"
            "False positive error reports may follow\n"
            "For details see "
-           "http://code.google.com/p/address-sanitizer/issues/detail?id=189\n",
+           "https://github.com/google/sanitizers/issues/189\n",
            top, bottom, top - bottom, top - bottom);
     return;
   }

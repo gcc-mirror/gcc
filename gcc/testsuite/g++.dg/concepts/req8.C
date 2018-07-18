@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 // Check that type requirements are normalized correctly.
 

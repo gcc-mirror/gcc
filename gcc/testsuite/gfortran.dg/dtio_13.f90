@@ -136,9 +136,7 @@ program test
    character(3) :: a, b
    class(t) :: chairman ! { dg-error "must be dummy, allocatable or pointer" }
    open (unit=71, file='myunformatted_data.dat', form='unformatted')
-! The following error is spurious and is eliminated if previous error is corrected.
-! TODO Although better than an ICE, fix me.
-   read (71) a, chairman, b ! { dg-error "cannot be polymorphic" }
+   read (71) a, chairman, b 
    close (unit=71)
 end
 

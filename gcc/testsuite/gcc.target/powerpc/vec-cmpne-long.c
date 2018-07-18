@@ -1,4 +1,4 @@
-/* { dg-do run { target { powerpc64*-*-* } } } */
+/* { dg-do run { target { powerpc64*-*-* && { p8vector_hw } } } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-options "-mcpu=power8 -mpower8-vector -O3" } */

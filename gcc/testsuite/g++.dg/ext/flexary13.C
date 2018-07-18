@@ -55,10 +55,4 @@ int main ()
       { 1, { 2 } };   // dg-warning "initialization of a flexible array member" }
     ASSERT (s.i == 1 && s.ax.n == 2);
   }
-
-  {
-    AAx s =
-      { 1, { 2, { 3 } } };   // dg-warning "initialization of a flexible array member" }
-    ASSERT (s.i == 1 && s.ax.n == 2 && s.ax.a [0] == 3);
-  }
 }

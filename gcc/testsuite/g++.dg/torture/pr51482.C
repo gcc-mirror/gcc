@@ -27,4 +27,5 @@ WVECT * anim_track_bez_wvect::tangent(int kn, BEZIER_KEY_CLASS key_class, WVECT 
   p_tn->y = (g1.y + g3.y*bp1)*tn1;
   p_tn->z = (g1.z + g3.z*bp1)*tn1;
   p_tn->w = (g1.w + g3.w*bp1)*tn1;
+  return 0;
 }

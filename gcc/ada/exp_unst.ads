@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2014-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,7 +64,7 @@ package Exp_Unst is
    --     doing transformations of this type.
 
    --     Second: given that the transformation will be semantics-preserving,
-   --     we can still used the standard GCC back end to build code from it.
+   --     we can still use the standard GCC back end to build code from it.
    --     This means we can easily run our full test suite to verify that the
    --     transformations are indeed semantics preserving. It is a lot more
    --     work to thoroughly test the output of specialized back ends.
@@ -239,7 +239,7 @@ package Exp_Unst is
    --          procedure inner (bb : integer; AREC1F : AREC1PT) is
    --          begin
    --             Integer'Deref(AREC1F.x) :=
-   --               Integer'Deref(AREC1F.rv) + y + b + Integer_Deref(AREC1F.b);
+   --               Integer'Deref(AREC1F.rv) + y + b + Integer'Deref(AREC1F.b);
    --          end;
    --
    --       begin
@@ -294,13 +294,13 @@ package Exp_Unst is
 
    --    What we do is to always generate a local constant for any dynamic
    --    bound in a dynamic subtype xx with name xx_FIRST or xx_LAST. The one
-   --    case where we can skip this is where the bound is e.g. in the third
-   --    example above, subtype dynam is expanded as
+   --    case where we can skip this is where the bound is already a constant.
+   --    E.g. in the third example above, subtype dynam is expanded as
 
-   --      dynam_LAST  : constant Integer := y + 3;
+   --      dynam_LAST : constant Integer := y + 3;
    --      subtype dynam is integer range x .. dynam_LAST;
 
-   --    Now if type dynam is uplevel referenced (as it is this case), then
+   --    Now if type dynam is uplevel referenced (as it is in this case), then
    --    the bounds x and dynam_LAST are marked as uplevel references
    --    so that appropriate entries are made in the activation record. Any
    --    explicit reference to such a bound in the front end generated code
@@ -310,7 +310,7 @@ package Exp_Unst is
    --    these bounds can be replaced by an appropriate reference to the entry
    --    in the activation record for xx_FIRST or xx_LAST. Thus the back end
    --    can eliminate the problematical uplevel reference without the need to
-   --    do the heavy tree modification to do that at the code expansion level
+   --    do the heavy tree modification to do that at the code expansion level.
 
    --  Looking at case 3 again, here is the normal -gnatG expanded code
 
@@ -347,7 +347,7 @@ package Exp_Unst is
    --  we ignore that detail to clarify the examples.
 
    --  Here we see that some of the bounds references are expanded by the
-   --  front end, so that we get explicit references to y or dynamLast. These
+   --  front end, so that we get explicit references to y or dynam_Last. These
    --  cases are handled by the normal uplevel reference mechanism described
    --  above for case 2. This is the case for the constraint check for the
    --  initialization of xx, and the range check in function inner.
@@ -562,6 +562,42 @@ package Exp_Unst is
    --    uplevel call, a subprogram at level 5 can call one at level 2 or even
    --    the outer level subprogram at level 1.
 
+   -------------------------------------
+   -- Handling of unconstrained types --
+   -------------------------------------
+
+   --  Objects whose nominal subtype is an unconstrained array type present
+   --  additional complications for translation into LLVM. The address
+   --  attribute of such objects points to the first component of the
+   --  array, and the bounds are found elsewhere, typically ahead of the
+   --  components. In many cases the bounds of an object are stored ahead
+   --  of the components and can be retrieved from it. However, if the
+   --  object is an expression (e.g. a slice) the bounds are not adjacent
+   --  and thus must be conveyed explicitly by means of a so-called
+   --  fat pointer. This leads to the following enhancements to the
+   --  handling of uplevel references described so far. This applies only
+   --  to uplevel references to unconstrained formals of enclosing
+   --  subprograms:
+   --
+   --  a) Uplevel references are detected as before during the tree traversal
+   --  in Visit_Node. For reference to uplevel formals, we include those with
+   --  an unconstrained array type (e.g. String) even if such a type has
+   --  static bounds.
+   --
+   --  b) references to unconstrained formals are recognized in the Subp
+   --  table by means of the predicate Needs_Fat_Pointer.
+   --
+   --  c) When constructing the required activation record we also construct
+   --  a named access type whose designated type is the unconstrained array
+   --  type. The activation record of a subprogram that contains such an
+   --  uplevel reference includes a component of this access type. The
+   --  declaration for that access type is introduced and analyzed before
+   --  that of the activation record, so it appears in the subprogram that
+   --  has that formal.
+   --
+   --  d) The uplevel reference is rewritten as an explicit dereference (.all)
+   --  of the corresponding pointer component.
+   --
    -----------
    -- Subps --
    -----------
@@ -658,7 +694,7 @@ package Exp_Unst is
       ARECnU : Entity_Id;
       --  This AREC entity is the uplink component. It is other than Empty only
       --  for nested subprograms that declare an activation record as indicated
-      --  by Declares_AREC being Ture, and which have uplevel references (Lev
+      --  by Declares_AREC being True, and which have uplevel references (Lev
       --  greater than Uplevel_Ref). It is the additional component in the
       --  activation record that references the ARECnF pointer (which points
       --  the activation record one level higher, thus forming the chain).
@@ -683,12 +719,18 @@ package Exp_Unst is
    --  function returns the level of nesting (Subp = 1, subprograms that
    --  are immediately nested within Subp = 2, etc.).
 
+   function In_Synchronized_Unit (Subp : Entity_Id) return Boolean;
+   --  Predicate to identify subprograms declared in task and protected types.
+   --  These subprograms are called from outside the compilation and therefore
+   --  must be considered reachable (and cannot be eliminated) because we must
+   --  generate code for them.
+
    function Subp_Index (Sub : Entity_Id) return SI_Type;
    --  Given the entity for a subprogram, return corresponding Subp's index
 
    procedure Unnest_Subprograms (N : Node_Id);
    --  Called to unnest subprograms. If we are in unnest subprogram mode, this
-   --  is the call that traverses the tree N and locates all the library level
+   --  is the call that traverses the tree N and locates all the library-level
    --  subprograms with nested subprograms to process them.
 
 end Exp_Unst;

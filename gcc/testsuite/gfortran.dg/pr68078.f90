@@ -1,4 +1,4 @@
-! { dg-do run { target x86_64-*-linux* } }
+! { dg-do run { target i?86-*-linux* x86_64-*-linux* } }
 ! { dg-additional-sources set_vm_limit.c }
 !
 ! This test calls set_vm_limit to set an artificially low address space

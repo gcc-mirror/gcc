@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "128-bit long double" { *-*-hpux* } { "*" } { "" } } */
+/* { dg-skip-if "128-bit long double" { *-*-hpux* } } */
 /* { dg-options "-O" } */
 /* Don't confuse the fma insn with the fma in the filename.  */
 /* { dg-final { scan-assembler-times "fma\[ 	\]" 2 } } */

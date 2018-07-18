@@ -187,7 +187,7 @@ int main(int argc, char **argv)
   printf("Test2: %d, %d, gdc: %d\n", a, b, nsd(a, b));
 }
 
-/* { dg-final { scan-ipa-dump "Semantic equality hit:s2->s1" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:nsd_different_result2->nsd_different_result" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:nsd->gcd" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:s1->s2" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:nsd_different_result->nsd_different_result2" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:gcd->nsd" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 3" "icf"  } } */

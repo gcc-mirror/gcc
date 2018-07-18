@@ -344,7 +344,7 @@ if $LINKS; then
             mkdir $component >/dev/null 2>&1
             cd $component
             dirmade=$dirmade/$component
-            dirname=`echo $dirname | sed -e 's|[^/]*/||'`
+            dirname=`echo $dirname | sed -e 's|[^/]*//*||'`
           done
         fi
 

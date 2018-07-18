@@ -22,11 +22,11 @@ subroutine foo(a, x)
   PRINT *, "c=", c
 
   IF (c(1) .gt. 0.0) THEN
-     CALL ABORT
+     STOP 1
   END IF
 
   IF (c(2) .gt. 0.0) THEN
-     CALL ABORT
+     STOP 2
   END IF
 end subroutine foo
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@ with Debug;  use Debug;
 with Osint;  use Osint;
 with Opt;    use Opt;
 
+with System.OS_Lib;  use System.OS_Lib;
 with System.WCh_Con; use System.WCh_Con;
 
 package body Switch.B is
@@ -252,6 +253,22 @@ package body Switch.B is
                Ptr := Ptr + 1;
             end if;
 
+         --  Processing for f switch
+
+         when 'f' =>
+            if Ptr = Max then
+               Bad_Switch (Switch_Chars);
+            end if;
+
+            Force_Elab_Order_File :=
+              new String'(Switch_Chars (Ptr + 1 .. Max));
+
+            Ptr := Max + 1;
+
+            if not Is_Read_Accessible_File (Force_Elab_Order_File.all) then
+               Osint.Fail (Force_Elab_Order_File.all & ": file not found");
+            end if;
+
          --  Processing for F switch
 
          when 'F' =>
@@ -374,6 +391,18 @@ package body Switch.B is
             Ptr := Ptr + 1;
             Quiet_Output := True;
 
+         --  Processing for Q switch
+
+         when 'Q' =>
+            if Ptr = Max then
+               Bad_Switch (Switch_Chars);
+            end if;
+
+            Ptr := Ptr + 1;
+            Scan_Nat
+              (Switch_Chars, Max, Ptr,
+               Quantity_Of_Default_Size_Sec_Stacks, C);
+
          --  Processing for r switch
 
          when 'r' =>
@@ -472,6 +501,9 @@ package body Switch.B is
             case Switch_Chars (Ptr) is
                when 'e' =>
                   Warning_Mode := Treat_As_Error;
+
+               when 'E' =>
+                  Warning_Mode := Treat_Run_Time_Warnings_As_Errors;
 
                when 's' =>
                   Warning_Mode := Suppress;

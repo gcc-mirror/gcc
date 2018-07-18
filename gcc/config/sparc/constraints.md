@@ -1,5 +1,5 @@
 ;; Constraint definitions for SPARC.
-;; Copyright (C) 2008-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2008-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;     B
-;;;    a        jkl    q  tuv xyz
+;;;    a        jkl        uv xyz
 
 
 ;; Register constraints
@@ -57,6 +57,16 @@
       (match_test "const_all_ones_operand (op, mode)")))
 
 ;; Integer constant constraints
+
+(define_constraint "q"
+ "Unsigned 2-bit integer constant"
+  (and (match_code "const_int")
+       (match_test "SPARC_IMM2_P (ival)")))
+
+(define_constraint "t"
+ "Unsigned 5-bit integer constant"
+ (and (match_code "const_int")
+      (match_test "SPARC_IMM5_P (ival)")))
 
 (define_constraint "A"
  "Signed 5-bit integer constant"
@@ -128,11 +138,11 @@
  (and (match_code "const_double")
       (match_test "fp_high_losum_p (op)")))
 
-;; Not needed in 64-bit mode
-(define_memory_constraint "T"
+;; We need a special memory constraint because of the alignment requirement
+(define_special_memory_constraint "T"
  "Memory reference whose address is aligned to 8-byte boundary"
- (and (match_test "TARGET_ARCH32")
-      (match_code "mem")
+ (and (match_code "mem")
+      (match_test "TARGET_ARCH32")
       (match_test "memory_ok_for_ldd (op)")))
 
 ;; This awkward register constraint is necessary because it is not
@@ -147,10 +157,10 @@
 ;; register into the register class, which would not restrict things
 ;; at all.
 ;;
-;; Using a combination of GENERAL_REGS and HARD_REGNO_MODE_OK is not a
-;; full solution either.  In fact, even though IRA uses the macro
-;; HARD_REGNO_MODE_OK to calculate which registers are prohibited from
-;; use in certain modes, it still can allocate an odd hard register
+;; Using a combination of GENERAL_REGS and TARGET_HARD_REGNO_MODE_OK is
+;; not a full solution either.  In fact, even though IRA uses the macro
+;; TARGET_HARD_REGNO_MODE_OK to calculate which registers are prohibited
+;; from use in certain modes, it still can allocate an odd hard register
 ;; for DImode values.  This is due to how IRA populates the table
 ;; ira_useful_class_mode_regs[][].  It suffers from the same problem
 ;; as using a register class to describe this restriction.  Namely, it
@@ -166,24 +176,25 @@
 ;; example, we have a non-offsetable MEM.  Reload will notice this
 ;; case and reload the address into a single hard register.
 ;;
-;; The real downfall of this awkward register constraint is that it does
-;; not evaluate to a true register class like a bonafide use of
-;; define_register_constraint would.  This currently means that we cannot
-;; use LRA on Sparc, since the constraint processing of LRA really depends
+;; The real downfall of this awkward register constraint is that it
+;; does not evaluate to a true register class like a bonafide use of
+;; define_register_constraint would.  This means that we cannot use
+;; it with LRA, since the constraint processing of LRA really depends
 ;; upon whether an extra constraint is for registers or not.  It uses
 ;; reg_class_for_constraint, and checks it against NO_REGS.
 (define_constraint "U"
  "Pseudo-register or hard even-numbered integer register"
- (and (match_test "TARGET_ARCH32")
-      (match_code "reg")
+ (and (match_code "reg")
       (ior (match_test "REGNO (op) < FIRST_PSEUDO_REGISTER")
 	   (not (match_test "reload_in_progress && reg_renumber [REGNO (op)] < 0")))
+      (match_test "TARGET_ARCH32")
       (match_test "register_ok_for_ldd (op)")))
 
-;; Equivalent to 'T' but available in 64-bit mode
+;; Equivalent to 'T' but in 64-bit mode without alignment requirement
 (define_memory_constraint "W"
  "Memory reference for 'e' constraint floating-point register"
  (and (match_code "mem")
+      (match_test "TARGET_ARCH64")
       (match_test "memory_ok_for_ldd (op)")))
 
 (define_memory_constraint "w"

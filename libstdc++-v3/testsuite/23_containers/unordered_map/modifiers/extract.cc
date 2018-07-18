@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++17" }
+// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 #include <unordered_map>
 #include <testsuite_hooks.h>
@@ -133,6 +134,17 @@ test03()
   static_assert( is_same_v<test_type::node_type, compat_type2::node_type> );
   using compat_type3 = std::unordered_multimap<int, int, hash, equal>;
   static_assert( is_same_v<test_type::node_type, compat_type3::node_type> );
+}
+
+void
+test04()
+{
+  // Check order of members in insert_return_type
+  auto [pos, ins, node] = test_type::insert_return_type{};
+  using std::is_same_v;
+  static_assert( is_same_v<test_type::iterator, decltype(pos)> );
+  static_assert( is_same_v<bool, decltype(ins)> );
+  static_assert( is_same_v<test_type::node_type, decltype(node)> );
 }
 
 int

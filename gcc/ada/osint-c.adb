@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -273,8 +273,11 @@ package body Osint.C is
    begin
       Name_Buffer (1 .. Src'Length) := Src;
       Name_Len := Src'Length;
-      Discard := Create_Auxiliary_File (Name_Find, "rep");
-      return;
+      if List_Representation_Info_To_JSON then
+         Discard := Create_Auxiliary_File (Name_Find, "json");
+      else
+         Discard := Create_Auxiliary_File (Name_Find, "rep");
+      end if;
    end Create_Repinfo_File;
 
    ---------------------------
@@ -347,6 +350,14 @@ package body Osint.C is
    is
    begin
       Set_File_Name (ALI_Suffix.all);
+
+      --  Remove trailing NUL that comes from Set_File_Name above. This is
+      --  needed for consistency with names that come from Scan_ALI and thus
+      --  preventing repeated scanning of the same file.
+
+      pragma Assert (Name_Len > 1 and then Name_Buffer (Name_Len) = ASCII.NUL);
+      Name_Len := Name_Len - 1;
+
       Name := Name_Find;
       Text := Read_Library_Info (Name, Fatal_Err => False);
    end Read_Library_Info;

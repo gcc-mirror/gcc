@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -149,7 +149,12 @@ chrec_fold_plus_poly_poly (enum tree_code code,
 
   /* This function should never be called for chrecs of loops that
      do not belong to the same loop nest.  */
-  gcc_assert (loop0 == loop1);
+  if (loop0 != loop1)
+    {
+      /* It still can happen if we are not in loop-closed SSA form.  */
+      gcc_assert (! loops_state_satisfies_p (LOOP_CLOSED_SSA));
+      return chrec_dont_know;
+    }
 
   if (code == PLUS_EXPR || code == POINTER_PLUS_EXPR)
     {
@@ -211,7 +216,12 @@ chrec_fold_multiply_poly_poly (tree type,
        chrec_fold_multiply (type, CHREC_LEFT (poly0), poly1),
        CHREC_RIGHT (poly0));
 
-  gcc_assert (loop0 == loop1);
+  if (loop0 != loop1)
+    {
+      /* It still can happen if we are not in loop-closed SSA form.  */
+      gcc_assert (! loops_state_satisfies_p (LOOP_CLOSED_SSA));
+      return chrec_dont_know;
+    }
 
   /* poly0 and poly1 are two polynomials in the same variable,
      {a, +, b}_x * {c, +, d}_x  ->  {a*c, +, a*d + b*c + b*d, +, 2*b*d}_x.  */
@@ -285,8 +295,23 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	  return chrec_fold_plus_poly_poly (code, type, op0, op1);
 
 	CASE_CONVERT:
-	  if (tree_contains_chrecs (op1, NULL))
-	    return chrec_dont_know;
+	  {
+	    /* We can strip sign-conversions to signed by performing the
+	       operation in unsigned.  */
+	    tree optype = TREE_TYPE (TREE_OPERAND (op1, 0));
+	    if (INTEGRAL_TYPE_P (type)
+		&& INTEGRAL_TYPE_P (optype)
+		&& tree_nop_conversion_p (type, optype)
+		&& TYPE_UNSIGNED (optype))
+	      return chrec_convert (type,
+				    chrec_fold_plus_1 (code, optype,
+						       chrec_convert (optype,
+								      op0, NULL),
+						       TREE_OPERAND (op1, 0)),
+				    NULL);
+	    if (tree_contains_chrecs (op1, NULL))
+	      return chrec_dont_know;
+	  }
 	  /* FALLTHRU */
 
 	default:
@@ -303,8 +328,23 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	}
 
     CASE_CONVERT:
-      if (tree_contains_chrecs (op0, NULL))
-	return chrec_dont_know;
+      {
+	/* We can strip sign-conversions to signed by performing the
+	   operation in unsigned.  */
+	tree optype = TREE_TYPE (TREE_OPERAND (op0, 0));
+	if (INTEGRAL_TYPE_P (type)
+	    && INTEGRAL_TYPE_P (optype)
+	    && tree_nop_conversion_p (type, optype)
+	    && TYPE_UNSIGNED (optype))
+	  return chrec_convert (type,
+				chrec_fold_plus_1 (code, optype,
+						   TREE_OPERAND (op0, 0),
+						   chrec_convert (optype,
+								  op1, NULL)),
+				NULL);
+	if (tree_contains_chrecs (op0, NULL))
+	  return chrec_dont_know;
+      }
       /* FALLTHRU */
 
     default:
@@ -335,12 +375,10 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 
 	default:
 	  {
-	    int size = 0;
-	    if ((tree_contains_chrecs (op0, &size)
-		 || tree_contains_chrecs (op1, &size))
-		&& size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+	    if (tree_contains_chrecs (op0, NULL)
+		|| tree_contains_chrecs (op1, NULL))
 	      return build2 (code, type, op0, op1);
-	    else if (size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+	    else
 	      {
 		if (code == POINTER_PLUS_EXPR)
 		  return fold_build_pointer_plus (fold_convert (type, op0),
@@ -350,8 +388,6 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 				      fold_convert (type, op0),
 				      fold_convert (type, op1));
 	      }
-	    else
-	      return chrec_dont_know;
 	  }
 	}
     }
@@ -488,7 +524,7 @@ chrec_fold_multiply (tree type,
 static tree
 tree_fold_binomial (tree type, tree n, unsigned int k)
 {
-  bool overflow;
+  wi::overflow_type overflow;
   unsigned int i;
 
   /* Handle the most frequent cases.  */
@@ -536,7 +572,8 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
 }
 
 /* Helper function.  Use the Newton's interpolating formula for
-   evaluating the value of the evolution function.  */
+   evaluating the value of the evolution function.
+   The result may be in an unsigned type of CHREC.  */
 
 static tree
 chrec_evaluate (unsigned var, tree chrec, tree n, unsigned int k)
@@ -549,25 +586,33 @@ chrec_evaluate (unsigned var, tree chrec, tree n, unsigned int k)
 	 && flow_loop_nested_p (var_loop, get_chrec_loop (chrec)))
     chrec = CHREC_LEFT (chrec);
 
+  /* The formula associates the expression and thus we have to make
+     sure to not introduce undefined overflow.  */
+  tree ctype = type;
+  if (INTEGRAL_TYPE_P (type)
+      && ! TYPE_OVERFLOW_WRAPS (type))
+    ctype = unsigned_type_for (type);
+
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC
       && CHREC_VARIABLE (chrec) == var)
     {
       arg1 = chrec_evaluate (var, CHREC_RIGHT (chrec), n, k + 1);
       if (arg1 == chrec_dont_know)
 	return chrec_dont_know;
-      binomial_n_k = tree_fold_binomial (type, n, k);
+      binomial_n_k = tree_fold_binomial (ctype, n, k);
       if (!binomial_n_k)
 	return chrec_dont_know;
-      arg0 = fold_build2 (MULT_EXPR, type,
-			  CHREC_LEFT (chrec), binomial_n_k);
-      return chrec_fold_plus (type, arg0, arg1);
+      tree l = chrec_convert (ctype, CHREC_LEFT (chrec), NULL);
+      arg0 = fold_build2 (MULT_EXPR, ctype, l, binomial_n_k);
+      return chrec_fold_plus (ctype, arg0, arg1);
     }
 
-  binomial_n_k = tree_fold_binomial (type, n, k);
+  binomial_n_k = tree_fold_binomial (ctype, n, k);
   if (!binomial_n_k)
     return chrec_dont_know;
 
-  return fold_build2 (MULT_EXPR, type, chrec, binomial_n_k);
+  return fold_build2 (MULT_EXPR, ctype,
+		      chrec_convert (ctype, chrec, NULL), binomial_n_k);
 }
 
 /* Evaluates "CHREC (X)" when the varying variable is VAR.
@@ -623,7 +668,7 @@ chrec_apply (unsigned var,
       else if (TREE_CODE (x) == INTEGER_CST
 	       && tree_int_cst_sgn (x) == 1)
 	/* testsuite/.../ssa-chrec-38.c.  */
-	res = chrec_evaluate (var, chrec, x, 0);
+	res = chrec_convert (type, chrec_evaluate (var, chrec, x, 0), NULL);
       else
 	res = chrec_dont_know;
       break;
@@ -643,11 +688,11 @@ chrec_apply (unsigned var,
     {
       fprintf (dump_file, "  (varying_loop = %d\n", var);
       fprintf (dump_file, ")\n  (chrec = ");
-      print_generic_expr (dump_file, chrec, 0);
+      print_generic_expr (dump_file, chrec);
       fprintf (dump_file, ")\n  (x = ");
-      print_generic_expr (dump_file, x, 0);
+      print_generic_expr (dump_file, x);
       fprintf (dump_file, ")\n  (res = ");
-      print_generic_expr (dump_file, res, 0);
+      print_generic_expr (dump_file, res);
       fprintf (dump_file, "))\n");
     }
 
@@ -853,8 +898,7 @@ reset_evolution_in_loop (unsigned loop_num,
 					   new_evol);
       tree right = reset_evolution_in_loop (loop_num, CHREC_RIGHT (chrec),
 					    new_evol);
-      return build3 (POLYNOMIAL_CHREC, TREE_TYPE (left),
-		     CHREC_VAR (chrec), left, right);
+      return build_polynomial_chrec (CHREC_VARIABLE (chrec), left, right);
     }
 
   while (TREE_CODE (chrec) == POLYNOMIAL_CHREC
@@ -943,6 +987,7 @@ chrec_contains_symbols (const_tree chrec)
 
   if (TREE_CODE (chrec) == SSA_NAME
       || VAR_P (chrec)
+      || TREE_CODE (chrec) == POLY_INT_CST
       || TREE_CODE (chrec) == PARM_DECL
       || TREE_CODE (chrec) == FUNCTION_DECL
       || TREE_CODE (chrec) == LABEL_DECL
@@ -1143,6 +1188,7 @@ evolution_function_is_univariate_p (const_tree chrec)
 	    return false;
 	  break;
 	}
+      return true;
 
     default:
       return true;
@@ -1591,6 +1637,9 @@ operator_is_linear (tree scev)
 bool
 scev_is_linear_expression (tree scev)
 {
+  if (evolution_function_is_constant_p (scev))
+    return true;
+
   if (scev == NULL
       || !operator_is_linear (scev))
     return false;

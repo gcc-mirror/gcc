@@ -1,12 +1,20 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "--param vect-max-peeling-for-alignment=0" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
 
 #define N 256
 
-extern int a[N+20];
+/* Pick a value greater than the vector length.  */
+#if VECTOR_BITS > 128
+#define OFF (VECTOR_BITS * 5 / 32)
+#else
+#define OFF 20
+#endif
+
+extern int a[N + OFF];
 
 /* The alignment of 'pa' is unknown. 
    Yet we do know that both the read access and write access have 
@@ -51,7 +59,7 @@ main3 ()
 
   for (i = 0; i < N; i++)
     {
-      a[i] = a[i+20];
+      a[i] = a[i + OFF];
     }
 
   return 0;
@@ -60,5 +68,4 @@ main3 ()
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 3 "vect" { xfail vect_no_int_add } } } */
 /* { dg-final { scan-tree-dump-times "accesses have the same alignment." 3 "vect" { target { { vect_aligned_arrays } && {! vect_sizes_32B_16B} } } } } */
 /* { dg-final { scan-tree-dump-times "accesses have the same alignment." 2 "vect" { target { {! vect_aligned_arrays } && {vect_sizes_32B_16B} } } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" {target { vector_alignment_reachable } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 3 "vect" {target { {! vector_alignment_reachable} && {! vect_hw_misalign} } } } } */

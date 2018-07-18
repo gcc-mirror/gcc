@@ -12,4 +12,4 @@ main (void)
   return 0;
 }
 
-/* { dg-bogus "will always overflow destination buffer" "" { target *-*-* } 10 } */
+/* { dg-bogus "overflow" "" { target *-*-* } 10 } */

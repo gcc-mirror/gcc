@@ -1,5 +1,5 @@
 /* Global constant/copy propagation for RTL.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -972,7 +972,7 @@ cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
   if (dump_file != NULL)
     {
       fprintf (dump_file,
-	       "GLOBAL CONST-PROP: Replacing reg %d in jump_insn %d with"
+	       "GLOBAL CONST-PROP: Replacing reg %d in jump_insn %d with "
 	       "constant ", REGNO (from), INSN_UID (jump));
       print_rtl (dump_file, src);
       fprintf (dump_file, "\n");
@@ -1161,9 +1161,7 @@ local_cprop_find_used_regs (rtx *xptr, void *data)
       return;
 
     case SUBREG:
-      /* Setting a subreg of a register larger than word_mode leaves
-	 the non-written words unchanged.  */
-      if (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))) > BITS_PER_WORD)
+      if (read_modify_subreg_p (x))
 	return;
       break;
 
@@ -1250,6 +1248,8 @@ local_cprop_pass (void)
   bool changed = false;
   unsigned i;
 
+  auto_vec<rtx_insn *> uncond_traps;
+
   cselib_init (0);
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1257,6 +1257,9 @@ local_cprop_pass (void)
 	{
 	  if (INSN_P (insn))
 	    {
+	      bool was_uncond_trap
+		= (GET_CODE (PATTERN (insn)) == TRAP_IF
+		   && XEXP (PATTERN (insn), 0) == const1_rtx);
 	      rtx note = find_reg_equal_equiv_note (insn);
 	      do
 		{
@@ -1275,6 +1278,13 @@ local_cprop_pass (void)
 			  break;
 			}
 		    }
+		  if (!was_uncond_trap
+		      && GET_CODE (PATTERN (insn)) == TRAP_IF
+		      && XEXP (PATTERN (insn), 0) == const1_rtx)
+		    {
+		      uncond_traps.safe_push (insn);
+		      break;
+		    }
 		  if (insn->deleted ())
 		    break;
 		}
@@ -1288,6 +1298,14 @@ local_cprop_pass (void)
     }
 
   cselib_finish ();
+
+  while (!uncond_traps.is_empty ())
+    {
+      rtx_insn *insn = uncond_traps.pop ();
+      basic_block to_split = BLOCK_FOR_INSN (insn);
+      remove_edge (split_block (to_split, insn));
+      emit_barrier_after_bb (to_split);
+    }
 
   return changed;
 }
@@ -1679,7 +1697,6 @@ bypass_conditional_jumps (void)
   if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return 0;
 
-  bypass_last_basic_block = last_basic_block_for_fn (cfun);
   mark_dfs_back_edges ();
 
   changed = 0;
@@ -1796,7 +1813,7 @@ one_cprop_pass (void)
   if (set_hash_table.n_elems > 0)
     {
       basic_block bb;
-      rtx_insn *insn;
+      auto_vec<rtx_insn *> uncond_traps;
 
       alloc_cprop_mem (last_basic_block_for_fn (cfun),
 		       set_hash_table.n_elems);
@@ -1812,6 +1829,9 @@ one_cprop_pass (void)
 		      EXIT_BLOCK_PTR_FOR_FN (cfun),
 		      next_bb)
 	{
+	  bool seen_uncond_trap = false;
+	  rtx_insn *insn;
+
 	  /* Reset tables used to keep track of what's still valid [since
 	     the start of the block].  */
 	  reset_opr_set_tables ();
@@ -1819,6 +1839,10 @@ one_cprop_pass (void)
 	  FOR_BB_INSNS (bb, insn)
 	    if (INSN_P (insn))
 	      {
+		bool was_uncond_trap
+		  = (GET_CODE (PATTERN (insn)) == TRAP_IF
+		     && XEXP (PATTERN (insn), 0) == const1_rtx);
+
 		changed |= cprop_insn (insn);
 
 		/* Keep track of everything modified by this insn.  */
@@ -1827,7 +1851,38 @@ one_cprop_pass (void)
 		       insn into a NOTE, or deleted the insn.  */
 		if (! NOTE_P (insn) && ! insn->deleted ())
 		  mark_oprs_set (insn);
+
+		if (!was_uncond_trap
+		    && GET_CODE (PATTERN (insn)) == TRAP_IF
+		    && XEXP (PATTERN (insn), 0) == const1_rtx)
+		  {
+		    /* If we have already seen an unconditional trap
+		       earlier, the rest of the bb is going to be removed
+		       as unreachable.  Just turn it into a note, so that
+		       RTL verification doesn't complain about it before
+		       it is finally removed.  */
+		    if (seen_uncond_trap)
+		      set_insn_deleted (insn);
+		    else
+		      {
+			seen_uncond_trap = true;
+			uncond_traps.safe_push (insn);
+		      }
+		  }
 	      }
+	}
+
+      /* Make sure bypass_conditional_jumps will ignore not just its new
+	 basic blocks, but also the ones after unconditional traps (those are
+	 unreachable and will be eventually removed as such).  */
+      bypass_last_basic_block = last_basic_block_for_fn (cfun);
+
+      while (!uncond_traps.is_empty ())
+	{
+	  rtx_insn *insn = uncond_traps.pop ();
+	  basic_block to_split = BLOCK_FOR_INSN (insn);
+	  remove_edge (split_block (to_split, insn));
+	  emit_barrier_after_bb (to_split);
 	}
 
       changed |= bypass_conditional_jumps ();

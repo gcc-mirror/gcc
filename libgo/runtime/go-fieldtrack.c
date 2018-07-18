@@ -27,18 +27,28 @@ __go_fieldtrack (byte *p __attribute__ ((unused)))
    map[string]bool.  */
 
 extern const char _etext[] __attribute__ ((weak));
+extern const char _edata[] __attribute__ ((weak));
+#ifdef _AIX
+// Following symbols do not exist on AIX
+const char *__etext = NULL;
+const char *__data_start = NULL;
+const char *__edata = NULL;
+const char *__bss_start = NULL;
+#else
 extern const char __etext[] __attribute__ ((weak));
 extern const char __data_start[] __attribute__ ((weak));
-extern const char _edata[] __attribute__ ((weak));
 extern const char __edata[] __attribute__ ((weak));
 extern const char __bss_start[] __attribute__ ((weak));
+#endif
 
-extern void mapassign1 (const struct __go_map_type *, void *hmap,
-			const void *key, const void *val)
-  __asm__ (GOSYM_PREFIX "runtime.mapassign1");
+extern void *mapassign (const struct __go_map_type *, void *hmap,
+			const void *key)
+  __asm__ (GOSYM_PREFIX "runtime.mapassign");
 
 // The type descriptor for map[string] bool.  */
-extern const char __go_td_MN6_string__N4_bool[] __attribute__ ((weak));
+extern const char map_string_bool[] __attribute__ ((weak));
+extern const char map_string_bool[]
+  __asm__ (GOSYM_PREFIX "type..map.6string.7bool");
 
 void runtime_Fieldtrack (void *) __asm__ (GOSYM_PREFIX "runtime.Fieldtrack");
 
@@ -50,7 +60,7 @@ runtime_Fieldtrack (void *m)
   const char *prefix;
   size_t prefix_len;
 
-  if (__go_td_MN6_string__N4_bool == NULL)
+  if (map_string_bool == NULL)
     return;
 
   p = __data_start;
@@ -95,12 +105,12 @@ runtime_Fieldtrack (void *m)
       if (__builtin_memchr (q1, '\0', q2 - q1) == NULL)
 	{
 	  String s;
-	  _Bool b;
+	  void *p;
 
 	  s.str = (const byte *) q1;
 	  s.len = q2 - q1;
-	  b = 1;
-	  mapassign1((const void*) __go_td_MN6_string__N4_bool, m, &s, &b);
+	  p = mapassign((const void*) map_string_bool, m, &s);
+	  *(_Bool*)p = 1;
 	}
 
       p = q2;

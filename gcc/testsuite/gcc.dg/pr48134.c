@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-stack-check "specific" } */
 /* { dg-options "-O2 -fstack-check=specific -fno-tree-dse -fno-tree-fre -fno-tree-loop-optimize -g" } */
 
 struct S

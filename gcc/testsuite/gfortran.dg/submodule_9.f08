@@ -38,4 +38,3 @@ program a_s
   implicit none
   call p()
 end program
-! { dg-final { cleanup-submodules "mod_a@b" } }

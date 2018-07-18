@@ -15,7 +15,6 @@ typedef struct {
 unsigned char ub[N*2];
 unsigned char uc[N];
 
-volatile int y = 0;
 unsigned char check_diff = 2;
 
 void
@@ -69,13 +68,11 @@ int main (void)
     ub[i] = (i%5 == 0)?i*3:i;
     uc[i] = i;
     check_diff += (unsigned char) (ub[i] - uc[i]);
-    if (y) /* Avoid vectorization.  */
-      abort ();
+    asm volatile ("" ::: "memory");
   }
   for (; i < 2*N; i++) {
     ub[i] = 0;
-    if (y) /* Avoid vectorization.  */
-      abort ();
+    asm volatile ("" ::: "memory");
   }
 
   for (i = 0; i < N; i++)
@@ -84,8 +81,7 @@ int main (void)
       arr[i].b = i * 2 + 10;
       arr[i].c = 17;
       arr[i].d = i+34;
-      if (y) /* Avoid vectorization.  */
-        abort ();
+      asm volatile ("" ::: "memory");
     }
   check_vect ();
 

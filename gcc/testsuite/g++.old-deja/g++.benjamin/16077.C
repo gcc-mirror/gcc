@@ -22,8 +22,8 @@ void peace(const colombia&);
 
 void foo(nicaragua& b) {
   peace(b); // { dg-warning "choosing 'nicaragua::operator" "nic" }
-  // { dg-warning "conversion" "conv" { target *-*-* } 24 }
-  // { dg-message "note" "note" { target *-*-* } 24 }
+  // { dg-warning "conversion" "conv" { target *-*-* } .-1 }
+  // { dg-message "note" "note" { target *-*-* } .-2 }
 }
 
 

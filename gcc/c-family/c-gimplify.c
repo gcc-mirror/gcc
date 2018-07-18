@@ -2,7 +2,7 @@
    by the C-based front ends.  The structure of gimplified, or
    language-independent, trees is dictated by the grammar described in this
    file.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Lowering of expressions contributed by Sebastian Pop <s.pop@laposte.net>
    Re-written to support lowering of whole function trees, documentation
    and miscellaneous cleanups by Diego Novillo <dnovillo@redhat.com>
@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "langhooks.h"
 #include "dumpfile.h"
-#include "cilk.h"
 #include "c-ubsan.h"
 
 /*  The gimplification pass converts the language-dependent trees
@@ -115,7 +114,7 @@ void
 c_genericize (tree fndecl)
 {
   FILE *dump_orig;
-  int local_dump_flags;
+  dump_flags_t local_dump_flags;
   struct cgraph_node *cgn;
 
   if (flag_sanitize & SANITIZE_BOUNDS)
@@ -124,6 +123,10 @@ c_genericize (tree fndecl)
       walk_tree (&DECL_SAVED_TREE (fndecl), ubsan_walk_array_refs_r, &pset,
 		 &pset);
     }
+
+  if (warn_duplicated_branches)
+    walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
+				  do_warn_duplicated_branches_r, NULL);
 
   /* Dump the C-specific tree IR.  */
   dump_orig = get_dump_info (TDI_original, &local_dump_flags);
@@ -225,6 +228,8 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
     {
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
       {
 	/* We used to convert the right operand of a shift-expression
 	   to an integer_type_node in the FEs.  But it is unnecessary
@@ -240,7 +245,9 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 				    unsigned_type_node)
 	    && !types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)),
 				    integer_type_node))
-	  *op1_p = convert (unsigned_type_node, *op1_p);
+	  /* Make sure to unshare the result, tree sharing is invalid
+	     during gimplification.  */
+	  *op1_p = unshare_expr (convert (unsigned_type_node, *op1_p));
 	break;
       }
 
@@ -270,31 +277,6 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	  }
 	break;
       }
-
-    case CILK_SPAWN_STMT:
-      gcc_assert(fn_contains_cilk_spawn_p (cfun)
-		 && cilk_detect_spawn_and_unwrap (expr_p));
-
-      if (!seen_error ())
-	{
-	  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p);
-	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	}
-      return GS_ERROR;
-
-    case MODIFY_EXPR:
-    case INIT_EXPR:
-    case CALL_EXPR:
-      if (fn_contains_cilk_spawn_p (cfun)
-	  && cilk_detect_spawn_and_unwrap (expr_p)
-	  /* If an error is found, the spawn wrapper is removed and the
-	     original expression (MODIFY/INIT/CALL_EXPR) is processes as
-	     it is supposed to be.  */
-	  && !seen_error ())
-	{
-	  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p);
-	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	}
 
     default:;
     }

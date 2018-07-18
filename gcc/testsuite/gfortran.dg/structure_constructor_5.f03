@@ -21,18 +21,18 @@ PROGRAM test
 
   empty = quasiempty_t ()
   IF (empty%greeting /= "hello") THEN
-    CALL abort()
+    STOP 1
   END IF
 
   basics = basics_t (r = 1.5)
   IF (basics%i /= 42 .OR. basics%r /= 1.5 .OR. basics%c /= (0., 1.)) THEN
-    CALL abort()
+    STOP 2
   END IF
 
   basics%c = (0., 0.) ! So we see it's surely gotten re-initialized
   basics = basics_t (1, 5.1)
   IF (basics%i /= 1 .OR. basics%r /= 5.1 .OR. basics%c /= (0., 1.)) THEN
-    CALL abort()
+    STOP 3
   END IF
 
 END PROGRAM test

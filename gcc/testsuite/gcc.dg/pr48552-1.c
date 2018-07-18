@@ -8,14 +8,14 @@ void
 f1 (void *x)
 {
   __asm volatile ("" : : "r" (*x));	/* { dg-warning "dereferencing" "deref" } */
-}					/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } 10 } */
+}					/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } .-1 } */
 
 void
 f2 (void *x)
 {
   __asm volatile ("" : "=r" (*x));	/* { dg-warning "dereferencing" "deref" } */
-}					/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } 16 } */
-					/* { dg-error "invalid lvalue in asm output 0" "invalid lvalue" { target *-*-* } 16 } */
+}					/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } .-1 } */
+					/* { dg-error "invalid lvalue in asm output 0" "invalid lvalue" { target *-*-* } .-2 } */
 void
 f3 (void *x)
 {
@@ -32,14 +32,14 @@ void
 f5 (void *x)
 {
   __asm volatile ("" : : "g" (*x));	/* { dg-warning "dereferencing" "deref" } */
-}					/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } 34 } */
+}					/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } .-1 } */
 
 void
 f6 (void *x)
 {
   __asm volatile ("" : "=g" (*x));	/* { dg-warning "dereferencing" "deref" } */
-}					/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } 40 } */
-					/* { dg-error "invalid lvalue in asm output 0" "invalid lvalue" { target *-*-* } 40 } */
+}					/* { dg-error "invalid use of void expression" "void expr" { target *-*-* } .-1 } */
+					/* { dg-error "invalid lvalue in asm output 0" "invalid lvalue" { target *-*-* } .-2 } */
 void
 f7 (struct S *x)
 {

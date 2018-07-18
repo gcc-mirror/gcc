@@ -10,8 +10,8 @@ contains
   subroutine param_test(my_char, my_char_2) bind(c)
     character(c_char), value :: my_char
     character(c_char), value :: my_char_2
-    if(my_char /= c_char_'y') call abort()
-    if(my_char_2 /= c_char_'z') call abort()
+    if(my_char /= c_char_'y') STOP 1
+    if(my_char_2 /= c_char_'z') STOP 2
     
     call sub1(my_char)
   end subroutine param_test
@@ -22,6 +22,6 @@ contains
 
   subroutine sub1(my_char_ref) bind(c)
     character(c_char) :: my_char_ref
-    if(my_char_ref /= c_char_'y') call abort()
+    if(my_char_ref /= c_char_'y') STOP 3
   end subroutine sub1
 end module c_char_tests

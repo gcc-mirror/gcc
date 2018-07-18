@@ -1,3 +1,232 @@
+2018-06-28  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/86343
+	* go-gcc.cc (Gcc_backend::set_placeholder_struct_type): Call
+	build_variant_type_copy rather than build_distinct_type_copy.
+
+2018-06-08  Cherry Zhang  <cherryyz@google.com>
+
+	* go-gcc.cc (class Gcc_backend): Remove
+	stack_allocation_expression method.
+
+2018-02-03  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::fill_in_struct): Mark struct types as
+	using structural equality.
+
+2018-02-02  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::type_size): Return 0 for
+	void_type_node.
+	(Gcc_backend::convert_expression): Don't convert if the type of
+	expr_tree is void_type_node.
+	(Gcc_backend::array_index_expression): Don't index if the type of
+	the array expression is void_type_node.
+	(Gcc_backend::init_statement): Don't initialize if the type of the
+	initializer expression is void_type_node.
+	(Gcc_backend::assignment_statement): Don't assign if the type of
+	either the left or right hand side is void_type_node.
+	(Gcc_backend::temporary_variable): Don't initialize if the type of
+	the initializer expression is void_type_node.
+
+2018-02-01  Cherry Zhang  <cherryyz@google.com>
+
+	* lang.opt (fgo-optimize): Remove RejectNegative.
+	* go-c.h (go_enable_optimize): Update declaration to take value
+	argument.
+	* go-lang.c (go_langhook_handle_option): Pass value to
+	go_enable_optimize.
+	* gccgo.texi (Invoking gccgo): Update -fgo-optimize-allocs doc.
+
+2018-01-30  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::convert_tree): New private method.
+	(Gcc_backend::constructor_expression): Call it.
+	(Gcc_backend::assignment_statement): Likewise.
+	(Gcc_backend::temporary_variable): Likewise.
+
+2018-01-09  Cherry Zhang  <cherryyz@google.com>
+
+	* go-gcc.cc (local_variable): Add decl_var parameter.
+
+2018-01-09  Cherry Zhang  <cherryyz@google.com>
+
+	* lang.opt (fgo-debug-escape-hash): New option.
+	* go-c.h (struct go_create_gogo_args): Add debug_escape_hash
+	field.
+	* go-lang.c (go_langhook_init): Set debug_escape_hash field.
+	* gccgo.texi (Invoking gccgo): Document -fgo-debug-escape-hash.
+
+2018-01-05  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Correct
+	math_function_type_long to take one argument.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* go-lang.c (go_langhook_type_for_mode): Handle MODE_VECTOR_BOOL.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* go-lang.c (go_langhook_type_for_mode): Check valid_vector_subparts_p.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* gccgo.texi: Bump @copyrights-go year.
+
+2017-12-12  Tony Reix  <tony.reix@atos.net>
+	    Ian Lance Taylor  <iant@golang.org>
+
+	* go-lang.c (TARGET_AIX): Define if not defined.
+	(go_langhook_init): Set nil_check_size_threshold to -1 on AIX.
+
+2017-12-01  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define
+	__builtin_unreachable.
+	(Gcc_backend::function): Add does_not_return parameter.
+
+2017-12-01  Than McIntosh  <thanm@google.com>
+
+	* go-c.h (go_create_gogo_args): Add nil_check_size_threshold
+	field.
+	* go-lang.c (go_langhook_init): Set nil_check_size_threshold.
+
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* go-gcc.cc (Gcc_backend::switch_statement): Build SWITCH_EXPR using
+	build2_loc instead of build3_loc.
+
+2017-11-14  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (var_expression): Remove Varexpr_context parameter.
+
+2017-10-11  Tony Reix  <tony.reix@atos.net>
+
+	* go-system.h (__STDC_FORMAT_MACROS): Define before including any
+	system header files, as is done in ../system.h.
+
+2017-10-05  Ian Lance Taylor  <iant@golang.org>
+
+	* Make-lang.in (GO_OBJS): Add go/names.o.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* go-lang.c (go_langhook_type_for_mode): Use is_complex_float_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* go-lang.c (go_langhook_type_for_mode): Use is_int_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* go-lang.c (go_langhook_type_for_mode): Use is_float_mode.
+
+2017-08-07  Martin Liska  <mliska@suse.cz>
+
+	* go-gcc.cc (Gcc_backend::function): Look up for no_split_stack
+	and not __no_split_stack__.
+
+2017-07-27    Tony Reix  <tony.reix@atos.net>
+
+	* go-backend.c (go_write_export_data): Use EXCLUDE section for
+	AIX.
+
+2017-06-09  Ian Lance Taylor  <iant@golang.org>
+
+	* go-lang.c (go_langhook_post_options): If -fsplit-stack is turned
+	on, disable implicit -forder-blocks-and-partition.
+
+2017-05-12  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (Gcc_backend::call_expression): Add caller parameter.
+
+2017-05-11  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64238
+	* go-gcc.cc (Gcc_backend::implicit_variable_reference): Set
+	DECL_EXTERNAL, clear TREE_STATIC.
+
+2017-05-10  Than McIntosh  <thanm@google.com>
+
+	* go-backend.c: Include "go-c.h".
+	* go-gcc.cc (Gcc_backend::write_export_data): New method.
+
+2017-05-10  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Declare
+	__builtin_prefetch.
+	* Make-lang.in (GO_OBJS): Add go/wb.o.
+
+2017-03-28  Than McIntosh  <thanm@google.com>
+
+	PR go/80226
+	* go-gcc.cc (Gcc_backend::return_statement): Check for
+	void_type_node when checking result size.
+
+2017-02-20  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/79642
+	* lang.opt (-fgo-relative-import-path): Change space to tab.
+
+2017-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79256
+	PR middle-end/79278
+	* go-backend.c (go_field_alignment): Adjust.
+
+2017-01-11  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (conditional_expression): Add Bfunction parameter.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* gccgo.texi: Bump @copyrights-go year.
+
+2016-12-16  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (Gcc_backend::expression_statement): Add Bfunction*
+	parameter.
+	(Gcc_backend::init_statement): Likewise.
+	(Gcc_backend::assignment_statement): Likewise.
+	(Gcc_backend::if_statement): Likewise.
+
+2016-12-06  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (Gcc_backend::var_expression): Add Varexpr_context
+	parameter.
+
+2016-11-22  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (char_needs_encoding): Remove.
+	(needs_encoding, fetch_utf8_char, encode_id): Remove.
+	(Gcc_backend::global_variable): Add asm_name parameter.  Don't
+	compute asm_name here.
+	(Gcc_backend::implicit_variable): Likewise.
+	(Gcc_backend::implicit_variable_reference): Likewise.
+	(Gcc_backend::immutable_struct): Likewise.
+	(Gcc_backend::immutable_struct_reference): Likewise.
+	* Make-lang.in (GO_OBJS): Add go/go-encode-id.o.
+
+2016-11-22  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Add builtin function
+	__builtin_frame_address.
+
 2016-10-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* go-lang.c (go_langhook_type_for_mode): Remove redundant cast
@@ -1310,7 +1539,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2016 Free Software Foundation, Inc.
+Copyright (C) 2010-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

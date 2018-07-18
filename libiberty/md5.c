@@ -1,6 +1,6 @@
 /* md5.c - Functions to compute MD5 message digest of files or memory blocks
    according to the definition of MD5 in RFC 1321 from April 1992.
-   Copyright (C) 1995, 1996, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
 
    NOTE: This source is derived from an old version taken from the GNU C
    Library (glibc).
@@ -231,7 +231,7 @@ md5_process_bytes (const void *buffer, size_t len, struct md5_ctx *ctx)
   /* Process available complete blocks.  */
   if (len > 64)
     {
-#if !_STRING_ARCH_unaligned
+#if !_STRING_ARCH_unaligned || defined UBSAN_BOOTSTRAP
 /* To check alignment gcc has an appropriate operator.  Other
    compilers don't.  */
 # if __GNUC__ >= 2

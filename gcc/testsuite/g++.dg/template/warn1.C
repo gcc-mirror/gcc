@@ -9,8 +9,8 @@
 template <class T>  void Foo(T i) 
 { 
   i++, i++;
-  i, i++; // { dg-warning "left operand" "" }
-  i++, i; // { dg-warning "right operand" "" }
+  i, i++; // { dg-warning "left operand" }
+  i++, i; // { dg-warning "right operand" }
   for (;; --i, ++i)
     ;
 } 

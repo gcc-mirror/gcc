@@ -47,3 +47,6 @@
            y(1) = 'hello world'
         end subroutine
        end
+
+ ! Remove -Wstringop-overflow warnings.
+ ! { dg-prune-output "overflows the destination" }

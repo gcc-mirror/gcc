@@ -17,5 +17,5 @@ bar (void)
   return ((__UINTPTR_TYPE__) &t[0]) & 15;
 }
 
-/* { dg-final { scan-assembler-not ".align\[ \t]*16\[^:]*\[\n\r]s:" { target { *-*-linux* } } } } */
-/* { dg-final { scan-assembler ".align\[ \t]*16\[^:]*\[\n\r]t:" { target { *-*-linux* } } } } */
+/* { dg-final { scan-assembler-not ".align\[ \t]*16\[^:]*\[\n\r]s:" { target *-*-linux* } } } */
+/* { dg-final { scan-assembler ".align\[ \t]*16\[^:]*\[\n\r]t:" { target *-*-linux* } } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-tree-vectorize -fdump-tree-cunroll-details" } */
+/* { dg-options "-O3 -fno-tree-vectorize -fdisable-tree-sccp -fdump-tree-cunroll-details" } */
 
 int bits;
 unsigned int size;
@@ -17,4 +17,4 @@ test ()
    bits += 8;
 }
 
-/* { dg-final { scan-tree-dump "Loop 2 iterates at most 4 times" "cunroll"} } */
+/* { dg-final { scan-tree-dump "Loop 2 iterates at most 3 times" "cunroll"} } */

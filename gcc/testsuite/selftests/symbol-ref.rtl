@@ -1,0 +1,13 @@
+(function "example_of_symbol_ref"
+  (insn-chain
+    (block 2
+      (edge-from entry (flags "FALLTHRU"))
+      (cinsn 1
+        (set (reg:SI <0>)
+             (high:SI (symbol_ref:SI ("isl_obj_map_vtable") [flags 0xc0] <var_decl 0x7fa0363ea240 isl_obj_map_vtable>)))
+        "y.c":12702
+        (nil))
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 2
+  ) ;; insn-chain
+) ;; function

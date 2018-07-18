@@ -1,5 +1,5 @@
 /* Generic implementation of the RESHAPE intrinsic
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -24,12 +24,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
-typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
-typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) parray;
+typedef GFC_FULL_ARRAY_DESCRIPTOR(1, index_type) shape_type;
+typedef GFC_FULL_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) parray;
 
 static void
 reshape_internal (parray *ret, parray *source, shape_type *shape,
@@ -68,6 +66,10 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
   index_type shape_data[GFC_MAX_DIMENSIONS];
 
   rdim = GFC_DESCRIPTOR_EXTENT(shape,0);
+  /* rdim is always > 0; this lets the compiler optimize more and
+     avoids a warning.  */
+  GFC_ASSERT (rdim > 0);
+  
   if (rdim != GFC_DESCRIPTOR_RANK(ret))
     runtime_error("rank of return array incorrect in RESHAPE intrinsic");
 
@@ -104,8 +106,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
 	alloc_size = rs;
 
       ret->base_addr = xmallocarray (alloc_size, size);
-
-      ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
+      ret->dtype.rank = rdim;
     }
 
   if (shape_empty)
@@ -160,6 +161,10 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
 
       source_extent = 1;
       sdim = GFC_DESCRIPTOR_RANK (source);
+      /* sdim is always > 0; this lets the compiler optimize more and
+         avoids a warning.  */
+      GFC_ASSERT(sdim>0);
+
       for (n = 0; n < sdim; n++)
 	{
 	  index_type se;
@@ -221,6 +226,10 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
     }
 
   sdim = GFC_DESCRIPTOR_RANK (source);
+  /* sdim is always > 0; this lets the compiler optimize more and
+     avoids a warning.  */
+  GFC_ASSERT(sdim>0);
+
   ssize = 1;
   sempty = 0;
   for (n = 0; n < sdim; n++)

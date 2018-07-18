@@ -5,7 +5,7 @@
 // Package types declares the data types and implements
 // the algorithms for type-checking of Go packages. Use
 // Config.Check to invoke the type checker for a package.
-// Alternatively, create a new type checked with NewChecker
+// Alternatively, create a new type checker with NewChecker
 // and invoke it incrementally by calling Checker.Files.
 //
 // Type-checking consists of several interdependent phases:
@@ -24,7 +24,7 @@
 //
 // For a tutorial, see https://golang.org/s/types-tutorial.
 //
-package types // import "go/types"
+package types
 
 import (
 	"bytes"
@@ -57,10 +57,9 @@ func (err Error) Error() string {
 // vendored packages. See https://golang.org/s/go15vendor.
 // If possible, external implementations should implement ImporterFrom.
 type Importer interface {
-	// Import returns the imported package for the given import
-	// path, or an error if the package couldn't be imported.
-	// Two calls to Import with the same path return the same
-	// package.
+	// Import returns the imported package for the given import path.
+	// The semantics is like for ImporterFrom.ImportFrom except that
+	// dir and mode are ignored (since they are not present).
 	Import(path string) (*Package, error)
 }
 
@@ -79,12 +78,15 @@ type ImporterFrom interface {
 	Importer
 
 	// ImportFrom returns the imported package for the given import
-	// path when imported by the package in srcDir, or an error
-	// if the package couldn't be imported. The mode value must
-	// be 0; it is reserved for future use.
-	// Two calls to ImportFrom with the same path and srcDir return
-	// the same package.
-	ImportFrom(path, srcDir string, mode ImportMode) (*Package, error)
+	// path when imported by a package file located in dir.
+	// If the import failed, besides returning an error, ImportFrom
+	// is encouraged to cache and return a package anyway, if one
+	// was created. This will reduce package inconsistencies and
+	// follow-on type checker errors due to the missing package.
+	// The mode value must be 0; it is reserved for future use.
+	// Two calls to ImportFrom with the same path and dir must
+	// return the same package.
+	ImportFrom(path, dir string, mode ImportMode) (*Package, error)
 }
 
 // A Config specifies the configuration for type checking.
@@ -99,7 +101,7 @@ type Config struct {
 	// identifiers referring to package C (which won't find an object).
 	// This feature is intended for the standard library cmd/api tool.
 	//
-	// Caution: Effects may be unpredictable due to follow-up errors.
+	// Caution: Effects may be unpredictable due to follow-on errors.
 	//          Do not use casually!
 	FakeImportC bool
 
@@ -121,7 +123,7 @@ type Config struct {
 	Importer Importer
 
 	// If Sizes != nil, it provides the sizing functions for package unsafe.
-	// Otherwise &StdSizes{WordSize: 8, MaxAlign: 8} is used instead.
+	// Otherwise SizesFor("gc", "amd64") is used instead.
 	Sizes Sizes
 
 	// If DisableUnusedImportCheck is set, packages are not checked
@@ -135,7 +137,8 @@ type Config struct {
 // be incomplete.
 type Info struct {
 	// Types maps expressions to their types, and for constant
-	// expressions, their values. Invalid expressions are omitted.
+	// expressions, also their values. Invalid expressions are
+	// omitted.
 	//
 	// For (possibly parenthesized) identifiers denoting built-in
 	// functions, the recorded signatures are call-site specific:
@@ -143,9 +146,13 @@ type Info struct {
 	// an argument-specific signature. Otherwise, the recorded type
 	// is invalid.
 	//
-	// Identifiers on the lhs of declarations (i.e., the identifiers
-	// which are being declared) are collected in the Defs map.
-	// Identifiers denoting packages are collected in the Uses maps.
+	// The Types map does not record the type of every identifier,
+	// only those that appear where an arbitrary expression is
+	// permitted. For instance, the identifier f in a selector
+	// expression x.f is found only in the Selections map, the
+	// identifier z in a variable declaration 'var z int' is found
+	// only in the Defs map, and identifiers denoting packages in
+	// qualified identifiers are collected in the Uses map.
 	Types map[ast.Expr]TypeAndValue
 
 	// Defs maps identifiers to the objects they define (including
@@ -169,11 +176,11 @@ type Info struct {
 	// Implicits maps nodes to their implicitly declared objects, if any.
 	// The following node and object types may appear:
 	//
-	//	node               declared object
+	//     node               declared object
 	//
-	//	*ast.ImportSpec    *PkgName for dot-imports and imports without renames
-	//	*ast.CaseClause    type-specific *Var for each type switch case clause (incl. default)
-	//      *ast.Field         anonymous parameter *Var
+	//     *ast.ImportSpec    *PkgName for imports without renames
+	//     *ast.CaseClause    type-specific *Var for each type switch case clause (incl. default)
+	//     *ast.Field         anonymous parameter *Var
 	//
 	Implicits map[ast.Node]Object
 
@@ -193,16 +200,16 @@ type Info struct {
 	//
 	// The following node types may appear in Scopes:
 	//
-	//	*ast.File
-	//	*ast.FuncType
-	//	*ast.BlockStmt
-	//	*ast.IfStmt
-	//	*ast.SwitchStmt
-	//	*ast.TypeSwitchStmt
-	//	*ast.CaseClause
-	//	*ast.CommClause
-	//	*ast.ForStmt
-	//	*ast.RangeStmt
+	//     *ast.File
+	//     *ast.FuncType
+	//     *ast.BlockStmt
+	//     *ast.IfStmt
+	//     *ast.SwitchStmt
+	//     *ast.TypeSwitchStmt
+	//     *ast.CaseClause
+	//     *ast.CommClause
+	//     *ast.ForStmt
+	//     *ast.RangeStmt
 	//
 	Scopes map[ast.Node]*Scope
 
@@ -238,7 +245,7 @@ func (info *Info) TypeOf(e ast.Expr) Type {
 // Precondition: the Uses and Defs maps are populated.
 //
 func (info *Info) ObjectOf(id *ast.Ident) Object {
-	if obj, _ := info.Defs[id]; obj != nil {
+	if obj := info.Defs[id]; obj != nil {
 		return obj
 	}
 	return info.Uses[id]

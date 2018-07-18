@@ -58,17 +58,23 @@ end module
   call baby%write_formatted(10, "abcd", v, istat, msg) ! Call the dtio proc directly
   rewind (10)
   read (10, *) msg
-  if (trim (msg) .ne. "99") call abort
+  if (trim (msg) .ne. "99") STOP 1
   rewind (10)
   baby%i = 42
   write (10,"(DT)") baby                               ! Call the dtio proc via the library
   rewind (10)
   read (10, *) msg
-  if (trim (msg) .ne. "42") call abort
+  if (trim (msg) .ne. "42") STOP 2
   rewind (10)
   write (10,"(DT)") child (77)                         ! The original testcase
   rewind (10)
   read (10, *) msg
-  if (trim (msg) .ne. "77") call abort
+  if (trim (msg) .ne. "77") STOP 3
+  rewind (10)
+  write (10,40) child (77)                         ! Modified using format label
+40 format(DT)
+  rewind (10)
+  read (10, *) msg
+  if (trim (msg) .ne. "77") STOP 4
   close(10)
 end

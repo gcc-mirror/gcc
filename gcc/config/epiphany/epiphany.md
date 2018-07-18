@@ -1,5 +1,5 @@
 ;; Machine description of the Adaptiva epiphany cpu for GNU C compiler
-;; Copyright (C) 1994-2016 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2018 Free Software Foundation, Inc.
 ;; Contributed by Embecosm on behalf of Adapteva, Inc.
 
 ;; This file is part of GCC.
@@ -1438,7 +1438,7 @@
   [(set_attr "type" "flow")])
 
 ; Floating point instructions require manipulating the control register.
-; Manipulating the control register needs aritmetic.
+; Manipulating the control register needs arithmetic.
 ; Arithmetic clobbers flags.
 ; The flags are in the status register, which also contains the alternate
 ; flag and the interrupt enable/disable bits.

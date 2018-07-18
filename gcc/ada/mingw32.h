@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 2002-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2002-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -59,16 +59,6 @@
 #endif
 #include <windows.h>
 
-#ifndef _O_U8TEXT
-#define _O_U8TEXT _O_TEXT
-#endif
-#ifndef _O_U16TEXT
-#define _O_U16TEXT _O_TEXT
-#endif
-#ifndef _O_WTEXT
-#define _O_WTEXT _O_TEXT
-#endif
-
 /* After including this file it is possible to use the character t as prefix
    to routines. If GNAT_UNICODE_SUPPORT is defined then the unicode enabled
    versions will be used.  */
@@ -78,14 +68,15 @@
 
 #ifdef GNAT_UNICODE_SUPPORT
 
-extern UINT CurrentCodePage;
-extern UINT CurrentCCSEncoding;
+extern UINT __gnat_current_codepage;
+extern UINT __gnat_current_ccs_encoding;
 
-/*  Macros to convert to/from the code page specified in CurrentCodePage.  */
+/*  Macros to convert to/from the code page specified in
+    __gnat_current_codepage.  */
 #define S2WSC(wstr,str,len) \
-   MultiByteToWideChar (CurrentCodePage,0,str,-1,wstr,len)
+   MultiByteToWideChar (__gnat_current_codepage,0,str,-1,wstr,len)
 #define WS2SC(str,wstr,len) \
-   WideCharToMultiByte (CurrentCodePage,0,wstr,-1,str,len,NULL,NULL)
+   WideCharToMultiByte (__gnat_current_codepage,0,wstr,-1,str,len,NULL,NULL)
 
 /*  Macros to convert to/from UTF-8 code page.  */
 #define S2WSU(wstr,str,len) \

@@ -10,16 +10,16 @@ c(1,1) = 4H(A4)
 c(1,2) = 4H(A5)
 
 write (ch, "(2A4)") c
-if (ch .ne. "(A4)(A5)") call abort()
+if (ch .ne. "(A4)(A5)") STOP 1
 write (ch, c) 'Hello'
-if (ch .ne. "Hell") call abort()
+if (ch .ne. "Hell") STOP 2
 write (ch, c (1,2)) 'Hello'
-if (ch .ne. "Hello") call abort()
+if (ch .ne. "Hello") STOP 3
 
 write (ch, *) 5Hhello
-if (ch .ne. " hello") call abort()
+if (ch .ne. " hello") STOP 4
 write (ch, "(A5)") 5Hhello
-if (ch .ne. "hello") call abort()
+if (ch .ne. "hello") STOP 5
 
 end
 

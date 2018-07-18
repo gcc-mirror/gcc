@@ -12,4 +12,5 @@ void foo (float **a, float **b, float *c, int n, int m, int l)
 }
 
 /* { dg-final { scan-tree-dump-times "guard hoisted" 3 "unswitch" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "unswitch" } } */
 

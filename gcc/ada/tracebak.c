@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2000-2016, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2000-2018, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -309,7 +309,7 @@ __gnat_backtrace (void **array,
 #define USE_GCC_UNWINDER
 #define PC_ADJUST -2
 
-#if (_WRS_VXWORKS_MAJOR >= 7)
+#if ((_WRS_VXWORKS_MAJOR >= 7) && (_VX_CPU != ARMARCH8A))
 #define USING_ARM_UNWINDING 1
 #endif
 
@@ -373,7 +373,11 @@ extern void __runnit(); /* thread entry point.  */
   (defined (__powerpc__) && defined (__Lynx__) && defined(__ELF__)) || \
   (defined (__linux__) && defined (__powerpc__))
 
+#if defined (_ARCH_PPC64) && !defined (__USING_SJLJ_EXCEPTIONS__)
+#define USE_GCC_UNWINDER
+#else
 #define USE_GENERIC_UNWINDER
+#endif
 
 struct layout
 {
@@ -474,10 +478,11 @@ struct layout
 #define PC_ADJUST -2
 #define STOP_FRAME(CURRENT, TOP_STACK) \
   (IS_BAD_PTR((long)(CURRENT)) \
+   || (void *) (CURRENT) < (TOP_STACK) \
    || IS_BAD_PTR((long)(CURRENT)->return_address) \
    || (CURRENT)->return_address == 0 \
    || (void *) ((CURRENT)->next) < (TOP_STACK)  \
-   || (void *) (CURRENT) < (TOP_STACK))
+   || EXTRA_STOP_CONDITION(CURRENT))
 
 #define BASE_SKIP (1+FRAME_LEVEL)
 
@@ -499,6 +504,56 @@ struct layout
         || ((*((ptr) - 5) & 0xff) == 0x9a) \
         || ((*((ptr) - 1) & 0xff) == 0xff) \
         || (((*(ptr) & 0xd0ff) == 0xd0ff))))
+
+#if defined (__vxworks) && defined (__RTP__)
+
+/* For VxWorks following backchains past the "main" frame gets us into the
+   kernel space, where it can't be dereferenced. So lets stop at the main
+   symbol.  */
+extern void main();
+
+static int
+is_return_from(void *symbol_addr, void *ret_addr)
+{
+  int ret = 0;
+  char *ptr = (char *)ret_addr;
+
+  if ((*(ptr - 5) & 0xff) == 0xe8)
+    {
+      /* call addr16  E8 xx xx xx xx  */
+      int32_t offset = *(int32_t *)(ptr - 4);
+      ret = (ptr + offset) == symbol_addr;
+    }
+
+  /* Others not implemented yet...  But it is very likely that call addr16
+     is used here.  */
+  return ret;
+}
+
+#define EXTRA_STOP_CONDITION(CURRENT) \
+  (is_return_from(&main, (CURRENT)->return_address))
+#else /* not (defined (__vxworks) && defined (__RTP__)) */
+#define EXTRA_STOP_CONDITION(CURRENT) (0)
+#endif /* not (defined (__vxworks) && defined (__RTP__)) */
+
+/*----------------------------- qnx ----------------------------------*/
+
+#elif defined (__QNX__)
+
+#define USE_GCC_UNWINDER
+
+#if defined (__aarch64__)
+#define PC_ADJUST -4
+#else
+#error Unhandled QNX architecture.
+#endif
+
+/*------------------- aarch64-linux ----------------------------------*/
+
+#elif (defined (__aarch64__) && defined (__linux__))
+
+#define USE_GCC_UNWINDER
+#define PC_ADJUST -4
 
 /*----------------------------- ia64 ---------------------------------*/
 

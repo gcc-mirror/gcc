@@ -1,5 +1,5 @@
 // Testcase from P0170R1
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 void g() {
   const int n = 0;

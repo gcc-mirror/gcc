@@ -16,4 +16,4 @@ int main()
 {
   D d;
   f(d);  // { dg-error "no matching" }
-}        // { dg-message "'A<T>' is an ambiguous base" "" { target *-*-* } 18 }
+}        // { dg-message "'A<T>' is an ambiguous base" "" { target *-*-* } .-1 }

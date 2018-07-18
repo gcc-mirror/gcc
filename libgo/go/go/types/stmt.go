@@ -11,6 +11,7 @@ import (
 	"go/ast"
 	"go/constant"
 	"go/token"
+	"sort"
 )
 
 func (check *Checker) funcBody(decl *declInfo, name string, sig *Signature, body *ast.BlockStmt) {
@@ -57,24 +58,42 @@ func (check *Checker) funcBody(decl *declInfo, name string, sig *Signature, body
 }
 
 func (check *Checker) usage(scope *Scope) {
-	for _, obj := range scope.elems {
-		if v, _ := obj.(*Var); v != nil && !v.used {
-			check.softErrorf(v.pos, "%s declared but not used", v.name)
+	var unused []*Var
+	for _, elem := range scope.elems {
+		if v, _ := elem.(*Var); v != nil && !v.used {
+			unused = append(unused, v)
 		}
 	}
+	sort.Slice(unused, func(i, j int) bool {
+		return unused[i].pos < unused[j].pos
+	})
+	for _, v := range unused {
+		check.softErrorf(v.pos, "%s declared but not used", v.name)
+	}
+
 	for _, scope := range scope.children {
-		check.usage(scope)
+		// Don't go inside closure scopes a second time;
+		// they are handled explicitly by funcBody.
+		if !scope.isFunc {
+			check.usage(scope)
+		}
 	}
 }
 
 // stmtContext is a bitset describing which
-// control-flow statements are permissible.
+// control-flow statements are permissible,
+// and provides additional context information
+// for better error messages.
 type stmtContext uint
 
 const (
+	// permissible control-flow statements
 	breakOk stmtContext = 1 << iota
 	continueOk
 	fallthroughOk
+
+	// additional context information
+	finalSwitchCase
 )
 
 func (check *Checker) simpleStmt(s ast.Stmt) {
@@ -230,15 +249,13 @@ L:
 		}
 		// look for duplicate values
 		if val := goVal(v.val); val != nil {
-			if list := seen[val]; list != nil {
-				// look for duplicate types for a given value
-				// (quadratic algorithm, but these lists tend to be very short)
-				for _, vt := range list {
-					if Identical(v.typ, vt.typ) {
-						check.errorf(v.pos(), "duplicate case %s in expression switch", &v)
-						check.error(vt.pos, "\tprevious case") // secondary error, \t indented
-						continue L
-					}
+			// look for duplicate types for a given value
+			// (quadratic algorithm, but these lists tend to be very short)
+			for _, vt := range seen[val] {
+				if Identical(v.typ, vt.typ) {
+					check.errorf(v.pos(), "duplicate case %s in expression switch", &v)
+					check.error(vt.pos, "\tprevious case") // secondary error, \t indented
+					continue L
 				}
 			}
 			seen[val] = append(seen[val], valueType{v.pos(), v.typ})
@@ -292,7 +309,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 		}(check.scope)
 	}
 
-	inner := ctxt &^ fallthroughOk
+	inner := ctxt &^ (fallthroughOk | finalSwitchCase)
 	switch s := s.(type) {
 	case *ast.BadStmt, *ast.EmptyStmt:
 		// ignore
@@ -454,7 +471,11 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			}
 		case token.FALLTHROUGH:
 			if ctxt&fallthroughOk == 0 {
-				check.error(s.Pos(), "fallthrough statement out of place")
+				msg := "fallthrough statement out of place"
+				if ctxt&finalSwitchCase != 0 {
+					msg = "cannot fallthrough final case in switch"
+				}
+				check.error(s.Pos(), msg)
 			}
 		default:
 			check.invalidAST(s.Pos(), "branch statement: %s", s.Tok)
@@ -523,6 +544,8 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			inner := inner
 			if i+1 < len(s.Body.List) {
 				inner |= fallthroughOk
+			} else {
+				inner |= finalSwitchCase
 			}
 			check.stmtList(inner, clause.Body)
 			check.closeScope()
@@ -616,9 +639,9 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 					T = x.typ
 				}
 				obj := NewVar(lhs.Pos(), check.pkg, lhs.Name, T)
-				scopePos := clause.End()
-				if len(clause.Body) > 0 {
-					scopePos = clause.Body[0].Pos()
+				scopePos := clause.Pos() + token.Pos(len("default")) // for default clause (len(List) == 0)
+				if n := len(clause.List); n > 0 {
+					scopePos = clause.List[n-1].End()
 				}
 				check.declare(check.scope, nil, obj, scopePos)
 				check.recordImplicit(clause, obj)
@@ -708,6 +731,9 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 		// declaration, but the post statement must not."
 		if s, _ := s.Post.(*ast.AssignStmt); s != nil && s.Tok == token.DEFINE {
 			check.softErrorf(s.Pos(), "cannot declare in post statement")
+			// Don't call useLHS here because we want to use the lhs in
+			// this erroneous statement so that we don't get errors about
+			// these lhs variables being declared but not used.
 			check.use(s.Lhs...) // avoid follow-up errors
 		}
 		check.stmt(inner, s.Body)
@@ -810,12 +836,12 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 
 			// declare variables
 			if len(vars) > 0 {
+				scopePos := s.X.End()
 				for _, obj := range vars {
 					// spec: "The scope of a constant or variable identifier declared inside
 					// a function begins at the end of the ConstSpec or VarSpec (ShortVarDecl
 					// for short variable declarations) and ends at the end of the innermost
 					// containing block."
-					scopePos := s.End()
 					check.declare(check.scope, nil /* recordDef already called */, obj, scopePos)
 				}
 			} else {

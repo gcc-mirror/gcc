@@ -2,7 +2,7 @@
    recognized.  */
 
 /* { dg-do preprocess } */
-/* { dg-warning "missing terminating" "bad charconst" { target *-*-* } 7 } */
-/* { dg-error "not valid" "bad charconst" { target *-*-* } 7 } */
+/* { dg-warning "-:missing terminating" "bad charconst" { target *-*-* } .+2 } */
+/* { dg-error "-:not valid" "bad charconst" { target *-*-* } .+1 } */
 #if 'x
 #endif

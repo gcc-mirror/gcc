@@ -76,16 +76,16 @@ void FNNAME (INSN_NAME) (void)
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
   CHECK(TEST_MSG, uint, 64, 1, PRIx64, expected, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, "");
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected, "");
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected, "");
 
 #ifdef EXTRA_TESTS
   EXTRA_TESTS();

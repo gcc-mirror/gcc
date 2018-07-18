@@ -16,4 +16,4 @@ bool IsValidPath( char const * filename )
       if ( *run ) 
 	++run;
     }
-}
+}	// { dg-warning "control reaches end of non-void function" }

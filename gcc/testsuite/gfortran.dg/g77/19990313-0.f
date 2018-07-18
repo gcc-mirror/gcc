@@ -16,7 +16,7 @@ c { dg-do run }
         data r/4e10/
         foo = 4e10
         bar = r
-        if (foo .ne. bar) call abort
+        if (foo .ne. bar) STOP 1
         end
 * $ g77 x.f && ./a.out
 *  1345294336

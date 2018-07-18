@@ -5,35 +5,39 @@
 package net
 
 import (
+	"internal/poll"
 	"io"
 	"os"
 	"syscall"
-	"time"
 )
 
 // Network file descriptor.
 type netFD struct {
-	// locking/lifetime of sysfd + serialize access to Read and Write methods
-	fdmu fdMutex
+	pfd poll.FD
 
 	// immutable until Close
-	net          string
-	n            string
-	dir          string
-	ctl, data    *os.File
-	laddr, raddr Addr
+	net               string
+	n                 string
+	dir               string
+	listen, ctl, data *os.File
+	laddr, raddr      Addr
+	isStream          bool
 }
 
-var (
-	netdir string // default network
-)
+var netdir = "/net" // default network
 
-func sysInit() {
-	netdir = "/net"
-}
-
-func newFD(net, name string, ctl, data *os.File, laddr, raddr Addr) (*netFD, error) {
-	return &netFD{net: net, n: name, dir: netdir + "/" + net + "/" + name, ctl: ctl, data: data, laddr: laddr, raddr: raddr}, nil
+func newFD(net, name string, listen, ctl, data *os.File, laddr, raddr Addr) (*netFD, error) {
+	ret := &netFD{
+		net:    net,
+		n:      name,
+		dir:    netdir + "/" + net + "/" + name,
+		listen: listen,
+		ctl:    ctl, data: data,
+		laddr: laddr,
+		raddr: raddr,
+	}
+	ret.pfd.Destroy = ret.destroy
+	return ret, nil
 }
 
 func (fd *netFD) init() error {
@@ -64,25 +68,21 @@ func (fd *netFD) destroy() {
 			err = err1
 		}
 	}
+	if fd.listen != nil {
+		if err1 := fd.listen.Close(); err1 != nil && err == nil {
+			err = err1
+		}
+	}
 	fd.ctl = nil
 	fd.data = nil
+	fd.listen = nil
 }
 
 func (fd *netFD) Read(b []byte) (n int, err error) {
 	if !fd.ok() || fd.data == nil {
 		return 0, syscall.EINVAL
 	}
-	if err := fd.readLock(); err != nil {
-		return 0, err
-	}
-	defer fd.readUnlock()
-	if len(b) == 0 {
-		return 0, nil
-	}
-	n, err = fd.data.Read(b)
-	if isHangup(err) {
-		err = io.EOF
-	}
+	n, err = fd.pfd.Read(fd.data.Read, b)
 	if fd.net == "udp" && err == io.EOF {
 		n = 0
 		err = nil
@@ -94,11 +94,7 @@ func (fd *netFD) Write(b []byte) (n int, err error) {
 	if !fd.ok() || fd.data == nil {
 		return 0, syscall.EINVAL
 	}
-	if err := fd.writeLock(); err != nil {
-		return 0, err
-	}
-	defer fd.writeUnlock()
-	return fd.data.Write(b)
+	return fd.pfd.Write(fd.data.Write, b)
 }
 
 func (fd *netFD) closeRead() error {
@@ -116,19 +112,18 @@ func (fd *netFD) closeWrite() error {
 }
 
 func (fd *netFD) Close() error {
-	if !fd.fdmu.increfAndClose() {
-		return errClosing
+	if err := fd.pfd.Close(); err != nil {
+		return err
 	}
 	if !fd.ok() {
 		return syscall.EINVAL
 	}
 	if fd.net == "tcp" {
 		// The following line is required to unblock Reads.
-		// For some reason, WriteString returns an error:
-		// "write /net/tcp/39/listen: inappropriate use of fd"
-		// But without it, Reads on dead conns hang forever.
-		// See Issue 9554.
-		fd.ctl.WriteString("hangup")
+		_, err := fd.ctl.WriteString("close")
+		if err != nil {
+			return err
+		}
 	}
 	err := fd.ctl.Close()
 	if fd.data != nil {
@@ -136,8 +131,14 @@ func (fd *netFD) Close() error {
 			err = err1
 		}
 	}
+	if fd.listen != nil {
+		if err1 := fd.listen.Close(); err1 != nil && err == nil {
+			err = err1
+		}
+	}
 	fd.ctl = nil
 	fd.data = nil
+	fd.listen = nil
 	return err
 }
 
@@ -164,26 +165,10 @@ func (fd *netFD) file(f *os.File, s string) (*os.File, error) {
 	return os.NewFile(uintptr(dfd), s), nil
 }
 
-func (fd *netFD) setDeadline(t time.Time) error {
-	return syscall.EPLAN9
-}
-
-func (fd *netFD) setReadDeadline(t time.Time) error {
-	return syscall.EPLAN9
-}
-
-func (fd *netFD) setWriteDeadline(t time.Time) error {
-	return syscall.EPLAN9
-}
-
 func setReadBuffer(fd *netFD, bytes int) error {
 	return syscall.EPLAN9
 }
 
 func setWriteBuffer(fd *netFD, bytes int) error {
 	return syscall.EPLAN9
-}
-
-func isHangup(err error) bool {
-	return err != nil && stringsHasSuffix(err.Error(), "Hangup")
 }

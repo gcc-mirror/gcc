@@ -15,16 +15,16 @@ package body Renaming6 is
 
   function Get_J return Integer is
   begin
-    return J;
+    return X;
   end;
 
   procedure Set_J (Val : Integer) is
   begin
-    J := Val;
+    X := Val;
   end;
 
 end Renaming6;
 
 -- { dg-final { scan-tree-dump-times "atomic_load" 2 "original" } }
 -- { dg-final { scan-tree-dump-times "atomic_store" 2 "original" } }
--- { dg-final { scan-tree-dump-not "j" "original" } }
+-- { dg-final { scan-tree-dump-not "x" "original" } }

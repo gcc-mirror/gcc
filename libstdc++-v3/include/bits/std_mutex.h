@@ -1,6 +1,6 @@
 // std::mutex implementation -*- C++ -*-
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -139,13 +139,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct adopt_lock_t { explicit adopt_lock_t() = default; };
 
   /// Tag used to prevent a scoped lock from acquiring ownership of a mutex.
-  constexpr defer_lock_t	defer_lock { };
+  _GLIBCXX17_INLINE constexpr defer_lock_t	defer_lock { };
 
   /// Tag used to prevent a scoped lock from blocking if a mutex is locked.
-  constexpr try_to_lock_t	try_to_lock { };
+  _GLIBCXX17_INLINE constexpr try_to_lock_t	try_to_lock { };
 
   /// Tag used to make a scoped lock take ownership of a locked mutex.
-  constexpr adopt_lock_t	adopt_lock { };
+  _GLIBCXX17_INLINE constexpr adopt_lock_t	adopt_lock { };
 
   /** @brief A simple scoped lock type.
    *

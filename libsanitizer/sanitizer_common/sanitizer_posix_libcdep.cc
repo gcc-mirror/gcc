@@ -16,6 +16,7 @@
 
 #include "sanitizer_common.h"
 #include "sanitizer_flags.h"
+#include "sanitizer_platform_limits_netbsd.h"
 #include "sanitizer_platform_limits_posix.h"
 #include "sanitizer_posix.h"
 #include "sanitizer_procmaps.h"
@@ -32,6 +33,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #if SANITIZER_FREEBSD
@@ -40,6 +42,8 @@
 #undef  MAP_NORESERVE
 #define MAP_NORESERVE 0
 #endif
+
+typedef void (*sa_sigaction_t)(int, siginfo_t *, void *);
 
 namespace __sanitizer {
 
@@ -51,8 +55,12 @@ uptr GetThreadSelf() {
   return (uptr)pthread_self();
 }
 
-void FlushUnneededShadowMemory(uptr addr, uptr size) {
-  madvise((void*)addr, size, MADV_DONTNEED);
+void ReleaseMemoryPagesToOS(uptr beg, uptr end) {
+  uptr page_size = GetPageSizeCached();
+  uptr beg_aligned = RoundUpTo(beg, page_size);
+  uptr end_aligned = RoundDownTo(end, page_size);
+  if (beg_aligned < end_aligned)
+    madvise((void*)beg_aligned, end_aligned - beg_aligned, MADV_DONTNEED);
 }
 
 void NoHugePagesInRegion(uptr addr, uptr size) {
@@ -95,6 +103,10 @@ bool StackSizeIsUnlimited() {
   return (stack_size == RLIM_INFINITY);
 }
 
+uptr GetStackSizeLimitInBytes() {
+  return (uptr)getlim(RLIMIT_STACK);
+}
+
 void SetStackSizeLimitInBytes(uptr limit) {
   setlim(RLIMIT_STACK, (rlim_t)limit);
   CHECK(!StackSizeIsUnlimited());
@@ -119,11 +131,22 @@ void SleepForMillis(int millis) {
 }
 
 void Abort() {
+#if !SANITIZER_GO
+  // If we are handling SIGABRT, unhandle it first.
+  // TODO(vitalybuka): Check if handler belongs to sanitizer.
+  if (GetHandleSignalMode(SIGABRT) != kHandleSignalNo) {
+    struct sigaction sigact;
+    internal_memset(&sigact, 0, sizeof(sigact));
+    sigact.sa_sigaction = (sa_sigaction_t)SIG_DFL;
+    internal_sigaction(SIGABRT, &sigact, nullptr);
+  }
+#endif
+
   abort();
 }
 
 int Atexit(void (*function)(void)) {
-#ifndef SANITIZER_GO
+#if !SANITIZER_GO
   return atexit(function);
 #else
   return 0;
@@ -134,7 +157,7 @@ bool SupportsColoredOutput(fd_t fd) {
   return isatty(fd) != 0;
 }
 
-#ifndef SANITIZER_GO
+#if !SANITIZER_GO
 // TODO(glider): different tools may require different altstack size.
 static const uptr kAltStackSize = SIGSTKSZ * 4;  // SIGSTKSZ is not enough.
 
@@ -163,11 +186,10 @@ void UnsetAlternateSignalStack() {
   UnmapOrDie(oldstack.ss_sp, oldstack.ss_size);
 }
 
-typedef void (*sa_sigaction_t)(int, siginfo_t *, void *);
 static void MaybeInstallSigaction(int signum,
                                   SignalHandlerType handler) {
-  if (!IsDeadlySignal(signum))
-    return;
+  if (GetHandleSignalMode(signum) == kHandleSignalNo) return;
+
   struct sigaction sigact;
   internal_memset(&sigact, 0, sizeof(sigact));
   sigact.sa_sigaction = (sa_sigaction_t)handler;
@@ -188,7 +210,55 @@ void InstallDeadlySignalHandlers(SignalHandlerType handler) {
   MaybeInstallSigaction(SIGBUS, handler);
   MaybeInstallSigaction(SIGABRT, handler);
   MaybeInstallSigaction(SIGFPE, handler);
+  MaybeInstallSigaction(SIGILL, handler);
 }
+
+bool SignalContext::IsStackOverflow() const {
+  // Access at a reasonable offset above SP, or slightly below it (to account
+  // for x86_64 or PowerPC redzone, ARM push of multiple registers, etc) is
+  // probably a stack overflow.
+#ifdef __s390__
+  // On s390, the fault address in siginfo points to start of the page, not
+  // to the precise word that was accessed.  Mask off the low bits of sp to
+  // take it into account.
+  bool IsStackAccess = addr >= (sp & ~0xFFF) && addr < sp + 0xFFFF;
+#else
+  bool IsStackAccess = addr + 512 > sp && addr < sp + 0xFFFF;
+#endif
+
+#if __powerpc__
+  // Large stack frames can be allocated with e.g.
+  //   lis r0,-10000
+  //   stdux r1,r1,r0 # store sp to [sp-10000] and update sp by -10000
+  // If the store faults then sp will not have been updated, so test above
+  // will not work, because the fault address will be more than just "slightly"
+  // below sp.
+  if (!IsStackAccess && IsAccessibleMemoryRange(pc, 4)) {
+    u32 inst = *(unsigned *)pc;
+    u32 ra = (inst >> 16) & 0x1F;
+    u32 opcd = inst >> 26;
+    u32 xo = (inst >> 1) & 0x3FF;
+    // Check for store-with-update to sp. The instructions we accept are:
+    //   stbu rs,d(ra)          stbux rs,ra,rb
+    //   sthu rs,d(ra)          sthux rs,ra,rb
+    //   stwu rs,d(ra)          stwux rs,ra,rb
+    //   stdu rs,ds(ra)         stdux rs,ra,rb
+    // where ra is r1 (the stack pointer).
+    if (ra == 1 &&
+        (opcd == 39 || opcd == 45 || opcd == 37 || opcd == 62 ||
+         (opcd == 31 && (xo == 247 || xo == 439 || xo == 183 || xo == 181))))
+      IsStackAccess = true;
+  }
+#endif  // __powerpc__
+
+  // We also check si_code to filter out SEGV caused by something else other
+  // then hitting the guard page or unmapped memory, like, for example,
+  // unaligned memory access.
+  auto si = static_cast<const siginfo_t *>(siginfo);
+  return IsStackAccess &&
+         (si->si_code == si_SEGV_MAPERR || si->si_code == si_SEGV_ACCERR);
+}
+
 #endif  // SANITIZER_GO
 
 bool IsAccessibleMemoryRange(uptr beg, uptr size) {
@@ -222,7 +292,6 @@ void PrepareForSandboxing(__sanitizer_sandbox_arguments *args) {
   // Same for /proc/self/exe in the symbolizer.
 #if !SANITIZER_GO
   Symbolizer::GetOrInit()->PrepareForSandboxing();
-  CovPrepareForSandboxing(args);
 #endif
 }
 
@@ -266,13 +335,18 @@ void *MmapFixedNoReserve(uptr fixed_addr, uptr size, const char *name) {
   return (void *)p;
 }
 
-void *MmapNoAccess(uptr fixed_addr, uptr size, const char *name) {
+void *MmapFixedNoAccess(uptr fixed_addr, uptr size, const char *name) {
   int fd = name ? GetNamedMappingFd(name, size) : -1;
   unsigned flags = MAP_PRIVATE | MAP_FIXED | MAP_NORESERVE;
   if (fd == -1) flags |= MAP_ANON;
 
   return (void *)internal_mmap((void *)fixed_addr, size, PROT_NONE, flags, fd,
                                0);
+}
+
+void *MmapNoAccess(uptr size) {
+  unsigned flags = MAP_PRIVATE | MAP_ANON | MAP_NORESERVE;
+  return (void *)internal_mmap(nullptr, size, PROT_NONE, flags, -1, 0);
 }
 
 // This function is defined elsewhere if we intercepted pthread_attr_getstack.
@@ -316,6 +390,83 @@ void AdjustStackSize(void *attr_) {
   }
 }
 #endif // !SANITIZER_GO
+
+pid_t StartSubprocess(const char *program, const char *const argv[],
+                      fd_t stdin_fd, fd_t stdout_fd, fd_t stderr_fd) {
+  auto file_closer = at_scope_exit([&] {
+    if (stdin_fd != kInvalidFd) {
+      internal_close(stdin_fd);
+    }
+    if (stdout_fd != kInvalidFd) {
+      internal_close(stdout_fd);
+    }
+    if (stderr_fd != kInvalidFd) {
+      internal_close(stderr_fd);
+    }
+  });
+
+  int pid = internal_fork();
+
+  if (pid < 0) {
+    int rverrno;
+    if (internal_iserror(pid, &rverrno)) {
+      Report("WARNING: failed to fork (errno %d)\n", rverrno);
+    }
+    return pid;
+  }
+
+  if (pid == 0) {
+    // Child subprocess
+    if (stdin_fd != kInvalidFd) {
+      internal_close(STDIN_FILENO);
+      internal_dup2(stdin_fd, STDIN_FILENO);
+      internal_close(stdin_fd);
+    }
+    if (stdout_fd != kInvalidFd) {
+      internal_close(STDOUT_FILENO);
+      internal_dup2(stdout_fd, STDOUT_FILENO);
+      internal_close(stdout_fd);
+    }
+    if (stderr_fd != kInvalidFd) {
+      internal_close(STDERR_FILENO);
+      internal_dup2(stderr_fd, STDERR_FILENO);
+      internal_close(stderr_fd);
+    }
+
+    for (int fd = sysconf(_SC_OPEN_MAX); fd > 2; fd--) internal_close(fd);
+
+    execv(program, const_cast<char **>(&argv[0]));
+    internal__exit(1);
+  }
+
+  return pid;
+}
+
+bool IsProcessRunning(pid_t pid) {
+  int process_status;
+  uptr waitpid_status = internal_waitpid(pid, &process_status, WNOHANG);
+  int local_errno;
+  if (internal_iserror(waitpid_status, &local_errno)) {
+    VReport(1, "Waiting on the process failed (errno %d).\n", local_errno);
+    return false;
+  }
+  return waitpid_status == 0;
+}
+
+int WaitForProcess(pid_t pid) {
+  int process_status;
+  uptr waitpid_status = internal_waitpid(pid, &process_status, 0);
+  int local_errno;
+  if (internal_iserror(waitpid_status, &local_errno)) {
+    VReport(1, "Waiting on the process failed (errno %d).\n", local_errno);
+    return -1;
+  }
+  return process_status;
+}
+
+bool IsStateDetached(int state) {
+  return state == PTHREAD_CREATE_DETACHED;
+}
 
 } // namespace __sanitizer
 

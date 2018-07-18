@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Memory</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="utilities.html" title="Chapter 6.  Utilities" /><link rel="prev" href="pairs.html" title="Pairs" /><link rel="next" href="traits.html" title="Traits" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Memory</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="pairs.html">Prev</a> </td><th width="60%" align="center">Chapter 6. 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Memory</title><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="utilities.html" title="Chapter 6.  Utilities" /><link rel="prev" href="pairs.html" title="Pairs" /><link rel="next" href="traits.html" title="Traits" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Memory</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="pairs.html">Prev</a> </td><th width="60%" align="center">Chapter 6. 
   Utilities
   
 </th><td width="20%" align="right"> <a accesskey="n" href="traits.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.util.memory"></a>Memory</h2></div></div></div><p>
@@ -119,8 +119,8 @@
        Over multiple iterations, various STL container
      objects have elements inserted to some maximum amount. A variety
      of allocators are tested.
-     Test source for <a class="link" href="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert/sequence.cc?view=markup" target="_top">sequence</a>
-     and <a class="link" href="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert/associative.cc?view=markup" target="_top">associative</a>
+     Test source for <a class="link" href="http://gcc.gnu.org/viewcvs/gcc/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert/sequence.cc?view=markup" target="_top">sequence</a>
+     and <a class="link" href="http://gcc.gnu.org/viewcvs/gcc/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert/associative.cc?view=markup" target="_top">associative</a>
      containers.
        </p></li><li class="listitem"><p>
        Insertion and erasure in a multi-threaded environment.
@@ -129,14 +129,14 @@
      on a per-thread basis, as well as measuring thread contention
      for memory resources.
      Test source
-    <a class="link" href="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert_erase/associative.cc?view=markup" target="_top">here</a>.
+    <a class="link" href="http://gcc.gnu.org/viewcvs/gcc/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert_erase/associative.cc?view=markup" target="_top">here</a>.
        </p></li><li class="listitem"><p>
 	 A threaded producer/consumer model.
        </p><p>
        Test source for
-     <a class="link" href="http://gcc.gnu.org/viewcvs/trunk/libstdc++-v3/testsuite/performance/23_containers/producer_consumer/sequence.cc?view=markup" target="_top">sequence</a>
+     <a class="link" href="http://gcc.gnu.org/viewcvs/gcc/trunk/libstdc++-v3/testsuite/performance/23_containers/producer_consumer/sequence.cc?view=markup" target="_top">sequence</a>
      and
-     <a class="link" href="http://gcc.gnu.org/viewcvs/trunk/libstdc++-v3/testsuite/performance/23_containers/producer_consumer/associative.cc?view=markup" target="_top">associative</a>
+     <a class="link" href="http://gcc.gnu.org/viewcvs/gcc/trunk/libstdc++-v3/testsuite/performance/23_containers/producer_consumer/associative.cc?view=markup" target="_top">associative</a>
      containers.
      </p></li></ol></div><p>
      The current default choice for
@@ -320,7 +320,7 @@
       </em>. </span><span class="author"><span class="firstname">Matt</span> <span class="surname">Austern</span>. </span><span class="publisher"><span class="publishername">
 	C/C++ Users Journal
       . </span></span></p></div><div class="biblioentry"><a id="id-1.3.4.4.4.3.9.4"></a><p><span class="title"><em>
-	<a class="link" href="http://www.hoard.org/" target="_top">
+	<a class="link" href="https://www.hoard.org" target="_top">
       The Hoard Memory Allocator
 	</a>
       </em>. </span><span class="author"><span class="firstname">Emery</span> <span class="surname">Berger</span>. </span></p></div><div class="biblioentry"><a id="id-1.3.4.4.4.3.9.5"></a><p><span class="title"><em>
@@ -671,7 +671,7 @@ be private.
       </em>. </span><span class="subtitle">
       N2461
     . </span></p></div><div class="biblioentry"><a id="id-1.3.4.4.4.5.8.5"></a><p><span class="title"><em>
-	<a class="link" href="http://boost.org/libs/smart_ptr/shared_ptr.htm" target="_top">
+	<a class="link" href="http://www.boost.org/libs/smart_ptr/shared_ptr.htm" target="_top">
       Boost C++ Libraries documentation, shared_ptr
 	</a>
       </em>. </span><span class="subtitle">

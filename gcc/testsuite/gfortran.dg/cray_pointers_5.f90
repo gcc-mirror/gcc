@@ -11,5 +11,5 @@ end module cray_pointers_5
 
   forall (i = 1:100) arr(i) = i
   ipt = loc (arr)
-  if (any (var .ne. (/1, 2, 3, 4, 5, 6, 7, 8, 9, 10/))) call abort
+  if (any (var .ne. (/1, 2, 3, 4, 5, 6, 7, 8, 9, 10/))) STOP 1
 end

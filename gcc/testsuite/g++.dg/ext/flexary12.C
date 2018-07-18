@@ -44,8 +44,9 @@ struct D {
   D ();
 };
 
-D::D ():
-  a ("c")   // { dg-error "incompatible types in assignment of .const char \\\[2\\\]. to .int \\\[\\\]." }
+D::D ():    // { dg-error "initializer for flexible array member" }
+  a ("c")   // the initializer also has an invalid type but emitting
+	    // just the error above is sufficient
 { }
 
 

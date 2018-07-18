@@ -7,11 +7,11 @@ program test_slice
   real (kind = 8) :: min, max
 
   x = 1.0
-  if (minval(x(1, 1:2, 1:1)) .ne. 1.0) call abort ()
-  if (maxval(x(1, 1:2, 1:1)) .ne. 1.0) call abort ()
-  if (any (shape(x(1, 1:2, 1:1)) .ne. (/2, 1/))) call abort ()
+  if (minval(x(1, 1:2, 1:1)) .ne. 1.0) STOP 1
+  if (maxval(x(1, 1:2, 1:1)) .ne. 1.0) STOP 2
+  if (any (shape(x(1, 1:2, 1:1)) .ne. (/2, 1/))) STOP 3
 
-  if (any (shape(x(1, 1:2, 1)) .ne. (/2/))) call abort ()
-  if (any (shape(x(1:1, 1:2, 1:1)) .ne. (/1, 2, 1/))) call abort ()
+  if (any (shape(x(1, 1:2, 1)) .ne. (/2/))) STOP 4
+  if (any (shape(x(1:1, 1:2, 1:1)) .ne. (/1, 2, 1/))) STOP 5
 
 end program test_slice

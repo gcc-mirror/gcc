@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1999-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1999-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -58,19 +58,18 @@ typedef char TCode;
 #define Min_Expr         13
 #define Max_Expr         14
 #define Abs_Expr         15
-#define Truth_Andif_Expr 16
-#define Truth_Orif_Expr  17
-#define Truth_And_Expr   18
-#define Truth_Or_Expr    19
-#define Truth_Xor_Expr   20
-#define Truth_Not_Expr   21
-#define Lt_Expr          22
-#define Le_Expr          23
-#define Gt_Expr          24
-#define Ge_Expr          25
-#define Eq_Expr          26
-#define Ne_Expr          27
-#define Bit_And_Expr     28
+#define Truth_And_Expr   16
+#define Truth_Or_Expr    17
+#define Truth_Xor_Expr   18
+#define Truth_Not_Expr   19
+#define Lt_Expr          20
+#define Le_Expr          21
+#define Gt_Expr          22
+#define Ge_Expr          23
+#define Eq_Expr          24
+#define Ne_Expr          25
+#define Bit_And_Expr     26
+#define Dynamic_Val      27
 
 /* Creates a node using the tree code defined by Expr and from 1-3
    operands as required (unused operands set as shown to No_Uint) Note

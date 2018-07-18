@@ -47,7 +47,7 @@ PROGRAM Main
     INTEGER :: i, index(5) = (/ (i, i = 1,5) /)
     
     array%f = array%tbp(index)
-    if (any (array%f .ne. array(1)%f)) call abort
+    if (any (array%f .ne. array(1)%f)) STOP 1
 
     array%f = index
     call Jack(array)
@@ -56,7 +56,7 @@ PROGRAM Main
         CLASS(t) :: dummy(:)
         dummy%f = dummy%tbp(index)
         !print *, dummy%f
-        if (any (dummy%f .ne. 15.0)) call abort
+        if (any (dummy%f .ne. 15.0)) STOP 2
     END SUBROUTINE
 END PROGRAM Main
 

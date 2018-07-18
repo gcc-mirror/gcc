@@ -1,3 +1,5 @@
+/* { dg-require-effective-target trampolines } */
+
 main ()
 {
   int i = 0;
@@ -7,9 +9,9 @@ main ()
 	i++, x--;
       return x;
     }
-#ifndef NO_TRAMPOLINES
+
   if (a (2) != 0)
     abort ();
-#endif
+
   exit (0);
 }

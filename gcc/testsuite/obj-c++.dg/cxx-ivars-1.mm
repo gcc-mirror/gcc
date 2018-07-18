@@ -20,7 +20,7 @@ struct cxx_struct {
 @interface Manip : TestsuiteObject {
   int c;
   cxx_struct s;   // { dg-warning "user-defined destructor" }
-                  // { dg-warning "constructors and destructors will not be invoked" "" { target *-*-* } 22 }
+                  // { dg-warning "constructors and destructors will not be invoked" "" { target *-*-* } .-1 }
 }
 - (void) manipulate_ivars;
 @end

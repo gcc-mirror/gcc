@@ -4,7 +4,7 @@
 /* { dg-do preprocess } */
 
 #define foo foo
-foo				/* { dg-error "detected recursion" } */
+foo				/* { dg-error "-:detected recursion" } */
 
 #define bar a bar b
-bar				/* { dg-error "detected recursion" } */
+bar				/* { dg-error "-:detected recursion" } */

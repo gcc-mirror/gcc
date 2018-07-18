@@ -1,7 +1,7 @@
 /* scalbnq.c -- __float128 version of s_scalbn.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
-   
+
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.

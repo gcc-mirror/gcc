@@ -15,7 +15,13 @@ class A<int, int>
 public:
   A(int) { ++count; if (b) throw 1; }
   A(const A&) { ++count; if (b) throw 1; }
-  ~A() throw(int) { --count; if (b) throw 1; }
+  ~A()
+#if __cplusplus <= 201402L
+  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#else
+  noexcept(false)
+#endif
+  { --count; if (b) throw 1; }
 };
 
 typedef A<int, int> B;
@@ -26,7 +32,13 @@ class A<void *, void *>
 public:
   A() { if (b) throw 1; }
   A(const B&) { if (b) throw 1; }
-  ~A() throw(int) { if (b) throw 1; }
+  ~A()
+#if __cplusplus <= 201402L
+  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#else
+  noexcept(false)
+#endif
+  { if (b) throw 1; }
 };
 
 typedef A<void *, void *> C;

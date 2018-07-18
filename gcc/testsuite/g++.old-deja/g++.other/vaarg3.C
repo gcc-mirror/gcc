@@ -23,11 +23,11 @@ void fn1(va_list args)
   const Z &z2 = va_arg (args, Z);       // { dg-error "incomplete" } 
 
   va_arg (args, char);    // { dg-warning "promote" } 
-  // { dg-message "should pass" "pass" { target *-*-* } 25 }
-  // { dg-message "abort" "abort" { target *-*-* } 25 }
+  // { dg-message "should pass" "pass" { target *-*-* } .-1 }
+  // { dg-message "abort" "abort" { target *-*-* } .-2 }
   va_arg (args, int []);  // { dg-error "array with unspecified bounds" } promote
   va_arg (args, int ());  // { dg-warning "promoted" } promote
-  // { dg-message "abort" "abort" { target *-*-* } 29 }
+  // { dg-message "abort" "abort" { target *-*-* } .-1 }
   va_arg (args, bool);    // { dg-warning "promote" "promote" } 
-  // { dg-message "abort" "abort" { target *-*-* } 31 }
+  // { dg-message "abort" "abort" { target *-*-* } .-1 }
 }

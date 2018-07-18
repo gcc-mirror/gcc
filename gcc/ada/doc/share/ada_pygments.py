@@ -1,4 +1,4 @@
-"""Alternate Ada and Project Files parsers for Sphinx/Rest"""
+"""Alternate Ada and Project Files parsers for Sphinx/Rest."""
 
 import re
 from pygments.lexer import RegexLexer, bygroups
@@ -7,12 +7,12 @@ from pygments.token import Text, Comment, Operator, Keyword, Name, String, \
 
 
 def get_lexer_tokens(tag_highlighting=False, project_support=False):
-    """Return the tokens needed for RegexLexer
+    """Return the tokens needed for RegexLexer.
 
     :param tag_highlighting: if True we support tag highlighting. See
         AdaLexerWithTags documentation
     :type tag_highlighting: bool
-    :param project_support: if True support additional keywors associated
+    :param project_support: if True support additional keywords associated
         with project files.
     :type project_support:  bool
 
@@ -21,7 +21,8 @@ def get_lexer_tokens(tag_highlighting=False, project_support=False):
     """
     if project_support:
         project_pattern = r'project\s+|'
-        project_pattern2 = r'project|'
+        project_pattern2 = \
+            r'aggregate|extends|external|external_as_list|library|project|'
     else:
         project_pattern = r''
         project_pattern2 = r''
@@ -46,7 +47,7 @@ def get_lexer_tokens(tag_highlighting=False, project_support=False):
             # Match use and with statements
             # The first part of the pattern is be sure we don't match
             # for/use constructs.
-            (r'(\n\s*|;\s*)(with|use)(\s+[\w\.]+)',
+            (r'(\n\s*|;\s*)(with|use)(\s+[\w\.]+\s*;)',
              bygroups(Punctuation, Keyword.Reserved, Name.Namespace)),
             # Match procedure, package and function declarations
             (r'end\s+(if|loop|record)', Keyword),
@@ -62,7 +63,7 @@ def get_lexer_tokens(tag_highlighting=False, project_support=False):
              r'Version|Value_Size|Value|Valid_Scalars|VADS_Size|Valid|Val|'
              r'Update|Unrestricted_Access|Universal_Literal_String|'
              r'Unconstrained_Array|Unchecked_Access|Unbiased_Rounding|'
-             r'Truncation|Type_Class|To_Address|Tick|Terminated|'
+             r'UET_Address|Truncation|Type_Class|To_Address|Tick|Terminated|'
              r'Target_Name|Tag|System_Allocator_Alignment|Succ|Stub_Type|'
              r'Stream_Size|Storage_Unit|Storage_Size|Storage_Pool|Small|Size|'
              r'Simple_Storage_Pool|Signed_Zeros|Scaling|Scale|'
@@ -112,7 +113,8 @@ def get_lexer_tokens(tag_highlighting=False, project_support=False):
             # Builtin values
             (r'False|True', Keyword.Constant),
             # Identifiers
-            (r'[\w\.]+', Name)], }
+            (r'[\w\.]+', Name),
+            (r'.', Text)]}
 
     # Insert tag highlighting before identifiers
     if tag_highlighting:
@@ -122,7 +124,7 @@ def get_lexer_tokens(tag_highlighting=False, project_support=False):
 
 
 class AdaLexer(RegexLexer):
-    """Alternate Pygments lexer for Ada source code and project files
+    """Alternate Pygments lexer for Ada source code and project files.
 
     The default pygments lexer always fails causing disabling of syntax
     highlighting in Sphinx. This lexer is simpler but safer.
@@ -149,7 +151,7 @@ class AdaLexer(RegexLexer):
 
 
 class TaggedAdaLexer(AdaLexer):
-    """Alternate Pygments lexer for Ada source code with tags
+    """Alternate Pygments lexer for Ada source code with tags.
 
     A tag is a string of the form::
 
@@ -165,7 +167,7 @@ class TaggedAdaLexer(AdaLexer):
 
 
 class GNATProjectLexer(RegexLexer):
-    """Pygment lexer for project files
+    """Pygment lexer for project files.
 
     This is the same as the AdaLexer but with support of ``project``
     keyword.

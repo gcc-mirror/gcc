@@ -41,7 +41,7 @@ libgomp_dir = $(build_dir)/../libgomp
 source_dir = $(top_srcdir)/runtime
 
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 # Target list.

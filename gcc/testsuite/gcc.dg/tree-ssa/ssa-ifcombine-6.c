@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-ifcombine" } */
+/* { dg-options "-O -fdump-tree-ifcombine-details-blocks" } */
 
 void bar (void);
 
@@ -34,3 +34,4 @@ foo2 (unsigned int a)
 
 /* { dg-final { scan-tree-dump "optimizing bits or bits test" "ifcombine" } } */
 /* { dg-final { scan-tree-dump "optimizing double bit test" "ifcombine" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "ifcombine" } } */

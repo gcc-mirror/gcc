@@ -4,9 +4,33 @@
 
 package time
 
+import "runtime"
+
 func init() {
 	// force US/Pacific for time zone tests
 	ForceUSPacificForTesting()
+}
+
+func initTestingZone() {
+	z, err := loadLocation("America/Los_Angeles", zoneSources[len(zoneSources)-1:])
+	if runtime.Compiler == "gccgo" && err != nil {
+		z, err = loadLocation("America/Los_Angeles", zoneSources)
+	}
+	if err != nil {
+		panic("cannot load America/Los_Angeles for testing: " + err.Error())
+	}
+	z.name = "Local"
+	localLoc = *z
+}
+
+var OrigZoneSources = zoneSources
+
+func forceZipFileForTesting(zipOnly bool) {
+	zoneSources = make([]string, len(OrigZoneSources))
+	copy(zoneSources, OrigZoneSources)
+	if zipOnly {
+		zoneSources = zoneSources[len(zoneSources)-1:]
+	}
 }
 
 var Interrupt = interrupt

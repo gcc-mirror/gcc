@@ -1,5 +1,5 @@
 /* Pass computing data for optimizing stdarg functions.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "tree-cfg.h"
 #include "tree-stdarg.h"
-#include "tree-chkp.h"
 
 /* A simple pass that attempts to optimize stdarg functions on architectures
    that need to save register arguments to stack on entry to stdarg functions.
@@ -1038,11 +1037,6 @@ expand_ifn_va_arg_1 (function *fun)
 	    unsigned int nargs = gimple_call_num_args (stmt);
 	    gcc_assert (useless_type_conversion_p (TREE_TYPE (lhs), type));
 
-	    /* We replace call with a new expr.  This may require
-	       corresponding bndret call fixup.  */
-	    if (chkp_function_instrumented_p (fun->decl))
-	      chkp_fixup_inlined_call (lhs, expr);
-
 	    if (nargs == 4)
 	      {
 		/* We've transported the size of with WITH_SIZE_EXPR here as
@@ -1058,7 +1052,7 @@ expand_ifn_va_arg_1 (function *fun)
 	    gimplify_assign (lhs, expr, &pre);
 	  }
 	else
-	  gimplify_expr (&expr, &pre, &post, is_gimple_lvalue, fb_lvalue);
+	  gimplify_and_add (expr, &pre);
 
 	input_location = saved_location;
 	pop_gimplify_context (NULL);

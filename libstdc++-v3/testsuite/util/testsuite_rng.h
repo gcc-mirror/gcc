@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -79,8 +79,8 @@ namespace __gnu_pbds
       {
 	const double min = m_base_generator.min();
 	const double max = m_base_generator.max();
-	const double range = static_cast<const double>(max - min);
-	const double res = static_cast<const double>(m_base_generator() - min);
+	const double range = static_cast<double>(max - min);
+	const double res = static_cast<double>(m_base_generator() - min);
 	const double ret = res / range;
 	_GLIBCXX_DEBUG_ASSERT(ret >= 0 && ret <= 1);
 	return ret;

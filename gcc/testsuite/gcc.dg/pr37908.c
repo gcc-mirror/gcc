@@ -16,7 +16,7 @@ int main (void)
   xLoc = xIn = ~ (1 << i);
   xExpect = ~ (xIn & 0x7F);
 
-  xOut = __sync_nand_and_fetch (&xLoc, 0x7F); /* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" "" } */
+  xOut = __sync_nand_and_fetch (&xLoc, 0x7F); /* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" } */
 
   if (xOut != xExpect)
     abort ();

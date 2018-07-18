@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2016 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -49,15 +49,6 @@ extern char arm_arch_name[];
 
 #include "config/arm/arm-opts.h"
 
-enum target_cpus
-{
-#define ARM_CORE(NAME, INTERNAL_IDENT, IDENT, ARCH, FLAGS, COSTS) \
-  TARGET_CPU_##INTERNAL_IDENT,
-#include "arm-cores.def"
-#undef ARM_CORE
-  TARGET_CPU_generic
-};
-
 /* The processor for which instructions should be scheduled.  */
 extern enum processor_type arm_tune;
 
@@ -82,13 +73,12 @@ extern int arm_ccfsm_state;
 extern GTY(()) rtx arm_target_insn;
 /* Callback to output language specific object attributes.  */
 extern void (*arm_lang_output_object_attributes_hook)(void);
+
+/* This type is the user-visible __fp16.  We need it in a few places in
+   the backend.  Defined in arm-builtins.c.  */
+extern tree arm_fp16_type_node;
+
 
-/* Just in case configure has failed to define anything.  */
-#ifndef TARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT TARGET_CPU_generic
-#endif
-
-
 #undef  CPP_SPEC
 #define CPP_SPEC "%(subtarget_cpp_spec)					\
 %{mfloat-abi=soft:%{mfloat-abi=hard:					\
@@ -129,9 +119,14 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_32BIT_P(flags)  (TARGET_ARM_P (flags) || TARGET_THUMB2_P (flags))
 
 /* Run-time Target Specification.  */
-#define TARGET_SOFT_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point instructions. */
-#define TARGET_HARD_FLOAT		(arm_float_abi != ARM_FLOAT_ABI_SOFT)
+#define TARGET_HARD_FLOAT	(arm_float_abi != ARM_FLOAT_ABI_SOFT	\
+				 && bitmap_bit_p (arm_active_target.isa, \
+						  isa_bit_vfpv2))
+#define TARGET_SOFT_FLOAT	(!TARGET_HARD_FLOAT)
+/* User has permitted use of FP instructions, if they exist for this
+   target.  */
+#define TARGET_MAYBE_HARD_FLOAT (arm_float_abi != ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point calling convention.  */
 #define TARGET_HARD_FLOAT_ABI		(arm_float_abi == ARM_FLOAT_ABI_HARD)
 #define TARGET_IWMMXT			(arm_arch_iwmmxt)
@@ -141,7 +136,7 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_IWMMXT_ABI (TARGET_32BIT && arm_abi == ARM_ABI_IWMMXT)
 #define TARGET_ARM                      (! TARGET_THUMB)
 #define TARGET_EITHER			1 /* (TARGET_ARM | TARGET_THUMB) */
-#define TARGET_BACKTRACE	        (leaf_function_p () \
+#define TARGET_BACKTRACE	        (crtl->is_leaf \
 				         ? TARGET_TPCS_LEAF_FRAME \
 				         : TARGET_TPCS_FRAME)
 #define TARGET_AAPCS_BASED \
@@ -160,7 +155,7 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* Thumb-1 only.  */
 #define TARGET_THUMB1_ONLY		(TARGET_THUMB1 && !arm_arch_notm)
 
-#define TARGET_LDRD			(arm_arch5e && ARM_DOUBLEWORD_ALIGN \
+#define TARGET_LDRD			(arm_arch5te && ARM_DOUBLEWORD_ALIGN \
                                          && !TARGET_THUMB1)
 
 #define TARGET_CRC32			(arm_arch_crc)
@@ -171,38 +166,38 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
    to be more careful with TARGET_NEON as noted below.  */
 
 /* FPU is has the full VFPv3/NEON register file of 32 D registers.  */
-#define TARGET_VFPD32 (TARGET_FPU_REGS == VFP_REG_D32)
+#define TARGET_VFPD32 (bitmap_bit_p (arm_active_target.isa, isa_bit_fp_d32))
 
 /* FPU supports VFPv3 instructions.  */
-#define TARGET_VFP3 (TARGET_FPU_REV >= 3)
+#define TARGET_VFP3 (bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv3))
 
 /* FPU supports FPv5 instructions.  */
-#define TARGET_VFP5 (TARGET_FPU_REV >= 5)
+#define TARGET_VFP5 (bitmap_bit_p (arm_active_target.isa, isa_bit_fpv5))
 
 /* FPU only supports VFP single-precision instructions.  */
-#define TARGET_VFP_SINGLE (TARGET_FPU_REGS == VFP_REG_SINGLE)
+#define TARGET_VFP_SINGLE (!TARGET_VFP_DOUBLE)
 
 /* FPU supports VFP double-precision instructions.  */
-#define TARGET_VFP_DOUBLE (TARGET_FPU_REGS != VFP_REG_SINGLE)
+#define TARGET_VFP_DOUBLE (bitmap_bit_p (arm_active_target.isa, isa_bit_fp_dbl))
 
 /* FPU supports half-precision floating-point with NEON element load/store.  */
 #define TARGET_NEON_FP16					\
-  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON)		\
-   && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_FP16))
+  (bitmap_bit_p (arm_active_target.isa, isa_bit_neon)		\
+   && bitmap_bit_p (arm_active_target.isa, isa_bit_fp16conv))
 
-/* FPU supports VFP half-precision floating-point.  */
-#define TARGET_FP16							\
-  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_FP16))
+/* FPU supports VFP half-precision floating-point conversions.  */
+#define TARGET_FP16 (bitmap_bit_p (arm_active_target.isa, isa_bit_fp16conv))
+
+/* FPU supports converting between HFmode and DFmode in a single hardware
+   step.  */
+#define TARGET_FP16_TO_DOUBLE						\
+  (TARGET_HARD_FLOAT && (TARGET_FP16 && TARGET_VFP5))
 
 /* FPU supports fused-multiply-add operations.  */
-#define TARGET_FMA (TARGET_FPU_REV >= 4)
-
-/* FPU is ARMv8 compatible.  */
-#define TARGET_FPU_ARMV8 (TARGET_FPU_REV >= 8)
+#define TARGET_FMA (bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv4))
 
 /* FPU supports Crypto extensions.  */
-#define TARGET_CRYPTO							\
-  (ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_CRYPTO))
+#define TARGET_CRYPTO (bitmap_bit_p (arm_active_target.isa, isa_bit_crypto))
 
 /* FPU supports Neon instructions.  The setting of this macro gets
    revealed via __ARM_NEON__ so we add extra guards upon TARGET_32BIT
@@ -210,27 +205,41 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
    available.  */
 #define TARGET_NEON							\
   (TARGET_32BIT && TARGET_HARD_FLOAT					\
-   && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON))
+   && bitmap_bit_p (arm_active_target.isa, isa_bit_neon))
 
 /* FPU supports ARMv8.1 Adv.SIMD extensions.  */
 #define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
 
-/* FPU supports the floating point FP16 instructions for ARMv8.2 and later.  */
+/* Supports the Dot Product AdvSIMD extensions.  */
+#define TARGET_DOTPROD (TARGET_NEON					\
+			&& bitmap_bit_p (arm_active_target.isa,		\
+					isa_bit_dotprod)		\
+			&& arm_arch8_2)
+
+/* FPU supports the floating point FP16 instructions for ARMv8.2-A
+   and later.  */
 #define TARGET_VFP_FP16INST \
-  (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 && arm_fp16_inst)
+  (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP5 && arm_fp16_inst)
+
+/* Target supports the floating point FP16 instructions from ARMv8.2-A
+   and later.  */
+#define TARGET_FP16FML (TARGET_NEON					\
+			&& bitmap_bit_p (arm_active_target.isa,	\
+					isa_bit_fp16fml)		\
+			&& arm_arch8_2)
 
 /* FPU supports the AdvSIMD FP16 instructions for ARMv8.2 and later.  */
 #define TARGET_NEON_FP16INST (TARGET_VFP_FP16INST && TARGET_NEON_RDMA)
 
 /* Q-bit is present.  */
 #define TARGET_ARM_QBIT \
-  (TARGET_32BIT && arm_arch5e && (arm_arch_notm || arm_arch7))
+  (TARGET_32BIT && arm_arch5te && (arm_arch_notm || arm_arch7))
 /* Saturation operation, e.g. SSAT.  */
 #define TARGET_ARM_SAT \
   (TARGET_32BIT && arm_arch6 && (arm_arch_notm || arm_arch7))
 /* "DSP" multiply instructions, eg. SMULxy.  */
 #define TARGET_DSP_MULTIPLY \
-  (TARGET_32BIT && arm_arch5e && (arm_arch_notm || arm_arch7em))
+  (TARGET_32BIT && arm_arch5te && (arm_arch_notm || arm_arch7em))
 /* Integer SIMD instructions, and extend-accumulate instructions.  */
 #define TARGET_INT_SIMD \
   (TARGET_32BIT && arm_arch6 && (arm_arch_notm || arm_arch7em))
@@ -252,21 +261,24 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_HAVE_MEMORY_BARRIER (TARGET_HAVE_DMB || TARGET_HAVE_DMB_MCR)
 
 /* Nonzero if this chip supports ldrex and strex */
-#define TARGET_HAVE_LDREX        ((arm_arch6 && TARGET_ARM) || arm_arch7)
+#define TARGET_HAVE_LDREX        ((arm_arch6 && TARGET_ARM)	\
+				  || arm_arch7			\
+				  || (arm_arch8 && !arm_arch_notm))
 
 /* Nonzero if this chip supports LPAE.  */
-#define TARGET_HAVE_LPAE						\
-  (arm_arch7 && ARM_FSET_HAS_CPU1 (insn_flags, FL_FOR_ARCH7VE))
+#define TARGET_HAVE_LPAE (arm_arch_lpae)
 
 /* Nonzero if this chip supports ldrex{bh} and strex{bh}.  */
-#define TARGET_HAVE_LDREXBH ((arm_arch6k && TARGET_ARM) || arm_arch7)
+#define TARGET_HAVE_LDREXBH ((arm_arch6k && TARGET_ARM)		\
+			     || arm_arch7			\
+			     || (arm_arch8 && !arm_arch_notm))
 
 /* Nonzero if this chip supports ldrexd and strexd.  */
 #define TARGET_HAVE_LDREXD (((arm_arch6k && TARGET_ARM) \
 			     || arm_arch7) && arm_arch_notm)
 
 /* Nonzero if this chip supports load-acquire and store-release.  */
-#define TARGET_HAVE_LDACQ	(TARGET_ARM_ARCH >= 8 && TARGET_32BIT)
+#define TARGET_HAVE_LDACQ	(TARGET_ARM_ARCH >= 8)
 
 /* Nonzero if this chip supports LDAEXD and STLEXD.  */
 #define TARGET_HAVE_LDACQEXD	(TARGET_ARM_ARCH >= 8	\
@@ -329,49 +341,11 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
   {"mode", "%{!marm:%{!mthumb:-m%(VALUE)}}"}, \
   {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},
 
-/* FPU feature sets.  */
-
-typedef unsigned long arm_fpu_feature_set;
-
-/* Test for an FPU feature.  */
-#define ARM_FPU_FSET_HAS(S,F) (((S) & (F)) == (F))
-
-/* FPU Features.  */
-#define FPU_FL_NONE	(0)
-#define FPU_FL_NEON	(1 << 0)	/* NEON instructions.  */
-#define FPU_FL_FP16	(1 << 1)	/* Half-precision.  */
-#define FPU_FL_CRYPTO	(1 << 2)	/* Crypto extensions.  */
-
-/* Which floating point model to use.  */
-enum arm_fp_model
-{
-  ARM_FP_MODEL_UNKNOWN,
-  /* VFP floating point model.  */
-  ARM_FP_MODEL_VFP
-};
-
-enum vfp_reg_type
-{
-  VFP_NONE = 0,
-  VFP_REG_D16,
-  VFP_REG_D32,
-  VFP_REG_SINGLE
-};
-
 extern const struct arm_fpu_desc
 {
   const char *name;
-  int rev;
-  enum vfp_reg_type regs;
-  arm_fpu_feature_set features;
+  enum isa_feature isa_bits[isa_num_bits];
 } all_fpus[];
-
-/* Accessors.  */
-
-#define TARGET_FPU_NAME     (all_fpus[arm_fpu_index].name)
-#define TARGET_FPU_REV      (all_fpus[arm_fpu_index].rev)
-#define TARGET_FPU_REGS     (all_fpus[arm_fpu_index].regs)
-#define TARGET_FPU_FEATURES (all_fpus[arm_fpu_index].features)
 
 /* Which floating point hardware to schedule for.  */
 extern int arm_fpu_attr;
@@ -382,6 +356,12 @@ extern int arm_fpu_attr;
 
 #ifndef ARM_DEFAULT_ABI
 #define ARM_DEFAULT_ABI ARM_ABI_APCS
+#endif
+
+/* AAPCS based ABIs use short enums by default.  */
+#ifndef ARM_DEFAULT_SHORT_ENUMS
+#define ARM_DEFAULT_SHORT_ENUMS \
+  (TARGET_AAPCS_BASED && arm_abi != ARM_ABI_AAPCS_LINUX)
 #endif
 
 /* Map each of the micro-architecture variants to their corresponding
@@ -395,8 +375,6 @@ enum base_architecture
   BASE_ARCH_3M = 3,
   BASE_ARCH_4 = 4,
   BASE_ARCH_4T = 4,
-  BASE_ARCH_5 = 5,
-  BASE_ARCH_5E = 5,
   BASE_ARCH_5T = 5,
   BASE_ARCH_5TE = 5,
   BASE_ARCH_5TEJ = 5,
@@ -414,14 +392,12 @@ enum base_architecture
   BASE_ARCH_7EM = 7,
   BASE_ARCH_8A = 8,
   BASE_ARCH_8M_BASE = 8,
-  BASE_ARCH_8M_MAIN = 8
+  BASE_ARCH_8M_MAIN = 8,
+  BASE_ARCH_8R = 8
 };
 
 /* The major revision number of the ARM Architecture implemented by the target.  */
 extern enum base_architecture arm_base_arch;
-
-/* Nonzero if this chip supports the ARM Architecture 3M extensions.  */
-extern int arm_arch3m;
 
 /* Nonzero if this chip supports the ARM Architecture 4 extensions.  */
 extern int arm_arch4;
@@ -429,11 +405,11 @@ extern int arm_arch4;
 /* Nonzero if this chip supports the ARM Architecture 4T extensions.  */
 extern int arm_arch4t;
 
-/* Nonzero if this chip supports the ARM Architecture 5 extensions.  */
-extern int arm_arch5;
+/* Nonzero if this chip supports the ARM Architecture 5T extensions.  */
+extern int arm_arch5t;
 
-/* Nonzero if this chip supports the ARM Architecture 5E extensions.  */
-extern int arm_arch5e;
+/* Nonzero if this chip supports the ARM Architecture 5TE extensions.  */
+extern int arm_arch5te;
 
 /* Nonzero if this chip supports the ARM Architecture 6 extensions.  */
 extern int arm_arch6;
@@ -523,6 +499,9 @@ extern bool arm_disable_literal_pool;
 
 /* Nonzero if chip supports the ARMv8 CRC instructions.  */
 extern int arm_arch_crc;
+
+/* Nonzero if chip supports the ARMv8-M Security Extensions.  */
+extern int arm_arch_cmse;
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  (MASK_APCS_FRAME)
@@ -622,15 +601,6 @@ extern int arm_arch_crc;
 #define BIGGEST_FIELD_ALIGNMENT 64
 #endif
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT_FACTOR (TARGET_THUMB || ! arm_tune_xscale ? 1 : 2)
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)				\
-   ((TREE_CODE (EXP) == STRING_CST				\
-     && !optimize_size						\
-     && (ALIGN) < BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR)	\
-    ? BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR : (ALIGN))
-
 /* Align definitions of arrays, unions and structures so that
    initializations and copies can be made more efficient.  This is not
    ABI-changing, so it only affects places where we can see the
@@ -714,7 +684,7 @@ extern int arm_arch_crc;
 /* Standard register usage.  */
 
 /* Register allocation in ARM Procedure Call Standard
-   (S - saved over call).
+   (S - saved over call, F - Frame-related).
 
 	r0	   *	argument word/integer result
 	r1-r3		argument word
@@ -1006,26 +976,6 @@ extern int arm_arch_crc;
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0
 #endif
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On the ARM core regs are UNITS_PER_WORD bits wide.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)  	\
-  ((TARGET_32BIT			\
-    && REGNO > PC_REGNUM		\
-    && REGNO != FRAME_POINTER_REGNUM	\
-    && REGNO != ARG_POINTER_REGNUM)	\
-    && !IS_VFP_REGNUM (REGNO)		\
-   ? 1 : ARM_NUM_REGS (MODE))
-
-/* Return true if REGNO is suitable for holding a quantity of type MODE.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  arm_hard_regno_mode_ok ((REGNO), (MODE))
-
-#define MODES_TIEABLE_P(MODE1, MODE2) arm_modes_tieable_p (MODE1, MODE2)
-
 #define VALID_IWMMXT_REG_MODE(MODE) \
  (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
 
@@ -1202,23 +1152,6 @@ enum reg_class
    or could index an array.  */
 #define REGNO_REG_CLASS(REGNO)  arm_regno_class (REGNO)
 
-/* In VFPv1, VFP registers could only be accessed in the mode they
-   were set, so subregs would be invalid there.  However, we don't
-   support VFPv1 at the moment, and the restriction was lifted in
-   VFPv2.
-   In big-endian mode, modes greater than word size (i.e. DFmode) are stored in
-   VFP registers in little-endian order.  We can't describe that accurately to
-   GCC, so avoid taking subregs of such values.
-   The only exception is going from a 128-bit to a 64-bit type.  In that case
-   the data layout happens to be consistent for big-endian, so we explicitly allow
-   that case.  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  (TARGET_BIG_END						\
-   && !(GET_MODE_SIZE (FROM) == 16 && GET_MODE_SIZE (TO) == 8)	\
-   && (GET_MODE_SIZE (FROM) > UNITS_PER_WORD			\
-       || GET_MODE_SIZE (TO) > UNITS_PER_WORD)			\
-   && reg_classes_intersect_p (VFP_REGS, (CLASS)))
-
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  (TARGET_THUMB1 ? LO_REGS : GENERAL_REGS)
 #define BASE_REG_CLASS   (TARGET_THUMB1 ? LO_REGS : CORE_REGS)
@@ -1247,7 +1180,7 @@ enum reg_class
   (lra_in_progress ? NO_REGS						\
    : ((CLASS) != LO_REGS && (CLASS) != BASE_REGS			\
       ? ((true_regnum (X) == -1 ? LO_REGS				\
-         : (true_regnum (X) + HARD_REGNO_NREGS (0, MODE) > 8) ? LO_REGS	\
+         : (true_regnum (X) + hard_regno_nregs (0, MODE) > 8) ? LO_REGS	\
          : NO_REGS)) 							\
       : NO_REGS))
 
@@ -1255,7 +1188,7 @@ enum reg_class
   (lra_in_progress ? NO_REGS						\
    : (CLASS) != LO_REGS && (CLASS) != BASE_REGS				\
       ? ((true_regnum (X) == -1 ? LO_REGS				\
-         : (true_regnum (X) + HARD_REGNO_NREGS (0, MODE) > 8) ? LO_REGS	\
+         : (true_regnum (X) + hard_regno_nregs (0, MODE) > 8) ? LO_REGS	\
          : NO_REGS)) 							\
       : NO_REGS)
 
@@ -1324,14 +1257,8 @@ enum reg_class
    couldn't convert a direct call into an indirect one.  */
 #define CALLER_INTERWORKING_SLOT_SIZE			\
   (TARGET_CALLER_INTERWORKING				\
-   && crtl->outgoing_args_size != 0		\
+   && maybe_ne (crtl->outgoing_args_size, 0)		\
    ? UNITS_PER_WORD : 0)
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET  0
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.  */
@@ -1383,6 +1310,7 @@ enum reg_class
 #define ARM_FT_VOLATILE		(1 << 4) /* Does not return.  */
 #define ARM_FT_NESTED		(1 << 5) /* Embedded inside another func.  */
 #define ARM_FT_STACKALIGN	(1 << 6) /* Called with misaligned stack.  */
+#define ARM_FT_CMSE_ENTRY	(1 << 7) /* ARMv8-M non-secure entry function.  */
 
 /* Some macros to test these flags.  */
 #define ARM_FUNC_TYPE(t)	(t & ARM_FT_TYPE_MASK)
@@ -1391,6 +1319,7 @@ enum reg_class
 #define IS_NAKED(t)        	(t & ARM_FT_NAKED)
 #define IS_NESTED(t)       	(t & ARM_FT_NESTED)
 #define IS_STACKALIGN(t)       	(t & ARM_FT_STACKALIGN)
+#define IS_CMSE_ENTRY(t)	(t & ARM_FT_CMSE_ENTRY)
 
 
 /* Structure used to hold the function stack frame layout.  Offsets are
@@ -1450,6 +1379,9 @@ typedef struct GTY(()) machine_function
   machine_mode thumb1_cc_mode;
   /* Set to 1 after arm_reorg has started.  */
   int after_arm_reorg;
+  /* The number of bytes used to store the static chain register on the
+     stack, above the stack frame.  */
+  int static_chain_stack_bytes;
 }
 machine_function;
 #endif
@@ -1514,11 +1446,8 @@ typedef struct
 } CUMULATIVE_ARGS;
 #endif
 
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-  (arm_pad_arg_upward (MODE, TYPE) ? upward : downward)
-
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (arm_pad_reg_upward (MODE, TYPE, FIRST) ? upward : downward)
+  (arm_pad_reg_upward (MODE, TYPE, FIRST) ? PAD_UPWARD : PAD_DOWNWARD)
 
 /* For AAPCS, padding should never be below the argument. For other ABIs,
  * mimic the default.  */
@@ -1692,12 +1621,10 @@ enum arm_auto_incmodes
 
 /* These assume that REGNO is a hard or pseudo reg number.
    They give nonzero only if REGNO is a hard reg of the suitable class
-   or a pseudo reg currently allocated to a suitable hard reg.
-   Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
-   allocation.  */
+   or a pseudo reg currently allocated to a suitable hard reg.  */
 #define TEST_REGNO(R, TEST, VALUE) \
-  ((R TEST VALUE) || ((unsigned) reg_renumber[R] TEST VALUE))
+  ((R TEST VALUE)	\
+    || (reg_renumber && ((unsigned) reg_renumber[R] TEST VALUE)))
 
 /* Don't allow the pc to be used.  */
 #define ARM_REGNO_OK_FOR_BASE_P(REGNO)			\
@@ -1954,8 +1881,6 @@ enum arm_auto_incmodes
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
 
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
-
 /* Immediate shift counts are truncated by the output routines (or was it
    the assembler?).  Shift counts in a register are truncated by ARM.  Note
    that the native compiler puts too large (> 32) immediate shift counts
@@ -1966,9 +1891,6 @@ enum arm_auto_incmodes
    On the arm, Y in a register is used modulo 256 for the shift. Only for
    rotates is modulo 32 used.  */
 /* #define SHIFT_COUNT_TRUNCATED 1 */
-
-/* All integers have the same format so truncation is easy.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
 
 /* Calling from registers is a massive pain.  */
 #define NO_FUNCTION_CSE 1
@@ -1983,8 +1905,9 @@ enum arm_auto_incmodes
 
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions.  */
-#define BRANCH_COST(speed_p, predictable_p) \
-  (current_tune->branch_cost (speed_p, predictable_p))
+#define BRANCH_COST(speed_p, predictable_p)			\
+  ((arm_branch_cost != -1) ? arm_branch_cost :			\
+   (current_tune->branch_cost (speed_p, predictable_p)))
 
 /* False if short circuit operation is preferred.  */
 #define LOGICAL_OP_NON_SHORT_CIRCUIT					\
@@ -2214,13 +2137,7 @@ extern int making_const_table;
 /* Expands to an upper-case char of the target's architectural
    profile.  */
 #define TARGET_ARM_ARCH_PROFILE				\
-  (!arm_arch_notm					\
-    ? 'M'						\
-    : (arm_arch7					\
-      ? (strlen (arm_arch_name) >=3			\
-	? (arm_arch_name[strlen (arm_arch_name) - 3])	\
-      	: 0)						\
-      : 0))
+  (arm_active_target.profile)
 
 /* Bit-field indicating what size LDREX/STREX loads/stores are available.
    Bit 0 for bytes, up to bit 3 for double-words.  */
@@ -2245,40 +2162,89 @@ extern int making_const_table;
   (TARGET_NEON ? (TARGET_ARM_FP & (0xff ^ 0x08)) \
 	       : 0)
 
+/* Name of the automatic fpu-selection option.  */
+#define FPUTYPE_AUTO "auto"
+
 /* The maximum number of parallel loads or stores we support in an ldm/stm
    instruction.  */
 #define MAX_LDM_STM_OPS 4
 
-#define BIG_LITTLE_SPEC \
-   " %{mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})}"
-
 extern const char *arm_rewrite_mcpu (int argc, const char **argv);
-#define BIG_LITTLE_CPU_SPEC_FUNCTIONS \
-  { "rewrite_mcpu", arm_rewrite_mcpu },
+extern const char *arm_rewrite_march (int argc, const char **argv);
+extern const char *arm_asm_auto_mfpu (int argc, const char **argv);
+#define ASM_CPU_SPEC_FUNCTIONS			\
+  { "rewrite_mcpu", arm_rewrite_mcpu },	\
+  { "rewrite_march", arm_rewrite_march },	\
+  { "asm_auto_mfpu", arm_asm_auto_mfpu },
 
-#define ASM_CPU_SPEC \
-   " %{mcpu=generic-*:-march=%*;"				\
-   "   :%{march=*:-march=%*}}"					\
-   BIG_LITTLE_SPEC
+#define ASM_CPU_SPEC							\
+  " %{mfpu=auto:%<mfpu=auto %:asm_auto_mfpu(%{march=*: arch %*})}"	\
+  " %{mcpu=generic-*:-march=%:rewrite_march(%{mcpu=generic-*:%*});"	\
+  "   march=*:-march=%:rewrite_march(%{march=*:%*});"			\
+  "   mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})"			\
+  " }"
+
+extern const char *arm_target_thumb_only (int argc, const char **argv);
+#define TARGET_MODE_SPEC_FUNCTIONS			\
+  { "target_mode_check", arm_target_thumb_only },
 
 /* -mcpu=native handling only makes sense with compiler running on
    an ARM chip.  */
 #if defined(__arm__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
-# define EXTRA_SPEC_FUNCTIONS						\
-  { "local_cpu_detect", host_detect_local_cpu },			\
-  BIG_LITTLE_CPU_SPEC_FUNCTIONS
-
-# define MCPU_MTUNE_NATIVE_SPECS					\
-   " %{march=native:%<march=native %:local_cpu_detect(arch)}"		\
-   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"		\
+#define HAVE_LOCAL_CPU_DETECT
+# define MCPU_MTUNE_NATIVE_FUNCTIONS			\
+  { "local_cpu_detect", host_detect_local_cpu },
+# define MCPU_MTUNE_NATIVE_SPECS				\
+   " %{march=native:%<march=native %:local_cpu_detect(arch)}"	\
+   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"	\
    " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
 #else
+# define MCPU_MTUNE_NATIVE_FUNCTIONS
 # define MCPU_MTUNE_NATIVE_SPECS ""
-# define EXTRA_SPEC_FUNCTIONS BIG_LITTLE_CPU_SPEC_FUNCTIONS
 #endif
 
-#define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
+const char *arm_canon_arch_option (int argc, const char **argv);
+
+#define CANON_ARCH_SPEC_FUNCTION		\
+  { "canon_arch", arm_canon_arch_option },
+
+const char *arm_be8_option (int argc, const char **argv);
+#define BE8_SPEC_FUNCTION			\
+  { "be8_linkopt", arm_be8_option },
+
+# define EXTRA_SPEC_FUNCTIONS			\
+  MCPU_MTUNE_NATIVE_FUNCTIONS			\
+  ASM_CPU_SPEC_FUNCTIONS			\
+  CANON_ARCH_SPEC_FUNCTION			\
+  TARGET_MODE_SPEC_FUNCTIONS			\
+  BE8_SPEC_FUNCTION
+
+/* Automatically add -mthumb for Thumb-only targets if mode isn't specified
+   via the configuration option --with-mode or via the command line. The
+   function target_mode_check is called to do the check with either:
+   - an array of -march values if any is given;
+   - an array of -mcpu values if any is given;
+   - an empty array.  */
+#define TARGET_MODE_SPECS						\
+  " %{!marm:%{!mthumb:%:target_mode_check(%{march=*:arch %*;mcpu=*:cpu %*;:})}}"
+
+/* Generate a canonical string to represent the architecture selected.  */
+#define ARCH_CANONICAL_SPECS				\
+  " -march=%:canon_arch(%{mcpu=*: cpu %*} "		\
+  "                     %{march=*: arch %*} "		\
+  "                     %{mfpu=*: fpu %*} "		\
+  "                     %{mfloat-abi=*: abi %*}"	\
+  "                     %<march=*) "
+
+/* Complete set of specs for the driver.  Commas separate the
+   individual rules so that any option suppression (%<opt...)is
+   completed before starting subsequent rules.  */
+#define DRIVER_SELF_SPECS			\
+  MCPU_MTUNE_NATIVE_SPECS,			\
+  TARGET_MODE_SPECS,				\
+  ARCH_CANONICAL_SPECS
+
 #define TARGET_SUPPORTS_WIDE_INT 1
 
 /* For switching between functions with different target attributes.  */

@@ -7,7 +7,7 @@
 //   section "Revision 1 Summary and Rationale" for more details.
 
 // { dg-do compile { target c++11 } }
-// { dg-skip-if "packed attribute missing for struct one" { "epiphany-*-*" } { "*" } { "" } }
+// { dg-skip-if "packed attribute missing for struct one" { "epiphany-*-*" } }
 
 template <bool> struct sa;
 template <> struct sa<true> {};

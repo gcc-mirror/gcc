@@ -9,8 +9,8 @@
       IMPLICIT DOUBLE PRECISION (X)
       INTEGER J
       COMMON /MYCOMMON / X(1)
-      DO 10 J=1,1024
-         X(J+1)=X(J+7)
+      DO 10 J=1,1024 ! { dg-warning "out of bounds" }
+         X(J+1)=X(J+7) ! { dg-warning "out of bounds" }
   10  CONTINUE
       RETURN
       END
@@ -18,3 +18,4 @@
 ! We should retain both a read and write of mycommon.x.
 ! { dg-final { scan-tree-dump-times "  _\[0-9\]+ = mycommon\\.x\\\[_\[0-9\]+\\\];" 1 "dom2" } }
 ! { dg-final { scan-tree-dump-times "  mycommon\\.x\\\[j?_\[0-9\]+\\\] = _\[0-9\]+;" 1 "dom2" } }
+! { dg-prune-output "overflows the destination" }

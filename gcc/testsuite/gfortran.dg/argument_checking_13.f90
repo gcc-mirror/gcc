@@ -53,8 +53,8 @@ call rlv2(pointer_dummy(1,1,1))    ! Valid F2003
 ! We warn nonetheless as the result is not what is intented
 ! and also formally wrong.
 ! Using (1:string_length) would be ok.
-call rlv2(ptr(1,1,1)(1:1))              ! { dg-warning "contains too few elements" }
-call rlv2(assumed_sh_dummy(1,1,1)(1:2)) ! { dg-warning "contains too few elements" }
+call rlv2(ptr(1,1,1)(1:1))              ! { dg-error "contains too few elements" }
+call rlv2(assumed_sh_dummy(1,1,1)(1:2)) ! { dg-error "contains too few elements" }
 call rlv2(pointer_dummy(1,1,1)(1:3))    ! Valid F2003
 end
 
@@ -72,12 +72,12 @@ character(2), pointer :: pointer_dummy(:,:,:)
 character(2), allocatable :: deferred(:,:,:)
 character(2), pointer     :: ptr(:,:,:)
 call rlv3(deferred(1,1,1))         ! Valid since contiguous
-call rlv3(ptr(1,1,1))              ! { dg-warning "contains too few elements" }
-call rlv3(assumed_sh_dummy(1,1,1)) ! { dg-warning "contains too few elements" }
-call rlv3(pointer_dummy(1,1,1))    ! { dg-warning "contains too few elements" }
+call rlv3(ptr(1,1,1))              ! { dg-error "contains too few elements" }
+call rlv3(assumed_sh_dummy(1,1,1)) ! { dg-error "contains too few elements" }
+call rlv3(pointer_dummy(1,1,1))    ! { dg-error "contains too few elements" }
 
 call rlv3(deferred(1,1,1)(1:2))         ! Valid since contiguous
-call rlv3(ptr(1,1,1)(1:2))              ! { dg-warning "contains too few elements" }
-call rlv3(assumed_sh_dummy(1,1,1)(1:2)) ! { dg-warning "contains too few elements" }
-call rlv3(pointer_dummy(1,1,1)(1:2))    ! { dg-warning "contains too few elements" }
+call rlv3(ptr(1,1,1)(1:2))              ! { dg-error "contains too few elements" }
+call rlv3(assumed_sh_dummy(1,1,1)(1:2)) ! { dg-error "contains too few elements" }
+call rlv3(pointer_dummy(1,1,1)(1:2))    ! { dg-error "contains too few elements" }
 end

@@ -1,0 +1,2 @@
+# At -O0 cc1 etc. are too large and -Wl,--relax is needed
+$(COMPILERS) : override LDFLAGS += -Wl,--relax

@@ -38,9 +38,22 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	      /* Silvermont.  */
 	      assert (__builtin_cpu_is ("silvermont"));
 	      break;
+	    case 0x5c:
+	    case 0x5f:
+	      /* Goldmont.  */
+	      assert (__builtin_cpu_is ("goldmont"));
+	      break;
+	    case 0x7a:
+	      /* Goldmont Plus.  */
+	      assert (__builtin_cpu_is ("goldmont-plus"));
+	      break;
 	    case 0x57:
 	      /* Knights Landing.  */
 	      assert (__builtin_cpu_is ("knl"));
+	      break;
+	    case 0x85:
+	      /* Knights Mill */
+	      assert (__builtin_cpu_is ("knm"));
 	      break;
 	    case 0x1a:
 	    case 0x1e:
@@ -88,6 +101,9 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	    case 0x4e:
 	    case 0x5e:
 	      /* Skylake.  */
+	    case 0x8e:
+	    case 0x9e:
+	      /* Kaby Lake.  */
 	      assert (__builtin_cpu_is ("corei7"));
 	      assert (__builtin_cpu_is ("skylake"));
 	      break;
@@ -95,6 +111,10 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	      /* Skylake with AVX-512 support.  */
 	      assert (__builtin_cpu_is ("corei7"));
 	      assert (__builtin_cpu_is ("skylake-avx512"));
+	      break;
+	    case 0x66:
+	      /* Cannon Lake.  */
+	      assert (__builtin_cpu_is ("cannonlake"));
 	      break;
 	    case 0x17:
 	    case 0x1d:
@@ -163,6 +183,9 @@ static void
 check_features (unsigned int ecx, unsigned int edx,
 		int max_cpuid_level)
 {
+  unsigned int eax, ebx;
+  unsigned int ext_level;
+
   if (edx & bit_CMOV)
     assert (__builtin_cpu_supports ("cmov"));
   if (edx & bit_MMX)
@@ -187,32 +210,68 @@ check_features (unsigned int ecx, unsigned int edx,
     assert (__builtin_cpu_supports ("sse4.2"));
   if (ecx & bit_AVX)
     assert (__builtin_cpu_supports ("avx"));
+  if (ecx & bit_FMA)
+    assert (__builtin_cpu_supports ("fma"));
 
   /* Get advanced features at level 7 (eax = 7, ecx = 0).  */
   if (max_cpuid_level >= 7)
     {
-      unsigned int eax, ebx, ecx, edx;
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
+      if (ebx & bit_BMI)
+	assert (__builtin_cpu_supports ("bmi"));
       if (ebx & bit_AVX2)
 	assert (__builtin_cpu_supports ("avx2"));
+      if (ebx & bit_BMI2)
+	assert (__builtin_cpu_supports ("bmi2"));
       if (ebx & bit_AVX512F)
 	assert (__builtin_cpu_supports ("avx512f"));
       if (ebx & bit_AVX512VL)
 	assert (__builtin_cpu_supports ("avx512vl"));
+      if (ebx & bit_AVX512BW)
+	assert (__builtin_cpu_supports ("avx512bw"));
+      if (ebx & bit_AVX512DQ)
+	assert (__builtin_cpu_supports ("avx512dq"));
       if (ebx & bit_AVX512CD)
 	assert (__builtin_cpu_supports ("avx512cd"));
       if (ebx & bit_AVX512PF)
 	assert (__builtin_cpu_supports ("avx512pf"));
       if (ebx & bit_AVX512ER)
 	assert (__builtin_cpu_supports ("avx512er"));
-      if (ebx & bit_AVX512BW)
-	assert (__builtin_cpu_supports ("avx512bw"));
-      if (ebx & bit_AVX512DQ)
-	assert (__builtin_cpu_supports ("avx512dq"));
-      if (ecx & bit_AVX512IFMA)
+      if (ebx & bit_AVX512IFMA)
 	assert (__builtin_cpu_supports ("avx512ifma"));
       if (ecx & bit_AVX512VBMI)
 	assert (__builtin_cpu_supports ("avx512vbmi"));
+      if (ecx & bit_AVX512VBMI2)
+	assert (__builtin_cpu_supports ("avx512vbmi2"));
+      if (ecx & bit_GFNI)
+	assert (__builtin_cpu_supports ("gfni"));
+      if (ecx & bit_VPCLMULQDQ)
+	assert (__builtin_cpu_supports ("vpclmulqdq"));
+      if (ecx & bit_AVX512VNNI)
+	assert (__builtin_cpu_supports ("avx512vnni"));
+      if (ecx & bit_AVX512BITALG)
+	assert (__builtin_cpu_supports ("avx512bitalg"));
+      if (ecx & bit_AVX512VPOPCNTDQ)
+	assert (__builtin_cpu_supports ("avx512vpopcntdq"));
+      if (edx & bit_AVX5124VNNIW)
+	assert (__builtin_cpu_supports ("avx5124vnniw"));
+      if (edx & bit_AVX5124FMAPS)
+	assert (__builtin_cpu_supports ("avx5124fmaps"));
+    }
+
+  /* Check cpuid level of extended features.  */
+  __cpuid (0x80000000, ext_level, ebx, ecx, edx);
+
+  if (ext_level >= 0x80000001)
+    {
+      __cpuid (0x80000001, eax, ebx, ecx, edx);
+
+      if (ecx & bit_SSE4a)
+	assert (__builtin_cpu_supports ("sse4a"));
+      if (ecx & bit_FMA4)
+	assert (__builtin_cpu_supports ("fma4"));
+      if (ecx & bit_XOP)
+	assert (__builtin_cpu_supports ("xop"));
     }
 }
 
@@ -310,6 +369,12 @@ quick_check ()
   assert (__builtin_cpu_supports ("avx2") >= 0);
 
   assert (__builtin_cpu_supports ("avx512f") >= 0);
+
+  assert (__builtin_cpu_supports ("avx5124vnniw") >= 0);
+
+  assert (__builtin_cpu_supports ("avx5124fmaps") >= 0);
+
+  assert (__builtin_cpu_supports ("avx512vpopcntdq") >= 0);
 
   /* Check CPU type.  */
   assert (__builtin_cpu_is ("amd") >= 0);

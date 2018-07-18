@@ -13,6 +13,8 @@ func init() {
 	register("Crash", Crash)
 }
 
+var NilPointer *string
+
 func test(name string) {
 	defer func() {
 		if x := recover(); x != nil {
@@ -21,8 +23,7 @@ func test(name string) {
 		fmt.Printf(" done\n")
 	}()
 	fmt.Printf("%s:", name)
-	var s *string
-	_ = *s
+	*NilPointer = name
 	fmt.Print("SHOULD NOT BE HERE")
 }
 

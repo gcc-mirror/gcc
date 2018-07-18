@@ -11,5 +11,5 @@
        rewind(74)
 !  can read the complex in as two reals, one on each line
        read(74,'(E13.5)')r1,r2      
-       if (r1.ne.1.0 .and. r2.ne.2.0) call abort
+       if (r1.ne.1.0 .and. r2.ne.2.0) STOP 1
        end

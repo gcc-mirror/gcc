@@ -31,9 +31,11 @@ void AddressInfo::Clear() {
   function_offset = kUnknown;
 }
 
-void AddressInfo::FillModuleInfo(const char *mod_name, uptr mod_offset) {
+void AddressInfo::FillModuleInfo(const char *mod_name, uptr mod_offset,
+                                 ModuleArch mod_arch) {
   module = internal_strdup(mod_name);
   module_offset = mod_offset;
+  module_arch = mod_arch;
 }
 
 SymbolizedStack::SymbolizedStack() : next(nullptr), info() {}
@@ -58,6 +60,7 @@ DataInfo::DataInfo() {
 
 void DataInfo::Clear() {
   InternalFree(module);
+  InternalFree(file);
   InternalFree(name);
   internal_memset(this, 0, sizeof(DataInfo));
 }
@@ -65,6 +68,10 @@ void DataInfo::Clear() {
 Symbolizer *Symbolizer::symbolizer_;
 StaticSpinMutex Symbolizer::init_mu_;
 LowLevelAllocator Symbolizer::symbolizer_allocator_;
+
+void Symbolizer::InvalidateModuleList() {
+  modules_fresh_ = false;
+}
 
 void Symbolizer::AddHooks(Symbolizer::StartSymbolizationHook start_hook,
                           Symbolizer::EndSymbolizationHook end_hook) {
@@ -94,7 +101,7 @@ const char *Symbolizer::ModuleNameOwner::GetOwnedCopy(const char *str) {
 }
 
 Symbolizer::Symbolizer(IntrusiveList<SymbolizerTool> tools)
-    : module_names_(&mu_), n_modules_(0), modules_fresh_(false), tools_(tools),
+    : module_names_(&mu_), modules_(), modules_fresh_(false), tools_(tools),
       start_hook_(0), end_hook_(0) {}
 
 Symbolizer::SymbolizerScope::SymbolizerScope(const Symbolizer *sym)

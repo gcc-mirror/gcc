@@ -14,7 +14,7 @@ wait_reading_process_output (void)
 	nfds++;
     }
 
-  if (nfds < 0) /* { dg-bogus "assuming signed overflow does not occur" "" { xfail *-*-* } } */
+  if (nfds < 0) /* { dg-bogus "assuming signed overflow does not occur" "" } */
     return 1;
   return 0;
 }

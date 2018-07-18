@@ -13,7 +13,7 @@ int main()
 {
   const A a;
   f(a);				// { dg-error "no match" }
-  // { dg-error "qualifiers" "" { target *-*-* } 15 }
-  // { dg-error "lvalue" "" { target *-*-* } 15 }
+  // { dg-error "qualifiers" "" { target *-*-* } .-1 }
+  // { dg-error "lvalue" "" { target *-*-* } .-2 }
   g(a);				// { dg-error "qualifiers" }
 }

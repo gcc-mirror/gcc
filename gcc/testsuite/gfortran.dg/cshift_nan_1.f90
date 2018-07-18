@@ -19,6 +19,6 @@ program main
   u%b = (/(i,i=-1,-4,-1)/)
   v(1:3:2) = cshift(u(1:3:2),1)
   v(2:4:2) = cshift(u(2:4:2),-1)
-  if (any(v%a /= (/-5242880, -3145728, 2142240768, 2144337920 /))) call abort
-  if (any(v%b /= (/-3, -4, -1, -2/))) call abort
+  if (any(v%a /= (/-5242880, -3145728, 2142240768, 2144337920 /))) STOP 1
+  if (any(v%b /= (/-3, -4, -1, -2/))) STOP 2
 end program main

@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -63,6 +63,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hosthooks.h"
 #include "opts.h"
 #include "opts-diagnostic.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "tsan.h"
 #include "plugin.h"
@@ -75,22 +77,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "gcse.h"
-#include "tree-chkp.h"
-#include "omp-low.h"
-#include "hsa.h"
+#include "omp-offload.h"
+#include "hsa-common.h"
 #include "edit-context.h"
+#include "tree-pass.h"
+#include "dumpfile.h"
+#include "ipa-fnsummary.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
 #endif
-
-#include "sdbout.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data declarations. */
 #endif
 
 #include "selftest.h"
+
+#ifdef HAVE_isl
+#include <isl/version.h>
+#endif
 
 static void general_init (const char *, bool);
 static void do_compile ();
@@ -150,11 +156,6 @@ HOST_WIDE_INT random_seed;
    At present, the rtx may be either a REG or a SYMBOL_REF, although
    the support provided depends on the backend.  */
 rtx stack_limit_rtx;
-
-/* True if the user has tagged the function with the 'section'
-   attribute.  */
-
-bool user_defined_section_attribute = false;
 
 struct target_flag_state default_target_flag_state;
 #if SWITCHABLE_TARGET
@@ -236,7 +237,7 @@ announce_function (tree decl)
     }
 }
 
-/* Initialize local_tick with a random number or -1 if
+/* Initialize local_tick with the time of day, or -1 if
    flag_random_seed is set.  */
 
 static void
@@ -244,19 +245,6 @@ init_local_tick (void)
 {
   if (!flag_random_seed)
     {
-      /* Try urandom first. Time of day is too likely to collide. 
-	 In case of any error we just use the local tick. */
-
-      int fd = open ("/dev/urandom", O_RDONLY);
-      if (fd >= 0)
-        {
-          if (read (fd, &random_seed, sizeof (random_seed))
-              != sizeof (random_seed))
-            random_seed = 0;
-          close (fd);
-        }
-
-      /* Now get the tick anyways  */
 #ifdef HAVE_GETTIMEOFDAY
       {
 	struct timeval tv;
@@ -277,34 +265,33 @@ init_local_tick (void)
     local_tick = -1;
 }
 
-/* Set up a default flag_random_seed and local_tick, unless the user
-   already specified one.  Must be called after init_local_tick.  */
-
-static void
-init_random_seed (void)
-{
-  if (!random_seed)
-    random_seed = local_tick ^ getpid ();  /* Old racey fallback method */
-}
-
 /* Obtain the random_seed.  Unless NOINIT, initialize it if
    it's not provided in the command line.  */
 
 HOST_WIDE_INT
 get_random_seed (bool noinit)
 {
-  if (!flag_random_seed && !noinit)
-    init_random_seed ();
+  if (!random_seed && !noinit)
+    {
+      int fd = open ("/dev/urandom", O_RDONLY);
+      if (fd >= 0)
+        {
+          if (read (fd, &random_seed, sizeof (random_seed))
+              != sizeof (random_seed))
+            random_seed = 0;
+          close (fd);
+        }
+      if (!random_seed)
+	random_seed = local_tick ^ getpid ();
+    }
   return random_seed;
 }
 
-/* Modify the random_seed string to VAL.  Return its previous
-   value.  */
+/* Set flag_random_seed to VAL, and if non-null, reinitialize random_seed.  */
 
-const char *
+void
 set_random_seed (const char *val)
 {
-  const char *old = flag_random_seed;
   flag_random_seed = val;
   if (flag_random_seed)
     {
@@ -315,7 +302,6 @@ set_random_seed (const char *val)
       if (!(endp > flag_random_seed && *endp == 0))
         random_seed = crc32_string (0, flag_random_seed);
     }
-  return old;
 }
 
 /* Handler for fatal signals, such as SIGSEGV.  These are transformed
@@ -508,7 +494,8 @@ compile_file (void)
 
   /* Compilation unit is finalized.  When producing non-fat LTO object, we are
      basically finished.  */
-  if (in_lto_p || !flag_lto || flag_fat_lto_objects)
+  if ((in_lto_p && flag_incremental_link != INCREMENTAL_LINK_LTO)
+      || !flag_lto || flag_fat_lto_objects)
     {
       /* File-scope initialization for AddressSanitizer.  */
       if (flag_sanitize & SANITIZE_ADDRESS)
@@ -516,9 +503,6 @@ compile_file (void)
 
       if (flag_sanitize & SANITIZE_THREAD)
 	tsan_finish_file ();
-
-      if (flag_check_pointer_bounds)
-	chkp_finish_file ();
 
       omp_finish_file ();
 
@@ -538,10 +522,9 @@ compile_file (void)
       /* Do dbx symbols.  */
       timevar_push (TV_SYMOUT);
 
-    #if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
-      if (dwarf2out_do_frame ())
-	dwarf2out_frame_finish ();
-    #endif
+#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
+      dwarf2out_frame_finish ();
+#endif
 
       (*debug_hooks->finish) (main_input_filename);
       timevar_pop (TV_SYMOUT);
@@ -683,10 +666,8 @@ print_version (FILE *file, const char *indent, bool show_global_state)
 	   GCC_GMP_STRINGIFY_VERSION, MPFR_VERSION_STRING, MPC_VERSION_STRING,
 #ifndef HAVE_isl
 	   "none"
-#elif HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-	   "0.15"
 #else
-	   "0.14 or 0.13"
+	   isl_version ()
 #endif
 	   );
   if (strcmp (GCC_GMP_STRINGIFY_VERSION, gmp_version))
@@ -816,11 +797,6 @@ print_switch_values (print_switch_fn_type print_fn)
 {
   int pos = 0;
   size_t j;
-
-  /* Fill in the -frandom-seed option, if the user didn't pass it, so
-     that it can be printed below.  This helps reproducibility.  */
-  if (!flag_random_seed)
-    init_random_seed ();
 
   /* Print the options as passed.  */
   pos = print_single_switch (print_fn, pos,
@@ -977,19 +953,32 @@ output_stack_usage (void)
   stack_usage_kind = STATIC;
 
   /* Add the maximum amount of space pushed onto the stack.  */
-  if (current_function_pushed_stack_size > 0)
+  if (maybe_ne (current_function_pushed_stack_size, 0))
     {
-      stack_usage += current_function_pushed_stack_size;
-      stack_usage_kind = DYNAMIC_BOUNDED;
+      HOST_WIDE_INT extra;
+      if (current_function_pushed_stack_size.is_constant (&extra))
+	{
+	  stack_usage += extra;
+	  stack_usage_kind = DYNAMIC_BOUNDED;
+	}
+      else
+	{
+	  extra = constant_lower_bound (current_function_pushed_stack_size);
+	  stack_usage += extra;
+	  stack_usage_kind = DYNAMIC;
+	}
     }
 
   /* Now on to the tricky part: dynamic stack allocation.  */
   if (current_function_allocates_dynamic_stack_space)
     {
-      if (current_function_has_unbounded_dynamic_stack_size)
-	stack_usage_kind = DYNAMIC;
-      else
-	stack_usage_kind = DYNAMIC_BOUNDED;
+      if (stack_usage_kind != DYNAMIC)
+	{
+	  if (current_function_has_unbounded_dynamic_stack_size)
+	    stack_usage_kind = DYNAMIC;
+	  else
+	    stack_usage_kind = DYNAMIC_BOUNDED;
+	}
 
       /* Add the size even in the unbounded case, this can't hurt.  */
       stack_usage += current_function_dynamic_stack_size;
@@ -1066,6 +1055,26 @@ open_auxiliary_file (const char *ext)
   return file;
 }
 
+/* Alternative diagnostics callback for reentered ICE reporting.  */
+
+static void
+internal_error_reentered (diagnostic_context *, const char *, va_list *)
+{
+  /* Flush the dump file if emergency_dump_function itself caused an ICE.  */
+  if (dump_file)
+    fflush (dump_file);
+}
+
+/* Auxiliary callback for the diagnostics code.  */
+
+static void
+internal_error_function (diagnostic_context *, const char *, va_list *)
+{
+  global_dc->internal_error = internal_error_reentered;
+  warn_if_plugins ();
+  emergency_dump_function ();
+}
+
 /* Initialization of the front end environment, before command line
    options are parsed.  Signal handlers, internationalization etc.
    ARGV0 is main's argv[0].  */
@@ -1104,7 +1113,7 @@ general_init (const char *argv0, bool init_signals)
     = global_options_init.x_flag_diagnostics_show_option;
   global_dc->show_column
     = global_options_init.x_flag_show_column;
-  global_dc->internal_error = plugins_internal_error_function;
+  global_dc->internal_error = internal_error_function;
   global_dc->option_enabled = option_enabled;
   global_dc->option_state = &global_options;
   global_dc->option_name = option_name;
@@ -1157,9 +1166,17 @@ general_init (const char *argv0, bool init_signals)
      processing.  */
   init_ggc_heuristics ();
 
-  /* Create the singleton holder for global state.
-     Doing so also creates the pass manager and with it the passes.  */
+  /* Create the singleton holder for global state.  This creates the
+     dump manager.  */
   g = new gcc::context ();
+
+  /* Allow languages and middle-end to register their dumps before the
+     optimization passes.  */
+  g->get_dumps ()->register_dumps ();
+
+  /* Create the passes.  */
+  g->set_passes (new gcc::pass_manager (g));
+
   symtab = new (ggc_cleared_alloc <symbol_table> ()) symbol_table ();
 
   statistics_early_init ();
@@ -1180,29 +1197,102 @@ target_supports_section_anchors_p (void)
   return true;
 }
 
-/* Default the align_* variables to 1 if they're still unset, and
-   set up the align_*_log variables.  */
+/* Parse "N[:M][:...]" into struct align_flags A.
+   VALUES contains parsed values (in reverse order), all processed
+   values are popped.  */
+
 static void
-init_alignments (void)
+read_log_maxskip (auto_vec<unsigned> &values, align_flags_tuple *a)
 {
-  if (align_loops <= 0)
-    align_loops = 1;
-  if (align_loops_max_skip > align_loops)
-    align_loops_max_skip = align_loops - 1;
-  align_loops_log = floor_log2 (align_loops * 2 - 1);
-  if (align_jumps <= 0)
-    align_jumps = 1;
-  if (align_jumps_max_skip > align_jumps)
-    align_jumps_max_skip = align_jumps - 1;
-  align_jumps_log = floor_log2 (align_jumps * 2 - 1);
-  if (align_labels <= 0)
-    align_labels = 1;
-  align_labels_log = floor_log2 (align_labels * 2 - 1);
-  if (align_labels_max_skip > align_labels)
-    align_labels_max_skip = align_labels - 1;
-  if (align_functions <= 0)
-    align_functions = 1;
-  align_functions_log = floor_log2 (align_functions * 2 - 1);
+  unsigned n = values.pop ();
+  if (n != 0)
+    a->log = floor_log2 (n * 2 - 1);
+
+  if (values.is_empty ())
+    a->maxskip = n ? n - 1 : 0;
+  else
+    {
+      unsigned m = values.pop ();
+      /* -falign-foo=N:M means M-1 max bytes of padding, not M.  */
+      if (m > 0)
+	m--;
+      a->maxskip = m;
+    }
+
+  /* Normalize the tuple.  */
+  a->normalize ();
+}
+
+/* Parse "N[:M[:N2[:M2]]]" string FLAG into a pair of struct align_flags.  */
+
+static void
+parse_N_M (const char *flag, align_flags &a)
+{
+  if (flag)
+    {
+      static hash_map <nofree_string_hash, align_flags> cache;
+      align_flags *entry = cache.get (flag);
+      if (entry)
+	{
+	  a = *entry;
+	  return;
+	}
+
+      auto_vec<unsigned> result_values;
+      bool r = parse_and_check_align_values (flag, NULL, result_values, false,
+					     UNKNOWN_LOCATION);
+      if (!r)
+	return;
+
+      /* Reverse values for easier manipulation.  */
+      result_values.reverse ();
+
+      read_log_maxskip (result_values, &a.levels[0]);
+      if (!result_values.is_empty ())
+	read_log_maxskip (result_values, &a.levels[1]);
+#ifdef SUBALIGN_LOG
+      else
+	{
+	  /* N2[:M2] is not specified.  This arch has a default for N2.
+	     Before -falign-foo=N:M:N2:M2 was introduced, x86 had a tweak.
+	     -falign-functions=N with N > 8 was adding secondary alignment.
+	     -falign-functions=10 was emitting this before every function:
+			.p2align 4,,9
+			.p2align 3
+	     Now this behavior (and more) can be explicitly requested:
+	     -falign-functions=16:10:8
+	     Retain old behavior if N2 is missing: */
+
+	  int align = 1 << a.levels[0].log;
+	  int subalign = 1 << SUBALIGN_LOG;
+
+	  if (a.levels[0].log > SUBALIGN_LOG
+	      && a.levels[0].maxskip >= subalign - 1)
+	    {
+	      /* Set N2 unless subalign can never have any effect.  */
+	      if (align > a.levels[0].maxskip + 1)
+		{
+		  a.levels[1].log = SUBALIGN_LOG;
+		  a.levels[1].normalize ();
+		}
+	    }
+	}
+#endif
+
+      /* Cache seen value.  */
+      cache.put (flag, a);
+    }
+}
+
+/* Process -falign-foo=N[:M[:N2[:M2]]] options.  */
+
+void
+parse_alignment_opts (void)
+{
+  parse_N_M (str_align_loops, align_loops);
+  parse_N_M (str_align_jumps, align_jumps);
+  parse_N_M (str_align_labels, align_labels);
+  parse_N_M (str_align_functions, align_functions);
 }
 
 /* Process the options that have been parsed.  */
@@ -1263,37 +1353,35 @@ process_options (void)
       || flag_loop_nest_optimize
       || flag_graphite_identity
       || flag_loop_parallelize_all)
-    sorry ("Graphite loop optimizations cannot be used (isl is not available)"
-	   "(-fgraphite, -fgraphite-identity, -floop-block, "
-	   "-floop-interchange, -floop-strip-mine, -floop-parallelize-all, "
-	   "-floop-unroll-and-jam, and -ftree-loop-linear)");
+    sorry ("Graphite loop optimizations cannot be used (isl is not available) "
+	   "(-fgraphite, -fgraphite-identity, -floop-nest-optimize, "
+	   "-floop-parallelize-all)");
 #endif
 
-  if (flag_check_pointer_bounds)
+  if (flag_cf_protection != CF_NONE
+      && !(flag_cf_protection & CF_SET))
     {
-      if (targetm.chkp_bound_mode () == VOIDmode)
+      if (flag_cf_protection == CF_FULL)
 	{
 	  error_at (UNKNOWN_LOCATION,
-		    "-fcheck-pointer-bounds is not supported for this target");
-	  flag_check_pointer_bounds = 0;
+		    "%<-fcf-protection=full%> is not supported for this "
+		    "target");
+	  flag_cf_protection = CF_NONE;
 	}
-
-      if (flag_sanitize & SANITIZE_ADDRESS)
+      if (flag_cf_protection == CF_BRANCH)
 	{
 	  error_at (UNKNOWN_LOCATION,
-		    "-fcheck-pointer-bounds is not supported with "
-		    "Address Sanitizer");
-	  flag_check_pointer_bounds = 0;
+		    "%<-fcf-protection=branch%> is not supported for this "
+		    "target");
+	  flag_cf_protection = CF_NONE;
 	}
-
-      if (flag_sanitize & SANITIZE_BOUNDS)
+      if (flag_cf_protection == CF_RETURN)
 	{
 	  error_at (UNKNOWN_LOCATION,
-		    "-fcheck-pointer-bounds is not supported with "
-		    "-fsanitize=bounds");
-	  flag_check_pointer_bounds = 0;
+		    "%<-fcf-protection=return%> is not supported for this "
+		    "target");
+	  flag_cf_protection = CF_NONE;
 	}
-
     }
 
   /* One region RA really helps to decrease the code size.  */
@@ -1417,8 +1505,6 @@ process_options (void)
   else if (write_symbols == XCOFF_DEBUG)
     debug_hooks = &xcoff_debug_hooks;
 #endif
-  else if (SDB_DEBUGGING_INFO && write_symbols == SDB_DEBUG)
-    debug_hooks = &sdb_debug_hooks;
 #ifdef DWARF2_DEBUGGING_INFO
   else if (write_symbols == DWARF2_DEBUG)
     debug_hooks = &dwarf2_debug_hooks;
@@ -1476,8 +1562,9 @@ process_options (void)
     flag_var_tracking_uninit = flag_var_tracking;
 
   if (flag_var_tracking_assignments == AUTODETECT_VALUE)
-    flag_var_tracking_assignments = flag_var_tracking
-      && !(flag_selective_scheduling || flag_selective_scheduling2);
+    flag_var_tracking_assignments
+      = (flag_var_tracking
+	 && !(flag_selective_scheduling || flag_selective_scheduling2));
 
   if (flag_var_tracking_assignments_toggle)
     flag_var_tracking_assignments = !flag_var_tracking_assignments;
@@ -1489,6 +1576,65 @@ process_options (void)
       && (flag_selective_scheduling || flag_selective_scheduling2))
     warning_at (UNKNOWN_LOCATION, 0,
 		"var-tracking-assignments changes selective scheduling");
+
+  if (debug_nonbind_markers_p == AUTODETECT_VALUE)
+    debug_nonbind_markers_p
+      = (optimize
+	 && debug_info_level >= DINFO_LEVEL_NORMAL
+	 && (write_symbols == DWARF2_DEBUG
+	     || write_symbols == VMS_AND_DWARF2_DEBUG)
+	 && !(flag_selective_scheduling || flag_selective_scheduling2));
+
+  if (dwarf2out_as_loc_support == AUTODETECT_VALUE)
+    dwarf2out_as_loc_support
+      = dwarf2out_default_as_loc_support ();
+  if (dwarf2out_as_locview_support == AUTODETECT_VALUE)
+    dwarf2out_as_locview_support
+      = dwarf2out_default_as_locview_support ();
+
+  if (debug_variable_location_views == AUTODETECT_VALUE)
+    {
+      debug_variable_location_views
+	= (flag_var_tracking
+	   && debug_info_level >= DINFO_LEVEL_NORMAL
+	   && (write_symbols == DWARF2_DEBUG
+	       || write_symbols == VMS_AND_DWARF2_DEBUG)
+	   && !dwarf_strict
+	   && dwarf2out_as_loc_support
+	   && dwarf2out_as_locview_support);
+    }
+  else if (debug_variable_location_views == -1 && dwarf_version != 5)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "without -gdwarf-5, -gvariable-location-views=incompat5 "
+		  "is equivalent to -gvariable-location-views");
+      debug_variable_location_views = 1;
+    }
+
+  if (debug_internal_reset_location_views == 2)
+    {
+      debug_internal_reset_location_views
+	= (debug_variable_location_views
+	   && targetm.reset_location_view);
+    }
+  else if (debug_internal_reset_location_views
+	   && !debug_variable_location_views)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-ginternal-reset-location-views is forced disabled "
+		  "without -gvariable-location-views");
+      debug_internal_reset_location_views = 0;
+    }
+
+  if (debug_inline_points == AUTODETECT_VALUE)
+    debug_inline_points = debug_variable_location_views;
+  else if (debug_inline_points && !debug_nonbind_markers_p)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-ginline-points is forced disabled without "
+		  "-gstatement-frontiers");
+      debug_inline_points = 0;
+    }
 
   if (flag_tree_cselim == AUTODETECT_VALUE)
     {
@@ -1561,6 +1707,26 @@ process_options (void)
       flag_associative_math = 0;
     }
 
+  /* -fstack-clash-protection is not currently supported on targets
+     where the stack grows up.  */
+  if (flag_stack_clash_protection && !STACK_GROWS_DOWNWARD)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fstack-clash-protection%> is not supported on targets "
+		  "where the stack grows from lower to higher addresses");
+      flag_stack_clash_protection = 0;
+    }
+
+  /* We can not support -fstack-check= and -fstack-clash-protection at
+     the same time.  */
+  if (flag_stack_check != NO_STACK_CHECK && flag_stack_clash_protection)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fstack-check=%> and %<-fstack-clash_protection%> are "
+		  "mutually exclusive.  Disabling %<-fstack-check=%>");
+      flag_stack_check = NO_STACK_CHECK;
+    }
+
   /* With -fcx-limited-range, we do cheap and quick complex arithmetic.  */
   if (flag_cx_limited_range)
     flag_complex_method = 0;
@@ -1600,8 +1766,10 @@ process_options (void)
     }
 
  /* Do not use IPA optimizations for register allocation if profiler is active
+    or patchable function entries are inserted for run-time instrumentation
     or port does not emit prologue and epilogue as RTL.  */
-  if (profile_flag || !targetm.have_prologue () || !targetm.have_epilogue ())
+  if (profile_flag || function_entry_patch_area_size
+      || !targetm.have_prologue () || !targetm.have_epilogue ())
     flag_ipa_ra = 0;
 
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error
@@ -1627,9 +1795,6 @@ process_options (void)
 static void
 backend_init_target (void)
 {
-  /* Initialize alignment variables.  */
-  init_alignments ();
-
   /* This depends on stack_pointer_rtx.  */
   init_fake_stack_mems ();
 
@@ -1685,41 +1850,17 @@ backend_init (void)
   init_regs ();
 }
 
-/* Initialize excess precision settings.  */
+/* Initialize excess precision settings.
+
+   We have no need to modify anything here, just keep track of what the
+   user requested.  We'll figure out any appropriate relaxations
+   later.  */
+
 static void
 init_excess_precision (void)
 {
-  /* Adjust excess precision handling based on the target options.  If
-     the front end cannot handle it, flag_excess_precision_cmdline
-     will already have been set accordingly in the post_options
-     hook.  */
   gcc_assert (flag_excess_precision_cmdline != EXCESS_PRECISION_DEFAULT);
   flag_excess_precision = flag_excess_precision_cmdline;
-  if (flag_unsafe_math_optimizations)
-    flag_excess_precision = EXCESS_PRECISION_FAST;
-  if (flag_excess_precision == EXCESS_PRECISION_STANDARD)
-    {
-      int flt_eval_method = TARGET_FLT_EVAL_METHOD;
-      switch (flt_eval_method)
-	{
-	case -1:
-	case 0:
-	  /* Either the target acts unpredictably (-1) or has all the
-	     operations required not to have excess precision (0).  */
-	  flag_excess_precision = EXCESS_PRECISION_FAST;
-	  break;
-	case 1:
-	case 2:
-	  /* In these cases, predictable excess precision makes
-	     sense.  */
-	  break;
-	default:
-	  /* Any other implementation-defined FLT_EVAL_METHOD values
-	     require the compiler to handle the associated excess
-	     precision rules in excess_precision_type.  */
-	  gcc_unreachable ();
-	}
-    }
 }
 
 /* Initialize things that are both lang-dependent and target-dependent.
@@ -1927,6 +2068,9 @@ finalize (bool no_backend)
       stack_usage_file = NULL;
     }
 
+  if (seen_error ())
+    coverage_remove_note_file ();
+
   if (!no_backend)
     {
       statistics_fini ();
@@ -2124,7 +2268,8 @@ toplev::main (int argc, char **argv)
      enough to default flags appropriately.  */
   decode_options (&global_options, &global_options_set,
 		  save_decoded_options, save_decoded_options_count,
-		  UNKNOWN_LOCATION, global_dc);
+		  UNKNOWN_LOCATION, global_dc,
+		  targetm.target_option.override);
 
   handle_common_deferred_options ();
 
@@ -2160,7 +2305,7 @@ toplev::main (int argc, char **argv)
     {
       gcc_assert (global_dc->edit_context_ptr);
 
-      pretty_printer (pp);
+      pretty_printer pp;
       pp_show_color (&pp) = pp_show_color (global_dc->printer);
       global_dc->edit_context_ptr->print_diff (&pp, true);
       pp_flush (&pp);
@@ -2188,6 +2333,7 @@ toplev::finalize (void)
 
   /* Needs to be called before cgraph_c_finalize since it uses symtab.  */
   ipa_reference_c_finalize ();
+  ipa_fnsummary_c_finalize ();
 
   cgraph_c_finalize ();
   cgraphunit_c_finalize ();

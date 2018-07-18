@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -237,6 +237,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ITp>
     struct __atomic_base
     {
+      using value_type = _ITp;
+      using difference_type = value_type;
+
     private:
       typedef _ITp 	__int_type;
 
@@ -366,7 +369,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_ALWAYS_INLINE void
       store(__int_type __i, memory_order __m = memory_order_seq_cst) noexcept
       {
-        memory_order __b = __m & __memory_order_mask;
+	memory_order __b = __m & __memory_order_mask;
 	__glibcxx_assert(__b != memory_order_acquire);
 	__glibcxx_assert(__b != memory_order_acq_rel);
 	__glibcxx_assert(__b != memory_order_consume);
@@ -378,7 +381,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       store(__int_type __i,
 	    memory_order __m = memory_order_seq_cst) volatile noexcept
       {
-        memory_order __b = __m & __memory_order_mask;
+	memory_order __b = __m & __memory_order_mask;
 	__glibcxx_assert(__b != memory_order_acquire);
 	__glibcxx_assert(__b != memory_order_acq_rel);
 	__glibcxx_assert(__b != memory_order_consume);
@@ -389,7 +392,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_ALWAYS_INLINE __int_type
       load(memory_order __m = memory_order_seq_cst) const noexcept
       {
-       memory_order __b = __m & __memory_order_mask;
+	memory_order __b = __m & __memory_order_mask;
 	__glibcxx_assert(__b != memory_order_release);
 	__glibcxx_assert(__b != memory_order_acq_rel);
 
@@ -399,7 +402,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_ALWAYS_INLINE __int_type
       load(memory_order __m = memory_order_seq_cst) const volatile noexcept
       {
-        memory_order __b = __m & __memory_order_mask;
+	memory_order __b = __m & __memory_order_mask;
 	__glibcxx_assert(__b != memory_order_release);
 	__glibcxx_assert(__b != memory_order_acq_rel);
 
@@ -425,8 +428,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_weak(__int_type& __i1, __int_type __i2,
 			    memory_order __m1, memory_order __m2) noexcept
       {
-       memory_order __b2 = __m2 & __memory_order_mask;
-       memory_order __b1 = __m1 & __memory_order_mask;
+	memory_order __b2 = __m2 & __memory_order_mask;
+	memory_order __b1 = __m1 & __memory_order_mask;
 	__glibcxx_assert(__b2 != memory_order_release);
 	__glibcxx_assert(__b2 != memory_order_acq_rel);
 	__glibcxx_assert(__b2 <= __b1);
@@ -439,8 +442,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    memory_order __m1,
 			    memory_order __m2) volatile noexcept
       {
-       memory_order __b2 = __m2 & __memory_order_mask;
-       memory_order __b1 = __m1 & __memory_order_mask;
+	memory_order __b2 = __m2 & __memory_order_mask;
+	memory_order __b1 = __m1 & __memory_order_mask;
 	__glibcxx_assert(__b2 != memory_order_release);
 	__glibcxx_assert(__b2 != memory_order_acq_rel);
 	__glibcxx_assert(__b2 <= __b1);
@@ -468,8 +471,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_strong(__int_type& __i1, __int_type __i2,
 			      memory_order __m1, memory_order __m2) noexcept
       {
-        memory_order __b2 = __m2 & __memory_order_mask;
-        memory_order __b1 = __m1 & __memory_order_mask;
+	memory_order __b2 = __m2 & __memory_order_mask;
+	memory_order __b1 = __m1 & __memory_order_mask;
 	__glibcxx_assert(__b2 != memory_order_release);
 	__glibcxx_assert(__b2 != memory_order_acq_rel);
 	__glibcxx_assert(__b2 <= __b1);
@@ -482,8 +485,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      memory_order __m1,
 			      memory_order __m2) volatile noexcept
       {
-        memory_order __b2 = __m2 & __memory_order_mask;
-        memory_order __b1 = __m1 & __memory_order_mask;
+	memory_order __b2 = __m2 & __memory_order_mask;
+	memory_order __b1 = __m1 & __memory_order_mask;
 
 	__glibcxx_assert(__b2 != memory_order_release);
 	__glibcxx_assert(__b2 != memory_order_acq_rel);
@@ -695,7 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       store(__pointer_type __p,
 	    memory_order __m = memory_order_seq_cst) volatile noexcept
       {
-        memory_order __b = __m & __memory_order_mask;
+	memory_order __b = __m & __memory_order_mask;
 	__glibcxx_assert(__b != memory_order_acquire);
 	__glibcxx_assert(__b != memory_order_acq_rel);
 	__glibcxx_assert(__b != memory_order_consume);
@@ -706,7 +709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_ALWAYS_INLINE __pointer_type
       load(memory_order __m = memory_order_seq_cst) const noexcept
       {
-        memory_order __b = __m & __memory_order_mask;
+	memory_order __b = __m & __memory_order_mask;
 	__glibcxx_assert(__b != memory_order_release);
 	__glibcxx_assert(__b != memory_order_acq_rel);
 
@@ -716,7 +719,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_ALWAYS_INLINE __pointer_type
       load(memory_order __m = memory_order_seq_cst) const volatile noexcept
       {
-        memory_order __b = __m & __memory_order_mask;
+	memory_order __b = __m & __memory_order_mask;
 	__glibcxx_assert(__b != memory_order_release);
 	__glibcxx_assert(__b != memory_order_acq_rel);
 
@@ -743,8 +746,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      memory_order __m1,
 			      memory_order __m2) noexcept
       {
-        memory_order __b2 = __m2 & __memory_order_mask;
-        memory_order __b1 = __m1 & __memory_order_mask;
+	memory_order __b2 = __m2 & __memory_order_mask;
+	memory_order __b1 = __m1 & __memory_order_mask;
 	__glibcxx_assert(__b2 != memory_order_release);
 	__glibcxx_assert(__b2 != memory_order_acq_rel);
 	__glibcxx_assert(__b2 <= __b1);
@@ -757,8 +760,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      memory_order __m1,
 			      memory_order __m2) volatile noexcept
       {
-        memory_order __b2 = __m2 & __memory_order_mask;
-        memory_order __b1 = __m1 & __memory_order_mask;
+	memory_order __b2 = __m2 & __memory_order_mask;
+	memory_order __b1 = __m1 & __memory_order_mask;
 
 	__glibcxx_assert(__b2 != memory_order_release);
 	__glibcxx_assert(__b2 != memory_order_acq_rel);

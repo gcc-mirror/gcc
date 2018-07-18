@@ -1,4 +1,4 @@
-##  Copyright (C) 2012-2016 Free Software Foundation, Inc.
+##  Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ##  Contributed by Richard Henderson <rth@redhat.com>.
 ##
 ##  This file is part of the GNU Atomic Library (libatomic).
@@ -26,7 +26,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = testsuite
 
 ## May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 config_path= @config_path@
 search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) \
@@ -122,8 +122,12 @@ libatomic_la_LIBADD = $(foreach s,$(SIZES),$(addsuffix _$(s)_.lo,$(SIZEOBJS)))
 
 ## On a target-specific basis, include alternates to be selected by IFUNC.
 if HAVE_IFUNC
+if ARCH_AARCH64_LINUX
+IFUNC_OPTIONS	     = -march=armv8-a+lse
+libatomic_la_LIBADD += $(foreach s,$(SIZES),$(addsuffix _$(s)_1_.lo,$(SIZEOBJS)))
+endif
 if ARCH_ARM_LINUX
-IFUNC_OPTIONS	     = -march=armv7-a -DHAVE_KERNEL64
+IFUNC_OPTIONS	     = -march=armv7-a+fp -DHAVE_KERNEL64
 libatomic_la_LIBADD += $(foreach s,$(SIZES),$(addsuffix _$(s)_1_.lo,$(SIZEOBJS)))
 libatomic_la_LIBADD += $(addsuffix _8_2_.lo,$(SIZEOBJS))
 endif

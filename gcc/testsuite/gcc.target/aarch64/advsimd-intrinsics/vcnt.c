@@ -65,10 +65,10 @@ FNNAME (INSN_NAME)
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, "");
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
 }
 
 int main (void)

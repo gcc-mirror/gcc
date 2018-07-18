@@ -1,0 +1,153 @@
+# Tests for ms_abi to sysv_abi calls.
+# Copyright (C) 2016-2018 Free Software Foundation, Inc.
+# Contributed by Daniel Santos <daniel.santos@pobox.com>
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# Under Section 7 of GPL version 3, you are granted additional
+# permissions described in the GCC Runtime Library Exception, version
+# 3.1, as published by the Free Software Foundation.
+#
+# You should have received a copy of the GNU General Public License and
+# a copy of the GCC Runtime Library Exception along with this program;
+# see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+# <http://www.gnu.org/licenses/>.
+
+load_lib gcc-dg.exp
+
+proc host_supports_c++11 {} {
+    global HOSTCXX HOSTCXXFLAGS
+
+    set pidstr [pid]
+    set src "host_supports_c++11_$pidstr.C"
+    set asm "host_supports_c++11_$pidstr.s"
+
+    set f [open $src "w"]
+    puts $f ""
+    close $f
+
+    set cxx "$HOSTCXX $HOSTCXXFLAGS"
+
+    # Temporarily switch to the environment for the host compiler.
+    restore_ld_library_path_env_vars
+    set status [remote_exec host "$cxx -S $src -std=c++11 -o $asm"]
+    # And switch back.
+    set_ld_library_path_env_vars
+
+    file delete $src $asm
+
+    set status [lindex $status 0]
+    if { $status != 0 } {
+	return 0
+    }
+
+    return 1
+}
+
+# Exit immediately if this isn't a native x86_64 target.
+if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
+      || ![is-effective-target lp64] || ![isnative]
+      || ![host_supports_c++11] } then {
+
+    # Gate "unsupported" message return value of first runtest_file_p call.
+    if [runtest_file_p $runtests "$srcdir/$subdir/ms-sysv.c"] {
+	unsupported "$subdir"
+    }
+    return
+}
+
+proc runtest_ms_sysv { cflags generator_args } {
+    global GCC_UNDER_TEST HOSTCXX HOSTCXXFLAGS tmpdir srcdir subdir \
+	   TEST_ALWAYS_FLAGS runtests
+
+    set objdir "$tmpdir/ms-sysv"
+    set generator "$tmpdir/ms-sysv-generate.exe"
+    set generated_header "$objdir/ms-sysv-generated.h"
+    set status 0
+    set warn_flags "-Wall"
+
+    # Detect when hard frame pointers are enabled (or required) so we know not
+    # to generate bp clobbers.
+    if { [regexp "(^| )-(O0|fno-omit-frame-pointer|p|pg)( |$)" \
+		 "$TEST_ALWAYS_FLAGS $cflags" match]
+	 || [istarget *-*-solaris*] } then {
+	set generator_args "$generator_args --omit-rbp-clobbers"
+    }
+
+    # Add all other flags
+    set escaped_generator_args [regsub -all " " $generator_args "\\ "]
+    set cflags "$cflags\"-DGEN_ARGS=$escaped_generator_args\""
+
+    gcc_parallel_test_enable 1
+    if ![runtest_file_p $runtests "$srcdir/$subdir/ms-sysv.c"] then {
+	return
+    }
+
+    #verbose "runtest_ms_sysv $cflags" 0
+
+    # Make sure there's no previous header file so that we can't accidentally
+    # pass if generation fails.
+    file delete -force $generated_header
+
+    # Cleanup any previous test in objdir
+    file delete -force $objdir
+    file mkdir $objdir
+
+    # Build the generator (only needs to be done once).
+    set src "$srcdir/$subdir/gen.cc"
+    if { (![file exists "$generator"]) || ([file mtime "$generator"]
+					   < [file mtime "$src"]) } {
+	# Temporarily switch to the environment for the host compiler.
+	restore_ld_library_path_env_vars
+	set cxx "$HOSTCXX $HOSTCXXFLAGS $TEST_ALWAYS_FLAGS $warn_flags -std=c++11"
+	set status [remote_exec host "$cxx -o $generator $src"]
+	set status [lindex $status 0]
+	set_ld_library_path_env_vars
+	if { $status != 0 } then {
+	    warning "Could not build $subdir generator"
+	}
+    }
+
+    # Generate header
+    if { $status == 0 } then {
+	set status [remote_exec host "$generator $generator_args $generated_header"]
+	set status [lindex $status 0]
+	if { $status != 0 } then {
+	    warning "Could not generate $generated_header"
+	}
+    }
+
+    gcc_parallel_test_enable 0
+    dg-runtest $srcdir/$subdir/ms-sysv.c "$cflags" "-I$objdir -I$srcdir/$subdir $warn_flags"
+    gcc_parallel_test_enable 1
+}
+
+dg-init
+
+# Standard test parameters.
+set gen_pcount_opts [list "-p0" "-p1" "-p5"]
+set base_cflags_arr [list " -O2 " " -O0 -g3 "]
+
+foreach gen_opts $gen_pcount_opts {
+    foreach cflags $base_cflags_arr {
+	# Run without -mcall-ms2sysv-xlogues always
+	runtest_ms_sysv "$cflags" "$gen_opts"
+
+	# Skip unsupported -mcall-ms2sysv-xlogues on Windows
+	if { ![istarget *-*-cygwin*] && ![istarget *-*-mingw*] } {
+	    runtest_ms_sysv "-mcall-ms2sysv-xlogues$cflags" "$gen_opts"
+	}
+    }
+}
+
+dg-finish

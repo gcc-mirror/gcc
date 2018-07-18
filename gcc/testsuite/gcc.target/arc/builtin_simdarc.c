@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=archs -O2 -Werror-implicit-function-declaration -mmpy-option=9" } */
+/* { dg-skip-if "" { ! { clmcpu } } } */
+/* { dg-options "-mcpu=hs38 -O2 -Werror-implicit-function-declaration -mmpy-option=9" } */
 
 #define STEST(name, rettype, op1type, op2type)	\
   rettype test_ ## name				\

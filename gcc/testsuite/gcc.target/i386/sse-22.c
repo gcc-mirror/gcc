@@ -8,9 +8,10 @@
 /* Test that the intrinsics compile with optimization.  All of them
    are defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h,
    mm3dnow.h, fma4intrin.h, xopintrin.h, abmintrin.h, bmiintrin.h,
-   tbmintrin.h, lwpintrin.h, popcntintrin.h, fmaintrin.h and mm_malloc.h 
-   that reference the proper builtin functions.
-
+   tbmintrin.h, lwpintrin.h, popcntintrin.h, fmaintrin.h,
+   avx5124fmapsintrin.h, avx5124vnniwintrin.h, avx512vpopcntdqintrin.h,
+   avx512bitalgintrin.h and mm_malloc.h that reference the proper builtin
+   functions.
    Defining away "extern" and "__inline" results in all of them being
    compiled as proper functions.  */
 
@@ -49,7 +50,7 @@
   { return func (A, B, imm1, imm2, imm3); }
 
 #define test_2vx(func, op1_type, op2_type, imm1, imm2)     \
-  _CONCAT(_,func) (op1_type A, op2_type B, int const I, int const L) \
+  void _CONCAT(_,func) (op1_type A, op2_type B, int const I, int const L) \
   { func (A, B, imm1, imm2); }
 
 #define test_3(func, type, op1_type, op2_type, op3_type, imm)		\
@@ -73,7 +74,7 @@
   { func (A, B, C, imm); }
 
 #define test_3vx(func, op1_type, op2_type, op3_type, imm1, imm2)   \
-  int _CONCAT(_,func) (op1_type A, op2_type B,             	   \
+  void _CONCAT(_,func) (op1_type A, op2_type B,             	   \
 		       op3_type C, int const I, int const L)       \
   { func (A, B, C, imm1, imm2); }
 
@@ -100,7 +101,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,avx512vl,avx512bw,avx512dq,avx512vbmi,avx512ifma")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,avx512vl,avx512bw,avx512dq,avx512vbmi,avx512ifma,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,gfni,avx512bitalg")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
@@ -217,7 +218,7 @@ test_4 (_mm_cmpestrz, int, __m128i, int, __m128i, int, 1)
 
 /* immintrin.h (AVX/AVX2/RDRND/FSGSBASE/F16C/RTM/AVX512F/SHA) */
 #ifdef DIFFERENT_PRAGMAS
-#pragma GCC target ("avx,avx2,rdrnd,fsgsbase,f16c,rtm,avx512f,avx512er,avx512cd,avx512pf,sha,avx512vl,avx512bw,avx512dq,avx512ifma,avx512vbmi")
+#pragma GCC target ("avx,avx2,rdrnd,fsgsbase,f16c,rtm,avx512f,avx512er,avx512cd,avx512pf,sha,avx512vl,avx512bw,avx512dq,avx512ifma,avx512vbmi,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,gfni,avx512bitalg")
 #endif
 #include <immintrin.h>
 test_1 (_cvtss_sh, unsigned short, float, 1)
@@ -398,7 +399,9 @@ test_2 (_mm512_maskz_extracti64x4_epi64, __m256i, __mmask8, __m512i, 1)
 test_2 (_mm512_maskz_getexp_round_pd, __m512d, __mmask8, __m512d, 8)
 test_2 (_mm512_maskz_getexp_round_ps, __m512, __mmask16, __m512, 8)
 test_2y (_mm512_maskz_getmant_round_pd, __m512d, __mmask8, __m512d, 1, 1, 8)
+test_3y (_mm_maskz_getmant_round_sd, __m128d, __mmask8, __m128d, __m128d, 1, 1, 8)
 test_2y (_mm512_maskz_getmant_round_ps, __m512, __mmask16, __m512, 1, 1, 8)
+test_3y (_mm_maskz_getmant_round_ss, __m128, __mmask8, __m128, __m128, 1, 1, 8)
 test_2 (_mm512_maskz_permute_pd, __m512d, __mmask8, __m512d, 1)
 test_2 (_mm512_maskz_permute_ps, __m512, __mmask16, __m512, 1)
 test_2 (_mm512_maskz_permutex_epi64, __m512i, __mmask8, __m512i, 1)
@@ -490,7 +493,9 @@ test_3 (_mm512_mask_extracti64x4_epi64, __m256i, __m256i, __mmask8, __m512i, 1)
 test_3 (_mm512_mask_getexp_round_pd, __m512d, __m512d, __mmask8, __m512d, 8)
 test_3 (_mm512_mask_getexp_round_ps, __m512, __m512, __mmask16, __m512, 8)
 test_3y (_mm512_mask_getmant_round_pd, __m512d, __m512d, __mmask8, __m512d, 1, 1, 8)
+test_4y (_mm_mask_getmant_round_sd, __m128d, __m128d, __mmask8, __m128d, __m128d, 1, 1, 8)
 test_3y (_mm512_mask_getmant_round_ps, __m512, __m512, __mmask16, __m512, 1, 1, 8)
+test_4y (_mm_mask_getmant_round_ss, __m128, __m128, __mmask8, __m128, __m128, 1, 1, 8)
 test_3 (_mm512_mask_permute_pd, __m512d, __m512d, __mmask8, __m512d, 1)
 test_3 (_mm512_mask_permute_ps, __m512, __m512, __mmask16, __m512, 1)
 test_3 (_mm512_mask_permutex_epi64, __m512i, __m512i, __mmask8, __m512i, 1)
@@ -646,11 +651,18 @@ test_4x (_mm_maskz_fixupimm_round_sd, __m128d, __mmask8, __m128d, __m128d, __m12
 test_4x (_mm_maskz_fixupimm_round_ss, __m128, __mmask8, __m128, __m128, __m128i, 1, 8)
 
 /* avx512pfintrin.h */
+test_2vx (_mm512_prefetch_i32gather_ps, __m512i, void const *, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i32scatter_ps, void const *, __m512i, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i64gather_ps, __m512i, void const *, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i64scatter_ps, void const *, __m512i, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i32gather_pd, __m256i, void const *, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i32scatter_pd, void const *, __m256i, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i64gather_pd, __m512i, long long *, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i64scatter_pd, void const *, __m512i, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i32gather_ps, __m512i, __mmask16, void const *, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i32scatter_ps, void const *, __mmask16, __m512i, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i64gather_ps, __m512i, __mmask8, void const *, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i64scatter_ps, void const *, __mmask8, __m512i, 1, _MM_HINT_T0)
-
 test_3vx (_mm512_mask_prefetch_i32gather_pd, __m256i, __mmask8, void const *, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i32scatter_pd, void const *, __mmask8, __m256i, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i64gather_pd, __m512i, __mmask8, long long *, 1, _MM_HINT_T0)
@@ -683,6 +695,11 @@ test_2 (_mm_rsqrt28_round_ss, __m128, __m128, __m128, 8)
 /* shaintrin.h */
 test_2 (_mm_sha1rnds4_epu32, __m128i, __m128i, __m128i, 1)
 
+/* gfniintrin.h */
+test_2 (_mm_gf2p8affineinv_epi64_epi8, __m128i, __m128i, __m128i, 1)
+test_2 (_mm256_gf2p8affineinv_epi64_epi8, __m256i, __m256i, __m256i, 1)
+test_2 (_mm512_gf2p8affineinv_epi64_epi8, __m512i, __m512i, __m512i, 1)
+
 /* wmmintrin.h (AES/PCLMUL).  */
 #ifdef DIFFERENT_PRAGMAS
 #pragma GCC target ("aes,pclmul")
@@ -699,7 +716,7 @@ test_2 (_mm_clmulepi64_si128, __m128i, __m128i, __m128i, 1)
 
 /* x86intrin.h (FMA4/XOP/LWP/BMI/BMI2/TBM/LZCNT/FMA). */
 #ifdef DIFFERENT_PRAGMAS
-#pragma GCC target ("fma4,xop,lwp,bmi,bmi2,tbm,lzcnt,fma,rdseed,prfchw,adx,fxsr,xsaveopt,xsavec,xsaves,clflushopt,clwb,pku")
+#pragma GCC target ("fma4,xop,lwp,bmi,bmi2,tbm,lzcnt,fma,rdseed,prfchw,adx,fxsr,xsaveopt,xsavec,xsaves,clflushopt,clwb,pku,sgx,rdpid")
 #endif
 #include <x86intrin.h>
 /* xopintrin.h */

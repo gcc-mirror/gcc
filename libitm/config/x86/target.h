@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -39,12 +39,14 @@ typedef struct gtm_jmpbuf
   unsigned long long r13;
   unsigned long long r14;
   unsigned long long r15;
+  unsigned long long ssp;
   unsigned long long rip;
 #else
   unsigned long ebx;
   unsigned long esi;
   unsigned long edi;
   unsigned long ebp;
+  unsigned long ssp;
   unsigned long eip;
 #endif
 } gtm_jmpbuf;
@@ -75,9 +77,32 @@ static inline bool
 htm_available ()
 {
   const unsigned cpuid_rtm = bit_RTM;
-  if (__get_cpuid_max (0, NULL) >= 7)
+  unsigned vendor;
+
+  if (__get_cpuid_max (0, &vendor) >= 7)
     {
       unsigned a, b, c, d;
+      unsigned family;
+
+      __cpuid (1, a, b, c, d);
+      family = (a >> 8) & 0x0f;
+      /* TSX is broken on some processors.  TSX can be disabled by microcode,
+	 but we cannot reliably detect whether the microcode has been
+	 updated.  Therefore, do not report availability of TSX on these
+	 processors.  We use the same approach here as in glibc (see
+	 https://sourceware.org/ml/libc-alpha/2016-12/msg00470.html).  */
+      if (vendor == signature_INTEL_ebx && family == 0x06)
+	{
+	  unsigned model = ((a >> 4) & 0x0f) + ((a >> 12) & 0xf0);
+	  unsigned stepping = a & 0x0f;
+	  if (model == 0x3c
+	      /* Xeon E7 v3 has correct TSX if stepping >= 4.  */
+	      || (model == 0x3f && stepping < 4)
+	      || model == 0x45
+	      || model == 0x46)
+	    return false;
+	}
+
       __cpuid_count (7, 0, a, b, c, d);
       if (b & cpuid_rtm)
 	return true;

@@ -1,5 +1,5 @@
 /* coverage.h - Defines data exported from coverage.c
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void coverage_init (const char *);
 extern void coverage_finish (void);
+extern void coverage_remove_note_file (void);
 
 /* Start outputting coverage information for the current
    function.  */
@@ -53,7 +54,7 @@ extern gcov_type *get_coverage_counts (unsigned /*counter*/,
 				       unsigned /*expected*/,
 				       unsigned /*cfg_checksum*/,
 				       unsigned /*lineno_checksum*/,
-				       const struct gcov_ctr_summary **);
+				       const gcov_summary **);
 
 extern tree get_gcov_type (void);
 extern bool coverage_node_map_initialized_p (void);

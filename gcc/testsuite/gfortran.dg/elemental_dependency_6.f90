@@ -14,7 +14,7 @@
   c = t(13)
   c = plus(c(1), b)
 ! print *, c
-  if (any(c%c /= 20)) call abort
+  if (any(c%c /= 20)) STOP 1
 
 contains
 

@@ -37,4 +37,4 @@ void update_sources() {
 /* Note that we miss one devirtualization because we are not able to track the
    vtbl store in destructor.  
    Previously we devirtualized to C::m_fn1 instead of B::m_fn1.  */
-/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 1 "cp"  } } */
+/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 2 "cp"  } } */

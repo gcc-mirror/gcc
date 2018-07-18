@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -27,15 +27,22 @@
 #ifndef _MMINTRIN_H_INCLUDED
 #define _MMINTRIN_H_INCLUDED
 
-#ifndef __MMX__
+#if defined __x86_64__ && !defined __SSE__ || !defined __MMX__
 #pragma GCC push_options
+#ifdef __x86_64__
+#pragma GCC target("sse,mmx")
+#else
 #pragma GCC target("mmx")
+#endif
 #define __DISABLE_MMX__
 #endif /* __MMX__ */
 
 /* The Intel API is flexible enough that we must allow aliasing with other
    vector types, and their scalar components.  */
 typedef int __m64 __attribute__ ((__vector_size__ (8), __may_alias__));
+
+/* Unaligned version of the same type  */
+typedef int __m64_u __attribute__ ((__vector_size__ (8), __may_alias__, __aligned__ (1)));
 
 /* Internal data types for implementing the intrinsics.  */
 typedef int __v2si __attribute__ ((__vector_size__ (8)));
@@ -308,7 +315,7 @@ _m_paddd (__m64 __m1, __m64 __m2)
 /* Add the 64-bit values in M1 to the 64-bit values in M2.  */
 #ifndef __SSE2__
 #pragma GCC push_options
-#pragma GCC target("sse2")
+#pragma GCC target("sse2,mmx")
 #define __DISABLE_SSE2__
 #endif /* __SSE2__ */
 
@@ -420,7 +427,7 @@ _m_psubd (__m64 __m1, __m64 __m2)
 /* Add the 64-bit values in M1 to the 64-bit values in M2.  */
 #ifndef __SSE2__
 #pragma GCC push_options
-#pragma GCC target("sse2")
+#pragma GCC target("sse2,mmx")
 #define __DISABLE_SSE2__
 #endif /* __SSE2__ */
 

@@ -1,3 +1,150 @@
+2018-07-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* dfp.m4 (enable_decimal_float): Enable for x86_64*-*-gnu* to
+	catch x86_64 kFreeBSD and Hurd.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
+	* bootstrap-mpx.mk: Remove.
+
+2018-05-10  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/64914
+	* bootstrap-ubsan.mk: Define UBSAN_BOOTSTRAP.
+
+2018-05-09  Joshua Watt <jpewhacker@gmail.com>
+
+        * ax_pthread.m4: Add file.
+
+2018-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85571
+	* bootstrap-lto-noplugin.mk: Disable compare.
+	* bootstrap-lto.mk: Supply contrib/compare-lto for do-compare.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/85490
+	* bootstrap-cet.mk (STAGE4_CFLAGS): New.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85485
+	* bootstrap-cet.mk (STAGE2_CFLAGS): Remove -mcet.
+	(STAGE3_CFLAGS): Likewise.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85485
+	* cet.m4 (GCC_CET_FLAGS): Replace -mcet with -mshstk.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* cet.m4 (GCC_CET_FLAGS): Default to --disable-cet, replace
+	--enable-cet=default with --enable-cet=auto.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* acx.m4 (GCC_BASE_VER): Remove \$\$ from sed expression.
+
+2018-04-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR gas/22318
+	* plugins.m4 (AC_PLUGINS): Use dlsym to check if libdl is needed.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* cet.m4: Check if target support multi-byte NOPS (SSE).
+
+2018-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-plugin.m4 (GCC_ENABLE_PLUGINS): Remove -q option passed to grep.
+
+2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* gcc-plugin.m4: Add support for MinGW.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* cet.m4: New file.
+
+2017-11-15  Alexandre Oliva <aoliva@redhat.com>
+
+	* bootstrap-debug-lean.mk (do-compare): Use the
+	contrib/compare-debug script.
+
+2017-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* bootstrap-cet.mk: New file.
+
+2017-06-19  Martin Liska  <mliska@suse.cz>
+
+	* bootstrap-lto-noplugin.mk: Enable -flto in all PGO stages.
+	* bootstrap-lto.mk: Likewise.
+
+2017-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* mt-android: New file.
+
+2017-02-13  Richard Biener  <rguenther@suse.de>
+
+	* isl.m4: Remove support for ISL 0.14.
+
+2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78478
+	* ax_check_define.m4: New file.
+
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* acx.m4 (GCC_BASE_VER): New m4 function.
+	(ACX_TOOL_DIRS): Require GCC_BASE_VER, for
+	--with-gcc-major-version-only use just major number from BASE-VER.
+
+2017-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR go/78978
+	* hwcaps.m4 (GCC_CHECK_ASSEMBLER_HWCAP): New macro.
+
+2017-01-04  Alan Modra  <amodra@gmail.com>
+
+	* picflag.m4: Remove stray \xA0 in comment.
+
+2016-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* hwcaps.m4: New file.
+
+2016-12-08  Alan Modra  <amodra@gmail.com>
+
+	* elf.m4: Revert 2016-06-21 change.
+	* picflag.m4: Likewise.  Revert 2016-04-30 change too.
+	* override.m4 (AC_PROG_LEX): Import 2016-01-18 binutils fix
+	for PR binutils/19481.
+
+2016-12-02  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* bootstrap-asan.mk: Replace LSAN_OPTIONS=detect_leaks=0 with
+	ASAN_OPTIONS=detect_leaks=0:use_odr_indicator=1.
+
+2016-12-01  Ma Jiang  <ma.jiang@zte.com.cn>
+
+	* acx.m4: Change "tail +16c" to "tail -c +17".
+
+2016-12-01  Matthias Klose  <doko@ubuntu.com>
+
+	* pkg.m4: Remove.
+
+2016-11-30  Matthias Klose  <doko@ubuntu.com>
+
+	* pkg.m4: New file.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	multi.m4: Don't set GCJ.
+
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* elf.m4: Remove interix support.

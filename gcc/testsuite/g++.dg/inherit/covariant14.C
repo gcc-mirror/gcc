@@ -8,13 +8,13 @@ struct A;
 
 struct B
 {
-  virtual A* foo();  // { dg-error "overriding" "" }
+  virtual A* foo();  // { dg-message "overridden" }
 };
 
 namespace N
 {
   struct A : B
   {
-    virtual A* foo(); // { dg-error "invalid covariant" "" }	
+    virtual A* foo(); // { dg-error "invalid covariant" }	
   };
 }

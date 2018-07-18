@@ -341,3 +341,4 @@ struct S35
   typedef D D2;
 };
 
+// { dg-prune-output "forbids flexible array member" }

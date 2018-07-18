@@ -1,0 +1,17 @@
+(function "test"
+  (insn-chain
+    (block 2
+      (edge-from entry (flags "FALLTHRU"))
+      (ccall_insn/j 1
+        (set (reg:DF xmm0)
+             (call (mem:QI (symbol_ref:DI ("sqrt") [flags 0x41]  <function_decl 0x7f82b1429d00 sqrt>) [0 __builtin_sqrt S1 A8])
+                    (const_int 0))) "test.c":19
+        (expr_list:REG_CALL_DECL (symbol_ref:DI ("sqrt") [flags 0x41]  <function_decl 0x7f82b1429d00 sqrt>)
+           (expr_list:REG_EH_REGION (const_int 0)
+              (nil)))
+        (expr_list:DF (use (reg:DF xmm0))
+           (nil)))
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 2
+  ) ;; insn-chain
+) ;; function "test"

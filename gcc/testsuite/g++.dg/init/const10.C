@@ -2,7 +2,7 @@
 // { dg-do compile { target c++11 } }
 
 class B // { dg-message "implicitly deleted" }
-        // { dg-error "uninitialized" "" { target c++11 } 4 }
+        // { dg-error "uninitialized" "" { target c++11 } .-1 }
 {
   int const v_; // { dg-message "should be initialized" }
 };
@@ -10,7 +10,7 @@ class B // { dg-message "implicitly deleted" }
 struct D : B {}; // { dg-error "deleted" }
 
 class A // { dg-message "implicitly deleted" }
-	// { dg-error "uninitialized" "" { target c++11 } 12 }
+	// { dg-error "uninitialized" "" { target c++11 } .-1 }
 {
   int& ref; // { dg-message "should be initialized" }
 };

@@ -1,6 +1,6 @@
 /* Routines for saving vector registers.
 
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Written by Alan Modra, IBM
 
    This file is free software; you can redistribute it and/or modify it
@@ -31,6 +31,7 @@
 
 /* Called with r0 pointing just beyond the end of the vector save area.  */
 
+	.machine altivec
 	.section ".text"
 CFI_STARTPROC
 HIDDEN_FUNC(_savevr_20)

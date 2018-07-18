@@ -1,0 +1,315 @@
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
+	 xml:id="status.iso.specfun" xreflabel="Status C++ 29124">
+<?dbhtml filename="status_iso_cxxis29124.html"?>
+
+<info><title>C++ IS 29124</title>
+  <keywordset>
+    <keyword>ISO C++</keyword>
+    <keyword>Special Functions</keyword>
+  </keywordset>
+</info>
+
+<para>
+This table is based on the table of contents of ISO/IEC FDIS 29124
+Doc No: N3060 Date: 2010-03-06
+Extensions to the C++ Library to support mathematical special functions
+</para>
+
+<para>
+Complete support for IS 29124 is in GCC 6.1 and later releases, when using
+at least C++11 (for older releases or C++98/C++03 use TR1 instead).
+For C++11 and C++14 the additions to the library are not declared by their
+respective headers unless <code>__STDCPP_WANT_MATH_SPEC_FUNCS__</code>
+is defined as a macro that expands to a non-zero integer constant.
+For C++17 the special functions are always declared (since GCC 7.1).
+</para>
+
+<para>
+When the special functions are declared the macro
+<code>__STDCPP_MATH_SPEC_FUNCS__</code> is defined to <code>201003L</code>.
+</para>
+
+<para>
+In addition to the special functions defined in IS 29124, for
+non-strict modes (i.e. <code>-std=gnu++NN</code> modes) the
+hypergeometric functions and confluent hypergeometric functions
+from TR1 are also provided, defined in namespace
+<code>__gnu_cxx</code>.
+</para>
+
+<!-- Status is Yes or No, Broken/Partial-->
+<!--
+   Yes
+
+   No
+      <?dbhtml bgcolor="#C8B0B0" ?>
+   Broken/Partial
+      <?dbhtml bgcolor="#B0B0B0" ?>
+-->
+<table frame="all" xml:id="table.specfun_status">
+<title>C++ Special Functions Implementation Status</title>
+
+<tgroup cols="4" align="left" colsep="0" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+
+  <thead>
+    <row>
+      <entry>Section</entry>
+      <entry>Description</entry>
+      <entry>Status</entry>
+      <entry>Comments</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
+      <entry>7</entry>
+      <entry>Macro names</entry>
+      <entry>Partial</entry>
+      <entry>No diagnostic for inconsistent definitions of
+             <code>__STDCPP_WANT_MATH_SPEC_FUNCS__</code></entry>
+    </row>
+    <row>
+      <entry>8</entry>
+      <entry>Mathematical special functions</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1</entry>
+      <entry>Additions to header <code>&lt;cmath&gt;</code> synopsis</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.1</entry>
+      <entry>associated Laguerre polynomials</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.2</entry>
+      <entry>associated Legendre functions</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.3</entry>
+      <entry>beta function</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.4</entry>
+      <entry>(complete) elliptic integral of the first kind</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.5</entry>
+      <entry>(complete) elliptic integral of the second kind</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.6</entry>
+      <entry>(complete) elliptic integral of the third kind</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.7</entry>
+      <entry>regular modified cylindrical Bessel functions</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.8</entry>
+      <entry>cylindrical Bessel functions (of the first kind)</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.9</entry>
+      <entry>irregular modified cylindrical Bessel functions</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.10</entry>
+      <entry>cylindrical Neumann functions</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.11</entry>
+      <entry>(incomplete) elliptic integral of the first kind</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.12</entry>
+      <entry>(incomplete) elliptic integral of the second kind</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.13</entry>
+      <entry>(incomplete) elliptic integral of the third kind</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.14</entry>
+      <entry>exponential integral</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.15</entry>
+      <entry>Hermite polynomials</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.16</entry>
+      <entry>Laguerre polynomials</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.17</entry>
+      <entry>Legendre polynomials</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.18</entry>
+      <entry>Riemann zeta function</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.19</entry>
+      <entry>spherical Bessel functions (of the first kind)</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.20</entry>
+      <entry>spherical associated Legendre functions</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.1.21</entry>
+      <entry>spherical Neumann functions</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <entry>8.2</entry>
+      <entry>Additions to header <code>&lt;math.h&gt;</code></entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
+      <entry>8.3</entry>
+      <entry>The header <code>&lt;ctgmath&gt;</code></entry>
+      <entry>Partial</entry>
+      <entry>Conflicts with C++ 2011 requirements.</entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>8.4</entry>
+      <entry>The header <code>&lt;tgmath.h&gt;</code></entry>
+      <entry>N</entry>
+      <entry>Conflicts with C++ 2011 requirements.</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
+
+<section xml:id="iso.specfun.specific" xreflabel="Implementation Specific"><info><title>Implementation Specific Behavior</title></info>
+
+   <para>For behaviour which is specified by the 2011 standard,
+      see <link linkend="iso.2011.specific">C++ 2011 Implementation
+      Specific Behavior</link>. This section documents behaviour which
+      is required by IS 29124.
+   </para>
+
+   <para>
+     <emphasis>7.2 [macro.user]/3 /4</emphasis> The functions declared in
+     Clause 8 are only declared when
+     <code>__STDCPP_WANT_MATH_SPEC_FUNCS__ == 1</code>
+     (or in C++17 mode, for GCC 7.1 and later).
+   </para>
+
+   <para>
+     <emphasis>8.1.1 [sf.cmath.Lnm]/1</emphasis> The effect of calling
+     these functions with <code>n >= 128</code> or <code>m >= 128</code>
+     should be described here.
+   </para>
+
+   <para>
+     <emphasis>8.1.2 [sf.cmath.Plm]/3</emphasis> The effect of calling
+     these functions with <code>l >= 128</code> should be described here.
+   </para>
+
+   <para>
+     <emphasis>8.1.3 [sf.cmath.I]/3</emphasis> The effect of calling
+     these functions with <code>nu >= 128</code> should be described here.
+   </para>
+
+   <para>
+     <emphasis>8.1.8 [sf.cmath.J]/3</emphasis> The effect of calling
+     these functions with <code>nu >= 128</code> should be described here.
+   </para>
+
+   <para>
+     <emphasis>8.1.9 [sf.cmath.K]/3</emphasis> The effect of calling
+     these functions with <code>nu >= 128</code> should be described here.
+   </para>
+
+   <para>
+     <emphasis>8.1.10 [sf.cmath.N]/3</emphasis> The effect of calling
+     these functions with <code>nu >= 128</code> should be described here.
+   </para>
+
+   <para>
+     <emphasis>8.1.15 [sf.cmath.Hn]/3</emphasis> The effect of calling
+     these functions with <code>n >= 128</code> should be described here.
+   </para>
+
+   <para>
+     <emphasis>8.1.16 [sf.cmath.Ln]/3</emphasis> The effect of calling
+     these functions with <code>n >= 128</code> should be described here.
+   </para>
+
+   <para>
+     <emphasis>8.1.17 [sf.cmath.Pl]/3</emphasis> The effect of calling
+     these functions with <code>l >= 128</code> should be described here.
+   </para>
+
+   <para>
+     <emphasis>8.1.19 [sf.cmath.j]/3</emphasis> The effect of calling
+     these functions with <code>n >= 128</code> should be described here.
+   </para>
+
+   <para>
+     <emphasis>8.1.20 [sf.cmath.Ylm]/3</emphasis> The effect of calling
+     these functions with <code>l >= 128</code> should be described here.
+   </para>
+
+   <para>
+     <emphasis>8.1.21 [sf.cmath.n]/3</emphasis> The effect of calling
+     these functions with <code>n >= 128</code> should be described here.
+   </para>
+
+</section>
+
+</section>

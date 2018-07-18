@@ -1,7 +1,6 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.  Generic MSDOS specialization.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2005
-   Free Software Foundation, Inc.
+   Copyright (C) 1996-2018 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or

@@ -1,6 +1,6 @@
 /* Form lists of pseudo register references for autoinc optimization
    for GNU compiler.  This is part of flow optimization.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -450,6 +450,13 @@ enum df_chain_flags
   DF_UD_CHAIN      =  2  /* Build UD chains.  */
 };
 
+enum df_scan_flags
+{
+  /* Flags for the SCAN problem.  */
+  DF_SCAN_EMPTY_ENTRY_EXIT = 1  /* Don't define any registers in the entry
+				   block; don't use any in the exit block.  */
+};
+
 enum df_changeable_flags
 {
   /* Scanning flags.  */
@@ -575,11 +582,9 @@ struct df_d
   bitmap_head insns_to_notes_rescan;
   int *postorder;                /* The current set of basic blocks
                                     in reverse postorder.  */
-  int *postorder_inverted;       /* The current set of basic blocks
+  vec<int> postorder_inverted;       /* The current set of basic blocks
                                     in reverse postorder of inverted CFG.  */
   int n_blocks;                  /* The number of blocks in reverse postorder.  */
-  int n_blocks_inverted;         /* The number of blocks
-                                    in reverse postorder of inverted CFG.  */
 
   /* An array [FIRST_PSEUDO_REGISTER], indexed by regno, of the number
      of refs that qualify as being real hard regs uses.  Artificial
@@ -1075,7 +1080,6 @@ extern unsigned int df_hard_reg_used_count (unsigned int);
 extern bool df_regs_ever_live_p (unsigned int);
 extern void df_set_regs_ever_live (unsigned int, bool);
 extern void df_compute_regs_ever_live (bool);
-extern bool df_read_modify_subreg_p (rtx);
 extern void df_scan_verify (void);
 
 

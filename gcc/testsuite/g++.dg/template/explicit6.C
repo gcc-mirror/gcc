@@ -5,4 +5,4 @@
 // Bug 19895: ICE on invalid
 
 struct A;
-template A<>::A(); // { dg-error "(not a template)|(explicit qualification)" "" }
+template A<>::A(); // { dg-error "(should have been)|(not a template)" }

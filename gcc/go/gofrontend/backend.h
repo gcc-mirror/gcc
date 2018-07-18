@@ -324,12 +324,12 @@ class Backend
   compound_expression(Bstatement* bstat, Bexpression* bexpr, Location) = 0;
 
   // Return an expression that executes THEN_EXPR if CONDITION is true, or
-  // ELSE_EXPR otherwise and returns the result as type BTYPE.  ELSE_EXPR
-  // may be NULL.  BTYPE may be NULL.
+  // ELSE_EXPR otherwise and returns the result as type BTYPE, within the
+  // specified function FUNCTION.  ELSE_EXPR may be NULL.  BTYPE may be NULL.
   virtual Bexpression*
-  conditional_expression(Btype* btype, Bexpression* condition,
-                         Bexpression* then_expr, Bexpression* else_expr,
-                         Location) = 0;
+  conditional_expression(Bfunction* function, Btype* btype,
+                         Bexpression* condition, Bexpression* then_expr,
+                         Bexpression* else_expr, Location) = 0;
 
   // Return an expression for the unary operation OP EXPR.
   // Supported values of OP are (from operators.h):
@@ -372,14 +372,12 @@ class Backend
   virtual Bexpression*
   array_index_expression(Bexpression* array, Bexpression* index, Location) = 0;
 
-  // Create an expression for a call to FN with ARGS.
+  // Create an expression for a call to FN with ARGS, taking place within
+  // caller CALLER.
   virtual Bexpression*
-  call_expression(Bexpression* fn, const std::vector<Bexpression*>& args,
+  call_expression(Bfunction *caller, Bexpression* fn,
+                  const std::vector<Bexpression*>& args,
 		  Bexpression* static_chain, Location) = 0;
-
-  // Return an expression that allocates SIZE bytes on the stack.
-  virtual Bexpression*
-  stack_allocation_expression(int64_t size, Location) = 0;
 
   // Statements.
 
@@ -389,19 +387,19 @@ class Backend
   virtual Bstatement*
   error_statement() = 0;
 
-  // Create an expression statement.
+  // Create an expression statement within the specified function.
   virtual Bstatement*
-  expression_statement(Bexpression*) = 0;
+  expression_statement(Bfunction*, Bexpression*) = 0;
 
-  // Create a variable initialization statement.  This initializes a
-  // local variable at the point in the program flow where it is
-  // declared.
+  // Create a variable initialization statement in the specified
+  // function.  This initializes a local variable at the point in the
+  // program flow where it is declared.
   virtual Bstatement*
-  init_statement(Bvariable* var, Bexpression* init) = 0;
+  init_statement(Bfunction*, Bvariable* var, Bexpression* init) = 0;
 
-  // Create an assignment statement.
+  // Create an assignment statement within the specified function.
   virtual Bstatement*
-  assignment_statement(Bexpression* lhs, Bexpression* rhs,
+  assignment_statement(Bfunction*, Bexpression* lhs, Bexpression* rhs,
 		       Location) = 0;
 
   // Create a return statement, passing the representation of the
@@ -410,9 +408,10 @@ class Backend
   return_statement(Bfunction*, const std::vector<Bexpression*>&,
 		   Location) = 0;
 
-  // Create an if statement.  ELSE_BLOCK may be NULL.
+  // Create an if statement within a function.  ELSE_BLOCK may be NULL.
   virtual Bstatement*
-  if_statement(Bexpression* condition, Bblock* then_block, Bblock* else_block,
+  if_statement(Bfunction*, Bexpression* condition,
+               Bblock* then_block, Bblock* else_block,
 	       Location) = 0;
 
   // Create a switch statement where the case values are constants.
@@ -482,21 +481,19 @@ class Backend
   virtual Bvariable*
   error_variable() = 0;
 
-  // Create a global variable.  PACKAGE_NAME is the name of the
-  // package where the variable is defined.  PKGPATH is the package
-  // path for that package, from the -fgo-pkgpath or -fgo-prefix
-  // option.  NAME is the name of the variable.  BTYPE is the type of
-  // the variable.  IS_EXTERNAL is true if the variable is defined in
-  // some other package.  IS_HIDDEN is true if the variable is not
-  // exported (name begins with a lower case letter).
-  // IN_UNIQUE_SECTION is true if the variable should be put into a
-  // unique section if possible; this is intended to permit the linker
-  // to garbage collect the variable if it is not referenced.
-  // LOCATION is where the variable was defined.
+  // Create a global variable. NAME is the package-qualified name of
+  // the variable.  ASM_NAME is the encoded identifier for the
+  // variable, incorporating the package, and made safe for the
+  // assembler.  BTYPE is the type of the variable.  IS_EXTERNAL is
+  // true if the variable is defined in some other package.  IS_HIDDEN
+  // is true if the variable is not exported (name begins with a lower
+  // case letter).  IN_UNIQUE_SECTION is true if the variable should
+  // be put into a unique section if possible; this is intended to
+  // permit the linker to garbage collect the variable if it is not
+  // referenced.  LOCATION is where the variable was defined.
   virtual Bvariable*
-  global_variable(const std::string& package_name,
-		  const std::string& pkgpath,
-		  const std::string& name,
+  global_variable(const std::string& name,
+                  const std::string& asm_name,
 		  Btype* btype,
 		  bool is_external,
 		  bool is_hidden,
@@ -515,15 +512,18 @@ class Backend
   // Create a local variable.  The frontend will create the local
   // variables first, and then create the block which contains them.
   // FUNCTION is the function in which the variable is defined.  NAME
-  // is the name of the variable.  TYPE is the type.  IS_ADDRESS_TAKEN
-  // is true if the address of this variable is taken (this implies
-  // that the address does not escape the function, as otherwise the
-  // variable would be on the heap).  LOCATION is where the variable
-  // is defined.  For each local variable the frontend will call
-  // init_statement to set the initial value.
+  // is the name of the variable.  TYPE is the type.  DECL_VAR, if not
+  // null, gives the location at which the value of this variable may
+  // be found, typically used to create an inner-scope reference to an
+  // outer-scope variable, to extend the lifetime of the variable beyond
+  // the inner scope.  IS_ADDRESS_TAKEN is true if the address of this
+  // variable is taken (this implies that the address does not escape
+  // the function, as otherwise the variable would be on the heap).
+  // LOCATION is where the variable is defined.  For each local variable
+  // the frontend will call init_statement to set the initial value.
   virtual Bvariable*
   local_variable(Bfunction* function, const std::string& name, Btype* type,
-		 bool is_address_taken, Location location) = 0;
+		 Bvariable* decl_var, bool is_address_taken, Location location) = 0;
 
   // Create a function parameter.  This is an incoming parameter, not
   // a result parameter (result parameters are treated as local
@@ -561,6 +561,9 @@ class Backend
   //
   // NAME is the name to use for the initialized variable this will create.
   //
+  // ASM_NAME is encoded assembler-friendly version of the name, or the
+  // empty string if no encoding is needed.
+  //
   // TYPE is the type of the implicit variable. 
   //
   // IS_HIDDEN will be true if the descriptor should only be visible
@@ -578,8 +581,9 @@ class Backend
   //
   // If ALIGNMENT is not zero, it is the desired alignment of the variable.
   virtual Bvariable*
-  implicit_variable(const std::string& name, Btype* type, bool is_hidden,
-		    bool is_constant, bool is_common, int64_t alignment) = 0;
+  implicit_variable(const std::string& name, const std::string& asm_name,
+                    Btype* type, bool is_hidden, bool is_constant,
+                    bool is_common, int64_t alignment) = 0;
 
 
   // Set the initial value of a variable created by implicit_variable.
@@ -597,12 +601,15 @@ class Backend
 			     bool is_hidden, bool is_constant, bool is_common,
 			     Bexpression* init) = 0;
 
-  // Create a reference to a named implicit variable defined in some other
-  // package.  This will be a variable created by a call to implicit_variable
-  // with the same NAME and TYPE and with IS_COMMON passed as false.  This
-  // corresponds to an extern global variable in C.
+  // Create a reference to a named implicit variable defined in some
+  // other package.  This will be a variable created by a call to
+  // implicit_variable with the same NAME, ASM_NAME and TYPE and with
+  // IS_COMMON passed as false.  This corresponds to an extern global
+  // variable in C.
   virtual Bvariable*
-  implicit_variable_reference(const std::string& name, Btype* type) = 0;
+  implicit_variable_reference(const std::string& name,
+                              const std::string& asm_name,
+                              Btype* type) = 0;
 
   // Create a named immutable initialized data structure.  This is
   // used for type descriptors, map descriptors, and function
@@ -611,6 +618,9 @@ class Backend
   //
   // NAME is the name to use for the initialized global variable which
   // this call will create.
+  //
+  // ASM_NAME is the encoded, assembler-friendly version of NAME, or
+  // the empty string if no encoding is needed.
   //
   // IS_HIDDEN will be true if the descriptor should only be visible
   // within the current object.
@@ -630,7 +640,9 @@ class Backend
   // address.  After calling this the frontend will call
   // immutable_struct_set_init.
   virtual Bvariable*
-  immutable_struct(const std::string& name, bool is_hidden, bool is_common,
+  immutable_struct(const std::string& name,
+                   const std::string& asm_name,
+                   bool is_hidden, bool is_common,
 		   Btype* type, Location) = 0;
 
   // Set the initial value of a variable created by immutable_struct.
@@ -648,11 +660,12 @@ class Backend
   // Create a reference to a named immutable initialized data
   // structure defined in some other package.  This will be a
   // structure created by a call to immutable_struct with the same
-  // NAME and TYPE and with IS_COMMON passed as false.  This
+  // NAME, ASM_NAME and TYPE and with IS_COMMON passed as false.  This
   // corresponds to an extern const global variable in C.
   virtual Bvariable*
-  immutable_struct_reference(const std::string& name, Btype* type,
-			     Location) = 0;
+  immutable_struct_reference(const std::string& name,
+                             const std::string& asm_name,
+                             Btype* type, Location) = 0;
 
   // Labels.
   
@@ -697,17 +710,20 @@ class Backend
   // IS_INLINABLE is true if the function can be inlined.
   // DISABLE_SPLIT_STACK is true if this function may not split the stack; this
   // is used for the implementation of recover.
+  // DOES_NOT_RETURN is true for a function that does not return; this is used
+  // for the implementation of panic.
   // IN_UNIQUE_SECTION is true if this function should be put into a unique
   // location if possible; this is used for field tracking.
   virtual Bfunction*
   function(Btype* fntype, const std::string& name, const std::string& asm_name,
            bool is_visible, bool is_declaration, bool is_inlinable,
-           bool disable_split_stack, bool in_unique_section, Location) = 0;
+           bool disable_split_stack, bool does_not_return,
+	   bool in_unique_section, Location) = 0;
 
   // Create a statement that runs all deferred calls for FUNCTION.  This should
   // be a statement that looks like this in C++:
   //   finish:
-  //     try { UNDEFER; } catch { CHECK_DEFER; goto finish; }
+  //     try { DEFER_RETURN; } catch { CHECK_DEFER; goto finish; }
   virtual Bstatement*
   function_defer_statement(Bfunction* function, Bexpression* undefer,
                            Bexpression* check_defer, Location) = 0;
@@ -738,6 +754,11 @@ class Backend
                            const std::vector<Bexpression*>& constant_decls,
                            const std::vector<Bfunction*>& function_decls,
                            const std::vector<Bvariable*>& variable_decls) = 0;
+
+  // Write SIZE bytes of export data from BYTES to the proper
+  // section in the output object file.
+  virtual void
+  write_export_data(const char* bytes, unsigned int size) = 0;
 };
 
 #endif // !defined(GO_BACKEND_H)

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { *-*-darwin* hppa*64*-*-* } } } } */
+/* { dg-do compile { target { ! { *-*-darwin* hppa*64*-*-* mips*-*-linux-* } } } } */
 /* { dg-options "-fno-PIC" } */
 
 #ifdef __PIC__

@@ -12,7 +12,7 @@ struct foo {		        // { dg-message "note" } candidate
 struct bar : foo {
   typedef int an_int;
   bar() : bar::an_int(3) {}	// { dg-error "match" "match" } not a base
-  // { dg-message "expected" "exp" { target *-*-* } 14 }
+  // { dg-message "expected" "exp" { target *-*-* } .-1 }
 };
 
 int

@@ -114,7 +114,7 @@ This reference manual contains the following chapters:
 .. index:: Ada 2005 Language Reference Manual
 
 This reference manual assumes a basic familiarity with the Ada 95 language, as
-described in the 
+described in the
 :title:`International Standard ANSI/ISO/IEC-8652:1995`.
 It does not require knowledge of the new features introduced by Ada 2005 or
 Ada 2012.
@@ -130,14 +130,14 @@ Conventions
 Following are examples of the typographical and graphic conventions used
 in this guide:
 
-* `Functions`, `utility program names`, `standard names`,
-  and `classes`.
+* ``Functions``, ``utility program names``, ``standard names``,
+  and ``classes``.
 
-* `Option flags`
+* ``Option flags``
 
 * :file:`File names`
 
-* `Variables`
+* ``Variables``
 
 * *Emphasis*
 
@@ -148,10 +148,10 @@ in this guide:
   ::
 
     and then shown this way.
-    
+
 * Commands that are entered by the user are shown as preceded by a prompt string
   comprising the ``$`` character followed by a space.
-  
+
 Related Information
 ===================
 

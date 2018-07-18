@@ -1,5 +1,5 @@
 /* Next Runtime (ABI-0/1) private.
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Iain Sandoe (split from objc-act.c)
 
 This file is part of GCC.
@@ -26,7 +26,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "tree.h"
 #include "stringpool.h"
+#include "attribs.h"
 
 #ifdef OBJCPLUS
 #include "cp/cp-tree.h"
@@ -1660,7 +1662,7 @@ generate_dispatch_table (tree chain, const char *name, tree attr)
 {
   tree decl, method_list_template, initlist;
   vec<constructor_elt, va_gc> *v = NULL;
-  int size;;
+  int size;
 
   if (!chain || !name || !(size = list_length (chain)))
     return NULL_TREE;
@@ -2812,7 +2814,7 @@ objc_eh_runtime_type (tree type)
 	 we use c++'s typeinfo decl. */
       return build_eh_type_type (type);
 #else
-      error ("non-objective-c type '%T' cannot be caught", type);
+      error ("non-objective-c type %qT cannot be caught", type);
       ident = get_identifier ("ErrorMarkNode");
       goto make_err_class;
 #endif

@@ -13,6 +13,7 @@ import (
 	"runtime"
 	"syscall"
 	"testing"
+	"time"
 )
 
 func (ln *TCPListener) port() string {
@@ -225,7 +226,7 @@ func TestDualStackTCPListener(t *testing.T) {
 	case "nacl", "plan9":
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
-	if !supportsIPv4 || !supportsIPv6 {
+	if !supportsIPv4() || !supportsIPv6() {
 		t.Skip("both IPv4 and IPv6 are required")
 	}
 
@@ -235,7 +236,7 @@ func TestDualStackTCPListener(t *testing.T) {
 			continue
 		}
 
-		if !supportsIPv4map && differentWildcardAddr(tt.address1, tt.address2) {
+		if !supportsIPv4map() && differentWildcardAddr(tt.address1, tt.address2) {
 			tt.xerr = nil
 		}
 		var firstErr, secondErr error
@@ -315,7 +316,7 @@ func TestDualStackUDPListener(t *testing.T) {
 	case "nacl", "plan9":
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
-	if !supportsIPv4 || !supportsIPv6 {
+	if !supportsIPv4() || !supportsIPv6() {
 		t.Skip("both IPv4 and IPv6 are required")
 	}
 
@@ -325,7 +326,7 @@ func TestDualStackUDPListener(t *testing.T) {
 			continue
 		}
 
-		if !supportsIPv4map && differentWildcardAddr(tt.address1, tt.address2) {
+		if !supportsIPv4map() && differentWildcardAddr(tt.address1, tt.address2) {
 			tt.xerr = nil
 		}
 		var firstErr, secondErr error
@@ -454,7 +455,7 @@ func checkDualStackAddrFamily(fd *netFD) error {
 		// and IPv6 IPv4-mapping capability, we can assume
 		// that the node listens on a wildcard address with an
 		// AF_INET6 socket.
-		if supportsIPv4map && fd.laddr.(*TCPAddr).isWildcard() {
+		if supportsIPv4map() && fd.laddr.(*TCPAddr).isWildcard() {
 			if fd.family != syscall.AF_INET6 {
 				return fmt.Errorf("Listen(%s, %v) returns %v; want %v", fd.net, fd.laddr, fd.family, syscall.AF_INET6)
 			}
@@ -468,7 +469,7 @@ func checkDualStackAddrFamily(fd *netFD) error {
 		// and IPv6 IPv4-mapping capability, we can assume
 		// that the node listens on a wildcard address with an
 		// AF_INET6 socket.
-		if supportsIPv4map && fd.laddr.(*UDPAddr).isWildcard() {
+		if supportsIPv4map() && fd.laddr.(*UDPAddr).isWildcard() {
 			if fd.family != syscall.AF_INET6 {
 				return fmt.Errorf("ListenPacket(%s, %v) returns %v; want %v", fd.net, fd.laddr, fd.family, syscall.AF_INET6)
 			}
@@ -535,7 +536,7 @@ func TestIPv4MulticastListener(t *testing.T) {
 	case "solaris":
 		t.Skipf("not supported on solaris, see golang.org/issue/7399")
 	}
-	if !supportsIPv4 {
+	if !supportsIPv4() {
 		t.Skip("IPv4 is not supported")
 	}
 
@@ -610,7 +611,7 @@ func TestIPv6MulticastListener(t *testing.T) {
 	case "solaris":
 		t.Skipf("not supported on solaris, see issue 7399")
 	}
-	if !supportsIPv6 {
+	if !supportsIPv6() {
 		t.Skip("IPv6 is not supported")
 	}
 	if os.Getuid() != 0 {
@@ -695,4 +696,36 @@ func multicastRIBContains(ip IP) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+// Issue 21856.
+func TestClosingListener(t *testing.T) {
+	ln, err := newLocalListener("tcp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	addr := ln.Addr()
+
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			c.Close()
+		}
+	}()
+
+	// Let the goroutine start. We don't sleep long: if the
+	// goroutine doesn't start, the test will pass without really
+	// testing anything, which is OK.
+	time.Sleep(time.Millisecond)
+
+	ln.Close()
+
+	ln2, err := Listen("tcp", addr.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	ln2.Close()
 }

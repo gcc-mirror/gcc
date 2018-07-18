@@ -3,5 +3,5 @@
 subroutine namelist_2(x)
   integer,intent(in) :: x
   namelist /n/ x
-  read(*,n) ! { dg-error "is INTENT" "" }
+  read(*,n) ! { dg-error "is INTENT" }
 end subroutine namelist_2

@@ -1,5 +1,5 @@
 /* toplev.h - Various declarations for functions found in toplev.c
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -74,11 +74,6 @@ extern void target_reinit (void);
 /* A unique local time stamp, might be zero if none is available.  */
 extern unsigned local_tick;
 
-/* True if the user has tagged the function with the 'section'
-   attribute.  */
-
-extern bool user_defined_section_attribute;
-
 /* See toplev.c.  */
 extern int flag_rerun_cse_after_global_opts;
 
@@ -96,7 +91,14 @@ extern bool set_src_pwd		       (const char *);
 /* Functions used to manipulate the random seed.  */
 
 extern HOST_WIDE_INT get_random_seed (bool);
-extern const char *set_random_seed (const char *);
+extern void set_random_seed (const char *);
+
+extern unsigned int min_align_loops_log;
+extern unsigned int min_align_jumps_log;
+extern unsigned int min_align_labels_log;
+extern unsigned int min_align_functions_log;
+
+extern void parse_alignment_opts (void);
 
 extern void initialize_rtl (void);
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-ifcvt" } */
+/* { dg-options "-O3 -fdump-tree-ifcvt-blocks-details" } */
 
 void foo (long *a)
 {
@@ -21,3 +21,10 @@ void foo (long *a)
 }
 
 /* { dg-final { scan-tree-dump "Applying if-conversion" "ifcvt" } } */
+/* We insert into code
+   if (LOOP_VECTORIZED (...))
+   which is folded by vectorizer.  Both outgoing edges must have probability
+   100% so the resulting profile match after folding.  */
+/* { dg-final { scan-tree-dump-times "Invalid sum of outgoing probabilities 200.0" 1 "ifcvt" } } */
+/* { dg-final { scan-tree-dump-times "Invalid sum of incoming counts" 1 "ifcvt" } } */
+

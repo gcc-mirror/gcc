@@ -6,7 +6,7 @@ package Renaming6 is
   function Get_I return Integer;
   procedure Set_I (Val : Integer);
 
-  J : Integer renames I;
+  X : Integer renames I;
 
   function Get_J return Integer;
   procedure Set_J (Val : Integer);

@@ -38,7 +38,7 @@ extern void abort (void);
 # error Charconst incorrectly sign-extended
 #endif
 
-#if LONG_CHARCONST != SHORT_CHARCONST /* { dg-warning "too long" "" } */
+#if LONG_CHARCONST != SHORT_CHARCONST /* { dg-warning "too long" } */
 # error Overly long charconst truncates wrongly for preprocessor
 #endif
 
@@ -46,7 +46,7 @@ int main ()
 {
   if (POS_CHARCONST < 0)
     abort ();
-  if (LONG_CHARCONST != SHORT_CHARCONST)  /* { dg-warning "too long" "" } */
+  if (LONG_CHARCONST != SHORT_CHARCONST)  /* { dg-warning "too long" } */
     abort ();
   return 0;
 }

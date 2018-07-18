@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -44,8 +44,11 @@
 #include "config.h"
 #include "gstdint.h"
 #include "libgomp-plugin.h"
+#include "gomp-constants.h"
 
+#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
+#endif
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -122,6 +125,7 @@ struct htab;
 #include "sem.h"
 #include "mutex.h"
 #include "bar.h"
+#include "simple-bar.h"
 #include "ptrlock.h"
 
 
@@ -360,9 +364,11 @@ extern char *gomp_bind_var_list;
 extern unsigned long gomp_bind_var_list_len;
 extern void **gomp_places_list;
 extern unsigned long gomp_places_list_len;
+extern unsigned int gomp_num_teams_var;
 extern int gomp_debug_var;
 extern int goacc_device_num;
 extern char *goacc_device_type;
+extern int goacc_default_dims[GOMP_DIM_MAX];
 
 enum gomp_task_kind
 {
@@ -626,8 +632,8 @@ struct gomp_thread_pool
   /* Number of threads running in this contention group.  */
   unsigned long threads_busy;
 
-  /* This barrier holds and releases threads waiting in threads.  */
-  gomp_barrier_t threads_dock;
+  /* This barrier holds and releases threads waiting in thread pools.  */
+  gomp_simple_barrier_t threads_dock;
 };
 
 enum gomp_cancel_kind
@@ -642,7 +648,15 @@ enum gomp_cancel_kind
 
 /* ... and here is that TLS data.  */
 
-#if defined HAVE_TLS || defined USE_EMUTLS
+#if defined __nvptx__
+extern struct gomp_thread *nvptx_thrs __attribute__((shared));
+static inline struct gomp_thread *gomp_thread (void)
+{
+  int tid;
+  asm ("mov.u32 %0, %%tid.y;" : "=r" (tid));
+  return nvptx_thrs + tid;
+}
+#elif defined HAVE_TLS || defined USE_EMUTLS
 extern __thread struct gomp_thread gomp_tls_data;
 static inline struct gomp_thread *gomp_thread (void)
 {
@@ -671,17 +685,21 @@ static inline struct gomp_task_icv *gomp_icv (bool write)
     return &gomp_global_icv;
 }
 
+#ifdef LIBGOMP_USE_PTHREADS
 /* The attributes to be used during thread creation.  */
 extern pthread_attr_t gomp_thread_attr;
 
 extern pthread_key_t gomp_thread_destructor;
+#endif
 
 /* Function prototypes.  */
 
 /* affinity.c */
 
 extern void gomp_init_affinity (void);
+#ifdef LIBGOMP_USE_PTHREADS
 extern void gomp_init_thread_affinity (pthread_attr_t *, unsigned int);
+#endif
 extern void **gomp_affinity_alloc (unsigned long, bool);
 extern void gomp_affinity_init_place (void *);
 extern bool gomp_affinity_add_cpus (void *, unsigned long, unsigned long,
@@ -835,6 +853,8 @@ struct splay_tree_key_s {
   uintptr_t tgt_offset;
   /* Reference count.  */
   uintptr_t refcount;
+  /* Dynamic reference count.  */
+  uintptr_t dynamic_refcount;
   /* Pointer to the original mapping of "omp declare target link" object.  */
   splay_tree_key link_key;
 };
@@ -866,31 +886,35 @@ typedef struct acc_dispatch_t
   struct target_mem_desc *data_environ;
 
   /* Execute.  */
-  void (*exec_func) (void (*) (void *), size_t, void **, void **, int,
-		     unsigned *, void *);
+  __typeof (GOMP_OFFLOAD_openacc_exec) *exec_func;
 
   /* Async cleanup callback registration.  */
-  void (*register_async_cleanup_func) (void *, int);
+  __typeof (GOMP_OFFLOAD_openacc_register_async_cleanup)
+    *register_async_cleanup_func;
 
   /* Asynchronous routines.  */
-  int (*async_test_func) (int);
-  int (*async_test_all_func) (void);
-  void (*async_wait_func) (int);
-  void (*async_wait_async_func) (int, int);
-  void (*async_wait_all_func) (void);
-  void (*async_wait_all_async_func) (int);
-  void (*async_set_async_func) (int);
+  __typeof (GOMP_OFFLOAD_openacc_async_test) *async_test_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_test_all) *async_test_all_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_wait) *async_wait_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_wait_async) *async_wait_async_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_wait_all) *async_wait_all_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_wait_all_async)
+    *async_wait_all_async_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_set_async) *async_set_async_func;
 
   /* Create/destroy TLS data.  */
-  void *(*create_thread_data_func) (int);
-  void (*destroy_thread_data_func) (void *);
+  __typeof (GOMP_OFFLOAD_openacc_create_thread_data) *create_thread_data_func;
+  __typeof (GOMP_OFFLOAD_openacc_destroy_thread_data)
+    *destroy_thread_data_func;
 
   /* NVIDIA target specific routines.  */
   struct {
-    void *(*get_current_device_func) (void);
-    void *(*get_current_context_func) (void);
-    void *(*get_stream_func) (int);
-    int (*set_stream_func) (int, void *);
+    __typeof (GOMP_OFFLOAD_openacc_cuda_get_current_device)
+      *get_current_device_func;
+    __typeof (GOMP_OFFLOAD_openacc_cuda_get_current_context)
+      *get_current_context_func;
+    __typeof (GOMP_OFFLOAD_openacc_cuda_get_stream) *get_stream_func;
+    __typeof (GOMP_OFFLOAD_openacc_cuda_set_stream) *set_stream_func;
   } cuda;
 } acc_dispatch_t;
 
@@ -924,23 +948,23 @@ struct gomp_device_descr
   enum offload_target_type type;
 
   /* Function handlers.  */
-  const char *(*get_name_func) (void);
-  unsigned int (*get_caps_func) (void);
-  int (*get_type_func) (void);
-  int (*get_num_devices_func) (void);
-  bool (*init_device_func) (int);
-  bool (*fini_device_func) (int);
-  unsigned (*version_func) (void);
-  int (*load_image_func) (int, unsigned, const void *, struct addr_pair **);
-  bool (*unload_image_func) (int, unsigned, const void *);
-  void *(*alloc_func) (int, size_t);
-  bool (*free_func) (int, void *);
-  bool (*dev2host_func) (int, void *, const void *, size_t);
-  bool (*host2dev_func) (int, void *, const void *, size_t);
-  bool (*dev2dev_func) (int, void *, const void *, size_t);
-  bool (*can_run_func) (void *);
-  void (*run_func) (int, void *, void *, void **);
-  void (*async_run_func) (int, void *, void *, void **, void *);
+  __typeof (GOMP_OFFLOAD_get_name) *get_name_func;
+  __typeof (GOMP_OFFLOAD_get_caps) *get_caps_func;
+  __typeof (GOMP_OFFLOAD_get_type) *get_type_func;
+  __typeof (GOMP_OFFLOAD_get_num_devices) *get_num_devices_func;
+  __typeof (GOMP_OFFLOAD_init_device) *init_device_func;
+  __typeof (GOMP_OFFLOAD_fini_device) *fini_device_func;
+  __typeof (GOMP_OFFLOAD_version) *version_func;
+  __typeof (GOMP_OFFLOAD_load_image) *load_image_func;
+  __typeof (GOMP_OFFLOAD_unload_image) *unload_image_func;
+  __typeof (GOMP_OFFLOAD_alloc) *alloc_func;
+  __typeof (GOMP_OFFLOAD_free) *free_func;
+  __typeof (GOMP_OFFLOAD_dev2host) *dev2host_func;
+  __typeof (GOMP_OFFLOAD_host2dev) *host2dev_func;
+  __typeof (GOMP_OFFLOAD_dev2dev) *dev2dev_func;
+  __typeof (GOMP_OFFLOAD_can_run) *can_run_func;
+  __typeof (GOMP_OFFLOAD_run) *run_func;
+  __typeof (GOMP_OFFLOAD_async_run) *async_run_func;
 
   /* Splay tree containing information about mapped memory regions.  */
   struct splay_tree_s mem_map;
@@ -969,7 +993,9 @@ enum gomp_map_vars_kind
 };
 
 extern void gomp_acc_insert_pointer (size_t, void **, size_t *, void *);
-extern void gomp_acc_remove_pointer (void *, bool, int, int);
+extern void gomp_acc_remove_pointer (void *, size_t, bool, int, int, int);
+extern void gomp_acc_declare_allocate (bool, size_t, void **, size_t *,
+				       unsigned short *);
 
 extern struct target_mem_desc *gomp_map_vars (struct gomp_device_descr *,
 					      size_t, void **, void **,
@@ -979,6 +1005,7 @@ extern void gomp_unmap_vars (struct target_mem_desc *, bool);
 extern void gomp_init_device (struct gomp_device_descr *);
 extern void gomp_free_memmap (struct splay_tree_s *);
 extern void gomp_unload_device (struct gomp_device_descr *);
+extern bool gomp_remove_var (struct gomp_device_descr *, splay_tree_key);
 
 /* work.c */
 
@@ -1040,8 +1067,6 @@ extern void gomp_set_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 extern void gomp_unset_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 extern int gomp_test_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 
-# define strong_alias(fn, al) \
-  extern __typeof (fn) al __attribute__ ((alias (#fn)));
 # define omp_lock_symver(fn) \
   __asm (".symver g" #fn "_30, " #fn "@@OMP_3.0"); \
   __asm (".symver g" #fn "_25, " #fn "@OMP_1.0");
@@ -1065,6 +1090,9 @@ extern int gomp_test_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 #endif
 
 #ifdef HAVE_ATTRIBUTE_ALIAS
+# define strong_alias(fn, al) \
+  extern __typeof (fn) al __attribute__ ((alias (#fn)));
+
 # define ialias_ulp	ialias_str1(__USER_LABEL_PREFIX__)
 # define ialias_str1(x)	ialias_str2(x)
 # define ialias_str2(x)	#x

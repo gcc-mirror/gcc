@@ -110,12 +110,10 @@ func FullRune(p []byte) bool {
 	}
 	// Must be short or invalid.
 	accept := acceptRanges[x>>4]
-	if n > 1 {
-		if c := p[1]; c < accept.lo || accept.hi < c {
-			return true
-		} else if n > 2 && (p[2] < locb || hicb < p[2]) {
-			return true
-		}
+	if n > 1 && (p[1] < accept.lo || accept.hi < p[1]) {
+		return true
+	} else if n > 2 && (p[2] < locb || hicb < p[2]) {
+		return true
 	}
 	return false
 }
@@ -132,12 +130,10 @@ func FullRuneInString(s string) bool {
 	}
 	// Must be short or invalid.
 	accept := acceptRanges[x>>4]
-	if n > 1 {
-		if c := s[1]; c < accept.lo || accept.hi < c {
-			return true
-		} else if n > 2 && (s[2] < locb || hicb < s[2]) {
-			return true
-		}
+	if n > 1 && (s[1] < accept.lo || accept.hi < s[1]) {
+		return true
+	} else if n > 2 && (s[2] < locb || hicb < s[2]) {
+		return true
 	}
 	return false
 }
@@ -347,6 +343,7 @@ func EncodeRune(p []byte, r rune) int {
 		p[0] = byte(r)
 		return 1
 	case i <= rune2Max:
+		_ = p[1] // eliminate bounds checks
 		p[0] = t2 | byte(r>>6)
 		p[1] = tx | byte(r)&maskx
 		return 2
@@ -354,11 +351,13 @@ func EncodeRune(p []byte, r rune) int {
 		r = RuneError
 		fallthrough
 	case i <= rune3Max:
+		_ = p[2] // eliminate bounds checks
 		p[0] = t3 | byte(r>>12)
 		p[1] = tx | byte(r>>6)&maskx
 		p[2] = tx | byte(r)&maskx
 		return 3
 	default:
+		_ = p[3] // eliminate bounds checks
 		p[0] = t4 | byte(r>>18)
 		p[1] = tx | byte(r>>12)&maskx
 		p[2] = tx | byte(r>>6)&maskx
@@ -513,12 +512,10 @@ func ValidString(s string) bool {
 // Code points that are out of range or a surrogate half are illegal.
 func ValidRune(r rune) bool {
 	switch {
-	case r < 0:
-		return false
-	case surrogateMin <= r && r <= surrogateMax:
-		return false
-	case r > MaxRune:
-		return false
+	case 0 <= r && r < surrogateMin:
+		return true
+	case surrogateMax < r && r <= MaxRune:
+		return true
 	}
-	return true
+	return false
 }

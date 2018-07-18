@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,8 +52,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // The following definitions of bitmask types are enums, not ints,
   // as permitted (but not required) in the standard, in order to provide
-  // better type safety in iostream calls.  A side effect is that
-  // expressions involving them are no longer compile-time constants.
+  // better type safety in iostream calls.  A side effect is that in C++98
+  // expressions involving them are not compile-time constants.
   enum _Ios_Fmtflags 
     { 
       _S_boolalpha 	= 1L << 0,
@@ -207,12 +207,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const error_category& iostream_category() noexcept;
 
   inline error_code
-  make_error_code(io_errc e) noexcept
-  { return error_code(static_cast<int>(e), iostream_category()); }
+  make_error_code(io_errc __e) noexcept
+  { return error_code(static_cast<int>(__e), iostream_category()); }
 
   inline error_condition
-  make_error_condition(io_errc e) noexcept
-  { return error_condition(static_cast<int>(e), iostream_category()); }
+  make_error_condition(io_errc __e) noexcept
+  { return error_condition(static_cast<int>(__e), iostream_category()); }
 #endif
 
   // 27.4.2  Class ios_base
@@ -469,13 +469,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Request a seek relative to the current end of the sequence.
     static const seekdir end =		_S_end;
 
-    // Annex D.6
+#if __cplusplus <= 201402L
+    // Annex D.6 (removed in C++17)
     typedef int io_state;
     typedef int open_mode;
     typedef int seek_dir;
 
     typedef std::streampos streampos;
     typedef std::streamoff streamoff;
+#endif
 
     // Callbacks;
     /**
@@ -604,6 +606,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       Init();
       ~Init();
+
+#if __cplusplus >= 201103L
+      Init(const Init&) = default;
+      Init& operator=(const Init&) = default;
+#endif
 
     private:
       static _Atomic_word	_S_refcount;
@@ -808,7 +815,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     long&
     iword(int __ix)
     {
-      _Words& __word = (__ix < _M_word_size)
+      _Words& __word = ((unsigned)__ix < (unsigned)_M_word_size)
 			? _M_word[__ix] : _M_grow_words(__ix, true);
       return __word._M_iword;
     }
@@ -829,7 +836,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void*&
     pword(int __ix)
     {
-      _Words& __word = (__ix < _M_word_size)
+      _Words& __word = ((unsigned)__ix < (unsigned)_M_word_size)
 			? _M_word[__ix] : _M_grow_words(__ix, false);
       return __word._M_pword;
     }

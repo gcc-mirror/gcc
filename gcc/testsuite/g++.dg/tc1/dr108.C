@@ -8,6 +8,6 @@ template <class T> struct S {
   };
   struct I2 : public I1 {
     X x;    // { dg-error "does not name a type" "name" }
-	    // { dg-message "note" "note" { target *-*-* } 10 }
+	    // { dg-message "note" "note" { target *-*-* } .-1 }
   };
 };

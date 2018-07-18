@@ -1,5 +1,5 @@
 /* NEON builtin definitions for ARM.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -51,6 +51,22 @@ VAR2 (TERNOP, vqdmlal, v4hi, v2si)
 VAR2 (TERNOP, vqdmlsl, v4hi, v2si)
 VAR4 (TERNOP, vqrdmlah, v4hi, v2si, v8hi, v4si)
 VAR4 (TERNOP, vqrdmlsh, v4hi, v2si, v8hi, v4si)
+VAR2 (TERNOP, vfmal_low, v2sf, v4sf)
+VAR2 (TERNOP, vfmal_high, v2sf, v4sf)
+VAR2 (TERNOP, vfmsl_low, v2sf, v4sf)
+VAR2 (TERNOP, vfmsl_high, v2sf, v4sf)
+VAR2 (MAC_LANE, vfmal_lane_low, v2sf, v4sf)
+VAR1 (MAC_LANE, vfmal_lane_lowv4hf, v4sf)
+VAR1 (MAC_LANE, vfmal_lane_lowv8hf, v2sf)
+VAR2 (MAC_LANE, vfmal_lane_high, v2sf, v4sf)
+VAR1 (MAC_LANE, vfmal_lane_highv4hf, v4sf)
+VAR1 (MAC_LANE, vfmal_lane_highv8hf, v2sf)
+VAR2 (MAC_LANE, vfmsl_lane_low, v2sf, v4sf)
+VAR1 (MAC_LANE, vfmsl_lane_lowv4hf, v4sf)
+VAR1 (MAC_LANE, vfmsl_lane_lowv8hf, v2sf)
+VAR2 (MAC_LANE, vfmsl_lane_high, v2sf, v4sf)
+VAR1 (MAC_LANE, vfmsl_lane_highv4hf, v4sf)
+VAR1 (MAC_LANE, vfmsl_lane_highv8hf, v2sf)
 VAR3 (BINOP, vmullp, v8qi, v4hi, v2si)
 VAR3 (BINOP, vmulls, v8qi, v4hi, v2si)
 VAR3 (BINOP, vmullu, v8qi, v4hi, v2si)
@@ -147,12 +163,12 @@ VAR6 (BINOP, vmaxs, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR6 (BINOP, vmaxu, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR2 (BINOP, vmaxf, v2sf, v4sf)
 VAR2 (BINOP, vmaxf, v8hf, v4hf)
-VAR2 (BINOP, vmaxnm, v4hf, v8hf)
+VAR4 (BINOP, vmaxnm, v2sf, v4sf, v4hf, v8hf)
 VAR6 (BINOP, vmins, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR6 (BINOP, vminu, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR2 (BINOP, vminf, v2sf, v4sf)
 VAR2 (BINOP, vminf, v4hf, v8hf)
-VAR2 (BINOP, vminnm, v8hf, v4hf)
+VAR4 (BINOP, vminnm, v2sf, v4sf, v8hf, v4hf)
 
 VAR3 (BINOP, vpmaxs, v8qi, v4hi, v2si)
 VAR3 (BINOP, vpmaxu, v8qi, v4hi, v2si)
@@ -331,3 +347,7 @@ VAR11 (STORE1, vst4,
 	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf)
 VAR9 (STORE1LANE, vst4_lane,
 	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
+VAR2 (TERNOP, sdot, v8qi, v16qi)
+VAR2 (UTERNOP, udot, v8qi, v16qi)
+VAR2 (MAC_LANE, sdot_lane, v8qi, v16qi)
+VAR2 (UMAC_LANE, udot_lane, v8qi, v16qi)

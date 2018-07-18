@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -mlock -mswape -mrtsc -fno-reorder-blocks" } */
+/* { dg-options "-Os -mlock -mswape -fno-reorder-blocks" } */
 
 /* This caused an ICE in arc_ifcvt when the 1->3 state change was not
    implemented for TYPE_UNCOND_BRANCH in arc_ccfsm_post_advance.  */

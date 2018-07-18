@@ -15,10 +15,8 @@
 #endif
 
 #include "runtime.h"
-#include "go-alloc.h"
 #include "array.h"
 #include "arch.h"
-#include "malloc.h"
 
 #undef int
 #undef char
@@ -46,10 +44,16 @@ main (int argc, char **argv)
     return 0;
   runtime_isstarted = true;
 
+  if (runtime_iscgo)
+    setIsCgo ();
+
   __go_end = (uintptr)_end;
+  runtime_cpuinit ();
   runtime_check ();
   runtime_args (argc, (byte **) argv);
-  runtime_osinit ();
+  setncpu (getproccount ());
+  setpagesize (getpagesize ());
+  runtime_sched = runtime_getsched();
   runtime_schedinit ();
   __go_go (runtime_main, NULL);
   runtime_mstart (runtime_m ());

@@ -5,6 +5,8 @@
 package os_test
 
 import (
+	"fmt"
+	"internal/testenv"
 	"io/ioutil"
 	. "os"
 	"path/filepath"
@@ -168,15 +170,38 @@ func TestRemoveAll(t *testing.T) {
 	}
 }
 
-func TestMkdirAllWithSymlink(t *testing.T) {
-	switch runtime.GOOS {
-	case "android", "nacl", "plan9":
-		t.Skipf("skipping on %s", runtime.GOOS)
-	case "windows":
-		if !supportsSymlinks {
-			t.Skipf("skipping on %s", runtime.GOOS)
-		}
+// Test RemoveAll on a large directory.
+func TestRemoveAllLarge(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
 	}
+
+	tmpDir := TempDir()
+	// Work directory.
+	path := tmpDir + "/_TestRemoveAllLarge_"
+
+	// Make directory with 1000 files and remove.
+	if err := MkdirAll(path, 0777); err != nil {
+		t.Fatalf("MkdirAll %q: %s", path, err)
+	}
+	for i := 0; i < 1000; i++ {
+		fpath := fmt.Sprintf("%s/file%d", path, i)
+		fd, err := Create(fpath)
+		if err != nil {
+			t.Fatalf("create %q: %s", fpath, err)
+		}
+		fd.Close()
+	}
+	if err := RemoveAll(path); err != nil {
+		t.Fatalf("RemoveAll %q: %s", path, err)
+	}
+	if _, err := Lstat(path); err == nil {
+		t.Fatalf("Lstat %q succeeded after RemoveAll", path)
+	}
+}
+
+func TestMkdirAllWithSymlink(t *testing.T) {
+	testenv.MustHaveSymlink(t)
 
 	tmpDir, err := ioutil.TempDir("", "TestMkdirAllWithSymlink-")
 	if err != nil {

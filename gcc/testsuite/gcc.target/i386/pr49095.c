@@ -1,7 +1,7 @@
 /* PR rtl-optimization/49095 */
 /* { dg-do compile } */
-/* { dg-options "-Os" } */
-/* { dg-options "-Os -mregparm=2" { target ia32 } } */
+/* { dg-options "-Os -fno-shrink-wrap -masm=att" } */
+/* { dg-additional-options "-mregparm=2" { target ia32 } } */
 
 void foo (void *);
 
@@ -70,5 +70,7 @@ G (short)
 G (int)
 G (long)
 
-/* See PR61225 for the XFAIL.  */
-/* { dg-final { scan-assembler-not "test\[lq\]" { xfail { ia32 } } } } */
+/* { dg-final { scan-assembler-not "test\[lq\]" } } */
+/* The {f,h}{char,short,int,long}xor functions aren't optimized into
+   a RMW instruction, so need load, modify and store.  FIXME eventually.  */
+/* { dg-final { scan-assembler-times "\\), %" 8 } } */

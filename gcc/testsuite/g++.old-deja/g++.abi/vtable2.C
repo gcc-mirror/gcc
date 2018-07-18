@@ -1,5 +1,5 @@
 // { dg-do run  }
-// { dg-options "-fno-strict-aliasing" }
+// { dg-options "-Wno-attribute-alias -fno-strict-aliasing" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 #if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
@@ -126,7 +126,8 @@ void S4::s1 ()
 extern "C" {
   /* We can use weakref here without dg-require-weak, because we know
      the symbols are defined, so we don't actually issue the .weak
-     directives.  */
+     directives.  The references to the incompatible virtual S3::s3()
+     and S4::s1() trigger -Wattributes.  */
   static void S3_s3 () __attribute__((__weakref__ ("_ZN2S32s3Ev")));
   static void S4_s1 () __attribute__((__weakref__ ("_ZN2S42s1Ev")));
 }
@@ -142,10 +143,24 @@ extern "C" {
 #define INC_VDATA(A,N)	((A) += 2*(N))
 #endif
 #else
+// HPPA uses function pointers but they point to function descriptors.
+#if defined __hppa__
+#ifdef __hpux__
+#ifdef _LP64
+#define CMP_VPTR(A, B)	(*(unsigned long *)(*(A)+16) == *(unsigned long *)((unsigned long)(B)+16))
+#else
 #define CMP_VPTR(A, B)	(*(A) == (ptrdiff_t)(B))
+#endif /* _LP64 */
+#else
+extern "C" { unsigned int __canonicalize_funcptr_for_compare (void*); }
+#define CMP_VPTR(A, B) (__canonicalize_funcptr_for_compare(*(void **)A) == __canonicalize_funcptr_for_compare((void *)B))
+#endif /* __hpux__ */
+#else
+#define CMP_VPTR(A, B)	(*(A) == (ptrdiff_t)(B))
+#endif /* __hppa__ */
 #define INC_VPTR(A)	((A) += 1)
 #define INC_VDATA(A,N)	((A) += (N))
-#endif
+#endif /* __ia64__ */
 
 int main ()
 {

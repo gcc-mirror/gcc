@@ -1,5 +1,5 @@
 /* General Solaris system support.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -27,12 +27,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "diagnostic-core.h"
 #include "varasm.h"
 #include "output.h"
-
-#undef TARGET_PRINTF_POINTER_FORMAT
-#define TARGET_PRINTF_POINTER_FORMAT solaris_printf_pointer_format
 
 tree solaris_pending_aligns, solaris_pending_inits, solaris_pending_finis;
 
@@ -300,15 +298,4 @@ solaris_override_options (void)
      Don't emit DWARF3/4 unless specifically selected if so.  */
   if (!HAVE_LD_EH_FRAME_CIEV3 && !global_options_set.x_dwarf_version)
     dwarf_version = 2;
-}
-
-/* Solaris libc formats pointers as if by "%zx" with the pound ('#')
-   format flag having the same meaning as in the integer directive.  */
-
-const char*
-solaris_printf_pointer_format (tree, const char **flags)
-{
-  *flags = "#";
-
-  return "%zx";
 }

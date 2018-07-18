@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 ! PR fortran/66057
 !
 ! Original code from Gerhard Steinmetz

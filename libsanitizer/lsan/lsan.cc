@@ -41,6 +41,7 @@ static void InitializeFlags() {
     cf.CopyFrom(*common_flags());
     cf.external_symbolizer_path = GetEnv("LSAN_SYMBOLIZER_PATH");
     cf.malloc_context_size = 30;
+    cf.intercept_tls_get_addr = true;
     cf.detect_leaks = true;
     cf.exitcode = 23;
     OverrideCommonFlags(cf);
@@ -53,6 +54,9 @@ static void InitializeFlags() {
   RegisterLsanFlags(&parser, f);
   RegisterCommonFlags(&parser);
 
+  // Override from user-specified string.
+  const char *lsan_default_options = MaybeCallLsanDefaultOptions();
+  parser.ParseString(lsan_default_options);
   parser.ParseString(GetEnv("LSAN_OPTIONS"));
 
   SetVerbosity(common_flags()->verbosity);
@@ -62,6 +66,18 @@ static void InitializeFlags() {
   if (common_flags()->help) parser.PrintFlagDescriptions();
 }
 
+static void OnStackUnwind(const SignalContext &sig, const void *,
+                          BufferedStackTrace *stack) {
+  GetStackTraceWithPcBpAndContext(stack, kStackTraceMax, sig.pc, sig.bp,
+                                  sig.context,
+                                  common_flags()->fast_unwind_on_fatal);
+}
+
+void LsanOnDeadlySignal(int signo, void *siginfo, void *context) {
+  HandleDeadlySignal(siginfo, context, GetCurrentThread(), &OnStackUnwind,
+                     nullptr);
+}
+
 extern "C" void __lsan_init() {
   CHECK(!lsan_init_is_running);
   if (lsan_inited)
@@ -69,12 +85,15 @@ extern "C" void __lsan_init() {
   lsan_init_is_running = true;
   SanitizerToolName = "LeakSanitizer";
   CacheBinaryName();
+  AvoidCVE_2016_2143();
   InitializeFlags();
   InitCommonLsan();
   InitializeAllocator();
+  ReplaceSystemMalloc();
   InitTlsSize();
   InitializeInterceptors();
   InitializeThreadRegistry();
+  InstallDeadlySignalHandlers(LsanOnDeadlySignal);
   u32 tid = ThreadCreate(0, 0, true);
   CHECK_EQ(tid, 0);
   ThreadStart(tid, GetTid());

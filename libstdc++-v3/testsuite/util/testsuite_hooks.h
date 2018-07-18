@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Utility subroutines for the C++ library testsuite.
 //
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,6 +73,18 @@
 #else
 # define ISO_8859(part,langTERR) ((part) == 15 ?\
          #langTERR ".ISO8859-" #part "@euro" : #langTERR ".ISO8859-" #part)
+#endif
+
+#if __cplusplus < 201103L
+# define THROW(X) throw(X)
+#else
+# define THROW(X) noexcept(false)
+#endif
+
+#if _GLIBCXX_HAVE___CXA_THREAD_ATEXIT || _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL
+// Correct order of thread_local destruction needs __cxa_thread_atexit_impl
+// or similar support from libc.
+# define CORRECT_THREAD_LOCAL_DTORS 1
 #endif
 
 namespace __gnu_test
@@ -235,8 +247,8 @@ namespace __gnu_test
     static unsigned int _M_count;
   };
 
-  // An class of objects that can be used for validating various
-  // behaviours and guarantees of containers and algorithms defined in
+  // A class of objects that can be used for validating various
+  // behaviors and guarantees of containers and algorithms defined in
   // the standard library.
   class copy_tracker
   {

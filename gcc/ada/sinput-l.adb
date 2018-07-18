@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,8 +44,6 @@ with Snames;   use Snames;
 with System;   use System;
 
 with System.OS_Lib; use System.OS_Lib;
-
-with Unchecked_Conversion;
 
 package body Sinput.L is
 
@@ -103,7 +101,7 @@ package body Sinput.L is
       --  case, but in practice there seem to be some nodes that get copied
       --  twice, and this is a defence against that happening.
 
-      if Factor.Lo <= Loc and then Loc <= Factor.Hi then
+      if Loc in Factor.Lo .. Factor.Hi then
          Set_Sloc (N, Loc + Factor.Adjust);
       end if;
    end Adjust_Instantiation_Sloc;
@@ -142,6 +140,13 @@ package body Sinput.L is
       Source_File.Append (Source_File.Table (Xold));
       Xnew := Source_File.Last;
 
+      if Debug_Flag_L then
+         Write_Eol;
+         Write_Str ("*** Create_Instantiation_Source: created source ");
+         Write_Int (Int (Xnew));
+         Write_Line ("");
+      end if;
+
       declare
          Sold : Source_File_Record renames Source_File.Table (Xold);
          Snew : Source_File_Record renames Source_File.Table (Xnew);
@@ -149,6 +154,7 @@ package body Sinput.L is
          Inst_Spec : Node_Id;
 
       begin
+         Snew.Index            := Xnew;
          Snew.Inlined_Body     := Inlined_Body;
          Snew.Inherited_Pragma := Inherited_Pragma;
          Snew.Template         := Xold;
@@ -213,8 +219,8 @@ package body Sinput.L is
          end if;
 
          --  Now compute the new values of Source_First and Source_Last and
-         --  adjust the source file pointer to have the correct virtual origin
-         --  for the new range of values.
+         --  adjust the source file pointer to have the correct bounds for the
+         --  new range of values.
 
          --  Source_First must be greater than the last Source_Last value and
          --  also must be a multiple of Source_Align.
@@ -229,9 +235,21 @@ package body Sinput.L is
 
          Snew.Sloc_Adjust := Sold.Sloc_Adjust - Factor.Adjust;
 
+         --  Modify the Dope of the instance Source_Text to use the
+         --  above-computed bounds.
+
+         declare
+            Dope : constant Dope_Ptr :=
+              new Dope_Rec'(Snew.Source_First, Snew.Source_Last);
+         begin
+            Snew.Source_Text := Sold.Source_Text;
+            Set_Dope (Snew.Source_Text'Address, Dope);
+            pragma Assert (Snew.Source_Text'First = Snew.Source_First);
+            pragma Assert (Snew.Source_Text'Last = Snew.Source_Last);
+         end;
+
          if Debug_Flag_L then
-            Write_Eol;
-            Write_Str ("*** Create instantiation source for ");
+            Write_Str ("  for ");
 
             if Nkind (Dnod) in N_Proper_Body
               and then Was_Originally_Stub (Dnod)
@@ -271,10 +289,6 @@ package body Sinput.L is
             Write_Name (Chars (Template_Id));
             Write_Eol;
 
-            Write_Str ("  new source index = ");
-            Write_Int (Int (Xnew));
-            Write_Eol;
-
             Write_Str ("  copying from file name = ");
             Write_Name (File_Name (Xold));
             Write_Eol;
@@ -307,31 +321,6 @@ package body Sinput.L is
             Write_Location (Sloc (Inst_Node));
             Write_Eol;
          end if;
-
-         --  For a given character in the source, a higher subscript will be
-         --  used to access the instantiation, which means that the virtual
-         --  origin must have a corresponding lower value. We compute this new
-         --  origin by taking the address of the appropriate adjusted element
-         --  in the old array. Since this adjusted element will be at a
-         --  negative subscript, we must suppress checks.
-
-         declare
-            pragma Suppress (All_Checks);
-
-            pragma Warnings (Off);
-            --  This unchecked conversion is aliasing safe, since it is never
-            --  used to create improperly aliased pointer values.
-
-            function To_Source_Buffer_Ptr is new
-              Unchecked_Conversion (Address, Source_Buffer_Ptr);
-
-            pragma Warnings (On);
-
-         begin
-            Snew.Source_Text :=
-              To_Source_Buffer_Ptr
-                (Sold.Source_Text (-Factor.Adjust)'Address);
-         end;
       end;
    end Create_Instantiation_Source;
 
@@ -365,10 +354,11 @@ package body Sinput.L is
      (N : File_Name_Type;
       T : Osint.File_Type) return Source_File_Index
    is
+      FD  : File_Descriptor;
+      Hi  : Source_Ptr;
+      Lo  : Source_Ptr;
       Src : Source_Buffer_Ptr;
       X   : Source_File_Index;
-      Lo  : Source_Ptr;
-      Hi  : Source_Ptr;
 
       Preprocessing_Needed : Boolean := False;
 
@@ -405,6 +395,14 @@ package body Sinput.L is
       Source_File.Increment_Last;
       X := Source_File.Last;
 
+      if Debug_Flag_L then
+         Write_Eol;
+         Write_Str ("Sinput.L.Load_File: created source ");
+         Write_Int (Int (X));
+         Write_Str (" for ");
+         Write_Str (Get_Name_String (N));
+      end if;
+
       --  Compute starting index, respecting alignment requirement
 
       if X = Source_File.First then
@@ -414,12 +412,16 @@ package body Sinput.L is
                   Source_Align) * Source_Align;
       end if;
 
-      Osint.Read_Source_File (N, Lo, Hi, Src, T);
+      Osint.Read_Source_File (N, Lo, Hi, Src, FD, T);
 
-      if Src = null then
+      if Null_Source_Buffer_Ptr (Src) then
          Source_File.Decrement_Last;
-         return No_Source_File;
 
+         if FD = Null_FD then
+            return No_Source_File;
+         else
+            return No_Access_To_Source_File;
+         end if;
       else
          if Debug_Flag_L then
             Write_Eol;
@@ -529,7 +531,8 @@ package body Sinput.L is
                   Source_Text         => Src,
                   Template            => No_Source_File,
                   Unit                => No_Unit,
-                  Time_Stamp          => Osint.Current_Source_File_Stamp);
+                  Time_Stamp          => Osint.Current_Source_File_Stamp,
+                  Index               => X);
 
             Alloc_Line_Tables (S, Opt.Table_Factor * Alloc.Lines_Initial);
             S.Lines_Table (1) := Lo;
@@ -688,54 +691,28 @@ package body Sinput.L is
                   --  Create the new source buffer
 
                   declare
-                     subtype Actual_Source_Buffer is Source_Buffer (Lo .. Hi);
-                     --  Physical buffer allocated
-
-                     type Actual_Source_Ptr is access Actual_Source_Buffer;
-                     --  Pointer type for the physical buffer allocated
-
-                     Actual_Ptr : constant Actual_Source_Ptr :=
-                                    new Actual_Source_Buffer;
-                     --  Actual physical buffer
+                     Var_Ptr : constant Source_Buffer_Ptr_Var :=
+                       new Source_Buffer (Lo .. Hi);
+                     --  Allocate source buffer, allowing extra character at
+                     --  end for EOF.
 
                   begin
-                     Actual_Ptr (Lo .. Hi - 1) :=
+                     Var_Ptr (Lo .. Hi - 1) :=
                        Prep_Buffer (1 .. Prep_Buffer_Last);
-                     Actual_Ptr (Hi) := EOF;
-
-                     --  Now we need to work out the proper virtual origin
-                     --  pointer to return. This is Actual_Ptr (0)'Address, but
-                     --  we have to be careful to suppress checks to compute
-                     --  this address.
-
-                     declare
-                        pragma Suppress (All_Checks);
-
-                        pragma Warnings (Off);
-                        --  This unchecked conversion is aliasing safe, since
-                        --  it is never used to create improperly aliased
-                        --  pointer values.
-
-                        function To_Source_Buffer_Ptr is new
-                          Unchecked_Conversion (Address, Source_Buffer_Ptr);
-
-                        pragma Warnings (On);
-
-                     begin
-                        Src := To_Source_Buffer_Ptr (Actual_Ptr (0)'Address);
-
-                        --  Record in the table the new source buffer and the
-                        --  new value of Hi.
-
-                        Source_File.Table (X).Source_Text := Src;
-                        Source_File.Table (X).Source_Last := Hi;
-
-                        --  Reset Last_Line to 1, because the lines do not
-                        --  have necessarily the same starts and lengths.
-
-                        Source_File.Table (X).Last_Source_Line := 1;
-                     end;
+                     Var_Ptr (Hi) := EOF;
+                     Src := Var_Ptr.all'Access;
                   end;
+
+                  --  Record in the table the new source buffer and the
+                  --  new value of Hi.
+
+                  Source_File.Table (X).Source_Text := Src;
+                  Source_File.Table (X).Source_Last := Hi;
+
+                  --  Reset Last_Line to 1, because the lines do not
+                  --  have necessarily the same starts and lengths.
+
+                  Source_File.Table (X).Last_Source_Line := 1;
                end if;
             end;
          end if;
@@ -817,8 +794,10 @@ package body Sinput.L is
 
             --  PRAGMA, WITH, USE (which can appear before a body)
 
-            when Tok_Pragma | Tok_With | Tok_Use =>
-
+            when Tok_Pragma
+               | Tok_Use
+               | Tok_With
+            =>
                --  We just want to skip any of these, do it by skipping to a
                --  semicolon, but check for EOF, in case we have bad syntax.
 
@@ -844,7 +823,9 @@ package body Sinput.L is
 
             --  FUNCTION or PROCEDURE
 
-            when Tok_Procedure | Tok_Function =>
+            when Tok_Function
+               | Tok_Procedure
+            =>
                Pcount := 0;
 
                --  Loop through tokens following PROCEDURE or FUNCTION
@@ -870,7 +851,10 @@ package body Sinput.L is
 
                      --  BEGIN or IS or END definitely means body is present
 
-                     when Tok_Begin | Tok_Is | Tok_End =>
+                     when Tok_Begin
+                        | Tok_End
+                        | Tok_Is
+                     =>
                         return True;
 
                      --  Semicolon means no body present if at outside any

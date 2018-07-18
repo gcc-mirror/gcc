@@ -1,6 +1,6 @@
 // TR1 cmath -*- C++ -*-
 
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -145,10 +145,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
 #if _GLIBCXX_USE_C99_MATH_TR1
 
   // Using declarations to bring names from libc's <math.h> into std::tr1.
@@ -490,7 +490,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // In C++03 we need to provide the additional overloads.
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   acosh(float __x)
   { return __builtin_acoshf(__x); }
@@ -506,7 +506,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     acosh(_Tp __x)
     { return __builtin_acosh(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   asinh(float __x)
   { return __builtin_asinhf(__x); }
@@ -522,7 +522,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     asinh(_Tp __x)
     { return __builtin_asinh(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   atanh(float __x)
   { return __builtin_atanhf(__x); }
@@ -538,7 +538,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     atanh(_Tp __x)
     { return __builtin_atanh(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   cbrt(float __x)
   { return __builtin_cbrtf(__x); }
@@ -554,7 +554,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     cbrt(_Tp __x)
     { return __builtin_cbrt(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   copysign(float __x, float __y)
   { return __builtin_copysignf(__x, __y); }
@@ -572,7 +572,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return copysign(__type(__x), __type(__y));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   erf(float __x)
   { return __builtin_erff(__x); }
@@ -588,7 +588,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erf(_Tp __x)
     { return __builtin_erf(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   erfc(float __x)
   { return __builtin_erfcf(__x); }
@@ -604,7 +604,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erfc(_Tp __x)
     { return __builtin_erfc(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   exp2(float __x)
   { return __builtin_exp2f(__x); }
@@ -620,7 +620,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     exp2(_Tp __x)
     { return __builtin_exp2(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   expm1(float __x)
   { return __builtin_expm1f(__x); }
@@ -636,7 +636,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     expm1(_Tp __x)
     { return __builtin_expm1(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   fdim(float __x, float __y)
   { return __builtin_fdimf(__x, __y); }
@@ -654,7 +654,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return fdim(__type(__x), __type(__y));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   fma(float __x, float __y, float __z)
   { return __builtin_fmaf(__x, __y, __z); }
@@ -672,7 +672,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return fma(__type(__x), __type(__y), __type(__z));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   fmax(float __x, float __y)
   { return __builtin_fmaxf(__x, __y); }
@@ -690,7 +690,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return fmax(__type(__x), __type(__y));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   fmin(float __x, float __y)
   { return __builtin_fminf(__x, __y); }
@@ -708,7 +708,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return fmin(__type(__x), __type(__y));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   hypot(float __x, float __y)
   { return __builtin_hypotf(__x, __y); }
@@ -726,7 +726,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return hypot(__type(__y), __type(__x));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline int
   ilogb(float __x)
   { return __builtin_ilogbf(__x); }
@@ -742,7 +742,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ilogb(_Tp __x)
     { return __builtin_ilogb(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   lgamma(float __x)
   { return __builtin_lgammaf(__x); }
@@ -758,7 +758,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lgamma(_Tp __x)
     { return __builtin_lgamma(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline long long
   llrint(float __x)
   { return __builtin_llrintf(__x); }
@@ -774,7 +774,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     llrint(_Tp __x)
     { return __builtin_llrint(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline long long
   llround(float __x)
   { return __builtin_llroundf(__x); }
@@ -790,7 +790,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     llround(_Tp __x)
     { return __builtin_llround(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   log1p(float __x)
   { return __builtin_log1pf(__x); }
@@ -807,7 +807,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __builtin_log1p(__x); }
 
   // DR 568.
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   log2(float __x)
   { return __builtin_log2f(__x); }
@@ -823,7 +823,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     log2(_Tp __x)
     { return __builtin_log2(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   logb(float __x)
   { return __builtin_logbf(__x); }
@@ -841,7 +841,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __builtin_logb(__x);
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline long
   lrint(float __x)
   { return __builtin_lrintf(__x); }
@@ -857,7 +857,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lrint(_Tp __x)
     { return __builtin_lrint(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline long
   lround(float __x)
   { return __builtin_lroundf(__x); }
@@ -873,7 +873,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lround(_Tp __x)
     { return __builtin_lround(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   nearbyint(float __x)
   { return __builtin_nearbyintf(__x); }
@@ -889,7 +889,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     nearbyint(_Tp __x)
     { return __builtin_nearbyint(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   nextafter(float __x, float __y)
   { return __builtin_nextafterf(__x, __y); }
@@ -907,7 +907,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return nextafter(__type(__x), __type(__y));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   nexttoward(float __x, long double __y)
   { return __builtin_nexttowardf(__x, __y); }
@@ -923,7 +923,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     nexttoward(_Tp __x, long double __y)
     { return __builtin_nexttoward(__x, __y); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   remainder(float __x, float __y)
   { return __builtin_remainderf(__x, __y); }
@@ -941,7 +941,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return remainder(__type(__x), __type(__y));
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   remquo(float __x, float __y, int* __pquo)
   { return __builtin_remquof(__x, __y, __pquo); }
@@ -959,7 +959,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return remquo(__type(__x), __type(__y), __pquo);
     }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   rint(float __x)
   { return __builtin_rintf(__x); }
@@ -975,7 +975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     rint(_Tp __x)
     { return __builtin_rint(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   round(float __x)
   { return __builtin_roundf(__x); }
@@ -991,7 +991,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     round(_Tp __x)
     { return __builtin_round(__x); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   scalbln(float __x, long __ex)
   { return __builtin_scalblnf(__x, __ex); }
@@ -1007,7 +1007,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     scalbln(_Tp __x, long __ex)
     { return __builtin_scalbln(__x, __ex); }
  
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   scalbn(float __x, int __ex)
   { return __builtin_scalbnf(__x, __ex); }
@@ -1023,7 +1023,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     scalbn(_Tp __x, int __ex)
     { return __builtin_scalbn(__x, __ex); }
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   tgamma(float __x)
   { return __builtin_tgammaf(__x); }
@@ -1039,7 +1039,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     tgamma(_Tp __x)
     { return __builtin_tgamma(__x); }
  
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   trunc(float __x)
   { return __builtin_truncf(__x); }
@@ -1059,16 +1059,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // @}
 
-#endif
-_GLIBCXX_END_NAMESPACE_VERSION
-}
-}
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-namespace tr1
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
+#endif /* _GLIBCXX_USE_C99_MATH_TR1 */
 
   // DR 550. What should the return type of pow(float,int) be?
   // NB: C++11 and TR1 != C++03.
@@ -1084,7 +1075,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // the discussion about this issue here:
   // http://gcc.gnu.org/ml/gcc-patches/2012-09/msg01278.html
 
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   pow(float __x, float __y)
   { return std::pow(__x, __y); }
@@ -1112,7 +1103,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // to std::fabs.
 
 #ifndef __CORRECT_ISO_CPP_MATH_H_PROTO
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float
   fabs(float __x)
   { return __builtin_fabsf(__x); }
@@ -1135,19 +1126,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++11
 
-
-
-_GLIBCXX_END_NAMESPACE_VERSION
-}
-}
-
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-namespace tr1
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @defgroup tr1_math_spec_func Mathematical Special Functions
@@ -1180,10 +1159,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using std::comp_ellint_3f;
   using std::comp_ellint_3l;
   using std::comp_ellint_3;
-
-  using __gnu_cxx::conf_hypergf;
-  using __gnu_cxx::conf_hypergl;
-  using __gnu_cxx::conf_hyperg;
 
   using std::cyl_bessel_if;
   using std::cyl_bessel_il;
@@ -1221,10 +1196,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using std::hermitel;
   using std::hermite;
 
-  using __gnu_cxx::hypergf;
-  using __gnu_cxx::hypergl;
-  using __gnu_cxx::hyperg;
-
   using std::laguerref;
   using std::laguerrel;
   using std::laguerre;
@@ -1250,11 +1221,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using std::sph_neumann;
 
   /* @} */ // tr1_math_spec_func
-_GLIBCXX_END_NAMESPACE_VERSION
-}
-}
 
 #else // ! _GLIBCXX_USE_STD_SPEC_FUNCS
+
+} // namespace tr1
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
 
 #include <bits/stl_algobase.h>
 #include <limits>
@@ -1265,7 +1238,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #include <tr1/beta_function.tcc>
 #include <tr1/ell_integral.tcc>
 #include <tr1/exp_integral.tcc>
-#include <tr1/hypergeometric.tcc>
 #include <tr1/legendre_function.tcc>
 #include <tr1/modified_bessel_func.tcc>
 #include <tr1/poly_hermite.tcc>
@@ -1274,10 +1246,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   /**
    * @defgroup tr1_math_spec_func Mathematical Special Functions
    * @ingroup numerics
@@ -1388,23 +1360,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Tpn>::__type __type;
       return __detail::__comp_ellint_3<__type>(__k, __nu);
-    }
-
-  inline float
-  conf_hypergf(float __a, float __c, float __x)
-  { return __detail::__conf_hyperg<float>(__a, __c, __x); }
-
-  inline long double
-  conf_hypergl(long double __a, long double __c, long double __x)
-  { return __detail::__conf_hyperg<long double>(__a, __c, __x); }
-
-  ///  5.2.1.7  Confluent hypergeometric functions.
-  template<typename _Tpa, typename _Tpc, typename _Tp>
-    inline typename __gnu_cxx::__promote_3<_Tpa, _Tpc, _Tp>::__type
-    conf_hyperg(_Tpa __a, _Tpc __c, _Tp __x)
-    {
-      typedef typename __gnu_cxx::__promote_3<_Tpa, _Tpc, _Tp>::__type __type;
-      return __detail::__conf_hyperg<__type>(__a, __c, __x);
     }
 
   inline float
@@ -1561,23 +1516,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   inline float
-  hypergf(float __a, float __b, float __c, float __x)
-  { return __detail::__hyperg<float>(__a, __b, __c, __x); }
-
-  inline long double
-  hypergl(long double __a, long double __b, long double __c, long double __x)
-  { return __detail::__hyperg<long double>(__a, __b, __c, __x); }
-
-  ///  5.2.1.17  Hypergeometric functions.
-  template<typename _Tpa, typename _Tpb, typename _Tpc, typename _Tp>
-    inline typename __gnu_cxx::__promote_4<_Tpa, _Tpb, _Tpc, _Tp>::__type
-    hyperg(_Tpa __a, _Tpb __b, _Tpc __c, _Tp __x)
-    {
-      typedef typename __gnu_cxx::__promote_4<_Tpa, _Tpb, _Tpc, _Tp>::__type __type;
-      return __detail::__hyperg<__type>(__a, __b, __c, __x);
-    }
-
-  inline float
   laguerref(unsigned int __n, float __x)
   { return __detail::__laguerre<float>(__n, __x); }
 
@@ -1680,9 +1618,84 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /* @} */ // tr1_math_spec_func
-_GLIBCXX_END_NAMESPACE_VERSION
-}
-}
 #endif // _GLIBCXX_USE_STD_SPEC_FUNCS
+
+} // namespace tr1
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+#if _GLIBCXX_USE_STD_SPEC_FUNCS && !defined(__STRICT_ANSI__)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+namespace tr1
+{
+  using __gnu_cxx::conf_hypergf;
+  using __gnu_cxx::conf_hypergl;
+  using __gnu_cxx::conf_hyperg;
+
+  using __gnu_cxx::hypergf;
+  using __gnu_cxx::hypergl;
+  using __gnu_cxx::hyperg;
+} // namespace tr1
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+#else // ! (_GLIBCXX_USE_STD_SPEC_FUNCS && !defined(__STRICT_ANSI__))
+
+#include <bits/stl_algobase.h>
+#include <limits>
+#include <tr1/type_traits>
+
+#include <tr1/hypergeometric.tcc>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+namespace tr1
+{
+  inline float
+  conf_hypergf(float __a, float __c, float __x)
+  { return __detail::__conf_hyperg<float>(__a, __c, __x); }
+
+  inline long double
+  conf_hypergl(long double __a, long double __c, long double __x)
+  { return __detail::__conf_hyperg<long double>(__a, __c, __x); }
+
+  ///  5.2.1.7  Confluent hypergeometric functions.
+  template<typename _Tpa, typename _Tpc, typename _Tp>
+    inline typename __gnu_cxx::__promote_3<_Tpa, _Tpc, _Tp>::__type
+    conf_hyperg(_Tpa __a, _Tpc __c, _Tp __x)
+    {
+      typedef typename __gnu_cxx::__promote_3<_Tpa, _Tpc, _Tp>::__type __type;
+      return __detail::__conf_hyperg<__type>(__a, __c, __x);
+    }
+
+  inline float
+  hypergf(float __a, float __b, float __c, float __x)
+  { return __detail::__hyperg<float>(__a, __b, __c, __x); }
+
+  inline long double
+  hypergl(long double __a, long double __b, long double __c, long double __x)
+  { return __detail::__hyperg<long double>(__a, __b, __c, __x); }
+
+  ///  5.2.1.17  Hypergeometric functions.
+  template<typename _Tpa, typename _Tpb, typename _Tpc, typename _Tp>
+    inline typename __gnu_cxx::__promote_4<_Tpa, _Tpb, _Tpc, _Tp>::__type
+    hyperg(_Tpa __a, _Tpb __b, _Tpc __c, _Tp __x)
+    {
+      typedef typename __gnu_cxx::__promote_4<_Tpa, _Tpb, _Tpc, _Tp>::__type __type;
+      return __detail::__hyperg<__type>(__a, __b, __c, __x);
+    }
+
+} // namespace tr1
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // _GLIBCXX_USE_STD_SPEC_FUNCS && !defined(__STRICT_ANSI__)
 
 #endif // _GLIBCXX_TR1_CMATH

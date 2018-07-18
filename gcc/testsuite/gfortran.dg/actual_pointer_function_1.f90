@@ -10,8 +10,8 @@
     INTEGER :: a
   END TYPE cp_logger_type
 
-  if (cp_logger_log(cp_get_default_logger (0))) call abort ()
-  if (.not. cp_logger_log(cp_get_default_logger (42))) call abort ()
+  if (cp_logger_log(cp_get_default_logger (0))) STOP 1
+  if (.not. cp_logger_log(cp_get_default_logger (42))) STOP 2
 
 CONTAINS
 

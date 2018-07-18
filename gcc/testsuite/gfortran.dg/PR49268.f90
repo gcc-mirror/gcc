@@ -44,7 +44,7 @@
         do i=1,n
             do j=1,m
                boo=foo(i,j)+1.0
-               if (abs (boo - 2.0) .gt. 1e-6) call abort
+               if (abs (boo - 2.0) .gt. 1e-6) STOP 1
             end do
         end do
 

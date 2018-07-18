@@ -12,7 +12,7 @@ program main
   allocate (p)
   p = t (123455, "", p)
   r => entry ("", 123456, 1, "", 99, "", p)
-  if (p%i /= 123455) call abort
+  if (p%i /= 123455) STOP 1
 contains
   function entry (x, i, j, c, k, d, p) result (q)
     integer :: i, j, k

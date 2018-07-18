@@ -25,7 +25,7 @@ fp128_softfp_obj	= $(fp128_softfp_static_obj) $(fp128_softfp_shared_obj)
 # New functions for software emulation
 fp128_ppc_funcs		= floattikf floatuntikf fixkfti fixunskfti \
 			  extendkftf2-sw trunctfkf2-sw \
-			  sfp-exceptions _mulkc3 _divkc3
+			  sfp-exceptions _mulkc3 _divkc3 _powikf2
 
 fp128_ppc_src		= $(addprefix $(srcdir)/config/rs6000/,$(addsuffix \
 				.c,$(fp128_ppc_funcs)))
@@ -59,7 +59,7 @@ fp128_includes		= $(srcdir)/soft-fp/double.h \
 
 # Build the emulator without ISA 3.0 hardware support.
 FP128_CFLAGS_SW		 = -Wno-type-limits -mvsx -mfloat128 \
-			   -mno-float128-hardware \
+			   -mno-float128-hardware -mno-gnu-attribute \
 			   -I$(srcdir)/soft-fp \
 			   -I$(srcdir)/config/rs6000 \
 			   $(FLOAT128_HW_INSNS)
@@ -86,7 +86,7 @@ test:
 	for x in $(fp128_obj); do echo "    $$x"; done;
 
 clean-float128:
-	rm -rf $(fp128_softfp_src)
+	-rm -f $(fp128_softfp_src) $(fp128_hardfp_src)
 	@$(MULTICLEAN) multi-clean DO=clean-float128
 
 # For now, only put it in the static library

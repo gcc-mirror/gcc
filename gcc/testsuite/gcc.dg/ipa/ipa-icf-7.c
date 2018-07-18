@@ -68,5 +68,5 @@ int main()
   return 1;
 }
 
-/* { dg-final { scan-ipa-dump "Semantic equality hit:foo2->foo" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:foo->foo2" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */

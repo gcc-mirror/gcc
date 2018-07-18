@@ -10,7 +10,7 @@ program main
 
   data a /2._dp,3._dp,5._dp,7._dp/
   thirteen = 13._dp
-  if (abs (product([[sum([eleven_ones()]), thirteen], a]) - 30030._dp) > 1e-8) call abort
+  if (abs (product([[sum([eleven_ones()]), thirteen], a]) - 30030._dp) > 1e-8) STOP 1
  contains
   function eleven_ones()
     real(kind=dp) :: eleven_ones(11)

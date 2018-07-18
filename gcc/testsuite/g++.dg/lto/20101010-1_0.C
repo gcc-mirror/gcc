@@ -1,5 +1,8 @@
 // { dg-lto-do link }
 
+/* "WARNING: lto.exp does not support dg-additional-options" */
+#pragma GCC diagnostic ignored "-Wreturn-type"
+
 typedef long size_t;
 template < class, class > struct pair
 {

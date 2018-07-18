@@ -1,6 +1,6 @@
 // <experimental/any> -*- C++ -*-
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,9 +31,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <typeinfo>
 #include <new>
@@ -43,12 +41,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   /**
    * @defgroup any Type-safe container of any type
    * @ingroup experimental
@@ -415,7 +413,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     void* __any_caster(const any* __any)
     {
-      if (__any->_M_manager != &any::_Manager<decay_t<_Tp>>::_S_manage)
+      struct _None { };
+      using _Up = decay_t<_Tp>;
+      using _Vp = conditional_t<is_copy_constructible<_Up>::value, _Up, _None>;
+      if (__any->_M_manager != &any::_Manager<_Vp>::_S_manage)
 	return nullptr;
       any::_Arg __arg;
       __any->_M_manager(any::_Op_access, __any, &__arg);
@@ -517,9 +518,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // @} group any
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v1
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

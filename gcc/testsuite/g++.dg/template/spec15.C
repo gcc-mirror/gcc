@@ -19,7 +19,7 @@ struct A<float> {
 };
 
 template <> void A<int>::f (int);                    // { dg-error "" }
-// { dg-message "need 2" "" { target *-*-* } 21 }
+// { dg-message "need 2" "" { target *-*-* } .-1 }
 template <> template <> void A<int>::f (int);
 
 template <> void A<int>::f2 (int);

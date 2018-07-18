@@ -14,6 +14,6 @@ void g ()
   B *bp;
   N::A *ap;
   f (bp);			// { dg-error "3:'f' was not declared" }
-  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } 16 }
+  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } .-1 }
   f (ap);
 }

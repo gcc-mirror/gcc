@@ -24,55 +24,55 @@ program test
     select type(P1)
         type is (character(*))
             P1 ="some test string"
-            if (P1 .ne. "some test string") call abort ()
-            if (len(P1) .ne. 20) call abort ()
-            if (len(P1) .eq. len("some test string")) call abort ()
+            if (P1 .ne. "some test string") STOP 1
+            if (len(P1) .ne. 20) STOP 2
+            if (len(P1) .eq. len("some test string")) STOP 3
         class default
-            call abort ()
+            STOP 4
     end select
 
     allocate(A1, source = P1)
 
     select type(A1)
         type is (character(*))
-            if (A1 .ne. "some test string") call abort ()
-            if (len(A1) .ne. 20) call abort ()
-            if (len(A1) .eq. len("some test string")) call abort ()
+            if (A1 .ne. "some test string") STOP 5
+            if (len(A1) .ne. 20) STOP 6
+            if (len(A1) .eq. len("some test string")) STOP 7
         class default
-            call abort ()
+            STOP 8
     end select
 
     allocate(A2, source = convertType(P1))
 
     select type(A2)
         type is (character(*))
-            if (A2 .ne. "some test string") call abort ()
-            if (len(A2) .ne. 20) call abort ()
-            if (len(A2) .eq. len("some test string")) call abort ()
+            if (A2 .ne. "some test string") STOP 9
+            if (len(A2) .ne. 20) STOP 10
+            if (len(A2) .eq. len("some test string")) STOP 11
         class default
-            call abort ()
+            STOP 12
     end select
 
     allocate(P2, source = str)
 
     select type(P2)
         type is (character(*))
-            if (P2 .ne. "string for test") call abort ()
-            if (len(P2) .eq. 20) call abort ()
-            if (len(P2) .ne. len("string for test")) call abort ()
+            if (P2 .ne. "string for test") STOP 13
+            if (len(P2) .eq. 20) STOP 14
+            if (len(P2) .ne. len("string for test")) STOP 15
         class default
-            call abort ()
+            STOP 16
     end select
 
     allocate(P3, source = "string for test")
 
     select type(P3)
         type is (character(*))
-            if (P3 .ne. "string for test") call abort ()
-            if (len(P3) .eq. 20) call abort ()
-            if (len(P3) .ne. len("string for test")) call abort ()
+            if (P3 .ne. "string for test") STOP 17
+            if (len(P3) .eq. 20) STOP 18
+            if (len(P3) .ne. len("string for test")) STOP 19
         class default
-            call abort ()
+            STOP 20
     end select
 
     allocate(character(len=10)::PA1(3))
@@ -80,15 +80,15 @@ program test
     select type(PA1)
         type is (character(*))
             PA1(1) = "string 10 "
-            if (PA1(1) .ne. "string 10 ") call abort ()
-            if (any(len(PA1(:)) .ne. [10,10,10])) call abort ()
+            if (PA1(1) .ne. "string 10 ") STOP 21
+            if (any(len(PA1(:)) .ne. [10,10,10])) STOP 22
         class default
-            call abort ()
+            STOP 23
     end select
 
     deallocate(PA1)
     deallocate(P3)
-!   if (len(P3) .ne. 0) call abort() ! Can't check, because select
+!   if (len(P3) .ne. 0) STOP 24 ! Can't check, because select
 !     type would be needed, which needs the vptr, which is 0 now.
     deallocate(P2)
     deallocate(A2)
@@ -102,59 +102,59 @@ program test
     select type(P1)
         type is (character(len=*,kind=4))
             P1 ="some test string"
-            if (P1 .ne. 4_"some test string") call abort ()
-            if (len(P1) .ne. 20) call abort ()
-            if (len(P1) .eq. len("some test string")) call abort ()
+            if (P1 .ne. 4_"some test string") STOP 25
+            if (len(P1) .ne. 20) STOP 26
+            if (len(P1) .eq. len("some test string")) STOP 27
         type is (character(len=*,kind=1))
-            call abort ()
+            STOP 28
         class default
-            call abort ()
+            STOP 29
     end select
 
     allocate(A1, source=P1)
 
     select type(A1)
         type is (character(len=*,kind=4))
-            if (A1 .ne. 4_"some test string") call abort ()
-            if (len(A1) .ne. 20) call abort ()
-            if (len(A1) .eq. len("some test string")) call abort ()
+            if (A1 .ne. 4_"some test string") STOP 30
+            if (len(A1) .ne. 20) STOP 31
+            if (len(A1) .eq. len("some test string")) STOP 32
         type is (character(len=*,kind=1))
-            call abort ()
+            STOP 33
         class default
-            call abort ()
+            STOP 34
     end select
 
     allocate(A2, source = convertType(P1))
 
     select type(A2)
         type is (character(len=*, kind=4))
-            if (A2 .ne. 4_"some test string") call abort ()
-            if (len(A2) .ne. 20) call abort ()
-            if (len(A2) .eq. len("some test string")) call abort ()
+            if (A2 .ne. 4_"some test string") STOP 35
+            if (len(A2) .ne. 20) STOP 36
+            if (len(A2) .eq. len("some test string")) STOP 37
         class default
-            call abort ()
+            STOP 38
     end select
 
     allocate(P2, source = str4)
 
     select type(P2)
         type is (character(len=*,kind=4))
-            if (P2 .ne. 4_"string for test") call abort ()
-            if (len(P2) .eq. 20) call abort ()
-            if (len(P2) .ne. len("string for test")) call abort ()
+            if (P2 .ne. 4_"string for test") STOP 39
+            if (len(P2) .eq. 20) STOP 40
+            if (len(P2) .ne. len("string for test")) STOP 41
         class default
-            call abort ()
+            STOP 42
     end select
 
     allocate(P3, source = convertType(P2))
 
     select type(P3)
         type is (character(len=*, kind=4))
-            if (P3 .ne. 4_"string for test") call abort ()
-            if (len(P3) .eq. 20) call abort ()
-            if (len(P3) .ne. len("string for test")) call abort ()
+            if (P3 .ne. 4_"string for test") STOP 43
+            if (len(P3) .eq. 20) STOP 44
+            if (len(P3) .ne. len("string for test")) STOP 45
         class default
-            call abort ()
+            STOP 46
     end select
 
     allocate(character(kind=4, len=10)::PA1(3))
@@ -162,10 +162,10 @@ program test
     select type(PA1)
         type is (character(len=*, kind=4))
             PA1(1) = 4_"string 10 "
-            if (PA1(1) .ne. 4_"string 10 ") call abort ()
-            if (any(len(PA1(:)) .ne. [10,10,10])) call abort ()
+            if (PA1(1) .ne. 4_"string 10 ") STOP 47
+            if (any(len(PA1(:)) .ne. [10,10,10])) STOP 48
         class default
-            call abort ()
+            STOP 49
     end select
 
     deallocate(PA1)
@@ -179,13 +179,13 @@ program test
     allocate(o2%content, source=o1%content)
     select type (c => o1%content)
       type is (character(*))
-        if (c /= 'test string') call abort ()
+        if (c /= 'test string') STOP 50
       class default
-        call abort()
+        STOP 51
     end select
     select type (d => o2%content)
       type is (character(*))
-        if (d /= 'test string') call abort ()
+        if (d /= 'test string') STOP 52
       class default
     end select
 
@@ -206,9 +206,9 @@ contains
     allocate(P, source=C)
     select type (P)
       type is (character(*))
-        if (P /= 'test string') call abort()
+        if (P /= 'test string') STOP 53
       class default
-        call abort()
+        STOP 54
     end select
   end subroutine
 

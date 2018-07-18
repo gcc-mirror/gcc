@@ -1,5 +1,5 @@
 /* Print RTL functions for GCC.
-   Copyright (C) 2016 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "alias.h"
 #include "tree.h"
-#include "cfg.h"
 #include "flags.h"
 #include "predict.h"
 #include "function.h"
@@ -33,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "memmodel.h"
 #include "emit-rtl.h"
+#include "varasm.h"
 
 /* Print an "(edge-from)" or "(edge-to)" directive describing E
    to OUTFILE.  */
@@ -127,6 +127,37 @@ can_have_basic_block_p (const rtx_insn *insn)
   return true;
 }
 
+/* Subroutine of print_param.  Write the name of ARG, if any, to OUTFILE.  */
+
+static void
+print_any_param_name (FILE *outfile, tree arg)
+{
+  if (DECL_NAME (arg))
+    fprintf (outfile, " \"%s\"", IDENTIFIER_POINTER (DECL_NAME (arg)));
+}
+
+/* Print a "(param)" directive for ARG to OUTFILE.  */
+
+static void
+print_param (FILE *outfile, rtx_writer &w, tree arg)
+{
+  fprintf (outfile, "  (param");
+  print_any_param_name (outfile, arg);
+  fprintf (outfile, "\n");
+
+  /* Print the value of DECL_RTL (without lazy-evaluation).  */
+  fprintf (outfile, "    (DECL_RTL ");
+  w.print_rtx (DECL_RTL_IF_SET (arg));
+  w.finish_directive ();
+
+  /* Print DECL_INCOMING_RTL.  */
+  fprintf (outfile, "    (DECL_RTL_INCOMING ");
+  w.print_rtx (DECL_INCOMING_RTL (arg));
+  fprintf (outfile, ")");
+
+  w.finish_directive ();
+}
+
 /* Write FN to OUTFILE in a form suitable for parsing, with indentation
    and comments to make the structure easy for a human to grok.  Track
    the basic blocks of insns in the chain, wrapping those that are within
@@ -143,38 +174,36 @@ can_have_basic_block_p (const rtx_insn *insn)
    Example output (with COMPACT==true):
 
    (function "times_two"
+     (param "i"
+       (DECL_RTL (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
+	   (const_int -4)) [1 i+0 S4 A32]))
+       (DECL_RTL_INCOMING (reg:SI di [ i ])))
      (insn-chain
-       (cnote NOTE_INSN_DELETED)
+       (cnote 1 NOTE_INSN_DELETED)
        (block 2
 	 (edge-from entry (flags "FALLTHRU"))
-	 (cnote [bb 2] NOTE_INSN_BASIC_BLOCK)
-	 (cinsn (set (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
+	 (cnote 4 [bb 2] NOTE_INSN_BASIC_BLOCK)
+	 (cinsn 2 (set (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
 			       (const_int -4)) [1 i+0 S4 A32])
-		       (reg:SI di [ i ])) "t.c":2
-		   (nil))
-	 (cnote NOTE_INSN_FUNCTION_BEG)
-	 (cinsn (set (reg:SI %2)
+		       (reg:SI di [ i ])) "t.c":2)
+	 (cnote 3 NOTE_INSN_FUNCTION_BEG)
+	 (cinsn 6 (set (reg:SI <2>)
 		       (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
-			       (const_int -4)) [1 i+0 S4 A32])) "t.c":3
-		   (nil))
-	 (cinsn (parallel [
-			   (set (reg:SI %0 [ _2 ])
-			       (ashift:SI (reg:SI %2)
+			       (const_int -4)) [1 i+0 S4 A32])) "t.c":3)
+	 (cinsn 7 (parallel [
+			   (set (reg:SI <0> [ _2 ])
+			       (ashift:SI (reg:SI <2>)
 				   (const_int 1)))
 			   (clobber (reg:CC flags))
 		       ]) "t.c":3
-		   (expr_list:REG_EQUAL (ashift:SI (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
+		    (expr_list:REG_EQUAL (ashift:SI (mem/c:SI (plus:DI (reg/f:DI virtual-stack-vars)
 				   (const_int -4)) [1 i+0 S4 A32])
-			   (const_int 1))
-		       (nil)))
-	 (cinsn (set (reg:SI %1 [ <retval> ])
-		       (reg:SI %0 [ _2 ])) "t.c":3
-		   (nil))
-	 (cinsn (set (reg/i:SI ax)
-		       (reg:SI %1 [ <retval> ])) "t.c":4
-		   (nil))
-	 (cinsn (use (reg/i:SI ax)) "t.c":4
-		   (nil))
+			   (const_int 1))))
+	 (cinsn 10 (set (reg:SI <1> [ <retval> ])
+		       (reg:SI <0> [ _2 ])) "t.c":3)
+	 (cinsn 14 (set (reg/i:SI ax)
+		       (reg:SI <1> [ <retval> ])) "t.c":4)
+	 (cinsn 15 (use (reg/i:SI ax)) "t.c":4)
 	 (edge-to exit (flags "FALLTHRU"))
        ) ;; block 2
      ) ;; insn-chain
@@ -189,13 +218,22 @@ can_have_basic_block_p (const rtx_insn *insn)
 DEBUG_FUNCTION void
 print_rtx_function (FILE *outfile, function *fn, bool compact)
 {
-  flag_compact = compact;
+  rtx_reuse_manager r;
+  rtx_writer w (outfile, 0, false, compact, &r);
+
+  /* Support "reuse_rtx" in the dump.  */
+  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    r.preprocess (insn);
 
   tree fdecl = fn->decl;
 
-  const char *dname = lang_hooks.decl_printable_name (fdecl, 2);
+  const char *dname = lang_hooks.decl_printable_name (fdecl, 1);
 
   fprintf (outfile, "(function \"%s\"\n", dname);
+
+  /* Params.  */
+  for (tree arg = DECL_ARGUMENTS (fdecl); arg; arg = DECL_CHAIN (arg))
+    print_param (outfile, w, arg);
 
   /* The instruction chain.  */
   fprintf (outfile, "  (insn-chain\n");
@@ -213,7 +251,7 @@ print_rtx_function (FILE *outfile, function *fn, bool compact)
 	  curr_bb = insn_bb;
 	  begin_any_block (outfile, curr_bb);
 	}
-      print_rtl_single_with_indent (outfile, insn, curr_bb ? 6 : 4);
+      w.print_rtl_single_with_indent (insn, curr_bb ? 6 : 4);
     }
   end_any_block (outfile, curr_bb);
   fprintf (outfile, "  ) ;; insn-chain\n");
@@ -221,11 +259,9 @@ print_rtx_function (FILE *outfile, function *fn, bool compact)
   /* Additional RTL state.  */
   fprintf (outfile, "  (crtl\n");
   fprintf (outfile, "    (return_rtx \n");
-  print_rtl_single_with_indent (outfile, crtl->return_rtx, 6);
+  w.print_rtl_single_with_indent (crtl->return_rtx, 6);
   fprintf (outfile, "    ) ;; return_rtx\n");
   fprintf (outfile, "  ) ;; crtl\n");
 
   fprintf (outfile, ") ;; function \"%s\"\n", dname);
-
-  flag_compact = false;
 }

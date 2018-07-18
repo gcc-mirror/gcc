@@ -7,7 +7,7 @@ program arrayarg2
    
    call test (a, b)
 
-   if (any (b .ne. (/4, 7, 10, 13, 16/))) call abort
+   if (any (b .ne. (/4, 7, 10, 13, 16/))) STOP 1
 contains
 subroutine test (x1, x2)
    implicit none

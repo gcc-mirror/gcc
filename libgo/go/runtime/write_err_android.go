@@ -75,7 +75,9 @@ func writeErr(b []byte) {
 		if v == '\n' || writePos == len(dst)-1 {
 			dst[writePos] = 0
 			write(writeFD, unsafe.Pointer(&writeBuf[0]), int32(hlen+writePos))
-			memclrBytes(dst)
+			for i := range dst {
+				dst[i] = 0
+			}
 			writePos = 0
 		}
 	}
@@ -142,7 +144,7 @@ func writeLogdHeader() int {
 	//      hdr[3:7] sec unsigned uint32, little endian.
 	//      hdr[7:11] nsec unsigned uint32, little endian.
 	hdr[0] = 0 // LOG_ID_MAIN
-	sec, nsec := time_now()
+	sec, nsec := walltime()
 	packUint32(hdr[3:7], uint32(sec))
 	packUint32(hdr[7:11], uint32(nsec))
 

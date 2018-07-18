@@ -12,6 +12,6 @@ program fm110_snippet
           "  .8765   8.765                         87.65")
   WRITE (s,35043) AAVS,AAVS,AAVS
   WRITE (s2,5043)
-  if (s(2) /= s2(2)) call abort()
+  if (s(2) /= s2(2)) STOP 1
 end program fm110_snippet
 

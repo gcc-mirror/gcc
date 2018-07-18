@@ -9,10 +9,10 @@ struct S;
 
 struct B
 {
-  virtual T *Foo (); // { dg-error "overriding" "" }
+  virtual T *Foo (); // { dg-message "overridden" }
 };
 
 struct D : B
 {
-  virtual S *Foo (); // { dg-error "invalid covariant" "" }
+  virtual S *Foo (); // { dg-error "invalid covariant" }
 };

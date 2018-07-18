@@ -1,5 +1,5 @@
 /* pass_manager.h - The pipeline of optimization passes
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,9 +47,6 @@ class context;
 class pass_manager
 {
 public:
-  void *operator new (size_t sz);
-  void operator delete (void *ptr);
-
   pass_manager (context *ctxt);
   ~pass_manager ();
 
@@ -81,6 +78,12 @@ public:
   void register_pass_name (opt_pass *pass, const char *name);
 
   opt_pass *get_pass_by_name (const char *name);
+
+  opt_pass *get_rest_of_compilation () const
+  {
+    return pass_rest_of_compilation_1;
+  }
+  opt_pass *get_clean_slate () const { return pass_clean_state_1; }
 
 public:
   /* The root of the compilation pass tree, once constructed.  */

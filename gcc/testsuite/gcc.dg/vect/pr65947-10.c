@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_condition } */
+/* { dg-require-effective-target vect_float } */
 
 #include "tree-vect.h"
 
@@ -40,6 +41,7 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" { xfail { ! vect_max_reduc } } } } */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 4 "vect" { target vect_fold_extract_last } } } */
 /* { dg-final { scan-tree-dump-not "condition expression based on integer induction." "vect" } } */
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2016 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
 This file is part of GCC.
@@ -62,27 +62,38 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-object-size.h"
 #include "params.h"
 #include "tree-cfg.h"
+#include "tree-ssa-propagate.h"
 #include "calls.h"
 #include "cfgloop.h"
 #include "intl.h"
+#include "langhooks.h"
 
 #include "builtins.h"
 #include "stor-layout.h"
 
 #include "realmpfr.h"
 #include "target.h"
-#include "targhooks.h"
 
 #include "cpplib.h"
 #include "input.h"
 #include "toplev.h"
 #include "substring-locations.h"
 #include "diagnostic.h"
+#include "domwalk.h"
+#include "alloc-pool.h"
+#include "vr-values.h"
+#include "gimple-ssa-evrp-analyze.h"
 
 /* The likely worst case value of MB_LEN_MAX for the target, large enough
    for UTF-8.  Ideally, this would be obtained by a target hook if it were
    to be used for optimization but it's good enough as is for warnings.  */
-#define target_mb_len_max   6
+#define target_mb_len_max()   6
+
+/* The maximum number of bytes a single non-string directive can result
+   in.  This is the result of printf("%.*Lf", INT_MAX, -LDBL_MAX) for
+   LDBL_MAX_10_EXP of 4932.  */
+#define IEEE_MAX_10_EXP    4932
+#define target_dir_max()   (target_int_max () + IEEE_MAX_10_EXP + 2)
 
 namespace {
 
@@ -98,7 +109,28 @@ const pass_data pass_data_sprintf_length = {
   0,	                   // properties_finish
 };
 
+/* Set to the warning level for the current function which is equal
+   either to warn_format_trunc for bounded functions or to
+   warn_format_overflow otherwise.  */
+
+static int warn_level;
+
 struct format_result;
+
+class sprintf_dom_walker : public dom_walker
+{
+ public:
+  sprintf_dom_walker () : dom_walker (CDI_DOMINATORS) {}
+  ~sprintf_dom_walker () {}
+
+  edge before_dom_children (basic_block) FINAL OVERRIDE;
+  void after_dom_children (basic_block) FINAL OVERRIDE;
+  bool handle_gimple_call (gimple_stmt_iterator *);
+
+  struct call_info;
+  bool compute_format_length (call_info &, format_result *);
+  class evrp_range_analyzer evrp_range_analyzer;
+};
 
 class pass_sprintf_length : public gimple_opt_pass
 {
@@ -122,67 +154,68 @@ public:
       fold_return_value = param;
     }
 
-  void handle_gimple_call (gimple_stmt_iterator);
-
-  struct call_info;
-  void compute_format_length (const call_info &, format_result *);
 };
 
 bool
 pass_sprintf_length::gate (function *)
 {
-  /* Run the pass iff -Warn-format-length is specified and either
-     not optimizing and the pass is being invoked early, or when
-     optimizing and the pass is being invoked during optimization
-     (i.e., "late").  */
-  return ((warn_format_length > 0 || flag_printf_return_value)
+  /* Run the pass iff -Warn-format-overflow or -Warn-format-truncation
+     is specified and either not optimizing and the pass is being invoked
+     early, or when optimizing and the pass is being invoked during
+     optimization (i.e., "late").  */
+  return ((warn_format_overflow > 0
+	   || warn_format_trunc > 0
+	   || flag_printf_return_value)
 	  && (optimize > 0) == fold_return_value);
 }
+
+/* The minimum, maximum, likely, and unlikely maximum number of bytes
+   of output either a formatting function or an individual directive
+   can result in.  */
+
+struct result_range
+{
+  /* The absolute minimum number of bytes.  The result of a successful
+     conversion is guaranteed to be no less than this.  (An erroneous
+     conversion can be indicated by MIN > HOST_WIDE_INT_MAX.)  */
+  unsigned HOST_WIDE_INT min;
+  /* The likely maximum result that is used in diagnostics.  In most
+     cases MAX is the same as the worst case UNLIKELY result.  */
+  unsigned HOST_WIDE_INT max;
+  /* The likely result used to trigger diagnostics.  For conversions
+     that result in a range of bytes [MIN, MAX], LIKELY is somewhere
+     in that range.  */
+  unsigned HOST_WIDE_INT likely;
+  /* In rare cases (e.g., for nultibyte characters) UNLIKELY gives
+     the worst cases maximum result of a directive.  In most cases
+     UNLIKELY == MAX.  UNLIKELY is used to control the return value
+     optimization but not in diagnostics.  */
+  unsigned HOST_WIDE_INT unlikely;
+};
 
 /* The result of a call to a formatted function.  */
 
 struct format_result
 {
-  /* Number of characters written by the formatted function, exact,
-     minimum and maximum when an exact number cannot be determined.
-     Setting the minimum to HOST_WIDE_INT_MAX disables all length
-     tracking for the remainder of the format string.
-     Setting either of the other two members to HOST_WIDE_INT_MAX
-     disables the exact or maximum length tracking, respectively,
-     but continues to track the maximum.  */
-  unsigned HOST_WIDE_INT number_chars;
-  unsigned HOST_WIDE_INT number_chars_min;
-  unsigned HOST_WIDE_INT number_chars_max;
-
-  /* True when the range given by NUMBER_CHARS_MIN and NUMBER_CHARS_MAX
-     can be relied on for value range propagation, false otherwise.
-     This means that BOUNDED must not be set if the number of bytes
-     produced by any directive is unspecified or implementation-
-     defined (unless the implementation's behavior is known and
-     determined via a target hook).
-     Note that BOUNDED only implies that the length of a function's
-     output is known to be within some range, not that it's constant
-     and a candidate for string folding.  BOUNDED is a stronger
-     guarantee than KNOWNRANGE.  */
-  bool bounded;
+  /* Range of characters written by the formatted function.
+     Setting the minimum to HOST_WIDE_INT_MAX disables all
+     length tracking for the remainder of the format string.  */
+  result_range range;
 
   /* True when the range above is obtained from known values of
-     directive arguments or their bounds and not the result of
-     heuristics that depend on warning levels.  It is used to
-     issue stricter diagnostics in cases where strings of unknown
-     lengths are bounded by the arrays they are determined to
-     refer to.  KNOWNRANGE must not be used to set the range of
-     the return value of a call.  */
+     directive arguments, or bounds on the amount of output such
+     as width and precision, and not the result of  heuristics that
+     depend on warning levels.  It's used to issue stricter diagnostics
+     in cases where strings of unknown lengths are bounded by the arrays
+     they are determined to refer to.  KNOWNRANGE must not be used for
+     the return value optimization.  */
   bool knownrange;
 
-  /* True when the output of the formatted call is constant (and
-     thus a candidate for string constant folding).  This is rare
-     and typically requires that the arguments of all directives
-     are also constant.  CONSTANT implies BOUNDED.  */
-  bool constant;
-
   /* True if no individual directive resulted in more than 4095 bytes
-     of output (the total NUMBER_CHARS might be greater).  */
+     of output (the total NUMBER_CHARS_{MIN,MAX} might be greater).
+     Implementations are not required to handle directives that produce
+     more than 4K bytes (leading to undefined behavior) and so when one
+     is found it disables the return value optimization.  */
   bool under4k;
 
   /* True when a floating point directive has been seen in the format
@@ -191,7 +224,7 @@ struct format_result
 
   /* True when an intermediate result has caused a warning.  Used to
      avoid issuing duplicate warnings while finishing the processing
-     of a call.  */
+     of a call.  WARNED also disables the return value optimization.  */
   bool warned;
 
   /* Preincrement the number of output characters by 1.  */
@@ -209,40 +242,35 @@ struct format_result
   }
 
   /* Increment the number of output characters by N.  */
-  format_result& operator+= (unsigned HOST_WIDE_INT n)
-  {
-    gcc_assert (n < HOST_WIDE_INT_MAX);
-
-    if (number_chars < HOST_WIDE_INT_MAX)
-      number_chars += n;
-    if (number_chars_min < HOST_WIDE_INT_MAX)
-      number_chars_min += n;
-    if (number_chars_max < HOST_WIDE_INT_MAX)
-      number_chars_max += n;
-    return *this;
-  }
+  format_result& operator+= (unsigned HOST_WIDE_INT);
 };
+
+format_result&
+format_result::operator+= (unsigned HOST_WIDE_INT n)
+{
+  gcc_assert (n < HOST_WIDE_INT_MAX);
+
+  if (range.min < HOST_WIDE_INT_MAX)
+    range.min += n;
+
+  if (range.max < HOST_WIDE_INT_MAX)
+    range.max += n;
+
+  if (range.likely < HOST_WIDE_INT_MAX)
+    range.likely += n;
+
+  if (range.unlikely < HOST_WIDE_INT_MAX)
+    range.unlikely += n;
+
+  return *this;
+}
 
 /* Return the value of INT_MIN for the target.  */
 
-static HOST_WIDE_INT
+static inline HOST_WIDE_INT
 target_int_min ()
 {
-  const unsigned HOST_WIDE_INT int_min
-    = HOST_WIDE_INT_M1U << (TYPE_PRECISION (integer_type_node) - 1);
-
-  return int_min;
-}
-
-/* Return the largest value for TYPE on the target.  */
-
-static unsigned HOST_WIDE_INT
-target_max_value (tree type)
-{
-  const unsigned HOST_WIDE_INT max_value
-    = HOST_WIDE_INT_M1U >> (HOST_BITS_PER_WIDE_INT
-			    - TYPE_PRECISION (type) + 1);
-  return max_value;
+  return tree_to_shwi (TYPE_MIN_VALUE (integer_type_node));
 }
 
 /* Return the value of INT_MAX for the target.  */
@@ -250,7 +278,7 @@ target_max_value (tree type)
 static inline unsigned HOST_WIDE_INT
 target_int_max ()
 {
-  return target_max_value (integer_type_node);
+  return tree_to_uhwi (TYPE_MAX_VALUE (integer_type_node));
 }
 
 /* Return the value of SIZE_MAX for the target.  */
@@ -258,7 +286,159 @@ target_int_max ()
 static inline unsigned HOST_WIDE_INT
 target_size_max ()
 {
-  return target_max_value (size_type_node);
+  return tree_to_uhwi (TYPE_MAX_VALUE (size_type_node));
+}
+
+/* A straightforward mapping from the execution character set to the host
+   character set indexed by execution character.  */
+
+static char target_to_host_charmap[256];
+
+/* Initialize a mapping from the execution character set to the host
+   character set.  */
+
+static bool
+init_target_to_host_charmap ()
+{
+  /* If the percent sign is non-zero the mapping has already been
+     initialized.  */
+  if (target_to_host_charmap['%'])
+    return true;
+
+  /* Initialize the target_percent character (done elsewhere).  */
+  if (!init_target_chars ())
+    return false;
+
+  /* The subset of the source character set used by printf conversion
+     specifications (strictly speaking, not all letters are used but
+     they are included here for the sake of simplicity).  The dollar
+     sign must be included even though it's not in the basic source
+     character set.  */
+  const char srcset[] = " 0123456789!\"#%&'()*+,-./:;<=>?[\\]^_{|}~$"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+  /* Set the mapping for all characters to some ordinary value (i,e.,
+     not none used in printf conversion specifications) and overwrite
+     those that are used by conversion specifications with their
+     corresponding values.  */
+  memset (target_to_host_charmap + 1, '?', sizeof target_to_host_charmap - 1);
+
+  /* Are the two sets of characters the same?  */
+  bool all_same_p = true;
+
+  for (const char *pc = srcset; *pc; ++pc)
+    {
+      /* Slice off the high end bits in case target characters are
+	 signed.  All values are expected to be non-nul, otherwise
+	 there's a problem.  */
+      if (unsigned char tc = lang_hooks.to_target_charset (*pc))
+	{
+	  target_to_host_charmap[tc] = *pc;
+	  if (tc != *pc)
+	    all_same_p = false;
+	}
+      else
+	return false;
+
+    }
+
+  /* Set the first element to a non-zero value if the mapping
+     is 1-to-1, otherwise leave it clear (NUL is assumed to be
+     the same in both character sets).  */
+  target_to_host_charmap[0] = all_same_p;
+
+  return true;
+}
+
+/* Return the host source character corresponding to the character
+   CH in the execution character set if one exists, or some innocuous
+   (non-special, non-nul) source character otherwise.  */
+
+static inline unsigned char
+target_to_host (unsigned char ch)
+{
+  return target_to_host_charmap[ch];
+}
+
+/* Convert an initial substring of the string TARGSTR consisting of
+   characters in the execution character set into a string in the
+   source character set on the host and store up to HOSTSZ characters
+   in the buffer pointed to by HOSTR.  Return HOSTR.  */
+
+static const char*
+target_to_host (char *hostr, size_t hostsz, const char *targstr)
+{
+  /* Make sure the buffer is reasonably big.  */
+  gcc_assert (hostsz > 4);
+
+  /* The interesting subset of source and execution characters are
+     the same so no conversion is necessary.  However, truncate
+     overlong strings just like the translated strings are.  */
+  if (target_to_host_charmap['\0'] == 1)
+    {
+      strncpy (hostr, targstr, hostsz - 4);
+      if (strlen (targstr) >= hostsz)
+	strcpy (hostr + hostsz - 4, "...");
+      return hostr;
+    }
+
+  /* Convert the initial substring of TARGSTR to the corresponding
+     characters in the host set, appending "..." if TARGSTR is too
+     long to fit.  Using the static buffer assumes the function is
+     not called in between sequence points (which it isn't).  */
+  for (char *ph = hostr; ; ++targstr)
+    {
+      *ph++ = target_to_host (*targstr);
+      if (!*targstr)
+	break;
+
+      if (size_t (ph - hostr) == hostsz - 4)
+	{
+	  *ph = '\0';
+	  strcat (ph, "...");
+	  break;
+	}
+    }
+
+  return hostr;
+}
+
+/* Convert the sequence of decimal digits in the execution character
+   starting at S to a long, just like strtol does.  Return the result
+   and set *END to one past the last converted character.  On range
+   error set ERANGE to the digit that caused it.  */
+
+static inline long
+target_strtol10 (const char **ps, const char **erange)
+{
+  unsigned HOST_WIDE_INT val = 0;
+  for ( ; ; ++*ps)
+    {
+      unsigned char c = target_to_host (**ps);
+      if (ISDIGIT (c))
+	{
+	  c -= '0';
+
+	  /* Check for overflow.  */
+	  if (val > (LONG_MAX - c) / 10LU)
+	    {
+	      val = LONG_MAX;
+	      *erange = *ps;
+
+	      /* Skip the remaining digits.  */
+	      do
+		c = target_to_host (*++*ps);
+	      while (ISDIGIT (c));
+	      break;
+	    }
+	  else
+	    val = val * 10 + c;
+	}
+      else
+	break;
+    }
+
+  return val;
 }
 
 /* Return the constant initial value of DECL if available or DECL
@@ -361,7 +541,11 @@ get_format_string (tree format, location_t *ploc)
   if (TREE_CODE (format) != STRING_CST)
     return NULL;
 
-  if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (format))) != char_type_node)
+  tree type = TREE_TYPE (format);
+
+  scalar_int_mode char_mode;
+  if (!is_int_mode (TYPE_MODE (TREE_TYPE (type)), &char_mode)
+      || GET_MODE_SIZE (char_mode) != 1)
     {
       /* Wide format string.  */
       return NULL;
@@ -405,18 +589,40 @@ get_format_string (tree format, location_t *ploc)
   return fmtstr;
 }
 
-/* The format_warning_at_substring function is not used here in a way
-   that makes using attribute format viable.  Suppress the warning.  */
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
-
-/* For convenience and brevity.  */
+/* For convenience and brevity, shorter named entrypoints of
+   format_warning_at_substring and format_warning_at_substring_n.
+   These have to be functions with the attribute so that exgettext
+   works properly.  */
 
 static bool
-  (* const fmtwarn) (const substring_loc &, const source_range *,
-		     const char *, int, const char *, ...)
-  = format_warning_at_substring;
+ATTRIBUTE_GCC_DIAG (5, 6)
+fmtwarn (const substring_loc &fmt_loc, location_t param_loc,
+	 const char *corrected_substring, int opt, const char *gmsgid, ...)
+{
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool warned = format_warning_va (fmt_loc, param_loc, corrected_substring,
+				   opt, gmsgid, &ap);
+  va_end (ap);
+
+  return warned;
+}
+
+static bool
+ATTRIBUTE_GCC_DIAG (6, 8) ATTRIBUTE_GCC_DIAG (7, 8)
+fmtwarn_n (const substring_loc &fmt_loc, location_t param_loc,
+	   const char *corrected_substring, int opt, unsigned HOST_WIDE_INT n,
+	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
+{
+  va_list ap;
+  va_start (ap, plural_gmsgid);
+  bool warned = format_warning_n_va (fmt_loc, param_loc, corrected_substring,
+				     opt, n, singular_gmsgid, plural_gmsgid,
+				     &ap);
+  va_end (ap);
+
+  return warned;
+}
 
 /* Format length modifiers.  */
 
@@ -434,23 +640,47 @@ enum format_lengths
 };
 
 
-/* A minimum and maximum number of bytes.  */
-
-struct result_range
-{
-  unsigned HOST_WIDE_INT min, max;
-};
-
 /* Description of the result of conversion either of a single directive
    or the whole format string.  */
 
 struct fmtresult
 {
-  fmtresult ()
-  : argmin (), argmax (), knownrange (), bounded (), constant ()
+  /* Construct a FMTRESULT object with all counters initialized
+     to MIN.  KNOWNRANGE is set when MIN is valid.  */
+  fmtresult (unsigned HOST_WIDE_INT min = HOST_WIDE_INT_MAX)
+  : argmin (), argmax (),
+    knownrange (min < HOST_WIDE_INT_MAX),
+    nullp ()
   {
-    range.min = range.max = HOST_WIDE_INT_MAX;
+    range.min = min;
+    range.max = min;
+    range.likely = min;
+    range.unlikely = min;
   }
+
+  /* Construct a FMTRESULT object with MIN, MAX, and LIKELY counters.
+     KNOWNRANGE is set when both MIN and MAX are valid.   */
+  fmtresult (unsigned HOST_WIDE_INT min, unsigned HOST_WIDE_INT max,
+	     unsigned HOST_WIDE_INT likely = HOST_WIDE_INT_MAX)
+  : argmin (), argmax (),
+    knownrange (min < HOST_WIDE_INT_MAX && max < HOST_WIDE_INT_MAX),
+    nullp ()
+  {
+    range.min = min;
+    range.max = max;
+    range.likely = max < likely ? min : likely;
+    range.unlikely = max;
+  }
+
+  /* Adjust result upward to reflect the RANGE of values the specified
+     width or precision is known to be in.  */
+  fmtresult& adjust_for_width_or_precision (const HOST_WIDE_INT[2],
+					    tree = NULL_TREE,
+					    unsigned = 0, unsigned = 0);
+
+  /* Return the maximum number of decimal digits a value of TYPE
+     formats as on output.  */
+  static unsigned type_max_digits (tree, int);
 
   /* The range a directive's argument is in.  */
   tree argmin, argmax;
@@ -464,34 +694,132 @@ struct fmtresult
      heuristics that depend on warning levels.  */
   bool knownrange;
 
-  /* True when the range is the result of an argument determined
-     to be bounded to a subrange of its type or value (such as by
-     value range propagation or the width of the formt directive),
-     false otherwise.  */
-  bool bounded;
-
-  /* True when the output of a directive is constant.  This is rare
-     and typically requires that the argument(s) of the directive
-     are also constant (such as determined by constant propagation,
-     though not value range propagation).  */
-  bool constant;
+  /* True when the argument is a null pointer.  */
+  bool nullp;
 };
 
-/* Description of a conversion specification.  */
+/* Adjust result upward to reflect the range ADJUST of values the
+   specified width or precision is known to be in.  When non-null,
+   TYPE denotes the type of the directive whose result is being
+   adjusted, BASE gives the base of the directive (octal, decimal,
+   or hex), and ADJ denotes the additional adjustment to the LIKELY
+   counter that may need to be added when ADJUST is a range.  */
 
-struct conversion_spec
+fmtresult&
+fmtresult::adjust_for_width_or_precision (const HOST_WIDE_INT adjust[2],
+					  tree type /* = NULL_TREE */,
+					  unsigned base /* = 0 */,
+					  unsigned adj /* = 0 */)
 {
+  bool minadjusted = false;
+
+  /* Adjust the minimum and likely counters.  */
+  if (adjust[0] >= 0)
+    {
+      if (range.min < (unsigned HOST_WIDE_INT)adjust[0])
+	{
+	  range.min = adjust[0];
+	  minadjusted = true;
+	}
+
+      /* Adjust the likely counter.  */
+      if (range.likely < range.min)
+	range.likely = range.min;
+    }
+  else if (adjust[0] == target_int_min ()
+	   && (unsigned HOST_WIDE_INT)adjust[1] == target_int_max ())
+    knownrange = false;
+
+  /* Adjust the maximum counter.  */
+  if (adjust[1] > 0)
+    {
+      if (range.max < (unsigned HOST_WIDE_INT)adjust[1])
+	{
+	  range.max = adjust[1];
+
+	  /* Set KNOWNRANGE if both the minimum and maximum have been
+	     adjusted.  Otherwise leave it at what it was before.  */
+	  knownrange = minadjusted;
+	}
+    }
+
+  if (warn_level > 1 && type)
+    {
+      /* For large non-constant width or precision whose range spans
+	 the maximum number of digits produced by the directive for
+	 any argument, set the likely number of bytes to be at most
+	 the number digits plus other adjustment determined by the
+	 caller (one for sign or two for the hexadecimal "0x"
+	 prefix).  */
+      unsigned dirdigs = type_max_digits (type, base);
+      if (adjust[0] < dirdigs && dirdigs < adjust[1]
+	  && range.likely < dirdigs)
+	range.likely = dirdigs + adj;
+    }
+  else if (range.likely < (range.min ? range.min : 1))
+    {
+      /* Conservatively, set LIKELY to at least MIN but no less than
+	 1 unless MAX is zero.  */
+      range.likely = (range.min
+		      ? range.min
+		      : range.max && (range.max < HOST_WIDE_INT_MAX
+				      || warn_level > 1) ? 1 : 0);
+    }
+
+  /* Finally adjust the unlikely counter to be at least as large as
+     the maximum.  */
+  if (range.unlikely < range.max)
+    range.unlikely = range.max;
+
+  return *this;
+}
+
+/* Return the maximum number of digits a value of TYPE formats in
+   BASE on output, not counting base prefix .  */
+
+unsigned
+fmtresult::type_max_digits (tree type, int base)
+{
+  unsigned prec = TYPE_PRECISION (type);
+  switch (base)
+    {
+    case 8:
+      return (prec + 2) / 3;
+    case 10:
+      /* Decimal approximation: yields 3, 5, 10, and 20 for precision
+	 of 8, 16, 32, and 64 bits.  */
+      return prec * 301 / 1000 + 1;
+    case 16:
+      return prec / 4;
+    }
+
+  gcc_unreachable ();
+}
+
+static bool
+get_int_range (tree, HOST_WIDE_INT *, HOST_WIDE_INT *, bool, HOST_WIDE_INT,
+	       class vr_values *vr_values);
+
+/* Description of a format directive.  A directive is either a plain
+   string or a conversion specification that starts with '%'.  */
+
+struct directive
+{
+  /* The 1-based directive number (for debugging).  */
+  unsigned dirno;
+
+  /* The first character of the directive and its length.  */
+  const char *beg;
+  size_t len;
+
   /* A bitmap of flags, one for each character.  */
   unsigned flags[256 / sizeof (int)];
-  /* Numeric width as in "%8x".  */
-  int width;
-  /* Numeric precision as in "%.32s".  */
-  int precision;
 
-  /* Width specified via the '*' character.  */
-  tree star_width;
-  /* Precision specified via the asterisk.  */
-  tree star_precision;
+  /* The range of values of the specified width, or -1 if not specified.  */
+  HOST_WIDE_INT width[2];
+  /* The range of values of the specified precision, or -1 if not
+     specified.  */
+  HOST_WIDE_INT prec[2];
 
   /* Length modifier.  */
   format_lengths modifier;
@@ -499,18 +827,13 @@ struct conversion_spec
   /* Format specifier character.  */
   char specifier;
 
-  /* Numeric width was given.  */
-  unsigned have_width: 1;
-  /* Numeric precision was given.  */
-  unsigned have_precision: 1;
-  /* Non-zero when certain flags should be interpreted even for a directive
-     that normally doesn't accept them (used when "%p" with flags such as
-     space or plus is interepreted as a "%x".  */
-  unsigned force_flags: 1;
+  /* The argument of the directive or null when the directive doesn't
+     take one or when none is available (such as for vararg functions).  */
+  tree arg;
 
-  /* Format conversion function that given a conversion specification
-     and an argument returns the formatting result.  */
-  fmtresult (*fmtfunc) (const conversion_spec &, tree);
+  /* Format conversion function that given a directive and an argument
+     returns the formatting result.  */
+  fmtresult (*fmtfunc) (const directive &, tree, vr_values *);
 
   /* Return True when a the format flag CHR has been used.  */
   bool get_flag (char chr) const
@@ -535,6 +858,48 @@ struct conversion_spec
     flags[c / (CHAR_BIT * sizeof *flags)]
       &= ~(1U << (c % (CHAR_BIT * sizeof *flags)));
   }
+
+  /* Set both bounds of the width range to VAL.  */
+  void set_width (HOST_WIDE_INT val)
+  {
+    width[0] = width[1] = val;
+  }
+
+  /* Set the width range according to ARG, with both bounds being
+     no less than 0.  For a constant ARG set both bounds to its value
+     or 0, whichever is greater.  For a non-constant ARG in some range
+     set width to its range adjusting each bound to -1 if it's less.
+     For an indeterminate ARG set width to [0, INT_MAX].  */
+  void set_width (tree arg, vr_values *vr_values)
+  {
+    get_int_range (arg, width, width + 1, true, 0, vr_values);
+  }
+
+  /* Set both bounds of the precision range to VAL.  */
+  void set_precision (HOST_WIDE_INT val)
+  {
+    prec[0] = prec[1] = val;
+  }
+
+  /* Set the precision range according to ARG, with both bounds being
+     no less than -1.  For a constant ARG set both bounds to its value
+     or -1 whichever is greater.  For a non-constant ARG in some range
+     set precision to its range adjusting each bound to -1 if it's less.
+     For an indeterminate ARG set precision to [-1, INT_MAX].  */
+  void set_precision (tree arg, vr_values *vr_values)
+  {
+    get_int_range (arg, prec, prec + 1, false, -1, vr_values);
+  }
+
+  /* Return true if both width and precision are known to be
+     either constant or in some range, false otherwise.  */
+  bool known_width_and_precision () const
+  {
+    return ((width[1] < 0
+	     || (unsigned HOST_WIDE_INT)width[1] <= target_int_max ())
+	    && (prec[1] < 0
+		|| (unsigned HOST_WIDE_INT)prec[1] < target_int_max ()));
+  }
 };
 
 /* Return the logarithm of X in BASE.  */
@@ -552,17 +917,18 @@ ilog (unsigned HOST_WIDE_INT x, int base)
 }
 
 /* Return the number of bytes resulting from converting into a string
-   the INTEGER_CST tree node X in BASE.  PLUS indicates whether 1 for
-   a plus sign should be added for positive numbers, and PREFIX whether
-   the length of an octal ('O') or hexadecimal ('0x') prefix should be
-   added for nonzero numbers.  Return -1 if X cannot be represented.  */
+   the INTEGER_CST tree node X in BASE with a minimum of PREC digits.
+   PLUS indicates whether 1 for a plus sign should be added for positive
+   numbers, and PREFIX whether the length of an octal ('O') or hexadecimal
+   ('0x') prefix should be added for nonzero numbers.  Return -1 if X cannot
+   be represented.  */
 
-static int
-tree_digits (tree x, int base, bool plus, bool prefix)
+static HOST_WIDE_INT
+tree_digits (tree x, int base, HOST_WIDE_INT prec, bool plus, bool prefix)
 {
   unsigned HOST_WIDE_INT absval;
 
-  int res;
+  HOST_WIDE_INT res;
 
   if (TYPE_UNSIGNED (TREE_TYPE (x)))
     {
@@ -579,24 +945,34 @@ tree_digits (tree x, int base, bool plus, bool prefix)
       if (tree_fits_shwi_p (x))
 	{
 	  HOST_WIDE_INT i = tree_to_shwi (x);
-	  if (i < 0)
-	    {
-	      absval = -i;
-	      res = 1;
-	    }
-	  else
-	    {
-	      absval = i;
-	      res = plus;
-	    }
+         if (HOST_WIDE_INT_MIN == i)
+           {
+             /* Avoid undefined behavior due to negating a minimum.  */
+             absval = HOST_WIDE_INT_MAX;
+             res = 1;
+           }
+         else if (i < 0)
+	   {
+	     absval = -i;
+	     res = 1;
+	   }
+	 else
+	   {
+	     absval = i;
+	     res = plus;
+	   }
 	}
       else
 	return -1;
     }
 
-  res += ilog (absval, base);
+  int ndigs = ilog (absval, base);
 
-  if (prefix && absval)
+  res += prec < ndigs ? ndigs : prec;
+
+  /* Adjust a non-zero value for the base prefix, either hexadecimal,
+     or, unless precision has resulted in a leading zero, also octal.  */
+  if (prefix && absval && (base == 16 || prec <= ndigs))
     {
       if (base == 8)
 	res += 1;
@@ -608,7 +984,7 @@ tree_digits (tree x, int base, bool plus, bool prefix)
 }
 
 /* Given the formatting result described by RES and NAVAIL, the number
-   of available in the destination, return the number of bytes remaining
+   of available in the destination, return the range of bytes remaining
    in the destination.  */
 
 static inline result_range
@@ -618,73 +994,31 @@ bytes_remaining (unsigned HOST_WIDE_INT navail, const format_result &res)
 
   if (HOST_WIDE_INT_MAX <= navail)
     {
-      range.min = range.max = navail;
+      range.min = range.max = range.likely = range.unlikely = navail;
       return range;
     }
 
-  if (res.number_chars < navail)
-    {
-      range.min = range.max = navail - res.number_chars;
-    }
-  else if (res.number_chars_min < navail)
-    {
-      range.max = navail - res.number_chars_min;
-    }
-  else
-    range.max = 0;
+  /* The lower bound of the available range is the available size
+     minus the maximum output size, and the upper bound is the size
+     minus the minimum.  */
+  range.max = res.range.min < navail ? navail - res.range.min : 0;
 
-  if (res.number_chars_max < navail)
-    range.min = navail - res.number_chars_max;
+  range.likely = res.range.likely < navail ? navail - res.range.likely : 0;
+
+  if (res.range.max < HOST_WIDE_INT_MAX)
+    range.min = res.range.max < navail ? navail - res.range.max : 0;
   else
-    range.min = 0;
+    range.min = range.likely;
+
+  range.unlikely = (res.range.unlikely < navail
+		    ? navail - res.range.unlikely : 0);
 
   return range;
 }
 
-/* Given the formatting result described by RES and NAVAIL, the number
-   of available in the destination, return the minimum number of bytes
-   remaining in the destination.  */
-
-static inline unsigned HOST_WIDE_INT
-min_bytes_remaining (unsigned HOST_WIDE_INT navail, const format_result &res)
-{
-  if (HOST_WIDE_INT_MAX <= navail)
-    return navail;
-
-  if (1 < warn_format_length || res.bounded)
-    {
-      /* At level 2, or when all directives output an exact number
-	 of bytes or when their arguments were bounded by known
-	 ranges, use the greater of the two byte counters if it's
-	 valid to compute the result.  */
-      if (res.number_chars_max < HOST_WIDE_INT_MAX)
-	navail -= res.number_chars_max;
-      else if (res.number_chars < HOST_WIDE_INT_MAX)
-	navail -= res.number_chars;
-      else if (res.number_chars_min < HOST_WIDE_INT_MAX)
-	navail -= res.number_chars_min;
-    }
-  else
-    {
-      /* At level 1 use the smaller of the byte counters to compute
-	 the result.  */
-      if (res.number_chars < HOST_WIDE_INT_MAX)
-	navail -= res.number_chars;
-      else if (res.number_chars_min < HOST_WIDE_INT_MAX)
-	navail -= res.number_chars_min;
-      else if (res.number_chars_max < HOST_WIDE_INT_MAX)
-	navail -= res.number_chars_max;
-    }
-
-  if (navail > HOST_WIDE_INT_MAX)
-    navail = 0;
-
-  return navail;
-}
-
 /* Description of a call to a formatted function.  */
 
-struct pass_sprintf_length::call_info
+struct sprintf_dom_walker::call_info
 {
   /* Function call statement.  */
   gimple *callstmt;
@@ -712,38 +1046,62 @@ struct pass_sprintf_length::call_info
   /* True for functions like snprintf that specify the size of
      the destination, false for others like sprintf that don't.  */
   bool bounded;
+
+  /* True for bounded functions like snprintf that specify a zero-size
+     buffer as a request to compute the size of output without actually
+     writing any.  NOWRITE is cleared in response to the %n directive
+     which has side-effects similar to writing output.  */
+  bool nowrite;
+
+  /* Return true if the called function's return value is used.  */
+  bool retval_used () const
+  {
+    return gimple_get_lhs (callstmt);
+  }
+
+  /* Return the warning option corresponding to the called function.  */
+  int warnopt () const
+  {
+    return bounded ? OPT_Wformat_truncation_ : OPT_Wformat_overflow_;
+  }
 };
+
+/* Return the result of formatting a no-op directive (such as '%n').  */
+
+static fmtresult
+format_none (const directive &, tree, vr_values *)
+{
+  fmtresult res (0);
+  return res;
+}
 
 /* Return the result of formatting the '%%' directive.  */
 
 static fmtresult
-format_percent (const conversion_spec &, tree)
+format_percent (const directive &, tree, vr_values *)
 {
-  fmtresult res;
-  res.argmin = res.argmax = NULL_TREE;
-  res.range.min = res.range.max = 1;
-  res.bounded = res.constant = true;
+  fmtresult res (1);
   return res;
 }
 
 
-/* Ugh.  Compute intmax_type_node and uintmax_type_node the same way
-   lto/lto-lang.c does it.  This should be available in tree.h.  */
+/* Compute intmax_type_node and uintmax_type_node similarly to how
+   tree.c builds size_type_node.  */
 
 static void
 build_intmax_type_nodes (tree *pintmax, tree *puintmax)
 {
-  if (strcmp (SIZE_TYPE, "unsigned int") == 0)
+  if (strcmp (UINTMAX_TYPE, "unsigned int") == 0)
     {
       *pintmax = integer_type_node;
       *puintmax = unsigned_type_node;
     }
-  else if (strcmp (SIZE_TYPE, "long unsigned int") == 0)
+  else if (strcmp (UINTMAX_TYPE, "long unsigned int") == 0)
     {
       *pintmax = long_integer_type_node;
       *puintmax = long_unsigned_type_node;
     }
-  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
+  else if (strcmp (UINTMAX_TYPE, "long long unsigned int") == 0)
     {
       *pintmax = long_long_integer_type_node;
       *puintmax = long_long_unsigned_type_node;
@@ -756,128 +1114,236 @@ build_intmax_type_nodes (tree *pintmax, tree *puintmax)
 	    char name[50];
 	    sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
 
-	    if (strcmp (name, SIZE_TYPE) == 0)
+	    if (strcmp (name, UINTMAX_TYPE) == 0)
 	      {
 	        *pintmax = int_n_trees[i].signed_type;
 	        *puintmax = int_n_trees[i].unsigned_type;
+		return;
 	      }
 	  }
+      gcc_unreachable ();
     }
 }
 
-static fmtresult
-format_integer (const conversion_spec &, tree);
+/* Determine the range [*PMIN, *PMAX] that the expression ARG is
+   in and that is representable in type int.
+   Return true when the range is a subrange of that of int.
+   When ARG is null it is as if it had the full range of int.
+   When ABSOLUTE is true the range reflects the absolute value of
+   the argument.  When ABSOLUTE is false, negative bounds of
+   the determined range are replaced with NEGBOUND.  */
 
-/* Return a range representing the minimum and maximum number of bytes
-   that the conversion specification SPEC will write on output for the
-   pointer argument ARG when non-null.  ARG may be null (for vararg
-   functions).  */
-
-static fmtresult
-format_pointer (const conversion_spec &spec, tree arg)
+static bool
+get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
+	       bool absolute, HOST_WIDE_INT negbound,
+	       class vr_values *vr_values)
 {
-  fmtresult res;
+  /* The type of the result.  */
+  const_tree type = integer_type_node;
 
-  /* Determine the target's integer format corresponding to "%p".  */
-  const char *flags;
-  const char *pfmt = targetm.printf_pointer_format (arg, &flags);
-  if (!pfmt)
+  bool knownrange = false;
+
+  if (!arg)
     {
-      /* The format couldn't be determined.  */
-      res.range.min = res.range.max = HOST_WIDE_INT_M1U;
-      return res;
+      *pmin = tree_to_shwi (TYPE_MIN_VALUE (type));
+      *pmax = tree_to_shwi (TYPE_MAX_VALUE (type));
     }
-
-  if (pfmt [0] == '%')
+  else if (TREE_CODE (arg) == INTEGER_CST
+	   && TYPE_PRECISION (TREE_TYPE (arg)) <= TYPE_PRECISION (type))
     {
-      /* Format the pointer using the integer format string.  */
-      conversion_spec pspec = spec;
+      /* For a constant argument return its value adjusted as specified
+	 by NEGATIVE and NEGBOUND and return true to indicate that the
+	 result is known.  */
+      *pmin = tree_fits_shwi_p (arg) ? tree_to_shwi (arg) : tree_to_uhwi (arg);
+      *pmax = *pmin;
+      knownrange = true;
+    }
+  else
+    {
+      /* True if the argument's range cannot be determined.  */
+      bool unknown = true;
 
-      /* Clear flags that are not listed as recognized.  */
-      for (const char *pf = "+ #0"; *pf; ++pf)
-	{
-	  if (!strchr (flags, *pf))
-	    pspec.clear_flag (*pf);
-	}
+      tree argtype = TREE_TYPE (arg);
 
-      /* Set flags that are specified in the format string.  */
-      bool flag_p = true;
-      do
+      /* Ignore invalid arguments with greater precision that that
+	 of the expected type (e.g., in sprintf("%*i", 12LL, i)).
+	 They will have been detected and diagnosed by -Wformat and
+	 so it's not important to complicate this code to try to deal
+	 with them again.  */
+      if (TREE_CODE (arg) == SSA_NAME
+	  && INTEGRAL_TYPE_P (argtype)
+	  && TYPE_PRECISION (argtype) <= TYPE_PRECISION (type))
 	{
-	  switch (*++pfmt)
+	  /* Try to determine the range of values of the integer argument.  */
+	  value_range *vr = vr_values->get_value_range (arg);
+	  if (vr->type == VR_RANGE
+	      && TREE_CODE (vr->min) == INTEGER_CST
+	      && TREE_CODE (vr->max) == INTEGER_CST)
 	    {
-	    case '+': case ' ': case '#': case '0':
-	      pspec.set_flag (*pfmt);
-	      break;
-	    default:
-	      flag_p = false;
+	      HOST_WIDE_INT type_min
+		= (TYPE_UNSIGNED (argtype)
+		   ? tree_to_uhwi (TYPE_MIN_VALUE (argtype))
+		   : tree_to_shwi (TYPE_MIN_VALUE (argtype)));
+
+	      HOST_WIDE_INT type_max = tree_to_uhwi (TYPE_MAX_VALUE (argtype));
+
+	      *pmin = TREE_INT_CST_LOW (vr->min);
+	      *pmax = TREE_INT_CST_LOW (vr->max);
+
+	      if (*pmin < *pmax)
+		{
+		  /* Return true if the adjusted range is a subrange of
+		     the full range of the argument's type.  *PMAX may
+		     be less than *PMIN when the argument is unsigned
+		     and its upper bound is in excess of TYPE_MAX.  In
+		     that (invalid) case disregard the range and use that
+		     of the expected type instead.  */
+		  knownrange = type_min < *pmin || *pmax < type_max;
+
+		  unknown = false;
+		}
 	    }
 	}
-      while (flag_p);
 
-      /* Set the appropriate length modifier taking care to clear
-       the one that may be set (Glibc's %p accepts but ignores all
-       the integer length modifiers).  */
-      switch (*pfmt)
-	{
-	case 'l': pspec.modifier = FMT_LEN_l; ++pfmt; break;
-	case 't': pspec.modifier = FMT_LEN_t; ++pfmt; break;
-	case 'z': pspec.modifier = FMT_LEN_z; ++pfmt; break;
-	default: pspec.modifier = FMT_LEN_none;
-	}
-
-      pspec.force_flags = 1;
-      pspec.specifier = *pfmt++;
-      gcc_assert (*pfmt == '\0');
-      return format_integer (pspec, arg);
+      /* Handle an argument with an unknown range as if none had been
+	 provided.  */
+      if (unknown)
+	return get_int_range (NULL_TREE, pmin, pmax, absolute,
+			      negbound, vr_values);
     }
 
-  /* The format is a plain string such as Glibc's "(nil)".  */
-  res.range.min = res.range.max = strlen (pfmt);
-  return res;
+  /* Adjust each bound as specified by ABSOLUTE and NEGBOUND.  */
+  if (absolute)
+    {
+      if (*pmin < 0)
+	{
+	  if (*pmin == *pmax)
+	    *pmin = *pmax = -*pmin;
+	  else
+	    {
+	      /* Make sure signed overlow is avoided.  */
+	      gcc_assert (*pmin != HOST_WIDE_INT_MIN);
+
+	      HOST_WIDE_INT tmp = -*pmin;
+	      *pmin = 0;
+	      if (*pmax < tmp)
+		*pmax = tmp;
+	    }
+	}
+    }
+  else if (*pmin < negbound)
+    *pmin = negbound;
+
+  return knownrange;
+}
+
+/* With the range [*ARGMIN, *ARGMAX] of an integer directive's actual
+   argument, due to the conversion from either *ARGMIN or *ARGMAX to
+   the type of the directive's formal argument it's possible for both
+   to result in the same number of bytes or a range of bytes that's
+   less than the number of bytes that would result from formatting
+   some other value in the range [*ARGMIN, *ARGMAX].  This can be
+   determined by checking for the actual argument being in the range
+   of the type of the directive.  If it isn't it must be assumed to
+   take on the full range of the directive's type.
+   Return true when the range has been adjusted to the full range
+   of DIRTYPE, and false otherwise.  */
+
+static bool
+adjust_range_for_overflow (tree dirtype, tree *argmin, tree *argmax)
+{
+  tree argtype = TREE_TYPE (*argmin);
+  unsigned argprec = TYPE_PRECISION (argtype);
+  unsigned dirprec = TYPE_PRECISION (dirtype);
+
+  /* If the actual argument and the directive's argument have the same
+     precision and sign there can be no overflow and so there is nothing
+     to adjust.  */
+  if (argprec == dirprec && TYPE_SIGN (argtype) == TYPE_SIGN (dirtype))
+    return false;
+
+  /* The logic below was inspired/lifted from the CONVERT_EXPR_CODE_P
+     branch in the extract_range_from_unary_expr function in tree-vrp.c.  */
+
+  if (TREE_CODE (*argmin) == INTEGER_CST
+      && TREE_CODE (*argmax) == INTEGER_CST
+      && (dirprec >= argprec
+	  || integer_zerop (int_const_binop (RSHIFT_EXPR,
+					     int_const_binop (MINUS_EXPR,
+							      *argmax,
+							      *argmin),
+					     size_int (dirprec)))))
+    {
+      *argmin = force_fit_type (dirtype, wi::to_widest (*argmin), 0, false);
+      *argmax = force_fit_type (dirtype, wi::to_widest (*argmax), 0, false);
+
+      /* If *ARGMIN is still less than *ARGMAX the conversion above
+	 is safe.  Otherwise, it has overflowed and would be unsafe.  */
+      if (tree_int_cst_le (*argmin, *argmax))
+	return false;
+    }
+
+  *argmin = TYPE_MIN_VALUE (dirtype);
+  *argmax = TYPE_MAX_VALUE (dirtype);
+  return true;
 }
 
 /* Return a range representing the minimum and maximum number of bytes
-   that the conversion specification SPEC will write on output for the
-   integer argument ARG when non-null.  ARG may be null (for vararg
-   functions).  */
+   that the format directive DIR will output for any argument given
+   the WIDTH and PRECISION (extracted from DIR).  This function is
+   used when the directive argument or its value isn't known.  */
 
 static fmtresult
-format_integer (const conversion_spec &spec, tree arg)
+format_integer (const directive &dir, tree arg, vr_values *vr_values)
 {
-  /* These are available as macros in the C and C++ front ends but,
-     sadly, not here.  */
-  static tree intmax_type_node;
-  static tree uintmax_type_node;
+  tree intmax_type_node;
+  tree uintmax_type_node;
 
-  /* Initialize the intmax nodes above the first time through here.  */
-  if (!intmax_type_node)
-    build_intmax_type_nodes (&intmax_type_node, &uintmax_type_node);
+  /* Base to format the number in.  */
+  int base;
 
-  /* Set WIDTH and PRECISION to either the values in the format
-     specification or to zero.  */
-  int width = spec.have_width ? spec.width : 0;
-  int prec = spec.have_precision ? spec.precision : 0;
+  /* True when a conversion is preceded by a prefix indicating the base
+     of the argument (octal or hexadecimal).  */
+  bool maybebase = dir.get_flag ('#');
 
-  if (spec.star_width)
-    width = (TREE_CODE (spec.star_width) == INTEGER_CST
-	     ? tree_to_shwi (spec.star_width) : 0);
+  /* True when a signed conversion is preceded by a sign or space.  */
+  bool maybesign = false;
 
-  if (spec.star_precision)
-    prec = (TREE_CODE (spec.star_precision) == INTEGER_CST
-	    ? tree_to_shwi (spec.star_precision) : 0);
+  /* True for signed conversions (i.e., 'd' and 'i').  */
+  bool sign = false;
 
-  bool sign = spec.specifier == 'd' || spec.specifier == 'i';
+  switch (dir.specifier)
+    {
+    case 'd':
+    case 'i':
+      /* Space and '+' are  only meaningful for signed conversions.  */
+      maybesign = dir.get_flag (' ') | dir.get_flag ('+');
+      sign = true;
+      base = 10;
+      break;
+    case 'u':
+      base = 10;
+      break;
+    case 'o':
+      base = 8;
+      break;
+    case 'X':
+    case 'x':
+      base = 16;
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   /* The type of the "formal" argument expected by the directive.  */
   tree dirtype = NULL_TREE;
 
   /* Determine the expected type of the argument from the length
      modifier.  */
-  switch (spec.modifier)
+  switch (dir.modifier)
     {
     case FMT_LEN_none:
-      if (spec.specifier == 'p')
+      if (dir.specifier == 'p')
 	dirtype = ptr_type_node;
       else
 	dirtype = sign ? integer_type_node : unsigned_type_node;
@@ -903,19 +1369,20 @@ format_integer (const conversion_spec &spec, tree arg)
       break;
 
     case FMT_LEN_z:
-      dirtype = sign ? ptrdiff_type_node : size_type_node;
+      dirtype = signed_or_unsigned_type_for (!sign, size_type_node);
       break;
 
     case FMT_LEN_t:
-      dirtype = sign ? ptrdiff_type_node : size_type_node;
+      dirtype = signed_or_unsigned_type_for (!sign, ptrdiff_type_node);
       break;
 
     case FMT_LEN_j:
+      build_intmax_type_nodes (&intmax_type_node, &uintmax_type_node);
       dirtype = sign ? intmax_type_node : uintmax_type_node;
       break;
 
     default:
-	return fmtresult ();
+      return fmtresult ();
     }
 
   /* The type of the argument to the directive, either deduced from
@@ -934,89 +1401,67 @@ format_integer (const conversion_spec &spec, tree arg)
     }
   else if (TREE_CODE (arg) == INTEGER_CST)
     {
-      /* The minimum and maximum number of bytes produced by
-	 the directive.  */
-      fmtresult res;
-
       /* When a constant argument has been provided use its value
 	 rather than type to determine the length of the output.  */
-      res.bounded = true;
-      res.constant = true;
-      res.knownrange = true;
+      fmtresult res;
 
-      /* Base to format the number in.  */
-      int base;
-
-      /* True when a signed conversion is preceded by a sign or space.  */
-      bool maybesign;
-
-      switch (spec.specifier)
+      if ((dir.prec[0] <= 0 && dir.prec[1] >= 0) && integer_zerop (arg))
 	{
-	case 'd':
-	case 'i':
-	  /* Space is only effective for signed conversions.  */
-	  maybesign = spec.get_flag (' ');
-	  base = 10;
-	  break;
-	case 'u':
-	  maybesign = spec.force_flags ? spec.get_flag (' ') : false;
-	  base = 10;
-	  break;
-	case 'o':
-	  maybesign = spec.force_flags ? spec.get_flag (' ') : false;
-	  base = 8;
-	  break;
-	case 'X':
-	case 'x':
-	  maybesign = spec.force_flags ? spec.get_flag (' ') : false;
-	  base = 16;
-	  break;
-	default:
-	  gcc_unreachable ();
+	  /* As a special case, a precision of zero with a zero argument
+	     results in zero bytes except in base 8 when the '#' flag is
+	     specified, and for signed conversions in base 8 and 10 when
+	     either the space or '+' flag has been specified and it results
+	     in just one byte (with width having the normal effect).  This
+	     must extend to the case of a specified precision with
+	     an unknown value because it can be zero.  */
+	  res.range.min = ((base == 8 && dir.get_flag ('#')) || maybesign);
+	  if (res.range.min == 0 && dir.prec[0] != dir.prec[1])
+	    {
+	      res.range.max = 1;
+	      res.range.likely = 1;
+	    }
+	  else
+	    {
+	      res.range.max = res.range.min;
+	      res.range.likely = res.range.min;
+	    }
+	}
+      else
+	{
+	  /* Convert the argument to the type of the directive.  */
+	  arg = fold_convert (dirtype, arg);
+
+	  res.range.min = tree_digits (arg, base, dir.prec[0],
+				       maybesign, maybebase);
+	  if (dir.prec[0] == dir.prec[1])
+	    res.range.max = res.range.min;
+	  else
+	    res.range.max = tree_digits (arg, base, dir.prec[1],
+					 maybesign, maybebase);
+	  res.range.likely = res.range.min;
+	  res.knownrange = true;
 	}
 
-      /* Convert the argument to the type of the directive.  */
-      arg = fold_convert (dirtype, arg);
+      res.range.unlikely = res.range.max;
 
-      maybesign |= spec.get_flag ('+');
-
-      /* True when a conversion is preceded by a prefix indicating the base
-	 of the argument (octal or hexadecimal).  */
-      bool maybebase = spec.get_flag ('#');
-      int len = tree_digits (arg, base, maybesign, maybebase);
-
-      if (len < prec)
-	len = prec;
-
-      if (len < width)
-	len = width;
-
-      res.range.max = len;
-      res.range.min = res.range.max;
-      res.bounded = true;
+      /* Bump up the counters if WIDTH is greater than LEN.  */
+      res.adjust_for_width_or_precision (dir.width, dirtype, base,
+					 (sign | maybebase) + (base == 16));
+      /* Bump up the counters again if PRECision is greater still.  */
+      res.adjust_for_width_or_precision (dir.prec, dirtype, base,
+					 (sign | maybebase) + (base == 16));
 
       return res;
     }
-  else if (TREE_CODE (TREE_TYPE (arg)) == INTEGER_TYPE
+  else if (INTEGRAL_TYPE_P (TREE_TYPE (arg))
 	   || TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE)
-    {
-      /* Determine the type of the provided non-constant argument.  */
-      if (TREE_CODE (arg) == NOP_EXPR)
-	arg = TREE_OPERAND (arg, 0);
-      else if (TREE_CODE (arg) == CONVERT_EXPR)
-	arg = TREE_OPERAND (arg, 0);
-      if (TREE_CODE (arg) == COMPONENT_REF)
-	arg = TREE_OPERAND (arg, 1);
-
-      argtype = TREE_TYPE (arg);
-    }
+    /* Determine the type of the provided non-constant argument.  */
+    argtype = TREE_TYPE (arg);
   else
-    {
-      /* Don't bother with invalid arguments since they likely would
-	 have already been diagnosed, and disable any further checking
-	 of the format string by returning [-1, -1].  */
-      return fmtresult ();
-    }
+    /* Don't bother with invalid arguments since they likely would
+       have already been diagnosed, and disable any further checking
+       of the format string by returning [-1, -1].  */
+    return fmtresult ();
 
   fmtresult res;
 
@@ -1026,57 +1471,37 @@ format_integer (const conversion_spec &spec, tree arg)
   tree argmin = NULL_TREE;
   tree argmax = NULL_TREE;
 
-  if (arg && TREE_CODE (arg) == SSA_NAME
-      && TREE_CODE (argtype) == INTEGER_TYPE)
+  if (arg
+      && TREE_CODE (arg) == SSA_NAME
+      && INTEGRAL_TYPE_P (argtype))
     {
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
-      wide_int min, max;
-      enum value_range_type range_type = get_range_info (arg, &min, &max);
-      if (range_type == VR_RANGE)
+      value_range *vr = vr_values->get_value_range (arg);
+      if (vr->type == VR_RANGE
+	  && TREE_CODE (vr->min) == INTEGER_CST
+	  && TREE_CODE (vr->max) == INTEGER_CST)
 	{
-	  res.argmin = build_int_cst (argtype, wi::fits_uhwi_p (min)
-				      ? min.to_uhwi () : min.to_shwi ());
-	  res.argmax = build_int_cst (argtype, wi::fits_uhwi_p (max)
-				      ? max.to_uhwi () : max.to_shwi ());
+	  argmin = vr->min;
+	  argmax = vr->max;
 
-	  /* For a range with a negative lower bound and a non-negative
-	     upper bound, use one to determine the minimum number of bytes
-	     on output and whichever of the two bounds that results in
-	     the greater number of bytes on output for the upper bound.
-	     For example, for ARG in the range of [-3, 123], use 123 as
-	     the upper bound for %i but -3 for %u.  */
-	  if (wi::neg_p (min) && !wi::neg_p (max))
-	    {
-	      argmin = build_int_cst (argtype, wi::fits_uhwi_p (min)
-				      ? min.to_uhwi () : min.to_shwi ());
+	  /* Set KNOWNRANGE if the argument is in a known subrange
+	     of the directive's type and neither width nor precision
+	     is unknown.  (KNOWNRANGE may be reset below).  */
+	  res.knownrange
+	    = ((!tree_int_cst_equal (TYPE_MIN_VALUE (dirtype), argmin)
+		|| !tree_int_cst_equal (TYPE_MAX_VALUE (dirtype), argmax))
+	       && dir.known_width_and_precision ());
 
-	      argmax = build_int_cst (argtype, wi::fits_uhwi_p (max)
-				      ? max.to_uhwi () : max.to_shwi ());
-
-	      int minbytes = format_integer (spec, res.argmin).range.min;
-	      int maxbytes = format_integer (spec, res.argmax).range.max;
-	      if (maxbytes < minbytes)
-		argmax = res.argmin;
-
-	      argmin = integer_zero_node;
-	    }
-	  else
-	    {
-	      argmin = res.argmin;
-	      argmax = res.argmax;
-	    }
-
-	  /* The argument is bounded by the known range of values
-	     determined by Value Range Propagation.  */
-	  res.bounded = true;
-	  res.knownrange = true;
+	  res.argmin = argmin;
+	  res.argmax = argmax;
 	}
-      else if (range_type == VR_ANTI_RANGE)
+      else if (vr->type == VR_ANTI_RANGE)
 	{
 	  /* Handle anti-ranges if/when bug 71690 is resolved.  */
 	}
-      else if (range_type == VR_VARYING)
+      else if (vr->type == VR_VARYING
+	       || vr->type == VR_UNDEFINED)
 	{
 	  /* The argument here may be the result of promoting the actual
 	     argument to int.  Try to determine the type of the actual
@@ -1089,74 +1514,189 @@ format_integer (const conversion_spec &spec, tree arg)
 	      if (code == INTEGER_CST)
 		{
 		  arg = gimple_assign_rhs1 (def);
-		  return format_integer (spec, arg);
+		  return format_integer (dir, arg, vr_values);
 		}
 
 	      if (code == NOP_EXPR)
-		argtype = TREE_TYPE (gimple_assign_rhs1 (def));
+		{
+		  tree type = TREE_TYPE (gimple_assign_rhs1 (def));
+		  if (INTEGRAL_TYPE_P (type)
+		      || TREE_CODE (type) == POINTER_TYPE)
+		    argtype = type;
+		}
 	    }
 	}
     }
 
   if (!argmin)
     {
-      /* For an unknown argument (e.g., one passed to a vararg function)
-	 or one whose value range cannot be determined, create a T_MIN
-	 constant if the argument's type is signed and T_MAX otherwise,
-	 and use those to compute the range of bytes that the directive
-	 can output.  */
-      argmin = build_int_cst (argtype, 1);
-
-      int typeprec = TYPE_PRECISION (dirtype);
-      int argprec = TYPE_PRECISION (argtype);
-
-      if (argprec < typeprec || POINTER_TYPE_P (argtype))
+      if (TREE_CODE (argtype) == POINTER_TYPE)
 	{
-	  if (TYPE_UNSIGNED (argtype))
-	    argmax = build_all_ones_cst (argtype);
-	  else
-	    argmax = fold_build2 (LSHIFT_EXPR, argtype, integer_one_node,
-				  build_int_cst (integer_type_node,
-						 argprec - 1));
+	  argmin = build_int_cst (pointer_sized_int_node, 0);
+	  argmax = build_all_ones_cst (pointer_sized_int_node);
 	}
       else
 	{
-	  argmax = fold_build2 (LSHIFT_EXPR, dirtype, integer_one_node,
-				build_int_cst (integer_type_node,
-					       typeprec - 1));
+	  argmin = TYPE_MIN_VALUE (argtype);
+	  argmax = TYPE_MAX_VALUE (argtype);
 	}
+    }
+
+  /* Clear KNOWNRANGE if the range has been adjusted to the maximum
+     of the directive.  If it has been cleared then since ARGMIN and/or
+     ARGMAX have been adjusted also adjust the corresponding ARGMIN and
+     ARGMAX in the result to include in diagnostics.  */
+  if (adjust_range_for_overflow (dirtype, &argmin, &argmax))
+    {
+      res.knownrange = false;
       res.argmin = argmin;
       res.argmax = argmax;
     }
 
-  /* Recursively compute the minimum and maximum from the known range,
-     taking care to swap them if the lower bound results in longer
-     output than the upper bound (e.g., in the range [-1, 0].  */
-  res.range.min = format_integer (spec, argmin).range.min;
-  res.range.max = format_integer (spec, argmax).range.max;
-
-  /* The result is bounded either when the argument is determined to be
-     (e.g., when it's within some range) or when the minimum and maximum
-     are the same.  That can happen here for example when the specified
-     width is as wide as the greater of MIN and MAX, as would be the case
-     with sprintf (d, "%08x", x) with a 32-bit integer x.  */
-  res.bounded |= res.range.min == res.range.max;
-
-  if (res.range.max < res.range.min)
+  /* Recursively compute the minimum and maximum from the known range.  */
+  if (TYPE_UNSIGNED (dirtype) || tree_int_cst_sgn (argmin) >= 0)
     {
-      unsigned HOST_WIDE_INT tmp = res.range.max;
-      res.range.max = res.range.min;
-      res.range.min = tmp;
+      /* For unsigned conversions/directives or signed when
+	 the minimum is positive, use the minimum and maximum to compute
+	 the shortest and longest output, respectively.  */
+      res.range.min = format_integer (dir, argmin, vr_values).range.min;
+      res.range.max = format_integer (dir, argmax, vr_values).range.max;
     }
+  else if (tree_int_cst_sgn (argmax) < 0)
+    {
+      /* For signed conversions/directives if maximum is negative,
+	 use the minimum as the longest output and maximum as the
+	 shortest output.  */
+      res.range.min = format_integer (dir, argmax, vr_values).range.min;
+      res.range.max = format_integer (dir, argmin, vr_values).range.max;
+    }
+  else
+    {
+      /* Otherwise, 0 is inside of the range and minimum negative.  Use 0
+	 as the shortest output and for the longest output compute the
+	 length of the output of both minimum and maximum and pick the
+	 longer.  */
+      unsigned HOST_WIDE_INT max1
+	= format_integer (dir, argmin, vr_values).range.max;
+      unsigned HOST_WIDE_INT max2
+	= format_integer (dir, argmax, vr_values).range.max;
+      res.range.min
+	= format_integer (dir, integer_zero_node, vr_values).range.min;
+      res.range.max = MAX (max1, max2);
+    }
+
+  /* If the range is known, use the maximum as the likely length.  */
+  if (res.knownrange)
+    res.range.likely = res.range.max;
+  else
+    {
+      /* Otherwise, use the minimum.  Except for the case where for %#x or
+         %#o the minimum is just for a single value in the range (0) and
+         for all other values it is something longer, like 0x1 or 01.
+	  Use the length for value 1 in that case instead as the likely
+	  length.  */
+      res.range.likely = res.range.min;
+      if (maybebase
+	  && base != 10
+	  && (tree_int_cst_sgn (argmin) < 0 || tree_int_cst_sgn (argmax) > 0))
+	{
+	  if (res.range.min == 1)
+	    res.range.likely += base == 8 ? 1 : 2;
+	  else if (res.range.min == 2
+		   && base == 16
+		   && (dir.width[0] == 2 || dir.prec[0] == 2))
+	    ++res.range.likely;
+	}
+    }
+
+  res.range.unlikely = res.range.max;
+  res.adjust_for_width_or_precision (dir.width, dirtype, base,
+				     (sign | maybebase) + (base == 16));
+  res.adjust_for_width_or_precision (dir.prec, dirtype, base,
+				     (sign | maybebase) + (base == 16));
 
   return res;
 }
 
-/* Return the number of bytes to format using the format specifier
-   SPEC the largest value in the real floating TYPE.  */
+/* Return the number of bytes that a format directive consisting of FLAGS,
+   PRECision, format SPECification, and MPFR rounding specifier RNDSPEC,
+   would result for argument X under ideal conditions (i.e., if PREC
+   weren't excessive).  MPFR 3.1 allocates large amounts of memory for
+   values of PREC with large magnitude and can fail (see MPFR bug #21056).
+   This function works around those problems.  */
 
-static int
-format_floating_max (tree type, char spec, int prec = -1)
+static unsigned HOST_WIDE_INT
+get_mpfr_format_length (mpfr_ptr x, const char *flags, HOST_WIDE_INT prec,
+			char spec, char rndspec)
+{
+  char fmtstr[40];
+
+  HOST_WIDE_INT len = strlen (flags);
+
+  fmtstr[0] = '%';
+  memcpy (fmtstr + 1, flags, len);
+  memcpy (fmtstr + 1 + len, ".*R", 3);
+  fmtstr[len + 4] = rndspec;
+  fmtstr[len + 5] = spec;
+  fmtstr[len + 6] = '\0';
+
+  spec = TOUPPER (spec);
+  if (spec == 'E' || spec == 'F')
+    {
+      /* For %e, specify the precision explicitly since mpfr_sprintf
+	 does its own thing just to be different (see MPFR bug 21088).  */
+      if (prec < 0)
+	prec = 6;
+    }
+  else
+    {
+      /* Avoid passing negative precisions with larger magnitude to MPFR
+	 to avoid exposing its bugs.  (A negative precision is supposed
+	 to be ignored.)  */
+      if (prec < 0)
+	prec = -1;
+    }
+
+  HOST_WIDE_INT p = prec;
+
+  if (spec == 'G' && !strchr (flags, '#'))
+    {
+      /* For G/g without the pound flag, precision gives the maximum number
+	 of significant digits which is bounded by LDBL_MAX_10_EXP, or, for
+	 a 128 bit IEEE extended precision, 4932.  Using twice as much here
+	 should be more than sufficient for any real format.  */
+      if ((IEEE_MAX_10_EXP * 2) < prec)
+	prec = IEEE_MAX_10_EXP * 2;
+      p = prec;
+    }
+  else
+    {
+      /* Cap precision arbitrarily at 1KB and add the difference
+	 (if any) to the MPFR result.  */
+      if (prec > 1024)
+	p = 1024;
+    }
+
+  len = mpfr_snprintf (NULL, 0, fmtstr, (int)p, x);
+
+  /* Handle the unlikely (impossible?) error by returning more than
+     the maximum dictated by the function's return type.  */
+  if (len < 0)
+    return target_dir_max () + 1;
+
+  /* Adjust the return value by the difference.  */
+  if (p < prec)
+    len += prec - p;
+
+  return len;
+}
+
+/* Return the number of bytes to format using the format specifier
+   SPEC and the precision PREC the largest value in the real floating
+   TYPE.  */
+
+static unsigned HOST_WIDE_INT
+format_floating_max (tree type, char spec, HOST_WIDE_INT prec)
 {
   machine_mode mode = TYPE_MODE (type);
 
@@ -1168,11 +1708,7 @@ format_floating_max (tree type, char spec, int prec = -1)
   const real_format *rfmt = REAL_MODE_FORMAT (mode);
   REAL_VALUE_TYPE rv;
 
-  {
-    char buf[256];
-    get_max_float (rfmt, buf, sizeof buf);
-    real_from_string (&rv, buf);
-  }
+  real_maxval (&rv, 0, mode);
 
   /* Convert the GCC real value representation with the precision
      of the real type to the mpfr_t format with the GCC default
@@ -1181,35 +1717,25 @@ format_floating_max (tree type, char spec, int prec = -1)
   mpfr_init2 (x, rfmt->p);
   mpfr_from_real (x, &rv, GMP_RNDN);
 
-  int n;
-
-  if (-1 < prec)
-    {
-      const char fmt[] = { '%', '.', '*', 'R', spec, '\0' };
-      n = mpfr_snprintf (NULL, 0, fmt, prec, x);
-    }
-  else
-    {
-      const char fmt[] = { '%', 'R', spec, '\0' };
-      n = mpfr_snprintf (NULL, 0, fmt, x);
-    }
-
   /* Return a value one greater to account for the leading minus sign.  */
-  return n + 1;
+  unsigned HOST_WIDE_INT r
+    = 1 + get_mpfr_format_length (x, "", prec, spec, 'D');
+  mpfr_clear (x);
+  return r;
 }
 
 /* Return a range representing the minimum and maximum number of bytes
-   that the conversion specification SPEC will output for any argument
-   given the WIDTH and PRECISION (extracted from SPEC).  This function
-   is used when the directive argument or its value isn't known.  */
+   that the directive DIR will output for any argument.  PREC gives
+   the adjusted precision range to account for negative precisions
+   meaning the default 6.  This function is used when the directive
+   argument or its value isn't known.  */
 
 static fmtresult
-format_floating (const conversion_spec &spec, int width, int prec)
+format_floating (const directive &dir, const HOST_WIDE_INT prec[2])
 {
   tree type;
-  bool ldbl = false;
 
-  switch (spec.modifier)
+  switch (dir.modifier)
     {
     case FMT_LEN_l:
     case FMT_LEN_none:
@@ -1218,12 +1744,10 @@ format_floating (const conversion_spec &spec, int width, int prec)
 
     case FMT_LEN_L:
       type = long_double_type_node;
-      ldbl = true;
       break;
 
     case FMT_LEN_ll:
       type = long_double_type_node;
-      ldbl = true;
       break;
 
     default:
@@ -1233,88 +1757,162 @@ format_floating (const conversion_spec &spec, int width, int prec)
   /* The minimum and maximum number of bytes produced by the directive.  */
   fmtresult res;
 
-  /* Log10 of of the maximum number of exponent digits for the type.  */
-  int logexpdigs = 2;
+  /* The minimum output as determined by flags.  It's always at least 1.
+     When plus or space are set the output is preceded by either a sign
+     or a space.  */
+  unsigned flagmin = (1 /* for the first digit */
+		      + (dir.get_flag ('+') | dir.get_flag (' ')));
 
-  if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2)
-    {
-      /* The base in which the exponent is represented should always
-	 be 2 in GCC.  */
+  /* The minimum is 3 for "inf" and "nan" for all specifiers, plus 1
+     for the plus sign/space with the '+' and ' ' flags, respectively,
+     unless reduced below.  */
+  res.range.min = 2 + flagmin;
 
-      const double log10_2 = .30102999566398119521;
+  /* When the pound flag is set the decimal point is included in output
+     regardless of precision.  Whether or not a decimal point is included
+     otherwise depends on the specification and precision.  */
+  bool radix = dir.get_flag ('#');
 
-      /* Compute T_MAX_EXP for base 2.  */
-      int expdigs = REAL_MODE_FORMAT (TYPE_MODE (type))->emax * log10_2;
-      logexpdigs = ilog (expdigs, 10);
-    }
-
-  switch (spec.specifier)
+  switch (dir.specifier)
     {
     case 'A':
     case 'a':
       {
-	/* The minimum output is "0x.p+0".  */
-	res.range.min = 6 + (prec > 0 ? prec : 0);
-	res.range.max = format_floating_max (type, 'a', prec);
+	HOST_WIDE_INT minprec = 6 + !radix /* decimal point */;
+	if (dir.prec[0] <= 0)
+	  minprec = 0;
+	else if (dir.prec[0] > 0)
+	  minprec = dir.prec[0] + !radix /* decimal point */;
 
-	/* The output of "%a" is fully specified only when precision
-	   is explicitly specified.  */
-	res.bounded = -1 < prec;
+	res.range.likely = (2 /* 0x */
+			    + flagmin
+			    + radix
+			    + minprec
+			    + 3 /* p+0 */);
+
+	res.range.max = format_floating_max (type, 'a', prec[1]);
+
+	/* The unlikely maximum accounts for the longest multibyte
+	   decimal point character.  */
+	res.range.unlikely = res.range.max;
+	if (dir.prec[1] > 0)
+	  res.range.unlikely += target_mb_len_max () - 1;
+
 	break;
       }
 
     case 'E':
     case 'e':
       {
-	bool sign = spec.get_flag ('+') || spec.get_flag (' ');
-	/* The minimum output is "[-+]1.234567e+00" regardless
-	   of the value of the actual argument.  */
-	res.range.min = (sign
-			 + 1 /* unit */ + (prec < 0 ? 7 : prec ? prec + 1 : 0)
-			 + 2 /* e+ */ + 2);
-	/* The maximum output is the minimum plus sign (unless already
-	   included), plus the difference between the minimum exponent
-	   of 2 and the maximum exponent for the type.  */
-	res.range.max = res.range.min + !sign + logexpdigs - 2;
+	/* Minimum output attributable to precision and, when it's
+	   non-zero, decimal point.  */
+	HOST_WIDE_INT minprec = prec[0] ? prec[0] + !radix : 0;
 
-	/* "%e" is fully specified and the range of bytes is bounded.  */
-	res.bounded = true;
+	/* The likely minimum output is "[-+]1.234567e+00" regardless
+	   of the value of the actual argument.  */
+	res.range.likely = (flagmin
+			    + radix
+			    + minprec
+			    + 2 /* e+ */ + 2);
+
+	res.range.max = format_floating_max (type, 'e', prec[1]);
+
+	/* The unlikely maximum accounts for the longest multibyte
+	   decimal point character.  */
+	if (dir.prec[0] != dir.prec[1]
+	    || dir.prec[0] == -1 || dir.prec[0] > 0)
+	  res.range.unlikely = res.range.max + target_mb_len_max () -1;
+	else
+	  res.range.unlikely = res.range.max;
 	break;
       }
 
     case 'F':
     case 'f':
       {
-	/* The minimum output is "1.234567" regardless of the value
-	   of the actual argument.  */
-	res.range.min = 2 + (prec < 0 ? 6 : prec);
+	/* Minimum output attributable to precision and, when it's non-zero,
+	   decimal point.  */
+	HOST_WIDE_INT minprec = prec[0] ? prec[0] + !radix : 0;
 
-	/* Compute the maximum just once.  */
-	static const int f_max[] = {
-	  format_floating_max (double_type_node, 'f'),
-	  format_floating_max (long_double_type_node, 'f')
-	};
-	res.range.max = f_max [ldbl];
+	/* For finite numbers (i.e., not infinity or NaN) the lower bound
+	   when precision isn't specified is 8 bytes ("1.23456" since
+	   precision is taken to be 6).  When precision is zero, the lower
+	   bound is 1 byte (e.g., "1").  Otherwise, when precision is greater
+	   than zero, then the lower bound is 2 plus precision (plus flags).
+	   But in all cases, the lower bound is no greater than 3.  */
+	unsigned HOST_WIDE_INT min = flagmin + radix + minprec;
+	if (min < res.range.min)
+	  res.range.min = min;
 
-	/* "%f" is fully specified and the range of bytes is bounded.  */
-	res.bounded = true;
+	/* Compute the upper bound for -TYPE_MAX.  */
+	res.range.max = format_floating_max (type, 'f', prec[1]);
+
+	/* The minimum output with unknown precision is a single byte
+	   (e.g., "0") but the more likely output is 3 bytes ("0.0").  */
+	if (dir.prec[0] < 0 && dir.prec[1] > 0)
+	  res.range.likely = 3;
+	else
+	  res.range.likely = min;
+
+	/* The unlikely maximum accounts for the longest multibyte
+	   decimal point character.  */
+	if (dir.prec[0] != dir.prec[1]
+	    || dir.prec[0] == -1 || dir.prec[0] > 0)
+	  res.range.unlikely = res.range.max + target_mb_len_max () - 1;
 	break;
       }
+
     case 'G':
     case 'g':
       {
-	/* The minimum is the same as for '%F'.  */
-	res.range.min = 2 + (prec < 0 ? 6 : prec);
+	/* The %g output depends on precision and the exponent of
+	   the argument.  Since the value of the argument isn't known
+	   the lower bound on the range of bytes (not counting flags
+	   or width) is 1 plus radix (i.e., either "0" or "0." for
+	   "%g" and "%#g", respectively, with a zero argument).  */
+	unsigned HOST_WIDE_INT min = flagmin + radix;
+	if (min < res.range.min)
+	  res.range.min = min;
 
-	/* Compute the maximum just once.  */
-	static const int g_max[] = {
-	  format_floating_max (double_type_node, 'g'),
-	  format_floating_max (long_double_type_node, 'g')
-	};
-	res.range.max = g_max [ldbl];
+	char spec = 'g';
+	HOST_WIDE_INT maxprec = dir.prec[1];
+	if (radix && maxprec)
+	  {
+	    /* When the pound flag (radix) is set, trailing zeros aren't
+	       trimmed and so the longest output is the same as for %e,
+	       except with precision minus 1 (as specified in C11).  */
+	    spec = 'e';
+	    if (maxprec > 0)
+	      --maxprec;
+	    else if (maxprec < 0)
+	      maxprec = 5;
+	  }
+	else
+	  maxprec = prec[1];
 
-	/* "%g" is fully specified and the range of bytes is bounded.  */
-	res.bounded = true;
+	res.range.max = format_floating_max (type, spec, maxprec);
+
+	/* The likely output is either the maximum computed above
+	   minus 1 (assuming the maximum is positive) when precision
+	   is known (or unspecified), or the same minimum as for %e
+	   (which is computed for a non-negative argument).  Unlike
+	   for the other specifiers above the likely output isn't
+	   the minimum because for %g that's 1 which is unlikely.  */
+	if (dir.prec[1] < 0
+	    || (unsigned HOST_WIDE_INT)dir.prec[1] < target_int_max ())
+	  res.range.likely = res.range.max - 1;
+	else
+	  {
+	    HOST_WIDE_INT minprec = 6 + !radix /* decimal point */;
+	    res.range.likely = (flagmin
+				+ radix
+				+ minprec
+				+ 2 /* e+ */ + 2);
+	  }
+
+	/* The unlikely maximum accounts for the longest multibyte
+	   decimal point character.  */
+	res.range.unlikely = res.range.max + target_mb_len_max () - 1;
 	break;
       }
 
@@ -1322,134 +1920,196 @@ format_floating (const conversion_spec &spec, int width, int prec)
       return fmtresult ();
     }
 
-  if (width > 0)
-    {
-      if (res.range.min < (unsigned)width)
-	res.range.min = width;
-      if (res.range.max < (unsigned)width)
-	res.range.max = width;
-    }
-
+  /* Bump up the byte counters if WIDTH is greater.  */
+  res.adjust_for_width_or_precision (dir.width);
   return res;
 }
 
 /* Return a range representing the minimum and maximum number of bytes
-   that the conversion specification SPEC will write on output for the
-   floating argument ARG.  */
+   that the directive DIR will write on output for the floating argument
+   ARG.  */
 
 static fmtresult
-format_floating (const conversion_spec &spec, tree arg)
+format_floating (const directive &dir, tree arg, vr_values *)
 {
-  int width = -1;
-  int prec = -1;
+  HOST_WIDE_INT prec[] = { dir.prec[0], dir.prec[1] };
+  tree type = (dir.modifier == FMT_LEN_L || dir.modifier == FMT_LEN_ll
+	       ? long_double_type_node : double_type_node);
+
+  /* For an indeterminate precision the lower bound must be assumed
+     to be zero.  */
+  if (TOUPPER (dir.specifier) == 'A')
+    {
+      /* Get the number of fractional decimal digits needed to represent
+	 the argument without a loss of accuracy.  */
+      unsigned fmtprec
+	= REAL_MODE_FORMAT (TYPE_MODE (type))->p;
+
+      /* The precision of the IEEE 754 double format is 53.
+	 The precision of all other GCC binary double formats
+	 is 56 or less.  */
+      unsigned maxprec = fmtprec <= 56 ? 13 : 15;
+
+      /* For %a, leave the minimum precision unspecified to let
+	 MFPR trim trailing zeros (as it and many other systems
+	 including Glibc happen to do) and set the maximum
+	 precision to reflect what it would be with trailing zeros
+	 present (as Solaris and derived systems do).  */
+      if (dir.prec[1] < 0)
+	{
+	  /* Both bounds are negative implies that precision has
+	     not been specified.  */
+	  prec[0] = maxprec;
+	  prec[1] = -1;
+	}
+      else if (dir.prec[0] < 0)
+	{
+	  /* With a negative lower bound and a non-negative upper
+	     bound set the minimum precision to zero and the maximum
+	     to the greater of the maximum precision (i.e., with
+	     trailing zeros present) and the specified upper bound.  */
+	  prec[0] = 0;
+	  prec[1] = dir.prec[1] < maxprec ? maxprec : dir.prec[1];
+	}
+    }
+  else if (dir.prec[0] < 0)
+    {
+      if (dir.prec[1] < 0)
+	{
+	  /* A precision in a strictly negative range is ignored and
+	     the default of 6 is used instead.  */
+	  prec[0] = prec[1] = 6;
+	}
+      else
+	{
+	  /* For a precision in a partly negative range, the lower bound
+	     must be assumed to be zero and the new upper bound is the
+	     greater of 6 (the default precision used when the specified
+	     precision is negative) and the upper bound of the specified
+	     range.  */
+	  prec[0] = 0;
+	  prec[1] = dir.prec[1] < 6 ? 6 : dir.prec[1];
+	}
+    }
+
+  if (!arg
+      || TREE_CODE (arg) != REAL_CST
+      || !useless_type_conversion_p (type, TREE_TYPE (arg)))
+    return format_floating (dir, prec);
 
   /* The minimum and maximum number of bytes produced by the directive.  */
   fmtresult res;
-  res.constant = arg && TREE_CODE (arg) == REAL_CST;
 
-  if (spec.have_width)
-    width = spec.width;
-  else if (spec.star_width)
+  /* Get the real type format desription for the target.  */
+  const REAL_VALUE_TYPE *rvp = TREE_REAL_CST_PTR (arg);
+  const real_format *rfmt = REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (arg)));
+
+  if (!real_isfinite (rvp))
     {
-      if (TREE_CODE (spec.star_width) == INTEGER_CST)
-	width = tree_to_shwi (spec.star_width);
-      else
-	{
-	  res.range.min = res.range.max = HOST_WIDE_INT_M1U;
-	  return res;
-	}
-    }
+      /* The format for Infinity and NaN is "[-]inf"/"[-]infinity"
+	 and "[-]nan" with the choice being implementation-defined
+	 but not locale dependent.  */
+      bool sign = dir.get_flag ('+') || real_isneg (rvp);
+      res.range.min = 3 + sign;
 
-  if (spec.have_precision)
-    prec = spec.precision;
-  else if (spec.star_precision)
-    {
-      if (TREE_CODE (spec.star_precision) == INTEGER_CST)
-	prec = tree_to_shwi (spec.star_precision);
-      else
-	{
-	  res.range.min = res.range.max = HOST_WIDE_INT_M1U;
-	  return res;
-	}
-    }
-  else if (res.constant && TOUPPER (spec.specifier) != 'A')
-    {
-      /* Specify the precision explicitly since mpfr_sprintf defaults
-	 to zero.  */
-      prec = 6;
-    }
+      res.range.likely = res.range.min;
+      res.range.max = res.range.min;
+      /* The inlikely maximum is "[-/+]infinity" or "[-/+]nan".  */
+      res.range.unlikely = sign + (real_isinf (rvp) ? 8 : 3);
 
-  if (res.constant)
-    {
-      /* Set up an array to easily iterate over.  */
-      unsigned HOST_WIDE_INT* const minmax[] = {
-	&res.range.min, &res.range.max
-      };
+      /* The range for infinity and NaN is known unless either width
+	 or precision is unknown.  Width has the same effect regardless
+	 of whether the argument is finite.  Precision is either ignored
+	 (e.g., Glibc) or can have an effect on the short vs long format
+	 such as inf/infinity (e.g., Solaris).  */
+      res.knownrange = dir.known_width_and_precision ();
 
-      /* Get the real type format desription for the target.  */
-      const REAL_VALUE_TYPE *rvp = TREE_REAL_CST_PTR (arg);
-      const real_format *rfmt = REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (arg)));
+      /* Adjust the range for width but ignore precision.  */
+      res.adjust_for_width_or_precision (dir.width);
 
-      /* Convert the GCC real value representation with the precision
-	 of the real type to the mpfr_t format with the GCC default
-	 round-to-nearest mode.  */
-      mpfr_t mpfrval;
-      mpfr_init2 (mpfrval, rfmt->p);
-      mpfr_from_real (mpfrval, rvp, GMP_RNDN);
-
-      char fmtstr [40];
-      char *pfmt = fmtstr;
-      *pfmt++ = '%';
-
-      /* Append flags.  */
-      for (const char *pf = "-+ #0"; *pf; ++pf)
-	if (spec.get_flag (*pf))
-	  *pfmt++ = *pf;
-
-      /* Append width when specified and precision.  */
-      if (width != -1)
-	pfmt += sprintf (pfmt, "%i", width);
-      if (prec != -1)
-	pfmt += sprintf (pfmt, ".%i", prec);
-
-      /* Append the MPFR 'R' floating type specifier (no length modifier
-	 is necessary or allowed by MPFR for mpfr_t values).  */
-      *pfmt++ = 'R';
-
-      /* Save the position of the MPFR rounding specifier and skip over
-	 it.  It will be set in each iteration in the loop below.  */
-      char* const rndspec = pfmt++;
-
-      /* Append the C type specifier and nul-terminate.  */
-      *pfmt++ = spec.specifier;
-      *pfmt = '\0';
-
-      for (int i = 0; i != sizeof minmax / sizeof *minmax; ++i)
-	{
-	  /* Use the MPFR rounding specifier to round down in the first
-	     iteration and then up.  In most but not all cases this will
-	     result in the same number of bytes.  */
-	  *rndspec = "DU"[i];
-
-	  /* Format it and store the result in the corresponding
-	     member of the result struct.  */
-	  *minmax[i] = mpfr_snprintf (NULL, 0, fmtstr, mpfrval);
-	}
-
-      /* The output of all directives except "%a" is fully specified
-	 and so the result is bounded unless it exceeds INT_MAX.
-	 For "%a" the output is fully specified only when precision
-	 is explicitly specified.  */
-      res.bounded = ((TOUPPER (spec.specifier) != 'A'
-		      || (0 <= prec && (unsigned) prec < target_int_max ()))
-		     && res.range.min < target_int_max ());
-
-      /* The range of output is known even if the result isn't bounded.  */
-      res.knownrange = true;
       return res;
     }
 
-  return format_floating (spec, width, prec);
+  char fmtstr [40];
+  char *pfmt = fmtstr;
+
+  /* Append flags.  */
+  for (const char *pf = "-+ #0"; *pf; ++pf)
+    if (dir.get_flag (*pf))
+      *pfmt++ = *pf;
+
+  *pfmt = '\0';
+
+  {
+    /* Set up an array to easily iterate over.  */
+    unsigned HOST_WIDE_INT* const minmax[] = {
+      &res.range.min, &res.range.max
+    };
+
+    for (int i = 0; i != sizeof minmax / sizeof *minmax; ++i)
+      {
+	/* Convert the GCC real value representation with the precision
+	   of the real type to the mpfr_t format rounding down in the
+	   first iteration that computes the minimm and up in the second
+	   that computes the maximum.  This order is arbibtrary because
+	   rounding in either direction can result in longer output.  */
+	mpfr_t mpfrval;
+	mpfr_init2 (mpfrval, rfmt->p);
+	mpfr_from_real (mpfrval, rvp, i ? GMP_RNDU : GMP_RNDD);
+
+	/* Use the MPFR rounding specifier to round down in the first
+	   iteration and then up.  In most but not all cases this will
+	   result in the same number of bytes.  */
+	char rndspec = "DU"[i];
+
+	/* Format it and store the result in the corresponding member
+	   of the result struct.  */
+	*minmax[i] = get_mpfr_format_length (mpfrval, fmtstr, prec[i],
+					     dir.specifier, rndspec);
+	mpfr_clear (mpfrval);
+      }
+  }
+
+  /* Make sure the minimum is less than the maximum (MPFR rounding
+     in the call to mpfr_snprintf can result in the reverse.  */
+  if (res.range.max < res.range.min)
+    {
+      unsigned HOST_WIDE_INT tmp = res.range.min;
+      res.range.min = res.range.max;
+      res.range.max = tmp;
+    }
+
+  /* The range is known unless either width or precision is unknown.  */
+  res.knownrange = dir.known_width_and_precision ();
+
+  /* For the same floating point constant, unless width or precision
+     is unknown, use the longer output as the likely maximum since
+     with round to nearest either is equally likely.  Otheriwse, when
+     precision is unknown, use the greater of the minimum and 3 as
+     the likely output (for "0.0" since zero precision is unlikely).  */
+  if (res.knownrange)
+    res.range.likely = res.range.max;
+  else if (res.range.min < 3
+	   && dir.prec[0] < 0
+	   && (unsigned HOST_WIDE_INT)dir.prec[1] == target_int_max ())
+    res.range.likely = 3;
+  else
+    res.range.likely = res.range.min;
+
+  res.range.unlikely = res.range.max;
+
+  if (res.range.max > 2 && (prec[0] != 0 || prec[1] != 0))
+    {
+      /* Unless the precision is zero output longer than 2 bytes may
+	 include the decimal point which must be a single character
+	 up to MB_LEN_MAX in length.  This is overly conservative
+	 since in some conversions some constants result in no decimal
+	 point (e.g., in %g).  */
+      res.range.unlikely += target_mb_len_max () - 1;
+    }
+
+  res.adjust_for_width_or_precision (dir.width);
+  return res;
 }
 
 /* Return a FMTRESULT struct set to the lengths of the shortest and longest
@@ -1465,11 +2125,7 @@ get_string_length (tree str)
   if (tree slen = c_strlen (str, 1))
     {
       /* Simply return the length of the string.  */
-      fmtresult res;
-      res.range.min = res.range.max = tree_to_shwi (slen);
-      res.bounded = true;
-      res.constant = true;
-      res.knownrange = true;
+      fmtresult res (tree_to_shwi (slen));
       return res;
     }
 
@@ -1479,27 +2135,54 @@ get_string_length (tree str)
      aren't known to point any such arrays result in LENRANGE[1] set
      to SIZE_MAX.  */
   tree lenrange[2];
-  get_range_strlen (str, lenrange);
+  bool flexarray = get_range_strlen (str, lenrange);
 
   if (lenrange [0] || lenrange [1])
     {
-      fmtresult res;
+      HOST_WIDE_INT min
+	= (tree_fits_uhwi_p (lenrange[0])
+	   ? tree_to_uhwi (lenrange[0])
+	   : 0);
 
-      res.range.min = (tree_fits_uhwi_p (lenrange[0])
-		       ? tree_to_uhwi (lenrange[0]) : 1 < warn_format_length);
-      res.range.max = (tree_fits_uhwi_p (lenrange[1])
-		       ? tree_to_uhwi (lenrange[1]) : HOST_WIDE_INT_M1U);
+      HOST_WIDE_INT max
+	= (tree_fits_uhwi_p (lenrange[1])
+	   ? tree_to_uhwi (lenrange[1])
+	   : HOST_WIDE_INT_M1U);
 
-      /* Set RES.BOUNDED to true if and only if all strings referenced
+      /* get_range_strlen() returns the target value of SIZE_MAX for
+	 strings of unknown length.  Bump it up to HOST_WIDE_INT_M1U
+	 which may be bigger.  */
+      if ((unsigned HOST_WIDE_INT)min == target_size_max ())
+	min = HOST_WIDE_INT_M1U;
+      if ((unsigned HOST_WIDE_INT)max == target_size_max ())
+	max = HOST_WIDE_INT_M1U;
+
+      fmtresult res (min, max);
+
+      /* Set RES.KNOWNRANGE to true if and only if all strings referenced
 	 by STR are known to be bounded (though not necessarily by their
 	 actual length but perhaps by their maximum possible length).  */
-      res.bounded = res.range.max < target_int_max ();
-      res.knownrange = res.bounded;
+      if (res.range.max < target_int_max ())
+	{
+	  res.knownrange = true;
+	  /* When the the length of the longest string is known and not
+	     excessive use it as the likely length of the string(s).  */
+	  res.range.likely = res.range.max;
+	}
+      else
+	{
+	  /* When the upper bound is unknown (it can be zero or excessive)
+	     set the likely length to the greater of 1 and the length of
+	     the shortest string and reset the lower bound to zero.  */
+	  res.range.likely = res.range.min ? res.range.min : warn_level > 1;
+	  res.range.min = 0;
+	}
 
-      /* Set RES.CONSTANT to false even though that may be overly
-	 conservative in rare cases like: 'x ? a : b' where a and
-	 b have the same lengths and consist of the same characters.  */
-      res.constant = false;
+      /* If the range of string length has been estimated from the size
+	 of an array at the end of a struct assume that it's longer than
+	 the array bound says it is in case it's used as a poor man's
+	 flexible array member, such as in struct S { char a[4]; };  */
+      res.range.unlikely = flexarray ? HOST_WIDE_INT_MAX : res.range.max;
 
       return res;
     }
@@ -1508,235 +2191,626 @@ get_string_length (tree str)
 }
 
 /* Return the minimum and maximum number of characters formatted
-   by the '%c' and '%s' format directives and ther wide character
-   forms for the argument ARG.  ARG can be null (for functions
-   such as vsprinf).  */
+   by the '%c' format directives and its wide character form for
+   the argument ARG.  ARG can be null (for functions such as
+   vsprinf).  */
 
 static fmtresult
-format_string (const conversion_spec &spec, tree arg)
+format_character (const directive &dir, tree arg, vr_values *vr_values)
 {
-  unsigned width = spec.have_width && spec.width > 0 ? spec.width : 0;
-  int prec = spec.have_precision ? spec.precision : -1;
-
-  if (spec.star_width)
-    {
-      width = (TREE_CODE (spec.star_width) == INTEGER_CST
-	       ? tree_to_shwi (spec.star_width) : 0);
-      if (width > INT_MAX)
-	width = 0;
-    }
-
-  if (spec.star_precision)
-    prec = (TREE_CODE (spec.star_precision) == INTEGER_CST
-	    ? tree_to_shwi (spec.star_precision) : -1);
-
   fmtresult res;
 
-  /* The maximum number of bytes for an unknown wide character argument
-     to a "%lc" directive adjusted for precision but not field width.  */
-  const unsigned HOST_WIDE_INT max_bytes_for_unknown_wc
-    = (1 == warn_format_length ? 0 <= prec ? prec : 0
-       : 2 == warn_format_length ? 0 <= prec ? prec : 1
-       : 0 <= prec ? prec : 6 /* Longest UTF-8 sequence.  */);
+  res.knownrange = true;
 
-  /* The maximum number of bytes for an unknown string argument to either
-     a "%s" or "%ls" directive adjusted for precision but not field width.  */
-  const unsigned HOST_WIDE_INT max_bytes_for_unknown_str
-    = (1 == warn_format_length ? 0 <= prec ? prec : 0
-       : 2 == warn_format_length ? 0 <= prec ? prec : 1
-       : HOST_WIDE_INT_MAX);
-
-  /* The result is bounded unless overriddden for a non-constant string
-     of an unknown length.  */
-  bool bounded = true;
-
-  if (spec.specifier == 'c')
+  if (dir.modifier == FMT_LEN_l)
     {
-      if (spec.modifier == FMT_LEN_l)
+      /* A wide character can result in as few as zero bytes.  */
+      res.range.min = 0;
+
+      HOST_WIDE_INT min, max;
+      if (get_int_range (arg, &min, &max, false, 0, vr_values))
 	{
-	  /* Positive if the argument is a wide NUL character?  */
-	  int nul = (arg && TREE_CODE (arg) == INTEGER_CST
-		     ? integer_zerop (arg) : -1);
-
-	  /* A '%lc' directive is the same as '%ls' for a two element
-	     wide string character with the second element of NUL, so
-	     when the character is unknown the minimum number of bytes
-	     is the smaller of either 0 (at level 1) or 1 (at level 2)
-	     and WIDTH, and the maximum is MB_CUR_MAX in the selected
-	     locale, which is unfortunately, unknown.  */
-	  res.range.min = 1 == warn_format_length ? !nul : nul < 1;
-	  res.range.max = max_bytes_for_unknown_wc;
-	  /* The range above is good enough to issue warnings but not
-	     for value range propagation, so clear BOUNDED.  */
-	  res.bounded = false;
-	}
-      else
-	{
-	  /* A plain '%c' directive.  Its ouput is exactly 1.  */
-	  res.range.min = res.range.max = 1;
-	  res.bounded = true;
-	  res.knownrange = true;
-	  res.constant = arg && TREE_CODE (arg) == INTEGER_CST;
-	}
-    }
-  else   /* spec.specifier == 's' */
-    {
-      /* Compute the range the argument's length can be in.  */
-      fmtresult slen = get_string_length (arg);
-      if (slen.constant)
-	{
-	  gcc_checking_assert (slen.range.min == slen.range.max);
-
-	  /* A '%s' directive with a string argument with constant length.  */
-	  res.range = slen.range;
-
-	  /* The output of "%s" and "%ls" directives with a constant
-	     string is in a known range.  For "%s" it is the length
-	     of the string.  For "%ls" it is in the range [length,
-	     length * MB_LEN_MAX].  (The final range can be further
-	     constrained by width and precision but it's always known.)  */
-	  res.knownrange = true;
-
-	  if (spec.modifier == FMT_LEN_l)
+	  if (min == 0 && max == 0)
 	    {
-	      bounded = false;
-
-	      if (warn_format_length > 1)
-		{
-		  /* Leave the minimum number of bytes the wide string
-		     converts to equal to its length and set the maximum
-		     to the worst case length which is the string length
-		     multiplied by MB_LEN_MAX.  */
-
-		  /* It's possible to be smarter about computing the maximum
-		     by scanning the wide string for any 8-bit characters and
-		     if it contains none, using its length for the maximum.
-		     Even though this would be simple to do it's unlikely to
-		     be worth it when dealing with wide characters.  */
-		  res.range.max *= target_mb_len_max;
-		}
-
-	      /* For a wide character string, use precision as the maximum
-		 even if precision is greater than the string length since
-		 the number of bytes the string converts to may be greater
-		 (due to MB_CUR_MAX).  */
-	      if (0 <= prec)
-		res.range.max = prec;
+	      /* The NUL wide character results in no bytes.  */
+	      res.range.max = 0;
+	      res.range.likely = 0;
+	      res.range.unlikely = 0;
+	    }
+	  else if (min > 0 && min < 128)
+	    {
+	      /* A wide character in the ASCII range most likely results
+		 in a single byte, and only unlikely in up to MB_LEN_MAX.  */
+	      res.range.max = 1;
+	      res.range.likely = 1;
+	      res.range.unlikely = target_mb_len_max ();
 	    }
 	  else
 	    {
-	      /* The output od a "%s" directive with a constant argument
-		 is bounded, constant, and obviously in a known range.  */
-	      res.bounded = true;
-	      res.constant = true;
-	    }
-
-	  if (0 <= prec && (unsigned)prec < res.range.min)
-	    {
-	      res.range.min = prec;
-	      res.range.max = prec;
+	      /* A wide character outside the ASCII range likely results
+		 in up to two bytes, and only unlikely in up to MB_LEN_MAX.  */
+	      res.range.max = target_mb_len_max ();
+	      res.range.likely = 2;
+	      res.range.unlikely = res.range.max;
 	    }
 	}
       else
 	{
-	  /* For a '%s' and '%ls' directive with a non-constant string,
-	     the minimum number of characters is the greater of WIDTH
-	     and either 0 in mode 1 or the smaller of PRECISION and 1
-	     in mode 2, and the maximum is PRECISION or -1 to disable
-	     tracking.  */
-
-	  if (0 <= prec)
-	    {
-	      if (slen.range.min >= target_int_max ())
-		slen.range.min = max_bytes_for_unknown_str;
-	      else if ((unsigned)prec < slen.range.min)
-		slen.range.min = prec;
-
-	      if ((unsigned)prec < slen.range.max
-		  || slen.range.max >= target_int_max ())
-		slen.range.max = prec;
-	    }
-	  else if (slen.range.min >= target_int_max ())
-	    {
-	      slen.range.min = max_bytes_for_unknown_str;
-	      slen.range.max = max_bytes_for_unknown_str;
-	      bounded = false;
-	    }
-
-	  res.range = slen.range;
-
-	  /* The output is considered bounded when a precision has been
-	     specified to limit the number of bytes or when the number
-	     of bytes is known or contrained to some range.  */
-	  res.bounded = 0 <= prec || slen.bounded;
-	  res.knownrange = slen.knownrange;
-	  res.constant = false;
+	  /* An unknown wide character is treated the same as a wide
+	     character outside the ASCII range.  */
+	  res.range.max = target_mb_len_max ();
+	  res.range.likely = 2;
+	  res.range.unlikely = res.range.max;
 	}
     }
+  else
+    {
+      /* A plain '%c' directive.  Its ouput is exactly 1.  */
+      res.range.min = res.range.max = 1;
+      res.range.likely = res.range.unlikely = 1;
+      res.knownrange = true;
+    }
 
-  /* Adjust the lengths for field width.  */
-  if (res.range.min < width)
-    res.range.min = width;
+  /* Bump up the byte counters if WIDTH is greater.  */
+  return res.adjust_for_width_or_precision (dir.width);
+}
 
-  if (res.range.max < width)
-    res.range.max = width;
+/* Return the minimum and maximum number of characters formatted
+   by the '%s' format directive and its wide character form for
+   the argument ARG.  ARG can be null (for functions such as
+   vsprinf).  */
 
-  /* Adjust BOUNDED if width happens to make them equal.  */
-  if (res.range.min == res.range.max && res.range.min < target_int_max ()
-      && bounded)
-    res.bounded = true;
+static fmtresult
+format_string (const directive &dir, tree arg, vr_values *)
+{
+  fmtresult res;
 
-  /* When precision is specified the range of characters on output
-     is known to be bounded by it.  */
-  if (-1 < prec)
-    res.knownrange = true;
+  /* Compute the range the argument's length can be in.  */
+  fmtresult slen = get_string_length (arg);
+  if (slen.range.min == slen.range.max
+      && slen.range.min < HOST_WIDE_INT_MAX)
+    {
+      /* The argument is either a string constant or it refers
+	 to one of a number of strings of the same length.  */
 
+      /* A '%s' directive with a string argument with constant length.  */
+      res.range = slen.range;
+
+      if (dir.modifier == FMT_LEN_l)
+	{
+	  /* In the worst case the length of output of a wide string S
+	     is bounded by MB_LEN_MAX * wcslen (S).  */
+	  res.range.max *= target_mb_len_max ();
+	  res.range.unlikely = res.range.max;
+	  /* It's likely that the the total length is not more that
+	     2 * wcslen (S).*/
+	  res.range.likely = res.range.min * 2;
+
+	  if (dir.prec[1] >= 0
+	      && (unsigned HOST_WIDE_INT)dir.prec[1] < res.range.max)
+	    {
+	      res.range.max = dir.prec[1];
+	      res.range.likely = dir.prec[1];
+	      res.range.unlikely = dir.prec[1];
+	    }
+
+	  if (dir.prec[0] < 0 && dir.prec[1] > -1)
+	    res.range.min = 0;
+	  else if (dir.prec[0] >= 0)
+	    res.range.likely = dir.prec[0];
+
+	  /* Even a non-empty wide character string need not convert into
+	     any bytes.  */
+	  res.range.min = 0;
+	}
+      else
+	{
+	  res.knownrange = true;
+
+	  if (dir.prec[0] < 0 && dir.prec[1] > -1)
+	    res.range.min = 0;
+	  else if ((unsigned HOST_WIDE_INT)dir.prec[0] < res.range.min)
+	    res.range.min = dir.prec[0];
+
+	  if ((unsigned HOST_WIDE_INT)dir.prec[1] < res.range.max)
+	    {
+	      res.range.max = dir.prec[1];
+	      res.range.likely = dir.prec[1];
+	      res.range.unlikely = dir.prec[1];
+	    }
+	}
+    }
+  else if (arg && integer_zerop (arg))
+    {
+      /* Handle null pointer argument.  */
+
+      fmtresult res (0);
+      res.nullp = true;
+      return res;
+    }
+  else
+    {
+      /* For a '%s' and '%ls' directive with a non-constant string (either
+	 one of a number of strings of known length or an unknown string)
+	 the minimum number of characters is lesser of PRECISION[0] and
+	 the length of the shortest known string or zero, and the maximum
+	 is the lessser of the length of the longest known string or
+	 PTRDIFF_MAX and PRECISION[1].  The likely length is either
+	 the minimum at level 1 and the greater of the minimum and 1
+	 at level 2.  This result is adjust upward for width (if it's
+	 specified).  */
+
+      if (dir.modifier == FMT_LEN_l)
+	{
+	  /* A wide character converts to as few as zero bytes.  */
+	  slen.range.min = 0;
+	  if (slen.range.max < target_int_max ())
+	    slen.range.max *= target_mb_len_max ();
+
+	  if (slen.range.likely < target_int_max ())
+	    slen.range.likely *= 2;
+
+	  if (slen.range.likely < target_int_max ())
+	    slen.range.unlikely *= target_mb_len_max ();
+	}
+
+      res.range = slen.range;
+
+      if (dir.prec[0] >= 0)
+	{
+	  /* Adjust the minimum to zero if the string length is unknown,
+	     or at most the lower bound of the precision otherwise.  */
+	  if (slen.range.min >= target_int_max ())
+	    res.range.min = 0;
+	  else if ((unsigned HOST_WIDE_INT)dir.prec[0] < slen.range.min)
+	    res.range.min = dir.prec[0];
+
+	  /* Make both maxima no greater than the upper bound of precision.  */
+	  if ((unsigned HOST_WIDE_INT)dir.prec[1] < slen.range.max
+	      || slen.range.max >= target_int_max ())
+	    {
+	      res.range.max = dir.prec[1];
+	      res.range.unlikely = dir.prec[1];
+	    }
+
+	  /* If precision is constant, set the likely counter to the lesser
+	     of it and the maximum string length.  Otherwise, if the lower
+	     bound of precision is greater than zero, set the likely counter
+	     to the minimum.  Otherwise set it to zero or one based on
+	     the warning level.  */
+	  if (dir.prec[0] == dir.prec[1])
+	    res.range.likely
+	      = ((unsigned HOST_WIDE_INT)dir.prec[0] < slen.range.max
+		 ? dir.prec[0] : slen.range.max);
+	  else if (dir.prec[0] > 0)
+	    res.range.likely = res.range.min;
+	  else
+	    res.range.likely = warn_level > 1;
+	}
+      else if (dir.prec[1] >= 0)
+	{
+	  res.range.min = 0;
+	  if ((unsigned HOST_WIDE_INT)dir.prec[1] < slen.range.max)
+	    res.range.max = dir.prec[1];
+	  res.range.likely = dir.prec[1] ? warn_level > 1 : 0;
+	}
+      else if (slen.range.min >= target_int_max ())
+	{
+	  res.range.min = 0;
+	  res.range.max = HOST_WIDE_INT_MAX;
+	  /* At level 1 strings of unknown length are assumed to be
+	     empty, while at level 1 they are assumed to be one byte
+	     long.  */
+	  res.range.likely = warn_level > 1;
+	}
+      else
+	{
+	  /* A string of unknown length unconstrained by precision is
+	     assumed to be empty at level 1 and just one character long
+	     at higher levels.  */
+	  if (res.range.likely >= target_int_max ())
+	    res.range.likely = warn_level > 1;
+	}
+
+      res.range.unlikely = res.range.max;
+    }
+
+  /* Bump up the byte counters if WIDTH is greater.  */
+  return res.adjust_for_width_or_precision (dir.width);
+}
+
+/* Format plain string (part of the format string itself).  */
+
+static fmtresult
+format_plain (const directive &dir, tree, vr_values *)
+{
+  fmtresult res (dir.len);
   return res;
 }
 
-/* Compute the length of the output resulting from the conversion
-   specification SPEC with the argument ARG in a call described by INFO
-   and update the overall result of the call in *RES.  The format directive
-   corresponding to SPEC starts at CVTBEG and is CVTLEN characters long.  */
+/* Return true if the RESULT of a directive in a call describe by INFO
+   should be diagnosed given the AVAILable space in the destination.  */
 
-static void
-format_directive (const pass_sprintf_length::call_info &info,
-		  format_result *res, const char *cvtbeg, size_t cvtlen,
-		  const conversion_spec &spec, tree arg)
+static bool
+should_warn_p (const sprintf_dom_walker::call_info &info,
+	       const result_range &avail, const result_range &result)
+{
+  if (result.max <= avail.min)
+    {
+      /* The least amount of space remaining in the destination is big
+	 enough for the longest output.  */
+      return false;
+    }
+
+  if (info.bounded)
+    {
+      if (warn_format_trunc == 1 && result.min <= avail.max
+	  && info.retval_used ())
+	{
+	  /* The likely amount of space remaining in the destination is big
+	     enough for the least output and the return value is used.  */
+	  return false;
+	}
+
+      if (warn_format_trunc == 1 && result.likely <= avail.likely
+	  && !info.retval_used ())
+	{
+	  /* The likely amount of space remaining in the destination is big
+	     enough for the likely output and the return value is unused.  */
+	  return false;
+	}
+
+      if (warn_format_trunc == 2
+	  && result.likely <= avail.min
+	  && (result.max <= avail.min
+	      || result.max > HOST_WIDE_INT_MAX))
+	{
+	  /* The minimum amount of space remaining in the destination is big
+	     enough for the longest output.  */
+	  return false;
+	}
+    }
+  else
+    {
+      if (warn_level == 1 && result.likely <= avail.likely)
+	{
+	  /* The likely amount of space remaining in the destination is big
+	     enough for the likely output.  */
+	  return false;
+	}
+
+      if (warn_level == 2
+	  && result.likely <= avail.min
+	  && (result.max <= avail.min
+	      || result.max > HOST_WIDE_INT_MAX))
+	{
+	  /* The minimum amount of space remaining in the destination is big
+	     enough for the longest output.  */
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+/* At format string location describe by DIRLOC in a call described
+   by INFO, issue a warning for a directive DIR whose output may be
+   in excess of the available space AVAIL_RANGE in the destination
+   given the formatting result FMTRES.  This function does nothing
+   except decide whether to issue a warning for a possible write
+   past the end or truncation and, if so, format the warning.
+   Return true if a warning has been issued.  */
+
+static bool
+maybe_warn (substring_loc &dirloc, location_t argloc,
+	    const sprintf_dom_walker::call_info &info,
+	    const result_range &avail_range, const result_range &res,
+	    const directive &dir)
+{
+  if (!should_warn_p (info, avail_range, res))
+    return false;
+
+  /* A warning will definitely be issued below.  */
+
+  /* The maximum byte count to reference in the warning.  Larger counts
+     imply that the upper bound is unknown (and could be anywhere between
+     RES.MIN + 1 and SIZE_MAX / 2) are printed as "N or more bytes" rather
+     than "between N and X" where X is some huge number.  */
+  unsigned HOST_WIDE_INT maxbytes = target_dir_max ();
+
+  /* True when there is enough room in the destination for the least
+     amount of a directive's output but not enough for its likely or
+     maximum output.  */
+  bool maybe = (res.min <= avail_range.max
+		&& (avail_range.min < res.likely
+		    || (res.max < HOST_WIDE_INT_MAX
+			&& avail_range.min < res.max)));
+
+  /* Buffer for the directive in the host character set (used when
+     the source character set is different).  */
+  char hostdir[32];
+
+  if (avail_range.min == avail_range.max)
+    {
+      /* The size of the destination region is exact.  */
+      unsigned HOST_WIDE_INT navail = avail_range.max;
+
+      if (target_to_host (*dir.beg) != '%')
+	{
+	  /* For plain character directives (i.e., the format string itself)
+	     but not others, point the caret at the first character that's
+	     past the end of the destination.  */
+	  if (navail < dir.len)
+	    dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
+	}
+
+      if (*dir.beg == '\0')
+	{
+	  /* This is the terminating nul.  */
+	  gcc_assert (res.min == 1 && res.min == res.max);
+
+	  return fmtwarn (dirloc, UNKNOWN_LOCATION, NULL, info.warnopt (),
+			  info.bounded
+			  ? (maybe
+			     ? G_("%qE output may be truncated before the "
+				  "last format character")
+			     : G_("%qE output truncated before the last "
+				  "format character"))
+			  : (maybe
+			     ? G_("%qE may write a terminating nul past the "
+				  "end of the destination")
+			     : G_("%qE writing a terminating nul past the "
+				  "end of the destination")),
+			  info.func);
+	}
+
+      if (res.min == res.max)
+	{
+	  const char *d = target_to_host (hostdir, sizeof hostdir, dir.beg);
+	  if (!info.bounded)
+	    return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			      "%<%.*s%> directive writing %wu byte into a "
+			      "region of size %wu",
+			      "%<%.*s%> directive writing %wu bytes into a "
+			      "region of size %wu",
+			      (int) dir.len, d, res.min, navail);
+	  else if (maybe)
+	    return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			      "%<%.*s%> directive output may be truncated "
+			      "writing %wu byte into a region of size %wu",
+			      "%<%.*s%> directive output may be truncated "
+			      "writing %wu bytes into a region of size %wu",
+			      (int) dir.len, d, res.min, navail);
+	  else
+	    return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			      "%<%.*s%> directive output truncated writing "
+			      "%wu byte into a region of size %wu",
+			      "%<%.*s%> directive output truncated writing "
+			      "%wu bytes into a region of size %wu",
+			      (int) dir.len, d, res.min, navail);
+	}
+      if (res.min == 0 && res.max < maxbytes)
+	return fmtwarn (dirloc, argloc, NULL,
+			info.warnopt (),
+			info.bounded
+			? (maybe
+			   ? G_("%<%.*s%> directive output may be truncated "
+				"writing up to %wu bytes into a region of "
+				"size %wu")
+			   : G_("%<%.*s%> directive output truncated writing "
+				"up to %wu bytes into a region of size %wu"))
+			: G_("%<%.*s%> directive writing up to %wu bytes "
+			     "into a region of size %wu"), (int) dir.len,
+			target_to_host (hostdir, sizeof hostdir, dir.beg),
+			res.max, navail);
+
+      if (res.min == 0 && maxbytes <= res.max)
+	/* This is a special case to avoid issuing the potentially
+	   confusing warning:
+	     writing 0 or more bytes into a region of size 0.  */
+	return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			info.bounded
+			? (maybe
+			   ? G_("%<%.*s%> directive output may be truncated "
+				"writing likely %wu or more bytes into a "
+				"region of size %wu")
+			   : G_("%<%.*s%> directive output truncated writing "
+				"likely %wu or more bytes into a region of "
+				"size %wu"))
+			: G_("%<%.*s%> directive writing likely %wu or more "
+			     "bytes into a region of size %wu"), (int) dir.len,
+			target_to_host (hostdir, sizeof hostdir, dir.beg),
+			res.likely, navail);
+
+      if (res.max < maxbytes)
+	return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			info.bounded
+			? (maybe
+			   ? G_("%<%.*s%> directive output may be truncated "
+				"writing between %wu and %wu bytes into a "
+				"region of size %wu")
+			   : G_("%<%.*s%> directive output truncated "
+				"writing between %wu and %wu bytes into a "
+				"region of size %wu"))
+			: G_("%<%.*s%> directive writing between %wu and "
+			     "%wu bytes into a region of size %wu"),
+			(int) dir.len,
+			target_to_host (hostdir, sizeof hostdir, dir.beg),
+			res.min, res.max, navail);
+
+      return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+		      info.bounded
+		      ? (maybe
+			 ? G_("%<%.*s%> directive output may be truncated "
+			      "writing %wu or more bytes into a region of "
+			      "size %wu")
+			 : G_("%<%.*s%> directive output truncated writing "
+			      "%wu or more bytes into a region of size %wu"))
+		      : G_("%<%.*s%> directive writing %wu or more bytes "
+			   "into a region of size %wu"), (int) dir.len,
+		      target_to_host (hostdir, sizeof hostdir, dir.beg),
+		      res.min, navail);
+    }
+
+  /* The size of the destination region is a range.  */
+
+  if (target_to_host (*dir.beg) != '%')
+    {
+      unsigned HOST_WIDE_INT navail = avail_range.max;
+
+      /* For plain character directives (i.e., the format string itself)
+	 but not others, point the caret at the first character that's
+	 past the end of the destination.  */
+      if (navail < dir.len)
+	dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
+    }
+
+  if (*dir.beg == '\0')
+    {
+      gcc_assert (res.min == 1 && res.min == res.max);
+
+      return fmtwarn (dirloc, UNKNOWN_LOCATION, NULL, info.warnopt (),
+		      info.bounded
+		      ? (maybe
+			 ? G_("%qE output may be truncated before the last "
+			      "format character")
+			 : G_("%qE output truncated before the last format "
+			      "character"))
+		      : (maybe
+			 ? G_("%qE may write a terminating nul past the end "
+			      "of the destination")
+			 : G_("%qE writing a terminating nul past the end "
+			      "of the destination")), info.func);
+    }
+
+  if (res.min == res.max)
+    {
+      const char *d = target_to_host (hostdir, sizeof hostdir, dir.beg);
+      if (!info.bounded)
+	return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			  "%<%.*s%> directive writing %wu byte into a region "
+			  "of size between %wu and %wu",
+			  "%<%.*s%> directive writing %wu bytes into a region "
+			  "of size between %wu and %wu", (int) dir.len, d,
+			  res.min, avail_range.min, avail_range.max);
+      else if (maybe)
+	return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			  "%<%.*s%> directive output may be truncated writing "
+			  "%wu byte into a region of size between %wu and %wu",
+			  "%<%.*s%> directive output may be truncated writing "
+			  "%wu bytes into a region of size between %wu and "
+			  "%wu", (int) dir.len, d, res.min, avail_range.min,
+			  avail_range.max);
+      else
+	return fmtwarn_n (dirloc, argloc, NULL, info.warnopt (), res.min,
+			  "%<%.*s%> directive output truncated writing %wu "
+			  "byte into a region of size between %wu and %wu",
+			  "%<%.*s%> directive output truncated writing %wu "
+			  "bytes into a region of size between %wu and %wu",
+			  (int) dir.len, d, res.min, avail_range.min,
+			  avail_range.max);
+    }
+
+  if (res.min == 0 && res.max < maxbytes)
+    return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+		    info.bounded
+		    ? (maybe
+		       ? G_("%<%.*s%> directive output may be truncated "
+			    "writing up to %wu bytes into a region of size "
+			    "between %wu and %wu")
+		       : G_("%<%.*s%> directive output truncated writing "
+			    "up to %wu bytes into a region of size between "
+			    "%wu and %wu"))
+		    : G_("%<%.*s%> directive writing up to %wu bytes "
+			 "into a region of size between %wu and %wu"),
+		    (int) dir.len,
+		    target_to_host (hostdir, sizeof hostdir, dir.beg),
+		    res.max, avail_range.min, avail_range.max);
+
+  if (res.min == 0 && maxbytes <= res.max)
+    /* This is a special case to avoid issuing the potentially confusing
+       warning:
+	 writing 0 or more bytes into a region of size between 0 and N.  */
+    return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+		    info.bounded
+		    ? (maybe
+		       ? G_("%<%.*s%> directive output may be truncated "
+			    "writing likely %wu or more bytes into a region "
+			    "of size between %wu and %wu")
+		       : G_("%<%.*s%> directive output truncated writing "
+			    "likely %wu or more bytes into a region of size "
+			    "between %wu and %wu"))
+		    : G_("%<%.*s%> directive writing likely %wu or more bytes "
+			 "into a region of size between %wu and %wu"),
+		    (int) dir.len,
+		    target_to_host (hostdir, sizeof hostdir, dir.beg),
+		    res.likely, avail_range.min, avail_range.max);
+
+  if (res.max < maxbytes)
+    return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+		    info.bounded
+		    ? (maybe
+		       ? G_("%<%.*s%> directive output may be truncated "
+			    "writing between %wu and %wu bytes into a region "
+			    "of size between %wu and %wu")
+		       : G_("%<%.*s%> directive output truncated writing "
+			    "between %wu and %wu bytes into a region of size "
+			    "between %wu and %wu"))
+		    : G_("%<%.*s%> directive writing between %wu and "
+			 "%wu bytes into a region of size between %wu and "
+			 "%wu"), (int) dir.len,
+		    target_to_host (hostdir, sizeof hostdir, dir.beg),
+		    res.min, res.max, avail_range.min, avail_range.max);
+
+  return fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+		  info.bounded
+		  ? (maybe
+		     ? G_("%<%.*s%> directive output may be truncated writing "
+			  "%wu or more bytes into a region of size between "
+			  "%wu and %wu")
+		     : G_("%<%.*s%> directive output truncated writing "
+			  "%wu or more bytes into a region of size between "
+			  "%wu and %wu"))
+		  : G_("%<%.*s%> directive writing %wu or more bytes "
+		       "into a region of size between %wu and %wu"),
+		  (int) dir.len,
+		  target_to_host (hostdir, sizeof hostdir, dir.beg),
+		  res.min, avail_range.min, avail_range.max);
+}
+
+/* Compute the length of the output resulting from the directive DIR
+   in a call described by INFO and update the overall result of the call
+   in *RES.  Return true if the directive has been handled.  */
+
+static bool
+format_directive (const sprintf_dom_walker::call_info &info,
+		  format_result *res, const directive &dir,
+		  class vr_values *vr_values)
 {
   /* Offset of the beginning of the directive from the beginning
      of the format string.  */
-  size_t offset = cvtbeg - info.fmtstr;
+  size_t offset = dir.beg - info.fmtstr;
+  size_t start = offset;
+  size_t length = offset + dir.len - !!dir.len;
 
   /* Create a location for the whole directive from the % to the format
      specifier.  */
   substring_loc dirloc (info.fmtloc, TREE_TYPE (info.format),
-			offset, offset, offset + cvtlen - 1);
+			offset, start, length);
 
-  /* Also create a location range for the argument if possible.
+  /* Also get the location of the argument if possible.
      This doesn't work for integer literals or function calls.  */
-  source_range argrange;
-  source_range *pargrange;
-  if (arg && CAN_HAVE_LOCATION_P (arg))
-    {
-      argrange = EXPR_LOCATION_RANGE (arg);
-      pargrange = &argrange;
-    }
-  else
-    pargrange = NULL;
+  location_t argloc = UNKNOWN_LOCATION;
+  if (dir.arg)
+    argloc = EXPR_LOCATION (dir.arg);
 
   /* Bail when there is no function to compute the output length,
      or when minimum length checking has been disabled.   */
-  if (!spec.fmtfunc || res->number_chars_min >= HOST_WIDE_INT_MAX)
-    return;
+  if (!dir.fmtfunc || res->range.min >= HOST_WIDE_INT_MAX)
+    return false;
 
-  /* Compute the (approximate) length of the formatted output.  */
-  fmtresult fmtres = spec.fmtfunc (spec, arg);
-
-  /* The overall result is bounded and constant only if the output
-     of every directive is bounded and constant, respectively.  */
-  res->bounded &= fmtres.bounded;
-  res->constant &= fmtres.constant;
+  /* Compute the range of lengths of the formatted output.  */
+  fmtresult fmtres = dir.fmtfunc (dir, dir.arg, vr_values);
 
   /* Record whether the output of all directives is known to be
      bounded by some maximum, implying that their arguments are
@@ -1748,9 +2822,13 @@ format_directive (const pass_sprintf_length::call_info &info,
   if (!fmtres.knownrange)
     {
       /* Only when the range is known, check it against the host value
-	 of INT_MAX.  Otherwise the range doesn't correspond to known
-	 values of the argument.  */
-      if (fmtres.range.max >= target_int_max ())
+	 of INT_MAX + (the number of bytes of the "%.*Lf" directive with
+	 INT_MAX precision, which is the longest possible output of any
+	 single directive).  That's the largest valid byte count (though
+	 not valid call to a printf-like function because it can never
+	 return such a count).  Otherwise, the range doesn't correspond
+	 to known values of the argument.  */
+      if (fmtres.range.max > target_dir_max ())
 	{
 	  /* Normalize the MAX counter to avoid having to deal with it
 	     later.  The counter can be less than HOST_WIDE_INT_M1U
@@ -1760,162 +2838,83 @@ format_directive (const pass_sprintf_length::call_info &info,
 	     to determine the maximum number of characters (for example
 	     for wide characters or wide character strings) but continue
 	     tracking the minimum number of characters.  */
-	  res->number_chars_max = HOST_WIDE_INT_M1U;
-	  res->number_chars = HOST_WIDE_INT_M1U;
+	  res->range.max = HOST_WIDE_INT_M1U;
 	}
 
-      if (fmtres.range.min >= target_int_max ())
+      if (fmtres.range.min > target_dir_max ())
 	{
 	  /* Disable exact length checking after a failure to determine
 	     even the minimum number of characters (it shouldn't happen
 	     except in an error) but keep tracking the minimum and maximum
 	     number of characters.  */
-	  res->number_chars = HOST_WIDE_INT_M1U;
-	  return;
+	  return true;
 	}
+    }
+
+  /* Buffer for the directive in the host character set (used when
+     the source character set is different).  */
+  char hostdir[32];
+
+  int dirlen = dir.len;
+
+  if (fmtres.nullp)
+    {
+      fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+	       "%<%.*s%> directive argument is null",
+	       dirlen, target_to_host (hostdir, sizeof hostdir, dir.beg));
+
+      /* Don't bother processing the rest of the format string.  */
+      res->warned = true;
+      res->range.min = HOST_WIDE_INT_M1U;
+      res->range.max = HOST_WIDE_INT_M1U;
+      return false;
     }
 
   /* Compute the number of available bytes in the destination.  There
      must always be at least one byte of space for the terminating
      NUL that's appended after the format string has been processed.  */
-  unsigned HOST_WIDE_INT navail = min_bytes_remaining (info.objsize, *res);
+  result_range avail_range = bytes_remaining (info.objsize, *res);
 
-  if (fmtres.range.min < fmtres.range.max)
-    {
-      /* The result is a range (i.e., it's inexact).  */
-      if (!res->warned)
-	{
-	  bool warned = false;
+  bool warned = res->warned;
 
-	  if (navail < fmtres.range.min)
-	    {
-	      /* The minimum directive output is longer than there is
-		 room in the destination.  */
-	      if (fmtres.range.min == fmtres.range.max)
-		{
-		  const char* fmtstr
-		    = (info.bounded
-		       ? G_("%<%.*s%> directive output truncated writing "
-			    "%wu bytes into a region of size %wu")
-		       : G_("%<%.*s%> directive writing %wu bytes "
-			    "into a region of size %wu"));
-		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    OPT_Wformat_length_, fmtstr,
-				    (int)cvtlen, cvtbeg, fmtres.range.min,
-				    navail);
-		}
-	      else
-		{
-		  const char* fmtstr
-		    = (info.bounded
-		       ? G_("%<%.*s%> directive output truncated writing "
-			    "between %wu and %wu bytes into a region of "
-			    "size %wu")
-		       : G_("%<%.*s%> directive writing between %wu and "
-			    "%wu bytes into a region of size %wu"));
-		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    OPT_Wformat_length_, fmtstr,
-				    (int)cvtlen, cvtbeg,
-				    fmtres.range.min, fmtres.range.max, navail);
-		}
-	    }
-	  else if (navail < fmtres.range.max
-		   && (((spec.specifier == 's'
-			 && fmtres.range.max < HOST_WIDE_INT_MAX)
-			/* && (spec.precision || spec.star_precision) */)
-		       || 1 < warn_format_length))
-	    {
-	      /* The maximum directive output is longer than there is
-		 room in the destination and the output length is either
-		 explicitly constrained by the precision (for strings)
- 		 or the warning level is greater than 1.  */
-	      if (fmtres.range.max >= HOST_WIDE_INT_MAX)
-		{
-		  const char* fmtstr
-		    = (info.bounded
-		       ? G_("%<%.*s%> directive output may be truncated "
-			    "writing %wu or more bytes a region of size %wu")
-		       : G_("%<%.*s%> directive writing %wu or more bytes "
-			    "into a region of size %wu"));
-		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    OPT_Wformat_length_, fmtstr,
-				    (int)cvtlen, cvtbeg,
-				    fmtres.range.min, navail);
-		}
-	      else
-		{
-		  const char* fmtstr
-		    = (info.bounded
-		       ? G_("%<%.*s%> directive output may be truncated "
-			    "writing between %wu and %wu bytes into a region "
-			    "of size %wu")
-		       : G_("%<%.*s%> directive writing between %wu and %wu "
-			    "bytes into a region of size %wu"));
-		  warned = fmtwarn (dirloc, pargrange, NULL,
-				    OPT_Wformat_length_, fmtstr,
-				    (int)cvtlen, cvtbeg,
-				    fmtres.range.min, fmtres.range.max,
-				    navail);
-		}
-	    }
+  if (!warned)
+    warned = maybe_warn (dirloc, argloc, info, avail_range,
+			 fmtres.range, dir);
 
-	  res->warned |= warned;
+  /* Bump up the total maximum if it isn't too big.  */
+  if (res->range.max < HOST_WIDE_INT_MAX
+      && fmtres.range.max < HOST_WIDE_INT_MAX)
+    res->range.max += fmtres.range.max;
 
-	  if (warned && fmtres.argmin)
-	    {
-	      if (fmtres.argmin == fmtres.argmax)
-		inform (info.fmtloc, "directive argument %qE", fmtres.argmin);
-	      else if (fmtres.bounded)
-		inform (info.fmtloc, "directive argument in the range [%E, %E]",
-			fmtres.argmin, fmtres.argmax);
-	      else
-		inform (info.fmtloc,
-			"using the range [%qE, %qE] for directive argument",
-			fmtres.argmin, fmtres.argmax);
-	    }
-	}
-
-      /* Disable exact length checking but adjust the minimum and maximum.  */
-      res->number_chars = HOST_WIDE_INT_M1U;
-      if (res->number_chars_max < HOST_WIDE_INT_MAX
-	  && fmtres.range.max < HOST_WIDE_INT_MAX)
-	res->number_chars_max += fmtres.range.max;
-
-      res->number_chars_min += fmtres.range.min;
-    }
+  /* Raise the total unlikely maximum by the larger of the maximum
+     and the unlikely maximum.  */
+  unsigned HOST_WIDE_INT save = res->range.unlikely;
+  if (fmtres.range.max < fmtres.range.unlikely)
+    res->range.unlikely += fmtres.range.unlikely;
   else
-    {
-      if (!res->warned && fmtres.range.min > 0 && navail < fmtres.range.min)
-	{
-	  const char* fmtstr
-	    = (info.bounded
-	       ? (1 < fmtres.range.min
-		  ? G_("%<%.*s%> directive output truncated while writing "
-		       "%wu bytes into a region of size %wu")
-		  : G_("%<%.*s%> directive output truncated while writing "
-		       "%wu byte into a region of size %wu"))
-	       : (1 < fmtres.range.min
-		  ? G_("%<%.*s%> directive writing %wu bytes "
-		       "into a region of size %wu")
-		  : G_("%<%.*s%> directive writing %wu byte "
-		       "into a region of size %wu")));
+    res->range.unlikely += fmtres.range.max;
 
-	  res->warned = fmtwarn (dirloc, pargrange, NULL,
-				 OPT_Wformat_length_, fmtstr,
-				 (int)cvtlen, cvtbeg, fmtres.range.min,
-				 navail);
-	}
-      *res += fmtres.range.min;
-    }
+  if (res->range.unlikely < save)
+    res->range.unlikely = HOST_WIDE_INT_M1U;
+
+  res->range.min += fmtres.range.min;
+  res->range.likely += fmtres.range.likely;
 
   /* Has the minimum directive output length exceeded the maximum
      of 4095 bytes required to be supported?  */
   bool minunder4k = fmtres.range.min < 4096;
-  if (!minunder4k || fmtres.range.max > 4095)
+  bool maxunder4k = fmtres.range.max < 4096;
+  /* Clear UNDER4K in the overall result if the maximum has exceeded
+     the 4k (this is necessary to avoid the return valuye optimization
+     that may not be safe in the maximum case).  */
+  if (!maxunder4k)
     res->under4k = false;
 
-  if (!res->warned && 1 < warn_format_length
-      && (!minunder4k || fmtres.range.max > 4095))
+  if (!warned
+      /* Only warn at level 2.  */
+      && warn_level > 1
+      && (!minunder4k
+	  || (!maxunder4k && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {
       /* The directive output may be longer than the maximum required
 	 to be handled by an implementation according to 7.21.6.1, p15
@@ -1925,170 +2924,86 @@ format_directive (const pass_sprintf_length::call_info &info,
 	 (like Glibc does under some conditions).  */
 
       if (fmtres.range.min == fmtres.range.max)
-	res->warned = fmtwarn (dirloc, pargrange, NULL,
-			       OPT_Wformat_length_,
-			       "%<%.*s%> directive output of %wu bytes exceeds "
-			       "minimum required size of 4095",
-			       (int)cvtlen, cvtbeg, fmtres.range.min);
+	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			  "%<%.*s%> directive output of %wu bytes exceeds "
+			  "minimum required size of 4095", dirlen,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  fmtres.range.min);
       else
-	{
-	  const char *fmtstr
-	    = (minunder4k
-	       ? G_("%<%.*s%> directive output between %qu and %wu "
-		    "bytes may exceed minimum required size of 4095")
-	       : G_("%<%.*s%> directive output between %qu and %wu "
-		    "bytes exceeds minimum required size of 4095"));
-
-	  res->warned = fmtwarn (dirloc, pargrange, NULL,
-				 OPT_Wformat_length_, fmtstr,
-				 (int)cvtlen, cvtbeg,
-				 fmtres.range.min, fmtres.range.max);
-	}
+	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			  minunder4k
+			  ? G_("%<%.*s%> directive output between %wu and %wu "
+			       "bytes may exceed minimum required size of "
+			       "4095")
+			  : G_("%<%.*s%> directive output between %wu and %wu "
+			       "bytes exceeds minimum required size of 4095"),
+			  dirlen,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  fmtres.range.min, fmtres.range.max);
     }
 
-  /* Has the minimum directive output length exceeded INT_MAX?  */
-  bool exceedmin = res->number_chars_min > target_int_max ();
+  /* Has the likely and maximum directive output exceeded INT_MAX?  */
+  bool likelyximax = *dir.beg && res->range.likely > target_int_max ();
+  /* Don't consider the maximum to be in excess when it's the result
+     of a string of unknown length (i.e., whose maximum has been set
+     to be greater than or equal to HOST_WIDE_INT_MAX.  */
+  bool maxximax = (*dir.beg
+		   && res->range.max > target_int_max ()
+		   && res->range.max < HOST_WIDE_INT_MAX);
 
-  if (!res->warned
-      && (exceedmin
-	  || (1 < warn_format_length
-	      && res->number_chars_max > target_int_max ())))
+  if (!warned
+      /* Warn for the likely output size at level 1.  */
+      && (likelyximax
+	  /* But only warn for the maximum at level 2.  */
+	  || (warn_level > 1
+	      && maxximax
+	      && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {
       /* The directive output causes the total length of output
 	 to exceed INT_MAX bytes.  */
 
       if (fmtres.range.min == fmtres.range.max)
-	res->warned = fmtwarn (dirloc, pargrange, NULL,
-			       OPT_Wformat_length_,
-			       "%<%.*s%> directive output of %wu bytes causes "
-			       "result to exceed %<INT_MAX%>",
-			       (int)cvtlen, cvtbeg, fmtres.range.min);
+	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			  "%<%.*s%> directive output of %wu bytes causes "
+			  "result to exceed %<INT_MAX%>", dirlen,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  fmtres.range.min);
       else
-	{
-	  const char *fmtstr
-	    = (exceedmin
-	       ? G_ ("%<%.*s%> directive output between %wu and %wu "
-		     "bytes causes result to exceed %<INT_MAX%>")
-	       : G_ ("%<%.*s%> directive output between %wu and %wu "
-		     "bytes may cause result to exceed %<INT_MAX%>"));
-	  res->warned = fmtwarn (dirloc, pargrange, NULL,
-				 OPT_Wformat_length_, fmtstr,
-				 (int)cvtlen, cvtbeg,
-				 fmtres.range.min, fmtres.range.max);
-	}
+	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			  fmtres.range.min > target_int_max ()
+			  ? G_("%<%.*s%> directive output between %wu and "
+			       "%wu bytes causes result to exceed "
+			       "%<INT_MAX%>")
+			  : G_("%<%.*s%> directive output between %wu and "
+			       "%wu bytes may cause result to exceed "
+			       "%<INT_MAX%>"), dirlen,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  fmtres.range.min, fmtres.range.max);
     }
-}
 
-/* Account for the number of bytes between BEG and END (or between
-   BEG + strlen (BEG) when END is null) in the format string in a call
-   to a formatted output function described by INFO.  Reflect the count
-   in RES and issue warnings as appropriate.  */
+  if (warned && fmtres.range.min < fmtres.range.likely
+      && fmtres.range.likely < fmtres.range.max)
+    inform_n (info.fmtloc, fmtres.range.likely,
+	      "assuming directive output of %wu byte",
+	      "assuming directive output of %wu bytes",
+	      fmtres.range.likely);
 
-static void
-add_bytes (const pass_sprintf_length::call_info &info,
-	   const char *beg, const char *end, format_result *res)
-{
-  if (res->number_chars_min >= HOST_WIDE_INT_MAX)
-    return;
-
-  /* The number of bytes to output is the number of bytes between
-     the end of the last directive and the beginning of the next
-     one if it exists, otherwise the number of characters remaining
-     in the format string plus 1 for the terminating NUL.  */
-  size_t nbytes = end ? end - beg : strlen (beg) + 1;
-
-  /* Return if there are no bytes to add at this time but there are
-     directives remaining in the format string.  */
-  if (!nbytes)
-    return;
-
-  /* Compute the range of available bytes in the destination.  There
-     must always be at least one byte left for the terminating NUL
-     that's appended after the format string has been processed.  */
-  result_range avail_range = bytes_remaining (info.objsize, *res);
-
-  /* If issuing a diagnostic (only when one hasn't already been issued),
-     distinguish between a possible overflow ("may write") and a certain
-     overflow somewhere "past the end."  (Ditto for truncation.)
-     KNOWNRANGE is used to warn even at level 1 about possibly writing
-     past the end or truncation due to strings of unknown lengths that
-     are bounded by the arrays they are known to refer to.  */
-  if (!res->warned
-      && (avail_range.max < nbytes
-	  || ((res->knownrange || 1 < warn_format_length)
-	      && avail_range.min < nbytes)))
+  if (warned && fmtres.argmin)
     {
-      /* Set NAVAIL to the number of available bytes used to decide
-	 whether or not to issue a warning below.  The exact kind of
-	 warning will depend on AVAIL_RANGE.  */
-      unsigned HOST_WIDE_INT navail = avail_range.max;
-      if (nbytes <= navail && avail_range.min < HOST_WIDE_INT_MAX
-	  && (res->knownrange || 1 < warn_format_length))
-	navail = avail_range.min;
-
-      /* Compute the offset of the first format character that is beyond
-	 the end of the destination region and the length of the rest of
-	 the format string from that point on.  */
-      unsigned HOST_WIDE_INT off
-	= (unsigned HOST_WIDE_INT)(beg - info.fmtstr) + navail;
-
-      size_t len = strlen (info.fmtstr + off);
-
-      /* Create a location that underscores the substring of the format
-	 string that is or may be written past the end (or is or may be
-	 truncated), pointing the caret at the first character of the
-	 substring.  */
-      substring_loc loc
-	(info.fmtloc, TREE_TYPE (info.format), off, len ? off : 0,
-	 off + len - !!len);
-
-      /* Is the output of the last directive the result of the argument
-	 being within a range whose lower bound would fit in the buffer
-	 but the upper bound would not?  If so, use the word "may" to
-	 indicate that the overflow/truncation may (but need not) happen.  */
-      bool boundrange
-	= (res->number_chars_min < res->number_chars_max
-	   && res->number_chars_min < info.objsize);
-
-      if (!end && ((nbytes - navail) == 1 || boundrange))
-	{
-	  /* There is room for the rest of the format string but none
-	     for the terminating nul.  */
-	  const char *text
-	    = (info.bounded   // Snprintf and the like.
-	       ? (boundrange
-		  ? G_("output may be truncated before the last format character"
-		       : "output truncated before the last format character"))
-	       : (boundrange
-		  ? G_("may write a terminating nul past the end "
-		       "of the destination")
-		  : G_("writing a terminating nul past the end "
-		       "of the destination")));
-
-	  res->warned = fmtwarn (loc, NULL, NULL, OPT_Wformat_length_, text);
-	}
+      if (fmtres.argmin == fmtres.argmax)
+	inform (info.fmtloc, "directive argument %qE", fmtres.argmin);
+      else if (fmtres.knownrange)
+	inform (info.fmtloc, "directive argument in the range [%E, %E]",
+		fmtres.argmin, fmtres.argmax);
       else
-	{
-	  /* There isn't enough room for 1 or more characters that remain
-	     to copy from the format string.  */
-	  const char *text
-	    = (info.bounded   // Snprintf and the like.
-	       ? (boundrange
-		  ? G_("output may be truncated at or before format character "
-		       "%qc at offset %wu")
-		  : G_("output truncated at format character %qc at offset %wu"))
-	       : (res->number_chars >= HOST_WIDE_INT_MAX
-		  ? G_("may write format character %#qc at offset %wu past "
-		       "the end of the destination")
-		  : G_("writing format character %#qc at offset %wu past "
-		       "the end of the destination")));
-
-	  res->warned = fmtwarn (loc, NULL, NULL, OPT_Wformat_length_,
-				 text, info.fmtstr[off], off);
-	}
+	inform (info.fmtloc,
+		"using the range [%E, %E] for directive argument",
+		fmtres.argmin, fmtres.argmax);
     }
 
-  if (res->warned && !end && info.objsize < HOST_WIDE_INT_MAX)
+  res->warned |= warned;
+
+  if (!dir.beg[0] && res->warned && info.objsize < HOST_WIDE_INT_MAX)
     {
       /* If a warning has been issued for buffer overflow or truncation
 	 (but not otherwise) help the user figure out how big a buffer
@@ -2096,366 +3011,550 @@ add_bytes (const pass_sprintf_length::call_info &info,
 
       location_t callloc = gimple_location (info.callstmt);
 
-      unsigned HOST_WIDE_INT min = res->number_chars_min;
-      unsigned HOST_WIDE_INT max = res->number_chars_max;
-      unsigned HOST_WIDE_INT exact
-	= (res->number_chars < HOST_WIDE_INT_MAX
-	   ? res->number_chars : res->number_chars_min);
+      unsigned HOST_WIDE_INT min = res->range.min;
+      unsigned HOST_WIDE_INT max = res->range.max;
 
-      if (min < max && max < HOST_WIDE_INT_MAX)
+      if (min == max)
 	inform (callloc,
-		"format output between %wu and %wu bytes into "
+		(min == 1
+		 ? G_("%qE output %wu byte into a destination of size %wu")
+		 : G_("%qE output %wu bytes into a destination of size %wu")),
+		info.func, min, info.objsize);
+      else if (max < HOST_WIDE_INT_MAX)
+	inform (callloc,
+		"%qE output between %wu and %wu bytes into "
 		"a destination of size %wu",
-		min + nbytes, max + nbytes, info.objsize);
+		info.func, min, max, info.objsize);
+      else if (min < res->range.likely && res->range.likely < max)
+	inform (callloc,
+		"%qE output %wu or more bytes (assuming %wu) into "
+		"a destination of size %wu",
+		info.func, min, res->range.likely, info.objsize);
       else
 	inform (callloc,
-		(nbytes + exact == 1
-		 ? G_("format output %wu byte into a destination of size %wu")
-		 : G_("format output %wu bytes into a destination of size %wu")),
-		nbytes + exact, info.objsize);
+		"%qE output %wu or more bytes into a destination of size %wu",
+		info.func, min, info.objsize);
     }
 
-  /* Add the number of bytes and then check for INT_MAX overflow.  */
-  *res += nbytes;
-
-  /* Has the minimum output length minus the terminating nul exceeded
-     INT_MAX?  */
-  bool exceedmin = (res->number_chars_min - !end) > target_int_max ();
-
-  if (!res->warned
-      && (exceedmin
-	  || (1 < warn_format_length
-	      && (res->number_chars_max - !end) > target_int_max ())))
+  if (dump_file && *dir.beg)
     {
-      /* The function's output exceeds INT_MAX bytes.  */
-
-      /* Set NAVAIL to the number of available bytes used to decide
-	 whether or not to issue a warning below.  The exact kind of
-	 warning will depend on AVAIL_RANGE.  */
-      unsigned HOST_WIDE_INT navail = avail_range.max;
-      if (nbytes <= navail && avail_range.min < HOST_WIDE_INT_MAX
-	  && (res->bounded || 1 < warn_format_length))
-	navail = avail_range.min;
-
-      /* Compute the offset of the first format character that is beyond
-	 the end of the destination region and the length of the rest of
-	 the format string from that point on.  */
-      unsigned HOST_WIDE_INT off = (unsigned HOST_WIDE_INT)(beg - info.fmtstr);
-      if (navail < HOST_WIDE_INT_MAX)
-	off += navail;
-
-      size_t len = strlen (info.fmtstr + off);
-
-      substring_loc loc
-	(info.fmtloc, TREE_TYPE (info.format), off - !len, len ? off : 0,
-	 off + len - !!len);
-
-      if (res->number_chars_min == res->number_chars_max)
-	res->warned = fmtwarn (loc, NULL, NULL,
-			       OPT_Wformat_length_,
-			       "output of %wu bytes causes "
-			       "result to exceed %<INT_MAX%>",
-			       res->number_chars_min - !end);
-      else
-	{
-	  const char *text
-	    = (exceedmin
-	       ? G_ ("output between %wu and %wu bytes causes "
-		     "result to exceed %<INT_MAX%>")
-	       : G_ ("output between %wu and %wu bytes may cause "
-		     "result to exceed %<INT_MAX%>"));
-	  res->warned = fmtwarn (loc, NULL, NULL, OPT_Wformat_length_,
-				 text,
-				 res->number_chars_min - !end,
-				 res->number_chars_max - !end);
-	}
+      fprintf (dump_file,
+	       "    Result: "
+	       HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC ", "
+	       HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC " ("
+	       HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC ", "
+	       HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC ")\n",
+	       fmtres.range.min, fmtres.range.likely,
+	       fmtres.range.max, fmtres.range.unlikely,
+	       res->range.min, res->range.likely,
+	       res->range.max, res->range.unlikely);
     }
+
+  return true;
 }
 
-#pragma GCC diagnostic pop
+/* Parse a format directive in function call described by INFO starting
+   at STR and populate DIR structure.  Bump up *ARGNO by the number of
+   arguments extracted for the directive.  Return the length of
+   the directive.  */
 
-/* Compute the length of the output resulting from the call to a formatted
-   output function described by INFO and store the result of the call in
-   *RES.  Issue warnings for detected past the end writes.  */
-
-void
-pass_sprintf_length::compute_format_length (const call_info &info,
-					    format_result *res)
+static size_t
+parse_directive (sprintf_dom_walker::call_info &info,
+		 directive &dir, format_result *res,
+		 const char *str, unsigned *argno,
+		 vr_values *vr_values)
 {
-  /* The variadic argument counter.  */
-  unsigned argno = info.argidx;
+  const char *pcnt = strchr (str, target_percent);
+  dir.beg = str;
 
-  /* Reset exact, minimum, and maximum character counters.  */
-  res->number_chars = res->number_chars_min = res->number_chars_max = 0;
-
-  /* No directive has been seen yet so the length of output is bounded
-     by the known range [0, 0] and constant (with no conversion producing
-     more than 4K bytes) until determined otherwise.  */
-  res->bounded = true;
-  res->knownrange = true;
-  res->constant = true;
-  res->under4k = true;
-  res->floating = false;
-  res->warned = false;
-
-  const char *pf = info.fmtstr;
-
-  for ( ; ; )
+  if (size_t len = pcnt ? pcnt - str : *str ? strlen (str) : 1)
     {
-      /* The beginning of the next format directive.  */
-      const char *dir = strchr (pf, '%');
+      /* This directive is either a plain string or the terminating nul
+	 (which isn't really a directive but it simplifies things to
+	 handle it as if it were).  */
+      dir.len = len;
+      dir.fmtfunc = format_plain;
 
-      /* Add the number of bytes between the end of the last directive
-	 and either the next if one exists, or the end of the format
-	 string.  */
-      add_bytes (info, pf, dir, res);
-
-      if (!dir)
-	break;
-
-      pf = dir + 1;
-
-      if (0 && *pf == 0)
+      if (dump_file)
 	{
-	  /* Incomplete directive.  */
-	  return;
+	  fprintf (dump_file, "  Directive %u at offset "
+		   HOST_WIDE_INT_PRINT_UNSIGNED ": \"%.*s\", "
+		   "length = " HOST_WIDE_INT_PRINT_UNSIGNED "\n",
+		   dir.dirno,
+		   (unsigned HOST_WIDE_INT)(size_t)(dir.beg - info.fmtstr),
+		   (int)dir.len, dir.beg, (unsigned HOST_WIDE_INT) dir.len);
 	}
 
-      conversion_spec spec = conversion_spec ();
+      return len - !*str;
+    }
 
-      /* POSIX numbered argument index or zero when none.  */
-      unsigned dollar = 0;
+  const char *pf = pcnt + 1;
 
-      if (ISDIGIT (*pf))
+    /* POSIX numbered argument index or zero when none.  */
+  HOST_WIDE_INT dollar = 0;
+
+  /* With and precision.  -1 when not specified, HOST_WIDE_INT_MIN
+     when given by a va_list argument, and a non-negative value
+     when specified in the format string itself.  */
+  HOST_WIDE_INT width = -1;
+  HOST_WIDE_INT precision = -1;
+
+  /* Pointers to the beginning of the width and precision decimal
+     string (if any) within the directive.  */
+  const char *pwidth = 0;
+  const char *pprec = 0;
+
+  /* When the value of the decimal string that specifies width or
+     precision is out of range, points to the digit that causes
+     the value to exceed the limit.  */
+  const char *werange = NULL;
+  const char *perange = NULL;
+
+  /* Width specified via the asterisk.  Need not be INTEGER_CST.
+     For vararg functions set to void_node.  */
+  tree star_width = NULL_TREE;
+
+  /* Width specified via the asterisk.  Need not be INTEGER_CST.
+     For vararg functions set to void_node.  */
+  tree star_precision = NULL_TREE;
+
+  if (ISDIGIT (target_to_host (*pf)))
+    {
+      /* This could be either a POSIX positional argument, the '0'
+	 flag, or a width, depending on what follows.  Store it as
+	 width and sort it out later after the next character has
+	 been seen.  */
+      pwidth = pf;
+      width = target_strtol10 (&pf, &werange);
+    }
+  else if (target_to_host (*pf) == '*')
+    {
+      /* Similarly to the block above, this could be either a POSIX
+	 positional argument or a width, depending on what follows.  */
+      if (*argno < gimple_call_num_args (info.callstmt))
+	star_width = gimple_call_arg (info.callstmt, (*argno)++);
+      else
+	star_width = void_node;
+      ++pf;
+    }
+
+  if (target_to_host (*pf) == '$')
+    {
+      /* Handle the POSIX dollar sign which references the 1-based
+	 positional argument number.  */
+      if (width != -1)
+	dollar = width + info.argidx;
+      else if (star_width
+	       && TREE_CODE (star_width) == INTEGER_CST
+	       && (TYPE_PRECISION (TREE_TYPE (star_width))
+		   <= TYPE_PRECISION (integer_type_node)))
+	dollar = width + tree_to_shwi (star_width);
+
+      /* Bail when the numbered argument is out of range (it will
+	 have already been diagnosed by -Wformat).  */
+      if (dollar == 0
+	  || dollar == (int)info.argidx
+	  || dollar > gimple_call_num_args (info.callstmt))
+	return false;
+
+      --dollar;
+
+      star_width = NULL_TREE;
+      width = -1;
+      ++pf;
+    }
+
+  if (dollar || !star_width)
+    {
+      if (width != -1)
 	{
-	  /* This could be either a POSIX positional argument, the '0'
-	     flag, or a width, depending on what follows.  Store it as
-	     width and sort it out later after the next character has
-	     been seen.  */
-	  char *end;
-	  spec.width = strtol (pf, &end, 10);
-	  spec.have_width = true;
-	  pf = end;
-	}
-      else if ('*' == *pf)
-	{
-	  /* Similarly to the block above, this could be either a POSIX
-	     positional argument or a width, depending on what follows.  */
-	  if (argno < gimple_call_num_args (info.callstmt))
-	    spec.star_width = gimple_call_arg (info.callstmt, argno++);
-	  else
-	    return;
-	  ++pf;
-	}
-
-      if (*pf == '$')
-	{
-	  /* Handle the POSIX dollar sign which references the 1-based
-	     positional argument number.  */
-	  if (spec.have_width)
-	    dollar = spec.width + info.argidx;
-	  else if (spec.star_width
-		   && TREE_CODE (spec.star_width) == INTEGER_CST)
-	    dollar = spec.width + tree_to_shwi (spec.star_width);
-
-	  /* Bail when the numbered argument is out of range (it will
-	     have already been diagnosed by -Wformat).  */
-	  if (dollar == 0
-	      || dollar == info.argidx
-	      || dollar > gimple_call_num_args (info.callstmt))
-	    return;
-
-	  --dollar;
-
-	  spec.star_width = NULL_TREE;
-	  spec.have_width = false;
-	  ++pf;
-	}
-
-      if (dollar || !spec.star_width)
-	{
-	  if (spec.have_width && spec.width == 0)
+	  if (width == 0)
 	    {
 	      /* The '0' that has been interpreted as a width above is
 		 actually a flag.  Reset HAVE_WIDTH, set the '0' flag,
 		 and continue processing other flags.  */
-	      spec.have_width = false;
-	      spec.set_flag ('0');
+	      width = -1;
+	      dir.set_flag ('0');
 	    }
-	  /* When either '$' has been seen, or width has not been seen,
-	     the next field is the optional flags followed by an optional
-	     width.  */
-	  for ( ; ; ) {
-	    switch (*pf)
-	      {
-	      case ' ':
-	      case '0':
-	      case '+':
-	      case '-':
-	      case '#':
-		spec.set_flag (*pf++);
-		break;
+	  else if (!dollar)
+	    {
+	      /* (Non-zero) width has been seen.  The next character
+		 is either a period or a digit.  */
+	      goto start_precision;
+	    }
+	}
+      /* When either '$' has been seen, or width has not been seen,
+	 the next field is the optional flags followed by an optional
+	 width.  */
+      for ( ; ; ) {
+	switch (target_to_host (*pf))
+	  {
+	  case ' ':
+	  case '0':
+	  case '+':
+	  case '-':
+	  case '#':
+	    dir.set_flag (target_to_host (*pf++));
+	    break;
 
-	      default:
-		goto start_width;
-	      }
+	  default:
+	    goto start_width;
 	  }
+      }
 
-	start_width:
-	  if (ISDIGIT (*pf))
-	    {
-	      char *end;
-	      spec.width = strtol (pf, &end, 10);
-	      spec.have_width = true;
-	      pf = end;
-	    }
-	  else if ('*' == *pf)
-	    {
-	      spec.star_width = gimple_call_arg (info.callstmt, argno++);
-	      ++pf;
-	    }
-	  else if ('\'' == *pf)
-	    {
-	      /* The POSIX apostrophe indicating a numeric grouping
-		 in the current locale.  Even though it's possible to
-		 estimate the upper bound on the size of the output
-		 based on the number of digits it probably isn't worth
-		 continuing.  */
-	      return;
-	    }
-	}
-
-      if ('.' == *pf)
+    start_width:
+      if (ISDIGIT (target_to_host (*pf)))
 	{
-	  ++pf;
-
-	  if (ISDIGIT (*pf))
-	    {
-	      char *end;
-	      spec.precision = strtol (pf, &end, 10);
-	      spec.have_precision = true;
-	      pf = end;
-	    }
-	  else if ('*' == *pf)
-	    {
-	      spec.star_precision = gimple_call_arg (info.callstmt, argno++);
-	      ++pf;
-	    }
-	  else
-	    return;
+	  werange = 0;
+	  pwidth = pf;
+	  width = target_strtol10 (&pf, &werange);
 	}
-
-      switch (*pf)
+      else if (target_to_host (*pf) == '*')
 	{
-	case 'h':
-	  if (pf[1] == 'h')
-	    {
-	      ++pf;
-	      spec.modifier = FMT_LEN_hh;
-	    }
+	  if (*argno < gimple_call_num_args (info.callstmt))
+	    star_width = gimple_call_arg (info.callstmt, (*argno)++);
 	  else
-	    spec.modifier = FMT_LEN_h;
-	  ++pf;
-	  break;
-
-	case 'j':
-	  spec.modifier = FMT_LEN_j;
-	  ++pf;
-	  break;
-
-	case 'L':
-	  spec.modifier = FMT_LEN_L;
-	  ++pf;
-	  break;
-
-	case 'l':
-	  if (pf[1] == 'l')
 	    {
-	      ++pf;
-	      spec.modifier = FMT_LEN_ll;
+	      /* This is (likely) a va_list.  It could also be an invalid
+		 call with insufficient arguments.  */
+	      star_width = void_node;
 	    }
-	  else
-	    spec.modifier = FMT_LEN_l;
 	  ++pf;
-	  break;
-
-	case 't':
-	  spec.modifier = FMT_LEN_t;
-	  ++pf;
-	  break;
-
-	case 'z':
-	  spec.modifier = FMT_LEN_z;
-	  ++pf;
-	  break;
 	}
-
-      switch (*pf)
+      else if (target_to_host (*pf) == '\'')
 	{
-	  /* Handle a sole '%' character the same as "%%" but since it's
-	     undefined prevent the result from being folded.  */
-	case '\0':
-	  --pf;
-	  res->bounded = false;
-	  /* FALLTHRU */
-	case '%':
-	  spec.fmtfunc = format_percent;
-	  break;
-
-	case 'a':
-	case 'A':
-	case 'e':
-	case 'E':
-	case 'f':
-	case 'F':
-	case 'g':
-	case 'G':
-	  res->floating = true;
-	  spec.fmtfunc = format_floating;
-	  break;
-
-	case 'd':
-	case 'i':
-	case 'o':
-	case 'u':
-	case 'x':
-	case 'X':
-	  spec.fmtfunc = format_integer;
-	  break;
-
-	case 'p':
-	  spec.fmtfunc = format_pointer;
-	  break;
-
-	case 'n':
-	  return;
-
-	case 'c':
-	case 'S':
-	case 's':
-	  spec.fmtfunc = format_string;
-	  break;
-
-	default:
-	  return;
+	  /* The POSIX apostrophe indicating a numeric grouping
+	     in the current locale.  Even though it's possible to
+	     estimate the upper bound on the size of the output
+	     based on the number of digits it probably isn't worth
+	     continuing.  */
+	  return 0;
 	}
-
-      spec.specifier = *pf++;
-
-      /* Compute the length of the format directive.  */
-      size_t dirlen = pf - dir;
-
-      /* Extract the argument if the directive takes one and if it's
-	 available (e.g., the function doesn't take a va_list).  Treat
-	 missing arguments the same as va_list, even though they will
-	 have likely already been diagnosed by -Wformat.  */
-      tree arg = NULL_TREE;
-      if (spec.specifier != '%'
-	  && argno < gimple_call_num_args (info.callstmt))
-	arg = gimple_call_arg (info.callstmt, dollar ? dollar : argno++);
-
-      ::format_directive (info, res, dir, dirlen, spec, arg);
     }
+
+ start_precision:
+  if (target_to_host (*pf) == '.')
+    {
+      ++pf;
+
+      if (ISDIGIT (target_to_host (*pf)))
+	{
+	  pprec = pf;
+	  precision = target_strtol10 (&pf, &perange);
+	}
+      else if (target_to_host (*pf) == '*')
+	{
+	  if (*argno < gimple_call_num_args (info.callstmt))
+	    star_precision = gimple_call_arg (info.callstmt, (*argno)++);
+	  else
+	    {
+	      /* This is (likely) a va_list.  It could also be an invalid
+		 call with insufficient arguments.  */
+	      star_precision = void_node;
+	    }
+	  ++pf;
+	}
+      else
+	{
+	  /* The decimal precision or the asterisk are optional.
+	     When neither is dirified it's taken to be zero.  */
+	  precision = 0;
+	}
+    }
+
+  switch (target_to_host (*pf))
+    {
+    case 'h':
+      if (target_to_host (pf[1]) == 'h')
+	{
+	  ++pf;
+	  dir.modifier = FMT_LEN_hh;
+	}
+      else
+	dir.modifier = FMT_LEN_h;
+      ++pf;
+      break;
+
+    case 'j':
+      dir.modifier = FMT_LEN_j;
+      ++pf;
+      break;
+
+    case 'L':
+      dir.modifier = FMT_LEN_L;
+      ++pf;
+      break;
+
+    case 'l':
+      if (target_to_host (pf[1]) == 'l')
+	{
+	  ++pf;
+	  dir.modifier = FMT_LEN_ll;
+	}
+      else
+	dir.modifier = FMT_LEN_l;
+      ++pf;
+      break;
+
+    case 't':
+      dir.modifier = FMT_LEN_t;
+      ++pf;
+      break;
+
+    case 'z':
+      dir.modifier = FMT_LEN_z;
+      ++pf;
+      break;
+    }
+
+  switch (target_to_host (*pf))
+    {
+      /* Handle a sole '%' character the same as "%%" but since it's
+	 undefined prevent the result from being folded.  */
+    case '\0':
+      --pf;
+      res->range.min = res->range.max = HOST_WIDE_INT_M1U;
+      /* FALLTHRU */
+    case '%':
+      dir.fmtfunc = format_percent;
+      break;
+
+    case 'a':
+    case 'A':
+    case 'e':
+    case 'E':
+    case 'f':
+    case 'F':
+    case 'g':
+    case 'G':
+      res->floating = true;
+      dir.fmtfunc = format_floating;
+      break;
+
+    case 'd':
+    case 'i':
+    case 'o':
+    case 'u':
+    case 'x':
+    case 'X':
+      dir.fmtfunc = format_integer;
+      break;
+
+    case 'p':
+      /* The %p output is implementation-defined.  It's possible
+	 to determine this format but due to extensions (edirially
+	 those of the Linux kernel -- see bug 78512) the first %p
+	 in the format string disables any further processing.  */
+      return false;
+
+    case 'n':
+      /* %n has side-effects even when nothing is actually printed to
+	 any buffer.  */
+      info.nowrite = false;
+      dir.fmtfunc = format_none;
+      break;
+
+    case 'c':
+      dir.fmtfunc = format_character;
+      break;
+
+    case 'S':
+    case 's':
+      dir.fmtfunc = format_string;
+      break;
+
+    default:
+      /* Unknown conversion specification.  */
+      return 0;
+    }
+
+  dir.specifier = target_to_host (*pf++);
+
+  /* Store the length of the format directive.  */
+  dir.len = pf - pcnt;
+
+  /* Buffer for the directive in the host character set (used when
+     the source character set is different).  */
+  char hostdir[32];
+
+  if (star_width)
+    {
+      if (INTEGRAL_TYPE_P (TREE_TYPE (star_width)))
+	dir.set_width (star_width, vr_values);
+      else
+	{
+	  /* Width specified by a va_list takes on the range [0, -INT_MIN]
+	     (width is the absolute value of that specified).  */
+	  dir.width[0] = 0;
+	  dir.width[1] = target_int_max () + 1;
+	}
+    }
+  else
+    {
+      if (width == LONG_MAX && werange)
+	{
+	  size_t begin = dir.beg - info.fmtstr + (pwidth - pcnt);
+	  size_t caret = begin + (werange - pcnt);
+	  size_t end = pf - info.fmtstr - 1;
+
+	  /* Create a location for the width part of the directive,
+	     pointing the caret at the first out-of-range digit.  */
+	  substring_loc dirloc (info.fmtloc, TREE_TYPE (info.format),
+				caret, begin, end);
+
+	  fmtwarn (dirloc, UNKNOWN_LOCATION, NULL, info.warnopt (),
+		   "%<%.*s%> directive width out of range", (int) dir.len,
+		   target_to_host (hostdir, sizeof hostdir, dir.beg));
+	}
+
+      dir.set_width (width);
+    }
+
+  if (star_precision)
+    {
+      if (INTEGRAL_TYPE_P (TREE_TYPE (star_precision)))
+	dir.set_precision (star_precision, vr_values);
+      else
+	{
+	  /* Precision specified by a va_list takes on the range [-1, INT_MAX]
+	     (unlike width, negative precision is ignored).  */
+	  dir.prec[0] = -1;
+	  dir.prec[1] = target_int_max ();
+	}
+    }
+  else
+    {
+      if (precision == LONG_MAX && perange)
+	{
+	  size_t begin = dir.beg - info.fmtstr + (pprec - pcnt) - 1;
+	  size_t caret = dir.beg - info.fmtstr + (perange - pcnt) - 1;
+	  size_t end = pf - info.fmtstr - 2;
+
+	  /* Create a location for the precision part of the directive,
+	     including the leading period, pointing the caret at the first
+	     out-of-range digit .  */
+	  substring_loc dirloc (info.fmtloc, TREE_TYPE (info.format),
+				caret, begin, end);
+
+	  fmtwarn (dirloc, UNKNOWN_LOCATION, NULL, info.warnopt (),
+		   "%<%.*s%> directive precision out of range", (int) dir.len,
+		   target_to_host (hostdir, sizeof hostdir, dir.beg));
+	}
+
+      dir.set_precision (precision);
+    }
+
+  /* Extract the argument if the directive takes one and if it's
+     available (e.g., the function doesn't take a va_list).  Treat
+     missing arguments the same as va_list, even though they will
+     have likely already been diagnosed by -Wformat.  */
+  if (dir.specifier != '%'
+      && *argno < gimple_call_num_args (info.callstmt))
+    dir.arg = gimple_call_arg (info.callstmt, dollar ? dollar : (*argno)++);
+
+  if (dump_file)
+    {
+      fprintf (dump_file,
+	       "  Directive %u at offset " HOST_WIDE_INT_PRINT_UNSIGNED
+	       ": \"%.*s\"",
+	       dir.dirno,
+	       (unsigned HOST_WIDE_INT)(size_t)(dir.beg - info.fmtstr),
+	       (int)dir.len, dir.beg);
+      if (star_width)
+	{
+	  if (dir.width[0] == dir.width[1])
+	    fprintf (dump_file, ", width = " HOST_WIDE_INT_PRINT_DEC,
+		     dir.width[0]);
+	  else
+	    fprintf (dump_file,
+		     ", width in range [" HOST_WIDE_INT_PRINT_DEC
+		     ", " HOST_WIDE_INT_PRINT_DEC "]",
+		     dir.width[0], dir.width[1]);
+	}
+
+      if (star_precision)
+	{
+	  if (dir.prec[0] == dir.prec[1])
+	    fprintf (dump_file, ", precision = " HOST_WIDE_INT_PRINT_DEC,
+		     dir.prec[0]);
+	  else
+	    fprintf (dump_file,
+		     ", precision in range [" HOST_WIDE_INT_PRINT_DEC
+		     HOST_WIDE_INT_PRINT_DEC "]",
+		     dir.prec[0], dir.prec[1]);
+	}
+      fputc ('\n', dump_file);
+    }
+
+  return dir.len;
+}
+
+/* Compute the length of the output resulting from the call to a formatted
+   output function described by INFO and store the result of the call in
+   *RES.  Issue warnings for detected past the end writes.  Return true
+   if the complete format string has been processed and *RES can be relied
+   on, false otherwise (e.g., when a unknown or unhandled directive was seen
+   that caused the processing to be terminated early).  */
+
+bool
+sprintf_dom_walker::compute_format_length (call_info &info,
+					   format_result *res)
+{
+  if (dump_file)
+    {
+      location_t callloc = gimple_location (info.callstmt);
+      fprintf (dump_file, "%s:%i: ",
+	       LOCATION_FILE (callloc), LOCATION_LINE (callloc));
+      print_generic_expr (dump_file, info.func, dump_flags);
+
+      fprintf (dump_file,
+	       ": objsize = " HOST_WIDE_INT_PRINT_UNSIGNED
+	       ", fmtstr = \"%s\"\n",
+	       info.objsize, info.fmtstr);
+    }
+
+  /* Reset the minimum and maximum byte counters.  */
+  res->range.min = res->range.max = 0;
+
+  /* No directive has been seen yet so the length of output is bounded
+     by the known range [0, 0] (with no conversion producing more than
+     4K bytes) until determined otherwise.  */
+  res->knownrange = true;
+  res->under4k = true;
+  res->floating = false;
+  res->warned = false;
+
+  /* 1-based directive counter.  */
+  unsigned dirno = 1;
+
+  /* The variadic argument counter.  */
+  unsigned argno = info.argidx;
+
+  for (const char *pf = info.fmtstr; ; ++dirno)
+    {
+      directive dir = directive ();
+      dir.dirno = dirno;
+
+      size_t n = parse_directive (info, dir, res, pf, &argno,
+				  evrp_range_analyzer.get_vr_values ());
+
+      /* Return failure if the format function fails.  */
+      if (!format_directive (info, res, dir,
+			     evrp_range_analyzer.get_vr_values ()))
+	return false;
+
+      /* Return success the directive is zero bytes long and it's
+	 the last think in the format string (i.e., it's the terminating
+	 nul, which isn't really a directive but handling it as one makes
+	 things simpler).  */
+      if (!n)
+	return *pf == '\0';
+
+      pf += n;
+    }
+
+  /* The complete format string was processed (with or without warnings).  */
+  return true;
 }
 
 /* Return the size of the object referenced by the expression DEST if
@@ -2464,6 +3563,9 @@ pass_sprintf_length::compute_format_length (const call_info &info,
 static unsigned HOST_WIDE_INT
 get_destination_size (tree dest)
 {
+  /* Initialize object size info before trying to compute it.  */
+  init_object_sizes ();
+
   /* Use __builtin_object_size to determine the size of the destination
      object.  When optimizing, determine the smallest object (such as
      a member array as opposed to the whole enclosing object), otherwise
@@ -2477,18 +3579,37 @@ get_destination_size (tree dest)
   return HOST_WIDE_INT_M1U;
 }
 
-/* Given a suitable result RES of a call to a formatted output function
-   described by INFO, substitute the result for the return value of
-   the call.  The result is suitable if the number of bytes it represents
-   is known and exact.  A result that isn't suitable for substitution may
-   have its range set to the range of return values, if that is known.  */
+/* Return true if the call described by INFO with result RES safe to
+   optimize (i.e., no undefined behavior), and set RETVAL to the range
+   of its return values.  */
 
-static void
-try_substitute_return_value (gimple_stmt_iterator gsi,
-			     const pass_sprintf_length::call_info &info,
-			     const format_result &res)
+static bool
+is_call_safe (const sprintf_dom_walker::call_info &info,
+	      const format_result &res, bool under4k,
+	      unsigned HOST_WIDE_INT retval[2])
 {
-  tree lhs = gimple_get_lhs (info.callstmt);
+  if (under4k && !res.under4k)
+    return false;
+
+  /* The minimum return value.  */
+  retval[0] = res.range.min;
+
+  /* The maximum return value is in most cases bounded by RES.RANGE.MAX
+     but in cases involving multibyte characters could be as large as
+     RES.RANGE.UNLIKELY.  */
+  retval[1]
+    = res.range.unlikely < res.range.max ? res.range.max : res.range.unlikely;
+
+  /* Adjust the number of bytes which includes the terminating nul
+     to reflect the return value of the function which does not.
+     Because the valid range of the function is [INT_MIN, INT_MAX],
+     a valid range before the adjustment below is [0, INT_MAX + 1]
+     (the functions only return negative values on error or undefined
+     behavior).  */
+  if (retval[0] <= target_int_max () + 1)
+    --retval[0];
+  if (retval[1] <= target_int_max () + 1)
+    --retval[1];
 
   /* Avoid the return value optimization when the behavior of the call
      is undefined either because any directive may have produced 4K or
@@ -2496,99 +3617,184 @@ try_substitute_return_value (gimple_stmt_iterator gsi,
      the output overflows the destination object (but leave it enabled
      when the function is bounded because then the behavior is well-
      defined).  */
-  if (lhs && res.bounded && res.under4k
-      && (info.bounded || res.number_chars <= info.objsize)
-      && res.number_chars - 1 <= target_int_max ())
+  if (retval[0] == retval[1]
+      && (info.bounded || retval[0] < info.objsize)
+      && retval[0] <= target_int_max ())
+    return true;
+
+  if ((info.bounded || retval[1] < info.objsize)
+      && (retval[0] < target_int_max ()
+	  && retval[1] < target_int_max ()))
+    return true;
+
+  if (!under4k && (info.bounded || retval[0] < info.objsize))
+    return true;
+
+  return false;
+}
+
+/* Given a suitable result RES of a call to a formatted output function
+   described by INFO, substitute the result for the return value of
+   the call.  The result is suitable if the number of bytes it represents
+   is known and exact.  A result that isn't suitable for substitution may
+   have its range set to the range of return values, if that is known.
+   Return true if the call is removed and gsi_next should not be performed
+   in the caller.  */
+
+static bool
+try_substitute_return_value (gimple_stmt_iterator *gsi,
+			     const sprintf_dom_walker::call_info &info,
+			     const format_result &res)
+{
+  tree lhs = gimple_get_lhs (info.callstmt);
+
+  /* Set to true when the entire call has been removed.  */
+  bool removed = false;
+
+  /* The minimum and maximum return value.  */
+  unsigned HOST_WIDE_INT retval[2];
+  bool safe = is_call_safe (info, res, true, retval);
+
+  if (safe
+      && retval[0] == retval[1]
+      /* Not prepared to handle possibly throwing calls here; they shouldn't
+	 appear in non-artificial testcases, except when the __*_chk routines
+	 are badly declared.  */
+      && !stmt_ends_bb_p (info.callstmt))
     {
-      /* Replace the left-hand side of the call with the constant
-	 result of the formatted function minus 1 for the terminating
-	 NUL which the functions' return value does not include.  */
-      gimple_call_set_lhs (info.callstmt, NULL_TREE);
-      tree cst = build_int_cst (integer_type_node, res.number_chars - 1);
-      gimple *g = gimple_build_assign (lhs, cst);
-      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-      update_stmt (info.callstmt);
+      tree cst = build_int_cst (integer_type_node, retval[0]);
+
+      if (lhs == NULL_TREE
+	  && info.nowrite)
+	{
+	  /* Remove the call to the bounded function with a zero size
+	     (e.g., snprintf(0, 0, "%i", 123)) if there is no lhs.  */
+	  unlink_stmt_vdef (info.callstmt);
+	  gsi_remove (gsi, true);
+	  removed = true;
+	}
+      else if (info.nowrite)
+	{
+	  /* Replace the call to the bounded function with a zero size
+	     (e.g., snprintf(0, 0, "%i", 123) with the constant result
+	     of the function.  */
+	  if (!update_call_from_tree (gsi, cst))
+	    gimplify_and_update_call_from_tree (gsi, cst);
+	  gimple *callstmt = gsi_stmt (*gsi);
+	  update_stmt (callstmt);
+	}
+      else if (lhs)
+	{
+	  /* Replace the left-hand side of the call with the constant
+	     result of the formatted function.  */
+	  gimple_call_set_lhs (info.callstmt, NULL_TREE);
+	  gimple *g = gimple_build_assign (lhs, cst);
+	  gsi_insert_after (gsi, g, GSI_NEW_STMT);
+	  update_stmt (info.callstmt);
+	}
 
       if (dump_file)
 	{
-	  location_t callloc = gimple_location (info.callstmt);
-	  fprintf (dump_file, "On line %i substituting ",
-		   LOCATION_LINE (callloc));
-	  print_generic_expr (dump_file, cst, dump_flags);
-	  fprintf (dump_file, " for ");
-	  print_generic_expr (dump_file, info.func, dump_flags);
-	  fprintf (dump_file, " return value (output %s).\n",
-		   res.constant ? "constant" : "variable");
+	  if (removed)
+	    fprintf (dump_file, "  Removing call statement.");
+	  else
+	    {
+	      fprintf (dump_file, "  Substituting ");
+	      print_generic_expr (dump_file, cst, dump_flags);
+	      fprintf (dump_file, " for %s.\n",
+		       info.nowrite ? "statement" : "return value");
+	    }
 	}
     }
-  else
+  else if (lhs)
     {
-      unsigned HOST_WIDE_INT maxbytes;
+      bool setrange = false;
 
-      if (lhs
-	  && res.bounded
-	  && ((maxbytes = res.number_chars - 1) <= target_int_max ()
-	      || (res.number_chars_min - 1 <= target_int_max ()
-		  && (maxbytes = res.number_chars_max - 1) <= target_int_max ()))
-	  && (info.bounded || maxbytes < info.objsize))
+      if (safe
+	  && (info.bounded || retval[1] < info.objsize)
+	  && (retval[0] < target_int_max ()
+	      && retval[1] < target_int_max ()))
 	{
 	  /* If the result is in a valid range bounded by the size of
 	     the destination set it so that it can be used for subsequent
 	     optimizations.  */
 	  int prec = TYPE_PRECISION (integer_type_node);
 
-	  if (res.number_chars < target_int_max () && res.under4k)
-	    {
-	      wide_int num = wi::shwi (res.number_chars - 1, prec);
-	      set_range_info (lhs, VR_RANGE, num, num);
-	    }
-	  else if (res.number_chars_min < target_int_max ()
-		   && res.number_chars_max < target_int_max ())
-	    {
-	      wide_int min = wi::shwi (res.under4k ? res.number_chars_min - 1
-				       : target_int_min (), prec);
-	      wide_int max = wi::shwi (res.number_chars_max - 1, prec);
-	      set_range_info (lhs, VR_RANGE, min, max);
-	    }
+	  wide_int min = wi::shwi (retval[0], prec);
+	  wide_int max = wi::shwi (retval[1], prec);
+	  set_range_info (lhs, VR_RANGE, min, max);
+
+	  setrange = true;
 	}
 
       if (dump_file)
 	{
 	  const char *inbounds
-	    = (res.number_chars_min <= info.objsize
-	       ? (res.number_chars_max <= info.objsize
+	    = (retval[0] < info.objsize
+	       ? (retval[1] < info.objsize
 		  ? "in" : "potentially out-of")
 	       : "out-of");
 
-	  location_t callloc = gimple_location (info.callstmt);
-	  fprintf (dump_file, "On line %i ", LOCATION_LINE (callloc));
-	  print_generic_expr (dump_file, info.func, dump_flags);
-
-	  const char *ign = lhs ? "" : " ignored";
-	  if (res.number_chars >= HOST_WIDE_INT_MAX)
+	  const char *what = setrange ? "Setting" : "Discarding";
+	  if (retval[0] != retval[1])
 	    fprintf (dump_file,
-		     " %s-bounds return value in range [%lu, %lu]%s.\n",
-		     inbounds,
-		     (unsigned long)res.number_chars_min,
-		     (unsigned long)res.number_chars_max, ign);
+		     "  %s %s-bounds return value range ["
+		     HOST_WIDE_INT_PRINT_UNSIGNED ", "
+		     HOST_WIDE_INT_PRINT_UNSIGNED "].\n",
+		     what, inbounds, retval[0], retval[1]);
 	  else
-	    fprintf (dump_file, " %s-bounds return value %lu%s.\n",
-		     inbounds, (unsigned long)res.number_chars, ign);
+	    fprintf (dump_file, "  %s %s-bounds return value "
+		     HOST_WIDE_INT_PRINT_UNSIGNED ".\n",
+		     what, inbounds, retval[0]);
 	}
     }
+
+  if (dump_file)
+    fputc ('\n', dump_file);
+
+  return removed;
+}
+
+/* Try to simplify a s{,n}printf call described by INFO with result
+   RES by replacing it with a simpler and presumably more efficient
+   call (such as strcpy).  */
+
+static bool
+try_simplify_call (gimple_stmt_iterator *gsi,
+		   const sprintf_dom_walker::call_info &info,
+		   const format_result &res)
+{
+  unsigned HOST_WIDE_INT dummy[2];
+  if (!is_call_safe (info, res, info.retval_used (), dummy))
+    return false;
+
+  switch (info.fncode)
+    {
+    case BUILT_IN_SNPRINTF:
+      return gimple_fold_builtin_snprintf (gsi);
+
+    case BUILT_IN_SPRINTF:
+      return gimple_fold_builtin_sprintf (gsi);
+
+    default:
+      ;
+    }
+
+  return false;
 }
 
 /* Determine if a GIMPLE CALL is to one of the sprintf-like built-in
-   functions and if so, handle it.  */
+   functions and if so, handle it.  Return true if the call is removed
+   and gsi_next should not be performed in the caller.  */
 
-void
-pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
+bool
+sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 {
   call_info info = call_info ();
 
-  info.callstmt = gsi_stmt (gsi);
+  info.callstmt = gsi_stmt (*gsi);
   if (!gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
-    return;
+    return false;
 
   info.func = gimple_call_fndecl (info.callstmt);
   info.fncode = DECL_FUNCTION_CODE (info.func);
@@ -2679,17 +3885,27 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
       break;
 
     default:
-      return;
+      return false;
     }
+
+  /* Set the global warning level for this function.  */
+  warn_level = info.bounded ? warn_format_trunc : warn_format_overflow;
+
+  /* The first argument is a pointer to the destination.  */
+  tree dstptr = gimple_call_arg (info.callstmt, 0);
 
   info.format = gimple_call_arg (info.callstmt, idx_format);
 
+  /* True when the destination size is constant as opposed to the lower
+     or upper bound of a range.  */
+  bool dstsize_cst_p = true;
+
   if (idx_dstsize == HOST_WIDE_INT_M1U)
     {
-      // For non-bounded functions like sprintf, to determine
-      // the size of the destination from the object or pointer
-      // passed to it as the first argument.
-      dstsize = get_destination_size (gimple_call_arg (info.callstmt, 0));
+      /* For non-bounded functions like sprintf, determine the size
+	 of the destination from the object or pointer passed to it
+	 as the first argument.  */
+      dstsize = get_destination_size (dstptr);
     }
   else if (tree size = gimple_call_arg (info.callstmt, idx_dstsize))
     {
@@ -2699,37 +3915,52 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
 	{
 	  dstsize = tree_to_uhwi (size);
 	  /* No object can be larger than SIZE_MAX bytes (half the address
-	     space) on the target.  This imposes a limit that's one byte
-	     less than that.  */
-	  if (dstsize >= target_size_max () / 2)
-	    warning_at (gimple_location (info.callstmt), OPT_Wformat_length_,
-			"specified destination size %wu too large",
+	     space) on the target.
+	     The functions are defined only for output of at most INT_MAX
+	     bytes.  Specifying a bound in excess of that limit effectively
+	     defeats the bounds checking (and on some implementations such
+	     as Solaris cause the function to fail with EINVAL).  */
+	  if (dstsize > target_size_max () / 2)
+	    {
+	      /* Avoid warning if -Wstringop-overflow is specified since
+		 it also warns for the same thing though only for the
+		 checking built-ins.  */
+	      if ((idx_objsize == HOST_WIDE_INT_M1U
+		   || !warn_stringop_overflow))
+		warning_at (gimple_location (info.callstmt), info.warnopt (),
+			    "specified bound %wu exceeds maximum object size "
+			    "%wu",
+			    dstsize, target_size_max () / 2);
+	    }
+	  else if (dstsize > target_int_max ())
+	    warning_at (gimple_location (info.callstmt), info.warnopt (),
+			"specified bound %wu exceeds %<INT_MAX%>",
 			dstsize);
 	}
       else if (TREE_CODE (size) == SSA_NAME)
 	{
 	  /* Try to determine the range of values of the argument
-	     and use the greater of the two at -Wformat-level 1 and
-	     the smaller of them at level 2.  */
-	  wide_int min, max;
-	  enum value_range_type range_type
-	    = get_range_info (size, &min, &max);
-	  if (range_type == VR_RANGE)
-	    {
-	      dstsize
-		= (warn_format_length < 2
-		   ? wi::fits_uhwi_p (max) ? max.to_uhwi () : max.to_shwi ()
-		   : wi::fits_uhwi_p (min) ? min.to_uhwi () : min.to_shwi ());
-	    }
+	     and use the greater of the two at level 1 and the smaller
+	     of them at level 2.  */
+	  value_range *vr = evrp_range_analyzer.get_value_range (size);
+	  if (vr->type == VR_RANGE
+	      && TREE_CODE (vr->min) == INTEGER_CST
+	      && TREE_CODE (vr->max) == INTEGER_CST)
+	    dstsize = (warn_level < 2
+		       ? TREE_INT_CST_LOW (vr->max)
+		       : TREE_INT_CST_LOW (vr->min));
+
+	  /* The destination size is not constant.  If the function is
+	     bounded (e.g., snprintf) a lower bound of zero doesn't
+	     necessarily imply it can be eliminated.  */
+	  dstsize_cst_p = false;
 	}
     }
 
   if (idx_objsize != HOST_WIDE_INT_M1U)
-    {
-      if (tree size = gimple_call_arg (info.callstmt, idx_objsize))
-	  if (tree_fits_uhwi_p (size))
-	    objsize = tree_to_uhwi (size);
-    }
+    if (tree size = gimple_call_arg (info.callstmt, idx_objsize))
+      if (tree_fits_uhwi_p (size))
+	objsize = tree_to_uhwi (size);
 
   if (info.bounded && !dstsize)
     {
@@ -2739,18 +3970,38 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
 	 without actually producing any.  Pretend the size is
 	 unlimited in this case.  */
       info.objsize = HOST_WIDE_INT_MAX;
+      info.nowrite = dstsize_cst_p;
     }
   else
     {
+      /* For calls to non-bounded functions or to those of bounded
+	 functions with a non-zero size, warn if the destination
+	 pointer is null.  */
+      if (integer_zerop (dstptr))
+	{
+	  /* This is diagnosed with -Wformat only when the null is a constant
+	     pointer.  The warning here diagnoses instances where the pointer
+	     is not constant.  */
+	  location_t loc = gimple_location (info.callstmt);
+	  warning_at (EXPR_LOC_OR_LOC (dstptr, loc),
+		      info.warnopt (), "null destination pointer");
+	  return false;
+	}
+
       /* Set the object size to the smaller of the two arguments
 	 of both have been specified and they're not equal.  */
       info.objsize = dstsize < objsize ? dstsize : objsize;
 
       if (info.bounded
-	  && dstsize < target_size_max () / 2 && objsize < dstsize)
+	  && dstsize < target_size_max () / 2 && objsize < dstsize
+	  /* Avoid warning if -Wstringop-overflow is specified since
+	     it also warns for the same thing though only for the
+	     checking built-ins.  */
+	  && (idx_objsize == HOST_WIDE_INT_M1U
+	      || !warn_stringop_overflow))
 	{
-	  warning_at (gimple_location (info.callstmt), OPT_Wformat_length_,
-		      "specified size %wu exceeds the size %wu "
+	  warning_at (gimple_location (info.callstmt), info.warnopt (),
+		      "specified bound %wu exceeds the size %wu "
 		      "of the destination object", dstsize, objsize);
 	}
     }
@@ -2760,28 +4011,71 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
       /* This is diagnosed with -Wformat only when the null is a constant
 	 pointer.  The warning here diagnoses instances where the pointer
 	 is not constant.  */
-      warning_at (EXPR_LOC_OR_LOC (info.format, input_location),
-		  OPT_Wformat_length_, "null format string");
-      return;
+      location_t loc = gimple_location (info.callstmt);
+      warning_at (EXPR_LOC_OR_LOC (info.format, loc),
+		  info.warnopt (), "null format string");
+      return false;
     }
 
   info.fmtstr = get_format_string (info.format, &info.fmtloc);
   if (!info.fmtstr)
-    return;
+    return false;
 
   /* The result is the number of bytes output by the formatted function,
      including the terminating NUL.  */
   format_result res = format_result ();
-  compute_format_length (info, &res);
+
+  bool success = compute_format_length (info, &res);
 
   /* When optimizing and the printf return value optimization is enabled,
      attempt to substitute the computed result for the return value of
      the call.  Avoid this optimization when -frounding-math is in effect
      and the format string contains a floating point directive.  */
-  if (optimize > 0
-      && flag_printf_return_value
-      && (!flag_rounding_math || !res.floating))
-    try_substitute_return_value (gsi, info, res);
+  bool call_removed = false;
+  if (success && optimize > 0)
+    {
+      /* Save a copy of the iterator pointing at the call.  The iterator
+	 may change to point past the call in try_substitute_return_value
+	 but the original value is needed in try_simplify_call.  */
+      gimple_stmt_iterator gsi_call = *gsi;
+
+      if (flag_printf_return_value
+	  && (!flag_rounding_math || !res.floating))
+	call_removed = try_substitute_return_value (gsi, info, res);
+
+      if (!call_removed)
+	try_simplify_call (&gsi_call, info, res);
+    }
+
+  return call_removed;
+}
+
+edge
+sprintf_dom_walker::before_dom_children (basic_block bb)
+{
+  evrp_range_analyzer.enter (bb);
+  for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si); )
+    {
+      /* Iterate over statements, looking for function calls.  */
+      gimple *stmt = gsi_stmt (si);
+
+      /* First record ranges generated by this statement.  */
+      evrp_range_analyzer.record_ranges_from_stmt (stmt, false);
+
+      if (is_gimple_call (stmt) && handle_gimple_call (&si))
+	/* If handle_gimple_call returns true, the iterator is
+	   already pointing to the next statement.  */
+	continue;
+
+      gsi_next (&si);
+    }
+  return NULL;
+}
+
+void
+sprintf_dom_walker::after_dom_children (basic_block bb)
+{
+  evrp_range_analyzer.leave (bb);
 }
 
 /* Execute the pass for function FUN.  */
@@ -2789,20 +4083,15 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator gsi)
 unsigned int
 pass_sprintf_length::execute (function *fun)
 {
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
-	   gsi_next (&si))
-	{
-	  /* Iterate over statements, looking for function calls.  */
-	  gimple *stmt = gsi_stmt (si);
+  init_target_to_host_charmap ();
 
-	  if (is_gimple_call (stmt))
-	    handle_gimple_call (si);
-	}
-    }
+  calculate_dominance_info (CDI_DOMINATORS);
 
+  sprintf_dom_walker sprintf_dom_walker;
+  sprintf_dom_walker.walk (ENTRY_BLOCK_PTR_FOR_FN (fun));
+
+  /* Clean up object size info.  */
+  fini_object_sizes ();
   return 0;
 }
 

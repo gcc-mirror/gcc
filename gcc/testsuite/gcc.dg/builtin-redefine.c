@@ -7,17 +7,17 @@
 
 #if defined(__DATE__)
 #error "__DATE__ is defined, but should not be (-U command line error)"
-/* { dg-bogus "__DATE__ is defined" "" { target *-*-* } 9 } */
+/* { dg-bogus "__DATE__ is defined" "" { target *-*-* } .-1 } */
 #endif
 
 #if __TIME__ != X
 #error "__TIME__ is not defined as expected (-D command line error)"
-/* { dg-bogus "__TIME__ is not defined" "" { target *-*-* } 14 } */
+/* { dg-bogus "__TIME__ is not defined" "" { target *-*-* } .-1 } */
 #endif
 
 #if !defined(__TIMESTAMP__)
 #error "__TIMESTAMP__ is not defined (built-in macro expectation error)"
-/* { dg-bogus "__TIMESTAMP__ is not defined" "" { target *-*-* } 19 } */
+/* { dg-bogus "__TIMESTAMP__ is not defined" "" { target *-*-* } .-1 } */
 #endif
 
 
@@ -25,10 +25,10 @@
 #undef __TIME__              /* Undefine while already undefined.  */
 
 #define __TIME__ "X"         /* Define while undefined.  */
-#define __TIME__ "X"         /* Re-define while defined.  */
+#define __TIME__ "X"         /* Re-define while defined.  */ /* { dg-line time_prev } */
 
-#define __TIME__ "Y"         /* { dg-warning "\"__TIME__\" redefined" } */
-/* { dg-message "previous definition" "" { target *-*-* } 28 } */
+#define __TIME__ "Y"         /* { dg-warning "-:\"__TIME__\" redefined" } */
+/* { dg-message "-:previous definition" "" { target *-*-* } time_prev } */
 
 #undef __TIME__              /* Undefine while defined.  */
 
@@ -36,19 +36,19 @@
 #undef __DATE__              /* Undefine while already undefined.  */
 
 #define __DATE__ "X"         /* Define while undefined.  */
-#define __DATE__ "X"         /* Re-define while defined.  */
+#define __DATE__ "X"         /* Re-define while defined.  */ /* { dg-line date_prev } */
 
-#define __DATE__ "Y"         /* { dg-warning "\"__DATE__\" redefined" } */
-/* { dg-message "previous definition" "" { target *-*-* } 39 } */
+#define __DATE__ "Y"         /* { dg-warning "-:\"__DATE__\" redefined" } */
+/* { dg-message "-:previous definition" "" { target *-*-* } date_prev } */
 
 #undef __DATE__              /* Undefine while defined.  */
 
 
 #define __TIMESTAMP__ "X"    /* Define while already defined.  */
-#define __TIMESTAMP__ "X"    /* Re-define while defined.  */
+#define __TIMESTAMP__ "X"    /* Re-define while defined.  */ /* { dg-line timestamp_prev } */
 
-#define __TIMESTAMP__ "Y"    /* { dg-warning "\"__TIMESTAMP__\" redefined" } */
-/* { dg-message "previous definition" "" { target *-*-* } 48 } */
+#define __TIMESTAMP__ "Y"    /* { dg-warning "-:\"__TIMESTAMP__\" redefined" } */
+/* { dg-message "-:previous definition" "" { target *-*-* } timestamp_prev } */
 
 #undef __TIMESTAMP__         /* Undefine while defined.  */
 
@@ -57,7 +57,7 @@
 
 #if !defined(__FILE__) || !defined(__BASE_FILE__)
 #error "Expected built-in is not defined (built-in macro expectation error)"
-/* { dg-bogus "Expected built-in is not defined" "" { target *-*-* } 59 } */
+/* { dg-bogus "Expected built-in is not defined" "" { target *-*-* } .-1 } */
 #endif
 
 #define __FILE__ "X"         /* Define while already defined.  */
@@ -68,12 +68,12 @@
 
 #if !defined(__LINE__) || !defined(__INCLUDE_LEVEL__) || !defined(__COUNTER__)
 #error "Expected built-in is not defined (built-in macro expectation error)"
-/* { dg-bogus "Expected built-in is not defined" "" { target *-*-* } 70 } */
+/* { dg-bogus "Expected built-in is not defined" "" { target *-*-* } .-1 } */
 #endif
 
-#define __LINE__ 0           /* { dg-warning "\"__LINE__\" redef" } */
-#define __INCLUDE_LEVEL__ 0  /* { dg-warning "\"__INCLUDE_LEVEL__\" redef" } */
-#define __COUNTER__ 0        /* { dg-warning "\"__COUNTER__\" redef" } */
+#define __LINE__ 0           /* { dg-warning "-:\"__LINE__\" redef" } */
+#define __INCLUDE_LEVEL__ 0  /* { dg-warning "-:\"__INCLUDE_LEVEL__\" redef" } */
+#define __COUNTER__ 0        /* { dg-warning "-:\"__COUNTER__\" redef" } */
 
 
 int unused;  /* Silence `ISO C forbids an empty translation unit' warning.  */

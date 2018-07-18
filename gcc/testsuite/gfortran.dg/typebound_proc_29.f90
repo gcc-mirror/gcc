@@ -22,5 +22,3 @@ program abstract
   type(pdf) pp
   print pp%getx()  ! { dg-error "must be of type default-kind CHARACTER or of INTEGER" }
 end program
-
-! { dg-final { cleanup-modules "pdfs" } }

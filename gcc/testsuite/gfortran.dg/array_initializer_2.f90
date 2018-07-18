@@ -21,11 +21,11 @@
 !
 ! PR28496
 !
-  if (any (b .ne. (/1,2,3/))) call abort ()
-  if (any (reshape(d,(/6/)) .ne. (/3, 2, 6, 5, 9, 8/))) call abort () 
-  if (any (reshape(f,(/6/)) .ne. (/2, 1, 5, 4, 8, 7/))) call abort () 
+  if (any (b .ne. (/1,2,3/))) STOP 1
+  if (any (reshape(d,(/6/)) .ne. (/3, 2, 6, 5, 9, 8/))) STOP 2 
+  if (any (reshape(f,(/6/)) .ne. (/2, 1, 5, 4, 8, 7/))) STOP 3 
 !
 ! PR29975
 !
-  IF (all(h(2:2) /= g(3:4))) call abort ()
+  IF (all(h(2:2) /= g(3:4))) STOP 4
 end

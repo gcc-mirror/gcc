@@ -6,7 +6,10 @@
 
 package big
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+)
 
 // Gob codec version. Permits backward-compatible changes to the encoding.
 const intGobVersion byte = 1
@@ -52,14 +55,13 @@ func (x *Int) MarshalText() (text []byte, err error) {
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
 func (z *Int) UnmarshalText(text []byte) error {
-	// TODO(gri): get rid of the []byte/string conversion
-	if _, ok := z.SetString(string(text), 0); !ok {
+	if _, ok := z.setFromScanner(bytes.NewReader(text), 0); !ok {
 		return fmt.Errorf("math/big: cannot unmarshal %q into a *big.Int", text)
 	}
 	return nil
 }
 
-// The JSON marshallers are only here for API backward compatibility
+// The JSON marshalers are only here for API backward compatibility
 // (programs that explicitly look for these two methods). JSON works
 // fine with the TextMarshaler only.
 
@@ -70,5 +72,9 @@ func (x *Int) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (z *Int) UnmarshalJSON(text []byte) error {
+	// Ignore null, like in the main JSON package.
+	if string(text) == "null" {
+		return nil
+	}
 	return z.UnmarshalText(text)
 }

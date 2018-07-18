@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++17" }
 
 namespace A::B::C
 {
@@ -11,7 +11,7 @@ A::B::C::T::U::V::Y y;
 
 inline namespace D::E {} // { dg-error "cannot be inline" }
 
-namespace F::G:: {} // { dg-error "nested identifier required" }
+namespace F::G:: {} // { dg-error "namespace name required" }
 
 namespace G __attribute ((visibility ("default"))) ::H {} // { dg-error "cannot have attributes" }
 

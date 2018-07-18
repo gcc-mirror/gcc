@@ -28,9 +28,9 @@ program test
   implicit none
   type(t), pointer :: p1, p2(:),p3(:,:)
   p1 => f1()
-  if (p1%ii /= 123) call abort ()
+  if (p1%ii /= 123) STOP 1
   p2 => f2()
-  if (any (p2%ii /= [-11,-22,-33])) call abort ()
+  if (any (p2%ii /= [-11,-22,-33])) STOP 2
   p3(2:2,1:3) => f2()
-  if (any (p3(2,:)%ii /= [-11,-22,-33])) call abort ()
+  if (any (p3(2,:)%ii /= [-11,-22,-33])) STOP 3
 end program test

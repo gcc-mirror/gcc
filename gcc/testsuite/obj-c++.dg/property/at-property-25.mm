@@ -79,9 +79,8 @@
 
 @implementation MySubClass4
 @end
-
-/* { dg-warning "incomplete implementation of class" "" { target *-*-* } 81 } */
-/* { dg-warning "method definition for ..setCount1:. not found" "" { target *-*-* } 81 } */
-/* { dg-warning "method definition for ..count1. not found" "" { target *-*-* } 81 } */
-/* { dg-warning "method definition for ..count2. not found" "" { target *-*-* } 81 } */
-/* { dg-warning "class .MySubClass4. does not fully implement the .count2. protocol" "" { target *-*-* } 81 } */
+/* { dg-warning "incomplete implementation of class" "" { target *-*-* } .-1 } */
+/* { dg-warning "method definition for ..setCount1:. not found" "" { target *-*-* } .-2 } */
+/* { dg-warning "method definition for ..count1. not found" "" { target *-*-* } .-3 } */
+/* { dg-warning "method definition for ..count2. not found" "" { target *-*-* } .-4 } */
+/* { dg-warning "class .MySubClass4. does not fully implement the .count2. protocol" "" { target *-*-* } .-5 } */

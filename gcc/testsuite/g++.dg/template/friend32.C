@@ -18,4 +18,5 @@ template<class T> class B
 int f ()
 {
   B<int> b;			// { dg-message "required" }
+  return 0;
 }

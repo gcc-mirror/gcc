@@ -1,6 +1,7 @@
 // PR ipa/63587
 // { dg-do compile { target c++11 } }
 // { dg-options "-O2" }
+// { dg-additional-options "-Wno-return-type" }
 
 namespace boost {
 class basic_cstring
@@ -22,6 +23,7 @@ template <typename FunctionObj> struct function_obj_invoker0
   {
     FunctionObj f;
     f ();
+    return 0;
   }
 };
 template <typename FunctionObj> struct get_function_obj_invoker0

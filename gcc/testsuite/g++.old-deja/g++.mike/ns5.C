@@ -4,4 +4,4 @@ namespace A {
 }
 
 int j = i;		// { dg-error "" } 
-  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } 6 }
+  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } .-1 }

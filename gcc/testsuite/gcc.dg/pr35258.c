@@ -10,7 +10,11 @@ char str[9] = "1234";
 void
 bar (void)
 {
+#if __SIZEOF_INT__ >= 4
   unsigned int temp;
+#else
+  __UINT32_TYPE__ temp;
+#endif
   char *p = &str[2];
 
   memcpy (&temp, &str[1], 4);

@@ -1,5 +1,5 @@
 /* Compiler arithmetic
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -555,10 +555,10 @@ check_result (arith rc, gfc_expr *x, gfc_expr *r, gfc_expr **rp)
       val = ARITH_OK;
     }
 
-  if (val != ARITH_OK)
-    gfc_free_expr (r);
-  else
+  if (val == ARITH_OK || val == ARITH_OVERFLOW)
     *rp = r;
+  else
+    gfc_free_expr (r);
 
   return val;
 }
@@ -874,8 +874,12 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 		  {
 		    /* if op2 < 0, op1**op2 == 0  because abs(op1) > 1.  */
 		    mpz_set_si (result->value.integer, 0);
+		    if (warn_integer_division)
+		      gfc_warning_now (OPT_Winteger_division, "Negative "
+				       "exponent of integer has zero "
+				       "result at %L", &result->where);
 		  }
-		else if (gfc_extract_int (op2, &power) != NULL)
+		else if (gfc_extract_int (op2, &power))
 		  {
 		    /* If op2 doesn't fit in an int, the exponentiation will
 		       overflow, because op2 > 0 and abs(op1) > 1.  */
@@ -976,7 +980,7 @@ static arith
 gfc_arith_concat (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
-  int len;
+  size_t len;
 
   gcc_assert (op1->ts.kind == op2->ts.kind);
   result = gfc_get_constant_expr (BT_CHARACTER, op1->ts.kind,
@@ -1085,7 +1089,7 @@ compare_complex (gfc_expr *op1, gfc_expr *op2)
 int
 gfc_compare_string (gfc_expr *a, gfc_expr *b)
 {
-  int len, alen, blen, i;
+  size_t len, alen, blen, i;
   gfc_char_t ac, bc;
 
   alen = a->value.character.length;
@@ -1112,7 +1116,7 @@ gfc_compare_string (gfc_expr *a, gfc_expr *b)
 int
 gfc_compare_with_Cstring (gfc_expr *a, const char *b, bool case_sensitive)
 {
-  int len, alen, blen, i;
+  size_t len, alen, blen, i;
   gfc_char_t ac, bc;
 
   alen = a->value.character.length;
@@ -1599,8 +1603,12 @@ eval_intrinsic (gfc_intrinsic_op op,
   if (rc != ARITH_OK)
     {
       gfc_error (gfc_arith_error (rc), &op1->where);
+      if (rc == ARITH_OVERFLOW)
+	goto done;
       return NULL;
     }
+
+done:
 
   gfc_free_expr (op1);
   gfc_free_expr (op2);
@@ -1997,13 +2005,14 @@ wprecision_real_real (mpfr_t r, int from_kind, int to_kind)
 static bool
 wprecision_int_real (mpz_t n, mpfr_t r)
 {
+  bool ret;
   mpz_t i;
   mpz_init (i);
   mpfr_get_z (i, r, GFC_RND_MODE);
   mpz_sub (i, i, n);
-  return mpz_cmp_si (i, 0) != 0;
+  ret = mpz_cmp_si (i, 0) != 0;
   mpz_clear (i);
-
+  return ret;
 }
 
 /* Convert integers to integers.  */
@@ -2072,11 +2081,11 @@ gfc_int2real (gfc_expr *src, int kind)
 
   if (warn_conversion
       && wprecision_int_real (src->value.integer, result->value.real))
-    gfc_warning_now (OPT_Wconversion, "Change of value in conversion "
-		     "from %qs to %qs at %L",
-		     gfc_typename (&src->ts),
-		     gfc_typename (&result->ts),
-		     &src->where);
+    gfc_warning (OPT_Wconversion, "Change of value in conversion "
+		 "from %qs to %qs at %L",
+		 gfc_typename (&src->ts),
+		 gfc_typename (&result->ts),
+		 &src->where);
 
   return result;
 }
@@ -2369,10 +2378,10 @@ gfc_complex2real (gfc_expr *src, int kind)
       /* See if we discarded an imaginary part.  */
       if (mpfr_cmp_si (mpc_imagref (src->value.complex), 0) != 0)
 	{
-	  gfc_warning_now (w, "Non-zero imaginary part discarded "
-			   "in conversion from %qs to %qs at %L",
-			   gfc_typename(&src->ts), gfc_typename (&result->ts),
-			   &src->where);
+	  gfc_warning (w, "Non-zero imaginary part discarded "
+		       "in conversion from %qs to %qs at %L",
+		       gfc_typename(&src->ts), gfc_typename (&result->ts),
+		       &src->where);
 	  did_warn = true;
 	}
 
@@ -2509,6 +2518,18 @@ gfc_int2log (gfc_expr *src, int kind)
   return result;
 }
 
+/* Convert character to character. We only use wide strings internally,
+   so we only set the kind.  */
+
+gfc_expr *
+gfc_character2character (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_copy_expr (src);
+  result->ts.kind = kind;
+
+  return result;
+}
 
 /* Helper function to set the representation in a Hollerith conversion.  
    This assumes that the ts.type and ts.kind of the result have already
@@ -2599,6 +2620,7 @@ gfc_hollerith2character (gfc_expr *src, int kind)
   result = gfc_copy_expr (src);
   result->ts.type = BT_CHARACTER;
   result->ts.kind = kind;
+  result->ts.u.pad = 0;
 
   result->value.character.length = result->representation.length;
   result->value.character.string

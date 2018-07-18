@@ -58,7 +58,7 @@ PROGRAM test
 ! Straight comparisons fail at any level of optimization.
 
   write(line, "(A7)") chairman%name
-  if (trim (line) .ne. "Charlie") call abort
+  if (trim (line) .ne. "Charlie") STOP 1
   line = "          "
   write(line, "(I4)") chairman%age
   if (trim (line) .eq. "   62") print *, trim(line)

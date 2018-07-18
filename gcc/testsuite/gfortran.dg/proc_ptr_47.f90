@@ -14,19 +14,15 @@
 
   res = my_AA%funct ()
 
-  if (res%i .ne. 3) call abort
-  if (.not.associated (res%funct)) call abort
-  if (my_AA%i .ne. 4) call abort
-  if (associated (my_AA%funct)) call abort
+  if (res%i .ne. 3) STOP 1
+  if (.not.associated (res%funct)) STOP 2
+  if (my_AA%i .ne. 4) STOP 3
+  if (associated (my_AA%funct)) STOP 4
 
 contains
   function foo(A)
-    class(AA), allocatable :: A
+    class(AA) :: A
     type(AA) foo
-
-    if (.not.allocated (A)) then
-      allocate (A, source = AA (2, foo))
-    endif
 
     select type (A)
       type is (AA)

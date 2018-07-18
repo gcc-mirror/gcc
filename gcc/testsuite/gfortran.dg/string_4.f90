@@ -12,7 +12,7 @@
       character*32 ddname,stmtfnt1
       stmtfnt1(x)=   'h810 e=0.01         '
       ddname=stmtfnt1(0.d0)
-      if (ddname /= "h810 e=0.01") call abort()
+      if (ddname /= "h810 e=0.01") STOP 1
       END
 
       SUBROUTINE TEST2()
@@ -21,7 +21,7 @@
       real :: x
       stmtfnt2(x)=   'x'
       ddname=stmtfnt2(0.0)
-      if(ddname /= 'x') call abort()
+      if(ddname /= 'x') STOP 2
       END
 
       SUBROUTINE TEST3()
@@ -30,7 +30,7 @@
       character*2 :: c
       dname(c) = 'h810 e=0.01         '
       ddname=dname("w ")
-      if (ddname /= "h810 e=0.01") call abort()
+      if (ddname /= "h810 e=0.01") STOP 3
       END
 
       SUBROUTINE TEST4()
@@ -40,8 +40,8 @@
       dname(c) = 'h810 e=0.01         '
       c = 'aa'
       ddname=dname("w ")
-      if (ddname /= "h810 e=0.01") call abort()
-      if (c /= "aa") call abort()
+      if (ddname /= "h810 e=0.01") STOP 4
+      if (c /= "aa") STOP 5
       END
 
       call test1()

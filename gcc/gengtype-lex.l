@@ -1,6 +1,6 @@
 /* -*- indented-text -*- */
 /* Process source files and output type information.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -159,7 +159,7 @@ CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend|static
 }
 
 "..."				{ return ELLIPSIS; }
-[(){},*:<>;=%|+\!\?\.-]		{ return yytext[0]; }
+[(){},*:<>;=%/|+\!\?\.-]	{ return yytext[0]; }
 
    /* ignore pp-directives */
 ^{HWS}"#"{HWS}[a-z_]+[^\n]*\n   {lexer_line.line++;}

@@ -8,4 +8,4 @@ main (void)
 
   z = __complex__ (1.90000007326203904e+19, 0.0);   /* { dg-error "__complex__" } */
   z = __complex__ (1.0e+0, 0.0) / z;   /* { dg-error "__complex__" "Complex" } */
-  /* { dg-error "at end of input" "end of input" { target *-*-* } 10 } */
+  /* { dg-error "at end of input" "end of input" { target *-*-* } .-1 } */

@@ -19,7 +19,7 @@ END MODULE MODS
   integer, dimension(N) :: Y = B
 
 ! Check the simplifed expressions against the library
-  if (any (ISHFTC(3, Y, 5) /= C)) call abort ()
-  if (any (ISHFTC(X, 3, 5) /= D)) call abort ()
-  if (any (ISHFTC(X, Y, 5) /= E)) call abort ()
+  if (any (ISHFTC(3, Y, 5) /= C)) STOP 1
+  if (any (ISHFTC(X, 3, 5) /= D)) STOP 2
+  if (any (ISHFTC(X, Y, 5) /= E)) STOP 3
 end

@@ -21,7 +21,7 @@
 
 /* The behavior of "defined" when it comes from a macro expansion is
    now documented.  */
-#if is_Z_defined
+#if is_Z_defined                /* { dg-error "may not be portable" } */
 #error Macro expanding into defined operator test 1
 #endif
 
@@ -31,7 +31,7 @@
 #error Z is defined
 #endif
 
-#if !is_Z_defined
+#if !is_Z_defined               /* { dg-error "may not be portable" } */
 #error Macro expanding into defined operator test 2
 #endif
 
@@ -53,7 +53,7 @@
 
 /* The behavior of "defined" when it comes from a macro expansion is
    now documented.  */
-#if is_Z_defined
+#if is_Z_defined                /* { dg-error "may not be portable" } */
 #error Macro expanding into defined operator test 1
 #endif
 
@@ -63,23 +63,23 @@
 #error Z is defined
 #endif
 
-#if !is_Z_defined
+#if !is_Z_defined               /* { dg-error "may not be portable" } */
 #error Macro expanding into defined operator test 2
 #endif
 
 /* Use of defined in different contexts.  */
 
 #define bad1 defined
-#if !bad1 Z			/* { dg-warning "may not be portable" } */
+#if !bad1 Z			/* { dg-error "may not be portable" } */
 #error Z is defined
 #endif 
 
-#if !bad1 (Z)			/* { dg-warning "may not be portable" } */
+#if !bad1 (Z)			/* { dg-error "may not be portable" } */
 #error Z is defined
 #endif 
 
 #define bad2 defined (Z
-#if !bad2)			/* { dg-warning "may not be portable" } */
+#if !bad2)			/* { dg-error "may not be portable" } */
 #error Z is defined
 #endif 
 

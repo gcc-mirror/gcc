@@ -18,7 +18,7 @@ void foo()
   for (i = 0; i < 10; ++i)
     {
       bad2: ;			// { dg-error "jump" }
-                                // { dg-message "enters OpenMP" "" { target *-*-* } 20 }
+                                // { dg-message "enters OpenMP" "" { target *-*-* } .-1 }
     }
 
   #pragma omp for

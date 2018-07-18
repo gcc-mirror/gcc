@@ -1,5 +1,5 @@
 /* Generic implementation of the CSHIFT intrinsic
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Feng Wang <wf_cs@yahoo.com>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -24,8 +24,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 
 static void
@@ -63,7 +61,7 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
       int i;
 
       ret->offset = 0;
-      ret->dtype = array->dtype;
+      GFC_DTYPE_COPY(ret,array);
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
 	  index_type ub, str;
@@ -97,7 +95,6 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
     {
     case GFC_DTYPE_LOGICAL_1:
     case GFC_DTYPE_INTEGER_1:
-    case GFC_DTYPE_DERIVED_1:
       cshift0_i1 ((gfc_array_i1 *)ret, (gfc_array_i1 *) array, shift, which);
       return;
 

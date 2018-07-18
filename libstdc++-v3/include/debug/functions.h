@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,9 +40,6 @@
 
 namespace __gnu_debug
 {
-  template<typename _Iterator, typename _Sequence>
-    class _Safe_iterator;
-
   template<typename _Sequence>
     struct _Insert_range_from_self_is_safe
     { enum { __value = 0 }; };
@@ -87,10 +84,13 @@ namespace __gnu_debug
   template<typename _InputIterator>
     inline _InputIterator
     __check_valid_range(const _InputIterator& __first,
-			const _InputIterator& __last
-			__attribute__((__unused__)))
+			const _InputIterator& __last,
+			const char* __file,
+			unsigned int __line,
+			const char* __function)
     {
-      __glibcxx_check_valid_range(__first, __last);
+      __glibcxx_check_valid_range_at(__first, __last,
+				     __file, __line, __function);
       return __first;
     }
 
@@ -209,29 +209,6 @@ namespace __gnu_debug
     {
       typedef typename std::__is_integer<_InputIterator>::__type _Integral;
       return __foreign_iterator_aux(__it, __other, __other_end, _Integral());
-    }
-
-  /** Checks that __s is non-NULL or __n == 0, and then returns __s. */
-  template<typename _CharT, typename _Integer>
-    inline const _CharT*
-    __check_string(const _CharT* __s,
-		   const _Integer& __n __attribute__((__unused__)))
-    {
-#ifdef _GLIBCXX_DEBUG_PEDANTIC
-      __glibcxx_assert(__s != 0 || __n == 0);
-#endif
-      return __s;
-    }
-
-  /** Checks that __s is non-NULL and then returns __s. */
-  template<typename _CharT>
-    inline const _CharT*
-    __check_string(const _CharT* __s)
-    {
-#ifdef _GLIBCXX_DEBUG_PEDANTIC
-      __glibcxx_assert(__s != 0);
-#endif
-      return __s;
     }
 
   // Can't check if an input iterator sequence is sorted, because we

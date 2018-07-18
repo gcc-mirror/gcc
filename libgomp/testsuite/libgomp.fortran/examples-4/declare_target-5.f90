@@ -21,7 +21,7 @@ real function accum () result (tmp)
   real :: tmp1
   integer :: i
   tmp = 0.0e0
-  !$omp target
+  !$omp target map(tofrom: tmp)
     !$omp parallel do private(tmp1) reduction(+:tmp)
     do i = 1, N
       tmp1 = 0.0e0
@@ -68,7 +68,7 @@ subroutine check (a, b)
   else
     err = (a - b) / b
   end if
-  if (err > EPS .or. err < -EPS) call abort
+  if (err > EPS .or. err < -EPS) STOP 1
 end subroutine
 
 program e_53_5

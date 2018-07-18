@@ -1,6 +1,6 @@
 /* Check statements that are eliminated by inlining.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-inline-details -fno-early-inlining -fno-partial-inlining -fno-ipa-cp"  } */
+/* { dg-options "-O2 -fdump-ipa-fnsummary-details -fno-early-inlining -fno-partial-inlining -fno-ipa-cp"  } */
 
 struct a {int a,b,c,d,e;};
 void t(int);
@@ -34,5 +34,5 @@ accessreference (struct a *a)
     /* Will be eliminated by inlining */
 }
 
-/* { dg-final { scan-ipa-dump-times "Will be eliminated" 4 "inline" { xfail { { hppa*-*-* } && { ! lp64 } } } } } */
-/* { dg-final { scan-ipa-dump-times "50. will be eliminated" 1 "inline"  } } */
+/* { dg-final { scan-ipa-dump-times "Will be eliminated" 4 "fnsummary" { xfail { { hppa*-*-* } && { ! lp64 } } } } } */
+/* { dg-final { scan-ipa-dump-times "50. will be eliminated" 1 "fnsummary"  } } */

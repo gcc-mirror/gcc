@@ -13,14 +13,14 @@ write(99,nml=nm,decimal="comma")
 a = 5.55
 rewind(99)
 read(99,nml=nm,decimal="comma")
-if (any (a /= [ (i*1.3, i=1,10) ])) call abort
+if (any (a /= [ (i*1.3, i=1,10) ])) STOP 1
 close(99, status="delete")
 
 c = (3.123,4.456)
 write(complex,*,decimal="comma") c
-if (complex.ne."             (3,12299991;4,45599985)") call abort
+if (complex.ne."             (3,12299991;4,45599985)") STOP 2
 c = (0.0, 0.0)
 read(complex,*,decimal="comma") c
-if (complex.ne."             (3,12299991;4,45599985)") call abort
+if (complex.ne."             (3,12299991;4,45599985)") STOP 3
 
 end

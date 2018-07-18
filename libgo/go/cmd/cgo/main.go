@@ -17,13 +17,16 @@ import (
 	"go/ast"
 	"go/printer"
 	"go/token"
-	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
 	"sort"
 	"strings"
+
+	"cmd/internal/edit"
+	"cmd/internal/objabi"
 )
 
 // A Package collects information about the package we're going to write.
@@ -42,10 +45,6 @@ type Package struct {
 	GoFiles     []string // list of Go files
 	GccFiles    []string // list of gcc output files
 	Preamble    string   // collected preamble for _cgo_export.h
-
-	// See unsafeCheckPointerName.
-	CgoChecks         []string
-	DeferredCgoChecks []string
 }
 
 // A File collects information about a single Go input file.
@@ -58,6 +57,12 @@ type File struct {
 	Calls    []*Call             // all calls to C.xxx in AST
 	ExpFunc  []*ExpFunc          // exported functions for this file
 	Name     map[string]*Name    // map from Go name to Name
+	NamePos  map[*Name]token.Pos // map from Name to position of the first reference
+	Edit     *edit.Buffer
+}
+
+func (f *File) offset(p token.Pos) int {
+	return fset.Position(p).Offset
 }
 
 func nameKeys(m map[string]*Name) []string {
@@ -79,7 +84,7 @@ type Call struct {
 type Ref struct {
 	Name    *Name
 	Expr    *ast.Expr
-	Context string // "type", "expr", "call", or "call2"
+	Context astContext
 }
 
 func (r *Ref) Pos() token.Pos {
@@ -92,7 +97,7 @@ type Name struct {
 	Mangle   string // name used in generated Go
 	C        string // name used in C
 	Define   string // #define expansion
-	Kind     string // "const", "type", "var", "fpvar", "func", "not-type"
+	Kind     string // "iconst", "fconst", "sconst", "type", "var", "fpvar", "func", "macro", "not-type"
 	Type     *Type  // the type of xxx
 	FuncType *FuncType
 	AddError bool
@@ -104,7 +109,12 @@ func (n *Name) IsVar() bool {
 	return n.Kind == "var" || n.Kind == "fpvar"
 }
 
-// A ExpFunc is an exported function, callable from C.
+// IsConst reports whether Kind is either "iconst", "fconst" or "sconst"
+func (n *Name) IsConst() bool {
+	return strings.HasSuffix(n.Kind, "const")
+}
+
+// An ExpFunc is an exported function, callable from C.
 // Such functions are identified in the Go input file
 // by doc comments containing the line //export ExpName
 type ExpFunc struct {
@@ -143,47 +153,55 @@ func usage() {
 }
 
 var ptrSizeMap = map[string]int64{
-	"386":      4,
-	"alpha":    8,
-	"amd64":    8,
-	"arm":      4,
-	"arm64":    8,
-	"m68k":     4,
-	"mipso32":  4,
-	"mipsn32":  4,
-	"mipso64":  8,
-	"mipsn64":  8,
-	"mips64":   8,
-	"mips64le": 8,
-	"ppc":      4,
-	"ppc64":    8,
-	"ppc64le":  8,
-	"s390":     4,
-	"s390x":    8,
-	"sparc":    4,
-	"sparc64":  8,
+	"386":         4,
+	"alpha":       8,
+	"amd64":       8,
+	"arm":         4,
+	"arm64":       8,
+	"m68k":        4,
+	"mips":        4,
+	"mipsle":      4,
+	"mips64":      8,
+	"mips64le":    8,
+	"mips64p32":   4,
+	"mips64p32le": 4,
+	"nios2":       4,
+	"ppc":         4,
+	"ppc64":       8,
+	"ppc64le":     8,
+	"riscv64":     8,
+	"s390":        4,
+	"s390x":       8,
+	"sh":          4,
+	"shbe":        4,
+	"sparc":       4,
+	"sparc64":     8,
 }
 
 var intSizeMap = map[string]int64{
-	"386":      4,
-	"alpha":    8,
-	"amd64":    8,
-	"arm":      4,
-	"arm64":    8,
-	"m68k":     4,
-	"mipso32":  4,
-	"mipsn32":  4,
-	"mipso64":  8,
-	"mipsn64":  8,
-	"mips64":   8,
-	"mips64le": 8,
-	"ppc":      4,
-	"ppc64":    8,
-	"ppc64le":  8,
-	"s390":     4,
-	"s390x":    8,
-	"sparc":    4,
-	"sparc64":  8,
+	"386":         4,
+	"alpha":       8,
+	"amd64":       8,
+	"arm":         4,
+	"arm64":       8,
+	"m68k":        4,
+	"mips":        4,
+	"mipsle":      4,
+	"mips64":      8,
+	"mips64le":    8,
+	"mips64p32":   8,
+	"mips64p32le": 8,
+	"nios2":       4,
+	"ppc":         4,
+	"ppc64":       8,
+	"ppc64le":     8,
+	"riscv64":     8,
+	"s390":        4,
+	"s390x":       8,
+	"sh":          4,
+	"shbe":        4,
+	"sparc":       4,
+	"sparc64":     8,
 }
 
 var cPrefix string
@@ -200,6 +218,7 @@ var dynlinker = flag.Bool("dynlinker", false, "record dynamic linker information
 // constant values used in the host's C libraries and system calls.
 var godefs = flag.Bool("godefs", false, "for bootstrap: write Go definitions for C file to standard output")
 
+var srcDir = flag.String("srcdir", "", "source directory")
 var objDir = flag.String("objdir", "", "object directory")
 var importPath = flag.String("importpath", "", "import path of package being built (for comments in generated files)")
 var exportHeader = flag.String("exportheader", "", "where to write export header if any exported functions")
@@ -212,6 +231,7 @@ var importSyscall = flag.Bool("import_syscall", true, "import syscall in generat
 var goarch, goos string
 
 func main() {
+	objabi.AddVersionFlag() // -V
 	flag.Usage = usage
 	flag.Parse()
 
@@ -277,23 +297,28 @@ func main() {
 	// concern is other cgo wrappers for the same functions.
 	// Use the beginning of the md5 of the input to disambiguate.
 	h := md5.New()
-	for _, input := range goFiles {
-		f, err := os.Open(input)
+	fs := make([]*File, len(goFiles))
+	for i, input := range goFiles {
+		if *srcDir != "" {
+			input = filepath.Join(*srcDir, input)
+		}
+
+		b, err := ioutil.ReadFile(input)
 		if err != nil {
 			fatalf("%s", err)
 		}
-		io.Copy(h, f)
-		f.Close()
-	}
-	cPrefix = fmt.Sprintf("_%x", h.Sum(nil)[0:6])
+		if _, err = h.Write(b); err != nil {
+			fatalf("%s", err)
+		}
 
-	fs := make([]*File, len(goFiles))
-	for i, input := range goFiles {
 		f := new(File)
-		f.ReadGo(input)
+		f.Edit = edit.NewBuffer(b)
+		f.ParseGo(input, b)
 		f.DiscardCgoDirectives()
 		fs[i] = f
 	}
+
+	cPrefix = fmt.Sprintf("_%x", h.Sum(nil)[0:6])
 
 	if *objDir == "" {
 		// make sure that _obj directory exists, so that we can write
@@ -308,11 +333,13 @@ func main() {
 		p.Translate(f)
 		for _, cref := range f.Ref {
 			switch cref.Context {
-			case "call", "call2":
+			case ctxCall, ctxCall2:
 				if cref.Name.Kind != "type" {
 					break
 				}
+				old := *cref.Expr
 				*cref.Expr = cref.Name.Type.Go
+				f.Edit.Replace(f.offset(old.Pos()), f.offset(old.End()), gofmt(cref.Name.Type.Go))
 			}
 		}
 		if nerrors > 0 {

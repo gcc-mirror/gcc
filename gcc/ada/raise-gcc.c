@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2014, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2018, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -33,16 +33,30 @@
    handling.  */
 
 #ifndef IN_RTS
-#error "RTS unit only"
+  /* For gnat1/gnatbind compilation: use host headers.  */
+# include "config.h"
+# include "system.h"
+  /* Don't use fancy_abort.  */
+# undef abort
+#else
+# ifndef CERT
+#  include "tconfig.h"
+#  include "tsystem.h"
+# else
+#  define ATTRIBUTE_UNUSED __attribute__((unused))
+#  define HAVE_GETIPINFO 1
+# endif
 #endif
 
-#include "tconfig.h"
-#include "tsystem.h"
-
 #include <stdarg.h>
+
+#ifdef __cplusplus
+# include <cstdlib>
+#else
 typedef char bool;
 # define true 1
 # define false 0
+#endif
 
 #include "raise.h"
 
@@ -65,7 +79,23 @@ typedef char bool;
    (SJLJ or DWARF). We need a consistently named interface to import from
    a-except, so wrappers are defined here.  */
 
-#include "unwind.h"
+#ifndef IN_RTS
+  /* For gnat1/gnatbind compilation: cannot use unwind.h, as it is for the
+     target. So mimic configure...
+     This is a hack ???, the real fix is to link gnat1/gnatbind with the
+     runtime of the build compiler.  */
+# ifdef EH_MECHANISM_arm
+#   include "config/arm/unwind-arm.h"
+# else
+#   include "unwind-generic.h"
+# endif
+#else
+# include "unwind.h"
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct _Unwind_Context _Unwind_Context;
 typedef struct _Unwind_Exception _Unwind_Exception;
@@ -74,13 +104,25 @@ _Unwind_Reason_Code
 __gnat_Unwind_RaiseException (_Unwind_Exception *);
 
 _Unwind_Reason_Code
-__gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
+__gnat_Unwind_ForcedUnwind (_Unwind_Exception *, _Unwind_Stop_Fn, void *);
 
-extern struct Exception_Occurrence *__gnat_setup_current_excep
- (_Unwind_Exception *);
+extern struct Exception_Occurrence *
+__gnat_setup_current_excep (_Unwind_Exception *, _Unwind_Action);
+
 extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 
+#ifdef CERT
+/* Called in case of error during propagation.  */
+extern void __gnat_raise_abort (void) __attribute__ ((noreturn));
+#define abort() __gnat_raise_abort()
+#endif
+
 #include "unwind-pe.h"
+
+#ifdef __ARM_EABI_UNWINDER__
+/* for memcmp */
+#include <string.h>
+#endif
 
 /* The known and handled exception classes.  */
 
@@ -198,7 +240,7 @@ db_indent (int requests)
 }
 
 static void ATTRIBUTE_PRINTF_2
-db (int db_code, char * msg_format, ...)
+db (int db_code, const char * msg_format, ...)
 {
   if (db_accepted_codes () & db_code)
     {
@@ -805,8 +847,8 @@ get_call_site_action_for (_Unwind_Ptr ip,
 
       db (DB_CSITE,
 	  "c_site @ %p (+%p), len = %p, lpad @ %p (+%p)\n",
-	  (void *)region->base + cs_start, (void *)cs_start, (void *)cs_len,
-	  (void *)region->lp_base + cs_lp, (void *)cs_lp);
+	  (char *)region->base + cs_start, (void *)cs_start, (void *)cs_len,
+	  (char *)region->lp_base + cs_lp, (void *)cs_lp);
 
       /* The table is sorted, so if we've passed the IP, stop.  */
       if (ip < region->base + cs_start)
@@ -868,7 +910,8 @@ extern struct Exception_Data Non_Ada_Error;
 /* Return true iff the exception class of EXCEPT is EC.  */
 
 static int
-exception_class_eq (const _GNAT_Exception *except, _Unwind_Exception_Class ec)
+exception_class_eq (const _GNAT_Exception *except,
+		    const _Unwind_Exception_Class ec)
 {
 #ifdef __ARM_EABI_UNWINDER__
   return memcmp (except->common.exception_class, ec, 8) == 0;
@@ -928,9 +971,13 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception *propagated_exception)
   /* All others and others choice match any foreign exception.  */
   if (choice == GNAT_ALL_OTHERS
       || choice == GNAT_OTHERS
-      || choice == (_Unwind_Ptr) &Foreign_Exception)
+#ifndef CERT
+      || choice == (_Unwind_Ptr) &Foreign_Exception
+#endif
+      )
     return handler;
 
+#ifndef CERT
   /* C++ exception occurrences.  */
   if (exception_class_eq (propagated_exception, CXX_EXCEPTION_CLASS)
       && Language_For (choice) == 'C')
@@ -947,6 +994,7 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception *propagated_exception)
       if (choice_typeinfo == except_typeinfo)
 	return handler;
     }
+#endif
 
   return nothing;
 }
@@ -1172,16 +1220,20 @@ personality_body (_Unwind_Action uw_phases,
 	}
       else
 	{
-	  struct Exception_Occurrence *excep;
-
+#ifndef CERT
 	  /* Trigger the appropriate notification routines before the second
-	     phase starts, which ensures the stack is still intact.
-             First, setup the Ada occurrence.  */
-          excep = __gnat_setup_current_excep (uw_exception);
+	     phase starts, when the stack is still intact.  First install what
+	     needs to be installed in the current exception buffer and fetch
+	     the Ada occurrence pointer to use.  */
+
+	  struct Exception_Occurrence *excep
+	    = __gnat_setup_current_excep (uw_exception, uw_phases);
+
 	  if (action.kind == unhandler)
 	    __gnat_notify_unhandled_exception (excep);
 	  else
 	    __gnat_notify_handled_exception (excep);
+#endif
 
 	  return _URC_HANDLER_FOUND;
 	}
@@ -1195,10 +1247,12 @@ personality_body (_Unwind_Action uw_phases,
   setup_to_install
     (uw_context, uw_exception, action.landing_pad, action.ttype_filter);
 
-  /* Write current exception, so that it can be retrieved from Ada.  It was
-     already done during phase 1 (just above), but in between, one or several
-     exceptions may have been raised (in cleanup handlers).  */
-  __gnat_setup_current_excep (uw_exception);
+#ifndef CERT
+  /* Write current exception so that it can be retrieved from Ada.  It was
+     already done during phase 1, but one or several exceptions may have been
+     raised in cleanup handlers in between.  */
+  __gnat_setup_current_excep (uw_exception, uw_phases);
+#endif
 
   return _URC_INSTALL_CONTEXT;
 }
@@ -1338,6 +1392,7 @@ PERSONALITY_FUNCTION (_Unwind_State state,
 /* Callback routine called by Unwind_ForcedUnwind to execute all the cleanup
    before exiting the task.  */
 
+#ifndef CERT
 _Unwind_Reason_Code
 __gnat_cleanupunwind_handler (int version ATTRIBUTE_UNUSED,
 			      _Unwind_Action phases,
@@ -1362,6 +1417,7 @@ __gnat_cleanupunwind_handler (int version ATTRIBUTE_UNUSED,
      and this hook will gain control again.  */
   return _URC_NO_REASON;
 }
+#endif
 
 /* Define the consistently named wrappers imported by Propagate_Exception.  */
 
@@ -1377,7 +1433,7 @@ __gnat_Unwind_RaiseException (_Unwind_Exception *e)
 
 _Unwind_Reason_Code
 __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e ATTRIBUTE_UNUSED,
-			    void *handler ATTRIBUTE_UNUSED,
+			    _Unwind_Stop_Fn handler ATTRIBUTE_UNUSED,
 			    void *argument ATTRIBUTE_UNUSED)
 {
 #ifdef __USING_SJLJ_EXCEPTIONS__
@@ -1404,9 +1460,6 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e ATTRIBUTE_UNUSED,
        (STATUS_USER_DEFINED | ((TYPE) << 24) | GCC_MAGIC)
 #define STATUS_GCC_THROW		GCC_EXCEPTION (0)
 
-EXCEPTION_DISPOSITION __gnat_SEH_error_handler
- (struct _EXCEPTION_RECORD*, void*, struct _CONTEXT*, void*);
-
 struct Exception_Data *
 __gnat_map_SEH (EXCEPTION_RECORD* ExceptionRecord, const char **msg);
 
@@ -1428,22 +1481,30 @@ __gnat_create_machine_occurrence_from_signal_handler (Exception_Id,
 /* Modify the IP value saved in the machine frame.  This is really a kludge,
    that will be removed if we could propagate the Windows exception (and not
    the GCC one).
+
    What is very wrong is that the Windows unwinder will try to decode the
-   instruction at IP, which isn't valid anymore after the adjust.  */
+   instruction at IP, which isn't valid anymore after the adjustment.  */
 
 static void
 __gnat_adjust_context (unsigned char *unw, ULONG64 rsp)
 {
   unsigned int len;
 
-  /* Version = 1, no flags, no prologue.  */
-  if (unw[0] != 1 || unw[1] != 0)
+  /* Version 1 or 2.  */
+  if (unw[0] != 1 && unw[0] != 2)
+    return;
+  /* No flags, no prologue.  */
+  if (unw[1] != 0)
     return;
   len = unw[2];
-  /* No frame pointer.  */
+  /* No frame.  */
   if (unw[3] != 0)
     return;
-  unw += 4;
+  /* ??? Skip the first 2 undocumented opcodes for version 2.  */
+  if (unw[0] == 2)
+    unw += 8;
+  else
+    unw += 4;
   while (len > 0)
     {
       /* Offset in prologue = 0.  */
@@ -1488,9 +1549,7 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 			 PCONTEXT ms_orig_context,
 			 PDISPATCHER_CONTEXT ms_disp)
 {
-  /* Possibly transform run-time errors into Ada exceptions.  As a small
-     optimization, we call __gnat_SEH_error_handler only on non-user
-     exceptions.  */
+  /* Possibly transform run-time errors into Ada exceptions.  */
   if (!(ms_exc->ExceptionCode & STATUS_USER_DEFINED))
     {
       struct Exception_Data *exception;
@@ -1504,13 +1563,21 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 		       + ms_disp->FunctionEntry->EndAddress))
 	{
 	  /* This is a fault in this function.  We need to adjust the return
-	     address before raising the GCC exception.  */
+	     address before raising the GCC exception.  In order to do that,
+	     we need to locate the machine frame that has been pushed onto
+	     the stack in response to the hardware exception, so we will do
+	     a private unwinding from here, i.e. the frame of the personality
+	     routine, up to the frame immediately following the frame of this
+	     function.  This frame corresponds to a dummy prologue which is
+	     never actually executed but instead appears before the real entry
+	     point of an interrupt routine and exists only to provide a place
+	     to simulate the push of a machine frame.  */
 	  CONTEXT context;
 	  PRUNTIME_FUNCTION mf_func = NULL;
 	  ULONG64 mf_imagebase;
 	  ULONG64 mf_rsp = 0;
 
-	  /* Get the context.  */
+	  /* Get the current context.  */
 	  RtlCaptureContext (&context);
 
 	  while (1)
@@ -1521,26 +1588,30 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 	      ULONG64 EstablisherFrame;
 
 	      /* Get function metadata.  */
-	      RuntimeFunction = RtlLookupFunctionEntry
-		(context.Rip, &ImageBase, ms_disp->HistoryTable);
+	      RuntimeFunction
+		= RtlLookupFunctionEntry (context.Rip, &ImageBase,
+					  ms_disp->HistoryTable);
+
+	      /* Stop once we reached the frame of this function.  */
 	      if (RuntimeFunction == ms_disp->FunctionEntry)
 		break;
+
 	      mf_func = RuntimeFunction;
 	      mf_imagebase = ImageBase;
 	      mf_rsp = context.Rsp;
 
-	      if (!RuntimeFunction)
-		{
-		  /* In case of failure, assume this is a leaf function.  */
-		  context.Rip = *(ULONG64 *) context.Rsp;
-		  context.Rsp += 8;
-		}
-	      else
+	      if (RuntimeFunction)
 		{
 		  /* Unwind.  */
 		  RtlVirtualUnwind (0, ImageBase, context.Rip, RuntimeFunction,
 				    &context, &HandlerData, &EstablisherFrame,
 				    NULL);
+		}
+	      else
+		{
+		  /* In case of failure, assume this is a leaf function.  */
+		  context.Rip = *(ULONG64 *) context.Rsp;
+		  context.Rsp += 8;
 		}
 
 	      /* 0 means bottom of the stack.  */
@@ -1550,6 +1621,8 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 		  break;
 		}
 	    }
+
+	  /* If we have found the machine frame, adjust the return address.  */
 	  if (mf_func != NULL)
 	    __gnat_adjust_context
 	      ((unsigned char *)(mf_imagebase + mf_func->UnwindData), mf_rsp);
@@ -1558,16 +1631,16 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
       exception = __gnat_map_SEH (ms_exc, &msg);
       if (exception != NULL)
 	{
-	  struct _Unwind_Exception *exc;
+	  /* Directly convert the system exception into a GCC one.
 
-	  /* Directly convert the system exception to a GCC one.
 	     This is really breaking the API, but is necessary for stack size
 	     reasons: the normal way is to call Raise_From_Signal_Handler,
-	     which build the exception and calls _Unwind_RaiseException, which
-	     unwinds the stack and will call this personality routine. But
-	     the Windows unwinder needs about 2KB of stack.  */
-	  exc = __gnat_create_machine_occurrence_from_signal_handler
-	    (exception, msg);
+	     which builds the exception and calls _Unwind_RaiseException,
+	     which unwinds the stack and will call this personality routine.
+	     But the Windows unwinder needs about 2KB of stack.  */
+	  struct _Unwind_Exception *exc
+	    = __gnat_create_machine_occurrence_from_signal_handler (exception,
+								    msg);
 	  memset (exc->private_, 0, sizeof (exc->private_));
 	  ms_exc->ExceptionCode = STATUS_GCC_THROW;
 	  ms_exc->NumberParameters = 1;
@@ -1576,9 +1649,11 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 
     }
 
-  return _GCC_specific_handler (ms_exc, this_frame, ms_orig_context,
-				ms_disp, __gnat_personality_imp);
+  return
+    _GCC_specific_handler (ms_exc, this_frame, ms_orig_context, ms_disp,
+			   __gnat_personality_imp);
 }
+
 #endif /* SEH */
 
 #if !defined (__USING_SJLJ_EXCEPTIONS__)
@@ -1586,4 +1661,8 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
    the offset to the C++ object.  */
 
 const int __gnat_unwind_exception_size = sizeof (_Unwind_Exception);
+#endif
+
+#ifdef __cplusplus
+}
 #endif

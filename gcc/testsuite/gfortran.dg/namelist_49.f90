@@ -14,6 +14,6 @@
       b = 0.0
       c = 0.0
       read(1,casedat)
-      if ((a.ne.1.0) .or. (b.ne.2.0) .or. (c.ne.3.0)) call abort
+      if ((a.ne.1.0) .or. (b.ne.2.0) .or. (c.ne.3.0)) STOP 1
       end
 

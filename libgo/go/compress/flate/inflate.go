@@ -10,6 +10,7 @@ package flate
 import (
 	"bufio"
 	"io"
+	mathbits "math/bits"
 	"strconv"
 	"sync"
 )
@@ -176,7 +177,7 @@ func (h *huffmanDecoder) init(bits []int) bool {
 		link := nextcode[huffmanChunkBits+1] >> 1
 		h.links = make([][]uint32, huffmanNumChunks-link)
 		for j := uint(link); j < huffmanNumChunks; j++ {
-			reverse := int(reverseByte[j>>8]) | int(reverseByte[j&0xff])<<8
+			reverse := int(mathbits.Reverse16(uint16(j)))
 			reverse >>= uint(16 - huffmanChunkBits)
 			off := j - uint(link)
 			if sanity && h.chunks[reverse] != 0 {
@@ -194,7 +195,7 @@ func (h *huffmanDecoder) init(bits []int) bool {
 		code := nextcode[n]
 		nextcode[n]++
 		chunk := uint32(i<<huffmanValueShift | n)
-		reverse := int(reverseByte[code>>8]) | int(reverseByte[code&0xff])<<8
+		reverse := int(mathbits.Reverse16(uint16(code)))
 		reverse >>= uint(16 - n)
 		if n <= huffmanChunkBits {
 			for off := reverse; off < len(h.chunks); off += 1 << uint(n) {
@@ -344,6 +345,9 @@ func (f *decompressor) Read(b []byte) (int, error) {
 			return 0, f.err
 		}
 		f.step(f)
+		if f.err != nil && len(f.toRead) == 0 {
+			f.toRead = f.dict.readFlush() // Flush what's left in case of error
+		}
 	}
 }
 
@@ -553,7 +557,7 @@ readLiteral:
 					return
 				}
 			}
-			dist = int(reverseByte[(f.b&0x1F)<<3])
+			dist = int(mathbits.Reverse8(uint8(f.b & 0x1F << 3)))
 			f.b >>= 5
 			f.nb -= 5
 		} else {

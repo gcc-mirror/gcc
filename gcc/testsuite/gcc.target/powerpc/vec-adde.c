@@ -1,5 +1,4 @@
-/* { dg-do run { target { powerpc64*-*-* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-do run { target { powerpc*-*-* && vsx_hw } } } */
 /* { dg-options "-mvsx -O3" } */
 
 /* Test that the vec_adde builtin works as expected.  */

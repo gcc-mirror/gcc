@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@ with Nlists;   use Nlists;
 with Sinfo;    use Sinfo;
 with Tree_IO;  use Tree_IO;
 
-with GNAT.HTable;           use GNAT.HTable;
+with GNAT.HTable;
 
 package body Aspects is
 
@@ -568,7 +568,10 @@ package body Aspects is
     Aspect_Linker_Section               => Aspect_Linker_Section,
     Aspect_Lock_Free                    => Aspect_Lock_Free,
     Aspect_Machine_Radix                => Aspect_Machine_Radix,
+    Aspect_Max_Entry_Queue_Depth        => Aspect_Max_Entry_Queue_Depth,
+    Aspect_Max_Queue_Length             => Aspect_Max_Queue_Length,
     Aspect_No_Elaboration_Code_All      => Aspect_No_Elaboration_Code_All,
+    Aspect_No_Inline                    => Aspect_No_Inline,
     Aspect_No_Return                    => Aspect_No_Return,
     Aspect_No_Tagged_Streams            => Aspect_No_Tagged_Streams,
     Aspect_Obsolescent                  => Aspect_Obsolescent,
@@ -598,6 +601,7 @@ package body Aspects is
     Aspect_Read                         => Aspect_Read,
     Aspect_Relative_Deadline            => Aspect_Relative_Deadline,
     Aspect_Scalar_Storage_Order         => Aspect_Scalar_Storage_Order,
+    Aspect_Secondary_Stack_Size         => Aspect_Secondary_Stack_Size,
     Aspect_Shared                       => Aspect_Atomic,
     Aspect_Shared_Passive               => Aspect_Shared_Passive,
     Aspect_Simple_Storage_Pool          => Aspect_Simple_Storage_Pool,

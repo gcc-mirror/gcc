@@ -35,7 +35,7 @@ __float128
 rintq (__float128 x)
 {
 	int64_t i0,j0,sx;
-	uint64_t i1;
+	uint64_t i1 __attribute__ ((unused));
 	__float128 w,t;
 	GET_FLT128_WORDS64(i0,i1,x);
 	sx = (((uint64_t)i0)>>63);

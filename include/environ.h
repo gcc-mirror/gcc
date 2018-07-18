@@ -1,5 +1,5 @@
 /* Declare the environ system variable.
-   Copyright (C) 2015 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -27,7 +27,9 @@ Boston, MA 02110-1301, USA.  */
 #     include <crt_externs.h>
 #     define environ (*_NSGetEnviron ())
 #  else
+#    ifndef environ
 extern char **environ;
+#    endif
 #  endif
 #  define HAVE_ENVIRON_DECL
 #endif

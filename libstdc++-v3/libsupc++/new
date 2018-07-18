@@ -1,6 +1,6 @@
 // The -*- C++ -*- dynamic memory management header.
 
-// Copyright (C) 1994-2016 Free Software Foundation, Inc.
+// Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 //
@@ -56,6 +56,11 @@ namespace std
   public:
     bad_alloc() throw() { }
 
+#if __cplusplus >= 201103L
+    bad_alloc(const bad_alloc&) = default;
+    bad_alloc& operator=(const bad_alloc&) = default;
+#endif
+
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_alloc() throw();
@@ -68,7 +73,7 @@ namespace std
   class bad_array_new_length : public bad_alloc
   {
   public:
-    bad_array_new_length() throw() { };
+    bad_array_new_length() throw() { }
 
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
@@ -175,6 +180,43 @@ inline void operator delete  (void*, void*) _GLIBCXX_USE_NOEXCEPT { }
 inline void operator delete[](void*, void*) _GLIBCXX_USE_NOEXCEPT { }
 //@}
 } // extern "C++"
+
+#if __cplusplus >= 201703L
+#if __GNUC__ >= 7
+#  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
+#elif defined __has_builtin
+// For non-GNU compilers:
+# if __has_builtin(__builtin_launder)
+#  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
+# endif
+#endif
+
+#ifdef _GLIBCXX_HAVE_BUILTIN_LAUNDER
+namespace std
+{
+#define __cpp_lib_launder 201606
+  /// Pointer optimization barrier [ptr.launder]
+  template<typename _Tp>
+    [[nodiscard]] constexpr _Tp*
+    launder(_Tp* __p) noexcept
+    { return __builtin_launder(__p); }
+
+  // The program is ill-formed if T is a function type or
+  // (possibly cv-qualified) void.
+
+  template<typename _Ret, typename... _Args _GLIBCXX_NOEXCEPT_PARM>
+    void launder(_Ret (*)(_Args...) _GLIBCXX_NOEXCEPT_QUAL) = delete;
+  template<typename _Ret, typename... _Args _GLIBCXX_NOEXCEPT_PARM>
+    void launder(_Ret (*)(_Args......) _GLIBCXX_NOEXCEPT_QUAL) = delete;
+
+  void launder(void*) = delete;
+  void launder(const void*) = delete;
+  void launder(volatile void*) = delete;
+  void launder(const volatile void*) = delete;
+}
+#endif // _GLIBCXX_HAVE_BUILTIN_LAUNDER
+#undef _GLIBCXX_HAVE_BUILTIN_LAUNDER
+#endif // C++17
 
 #pragma GCC visibility pop
 

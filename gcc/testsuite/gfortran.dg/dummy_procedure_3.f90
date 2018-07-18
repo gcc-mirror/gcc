@@ -18,8 +18,8 @@ program prog
   character(3) :: str
   integer :: i(3) = (/1,2,3/)
   str = p(i,mysize)
-  if (len(str) .ne. 3) call abort
-  if (str .ne. "BCD") call abort
+  if (len(str) .ne. 3) STOP 1
+  if (str .ne. "BCD") STOP 2
 contains
   function p(y,asz)
     implicit none

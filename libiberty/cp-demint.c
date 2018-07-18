@@ -1,5 +1,5 @@
 /* Demangler component interface functions.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
    This file is part of the libiberty library, which is part of GCC.
@@ -106,6 +106,7 @@ cplus_demangle_fill_component (struct demangle_component *p,
     case DEMANGLE_COMPONENT_CONST_THIS:
     case DEMANGLE_COMPONENT_POINTER:
     case DEMANGLE_COMPONENT_REFERENCE:
+    case DEMANGLE_COMPONENT_RVALUE_REFERENCE:
     case DEMANGLE_COMPONENT_COMPLEX:
     case DEMANGLE_COMPONENT_IMAGINARY:
     case DEMANGLE_COMPONENT_VENDOR_TYPE:
@@ -123,6 +124,7 @@ cplus_demangle_fill_component (struct demangle_component *p,
   p->type = type;
   p->u.s_binary.left = left;
   p->u.s_binary.right = right;
+  p->d_printing = 0;
 
   return 1;
 }
@@ -146,6 +148,7 @@ cplus_demangle_fill_builtin_type (struct demangle_component *p,
 	{
 	  p->type = DEMANGLE_COMPONENT_BUILTIN_TYPE;
 	  p->u.s_builtin.type = &cplus_demangle_builtin_types[i];
+	  p->d_printing = 0;
 	  return 1;
 	}
     }
@@ -172,6 +175,7 @@ cplus_demangle_fill_operator (struct demangle_component *p,
 	{
 	  p->type = DEMANGLE_COMPONENT_OPERATOR;
 	  p->u.s_operator.op = &cplus_demangle_operators[i];
+	  p->d_printing = 0;
 	  return 1;
 	}
     }

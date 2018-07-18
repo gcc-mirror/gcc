@@ -5,4 +5,4 @@ static void InstantiateConstraint(const float&, unsigned,
                                   void(*AddFunction)(const TYPE&,bool&,
                                                      char*, char*,
                                                      unsigned*));
-// { dg-error "60: 'TYPE' does not name a type" "does not" { target *-*-* } { 5 } }
+// { dg-error "60: 'TYPE' does not name a type" "does not" { target *-*-* } 5 }

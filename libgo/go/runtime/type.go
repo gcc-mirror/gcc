@@ -9,17 +9,18 @@ package runtime
 import "unsafe"
 
 type _type struct {
+	size       uintptr
+	ptrdata    uintptr
+	hash       uint32
 	kind       uint8
 	align      int8
 	fieldAlign uint8
 	_          uint8
-	size       uintptr
-	hash       uint32
 
-	hashfn  func(unsafe.Pointer, uintptr, uintptr) uintptr
-	equalfn func(unsafe.Pointer, unsafe.Pointer, uintptr) bool
+	hashfn  func(unsafe.Pointer, uintptr) uintptr
+	equalfn func(unsafe.Pointer, unsafe.Pointer) bool
 
-	gc     unsafe.Pointer
+	gcdata *byte
 	string *string
 	*uncommontype
 	ptrToThis *_type
@@ -112,11 +113,19 @@ type ptrtype struct {
 }
 
 type structfield struct {
-	name    *string // nil for embedded fields
-	pkgPath *string // nil for exported Names; otherwise import path
-	typ     *_type  // type of field
-	tag     *string // nil if no tag
-	offset  uintptr // byte offset of field within struct
+	name       *string // nil for embedded fields
+	pkgPath    *string // nil for exported Names; otherwise import path
+	typ        *_type  // type of field
+	tag        *string // nil if no tag
+	offsetAnon uintptr // byte offset of field<<1 | isAnonymous
+}
+
+func (f *structfield) offset() uintptr {
+	return f.offsetAnon >> 1
+}
+
+func (f *structfield) anon() bool {
+	return f.offsetAnon&1 != 0
 }
 
 type structtype struct {

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=thunderx -dA" } */
+/* { dg-options "-O2 -mcpu=thunderx -march=armv8-a -dA" } */
 
 /* Test that cpu attribute overrides the command-line -mcpu.  */
 

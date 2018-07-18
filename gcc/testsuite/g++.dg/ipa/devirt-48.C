@@ -5,14 +5,14 @@ struct A {
 };
 struct B:A {
    virtual int foo(){return 2;}
-   int callfoo(){foo();}
+   void callfoo(){foo();}
 };
 struct C:A {
    virtual int foo(){return 3;}
 };
 struct D:B {
    virtual int foo(){return 4;}
-   int callfoo(){foo();}
+   void callfoo(){foo();}
 };
 static void
 test (struct A *a)

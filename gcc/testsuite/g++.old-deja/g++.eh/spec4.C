@@ -1,4 +1,4 @@
-// { dg-do run  }
+// { dg-do run { target c++14_down } }
 // Testing exception specifications.
 // Test 4: all throws fail, call terminate.
 
@@ -9,7 +9,7 @@ void my_term ()  { exit (0); }
 void my_unexp () { throw 42; }
 
 void
-f () throw (short)
+f () throw (short)		// { dg-warning "deprecated" "" { target c++11 } }
 {
   throw 'a';
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -23,13 +23,16 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* This file defines the OpenMP internal control variables, and arranges
+/* This file defines the OpenMP internal control variables and arranges
    for them to be initialized from environment variables at startup.  */
 
+#define _GNU_SOURCE
 #include "libgomp.h"
+#include "gomp-constants.h"
+#include <limits.h>
+#ifndef LIBGOMP_OFFLOADED_ONLY
 #include "libgomp_f.h"
 #include "oacc-int.h"
-#include "gomp-constants.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,12 +51,15 @@
 #  endif
 # endif
 #endif
-#include <limits.h>
 #include <errno.h>
+#include "thread-stacksize.h"
 
 #ifndef HAVE_STRTOULL
 # define strtoull(ptr, eptr, base) strtoul (ptr, eptr, base)
 #endif
+#endif /* LIBGOMP_OFFLOADED_ONLY */
+
+#include "secure_getenv.h"
 
 struct gomp_task_icv gomp_global_icv = {
   .nthreads_var = 1,
@@ -81,8 +87,12 @@ unsigned long gomp_bind_var_list_len;
 void **gomp_places_list;
 unsigned long gomp_places_list_len;
 int gomp_debug_var;
+unsigned int gomp_num_teams_var;
 char *goacc_device_type;
 int goacc_device_num;
+int goacc_default_dims[GOMP_DIM_MAX];
+
+#ifndef LIBGOMP_OFFLOADED_ONLY
 
 /* Parse the OMP_SCHEDULE environment variable.  */
 
@@ -165,15 +175,17 @@ parse_schedule (void)
 }
 
 /* Parse an unsigned long environment variable.  Return true if one was
-   present and it was successfully parsed.  */
+   present and it was successfully parsed.  If SECURE, use secure_getenv to the
+   environment variable.  */
 
 static bool
-parse_unsigned_long (const char *name, unsigned long *pvalue, bool allow_zero)
+parse_unsigned_long_1 (const char *name, unsigned long *pvalue, bool allow_zero,
+		       bool secure)
 {
   char *env, *end;
   unsigned long value;
 
-  env = getenv (name);
+  env = (secure ? secure_getenv (name) : getenv (name));
   if (env == NULL)
     return false;
 
@@ -200,14 +212,23 @@ parse_unsigned_long (const char *name, unsigned long *pvalue, bool allow_zero)
   return false;
 }
 
-/* Parse a positive int environment variable.  Return true if one was
-   present and it was successfully parsed.  */
+/* As parse_unsigned_long_1, but always use getenv.  */
 
 static bool
-parse_int (const char *name, int *pvalue, bool allow_zero)
+parse_unsigned_long (const char *name, unsigned long *pvalue, bool allow_zero)
+{
+  return parse_unsigned_long_1 (name, pvalue, allow_zero, false);
+}
+
+/* Parse a positive int environment variable.  Return true if one was
+   present and it was successfully parsed.  If SECURE, use secure_getenv to the
+   environment variable.  */
+
+static bool
+parse_int_1 (const char *name, int *pvalue, bool allow_zero, bool secure)
 {
   unsigned long value;
-  if (!parse_unsigned_long (name, &value, allow_zero))
+  if (!parse_unsigned_long_1 (name, &value, allow_zero, secure))
     return false;
   if (value > INT_MAX)
     {
@@ -216,6 +237,22 @@ parse_int (const char *name, int *pvalue, bool allow_zero)
     }
   *pvalue = (int) value;
   return true;
+}
+
+/* As parse_int_1, but use getenv.  */
+
+static bool
+parse_int (const char *name, int *pvalue, bool allow_zero)
+{
+  return parse_int_1 (name, pvalue, allow_zero, false);
+}
+
+/* As parse_int_1, but use getenv_secure.  */
+
+static bool
+parse_int_secure (const char *name, int *pvalue, bool allow_zero)
+{
+  return parse_int_1 (name, pvalue, allow_zero, true);
 }
 
 /* Parse an unsigned long list environment variable.  Return true if one was
@@ -1030,6 +1067,36 @@ parse_acc_device_type (void)
 }
 
 static void
+parse_gomp_openacc_dim (void)
+{
+  /* The syntax is the same as for the -fopenacc-dim compilation option.  */
+  const char *var_name = "GOMP_OPENACC_DIM";
+  const char *env_var = getenv (var_name);
+  if (!env_var)
+    return;
+
+  const char *pos = env_var;
+  int i;
+  for (i = 0; *pos && i != GOMP_DIM_MAX; i++)
+    {
+      if (i && *pos++ != ':')
+	break;
+
+      if (*pos == ':')
+	continue;
+
+      const char *eptr;
+      errno = 0;
+      long val = strtol (pos, (char **)&eptr, 10);
+      if (errno || val < 0 || (unsigned)val != val)
+	break;
+
+      goacc_default_dims[i] = (int)val;
+      pos = eptr;
+    }
+}
+
+static void
 handle_omp_display_env (unsigned long stacksize, int wait_policy)
 {
   const char *env;
@@ -1182,7 +1249,7 @@ handle_omp_display_env (unsigned long stacksize, int wait_policy)
 static void __attribute__((constructor))
 initialize_env (void)
 {
-  unsigned long thread_limit_var, stacksize;
+  unsigned long thread_limit_var, stacksize = GOMP_DEFAULT_STACKSIZE;
   int wait_policy;
 
   /* Do a compile time check that mkomp_h.pl did good job.  */
@@ -1201,7 +1268,7 @@ initialize_env (void)
       gomp_global_icv.thread_limit_var
 	= thread_limit_var > INT_MAX ? UINT_MAX : thread_limit_var;
     }
-  parse_int ("GOMP_DEBUG", &gomp_debug_var, true);
+  parse_int_secure ("GOMP_DEBUG", &gomp_debug_var, true);
 #ifndef HAVE_SYNC_BUILTINS
   gomp_mutex_init (&gomp_managed_threads_lock);
 #endif
@@ -1269,7 +1336,8 @@ initialize_env (void)
   pthread_attr_setdetachstate (&gomp_thread_attr, PTHREAD_CREATE_DETACHED);
 
   if (parse_stacksize ("OMP_STACKSIZE", &stacksize)
-      || parse_stacksize ("GOMP_STACKSIZE", &stacksize))
+      || parse_stacksize ("GOMP_STACKSIZE", &stacksize)
+      || GOMP_DEFAULT_STACKSIZE)
     {
       int err;
 
@@ -1299,243 +1367,8 @@ initialize_env (void)
     goacc_device_num = 0;
 
   parse_acc_device_type ();
+  parse_gomp_openacc_dim ();
 
   goacc_runtime_initialize ();
 }
-
-
-/* The public OpenMP API routines that access these variables.  */
-
-void
-omp_set_num_threads (int n)
-{
-  struct gomp_task_icv *icv = gomp_icv (true);
-  icv->nthreads_var = (n > 0 ? n : 1);
-}
-
-void
-omp_set_dynamic (int val)
-{
-  struct gomp_task_icv *icv = gomp_icv (true);
-  icv->dyn_var = val;
-}
-
-int
-omp_get_dynamic (void)
-{
-  struct gomp_task_icv *icv = gomp_icv (false);
-  return icv->dyn_var;
-}
-
-void
-omp_set_nested (int val)
-{
-  struct gomp_task_icv *icv = gomp_icv (true);
-  icv->nest_var = val;
-}
-
-int
-omp_get_nested (void)
-{
-  struct gomp_task_icv *icv = gomp_icv (false);
-  return icv->nest_var;
-}
-
-void
-omp_set_schedule (omp_sched_t kind, int chunk_size)
-{
-  struct gomp_task_icv *icv = gomp_icv (true);
-  switch (kind)
-    {
-    case omp_sched_static:
-      if (chunk_size < 1)
-	chunk_size = 0;
-      icv->run_sched_chunk_size = chunk_size;
-      break;
-    case omp_sched_dynamic:
-    case omp_sched_guided:
-      if (chunk_size < 1)
-	chunk_size = 1;
-      icv->run_sched_chunk_size = chunk_size;
-      break;
-    case omp_sched_auto:
-      break;
-    default:
-      return;
-    }
-  icv->run_sched_var = kind;
-}
-
-void
-omp_get_schedule (omp_sched_t *kind, int *chunk_size)
-{
-  struct gomp_task_icv *icv = gomp_icv (false);
-  *kind = icv->run_sched_var;
-  *chunk_size = icv->run_sched_chunk_size;
-}
-
-int
-omp_get_max_threads (void)
-{
-  struct gomp_task_icv *icv = gomp_icv (false);
-  return icv->nthreads_var;
-}
-
-int
-omp_get_thread_limit (void)
-{
-  struct gomp_task_icv *icv = gomp_icv (false);
-  return icv->thread_limit_var > INT_MAX ? INT_MAX : icv->thread_limit_var;
-}
-
-void
-omp_set_max_active_levels (int max_levels)
-{
-  if (max_levels >= 0)
-    gomp_max_active_levels_var = max_levels;
-}
-
-int
-omp_get_max_active_levels (void)
-{
-  return gomp_max_active_levels_var;
-}
-
-int
-omp_get_cancellation (void)
-{
-  return gomp_cancel_var;
-}
-
-int
-omp_get_max_task_priority (void)
-{
-  return gomp_max_task_priority_var;
-}
-
-omp_proc_bind_t
-omp_get_proc_bind (void)
-{
-  struct gomp_task_icv *icv = gomp_icv (false);
-  return icv->bind_var;
-}
-
-void
-omp_set_default_device (int device_num)
-{
-  struct gomp_task_icv *icv = gomp_icv (true);
-  icv->default_device_var = device_num >= 0 ? device_num : 0;
-}
-
-int
-omp_get_default_device (void)
-{
-  struct gomp_task_icv *icv = gomp_icv (false);
-  return icv->default_device_var;
-}
-
-int
-omp_get_num_devices (void)
-{
-  return gomp_get_num_devices ();
-}
-
-int
-omp_get_num_teams (void)
-{
-  /* Hardcoded to 1 on host, MIC, HSAIL?  Maybe variable on PTX.  */
-  return 1;
-}
-
-int
-omp_get_team_num (void)
-{
-  /* Hardcoded to 0 on host, MIC, HSAIL?  Maybe variable on PTX.  */
-  return 0;
-}
-
-int
-omp_is_initial_device (void)
-{
-  /* Hardcoded to 1 on host, should be 0 on MIC, HSAIL, PTX.  */
-  return 1;
-}
-
-int
-omp_get_initial_device (void)
-{
-  return GOMP_DEVICE_HOST_FALLBACK;
-}
-
-int
-omp_get_num_places (void)
-{
-  return gomp_places_list_len;
-}
-
-int
-omp_get_place_num (void)
-{
-  if (gomp_places_list == NULL)
-    return -1;
-
-  struct gomp_thread *thr = gomp_thread ();
-  if (thr->place == 0)
-    gomp_init_affinity ();
-
-  return (int) thr->place - 1;
-}
-
-int
-omp_get_partition_num_places (void)
-{
-  if (gomp_places_list == NULL)
-    return 0;
-
-  struct gomp_thread *thr = gomp_thread ();
-  if (thr->place == 0)
-    gomp_init_affinity ();
-
-  return thr->ts.place_partition_len;
-}
-
-void
-omp_get_partition_place_nums (int *place_nums)
-{
-  if (gomp_places_list == NULL)
-    return;
-
-  struct gomp_thread *thr = gomp_thread ();
-  if (thr->place == 0)
-    gomp_init_affinity ();
-
-  unsigned int i;
-  for (i = 0; i < thr->ts.place_partition_len; i++)
-    *place_nums++ = thr->ts.place_partition_off + i;
-}
-
-ialias (omp_set_dynamic)
-ialias (omp_set_nested)
-ialias (omp_set_num_threads)
-ialias (omp_get_dynamic)
-ialias (omp_get_nested)
-ialias (omp_set_schedule)
-ialias (omp_get_schedule)
-ialias (omp_get_max_threads)
-ialias (omp_get_thread_limit)
-ialias (omp_set_max_active_levels)
-ialias (omp_get_max_active_levels)
-ialias (omp_get_cancellation)
-ialias (omp_get_proc_bind)
-ialias (omp_set_default_device)
-ialias (omp_get_default_device)
-ialias (omp_get_num_devices)
-ialias (omp_get_num_teams)
-ialias (omp_get_team_num)
-ialias (omp_is_initial_device)
-ialias (omp_get_initial_device)
-ialias (omp_get_max_task_priority)
-ialias (omp_get_num_places)
-ialias (omp_get_place_num)
-ialias (omp_get_partition_num_places)
-ialias (omp_get_partition_place_nums)
+#endif /* LIBGOMP_OFFLOADED_ONLY */

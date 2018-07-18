@@ -64,6 +64,9 @@
    tmp = gen_rtx_REG (SFmode, ACCL_REGNO);
    emit_move_insn (tmp, operands[3]);
    operands[3] = tmp;
+   if (!register_operand (operands[1], SFmode)
+        && !register_operand (operands[2], SFmode))
+     operands[2] = force_reg (SFmode, operands[2]);
    }")
 
 (define_expand "fnmasf4"
@@ -77,6 +80,9 @@
    tmp = gen_rtx_REG (SFmode, ACCL_REGNO);
    emit_move_insn (tmp, operands[3]);
    operands[3] = tmp;
+   if (!register_operand (operands[1], SFmode)
+        && !register_operand (operands[2], SFmode))
+     operands[2] = force_reg (SFmode, operands[2]);
 }")
 
 (define_insn "fmasf4_fpu"
@@ -92,7 +98,7 @@
    (set_attr "predicable" "yes,no,yes,no,no")
    (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_fuse")])
 
 (define_insn "fnmasf4_fpu"
   [(set (match_operand:SF 0 "register_operand"                  "=r,r,r,r,r")
@@ -107,7 +113,7 @@
    (set_attr "predicable" "yes,no,yes,no,no")
    (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_fuse")])
 
 (define_expand "fmadf4"
   [(match_operand:DF 0 "even_register_operand" "")
@@ -177,7 +183,7 @@
    (set_attr "predicable" "yes,no")
    (set_attr "cond" "canuse,nocond")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_fuse")])
 
 (define_insn "fnmadf4_fpu"
   [(set (match_operand:DF 0 "even_register_operand"                 "=r,r")
@@ -190,18 +196,20 @@
    (set_attr "predicable" "yes,no")
    (set_attr "cond" "canuse,nocond")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_fuse")])
 
 ;; Division
-(define_insn "divsf3"
+(define_insn "*divsf3_fpu"
   [(set (match_operand:SF 0 "register_operand"         "=r,r,r,r,r")
 	(div:SF (match_operand:SF 1 "nonmemory_operand" "0,r,0,r,F")
 		(match_operand:SF 2 "nonmemory_operand" "r,r,F,F,r")))]
-  "TARGET_FP_SP_SQRT"
+  "TARGET_FP_SP_SQRT
+   && (register_operand (operands[1], SFmode)
+       || register_operand (operands[2], SFmode))"
   "fsdiv%? %0,%1,%2"
   [(set_attr "length" "4,4,8,8,8")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")
+   (set_attr "type" "fpu_sdiv")
    (set_attr "predicable" "yes,no,yes,no,no")
    (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
    ])
@@ -213,13 +221,13 @@
 ;; see pattern in arc.md
 
 ;; Square root
-(define_insn "sqrtsf2"
+(define_insn "sqrtsf2_fpu"
   [(set (match_operand:SF 0 "register_operand"           "=r,r")
 	(sqrt:SF (match_operand:SF 1 "nonmemory_operand"  "r,F")))]
   "TARGET_FP_SP_SQRT"
   "fssqrt %0,%1"
   [(set_attr "length" "4,8")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_sdiv")])
 
 ;; Comparison
 (define_insn "*cmpsf_fpu"
@@ -304,7 +312,7 @@
   "fddiv%? %0,%1,%2"
   [(set_attr "length" "4,4")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")
+   (set_attr "type" "fpu_ddiv")
    (set_attr "predicable" "yes,no")
    (set_attr "cond" "canuse,nocond")
    ])
@@ -316,7 +324,7 @@
   "TARGET_FP_DP_SQRT"
   "fdsqrt %0,%1"
   [(set_attr "length" "4")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_ddiv")])
 
 ;; Comparison
 (define_insn "*cmpdf_fpu"
@@ -410,7 +418,7 @@
 )
 
 ;; SI->SF
-(define_insn "floatsisf2"
+(define_insn "floatsisf2_fpu"
   [(set (match_operand:SF 0 "register_operand"           "=r,r")
 	(float:SF (match_operand:SI 1 "register_operand"  "0,r")))]
   "TARGET_FP_SP_CONV"
@@ -446,7 +454,7 @@
 )
 
 ;; SF->SI (using rounding towards zero)
-(define_insn "fix_truncsfsi2"
+(define_insn "fix_truncsfsi2_fpu"
   [(set (match_operand:SI 0 "register_operand"                "=r,r")
 	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "0,r"))))]
   "TARGET_FP_SP_CONV"

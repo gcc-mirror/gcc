@@ -57,7 +57,7 @@ contains
     type(polar_t), dimension(3) :: b
     b = polar_t (2.0,0.5)
     b(:) = b(:)/b(1)
-    if (any (b .ne. one)) call abort   
+    if (any (b .ne. one)) STOP 1
   end subroutine test_member
   subroutine test_other
     type(polar_t), dimension(3) :: b
@@ -65,7 +65,7 @@ contains
     b = polar_t (3.0,1.0)
     c = polar_t (3.0,1.0)
     b(:) = b(:)/c(1)
-    if (any (b .ne. one)) call abort   
+    if (any (b .ne. one)) STOP 2
   end subroutine test_other
   subroutine test_scalar
     type(polar_t), dimension(3) :: b
@@ -73,7 +73,7 @@ contains
     b = polar_t (4.0,1.5)
     c = b(1)
     b(:) = b(:)/c
-    if (any (b .ne. one)) call abort   
+    if (any (b .ne. one)) STOP 3
   end subroutine test_scalar
   subroutine test_real
     real,dimension(3) :: b
@@ -81,6 +81,6 @@ contains
     b = 2.0
     real_one = b(2)/b(1)
     b(:) = b(:)/b(1)
-    if (any (b .ne. real_one)) call abort   
+    if (any (b .ne. real_one)) STOP 4
   end subroutine test_real
 end program main

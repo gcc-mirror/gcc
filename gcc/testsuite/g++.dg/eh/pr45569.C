@@ -7,7 +7,7 @@ _Complex float g ();
 void
 i (_Complex float);
 
-float j ()
+void j ()
 {
   _Complex float x = 0;
   try

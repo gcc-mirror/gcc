@@ -1,5 +1,5 @@
 /* Implementation of the COUNT intrinsic
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -24,8 +24,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <stdlib.h>
-#include <assert.h>
 
 
 #if defined (HAVE_GFC_INTEGER_4)
@@ -99,7 +97,7 @@ count_4_l (gfc_array_i4 * const restrict retarray,
         }
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      retarray->dtype.rank = rank;
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
@@ -197,9 +195,9 @@ count_4_l (gfc_array_i4 * const restrict retarray,
           base -= sstride[n] * extent[n];
           dest -= dstride[n] * extent[n];
           n++;
-          if (n == rank)
+          if (n >= rank)
             {
-              /* Break out of the look.  */
+              /* Break out of the loop.  */
               continue_loop = 0;
               break;
             }

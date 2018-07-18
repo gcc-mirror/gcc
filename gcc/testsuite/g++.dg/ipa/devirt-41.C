@@ -13,7 +13,7 @@ test (struct A *a)
     __builtin_abort ();
 }
 
-main()
+int main()
 {
   struct B a;
   dostuff (&a);

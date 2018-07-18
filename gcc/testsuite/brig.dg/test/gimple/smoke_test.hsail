@@ -1,0 +1,91 @@
+module &module:1:0:$full:$large:$default;
+
+/* A basic smoke test. */
+
+/* { dg-do compile } */
+/* { dg-options "-fdump-tree-gimple" } */
+
+prog kernel &Kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
+{
+	ld_kernarg_u64 $d0, [%input_ptr];
+	ld_global_u32 $s0, [$d0];
+	ld_global_u32 $s1, [$d0 + 4];
+
+	add_u32 $s2, $s0, $s1;
+	add_u32 $s3, $s0, 4294967295;
+
+	ld_kernarg_u64 $d0, [%output_ptr];
+	st_global_u32 $s2, [$d0];
+	st_global_u32 $s3, [$d0 + 4];
+
+	ret;
+};
+
+prog kernel &KernelWithBarrier(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
+{
+	ld_kernarg_u64 $d0, [%input_ptr];
+	ld_global_u32 $s0, [$d0];
+	ld_global_u32 $s1, [$d0 + 4];
+
+	add_u32 $s2, $s0, $s1;
+
+	barrier_width(all);
+
+	add_u32 $s3, $s0, 4294967295;
+
+	ld_kernarg_u64 $d0, [%output_ptr];
+	st_global_u32 $s2, [$d0];
+	st_global_u32 $s3, [$d0 + 4];
+
+	ret;
+};
+
+/* The kernel function itself should have a fingerprint as follows */
+/* _Kernel (const unsigned char * restrict __args, void * restrict __context, unsigned char * restrict __group_base_addr, unsigned int __group_local_offset, unsigned char * restrict __private_base_addr) */
+/* { dg-final { scan-tree-dump "_Kernel \\\(const unsigned char \\\* restrict __args, void \\\* restrict __context, unsigned char \\\* restrict __group_base_addr, unsigned int __group_local_offset, unsigned char \\\* restrict __private_base_addr\\\)" "gimple"} } */
+
+/* ld_kernarg: mem_read.0 = MEM[(unsigned long *)__args]; */
+/* { dg-final { scan-tree-dump "mem_read.\[0-9\] = MEM\\\[\\\(unsigned long \\\*\\\)__args\\\];" "gimple"} } */
+
+/* The latter ld_global_u32 should be visible as a pointer dereference (after pointer arithmetics on a temporary var): */
+/* mem_read.2 = *D.1691; */
+/* { dg-final { scan-tree-dump "mem_read.\[0-9\]+ = \\\*\[_0-9\]+;" "gimple"} } */
+
+/* add_u32s should generate +operators */
+/* { dg-final { scan-tree-dump "s2 = s0 \\\+ s1;" "gimple"} } */
+/* { dg-final { scan-tree-dump "s3 = s0 \\\+ 4294967295;" "gimple"} } */
+
+/* The latter st_global_u32 should be visible as a pointer dereference (after pointer arithmetics on a temporary var): */
+/* *D.1694 = s3; */
+/* { dg-final { scan-tree-dump "\\\*\[_0-9\]+ = s3;" "gimple"} } */
+
+/* The return inside the kernel should be generated to a goto to the end of the kernel. */
+/*  goto __kernel_exit; */
+/*  __kernel_exit: */
+/* { dg-final { scan-tree-dump "goto __kernel_exit;" "gimple"} } */
+/* { dg-final { scan-tree-dump "__kernel_exit:" "gimple"} } */
+
+/* Expecting a work item loop because there are no barrier calls. */
+/* { dg-final { scan-tree-dump "if \\\(__local_x < __cur_wg_size_x\\\) goto __wi_loop_x; else goto" "gimple"} } */
+/* { dg-final { scan-tree-dump "if \\\(__local_y < __cur_wg_size_y\\\) goto __wi_loop_y; else goto" "gimple"} } */
+/* { dg-final { scan-tree-dump "if \\\(__local_z < __cur_wg_size_z\\\) goto __wi_loop_z; else goto" "gimple"} } */
+
+/* The launcher should call __hsail_launch_wg_function in this case: */
+/* Kernel (void * restrict __context, unsigned char * restrict __group_base_addr) */
+/* { dg-final { scan-tree-dump "Kernel \\\(void \\\* restrict __context, unsigned char \\\* restrict __group_base_addr\\\)" "gimple"} } */
+/* { dg-final { scan-tree-dump "__hsail_launch_wg_function \\\(_Kernel, __context, __group_base_addr, group_local_offset.*\\\);" "gimple"} }*/
+
+/* The kernel should have the magic metadata section injected to the ELF. */
+/* TODO: this should be disabled in case not outputting to an ELF. */
+/* Currently ELF is assumed by the brig frontend. Do not check for the context */
+/* as it is likely to change. */
+/* { dg-final { scan-tree-dump "\\\.pushsection phsa\\\.desc\\\.Kernel" "gimple"} }*/
+
+/* The kernel with the barrier call should have the barrier builtin call in between the two summations. */
+/* { dg-final { scan-tree-dump "s2 = s0 \\\+ s1;\[\n \]+__builtin___hsail_barrier \\\(__context\\\);\[\n \]+s3 = s0 \\\+ 4294967295;" "gimple"} } */
+
+/* The kernel with the barrier call's launcher function should call the thread-spawning function. */
+/* { dg-final { scan-tree-dump "__hsail_launch_kernel \\\(_KernelWithBarrier, __context, __group_base_addr, group_local_offset.*\\\);" "gimple" } } */
+
+
+

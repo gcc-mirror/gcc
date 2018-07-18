@@ -4,7 +4,7 @@
    These tests cover integer complex values (which are GNU extensions).  */
 
 /* { dg-do compile } */
-/* { dg-skip-if "doubles are floats,ints are 16bits" { "avr-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "doubles are floats,ints are 16bits" { "avr-*-*" } } */
 /* { dg-options " -std=gnu99 -Wconversion " } */
 /* { dg-require-effective-target int32plus } */
 /* { dg-require-effective-target double64plus } */
@@ -32,11 +32,11 @@ var_float_to_int (void)
 {
   double _Complex doublec = 0.;
 
-  fsic (doublec); /* { dg-warning "float-conversion" } */
-  fuic (doublec); /* { dg-warning "float-conversion" } */
+  fsic (doublec); /* { dg-warning "conversion" } */
+  fuic (doublec); /* { dg-warning "conversion" } */
 
-  vsic = doublec; /* { dg-warning "float-conversion" } */
-  vuic = doublec; /* { dg-warning "float-conversion" } */
+  vsic = doublec; /* { dg-warning "conversion" } */
+  vuic = doublec; /* { dg-warning "conversion" } */
 }
 
 /* Check implicit conversions of integer complex-domain values to integer
@@ -75,9 +75,9 @@ const_float_to_int (void)
   vsic = 1. - 1.i;
   vuic = 1. + 1.i;
 
-  fsic (0.5 + 0.i); /* { dg-warning "float-conversion" } */
-  vsic = 0.5 + 0.i; /* { dg-warning "float-conversion" } */
-  fuic (0.5 + 0.i); /* { dg-warning "float-conversion" } */
+  fsic (0.5 + 0.i); /* { dg-warning "conversion" } */
+  vsic = 0.5 + 0.i; /* { dg-warning "conversion" } */
+  fuic (0.5 + 0.i); /* { dg-warning "conversion" } */
 }
 
 /* Check implicit conversions of integer complex-domain constants to integer
@@ -96,8 +96,8 @@ const_complex_int_to_real_int (void)
   fui (UINT_MAX + 1ull + 0i); /* { dg-warning "conversion" } */
   vui = UINT_MAX + 1ull + 0i; /* { dg-warning "conversion" } */
 
-  ffloat (UINT_MAX + 0i); /* { dg-warning "float-conversion" } */
-  vfloat = UINT_MAX + 0i; /* { dg-warning "float-conversion" } */
+  ffloat (UINT_MAX + 0i); /* { dg-warning "conversion" } */
+  vfloat = UINT_MAX + 0i; /* { dg-warning "conversion" } */
 }
 
 void
@@ -116,12 +116,12 @@ const_complex_int_narrowing (void)
   vuic = (UINT_MAX + 1ull) + 1i; /* { dg-warning "conversion" } */
   vuic = (UINT_MAX + 1ull) + (UINT_MAX + 1ull) * 1i; /* { dg-warning "conversion" } */
 
-  ffloatc (UINT_MAX * 1i); /* { dg-warning "float-conversion" } */
-  ffloatc (UINT_MAX + 1i); /* { dg-warning "float-conversion" } */
-  ffloatc (UINT_MAX + UINT_MAX * 1i); /* { dg-warning "float-conversion" } */
+  ffloatc (UINT_MAX * 1i); /* { dg-warning "conversion" } */
+  ffloatc (UINT_MAX + 1i); /* { dg-warning "conversion" } */
+  ffloatc (UINT_MAX + UINT_MAX * 1i); /* { dg-warning "conversion" } */
 
-  vfloatc = UINT_MAX * 1i; /* { dg-warning "float-conversion" } */
-  vfloatc = UINT_MAX + 1i; /* { dg-warning "float-conversion" } */
-  vfloatc = UINT_MAX + UINT_MAX * 1i; /* { dg-warning "float-conversion" } */
+  vfloatc = UINT_MAX * 1i; /* { dg-warning "conversion" } */
+  vfloatc = UINT_MAX + 1i; /* { dg-warning "conversion" } */
+  vfloatc = UINT_MAX + UINT_MAX * 1i; /* { dg-warning "conversion" } */
 }
 

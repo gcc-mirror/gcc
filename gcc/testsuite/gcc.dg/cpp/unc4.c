@@ -36,4 +36,4 @@ ignored
 
 /* dg.exp doesn't read the included files for tags, so we have to
    do them explicitly here.  */
-/* { dg-error "#if" "unc1.c: unterminated #if" { target *-*-* } 4 } */
+/* { dg-error "-:#if" "unc1.c: unterminated #if" { target *-*-* } 4 } */

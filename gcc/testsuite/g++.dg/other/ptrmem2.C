@@ -19,7 +19,7 @@ template<class T> int f2(T x);
 
 int D::Foo ()
 {
-  f1( &D::m);   // { dg-error "cannot create pointer to ref" "" }
+  f1( &D::m);   // { dg-error "cannot create pointer to ref" }
   f1( &(D::m));	// ok
   f2( &D::s);   // ok
   f2( &(D::s)); // ok
@@ -28,7 +28,7 @@ int D::Foo ()
 
 int Foo ()
 {
-  f1( &D::m);    // { dg-error "cannot create pointer to ref" "" }
+  f1( &D::m);    // { dg-error "cannot create pointer to ref" }
   f1( &(D::m));  // { dg-error "non-static" }
   f2( &D::s);    // ok
   f2( &(D::s));  // ok

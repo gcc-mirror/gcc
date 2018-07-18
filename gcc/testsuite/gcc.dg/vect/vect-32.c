@@ -3,8 +3,12 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
+#if VECTOR_BITS > 128
+#define N (VECTOR_BITS / 8)
+#else
 #define N 16
- 
+#endif
+
 __attribute__ ((noinline))
 int main1 ()
 {  
@@ -36,4 +40,4 @@ int main (void)
 } 
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" { xfail { ! vect_align_stack_vars } } } } */

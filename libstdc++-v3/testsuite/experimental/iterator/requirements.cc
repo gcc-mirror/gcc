@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,7 +19,7 @@
 
 // This is a compile-only test with minimal includes
 #include <experimental/iterator>
-#include <iosfwd>
+#include <iosfwd> // No guarantee that <experimental/iterator> includes this!
 
 using namespace std::experimental;
 
@@ -55,3 +55,13 @@ tester<int, char> ic;
 tester<wchar_t, wchar_t> ww;
 tester<int, wchar_t> iw;
 #endif
+
+std::ostream& os();
+
+// Ensure that contents of <iterator> are defined by <experimental/iterator>:
+std::reverse_iterator<int*> ii;
+std::move_iterator<int*> mi;
+std::istream_iterator<int> isi;
+std::ostream_iterator<int> osi(os());
+std::istreambuf_iterator<char> isbi;
+std::ostreambuf_iterator<char> osbi(os());

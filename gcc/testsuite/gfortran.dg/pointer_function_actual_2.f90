@@ -16,7 +16,7 @@ CONTAINS
     REAL,TARGET :: targ
     REAL,POINTER :: p
     p => targ
-    IF (.NOT. ASSOCIATED(p,x)) CALL ABORT()
+    IF (.NOT. ASSOCIATED(p,x)) STOP 1
   END SUBROUTINE
 END
 

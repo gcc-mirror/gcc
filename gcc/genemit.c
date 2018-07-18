@@ -1,5 +1,5 @@
 /* Generate code from machine description to emit insns as rtl.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -235,6 +235,12 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
 	  printf ("%u", REGNO (x));
 	  break;
 
+	case 'p':
+	  /* We don't have a way of parsing polynomial offsets yet,
+	     and hopefully never will.  */
+	  printf ("%d", SUBREG_BYTE (x).to_constant ());
+	  break;
+
 	case 's':
 	  printf ("\"%s\"", XSTR (x, i));
 	  break;
@@ -448,6 +454,10 @@ gen_expand (md_rtx_info *info)
 
   /* Find out how many operands this function has.  */
   get_pattern_stats (&stats, XVEC (expand, 1));
+  if (stats.min_scratch_opno != -1
+      && stats.min_scratch_opno <= MAX (stats.max_opno, stats.max_dup_opno))
+    fatal_at (info->loc, "define_expand for %s needs to have match_scratch "
+			 "numbers above all other operands", XSTR (expand, 0));
 
   /* Output the function name and argument declarations.  */
   printf ("rtx\ngen_%s (", XSTR (expand, 0));
@@ -479,8 +489,6 @@ gen_expand (md_rtx_info *info)
      make a local variable.  */
   for (i = stats.num_generator_args; i <= stats.max_dup_opno; i++)
     printf ("  rtx operand%d;\n", i);
-  for (; i <= stats.max_scratch_opno; i++)
-    printf ("  rtx operand%d ATTRIBUTE_UNUSED;\n", i);
   printf ("  rtx_insn *_val = 0;\n");
   printf ("  start_sequence ();\n");
 
@@ -516,7 +524,7 @@ gen_expand (md_rtx_info *info)
 	 (unless we aren't going to use them at all).  */
       if (XVEC (expand, 1) != 0)
 	{
-	  for (i = 0; i < stats.num_operand_vars; i++)
+	  for (i = 0; i <= MAX (stats.max_opno, stats.max_dup_opno); i++)
 	    {
 	      printf ("    operand%d = operands[%d];\n", i, i);
 	      printf ("    (void) operand%d;\n", i);
@@ -762,6 +770,7 @@ main (int argc, const char **argv)
   printf ("/* Generated automatically by the program `genemit'\n\
 from the machine description file `md'.  */\n\n");
 
+  printf ("#define IN_TARGET_CODE 1\n");
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
   printf ("#include \"coretypes.h\"\n");
@@ -795,7 +804,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"tm-constrs.h\"\n");
   printf ("#include \"ggc.h\"\n");
-  printf ("#include \"dumpfile.h\"\n");
   printf ("#include \"target.h\"\n\n");
 
   /* Read the machine description.  */

@@ -35,5 +35,3 @@ contains
   end subroutine
 
 end
-
-! { dg-final { cleanup-modules "ObjectLists" } }

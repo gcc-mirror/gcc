@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target ia32 } */
-/* { dg-options "-O2 -Wno-psabi -fomit-frame-pointer -fno-asynchronous-unwind-tables -mpush-args -mno-accumulate-outgoing-args -m128bit-long-double" } */
-/* { dg-options "-O2 -Wno-psabi -fomit-frame-pointer -fno-asynchronous-unwind-tables -mpush-args -m128bit-long-double" { target *-*-mingw* *-*-cygwin* } } */
+/* { dg-options "-O2 -Wno-psabi -fomit-frame-pointer -fno-asynchronous-unwind-tables -mpush-args -m128bit-long-double" } */
+/* { dg-additional-options "-mno-accumulate-outgoing-args" { target { ! { *-*-mingw* *-*-cygwin* } } } } */
 
 void abort (void);
 

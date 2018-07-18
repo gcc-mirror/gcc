@@ -11,7 +11,7 @@ void f()
 {
   const int i = 42;
   A()(i);			// { dg-message "<conversion>" }
-  // { dg-error "qualifiers" "" { target *-*-* } 13 }
+  // { dg-error "qualifiers" "" { target *-*-* } .-1 }
 }
 
 // { dg-prune-output "no match" }

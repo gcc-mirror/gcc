@@ -6,7 +6,7 @@
 ! The code comes from http://www.star.le.ac.uk/~cgp/fortran.html (by Clive Page)
 ! Reported by Thomas Koenig <tkoenig@gcc.gnu.org>
 !
-  if (any (Up ("AbCdEfGhIjKlM") .ne. (/"ABCDEFGHIJKLM"/))) call abort ()
+  if (any (Up ("AbCdEfGhIjKlM") .ne. (/"ABCDEFGHIJKLM"/))) STOP 1
 contains
   Character (len=20) Function Up (string)
     Character(len=*) string

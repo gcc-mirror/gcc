@@ -63,8 +63,8 @@ void exec_vget_low (void)
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
   CHECK(TEST_MSG, uint, 64, 1, PRIx64, expected, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected, "");
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected, "");
 #endif

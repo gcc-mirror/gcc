@@ -152,9 +152,11 @@ for check in release $ac_checking_flags
 do
 	case $check in
 	# these set all the flags to specific states
-	yes|all) ac_checking=1 ; ac_valgrind_checking= ;;
-	no|none|release) ac_checking= ; ac_valgrind_checking= ;;
+	yes|all) ac_checking=1 ; ac_assert_checking=1 ; ac_valgrind_checking= ;;
+	no|none) ac_checking= ; ac_assert_checking= ; ac_valgrind_checking= ;;
+	release) ac_checking= ; ac_assert_checking=1 ; ac_valgrind_checking= ;;
 	# these enable particular checks
+	assert) ac_assert_checking=1 ;;
 	misc) ac_checking=1 ;;
 	valgrind) ac_valgrind_checking=1 ;;
 	# accept
@@ -168,6 +170,11 @@ if test x$ac_checking != x ; then
 [Define to 1 if you want more run-time sanity checks.])
 else
   AC_DEFINE(CHECKING_P, 0)
+fi
+
+if test x$ac_assert_checking != x ; then
+  AC_DEFINE(ENABLE_ASSERT_CHECKING, 1,
+[Define if you want assertions enabled.  This is a cheap check.])
 fi
 
 if test x$ac_valgrind_checking != x ; then

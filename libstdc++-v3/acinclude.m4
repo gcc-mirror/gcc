@@ -140,13 +140,6 @@ AC_DEFUN([GLIBCXX_CHECK_COMPILER_FEATURES], [
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
 
-  # Check for maintainer-mode bits.
-  if test x"$USE_MAINTAINER_MODE" = xno; then
-    WERROR=''
-  else
-    WERROR='-Werror'
-  fi
-
   # Check for -ffunction-sections -fdata-sections
   AC_MSG_CHECKING([for g++ that supports -ffunction-sections -fdata-sections])
   CXXFLAGS='-g -Werror -ffunction-sections -fdata-sections'
@@ -163,40 +156,7 @@ AC_DEFUN([GLIBCXX_CHECK_COMPILER_FEATURES], [
   AC_MSG_RESULT($ac_fdsections)
 
   AC_LANG_RESTORE
-  AC_SUBST(WERROR)
   AC_SUBST(SECTION_FLAGS)
-])
-
-
-dnl
-dnl Check if the assembler used supports disabling generation of hardware
-dnl capabilities.  This is only supported by Sun as at the moment.
-dnl
-dnl Defines:
-dnl  HWCAP_FLAGS='-Wa,-nH' if possible.
-dnl
-AC_DEFUN([GLIBCXX_CHECK_ASSEMBLER_HWCAP], [
-  test -z "$HWCAP_FLAGS" && HWCAP_FLAGS=''
-
-  # Restrict the test to Solaris, other assemblers (e.g. AIX as) have -nH
-  # with a different meaning.
-  case ${target_os} in
-    solaris2*)
-      ac_save_CFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -Wa,-nH"
-
-      AC_MSG_CHECKING([for as that supports -Wa,-nH])
-      AC_TRY_COMPILE([], [return 0;], [ac_hwcap_flags=yes],[ac_hwcap_flags=no])
-      if test "$ac_hwcap_flags" = "yes"; then
-	HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
-      fi
-      AC_MSG_RESULT($ac_hwcap_flags)
-
-      CFLAGS="$ac_save_CFLAGS"
-      ;;
-  esac
-
-  AC_SUBST(HWCAP_FLAGS)
 ])
 
 
@@ -429,7 +389,7 @@ AC_DEFUN([GLIBCXX_CHECK_S_ISREG_OR_S_IFREG], [
   res=no
   if test $glibcxx_cv_S_ISREG = yes; then
     AC_DEFINE(HAVE_S_ISREG, 1,
-	      [Define if S_IFREG is available in <sys/stat.h>.])
+	      [Define if S_ISREG is available in <sys/stat.h>.])
     res=S_ISREG
   elif test $glibcxx_cv_S_IFREG = yes; then
     AC_DEFINE(HAVE_S_IFREG, 1,
@@ -765,7 +725,7 @@ AC_DEFUN([GLIBCXX_EXPORT_FLAGS], [
   # OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc
   AC_SUBST(OPTIMIZE_CXXFLAGS)
 
-  WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi'
+  WARN_FLAGS="-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi=2"
   AC_SUBST(WARN_FLAGS)
 ])
 
@@ -1454,7 +1414,7 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
         ;;
-      freebsd*|netbsd*|dragonfly*)
+      freebsd*|netbsd*|dragonfly*|rtems*)
         ac_has_clock_monotonic=yes
         ac_has_clock_realtime=yes
         ac_has_nanosleep=yes
@@ -1922,12 +1882,14 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		  lgamma(0.0);
 		  lgammaf(0.0f);
 		  lgammal(0.0l);
+		  #ifndef __APPLE__ /* see below */
 		  llrint(0.0);
 		  llrintf(0.0f);
 		  llrintl(0.0l);
 		  llround(0.0);
 		  llroundf(0.0f);
 		  llroundl(0.0l);
+		  #endif
 		  log1p(0.0);
 		  log1pf(0.0f);
 		  log1pl(0.0l);
@@ -1986,6 +1948,29 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
     AC_DEFINE(_GLIBCXX_USE_C99_MATH_TR1, 1,
 	      [Define if C99 functions or macros in <math.h> should be imported
 	      in <tr1/cmath> in namespace std::tr1.])
+
+    case "${target_os}" in
+      darwin*)
+        AC_MSG_CHECKING([for ISO C99 rounding functions in <math.h>])
+        AC_CACHE_VAL(glibcxx_cv_c99_math_llround, [
+          AC_TRY_COMPILE([#include <math.h>],
+		 [llrint(0.0);
+		  llrintf(0.0f);
+		  llrintl(0.0l);
+		  llround(0.0);
+		  llroundf(0.0f);
+		  llroundl(0.0l);
+		 ],
+		 [glibcxx_cv_c99_math_llround=yes],
+		 [glibcxx_cv_c99_math_llround=no])
+          ])
+	AC_MSG_RESULT($glibcxx_cv_c99_math_llround)
+        ;;
+    esac
+    if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
+      AC_DEFINE(_GLIBCXX_NO_C99_ROUNDING_FUNCS, 1,
+		[Define if C99 llrint and llround functions are missing from <math.h>.])
+    fi
   fi
 
   # Check for the existence of <inttypes.h> functions (NB: doesn't make
@@ -2181,7 +2166,8 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
 ])
 
 dnl
-dnl Check whether required C++11 overloads are present in <math.h>.
+dnl Check whether required C++11 overloads for floating point and integral
+dnl types are present in <math.h>.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 
@@ -2192,10 +2178,10 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 
   case "$host" in
     *-*-solaris2.*)
-      # Solaris 12 introduced the C++11 <math.h> overloads.  A backport to
-      # a Solaris 11.3 SRU is likely, maybe even a Solaris 10 patch.
-      AC_MSG_CHECKING([for C++11 <math.h> overloads])
-      AC_CACHE_VAL(glibcxx_cv_math11_overload, [
+      # Solaris 12 Build 86, Solaris 11.3 SRU 3.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> floating point overloads.
+      AC_MSG_CHECKING([for C++11 <math.h> floating point overloads])
+      AC_CACHE_VAL(glibcxx_cv_math11_fp_overload, [
 	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 	  [#include <math.h>
 	   #undef isfinite
@@ -2204,21 +2190,73 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 	     { return __builtin_isfinite(__x); }
 	   }
 	])],
-	[glibcxx_cv_math11_overload=no],
-	[glibcxx_cv_math11_overload=yes]
+	[glibcxx_cv_math11_fp_overload=no],
+	[glibcxx_cv_math11_fp_overload=yes]
       )])
 
       # autoheader cannot handle indented templates.
-      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO],
-        [/* Define if all C++11 overloads are available in <math.h>.  */
+      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO_FP],
+        [/* Define if all C++11 floating point overloads are available in <math.h>.  */
 #if __cplusplus >= 201103L
-#undef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
 #endif])
 
-      if test $glibcxx_cv_math11_overload = yes; then
-        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO)
+      if test $glibcxx_cv_math11_fp_overload = yes; then
+        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO_FP)
       fi
-      AC_MSG_RESULT([$glibcxx_cv_math11_overload])
+      AC_MSG_RESULT([$glibcxx_cv_math11_fp_overload])
+
+      # Solaris 12 Build 90, Solaris 11.3 SRU 5.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> integral type overloads.
+      AC_MSG_CHECKING([for C++11 <math.h> integral type overloads])
+      AC_CACHE_VAL(glibcxx_cv_math11_int_overload, [
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+	  [#include <math.h>
+	   namespace std {
+	     template<typename _Tp>
+	       struct __is_integer;
+	     template<>
+	       struct __is_integer<int>
+	       {
+	         enum { __value = 1 };
+	       };
+	   }
+	   namespace __gnu_cxx {
+	     template<bool, typename>
+	       struct __enable_if;
+	     template<typename _Tp>
+	       struct __enable_if<true, _Tp>
+	       { typedef _Tp __type; };
+	   }
+	   namespace std {
+	     template<typename _Tp>
+	       constexpr typename __gnu_cxx::__enable_if
+	       		 <__is_integer<_Tp>::__value, double>::__type
+	       log2(_Tp __x)
+	       { return __builtin_log2(__x); }
+	   }
+	   int
+	   main (void)
+	   {
+	     int i = 1000;
+	     return std::log2(i);
+	   }
+	])],
+	[glibcxx_cv_math11_int_overload=no],
+	[glibcxx_cv_math11_int_overload=yes]
+      )])
+
+      # autoheader cannot handle indented templates.
+      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO_INT],
+        [/* Define if all C++11 integral type overloads are available in <math.h>.  */
+#if __cplusplus >= 201103L
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
+#endif])
+
+      if test $glibcxx_cv_math11_int_overload = yes; then
+        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO_INT)
+      fi
+      AC_MSG_RESULT([$glibcxx_cv_math11_int_overload])
       ;;
     *)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
@@ -2251,7 +2289,8 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
       AC_MSG_CHECKING([for obsolete isnan function in <math.h>])
         AC_CACHE_VAL(glibcxx_cv_obsolete_isnan, [
           AC_COMPILE_IFELSE([AC_LANG_SOURCE(
-            [#include <math.h>
+            [#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+             #include <math.h>
              #undef isnan
              namespace std {
                using ::isnan;
@@ -3015,7 +3054,7 @@ dnl Note: also checks that the types aren't standard types.
 dnl
 dnl Defines:
 dnl  _GLIBCXX_USE_INT128
-dnl  _GLIBCXX_USE_FLOAT128
+dnl  ENABLE_FLOAT128
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_INT128_FLOAT128], [
 
@@ -3070,13 +3109,12 @@ EOF
 
     AC_MSG_CHECKING([for __float128])
     if AC_TRY_EVAL(ac_compile); then
-      AC_DEFINE(_GLIBCXX_USE_FLOAT128, 1,
-      [Define if __float128 is supported on this host.])
       enable_float128=yes
     else
       enable_float128=no
     fi
     AC_MSG_RESULT($enable_float128)
+    GLIBCXX_CONDITIONAL(ENABLE_FLOAT128, test $enable_float128 = yes)
     rm -f conftest*
 
   AC_LANG_RESTORE
@@ -3703,7 +3741,7 @@ changequote([,])dnl
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:23:0
+libtool_VERSION=6:26:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -3716,7 +3754,7 @@ case $enable_symvers in
 	      [Define to use GNU versioning in the shared library.])
     ;;
   gnu-versioned-namespace)
-    libtool_VERSION=7:0:0
+    libtool_VERSION=8:0:0
     SYMVER_FILE=config/abi/pre/gnu-versioned-namespace.ver
     AC_DEFINE(_GLIBCXX_SYMVER_GNU_NAMESPACE, 1,
 	      [Define to use GNU namespace versioning in the shared library.])
@@ -4247,6 +4285,9 @@ AC_DEFUN([GLIBCXX_ENABLE_FILESYSTEM_TS], [
       gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
         enable_libstdcxx_filesystem_ts=yes
         ;;
+      rtems*)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
       solaris*)
         enable_libstdcxx_filesystem_ts=yes
         ;;
@@ -4260,143 +4301,194 @@ AC_DEFUN([GLIBCXX_ENABLE_FILESYSTEM_TS], [
 ])
 
 dnl
-dnl Check whether the library calls required by the Filesystem TS are present
-dnl and define _GLIBCXX_USE_REALPATH and _GLIBCXX_USE_UTIMENSAT.
+dnl Check whether the library calls required by the Filesystem TS are present.
+dnl Defines:
+dnl  HAVE_STRUCT_DIRENT_D_TYPE
+dnl  _GLIBCXX_USE_REALPATH
+dnl  _GLIBCXX_USE_UTIMENSAT
+dnl  _GLIBCXX_USE_ST_MTIM
+dnl  _GLIBCXX_USE_FCHMOD
+dnl  _GLIBCXX_USE_FCHMODAT
+dnl  _GLIBCXX_USE_SENDFILE
+dnl  HAVE_LINK
+dnl  HAVE_READLINK
+dnl  HAVE_SYMLINK
 dnl
 AC_DEFUN([GLIBCXX_CHECK_FILESYSTEM_DEPS], [dnl
 dnl
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  if test $enable_libstdcxx_filesystem_ts = yes; then
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    ac_save_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS="$CXXFLAGS -fno-exceptions"
 dnl
-  AC_MSG_CHECKING([for struct dirent.d_type])
-  AC_CACHE_VAL(glibcxx_cv_dirent_d_type, [dnl
-    GCC_TRY_COMPILE_OR_LINK(
-      [#include <dirent.h>],
-      [
-       struct dirent d;
-       if (sizeof d.d_type) return 0;
-      ],
-      [glibcxx_cv_dirent_d_type=yes],
-      [glibcxx_cv_dirent_d_type=no])
-  ])
-  if test $glibcxx_cv_dirent_d_type = yes; then
-    AC_DEFINE(HAVE_STRUCT_DIRENT_D_TYPE, 1, [Define to 1 if `d_type' is a member of `struct dirent'.])
+    AC_MSG_CHECKING([for struct dirent.d_type])
+    AC_CACHE_VAL(glibcxx_cv_dirent_d_type, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [#include <dirent.h>],
+        [
+         struct dirent d;
+         if (sizeof d.d_type) return 0;
+        ],
+        [glibcxx_cv_dirent_d_type=yes],
+        [glibcxx_cv_dirent_d_type=no])
+    ])
+    if test $glibcxx_cv_dirent_d_type = yes; then
+      AC_DEFINE(HAVE_STRUCT_DIRENT_D_TYPE, 1, [Define to 1 if `d_type' is a member of `struct dirent'.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_dirent_d_type)
+dnl
+    AC_MSG_CHECKING([for realpath])
+    AC_CACHE_VAL(glibcxx_cv_realpath, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [
+         #include <limits.h>
+         #include <stdlib.h>
+         #include <unistd.h>
+        ],
+        [
+         #if _XOPEN_VERSION < 500
+         #error
+         #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
+         char *tmp = realpath((const char*)NULL, (char*)NULL);
+         #else
+         #error
+         #endif
+        ],
+        [glibcxx_cv_realpath=yes],
+        [glibcxx_cv_realpath=no])
+    ])
+    if test $glibcxx_cv_realpath = yes; then
+      AC_DEFINE(_GLIBCXX_USE_REALPATH, 1, [Define if usable realpath is available in <stdlib.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_realpath)
+dnl
+    AC_MSG_CHECKING([for utimensat])
+    AC_CACHE_VAL(glibcxx_cv_utimensat, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [
+          #include <fcntl.h>
+          #include <sys/stat.h>
+        ],
+        [
+          struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
+          int i = utimensat(AT_FDCWD, "path", ts, 0);
+        ],
+        [glibcxx_cv_utimensat=yes],
+        [glibcxx_cv_utimensat=no])
+    ])
+    if test $glibcxx_cv_utimensat = yes; then
+      AC_DEFINE(_GLIBCXX_USE_UTIMENSAT, 1, [Define if utimensat and UTIME_OMIT are available in <sys/stat.h> and AT_FDCWD in <fcntl.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_utimensat)
+dnl
+    AC_MSG_CHECKING([for struct stat.st_mtim.tv_nsec])
+    AC_CACHE_VAL(glibcxx_cv_st_mtim, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [ #include <sys/stat.h> ],
+        [
+          struct stat st;
+          return st.st_mtim.tv_nsec;
+        ],
+        [glibcxx_cv_st_mtim=yes],
+        [glibcxx_cv_st_mtim=no])
+    ])
+    if test $glibcxx_cv_st_mtim = yes; then
+      AC_DEFINE(_GLIBCXX_USE_ST_MTIM, 1, [Define if struct stat has timespec members.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_st_mtim)
+dnl
+    AC_MSG_CHECKING([for fchmod])
+    AC_CACHE_VAL(glibcxx_cv_fchmod, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [#include <sys/stat.h>],
+        [fchmod(1, S_IWUSR);],
+        [glibcxx_cv_fchmod=yes],
+        [glibcxx_cv_fchmod=no])
+    ])
+    if test $glibcxx_cv_fchmod = yes; then
+      AC_DEFINE(_GLIBCXX_USE_FCHMOD, 1, [Define if fchmod is available in <sys/stat.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_fchmod)
+dnl
+    AC_MSG_CHECKING([for fchmodat])
+    AC_CACHE_VAL(glibcxx_cv_fchmodat, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [
+          #include <fcntl.h>
+          #include <sys/stat.h>
+        ],
+        [fchmodat(AT_FDCWD, "", 0, AT_SYMLINK_NOFOLLOW);],
+        [glibcxx_cv_fchmodat=yes],
+        [glibcxx_cv_fchmodat=no])
+    ])
+    if test $glibcxx_cv_fchmodat = yes; then
+      AC_DEFINE(_GLIBCXX_USE_FCHMODAT, 1, [Define if fchmodat is available in <sys/stat.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_fchmodat)
+dnl
+    AC_MSG_CHECKING([for sendfile that can copy files])
+    AC_CACHE_VAL(glibcxx_cv_sendfile, [dnl
+      case "${target_os}" in
+        gnu* | linux* | solaris*)
+          GCC_TRY_COMPILE_OR_LINK(
+            [#include <sys/sendfile.h>],
+            [sendfile(1, 2, (off_t*)0, sizeof 1);],
+            [glibcxx_cv_sendfile=yes],
+            [glibcxx_cv_sendfile=no])
+          ;;
+        *)
+          glibcxx_cv_sendfile=no
+          ;;
+      esac
+    ])
+    if test $glibcxx_cv_sendfile = yes; then
+      AC_DEFINE(_GLIBCXX_USE_SENDFILE, 1, [Define if sendfile is available in <sys/sendfile.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_sendfile)
+dnl
+    AC_MSG_CHECKING([for link])
+    AC_CACHE_VAL(glibcxx_cv_link, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [#include <unistd.h>],
+        [link("", "");],
+        [glibcxx_cv_link=yes],
+        [glibcxx_cv_link=no])
+    ])
+    if test $glibcxx_cv_link = yes; then
+      AC_DEFINE(HAVE_LINK, 1, [Define if link is available in <unistd.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_link)
+dnl
+    AC_MSG_CHECKING([for readlink])
+    AC_CACHE_VAL(glibcxx_cv_readlink, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [#include <unistd.h>],
+        [char buf[32]; readlink("", buf, sizeof(buf));],
+        [glibcxx_cv_readlink=yes],
+        [glibcxx_cv_readlink=no])
+    ])
+    if test $glibcxx_cv_readlink = yes; then
+      AC_DEFINE(HAVE_READLINK, 1, [Define if readlink is available in <unistd.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_readlink)
+dnl
+    AC_MSG_CHECKING([for symlink])
+    AC_CACHE_VAL(glibcxx_cv_symlink, [dnl
+      GCC_TRY_COMPILE_OR_LINK(
+        [#include <unistd.h>],
+        [symlink("", "");],
+        [glibcxx_cv_symlink=yes],
+        [glibcxx_cv_symlink=no])
+    ])
+    if test $glibcxx_cv_symlink = yes; then
+      AC_DEFINE(HAVE_SYMLINK, 1, [Define if symlink is available in <unistd.h>.])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_symlink)
+dnl
+    CXXFLAGS="$ac_save_CXXFLAGS"
+    AC_LANG_RESTORE
   fi
-  AC_MSG_RESULT($glibcxx_cv_dirent_d_type)
-dnl
-  AC_MSG_CHECKING([for realpath])
-  AC_CACHE_VAL(glibcxx_cv_realpath, [dnl
-    GCC_TRY_COMPILE_OR_LINK(
-      [
-       #include <limits.h>
-       #include <stdlib.h>
-       #include <unistd.h>
-      ],
-      [
-       #if _XOPEN_VERSION < 500
-       #error
-       #elif _XOPEN_VERSION >= 700 || defined(PATH_MAX)
-       char *tmp = realpath((const char*)NULL, (char*)NULL);
-       #else
-       #error
-       #endif
-      ],
-      [glibcxx_cv_realpath=yes],
-      [glibcxx_cv_realpath=no])
-  ])
-  if test $glibcxx_cv_realpath = yes; then
-    AC_DEFINE(_GLIBCXX_USE_REALPATH, 1, [Define if usable realpath is available in <stdlib.h>.])
-  fi
-  AC_MSG_RESULT($glibcxx_cv_realpath)
-dnl
-  AC_MSG_CHECKING([for utimensat])
-  AC_CACHE_VAL(glibcxx_cv_utimensat, [dnl
-    GCC_TRY_COMPILE_OR_LINK(
-      [
-        #include <fcntl.h>
-        #include <sys/stat.h>
-      ],
-      [
-        struct timespec ts[2] = { { 0, UTIME_OMIT }, { 1, 1 } };
-        int i = utimensat(AT_FDCWD, "path", ts, 0);
-      ],
-      [glibcxx_cv_utimensat=yes],
-      [glibcxx_cv_utimensat=no])
-  ])
-  if test $glibcxx_cv_utimensat = yes; then
-    AC_DEFINE(_GLIBCXX_USE_UTIMENSAT, 1, [Define if utimensat and UTIME_OMIT are available in <sys/stat.h> and AT_FDCWD in <fcntl.h>.])
-  fi
-  AC_MSG_RESULT($glibcxx_cv_utimensat)
-dnl
-  AC_MSG_CHECKING([for struct stat.st_mtim.tv_nsec])
-  AC_CACHE_VAL(glibcxx_cv_st_mtim, [dnl
-    GCC_TRY_COMPILE_OR_LINK(
-      [ #include <sys/stat.h> ],
-      [
-        struct stat st;
-        return st.st_mtim.tv_nsec;
-      ],
-      [glibcxx_cv_st_mtim=yes],
-      [glibcxx_cv_st_mtim=no])
-  ])
-  if test $glibcxx_cv_st_mtim = yes; then
-    AC_DEFINE(_GLIBCXX_USE_ST_MTIM, 1, [Define if struct stat has timespec members.])
-  fi
-  AC_MSG_RESULT($glibcxx_cv_st_mtim)
-dnl
-  AC_MSG_CHECKING([for fchmod])
-  AC_CACHE_VAL(glibcxx_cv_fchmod, [dnl
-    GCC_TRY_COMPILE_OR_LINK(
-      [#include <sys/stat.h>],
-      [fchmod(1, S_IWUSR);],
-      [glibcxx_cv_fchmod=yes],
-      [glibcxx_cv_fchmod=no])
-  ])
-  if test $glibcxx_cv_fchmod = yes; then
-    AC_DEFINE(_GLIBCXX_USE_FCHMOD, 1, [Define if fchmod is available in <sys/stat.h>.])
-  fi
-  AC_MSG_RESULT($glibcxx_cv_fchmod)
-dnl
-  AC_MSG_CHECKING([for fchmodat])
-  AC_CACHE_VAL(glibcxx_cv_fchmodat, [dnl
-    GCC_TRY_COMPILE_OR_LINK(
-      [
-        #include <fcntl.h>
-        #include <sys/stat.h>
-      ],
-      [fchmodat(AT_FDCWD, "", 0, AT_SYMLINK_NOFOLLOW);],
-      [glibcxx_cv_fchmodat=yes],
-      [glibcxx_cv_fchmodat=no])
-  ])
-  if test $glibcxx_cv_fchmodat = yes; then
-    AC_DEFINE(_GLIBCXX_USE_FCHMODAT, 1, [Define if fchmodat is available in <sys/stat.h>.])
-  fi
-  AC_MSG_RESULT($glibcxx_cv_fchmodat)
-dnl
-  AC_MSG_CHECKING([for sendfile that can copy files])
-  AC_CACHE_VAL(glibcxx_cv_sendfile, [dnl
-    case "${target_os}" in
-      gnu* | linux* | solaris*)
-        GCC_TRY_COMPILE_OR_LINK(
-          [#include <sys/sendfile.h>],
-          [sendfile(1, 2, (off_t*)0, sizeof 1);],
-          [glibcxx_cv_sendfile=yes],
-          [glibcxx_cv_sendfile=no])
-        ;;
-      *)
-        glibcxx_cv_sendfile=no
-        ;;
-    esac
-  ])
-  if test $glibcxx_cv_sendfile = yes; then
-    AC_DEFINE(_GLIBCXX_USE_SENDFILE, 1, [Define if sendfile is available in <sys/sendfile.h>.])
-  fi
-  AC_MSG_RESULT($glibcxx_cv_sendfile)
-dnl
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  AC_LANG_RESTORE
 ])
 
 dnl
@@ -4414,8 +4506,12 @@ AC_DEFUN([GLIBCXX_CHECK_SIZE_T_MANGLING], [
                        [glibcxx_cv_size_t_mangling=y], [
           AC_TRY_COMPILE([],
                          [extern __SIZE_TYPE__ x; extern unsigned short x;],
-                         [glibcxx_cv_size_t_mangling=t],
-                         [glibcxx_cv_size_t_mangling=x])
+                         [glibcxx_cv_size_t_mangling=t], [
+            AC_TRY_COMPILE([],
+                           [extern __SIZE_TYPE__ x; extern __int20 unsigned x;],
+                           [glibcxx_cv_size_t_mangling=u6uint20],
+                           [glibcxx_cv_size_t_mangling=x])
+          ])
         ])
       ])
     ])
@@ -4427,7 +4523,45 @@ AC_DEFUN([GLIBCXX_CHECK_SIZE_T_MANGLING], [
     [Define to the letter to which size_t is mangled.])
 ])
 
+dnl
+dnl Determine whether std::exception_ptr symbols should be exported with
+dnl the symbol versions from GCC 4.6.0 or GCC 7.1.0, depending on which
+dnl release first added support for std::exception_ptr. Originally it was
+dnl only supported for targets with always-lock-free atomics for int, but
+dnl since GCC 7.1 it is supported for all targets.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER], [
+  if test $enable_symvers != no; then
+    AC_MSG_CHECKING([for first version to support std::exception_ptr])
+    case ${target} in
+      aarch64-*-* | alpha-*-* | hppa*-*-* | i?86-*-* | x86_64-*-* | \
+      m68k-*-* | powerpc*-*-* | s390*-*-* | *-*-solaris* )
+        ac_exception_ptr_since_gcc46=yes
+        ;;
+      *)
+        # If the value of this macro changes then we will need to hardcode
+        # yes/no here for additional targets based on the original value.
+        AC_TRY_COMPILE([], [
+          #if __GCC_ATOMIC_INT_LOCK_FREE <= 1
+          # error atomic int not always lock free
+          #endif
+          ],
+          [ac_exception_ptr_since_gcc46=yes],
+          [ac_exception_ptr_since_gcc46=no])
+        ;;
+    esac
+    if test x"$ac_exception_ptr_since_gcc46" = x"yes" ; then
+      AC_DEFINE(HAVE_EXCEPTION_PTR_SINCE_GCC46, 1,
+        [Define to 1 if GCC 4.6 supported std::exception_ptr for the target])
+      AC_MSG_RESULT([4.6.0])
+    else
+      AC_MSG_RESULT([7.1.0])
+    fi
+  fi
+])
+
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])
 m4_include([../config/gthr.m4])
+m4_include([../config/cet.m4])

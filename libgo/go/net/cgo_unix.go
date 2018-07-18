@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // +build cgo,!netgo
-// +build darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
 
 package net
 
@@ -12,7 +12,6 @@ package net
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 */
@@ -24,7 +23,7 @@ import (
 )
 
 //extern getaddrinfo
-func libc_getaddrinfo(node *byte, service *byte, hints *syscall.Addrinfo, res **syscall.Addrinfo) int
+func libc_getaddrinfo(node *byte, service *byte, hints *syscall.Addrinfo, res **syscall.Addrinfo) int32
 
 //extern freeaddrinfo
 func libc_freeaddrinfo(res *syscall.Addrinfo)
@@ -114,7 +113,15 @@ func cgoLookupPort(ctx context.Context, network, service string) (port int, err 
 }
 
 func cgoLookupServicePort(hints *syscall.Addrinfo, network, service string) (port int, err error) {
-	s := syscall.StringBytePtr(service)
+	s, err := syscall.BytePtrFromString(service)
+	if err != nil {
+		return 0, err
+	}
+	// Lowercase the service name in the memory passed to C.
+	for i := 0; i < len(service); i++ {
+		bp := (*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(s)) + uintptr(i)))
+		*bp = lowerASCII(*bp)
+	}
 	var res *syscall.Addrinfo
 	syscall.Entersyscall()
 	gerrno := libc_getaddrinfo(nil, s, hints, &res)
@@ -212,7 +219,7 @@ func cgoLookupIPCNAME(name string) (addrs []IPAddr, cname string, err error) {
 			addrs = append(addrs, addr)
 		case syscall.AF_INET6:
 			sa := (*syscall.RawSockaddrInet6)(unsafe.Pointer(r.Ai_addr))
-			addr := IPAddr{IP: copyIP(sa.Addr[:]), Zone: zoneToString(int(sa.Scope_id))}
+			addr := IPAddr{IP: copyIP(sa.Addr[:]), Zone: zoneCache.name(int(sa.Scope_id))}
 			addrs = append(addrs, addr)
 		}
 	}
@@ -337,7 +344,7 @@ func cgoSockaddr(ip IP, zone string) (*syscall.RawSockaddr, syscall.Socklen_t) {
 		return cgoSockaddrInet4(ip4), syscall.Socklen_t(syscall.SizeofSockaddrInet4)
 	}
 	if ip6 := ip.To16(); ip6 != nil {
-		return cgoSockaddrInet6(ip6, zoneToInt(zone)), syscall.Socklen_t(syscall.SizeofSockaddrInet6)
+		return cgoSockaddrInet6(ip6, zoneCache.index(zone)), syscall.Socklen_t(syscall.SizeofSockaddrInet6)
 	}
 	return nil, 0
 }

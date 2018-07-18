@@ -1,5 +1,5 @@
 /* Handle errors.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Niels Kristian Bech Jensen
 
 This file is part of GCC.
@@ -67,7 +67,7 @@ gfc_push_suppress_errors (void)
 }
 
 static void
-gfc_error (const char *gmsgid, va_list ap)  ATTRIBUTE_GCC_GFC(1,0);
+gfc_error_opt (int opt, const char *gmsgid, va_list ap)  ATTRIBUTE_GCC_GFC(2,0);
 
 static bool
 gfc_warning (int opt, const char *gmsgid, va_list ap) ATTRIBUTE_GCC_GFC(2,0);
@@ -789,7 +789,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
   diagnostic.option_index = opt;
-  bool ret = report_diagnostic (&diagnostic);
+  bool ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
 
   if (buffered_p)
     {
@@ -842,6 +842,38 @@ gfc_notification_std (int std)
 }
 
 
+/* Return a string describing the nature of a standard violation
+ * and/or the relevant version of the standard.  */
+
+char const*
+notify_std_msg(int std)
+{
+
+  if (std & GFC_STD_F2018_DEL)
+    return _("Fortran 2018 deleted feature:");
+  else if (std & GFC_STD_F2018_OBS)
+    return _("Fortran 2018 obsolescent feature:");
+  else if (std & GFC_STD_F2018)
+    return _("Fortran 2018:");
+  else if (std & GFC_STD_F2008_OBS)
+    return _("Fortran 2008 obsolescent feature:");
+  else if (std & GFC_STD_F2008)
+    return "Fortran 2008:";
+  else if (std & GFC_STD_F2003)
+    return "Fortran 2003:";
+  else if (std & GFC_STD_GNU)
+    return _("GNU Extension:");
+  else if (std & GFC_STD_LEGACY)
+    return _("Legacy Extension:");
+  else if (std & GFC_STD_F95_OBS)
+    return _("Obsolescent feature:");
+  else if (std & GFC_STD_F95_DEL)
+    return _("Deleted feature:");
+  else
+    gcc_unreachable ();
+}
+
+
 /* Possibly issue a warning/error about use of a nonstandard (or deleted)
    feature.  An error/warning will be issued if the currently selected
    standard does not contain the requested bits.  Return false if
@@ -851,46 +883,24 @@ bool
 gfc_notify_std (int std, const char *gmsgid, ...)
 {
   va_list argp;
-  bool warning;
   const char *msg, *msg2;
   char *buffer;
 
-  warning = ((gfc_option.warn_std & std) != 0) && !inhibit_warnings;
-  if ((gfc_option.allow_std & std) != 0 && !warning)
+  /* Determine whether an error or a warning is needed.  */
+  const int wstd = std & gfc_option.warn_std;    /* Standard to warn about.  */
+  const int estd = std & ~gfc_option.allow_std;  /* Standard to error about.  */
+  const bool warning = (wstd != 0) && !inhibit_warnings;
+  const bool error = (estd != 0);
+
+  if (!error && !warning)
     return true;
-
   if (suppress_errors)
-    return warning ? true : false;
+    return !error;
 
-  switch (std)
-  {
-    case GFC_STD_F2008_TS:
-      msg = "TS 29113/TS 18508:";
-      break;
-    case GFC_STD_F2008_OBS:
-      msg = _("Fortran 2008 obsolescent feature:");
-      break;
-    case GFC_STD_F2008:
-      msg = "Fortran 2008:";
-      break;
-    case GFC_STD_F2003:
-      msg = "Fortran 2003:";
-      break;
-    case GFC_STD_GNU:
-      msg = _("GNU Extension:");
-      break;
-    case GFC_STD_LEGACY:
-      msg = _("Legacy Extension:");
-      break;
-    case GFC_STD_F95_OBS:
-      msg = _("Obsolescent feature:");
-      break;
-    case GFC_STD_F95_DEL:
-      msg = _("Deleted feature:");
-      break;
-    default:
-      gcc_unreachable ();
-  }
+  if (error)
+    msg = notify_std_msg (estd);
+  else
+    msg = notify_std_msg (wstd);
 
   msg2 = _(gmsgid);
   buffer = (char *) alloca (strlen (msg) + strlen (msg2) + 2);
@@ -899,13 +909,16 @@ gfc_notify_std (int std, const char *gmsgid, ...)
   strcat (buffer, msg2);
 
   va_start (argp, gmsgid);
-  if (warning)
-    gfc_warning (0, buffer, argp);
+  if (error)
+    gfc_error_opt (0, buffer, argp);
   else
-    gfc_error (buffer, argp);
+    gfc_warning (0, buffer, argp);
   va_end (argp);
 
-  return (warning && !warnings_are_errors) ? true : false;
+  if (error)
+    return false;
+  else
+    return (warning && !warnings_are_errors);
 }
 
 
@@ -916,10 +929,9 @@ gfc_notify_std (int std, const char *gmsgid, ...)
    %L  Takes locus argument
 */
 static bool
-gfc_format_decoder (pretty_printer *pp,
-		    text_info *text, const char *spec,
-		    int precision ATTRIBUTE_UNUSED, bool wide ATTRIBUTE_UNUSED,
-		    bool plus ATTRIBUTE_UNUSED, bool hash ATTRIBUTE_UNUSED)
+gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
+		    int precision, bool wide, bool set_locus, bool hash,
+		    bool *quoted, const char **buffer_ptr)
 {
   switch (*spec)
     {
@@ -946,7 +958,11 @@ gfc_format_decoder (pretty_printer *pp,
 	return true;
       }
     default:
-      return false;
+      /* Fall through info the middle-end decoder, as e.g. stor-layout.c
+	 etc. diagnostics can use the FE printer while the FE is still
+	 active.  */
+      return default_tree_printer (pp, text, spec, precision, wide,
+				   set_locus, hash, quoted, buffer_ptr);
     }
 }
 
@@ -1089,7 +1105,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
     }
   else
     {
-      pp_verbatim (context->printer, locus_prefix);
+      pp_verbatim (context->printer, "%s", locus_prefix);
       free (locus_prefix);
       /* Fortran uses an empty line between locus and caret line.  */
       pp_newline (context->printer);
@@ -1106,7 +1122,7 @@ gfc_diagnostic_start_span (diagnostic_context *context,
 {
   char *locus_prefix;
   locus_prefix = gfc_diagnostic_build_locus_prefix (context, exploc);
-  pp_verbatim (context->printer, locus_prefix);
+  pp_verbatim (context->printer, "%s", locus_prefix);
   free (locus_prefix);
   pp_newline (context->printer);
   /* Fortran uses an empty line between locus and caret line.  */
@@ -1136,7 +1152,7 @@ gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_WARNING);
   diagnostic.option_index = opt;
-  ret = report_diagnostic (&diagnostic);
+  ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (argp);
   return ret;
 }
@@ -1155,11 +1171,29 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
   diagnostic.option_index = opt;
-  ret = report_diagnostic (&diagnostic);
+  ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (argp);
   return ret;
 }
 
+/* Internal warning, do not buffer.  */
+
+bool
+gfc_warning_internal (int opt, const char *gmsgid, ...)
+{
+  va_list argp;
+  diagnostic_info diagnostic;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
+  bool ret;
+
+  va_start (argp, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
+		       DK_WARNING);
+  diagnostic.option_index = opt;
+  ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
+  va_end (argp);
+  return ret;
+}
 
 /* Immediate error (i.e. do not buffer).  */
 
@@ -1174,7 +1208,7 @@ gfc_error_now (const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ERROR);
-  report_diagnostic (&diagnostic);
+  diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (argp);
 }
 
@@ -1190,7 +1224,7 @@ gfc_fatal_error (const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_FATAL);
-  report_diagnostic (&diagnostic);
+  diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (argp);
 
   gcc_unreachable ();
@@ -1226,6 +1260,7 @@ gfc_warning_check (void)
       diagnostic_action_after_output (global_dc,
 				      warningcount_buffered
 				      ? DK_WARNING : DK_ERROR);
+      diagnostic_check_max_errors (global_dc, true);
     }
 }
 
@@ -1233,7 +1268,7 @@ gfc_warning_check (void)
 /* Issue an error.  */
 
 static void
-gfc_error (const char *gmsgid, va_list ap)
+gfc_error_opt (int opt, const char *gmsgid, va_list ap)
 {
   va_list argp;
   va_copy (argp, ap);
@@ -1241,7 +1276,7 @@ gfc_error (const char *gmsgid, va_list ap)
 
   if (warnings_not_errors)
     {
-      gfc_warning (/*opt=*/0, gmsgid, argp);
+      gfc_warning (opt, gmsgid, argp);
       va_end (argp);
       return;
     }
@@ -1274,7 +1309,7 @@ gfc_error (const char *gmsgid, va_list ap)
     }
 
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &richloc, DK_ERROR);
-  report_diagnostic (&diagnostic);
+  diagnostic_report_diagnostic (global_dc, &diagnostic);
 
   if (buffered_p)
     {
@@ -1289,11 +1324,21 @@ gfc_error (const char *gmsgid, va_list ap)
 
 
 void
+gfc_error_opt (int opt, const char *gmsgid, ...)
+{
+  va_list argp;
+  va_start (argp, gmsgid);
+  gfc_error_opt (opt, gmsgid, argp);
+  va_end (argp);
+}
+
+
+void
 gfc_error (const char *gmsgid, ...)
 {
   va_list argp;
   va_start (argp, gmsgid);
-  gfc_error (gmsgid, argp);
+  gfc_error_opt (0, gmsgid, argp);
   va_end (argp);
 }
 
@@ -1314,7 +1359,7 @@ gfc_internal_error (const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ICE);
-  report_diagnostic (&diagnostic);
+  diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (argp);
 
   gcc_unreachable ();
@@ -1360,6 +1405,7 @@ gfc_error_check (void)
       gcc_assert (gfc_output_buffer_empty_p (pp_error_buffer));
       pp->buffer = tmp_buffer;
       diagnostic_action_after_output (global_dc, DK_ERROR);
+      diagnostic_check_max_errors (global_dc, true);
       return true;
     }
 

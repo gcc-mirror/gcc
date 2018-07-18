@@ -1,6 +1,6 @@
 // { dg-do compile { target c++14 } }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -13,12 +13,12 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a moved_to of the GNU General Public License along
+// You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
 #include <experimental/array>
-#include <functional>
+#include <functional> // for std::ref and std::reference_wrapper
 
 struct MoveOnly
 {
@@ -27,7 +27,7 @@ struct MoveOnly
   MoveOnly& operator=(MoveOnly&&) = default;
 };
 
-int main()
+void test01()
 {
   char x[42];
   std::array<char, 42> y = std::experimental::to_array(x);
@@ -44,4 +44,14 @@ int main()
   constexpr std::array<long, 3> zz2
     = std::experimental::make_array(1,2L, 3);
   constexpr std::array<MoveOnly, 1> zzz2 = std::experimental::make_array(MoveOnly{});
+}
+
+void test02()
+{
+  // PR libstdc++/79195
+  struct A {};
+  struct B : A {};
+  struct C : A {};
+  auto arr = std::experimental::make_array<A>(B{}, C{});
+  static_assert(std::is_same<decltype(arr), std::array<A, 2>>::value, "");
 }

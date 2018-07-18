@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -122,7 +122,7 @@ package body Lib.Load is
 
       --  No change if we did not find the spec
 
-      if X = No_Source_File then
+      if X <= No_Source_File then
          return;
       end if;
 
@@ -145,7 +145,15 @@ package body Lib.Load is
       Cunit        : Node_Id;
       Du_Name      : Node_Or_Entity_Id;
       End_Lab      : Node_Id;
-      Save_CS      : constant Boolean := Get_Comes_From_Source_Default;
+      Fname        : constant File_Name_Type :=
+        Get_File_Name (Spec_Name, Subunit => False);
+      Pre_Name : constant Boolean :=
+        Is_Predefined_File_Name (Fname, Renamings_Included => False);
+      Ren_Name : constant Boolean :=
+        Is_Predefined_Renaming_File_Name (Fname);
+      GNAT_Name : constant Boolean :=
+        Is_GNAT_File_Name (Fname);
+      Save_CS : constant Boolean := Get_Comes_From_Source_Default;
 
    begin
       --  The created dummy package unit does not come from source
@@ -205,30 +213,37 @@ package body Lib.Load is
       Units.Increment_Last;
       Unum := Units.Last;
 
-      Units.Table (Unum) := (
-        Cunit             => Cunit,
-        Cunit_Entity      => Cunit_Entity,
-        Dependency_Num    => 0,
-        Dynamic_Elab      => False,
-        Error_Location    => Sloc (With_Node),
-        Expected_Unit     => Spec_Name,
-        Fatal_Error       => Error_Detected,
-        Generate_Code     => False,
-        Has_RACW          => False,
-        Filler            => False,
-        Ident_String      => Empty,
-        Loading           => False,
-        Main_Priority     => Default_Main_Priority,
-        Main_CPU          => Default_Main_CPU,
-        Munit_Index       => 0,
-        No_Elab_Code_All  => False,
-        Serial_Number     => 0,
-        Source_Index      => No_Source_File,
-        Unit_File_Name    => Get_File_Name (Spec_Name, Subunit => False),
-        Unit_Name         => Spec_Name,
-        Version           => 0,
-        OA_Setting        => 'O',
-        SPARK_Mode_Pragma => Empty);
+      Units.Table (Unum) :=
+        (Cunit                  => Cunit,
+         Cunit_Entity           => Cunit_Entity,
+         Dependency_Num         => 0,
+         Dynamic_Elab           => False,
+         Error_Location         => Sloc (With_Node),
+         Expected_Unit          => Spec_Name,
+         Fatal_Error            => Error_Detected,
+         Generate_Code          => False,
+         Has_RACW               => False,
+         Filler                 => False,
+         Ident_String           => Empty,
+
+         Is_Predefined_Renaming => Ren_Name,
+         Is_Predefined_Unit     => Pre_Name or Ren_Name,
+         Is_Internal_Unit       => Pre_Name or Ren_Name or GNAT_Name,
+         Filler2                => False,
+
+         Loading                => False,
+         Main_Priority          => Default_Main_Priority,
+         Main_CPU               => Default_Main_CPU,
+         Primary_Stack_Count    => 0,
+         Sec_Stack_Count        => 0,
+         Munit_Index            => 0,
+         No_Elab_Code_All       => False,
+         Serial_Number          => 0,
+         Source_Index           => No_Source_File,
+         Unit_File_Name         => Fname,
+         Unit_Name              => Spec_Name,
+         Version                => 0,
+         OA_Setting             => 'O');
 
       Set_Comes_From_Source_Default (Save_CS);
       Set_Error_Posted (Cunit_Entity);
@@ -286,7 +301,13 @@ package body Lib.Load is
    ----------------------
 
    procedure Load_Main_Source is
-      Fname   : File_Name_Type;
+      Fname : constant File_Name_Type := Next_Main_Source;
+      Pre_Name : constant Boolean :=
+        Is_Predefined_File_Name (Fname, Renamings_Included => False);
+      Ren_Name : constant Boolean :=
+        Is_Predefined_Renaming_File_Name (Fname);
+      GNAT_Name : constant Boolean :=
+        Is_GNAT_File_Name (Fname);
       Version : Word := 0;
 
    begin
@@ -300,7 +321,6 @@ package body Lib.Load is
       --  Cunit_Entity fields also get filled in later by the parser.
 
       Units.Increment_Last;
-      Fname := Next_Main_Source;
 
       Units.Table (Main_Unit).Unit_File_Name := Fname;
 
@@ -308,34 +328,61 @@ package body Lib.Load is
          Main_Source_File := Load_Source_File (Fname);
          Current_Error_Source_File := Main_Source_File;
 
-         if Main_Source_File /= No_Source_File then
+         if Main_Source_File > No_Source_File then
             Version := Source_Checksum (Main_Source_File);
+
+         else
+            --  To avoid emitting a source location (since there is no file),
+            --  we write a custom error message instead of using the machinery
+            --  in errout.adb.
+
+            Set_Standard_Error;
+
+            if Main_Source_File = No_Access_To_Source_File then
+               Write_Str
+                 ("no read access for file """ & Get_Name_String (Fname)
+                  & """");
+            else
+               Write_Str
+                 ("file """ & Get_Name_String (Fname) & """ not found");
+            end if;
+
+            Write_Eol;
+            Set_Standard_Output;
          end if;
 
-         Units.Table (Main_Unit) := (
-           Cunit             => Empty,
-           Cunit_Entity      => Empty,
-           Dependency_Num    => 0,
-           Dynamic_Elab      => False,
-           Error_Location    => No_Location,
-           Expected_Unit     => No_Unit_Name,
-           Fatal_Error       => None,
-           Generate_Code     => False,
-           Has_RACW          => False,
-           Filler            => False,
-           Ident_String      => Empty,
-           Loading           => True,
-           Main_Priority     => Default_Main_Priority,
-           Main_CPU          => Default_Main_CPU,
-           Munit_Index       => 0,
-           No_Elab_Code_All  => False,
-           Serial_Number     => 0,
-           Source_Index      => Main_Source_File,
-           Unit_File_Name    => Fname,
-           Unit_Name         => No_Unit_Name,
-           Version           => Version,
-           OA_Setting        => 'O',
-           SPARK_Mode_Pragma => Empty);
+         Units.Table (Main_Unit) :=
+           (Cunit                  => Empty,
+            Cunit_Entity           => Empty,
+            Dependency_Num         => 0,
+            Dynamic_Elab           => False,
+            Error_Location         => No_Location,
+            Expected_Unit          => No_Unit_Name,
+            Fatal_Error            => None,
+            Generate_Code          => False,
+            Has_RACW               => False,
+            Filler                 => False,
+            Ident_String           => Empty,
+
+            Is_Predefined_Renaming => Ren_Name,
+            Is_Predefined_Unit     => Pre_Name or Ren_Name,
+            Is_Internal_Unit       => Pre_Name or Ren_Name or GNAT_Name,
+            Filler2                => False,
+
+            Loading                => True,
+            Main_Priority          => Default_Main_Priority,
+            Main_CPU               => Default_Main_CPU,
+            Primary_Stack_Count    => 0,
+            Sec_Stack_Count        => 0,
+
+            Munit_Index            => 0,
+            No_Elab_Code_All       => False,
+            Serial_Number          => 0,
+            Source_Index           => Main_Source_File,
+            Unit_File_Name         => Fname,
+            Unit_Name              => No_Unit_Name,
+            Version                => Version,
+            OA_Setting             => 'O');
       end if;
    end Load_Main_Source;
 
@@ -358,6 +405,9 @@ package body Lib.Load is
       Unum         : Unit_Number_Type;
       Unump        : Unit_Number_Type;
       Fname        : File_Name_Type;
+      Pre_Name     : Boolean;
+      Ren_Name     : Boolean;
+      GNAT_Name    : Boolean;
       Src_Ind      : Source_File_Index;
       Save_PMES    : constant Boolean := Parsing_Main_Extended_Source;
 
@@ -469,7 +519,11 @@ package body Lib.Load is
          Uname_Actual := Load_Name;
       end if;
 
-      Fname := Get_File_Name (Uname_Actual, Subunit);
+      Fname     := Get_File_Name (Uname_Actual, Subunit);
+      Pre_Name  :=
+        Is_Predefined_File_Name (Fname, Renamings_Included => False);
+      Ren_Name  := Is_Predefined_Renaming_File_Name (Fname);
+      GNAT_Name := Is_GNAT_File_Name (Fname);
 
       if Debug_Flag_L then
          Write_Eol;
@@ -582,6 +636,8 @@ package body Lib.Load is
                end if;
 
                if Present (Error_Node) then
+                  Get_Name_String (Fname);
+
                   if Is_Predefined_File_Name (Fname) then
                      Error_Msg_Unit_1 := Uname_Actual;
                      Error_Msg
@@ -675,31 +731,38 @@ package body Lib.Load is
 
          --  File was found
 
-         if Src_Ind /= No_Source_File then
-            Units.Table (Unum) := (
-              Cunit             => Empty,
-              Cunit_Entity      => Empty,
-              Dependency_Num    => 0,
-              Dynamic_Elab      => False,
-              Error_Location    => Sloc (Error_Node),
-              Expected_Unit     => Uname_Actual,
-              Fatal_Error       => None,
-              Generate_Code     => False,
-              Has_RACW          => False,
-              Filler            => False,
-              Ident_String      => Empty,
-              Loading           => True,
-              Main_Priority     => Default_Main_Priority,
-              Main_CPU          => Default_Main_CPU,
-              Munit_Index       => 0,
-              No_Elab_Code_All  => False,
-              Serial_Number     => 0,
-              Source_Index      => Src_Ind,
-              Unit_File_Name    => Fname,
-              Unit_Name         => Uname_Actual,
-              Version           => Source_Checksum (Src_Ind),
-              OA_Setting        => 'O',
-              SPARK_Mode_Pragma => Empty);
+         if Src_Ind > No_Source_File then
+            Units.Table (Unum) :=
+              (Cunit                  => Empty,
+               Cunit_Entity           => Empty,
+               Dependency_Num         => 0,
+               Dynamic_Elab           => False,
+               Error_Location         => Sloc (Error_Node),
+               Expected_Unit          => Uname_Actual,
+               Fatal_Error            => None,
+               Generate_Code          => False,
+               Has_RACW               => False,
+               Filler                 => False,
+               Ident_String           => Empty,
+
+               Is_Predefined_Renaming => Ren_Name,
+               Is_Predefined_Unit     => Pre_Name or Ren_Name,
+               Is_Internal_Unit       => Pre_Name or Ren_Name or GNAT_Name,
+               Filler2                => False,
+
+               Loading                => True,
+               Main_Priority          => Default_Main_Priority,
+               Main_CPU               => Default_Main_CPU,
+               Primary_Stack_Count    => 0,
+               Sec_Stack_Count        => 0,
+               Munit_Index            => 0,
+               No_Elab_Code_All       => False,
+               Serial_Number          => 0,
+               Source_Index           => Src_Ind,
+               Unit_File_Name         => Fname,
+               Unit_Name              => Uname_Actual,
+               Version                => Source_Checksum (Src_Ind),
+               OA_Setting             => 'O');
 
             --  Parse the new unit
 
@@ -778,13 +841,20 @@ package body Lib.Load is
 
          else
             if Debug_Flag_L then
-               Write_Str ("  file was not found, load failed");
+               if Src_Ind = No_Access_To_Source_File then
+                  Write_Str ("  no read access to file, load failed");
+               else
+                  Write_Str ("  file was not found, load failed");
+               end if;
+
                Write_Eol;
             end if;
 
             --  Generate message if unit required
 
             if Required then
+               Get_Name_String (Fname);
+
                if Is_Predefined_File_Name (Fname) then
 
                   --  This is a predefined library unit which is not present
@@ -809,7 +879,12 @@ package body Lib.Load is
 
                else
                   Error_Msg_File_1 := Fname;
-                  Error_Msg ("file{ not found", Load_Msg_Sloc);
+
+                  if Src_Ind = No_Access_To_Source_File then
+                     Error_Msg ("no read access to file{", Load_Msg_Sloc);
+                  else
+                     Error_Msg ("file{ not found", Load_Msg_Sloc);
+                  end if;
                end if;
 
                Write_Dependency_Chain;
@@ -879,7 +954,7 @@ package body Lib.Load is
    --  code will have to be generated for it.
 
    procedure Make_Instance_Unit (N : Node_Id; In_Main : Boolean) is
-      Sind : constant Source_File_Index := Source_Index (Main_Unit);
+      Sind  : constant Source_File_Index := Source_Index (Main_Unit);
 
    begin
       Units.Increment_Last;
@@ -935,7 +1010,7 @@ package body Lib.Load is
       Unum  : constant Unit_Number_Type := Get_Cunit_Unit_Number (U);
       Fnum  : constant Unit_Number_Type := Get_Cunit_Unit_Number (From);
    begin
-      if Source_Index (Fnum) /= No_Source_File then
+      if Source_Index (Fnum) > No_Source_File then
          Units.Table (Unum).Version :=
            Units.Table (Unum).Version
              xor

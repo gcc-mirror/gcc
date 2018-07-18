@@ -1,7 +1,7 @@
 # This option enables -fsanitize=address for stage2 and stage3.
 
 # Suppress LeakSanitizer in bootstrap.
-export LSAN_OPTIONS="detect_leaks=0"
+export ASAN_OPTIONS=detect_leaks=0:use_odr_indicator=1
 
 STAGE2_CFLAGS += -fsanitize=address
 STAGE3_CFLAGS += -fsanitize=address

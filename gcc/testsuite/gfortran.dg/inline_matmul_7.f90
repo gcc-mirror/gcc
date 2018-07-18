@@ -23,10 +23,10 @@ program main
 
   DO i=1,N
      v1 = MATMUL(a,b(:,i))
-     if (any(abs(v1-v1res(:,i)) > 1e-10)) call abort
+     if (any(abs(v1-v1res(:,i)) > 1e-10)) STOP 1
 
      v2 = MATMUL(a,b(i,:))
-     if (any(abs(v2-v2res(:,i)) > 1e-10)) call abort
+     if (any(abs(v2-v2res(:,i)) > 1e-10)) STOP 2
 
   ENDDO
 

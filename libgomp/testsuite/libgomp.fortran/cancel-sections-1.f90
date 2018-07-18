@@ -7,16 +7,16 @@
     !$omp parallel num_threads(32)
       !$omp sections
 	  !$omp cancel sections
-	  call abort
+	  STOP 1
 	!$omp section
 	  !$omp cancel sections
-	  call abort
+	  STOP 2
 	!$omp section
 	  !$omp cancel sections
-	  call abort
+	  STOP 3
 	!$omp section
 	  !$omp cancel sections
-	  call abort
+	  STOP 4
       !$omp end sections
     !$omp end parallel
   end if

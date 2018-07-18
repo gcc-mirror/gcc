@@ -1,5 +1,5 @@
 ! { dg-do run { target { powerpc*-*-* } } }
-! { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } }
+! { dg-skip-if "" { powerpc*-*-darwin* } }
 ! { dg-options "-O3 -funroll-loops -ffast-math -mcpu=power4" }
 
 
@@ -33,5 +33,5 @@
  50	continue
 
 	call sfcpar(ar1,10,d2,d3,d1)
-	if (d1.ne.10.0) call abort()
+	if (d1.ne.10.0) STOP 1
       end

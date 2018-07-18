@@ -21,7 +21,7 @@ main ()
     }
   }
 
-  if (acc_get_device_type () != acc_device_nvidia)
+  if (acc_get_device_type () == acc_device_host)
     {
       if (s1 != 1)
 	abort ();
@@ -41,7 +41,7 @@ main ()
     s2 += N;
   }
 
-  if (acc_get_device_type () != acc_device_nvidia)
+  if (acc_get_device_type () == acc_device_host)
     {
       if (s1 != 1)
 	abort ();

@@ -39,14 +39,13 @@ void GetStackTraceWithPcBpAndContext(BufferedStackTrace *stack, uptr max_depth,
   stack->size = 0;
   if (LIKELY(asan_inited)) {
     if ((t = GetCurrentThread()) && !t->isUnwinding()) {
-      // On FreeBSD the slow unwinding that leverages _Unwind_Backtrace()
-      // yields the call stack of the signal's handler and not of the code
-      // that raised the signal (as it does on Linux).
-      if (SANITIZER_FREEBSD && t->isInDeadlySignal()) fast = true;
       uptr stack_top = t->stack_top();
       uptr stack_bottom = t->stack_bottom();
       ScopedUnwinding unwind_scope(t);
-      stack->Unwind(max_depth, pc, bp, context, stack_top, stack_bottom, fast);
+      if (!SANITIZER_MIPS || IsValidFrame(bp, stack_top, stack_bottom)) {
+        stack->Unwind(max_depth, pc, bp, context, stack_top, stack_bottom,
+                      fast);
+      }
     } else if (!t && !fast) {
       /* If GetCurrentThread() has failed, try to do slow unwind anyways. */
       stack->Unwind(max_depth, pc, bp, context, 0, 0, false);

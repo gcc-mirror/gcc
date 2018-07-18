@@ -15,7 +15,7 @@ template <class T>
 class Vector
 {
   friend ostream& operator<< (ostream& out, const Vector<T> & vec); // { dg-warning "non-template" "warn" } 
-  // { dg-message "note" "note" { target *-*-* } 17 }
+  // { dg-message "note" "note" { target *-*-* } .-1 }
 };
 
 template <class T>

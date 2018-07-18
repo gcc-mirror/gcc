@@ -21,6 +21,9 @@
 /* Define if your assembler supports unwind section type. */
 #undef HAVE_AS_X86_64_UNWIND_SECTION_TYPE
 
+/* Define if your assembler supports AES instructions. */
+#undef HAVE_AS_X86_AES
+
 /* Define if your assembler supports PC relative relocs. */
 #undef HAVE_AS_X86_PCREL
 
@@ -110,6 +113,9 @@
 
 /* Define to 1 if you have the <linux/netlink.h> header file. */
 #undef HAVE_LINUX_NETLINK_H
+
+/* Define to 1 if you have the <linux/ptrace.h> header file. */
+#undef HAVE_LINUX_PTRACE_H
 
 /* Define to 1 if you have the <linux/reboot.h> header file. */
 #undef HAVE_LINUX_REBOOT_H
@@ -256,6 +262,9 @@
 /* Define to 1 if you have the `sync_file_range' function. */
 #undef HAVE_SYNC_FILE_RANGE
 
+/* Define to 1 if you have the `syscall' function. */
+#undef HAVE_SYSCALL
+
 /* Define to 1 if you have the <syscall.h> header file. */
 #undef HAVE_SYSCALL_H
 
@@ -333,9 +342,6 @@
 
 /* Define to 1 if you have the `unshare' function. */
 #undef HAVE_UNSHARE
-
-/* Define to 1 if you have the <ustat.h> header file and it works. */
-#undef HAVE_USTAT_H
 
 /* Define to 1 if you have the `utimensat' function. */
 #undef HAVE_UTIMENSAT

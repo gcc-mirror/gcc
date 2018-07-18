@@ -59,7 +59,7 @@ CONTAINS
     READ (UNIT = UNIT, FMT = *) dtv%name, dtv%age
   END SUBROUTINE prf
 
-  SUBROUTINE pwuf (dtv,unit,iostat,iomsg)  ! { dg-error "must have intent IN" }
+  SUBROUTINE pwuf (dtv,unit,iostat,iomsg)  ! { dg-error "must have INTENT IN" }
     CLASS(person), INTENT(INOUT) :: dtv
     INTEGER, INTENT(IN) :: unit
     INTEGER, INTENT(OUT) :: iostat

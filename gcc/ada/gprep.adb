@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -249,11 +249,23 @@ package body GPrep is
                Fail ("unable to find definition file """
                      & Get_Name_String (Deffile_Name)
                      & """");
+            elsif Deffile = No_Access_To_Source_File then
+               Fail ("unabled to read definition file """
+                     & Get_Name_String (Deffile_Name)
+                     & """");
             end if;
 
             Scanner.Initialize_Scanner (Deffile);
 
-            Prep.Parse_Def_File;
+            --  Parse the definition file without "replace in comments"
+
+            declare
+               Replace : constant Boolean := Opt.Replace_In_Comments;
+            begin
+               Opt.Replace_In_Comments := False;
+               Prep.Parse_Def_File;
+               Opt.Replace_In_Comments := Replace;
+            end;
          end;
       end if;
 
@@ -506,6 +518,10 @@ package body GPrep is
             Fail ("unable to find input file """
                   & Get_Name_String (Infile_Name)
                   & """");
+         elsif Infile = No_Access_To_Source_File then
+            Fail ("unable to read input file """
+                  & Get_Name_String (Infile_Name)
+                  & """");
          end if;
 
          --  Set Main_Source_File to the input file for the benefit of
@@ -729,7 +745,6 @@ package body GPrep is
             Switch := GNAT.Command_Line.Getopt ("D: a b c C r s T u v");
 
             case Switch is
-
                when ASCII.NUL =>
                   exit;
 

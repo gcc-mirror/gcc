@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for 64 bit PowerPC linux.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -85,7 +85,7 @@ extern int dot_symbols;
 #undef	RS6000_ABI_NAME
 #define	RS6000_ABI_NAME "linux"
 
-#define INVALID_64BIT "-m%s not supported in this configuration"
+#define INVALID_64BIT "%<-m%s%> not supported in this configuration"
 #define INVALID_32BIT INVALID_64BIT
 
 #ifdef LINUX64_DEFAULT_ABI_ELFv2
@@ -292,12 +292,12 @@ extern int dot_symbols;
 
 /* PowerPC64 Linux word-aligns FP doubles when -malign-power is given.  */
 #undef  ADJUST_FIELD_ALIGN
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-  (rs6000_special_adjust_field_align_p ((FIELD), (COMPUTED))		\
+#define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
+  (rs6000_special_adjust_field_align_p ((TYPE), (COMPUTED))		\
    ? 128								\
    : (TARGET_64BIT							\
       && TARGET_ALIGN_NATURAL == 0					\
-      && TYPE_MODE (strip_array_types (TREE_TYPE (FIELD))) == DFmode)	\
+      && TYPE_MODE (strip_array_types (TYPE)) == DFmode)		\
    ? MIN ((COMPUTED), 32)						\
    : (COMPUTED))
 
@@ -340,7 +340,7 @@ extern int dot_symbols;
    registers and memory.  FIRST is nonzero if this is the only
    element.  */
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (!(FIRST) ? upward : FUNCTION_ARG_PADDING (MODE, TYPE))
+  (!(FIRST) ? PAD_UPWARD : targetm.calls.function_arg_padding (MODE, TYPE))
 
 /* Linux doesn't support saving and restoring 64-bit regs in a 32-bit
    process.  */
@@ -395,7 +395,8 @@ extern int dot_symbols;
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux) %(include_extra)"
 
 #undef  LINK_SHLIB_SPEC
-#define LINK_SHLIB_SPEC "%{shared:-shared} %{!shared: %{static:-static}}"
+#define LINK_SHLIB_SPEC "%{shared:-shared} %{!shared: %{static:-static}} \
+  %{static-pie:-static -pie --no-dynamic-linker -z text}"
 
 #undef  LIB_DEFAULT_SPEC
 #define LIB_DEFAULT_SPEC "%(lib_linux)"
@@ -470,13 +471,15 @@ extern int dot_symbols;
 #endif
 
 #define LINK_OS_LINUX_SPEC32 LINK_OS_LINUX_EMUL32 " %{!shared: %{!static: \
-  %{rdynamic:-export-dynamic} \
-  -dynamic-linker " GNU_USER_DYNAMIC_LINKER32 "}} \
+  %{!static-pie: \
+    %{rdynamic:-export-dynamic} \
+    -dynamic-linker " GNU_USER_DYNAMIC_LINKER32 "}}} \
   %(link_os_extra_spec32)"
 
 #define LINK_OS_LINUX_SPEC64 LINK_OS_LINUX_EMUL64 " %{!shared: %{!static: \
-  %{rdynamic:-export-dynamic} \
-  -dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}} \
+  %{!static-pie: \
+    %{rdynamic:-export-dynamic} \
+    -dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}}} \
   %(link_os_extra_spec64)"
 
 #undef  TOC_SECTION_ASM_OP
@@ -640,7 +643,3 @@ extern int dot_symbols;
    enabling the __float128 keyword.  */
 #undef	TARGET_FLOAT128_ENABLE_TYPE
 #define TARGET_FLOAT128_ENABLE_TYPE 1
-
-/* The format string to which "%p" corresponds.  */
-#undef TARGET_PRINTF_POINTER_FORMAT
-#define TARGET_PRINTF_POINTER_FORMAT linux_printf_pointer_format

@@ -64,11 +64,24 @@ func (s *StdSizes) Alignof(T Type) int64 {
 			}
 		}
 		return max
+	case *Slice, *Interface:
+		// Multiword data structures are effectively structs
+		// in which each element has size WordSize.
+		return s.WordSize
+	case *Basic:
+		// Strings are like slices and interfaces.
+		if t.Info()&IsString != 0 {
+			return s.WordSize
+		}
 	}
 	a := s.Sizeof(T) // may be 0
 	// spec: "For a variable x of any type: unsafe.Alignof(x) is at least 1."
 	if a < 1 {
 		return 1
+	}
+	// complex{64,128} are aligned like [2]float{32,64}.
+	if isComplex(T) {
+		a /= 2
 	}
 	if a > s.MaxAlign {
 		return s.MaxAlign
@@ -132,16 +145,58 @@ func (s *StdSizes) Sizeof(T Type) int64 {
 		if n == 0 {
 			return 0
 		}
-		setOffsets(t, s)
-		return t.offsets[n-1] + s.Sizeof(t.fields[n-1].typ)
+		offsets := s.Offsetsof(t.fields)
+		return offsets[n-1] + s.Sizeof(t.fields[n-1].typ)
 	case *Interface:
 		return s.WordSize * 2
 	}
 	return s.WordSize // catch-all
 }
 
+// common architecture word sizes and alignments
+var gcArchSizes = map[string]*StdSizes{
+	"386":      {4, 4},
+	"arm":      {4, 4},
+	"arm64":    {8, 8},
+	"amd64":    {8, 8},
+	"amd64p32": {4, 8},
+	"mips":     {4, 4},
+	"mipsle":   {4, 4},
+	"mips64":   {8, 8},
+	"mips64le": {8, 8},
+	"ppc64":    {8, 8},
+	"ppc64le":  {8, 8},
+	"s390x":    {8, 8},
+	"wasm":     {8, 8},
+	// When adding more architectures here,
+	// update the doc string of SizesFor below.
+}
+
+// SizesFor returns the Sizes used by a compiler for an architecture.
+// The result is nil if a compiler/architecture pair is not known.
+//
+// Supported architectures for compiler "gc":
+// "386", "arm", "arm64", "amd64", "amd64p32", "mips", "mipsle",
+// "mips64", "mips64le", "ppc64", "ppc64le", "s390x", "wasm".
+func SizesFor(compiler, arch string) Sizes {
+	var m map[string]*StdSizes
+	switch compiler {
+	case "gc":
+		m = gcArchSizes
+	case "gccgo":
+		m = gccgoArchSizes
+	default:
+		return nil
+	}
+	s, ok := m[arch]
+	if !ok {
+		return nil
+	}
+	return s
+}
+
 // stdSizes is used if Config.Sizes == nil.
-var stdSizes = StdSizes{8, 8}
+var stdSizes = SizesFor("gc", "amd64")
 
 func (conf *Config) alignof(T Type) int64 {
 	if s := conf.Sizes; s != nil {
@@ -158,22 +213,18 @@ func (conf *Config) offsetsof(T *Struct) []int64 {
 	if T.NumFields() > 0 {
 		// compute offsets on demand
 		if s := conf.Sizes; s != nil {
-			calculated := setOffsets(T, s)
-			offsets = T.offsets
-			if calculated {
-				// sanity checks
-				if len(offsets) != T.NumFields() {
-					panic("Config.Sizes.Offsetsof returned the wrong number of offsets")
-				}
-				for _, o := range offsets {
-					if o < 0 {
-						panic("Config.Sizes.Offsetsof returned an offset < 0")
-					}
+			offsets = s.Offsetsof(T.fields)
+			// sanity checks
+			if len(offsets) != T.NumFields() {
+				panic("Config.Sizes.Offsetsof returned the wrong number of offsets")
+			}
+			for _, o := range offsets {
+				if o < 0 {
+					panic("Config.Sizes.Offsetsof returned an offset < 0")
 				}
 			}
 		} else {
-			setOffsets(T, &stdSizes)
-			offsets = T.offsets
+			offsets = stdSizes.Offsetsof(T.fields)
 		}
 	}
 	return offsets
@@ -206,16 +257,4 @@ func (conf *Config) sizeof(T Type) int64 {
 func align(x, a int64) int64 {
 	y := x + a - 1
 	return y - y%a
-}
-
-// setOffsets sets the offsets of s for the given sizes if necessary.
-// The result is true if the offsets were not set before; otherwise it
-// is false.
-func setOffsets(s *Struct, sizes Sizes) bool {
-	var calculated bool
-	s.offsetsOnce.Do(func() {
-		calculated = true
-		s.offsets = sizes.Offsetsof(s.fields)
-	})
-	return calculated
 }

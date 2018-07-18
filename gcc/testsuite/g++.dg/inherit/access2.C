@@ -10,5 +10,5 @@ B b;
 
 void A::f ()
 {
-  A* ap = &b;			// { dg-error "base|inherit" "" }
+  A* ap = &b;			// { dg-error "base|inherit" }
 }

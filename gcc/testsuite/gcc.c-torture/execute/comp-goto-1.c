@@ -1,6 +1,9 @@
+/* { dg-require-effective-target label_values } */
+/* { dg-require-stack-size "4000" } */
+
 #include <stdlib.h>
 
-#if !defined(NO_LABEL_VALUES) && (!defined(STACK_SIZE) || STACK_SIZE >= 4000) && __INT_MAX__ >= 2147483647
+#if __INT_MAX__ >= 2147483647
 typedef unsigned int uint32;
 typedef signed int sint32;
 
@@ -14,7 +17,7 @@ typedef union
 {
   struct
     {
-      unsigned int	offset:18;
+      signed int	offset:18;
       unsigned int	ignore:4;
       unsigned int	s1:8;
       int		:2;

@@ -1,5 +1,5 @@
 /* ARM EABI compliant unwinding routines.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it
@@ -509,3 +509,25 @@ __aeabi_unwind_cpp_pr2 (_Unwind_State state,
 {
   return __gnu_unwind_pr_common (state, ucbp, context, 2);
 }
+
+#ifdef __FreeBSD__
+/* FreeBSD expects these to be functions */
+inline _Unwind_Ptr
+_Unwind_GetIP (struct _Unwind_Context *context)
+{
+  return _Unwind_GetGR (context, 15) & ~(_Unwind_Word)1;
+}
+
+inline _Unwind_Ptr
+_Unwind_GetIPInfo (struct _Unwind_Context *context, int *ip_before_insn)
+{
+  *ip_before_insn = 0;
+  return _Unwind_GetIP (context);
+}
+
+inline void
+_Unwind_SetIP (struct _Unwind_Context *context, _Unwind_Ptr val)
+{
+  _Unwind_SetGR (context, 15, val | (_Unwind_GetGR (context, 15) & 1));
+}
+#endif

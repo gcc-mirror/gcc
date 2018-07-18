@@ -13,4 +13,4 @@ subroutine vector_square(n, a, b)
 !$omp end target teams
 end subroutine vector_square
 
-! { dg-final { scan-tree-dump "Target construct will be turned into a gridified GPGPU kernel" "omplower" } }
+! { dg-final { scan-tree-dump "Target construct will be turned into a gridified HSA kernel" "omplower" } }

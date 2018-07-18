@@ -1,5 +1,5 @@
 /* Define control flow data structures for the CFG.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,9 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CFGRTL_H
 #define GCC_CFGRTL_H
 
-extern void delete_insn (rtx);
+extern void delete_insn (rtx_insn *);
 extern bool delete_insn_and_edges (rtx_insn *);
-extern void delete_insn_chain (rtx, rtx, bool);
+extern void delete_insn_chain (rtx, rtx_insn *, bool);
 extern basic_block create_basic_block_structure (rtx_insn *, rtx_insn *,
 						 rtx_note *, basic_block);
 extern void compute_bb_for_insn (void);
@@ -40,7 +40,7 @@ extern basic_block force_nonfallthru_and_redirect (edge, basic_block, rtx);
 extern void insert_insn_on_edge (rtx, edge);
 extern void commit_one_edge_insertion (edge e);
 extern void commit_edge_insertions (void);
-extern void print_rtl_with_bb (FILE *, const rtx_insn *, int);
+extern void print_rtl_with_bb (FILE *, const rtx_insn *, dump_flags_t);
 extern void update_br_prob_note (basic_block);
 extern rtx_insn *get_last_bb_insn (basic_block);
 extern void fixup_partitions (void);
@@ -50,9 +50,10 @@ extern bool fixup_abnormal_edges (void);
 extern rtx_insn *unlink_insn_chain (rtx_insn *, rtx_insn *);
 extern void relink_block_chain (bool);
 extern rtx_insn *duplicate_insn_chain (rtx_insn *, rtx_insn *);
-extern void cfg_layout_initialize (unsigned int);
+extern void cfg_layout_initialize (int);
 extern void cfg_layout_finalize (void);
 extern void break_superblocks (void);
 extern void init_rtl_bb_info (basic_block);
+extern void find_bbs_reachable_by_hot_paths (hash_set <basic_block> *);
 
 #endif /* GCC_CFGRTL_H */

@@ -24,7 +24,7 @@ contains
     subroutine non_alloc
       type (mytype) :: x
       x = mytype(yy, bar)
-      if (allocated (x%a) .or. allocated (x%q)) call abort
+      if (allocated (x%a) .or. allocated (x%q)) STOP 1
     end subroutine non_alloc
     subroutine alloc
       type (mytype) :: x
@@ -33,6 +33,6 @@ contains
       yy = reshape ([10,20,30,40],[2,2])
       bar = thytype (reshape ([1,2,3,4],[2,2]))
       x = mytype(yy, bar)
-      if (.not.allocated (x%a) .or. .not.allocated (x%q)) call abort
+      if (.not.allocated (x%a) .or. .not.allocated (x%q)) STOP 2
     end subroutine alloc
 end program test_constructor

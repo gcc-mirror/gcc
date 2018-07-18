@@ -3,6 +3,7 @@
    compilations).  */
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1999 -pedantic-errors" } */
+/* { dg-additional-options "-DSIGNAL_SUPPRESS" { target { ! signal } } } */
 
 #include <stdint.h>
 #ifndef SIGNAL_SUPPRESS

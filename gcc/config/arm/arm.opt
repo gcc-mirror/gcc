@@ -1,6 +1,6 @@
 ; Options for the ARM port of the compiler.
 
-; Copyright (C) 2005-2016 Free Software Foundation, Inc.
+; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -20,6 +20,15 @@
 
 HeaderInclude
 config/arm/arm-opts.h
+
+TargetSave
+const char *x_arm_arch_string
+
+TargetSave
+const char *x_arm_cpu_string
+
+TargetSave
+const char *x_arm_tune_string
 
 Enum
 Name(tls_type) Type(enum arm_tls_type)
@@ -61,10 +70,6 @@ Generate a call to abort if a noreturn function returns.
 mapcs
 Target RejectNegative Mask(APCS_FRAME) Undocumented
 
-mapcs-float
-Target Report Mask(APCS_FLOAT)
-Pass FP arguments in FP registers.
-
 mapcs-frame
 Target Report Mask(APCS_FRAME)
 Generate APCS conformant stack frames.
@@ -77,7 +82,7 @@ mapcs-stack-check
 Target Report Mask(APCS_STACK) Undocumented
 
 march=
-Target RejectNegative ToLower Joined Enum(arm_arch) Var(arm_arch_option)
+Target RejectNegative ToLower Joined Var(arm_arch_string)
 Specify the name of the target architecture.
 
 ; Other arm_arch values are loaded from arm-tables.opt
@@ -86,11 +91,11 @@ EnumValue
 Enum(arm_arch) String(native) Value(-1) DriverOnly
 
 marm
-Target Report RejectNegative InverseMask(THUMB)
+Target Report RejectNegative Negative(mthumb) InverseMask(THUMB)
 Generate code in 32 bit ARM state.
 
 mbig-endian
-Target Report RejectNegative Mask(BIG_END)
+Target Report RejectNegative Negative(mlittle-endian) Mask(BIG_END)
 Assume target CPU is configured as big endian.
 
 mcallee-super-interworking
@@ -102,12 +107,16 @@ Target Report Mask(CALLER_INTERWORKING)
 Thumb: Assume function pointers may go to non-Thumb aware code.
 
 mcpu=
-Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_cpu_option) Init(arm_none)
+Target RejectNegative ToLower Joined Var(arm_cpu_string)
 Specify the name of the target CPU.
 
 mfloat-abi=
 Target RejectNegative Joined Enum(float_abi_type) Var(arm_float_abi) Init(TARGET_DEFAULT_FLOAT_ABI)
 Specify if floating point hardware should be used.
+
+mcmse
+Target RejectNegative Var(use_cmse)
+Specify that the compiler should target secure code as per ARMv8-M Security Extensions.
 
 Enum
 Name(float_abi_type) Type(enum float_abi_type)
@@ -144,14 +153,14 @@ EnumValue
 Enum(arm_fp16_format_type) String(alternative) Value(ARM_FP16_FORMAT_ALTERNATIVE)
 
 mfpu=
-Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index) Save
+Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index) Init(TARGET_FPU_auto) Save
 Specify the name of the target floating point hardware/format.
 
 mhard-float
 Target RejectNegative Alias(mfloat-abi=, hard) Undocumented
 
 mlittle-endian
-Target Report RejectNegative InverseMask(BIG_END)
+Target Report RejectNegative Negative(mbig-endian) InverseMask(BIG_END)
 Assume target CPU is configured as little endian.
 
 mlong-calls
@@ -183,10 +192,10 @@ Target RejectNegative Alias(mfloat-abi=, soft) Undocumented
 
 mstructure-size-boundary=
 Target RejectNegative Joined UInteger Var(arm_structure_size_boundary) Init(DEFAULT_STRUCTURE_SIZE_BOUNDARY)
-Specify the minimum bit alignment of structures.
+Specify the minimum bit alignment of structures. (Deprecated).
 
 mthumb
-Target Report RejectNegative Mask(THUMB) Save
+Target Report RejectNegative Negative(marm) Mask(THUMB) Save
 Generate code for Thumb state.
 
 mthumb-interwork
@@ -223,7 +232,7 @@ Target Report Mask(TPCS_LEAF_FRAME)
 Thumb: Generate (leaf) stack frames even if not needed.
 
 mtune=
-Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_tune_option) Init(arm_none)
+Target RejectNegative ToLower Joined Var(arm_tune_string)
 Tune code for the given processor.
 
 mprint-tune-info
@@ -245,6 +254,10 @@ mvectorize-with-neon-double
 Target Report RejectNegative Mask(NEON_VECTORIZE_DOUBLE)
 Use Neon double-word (rather than quad-word) registers for vectorization.
 
+mverbose-cost-dump
+Common Undocumented Var(arm_verbose_cost) Init(0)
+Enable more verbose RTX cost dumps during debug.  For GCC developers use only.
+
 mword-relocations
 Target Report Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)
 Only generate absolute relocations on word sized values.
@@ -252,14 +265,6 @@ Only generate absolute relocations on word sized values.
 mrestrict-it
 Target Report Var(arm_restrict_it) Init(2) Save
 Generate IT blocks appropriate for ARMv8.
-
-mold-rtx-costs
-Target Report Mask(OLD_RTX_COSTS)
-Use the old RTX costing tables (transitional).
-
-mnew-generic-costs
-Target Report Mask(NEW_GENERIC_COSTS)
-Use the new generic RTX cost tables if new core-specific cost table not available (transitional).
 
 mfix-cortex-m3-ldrd
 Target Report Var(fix_cm3_ldrd) Init(2)
@@ -285,3 +290,15 @@ Assume unified syntax for inline assembly code.
 mpure-code
 Target Report Var(target_pure_code) Init(0)
 Do not allow constant data to be placed in code sections.
+
+mbe8
+Target Report RejectNegative Negative(mbe32) Mask(BE8)
+When linking for big-endian targets, generate a BE8 format image.
+
+mbe32
+Target Report RejectNegative Negative(mbe8) InverseMask(BE8)
+When linking for big-endian targets, generate a legacy BE32 format image.
+
+mbranch-cost=
+Target RejectNegative Joined UInteger Var(arm_branch_cost) Init(-1)
+Cost to assume for a branch insn.

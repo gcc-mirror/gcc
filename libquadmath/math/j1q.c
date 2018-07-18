@@ -95,6 +95,7 @@
     License along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
 
+#include <errno.h>
 #include "quadmath-imp.h"
 
 /* 1 / sqrt(pi) */
@@ -687,13 +688,21 @@ j1q (__float128 x)
   if (! finiteq (x))
     {
       if (x != x)
-	return x;
+	return x + x;
       else
 	return 0.0Q;
     }
   if (x == 0.0Q)
     return x;
   xx = fabsq (x);
+  if (xx <= 0x1p-58Q)
+    {
+      __float128 ret = x * 0.5Q;
+      math_check_force_underflow (ret);
+      if (ret == 0)
+	errno = ERANGE;
+      return ret;
+    }
   if (xx <= 2.0Q)
     {
       /* 0 <= x <= 2 */
@@ -703,6 +712,32 @@ j1q (__float128 x)
       if (x < 0)
 	p = -p;
       return p;
+    }
+
+  /* X = x - 3 pi/4
+     cos(X) = cos(x) cos(3 pi/4) + sin(x) sin(3 pi/4)
+     = 1/sqrt(2) * (-cos(x) + sin(x))
+     sin(X) = sin(x) cos(3 pi/4) - cos(x) sin(3 pi/4)
+     = -1/sqrt(2) * (sin(x) + cos(x))
+     cf. Fdlibm.  */
+  sincosq (xx, &s, &c);
+  ss = -s - c;
+  cc = s - c;
+  if (xx <= FLT128_MAX / 2.0Q)
+    {
+      z = cosq (xx + xx);
+      if ((s * c) > 0)
+	cc = z / ss;
+      else
+	ss = z / cc;
+    }
+
+  if (xx > 0x1p256Q)
+    {
+      z = ONEOSQPI * cc / sqrtq (xx);
+      if (x < 0)
+	z = -z;
+      return z;
     }
 
   xinv = 1.0Q / xx;
@@ -766,20 +801,6 @@ j1q (__float128 x)
   p = 1.0Q + z * p;
   q = z * q;
   q = q * xinv + 0.375Q * xinv;
-  /* X = x - 3 pi/4
-     cos(X) = cos(x) cos(3 pi/4) + sin(x) sin(3 pi/4)
-     = 1/sqrt(2) * (-cos(x) + sin(x))
-     sin(X) = sin(x) cos(3 pi/4) - cos(x) sin(3 pi/4)
-     = -1/sqrt(2) * (sin(x) + cos(x))
-     cf. Fdlibm.  */
-  sincosq (xx, &s, &c);
-  ss = -s - c;
-  cc = s - c;
-  z = cosq (xx + xx);
-  if ((s * c) > 0)
-    cc = z / ss;
-  else
-    ss = z / cc;
   z = ONEOSQPI * (p * cc - q * ss) / sqrtq (xx);
   if (x < 0)
     z = -z;
@@ -823,30 +844,52 @@ y1q (__float128 x)
   __float128 xx, xinv, z, p, q, c, s, cc, ss;
 
   if (! finiteq (x))
-    {
-      if (x != x)
-	return x;
-      else
-	return 0.0Q;
-    }
+    return 1 / (x + x * x);
   if (x <= 0.0Q)
     {
       if (x < 0.0Q)
 	return (zero / (zero * x));
-      return -HUGE_VALQ + x;
+      return -1 / zero; /* -inf and divide by zero exception.  */
     }
   xx = fabsq (x);
   if (xx <= 0x1p-114)
-    return -TWOOPI / x;
+    {
+      z = -TWOOPI / x;
+      if (isinfq (z))
+	errno = ERANGE;
+      return z;
+    }
   if (xx <= 2.0Q)
    {
       /* 0 <= x <= 2 */
+      /* FIXME:  SET_RESTORE_ROUNDL (FE_TONEAREST);  */
       z = xx * xx;
       p = xx * neval (z, Y0_2N, NY0_2N) / deval (z, Y0_2D, NY0_2D);
       p = -TWOOPI / xx + p;
       p = TWOOPI * logq (x) * j1q (x) + p;
       return p;
     }
+
+  /* X = x - 3 pi/4
+     cos(X) = cos(x) cos(3 pi/4) + sin(x) sin(3 pi/4)
+     = 1/sqrt(2) * (-cos(x) + sin(x))
+     sin(X) = sin(x) cos(3 pi/4) - cos(x) sin(3 pi/4)
+     = -1/sqrt(2) * (sin(x) + cos(x))
+     cf. Fdlibm.  */
+  sincosq (xx, &s, &c);
+  ss = -s - c;
+  cc = s - c;
+  if (xx <= FLT128_MAX / 2.0Q)
+    {
+      z = cosq (xx + xx);
+      if ((s * c) > 0)
+	cc = z / ss;
+      else
+	ss = z / cc;
+    }
+
+  if (xx > 0x1p256Q)
+    return ONEOSQPI * ss / sqrtq (xx);
 
   xinv = 1.0Q / xx;
   z = xinv * xinv;
@@ -909,20 +952,6 @@ y1q (__float128 x)
   p = 1.0Q + z * p;
   q = z * q;
   q = q * xinv + 0.375Q * xinv;
-  /* X = x - 3 pi/4
-     cos(X) = cos(x) cos(3 pi/4) + sin(x) sin(3 pi/4)
-     = 1/sqrt(2) * (-cos(x) + sin(x))
-     sin(X) = sin(x) cos(3 pi/4) - cos(x) sin(3 pi/4)
-     = -1/sqrt(2) * (sin(x) + cos(x))
-     cf. Fdlibm.  */
-  sincosq (xx, &s, &c);
-  ss = -s - c;
-  cc = s - c;
-  z = cosq (xx + xx);
-  if ((s * c) > 0)
-    cc = z / ss;
-  else
-    ss = z / cc;
   z = ONEOSQPI * (p * ss + q * cc) / sqrtq (xx);
   return z;
 }

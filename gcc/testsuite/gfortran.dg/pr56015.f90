@@ -11,6 +11,6 @@ program pr56015
 contains
   subroutine foo (p)
     complex*16 p(10)
-    if (any (p .ne. (-0.2d0, 0.1d0))) call abort
+    if (any (p .ne. (-0.2d0, 0.1d0))) STOP 1
   end subroutine
 end program pr56015

@@ -1,4 +1,4 @@
-/* { dg-options "-O1 -funsafe-math-optimizations -floop-interchange" } */
+/* { dg-options "-O1 -funsafe-math-optimizations -floop-nest-optimize" } */
 
 double f(double x)
 {

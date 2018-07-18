@@ -14,6 +14,9 @@
 #include "statements.h"
 #include "export.h"
 
+#include "go-linemap.h"
+#include "backend.h"
+
 // This file handles exporting global declarations.
 
 // Class Export.
@@ -359,6 +362,10 @@ Export::write_imported_init_fns(const std::string& package_name,
        ++p)
     {
       const Import_init* ii = *p;
+
+      if (ii->init_name() == import_init_fn)
+	continue;
+
       this->write_c_string(" ");
       this->write_string(ii->package_name());
       this->write_c_string(" ");
@@ -608,6 +615,9 @@ Export::write_type(const Type* type)
       // definition of the type may refer to the named type via a
       // pointer.
       this->type_refs_[type] = index;
+
+      if (named_type != NULL && named_type->is_alias())
+	this->write_c_string("= ");
     }
 
   type->export_type(this);
@@ -724,7 +734,8 @@ Export::Stream::write_checksum(const std::string& s)
 
 // Class Stream_to_section.
 
-Stream_to_section::Stream_to_section()
+Stream_to_section::Stream_to_section(Backend* backend)
+    : backend_(backend)
 {
 }
 
@@ -733,5 +744,5 @@ Stream_to_section::Stream_to_section()
 void
 Stream_to_section::do_write(const char* bytes, size_t length)
 {
-  go_write_export_data (bytes, length);
+  this->backend_->write_export_data (bytes, length);
 }

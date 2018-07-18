@@ -1,0 +1,2 @@
+This directory contains reproducers for issues seen when adding location
+wrapper nodes to the C++ frontend (ICEs and behavior changes).

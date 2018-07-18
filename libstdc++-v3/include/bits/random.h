@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,15 +58,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _RealType
     generate_canonical(_UniformRandomNumberGenerator& __g);
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
   /*
    * Implementation-space details.
    */
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     template<typename _UIntType, size_t __w,
 	     bool = __w < static_cast<size_t>
 			  (std::numeric_limits<_UIntType>::digits)>
@@ -189,10 +185,22 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	_Engine& _M_g;
       };
 
-  _GLIBCXX_END_NAMESPACE_VERSION
-  } // namespace __detail
+    template<typename _Sseq>
+      using __seed_seq_generate_t = decltype(
+	  std::declval<_Sseq&>().generate(std::declval<uint_least32_t*>(),
+					  std::declval<uint_least32_t*>()));
 
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
+    // Detect whether _Sseq is a valid seed sequence for
+    // a random number engine _Engine with result type _Res.
+    template<typename _Sseq, typename _Engine, typename _Res,
+	     typename _GenerateCheck = __seed_seq_generate_t<_Sseq>>
+      using __is_seed_seq = __and_<
+        __not_<is_same<__remove_cvref_t<_Sseq>, _Engine>>,
+	is_unsigned<typename _Sseq::result_type>,
+	__not_<is_convertible<_Sseq, _Res>>
+      >;
+
+  } // namespace __detail
 
   /**
    * @addtogroup random_generators Random Number Generators
@@ -240,6 +248,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(__m == 0u || (__a < __m && __c < __m),
 		    "template argument substituting __m out of bounds");
 
+      template<typename _Sseq>
+	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
+	  _Sseq, linear_congruential_engine, _UIntType>::value>::type;
+
     public:
       /** The type of the generated random value. */
       typedef _UIntType result_type;
@@ -254,13 +266,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Constructs a %linear_congruential_engine random number
+       *        generator engine with seed 1.
+       */
+      linear_congruential_engine() : linear_congruential_engine(default_seed)
+      { }
+
+      /**
+       * @brief Constructs a %linear_congruential_engine random number
        *        generator engine with seed @p __s.  The default seed value
        *        is 1.
        *
        * @param __s The initial seed value.
        */
       explicit
-      linear_congruential_engine(result_type __s = default_seed)
+      linear_congruential_engine(result_type __s)
       { seed(__s); }
 
       /**
@@ -269,9 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @param __q the seed sequence.
        */
-      template<typename _Sseq, typename = typename
-	std::enable_if<!std::is_same<_Sseq, linear_congruential_engine>::value>
-	       ::type>
+      template<typename _Sseq, typename = _If_seed_seq<_Sseq>>
         explicit
         linear_congruential_engine(_Sseq& __q)
         { seed(__q); }
@@ -293,7 +310,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @param __q the seed sequence.
        */
       template<typename _Sseq>
-        typename std::enable_if<std::is_class<_Sseq>::value>::type
+        _If_seed_seq<_Sseq>
         seed(_Sseq& __q);
 
       /**
@@ -470,6 +487,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(__f <= (__detail::_Shift<_UIntType, __w>::__value - 1),
 		    "template argument substituting __f out of bound");
 
+      template<typename _Sseq>
+	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
+	  _Sseq, mersenne_twister_engine, _UIntType>::value>::type;
+
     public:
       /** The type of the generated random value. */
       typedef _UIntType result_type;
@@ -490,9 +511,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr result_type initialization_multiplier = __f;
       static constexpr result_type default_seed = 5489u;
 
-      // constructors and member function
+      // constructors and member functions
+
+      mersenne_twister_engine() : mersenne_twister_engine(default_seed) { }
+
       explicit
-      mersenne_twister_engine(result_type __sd = default_seed)
+      mersenne_twister_engine(result_type __sd)
       { seed(__sd); }
 
       /**
@@ -501,9 +525,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @param __q the seed sequence.
        */
-      template<typename _Sseq, typename = typename
-        std::enable_if<!std::is_same<_Sseq, mersenne_twister_engine>::value>
-	       ::type>
+      template<typename _Sseq, typename = _If_seed_seq<_Sseq>>
         explicit
         mersenne_twister_engine(_Sseq& __q)
         { seed(__q); }
@@ -512,7 +534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       seed(result_type __sd = default_seed);
 
       template<typename _Sseq>
-	typename std::enable_if<std::is_class<_Sseq>::value>::type
+        _If_seed_seq<_Sseq>
         seed(_Sseq& __q);
 
       /**
@@ -520,7 +542,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       static constexpr result_type
       min()
-      { return 0; };
+      { return 0; }
 
       /**
        * @brief Gets the largest possible value in the output range.
@@ -665,6 +687,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(0u < __w && __w <= std::numeric_limits<_UIntType>::digits,
 		    "template argument substituting __w out of bounds");
 
+      template<typename _Sseq>
+	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
+	  _Sseq, subtract_with_carry_engine, _UIntType>::value>::type;
+
     public:
       /** The type of the generated random value. */
       typedef _UIntType result_type;
@@ -675,12 +701,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr size_t      long_lag     = __r;
       static constexpr result_type default_seed = 19780503u;
 
+      subtract_with_carry_engine() : subtract_with_carry_engine(default_seed)
+      { }
+
       /**
-       * @brief Constructs an explicitly seeded % subtract_with_carry_engine
+       * @brief Constructs an explicitly seeded %subtract_with_carry_engine
        *        random number generator.
        */
       explicit
-      subtract_with_carry_engine(result_type __sd = default_seed)
+      subtract_with_carry_engine(result_type __sd)
       { seed(__sd); }
 
       /**
@@ -689,9 +718,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @param __q the seed sequence.
        */
-      template<typename _Sseq, typename = typename
-        std::enable_if<!std::is_same<_Sseq, subtract_with_carry_engine>::value>
-	       ::type>
+      template<typename _Sseq, typename = _If_seed_seq<_Sseq>>
         explicit
         subtract_with_carry_engine(_Sseq& __q)
         { seed(__q); }
@@ -716,7 +743,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * % subtract_with_carry_engine random number generator.
        */
       template<typename _Sseq>
-	typename std::enable_if<std::is_class<_Sseq>::value>::type
+	_If_seed_seq<_Sseq>
         seed(_Sseq& __q);
 
       /**
@@ -852,6 +879,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /** The type of the generated random value. */
       typedef typename _RandomNumberEngine::result_type result_type;
 
+      template<typename _Sseq>
+	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
+	  _Sseq, discard_block_engine, result_type>::value>::type;
+
       // parameter values
       static constexpr size_t block_size = __p;
       static constexpr size_t used_block = __r;
@@ -899,10 +930,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @param __q A seed sequence.
        */
-      template<typename _Sseq, typename = typename
-	std::enable_if<!std::is_same<_Sseq, discard_block_engine>::value
-		       && !std::is_same<_Sseq, _RandomNumberEngine>::value>
-	       ::type>
+      template<typename _Sseq, typename = _If_seed_seq<_Sseq>>
         explicit
         discard_block_engine(_Sseq& __q)
 	: _M_b(__q), _M_n(0)
@@ -936,7 +964,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @param __q A seed generator function.
        */
       template<typename _Sseq>
-        void
+        _If_seed_seq<_Sseq>
         seed(_Sseq& __q)
         {
 	  _M_b.seed(__q);
@@ -1070,6 +1098,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(0u < __w && __w <= std::numeric_limits<_UIntType>::digits,
 		    "template argument substituting __w out of bounds");
 
+      template<typename _Sseq>
+	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
+	  _Sseq, independent_bits_engine, _UIntType>::value>::type;
+
     public:
       /** The type of the generated random value. */
       typedef _UIntType result_type;
@@ -1117,10 +1149,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @param __q A seed sequence.
        */
-      template<typename _Sseq, typename = typename
-	std::enable_if<!std::is_same<_Sseq, independent_bits_engine>::value
-		       && !std::is_same<_Sseq, _RandomNumberEngine>::value>
-               ::type>
+      template<typename _Sseq, typename = _If_seed_seq<_Sseq>>
         explicit
         independent_bits_engine(_Sseq& __q)
         : _M_b(__q)
@@ -1148,7 +1177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @param __q A seed generator function.
        */
       template<typename _Sseq>
-        void
+        _If_seed_seq<_Sseq>
         seed(_Sseq& __q)
         { _M_b.seed(__q); }
 
@@ -1290,6 +1319,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /** The type of the generated random value. */
       typedef typename _RandomNumberEngine::result_type result_type;
 
+      template<typename _Sseq>
+	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
+	  _Sseq, shuffle_order_engine, result_type>::value>::type;
+
       static constexpr size_t table_size = __k;
 
       /**
@@ -1339,10 +1372,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @param __q A seed sequence.
        */
-      template<typename _Sseq, typename = typename
-	std::enable_if<!std::is_same<_Sseq, shuffle_order_engine>::value
-		       && !std::is_same<_Sseq, _RandomNumberEngine>::value>
-	       ::type>
+      template<typename _Sseq, typename = _If_seed_seq<_Sseq>>
         explicit
         shuffle_order_engine(_Sseq& __q)
         : _M_b(__q)
@@ -1376,7 +1406,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @param __q A seed generator function.
        */
       template<typename _Sseq>
-        void
+        _If_seed_seq<_Sseq>
         seed(_Sseq& __q)
         {
 	  _M_b.seed(__q);
@@ -1573,24 +1603,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // constructors, destructors and member functions
 
 #ifdef _GLIBCXX_USE_RANDOM_TR1
+    random_device() { _M_init("default"); }
 
     explicit
-    random_device(const std::string& __token = "default")
-    {
-      _M_init(__token);
-    }
+    random_device(const std::string& __token) { _M_init(__token); }
 
     ~random_device()
     { _M_fini(); }
-
 #else
+    random_device() { _M_init("mt19937"); }
 
     explicit
-    random_device(const std::string& __token = "mt19937")
+    random_device(const std::string& __token)
     { _M_init_pretr1(__token); }
-
-  public:
-
 #endif
 
     static constexpr result_type
@@ -1603,7 +1628,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     double
     entropy() const noexcept
-    { return 0.0; }
+    {
+#ifdef _GLIBCXX_USE_RANDOM_TR1
+      return this->_M_getentropy();
+#else
+      return 0.0;
+#endif
+    }
 
     result_type
     operator()()
@@ -1627,6 +1658,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     result_type _M_getval();
     result_type _M_getval_pretr1();
+    double _M_getentropy() const noexcept;
 
     union
     {
@@ -1707,14 +1739,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef uniform_real_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(0) { }
+
 	explicit
-	param_type(_RealType __a = _RealType(0),
-		   _RealType __b = _RealType(1))
+	param_type(_RealType __a, _RealType __b = _RealType(1))
 	: _M_a(__a), _M_b(__b)
 	{
 	  __glibcxx_assert(_M_a <= _M_b);
@@ -1732,6 +1766,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_RealType _M_a;
 	_RealType _M_b;
@@ -1741,12 +1779,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @brief Constructs a uniform_real_distribution object.
        *
+       * The lower bound is set to 0.0 and the upper bound to 1.0
+       */
+      uniform_real_distribution() : uniform_real_distribution(0.0) { }
+
+      /**
+       * @brief Constructs a uniform_real_distribution object.
+       *
        * @param __a [IN]  The lower bound of the distribution.
        * @param __b [IN]  The upper bound of the distribution.
        */
       explicit
-      uniform_real_distribution(_RealType __a = _RealType(0),
-				_RealType __b = _RealType(1))
+      uniform_real_distribution(_RealType __a, _RealType __b = _RealType(1))
       : _M_param(__a, __b)
       { }
 
@@ -1925,14 +1969,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef normal_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(0.0) { }
+
 	explicit
-	param_type(_RealType __mean = _RealType(0),
-		   _RealType __stddev = _RealType(1))
+	param_type(_RealType __mean, _RealType __stddev = _RealType(1))
 	: _M_mean(__mean), _M_stddev(__stddev)
 	{
 	  __glibcxx_assert(_M_stddev > _RealType(0));
@@ -1951,18 +1997,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return (__p1._M_mean == __p2._M_mean
 		  && __p1._M_stddev == __p2._M_stddev); }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_RealType _M_mean;
 	_RealType _M_stddev;
       };
 
     public:
+      normal_distribution() : normal_distribution(0.0) { }
+
       /**
        * Constructs a normal distribution with parameters @f$mean@f$ and
        * standard deviation.
        */
       explicit
-      normal_distribution(result_type __mean = result_type(0),
+      normal_distribution(result_type __mean,
 			  result_type __stddev = result_type(1))
       : _M_param(__mean, __stddev), _M_saved_available(false)
       { }
@@ -2138,14 +2190,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef lognormal_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(0.0) { }
+
 	explicit
-	param_type(_RealType __m = _RealType(0),
-		   _RealType __s = _RealType(1))
+	param_type(_RealType __m, _RealType __s = _RealType(1))
 	: _M_m(__m), _M_s(__s)
 	{ }
 
@@ -2161,14 +2215,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_m == __p2._M_m && __p1._M_s == __p2._M_s; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_RealType _M_m;
 	_RealType _M_s;
       };
 
+      lognormal_distribution() : lognormal_distribution(0.0) { }
+
       explicit
-      lognormal_distribution(_RealType __m = _RealType(0),
-			     _RealType __s = _RealType(1))
+      lognormal_distribution(_RealType __m, _RealType __s = _RealType(1))
       : _M_param(__m, __s), _M_nd()
       { }
 
@@ -2342,15 +2401,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef gamma_distribution<_RealType> distribution_type;
 	friend class gamma_distribution<_RealType>;
 
+	param_type() : param_type(1.0) { }
+
 	explicit
-	param_type(_RealType __alpha_val = _RealType(1),
-		   _RealType __beta_val = _RealType(1))
+	param_type(_RealType __alpha_val, _RealType __beta_val = _RealType(1))
 	: _M_alpha(__alpha_val), _M_beta(__beta_val)
 	{
 	  __glibcxx_assert(_M_alpha > _RealType(0));
@@ -2370,6 +2431,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return (__p1._M_alpha == __p2._M_alpha
 		  && __p1._M_beta == __p2._M_beta); }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	void
 	_M_initialize();
@@ -2382,11 +2447,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       /**
+       * @brief Constructs a gamma distribution with parameters 1 and 1.
+       */
+      gamma_distribution() : gamma_distribution(1.0) { }
+
+      /**
        * @brief Constructs a gamma distribution with parameters
        * @f$\alpha@f$ and @f$\beta@f$.
        */
       explicit
-      gamma_distribution(_RealType __alpha_val = _RealType(1),
+      gamma_distribution(_RealType __alpha_val,
 			 _RealType __beta_val = _RealType(1))
       : _M_param(__alpha_val, __beta_val), _M_nd()
       { }
@@ -2559,13 +2629,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef chi_squared_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(1) { }
+
 	explicit
-	param_type(_RealType __n = _RealType(1))
+	param_type(_RealType __n)
 	: _M_n(__n)
 	{ }
 
@@ -2577,12 +2650,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_n == __p2._M_n; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_RealType _M_n;
       };
 
+      chi_squared_distribution() : chi_squared_distribution(1) { }
+
       explicit
-      chi_squared_distribution(_RealType __n = _RealType(1))
+      chi_squared_distribution(_RealType __n)
       : _M_param(__n), _M_gd(__n / 2)
       { }
 
@@ -2618,7 +2697,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       void
       param(const param_type& __param)
-      { _M_param = __param; }
+      {
+	_M_param = __param;
+	typedef typename std::gamma_distribution<result_type>::param_type
+	  param_type;
+	_M_gd.param(param_type{__param.n() / 2});
+      }
 
       /**
        * @brief Returns the greatest lower bound value of the distribution.
@@ -2769,14 +2853,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef cauchy_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(0) { }
+
 	explicit
-	param_type(_RealType __a = _RealType(0),
-		   _RealType __b = _RealType(1))
+	param_type(_RealType __a, _RealType __b = _RealType(1))
 	: _M_a(__a), _M_b(__b)
 	{ }
 
@@ -2792,14 +2878,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_RealType _M_a;
 	_RealType _M_b;
       };
 
+      cauchy_distribution() : cauchy_distribution(0.0) { }
+
       explicit
-      cauchy_distribution(_RealType __a = _RealType(0),
-			  _RealType __b = _RealType(1))
+      cauchy_distribution(_RealType __a, _RealType __b = 1.0)
       : _M_param(__a, __b)
       { }
 
@@ -2970,14 +3061,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef fisher_f_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(1) { }
+
 	explicit
-	param_type(_RealType __m = _RealType(1),
-		   _RealType __n = _RealType(1))
+	param_type(_RealType __m, _RealType __n = _RealType(1))
 	: _M_m(__m), _M_n(__n)
 	{ }
 
@@ -2993,13 +3086,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_m == __p2._M_m && __p1._M_n == __p2._M_n; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_RealType _M_m;
 	_RealType _M_n;
       };
 
+      fisher_f_distribution() : fisher_f_distribution(1.0) { }
+
       explicit
-      fisher_f_distribution(_RealType __m = _RealType(1),
+      fisher_f_distribution(_RealType __m,
 			    _RealType __n = _RealType(1))
       : _M_param(__m, __n), _M_gd_x(__m / 2), _M_gd_y(__n / 2)
       { }
@@ -3194,13 +3293,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef student_t_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(1) { }
+
 	explicit
-	param_type(_RealType __n = _RealType(1))
+	param_type(_RealType __n)
 	: _M_n(__n)
 	{ }
 
@@ -3212,12 +3314,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_n == __p2._M_n; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_RealType _M_n;
       };
 
+      student_t_distribution() : student_t_distribution(1.0) { }
+
       explicit
-      student_t_distribution(_RealType __n = _RealType(1))
+      student_t_distribution(_RealType __n)
       : _M_param(__n), _M_nd(), _M_gd(__n / 2, 2)
       { }
 
@@ -3409,13 +3517,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   public:
     /** The type of the range of the distribution. */
     typedef bool result_type;
+
     /** Parameter type. */
     struct param_type
     {
       typedef bernoulli_distribution distribution_type;
 
+      param_type() : param_type(0.5) { }
+
       explicit
-      param_type(double __p = 0.5)
+      param_type(double __p)
       : _M_p(__p)
       {
 	__glibcxx_assert((_M_p >= 0.0) && (_M_p <= 1.0));
@@ -3429,11 +3540,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator==(const param_type& __p1, const param_type& __p2)
       { return __p1._M_p == __p2._M_p; }
 
+      friend bool
+      operator!=(const param_type& __p1, const param_type& __p2)
+      { return !(__p1 == __p2); }
+
     private:
       double _M_p;
     };
 
   public:
+    /**
+     * @brief Constructs a Bernoulli distribution with likelihood 0.5.
+     */
+    bernoulli_distribution() : bernoulli_distribution(0.5) { }
+
     /**
      * @brief Constructs a Bernoulli distribution with likelihood @p p.
      *
@@ -3441,7 +3561,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *                   Must be in the interval @f$[0, 1]@f$.
      */
     explicit
-    bernoulli_distribution(double __p = 0.5)
+    bernoulli_distribution(double __p)
     : _M_param(__p)
     { }
 
@@ -3617,14 +3737,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _IntType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef binomial_distribution<_IntType> distribution_type;
 	friend class binomial_distribution<_IntType>;
 
+	param_type() : param_type(1) { }
+
 	explicit
-	param_type(_IntType __t = _IntType(1), double __p = 0.5)
+	param_type(_IntType __t, double __p = 0.5)
 	: _M_t(__t), _M_p(__p)
 	{
 	  __glibcxx_assert((_M_t >= _IntType(0))
@@ -3645,6 +3768,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_t == __p2._M_t && __p1._M_p == __p2._M_p; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	void
 	_M_initialize();
@@ -3660,10 +3787,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool   _M_easy;
       };
 
-      // constructors and member function
+      // constructors and member functions
+
+      binomial_distribution() : binomial_distribution(1) { }
+
       explicit
-      binomial_distribution(_IntType __t = _IntType(1),
-			    double __p = 0.5)
+      binomial_distribution(_IntType __t, double __p = 0.5)
       : _M_param(__t, __p), _M_nd()
       { }
 
@@ -3848,14 +3977,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _IntType  result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef geometric_distribution<_IntType> distribution_type;
 	friend class geometric_distribution<_IntType>;
 
+	param_type() : param_type(0.5) { }
+
 	explicit
-	param_type(double __p = 0.5)
+	param_type(double __p)
 	: _M_p(__p)
 	{
 	  __glibcxx_assert((_M_p > 0.0) && (_M_p < 1.0));
@@ -3870,6 +4002,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_p == __p2._M_p; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	void
 	_M_initialize()
@@ -3880,9 +4016,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	double _M_log_1_p;
       };
 
-      // constructors and member function
+      // constructors and member functions
+
+      geometric_distribution() : geometric_distribution(0.5) { }
+
       explicit
-      geometric_distribution(double __p = 0.5)
+      geometric_distribution(double __p)
       : _M_param(__p)
       { }
 
@@ -4048,13 +4187,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _IntType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef negative_binomial_distribution<_IntType> distribution_type;
 
+	param_type() : param_type(1) { }
+
 	explicit
-	param_type(_IntType __k = 1, double __p = 0.5)
+	param_type(_IntType __k, double __p = 0.5)
 	: _M_k(__k), _M_p(__p)
 	{
 	  __glibcxx_assert((_M_k > 0) && (_M_p > 0.0) && (_M_p <= 1.0));
@@ -4072,13 +4214,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_k == __p2._M_k && __p1._M_p == __p2._M_p; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_IntType _M_k;
 	double _M_p;
       };
 
+      negative_binomial_distribution() : negative_binomial_distribution(1) { }
+
       explicit
-      negative_binomial_distribution(_IntType __k = 1, double __p = 0.5)
+      negative_binomial_distribution(_IntType __k, double __p = 0.5)
       : _M_param(__k, __p), _M_gd(__k, (1.0 - __p) / __p)
       { }
 
@@ -4270,14 +4418,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _IntType  result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef poisson_distribution<_IntType> distribution_type;
 	friend class poisson_distribution<_IntType>;
 
+	param_type() : param_type(1.0) { }
+
 	explicit
-	param_type(double __mean = 1.0)
+	param_type(double __mean)
 	: _M_mean(__mean)
 	{
 	  __glibcxx_assert(_M_mean > 0.0);
@@ -4292,6 +4443,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_mean == __p2._M_mean; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	// Hosts either log(mean) or the threshold of the simple method.
 	void
@@ -4305,9 +4460,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
       };
 
-      // constructors and member function
+      // constructors and member functions
+
+      poisson_distribution() : poisson_distribution(1.0) { }
+
       explicit
-      poisson_distribution(double __mean = 1.0)
+      poisson_distribution(double __mean)
       : _M_param(__mean), _M_nd()
       { }
 
@@ -4486,13 +4644,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef exponential_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(1.0) { }
+
 	explicit
-	param_type(_RealType __lambda = _RealType(1))
+	param_type(_RealType __lambda)
 	: _M_lambda(__lambda)
 	{
 	  __glibcxx_assert(_M_lambda > _RealType(0));
@@ -4506,6 +4667,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_lambda == __p2._M_lambda; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_RealType _M_lambda;
       };
@@ -4513,10 +4678,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /**
        * @brief Constructs an exponential distribution with inverse scale
+       *        parameter 1.0
+       */
+      exponential_distribution() : exponential_distribution(1.0) { }
+
+      /**
+       * @brief Constructs an exponential distribution with inverse scale
        *        parameter @f$\lambda@f$.
        */
       explicit
-      exponential_distribution(const result_type& __lambda = result_type(1))
+      exponential_distribution(_RealType __lambda)
       : _M_param(__lambda)
       { }
 
@@ -4688,14 +4859,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef weibull_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(1.0) { }
+
 	explicit
-	param_type(_RealType __a = _RealType(1),
-		   _RealType __b = _RealType(1))
+	param_type(_RealType __a, _RealType __b = _RealType(1.0))
 	: _M_a(__a), _M_b(__b)
 	{ }
 
@@ -4711,14 +4884,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_RealType _M_a;
 	_RealType _M_b;
       };
 
+      weibull_distribution() : weibull_distribution(1.0) { }
+
       explicit
-      weibull_distribution(_RealType __a = _RealType(1),
-			   _RealType __b = _RealType(1))
+      weibull_distribution(_RealType __a, _RealType __b = _RealType(1))
       : _M_param(__a, __b)
       { }
 
@@ -4891,14 +5069,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	typedef extreme_value_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(0.0) { }
+
 	explicit
-	param_type(_RealType __a = _RealType(0),
-		   _RealType __b = _RealType(1))
+	param_type(_RealType __a, _RealType __b = _RealType(1.0))
 	: _M_a(__a), _M_b(__b)
 	{ }
 
@@ -4914,14 +5094,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	_RealType _M_a;
 	_RealType _M_b;
       };
 
+      extreme_value_distribution() : extreme_value_distribution(0.0) { }
+
       explicit
-      extreme_value_distribution(_RealType __a = _RealType(0),
-				 _RealType __b = _RealType(1))
+      extreme_value_distribution(_RealType __a, _RealType __b = _RealType(1))
       : _M_param(__a, __b)
       { }
 
@@ -5091,6 +5276,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _IntType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -5126,6 +5312,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_prob == __p2._M_prob; }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	void
@@ -5321,6 +5511,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -5368,6 +5559,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_int == __p2._M_int && __p1._M_den == __p2._M_den; }
 
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
+
       private:
 	void
 	_M_initialize();
@@ -5377,7 +5572,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::vector<double> _M_cp;
       };
 
-      explicit
       piecewise_constant_distribution()
       : _M_param()
       { }
@@ -5588,6 +5782,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
@@ -5633,8 +5828,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_int == __p2._M_int
-		  && __p1._M_den == __p2._M_den); }
+	{ return __p1._M_int == __p2._M_int && __p1._M_den == __p2._M_den; }
+
+	friend bool
+	operator!=(const param_type& __p1, const param_type& __p2)
+	{ return !(__p1 == __p2); }
 
       private:
 	void
@@ -5646,7 +5844,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::vector<double> _M_m;
       };
 
-      explicit
       piecewise_linear_distribution()
       : _M_param()
       { }

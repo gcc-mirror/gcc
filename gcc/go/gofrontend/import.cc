@@ -82,6 +82,25 @@ Import::open_package(const std::string& filename, Location location,
 	  // A special case.
 	  fn = relative_import_path;
 	}
+      else if (fn[0] == '.' && fn[1] == '.'
+	       && (fn[2] == '\0' || IS_DIR_SEPARATOR(fn[2])))
+	{
+	  // We are going to join relative_import_path and fn, and it
+	  // will look like DIR/../PATH.  But DIR does not necessarily
+	  // exist in this case, and if it doesn't the use of .. will
+	  // fail although it shouldn't.  The gc compiler uses
+	  // path.Join here, which cleans up the .., so we need to do
+	  // the same.
+	  size_t index;
+	  for (index = relative_import_path.length() - 1;
+	       index > 0 && !IS_DIR_SEPARATOR(relative_import_path[index]);
+	       index--)
+	    ;
+	  if (index > 0)
+	    fn = relative_import_path.substr(0, index) + fn.substr(2);
+	  else
+	    fn = relative_import_path + '/' + fn;
+	}
       else
 	fn = relative_import_path + '/' + fn;
       is_local = false;
@@ -588,8 +607,9 @@ Import::import_func(Package* package)
   Typed_identifier_list* parameters;
   Typed_identifier_list* results;
   bool is_varargs;
+  bool nointerface;
   Function::import_func(this, &name, &receiver,
-			&parameters, &results, &is_varargs);
+			&parameters, &results, &is_varargs, &nointerface);
   Function_type *fntype = Type::make_function_type(receiver, parameters,
 						   results, this->location_);
   if (is_varargs)
@@ -629,6 +649,10 @@ Import::import_func(Package* package)
       if (this->add_to_globals_)
 	this->gogo_->add_dot_import_object(no);
     }
+
+  if (nointerface)
+    no->func_declaration_value()->set_nointerface();
+
   return no;
 }
 
@@ -749,6 +773,13 @@ Import::read_type()
       this->require_c_string(" ");
     }
 
+  bool is_alias = false;
+  if (this->match_c_string("= "))
+    {
+      stream->advance(2);
+      is_alias = true;
+    }
+
   // Declare the type in the appropriate package.  If we haven't seen
   // it before, mark it as invisible.  We declare it before we read
   // the actual definition of the type, since the definition may refer
@@ -809,6 +840,9 @@ Import::read_type()
 
 	  // This type has not yet been imported.
 	  ntype->clear_is_visible();
+
+	  if (is_alias)
+	    ntype->set_is_alias();
 
 	  if (!type->is_undefined() && type->interface_type() != NULL)
 	    this->gogo_->record_interface_type(type->interface_type());

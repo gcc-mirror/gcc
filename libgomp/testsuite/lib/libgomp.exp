@@ -26,9 +26,13 @@ load_gcc_lib file-format.exp
 load_gcc_lib target-supports-dg.exp
 load_gcc_lib scanasm.exp
 load_gcc_lib scandump.exp
+load_gcc_lib scanlang.exp
 load_gcc_lib scanrtl.exp
 load_gcc_lib scantree.exp
+load_gcc_lib scanltranstree.exp
+load_gcc_lib scanoffloadtree.exp
 load_gcc_lib scanipa.exp
+load_gcc_lib scanwpaipa.exp
 load_gcc_lib timeout-dg.exp
 load_gcc_lib torture-options.exp
 load_gcc_lib fortran-modules.exp
@@ -183,9 +187,9 @@ proc libgomp_init { args } {
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
         lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
         lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
-	# The top-level include directory, for gomp-constants.h.
-	lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/../../include"
     }
+    # The top-level include directory, for gomp-constants.h.
+    lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/../../include"
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
 
     # For build-tree testing, also consider the library paths used for builing.
@@ -205,12 +209,8 @@ proc libgomp_init { args } {
 	    append always_ld_library_path ":$cuda_driver_lib"
 	}
 	global hsa_runtime_lib
-	global hsa_kmt_lib
 	if { $hsa_runtime_lib != "" } {
 	    append always_ld_library_path ":$hsa_runtime_lib"
-	}
-	if { $hsa_kmt_lib != "" } {
-	    append always_ld_library_path ":$hsa_kmt_lib"
 	}
     }
 
@@ -362,6 +362,18 @@ proc check_effective_target_offload_device_shared_as { } {
     } ]
 }
 
+# Return 1 if configured for nvptx offloading.
+
+proc check_effective_target_openacc_nvidia_accel_configured { } {
+    global offload_targets
+    if { ![string match "*,nvptx,*" ",$offload_targets,"] } {
+        return 0
+    }
+    # PR libgomp/65099: Currently, we only support offloading in 64-bit
+    # configurations.
+    return [is-effective-target lp64]
+}
+
 # Return 1 if at least one nvidia board is present.
 
 proc check_effective_target_openacc_nvidia_accel_present { } {
@@ -412,16 +424,16 @@ proc check_effective_target_hsa_offloading_selected_nocache {} {
 	}
     }
     
-    set result [eval [list check_compile hsa_offloading_src executable $src] ""]
+    set result [check_compile hsa_offloading_src executable $src]
     set lines [lindex $result 0]
-    set output [lindex $result 1]
+    set exe [lindex $result 1]
 
     set ok 0
     if { [string match "" $lines] } {
 	# No error messages, let us switch on HSA debugging output and run it
 	set prev_HSA_DEBUG [getenv HSA_DEBUG]
 	setenv HSA_DEBUG "1"
-	set result [remote_load target "./$output" "2>&1" ""]
+	set result [remote_load target "./$exe"]
 	if { [string match "" $prev_HSA_DEBUG] } {
 	    unsetenv HSA_DEBUG
 	} else {
@@ -429,6 +441,7 @@ proc check_effective_target_hsa_offloading_selected_nocache {} {
 	}
 	set status [lindex $result 0]
 	if { $status != "pass" } {
+	    remote_file build delete $exe
 	    verbose "HSA availability test failed"
 	    return 0
 	}
@@ -438,7 +451,7 @@ proc check_effective_target_hsa_offloading_selected_nocache {} {
 	    set ok 1
 	}
     }
-    remote_file build delete $output
+    remote_file build delete $exe
     return $ok
 }
 

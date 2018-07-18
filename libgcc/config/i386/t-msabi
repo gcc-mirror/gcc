@@ -1,0 +1,13 @@
+# Makefile fragment to support -mcall-ms2sysv-xlogues
+LIB2ADD_ST += $(srcdir)/config/i386/avx_savms64.S \
+	      $(srcdir)/config/i386/avx_resms64.S \
+	      $(srcdir)/config/i386/avx_resms64x.S \
+	      $(srcdir)/config/i386/avx_savms64f.S \
+	      $(srcdir)/config/i386/avx_resms64f.S \
+	      $(srcdir)/config/i386/avx_resms64fx.S \
+	      $(srcdir)/config/i386/sse_savms64.S \
+	      $(srcdir)/config/i386/sse_resms64.S \
+	      $(srcdir)/config/i386/sse_resms64x.S \
+	      $(srcdir)/config/i386/sse_savms64f.S \
+	      $(srcdir)/config/i386/sse_resms64f.S \
+	      $(srcdir)/config/i386/sse_resms64fx.S

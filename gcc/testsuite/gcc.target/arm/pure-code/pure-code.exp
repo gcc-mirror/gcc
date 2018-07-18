@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,8 +26,9 @@ if ![info exists DEFAULT_CFLAGS] then {
 }
 
 # The -mpure-code option is only available for M-profile targets that support
-# thumb2.
-if {[check_effective_target_arm_thumb2_ok]
+# the MOVT instruction.
+if {([check_effective_target_arm_thumb2_ok]
+     || [check_effective_target_arm_thumb1_movt_ok])
     && [check_effective_target_arm_cortex_m]} then {
 # Initialize `dg'.
 dg-init

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,6 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
-with Fname;    use Fname;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -102,7 +101,7 @@ package body Sem_Intr is
       Nam  : constant Entity_Id := Entity (Name (N));
       Arg1 : constant Node_Id   := First_Actual (N);
       Typ  : Entity_Id;
-      Rtyp : Entity_Id;
+      Rtyp : Entity_Id := Empty;
       Cnam : Name_Id;
       Unam : Node_Id;
 
@@ -339,8 +338,7 @@ package body Sem_Intr is
 
       elsif not Comes_From_Source (E)
         or else not Comes_From_Source (N)
-        or else Is_Predefined_File_Name
-                  (Unit_File_Name (Get_Source_Unit (N)))
+        or else In_Predefined_Unit (N)
       then
          null;
 

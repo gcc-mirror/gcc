@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -402,6 +402,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   struct condition_base
   {
+#if __cplusplus >= 201103L
+    condition_base() = default;
+    condition_base(const condition_base&) = default;
+    condition_base& operator=(const condition_base&) = default;
+#endif
     virtual ~condition_base() { };
   };
 

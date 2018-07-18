@@ -130,7 +130,7 @@
    int i = (size_t)[self instance_func0];    /* { dg-warning ".Derived. may not respond to .\\-instance_func0." } */
    i += [(Derived <Func> *)self categ_instance_func2];
    i += (size_t)[(TestsuiteObject <Func> *)self categ_instance_func2]; /* { dg-warning ".TestsuiteObject. may not respond to .\\-categ_instance_func2." } */
-   /* { dg-warning ".\\-categ_instance_func2. not found in protocol" "" { target *-*-* } 132 } */
+   /* { dg-warning ".\\-categ_instance_func2. not found in protocol" "" { target *-*-* } .-1 } */
    i += (size_t)[(id <Func>)self categ_instance_func2];  /* { dg-warning ".\\-categ_instance_func2. not found in protocol" } */
    i += [(id)self categ_instance_func2];
    return i + (size_t)[super instance_func0];   /* { dg-warning ".TestsuiteObject. may not respond to .\\-instance_func0." } */

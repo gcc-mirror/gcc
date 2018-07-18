@@ -14,13 +14,13 @@
 
       a = ""
       read(10,20)(a(i),i=1,4)
-      if (a(4).ne."jkl") call abort()
+      if (a(4).ne."jkl") STOP 1
 
       rewind(10)
 
       a = ""
       read(10,30)(a(i),i=1,4)
-      if (a(4).ne."jkl") call abort()
+      if (a(4).ne."jkl") STOP 2
 
  20   format(1x,a3,1x,a3,1x,a3,1x,a3,10x)
  30   format(1x,a3,1x,a3,1x,a3,1x,a3)

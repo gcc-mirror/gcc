@@ -34,4 +34,4 @@ if (n >= k + 1 && k >= 0) {
 
 */
 
-/* { dg-final { scan-tree-dump "if \\\(P_8 >= P_11 \\\+ 1 && P_11 >= 0\\\) \\\{" "graphite" } } */
+/* { dg-final { scan-tree-dump "if \\\(P_\[0-9\]+ >= P_\[0-9\]+ \\\+ 1 && P_\[0-9\]+ >= 0\\\) \\\{" "graphite" } } */

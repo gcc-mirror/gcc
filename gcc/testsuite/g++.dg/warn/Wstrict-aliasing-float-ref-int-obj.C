@@ -4,9 +4,9 @@
 
 int foo() {
   int x;
-  float& q = reinterpret_cast<float&> (x);  /* { dg-message "dereferencing type-punned" "deref" { target *-*-* } } */
+  float& q = reinterpret_cast<float&> (x); /* { dg-message "dereferencing type-punned" "deref" } */
+  /* { dg-message "initialized" "note" { xfail *-*-* } .-1 } */
+  
   q = 1.0; /* { dg-warning "does break strict-aliasing" "strict-aliasing" { xfail *-*-* } } */
   return x;
 }
-
-/* { dg-message "initialized" "note" { xfail *-*-* } 7 } */

@@ -1,5 +1,5 @@
 ;; Frv Machine Description
-;; Copyright (C) 1999-2016 Free Software Foundation, Inc.
+;; Copyright (C) 1999-2018 Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc.
 
 ;; This file is part of GCC.
@@ -1335,9 +1335,9 @@
 ;; patterns `reload_inM' or `reload_outM' to handle them.
 
 ;; The constraints on a `moveM' must permit moving any hard register to any
-;; other hard register provided that `HARD_REGNO_MODE_OK' permits mode M in
-;; both registers and `REGISTER_MOVE_COST' applied to their classes returns a
-;; value of 2.
+;; other hard register provided that `TARGET_HARD_REGNO_MODE_OK' permits
+;; mode M in both registers and `REGISTER_MOVE_COST' applied to their
+;; classes returns a value of 2.
 
 ;; It is obligatory to support floating point `moveM' instructions
 ;; into and out of any registers that can hold fixed point values,
@@ -1345,12 +1345,13 @@
 ;; `DImode') can be in those registers and they may have floating
 ;; point members.
 
-;; There may also be a need to support fixed point `moveM' instructions in and
-;; out of floating point registers.  Unfortunately, I have forgotten why this
-;; was so, and I don't know whether it is still true.  If `HARD_REGNO_MODE_OK'
-;; rejects fixed point values in floating point registers, then the constraints
-;; of the fixed point `moveM' instructions must be designed to avoid ever
-;; trying to reload into a floating point register.
+;; There may also be a need to support fixed point `moveM' instructions
+;; in and out of floating point registers.  Unfortunately, I have
+;; forgotten why this was so, and I don't know whether it is still true.
+;; If `TARGET_HARD_REGNO_MODE_OK' rejects fixed point values in floating
+;; point registers, then the constraints of the fixed point `moveM'
+;; instructions must be designed to avoid ever trying to reload into a
+;; floating point register.
 
 (define_expand "movqi"
   [(set (match_operand:QI 0 "general_operand" "")
@@ -7347,9 +7348,8 @@
   ""
   "
 {
-  rtx insn;
-
-  insn = emit_insn (gen_symGOT2reg_i (operands[0], operands[1], operands[2], operands[3]));
+  rtx_insn *insn = emit_insn (gen_symGOT2reg_i (operands[0], operands[1],
+						operands[2], operands[3]));
 
   MEM_READONLY_P (SET_SRC (PATTERN (insn))) = 1;
 
@@ -7431,7 +7431,8 @@
   ""
   "
 {
-  rtx insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1], operands[2], operands[3]));
+  rtx_insn *insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1],
+						   operands[2], operands[3]));
 
   set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 
@@ -7457,8 +7458,6 @@
   ""
   "
 {
-  rtx insn;
-
   if (!can_create_pseudo_p ())
     operands[4] = operands[0];
   else
@@ -7466,8 +7465,8 @@
 
   emit_insn (frv_gen_GPsym2reg (operands[4], operands[2]));
 
-  insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1],
-					 operands[4], operands[3]));
+  rtx_insn *insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1],
+						   operands[4], operands[3]));
 
   set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 
@@ -7483,8 +7482,6 @@
   ""
   "
 {
-  rtx insn;
-
   if (!can_create_pseudo_p ())
     {
       emit_insn (gen_symGOT2reg (operands[0], operands[1], operands[2],
@@ -7496,8 +7493,8 @@
 
   emit_insn (frv_gen_GPsym2reg (operands[4], operands[2]));
 
-  insn = emit_insn (gen_symGOTOFF2reg_hilo (operands[0], operands[1],
-					    operands[4], operands[3]));
+  rtx_insn *insn = emit_insn (gen_symGOTOFF2reg_hilo (operands[0], operands[1],
+						      operands[4], operands[3]));
 
   set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 

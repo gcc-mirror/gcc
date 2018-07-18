@@ -15,5 +15,6 @@ foo (int a)
     }
 }
 
-/* Both ifs should be optimized.  */
-/* { dg-final { scan-tree-dump-times "if \\\(" 0 "vrp1" } } */
+/* Both ifs should be optimized (and switch statement will be the only if
+   in the function).  */
+/* { dg-final { scan-tree-dump-times "if \\\(" 1 "vrp1" } } */

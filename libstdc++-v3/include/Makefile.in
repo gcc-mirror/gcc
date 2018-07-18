@@ -58,6 +58,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/futex.m4 \
+	$(top_srcdir)/../config/hwcaps.m4 \
 	$(top_srcdir)/../config/iconv.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/lib-ld.m4 \
@@ -75,7 +76,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/linkage.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../config/gthr.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 CONFIG_HEADER = $(top_builddir)/config.h
@@ -144,12 +145,13 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 ERROR_CONSTANTS_SRCDIR = @ERROR_CONSTANTS_SRCDIR@
 EXEEXT = @EXEEXT@
+EXTRA_CFLAGS = @EXTRA_CFLAGS@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 FGREP = @FGREP@
 GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
 GLIBCXX_LIBS = @GLIBCXX_LIBS@
 GREP = @GREP@
-HWCAP_FLAGS = @HWCAP_FLAGS@
+HWCAP_CFLAGS = @HWCAP_CFLAGS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -202,7 +204,6 @@ VTV_CXXFLAGS = @VTV_CXXFLAGS@
 VTV_CXXLINKFLAGS = @VTV_CXXLINKFLAGS@
 VTV_PCH_CXXFLAGS = @VTV_PCH_CXXFLAGS@
 WARN_FLAGS = @WARN_FLAGS@
-WERROR = @WERROR@
 XMLLINT = @XMLLINT@
 XSLTPROC = @XSLTPROC@
 XSL_STYLE_DIR = @XSL_STYLE_DIR@
@@ -233,6 +234,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 glibcxx_MOFILES = @glibcxx_MOFILES@
 glibcxx_PCHFLAGS = @glibcxx_PCHFLAGS@
 glibcxx_POFILES = @glibcxx_POFILES@
@@ -289,7 +291,7 @@ toplevel_builddir = @toplevel_builddir@
 toplevel_srcdir = @toplevel_srcdir@
 
 # May be used by various substitution variables.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 PWD_COMMAND = $${PWDCMD-pwd}
@@ -297,14 +299,14 @@ STAMP = echo timestamp >
 toolexecdir = $(glibcxx_toolexecdir)
 toolexeclibdir = $(glibcxx_toolexeclibdir)
 @ENABLE_WERROR_FALSE@WERROR_FLAG = 
-@ENABLE_WERROR_TRUE@WERROR_FLAG = $(WERROR)
+@ENABLE_WERROR_TRUE@WERROR_FLAG = -Werror
 @ENABLE_EXTERN_TEMPLATE_FALSE@XTEMPLATE_FLAGS = 
 @ENABLE_EXTERN_TEMPLATE_TRUE@XTEMPLATE_FLAGS = -fno-implicit-templates
 
 # These bits are all figured out from configure.  Look in acinclude.m4
 # or configure.ac to see how they are set.  See GLIBCXX_EXPORT_FLAGS.
 CONFIG_CXXFLAGS = \
-	$(SECTION_FLAGS) $(HWCAP_FLAGS) -frandom-seed=$@
+	$(SECTION_FLAGS) $(HWCAP_CFLAGS) -frandom-seed=$@
 
 WARN_CXXFLAGS = \
 	$(WARN_FLAGS) $(WERROR_FLAG) -fdiagnostics-show-location=once 
@@ -321,12 +323,15 @@ std_headers = \
 	${std_srcdir}/any \
 	${std_srcdir}/array \
 	${std_srcdir}/atomic \
+	${std_srcdir}/bit \
 	${std_srcdir}/bitset \
+	${std_srcdir}/charconv \
 	${std_srcdir}/chrono \
 	${std_srcdir}/codecvt \
 	${std_srcdir}/complex \
 	${std_srcdir}/condition_variable \
 	${std_srcdir}/deque \
+	${std_srcdir}/filesystem \
 	${std_srcdir}/forward_list \
 	${std_srcdir}/fstream \
 	${std_srcdir}/functional \
@@ -369,7 +374,8 @@ std_headers = \
 	${std_srcdir}/utility \
 	${std_srcdir}/valarray \
 	${std_srcdir}/variant \
-	${std_srcdir}/vector
+	${std_srcdir}/vector \
+	${std_srcdir}/version
 
 bits_srcdir = ${glibcxx_srcdir}/include/bits
 bits_builddir = ./bits
@@ -386,8 +392,6 @@ bits_headers = \
 	${bits_srcdir}/basic_string.tcc \
 	${bits_srcdir}/boost_concept_check.h \
 	${bits_srcdir}/c++0x_warning.h \
-	${bits_srcdir}/c++14_warning.h \
-	${bits_srcdir}/c++17_warning.h \
 	${bits_srcdir}/char_traits.h \
 	${bits_srcdir}/codecvt.h \
 	${bits_srcdir}/concept_check.h \
@@ -396,6 +400,10 @@ bits_headers = \
 	${bits_srcdir}/enable_special_members.h \
 	${bits_srcdir}/forward_list.h \
 	${bits_srcdir}/forward_list.tcc \
+	${bits_srcdir}/fs_dir.h \
+	${bits_srcdir}/fs_fwd.h \
+	${bits_srcdir}/fs_ops.h \
+	${bits_srcdir}/fs_path.h \
 	${bits_srcdir}/fstream.tcc \
 	${bits_srcdir}/functexcept.h \
 	${bits_srcdir}/functional_hash.h \
@@ -417,7 +425,6 @@ bits_headers = \
 	${bits_srcdir}/locale_facets_nonio.tcc \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
-	${bits_srcdir}/specfun.h \
 	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/move.h \
 	${bits_srcdir}/node_handle.h \
@@ -448,6 +455,7 @@ bits_headers = \
 	${bits_srcdir}/shared_ptr_atomic.h \
 	${bits_srcdir}/shared_ptr_base.h \
 	${bits_srcdir}/slice_array.h \
+	${bits_srcdir}/specfun.h \
 	${bits_srcdir}/sstream.tcc \
 	${bits_srcdir}/std_abs.h \
 	${bits_srcdir}/std_function.h \
@@ -969,6 +977,7 @@ experimental_headers = \
 	${experimental_srcdir}/ratio \
 	${experimental_srcdir}/regex \
 	${experimental_srcdir}/set \
+	${experimental_srcdir}/source_location \
 	${experimental_srcdir}/string \
 	${experimental_srcdir}/string_view \
 	${experimental_srcdir}/system_error \
@@ -1473,7 +1482,7 @@ stamp-bits: ${bits_headers}
 	@$(STAMP) stamp-bits
 
 stamp-bits-sup: stamp-bits ${bits_sup_headers}
-	@-cd ${bits_builddir} && $(LN_S) $? . 2>/dev/null
+	@-cd ${bits_builddir} && $(LN_S) ${bits_sup_headers} . 2>/dev/null
 	@$(STAMP) stamp-bits-sup
 
 stamp-c_base: ${c_base_headers}
@@ -1654,6 +1663,11 @@ stamp-host: ${host_headers} ${bits_host_headers} ${ext_host_headers} ${host_head
 @ENABLE_ALLOCATOR_NEW_FALSE@stamp-allocator-new:
 @ENABLE_ALLOCATOR_NEW_FALSE@	echo 0 > stamp-allocator-new
 
+@ENABLE_FLOAT128_TRUE@stamp-float128:
+@ENABLE_FLOAT128_TRUE@	echo 'define _GLIBCXX_USE_FLOAT128 1' > stamp-float128
+@ENABLE_FLOAT128_FALSE@stamp-float128:
+@ENABLE_FLOAT128_FALSE@	echo 'undef _GLIBCXX_USE_FLOAT128' > stamp-float128
+
 # NB: The non-empty default ldbl_compat works around an AIX sed
 # oddity, see libstdc++/31957 for details.
 ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
@@ -1665,25 +1679,30 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      stamp-extern-template \
 			      stamp-dual-abi \
 			      stamp-cxx11-abi \
-			      stamp-allocator-new
+			      stamp-allocator-new \
+			      stamp-float128
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
+	release=`sed 's/^\([0-9]*\).*$$/\1/' ${toplevel_srcdir}/gcc/BASE-VER` ;\
 	ns_version=`cat stamp-namespace-version` ;\
 	visibility=`cat stamp-visibility` ;\
 	externtemplate=`cat stamp-extern-template` ;\
 	dualabi=`cat stamp-dual-abi` ;\
 	cxx11abi=`cat stamp-cxx11-abi` ;\
 	allocatornew=`cat stamp-allocator-new` ;\
+	float128=`cat stamp-float128` ;\
 	ldbl_compat='s,g,g,' ;\
 	grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_LONG_DOUBLE_COMPAT[	 ][	 ]*1[	 ]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_COMPAT 1,' ;\
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
+	-e "s,define _GLIBCXX_RELEASE,define _GLIBCXX_RELEASE $$release," \
 	-e "s,define _GLIBCXX_INLINE_VERSION, define _GLIBCXX_INLINE_VERSION $$ns_version," \
 	-e "s,define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY, define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY $$visibility," \
 	-e "s,define _GLIBCXX_EXTERN_TEMPLATE$$, define _GLIBCXX_EXTERN_TEMPLATE $$externtemplate," \
 	-e "s,define _GLIBCXX_USE_DUAL_ABI, define _GLIBCXX_USE_DUAL_ABI $$dualabi," \
 	-e "s,define _GLIBCXX_USE_CXX11_ABI, define _GLIBCXX_USE_CXX11_ABI $$cxx11abi," \
 	-e "s,define _GLIBCXX_USE_ALLOCATOR_NEW, define _GLIBCXX_USE_ALLOCATOR_NEW $$allocatornew," \
+	-e "s,define _GLIBCXX_USE_FLOAT128,$$float128," \
 	-e "$$ldbl_compat" \
 	    < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \
@@ -1892,6 +1911,9 @@ $(decimal_headers): ; @:
 $(ext_headers): ; @:
 $(experimental_headers): ; @:
 $(experimental_bits_headers): ; @:
+
+# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81797
+@INCLUDE_DIR_NOTPARALLEL_TRUE@.NOTPARALLEL:
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

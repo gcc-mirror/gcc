@@ -1,6 +1,6 @@
 // Boilerplate support routines for -*- C++ -*- dynamic memory management.
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -46,9 +46,13 @@ _GLIBCXX_END_NAMESPACE_VERSION
 _GLIBCXX_WEAK_DEFINITION void
 operator delete(void* ptr, std::align_val_t) _GLIBCXX_USE_NOEXCEPT
 {
-#if !_GLIBCXX_HAVE_ALIGNED_ALLOC && _GLIBCXX_HAVE__ALIGNED_MALLOC
+#if _GLIBCXX_HAVE_ALIGNED_ALLOC || _GLIBCXX_HAVE_POSIX_MEMALIGN \
+    || _GLIBCXX_HAVE_MEMALIGN
+  std::free (ptr);
+#elif _GLIBCXX_HAVE__ALIGNED_MALLOC
   _aligned_free (ptr);
 #else
-  std::free(ptr);
+  if (ptr)
+    std::free (((void **) ptr)[-1]); // See aligned_alloc in new_opa.cc
 #endif
 }

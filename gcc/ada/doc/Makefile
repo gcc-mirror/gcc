@@ -1,7 +1,7 @@
 # Makefile for Sphinx documentation
 
 # You can set these variables from the command line.
-SPHINXOPTS    =
+SPHINXOPTS    = -W
 SPHINXBUILD   = DOC_NAME=$* sphinx-build
 PAPER         =
 BUILDDIR      = build
@@ -47,7 +47,6 @@ clean:
 
 %.pdf:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/$*/pdf
-	cp $(SOURCEDIR)/share/sphinx.sty $(BUILDDIR)/$*/pdf
 	$(MAKE) -C $(BUILDDIR)/$*/pdf all-pdf LATEXOPTS="-interaction=nonstopmode"
 
 %.txt:

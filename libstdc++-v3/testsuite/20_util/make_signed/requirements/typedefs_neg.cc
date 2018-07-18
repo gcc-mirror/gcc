@@ -2,7 +2,7 @@
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 //
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,7 @@ void test01()
 {
   using std::make_signed;
 
-  // Negative  tests.
+  // Negative tests.
   typedef make_signed<bool>::type     	test1_type;
 
   typedef make_signed<__gnu_test::pod_uint>::type     	test2_type;
@@ -41,10 +41,10 @@ void test01()
   typedef make_signed<float>::type  	test5_type;
 }
 
-// { dg-error "does not name a type" "" { target *-*-* } 32 }
+// { dg-error "invalid use of incomplete type" "" { target *-*-* } 32 }
 // { dg-error "required from here" "" { target *-*-* } 34 }
 // { dg-error "required from here" "" { target *-*-* } 36 }
 // { dg-error "required from here" "" { target *-*-* } 39 }
 // { dg-error "required from here" "" { target *-*-* } 41 }
 
-// { dg-error "invalid use of incomplete type" "" { target *-*-* } 1924 }
+// { dg-error "invalid use of incomplete type" "" { target *-*-* } 0 }

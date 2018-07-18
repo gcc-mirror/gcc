@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=f2008 -fall-intrinsics" }
+! { dg-options "-std=f2008 " }
 
 ! PR fortran/44602
 ! Check for correct behavior of EXIT / CYCLE combined with non-loop
@@ -23,57 +23,57 @@ PROGRAM main
 
   i = 2
   myif: IF (i == 1) THEN
-    CALL abort ()
+    STOP 1
     EXIT myif
   ELSE IF (i == 2) THEN
     EXIT myif
-    CALL abort ()
+    STOP 2
   ELSE
-    CALL abort ()
+    STOP 3
     EXIT myif
   END IF myif
 
   mysel: SELECT CASE (i)
     CASE (1)
-      CALL abort ()
+      STOP 4
       EXIT mysel
     CASE (2)
       EXIT mysel
-      CALL abort ()
+      STOP 5
     CASE DEFAULT
-      CALL abort ()
+      STOP 6
       EXIT mysel
   END SELECT mysel
 
   mycharsel: SELECT CASE ("foobar")
     CASE ("abc")
-      CALL abort ()
+      STOP 7
       EXIT mycharsel
     CASE ("xyz")
-      CALL abort ()
+      STOP 8
       EXIT mycharsel
     CASE DEFAULT
       EXIT mycharsel
-      CALL abort ()
+      STOP 9
   END SELECT mycharsel
 
   myblock: BLOCK
     EXIT myblock
-    CALL abort ()
+    STOP 10
   END BLOCK myblock
 
   myassoc: ASSOCIATE (x => 5 + 2)
     EXIT myassoc
-    CALL abort ()
+    STOP 11
   END ASSOCIATE myassoc
 
   ALLOCATE (t :: var)
   mytypesel: SELECT TYPE (var)
     TYPE IS (t)
       EXIT mytypesel
-      CALL abort ()
+      STOP 12
     CLASS DEFAULT
-      CALL abort ()
+      STOP 13
       EXIT mytypesel
   END SELECT mytypesel
 
@@ -81,8 +81,8 @@ PROGRAM main
   outer: BLOCK
     inner: IF (.TRUE.) THEN
       EXIT outer
-      CALL abort ()
+      STOP 14
     END IF inner
-    CALL abort ()
+    STOP 15
   END BLOCK outer
 END PROGRAM main

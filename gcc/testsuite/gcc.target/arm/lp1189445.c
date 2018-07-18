@@ -1,7 +1,7 @@
 /* { dg-do compile } */
+/* { dg-options "-O3" } */
 /* { dg-require-effective-target arm_neon } */
 /* { dg-add-options arm_neon } */
-/* { dg-options "-O3" } */
 
 int id;
 int

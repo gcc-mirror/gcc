@@ -32,7 +32,7 @@ program cosubscript_test
     k = 1
     j = -1
     i = 0
-    if (scalar[i,j,k] /= this_image()) call abort
+    if (scalar[i,j,k] /= this_image()) STOP 1
     stop "OK"
   else if (num_images() == 2) then
     k = 1
@@ -40,7 +40,7 @@ program cosubscript_test
     counter = 0
     do i = 0,P
       counter = counter+1
-      if (counter /= scalar[i,j,k]) call abort()
+      if (counter /= scalar[i,j,k]) STOP 1
     end do
     stop "OK"
   end if
@@ -61,6 +61,6 @@ program cosubscript_test
   end do
   
   if (is_err) then
-    call abort()
+    STOP 2
   end if
 end program cosubscript_test

@@ -1,5 +1,5 @@
 /* Tail call optimization on trees.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -184,7 +184,8 @@ suitable_for_tail_call_opt_p (void)
    containing the value of EXPR at GSI.  */
 
 static tree
-independent_of_stmt_p (tree expr, gimple *at, gimple_stmt_iterator gsi)
+independent_of_stmt_p (tree expr, gimple *at, gimple_stmt_iterator gsi,
+		       bitmap to_move)
 {
   basic_block bb, call_bb, at_bb;
   edge e;
@@ -195,6 +196,9 @@ independent_of_stmt_p (tree expr, gimple *at, gimple_stmt_iterator gsi)
 
   if (TREE_CODE (expr) != SSA_NAME)
     return NULL_TREE;
+
+  if (bitmap_bit_p (to_move, SSA_NAME_VERSION (expr)))
+    return expr;
 
   /* Mark the blocks in the chain leading to the end.  */
   at_bb = gimple_bb (at);
@@ -250,13 +254,16 @@ independent_of_stmt_p (tree expr, gimple *at, gimple_stmt_iterator gsi)
   return expr;
 }
 
+enum par { FAIL, OK, TRY_MOVE };
+
 /* Simulates the effect of an assignment STMT on the return value of the tail
    recursive CALL passed in ASS_VAR.  M and A are the multiplicative and the
    additive factor for the real return value.  */
 
-static bool
-process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
-		    tree *a, tree *ass_var)
+static par
+process_assignment (gassign *stmt,
+		    gimple_stmt_iterator call, tree *m,
+		    tree *a, tree *ass_var, bitmap to_move)
 {
   tree op0, op1 = NULL_TREE, non_ass_var = NULL_TREE;
   tree dest = gimple_assign_lhs (stmt);
@@ -269,29 +276,25 @@ process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
      conversions that can never produce extra code between the function
      call and the function return.  */
   if ((rhs_class == GIMPLE_SINGLE_RHS || gimple_assign_cast_p (stmt))
-      && (TREE_CODE (src_var) == SSA_NAME))
+      && src_var == *ass_var)
     {
       /* Reject a tailcall if the type conversion might need
 	 additional code.  */
       if (gimple_assign_cast_p (stmt))
 	{
 	  if (TYPE_MODE (TREE_TYPE (dest)) != TYPE_MODE (TREE_TYPE (src_var)))
-	    return false;
+	    return FAIL;
 
 	  /* Even if the type modes are the same, if the precision of the
 	     type is smaller than mode's precision,
 	     reduce_to_bit_field_precision would generate additional code.  */
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (dest))
-	      && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (dest)))
-		  > TYPE_PRECISION (TREE_TYPE (dest))))
-	    return false;
+	      && !type_has_mode_precision_p (TREE_TYPE (dest)))
+	    return FAIL;
 	}
 
-      if (src_var != *ass_var)
-	return false;
-
       *ass_var = dest;
-      return true;
+      return OK;
     }
 
   switch (rhs_class)
@@ -306,7 +309,7 @@ process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
       break;
 
     default:
-      return false;
+      return FAIL;
     }
 
   /* Accumulator optimizations will reverse the order of operations.
@@ -314,42 +317,45 @@ process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
      that addition and multiplication are associative.  */
   if (!flag_associative_math)
     if (FLOAT_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
-      return false;
+      return FAIL;
 
-  if (rhs_class == GIMPLE_UNARY_RHS)
+  if (rhs_class == GIMPLE_UNARY_RHS
+      && op0 == *ass_var)
     ;
   else if (op0 == *ass_var
-	   && (non_ass_var = independent_of_stmt_p (op1, stmt, call)))
+	   && (non_ass_var = independent_of_stmt_p (op1, stmt, call,
+						    to_move)))
     ;
   else if (op1 == *ass_var
-	   && (non_ass_var = independent_of_stmt_p (op0, stmt, call)))
+	   && (non_ass_var = independent_of_stmt_p (op0, stmt, call,
+						    to_move)))
     ;
   else
-    return false;
+    return TRY_MOVE;
 
   switch (code)
     {
     case PLUS_EXPR:
       *a = non_ass_var;
       *ass_var = dest;
-      return true;
+      return OK;
 
     case POINTER_PLUS_EXPR:
       if (op0 != *ass_var)
-	return false;
+	return FAIL;
       *a = non_ass_var;
       *ass_var = dest;
-      return true;
+      return OK;
 
     case MULT_EXPR:
       *m = non_ass_var;
       *ass_var = dest;
-      return true;
+      return OK;
 
     case NEGATE_EXPR:
       *m = build_minus_one_cst (TREE_TYPE (op0));
       *ass_var = dest;
-      return true;
+      return OK;
 
     case MINUS_EXPR:
       if (*ass_var == op0)
@@ -361,12 +367,10 @@ process_assignment (gassign *stmt, gimple_stmt_iterator call, tree *m,
         }
 
       *ass_var = dest;
-      return true;
-
-      /* TODO -- Handle POINTER_PLUS_EXPR.  */
+      return OK;
 
     default:
-      return false;
+      return FAIL;
     }
 }
 
@@ -416,6 +420,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       if (gimple_code (stmt) == GIMPLE_LABEL
 	  || gimple_code (stmt) == GIMPLE_RETURN
 	  || gimple_code (stmt) == GIMPLE_NOP
+	  || gimple_code (stmt) == GIMPLE_PREDICT
 	  || gimple_clobber_p (stmt)
 	  || is_gimple_debug (stmt))
 	continue;
@@ -427,6 +432,13 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	  ass_var = gimple_call_lhs (call);
 	  break;
 	}
+
+      /* Allow simple copies between local variables, even if they're
+	 aggregates.  */
+      if (is_gimple_assign (stmt)
+	  && auto_var_in_fn_p (gimple_assign_lhs (stmt), cfun->decl)
+	  && auto_var_in_fn_p (gimple_assign_rhs1 (stmt), cfun->decl))
+	continue;
 
       /* If the statement references memory or volatile operands, fail.  */
       if (gimple_references_memory_p (stmt)
@@ -444,18 +456,20 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       return;
     }
 
-  /* If the LHS of our call is not just a simple register, we can't
-     transform this into a tail or sibling call.  This situation happens,
-     in (e.g.) "*p = foo()" where foo returns a struct.  In this case
-     we won't have a temporary here, but we need to carry out the side
-     effect anyway, so tailcall is impossible.
+  /* If the LHS of our call is not just a simple register or local
+     variable, we can't transform this into a tail or sibling call.
+     This situation happens, in (e.g.) "*p = foo()" where foo returns a
+     struct.  In this case we won't have a temporary here, but we need
+     to carry out the side effect anyway, so tailcall is impossible.
 
      ??? In some situations (when the struct is returned in memory via
      invisible argument) we could deal with this, e.g. by passing 'p'
      itself as that argument to foo, but it's too early to do this here,
      and expand_call() will not handle it anyway.  If it ever can, then
      we need to revisit this here, to allow that situation.  */
-  if (ass_var && !is_gimple_reg (ass_var))
+  if (ass_var
+      && !is_gimple_reg (ass_var)
+      && !auto_var_in_fn_p (ass_var, cfun->decl))
     return;
 
   /* We found the call, check whether it is suitable.  */
@@ -467,7 +481,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
     {
       tree arg;
 
-      for (param = DECL_ARGUMENTS (func), idx = 0;
+      for (param = DECL_ARGUMENTS (current_function_decl), idx = 0;
 	   param && idx < gimple_call_num_args (call);
 	   param = DECL_CHAIN (param), idx ++)
 	{
@@ -498,12 +512,14 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	tail_recursion = true;
     }
 
-  /* Make sure the tail invocation of this function does not refer
-     to local variables.  */
+  /* Make sure the tail invocation of this function does not indirectly
+     refer to local variables.  (Passing variables directly by value
+     is OK.)  */
   FOR_EACH_LOCAL_DECL (cfun, idx, var)
     {
       if (TREE_CODE (var) != PARM_DECL
 	  && auto_var_in_fn_p (var, cfun->decl)
+	  && may_be_aliased (var)
 	  && (ref_maybe_used_by_stmt_p (call, var)
 	      || call_may_clobber_ref_p (call, var)))
 	return;
@@ -515,6 +531,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
      since we are running after dce.  */
   m = NULL_TREE;
   a = NULL_TREE;
+  auto_bitmap to_move_defs;
+  auto_vec<gimple *> to_move_stmts;
 
   abb = bb;
   agsi = gsi;
@@ -532,27 +550,44 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	}
 
       stmt = gsi_stmt (agsi);
-
-      if (gimple_code (stmt) == GIMPLE_LABEL
-	  || gimple_code (stmt) == GIMPLE_NOP)
-	continue;
-
       if (gimple_code (stmt) == GIMPLE_RETURN)
 	break;
 
-      if (gimple_clobber_p (stmt))
-	continue;
-
-      if (is_gimple_debug (stmt))
+      if (gimple_code (stmt) == GIMPLE_LABEL
+	  || gimple_code (stmt) == GIMPLE_NOP
+	  || gimple_code (stmt) == GIMPLE_PREDICT
+	  || gimple_clobber_p (stmt)
+	  || is_gimple_debug (stmt))
 	continue;
 
       if (gimple_code (stmt) != GIMPLE_ASSIGN)
 	return;
 
       /* This is a gimple assign. */
-      if (! process_assignment (as_a <gassign *> (stmt), gsi, &tmp_m,
-				&tmp_a, &ass_var))
+      par ret = process_assignment (as_a <gassign *> (stmt), gsi,
+				    &tmp_m, &tmp_a, &ass_var, to_move_defs);
+      if (ret == FAIL)
 	return;
+      else if (ret == TRY_MOVE)
+	{
+	  if (! tail_recursion)
+	    return;
+	  /* Do not deal with checking dominance, the real fix is to
+	     do path isolation for the transform phase anyway, removing
+	     the need to compute the accumulators with new stmts.  */
+	  if (abb != bb)
+	    return;
+	  for (unsigned opno = 1; opno < gimple_num_ops (stmt); ++opno)
+	    {
+	      tree op = gimple_op (stmt, opno);
+	      if (independent_of_stmt_p (op, stmt, gsi, to_move_defs) != op)
+		return;
+	    }
+	  bitmap_set_bit (to_move_defs,
+			  SSA_NAME_VERSION (gimple_assign_lhs (stmt)));
+	  to_move_stmts.safe_push (stmt);
+	  continue;
+	}
 
       if (tmp_a)
 	{
@@ -592,6 +627,17 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   /* For pointers only allow additions.  */
   if (m && POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
     return;
+
+  /* Move queued defs.  */
+  if (tail_recursion)
+    {
+      unsigned i;
+      FOR_EACH_VEC_ELT (to_move_stmts, i, stmt)
+	{
+	  gimple_stmt_iterator mgsi = gsi_for_stmt (stmt);
+	  gsi_move_before (&mgsi, &gsi);
+	}
+    }
 
   nw = XNEW (struct tailcall);
 
@@ -759,24 +805,14 @@ adjust_return_value (basic_block bb, tree m, tree a)
 /* Subtract COUNT and FREQUENCY from the basic block and it's
    outgoing edge.  */
 static void
-decrease_profile (basic_block bb, gcov_type count, int frequency)
+decrease_profile (basic_block bb, profile_count count)
 {
-  edge e;
-  bb->count -= count;
-  if (bb->count < 0)
-    bb->count = 0;
-  bb->frequency -= frequency;
-  if (bb->frequency < 0)
-    bb->frequency = 0;
+  bb->count = bb->count - count;
   if (!single_succ_p (bb))
     {
       gcc_assert (!EDGE_COUNT (bb->succs));
       return;
     }
-  e = single_succ_edge (bb);
-  e->count -= count;
-  if (e->count < 0)
-    e->count = 0;
 }
 
 /* Returns true if argument PARAM of the tail recursive call needs to be copied
@@ -853,11 +889,18 @@ eliminate_tail_call (struct tailcall *t)
 
   /* Number of executions of function has reduced by the tailcall.  */
   e = single_succ_edge (gsi_bb (t->call_gsi));
-  decrease_profile (EXIT_BLOCK_PTR_FOR_FN (cfun), e->count, EDGE_FREQUENCY (e));
-  decrease_profile (ENTRY_BLOCK_PTR_FOR_FN (cfun), e->count,
-		    EDGE_FREQUENCY (e));
+
+  profile_count count = e->count ();
+
+  /* When profile is inconsistent and the recursion edge is more frequent
+     than number of executions of functions, scale it down, so we do not end
+     up with 0 executions of entry block.  */
+  if (count >= ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)
+    count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale (7, 8);
+  decrease_profile (EXIT_BLOCK_PTR_FOR_FN (cfun), count);
+  decrease_profile (ENTRY_BLOCK_PTR_FOR_FN (cfun), count);
   if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
-    decrease_profile (e->dest, e->count, EDGE_FREQUENCY (e));
+    decrease_profile (e->dest, count);
 
   /* Replace the call by a jump to the start of function.  */
   e = redirect_edge_and_branch (single_succ_edge (gsi_bb (t->call_gsi)),
@@ -888,7 +931,7 @@ eliminate_tail_call (struct tailcall *t)
 
   call = gsi_stmt (t->call_gsi);
   rslt = gimple_call_lhs (call);
-  if (rslt != NULL_TREE)
+  if (rslt != NULL_TREE && TREE_CODE (rslt) == SSA_NAME)
     {
       /* Result of the call will no longer be defined.  So adjust the
 	 SSA_NAME_DEF_STMT accordingly.  */

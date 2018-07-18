@@ -3,7 +3,7 @@
 
 inline double foo (double x)
 {
-  register double r;	// { dg-warning "ISO C\\+\\+1z does not allow 'register' storage class specifier" "" { target c++1z } }
+  register double r;	// { dg-warning "ISO C\\+\\+17 does not allow 'register' storage class specifier" "" { target c++17 } }
   asm volatile ("fsqrt" : "=t" (r) : "0" (x));
   return r;
 }

@@ -1,5 +1,5 @@
-; Options for the Fortran 95 front end.
-; Copyright (C) 2003-2016 Free Software Foundation, Inc.
+; Options for the Fortran front end.
+; Copyright (C) 2003-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -209,6 +209,10 @@ Warray-temporaries
 Fortran Warning Var(warn_array_temporaries)
 Warn about creation of array temporaries.
 
+Wargument-mismatch
+Fortran Warning Var(warn_argument_mismatch) Init(1)
+Warn about type and rank mismatches between arguments and parameters.
+
 Wc-binding-type
 Fortran Var(warn_c_binding_type) Warning LangEnabledBy(Fortran,Wall)
 Warn if the type of a variable might be not interoperable with C.
@@ -233,9 +237,17 @@ Wconversion-extra
 Fortran Var(warn_conversion_extra) Warning
 Warn about most implicit conversions.
 
+Wdo-subscript
+Fortran Var(warn_do_subscript) Warning LangEnabledBy(Fortran,Wextra)
+Warn about possibly incorrect subscripts in do loops.
+
 Wextra
 Fortran Warning
 ; Documented in common
+
+Wfrontend-loop-interchange
+Fortran Var(flag_warn_frontend_loop_interchange)
+Warn if loops have been interchanged.
 
 Wfunction-elimination
 Fortran Warning Var(warn_function_elimination)
@@ -355,7 +367,7 @@ Fortran Joined
 
 faggressive-function-elimination
 Fortran Var(flag_aggressive_function_elimination)
-Eliminate multiple function invokations also for impure functions.
+Eliminate multiple function invocations also for impure functions.
 
 falign-commons
 Fortran Var(flag_align_commons) Init(1)
@@ -394,7 +406,7 @@ Fortran RejectNegative Joined Enum(gfc_convert) Var(flag_convert) Init(GFC_FLAG_
 -fconvert=<big-endian|little-endian|native|swap> The endianness used for unformatted files.
 
 Enum
-Name(gfc_convert) Type(enum gfc_convert) UnknownError(Unrecognized option to endianess value: %qs)
+Name(gfc_convert) Type(enum gfc_convert) UnknownError(Unrecognized option to endianness value: %qs)
 
 EnumValue
 Enum(gfc_convert) String(big-endian) Value(GFC_FLAG_CONVERT_BIG)
@@ -411,6 +423,10 @@ Enum(gfc_convert) String(swap) Value(GFC_FLAG_CONVERT_SWAP)
 fcray-pointer
 Fortran Var(flag_cray_pointer)
 Use the Cray Pointer extension.
+
+fc-prototypes
+Fortran Var(flag_c_prototypes)
+Generate C prototypes from BIND(C) declarations.
 
 fd-lines-as-code
 Fortran RejectNegative
@@ -449,8 +465,16 @@ Fortran Var(flag_default_integer)
 Set the default integer kind to an 8 byte wide type.
 
 fdefault-real-8
-Fortran Var(flag_default_real)
+Fortran Var(flag_default_real_8)
 Set the default real kind to an 8 byte wide type.
+
+fdefault-real-10
+Fortran Var(flag_default_real_10)
+Set the default real kind to an 10 byte wide type.
+
+fdefault-real-16
+Fortran Var(flag_default_real_16)
+Set the default real kind to an 16 byte wide type.
 
 fdollar-ok
 Fortran Var(flag_dollar_ok)
@@ -483,6 +507,10 @@ Use f2c calling convention.
 ffixed-form
 Fortran RejectNegative
 Assume that the source file is fixed form.
+
+ftest-forall-temp
+Fortran Var(flag_test_forall_temp) Init(0)
+Force creation of temporary to test infrequently-executed forall code.
 
 finteger-4-integer-8
 Fortran RejectNegative Var(flag_integer4_kind,8)
@@ -523,6 +551,10 @@ Allow arbitrary character line width in free mode.
 ffree-line-length-
 Fortran RejectNegative Joined UInteger Var(flag_free_line_length) Init(132)
 -ffree-line-length-<n>	Use n as character line width in free mode.
+
+ffrontend-loop-interchange
+Fortran Var(flag_frontend_loop_interchange) Init(-1)
+Try to interchange loops if profitable.
 
 ffrontend-optimize
 Fortran Var(flag_frontend_optimize) Init(-1)
@@ -769,6 +801,10 @@ Conform to the ISO Fortran 2008 standard.
 std=f2008ts
 Fortran
 Conform to the ISO Fortran 2008 standard including TS 29113.
+
+std=f2018
+Fortran
+Conform to the ISO Fortran 2018 standard.
 
 std=f95
 Fortran

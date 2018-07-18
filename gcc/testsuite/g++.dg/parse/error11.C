@@ -17,42 +17,42 @@ struct Foo
 
   void method(void) {
     typename Foo<::B>::template Nested<::B> n; // { dg-error "17:'<::' cannot begin" "17-begin" { target { ! c++11 } } }
-// { dg-message "17:'<:' is an alternate spelling" "17-alt" { target { ! c++11 } } 19 }
-// { dg-error "39:'<::' cannot begin" "39-begin" { target { ! c++11 } } 19 }
-// { dg-message "39:'<:' is an alternate spelling" "39-alt" { target { ! c++11 } } 19 }
+// { dg-message "17:'<:' is an alternate spelling" "17-alt" { target { ! c++11 } } .-1 }
+// { dg-error "39:'<::' cannot begin" "39-begin" { target { ! c++11 } } .-2 }
+// { dg-message "39:'<:' is an alternate spelling" "39-alt" { target { ! c++11 } } .-3 }
     n.template Nested<B>::method();
     n.template Nested<::B>::method();  // { dg-error "22:'<::' cannot begin" "error" { target { ! c++11 } } }
-// { dg-message "22:'<:' is an alternate" "note" { target { ! c++11 } } 24 }
+// { dg-message "22:'<:' is an alternate" "note" { target { ! c++11 } } .-1 }
     Nested<B>::method();
     Nested<::B>::method(); // { dg-error "11:'<::' cannot begin" "error" { target { ! c++11 } } }
-// { dg-message "11:'<:' is an alternate" "note" { target { ! c++11 } } 27 }
+// { dg-message "11:'<:' is an alternate" "note" { target { ! c++11 } } .-1 }
   }
 };
 
 template <int N> struct Foo2 {};
 template struct Foo2<::B>;  // { dg-error "21:'<::' cannot begin" "begin" { target { ! c++11 } } }
-// { dg-message "21:'<:' is an alternate" "alt" { target { ! c++11 } } 33 }
-// { dg-message "25:type/value mismatch" "mismatch" { target *-*-* } 33 }
-// { dg-message "25:expected a constant" "const" { target *-*-* } 33 }
+// { dg-message "21:'<:' is an alternate" "alt" { target { ! c++11 } } .-1 }
+// { dg-message "25:type/value mismatch" "mismatch" { target *-*-* } .-2 }
+// { dg-message "25:expected a constant" "const" { target *-*-* } .-3 }
 
 int value = 0;
 
 void func(void)
 {
   Foo<::B> f; // { dg-error "cannot begin" "begin" { target { ! c++11 } } }
-// { dg-message "alternate spelling" "alt" { target { ! c++11 } } 42 }
+// { dg-message "alternate spelling" "alt" { target { ! c++11 } } .-1 }
   f.Foo<B>::method();
   f.Foo<::B>::method(); // { dg-error "8:cannot begin" "begin" { target { ! c++11 } } }
-// { dg-message "8:alternate spelling" "alt" { target { ! c++11 } } 45 }
+// { dg-message "8:alternate spelling" "alt" { target { ! c++11 } } .-1 }
 
   // Check cases where we the token sequence is the correct one, but there
   //  was no digraph or whitespaces in the middle, so we should not emit
   //  the special error message.
   Foo<: :B> k2;     // { dg-bogus "cannot begin|alternate spelling" "smart error should not be triggered here" }
   Foo[:B> k1;       // { dg-bogus "cannot begin|alternate spelling" "smart error should not be triggered here" } 
-// { dg-error "6:missing template arguments before" "template" { target *-*-* } { 51 } }
+// { dg-error "6:missing template arguments before" "template" { target *-*-* } 51 }
 // { dg-error "9:expected primary-expression before ':' token" "primary" { target *-*-* } 51 }
-// { dg-error "9:expected '\]' before ':' token" "backslash" { target *-*-* } 51 }
+// { dg-error "8:expected '\]' before ':' token" "backslash" { target *-*-* } 51 }
 // { dg-error "6:missing template arguments before" "template" { target *-*-* } 52 }
 // { dg-error "7:expected primary-expression before ':' token" "primary" { target *-*-* } 52 }
 // { dg-error "7:expected '\]' before ':' token" "backslash" { target *-*-* } 52 }
@@ -62,7 +62,7 @@ void func(void)
 }
 
 template struct Foo<::B>; // { dg-error "20:'<::' cannot begin" "begin" { target { ! c++11 } } }
-// { dg-message "20:is an alternate" "alt" { target { ! c++11 } } 64 }
+// { dg-message "20:is an alternate" "alt" { target { ! c++11 } } .-1 }
 
 // On the first error message, an additional note about the use of 
 //  -fpermissive should be present

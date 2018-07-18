@@ -18,12 +18,12 @@ program main
   ub = lb + 2
   allocate(o1%acc, source=vec)
   allocate(o2%acc, source=o1%acc(lb:ub))
-  if (any (o2%acc /= [7, 8, 9])) call abort()
+  if (any (o2%acc /= [7, 8, 9])) STOP 1
   block
     real, dimension(0:n) :: a
     real, dimension(:), allocatable :: c
     call random_number(a)
     allocate(c,source=a(:))
-    if (any (abs(a - c) > 1E-6)) call abort()
+    if (any (abs(a - c) > 1E-6)) STOP 2
   end block
 end program main

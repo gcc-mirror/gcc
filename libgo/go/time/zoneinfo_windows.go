@@ -11,7 +11,9 @@ import (
 	"syscall"
 )
 
-//go:generate go run genzabbrs.go -output zoneinfo_abbrs_windows.go
+var zoneSources = []string{
+	runtime.GOROOT() + "/lib/time/zoneinfo.zip",
+}
 
 // TODO(rsc): Fall back to copy of zoneinfo files.
 
@@ -134,7 +136,7 @@ func pseudoUnix(year int, d *syscall.Systemtime) int64 {
 			day -= 7
 		}
 	}
-	return t.sec + int64(day-1)*secondsPerDay + internalToUnix
+	return t.sec() + int64(day-1)*secondsPerDay + internalToUnix
 }
 
 func initLocalFromTZI(i *syscall.Timezoneinformation) {
@@ -230,14 +232,6 @@ var aus = syscall.Timezoneinformation{
 	DaylightBias: -60,
 }
 
-func initTestingZone() {
-	initLocalFromTZI(&usPacific)
-}
-
-func initAusTestingZone() {
-	initLocalFromTZI(&aus)
-}
-
 func initLocal() {
 	var i syscall.Timezoneinformation
 	if _, err := syscall.GetTimeZoneInformation(&i); err != nil {
@@ -245,17 +239,4 @@ func initLocal() {
 		return
 	}
 	initLocalFromTZI(&i)
-}
-
-func loadLocation(name string) (*Location, error) {
-	z, err := loadZoneFile(runtime.GOROOT()+`\lib\time\zoneinfo.zip`, name)
-	if err != nil {
-		return nil, err
-	}
-	z.name = name
-	return z, nil
-}
-
-func forceZipFileForTesting(zipOnly bool) {
-	// We only use the zip file anyway.
 }

@@ -17,7 +17,7 @@ CONTAINS
     INTEGER :: n
     arr = [ character(len=n) :: 'test', s ]
     IF (arr(1) /= a1 .OR. arr(2) /= a2) THEN
-      CALL abort ()
+      STOP 1
     END IF
   END SUBROUTINE foo
 END PROGRAM test

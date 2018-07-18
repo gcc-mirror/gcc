@@ -22,6 +22,7 @@ list_files() {
 
 change_comment_headers() {
   for f in $(list_files $1); do
+    sed -n 3p $1/$f | grep -q 'The LLVM Compiler Infrastructure' || continue
     changed=$(awk 'NR != 2 && NR != 3' < $1/$f)
     echo "$changed" > $1/$f
   done
@@ -71,6 +72,10 @@ merge lib/tsan/rtl tsan
 merge lib/sanitizer_common sanitizer_common
 merge lib/interception interception
 merge lib/ubsan ubsan
+
+# Need to merge lib/builtins/assembly.h file:
+mkdir -p builtins
+cp -v upstream/lib/builtins/assembly.h builtins/assembly.h
 
 rm -rf upstream
 

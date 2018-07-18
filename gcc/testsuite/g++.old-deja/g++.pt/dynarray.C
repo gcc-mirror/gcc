@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-options "" }
+// { dg-require-effective-target alloca }
 // Origin: Theo Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 inline const unsigned& f(unsigned const& a) {

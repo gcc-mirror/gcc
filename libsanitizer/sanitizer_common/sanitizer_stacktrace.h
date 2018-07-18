@@ -27,7 +27,7 @@ static const u32 kStackTraceMax = 256;
 
 // Fast unwind is the only option on Mac for now; we will need to
 // revisit this macro when slow unwind works on Mac, see
-// https://code.google.com/p/address-sanitizer/issues/detail?id=137
+// https://github.com/google/sanitizers/issues/137
 #if SANITIZER_MAC
 # define SANITIZER_CAN_SLOW_UNWIND 0
 #else
@@ -95,6 +95,11 @@ struct BufferedStackTrace : public StackTrace {
   void Unwind(u32 max_depth, uptr pc, uptr bp, void *context, uptr stack_top,
               uptr stack_bottom, bool request_fast_unwind);
 
+  void Reset() {
+    *static_cast<StackTrace *>(this) = StackTrace(trace_buffer, 0);
+    top_frame_bp = 0;
+  }
+
  private:
   void FastUnwindStack(uptr pc, uptr bp, uptr stack_top, uptr stack_bottom,
                        u32 max_depth);
@@ -104,9 +109,14 @@ struct BufferedStackTrace : public StackTrace {
   void PopStackFrames(uptr count);
   uptr LocatePcInTrace(uptr pc);
 
-  BufferedStackTrace(const BufferedStackTrace &);
-  void operator=(const BufferedStackTrace &);
+  BufferedStackTrace(const BufferedStackTrace &) = delete;
+  void operator=(const BufferedStackTrace &) = delete;
 };
+
+// Check if given pointer points into allocated stack area.
+static inline bool IsValidFrame(uptr frame, uptr stack_top, uptr stack_bottom) {
+  return frame > stack_bottom && frame < stack_top - 2 * sizeof (uhwptr);
+}
 
 }  // namespace __sanitizer
 

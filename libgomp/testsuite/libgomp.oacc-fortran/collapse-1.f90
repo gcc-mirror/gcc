@@ -23,5 +23,5 @@ program collapse1
       end do
     end do
   !$acc end parallel
-  if (l) call abort
+  if (l) STOP 1
 end program collapse1

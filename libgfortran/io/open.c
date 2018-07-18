@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -33,7 +33,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <string.h>
 #include <errno.h>
-#include <stdlib.h>
 
 
 static const st_option access_opt[] = {
@@ -169,7 +168,7 @@ static const st_option async_opt[] =
    AT_ENDFILE.  */
 
 static void
-test_endfile (gfc_unit * u)
+test_endfile (gfc_unit *u)
 {
   if (u->endfile == NO_ENDFILE)
     { 
@@ -184,7 +183,7 @@ test_endfile (gfc_unit * u)
    changed.  */
 
 static void
-edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
+edit_modes (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
 {
   /* Complain about attempts to change the unchangeable.  */
 
@@ -330,7 +329,7 @@ edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
 /* Open an unused unit.  */
 
 gfc_unit *
-new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
+new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
 {
   gfc_unit *u2;
   stream *s;
@@ -587,7 +586,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   else
     {
       u->flags.has_recl = 0;
-      u->recl = max_offset;
+      u->recl = default_recl;
       if (compile_options.max_subrecord_length)
 	{
 	  u->recl_subrecord = compile_options.max_subrecord_length;
@@ -623,7 +622,9 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   if (flags->access == ACCESS_STREAM)
     {
       u->maxrec = max_offset;
-      u->recl = 1;
+      /* F2018 (N2137) 12.10.2.26: If the connection is for stream
+	 access recl is assigned the value -2.  */
+      u->recl = -2;
       u->bytes_left = 1;
       u->strm_pos = stell (u->s) + 1;
     }
@@ -672,7 +673,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
    modes or closing what is there now and opening the new file.  */
 
 static void
-already_open (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
+already_open (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
 {
   if ((opp->common.flags & IOPARM_OPEN_HAS_FILE) == 0)
     {
@@ -806,8 +807,6 @@ st_open (st_parameter_open *opp)
 	conv = compile_options.convert;
     }
   
-  /* We use big_endian, which is 0 on little-endian machines
-     and 1 on big-endian machines.  */
   switch (conv)
     {
     case GFC_CONVERT_NATIVE:
@@ -815,11 +814,11 @@ st_open (st_parameter_open *opp)
       break;
       
     case GFC_CONVERT_BIG:
-      conv = big_endian ? GFC_CONVERT_NATIVE : GFC_CONVERT_SWAP;
+      conv = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? GFC_CONVERT_NATIVE : GFC_CONVERT_SWAP;
       break;
       
     case GFC_CONVERT_LITTLE:
-      conv = big_endian ? GFC_CONVERT_SWAP : GFC_CONVERT_NATIVE;
+      conv = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? GFC_CONVERT_SWAP : GFC_CONVERT_NATIVE;
       break;
       
     default:

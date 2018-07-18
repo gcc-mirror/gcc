@@ -1,4 +1,4 @@
-/* Copyright (C) 2016 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -20,6 +20,7 @@
 ARC_C_DEF ("__ARC600__",	TARGET_ARC600)
 ARC_C_DEF ("__ARC601__",	TARGET_ARC601)
 ARC_C_DEF ("__ARC700__",	TARGET_ARC700)
+ARC_C_DEF ("__NPS400__",	TARGET_NPS400)
 ARC_C_DEF ("__ARCEM__",		TARGET_EM)
 ARC_C_DEF ("__ARCHS__",		TARGET_HS)
 ARC_C_DEF ("__ARC_ATOMIC__",	TARGET_ATOMIC)
@@ -27,6 +28,8 @@ ARC_C_DEF ("__ARC_NORM__",	TARGET_NORM)
 ARC_C_DEF ("__ARC_MUL64__",	TARGET_MUL64_SET)
 ARC_C_DEF ("__ARC_MUL32BY16__", TARGET_MULMAC_32BY16_SET)
 ARC_C_DEF ("__ARC_SIMD__",	TARGET_SIMD_SET)
+ARC_C_DEF ("__ARC_RF16__",	TARGET_RF16)
+ARC_C_DEF ("__ARC_UNALIGNED__", !STRICT_ALIGNMENT)
 
 ARC_C_DEF ("__ARC_BARREL_SHIFTER__", TARGET_BARREL_SHIFTER)
 
@@ -58,6 +61,7 @@ ARC_C_DEF ("__ARC_FPU_DP_DIV__", TARGET_FP_DP_SQRT)
 ARC_C_DEF ("__ARC_FPU_SP_FMA__", TARGET_FP_SP_FUSED)
 ARC_C_DEF ("__ARC_FPU_DP_FMA__", TARGET_FP_DP_FUSED)
 ARC_C_DEF ("__ARC_FPU_ASSIST__", TARGET_FP_DP_AX)
+ARC_C_DEF ("__ARC_FPX_QUARK__",  TARGET_FPX_QUARK)
 
 /* To be deprecated.  */
 ARC_C_DEF ("__A6__",     TARGET_ARC600)
@@ -66,3 +70,7 @@ ARC_C_DEF ("__EM__",     TARGET_EM)
 ARC_C_DEF ("__HS__",     TARGET_HS)
 ARC_C_DEF ("__Xnorm",    TARGET_NORM)
 ARC_C_DEF ("__Xbarrel_shifter", TARGET_BARREL_SHIFTER)
+
+/* Local Variables: */
+/* mode: c */
+/* End: */

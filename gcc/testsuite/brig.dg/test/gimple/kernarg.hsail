@@ -1,0 +1,25 @@
+module &module:1:0:$full:$large:$default;
+
+/* Tests for kernarg addressing modes. */
+
+/* { dg-do compile } */
+/* { dg-options "-fdump-tree-original" } */
+
+prog kernel &Kernel(kernarg_u64 %input[4], kernarg_u64 %output_ptr, kernarg_u64 %i)
+{
+	ld_kernarg_u64 $d0, [%i];
+	ld_kernarg_u64 $d0, [%input][$d0 + 1];
+
+	ld_kernarg_u64 $d1, [%output_ptr];
+	st_global_u64 $d0, [$d1];
+
+	ret;
+};
+
+/* [%i] */
+/* { dg-final { scan-tree-dump " = \\\*\\\(unsigned long \\\*\\\) \\\(__args \\\+ 40\\\);" "original"} } */
+
+/* [%input][$d0 + 1] */
+/* { dg-final { scan-tree-dump "\\\*\\\(unsigned long \\\*\\\) \\\(\\\(VIEW_CONVERT_EXPR<void \\\*>\\\(\\\(unsigned long\\\) __args\\\) \\\+ \\\(unsigned long\\\) d0\\\) \\\+ 1\\\);" "original"} } */
+
+

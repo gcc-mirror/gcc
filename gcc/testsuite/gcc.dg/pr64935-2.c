@@ -1,8 +1,8 @@
 /* PR rtl-optimization/64935 */
 /* { dg-do compile } */
-/* { dg-options "-O -fschedule-insns --param=max-sched-ready-insns=0 -fcompare-debug" } */
+/* { dg-options "-O -fschedule-insns --param=max-sched-ready-insns=1 -fcompare-debug" } */
 /* { dg-require-effective-target scheduling } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } } */
 
 void
 foo (int *data, unsigned len, const int qlp_coeff[],

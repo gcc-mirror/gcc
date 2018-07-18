@@ -9,7 +9,7 @@ protected:
 
 struct B: A
 {
-  using A::A;			// { dg-message "protected" }
+  using A::A;
 };
 
 B b(42);			// { dg-error "this context" }

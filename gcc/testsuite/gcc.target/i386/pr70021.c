@@ -1,7 +1,7 @@
 /* PR target/70021 */
 /* { dg-do run } */
 /* { dg-require-effective-target avx2 } */
-/* { dg-options "-O2 -ftree-vectorize -mavx2 -fdump-tree-vect-details" } */
+/* { dg-options "-O2 -ftree-vectorize -mavx2 -fdump-tree-vect-details -mtune=skylake" } */
 
 #include "avx2-check.h"
 

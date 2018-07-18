@@ -1,7 +1,7 @@
 /* Detect paths through the CFG which can never be executed in a conforming
    program and isolate them.
 
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-cfg.h"
+#include "cfganal.h"
 #include "intl.h"
 
 
@@ -136,6 +137,16 @@ isolate_path (basic_block bb, basic_block duplicate,
   gimple_stmt_iterator si, si2;
   edge_iterator ei;
   edge e2;
+  bool impossible = true;
+  profile_count count = e->count ();
+
+  for (si = gsi_start_bb (bb); gsi_stmt (si) != stmt; gsi_next (&si))
+    if (stmt_can_terminate_bb_p (gsi_stmt (si)))
+      {
+	impossible = false;
+	break;
+      }
+  force_edge_cold (e, impossible);
 
   /* First duplicate BB if we have not done so already and remove all
      the duplicate's outgoing edges as duplicate is going to unconditionally
@@ -144,16 +155,22 @@ isolate_path (basic_block bb, basic_block duplicate,
   if (!duplicate)
     {
       duplicate = duplicate_block (bb, NULL, NULL);
+      duplicate->count = profile_count::zero ();
       if (!ret_zero)
 	for (ei = ei_start (duplicate->succs); (e2 = ei_safe_edge (ei)); )
 	  remove_edge (e2);
     }
+  bb->count -= count;
 
   /* Complete the isolation step by redirecting E to reach DUPLICATE.  */
   e2 = redirect_edge_and_branch (e, duplicate);
   if (e2)
-    flush_pending_stmts (e2);
+    {
+      flush_pending_stmts (e2);
 
+      /* Update profile only when redirection is really processed.  */
+      bb->count += e->count ();
+    }
 
   /* There may be more than one statement in DUPLICATE which exhibits
      undefined behavior.  Ultimately we want the first such statement in
@@ -206,6 +223,124 @@ isolate_path (basic_block bb, basic_block duplicate,
   return duplicate;
 }
 
+/* Return TRUE if STMT is a div/mod operation using DIVISOR as the divisor.
+   FALSE otherwise.  */
+
+static bool
+is_divmod_with_given_divisor (gimple *stmt, tree divisor)
+{
+  /* Only assignments matter.  */
+  if (!is_gimple_assign (stmt))
+    return false;
+
+  /* Check for every DIV/MOD expression.  */
+  enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
+  if (rhs_code == TRUNC_DIV_EXPR
+      || rhs_code == FLOOR_DIV_EXPR
+      || rhs_code == CEIL_DIV_EXPR
+      || rhs_code == EXACT_DIV_EXPR
+      || rhs_code == ROUND_DIV_EXPR
+      || rhs_code == TRUNC_MOD_EXPR
+      || rhs_code == FLOOR_MOD_EXPR
+      || rhs_code == CEIL_MOD_EXPR
+      || rhs_code == ROUND_MOD_EXPR)
+    {
+      /* Pointer equality is fine when DIVISOR is an SSA_NAME, but
+	 not sufficient for constants which may have different types.  */
+      if (operand_equal_p (gimple_assign_rhs2 (stmt), divisor, 0))
+	return true;
+    }
+  return false;
+}
+
+/* NAME is an SSA_NAME that we have already determined has the value 0 or NULL.
+
+   Return TRUE if USE_STMT uses NAME in a way where a 0 or NULL value results
+   in undefined behavior, FALSE otherwise
+
+   LOC is used for issuing diagnostics.  This case represents potential
+   undefined behavior exposed by path splitting and that's reflected in
+   the diagnostic.  */
+
+bool
+stmt_uses_name_in_undefined_way (gimple *use_stmt, tree name, location_t loc)
+{
+  /* If we are working with a non pointer type, then see
+     if this use is a DIV/MOD operation using NAME as the
+     divisor.  */
+  if (!POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      if (!flag_non_call_exceptions)
+	return is_divmod_with_given_divisor (use_stmt, name);
+      return false;
+    }
+
+  /* NAME is a pointer, so see if it's used in a context where it must
+     be non-NULL.  */
+  bool by_dereference
+    = infer_nonnull_range_by_dereference (use_stmt, name);
+
+  if (by_dereference
+      || infer_nonnull_range_by_attribute (use_stmt, name))
+    {
+
+      if (by_dereference)
+	{
+	  warning_at (loc, OPT_Wnull_dereference,
+		      "potential null pointer dereference");
+	  if (!flag_isolate_erroneous_paths_dereference)
+	    return false;
+	}
+      else
+	{
+	  if (!flag_isolate_erroneous_paths_attribute)
+	    return false;
+	}
+      return true;
+    }
+  return false;
+}
+
+/* Return TRUE if USE_STMT uses 0 or NULL in a context which results in
+   undefined behavior, FALSE otherwise.
+
+   These cases are explicit in the IL.  */
+
+bool
+stmt_uses_0_or_null_in_undefined_way (gimple *stmt)
+{
+  if (!flag_non_call_exceptions
+      && is_divmod_with_given_divisor (stmt, integer_zero_node))
+    return true;
+
+  /* By passing null_pointer_node, we can use the
+     infer_nonnull_range functions to detect explicit NULL
+     pointer dereferences and other uses where a non-NULL
+     value is required.  */
+
+  bool by_dereference
+    = infer_nonnull_range_by_dereference (stmt, null_pointer_node);
+  if (by_dereference
+      || infer_nonnull_range_by_attribute (stmt, null_pointer_node))
+    {
+      if (by_dereference)
+	{
+	  location_t loc = gimple_location (stmt);
+	  warning_at (loc, OPT_Wnull_dereference,
+		      "null pointer dereference");
+	  if (!flag_isolate_erroneous_paths_dereference)
+	    return false;
+	}
+      else
+	{
+	  if (!flag_isolate_erroneous_paths_attribute)
+	    return false;
+	}
+      return true;
+    }
+  return false;
+}
+
 /* Look for PHI nodes which feed statements in the same block where
    the value of the PHI node implies the statement is erroneous.
 
@@ -234,6 +369,16 @@ find_implicit_erroneous_behavior (void)
       if (has_abnormal_or_eh_outgoing_edge_p (bb))
 	continue;
 
+
+      /* If BB has an edge to itself, then duplication of BB below
+	 could result in reallocation of BB's PHI nodes.   If that happens
+	 then the loop below over the PHIs would use the old PHI and
+	 thus invalid information.  We don't have a good way to know
+	 if a PHI has been reallocated, so just avoid isolation in
+	 this case.  */
+      if (find_edge (bb, bb))
+	continue;
+
       /* First look for a PHI which sets a pointer to NULL and which
  	 is then dereferenced within BB.  This is somewhat overly
 	 conservative, but probably catches most of the interesting
@@ -242,11 +387,6 @@ find_implicit_erroneous_behavior (void)
 	{
 	  gphi *phi = si.phi ();
 	  tree lhs = gimple_phi_result (phi);
-
-	  /* If the result is not a pointer, then there is no need to
- 	     examine the arguments.  */
-	  if (!POINTER_TYPE_P (TREE_TYPE (lhs)))
-	    continue;
 
 	  /* PHI produces a pointer result.  See if any of the PHI's
 	     arguments are NULL.
@@ -305,6 +445,8 @@ find_implicit_erroneous_behavior (void)
 	      if (!integer_zerop (op))
 		continue;
 
+	      location_t phi_arg_loc = gimple_phi_arg_location (phi, i);
+
 	      /* We've got a NULL PHI argument.  Now see if the
  	         PHI's result is dereferenced within BB.  */
 	      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
@@ -315,29 +457,12 @@ find_implicit_erroneous_behavior (void)
 		  if (gimple_bb (use_stmt) != bb)
 		    continue;
 
-		  bool by_dereference 
-		    = infer_nonnull_range_by_dereference (use_stmt, lhs);
+		  location_t loc = gimple_location (use_stmt)
+		    ? gimple_location (use_stmt)
+		    : phi_arg_loc;
 
-		  if (by_dereference 
-		      || infer_nonnull_range_by_attribute (use_stmt, lhs))
+		  if (stmt_uses_name_in_undefined_way (use_stmt, lhs, loc))
 		    {
-		      location_t loc = gimple_location (use_stmt)
-			? gimple_location (use_stmt)
-			: gimple_phi_arg_location (phi, i);
-
-		      if (by_dereference)
-			{
-			  warning_at (loc, OPT_Wnull_dereference,
-				      "potential null pointer dereference");
-			  if (!flag_isolate_erroneous_paths_dereference)
-			    continue;
-			}
-		      else 
-			{
-			  if (!flag_isolate_erroneous_paths_attribute)
-			    continue;
-			}
-
 		      duplicate = isolate_path (bb, duplicate, e,
 						use_stmt, lhs, false);
 
@@ -383,29 +508,8 @@ find_explicit_erroneous_behavior (void)
 	{
 	  gimple *stmt = gsi_stmt (si);
 
-	  /* By passing null_pointer_node, we can use the
-	     infer_nonnull_range functions to detect explicit NULL
-	     pointer dereferences and other uses where a non-NULL
-	     value is required.  */
-	  
-	  bool by_dereference
-	    = infer_nonnull_range_by_dereference (stmt, null_pointer_node);
-	  if (by_dereference
-	      || infer_nonnull_range_by_attribute (stmt, null_pointer_node))
+	  if (stmt_uses_0_or_null_in_undefined_way (stmt))
 	    {
-	      if (by_dereference)
-		{
-		  warning_at (gimple_location (stmt), OPT_Wnull_dereference,
-			      "null pointer dereference");
-		  if (!flag_isolate_erroneous_paths_dereference)
-		    continue;
-		}
-	      else
-		{
-		  if (!flag_isolate_erroneous_paths_attribute)
-		    continue;
-		}
-
 	      insert_trap (&si, null_pointer_node);
 	      bb = gimple_bb (gsi_stmt (si));
 

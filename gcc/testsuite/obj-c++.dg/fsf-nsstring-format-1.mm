@@ -46,6 +46,6 @@ void foo (void)
 {
   s1 (@"this format not checked %d %s", 3, 4);
   printf("this one is checked %d %s", 3, 4, 5); /* { dg-warning "format '%s' expects argument of type 'char.', but argument 3 has type 'int'" } */
-			/* { dg-warning "too many arguments for format" "" { target *-*-* } 48 } */
+			/* { dg-warning "too many arguments for format" "" { target *-*-* } .-1 } */
   printf(s9 (1, (char *)"and so is this %d %d %s" , 3, 4, "hm"), 5, 6, 12); /* { dg-warning "format '%s' expects argument of type 'char.', but argument 4 has type 'int'" } */
 }

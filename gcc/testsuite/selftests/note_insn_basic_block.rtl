@@ -1,0 +1,9 @@
+(function "example_of_note"
+  (insn-chain
+    (block 2
+      (edge-from entry (flags "FALLTHRU"))
+      (cnote 1 [bb 2] NOTE_INSN_BASIC_BLOCK)
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 2
+  ) ;; insn-chain
+) ;; function

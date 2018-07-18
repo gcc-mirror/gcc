@@ -22,5 +22,5 @@ template<typename _CharT>
 class ctype2 : public __ctype_abstract_base<_CharT>
 {
   typedef mask mask; // { dg-error "does not name a type" "no type" }
-  // { dg-message "note" "note" { target *-*-* } 24 }
+  // { dg-message "note" "note" { target *-*-* } .-1 }
 };

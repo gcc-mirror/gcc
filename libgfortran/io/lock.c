@@ -1,5 +1,5 @@
 /* Thread/recursion locking
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org> and Andy Vaught
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -25,7 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "io.h"
 #include <string.h>
-#include <stdlib.h>
 
 /* library_start()-- Called with a library call is entered.  */
 
@@ -42,7 +41,7 @@ library_start (st_parameter_common *cmp)
 void
 free_ionml (st_parameter_dt *dtp)
 {
-  namelist_info * t1, *t2;
+  namelist_info *t1, *t2;
 
   /* Delete the namelist, if it exists.  */
 

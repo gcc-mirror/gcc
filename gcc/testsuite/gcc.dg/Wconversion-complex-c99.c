@@ -5,7 +5,7 @@
    Likewise, the magic value 16777217.  */
 
 /* { dg-do compile } */
-/* { dg-skip-if "doubles are floats,ints are 16bits" { "avr-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "doubles are floats,ints are 16bits" { "avr-*-*" } } */
 /* { dg-options " -std=c99 -pedantic -Wconversion " } */
 /* { dg-require-effective-target int32plus } */
 /* { dg-require-effective-target double64plus } */
@@ -63,10 +63,10 @@ var_complex_narrowing (void)
   double _Complex doublec = 0.;
 
   vdoublec = floatc;
-  vfloatc = doublec; /* { dg-warning "float-conversion" } */
+  vfloatc = doublec; /* { dg-warning "conversion from .complex double. to .complex float. may change value" } */
 
   fdoublec (floatc);
-  ffloatc (doublec); /* { dg-warning "float-conversion" } */
+  ffloatc (doublec); /* { dg-warning "conversion from .complex double. to .complex float. may change value" } */
 }
 
 /* Check implicit conversions of complex values to integers.  */

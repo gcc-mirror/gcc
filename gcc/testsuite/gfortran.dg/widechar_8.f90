@@ -15,14 +15,14 @@ open(6,encoding="UTF-8")
 str = transfer(buffer, str)
 !print *, str
 !print *, 4_'\u039f\u03cd\u03c7\u30b8'
-if (str /= 4_'\u039f\u03cd\u03c7\u30b8') call abort()
+if (str /= 4_'\u039f\u03cd\u03c7\u30b8') STOP 1
 str = transfer([int(z'039f'),int(z'03cd'),int(z'03c7'),  &
                            int(z'30b8') ], str)
-if (str /= 4_'\u039f\u03cd\u03c7\u30b8') call abort()
+if (str /= 4_'\u039f\u03cd\u03c7\u30b8') STOP 2
 
 buffer2 = transfer(4_'\u039f\u03cd\u03c7\u30b8', buffer2, 4)
 !print *, buffer
 !print *, buffer2
 buffer2 = transfer(str, buffer2, 4)
-if (any(buffer2 /= buffer)) call abort()
+if (any(buffer2 /= buffer)) STOP 3
 end

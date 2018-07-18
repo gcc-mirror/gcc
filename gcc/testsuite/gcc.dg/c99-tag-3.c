@@ -40,7 +40,7 @@ void g(void) { const union u2; } /* { dg-error "28:empty declaration with type q
 
 union u3 { float v; };
 void h(void) { const struct u3; } /* { dg-error "29:'u3' defined as wrong kind of tag" } */
-/* { dg-error "29:empty declaration with type qualifier does not redeclare tag" "wrong tag empty" { target *-*-* } 42 } */
+/* { dg-error "29:empty declaration with type qualifier does not redeclare tag" "wrong tag empty" { target *-*-* } .-1 } */
 
 /* However, such useless specifiers are OK if the contents of the tag
    are being defined, or shadowed in an inner scope with the contents

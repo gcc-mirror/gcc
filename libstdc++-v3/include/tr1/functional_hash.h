@@ -1,6 +1,6 @@
 // TR1 functional_hash.h header -*- C++ -*-
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,10 +34,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   /// Class template hash.
   // Declaration of default hash functor std::tr1::hash.  The types for
   // which std::tr1::hash<T> is well-defined is in clause 6.3.3. of the PDTR.
@@ -82,6 +82,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Fowler / Noll / Vo (FNV) Hash (type FNV-1a)
   // (Used by the next specializations of std::tr1::hash.)
+
+  // N.B. These functions should work on unsigned char, otherwise they do not
+  // correctly implement the FNV-1a algorithm (see PR59406).
+  // The existing behaviour is retained for backwards compatibility.
 
   /// Dummy generic implementation (for sizeof(size_t) != 4, 8).
   template<size_t>
@@ -188,9 +192,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_PURE size_t
     hash<const wstring&>::operator()(const wstring&) const;
 #endif
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 #endif // _GLIBCXX_TR1_FUNCTIONAL_HASH_H

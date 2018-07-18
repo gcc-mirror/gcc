@@ -11,7 +11,7 @@ struct D {
     C *m_fn2() {
 	if (a)
 	  __builtin_abort();
-    }
+    }	// { dg-warning "control reaches end of non-void function" }
 };
 D getd();
 

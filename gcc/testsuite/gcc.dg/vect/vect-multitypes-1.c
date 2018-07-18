@@ -4,7 +4,14 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 32
+#if VECTOR_BITS > 128
+#define NSHORTS (VECTOR_BITS / 16)
+#else
+#define NSHORTS 8
+#endif
+
+#define NINTS (NSHORTS / 2)
+#define N (NSHORTS * 4)
 
 short sa[N];
 short sb[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
@@ -27,14 +34,14 @@ __attribute__ ((noinline)) int main1 (int n)
      copmutations. Vectorizable.  */
   for (i = 0; i < n; i++)
     {
-      sa[i+7] = sb[i];
-      ia[i+3] = ib[i+1];
+      sa[i + NSHORTS - 1] = sb[i];
+      ia[i + NINTS - 1] = ib[i + 1];
     }
 
   /* check results:  */
   for (i = 0; i < n; i++)
     {
-      if (sa[i+7] != sb[i] || ia[i+3] != ib[i+1])
+      if (sa[i + NSHORTS - 1] != sb[i] || ia[i + NINTS - 1] != ib[i + 1])
 	abort ();
     }
 
@@ -57,14 +64,14 @@ __attribute__ ((noinline)) int main2 (int n)
      copmutations.  */
   for (i = 0; i < n; i++)
     {
-      ia[i+3] = ib[i];
-      sa[i+3] = sb[i+1];
+      ia[i + NINTS - 1] = ib[i];
+      sa[i + NINTS - 1] = sb[i + 1];
     }
 
   /* check results:  */
   for (i = 0; i < n; i++)
     {
-      if (sa[i+3] != sb[i+1] || ia[i+3] != ib[i])
+      if (sa[i + NINTS - 1] != sb[i + 1] || ia[i + NINTS - 1] != ib[i])
         abort ();
     }
 
@@ -75,13 +82,13 @@ int main (void)
 { 
   check_vect ();
   
-  main1 (N-7);
-  main2 (N-3);
+  main1 (N - NSHORTS + 1);
+  main2 (N - NINTS + 1);
 
   return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail {{ vect_no_align && { ! vect_hw_misalign } } || {vect_sizes_32B_16B }}} } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { xfail {{ vect_no_align && { ! vect_hw_misalign } } || {vect_sizes_32B_16B }}} } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail { { ! vect_unaligned_possible } || vect_sizes_32B_16B } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { target { vect_no_align && { { ! vect_hw_misalign } && vect_sizes_32B_16B } } }} } */
 

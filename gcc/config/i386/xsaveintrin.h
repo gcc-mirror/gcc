@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -46,6 +46,20 @@ __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _xrstor (void *__P, long long __M)
 {
   __builtin_ia32_xrstor (__P, __M);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_xsetbv (unsigned int __A, long long __V)
+{
+  __builtin_ia32_xsetbv (__A, __V);
+}
+
+extern __inline long long
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_xgetbv (unsigned int __A)
+{
+  return __builtin_ia32_xgetbv (__A);
 }
 
 #ifdef __x86_64__

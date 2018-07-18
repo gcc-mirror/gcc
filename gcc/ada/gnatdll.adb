@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,7 @@
 
 with Gnatvsn;
 with MDLL.Fil; use MDLL.Fil;
-with MDLL.Utl; use MDLL.Utl;
+with MDLL.Utl;
 with Switch;   use Switch;
 
 with Ada.Text_IO;           use Ada.Text_IO;
@@ -40,8 +40,6 @@ with GNAT.OS_Lib;       use GNAT.OS_Lib;
 with GNAT.Command_Line; use GNAT.Command_Line;
 
 procedure Gnatdll is
-
-   use type GNAT.OS_Lib.Argument_List;
 
    procedure Syntax;
    --  Print out usage
@@ -271,7 +269,6 @@ procedure Gnatdll is
 
       loop
          case Getopt ("g h v q k a? b: d: e: l: n m I:") is
-
             when ASCII.NUL =>
                exit;
 
@@ -305,11 +302,9 @@ procedure Gnatdll is
                end if;
 
             when 'k' =>
-
                MDLL.Kill_Suffix := True;
 
             when 'a' =>
-
                if Parameter = "" then
 
                   --  Default address for a relocatable dynamic library.
@@ -324,13 +319,10 @@ procedure Gnatdll is
                Must_Build_Relocatable := False;
 
             when 'b' =>
-
                DLL_Address := To_Unbounded_String (Parameter);
-
                Must_Build_Relocatable := True;
 
             when 'e' =>
-
                Def_Filename := To_Unbounded_String (Parameter);
 
             when 'd' =>
@@ -347,11 +339,9 @@ procedure Gnatdll is
                Build_Mode := Dynamic_Lib;
 
             when 'm' =>
-
                Gen_Map_File := True;
 
             when 'n' =>
-
                Build_Import := False;
 
             when 'l' =>
@@ -398,14 +388,12 @@ procedure Gnatdll is
 
       loop
          case Getopt ("*") is
-
             when ASCII.NUL =>
                exit;
 
             when others =>
                Bopts (B) := new String'(Full_Switch);
                B := B + 1;
-
          end case;
       end loop;
 

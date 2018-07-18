@@ -40,6 +40,6 @@ program pr40594
   am%dummy = 0
 
   call init(ap)
-  if (ap%initialized .neqv. .false.) call abort()
+  if (ap%initialized .neqv. .false.) STOP 1
 
 END

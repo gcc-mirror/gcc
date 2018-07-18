@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,6 @@ with Exp_Prag; use Exp_Prag;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
-with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -55,15 +54,12 @@ with Sinfo;    use Sinfo;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
 with Stand;    use Stand;
-with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
@@ -129,10 +125,10 @@ package body Exp_Ch7 is
    -- Transient Blocks and Finalization Management --
    --------------------------------------------------
 
-   function Find_Node_To_Be_Wrapped (N : Node_Id) return Node_Id;
-   --  N is a node which may generate a transient scope. Loop over the parent
-   --  pointers of N until we find the appropriate node to wrap. If it returns
-   --  Empty, it means that no transient scope is needed in this context.
+   function Find_Transient_Context (N : Node_Id) return Node_Id;
+   --  Locate a suitable context for arbitrary node N which may need to be
+   --  serviced by a transient scope. Return Empty if no suitable context is
+   --  available.
 
    procedure Insert_Actions_In_Scope_Around
      (N         : Node_Id;
@@ -314,7 +310,7 @@ package body Exp_Ch7 is
    function Build_Cleanup_Statements
      (N                  : Node_Id;
       Additional_Cleanup : List_Id) return List_Id;
-   --  Create the clean up calls for an asynchronous call block, task master,
+   --  Create the cleanup calls for an asynchronous call block, task master,
    --  protected subprogram body, task allocation block or task body, or
    --  additional cleanup actions parked on a transient block. If the context
    --  does not contain the above constructs, the routine returns an empty
@@ -353,6 +349,16 @@ package body Exp_Ch7 is
    procedure Build_Record_Deep_Procs (Typ : Entity_Id);
    --  Build the deep Initialize/Adjust/Finalize for a record Typ with
    --  Has_Component_Component set and store them using the TSS mechanism.
+
+   procedure Check_Unnesting_Elaboration_Code (N : Node_Id);
+   --  The statement part of a package body that is a compilation unit may
+   --  contain blocks that declare local subprograms. In Subprogram_Unnesting
+   --  Mode such subprograms must be handled as nested inside the (implicit)
+   --  elaboration procedure that executes that statement part. To handle
+   --  properly uplevel references we construct that subprogram explicitly,
+   --  to contain blocks and inner subprograms, The statement part becomes
+   --  a call to this subprogram. This is only done if blocks are present
+   --  in the statement list of the body.
 
    procedure Check_Visibly_Controlled
      (Prim : Final_Primitives;
@@ -483,39 +489,46 @@ package body Exp_Ch7 is
          return False;
 
       --  Do not consider C and C++ types since it is assumed that the non-Ada
-      --  side will handle their clean up.
+      --  side will handle their cleanup.
 
       elsif Convention (Desig_Typ) = Convention_C
         or else Convention (Desig_Typ) = Convention_CPP
       then
          return False;
 
-      --  Do not consider types that return on the secondary stack
+      --  Do not consider an access type that returns on the secondary stack
 
       elsif Present (Associated_Storage_Pool (Ptr_Typ))
         and then Is_RTE (Associated_Storage_Pool (Ptr_Typ), RE_SS_Pool)
       then
          return False;
 
-      --  Do not consider types which may never allocate an object
+      --  Do not consider an access type that can never allocate an object
 
       elsif No_Pool_Assigned (Ptr_Typ) then
          return False;
 
-      --  Do not consider access types coming from Ada.Unchecked_Deallocation
-      --  instances. Even though the designated type may be controlled, the
-      --  access type will never participate in allocation.
+      --  Do not consider an access type coming from an Unchecked_Deallocation
+      --  instance. Even though the designated type may be controlled, the
+      --  access type will never participate in any allocations.
 
       elsif In_Deallocation_Instance (Ptr_Typ) then
          return False;
 
-      --  Do not consider non-library access types when restriction
-      --  No_Nested_Finalization is in effect since masters are controlled
-      --  objects.
+      --  Do not consider a non-library access type when No_Nested_Finalization
+      --  is in effect since finalization masters are controlled objects and if
+      --  created will violate the restriction.
 
       elsif Restriction_Active (No_Nested_Finalization)
         and then not Is_Library_Level_Entity (Ptr_Typ)
       then
+         return False;
+
+      --  Do not consider an access type subject to pragma No_Heap_Finalization
+      --  because objects allocated through such a type are not to be finalized
+      --  when the access type goes out of scope.
+
+      elsif No_Heap_Finalization (Ptr_Typ) then
          return False;
 
       --  Do not create finalization masters in GNATprove mode because this
@@ -784,13 +797,15 @@ package body Exp_Ch7 is
               Typ   => Typ,
               Stmts => Make_Deep_Array_Body (Finalize_Case, Typ)));
 
-         --  Create TSS primitive Finalize_Address.
+         --  Create TSS primitive Finalize_Address (unless CodePeer_Mode)
 
-         Set_TSS (Typ,
-           Make_Deep_Proc
-             (Prim  => Address_Case,
-              Typ   => Typ,
-              Stmts => Make_Deep_Array_Body (Address_Case, Typ)));
+         if not CodePeer_Mode then
+            Set_TSS (Typ,
+              Make_Deep_Proc
+                (Prim  => Address_Case,
+                 Typ   => Typ,
+                 Stmts => Make_Deep_Array_Body (Address_Case, Typ)));
+         end if;
       end if;
    end Build_Array_Deep_Procs;
 
@@ -1322,8 +1337,7 @@ package body Exp_Ch7 is
                              or else
                                (Present (Clean_Stmts)
                                  and then Is_Non_Empty_List (Clean_Stmts));
-      Exceptions_OK    : constant Boolean :=
-                           not Restriction_Active (No_Exception_Propagation);
+      Exceptions_OK    : constant Boolean := Exceptions_In_Finalization_OK;
       For_Package_Body : constant Boolean := Nkind (N) = N_Package_Body;
       For_Package_Spec : constant Boolean := Nkind (N) = N_Package_Declaration;
       For_Package      : constant Boolean :=
@@ -1550,8 +1564,8 @@ package body Exp_Ch7 is
             Jump_Alts := New_List;
          end if;
 
-         --  If the context requires additional clean up, the finalization
-         --  machinery is added after the clean up code.
+         --  If the context requires additional cleanup, the finalization
+         --  machinery is added after the cleanup code.
 
          if Acts_As_Clean then
             Finalizer_Stmts       := Clean_Stmts;
@@ -1773,14 +1787,59 @@ package body Exp_Ch7 is
             Set_At_End_Proc (HSS, Empty);
          end if;
 
-         --  Release the secondary stack mark
+         --  Release the secondary stack
 
          if Present (Mark_Id) then
-            Append_To (Finalizer_Stmts, Build_SS_Release_Call (Loc, Mark_Id));
+            declare
+               Release : Node_Id := Build_SS_Release_Call (Loc, Mark_Id);
+
+            begin
+               --  If the context is a build-in-place function, the secondary
+               --  stack must be released, unless the build-in-place function
+               --  itself is returning on the secondary stack. Generate:
+               --
+               --    if BIP_Alloc_Form /= Secondary_Stack then
+               --       SS_Release (Mark_Id);
+               --    end if;
+               --
+               --  Note that if the function returns on the secondary stack,
+               --  then the responsibility of reclaiming the space is always
+               --  left to the caller (recursively if needed).
+
+               if Nkind (N) = N_Subprogram_Body then
+                  declare
+                     Spec_Id : constant Entity_Id :=
+                                 Unique_Defining_Entity (N);
+                     BIP_SS  : constant Boolean :=
+                                 Is_Build_In_Place_Function (Spec_Id)
+                                   and then Needs_BIP_Alloc_Form (Spec_Id);
+                  begin
+                     if BIP_SS then
+                        Release :=
+                          Make_If_Statement (Loc,
+                            Condition       =>
+                              Make_Op_Ne (Loc,
+                                Left_Opnd  =>
+                                  New_Occurrence_Of
+                                    (Build_In_Place_Formal
+                                      (Spec_Id, BIP_Alloc_Form), Loc),
+                                Right_Opnd =>
+                                  Make_Integer_Literal (Loc,
+                                    UI_From_Int
+                                      (BIP_Allocation_Form'Pos
+                                        (Secondary_Stack)))),
+
+                            Then_Statements => New_List (Release));
+                     end if;
+                  end;
+               end if;
+
+               Append_To (Finalizer_Stmts, Release);
+            end;
          end if;
 
          --  Protect the statements with abort defer/undefer. This is only when
-         --  aborts are allowed and the clean up statements require deferral or
+         --  aborts are allowed and the cleanup statements require deferral or
          --  there are controlled objects to be finalized. Note that the abort
          --  defer/undefer pair does not require an extra block because each
          --  finalization exception is caught in its corresponding finalization
@@ -1796,7 +1855,7 @@ package body Exp_Ch7 is
 
          --  The local exception does not need to be reraised for library-level
          --  finalizers. Note that this action must be carried out after object
-         --  clean up, secondary stack release and abort undeferral. Generate:
+         --  cleanup, secondary stack release, and abort undeferral. Generate:
 
          --    if Raised and then not Abort then
          --       Raise_From_Controlled_Operation (E);
@@ -1903,7 +1962,7 @@ package body Exp_Ch7 is
             Append_To (Spec_Decls, Fin_Spec);
             Analyze (Fin_Spec);
 
-            --  When the finalizer acts solely as a clean up routine, the body
+            --  When the finalizer acts solely as a cleanup routine, the body
             --  is inserted right after the spec.
 
             if Acts_As_Clean and not Has_Ctrl_Objs then
@@ -1951,7 +2010,7 @@ package body Exp_Ch7 is
                Insert_After (Finalizer_Insert_Nod, Fin_Body);
             end if;
 
-            Analyze (Fin_Body);
+            Analyze (Fin_Body, Suppress => All_Checks);
          end if;
       end Create_Finalizer;
 
@@ -2094,15 +2153,6 @@ package body Exp_Ch7 is
                --  because they will not appear in the final tree.
 
                elsif Is_Ignored_Ghost_Entity (Obj_Id) then
-                  null;
-
-               --  The expansion of iterator loops generates an object
-               --  declaration where the Ekind is explicitly set to loop
-               --  parameter. This is to ensure that the loop parameter behaves
-               --  as a constant from user code point of view. Such object are
-               --  never controlled and do not require finalization.
-
-               elsif Ekind (Obj_Id) = E_Loop_Parameter then
                   null;
 
                --  The object is of the form:
@@ -2610,8 +2660,8 @@ package body Exp_Ch7 is
             --  procedures of types Init_Typ or Obj_Typ.
 
             function Next_Suitable_Statement (Stmt : Node_Id) return Node_Id;
-            --  Given a statement which is part of a list, return the next
-            --  statement while skipping over dynamic elab checks.
+            --  Obtain the next statement which follows list member Stmt while
+            --  ignoring artifacts related to access-before-elaboration checks.
 
             -----------------------------
             -- Find_Last_Init_In_Block --
@@ -2730,16 +2780,22 @@ package body Exp_Ch7 is
             -----------------------------
 
             function Next_Suitable_Statement (Stmt : Node_Id) return Node_Id is
-               Result : Node_Id := Next (Stmt);
+               Result : Node_Id;
 
             begin
-               --  Skip over access-before-elaboration checks
+               --  Skip call markers and Program_Error raises installed by the
+               --  ABE mechanism.
 
-               if Dynamic_Elaboration_Checks
-                 and then Nkind (Result) = N_Raise_Program_Error
-               then
+               Result := Next (Stmt);
+               while Present (Result) loop
+                  if not Nkind_In (Result, N_Call_Marker,
+                                           N_Raise_Program_Error)
+                  then
+                     exit;
+                  end if;
+
                   Result := Next (Result);
-               end if;
+               end loop;
 
                return Result;
             end Next_Suitable_Statement;
@@ -2768,9 +2824,30 @@ package body Exp_Ch7 is
 
             Stmt := Next_Suitable_Statement (Decl);
 
-            --  Nothing to do for an object with suppressed initialization
+            --  For an object with suppressed initialization, we check whether
+            --  there is in fact no initialization expression. If there is not,
+            --  then this is an object declaration that has been turned into a
+            --  different object declaration that calls the build-in-place
+            --  function in a 'Reference attribute, as in "F(...)'Reference".
+            --  We search for that later object declaration, so that the
+            --  Inc_Decl will be inserted after the call. Otherwise, if the
+            --  call raises an exception, we will finalize the (uninitialized)
+            --  object, which is wrong.
 
             if No_Initialization (Decl) then
+               if No (Expression (Last_Init)) then
+                  loop
+                     Last_Init := Next (Last_Init);
+                     exit when No (Last_Init);
+                     exit when Nkind (Last_Init) = N_Object_Declaration
+                       and then Nkind (Expression (Last_Init)) = N_Reference
+                       and then Nkind (Prefix (Expression (Last_Init))) =
+                                  N_Function_Call
+                       and then Is_Expanded_Build_In_Place_Call
+                                  (Prefix (Expression (Last_Init)));
+                  end loop;
+               end if;
+
                return;
 
             --  In all other cases the initialization calls follow the related
@@ -2839,7 +2916,7 @@ package body Exp_Ch7 is
          Body_Ins  : Node_Id;
          Count_Ins : Node_Id;
          Fin_Call  : Node_Id;
-         Fin_Stmts : List_Id;
+         Fin_Stmts : List_Id := No_List;
          Inc_Decl  : Node_Id;
          Label     : Node_Id;
          Label_Id  : Entity_Id;
@@ -2941,6 +3018,14 @@ package body Exp_Ch7 is
             Find_Last_Init (Count_Ins, Body_Ins);
          end if;
 
+         --  If the Initialize function is null or trivial, the call will have
+         --  been replaced with a null statement, in which case place counter
+         --  declaration after object declaration itself.
+
+         if No (Count_Ins) then
+            Count_Ins := Decl;
+         end if;
+
          Insert_After (Count_Ins, Inc_Decl);
          Analyze (Inc_Decl);
 
@@ -2952,7 +3037,7 @@ package body Exp_Ch7 is
 
          if No (Finalizer_Insert_Nod) then
 
-            --  Insertion after an abort deffered block
+            --  Insertion after an abort deferred block
 
             if Present (Body_Ins) then
                Finalizer_Insert_Nod := Body_Ins;
@@ -2999,8 +3084,6 @@ package body Exp_Ch7 is
          --  manual finalization of their lock managers.
 
          if Is_Protected then
-            Fin_Stmts := No_List;
-
             if Is_Simple_Protected_Type (Obj_Typ) then
                Fin_Call := Cleanup_Protected_Object (Decl, Obj_Ref);
 
@@ -3026,8 +3109,8 @@ package body Exp_Ch7 is
             --          null;
             --    end;
 
-            if Present (Fin_Stmts) then
-               Append_To (Finalizer_Stmts,
+            if Present (Fin_Stmts) and then Exceptions_OK then
+               Fin_Stmts := New_List (
                  Make_Block_Statement (Loc,
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,
@@ -3061,6 +3144,13 @@ package body Exp_Ch7 is
               Make_Final_Call (
                 Obj_Ref => Obj_Ref,
                 Typ     => Obj_Typ);
+
+            --  Guard against a missing [Deep_]Finalize when the object type
+            --  was not properly frozen.
+
+            if No (Fin_Call) then
+               Fin_Call := Make_Null_Statement (Loc);
+            end if;
 
             --  For CodePeer, the exception handlers normally generated here
             --  generate complex flowgraphs which result in capacity problems.
@@ -3440,1566 +3530,13 @@ package body Exp_Ch7 is
 
       Set_At_End_Proc (HSS, New_Occurrence_Of (Fin_Id, Loc));
 
+      --  Attach reference to finalizer to tree, for LLVM use
+
+      Set_Parent (At_End_Proc (HSS), HSS);
+
       Analyze (At_End_Proc (HSS));
       Expand_At_End_Handler (HSS, Empty);
    end Build_Finalizer_Call;
-
-   ------------------------------------
-   -- Build_Invariant_Procedure_Body --
-   ------------------------------------
-
-   procedure Build_Invariant_Procedure_Body
-     (Typ               : Entity_Id;
-      Partial_Invariant : Boolean := False)
-   is
-      Loc : constant Source_Ptr := Sloc (Typ);
-
-      Pragmas_Seen : Elist_Id := No_Elist;
-      --  This list contains all invariant pragmas processed so far. The list
-      --  is used to avoid generating redundant invariant checks.
-
-      Produced_Check : Boolean := False;
-      --  This flag tracks whether the type has produced at least one invariant
-      --  check. The flag is used as a sanity check at the end of the routine.
-
-      --  NOTE: most of the routines in Build_Invariant_Procedure_Body are
-      --  intentionally unnested to avoid deep indentation of code.
-
-      --  NOTE: all Add_xxx_Invariants routines are reactive. In other words
-      --  they emit checks, loops (for arrays) and case statements (for record
-      --  variant parts) only when there are invariants to verify. This keeps
-      --  the body of the invariant procedure free from useless code.
-
-      procedure Add_Array_Component_Invariants
-        (T      : Entity_Id;
-         Obj_Id : Entity_Id;
-         Checks : in out List_Id);
-      --  Generate an invariant check for each component of array type T.
-      --  Obj_Id denotes the entity of the _object formal parameter of the
-      --  invariant procedure. All created checks are added to list Checks.
-
-      procedure Add_Interface_Invariants
-        (T      : Entity_Id;
-         Obj_Id : Entity_Id;
-         Checks : in out List_Id);
-      --  Generate an invariant check for each inherited class-wide invariant
-      --  coming from all interfaces implemented by type T. Obj_Id denotes the
-      --  entity of the _object formal parameter of the invariant procedure.
-      --  All created checks are added to list Checks.
-
-      procedure Add_Parent_Invariants
-        (T      : Entity_Id;
-         Obj_Id : Entity_Id;
-         Checks : in out List_Id);
-      --  Generate an invariant check for each inherited class-wide invariant
-      --  coming from all parent types of type T. Obj_Id denotes the entity of
-      --  the _object formal parameter of the invariant procedure. All created
-      --  checks are added to list Checks.
-
-      procedure Add_Record_Component_Invariants
-        (T      : Entity_Id;
-         Obj_Id : Entity_Id;
-         Checks : in out List_Id);
-      --  Generate an invariant check for each component of record type T.
-      --  Obj_Id denotes the entity of the _object formal parameter of the
-      --  invariant procedure. All created checks are added to list Checks.
-
-      procedure Add_Type_Invariants
-        (Priv_Typ  : Entity_Id;
-         Full_Typ  : Entity_Id;
-         CRec_Typ  : Entity_Id;
-         Obj_Id    : Entity_Id;
-         Checks    : in out List_Id;
-         Inherit   : Boolean := False;
-         Priv_Item : Node_Id := Empty);
-      --  Generate an invariant check for each invariant found in one of the
-      --  following types (if available):
-      --
-      --    Priv_Typ - the partial view of a type
-      --    Full_Typ - the full view of a type
-      --    CRec_Typ - the corresponding record of a protected or a task type
-      --
-      --  Obj_Id denotes the entity of the _object formal parameter of the
-      --  invariant procedure. All created checks are added to list Checks.
-      --  Flag Inherit should be set when generating invariant checks for
-      --  inherited class-wide invariants. Priv_Item denotes the first rep
-      --  item of the private type.
-
-      procedure Create_Append (L : in out List_Id; N : Node_Id);
-      --  Append arbitrary node N to list L. If there is no list, create one.
-
-      function Is_Untagged_Private_Derivation
-        (Priv_Typ : Entity_Id;
-         Full_Typ : Entity_Id) return Boolean;
-      --  Determine whether private type Priv_Typ and its full view Full_Typ
-      --  represent an untagged derivation from a private parent.
-
-      ------------------------------------
-      -- Add_Array_Component_Invariants --
-      ------------------------------------
-
-      procedure Add_Array_Component_Invariants
-        (T      : Entity_Id;
-         Obj_Id : Entity_Id;
-         Checks : in out List_Id)
-      is
-         Comp_Typ : constant Entity_Id := Component_Type (T);
-         Dims     : constant Pos       := Number_Dimensions (T);
-
-         procedure Process_Array_Component
-           (Indices     : List_Id;
-            Comp_Checks : in out List_Id);
-         --  Generate an invariant check for an array component identified by
-         --  the indices in list Indices. All created checks are added to list
-         --  Comp_Checks.
-
-         procedure Process_One_Dimension
-           (Dim        : Pos;
-            Indices    : List_Id;
-            Dim_Checks : in out List_Id);
-         --  Generate a loop over the Nth dimension Dim of an array type. List
-         --  Indices contains all array indices for the dimension. All created
-         --  checks are added to list Dim_Checks.
-
-         -----------------------------
-         -- Process_Array_Component --
-         -----------------------------
-
-         procedure Process_Array_Component
-           (Indices     : List_Id;
-            Comp_Checks : in out List_Id)
-         is
-            Proc_Id : Entity_Id;
-
-         begin
-            if Has_Invariants (Comp_Typ) then
-               Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
-
-               --  The component type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
-
-               pragma Assert (Present (Proc_Id));
-
-               --  Generate:
-               --    <Comp_Typ>Invariant (_object (<Indices>));
-
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
-
-               if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name                   =>
-                        New_Occurrence_Of (Proc_Id, Loc),
-                      Parameter_Associations => New_List (
-                        Make_Indexed_Component (Loc,
-                          Prefix      => New_Occurrence_Of (Obj_Id, Loc),
-                          Expressions => New_Copy_List (Indices)))));
-               end if;
-
-               Produced_Check := True;
-            end if;
-
-            --  In a rare case the designated type of an access component may
-            --  have an invariant. In this case verify the dereference of the
-            --  component.
-
-            if Is_Access_Type (Comp_Typ)
-              and then Has_Invariants (Designated_Type (Comp_Typ))
-            then
-               Proc_Id :=
-                 Invariant_Procedure (Base_Type (Designated_Type (Comp_Typ)));
-
-               --  The designated type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
-
-               pragma Assert (Present (Proc_Id));
-
-               --  Generate:
-               --    if _object (<Indexes>) /= null then
-               --       <Desig_Comp_Typ>Invariant (_object (<Indices>).all);
-               --    end if;
-
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
-
-               if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
-                    Make_If_Statement (Loc,
-                      Condition       =>
-                        Make_Op_Ne (Loc,
-                          Left_Opnd  =>
-                            Make_Indexed_Component (Loc,
-                              Prefix      => New_Occurrence_Of (Obj_Id, Loc),
-                              Expressions => New_Copy_List (Indices)),
-                          Right_Opnd => Make_Null (Loc)),
-
-                      Then_Statements => New_List (
-                        Make_Procedure_Call_Statement (Loc,
-                          Name                   =>
-                            New_Occurrence_Of (Proc_Id, Loc),
-
-                          Parameter_Associations => New_List (
-                            Make_Explicit_Dereference (Loc,
-                              Prefix =>
-                                Make_Indexed_Component (Loc,
-                                  Prefix      =>
-                                    New_Occurrence_Of (Obj_Id, Loc),
-                                  Expressions =>
-                                    New_Copy_List (Indices))))))));
-               end if;
-
-               Produced_Check := True;
-            end if;
-         end Process_Array_Component;
-
-         ---------------------------
-         -- Process_One_Dimension --
-         ---------------------------
-
-         procedure Process_One_Dimension
-           (Dim        : Pos;
-            Indices    : List_Id;
-            Dim_Checks : in out List_Id)
-         is
-            Comp_Checks : List_Id := No_List;
-            Index       : Entity_Id;
-
-         begin
-            --  Generate the invariant checks for the array component after all
-            --  dimensions have produced their respective loops.
-
-            if Dim > Dims then
-               Process_Array_Component
-                 (Indices     => Indices,
-                  Comp_Checks => Dim_Checks);
-
-            --  Otherwise create a loop for the current dimension
-
-            else
-               --  Create a new loop variable for each dimension
-
-               Index :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_External_Name ('I', Dim));
-               Append_To (Indices, New_Occurrence_Of (Index, Loc));
-
-               Process_One_Dimension
-                 (Dim        => Dim + 1,
-                  Indices    => Indices,
-                  Dim_Checks => Comp_Checks);
-
-               --  Generate:
-               --    for I<Dim> in _object'Range (<Dim>) loop
-               --       <Comp_Checks>
-               --    end loop;
-
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
-
-               if Present (Comp_Checks) then
-                  Create_Append (Dim_Checks,
-                    Make_Implicit_Loop_Statement (T,
-                      Identifier       => Empty,
-                      Iteration_Scheme =>
-                        Make_Iteration_Scheme (Loc,
-                          Loop_Parameter_Specification =>
-                            Make_Loop_Parameter_Specification (Loc,
-                              Defining_Identifier         => Index,
-                              Discrete_Subtype_Definition =>
-                                Make_Attribute_Reference (Loc,
-                                  Prefix         =>
-                                    New_Occurrence_Of (Obj_Id, Loc),
-                                  Attribute_Name => Name_Range,
-                                  Expressions    => New_List (
-                                    Make_Integer_Literal (Loc, Dim))))),
-
-                      Statements => Comp_Checks));
-               end if;
-            end if;
-         end Process_One_Dimension;
-
-      --  Start of processing for Add_Array_Component_Invariants
-
-      begin
-         Process_One_Dimension
-           (Dim        => 1,
-            Indices    => New_List,
-            Dim_Checks => Checks);
-      end Add_Array_Component_Invariants;
-
-      ------------------------------
-      -- Add_Interface_Invariants --
-      ------------------------------
-
-      procedure Add_Interface_Invariants
-        (T      : Entity_Id;
-         Obj_Id : Entity_Id;
-         Checks : in out List_Id)
-      is
-         Iface_Elmt : Elmt_Id;
-         Ifaces     : Elist_Id;
-
-      begin
-         if Is_Tagged_Type (T) then
-            Collect_Interfaces (T, Ifaces);
-
-            --  Process the class-wide invariants of all implemented interfaces
-
-            Iface_Elmt := First_Elmt (Ifaces);
-            while Present (Iface_Elmt) loop
-               Add_Type_Invariants
-                 (Priv_Typ => Empty,
-                  Full_Typ => Node (Iface_Elmt),
-                  CRec_Typ => Empty,
-                  Obj_Id   => Obj_Id,
-                  Checks   => Checks,
-                  Inherit  => True);
-
-               Next_Elmt (Iface_Elmt);
-            end loop;
-         end if;
-      end Add_Interface_Invariants;
-
-      ---------------------------
-      -- Add_Parent_Invariants --
-      ---------------------------
-
-      procedure Add_Parent_Invariants
-        (T      : Entity_Id;
-         Obj_Id : Entity_Id;
-         Checks : in out List_Id)
-      is
-         Dummy_1 : Entity_Id;
-         Dummy_2 : Entity_Id;
-
-         Curr_Typ : Entity_Id;
-         --  The entity of the current type being examined
-
-         Full_Typ : Entity_Id;
-         --  The full view of Par_Typ
-
-         Par_Typ : Entity_Id;
-         --  The entity of the parent type
-
-         Priv_Typ : Entity_Id;
-         --  The partial view of Par_Typ
-
-      begin
-         --  Climb the parent type chain
-
-         Curr_Typ := T;
-         loop
-            --  Do not consider subtypes as they inherit the invariants from
-            --  their base types.
-
-            Par_Typ := Base_Type (Etype (Curr_Typ));
-
-            --  Stop the climb once the root of the parent chain is reached
-
-            exit when Curr_Typ = Par_Typ;
-
-            --  Process the class-wide invariants of the parent type
-
-            Get_Views (Par_Typ, Priv_Typ, Full_Typ, Dummy_1, Dummy_2);
-
-            Add_Type_Invariants
-              (Priv_Typ => Priv_Typ,
-               Full_Typ => Full_Typ,
-               CRec_Typ => Empty,
-               Obj_Id   => Obj_Id,
-               Checks   => Checks,
-               Inherit  => True);
-
-            Curr_Typ := Par_Typ;
-         end loop;
-      end Add_Parent_Invariants;
-
-      -------------------------------------
-      -- Add_Record_Component_Invariants --
-      -------------------------------------
-
-      procedure Add_Record_Component_Invariants
-        (T      : Entity_Id;
-         Obj_Id : Entity_Id;
-         Checks : in out List_Id)
-      is
-         procedure Process_Component_List
-           (Comp_List : Node_Id;
-            CL_Checks : in out List_Id);
-         --  Generate invariant checks for all record components found in
-         --  component list Comp_List, including variant parts. All created
-         --  checks are added to list CL_Checks.
-
-         procedure Process_Record_Component
-           (Comp_Id     : Entity_Id;
-            Comp_Checks : in out List_Id);
-         --  Generate an invariant check for a record component identified by
-         --  Comp_Id. All created checks are added to list Comp_Checks.
-
-         ----------------------------
-         -- Process_Component_List --
-         ----------------------------
-
-         procedure Process_Component_List
-           (Comp_List : Node_Id;
-            CL_Checks : in out List_Id)
-         is
-            Comp       : Node_Id;
-            Var        : Node_Id;
-            Var_Alts   : List_Id := No_List;
-            Var_Checks : List_Id := No_List;
-            Var_Stmts  : List_Id;
-
-            Produced_Variant_Check : Boolean := False;
-            --  This flag tracks whether the component has produced at least
-            --  one invariant check.
-
-         begin
-            --  Traverse the component items
-
-            Comp := First (Component_Items (Comp_List));
-            while Present (Comp) loop
-               if Nkind (Comp) = N_Component_Declaration then
-
-                  --  Generate the component invariant check
-
-                  Process_Record_Component
-                    (Comp_Id     => Defining_Entity (Comp),
-                     Comp_Checks => CL_Checks);
-               end if;
-
-               Next (Comp);
-            end loop;
-
-            --  Traverse the variant part
-
-            if Present (Variant_Part (Comp_List)) then
-               Var := First (Variants (Variant_Part (Comp_List)));
-               while Present (Var) loop
-                  Var_Checks := No_List;
-
-                  --  Generate invariant checks for all components and variant
-                  --  parts that qualify.
-
-                  Process_Component_List
-                    (Comp_List => Component_List (Var),
-                     CL_Checks => Var_Checks);
-
-                  --  The components of the current variant produced at least
-                  --  one invariant check.
-
-                  if Present (Var_Checks) then
-                     Var_Stmts := Var_Checks;
-                     Produced_Variant_Check := True;
-
-                  --  Otherwise there are either no components with invariants,
-                  --  assertions are disabled, or Assertion_Policy Ignore is in
-                  --  effect.
-
-                  else
-                     Var_Stmts := New_List (Make_Null_Statement (Loc));
-                  end if;
-
-                  Create_Append (Var_Alts,
-                    Make_Case_Statement_Alternative (Loc,
-                      Discrete_Choices =>
-                        New_Copy_List (Discrete_Choices (Var)),
-                      Statements       => Var_Stmts));
-
-                  Next (Var);
-               end loop;
-
-               --  Create a case statement which verifies the invariant checks
-               --  of a particular component list depending on the discriminant
-               --  values only when there is at least one real invariant check.
-
-               if Produced_Variant_Check then
-                  Create_Append (CL_Checks,
-                    Make_Case_Statement (Loc,
-                      Expression   =>
-                        Make_Selected_Component (Loc,
-                          Prefix        => New_Occurrence_Of (Obj_Id, Loc),
-                          Selector_Name =>
-                            New_Occurrence_Of
-                              (Entity (Name (Variant_Part (Comp_List))), Loc)),
-                      Alternatives => Var_Alts));
-               end if;
-            end if;
-         end Process_Component_List;
-
-         ------------------------------
-         -- Process_Record_Component --
-         ------------------------------
-
-         procedure Process_Record_Component
-           (Comp_Id     : Entity_Id;
-            Comp_Checks : in out List_Id)
-         is
-            Comp_Typ : constant Entity_Id := Etype (Comp_Id);
-            Proc_Id  : Entity_Id;
-
-            Produced_Component_Check : Boolean := False;
-            --  This flag tracks whether the component has produced at least
-            --  one invariant check.
-
-         begin
-            --  Nothing to do for internal component _parent. Note that it is
-            --  not desirable to check whether the component comes from source
-            --  because protected type components are relocated to an internal
-            --  corresponding record, but still need processing.
-
-            if Chars (Comp_Id) = Name_uParent then
-               return;
-            end if;
-
-            --  Verify the invariant of the component. Note that an access
-            --  type may have an invariant when it acts as the full view of a
-            --  private type and the invariant appears on the partial view. In
-            --  this case verify the access value itself.
-
-            if Has_Invariants (Comp_Typ) then
-               Proc_Id := Invariant_Procedure (Base_Type (Comp_Typ));
-
-               --  The component type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
-
-               pragma Assert (Present (Proc_Id));
-
-               --  Generate:
-               --    <Comp_Typ>Invariant (T (_object).<Comp_Id>);
-
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
-
-               if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name                   =>
-                        New_Occurrence_Of (Proc_Id, Loc),
-                      Parameter_Associations => New_List (
-                        Make_Selected_Component (Loc,
-                          Prefix        =>
-                            Unchecked_Convert_To
-                              (T, New_Occurrence_Of (Obj_Id, Loc)),
-                          Selector_Name =>
-                            New_Occurrence_Of (Comp_Id, Loc)))));
-               end if;
-
-               Produced_Check           := True;
-               Produced_Component_Check := True;
-            end if;
-
-            --  In a rare case the designated type of an access component may
-            --  have a invariant. In this case verify the dereference of the
-            --  component.
-
-            if Is_Access_Type (Comp_Typ)
-              and then Has_Invariants (Designated_Type (Comp_Typ))
-            then
-               Proc_Id :=
-                 Invariant_Procedure (Base_Type (Designated_Type (Comp_Typ)));
-
-               --  The designated type should have an invariant procedure if it
-               --  has invariants of its own or inherits class-wide invariants
-               --  from parent or interface types.
-
-               pragma Assert (Present (Proc_Id));
-
-               --  Generate:
-               --    if T (_object).<Comp_Id> /= null then
-               --       <Desig_Comp_Typ>Invariant (T (_object).<Comp_Id>.all);
-               --    end if;
-
-               --  Note that the invariant procedure may have a null body if
-               --  assertions are disabled or Assertion_Polity Ignore is in
-               --  effect.
-
-               if not Has_Null_Body (Proc_Id) then
-                  Create_Append (Comp_Checks,
-                    Make_If_Statement (Loc,
-                      Condition       =>
-                        Make_Op_Ne (Loc,
-                          Left_Opnd  =>
-                            Make_Selected_Component (Loc,
-                              Prefix        =>
-                                Unchecked_Convert_To
-                                  (T, New_Occurrence_Of (Obj_Id, Loc)),
-                              Selector_Name =>
-                                New_Occurrence_Of (Comp_Id, Loc)),
-                          Right_Opnd => Make_Null (Loc)),
-
-                      Then_Statements => New_List (
-                        Make_Procedure_Call_Statement (Loc,
-                          Name                   =>
-                            New_Occurrence_Of (Proc_Id, Loc),
-
-                          Parameter_Associations => New_List (
-                            Make_Explicit_Dereference (Loc,
-                              Prefix =>
-                                Make_Selected_Component (Loc,
-                                  Prefix        =>
-                                    Unchecked_Convert_To
-                                      (T, New_Occurrence_Of (Obj_Id, Loc)),
-                                  Selector_Name =>
-                                    New_Occurrence_Of (Comp_Id, Loc))))))));
-               end if;
-
-               Produced_Check           := True;
-               Produced_Component_Check := True;
-            end if;
-
-            if Produced_Component_Check and then Has_Unchecked_Union (T) then
-               Error_Msg_NE
-                 ("invariants cannot be checked on components of "
-                  & "unchecked_union type &?", Comp_Id, T);
-            end if;
-         end Process_Record_Component;
-
-         --  Local variables
-
-         Comps : Node_Id;
-         Def   : Node_Id;
-
-      --  Start of processing for Add_Record_Component_Invariants
-
-      begin
-         --  An untagged derived type inherits the components of its parent
-         --  type. In order to avoid creating redundant invariant checks, do
-         --  not process the components now. Instead wait until the ultimate
-         --  parent of the untagged derivation chain is reached.
-
-         if not Is_Untagged_Derivation (T) then
-            Def := Type_Definition (Parent (T));
-
-            if Nkind (Def) = N_Derived_Type_Definition then
-               Def := Record_Extension_Part (Def);
-            end if;
-
-            pragma Assert (Nkind (Def) = N_Record_Definition);
-            Comps := Component_List (Def);
-
-            if Present (Comps) then
-               Process_Component_List
-                 (Comp_List => Comps,
-                  CL_Checks => Checks);
-            end if;
-         end if;
-      end Add_Record_Component_Invariants;
-
-      -------------------------
-      -- Add_Type_Invariants --
-      -------------------------
-
-      procedure Add_Type_Invariants
-        (Priv_Typ  : Entity_Id;
-         Full_Typ  : Entity_Id;
-         CRec_Typ  : Entity_Id;
-         Obj_Id    : Entity_Id;
-         Checks    : in out List_Id;
-         Inherit   : Boolean := False;
-         Priv_Item : Node_Id := Empty)
-      is
-         procedure Add_Invariant (Prag : Node_Id);
-         --  Create a runtime check to verify the invariant exression of pragma
-         --  Prag. All generated code is added to list Checks.
-
-         procedure Process_Type (T : Entity_Id; Stop_Item : Node_Id := Empty);
-         --  Generate invariant checks for type T by inspecting the rep item
-         --  chain of the type. Stop_Item denotes a rep item which once seen
-         --  will stop the inspection.
-
-         -------------------
-         -- Add_Invariant --
-         -------------------
-
-         procedure Add_Invariant (Prag : Node_Id) is
-            Rep_Typ : Entity_Id;
-            --  The replacement type used in the substitution of the current
-            --  instance of a type with the _object formal parameter.
-
-            procedure Replace_Type_Ref (N : Node_Id);
-            --  Substitute the occurrence of a type name denoted by N with a
-            --  reference to the _object formal parameter.
-
-            ----------------------
-            -- Replace_Type_Ref --
-            ----------------------
-
-            procedure Replace_Type_Ref (N : Node_Id) is
-               Nloc : constant Source_Ptr := Sloc (N);
-               Ref  : Node_Id;
-
-            begin
-               --  Decorate the reference to Ref_Typ even though it may be
-               --  rewritten further down. This is done for two reasons:
-
-               --    1) ASIS has all necessary semantic information in the
-               --    original tree.
-
-               --    2) Routines which examine properties of the Original_Node
-               --    have some semantic information.
-
-               if Nkind (N) = N_Identifier then
-                  Set_Entity (N, Rep_Typ);
-                  Set_Etype  (N, Rep_Typ);
-
-               elsif Nkind (N) = N_Selected_Component then
-                  Analyze (Prefix (N));
-                  Set_Entity (Selector_Name (N), Rep_Typ);
-                  Set_Etype  (Selector_Name (N), Rep_Typ);
-               end if;
-
-               --  Perform the following substitution:
-
-               --    Ref_Typ  -->  _object
-
-               Ref := Make_Identifier (Nloc, Chars (Obj_Id));
-               Set_Entity (Ref, Obj_Id);
-               Set_Etype  (Ref, Rep_Typ);
-
-               --  When the pragma denotes a class-wide invariant, perform the
-               --  following substitution:
-
-               --    Rep_Typ  -->  Rep_Typ'Class (_object)
-
-               if Class_Present (Prag) then
-                  Ref :=
-                    Make_Type_Conversion (Nloc,
-                      Subtype_Mark =>
-                        Make_Attribute_Reference (Nloc,
-                          Prefix         =>
-                            New_Occurrence_Of (Rep_Typ, Nloc),
-                          Attribute_Name => Name_Class),
-                      Expression   => Ref);
-               end if;
-
-               Rewrite (N, Ref);
-               Set_Comes_From_Source (N, True);
-            end Replace_Type_Ref;
-
-            procedure Replace_Type_Refs is
-              new Replace_Type_References_Generic (Replace_Type_Ref);
-
-            --  Local variables
-
-            Asp  : constant Node_Id    := Corresponding_Aspect (Prag);
-            Nam  : constant Name_Id    := Original_Aspect_Pragma_Name (Prag);
-            Ploc : constant Source_Ptr := Sloc (Prag);
-
-            Arg1      : Node_Id;
-            Arg2      : Node_Id;
-            Arg3      : Node_Id;
-            ASIS_Expr : Node_Id;
-            Assoc     : List_Id;
-            Expr      : Node_Id;
-            Str       : String_Id;
-
-         --  Start of processing for Add_Invariant
-
-         begin
-            --  Nothing to do if the pragma was already processed
-
-            if Contains (Pragmas_Seen, Prag) then
-               return;
-            end if;
-
-            --  Extract the arguments of the invariant pragma
-
-            Arg1 := First (Pragma_Argument_Associations (Prag));
-            Arg2 := Next (Arg1);
-            Arg3 := Next (Arg2);
-
-            Arg1 := Get_Pragma_Arg (Arg1);
-            Arg2 := Get_Pragma_Arg (Arg2);
-
-            --  The pragma applies to the partial view
-
-            if Present (Priv_Typ) and then Entity (Arg1) = Priv_Typ then
-               Rep_Typ := Priv_Typ;
-
-            --  The pragma applies to the full view
-
-            elsif Present (Full_Typ) and then Entity (Arg1) = Full_Typ then
-               Rep_Typ := Full_Typ;
-
-            --  Otherwise the pragma applies to a parent type in which case it
-            --  will be processed at a later stage by Add_Parent_Invariants or
-            --  Add_Interface_Invariants.
-
-            else
-               return;
-            end if;
-
-            --  Nothing to do when the caller requests the processing of all
-            --  inherited class-wide invariants, but the pragma does not fall
-            --  in this category.
-
-            if Inherit and then not Class_Present (Prag) then
-               return;
-            end if;
-
-            Expr := New_Copy_Tree (Arg2);
-
-            --  Substitute all references to type Rep_Typ with references to
-            --  the _object formal parameter.
-
-            Replace_Type_Refs (Expr, Rep_Typ);
-
-            --  Additional processing for non-class-wide invariants
-
-            if not Inherit then
-
-               --  Preanalyze the invariant expression to detect errors and at
-               --  the same time capture the visibility of the proper package
-               --  part.
-
-               --  Historical note: the old implementation of invariants used
-               --  node N as the parent, but a package specification as parent
-               --  of an expression is bizarre.
-
-               Set_Parent (Expr, Parent (Arg2));
-               Preanalyze_Assert_Expression (Expr, Any_Boolean);
-
-               --  If the pragma comes from an aspect specification, replace
-               --  the saved expression because all type references must be
-               --  substituted for the call to Preanalyze_Spec_Expression in
-               --  Check_Aspect_At_xxx routines.
-
-               if Present (Asp) then
-                  Set_Entity (Identifier (Asp), New_Copy_Tree (Expr));
-               end if;
-
-               --  Analyze the original invariant expression for ASIS
-
-               if ASIS_Mode then
-                  ASIS_Expr := Empty;
-
-                  if Comes_From_Source (Prag) then
-                     ASIS_Expr := Arg2;
-                  elsif Present (Asp) then
-                     ASIS_Expr := Expression (Asp);
-                  end if;
-
-                  if Present (ASIS_Expr) then
-                     Replace_Type_Refs (ASIS_Expr, Rep_Typ);
-                     Preanalyze_Assert_Expression (ASIS_Expr, Any_Boolean);
-                  end if;
-               end if;
-
-               --  A class-wide invariant may be inherited in a separate unit,
-               --  where the corresponding expression cannot be resolved by
-               --  visibility, because it refers to a local function. Propagate
-               --  semantic information to the original representation item, to
-               --  be used when an invariant procedure for a derived type is
-               --  constructed.
-
-               --  ??? Unclear how to handle class-wide invariants that are not
-               --  function calls.
-
-               if Class_Present (Prag)
-                 and then Nkind (Expr) = N_Function_Call
-                 and then Nkind (Arg2) = N_Indexed_Component
-               then
-                  Rewrite (Arg2,
-                    Make_Function_Call (Ploc,
-                      Name                   =>
-                        New_Occurrence_Of (Entity (Name (Expr)), Ploc),
-                      Parameter_Associations => Expressions (Arg2)));
-               end if;
-            end if;
-
-            --  The invariant is ignored, nothing left to do
-
-            if Is_Ignored (Prag) then
-               null;
-
-            --  Otherwise the invariant is checked. Build a Check pragma to
-            --  verify the expression at runtime.
-
-            else
-               Assoc := New_List (
-                 Make_Pragma_Argument_Association (Ploc,
-                   Expression => Make_Identifier (Ploc, Nam)),
-                 Make_Pragma_Argument_Association (Ploc,
-                   Expression => Expr));
-
-               --  Handle the String argument (if any)
-
-               if Present (Arg3) then
-                  Str := Strval (Get_Pragma_Arg (Arg3));
-
-                  --  When inheriting an invariant, modify the message from
-                  --  "failed invariant" to "failed inherited invariant".
-
-                  if Inherit then
-                     String_To_Name_Buffer (Str);
-
-                     if Name_Buffer (1 .. 16) = "failed invariant" then
-                        Insert_Str_In_Name_Buffer ("inherited ", 8);
-                        Str := String_From_Name_Buffer;
-                     end if;
-                  end if;
-
-                  Append_To (Assoc,
-                    Make_Pragma_Argument_Association (Ploc,
-                      Expression => Make_String_Literal (Ploc, Str)));
-               end if;
-
-               --  Generate:
-               --    pragma Check (<Nam>, <Expr>, <Str>);
-
-               Create_Append (Checks,
-                 Make_Pragma (Ploc,
-                   Pragma_Identifier            =>
-                     Make_Identifier (Ploc, Name_Check),
-                   Pragma_Argument_Associations => Assoc));
-            end if;
-
-            --  Output an info message when inheriting an invariant and the
-            --  listing option is enabled.
-
-            if Inherit and Opt.List_Inherited_Aspects then
-               Error_Msg_Sloc := Sloc (Prag);
-               Error_Msg_N
-                 ("info: & inherits `Invariant''Class` aspect from #?L?", Typ);
-            end if;
-
-            --  Add the pragma to the list of processed pragmas
-
-            Append_New_Elmt (Prag, Pragmas_Seen);
-            Produced_Check := True;
-         end Add_Invariant;
-
-         ------------------
-         -- Process_Type --
-         ------------------
-
-         procedure Process_Type
-           (T         : Entity_Id;
-            Stop_Item : Node_Id := Empty)
-         is
-            Rep_Item : Node_Id;
-
-         begin
-            Rep_Item := First_Rep_Item (T);
-            while Present (Rep_Item) loop
-               if Nkind (Rep_Item) = N_Pragma
-                 and then Pragma_Name (Rep_Item) = Name_Invariant
-               then
-                  --  Stop the traversal of the rep item chain once a specific
-                  --  item is encountered.
-
-                  if Present (Stop_Item) and then Rep_Item = Stop_Item then
-                     exit;
-
-                  --  Otherwise generate an invariant check
-
-                  else
-                     Add_Invariant (Rep_Item);
-                  end if;
-               end if;
-
-               Next_Rep_Item (Rep_Item);
-            end loop;
-         end Process_Type;
-
-      --  Start of processing for Add_Type_Invariants
-
-      begin
-         --  Process the invariants of the partial view
-
-         if Present (Priv_Typ) then
-            Process_Type (Priv_Typ);
-         end if;
-
-         --  Process the invariants of the full view
-
-         if Present (Full_Typ) then
-            Process_Type (Full_Typ, Stop_Item => Priv_Item);
-
-            --  Process the elements of an array type
-
-            if Is_Array_Type (Full_Typ) then
-               Add_Array_Component_Invariants (Full_Typ, Obj_Id, Checks);
-
-            --  Process the components of a record type
-
-            elsif Ekind (Full_Typ) = E_Record_Type then
-               Add_Record_Component_Invariants (Full_Typ, Obj_Id, Checks);
-            end if;
-         end if;
-
-         --  Process the components of a corresponding record type
-
-         if Present (CRec_Typ) then
-            Add_Record_Component_Invariants (CRec_Typ, Obj_Id, Checks);
-         end if;
-      end Add_Type_Invariants;
-
-      -------------------
-      -- Create_Append --
-      -------------------
-
-      procedure Create_Append (L : in out List_Id; N : Node_Id) is
-      begin
-         if No (L) then
-            L := New_List;
-         end if;
-
-         Append_To (L, N);
-      end Create_Append;
-
-      ------------------------------------
-      -- Is_Untagged_Private_Derivation --
-      ------------------------------------
-
-      function Is_Untagged_Private_Derivation
-        (Priv_Typ : Entity_Id;
-         Full_Typ : Entity_Id) return Boolean
-      is
-      begin
-         return
-           Present (Priv_Typ)
-             and then Is_Untagged_Derivation (Priv_Typ)
-             and then Is_Private_Type (Etype (Priv_Typ))
-             and then Present (Full_Typ)
-             and then Is_Itype (Full_Typ);
-      end Is_Untagged_Private_Derivation;
-
-      --  Local variables
-
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
-      Dummy        : Entity_Id;
-      Priv_Item    : Node_Id;
-      Proc_Body    : Node_Id;
-      Proc_Body_Id : Entity_Id;
-      Proc_Decl    : Node_Id;
-      Proc_Id      : Entity_Id;
-      Stmts        : List_Id := No_List;
-
-      CRec_Typ : Entity_Id;
-      --  The corresponding record type of Full_Typ
-
-      Full_Proc : Entity_Id;
-      --  The entity of the "full" invariant procedure
-
-      Full_Typ : Entity_Id;
-      --  The full view of the working type
-
-      Freeze_Typ : Entity_Id;
-      --  The freeze type whose freeze node carries the invariant procedure
-      --  body. This is either the partial or the full view of the working
-      --  type.
-
-      Obj_Id : Entity_Id;
-      --  The _object formal parameter of the invariant procedure
-
-      Part_Proc : Entity_Id;
-      --  The entity of the "partial" invariant procedure
-
-      Priv_Typ : Entity_Id;
-      --  The partial view of the working type
-
-      Work_Typ : Entity_Id;
-      --  The working type
-
-   --  Start of processing for Build_Invariant_Procedure_Body
-
-   begin
-      Work_Typ := Typ;
-
-      --  The input type denotes the implementation base type of a constrained
-      --  array type. Work with the first subtype as all invariant pragmas are
-      --  on its rep item chain.
-
-      if Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
-         Work_Typ := First_Subtype (Work_Typ);
-
-      --  The input type denotes the corresponding record type of a protected
-      --  or task type. Work with the concurrent type because the corresponding
-      --  record type may not be visible to clients of the type.
-
-      elsif Ekind (Work_Typ) = E_Record_Type
-        and then Is_Concurrent_Record_Type (Work_Typ)
-      then
-         Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
-      end if;
-
-      --  The type must either have invariants of its own, inherit class-wide
-      --  invariants from parent types or interfaces, or be an array or record
-      --  type whose components have invariants.
-
-      pragma Assert (Has_Invariants (Work_Typ));
-
-      --  Nothing to do for interface types as their class-wide invariants are
-      --  inherited by implementing types.
-
-      if Is_Interface (Work_Typ) then
-         return;
-      end if;
-
-      --  Obtain both views of the type
-
-      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Dummy, CRec_Typ);
-
-      --  The caller requests a body for the partial invariant procedure
-
-      if Partial_Invariant then
-         Full_Proc := Invariant_Procedure (Work_Typ);
-         Proc_Id   := Partial_Invariant_Procedure (Work_Typ);
-
-         --  The "full" invariant procedure body was already created
-
-         if Present (Full_Proc)
-           and then Present
-                      (Corresponding_Body (Unit_Declaration_Node (Full_Proc)))
-         then
-            --  This scenario happens only when the type is an untagged
-            --  derivation from a private parent and the underlying full
-            --  view was processed before the partial view.
-
-            pragma Assert
-              (Is_Untagged_Private_Derivation (Priv_Typ, Full_Typ));
-
-            --  Nothing to do because the processing of the underlying full
-            --  view already checked the invariants of the partial view.
-
-            return;
-         end if;
-
-         --  Create a declaration for the "partial" invariant procedure if it
-         --  is not available.
-
-         if No (Proc_Id) then
-            Build_Invariant_Procedure_Declaration
-              (Typ               => Work_Typ,
-               Partial_Invariant => True);
-
-            Proc_Id := Partial_Invariant_Procedure (Work_Typ);
-         end if;
-
-      --  The caller requests a body for the "full" invariant procedure
-
-      else
-         Proc_Id   := Invariant_Procedure (Work_Typ);
-         Part_Proc := Partial_Invariant_Procedure (Work_Typ);
-
-         --  Create a declaration for the "full" invariant procedure if it is
-         --  not available.
-
-         if No (Proc_Id) then
-            Build_Invariant_Procedure_Declaration (Work_Typ);
-            Proc_Id := Invariant_Procedure (Work_Typ);
-         end if;
-      end if;
-
-      --  At this point there should be an invariant procedure declaration
-
-      pragma Assert (Present (Proc_Id));
-      Proc_Decl := Unit_Declaration_Node (Proc_Id);
-
-      --  Nothing to do if the invariant procedure already has a body
-
-      if Present (Corresponding_Body (Proc_Decl)) then
-         return;
-      end if;
-
-      --  The working type may be subject to pragma Ghost. Set the mode now to
-      --  ensure that the invariant procedure is properly marked as Ghost.
-
-      Set_Ghost_Mode_From_Entity (Work_Typ);
-
-      --  Emulate the environment of the invariant procedure by installing
-      --  its scope and formal parameters. Note that this is not needed, but
-      --  having the scope of the invariant procedure installed helps with
-      --  the detection of invariant-related errors.
-
-      Push_Scope (Proc_Id);
-      Install_Formals (Proc_Id);
-
-      Obj_Id := First_Formal (Proc_Id);
-      pragma Assert (Present (Obj_Id));
-
-      --  The "partial" invariant procedure verifies the invariants of the
-      --  partial view only.
-
-      if Partial_Invariant then
-         pragma Assert (Present (Priv_Typ));
-         Freeze_Typ := Priv_Typ;
-
-         Add_Type_Invariants
-           (Priv_Typ => Priv_Typ,
-            Full_Typ => Empty,
-            CRec_Typ => Empty,
-            Obj_Id   => Obj_Id,
-            Checks   => Stmts);
-
-      --  Otherwise the "full" invariant procedure verifies the invariants of
-      --  the full view, all array or record components, as well as class-wide
-      --  invariants inherited from parent types or interfaces. In addition, it
-      --  indirectly verifies the invariants of the partial view by calling the
-      --  "partial" invariant procedure.
-
-      else
-         pragma Assert (Present (Full_Typ));
-         Freeze_Typ := Full_Typ;
-
-         --  Check the invariants of the partial view by calling the "partial"
-         --  invariant procedure. Generate:
-
-         --    <Work_Typ>Partial_Invariant (_object);
-
-         if Present (Part_Proc) then
-            Create_Append (Stmts,
-              Make_Procedure_Call_Statement (Loc,
-                Name                   => New_Occurrence_Of (Part_Proc, Loc),
-                Parameter_Associations => New_List (
-                  New_Occurrence_Of (Obj_Id, Loc))));
-
-            Produced_Check := True;
-         end if;
-
-         Priv_Item := Empty;
-
-         --  Derived subtypes do not have a partial view
-
-         if Present (Priv_Typ) then
-
-            --  The processing of the "full" invariant procedure intentionally
-            --  skips the partial view because a) this may result in changes of
-            --  visibility and b) lead to duplicate checks. However, when the
-            --  full view is the underlying full view of an untagged derived
-            --  type whose parent type is private, partial invariants appear on
-            --  the rep item chain of the partial view only.
-
-            --    package Pack_1 is
-            --       type Root ... is private;
-            --    private
-            --       <full view of Root>
-            --    end Pack_1;
-
-            --    with Pack_1;
-            --    package Pack_2 is
-            --       type Child is new Pack_1.Root with Type_Invariant => ...;
-            --       <underlying full view of Child>
-            --    end Pack_2;
-
-            --  As a result, the processing of the full view must also consider
-            --  all invariants of the partial view.
-
-            if Is_Untagged_Private_Derivation (Priv_Typ, Full_Typ) then
-               null;
-
-            --  Otherwise the invariants of the partial view are ignored
-
-            else
-               --  Note that the rep item chain is shared between the partial
-               --  and full views of a type. To avoid processing the invariants
-               --  of the partial view, signal the logic to stop when the first
-               --  rep item of the partial view has been reached.
-
-               Priv_Item := First_Rep_Item (Priv_Typ);
-
-               --  Ignore the invariants of the partial view by eliminating the
-               --  view.
-
-               Priv_Typ := Empty;
-            end if;
-         end if;
-
-         --  Process the invariants of the full view and in certain cases those
-         --  of the partial view. This also handles any invariants on array or
-         --  record components.
-
-         Add_Type_Invariants
-           (Priv_Typ  => Priv_Typ,
-            Full_Typ  => Full_Typ,
-            CRec_Typ  => CRec_Typ,
-            Obj_Id    => Obj_Id,
-            Checks    => Stmts,
-            Priv_Item => Priv_Item);
-
-         --  Process the inherited class-wide invariants of all parent types.
-         --  This also handles any invariants on record components.
-
-         Add_Parent_Invariants (Full_Typ, Obj_Id, Stmts);
-
-         --  Process the inherited class-wide invariants of all implemented
-         --  interface types.
-
-         Add_Interface_Invariants (Full_Typ, Obj_Id, Stmts);
-      end if;
-
-      End_Scope;
-
-      --  At this point there should be at least one invariant check. If this
-      --  is not the case, then the invariant-related flags were not properly
-      --  set, or there is a missing invariant procedure on one of the array
-      --  or record components.
-
-      pragma Assert (Produced_Check);
-
-      --  Account for the case where assertions are disabled or all invariant
-      --  checks are subject to Assertion_Policy Ignore. Produce a completing
-      --  empty body.
-
-      if No (Stmts) then
-         Stmts := New_List (Make_Null_Statement (Loc));
-      end if;
-
-      --  Generate:
-      --    procedure <Work_Typ>[Partial_]Invariant (_object : <Work_Typ>) is
-      --    begin
-      --       <Stmts>
-      --    end <Work_Typ>[Partial_]Invariant;
-
-      Proc_Body :=
-        Make_Subprogram_Body (Loc,
-          Specification                =>
-            Copy_Subprogram_Spec (Parent (Proc_Id)),
-          Declarations                 => Empty_List,
-            Handled_Statement_Sequence =>
-              Make_Handled_Sequence_Of_Statements (Loc,
-                Statements => Stmts));
-      Proc_Body_Id := Defining_Entity (Proc_Body);
-
-      --  Perform minor decoration in case the body is not analyzed
-
-      Set_Ekind (Proc_Body_Id, E_Subprogram_Body);
-      Set_Etype (Proc_Body_Id, Standard_Void_Type);
-      Set_Scope (Proc_Body_Id, Current_Scope);
-
-      --  Link both spec and body to avoid generating duplicates
-
-      Set_Corresponding_Body (Proc_Decl, Proc_Body_Id);
-      Set_Corresponding_Spec (Proc_Body, Proc_Id);
-
-      --  The body should not be inserted into the tree when the context is
-      --  ASIS, GNATprove or a generic unit because it is not part of the
-      --  template. Note that the body must still be generated in order to
-      --  resolve the invariants.
-
-      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
-         null;
-
-      --  Otherwise the body is part of the freezing actions of the type
-
-      else
-         Append_Freeze_Action (Freeze_Typ, Proc_Body);
-      end if;
-
-      Ghost_Mode := Save_Ghost_Mode;
-   end Build_Invariant_Procedure_Body;
-
-   -------------------------------------------
-   -- Build_Invariant_Procedure_Declaration --
-   -------------------------------------------
-
-   procedure Build_Invariant_Procedure_Declaration
-     (Typ               : Entity_Id;
-      Partial_Invariant : Boolean := False)
-   is
-      Loc : constant Source_Ptr := Sloc (Typ);
-
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
-      Proc_Decl : Node_Id;
-      Proc_Id   : Entity_Id;
-      Proc_Nam  : Name_Id;
-      Typ_Decl  : Node_Id;
-
-      CRec_Typ : Entity_Id;
-      --  The corresponding record type of Full_Typ
-
-      Full_Base : Entity_Id;
-      --  The base type of Full_Typ
-
-      Full_Typ : Entity_Id;
-      --  The full view of working type
-
-      Obj_Id : Entity_Id;
-      --  The _object formal parameter of the invariant procedure
-
-      Priv_Typ : Entity_Id;
-      --  The partial view of working type
-
-      Work_Typ : Entity_Id;
-      --  The working type
-
-   begin
-      Work_Typ := Typ;
-
-      --  The input type denotes the implementation base type of a constrained
-      --  array type. Work with the first subtype as all invariant pragmas are
-      --  on its rep item chain.
-
-      if Ekind (Work_Typ) = E_Array_Type and then Is_Itype (Work_Typ) then
-         Work_Typ := First_Subtype (Work_Typ);
-
-      --  The input denotes the corresponding record type of a protected or a
-      --  task type. Work with the concurrent type because the corresponding
-      --  record type may not be visible to clients of the type.
-
-      elsif Ekind (Work_Typ) = E_Record_Type
-        and then Is_Concurrent_Record_Type (Work_Typ)
-      then
-         Work_Typ := Corresponding_Concurrent_Type (Work_Typ);
-      end if;
-
-      --  The type must either have invariants of its own, inherit class-wide
-      --  invariants from parent or interface types, or be an array or record
-      --  type whose components have invariants.
-
-      pragma Assert (Has_Invariants (Work_Typ));
-
-      --  Nothing to do for interface types as their class-wide invariants are
-      --  inherited by implementing types.
-
-      if Is_Interface (Work_Typ) then
-         return;
-
-      --  Nothing to do if the type already has a "partial" invariant procedure
-
-      elsif Partial_Invariant then
-         if Present (Partial_Invariant_Procedure (Work_Typ)) then
-            return;
-         end if;
-
-      --  Nothing to do if the type already has a "full" invariant procedure
-
-      elsif Present (Invariant_Procedure (Work_Typ)) then
-         return;
-      end if;
-
-      --  The working type may be subject to pragma Ghost. Set the mode now to
-      --  ensure that the invariant procedure is properly marked as Ghost.
-
-      Set_Ghost_Mode_From_Entity (Work_Typ);
-
-      --  The caller requests the declaration of the "partial" invariant
-      --  procedure.
-
-      if Partial_Invariant then
-         Proc_Nam := New_External_Name (Chars (Work_Typ), "Partial_Invariant");
-
-      --  Otherwise the caller requests the declaration of the "full" invariant
-      --  procedure.
-
-      else
-         Proc_Nam := New_External_Name (Chars (Work_Typ), "Invariant");
-      end if;
-
-      Proc_Id := Make_Defining_Identifier (Loc, Chars => Proc_Nam);
-
-      --  Perform minor decoration in case the declaration is not analyzed
-
-      Set_Ekind (Proc_Id, E_Procedure);
-      Set_Etype (Proc_Id, Standard_Void_Type);
-      Set_Scope (Proc_Id, Current_Scope);
-
-      if Partial_Invariant then
-         Set_Is_Partial_Invariant_Procedure (Proc_Id);
-         Set_Partial_Invariant_Procedure (Work_Typ, Proc_Id);
-      else
-         Set_Is_Invariant_Procedure (Proc_Id);
-         Set_Invariant_Procedure (Work_Typ, Proc_Id);
-      end if;
-
-      --  The invariant procedure requires debug info when the invariants are
-      --  subject to Source Coverage Obligations.
-
-      if Opt.Generate_SCO then
-         Set_Needs_Debug_Info (Proc_Id);
-      end if;
-
-      --  Mark the invariant procedure explicitly as Ghost because it does not
-      --  come from source.
-
-      if Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Proc_Id);
-      end if;
-
-      --  Obtain all views of the input type
-
-      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Full_Base, CRec_Typ);
-
-      --  Associate the invariant procedure with all views
-
-      Propagate_Invariant_Attributes (Priv_Typ,  From_Typ => Work_Typ);
-      Propagate_Invariant_Attributes (Full_Typ,  From_Typ => Work_Typ);
-      Propagate_Invariant_Attributes (Full_Base, From_Typ => Work_Typ);
-      Propagate_Invariant_Attributes (CRec_Typ,  From_Typ => Work_Typ);
-
-      --  The declaration of the invariant procedure is inserted after the
-      --  declaration of the partial view as this allows for proper external
-      --  visibility.
-
-      if Present (Priv_Typ) then
-         Typ_Decl := Declaration_Node (Priv_Typ);
-
-      --  Derived types with the full view as parent do not have a partial
-      --  view. Insert the invariant procedure after the derived type.
-
-      else
-         Typ_Decl := Declaration_Node (Full_Typ);
-      end if;
-
-      --  The type should have a declarative node
-
-      pragma Assert (Present (Typ_Decl));
-
-      --  Create the formal parameter which emulates the variable-like behavior
-      --  of the current type instance.
-
-      Obj_Id := Make_Defining_Identifier (Loc, Chars => Name_uObject);
-
-      --  Perform minor decoration in case the declaration is not analyzed
-
-      Set_Ekind (Obj_Id, E_In_Parameter);
-      Set_Etype (Obj_Id, Work_Typ);
-      Set_Scope (Obj_Id, Proc_Id);
-
-      Set_First_Entity (Proc_Id, Obj_Id);
-
-      --  Generate:
-      --    procedure <Work_Typ>[Partial_]Invariant (_object : <Work_Typ>);
-
-      Proc_Decl :=
-        Make_Subprogram_Declaration (Loc,
-          Specification =>
-            Make_Procedure_Specification (Loc,
-              Defining_Unit_Name       => Proc_Id,
-              Parameter_Specifications => New_List (
-                Make_Parameter_Specification (Loc,
-                  Defining_Identifier => Obj_Id,
-                  Parameter_Type      =>
-                    New_Occurrence_Of (Work_Typ, Loc)))));
-
-      --  The declaration should not be inserted into the tree when the context
-      --  is ASIS, GNATprove or a generic unit because it is not part of the
-      --  template.
-
-      if ASIS_Mode or GNATprove_Mode or Inside_A_Generic then
-         null;
-
-      --  Otherwise insert the declaration
-
-      else
-         pragma Assert (Present (Typ_Decl));
-         Insert_After_And_Analyze (Typ_Decl, Proc_Decl);
-      end if;
-
-      Ghost_Mode := Save_Ghost_Mode;
-   end Build_Invariant_Procedure_Declaration;
 
    ---------------------
    -- Build_Late_Proc --
@@ -5216,13 +3753,15 @@ package body Exp_Ch7 is
               Typ   => Typ,
               Stmts => Make_Deep_Record_Body (Finalize_Case, Typ)));
 
-         --  Create TSS primitive Finalize_Address
+         --  Create TSS primitive Finalize_Address (unless CodePeer_Mode)
 
-         Set_TSS (Typ,
-           Make_Deep_Proc
-             (Prim  => Address_Case,
-              Typ   => Typ,
-              Stmts => Make_Deep_Record_Body (Address_Case, Typ)));
+         if not CodePeer_Mode then
+            Set_TSS (Typ,
+              Make_Deep_Proc
+                (Prim  => Address_Case,
+                 Typ   => Typ,
+                 Stmts => Make_Deep_Record_Body (Address_Case, Typ)));
+         end if;
       end if;
    end Build_Record_Deep_Procs;
 
@@ -5430,8 +3969,8 @@ package body Exp_Ch7 is
 
    begin
       --  For restricted run-time libraries (Ravenscar), tasks are
-      --  non-terminating and they can only appear at library level, so we do
-      --  not want finalization of task objects.
+      --  non-terminating and they can only appear at library level,
+      --  so we do not want finalization of task objects.
 
       if Restricted_Profile then
          return Empty;
@@ -5444,6 +3983,119 @@ package body Exp_Ch7 is
              Parameter_Associations => New_List (Concurrent_Ref (Ref)));
       end if;
    end Cleanup_Task;
+
+   --------------------------------------
+   -- Check_Unnesting_Elaboration_Code --
+   --------------------------------------
+
+   procedure Check_Unnesting_Elaboration_Code (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+
+      function Contains_Subprogram (Blk : Entity_Id) return Boolean;
+      --  Check recursively whether a loop or block contains a subprogram that
+      --  may need an activation record.
+
+      --------------------------
+      --  Contains_Subprogram --
+      --------------------------
+
+      function Contains_Subprogram (Blk : Entity_Id) return Boolean is
+         E : Entity_Id;
+
+      begin
+         E := First_Entity (Blk);
+
+         while Present (E) loop
+            if Is_Subprogram (E) then
+               return True;
+
+            elsif Ekind_In (E, E_Block, E_Loop)
+              and then Contains_Subprogram (E)
+            then
+               return True;
+            end if;
+
+            Next_Entity (E);
+         end loop;
+
+         return False;
+      end Contains_Subprogram;
+
+      --  Local variables
+
+      Elab_Body : Node_Id;
+      Elab_Call : Node_Id;
+      Elab_Proc : Entity_Id;
+      Stat      : Node_Id;
+
+   --  Start of processing for Check_Unnesting_Elaboration_Code
+
+   begin
+      if Unnest_Subprogram_Mode
+        and then Present (Handled_Statement_Sequence (N))
+        and then Is_Compilation_Unit (Current_Scope)
+      then
+         Stat := First (Statements (Handled_Statement_Sequence (N)));
+         while Present (Stat) loop
+            exit when ((Nkind (Stat) = N_Block_Statement
+                         and then Present (Identifier (Stat)))
+                or else Nkind (Stat) = N_Loop_Statement)
+              and then Contains_Subprogram (Entity (Identifier (Stat)));
+            Next (Stat);
+         end loop;
+
+         if Present (Stat) then
+            Elab_Proc :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_Internal_Name ('I'));
+
+            Elab_Body :=
+              Make_Subprogram_Body (Loc,
+                Specification              =>
+                  Make_Procedure_Specification (Loc,
+                    Defining_Unit_Name => Elab_Proc),
+                Declarations               => New_List,
+                Handled_Statement_Sequence =>
+                  Relocate_Node (Handled_Statement_Sequence (N)));
+
+            Elab_Call :=
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (Elab_Proc, Loc));
+
+            Append_To (Declarations (N), Elab_Body);
+            Analyze (Elab_Body);
+            Set_Has_Nested_Subprogram (Elab_Proc);
+
+            Set_Handled_Statement_Sequence (N,
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements => New_List (Elab_Call)));
+
+            Analyze (Elab_Call);
+
+            --  The scope of all blocks and loops in the elaboration code is
+            --  now the constructed elaboration procedure. Nested subprograms
+            --  within those blocks will have activation records if they
+            --  contain references to entities in the enclosing block.
+
+            Stat :=
+              First (Statements (Handled_Statement_Sequence (Elab_Body)));
+
+            while Present (Stat) loop
+               if (Nkind (Stat) = N_Block_Statement
+                    and then Present (Identifier (Stat)))
+                 or else Nkind (Stat) = N_Loop_Statement
+               then
+                  Set_Scope (Entity (Identifier (Stat)), Elab_Proc);
+
+               elsif Nkind (Stat) = N_Subprogram_Body then
+                  Set_Scope (Defining_Entity (Stat), Elab_Proc);
+               end if;
+
+               Next (Stat);
+            end loop;
+         end if;
+      end if;
+   end Check_Unnesting_Elaboration_Code;
 
    ------------------------------
    -- Check_Visibly_Controlled --
@@ -5583,75 +4235,50 @@ package body Exp_Ch7 is
 
    --  This procedure is called each time a transient block has to be inserted
    --  that is to say for each call to a function with unconstrained or tagged
-   --  result. It creates a new scope on the stack scope in order to enclose
+   --  result. It creates a new scope on the scope stack in order to enclose
    --  all transient variables generated.
 
-   procedure Establish_Transient_Scope (N : Node_Id; Sec_Stack : Boolean) is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Iter_Loop : Entity_Id;
-      Wrap_Node : Node_Id;
+   procedure Establish_Transient_Scope
+     (N                : Node_Id;
+      Manage_Sec_Stack : Boolean)
+   is
+      procedure Create_Transient_Scope (Constr : Node_Id);
+      --  Place a new scope on the scope stack in order to service construct
+      --  Constr. The new scope may also manage the secondary stack.
 
-   begin
-      --  Do not create a transient scope if we are already inside one
+      procedure Delegate_Sec_Stack_Management;
+      --  Move the management of the secondary stack to the nearest enclosing
+      --  suitable scope.
 
-      for S in reverse Scope_Stack.First .. Scope_Stack.Last loop
-         if Scope_Stack.Table (S).Is_Transient then
-            if Sec_Stack then
-               Set_Uses_Sec_Stack (Scope_Stack.Table (S).Entity);
-            end if;
+      function Find_Enclosing_Transient_Scope return Entity_Id;
+      --  Examine the scope stack looking for the nearest enclosing transient
+      --  scope. Return Empty if no such scope exists.
 
-            return;
+      function Is_Package_Or_Subprogram (Id : Entity_Id) return Boolean;
+      --  Determine whether arbitrary Id denotes a package or subprogram [body]
 
-         --  If we encounter Standard there are no enclosing transient scopes
+      ----------------------------
+      -- Create_Transient_Scope --
+      ----------------------------
 
-         elsif Scope_Stack.Table (S).Entity = Standard_Standard then
-            exit;
-         end if;
-      end loop;
+      procedure Create_Transient_Scope (Constr : Node_Id) is
+         Loc : constant Source_Ptr := Sloc (N);
 
-      Wrap_Node := Find_Node_To_Be_Wrapped (N);
+         Iter_Loop  : Entity_Id;
+         Trans_Scop : Entity_Id;
 
-      --  The context does not contain a node that requires a transient scope,
-      --  nothing to do.
+      begin
+         Trans_Scop := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+         Set_Etype (Trans_Scop, Standard_Void_Type);
 
-      if No (Wrap_Node) then
-         null;
-
-      --  If the node to wrap is an iteration_scheme, the expression is one of
-      --  the bounds, and the expansion will make an explicit declaration for
-      --  it (see Analyze_Iteration_Scheme, sem_ch5.adb), so do not apply any
-      --  transformations here. Same for an Ada 2012 iterator specification,
-      --  where a block is created for the expression that build the container.
-
-      elsif Nkind_In (Wrap_Node, N_Iteration_Scheme,
-                                 N_Iterator_Specification)
-      then
-         null;
-
-      --  In formal verification mode, if the node to wrap is a pragma check,
-      --  this node and enclosed expression are not expanded, so do not apply
-      --  any transformations here.
-
-      elsif GNATprove_Mode
-        and then Nkind (Wrap_Node) = N_Pragma
-        and then Get_Pragma_Id (Wrap_Node) = Pragma_Check
-      then
-         null;
-
-      --  Create a block entity to act as a transient scope. Note that when the
-      --  node to be wrapped is an expression or a statement, a real physical
-      --  block is constructed (see routines Wrap_Transient_Expression and
-      --  Wrap_Transient_Statement) and inserted into the tree.
-
-      else
-         Push_Scope (New_Internal_Entity (E_Block, Current_Scope, Loc, 'B'));
+         Push_Scope (Trans_Scop);
+         Set_Node_To_Be_Wrapped (Constr);
          Set_Scope_Is_Transient;
 
-         --  The transient scope must also take care of the secondary stack
-         --  management.
+         --  The transient scope must also manage the secondary stack
 
-         if Sec_Stack then
-            Set_Uses_Sec_Stack (Current_Scope);
+         if Manage_Sec_Stack then
+            Set_Uses_Sec_Stack (Trans_Scop);
             Check_Restriction (No_Secondary_Stack, N);
 
             --  The expansion of iterator loops generates references to objects
@@ -5671,26 +4298,175 @@ package body Exp_Ch7 is
 
             --    for Obj of Container loop
 
-            --  Routine Wrap_Transient_Declaration however does not generate a
-            --  physical block as wrapping a declaration will kill it too ealy.
-            --  To handle this peculiar case, mark the related iterator loop as
-            --  requiring the secondary stack. This signals the finalization
-            --  machinery to manage the secondary stack (see routine
-            --  Process_Statements_For_Controlled_Objects).
+            --  Routine Wrap_Transient_Declaration however does not generate
+            --  a physical block as wrapping a declaration will kill it too
+            --  early. To handle this peculiar case, mark the related iterator
+            --  loop as requiring the secondary stack. This signals the
+            --  finalization machinery to manage the secondary stack (see
+            --  routine Process_Statements_For_Controlled_Objects).
 
-            Iter_Loop := Find_Enclosing_Iterator_Loop (Current_Scope);
+            Iter_Loop := Find_Enclosing_Iterator_Loop (Trans_Scop);
 
             if Present (Iter_Loop) then
                Set_Uses_Sec_Stack (Iter_Loop);
             end if;
          end if;
 
-         Set_Etype (Current_Scope, Standard_Void_Type);
-         Set_Node_To_Be_Wrapped (Wrap_Node);
-
          if Debug_Flag_W then
             Write_Str ("    <Transient>");
             Write_Eol;
+         end if;
+      end Create_Transient_Scope;
+
+      -----------------------------------
+      -- Delegate_Sec_Stack_Management --
+      -----------------------------------
+
+      procedure Delegate_Sec_Stack_Management is
+         Scop_Id  : Entity_Id;
+         Scop_Rec : Scope_Stack_Entry;
+
+      begin
+         for Index in reverse Scope_Stack.First .. Scope_Stack.Last loop
+            Scop_Rec := Scope_Stack.Table (Index);
+            Scop_Id  := Scop_Rec.Entity;
+
+            --  Prevent the search from going too far or within the scope space
+            --  of another unit.
+
+            if Scop_Id = Standard_Standard then
+               return;
+
+            --  No transient scope should be encountered during the traversal
+            --  because Establish_Transient_Scope should have already handled
+            --  this case.
+
+            elsif Scop_Rec.Is_Transient then
+               pragma Assert (False);
+               return;
+
+            --  The construct which requires secondary stack management is
+            --  always enclosed by a package or subprogram scope.
+
+            elsif Is_Package_Or_Subprogram (Scop_Id) then
+               Set_Uses_Sec_Stack (Scop_Id);
+               Check_Restriction (No_Secondary_Stack, N);
+
+               return;
+            end if;
+         end loop;
+
+         --  At this point no suitable scope was found. This should never occur
+         --  because a construct is always enclosed by a compilation unit which
+         --  has a scope.
+
+         pragma Assert (False);
+      end Delegate_Sec_Stack_Management;
+
+      ------------------------------------
+      -- Find_Enclosing_Transient_Scope --
+      ------------------------------------
+
+      function Find_Enclosing_Transient_Scope return Entity_Id is
+         Scop_Id   : Entity_Id;
+         Scop_Rec  : Scope_Stack_Entry;
+
+      begin
+         for Index in reverse Scope_Stack.First .. Scope_Stack.Last loop
+            Scop_Rec := Scope_Stack.Table (Index);
+            Scop_Id  := Scop_Rec.Entity;
+
+            --  Prevent the search from going too far or within the scope space
+            --  of another unit.
+
+            if Scop_Id = Standard_Standard
+              or else Is_Package_Or_Subprogram (Scop_Id)
+            then
+               exit;
+
+            elsif Scop_Rec.Is_Transient then
+               return Scop_Id;
+            end if;
+         end loop;
+
+         return Empty;
+      end Find_Enclosing_Transient_Scope;
+
+      ------------------------------
+      -- Is_Package_Or_Subprogram --
+      ------------------------------
+
+      function Is_Package_Or_Subprogram (Id : Entity_Id) return Boolean is
+      begin
+         return Ekind_In (Id, E_Entry,
+                              E_Entry_Family,
+                              E_Function,
+                              E_Package,
+                              E_Procedure,
+                              E_Subprogram_Body);
+      end Is_Package_Or_Subprogram;
+
+      --  Local variables
+
+      Trans_Id : constant Entity_Id := Find_Enclosing_Transient_Scope;
+      Context  : Node_Id;
+
+   --  Start of processing for Establish_Transient_Scope
+
+   begin
+      --  Do not create a new transient scope if there is an existing transient
+      --  scope on the stack.
+
+      if Present (Trans_Id) then
+
+         --  If the transient scope was requested for purposes of managing the
+         --  secondary stack, then the existing scope must perform this task.
+
+         if Manage_Sec_Stack then
+            Set_Uses_Sec_Stack (Trans_Id);
+         end if;
+
+         return;
+      end if;
+
+      --  At this point it is known that the scope stack is free of transient
+      --  scopes. Locate the proper construct which must be serviced by a new
+      --  transient scope.
+
+      Context := Find_Transient_Context (N);
+
+      if Present (Context) then
+         if Nkind (Context) = N_Assignment_Statement then
+
+            --  An assignment statement with suppressed controlled semantics
+            --  does not need a transient scope because finalization is not
+            --  desirable at this point. Note that No_Ctrl_Actions is also
+            --  set for non-controlled assignments to suppress dispatching
+            --  _assign.
+
+            if No_Ctrl_Actions (Context)
+              and then Needs_Finalization (Etype (Name (Context)))
+            then
+               --  When a controlled component is initialized by a function
+               --  call, the result on the secondary stack is always assigned
+               --  to the component. Signal the nearest suitable scope that it
+               --  is safe to manage the secondary stack.
+
+               if Manage_Sec_Stack and then Within_Init_Proc then
+                  Delegate_Sec_Stack_Management;
+               end if;
+
+            --  Otherwise the assignment is a normal transient context and thus
+            --  requires a transient scope.
+
+            else
+               Create_Transient_Scope (Context);
+            end if;
+
+         --  General case
+
+         else
+            Create_Transient_Scope (Context);
          end if;
       end if;
    end Establish_Transient_Scope;
@@ -5700,39 +4476,58 @@ package body Exp_Ch7 is
    ----------------------------
 
    procedure Expand_Cleanup_Actions (N : Node_Id) is
+      pragma Assert (Nkind_In (N, N_Block_Statement,
+                                  N_Entry_Body,
+                                  N_Extended_Return_Statement,
+                                  N_Subprogram_Body,
+                                  N_Task_Body));
+
       Scop : constant Entity_Id := Current_Scope;
 
-      Is_Asynchronous_Call : constant Boolean :=
-                               Nkind (N) = N_Block_Statement
-                                 and then Is_Asynchronous_Call_Block (N);
-      Is_Master            : constant Boolean :=
-                               Nkind (N) /= N_Entry_Body
-                                 and then Is_Task_Master (N);
-      Is_Protected_Body    : constant Boolean :=
-                               Nkind (N) = N_Subprogram_Body
-                                 and then Is_Protected_Subprogram_Body (N);
-      Is_Task_Allocation   : constant Boolean :=
-                               Nkind (N) = N_Block_Statement
-                                 and then Is_Task_Allocation_Block (N);
-      Is_Task_Body         : constant Boolean :=
-                               Nkind (Original_Node (N)) = N_Task_Body;
-      Needs_Sec_Stack_Mark : constant Boolean :=
-                               Uses_Sec_Stack (Scop)
-                                 and then
-                                   not Sec_Stack_Needed_For_Return (Scop);
-      Needs_Custom_Cleanup : constant Boolean :=
-                               Nkind (N) = N_Block_Statement
-                                 and then Present (Cleanup_Actions (N));
+      Is_Asynchronous_Call   : constant Boolean :=
+                                 Nkind (N) = N_Block_Statement
+                                   and then Is_Asynchronous_Call_Block (N);
+      Is_Master              : constant Boolean :=
+                                 Nkind (N) /= N_Extended_Return_Statement
+                                   and then Nkind (N) /= N_Entry_Body
+                                   and then Is_Task_Master (N);
+      Is_Protected_Subp_Body : constant Boolean :=
+                                 Nkind (N) = N_Subprogram_Body
+                                   and then Is_Protected_Subprogram_Body (N);
+      Is_Task_Allocation     : constant Boolean :=
+                                 Nkind (N) = N_Block_Statement
+                                   and then Is_Task_Allocation_Block (N);
+      Is_Task_Body           : constant Boolean :=
+                                 Nkind (Original_Node (N)) = N_Task_Body;
 
-      Actions_Required     : constant Boolean :=
-                               Requires_Cleanup_Actions (N, True)
-                                 or else Is_Asynchronous_Call
-                                 or else Is_Master
-                                 or else Is_Protected_Body
-                                 or else Is_Task_Allocation
-                                 or else Is_Task_Body
-                                 or else Needs_Sec_Stack_Mark
-                                 or else Needs_Custom_Cleanup;
+      --  We mark the secondary stack if it is used in this construct, and
+      --  we're not returning a function result on the secondary stack, except
+      --  that a build-in-place function that might or might not return on the
+      --  secondary stack always needs a mark. A run-time test is required in
+      --  the case where the build-in-place function has a BIP_Alloc extra
+      --  parameter (see Create_Finalizer).
+
+      Needs_Sec_Stack_Mark   : constant Boolean :=
+                                   (Uses_Sec_Stack (Scop)
+                                     and then
+                                       not Sec_Stack_Needed_For_Return (Scop))
+                                 or else
+                                   (Is_Build_In_Place_Function (Scop)
+                                     and then Needs_BIP_Alloc_Form (Scop));
+
+      Needs_Custom_Cleanup   : constant Boolean :=
+                                 Nkind (N) = N_Block_Statement
+                                   and then Present (Cleanup_Actions (N));
+
+      Actions_Required       : constant Boolean :=
+                                 Requires_Cleanup_Actions (N, True)
+                                   or else Is_Asynchronous_Call
+                                   or else Is_Master
+                                   or else Is_Protected_Subp_Body
+                                   or else Is_Task_Allocation
+                                   or else Is_Task_Body
+                                   or else Needs_Sec_Stack_Mark
+                                   or else Needs_Custom_Cleanup;
 
       HSS : Node_Id := Handled_Statement_Sequence (N);
       Loc : Source_Ptr;
@@ -5798,6 +4593,51 @@ package body Exp_Ch7 is
         and then Nkind (N) = N_Subprogram_Body
         and then not Delay_Subprogram_Descriptors (Corresponding_Spec (N))
       then
+         return;
+      end if;
+
+      --  If an extended return statement contains something like
+      --
+      --     X := F (...);
+      --
+      --  where F is a build-in-place function call returning a controlled
+      --  type, then a temporary object will be implicitly declared as part
+      --  of the statement list, and this will need cleanup. In such cases,
+      --  we transform:
+      --
+      --    return Result : T := ... do
+      --       <statements> -- possibly with handlers
+      --    end return;
+      --
+      --  into:
+      --
+      --    return Result : T := ... do
+      --       declare -- no declarations
+      --       begin
+      --          <statements> -- possibly with handlers
+      --       end; -- no handlers
+      --    end return;
+      --
+      --  So Expand_Cleanup_Actions will end up being called recursively on the
+      --  block statement.
+
+      if Nkind (N) = N_Extended_Return_Statement then
+         declare
+            Block : constant Node_Id :=
+                      Make_Block_Statement (Sloc (N),
+                        Declarations               => Empty_List,
+                        Handled_Statement_Sequence =>
+                          Handled_Statement_Sequence (N));
+         begin
+            Set_Handled_Statement_Sequence (N,
+              Make_Handled_Sequence_Of_Statements (Sloc (N),
+                Statements => New_List (Block)));
+
+            Analyze (Block);
+         end;
+
+         --  Analysis of the block did all the work
+
          return;
       end if;
 
@@ -5965,19 +4805,11 @@ package body Exp_Ch7 is
       Spec_Id : constant Entity_Id := Corresponding_Spec (N);
       Fin_Id  : Entity_Id;
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
    begin
-      --  The package body is Ghost when the corresponding spec is Ghost. Set
-      --  the mode now to ensure that any nodes generated during expansion are
-      --  properly marked as Ghost.
-
-      Set_Ghost_Mode (N, Spec_Id);
-
       --  This is done only for non-generic packages
 
       if Ekind (Spec_Id) = E_Package then
-         Push_Scope (Corresponding_Spec (N));
+         Push_Scope (Spec_Id);
 
          --  Build dispatch tables of library level tagged types
 
@@ -5989,18 +4821,16 @@ package body Exp_Ch7 is
 
          Build_Task_Activation_Call (N);
 
-         --  When the package is subject to pragma Initial_Condition, the
-         --  assertion expression must be verified at the end of the body
-         --  statements.
+         --  Verify the run-time semantics of pragma Initial_Condition at the
+         --  end of the body statements.
 
-         if Present (Get_Pragma (Spec_Id, Pragma_Initial_Condition)) then
-            Expand_Pragma_Initial_Condition (N);
-         end if;
+         Expand_Pragma_Initial_Condition (Spec_Id, N);
+         Check_Unnesting_Elaboration_Code (N);
 
          Pop_Scope;
       end if;
 
-      Set_Elaboration_Flag (N, Corresponding_Spec (N));
+      Set_Elaboration_Flag (N, Spec_Id);
       Set_In_Package_Body (Spec_Id, False);
 
       --  Set to encode entity names in package body before gigi is called
@@ -6029,8 +4859,6 @@ package body Exp_Ch7 is
             end;
          end if;
       end if;
-
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Package_Body;
 
    ----------------------------------
@@ -6117,14 +4945,10 @@ package body Exp_Ch7 is
             Build_Task_Activation_Call (N);
          end if;
 
-         --  When the package is subject to pragma Initial_Condition and lacks
-         --  a body, the assertion expression must be verified at the end of
-         --  the visible declarations. Otherwise the check is performed at the
-         --  end of the body statements (see Expand_N_Package_Body).
+         --  Verify the run-time semantics of pragma Initial_Condition at the
+         --  end of the private declarations when the package lacks a body.
 
-         if Present (Get_Pragma (Id, Pragma_Initial_Condition)) then
-            Expand_Pragma_Initial_Condition (N);
-         end if;
+         Expand_Pragma_Initial_Condition (Id, N);
 
          Pop_Scope;
       end if;
@@ -6161,155 +4985,177 @@ package body Exp_Ch7 is
       end if;
    end Expand_N_Package_Declaration;
 
-   -----------------------------
-   -- Find_Node_To_Be_Wrapped --
-   -----------------------------
+   ----------------------------
+   -- Find_Transient_Context --
+   ----------------------------
 
-   function Find_Node_To_Be_Wrapped (N : Node_Id) return Node_Id is
-      P          : Node_Id;
-      The_Parent : Node_Id;
+   function Find_Transient_Context (N : Node_Id) return Node_Id is
+      Curr : Node_Id;
+      Prev : Node_Id;
 
    begin
-      The_Parent := N;
-      P          := Empty;
-      loop
-         case Nkind (The_Parent) is
+      Curr := N;
+      Prev := Empty;
+      while Present (Curr) loop
+         case Nkind (Curr) is
 
-            --  Simple statement can be wrapped
+            --  Declarations
 
-            when N_Pragma =>
-               return The_Parent;
+            --  Declarations act as a boundary for a transient scope even if
+            --  they are not wrapped, see Wrap_Transient_Declaration.
 
-            --  Usually assignments are good candidate for wrapping except
-            --  when they have been generated as part of a controlled aggregate
-            --  where the wrapping should take place more globally. Note that
-            --  No_Ctrl_Actions may be set also for non-controlled assignements
-            --  in order to disable the use of dispatching _assign, so we need
-            --  to test explicitly for a controlled type here.
+            when N_Object_Declaration
+               | N_Object_Renaming_Declaration
+               | N_Subtype_Declaration
+            =>
+               return Curr;
+
+            --  Statements
+
+            --  Statements and statement-like constructs act as a boundary for
+            --  a transient scope.
+
+            when N_Accept_Alternative
+               | N_Attribute_Definition_Clause
+               | N_Case_Statement
+               | N_Case_Statement_Alternative
+               | N_Code_Statement
+               | N_Delay_Alternative
+               | N_Delay_Until_Statement
+               | N_Delay_Relative_Statement
+               | N_Discriminant_Association
+               | N_Elsif_Part
+               | N_Entry_Body_Formal_Part
+               | N_Exit_Statement
+               | N_If_Statement
+               | N_Iteration_Scheme
+               | N_Terminate_Alternative
+            =>
+               pragma Assert (Present (Prev));
+               return Prev;
 
             when N_Assignment_Statement =>
-               if No_Ctrl_Actions (The_Parent)
-                 and then Needs_Finalization (Etype (Name (The_Parent)))
+               return Curr;
+
+            when N_Entry_Call_Statement
+               | N_Procedure_Call_Statement
+            =>
+               --  When an entry or procedure call acts as the alternative of a
+               --  conditional or timed entry call, the proper context is that
+               --  of the alternative.
+
+               if Nkind (Parent (Curr)) = N_Entry_Call_Alternative
+                 and then Nkind_In (Parent (Parent (Curr)),
+                                    N_Conditional_Entry_Call,
+                                    N_Timed_Entry_Call)
                then
-                  null;
+                  return Parent (Parent (Curr));
+
+               --  General case for entry or procedure calls
+
                else
-                  return The_Parent;
+                  return Curr;
                end if;
 
-            --  An entry call statement is a special case if it occurs in the
-            --  context of a Timed_Entry_Call. In this case we wrap the entire
-            --  timed entry call.
+            when N_Pragma =>
 
-            when N_Entry_Call_Statement     |
-                 N_Procedure_Call_Statement =>
-               if Nkind (Parent (The_Parent)) = N_Entry_Call_Alternative
-                 and then Nkind_In (Parent (Parent (The_Parent)),
-                                    N_Timed_Entry_Call,
-                                    N_Conditional_Entry_Call)
+               --  Pragma Check is not a valid transient context in GNATprove
+               --  mode because the pragma must remain unchanged.
+
+               if GNATprove_Mode
+                 and then Get_Pragma_Id (Curr) = Pragma_Check
                then
-                  return Parent (Parent (The_Parent));
+                  return Empty;
+
+               --  General case for pragmas
+
                else
-                  return The_Parent;
+                  return Curr;
                end if;
-
-            --  Object declarations are also a boundary for the transient scope
-            --  even if they are not really wrapped. For further details, see
-            --  Wrap_Transient_Declaration.
-
-            when N_Object_Declaration          |
-                 N_Object_Renaming_Declaration |
-                 N_Subtype_Declaration         =>
-               return The_Parent;
-
-            --  The expression itself is to be wrapped if its parent is a
-            --  compound statement or any other statement where the expression
-            --  is known to be scalar.
-
-            when N_Accept_Alternative               |
-                 N_Attribute_Definition_Clause      |
-                 N_Case_Statement                   |
-                 N_Code_Statement                   |
-                 N_Delay_Alternative                |
-                 N_Delay_Until_Statement            |
-                 N_Delay_Relative_Statement         |
-                 N_Discriminant_Association         |
-                 N_Elsif_Part                       |
-                 N_Entry_Body_Formal_Part           |
-                 N_Exit_Statement                   |
-                 N_If_Statement                     |
-                 N_Iteration_Scheme                 |
-                 N_Terminate_Alternative            =>
-               pragma Assert (Present (P));
-               return P;
-
-            when N_Attribute_Reference =>
-
-               if Is_Procedure_Attribute_Name
-                    (Attribute_Name (The_Parent))
-               then
-                  return The_Parent;
-               end if;
-
-            --  A raise statement can be wrapped. This will arise when the
-            --  expression in a raise_with_expression uses the secondary
-            --  stack, for example.
 
             when N_Raise_Statement =>
-               return The_Parent;
-
-            --  If the expression is within the iteration scheme of a loop,
-            --  we must create a declaration for it, followed by an assignment
-            --  in order to have a usable statement to wrap.
-
-            when N_Loop_Parameter_Specification =>
-               return Parent (The_Parent);
-
-            --  The following nodes contains "dummy calls" which don't need to
-            --  be wrapped.
-
-            when N_Parameter_Specification     |
-                 N_Discriminant_Specification  |
-                 N_Component_Declaration       =>
-               return Empty;
-
-            --  The return statement is not to be wrapped when the function
-            --  itself needs wrapping at the outer-level
+               return Curr;
 
             when N_Simple_Return_Statement =>
-               declare
-                  Applies_To : constant Entity_Id :=
-                                 Return_Applies_To
-                                   (Return_Statement_Entity (The_Parent));
-                  Return_Type : constant Entity_Id := Etype (Applies_To);
-               begin
-                  if Requires_Transient_Scope (Return_Type) then
-                     return Empty;
-                  else
-                     return The_Parent;
-                  end if;
-               end;
 
-            --  If we leave a scope without having been able to find a node to
-            --  wrap, something is going wrong but this can happen in error
-            --  situation that are not detected yet (such as a dynamic string
-            --  in a pragma export)
+               --  A return statement is not a valid transient context when the
+               --  function itself requires transient scope management because
+               --  the result will be reclaimed too early.
 
-            when N_Subprogram_Body     |
-                 N_Package_Declaration |
-                 N_Package_Body        |
-                 N_Block_Statement     =>
+               if Requires_Transient_Scope (Etype
+                    (Return_Applies_To (Return_Statement_Entity (Curr))))
+               then
+                  return Empty;
+
+               --  General case for return statements
+
+               else
+                  return Curr;
+               end if;
+
+            --  Special
+
+            when N_Attribute_Reference =>
+               if Is_Procedure_Attribute_Name (Attribute_Name (Curr)) then
+                  return Curr;
+               end if;
+
+            --  An Ada 2012 iterator specification is not a valid context
+            --  because Analyze_Iterator_Specification already employs special
+            --  processing for it.
+
+            when N_Iterator_Specification =>
                return Empty;
 
-            --  Otherwise continue the search
+            when N_Loop_Parameter_Specification =>
+
+               --  An iteration scheme is not a valid context because routine
+               --  Analyze_Iteration_Scheme already employs special processing.
+
+               if Nkind (Parent (Curr)) = N_Iteration_Scheme then
+                  return Empty;
+               else
+                  return Parent (Curr);
+               end if;
+
+            --  Termination
+
+            --  The following nodes represent "dummy contexts" which do not
+            --  need to be wrapped.
+
+            when N_Component_Declaration
+               | N_Discriminant_Specification
+               | N_Parameter_Specification
+            =>
+               return Empty;
+
+            --  If the traversal leaves a scope without having been able to
+            --  find a construct to wrap, something is going wrong, but this
+            --  can happen in error situations that are not detected yet (such
+            --  as a dynamic string in a pragma Export).
+
+            when N_Block_Statement
+               | N_Entry_Body
+               | N_Package_Body
+               | N_Package_Declaration
+               | N_Protected_Body
+               | N_Subprogram_Body
+               | N_Task_Body
+            =>
+               return Empty;
+
+            --  Default
 
             when others =>
                null;
          end case;
 
-         P          := The_Parent;
-         The_Parent := Parent (P);
+         Prev := Curr;
+         Curr := Parent (Curr);
       end loop;
-   end Find_Node_To_Be_Wrapped;
+
+      return Empty;
+   end Find_Transient_Context;
 
    ----------------------------------
    -- Has_New_Controlled_Component --
@@ -6415,8 +5261,7 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         Exceptions_OK : constant Boolean :=
-                           not Restriction_Active (No_Exception_Propagation);
+         Exceptions_OK : constant Boolean := Exceptions_In_Finalization_OK;
 
          Must_Hook : Boolean := False;
          --  Flag denoting whether the context requires transient object
@@ -6455,7 +5300,7 @@ package body Exp_Ch7 is
             --  node. Inspect the original node to detect the initial placement
             --  of the call.
 
-            elsif Original_Node (N) /= N then
+            elsif Is_Rewrite_Substitution (N) then
                Detect_Subprogram_Call (Original_Node (N));
 
                if Must_Hook then
@@ -6721,10 +5566,10 @@ package body Exp_Ch7 is
             then
                Loc := Sloc (Obj_Decl);
 
-               --  Before generating the clean up code for the first transient
+               --  Before generating the cleanup code for the first transient
                --  object, create a wrapper block which houses all hook clear
                --  statements and finalization calls. This wrapper is needed by
-               --  the back-end.
+               --  the back end.
 
                if not Built then
                   Built     := True;
@@ -6810,7 +5655,14 @@ package body Exp_Ch7 is
    --  Start of processing for Insert_Actions_In_Scope_Around
 
    begin
-      if No (Act_Before) and then No (Act_After) and then No (Act_Cleanup) then
+      --  Nothing to do if the scope does not manage the secondary stack or
+      --  does not contain meaninful actions for insertion.
+
+      if not Manage_SS
+        and then No (Act_Before)
+        and then No (Act_After)
+        and then No (Act_Cleanup)
+      then
          return;
       end if;
 
@@ -6919,10 +5771,12 @@ package body Exp_Ch7 is
    is
       Loc    : constant Source_Ptr := Sloc (Obj_Ref);
       Adj_Id : Entity_Id := Empty;
-      Ref    : Node_Id   := Obj_Ref;
+      Ref    : Node_Id;
       Utyp   : Entity_Id;
 
    begin
+      Ref := Obj_Ref;
+
       --  Recover the proper type which contains Deep_Adjust
 
       if Is_Class_Wide_Type (Typ) then
@@ -6936,7 +5790,7 @@ package body Exp_Ch7 is
 
       --  Deal with untagged derivation of private views
 
-      if Is_Untagged_Derivation (Typ) then
+      if Present (Utyp) and then Is_Untagged_Derivation (Typ) then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
          Ref  := Unchecked_Convert_To (Utyp, Ref);
          Set_Assignment_OK (Ref);
@@ -6945,14 +5799,21 @@ package body Exp_Ch7 is
       --  When dealing with the completion of a private type, use the base
       --  type instead.
 
-      if Utyp /= Base_Type (Utyp) then
+      if Present (Utyp) and then Utyp /= Base_Type (Utyp) then
          pragma Assert (Is_Private_Type (Typ));
 
          Utyp := Base_Type (Utyp);
          Ref  := Unchecked_Convert_To (Utyp, Ref);
       end if;
 
-      if Skip_Self then
+      --  The underlying type may not be present due to a missing full view. In
+      --  this case freezing did not take place and there is no [Deep_]Adjust
+      --  primitive to call.
+
+      if No (Utyp) then
+         return Empty;
+
+      elsif Skip_Self then
          if Has_Controlled_Component (Utyp) then
             if Is_Tagged_Type (Utyp) then
                Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
@@ -7012,7 +5873,7 @@ package body Exp_Ch7 is
          return
            Make_Call (Loc,
              Proc_Id   => Adj_Id,
-             Param     => New_Copy_Tree (Ref),
+             Param     => Ref,
              Skip_Self => Skip_Self);
       else
          return Empty;
@@ -7069,6 +5930,8 @@ package body Exp_Ch7 is
      (Prim : Final_Primitives;
       Typ  : Entity_Id) return List_Id
    is
+      Exceptions_OK : constant Boolean := Exceptions_In_Finalization_OK;
+
       function Build_Adjust_Or_Finalize_Statements
         (Typ : Entity_Id) return List_Id;
       --  Create the statements necessary to adjust or finalize an array of
@@ -7185,22 +6048,10 @@ package body Exp_Ch7 is
       function Build_Adjust_Or_Finalize_Statements
         (Typ : Entity_Id) return List_Id
       is
-         Comp_Typ       : constant Entity_Id  := Component_Type (Typ);
-         Exceptions_OK  : constant Boolean    :=
-                            not Restriction_Active (No_Exception_Propagation);
-         Index_List     : constant List_Id    := New_List;
-         Loc            : constant Source_Ptr := Sloc (Typ);
-         Num_Dims       : constant Int        := Number_Dimensions (Typ);
-
-         Finalizer_Decls : List_Id := No_List;
-         Finalizer_Data  : Finalization_Exception_Data;
-         Call            : Node_Id;
-         Comp_Ref        : Node_Id;
-         Core_Loop       : Node_Id;
-         Dim             : Int;
-         J               : Entity_Id;
-         Loop_Id         : Entity_Id;
-         Stmts           : List_Id;
+         Comp_Typ   : constant Entity_Id  := Component_Type (Typ);
+         Index_List : constant List_Id    := New_List;
+         Loc        : constant Source_Ptr := Sloc (Typ);
+         Num_Dims   : constant Int        := Number_Dimensions (Typ);
 
          procedure Build_Indexes;
          --  Generate the indexes used in the dimension loops
@@ -7220,13 +6071,26 @@ package body Exp_Ch7 is
             end loop;
          end Build_Indexes;
 
+         --  Local variables
+
+         Final_Decls : List_Id := No_List;
+         Final_Data  : Finalization_Exception_Data;
+         Block       : Node_Id;
+         Call        : Node_Id;
+         Comp_Ref    : Node_Id;
+         Core_Loop   : Node_Id;
+         Dim         : Int;
+         J           : Entity_Id;
+         Loop_Id     : Entity_Id;
+         Stmts       : List_Id;
+
       --  Start of processing for Build_Adjust_Or_Finalize_Statements
 
       begin
-         Finalizer_Decls := New_List;
+         Final_Decls := New_List;
 
          Build_Indexes;
-         Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
+         Build_Object_Declarations (Final_Data, Final_Decls, Loc);
 
          Comp_Ref :=
            Make_Indexed_Component (Loc,
@@ -7247,99 +6111,111 @@ package body Exp_Ch7 is
             Call := Make_Final_Call (Obj_Ref => Comp_Ref, Typ => Comp_Typ);
          end if;
 
-         --  Generate the block which houses the adjust or finalize call:
+         if Present (Call) then
 
-         --    begin
-         --       <adjust or finalize call>
+            --  Generate the block which houses the adjust or finalize call:
 
-         --    exception
-         --       when others =>
-         --          if not Raised then
-         --             Raised := True;
-         --             Save_Occurrence (E, Get_Current_Excep.all.all);
-         --          end if;
-         --    end;
+            --    begin
+            --       <adjust or finalize call>
 
-         if Exceptions_OK then
-            Core_Loop :=
+            --    exception
+            --       when others =>
+            --          if not Raised then
+            --             Raised := True;
+            --             Save_Occurrence (E, Get_Current_Excep.all.all);
+            --          end if;
+            --    end;
+
+            if Exceptions_OK then
+               Core_Loop :=
+                 Make_Block_Statement (Loc,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements         => New_List (Call),
+                       Exception_Handlers => New_List (
+                         Build_Exception_Handler (Final_Data))));
+            else
+               Core_Loop := Call;
+            end if;
+
+            --  Generate the dimension loops starting from the innermost one
+
+            --    for Jnn in [reverse] V'Range (Dim) loop
+            --       <core loop>
+            --    end loop;
+
+            J := Last (Index_List);
+            Dim := Num_Dims;
+            while Present (J) and then Dim > 0 loop
+               Loop_Id := J;
+               Prev (J);
+               Remove (Loop_Id);
+
+               Core_Loop :=
+                 Make_Loop_Statement (Loc,
+                   Iteration_Scheme =>
+                     Make_Iteration_Scheme (Loc,
+                       Loop_Parameter_Specification =>
+                         Make_Loop_Parameter_Specification (Loc,
+                           Defining_Identifier         => Loop_Id,
+                           Discrete_Subtype_Definition =>
+                             Make_Attribute_Reference (Loc,
+                               Prefix         => Make_Identifier (Loc, Name_V),
+                               Attribute_Name => Name_Range,
+                               Expressions    => New_List (
+                                 Make_Integer_Literal (Loc, Dim))),
+
+                           Reverse_Present             =>
+                             Prim = Finalize_Case)),
+
+                   Statements       => New_List (Core_Loop),
+                   End_Label        => Empty);
+
+               Dim := Dim - 1;
+            end loop;
+
+            --  Generate the block which contains the core loop, declarations
+            --  of the abort flag, the exception occurrence, the raised flag
+            --  and the conditional raise:
+
+            --    declare
+            --       Abort  : constant Boolean := Triggered_By_Abort;
+            --         <or>
+            --       Abort  : constant Boolean := False;  --  no abort
+
+            --       E      : Exception_Occurrence;
+            --       Raised : Boolean := False;
+
+            --    begin
+            --       <core loop>
+
+            --       if Raised and then not Abort then
+            --          Raise_From_Controlled_Operation (E);
+            --       end if;
+            --    end;
+
+            Stmts := New_List (Core_Loop);
+
+            if Exceptions_OK then
+               Append_To (Stmts, Build_Raise_Statement (Final_Data));
+            end if;
+
+            Block :=
               Make_Block_Statement (Loc,
+                Declarations               => Final_Decls,
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements         => New_List (Call),
-                    Exception_Handlers => New_List (
-                      Build_Exception_Handler (Finalizer_Data))));
+                    Statements => Stmts));
+
+         --  Otherwise previous errors or a missing full view may prevent the
+         --  proper freezing of the component type. If this is the case, there
+         --  is no [Deep_]Adjust or [Deep_]Finalize primitive to call.
+
          else
-            Core_Loop := Call;
+            Block := Make_Null_Statement (Loc);
          end if;
 
-         --  Generate the dimension loops starting from the innermost one
-
-         --    for Jnn in [reverse] V'Range (Dim) loop
-         --       <core loop>
-         --    end loop;
-
-         J := Last (Index_List);
-         Dim := Num_Dims;
-         while Present (J) and then Dim > 0 loop
-            Loop_Id := J;
-            Prev (J);
-            Remove (Loop_Id);
-
-            Core_Loop :=
-              Make_Loop_Statement (Loc,
-                Iteration_Scheme =>
-                  Make_Iteration_Scheme (Loc,
-                    Loop_Parameter_Specification =>
-                      Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier         => Loop_Id,
-                        Discrete_Subtype_Definition =>
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => Make_Identifier (Loc, Name_V),
-                            Attribute_Name => Name_Range,
-                            Expressions    => New_List (
-                              Make_Integer_Literal (Loc, Dim))),
-
-                        Reverse_Present => Prim = Finalize_Case)),
-
-                Statements => New_List (Core_Loop),
-                End_Label  => Empty);
-
-            Dim := Dim - 1;
-         end loop;
-
-         --  Generate the block which contains the core loop, the declarations
-         --  of the abort flag, the exception occurrence, the raised flag and
-         --  the conditional raise:
-
-         --    declare
-         --       Abort  : constant Boolean := Triggered_By_Abort;
-         --         <or>
-         --       Abort  : constant Boolean := False;  --  no abort
-
-         --       E      : Exception_Occurrence;
-         --       Raised : Boolean := False;
-
-         --    begin
-         --       <core loop>
-
-         --       if Raised and then not Abort then
-         --          Raise_From_Controlled_Operation (E);
-         --       end if;
-         --    end;
-
-         Stmts := New_List (Core_Loop);
-
-         if Exceptions_OK then
-            Append_To (Stmts, Build_Raise_Statement (Finalizer_Data));
-         end if;
-
-         return
-           New_List (
-             Make_Block_Statement (Loc,
-               Declarations               =>
-                 Finalizer_Decls,
-               Handled_Statement_Sequence =>
-                 Make_Handled_Sequence_Of_Statements (Loc, Stmts)));
+         return New_List (Block);
       end Build_Adjust_Or_Finalize_Statements;
 
       ---------------------------------
@@ -7347,32 +6223,19 @@ package body Exp_Ch7 is
       ---------------------------------
 
       function Build_Initialize_Statements (Typ : Entity_Id) return List_Id is
-         Comp_Typ       : constant Entity_Id  := Component_Type (Typ);
-         Exceptions_OK  : constant Boolean    :=
-                            not Restriction_Active (No_Exception_Propagation);
-         Final_List     : constant List_Id    := New_List;
-         Index_List     : constant List_Id    := New_List;
-         Loc            : constant Source_Ptr := Sloc (Typ);
-         Num_Dims       : constant Int        := Number_Dimensions (Typ);
+         Comp_Typ   : constant Entity_Id  := Component_Type (Typ);
+         Final_List : constant List_Id    := New_List;
+         Index_List : constant List_Id    := New_List;
+         Loc        : constant Source_Ptr := Sloc (Typ);
+         Num_Dims   : constant Int        := Number_Dimensions (Typ);
 
-         Counter_Id      : Entity_Id;
-         Dim             : Int;
-         F               : Node_Id;
-         Fin_Stmt        : Node_Id;
-         Final_Block     : Node_Id;
-         Final_Loop      : Node_Id;
-         Finalizer_Data  : Finalization_Exception_Data;
-         Finalizer_Decls : List_Id := No_List;
-         Init_Loop       : Node_Id;
-         J               : Node_Id;
-         Loop_Id         : Node_Id;
-         Stmts           : List_Id;
-
-         function Build_Counter_Assignment return Node_Id;
+         function Build_Assignment (Counter_Id : Entity_Id) return Node_Id;
          --  Generate the following assignment:
          --    Counter := V'Length (1) *
          --               ...
          --               V'Length (N) - Counter;
+         --
+         --  Counter_Id denotes the entity of the counter.
 
          function Build_Finalization_Call return Node_Id;
          --  Generate a deep finalization call for an array element
@@ -7384,11 +6247,11 @@ package body Exp_Ch7 is
          function Build_Initialization_Call return Node_Id;
          --  Generate a deep initialization call for an array element
 
-         ------------------------------
-         -- Build_Counter_Assignment --
-         ------------------------------
+         ----------------------
+         -- Build_Assignment --
+         ----------------------
 
-         function Build_Counter_Assignment return Node_Id is
+         function Build_Assignment (Counter_Id : Entity_Id) return Node_Id is
             Dim  : Int;
             Expr : Node_Id;
 
@@ -7431,7 +6294,7 @@ package body Exp_Ch7 is
                   Make_Op_Subtract (Loc,
                     Left_Opnd  => Expr,
                     Right_Opnd => New_Occurrence_Of (Counter_Id, Loc)));
-         end Build_Counter_Assignment;
+         end Build_Assignment;
 
          -----------------------------
          -- Build_Finalization_Call --
@@ -7490,14 +6353,31 @@ package body Exp_Ch7 is
             return Make_Init_Call (Obj_Ref => Comp_Ref, Typ => Comp_Typ);
          end Build_Initialization_Call;
 
+         --  Local variables
+
+         Counter_Id  : Entity_Id;
+         Dim         : Int;
+         F           : Node_Id;
+         Fin_Stmt    : Node_Id;
+         Final_Block : Node_Id;
+         Final_Data  : Finalization_Exception_Data;
+         Final_Decls : List_Id := No_List;
+         Final_Loop  : Node_Id;
+         Init_Block  : Node_Id;
+         Init_Call   : Node_Id;
+         Init_Loop   : Node_Id;
+         J           : Node_Id;
+         Loop_Id     : Node_Id;
+         Stmts       : List_Id;
+
       --  Start of processing for Build_Initialize_Statements
 
       begin
-         Counter_Id := Make_Temporary (Loc, 'C');
-         Finalizer_Decls := New_List;
+         Counter_Id  := Make_Temporary (Loc, 'C');
+         Final_Decls := New_List;
 
          Build_Indexes;
-         Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
+         Build_Object_Declarations (Final_Data, Final_Decls, Loc);
 
          --  Generate the block which houses the finalization call, the index
          --  guard and the handler which triggers Program_Error later on.
@@ -7516,114 +6396,123 @@ package body Exp_Ch7 is
          --       end;
          --    end if;
 
-         if Exceptions_OK then
-            Fin_Stmt :=
-              Make_Block_Statement (Loc,
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements         => New_List (Build_Finalization_Call),
-                    Exception_Handlers => New_List (
-                      Build_Exception_Handler (Finalizer_Data))));
-         else
-            Fin_Stmt := Build_Finalization_Call;
-         end if;
+         Fin_Stmt := Build_Finalization_Call;
 
-         --  This is the core of the loop, the dimension iterators are added
-         --  one by one in reverse.
+         if Present (Fin_Stmt) then
+            if Exceptions_OK then
+               Fin_Stmt :=
+                 Make_Block_Statement (Loc,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements         => New_List (Fin_Stmt),
+                       Exception_Handlers => New_List (
+                         Build_Exception_Handler (Final_Data))));
+            end if;
 
-         Final_Loop :=
-           Make_If_Statement (Loc,
-             Condition =>
-               Make_Op_Gt (Loc,
-                 Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
-                 Right_Opnd => Make_Integer_Literal (Loc, 0)),
-
-             Then_Statements => New_List (
-               Make_Assignment_Statement (Loc,
-                 Name       => New_Occurrence_Of (Counter_Id, Loc),
-                 Expression =>
-                   Make_Op_Subtract (Loc,
-                     Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
-                     Right_Opnd => Make_Integer_Literal (Loc, 1)))),
-
-             Else_Statements => New_List (Fin_Stmt));
-
-         --  Generate all finalization loops starting from the innermost
-         --  dimension.
-
-         --    for Fnn in reverse V'Range (Dim) loop
-         --       <final loop>
-         --    end loop;
-
-         F := Last (Final_List);
-         Dim := Num_Dims;
-         while Present (F) and then Dim > 0 loop
-            Loop_Id := F;
-            Prev (F);
-            Remove (Loop_Id);
+            --  This is the core of the loop, the dimension iterators are added
+            --  one by one in reverse.
 
             Final_Loop :=
-              Make_Loop_Statement (Loc,
-                Iteration_Scheme =>
-                  Make_Iteration_Scheme (Loc,
-                    Loop_Parameter_Specification =>
-                      Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier => Loop_Id,
-                        Discrete_Subtype_Definition =>
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => Make_Identifier (Loc, Name_V),
-                            Attribute_Name => Name_Range,
-                            Expressions    => New_List (
-                              Make_Integer_Literal (Loc, Dim))),
+              Make_If_Statement (Loc,
+                Condition =>
+                  Make_Op_Gt (Loc,
+                    Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
+                    Right_Opnd => Make_Integer_Literal (Loc, 0)),
 
-                        Reverse_Present => True)),
+                Then_Statements => New_List (
+                  Make_Assignment_Statement (Loc,
+                    Name       => New_Occurrence_Of (Counter_Id, Loc),
+                    Expression =>
+                      Make_Op_Subtract (Loc,
+                        Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
+                        Right_Opnd => Make_Integer_Literal (Loc, 1)))),
 
-                Statements => New_List (Final_Loop),
-                End_Label => Empty);
+                Else_Statements => New_List (Fin_Stmt));
 
-            Dim := Dim - 1;
-         end loop;
+            --  Generate all finalization loops starting from the innermost
+            --  dimension.
 
-         --  Generate the block which contains the finalization loops, the
-         --  declarations of the abort flag, the exception occurrence, the
-         --  raised flag and the conditional raise.
+            --    for Fnn in reverse V'Range (Dim) loop
+            --       <final loop>
+            --    end loop;
 
-         --    declare
-         --       Abort  : constant Boolean := Triggered_By_Abort;
-         --         <or>
-         --       Abort  : constant Boolean := False;  --  no abort
+            F := Last (Final_List);
+            Dim := Num_Dims;
+            while Present (F) and then Dim > 0 loop
+               Loop_Id := F;
+               Prev (F);
+               Remove (Loop_Id);
 
-         --       E      : Exception_Occurrence;
-         --       Raised : Boolean := False;
+               Final_Loop :=
+                 Make_Loop_Statement (Loc,
+                   Iteration_Scheme =>
+                     Make_Iteration_Scheme (Loc,
+                       Loop_Parameter_Specification =>
+                         Make_Loop_Parameter_Specification (Loc,
+                           Defining_Identifier         => Loop_Id,
+                           Discrete_Subtype_Definition =>
+                             Make_Attribute_Reference (Loc,
+                               Prefix         => Make_Identifier (Loc, Name_V),
+                               Attribute_Name => Name_Range,
+                               Expressions    => New_List (
+                                 Make_Integer_Literal (Loc, Dim))),
 
-         --    begin
-         --       Counter :=
-         --         V'Length (1) *
-         --         ...
-         --         V'Length (N) - Counter;
+                           Reverse_Present             => True)),
 
-         --       <final loop>
+                   Statements       => New_List (Final_Loop),
+                   End_Label        => Empty);
 
-         --       if Raised and then not Abort then
-         --          Raise_From_Controlled_Operation (E);
-         --       end if;
+               Dim := Dim - 1;
+            end loop;
 
-         --       raise;
-         --    end;
+            --  Generate the block which contains the finalization loops, the
+            --  declarations of the abort flag, the exception occurrence, the
+            --  raised flag and the conditional raise.
 
-         Stmts := New_List (Build_Counter_Assignment, Final_Loop);
+            --    declare
+            --       Abort  : constant Boolean := Triggered_By_Abort;
+            --         <or>
+            --       Abort  : constant Boolean := False;  --  no abort
 
-         if Exceptions_OK then
-            Append_To (Stmts, Build_Raise_Statement (Finalizer_Data));
-            Append_To (Stmts, Make_Raise_Statement (Loc));
+            --       E      : Exception_Occurrence;
+            --       Raised : Boolean := False;
+
+            --    begin
+            --       Counter :=
+            --         V'Length (1) *
+            --         ...
+            --         V'Length (N) - Counter;
+
+            --       <final loop>
+
+            --       if Raised and then not Abort then
+            --          Raise_From_Controlled_Operation (E);
+            --       end if;
+
+            --       raise;
+            --    end;
+
+            Stmts := New_List (Build_Assignment (Counter_Id), Final_Loop);
+
+            if Exceptions_OK then
+               Append_To (Stmts, Build_Raise_Statement (Final_Data));
+               Append_To (Stmts, Make_Raise_Statement (Loc));
+            end if;
+
+            Final_Block :=
+              Make_Block_Statement (Loc,
+                Declarations               => Final_Decls,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => Stmts));
+
+         --  Otherwise previous errors or a missing full view may prevent the
+         --  proper freezing of the component type. If this is the case, there
+         --  is no [Deep_]Finalize primitive to call.
+
+         else
+            Final_Block := Make_Null_Statement (Loc);
          end if;
-
-         Final_Block :=
-           Make_Block_Statement (Loc,
-             Declarations               =>
-               Finalizer_Decls,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts));
 
          --  Generate the block which contains the initialization call and
          --  the partial finalization code.
@@ -7638,70 +6527,78 @@ package body Exp_Ch7 is
          --          <finalization code>
          --    end;
 
-         Init_Loop :=
-           Make_Block_Statement (Loc,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements         => New_List (Build_Initialization_Call),
-                 Exception_Handlers => New_List (
-                   Make_Exception_Handler (Loc,
-                     Exception_Choices => New_List (Make_Others_Choice (Loc)),
-                     Statements        => New_List (Final_Block)))));
+         Init_Call := Build_Initialization_Call;
 
-         Append_To (Statements (Handled_Statement_Sequence (Init_Loop)),
-           Make_Assignment_Statement (Loc,
-             Name       => New_Occurrence_Of (Counter_Id, Loc),
-             Expression =>
-               Make_Op_Add (Loc,
-                 Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
-                 Right_Opnd => Make_Integer_Literal (Loc, 1))));
+         --  Only create finalization block if there is a non-trivial
+         --  call to initialization.
 
-         --  Generate all initialization loops starting from the innermost
-         --  dimension.
-
-         --    for Jnn in V'Range (Dim) loop
-         --       <init loop>
-         --    end loop;
-
-         J := Last (Index_List);
-         Dim := Num_Dims;
-         while Present (J) and then Dim > 0 loop
-            Loop_Id := J;
-            Prev (J);
-            Remove (Loop_Id);
-
+         if Present (Init_Call)
+           and then Nkind (Init_Call) /= N_Null_Statement
+         then
             Init_Loop :=
-              Make_Loop_Statement (Loc,
-                Iteration_Scheme =>
-                  Make_Iteration_Scheme (Loc,
-                    Loop_Parameter_Specification =>
-                      Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier => Loop_Id,
-                        Discrete_Subtype_Definition =>
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => Make_Identifier (Loc, Name_V),
-                            Attribute_Name => Name_Range,
-                            Expressions    => New_List (
-                              Make_Integer_Literal (Loc, Dim))))),
+              Make_Block_Statement (Loc,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements         => New_List (Init_Call),
+                    Exception_Handlers => New_List (
+                      Make_Exception_Handler (Loc,
+                        Exception_Choices => New_List (
+                          Make_Others_Choice (Loc)),
+                        Statements        => New_List (Final_Block)))));
 
-                Statements => New_List (Init_Loop),
-                End_Label => Empty);
+            Append_To (Statements (Handled_Statement_Sequence (Init_Loop)),
+              Make_Assignment_Statement (Loc,
+                Name       => New_Occurrence_Of (Counter_Id, Loc),
+                Expression =>
+                  Make_Op_Add (Loc,
+                    Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
+                    Right_Opnd => Make_Integer_Literal (Loc, 1))));
 
-            Dim := Dim - 1;
-         end loop;
+            --  Generate all initialization loops starting from the innermost
+            --  dimension.
 
-         --  Generate the block which contains the counter variable and the
-         --  initialization loops.
+            --    for Jnn in V'Range (Dim) loop
+            --       <init loop>
+            --    end loop;
 
-         --    declare
-         --       Counter : Integer := 0;
-         --    begin
-         --       <init loop>
-         --    end;
+            J := Last (Index_List);
+            Dim := Num_Dims;
+            while Present (J) and then Dim > 0 loop
+               Loop_Id := J;
+               Prev (J);
+               Remove (Loop_Id);
 
-         return
-           New_List (
-             Make_Block_Statement (Loc,
+               Init_Loop :=
+                 Make_Loop_Statement (Loc,
+                   Iteration_Scheme =>
+                     Make_Iteration_Scheme (Loc,
+                       Loop_Parameter_Specification =>
+                         Make_Loop_Parameter_Specification (Loc,
+                           Defining_Identifier => Loop_Id,
+                           Discrete_Subtype_Definition =>
+                             Make_Attribute_Reference (Loc,
+                               Prefix         => Make_Identifier (Loc, Name_V),
+                               Attribute_Name => Name_Range,
+                               Expressions    => New_List (
+                                 Make_Integer_Literal (Loc, Dim))))),
+
+                   Statements => New_List (Init_Loop),
+                   End_Label => Empty);
+
+               Dim := Dim - 1;
+            end loop;
+
+            --  Generate the block which contains the counter variable and the
+            --  initialization loops.
+
+            --    declare
+            --       Counter : Integer := 0;
+            --    begin
+            --       <init loop>
+            --    end;
+
+            Init_Block :=
+              Make_Block_Statement (Loc,
                Declarations               => New_List (
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Counter_Id,
@@ -7711,7 +6608,17 @@ package body Exp_Ch7 is
 
                Handled_Statement_Sequence =>
                  Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements => New_List (Init_Loop))));
+                   Statements => New_List (Init_Loop)));
+
+         --  Otherwise previous errors or a missing full view may prevent the
+         --  proper freezing of the component type. If this is the case, there
+         --  is no [Deep_]Initialize primitive to call.
+
+         else
+            Init_Block := Make_Null_Statement (Loc);
+         end if;
+
+         return New_List (Init_Block);
       end Build_Initialize_Statements;
 
       -----------------------
@@ -7742,8 +6649,9 @@ package body Exp_Ch7 is
          when Address_Case =>
             return Make_Finalize_Address_Stmts (Typ);
 
-         when Adjust_Case   |
-              Finalize_Case =>
+         when Adjust_Case
+            | Finalize_Case
+         =>
             return Build_Adjust_Or_Finalize_Statements (Typ);
 
          when Initialize_Case =>
@@ -7833,6 +6741,15 @@ package body Exp_Ch7 is
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts)));
 
+      --  If there are no calls to component initialization, indicate that
+      --  the procedure is trivial, so prevent calls to it.
+
+      if Is_Empty_List (Stmts)
+        or else Nkind (First (Stmts)) = N_Null_Statement
+      then
+         Set_Is_Trivial_Subprogram (Proc_Id);
+      end if;
+
       return Proc_Id;
    end Make_Deep_Proc;
 
@@ -7845,6 +6762,8 @@ package body Exp_Ch7 is
       Typ      : Entity_Id;
       Is_Local : Boolean := False) return List_Id
    is
+      Exceptions_OK : constant Boolean := Exceptions_In_Finalization_OK;
+
       function Build_Adjust_Statements (Typ : Entity_Id) return List_Id;
       --  Build the statements necessary to adjust a record type. The type may
       --  have discriminants and contain variant parts. Generate:
@@ -7994,16 +6913,10 @@ package body Exp_Ch7 is
       -----------------------------
 
       function Build_Adjust_Statements (Typ : Entity_Id) return List_Id is
-         Exceptions_OK  : constant Boolean    :=
-                            not Restriction_Active (No_Exception_Propagation);
-         Loc            : constant Source_Ptr := Sloc (Typ);
-         Typ_Def        : constant Node_Id := Type_Definition (Parent (Typ));
+         Loc     : constant Source_Ptr := Sloc (Typ);
+         Typ_Def : constant Node_Id    := Type_Definition (Parent (Typ));
 
-         Bod_Stmts       : List_Id;
-         Finalizer_Data  : Finalization_Exception_Data;
-         Finalizer_Decls : List_Id := No_List;
-         Rec_Def         : Node_Id;
-         Var_Case        : Node_Id;
+         Finalizer_Data : Finalization_Exception_Data;
 
          function Process_Component_List_For_Adjust
            (Comps : Node_Id) return List_Id;
@@ -8016,12 +6929,7 @@ package body Exp_Ch7 is
          function Process_Component_List_For_Adjust
            (Comps : Node_Id) return List_Id
          is
-            Stmts     : constant List_Id := New_List;
-            Decl      : Node_Id;
-            Decl_Id   : Entity_Id;
-            Decl_Typ  : Entity_Id;
-            Has_POC   : Boolean;
-            Num_Comps : Nat;
+            Stmts : constant List_Id := New_List;
 
             procedure Process_Component_For_Adjust (Decl : Node_Id);
             --  Process the declaration of a single controlled component
@@ -8031,9 +6939,10 @@ package body Exp_Ch7 is
             ----------------------------------
 
             procedure Process_Component_For_Adjust (Decl : Node_Id) is
-               Id       : constant Entity_Id := Defining_Identifier (Decl);
-               Typ      : constant Entity_Id := Etype (Id);
-               Adj_Stmt : Node_Id;
+               Id  : constant Entity_Id := Defining_Identifier (Decl);
+               Typ : constant Entity_Id := Etype (Id);
+
+               Adj_Call : Node_Id;
 
             begin
                --    begin
@@ -8047,7 +6956,7 @@ package body Exp_Ch7 is
                --          end if;
                --    end;
 
-               Adj_Stmt :=
+               Adj_Call :=
                  Make_Adjust_Call (
                    Obj_Ref =>
                      Make_Selected_Component (Loc,
@@ -8055,18 +6964,32 @@ package body Exp_Ch7 is
                        Selector_Name => Make_Identifier (Loc, Chars (Id))),
                    Typ     => Typ);
 
-               if Exceptions_OK then
-                  Adj_Stmt :=
-                    Make_Block_Statement (Loc,
-                      Handled_Statement_Sequence =>
-                        Make_Handled_Sequence_Of_Statements (Loc,
-                          Statements         => New_List (Adj_Stmt),
-                          Exception_Handlers => New_List (
-                            Build_Exception_Handler (Finalizer_Data))));
-               end if;
+               --  Guard against a missing [Deep_]Adjust when the component
+               --  type was not properly frozen.
 
-               Append_To (Stmts, Adj_Stmt);
+               if Present (Adj_Call) then
+                  if Exceptions_OK then
+                     Adj_Call :=
+                       Make_Block_Statement (Loc,
+                         Handled_Statement_Sequence =>
+                           Make_Handled_Sequence_Of_Statements (Loc,
+                             Statements         => New_List (Adj_Call),
+                             Exception_Handlers => New_List (
+                               Build_Exception_Handler (Finalizer_Data))));
+                  end if;
+
+                  Append_To (Stmts, Adj_Call);
+               end if;
             end Process_Component_For_Adjust;
+
+            --  Local variables
+
+            Decl      : Node_Id;
+            Decl_Id   : Entity_Id;
+            Decl_Typ  : Entity_Id;
+            Has_POC   : Boolean;
+            Num_Comps : Nat;
+            Var_Case  : Node_Id;
 
          --  Start of processing for Process_Component_List_For_Adjust
 
@@ -8195,6 +7118,12 @@ package body Exp_Ch7 is
 
             return Stmts;
          end Process_Component_List_For_Adjust;
+
+         --  Local variables
+
+         Bod_Stmts       : List_Id := No_List;
+         Finalizer_Decls : List_Id := No_List;
+         Rec_Def         : Node_Id;
 
       --  Start of processing for Build_Adjust_Statements
 
@@ -8400,17 +7329,11 @@ package body Exp_Ch7 is
       -------------------------------
 
       function Build_Finalize_Statements (Typ : Entity_Id) return List_Id is
-         Exceptions_OK  : constant Boolean    :=
-                            not Restriction_Active (No_Exception_Propagation);
-         Loc            : constant Source_Ptr := Sloc (Typ);
-         Typ_Def        : constant Node_Id := Type_Definition (Parent (Typ));
+         Loc     : constant Source_Ptr := Sloc (Typ);
+         Typ_Def : constant Node_Id    := Type_Definition (Parent (Typ));
 
-         Bod_Stmts       : List_Id;
-         Counter         : Int := 0;
-         Finalizer_Data  : Finalization_Exception_Data;
-         Finalizer_Decls : List_Id := No_List;
-         Rec_Def         : Node_Id;
-         Var_Case        : Node_Id;
+         Counter        : Int := 0;
+         Finalizer_Data : Finalization_Exception_Data;
 
          function Process_Component_List_For_Finalize
            (Comps : Node_Id) return List_Id;
@@ -8425,43 +7348,33 @@ package body Exp_Ch7 is
          function Process_Component_List_For_Finalize
            (Comps : Node_Id) return List_Id
          is
-            Alts       : List_Id;
-            Counter_Id : Entity_Id;
-            Decl       : Node_Id;
-            Decl_Id    : Entity_Id;
-            Decl_Typ   : Entity_Id;
-            Decls      : List_Id;
-            Has_POC    : Boolean;
-            Jump_Block : Node_Id;
-            Label      : Node_Id;
-            Label_Id   : Entity_Id;
-            Num_Comps  : Nat;
-            Stmts      : List_Id;
-
             procedure Process_Component_For_Finalize
-              (Decl  : Node_Id;
-               Alts  : List_Id;
-               Decls : List_Id;
-               Stmts : List_Id);
+              (Decl      : Node_Id;
+               Alts      : List_Id;
+               Decls     : List_Id;
+               Stmts     : List_Id;
+               Num_Comps : in out Nat);
             --  Process the declaration of a single controlled component. If
             --  flag Is_Local is enabled, create the corresponding label and
             --  jump circuitry. Alts is the list of case alternatives, Decls
             --  is the top level declaration list where labels are declared
-            --  and Stmts is the list of finalization actions.
+            --  and Stmts is the list of finalization actions. Num_Comps
+            --  denotes the current number of components needing finalization.
 
             ------------------------------------
             -- Process_Component_For_Finalize --
             ------------------------------------
 
             procedure Process_Component_For_Finalize
-              (Decl  : Node_Id;
-               Alts  : List_Id;
-               Decls : List_Id;
-               Stmts : List_Id)
+              (Decl      : Node_Id;
+               Alts      : List_Id;
+               Decls     : List_Id;
+               Stmts     : List_Id;
+               Num_Comps : in out Nat)
             is
                Id       : constant Entity_Id := Defining_Identifier (Decl);
                Typ      : constant Entity_Id := Etype (Id);
-               Fin_Stmt : Node_Id;
+               Fin_Call : Node_Id;
 
             begin
                if Is_Local then
@@ -8525,7 +7438,7 @@ package body Exp_Ch7 is
                --          end if;
                --    end;
 
-               Fin_Stmt :=
+               Fin_Call :=
                  Make_Final_Call
                    (Obj_Ref =>
                       Make_Selected_Component (Loc,
@@ -8533,18 +7446,39 @@ package body Exp_Ch7 is
                         Selector_Name => Make_Identifier (Loc, Chars (Id))),
                     Typ     => Typ);
 
-               if not Restriction_Active (No_Exception_Propagation) then
-                  Fin_Stmt :=
-                    Make_Block_Statement (Loc,
-                      Handled_Statement_Sequence =>
-                        Make_Handled_Sequence_Of_Statements (Loc,
-                          Statements         => New_List (Fin_Stmt),
-                          Exception_Handlers => New_List (
-                            Build_Exception_Handler (Finalizer_Data))));
-               end if;
+               --  Guard against a missing [Deep_]Finalize when the component
+               --  type was not properly frozen.
 
-               Append_To (Stmts, Fin_Stmt);
+               if Present (Fin_Call) then
+                  if Exceptions_OK then
+                     Fin_Call :=
+                       Make_Block_Statement (Loc,
+                         Handled_Statement_Sequence =>
+                           Make_Handled_Sequence_Of_Statements (Loc,
+                             Statements         => New_List (Fin_Call),
+                             Exception_Handlers => New_List (
+                               Build_Exception_Handler (Finalizer_Data))));
+                  end if;
+
+                  Append_To (Stmts, Fin_Call);
+               end if;
             end Process_Component_For_Finalize;
+
+            --  Local variables
+
+            Alts       : List_Id;
+            Counter_Id : Entity_Id := Empty;
+            Decl       : Node_Id;
+            Decl_Id    : Entity_Id;
+            Decl_Typ   : Entity_Id;
+            Decls      : List_Id;
+            Has_POC    : Boolean;
+            Jump_Block : Node_Id;
+            Label      : Node_Id;
+            Label_Id   : Entity_Id;
+            Num_Comps  : Nat;
+            Stmts      : List_Id;
+            Var_Case   : Node_Id;
 
          --  Start of processing for Process_Component_List_For_Finalize
 
@@ -8653,7 +7587,8 @@ package body Exp_Ch7 is
                     and then Has_Access_Constraint (Decl_Id)
                     and then No (Expression (Decl))
                   then
-                     Process_Component_For_Finalize (Decl, Alts, Decls, Stmts);
+                     Process_Component_For_Finalize
+                       (Decl, Alts, Decls, Stmts, Num_Comps);
                   end if;
 
                   Prev_Non_Pragma (Decl);
@@ -8680,7 +7615,8 @@ package body Exp_Ch7 is
                   then
                      null;
                   else
-                     Process_Component_For_Finalize (Decl, Alts, Decls, Stmts);
+                     Process_Component_For_Finalize
+                       (Decl, Alts, Decls, Stmts, Num_Comps);
                   end if;
                end if;
 
@@ -8765,6 +7701,12 @@ package body Exp_Ch7 is
                return New_List (Jump_Block);
             end if;
          end Process_Component_List_For_Finalize;
+
+         --  Local variables
+
+         Bod_Stmts       : List_Id := No_List;
+         Finalizer_Decls : List_Id := No_List;
+         Rec_Def         : Node_Id;
 
       --  Start of processing for Build_Finalize_Statements
 
@@ -9075,17 +8017,18 @@ package body Exp_Ch7 is
       Utyp   : Entity_Id;
 
    begin
+      Ref := Obj_Ref;
+
       --  Recover the proper type which contains [Deep_]Finalize
 
       if Is_Class_Wide_Type (Typ) then
          Utyp := Root_Type (Typ);
          Atyp := Utyp;
-         Ref  := Obj_Ref;
 
       elsif Is_Concurrent_Type (Typ) then
          Utyp := Corresponding_Record_Type (Typ);
          Atyp := Empty;
-         Ref  := Convert_Concurrent (Obj_Ref, Typ);
+         Ref  := Convert_Concurrent (Ref, Typ);
 
       elsif Is_Private_Type (Typ)
         and then Present (Full_View (Typ))
@@ -9093,12 +8036,11 @@ package body Exp_Ch7 is
       then
          Utyp := Corresponding_Record_Type (Full_View (Typ));
          Atyp := Typ;
-         Ref  := Convert_Concurrent (Obj_Ref, Full_View (Typ));
+         Ref  := Convert_Concurrent (Ref, Full_View (Typ));
 
       else
          Utyp := Typ;
          Atyp := Typ;
-         Ref  := Obj_Ref;
       end if;
 
       Utyp := Underlying_Type (Base_Type (Utyp));
@@ -9127,7 +8069,8 @@ package body Exp_Ch7 is
       --  their parents. In this case, [Deep_]Finalize can be found in the full
       --  view of the parent type.
 
-      if Is_Tagged_Type (Utyp)
+      if Present (Utyp)
+        and then Is_Tagged_Type (Utyp)
         and then Is_Derived_Type (Utyp)
         and then Is_Empty_Elmt_List (Primitive_Operations (Utyp))
         and then Is_Private_Type (Etype (Utyp))
@@ -9141,7 +8084,7 @@ package body Exp_Ch7 is
       --  When dealing with the completion of a private type, use the base type
       --  instead.
 
-      if Utyp /= Base_Type (Utyp) then
+      if Present (Utyp) and then Utyp /= Base_Type (Utyp) then
          pragma Assert (Present (Atyp) and then Is_Private_Type (Atyp));
 
          Utyp := Base_Type (Utyp);
@@ -9149,7 +8092,14 @@ package body Exp_Ch7 is
          Set_Assignment_OK (Ref);
       end if;
 
-      if Skip_Self then
+      --  The underlying type may not be present due to a missing full view. In
+      --  this case freezing did not take place and there is no [Deep_]Finalize
+      --  primitive to call.
+
+      if No (Utyp) then
+         return Empty;
+
+      elsif Skip_Self then
          if Has_Controlled_Component (Utyp) then
             if Is_Tagged_Type (Utyp) then
                Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
@@ -9229,7 +8179,7 @@ package body Exp_Ch7 is
          return
            Make_Call (Loc,
              Proc_Id   => Fin_Id,
-             Param     => New_Copy_Tree (Ref),
+             Param     => Ref,
              Skip_Self => Skip_Self);
       else
          return Empty;
@@ -9270,6 +8220,12 @@ package body Exp_Ch7 is
             and then Ekind (Root_Type (Typ)) = E_Record_Subtype
             and then not Comes_From_Source (Root_Type (Typ)))
       then
+         return;
+      end if;
+
+      --  Do not generate Finalize_Address routine for CodePeer
+
+      if CodePeer_Mode then
          return;
       end if;
 
@@ -9324,18 +8280,21 @@ package body Exp_Ch7 is
    ---------------------------------
 
    function Make_Finalize_Address_Stmts (Typ : Entity_Id) return List_Id is
-      Loc      : constant Source_Ptr := Sloc (Typ);
-      Ptr_Typ  : constant Entity_Id  := Make_Temporary (Loc, 'P');
-      Decls    : List_Id;
-      Desg_Typ : Entity_Id;
-      Obj_Expr : Node_Id;
+      Loc : constant Source_Ptr := Sloc (Typ);
+
+      Decls     : List_Id;
+      Desig_Typ : Entity_Id;
+      Fin_Block : Node_Id;
+      Fin_Call  : Node_Id;
+      Obj_Expr  : Node_Id;
+      Ptr_Typ   : Entity_Id;
 
    begin
       if Is_Array_Type (Typ) then
          if Is_Constrained (First_Subtype (Typ)) then
-            Desg_Typ := First_Subtype (Typ);
+            Desig_Typ := First_Subtype (Typ);
          else
-            Desg_Typ := Base_Type (Typ);
+            Desig_Typ := Base_Type (Typ);
          end if;
 
       --  Class-wide types of constrained root types
@@ -9367,18 +8326,20 @@ package body Exp_Ch7 is
                Parent_Typ := Underlying_Record_View (Parent_Typ);
             end if;
 
-            Desg_Typ := Class_Wide_Type (Underlying_Type (Parent_Typ));
+            Desig_Typ := Class_Wide_Type (Underlying_Type (Parent_Typ));
          end;
 
       --  General case
 
       else
-         Desg_Typ := Typ;
+         Desig_Typ := Typ;
       end if;
 
       --  Generate:
       --    type Ptr_Typ is access all Typ;
       --    for Ptr_Typ'Storage_Size use 0;
+
+      Ptr_Typ := Make_Temporary (Loc, 'P');
 
       Decls := New_List (
         Make_Full_Type_Declaration (Loc,
@@ -9386,7 +8347,7 @@ package body Exp_Ch7 is
           Type_Definition     =>
             Make_Access_To_Object_Definition (Loc,
               All_Present        => True,
-              Subtype_Indication => New_Occurrence_Of (Desg_Typ, Loc))),
+              Subtype_Indication => New_Occurrence_Of (Desig_Typ, Loc))),
 
         Make_Attribute_Definition_Clause (Loc,
           Name       => New_Occurrence_Of (Ptr_Typ, Loc),
@@ -9419,7 +8380,7 @@ package body Exp_Ch7 is
 
             --  Generate:
             --    Dnn : constant Storage_Offset :=
-            --            Desg_Typ'Descriptor_Size / Storage_Unit;
+            --            Desig_Typ'Descriptor_Size / Storage_Unit;
 
             Dope_Id := Make_Temporary (Loc, 'D');
 
@@ -9433,7 +8394,7 @@ package body Exp_Ch7 is
                   Make_Op_Divide (Loc,
                     Left_Opnd  =>
                       Make_Attribute_Reference (Loc,
-                        Prefix         => New_Occurrence_Of (Desg_Typ, Loc),
+                        Prefix         => New_Occurrence_Of (Desig_Typ, Loc),
                         Attribute_Name => Name_Descriptor_Size),
                     Right_Opnd =>
                       Make_Integer_Literal (Loc, System_Storage_Unit))));
@@ -9456,20 +8417,30 @@ package body Exp_Ch7 is
          end;
       end if;
 
-      --  Create the block and the finalization call
+      Fin_Call :=
+        Make_Final_Call (
+          Obj_Ref =>
+            Make_Explicit_Dereference (Loc,
+              Prefix => Unchecked_Convert_To (Ptr_Typ, Obj_Expr)),
+          Typ     => Desig_Typ);
 
-      return New_List (
-        Make_Block_Statement (Loc,
-          Declarations => Decls,
+      if Present (Fin_Call) then
+         Fin_Block :=
+           Make_Block_Statement (Loc,
+             Declarations               => Decls,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Fin_Call)));
 
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (
-                Make_Final_Call (
-                  Obj_Ref =>
-                    Make_Explicit_Dereference (Loc,
-                      Prefix => Unchecked_Convert_To (Ptr_Typ, Obj_Expr)),
-                  Typ => Desg_Typ)))));
+      --  Otherwise previous errors or a missing full view may prevent the
+      --  proper freezing of the designated type. If this is the case, there
+      --  is no [Deep_]Finalize primitive to call.
+
+      else
+         Fin_Block := Make_Null_Statement (Loc);
+      end if;
+
+      return New_List (Fin_Block);
    end Make_Finalize_Address_Stmts;
 
    -------------------------------------
@@ -9544,13 +8515,15 @@ package body Exp_Ch7 is
       Utyp    : Entity_Id;
 
    begin
+      Ref := Obj_Ref;
+
       --  Deal with the type and object reference. Depending on the context, an
       --  object reference may need several conversions.
 
       if Is_Concurrent_Type (Typ) then
          Is_Conc := True;
          Utyp    := Corresponding_Record_Type (Typ);
-         Ref     := Convert_Concurrent (Obj_Ref, Typ);
+         Ref     := Convert_Concurrent (Ref, Typ);
 
       elsif Is_Private_Type (Typ)
         and then Present (Full_View (Typ))
@@ -9558,17 +8531,15 @@ package body Exp_Ch7 is
       then
          Is_Conc := True;
          Utyp    := Corresponding_Record_Type (Underlying_Type (Typ));
-         Ref     := Convert_Concurrent (Obj_Ref, Underlying_Type (Typ));
+         Ref     := Convert_Concurrent (Ref, Underlying_Type (Typ));
 
       else
          Is_Conc := False;
          Utyp    := Typ;
-         Ref     := Obj_Ref;
       end if;
 
-      Set_Assignment_OK (Ref);
-
       Utyp := Underlying_Type (Base_Type (Utyp));
+      Set_Assignment_OK (Ref);
 
       --  Deal with untagged derivation of private views
 
@@ -9585,10 +8556,18 @@ package body Exp_Ch7 is
       --  completion of a private type. We need to access the base type and
       --  generate a conversion to it.
 
-      if Utyp /= Base_Type (Utyp) then
+      if Present (Utyp) and then Utyp /= Base_Type (Utyp) then
          pragma Assert (Is_Private_Type (Typ));
          Utyp := Base_Type (Utyp);
          Ref  := Unchecked_Convert_To (Utyp, Ref);
+      end if;
+
+      --  The underlying type may not be present due to a missing full view.
+      --  In this case freezing did not take place and there is no suitable
+      --  [Deep_]Initialize primitive to call.
+
+      if No (Utyp) then
+         return Empty;
       end if;
 
       --  Select the appropriate version of initialize
@@ -9598,6 +8577,18 @@ package body Exp_Ch7 is
       else
          Proc := Find_Prim_Op (Utyp, Name_Of (Initialize_Case));
          Check_Visibly_Controlled (Initialize_Case, Typ, Proc, Ref);
+      end if;
+
+      --  If initialization procedure for an array of controlled objects is
+      --  trivial, do not generate a useless call to it.
+
+      if (Is_Array_Type (Utyp) and then Is_Trivial_Subprogram (Proc))
+        or else
+          (not Comes_From_Source (Proc)
+            and then Present (Alias (Proc))
+            and then Is_Trivial_Subprogram (Alias (Proc)))
+      then
+         return Make_Null_Statement (Loc);
       end if;
 
       --  The object reference may need another conversion depending on the
@@ -9610,8 +8601,7 @@ package body Exp_Ch7 is
 
       return
         Make_Procedure_Call_Statement (Loc,
-          Name =>
-            New_Occurrence_Of (Proc, Loc),
+          Name                   => New_Occurrence_Of (Proc, Loc),
           Parameter_Associations => New_List (Ref));
    end Make_Init_Call;
 
@@ -9712,83 +8702,162 @@ package body Exp_Ch7 is
       Action : Node_Id;
       Par    : Node_Id) return Node_Id
    is
-      Decls  : constant List_Id := New_List;
-      Instrs : constant List_Id := New_List (Action);
+      function Manages_Sec_Stack (Id : Entity_Id) return Boolean;
+      --  Determine whether scoping entity Id manages the secondary stack
+
+      function Within_Loop_Statement (N : Node_Id) return Boolean;
+      --  Return True when N appears within a loop and no block is containing N
+
+      -----------------------
+      -- Manages_Sec_Stack --
+      -----------------------
+
+      function Manages_Sec_Stack (Id : Entity_Id) return Boolean is
+      begin
+         case Ekind (Id) is
+
+            --  An exception handler with a choice parameter utilizes a dummy
+            --  block to provide a declarative region. Such a block should not
+            --  be considered because it never manifests in the tree and can
+            --  never release the secondary stack.
+
+            when E_Block =>
+               return
+                 Uses_Sec_Stack (Id) and then not Is_Exception_Handler (Id);
+
+            when E_Entry
+               | E_Entry_Family
+               | E_Function
+               | E_Procedure
+            =>
+               return Uses_Sec_Stack (Id);
+
+            when others =>
+               return False;
+         end case;
+      end Manages_Sec_Stack;
+
+      ---------------------------
+      -- Within_Loop_Statement --
+      ---------------------------
+
+      function Within_Loop_Statement (N : Node_Id) return Boolean is
+         Par : Node_Id := Parent (N);
+
+      begin
+         while not (Nkind_In (Par, N_Handled_Sequence_Of_Statements,
+                                   N_Loop_Statement,
+                                   N_Package_Specification)
+                      or else Nkind (Par) in N_Proper_Body)
+         loop
+            pragma Assert (Present (Par));
+            Par := Parent (Par);
+         end loop;
+
+         return Nkind (Par) = N_Loop_Statement;
+      end Within_Loop_Statement;
+
+      --  Local variables
+
+      Decls    : constant List_Id   := New_List;
+      Instrs   : constant List_Id   := New_List (Action);
+      Trans_Id : constant Entity_Id := Current_Scope;
+
       Block  : Node_Id;
       Insert : Node_Id;
+      Scop   : Entity_Id;
+
+   --  Start of processing for Make_Transient_Block
 
    begin
-      --  Case where only secondary stack use is involved
+      --  Even though the transient block is tasked with managing the secondary
+      --  stack, the block may forgo this functionality depending on how the
+      --  secondary stack is managed by enclosing scopes.
 
-      if Uses_Sec_Stack (Current_Scope)
-        and then Nkind (Action) /= N_Simple_Return_Statement
-        and then Nkind (Par) /= N_Exception_Handler
-      then
-         declare
-            S : Entity_Id;
+      if Manages_Sec_Stack (Trans_Id) then
 
-         begin
-            S := Scope (Current_Scope);
-            loop
-               --  At the outer level, no need to release the sec stack
+         --  Determine whether an enclosing scope already manages the secondary
+         --  stack.
 
-               if S = Standard_Standard then
-                  Set_Uses_Sec_Stack (Current_Scope, False);
-                  exit;
+         Scop := Scope (Trans_Id);
+         while Present (Scop) loop
 
-               --  In a function, only release the sec stack if the function
-               --  does not return on the sec stack otherwise the result may
-               --  be lost. The caller is responsible for releasing.
+            --  It should not be possible to reach Standard without hitting one
+            --  of the other cases first unless Standard was manually pushed.
 
-               elsif Ekind (S) = E_Function then
-                  Set_Uses_Sec_Stack (Current_Scope, False);
+            if Scop = Standard_Standard then
+               exit;
 
-                  if not Requires_Transient_Scope (Etype (S)) then
-                     Set_Uses_Sec_Stack (S, True);
-                     Check_Restriction (No_Secondary_Stack, Action);
-                  end if;
+            --  The transient block is within a function which returns on the
+            --  secondary stack. Take a conservative approach and assume that
+            --  the value on the secondary stack is part of the result. Note
+            --  that it is not possible to detect this dependency without flow
+            --  analysis which the compiler does not have. Letting the object
+            --  live longer than the transient block will not leak any memory
+            --  because the caller will reclaim the total storage used by the
+            --  function.
 
-                  exit;
+            elsif Ekind (Scop) = E_Function
+              and then Sec_Stack_Needed_For_Return (Scop)
+            then
+               Set_Uses_Sec_Stack (Trans_Id, False);
+               exit;
 
-               --  In a loop or entry we should install a block encompassing
-               --  all the construct. For now just release right away.
+            --  The transient block must manage the secondary stack when the
+            --  block appears within a loop in order to reclaim the memory at
+            --  each iteration.
 
-               elsif Ekind_In (S, E_Entry, E_Loop) then
-                  exit;
+            elsif Ekind (Scop) = E_Loop then
+               exit;
 
-               --  In a procedure or a block, release the sec stack on exit
-               --  from the construct. Note that an exception handler with a
-               --  choice parameter requires a declarative region in the form
-               --  of a block. The block does not physically manifest in the
-               --  tree as it only serves as a scope. Do not consider such a
-               --  block because it will never release the sec stack.
+            --  Ditto when the block appears without a block that does not
+            --  manage the secondary stack and is located within a loop.
 
-               --  ??? Memory leak can be created by recursive calls
+            elsif Ekind (Scop) = E_Block
+              and then not Manages_Sec_Stack (Scop)
+              and then Present (Block_Node (Scop))
+              and then Within_Loop_Statement (Block_Node (Scop))
+            then
+               exit;
 
-               elsif Ekind (S) = E_Procedure
-                 or else (Ekind (S) = E_Block
-                           and then not Is_Exception_Handler (S))
-               then
-                  Set_Uses_Sec_Stack (Current_Scope, False);
-                  Set_Uses_Sec_Stack (S, True);
-                  Check_Restriction (No_Secondary_Stack, Action);
-                  exit;
+            --  The transient block does not need to manage the secondary stack
+            --  when there is an enclosing construct which already does that.
+            --  This optimization saves on SS_Mark and SS_Release calls but may
+            --  allow objects to live a little longer than required.
 
-               else
-                  S := Scope (S);
-               end if;
-            end loop;
-         end;
+            --  The transient block must manage the secondary stack when switch
+            --  -gnatd.s (strict management) is in effect.
+
+            elsif Manages_Sec_Stack (Scop) and then not Debug_Flag_Dot_S then
+               Set_Uses_Sec_Stack (Trans_Id, False);
+               exit;
+
+            --  Prevent the search from going too far because transient blocks
+            --  are bounded by packages and subprogram scopes.
+
+            elsif Ekind_In (Scop, E_Entry,
+                                  E_Entry_Family,
+                                  E_Function,
+                                  E_Package,
+                                  E_Procedure,
+                                  E_Subprogram_Body)
+            then
+               exit;
+            end if;
+
+            Scop := Scope (Scop);
+         end loop;
       end if;
 
       --  Create the transient block. Set the parent now since the block itself
-      --  is not part of the tree. The current scope is the E_Block entity
-      --  that has been pushed by Establish_Transient_Scope.
+      --  is not part of the tree. The current scope is the E_Block entity that
+      --  has been pushed by Establish_Transient_Scope.
 
-      pragma Assert (Ekind (Current_Scope) = E_Block);
+      pragma Assert (Ekind (Trans_Id) = E_Block);
+
       Block :=
         Make_Block_Statement (Loc,
-          Identifier                 => New_Occurrence_Of (Current_Scope, Loc),
+          Identifier                 => New_Occurrence_Of (Trans_Id, Loc),
           Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Statements => Instrs),
@@ -9803,8 +8872,9 @@ package body Exp_Ch7 is
         (Action, Clean => False, Manage_SS => False);
 
       Insert := Prev (Action);
+
       if Present (Insert) then
-         Freeze_All (First_Entity (Current_Scope), Insert);
+         Freeze_All (First_Entity (Trans_Id), Insert);
       end if;
 
       --  Transfer cleanup actions to the newly created block
@@ -10002,10 +9072,10 @@ package body Exp_Ch7 is
       --       Finalizer;
       --    end;
 
-      --  A special case is made for Boolean expressions so that the back-end
+      --  A special case is made for Boolean expressions so that the back end
       --  knows to generate a conditional branch instruction, if running with
-      --  -fpreserve-control-flow. This ensures that a control flow change
-      --  signalling the decision outcome occurs before the cleanup actions.
+      --  -fpreserve-control-flow. This ensures that a control-flow change
+      --  signaling the decision outcome occurs before the cleanup actions.
 
       if Opt.Suppress_Control_Flow_Optimizations
         and then Is_Boolean_Type (Typ)

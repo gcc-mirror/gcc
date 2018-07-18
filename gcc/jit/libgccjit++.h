@@ -1,5 +1,5 @@
 /* A C++ API for libgccjit, purely as inline wrapper functions.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -187,6 +187,8 @@ namespace gccjit
     rvalue new_rvalue (type pointer_type,
 		       void *value) const;
     rvalue new_rvalue (const std::string &value) const;
+    rvalue new_rvalue (type vector_type,
+		       std::vector<rvalue> elements) const;
 
     /* Generic unary operations...  */
     rvalue new_unary_op (enum gcc_jit_unary_op op,
@@ -330,7 +332,10 @@ namespace gccjit
     gcc_jit_type *get_inner_type () const;
 
     type get_pointer ();
+    type get_const ();
     type get_volatile ();
+    type get_aligned (size_t alignment_in_bytes);
+    type get_vector (size_t num_units);
 
     // Shortcuts for getting values of numeric types:
     rvalue zero ();
@@ -364,6 +369,8 @@ namespace gccjit
     lvalue new_local (type type_,
 		      const std::string &name,
 		      location loc = location ());
+
+    rvalue get_address (location loc = location ());
 
     /* A series of overloaded operator () with various numbers of arguments
        for a very terse way of creating a call to this function.  The call
@@ -892,6 +899,26 @@ context::new_rvalue (const std::string &value) const
 }
 
 inline rvalue
+context::new_rvalue (type vector_type,
+		     std::vector<rvalue> elements) const
+{
+  /* Treat std::vector as an array, relying on it not being resized: */
+  rvalue *as_array_of_wrappers = &elements[0];
+
+  /* Treat the array as being of the underlying pointers, relying on
+     the wrapper type being such a pointer internally.	*/
+  gcc_jit_rvalue **as_array_of_ptrs =
+    reinterpret_cast<gcc_jit_rvalue **> (as_array_of_wrappers);
+
+  return rvalue (
+    gcc_jit_context_new_rvalue_from_vector (m_inner_ctxt,
+					    NULL,
+					    vector_type.get_inner_type (),
+					    elements.size (),
+					    as_array_of_ptrs));
+}
+
+inline rvalue
 context::new_unary_op (enum gcc_jit_unary_op op,
 		       type result_type,
 		       rvalue a,
@@ -1286,9 +1313,29 @@ type::get_pointer ()
 }
 
 inline type
+type::get_const ()
+{
+  return type (gcc_jit_type_get_const (get_inner_type ()));
+}
+
+inline type
 type::get_volatile ()
 {
   return type (gcc_jit_type_get_volatile (get_inner_type ()));
+}
+
+inline type
+type::get_aligned (size_t alignment_in_bytes)
+{
+  return type (gcc_jit_type_get_aligned (get_inner_type (),
+					 alignment_in_bytes));
+}
+
+inline type
+type::get_vector (size_t num_units)
+{
+  return type (gcc_jit_type_get_vector (get_inner_type (),
+					num_units));
 }
 
 inline rvalue
@@ -1367,6 +1414,13 @@ function::new_local (type type_,
 					     loc.get_inner_location (),
 					     type_.get_inner_type (),
 					     name.c_str ()));
+}
+
+inline rvalue
+function::get_address (location loc)
+{
+  return rvalue (gcc_jit_function_get_address (get_inner_function (),
+					       loc.get_inner_location ()));
 }
 
 inline function

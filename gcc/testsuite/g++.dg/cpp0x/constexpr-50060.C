@@ -17,5 +17,5 @@ struct T
   int y;
 };
 
-static_assert (S (6.5).x == 0.8125, "");	// { dg-error "non-constant condition for static assertion|in constexpr expansion" "" { target { ! c++14 } } }
+static_assert (S (6.5).x == 0.8125, "");	// { dg-error "non-constant condition for static assertion|in .constexpr. expansion" "" { target { ! c++14 } } }
 static_assert (T (6.5).x == 0.8125, "");	// { dg-error "non-constant condition for static assertion|called in a constant expression" "" { target { ! c++14 } } }

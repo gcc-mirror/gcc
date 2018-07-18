@@ -66,6 +66,17 @@ struct String;
 
 struct __go_type_descriptor
 {
+  /* The size in bytes of a value of this type.  Note that all types
+     in Go have a fixed size.  */
+  uintptr_t __size;
+
+  /* The size of the memory prefix of a value of this type that holds
+     all pointers.  */
+  uintptr_t __ptrdata;
+
+  /* The type's hash code.  */
+  uint32_t __hash;
+
   /* The type code for this type, one of the type kind values above.
      This is used by unsafe.Reflect and unsafe.Typeof to determine the
      type descriptor to return for this type itself.  It is also used
@@ -78,13 +89,6 @@ struct __go_type_descriptor
   /* The alignment in bytes of a struct field with this type.  */
   unsigned char __field_align;
 
-  /* The size in bytes of a value of this type.  Note that all types
-     in Go have a fixed size.  */
-  uintptr_t __size;
-
-  /* The type's hash code.  */
-  uint32_t __hash;
-
   /* This function takes a pointer to a value of this type, and the
      size of this type, and returns a hash code.  We pass the size
      explicitly becaues it means that we can share a single instance
@@ -96,7 +100,7 @@ struct __go_type_descriptor
   const FuncVal *__equalfn;
 
   /* The garbage collection data. */
-  const uintptr *__gc;
+  const byte *__gcdata;
 
   /* A string describing this type.  This is only used for
      debugging.  */
@@ -361,26 +365,5 @@ __go_call_equalfn (const FuncVal *equalfn, const void *p1, const void *p2,
 extern _Bool
 __go_type_descriptors_equal(const struct __go_type_descriptor*,
 			    const struct __go_type_descriptor*);
-
-extern uintptr_t __go_type_hash_identity (const void *, uintptr_t, uintptr_t);
-extern const FuncVal __go_type_hash_identity_descriptor;
-extern _Bool __go_type_equal_identity (const void *, const void *, uintptr_t);
-extern const FuncVal __go_type_equal_identity_descriptor;
-extern uintptr_t __go_type_hash_string (const void *, uintptr_t, uintptr_t);
-extern const FuncVal __go_type_hash_string_descriptor;
-extern _Bool __go_type_equal_string (const void *, const void *, uintptr_t);
-extern const FuncVal __go_type_equal_string_descriptor;
-extern uintptr_t __go_type_hash_float (const void *, uintptr_t, uintptr_t);
-extern const FuncVal __go_type_hash_float_descriptor;
-extern _Bool __go_type_equal_float (const void *, const void *, uintptr_t);
-extern const FuncVal __go_type_equal_float_descriptor;
-extern uintptr_t __go_type_hash_complex (const void *, uintptr_t, uintptr_t);
-extern const FuncVal __go_type_hash_complex_descriptor;
-extern _Bool __go_type_equal_complex (const void *, const void *, uintptr_t);
-extern const FuncVal __go_type_equal_complex_descriptor;
-extern uintptr_t __go_type_hash_interface (const void *, uintptr_t, uintptr_t);
-extern const FuncVal __go_type_hash_interface_descriptor;
-extern _Bool __go_type_equal_interface (const void *, const void *, uintptr_t);
-extern const FuncVal __go_type_equal_interface_descriptor;
 
 #endif /* !defined(LIBGO_GO_TYPE_H) */

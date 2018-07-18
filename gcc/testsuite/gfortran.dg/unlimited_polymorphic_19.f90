@@ -49,5 +49,3 @@ CONTAINS
     END SELECT; END SELECT
   END SUBROUTINE copy_int 
 END PROGRAM main
-
-! { dg-final { cleanup-modules "m" } }

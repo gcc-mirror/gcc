@@ -1,4 +1,4 @@
-/* { dg-skip-if "powerpc and integer vectorization only" { ! { powerpc*-*-* && vect_int } } { "*" } { "" }  } */
+/* { dg-skip-if "powerpc and integer vectorization only" { ! { powerpc*-*-* && vect_int } }  } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

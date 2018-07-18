@@ -1,6 +1,8 @@
 /* PR middle-end/71408 */
 /* { dg-do run } */
 /* { dg-options "-Os" } */
+
+#if __SIZEOF_INT__ >= 4
 unsigned a, b;
 
 struct S0
@@ -8,6 +10,15 @@ struct S0
   int f1:18;
   unsigned f3:4;
 };
+#else
+__UINT32_TYPE__ a, b;
+
+struct S0
+{
+  __INT32_TYPE__ f1:18;
+  unsigned f3:4;
+};
+#endif
 
 void fn1 ()
 {

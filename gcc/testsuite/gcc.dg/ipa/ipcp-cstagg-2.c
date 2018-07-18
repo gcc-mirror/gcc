@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-ipa-cp-details" } */
+/* { dg-options "-O3 -fdump-ipa-cp-details -fno-ipa-sra" } */
 
 typedef struct S
 {

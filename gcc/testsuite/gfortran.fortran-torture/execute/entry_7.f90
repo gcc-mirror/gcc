@@ -90,17 +90,17 @@
 	end function
 	end interface
 	double precision d
-	if (f1 (6) .ne. 21) call abort ()
-	if (e1 (7) .ne. 49) call abort ()
-	if (f2 () .ne. 45) call abort ()
-	if (e2 () .ne. 45) call abort ()
-	if (f3 () .ne. 47) call abort ()
-	if (e3 () .ne. 47) call abort ()
+	if (f1 (6) .ne. 21) STOP 1
+	if (e1 (7) .ne. 49) STOP 2
+	if (f2 () .ne. 45) STOP 3
+	if (e2 () .ne. 45) STOP 4
+	if (f3 () .ne. 47) STOP 5
+	if (e3 () .ne. 47) STOP 6
 	d = 17
-	if (f4 (d) .ne. 32) call abort ()
-	if (e4 (d) .ne. 59) call abort ()
-	if (f5 () .ne. 45) call abort ()
-	if (e5 () .ne. 45) call abort ()
-	if (f6 () .ne. 47) call abort ()
-	if (e6 () .ne. 47) call abort ()
+	if (f4 (d) .ne. 32) STOP 7
+	if (e4 (d) .ne. 59) STOP 8
+	if (f5 () .ne. 45) STOP 9
+	if (e5 () .ne. 45) STOP 10
+	if (f6 () .ne. 47) STOP 11
+	if (e6 () .ne. 47) STOP 12
 	end

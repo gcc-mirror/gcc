@@ -1,5 +1,5 @@
 /* Implementation of the EOSHIFT intrinsic
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -24,8 +24,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 
 
@@ -87,12 +85,10 @@ eoshift3 (gfc_array_char * const restrict ret,
 
   if (ret->base_addr == NULL)
     {
-      int i;
-
       ret->base_addr = xmallocarray (arraysize, size);
       ret->offset = 0;
-      ret->dtype = array->dtype;
-      for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
+      GFC_DTYPE_COPY(ret,array);
+      for (index_type i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
 	  index_type ub, str;
 
@@ -200,12 +196,24 @@ eoshift3 (gfc_array_char * const restrict ret,
           src = sptr;
           dest = &rptr[delta * roffset];
         }
-      for (n = 0; n < len - delta; n++)
-        {
-          memcpy (dest, src, size);
-          dest += roffset;
-          src += soffset;
-        }
+
+      /* If the elements are contiguous, perform a single block move.  */
+      if (soffset == size && roffset == size)
+	{
+	  size_t chunk = size * (len - delta);
+	  memcpy (dest, src, chunk);
+	  dest += chunk;
+	}
+      else
+	{
+	  for (n = 0; n < len - delta; n++)
+	    {
+	      memcpy (dest, src, size);
+	      dest += roffset;
+	      src += soffset;
+	    }
+	}
+
       if (sh < 0)
         dest = rptr;
       n = delta;

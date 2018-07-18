@@ -6,5 +6,5 @@
 
 int asm;	/* { dg-error "before .asm." } */
 int inline;	/* { dg-warning "empty declaration" } */
-/* { dg-error "empty declaration" "" { target *-*-* } 8 } */
+/* { dg-error "empty declaration" "" { target *-*-* } .-1 } */
 int typeof;	/* { dg-error "before .typeof." } */

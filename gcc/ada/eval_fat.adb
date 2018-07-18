@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,6 +25,7 @@
 
 with Einfo;    use Einfo;
 with Errout;   use Errout;
+with Opt;      use Opt;
 with Sem_Util; use Sem_Util;
 
 package body Eval_Fat is
@@ -373,7 +374,7 @@ package body Eval_Fat is
                   Fraction := Fraction + 1;
                end if;
 
-            when Round   =>
+            when Round =>
 
                --  Do not round to even as is done with IEEE arithmetic, but
                --  instead round away from zero when the result is exactly
@@ -390,7 +391,7 @@ package body Eval_Fat is
                   Fraction := Fraction + 1;
                end if;
 
-            when Floor   =>
+            when Floor =>
                if N > Uint_0 and then UR_Is_Negative (X) then
                   Fraction := Fraction + 1;
                end if;
@@ -502,18 +503,29 @@ package body Eval_Fat is
 
       if X_Exp < Emin then
          declare
-            Emin_Den : constant UI := Machine_Emin_Value (RT)
-                                        - Machine_Mantissa_Value (RT) + Uint_1;
+            Emin_Den : constant UI := Machine_Emin_Value (RT) -
+                                        Machine_Mantissa_Value (RT) + Uint_1;
+
          begin
+            --  Do not issue warnings about underflows in GNATprove mode,
+            --  as calling Machine as part of interval checking may lead
+            --  to spurious warnings.
+
             if X_Exp < Emin_Den or not Has_Denormals (RT) then
                if Has_Signed_Zeros (RT) and then UR_Is_Negative (X) then
-                  Error_Msg_N
-                    ("floating-point value underflows to -0.0??", Enode);
+                  if not GNATprove_Mode then
+                     Error_Msg_N
+                       ("floating-point value underflows to -0.0??", Enode);
+                  end if;
+
                   return Ureal_M_0;
 
                else
-                  Error_Msg_N
-                    ("floating-point value underflows to 0.0??", Enode);
+                  if not GNATprove_Mode then
+                     Error_Msg_N
+                       ("floating-point value underflows to 0.0??", Enode);
+                  end if;
+
                   return Ureal_0;
                end if;
 
@@ -543,10 +555,16 @@ package body Eval_Fat is
                      UR_Is_Negative (X));
 
                begin
+                  --  Do not issue warnings about loss of precision in
+                  --  GNATprove mode, as calling Machine as part of interval
+                  --  checking may lead to spurious warnings.
+
                   if X_Frac_Denorm /= X_Frac then
-                     Error_Msg_N
-                       ("gradual underflow causes loss of precision??",
-                        Enode);
+                     if not GNATprove_Mode then
+                        Error_Msg_N
+                          ("gradual underflow causes loss of precision??",
+                           Enode);
+                     end if;
                      X_Frac := X_Frac_Denorm;
                   end if;
                end;

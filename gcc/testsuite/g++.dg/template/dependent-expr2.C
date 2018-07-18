@@ -18,6 +18,6 @@ struct B
 {
   bool bar(A& a)
   {
-    return a.foo == 0; // { dg-error "" "" }
+    return a.foo == 0; // { dg-error "" }
   }
 };

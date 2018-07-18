@@ -1,5 +1,5 @@
 /* Header file for any pass which requires SSA routines.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -50,6 +50,8 @@ extern void delete_tree_ssa (function *);
 extern bool tree_ssa_useless_type_conversion (tree);
 extern tree tree_ssa_strip_useless_type_conversions (tree);
 
+
+extern bool ssa_defined_default_def_p (tree t);
 extern bool ssa_undefined_value_p (tree, bool = true);
 extern bool gimple_uses_undefined_value_p (gimple *);
 extern void execute_update_addresses_taken (void);

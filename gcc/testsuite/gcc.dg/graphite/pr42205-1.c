@@ -1,4 +1,5 @@
-/* { dg-options "-O1 -ffast-math -floop-interchange" } */
+/* { dg-require-effective-target int32plus } */
+/* { dg-options "-O1 -ffast-math -floop-nest-optimize" } */
 
 int adler32(int adler, char *buf, int n)
 {

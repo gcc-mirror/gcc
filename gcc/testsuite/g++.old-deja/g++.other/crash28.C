@@ -27,9 +27,16 @@ class foo
   bool b;
 public:
   foo();
-  void x () throw(bar);
+  void x ()
+#if __cplusplus <= 201402L
+  throw(bar)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+  ;
 };
-void foo::x() throw(bar)
+void foo::x()
+#if __cplusplus <= 201402L
+throw(bar)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
 {
   if (!b) throw bar (static_cast<::N::X*>(this));	// { dg-error "lambda expressions|expected|invalid" } parse error
 }

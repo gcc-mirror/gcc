@@ -18,41 +18,41 @@ real :: g(4,1) = RESHAPE ([real :: 0, 0, 4, -1], [4,1])
 ! Check compile-time version
 
 if (abs (NORM2 ([real :: 1, 2, huge(3.0)])   - huge(3.0)) &
-    > epsilon(0.0)*huge(3.0)) call abort()
+    > epsilon(0.0)*huge(3.0)) STOP 1
 
 if (abs (SNORM2([real :: 1, 2, huge(3.0)],3) - huge(3.0)) &
-    > epsilon(0.0)*huge(3.0)) call abort()
+    > epsilon(0.0)*huge(3.0)) STOP 2
 
 if (abs (SNORM2([real :: 1, 2, 3],3) - NORM2([real :: 1, 2, 3])) &
-    > epsilon(0.0)*SNORM2([real :: 1, 2, 3],3)) call abort()
+    > epsilon(0.0)*SNORM2([real :: 1, 2, 3],3)) STOP 3
 
-if (NORM2([real :: ]) /= 0.0) call abort()
-if (abs (NORM2([real :: 0, 0, 3, 0]) - 3.0) > epsilon(0.0)) call abort()
+if (NORM2([real :: ]) /= 0.0) STOP 4
+if (abs (NORM2([real :: 0, 0, 3, 0]) - 3.0) > epsilon(0.0)) STOP 5
 
 ! Check TREE version
 
 if (abs (NORM2 (a)   - huge(3.0)) &
-    > epsilon(0.0)*huge(3.0)) call abort()
+    > epsilon(0.0)*huge(3.0)) STOP 6
 
 if (abs (SNORM2(b,3) - NORM2(b)) &
-    > epsilon(0.0)*SNORM2(b,3)) call abort()
+    > epsilon(0.0)*SNORM2(b,3)) STOP 7
 
 if (abs (SNORM2(c,4) - NORM2(c)) &
-    > epsilon(0.0)*SNORM2(c,4)) call abort()
+    > epsilon(0.0)*SNORM2(c,4)) STOP 8
 
 if (ANY (abs (abs(d(:,1)) - NORM2(d, 2)) &
-    > epsilon(0.0))) call abort()
+    > epsilon(0.0))) STOP 9
 
 ! Check libgfortran version
 
 if (ANY (abs (SNORM2(d,4) - NORM2(d, 1)) &
-    > epsilon(0.0)*SNORM2(d,4))) call abort()
+    > epsilon(0.0)*SNORM2(d,4))) STOP 10
 
 if (abs (SNORM2(f,4) - NORM2(f, 1)) &
-    > epsilon(0.0)*SNORM2(d,4)) call abort()
+    > epsilon(0.0)*SNORM2(d,4)) STOP 11
 
 if (ANY (abs (abs(g(:,1)) - NORM2(g, 2)) &
-    > epsilon(0.0))) call abort()
+    > epsilon(0.0))) STOP 12
 
 contains
    ! NORM2 algorithm based on BLAS, cf.

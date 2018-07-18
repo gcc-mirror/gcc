@@ -15,12 +15,12 @@
 
   if (DepEcoSystem%name /= "Gridxxxx" &
       .or. DepEcoSystem%name(9:9) /= ' ' &
-      .or. DepEcoSystem%name(10:10) /= ' ') call abort()
+      .or. DepEcoSystem%name(10:10) /= ' ') STOP 1
   DepEcoSystem%name = 'ABCDEFGHIJ'
   call Init_EcoSystems()
   if (DepEcoSystem%name /= "StringYY" &
       .or. DepEcoSystem%name(9:9) /= ' ' &
-      .or. DepEcoSystem%name(10:10) /= ' ') call abort()
+      .or. DepEcoSystem%name(10:10) /= ' ') STOP 2
 
 contains
   subroutine Init_EcoSystems()

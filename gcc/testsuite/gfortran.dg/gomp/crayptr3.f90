@@ -16,7 +16,7 @@
   a = 1
 !$omp end parallel
 
-!$omp parallel default (none)	! { dg-error "enclosing parallel" }
-  a = 1		! { dg-error "'ip' not specified in enclosing parallel" }
+!$omp parallel default (none)	! { dg-error "enclosing 'parallel'" }
+  a = 1		! { dg-error "'ip' not specified in enclosing 'parallel'" }
 !$omp end parallel
 end

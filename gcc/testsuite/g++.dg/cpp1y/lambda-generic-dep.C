@@ -1,5 +1,6 @@
 // Generic lambda type dependence test part from N3690 5.1.2.12
 // { dg-do compile { target c++14 } }
+// { dg-options "-pedantic" }
 
 void f(int, const int (&)[2] = {}) { } // #1
 void f(const int&, const int (&)[1]) { } // #2
@@ -26,7 +27,7 @@ struct S {
 
 int main()
 {
-  auto f = [] <typename T> (T const& s) mutable {
+  auto f = [] <typename T> (T const& s) mutable {	// { dg-warning "lambda templates are only available with" "" { target c++17_down } }
     typename T::N x;
     return x.test ();
   };

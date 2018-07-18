@@ -15,4 +15,5 @@ test_any_equal (vector unsigned long long *arg1_p,
   return vec_any_eq (arg_1, arg_2);
 }
 
-/* { dg-final { scan-assembler "vcmpnew." } } */
+/* { dg-final { scan-assembler "vcmpequd." } } */
+/* { dg-final { scan-assembler "rlwinm r?\[0-9\]+,r?\[0-9\]+,27,1" } } */

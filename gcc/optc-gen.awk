@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2016 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2018 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -326,12 +326,17 @@ for (i = 0; i < n_opts; i++) {
 			alias_data = "NULL, NULL, OPT_SPECIAL_ignore"
 		else
 			alias_data = "NULL, NULL, N_OPTS"
+		if (flag_set_p("Enum.*", flags[i])) {
+			if (!flag_set_p("RejectNegative", flags[i]) \
+			    && opts[i] ~ "^[Wfgm]")
+				print "#error Enum allowing negative form"
+		}
 	} else {
 		alias_opt = nth_arg(0, alias_arg)
 		alias_posarg = nth_arg(1, alias_arg)
 		alias_negarg = nth_arg(2, alias_arg)
 
-		if (var_ref(opts[i], flags[i]) != "-1")
+		if (var_ref(opts[i], flags[i]) != "(unsigned short) -1")
 			print "#error Alias setting variable"
 
 		if (alias_posarg != "" && alias_negarg == "") {
@@ -365,7 +370,7 @@ for (i = 0; i < n_opts; i++) {
 		if (flag_set_p("RejectNegative", flags[i]))
 			idx = -1;
 		else {
-			if (opts[i] ~ "^[Wfm]")
+			if (opts[i] ~ "^[Wfgm]")
 				idx = indices[opts[i]];
 			else
 				idx = -1;
@@ -394,8 +399,9 @@ for (i = 0; i < n_opts; i++) {
 		printf("    %s,\n" \
 		       "    0, %s,\n",
 		       cl_flags, cl_bit_fields)
-	printf("    %s, %s }%s\n", var_ref(opts[i], flags[i]),
-	       var_set(flags[i]), comma)
+	printf("    %s, %s, %s }%s\n", var_ref(opts[i], flags[i]),
+	       var_set(flags[i]), integer_range_info(opt_args("IntegerRange", flags[i]),
+		    opt_args("Init", flags[i]), opts[i]), comma)
 }
 
 print "};"
@@ -439,7 +445,7 @@ for (i = 0; i < n_enabledby; i++) {
             print "      if (" condition ")"
             print "        handle_generated_option (opts, opts_set,"
             print "                                 " opt_enum(thisenable[j]) ", NULL, " value ","
-            print "                                 lang_mask, kind, loc, handlers, dc);"
+            print "                                 lang_mask, kind, loc, handlers, true, dc);"
         } else {
             print "#error " thisenable[j] " does not have a Var() flag"
         }
@@ -492,7 +498,7 @@ for (i = 0; i < n_langs; i++) {
                 print "      if (!opts_set->x_" opt_var_name ")"
                 print "        handle_generated_option (opts, opts_set,"
                 print "                                 " opt_enum(thisenable_opt) ", NULL, " value ","
-                print "                                 lang_mask, kind, loc, handlers, dc);"
+                print "                                 lang_mask, kind, loc, handlers, true, dc);"
             } else {
                 print "#error " thisenable_opt " does not have a Var() flag"
             }

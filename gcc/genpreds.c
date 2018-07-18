@@ -2,7 +2,7 @@
    - prototype declarations for operand predicates (tm-preds.h)
    - function definitions of operand predicates, if defined new-style
      (insn-preds.c)
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1205,7 +1205,7 @@ write_tm_constrs_h (void)
   printf ("\
 /* Generated automatically by the program '%s'\n\
    from the machine description file '%s'.  */\n\n", progname,
-	  rtx_reader_ptr->get_top_level_filename ());
+	  md_reader_ptr->get_top_level_filename ());
 
   puts ("\
 #ifndef GCC_TM_CONSTRS_H\n\
@@ -1405,7 +1405,7 @@ write_tm_preds_h (void)
   printf ("\
 /* Generated automatically by the program '%s'\n\
    from the machine description file '%s'.  */\n\n", progname,
-	  rtx_reader_ptr->get_top_level_filename ());
+	  md_reader_ptr->get_top_level_filename ());
 
   puts ("\
 #ifndef GCC_TM_PREDS_H\n\
@@ -1555,9 +1555,10 @@ write_insn_preds_c (void)
   printf ("\
 /* Generated automatically by the program '%s'\n\
    from the machine description file '%s'.  */\n\n", progname,
-	  rtx_reader_ptr->get_top_level_filename ());
+	  md_reader_ptr->get_top_level_filename ());
 
   puts ("\
+#define IN_TARGET_CODE 1\n\
 #include \"config.h\"\n\
 #include \"system.h\"\n\
 #include \"coretypes.h\"\n\
@@ -1581,7 +1582,8 @@ write_insn_preds_c (void)
 #include \"reload.h\"\n\
 #include \"regs.h\"\n\
 #include \"emit-rtl.h\"\n\
-#include \"tm-constrs.h\"\n");
+#include \"tm-constrs.h\"\n\
+#include \"target.h\"\n");
 
   FOR_ALL_PREDICATES (p)
     write_one_predicate_function (p);

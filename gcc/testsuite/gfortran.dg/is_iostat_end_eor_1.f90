@@ -4,6 +4,6 @@
 program test
   use iso_fortran_env
   implicit none
-  if ((.not. is_iostat_end(IOSTAT_END)) .or. is_iostat_end(0)) call abort()
-  if ((.not. is_iostat_eor(IOSTAT_EOR)) .or. is_iostat_end(0)) call abort()
+  if ((.not. is_iostat_end(IOSTAT_END)) .or. is_iostat_end(0)) STOP 1
+  if ((.not. is_iostat_eor(IOSTAT_EOR)) .or. is_iostat_end(0)) STOP 2
 end program test

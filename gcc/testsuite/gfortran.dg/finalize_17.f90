@@ -15,9 +15,9 @@ module m
 contains
   impure elemental subroutine finit(x)
     type(t), intent(in) :: x
-    if (called_final == -1) call abort ()
+    if (called_final == -1) STOP 1
     called_final = called_final + 1 
-    if (called_final /= x%i) call abort ()
+    if (called_final /= x%i) STOP 2
   end subroutine finit
 end module m
 
@@ -33,7 +33,7 @@ end module m
     x3%i = -6
     called_final = 0
   end block
-  if (called_final /= 3) call abort
+  if (called_final /= 3) STOP 1
   called_final = -1
   y2%i = [-7, -8]
   x2%i = -9

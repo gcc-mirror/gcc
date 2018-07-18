@@ -8,6 +8,6 @@
   j4 = mclock()
   j8 = mclock8()
 
-  if (i4 > j4 .or. i8 > j8 .or. i4 > i8 .or. j4 > j8) call abort
+  if (i4 > j4 .or. i8 > j8 .or. i4 > i8 .or. j4 > j8) STOP 1
 
   end

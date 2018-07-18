@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fcoarray=lib -lcaf_single" }
+! { dg-additional-options "-latomic" { target libatomic_available } }
 
 program check_caf_send_by_ref
 
@@ -19,11 +20,11 @@ program check_caf_send_by_ref
   obj[np]%scal = 42
 
   ! Check the token for the scalar is set.
-  if (obj[np]%scal /= 42) call abort()
+  if (obj[np]%scal /= 42) STOP 1
 
   ! Now the same for arrays.
   obj[np]%array = [(i * np + me, i = 1, 15)]
-  if (any(obj[np]%array /= [(i * np + me, i = 1, 15)])) call abort()
+  if (any(obj[np]%array /= [(i * np + me, i = 1, 15)])) STOP 2
 
 end program check_caf_send_by_ref
 

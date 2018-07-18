@@ -9,5 +9,5 @@ void
 foo (void *p)
 {
   printf ("%d", p); /* { dg-bogus "va_list" "wrong type in format warning" } */
-  /* { dg-warning "format" "format error" { target *-*-* } 11 } */
+  /* { dg-warning "format" "format error" { target *-*-* } .-1 } */
 }

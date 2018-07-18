@@ -5,9 +5,6 @@
    license that can be found in the LICENSE file.  */
 
 #include "runtime.h"
-#include "go-panic.h"
-#include "arch.h"
-#include "malloc.h"
 
 String
 __go_string_slice (String s, intgo start, intgo end)
@@ -20,7 +17,14 @@ __go_string_slice (String s, intgo start, intgo end)
     end = len;
   if (start > len || end < start || end > len)
     runtime_panicstring ("string index out of bounds");
-  ret.str = s.str + start;
   ret.len = end - start;
+  // If the length of the new string is zero, the str field doesn't
+  // matter, so just set it to nil.  This avoids the problem of
+  // s.str + start pointing just past the end of the string,
+  // which may keep the next memory block alive unnecessarily.
+  if (ret.len == 0)
+    ret.str = nil;
+  else
+    ret.str = s.str + start;
   return ret;
 }

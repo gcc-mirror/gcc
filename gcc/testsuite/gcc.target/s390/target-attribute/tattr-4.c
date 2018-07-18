@@ -24,8 +24,7 @@ void a0(void)
 #ifdef __VEC__
 #error __VEC__ is defined
 #endif
-  vec_load_bndry ((const signed char *)0, 64); /* { dg-error "is not supported without -mvx" } */
-  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "is not supported without -mvx" } */
+  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "requires -mvx" } */
 }
 
 void d(void)
@@ -33,6 +32,5 @@ void d(void)
 #ifdef __VEC__
 #error __VEC__ is defined
 #endif
-  vec_load_bndry ((const signed char *)0, 64); /* { dg-error "is not supported without -mvx" } */
-  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "is not supported without -mvx" } */
+  __builtin_s390_vll ((unsigned int)0, (const void *)8); /* { dg-error "requires -mvx" } */
 }

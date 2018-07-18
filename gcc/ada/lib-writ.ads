@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -192,8 +192,8 @@ package Lib.Writ is
    --              the units in this file, where x is the first character
    --              (upper case) of the policy name (e.g. 'C' for Concurrent).
 
-   --         FX  Units in this file use front-end exceptions, with explicit
-   --             handlers to trigger AT-END actions on exception paths.
+   --         FX   Units in this file use front-end exceptions, with explicit
+   --              handlers to trigger AT-END actions on exception paths.
 
    --         GP   Set if this compilation was done in GNATprove mode, either
    --              from direct use of GNATprove, or from use of -gnatdF.
@@ -240,12 +240,12 @@ package Lib.Writ is
    --              (upper case) of the corresponding policy name (e.g. 'F'
    --              for FIFO_Within_Priorities).
 
-   --         UA  Unreserve_All_Interrupts pragma was processed in one or
-   --             more units in this file
+   --         UA   Unreserve_All_Interrupts pragma was processed in one or
+   --              more units in this file
 
-   --         ZX  Units in this file use zero-cost exceptions and have
-   --             generated exception tables. If ZX is not present, the
-   --             longjmp/setjmp exception scheme is in use.
+   --         ZX   Units in this file use zero-cost exceptions and have
+   --              generated exception tables. If ZX is not present, the
+   --              longjmp/setjmp exception scheme is in use.
 
    --      Note that language defined units never output policy (Lx, Tx, Qx)
    --      parameters. Language defined units must correctly handle all
@@ -570,22 +570,22 @@ package Lib.Writ is
    --             code is required. Set if N_Compilation_Unit node has flag
    --             Has_No_Elaboration_Code set.
 
-   --         OL   The units in this file are compiled with a local pragma
-   --              Optimize_Alignment, so no consistency requirement applies
-   --              to these units. All internal units have this status since
-   --              they have an automatic default of Optimize_Alignment (Off).
+   --         OL  The units in this file are compiled with a local pragma
+   --             Optimize_Alignment, so no consistency requirement applies
+   --             to these units. All internal units have this status since
+   --             they have an automatic default of Optimize_Alignment (Off).
    --
-   --         OO   Optimize_Alignment (Off) is the default setting for all
-   --              units in this file. All files in the partition that specify
-   --              a default must specify the same default.
+   --         OO  Optimize_Alignment (Off) is the default setting for all
+   --             units in this file. All files in the partition that specify
+   --             a default must specify the same default.
 
-   --         OS   Optimize_Alignment (Space) is the default setting for all
-   --              units in this file. All files in the partition that specify
-   --              a default must specify the same default.
+   --         OS  Optimize_Alignment (Space) is the default setting for all
+   --             units in this file. All files in the partition that specify
+   --             a default must specify the same default.
 
-   --         OT   Optimize_Alignment (Time) is the default setting for all
-   --              units in this file. All files in the partition that specify
-   --              a default must specify the same default.
+   --         OT  Optimize_Alignment (Time) is the default setting for all
+   --             units in this file. All files in the partition that specify
+   --             a default must specify the same default.
 
    --         PF  The unit has a library-level (package) finalizer
 
@@ -670,14 +670,33 @@ package Lib.Writ is
    --      binder do the consistency check, but not include the unit in the
    --      partition closure (unless it is properly With'ed somewhere).
 
+   --  --------------------
+   --  -- T  Task Stacks --
+   --  --------------------
+
+   --  Following the W lines (if any, or the U line if not), is an optional
+   --  line that identifies the number of default-sized primary and secondary
+   --  stacks that the binder needs to create for the tasks declared within the
+   --  unit. For each compilation unit, a line is present in the form:
+
+   --    T primary-stack-quantity secondary-stack-quantity
+
+   --     The first parameter of T defines the number of task objects declared
+   --     in the unit that have no Storage_Size specified. The second parameter
+   --     defines the number of task objects declared in the unit that have no
+   --     Secondary_Stack_Size specified. These values are non-zero only if
+   --     the restrictions No_Implicit_Heap_Allocations or
+   --     No_Implicit_Task_Allocations are active.
+
    --  -----------------------
    --  -- L  Linker_Options --
    --  -----------------------
 
-   --  Following the W lines (if any, or the U line if not), are an optional
-   --  series of lines that indicates the usage of the pragma Linker_Options in
-   --  the associated unit. For each appearance of a pragma Linker_Options (or
-   --  Link_With) in the unit, a line is present with the form:
+   --  Following the T and W lines (if any, or the U line if not), are
+   --  an optional series of lines that indicates the usage of the pragma
+   --  Linker_Options in the associated unit. For each appearance of a pragma
+   --  Linker_Options (or Link_With) in the unit, a line is present with the
+   --  form:
 
    --    L "string"
 

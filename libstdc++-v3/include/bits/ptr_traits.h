@@ -1,6 +1,6 @@
 // Pointer Traits -*- C++ -*-
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,7 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Given Template<T, ...> and U return Template<U, ...>, otherwise invalid.
   template<typename _Tp, typename _Up>
     struct __replace_first_arg
-    { using type = __undefined; };
+    { };
 
   template<template<typename, typename...> class _Template, typename _Up,
            typename _Tp, typename... _Types>
@@ -84,8 +84,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Tp>
 	using __difference_type = typename _Tp::difference_type;
 
+      template<typename _Tp, typename _Up, typename = void>
+	struct __rebind : __replace_first_arg<_Tp, _Up> { };
+
       template<typename _Tp, typename _Up>
-	using __rebind = typename _Tp::template rebind<_Up>;
+	struct __rebind<_Tp, _Up, __void_t<typename _Tp::template rebind<_Up>>>
+	{ using type = typename _Tp::template rebind<_Up>; };
 
     public:
       /// The pointer type.
@@ -93,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// The type pointed to.
       using element_type
-	= __detected_or_t_<__get_first_arg_t, __element_type, _Ptr>;
+	= __detected_or_t<__get_first_arg_t<_Ptr>, __element_type, _Ptr>;
 
       /// The type used to represent the difference between two pointers.
       using difference_type
@@ -101,8 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// A pointer to a different type.
       template<typename _Up>
-        using rebind
-	  = __detected_or_t_<__replace_first_arg_t, __rebind, _Ptr, _Up>;
+        using rebind = typename __rebind<_Ptr, _Up>::type;
 
       static _Ptr
       pointer_to(__make_not_void<element_type>& __e)
@@ -110,8 +113,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static_assert(!is_same<element_type, __undefined>::value,
 	  "pointer type defines element_type or is like SomePointer<T, Args>");
-      static_assert(!is_same<rebind<element_type>, __undefined>::value,
-	  "pointer type defines rebind<U> or is like SomePointer<T, Args>");
     };
 
   /**
@@ -144,6 +145,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Convenience alias for rebinding pointers.
   template<typename _Ptr, typename _Tp>
     using __ptr_rebind = typename pointer_traits<_Ptr>::template rebind<_Tp>;
+
+  template<typename _Tp>
+    constexpr _Tp*
+    __to_address(_Tp* __ptr) noexcept
+    {
+      static_assert(!std::is_function<_Tp>::value, "not a function pointer");
+      return __ptr;
+    }
+
+#if __cplusplus <= 201703L
+  template<typename _Ptr>
+    constexpr typename std::pointer_traits<_Ptr>::element_type*
+    __to_address(const _Ptr& __ptr)
+    { return std::__to_address(__ptr.operator->()); }
+#else
+  template<typename _Ptr>
+    constexpr auto
+    __to_address(const _Ptr& __ptr) noexcept
+    -> decltype(std::pointer_traits<_Ptr>::to_address(__ptr))
+    { return std::pointer_traits<_Ptr>::to_address(__ptr); }
+
+  template<typename _Ptr, typename... _None>
+    constexpr auto
+    __to_address(const _Ptr& __ptr, _None...) noexcept
+    { return std::__to_address(__ptr.operator->()); }
+
+  /**
+   * @brief Obtain address referenced by a pointer to an object
+   * @param __ptr A pointer to an object
+   * @return @c __ptr
+   * @ingroup pointer_abstractions
+  */
+  template<typename _Tp>
+    constexpr _Tp*
+    to_address(_Tp* __ptr) noexcept
+    { return std::__to_address(__ptr); }
+
+  /**
+   * @brief Obtain address referenced by a pointer to an object
+   * @param __ptr A pointer to an object
+   * @return @c pointer_traits<_Ptr>::to_address(__ptr) if that expression is
+             well-formed, otherwise @c to_address(__ptr.operator->())
+   * @ingroup pointer_abstractions
+  */
+  template<typename _Ptr>
+    constexpr auto
+    to_address(const _Ptr& __ptr) noexcept
+    { return std::__to_address(__ptr); }
+#endif // C++2a
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

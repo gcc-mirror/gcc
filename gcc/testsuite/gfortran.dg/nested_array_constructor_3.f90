@@ -17,6 +17,6 @@ SUBROUTINE sub(str)
   WRITE (*,*) str
 
   IF (str(1) /= 'ac' .OR. str(2) /= 'ac') THEN
-    CALL abort ()
+    STOP 1
   END IF
 END SUBROUTINE sub

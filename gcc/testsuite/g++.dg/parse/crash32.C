@@ -9,5 +9,5 @@ struct Ast
 void
 Ast::accept (Visitor& v)
 {
-  v (*this); // { dg-error "no match for call" "" }
+  v (*this); // { dg-error "no match for call" }
 }

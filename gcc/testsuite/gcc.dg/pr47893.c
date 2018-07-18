@@ -2,7 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-additional-options "-mtune=atom -fno-omit-frame-pointer -fno-strict-aliasing" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
-/* { dg-skip-if "Too much RAM needed" { "avr-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "Too much RAM needed" { "avr-*-*" } } */
 
 extern void abort (void);
 

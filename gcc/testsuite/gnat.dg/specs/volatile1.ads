@@ -19,7 +19,7 @@ package Volatile1 is
     pragma Volatile (C);
   end record;
   for R2 use record
-    C at 0 range 0 .. 10; -- { dg-error "size of volatile field" }
+    C at 0 range 0 .. 10;
   end record;
 
 end Volatile1;

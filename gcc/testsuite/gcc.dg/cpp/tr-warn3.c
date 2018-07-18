@@ -25,9 +25,13 @@
    they should get a -pedantic warning. */
 
 #assert foo(bar)	/* { dg-warning "indented" "^#ext"    } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } .-1 } */
 # assert bar(baz)	/* { dg-warning "indented" "^# ext"   } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } .-1 } */
  #assert baz(quux)	/* { dg-bogus "indented" "^ #ext"     } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } .-1 } */
  # assert quux(weeble)	/* { dg-bogus "indented" "^ # ext"    } */
+/* { dg-warning "GCC extension" "extension warning" { target *-*-* } .-1 } */
 
 #else
 
@@ -54,8 +58,3 @@
  # unassert quux(weeble)	/* { dg-bogus "indented" "^ # ext"    } */
 
 #endif
-
-/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 27 } */
-/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 28 } */
-/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 29 } */
-/* { dg-warning "GCC extension" "extension warning" { target *-*-* } 30 } */

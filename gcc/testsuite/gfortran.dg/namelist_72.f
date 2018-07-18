@@ -26,8 +26,8 @@
 
       !print *, 'xpos', xpos(1:10), 'ypos', ypos(1:10)
 
-      if (any (xpos(1:5) /= [0.00, 0.10, 0.20, 0.30, 0.40]))call abort()
-      if (any (ypos(1:5) /= [0.50, 0.60, 0.70, 0.80, 0.90]))call abort()
-      if (any (xpos(6:) /= -huge(xpos))) call abort ()
-      if (any (ypos(6:) /= -huge(ypos))) call abort ()
+      if (any (xpos(1:5) /= [0.00, 0.10, 0.20, 0.30, 0.40]))STOP 1
+      if (any (ypos(1:5) /= [0.50, 0.60, 0.70, 0.80, 0.90]))STOP 2
+      if (any (xpos(6:) /= -huge(xpos))) STOP 3
+      if (any (ypos(6:) /= -huge(ypos))) STOP 4
       end

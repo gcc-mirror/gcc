@@ -31,6 +31,3 @@ module integrable_model_module
       end subroutine
 
 end module integrable_model_module
-
-! { dg-final { cleanup-modules "integrable_model_module" } }
- 

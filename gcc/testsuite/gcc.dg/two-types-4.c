@@ -5,5 +5,5 @@ int f()
 {
   struct f {
   }
-  int z; /* { dg-error "expected ';', identifier or " "" } */
+  int z; /* { dg-error "expected ';', identifier or " } */
 }

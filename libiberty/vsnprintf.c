@@ -1,5 +1,5 @@
 /* Implement the vsnprintf function.
-   Copyright (C) 2003, 2004, 2005, 2011, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>.
 
 This file is part of the libiberty library.  This library is free

@@ -345,13 +345,13 @@ void exec_vfma_vfms_n (void)
 		 VECT_VAR (vsrc_2, float, 64, 2), delem0);
   vst1q_f64 (VECT_VAR (result, float, 64, 2),
 	     VECT_VAR (vector_res, float, 64, 2));
-  CHECK_FP (TEST_MSG, float, 64, 2, PRIx16, expectedfms0_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 2, PRIx64, expectedfms0_static, "");
   VECT_VAR (vector_res, float, 64, 2) =
     vfmaq_n_f64 (VECT_VAR (vsrc_1, float, 64, 2),
 		 VECT_VAR (vsrc_2, float, 64, 2), delem0);
   vst1q_f64 (VECT_VAR (result, float, 64, 2),
 	     VECT_VAR (vector_res, float, 64, 2));
-  CHECK_FP (TEST_MSG, float, 64, 2, PRIx16, expectedfma0_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 2, PRIx64, expectedfma0_static, "");
 
   VECT_VAR_DECL (buf_src_3, float, 64, 2) [] = {DA2, DA3};
   VECT_VAR_DECL (buf_src_4, float, 64, 2) [] = {DB2, DB3};
@@ -362,13 +362,13 @@ void exec_vfma_vfms_n (void)
 		 VECT_VAR (vsrc_2, float, 64, 2), delem1);
   vst1q_f64 (VECT_VAR (result, float, 64, 2),
 	     VECT_VAR (vector_res, float, 64, 2));
-  CHECK_FP (TEST_MSG, float, 64, 2, PRIx16, expectedfms1_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 2, PRIx64, expectedfms1_static, "");
   VECT_VAR (vector_res, float, 64, 2) =
     vfmaq_n_f64 (VECT_VAR (vsrc_1, float, 64, 2),
 		 VECT_VAR (vsrc_2, float, 64, 2), delem1);
   vst1q_f64 (VECT_VAR (result, float, 64, 2),
 	     VECT_VAR (vector_res, float, 64, 2));
-  CHECK_FP (TEST_MSG, float, 64, 2, PRIx16, expectedfma1_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 2, PRIx64, expectedfma1_static, "");
 
   VECT_VAR_DECL (buf_src_5, float, 64, 2) [] = {DA4, DA5};
   VECT_VAR_DECL (buf_src_6, float, 64, 2) [] = {DB4, DB5};
@@ -379,13 +379,13 @@ void exec_vfma_vfms_n (void)
 		 VECT_VAR (vsrc_2, float, 64, 2), delem2);
   vst1q_f64 (VECT_VAR (result, float, 64, 2),
 	     VECT_VAR (vector_res, float, 64, 2));
-  CHECK_FP (TEST_MSG, float, 64, 2, PRIx16, expectedfms2_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 2, PRIx64, expectedfms2_static, "");
   VECT_VAR (vector_res, float, 64, 2) =
     vfmaq_n_f64 (VECT_VAR (vsrc_1, float, 64, 2),
 		 VECT_VAR (vsrc_2, float, 64, 2), delem2);
   vst1q_f64 (VECT_VAR (result, float, 64, 2),
 	     VECT_VAR (vector_res, float, 64, 2));
-  CHECK_FP (TEST_MSG, float, 64, 2, PRIx16, expectedfma2_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 2, PRIx64, expectedfma2_static, "");
 
   VECT_VAR_DECL (buf_src_7, float, 64, 2) [] = {DA6, DA7};
   VECT_VAR_DECL (buf_src_8, float, 64, 2) [] = {DB6, DB7};
@@ -396,13 +396,13 @@ void exec_vfma_vfms_n (void)
 		 VECT_VAR (vsrc_2, float, 64, 2), delem3);
   vst1q_f64 (VECT_VAR (result, float, 64, 2),
 	     VECT_VAR (vector_res, float, 64, 2));
-  CHECK_FP (TEST_MSG, float, 64, 2, PRIx16, expectedfms3_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 2, PRIx64, expectedfms3_static, "");
   VECT_VAR (vector_res, float, 64, 2) =
     vfmaq_n_f64 (VECT_VAR (vsrc_1, float, 64, 2),
 		 VECT_VAR (vsrc_2, float, 64, 2), delem3);
   vst1q_f64 (VECT_VAR (result, float, 64, 2),
 	     VECT_VAR (vector_res, float, 64, 2));
-  CHECK_FP (TEST_MSG, float, 64, 2, PRIx16, expectedfma3_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 2, PRIx64, expectedfma3_static, "");
 
 #undef TEST_MSG
 #define TEST_MSG "VFMS_VFMA_N (FP64)"
@@ -419,13 +419,13 @@ void exec_vfma_vfms_n (void)
 		VECT_VAR (vsrc_2, float, 64, 1), delem0);
   vst1_f64 (VECT_VAR (result, float, 64, 1),
 	     VECT_VAR (vector_res, float, 64, 1));
-  CHECK_FP (TEST_MSG, float, 64, 1, PRIx16, expectedfms0_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 1, PRIx64, expectedfms0_static, "");
   VECT_VAR (vector_res, float, 64, 1) =
     vfma_n_f64 (VECT_VAR (vsrc_1, float, 64, 1),
 		VECT_VAR (vsrc_2, float, 64, 1), delem0);
   vst1_f64 (VECT_VAR (result, float, 64, 1),
 	     VECT_VAR (vector_res, float, 64, 1));
-  CHECK_FP (TEST_MSG, float, 64, 1, PRIx16, expectedfma0_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 1, PRIx64, expectedfma0_static, "");
 
   VECT_VAR_DECL (buf_src_3, float, 64, 1) [] = {DA2};
   VECT_VAR_DECL (buf_src_4, float, 64, 1) [] = {DB2};
@@ -436,13 +436,13 @@ void exec_vfma_vfms_n (void)
 		VECT_VAR (vsrc_2, float, 64, 1), delem1);
   vst1_f64 (VECT_VAR (result, float, 64, 1),
 	     VECT_VAR (vector_res, float, 64, 1));
-  CHECK_FP (TEST_MSG, float, 64, 1, PRIx16, expectedfms1_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 1, PRIx64, expectedfms1_static, "");
   VECT_VAR (vector_res, float, 64, 1) =
     vfma_n_f64 (VECT_VAR (vsrc_1, float, 64, 1),
 		VECT_VAR (vsrc_2, float, 64, 1), delem1);
   vst1_f64 (VECT_VAR (result, float, 64, 1),
 	     VECT_VAR (vector_res, float, 64, 1));
-  CHECK_FP (TEST_MSG, float, 64, 1, PRIx16, expectedfma1_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 1, PRIx64, expectedfma1_static, "");
 
   VECT_VAR_DECL (buf_src_5, float, 64, 1) [] = {DA4};
   VECT_VAR_DECL (buf_src_6, float, 64, 1) [] = {DB4};
@@ -453,13 +453,13 @@ void exec_vfma_vfms_n (void)
 		VECT_VAR (vsrc_2, float, 64, 1), delem2);
   vst1_f64 (VECT_VAR (result, float, 64, 1),
 	     VECT_VAR (vector_res, float, 64, 1));
-  CHECK_FP (TEST_MSG, float, 64, 1, PRIx16, expectedfms2_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 1, PRIx64, expectedfms2_static, "");
   VECT_VAR (vector_res, float, 64, 1) =
     vfma_n_f64 (VECT_VAR (vsrc_1, float, 64, 1),
 		VECT_VAR (vsrc_2, float, 64, 1), delem2);
   vst1_f64 (VECT_VAR (result, float, 64, 1),
 	     VECT_VAR (vector_res, float, 64, 1));
-  CHECK_FP (TEST_MSG, float, 64, 1, PRIx16, expectedfma2_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 1, PRIx64, expectedfma2_static, "");
 
   VECT_VAR_DECL (buf_src_7, float, 64, 1) [] = {DA6};
   VECT_VAR_DECL (buf_src_8, float, 64, 1) [] = {DB6};
@@ -470,13 +470,13 @@ void exec_vfma_vfms_n (void)
 		VECT_VAR (vsrc_2, float, 64, 1), delem3);
   vst1_f64 (VECT_VAR (result, float, 64, 1),
 	     VECT_VAR (vector_res, float, 64, 1));
-  CHECK_FP (TEST_MSG, float, 64, 1, PRIx16, expectedfms3_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 1, PRIx64, expectedfms3_static, "");
   VECT_VAR (vector_res, float, 64, 1) =
     vfma_n_f64 (VECT_VAR (vsrc_1, float, 64, 1),
 		VECT_VAR (vsrc_2, float, 64, 1), delem3);
   vst1_f64 (VECT_VAR (result, float, 64, 1),
 	     VECT_VAR (vector_res, float, 64, 1));
-  CHECK_FP (TEST_MSG, float, 64, 1, PRIx16, expectedfma3_static, "");
+  CHECK_FP (TEST_MSG, float, 64, 1, PRIx64, expectedfma3_static, "");
 }
 #endif
 

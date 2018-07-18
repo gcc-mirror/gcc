@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -272,15 +272,19 @@ package body Sem_Dist is
    ---------------------------------
 
    function Is_RACW_Stub_Type_Operation (Op : Entity_Id) return Boolean is
-      Dispatching_Type : Entity_Id;
+      Typ : Entity_Id;
 
    begin
       case Ekind (Op) is
-         when E_Function | E_Procedure =>
-            Dispatching_Type := Find_Dispatching_Type (Op);
-            return Present (Dispatching_Type)
-                     and then Is_RACW_Stub_Type (Dispatching_Type)
-                     and then not Is_Internal (Op);
+         when E_Function
+            | E_Procedure
+         =>
+            Typ := Find_Dispatching_Type (Op);
+
+            return
+              Present (Typ)
+                and then Is_RACW_Stub_Type (Typ)
+                and then not Is_Internal (Op);
 
          when others =>
             return False;
@@ -348,7 +352,7 @@ package body Sem_Dist is
    end Package_Specification_Of_Scope;
 
    --------------------------
-   -- Process_Partition_ID --
+   -- Process_Partition_Id --
    --------------------------
 
    procedure Process_Partition_Id (N : Node_Id) is

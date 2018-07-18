@@ -3,7 +3,7 @@
    implementations of stdio; newer ones should already have vsprintf.
    Written by Per Bothner of Cygnus Support.
    Based on libg++'s "form" (written by Doug Lea; dl@rocky.oswego.edu).
-   Copyright (C) 1991, 1995, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.  This library is free
 software; you can redistribute it and/or modify it under the

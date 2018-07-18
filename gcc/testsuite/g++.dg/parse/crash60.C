@@ -10,5 +10,5 @@ void foo()
   int result = 0;
   M m;
 
-  result += m.pop();  // { dg-error "invalid operands|in evaluation" }
+  result += m.pop();  // { dg-error "" }
 }

@@ -31,8 +31,8 @@ GCC_SRC_DIR=../../gcc
 
 # v850e1-elf is rejected by config.sub
 LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
-  alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
-  alpha64-dec-vms alpha-dec-vms am33_2.0-linux \
+  alpha-linux-gnu alpha-netbsd alpha-openbsd \
+  alpha64-dec-vms alpha-dec-vms \
   arc-elf32OPT-with-cpu=arc600 arc-elf32OPT-with-cpu=arc700 \
   arc-linux-uclibcOPT-with-cpu=arc700 arceb-linux-uclibcOPT-with-cpu=arc700 \
   arm-wrs-vxworks arm-netbsdelf \
@@ -75,10 +75,11 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   powerpc-eabispe powerpc-eabisimaltivec powerpc-eabisim ppc-elf \
   powerpc-eabialtivec powerpc-xilinx-eabi powerpc-eabi \
   powerpc-rtems powerpc-linux_spe \
-  powerpc-linux_paired powerpc64-linux_altivec \
+  powerpc64-linux_altivec \
   powerpc-wrs-vxworks powerpc-wrs-vxworksae powerpc-wrs-vxworksmils \
   powerpc-lynxos powerpcle-elf \
   powerpcle-eabisim powerpcle-eabi \
+  riscv32-unknown-linux-gnu riscv64-unknown-linux-gnu \
   rs6000-ibm-aix5.3.0 rs6000-ibm-aix6.1 rs6000-ibm-aix7.1 \
   rl78-elf rx-elf s390-linux-gnu s390x-linux-gnu s390x-ibm-tpf sh-elf \
   shle-linux sh-netbsdelf sh-superh-elf \

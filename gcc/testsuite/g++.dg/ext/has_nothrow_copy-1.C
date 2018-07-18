@@ -15,6 +15,12 @@ struct B
 struct C
 : public A { };
 
+#if __cplusplus > 201402L
+#define THROW_INT
+#else
+#define THROW_INT throw(int)	// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+
 struct D
 {
   D(const D&) throw() { }
@@ -22,12 +28,12 @@ struct D
 
 struct E
 {
-  E(const E&) throw(int) { }
+  E(const E&) THROW_INT { }
 };
 
 struct E1
 {
-  E1(const E1&) throw(int) { throw int(); }
+  E1(const E1&) THROW_INT { throw int(); }
 };
 
 struct F
@@ -37,28 +43,28 @@ struct F
 
 struct G
 {
-  G() throw(int) { throw int(); }
+  G() THROW_INT { throw int(); }
 };
 
 struct H
 {
-  H(H&) throw(int) { }
+  H(H&) THROW_INT { }
 };
 
 struct H1
 {
-  H1(H1&) throw(int) { throw int(); }
+  H1(H1&) THROW_INT { throw int(); }
 };
 
 struct I
 {
-  I(I&) throw(int) { }
+  I(I&) THROW_INT { }
   I(const I&) throw() { }
 };
 
 struct I1
 {
-  I1(I1&) throw(int) { throw int(); }
+  I1(I1&) THROW_INT { throw int(); }
   I1(const I1&) throw() { }
 };
 

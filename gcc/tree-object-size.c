@@ -1,5 +1,5 @@
 /* __builtin_object_size (ptr, object_size_type) computation
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -32,13 +32,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 struct object_size_info
 {
   int object_size_type;
-  bitmap visited, reexamine;
-  int pass;
+  unsigned char pass;
   bool changed;
+  bitmap visited, reexamine;
   unsigned int *depths;
   unsigned int *stack, *tos;
 };
@@ -138,13 +140,18 @@ compute_object_offset (const_tree expr, const_tree var)
 	return base;
 
       t = TREE_OPERAND (expr, 1);
+      tree low_bound, unit_size;
+      low_bound = array_ref_low_bound (CONST_CAST_TREE (expr));
+      unit_size = array_ref_element_size (CONST_CAST_TREE (expr));
+      if (! integer_zerop (low_bound))
+	t = fold_build2 (MINUS_EXPR, TREE_TYPE (t), t, low_bound);
       if (TREE_CODE (t) == INTEGER_CST && tree_int_cst_sgn (t) < 0)
 	{
 	  code = MINUS_EXPR;
 	  t = fold_build1 (NEGATE_EXPR, TREE_TYPE (t), t);
 	}
       t = fold_convert (sizetype, t);
-      off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
+      off = size_binop (MULT_EXPR, unit_size, t);
       break;
 
     case MEM_REF:
@@ -203,11 +210,17 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	}
       if (sz != unknown[object_size_type])
 	{
-	  offset_int dsz = wi::sub (sz, mem_ref_offset (pt_var));
-	  if (wi::neg_p (dsz))
-	    sz = 0;
-	  else if (wi::fits_uhwi_p (dsz))
-	    sz = dsz.to_uhwi ();
+	  offset_int mem_offset;
+	  if (mem_ref_offset (pt_var).is_constant (&mem_offset))
+	    {
+	      offset_int dsz = wi::sub (sz, mem_offset);
+	      if (wi::neg_p (dsz))
+		sz = 0;
+	      else if (wi::fits_uhwi_p (dsz))
+		sz = dsz.to_uhwi ();
+	      else
+		sz = unknown[object_size_type];
+	    }
 	  else
 	    sz = unknown[object_size_type];
 	}
@@ -423,8 +436,7 @@ alloc_object_size (const gcall *call, int object_size_type)
 	arg2 = 1;
 	/* fall through */
       case BUILT_IN_MALLOC:
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      CASE_BUILT_IN_ALLOCA:
 	arg1 = 0;
       default:
 	break;
@@ -458,34 +470,17 @@ alloc_object_size (const gcall *call, int object_size_type)
 static tree
 pass_through_call (const gcall *call)
 {
-  tree callee = gimple_call_fndecl (call);
+  unsigned rf = gimple_call_return_flags (call);
+  if (rf & ERF_RETURNS_ARG)
+    {
+      unsigned argnum = rf & ERF_RETURN_ARG_MASK;
+      if (argnum < gimple_call_num_args (call))
+	return gimple_call_arg (call, argnum);
+    }
 
-  if (callee
-      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
-    switch (DECL_FUNCTION_CODE (callee))
-      {
-      case BUILT_IN_MEMCPY:
-      case BUILT_IN_MEMMOVE:
-      case BUILT_IN_MEMSET:
-      case BUILT_IN_STRCPY:
-      case BUILT_IN_STRNCPY:
-      case BUILT_IN_STRCAT:
-      case BUILT_IN_STRNCAT:
-      case BUILT_IN_MEMCPY_CHK:
-      case BUILT_IN_MEMMOVE_CHK:
-      case BUILT_IN_MEMSET_CHK:
-      case BUILT_IN_STRCPY_CHK:
-      case BUILT_IN_STRNCPY_CHK:
-      case BUILT_IN_STPNCPY_CHK:
-      case BUILT_IN_STRCAT_CHK:
-      case BUILT_IN_STRNCAT_CHK:
-      case BUILT_IN_ASSUME_ALIGNED:
-	if (gimple_call_num_args (call) >= 1)
-	  return gimple_call_arg (call, 0);
-	break;
-      default:
-	break;
-      }
+  /* __builtin_assume_aligned is intentionally not marked RET1.  */
+  if (gimple_call_builtin_p (call, BUILT_IN_ASSUME_ALIGNED))
+    return gimple_call_arg (call, 0);
 
   return NULL_TREE;
 }
@@ -533,7 +528,7 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 	      tree offset = gimple_assign_rhs2 (def);
 	      ptr = gimple_assign_rhs1 (def);
 
-	      if (cst_and_fits_in_hwi (offset)
+	      if (tree_fits_shwi_p (offset)
 		  && compute_builtin_object_size (ptr, object_size_type, psize))
 		{
 		  /* Return zero when the offset is out of bounds.  */
@@ -1230,7 +1225,7 @@ init_object_sizes (void)
 
 /* Destroy data structures after the object size computation.  */
 
-static void
+void
 fini_object_sizes (void)
 {
   int object_size_type;
@@ -1375,7 +1370,7 @@ pass_object_sizes::execute (function *fun)
 	      fprintf (dump_file, "Simplified\n  ");
 	      print_gimple_stmt (dump_file, call, 0, dump_flags);
 	      fprintf (dump_file, " to ");
-	      print_generic_expr (dump_file, result, 0);
+	      print_generic_expr (dump_file, result);
 	      fprintf (dump_file, "\n");
 	    }
 

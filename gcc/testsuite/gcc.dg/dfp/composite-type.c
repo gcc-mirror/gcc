@@ -34,15 +34,15 @@ do \
 } while(0)
  
 DECIMAL_COMPOSITE_DECL(32);  /* { dg-error "incompatible types when assigning to type '\[^\n\]*' from type '\[^\n\]*'" } */
-/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 36 } */
+/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } .-1 } */
 
 
 DECIMAL_COMPOSITE_DECL(64);  /* { dg-error "incompatible types when assigning to type '\[^\n\]*' from type '\[^\n\]*'" } */
-/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 40 } */
+/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } .-1 } */
 
 
 DECIMAL_COMPOSITE_DECL(128); /* { dg-error "incompatible types when assigning to type '\[^\n\]*' from type '\[^\n\]*'" } */
-/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 44 } */
+/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } .-1 } */
 
 
 int main()

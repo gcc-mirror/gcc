@@ -14,10 +14,14 @@ f (void)
   asm (L"foo"); /* { dg-error "8:wide string literal in 'asm'" } */
   asm ("foo" :
        L"=g" (x)); /* { dg-error "8:wide string literal in 'asm'" } */
+  /* Extra errors from the substitution of "" for wide strings: */
+  /* { dg-error "output" "output" { target *-*-* } .-2 } */
   asm ("foo" : [x]
        L"=g" (x)); /* { dg-error "8:wide string literal in 'asm'" } */
+  /* { dg-error "output" "output" { target *-*-* } .-1 } */
   asm ("foo" : [x] "=g" (x),
        L"=g" (x)); /* { dg-error "8:wide string literal in 'asm'" } */
+  /* { dg-error "output" "output" { target *-*-* } .-1 } */
   asm ("foo" : :
        L"g" (x)); /* { dg-error "8:wide string literal in 'asm'" } */
   asm ("foo" : : :
@@ -25,8 +29,3 @@ f (void)
   asm ("foo" : : : "memory",
        L"memory"); /* { dg-error "8:wide string literal in 'asm'" } */
 }
-
-/* Extra errors from the substitution of "" for wide strings: */
-/* { dg-error "output" "output" { target *-*-* } 16 } */
-/* { dg-error "output" "output" { target *-*-* } 18 } */
-/* { dg-error "output" "output" { target *-*-* } 20 } */

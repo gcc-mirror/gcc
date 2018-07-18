@@ -8,6 +8,8 @@
 /* { dg-do run { xfail { { cris-*-* crisv32-*-* h8300-*-* hppa*64*-*-* m32r-*-* mcore-*-* mn10300-*-* msp430*-*-* nds32*-*-* nvptx-*-* xstormy16-*-* v850*-*-* vax-*-* xtensa*-*-* } || { arm*-*-* && { ! arm32 } } } } } */
 /* -mlongcall disables sibcall patterns.  */
 /* { dg-skip-if "" { powerpc*-*-* } { "-mlongcall" } { "" } } */
+/* -msave-restore disables sibcall patterns.  */
+/* { dg-skip-if "" { riscv*-*-* } { "-msave-restore" } { "" } } */
 /* { dg-options "-O2 -foptimize-sibling-calls" } */
 
 /* The option -foptimize-sibling-calls is the default, but serves as

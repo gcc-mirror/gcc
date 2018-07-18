@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fcoarray=lib -lcaf_single" }
+! { dg-additional-options "-latomic" { target libatomic_available } }
 !
 ! Support for stat= in caf reference
 !
@@ -18,6 +19,6 @@ program whitespace
   stat = 42
 
   tmp = me[num_images(),stat = stat]
-  if(stat /= 0) call abort()
+  if(stat /= 0) STOP 1
 
 end program whitespace

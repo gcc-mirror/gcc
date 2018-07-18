@@ -11,7 +11,7 @@ program der_io_1
 
   v%p => i
   i = 42
-  write (unit=s, fmt='(I2)') v ! { dg-error "POINTER components" "" }
-  if (s .ne. '42') call abort ()
+  write (unit=s, fmt='(I2)') v ! { dg-error "POINTER components" }
+  if (s .ne. '42') STOP 1
 end program
 

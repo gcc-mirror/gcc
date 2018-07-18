@@ -1,0 +1,15 @@
+(function "copy_hard_reg_into_frame"
+  (insn-chain
+    (block 2
+      (edge-from entry (flags "FALLTHRU"))
+      (cinsn 1 (set (mem/c:SI
+                      (plus:DI
+                        (reg/f:DI frame)
+                        (const_int -4))
+                      [1 i+0 S4 A32])
+               (reg:SI di [ i ])) "test.c":2
+               (nil))
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 2
+  ) ;; insn-chain
+) ;; function

@@ -41,4 +41,4 @@ foo (float *a, float *b, float *c)
   *a = z;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 1 "vect" { target vect_condition } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 1 "vect" { target { vect_condition && vect_float } } } } */

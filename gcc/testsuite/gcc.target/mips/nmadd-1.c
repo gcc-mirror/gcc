@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-ffast-math isa=4 -mhard-float" } */
+/* { dg-options "-ffast-math -mmadd4 isa=4 -mhard-float" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\tnmadd.s\t" } } */
 /* { dg-final { scan-assembler "\tnmadd.d\t" } } */

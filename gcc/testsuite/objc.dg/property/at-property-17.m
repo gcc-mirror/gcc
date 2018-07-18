@@ -95,4 +95,4 @@
 
 @implementation MyClass3 (count3)
 @end /* { dg-warning "incomplete implementation" } */
-/* { dg-warning "method definition for .-setCount3:. not found" "" { target *-*-* } 97 } */
+/* { dg-warning "method definition for .-setCount3:. not found" "" { target *-*-* } .-1 } */

@@ -1,6 +1,6 @@
 // Predefined symbols and macros -*- C++ -*-
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,13 +24,16 @@
 
 /** @file bits/c++config.h
  *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{iosfwd}
+ *  Do not attempt to use it directly. @headername{version}
  */
 
 #ifndef _GLIBCXX_CXX_CONFIG_H
 #define _GLIBCXX_CXX_CONFIG_H 1
 
-// The current version of the C++ library in compressed ISO date format.
+// The major release number for the GCC release the C++ library belongs to.
+#define _GLIBCXX_RELEASE
+
+// The datestamp of the C++ library in compressed ISO date format.
 #define __GLIBCXX__
 
 // Macros for various attributes.
@@ -74,6 +77,7 @@
 // Macros for deprecated attributes.
 //   _GLIBCXX_USE_DEPRECATED
 //   _GLIBCXX_DEPRECATED
+//   _GLIBCXX17_DEPRECATED
 #ifndef _GLIBCXX_USE_DEPRECATED
 # define _GLIBCXX_USE_DEPRECATED 1
 #endif
@@ -82,6 +86,12 @@
 # define _GLIBCXX_DEPRECATED __attribute__ ((__deprecated__))
 #else
 # define _GLIBCXX_DEPRECATED
+#endif
+
+#if defined(__DEPRECATED) && (__cplusplus >= 201703L)
+# define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#else
+# define _GLIBCXX17_DEPRECATED
 #endif
 
 // Macros for ABI tag attributes.
@@ -112,10 +122,26 @@
 #endif
 
 #ifndef _GLIBCXX17_CONSTEXPR
-# if __cplusplus > 201402L
+# if __cplusplus >= 201703L
 #  define _GLIBCXX17_CONSTEXPR constexpr
 # else
 #  define _GLIBCXX17_CONSTEXPR
+# endif
+#endif
+
+#ifndef _GLIBCXX20_CONSTEXPR
+# if __cplusplus > 201703L
+#  define _GLIBCXX20_CONSTEXPR constexpr
+# else
+#  define _GLIBCXX20_CONSTEXPR
+# endif
+#endif
+
+#ifndef _GLIBCXX17_INLINE
+# if __cplusplus >= 201703L
+#  define _GLIBCXX17_INLINE inline
+# else
+#  define _GLIBCXX17_INLINE
 # endif
 #endif
 
@@ -146,6 +172,14 @@
 # endif
 #endif
 
+#if __cpp_noexcept_function_type
+#define _GLIBCXX_NOEXCEPT_PARM , bool _NE
+#define _GLIBCXX_NOEXCEPT_QUAL noexcept (_NE)
+#else
+#define _GLIBCXX_NOEXCEPT_PARM
+#define _GLIBCXX_NOEXCEPT_QUAL
+#endif
+
 // Macro for extern template, ie controlling template linkage via use
 // of extern keyword on template declaration. As documented in the g++
 // manual, it inhibits all implicit instantiations and is used
@@ -168,7 +202,9 @@
     namespace __profile { }
     namespace __cxx1998 { }
 
-    namespace __detail { }
+    namespace __detail {
+      namespace __variant { }				// C++17
+    }
 
     namespace rel_ops { }
 
@@ -183,14 +219,15 @@
     
     namespace decimal { }
 
-    namespace chrono { }
-    namespace placeholders { }
-    namespace regex_constants { }
-    namespace this_thread { }
-    inline namespace literals {
-      inline namespace chrono_literals { }
-      inline namespace complex_literals { }
-      inline namespace string_literals { }
+    namespace chrono { }				// C++11
+    namespace placeholders { }				// C++11
+    namespace regex_constants { }			// C++11
+    namespace this_thread { }				// C++11
+    inline namespace literals {				// C++14
+      inline namespace chrono_literals { }		// C++14
+      inline namespace complex_literals { }		// C++14
+      inline namespace string_literals { }		// C++14
+      inline namespace string_view_literals { }		// C++17
     }
   }
 
@@ -245,78 +282,57 @@ namespace __gnu_cxx
 # define _GLIBCXX_DEFAULT_ABI_TAG
 #endif
 
-
 // Defined if inline namespaces are used for versioning.
 #define _GLIBCXX_INLINE_VERSION 
 
 // Inline namespace for symbol versioning.
 #if _GLIBCXX_INLINE_VERSION
+# define _GLIBCXX_BEGIN_NAMESPACE_VERSION namespace __8 {
+# define _GLIBCXX_END_NAMESPACE_VERSION }
 
 namespace std
 {
-  inline namespace __7 { }
-
-  namespace rel_ops { inline namespace __7 { } }
-
-  namespace tr1
-  {
-    inline namespace __7 { }
-    namespace placeholders { inline namespace __7 { } }
-    namespace regex_constants { inline namespace __7 { } }
-    namespace __detail { inline namespace __7 { } }
-  }
-
-  namespace tr2
-  { inline namespace __7 { } }
-
-  namespace decimal { inline namespace __7 { } }
-
-  namespace chrono { inline namespace __7 { } }
-  namespace placeholders { inline namespace __7 { } }
-  namespace regex_constants { inline namespace __7 { } }
-  namespace this_thread { inline namespace __7 { } }
-
+inline _GLIBCXX_BEGIN_NAMESPACE_VERSION
+#if __cplusplus >= 201402L
   inline namespace literals {
-    inline namespace chrono_literals { inline namespace __7 { } }
-    inline namespace complex_literals { inline namespace __7 { } }
-    inline namespace string_literals { inline namespace __7 { } }
+    inline namespace chrono_literals { }
+    inline namespace complex_literals { }
+    inline namespace string_literals { }
+#if __cplusplus > 201402L
+    inline namespace string_view_literals { }
+#endif // C++17
   }
-
-  namespace __detail {
-    inline namespace __7 { }
-    namespace __variant { inline namespace __7 { } }
-  }
+#endif // C++14
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 namespace __gnu_cxx
 {
-  inline namespace __7 { }
-  namespace __detail { inline namespace __7 { } }
+inline _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_END_NAMESPACE_VERSION
 }
-# define _GLIBCXX_BEGIN_NAMESPACE_VERSION namespace __7 {
-# define _GLIBCXX_END_NAMESPACE_VERSION }
+
 #else
 # define _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_END_NAMESPACE_VERSION
 #endif
-
 
 // Inline namespaces for special modes: debug, parallel, profile.
 #if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PARALLEL) \
     || defined(_GLIBCXX_PROFILE)
 namespace std
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   // Non-inline namespace for components replaced by alternates in active mode.
   namespace __cxx1998
   {
-# if _GLIBCXX_INLINE_VERSION
-  inline namespace __7 { }
-# endif
-
 # if _GLIBCXX_USE_CXX11_ABI
   inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
 # endif
   }
+
+_GLIBCXX_END_NAMESPACE_VERSION
 
   // Inline namespace for debug mode.
 # ifdef _GLIBCXX_DEBUG
@@ -365,25 +381,23 @@ namespace std
 #if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PROFILE)
 # define _GLIBCXX_STD_C __cxx1998
 # define _GLIBCXX_BEGIN_NAMESPACE_CONTAINER \
-	 namespace _GLIBCXX_STD_C { _GLIBCXX_BEGIN_NAMESPACE_VERSION
-# define _GLIBCXX_END_NAMESPACE_CONTAINER \
-	 _GLIBCXX_END_NAMESPACE_VERSION }
+	 namespace _GLIBCXX_STD_C {
+# define _GLIBCXX_END_NAMESPACE_CONTAINER }
 #else
 # define _GLIBCXX_STD_C std
-# define _GLIBCXX_BEGIN_NAMESPACE_CONTAINER _GLIBCXX_BEGIN_NAMESPACE_VERSION
-# define _GLIBCXX_END_NAMESPACE_CONTAINER _GLIBCXX_END_NAMESPACE_VERSION
+# define _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+# define _GLIBCXX_END_NAMESPACE_CONTAINER
 #endif
 
 #ifdef _GLIBCXX_PARALLEL
 # define _GLIBCXX_STD_A __cxx1998
 # define _GLIBCXX_BEGIN_NAMESPACE_ALGO \
-	 namespace _GLIBCXX_STD_A { _GLIBCXX_BEGIN_NAMESPACE_VERSION
-# define _GLIBCXX_END_NAMESPACE_ALGO \
-	 _GLIBCXX_END_NAMESPACE_VERSION }
+	 namespace _GLIBCXX_STD_A {
+# define _GLIBCXX_END_NAMESPACE_ALGO }
 #else
 # define _GLIBCXX_STD_A std
-# define _GLIBCXX_BEGIN_NAMESPACE_ALGO _GLIBCXX_BEGIN_NAMESPACE_VERSION
-# define _GLIBCXX_END_NAMESPACE_ALGO _GLIBCXX_END_NAMESPACE_VERSION
+# define _GLIBCXX_BEGIN_NAMESPACE_ALGO
+# define _GLIBCXX_END_NAMESPACE_ALGO
 #endif
 
 // GLIBCXX_ABI Deprecated
@@ -415,7 +429,7 @@ namespace std
 #endif
 
 // Debug Mode implies checking assertions.
-#ifdef _GLIBCXX_DEBUG
+#if defined(_GLIBCXX_DEBUG) && !defined(_GLIBCXX_ASSERTIONS)
 # define _GLIBCXX_ASSERTIONS 1
 #endif
 
@@ -426,14 +440,13 @@ namespace std
 #endif
 
 // Assert.
-#if !defined(_GLIBCXX_ASSERTIONS) && !defined(_GLIBCXX_PARALLEL)
-# define __glibcxx_assert(_Condition)
-#else
+#if defined(_GLIBCXX_ASSERTIONS) \
+  || defined(_GLIBCXX_PARALLEL) || defined(_GLIBCXX_PARALLEL_ASSERTIONS)
 namespace std
 {
   // Avoid the use of assert, because we're trying to keep the <cassert>
   // include out of the mix.
-  inline void
+  extern "C++" inline void
   __replacement_assert(const char* __file, int __line,
 		       const char* __function, const char* __condition)
   {
@@ -442,13 +455,19 @@ namespace std
     __builtin_abort();
   }
 }
-#define __glibcxx_assert(_Condition)				   	 \
+#define __glibcxx_assert_impl(_Condition)				 \
   do 									 \
   {							      		 \
     if (! (_Condition))                                                  \
       std::__replacement_assert(__FILE__, __LINE__, __PRETTY_FUNCTION__, \
 				#_Condition);				 \
   } while (false)
+#endif
+
+#if defined(_GLIBCXX_ASSERTIONS)
+# define __glibcxx_assert(_Condition) __glibcxx_assert_impl(_Condition)
+#else
+# define __glibcxx_assert(_Condition)
 #endif
 
 // Macros for race detectors.
@@ -524,7 +543,7 @@ namespace std
 // Most of the following conditions are due to limitations in the current
 // implementation.
 #if __cplusplus >= 201103L && _GLIBCXX_USE_CXX11_ABI			\
-  && _GLIBCXX_USE_DUAL_ABI && __cpp_transactional_memory >= 201505L	\
+  && _GLIBCXX_USE_DUAL_ABI && __cpp_transactional_memory >= 201500L	\
   &&  !_GLIBCXX_FULLY_DYNAMIC_STRING && _GLIBCXX_USE_WEAK_REF		\
   && _GLIBCXX_USE_ALLOCATOR_NEW
 #define _GLIBCXX_TXN_SAFE transaction_safe
@@ -596,6 +615,11 @@ namespace std
 # ifndef _GLIBCXX_USE_C99_WCHAR
 # define _GLIBCXX_USE_C99_WCHAR _GLIBCXX98_USE_C99_WCHAR
 # endif
+#endif
+
+/* Define if __float128 is supported on this host. */
+#if defined(__FLOAT128__) || defined(__SIZEOF_FLOAT128__)
+#define _GLIBCXX_USE_FLOAT128
 #endif
 
 // End of prewritten config; the settings discovered at configure time follow.

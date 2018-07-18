@@ -3,7 +3,7 @@
 
 @interface foo
 struct f {}
-struct g { int a; }; /* { dg-error "expected ';', identifier or " "" } */
+struct g { int a; }; /* { dg-error "expected ';', identifier or " } */
 
 - (struct f *) a;
 - (struct g *) b;
@@ -11,5 +11,5 @@ struct g { int a; }; /* { dg-error "expected ';', identifier or " "" } */
 
 int f(struct g *x)
 {
-  return x->a; /* { dg-bogus " has no member " "" } */
+  return x->a; /* { dg-bogus " has no member " } */
 }

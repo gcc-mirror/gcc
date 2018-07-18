@@ -13,5 +13,5 @@ void
 foo (bool b)
 {
   b ? c : s;			// { dg-error "?:" }
-  // { dg-message "convert" "" { target *-*-* } 15 }
+  // { dg-message "convert" "" { target *-*-* } .-1 }
 }

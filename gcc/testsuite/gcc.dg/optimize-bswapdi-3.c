@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target bswap64 } */
+/* { dg-require-effective-target bswap } */
 /* { dg-require-effective-target stdint_types } */
 /* { dg-options "-O2 -fdump-tree-bswap" } */
 /* { dg-additional-options "-mzarch" { target s390*-*-* } } */
@@ -61,4 +61,4 @@ uint64_t read_be64_3 (unsigned char *data)
 }
 
 /* { dg-final { scan-tree-dump-times "64 bit load in target endianness found at" 3 "bswap" } } */
-/* { dg-final { scan-tree-dump-times "64 bit bswap implementation found at" 3 "bswap" { xfail alpha*-*-* arm*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "64 bit bswap implementation found at" 3 "bswap" } } */

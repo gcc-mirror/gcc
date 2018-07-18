@@ -18,7 +18,7 @@ contains
  subroutine doIt()
    type(t) :: x
    x%ppt => deferred_len
-   if ("abc" /= x%ppt()) call abort()
+   if ("abc" /= x%ppt()) STOP 1
  end subroutine doIt
 end module test
 

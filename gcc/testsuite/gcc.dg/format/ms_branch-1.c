@@ -24,5 +24,5 @@ foo (long l, int nfoo)
   printf ((nfoo > 1) ? "%d foos" : ((nfoo > 0) ? "%ld foo" : "%d foos"), nfoo); /* { dg-warning "long int" "wrong type" } */
   /* Extra arguments to NULL should be complained about.  */
   printf (NULL, "foo"); /* { dg-warning "too many" "NULL extra args" } */
-  /* { dg-warning "null" "null format arg" { target *-*-* } 26 } */
+  /* { dg-warning "null" "null format arg" { target *-*-* } .-1 } */
 }

@@ -18,6 +18,5 @@ bar (void)
      6.3.15 does not permit conditional expressions between arrays.
      In C99, they decay to pointers.  */
   (e ? (d ? b : c).c : (e ? b : c).c); /* { dg-bogus "warning" "warning in place of error" } */
+  /* { dg-error "array" "bad conditional" { target *-*-* } .-1 } */
 }
-
-/* { dg-error "array" "bad conditional" { target *-*-* } 20 } */

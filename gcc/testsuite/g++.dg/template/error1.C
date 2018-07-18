@@ -8,6 +8,6 @@
 template <class T> void make_pair(T x);
 
 void foo(){
-  struct fps_chan_ID fps; // { dg-error "incomplete" "" }
-  make_pair(fps);         // { dg-bogus "no matching function" "" }
+  struct fps_chan_ID fps; // { dg-error "incomplete" }
+  make_pair(fps);         // { dg-bogus "no matching function" }
 }

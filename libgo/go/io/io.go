@@ -233,7 +233,9 @@ type WriterAt interface {
 
 // ByteReader is the interface that wraps the ReadByte method.
 //
-// ReadByte reads and returns the next byte from the input.
+// ReadByte reads and returns the next byte from the input or
+// any error encountered. If ReadByte returns an error, no input
+// byte was consumed, and the returned byte value is undefined.
 type ByteReader interface {
 	ReadByte() (byte, error)
 }
@@ -383,8 +385,16 @@ func copyBuffer(dst Writer, src Reader, buf []byte) (written int64, err error) {
 	if rt, ok := dst.(ReaderFrom); ok {
 		return rt.ReadFrom(src)
 	}
+	size := 32 * 1024
+	if l, ok := src.(*LimitedReader); ok && int64(size) > l.N {
+		if l.N < 1 {
+			size = 1
+		} else {
+			size = int(l.N)
+		}
+	}
 	if buf == nil {
-		buf = make([]byte, 32*1024)
+		buf = make([]byte, size)
 	}
 	for {
 		nr, er := src.Read(buf)
@@ -402,11 +412,10 @@ func copyBuffer(dst Writer, src Reader, buf []byte) (written int64, err error) {
 				break
 			}
 		}
-		if er == EOF {
-			break
-		}
 		if er != nil {
-			err = er
+			if er != EOF {
+				err = er
+			}
 			break
 		}
 	}
@@ -421,6 +430,7 @@ func LimitReader(r Reader, n int64) Reader { return &LimitedReader{r, n} }
 // A LimitedReader reads from R but limits the amount of
 // data returned to just N bytes. Each call to Read
 // updates N to reflect the new amount remaining.
+// Read returns EOF when N <= 0 or when the underlying R returns EOF.
 type LimitedReader struct {
 	R Reader // underlying reader
 	N int64  // max bytes remaining

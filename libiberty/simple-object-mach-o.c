@@ -1,5 +1,5 @@
 /* simple-object-mach-o.c -- routines to manipulate Mach-O object files.
-   Copyright 2010, 2011, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 This program is free software; you can redistribute it and/or modify it
@@ -1374,5 +1374,6 @@ const struct simple_object_functions simple_object_mach_o_functions =
   simple_object_mach_o_release_attributes,
   simple_object_mach_o_start_write,
   simple_object_mach_o_write_to_file,
-  simple_object_mach_o_release_write
+  simple_object_mach_o_release_write,
+  NULL
 };

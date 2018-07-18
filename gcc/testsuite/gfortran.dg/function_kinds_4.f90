@@ -19,7 +19,7 @@ integer(i1) function three()
   use m1, only: i2
   use m2                ! This provides the function kind
   three = i1
-  if(three /= kind(three)) call abort()
+  if(three /= kind(three)) STOP 1
 end function three
 
 ! At one stage during the development of the patch, this started failing
@@ -39,17 +39,17 @@ implicit none
  real (kind(0d0)) foo
  i = one()
  i = two()
- if(three() /= 8) call abort()
- if (int(foo()) /= 8) call abort ()
+ if(three() /= 8) STOP 2
+ if (int(foo()) /= 8) STOP 3
 contains
  integer(i1) function one()  ! Host associated kind
-   if (kind(one) /= 4) call abort()
+   if (kind(one) /= 4) STOP 4
    one = 1
  end function one
  integer(i1) function two()  ! Use associated kind
    use m1, only: i2
    use m2
-   if (kind(two) /= 8) call abort()
+   if (kind(two) /= 8) STOP 5
    two = 1
  end function two
 end program main

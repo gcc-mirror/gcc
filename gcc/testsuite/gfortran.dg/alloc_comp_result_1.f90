@@ -28,5 +28,5 @@ program test
   implicit none
   type(t_2) x(1)
   x = a_fun(0)
-  if (any (x(1)%mons%coeff .ne. 99)) call abort
+  if (any (x(1)%mons%coeff .ne. 99)) STOP 1
 end program test

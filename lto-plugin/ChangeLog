@@ -1,3 +1,45 @@
+2018-05-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto-plugin.c: (non_claimed_files): New static var.
+	(linker_ouput_known): New static var.
+	(all_symbols_read_handler): When user specifies linker output do not
+	imply it; output warning when nonlto-rel mode is forced.
+	(claim_file_header): Record number of nonclaimed files.
+	(process_option): Remember if linker output is known
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-07-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR lto/81487
+	* lto-plugin.c (claim_file_handler): Use xasprintf instead of
+	asprintf.
+	[hi!=0]: Swap hi and lo arguments supplied to xasprintf.
+
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead of cat to
+	get version from BASE-VER file.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2016-02-25  Ilya Verbin  <ilya.verbin@intel.com>
 
 	PR driver/68463

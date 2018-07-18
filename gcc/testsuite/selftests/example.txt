@@ -1,0 +1,1 @@
+example of a selftest file

@@ -17,12 +17,12 @@ contains
     type(t), pointer :: func
     type(t), target :: a
     integer, save :: i = 0
-    if (i /= 0) call abort ! multiple calls would cause this abort
+    if (i /= 0) STOP 1! multiple calls would cause this abort
     i = i + 1
     func => a
   end function func
   subroutine sub (a)
     type(t), intent(IN), target :: a
-    if (any (a%A .ne. [1,2,3])) call abort
+    if (any (a%A .ne. [1,2,3])) STOP 2
   end subroutine sub
 end

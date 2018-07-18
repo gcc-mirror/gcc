@@ -1,4 +1,4 @@
-/* Copyright (C) 2001-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Joseph Myers <jsm28@cam.ac.uk>.
 
 This file is part of GCC.
@@ -18,7 +18,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This header provides a declarative way of describing the attributes
-   that are applied to some functions by default.
+   that are applied to some built-in functions by default.  Attributes
+   that are meant to be used by user-defined functions but aren't used
+   by any built-ins, or attributes that apply to types or variables
+   but not to functions need not and should not be defined here.
 
    Before including this header, you must define the following macros.
    In each case where there is an ENUM, it is an identifier used to
@@ -72,6 +75,9 @@ DEF_ATTR_FOR_STRING (STR1, "1")
 		      ATTR_##VALUE1, ATTR_LIST_##VALUE2)
 DEF_LIST_INT_INT (1,0)
 DEF_LIST_INT_INT (1,2)
+DEF_LIST_INT_INT (1,3)
+DEF_LIST_INT_INT (1,4)
+DEF_LIST_INT_INT (1,5)
 DEF_LIST_INT_INT (2,0)
 DEF_LIST_INT_INT (2,3)
 DEF_LIST_INT_INT (3,0)
@@ -82,7 +88,10 @@ DEF_LIST_INT_INT (5,0)
 DEF_LIST_INT_INT (5,6)
 #undef DEF_LIST_INT_INT
 
-/* Construct trees for identifiers.  */
+/* Construct trees for identifiers used in built-in function attributes.
+   The construction contributes to startup costs so only attributes that
+   are used to define built-ins should be defined here.  */
+DEF_ATTR_IDENT (ATTR_ALLOC_SIZE, "alloc_size")
 DEF_ATTR_IDENT (ATTR_COLD, "cold")
 DEF_ATTR_IDENT (ATTR_CONST, "const")
 DEF_ATTR_IDENT (ATTR_FORMAT, "format")
@@ -108,6 +117,7 @@ DEF_ATTR_IDENT (ATTR_TYPEGENERIC, "type generic")
 DEF_ATTR_IDENT (ATTR_TM_REGPARM, "*tm regparm")
 DEF_ATTR_IDENT (ATTR_TM_TMPURE, "transaction_pure")
 DEF_ATTR_IDENT (ATTR_RETURNS_TWICE, "returns_twice")
+DEF_ATTR_IDENT (ATTR_RETURNS_NONNULL, "returns_nonnull")
 
 DEF_ATTR_TREE_LIST (ATTR_NOVOPS_LIST, ATTR_NOVOPS, ATTR_NULL, ATTR_NULL)
 
@@ -131,6 +141,8 @@ DEF_ATTR_TREE_LIST (ATTR_NORETURN_NOTHROW_LIST, ATTR_NORETURN,	\
 			ATTR_NULL, ATTR_NOTHROW_LIST)
 DEF_ATTR_TREE_LIST (ATTR_NORETURN_NOTHROW_LEAF_LIST, ATTR_NORETURN,\
 			ATTR_NULL, ATTR_NOTHROW_LEAF_LIST)
+DEF_ATTR_TREE_LIST (ATTR_NORETURN_NOTHROW_LEAF_COLD_LIST, ATTR_COLD,\
+			ATTR_NULL, ATTR_NORETURN_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_RT_NOTHROW_LEAF_LIST, ATTR_RETURNS_TWICE,\
 			ATTR_NULL, ATTR_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_COLD_NOTHROW_LEAF_LIST, ATTR_COLD,\
@@ -139,6 +151,8 @@ DEF_ATTR_TREE_LIST (ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST, ATTR_COLD,\
 			ATTR_NULL, ATTR_NORETURN_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_CONST_NORETURN_NOTHROW_LEAF_LIST, ATTR_CONST,\
 			ATTR_NULL, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_ATTR_TREE_LIST (ATTR_CONST_NORETURN_NOTHROW_LEAF_COLD_LIST, ATTR_COLD,\
+			ATTR_NULL, ATTR_CONST_NORETURN_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_LIST, ATTR_MALLOC,	\
 			ATTR_NULL, ATTR_NOTHROW_LIST)
 DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_LEAF_LIST, ATTR_MALLOC,	\
@@ -149,6 +163,29 @@ DEF_ATTR_TREE_LIST (ATTR_SENTINEL_NOTHROW_LEAF_LIST, ATTR_SENTINEL,	\
 			ATTR_NULL, ATTR_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_COLD_CONST_NORETURN_NOTHROW_LEAF_LIST, ATTR_CONST,\
 			ATTR_NULL, ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST)
+
+/* Allocation functions like malloc and realloc whose first argument
+   with _SIZE_1, or second argument with _SIZE_2, specifies the size
+   of the allocated object.  */
+DEF_ATTR_TREE_LIST (ATTR_MALLOC_SIZE_1_NOTHROW_LIST, ATTR_ALLOC_SIZE,	\
+			ATTR_LIST_1, ATTR_MALLOC_NOTHROW_LIST)
+DEF_ATTR_TREE_LIST (ATTR_ALLOC_SIZE_2_NOTHROW_LIST, ATTR_ALLOC_SIZE,	\
+			ATTR_LIST_2, ATTR_MALLOC_NOTHROW_LIST)
+DEF_ATTR_TREE_LIST (ATTR_MALLOC_SIZE_1_NOTHROW_LEAF_LIST, ATTR_ALLOC_SIZE, \
+		        ATTR_LIST_1, ATTR_MALLOC_NOTHROW_LEAF_LIST)
+/* Alloca is just like malloc except that it never returns null.  */
+DEF_ATTR_TREE_LIST (ATTR_ALLOCA_SIZE_1_NOTHROW_LEAF_LIST, ATTR_RETURNS_NONNULL,
+		    ATTR_NULL, ATTR_MALLOC_SIZE_1_NOTHROW_LEAF_LIST)
+
+/* Allocation functions like calloc the product of whose first two arguments
+   specifies the size of the allocated object.  */
+DEF_ATTR_TREE_LIST (ATTR_MALLOC_SIZE_1_2_NOTHROW_LEAF_LIST, ATTR_ALLOC_SIZE, \
+		        ATTR_LIST_1_2, ATTR_MALLOC_NOTHROW_LEAF_LIST)
+
+/* Allocation functions like realloc whose second argument specifies
+   the size of the allocated object.  */
+DEF_ATTR_TREE_LIST (ATTR_ALLOC_SIZE_2_NOTHROW_LEAF_LIST, ATTR_ALLOC_SIZE, \
+		        ATTR_LIST_2, ATTR_NOTHROW_LEAF_LIST)
 
 /* Functions whose pointer parameter(s) are all nonnull.  */
 DEF_ATTR_TREE_LIST (ATTR_NONNULL_LIST, ATTR_NONNULL, ATTR_NULL, ATTR_NULL)
@@ -183,6 +220,40 @@ DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_4, ATTR_NONNULL, ATTR_LIST_4, \
 /* Nothrow functions whose fifth parameter is a nonnull pointer.  */
 DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_5, ATTR_NONNULL, ATTR_LIST_5, \
 			ATTR_NOTHROW_LIST)
+
+/* Same as ATTR_NONNULL_1.  */
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_1, ATTR_NONNULL, ATTR_LIST_1, ATTR_NULL)
+/* Functions like {v,}fprintf whose first and second parameters are
+   nonnull pointers.  As cancellation points the functions are not
+   nothrow.  */
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_2, ATTR_NONNULL, ATTR_LIST_1_2, ATTR_NULL)
+/* The following don't have {v,}fprintf forms.  They exist only to
+   make it possible to declare {v,}{f,s}printf attributes using
+   the same macro.  */
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_3, ATTR_NONNULL, ATTR_LIST_1_3, ATTR_NULL)
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_4, ATTR_NONNULL, ATTR_LIST_1_4, ATTR_NULL)
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_5, ATTR_NONNULL, ATTR_LIST_1_5, ATTR_NULL)
+
+/* Same as ATTR_NOTHROW_NONNULL_1.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_1, ATTR_NONNULL, ATTR_LIST_1,
+		    ATTR_NOTHROW_LIST)
+/* Nothrow functions like {v,}sprintf whose first and second parameters
+   are nonnull pointers.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_2, ATTR_NONNULL, ATTR_LIST_1_2, \
+		    ATTR_NOTHROW_LIST)
+/* Nothrow functions like {v,}snprintf whose first and third parameters
+   are nonnull pointers.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_3, ATTR_NONNULL, ATTR_LIST_1_3, \
+		    ATTR_NOTHROW_LIST)
+/* Nothrow functions like {v,}sprintf_chk whose first and fourth parameters
+   are nonnull pointers.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_4, ATTR_NONNULL, ATTR_LIST_1_4, \
+		    ATTR_NOTHROW_LIST)
+/* Nothrow functions like {v,}snprintf_chk whose first and fifth parameters
+   are nonnull pointers.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_5, ATTR_NONNULL, ATTR_LIST_1_5, \
+		    ATTR_NOTHROW_LIST)
+		
 /* Nothrow leaf functions which are type-generic.  */
 DEF_ATTR_TREE_LIST (ATTR_NOTHROW_TYPEGENERIC_LEAF, ATTR_TYPEGENERIC, ATTR_NULL, \
 			ATTR_NOTHROW_LEAF_LIST)
@@ -196,6 +267,10 @@ DEF_ATTR_TREE_LIST (ATTR_CONST_NOTHROW_NONNULL, ATTR_CONST, ATTR_NULL, \
 /* Nothrow leaf functions whose pointer parameter(s) are all nonnull,
    and which return their first argument.  */
 DEF_ATTR_TREE_LIST (ATTR_RET1_NOTHROW_NONNULL_LEAF, ATTR_FNSPEC, ATTR_LIST_STR1, \
+			ATTR_NOTHROW_NONNULL_LEAF)
+/* Nothrow leaf functions whose pointer parameter(s) are all nonnull,
+   and return value is also nonnull.  */
+DEF_ATTR_TREE_LIST (ATTR_RETNONNULL_NOTHROW_LEAF, ATTR_RETURNS_NONNULL, ATTR_NULL, \
 			ATTR_NOTHROW_NONNULL_LEAF)
 /* Nothrow const leaf functions whose pointer parameter(s) are all nonnull.  */
 DEF_ATTR_TREE_LIST (ATTR_CONST_NOTHROW_NONNULL_LEAF, ATTR_CONST, ATTR_NULL, \
@@ -219,17 +294,23 @@ DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_NONNULL, ATTR_MALLOC, ATTR_NULL, \
 DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_NONNULL_LEAF, ATTR_MALLOC, ATTR_NULL, \
 			ATTR_NOTHROW_NONNULL_LEAF)
 
-/* Construct a tree for a format attribute.  */
+/* Construct a tree for the format attribute (and implicitly nonnull).  */
 #define DEF_FORMAT_ATTRIBUTE(TYPE, FA, VALUES)				 \
   DEF_ATTR_TREE_LIST (ATTR_##TYPE##_##VALUES, ATTR_NULL,		 \
 		      ATTR_##TYPE, ATTR_LIST_##VALUES)			 \
   DEF_ATTR_TREE_LIST (ATTR_FORMAT_##TYPE##_##VALUES, ATTR_FORMAT,	 \
 		      ATTR_##TYPE##_##VALUES, ATTR_NONNULL_##FA)
+
+/* Construct a tree for the format and nothrow attributes (format
+   implies nonnull).  */
 #define DEF_FORMAT_ATTRIBUTE_NOTHROW(TYPE, FA, VALUES)			 \
   DEF_ATTR_TREE_LIST (ATTR_##TYPE##_##VALUES, ATTR_NULL,		 \
 		      ATTR_##TYPE, ATTR_LIST_##VALUES)			 \
   DEF_ATTR_TREE_LIST (ATTR_FORMAT_##TYPE##_NOTHROW_##VALUES, ATTR_FORMAT,\
 		      ATTR_##TYPE##_##VALUES, ATTR_NOTHROW_NONNULL_##FA)
+
+/* Construct one tree for the format attribute and another for the format
+   and nothrow attributes (in both cases format implies nonnull).  */
 #define DEF_FORMAT_ATTRIBUTE_BOTH(TYPE, FA, VALUES)			 \
   DEF_ATTR_TREE_LIST (ATTR_##TYPE##_##VALUES, ATTR_NULL,		 \
 		      ATTR_##TYPE, ATTR_LIST_##VALUES)			 \
@@ -237,6 +318,18 @@ DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_NONNULL_LEAF, ATTR_MALLOC, ATTR_NULL, \
 		      ATTR_##TYPE##_##VALUES, ATTR_NONNULL_##FA)	 \
   DEF_ATTR_TREE_LIST (ATTR_FORMAT_##TYPE##_NOTHROW_##VALUES, ATTR_FORMAT,\
 		      ATTR_##TYPE##_##VALUES, ATTR_NOTHROW_NONNULL_##FA)
+
+/* Construct a pair of trees for the nonnull attribute for the first
+   argument, plus format printf attribute (format implies nonnull):
+   the first ordinary and the second nothrow.  */
+#define DEF_FORMAT_ATTRIBUTE_NONNULL(TYPE, FA, VALUES)			 \
+  DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_FORMAT_##TYPE##_##VALUES,   	 \
+  		      ATTR_FORMAT, ATTR_##TYPE##_##VALUES, 	 	 \
+		      ATTR_NONNULL_1_##FA)				 \
+  DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_FORMAT_##TYPE##_##VALUES,   \
+  		      ATTR_FORMAT, ATTR_##TYPE##_##VALUES, 	 	 \
+		      ATTR_NOTHROW_NONNULL_1_##FA)
+
 DEF_FORMAT_ATTRIBUTE(PRINTF,1,1_0)
 DEF_FORMAT_ATTRIBUTE(PRINTF,1,1_2)
 DEF_FORMAT_ATTRIBUTE_BOTH(PRINTF,2,2_0)
@@ -247,6 +340,26 @@ DEF_FORMAT_ATTRIBUTE_NOTHROW(PRINTF,4,4_0)
 DEF_FORMAT_ATTRIBUTE_NOTHROW(PRINTF,4,4_5)
 DEF_FORMAT_ATTRIBUTE_NOTHROW(PRINTF,5,5_0)
 DEF_FORMAT_ATTRIBUTE_NOTHROW(PRINTF,5,5_6)
+
+/* Attributes for fprintf(f, f, va).  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,1,1_2)
+/* Attributes for v{f,s}printf(d, f, va).  vsprintf is nothrow, vfprintf
+   is not.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,2,2_0)
+/* Attributes for {f,s}printf(d, f, ...).  sprintf is nothrow, fprintf
+   is not.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,2,2_3)
+/* Attributes for vprintf_chk.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,3,3_0)
+/* Attributes for printf_chk.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,3,3_4)
+/* Attributes for v{f,s}printf_chk(d, t, bos, f, va).  vsprintf_chk is
+   nothrow, vfprintf_chk is not.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,4,4_0)
+/* Attributes for {f,s}printf_chk(d, t, bos, f, ...).  sprintf_chk is
+   nothrow, fprintf_chk is not.  */
+DEF_FORMAT_ATTRIBUTE_NONNULL(PRINTF,4,4_5)
+
 DEF_FORMAT_ATTRIBUTE(SCANF,1,1_0)
 DEF_FORMAT_ATTRIBUTE(SCANF,1,1_2)
 DEF_FORMAT_ATTRIBUTE_BOTH(SCANF,2,2_0)
@@ -283,6 +396,9 @@ DEF_ATTR_TREE_LIST (ATTR_TMPURE_NOTHROW_LEAF_LIST,
 		    ATTR_TM_TMPURE, ATTR_NULL, ATTR_NOTHROW_LEAF_LIST)
 DEF_ATTR_TREE_LIST (ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST,
 		    ATTR_TM_TMPURE, ATTR_NULL, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_ATTR_TREE_LIST (ATTR_TMPURE_NORETURN_NOTHROW_LEAF_COLD_LIST,
+		    ATTR_COLD, ATTR_NULL,
+		    ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST)
 
 /* Construct a tree for a format_arg attribute.  */
 #define DEF_FORMAT_ARG_ATTRIBUTE(FA)					\

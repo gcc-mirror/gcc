@@ -33,12 +33,12 @@ PROGRAM test_prog
  f_array(3)%f => f_array(1)%f
 
  r = f(1.,2.)
- if (abs(r-3.)>1E-3) call abort()
+ if (abs(r-3.)>1E-3) STOP 1
  r = f_array(1)%f(4.,2.)
- if (abs(r-6.)>1E-3) call abort()
+ if (abs(r-6.)>1E-3) STOP 2
  r = f_array(2)%f(5.,3.)
- if (abs(r-2.)>1E-3) call abort()
- if (abs(f_array(1)%f(1.,3.)-f_array(3)%f(2.,2.))>1E-3) call abort()
+ if (abs(r-2.)>1E-3) STOP 3
+ if (abs(f_array(1)%f(1.,3.)-f_array(3)%f(2.,2.))>1E-3) STOP 4
 
 CONTAINS
 

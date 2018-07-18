@@ -15,7 +15,7 @@
   call foo (x)
   y = reshape ([((t (i*j*2, "a"),i = 1,4), j=1,3)], [4,3])
   call bar(y, 4, 3, 1, -1, -4, -3)
-  if (any (x%i .ne. y%i)) call abort
+  if (any (x%i .ne. y%i)) STOP 1
 contains
   SUBROUTINE foo (x)
     TYPE(t) x(4, 3)      ! No dependency at all
@@ -28,3 +28,5 @@ contains
                  6, x(-MF4:-MF1:-NF1, -MF1:-MF3)%i, 9)
   END SUBROUTINE
 end
+
+! { dg-prune-output "reading \[0-9\]+ bytes from a region" }

@@ -1,6 +1,6 @@
 /* PR debug/50983 */
 /* { dg-do compile { target *-*-gnu* } } */
-/* { dg-options "-O0 -gdwarf" } */
+/* { dg-options "-O0 -gdwarf -gno-column-info" } */
 /* { dg-final { scan-assembler "is_stmt 1" } } */
 
 int i;

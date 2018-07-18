@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -266,20 +266,14 @@ namespace __gnu_pbds
 	const entry_cmp& m_cmp = static_cast<entry_cmp&>(*this);
 	entry_pointer end = m_a_entries + m_size;
 	std::make_heap(m_a_entries, end, m_cmp);
-	_GLIBCXX_DEBUG_ASSERT(is_heap());
       }
 
       void
       push_heap()
       {
-	if (!is_heap())
-	  make_heap();
-	else
-	  {
-	    const entry_cmp& m_cmp = static_cast<entry_cmp&>(*this);
-	    entry_pointer end = m_a_entries + m_size;
-	    std::push_heap(m_a_entries, end, m_cmp);
-	  }
+	const entry_cmp& m_cmp = static_cast<entry_cmp&>(*this);
+	entry_pointer end = m_a_entries + m_size;
+	std::push_heap(m_a_entries, end, m_cmp);
       }
 
       void
@@ -288,15 +282,6 @@ namespace __gnu_pbds
 	const entry_cmp& m_cmp = static_cast<entry_cmp&>(*this);
 	entry_pointer end = m_a_entries + m_size;
 	std::pop_heap(m_a_entries, end, m_cmp);
-      }
-
-      bool
-      is_heap()
-      {
-	const entry_cmp& m_cmp = static_cast<entry_cmp&>(*this);
-	entry_pointer end = m_a_entries + m_size;
-	bool p = std::__is_heap(m_a_entries, end, m_cmp);
-	return p;
       }
 
 #ifdef _GLIBCXX_DEBUG

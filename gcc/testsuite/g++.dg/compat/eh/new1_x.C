@@ -4,7 +4,11 @@
 extern "C" void exit (int);
 extern "C" void abort (void);
 
-extern void * operator new[] (std::size_t s) throw (std::bad_alloc);
+extern void * operator new[] (std::size_t s)
+#if __cplusplus < 201103L
+throw (std::bad_alloc)
+#endif
+;
 extern void operator delete[] (void *p) throw ();
 
 struct A

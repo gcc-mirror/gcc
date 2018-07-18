@@ -11,5 +11,5 @@ program main
 !  foo = foo_type("hello world ")
   write (buf1,*)  foo
   write (buf2,*)  (foo%name(i), i=1,13)
-  if (buf1.ne.buf2) call abort
+  if (buf1.ne.buf2) STOP 1
 end program main

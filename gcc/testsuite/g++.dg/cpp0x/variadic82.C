@@ -3,9 +3,9 @@
 
 template<typename> struct A;
 
-template<typename... T> struct A<T*...> // { dg-bogus "cannot expand" "" }
+template<typename... T> struct A<T*...> // { dg-error "" }
 {
   struct B;
 };
 
-A<void*> a; // { dg-bogus "incomplete type" "" }
+A<void*> a;

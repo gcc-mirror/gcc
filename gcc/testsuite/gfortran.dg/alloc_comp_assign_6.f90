@@ -48,6 +48,6 @@ program VST28
   res = res//char_a(6:6)
   if(size(res%chars) /= 2 .or. any(res%chars /= ['e','f'])) then
     write(*,*) 'ERROR: should be ef, got: ', res%chars, size(res%chars)
-    call abort ()
+    STOP 1
   end if
 end program VST28

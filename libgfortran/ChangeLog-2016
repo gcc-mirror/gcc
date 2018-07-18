@@ -1,0 +1,1541 @@
+2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/random.c: Do not include <sys/types.h> header.
+	* m4/maxloc0.m4: Do not include <limits.h> header.
+	* m4/maxloc1.m4: Do not include <limits.h> header.
+	* m4/minloc0.m4: Do not include <limits.h> header.
+	* m4/minloc1.m4: Do not include <limits.h> header.
+	* m4/norm2.m4: Do not include <math.h> header.
+	* m4/parity.m4: Do not include <math.h> header.
+	* runtime/minimal.c: Remove <limits.h> and <errno.h> headers.
+	* generated/maxloc0_16_i1.c: Regenerate.
+	* generated/maxloc0_16_i16.c: Regenerate.
+	* generated/maxloc0_16_i2.c: Regenerate.
+	* generated/maxloc0_16_i4.c: Regenerate.
+	* generated/maxloc0_16_i8.c: Regenerate.
+	* generated/maxloc0_16_r10.c: Regenerate.
+	* generated/maxloc0_16_r16.c: Regenerate.
+	* generated/maxloc0_16_r4.c: Regenerate.
+	* generated/maxloc0_16_r8.c: Regenerate.
+	* generated/maxloc0_4_i1.c: Regenerate.
+	* generated/maxloc0_4_i16.c: Regenerate.
+	* generated/maxloc0_4_i2.c: Regenerate.
+	* generated/maxloc0_4_i4.c: Regenerate.
+	* generated/maxloc0_4_i8.c: Regenerate.
+	* generated/maxloc0_4_r10.c: Regenerate.
+	* generated/maxloc0_4_r16.c: Regenerate.
+	* generated/maxloc0_4_r4.c: Regenerate.
+	* generated/maxloc0_4_r8.c: Regenerate.
+	* generated/maxloc0_8_i1.c: Regenerate.
+	* generated/maxloc0_8_i16.c: Regenerate.
+	* generated/maxloc0_8_i2.c: Regenerate.
+	* generated/maxloc0_8_i4.c: Regenerate.
+	* generated/maxloc0_8_i8.c: Regenerate.
+	* generated/maxloc0_8_r10.c: Regenerate.
+	* generated/maxloc0_8_r16.c: Regenerate.
+	* generated/maxloc0_8_r4.c: Regenerate.
+	* generated/maxloc0_8_r8.c: Regenerate.
+	* generated/maxloc1_16_i1.c: Regenerate.
+	* generated/maxloc1_16_i16.c: Regenerate.
+	* generated/maxloc1_16_i2.c: Regenerate.
+	* generated/maxloc1_16_i4.c: Regenerate.
+	* generated/maxloc1_16_i8.c: Regenerate.
+	* generated/maxloc1_16_r10.c: Regenerate.
+	* generated/maxloc1_16_r16.c: Regenerate.
+	* generated/maxloc1_16_r4.c: Regenerate.
+	* generated/maxloc1_16_r8.c: Regenerate.
+	* generated/maxloc1_4_i1.c: Regenerate.
+	* generated/maxloc1_4_i16.c: Regenerate.
+	* generated/maxloc1_4_i2.c: Regenerate.
+	* generated/maxloc1_4_i4.c: Regenerate.
+	* generated/maxloc1_4_i8.c: Regenerate.
+	* generated/maxloc1_4_r10.c: Regenerate.
+	* generated/maxloc1_4_r16.c: Regenerate.
+	* generated/maxloc1_4_r4.c: Regenerate.
+	* generated/maxloc1_4_r8.c: Regenerate.
+	* generated/maxloc1_8_i1.c: Regenerate.
+	* generated/maxloc1_8_i16.c: Regenerate.
+	* generated/maxloc1_8_i2.c: Regenerate.
+	* generated/maxloc1_8_i4.c: Regenerate.
+	* generated/maxloc1_8_i8.c: Regenerate.
+	* generated/maxloc1_8_r10.c: Regenerate.
+	* generated/maxloc1_8_r16.c: Regenerate.
+	* generated/maxloc1_8_r4.c: Regenerate.
+	* generated/maxloc1_8_r8.c: Regenerate.
+	* generated/minloc0_16_i1.c: Regenerate.
+	* generated/minloc0_16_i16.c: Regenerate.
+	* generated/minloc0_16_i2.c: Regenerate.
+	* generated/minloc0_16_i4.c: Regenerate.
+	* generated/minloc0_16_i8.c: Regenerate.
+	* generated/minloc0_16_r10.c: Regenerate.
+	* generated/minloc0_16_r16.c: Regenerate.
+	* generated/minloc0_16_r4.c: Regenerate.
+	* generated/minloc0_16_r8.c: Regenerate.
+	* generated/minloc0_4_i1.c: Regenerate.
+	* generated/minloc0_4_i16.c: Regenerate.
+	* generated/minloc0_4_i2.c: Regenerate.
+	* generated/minloc0_4_i4.c: Regenerate.
+	* generated/minloc0_4_i8.c: Regenerate.
+	* generated/minloc0_4_r10.c: Regenerate.
+	* generated/minloc0_4_r16.c: Regenerate.
+	* generated/minloc0_4_r4.c: Regenerate.
+	* generated/minloc0_4_r8.c: Regenerate.
+	* generated/minloc0_8_i1.c: Regenerate.
+	* generated/minloc0_8_i16.c: Regenerate.
+	* generated/minloc0_8_i2.c: Regenerate.
+	* generated/minloc0_8_i4.c: Regenerate.
+	* generated/minloc0_8_i8.c: Regenerate.
+	* generated/minloc0_8_r10.c: Regenerate.
+	* generated/minloc0_8_r16.c: Regenerate.
+	* generated/minloc0_8_r4.c: Regenerate.
+	* generated/minloc0_8_r8.c: Regenerate.
+	* generated/minloc1_16_i1.c: Regenerate.
+	* generated/minloc1_16_i16.c: Regenerate.
+	* generated/minloc1_16_i2.c: Regenerate.
+	* generated/minloc1_16_i4.c: Regenerate.
+	* generated/minloc1_16_i8.c: Regenerate.
+	* generated/minloc1_16_r10.c: Regenerate.
+	* generated/minloc1_16_r16.c: Regenerate.
+	* generated/minloc1_16_r4.c: Regenerate.
+	* generated/minloc1_16_r8.c: Regenerate.
+	* generated/minloc1_4_i1.c: Regenerate.
+	* generated/minloc1_4_i16.c: Regenerate.
+	* generated/minloc1_4_i2.c: Regenerate.
+	* generated/minloc1_4_i4.c: Regenerate.
+	* generated/minloc1_4_i8.c: Regenerate.
+	* generated/minloc1_4_r10.c: Regenerate.
+	* generated/minloc1_4_r16.c: Regenerate.
+	* generated/minloc1_4_r4.c: Regenerate.
+	* generated/minloc1_4_r8.c: Regenerate.
+	* generated/minloc1_8_i1.c: Regenerate.
+	* generated/minloc1_8_i16.c: Regenerate.
+	* generated/minloc1_8_i2.c: Regenerate.
+	* generated/minloc1_8_i4.c: Regenerate.
+	* generated/minloc1_8_i8.c: Regenerate.
+	* generated/minloc1_8_r10.c: Regenerate.
+	* generated/minloc1_8_r16.c: Regenerate.
+	* generated/minloc1_8_r4.c: Regenerate.
+	* generated/minloc1_8_r8.c: Regenerate.
+	* generated/norm2_r10.c: Regenerate.
+	* generated/norm2_r16.c: Regenerate.
+	* generated/norm2_r4.c: Regenerate.
+	* generated/norm2_r8.c: Regenerate.
+	* generated/parity_l1.c: Regenerate.
+	* generated/parity_l16.c: Regenerate.
+	* generated/parity_l2.c: Regenerate.
+	* generated/parity_l4.c: Regenerate.
+	* generated/parity_l8.c: Regenerate.
+
+2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h: Include <stdlib.h> header.
+	* intrinsics/access.c: Do not include <stdlib.h> header.
+	* intrinsics/chdir.c: Do not include <stdlib.h> header.
+	* intrinsics/chmod.c: Do not include <stdlib.h> header.
+	* intrinsics/date_and_time.c: Do not include <stdlib.h> header.
+	* intrinsics/env.c: Do not include <stdlib.h> header.
+	* intrinsics/execute_command_line.c: Do not include <stdlib.h> header.
+	* intrinsics/exit.c: Do not include <stdlib.h> header.
+	* intrinsics/getcwd.c: Do not include <stdlib.h> header.
+	* intrinsics/getlog.c: Do not include <stdlib.h> header.
+	* intrinsics/link.c: Do not include <stdlib.h> header.
+	* intrinsics/move_alloc.c: Do not include <stdlib.h> header.
+	* intrinsics/perror.c: Do not include <stdlib.h> header.
+	* intrinsics/random.c: Do not include <stdlib.h> header.
+	* intrinsics/rename.c: Do not include <stdlib.h> header.
+	* intrinsics/reshape_generic.c: Do not include <stdlib.h> header.
+	* intrinsics/stat.c: Do not include <stdlib.h> header.
+	* intrinsics/symlnk.c: Do not include <stdlib.h> header.
+	* intrinsics/system.c: Do not include <stdlib.h> header.
+	* intrinsics/unlink.c: Do not include <stdlib.h> header.
+	* io/fbuf.c: Do not include <stdlib.h> header.
+	* io/format.c: Do not include <stdlib.h> header.
+	* io/intrinsics.c: Do not include <stdlib.h> header.
+	* io/list_read.c: Do not include <stdlib.h> header.
+	* io/lock.c: Do not include <stdlib.h> header.
+	* io/open.c: Do not include <stdlib.h> header.
+	* io/read.c: Do not include <stdlib.h> header.
+	* io/transfer.c: Do not include <stdlib.h> header.
+	* io/unit.c: Do not include <stdlib.h> header.
+	* io/unix.c: Do not include <stdlib.h> header.
+	* io/write.c: Do not include <stdlib.h> header.
+	* m4/all.m4: Do not include <stdlib.h> header.
+	* m4/any.m4: Do not include <stdlib.h> header.
+	* m4/bessel.m4: Do not include <stdlib.h> header.
+	* m4/count.m4: Do not include <stdlib.h> header.
+	* m4/cshift0.m4: Do not include <stdlib.h> header.
+	* m4/cshift1.m4: Do not include <stdlib.h> header.
+	* m4/eoshift1.m4: Do not include <stdlib.h> header.
+	* m4/eoshift3.m4: Do not include <stdlib.h> header.
+	* m4/iall.m4: Do not include <stdlib.h> header.
+	* m4/iany.m4: Do not include <stdlib.h> header.
+	* m4/in_pack.m4: Do not include <stdlib.h> header.
+	* m4/in_unpack.m4: Do not include <stdlib.h> header.
+	* m4/iparity.m4: Do not include <stdlib.h> header.
+	* m4/matmul.m4: Do not include <stdlib.h> header.
+	* m4/matmull.m4: Do not include <stdlib.h> header.
+	* m4/maxloc0.m4: Do not include <stdlib.h> header.
+	* m4/maxloc1.m4: Do not include <stdlib.h> header.
+	* m4/maxval.m4: Do not include <stdlib.h> header.
+	* m4/minloc0.m4: Do not include <stdlib.h> header.
+	* m4/minloc1.m4: Do not include <stdlib.h> header.
+	* m4/minval.m4: Do not include <stdlib.h> header.
+	* m4/norm2.m4: Do not include <stdlib.h> header.
+	* m4/pack.m4: Do not include <stdlib.h> header.
+	* m4/parity.m4: Do not include <stdlib.h> header.
+	* m4/product.m4: Do not include <stdlib.h> header.
+	* m4/reshape.m4: Do not include <stdlib.h> header.
+	* m4/shape.m4: Do not include <stdlib.h> header.
+	* m4/spread.m4: Do not include <stdlib.h> header.
+	* m4/sum.m4: Do not include <stdlib.h> header.
+	* m4/unpack.m4: Do not include <stdlib.h> header.
+	* runtime/environ.c: Do not include <stdlib.h> header.
+	* runtime/error.c: Do not include <stdlib.h> header.
+	* runtime/memory.c: Do not include <stdlib.h> header.
+	* runtime/minimal.c: Do not include <stdlib.h> header.
+	* runtime/string.c: Do not include <stdlib.h> header.
+	* generated/all_l1.c: Regenerate.
+	* generated/all_l16.c: Regenerate.
+	* generated/all_l2.c: Regenerate.
+	* generated/all_l4.c: Regenerate.
+	* generated/all_l8.c: Regenerate.
+	* generated/any_l1.c: Regenerate.
+	* generated/any_l16.c: Regenerate.
+	* generated/any_l2.c: Regenerate.
+	* generated/any_l4.c: Regenerate.
+	* generated/any_l8.c: Regenerate.
+	* generated/bessel_r10.c: Regenerate.
+	* generated/bessel_r16.c: Regenerate.
+	* generated/bessel_r4.c: Regenerate.
+	* generated/bessel_r8.c: Regenerate.
+	* generated/count_16_l.c: Regenerate.
+	* generated/count_1_l.c: Regenerate.
+	* generated/count_2_l.c: Regenerate.
+	* generated/count_4_l.c: Regenerate.
+	* generated/count_8_l.c: Regenerate.
+	* generated/cshift0_c10.c: Regenerate.
+	* generated/cshift0_c16.c: Regenerate.
+	* generated/cshift0_c4.c: Regenerate.
+	* generated/cshift0_c8.c: Regenerate.
+	* generated/cshift0_i1.c: Regenerate.
+	* generated/cshift0_i16.c: Regenerate.
+	* generated/cshift0_i2.c: Regenerate.
+	* generated/cshift0_i4.c: Regenerate.
+	* generated/cshift0_i8.c: Regenerate.
+	* generated/cshift0_r10.c: Regenerate.
+	* generated/cshift0_r16.c: Regenerate.
+	* generated/cshift0_r4.c: Regenerate.
+	* generated/cshift0_r8.c: Regenerate.
+	* generated/cshift1_16.c: Regenerate.
+	* generated/cshift1_4.c: Regenerate.
+	* generated/cshift1_8.c: Regenerate.
+	* generated/eoshift1_16.c: Regenerate.
+	* generated/eoshift1_4.c: Regenerate.
+	* generated/eoshift1_8.c: Regenerate.
+	* generated/eoshift3_16.c: Regenerate.
+	* generated/eoshift3_4.c: Regenerate.
+	* generated/eoshift3_8.c: Regenerate.
+	* generated/iall_i1.c: Regenerate.
+	* generated/iall_i16.c: Regenerate.
+	* generated/iall_i2.c: Regenerate.
+	* generated/iall_i4.c: Regenerate.
+	* generated/iall_i8.c: Regenerate.
+	* generated/iany_i1.c: Regenerate.
+	* generated/iany_i16.c: Regenerate.
+	* generated/iany_i2.c: Regenerate.
+	* generated/iany_i4.c: Regenerate.
+	* generated/iany_i8.c: Regenerate.
+	* generated/in_pack_c10.c: Regenerate.
+	* generated/in_pack_c16.c: Regenerate.
+	* generated/in_pack_c4.c: Regenerate.
+	* generated/in_pack_c8.c: Regenerate.
+	* generated/in_pack_i1.c: Regenerate.
+	* generated/in_pack_i16.c: Regenerate.
+	* generated/in_pack_i2.c: Regenerate.
+	* generated/in_pack_i4.c: Regenerate.
+	* generated/in_pack_i8.c: Regenerate.
+	* generated/in_pack_r10.c: Regenerate.
+	* generated/in_pack_r16.c: Regenerate.
+	* generated/in_pack_r4.c: Regenerate.
+	* generated/in_pack_r8.c: Regenerate.
+	* generated/in_unpack_c10.c: Regenerate.
+	* generated/in_unpack_c16.c: Regenerate.
+	* generated/in_unpack_c4.c: Regenerate.
+	* generated/in_unpack_c8.c: Regenerate.
+	* generated/in_unpack_i1.c: Regenerate.
+	* generated/in_unpack_i16.c: Regenerate.
+	* generated/in_unpack_i2.c: Regenerate.
+	* generated/in_unpack_i4.c: Regenerate.
+	* generated/in_unpack_i8.c: Regenerate.
+	* generated/in_unpack_r10.c: Regenerate.
+	* generated/in_unpack_r16.c: Regenerate.
+	* generated/in_unpack_r4.c: Regenerate.
+	* generated/in_unpack_r8.c: Regenerate.
+	* generated/iparity_i1.c: Regenerate.
+	* generated/iparity_i16.c: Regenerate.
+	* generated/iparity_i2.c: Regenerate.
+	* generated/iparity_i4.c: Regenerate.
+	* generated/iparity_i8.c: Regenerate.
+	* generated/matmul_c10.c: Regenerate.
+	* generated/matmul_c16.c: Regenerate.
+	* generated/matmul_c4.c: Regenerate.
+	* generated/matmul_c8.c: Regenerate.
+	* generated/matmul_i1.c: Regenerate.
+	* generated/matmul_i16.c: Regenerate.
+	* generated/matmul_i2.c: Regenerate.
+	* generated/matmul_i4.c: Regenerate.
+	* generated/matmul_i8.c: Regenerate.
+	* generated/matmul_l16.c: Regenerate.
+	* generated/matmul_l4.c: Regenerate.
+	* generated/matmul_l8.c: Regenerate.
+	* generated/matmul_r10.c: Regenerate.
+	* generated/matmul_r16.c: Regenerate.
+	* generated/matmul_r4.c: Regenerate.
+	* generated/matmul_r8.c: Regenerate.
+	* generated/maxloc0_16_i1.c: Regenerate.
+	* generated/maxloc0_16_i16.c: Regenerate.
+	* generated/maxloc0_16_i2.c: Regenerate.
+	* generated/maxloc0_16_i4.c: Regenerate.
+	* generated/maxloc0_16_i8.c: Regenerate.
+	* generated/maxloc0_16_r10.c: Regenerate.
+	* generated/maxloc0_16_r16.c: Regenerate.
+	* generated/maxloc0_16_r4.c: Regenerate.
+	* generated/maxloc0_16_r8.c: Regenerate.
+	* generated/maxloc0_4_i1.c: Regenerate.
+	* generated/maxloc0_4_i16.c: Regenerate.
+	* generated/maxloc0_4_i2.c: Regenerate.
+	* generated/maxloc0_4_i4.c: Regenerate.
+	* generated/maxloc0_4_i8.c: Regenerate.
+	* generated/maxloc0_4_r10.c: Regenerate.
+	* generated/maxloc0_4_r16.c: Regenerate.
+	* generated/maxloc0_4_r4.c: Regenerate.
+	* generated/maxloc0_4_r8.c: Regenerate.
+	* generated/maxloc0_8_i1.c: Regenerate.
+	* generated/maxloc0_8_i16.c: Regenerate.
+	* generated/maxloc0_8_i2.c: Regenerate.
+	* generated/maxloc0_8_i4.c: Regenerate.
+	* generated/maxloc0_8_i8.c: Regenerate.
+	* generated/maxloc0_8_r10.c: Regenerate.
+	* generated/maxloc0_8_r16.c: Regenerate.
+	* generated/maxloc0_8_r4.c: Regenerate.
+	* generated/maxloc0_8_r8.c: Regenerate.
+	* generated/maxloc1_16_i1.c: Regenerate.
+	* generated/maxloc1_16_i16.c: Regenerate.
+	* generated/maxloc1_16_i2.c: Regenerate.
+	* generated/maxloc1_16_i4.c: Regenerate.
+	* generated/maxloc1_16_i8.c: Regenerate.
+	* generated/maxloc1_16_r10.c: Regenerate.
+	* generated/maxloc1_16_r16.c: Regenerate.
+	* generated/maxloc1_16_r4.c: Regenerate.
+	* generated/maxloc1_16_r8.c: Regenerate.
+	* generated/maxloc1_4_i1.c: Regenerate.
+	* generated/maxloc1_4_i16.c: Regenerate.
+	* generated/maxloc1_4_i2.c: Regenerate.
+	* generated/maxloc1_4_i4.c: Regenerate.
+	* generated/maxloc1_4_i8.c: Regenerate.
+	* generated/maxloc1_4_r10.c: Regenerate.
+	* generated/maxloc1_4_r16.c: Regenerate.
+	* generated/maxloc1_4_r4.c: Regenerate.
+	* generated/maxloc1_4_r8.c: Regenerate.
+	* generated/maxloc1_8_i1.c: Regenerate.
+	* generated/maxloc1_8_i16.c: Regenerate.
+	* generated/maxloc1_8_i2.c: Regenerate.
+	* generated/maxloc1_8_i4.c: Regenerate.
+	* generated/maxloc1_8_i8.c: Regenerate.
+	* generated/maxloc1_8_r10.c: Regenerate.
+	* generated/maxloc1_8_r16.c: Regenerate.
+	* generated/maxloc1_8_r4.c: Regenerate.
+	* generated/maxloc1_8_r8.c: Regenerate.
+	* generated/maxval_i1.c: Regenerate.
+	* generated/maxval_i16.c: Regenerate.
+	* generated/maxval_i2.c: Regenerate.
+	* generated/maxval_i4.c: Regenerate.
+	* generated/maxval_i8.c: Regenerate.
+	* generated/maxval_r10.c: Regenerate.
+	* generated/maxval_r16.c: Regenerate.
+	* generated/maxval_r4.c: Regenerate.
+	* generated/maxval_r8.c: Regenerate.
+	* generated/minloc0_16_i1.c: Regenerate.
+	* generated/minloc0_16_i16.c: Regenerate.
+	* generated/minloc0_16_i2.c: Regenerate.
+	* generated/minloc0_16_i4.c: Regenerate.
+	* generated/minloc0_16_i8.c: Regenerate.
+	* generated/minloc0_16_r10.c: Regenerate.
+	* generated/minloc0_16_r16.c: Regenerate.
+	* generated/minloc0_16_r4.c: Regenerate.
+	* generated/minloc0_16_r8.c: Regenerate.
+	* generated/minloc0_4_i1.c: Regenerate.
+	* generated/minloc0_4_i16.c: Regenerate.
+	* generated/minloc0_4_i2.c: Regenerate.
+	* generated/minloc0_4_i4.c: Regenerate.
+	* generated/minloc0_4_i8.c: Regenerate.
+	* generated/minloc0_4_r10.c: Regenerate.
+	* generated/minloc0_4_r16.c: Regenerate.
+	* generated/minloc0_4_r4.c: Regenerate.
+	* generated/minloc0_4_r8.c: Regenerate.
+	* generated/minloc0_8_i1.c: Regenerate.
+	* generated/minloc0_8_i16.c: Regenerate.
+	* generated/minloc0_8_i2.c: Regenerate.
+	* generated/minloc0_8_i4.c: Regenerate.
+	* generated/minloc0_8_i8.c: Regenerate.
+	* generated/minloc0_8_r10.c: Regenerate.
+	* generated/minloc0_8_r16.c: Regenerate.
+	* generated/minloc0_8_r4.c: Regenerate.
+	* generated/minloc0_8_r8.c: Regenerate.
+	* generated/minloc1_16_i1.c: Regenerate.
+	* generated/minloc1_16_i16.c: Regenerate.
+	* generated/minloc1_16_i2.c: Regenerate.
+	* generated/minloc1_16_i4.c: Regenerate.
+	* generated/minloc1_16_i8.c: Regenerate.
+	* generated/minloc1_16_r10.c: Regenerate.
+	* generated/minloc1_16_r16.c: Regenerate.
+	* generated/minloc1_16_r4.c: Regenerate.
+	* generated/minloc1_16_r8.c: Regenerate.
+	* generated/minloc1_4_i1.c: Regenerate.
+	* generated/minloc1_4_i16.c: Regenerate.
+	* generated/minloc1_4_i2.c: Regenerate.
+	* generated/minloc1_4_i4.c: Regenerate.
+	* generated/minloc1_4_i8.c: Regenerate.
+	* generated/minloc1_4_r10.c: Regenerate.
+	* generated/minloc1_4_r16.c: Regenerate.
+	* generated/minloc1_4_r4.c: Regenerate.
+	* generated/minloc1_4_r8.c: Regenerate.
+	* generated/minloc1_8_i1.c: Regenerate.
+	* generated/minloc1_8_i16.c: Regenerate.
+	* generated/minloc1_8_i2.c: Regenerate.
+	* generated/minloc1_8_i4.c: Regenerate.
+	* generated/minloc1_8_i8.c: Regenerate.
+	* generated/minloc1_8_r10.c: Regenerate.
+	* generated/minloc1_8_r16.c: Regenerate.
+	* generated/minloc1_8_r4.c: Regenerate.
+	* generated/minloc1_8_r8.c: Regenerate.
+	* generated/minval_i1.c: Regenerate.
+	* generated/minval_i16.c: Regenerate.
+	* generated/minval_i2.c: Regenerate.
+	* generated/minval_i4.c: Regenerate.
+	* generated/minval_i8.c: Regenerate.
+	* generated/minval_r10.c: Regenerate.
+	* generated/minval_r16.c: Regenerate.
+	* generated/minval_r4.c: Regenerate.
+	* generated/minval_r8.c: Regenerate.
+	* generated/norm2_r10.c: Regenerate.
+	* generated/norm2_r16.c: Regenerate.
+	* generated/norm2_r4.c: Regenerate.
+	* generated/norm2_r8.c: Regenerate.
+	* generated/pack_c10.c: Regenerate.
+	* generated/pack_c16.c: Regenerate.
+	* generated/pack_c4.c: Regenerate.
+	* generated/pack_c8.c: Regenerate.
+	* generated/pack_i1.c: Regenerate.
+	* generated/pack_i16.c: Regenerate.
+	* generated/pack_i2.c: Regenerate.
+	* generated/pack_i4.c: Regenerate.
+	* generated/pack_i8.c: Regenerate.
+	* generated/pack_r10.c: Regenerate.
+	* generated/pack_r16.c: Regenerate.
+	* generated/pack_r4.c: Regenerate.
+	* generated/pack_r8.c: Regenerate.
+	* generated/parity_l1.c: Regenerate.
+	* generated/parity_l16.c: Regenerate.
+	* generated/parity_l2.c: Regenerate.
+	* generated/parity_l4.c: Regenerate.
+	* generated/parity_l8.c: Regenerate.
+	* generated/product_c10.c: Regenerate.
+	* generated/product_c16.c: Regenerate.
+	* generated/product_c4.c: Regenerate.
+	* generated/product_c8.c: Regenerate.
+	* generated/product_i1.c: Regenerate.
+	* generated/product_i16.c: Regenerate.
+	* generated/product_i2.c: Regenerate.
+	* generated/product_i4.c: Regenerate.
+	* generated/product_i8.c: Regenerate.
+	* generated/product_r10.c: Regenerate.
+	* generated/product_r16.c: Regenerate.
+	* generated/product_r4.c: Regenerate.
+	* generated/product_r8.c: Regenerate.
+	* generated/reshape_c10.c: Regenerate.
+	* generated/reshape_c16.c: Regenerate.
+	* generated/reshape_c4.c: Regenerate.
+	* generated/reshape_c8.c: Regenerate.
+	* generated/reshape_i16.c: Regenerate.
+	* generated/reshape_i4.c: Regenerate.
+	* generated/reshape_i8.c: Regenerate.
+	* generated/reshape_r10.c: Regenerate.
+	* generated/reshape_r16.c: Regenerate.
+	* generated/reshape_r4.c: Regenerate.
+	* generated/reshape_r8.c: Regenerate.
+	* generated/shape_i1.c: Regenerate.
+	* generated/shape_i16.c: Regenerate.
+	* generated/shape_i2.c: Regenerate.
+	* generated/shape_i4.c: Regenerate.
+	* generated/shape_i8.c: Regenerate.
+	* generated/spread_c10.c: Regenerate.
+	* generated/spread_c16.c: Regenerate.
+	* generated/spread_c4.c: Regenerate.
+	* generated/spread_c8.c: Regenerate.
+	* generated/spread_i1.c: Regenerate.
+	* generated/spread_i16.c: Regenerate.
+	* generated/spread_i2.c: Regenerate.
+	* generated/spread_i4.c: Regenerate.
+	* generated/spread_i8.c: Regenerate.
+	* generated/spread_r10.c: Regenerate.
+	* generated/spread_r16.c: Regenerate.
+	* generated/spread_r4.c: Regenerate.
+	* generated/spread_r8.c: Regenerate.
+	* generated/sum_c10.c: Regenerate.
+	* generated/sum_c16.c: Regenerate.
+	* generated/sum_c4.c: Regenerate.
+	* generated/sum_c8.c: Regenerate.
+	* generated/sum_i1.c: Regenerate.
+	* generated/sum_i16.c: Regenerate.
+	* generated/sum_i2.c: Regenerate.
+	* generated/sum_i4.c: Regenerate.
+	* generated/sum_i8.c: Regenerate.
+	* generated/sum_r10.c: Regenerate.
+	* generated/sum_r16.c: Regenerate.
+	* generated/sum_r4.c: Regenerate.
+	* generated/sum_r8.c: Regenerate.
+	* generated/unpack_c10.c: Regenerate.
+	* generated/unpack_c16.c: Regenerate.
+	* generated/unpack_c4.c: Regenerate.
+	* generated/unpack_c8.c: Regenerate.
+	* generated/unpack_i1.c: Regenerate.
+	* generated/unpack_i16.c: Regenerate.
+	* generated/unpack_i2.c: Regenerate.
+	* generated/unpack_i4.c: Regenerate.
+	* generated/unpack_i8.c: Regenerate.
+	* generated/unpack_r10.c: Regenerate.
+	* generated/unpack_r16.c: Regenerate.
+	* generated/unpack_r4.c: Regenerate.
+	* generated/unpack_r8.c: Regenerate.
+
+2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/abort.c: Remove unused headers.
+	* intrinsics/access.c: Remove unused headers.
+	* intrinsics/chdir.c: Remove unused headers.
+	* intrinsics/chmod.c: Remove unused headers.
+	* intrinsics/cshift0.c: Remove unused headers.
+	* intrinsics/ctime.c: Remove unused headers.
+	* intrinsics/eoshift0.c: Remove unused headers.
+	* intrinsics/eoshift2.c: Remove unused headers.
+	* intrinsics/extends_type_of.c: Remove unused headers.
+	* intrinsics/link.c: Remove unused headers.
+	* intrinsics/pack_generic.c: Remove unused headers.
+	* intrinsics/perror.c: Remove unused headers.
+	* intrinsics/rename.c: Remove unused headers.
+	* intrinsics/reshape_generic.c: Remove unused headers.
+	* intrinsics/sleep.c: Remove unused headers.
+	* intrinsics/spread_generic.c: Remove unused headers.
+	* intrinsics/stat.c: Remove unused headers.
+	* intrinsics/string_intrinsics.c: Remove unused headers.
+	* intrinsics/symlnk.c: Remove unused headers.
+	* intrinsics/system.c: Remove unused headers.
+	* intrinsics/umask.c: Remove unused headers.
+	* intrinsics/unlink.c: Remove unused headers.
+	* intrinsics/unpack_generic.c: Remove unused headers.
+	* io/read.c: Remove unused headers.
+	* io/transfer.c: Remove unused headers.
+	* io/unix.c: Remove unused headers.
+	* io/write.c: Remove unused headers.
+	* m4/all.m4: Remove unused headers.
+	* m4/any.m4: Remove unused headers.
+	* m4/bessel.m4: Remove unused headers.
+	* m4/count.m4: Remove unused headers.
+	* m4/cshift0.m4: Remove unused headers.
+	* m4/cshift1.m4: Remove unused headers.
+	* m4/eoshift1.m4: Remove unused headers.
+	* m4/eoshift3.m4: Remove unused headers.
+	* m4/iall.m4: Remove unused headers.
+	* m4/iany.m4: Remove unused headers.
+	* m4/in_pack.m4: Remove unused headers.
+	* m4/in_unpack.m4: Remove unused headers.
+	* m4/iparity.m4: Remove unused headers.
+	* m4/maxloc0.m4: Remove unused headers.
+	* m4/maxloc1.m4: Remove unused headers.
+	* m4/maxval.m4: Remove unused headers.
+	* m4/minloc0.m4: Remove unused headers.
+	* m4/minloc1.m4: Remove unused headers.
+	* m4/minval.m4: Remove unused headers.
+	* m4/norm2.m4: Remove unused headers.
+	* m4/pack.m4: Remove unused headers.
+	* m4/parity.m4: Remove unused headers.
+	* m4/product.m4: Remove unused headers.
+	* m4/reshape.m4: Remove unused headers.
+	* m4/shape.m4: Remove unused headers.
+	* m4/spread.m4: Remove unused headers.
+	* m4/sum.m4: Remove unused headers.
+	* m4/unpack.m4: Remove unused headers.
+	* runtime/backtrace.c: Remove unused headers.
+	* runtime/convert_char.c: Remove unused headers.
+	* runtime/in_pack_generic.c: Remove unused headers.
+	* runtime/in_unpack_generic.c: Remove unused headers.
+	* runtime/main.c: Remove unused headers.
+	* runtime/stop.c: Remove unused headers.
+	* generated/all_l1.c: Regenerate.
+	* generated/all_l16.c: Regenerate.
+	* generated/all_l2.c: Regenerate.
+	* generated/all_l4.c: Regenerate.
+	* generated/all_l8.c: Regenerate.
+	* generated/any_l1.c: Regenerate.
+	* generated/any_l16.c: Regenerate.
+	* generated/any_l2.c: Regenerate.
+	* generated/any_l4.c: Regenerate.
+	* generated/any_l8.c: Regenerate.
+	* generated/bessel_r10.c: Regenerate.
+	* generated/bessel_r16.c: Regenerate.
+	* generated/bessel_r4.c: Regenerate.
+	* generated/bessel_r8.c: Regenerate.
+	* generated/count_16_l.c: Regenerate.
+	* generated/count_1_l.c: Regenerate.
+	* generated/count_2_l.c: Regenerate.
+	* generated/count_4_l.c: Regenerate.
+	* generated/count_8_l.c: Regenerate.
+	* generated/cshift0_c10.c: Regenerate.
+	* generated/cshift0_c16.c: Regenerate.
+	* generated/cshift0_c4.c: Regenerate.
+	* generated/cshift0_c8.c: Regenerate.
+	* generated/cshift0_i1.c: Regenerate.
+	* generated/cshift0_i16.c: Regenerate.
+	* generated/cshift0_i2.c: Regenerate.
+	* generated/cshift0_i4.c: Regenerate.
+	* generated/cshift0_i8.c: Regenerate.
+	* generated/cshift0_r10.c: Regenerate.
+	* generated/cshift0_r16.c: Regenerate.
+	* generated/cshift0_r4.c: Regenerate.
+	* generated/cshift0_r8.c: Regenerate.
+	* generated/cshift1_16.c: Regenerate.
+	* generated/cshift1_4.c: Regenerate.
+	* generated/cshift1_8.c: Regenerate.
+	* generated/eoshift1_16.c: Regenerate.
+	* generated/eoshift1_4.c: Regenerate.
+	* generated/eoshift1_8.c: Regenerate.
+	* generated/eoshift3_16.c: Regenerate.
+	* generated/eoshift3_4.c: Regenerate.
+	* generated/eoshift3_8.c: Regenerate.
+	* generated/iall_i1.c: Regenerate.
+	* generated/iall_i16.c: Regenerate.
+	* generated/iall_i2.c: Regenerate.
+	* generated/iall_i4.c: Regenerate.
+	* generated/iall_i8.c: Regenerate.
+	* generated/iany_i1.c: Regenerate.
+	* generated/iany_i16.c: Regenerate.
+	* generated/iany_i2.c: Regenerate.
+	* generated/iany_i4.c: Regenerate.
+	* generated/iany_i8.c: Regenerate.
+	* generated/in_pack_c10.c: Regenerate.
+	* generated/in_pack_c16.c: Regenerate.
+	* generated/in_pack_c4.c: Regenerate.
+	* generated/in_pack_c8.c: Regenerate.
+	* generated/in_pack_i1.c: Regenerate.
+	* generated/in_pack_i16.c: Regenerate.
+	* generated/in_pack_i2.c: Regenerate.
+	* generated/in_pack_i4.c: Regenerate.
+	* generated/in_pack_i8.c: Regenerate.
+	* generated/in_pack_r10.c: Regenerate.
+	* generated/in_pack_r16.c: Regenerate.
+	* generated/in_pack_r4.c: Regenerate.
+	* generated/in_pack_r8.c: Regenerate.
+	* generated/in_unpack_c10.c: Regenerate.
+	* generated/in_unpack_c16.c: Regenerate.
+	* generated/in_unpack_c4.c: Regenerate.
+	* generated/in_unpack_c8.c: Regenerate.
+	* generated/in_unpack_i1.c: Regenerate.
+	* generated/in_unpack_i16.c: Regenerate.
+	* generated/in_unpack_i2.c: Regenerate.
+	* generated/in_unpack_i4.c: Regenerate.
+	* generated/in_unpack_i8.c: Regenerate.
+	* generated/in_unpack_r10.c: Regenerate.
+	* generated/in_unpack_r16.c: Regenerate.
+	* generated/in_unpack_r4.c: Regenerate.
+	* generated/in_unpack_r8.c: Regenerate.
+	* generated/iparity_i1.c: Regenerate.
+	* generated/iparity_i16.c: Regenerate.
+	* generated/iparity_i2.c: Regenerate.
+	* generated/iparity_i4.c: Regenerate.
+	* generated/iparity_i8.c: Regenerate.
+	* generated/maxloc0_16_i1.c: Regenerate.
+	* generated/maxloc0_16_i16.c: Regenerate.
+	* generated/maxloc0_16_i2.c: Regenerate.
+	* generated/maxloc0_16_i4.c: Regenerate.
+	* generated/maxloc0_16_i8.c: Regenerate.
+	* generated/maxloc0_16_r10.c: Regenerate.
+	* generated/maxloc0_16_r16.c: Regenerate.
+	* generated/maxloc0_16_r4.c: Regenerate.
+	* generated/maxloc0_16_r8.c: Regenerate.
+	* generated/maxloc0_4_i1.c: Regenerate.
+	* generated/maxloc0_4_i16.c: Regenerate.
+	* generated/maxloc0_4_i2.c: Regenerate.
+	* generated/maxloc0_4_i4.c: Regenerate.
+	* generated/maxloc0_4_i8.c: Regenerate.
+	* generated/maxloc0_4_r10.c: Regenerate.
+	* generated/maxloc0_4_r16.c: Regenerate.
+	* generated/maxloc0_4_r4.c: Regenerate.
+	* generated/maxloc0_4_r8.c: Regenerate.
+	* generated/maxloc0_8_i1.c: Regenerate.
+	* generated/maxloc0_8_i16.c: Regenerate.
+	* generated/maxloc0_8_i2.c: Regenerate.
+	* generated/maxloc0_8_i4.c: Regenerate.
+	* generated/maxloc0_8_i8.c: Regenerate.
+	* generated/maxloc0_8_r10.c: Regenerate.
+	* generated/maxloc0_8_r16.c: Regenerate.
+	* generated/maxloc0_8_r4.c: Regenerate.
+	* generated/maxloc0_8_r8.c: Regenerate.
+	* generated/maxloc1_16_i1.c: Regenerate.
+	* generated/maxloc1_16_i16.c: Regenerate.
+	* generated/maxloc1_16_i2.c: Regenerate.
+	* generated/maxloc1_16_i4.c: Regenerate.
+	* generated/maxloc1_16_i8.c: Regenerate.
+	* generated/maxloc1_16_r10.c: Regenerate.
+	* generated/maxloc1_16_r16.c: Regenerate.
+	* generated/maxloc1_16_r4.c: Regenerate.
+	* generated/maxloc1_16_r8.c: Regenerate.
+	* generated/maxloc1_4_i1.c: Regenerate.
+	* generated/maxloc1_4_i16.c: Regenerate.
+	* generated/maxloc1_4_i2.c: Regenerate.
+	* generated/maxloc1_4_i4.c: Regenerate.
+	* generated/maxloc1_4_i8.c: Regenerate.
+	* generated/maxloc1_4_r10.c: Regenerate.
+	* generated/maxloc1_4_r16.c: Regenerate.
+	* generated/maxloc1_4_r4.c: Regenerate.
+	* generated/maxloc1_4_r8.c: Regenerate.
+	* generated/maxloc1_8_i1.c: Regenerate.
+	* generated/maxloc1_8_i16.c: Regenerate.
+	* generated/maxloc1_8_i2.c: Regenerate.
+	* generated/maxloc1_8_i4.c: Regenerate.
+	* generated/maxloc1_8_i8.c: Regenerate.
+	* generated/maxloc1_8_r10.c: Regenerate.
+	* generated/maxloc1_8_r16.c: Regenerate.
+	* generated/maxloc1_8_r4.c: Regenerate.
+	* generated/maxloc1_8_r8.c: Regenerate.
+	* generated/maxval_i1.c: Regenerate.
+	* generated/maxval_i16.c: Regenerate.
+	* generated/maxval_i2.c: Regenerate.
+	* generated/maxval_i4.c: Regenerate.
+	* generated/maxval_i8.c: Regenerate.
+	* generated/maxval_r10.c: Regenerate.
+	* generated/maxval_r16.c: Regenerate.
+	* generated/maxval_r4.c: Regenerate.
+	* generated/maxval_r8.c: Regenerate.
+	* generated/minloc0_16_i1.c: Regenerate.
+	* generated/minloc0_16_i16.c: Regenerate.
+	* generated/minloc0_16_i2.c: Regenerate.
+	* generated/minloc0_16_i4.c: Regenerate.
+	* generated/minloc0_16_i8.c: Regenerate.
+	* generated/minloc0_16_r10.c: Regenerate.
+	* generated/minloc0_16_r16.c: Regenerate.
+	* generated/minloc0_16_r4.c: Regenerate.
+	* generated/minloc0_16_r8.c: Regenerate.
+	* generated/minloc0_4_i1.c: Regenerate.
+	* generated/minloc0_4_i16.c: Regenerate.
+	* generated/minloc0_4_i2.c: Regenerate.
+	* generated/minloc0_4_i4.c: Regenerate.
+	* generated/minloc0_4_i8.c: Regenerate.
+	* generated/minloc0_4_r10.c: Regenerate.
+	* generated/minloc0_4_r16.c: Regenerate.
+	* generated/minloc0_4_r4.c: Regenerate.
+	* generated/minloc0_4_r8.c: Regenerate.
+	* generated/minloc0_8_i1.c: Regenerate.
+	* generated/minloc0_8_i16.c: Regenerate.
+	* generated/minloc0_8_i2.c: Regenerate.
+	* generated/minloc0_8_i4.c: Regenerate.
+	* generated/minloc0_8_i8.c: Regenerate.
+	* generated/minloc0_8_r10.c: Regenerate.
+	* generated/minloc0_8_r16.c: Regenerate.
+	* generated/minloc0_8_r4.c: Regenerate.
+	* generated/minloc0_8_r8.c: Regenerate.
+	* generated/minloc1_16_i1.c: Regenerate.
+	* generated/minloc1_16_i16.c: Regenerate.
+	* generated/minloc1_16_i2.c: Regenerate.
+	* generated/minloc1_16_i4.c: Regenerate.
+	* generated/minloc1_16_i8.c: Regenerate.
+	* generated/minloc1_16_r10.c: Regenerate.
+	* generated/minloc1_16_r16.c: Regenerate.
+	* generated/minloc1_16_r4.c: Regenerate.
+	* generated/minloc1_16_r8.c: Regenerate.
+	* generated/minloc1_4_i1.c: Regenerate.
+	* generated/minloc1_4_i16.c: Regenerate.
+	* generated/minloc1_4_i2.c: Regenerate.
+	* generated/minloc1_4_i4.c: Regenerate.
+	* generated/minloc1_4_i8.c: Regenerate.
+	* generated/minloc1_4_r10.c: Regenerate.
+	* generated/minloc1_4_r16.c: Regenerate.
+	* generated/minloc1_4_r4.c: Regenerate.
+	* generated/minloc1_4_r8.c: Regenerate.
+	* generated/minloc1_8_i1.c: Regenerate.
+	* generated/minloc1_8_i16.c: Regenerate.
+	* generated/minloc1_8_i2.c: Regenerate.
+	* generated/minloc1_8_i4.c: Regenerate.
+	* generated/minloc1_8_i8.c: Regenerate.
+	* generated/minloc1_8_r10.c: Regenerate.
+	* generated/minloc1_8_r16.c: Regenerate.
+	* generated/minloc1_8_r4.c: Regenerate.
+	* generated/minloc1_8_r8.c: Regenerate.
+	* generated/minval_i1.c: Regenerate.
+	* generated/minval_i16.c: Regenerate.
+	* generated/minval_i2.c: Regenerate.
+	* generated/minval_i4.c: Regenerate.
+	* generated/minval_i8.c: Regenerate.
+	* generated/minval_r10.c: Regenerate.
+	* generated/minval_r16.c: Regenerate.
+	* generated/minval_r4.c: Regenerate.
+	* generated/minval_r8.c: Regenerate.
+	* generated/norm2_r10.c: Regenerate.
+	* generated/norm2_r16.c: Regenerate.
+	* generated/norm2_r4.c: Regenerate.
+	* generated/norm2_r8.c: Regenerate.
+	* generated/pack_c10.c: Regenerate.
+	* generated/pack_c16.c: Regenerate.
+	* generated/pack_c4.c: Regenerate.
+	* generated/pack_c8.c: Regenerate.
+	* generated/pack_i1.c: Regenerate.
+	* generated/pack_i16.c: Regenerate.
+	* generated/pack_i2.c: Regenerate.
+	* generated/pack_i4.c: Regenerate.
+	* generated/pack_i8.c: Regenerate.
+	* generated/pack_r10.c: Regenerate.
+	* generated/pack_r16.c: Regenerate.
+	* generated/pack_r4.c: Regenerate.
+	* generated/pack_r8.c: Regenerate.
+	* generated/parity_l1.c: Regenerate.
+	* generated/parity_l16.c: Regenerate.
+	* generated/parity_l2.c: Regenerate.
+	* generated/parity_l4.c: Regenerate.
+	* generated/parity_l8.c: Regenerate.
+	* generated/product_c10.c: Regenerate.
+	* generated/product_c16.c: Regenerate.
+	* generated/product_c4.c: Regenerate.
+	* generated/product_c8.c: Regenerate.
+	* generated/product_i1.c: Regenerate.
+	* generated/product_i16.c: Regenerate.
+	* generated/product_i2.c: Regenerate.
+	* generated/product_i4.c: Regenerate.
+	* generated/product_i8.c: Regenerate.
+	* generated/product_r10.c: Regenerate.
+	* generated/product_r16.c: Regenerate.
+	* generated/product_r4.c: Regenerate.
+	* generated/product_r8.c: Regenerate.
+	* generated/reshape_c10.c: Regenerate.
+	* generated/reshape_c16.c: Regenerate.
+	* generated/reshape_c4.c: Regenerate.
+	* generated/reshape_c8.c: Regenerate.
+	* generated/reshape_i16.c: Regenerate.
+	* generated/reshape_i4.c: Regenerate.
+	* generated/reshape_i8.c: Regenerate.
+	* generated/reshape_r10.c: Regenerate.
+	* generated/reshape_r16.c: Regenerate.
+	* generated/reshape_r4.c: Regenerate.
+	* generated/reshape_r8.c: Regenerate.
+	* generated/shape_i1.c: Regenerate.
+	* generated/shape_i16.c: Regenerate.
+	* generated/shape_i2.c: Regenerate.
+	* generated/shape_i4.c: Regenerate.
+	* generated/shape_i8.c: Regenerate.
+	* generated/spread_c10.c: Regenerate.
+	* generated/spread_c16.c: Regenerate.
+	* generated/spread_c4.c: Regenerate.
+	* generated/spread_c8.c: Regenerate.
+	* generated/spread_i1.c: Regenerate.
+	* generated/spread_i16.c: Regenerate.
+	* generated/spread_i2.c: Regenerate.
+	* generated/spread_i4.c: Regenerate.
+	* generated/spread_i8.c: Regenerate.
+	* generated/spread_r10.c: Regenerate.
+	* generated/spread_r16.c: Regenerate.
+	* generated/spread_r4.c: Regenerate.
+	* generated/spread_r8.c: Regenerate.
+	* generated/sum_c10.c: Regenerate.
+	* generated/sum_c16.c: Regenerate.
+	* generated/sum_c4.c: Regenerate.
+	* generated/sum_c8.c: Regenerate.
+	* generated/sum_i1.c: Regenerate.
+	* generated/sum_i16.c: Regenerate.
+	* generated/sum_i2.c: Regenerate.
+	* generated/sum_i4.c: Regenerate.
+	* generated/sum_i8.c: Regenerate.
+	* generated/sum_r10.c: Regenerate.
+	* generated/sum_r16.c: Regenerate.
+	* generated/sum_r4.c: Regenerate.
+	* generated/sum_r8.c: Regenerate.
+	* generated/unpack_c10.c: Regenerate.
+	* generated/unpack_c16.c: Regenerate.
+	* generated/unpack_c4.c: Regenerate.
+	* generated/unpack_c8.c: Regenerate.
+	* generated/unpack_i1.c: Regenerate.
+	* generated/unpack_i16.c: Regenerate.
+	* generated/unpack_i2.c: Regenerate.
+	* generated/unpack_i4.c: Regenerate.
+	* generated/unpack_i8.c: Regenerate.
+	* generated/unpack_r10.c: Regenerate.
+	* generated/unpack_r16.c: Regenerate.
+	* generated/unpack_r4.c: Regenerate.
+	* generated/unpack_r8.c: Regenerate.
+
+2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/70311
+	* intrinsics/selected_char_kind.c: Include <strings.h> header.
+	* runtime/environ.c: Include <strings.h> header.
+	* runtime/string.c: Include <strings.h> header.
+
+2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.map: Remove _gfortran_ftell2.
+	* io/intrinsics.c (ftell): Remove.
+	(ftell2): Rename to ftell.
+
+2016-12-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.map: Move all _gfortran_* __iso_c_binding_* symbols
+	to GFORTRAN_7. Rename F2C_1.0 to GFORTRAN_F2C_7. Move all C99
+	compatibility symbols to GFORTRAN_C99_7.
+
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* runtime/compile_options.c (set_options): Remove unused elements.
+
+2016-12-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* Actually remove files that should have been removed by r243799.
+
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.map: Remove _gfortran_stop_numeric_f08.
+	* runtime/stop.c: Rename stop_numeric_f08 into stop_numeric.
+
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* Makefile.am: Remove ISO_C_BINDING runtime functions.
+	* Makefile.in: Regenerate.
+	* gfortran.map: Remove all __iso_c_binding_c_f_pointer_* symbols.
+	* intrinsics/iso_c_binding.h: Remove.
+	* intrinsics/iso_c_binding.c: Remove.
+	* intrinsics/iso_c_generated_procs.c: Remove.
+
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* Makefile.am: Remove intrinsics/bit_intrinsics.c.
+	* Makefile.in: Regenerate.
+	* gfortran.map: Remove _gfortran_clz128 and _gfortran_ctz128.
+	* intrinsics/bit_intrinsics.c: Remove.
+
+2016-12-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* Makefile.am: Remove exponent, fraction, nearest, rrspacing,
+	set_exponent, spacing, transpose, malloc, transpose_generic.
+	* Makefile.in: Regenerate.
+	* generated/exponent_r10.c: Remove.
+	* generated/exponent_r16.c: Remove.
+	* generated/exponent_r4.c: Remove.
+	* generated/exponent_r8.c: Remove.
+	* generated/fraction_r10.c: Remove.
+	* generated/fraction_r16.c: Remove.
+	* generated/fraction_r4.c: Remove.
+	* generated/fraction_r8.c: Remove.
+	* generated/nearest_r10.c: Remove.
+	* generated/nearest_r16.c: Remove.
+	* generated/nearest_r4.c: Remove.
+	* generated/nearest_r8.c: Remove.
+	* generated/rrspacing_r10.c: Remove.
+	* generated/rrspacing_r16.c: Remove.
+	* generated/rrspacing_r4.c: Remove.
+	* generated/rrspacing_r8.c: Remove.
+	* generated/set_exponent_r10.c: Remove.
+	* generated/set_exponent_r16.c: Remove.
+	* generated/set_exponent_r4.c: Remove.
+	* generated/set_exponent_r8.c: Remove.
+	* generated/spacing_r10.c: Remove.
+	* generated/spacing_r16.c: Remove.
+	* generated/spacing_r4.c: Remove.
+	* generated/spacing_r8.c: Remove.
+	* generated/transpose_c10.c: Remove.
+	* generated/transpose_c16.c: Remove.
+	* generated/transpose_c4.c: Remove.
+	* generated/transpose_c8.c: Remove.
+	* generated/transpose_i16.c: Remove.
+	* generated/transpose_i4.c: Remove.
+	* generated/transpose_i8.c: Remove.
+	* generated/transpose_r10.c: Remove.
+	* generated/transpose_r16.c: Remove.
+	* generated/transpose_r4.c: Remove.
+	* generated/transpose_r8.c: Remove.
+	* gfortran.map: Remove exponent, fraction, nearest, rrspacing,
+	set_exponent, spacing, transpose, malloc, free, transpose_generic,
+	store_exe_path.
+	* intrinsics/malloc.c: Remove.
+	* intrinsics/transpose_generic.c: Remove.
+	* libgfortran.h (store_exe_path): Remove.
+	* m4/exponent.m4: Remove.
+	* m4/fraction.m4: Remove.
+	* m4/nearest.m4: Remove.
+	* m4/rrspacing.m4: Remove.
+	* m4/set_exponent.m4: Remove.
+	* m4/spacing.m4: Remove.
+	* m4/transpose.m4: Remove.
+	* runtime/main.c (store_exe_path): Remove.
+
+2016-12-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/chmod.c (chmod_internal): Fix case where mode_t is
+	different from unsigned int.
+
+2016-12-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/78545
+	* intrinsics/date_and_time.c: Fix comments for GMTIME and LTIME.
+
+2016-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/78622
+	* io/transfer.c (get_dt_format): New static function to alloc
+	and set the DT iotype string, handling doubled quotes.
+	(formatted_transfer_scalar_read,
+	formatted_transfer_scalar_write): Use new function.
+
+2016-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Call GCC_CHECK_LINKER_HWCAP.
+	* Makefile.am (libgfortran_la_LDFLAGS): Add HWCAP_LDFLAGS.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
+2016-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78379
+	* Makefile.am:  Add dependence of m4/matmul_internal_m4 to
+	mamtul files..
+	* Makefile.in:  Regenerated.
+	* acinclude.m4:  Check for AVX, AVX2 and AVX512F.
+	* config.h.in:  Add HAVE_AVX, HAVE_AVX2 and HAVE_AVX512F.
+	* configure:  Regenerated.
+	* configure.ac:  Use checks for AVX, AVX2 and AVX_512F.
+	* m4/matmul_internal.m4:  New file. working part of matmul.m4.
+	* m4/matmul.m4:  Implement architecture-specific switching
+	for AVX, AVX2 and AVX512F by including matmul_internal.m4
+	multiple times.
+	* generated/matmul_c10.c: Regenerated.
+        * generated/matmul_c16.c: Regenerated.
+        * generated/matmul_c4.c: Regenerated.
+        * generated/matmul_c8.c: Regenerated.
+        * generated/matmul_i1.c: Regenerated.
+        * generated/matmul_i16.c: Regenerated.
+        * generated/matmul_i2.c: Regenerated.
+        * generated/matmul_i4.c: Regenerated.
+        * generated/matmul_i8.c: Regenerated.
+        * generated/matmul_r10.c: Regenerated.
+        * generated/matmul_r16.c: Regenerated.
+        * generated/matmul_r4.c: Regenerated.
+        * generated/matmul_r8.c: Regenerated.
+
+2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/single.c (_gfortran_caf_get_by_ref): Prevent compile time
+	warning.
+	(_gfortran_caf_send_by_ref): Same.
+	(_gfortran_caf_is_present): Prevent fallthrough	warnings.
+
+2016-11-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add new action types for (de-)registration of
+	allocatable components in derived type coarrays.  Add _caf_is_present
+	prototype.
+	* caf/single.c (_gfortran_caf_register): Add support for registration
+	only and allocation of already registered allocatable components in
+	derived type coarrays.
+	(_gfortran_caf_deregister): Add mode to deallocate but not deregister
+	an allocatable component in a derived type coarray.
+	(_gfortran_caf_is_present): New function.  Query whether an
+	allocatable component in a derived type coarray on a remote image is
+	allocated.
+
+2016-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/51119
+	* Makefile.am: Remove -fno-protect-parens -fstack-arrays.
+	* Makefile.in: Regenerate.
+
+2016-11-16  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR libgfortran/78314
+	* config/fpu-glibc.h (support_fpu_trap): Use feenableexcept.
+
+2016-11-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libgfortran/51119
+	* Makefile.am: Add new optimization flags matmul.
+	* Makefile.in: Regenerate.
+	* m4/matmul.m4: For the case of all strides = 1, implement a
+	fast blocked matrix multiply. Fix some whitespace.
+	* generated/matmul_c10.c: Regenerate.
+	* generated/matmul_c16.c: Regenerate.
+	* generated/matmul_c4.c: Regenerate.
+	* generated/matmul_c8.c: Regenerate.
+	* generated/matmul_i1.c: Regenerate.
+	* generated/matmul_i16.c: Regenerate.
+	* generated/matmul_i2.c: Regenerate.
+	* generated/matmul_i4.c: Regenerate.
+	* generated/matmul_i8.c: Regenerate.
+	* generated/matmul_r10.c: Regenerate.
+	* generated/matmul_r16.c: Regenerate.
+	* generated/matmul_r4.c: Regenerate.
+	* generated/matmul_r8.c: Regenerate.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
+2016-11-03  Fritz Reese <fritzoreese@gmail.com>
+
+	* io/io.h (IOPARM_DT_DEFAULT_EXP): New flag bit.
+	* io/list_read.c (parse_real, read_real): Allow omission of exponent
+	with IOPARM_DT_DEFAULT_EXP.
+	* io/read.c (read_f): Ditto.
+
+2016-10-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/54679
+	* io/format.c (parse_format_list): Adjust checks for FMT_L to
+	treat a zero width as an extension, giving warnings or error
+	as appropriate. Improve messages.
+
+2016-10-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/78123
+	* io/transfer.c (formatted_transfer_scalar_read): Clear seen_eor
+	only if we have tabbed to left of current position.
+
+2016-10-26  Fritz Reese  <fritzoreese@gmail.com>
+
+	* libgfortran.h (IOPARM_OPEN_HAS_READONLY, IOPARM_OPEN_HAS_SHARE,
+	IOPARM_OPEN_HAS_CC): New for READONLY, SHARE, and CARRIAGECONTROL.
+	* io/close.c (st_close): Support READONLY.
+	* io/io.h (st_parameter_open, unit_flags): Support SHARE,
+	CARRIAGECONTROL, and READONLY.
+	* io/open.c (st_open): Ditto.
+	* io/transfer.c (data_transfer_init): Ditto.
+	* io/io.h (st_parameter_dt): New member 'cc' for CARRIAGECONTROL.
+	* io/write.c (write_check_cc, write_cc): New functions for
+	CARRIAGECONTROL.
+	* io/transfer.c (next_record_cc): Ditto.
+	* io/file_pos.c (st_endfile): Support SHARE and CARRIAGECONTROL.
+	* io/io.h (st_parameter_inquire): Ditto.
+	* io/open.c (edit_modes, new_unit): Ditto.
+	* io/inquire.c (inquire_via_unit, inquire_via_filename): Ditto.
+	* io/io.h (unit_share, unit_cc, cc_fortran, IOPARM_INQUIRE_HAS_SHARE,
+	IOPARM_INQUIRE_HAS_CC): New for SHARE and CARRIAGECONTROL.
+	* io/open.c (share_opt, cc_opt): Ditto.
+	* io/read.c (read_x): Support CARRIAGECONTROL.
+	* io/transfer.c (read_sf, next_record_r, next_record_w): Ditto.
+	* io/write.c (list_formatted_write_scalar, write_a): Ditto.
+	* io/unix.h (close_share): New prototype.
+	* io/unix.c (open_share, close_share): New functions to handle SHARE.
+	* io/unix.c (open_external): Handle READONLY. Call open_share.
+	* io/close.c (st_close): Call close_share.
+
+2016-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/77828
+	* io/io.h (st_parameter_dt): Reorder for readability and sanity.
+	* io/transfer.c (data_transfer_init): Remove TODO and enable the
+	runtime error message, rec= specifier not allowed in STREAM
+	access.
+	* libtool-version: Bump major version of libgfortran to 4.
+
+2016-10-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/78055
+	* io/io.h (st_parameter_dt): Restore GFC_IO_INT to maintain
+	alignment.
+
+2016-10-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/transfer.c (finalize_transfer): Free format data in child
+	procedures. (st_read_done, st_write_done): Don't free format
+	hash table.
+
+2016-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/48298
+	* io/io.h: Move size_used from dtp to unit structure. Add bool
+	has_size to unit structure.
+	* io/read.c (read_x): Use has_size and size_used.
+	* io/transfer.c (read_sf_internal,read_sf,read_block_form,
+	read_block_form4): Likewise.
+	(data_transfer_init): If parent, initialize the size variables.
+	(finalize_transfer): Set the size variable using size_used in
+	gfc_unit. (write_block): Delete bogus/dead code.
+
+2016-10-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/48587
+	* io/transfer.c (data_transfer_init): Improve error message,
+	remove redundant check.
+
+2016-10-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/48587
+        * io/io.h (get_unique_unit_number): Remove prototype.
+        (newunit_alloc): New prototype.
+        * io/open.c (st_open): Call newunit_alloc.
+        * io/unit.c (newunits,newunit_size,newunit_lwi): New static
+        variables.
+        (GFC_FIRST_NEWUNIT): Rename to NEWUNIT_START.
+        (next_available_newunit): Remove variable.
+        (get_unit): Call newunit_alloc, don't try to create negative
+        external unit.
+        (close_unit_1): Call newunit_free.
+        (close_units): Free newunits array.
+        (get_unique_number): Remove function.
+        (newunit_alloc): New function.
+        (newunit_free): New function.
+        * io/transfer.c (data_transfer_init): Check for invalid unit
+        number.
+
+2016-10-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/67585
+        * io/io.h: TEMP_FAILURE_RETRY: Define macro if not found.
+        * io/unix.c (raw_read): Handle EINTR.
+        (raw_write): Check for return value -1.
+        (raw_seek): Handle EINTR.
+        (raw_tell): Likewise.
+        (raw_size): Likewise.
+        (raw_truncate): Likewise.
+        (raw_close): Likewise.
+        (buf_flush): Call raw_seek instead of lseek.
+        (buf_read): Likewise.
+        (buf_write): Likewise.
+        (fd_to_stream): Handle EINTR.
+        (tempfile_open): Likewise.
+        (regular_file2): Likewise.
+        (compare_file_filename): Likewise.
+        (find_file): Likewise.
+        (inquire_sequential): Likewise.
+        (inquire_direct): Likewise.
+        (inquire_formatted): Likewise.
+
+2016-10-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/77868
+	* io/inquire.c (inquire_via_unit): NULL guard the check for
+	internal unit passed into child IO procedure.
+
+2016-10-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/inquire.c (inquire_via_unit): Add check for internal unit
+	passed into child IO procedure.
+
+2016-10-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77663
+	* caf/single.c (caf_internal_error): Fix not terminating va-list.
+	(_gfortran_caf_register): Free memory also when other allocs failed.
+	(_gfortran_caf_get_by_ref): Fixed style.
+	(send_by_ref): Token is now stored at the correct position preventing
+	inaccessible tokens, memory loss and possibly crashes.
+
+2016-09-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/77707
+	io/transfer.c (next_record): Flush before calculating next_record.
+	Correctly calculate.
+
+2016-09-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48298
+	* io/inquire.c (inquire_via_unit): Adjust error check for the
+	two possible internal unit KINDs.
+	* io/io.h: Adjust defines for is_internal_unit and
+	is_char4_unit. (gfc_unit): Add internal unit data to structure.
+	(get_internal_unit): Change declaration to set_internal_unit.
+	(free_internal_unit): Change name to stash_internal_unit_number.
+	(get_unique_unit_number): Adjust parameter argument.
+	Define IOPARM_DT_HAS_UDTIO. (gfc_saved_unit): New structure.
+	* io/list_read.c (next_char_internal): Use is_char4_unit.
+	* io/open.c (st_open): Adjust call to get_unique_unit_number.
+	* io/transfer.c (write_block): Use is_char4_unit.
+	(data_transfer_init): Update check for unit numbers.
+	(st_read_done): Free the various allocated memories used for the
+	internal units and stash the negative unit number and pointer to unit
+	structure to allow reuse. (st_write_done): Likewise stash the freed
+	unit.
+	* io/unit.c: Create a fixed size buffer of 16 gfc_saved_unit's to use
+	as a stack to save newunit unit numbers and unit structure for reuse.
+	(get_external_unit): Change name to get_gfc_unit to better
+	reflect what it does. (find_unit): Change call to get_gfc_unit.
+	(find_or_create_unit): Likewise. (get_internal_unit): Change
+	name to set_internal_unit. Move internal unit from the dtp
+	structure to the gfc_unit structure so that it can be passed to
+	child I/O statements through the UNIT.
+	(free_internal_unit): Change name to stash_internal_unit_number.
+	Push the common.unit number onto the newunit stack, saving it
+	for possible reuse later. (get_unit): Set the internal unit
+	KIND. Use get_unique_unit_number to get a negative unit number
+	for the internal unit. Use get_gfc_unit to get the unit structure
+	and use set_internal_unit to initialize it.
+	(init_units): Initialize the newunit stack.
+	(get_unique_unit_number): Check the stack for an available unit
+	number and use it. If none there get the next most negative
+	number. (close_units): Free any unit structures pointed to from the save
+	stack.
+
+2016-09-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c (getosrandom): Use rand_s() on
+	MinGW-w64. Fix bounds overflow in fallback code.
+
+2016-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add caf_reference_type.
+	* caf/mpi.c: Adapted signature of caf_register().
+	* caf/single.c (struct caf_single_token): Added to keep the pointer
+	to the memory registered and array descriptor.
+	(caf_internal_error): Added convenience interface.
+	(_gfortran_caf_register): Adapted to work with caf_single_token and
+	return memory in the array descriptor.
+	(_gfortran_caf_deregister): Same.
+	(assign_char1_from_char4): Fixed style.
+	(convert_type): Fixed incorrect conversion.
+	(_gfortran_caf_get): Adapted to work with caf_single_token.
+	(_gfortran_caf_send): Same.
+	(_gfortran_caf_sendget): Same.
+	(copy_data): Added to stop repeating it in all _by_ref functions.
+	(get_for_ref): Recursive getting of coarray data using a chain of
+	references.
+	(_gfortran_caf_get_by_ref): Driver for computing the memory needed for
+	the get and checking properties of the operation.
+	(send_by_ref): Same as get_for_ref but for sending data.
+	(_gfortran_caf_send_by_ref): Same like caf_get_by_ref but for sending.
+	(_gfortran_caf_sendget_by_ref): Uses get_by_ref and send_by_ref to
+	implement sendget for reference chains.
+	(_gfortran_caf_atomic_define): Adapted to work with caf_single_token.
+	(_gfortran_caf_atomic_ref): Likewise.
+	(_gfortran_caf_atomic_cas): Likewise.
+	(_gfortran_caf_atomic_op): Likewise.
+	(_gfortran_caf_event_post): Likewise.
+	(_gfortran_caf_event_wait): Likewise.
+	(_gfortran_caf_event_query): Likewise.
+	(_gfortran_caf_lock): Likewise.
+	(_gfortran_caf_unlock): Likewise.
+
+2016-09-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77507
+ 	* ieee/ieee_arithmetic.F90 (IEEE_VALUE_4,IEEE_VALUE_8,IEEE_VALULE_10,
+	IEEE_VALUE_16):  Use correct keyword.
+
+2016-09-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/77393
+	* io/write_float.def (build_float_string): Recognize when the
+	result will not fit in the user provided, star fill, and exit
+	early.
+
+2016-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/77393
+	* io/write.c (kind_from_size): New function to calculate required buffer
+	size based on kind type. (select_buffer, select_string): Use new
+	function. (write_float_0, write_real, write_real_g0, write_complex):
+	Adjust calls to pass parameters needed by new function.
+
+2016-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libgfortran/48298
+	* gfortran.map : Flag _st_set_nml_dtio_var and
+	_gfortran_transfer_derived.
+	* io/format.c (format_lex): Detect DTIO formatting.
+	(parse_format_list): Parse the DTIO format.
+	(next_format): Include FMT_DT.
+	* io/format.h : Likewise. Add structure 'udf' to structure
+	'fnode' to carry the IOTYPE string and the 'vlist'.
+	* io/io.h : Add prototypes for the two types of DTIO subroutine
+	and a typedef for gfc_class. Also, add to 'namelist_type'
+	fields for the pointer to the DTIO procedure and the vtable.
+	Add fields to struct st_parameter_dt for pointers to the two
+	types of DTIO subroutine. Add to gfc_unit DTIO specific fields.
+	(internal_proto): Add prototype for 'read_user_defined' and
+	'write_user_defined'.
+	* io/list_read.c (check_buffers): Use the 'current_unit' field.
+	(unget_char): Likewise.
+	(eat_spaces): Likewise.
+	(list_formatted_read_scalar): For case BT_CLASS, call the DTIO
+	procedure.
+	(nml_get_obj_data): Likewise when DTIO procedure is present,.
+	* io/transfer.c : Export prototypes for 'transfer_derived' and
+	'transfer_derived_write'.
+	(unformatted_read): For case BT_CLASS, call the DTIO procedure.
+	(unformatted_write): Likewise.
+	(formatted_transfer_scalar_read): Likewise.
+	(formatted_transfer_scalar_write: Likewise.
+	(transfer_derived): New function.
+	(data_transfer_init): Set last_char if no child_dtio.
+	(finalize_transfer): Return if child_dtio set.
+	(st_write_done): Add condition for child_dtio not set.
+	Add extra arguments for st_set_nml_var prototype.
+	(set_nml_var): New function that contains the contents of the
+	old version of st_set_nml_var. Also sets the 'dtio_sub' and
+	'vtable' fields of the 'nml' structure.
+	(st_set_nml_var): Now just calls set_nml_var with 'dtio_sub'
+	and 'vtable' NULL.
+	(st_set_nml_dtio_var): New function that calls set_nml_var.
+	* io/unit.c (get_external_unit): If the found unit child_dtio
+	is non zero, don't do any mutex locking/unlocking.  Just
+	return the unit.
+	* io/unix.c (tempfile_open): Revert to C style comment.
+	* io/write.c (list_formatted_write_scalar): Do the DTIO call.
+	(nml_write_obj): Add BT_CLASS and do the DTIO call.
+
+2016-08-29  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac (nvptx-*): Hardwire newlib.
+	* configure: Rebuilt.
+
+2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c (xor_keys): New array with "secret" keys.
+	(scramble_seed): XOR given seed with xor_keys array rather than
+	shuffling bytes.
+	(unscramble_seed): Remove function.
+	(random_seed_i4): Use new scramble_seed.
+	(random_seed_i8): Likewise.
+
+2016-08-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c (master_init): New variable.
+	(init_rand_state): Move below getosrandom (), maybe initialize
+	master_state.
+	(random_seed_i4): If called with no arguments, set master_init to
+	false, and reinitialize. If called with PUT=, set master_init to
+	true.
+	(random_seed_i8): Likewise.
+
+2016-08-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* intrinsics/random.c: Include <stdlib.h>.
+
+2016-08-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c: Replace KISS with xorshift1024* using
+	per-thread state.
+	* runtime/main.c (init): Don't call random_seed_i4.
+
+2016-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add parameter stat to caf_get() and
+	caf_send()'s function prototypes.
+	* caf/single.c (_gfortran_caf_get): Implement reporting
+	error using stat instead of abort().
+	(_gfortran_caf_send): Same.
+	(_gfortran_caf_sendget): Use NULL for stat when calling
+	caf_send().
+
+2016-06-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48852
+	* io/write.c: Cleaned up whitespace.
+	(write_d, write_e, write_f, write_es, write_en): Use new helper
+	function write_float_0.
+	(write_float_0): New helper function.
+	(get_precision, select_buffer, select_string, write_float_string): New
+	helper functions used in remaining float writing functions.
+	Helper function write_float_string now contains code for writing
+	to kind=4 character internal units.
+	(write_real): Modified to establish working buffers at this level
+	and to 	use new helper functions.
+	(write_real_g0): Likewise modified.
+	(write_complex): Likewise modified. Gets both float strings before
+	output so that final lengths can be determined which allows right
+	justifying the complex number with no intervening spaces.
+	* io/write_float.def (build_float_string): Renamed from previosly
+	output_float, modified to use buffers passed in from higher functions,
+	builds a null terminated string of the floating point value. Character
+	kind=4 code eliminated.
+	(write_infnan): Likewise modified to use incoming buffers and eliminate
+	kind=4 related code.
+	(OUTPUT_FLOAT_FMT_G): Deleted, functionality moved into FORMAT_FLOAT.
+	(FORMAT_FLOAT): Renamed macro from WRITE_FLOAT. Use build_float_string.
+	(get_float_string): Renamed from write_float, uses FORMAT_FLOAT macro.
+	Buffer allocation removed, now at higher level.
+
+2016-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/71123
+	* io/list_read (eat_spaces): Eat '\r' as part of spaces.
+
+2016-04-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/70684
+	* io/list_read (check_buffers): Add '\r' to check for end of line.
+
+2016-03-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libgfortran/70235
+	* io/write_float.def: Fix PF format for negative values of the scale
+	factor.
+
+2016-03-28  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* caf/libcaf.h: caf_stop_numeric and caf_stop_str prototype.
+	* caf/single.c: _gfortran_caf_stop_numeric and
+	_gfortran_caf_stop_str implementation.
+
+2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/69456
+	* io/list_read.c (read_real): If digit is missing from exponent issue
+	an error. (parse_real): Likewise and adjusted error message to clarify
+	it is part of a complex number.
+	(nml_read_obj): Bump item count and add comment that this is used to
+	identify which item in a namelist read has a problem.
+
+2016-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/69651
+	* io/list_read.c (push_char4): Fix the pointer usage for xrealloc.
+
+2016-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/69651
+	* io/list_read.c: Entire file trailing spaces removed.
+	(CASE_SEPARATORS): Remove '!'.
+	(is_separator): Add namelist mode as condition with '!'.
+	(push_char): Remove un-needed memset. (push_char4): Likewise and remove
+	'new' pointer. (eat_separator): Remove un-needed use of notify_std.
+	(read_logical): If '!' bang encountered when not in namelist mode got
+	bad_logical to give an error. (read_integer): Likewise reject '!'.
+	(read_character): Remove condition testing c = '!' which is now inside
+	the is_separator macro. (parse_real): Reject '!' unless in namelist mode.
+	(read_complex): Reject '!' unless in namelist mode. (read_real): Likewise
+	reject '!'.
+
+2016-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/69668
+	* io/list_read.c (read_character): Remove code related to DELIM_NONE.
+
+2016-01-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libfortran/68744
+	* runtime/backtrace.c: Include gthr.h.
+	(show_backtrace): Use __gthread_active_p() to determine whether threads
+	are active.  Return if lbstate is NULL.
+
+2016-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* intrinsics/execute_command_line.c (set_cmdstat): Use "%s", msg
+	instead of msg to avoid -Wformat-security warning.
+
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+Copyright (C) 2016 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -50,12 +50,10 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	gcshrinkstackoff: setting gcshrinkstackoff=1 disables moving goroutines
 	onto smaller stacks. In this mode, a goroutine's stack can only grow.
 
-	gcstackbarrieroff: setting gcstackbarrieroff=1 disables the use of stack barriers
-	that allow the garbage collector to avoid repeating a stack scan during the
-	mark termination phase.
-
-	gcstackbarrierall: setting gcstackbarrierall=1 installs stack barriers
-	in every stack frame, rather than in exponentially-spaced frames.
+	gcrescanstacks: setting gcrescanstacks=1 enables stack
+	re-scanning during the STW mark termination phase. This is
+	helpful for debugging if objects are being prematurely
+	garbage collected.
 
 	gcstoptheworld: setting gcstoptheworld=1 disables concurrent garbage collection,
 	making every garbage collection a stop-the-world event. Setting gcstoptheworld=2
@@ -80,7 +78,7 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	for mark/scan are broken down in to assist time (GC performed in
 	line with allocation), background GC time, and idle GC time.
 	If the line ends with "(forced)", this GC was forced by a
-	runtime.GC() call and all phases are STW.
+	runtime.GC() call.
 
 	Setting gctrace to any value > 0 also causes the garbage collector
 	to emit a summary when memory is released back to the system.
@@ -159,25 +157,12 @@ package runtime
 
 import "runtime/internal/sys"
 
-// Gosched yields the processor, allowing other goroutines to run.  It does not
-// suspend the current goroutine, so execution resumes automatically.
-func Gosched()
-
-// Goexit terminates the goroutine that calls it.  No other goroutine is affected.
-// Goexit runs all deferred calls before terminating the goroutine.
-//
-// Calling Goexit from the main goroutine terminates that goroutine
-// without func main returning. Since func main has not returned,
-// the program continues execution of other goroutines.
-// If all other goroutines exit, the program crashes.
-func Goexit()
-
 // Caller reports file and line number information about function invocations on
 // the calling goroutine's stack. The argument skip is the number of stack frames
 // to ascend, with 0 identifying the caller of Caller.  (For historical reasons the
 // meaning of skip differs between Caller and Callers.) The return values report the
 // program counter, file name, and line number within the file of the corresponding
-// call.  The boolean ok is false if it was not possible to recover the information.
+// call. The boolean ok is false if it was not possible to recover the information.
 func Caller(skip int) (pc uintptr, file string, line int, ok bool)
 
 // Callers fills the slice pc with the return program counters of function invocations
@@ -185,102 +170,21 @@ func Caller(skip int) (pc uintptr, file string, line int, ok bool)
 // to skip before recording in pc, with 0 identifying the frame for Callers itself and
 // 1 identifying the caller of Callers.
 // It returns the number of entries written to pc.
+//
+// To translate these PCs into symbolic information such as function
+// names and line numbers, use CallersFrames. CallersFrames accounts
+// for inlined functions and adjusts the return program counters into
+// call program counters. Iterating over the returned slice of PCs
+// directly is discouraged, as is using FuncForPC on any of the
+// returned PCs, since these cannot account for inlining or return
+// program counter adjustment.
 func Callers(skip int, pc []uintptr) int
 
-// SetFinalizer sets the finalizer associated with obj to the provided
-// finalizer function. When the garbage collector finds an unreachable block
-// with an associated finalizer, it clears the association and runs
-// finalizer(obj) in a separate goroutine. This makes obj reachable again,
-// but now without an associated finalizer. Assuming that SetFinalizer
-// is not called again, the next time the garbage collector sees
-// that obj is unreachable, it will free obj.
-//
-// SetFinalizer(obj, nil) clears any finalizer associated with obj.
-//
-// The argument obj must be a pointer to an object allocated by
-// calling new or by taking the address of a composite literal.
-// The argument finalizer must be a function that takes a single argument
-// to which obj's type can be assigned, and can have arbitrary ignored return
-// values. If either of these is not true, SetFinalizer aborts the
-// program.
-//
-// Finalizers are run in dependency order: if A points at B, both have
-// finalizers, and they are otherwise unreachable, only the finalizer
-// for A runs; once A is freed, the finalizer for B can run.
-// If a cyclic structure includes a block with a finalizer, that
-// cycle is not guaranteed to be garbage collected and the finalizer
-// is not guaranteed to run, because there is no ordering that
-// respects the dependencies.
-//
-// The finalizer for obj is scheduled to run at some arbitrary time after
-// obj becomes unreachable.
-// There is no guarantee that finalizers will run before a program exits,
-// so typically they are useful only for releasing non-memory resources
-// associated with an object during a long-running program.
-// For example, an os.File object could use a finalizer to close the
-// associated operating system file descriptor when a program discards
-// an os.File without calling Close, but it would be a mistake
-// to depend on a finalizer to flush an in-memory I/O buffer such as a
-// bufio.Writer, because the buffer would not be flushed at program exit.
-//
-// It is not guaranteed that a finalizer will run if the size of *obj is
-// zero bytes.
-//
-// It is not guaranteed that a finalizer will run for objects allocated
-// in initializers for package-level variables. Such objects may be
-// linker-allocated, not heap-allocated.
-//
-// A finalizer may run as soon as an object becomes unreachable.
-// In order to use finalizers correctly, the program must ensure that
-// the object is reachable until it is no longer required.
-// Objects stored in global variables, or that can be found by tracing
-// pointers from a global variable, are reachable. For other objects,
-// pass the object to a call of the KeepAlive function to mark the
-// last point in the function where the object must be reachable.
-//
-// For example, if p points to a struct that contains a file descriptor d,
-// and p has a finalizer that closes that file descriptor, and if the last
-// use of p in a function is a call to syscall.Write(p.d, buf, size), then
-// p may be unreachable as soon as the program enters syscall.Write. The
-// finalizer may run at that moment, closing p.d, causing syscall.Write
-// to fail because it is writing to a closed file descriptor (or, worse,
-// to an entirely different file descriptor opened by a different goroutine).
-// To avoid this problem, call runtime.KeepAlive(p) after the call to
-// syscall.Write.
-//
-// A single goroutine runs all finalizers for a program, sequentially.
-// If a finalizer must run for a long time, it should do so by starting
-// a new goroutine.
-func SetFinalizer(obj interface{}, finalizer interface{})
-
-// KeepAlive marks its argument as currently reachable.
-// This ensures that the object is not freed, and its finalizer is not run,
-// before the point in the program where KeepAlive is called.
-//
-// A very simplified example showing where KeepAlive is required:
-// 	type File struct { d int }
-// 	d, err := syscall.Open("/file/path", syscall.O_RDONLY, 0)
-// 	// ... do something if err != nil ...
-// 	p := &File{d}
-// 	runtime.SetFinalizer(p, func(p *File) { syscall.Close(p.d) })
-// 	var buf [10]byte
-// 	n, err := syscall.Read(p.d, buf[:])
-// 	// Ensure p is not finalized until Read returns.
-// 	runtime.KeepAlive(p)
-// 	// No more uses of p after this point.
-//
-// Without the KeepAlive call, the finalizer could run at the start of
-// syscall.Read, closing the file descriptor before syscall.Read makes
-// the actual system call.
-func KeepAlive(interface{})
-
-func getgoroot() string
-
-// GOROOT returns the root of the Go tree.
-// It uses the GOROOT environment variable, if set,
+// GOROOT returns the root of the Go tree. It uses the
+// GOROOT environment variable, if set at process start,
 // or else the root used during the Go build.
 func GOROOT() string {
-	s := getgoroot()
+	s := gogetenv("GOROOT")
 	if s != "" {
 		return s
 	}
@@ -299,7 +203,7 @@ func Version() string {
 const GOOS string = sys.GOOS
 
 // GOARCH is the running program's architecture target:
-// 386, amd64, arm, or s390x.
+// one of 386, amd64, arm, s390x, and so on.
 const GOARCH string = sys.GOARCH
 
 // GCCGOTOOLDIR is the Tool Dir for the gccgo build

@@ -39,6 +39,7 @@ class Unary_expression;
 class Binary_expression;
 class String_concat_expression;
 class Call_expression;
+class Builtin_call_expression;
 class Call_result_expression;
 class Func_expression;
 class Func_descriptor_expression;
@@ -128,6 +129,7 @@ class Expression
     EXPRESSION_RECEIVE,
     EXPRESSION_TYPE_DESCRIPTOR,
     EXPRESSION_GC_SYMBOL,
+    EXPRESSION_PTRMASK_SYMBOL,
     EXPRESSION_TYPE_INFO,
     EXPRESSION_SLICE_INFO,
     EXPRESSION_SLICE_VALUE,
@@ -137,7 +139,8 @@ class Expression
     EXPRESSION_STRUCT_FIELD_OFFSET,
     EXPRESSION_LABEL_ADDR,
     EXPRESSION_CONDITIONAL,
-    EXPRESSION_COMPOUND
+    EXPRESSION_COMPOUND,
+    EXPRESSION_BACKEND
   };
 
   Expression(Expression_classification, Location);
@@ -401,6 +404,13 @@ class Expression
   static Expression*
   make_gc_symbol(Type* type);
 
+  // Make an expression that evaluates to the address of a ptrmask
+  // symbol for TYPE.  For most types this will be the same as
+  // make_gc_symbol, but for larger types make_gc_symbol will return a
+  // gcprog while this will return a ptrmask.
+  static Expression*
+  make_ptrmask_symbol(Type* type);
+
   // Make an expression which evaluates to some characteristic of a
   // type.  These are only used for type descriptors, so there is no
   // location parameter.
@@ -412,7 +422,15 @@ class Expression
       TYPE_INFO_ALIGNMENT,
       // The required alignment of a value of the type when used as a
       // field in a struct.
-      TYPE_INFO_FIELD_ALIGNMENT
+      TYPE_INFO_FIELD_ALIGNMENT,
+      // The size of the prefix of a value of the type that contains
+      // all the pointers.  This is 0 for a type that contains no
+      // pointers.  It is always <= TYPE_INFO_SIZE.
+      TYPE_INFO_BACKEND_PTRDATA,
+      // Like TYPE_INFO_BACKEND_PTRDATA, but the ptrdata value that we
+      // want to store in a type descriptor.  They are the same for
+      // most types, but can differ for a type that uses a gcprog.
+      TYPE_INFO_DESCRIPTOR_PTRDATA
     };
 
   static Expression*
@@ -485,6 +503,27 @@ class Expression
   static Expression*
   make_compound(Expression*, Expression*, Location);
 
+  // Make a backend expression.
+  static Expression*
+  make_backend(Bexpression*, Type*, Location);
+
+  enum Nil_check_classification
+    {
+      // Use the default policy for deciding if this deref needs a check.
+      NIL_CHECK_DEFAULT,
+      // An explicit check is required for this dereference operation.
+      NIL_CHECK_NEEDED,
+      // No check needed for this dereference operation.
+      NIL_CHECK_NOT_NEEDED,
+      // A type error or error construct was encountered when determining
+      // whether this deref needs an explicit check.
+      NIL_CHECK_ERROR_ENCOUNTERED
+    };
+
+  // Make a dereference expression.
+  static Expression*
+  make_dereference(Expression*, Nil_check_classification, Location);
+
   // Return the expression classification.
   Expression_classification
   classification() const
@@ -500,10 +539,20 @@ class Expression
   is_constant() const
   { return this->do_is_constant(); }
 
-  // Return whether this is an immutable expression.
+  // Return whether this expression can be used as a static
+  // initializer.  This is true for an expression that has only
+  // numbers and pointers to global variables or composite literals
+  // that do not require runtime initialization.  It is false if we
+  // must generate code to compute this expression when it is used to
+  // initialize a global variable.  This is not a language-level
+  // concept, but an implementation-level one.  If this expression is
+  // used to initialize a global variable, this is true if we can pass
+  // an initializer to the backend, false if we must generate code to
+  // initialize the variable.  It is always safe for this method to
+  // return false, but the resulting code may be less efficient.
   bool
-  is_immutable() const
-  { return this->do_is_immutable(); }
+  is_static_initializer() const
+  { return this->do_is_static_initializer(); }
 
   // If this is not a numeric constant, return false.  If it is one,
   // return true, and set VAL to hold the value.
@@ -991,9 +1040,10 @@ class Expression
   do_is_constant() const
   { return false; }
 
-  // Return whether this is an immutable expression.
+  // Return whether this expression can be used as a constant
+  // initializer.
   virtual bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return false; }
 
   // Return whether this is a constant expression of numeric type, and
@@ -1508,7 +1558,7 @@ class String_expression : public Expression
   { return true; }
 
   bool
-  do_is_immutable() const
+  do_is_static_initializer() const
   { return true; }
 
   bool
@@ -1595,7 +1645,7 @@ class Type_conversion_expression : public Expression
   do_is_constant() const;
 
   bool
-  do_is_immutable() const;
+  do_is_static_initializer() const;
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
@@ -1614,11 +1664,7 @@ class Type_conversion_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return new Type_conversion_expression(this->type_, this->expr_->copy(),
-					  this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context* context);
@@ -1659,7 +1705,7 @@ class Unsafe_type_conversion_expression : public Expression
   do_traverse(Traverse* traverse);
 
   bool
-  do_is_immutable() const;
+  do_is_static_initializer() const;
 
   Type*
   do_type()
@@ -1670,12 +1716,7 @@ class Unsafe_type_conversion_expression : public Expression
   { this->expr_->determine_type_no_context(); }
 
   Expression*
-  do_copy()
-  {
-    return new Unsafe_type_conversion_expression(this->type_,
-						 this->expr_->copy(),
-						 this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -1698,7 +1739,8 @@ class Unary_expression : public Expression
   Unary_expression(Operator op, Expression* expr, Location location)
     : Expression(EXPRESSION_UNARY, location),
       op_(op), escapes_(true), create_temp_(false), is_gc_root_(false),
-      is_slice_init_(false), expr_(expr), issue_nil_check_(false)
+      is_slice_init_(false), expr_(expr),
+      issue_nil_check_(NIL_CHECK_DEFAULT)
   { }
 
   // Return the operator.
@@ -1746,14 +1788,30 @@ class Unary_expression : public Expression
     this->is_slice_init_ = true;
   }
 
+  // Call the address_taken method on the operand if necessary.
+  void
+  check_operand_address_taken(Gogo*);
+
   // Apply unary opcode OP to UNC, setting NC.  Return true if this
-  // could be done, false if not.  Issue errors for overflow.
+  // could be done, false if not.  On overflow, issues an error and
+  // sets *ISSUED_ERROR.
   static bool
   eval_constant(Operator op, const Numeric_constant* unc,
-		Location, Numeric_constant* nc);
+		Location, Numeric_constant* nc, bool *issued_error);
 
   static Expression*
   do_import(Import*);
+
+  // Declare that this deref does or does not require an explicit nil check.
+  void
+  set_requires_nil_check(bool needed)
+  {
+    go_assert(this->op_ == OPERATOR_MULT);
+    if (needed)
+      this->issue_nil_check_ = NIL_CHECK_NEEDED;
+    else
+      this->issue_nil_check_ = NIL_CHECK_NOT_NEEDED;
+  }
 
  protected:
   int
@@ -1770,11 +1828,7 @@ class Unary_expression : public Expression
   do_is_constant() const;
 
   bool
-  do_is_immutable() const
-  {
-    return (this->expr_->is_immutable()
-	    || (this->op_ == OPERATOR_AND && this->expr_->is_variable()));
-  }
+  do_is_static_initializer() const;
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
@@ -1814,9 +1868,20 @@ class Unary_expression : public Expression
 
   void
   do_issue_nil_check()
-  { this->issue_nil_check_ = (this->op_ == OPERATOR_MULT); }
+  {
+    if (this->op_ == OPERATOR_MULT)
+      this->set_requires_nil_check(true);
+  }
 
  private:
+  static bool
+  base_is_static_initializer(Expression*);
+
+  // Return a determination as to whether this dereference expression
+  // requires a nil check.
+  Nil_check_classification
+  requires_nil_check(Gogo*);
+
   // The unary operator to apply.
   Operator op_;
   // Normally true.  False if this is an address expression which does
@@ -1838,7 +1903,7 @@ class Unary_expression : public Expression
   Expression* expr_;
   // Whether or not to issue a nil check for this expression if its address
   // is being taken.
-  bool issue_nil_check_;
+  Nil_check_classification issue_nil_check_;
 };
 
 // A binary expression.
@@ -1869,11 +1934,11 @@ class Binary_expression : public Expression
 
   // Apply binary opcode OP to LEFT_NC and RIGHT_NC, setting NC.
   // Return true if this could be done, false if not.  Issue errors at
-  // LOCATION as appropriate.
+  // LOCATION as appropriate, and sets *ISSUED_ERROR if it did.
   static bool
   eval_constant(Operator op, Numeric_constant* left_nc,
 		Numeric_constant* right_nc, Location location,
-		Numeric_constant* nc);
+		Numeric_constant* nc, bool* issued_error);
 
   // Compare constants LEFT_NC and RIGHT_NC according to OP, setting
   // *RESULT.  Return true if this could be done, false if not.  Issue
@@ -1913,8 +1978,7 @@ class Binary_expression : public Expression
   { return this->left_->is_constant() && this->right_->is_constant(); }
 
   bool
-  do_is_immutable() const
-  { return this->left_->is_immutable() && this->right_->is_immutable(); }
+  do_is_static_initializer() const;
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
@@ -2029,7 +2093,7 @@ class String_concat_expression : public Expression
   do_is_constant() const;
 
   bool
-  do_is_immutable() const;
+  do_is_static_initializer() const;
 
   Type*
   do_type();
@@ -2068,8 +2132,8 @@ class Call_expression : public Expression
   Call_expression(Expression* fn, Expression_list* args, bool is_varargs,
 		  Location location)
     : Expression(EXPRESSION_CALL, location),
-      fn_(fn), args_(args), type_(NULL), results_(NULL), call_(NULL),
-      call_temp_(NULL), expected_result_count_(0), is_varargs_(is_varargs),
+      fn_(fn), args_(args), type_(NULL), call_(NULL), call_temp_(NULL)
+    , expected_result_count_(0), is_varargs_(is_varargs),
       varargs_are_lowered_(false), types_are_determined_(false),
       is_deferred_(false), is_concurrent_(false), issued_error_(false),
       is_multi_value_arg_(false), is_flattened_(false)
@@ -2097,11 +2161,11 @@ class Call_expression : public Expression
   size_t
   result_count() const;
 
-  // Return the temporary variable which holds result I.  This is only
-  // valid after the expression has been lowered, and is only valid
-  // for calls which return multiple results.
+  // Return the temporary variable that holds the results.  This is
+  // only valid after the expression has been lowered, and is only
+  // valid for calls which return multiple results.
   Temporary_statement*
-  result(size_t i) const;
+  results() const;
 
   // Set the number of results expected from this call.  This is used
   // when the call appears in a context that expects multiple results,
@@ -2174,6 +2238,15 @@ class Call_expression : public Expression
   set_is_multi_value_arg()
   { this->is_multi_value_arg_ = true; }
 
+  // Whether this is a call to builtin function.
+  virtual bool
+  is_builtin()
+  { return false; }
+
+  // Convert to a Builtin_call_expression, or return NULL.
+  inline Builtin_call_expression*
+  builtin_call_expression();
+
  protected:
   int
   do_traverse(Traverse*);
@@ -2240,10 +2313,10 @@ class Call_expression : public Expression
 
   Expression*
   interface_method_function(Interface_field_reference_expression*,
-			    Expression**);
+			    Expression**, Location);
 
   Bexpression*
-  set_results(Translate_context*, Bexpression*);
+  set_results(Translate_context*);
 
   // The function to call.
   Expression* fn_;
@@ -2252,9 +2325,6 @@ class Call_expression : public Expression
   Expression_list* args_;
   // The type of the expression, to avoid recomputing it.
   Type* type_;
-  // The list of temporaries which will hold the results if the
-  // function returns a tuple.
-  std::vector<Temporary_statement*>* results_;
   // The backend expression for the call, used for a call which returns a tuple.
   Bexpression* call_;
   // A temporary variable to store this call if the function returns a tuple.
@@ -2281,6 +2351,138 @@ class Call_expression : public Expression
   // True if this expression has already been flattened.
   bool is_flattened_;
 };
+
+// A call expression to a builtin function.
+
+class Builtin_call_expression : public Call_expression
+{
+ public:
+  Builtin_call_expression(Gogo* gogo, Expression* fn, Expression_list* args,
+			  bool is_varargs, Location location);
+
+  // The builtin functions.
+  enum Builtin_function_code
+    {
+      BUILTIN_INVALID,
+
+      // Predeclared builtin functions.
+      BUILTIN_APPEND,
+      BUILTIN_CAP,
+      BUILTIN_CLOSE,
+      BUILTIN_COMPLEX,
+      BUILTIN_COPY,
+      BUILTIN_DELETE,
+      BUILTIN_IMAG,
+      BUILTIN_LEN,
+      BUILTIN_MAKE,
+      BUILTIN_NEW,
+      BUILTIN_PANIC,
+      BUILTIN_PRINT,
+      BUILTIN_PRINTLN,
+      BUILTIN_REAL,
+      BUILTIN_RECOVER,
+
+      // Builtin functions from the unsafe package.
+      BUILTIN_ALIGNOF,
+      BUILTIN_OFFSETOF,
+      BUILTIN_SIZEOF
+    };
+
+  Builtin_function_code
+  code()
+  { return this->code_; }
+
+  // This overrides Call_expression::is_builtin.
+  bool
+  is_builtin()
+  { return true; }
+
+  // Return whether EXPR, of array type, is a constant if passed to
+  // len or cap.
+  static bool
+  array_len_is_constant(Expression* expr);
+
+ protected:
+  // This overrides Call_expression::do_lower.
+  Expression*
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+
+  Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
+
+  bool
+  do_is_constant() const;
+
+  bool
+  do_numeric_constant_value(Numeric_constant*) const;
+
+  bool
+  do_discarding_value();
+
+  Type*
+  do_type();
+
+  void
+  do_determine_type(const Type_context*);
+
+  void
+  do_check_types(Gogo*);
+
+  Expression*
+  do_copy();
+
+  Bexpression*
+  do_get_backend(Translate_context*);
+
+  void
+  do_export(Export*) const;
+
+  virtual bool
+  do_is_recover_call() const;
+
+  virtual void
+  do_set_recover_arg(Expression*);
+
+ private:
+  Expression*
+  one_arg() const;
+
+  bool
+  check_one_arg();
+
+  static Type*
+  real_imag_type(Type*);
+
+  static Type*
+  complex_type(Type*);
+
+  Expression*
+  lower_make(Statement_inserter*);
+
+  Expression* flatten_append(Gogo*, Named_object*, Statement_inserter*);
+
+  bool
+  check_int_value(Expression*, bool is_length, bool* small);
+
+  // A pointer back to the general IR structure.  This avoids a global
+  // variable, or passing it around everywhere.
+  Gogo* gogo_;
+  // The builtin function being called.
+  Builtin_function_code code_;
+  // Used to stop endless loops when the length of an array uses len
+  // or cap of the array itself.
+  mutable bool seen_;
+  // Whether the argument is set for calls to BUILTIN_RECOVER.
+  bool recover_arg_is_set_;
+};
+
+inline Builtin_call_expression*
+Call_expression::builtin_call_expression()
+{
+  return (this->is_builtin()
+          ? static_cast<Builtin_call_expression*>(this)
+          : NULL);
+}
 
 // A single result from a call which returns multiple results.
 
@@ -2569,12 +2771,10 @@ class Index_expression : public Parser_expression
 				this->location());
   }
 
+  // This shouldn't be called--we don't know yet.
   bool
-  do_must_eval_subexpressions_in_order(int* skip) const
-  {
-    *skip = 1;
-    return true;
-  }
+  do_must_eval_subexpressions_in_order(int*) const
+  { go_unreachable(); }
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2604,7 +2804,8 @@ class Array_index_expression : public Expression
   Array_index_expression(Expression* array, Expression* start,
 			 Expression* end, Expression* cap, Location location)
     : Expression(EXPRESSION_ARRAY_INDEX, location),
-      array_(array), start_(start), end_(end), cap_(cap), type_(NULL)
+      array_(array), start_(start), end_(end), cap_(cap), type_(NULL),
+      is_lvalue_(false)
   { }
 
   // Return the array.
@@ -2615,6 +2816,38 @@ class Array_index_expression : public Expression
   const Expression*
   array() const
   { return this->array_; }
+
+  // Return the index of a simple index expression, or the start index
+  // of a slice expression.
+  Expression*
+  start()
+  { return this->start_; }
+
+  const Expression*
+  start() const
+  { return this->start_; }
+
+  // Return the end index of a slice expression.  This is NULL for a
+  // simple index expression.
+  Expression*
+  end()
+  { return this->end_; }
+
+  const Expression*
+  end() const
+  { return this->end_; }
+
+  // Return whether this array index expression appears in an lvalue
+  // (left hand side of assignment) context.
+  bool
+  is_lvalue() const
+  { return this->is_lvalue_; }
+
+  // Update this array index expression to indicate that it appears
+  // in a left-hand-side or lvalue context.
+  void
+  set_is_lvalue()
+  { this->is_lvalue_ = true; }
 
  protected:
   int
@@ -2647,18 +2880,13 @@ class Array_index_expression : public Expression
   }
 
   bool
-  do_must_eval_subexpressions_in_order(int* skip) const
-  {
-    *skip = 1;
-    return true;
-  }
+  do_must_eval_subexpressions_in_order(int* skip) const;
 
   bool
   do_is_addressable() const;
 
   void
-  do_address_taken(bool escapes)
-  { this->array_->address_taken(escapes); }
+  do_address_taken(bool escapes);
 
   void
   do_issue_nil_check()
@@ -2683,6 +2911,8 @@ class Array_index_expression : public Expression
   Expression* cap_;
   // The type of the expression.
   Type* type_;
+  // Whether expr appears in an lvalue context.
+  bool is_lvalue_;
 };
 
 // A string index.  This is used for both indexing and slicing.
@@ -2729,11 +2959,8 @@ class String_index_expression : public Expression
   }
 
   bool
-  do_must_eval_subexpressions_in_order(int* skip) const
-  {
-    *skip = 1;
-    return true;
-  }
+  do_must_eval_subexpressions_in_order(int*) const
+  { return true; }
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -2816,11 +3043,8 @@ class Map_index_expression : public Expression
   }
 
   bool
-  do_must_eval_subexpressions_in_order(int* skip) const
-  {
-    *skip = 1;
-    return true;
-  }
+  do_must_eval_subexpressions_in_order(int*) const
+  { return true; }
 
   // A map index expression is an lvalue but it is not addressable.
 
@@ -3135,6 +3359,9 @@ class Allocation_expression : public Expression
   do_determine_type(const Type_context*)
   { }
 
+  void
+  do_check_types(Gogo*);
+
   Expression*
   do_copy();
 
@@ -3182,19 +3409,7 @@ class Composite_literal_expression : public Parser_expression
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   Expression*
-  do_copy()
-  {
-    Composite_literal_expression *ret =
-      new Composite_literal_expression(this->type_, this->depth_,
-				       this->has_keys_,
-				       (this->vals_ == NULL
-					? NULL
-					: this->vals_->copy()),
-				       this->all_are_names_,
-				       this->location());
-    ret->key_path_ = this->key_path_;
-    return ret;
-  }
+  do_copy();
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -3232,37 +3447,70 @@ class Composite_literal_expression : public Parser_expression
   std::vector<bool> key_path_;
 };
 
-// Construct a struct.
+// Helper/mixin class for struct and array construction expressions;
+// encapsulates a list of values plus an optional traversal order
+// recording the order in which the values should be visited.
 
-class Struct_construction_expression : public Expression
+class Ordered_value_list
 {
  public:
-  Struct_construction_expression(Type* type, Expression_list* vals,
-				 Location location)
-    : Expression(EXPRESSION_STRUCT_CONSTRUCTION, location),
-      type_(type), vals_(vals), traverse_order_(NULL)
+  Ordered_value_list(Expression_list* vals)
+      : vals_(vals), traverse_order_(NULL)
   { }
-
-  // Set the traversal order, used to ensure that we implement the
-  // order of evaluation rules.  Takes ownership of the argument.
-  void
-  set_traverse_order(std::vector<int>* traverse_order)
-  { this->traverse_order_ = traverse_order; }
-
-  // Return whether this is a constant initializer.
-  bool
-  is_constant_struct() const;
 
   Expression_list*
   vals() const
   { return this->vals_; }
+
+  int
+  traverse_vals(Traverse* traverse);
+
+  // Get the traversal order (may be NULL)
+  std::vector<unsigned long>*
+  traverse_order()
+  { return traverse_order_; }
+
+  // Set the traversal order, used to ensure that we implement the
+  // order of evaluation rules.  Takes ownership of the argument.
+  void
+  set_traverse_order(std::vector<unsigned long>* traverse_order)
+  { this->traverse_order_ = traverse_order; }
+
+ private:
+  // The list of values, in order of the fields in the struct or in
+  // order of indices in an array. A NULL value of vals_ means that
+  // all fields/slots should be zero-initialized; a single NULL entry
+  // in the list means that the corresponding field or array slot
+  // should be zero-initialized.
+  Expression_list* vals_;
+  // If not NULL, the order in which to traverse vals_.  This is used
+  // so that we implement the order of evaluation rules correctly.
+  std::vector<unsigned long>* traverse_order_;
+};
+
+// Construct a struct.
+
+class Struct_construction_expression : public Expression,
+				       public Ordered_value_list
+{
+ public:
+  Struct_construction_expression(Type* type, Expression_list* vals,
+				 Location location)
+      : Expression(EXPRESSION_STRUCT_CONSTRUCTION, location),
+	Ordered_value_list(vals),
+	type_(type)
+  { }
+
+ // Return whether this is a constant initializer.
+  bool
+  is_constant_struct() const;
 
  protected:
   int
   do_traverse(Traverse* traverse);
 
   bool
-  do_is_immutable() const;
+  do_is_static_initializer() const;
 
   Type*
   do_type()
@@ -3275,18 +3523,7 @@ class Struct_construction_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    Struct_construction_expression* ret =
-      new Struct_construction_expression(this->type_,
-					 (this->vals_ == NULL
-					  ? NULL
-					  : this->vals_->copy()),
-					 this->location());
-    if (this->traverse_order_ != NULL)
-      ret->set_traverse_order(this->traverse_order_);
-    return ret;
-  }
+  do_copy();
 
   Expression*
   do_flatten(Gogo*, Named_object*, Statement_inserter*);
@@ -3303,19 +3540,14 @@ class Struct_construction_expression : public Expression
  private:
   // The type of the struct to construct.
   Type* type_;
-  // The list of values, in order of the fields in the struct.  A NULL
-  // entry means that the field should be zero-initialized.
-  Expression_list* vals_;
-  // If not NULL, the order in which to traverse vals_.  This is used
-  // so that we implement the order of evaluation rules correctly.
-  std::vector<int>* traverse_order_;
 };
 
 // Construct an array.  This class is not used directly; instead we
 // use the child classes, Fixed_array_construction_expression and
 // Slice_construction_expression.
 
-class Array_construction_expression : public Expression
+class Array_construction_expression : public Expression,
+				      public Ordered_value_list
 {
  protected:
   Array_construction_expression(Expression_classification classification,
@@ -3323,7 +3555,8 @@ class Array_construction_expression : public Expression
 				const std::vector<unsigned long>* indexes,
 				Expression_list* vals, Location location)
     : Expression(classification, location),
-      type_(type), indexes_(indexes), vals_(vals)
+      Ordered_value_list(vals),
+      type_(type), indexes_(indexes)
   { go_assert(indexes == NULL || indexes->size() == vals->size()); }
 
  public:
@@ -3334,19 +3567,14 @@ class Array_construction_expression : public Expression
   // Return the number of elements.
   size_t
   element_count() const
-  { return this->vals_ == NULL ? 0 : this->vals_->size(); }
-
-  // The list of values.
-  Expression_list*
-  vals() const
-  { return this->vals_; }
+  { return this->vals() == NULL ? 0 : this->vals()->size(); }
 
 protected:
   virtual int
   do_traverse(Traverse* traverse);
 
   bool
-  do_is_immutable() const;
+  do_is_static_initializer() const;
 
   Type*
   do_type()
@@ -3385,8 +3613,6 @@ protected:
   // The list of indexes into the array, one for each value.  This may
   // be NULL, in which case the indexes start at zero and increment.
   const std::vector<unsigned long>* indexes_;
-  // The list of values.  This may be NULL if there are no values.
-  Expression_list* vals_;
 };
 
 // Construct a fixed array.
@@ -3401,15 +3627,7 @@ class Fixed_array_construction_expression :
 
  protected:
   Expression*
-  do_copy()
-  {
-    return new Fixed_array_construction_expression(this->type(),
-						   this->indexes(),
-						   (this->vals() == NULL
-						    ? NULL
-						    : this->vals()->copy()),
-						   this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3442,14 +3660,7 @@ class Slice_construction_expression : public Array_construction_expression
   do_traverse(Traverse* traverse);
 
   Expression*
-  do_copy()
-  {
-    return new Slice_construction_expression(this->type(), this->indexes(),
-					     (this->vals() == NULL
-					      ? NULL
-					      : this->vals()->copy()),
-					     this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3508,14 +3719,7 @@ class Map_construction_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return new Map_construction_expression(this->type_,
-					   (this->vals_ == NULL
-					    ? NULL
-					    : this->vals_->copy()),
-					   this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3576,11 +3780,7 @@ class Type_guard_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return new Type_guard_expression(this->expr_->copy(), this->type_,
-				     this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3605,12 +3805,16 @@ class Heap_expression : public Expression
  public:
   Heap_expression(Expression* expr, Location location)
     : Expression(EXPRESSION_HEAP, location),
-      expr_(expr)
+      expr_(expr), allocate_on_stack_(false)
   { }
 
   Expression*
   expr() const
   { return this->expr_; }
+
+  void
+  set_allocate_on_stack()
+  { this->allocate_on_stack_ = true; }
 
  protected:
   int
@@ -3645,6 +3849,8 @@ class Heap_expression : public Expression
  private:
   // The expression which is being put on the heap.
   Expression* expr_;
+  // Whether or not this is a stack allocation.
+  bool allocate_on_stack_;
 };
 
 // A receive expression.
@@ -3797,6 +4003,51 @@ class Compound_expression : public Expression
   Expression* expr_;
 };
 
+// A backend expression.  This is a backend expression wrapped in an
+// Expression, for convenience during backend generation.
+
+class Backend_expression : public Expression
+{
+ public:
+  Backend_expression(Bexpression* bexpr, Type* type, Location location)
+    : Expression(EXPRESSION_BACKEND, location), bexpr_(bexpr), type_(type)
+  {}
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  // For now these are always valid static initializers.  If that
+  // changes we can change this.
+  bool
+  do_is_static_initializer() const
+  { return true; }
+
+  Type*
+  do_type()
+  { return this->type_; }
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy();
+
+  Bexpression*
+  do_get_backend(Translate_context*)
+  { return this->bexpr_; }
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+ private:
+  // The backend expression we are wrapping.
+  Bexpression* bexpr_;
+  // The type of the expression;
+  Type* type_;
+};
+
 // A numeric constant.  This is used both for untyped constants and
 // for constants that have a type.
 
@@ -3894,6 +4145,13 @@ class Numeric_constant
   To_unsigned_long
   to_unsigned_long(unsigned long* val) const;
 
+  // If the value can be expressed as an integer that describes the
+  // size of an object in memory, set *VAL and return true.
+  // Otherwise, return false.  Currently we use int64_t to represent a
+  // memory size, as in Type::backend_type_size.
+  bool
+  to_memory_size(int64_t* val) const;
+
   // If the value can be expressed as an int, return true and
   // initialize and set VAL.  This will return false for a value with
   // an explicit float or complex type, even if the value is integral.
@@ -3936,6 +4194,12 @@ class Numeric_constant
   mpfr_to_unsigned_long(const mpfr_t fval, unsigned long *val) const;
 
   bool
+  mpz_to_memory_size(const mpz_t ival, int64_t* val) const;
+
+  bool
+  mpfr_to_memory_size(const mpfr_t fval, int64_t* val) const;
+
+  bool
   check_int_type(Integer_type*, bool, Location);
 
   bool
@@ -3943,6 +4207,9 @@ class Numeric_constant
 
   bool
   check_complex_type(Complex_type*, bool, Location);
+
+  static bool
+  is_float_neg_zero(const mpfr_t, int bits);
 
   // The kinds of constants.
   enum Classification

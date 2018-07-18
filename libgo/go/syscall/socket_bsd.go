@@ -8,6 +8,8 @@
 
 package syscall
 
+import "unsafe"
+
 const SizeofSockaddrInet4 = 16
 const SizeofSockaddrInet6 = 28
 const SizeofSockaddrUnix = 110

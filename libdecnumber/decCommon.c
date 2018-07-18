@@ -1,5 +1,5 @@
 /* Common code for fixed-size types in the decNumber C Library.
-   Copyright (C) 2007-2016 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by IBM Corporation.  Author Mike Cowlishaw.
 
    This file is part of GCC.
@@ -713,7 +713,7 @@ decFloat * decFloatFromPacked(decFloat *df, Int exp, const uByte *packed) {
 /*  returns df, which will be canonical or NULL if any of the	      */
 /*    requirements are not met (if this case df is unchanged); that   */
 /*    is, the input data must be as returned by decFloatToPacked,     */
-/*    except that all six sign codes are acccepted.		      */
+/*    except that all six sign codes are accepted.		      */
 /*								      */
 /* No status will be set.					      */
 /* ------------------------------------------------------------------ */

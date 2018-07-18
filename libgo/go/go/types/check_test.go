@@ -42,7 +42,7 @@ import (
 )
 
 var (
-	listErrors = flag.Bool("list", false, "list errors")
+	listErrors = flag.Bool("errlist", false, "list errors")
 	testFiles  = flag.String("files", "", "space-separated list of test files")
 )
 
@@ -68,6 +68,8 @@ var tests = [][]string{
 	{"testdata/decls1.src"},
 	{"testdata/decls2a.src", "testdata/decls2b.src"},
 	{"testdata/decls3.src"},
+	{"testdata/decls4.src"},
+	{"testdata/decls5.src"},
 	{"testdata/const0.src"},
 	{"testdata/const1.src"},
 	{"testdata/constdecl.src"},
@@ -80,6 +82,7 @@ var tests = [][]string{
 	{"testdata/shifts.src"},
 	{"testdata/builtins.src"},
 	{"testdata/conversions.src"},
+	{"testdata/conversions2.src"},
 	{"testdata/stmt0.src"},
 	{"testdata/stmt1.src"},
 	{"testdata/gotos.src"},

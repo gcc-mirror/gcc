@@ -1,5 +1,5 @@
 /* Rewrite a program in Normal form into SSA.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -38,6 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "domwalk.h"
 #include "statistics.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "asan.h"
 
 #define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))
 
@@ -1065,6 +1068,59 @@ insert_phi_nodes (bitmap_head *dfs)
 
   timevar_push (TV_TREE_INSERT_PHI_NODES);
 
+  /* When the gimplifier introduces SSA names it cannot easily avoid
+     situations where abnormal edges added by CFG construction break
+     the use-def dominance requirement.  For this case rewrite SSA
+     names with broken use-def dominance out-of-SSA and register them
+     for PHI insertion.  We only need to do this if abnormal edges
+     can appear in the function.  */
+  tree name;
+  if (cfun->calls_setjmp
+      || cfun->has_nonlocal_label)
+    FOR_EACH_SSA_NAME (i, name, cfun)
+      {
+	gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+	if (SSA_NAME_IS_DEFAULT_DEF (name))
+	  continue;
+
+	basic_block def_bb = gimple_bb (def_stmt);
+	imm_use_iterator it;
+	gimple *use_stmt;
+	bool need_phis = false;
+	FOR_EACH_IMM_USE_STMT (use_stmt, it, name)
+	  {
+	    basic_block use_bb = gimple_bb (use_stmt);
+	    if (use_bb != def_bb
+		&& ! dominated_by_p (CDI_DOMINATORS, use_bb, def_bb))
+	      need_phis = true;
+	  }
+	if (need_phis)
+	  {
+	    tree var = create_tmp_reg (TREE_TYPE (name));
+	    use_operand_p use_p;
+	    FOR_EACH_IMM_USE_STMT (use_stmt, it, name)
+	      {
+		basic_block use_bb = gimple_bb (use_stmt);
+		FOR_EACH_IMM_USE_ON_STMT (use_p, it)
+		    SET_USE (use_p, var);
+		update_stmt (use_stmt);
+		set_livein_block (var, use_bb);
+		set_rewrite_uses (use_stmt, true);
+		bitmap_set_bit (interesting_blocks, use_bb->index);
+	      }
+	    def_operand_p def_p;
+	    ssa_op_iter dit;
+	    FOR_EACH_SSA_DEF_OPERAND (def_p, def_stmt, dit, SSA_OP_DEF)
+	      if (DEF_FROM_PTR (def_p) == name)
+		SET_DEF (def_p, var);
+	    update_stmt (def_stmt);
+	    set_def_block (var, def_bb, false);
+	    set_register_defs (def_stmt, true);
+	    bitmap_set_bit (interesting_blocks, def_bb->index);
+	    release_ssa_name (name);
+	  }
+      }
+
   auto_vec<var_info *> vars (var_infos->elements ());
   FOR_EACH_HASH_TABLE_ELEMENT (*var_infos, info, var_info_p, hi)
     if (info->info.need_phi_state != NEED_PHI_STATE_NO)
@@ -1170,6 +1226,8 @@ get_reaching_def (tree var)
   if (currdef == NULL_TREE)
     {
       tree sym = DECL_P (var) ? var : SSA_NAME_VAR (var);
+      if (! sym)
+	sym = create_tmp_reg (TREE_TYPE (var));
       currdef = get_or_create_ssa_default_def (cfun, sym);
     }
 
@@ -1229,7 +1287,7 @@ rewrite_debug_stmt_uses (gimple *stmt)
 		  def_temp = gimple_build_debug_source_bind (def, var, NULL);
 		  DECL_ARTIFICIAL (def) = 1;
 		  TREE_TYPE (def) = TREE_TYPE (var);
-		  DECL_MODE (def) = DECL_MODE (var);
+		  SET_DECL_MODE (def, DECL_MODE (var));
 		  gsi =
 		 gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 		  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
@@ -1378,12 +1436,20 @@ rewrite_add_phi_arguments (basic_block bb)
       for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  tree currdef, res;
+	  tree currdef, res, argvar;
 	  location_t loc;
 
 	  phi = gsi.phi ();
 	  res = gimple_phi_result (phi);
-	  currdef = get_reaching_def (SSA_NAME_VAR (res));
+	  /* If we have pre-existing PHI (via the GIMPLE FE) its args may
+	     be different vars than existing vars and they may be constants
+	     as well.  Note the following supports partial SSA for PHI args.  */
+	  argvar = gimple_phi_arg_def (phi, e->dest_idx);
+	  if (argvar && ! DECL_P (argvar))
+	    continue;
+	  if (!argvar)
+	    argvar = SSA_NAME_VAR (res);
+	  currdef = get_reaching_def (argvar);
 	  /* Virtual operand PHI args do not need a location.  */
 	  if (virtual_operand_p (res))
 	    loc = UNKNOWN_LOCATION;
@@ -1397,7 +1463,8 @@ rewrite_add_phi_arguments (basic_block bb)
 class rewrite_dom_walker : public dom_walker
 {
 public:
-  rewrite_dom_walker (cdi_direction direction) : dom_walker (direction) {}
+  rewrite_dom_walker (cdi_direction direction)
+    : dom_walker (direction, ALL_BLOCKS, NULL) {}
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -1546,10 +1613,10 @@ dump_defs_stack (FILE *file, int n)
 	}
 
       fprintf (file, "    Previous CURRDEF (");
-      print_generic_expr (file, var, 0);
+      print_generic_expr (file, var);
       fprintf (file, ") = ");
       if (name)
-	print_generic_expr (file, name, 0);
+	print_generic_expr (file, name);
       else
 	fprintf (file, "<NIL>");
       fprintf (file, "\n");
@@ -1585,10 +1652,10 @@ dump_currdefs (FILE *file)
     {
       common_info *info = get_common_info (var);
       fprintf (file, "CURRDEF (");
-      print_generic_expr (file, var, 0);
+      print_generic_expr (file, var);
       fprintf (file, ") = ");
       if (info->current_def)
-	print_generic_expr (file, info->current_def, 0);
+	print_generic_expr (file, info->current_def);
       else
 	fprintf (file, "<NIL>");
       fprintf (file, "\n");
@@ -1799,6 +1866,26 @@ maybe_replace_use_in_debug_stmt (use_operand_p use_p)
 }
 
 
+/* If DEF has x_5 = ASAN_POISON () as its current def, add
+   ASAN_POISON_USE (x_5) stmt before GSI to denote the stmt writes into
+   a poisoned (out of scope) variable.  */
+
+static void
+maybe_add_asan_poison_write (tree def, gimple_stmt_iterator *gsi)
+{
+  tree cdef = get_current_def (def);
+  if (cdef != NULL
+      && TREE_CODE (cdef) == SSA_NAME
+      && gimple_call_internal_p (SSA_NAME_DEF_STMT (cdef), IFN_ASAN_POISON))
+    {
+      gcall *call
+	= gimple_build_call_internal (IFN_ASAN_POISON_USE, 1, cdef);
+      gimple_set_location (call, gimple_location (gsi_stmt (*gsi)));
+      gsi_insert_before (gsi, call, GSI_SAME_STMT);
+    }
+}
+
+
 /* If the operand pointed to by DEF_P is an SSA name in NEW_SSA_NAMES
    or OLD_SSA_NAMES, or if it is a symbol marked for renaming,
    register it as the current definition for the names replaced by
@@ -1829,7 +1916,11 @@ maybe_register_def (def_operand_p def_p, gimple *stmt,
 	      def = get_or_create_ssa_default_def (cfun, sym);
 	    }
 	  else
-	    def = make_ssa_name (def, stmt);
+	    {
+	      if (asan_sanitize_use_after_scope ())
+		maybe_add_asan_poison_write (def, &gsi);
+	      def = make_ssa_name (def, stmt);
+	    }
 	  SET_DEF (def_p, def);
 
 	  tree tracked_var = target_for_debug_bind (sym);
@@ -2063,7 +2154,8 @@ rewrite_update_phi_arguments (basic_block bb)
 class rewrite_update_dom_walker : public dom_walker
 {
 public:
-  rewrite_update_dom_walker (cdi_direction direction) : dom_walker (direction) {}
+  rewrite_update_dom_walker (cdi_direction direction)
+    : dom_walker (direction, ALL_BLOCKS, NULL) {}
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -2232,7 +2324,7 @@ private:
 };
 
 mark_def_dom_walker::mark_def_dom_walker (cdi_direction direction)
-  : dom_walker (direction), m_kills (BITMAP_ALLOC (NULL))
+  : dom_walker (direction, ALL_BLOCKS, NULL), m_kills (BITMAP_ALLOC (NULL))
 {
 }
 
@@ -2698,13 +2790,13 @@ dump_names_replaced_by (FILE *file, tree name)
   bitmap old_set;
   bitmap_iterator bi;
 
-  print_generic_expr (file, name, 0);
+  print_generic_expr (file, name);
   fprintf (file, " -> { ");
 
   old_set = names_replaced_by (name);
   EXECUTE_IF_SET_IN_BITMAP (old_set, 0, i, bi)
     {
-      print_generic_expr (file, ssa_name (i), 0);
+      print_generic_expr (file, ssa_name (i));
       fprintf (file, " ");
     }
 
@@ -2756,7 +2848,7 @@ dump_update_ssa (FILE *file)
       fprintf (file, "\nSSA names to release after updating the SSA web\n\n");
       EXECUTE_IF_SET_IN_BITMAP (names_to_release, 0, i, bi)
 	{
-	  print_generic_expr (file, ssa_name (i), 0);
+	  print_generic_expr (file, ssa_name (i));
 	  fprintf (file, " ");
 	}
       fprintf (file, "\n");
@@ -3201,7 +3293,7 @@ update_ssa (unsigned update_flags)
 		      error ("statement uses released SSA name:");
 		      debug_gimple_stmt (stmt);
 		      fprintf (stderr, "The use of ");
-		      print_generic_expr (stderr, use, 0);
+		      print_generic_expr (stderr, use);
 		      fprintf (stderr," should have been replaced\n");
 		      err = true;
 		    }

@@ -14,12 +14,12 @@
 #endif
 
 @interface Base
-- (unsigned)port;
+- (unsigned)port; /* { dg-line Base_port } */
 @end
 
 @interface Derived: Base
 - (OBJECT *)port;
-+ (Protocol *)port;
++ (Protocol *)port; /* { dg-line Derived_port_last } */
 - (id)starboard;
 @end
 
@@ -27,13 +27,13 @@ void foo(void) {
   Class receiver;
 
   [receiver port];  /* { dg-warning "multiple methods named .\\+port. found" } */
-       /* { dg-message "using .\\-\\(unsigned( int)?\\)port." "" { target *-*-* } 17 } */
-       /* { dg-message "also found .\\+\\(Protocol \\*\\)port." "" { target *-*-* } 22 } */
+       /* { dg-message "using .\\-\\(unsigned( int)?\\)port." "" { target *-*-* } Base_port } */
+       /* { dg-message "also found .\\+\\(Protocol \\*\\)port." "" { target *-*-* } Derived_port_last } */
 
   [receiver starboard];  /* { dg-warning "no .\\+starboard. method found" } */
-       /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } 33 } */
-       /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } 33 } */
-       /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } 33 } */
+       /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } .-1 } */
+       /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } .-2 } */
+       /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } .-3 } */
 
   [Class port];  /* { dg-error ".Class. is not an Objective\\-C class name or alias" } */
 }

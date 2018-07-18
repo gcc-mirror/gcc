@@ -18,6 +18,6 @@ program substr_derived_alloc_comp
     x1%s = c
 
     do i = 1, 36
-        if (x1%s(i:) .ne. c(i:)) call abort
+        if (x1%s(i:) .ne. c(i:)) STOP 1
     end do
 end program

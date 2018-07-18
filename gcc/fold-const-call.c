@@ -1,5 +1,5 @@
 /* Constant folding for calls to built-in and internal functions.
-   Copyright (C) 1988-2016 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "tm.h" /* For C[LT]Z_DEFINED_AT_ZERO.  */
 #include "builtins.h"
+#include "gimple-expr.h"
 
 /* Functions that test for certain constant types, abstracting away the
    decision about whether to check for overflow.  */
@@ -57,8 +58,10 @@ complex_cst_p (tree t)
 static inline bool
 host_size_t_cst_p (tree t, size_t *size_out)
 {
-  if (integer_cst_p (t)
-      && wi::min_precision (t, UNSIGNED) <= sizeof (size_t) * CHAR_BIT)
+  if (types_compatible_p (size_type_node, TREE_TYPE (t))
+      && integer_cst_p (t)
+      && (wi::min_precision (wi::to_wide (t), UNSIGNED)
+	  <= sizeof (size_t) * CHAR_BIT))
     {
       *size_out = tree_to_uhwi (t);
       return true;
@@ -526,6 +529,48 @@ fold_const_pow (real_value *result, const real_value *arg0,
 
 /* Try to evaluate:
 
+      *RESULT = nextafter (*ARG0, *ARG1)
+
+   or
+
+      *RESULT = nexttoward (*ARG0, *ARG1)
+
+   in format FORMAT.  Return true on success.  */
+
+static bool
+fold_const_nextafter (real_value *result, const real_value *arg0,
+		      const real_value *arg1, const real_format *format)
+{
+  if (REAL_VALUE_ISSIGNALING_NAN (*arg0)
+      || REAL_VALUE_ISSIGNALING_NAN (*arg1))
+    return false;
+
+  /* Don't handle composite modes, nor decimal, nor modes without
+     inf or denorm at least for now.  */
+  if (format->pnan < format->p
+      || format->b == 10
+      || !format->has_inf
+      || !format->has_denorm)
+    return false;
+
+  if (real_nextafter (result, format, arg0, arg1)
+      /* If raising underflow or overflow and setting errno to ERANGE,
+	 fail if we care about those side-effects.  */
+      && (flag_trapping_math || flag_errno_math))
+    return false;
+  /* Similarly for nextafter (0, 1) raising underflow.  */
+  else if (flag_trapping_math
+	   && arg0->cl == rvc_zero
+	   && result->cl != rvc_zero)
+    return false;
+
+  real_convert (result, format, result);
+
+  return true;
+}
+
+/* Try to evaluate:
+
       *RESULT = ldexp (*ARG0, ARG1)
 
    in format FORMAT.  Return true on success.  */
@@ -580,6 +625,26 @@ fold_const_builtin_nan (tree type, tree arg, bool quiet)
   return NULL_TREE;
 }
 
+/* Fold a call to IFN_REDUC_<CODE> (ARG), returning a value of type TYPE.  */
+
+static tree
+fold_const_reduction (tree type, tree arg, tree_code code)
+{
+  unsigned HOST_WIDE_INT nelts;
+  if (TREE_CODE (arg) != VECTOR_CST
+      || !VECTOR_CST_NELTS (arg).is_constant (&nelts))
+    return NULL_TREE;
+
+  tree res = VECTOR_CST_ELT (arg, 0);
+  for (unsigned HOST_WIDE_INT i = 1; i < nelts; i++)
+    {
+      res = const_binop (code, type, res, VECTOR_CST_ELT (arg, i));
+      if (res == NULL_TREE || !CONSTANT_CLASS_P (res))
+	return NULL_TREE;
+    }
+  return res;
+}
+
 /* Try to evaluate:
 
       *RESULT = FN (*ARG)
@@ -593,6 +658,7 @@ fold_const_call_ss (real_value *result, combined_fn fn,
   switch (fn)
     {
     CASE_CFN_SQRT:
+    CASE_CFN_SQRT_FN:
       return (real_compare (GE_EXPR, arg, &dconst0)
 	      && do_mpfr_arg1 (result, mpfr_sqrt, arg, format));
 
@@ -695,6 +761,7 @@ fold_const_call_ss (real_value *result, combined_fn fn,
 	      && do_mpfr_arg1 (result, mpfr_y1, arg, format));
 
     CASE_CFN_FLOOR:
+    CASE_CFN_FLOOR_FN:
       if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
 	{
 	  real_floor (result, format, arg);
@@ -703,6 +770,7 @@ fold_const_call_ss (real_value *result, combined_fn fn,
       return false;
 
     CASE_CFN_CEIL:
+    CASE_CFN_CEIL_FN:
       if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
 	{
 	  real_ceil (result, format, arg);
@@ -711,10 +779,12 @@ fold_const_call_ss (real_value *result, combined_fn fn,
       return false;
 
     CASE_CFN_TRUNC:
+    CASE_CFN_TRUNC_FN:
       real_trunc (result, format, arg);
       return true;
 
     CASE_CFN_ROUND:
+    CASE_CFN_ROUND_FN:
       if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
 	{
 	  real_round (result, format, arg);
@@ -842,7 +912,8 @@ fold_const_call_ss (wide_int *result, combined_fn fn, const wide_int_ref &arg,
 	int tmp;
 	if (wi::ne_p (arg, 0))
 	  tmp = wi::clz (arg);
-	else if (! CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (arg_type), tmp))
+	else if (!CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (arg_type),
+					     tmp))
 	  tmp = TYPE_PRECISION (arg_type);
 	*result = wi::shwi (tmp, precision);
 	return true;
@@ -853,7 +924,8 @@ fold_const_call_ss (wide_int *result, combined_fn fn, const wide_int_ref &arg,
 	int tmp;
 	if (wi::ne_p (arg, 0))
 	  tmp = wi::ctz (arg);
-	else if (! CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (arg_type), tmp))
+	else if (!CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (arg_type),
+					     tmp))
 	  tmp = TYPE_PRECISION (arg_type);
 	*result = wi::shwi (tmp, precision);
 	return true;
@@ -1037,8 +1109,8 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg)
       if (SCALAR_INT_MODE_P (mode))
 	{
 	  wide_int result;
-	  if (fold_const_call_ss (&result, fn, arg, TYPE_PRECISION (type),
-				  TREE_TYPE (arg)))
+	  if (fold_const_call_ss (&result, fn, wi::to_wide (arg),
+				  TYPE_PRECISION (type), TREE_TYPE (arg)))
 	    return wide_int_to_tree (type, result);
 	}
       return NULL_TREE;
@@ -1142,9 +1214,49 @@ fold_const_call (combined_fn fn, tree type, tree arg)
     CASE_FLT_FN_FLOATN_NX (CFN_BUILT_IN_NANS):
       return fold_const_builtin_nan (type, arg, false);
 
+    case CFN_REDUC_PLUS:
+      return fold_const_reduction (type, arg, PLUS_EXPR);
+
+    case CFN_REDUC_MAX:
+      return fold_const_reduction (type, arg, MAX_EXPR);
+
+    case CFN_REDUC_MIN:
+      return fold_const_reduction (type, arg, MIN_EXPR);
+
+    case CFN_REDUC_AND:
+      return fold_const_reduction (type, arg, BIT_AND_EXPR);
+
+    case CFN_REDUC_IOR:
+      return fold_const_reduction (type, arg, BIT_IOR_EXPR);
+
+    case CFN_REDUC_XOR:
+      return fold_const_reduction (type, arg, BIT_XOR_EXPR);
+
     default:
       return fold_const_call_1 (fn, type, arg);
     }
+}
+
+/* Fold a call to IFN_FOLD_LEFT_<CODE> (ARG0, ARG1), returning a value
+   of type TYPE.  */
+
+static tree
+fold_const_fold_left (tree type, tree arg0, tree arg1, tree_code code)
+{
+  if (TREE_CODE (arg1) != VECTOR_CST)
+    return NULL_TREE;
+
+  unsigned HOST_WIDE_INT nelts;
+  if (!VECTOR_CST_NELTS (arg1).is_constant (&nelts))
+    return NULL_TREE;
+
+  for (unsigned HOST_WIDE_INT i = 0; i < nelts; i++)
+    {
+      arg0 = const_binop (code, type, arg0, VECTOR_CST_ELT (arg1, i));
+      if (arg0 == NULL_TREE || !CONSTANT_CLASS_P (arg0))
+	return NULL_TREE;
+    }
+  return arg0;
 }
 
 /* Try to evaluate:
@@ -1174,18 +1286,25 @@ fold_const_call_sss (real_value *result, combined_fn fn,
       return do_mpfr_arg2 (result, mpfr_hypot, arg0, arg1, format);
 
     CASE_CFN_COPYSIGN:
+    CASE_CFN_COPYSIGN_FN:
       *result = *arg0;
       real_copysign (result, arg1);
       return true;
 
     CASE_CFN_FMIN:
+    CASE_CFN_FMIN_FN:
       return do_mpfr_arg2 (result, mpfr_min, arg0, arg1, format);
 
     CASE_CFN_FMAX:
+    CASE_CFN_FMAX_FN:
       return do_mpfr_arg2 (result, mpfr_max, arg0, arg1, format);
 
     CASE_CFN_POW:
       return fold_const_pow (result, arg0, arg1, format);
+
+    CASE_CFN_NEXTAFTER:
+    CASE_CFN_NEXTTOWARD:
+      return fold_const_nextafter (result, arg0, arg1, format);
 
     default:
       return false;
@@ -1292,20 +1411,33 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1)
   machine_mode arg0_mode = TYPE_MODE (TREE_TYPE (arg0));
   machine_mode arg1_mode = TYPE_MODE (TREE_TYPE (arg1));
 
-  if (arg0_mode == arg1_mode
+  if (mode == arg0_mode
       && real_cst_p (arg0)
       && real_cst_p (arg1))
     {
       gcc_checking_assert (SCALAR_FLOAT_MODE_P (arg0_mode));
-      if (mode == arg0_mode)
+      REAL_VALUE_TYPE result;
+      if (arg0_mode == arg1_mode)
 	{
 	  /* real, real -> real.  */
-	  REAL_VALUE_TYPE result;
 	  if (fold_const_call_sss (&result, fn, TREE_REAL_CST_PTR (arg0),
 				   TREE_REAL_CST_PTR (arg1),
 				   REAL_MODE_FORMAT (mode)))
 	    return build_real (type, result);
 	}
+      else if (arg1_mode == TYPE_MODE (long_double_type_node))
+	switch (fn)
+	  {
+	  CASE_CFN_NEXTTOWARD:
+	    /* real, long double -> real.  */
+	    if (fold_const_call_sss (&result, fn, TREE_REAL_CST_PTR (arg0),
+				     TREE_REAL_CST_PTR (arg1),
+				     REAL_MODE_FORMAT (mode)))
+	      return build_real (type, result);
+	    break;
+	  default:
+	    break;
+	  }
       return NULL_TREE;
     }
 
@@ -1318,7 +1450,8 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1)
 	  /* real, int -> real.  */
 	  REAL_VALUE_TYPE result;
 	  if (fold_const_call_sss (&result, fn, TREE_REAL_CST_PTR (arg0),
-				   arg1, REAL_MODE_FORMAT (mode)))
+				   wi::to_wide (arg1),
+				   REAL_MODE_FORMAT (mode)))
 	    return build_real (type, result);
 	}
       return NULL_TREE;
@@ -1332,7 +1465,7 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1)
 	{
 	  /* int, real -> real.  */
 	  REAL_VALUE_TYPE result;
-	  if (fold_const_call_sss (&result, fn, arg0,
+	  if (fold_const_call_sss (&result, fn, wi::to_wide (arg0),
 				   TREE_REAL_CST_PTR (arg1),
 				   REAL_MODE_FORMAT (mode)))
 	    return build_real (type, result);
@@ -1381,6 +1514,7 @@ tree
 fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 {
   const char *p0, *p1;
+  char c;
   switch (fn)
     {
     case CFN_BUILT_IN_STRSPN:
@@ -1407,6 +1541,49 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 	}
       return NULL_TREE;
 
+    case CFN_BUILT_IN_INDEX:
+    case CFN_BUILT_IN_STRCHR:
+      if ((p0 = c_getstr (arg0)) && target_char_cst_p (arg1, &c))
+	{
+	  const char *r = strchr (p0, c);
+	  if (r == NULL)
+	    return build_int_cst (type, 0);
+	  return fold_convert (type,
+			       fold_build_pointer_plus_hwi (arg0, r - p0));
+	}
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_RINDEX:
+    case CFN_BUILT_IN_STRRCHR:
+      if ((p0 = c_getstr (arg0)) && target_char_cst_p (arg1, &c))
+	{
+	  const char *r = strrchr (p0, c);
+	  if (r == NULL)
+	    return build_int_cst (type, 0);
+	  return fold_convert (type,
+			       fold_build_pointer_plus_hwi (arg0, r - p0));
+	}
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_STRSTR:
+      if ((p1 = c_getstr (arg1)))
+	{
+	  if ((p0 = c_getstr (arg0)))
+	    {
+	      const char *r = strstr (p0, p1);
+	      if (r == NULL)
+		return build_int_cst (type, 0);
+	      return fold_convert (type,
+				   fold_build_pointer_plus_hwi (arg0, r - p0));
+	    }
+	  if (*p1 == '\0')
+	    return fold_convert (type, arg0);
+	}
+      return NULL_TREE;
+
+    case CFN_FOLD_LEFT_PLUS:
+      return fold_const_fold_left (type, arg0, arg1, PLUS_EXPR);
+
     default:
       return fold_const_call_1 (fn, type, arg0, arg1);
     }
@@ -1426,7 +1603,28 @@ fold_const_call_ssss (real_value *result, combined_fn fn,
   switch (fn)
     {
     CASE_CFN_FMA:
+    CASE_CFN_FMA_FN:
       return do_mpfr_arg3 (result, mpfr_fma, arg0, arg1, arg2, format);
+
+    case CFN_FMS:
+      {
+	real_value new_arg2 = real_value_negate (arg2);
+	return do_mpfr_arg3 (result, mpfr_fma, arg0, arg1, &new_arg2, format);
+      }
+
+    case CFN_FNMA:
+      {
+	real_value new_arg0 = real_value_negate (arg0);
+	return do_mpfr_arg3 (result, mpfr_fma, &new_arg0, arg1, arg2, format);
+      }
+
+    case CFN_FNMS:
+      {
+	real_value new_arg0 = real_value_negate (arg0);
+	real_value new_arg2 = real_value_negate (arg2);
+	return do_mpfr_arg3 (result, mpfr_fma, &new_arg0, arg1,
+			     &new_arg2, format);
+      }
 
     default:
       return false;
@@ -1464,36 +1662,6 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
       return NULL_TREE;
     }
 
-  switch (fn)
-    {
-    case CFN_BUILT_IN_MEMCHR:
-      {
-	char c;
-	if (integer_zerop (arg2)
-	    && !TREE_SIDE_EFFECTS (arg0)
-	    && !TREE_SIDE_EFFECTS (arg1))
-	  return build_int_cst (type, 0);
-
-	if (!tree_fits_uhwi_p (arg2) || !target_char_cst_p (arg1, &c))
-	  return NULL_TREE;
-
-	unsigned HOST_WIDE_INT length = tree_to_uhwi (arg2);
-	unsigned HOST_WIDE_INT string_length;
-	const char *p1 = c_getstr (arg0, &string_length);
-	if (p1)
-	  {
-	    const char *r
-	      = (const char *)memchr (p1, c, MIN (length, string_length));
-	    if (r == NULL && length <= string_length)
-	      return build_int_cst (type, 0);
-	  }
-
-	break;
-      }
-    default:
-      break;
-    }
-
   return NULL_TREE;
 }
 
@@ -1504,64 +1672,70 @@ tree
 fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 {
   const char *p0, *p1;
+  char c;
+  unsigned HOST_WIDE_INT s0, s1;
   size_t s2 = 0;
   switch (fn)
     {
     case CFN_BUILT_IN_STRNCMP:
-      {
-	bool const_size_p = host_size_t_cst_p (arg2, &s2);
-	if (const_size_p && s2 == 0
-	    && !TREE_SIDE_EFFECTS (arg0)
-	    && !TREE_SIDE_EFFECTS (arg1))
-	  return build_int_cst (type, 0);
-	else if (const_size_p
-		 && (p0 = c_getstr (arg0))
-		 && (p1 = c_getstr (arg1)))
-	  return build_int_cst (type, strncmp (p0, p1, s2));
+      if (!host_size_t_cst_p (arg2, &s2))
 	return NULL_TREE;
-      }
+      if (s2 == 0
+	  && !TREE_SIDE_EFFECTS (arg0)
+	  && !TREE_SIDE_EFFECTS (arg1))
+	return build_int_cst (type, 0);
+      else if ((p0 = c_getstr (arg0)) && (p1 = c_getstr (arg1)))
+	return build_int_cst (type, strncmp (p0, p1, s2));
+      return NULL_TREE;
+
     case CFN_BUILT_IN_STRNCASECMP:
-      {
-	bool const_size_p = host_size_t_cst_p (arg2, &s2);
-	if (const_size_p && s2 == 0
-	    && !TREE_SIDE_EFFECTS (arg0)
-	    && !TREE_SIDE_EFFECTS (arg1))
-	  return build_int_cst (type, 0);
-	else if (const_size_p
-		 && (p0 = c_getstr (arg0))
-		 && (p1 = c_getstr (arg1))
-		 && strncmp (p0, p1, s2) == 0)
-	  return build_int_cst (type, 0);
+      if (!host_size_t_cst_p (arg2, &s2))
 	return NULL_TREE;
-      }
+      if (s2 == 0
+	  && !TREE_SIDE_EFFECTS (arg0)
+	  && !TREE_SIDE_EFFECTS (arg1))
+	return build_int_cst (type, 0);
+      else if ((p0 = c_getstr (arg0))
+	       && (p1 = c_getstr (arg1))
+	       && strncmp (p0, p1, s2) == 0)
+	return build_int_cst (type, 0);
+      return NULL_TREE;
+
     case CFN_BUILT_IN_BCMP:
     case CFN_BUILT_IN_MEMCMP:
-      if ((p0 = c_getstr (arg0))
-	  && (p1 = c_getstr (arg1))
-	  && host_size_t_cst_p (arg2, &s2)
-	  && s2 <= strlen (p0)
-	  && s2 <= strlen (p1))
+      if (!host_size_t_cst_p (arg2, &s2))
+	return NULL_TREE;
+      if (s2 == 0
+	  && !TREE_SIDE_EFFECTS (arg0)
+	  && !TREE_SIDE_EFFECTS (arg1))
+	return build_int_cst (type, 0);
+      if ((p0 = c_getstr (arg0, &s0))
+	  && (p1 = c_getstr (arg1, &s1))
+	  && s2 <= s0
+	  && s2 <= s1)
 	return build_cmp_result (type, memcmp (p0, p1, s2));
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_MEMCHR:
+      if (!host_size_t_cst_p (arg2, &s2))
+	return NULL_TREE;
+      if (s2 == 0
+	  && !TREE_SIDE_EFFECTS (arg0)
+	  && !TREE_SIDE_EFFECTS (arg1))
+	return build_int_cst (type, 0);
+      if ((p0 = c_getstr (arg0, &s0))
+	  && s2 <= s0
+	  && target_char_cst_p (arg1, &c))
+	{
+	  const char *r = (const char *) memchr (p0, c, s2);
+	  if (r == NULL)
+	    return build_int_cst (type, 0);
+	  return fold_convert (type,
+			       fold_build_pointer_plus_hwi (arg0, r - p0));
+	}
       return NULL_TREE;
 
     default:
       return fold_const_call_1 (fn, type, arg0, arg1, arg2);
     }
-}
-
-/* Fold a fma operation with arguments ARG[012].  */
-
-tree
-fold_fma (location_t, tree type, tree arg0, tree arg1, tree arg2)
-{
-  REAL_VALUE_TYPE result;
-  if (real_cst_p (arg0)
-      && real_cst_p (arg1)
-      && real_cst_p (arg2)
-      && do_mpfr_arg3 (&result, mpfr_fma, TREE_REAL_CST_PTR (arg0),
-		       TREE_REAL_CST_PTR (arg1), TREE_REAL_CST_PTR (arg2),
-		       REAL_MODE_FORMAT (TYPE_MODE (type))))
-    return build_real (type, result);
-
-  return NULL_TREE;
 }

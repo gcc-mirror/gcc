@@ -6,6 +6,6 @@
 
 typedef const int cia[2];
 const cia a; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "duplicate" "duplicate type qualifier error" { target *-*-* } 8 } */
+/* { dg-error "duplicate" "duplicate type qualifier error" { target *-*-* } .-1 } */
 const cia b[2]; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "duplicate" "duplicate type qualifier error" { target *-*-* } 10 } */
+/* { dg-error "duplicate" "duplicate type qualifier error" { target *-*-* } .-1 } */

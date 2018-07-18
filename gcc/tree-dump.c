@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GCC.
@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
-#include "tree-cfg.h"
 
 static unsigned int queue (dump_info_p, const_tree, int);
 static void dump_index (dump_info_p, unsigned int);
@@ -150,22 +149,6 @@ dump_maybe_newline (dump_info_p di)
     {
       fprintf (di->stream, "%*s", COLUMN_ALIGNMENT - extra, "");
       di->column += COLUMN_ALIGNMENT - extra;
-    }
-}
-
-/* Dump FUNCTION_DECL FN as tree dump PHASE.  */
-
-void
-dump_function (int phase, tree fn)
-{
-  FILE *stream;
-  int flags;
-
-  stream = dump_begin (phase, &flags);
-  if (stream)
-    {
-      dump_function_to_file (fn, stream, flags);
-      dump_end (phase, stream);
     }
 }
 
@@ -354,7 +337,8 @@ dequeue_and_dump (dump_info_p di)
       /* All declarations have names.  */
       if (DECL_NAME (t))
 	dump_child ("name", DECL_NAME (t));
-      if (DECL_ASSEMBLER_NAME_SET_P (t)
+      if (HAS_DECL_ASSEMBLER_NAME_P (t)
+	  && DECL_ASSEMBLER_NAME_SET_P (t)
 	  && DECL_ASSEMBLER_NAME (t) != DECL_NAME (t))
 	dump_child ("mngl", DECL_ASSEMBLER_NAME (t));
       if (DECL_ABSTRACT_ORIGIN (t))
@@ -507,7 +491,6 @@ dequeue_and_dump (dump_info_p di)
 	dump_string_field (di, "tag", "union");
 
       dump_child ("flds", TYPE_FIELDS (t));
-      dump_child ("fncs", TYPE_METHODS (t));
       queue_and_dump_index (di, "binf", TYPE_BINFO (t),
 			    DUMP_BINFO);
       break;
@@ -558,7 +541,7 @@ dequeue_and_dump (dump_info_p di)
 
     case INTEGER_CST:
       fprintf (di->stream, "int: ");
-      print_decs (t, di->stream);
+      print_decs (wi::to_wide (t), di->stream);
       break;
 
     case STRING_CST:
@@ -700,10 +683,6 @@ dequeue_and_dump (dump_info_p di)
     case SWITCH_EXPR:
       dump_child ("cond", TREE_OPERAND (t, 0));
       dump_child ("body", TREE_OPERAND (t, 1));
-      if (TREE_OPERAND (t, 2))
-        {
-      	  dump_child ("labl", TREE_OPERAND (t,2));
-        }
       break;
     case OMP_CLAUSE:
       {
@@ -729,7 +708,7 @@ dequeue_and_dump (dump_info_p di)
 /* Return nonzero if FLAG has been specified for the dump, and NODE
    is not the root node of the dump.  */
 
-int dump_flag (dump_info_p di, int flag, const_tree node)
+int dump_flag (dump_info_p di, dump_flags_t flag, const_tree node)
 {
   return (di->flags & flag) && (node != di->node);
 }
@@ -737,7 +716,7 @@ int dump_flag (dump_info_p di, int flag, const_tree node)
 /* Dump T, and all its children, on STREAM.  */
 
 void
-dump_node (const_tree t, int flags, FILE *stream)
+dump_node (const_tree t, dump_flags_t flags, FILE *stream)
 {
   struct dump_info di;
   dump_queue_p dq;
@@ -753,7 +732,7 @@ dump_node (const_tree t, int flags, FILE *stream)
   di.flags = flags;
   di.node = t;
   di.nodes = splay_tree_new (splay_tree_compare_pointers, 0,
-			     (splay_tree_delete_value_fn) &free);
+			     splay_tree_delete_pointers);
 
   /* Queue up the first node.  */
   queue (&di, t, DUMP_NONE);

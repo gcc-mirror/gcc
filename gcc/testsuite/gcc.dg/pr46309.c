@@ -4,7 +4,7 @@
 /* The transformation depends on BRANCH_COST being greater than 1
    (see the notes in the PR), so try to force that.  */
 /* { dg-additional-options "-mtune=octeon2" { target mips*-*-* } } */
-/* { dg-additional-options "-mbranch-cost=2" { target avr*-*-* s390*-*-* i?86-*-* x86_64-*-* } } */
+/* { dg-additional-options "-mbranch-cost=2" { target branch_cost } } */
 
 int
 f1 (int a)
@@ -65,4 +65,4 @@ f6 (unsigned int a)
 /* { dg-final { scan-tree-dump-times "Optimizing range tests a_\[0-9\]*.D. -.1, 1. and -.2, 2.\[\n\r\]* into" 1 "reassoc1" } } */
 /* { dg-final { scan-tree-dump-times "Optimizing range tests a_\[0-9\]*.D. -.0, 31. and -.64, 95.\[\n\r\]* into" 2 "reassoc1" } } */
 /* { dg-final { scan-tree-dump-times "Optimizing range tests a_\[0-9\]*.D. -.128, 159. and -.192, 223.\[\n\r\]* into" 1 "reassoc1" } } */
-/* { dg-final { scan-tree-dump-times "Optimizing range tests \[^\r\n\]*_\[0-9\]* -.0, 31. and -.128, 159.\[\n\r\]* into" 1 "reassoc2" } } */
+/* { dg-final { scan-tree-dump-times "Optimizing range tests \[^\r\n\]*_\[0-9\]* -.0, 0. and -.128, 128.\[\n\r\]* into" 1 "reassoc2" } } */

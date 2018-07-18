@@ -15,22 +15,16 @@
 #if SANITIZER_POSIX
 
 #include "sanitizer_common.h"
+#include "sanitizer_file.h"
 #include "sanitizer_libc.h"
 #include "sanitizer_posix.h"
 #include "sanitizer_procmaps.h"
 #include "sanitizer_stacktrace.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/mman.h>
-
-#if SANITIZER_LINUX
-#include <sys/utsname.h>
-#endif
-
-#if SANITIZER_LINUX && !SANITIZER_ANDROID
-#include <sys/personality.h>
-#endif
 
 #if SANITIZER_FREEBSD
 // The MAP_NORESERVE define has been removed in FreeBSD 11.x, and even before
@@ -46,78 +40,14 @@ uptr GetMmapGranularity() {
   return GetPageSize();
 }
 
-#if SANITIZER_WORDSIZE == 32
-// Take care of unusable kernel area in top gigabyte.
-static uptr GetKernelAreaSize() {
-#if SANITIZER_LINUX && !SANITIZER_X32
-  const uptr gbyte = 1UL << 30;
-
-  // Firstly check if there are writable segments
-  // mapped to top gigabyte (e.g. stack).
-  MemoryMappingLayout proc_maps(/*cache_enabled*/true);
-  uptr end, prot;
-  while (proc_maps.Next(/*start*/nullptr, &end,
-                        /*offset*/nullptr, /*filename*/nullptr,
-                        /*filename_size*/0, &prot)) {
-    if ((end >= 3 * gbyte)
-        && (prot & MemoryMappingLayout::kProtectionWrite) != 0)
-      return 0;
-  }
-
-#if !SANITIZER_ANDROID
-  // Even if nothing is mapped, top Gb may still be accessible
-  // if we are running on 64-bit kernel.
-  // Uname may report misleading results if personality type
-  // is modified (e.g. under schroot) so check this as well.
-  struct utsname uname_info;
-  int pers = personality(0xffffffffUL);
-  if (!(pers & PER_MASK)
-      && uname(&uname_info) == 0
-      && internal_strstr(uname_info.machine, "64"))
-    return 0;
-#endif  // SANITIZER_ANDROID
-
-  // Top gigabyte is reserved for kernel.
-  return gbyte;
-#else
-  return 0;
-#endif  // SANITIZER_LINUX && !SANITIZER_X32
-}
-#endif  // SANITIZER_WORDSIZE == 32
-
-uptr GetMaxVirtualAddress() {
-#if SANITIZER_WORDSIZE == 64
-# if defined(__powerpc64__) || defined(__aarch64__)
-  // On PowerPC64 we have two different address space layouts: 44- and 46-bit.
-  // We somehow need to figure out which one we are using now and choose
-  // one of 0x00000fffffffffffUL and 0x00003fffffffffffUL.
-  // Note that with 'ulimit -s unlimited' the stack is moved away from the top
-  // of the address space, so simply checking the stack address is not enough.
-  // This should (does) work for both PowerPC64 Endian modes.
-  // Similarly, aarch64 has multiple address space layouts: 39, 42 and 47-bit.
-  return (1ULL << (MostSignificantSetBitIndex(GET_CURRENT_FRAME()) + 1)) - 1;
-# elif defined(__mips64)
-  return (1ULL << 40) - 1;  // 0x000000ffffffffffUL;
-# else
-  return (1ULL << 47) - 1;  // 0x00007fffffffffffUL;
-# endif
-#else  // SANITIZER_WORDSIZE == 32
-  uptr res = (1ULL << 32) - 1;  // 0xffffffff;
-  if (!common_flags()->full_address_space)
-    res -= GetKernelAreaSize();
-  CHECK_LT(reinterpret_cast<uptr>(&res), res);
-  return res;
-#endif  // SANITIZER_WORDSIZE
-}
-
-void *MmapOrDie(uptr size, const char *mem_type) {
+void *MmapOrDie(uptr size, const char *mem_type, bool raw_report) {
   size = RoundUpTo(size, GetPageSizeCached());
   uptr res = internal_mmap(nullptr, size,
                            PROT_READ | PROT_WRITE,
                            MAP_PRIVATE | MAP_ANON, -1, 0);
   int reserrno;
-  if (internal_iserror(res, &reserrno))
-    ReportMmapFailureAndDie(size, mem_type, "allocate", reserrno);
+  if (UNLIKELY(internal_iserror(res, &reserrno)))
+    ReportMmapFailureAndDie(size, mem_type, "allocate", reserrno, raw_report);
   IncreaseTotalMmap(size);
   return (void *)res;
 }
@@ -125,12 +55,50 @@ void *MmapOrDie(uptr size, const char *mem_type) {
 void UnmapOrDie(void *addr, uptr size) {
   if (!addr || !size) return;
   uptr res = internal_munmap(addr, size);
-  if (internal_iserror(res)) {
+  if (UNLIKELY(internal_iserror(res))) {
     Report("ERROR: %s failed to deallocate 0x%zx (%zd) bytes at address %p\n",
            SanitizerToolName, size, size, addr);
     CHECK("unable to unmap" && 0);
   }
   DecreaseTotalMmap(size);
+}
+
+void *MmapOrDieOnFatalError(uptr size, const char *mem_type) {
+  size = RoundUpTo(size, GetPageSizeCached());
+  uptr res = internal_mmap(nullptr, size,
+                           PROT_READ | PROT_WRITE,
+                           MAP_PRIVATE | MAP_ANON, -1, 0);
+  int reserrno;
+  if (UNLIKELY(internal_iserror(res, &reserrno))) {
+    if (reserrno == ENOMEM)
+      return nullptr;
+    ReportMmapFailureAndDie(size, mem_type, "allocate", reserrno);
+  }
+  IncreaseTotalMmap(size);
+  return (void *)res;
+}
+
+// We want to map a chunk of address space aligned to 'alignment'.
+// We do it by mapping a bit more and then unmapping redundant pieces.
+// We probably can do it with fewer syscalls in some OS-dependent way.
+void *MmapAlignedOrDieOnFatalError(uptr size, uptr alignment,
+                                   const char *mem_type) {
+  CHECK(IsPowerOfTwo(size));
+  CHECK(IsPowerOfTwo(alignment));
+  uptr map_size = size + alignment;
+  uptr map_res = (uptr)MmapOrDieOnFatalError(map_size, mem_type);
+  if (UNLIKELY(!map_res))
+    return nullptr;
+  uptr map_end = map_res + map_size;
+  uptr res = map_res;
+  if (!IsAligned(res, alignment)) {
+    res = (map_res + alignment - 1) & ~(alignment - 1);
+    UnmapOrDie((void*)map_res, res - map_res);
+  }
+  uptr end = res + size;
+  if (end != map_end)
+    UnmapOrDie((void*)end, map_end - end);
+  return (void*)res;
 }
 
 void *MmapNoReserveOrDie(uptr size, const char *mem_type) {
@@ -141,13 +109,13 @@ void *MmapNoReserveOrDie(uptr size, const char *mem_type) {
                          MAP_PRIVATE | MAP_ANON | MAP_NORESERVE,
                          -1, 0);
   int reserrno;
-  if (internal_iserror(p, &reserrno))
+  if (UNLIKELY(internal_iserror(p, &reserrno)))
     ReportMmapFailureAndDie(size, mem_type, "allocate noreserve", reserrno);
   IncreaseTotalMmap(size);
   return (void *)p;
 }
 
-void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
+void *MmapFixedImpl(uptr fixed_addr, uptr size, bool tolerate_enomem) {
   uptr PageSize = GetPageSizeCached();
   uptr p = internal_mmap((void*)(fixed_addr & ~(PageSize - 1)),
       RoundUpTo(size, PageSize),
@@ -155,8 +123,10 @@ void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
       MAP_PRIVATE | MAP_ANON | MAP_FIXED,
       -1, 0);
   int reserrno;
-  if (internal_iserror(p, &reserrno)) {
-    char mem_type[30];
+  if (UNLIKELY(internal_iserror(p, &reserrno))) {
+    if (tolerate_enomem && reserrno == ENOMEM)
+      return nullptr;
+    char mem_type[40];
     internal_snprintf(mem_type, sizeof(mem_type), "memory at address 0x%zx",
                       fixed_addr);
     ReportMmapFailureAndDie(size, mem_type, "allocate", reserrno);
@@ -165,8 +135,20 @@ void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
   return (void *)p;
 }
 
+void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
+  return MmapFixedImpl(fixed_addr, size, false /*tolerate_enomem*/);
+}
+
+void *MmapFixedOrDieOnFatalError(uptr fixed_addr, uptr size) {
+  return MmapFixedImpl(fixed_addr, size, true /*tolerate_enomem*/);
+}
+
 bool MprotectNoAccess(uptr addr, uptr size) {
   return 0 == internal_mprotect((void*)addr, size, PROT_NONE);
+}
+
+bool MprotectReadOnly(uptr addr, uptr size) {
+  return 0 == internal_mprotect((void *)addr, size, PROT_READ);
 }
 
 fd_t OpenFile(const char *filename, FileAccessMode mode, error_t *errno_p) {
@@ -248,13 +230,12 @@ static inline bool IntervalsAreSeparate(uptr start1, uptr end1,
 // memory).
 bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
   MemoryMappingLayout proc_maps(/*cache_enabled*/true);
-  uptr start, end;
-  while (proc_maps.Next(&start, &end,
-                        /*offset*/nullptr, /*filename*/nullptr,
-                        /*filename_size*/0, /*protection*/nullptr)) {
-    if (start == end) continue;  // Empty range.
-    CHECK_NE(0, end);
-    if (!IntervalsAreSeparate(start, end - 1, range_start, range_end))
+  MemoryMappedSegment segment;
+  while (proc_maps.Next(&segment)) {
+    if (segment.start == segment.end) continue;  // Empty range.
+    CHECK_NE(0, segment.end);
+    if (!IntervalsAreSeparate(segment.start, segment.end - 1, range_start,
+                              range_end))
       return false;
   }
   return true;
@@ -262,13 +243,13 @@ bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
 
 void DumpProcessMap() {
   MemoryMappingLayout proc_maps(/*cache_enabled*/true);
-  uptr start, end;
   const sptr kBufSize = 4095;
   char *filename = (char*)MmapOrDie(kBufSize, __func__);
+  MemoryMappedSegment segment(filename, kBufSize);
   Report("Process memory map follows:\n");
-  while (proc_maps.Next(&start, &end, /* file_offset */nullptr,
-                        filename, kBufSize, /* protection */nullptr)) {
-    Printf("\t%p-%p\t%s\n", (void*)start, (void*)end, filename);
+  while (proc_maps.Next(&segment)) {
+    Printf("\t%p-%p\t%s\n", (void *)segment.start, (void *)segment.end,
+           segment.filename);
   }
   Report("End of process memory map.\n");
   UnmapOrDie(filename, kBufSize);
@@ -298,41 +279,48 @@ void ReportFile::Write(const char *buffer, uptr length) {
 }
 
 bool GetCodeRangeForFile(const char *module, uptr *start, uptr *end) {
-  uptr s, e, off, prot;
-  InternalScopedString buff(kMaxPathLength);
   MemoryMappingLayout proc_maps(/*cache_enabled*/false);
-  while (proc_maps.Next(&s, &e, &off, buff.data(), buff.size(), &prot)) {
-    if ((prot & MemoryMappingLayout::kProtectionExecute) != 0
-        && internal_strcmp(module, buff.data()) == 0) {
-      *start = s;
-      *end = e;
+  InternalScopedString buff(kMaxPathLength);
+  MemoryMappedSegment segment(buff.data(), kMaxPathLength);
+  while (proc_maps.Next(&segment)) {
+    if (segment.IsExecutable() &&
+        internal_strcmp(module, segment.filename) == 0) {
+      *start = segment.start;
+      *end = segment.end;
       return true;
     }
   }
   return false;
 }
 
-SignalContext SignalContext::Create(void *siginfo, void *context) {
-  uptr addr = (uptr)((siginfo_t*)siginfo)->si_addr;
-  uptr pc, sp, bp;
-  GetPcSpBp(context, &pc, &sp, &bp);
-  return SignalContext(context, addr, pc, sp, bp);
+uptr SignalContext::GetAddress() const {
+  auto si = static_cast<const siginfo_t *>(siginfo);
+  return (uptr)si->si_addr;
 }
 
-// This function check is the built VMA matches the runtime one for
-// architectures with multiple VMA size.
-void CheckVMASize() {
-#ifdef __aarch64__
-  static const unsigned kBuiltVMA = SANITIZER_AARCH64_VMA;
-  unsigned maxRuntimeVMA =
-    (MostSignificantSetBitIndex(GET_CURRENT_FRAME()) + 1);
-  if (kBuiltVMA != maxRuntimeVMA) {
-    Printf("WARNING: %s runtime VMA is not the one built for.\n",
-      SanitizerToolName);
-    Printf("\tBuilt VMA:   %u bits\n", kBuiltVMA);
-    Printf("\tRuntime VMA: %u bits\n", maxRuntimeVMA);
+bool SignalContext::IsMemoryAccess() const {
+  auto si = static_cast<const siginfo_t *>(siginfo);
+  return si->si_signo == SIGSEGV;
+}
+
+int SignalContext::GetType() const {
+  return static_cast<const siginfo_t *>(siginfo)->si_signo;
+}
+
+const char *SignalContext::Describe() const {
+  switch (GetType()) {
+    case SIGFPE:
+      return "FPE";
+    case SIGILL:
+      return "ILL";
+    case SIGABRT:
+      return "ABRT";
+    case SIGSEGV:
+      return "SEGV";
+    case SIGBUS:
+      return "BUS";
   }
-#endif
+  return "UNKNOWN SIGNAL";
 }
 
 } // namespace __sanitizer

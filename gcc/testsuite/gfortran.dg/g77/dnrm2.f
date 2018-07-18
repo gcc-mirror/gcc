@@ -21,7 +21,7 @@ c     current Netlib BLAS.)
       do i=1,100
          a(i)=0.D0
       enddo
-      if (dnrm2(100,a,1) .ne. 0.0) call abort
+      if (dnrm2(100,a,1) .ne. 0.0) STOP 1
       end
 
       double precision function dnrm2 ( n, dx, incx)
@@ -33,21 +33,21 @@ c     current Netlib BLAS.)
       if(n .gt. 0 .and. incx.gt.0) go to 10
          dnrm2  = zero
          go to 300
-   10 assign 30 to next ! { dg-warning "ASSIGN" "" }
+   10 assign 30 to next ! { dg-warning "ASSIGN" }
       sum = zero
       i = 1
       ix = 1
-   20    go to next,(30, 50, 70, 110) ! { dg-warning "Assigned GOTO" "" }
+   20    go to next,(30, 50, 70, 110) ! { dg-warning "Assigned GOTO" }
    30 if( dabs(dx(i)) .gt. cutlo) go to 85
-      assign 50 to next ! { dg-warning "ASSIGN" "" }
+      assign 50 to next ! { dg-warning "ASSIGN" }
       xmax = zero
    50 if( dx(i) .eq. zero) go to 200
       if( dabs(dx(i)) .gt. cutlo) go to 85
-      assign 70 to next ! { dg-warning "ASSIGN" "" }
+      assign 70 to next ! { dg-warning "ASSIGN" }
       go to 105
   100 continue
       ix = j
-      assign 110 to next ! { dg-warning "ASSIGN" "" }
+      assign 110 to next ! { dg-warning "ASSIGN" }
       sum = (sum / dx(i)) / dx(i)
   105 xmax = dabs(dx(i))
       go to 115

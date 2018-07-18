@@ -147,6 +147,13 @@ if test "x$GCC" = "xyes"; then
   ## that we'll encounter when compiling our own source files.
   CFLAGS="-std=gnu11 $CFLAGS"
 fi
+
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+AM_FCFLAGS="$AM_FCFLAGS $CET_FLAGS"
+AM_CFLAGS="$AM_CFLAGS $CET_FLAGS"
+CFLAGS="$CFLAGS $CET_FLAGS"
+
 AC_SUBST(AM_FCFLAGS)
 AC_SUBST(AM_CFLAGS)
 AC_SUBST(CFLAGS)
@@ -221,6 +228,9 @@ if test x"$ac_fdsections" = x"yes"; then
 fi
 AC_MSG_RESULT($ac_fdsections)
 AC_SUBST(SECTION_FLAGS)
+
+# Check linker hardware capability support.
+GCC_CHECK_LINKER_HWCAP
 
 # Find other programs we need.
 AC_CHECK_TOOL(AS, as)
@@ -553,6 +563,9 @@ AC_CHECK_FUNC([fpresetsticky],[have_fpresetsticky=yes AC_DEFINE([HAVE_FPRESETSTI
 AC_CHECK_FUNC([fp_trap],[have_fp_trap=yes AC_DEFINE([HAVE_FP_TRAP],[1],[fp_trap is present])])
 AC_CHECK_FUNC([fp_enable],[have_fp_enable=yes AC_DEFINE([HAVE_FP_ENABLE],[1],[fp_enable is present])])
 
+# Check if _SOFT_FLOAT is defined
+AC_CHECK_DEFINE([_SOFT_FLOAT],[have_soft_float=yes])
+
 # Runs configure.host to set up necessary host-dependent shell variables.
 # We then display a message about it, and propagate them through the
 # build chain.
@@ -608,6 +621,27 @@ LIBGFOR_CHECK_UNLINK_OPEN_FILE
 
 # Check whether line terminator is LF or CRLF
 LIBGFOR_CHECK_CRLF
+
+# Check whether we support AVX extensions
+LIBGFOR_CHECK_AVX
+
+# Check wether we support AVX2 extensions
+LIBGFOR_CHECK_AVX2
+
+# Check wether we support AVX512f extensions
+LIBGFOR_CHECK_AVX512F
+
+# Check for FMA3 extensions
+LIBGFOR_CHECK_FMA3
+
+# Check for FMA4 extensions
+LIBGFOR_CHECK_FMA4
+
+# Check if AVX128 works
+LIBGFOR_CHECK_AVX128
+
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
 
 AC_CACHE_SAVE
 

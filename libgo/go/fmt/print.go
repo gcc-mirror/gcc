@@ -172,6 +172,13 @@ func (p *pp) Write(b []byte) (ret int, err error) {
 	return len(b), nil
 }
 
+// Implement WriteString so that we can call io.WriteString
+// on a pp (through state), for efficiency.
+func (p *pp) WriteString(s string) (ret int, err error) {
+	p.buf.WriteString(s)
+	return len(s), nil
+}
+
 // These routines end in 'f' and take a format string.
 
 // Fprintf formats according to a format specifier and writes to w.
@@ -535,7 +542,11 @@ func (p *pp) catchPanic(arg interface{}, verb rune) {
 			// Nested panics; the recursion in printArg cannot succeed.
 			panic(err)
 		}
-		p.fmt.clearflags() // We are done, and for this output we want default behavior.
+
+		oldFlags := p.fmt.fmtFlags
+		// For this output we want default behavior.
+		p.fmt.clearflags()
+
 		p.buf.WriteString(percentBangString)
 		p.buf.WriteRune(verb)
 		p.buf.WriteString(panicString)
@@ -543,6 +554,8 @@ func (p *pp) catchPanic(arg interface{}, verb rune) {
 		p.printArg(err, 'v')
 		p.panicking = false
 		p.buf.WriteByte(')')
+
+		p.fmt.fmtFlags = oldFlags
 	}
 }
 
@@ -659,6 +672,14 @@ func (p *pp) printArg(arg interface{}, verb rune) {
 	case []byte:
 		p.fmtBytes(f, verb, "[]byte")
 	case reflect.Value:
+		// Handle extractable values with special methods
+		// since printValue does not handle them at depth 0.
+		if f.IsValid() && f.CanInterface() {
+			p.arg = f.Interface()
+			if p.handleMethods(verb) {
+				return
+			}
+		}
 		p.printValue(f, verb, 0)
 	default:
 		// If the type is not simple, it might have methods.
@@ -669,8 +690,6 @@ func (p *pp) printArg(arg interface{}, verb rune) {
 		}
 	}
 }
-
-var byteType = reflect.TypeOf(byte(0))
 
 // printValue is similar to printArg but starts with a reflect value, not an interface{} value.
 // It does not handle 'p' and 'T' verbs because these should have been already handled by printArg.
@@ -805,16 +824,15 @@ func (p *pp) printValue(value reflect.Value, verb rune, depth int) {
 			if f.Kind() == reflect.Slice && f.IsNil() {
 				p.buf.WriteString(nilParenString)
 				return
-			} else {
-				p.buf.WriteByte('{')
-				for i := 0; i < f.Len(); i++ {
-					if i > 0 {
-						p.buf.WriteString(commaSpaceString)
-					}
-					p.printValue(f.Index(i), verb, depth+1)
-				}
-				p.buf.WriteByte('}')
 			}
+			p.buf.WriteByte('{')
+			for i := 0; i < f.Len(); i++ {
+				if i > 0 {
+					p.buf.WriteString(commaSpaceString)
+				}
+				p.printValue(f.Index(i), verb, depth+1)
+			}
+			p.buf.WriteByte('}')
 		} else {
 			p.buf.WriteByte('[')
 			for i := 0; i < f.Len(); i++ {
@@ -826,7 +844,7 @@ func (p *pp) printValue(value reflect.Value, verb rune, depth int) {
 			p.buf.WriteByte(']')
 		}
 	case reflect.Ptr:
-		// pointer to array or slice or struct?  ok at top level
+		// pointer to array or slice or struct? ok at top level
 		// but not embedded (avoid loops)
 		if depth == 0 && f.Pointer() != 0 {
 			switch a := f.Elem(); a.Kind() {
@@ -1056,8 +1074,11 @@ formatLoop:
 			break
 		}
 
-		verb, w := utf8.DecodeRuneInString(format[i:])
-		i += w
+		verb, size := rune(format[i]), 1
+		if verb >= utf8.RuneSelf {
+			verb, size = utf8.DecodeRuneInString(format[i:])
+		}
+		i += size
 
 		switch {
 		case verb == '%': // Percent does not absorb operands and ignores f.wid and f.prec.

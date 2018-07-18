@@ -40,26 +40,26 @@ void h (int x)
   fuc ('A');
   uc = 'A';
 
-  uc = x ? 1U : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  uc = x ? SCHAR_MIN : 1U;  /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  uc = x ? 1 : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  uc = x ? SCHAR_MIN : 1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  ui = x ? 1U : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  ui = x ? INT_MIN : 1U; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  ui = ui ? SCHAR_MIN : 1U; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  ui = 1U * -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  ui = ui + INT_MIN; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  ui = x ? 1 : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  ui = ui ? SCHAR_MIN : 1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
+  uc = x ? 1U : -1; /* { dg-warning "unsigned conversion" } */
+  uc = x ? SCHAR_MIN : 1U;  /* { dg-warning "unsigned conversion" } */
+  uc = x ? 1 : -1; /* { dg-warning "unsigned conversion" } */
+  uc = x ? SCHAR_MIN : 1; /* { dg-warning "unsigned conversion" } */
+  ui = x ? 1U : -1; /* { dg-warning "unsigned conversion" } */
+  ui = x ? INT_MIN : 1U; /* { dg-warning "unsigned conversion" } */
+  ui = ui ? SCHAR_MIN : 1U; /* { dg-warning "unsigned conversion" } */
+  ui = 1U * -1; /* { dg-warning "unsigned conversion" } */
+  ui = ui + INT_MIN; /* { dg-warning "unsigned conversion" } */
+  ui = x ? 1 : -1; /* { dg-warning "unsigned conversion" } */
+  ui = ui ? SCHAR_MIN : 1; /* { dg-warning "unsigned conversion" } */
 
-  fuc (-1); /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  uc = -1;  /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  fui (-1); /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  ui = -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  fuc ('\xa0'); /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  uc = '\xa0'; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  fui ('\xa0');/* { dg-warning "negative integer implicitly converted to unsigned type" } */
-  ui = '\xa0'; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
+  fuc (-1); /* { dg-warning "unsigned conversion" } */
+  uc = -1;  /* { dg-warning "unsigned conversion" } */
+  fui (-1); /* { dg-warning "unsigned conversion" } */
+  ui = -1; /* { dg-warning "unsigned conversion" } */
+  fuc ('\xa0'); /* { dg-warning "unsigned conversion" } */
+  uc = '\xa0'; /* { dg-warning "unsigned conversion" } */
+  fui ('\xa0');/* { dg-warning "unsigned conversion" } */
+  ui = '\xa0'; /* { dg-warning "unsigned conversion" } */
   fsi (0x80000000); /* { dg-warning "conversion" } */
   si = 0x80000000;  /* { dg-warning "conversion" } */
 
@@ -91,5 +91,5 @@ void h (int x)
   ui = sc;  /* { dg-warning "conversion" } */
 }
 
-unsigned fui (unsigned a) { return a + -1; } /* { dg-warning "negative integer implicitly converted to unsigned type" } */
+unsigned fui (unsigned a) { return a + -1; } /* { dg-warning "unsigned conversion" } */
 

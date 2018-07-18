@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-shouldfail "dimension of array B incorrect in MATMUL intrinsic" }
+! { dg-options "-finline-matmul-limit=0" }
 program main
   real, dimension(:,:), allocatable :: a
   real, dimension(:), allocatable :: b

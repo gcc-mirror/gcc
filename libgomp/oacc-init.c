@@ -1,6 +1,6 @@
 /* OpenACC Runtime initialization routines
 
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -325,7 +325,7 @@ acc_shutdown_1 (acc_device_t d)
 static struct goacc_thread *
 goacc_new_thread (void)
 {
-  struct goacc_thread *thr = gomp_malloc (sizeof (struct gomp_thread));
+  struct goacc_thread *thr = gomp_malloc (sizeof (struct goacc_thread));
 
 #if defined HAVE_TLS || defined USE_EMUTLS
   goacc_tls_data = thr;

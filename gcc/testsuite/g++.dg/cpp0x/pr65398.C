@@ -20,9 +20,9 @@ constexpr char d5 = *(&s[4] - 4);
 constexpr char d6 = *(&s[4] - 5);  // { dg-error "array subscript" }
 
 /* Don't accept invalid stuff.  */
-constexpr char e1 = *(&s[5] - 1); // { dg-error "is not a constant expression" }
-constexpr char e2 = *(&s[5] - 2); // { dg-error "is not a constant expression" }
-constexpr char e3 = *(&s[5] - 3); // { dg-error "is not a constant expression" }
+constexpr char e1 = *(&s[5] - 1); // { dg-error "array subscript" }
+constexpr char e2 = *(&s[5] - 2); // { dg-error "array subscript" }
+constexpr char e3 = *(&s[5] - 3); // { dg-error "array subscript" }
 
 SA (c1 == 'a');
 SA (c2 == 'b');
@@ -53,9 +53,9 @@ constexpr char j5 = *(&l[4] - 4);
 constexpr char j6 = *(&l[4] - 5);  // { dg-error "array subscript" }
 
 /* Don't accept invalid stuff.  */
-constexpr char k1 = *(&l[5] - 1); // { dg-error "is not a constant expression" }
-constexpr char k2 = *(&l[5] - 2); // { dg-error "is not a constant expression" }
-constexpr char k3 = *(&l[5] - 3); // { dg-error "is not a constant expression" }
+constexpr char k1 = *(&l[5] - 1); // { dg-error "array subscript" }
+constexpr char k2 = *(&l[5] - 2); // { dg-error "array subscript" }
+constexpr char k3 = *(&l[5] - 3); // { dg-error "array subscript" }
 
 SA (i1 == 'c');
 SA (i2 == 'd');

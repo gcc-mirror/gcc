@@ -13,7 +13,7 @@ foo (void)
 {
   int i, *j = &i;
   bar (j);
-  return 6 + i;	/* { dg-final { gdb-test 16 "j" "&i" } } */
+  return 6 + i;	/* { dg-final { gdb-test . "j" "&i" } } */
 }
 
 int

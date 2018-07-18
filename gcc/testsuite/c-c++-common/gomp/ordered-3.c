@@ -45,7 +45,7 @@ foo (void)
   for (i = 0; i < 64; i++)
     {
       #pragma omp ordered threads, simd, threads, simd	/* { dg-error "too many .threads. clauses" } */
-      ;	/* { dg-error "too many .simd. clauses" "" { target *-*-* } 47 } */
+      ;	/* { dg-error "too many .simd. clauses" "" { target *-*-* } .-1 } */
     }
   #pragma omp for simd ordered(1)	/* { dg-error ".ordered. clause with parameter may not be specified on .#pragma omp for simd. construct" } */
   for (i = 0; i < 64; i++)

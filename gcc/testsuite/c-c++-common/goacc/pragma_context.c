@@ -22,7 +22,7 @@ void
 f2 (void)
 {
   if (0)
-#pragma acc update /* { dg-error "'#pragma acc update' may only be used in compound statements before '#pragma'" } */
+#pragma acc update /* { dg-error "'#pragma acc update' may only be used in compound statements" } */
 }
 
 // pragma_compound

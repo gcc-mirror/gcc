@@ -32,7 +32,7 @@ struct s3 { short f1; int f2; };
 struct s4 { short f1; int f2; };
 
 #pragma options align=natural foo /* { dg-warning "junk at end of '#pragma options'" } */
-/* { dg-warning "malformed '#pragma options align={mac68k|power|reset}', ignoring" "ignoring" { target *-*-* } 34 } */
+/* { dg-warning "malformed '#pragma options align={mac68k|power|reset}', ignoring" "ignoring" { target *-*-* } .-1 } */
 
 /* Segment pragmas don't do anything anymore.  */
 

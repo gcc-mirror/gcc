@@ -1,7 +1,6 @@
 /* <ctype.h> replacement macros.
 
-   Copyright (C) 2000, 2001, 2002, 2003, 2004,
-   2005 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Zack Weinberg <zackw@stanford.edu>.
 
 This file is part of the libiberty library.

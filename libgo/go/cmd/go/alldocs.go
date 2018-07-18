@@ -14,11 +14,12 @@
 // The commands are:
 //
 // 	build       compile packages and dependencies
-// 	clean       remove object files
+// 	clean       remove object files and cached files
 // 	doc         show documentation for package or symbol
 // 	env         print Go environment information
-// 	fix         run go tool fix on packages
-// 	fmt         run gofmt on package sources
+// 	bug         start a bug report
+// 	fix         update packages to use new APIs
+// 	fmt         gofmt (reformat) package sources
 // 	generate    generate Go files by processing source
 // 	get         download and install packages and dependencies
 // 	install     compile and install packages and dependencies
@@ -27,21 +28,22 @@
 // 	test        test packages
 // 	tool        run specified go tool
 // 	version     print Go version
-// 	vet         run go tool vet on packages
+// 	vet         report likely mistakes in packages
 //
 // Use "go help [command]" for more information about a command.
 //
 // Additional help topics:
 //
 // 	c           calling between Go and C
-// 	buildmode   description of build modes
+// 	buildmode   build modes
+// 	cache       build and test caching
 // 	filetype    file types
 // 	gopath      GOPATH environment variable
 // 	environment environment variables
 // 	importpath  import path syntax
-// 	packages    description of package lists
-// 	testflag    description of testing flags
-// 	testfunc    description of testing functions
+// 	packages    package lists
+// 	testflag    testing flags
+// 	testfunc    testing functions
 //
 // Use "go help [topic]" for more information about that topic.
 //
@@ -103,24 +105,24 @@
 // 	-x
 // 		print the commands.
 //
-// 	-asmflags 'flag list'
+// 	-asmflags '[pattern=]arg list'
 // 		arguments to pass on each go tool asm invocation.
 // 	-buildmode mode
 // 		build mode to use. See 'go help buildmode' for more.
 // 	-compiler name
 // 		name of compiler to use, as in runtime.Compiler (gccgo or gc).
-// 	-gccgoflags 'arg list'
+// 	-gccgoflags '[pattern=]arg list'
 // 		arguments to pass on each gccgo compiler/linker invocation.
-// 	-gcflags 'arg list'
+// 	-gcflags '[pattern=]arg list'
 // 		arguments to pass on each go tool compile invocation.
 // 	-installsuffix suffix
 // 		a suffix to use in the name of the package installation directory,
 // 		in order to keep output separate from default builds.
 // 		If using the -race flag, the install suffix is automatically set to race
-// 		or, if set explicitly, has _race appended to it.  Likewise for the -msan
-// 		flag.  Using a -buildmode option that requires non-default compile flags
+// 		or, if set explicitly, has _race appended to it. Likewise for the -msan
+// 		flag. Using a -buildmode option that requires non-default compile flags
 // 		has a similar effect.
-// 	-ldflags 'flag list'
+// 	-ldflags '[pattern=]arg list'
 // 		arguments to pass on each go tool link invocation.
 // 	-linkshared
 // 		link against shared libraries previously created with
@@ -130,16 +132,29 @@
 // 		For example, when building with a non-standard configuration,
 // 		use -pkgdir to keep generated packages in a separate location.
 // 	-tags 'tag list'
-// 		a list of build tags to consider satisfied during the build.
-// 		For more information about build tags, see the description of
+// 		a space-separated list of build tags to consider satisfied during the
+// 		build. For more information about build tags, see the description of
 // 		build constraints in the documentation for the go/build package.
 // 	-toolexec 'cmd args'
 // 		a program to use to invoke toolchain programs like vet and asm.
 // 		For example, instead of running asm, the go command will run
 // 		'cmd args /path/to/asm <arguments for asm>'.
 //
-// The list flags accept a space-separated list of strings. To embed spaces
-// in an element in the list, surround it with either single or double quotes.
+// The -asmflags, -gccgoflags, -gcflags, and -ldflags flags accept a
+// space-separated list of arguments to pass to an underlying tool
+// during the build. To embed spaces in an element in the list, surround
+// it with either single or double quotes. The argument list may be
+// preceded by a package pattern and an equal sign, which restricts
+// the use of that argument list to the building of packages matching
+// that pattern (see 'go help packages' for a description of package
+// patterns). Without a pattern, the argument list applies only to the
+// packages named on the command line. The flags may be repeated
+// with different patterns in order to specify different arguments for
+// different sets of packages. If a package matches patterns given in
+// multiple flags, the latest match on the command line wins.
+// For example, 'go build -gcflags=-S fmt' prints the disassembly
+// only for package fmt, while 'go build -gcflags=all=-S fmt'
+// prints the disassembly for fmt and all its dependencies.
 //
 // For more about specifying packages, see 'go help packages'.
 // For more about where packages and binaries are installed,
@@ -156,11 +171,11 @@
 // See also: go install, go get, go clean.
 //
 //
-// Remove object files
+// Remove object files and cached files
 //
 // Usage:
 //
-// 	go clean [-i] [-r] [-n] [-x] [build flags] [packages]
+// 	go clean [-i] [-r] [-n] [-x] [-cache] [-testcache] [build flags] [packages]
 //
 // Clean removes object files from package source directories.
 // The go command builds most objects in a temporary directory,
@@ -198,6 +213,11 @@
 //
 // The -x flag causes clean to print remove commands as it executes them.
 //
+// The -cache flag causes clean to remove the entire go build cache.
+//
+// The -testcache flag causes clean to expire all test results in the
+// go build cache.
+//
 // For more about build flags, see 'go help build'.
 //
 // For more about specifying packages, see 'go help packages'.
@@ -207,12 +227,13 @@
 //
 // Usage:
 //
-// 	go doc [-u] [-c] [package|[package.]symbol[.method]]
+// 	go doc [-u] [-c] [package|[package.]symbol[.methodOrField]]
 //
 // Doc prints the documentation comments associated with the item identified by its
-// arguments (a package, const, func, type, var, or method) followed by a one-line
-// summary of each of the first-level items "under" that item (package-level
-// declarations for a package, methods for a type, etc.).
+// arguments (a package, const, func, type, var, method, or struct field)
+// followed by a one-line summary of each of the first-level items "under"
+// that item (package-level declarations for a package, methods for a type,
+// etc.).
 //
 // Doc accepts zero, one, or two arguments.
 //
@@ -230,9 +251,9 @@
 // which is schematically one of these:
 //
 // 	go doc <pkg>
-// 	go doc <sym>[.<method>]
-// 	go doc [<pkg>.]<sym>[.<method>]
-// 	go doc [<pkg>.][<sym>.]<method>
+// 	go doc <sym>[.<methodOrField>]
+// 	go doc [<pkg>.]<sym>[.<methodOrField>]
+// 	go doc [<pkg>.][<sym>.]<methodOrField>
 //
 // The first item in this list matched by the argument is the one whose documentation
 // is printed. (See the examples below.) However, if the argument starts with a capital
@@ -240,7 +261,7 @@
 //
 // For packages, the order of scanning is determined lexically in breadth-first order.
 // That is, the package presented is the one that matches the search and is nearest
-// the root and lexically first at its level of the hierarchy.  The GOROOT tree is
+// the root and lexically first at its level of the hierarchy. The GOROOT tree is
 // always scanned in its entirety before GOPATH.
 //
 // If there is no package specified or matched, the package in the current
@@ -252,10 +273,10 @@
 // elements like . and ... are not implemented by go doc.
 //
 // When run with two arguments, the first must be a full package path (not just a
-// suffix), and the second is a symbol or symbol and method; this is similar to the
-// syntax accepted by godoc:
+// suffix), and the second is a symbol, or symbol with method or struct field.
+// This is similar to the syntax accepted by godoc:
 //
-// 	go doc <pkg> <sym>[.<method>]
+// 	go doc <pkg> <sym>[.<methodOrField>]
 //
 // In all forms, when matching symbols, lower-case letters in the argument match
 // either case but upper-case letters match exactly. This means that there may be
@@ -306,24 +327,39 @@
 // 		when showing the package's top-level documentation.
 // 	-u
 // 		Show documentation for unexported as well as exported
-// 		symbols and methods.
+// 		symbols, methods, and fields.
 //
 //
 // Print Go environment information
 //
 // Usage:
 //
-// 	go env [var ...]
+// 	go env [-json] [var ...]
 //
 // Env prints Go environment information.
 //
 // By default env prints information as a shell script
-// (on Windows, a batch file).  If one or more variable
-// names is given as arguments,  env prints the value of
+// (on Windows, a batch file). If one or more variable
+// names is given as arguments, env prints the value of
 // each named variable on its own line.
 //
+// The -json flag prints the environment in JSON format
+// instead of as a shell script.
 //
-// Run go tool fix on packages
+// For more about environment variables, see 'go help environment'.
+//
+//
+// Start a bug report
+//
+// Usage:
+//
+// 	go bug
+//
+// Bug opens the default browser and starts a new bug report.
+// The report includes useful system information.
+//
+//
+// Update packages to use new APIs
 //
 // Usage:
 //
@@ -339,14 +375,14 @@
 // See also: go fmt, go vet.
 //
 //
-// Run gofmt on package sources
+// Gofmt (reformat) package sources
 //
 // Usage:
 //
 // 	go fmt [-n] [-x] [packages]
 //
 // Fmt runs the command 'gofmt -l -w' on the packages named
-// by the import paths.  It prints the names of the files that are modified.
+// by the import paths. It prints the names of the files that are modified.
 //
 // For more about gofmt, see 'go doc cmd/gofmt'.
 // For more about specifying packages, see 'go help packages'.
@@ -367,7 +403,7 @@
 //
 // Generate runs commands described by directives within existing
 // files. Those commands can run any process but the intent is to
-// create or update Go source files, for instance by running yacc.
+// create or update Go source files.
 //
 // Go generate is never run automatically by go build, go get, go test,
 // and so on. It must be run explicitly.
@@ -416,7 +452,7 @@
 // As a last step before running the command, any invocations of any
 // environment variables with alphanumeric names, such as $GOFILE or
 // $HOME, are expanded throughout the command line. The syntax for
-// variable expansion is $NAME on all operating systems.  Due to the
+// variable expansion is $NAME on all operating systems. Due to the
 // order of evaluation, variables are expanded even inside quoted
 // strings. If the variable NAME is not set, $NAME expands to the
 // empty string.
@@ -430,10 +466,10 @@
 // can be used to create aliases or to handle multiword generators.
 // For example,
 //
-// 	//go:generate -command yacc go tool yacc
+// 	//go:generate -command foo go tool foo
 //
-// specifies that the command "yacc" represents the generator
-// "go tool yacc".
+// specifies that the command "foo" represents the generator
+// "go tool foo".
 //
 // Generate processes packages in the order given on the command line,
 // one at a time. If the command line lists .go files, they are treated
@@ -470,7 +506,7 @@
 //
 // Usage:
 //
-// 	go get [-d] [-f] [-fix] [-insecure] [-t] [-u] [build flags] [packages]
+// 	go get [-d] [-f] [-fix] [-insecure] [-t] [-u] [-v] [build flags] [packages]
 //
 // Get downloads the packages named by the import paths, along with their
 // dependencies. It then installs the named packages, like 'go install'.
@@ -493,20 +529,22 @@
 // the tests for the specified packages.
 //
 // The -u flag instructs get to use the network to update the named packages
-// and their dependencies.  By default, get uses the network to check out
+// and their dependencies. By default, get uses the network to check out
 // missing packages but does not use it to look for updates to existing packages.
+//
+// The -v flag enables verbose progress and debug output.
 //
 // Get also accepts build flags to control the installation. See 'go help build'.
 //
 // When checking out a new package, get creates the target directory
 // GOPATH/src/<import-path>. If the GOPATH contains multiple entries,
-// get uses the first one. See 'go help gopath'.
+// get uses the first one. For more details see: 'go help gopath'.
 //
 // When checking out or updating a package, get looks for a branch or tag
 // that matches the locally installed version of Go. The most important
 // rule is that if the local installation is running version "go1", get
-// searches for a branch or tag named "go1". If no such version exists it
-// retrieves the most recent version of the package.
+// searches for a branch or tag named "go1". If no such version exists
+// it retrieves the default branch of the package.
 //
 // When go get checks out or updates a Git repository,
 // it also updates any git submodules referenced by the repository.
@@ -525,10 +563,11 @@
 //
 // Usage:
 //
-// 	go install [build flags] [packages]
+// 	go install [-i] [build flags] [packages]
 //
-// Install compiles and installs the packages named by the import paths,
-// along with their dependencies.
+// Install compiles and installs the packages named by the import paths.
+//
+// The -i flag installs the dependencies of the named packages as well.
 //
 // For more about the build flags, see 'go help build'.
 // For more about specifying packages, see 'go help packages'.
@@ -552,7 +591,7 @@
 //     golang.org/x/net/html
 //
 // The -f flag specifies an alternate format for the list, using the
-// syntax of package template.  The default output is equivalent to -f
+// syntax of package template. The default output is equivalent to -f
 // '{{.ImportPath}}'. The struct being passed to the template is:
 //
 //     type Package struct {
@@ -584,6 +623,8 @@
 //         SwigFiles      []string // .swig files
 //         SwigCXXFiles   []string // .swigcxx files
 //         SysoFiles      []string // .syso object files to add to archive
+//         TestGoFiles    []string // _test.go files in package
+//         XTestGoFiles   []string // _test.go files outside package
 //
 //         // Cgo directives
 //         CgoCFLAGS    []string // cgo: flags for C compiler
@@ -594,19 +635,22 @@
 //         CgoPkgConfig []string // cgo: pkg-config names
 //
 //         // Dependency information
-//         Imports []string // import paths used by this package
-//         Deps    []string // all (recursively) imported dependencies
+//         Imports      []string // import paths used by this package
+//         Deps         []string // all (recursively) imported dependencies
+//         TestImports  []string // imports from TestGoFiles
+//         XTestImports []string // imports from XTestGoFiles
 //
 //         // Error information
 //         Incomplete bool            // this package or a dependency has an error
 //         Error      *PackageError   // error loading package
 //         DepsErrors []*PackageError // errors loading dependencies
-//
-//         TestGoFiles  []string // _test.go files in package
-//         TestImports  []string // imports from TestGoFiles
-//         XTestGoFiles []string // _test.go files outside package
-//         XTestImports []string // imports from XTestGoFiles
 //     }
+//
+// Packages stored in vendor directories report an ImportPath that includes the
+// path to the vendor directory (for example, "d/vendor/p" instead of "p"),
+// so that the ImportPath uniquely identifies a given copy of a package.
+// The Imports, Deps, TestImports, and XTestImports lists also contain these
+// expanded imports paths. See golang.org/s/go15vendor for more about vendoring.
 //
 // The error information, if any, is
 //
@@ -640,12 +684,12 @@
 // instead of using the template format.
 //
 // The -e flag changes the handling of erroneous packages, those that
-// cannot be found or are malformed.  By default, the list command
+// cannot be found or are malformed. By default, the list command
 // prints an error to standard error for each erroneous package and
 // omits the packages from consideration during the usual printing.
 // With the -e flag, the list command never prints errors to standard
 // error and instead processes the erroneous packages with the usual
-// printing.  Erroneous packages will have a non-empty ImportPath and
+// printing. Erroneous packages will have a non-empty ImportPath and
 // a non-nil Error field; other information may or may not be missing
 // (zeroed).
 //
@@ -696,10 +740,10 @@
 //
 // 'Go test' recompiles each package along with any files with names matching
 // the file pattern "*_test.go".
-// Files whose names begin with "_" (including "_test.go") or "." are ignored.
 // These additional files can contain test functions, benchmark functions, and
-// example functions.  See 'go help testfunc' for more.
+// example functions. See 'go help testfunc' for more.
 // Each listed package causes the execution of a separate test binary.
+// Files whose names begin with "_" (including "_test.go") or "." are ignored.
 //
 // Test files that declare a package with the suffix "_test" will be compiled as a
 // separate package, and then linked and run with the main test binary.
@@ -707,11 +751,58 @@
 // The go tool will ignore a directory named "testdata", making it available
 // to hold ancillary data needed by the tests.
 //
-// By default, go test needs no arguments.  It compiles and tests the package
-// with source in the current directory, including tests, and runs the tests.
+// As part of building a test binary, go test runs go vet on the package
+// and its test source files to identify significant problems. If go vet
+// finds any problems, go test reports those and does not run the test binary.
+// Only a high-confidence subset of the default go vet checks are used.
+// To disable the running of go vet, use the -vet=off flag.
 //
-// The package is built in a temporary directory so it does not interfere with the
-// non-test installation.
+// All test output and summary lines are printed to the go command's
+// standard output, even if the test printed them to its own standard
+// error. (The go command's standard error is reserved for printing
+// errors building the tests.)
+//
+// Go test runs in two different modes:
+//
+// The first, called local directory mode, occurs when go test is
+// invoked with no package arguments (for example, 'go test' or 'go
+// test -v'). In this mode, go test compiles the package sources and
+// tests found in the current directory and then runs the resulting
+// test binary. In this mode, caching (discussed below) is disabled.
+// After the package test finishes, go test prints a summary line
+// showing the test status ('ok' or 'FAIL'), package name, and elapsed
+// time.
+//
+// The second, called package list mode, occurs when go test is invoked
+// with explicit package arguments (for example 'go test math', 'go
+// test ./...', and even 'go test .'). In this mode, go test compiles
+// and tests each of the packages listed on the command line. If a
+// package test passes, go test prints only the final 'ok' summary
+// line. If a package test fails, go test prints the full test output.
+// If invoked with the -bench or -v flag, go test prints the full
+// output even for passing package tests, in order to display the
+// requested benchmark results or verbose logging.
+//
+// In package list mode only, go test caches successful package test
+// results to avoid unnecessary repeated running of tests. When the
+// result of a test can be recovered from the cache, go test will
+// redisplay the previous output instead of running the test binary
+// again. When this happens, go test prints '(cached)' in place of the
+// elapsed time in the summary line.
+//
+// The rule for a match in the cache is that the run involves the same
+// test binary and the flags on the command line come entirely from a
+// restricted set of 'cacheable' test flags, defined as -cpu, -list,
+// -parallel, -run, -short, and -v. If a run of go test has any test
+// or non-test flags outside this set, the result is not cached. To
+// disable test caching, use any test flag or argument other than the
+// cacheable flags. The idiomatic way to disable test caching explicitly
+// is to use -count=1. Tests that open files within the package's source
+// root (usually $GOPATH) or that consult environment variables only
+// match future runs in which the files and environment variables are unchanged.
+// A cached test result is treated as executing in no time at all,
+// so a successful package test result will be cached and reused
+// regardless of -timeout setting.
 //
 // In addition to the build flags, the flags handled by 'go test' itself are:
 //
@@ -733,6 +824,10 @@
 // 	-i
 // 	    Install packages that are dependencies of the test.
 // 	    Do not run the test.
+//
+// 	-json
+// 	    Convert test output to JSON suitable for automated processing.
+// 	    See 'go doc test2json' for the encoding details.
 //
 // 	-o file
 // 	    Compile the test binary to the named file.
@@ -759,7 +854,7 @@
 // The -n flag causes tool to print the command that would be
 // executed but not execute it.
 //
-// For more about each tool command, see 'go tool command -h'.
+// For more about each tool command, see 'go doc cmd/<command>'.
 //
 //
 // Print Go version
@@ -771,23 +866,23 @@
 // Version prints the Go version, as reported by runtime.Version.
 //
 //
-// Run go tool vet on packages
+// Report likely mistakes in packages
 //
 // Usage:
 //
-// 	go vet [-n] [-x] [build flags] [packages]
+// 	go vet [-n] [-x] [build flags] [vet flags] [packages]
 //
 // Vet runs the Go vet command on the packages named by the import paths.
 //
-// For more about vet, see 'go doc cmd/vet'.
+// For more about vet and its flags, see 'go doc cmd/vet'.
 // For more about specifying packages, see 'go help packages'.
-//
-// To run the vet tool with specific options, run 'go tool vet'.
 //
 // The -n flag prints commands that would be executed.
 // The -x flag prints commands as they are executed.
 //
-// For more about build flags, see 'go help build'.
+// The build flags supported by go vet are those that control package resolution
+// and execution, such as -n, -x, -v, -tags, and -toolexec.
+// For more about these flags, see 'go help build'.
 //
 // See also: go fmt, go fix.
 //
@@ -796,22 +891,22 @@
 //
 // There are two different ways to call between Go and C/C++ code.
 //
-// The first is the cgo tool, which is part of the Go distribution.  For
+// The first is the cgo tool, which is part of the Go distribution. For
 // information on how to use it see the cgo documentation (go doc cmd/cgo).
 //
 // The second is the SWIG program, which is a general tool for
-// interfacing between languages.  For information on SWIG see
-// http://swig.org/.  When running go build, any file with a .swig
-// extension will be passed to SWIG.  Any file with a .swigcxx extension
+// interfacing between languages. For information on SWIG see
+// http://swig.org/. When running go build, any file with a .swig
+// extension will be passed to SWIG. Any file with a .swigcxx extension
 // will be passed to SWIG with the -c++ option.
 //
 // When either cgo or SWIG is used, go build will pass any .c, .m, .s,
 // or .S files to the C compiler, and any .cc, .cpp, .cxx files to the C++
-// compiler.  The CC or CXX environment variables may be set to determine
+// compiler. The CC or CXX environment variables may be set to determine
 // the C or C++ compiler, respectively, to use.
 //
 //
-// Description of build modes
+// Build modes
 //
 // The 'go build' and 'go install' commands take a -buildmode argument which
 // indicates which kind of object file is to be built. Currently supported values
@@ -828,10 +923,10 @@
 // 		exactly one main package to be listed.
 //
 // 	-buildmode=c-shared
-// 		Build the listed main packages, plus all packages that they
-// 		import, into C shared libraries. The only callable symbols will
+// 		Build the listed main package, plus all packages it imports,
+// 		into a C shared library. The only callable symbols will
 // 		be those functions exported using a cgo //export comment.
-// 		Non-main packages are ignored.
+// 		Requires exactly one main package to be listed.
 //
 // 	-buildmode=default
 // 		Listed main packages are built into executables and listed
@@ -851,6 +946,49 @@
 // 		Build the listed main packages and everything they import into
 // 		position independent executables (PIE). Packages not named
 // 		main are ignored.
+//
+// 	-buildmode=plugin
+// 		Build the listed main packages, plus all packages that they
+// 		import, into a Go plugin. Packages not named main are ignored.
+//
+//
+// Build and test caching
+//
+// The go command caches build outputs for reuse in future builds.
+// The default location for cache data is a subdirectory named go-build
+// in the standard user cache directory for the current operating system.
+// Setting the GOCACHE environment variable overrides this default,
+// and running 'go env GOCACHE' prints the current cache directory.
+//
+// The go command periodically deletes cached data that has not been
+// used recently. Running 'go clean -cache' deletes all cached data.
+//
+// The build cache correctly accounts for changes to Go source files,
+// compilers, compiler options, and so on: cleaning the cache explicitly
+// should not be necessary in typical use. However, the build cache
+// does not detect changes to C libraries imported with cgo.
+// If you have made changes to the C libraries on your system, you
+// will need to clean the cache explicitly or else use the -a build flag
+// (see 'go help build') to force rebuilding of packages that
+// depend on the updated C libraries.
+//
+// The go command also caches successful package test results.
+// See 'go help test' for details. Running 'go clean -testcache' removes
+// all cached test results (but not cached build results).
+//
+// The GODEBUG environment variable can enable printing of debugging
+// information about the state of the cache:
+//
+// GODEBUG=gocacheverify=1 causes the go command to bypass the
+// use of any cache entries and instead rebuild everything and check
+// that the results match existing cache entries.
+//
+// GODEBUG=gocachehash=1 causes the go command to print the inputs
+// for all of the content hashes it uses to construct cache lookup keys.
+// The output is voluminous but can be useful for debugging the cache.
+//
+// GODEBUG=gocachetest=1 causes the go command to print details of its
+// decisions about whether to reuse a cached test result.
 //
 //
 // File types
@@ -892,8 +1030,10 @@
 // comment, indicating that the package sources are included
 // for documentation only and must not be used to build the
 // package binary. This enables distribution of Go packages in
-// their compiled form alone. See the go/build package documentation
-// for more details.
+// their compiled form alone. Even binary-only packages require
+// accurate import blocks listing required dependencies, so that
+// those dependencies can be supplied when linking the resulting
+// command.
 //
 //
 // GOPATH environment variable
@@ -906,12 +1046,17 @@
 // On Windows, the value is a semicolon-separated string.
 // On Plan 9, the value is a list.
 //
-// GOPATH must be set to get, build and install packages outside the
-// standard Go tree.
+// If the environment variable is unset, GOPATH defaults
+// to a subdirectory named "go" in the user's home directory
+// ($HOME/go on Unix, %USERPROFILE%\go on Windows),
+// unless that directory holds a Go distribution.
+// Run "go env GOPATH" to see the current GOPATH.
+//
+// See https://golang.org/wiki/SettingGOPATH to set a custom GOPATH.
 //
 // Each directory listed in GOPATH must have a prescribed structure:
 //
-// The src directory holds source code.  The path below src
+// The src directory holds source code. The path below src
 // determines the import path or executable name.
 //
 // The pkg directory holds installed package objects.
@@ -925,19 +1070,19 @@
 //
 // The bin directory holds compiled commands.
 // Each command is named for its source directory, but only
-// the final element, not the entire path.  That is, the
+// the final element, not the entire path. That is, the
 // command with source in DIR/src/foo/quux is installed into
-// DIR/bin/quux, not DIR/bin/foo/quux.  The "foo/" prefix is stripped
+// DIR/bin/quux, not DIR/bin/foo/quux. The "foo/" prefix is stripped
 // so that you can add DIR/bin to your PATH to get at the
-// installed commands.  If the GOBIN environment variable is
+// installed commands. If the GOBIN environment variable is
 // set, commands are installed to the directory it names instead
 // of DIR/bin. GOBIN must be an absolute path.
 //
 // Here's an example directory layout:
 //
-//     GOPATH=/home/user/gocode
+//     GOPATH=/home/user/go
 //
-//     /home/user/gocode/
+//     /home/user/go/
 //         src/
 //             foo/
 //                 bar/               (go code in package bar)
@@ -963,7 +1108,7 @@
 // by code in the directory tree rooted at the parent of "internal".
 // Here's an extended version of the directory layout above:
 //
-//     /home/user/gocode/
+//     /home/user/go/
 //         src/
 //             crash/
 //                 bang/              (go code in package bang)
@@ -1001,7 +1146,7 @@
 // but with the "internal" directory renamed to "vendor"
 // and a new foo/vendor/crash/bang directory added:
 //
-//     /home/user/gocode/
+//     /home/user/go/
 //         src/
 //             crash/
 //                 bang/              (go code in package bang)
@@ -1060,32 +1205,52 @@
 // 		The operating system for which to compile code.
 // 		Examples are linux, darwin, windows, netbsd.
 // 	GOPATH
-// 		See 'go help gopath'.
+// 		For more details see: 'go help gopath'.
 // 	GORACE
 // 		Options for the race detector.
 // 		See https://golang.org/doc/articles/race_detector.html.
 // 	GOROOT
 // 		The root of the go tree.
+// 	GOTMPDIR
+// 		The directory where the go command will write
+// 		temporary source files, packages, and binaries.
+// 	GOCACHE
+// 		The directory where the go command will store
+// 		cached information for reuse in future builds.
 //
 // Environment variables for use with cgo:
 //
 // 	CC
 // 		The command to use to compile C code.
 // 	CGO_ENABLED
-// 		Whether the cgo command is supported.  Either 0 or 1.
+// 		Whether the cgo command is supported. Either 0 or 1.
 // 	CGO_CFLAGS
 // 		Flags that cgo will pass to the compiler when compiling
 // 		C code.
-// 	CGO_CPPFLAGS
-// 		Flags that cgo will pass to the compiler when compiling
-// 		C or C++ code.
-// 	CGO_CXXFLAGS
-// 		Flags that cgo will pass to the compiler when compiling
-// 		C++ code.
-// 	CGO_LDFLAGS
-// 		Flags that cgo will pass to the compiler when linking.
+// 	CGO_CFLAGS_ALLOW
+// 		A regular expression specifying additional flags to allow
+// 		to appear in #cgo CFLAGS source code directives.
+// 		Does not apply to the CGO_CFLAGS environment variable.
+// 	CGO_CFLAGS_DISALLOW
+// 		A regular expression specifying flags that must be disallowed
+// 		from appearing in #cgo CFLAGS source code directives.
+// 		Does not apply to the CGO_CFLAGS environment variable.
+// 	CGO_CPPFLAGS, CGO_CPPFLAGS_ALLOW, CGO_CPPFLAGS_DISALLOW
+// 		Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+// 		but for the C preprocessor.
+// 	CGO_CXXFLAGS, CGO_CXXFLAGS_ALLOW, CGO_CXXFLAGS_DISALLOW
+// 		Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+// 		but for the C++ compiler.
+// 	CGO_FFLAGS, CGO_FFLAGS_ALLOW, CGO_FFLAGS_DISALLOW
+// 		Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+// 		but for the Fortran compiler.
+// 	CGO_LDFLAGS, CGO_LDFLAGS_ALLOW, CGO_LDFLAGS_DISALLOW
+// 		Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+// 		but for the linker.
 // 	CXX
 // 		The command to use to compile C++ code.
+// 	PKG_CONFIG
+// 		Path to pkg-config tool.
 //
 // Architecture-specific environment variables:
 //
@@ -1095,9 +1260,15 @@
 // 	GO386
 // 		For GOARCH=386, the floating point instruction set.
 // 		Valid values are 387, sse2.
+// 	GOMIPS
+// 		For GOARCH=mips{,le}, whether to use floating point instructions.
+// 		Valid values are hardfloat (default), softfloat.
 //
 // Special-purpose environment variables:
 //
+// 	GCCGOTOOLDIR
+// 		If set, where to find gccgo tools, such as cgo.
+// 		The default is based on how gccgo was configured.
 // 	GOROOT_FINAL
 // 		The root of the installed Go tree, when it is
 // 		installed in a location other than where it is built.
@@ -1107,14 +1278,18 @@
 // 		Whether the linker should use external linking mode
 // 		when using -linkmode=auto with code that uses cgo.
 // 		Set to 0 to disable external linking mode, 1 to enable it.
+// 	GIT_ALLOW_PROTOCOL
+// 		Defined by Git. A colon-separated list of schemes that are allowed to be used
+// 		with git fetch/clone. If set, any scheme not explicitly mentioned will be
+// 		considered insecure by 'go get'.
 //
 //
 // Import path syntax
 //
-// An import path (see 'go help packages') denotes a package
-// stored in the local file system.  In general, an import path denotes
-// either a standard package (such as "unicode/utf8") or a package
-// found in one of the work spaces (see 'go help gopath').
+// An import path (see 'go help packages') denotes a package stored in the local
+// file system. In general, an import path denotes either a standard package (such
+// as "unicode/utf8") or a package found in one of the work spaces (For more
+// details see: 'go help gopath').
 //
 // Relative import paths
 //
@@ -1183,7 +1358,7 @@
 //
 // specifies the given repository, with or without the .vcs suffix,
 // using the named version control system, and then the path inside
-// that repository.  The supported version control systems are:
+// that repository. The supported version control systems are:
 //
 // 	Bazaar      .bzr
 // 	Git         .git
@@ -1203,8 +1378,13 @@
 // example.org/repo or repo.git.
 //
 // When a version control system supports multiple protocols,
-// each is tried in turn when downloading.  For example, a Git
+// each is tried in turn when downloading. For example, a Git
 // download tries https://, then git+ssh://.
+//
+// By default, downloads are restricted to known secure protocols
+// (e.g. https, ssh). To override this setting for Git downloads, the
+// GIT_ALLOW_PROTOCOL environment variable can be set (For more details see:
+// 'go help environment').
 //
 // If the import path is not a known code hosting site and also lacks a
 // version control qualifier, the go tool attempts to fetch the import
@@ -1246,8 +1426,8 @@
 // same meta tag and then git clone https://code.org/r/p/exproj into
 // GOPATH/src/example.org.
 //
-// New downloaded packages are written to the first directory
-// listed in the GOPATH environment variable (see 'go help gopath').
+// New downloaded packages are written to the first directory listed in the GOPATH
+// environment variable (For more details see: 'go help gopath').
 //
 // The go command attempts to download the version of the
 // package appropriate for the Go release being used.
@@ -1277,7 +1457,7 @@
 // See https://golang.org/s/go14customimport for details.
 //
 //
-// Description of package lists
+// Package lists
 //
 // Many commands apply to a set of packages:
 //
@@ -1291,7 +1471,7 @@
 //
 // Otherwise, the import path P denotes the package found in
 // the directory DIR/src/P for some DIR listed in the GOPATH
-// environment variable (see 'go help gopath').
+// environment variable (For more details see: 'go help gopath').
 //
 // If no import paths are given, the action applies to the
 // package in the current directory.
@@ -1311,19 +1491,33 @@
 // - "cmd" expands to the Go repository's commands and their
 // internal libraries.
 //
+// Import paths beginning with "cmd/" only match source code in
+// the Go repository.
+//
 // An import path is a pattern if it includes one or more "..." wildcards,
 // each of which can match any string, including the empty string and
-// strings containing slashes.  Such a pattern expands to all package
+// strings containing slashes. Such a pattern expands to all package
 // directories found in the GOPATH trees with names matching the
-// patterns.  As a special case, x/... matches x as well as x's subdirectories.
-// For example, net/... expands to net and packages in its subdirectories.
+// patterns.
+//
+// To make common patterns more convenient, there are two special cases.
+// First, /... at the end of the pattern can match an empty string,
+// so that net/... matches both net and packages in its subdirectories, like net/http.
+// Second, any slash-separated pattern element containing a wildcard never
+// participates in a match of the "vendor" element in the path of a vendored
+// package, so that ./... does not match packages in subdirectories of
+// ./vendor or ./mycode/vendor, but ./vendor/... and ./mycode/vendor/... do.
+// Note, however, that a directory named vendor that itself contains code
+// is not a vendored package: cmd/vendor would be a command named vendor,
+// and the pattern cmd/... matches it.
+// See golang.org/s/go15vendor for more about vendoring.
 //
 // An import path can also name a package to be downloaded from
-// a remote repository.  Run 'go help importpath' for details.
+// a remote repository. Run 'go help importpath' for details.
 //
 // Every package in a program must have a unique import path.
 // By convention, this is arranged by starting each path with a
-// unique prefix that belongs to you.  For example, paths used
+// unique prefix that belongs to you. For example, paths used
 // internally at Google all begin with 'google', and paths
 // denoting remote repositories begin with the path to the code,
 // such as 'github.com/user/repo'.
@@ -1345,48 +1539,36 @@
 // by the go tool, as are directories named "testdata".
 //
 //
-// Description of testing flags
+// Testing flags
 //
 // The 'go test' command takes both flags that apply to 'go test' itself
 // and flags that apply to the resulting test binary.
 //
 // Several of the flags control profiling and write an execution profile
 // suitable for "go tool pprof"; run "go tool pprof -h" for more
-// information.  The --alloc_space, --alloc_objects, and --show_bytes
+// information. The --alloc_space, --alloc_objects, and --show_bytes
 // options of pprof control how the information is presented.
 //
 // The following flags are recognized by the 'go test' command and
 // control the execution of any test:
 //
 // 	-bench regexp
-// 	    Run (sub)benchmarks matching a regular expression.
-// 	    The given regular expression is split into smaller ones by
-// 	    top-level '/', where each must match the corresponding part of a
-// 	    benchmark's identifier.
-// 	    By default, no benchmarks run. To run all benchmarks,
-// 	    use '-bench .' or '-bench=.'.
-//
-// 	-benchmem
-// 	    Print memory allocation statistics for benchmarks.
+// 	    Run only those benchmarks matching a regular expression.
+// 	    By default, no benchmarks are run.
+// 	    To run all benchmarks, use '-bench .' or '-bench=.'.
+// 	    The regular expression is split by unbracketed slash (/)
+// 	    characters into a sequence of regular expressions, and each
+// 	    part of a benchmark's identifier must match the corresponding
+// 	    element in the sequence, if any. Possible parents of matches
+// 	    are run with b.N=1 to identify sub-benchmarks. For example,
+// 	    given -bench=X/Y, top-level benchmarks matching X are run
+// 	    with b.N=1 to find any sub-benchmarks matching Y, which are
+// 	    then run in full.
 //
 // 	-benchtime t
 // 	    Run enough iterations of each benchmark to take t, specified
 // 	    as a time.Duration (for example, -benchtime 1h30s).
 // 	    The default is 1 second (1s).
-//
-// 	-blockprofile block.out
-// 	    Write a goroutine blocking profile to the specified file
-// 	    when all tests are complete.
-// 	    Writes test binary as -c would.
-//
-// 	-blockprofilerate n
-// 	    Control the detail provided in goroutine blocking profiles by
-// 	    calling runtime.SetBlockProfileRate with n.
-// 	    See 'go doc runtime.SetBlockProfileRate'.
-// 	    The profiler aims to sample, on average, one blocking event every
-// 	    n nanoseconds the program spends blocked.  By default,
-// 	    if -test.blockprofile is set without this flag, all blocking events
-// 	    are recorded, equivalent to -test.blockprofilerate=1.
 //
 // 	-count n
 // 	    Run each test and benchmark n times (default 1).
@@ -1395,6 +1577,10 @@
 //
 // 	-cover
 // 	    Enable coverage analysis.
+// 	    Note that because coverage works by annotating the source
+// 	    code before compilation, compilation and test failures with
+// 	    coverage enabled may report line numbers that don't correspond
+// 	    to the original sources.
 //
 // 	-covermode set,count,atomic
 // 	    Set the mode for coverage analysis for the package[s]
@@ -1407,38 +1593,24 @@
 // 			significantly more expensive.
 // 	    Sets -cover.
 //
-// 	-coverpkg pkg1,pkg2,pkg3
-// 	    Apply coverage analysis in each test to the given list of packages.
+// 	-coverpkg pattern1,pattern2,pattern3
+// 	    Apply coverage analysis in each test to packages matching the patterns.
 // 	    The default is for each test to analyze only the package being tested.
-// 	    Packages are specified as import paths.
-// 	    Sets -cover.
-//
-// 	-coverprofile cover.out
-// 	    Write a coverage profile to the file after all tests have passed.
+// 	    See 'go help packages' for a description of package patterns.
 // 	    Sets -cover.
 //
 // 	-cpu 1,2,4
 // 	    Specify a list of GOMAXPROCS values for which the tests or
-// 	    benchmarks should be executed.  The default is the current value
+// 	    benchmarks should be executed. The default is the current value
 // 	    of GOMAXPROCS.
 //
-// 	-cpuprofile cpu.out
-// 	    Write a CPU profile to the specified file before exiting.
-// 	    Writes test binary as -c would.
+// 	-failfast
+// 	    Do not start new tests after the first test failure.
 //
-// 	-memprofile mem.out
-// 	    Write a memory profile to the file after all tests have passed.
-// 	    Writes test binary as -c would.
-//
-// 	-memprofilerate n
-// 	    Enable more precise (and expensive) memory profiles by setting
-// 	    runtime.MemProfileRate.  See 'go doc runtime.MemProfileRate'.
-// 	    To profile all memory allocations, use -test.memprofilerate=1
-// 	    and pass --alloc_space flag to the pprof tool.
-//
-// 	-outputdir directory
-// 	    Place output files from profiling in the specified directory,
-// 	    by default the directory in which "go test" is running.
+// 	-list regexp
+// 	    List tests, benchmarks, or examples matching the regular expression.
+// 	    No tests, benchmarks or examples will be run. This will only
+// 	    list top-level tests. No subtest or subbenchmarks will be shown.
 //
 // 	-parallel n
 // 	    Allow parallel execution of test functions that call t.Parallel.
@@ -1451,9 +1623,13 @@
 //
 // 	-run regexp
 // 	    Run only those tests and examples matching the regular expression.
-// 	    For tests the regular expression is split into smaller ones by
-// 	    top-level '/', where each must match the corresponding part of a
-// 	    test's identifier.
+// 	    For tests, the regular expression is split by unbracketed slash (/)
+// 	    characters into a sequence of regular expressions, and each part
+// 	    of a test's identifier must match the corresponding element in
+// 	    the sequence, if any. Note that possible parents of matches are
+// 	    run too, so that -run=X/Y matches and runs and reports the result
+// 	    of all tests matching X, even those without sub-tests matching Y,
+// 	    because it must run them to look for those sub-tests.
 //
 // 	-short
 // 	    Tell long-running tests to shorten their run time.
@@ -1461,16 +1637,75 @@
 // 	    the Go tree can run a sanity check but not spend time running
 // 	    exhaustive tests.
 //
-// 	-timeout t
-// 	    If a test runs longer than t, panic.
+// 	-timeout d
+// 	    If a test binary runs longer than duration d, panic.
+// 	    If d is 0, the timeout is disabled.
 // 	    The default is 10 minutes (10m).
-//
-// 	-trace trace.out
-// 	    Write an execution trace to the specified file before exiting.
 //
 // 	-v
 // 	    Verbose output: log all tests as they are run. Also print all
 // 	    text from Log and Logf calls even if the test succeeds.
+//
+// 	-vet list
+// 	    Configure the invocation of "go vet" during "go test"
+// 	    to use the comma-separated list of vet checks.
+// 	    If list is empty, "go test" runs "go vet" with a curated list of
+// 	    checks believed to be always worth addressing.
+// 	    If list is "off", "go test" does not run "go vet" at all.
+//
+// The following flags are also recognized by 'go test' and can be used to
+// profile the tests during execution:
+//
+// 	-benchmem
+// 	    Print memory allocation statistics for benchmarks.
+//
+// 	-blockprofile block.out
+// 	    Write a goroutine blocking profile to the specified file
+// 	    when all tests are complete.
+// 	    Writes test binary as -c would.
+//
+// 	-blockprofilerate n
+// 	    Control the detail provided in goroutine blocking profiles by
+// 	    calling runtime.SetBlockProfileRate with n.
+// 	    See 'go doc runtime.SetBlockProfileRate'.
+// 	    The profiler aims to sample, on average, one blocking event every
+// 	    n nanoseconds the program spends blocked. By default,
+// 	    if -test.blockprofile is set without this flag, all blocking events
+// 	    are recorded, equivalent to -test.blockprofilerate=1.
+//
+// 	-coverprofile cover.out
+// 	    Write a coverage profile to the file after all tests have passed.
+// 	    Sets -cover.
+//
+// 	-cpuprofile cpu.out
+// 	    Write a CPU profile to the specified file before exiting.
+// 	    Writes test binary as -c would.
+//
+// 	-memprofile mem.out
+// 	    Write a memory profile to the file after all tests have passed.
+// 	    Writes test binary as -c would.
+//
+// 	-memprofilerate n
+// 	    Enable more precise (and expensive) memory profiles by setting
+// 	    runtime.MemProfileRate. See 'go doc runtime.MemProfileRate'.
+// 	    To profile all memory allocations, use -test.memprofilerate=1
+// 	    and pass --alloc_space flag to the pprof tool.
+//
+// 	-mutexprofile mutex.out
+// 	    Write a mutex contention profile to the specified file
+// 	    when all tests are complete.
+// 	    Writes test binary as -c would.
+//
+// 	-mutexprofilefraction n
+// 	    Sample 1 in n stack traces of goroutines holding a
+// 	    contended mutex.
+//
+// 	-outputdir directory
+// 	    Place output files from profiling in the specified directory,
+// 	    by default the directory in which "go test" is running.
+//
+// 	-trace trace.out
+// 	    Write an execution trace to the specified file before exiting.
 //
 // Each of these flags is also recognized with an optional 'test.' prefix,
 // as in -test.v. When invoking the generated test binary (the result of
@@ -1531,19 +1766,19 @@
 // binary, instead of being interpreted as the package list.
 //
 //
-// Description of testing functions
+// Testing functions
 //
 // The 'go test' command expects to find test, benchmark, and example functions
 // in the "*_test.go" files corresponding to the package under test.
 //
-// A test function is one named TestXXX (where XXX is any alphanumeric string
-// not starting with a lower case letter) and should have the signature,
+// A test function is one named TestXxx (where Xxx does not start with a
+// lower case letter) and should have the signature,
 //
-// 	func TestXXX(t *testing.T) { ... }
+// 	func TestXxx(t *testing.T) { ... }
 //
-// A benchmark function is one named BenchmarkXXX and should have the signature,
+// A benchmark function is one named BenchmarkXxx and should have the signature,
 //
-// 	func BenchmarkXXX(b *testing.B) { ... }
+// 	func BenchmarkXxx(b *testing.B) { ... }
 //
 // An example function is similar to a test function but, instead of using
 // *testing.T to report success or failure, prints output to os.Stdout.
@@ -1551,11 +1786,12 @@
 // is compared exactly against the comment (see examples below). If the last
 // comment begins with "Unordered output:" then the output is compared to the
 // comment, however the order of the lines is ignored. An example with no such
-// comment, or with no text after "Output:" is compiled but not executed.
+// comment is compiled but not executed. An example with no text after
+// "Output:" is compiled, executed, and expected to produce no output.
 //
-// Godoc displays the body of ExampleXXX to demonstrate the use
-// of the function, constant, or variable XXX.  An example of a method M with
-// receiver type T or *T is named ExampleT_M.  There may be multiple examples
+// Godoc displays the body of ExampleXxx to demonstrate the use
+// of the function, constant, or variable Xxx. An example of a method M with
+// receiver type T or *T is named ExampleT_M. There may be multiple examples
 // for a given function, constant, or variable, distinguished by a trailing _xxx,
 // where xxx is a suffix not beginning with an upper case letter.
 //

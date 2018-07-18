@@ -1,6 +1,6 @@
 # Makefile.in
 
-# Copyright (C) 2005-2016 Free Software Foundation, Inc.
+# Copyright (C) 2005-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -36,6 +36,7 @@ SHELL = @SHELL@
 
 cpu_type = @cpu_type@
 enable_shared = @enable_shared@
+enable_gcov = @enable_gcov@
 double_type_size = @double_type_size@
 long_double_type_size = @long_double_type_size@
 decimal_float = @decimal_float@
@@ -165,8 +166,14 @@ configure_deps = \
 	$(srcdir)/../config/tls.m4 \
 	$(srcdir)/../config/acx.m4 \
 	$(srcdir)/../config/no-executables.m4 \
+	$(srcdir)/../config/lib-ld.m4 \
 	$(srcdir)/../config/override.m4 \
+	$(srcdir)/../config/picflag.m4 \
 	$(srcdir)/../config/dfp.m4 \
+	$(srcdir)/../config/unwind_ipinfo.m4 \
+	$(srcdir)/../config/gthr.m4 \
+	$(srcdir)/../config/sjlj.m4 \
+	$(srcdir)/../config/cet.m4
 
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(configure_deps)
 	cd $(srcdir) && $(AUTOCONF)
@@ -219,7 +226,7 @@ export slibdir
 export toolexecdir
 export toolexeclibdir
 
-version := $(shell cat $(srcdir)/../gcc/BASE-VER)
+version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
 
 ifeq ($(decimal_float),yes)
 ifeq ($(enable_decimal_float),bid)
@@ -249,15 +256,13 @@ HOST_LIBGCC2_CFLAGS =
 
 PICFLAG = @PICFLAG@
 
+CET_FLAGS = @CET_FLAGS@
+
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
 
 # List of functions not to build from libgcc2.c.
 LIB2FUNCS_EXCLUDE =
-
-# These might cause a divide overflow trap and so are compiled with
-# unwinder info.
-LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 
 # List of extra C and assembler files to add to static and shared libgcc2.
 # Assembler files should have names ending in `.S'.
@@ -347,8 +352,6 @@ LIBUNWIND =
 SHLIBUNWIND_LINK =
 SHLIBUNWIND_INSTALL =
 
-tmake_file = @tmake_file@
-include $(srcdir)/empty.mk $(tmake_file)
 
 # Create links to files specified in config.host.
 LIBGCC_LINKS = enable-execute-stack.c unwind.h md-unwind-support.h \
@@ -364,6 +367,9 @@ sfp-machine.h: $(srcdir)/config/$(sfp_machine_header)
 	-$(LN_S) $< $@
 gthr-default.h: $(srcdir)/$(thread_header)
 	-$(LN_S) $< $@
+
+tmake_file = @tmake_file@
+include $(srcdir)/empty.mk $(tmake_file)
 
 # Collect target defines and headers from config.host.
 libgcc_tm_defines = @tm_defines@
@@ -455,7 +461,8 @@ endif
 
 # These might cause a divide overflow trap and so are compiled with
 # unwinder info.
-LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
+LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _divmoddi4 \
+		    _udivdi3 _umoddi3 _udivmoddi4 _udiv_w_sdiv
 
 # Remove any objects from lib2funcs and LIB2_DIVMOD_FUNCS that are
 # defined as optimized assembly code in LIB1ASMFUNCS or as C code
@@ -904,14 +911,14 @@ libgcov-driver-objects = $(patsubst %,%$(objext),$(LIBGCOV_DRIVER))
 libgcov-objects = $(libgcov-merge-objects) $(libgcov-profiler-objects) \
                  $(libgcov-interface-objects) $(libgcov-driver-objects)
 
-$(libgcov-merge-objects): %$(objext): $(srcdir)/libgcov-merge.c $(srcdir)/libgcov.h
+$(libgcov-merge-objects): %$(objext): $(srcdir)/libgcov-merge.c $(srcdir)/gcov.h $(srcdir)/libgcov.h
 	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-merge.c
-$(libgcov-profiler-objects): %$(objext): $(srcdir)/libgcov-profiler.c $(srcdir)/libgcov.h
+$(libgcov-profiler-objects): %$(objext): $(srcdir)/libgcov-profiler.c $(srcdir)/gcov.h $(srcdir)/libgcov.h
 	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-profiler.c
-$(libgcov-interface-objects): %$(objext): $(srcdir)/libgcov-interface.c $(srcdir)/libgcov.h
+$(libgcov-interface-objects): %$(objext): $(srcdir)/libgcov-interface.c $(srcdir)/gcov.h $(srcdir)/libgcov.h
 	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-interface.c
 $(libgcov-driver-objects): %$(objext): $(srcdir)/libgcov-driver.c \
-  $(srcdir)/libgcov-driver-system.c $(srcdir)/libgcov.h
+  $(srcdir)/libgcov-driver-system.c $(srcdir)/gcov.h $(srcdir)/libgcov.h
 	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-driver.c
 
 
@@ -935,7 +942,10 @@ libgcc.a libgcov.a libunwind.a libgcc_eh.a:
 
 	$(RANLIB) $@
 
-all: libgcc.a libgcov.a
+all: libgcc.a
+ifeq ($(enable_gcov),yes)
+all: libgcov.a
+endif
 
 ifneq ($(LIBUNWIND),)
 all: libunwind.a
@@ -1111,6 +1121,10 @@ install-unwind_h:
 
 all: install-unwind_h-forbuild
 
+install-gcov_h:
+	$(mkinstalldirs) $(DESTDIR)$(libsubdir)/include
+	$(INSTALL_DATA) $(srcdir)/gcov.h $(DESTDIR)$(libsubdir)/include
+
 # Documentation targets (empty).
 .PHONY: info html dvi pdf install-info install-html install-pdf
 
@@ -1154,9 +1168,11 @@ install-leaf: $(install-shared) $(install-libunwind)
 	$(INSTALL_DATA) libgcc.a $(DESTDIR)$(inst_libdir)/
 	chmod 644 $(DESTDIR)$(inst_libdir)/libgcc.a
 	$(RANLIB) $(DESTDIR)$(inst_libdir)/libgcc.a
+ifeq ($(enable_gcov),yes)
 	$(INSTALL_DATA) libgcov.a $(DESTDIR)$(inst_libdir)/
 	chmod 644 $(DESTDIR)$(inst_libdir)/libgcov.a
 	$(RANLIB) $(DESTDIR)$(inst_libdir)/libgcov.a
+endif
 
 	parts="$(INSTALL_PARTS)";				\
 	for file in $$parts; do					\
@@ -1168,13 +1184,14 @@ install-leaf: $(install-shared) $(install-libunwind)
 	  esac;							\
 	done
 
-install: install-leaf install-unwind_h
+install: install-leaf install-unwind_h install-gcov_h
 	@: $(MAKE) ; $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 install-strip: install
 
 .PHONY: install install-shared install-libunwind install-strip
 .PHONY: install-unwind_h install-unwind_h-forbuild
+.PHONY: install-gcov_h
 
 # Don't export variables to the environment, in order to not confuse
 # configure.

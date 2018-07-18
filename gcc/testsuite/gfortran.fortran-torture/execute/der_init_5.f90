@@ -9,8 +9,8 @@ program der_init_5
      integer, pointer, dimension(:) :: d => NULL()
   end type t
   type (t) :: p
-  if (associated(p%a)) call abort()
-  if (associated(p%b)) call abort()
-!  if (associated(p%c)) call abort()
-  if (associated(p%d)) call abort()
+  if (associated(p%a)) STOP 1
+  if (associated(p%b)) STOP 2
+!  if (associated(p%c)) STOP 3
+  if (associated(p%d)) STOP 4
 end

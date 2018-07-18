@@ -63,8 +63,8 @@ void exec_vget_high (void)
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
   CHECK(TEST_MSG, uint, 64, 1, PRIx64, expected, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected, "");
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected, "");
 }
 

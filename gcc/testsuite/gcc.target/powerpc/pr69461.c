@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mlra" } */
+/* { dg-options "-O3" } */
 
 extern void _setjmp (void);
 typedef struct {

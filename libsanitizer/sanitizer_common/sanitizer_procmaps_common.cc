@@ -10,7 +10,7 @@
 
 #include "sanitizer_platform.h"
 
-#if SANITIZER_FREEBSD || SANITIZER_LINUX
+#if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD
 
 #include "sanitizer_common.h"
 #include "sanitizer_placement_new.h"
@@ -18,9 +18,8 @@
 
 namespace __sanitizer {
 
-// Linker initialized.
-ProcSelfMapsBuff MemoryMappingLayout::cached_proc_self_maps_;
-StaticSpinMutex MemoryMappingLayout::cache_lock_;  // Linker initialized.
+static ProcSelfMapsBuff cached_proc_self_maps;
+static StaticSpinMutex cache_lock;
 
 static int TranslateDigit(char c) {
   if (c >= '0' && c <= '9')
@@ -62,15 +61,21 @@ uptr ParseHex(const char **p) {
   return ParseNumber(p, 16);
 }
 
+void MemoryMappedSegment::AddAddressRanges(LoadedModule *module) {
+  // data_ should be unused on this platform
+  CHECK(!data_);
+  module->addAddressRange(start, end, IsExecutable(), IsWritable());
+}
+
 MemoryMappingLayout::MemoryMappingLayout(bool cache_enabled) {
-  ReadProcMaps(&proc_self_maps_);
+  ReadProcMaps(&data_.proc_self_maps);
   if (cache_enabled) {
-    if (proc_self_maps_.mmaped_size == 0) {
+    if (data_.proc_self_maps.mmaped_size == 0) {
       LoadFromCache();
-      CHECK_GT(proc_self_maps_.len, 0);
+      CHECK_GT(data_.proc_self_maps.len, 0);
     }
   } else {
-    CHECK_GT(proc_self_maps_.mmaped_size, 0);
+    CHECK_GT(data_.proc_self_maps.mmaped_size, 0);
   }
   Reset();
   // FIXME: in the future we may want to cache the mappings on demand only.
@@ -81,24 +86,22 @@ MemoryMappingLayout::MemoryMappingLayout(bool cache_enabled) {
 MemoryMappingLayout::~MemoryMappingLayout() {
   // Only unmap the buffer if it is different from the cached one. Otherwise
   // it will be unmapped when the cache is refreshed.
-  if (proc_self_maps_.data != cached_proc_self_maps_.data) {
-    UnmapOrDie(proc_self_maps_.data, proc_self_maps_.mmaped_size);
+  if (data_.proc_self_maps.data != cached_proc_self_maps.data) {
+    UnmapOrDie(data_.proc_self_maps.data, data_.proc_self_maps.mmaped_size);
   }
 }
 
-void MemoryMappingLayout::Reset() {
-  current_ = proc_self_maps_.data;
-}
+void MemoryMappingLayout::Reset() { data_.current = data_.proc_self_maps.data; }
 
 // static
 void MemoryMappingLayout::CacheMemoryMappings() {
-  SpinMutexLock l(&cache_lock_);
+  SpinMutexLock l(&cache_lock);
   // Don't invalidate the cache if the mappings are unavailable.
   ProcSelfMapsBuff old_proc_self_maps;
-  old_proc_self_maps = cached_proc_self_maps_;
-  ReadProcMaps(&cached_proc_self_maps_);
-  if (cached_proc_self_maps_.mmaped_size == 0) {
-    cached_proc_self_maps_ = old_proc_self_maps;
+  old_proc_self_maps = cached_proc_self_maps;
+  ReadProcMaps(&cached_proc_self_maps);
+  if (cached_proc_self_maps.mmaped_size == 0) {
+    cached_proc_self_maps = old_proc_self_maps;
   } else {
     if (old_proc_self_maps.mmaped_size) {
       UnmapOrDie(old_proc_self_maps.data,
@@ -108,27 +111,20 @@ void MemoryMappingLayout::CacheMemoryMappings() {
 }
 
 void MemoryMappingLayout::LoadFromCache() {
-  SpinMutexLock l(&cache_lock_);
-  if (cached_proc_self_maps_.data) {
-    proc_self_maps_ = cached_proc_self_maps_;
+  SpinMutexLock l(&cache_lock);
+  if (cached_proc_self_maps.data) {
+    data_.proc_self_maps = cached_proc_self_maps;
   }
 }
 
-uptr MemoryMappingLayout::DumpListOfModules(LoadedModule *modules,
-                                            uptr max_modules,
-                                            string_predicate_t filter) {
+void MemoryMappingLayout::DumpListOfModules(
+    InternalMmapVectorNoCtor<LoadedModule> *modules) {
   Reset();
-  uptr cur_beg, cur_end, cur_offset, prot;
   InternalScopedString module_name(kMaxPathLength);
-  uptr n_modules = 0;
-  for (uptr i = 0; n_modules < max_modules &&
-                       Next(&cur_beg, &cur_end, &cur_offset, module_name.data(),
-                            module_name.size(), &prot);
-       i++) {
-    const char *cur_name = module_name.data();
+  MemoryMappedSegment segment(module_name.data(), module_name.size());
+  for (uptr i = 0; Next(&segment); i++) {
+    const char *cur_name = segment.filename;
     if (cur_name[0] == '\0')
-      continue;
-    if (filter && !filter(cur_name))
       continue;
     // Don't subtract 'cur_beg' from the first entry:
     // * If a binary is compiled w/o -pie, then the first entry in
@@ -141,13 +137,12 @@ uptr MemoryMappingLayout::DumpListOfModules(LoadedModule *modules,
     //   mapped high at address space (in particular, higher than
     //   shadow memory of the tool), so the module can't be the
     //   first entry.
-    uptr base_address = (i ? cur_beg : 0) - cur_offset;
-    LoadedModule *cur_module = &modules[n_modules];
-    cur_module->set(cur_name, base_address);
-    cur_module->addAddressRange(cur_beg, cur_end, prot & kProtectionExecute);
-    n_modules++;
+    uptr base_address = (i ? segment.start : 0) - segment.offset;
+    LoadedModule cur_module;
+    cur_module.set(cur_name, base_address);
+    segment.AddAddressRanges(&cur_module);
+    modules->push_back(cur_module);
   }
-  return n_modules;
 }
 
 void GetMemoryProfile(fill_profile_f cb, uptr *stats, uptr stats_size) {
@@ -176,4 +171,4 @@ void GetMemoryProfile(fill_profile_f cb, uptr *stats, uptr stats_size) {
 
 } // namespace __sanitizer
 
-#endif // SANITIZER_FREEBSD || SANITIZER_LINUX
+#endif // SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD

@@ -40,5 +40,5 @@ int main(int argc, char **argv)
   printf("fce2: %d\n", fce2(argc, 2 * argc));
 }
 
-/* { dg-final { scan-ipa-dump "Semantic equality hit:fce2->fce1" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:fce1->fce2" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */

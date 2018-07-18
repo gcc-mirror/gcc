@@ -172,7 +172,7 @@ acosq (__float128 x)
     }
   else if (ix < 0x3ffe0000)	/* |x| < 0.5 */
     {
-      if (ix < 0x3fc60000)	/* |x| < 2**-57 */
+      if (ix < 0x3f8e0000)	/* |x| < 2**-113 */
 	return pio2_hi + pio2_lo;
       if (ix < 0x3ffde000)	/* |x| < .4375 */
 	{

@@ -10,8 +10,8 @@ int main () {
   X x; 
   Y y;
   x++; // { dg-bogus "trying prefix operator" } 
-  // { dg-error "fpermissive" "" { target *-*-* } 12 }
+  // { dg-error "fpermissive" "" { target *-*-* } .-1 }
   y++; // { dg-bogus "trying prefix operator" } 
-  // { dg-error "fpermissive" "" { target *-*-* } 14 }
+  // { dg-error "fpermissive" "" { target *-*-* } .-1 }
 } 
 

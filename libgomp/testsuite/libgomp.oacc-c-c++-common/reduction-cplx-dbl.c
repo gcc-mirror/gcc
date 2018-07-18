@@ -1,5 +1,7 @@
 
+#if !defined(__hppa__) || !defined(__hpux__)
 #include <complex.h>
+#endif
 
 /* Double float has 53 bits of fraction. */
 #define FRAC (1.0 / (1LL << 48))
@@ -97,7 +99,7 @@ int main (void)
     {
       double frac = ix * (1.0 / 1024) + 1.0;
       
-      ary[ix] = frac + frac * 2.0i - 1.0i;
+      ary[ix] = frac + frac * 2.0j - 1.0j;
       sum += ary[ix];
       prod *= ary[ix];
     }

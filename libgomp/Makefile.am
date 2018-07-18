@@ -4,13 +4,13 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = testsuite
 
 ## May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 config_path = @config_path@
 search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir) \
 	      $(top_srcdir)/../include
 
-fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/finclude
+fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 vpath % $(strip $(search_path))
@@ -58,12 +58,12 @@ libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script) \
 libgomp_la_DEPENDENCIES = $(libgomp_version_dep)
 libgomp_la_LINK = $(LINK) $(libgomp_la_LDFLAGS)
 
-libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \
-	iter_ull.c loop.c loop_ull.c ordered.c parallel.c sections.c single.c \
-	task.c team.c work.c lock.c mutex.c proc.c sem.c bar.c ptrlock.c \
-	time.c fortran.c affinity.c target.c splay-tree.c libgomp-plugin.c \
-	oacc-parallel.c oacc-host.c oacc-init.c oacc-mem.c oacc-async.c \
-	oacc-plugin.c oacc-cuda.c priority_queue.c
+libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c error.c \
+	icv.c icv-device.c iter.c iter_ull.c loop.c loop_ull.c ordered.c \
+	parallel.c sections.c single.c task.c team.c work.c lock.c mutex.c \
+	proc.c sem.c bar.c ptrlock.c time.c fortran.c affinity.c target.c \
+	splay-tree.c libgomp-plugin.c oacc-parallel.c oacc-host.c oacc-init.c \
+	oacc-mem.c oacc-async.c oacc-plugin.c oacc-cuda.c priority_queue.c
 
 include $(top_srcdir)/plugin/Makefrag.am
 

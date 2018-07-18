@@ -8,7 +8,7 @@ void f1 (void) { &v; } /* { dg-error "taking address of expression of type 'void
 
 extern void *pv;
 void f2 (void) { &*pv; } /* { dg-warning "dereferencing" } */
-/* { dg-error "taking address of expression of type 'void'" "C90 only error" { target *-*-* } 10 } */
+/* { dg-error "taking address of expression of type 'void'" "C90 only error" { target *-*-* } .-1 } */
 
 extern const void cv;
 void f3 (void) { &cv; }

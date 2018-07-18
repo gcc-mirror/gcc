@@ -20,11 +20,11 @@
       write (iunit, rec=1) 'ABCD'
       read (iunit, rec=1) string
       close (iunit, status = 'delete')
-      if (string.ne.'ABCD') call abort
+      if (string.ne.'ABCD') STOP 1
 
       open (UNIT=iunit,FORM='unformatted',ACCESS='direct',STATUS='scratch',RECL=strlen)
       write (iunit, rec=1) 'ABCD'
       read (iunit, rec=1) string
       close (iunit)
-      if (string.ne.'ABCD') call abort
+      if (string.ne.'ABCD') STOP 2
       end

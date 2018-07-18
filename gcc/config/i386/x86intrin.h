@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,22 +28,6 @@
 
 #ifndef __iamcu__
 
-#include <mmintrin.h>
-
-#include <xmmintrin.h>
-
-#include <emmintrin.h>
-
-#include <pmmintrin.h>
-
-#include <tmmintrin.h>
-
-#include <ammintrin.h>
-
-#include <smmintrin.h>
-
-#include <wmmintrin.h>
-
 /* For including AVX instructions */
 #include <immintrin.h>
 
@@ -55,13 +39,7 @@
 
 #include <lwpintrin.h>
 
-#include <bmiintrin.h>
-
-#include <bmi2intrin.h>
-
 #include <tbmintrin.h>
-
-#include <lzcntintrin.h>
 
 #include <popcntintrin.h>
 
@@ -92,6 +70,8 @@
 #include <mwaitxintrin.h>
 
 #include <clzerointrin.h>
+
+#include <wbnoinvdintrin.h>
 
 #include <pkuintrin.h>
 

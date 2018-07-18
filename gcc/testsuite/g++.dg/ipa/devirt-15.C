@@ -30,7 +30,7 @@ m(void)
 {
   b->foo();
 }
-main()
+int main()
 {
   m();
 }

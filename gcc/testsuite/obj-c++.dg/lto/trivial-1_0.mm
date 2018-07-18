@@ -1,7 +1,7 @@
 /* { dg-lto-do run } */
-/* { dg-skip-if "Needs OBJC2 ABI" { "*-*-darwin*" && lp64 } { "*" } { "" } } */
+/* { dg-skip-if "Needs OBJC2 ABI" { "*-*-darwin*" && lp64 } } */
 extern "C" {
-extern int printf (char *,...) ;
+extern int printf (const char *,...) ;
 extern void abort (void) ;
 } 
 

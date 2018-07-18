@@ -21,7 +21,7 @@ type importerTest struct {
 }
 
 func runImporterTest(t *testing.T, imp Importer, initmap map[*types.Package]InitData, test *importerTest) {
-	pkg, err := imp(make(map[string]*types.Package), test.pkgpath)
+	pkg, err := imp(make(map[string]*types.Package), test.pkgpath, ".", nil)
 	if err != nil {
 		t.Error(err)
 		return
@@ -95,8 +95,14 @@ var importerTests = [...]importerTest{
 	{pkgpath: "complexnums", name: "NP", want: "const NP untyped complex", wantval: "(-1 + 1i)"},
 	{pkgpath: "complexnums", name: "PN", want: "const PN untyped complex", wantval: "(1 + -1i)"},
 	{pkgpath: "complexnums", name: "PP", want: "const PP untyped complex", wantval: "(1 + 1i)"},
-	// TODO: enable this entry once bug has been tracked down
-	//{pkgpath: "imports", wantinits: []string{"imports..import", "fmt..import", "math..import"}},
+	{pkgpath: "conversions", name: "Bits", want: "const Bits Units", wantval: `"bits"`},
+	{pkgpath: "time", name: "Duration", want: "type Duration int64"},
+	{pkgpath: "time", name: "Nanosecond", want: "const Nanosecond Duration", wantval: "1"},
+	{pkgpath: "unicode", name: "IsUpper", want: "func IsUpper(r rune) bool"},
+	{pkgpath: "unicode", name: "MaxRune", want: "const MaxRune untyped rune", wantval: "1114111"},
+	{pkgpath: "imports", wantinits: []string{"imports..import", "fmt..import", "math..import"}},
+	{pkgpath: "alias", name: "IntAlias2", want: "type IntAlias2 = Int"},
+	{pkgpath: "escapeinfo", name: "NewT", want: "func NewT(data []byte) *T"},
 }
 
 func TestGoxImporter(t *testing.T) {
@@ -117,7 +123,6 @@ func TestObjImporter(t *testing.T) {
 	// were compiled with gccgo.
 	if runtime.Compiler != "gccgo" {
 		t.Skip("This test needs gccgo")
-		return
 	}
 
 	tmpdir, err := ioutil.TempDir("", "")

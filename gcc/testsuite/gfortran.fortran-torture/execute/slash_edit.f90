@@ -9,6 +9,6 @@
  200   FORMAT(I4,///I4)
        READ(7,200)I,J
        CLOSE(7, STATUS='DELETE') 
-       IF (I.NE.1) CALL ABORT
-       IF (J.NE.4) CALL ABORT
+       IF (I.NE.1) STOP 1
+       IF (J.NE.4) STOP 2
        END

@@ -81,10 +81,7 @@ func (s *state) at(node parse.Node) {
 // doublePercent returns the string with %'s replaced by %%, if necessary,
 // so it can be used safely inside a Printf format string.
 func doublePercent(str string) string {
-	if strings.Contains(str, "%") {
-		str = strings.Replace(str, "%", "%%", -1)
-	}
-	return str
+	return strings.Replace(str, "%", "%%", -1)
 }
 
 // TODO: It would be nice if ExecError was more broken down, but
@@ -155,7 +152,8 @@ func errRecover(errp *error) {
 // If an error occurs executing the template or writing its output,
 // execution stops, but partial results may already have been written to
 // the output writer.
-// A template may be executed safely in parallel.
+// A template may be executed safely in parallel, although if parallel
+// executions share a Writer the output may be interleaved.
 func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {
 	var tmpl *Template
 	if t.common != nil {
@@ -172,21 +170,28 @@ func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) 
 // If an error occurs executing the template or writing its output,
 // execution stops, but partial results may already have been written to
 // the output writer.
-// A template may be executed safely in parallel.
+// A template may be executed safely in parallel, although if parallel
+// executions share a Writer the output may be interleaved.
+//
+// If data is a reflect.Value, the template applies to the concrete
+// value that the reflect.Value holds, as in fmt.Print.
 func (t *Template) Execute(wr io.Writer, data interface{}) error {
 	return t.execute(wr, data)
 }
 
 func (t *Template) execute(wr io.Writer, data interface{}) (err error) {
 	defer errRecover(&err)
-	value := reflect.ValueOf(data)
+	value, ok := data.(reflect.Value)
+	if !ok {
+		value = reflect.ValueOf(data)
+	}
 	state := &state{
 		tmpl: t,
 		wr:   wr,
 		vars: []variable{{"$", value}},
 	}
 	if t.Tree == nil || t.Root == nil {
-		state.errorf("%q is an incomplete or empty template%s", t.Name(), t.DefinedTemplates())
+		state.errorf("%q is an incomplete or empty template", t.Name())
 	}
 	state.walk(value, t.Root)
 	return
@@ -537,6 +542,9 @@ func (s *state) evalFunction(dot reflect.Value, node *parse.IdentifierNode, cmd 
 // value of the pipeline, if any.
 func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, args []parse.Node, final, receiver reflect.Value) reflect.Value {
 	if !receiver.IsValid() {
+		if s.tmpl.option.missingKey == mapError { // Treat invalid value as missing map key.
+			s.errorf("nil data; no entry for key %q", fieldName)
+		}
 		return zero
 	}
 	typ := receiver.Type()
@@ -544,7 +552,7 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 	// Unless it's an interface, need to get to a value of type *T to guarantee
 	// we see all methods of T and *T.
 	ptr := receiver
-	if ptr.Kind() != reflect.Interface && ptr.CanAddr() {
+	if ptr.Kind() != reflect.Interface && ptr.Kind() != reflect.Ptr && ptr.CanAddr() {
 		ptr = ptr.Addr()
 	}
 	if method := ptr.MethodByName(fieldName); method.IsValid() {
@@ -598,8 +606,9 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 }
 
 var (
-	errorType       = reflect.TypeOf((*error)(nil)).Elem()
-	fmtStringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
+	errorType        = reflect.TypeOf((*error)(nil)).Elem()
+	fmtStringerType  = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
+	reflectValueType = reflect.TypeOf((*reflect.Value)(nil)).Elem()
 )
 
 // evalCall executes a function or method call. If it's a method, fun already has the receiver bound, so
@@ -620,7 +629,7 @@ func (s *state) evalCall(dot, fun reflect.Value, node parse.Node, name string, a
 		if numIn < numFixed {
 			s.errorf("wrong number of args for %s: want at least %d got %d", name, typ.NumIn()-1, len(args))
 		}
-	} else if numIn < typ.NumIn()-1 || !typ.IsVariadic() && numIn != typ.NumIn() {
+	} else if numIn != typ.NumIn() {
 		s.errorf("wrong number of args for %s: want %d got %d", name, typ.NumIn(), len(args))
 	}
 	if !goodFunc(typ) {
@@ -663,7 +672,11 @@ func (s *state) evalCall(dot, fun reflect.Value, node parse.Node, name string, a
 		s.at(node)
 		s.errorf("error calling %s: %s", name, result[1].Interface().(error))
 	}
-	return result[0]
+	v := result[0]
+	if v.Type() == reflectValueType {
+		v = v.Interface().(reflect.Value)
+	}
+	return v
 }
 
 // canBeNil reports whether an untyped nil can be assigned to the type. See reflect.Zero.
@@ -671,6 +684,8 @@ func canBeNil(typ reflect.Type) bool {
 	switch typ.Kind() {
 	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
 		return true
+	case reflect.Struct:
+		return typ == reflectValueType
 	}
 	return false
 }
@@ -683,6 +698,9 @@ func (s *state) validateType(value reflect.Value, typ reflect.Type) reflect.Valu
 			return reflect.Zero(typ)
 		}
 		s.errorf("invalid value; expected %s", typ)
+	}
+	if typ == reflectValueType && value.Type() != typ {
+		return reflect.ValueOf(value)
 	}
 	if typ != nil && !value.Type().AssignableTo(typ) {
 		if value.Kind() == reflect.Interface && !value.IsNil() {
@@ -744,6 +762,10 @@ func (s *state) evalArg(dot reflect.Value, typ reflect.Type, n parse.Node) refle
 	case reflect.Interface:
 		if typ.NumMethod() == 0 {
 			return s.evalEmptyInterface(dot, n)
+		}
+	case reflect.Struct:
+		if typ == reflectValueType {
+			return reflect.ValueOf(s.evalEmptyInterface(dot, n))
 		}
 	case reflect.String:
 		return s.evalString(typ, n)
@@ -856,6 +878,20 @@ func indirect(v reflect.Value) (rv reflect.Value, isNil bool) {
 	return v, false
 }
 
+// indirectInterface returns the concrete value in an interface value,
+// or else the zero reflect.Value.
+// That is, if v represents the interface value x, the result is the same as reflect.ValueOf(x):
+// the fact that x was an interface value is forgotten.
+func indirectInterface(v reflect.Value) reflect.Value {
+	if v.Kind() != reflect.Interface {
+		return v
+	}
+	if v.IsNil() {
+		return reflect.Value{}
+	}
+	return v.Elem()
+}
+
 // printValue writes the textual representation of the value to the output of
 // the template.
 func (s *state) printValue(n parse.Node, v reflect.Value) {
@@ -893,29 +929,6 @@ func printableValue(v reflect.Value) (interface{}, bool) {
 	return v.Interface(), true
 }
 
-// Types to help sort the keys in a map for reproducible output.
-
-type rvs []reflect.Value
-
-func (x rvs) Len() int      { return len(x) }
-func (x rvs) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
-
-type rvInts struct{ rvs }
-
-func (x rvInts) Less(i, j int) bool { return x.rvs[i].Int() < x.rvs[j].Int() }
-
-type rvUints struct{ rvs }
-
-func (x rvUints) Less(i, j int) bool { return x.rvs[i].Uint() < x.rvs[j].Uint() }
-
-type rvFloats struct{ rvs }
-
-func (x rvFloats) Less(i, j int) bool { return x.rvs[i].Float() < x.rvs[j].Float() }
-
-type rvStrings struct{ rvs }
-
-func (x rvStrings) Less(i, j int) bool { return x.rvs[i].String() < x.rvs[j].String() }
-
 // sortKeys sorts (if it can) the slice of reflect.Values, which is a slice of map keys.
 func sortKeys(v []reflect.Value) []reflect.Value {
 	if len(v) <= 1 {
@@ -923,13 +936,21 @@ func sortKeys(v []reflect.Value) []reflect.Value {
 	}
 	switch v[0].Kind() {
 	case reflect.Float32, reflect.Float64:
-		sort.Sort(rvFloats{v})
+		sort.Slice(v, func(i, j int) bool {
+			return v[i].Float() < v[j].Float()
+		})
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		sort.Sort(rvInts{v})
+		sort.Slice(v, func(i, j int) bool {
+			return v[i].Int() < v[j].Int()
+		})
 	case reflect.String:
-		sort.Sort(rvStrings{v})
+		sort.Slice(v, func(i, j int) bool {
+			return v[i].String() < v[j].String()
+		})
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		sort.Sort(rvUints{v})
+		sort.Slice(v, func(i, j int) bool {
+			return v[i].Uint() < v[j].Uint()
+		})
 	}
 	return v
 }

@@ -1,5 +1,5 @@
 ;; ARM Cortex-A57 pipeline description
-;; Copyright (C) 2014-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -76,7 +76,7 @@
 			   neon_mul_h_scalar_long, neon_mul_s_scalar_long,\
 			   neon_sat_mul_b_long, neon_sat_mul_h_long,\
 			   neon_sat_mul_s_long, neon_sat_mul_h_scalar_long,\
-			   neon_sat_mul_s_scalar_long")
+			   neon_sat_mul_s_scalar_long, crypto_pmull")
 	    (const_string "neon_multiply")
 	  (eq_attr "type" "neon_mul_b_q, neon_mul_h_q, neon_mul_s_q,\
 			   neon_mul_h_scalar_q, neon_mul_s_scalar_q,\
@@ -297,7 +297,7 @@
        (eq_attr "type" "alu_imm,alus_imm,logic_imm,logics_imm,\
 			alu_sreg,alus_sreg,logic_reg,logics_reg,\
 			adc_imm,adcs_imm,adc_reg,adcs_reg,\
-			adr,bfm,clz,csel,rbit,rev,alu_dsp_reg,\
+			adr,bfx,extend,clz,rbit,rev,alu_dsp_reg,\
 			rotate_imm,shift_imm,shift_reg,\
 			mov_imm,mov_reg,\
 			mvn_imm,mvn_reg,\
@@ -307,7 +307,7 @@
 ;; ALU ops with immediate shift
 (define_insn_reservation "cortex_a57_alu_shift" 3
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "extend,\
+       (eq_attr "type" "bfm,\
 			alu_shift_imm,alus_shift_imm,\
 			crc,logic_shift_imm,logics_shift_imm,\
 			mov_shift,mvn_shift"))
@@ -357,25 +357,25 @@
 ;; Loads of up to two words.
 (define_insn_reservation "cortex_a57_load1" 5
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "load_byte,load1,load2"))
+       (eq_attr "type" "load_byte,load_4,load_8"))
   "ca57_load_model")
 
 ;; Loads of three or four words.
 (define_insn_reservation "cortex_a57_load3" 5
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "load3,load4"))
+       (eq_attr "type" "load_12,load_16"))
   "ca57_ls_issue*2,ca57_load_model")
 
 ;; Stores of up to two words.
 (define_insn_reservation "cortex_a57_store1" 0
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "store1,store2"))
+       (eq_attr "type" "store_4,store_8"))
   "ca57_store_model")
 
 ;; Stores of three or four words.
 (define_insn_reservation "cortex_a57_store3" 0
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "store3,store4"))
+       (eq_attr "type" "store_12,store_16"))
   "ca57_ls_issue*2,ca57_store_model")
 
 ;; Advanced SIMD Unit - Integer Arithmetic Instructions.

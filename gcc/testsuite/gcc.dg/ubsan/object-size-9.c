@@ -3,7 +3,7 @@
 /* { dg-options "-fsanitize=undefined" } */
 
 struct T { int c; char d[]; };
-struct T t = { 1, "a" };
+struct T t __attribute__ ((aligned(4096))) = { 1, "a" };
 
 int
 baz (int i)

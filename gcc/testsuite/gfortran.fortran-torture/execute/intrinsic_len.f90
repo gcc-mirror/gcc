@@ -10,8 +10,8 @@ program test
   integer n
   a = w (n)
 
-  if ((a .ne. "01234567") .or. (n .ne. 8)) call abort
-  if (len(Tom%name) .ne. 10) call abort
+  if ((a .ne. "01234567") .or. (n .ne. 8)) STOP 1
+  if (len(Tom%name) .ne. 10) STOP 2
   call array_test()
 end
 
@@ -26,6 +26,6 @@ end
 subroutine array_test
    implicit none
    character(len=10) a(4)
-   if (len(a) .NE. 10) call abort()
+   if (len(a) .NE. 10) STOP 1
 end subroutine array_test
 

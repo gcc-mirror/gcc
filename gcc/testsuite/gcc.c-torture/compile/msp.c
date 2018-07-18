@@ -1,3 +1,5 @@
+/* { dg-add-options stack_size } */
+
 #ifdef STACK_SIZE
 # define A_SIZE (STACK_SIZE/sizeof(int))
 #else

@@ -89,7 +89,7 @@
 	  </title></info>
 
 	  <para>The graphic below show the results for the native
-	  and collision-chaining hash types the the function
+	  and collision-chaining hash types the function
 	  applied being a text find timing test using
 	  <function>find</function>.
 	  </para>

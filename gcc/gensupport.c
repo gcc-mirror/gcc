@@ -1,5 +1,5 @@
 /* Support routines for the various generation passes.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -679,7 +679,7 @@ change_subst_attribute (struct queue_elem *elem,
    represented by SUBST_ELEM and this attribute has value SUBST_TRUE.
    DEFINE_SUBST isn't applied to patterns without such attribute.  In other
    words, we suppose the default value of the attribute to be 'no' since it is
-   always generated automaticaly in read-rtl.c.  */
+   always generated automatically in read-rtl.c.  */
 static bool
 has_subst_attribute (struct queue_elem *elem, struct queue_elem *subst_elem)
 {
@@ -883,7 +883,7 @@ subst_pattern_match (rtx x, rtx pt, file_location loc)
 
       switch (fmt[i])
 	{
-	case 'i': case 'r': case 'w': case 's':
+	case 'r': case 'p': case 'i': case 'w': case 's':
 	  continue;
 
 	case 'e': case 'u':
@@ -1047,7 +1047,8 @@ get_alternatives_number (rtx pattern, int *n_alt, file_location loc)
 	      return 0;
 	  break;
 
-	case 'i': case 'r': case 'w': case '0': case 's': case 'S': case 'T':
+	case 'r': case 'p': case 'i': case 'w':
+	case '0': case 's': case 'S': case 'T':
 	  break;
 
 	default:
@@ -1106,7 +1107,8 @@ collect_insn_data (rtx pattern, int *palt, int *pmax)
 	    collect_insn_data (XVECEXP (pattern, i, j), palt, pmax);
 	  break;
 
-	case 'i': case 'r': case 'w': case '0': case 's': case 'S': case 'T':
+	case 'r': case 'p': case 'i': case 'w':
+	case '0': case 's': case 'S': case 'T':
 	  break;
 
 	default:
@@ -1190,7 +1192,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op,
 	    }
 	  break;
 
-	case 'i': case 'r': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
 	  break;
 
 	default:
@@ -1248,7 +1250,7 @@ alter_constraints (rtx pattern, int n_dup, constraints_handler_t alter)
 	    }
 	  break;
 
-	case 'i': case 'r': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
 	  break;
 
 	default:
@@ -2164,7 +2166,8 @@ subst_dup (rtx pattern, int n_alt, int n_subst_alt)
 						   n_alt, n_subst_alt);
 	  break;
 
-	case 'i': case 'r': case 'w': case '0': case 's': case 'S': case 'T':
+	case 'r': case 'p': case 'i': case 'w':
+	case '0': case 's': case 'S': case 'T':
 	  break;
 
 	default:
@@ -2233,7 +2236,7 @@ process_define_subst (void)
 class gen_reader : public rtx_reader
 {
  public:
-  gen_reader () : rtx_reader () {}
+  gen_reader () : rtx_reader (false) {}
   void handle_unknown_directive (file_location, const char *);
 };
 
@@ -2259,7 +2262,7 @@ htab_eq_string (const void *s1, const void *s2)
 }
 
 /* Add mnemonic STR with length LEN to the mnemonic hash table
-   MNEMONIC_HTAB.  A trailing zero end character is appendend to STR
+   MNEMONIC_HTAB.  A trailing zero end character is appended to STR
    and a permanent heap copy of STR is created.  */
 
 static void
@@ -3000,6 +3003,10 @@ get_pattern_stats_1 (struct pattern_stats *stats, rtx x)
       break;
 
     case MATCH_SCRATCH:
+      if (stats->min_scratch_opno == -1)
+	stats->min_scratch_opno = XINT (x, 0);
+      else
+	stats->min_scratch_opno = MIN (stats->min_scratch_opno, XINT (x, 0));
       stats->max_scratch_opno = MAX (stats->max_scratch_opno, XINT (x, 0));
       break;
 
@@ -3032,6 +3039,7 @@ get_pattern_stats (struct pattern_stats *stats, rtvec pattern)
 
   stats->max_opno = -1;
   stats->max_dup_opno = -1;
+  stats->min_scratch_opno = -1;
   stats->max_scratch_opno = -1;
   stats->num_dups = 0;
 

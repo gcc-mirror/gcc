@@ -1,5 +1,5 @@
 /* context.h - Holder for global state
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,6 +38,12 @@ public:
   bool have_offload;
 
   /* Pass-management.  */
+
+  void set_passes (pass_manager *m)
+  {
+    gcc_assert (!m_passes);
+    m_passes = m;
+  }
 
   pass_manager *get_passes () { gcc_assert (m_passes); return m_passes; }
 

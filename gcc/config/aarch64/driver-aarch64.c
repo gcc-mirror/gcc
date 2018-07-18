@@ -1,5 +1,5 @@
 /* Native CPU detection for aarch64.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -16,6 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #define INCLUDE_STRING
@@ -48,6 +50,7 @@ struct aarch64_core_data
   const char* arch;
   unsigned char implementer_id; /* Exactly 8 bits */
   unsigned int part_no; /* 12 bits + 12 bits */
+  unsigned variant;
   const unsigned long flags;
 };
 
@@ -55,14 +58,15 @@ struct aarch64_core_data
   (((BIG)&0xFFFu) << 12 | ((LITTLE) & 0xFFFu))
 #define INVALID_IMP ((unsigned char) -1)
 #define INVALID_CORE ((unsigned)-1)
+#define ALL_VARIANTS ((unsigned)-1)
 
-#define AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART) \
-  { CORE_NAME, #ARCH, IMP, PART, FLAGS },
+#define AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
+  { CORE_NAME, #ARCH, IMP, PART, VARIANT, FLAGS },
 
 static struct aarch64_core_data aarch64_cpu_data[] =
 {
 #include "aarch64-cores.def"
-  { NULL, NULL, INVALID_IMP, INVALID_CORE, 0 }
+  { NULL, NULL, INVALID_IMP, INVALID_CORE, ALL_VARIANTS, 0 }
 };
 
 
@@ -160,7 +164,6 @@ contains_core_p (unsigned *arr, unsigned core)
 const char *
 host_detect_local_cpu (int argc, const char **argv)
 {
-  const char *arch_id = NULL;
   const char *res = NULL;
   static const int num_exts = ARRAY_SIZE (aarch64_extensions);
   char buf[128];
@@ -169,10 +172,11 @@ host_detect_local_cpu (int argc, const char **argv)
   bool tune = false;
   bool cpu = false;
   unsigned int i = 0;
-  unsigned int core_idx = 0;
   unsigned char imp = INVALID_IMP;
   unsigned int cores[2] = { INVALID_CORE, INVALID_CORE };
   unsigned int n_cores = 0;
+  unsigned int variants[2] = { ALL_VARIANTS, ALL_VARIANTS };
+  unsigned int n_variants = 0;
   bool processed_exts = false;
   const char *ext_string = "";
   unsigned long extension_flags = 0;
@@ -216,21 +220,29 @@ host_detect_local_cpu (int argc, const char **argv)
 	    goto not_found;
 	}
 
+      if (strstr (buf, "variant") != NULL)
+	{
+	  unsigned cvariant = parse_field (buf);
+	  if (!contains_core_p (variants, cvariant))
+	    {
+              if (n_variants == 2)
+                goto not_found;
+
+              variants[n_variants++] = cvariant;
+	    }
+          continue;
+        }
+
       if (strstr (buf, "part") != NULL)
 	{
 	  unsigned ccore = parse_field (buf);
-	  for (i = 0; aarch64_cpu_data[i].name != NULL; i++)
-	    if (ccore == aarch64_cpu_data[i].part_no
-		&& !contains_core_p (cores, ccore))
-	      {
-		if (n_cores == 2)
-		  goto not_found;
+	  if (!contains_core_p (cores, ccore))
+	    {
+	      if (n_cores == 2)
+		goto not_found;
 
-		cores[n_cores++] = ccore;
-		core_idx = i;
-		arch_id = aarch64_cpu_data[i].arch;
-		break;
-	      }
+	      cores[n_cores++] = ccore;
+	    }
 	  continue;
 	}
       if (!tune && !processed_exts && strstr (buf, "Features") != NULL)
@@ -273,25 +285,48 @@ host_detect_local_cpu (int argc, const char **argv)
   f = NULL;
 
   /* Weird cpuinfo format that we don't know how to handle.  */
-  if (n_cores == 0 || n_cores > 2 || imp == INVALID_IMP)
+  if (n_cores == 0
+      || n_cores > 2
+      || (n_cores == 1 && n_variants != 1)
+      || imp == INVALID_IMP)
     goto not_found;
 
-  if (arch && !arch_id)
-    goto not_found;
-
-  if (arch)
+  /* Simple case, one core type or just looking for the arch. */
+  if (n_cores == 1 || arch)
     {
-      struct aarch64_arch_driver_info* arch_info = get_arch_from_id (arch_id);
+      /* Search for one of the cores in the list. */
+      for (i = 0; aarch64_cpu_data[i].name != NULL; i++)
+	if (aarch64_cpu_data[i].implementer_id == imp
+            && cores[0] == aarch64_cpu_data[i].part_no
+            && (aarch64_cpu_data[i].variant == ALL_VARIANTS
+                || variants[0] == aarch64_cpu_data[i].variant))
+	  break;
+      if (aarch64_cpu_data[i].name == NULL)
+        goto not_found;
 
-      /* We got some arch indentifier that's not in aarch64-arches.def?  */
-      if (!arch_info)
-	goto not_found;
+      if (arch)
+	{
+	  const char *arch_id = aarch64_cpu_data[i].arch;
+	  aarch64_arch_driver_info* arch_info = get_arch_from_id (arch_id);
 
-      res = concat ("-march=", arch_info->name, NULL);
-      default_flags = arch_info->flags;
+	  /* We got some arch indentifier that's not in aarch64-arches.def?  */
+	  if (!arch_info)
+	    goto not_found;
+
+	  res = concat ("-march=", arch_info->name, NULL);
+	  default_flags = arch_info->flags;
+	}
+      else
+	{
+	  default_flags = aarch64_cpu_data[i].flags;
+	  res = concat ("-m",
+			cpu ? "cpu" : "tune", "=",
+			aarch64_cpu_data[i].name,
+			NULL);
+	}
     }
   /* We have big.LITTLE.  */
-  else if (n_cores == 2)
+  else
     {
       for (i = 0; aarch64_cpu_data[i].name != NULL; i++)
 	{
@@ -308,16 +343,6 @@ host_detect_local_cpu (int argc, const char **argv)
 	}
       if (!res)
 	goto not_found;
-    }
-  /* The simple, non-big.LITTLE case.  */
-  else
-    {
-      if (aarch64_cpu_data[core_idx].implementer_id != imp)
-	goto not_found;
-
-      res = concat ("-m", cpu ? "cpu" : "tune", "=",
-		    aarch64_cpu_data[core_idx].name, NULL);
-      default_flags = aarch64_cpu_data[core_idx].flags;
     }
 
   if (tune)

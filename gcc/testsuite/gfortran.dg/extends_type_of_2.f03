@@ -22,15 +22,15 @@ class(t11), pointer :: b11
 b1  => NULL()
 b11 => NULL()
 
-if (.not. extends_type_of(b1 , a1)) call abort()
-if (.not. extends_type_of(b11, a1)) call abort()
-if (.not. extends_type_of(b11,a11)) call abort()
+if (.not. extends_type_of(b1 , a1)) STOP 1
+if (.not. extends_type_of(b11, a1)) STOP 2
+if (.not. extends_type_of(b11,a11)) STOP 3
 
 b1  => a1
 b11 => a11
 
-if (.not. extends_type_of(b1 , a1)) call abort()
-if (.not. extends_type_of(b11, a1)) call abort()
-if (.not. extends_type_of(b11,a11)) call abort()
+if (.not. extends_type_of(b1 , a1)) STOP 4
+if (.not. extends_type_of(b11, a1)) STOP 5
+if (.not. extends_type_of(b11,a11)) STOP 6
 
 end

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,7 +79,7 @@ package body Ch9 is
    --  Error recovery: cannot raise Error_Resync
 
    function P_Task return Node_Id is
-      Aspect_Sloc : Source_Ptr;
+      Aspect_Sloc : Source_Ptr := No_Location;
       Name_Node   : Node_Id;
       Task_Node   : Node_Id;
       Task_Sloc   : Source_Ptr;
@@ -101,6 +101,7 @@ package body Ch9 is
          Scan; -- past BODY
          Name_Node := P_Defining_Identifier (C_Is);
          Scope.Table (Scope.Last).Labl := Name_Node;
+         Current_Node := Name_Node;
 
          if Token = Tok_Left_Paren then
             Error_Msg_SC ("discriminant part not allowed in task body");
@@ -168,6 +169,7 @@ package body Ch9 is
             Name_Node := P_Defining_Identifier;
             Set_Defining_Identifier (Task_Node, Name_Node);
             Scope.Table (Scope.Last).Labl := Name_Node;
+            Current_Node := Name_Node;
             Set_Discriminant_Specifications
               (Task_Node, P_Known_Discriminant_Part_Opt);
 
@@ -176,6 +178,7 @@ package body Ch9 is
             Name_Node := P_Defining_Identifier (C_Is);
             Set_Defining_Identifier (Task_Node, Name_Node);
             Scope.Table (Scope.Last).Labl := Name_Node;
+            Current_Node := Name_Node;
 
             if Token = Tok_Left_Paren then
                Error_Msg_SC ("discriminant part not allowed for single task");
@@ -338,10 +341,10 @@ package body Ch9 is
          Decl_Sloc := Token_Ptr;
 
          if Token = Tok_Pragma then
-            Append (P_Pragma, Items);
+            P_Pragmas_Opt (Items);
 
-         --  Ada 2005 (AI-397): Reserved words NOT and OVERRIDING
-         --  may begin an entry declaration.
+         --  Ada 2005 (AI-397): Reserved words NOT and OVERRIDING may begin an
+         --  entry declaration.
 
          elsif Token = Tok_Entry
            or else Token = Tok_Not
@@ -350,8 +353,9 @@ package body Ch9 is
             Append (P_Entry_Declaration, Items);
 
          elsif Token = Tok_For then
-            --  Representation clause in task declaration. The only rep
-            --  clause which is legal in a protected is an address clause,
+
+            --  Representation clause in task declaration. The only rep clause
+            --  which is legal in a protected declaration is an address clause,
             --  so that is what we try to scan out.
 
             Item_Node := P_Representation_Clause;
@@ -424,7 +428,7 @@ package body Ch9 is
    --  Error recovery: cannot raise Error_Resync
 
    function P_Protected return Node_Id is
-      Aspect_Sloc    : Source_Ptr;
+      Aspect_Sloc    : Source_Ptr := No_Location;
       Name_Node      : Node_Id;
       Protected_Node : Node_Id;
       Protected_Sloc : Source_Ptr;
@@ -446,6 +450,7 @@ package body Ch9 is
          Scan; -- past BODY
          Name_Node := P_Defining_Identifier (C_Is);
          Scope.Table (Scope.Last).Labl := Name_Node;
+         Current_Node := Name_Node;
 
          if Token = Tok_Left_Paren then
             Error_Msg_SC ("discriminant part not allowed in protected body");
@@ -500,6 +505,7 @@ package body Ch9 is
             Name_Node := P_Defining_Identifier (C_Is);
             Set_Defining_Identifier (Protected_Node, Name_Node);
             Scope.Table (Scope.Last).Labl := Name_Node;
+            Current_Node := Name_Node;
             Set_Discriminant_Specifications
               (Protected_Node, P_Known_Discriminant_Part_Opt);
 
@@ -516,6 +522,7 @@ package body Ch9 is
             end if;
 
             Scope.Table (Scope.Last).Labl := Name_Node;
+            Current_Node := Name_Node;
          end if;
 
          P_Aspect_Specifications (Protected_Node, Semicolon => False);
@@ -617,8 +624,10 @@ package body Ch9 is
    --  Error recovery: cannot raise Error_Resync
 
    function P_Protected_Definition return Node_Id is
-      Def_Node  : Node_Id;
-      Item_Node : Node_Id;
+      Def_Node   : Node_Id;
+      Item_Node  : Node_Id;
+      Priv_Decls : List_Id;
+      Vis_Decls  : List_Id;
 
    begin
       Def_Node := New_Node (N_Protected_Definition, Token_Ptr);
@@ -631,33 +640,63 @@ package body Ch9 is
 
       --  Loop to scan visible declarations (protected operation declarations)
 
-      Set_Visible_Declarations (Def_Node, New_List);
+      Vis_Decls := New_List;
+      Set_Visible_Declarations (Def_Node, Vis_Decls);
+
+      --  Flag and discard all pragmas which cannot appear in the protected
+      --  definition. Note that certain pragmas are still allowed as long as
+      --  they apply to entries, entry families, or protected subprograms.
+
+      P_Pragmas_Opt (Vis_Decls);
 
       loop
          Item_Node := P_Protected_Operation_Declaration_Opt;
+
+         if Present (Item_Node) then
+            Append (Item_Node, Vis_Decls);
+         end if;
+
+         P_Pragmas_Opt (Vis_Decls);
+
          exit when No (Item_Node);
-         Append (Item_Node, Visible_Declarations (Def_Node));
       end loop;
 
       --  Deal with PRIVATE part (including graceful handling of multiple
       --  PRIVATE parts).
 
       Private_Loop : while Token = Tok_Private loop
-         if No (Private_Declarations (Def_Node)) then
-            Set_Private_Declarations (Def_Node, New_List);
-         else
+         Priv_Decls := Private_Declarations (Def_Node);
+
+         if Present (Priv_Decls) then
             Error_Msg_SC ("duplicate private part");
+         else
+            Priv_Decls := New_List;
+            Set_Private_Declarations (Def_Node, Priv_Decls);
          end if;
 
          Scan; -- past PRIVATE
 
+         --  Flag and discard all pragmas which cannot appear in the protected
+         --  definition. Note that certain pragmas are still allowed as long as
+         --  they apply to entries, entry families, or protected subprograms.
+
+         P_Pragmas_Opt (Priv_Decls);
+
          Declaration_Loop : loop
             if Token = Tok_Identifier then
-               P_Component_Items (Private_Declarations (Def_Node));
+               P_Component_Items (Priv_Decls);
+               P_Pragmas_Opt (Priv_Decls);
+
             else
                Item_Node := P_Protected_Operation_Declaration_Opt;
+
+               if Present (Item_Node) then
+                  Append (Item_Node, Priv_Decls);
+               end if;
+
+               P_Pragmas_Opt (Priv_Decls);
+
                exit Declaration_Loop when No (Item_Node);
-               Append (Item_Node, Private_Declarations (Def_Node));
             end if;
          end loop Declaration_Loop;
       end loop Private_Loop;
@@ -743,57 +782,82 @@ package body Ch9 is
          return Decl;
       end P_Entry_Or_Subprogram_With_Indicator;
 
+      Result : Node_Id := Empty;
+
    --  Start of processing for P_Protected_Operation_Declaration_Opt
 
    begin
-      --  This loop runs more than once only when a junk declaration
-      --  is skipped.
+      --  This loop runs more than once only when a junk declaration is skipped
 
       loop
-         if Token = Tok_Pragma then
-            return P_Pragma;
+         case Token is
+            when Tok_Pragma =>
+               Result := P_Pragma;
+               exit;
 
-         elsif Token = Tok_Not or else Token = Tok_Overriding then
-            return P_Entry_Or_Subprogram_With_Indicator;
+            when Tok_Not
+               | Tok_Overriding
+            =>
+               Result := P_Entry_Or_Subprogram_With_Indicator;
+               exit;
 
-         elsif Token = Tok_Entry then
-            return P_Entry_Declaration;
+            when Tok_Entry =>
+               Result := P_Entry_Declaration;
+               exit;
 
-         elsif Token = Tok_Function or else Token = Tok_Procedure then
-            return P_Subprogram (Pf_Decl_Pexp);
+            when Tok_Function
+               | Tok_Procedure
+            =>
+               Result := P_Subprogram (Pf_Decl_Pexp);
+               exit;
 
-         elsif Token = Tok_Identifier then
-            L := New_List;
-            P := Token_Ptr;
-            Skip_Declaration (L);
+            when Tok_Identifier =>
+               L := New_List;
+               P := Token_Ptr;
+               Skip_Declaration (L);
 
-            if Nkind (First (L)) = N_Object_Declaration then
-               Error_Msg
-                 ("component must be declared in private part of " &
-                  "protected type", P);
-            else
-               Error_Msg
-                 ("illegal declaration in protected definition", P);
-            end if;
+               if Nkind (First (L)) = N_Object_Declaration then
+                  Error_Msg
+                    ("component must be declared in private part of " &
+                     "protected type", P);
+               else
+                  Error_Msg
+                    ("illegal declaration in protected definition", P);
+               end if;
+               --  Continue looping
 
-         elsif Token in Token_Class_Declk then
-            Error_Msg_SC ("illegal declaration in protected definition");
-            Resync_Past_Semicolon;
+            when Tok_For =>
+               Error_Msg_SC
+                 ("representation clause not allowed in protected definition");
+               Resync_Past_Semicolon;
+               --  Continue looping
 
-            --  Return now to avoid cascaded messages if next declaration
-            --  is a valid component declaration.
+            when others =>
+               if Token in Token_Class_Declk then
+                  Error_Msg_SC ("illegal declaration in protected definition");
+                  Resync_Past_Semicolon;
 
-            return Error;
+                  --  Return now to avoid cascaded messages if next declaration
+                  --  is a valid component declaration.
 
-         elsif Token = Tok_For then
-            Error_Msg_SC
-              ("representation clause not allowed in protected definition");
-            Resync_Past_Semicolon;
+                  Result := Error;
+               end if;
 
-         else
-            return Empty;
-         end if;
+               exit;
+         end case;
       end loop;
+
+      if Nkind (Result) = N_Subprogram_Declaration
+        and then Nkind (Specification (Result)) =
+                   N_Procedure_Specification
+        and then Null_Present (Specification (Result))
+      then
+         Error_Msg_N
+           ("protected operation cannot be a null procedure",
+            Null_Statement (Specification (Result)));
+      end if;
+
+      return Result;
    end P_Protected_Operation_Declaration_Opt;
 
    -----------------------------------
@@ -1016,6 +1080,7 @@ package body Ch9 is
       Accept_Node := New_Node (N_Accept_Statement, Token_Ptr);
       Scan; -- past ACCEPT
       Scope.Table (Scope.Last).Labl := Token_Node;
+      Current_Node := Token_Node;
 
       Set_Entry_Direct_Name (Accept_Node, P_Identifier (C_Do));
 
@@ -1164,6 +1229,7 @@ package body Ch9 is
       Name_Node := P_Defining_Identifier;
       Set_Defining_Identifier (Entry_Node, Name_Node);
       Scope.Table (Scope.Last).Labl := Name_Node;
+      Current_Node := Name_Node;
 
       Formal_Part_Node := P_Entry_Body_Formal_Part;
       Set_Entry_Body_Formal_Part (Entry_Node, Formal_Part_Node);

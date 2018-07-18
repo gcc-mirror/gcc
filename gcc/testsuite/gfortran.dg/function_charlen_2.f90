@@ -15,11 +15,11 @@ program test
   character(len = 10) :: c
   character(4) :: cl
   c = f ()
-  if (g () /= "2") call abort
+  if (g () /= "2") STOP 1
 contains
   character(len = l) function f ()
     use m
-    if (len (f) /= 2) call abort
+    if (len (f) /= 2) STOP 2
     f = "a"
   end function f
   character(len = len (cl)) function g ()

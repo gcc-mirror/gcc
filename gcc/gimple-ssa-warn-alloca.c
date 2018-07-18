@@ -1,5 +1,5 @@
 /* Warn on problematic uses of alloca and variable length arrays.
-   Copyright (C) 2016 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -78,7 +78,8 @@ pass_walloca::gate (function *fun ATTRIBUTE_UNUSED)
   if (first_time_p)
     return warn_alloca != 0;
 
-  return warn_alloca_limit > 0 || warn_vla_limit > 0;
+  return ((unsigned HOST_WIDE_INT) warn_alloca_limit > 0
+	  || (unsigned HOST_WIDE_INT) warn_vla_limit > 0);
 }
 
 // Possible problematic uses of alloca.
@@ -193,7 +194,8 @@ alloca_call_type_by_arg (tree arg, tree arg_casted, edge e, unsigned max_size)
 	      // degrade into "if (N > Y) alloca(N)".
 	      if (cond_code == GT_EXPR || cond_code == GE_EXPR)
 		rhs = integer_zero_node;
-	      return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE, rhs);
+	      return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE,
+					    wi::to_wide (rhs));
 	    }
 	}
       else
@@ -262,7 +264,7 @@ is_max (tree x, wide_int max)
 
 // Analyze the alloca call in STMT and return the alloca type with its
 // corresponding limit (if applicable).  IS_VLA is set if the alloca
-// call is really a BUILT_IN_ALLOCA_WITH_ALIGN, signifying a VLA.
+// call was created by the gimplifier for a VLA.
 //
 // If the alloca call may be too large because of a cast from a signed
 // type to an unsigned type, set *INVALID_CASTED_TYPE to the
@@ -272,13 +274,15 @@ static struct alloca_type_and_limit
 alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 {
   gcc_assert (gimple_alloca_call_p (stmt));
+  bool tentative_cast_from_signed = false;
   tree len = gimple_call_arg (stmt, 0);
   tree len_casted = NULL;
   wide_int min, max;
-  struct alloca_type_and_limit ret = alloca_type_and_limit (ALLOCA_UNBOUNDED);
+  edge_iterator ei;
+  edge e;
 
-  gcc_assert (!is_vla || warn_vla_limit > 0);
-  gcc_assert (is_vla || warn_alloca_limit > 0);
+  gcc_assert (!is_vla || (unsigned HOST_WIDE_INT) warn_vla_limit > 0);
+  gcc_assert (is_vla || (unsigned HOST_WIDE_INT) warn_alloca_limit > 0);
 
   // Adjust warn_alloca_max_size for VLAs, by taking the underlying
   // type into account.
@@ -292,18 +296,22 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
   if (TREE_CODE (len) == INTEGER_CST)
     {
       if (tree_to_uhwi (len) > max_size)
-	return alloca_type_and_limit (ALLOCA_BOUND_DEFINITELY_LARGE, len);
+	return alloca_type_and_limit (ALLOCA_BOUND_DEFINITELY_LARGE,
+				      wi::to_wide (len));
       if (integer_zerop (len))
 	return alloca_type_and_limit (ALLOCA_ARG_IS_ZERO);
-      ret = alloca_type_and_limit (ALLOCA_OK);
+
+      return alloca_type_and_limit (ALLOCA_OK);
     }
+
   // Check the range info if available.
-  else if (value_range_type range_type = get_range_info (len, &min, &max))
+  if (TREE_CODE (len) == SSA_NAME)
     {
+      value_range_type range_type = get_range_info (len, &min, &max);
       if (range_type == VR_RANGE)
 	{
 	  if (wi::leu_p (max, max_size))
-	    ret = alloca_type_and_limit (ALLOCA_OK);
+	    return alloca_type_and_limit (ALLOCA_OK);
 	  else
 	    {
 	      // A cast may have created a range we don't care
@@ -324,12 +332,20 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 	      // away with better range information.  But it gets
 	      // most of the cases.
 	      gimple *def = SSA_NAME_DEF_STMT (len);
-	      if (gimple_assign_cast_p (def)
-		  && TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (def))))
-
+	      if (gimple_assign_cast_p (def))
 		{
-		  len_casted = gimple_assign_rhs1 (def);
-		  range_type = get_range_info (len_casted, &min, &max);
+		  tree rhs1 = gimple_assign_rhs1 (def);
+		  tree rhs1type = TREE_TYPE (rhs1);
+
+		  // Bail if the argument type is not valid.
+		  if (!INTEGRAL_TYPE_P (rhs1type))
+		    return alloca_type_and_limit (ALLOCA_OK);
+
+		  if (TYPE_UNSIGNED (rhs1type))
+		    {
+		      len_casted = rhs1;
+		      range_type = get_range_info (len_casted, &min, &max);
+		    }
 		}
 	      // An unknown range or a range of the entire domain is
 	      // really no range at all.
@@ -339,9 +355,10 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 		{
 		  // Fall through.
 		}
+	      else if (range_type == VR_ANTI_RANGE)
+		return alloca_type_and_limit (ALLOCA_UNBOUNDED);
 	      else if (range_type != VR_VARYING)
-		return
-		  alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE, max);
+		return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE, max);
 	    }
 	}
       else if (range_type == VR_ANTI_RANGE)
@@ -350,8 +367,26 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 	  // with this heuristic.  Hopefully, this VR_ANTI_RANGE
 	  // nonsense will go away, and we won't have to catch the
 	  // sign conversion problems with this crap.
+	  //
+	  // This is here to catch things like:
+	  // void foo(signed int n) {
+	  //   if (n < 100)
+	  //     alloca(n);
+	  //   ...
+	  // }
 	  if (cast_from_signed_p (len, invalid_casted_type))
-	    return alloca_type_and_limit (ALLOCA_CAST_FROM_SIGNED);
+	    {
+	      // Unfortunately this also triggers:
+	      //
+	      // __SIZE_TYPE__ n = (__SIZE_TYPE__)blah;
+	      // if (n < 100)
+	      //   alloca(n);
+	      //
+	      // ...which is clearly bounded.  So, double check that
+	      // the paths leading up to the size definitely don't
+	      // have a bound.
+	      tentative_cast_from_signed = true;
+	    }
 	}
       // No easily determined range and try other things.
     }
@@ -359,50 +394,41 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
   // If we couldn't find anything, try a few heuristics for things we
   // can easily determine.  Check these misc cases but only accept
   // them if all predecessors have a known bound.
-  basic_block bb = gimple_bb (stmt);
-  if (ret.type == ALLOCA_UNBOUNDED)
+  struct alloca_type_and_limit ret = alloca_type_and_limit (ALLOCA_OK);
+  FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->preds)
     {
-      ret.type = ALLOCA_OK;
-      for (unsigned ix = 0; ix < EDGE_COUNT (bb->preds); ix++)
-	{
-	  gcc_assert (!len_casted || TYPE_UNSIGNED (TREE_TYPE (len_casted)));
-	  ret = alloca_call_type_by_arg (len, len_casted,
-					 EDGE_PRED (bb, ix), max_size);
-	  if (ret.type != ALLOCA_OK)
-	    return ret;
-	}
+      gcc_assert (!len_casted || TYPE_UNSIGNED (TREE_TYPE (len_casted)));
+      ret = alloca_call_type_by_arg (len, len_casted, e, max_size);
+      if (ret.type != ALLOCA_OK)
+	break;
+    }
+
+  if (ret.type != ALLOCA_OK && tentative_cast_from_signed)
+    ret = alloca_type_and_limit (ALLOCA_CAST_FROM_SIGNED);
+
+  // If we have a declared maximum size, we can take it into account.
+  if (ret.type != ALLOCA_OK
+      && gimple_call_builtin_p (stmt, BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX))
+    {
+      tree arg = gimple_call_arg (stmt, 2);
+      if (compare_tree_int (arg, max_size) <= 0)
+	ret = alloca_type_and_limit (ALLOCA_OK);
+      else
+	ret = alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE,
+				     wi::to_wide (arg));
     }
 
   return ret;
 }
 
-// Return TRUE if the alloca call in STMT is in a loop, otherwise
-// return FALSE. As an exception, ignore alloca calls for VLAs that
-// occur in a loop since those will be cleaned up when they go out of
-// scope.
+// Return TRUE if STMT is in a loop, otherwise return FALSE.
 
 static bool
-in_loop_p (bool is_vla, gimple *stmt)
+in_loop_p (gimple *stmt)
 {
   basic_block bb = gimple_bb (stmt);
-  if (bb->loop_father
-      && bb->loop_father->header != ENTRY_BLOCK_PTR_FOR_FN (cfun))
-    {
-      // Do not warn on VLAs occurring in a loop, since VLAs are
-      // guaranteed to be cleaned up when they go out of scope.
-      // That is, there is a corresponding __builtin_stack_restore
-      // at the end of the scope in which the VLA occurs.
-      tree fndecl = gimple_call_fn (stmt);
-      while (TREE_CODE (fndecl) == ADDR_EXPR)
-	fndecl = TREE_OPERAND (fndecl, 0);
-      if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-	  && is_vla
-	  && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA_WITH_ALIGN)
-	return false;
-
-      return true;
-    }
-  return false;
+  return
+    bb->loop_father && bb->loop_father->header != ENTRY_BLOCK_PTR_FOR_FN (cfun);
 }
 
 unsigned int
@@ -419,10 +445,9 @@ pass_walloca::execute (function *fun)
 
 	  if (!gimple_alloca_call_p (stmt))
 	    continue;
-	  gcc_assert (gimple_call_num_args (stmt) >= 1);
 
-	  bool is_vla = gimple_alloca_call_p (stmt)
-	    && gimple_call_alloca_for_var_p (as_a <gcall *> (stmt));
+	  const bool is_vla
+	    = gimple_call_alloca_for_var_p (as_a <gcall *> (stmt));
 
 	  // Strict mode whining for VLAs is handled by the front-end,
 	  // so we can safely ignore this case.  Also, ignore VLAs if
@@ -442,9 +467,10 @@ pass_walloca::execute (function *fun)
 	  struct alloca_type_and_limit t
 	    = alloca_call_type (stmt, is_vla, &invalid_casted_type);
 
-	  // Even if we think the alloca call is OK, make sure it's
-	  // not in a loop.
-	  if (t.type == ALLOCA_OK && in_loop_p (is_vla, stmt))
+	  // Even if we think the alloca call is OK, make sure it's not in a
+	  // loop, except for a VLA, since VLAs are guaranteed to be cleaned
+	  // up when they go out of scope, including in a loop.
+	  if (t.type == ALLOCA_OK && !is_vla && in_loop_p (stmt))
 	    t = alloca_type_and_limit (ALLOCA_IN_LOOP);
 
 	  enum opt_code wcode
@@ -459,7 +485,7 @@ pass_walloca::execute (function *fun)
 			      is_vla ? G_("argument to variable-length array "
 					  "may be too large")
 			      : G_("argument to %<alloca%> may be too large"))
-		  && t.limit != integer_zero_node)
+		  && t.limit != 0)
 		{
 		  print_decu (t.limit, buff);
 		  inform (loc, G_("limit is %u bytes, but argument "
@@ -472,7 +498,7 @@ pass_walloca::execute (function *fun)
 			      is_vla ? G_("argument to variable-length array "
 					  "is too large")
 			      : G_("argument to %<alloca%> is too large"))
-		  && t.limit != integer_zero_node)
+		  && t.limit != 0)
 		{
 		  print_decu (t.limit, buff);
 		  inform (loc, G_("limit is %u bytes, but argument is %s"),

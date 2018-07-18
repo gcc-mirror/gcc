@@ -1,14 +1,14 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512vbmi -mavx512vl -O2" } */
-/* { dg-final { scan-assembler-times "vpermt2b\[ \\t\]+\[^\n\]*%zmm\[0-9\]+" 3 } } */
-/* { dg-final { scan-assembler-times "vpermt2b\[ \\t\]+\[^\n\]*%ymm\[0-9\]+" 3 } } *
-/* { dg-final { scan-assembler-times "vpermt2b\[ \\t\]+\[^\n\]*%xmm\[0-9\]+" 3 } } */
-/* { dg-final { scan-assembler-times "vpermt2b\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpermt2b\[ \\t\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpermt2b\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpermt2b\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
-/* { dg-final { scan-assembler-times "vpermt2b\[ \\t\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
-/* { dg-final { scan-assembler-times "vpermt2b\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
+/* { dg-final { scan-assembler-times "vperm\[ti]2b\[ \\t\]+\[^\n\]*%zmm\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "vperm\[ti]2b\[ \\t\]+\[^\n\]*%ymm\[0-9\]+" 3 } } *
+/* { dg-final { scan-assembler-times "vperm\[ti]2b\[ \\t\]+\[^\n\]*%xmm\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "vperm\[ti]2b\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vperm\[ti]2b\[ \\t\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vperm\[ti]2b\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vperm\[ti]2b\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
+/* { dg-final { scan-assembler-times "vperm\[ti]2b\[ \\t\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
+/* { dg-final { scan-assembler-times "vperm\[ti]2b\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
 
 #include <immintrin.h>
 

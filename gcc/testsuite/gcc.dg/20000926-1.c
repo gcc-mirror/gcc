@@ -22,6 +22,6 @@ struct PLAYBOOK playbook  =
 {
   "BookName",
   {
-    { 1, "PName0" }, /* { dg-warning "(excess elements)|(near initialization)" "" } */
+    { 1, "PName0" }, /* { dg-warning "(excess elements)|(near initialization)" } */
   }
 };

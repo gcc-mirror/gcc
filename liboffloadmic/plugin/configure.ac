@@ -132,5 +132,8 @@ hardcode_into_libs=no
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 # Must be last
 AC_OUTPUT

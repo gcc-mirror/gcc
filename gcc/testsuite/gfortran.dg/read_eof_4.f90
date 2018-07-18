@@ -15,16 +15,16 @@
       open(unit=11,form='unformatted')
 
       read(11, ERR=100) i1, i2, i3
-      call abort()
+      STOP 1
   100 continue
-      if (i1 /= 1 .or. i2 /= 2) call abort
+      if (i1 /= 1 .or. i2 /= 2) STOP 1
 
       read(11, ERR=110) i1, i2, i3
-      call abort()
+      STOP 2
   110 continue
-      if (i1 /= 3 .or. i2 /= 4) call abort
+      if (i1 /= 3 .or. i2 /= 4) STOP 2
 
       read(11, end=120) i3
-      call abort()
+      STOP 3
  120  close(11,status='delete')
       end

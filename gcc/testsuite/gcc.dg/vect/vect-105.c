@@ -16,8 +16,6 @@ static int a[N][N] = {{1,2,3,11},{4,5,6,12},{7,8,9,13},{34,45,67,83}};
 static int b[N][N] = {{17,28,15,23},{0,2,3,24},{4,31,82,25},{29,31,432,256}};
 static int c[N][N] = {{1,2,3,11},{4,9,13,34},{45,67,83,13},{34,45,67,83}};
 
-volatile int y;
-
 __attribute__ ((noinline))
 int main1 (int x) {
   int i,j;
@@ -30,10 +28,7 @@ int main1 (int x) {
      {
        p->a[i][j] = a[i][j];
        p->b[i][j] = b[i][j];
-       /* Because Y is volatile, the compiler cannot move this check out
-	  of the loop.  */
-       if (y)
-	 abort (); /* to avoid vectorization  */
+       asm volatile ("" ::: "memory");
      }
    }
 

@@ -16,7 +16,7 @@ program main
                        if (b(i1,i2,i3,i4,i5,i6,i7) /= &
                             2*((i1-1)+(i2-1)*2+(i3-1)*4+(i4-1)*8+&
                             (i5-1)*16+(i6-1)*32+(i7-1)*64)+1) &
-                            call abort
+                            STOP 1
               end do
             end do
           end do

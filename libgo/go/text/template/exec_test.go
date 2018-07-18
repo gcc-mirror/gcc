@@ -44,6 +44,12 @@ type T struct {
 	MSIEmpty map[string]int
 	MXI      map[interface{}]int
 	MII      map[int]int
+	MI32S    map[int32]string
+	MI64S    map[int64]string
+	MUI32S   map[uint32]string
+	MUI64S   map[uint64]string
+	MI8S     map[int8]string
+	MUI8S    map[uint8]string
 	SMSI     []map[string]int
 	// Empty interfaces; used to see if we can dig inside one.
 	Empty0 interface{} // nil
@@ -124,6 +130,12 @@ var tVal = &T{
 	MSIone: map[string]int{"one": 1},
 	MXI:    map[interface{}]int{"one": 1},
 	MII:    map[int]int{1: 1},
+	MI32S:  map[int32]string{1: "one", 2: "two"},
+	MI64S:  map[int64]string{2: "i642", 3: "i643"},
+	MUI32S: map[uint32]string{2: "u322", 3: "u323"},
+	MUI64S: map[uint64]string{2: "ui642", 3: "ui643"},
+	MI8S:   map[int8]string{2: "i82", 3: "i83"},
+	MUI8S:  map[uint8]string{2: "u82", 3: "u83"},
 	SMSI: []map[string]int{
 		{"one": 1, "two": 2},
 		{"eleven": 11, "twelve": 12},
@@ -146,6 +158,8 @@ var tVal = &T{
 	ErrFunc:              func() (string, error) { return "bla", nil },
 	Tmpl:                 Must(New("x").Parse("test template")), // "x" is the value of .X
 }
+
+var tSliceOfNil = []*T{nil}
 
 // A non-empty interface.
 type I interface {
@@ -337,6 +351,7 @@ var execTests = []execTest{
 		"true", tVal, true},
 	{".NilOKFunc not nil", "{{call .NilOKFunc .PI}}", "false", tVal, true},
 	{".NilOKFunc nil", "{{call .NilOKFunc nil}}", "true", tVal, true},
+	{"method on nil value from slice", "-{{range .}}{{.Method1 1234}}{{end}}-", "-1234-", tSliceOfNil, true},
 
 	// Function call builtin.
 	{".BinaryFunc", "{{call .BinaryFunc `1` `2`}}", "[1=2]", tVal, true},
@@ -445,6 +460,11 @@ var execTests = []execTest{
 	{"map[WRONG]", "{{index .MSI 10}}", "", tVal, false},
 	{"double index", "{{index .SMSI 1 `eleven`}}", "11", tVal, true},
 	{"nil[1]", "{{index nil 1}}", "", tVal, false},
+	{"map MI64S", "{{index .MI64S 2}}", "i642", tVal, true},
+	{"map MI32S", "{{index .MI32S 2}}", "two", tVal, true},
+	{"map MUI64S", "{{index .MUI64S 3}}", "ui643", tVal, true},
+	{"map MI8S", "{{index .MI8S 3}}", "i83", tVal, true},
+	{"map MUI8S", "{{index .MUI8S 2}}", "u82", tVal, true},
 
 	// Len.
 	{"slice", "{{len .SI}}", "3", tVal, true},
@@ -932,7 +952,7 @@ func TestMessageForExecuteEmpty(t *testing.T) {
 		t.Fatal("expected second error")
 	}
 	got = err.Error()
-	want = `template: empty: "empty" is an incomplete or empty template; defined templates are: "secondary"`
+	want = `template: empty: "empty" is an incomplete or empty template`
 	if got != want {
 		t.Errorf("expected error %s got %s", want, got)
 	}
@@ -1142,6 +1162,12 @@ func TestMissingMapKey(t *testing.T) {
 	if err == nil {
 		t.Errorf("expected error; got none")
 	}
+	// same Option, but now a nil interface: ask for an error
+	err = tmpl.Execute(&b, nil)
+	t.Log(err)
+	if err == nil {
+		t.Errorf("expected error for nil-interface; got none")
+	}
 }
 
 // Test that the error message for multiline unterminated string
@@ -1152,7 +1178,7 @@ func TestUnterminatedStringError(t *testing.T) {
 		t.Fatal("expected error")
 	}
 	str := err.Error()
-	if !strings.Contains(str, "X:3: unexpected unterminated raw quoted strin") {
+	if !strings.Contains(str, "X:3: unexpected unterminated raw quoted string") {
 		t.Fatalf("unexpected error: %s", str)
 	}
 }
@@ -1308,5 +1334,101 @@ func TestMaxExecDepth(t *testing.T) {
 	const want = "exceeded maximum template depth"
 	if !strings.Contains(got, want) {
 		t.Errorf("got error %q; want %q", got, want)
+	}
+}
+
+func TestAddrOfIndex(t *testing.T) {
+	// golang.org/issue/14916.
+	// Before index worked on reflect.Values, the .String could not be
+	// found on the (incorrectly unaddressable) V value,
+	// in contrast to range, which worked fine.
+	// Also testing that passing a reflect.Value to tmpl.Execute works.
+	texts := []string{
+		`{{range .}}{{.String}}{{end}}`,
+		`{{with index . 0}}{{.String}}{{end}}`,
+	}
+	for _, text := range texts {
+		tmpl := Must(New("tmpl").Parse(text))
+		var buf bytes.Buffer
+		err := tmpl.Execute(&buf, reflect.ValueOf([]V{{1}}))
+		if err != nil {
+			t.Fatalf("%s: Execute: %v", text, err)
+		}
+		if buf.String() != "<1>" {
+			t.Fatalf("%s: template output = %q, want %q", text, &buf, "<1>")
+		}
+	}
+}
+
+func TestInterfaceValues(t *testing.T) {
+	// golang.org/issue/17714.
+	// Before index worked on reflect.Values, interface values
+	// were always implicitly promoted to the underlying value,
+	// except that nil interfaces were promoted to the zero reflect.Value.
+	// Eliminating a round trip to interface{} and back to reflect.Value
+	// eliminated this promotion, breaking these cases.
+	tests := []struct {
+		text string
+		out  string
+	}{
+		{`{{index .Nil 1}}`, "ERROR: index of untyped nil"},
+		{`{{index .Slice 2}}`, "2"},
+		{`{{index .Slice .Two}}`, "2"},
+		{`{{call .Nil 1}}`, "ERROR: call of nil"},
+		{`{{call .PlusOne 1}}`, "2"},
+		{`{{call .PlusOne .One}}`, "2"},
+		{`{{and (index .Slice 0) true}}`, "0"},
+		{`{{and .Zero true}}`, "0"},
+		{`{{and (index .Slice 1) false}}`, "false"},
+		{`{{and .One false}}`, "false"},
+		{`{{or (index .Slice 0) false}}`, "false"},
+		{`{{or .Zero false}}`, "false"},
+		{`{{or (index .Slice 1) true}}`, "1"},
+		{`{{or .One true}}`, "1"},
+		{`{{not (index .Slice 0)}}`, "true"},
+		{`{{not .Zero}}`, "true"},
+		{`{{not (index .Slice 1)}}`, "false"},
+		{`{{not .One}}`, "false"},
+		{`{{eq (index .Slice 0) .Zero}}`, "true"},
+		{`{{eq (index .Slice 1) .One}}`, "true"},
+		{`{{ne (index .Slice 0) .Zero}}`, "false"},
+		{`{{ne (index .Slice 1) .One}}`, "false"},
+		{`{{ge (index .Slice 0) .One}}`, "false"},
+		{`{{ge (index .Slice 1) .Zero}}`, "true"},
+		{`{{gt (index .Slice 0) .One}}`, "false"},
+		{`{{gt (index .Slice 1) .Zero}}`, "true"},
+		{`{{le (index .Slice 0) .One}}`, "true"},
+		{`{{le (index .Slice 1) .Zero}}`, "false"},
+		{`{{lt (index .Slice 0) .One}}`, "true"},
+		{`{{lt (index .Slice 1) .Zero}}`, "false"},
+	}
+
+	for _, tt := range tests {
+		tmpl := Must(New("tmpl").Parse(tt.text))
+		var buf bytes.Buffer
+		err := tmpl.Execute(&buf, map[string]interface{}{
+			"PlusOne": func(n int) int {
+				return n + 1
+			},
+			"Slice": []int{0, 1, 2, 3},
+			"One":   1,
+			"Two":   2,
+			"Nil":   nil,
+			"Zero":  0,
+		})
+		if strings.HasPrefix(tt.out, "ERROR:") {
+			e := strings.TrimSpace(strings.TrimPrefix(tt.out, "ERROR:"))
+			if err == nil || !strings.Contains(err.Error(), e) {
+				t.Errorf("%s: Execute: %v, want error %q", tt.text, err, e)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("%s: Execute: %v", tt.text, err)
+			continue
+		}
+		if buf.String() != tt.out {
+			t.Errorf("%s: template output = %q, want %q", tt.text, &buf, tt.out)
+		}
 	}
 }

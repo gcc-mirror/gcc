@@ -10,11 +10,11 @@
 extern "C" void FormatDisk();
   template <class T>
   struct C {
-    C(){ FormatDisk(), 0; }  // { dg-warning "right operand of comma" "" }
+    C(){ FormatDisk(), 0; }  // { dg-warning "right operand of comma" }
   };
   template struct C<int>; // { dg-message "required" }
   template <class T>
-  void f() { FormatDisk(), 0; } // { dg-warning "right operand of comma" "" }
+  void f() { FormatDisk(), 0; } // { dg-warning "right operand of comma" }
   template void f<int> (); // { dg-message "required" }
-void g() { FormatDisk(), 0; } // { dg-warning "right operand of comma" "" }
+void g() { FormatDisk(), 0; } // { dg-warning "right operand of comma" }
 

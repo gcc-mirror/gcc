@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:generate go run genzfunc.go
+
 // Package sort provides primitives for sorting slices and user-defined
 // collections.
 package sort
@@ -92,7 +94,7 @@ func swapRange(data Interface, a, b, n int) {
 }
 
 func doPivot(data Interface, lo, hi int) (midlo, midhi int) {
-	m := lo + (hi-lo)/2 // Written like this to avoid integer overflow.
+	m := int(uint(lo+hi) >> 1) // Written like this to avoid integer overflow.
 	if hi-lo > 40 {
 		// Tukey's ``Ninther,'' median of three medians of three.
 		s := (hi - lo) / 8
@@ -212,14 +214,26 @@ func quickSort(data Interface, a, b, maxDepth int) {
 // It makes one call to data.Len to determine n, and O(n*log(n)) calls to
 // data.Less and data.Swap. The sort is not guaranteed to be stable.
 func Sort(data Interface) {
-	// Switch to heapsort if depth of 2*ceil(lg(n+1)) is reached.
 	n := data.Len()
-	maxDepth := 0
+	quickSort(data, 0, n, maxDepth(n))
+}
+
+// maxDepth returns a threshold at which quicksort should switch
+// to heapsort. It returns 2*ceil(lg(n+1)).
+func maxDepth(n int) int {
+	var depth int
 	for i := n; i > 0; i >>= 1 {
-		maxDepth++
+		depth++
 	}
-	maxDepth *= 2
-	quickSort(data, 0, n, maxDepth)
+	return depth * 2
+}
+
+// lessSwap is a pair of Less and Swap function for use with the
+// auto-generated func-optimized variant of sort.go in
+// zfuncversion.go.
+type lessSwap struct {
+	Less func(i, j int) bool
+	Swap func(i, j int)
 }
 
 type reverse struct {
@@ -261,7 +275,8 @@ func (p IntSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 // Sort is a convenience method.
 func (p IntSlice) Sort() { Sort(p) }
 
-// Float64Slice attaches the methods of Interface to []float64, sorting in increasing order.
+// Float64Slice attaches the methods of Interface to []float64, sorting in increasing order
+// (not-a-number values are treated as less than other values).
 type Float64Slice []float64
 
 func (p Float64Slice) Len() int           { return len(p) }
@@ -291,7 +306,8 @@ func (p StringSlice) Sort() { Sort(p) }
 // Ints sorts a slice of ints in increasing order.
 func Ints(a []int) { Sort(IntSlice(a)) }
 
-// Float64s sorts a slice of float64s in increasing order.
+// Float64s sorts a slice of float64s in increasing order
+// (not-a-number values are treated as less than other values).
 func Float64s(a []float64) { Sort(Float64Slice(a)) }
 
 // Strings sorts a slice of strings in increasing order.
@@ -300,7 +316,8 @@ func Strings(a []string) { Sort(StringSlice(a)) }
 // IntsAreSorted tests whether a slice of ints is sorted in increasing order.
 func IntsAreSorted(a []int) bool { return IsSorted(IntSlice(a)) }
 
-// Float64sAreSorted tests whether a slice of float64s is sorted in increasing order.
+// Float64sAreSorted tests whether a slice of float64s is sorted in increasing order
+// (not-a-number values are treated as less than other values).
 func Float64sAreSorted(a []float64) bool { return IsSorted(Float64Slice(a)) }
 
 // StringsAreSorted tests whether a slice of strings is sorted in increasing order.
@@ -337,7 +354,10 @@ func StringsAreSorted(a []string) bool { return IsSorted(StringSlice(a)) }
 // It makes one call to data.Len to determine n, O(n*log(n)) calls to
 // data.Less and O(n*log(n)*log(n)) calls to data.Swap.
 func Stable(data Interface) {
-	n := data.Len()
+	stable(data, data.Len())
+}
+
+func stable(data Interface, n int) {
 	blockSize := 20 // must be > 0
 	a, b := 0, blockSize
 	for b <= n {
@@ -391,7 +411,7 @@ func symMerge(data Interface, a, m, b int) {
 		i := m
 		j := b
 		for i < j {
-			h := i + (j-i)/2
+			h := int(uint(i+j) >> 1)
 			if data.Less(h, a) {
 				i = h + 1
 			} else {
@@ -415,7 +435,7 @@ func symMerge(data Interface, a, m, b int) {
 		i := a
 		j := m
 		for i < j {
-			h := i + (j-i)/2
+			h := int(uint(i+j) >> 1)
 			if !data.Less(m, h) {
 				i = h + 1
 			} else {
@@ -429,7 +449,7 @@ func symMerge(data Interface, a, m, b int) {
 		return
 	}
 
-	mid := a + (b-a)/2
+	mid := int(uint(a+b) >> 1)
 	n := mid + m
 	var start, r int
 	if m > mid {
@@ -442,7 +462,7 @@ func symMerge(data Interface, a, m, b int) {
 	p := n - 1
 
 	for start < r {
-		c := start + (r-start)/2
+		c := int(uint(start+r) >> 1)
 		if !data.Less(p-c, c) {
 			start = c + 1
 		} else {

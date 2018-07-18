@@ -2630,6 +2630,10 @@ particular release.
       <classname>u32streampos</classname> are both synonyms for
       <classname>fpos&lt;mbstate_t&gt;</classname>.
       The function <function>eof</function> returns <code>int_type(-1)</code>.
+      <function>char_traits&lt;char16_t&gt;::to_int_type</function> will
+      transform the "noncharacter" U+FFFF to U+FFFD (REPLACEMENT CHARACTER).
+      This is done to ensure that <function>to_int_type</function> never
+      returns the same value as <function>eof</function>, which is U+FFFF.
    </para>
 
    <para>

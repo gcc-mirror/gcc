@@ -25,8 +25,8 @@
                                             SUM( rmatrix_sum_d1 ) == rmatrix_sum])
   LOGICAL, PARAMETER :: r_empty_sum = SUM(rmatrix, mask=.FALSE.) == 0.0
 
-  IF (.NOT. ALL ([i_equal_sum, i_empty_sum])) CALL abort()
-  IF (.NOT. ALL ([r_equal_sum, r_empty_sum])) CALL abort()
+  IF (.NOT. ALL ([i_equal_sum, i_empty_sum])) STOP 1
+  IF (.NOT. ALL ([r_equal_sum, r_empty_sum])) STOP 2
 
   CALL ilib (imatrix, imatrix_sum)
   CALL ilib_with_dim (imatrix, 1, imatrix_sum_d1)
@@ -39,27 +39,27 @@ CONTAINS
   SUBROUTINE ilib (array, result)
     INTEGER, DIMENSION(:,:), INTENT(in) :: array
     INTEGER, INTENT(in) :: result
-    IF (SUM(array) /= result) CALL abort()
+    IF (SUM(array) /= result) STOP 3
   END SUBROUTINE
 
   SUBROUTINE ilib_with_dim (array, dim, result)
     INTEGER, DIMENSION(:,:), INTENT(in) :: array
     INTEGER, INTENT(iN)                 :: dim
     INTEGER, DIMENSION(:), INTENT(in)   :: result
-    IF (ANY (SUM (array, dim=dim) /= result)) CALL abort()
+    IF (ANY (SUM (array, dim=dim) /= result)) STOP 4
   END SUBROUTINE
 
   SUBROUTINE rlib (array, result)
     REAL, DIMENSION(:,:), INTENT(in) :: array
     REAL, INTENT(in) :: result
-    IF (ABS(SUM(array) - result) > 4e-6) CALL abort()
+    IF (ABS(SUM(array) - result) > 4e-6) STOP 5
   END SUBROUTINE
 
   SUBROUTINE rlib_with_dim (array, dim, result)
     REAL, DIMENSION(:,:), INTENT(in) :: array
     INTEGER, INTENT(iN)              :: dim
     REAL, DIMENSION(:), INTENT(in)   :: result
-    IF (ANY (ABS(SUM (array, dim=dim) - result) > 4e-6)) CALL abort()
+    IF (ANY (ABS(SUM (array, dim=dim) - result) > 4e-6)) STOP 6
   END SUBROUTINE
 END
 

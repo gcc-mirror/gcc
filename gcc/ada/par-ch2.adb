@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -224,26 +224,6 @@ package body Ch2 is
    --  in fact the bodies ARE present, supplied by these pragmas.
 
    function P_Pragma (Skipping : Boolean := False) return Node_Id is
-      Interface_Check_Required : Boolean := False;
-      --  Set True if check of pragma INTERFACE is required
-
-      Import_Check_Required : Boolean := False;
-      --  Set True if check of pragma IMPORT is required
-
-      Arg_Count : Nat := 0;
-      --  Number of argument associations processed
-
-      Identifier_Seen : Boolean := False;
-      --  Set True if an identifier is encountered for a pragma argument. Used
-      --  to check that there are no more arguments without identifiers.
-
-      Prag_Node     : Node_Id;
-      Prag_Name     : Name_Id;
-      Semicolon_Loc : Source_Ptr;
-      Ident_Node    : Node_Id;
-      Assoc_Node    : Node_Id;
-      Result        : Node_Id;
-
       procedure Skip_Pragma_Semicolon;
       --  Skip past semicolon at end of pragma
 
@@ -265,9 +245,32 @@ package body Ch2 is
          end if;
       end Skip_Pragma_Semicolon;
 
+      --  Local variables
+
+      Interface_Check_Required : Boolean := False;
+      --  Set True if check of pragma INTERFACE is required
+
+      Import_Check_Required : Boolean := False;
+      --  Set True if check of pragma IMPORT is required
+
+      Arg_Count : Nat := 0;
+      --  Number of argument associations processed
+
+      Identifier_Seen : Boolean := False;
+      --  Set True if an identifier is encountered for a pragma argument. Used
+      --  to check that there are no more arguments without identifiers.
+
+      Assoc_Node    : Node_Id;
+      Ident_Node    : Node_Id;
+      Prag_Name     : Name_Id;
+      Prag_Node     : Node_Id;
+      Result        : Node_Id;
+      Semicolon_Loc : Source_Ptr;
+
    --  Start of processing for P_Pragma
 
    begin
+      Inside_Pragma := True;
       Prag_Node := New_Node (N_Pragma, Token_Ptr);
       Scan; -- past PRAGMA
       Prag_Name := Token_Name;
@@ -279,12 +282,10 @@ package body Ch2 is
       --  Ada 2005 (AI-284): INTERFACE is a new reserved word but it is
       --  allowed as a pragma name.
 
-      if Ada_Version >= Ada_2005
-        and then Token = Tok_Interface
-      then
-         Prag_Name  := Name_Interface;
-         Ident_Node := Make_Identifier (Token_Ptr, Name_Interface);
-         Scan; -- past INTERFACE
+      if Is_Reserved_Keyword (Token) then
+         Prag_Name  := Keyword_Name (Token);
+         Ident_Node := Make_Identifier (Token_Ptr, Prag_Name);
+         Scan; -- past the keyword
       else
          Ident_Node := P_Identifier;
       end if;
@@ -303,7 +304,9 @@ package body Ch2 is
 
       --  Set global to indicate if we are within a Depends pragma
 
-      if Chars (Ident_Node) = Name_Depends then
+      if Chars (Ident_Node) = Name_Depends
+        or else Chars (Ident_Node) = Name_Refined_Depends
+      then
          Inside_Depends := True;
       end if;
 
@@ -364,10 +367,11 @@ package body Ch2 is
 
       Semicolon_Loc := Token_Ptr;
 
-      --  Cancel indication of being within Depends pragm. Can be done
-      --  unconditionally, since quicker than doing a test.
+      --  Cancel indication of being within a pragma or in particular a Depends
+      --  pragma.
 
       Inside_Depends := False;
+      Inside_Pragma  := False;
 
       --  Now we have two tasks left, we need to scan out the semicolon
       --  following the pragma, and we have to call Par.Prag to process
@@ -394,8 +398,9 @@ package body Ch2 is
    exception
       when Error_Resync =>
          Resync_Past_Semicolon;
+         Inside_Depends := False;
+         Inside_Pragma  := False;
          return Error;
-
    end P_Pragma;
 
    --  This routine is called if a pragma is encountered in an inappropriate
@@ -438,16 +443,16 @@ package body Ch2 is
    --  Error recovery: Cannot raise Error_Resync
 
    procedure P_Pragmas_Opt (List : List_Id) is
-      P     : Node_Id;
+      P : Node_Id;
 
    begin
       while Token = Tok_Pragma loop
          P := P_Pragma;
 
          if Nkind (P) /= N_Error
-           and then Nam_In (Pragma_Name (P), Name_Assert, Name_Debug)
+           and then Nam_In (Pragma_Name_Unmapped (P), Name_Assert, Name_Debug)
          then
-            Error_Msg_Name_1 := Pragma_Name (P);
+            Error_Msg_Name_1 := Pragma_Name_Unmapped (P);
             Error_Msg_N
               ("pragma% must be in declaration/statement context", P);
          else
@@ -490,8 +495,8 @@ package body Ch2 is
       Reserved_Words_OK : Boolean := False)
    is
       function P_Expression_Or_Reserved_Word return Node_Id;
-      --  Parse an expression or, if the token denotes one of the following
-      --  reserved words, construct an identifier with proper Chars field.
+      --  Parse an expression or, if the token is one of the following reserved
+      --  words, construct an identifier with proper Chars field.
       --    Access
       --    Delta
       --    Digits

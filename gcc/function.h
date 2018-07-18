@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,6 +34,8 @@ struct GTY(()) sequence_stack {
 };
 
 struct GTY(()) emit_status {
+  void ensure_regno_capacity ();
+
   /* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
      After rtl generation, it is 1 plus the largest register number used.  */
   int x_reg_rtx_no;
@@ -92,7 +94,7 @@ extern GTY ((length ("crtl->emit.x_reg_rtx_no"))) rtx * regno_reg_rtx;
 struct GTY(()) expr_status {
   /* Number of units that we should eventually pop off the stack.
      These are the arguments to function calls that have already returned.  */
-  int x_pending_stack_adjust;
+  poly_int64_pod x_pending_stack_adjust;
 
   /* Under some ABIs, it is the caller's responsibility to pop arguments
      pushed for function calls.  A naive implementation would simply pop
@@ -115,7 +117,7 @@ struct GTY(()) expr_status {
      boundary can be momentarily unaligned while pushing the arguments.
      Record the delta since last aligned boundary here in order to get
      stack alignment in the nested function calls working right.  */
-  int x_stack_pointer_delta;
+  poly_int64_pod x_stack_pointer_delta;
 
   /* Nonzero means __builtin_saveregs has already been done in this function.
      The value is the pseudoreg containing the value __builtin_saveregs
@@ -185,8 +187,8 @@ struct GTY(()) frame_space
 {
   struct frame_space *next;
 
-  HOST_WIDE_INT start;
-  HOST_WIDE_INT length;
+  poly_int64 start;
+  poly_int64 length;
 };
 
 struct GTY(()) stack_usage
@@ -198,9 +200,10 @@ struct GTY(()) stack_usage
      meaningful only if has_unbounded_dynamic_stack_size is zero.  */
   HOST_WIDE_INT dynamic_stack_size;
 
-  /* # of bytes of space pushed onto the stack after the prologue.  If
-     !ACCUMULATE_OUTGOING_ARGS, it contains the outgoing arguments.  */
-  int pushed_stack_size;
+  /* Upper bound on the number of bytes pushed onto the stack after the
+     prologue.  If !ACCUMULATE_OUTGOING_ARGS, it contains the outgoing
+     arguments.  */
+  poly_int64 pushed_stack_size;
 
   /* Nonzero if the amount of stack space allocated dynamically cannot
      be bounded at compile-time.  */
@@ -234,6 +237,9 @@ struct GTY(()) function {
   /* The loops in this function.  */
   struct loops *x_current_loops;
 
+  /* Filled by the GIMPLE and RTL FEs, pass to start compilation with.  */
+  char *pass_startwith;
+
   /* The stack usage of this function.  */
   struct stack_usage *su;
 
@@ -257,9 +263,6 @@ struct GTY(()) function {
   /* Vector of function local variables, functions, types and constants.  */
   vec<tree, va_gc> *local_decls;
 
-  /* In a Cilk function, the VAR_DECL for the frame descriptor. */
-  tree cilk_frame_decl;
-
   /* For md files.  */
 
   /* tm.h can use this to store whatever it likes.  */
@@ -278,6 +281,12 @@ struct GTY(()) function {
 
   /* Last statement uid.  */
   int last_stmt_uid;
+
+  /* Debug marker counter.  Count begin stmt markers.  We don't have
+     to keep it exact, it's more of a rough estimate to enable us to
+     decide whether they are too many to copy during inlining, or when
+     expanding to RTL.  */
+  int debug_marker_count;
 
   /* Function sequence number for profiling, debugging, etc.  */
   int funcdef_no;
@@ -318,12 +327,6 @@ struct GTY(()) function {
      either as a subroutine or builtin.  */
   unsigned int calls_alloca : 1;
 
-  /* This will indicate whether a function is a cilk function */
-  unsigned int is_cilk_function : 1;
-
-  /* Nonzero if this is a Cilk function that spawns. */
-  unsigned int calls_cilk_spawn : 1;
-  
   /* Nonzero if function being compiled receives nonlocal gotos
      from nested functions.  */
   unsigned int has_nonlocal_label : 1;
@@ -380,8 +383,15 @@ struct GTY(()) function {
      nonzero value in loop->simduid.  */
   unsigned int has_simduid_loops : 1;
 
-  /* Set when the tail call has been identified.  */
+  /* Nonzero when the tail call has been identified.  */
   unsigned int tail_call_marked : 1;
+
+  /* Nonzero if the current function contains a #pragma GCC unroll.  */
+  unsigned int has_unroll : 1;
+
+  /* Set when the function was compiled with generation of debug
+     (begin stmt, inline entry, ...) markers enabled.  */
+  unsigned int debug_nonbind_markers : 1;
 };
 
 /* Add the decl D to the local_decls list of FUN.  */
@@ -464,8 +474,6 @@ set_loops_for_fn (struct function *fn, struct loops *loops)
    data structures.  */
 extern struct machine_function * (*init_machine_status) (void);
 
-enum direction {none, upward, downward};
-
 /* Structure to record the size of a sequence of arguments
    as the sum of a tree-expression and a constant.  This structure is
    also used to store offsets from the stack, which might be negative,
@@ -473,7 +481,7 @@ enum direction {none, upward, downward};
 
 struct args_size
 {
-  HOST_WIDE_INT constant;
+  poly_int64_pod constant;
   tree var;
 };
 
@@ -494,7 +502,7 @@ struct locate_and_pad_arg_data
      force alignment for the next argument.  */
   struct args_size alignment_pad;
   /* Which way we should pad this arg.  */
-  enum direction where_pad;
+  pad_direction where_pad;
   /* slot_offset is at least this aligned.  */
   unsigned int boundary;
 };
@@ -535,7 +543,7 @@ do {								\
 
 /* Convert the implicit sum in a `struct args_size' into an rtx.  */
 #define ARGS_SIZE_RTX(SIZE)					\
-((SIZE).var == 0 ? GEN_INT ((SIZE).constant)			\
+((SIZE).var == 0 ? gen_int_mode ((SIZE).constant, Pmode)	\
  : expand_normal (ARGS_SIZE_TREE (SIZE)))
 
 #define ASLK_REDUCE_ALIGN 1
@@ -548,6 +556,14 @@ do {								\
   ((TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn)	     \
    ? MAX (FUNCTION_BOUNDARY, 2 * BITS_PER_UNIT) : FUNCTION_BOUNDARY)
 
+enum stack_clash_probes {
+  NO_PROBE_NO_FRAME,
+  NO_PROBE_SMALL_FRAME,
+  PROBE_INLINE,
+  PROBE_LOOP
+};
+
+extern void dump_stack_clash_frame_info (enum stack_clash_probes, bool);
 
 
 extern void push_function_context (void);
@@ -560,17 +576,19 @@ extern void free_after_compilation (struct function *);
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;
    the caller may have to do that.  */
-extern HOST_WIDE_INT get_frame_size (void);
+extern poly_int64 get_frame_size (void);
 
 /* Issue an error message and return TRUE if frame OFFSET overflows in
    the signed target pointer arithmetics for function FUNC.  Otherwise
    return FALSE.  */
-extern bool frame_offset_overflow (HOST_WIDE_INT, tree);
+extern bool frame_offset_overflow (poly_int64, tree);
 
-extern rtx assign_stack_local_1 (machine_mode, HOST_WIDE_INT, int, int);
-extern rtx assign_stack_local (machine_mode, HOST_WIDE_INT, int);
-extern rtx assign_stack_temp_for_type (machine_mode, HOST_WIDE_INT, tree);
-extern rtx assign_stack_temp (machine_mode, HOST_WIDE_INT);
+extern unsigned int spill_slot_alignment (machine_mode);
+
+extern rtx assign_stack_local_1 (machine_mode, poly_int64, int, int);
+extern rtx assign_stack_local (machine_mode, poly_int64, int);
+extern rtx assign_stack_temp_for_type (machine_mode, poly_int64, tree);
+extern rtx assign_stack_temp (machine_mode, poly_int64);
 extern rtx assign_temp (tree, int, int);
 extern void update_temp_slot_address (rtx, rtx);
 extern void preserve_temp_slots (rtx);
@@ -589,7 +607,7 @@ extern bool initial_value_entry (int i, rtx *, rtx *);
 extern void instantiate_decl_rtl (rtx x);
 extern int aggregate_value_p (const_tree, const_tree);
 extern bool use_register_for_decl (const_tree);
-extern gimple_seq gimplify_parameters (void);
+extern gimple_seq gimplify_parameters (gimple_seq *);
 extern void locate_and_pad_parm (machine_mode, tree, int, int, int,
 				 tree, struct args_size *,
 				 struct locate_and_pad_arg_data *);
@@ -606,7 +624,7 @@ extern tree block_chainon (tree, tree);
 extern void number_blocks (tree);
 
 /* cfun shouldn't be set directly; use one of these functions instead.  */
-extern void set_cfun (struct function *new_cfun);
+extern void set_cfun (struct function *new_cfun, bool force = false);
 extern void push_cfun (struct function *new_cfun);
 extern void pop_cfun (void);
 
@@ -628,7 +646,11 @@ extern void clobber_return_register (void);
 extern void expand_function_end (void);
 extern rtx get_arg_pointer_save_area (void);
 extern void maybe_copy_prologue_epilogue_insn (rtx, rtx);
-extern int prologue_epilogue_contains (const_rtx);
+extern int prologue_contains (const rtx_insn *);
+extern int epilogue_contains (const rtx_insn *);
+extern int prologue_epilogue_contains (const rtx_insn *);
+extern void record_prologue_seq (rtx_insn *);
+extern void record_epilogue_seq (rtx_insn *);
 extern void emit_return_into_block (bool simple_p, basic_block bb);
 extern void set_return_jump_label (rtx_insn *);
 extern bool active_insn_between (rtx_insn *head, rtx_insn *tail);

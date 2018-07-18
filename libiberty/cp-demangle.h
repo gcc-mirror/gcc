@@ -1,6 +1,5 @@
 /* Internal demangler interface for g++ V3 ABI.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
    This file is part of the libiberty library, which is part of GCC.
@@ -112,10 +111,6 @@ struct d_info
   int next_sub;
   /* The number of available entries in the subs array.  */
   int num_subs;
-  /* The number of substitutions which we actually made from the subs
-     array, plus the number of template parameter references we
-     saw.  */
-  int did_subs;
   /* The last name we saw, for constructors and destructors.  */
   struct demangle_component *last_name;
   /* A running total of the length of large expansions from the

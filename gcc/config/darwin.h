@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -42,9 +42,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define DARWIN_X86 0
 #define DARWIN_PPC 0
-
-/* Don't assume anything about the header files.  */
-#define NO_IMPLICIT_EXTERN_C
 
 /* Suppress g++ attempt to link in the math library automatically. */
 #define MATH_LIBRARY ""
@@ -165,6 +162,12 @@ extern GTY(()) int darwin_ms_struct;
    specifying the handling of options understood by generic Unix
    linkers, and for positional arguments like libraries.  */
 
+#if LD64_HAS_EXPORT_DYNAMIC
+#define DARWIN_EXPORT_DYNAMIC " %{rdynamic:-export_dynamic}"
+#else
+#define DARWIN_EXPORT_DYNAMIC " %{rdynamic: %nrdynamic is not supported}"
+#endif
+
 #define LINK_COMMAND_SPEC_A \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %(linker)" \
@@ -179,13 +182,14 @@ extern GTY(()) int darwin_ms_struct;
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
     %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1): \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
-    %{fcilkplus:%:include(libcilkrts.spec)%(link_cilkrts)}\
     %{fgnu-tm: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libitm.a%s; : -litm } } \
     %{!nostdlib:%{!nodefaultlibs:\
       %{%:sanitize(address): -lasan } \
       %{%:sanitize(undefined): -lubsan } \
-      %(link_ssp) %(link_gcc_c_sequence)\
+      %(link_ssp) \
+      " DARWIN_EXPORT_DYNAMIC " %<rdynamic \
+      %(link_gcc_c_sequence) \
     }}\
     %{!nostdlib:%{!nostartfiles:%E}} %{T*} %{F*} }}}}}}}"
 
@@ -194,9 +198,9 @@ extern GTY(()) int darwin_ms_struct;
 #define DSYMUTIL_SPEC \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{v} \
-    %{gdwarf-2:%{!gstabs*:%{!g0: -idsym}}}\
+    %{gdwarf-2:%{!gstabs*:%{%:debug-level-gt(0): -idsym}}}\
     %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm: \
-    %{gdwarf-2:%{!gstabs*:%{!g0: -dsym}}}}}}}}}}}"
+    %{gdwarf-2:%{!gstabs*:%{%:debug-level-gt(0): -dsym}}}}}}}}}}}"
 
 #define LINK_COMMAND_SPEC LINK_COMMAND_SPEC_A DSYMUTIL_SPEC
 
@@ -391,15 +395,32 @@ extern GTY(()) int darwin_ms_struct;
    %:version-compare(>< 10.6 10.8 mmacosx-version-min= -lcrt1.10.6.o)	\
    %{fgnu-tm: -lcrttms.o}"
 
-/* Default Darwin ASM_SPEC, very simple.  */
+#ifdef HAVE_AS_MMACOSX_VERSION_MIN_OPTION
+/* Emit macosx version (but only major).  */
+#define ASM_MMACOSX_VERSION_MIN_SPEC \
+  " %{asm_macosx_version_min=*: -mmacosx-version-min=%*} %<asm_macosx_version_min=*"
+#else
+#define ASM_MMACOSX_VERSION_MIN_SPEC " %<asm_macosx_version_min=*"
+#endif
+
+/* When we detect that we're cctools or llvm as, we need to insert the right
+   additional options.  */
+#if HAVE_GNU_AS
+#define ASM_OPTIONS ""
+#else
+#define ASM_OPTIONS "%{v} %{w:-W} %{I*}"
+#endif
+
+/* Default Darwin ASM_SPEC, very simple. */
 #define ASM_SPEC "-arch %(darwin_arch) \
+  " ASM_OPTIONS " \
   %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
-  %{static}"
+  %{static}" ASM_MMACOSX_VERSION_MIN_SPEC
 
 /* Default ASM_DEBUG_SPEC.  Darwin's as cannot currently produce dwarf
    debugging data.  */
 
-#define ASM_DEBUG_SPEC  "%{g*:%{!g0:%{!gdwarf*:--gstabs}}}"
+#define ASM_DEBUG_SPEC  "%{g*:%{%:debug-level-gt(0):%{!gdwarf*:--gstabs}}}"
 
 /* We still allow output of STABS if the assembler supports it.  */
 #ifdef HAVE_AS_STABS_DIRECTIVE
@@ -420,7 +441,14 @@ extern GTY(()) int darwin_ms_struct;
 #define DEBUG_PUBTYPES_SECTION	"__DWARF,__debug_pubtypes,regular,debug"
 #define DEBUG_STR_SECTION	"__DWARF,__debug_str,regular,debug"
 #define DEBUG_RANGES_SECTION	"__DWARF,__debug_ranges,regular,debug"
-#define DEBUG_MACRO_SECTION    "__DWARF,__debug_macro,regular,debug"
+#define DEBUG_MACRO_SECTION     "__DWARF,__debug_macro,regular,debug"
+
+#define DEBUG_LTO_INFO_SECTION	  "__GNU_DWARF_LTO,__debug_info,regular,debug"
+#define DEBUG_LTO_ABBREV_SECTION  "__GNU_DWARF_LTO,__debug_abbrev,regular,debug"
+#define DEBUG_LTO_MACINFO_SECTION "__GNU_DWARF_LTO,__debug_macinfo,regular,debug"
+#define DEBUG_LTO_LINE_SECTION	  "__GNU_DWARF_LTO,__debug_line,regular,debug"
+#define DEBUG_LTO_STR_SECTION	  "__GNU_DWARF_LTO,__debug_str,regular,debug"
+#define DEBUG_LTO_MACRO_SECTION   "__GNU_DWARF_LTO,__debug_macro,regular,debug"
 
 #define TARGET_WANT_DEBUG_PUB_SECTIONS true
 
@@ -709,16 +737,23 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 
 /* Extra attributes for Darwin.  */
 #define SUBTARGET_ATTRIBUTE_TABLE					     \
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,     \
-       affects_type_identity } */						     \
-  { "apple_kext_compatibility", 0, 0, false, true, false,		     \
-    darwin_handle_kext_attribute, false },				     \
-  { "weak_import", 0, 0, true, false, false,				     \
-    darwin_handle_weak_import_attribute, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,		     \
+       affects_type_identity, handler, exclude } */			     \
+  { "apple_kext_compatibility", 0, 0, false, true, false, false,	     \
+    darwin_handle_kext_attribute, NULL },				     \
+  { "weak_import", 0, 0, true, false, false, false,			     \
+    darwin_handle_weak_import_attribute, NULL }
 
+/* Make local constant labels linker-visible, so that if one follows a
+   weak_global constant, ld64 will be able to separate the atoms.  */
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM))
+  do {							\
+    if (strcmp ("LC", PREFIX) == 0)			\
+      sprintf (LABEL, "*%s%ld", "lC", (long)(NUM));	\
+    else						\
+      sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM));	\
+  } while (0)
 
 #undef TARGET_ASM_MARK_DECL_PRESERVED
 #define TARGET_ASM_MARK_DECL_PRESERVED darwin_mark_decl_preserved
@@ -924,5 +959,16 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
    10.5 is the only version that fully supports all our archs so that's the
    fall-back default.  */
 #define DEF_MIN_OSX_VERSION "10.5"
+
+/* Later versions of ld64 support coalescing weak code/data without requiring
+   that they be placed in specially identified sections.  This is the earliest
+   _tested_ version known to support this so far.  */
+#define MIN_LD64_NO_COAL_SECTS "236.4"
+
+#ifndef LD64_VERSION
+#define LD64_VERSION "85.2"
+#else
+#define DEF_LD64 LD64_VERSION
+#endif
 
 #endif /* CONFIG_DARWIN_H */

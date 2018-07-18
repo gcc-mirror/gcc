@@ -1,5 +1,7 @@
 
+#if !defined(__hppa__) || !defined(__hpux__)
 #include <complex.h>
+#endif
 
 /* Single float has 23 bits of fraction. */
 #define FRAC (1.0f / (1 << 20))
@@ -97,7 +99,7 @@ int main (void)
     {
       float frac = ix * (1.0f / 1024) + 1.0f;
       
-      ary[ix] = frac + frac * 2.0i - 1.0i;
+      ary[ix] = frac + frac * 2.0j - 1.0j;
       sum += ary[ix];
       prod *= ary[ix];
     }

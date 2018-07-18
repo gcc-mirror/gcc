@@ -4,11 +4,12 @@
 /* { dg-options "-mcpu=power8" } */
 
 #include <altivec.h>
+#include <stdbool.h>
 
-unsigned int
+bool
 test_neg (double *p)
 {
   double source = *p;
 
-  return __builtin_vec_scalar_test_neg_dp (source); /* { dg-error "Builtin function __builtin_vsx_scalar_test_neg_dp requires" } */
+  return __builtin_vec_scalar_test_neg_dp (source); /* { dg-error "builtin function '__builtin_vsx_scalar_test_neg_dp' requires" } */
 }

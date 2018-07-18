@@ -1,5 +1,7 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -floop-interchange -ffast-math -fno-ipa-cp" } */
+/* { dg-require-effective-target size32plus } */
+/* { dg-require-effective-target int32plus } */
+/* { dg-options "-O2 -floop-nest-optimize -ffast-math -fno-ipa-cp" } */
 
 #define DEBUG 0
 #if DEBUG

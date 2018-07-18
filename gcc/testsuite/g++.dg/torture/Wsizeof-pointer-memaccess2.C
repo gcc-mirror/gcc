@@ -1,9 +1,11 @@
 // Test -Wsizeof-pointer-memaccess warnings.
 // { dg-do compile }
-// { dg-options "-Wall -Wno-sizeof-array-argument" }
-// Test just twice, once with -O0 non-fortified, once with -O2 fortified.
+// { dg-options "-Wall -Wno-array-bounds -Wno-sizeof-array-argument -Wno-stringop-overflow -Wno-stringop-truncation" }
+// Test just twice, once with -O0 non-fortified, once with -O2 fortified,
+// suppressing buffer overflow warnings.
 // { dg-skip-if "" { *-*-* }  { "*" } { "-O0" "-O2" } }
 // { dg-skip-if "" { *-*-* }  { "-flto" } { "" } }
+// { dg-require-effective-target alloca }
 
 extern "C" {
 
@@ -702,12 +704,13 @@ f4 (char *x, char **y, int z, char w[64])
   strncat (w, s2, sizeof (w));		    // { dg-warning "call is the same expression as the destination; did you mean to provide an explicit length" }
   stpncpy (w, s1, sizeof (w));		    // { dg-warning "call is the same expression as the destination; did you mean to provide an explicit length" }
 
-  // These are correct, no warning. 
   const char s3[] = "foobarbaz";
   const char s4[] = "abcde12345678";
-  strncpy (x, s3, sizeof (s3));
-  strncat (x, s4, sizeof (s4));
-  stpncpy (x, s3, sizeof (s3));
+  strncpy (x, s3, sizeof (s3));             // { dg-warning "call is the same expression as the source; did you mean to use the size of the destination" }
+  strncat (x, s4, sizeof (s4));             // { dg-warning "call is the same expression as the source; did you mean to use the size of the destination" }
+  stpncpy (x, s3, sizeof (s3));             // { dg-warning "call is the same expression as the source; did you mean to use the size of the destination" }
+
+  // These are safe, no warning.
   y[1] = strndup (s3, sizeof (s3));
   z += strncmp (s3, s4, sizeof (s3));
   z += strncmp (s3, s4, sizeof (s4));

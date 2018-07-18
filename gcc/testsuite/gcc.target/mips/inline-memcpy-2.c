@@ -1,4 +1,4 @@
-/* { dg-options "-fno-common isa_rev>=6" } */
+/* { dg-options "-fno-common isa_rev>=6 (REQUIRES_STDLIB)" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" "-Os"} { "" } } */
 /* { dg-final { scan-assembler-not "\tmemcpy" } } */
 /* { dg-final { scan-assembler-times "\tsh\t" 16 } } */

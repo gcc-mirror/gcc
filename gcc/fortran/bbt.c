@@ -1,5 +1,5 @@
 /* Balanced binary trees using treaps.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -116,7 +116,7 @@ insert (gfc_bbt *new_bbt, gfc_bbt *t, compare_fn compare)
 	t = rotate_left (t);
     }
   else /* if (c == 0)  */
-    gfc_internal_error("insert_bbt(): Duplicate key found!");
+    gfc_internal_error("insert_bbt(): Duplicate key found");
 
   return t;
 }

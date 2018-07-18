@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,7 +59,7 @@
 --    5. If the semantic analysis of expressions/names in the aspect should not
 --       occur at the point the aspect is defined, add code in the adequate
 --       semantic analysis procedure for the aspect. For example, this is the
---       case for aspects Pre and Post on subprograms, which are pre-analyzed
+--       case for aspects Pre and Post on subprograms, which are preanalyzed
 --       at the end of the declaration list to which the subprogram belongs,
 --       and fully analyzed (possibly with expansion) during the semantic
 --       analysis of subprogram bodies.
@@ -116,6 +116,8 @@ package Aspects is
       Aspect_Link_Name,
       Aspect_Linker_Section,                -- GNAT
       Aspect_Machine_Radix,
+      Aspect_Max_Entry_Queue_Depth,
+      Aspect_Max_Queue_Length,              -- GNAT
       Aspect_Object_Size,                   -- GNAT
       Aspect_Obsolescent,                   -- GNAT
       Aspect_Output,
@@ -134,6 +136,7 @@ package Aspects is
       Aspect_Refined_State,                 -- GNAT
       Aspect_Relative_Deadline,
       Aspect_Scalar_Storage_Order,          -- GNAT
+      Aspect_Secondary_Stack_Size,          -- GNAT
       Aspect_Simple_Storage_Pool,           -- GNAT
       Aspect_Size,
       Aspect_Small,
@@ -187,6 +190,7 @@ package Aspects is
       Aspect_Inline_Always,                 -- GNAT
       Aspect_Interrupt_Handler,
       Aspect_Lock_Free,                     -- GNAT
+      Aspect_No_Inline,                     -- GNAT
       Aspect_No_Return,
       Aspect_No_Tagged_Streams,             -- GNAT
       Aspect_Pack,
@@ -247,12 +251,15 @@ package Aspects is
       Aspect_Inline_Always              => True,
       Aspect_Invariant                  => True,
       Aspect_Lock_Free                  => True,
+      Aspect_Max_Entry_Queue_Depth      => True,
+      Aspect_Max_Queue_Length           => True,
       Aspect_Object_Size                => True,
       Aspect_Persistent_BSS             => True,
       Aspect_Predicate                  => True,
       Aspect_Pure_Function              => True,
       Aspect_Remote_Access_Type         => True,
       Aspect_Scalar_Storage_Order       => True,
+      Aspect_Secondary_Stack_Size       => True,
       Aspect_Shared                     => True,
       Aspect_Simple_Storage_Pool        => True,
       Aspect_Simple_Storage_Pool_Type   => True,
@@ -353,6 +360,8 @@ package Aspects is
       Aspect_Link_Name                  => Expression,
       Aspect_Linker_Section             => Expression,
       Aspect_Machine_Radix              => Expression,
+      Aspect_Max_Entry_Queue_Depth      => Expression,
+      Aspect_Max_Queue_Length           => Expression,
       Aspect_Object_Size                => Expression,
       Aspect_Obsolescent                => Optional_Expression,
       Aspect_Output                     => Name,
@@ -371,6 +380,7 @@ package Aspects is
       Aspect_Refined_State              => Expression,
       Aspect_Relative_Deadline          => Expression,
       Aspect_Scalar_Storage_Order       => Expression,
+      Aspect_Secondary_Stack_Size       => Expression,
       Aspect_Simple_Storage_Pool        => Name,
       Aspect_Size                       => Expression,
       Aspect_Small                      => Expression,
@@ -460,7 +470,10 @@ package Aspects is
       Aspect_Linker_Section               => Name_Linker_Section,
       Aspect_Lock_Free                    => Name_Lock_Free,
       Aspect_Machine_Radix                => Name_Machine_Radix,
+      Aspect_Max_Entry_Queue_Depth        => Name_Max_Entry_Queue_Depth,
+      Aspect_Max_Queue_Length             => Name_Max_Queue_Length,
       Aspect_No_Elaboration_Code_All      => Name_No_Elaboration_Code_All,
+      Aspect_No_Inline                    => Name_No_Inline,
       Aspect_No_Return                    => Name_No_Return,
       Aspect_No_Tagged_Streams            => Name_No_Tagged_Streams,
       Aspect_Object_Size                  => Name_Object_Size,
@@ -490,6 +503,7 @@ package Aspects is
       Aspect_Remote_Call_Interface        => Name_Remote_Call_Interface,
       Aspect_Remote_Types                 => Name_Remote_Types,
       Aspect_Scalar_Storage_Order         => Name_Scalar_Storage_Order,
+      Aspect_Secondary_Stack_Size         => Name_Secondary_Stack_Size,
       Aspect_Shared                       => Name_Shared,
       Aspect_Shared_Passive               => Name_Shared_Passive,
       Aspect_Simple_Storage_Pool          => Name_Simple_Storage_Pool,
@@ -669,6 +683,7 @@ package Aspects is
       Aspect_Link_Name                    => Always_Delay,
       Aspect_Linker_Section               => Always_Delay,
       Aspect_Lock_Free                    => Always_Delay,
+      Aspect_No_Inline                    => Always_Delay,
       Aspect_No_Return                    => Always_Delay,
       Aspect_Output                       => Always_Delay,
       Aspect_Persistent_BSS               => Always_Delay,
@@ -688,6 +703,7 @@ package Aspects is
       Aspect_Remote_Access_Type           => Always_Delay,
       Aspect_Remote_Call_Interface        => Always_Delay,
       Aspect_Remote_Types                 => Always_Delay,
+      Aspect_Secondary_Stack_Size         => Always_Delay,
       Aspect_Shared                       => Always_Delay,
       Aspect_Shared_Passive               => Always_Delay,
       Aspect_Simple_Storage_Pool          => Always_Delay,
@@ -731,6 +747,8 @@ package Aspects is
       Aspect_Import                       => Never_Delay,
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
+      Aspect_Max_Entry_Queue_Depth        => Never_Delay,
+      Aspect_Max_Queue_Length             => Never_Delay,
       Aspect_No_Elaboration_Code_All      => Never_Delay,
       Aspect_No_Tagged_Streams            => Never_Delay,
       Aspect_Obsolescent                  => Never_Delay,

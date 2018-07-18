@@ -5,12 +5,12 @@
 
 program test
 
-  if (leadz (foo()) /= bit_size(0) - 1) call abort
-  if (leadz (foo()) /= bit_size(0) - 2) call abort
-  if (trailz (foo()) /= 0) call abort
-  if (trailz (foo()) /= 2) call abort
-  if (trailz (foo()) /= 0) call abort
-  if (trailz (foo()) /= 1) call abort
+  if (leadz (foo()) /= bit_size(0) - 1) STOP 1
+  if (leadz (foo()) /= bit_size(0) - 2) STOP 2
+  if (trailz (foo()) /= 0) STOP 3
+  if (trailz (foo()) /= 2) STOP 4
+  if (trailz (foo()) /= 0) STOP 5
+  if (trailz (foo()) /= 1) STOP 6
 
 contains
   

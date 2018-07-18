@@ -2,10 +2,11 @@
 // that isn't reverse order of construction.  We need to move
 // __cxa_thread_atexit into glibc to get this right.
 
-// { dg-do run { xfail *-*-* } }
+// { dg-do run }
 // { dg-require-effective-target c++11 }
 // { dg-add-options tls }
 // { dg-require-effective-target tls_runtime }
+// { dg-xfail-run-if "" { { hppa*-*-hpux* *-*-solaris* } || { newlib } } }
 
 extern "C" void abort();
 extern "C" int printf (const char *, ...);

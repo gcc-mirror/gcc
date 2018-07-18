@@ -84,15 +84,15 @@ program main
 ! foo's assign negates, whilst its '*' negates and mutliplies.
  unitf%foo_x = 1
  call rescale(unitf, 42)
- if (unitf%foo_x .ne. 42) call abort
+ if (unitf%foo_x .ne. 42) STOP 1
 
 ! bar's assign negates foo_x, whilst its '*' copies foo_x
 ! and does a multiply by twice factor.
  unitb%foo_x = 1
  unitb%bar_x = 2
  call rescale(unitb, 3)
- if (unitb%bar_x .ne. 12) call abort
- if (unitb%foo_x .ne. -1) call abort
+ if (unitb%bar_x .ne. 12) STOP 2
+ if (unitb%foo_x .ne. -1) STOP 3
 contains
  subroutine rescale(this,scale)
    class(foo) ,intent(inout) :: this

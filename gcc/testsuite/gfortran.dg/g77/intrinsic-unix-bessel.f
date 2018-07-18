@@ -76,7 +76,7 @@ c     BESYN  - Bessel function of second kind of order N
       call c_d(DBESYN(j,dx),da,'DBESYN(integer(2),double)')
       call c_d(DBESYN(k,dx),da,'DBESYN(integer(1),double)')
 
-      if ( fail ) call abort()
+      if ( fail ) STOP 1
       end
 
       subroutine failure(label)

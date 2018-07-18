@@ -1,5 +1,5 @@
 /* Provide a version of _doprnt in terms of fprintf.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002   Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Contributed by Kaveh Ghazi  (ghazi@caip.rutgers.edu)  3/29/98
 
 This program is free software; you can redistribute it and/or modify it

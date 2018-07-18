@@ -10,13 +10,13 @@ foo (int k, int l, int m, int n)
     int h = n;
     {
       int i = k;
-      k++;	/* { dg-final { gdb-test 13 "i" "6" } } */
-    }		/* { dg-final { gdb-test 13 "h" "9" } } */
-		/* { dg-final { gdb-test 13 "n" "9" } } */
+      k++;	/* { dg-final { gdb-test . "i" "6" } } */
+    }		/* { dg-final { gdb-test .-1 "h" "9" } } */
+		/* { dg-final { gdb-test .-2 "n" "9" } } */
     {
       int j = m;
-      m++;	/* { dg-final { gdb-test 18 "j" "8" } } */
-    }		/* { dg-final { gdb-test 18 "h" "9" } } */
+      m++;	/* { dg-final { gdb-test . "j" "8" } } */
+    }		/* { dg-final { gdb-test .-1 "h" "9" } } */
 		/* { dg-final { gdb-test 12 "n" "9" } } */
   }
   asm volatile ("" : : "r" (k), "r" (l));

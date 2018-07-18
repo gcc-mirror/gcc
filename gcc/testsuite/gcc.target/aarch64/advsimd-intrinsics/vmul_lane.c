@@ -116,17 +116,17 @@ void exec_vmul_lane (void)
 #endif
   TEST_VMUL_LANE(q, float, f, 32, 4, 2, 0);
 
-  CHECK(TEST_MSG, int, 16, 4, PRIx64, expected, "");
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, "");
-  CHECK(TEST_MSG, uint, 16, 4, PRIx64, expected, "");
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
 #if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected, "");
 #endif
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected, "");
-  CHECK(TEST_MSG, int, 16, 8, PRIx64, expected, "");
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
-  CHECK(TEST_MSG, uint, 16, 8, PRIx64, expected, "");
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
 #if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
   CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected, "");

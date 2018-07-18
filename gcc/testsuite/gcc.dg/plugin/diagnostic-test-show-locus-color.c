@@ -122,6 +122,7 @@ void test_very_wide_line (void)
  6789012345678901234567890123456789012345678901234567890123456789012345
                                               float f = [01;35m[Kfoo * bar[m[K;
                                                         [01;35m[K~~~~^~~~~[m[K
+                                                        [32m[Kbar * foo[m[K
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -190,6 +191,26 @@ void test_fixit_replace (void)
    [01;35m[Kgtk_widget_showall[m[K (dlg);
    [01;35m[K^~~~~~~~~~~~~~~~~~[m[K
    [32m[Kgtk_widget_show_all[m[K
+   { dg-end-multiline-output "" } */
+#endif
+}
+
+/* Unit test for rendering of fix-it hints that add new lines.  */
+
+void test_fixit_insert_newline (void)
+{
+#if 0
+  switch (op)
+    {
+    case 'a':
+      x = a;
+    case 'b':  /* { dg-warning "newline insertion" } */
+      x = b;
+    }
+/* { dg-begin-multiline-output "" }
++[32m[K      break;[m[K
+     [01;35m[Kcase 'b'[m[K:
+     [01;35m[K^~~~~~~~[m[K
    { dg-end-multiline-output "" } */
 #endif
 }

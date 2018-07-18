@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target { ! { *-*-mingw* } } } }
 ! { dg-options "-fdec" }
 !
 ! Run-time tests for various carriagecontrol parameters with DEC I/O.
@@ -48,7 +48,7 @@ subroutine check_cc (cc, fname, expected)
     print *, expected
     deallocate(buf)
     close(unit=fd)
-    call abort()
+    STOP 1
   else
     deallocate(buf)
     close(unit=fd, status='delete')

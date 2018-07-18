@@ -1,5 +1,5 @@
 /* Encoding of types for Objective C.
-   Copyright (C) 1993-2016 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
    Bitfield support by Ovidiu Predescu
 
@@ -162,7 +162,7 @@ _darwin_rs6000_special_round_type_align (const char *struc, int comp, int spec)
       case UNION_TYPE:
 	return MAX (MAX (comp, spec), objc_alignof_type (_stp) * __CHAR_BIT__);
 	break;
-      case DFmode:
+      case E_DFmode:
       case _C_LNG_LNG:
       case _C_ULNG_LNG:
 	return MAX (MAX (comp, spec), 64);
@@ -1159,7 +1159,7 @@ objc_layout_structure_next_member (struct objc_struct_layout *layout)
   desired_align = MIN (desired_align, BIGGEST_FIELD_ALIGNMENT);
 #endif
 #ifdef ADJUST_FIELD_ALIGN
-  desired_align = ADJUST_FIELD_ALIGN (type, desired_align);
+  desired_align = ADJUST_FIELD_ALIGN (type, type, desired_align);
 #endif
 
   /* Record must have at least as much alignment as any field.

@@ -13,9 +13,9 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -mdisable-indexing" { target hppa*-*-hpux* } } */
-/* { dg-skip-if "" { aarch64*-*-* && ilp32 } { "*" } { "" } } */
+/* { dg-skip-if "" { aarch64*-*-* && ilp32 } } */
 /* { dg-skip-if "" { "ia64-*-hpux*" } "*" "-mlp64" } */
-/* { dg-skip-if "" { { i?86-*-* x86_64-*-* } && x32 } { "*" } { "" } } */
+/* { dg-skip-if "" { { i?86-*-* x86_64-*-* } && x32 } } */
 
 /* Disable the test entirely for 16-bit targets.  */
 #if __INT_MAX__ > 32767

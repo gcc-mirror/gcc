@@ -1,4 +1,4 @@
-// { dg-do run  }
+// { dg-do compile  }
 // { dg-options "-w -fpermissive" }
 // Test for g++ array init extension 
 
@@ -11,5 +11,5 @@ private:
 
 main()
 {
-  A *list = new A[10](4);
+  A *list = new A[10](4); // { dg-error "parenthesized" }
 }

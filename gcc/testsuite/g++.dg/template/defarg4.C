@@ -1,7 +1,7 @@
 // PR c++/14763
 
 struct A { 
-  int get() const {} 
+  int get() const { return 0; } 
   static A *foo(); 
 }; 
  

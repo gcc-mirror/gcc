@@ -47,15 +47,14 @@ var traceback_env uint32
 //go:nosplit
 func gotraceback() (level int32, all, crash bool) {
 	_g_ := getg()
-	all = _g_.m.throwing > 0
-	if _g_.m.traceback != 0 {
-		level = int32(_g_.m.traceback)
-		return
-	}
 	t := atomic.Load(&traceback_cache)
 	crash = t&tracebackCrash != 0
-	all = all || t&tracebackAll != 0
-	level = int32(t >> tracebackShift)
+	all = _g_.m.throwing > 0 || t&tracebackAll != 0
+	if _g_.m.traceback != 0 {
+		level = int32(_g_.m.traceback)
+	} else {
+		level = int32(t >> tracebackShift)
+	}
 	return
 }
 
@@ -80,7 +79,6 @@ func goargs() {
 	if GOOS == "windows" {
 		return
 	}
-
 	argslice = make([]string, argc)
 	for i := int32(0); i < argc; i++ {
 		argslice[i] = gostringnocopy(argv_index(argv, i))
@@ -113,10 +111,6 @@ var test_z64, test_x64 uint64
 func testAtomic64() {
 	test_z64 = 42
 	test_x64 = 0
-	// prefetcht0(uintptr(unsafe.Pointer(&test_z64)))
-	// prefetcht1(uintptr(unsafe.Pointer(&test_z64)))
-	// prefetcht2(uintptr(unsafe.Pointer(&test_z64)))
-	// prefetchnta(uintptr(unsafe.Pointer(&test_z64)))
 	if atomic.Cas64(&test_z64, test_x64, 1) {
 		throw("cas64 failed")
 	}
@@ -152,14 +146,6 @@ func testAtomic64() {
 }
 
 func check() {
-
-	// This doesn't currently work for gccgo.  Because escape
-	// analysis is not turned on by default, the code below that
-	// takes the address of local variables causes memory
-	// allocation, but this function is called before the memory
-	// allocator has been initialized.
-	return
-
 	var (
 		a     int8
 		b     uint8
@@ -281,6 +267,12 @@ func check() {
 		throw("atomicor8")
 	}
 
+	m = [4]byte{0xff, 0xff, 0xff, 0xff}
+	atomic.And8(&m[1], 0x1)
+	if m[0] != 0xff || m[1] != 0x1 || m[2] != 0xff || m[3] != 0xff {
+		throw("atomicand8")
+	}
+
 	*(*uint64)(unsafe.Pointer(&j)) = ^uint64(0)
 	if j == j {
 		throw("float64nan")
@@ -333,33 +325,22 @@ type dbgVar struct {
 // except for "memprofilerate" since there is an
 // existing int var for that value, which may
 // already have an initial value.
-
-// For gccgo we use a named type so that the C code can see the
-// definition.
-type debugVars struct {
-	allocfreetrace    int32
-	cgocheck          int32
-	efence            int32
-	gccheckmark       int32
-	gcpacertrace      int32
-	gcshrinkstackoff  int32
-	gcstackbarrieroff int32
-	gcstackbarrierall int32
-	gcstoptheworld    int32
-	gctrace           int32
-	invalidptr        int32
-	sbrk              int32
-	scavenge          int32
-	scheddetail       int32
-	schedtrace        int32
-	wbshadow          int32
+var debug struct {
+	allocfreetrace   int32
+	cgocheck         int32
+	efence           int32
+	gccheckmark      int32
+	gcpacertrace     int32
+	gcshrinkstackoff int32
+	gcrescanstacks   int32
+	gcstoptheworld   int32
+	gctrace          int32
+	invalidptr       int32
+	sbrk             int32
+	scavenge         int32
+	scheddetail      int32
+	schedtrace       int32
 }
-
-var debug debugVars
-
-// For gccgo's C code.
-//extern runtime_setdebug
-func runtime_setdebug(*debugVars)
 
 var dbgvars = []dbgVar{
 	{"allocfreetrace", &debug.allocfreetrace},
@@ -368,8 +349,7 @@ var dbgvars = []dbgVar{
 	{"gccheckmark", &debug.gccheckmark},
 	{"gcpacertrace", &debug.gcpacertrace},
 	{"gcshrinkstackoff", &debug.gcshrinkstackoff},
-	{"gcstackbarrieroff", &debug.gcstackbarrieroff},
-	{"gcstackbarrierall", &debug.gcstackbarrierall},
+	{"gcrescanstacks", &debug.gcrescanstacks},
 	{"gcstoptheworld", &debug.gcstoptheworld},
 	{"gctrace", &debug.gctrace},
 	{"invalidptr", &debug.invalidptr},
@@ -377,13 +357,23 @@ var dbgvars = []dbgVar{
 	{"scavenge", &debug.scavenge},
 	{"scheddetail", &debug.scheddetail},
 	{"schedtrace", &debug.schedtrace},
-	{"wbshadow", &debug.wbshadow},
 }
 
 func parsedebugvars() {
 	// defaults
 	debug.cgocheck = 1
-	debug.invalidptr = 1
+
+	// Unfortunately, because gccgo uses conservative stack scanning,
+	// we can not enable invalid pointer checking. It is possible for
+	// memory block M1 to point to M2, and for both to be dead.
+	// We release M2, causing the entire span to be released.
+	// Before we release M1, a stack pointer appears that point into it.
+	// This stack pointer is presumably dead, but causes M1 to be marked.
+	// We scan M1 and see the pointer to M2 on a released span.
+	// At that point, if debug.invalidptr is set, we crash.
+	// This is not a problem, assuming that M1 really is dead and
+	// the pointer we discovered to it will not be used.
+	// debug.invalidptr = 1
 
 	for p := gogetenv("GODEBUG"); p != ""; {
 		field := ""
@@ -403,11 +393,15 @@ func parsedebugvars() {
 		// is int, not int32, and should only be updated
 		// if specified in GODEBUG.
 		if key == "memprofilerate" {
-			MemProfileRate = atoi(value)
+			if n, ok := atoi(value); ok {
+				MemProfileRate = n
+			}
 		} else {
 			for _, v := range dbgvars {
 				if v.name == key {
-					*v.value = int32(atoi(value))
+					if n, ok := atoi32(value); ok {
+						*v.value = n
+					}
 				}
 			}
 		}
@@ -415,20 +409,6 @@ func parsedebugvars() {
 
 	setTraceback(gogetenv("GOTRACEBACK"))
 	traceback_env = traceback_cache
-
-	// if debug.gcstackbarrierall > 0 {
-	// 	firstStackBarrierOffset = 0
-	// }
-
-	// For cgocheck > 1, we turn on the write barrier at all times
-	// and check all pointer writes.
-	if debug.cgocheck > 1 {
-		writeBarrier.cgo = true
-		writeBarrier.enabled = true
-	}
-
-	// Tell the C code what the value is.
-	runtime_setdebug(&debug)
 }
 
 //go:linkname setTraceback runtime_debug.SetTraceback
@@ -446,7 +426,10 @@ func setTraceback(level string) {
 	case "crash":
 		t = 2<<tracebackShift | tracebackAll | tracebackCrash
 	default:
-		t = uint32(atoi(level))<<tracebackShift | tracebackAll
+		t = tracebackAll
+		if n, ok := atoi(level); ok && n == int(uint32(n)) {
+			t |= uint32(n) << tracebackShift
+		}
 	}
 	// when C owns the process, simply exit'ing the process on fatal errors
 	// and panics is surprising. Be louder and abort instead.

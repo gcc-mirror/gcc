@@ -163,14 +163,14 @@ void vsri_extra(void)
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, uint, 64, 1, PRIx64, expected_max_shift, COMMENT);
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_max_shift, COMMENT);
-  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_max_shift, COMMENT);
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected_max_shift, COMMENT);
+  CHECK_POLY(TEST_MSG, poly, 16, 4, PRIx16, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_max_shift, COMMENT);
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_max_shift, COMMENT);
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_max_shift, COMMENT);
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_max_shift, COMMENT);
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected_max_shift, COMMENT);
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected_max_shift, COMMENT);
 }

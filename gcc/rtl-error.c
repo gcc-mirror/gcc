@@ -1,5 +1,5 @@
 /* RTL specific diagnostic subroutines for GCC
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -71,7 +71,7 @@ diagnostic_for_asm (const rtx_insn *insn, const char *msg, va_list *args_ptr,
 
   diagnostic_set_info (&diagnostic, msg, args_ptr,
 		       &richloc, kind);
-  report_diagnostic (&diagnostic);
+  diagnostic_report_diagnostic (global_dc, &diagnostic);
 }
 
 void

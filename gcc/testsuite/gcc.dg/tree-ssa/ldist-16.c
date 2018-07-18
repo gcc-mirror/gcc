@@ -16,5 +16,5 @@ void foo (int n)
 
 /* We should not apply loop distribution and not generate a memset (0).  */
 
-/* { dg-final { scan-tree-dump "Loop 1 is the same" "ldist" } } */
+/* { dg-final { scan-tree-dump "Loop 1 not distributed" "ldist" } } */
 /* { dg-final { scan-tree-dump-times "generated memset zero" 0 "ldist" } } */

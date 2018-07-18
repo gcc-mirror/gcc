@@ -1,6 +1,6 @@
 // <tuple> -*- C++ -*-
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -846,20 +846,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      template<typename... _UElements, typename = typename
+      template<typename... _UElements>
+	typename
 	       enable_if<sizeof...(_UElements)
-			 == sizeof...(_Elements)>::type>
-        tuple&
+			 == sizeof...(_Elements), tuple&>::type
         operator=(const tuple<_UElements...>& __in)
         {
 	  static_cast<_Inherited&>(*this) = __in;
 	  return *this;
 	}
 
-      template<typename... _UElements, typename = typename
+      template<typename... _UElements>
+	typename
 	       enable_if<sizeof...(_UElements)
-			 == sizeof...(_Elements)>::type>
-        tuple&
+			 == sizeof...(_Elements), tuple&>::type
         operator=(tuple<_UElements...>&& __in)
         {
 	  static_cast<_Inherited&>(*this) = std::move(__in);
@@ -871,6 +871,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       noexcept(noexcept(__in._M_swap(__in)))
       { _Inherited::_M_swap(__in); }
     };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename... _UTypes>
+    tuple(_UTypes...) -> tuple<_UTypes...>;
+  template<typename _T1, typename _T2>
+    tuple(pair<_T1, _T2>) -> tuple<_T1, _T2>;
+  template<typename _Alloc, typename... _UTypes>
+    tuple(allocator_arg_t, _Alloc, _UTypes...) -> tuple<_UTypes...>;
+  template<typename _Alloc, typename _T1, typename _T2>
+    tuple(allocator_arg_t, _Alloc, pair<_T1, _T2>) -> tuple<_T1, _T2>;
+  template<typename _Alloc, typename... _UTypes>
+    tuple(allocator_arg_t, _Alloc, tuple<_UTypes...>) -> tuple<_UTypes...>;
+#endif
 
   // Explicit specialization, zero-element tuple.
   template<>
@@ -951,7 +964,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         enable_if<_TMC::template
                     _MoveConstructibleTuple<_U1, _U2>()
                   && _TMC::template
-                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>()
+	          && !is_same<typename decay<_U1>::type,
+			      allocator_arg_t>::value,
 	bool>::type = true>
         constexpr tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
@@ -960,7 +975,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         enable_if<_TMC::template
                     _MoveConstructibleTuple<_U1, _U2>()
                   && !_TMC::template
-                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>()
+	          && !is_same<typename decay<_U1>::type,
+			      allocator_arg_t>::value,
 	bool>::type = false>
         explicit constexpr tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
@@ -1251,7 +1268,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L
   template <typename _Tp>
-    constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
+    inline constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
 #endif
 
   /**
@@ -1312,7 +1329,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::forward<__element_type&&>(std::get<__i>(__t));
     }
 
-#if __cplusplus > 201103L
+  /// Return a const rvalue reference to the ith element of a const tuple rvalue.
+  template<std::size_t __i, typename... _Elements>
+    constexpr const __tuple_element_t<__i, tuple<_Elements...>>&&
+    get(const tuple<_Elements...>&& __t) noexcept
+    {
+      typedef __tuple_element_t<__i, tuple<_Elements...>> __element_type;
+      return std::forward<const __element_type&&>(std::get<__i>(__t));
+    }
+
+#if __cplusplus >= 201402L
 
 #define __cpp_lib_tuples_by_type 201304
 
@@ -1343,6 +1369,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr const _Tp&
     get(const tuple<_Types...>& __t) noexcept
     { return std::__get_helper2<_Tp>(__t); }
+
+  /// Return a const reference to the unique element of type _Tp of
+  /// a const tuple rvalue.
+  template <typename _Tp, typename... _Types>
+    constexpr const _Tp&&
+    get(const tuple<_Types...>&& __t) noexcept
+    { return std::forward<const _Tp&&>(std::__get_helper2<_Tp>(__t)); }
 #endif
 
   // This class performs the comparison operations on tuples
@@ -1437,21 +1470,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2275. Why is forward_as_tuple not constexpr?
+  /// std::forward_as_tuple
   template<typename... _Elements>
     constexpr tuple<_Elements&&...>
     forward_as_tuple(_Elements&&... __args) noexcept
     { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
-
-  template<typename... _Tps>
-    struct __is_tuple_like_impl<tuple<_Tps...>> : true_type
-    { };
-
-  // Internal type trait that allows us to sfinae-protect tuple_cat.
-  template<typename _Tp>
-    struct __is_tuple_like
-    : public __is_tuple_like_impl<typename std::remove_cv
-            <typename std::remove_reference<_Tp>::type>::type>::type
-    { };
 
   template<size_t, typename, typename, size_t>
     struct __make_tuple_impl;
@@ -1477,8 +1500,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Returns the std::tuple equivalent of a tuple-like type.
   template<typename _Tuple>
     struct __make_tuple
-    : public __do_make_tuple<typename std::remove_cv
-            <typename std::remove_reference<_Tuple>::type>::type>
+    : public __do_make_tuple<__remove_cvref_t<_Tuple>>
     { };
 
   // Combines several std::tuple's into a single one.
@@ -1597,17 +1619,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+  template<typename... _Elements>
+    typename enable_if<!__and_<__is_swappable<_Elements>...>::value>::type
+    swap(tuple<_Elements...>&, tuple<_Elements...>&) = delete;
+#endif
+
   // A class (and instance) which can be used in 'tie' when an element
-  // of a tuple is not required
+  // of a tuple is not required.
+  // _GLIBCXX14_CONSTEXPR
+  // 2933. PR for LWG 2773 could be clearer
   struct _Swallow_assign
   {
     template<class _Tp>
-      const _Swallow_assign&
+      _GLIBCXX14_CONSTEXPR const _Swallow_assign&
       operator=(const _Tp&) const
       { return *this; }
   };
 
-  const _Swallow_assign ignore{};
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2773. Making std::ignore constexpr
+  _GLIBCXX17_INLINE constexpr _Swallow_assign ignore{};
 
   /// Partial specialization for tuples
   template<typename... _Types, typename _Alloc>

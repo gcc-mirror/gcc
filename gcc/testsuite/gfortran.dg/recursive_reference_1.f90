@@ -8,9 +8,9 @@
 ! Based on PR testcase by Nicolas Bock  <nicolasbock@gmail.com>
 !
 program test
-  if (original_stuff(1) .ne. 5) call abort ()
-  if (scalar_stuff(-4) .ne. 10) call abort ()
-  if (any (array_stuff((/-19,-30/)) .ne. (/25,25/))) call abort ()
+  if (original_stuff(1) .ne. 5) STOP 1
+  if (scalar_stuff(-4) .ne. 10) STOP 2
+  if (any (array_stuff((/-19,-30/)) .ne. (/25,25/))) STOP 3
 contains
   recursive function original_stuff(n)
     integer :: original_stuff

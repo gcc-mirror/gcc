@@ -12,16 +12,16 @@ program large_real_kind_form_io_1
   b(:) = 2.0_k
   write (tmp, *) b
   read (tmp, *) a, c
-  if (abs (a - b(1)) > eps) call abort ()
-  if (abs (c - b(2)) > eps) call abort ()
+  if (abs (a - b(1)) > eps) STOP 1
+  if (abs (c - b(2)) > eps) STOP 2
   ! Complex(k) scalar and array formatted and list formatted IO
   d = cmplx ( 1.0_k, 2.0_k, k)
   f = d
   write (tmp, *) f
   read (tmp, *) e, g
-  if (abs (e - d) > eps) call abort ()
-  if (abs (g - d) > eps) call abort ()
+  if (abs (e - d) > eps) STOP 3
+  if (abs (g - d) > eps) STOP 4
   write (tmp, '(2(e12.4e5, 2x))') d
   read (tmp, '(2(e12.4e5, 2x))') e
-  if (abs (e - d) > eps) call abort()
+  if (abs (e - d) > eps) STOP 5
 end program large_real_kind_form_io_1

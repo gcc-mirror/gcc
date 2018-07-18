@@ -14,7 +14,7 @@ C
       SUBROUTINE QUICK
       SAVE
 C
-      ASSIGN 101 TO JUMP ! { dg-warning "Deleted feature: ASSIGN" "" }
+      ASSIGN 101 TO JUMP ! { dg-warning "Deleted feature: ASSIGN" }
   101 Continue
 C
       RETURN

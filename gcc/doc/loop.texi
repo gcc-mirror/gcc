@@ -1,4 +1,4 @@
-@c Copyright (C) 2006-2016 Free Software Foundation, Inc.
+@c Copyright (C) 2006-2018 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -258,12 +258,11 @@ one of the edges entering loop header, thus performing either loop
 unrolling or loop peeling.  @code{can_duplicate_loop_p}
 (@code{can_unroll_loop_p} on GIMPLE) must be true for the duplicated
 loop.
-@item @code{loop_version}, @code{tree_ssa_loop_version}: These function
-create a copy of a loop, and a branch before them that selects one of
-them depending on the prescribed condition.  This is useful for
-optimizations that need to verify some assumptions in runtime (one of
-the copies of the loop is usually left unchanged, while the other one is
-transformed in some way).
+@item @code{loop_version}: This function creates a copy of a loop, and
+a branch before them that selects one of them depending on the
+prescribed condition.  This is useful for optimizations that need to
+verify some assumptions in runtime (one of the copies of the loop is
+usually left unchanged, while the other one is transformed in some way).
 @item @code{tree_unroll_loop}: Unrolls the loop, including peeling the
 extra iterations to make the number of iterations divisible by unroll
 factor, updating the exit condition, and removing the exits that now
@@ -568,7 +567,7 @@ relative to @code{p + i}. The access functions of the array are
 @code{@{i_init, + i_step@}_for1} and @code{@{j_init, +, j_step@}_for2}
 relative to @code{a}.
 
-Usually, the object the pointer refers to is either unknown, or we can't
+Usually, the object the pointer refers to is either unknown, or we cannot
 prove that the access is confined to the boundaries of a certain object.
 
 Two data references can be compared only if at least one of these two

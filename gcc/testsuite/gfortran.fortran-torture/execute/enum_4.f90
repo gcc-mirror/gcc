@@ -12,8 +12,8 @@ program main
   use mod
   implicit none
 
-  if (red /= 0 ) call abort
-  if (yellow /= 1) call abort
-  if (blue /= 2) call abort
-  if (green /= 3) call abort
+  if (red /= 0 ) STOP 1
+  if (yellow /= 1) STOP 2
+  if (blue /= 2) STOP 3
+  if (green /= 3) STOP 4
 end program main

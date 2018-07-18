@@ -12,4 +12,3 @@ subroutine test(n, a, b, c)
 end subroutine test
 
 ! { dg-message "loop vectorized" "" { target *-*-* } 0 }
-! { dg-bogus " version\[^\n\r]* alias" "" { target *-*-* } 0 }

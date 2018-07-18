@@ -1,4 +1,4 @@
-/* { dg-do compile { target x86_64-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-additional-options "-O3 -march=core-avx2" } */
 
 unsigned *a;

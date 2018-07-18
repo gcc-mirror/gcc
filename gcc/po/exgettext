@@ -1,6 +1,6 @@
 #! /bin/sh
 # Wrapper around gettext for programs using the msgid convention.
-# Copyright (C) 1998-2016 Free Software Foundation, Inc.
+# Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
 # Written by Paul Eggert <eggert@twinsun.com>.
 # Revised by Zack Weinberg <zackw@stanford.edu> for no-POTFILES operation.
@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
+
+BUGURL="https://gcc.gnu.org/bugs/"
 
 # Always operate in the C locale.
 LANG=C
@@ -237,6 +239,8 @@ echo "scanning option files..." >&2
     field = 0
     while (getline < file) {
 	if (/^[ \t]*(;|$)/ || !/^[^ \t]/) {
+	    if (field > 2)
+		printf("_(\"%s\")\n", line)
 	    field = 0
 	} else {
 	    if ((field == 1) && /MissingArgError/) {
@@ -275,12 +279,15 @@ echo "scanning option files..." >&2
 	    if (field == 2) {
 		line = $0
 		printf("#line %d \"%s\"\n", lineno, file)
-		printf("_(\"%s\")\n", line)
+	    } else if (field > 2) {
+		line = line " " $0
 	    }
 	    field++;
 	}
 	lineno++;
     }
+    if (field > 2)
+	printf("_(\"%s\")\n", line)
   }') >> $emsg
 
 # Run the xgettext commands, with temporary added as a file to scan.
@@ -288,13 +295,13 @@ echo "running xgettext..." >&2
 $xgettext --default-domain=$package --directory=$srcdir \
 	  --add-comments `cat $kopt` --files-from=$posr \
 	  --copyright-holder="Free Software Foundation, Inc." \
-	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	  --msgid-bugs-address="$BUGURL" \
 	  --language=c -o $pottmp1
 if test -s $posrcxx; then
   $xgettext --default-domain=$package --directory=$srcdir \
 	    --add-comments `cat $kopt` --files-from=$posrcxx \
 	    --copyright-holder="Free Software Foundation, Inc." \
-	    --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	    --msgid-bugs-address="$BUGURL" \
 	    --language=c++ -o $pottmp2
 else
   echo > $pottmp2
@@ -302,12 +309,12 @@ fi
 $xgettext --default-domain=$package --directory=$srcdir \
 	  --add-comments --keyword= `cat $kopt2` --files-from=$posr \
 	  --copyright-holder="Free Software Foundation, Inc." \
-	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	  --msgid-bugs-address="$BUGURL" \
 	  --language=GCC-source -o $pottmp3
 $xgettext --default-domain=$package \
 	  --add-comments $pottmp1 $pottmp2 $pottmp3 \
 	  --copyright-holder="Free Software Foundation, Inc." \
-	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	  --msgid-bugs-address="$BUGURL" \
 	  --language=PO -o $pottmp
 # Remove local paths from .pot file.
 sed "s:$srcdir/::g;s:$pwd/::g;" <$pottmp >po/$package.pot

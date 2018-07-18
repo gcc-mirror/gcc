@@ -46,7 +46,7 @@ type fmt struct {
 	wid  int // width
 	prec int // precision
 
-	// intbuf is large enought to store %b of an int64 with a sign and
+	// intbuf is large enough to store %b of an int64 with a sign and
 	// avoids padding at the end of the struct on 32 bit architectures.
 	intbuf [68]byte
 }
@@ -479,6 +479,46 @@ func (f *fmt) fmt_float(v float64, size int, verb rune, prec int) {
 		f.pad(num)
 		f.zero = oldZero
 		return
+	}
+	// The sharp flag forces printing a decimal point for non-binary formats
+	// and retains trailing zeros, which we may need to restore.
+	if f.sharp && verb != 'b' {
+		digits := 0
+		switch verb {
+		case 'v', 'g', 'G':
+			digits = prec
+			// If no precision is set explicitly use a precision of 6.
+			if digits == -1 {
+				digits = 6
+			}
+		}
+
+		// Buffer pre-allocated with enough room for
+		// exponent notations of the form "e+123".
+		var tailBuf [5]byte
+		tail := tailBuf[:0]
+
+		hasDecimalPoint := false
+		// Starting from i = 1 to skip sign at num[0].
+		for i := 1; i < len(num); i++ {
+			switch num[i] {
+			case '.':
+				hasDecimalPoint = true
+			case 'e', 'E':
+				tail = append(tail, num[i:]...)
+				num = num[:i]
+			default:
+				digits--
+			}
+		}
+		if !hasDecimalPoint {
+			num = append(num, '.')
+		}
+		for digits > 0 {
+			num = append(num, '0')
+			digits--
+		}
+		num = append(num, tail...)
 	}
 	// We want a sign if asked for and if the sign is not positive.
 	if f.plus || num[0] != '+' {

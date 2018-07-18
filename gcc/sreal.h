@@ -1,5 +1,5 @@
 /* Definitions for simple data type for real numbers.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,6 +31,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #define SREAL_BITS SREAL_PART_BITS
 
+#define SREAL_SIGN(v) (v < 0 ? -1: 1)
+#define SREAL_ABS(v) (v < 0 ? -v: v)
+
+struct output_block;
+struct lto_input_block;
+
 /* Structure for holding a simple real number.  */
 class sreal
 {
@@ -47,6 +53,8 @@ public:
   void dump (FILE *) const;
   int64_t to_int () const;
   double to_double () const;
+  void stream_out (struct output_block *);
+  static sreal stream_in (struct lto_input_block *);
   sreal operator+ (const sreal &other) const;
   sreal operator- (const sreal &other) const;
   sreal operator* (const sreal &other) const;
@@ -193,7 +201,6 @@ inline sreal operator>> (const sreal &a, int exp)
 inline void
 sreal::normalize_up ()
 {
-  int64_t s = m_sig < 0 ? -1 : 1;
   unsigned HOST_WIDE_INT sig = absu_hwi (m_sig);
   int shift = SREAL_PART_BITS - 2 - floor_log2 (sig);
 
@@ -208,7 +215,7 @@ sreal::normalize_up ()
       m_exp = -SREAL_MAX_EXP;
       sig = 0;
     }
-  if (s == -1)
+  if (SREAL_SIGN (m_sig) == -1)
     m_sig = -sig;
   else
     m_sig = sig;
@@ -221,7 +228,6 @@ sreal::normalize_up ()
 inline void
 sreal::normalize_down ()
 {
-  int64_t s = m_sig < 0 ? -1 : 1;
   int last_bit;
   unsigned HOST_WIDE_INT sig = absu_hwi (m_sig);
   int shift = floor_log2 (sig) - SREAL_PART_BITS + 2;
@@ -246,7 +252,7 @@ sreal::normalize_down ()
       m_exp = SREAL_MAX_EXP;
       sig = SREAL_MAX_SIG;
     }
-  if (s == -1)
+  if (SREAL_SIGN (m_sig) == -1)
     m_sig = -sig;
   else
     m_sig = sig;

@@ -19,12 +19,24 @@ namespace std {
 class UIException {
 };
 class PasswordDialog {
-    void run() throw (UIException);
+    void run()
+#if __cplusplus <= 201402L
+    throw (UIException)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+    ;
 };
 class MessageBox  {
 public:
-    MessageBox (std::string t) throw (UIException);
-    virtual int run() throw (UIException) ;
+    MessageBox (std::string t)
+#if __cplusplus <= 201402L
+    throw (UIException)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+    ;
+    virtual int run()
+#if __cplusplus <= 201402L
+    throw (UIException)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+    ;
 };
 extern "C" {
     struct __jmp_buf_tag   {
@@ -33,7 +45,10 @@ extern "C" {
     typedef struct __jmp_buf_tag sigjmp_buf[1];
 }
 sigjmp_buf password_dialog_sig_jmp_buf;
-void PasswordDialog::run() throw (UIException)
+void PasswordDialog::run()
+#if __cplusplus <= 201402L
+throw (UIException)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
 {
   __sigsetjmp (password_dialog_sig_jmp_buf, 1);
   MessageBox* errmsg = __null;

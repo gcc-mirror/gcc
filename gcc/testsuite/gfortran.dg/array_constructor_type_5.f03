@@ -14,5 +14,5 @@ program test
                          .or. a(2)(15:15) /= achar(32) &
      .or. a(3) /= 'Hay'  .or. a(3)(4:4)   /= achar(32) &
                          .or. a(3)(15:15) /= achar(32))&
-   call abort()
+   STOP 1
 end program test

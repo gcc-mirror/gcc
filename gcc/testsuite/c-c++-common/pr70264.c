@@ -5,7 +5,7 @@ X
 
 /* { dg-begin-multiline-output "" }
  #define X __LINE__
-           ^
+           ^~~~~~~~
    { dg-end-multiline-output "" } */
 /* { dg-begin-multiline-output "" }
  X

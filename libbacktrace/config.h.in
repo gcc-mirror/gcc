@@ -3,8 +3,14 @@
 /* ELF size: 32 or 64 */
 #undef BACKTRACE_ELF_SIZE
 
+/* XCOFF size: 32 or 64 */
+#undef BACKTRACE_XCOFF_SIZE
+
 /* Define to 1 if you have the __atomic functions */
 #undef HAVE_ATOMIC_FUNCTIONS
+
+/* Define to 1 if you have the `clock_gettime' function. */
+#undef HAVE_CLOCK_GETTIME
 
 /* Define to 1 if you have the declaration of `strnlen', and to 0 if you
    don't. */
@@ -28,11 +34,23 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `z' library (-lz). */
+#undef HAVE_LIBZ
+
 /* Define to 1 if you have the <link.h> header file. */
 #undef HAVE_LINK_H
 
+/* Define if AIX loadquery is available. */
+#undef HAVE_LOADQUERY
+
+/* Define to 1 if you have the `lstat' function. */
+#undef HAVE_LSTAT
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `readlink' function. */
+#undef HAVE_READLINK
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -49,6 +67,9 @@
 /* Define to 1 if you have the __sync functions */
 #undef HAVE_SYNC_FUNCTIONS
 
+/* Define to 1 if you have the <sys/ldr.h> header file. */
+#undef HAVE_SYS_LDR_H
+
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H
 
@@ -60,6 +81,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define if -lz is available. */
+#undef HAVE_ZLIB
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
@@ -122,6 +146,12 @@
 # undef __EXTENSIONS__
 #endif
 
+
+/* Number of bits in a file offset, on hosts where this is settable. */
+#undef _FILE_OFFSET_BITS
+
+/* Define for large files, on AIX-style hosts. */
+#undef _LARGE_FILES
 
 /* Define to 1 if on MINIX. */
 #undef _MINIX

@@ -14,7 +14,7 @@ PROGRAM test
 
  o%f => three
  g=greater(4.,o%f())
- if (.not. g) call abort()
+ if (.not. g) STOP 1
 
 CONTAINS
 

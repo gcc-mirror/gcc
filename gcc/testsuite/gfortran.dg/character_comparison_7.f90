@@ -12,13 +12,13 @@ end program main
 subroutine yes(a)
   implicit none
   logical, intent(in) :: a
-  if (.not. a) call abort
+  if (.not. a) STOP 1
 end subroutine yes
 
 subroutine no(a)
   implicit none
   logical, intent(in) :: a
-  if (a) call abort
+  if (a) STOP 2
 end subroutine no
 
 ! { dg-final { scan-tree-dump-times "gfortran_compare_string" 0 "original" } }

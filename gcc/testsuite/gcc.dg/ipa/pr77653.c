@@ -1,3 +1,4 @@
+/* { dg-require-alias "" } */
 /* { dg-options "-O2 -fdump-ipa-icf-details"  } */
 
 int a, b, c, d, e, h, i, j, k, l;
@@ -21,4 +22,4 @@ int main ()
 }
 
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Not unifying; address of original may be compared." "icf"  } } */
+/* { dg-final { scan-ipa-dump "Not unifying; alias cannot be created; target is discardable" "icf"  } } */

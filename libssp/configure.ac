@@ -62,6 +62,11 @@ void __attribute__((noinline)) bar (char *x)
 [AC_MSG_RESULT(no)])
 CFLAGS="$save_CFLAGS"
 
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+XCFLAGS="$XCFLAGS $CET_FLAGS"
+AC_SUBST(XCFLAGS)
+
 AC_MSG_CHECKING([whether hidden visibility is supported])
 AC_TRY_COMPILE([
 void __attribute__((visibility ("hidden"))) bar (void) {}],,
@@ -194,6 +199,9 @@ if test ${multilib} = yes; then
 else
   multilib_arg=
 fi
+
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
 
 AC_CONFIG_FILES([Makefile ssp/ssp.h])
 AC_OUTPUT

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@ with Types; use Types;
 package Exp_Aggr is
 
    procedure Expand_N_Aggregate           (N : Node_Id);
+   procedure Expand_N_Delta_Aggregate     (N : Node_Id);
    procedure Expand_N_Extension_Aggregate (N : Node_Id);
 
    function Is_Delayed_Aggregate (N : Node_Id) return Boolean;

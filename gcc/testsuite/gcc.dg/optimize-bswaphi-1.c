@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target bswap16 } */
+/* { dg-require-effective-target bswap } */
 /* { dg-require-effective-target stdint_types } */
 /* { dg-options "-O2 -fdump-tree-bswap" } */
 /* { dg-additional-options "-march=z900" { target s390-*-* } } */
@@ -55,5 +55,4 @@ swap16 (HItype in)
 }
 
 /* { dg-final { scan-tree-dump-times "16 bit load in target endianness found at" 3 "bswap" } } */
-/* { dg-final { scan-tree-dump-times "16 bit bswap implementation found at" 1 "bswap" { target alpha*-*-* arm*-*-* } } } */
-/* { dg-final { scan-tree-dump-times "16 bit bswap implementation found at" 4 "bswap" { xfail alpha*-*-* arm*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "16 bit bswap implementation found at" 4 "bswap" } } */

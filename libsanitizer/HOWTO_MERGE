@@ -11,7 +11,8 @@ general list of actions required to perform the merge:
   in corresponding CMakeLists.txt and config-ix.cmake files from compiler-rt source
   directory.
 * Apply all needed GCC-specific patches to libsanitizer (note that some of
-  them might be already included to upstream).
+  them might be already included to upstream).  The list of these patches is stored
+  into LOCAL_PATCHES file.
 * Apply all necessary compiler changes.  Be especially careful here, you must
   not break ABI between compiler and library.  You can reveal these changes by
   inspecting the history of AddressSanitizer.cpp and ThreadSanitizer.cpp files
@@ -37,3 +38,4 @@ general list of actions required to perform the merge:
   in libasan, configure/Makefile changes). The review process has O(N^2) complexity, so you
   would simplify and probably speed up the review process by doing this.
 * Send your patches for review to GCC Patches Mailing List (gcc-patches@gcc.gnu.org).
+* Update LOCAL_PATCHES file when you've committed the whole patch set with new revisions numbers.

@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
 This file is part of GCC.
@@ -42,9 +42,11 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 
 #define _FP_DIV_MEAT_Q(R,X,Y)	_FP_DIV_MEAT_2_udiv(Q,R,X,Y)
 
+#define _FP_NANFRAC_H		((_FP_QNANBIT_H << 1) - 1)
 #define _FP_NANFRAC_S		((_FP_QNANBIT_S << 1) - 1)
 #define _FP_NANFRAC_D		((_FP_QNANBIT_D << 1) - 1)
 #define _FP_NANFRAC_Q		((_FP_QNANBIT_Q << 1) - 1), -1
+#define _FP_NANSIGN_H		0
 #define _FP_NANSIGN_S		0
 #define _FP_NANSIGN_D		0
 #define _FP_NANSIGN_Q		0
@@ -88,7 +90,7 @@ void __sfp_handle_exceptions (int);
   do {						\
     if (__builtin_expect (_fex, 0))		\
       __sfp_handle_exceptions (_fex);		\
-  } while (0);
+  } while (0)
 
 #define FP_TRAPPING_EXCEPTIONS ((_fpcr >> FP_EX_SHIFT) & FP_EX_ALL)
 

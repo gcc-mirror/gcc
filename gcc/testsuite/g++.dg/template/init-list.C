@@ -12,6 +12,6 @@ struct Derived : Base<T> {
 };
 
 template<typename T>
-Derived<T>::Derived() : Base(4) { } // { dg-error "have any field" "" }
+Derived<T>::Derived() : Base(4) { } // { dg-error "have any field" }
 
 

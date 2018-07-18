@@ -17,6 +17,6 @@ char
 g (void)
 {
   return (char) p;
-/* { dg-warning "cast from pointer to integer of different size" "" { target c } 19 } */
-/* { dg-error "cast from 'void\\*' to 'char' loses precision" "" { target c++ } 19 } */
+/* { dg-warning "cast from pointer to integer of different size" "" { target c } .-1 } */
+/* { dg-error "cast from 'void\\*' to 'char' loses precision" "" { target c++ } .-2 } */
 }

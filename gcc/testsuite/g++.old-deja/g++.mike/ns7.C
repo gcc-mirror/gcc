@@ -6,5 +6,5 @@ namespace A {
 
 namespace B {
   int j = i;	// { dg-error "" } 
-  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } 8 }
+  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } .-1 }
 }

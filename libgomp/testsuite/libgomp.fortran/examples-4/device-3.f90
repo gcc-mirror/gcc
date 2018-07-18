@@ -8,14 +8,14 @@ program e_57_3
   integer :: default_device
 
   default_device = omp_get_default_device ()
-  !$omp target
+  !$omp target map(from: res)
     res = omp_is_initial_device ()
   !$omp end target
-  if (res) call abort
+  if (res) STOP 1
 
   call omp_set_default_device (omp_get_num_devices ())
-  !$omp target
+  !$omp target map(from: res)
     res = omp_is_initial_device ()
   !$omp end target
-  if (.not. res) call abort
+  if (.not. res) STOP 2
 end program

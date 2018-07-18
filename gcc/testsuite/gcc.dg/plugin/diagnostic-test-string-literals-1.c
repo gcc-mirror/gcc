@@ -194,6 +194,39 @@ test_L (void)
 }
 
 void
+test_raw_string_one_liner (void)
+{
+  /* Digits 0-9.  */
+  __emit_string_literal_range (R"foo(0123456789)foo", /* { dg-warning "range" } */
+			       6, 4, 7);
+/* { dg-begin-multiline-output "" }
+   __emit_string_literal_range (R"foo(0123456789)foo",
+                                          ~~^~
+   { dg-end-multiline-output "" } */
+}
+
+void
+test_raw_string_multiline (void)
+{
+  __emit_string_literal_range (R"foo(
+hello
+world
+)foo",
+			       6, 4, 7);
+  /* { dg-error "unable to read substring location: range endpoints are on different lines" "" { target *-*-* } .-5 } */
+  /* { dg-begin-multiline-output "" }
+   __emit_string_literal_range (R"foo(
+                                ^~~~~~
+ hello
+ ~~~~~                           
+ world
+ ~~~~~                           
+ )foo",
+ ~~~~~                           
+   { dg-end-multiline-output "" } */
+}
+
+void
 test_macro (void)
 {
 #define START "01234"  /* { dg-warning "range" } */
@@ -210,6 +243,22 @@ test_macro (void)
    { dg-end-multiline-output "" } */
 }
 
+void
+test_multitoken_macro (void)
+{
+#define RANGE ("0123456789")  /* { dg-error "unable to read substring location: macro expansion" } */
+  __emit_string_literal_range (RANGE, 4, 3, 6);
+/* { dg-begin-multiline-output "" }
+ #define RANGE ("0123456789")
+               ^~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+   __emit_string_literal_range (RANGE, 4, 3, 6);
+                                ^~~~~
+   { dg-end-multiline-output "" } */
+#undef RANGE
+}
+
 /* Verify that the location of the closing quote is used
    for the location of the null terminating character.  */
 
@@ -221,5 +270,25 @@ test_terminator_location (void)
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range ("0123456789",
                                            ^
+   { dg-end-multiline-output "" } */
+}
+
+/* Verify that we fail gracefully when a string literal token is split
+   across multiple physical lines.  */
+
+void
+test_backslash_continued_logical_lines (void)
+{
+  __emit_string_literal_range ("\
+01234\
+56789", 6, 6, 7);
+  /* { dg-error "unable to read substring location: range endpoints are on different lines" "" { target *-*-* } .-3 } */
+  /* { dg-begin-multiline-output "" }
+   __emit_string_literal_range ("\
+                                ^~
+ 01234\
+ ~~~~~~                          
+ 56789", 6, 6, 7);
+ ~~~~~~                          
    { dg-end-multiline-output "" } */
 }

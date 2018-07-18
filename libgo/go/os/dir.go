@@ -1,102 +1,46 @@
-// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright 2016 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package os
 
-import (
-	"io"
-	"sync/atomic"
-	"syscall"
-	"unsafe"
-)
-
-//extern opendir
-func libc_opendir(*byte) *syscall.DIR
-
-//extern closedir
-func libc_closedir(*syscall.DIR) int
-
-// FIXME: pathconf returns long, not int.
-//extern pathconf
-func libc_pathconf(*byte, int) int
-
-func clen(n []byte) int {
-	for i := 0; i < len(n); i++ {
-		if n[i] == 0 {
-			return i
-		}
+// Readdir reads the contents of the directory associated with file and
+// returns a slice of up to n FileInfo values, as would be returned
+// by Lstat, in directory order. Subsequent calls on the same file will yield
+// further FileInfos.
+//
+// If n > 0, Readdir returns at most n FileInfo structures. In this case, if
+// Readdir returns an empty slice, it will return a non-nil error
+// explaining why. At the end of a directory, the error is io.EOF.
+//
+// If n <= 0, Readdir returns all the FileInfo from the directory in
+// a single slice. In this case, if Readdir succeeds (reads all
+// the way to the end of the directory), it returns the slice and a
+// nil error. If it encounters an error before the end of the
+// directory, Readdir returns the FileInfo read until that point
+// and a non-nil error.
+func (f *File) Readdir(n int) ([]FileInfo, error) {
+	if f == nil {
+		return nil, ErrInvalid
 	}
-	return len(n)
+	return f.readdir(n)
 }
 
-var nameMax int32
-
-func (file *File) readdirnames(n int) (names []string, err error) {
-	if file.dirinfo == nil {
-		p, err := syscall.BytePtrFromString(file.name)
-		if err != nil {
-			return nil, err
-		}
-
-		elen := int(atomic.LoadInt32(&nameMax))
-		if elen == 0 {
-			syscall.Entersyscall()
-			plen := libc_pathconf(p, syscall.PC_NAME_MAX)
-			syscall.Exitsyscall()
-			if plen < 1024 {
-				plen = 1024
-			}
-			var dummy syscall.Dirent
-			elen = int(unsafe.Offsetof(dummy.Name)) + plen + 1
-			atomic.StoreInt32(&nameMax, int32(elen))
-		}
-
-		syscall.Entersyscall()
-		r := libc_opendir(p)
-		errno := syscall.GetErrno()
-		syscall.Exitsyscall()
-		if r == nil {
-			return nil, &PathError{"opendir", file.name, errno}
-		}
-
-		file.dirinfo = new(dirInfo)
-		file.dirinfo.buf = make([]byte, elen)
-		file.dirinfo.dir = r
+// Readdirnames reads and returns a slice of names from the directory f.
+//
+// If n > 0, Readdirnames returns at most n names. In this case, if
+// Readdirnames returns an empty slice, it will return a non-nil error
+// explaining why. At the end of a directory, the error is io.EOF.
+//
+// If n <= 0, Readdirnames returns all the names from the directory in
+// a single slice. In this case, if Readdirnames succeeds (reads all
+// the way to the end of the directory), it returns the slice and a
+// nil error. If it encounters an error before the end of the
+// directory, Readdirnames returns the names read until that point and
+// a non-nil error.
+func (f *File) Readdirnames(n int) (names []string, err error) {
+	if f == nil {
+		return nil, ErrInvalid
 	}
-
-	entryDirent := (*syscall.Dirent)(unsafe.Pointer(&file.dirinfo.buf[0]))
-
-	size := n
-	if size <= 0 {
-		size = 100
-		n = -1
-	}
-
-	names = make([]string, 0, size) // Empty with room to grow.
-
-	for n != 0 {
-		var dirent *syscall.Dirent
-		pr := &dirent
-		syscall.Entersyscall()
-		i := libc_readdir_r(file.dirinfo.dir, entryDirent, pr)
-		syscall.Exitsyscall()
-		if i != 0 {
-			return names, NewSyscallError("readdir_r", i)
-		}
-		if dirent == nil {
-			break // EOF
-		}
-		bytes := (*[10000]byte)(unsafe.Pointer(&dirent.Name[0]))
-		var name = string(bytes[0:clen(bytes[:])])
-		if name == "." || name == ".." { // Useless names
-			continue
-		}
-		names = append(names, name)
-		n--
-	}
-	if n >= 0 && len(names) == 0 {
-		return names, io.EOF
-	}
-	return names, nil
+	return f.readdirnames(n)
 }

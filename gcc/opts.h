@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -100,6 +100,8 @@ struct cl_option
   BOOL_BITFIELD cl_tolower : 1;
   /* Report argument with -fverbose-asm  */
   BOOL_BITFIELD cl_report : 1;
+  /* Deprecated option  */
+  BOOL_BITFIELD cl_deprecated: 1;
   /* Offset of field for this option in struct gcc_options, or
      (unsigned short) -1 if none.  */
   unsigned short flag_var_offset;
@@ -110,6 +112,10 @@ struct cl_option
   enum cl_var_type var_type;
   /* Value or bit-mask with which to set a field.  */
   HOST_WIDE_INT var_value;
+  /* Range info minimum, or -1.  */
+  int range_min;
+  /* Range info maximum, or -1.  */
+  int range_max;
 };
 
 /* Records that the state of an option consists of SIZE bytes starting
@@ -200,10 +206,12 @@ extern const unsigned int cl_enums_count;
 #define CL_ERR_MISSING_ARG	(1 << 1) /* Argument required but missing.  */
 #define CL_ERR_WRONG_LANG	(1 << 2) /* Option for wrong language.  */
 #define CL_ERR_UINT_ARG		(1 << 3) /* Bad unsigned integer argument.  */
-#define CL_ERR_ENUM_ARG		(1 << 4) /* Bad enumerated argument.  */
-#define CL_ERR_NEGATIVE		(1 << 5) /* Negative form of option
+#define CL_ERR_INT_RANGE_ARG	(1 << 4) /* Bad unsigned integer argument.  */
+#define CL_ERR_ENUM_ARG		(1 << 5) /* Bad enumerated argument.  */
+#define CL_ERR_NEGATIVE		(1 << 6) /* Negative form of option
 					    not permitted (together
 					    with OPT_SPECIAL_unknown).  */
+#define CL_ERR_DEPRECATED	(1 << 7) /* Deprecated option.  */
 
 /* Structure describing the result of decoding an option.  */
 
@@ -267,7 +275,8 @@ struct cl_option_handler_func
 		   const struct cl_decoded_option *decoded,
 		   unsigned int lang_mask, int kind, location_t loc,
 		   const struct cl_option_handlers *handlers,
-		   diagnostic_context *dc);
+		   diagnostic_context *dc,
+		   void (*target_option_override_hook) (void));
 
   /* The mask that must have some bit in common with the flags for the
      option for this particular handler to be used.  */
@@ -288,6 +297,9 @@ struct cl_option_handlers
      language.  */
   void (*wrong_lang_callback) (const struct cl_decoded_option *decoded,
 			       unsigned int lang_mask);
+
+  /* Target option override hook.  */
+  void (*target_option_override_hook) (void);
 
   /* The number of individual handlers.  */
   size_t num_handlers;
@@ -333,13 +345,15 @@ extern void decode_cmdline_options_to_array_default_mask (unsigned int argc,
 							  const char **argv, 
 							  struct cl_decoded_option **decoded_options,
 							  unsigned int *decoded_options_count);
-extern void set_default_handlers (struct cl_option_handlers *handlers);
+extern void set_default_handlers (struct cl_option_handlers *handlers,
+				  void (*target_option_override_hook) (void));
 extern void decode_options (struct gcc_options *opts,
 			    struct gcc_options *opts_set,
 			    struct cl_decoded_option *decoded_options,
 			    unsigned int decoded_options_count,
 			    location_t loc,
-			    diagnostic_context *dc);
+			    diagnostic_context *dc,
+			    void (*target_option_override_hook) (void));
 extern int option_enabled (int opt_idx, void *opts);
 extern bool get_option_state (struct gcc_options *, int,
 			      struct cl_option_state *);
@@ -353,7 +367,7 @@ bool handle_generated_option (struct gcc_options *opts,
 			      size_t opt_index, const char *arg, int value,
 			      unsigned int lang_mask, int kind, location_t loc,
 			      const struct cl_option_handlers *handlers,
-			      diagnostic_context *dc);
+			      bool generated_p, diagnostic_context *dc);
 void generate_option (size_t opt_index, const char *arg, int value,
 		      unsigned int lang_mask,
 		      struct cl_decoded_option *decoded);
@@ -378,20 +392,24 @@ extern void print_ignored_options (void);
 extern void handle_common_deferred_options (void);
 unsigned int parse_sanitizer_options (const char *, location_t, int,
 				      unsigned int, int, bool);
+
+unsigned int parse_no_sanitize_attribute (char *value);
 extern bool common_handle_option (struct gcc_options *opts,
 				  struct gcc_options *opts_set,
 				  const struct cl_decoded_option *decoded,
 				  unsigned int lang_mask, int kind,
 				  location_t loc,
 				  const struct cl_option_handlers *handlers,
-				  diagnostic_context *dc);
+				  diagnostic_context *dc,
+				  void (*target_option_override_hook) (void));
 extern bool target_handle_option (struct gcc_options *opts,
 				  struct gcc_options *opts_set,
 				  const struct cl_decoded_option *decoded,
 				  unsigned int lang_mask, int kind,
 				  location_t loc,
 				  const struct cl_option_handlers *handlers,
-				  diagnostic_context *dc);
+				  diagnostic_context *dc,
+				  void (*target_option_override_hook) (void));
 extern void finish_options (struct gcc_options *opts,
 			    struct gcc_options *opts_set,
 			    location_t loc);
@@ -423,5 +441,12 @@ extern void add_misspelling_candidates (auto_vec<char *> *candidates,
 extern const char *candidates_list_and_hint (const char *arg, char *&str,
 					     const auto_vec <const char *> &
 					     candidates);
+
+
+extern bool parse_and_check_align_values (const char *flag,
+					  const char *name,
+					  auto_vec<unsigned> &result_values,
+					  bool report_error,
+					  location_t loc);
 
 #endif

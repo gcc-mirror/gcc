@@ -56,13 +56,13 @@ TEST (SUFFIX, q, 32, 4, u,u,s)			\
 TEST (SUFFIX, q, 64, 2, u,u,d)			\
 
 BUILD_VARIANTS ( )
-/* { dg-final { scan-assembler "fcvtzs\\tw\[0-9\]+, s\[0-9\]+" } } */
-/* { dg-final { scan-assembler "fcvtzs\\tx\[0-9\]+, d\[0-9\]+" } } */
+/* { dg-final { scan-assembler "fcvtzs\\t(w|s)\[0-9\]+, s\[0-9\]+" } } */
+/* { dg-final { scan-assembler "fcvtzs\\t(x|d)\[0-9\]+, d\[0-9\]+" } } */
 /* { dg-final { scan-assembler "fcvtzs\\tv\[0-9\]+\.2s, v\[0-9\]+\.2s" } } */
 /* { dg-final { scan-assembler "fcvtzs\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s" } } */
 /* { dg-final { scan-assembler "fcvtzs\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d" } } */
-/* { dg-final { scan-assembler "fcvtzu\\tw\[0-9\]+, s\[0-9\]+" } } */
-/* { dg-final { scan-assembler "fcvtzu\\tx\[0-9\]+, d\[0-9\]+" } } */
+/* { dg-final { scan-assembler "fcvtzu\\t(w|s)\[0-9\]+, s\[0-9\]+" } } */
+/* { dg-final { scan-assembler "fcvtzu\\t(x|d)\[0-9\]+, d\[0-9\]+" } } */
 /* { dg-final { scan-assembler "fcvtzu\\tv\[0-9\]+\.2s, v\[0-9\]+\.2s" } } */
 /* { dg-final { scan-assembler "fcvtzu\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s" } } */
 /* { dg-final { scan-assembler "fcvtzu\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d" } } */

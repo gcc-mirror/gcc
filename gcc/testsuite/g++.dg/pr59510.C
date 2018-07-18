@@ -1,6 +1,7 @@
 // PR debug/59510
 // { dg-do compile }
 // { dg-options "-O2 -g --param=large-stack-frame-growth=1" }
+// { dg-additional-options "-Wno-return-type" }
 
 template <typename _Iterator>
 struct _Iter_base

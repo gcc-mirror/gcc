@@ -42,11 +42,11 @@ character*600 :: l = " &NAMINTERP atmkey%ppp = 076,058,062,079, atmkey%nnn = 000
 namelist /naminterp/outgeo,ahalf,bhalf,atmkey
 print *, outgeo%nlev
 read(l,nml=naminterp)
-if (outgeo%nlev /= 10) call abort
-if (any(ahalf(1:10) .ne. [0.,1.,2.,3.,4.,5.,6.,7.,8.,9.])) call abort
-if (any(bhalf(1:10) .ne. [0.,1.,2.,3.,4.,5.,6.,7.,8.,9.])) call abort
-if (any(atmkey(1:4)%ppp .ne. [076,058,062,079])) call abort
-if (any(atmkey(1:4)%nnn .ne. [0,0,0,0])) call abort
+if (outgeo%nlev /= 10) STOP 1
+if (any(ahalf(1:10) .ne. [0.,1.,2.,3.,4.,5.,6.,7.,8.,9.])) STOP 2
+if (any(bhalf(1:10) .ne. [0.,1.,2.,3.,4.,5.,6.,7.,8.,9.])) STOP 3
+if (any(atmkey(1:4)%ppp .ne. [076,058,062,079])) STOP 4
+if (any(atmkey(1:4)%nnn .ne. [0,0,0,0])) STOP 5
 if (any(atmkey(1:4)%name .ne. ['LIQUID_WATER','SOLID_WATER ','SNOW        ',&
-                              &'RAIN        '])) call abort
+                              &'RAIN        '])) STOP 6
 end

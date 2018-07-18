@@ -12,10 +12,10 @@
       write (19,'(A15)') 'E+00'
       rewind (19)
       read (19,'(E15.8)') a
-      if (a .ne. 0) call abort
+      if (a .ne. 0) STOP 1
       close (19)
 
       c = "+         "
       read (c,"(F10.4)") a
-      if (a /= 0) call abort
+      if (a /= 0) STOP 2
       end

@@ -54,7 +54,7 @@ int64 i; /* { dg-error "unknown type name 'int64'; did you mean 'int64_t'?" } */
 /* Verify that gcc doesn't offer nonsensical suggestions.  */
 
 nonsensical_suggestion_t var; /* { dg-bogus "did you mean" } */
-/* { dg-error "unknown type name" "" { target { *-*-* } } 56 } */
+/* { dg-error "unknown type name" "" { target { *-*-* } } .-1 } */
 /* { dg-begin-multiline-output "" }
  nonsensical_suggestion_t var;
  ^~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,8 +100,9 @@ baz value; /* { dg-error "1: unknown type name .baz.; use .enum. keyword to refe
    { dg-end-multiline-output "" } */
 
 /* TODO: it would be better to detect the "singed" vs "signed" typo here.  */
-singed char ch; /* { dg-error "8: before .char." } */
+singed char ch; /* { dg-error "7: before .char." } */
 /* { dg-begin-multiline-output "" }
  singed char ch;
-        ^~~~
+       ^~~~~
+       ;
    { dg-end-multiline-output "" } */

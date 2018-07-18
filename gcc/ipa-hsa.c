@@ -1,5 +1,5 @@
 /* Callgraph based analysis of static variables.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
    Contributed by Martin Liska <mliska@suse.cz>
 
 This file is part of GCC.
@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "print-tree.h"
 #include "symbol-summary.h"
-#include "hsa.h"
+#include "hsa-common.h"
 
 namespace {
 
@@ -79,10 +79,10 @@ process_hsa_functions (void)
       hsa_function_summary *s = hsa_summaries->get (node);
 
       /* A linked function is skipped.  */
-      if (s->m_binded_function != NULL)
+      if (s != NULL && s->m_bound_function != NULL)
 	continue;
 
-      if (s->m_kind != HSA_NONE)
+      if (s != NULL)
 	{
 	  if (!check_warn_node_versionable (node))
 	    continue;
@@ -90,6 +90,7 @@ process_hsa_functions (void)
 	    = node->create_virtual_clone (vec <cgraph_edge *> (),
 					  NULL, NULL, "hsa");
 	  TREE_PUBLIC (clone->decl) = TREE_PUBLIC (node->decl);
+	  clone->externally_visible = node->externally_visible;
 
 	  clone->force_output = true;
 	  hsa_summaries->link_functions (clone, node, s->m_kind, false);
@@ -99,7 +100,10 @@ process_hsa_functions (void)
 		     clone->name (),
 		     s->m_kind == HSA_KERNEL ? "kernel" : "function");
 	}
-      else if (hsa_callable_function_p (node->decl))
+      else if (hsa_callable_function_p (node->decl)
+	       /* At this point, this is enough to identify clones for
+		  parallel, which for HSA would need to be kernels anyway.  */
+	       && !DECL_ARTIFICIAL (node->decl))
 	{
 	  if (!check_warn_node_versionable (node))
 	    continue;
@@ -107,8 +111,9 @@ process_hsa_functions (void)
 	    = node->create_virtual_clone (vec <cgraph_edge *> (),
 					  NULL, NULL, "hsa");
 	  TREE_PUBLIC (clone->decl) = TREE_PUBLIC (node->decl);
+	  clone->externally_visible = node->externally_visible;
 
-	  if (!cgraph_local_p (node))
+	  if (!node->local.local)
 	    clone->force_output = true;
 	  hsa_summaries->link_functions (clone, node, HSA_FUNCTION, false);
 
@@ -126,12 +131,12 @@ process_hsa_functions (void)
       while (e)
 	{
 	  hsa_function_summary *src = hsa_summaries->get (node);
-	  if (src->m_kind != HSA_NONE && src->m_gpu_implementation_p)
+	  if (src != NULL && src->m_gpu_implementation_p)
 	    {
 	      hsa_function_summary *dst = hsa_summaries->get (e->callee);
-	      if (dst->m_kind != HSA_NONE && !dst->m_gpu_implementation_p)
+	      if (dst != NULL && !dst->m_gpu_implementation_p)
 		{
-		  e->redirect_callee (dst->m_binded_function);
+		  e->redirect_callee (dst->m_bound_function);
 		  if (dump_file)
 		    fprintf (dump_file,
 			     "Redirecting edge to HSA function: %s->%s\n",
@@ -171,7 +176,7 @@ ipa_hsa_write_summary (void)
       node = lsei_cgraph_node (lsei);
       hsa_function_summary *s = hsa_summaries->get (node);
 
-      if (s->m_kind != HSA_NONE)
+      if (s != NULL)
 	count++;
     }
 
@@ -184,7 +189,7 @@ ipa_hsa_write_summary (void)
       node = lsei_cgraph_node (lsei);
       hsa_function_summary *s = hsa_summaries->get (node);
 
-      if (s->m_kind != HSA_NONE)
+      if (s != NULL)
 	{
 	  encoder = ob->decl_state->symtab_node_encoder;
 	  int node_ref = lto_symtab_encoder_encode (encoder, node);
@@ -193,10 +198,10 @@ ipa_hsa_write_summary (void)
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, s->m_kind, 2);
 	  bp_pack_value (&bp, s->m_gpu_implementation_p, 1);
-	  bp_pack_value (&bp, s->m_binded_function != NULL, 1);
+	  bp_pack_value (&bp, s->m_bound_function != NULL, 1);
 	  streamer_write_bitpack (&bp);
-	  if (s->m_binded_function)
-	    stream_write_tree (ob, s->m_binded_function->decl, true);
+	  if (s->m_bound_function)
+	    stream_write_tree (ob, s->m_bound_function->decl, true);
 	}
     }
 
@@ -239,7 +244,7 @@ ipa_hsa_read_section (struct lto_file_decl_data *file_data, const char *data,
       node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder,
 								index));
       gcc_assert (node->definition);
-      hsa_function_summary *s = hsa_summaries->get (node);
+      hsa_function_summary *s = hsa_summaries->get_create (node);
 
       struct bitpack_d bp = streamer_read_bitpack (&ib_main);
       s->m_kind = (hsa_function_kind) bp_unpack_value (&bp, 2);
@@ -249,7 +254,7 @@ ipa_hsa_read_section (struct lto_file_decl_data *file_data, const char *data,
       if (has_tree)
 	{
 	  tree decl = stream_read_tree (&ib_main, data_in);
-	  s->m_binded_function = cgraph_node::get_create (decl);
+	  s->m_bound_function = cgraph_node::get_create (decl);
 	}
     }
   lto_free_section_data (file_data, LTO_section_ipa_hsa, NULL, data,
@@ -284,7 +289,7 @@ const pass_data pass_data_ipa_hsa =
 {
   IPA_PASS, /* type */
   "hsa", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
+  OPTGROUP_OMP, /* optinfo_flags */
   TV_IPA_HSA, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

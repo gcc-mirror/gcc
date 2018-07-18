@@ -14,7 +14,7 @@ template<class T> void A::f()
   struct B
   {
     void g() {}
-    static int x;	// { dg-error "static.*int A::f\\(\\)::B::x" "" }
+    static int x;	// { dg-error "static.*int A::f\\(\\)::B::x" }
   };
 }
 

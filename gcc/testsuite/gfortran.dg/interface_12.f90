@@ -77,8 +77,8 @@ program test
    character(21) :: chr (3)
    chr = "ABCDEFGHIJKLMNOPQRSTU"
 
-   if (len (test2 (10)) .ne. 21) call abort ()
-   if (any (test2 (10) .ne. chr)) call abort ()
+   if (len (test2 (10)) .ne. 21) STOP 1
+   if (any (test2 (10) .ne. chr)) STOP 2
 end program test
 
 pure function f (x)

@@ -30,23 +30,23 @@ program test
  jjp = t(88)
 
  call faa(iia, jja) ! Copy back
- if (iia /= 7 .and. jja%aa /= 88) call abort ()
+ if (iia /= 7 .and. jja%aa /= 88) STOP 1
  call fai(iia, jja) ! No copy back
- if (iia /= 7 .and. jja%aa /= 88) call abort ()
+ if (iia /= 7 .and. jja%aa /= 88) STOP 2
 
  call fpa(iip, jjp) ! Copy back
- if (iip /= 7 .and. jjp%aa /= 88) call abort ()
+ if (iip /= 7 .and. jjp%aa /= 88) STOP 3
  call fpi(iip, jjp) ! No copy back
- if (iip /= 7 .and. jjp%aa /= 88) call abort ()
+ if (iip /= 7 .and. jjp%aa /= 88) STOP 4
 
  call fnn(iia, jja) ! No copy back
- if (iia /= 7 .and. jja%aa /= 88) call abort ()
+ if (iia /= 7 .and. jja%aa /= 88) STOP 5
  call fno(iia, jja) ! No copy back
- if (iia /= 7 .and. jja%aa /= 88) call abort ()
+ if (iia /= 7 .and. jja%aa /= 88) STOP 6
  call fnn(iip, jjp) ! No copy back
- if (iip /= 7 .and. jjp%aa /= 88) call abort ()
+ if (iip /= 7 .and. jjp%aa /= 88) STOP 7
  call fno(iip, jjp) ! No copy back
- if (iip /= 7 .and. jjp%aa /= 88) call abort ()
+ if (iip /= 7 .and. jjp%aa /= 88) STOP 8
 
  is_present = .false.
 
@@ -61,27 +61,27 @@ contains
   subroutine faa (xx1, yy1)
     integer, allocatable :: xx1(..)
     type(t), allocatable :: yy1(..)
-    if (.not. allocated (xx1)) call abort ()
-    if (.not. allocated (yy1)) call abort ()
+    if (.not. allocated (xx1)) STOP 9
+    if (.not. allocated (yy1)) STOP 10
   end subroutine faa
   subroutine fai (xx1, yy1)
     integer, allocatable, intent(in) :: xx1(..)
     type(t), allocatable, intent(in) :: yy1(..)
-    if (.not. allocated (xx1)) call abort ()
-    if (.not. allocated (yy1)) call abort ()
+    if (.not. allocated (xx1)) STOP 11
+    if (.not. allocated (yy1)) STOP 12
   end subroutine fai
   subroutine fpa (xx1, yy1)
     integer, pointer :: xx1(..)
     type(t), pointer :: yy1(..)
-    if (is_present .neqv. associated (xx1)) call abort ()
-    if (is_present .neqv. associated (yy1)) call abort ()
+    if (is_present .neqv. associated (xx1)) STOP 13
+    if (is_present .neqv. associated (yy1)) STOP 14
   end subroutine fpa
 
   subroutine fpi (xx1, yy1)
     integer, pointer, intent(in) :: xx1(..)
     type(t), pointer, intent(in) :: yy1(..)
-    if (is_present .neqv. associated (xx1)) call abort ()
-    if (is_present .neqv. associated (yy1)) call abort ()
+    if (is_present .neqv. associated (xx1)) STOP 15
+    if (is_present .neqv. associated (yy1)) STOP 16
   end subroutine fpi
 
   subroutine fnn(xx2,yy2)
@@ -92,8 +92,8 @@ contains
   subroutine fno(xx2,yy2)
     integer, optional  :: xx2(..)
     type(t), optional  :: yy2(..)
-    if (is_present .neqv. present (xx2)) call abort ()
-    if (is_present .neqv. present (yy2)) call abort ()
+    if (is_present .neqv. present (xx2)) STOP 17
+    if (is_present .neqv. present (yy2)) STOP 18
   end subroutine fno
 end program test
 

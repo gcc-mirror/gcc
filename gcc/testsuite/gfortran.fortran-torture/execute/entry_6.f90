@@ -80,30 +80,30 @@
 	double precision, dimension (2, 2) :: d, e
 	i (:, :) = 6
 	j = f1 (i)
-	if (any (j .ne. 21)) call abort ()
+	if (any (j .ne. 21)) STOP 1
 	i (:, :) = 7
 	j = e1 (i)
 	j (:, :) = 49
-	if (any (j .ne. 49)) call abort ()
+	if (any (j .ne. 49)) STOP 2
 	r = f2 ()
-	if (any (r .ne. 45)) call abort ()
+	if (any (r .ne. 45)) STOP 3
 	r = e2 ()
-	if (any (r .ne. 45)) call abort ()
+	if (any (r .ne. 45)) STOP 4
 	e = f3 ()
-	if (any (e .ne. 47)) call abort ()
+	if (any (e .ne. 47)) STOP 5
 	e = e3 ()
-	if (any (e .ne. 47)) call abort ()
+	if (any (e .ne. 47)) STOP 6
 	d (:, :) = 17
 	e = f4 (d)
-	if (any (e .ne. 32)) call abort ()
+	if (any (e .ne. 32)) STOP 7
 	e = e4 (d)
-	if (any (e .ne. 59)) call abort ()
+	if (any (e .ne. 59)) STOP 8
 	j = f5 ()
-	if (any (j .ne. 45)) call abort ()
+	if (any (j .ne. 45)) STOP 9
 	j = e5 ()
-	if (any (j .ne. 45)) call abort ()
+	if (any (j .ne. 45)) STOP 10
 	r = f6 ()
-	if (any (r .ne. 47)) call abort ()
+	if (any (r .ne. 47)) STOP 11
 	r = e6 ()
-	if (any (r .ne. 47)) call abort ()
+	if (any (r .ne. 47)) STOP 12
 	end

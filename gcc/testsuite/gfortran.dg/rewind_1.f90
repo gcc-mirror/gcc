@@ -15,6 +15,6 @@ program foo
   s = ""
   read(11, '(a11)') s
   close(11)
-  if (s .ne. "Hello World") call abort
+  if (s .ne. "Hello World") STOP 1
 end program
 

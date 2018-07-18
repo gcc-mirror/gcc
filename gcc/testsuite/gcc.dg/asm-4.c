@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
+/* "p" modifier can't be used to generate a valid memory address with ILP32.  */
+/* { dg-skip-if "" { aarch64*-*-* && ilp32 } } */
+
 int main()
 {
   int x, y, z;

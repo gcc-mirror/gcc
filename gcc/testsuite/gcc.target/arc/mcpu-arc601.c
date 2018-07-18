@@ -1,4 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=ARC601" } */
+/* { dg-skip-if "" { ! { clmcpu } } } */
+/* { dg-options "-mcpu=arc601" } */
 
-/* { dg-final { scan-assembler ".cpu ARC601" } } */
+/* { dg-final { scan-assembler ".cpu ARC60.*" } } */

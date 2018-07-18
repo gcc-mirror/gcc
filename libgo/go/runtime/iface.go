@@ -261,7 +261,7 @@ func ifaceI2T2P(t *_type, i iface) (unsafe.Pointer, bool) {
 // Convert an empty interface to a non-pointer non-interface type.
 func ifaceE2T2(t *_type, e eface, ret unsafe.Pointer) bool {
 	if !eqtype(t, e._type) {
-		memclr(ret, t.size)
+		typedmemclr(t, ret)
 		return false
 	} else {
 		typedmemmove(t, ret, e.data)
@@ -272,7 +272,7 @@ func ifaceE2T2(t *_type, e eface, ret unsafe.Pointer) bool {
 // Convert a non-empty interface to a non-pointer non-interface type.
 func ifaceI2T2(t *_type, i iface, ret unsafe.Pointer) bool {
 	if i.tab == nil || !eqtype(t, *(**_type)(i.tab)) {
-		memclr(ret, t.size)
+		typedmemclr(t, ret)
 		return false
 	} else {
 		typedmemmove(t, ret, i.data)

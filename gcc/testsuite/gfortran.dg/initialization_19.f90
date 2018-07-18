@@ -17,7 +17,7 @@ subroutine g
  type(d) :: a
  ! Without the following line it passes with 4.3.0:
  print *, a%i
- if(a%i /= -1) call abort()
+ if(a%i /= -1) STOP 1
  a%i=0
 end subroutine g
 end module s

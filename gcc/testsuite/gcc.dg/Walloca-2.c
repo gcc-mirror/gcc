@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-Walloca-larger-than=2000 -O2" } */
 
 void f (void *);
@@ -36,8 +37,8 @@ g3 (int n)
   if (n > 0 && n < 3000)
     {
       p = __builtin_alloca (n); // { dg-warning "'alloca' may be too large" "" { target lp64} }
-      // { dg-message "note:.*argument may be as large as 2999" "note" { target lp64 } 38 }
-      // { dg-warning "unbounded use of 'alloca'" "" { target { ! lp64 } } 38 }
+      // { dg-message "note:.*argument may be as large as 2999" "note" { target lp64 } .-1 }
+      // { dg-warning "unbounded use of 'alloca'" "" { target { ! lp64 } } .-2 }
     }
   else
     p = __builtin_malloc (n);

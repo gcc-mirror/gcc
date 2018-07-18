@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,6 +67,10 @@ package Errout is
    --  (Off,..) and Warning_As_Pragma(...) but do not result in adding the
    --  error message tag. The -gnatw.d switch sets this flag True, -gnatw.D
    --  sets this flag False.
+
+   Current_Node : Node_Id := Empty;
+   --  Used by Error_Msg as a default Node_Id.
+   --  Relevant only when Opt.Include_Subprogram_In_Messages is set.
 
    -----------------------------------
    -- Suppression of Error Messages --
@@ -214,7 +218,7 @@ package Errout is
    --    Insertion character } (Right brace: insert type reference)
    --      The character } is replaced by a string describing the type
    --      referenced by the entity whose Id is stored in Error_Msg_Node_1.
-   --      the string gives the name or description of the type, and also
+   --      The string gives the name or description of the type, and also
    --      where appropriate the location of its declaration. Special cases
    --      like "some integer type" are handled appropriately. Only one } is
    --      allowed in a message, since there is not enough room for two (the
@@ -686,9 +690,13 @@ package Errout is
    --  Output list of messages, including messages giving number of detected
    --  errors and warnings.
 
-   procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr);
+   procedure Error_Msg
+     (Msg : String; Flag_Location : Source_Ptr);
+   procedure Error_Msg
+     (Msg : String; Flag_Location : Source_Ptr; N : Node_Id);
    --  Output a message at specified location. Can be called from the parser
-   --  or the semantic analyzer.
+   --  or the semantic analyzer. If N is set, points to the relevant node for
+   --  this message.
 
    procedure Error_Msg_S (Msg : String);
    --  Output a message at current scan pointer location. This routine can be
@@ -803,6 +811,11 @@ package Errout is
    --  Remove warnings on all elements of a list (Calls Remove_Warning_Messages
    --  on each element of the list, see above).
 
+   procedure Reset_Warnings;
+   --  Reset the counts related to warnings. This is used both to initialize
+   --  these counts and to reset them after each phase of analysis for a given
+   --  value of Opt.Warning_Mode in gnat2why.
+
    procedure Set_Ignore_Errors (To : Boolean);
    --  Following a call to this procedure with To=True, all error calls are
    --  ignored. A call with To=False restores the default treatment in which
@@ -852,9 +865,9 @@ package Errout is
    function Compilation_Errors return Boolean;
    --  Returns True if errors have been detected, or warnings in -gnatwe (treat
    --  warnings as errors) mode. Note that it is mandatory to call Finalize
-   --  before calling this routine. Always returns False in formal verification
-   --  mode, because errors issued when analyzing code are not compilation
-   --  errors, and should not result in exiting with an error status.
+   --  before calling this routine. To account for changes to Warning_Mode in
+   --  gnat2why between phases, the past or current presence of an error is
+   --  recorded in a global variable at each call.
 
    procedure Error_Msg_CRT (Feature : String; N : Node_Id);
    --  Posts a non-fatal message on node N saying that the feature identified

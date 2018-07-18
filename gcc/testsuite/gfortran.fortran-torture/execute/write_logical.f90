@@ -7,17 +7,17 @@
        false = .FALSE.
        b = ''
        write (b, '(L1)') true
-       if (b(1:1) .ne. 'T') call abort
+       if (b(1:1) .ne. 'T') STOP 1
 
        b = ''
        write (b, '(L1)') false
-       if (b(1:1) .ne. 'F') call abort
+       if (b(1:1) .ne. 'F') STOP 2
 
        b = ''
        write(b, '(L4)') true
-       if (b(1:4) .ne. '   T') call abort
+       if (b(1:4) .ne. '   T') STOP 3
 
        b = ''
        write(b, '(L4)') false
-       if (b(1:4) .ne. '   F') call abort
+       if (b(1:4) .ne. '   F') STOP 4
        end

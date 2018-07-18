@@ -23,5 +23,5 @@
         READ (53, temp)
         CLOSE (53)
 
-        if (int1 /= 1 .or. int2 /= 2 .or. int3 /= 3) call abort()
+        if (int1 /= 1 .or. int2 /= 2 .or. int3 /= 3) STOP 1
         END PROGRAM

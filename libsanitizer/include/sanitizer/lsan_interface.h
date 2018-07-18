@@ -62,7 +62,13 @@ extern "C" {
   // for the program it is linked into (if the return value is non-zero). This
   // function must be defined as returning a constant value; any behavior beyond
   // that is unsupported.
+  // To avoid dead stripping, you may need to define this function with
+  // __attribute__((used))
   int __lsan_is_turned_off();
+
+  // This function may be optionally provided by user and should return
+  // a string containing LSan runtime options. See lsan_flags.inc for details.
+  const char *__lsan_default_options();
 
   // This function may be optionally provided by the user and should return
   // a string containing LSan suppressions.

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mcpu=8540 -mspe -mabi=spe -mfloat-gprs=single" } */
-/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } { "*" } { "" } } */
+/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } } */
 
 /* Test vectors that can interconvert without a cast.  */
 
@@ -20,7 +20,7 @@ main (void)
 
   /* Just because this is a V2SI, it doesn't make it an opaque.  */
   vint = vshort; /* { dg-message "note: use -flax-vector-conversions to permit conversions between vectors with differing element types or numbers of subparts" } */
-  /* { dg-error "incompatible types when assigning" "" { target *-*-* } 22 } */
+  /* { dg-error "incompatible types when assigning" "" { target *-*-* } .-1 } */
 
   return 0;
 }

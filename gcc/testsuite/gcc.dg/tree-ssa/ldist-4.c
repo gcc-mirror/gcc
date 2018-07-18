@@ -20,7 +20,5 @@ int loop1 (int k)
   return b[100-1][1];
 }
 
-/* The current cost model fuses the two partitions because they have
-   similar memory accesses.  */
-/* { dg-final { scan-tree-dump "similar memory accesses" "ldist" } } */
+/* Distributing inner loop doesn't expose more parallelism.  */
 /* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 0 "ldist" } } */

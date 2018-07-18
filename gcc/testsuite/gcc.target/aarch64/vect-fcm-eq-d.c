@@ -1,5 +1,7 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-all -fno-unroll-loops --save-temps -fno-inline" } */
+/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-all -fno-unroll-loops --save-temps -fno-inline -fno-vect-cost-model" } */
+
+#pragma GCC target "+nosve"
 
 #define FTYPE double
 #define ITYPE long

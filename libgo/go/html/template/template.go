@@ -33,8 +33,10 @@ var escapeOK = fmt.Errorf("template escaped correctly")
 
 // nameSpace is the data structure shared by all templates in an association.
 type nameSpace struct {
-	mu  sync.Mutex
-	set map[string]*Template
+	mu      sync.Mutex
+	set     map[string]*Template
+	escaped bool
+	esc     escaper
 }
 
 // Templates returns a slice of the templates associated with t, including t
@@ -74,13 +76,28 @@ func (t *Template) Option(opt ...string) *Template {
 	return t
 }
 
+// checkCanParse checks whether it is OK to parse templates.
+// If not, it returns an error.
+func (t *Template) checkCanParse() error {
+	if t == nil {
+		return nil
+	}
+	t.nameSpace.mu.Lock()
+	defer t.nameSpace.mu.Unlock()
+	if t.nameSpace.escaped {
+		return fmt.Errorf("html/template: cannot Parse after Execute")
+	}
+	return nil
+}
+
 // escape escapes all associated templates.
 func (t *Template) escape() error {
 	t.nameSpace.mu.Lock()
 	defer t.nameSpace.mu.Unlock()
+	t.nameSpace.escaped = true
 	if t.escapeErr == nil {
 		if t.Tree == nil {
-			return fmt.Errorf("template: %q is an incomplete or empty template%s", t.Name(), t.DefinedTemplates())
+			return fmt.Errorf("template: %q is an incomplete or empty template", t.Name())
 		}
 		if err := escapeTemplate(t, t.text.Root, t.Name()); err != nil {
 			return err
@@ -96,7 +113,8 @@ func (t *Template) escape() error {
 // If an error occurs executing the template or writing its output,
 // execution stops, but partial results may already have been written to
 // the output writer.
-// A template may be executed safely in parallel.
+// A template may be executed safely in parallel, although if parallel
+// executions share a Writer the output may be interleaved.
 func (t *Template) Execute(wr io.Writer, data interface{}) error {
 	if err := t.escape(); err != nil {
 		return err
@@ -109,7 +127,8 @@ func (t *Template) Execute(wr io.Writer, data interface{}) error {
 // If an error occurs executing the template or writing its output,
 // execution stops, but partial results may already have been written to
 // the output writer.
-// A template may be executed safely in parallel.
+// A template may be executed safely in parallel, although if parallel
+// executions share a Writer the output may be interleaved.
 func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {
 	tmpl, err := t.lookupAndEscapeTemplate(name)
 	if err != nil {
@@ -124,6 +143,7 @@ func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) 
 func (t *Template) lookupAndEscapeTemplate(name string) (tmpl *Template, err error) {
 	t.nameSpace.mu.Lock()
 	defer t.nameSpace.mu.Unlock()
+	t.nameSpace.escaped = true
 	tmpl = t.set[name]
 	if tmpl == nil {
 		return nil, fmt.Errorf("html/template: %q is undefined", name)
@@ -150,22 +170,27 @@ func (t *Template) DefinedTemplates() string {
 	return t.text.DefinedTemplates()
 }
 
-// Parse parses a string into a template. Nested template definitions
-// will be associated with the top-level template t. Parse may be
-// called multiple times to parse definitions of templates to associate
-// with t. It is an error if a resulting template is non-empty (contains
-// content other than template definitions) and would replace a
-// non-empty template with the same name.  (In multiple calls to Parse
-// with the same receiver template, only one call can contain text
-// other than space, comments, and template definitions.)
-func (t *Template) Parse(src string) (*Template, error) {
-	t.nameSpace.mu.Lock()
-	t.escapeErr = nil
-	t.nameSpace.mu.Unlock()
-	ret, err := t.text.Parse(src)
+// Parse parses text as a template body for t.
+// Named template definitions ({{define ...}} or {{block ...}} statements) in text
+// define additional templates associated with t and are removed from the
+// definition of t itself.
+//
+// Templates can be redefined in successive calls to Parse,
+// before the first use of Execute on t or any associated template.
+// A template definition with a body containing only white space and comments
+// is considered empty and will not replace an existing template's body.
+// This allows using Parse to add new named template definitions without
+// overwriting the main template body.
+func (t *Template) Parse(text string) (*Template, error) {
+	if err := t.checkCanParse(); err != nil {
+		return nil, err
+	}
+
+	ret, err := t.text.Parse(text)
 	if err != nil {
 		return nil, err
 	}
+
 	// In general, all the named templates might have changed underfoot.
 	// Regardless, some new ones may have been defined.
 	// The template.Template set has been updated; update ours.
@@ -176,11 +201,7 @@ func (t *Template) Parse(src string) (*Template, error) {
 		tmpl := t.set[name]
 		if tmpl == nil {
 			tmpl = t.new(name)
-		} else if tmpl.escapeErr != nil {
-			return nil, fmt.Errorf("html/template: cannot redefine %q after it has executed", name)
 		}
-		// Restore our record of this text/template to its unescaped original state.
-		tmpl.escapeErr = nil
 		tmpl.text = v
 		tmpl.Tree = v.Tree
 	}
@@ -190,13 +211,14 @@ func (t *Template) Parse(src string) (*Template, error) {
 // AddParseTree creates a new template with the name and parse tree
 // and associates it with t.
 //
-// It returns an error if t has already been executed.
+// It returns an error if t or any associated template has already been executed.
 func (t *Template) AddParseTree(name string, tree *parse.Tree) (*Template, error) {
+	if err := t.checkCanParse(); err != nil {
+		return nil, err
+	}
+
 	t.nameSpace.mu.Lock()
 	defer t.nameSpace.mu.Unlock()
-	if t.escapeErr != nil {
-		return nil, fmt.Errorf("html/template: cannot AddParseTree to %q after it has executed", t.Name())
-	}
 	text, err := t.text.AddParseTree(name, tree)
 	if err != nil {
 		return nil, err
@@ -229,13 +251,13 @@ func (t *Template) Clone() (*Template, error) {
 	if err != nil {
 		return nil, err
 	}
+	ns := &nameSpace{set: make(map[string]*Template)}
+	ns.esc = makeEscaper(ns)
 	ret := &Template{
 		nil,
 		textClone,
 		textClone.Tree,
-		&nameSpace{
-			set: make(map[string]*Template),
-		},
+		ns,
 	}
 	ret.set[ret.Name()] = ret
 	for _, x := range textClone.Templates() {
@@ -252,18 +274,19 @@ func (t *Template) Clone() (*Template, error) {
 			ret.nameSpace,
 		}
 	}
-	return ret, nil
+	// Return the template associated with the name of this template.
+	return ret.set[ret.Name()], nil
 }
 
 // New allocates a new HTML template with the given name.
 func New(name string) *Template {
+	ns := &nameSpace{set: make(map[string]*Template)}
+	ns.esc = makeEscaper(ns)
 	tmpl := &Template{
 		nil,
 		template.New(name),
 		nil,
-		&nameSpace{
-			set: make(map[string]*Template),
-		},
+		ns,
 	}
 	tmpl.set[name] = tmpl
 	return tmpl
@@ -272,6 +295,10 @@ func New(name string) *Template {
 // New allocates a new HTML template associated with the given one
 // and with the same delimiters. The association, which is transitive,
 // allows one template to invoke another with a {{template}} action.
+//
+// If a template with the given name already exists, the new HTML template
+// will replace it. The existing template will be reset and disassociated with
+// t.
 func (t *Template) New(name string) *Template {
 	t.nameSpace.mu.Lock()
 	defer t.nameSpace.mu.Unlock()
@@ -285,6 +312,10 @@ func (t *Template) new(name string) *Template {
 		t.text.New(name),
 		nil,
 		t.nameSpace,
+	}
+	if existing, ok := tmpl.set[name]; ok {
+		emptyTmpl := New(existing.Name())
+		*existing = *emptyTmpl
 	}
 	tmpl.set[name] = tmpl
 	return tmpl
@@ -305,6 +336,7 @@ func (t *Template) Name() string {
 type FuncMap map[string]interface{}
 
 // Funcs adds the elements of the argument map to the template's function map.
+// It must be called before the template is parsed.
 // It panics if a value in the map is not a function with appropriate return
 // type. However, it is legal to overwrite elements of the map. The return
 // value is the template, so calls can be chained.
@@ -361,6 +393,8 @@ func ParseFiles(filenames ...string) (*Template, error) {
 //
 // When parsing multiple files with the same name in different directories,
 // the last one mentioned will be the one that results.
+//
+// ParseFiles returns an error if t or any associated template has already been executed.
 func (t *Template) ParseFiles(filenames ...string) (*Template, error) {
 	return parseFiles(t, filenames...)
 }
@@ -368,6 +402,10 @@ func (t *Template) ParseFiles(filenames ...string) (*Template, error) {
 // parseFiles is the helper for the method and function. If the argument
 // template is nil, it is created from the first file.
 func parseFiles(t *Template, filenames ...string) (*Template, error) {
+	if err := t.checkCanParse(); err != nil {
+		return nil, err
+	}
+
 	if len(filenames) == 0 {
 		// Not really a problem, but be consistent.
 		return nil, fmt.Errorf("html/template: no files named in call to ParseFiles")
@@ -422,12 +460,17 @@ func ParseGlob(pattern string) (*Template, error) {
 //
 // When parsing multiple files with the same name in different directories,
 // the last one mentioned will be the one that results.
+//
+// ParseGlob returns an error if t or any associated template has already been executed.
 func (t *Template) ParseGlob(pattern string) (*Template, error) {
 	return parseGlob(t, pattern)
 }
 
 // parseGlob is the implementation of the function and method ParseGlob.
 func parseGlob(t *Template, pattern string) (*Template, error) {
+	if err := t.checkCanParse(); err != nil {
+		return nil, err
+	}
 	filenames, err := filepath.Glob(pattern)
 	if err != nil {
 		return nil, err

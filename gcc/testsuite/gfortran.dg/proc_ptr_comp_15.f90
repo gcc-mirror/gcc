@@ -21,5 +21,5 @@ use m
  x%ptr => abc
  print *,x%ptr()
  str = x%ptr()
- if (str/='abcde') call abort()
+ if (str/='abcde') STOP 1
 end

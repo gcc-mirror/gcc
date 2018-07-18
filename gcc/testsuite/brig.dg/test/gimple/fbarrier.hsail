@@ -1,0 +1,74 @@
+module &module:1:0:$full:$large:$default;
+
+/* Tests for fbarrier. */
+
+/* { dg-do compile } */
+/* { dg-options "-fdump-tree-gimple" } */
+
+fbarrier &fb_module_scope;
+
+prog function &subfunction(arg_u32 %return_value)() {
+
+     workitemflatabsid_u32 $s3;
+     cvt_b1_u32 $c1, $s3;
+     cbr_width(all)_b1 $c1, @skip_fbar;
+     waitfbar &fb_module_scope;
+@skip_fbar:
+
+     st_arg_u32 $s3, [%return_value];
+     ret;
+};
+
+prog kernel &kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
+{
+	fbarrier %fb_func_scope;
+
+        ld_kernarg_u64 $d0, [%input_ptr];
+        ld_global_u32 $s0, [$d0];
+
+	workitemflatabsid_u32 $s1;
+	cvt_b1_u32 $c1, $s1;
+	cbr_width(all)_b1 $c1, @skip_init;
+
+	initfbar &fb_module_scope;
+	initfbar %fb_func_scope;
+
+        joinfbar &fb_module_scope;
+
+@skip_init:
+	barrier_width(all);
+
+        joinfbar %fb_func_scope;
+
+	{
+		arg_u32 %return_value;
+		call &subfunction(%return_value)();
+		ld_arg_u32 $s1, [%return_value];
+	}
+	arrivefbar %fb_func_scope;
+
+        ld_kernarg_u64 $d1, [%output_ptr];
+        st_global_u32 $s1, [$d0];
+
+	workitemflatabsid_u32 $s1;
+	cvt_b1_u32 $c0, $s1;
+	cbr_width(all)_b1 $c0, @skip_fini;
+
+	releasefbar &fb_module_scope;
+	releasefbar %fb_func_scope;
+
+@skip_fini:
+
+};
+/* fbarriers are allocated from the group memory in the order of 
+   appearance. The current implementation allocates 32B per fbarrier. */
+
+/* { dg-final { scan-tree-dump "__hsail_waitfbar \\\(0, __context\\\);" "gimple"} } */
+/* { dg-final { scan-tree-dump "__hsail_initfbar \\\(0, __context\\\);" "gimple"} } */
+/* { dg-final { scan-tree-dump "__hsail_initfbar \\\(__group_local_offset, __context\\\);" "gimple"} } */
+/* { dg-final { scan-tree-dump "__hsail_joinfbar \\\(0, __context\\\);" "gimple"} } */
+/* { dg-final { scan-tree-dump "@skip_init:\[\n ]+__builtin___hsail_barrier \\\(__context\\\);\[\n ]+__builtin___hsail_joinfbar \\\(__group_local_offset, __context\\\);" "gimple"} } */
+
+/* { dg-final { scan-tree-dump "__hsail_arrivefbar \\\(__group_local_offset, __context\\\);" "gimple"} } */
+
+/* { dg-final { scan-tree-dump "__hsail_releasefbar \\\(0, __context\\\);\[\n ]+__builtin___hsail_releasefbar \\\(__group_local_offset, __context\\\);" "gimple"} } */

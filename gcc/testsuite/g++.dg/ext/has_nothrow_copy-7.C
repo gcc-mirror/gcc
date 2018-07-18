@@ -3,7 +3,11 @@
 
 struct S {
     S (const S&) throw ();
-    S (S&&) throw (int);
+    S (S&&)
+#if __cplusplus <= 201402L
+    throw (int)			// { dg-warning "deprecated" "" { target { ! c++17 } } }
+#endif
+    ;
 };
 
 int main ()

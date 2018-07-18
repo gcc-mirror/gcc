@@ -1,5 +1,5 @@
 /* Diagnostic subroutines for printing source-code
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -27,7 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "backtrace.h"
 #include "diagnostic.h"
 #include "diagnostic-color.h"
+#include "gcc-rich-location.h"
 #include "selftest.h"
+#include "selftest-diagnostic.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -96,7 +98,6 @@ class colorizer
   diagnostic_context *m_context;
   diagnostic_t m_diagnostic_kind;
   int m_current_state;
-  const char *m_caret;
   const char *m_range1;
   const char *m_range2;
   const char *m_fixit_insert;
@@ -114,7 +115,7 @@ class layout_point
   : m_line (exploc.line),
     m_column (exploc.column) {}
 
-  int m_line;
+  linenum_type m_line;
   int m_column;
 };
 
@@ -128,8 +129,8 @@ class layout_range
 		bool show_caret_p,
 		const expanded_location *caret_exploc);
 
-  bool contains_point (int row, int column) const;
-  bool intersects_line_p (int row) const;
+  bool contains_point (linenum_type row, int column) const;
+  bool intersects_line_p (linenum_type row) const;
 
   layout_point m_start;
   layout_point m_finish;
@@ -171,15 +172,51 @@ struct line_span
   {
     const line_span *ls1 = (const line_span *)p1;
     const line_span *ls2 = (const line_span *)p2;
-    int first_line_diff = (int)ls1->m_first_line - (int)ls2->m_first_line;
-    if (first_line_diff)
-      return first_line_diff;
-    return (int)ls1->m_last_line - (int)ls2->m_last_line;
+    int first_line_cmp = compare (ls1->m_first_line, ls2->m_first_line);
+    if (first_line_cmp)
+      return first_line_cmp;
+    return compare (ls1->m_last_line, ls2->m_last_line);
   }
 
   linenum_type m_first_line;
   linenum_type m_last_line;
 };
+
+#if CHECKING_P
+
+/* Selftests for line_span.  */
+
+static void
+test_line_span ()
+{
+  line_span line_one (1, 1);
+  ASSERT_EQ (1, line_one.get_first_line ());
+  ASSERT_EQ (1, line_one.get_last_line ());
+  ASSERT_FALSE (line_one.contains_line_p (0));
+  ASSERT_TRUE (line_one.contains_line_p (1));
+  ASSERT_FALSE (line_one.contains_line_p (2));
+
+  line_span lines_1_to_3 (1, 3);
+  ASSERT_EQ (1, lines_1_to_3.get_first_line ());
+  ASSERT_EQ (3, lines_1_to_3.get_last_line ());
+  ASSERT_TRUE (lines_1_to_3.contains_line_p (1));
+  ASSERT_TRUE (lines_1_to_3.contains_line_p (3));
+
+  ASSERT_EQ (0, line_span::comparator (&line_one, &line_one));
+  ASSERT_GT (line_span::comparator (&lines_1_to_3, &line_one), 0);
+  ASSERT_LT (line_span::comparator (&line_one, &lines_1_to_3), 0);
+
+  /* A linenum > 2^31.  */
+  const linenum_type LARGEST_LINE = 0xffffffff;
+  line_span largest_line (LARGEST_LINE, LARGEST_LINE);
+  ASSERT_EQ (LARGEST_LINE, largest_line.get_first_line ());
+  ASSERT_EQ (LARGEST_LINE, largest_line.get_last_line ());
+
+  ASSERT_GT (line_span::comparator (&largest_line, &line_one), 0);
+  ASSERT_LT (line_span::comparator (&line_one, &largest_line), 0);
+}
+
+#endif /* #if CHECKING_P */
 
 /* A class to control the overall layout when printing a diagnostic.
 
@@ -196,6 +233,9 @@ class layout
 	  rich_location *richloc,
 	  diagnostic_t diagnostic_kind);
 
+  bool maybe_add_location_range (const location_range *loc_range,
+				 bool restrict_to_current_line_spans);
+
   int get_num_line_spans () const { return m_line_spans.length (); }
   const line_span *get_line_span (int idx) const { return &m_line_spans[idx]; }
 
@@ -203,16 +243,21 @@ class layout
 
   expanded_location get_expanded_location (const line_span *) const;
 
-  bool print_source_line (int row, line_bounds *lbounds_out);
-  bool should_print_annotation_line_p (int row) const;
-  void print_annotation_line (int row, const line_bounds lbounds);
-  bool annotation_line_showed_range_p (int line, int start_column,
-				       int finish_column) const;
-  void print_any_fixits (int row);
-
-  void show_ruler (int max_column) const;
+  void print_line (linenum_type row);
 
  private:
+  bool will_show_line_p (linenum_type row) const;
+  void print_leading_fixits (linenum_type row);
+  void print_source_line (linenum_type row, const char *line, int line_width,
+			  line_bounds *lbounds_out);
+  bool should_print_annotation_line_p (linenum_type row) const;
+  void print_annotation_line (linenum_type row, const line_bounds lbounds);
+  void print_trailing_fixits (linenum_type row);
+
+  bool annotation_line_showed_range_p (linenum_type line, int start_column,
+				       int finish_column) const;
+  void show_ruler (int max_column) const;
+
   bool validate_fixit_hint_p (const fixit_hint *hint);
 
   void calculate_line_spans ();
@@ -221,13 +266,13 @@ class layout
 
   bool
   get_state_at_point (/* Inputs.  */
-		      int row, int column,
+		      linenum_type row, int column,
 		      int first_non_ws, int last_non_ws,
 		      /* Outputs.  */
 		      point_state *out_state);
 
   int
-  get_x_bound_for_row (int row, int caret_column,
+  get_x_bound_for_row (linenum_type row, int caret_column,
 		       int last_non_ws);
 
   void
@@ -237,6 +282,7 @@ class layout
   diagnostic_context *m_context;
   pretty_printer *m_pp;
   diagnostic_t m_diagnostic_kind;
+  location_t m_primary_loc;
   expanded_location m_exploc;
   colorizer m_colorizer;
   bool m_colorize_source_p;
@@ -407,7 +453,7 @@ layout_range::layout_range (const expanded_location *start_exploc,
    - 'a' indicates a subsequent point *after* the range.  */
 
 bool
-layout_range::contains_point (int row, int column) const
+layout_range::contains_point (linenum_type row, int column) const
 {
   gcc_assert (m_start.m_line <= m_finish.m_line);
   /* ...but the equivalent isn't true for the columns;
@@ -468,7 +514,7 @@ layout_range::contains_point (int row, int column) const
 /* Does this layout_range contain any part of line ROW?  */
 
 bool
-layout_range::intersects_line_p (int row) const
+layout_range::intersects_line_p (linenum_type row) const
 {
   gcc_assert (m_start.m_line <= m_finish.m_line);
   if (row < m_start.m_line)
@@ -629,7 +675,7 @@ get_line_width_without_trailing_whitespace (const char *line, int line_width)
   while (result > 0)
     {
       char ch = line[result - 1];
-      if (ch == ' ' || ch == '\t')
+      if (ch == ' ' || ch == '\t' || ch == '\r')
 	result--;
       else
 	break;
@@ -638,7 +684,8 @@ get_line_width_without_trailing_whitespace (const char *line, int line_width)
   gcc_assert (result <= line_width);
   gcc_assert (result == 0 ||
 	      (line[result - 1] != ' '
-	       && line[result -1] != '\t'));
+	       && line[result -1] != '\t'
+	       && line[result -1] != '\r'));
   return result;
 }
 
@@ -663,9 +710,11 @@ test_get_line_width_without_trailing_whitespace ()
   assert_eq ("", 0);
   assert_eq (" ", 0);
   assert_eq ("\t", 0);
+  assert_eq ("\r", 0);
   assert_eq ("hello world", 11);
   assert_eq ("hello world     ", 11);
   assert_eq ("hello world     \t\t  ", 11);
+  assert_eq ("hello world\r", 11);
 }
 
 #endif /* #if CHECKING_P */
@@ -746,6 +795,16 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
     }
 }
 
+/* Comparator for sorting fix-it hints.  */
+
+static int
+fixit_cmp (const void *p_a, const void *p_b)
+{
+  const fixit_hint * hint_a = *static_cast<const fixit_hint * const *> (p_a);
+  const fixit_hint * hint_b = *static_cast<const fixit_hint * const *> (p_b);
+  return hint_a->get_start_loc () - hint_b->get_start_loc ();
+}
+
 /* Implementation of class layout.  */
 
 /* Constructor for class layout.
@@ -763,6 +822,7 @@ layout::layout (diagnostic_context * context,
 : m_context (context),
   m_pp (context->printer),
   m_diagnostic_kind (diagnostic_kind),
+  m_primary_loc (richloc->get_range (0)->m_loc),
   m_exploc (richloc->get_expanded_location (0)),
   m_colorizer (context, diagnostic_kind),
   m_colorize_source_p (context->colorize_source_p),
@@ -771,74 +831,12 @@ layout::layout (diagnostic_context * context,
   m_line_spans (1 + richloc->get_num_locations ()),
   m_x_offset (0)
 {
-  source_location primary_loc = richloc->get_range (0)->m_loc;
-
   for (unsigned int idx = 0; idx < richloc->get_num_locations (); idx++)
     {
       /* This diagnostic printer can only cope with "sufficiently sane" ranges.
 	 Ignore any ranges that are awkward to handle.  */
       const location_range *loc_range = richloc->get_range (idx);
-
-      /* Split the "range" into caret and range information.  */
-      source_range src_range = get_range_from_loc (line_table, loc_range->m_loc);
-
-      /* Expand the various locations.  */
-      expanded_location start
-	= linemap_client_expand_location_to_spelling_point (src_range.m_start);
-      expanded_location finish
-	= linemap_client_expand_location_to_spelling_point (src_range.m_finish);
-      expanded_location caret
-	= linemap_client_expand_location_to_spelling_point (loc_range->m_loc);
-
-      /* If any part of the range isn't in the same file as the primary
-	 location of this diagnostic, ignore the range.  */
-      if (start.file != m_exploc.file)
-	continue;
-      if (finish.file != m_exploc.file)
-	continue;
-      if (loc_range->m_show_caret_p)
-	if (caret.file != m_exploc.file)
-	  continue;
-
-      /* Sanitize the caret location for non-primary ranges.  */
-      if (m_layout_ranges.length () > 0)
-	if (loc_range->m_show_caret_p)
-	  if (!compatible_locations_p (loc_range->m_loc, primary_loc))
-	    /* Discard any non-primary ranges that can't be printed
-	       sanely relative to the primary location.  */
-	    continue;
-
-      /* Everything is now known to be in the correct source file,
-	 but it may require further sanitization.  */
-      layout_range ri (&start, &finish, loc_range->m_show_caret_p, &caret);
-
-      /* If we have a range that finishes before it starts (perhaps
-	 from something built via macro expansion), printing the
-	 range is likely to be nonsensical.  Also, attempting to do so
-	 breaks assumptions within the printing code  (PR c/68473).
-	 Similarly, don't attempt to print ranges if one or both ends
-	 of the range aren't sane to print relative to the
-	 primary location (PR c++/70105).  */
-      if (start.line > finish.line
-	  || !compatible_locations_p (src_range.m_start, primary_loc)
-	  || !compatible_locations_p (src_range.m_finish, primary_loc))
-	{
-	  /* Is this the primary location?  */
-	  if (m_layout_ranges.length () == 0)
-	    {
-	      /* We want to print the caret for the primary location, but
-		 we must sanitize away m_start and m_finish.  */
-	      ri.m_start = ri.m_caret;
-	      ri.m_finish = ri.m_caret;
-	    }
-	  else
-	    /* This is a non-primary range; ignore it.  */
-	    continue;
-	}
-
-      /* Passed all the tests; add the range to m_layout_ranges so that
-	 it will be printed.  */
-      m_layout_ranges.safe_push (ri);
+      maybe_add_location_range (loc_range, false);
     }
 
   /* Populate m_fixit_hints, filtering to only those that are in the
@@ -850,29 +848,142 @@ layout::layout (diagnostic_context * context,
 	m_fixit_hints.safe_push (hint);
     }
 
+  /* Sort m_fixit_hints.  */
+  m_fixit_hints.qsort (fixit_cmp);
+
   /* Populate m_line_spans.  */
   calculate_line_spans ();
 
   /* Adjust m_x_offset.
      Center the primary caret to fit in max_width; all columns
      will be adjusted accordingly.  */
-  int max_width = m_context->caret_max_width;
-  int line_width;
-  const char *line = location_get_source_line (m_exploc.file, m_exploc.line,
-					       &line_width);
-  if (line && m_exploc.column <= line_width)
+  size_t max_width = m_context->caret_max_width;
+  char_span line = location_get_source_line (m_exploc.file, m_exploc.line);
+  if (line && (size_t)m_exploc.column <= line.length ())
     {
-      int right_margin = CARET_LINE_MARGIN;
-      int column = m_exploc.column;
-      right_margin = MIN (line_width - column, right_margin);
+      size_t right_margin = CARET_LINE_MARGIN;
+      size_t column = m_exploc.column;
+      right_margin = MIN (line.length () - column, right_margin);
       right_margin = max_width - right_margin;
-      if (line_width >= max_width && column > right_margin)
+      if (line.length () >= max_width && column > right_margin)
 	m_x_offset = column - right_margin;
       gcc_assert (m_x_offset >= 0);
     }
 
   if (context->show_ruler_p)
     show_ruler (m_x_offset + max_width);
+}
+
+/* Attempt to add LOC_RANGE to m_layout_ranges, filtering them to
+   those that we can sanely print.
+
+   If RESTRICT_TO_CURRENT_LINE_SPANS is true, then LOC_RANGE is also
+   filtered against this layout instance's current line spans: it
+   will only be added if the location is fully within the lines
+   already specified by other locations.
+
+   Return true iff LOC_RANGE was added.  */
+
+bool
+layout::maybe_add_location_range (const location_range *loc_range,
+				  bool restrict_to_current_line_spans)
+{
+  gcc_assert (loc_range);
+
+  /* Split the "range" into caret and range information.  */
+  source_range src_range = get_range_from_loc (line_table, loc_range->m_loc);
+
+  /* Expand the various locations.  */
+  expanded_location start
+    = linemap_client_expand_location_to_spelling_point
+    (src_range.m_start, LOCATION_ASPECT_START);
+  expanded_location finish
+    = linemap_client_expand_location_to_spelling_point
+    (src_range.m_finish, LOCATION_ASPECT_FINISH);
+  expanded_location caret
+    = linemap_client_expand_location_to_spelling_point
+    (loc_range->m_loc, LOCATION_ASPECT_CARET);
+
+  /* If any part of the range isn't in the same file as the primary
+     location of this diagnostic, ignore the range.  */
+  if (start.file != m_exploc.file)
+    return false;
+  if (finish.file != m_exploc.file)
+    return false;
+  if (loc_range->m_show_caret_p)
+    if (caret.file != m_exploc.file)
+      return false;
+
+  /* Sanitize the caret location for non-primary ranges.  */
+  if (m_layout_ranges.length () > 0)
+    if (loc_range->m_show_caret_p)
+      if (!compatible_locations_p (loc_range->m_loc, m_primary_loc))
+	/* Discard any non-primary ranges that can't be printed
+	   sanely relative to the primary location.  */
+	return false;
+
+  /* Everything is now known to be in the correct source file,
+     but it may require further sanitization.  */
+  layout_range ri (&start, &finish, loc_range->m_show_caret_p, &caret);
+
+  /* If we have a range that finishes before it starts (perhaps
+     from something built via macro expansion), printing the
+     range is likely to be nonsensical.  Also, attempting to do so
+     breaks assumptions within the printing code  (PR c/68473).
+     Similarly, don't attempt to print ranges if one or both ends
+     of the range aren't sane to print relative to the
+     primary location (PR c++/70105).  */
+  if (start.line > finish.line
+      || !compatible_locations_p (src_range.m_start, m_primary_loc)
+      || !compatible_locations_p (src_range.m_finish, m_primary_loc))
+    {
+      /* Is this the primary location?  */
+      if (m_layout_ranges.length () == 0)
+	{
+	  /* We want to print the caret for the primary location, but
+	     we must sanitize away m_start and m_finish.  */
+	  ri.m_start = ri.m_caret;
+	  ri.m_finish = ri.m_caret;
+	}
+      else
+	/* This is a non-primary range; ignore it.  */
+	return false;
+    }
+
+  /* Potentially filter to just the lines already specified by other
+     locations.  This is for use by gcc_rich_location::add_location_if_nearby.
+     The layout ctor doesn't use it, and can't because m_line_spans
+     hasn't been set up at that point.  */
+  if (restrict_to_current_line_spans)
+    {
+      if (!will_show_line_p (start.line))
+	return false;
+      if (!will_show_line_p (finish.line))
+	return false;
+      if (loc_range->m_show_caret_p)
+	if (!will_show_line_p (caret.line))
+	  return false;
+    }
+
+  /* Passed all the tests; add the range to m_layout_ranges so that
+     it will be printed.  */
+  m_layout_ranges.safe_push (ri);
+  return true;
+}
+
+/* Return true iff ROW is within one of the line spans for this layout.  */
+
+bool
+layout::will_show_line_p (linenum_type row) const
+{
+  for (int line_span_idx = 0; line_span_idx < get_num_line_spans ();
+       line_span_idx++)
+    {
+      const line_span *line_span = get_line_span (line_span_idx);
+      if (line_span->contains_line_p (row))
+	return true;
+    }
+  return false;
 }
 
 /* Return true iff we should print a heading when starting the
@@ -941,32 +1052,10 @@ layout::get_expanded_location (const line_span *line_span) const
 bool
 layout::validate_fixit_hint_p (const fixit_hint *hint)
 {
-  switch (hint->get_kind ())
-    {
-    case fixit_hint::INSERT:
-      {
-	const fixit_insert *insert = static_cast <const fixit_insert *> (hint);
-	location_t loc = insert->get_location ();
-	if (LOCATION_FILE (loc) != m_exploc.file)
-	  return false;
-      }
-      break;
-
-    case fixit_hint::REPLACE:
-      {
-	const fixit_replace *replace
-	  = static_cast <const fixit_replace *> (hint);
-	source_range src_range = replace->get_range ();
-	if (LOCATION_FILE (src_range.m_start) != m_exploc.file)
-	  return false;
-	if (LOCATION_FILE (src_range.m_finish) != m_exploc.file)
-	  return false;
-      }
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
+  if (LOCATION_FILE (hint->get_start_loc ()) != m_exploc.file)
+    return false;
+  if (LOCATION_FILE (hint->get_next_loc ()) != m_exploc.file)
+    return false;
 
   return true;
 }
@@ -979,30 +1068,8 @@ static line_span
 get_line_span_for_fixit_hint (const fixit_hint *hint)
 {
   gcc_assert (hint);
-  switch (hint->get_kind ())
-    {
-    case fixit_hint::INSERT:
-      {
-	const fixit_insert *insert = static_cast <const fixit_insert *> (hint);
-	location_t loc = insert->get_location ();
-	int line = LOCATION_LINE (loc);
-	return line_span (line, line);
-      }
-      break;
-
-    case fixit_hint::REPLACE:
-      {
-	const fixit_replace *replace
-	  = static_cast <const fixit_replace *> (hint);
-	source_range src_range = replace->get_range ();
-	return line_span (LOCATION_LINE (src_range.m_start),
-			  LOCATION_LINE (src_range.m_finish));
-      }
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
+  return line_span (LOCATION_LINE (hint->get_start_loc ()),
+		    LOCATION_LINE (hint->get_next_loc ()));
 }
 
 /* We want to print the pertinent source code at a diagnostic.  The
@@ -1099,21 +1166,15 @@ layout::calculate_line_spans ()
     }
 }
 
-/* Attempt to print line ROW of source code, potentially colorized at any
-   ranges.
-   Return true if the line was printed, populating *LBOUNDS_OUT.
-   Return false if the source line could not be read, leaving *LBOUNDS_OUT
-   untouched.  */
+/* Print line ROW of source code, potentially colorized at any ranges, and
+   populate *LBOUNDS_OUT.
+   LINE is the source line (not necessarily 0-terminated) and LINE_WIDTH
+   is its width.  */
 
-bool
-layout::print_source_line (int row, line_bounds *lbounds_out)
+void
+layout::print_source_line (linenum_type row, const char *line, int line_width,
+			   line_bounds *lbounds_out)
 {
-  int line_width;
-  const char *line = location_get_source_line (m_exploc.file, row,
-					       &line_width);
-  if (!line)
-    return false;
-
   m_colorizer.set_normal_text ();
 
   /* We will stop printing the source line at any trailing
@@ -1152,8 +1213,8 @@ layout::print_source_line (int row, line_bounds *lbounds_out)
 	  else
 	    m_colorizer.set_normal_text ();
 	}
-      char c = *line == '\t' ? ' ' : *line;
-      if (c == '\0')
+      char c = *line;
+      if (c == '\0' || c == '\t' || c == '\r')
 	c = ' ';
       if (c != ' ')
 	{
@@ -1168,14 +1229,13 @@ layout::print_source_line (int row, line_bounds *lbounds_out)
 
   lbounds_out->m_first_non_ws = first_non_ws;
   lbounds_out->m_last_non_ws = last_non_ws;
-  return true;
 }
 
 /* Determine if we should print an annotation line for ROW.
    i.e. if any of m_layout_ranges contains ROW.  */
 
 bool
-layout::should_print_annotation_line_p (int row) const
+layout::should_print_annotation_line_p (linenum_type row) const
 {
   layout_range *range;
   int i;
@@ -1189,7 +1249,7 @@ layout::should_print_annotation_line_p (int row) const
    source line.  */
 
 void
-layout::print_annotation_line (int row, const line_bounds lbounds)
+layout::print_annotation_line (linenum_type row, const line_bounds lbounds)
 {
   int x_bound = get_x_bound_for_row (row, m_exploc.column,
 				     lbounds.m_last_non_ws);
@@ -1230,13 +1290,52 @@ layout::print_annotation_line (int row, const line_bounds lbounds)
   print_newline ();
 }
 
-/* Subroutine of layout::print_any_fixits.
+/* If there are any fixit hints inserting new lines before source line ROW,
+   print them.
+
+   They are printed on lines of their own, before the source line
+   itself, with a leading '+'.  */
+
+void
+layout::print_leading_fixits (linenum_type row)
+{
+  for (unsigned int i = 0; i < m_fixit_hints.length (); i++)
+    {
+      const fixit_hint *hint = m_fixit_hints[i];
+
+      if (!hint->ends_with_newline_p ())
+	/* Not a newline fixit; print it in print_trailing_fixits.  */
+	continue;
+
+      gcc_assert (hint->insertion_p ());
+
+      if (hint->affects_line_p (m_exploc.file, row))
+	{
+	  /* Printing the '+' with normal colorization
+	     and the inserted line with "insert" colorization
+	     helps them stand out from each other, and from
+	     the surrounding text.  */
+	  m_colorizer.set_normal_text ();
+	  pp_character (m_pp, '+');
+	  m_colorizer.set_fixit_insert ();
+	  /* Print all but the trailing newline of the fix-it hint.
+	     We have to print the newline separately to avoid
+	     getting additional pp prefixes printed.  */
+	  for (size_t i = 0; i < hint->get_length () - 1; i++)
+	    pp_character (m_pp, hint->get_string ()[i]);
+	  m_colorizer.set_normal_text ();
+	  pp_newline (m_pp);
+	}
+    }
+}
+
+/* Subroutine of layout::print_trailing_fixits.
 
    Determine if the annotation line printed for LINE contained
    the exact range from START_COLUMN to FINISH_COLUMN.  */
 
 bool
-layout::annotation_line_showed_range_p (int line, int start_column,
+layout::annotation_line_showed_range_p (linenum_type line, int start_column,
 					int finish_column) const
 {
   layout_range *range;
@@ -1250,76 +1349,410 @@ layout::annotation_line_showed_range_p (int line, int start_column,
   return false;
 }
 
-/* If there are any fixit hints on source line ROW, print them.
-   They are printed in order, attempting to combine them onto lines, but
-   starting new lines if necessary.  */
+/* Classes for printing trailing fix-it hints i.e. those that
+   don't add new lines.
+
+   For insertion, these can look like:
+
+     new_text
+
+   For replacement, these can look like:
+
+     ------------- : underline showing affected range
+     new_text
+
+   For deletion, these can look like:
+
+     ------------- : underline showing affected range
+
+   This can become confusing if they overlap, and so we need
+   to do some preprocessing to decide what to print.
+   We use the list of fixit_hint instances affecting the line
+   to build a list of "correction" instances, and print the
+   latter.
+
+   For example, consider a set of fix-its for converting
+   a C-style cast to a C++ const_cast.
+
+   Given:
+
+   ..000000000111111111122222222223333333333.
+   ..123456789012345678901234567890123456789.
+     foo *f = (foo *)ptr->field;
+                          ^~~~~
+
+   and the fix-it hints:
+     - replace col 10 (the open paren) with "const_cast<"
+     - replace col 16 (the close paren) with "> ("
+     - insert ")" before col 27
+
+   then we would get odd-looking output:
+
+     foo *f = (foo *)ptr->field;
+                          ^~~~~
+              -
+              const_cast<
+                    -
+                    > (        )
+
+   It would be better to detect when fixit hints are going to
+   overlap (those that require new lines), and to consolidate
+   the printing of such fixits, giving something like:
+
+     foo *f = (foo *)ptr->field;
+                          ^~~~~
+              -----------------
+              const_cast<foo *> (ptr->field)
+
+   This works by detecting when the printing would overlap, and
+   effectively injecting no-op replace hints into the gaps between
+   such fix-its, so that the printing joins up.
+
+   In the above example, the overlap of:
+     - replace col 10 (the open paren) with "const_cast<"
+   and:
+     - replace col 16 (the close paren) with "> ("
+   is fixed by injecting a no-op:
+     - replace cols 11-15 with themselves ("foo *")
+   and consolidating these, making:
+     - replace cols 10-16 with "const_cast<" + "foo *" + "> ("
+   i.e.:
+     - replace cols 10-16 with "const_cast<foo *> ("
+
+   This overlaps with the final fix-it hint:
+     - insert ")" before col 27
+   and so we repeat the consolidation process, by injecting
+   a no-op:
+     - replace cols 17-26 with themselves ("ptr->field")
+   giving:
+     - replace cols 10-26 with "const_cast<foo *> (" + "ptr->field" + ")"
+   i.e.:
+     - replace cols 10-26 with "const_cast<foo *> (ptr->field)"
+
+   and is thus printed as desired.  */
+
+/* A range of columns within a line.  */
+
+struct column_range
+{
+  column_range (int start_, int finish_) : start (start_), finish (finish_)
+  {
+    /* We must have either a range, or an insertion.  */
+    gcc_assert (start <= finish || finish == start - 1);
+  }
+
+  bool operator== (const column_range &other) const
+  {
+    return start == other.start && finish == other.finish;
+  }
+
+  int start;
+  int finish;
+};
+
+/* Get the range of columns that HINT would affect.  */
+
+static column_range
+get_affected_columns (const fixit_hint *hint)
+{
+  int start_column = LOCATION_COLUMN (hint->get_start_loc ());
+  int finish_column = LOCATION_COLUMN (hint->get_next_loc ()) - 1;
+
+  return column_range (start_column, finish_column);
+}
+
+/* Get the range of columns that would be printed for HINT.  */
+
+static column_range
+get_printed_columns (const fixit_hint *hint)
+{
+  int start_column = LOCATION_COLUMN (hint->get_start_loc ());
+  int final_hint_column = start_column + hint->get_length () - 1;
+  if (hint->insertion_p ())
+    {
+      return column_range (start_column, final_hint_column);
+    }
+  else
+    {
+      int finish_column = LOCATION_COLUMN (hint->get_next_loc ()) - 1;
+
+      return column_range (start_column,
+			   MAX (finish_column, final_hint_column));
+    }
+}
+
+/* A correction on a particular line.
+   This describes a plan for how to print one or more fixit_hint
+   instances that affected the line, potentially consolidating hints
+   into corrections to make the result easier for the user to read.  */
+
+struct correction
+{
+  correction (column_range affected_columns,
+	      column_range printed_columns,
+	      const char *new_text, size_t new_text_len)
+  : m_affected_columns (affected_columns),
+    m_printed_columns (printed_columns),
+    m_text (xstrdup (new_text)),
+    m_len (new_text_len),
+    m_alloc_sz (new_text_len + 1)
+  {
+  }
+
+  ~correction () { free (m_text); }
+
+  bool insertion_p () const
+  {
+    return m_affected_columns.start == m_affected_columns.finish + 1;
+  }
+
+  void ensure_capacity (size_t len);
+  void ensure_terminated ();
+
+  void overwrite (int dst_offset, const char_span &src_span)
+  {
+    gcc_assert (dst_offset >= 0);
+    gcc_assert (dst_offset + src_span.length () < m_alloc_sz);
+    memcpy (m_text + dst_offset, src_span.get_buffer (),
+	    src_span.length ());
+  }
+
+  /* If insert, then start: the column before which the text
+     is to be inserted, and finish is offset by the length of
+     the replacement.
+     If replace, then the range of columns affected.  */
+  column_range m_affected_columns;
+
+  /* If insert, then start: the column before which the text
+     is to be inserted, and finish is offset by the length of
+     the replacement.
+     If replace, then the range of columns affected.  */
+  column_range m_printed_columns;
+
+  /* The text to be inserted/used as replacement.  */
+  char *m_text;
+  size_t m_len;
+  size_t m_alloc_sz;
+};
+
+/* Ensure that m_text can hold a string of length LEN
+   (plus 1 for 0-termination).  */
 
 void
-layout::print_any_fixits (int row)
+correction::ensure_capacity (size_t len)
 {
-  int column = 0;
+  /* Allow 1 extra byte for 0-termination.  */
+  if (m_alloc_sz < (len + 1))
+    {
+      size_t new_alloc_sz = (len + 1) * 2;
+      m_text = (char *)xrealloc (m_text, new_alloc_sz);
+      m_alloc_sz = new_alloc_sz;
+    }
+}
+
+/* Ensure that m_text is 0-terminated.  */
+
+void
+correction::ensure_terminated ()
+{
+  /* 0-terminate the buffer.  */
+  gcc_assert (m_len < m_alloc_sz);
+  m_text[m_len] = '\0';
+}
+
+/* A list of corrections affecting a particular line.
+   This is used by layout::print_trailing_fixits for planning
+   how to print the fix-it hints affecting the line.  */
+
+struct line_corrections
+{
+  line_corrections (const char *filename, linenum_type row)
+  : m_filename (filename), m_row (row)
+  {}
+  ~line_corrections ();
+
+  void add_hint (const fixit_hint *hint);
+
+  const char *m_filename;
+  linenum_type m_row;
+  auto_vec <correction *> m_corrections;
+};
+
+/* struct line_corrections.  */
+
+line_corrections::~line_corrections ()
+{
+  unsigned i;
+  correction *c;
+  FOR_EACH_VEC_ELT (m_corrections, i, c)
+    delete c;
+}
+
+/* A struct wrapping a particular source line, allowing
+   run-time bounds-checking of accesses in a checked build.  */
+
+struct source_line
+{
+  source_line (const char *filename, int line);
+
+  char_span as_span () { return char_span (chars, width); }
+
+  const char *chars;
+  int width;
+};
+
+/* source_line's ctor.  */
+
+source_line::source_line (const char *filename, int line)
+{
+  char_span span = location_get_source_line (filename, line);
+  chars = span.get_buffer ();
+  width = span.length ();
+}
+
+/* Add HINT to the corrections for this line.
+   Attempt to consolidate nearby hints so that they will not
+   overlap with printed.  */
+
+void
+line_corrections::add_hint (const fixit_hint *hint)
+{
+  column_range affected_columns = get_affected_columns (hint);
+  column_range printed_columns = get_printed_columns (hint);
+
+  /* Potentially consolidate.  */
+  if (!m_corrections.is_empty ())
+    {
+      correction *last_correction
+	= m_corrections[m_corrections.length () - 1];
+
+      /* The following consolidation code assumes that the fix-it hints
+	 have been sorted by start (done within layout's ctor).  */
+      gcc_assert (affected_columns.start
+		  >= last_correction->m_affected_columns.start);
+      gcc_assert (printed_columns.start
+		  >= last_correction->m_printed_columns.start);
+
+      if (printed_columns.start <= last_correction->m_printed_columns.finish)
+	{
+	  /* We have two hints for which the printed forms of the hints
+	     would touch or overlap, so we need to consolidate them to avoid
+	     confusing the user.
+	     Attempt to inject a "replace" correction from immediately
+	     after the end of the last hint to immediately before the start
+	     of the next hint.  */
+	  column_range between (last_correction->m_affected_columns.finish + 1,
+				printed_columns.start - 1);
+
+	  /* Try to read the source.  */
+	  source_line line (m_filename, m_row);
+	  if (line.chars && between.finish < line.width)
+	    {
+	      /* Consolidate into the last correction:
+		 add a no-op "replace" of the "between" text, and
+		 add the text from the new hint.  */
+	      int old_len = last_correction->m_len;
+	      gcc_assert (old_len >= 0);
+	      int between_len = between.finish + 1 - between.start;
+	      gcc_assert (between_len >= 0);
+	      int new_len = old_len + between_len + hint->get_length ();
+	      gcc_assert (new_len >= 0);
+	      last_correction->ensure_capacity (new_len);
+	      last_correction->overwrite
+		(old_len,
+		 line.as_span ().subspan (between.start - 1,
+					  between.finish + 1 - between.start));
+	      last_correction->overwrite (old_len + between_len,
+					  char_span (hint->get_string (),
+						     hint->get_length ()));
+	      last_correction->m_len = new_len;
+	      last_correction->ensure_terminated ();
+	      last_correction->m_affected_columns.finish
+		= affected_columns.finish;
+	      last_correction->m_printed_columns.finish
+		+= between_len + hint->get_length ();
+	      return;
+	    }
+	}
+    }
+
+  /* If no consolidation happened, add a new correction instance.  */
+  m_corrections.safe_push (new correction (affected_columns,
+					   printed_columns,
+					   hint->get_string (),
+					   hint->get_length ()));
+}
+
+/* If there are any fixit hints on source line ROW, print them.
+   They are printed in order, attempting to combine them onto lines, but
+   starting new lines if necessary.
+   Fix-it hints that insert new lines are handled separately,
+   in layout::print_leading_fixits.  */
+
+void
+layout::print_trailing_fixits (linenum_type row)
+{
+  /* Build a list of correction instances for the line,
+     potentially consolidating hints (for the sake of readability).  */
+  line_corrections corrections (m_exploc.file, row);
   for (unsigned int i = 0; i < m_fixit_hints.length (); i++)
     {
       const fixit_hint *hint = m_fixit_hints[i];
+
+      /* Newline fixits are handled by layout::print_leading_fixits.  */
+      if (hint->ends_with_newline_p ())
+	continue;
+
       if (hint->affects_line_p (m_exploc.file, row))
+	corrections.add_hint (hint);
+    }
+
+  /* Now print the corrections.  */
+  unsigned i;
+  correction *c;
+  int column = m_x_offset;
+
+  FOR_EACH_VEC_ELT (corrections.m_corrections, i, c)
+    {
+      /* For now we assume each fixit hint can only touch one line.  */
+      if (c->insertion_p ())
 	{
-	  /* For now we assume each fixit hint can only touch one line.  */
-	  switch (hint->get_kind ())
+	  /* This assumes the insertion just affects one line.  */
+	  int start_column = c->m_printed_columns.start;
+	  move_to_column (&column, start_column);
+	  m_colorizer.set_fixit_insert ();
+	  pp_string (m_pp, c->m_text);
+	  m_colorizer.set_normal_text ();
+	  column += c->m_len;
+	}
+      else
+	{
+	  /* If the range of the replacement wasn't printed in the
+	     annotation line, then print an extra underline to
+	     indicate exactly what is being replaced.
+	     Always show it for removals.  */
+	  int start_column = c->m_affected_columns.start;
+	  int finish_column = c->m_affected_columns.finish;
+	  if (!annotation_line_showed_range_p (row, start_column,
+					       finish_column)
+	      || c->m_len == 0)
 	    {
-	    case fixit_hint::INSERT:
-	      {
-		const fixit_insert *insert
-		  = static_cast <const fixit_insert *> (hint);
-		/* This assumes the insertion just affects one line.  */
-		int start_column
-		  = LOCATION_COLUMN (insert->get_location ());
-		move_to_column (&column, start_column);
-		m_colorizer.set_fixit_insert ();
-		pp_string (m_pp, insert->get_string ());
-		m_colorizer.set_normal_text ();
-		column += insert->get_length ();
-	      }
-	      break;
-
-	    case fixit_hint::REPLACE:
-	      {
-		const fixit_replace *replace
-		  = static_cast <const fixit_replace *> (hint);
-		source_range src_range = replace->get_range ();
-		int line = LOCATION_LINE (src_range.m_start);
-		int start_column = LOCATION_COLUMN (src_range.m_start);
-		int finish_column = LOCATION_COLUMN (src_range.m_finish);
-
-		/* If the range of the replacement wasn't printed in the
-		   annotation line, then print an extra underline to
-		   indicate exactly what is being replaced.
-		   Always show it for removals.  */
-		if (!annotation_line_showed_range_p (line, start_column,
-						     finish_column)
-		    || replace->get_length () == 0)
-		  {
-		    move_to_column (&column, start_column);
-		    m_colorizer.set_fixit_delete ();
-		    for (; column <= finish_column; column++)
-		      pp_character (m_pp, '-');
-		    m_colorizer.set_normal_text ();
-		  }
-		/* Print the replacement text.  REPLACE also covers
-		   removals, so only do this extra work (potentially starting
-		   a new line) if we have actual replacement text.  */
-		if (replace->get_length () > 0)
-		  {
-		    move_to_column (&column, start_column);
-		    m_colorizer.set_fixit_insert ();
-		    pp_string (m_pp, replace->get_string ());
-		    m_colorizer.set_normal_text ();
-		    column += replace->get_length ();
-		  }
-	      }
-	      break;
-
-	    default:
-	      gcc_unreachable ();
+	      move_to_column (&column, start_column);
+	      m_colorizer.set_fixit_delete ();
+	      for (; column <= finish_column; column++)
+		pp_character (m_pp, '-');
+	      m_colorizer.set_normal_text ();
+	    }
+	  /* Print the replacement text.  REPLACE also covers
+	     removals, so only do this extra work (potentially starting
+	     a new line) if we have actual replacement text.  */
+	  if (c->m_len > 0)
+	    {
+	      move_to_column (&column, start_column);
+	      m_colorizer.set_fixit_insert ();
+	      pp_string (m_pp, c->m_text);
+	      m_colorizer.set_normal_text ();
+	      column += c->m_len;
 	    }
 	}
     }
@@ -1344,7 +1777,7 @@ layout::print_newline ()
 
 bool
 layout::get_state_at_point (/* Inputs.  */
-			    int row, int column,
+			    linenum_type row, int column,
 			    int first_non_ws, int last_non_ws,
 			    /* Outputs.  */
 			    point_state *out_state)
@@ -1389,7 +1822,7 @@ layout::get_state_at_point (/* Inputs.  */
    character of source (as determined when printing the source line).  */
 
 int
-layout::get_x_bound_for_row (int row, int caret_column,
+layout::get_x_bound_for_row (linenum_type row, int caret_column,
 			     int last_non_ws_column)
 {
   int result = caret_column + 1;
@@ -1431,7 +1864,7 @@ layout::move_to_column (int *column, int dest_column)
   if (*column > dest_column)
     {
       print_newline ();
-      *column = 0;
+      *column = m_x_offset;
     }
 
   while (*column < dest_column)
@@ -1452,7 +1885,7 @@ layout::show_ruler (int max_column) const
     {
       pp_space (m_pp);
       for (int column = 1 + m_x_offset; column <= max_column; column++)
-	if (0 == column % 10)
+	if (column % 10 == 0)
 	  pp_character (m_pp, '0' + (column / 100) % 10);
 	else
 	  pp_space (m_pp);
@@ -1462,7 +1895,7 @@ layout::show_ruler (int max_column) const
   /* Tens.  */
   pp_space (m_pp);
   for (int column = 1 + m_x_offset; column <= max_column; column++)
-    if (0 == column % 10)
+    if (column % 10 == 0)
       pp_character (m_pp, '0' + (column / 10) % 10);
     else
       pp_space (m_pp);
@@ -1475,7 +1908,48 @@ layout::show_ruler (int max_column) const
   pp_newline (m_pp);
 }
 
+/* Print leading fix-its (for new lines inserted before the source line)
+   then the source line, followed by an annotation line
+   consisting of any caret/underlines, then any fixits.
+   If the source line can't be read, print nothing.  */
+void
+layout::print_line (linenum_type row)
+{
+  char_span line = location_get_source_line (m_exploc.file, row);
+  if (!line)
+    return;
+
+  line_bounds lbounds;
+  print_leading_fixits (row);
+  print_source_line (row, line.get_buffer (), line.length (), &lbounds);
+  if (should_print_annotation_line_p (row))
+    print_annotation_line (row, lbounds);
+  print_trailing_fixits (row);
+}
+
 } /* End of anonymous namespace.  */
+
+/* If LOC is within the spans of lines that will already be printed for
+   this gcc_rich_location, then add it as a secondary location and return true.
+
+   Otherwise return false.  */
+
+bool
+gcc_rich_location::add_location_if_nearby (location_t loc)
+{
+  /* Use the layout location-handling logic to sanitize LOC,
+     filtering it to the current line spans within a temporary
+     layout instance.  */
+  layout layout (global_dc, this, DK_ERROR);
+  location_range loc_range;
+  loc_range.m_loc = loc;
+  loc_range.m_show_caret_p = false;
+  if (!layout.maybe_add_location_range (&loc_range, true))
+    return false;
+
+  add_range (loc, false);
+  return true;
+}
 
 /* Print the physical source code corresponding to the location of
    this diagnostic, with additional annotations.  */
@@ -1517,20 +1991,10 @@ diagnostic_show_locus (diagnostic_context * context,
 	  expanded_location exploc = layout.get_expanded_location (line_span);
 	  context->start_span (context, exploc);
 	}
-      int last_line = line_span->get_last_line ();
-      for (int row = line_span->get_first_line (); row <= last_line; row++)
-	{
-	  /* Print the source line, followed by an annotation line
-	     consisting of any caret/underlines, then any fixits.
-	     If the source line can't be read, print nothing.  */
-	  line_bounds lbounds;
-	  if (layout.print_source_line (row, &lbounds))
-	    {
-	      if (layout.should_print_annotation_line_p (row))
-		layout.print_annotation_line (row, lbounds);
-	      layout.print_any_fixits (row);
-	    }
-	}
+      linenum_type last_line = line_span->get_last_line ();
+      for (linenum_type row = line_span->get_first_line ();
+	   row <= last_line; row++)
+	layout.print_line (row);
     }
 
   pp_set_prefix (context->printer, saved_prefix);
@@ -1541,34 +2005,6 @@ diagnostic_show_locus (diagnostic_context * context,
 namespace selftest {
 
 /* Selftests for diagnostic_show_locus.  */
-
-/* Convenience subclass of diagnostic_context for testing
-   diagnostic_show_locus.  */
-
-class test_diagnostic_context : public diagnostic_context
-{
- public:
-  test_diagnostic_context ()
-  {
-    diagnostic_initialize (this, 0);
-    show_caret = true;
-    show_column = true;
-    start_span = start_span_cb;
-  }
-  ~test_diagnostic_context ()
-  {
-    diagnostic_finish (this);
-  }
-
-  /* Implementation of diagnostic_start_span_fn, hiding the
-     real filename (to avoid printing the names of tempfiles).  */
-  static void
-  start_span_cb (diagnostic_context *context, expanded_location exploc)
-  {
-    exploc.file = "FILENAME";
-    default_diagnostic_start_span_fn (context, exploc);
-  }
-};
 
 /* Verify that diagnostic_show_locus works sanely on UNKNOWN_LOCATION.  */
 
@@ -1852,41 +2288,45 @@ test_one_liner_fixit_validation_adhoc_locations ()
   }
 }
 
-/* Ensure that we can add an arbitrary number of fix-it hints to a
-   rich_location.  */
+/* Test of consolidating insertions at the same location.  */
 
 static void
-test_one_liner_many_fixits ()
+test_one_liner_many_fixits_1 ()
 {
   test_diagnostic_context dc;
   location_t equals = linemap_position_for_column (line_table, 5);
   rich_location richloc (line_table, equals);
   for (int i = 0; i < 19; i++)
     richloc.add_fixit_insert_before ("a");
+  ASSERT_EQ (1, richloc.get_num_fixit_hints ());
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" foo = bar.field;\n"
+		"     ^\n"
+		"     aaaaaaaaaaaaaaaaaaa\n",
+		pp_formatted_text (dc.printer));
+}
+
+/* Ensure that we can add an arbitrary number of fix-it hints to a
+   rich_location, even if they are not consolidated.  */
+
+static void
+test_one_liner_many_fixits_2 ()
+{
+  test_diagnostic_context dc;
+  location_t equals = linemap_position_for_column (line_table, 5);
+  rich_location richloc (line_table, equals);
+  for (int i = 0; i < 19; i++)
+    {
+      location_t loc = linemap_position_for_column (line_table, i * 2);
+      richloc.add_fixit_insert_before (loc, "a");
+    }
   ASSERT_EQ (19, richloc.get_num_fixit_hints ());
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ ("\n"
 		" foo = bar.field;\n"
 		"     ^\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n",
+		"a a a a a a a a a a a a a a a a a a a\n",
 		pp_formatted_text (dc.printer));
 }
 
@@ -1924,7 +2364,72 @@ test_diagnostic_show_locus_one_liner (const line_table_case &case_)
   test_one_liner_fixit_replace_non_equal_range ();
   test_one_liner_fixit_replace_equal_secondary_range ();
   test_one_liner_fixit_validation_adhoc_locations ();
-  test_one_liner_many_fixits ();
+  test_one_liner_many_fixits_1 ();
+  test_one_liner_many_fixits_2 ();
+}
+
+/* Verify that gcc_rich_location::add_location_if_nearby works.  */
+
+static void
+test_add_location_if_nearby (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     ...000000000111111111122222222223333333333.
+     ...123456789012345678901234567890123456789.  */
+  const char *content
+    = ("struct same_line { double x; double y; ;\n" /* line 1.  */
+       "struct different_line\n"                    /* line 2.  */
+       "{\n"                                        /* line 3.  */
+       "  double x;\n"                              /* line 4.  */
+       "  double y;\n"                              /* line 5.  */
+       ";\n");                                      /* line 6.  */
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  line_table_test ltt (case_);
+
+  const line_map_ordinary *ord_map
+    = linemap_check_ordinary (linemap_add (line_table, LC_ENTER, false,
+					   tmp.get_filename (), 0));
+
+  linemap_line_start (line_table, 1, 100);
+
+  const location_t final_line_end
+    = linemap_position_for_line_and_column (line_table, ord_map, 6, 7);
+
+  /* Don't attempt to run the tests if column data might be unavailable.  */
+  if (final_line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  /* Test of add_location_if_nearby on the same line as the
+     primary location.  */
+  {
+    const location_t missing_close_brace_1_39
+      = linemap_position_for_line_and_column (line_table, ord_map, 1, 39);
+    const location_t matching_open_brace_1_18
+      = linemap_position_for_line_and_column (line_table, ord_map, 1, 18);
+    gcc_rich_location richloc (missing_close_brace_1_39);
+    bool added = richloc.add_location_if_nearby (matching_open_brace_1_18);
+    ASSERT_TRUE (added);
+    ASSERT_EQ (2, richloc.get_num_locations ());
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  " struct same_line { double x; double y; ;\n"
+		  "                  ~                    ^\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Test of add_location_if_nearby on a different line to the
+     primary location.  */
+  {
+    const location_t missing_close_brace_6_1
+      = linemap_position_for_line_and_column (line_table, ord_map, 6, 1);
+    const location_t matching_open_brace_3_1
+      = linemap_position_for_line_and_column (line_table, ord_map, 3, 1);
+    gcc_rich_location richloc (missing_close_brace_6_1);
+    bool added = richloc.add_location_if_nearby (matching_open_brace_3_1);
+    ASSERT_FALSE (added);
+    ASSERT_EQ (1, richloc.get_num_locations ());
+  }
 }
 
 /* Verify that we print fixits even if they only affect lines
@@ -2027,6 +2532,7 @@ test_fixit_consolidation (const line_table_case &case_)
   const location_t c16 = linemap_position_for_column (line_table, 16);
   const location_t c17 = linemap_position_for_column (line_table, 17);
   const location_t c20 = linemap_position_for_column (line_table, 20);
+  const location_t c21 = linemap_position_for_column (line_table, 21);
   const location_t caret = c10;
 
   /* Insert + insert. */
@@ -2105,11 +2611,9 @@ test_fixit_consolidation (const line_table_case &case_)
 	/* They should have been merged into a single "replace".  */
 	ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 	const fixit_hint *hint = richloc.get_fixit_hint (0);
-	ASSERT_EQ (fixit_hint::REPLACE, hint->get_kind ());
-	const fixit_replace *replace = (const fixit_replace *)hint;
-	ASSERT_STREQ ("foobar", replace->get_string ());
-	ASSERT_EQ (c10, replace->get_range ().m_start);
-	ASSERT_EQ (c20, replace->get_range ().m_finish);
+	ASSERT_STREQ ("foobar", hint->get_string ());
+	ASSERT_EQ (c10, hint->get_start_loc ());
+	ASSERT_EQ (c21, hint->get_next_loc ());
       }
   }
 
@@ -2129,11 +2633,9 @@ test_fixit_consolidation (const line_table_case &case_)
 	   range extended to cover that of the removal.  */
 	ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 	const fixit_hint *hint = richloc.get_fixit_hint (0);
-	ASSERT_EQ (fixit_hint::REPLACE, hint->get_kind ());
-	const fixit_replace *replace = (const fixit_replace *)hint;
-	ASSERT_STREQ ("foo", replace->get_string ());
-	ASSERT_EQ (c10, replace->get_range ().m_start);
-	ASSERT_EQ (c20, replace->get_range ().m_finish);
+	ASSERT_STREQ ("foo", hint->get_string ());
+	ASSERT_EQ (c10, hint->get_start_loc ());
+	ASSERT_EQ (c21, hint->get_next_loc ());
       }
   }
 
@@ -2151,17 +2653,301 @@ test_fixit_consolidation (const line_table_case &case_)
 	/* They should have been merged into a single "replace-with-empty".  */
 	ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 	const fixit_hint *hint = richloc.get_fixit_hint (0);
-	ASSERT_EQ (fixit_hint::REPLACE, hint->get_kind ());
-	const fixit_replace *replace = (const fixit_replace *)hint;
-	ASSERT_STREQ ("", replace->get_string ());
-	ASSERT_EQ (c10, replace->get_range ().m_start);
-	ASSERT_EQ (c20, replace->get_range ().m_finish);
+	ASSERT_STREQ ("", hint->get_string ());
+	ASSERT_EQ (c10, hint->get_start_loc ());
+	ASSERT_EQ (c21, hint->get_next_loc ());
       }
   }
 }
 
-/* Insertion fix-it hint: adding a "break;" on a line by itself.
-   This will fail, as newlines aren't yet supported.  */
+/* Verify that the line_corrections machinery correctly prints
+   overlapping fixit-hints.  */
+
+static void
+test_overlapped_fixit_printing (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     ...000000000111111111122222222223333333333.
+     ...123456789012345678901234567890123456789.  */
+  const char *content
+    = ("  foo *f = (foo *)ptr->field;\n");
+  temp_source_file tmp (SELFTEST_LOCATION, ".C", content);
+  line_table_test ltt (case_);
+
+  const line_map_ordinary *ord_map
+    = linemap_check_ordinary (linemap_add (line_table, LC_ENTER, false,
+					   tmp.get_filename (), 0));
+
+  linemap_line_start (line_table, 1, 100);
+
+  const location_t final_line_end
+    = linemap_position_for_line_and_column (line_table, ord_map, 6, 36);
+
+  /* Don't attempt to run the tests if column data might be unavailable.  */
+  if (final_line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  /* A test for converting a C-style cast to a C++-style cast.  */
+  const location_t open_paren
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 12);
+  const location_t close_paren
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 18);
+  const location_t expr_start
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 19);
+  const location_t expr_finish
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 28);
+  const location_t expr = make_location (expr_start, expr_start, expr_finish);
+
+  /* Various examples of fix-it hints that aren't themselves consolidated,
+     but for which the *printing* may need consolidation.  */
+
+  /* Example where 3 fix-it hints are printed as one.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_replace (open_paren, "const_cast<");
+    richloc.add_fixit_replace (close_paren, "> (");
+    richloc.add_fixit_insert_after (")");
+
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -----------------\n"
+		  "            const_cast<foo *> (ptr->field)\n",
+		  pp_formatted_text (dc.printer));
+
+    /* Unit-test the line_corrections machinery.  */
+    ASSERT_EQ (3, richloc.get_num_fixit_hints ());
+    const fixit_hint *hint_0 = richloc.get_fixit_hint (0);
+    ASSERT_EQ (column_range (12, 12), get_affected_columns (hint_0));
+    ASSERT_EQ (column_range (12, 22), get_printed_columns (hint_0));
+    const fixit_hint *hint_1 = richloc.get_fixit_hint (1);
+    ASSERT_EQ (column_range (18, 18), get_affected_columns (hint_1));
+    ASSERT_EQ (column_range (18, 20), get_printed_columns (hint_1));
+    const fixit_hint *hint_2 = richloc.get_fixit_hint (2);
+    ASSERT_EQ (column_range (29, 28), get_affected_columns (hint_2));
+    ASSERT_EQ (column_range (29, 29), get_printed_columns (hint_2));
+
+    /* Add each hint in turn to a line_corrections instance,
+       and verify that they are consolidated into one correction instance
+       as expected.  */
+    line_corrections lc (tmp.get_filename (), 1);
+
+    /* The first replace hint by itself.  */
+    lc.add_hint (hint_0);
+    ASSERT_EQ (1, lc.m_corrections.length ());
+    ASSERT_EQ (column_range (12, 12), lc.m_corrections[0]->m_affected_columns);
+    ASSERT_EQ (column_range (12, 22), lc.m_corrections[0]->m_printed_columns);
+    ASSERT_STREQ ("const_cast<", lc.m_corrections[0]->m_text);
+
+    /* After the second replacement hint, they are printed together
+       as a replacement (along with the text between them).  */
+    lc.add_hint (hint_1);
+    ASSERT_EQ (1, lc.m_corrections.length ());
+    ASSERT_STREQ ("const_cast<foo *> (", lc.m_corrections[0]->m_text);
+    ASSERT_EQ (column_range (12, 18), lc.m_corrections[0]->m_affected_columns);
+    ASSERT_EQ (column_range (12, 30), lc.m_corrections[0]->m_printed_columns);
+
+    /* After the final insertion hint, they are all printed together
+       as a replacement (along with the text between them).  */
+    lc.add_hint (hint_2);
+    ASSERT_STREQ ("const_cast<foo *> (ptr->field)",
+		  lc.m_corrections[0]->m_text);
+    ASSERT_EQ (1, lc.m_corrections.length ());
+    ASSERT_EQ (column_range (12, 28), lc.m_corrections[0]->m_affected_columns);
+    ASSERT_EQ (column_range (12, 41), lc.m_corrections[0]->m_printed_columns);
+  }
+
+  /* Example where two are consolidated during printing.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_replace (open_paren, "CAST (");
+    richloc.add_fixit_replace (close_paren, ") (");
+    richloc.add_fixit_insert_after (")");
+
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -\n"
+		  "            CAST (-\n"
+		  "                  ) (        )\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Example where none are consolidated during printing.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_replace (open_paren, "CST (");
+    richloc.add_fixit_replace (close_paren, ") (");
+    richloc.add_fixit_insert_after (")");
+
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -\n"
+		  "            CST ( -\n"
+		  "                  ) (        )\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Example of deletion fix-it hints.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_insert_before (open_paren, "(bar *)");
+    source_range victim = {open_paren, close_paren};
+    richloc.add_fixit_remove (victim);
+
+    /* This case is actually handled by fixit-consolidation,
+       rather than by line_corrections.  */
+    ASSERT_EQ (1, richloc.get_num_fixit_hints ());
+
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -------\n"
+		  "            (bar *)\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Example of deletion fix-it hints that would overlap.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_insert_before (open_paren, "(longer *)");
+    source_range victim = {expr_start, expr_finish};
+    richloc.add_fixit_remove (victim);
+
+    /* These fixits are not consolidated.  */
+    ASSERT_EQ (2, richloc.get_num_fixit_hints ());
+
+    /* But the corrections are.  */
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -----------------\n"
+		  "            (longer *)(foo *)\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Example of insertion fix-it hints that would overlap.  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, expr);
+    richloc.add_fixit_insert_before (open_paren, "LONGER THAN THE CAST");
+    richloc.add_fixit_insert_after (close_paren, "TEST");
+
+    /* The first insertion is long enough that if printed naively,
+       it would overlap with the second.
+       Verify that they are printed as a single replacement.  */
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "   foo *f = (foo *)ptr->field;\n"
+		  "                   ^~~~~~~~~~\n"
+		  "            -------\n"
+		  "            LONGER THAN THE CAST(foo *)TEST\n",
+		  pp_formatted_text (dc.printer));
+  }
+}
+
+/* Verify that the line_corrections machinery correctly prints
+   overlapping fixit-hints that have been added in the wrong
+   order.
+   Adapted from PR c/81405 seen on gcc.dg/init-excess-1.c*/
+
+static void
+test_overlapped_fixit_printing_2 (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     ...000000000111111111122222222223333333333.
+     ...123456789012345678901234567890123456789.  */
+  const char *content
+    = ("int a5[][0][0] = { 1, 2 };\n");
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  line_table_test ltt (case_);
+
+  const line_map_ordinary *ord_map
+    = linemap_check_ordinary (linemap_add (line_table, LC_ENTER, false,
+					   tmp.get_filename (), 0));
+
+  linemap_line_start (line_table, 1, 100);
+
+  const location_t final_line_end
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 100);
+
+  /* Don't attempt to run the tests if column data might be unavailable.  */
+  if (final_line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  const location_t col_1
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 1);
+  const location_t col_20
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 20);
+  const location_t col_21
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 21);
+  const location_t col_23
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 23);
+  const location_t col_25
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 25);
+
+  /* Two insertions, in the wrong order.  */
+  {
+    rich_location richloc (line_table, col_20);
+    richloc.add_fixit_insert_before (col_23, "{");
+    richloc.add_fixit_insert_before (col_21, "}");
+
+    /* These fixits should be accepted; they can't be consolidated.  */
+    ASSERT_EQ (2, richloc.get_num_fixit_hints ());
+    const fixit_hint *hint_0 = richloc.get_fixit_hint (0);
+    ASSERT_EQ (column_range (23, 22), get_affected_columns (hint_0));
+    ASSERT_EQ (column_range (23, 23), get_printed_columns (hint_0));
+    const fixit_hint *hint_1 = richloc.get_fixit_hint (1);
+    ASSERT_EQ (column_range (21, 20), get_affected_columns (hint_1));
+    ASSERT_EQ (column_range (21, 21), get_printed_columns (hint_1));
+
+    /* Verify that they're printed correctly.  */
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  " int a5[][0][0] = { 1, 2 };\n"
+		  "                    ^\n"
+		  "                     } {\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Various overlapping insertions, some occurring "out of order"
+     (reproducing the fix-it hints from PR c/81405).  */
+  {
+    test_diagnostic_context dc;
+    rich_location richloc (line_table, col_20);
+
+    richloc.add_fixit_insert_before (col_20, "{{");
+    richloc.add_fixit_insert_before (col_21, "}}");
+    richloc.add_fixit_insert_before (col_23, "{");
+    richloc.add_fixit_insert_before (col_21, "}");
+    richloc.add_fixit_insert_before (col_23, "{{");
+    richloc.add_fixit_insert_before (col_25, "}");
+    richloc.add_fixit_insert_before (col_21, "}");
+    richloc.add_fixit_insert_before (col_1, "{");
+    richloc.add_fixit_insert_before (col_25, "}");
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  " int a5[][0][0] = { 1, 2 };\n"
+		  "                    ^\n"
+		  " {                  -----\n"
+		  "                    {{1}}}}, {{{2 }}\n",
+		  pp_formatted_text (dc.printer));
+  }
+}
+
+/* Insertion fix-it hint: adding a "break;" on a line by itself.  */
 
 static void
 test_fixit_insert_containing_newline (const line_table_case &case_)
@@ -2178,32 +2964,97 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
   line_table_test ltt (case_);
   linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 3);
 
-  /* Add a "break;" on a line by itself before line 3 i.e. before
-     column 1 of line 3. */
   location_t case_start = linemap_position_for_column (line_table, 5);
   location_t case_finish = linemap_position_for_column (line_table, 13);
   location_t case_loc = make_location (case_start, case_start, case_finish);
-  rich_location richloc (line_table, case_loc);
   location_t line_start = linemap_position_for_column (line_table, 1);
-  richloc.add_fixit_insert_before (line_start, "      break;\n");
-
-  /* Newlines are not yet supported within fix-it hints, so
-     the fix-it should not be displayed.  */
-  ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
 
   if (case_finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  /* Add a "break;" on a line by itself before line 3 i.e. before
+     column 1 of line 3. */
+  {
+    rich_location richloc (line_table, case_loc);
+    richloc.add_fixit_insert_before (line_start, "      break;\n");
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "+      break;\n"
+		  "     case 'b':\n"
+		  "     ^~~~~~~~~\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Verify that attempts to add text with a newline fail when the
+     insertion point is *not* at the start of a line.  */
+  {
+    rich_location richloc (line_table, case_loc);
+    richloc.add_fixit_insert_before (case_start, "break;\n");
+    ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "     case 'b':\n"
+		  "     ^~~~~~~~~\n",
+		  pp_formatted_text (dc.printer));
+  }
+}
+
+/* Insertion fix-it hint: adding a "#include <stdio.h>\n" to the top
+   of the file, where the fix-it is printed in a different line-span
+   to the primary range of the diagnostic.  */
+
+static void
+test_fixit_insert_containing_newline_2 (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     .........................0000000001111111.
+     .........................1234567890123456.  */
+  const char *old_content = ("test (int ch)\n"  /* line 1. */
+			     "{\n"              /* line 2. */
+			     " putchar (ch);\n" /* line 3. */
+			     "}\n");            /* line 4. */
+
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", old_content);
+  line_table_test ltt (case_);
+
+  const line_map_ordinary *ord_map = linemap_check_ordinary
+    (linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 0));
+  linemap_line_start (line_table, 1, 100);
+
+  /* The primary range is the "putchar" token.  */
+  location_t putchar_start
+    = linemap_position_for_line_and_column (line_table, ord_map, 3, 2);
+  location_t putchar_finish
+    = linemap_position_for_line_and_column (line_table, ord_map, 3, 8);
+  location_t putchar_loc
+    = make_location (putchar_start, putchar_start, putchar_finish);
+  rich_location richloc (line_table, putchar_loc);
+
+  /* Add a "#include <stdio.h>" on a line by itself at the top of the file.  */
+  location_t file_start
+     = linemap_position_for_line_and_column (line_table, ord_map,  1, 1);
+  richloc.add_fixit_insert_before (file_start, "#include <stdio.h>\n");
+
+  if (putchar_finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
   test_diagnostic_context dc;
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ ("\n"
-		"     case 'b':\n"
-		"     ^~~~~~~~~\n",
+		"FILENAME:1:1:\n"
+		"+#include <stdio.h>\n"
+		" test (int ch)\n"
+		"FILENAME:3:2:\n"
+		"  putchar (ch);\n"
+		"  ^~~~~~~\n",
 		pp_formatted_text (dc.printer));
 }
 
 /* Replacement fix-it hint containing a newline.
-   This will fail, as newlines aren't yet supported.  */
+   This will fail, as newlines are only supported when inserting at the
+   beginning of a line.  */
 
 static void
 test_fixit_replace_containing_newline (const line_table_case &case_)
@@ -2226,7 +3077,7 @@ test_fixit_replace_containing_newline (const line_table_case &case_)
   source_range range = source_range::from_locations (start, finish);
   richloc.add_fixit_replace (range, "\n =");
 
-  /* Newlines are not yet supported within fix-it hints, so
+  /* Arbitrary newlines are not yet supported within fix-it hints, so
      the fix-it should not be displayed.  */
   ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
 
@@ -2241,11 +3092,60 @@ test_fixit_replace_containing_newline (const line_table_case &case_)
 		pp_formatted_text (dc.printer));
 }
 
+/* Fix-it hint, attempting to delete a newline.
+   This will fail, as we currently only support fix-it hints that
+   affect one line at a time.  */
+
+static void
+test_fixit_deletion_affecting_newline (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+    ..........................0000000001111.
+    ..........................1234567890123.  */
+  const char *old_content = ("foo = bar (\n"
+			     "      );\n");
+
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", old_content);
+  line_table_test ltt (case_);
+  const line_map_ordinary *ord_map = linemap_check_ordinary
+    (linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 0));
+  linemap_line_start (line_table, 1, 100);
+
+  /* Attempt to delete the " (\n...)".  */
+  location_t start
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 10);
+  location_t caret
+    = linemap_position_for_line_and_column (line_table, ord_map, 1, 11);
+  location_t finish
+    = linemap_position_for_line_and_column (line_table, ord_map, 2, 7);
+  location_t loc = make_location (caret, start, finish);
+  rich_location richloc (line_table, loc);
+  richloc. add_fixit_remove ();
+
+  /* Fix-it hints that affect more than one line are not yet supported, so
+     the fix-it should not be displayed.  */
+  ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
+
+  if (finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  test_diagnostic_context dc;
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" foo = bar (\n"
+		"          ~^\n"
+		"       );\n"
+		"       ~    \n",
+		pp_formatted_text (dc.printer));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
 diagnostic_show_locus_c_tests ()
 {
+  test_line_span ();
+
   test_layout_range_for_single_point ();
   test_layout_range_for_single_line ();
   test_layout_range_for_multiple_lines ();
@@ -2255,10 +3155,15 @@ diagnostic_show_locus_c_tests ()
   test_diagnostic_show_locus_unknown_location ();
 
   for_each_line_table_case (test_diagnostic_show_locus_one_liner);
+  for_each_line_table_case (test_add_location_if_nearby);
   for_each_line_table_case (test_diagnostic_show_locus_fixit_lines);
   for_each_line_table_case (test_fixit_consolidation);
+  for_each_line_table_case (test_overlapped_fixit_printing);
+  for_each_line_table_case (test_overlapped_fixit_printing_2);
   for_each_line_table_case (test_fixit_insert_containing_newline);
+  for_each_line_table_case (test_fixit_insert_containing_newline_2);
   for_each_line_table_case (test_fixit_replace_containing_newline);
+  for_each_line_table_case (test_fixit_deletion_affecting_newline);
 }
 
 } // namespace selftest

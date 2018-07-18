@@ -2,6 +2,7 @@
 // { dg-options "-mx32 -fPIC" }
 // { dg-require-ifunc "" }
 // { dg-require-effective-target maybe_x32 }
+// { dg-require-effective-target rdrand }
 
 void
 __throw_runtime_error(const char*) __attribute__((__noreturn__));

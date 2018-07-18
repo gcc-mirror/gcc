@@ -16,5 +16,5 @@ template <class, class Y> typename F<Y>::ret_type cast(Y &);
 class CompoundStmt;
 class alignas(8) Stmt {
   Stmt *Children[1];
-  CompoundStmt *getBlock() const { cast<CompoundStmt>(Children[0]); }
+  CompoundStmt *getBlock() const { cast<CompoundStmt>(Children[0]); return 0; }
 };

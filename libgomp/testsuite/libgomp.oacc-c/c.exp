@@ -15,6 +15,13 @@ load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 load_gcc_lib torture-options.exp
 
+proc check_effective_target_c { } {
+    return 1
+}
+proc check_effective_target_c++ { } {
+    return 0
+}
+
 # Initialize dg.
 dg-init
 torture-init

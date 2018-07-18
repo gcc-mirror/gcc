@@ -1,6 +1,6 @@
 // auto_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,6 +53,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto_ptr_ref(_Tp1* __p): _M_ptr(__p) { }
     } _GLIBCXX_DEPRECATED;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
   /**
    *  @brief  A simple smart pointer providing strict ownership semantics.
@@ -326,6 +328,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     unique_ptr<_Tp, _Dp>::unique_ptr(auto_ptr<_Up>&& __u) noexcept
     : _M_t(__u.release(), deleter_type()) { }
 #endif
+
+#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

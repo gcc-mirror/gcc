@@ -1,5 +1,5 @@
 ;; GCC machine description for CRIS cpu cores.
-;; Copyright (C) 1998-2016 Free Software Foundation, Inc.
+;; Copyright (C) 1998-2018 Free Software Foundation, Inc.
 ;; Contributed by Axis Communications.
 
 ;; This file is part of GCC.
@@ -499,7 +499,8 @@
 {
   if (MEM_P (operands[0])
       && operands[1] != const0_rtx
-      && (!TARGET_V32 || (!REG_P (operands[1]) && can_create_pseudo_p ())))
+      && can_create_pseudo_p ()
+      && (!TARGET_V32 || !REG_P (operands[1])))
     operands[1] = copy_to_mode_reg (DImode, operands[1]);
 
   /* Some other ports (as of 2001-09-10 for example mcore and romp) also
@@ -5033,7 +5034,7 @@
   [(set (match_dup 0) (match_dup 3))
    (set (match_dup 0) (and:SI (match_dup 0) (match_dup 4)))]
 {
-  machine_mode zmode = INTVAL (operands[2]) <= 255 ? QImode : HImode;
+  machine_mode zmode = INTVAL (operands[1]) <= 255 ? QImode : HImode;
   rtx op1
     = (REG_S_P (operands[2])
        ? gen_rtx_REG (zmode, REGNO (operands[2]))

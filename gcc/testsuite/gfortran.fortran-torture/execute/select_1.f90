@@ -13,5 +13,5 @@ case default
 end select
 end function
 
-if (j(2).NE.2 .OR. j(11).NE.0) call abort()
+if (j(2).NE.2 .OR. j(11).NE.0) STOP 1
 end

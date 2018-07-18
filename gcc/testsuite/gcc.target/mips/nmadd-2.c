@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fno-fast-math -ffinite-math-only isa=4 -mhard-float" } */
+/* { dg-options "-fno-fast-math -ffinite-math-only -mmadd4 isa=4 -mhard-float" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\tnmadd.s\t" } } */
 /* { dg-final { scan-assembler "\tnmadd.d\t" } } */

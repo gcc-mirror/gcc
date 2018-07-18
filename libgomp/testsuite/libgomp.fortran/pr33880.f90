@@ -9,7 +9,7 @@ program pr33880
     !$omp atomic
       j = j + 1
   end do
-  if (j .ne. 1000) call abort
+  if (j .ne. 1000) STOP 1
 contains
   subroutine something()
     i = 0

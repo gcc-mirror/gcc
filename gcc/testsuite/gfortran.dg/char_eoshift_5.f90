@@ -16,7 +16,7 @@ contains
     chk(1:8) = "5"
     chk(9:10) = " "
     Z(:)="456"
-    if (any (EOSHIFT(Z(:)(2:2),2) .ne. chk)) call abort 
+    if (any (EOSHIFT(Z(:)(2:2),2) .ne. chk)) STOP 1
   END subroutine
 END
 

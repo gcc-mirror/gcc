@@ -1,5 +1,5 @@
 /* Additional functions for the GCC driver on Darwin native.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -37,9 +37,7 @@ darwin_find_version_from_kernel (void)
   size_t osversion_len = sizeof (osversion) - 1;
   static int osversion_name[2] = { CTL_KERN, KERN_OSRELEASE };
   int major_vers;
-  char minor_vers[6];
   char * version_p;
-  char * version_pend;
   char * new_flag;
 
   /* Determine the version of the running OS.  If we can't, warn user,
@@ -61,22 +59,20 @@ darwin_find_version_from_kernel (void)
     major_vers = major_vers * 10 + (*version_p++ - '0');
   if (*version_p++ != '.')
     goto parse_failed;
-  version_pend = strchr(version_p, '.');
-  if (!version_pend)
-    goto parse_failed;
-  if (! ISDIGIT (*version_p))
-    goto parse_failed;
-  strncpy(minor_vers, version_p, version_pend - version_p);
-  minor_vers[version_pend - version_p] = '\0';
   
   /* The major kernel version number is 4 plus the second OS version
      component.  */
   if (major_vers - 4 <= 4)
     /* On 10.4 and earlier, the old linker is used which does not
-       support three-component system versions.  */
+       support three-component system versions.
+       FIXME: we should not assume this - a newer linker could be used.  */
     asprintf (&new_flag, "10.%d", major_vers - 4);
   else
-    asprintf (&new_flag, "10.%d.%s", major_vers - 4, minor_vers);
+    /* Although the newer linker supports three-component system
+       versions, there's no guarantee that the minor version component
+       of the kernel and the system are the same. Apple's clang always
+       uses 0 as the minor version: do the same.  */
+    asprintf (&new_flag, "10.%d.0", major_vers - 4);
 
   return new_flag;
 
@@ -85,7 +81,6 @@ darwin_find_version_from_kernel (void)
 	   (int) osversion_len, osversion);
   return NULL;
 }
-
 #endif
 
 /* When running on a Darwin system and using that system's headers and
@@ -293,5 +288,30 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	  generate_option (OPT_mmacosx_version_min_, vers_string, 1, CL_DRIVER,
 			  &(*decoded_options)[*decoded_options_count - 1]);
 	}
+    }
+  /* Create and push the major version for assemblers that need it.  */
+  if (vers_string != NULL)
+    {
+      char *asm_major = NULL;
+      const char *first_period = strchr(vers_string, '.');
+      if (first_period != NULL)
+	{
+	  const char *second_period = strchr(first_period+1, '.');
+	  if (second_period  != NULL)
+	    asm_major = xstrndup (vers_string, second_period-vers_string);
+	  else
+	    asm_major = xstrdup (vers_string);
+        }
+      /* Else we appear to have a weird macosx version with no major number.
+         Punt on this for now.  */
+      if (asm_major != NULL)
+        {
+	  ++*decoded_options_count;
+	  *decoded_options = XRESIZEVEC (struct cl_decoded_option,
+					 *decoded_options,
+					 *decoded_options_count);
+	  generate_option (OPT_asm_macosx_version_min_, asm_major, 1, CL_DRIVER,
+			  &(*decoded_options)[*decoded_options_count - 1]);
+        }
     }
 }

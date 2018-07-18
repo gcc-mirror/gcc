@@ -1,4 +1,4 @@
-// PR c++/39367
+// PR c++/39367 - ICE at tree-inline.c:1042 with -O
 // { dg-options "-O" }
 
 class QScriptEnginePrivate;
@@ -15,8 +15,8 @@ namespace QScript {
     namespace Ecma {
         class Core {
         public:
-            inline QScriptEnginePrivate *engine() const     { }
-            inline QScriptClassInfo *classInfo() const     { }
+            inline QScriptEnginePrivate *engine() const     { return 0; }
+            inline QScriptClassInfo *classInfo() const     { return 0; }
             QScriptValueImpl publicPrototype;
         };
         class Boolean: public Core {
@@ -37,6 +37,11 @@ template <typename T> void QScript::Buffer<T>::resize(int s) {
       reserve (s << 1);
 }
 template <typename T> void QScript::Buffer<T>::reserve(int x) {
+    /* The following may be optimized into a trap because the function
+       is called from resize(0) and so with m_capacity < 0.  When not
+       optimized it may trigger -Walloc-size-larger-than= since
+       operator new() is called with an excessively large value.
+       The warning is pruned from the test output below.  */
     T *new_data = new T[m_capacity];
     for (int i=0; i<m_size; ++i)
       new_data[i] = m_data[i];
@@ -69,3 +74,5 @@ namespace QScript {
           }
     }
 }
+
+// { dg-prune-output "\\\[-Walloc-size-larger-than=]" }

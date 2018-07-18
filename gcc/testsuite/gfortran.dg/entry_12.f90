@@ -26,5 +26,5 @@ END MODULE ksbin1_aux_mod
 
     use ksbin1_aux_mod
     if (any ((/foo (), bar (99), foobar (), foobar (99), j (), k (99)/) .ne. &
-             (/1, 2, 1, 2, 1, 2/))) Call abort ()
+             (/1, 2, 1, 2, 1, 2/))) STOP 1
 end

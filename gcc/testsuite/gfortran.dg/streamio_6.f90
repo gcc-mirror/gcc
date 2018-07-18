@@ -23,9 +23,9 @@ program streamio_6
   do j=1,100
     read(unit=15, pos=a(j), iostat=ier) c
     if (ier.ne.0) then
-      call abort
+      STOP 1
     else
-      if (achar(a(j)) /= c) call abort
+      if (achar(a(j)) /= c) STOP 2
     endif
   enddo
   close(unit=15, status="delete")

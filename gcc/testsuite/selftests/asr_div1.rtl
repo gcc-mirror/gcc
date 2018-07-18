@@ -1,0 +1,24 @@
+;; Taken from
+;;    gcc/testsuite/gcc.dg/asr_div1.c -O2 -fdump-rtl-all -mtune=cortex-a53
+;; for aarch64, hand editing to the new format.
+
+(function "f1"
+  (insn-chain
+    (block 2
+      (edge-from entry (flags "FALLTHRU"))
+      (cinsn 1 (set (reg:DI <2>)
+        (lshiftrt:DI (reg:DI <0>)
+            (const_int 32)))
+        "../../src/gcc/testsuite/gcc.dg/asr_div1.c":14
+        (expr_list:REG_DEAD (reg:DI <0>)
+          (nil)))
+      (cinsn 2 (set (reg:SI <1>)
+        (ashiftrt:SI (subreg:SI (reg:DI <2>) 0)
+            (const_int 3)))
+        "../../src/gcc/testsuite/gcc.dg/asr_div1.c":14
+        (expr_list:REG_DEAD (reg:DI <2>)
+          (nil)))
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 2
+  ) ;; insn-chain
+) ;; function

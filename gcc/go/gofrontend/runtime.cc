@@ -190,27 +190,47 @@ runtime_function_type(Runtime_function_type bft)
 	  break;
 
 	case RFT_ARRAY2STRING:
-	  t = Type::make_array_type(Type::make_string_type(),
+	  {
+	    Array_type* at =
+	      Type::make_array_type(Type::make_string_type(),
 				    Expression::make_integer_ul(2, NULL,
 								bloc));
+	    at->set_is_array_incomparable();
+	    t = at;
+	  }
 	  break;
 
 	case RFT_ARRAY3STRING:
-	  t = Type::make_array_type(Type::make_string_type(),
+	  {
+	    Array_type* at =
+	      Type::make_array_type(Type::make_string_type(),
 				    Expression::make_integer_ul(3, NULL,
 								bloc));
+	    at->set_is_array_incomparable();
+	    t = at;
+	  }
 	  break;
 
 	case RFT_ARRAY4STRING:
-	  t = Type::make_array_type(Type::make_string_type(),
+	  {
+	    Array_type* at =
+	      Type::make_array_type(Type::make_string_type(),
 				    Expression::make_integer_ul(4, NULL,
 								bloc));
+	    at->set_is_array_incomparable();
+	    t = at;
+	  }
 	  break;
 
 	case RFT_ARRAY5STRING:
-	  t = Type::make_array_type(Type::make_string_type(),
+	  {
+	    Array_type* at =
+	      Type::make_array_type(Type::make_string_type(),
 				    Expression::make_integer_ul(5, NULL,
 								bloc));
+	    at->set_is_array_incomparable();
+	    t = at;
+	  }
 	  break;
 	}
 
@@ -418,26 +438,18 @@ Runtime::name_to_code(const std::string& name)
 {
   Function code = Runtime::NUMBER_OF_FUNCTIONS;
 
-  // Aliases seen in function declaration code.
-  // TODO(cmang): Add other aliases.
-  if (name == "new")
-    code = Runtime::NEW;
-  else if (name == "close")
-    code = Runtime::CLOSE;
-  else if (name == "copy")
-    code = Runtime::COPY;
-  else if (name == "append")
-    code = Runtime::APPEND;
-  else if (name == "delete")
-    code = Runtime::MAPDELETE;
-  else
+  // Look through the known names for a match.
+  for (size_t i = 0; i < Runtime::NUMBER_OF_FUNCTIONS; i++)
     {
-      // Look through the known names for a match.
-      for (size_t i = 0; i < Runtime::NUMBER_OF_FUNCTIONS; i++)
-	{
-	  if (strcmp(runtime_functions[i].name, name.c_str()) == 0)
-	    code = static_cast<Runtime::Function>(i);
-	}
+      const char* runtime_function_name = runtime_functions[i].name;
+      if (strcmp(runtime_function_name, name.c_str()) == 0)
+        code = static_cast<Runtime::Function>(i);
+      // The names in the table have "runtime." prefix. We may be
+      // called with a name without the prefix. Try matching
+      // without the prefix as well.
+      if (strncmp(runtime_function_name, "runtime.", 8) == 0
+          && strcmp(runtime_function_name + 8, name.c_str()) == 0)
+        code = static_cast<Runtime::Function>(i);
     }
   return code;
 }

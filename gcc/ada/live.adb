@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -267,6 +267,7 @@ package body Live is
             when others =>
                null;
          end case;
+
          return OK;
       end Process;
 
@@ -305,8 +306,11 @@ package body Live is
 
       begin
          case Nkind (N) is
-            when N_Pragma | N_Generic_Declaration'Range |
-                 N_Subprogram_Declaration | N_Subprogram_Body_Stub =>
+            when N_Generic_Declaration'Range
+               | N_Pragma
+               | N_Subprogram_Body_Stub
+               | N_Subprogram_Declaration
+            =>
                Result := Skip;
 
             when N_Subprogram_Body =>
@@ -319,7 +323,10 @@ package body Live is
                   Traverse (Proper_Body (Unit (Library_Unit (N))));
                end if;
 
-            when N_Identifier | N_Operator_Symbol | N_Expanded_Name =>
+            when N_Expanded_Name
+               | N_Identifier
+               | N_Operator_Symbol
+            =>
                E := Entity (N);
 
                if E /= Empty and then not Marked (Marks, E) then

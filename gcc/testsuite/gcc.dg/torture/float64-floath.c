@@ -53,10 +53,6 @@
 # error "FLT64_TRUE_MIN undefined"
 #endif
 
-#if FLT64_DECIMAL_DIG > DECIMAL_DIG
-# error "FLT64_DECIMAL_DIG > DECIMAL_DIG"
-#endif
-
 #if FLT64_MANT_DIG != 53 || FLT64_MAX_EXP != 1024 || FLT64_MIN_EXP != -1021
 # error "_Float64 bad format"
 #endif

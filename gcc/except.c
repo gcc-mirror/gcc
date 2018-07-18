@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -147,7 +147,9 @@ along with GCC; see the file COPYING3.  If not see
 
 static GTY(()) int call_site_base;
 
-static GTY (()) hash_map<tree_hash, tree> *type_to_runtime_map;
+static GTY(()) hash_map<tree_hash, tree> *type_to_runtime_map;
+
+static GTY(()) tree setjmp_fn;
 
 /* Describe the SjLj_Function_Context structure.  */
 static GTY(()) tree sjlj_fc_type_node;
@@ -216,10 +218,8 @@ static int add_call_site (rtx, int, int);
 
 static void push_uleb128 (vec<uchar, va_gc> **, unsigned int);
 static void push_sleb128 (vec<uchar, va_gc> **, int);
-#ifndef HAVE_AS_LEB128
 static int dw2_size_of_call_site_table (int);
 static int sjlj_size_of_call_site_table (void);
-#endif
 static void dw2_output_call_site_table (int, int);
 static void sjlj_output_call_site_table (void);
 
@@ -333,6 +333,16 @@ init_eh (void)
       sjlj_fc_jbuf_ofs
 	= (tree_to_uhwi (DECL_FIELD_OFFSET (f_jbuf))
 	   + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (f_jbuf)) / BITS_PER_UNIT);
+
+#ifdef DONT_USE_BUILTIN_SETJMP
+      tmp = build_function_type_list (integer_type_node, TREE_TYPE (f_jbuf),
+				      NULL);
+      setjmp_fn = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+			      get_identifier ("setjmp"), tmp);
+      TREE_PUBLIC (setjmp_fn) = 1;
+      DECL_EXTERNAL (setjmp_fn) = 1;
+      DECL_ASSEMBLER_NAME (setjmp_fn);
+#endif
     }
 }
 
@@ -909,7 +919,7 @@ assign_filter_values (void)
    first instruction of some existing BB and return the newly
    produced block.  */
 static basic_block
-emit_to_new_bb_before (rtx_insn *seq, rtx insn)
+emit_to_new_bb_before (rtx_insn *seq, rtx_insn *insn)
 {
   rtx_insn *last;
   basic_block bb;
@@ -937,7 +947,7 @@ emit_to_new_bb_before (rtx_insn *seq, rtx insn)
    at the rtl level.  Emit the code required by the target at a landing
    pad for the given region.  */
 
-void
+static void
 expand_dw2_landing_pad_for_region (eh_region region)
 {
   if (targetm.have_exception_receiver ())
@@ -976,7 +986,6 @@ dw2_build_landing_pads (void)
     {
       basic_block bb;
       rtx_insn *seq;
-      edge e;
 
       if (lp == NULL || lp->post_landing_pad == NULL)
 	continue;
@@ -993,9 +1002,8 @@ dw2_build_landing_pads (void)
       end_sequence ();
 
       bb = emit_to_new_bb_before (seq, label_rtx (lp->post_landing_pad));
-      e = make_edge (bb, bb->next_bb, e_flags);
-      e->count = bb->count;
-      e->probability = REG_BR_PROB_BASE;
+      bb->count = bb->next_bb->count;
+      make_single_succ_edge (bb, bb->next_bb, e_flags);
       if (current_loops)
 	{
 	  struct loop *loop = bb->next_bb->loop_father;
@@ -1179,20 +1187,20 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
       addr = convert_memory_address (ptr_mode, addr);
       tree addr_tree = make_tree (ptr_type_node, addr);
 
-      tree fn = builtin_decl_implicit (BUILT_IN_SETJMP);
-      tree call_expr = build_call_expr (fn, 1, addr_tree);
+      tree call_expr = build_call_expr (setjmp_fn, 1, addr_tree);
       rtx x = expand_call (call_expr, NULL_RTX, false);
 
       emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
 			       TYPE_MODE (integer_type_node), 0,
-			       dispatch_label, REG_BR_PROB_BASE / 100);
+			       dispatch_label,
+			       profile_probability::unlikely ());
 #else
       expand_builtin_setjmp_setup (addr, dispatch_label);
 #endif
     }
 
   emit_library_call (unwind_sjlj_register_libfunc, LCT_NORMAL, VOIDmode,
-		     1, XEXP (fc, 0), Pmode);
+		     XEXP (fc, 0), Pmode);
 
   seq = get_insns ();
   end_sequence ();
@@ -1210,6 +1218,28 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
 	else if (NOTE_INSN_BASIC_BLOCK_P (fn_begin))
 	  fn_begin_outside_block = false;
       }
+
+#ifdef DONT_USE_BUILTIN_SETJMP
+  if (dispatch_label)
+    {
+      /* The sequence contains a branch in the middle so we need to force
+	 the creation of a new basic block by means of BB_SUPERBLOCK.  */
+      if (fn_begin_outside_block)
+	{
+	  basic_block bb
+	    = split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	  if (JUMP_P (BB_END (bb)))
+	    emit_insn_before (seq, BB_END (bb));
+	  else
+	    emit_insn_after (seq, BB_END (bb));
+	}
+      else
+	emit_insn_after (seq, fn_begin);
+
+      single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun))->flags |= BB_SUPERBLOCK;
+      return;
+    }
+#endif
 
   if (fn_begin_outside_block)
     insert_insn_on_edge (seq, single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
@@ -1234,7 +1264,7 @@ sjlj_emit_function_exit (void)
   start_sequence ();
 
   emit_library_call (unwind_sjlj_unregister_libfunc, LCT_NORMAL, VOIDmode,
-		     1, XEXP (crtl->eh.sjlj_fc, 0), Pmode);
+		     XEXP (crtl->eh.sjlj_fc, 0), Pmode);
 
   seq = get_insns ();
   end_sequence ();
@@ -1253,14 +1283,13 @@ sjlj_emit_function_exit (void)
 static void
 sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 {
-  machine_mode unwind_word_mode = targetm.unwind_word_mode ();
-  machine_mode filter_mode = targetm.eh_return_filter_mode ();
+  scalar_int_mode unwind_word_mode = targetm.unwind_word_mode ();
+  scalar_int_mode filter_mode = targetm.eh_return_filter_mode ();
   eh_landing_pad lp;
   rtx mem, fc, exc_ptr_reg, filter_reg;
   rtx_insn *seq;
   basic_block bb;
   eh_region r;
-  edge e;
   int i, disp_index;
   vec<tree> dispatch_labels = vNULL;
 
@@ -1348,9 +1377,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 
 	rtx_insn *before = label_rtx (lp->post_landing_pad);
 	bb = emit_to_new_bb_before (seq2, before);
-	e = make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
-	e->count = bb->count;
-	e->probability = REG_BR_PROB_BASE;
+	make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
 	if (current_loops)
 	  {
 	    struct loop *loop = bb->next_bb->loop_father;
@@ -1388,9 +1415,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
   bb = emit_to_new_bb_before (seq, first_reachable_label);
   if (num_dispatch == 1)
     {
-      e = make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
-      e->count = bb->count;
-      e->probability = REG_BR_PROB_BASE;
+      make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
       if (current_loops)
 	{
 	  struct loop *loop = bb->next_bb->loop_father;
@@ -1485,12 +1510,8 @@ finish_eh_generation (void)
     sjlj_build_landing_pads ();
   else
     dw2_build_landing_pads ();
-  break_superblocks ();
 
-  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ
-      /* Kludge for Alpha (see alpha_gp_save_rtx).  */
-      || single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->insns.r)
-    commit_edge_insertions ();
+  break_superblocks ();
 
   /* Redirect all EH edges from the post_landing_pad to the landing pad.  */
   FOR_EACH_BB_FN (bb, cfun)
@@ -1521,6 +1542,11 @@ finish_eh_generation (void)
 		       : EDGE_ABNORMAL);
 	}
     }
+
+  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ
+      /* Kludge for Alpha (see alpha_gp_save_rtx).  */
+      || single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->insns.r)
+    commit_edge_insertions ();
 }
 
 /* This section handles removing dead code for flow.  */
@@ -2080,7 +2106,7 @@ expand_builtin_eh_copy_values (tree exp)
     = expand_builtin_eh_common (CALL_EXPR_ARG (exp, 0));
   eh_region src
     = expand_builtin_eh_common (CALL_EXPR_ARG (exp, 1));
-  machine_mode fmode = targetm.eh_return_filter_mode ();
+  scalar_int_mode fmode = targetm.eh_return_filter_mode ();
 
   if (dst->exc_ptr_reg == NULL)
     dst->exc_ptr_reg = gen_reg_rtx (ptr_mode);
@@ -2440,15 +2466,62 @@ add_call_site (rtx landing_pad, int action, int section)
 static rtx_note *
 emit_note_eh_region_end (rtx_insn *insn)
 {
-  rtx_insn *next = NEXT_INSN (insn);
-
-  /* Make sure we do not split a call and its corresponding
-     CALL_ARG_LOCATION note.  */
-  if (next && NOTE_P (next)
-      && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-    insn = next;
-
   return emit_note_after (NOTE_INSN_EH_REGION_END, insn);
+}
+
+/* Add NOP after NOTE_INSN_SWITCH_TEXT_SECTIONS when the cold section starts
+   with landing pad.
+   With landing pad being at offset 0 from the start label of the section
+   we would miss EH delivery because 0 is special and means no landing pad.  */
+
+static bool
+maybe_add_nop_after_section_switch (void)
+{
+  if (!crtl->uses_eh_lsda
+      || !crtl->eh.call_site_record_v[1])
+    return false;
+  int n = vec_safe_length (crtl->eh.call_site_record_v[1]);
+  hash_set<rtx_insn *> visited;
+
+  for (int i = 0; i < n; ++i)
+    {
+      struct call_site_record_d *cs
+	 = (*crtl->eh.call_site_record_v[1])[i];
+      if (cs->landing_pad)
+	{
+	  rtx_insn *insn = as_a <rtx_insn *> (cs->landing_pad);
+	  while (true)
+	    {
+	      /* Landing pads have LABEL_PRESERVE_P flag set.  This check make
+		 sure that we do not walk past landing pad visited earlier
+		 which would result in possible quadratic behaviour.  */
+	      if (LABEL_P (insn) && LABEL_PRESERVE_P (insn)
+		  && visited.add (insn))
+		break;
+
+	      /* Conservatively assume that ASM insn may be empty.  We have
+		 now way to tell what they contain.  */
+	      if (active_insn_p (insn)
+		  && GET_CODE (PATTERN (insn)) != ASM_INPUT
+		  && GET_CODE (PATTERN (insn)) != ASM_OPERANDS)
+		break;
+
+	      /* If we reached the start of hot section, then NOP will be
+		 needed.  */
+	      if (GET_CODE (insn) == NOTE
+		  && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
+		{
+		  emit_insn_after (gen_nop (), insn);
+		  break;
+		}
+
+	      /* We visit only labels from cold section.  We should never hit
+		 begining of the insn stream here.  */
+	      insn = PREV_INSN (insn);
+	    }
+	}
+    }
+  return false;
 }
 
 /* Turn REG_EH_REGION notes back into NOTE_INSN_EH_REGION notes.
@@ -2638,7 +2711,9 @@ public:
   virtual bool gate (function *);
   virtual unsigned int execute (function *)
     {
-      return convert_to_eh_region_ranges ();
+      int ret = convert_to_eh_region_ranges ();
+      maybe_add_nop_after_section_switch ();
+      return ret;
     }
 
 }; // class pass_convert_to_eh_region_ranges
@@ -2696,7 +2771,6 @@ push_sleb128 (vec<uchar, va_gc> **data_area, int value)
 }
 
 
-#ifndef HAVE_AS_LEB128
 static int
 dw2_size_of_call_site_table (int section)
 {
@@ -2731,7 +2805,6 @@ sjlj_size_of_call_site_table (void)
 
   return size;
 }
-#endif
 
 static void
 dw2_output_call_site_table (int cs_format, int section)
@@ -2867,7 +2940,6 @@ switch_to_exception_section (const char * ARG_UNUSED (fnname))
   switch_to_section (s);
 }
 
-
 /* Output a reference from an exception table to the type_info object TYPE.
    TT_FORMAT and TT_FORMAT_SIZE describe the DWARF encoding method used for
    the value.  */
@@ -2917,17 +2989,21 @@ output_ttype (tree type, int tt_format, int tt_format_size)
     dw2_asm_output_encoded_addr_rtx (tt_format, value, is_public, NULL);
 }
 
+/* Output an exception table for the current function according to SECTION.
+
+   If the function has been partitioned into hot and cold parts, value 0 for
+   SECTION refers to the table associated with the hot part while value 1
+   refers to the table associated with the cold part.  If the function has
+   not been partitioned, value 0 refers to the single exception table.  */
+ 
 static void
 output_one_function_exception_table (int section)
 {
   int tt_format, cs_format, lp_format, i;
-#ifdef HAVE_AS_LEB128
   char ttype_label[32];
   char cs_after_size_label[32];
   char cs_end_label[32];
-#else
   int call_site_len;
-#endif
   int have_tt_data;
   int tt_format_size = 0;
 
@@ -2942,11 +3018,11 @@ output_one_function_exception_table (int section)
   else
     {
       tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
-#ifdef HAVE_AS_LEB128
-      ASM_GENERATE_INTERNAL_LABEL (ttype_label,
-				   section ? "LLSDATTC" : "LLSDATT",
-				   current_function_funcdef_no);
-#endif
+      if (HAVE_AS_LEB128)
+	ASM_GENERATE_INTERNAL_LABEL (ttype_label,
+				     section ? "LLSDATTC" : "LLSDATT",
+				     current_function_funcdef_no);
+
       tt_format_size = size_of_encoded_value (tt_format);
 
       assemble_align (tt_format_size * BITS_PER_UNIT);
@@ -2972,86 +3048,93 @@ output_one_function_exception_table (int section)
   dw2_asm_output_data (1, tt_format, "@TType format (%s)",
 		       eh_data_format_name (tt_format));
 
-#ifndef HAVE_AS_LEB128
-  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
-    call_site_len = sjlj_size_of_call_site_table ();
-  else
-    call_site_len = dw2_size_of_call_site_table (section);
-#endif
+  if (!HAVE_AS_LEB128)
+    {
+      if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
+	call_site_len = sjlj_size_of_call_site_table ();
+      else
+	call_site_len = dw2_size_of_call_site_table (section);
+    }
 
   /* A pc-relative 4-byte displacement to the @TType data.  */
   if (have_tt_data)
     {
-#ifdef HAVE_AS_LEB128
-      char ttype_after_disp_label[32];
-      ASM_GENERATE_INTERNAL_LABEL (ttype_after_disp_label,
-				   section ? "LLSDATTDC" : "LLSDATTD",
-				   current_function_funcdef_no);
-      dw2_asm_output_delta_uleb128 (ttype_label, ttype_after_disp_label,
-				    "@TType base offset");
-      ASM_OUTPUT_LABEL (asm_out_file, ttype_after_disp_label);
-#else
-      /* Ug.  Alignment queers things.  */
-      unsigned int before_disp, after_disp, last_disp, disp;
-
-      before_disp = 1 + 1;
-      after_disp = (1 + size_of_uleb128 (call_site_len)
-		    + call_site_len
-		    + vec_safe_length (crtl->eh.action_record_data)
-		    + (vec_safe_length (cfun->eh->ttype_data)
-		       * tt_format_size));
-
-      disp = after_disp;
-      do
+      if (HAVE_AS_LEB128)
 	{
-	  unsigned int disp_size, pad;
-
-	  last_disp = disp;
-	  disp_size = size_of_uleb128 (disp);
-	  pad = before_disp + disp_size + after_disp;
-	  if (pad % tt_format_size)
-	    pad = tt_format_size - (pad % tt_format_size);
-	  else
-	    pad = 0;
-	  disp = after_disp + pad;
+	  char ttype_after_disp_label[32];
+	  ASM_GENERATE_INTERNAL_LABEL (ttype_after_disp_label,
+				       section ? "LLSDATTDC" : "LLSDATTD",
+				       current_function_funcdef_no);
+	  dw2_asm_output_delta_uleb128 (ttype_label, ttype_after_disp_label,
+					"@TType base offset");
+	  ASM_OUTPUT_LABEL (asm_out_file, ttype_after_disp_label);
 	}
-      while (disp != last_disp);
+      else
+	{
+	  /* Ug.  Alignment queers things.  */
+	  unsigned int before_disp, after_disp, last_disp, disp;
 
-      dw2_asm_output_data_uleb128 (disp, "@TType base offset");
-#endif
-    }
+	  before_disp = 1 + 1;
+	  after_disp = (1 + size_of_uleb128 (call_site_len)
+			+ call_site_len
+			+ vec_safe_length (crtl->eh.action_record_data)
+			+ (vec_safe_length (cfun->eh->ttype_data)
+			   * tt_format_size));
+
+	  disp = after_disp;
+	  do
+	    {
+	      unsigned int disp_size, pad;
+
+	      last_disp = disp;
+	      disp_size = size_of_uleb128 (disp);
+	      pad = before_disp + disp_size + after_disp;
+	      if (pad % tt_format_size)
+		pad = tt_format_size - (pad % tt_format_size);
+	      else
+		pad = 0;
+	      disp = after_disp + pad;
+	    }
+	  while (disp != last_disp);
+
+	  dw2_asm_output_data_uleb128 (disp, "@TType base offset");
+	}
+	}
 
   /* Indicate the format of the call-site offsets.  */
-#ifdef HAVE_AS_LEB128
-  cs_format = DW_EH_PE_uleb128;
-#else
-  cs_format = DW_EH_PE_udata4;
-#endif
+  if (HAVE_AS_LEB128)
+    cs_format = DW_EH_PE_uleb128;
+  else
+    cs_format = DW_EH_PE_udata4;
+
   dw2_asm_output_data (1, cs_format, "call-site format (%s)",
 		       eh_data_format_name (cs_format));
 
-#ifdef HAVE_AS_LEB128
-  ASM_GENERATE_INTERNAL_LABEL (cs_after_size_label,
-			       section ? "LLSDACSBC" : "LLSDACSB",
-			       current_function_funcdef_no);
-  ASM_GENERATE_INTERNAL_LABEL (cs_end_label,
-			       section ? "LLSDACSEC" : "LLSDACSE",
-			       current_function_funcdef_no);
-  dw2_asm_output_delta_uleb128 (cs_end_label, cs_after_size_label,
-				"Call-site table length");
-  ASM_OUTPUT_LABEL (asm_out_file, cs_after_size_label);
-  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
-    sjlj_output_call_site_table ();
+  if (HAVE_AS_LEB128)
+    {
+      ASM_GENERATE_INTERNAL_LABEL (cs_after_size_label,
+				   section ? "LLSDACSBC" : "LLSDACSB",
+				   current_function_funcdef_no);
+      ASM_GENERATE_INTERNAL_LABEL (cs_end_label,
+				   section ? "LLSDACSEC" : "LLSDACSE",
+				   current_function_funcdef_no);
+      dw2_asm_output_delta_uleb128 (cs_end_label, cs_after_size_label,
+				    "Call-site table length");
+      ASM_OUTPUT_LABEL (asm_out_file, cs_after_size_label);
+      if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
+	sjlj_output_call_site_table ();
+      else
+	dw2_output_call_site_table (cs_format, section);
+      ASM_OUTPUT_LABEL (asm_out_file, cs_end_label);
+    }
   else
-    dw2_output_call_site_table (cs_format, section);
-  ASM_OUTPUT_LABEL (asm_out_file, cs_end_label);
-#else
-  dw2_asm_output_data_uleb128 (call_site_len, "Call-site table length");
-  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
-    sjlj_output_call_site_table ();
-  else
-    dw2_output_call_site_table (cs_format, section);
-#endif
+    {
+      dw2_asm_output_data_uleb128 (call_site_len, "Call-site table length");
+      if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
+	sjlj_output_call_site_table ();
+      else
+	dw2_output_call_site_table (cs_format, section);
+    }
 
   /* ??? Decode and interpret the data for flag_debug_asm.  */
   {
@@ -3070,10 +3153,8 @@ output_one_function_exception_table (int section)
       output_ttype (type, tt_format, tt_format_size);
     }
 
-#ifdef HAVE_AS_LEB128
-  if (have_tt_data)
-      ASM_OUTPUT_LABEL (asm_out_file, ttype_label);
-#endif
+  if (HAVE_AS_LEB128 && have_tt_data)
+    ASM_OUTPUT_LABEL (asm_out_file, ttype_label);
 
   /* ??? Decode and interpret the data for flag_debug_asm.  */
   if (targetm.arm_eabi_unwinder)
@@ -3093,13 +3174,26 @@ output_one_function_exception_table (int section)
     }
 }
 
+/* Output an exception table for the current function according to SECTION,
+   switching back and forth from the function section appropriately.
+
+   If the function has been partitioned into hot and cold parts, value 0 for
+   SECTION refers to the table associated with the hot part while value 1
+   refers to the table associated with the cold part.  If the function has
+   not been partitioned, value 0 refers to the single exception table.  */
+
 void
-output_function_exception_table (const char *fnname)
+output_function_exception_table (int section)
 {
+  const char *fnname = get_fnname_from_decl (current_function_decl);
   rtx personality = get_personality_function (current_function_decl);
 
   /* Not all functions need anything.  */
-  if (! crtl->uses_eh_lsda)
+  if (!crtl->uses_eh_lsda)
+    return;
+
+  /* No need to emit any boilerplate stuff for the cold part.  */
+  if (section == 1 && !crtl->eh.call_site_record_v[1])
     return;
 
   if (personality)
@@ -3115,9 +3209,8 @@ output_function_exception_table (const char *fnname)
   /* If the target wants a label to begin the table, emit it here.  */
   targetm.asm_out.emit_except_table_label (asm_out_file);
 
-  output_one_function_exception_table (0);
-  if (crtl->eh.call_site_record_v[1])
-    output_one_function_exception_table (1);
+  /* Do the real work.  */
+  output_one_function_exception_table (section);
 
   switch_to_section (current_function_section ());
 }
@@ -3198,7 +3291,7 @@ dump_eh_tree (FILE * out, struct function *fun)
 	      for (lp = i->landing_pads; lp ; lp = lp->next_lp)
 		{
 		  fprintf (out, "{%i,", lp->index);
-		  print_generic_expr (out, lp->post_landing_pad, 0);
+		  print_generic_expr (out, lp->post_landing_pad);
 		  fputc ('}', out);
 		  if (lp->next_lp)
 		    fputc (',', out);
@@ -3244,10 +3337,10 @@ dump_eh_tree (FILE * out, struct function *fun)
 		if (c->label)
 		  {
 		    fprintf (out, "lab:");
-		    print_generic_expr (out, c->label, 0);
+		    print_generic_expr (out, c->label);
 		    fputc (';', out);
 		  }
-		print_generic_expr (out, c->type_list, 0);
+		print_generic_expr (out, c->type_list);
 		fputc ('}', out);
 		if (c->next_catch)
 		  fputc (',', out);
@@ -3257,7 +3350,7 @@ dump_eh_tree (FILE * out, struct function *fun)
 
 	case ERT_ALLOWED_EXCEPTIONS:
 	  fprintf (out, " filter :%i types:", i->u.allowed.filter);
-	  print_generic_expr (out, i->u.allowed.type_list, 0);
+	  print_generic_expr (out, i->u.allowed.type_list);
 	  break;
 	}
       fputc ('\n', out);

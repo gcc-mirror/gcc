@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -464,9 +464,9 @@ package body Ch3 is
 
       loop
          case Token is
-
-            when Tok_Access |
-                 Tok_Not    => --  Ada 2005 (AI-231)
+            when Tok_Access
+               | Tok_Not  --  Ada 2005 (AI-231)
+            =>
                Typedef_Node := P_Access_Type_Definition;
                exit;
 
@@ -777,10 +777,10 @@ package body Ch3 is
             --  Ada 2005 (AI-345): Protected, synchronized or task interface
             --  or Ada 2005 (AI-443): Synchronized private extension.
 
-            when Tok_Protected    |
-                 Tok_Synchronized |
-                 Tok_Task         =>
-
+            when Tok_Protected
+               | Tok_Synchronized
+               | Tok_Task
+            =>
                declare
                   Saved_Token : constant Token_Type := Token;
 
@@ -864,7 +864,6 @@ package body Ch3 is
                   Error_Msg_AP ("type definition expected");
                   raise Error_Resync;
                end if;
-
          end case;
       end loop;
 
@@ -1899,6 +1898,11 @@ package body Ch3 is
                  ("aspect specifications must come after initialization "
                   & "expression",
                   Sloc (First (Aspect_Specifications (Decl_Node))));
+
+            else
+               --  In any case, the assignment symbol doesn't belong.
+
+               Error_Msg ("misplaced assignment symbol", Scan_Ptr);
             end if;
 
             Set_Expression (Decl_Node, Init_Expr_Opt);
@@ -3490,7 +3494,7 @@ package body Ch3 is
    procedure P_Component_Items (Decls : List_Id) is
       Aliased_Present  : Boolean := False;
       CompDef_Node     : Node_Id;
-      Decl_Node        : Node_Id;
+      Decl_Node        : Node_Id := Empty;  -- initialize to prevent warning
       Scan_State       : Saved_Scan_State;
       Not_Null_Present : Boolean := False;
       Num_Idents       : Nat;
@@ -3750,7 +3754,7 @@ package body Ch3 is
 
    function P_Discrete_Choice_List return List_Id is
       Choices     : List_Id;
-      Expr_Node   : Node_Id;
+      Expr_Node   : Node_Id := Empty;  -- initialize to prevent warning
       Choice_Node : Node_Id;
 
    begin
@@ -3852,6 +3856,10 @@ package body Ch3 is
          end if;
 
          if Token = Tok_Comma then
+            if Nkind (Expr_Node) = N_Iterated_Component_Association then
+               return Choices;
+            end if;
+
             Scan; -- past comma
 
             if Token = Tok_Vertical_Bar then
@@ -4306,16 +4314,20 @@ package body Ch3 is
       Scan_State : Saved_Scan_State;
 
    begin
+      Done := False;
+
       if Style_Check then
          Style.Check_Indentation;
       end if;
 
       case Token is
-
-         when Tok_Function =>
+         when Tok_Function
+            | Tok_Not
+            | Tok_Overriding
+            | Tok_Procedure
+         =>
             Check_Bad_Layout;
             Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
-            Done := False;
 
          when Tok_For =>
             Check_Bad_Layout;
@@ -4339,12 +4351,10 @@ package body Ch3 is
 
             Restore_Scan_State (Scan_State);
             Append (P_Representation_Clause, Decls);
-            Done := False;
 
          when Tok_Generic =>
             Check_Bad_Layout;
             Append (P_Generic, Decls);
-            Done := False;
 
          when Tok_Identifier =>
             Check_Bad_Layout;
@@ -4359,7 +4369,6 @@ package body Ch3 is
 
                Token := Tok_Overriding;
                Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
-               Done := False;
 
             --  Normal case, no overriding, or overriding followed by colon
 
@@ -4367,60 +4376,34 @@ package body Ch3 is
                P_Identifier_Declarations (Decls, Done, In_Spec);
             end if;
 
-         --  Ada 2005: A subprogram declaration can start with "not" or
-         --  "overriding". In older versions, "overriding" is handled
-         --  like an identifier, with the appropriate messages.
-
-         when Tok_Not =>
-            Check_Bad_Layout;
-            Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
-            Done := False;
-
-         when Tok_Overriding =>
-            Check_Bad_Layout;
-            Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
-            Done := False;
-
          when Tok_Package =>
             Check_Bad_Layout;
             Append (P_Package (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
-            Done := False;
 
          when Tok_Pragma =>
             Append (P_Pragma, Decls);
-            Done := False;
-
-         when Tok_Procedure =>
-            Check_Bad_Layout;
-            Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
-            Done := False;
 
          when Tok_Protected =>
             Check_Bad_Layout;
             Scan; -- past PROTECTED
             Append (P_Protected, Decls);
-            Done := False;
 
          when Tok_Subtype =>
             Check_Bad_Layout;
             Append (P_Subtype_Declaration, Decls);
-            Done := False;
 
          when Tok_Task =>
             Check_Bad_Layout;
             Scan; -- past TASK
             Append (P_Task, Decls);
-            Done := False;
 
          when Tok_Type =>
             Check_Bad_Layout;
             Append (P_Type_Declaration, Decls);
-            Done := False;
 
          when Tok_Use =>
             Check_Bad_Layout;
-            Append (P_Use_Clause, Decls);
-            Done := False;
+            P_Use_Clause (Decls);
 
          when Tok_With =>
             Check_Bad_Layout;
@@ -4446,8 +4429,6 @@ package body Ch3 is
                --  Assume that this is a misplaced aspect specification within
                --  a declarative list. After discarding the misplaced aspects
                --  we can continue the scan.
-
-               Done := False;
 
                declare
                   Dummy_Node : constant Node_Id :=
@@ -4541,8 +4522,6 @@ package body Ch3 is
                   End_Statements (Handled_Statement_Sequence (Body_Node));
                end;
 
-               Done := False;
-
             else
                Done := True;
             end if;
@@ -4564,7 +4543,6 @@ package body Ch3 is
                --  After discarding the misplaced aspects we can continue the
                --  scan.
 
-               Done := False;
             else
                Restore_Scan_State (Scan_State); -- to END
                Done := True;
@@ -4576,19 +4554,19 @@ package body Ch3 is
          --  judgment, because it is a real mess to go into statement mode
          --  prematurely in response to a junk declaration.
 
-         when Tok_Abort     |
-              Tok_Accept    |
-              Tok_Declare   |
-              Tok_Delay     |
-              Tok_Exit      |
-              Tok_Goto      |
-              Tok_If        |
-              Tok_Loop      |
-              Tok_Null      |
-              Tok_Requeue   |
-              Tok_Select    |
-              Tok_While     =>
-
+         when Tok_Abort
+            | Tok_Accept
+            | Tok_Declare
+            | Tok_Delay
+            | Tok_Exit
+            | Tok_Goto
+            | Tok_If
+            | Tok_Loop
+            | Tok_Null
+            | Tok_Requeue
+            | Tok_Select
+            | Tok_While
+         =>
             --  But before we decide that it's a statement, let's check for
             --  a reserved word misused as an identifier.
 
@@ -4679,7 +4657,6 @@ package body Ch3 is
    exception
       when Error_Resync =>
          Resync_Past_Semicolon;
-         Done := False;
    end P_Declarative_Items;
 
    ----------------------------------

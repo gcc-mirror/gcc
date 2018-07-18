@@ -9,11 +9,11 @@ program main
   backspace 10
   read (10) b
   close(10,status="delete")
-  if (a /= b) call abort
+  if (a /= b) STOP 1
   write (11) a
   backspace 11
   open (11,form="unformatted")
   read (11) c
-  if (a .ne. c) call abort
+  if (a .ne. c) STOP 2
   close (11, status="delete")
 end program main

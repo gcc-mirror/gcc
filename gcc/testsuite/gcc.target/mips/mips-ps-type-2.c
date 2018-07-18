@@ -1,7 +1,7 @@
 /* Test v2sf calculations.  The nmadd and nmsub patterns need
    -ffinite-math-only.  */
 /* { dg-do compile } */
-/* { dg-options "(HAS_MADDPS) -mgp32 -mpaired-single -ffinite-math-only forbid_cpu=octeon.*" } */
+/* { dg-options "(HAS_MADDPS) -mmadd4 -mgp32 -mpaired-single -ffinite-math-only forbid_cpu=octeon.*" } */
 /* { dg-skip-if "nmadd and nmsub need combine" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\tcvt.ps.s\t" } } */
 /* { dg-final { scan-assembler "\tmov.ps\t" } } */
@@ -32,6 +32,11 @@ NOMIPS16 v2sf init (float a, float b)
 /* Move between registers */
 NOMIPS16 v2sf move (v2sf a)
 {
+  register v2sf b __asm__("$f0") = a;
+  register v2sf c __asm__("$f2");
+  __asm__ __volatile__ ("" : "+f" (b));
+  c = b;
+  __asm__ __volatile__ ("" : : "f" (c));
   return a;
 }
 

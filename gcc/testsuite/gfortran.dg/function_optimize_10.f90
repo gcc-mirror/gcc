@@ -18,7 +18,7 @@ program main
   else if ((my_ichar(charq).ge.97 .and. my_ichar(charq).le.103)) then
      test2_OK = .true.
   end if
-  if ((.not. test1_ok) .or. (.not. test2_ok)) call abort
+  if ((.not. test1_ok) .or. (.not. test2_ok)) STOP 1
 
   test1_ok = .true.
   test2_ok = .true.
@@ -31,7 +31,7 @@ program main
   else if ((my_ichar(charq).ge.97 .and. my_ichar(charq).le.103)) then
      test3_ok = .true.
   end if
-  if ((.not. test1_ok) .or. (.not. test2_ok) .or. (.not. test3_ok)) call abort
+  if ((.not. test1_ok) .or. (.not. test2_ok) .or. (.not. test3_ok)) STOP 2
 
   test1_ok = .true.
   test2_ok = .true.
@@ -45,7 +45,7 @@ program main
      test3_ok = .true.
   end if
 
-  if ((.not. test1_ok) .or. (.not. test2_ok) .or. (.not. test3_ok)) call abort
+  if ((.not. test1_ok) .or. (.not. test2_ok) .or. (.not. test3_ok)) STOP 3
 
 contains
   pure function my_ichar(c)

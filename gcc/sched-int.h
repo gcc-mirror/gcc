@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.  This file contains definitions used
    internally in the scheduler.
-   Copyright (C) 1992-2016 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -537,6 +537,17 @@ struct deps_desc
   /* The last insn bearing REG_ARGS_SIZE that we've seen.  */
   rtx_insn *last_args_size;
 
+  /* A list of all prologue insns we have seen without intervening epilogue
+     insns, and one of all epilogue insns we have seen without intervening
+     prologue insns.  This is used to prevent mixing prologue and epilogue
+     insns.  See PR78029.  */
+  rtx_insn_list *last_prologue;
+  rtx_insn_list *last_epilogue;
+
+  /* Whether the last *logue insn was an epilogue insn or a prologue insn
+     instead.  */
+  bool last_logue_was_epilogue;
+
   /* The maximum register number for the following arrays.  Before reload
      this is max_reg_num; after reload it is FIRST_PSEUDO_REGISTER.  */
   int max_reg;
@@ -808,15 +819,8 @@ struct autopref_multipass_data_
   /* Base part of memory address.  */
   rtx base;
 
-  /* Memory offsets from the base.  For single simple sets
-     only min_offset is valid.  For multi-set insns min_offset
-     and max_offset record the minimum and maximum offsets from the same
-     base among the sets inside the PARALLEL.  */
-  int min_offset;
-  int max_offset;
-
-  /* True if this is a load/store-multiple instruction.  */
-  bool multi_mem_insn_p;
+  /* Memory offsets from the base.  */
+  int offset;
 
   /* Entry status.  */
   enum autopref_multipass_data_status status;
@@ -1392,7 +1396,7 @@ extern void get_ebb_head_tail (basic_block, basic_block,
 			       rtx_insn **, rtx_insn **);
 extern int no_real_insns_p (const rtx_insn *, const rtx_insn *);
 
-extern int insn_cost (rtx_insn *);
+extern int insn_sched_cost (rtx_insn *);
 extern int dep_cost_1 (dep_t, dw_t);
 extern int dep_cost (dep_t);
 extern int set_priorities (rtx_insn *, rtx_insn *);

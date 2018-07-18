@@ -20,7 +20,7 @@
 package big
 
 // A decimal represents an unsigned floating-point number in decimal representation.
-// The value of a non-zero decimal d is d.mant * 10**d.exp with 0.5 <= d.mant < 1,
+// The value of a non-zero decimal d is d.mant * 10**d.exp with 0.1 <= d.mant < 1,
 // with the most-significant mantissa digit at index 0. For the zero decimal, the
 // mantissa length and exponent are 0.
 // The zero value for decimal represents a ready-to-use 0.0.
@@ -125,11 +125,12 @@ func shr(x *decimal, s uint) {
 
 	// read a digit, write a digit
 	w := 0 // write index
+	mask := Word(1)<<s - 1
 	for r < len(x.mant) {
 		ch := Word(x.mant[r])
 		r++
 		d := n >> s
-		n -= d << s
+		n &= mask // n -= d << s
 		x.mant[w] = byte(d + '0')
 		w++
 		n = n*10 + ch - '0'
@@ -138,7 +139,7 @@ func shr(x *decimal, s uint) {
 	// write extra digits that still fit
 	for n > 0 && w < len(x.mant) {
 		d := n >> s
-		n -= d << s
+		n &= mask
 		x.mant[w] = byte(d + '0')
 		w++
 		n = n * 10
@@ -148,7 +149,7 @@ func shr(x *decimal, s uint) {
 	// append additional digits that didn't fit
 	for n > 0 {
 		d := n >> s
-		n -= d << s
+		n &= mask
 		x.mant = append(x.mant, byte(d+'0'))
 		n = n * 10
 	}

@@ -23,7 +23,7 @@ check (__m128 x, float *v, int j)
 
   u.x = x;
   
-  for (i = 0; i < sizeof (v) / sizeof (v[0]); i++)
+  for (i = 0; i < sizeof (u) / sizeof (v[0]); i++)
     if (i == j)
       {
 	if (v[i] != u.f[i])

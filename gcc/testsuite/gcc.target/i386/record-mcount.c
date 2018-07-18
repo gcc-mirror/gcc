@@ -1,5 +1,5 @@
 /* Test -mrecord-mcount */
-/* { dg-do compile { target { *-*-linux* } && { nonpic } } } */
+/* { dg-do compile { target { *-*-linux* && nonpic } } } */
 /* { dg-options "-pg -mrecord-mcount" } */
 /* { dg-final { scan-assembler "mcount_loc" } } */
 /* Origin: Andi Kleen */

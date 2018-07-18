@@ -1,6 +1,6 @@
 /* PR41779: Wconversion cannot see through real*integer promotions. */
 /* { dg-do compile } */
-/* { dg-skip-if "doubles are floats" { "avr-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "doubles are floats" { "avr-*-*" } } */
 /* { dg-options "-std=c99 -Wconversion" { target c } } */
 /* { dg-options "-Wconversion" { target c++ } } */
 /* { dg-require-effective-target large_double } */

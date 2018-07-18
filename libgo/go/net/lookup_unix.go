@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
 
 package net
 
@@ -16,28 +16,31 @@ var onceReadProtocols sync.Once
 // readProtocols loads contents of /etc/protocols into protocols map
 // for quick access.
 func readProtocols() {
-	if file, err := open("/etc/protocols"); err == nil {
-		for line, ok := file.readLine(); ok; line, ok = file.readLine() {
-			// tcp    6   TCP    # transmission control protocol
-			if i := byteIndex(line, '#'); i >= 0 {
-				line = line[0:i]
+	file, err := open("/etc/protocols")
+	if err != nil {
+		return
+	}
+	defer file.close()
+
+	for line, ok := file.readLine(); ok; line, ok = file.readLine() {
+		// tcp    6   TCP    # transmission control protocol
+		if i := byteIndex(line, '#'); i >= 0 {
+			line = line[0:i]
+		}
+		f := getFields(line)
+		if len(f) < 2 {
+			continue
+		}
+		if proto, _, ok := dtoi(f[1]); ok {
+			if _, ok := protocols[f[0]]; !ok {
+				protocols[f[0]] = proto
 			}
-			f := getFields(line)
-			if len(f) < 2 {
-				continue
-			}
-			if proto, _, ok := dtoi(f[1], 0); ok {
-				if _, ok := protocols[f[0]]; !ok {
-					protocols[f[0]] = proto
-				}
-				for _, alias := range f[2:] {
-					if _, ok := protocols[alias]; !ok {
-						protocols[alias] = proto
-					}
+			for _, alias := range f[2:] {
+				if _, ok := protocols[alias]; !ok {
+					protocols[alias] = proto
 				}
 			}
 		}
-		file.close()
 	}
 }
 
@@ -45,26 +48,48 @@ func readProtocols() {
 // returns correspondent protocol number.
 func lookupProtocol(_ context.Context, name string) (int, error) {
 	onceReadProtocols.Do(readProtocols)
-	proto, found := protocols[name]
-	if !found {
-		return 0, &AddrError{Err: "unknown IP protocol specified", Addr: name}
-	}
-	return proto, nil
+	return lookupProtocolMap(name)
 }
 
-func lookupHost(ctx context.Context, host string) (addrs []string, err error) {
+func (r *Resolver) dial(ctx context.Context, network, server string) (dnsConn, error) {
+	// Calling Dial here is scary -- we have to be sure not to
+	// dial a name that will require a DNS lookup, or Dial will
+	// call back here to translate it. The DNS config parser has
+	// already checked that all the cfg.servers are IP
+	// addresses, which Dial will use without a DNS lookup.
+	var c Conn
+	var err error
+	if r.Dial != nil {
+		c, err = r.Dial(ctx, network, server)
+	} else {
+		var d Dialer
+		c, err = d.DialContext(ctx, network, server)
+	}
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	if _, ok := c.(PacketConn); ok {
+		return &dnsPacketConn{c}, nil
+	}
+	return &dnsStreamConn{c}, nil
+}
+
+func (r *Resolver) lookupHost(ctx context.Context, host string) (addrs []string, err error) {
 	order := systemConf().hostLookupOrder(host)
-	if order == hostLookupCgo {
+	if !r.PreferGo && order == hostLookupCgo {
 		if addrs, err, ok := cgoLookupHost(ctx, host); ok {
 			return addrs, err
 		}
 		// cgo not available (or netgo); fall back to Go's DNS resolver
 		order = hostLookupFilesDNS
 	}
-	return goLookupHostOrder(ctx, host, order)
+	return r.goLookupHostOrder(ctx, host, order)
 }
 
-func lookupIP(ctx context.Context, host string) (addrs []IPAddr, err error) {
+func (r *Resolver) lookupIP(ctx context.Context, host string) (addrs []IPAddr, err error) {
+	if r.PreferGo {
+		return r.goLookupIP(ctx, host)
+	}
 	order := systemConf().hostLookupOrder(host)
 	if order == hostLookupCgo {
 		if addrs, err, ok := cgoLookupIP(ctx, host); ok {
@@ -73,40 +98,43 @@ func lookupIP(ctx context.Context, host string) (addrs []IPAddr, err error) {
 		// cgo not available (or netgo); fall back to Go's DNS resolver
 		order = hostLookupFilesDNS
 	}
-	return goLookupIPOrder(ctx, host, order)
+	addrs, _, err = r.goLookupIPCNAMEOrder(ctx, host, order)
+	return
 }
 
-func lookupPort(ctx context.Context, network, service string) (int, error) {
-	// TODO: use the context if there ever becomes a need. Related
-	// is issue 15321. But port lookup generally just involves
-	// local files, and the os package has no context support. The
-	// files might be on a remote filesystem, though. This should
-	// probably race goroutines if ctx != context.Background().
-	if systemConf().canUseCgo() {
+func (r *Resolver) lookupPort(ctx context.Context, network, service string) (int, error) {
+	if !r.PreferGo && systemConf().canUseCgo() {
 		if port, err, ok := cgoLookupPort(ctx, network, service); ok {
+			if err != nil {
+				// Issue 18213: if cgo fails, first check to see whether we
+				// have the answer baked-in to the net package.
+				if port, err := goLookupPort(network, service); err == nil {
+					return port, nil
+				}
+			}
 			return port, err
 		}
 	}
 	return goLookupPort(network, service)
 }
 
-func lookupCNAME(ctx context.Context, name string) (string, error) {
-	if systemConf().canUseCgo() {
+func (r *Resolver) lookupCNAME(ctx context.Context, name string) (string, error) {
+	if !r.PreferGo && systemConf().canUseCgo() {
 		if cname, err, ok := cgoLookupCNAME(ctx, name); ok {
 			return cname, err
 		}
 	}
-	return goLookupCNAME(ctx, name)
+	return r.goLookupCNAME(ctx, name)
 }
 
-func lookupSRV(ctx context.Context, service, proto, name string) (string, []*SRV, error) {
+func (r *Resolver) lookupSRV(ctx context.Context, service, proto, name string) (string, []*SRV, error) {
 	var target string
 	if service == "" && proto == "" {
 		target = name
 	} else {
 		target = "_" + service + "._" + proto + "." + name
 	}
-	cname, rrs, err := lookup(ctx, target, dnsTypeSRV)
+	cname, rrs, err := r.lookup(ctx, target, dnsTypeSRV)
 	if err != nil {
 		return "", nil, err
 	}
@@ -119,8 +147,8 @@ func lookupSRV(ctx context.Context, service, proto, name string) (string, []*SRV
 	return cname, srvs, nil
 }
 
-func lookupMX(ctx context.Context, name string) ([]*MX, error) {
-	_, rrs, err := lookup(ctx, name, dnsTypeMX)
+func (r *Resolver) lookupMX(ctx context.Context, name string) ([]*MX, error) {
+	_, rrs, err := r.lookup(ctx, name, dnsTypeMX)
 	if err != nil {
 		return nil, err
 	}
@@ -133,8 +161,8 @@ func lookupMX(ctx context.Context, name string) ([]*MX, error) {
 	return mxs, nil
 }
 
-func lookupNS(ctx context.Context, name string) ([]*NS, error) {
-	_, rrs, err := lookup(ctx, name, dnsTypeNS)
+func (r *Resolver) lookupNS(ctx context.Context, name string) ([]*NS, error) {
+	_, rrs, err := r.lookup(ctx, name, dnsTypeNS)
 	if err != nil {
 		return nil, err
 	}
@@ -145,8 +173,8 @@ func lookupNS(ctx context.Context, name string) ([]*NS, error) {
 	return nss, nil
 }
 
-func lookupTXT(ctx context.Context, name string) ([]string, error) {
-	_, rrs, err := lookup(ctx, name, dnsTypeTXT)
+func (r *Resolver) lookupTXT(ctx context.Context, name string) ([]string, error) {
+	_, rrs, err := r.lookup(ctx, name, dnsTypeTXT)
 	if err != nil {
 		return nil, err
 	}
@@ -157,11 +185,11 @@ func lookupTXT(ctx context.Context, name string) ([]string, error) {
 	return txts, nil
 }
 
-func lookupAddr(ctx context.Context, addr string) ([]string, error) {
-	if systemConf().canUseCgo() {
+func (r *Resolver) lookupAddr(ctx context.Context, addr string) ([]string, error) {
+	if !r.PreferGo && systemConf().canUseCgo() {
 		if ptrs, err, ok := cgoLookupPTR(ctx, addr); ok {
 			return ptrs, err
 		}
 	}
-	return goLookupPTR(ctx, addr)
+	return r.goLookupPTR(ctx, addr)
 }

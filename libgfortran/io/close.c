@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -46,7 +46,7 @@ st_close (st_parameter_close *clp)
   close_status status;
   gfc_unit *u;
 #if !HAVE_UNLINK_OPEN_FILE
-  char * path;
+  char *path;
 
   path = NULL;
 #endif

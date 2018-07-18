@@ -151,8 +151,10 @@ asinq (__float128 x)
     {
       if (ix < 0x3fc60000) /* |x| < 2**-57 */
 	{
-	  if (huge + x > one)
-	    return x;		/* return x with inexact if x!=0 */
+	  math_check_force_underflow (x);
+	  __float128 force_inexact = huge + x;
+	  math_force_eval (force_inexact);
+	  return x;		/* return x with inexact if x!=0 */
 	}
       else
 	{

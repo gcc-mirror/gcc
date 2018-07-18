@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu89 -Os -fprofile-arcs -fno-sanitize=all -fsanitize=kernel-address" } */
+/* { dg-options "-std=gnu89 -fprofile-arcs -fno-sanitize=all -fsanitize=kernel-address" } */
+/* { dg-skip-if "" { *-*-* }  { "*" } { "-Os" } } */
 
 char *a;
 int d;

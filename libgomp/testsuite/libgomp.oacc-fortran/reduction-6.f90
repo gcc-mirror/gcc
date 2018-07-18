@@ -57,17 +57,17 @@ program reduction
      hs2 = hs2 + 2
   end do
 
-  if (gs1 .ne. hs1) call abort ()
-  if (gs2 .ne. hs2) call abort ()
+  if (gs1 .ne. hs1) STOP 1
+  if (gs2 .ne. hs2) STOP 2
 
-  if (ws1 .ne. hs1) call abort ()
-  if (ws2 .ne. hs2) call abort ()
+  if (ws1 .ne. hs1) STOP 3
+  if (ws2 .ne. hs2) STOP 4
 
-  if (vs1 .ne. hs1) call abort ()
-  if (vs2 .ne. hs2) call abort ()
+  if (vs1 .ne. hs1) STOP 5
+  if (vs2 .ne. hs2) STOP 6
 
-  if (cs1 .ne. hs1) call abort ()
-  if (cs2 .ne. hs2) call abort ()
+  if (cs1 .ne. hs1) STOP 7
+  if (cs2 .ne. hs2) STOP 8
 
   ! Nested reductions.
 
@@ -90,5 +90,5 @@ program reduction
      end do
   end do
 
-  if (red .ne. vred) call abort ()
+  if (red .ne. vred) STOP 9
 end program reduction

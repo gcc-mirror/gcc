@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++17" }
 
 template<typename T>
   struct is_float
@@ -13,7 +13,7 @@ template<>
   };
 
 template<typename T>
-  T
+  void
   float_thing(T __x)
   {
     static_assert(is_float<T>::value, ""); // { dg-error "static assertion failed" }

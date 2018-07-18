@@ -1,5 +1,5 @@
 // PR c++/67003
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 namespace X {
   template<class>

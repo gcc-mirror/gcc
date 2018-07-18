@@ -8,7 +8,7 @@ namespace N
     struct X { };
 }
 
-N::X X;                           // { dg-error "" "" }
+N::X X;                           // { dg-error "" }
 
 int main()
 {

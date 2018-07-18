@@ -11,4 +11,4 @@ template<T N = 0, void (A::*)() = &A::foo<N> > struct B {}; // { dg-error "type|
 
 B<> b; // { dg-message "non-type" }
 
-// { dg-prune-output "could not convert" }
+// { dg-prune-output "(could not convert|no matches)" }

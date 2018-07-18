@@ -8,5 +8,5 @@ void
 foo (void)
 {
   printf ("%d\n", 0UL); /* { dg-bogus "expects argument of type.*expects argument of type" } */
- /* { dg-warning "expects argument of type" "" { target *-*-* } 10 } */
+ /* { dg-warning "expects argument of type" "" { target *-*-* } .-1 } */
 }

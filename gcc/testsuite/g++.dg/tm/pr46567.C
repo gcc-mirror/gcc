@@ -1667,8 +1667,16 @@ namespace std
   typedef void (*new_handler)();
   new_handler set_new_handler(new_handler) throw();
 }
-void* operator new(std::size_t) throw (std::bad_alloc);
-void* operator new[](std::size_t) throw (std::bad_alloc);
+void* operator new(std::size_t)
+#if __cplusplus <= 201402L
+throw (std::bad_alloc)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+;
+void* operator new[](std::size_t)
+#if __cplusplus <= 201402L
+throw (std::bad_alloc)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
+;
 void operator delete(void*) throw();
 void operator delete[](void*) throw();
 void* operator new(std::size_t, const std::nothrow_t&) throw();

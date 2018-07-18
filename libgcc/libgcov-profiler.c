@@ -1,6 +1,6 @@
 /* Routines required for instrumenting a program.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -336,36 +336,17 @@ __gcov_indirect_call_profiler_v2 (gcov_type value, void* cur_func)
       || (__LIBGCC_VTABLE_USES_DESCRIPTORS__ && __gcov_indirect_call_callee
           && *(void **) cur_func == *(void **) __gcov_indirect_call_callee))
     __gcov_one_value_profiler_body (__gcov_indirect_call_counters, value, 0);
+
+  __gcov_indirect_call_callee = NULL;
 }
 #endif
 
 #ifdef L_gcov_time_profiler
 
 /* Counter for first visit of each function.  */
-static gcov_type function_counter;
+gcov_type __gcov_time_profiler_counter ATTRIBUTE_HIDDEN;
 
-/* Sets corresponding COUNTERS if there is no value.  */
-
-void
-__gcov_time_profiler (gcov_type* counters)
-{
-  if (!counters[0])
-    counters[0] = ++function_counter;
-}
-
-#if GCOV_SUPPORTS_ATOMIC
-/* Sets corresponding COUNTERS if there is no value.
-   Function is thread-safe.  */
-
-void
-__gcov_time_profiler_atomic (gcov_type* counters)
-{
-  if (!counters[0])
-    counters[0] = __atomic_add_fetch (&function_counter, 1, __ATOMIC_RELAXED);
-}
 #endif
-#endif
-
 
 #ifdef L_gcov_average_profiler
 /* Increase corresponding COUNTER by VALUE.  FIXME: Perhaps we want

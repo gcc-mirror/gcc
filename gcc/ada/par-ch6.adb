@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -336,6 +336,7 @@ package body Ch6 is
       end if;
 
       Scope.Table (Scope.Last).Labl := Name_Node;
+      Current_Node := Name_Node;
       Ignore (Tok_Colon);
 
       --  Deal with generic instantiation, the one case in which we do not
@@ -607,6 +608,8 @@ package body Ch6 is
                   Error_Msg_SP ("only procedures can be null");
                else
                   Set_Null_Present (Specification_Node);
+                  Set_Null_Statement (Specification_Node,
+                    New_Node (N_Null_Statement, Prev_Token_Ptr));
                end if;
 
                goto Subprogram_Declaration;
@@ -808,10 +811,15 @@ package body Ch6 is
                      end if;
                   end if;
 
-                  --  Fall through if we have a likely expression function
+                  --  Fall through if we have a likely expression function.
+                  --  If the starting keyword is not "function" the error
+                  --  will be reported elsewhere.
 
-                  Error_Msg_SC
-                    ("expression function must be enclosed in parentheses");
+                  if Func then
+                     Error_Msg_SC
+                       ("expression function must be enclosed in parentheses");
+                  end if;
+
                   return True;
                end Likely_Expression_Function;
 
@@ -842,12 +850,21 @@ package body Ch6 is
 
                   --  This case is correctly processed by the parser because
                   --  the expression function first appears as a subprogram
-                  --  declaration to the parser.
+                  --  declaration to the parser. The starting keyword may
+                  --  not have been "function" in which case the error is
+                  --  on a malformed procedure.
 
                   if Is_Non_Empty_List (Aspects) then
-                     Error_Msg
-                       ("aspect specifications must come after parenthesized "
-                        & "expression", Sloc (First (Aspects)));
+                     if Func then
+                        Error_Msg
+                          ("aspect specifications must come after "
+                           & "parenthesized expression",
+                           Sloc (First (Aspects)));
+                     else
+                        Error_Msg
+                          ("aspect specifications must come after subprogram "
+                           & "specification", Sloc (First (Aspects)));
+                     end if;
                   end if;
 
                   --  Parse out expression and build expression function
@@ -856,7 +873,27 @@ package body Ch6 is
                     New_Node
                       (N_Expression_Function, Sloc (Specification_Node));
                   Set_Specification (Body_Node, Specification_Node);
-                  Set_Expression (Body_Node, P_Expression);
+
+                  declare
+                     Expr : constant Node_Id := P_Expression;
+                  begin
+                     Set_Expression (Body_Node, Expr);
+
+                     --  Check that the full expression is properly
+                     --  parenthesized since we may have a left-operand that is
+                     --  parenthesized but that is not one of the allowed cases
+                     --  with syntactic parentheses.
+
+                     if not (Paren_Count (Expr) /= 0
+                              or else Nkind_In (Expr, N_Aggregate,
+                                                      N_Extension_Aggregate,
+                                                      N_Quantified_Expression))
+                     then
+                        Error_Msg
+                          ("expression function must be enclosed in "
+                           & "parentheses", Sloc (Expr));
+                     end if;
+                  end;
 
                   --  Expression functions can carry pre/postconditions
 
@@ -1909,8 +1946,9 @@ package body Ch6 is
 
             if Token = Tok_Do then
                Push_Scope_Stack;
-               Scope.Table (Scope.Last).Etyp := E_Return;
                Scope.Table (Scope.Last).Ecol := Ret_Strt;
+               Scope.Table (Scope.Last).Etyp := E_Return;
+               Scope.Table (Scope.Last).Labl := Error;
                Scope.Table (Scope.Last).Sloc := Ret_Sloc;
 
                Scan; -- past DO

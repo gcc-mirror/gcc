@@ -171,7 +171,7 @@ void FNNAME (INSN_NAME) (void)
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, "");
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
-  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected, "");
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, "");
   CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
@@ -179,7 +179,7 @@ void FNNAME (INSN_NAME) (void)
   CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected, "");
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected, "");
 #if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
   CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected, "");

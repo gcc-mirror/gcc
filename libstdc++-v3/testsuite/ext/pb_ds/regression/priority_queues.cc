@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -108,7 +108,7 @@ priority_queue_link_regression_test_0()
 
   {
     /*
-     *  Perform operations on a binomial-heap queue.
+     *  Perform operations on a binary-heap queue.
      */
     cout << "Binary heap" << endl;
     __gnu_pbds::priority_queue<int, less<int>, binary_heap_tag> c;

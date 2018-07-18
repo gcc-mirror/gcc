@@ -12,6 +12,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"internal/poll"
 	"internal/testenv"
 	"io"
 	"io/ioutil"
@@ -103,6 +104,26 @@ func TestCatStdin(t *testing.T) {
 	if s != input {
 		t.Errorf("cat: want %q, got %q", input, s)
 	}
+}
+
+func TestEchoFileRace(t *testing.T) {
+	cmd := helperCommand(t, "echo")
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		t.Fatalf("StdinPipe: %v", err)
+	}
+	if err := cmd.Start(); err != nil {
+		t.Fatalf("Start: %v", err)
+	}
+	wrote := make(chan bool)
+	go func() {
+		defer close(wrote)
+		fmt.Fprint(stdin, "echo\n")
+	}()
+	if err := cmd.Wait(); err != nil {
+		t.Fatalf("Wait: %v", err)
+	}
+	<-wrote
 }
 
 func TestCatGoodAndBadFile(t *testing.T) {
@@ -230,10 +251,93 @@ func TestStdinClose(t *testing.T) {
 	check("Wait", cmd.Wait())
 }
 
+// Issue 17647.
+// It used to be the case that TestStdinClose, above, would fail when
+// run under the race detector. This test is a variant of TestStdinClose
+// that also used to fail when run under the race detector.
+// This test is run by cmd/dist under the race detector to verify that
+// the race detector no longer reports any problems.
+func TestStdinCloseRace(t *testing.T) {
+	cmd := helperCommand(t, "stdinClose")
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		t.Fatalf("StdinPipe: %v", err)
+	}
+	if err := cmd.Start(); err != nil {
+		t.Fatalf("Start: %v", err)
+	}
+	go func() {
+		// We don't check the error return of Kill. It is
+		// possible that the process has already exited, in
+		// which case Kill will return an error "process
+		// already finished". The purpose of this test is to
+		// see whether the race detector reports an error; it
+		// doesn't matter whether this Kill succeeds or not.
+		cmd.Process.Kill()
+	}()
+	go func() {
+		// Send the wrong string, so that the child fails even
+		// if the other goroutine doesn't manage to kill it first.
+		// This test is to check that the race detector does not
+		// falsely report an error, so it doesn't matter how the
+		// child process fails.
+		io.Copy(stdin, strings.NewReader("unexpected string"))
+		if err := stdin.Close(); err != nil {
+			t.Errorf("stdin.Close: %v", err)
+		}
+	}()
+	if err := cmd.Wait(); err == nil {
+		t.Fatalf("Wait: succeeded unexpectedly")
+	}
+}
+
 // Issue 5071
 func TestPipeLookPathLeak(t *testing.T) {
-	fd0, lsof0 := numOpenFDS(t)
-	for i := 0; i < 4; i++ {
+	// If we are reading from /proc/self/fd we (should) get an exact result.
+	tolerance := 0
+
+	// Reading /proc/self/fd is more reliable than calling lsof, so try that
+	// first.
+	numOpenFDs := func() (int, []byte, error) {
+		fds, err := ioutil.ReadDir("/proc/self/fd")
+		if err != nil {
+			return 0, nil, err
+		}
+		return len(fds), nil, nil
+	}
+	want, before, err := numOpenFDs()
+	if err != nil {
+		// We encountered a problem reading /proc/self/fd (we might be on
+		// a platform that doesn't have it). Fall back onto lsof.
+		t.Logf("using lsof because: %v", err)
+		numOpenFDs = func() (int, []byte, error) {
+			// Android's stock lsof does not obey the -p option,
+			// so extra filtering is needed.
+			// https://golang.org/issue/10206
+			if runtime.GOOS == "android" {
+				// numOpenFDsAndroid handles errors itself and
+				// might skip or fail the test.
+				n, lsof := numOpenFDsAndroid(t)
+				return n, lsof, nil
+			}
+			lsof, err := exec.Command("lsof", "-b", "-n", "-p", strconv.Itoa(os.Getpid())).Output()
+			return bytes.Count(lsof, []byte("\n")), lsof, err
+		}
+
+		// lsof may see file descriptors associated with the fork itself,
+		// so we allow some extra margin if we have to use it.
+		// https://golang.org/issue/19243
+		tolerance = 5
+
+		// Retry reading the number of open file descriptors.
+		want, before, err = numOpenFDs()
+		if err != nil {
+			t.Log(err)
+			t.Skipf("skipping test; error finding or running lsof")
+		}
+	}
+
+	for i := 0; i < 6; i++ {
 		cmd := exec.Command("something-that-does-not-exist-binary")
 		cmd.StdoutPipe()
 		cmd.StderrPipe()
@@ -242,36 +346,20 @@ func TestPipeLookPathLeak(t *testing.T) {
 			t.Fatal("unexpected success")
 		}
 	}
-	for triesLeft := 3; triesLeft >= 0; triesLeft-- {
-		open, lsof := numOpenFDS(t)
-		fdGrowth := open - fd0
-		if fdGrowth > 2 {
-			if triesLeft > 0 {
-				// Work around what appears to be a race with Linux's
-				// proc filesystem (as used by lsof). It seems to only
-				// be eventually consistent. Give it awhile to settle.
-				// See golang.org/issue/7808
-				time.Sleep(100 * time.Millisecond)
-				continue
-			}
-			t.Errorf("leaked %d fds; want ~0; have:\n%s\noriginally:\n%s", fdGrowth, lsof, lsof0)
-		}
-		break
-	}
-}
-
-func numOpenFDS(t *testing.T) (n int, lsof []byte) {
-	if runtime.GOOS == "android" {
-		// Android's stock lsof does not obey the -p option,
-		// so extra filtering is needed. (golang.org/issue/10206)
-		return numOpenFDsAndroid(t)
-	}
-
-	lsof, err := exec.Command("lsof", "-b", "-n", "-p", strconv.Itoa(os.Getpid())).Output()
+	got, after, err := numOpenFDs()
 	if err != nil {
-		t.Skip("skipping test; error finding or running lsof")
+		// numOpenFDs has already succeeded once, it should work here.
+		t.Errorf("unexpected failure: %v", err)
 	}
-	return bytes.Count(lsof, []byte("\n")), lsof
+	if got-want > tolerance {
+		t.Errorf("number of open file descriptors changed: got %v, want %v", got, want)
+		if before != nil {
+			t.Errorf("before:\n%v\n", before)
+		}
+		if after != nil {
+			t.Errorf("after:\n%v\n", after)
+		}
+	}
 }
 
 func numOpenFDsAndroid(t *testing.T) (n int, lsof []byte) {
@@ -317,12 +405,22 @@ var testedAlreadyLeaked = false
 
 // basefds returns the number of expected file descriptors
 // to be present in a process at start.
+// stdin, stdout, stderr, epoll/kqueue, maybe testlog
 func basefds() uintptr {
-	return os.Stderr.Fd() + 1
+	n := os.Stderr.Fd() + 1
+	for _, arg := range os.Args {
+		if strings.HasPrefix(arg, "-test.testlogfile=") {
+			n++
+		}
+	}
+	return n
 }
 
 func closeUnexpectedFds(t *testing.T, m string) {
 	for fd := basefds(); fd <= 101; fd++ {
+		if fd == poll.PollDescriptor() {
+			continue
+		}
 		err := os.NewFile(fd, "").Close()
 		if err == nil {
 			t.Logf("%s: Something already leaked - closed fd %d", m, fd)
@@ -416,7 +514,7 @@ func TestExtraFilesFDShuffle(t *testing.T) {
 		buf := make([]byte, 512)
 		n, err := stderr.Read(buf)
 		if err != nil {
-			t.Fatalf("Read: %s", err)
+			t.Errorf("Read: %s", err)
 			ch <- err.Error()
 		} else {
 			ch <- string(buf[:n])
@@ -605,6 +703,11 @@ func TestHelperProcess(*testing.T) {
 			iargs = append(iargs, s)
 		}
 		fmt.Println(iargs...)
+	case "echoenv":
+		for _, s := range args {
+			fmt.Println(os.Getenv(s))
+		}
+		os.Exit(0)
 	case "cat":
 		if len(args) == 0 {
 			io.Copy(os.Stdout, os.Stdin)
@@ -680,6 +783,9 @@ func TestHelperProcess(*testing.T) {
 			// Now verify that there are no other open fds.
 			var files []*os.File
 			for wantfd := basefds() + 1; wantfd <= 100; wantfd++ {
+				if wantfd == poll.PollDescriptor() {
+					continue
+				}
 				f, err := os.Open(os.Args[0])
 				if err != nil {
 					fmt.Printf("error opening file with expected fd %d: %v", wantfd, err)
@@ -772,31 +878,50 @@ func TestHelperProcess(*testing.T) {
 	case "stderrfail":
 		fmt.Fprintf(os.Stderr, "some stderr text\n")
 		os.Exit(1)
+	case "sleep":
+		time.Sleep(3 * time.Second)
+		os.Exit(0)
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command %q\n", cmd)
 		os.Exit(2)
 	}
 }
 
+type delayedInfiniteReader struct{}
+
+func (delayedInfiniteReader) Read(b []byte) (int, error) {
+	time.Sleep(100 * time.Millisecond)
+	for i := range b {
+		b[i] = 'x'
+	}
+	return len(b), nil
+}
+
 // Issue 9173: ignore stdin pipe writes if the program completes successfully.
 func TestIgnorePipeErrorOnSuccess(t *testing.T) {
 	testenv.MustHaveExec(t)
 
-	// We really only care about testing this on Unixy things.
-	if runtime.GOOS == "windows" || runtime.GOOS == "plan9" {
+	// We really only care about testing this on Unixy and Windowsy things.
+	if runtime.GOOS == "plan9" {
 		t.Skipf("skipping test on %q", runtime.GOOS)
 	}
 
-	cmd := helperCommand(t, "echo", "foo")
-	var out bytes.Buffer
-	cmd.Stdin = strings.NewReader(strings.Repeat("x", 10<<20))
-	cmd.Stdout = &out
-	if err := cmd.Run(); err != nil {
-		t.Fatal(err)
+	testWith := func(r io.Reader) func(*testing.T) {
+		return func(t *testing.T) {
+			cmd := helperCommand(t, "echo", "foo")
+			var out bytes.Buffer
+			cmd.Stdin = r
+			cmd.Stdout = &out
+			if err := cmd.Run(); err != nil {
+				t.Fatal(err)
+			}
+			if got, want := out.String(), "foo\n"; got != want {
+				t.Errorf("output = %q; want %q", got, want)
+			}
+		}
 	}
-	if got, want := out.String(), "foo\n"; got != want {
-		t.Errorf("output = %q; want %q", got, want)
-	}
+	t.Run("10MB", testWith(strings.NewReader(strings.Repeat("x", 10<<20))))
+	t.Run("Infinite", testWith(delayedInfiniteReader{}))
 }
 
 type badWriter struct{}
@@ -884,6 +1009,9 @@ func TestContext(t *testing.T) {
 }
 
 func TestContextCancel(t *testing.T) {
+	if testenv.Builder() == "windows-386-xp" {
+		t.Skipf("known to fail on Windows XP. Issue 17245")
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	c := helperCommandContext(t, ctx, "cat")
@@ -936,13 +1064,13 @@ func TestContextCancel(t *testing.T) {
 			break
 		}
 		if time.Since(start) > time.Second {
-			t.Fatal("cancelling context did not stop program")
+			t.Fatal("canceling context did not stop program")
 		}
 		time.Sleep(time.Millisecond)
 	}
 
 	if err := w.Close(); err != nil {
-		t.Error("error closing write end of pipe: %v", err)
+		t.Errorf("error closing write end of pipe: %v", err)
 	}
 	<-readDone
 
@@ -950,5 +1078,20 @@ func TestContextCancel(t *testing.T) {
 		t.Error("program unexpectedly exited successfully")
 	} else {
 		t.Logf("exit status: %v", err)
+	}
+}
+
+// test that environment variables are de-duped.
+func TestDedupEnvEcho(t *testing.T) {
+	testenv.MustHaveExec(t)
+
+	cmd := helperCommand(t, "echoenv", "FOO")
+	cmd.Env = append(cmd.Env, "FOO=bad", "FOO=good")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := strings.TrimSpace(string(out)), "good"; got != want {
+		t.Errorf("output = %q; want %q", got, want)
 	}
 }

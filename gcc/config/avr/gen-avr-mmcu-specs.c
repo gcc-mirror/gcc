@@ -1,4 +1,4 @@
-/* Copyright (C) 1998-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Contributed by Joern Rennecke
 
    This file is part of GCC.
@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 
@@ -53,7 +55,7 @@
 static bool
 str_prefix_p (const char *str, const char *prefix)
 {
-  return 0 == strncmp (str, prefix, strlen (prefix));
+  return strncmp (str, prefix, strlen (prefix)) == 0;
 }
 
 
@@ -113,6 +115,7 @@ static void
 print_mcu (const avr_mcu_t *mcu)
 {
   const char *sp8_spec;
+  const char *rcall_spec;
   const avr_mcu_t *arch_mcu;
   const avr_arch_t *arch;
   enum avr_arch_id arch_id = mcu->arch_id;
@@ -130,10 +133,12 @@ print_mcu (const avr_mcu_t *mcu)
 
   FILE *f = fopen (name ,"w");
 
-  bool errata_skip = 0 != (mcu->dev_attribute & AVR_ERRATA_SKIP);
-  bool rmw = 0 != (mcu->dev_attribute & AVR_ISA_RMW);
-  bool sp8 = 0 != (mcu->dev_attribute & AVR_SHORT_SP);
-  bool is_arch = NULL == mcu->macro;
+  bool absdata = (mcu->dev_attribute & AVR_ISA_LDS) != 0;
+  bool errata_skip = (mcu->dev_attribute & AVR_ERRATA_SKIP) != 0;
+  bool rmw = (mcu->dev_attribute & AVR_ISA_RMW) != 0;
+  bool sp8 = (mcu->dev_attribute & AVR_SHORT_SP) != 0;
+  bool rcall = (mcu->dev_attribute & AVR_ISA_RCALL);
+  bool is_arch = mcu->macro == NULL;
   bool is_device = ! is_arch;
 
   if (is_arch
@@ -149,13 +154,25 @@ print_mcu (const avr_mcu_t *mcu)
       sp8_spec = sp8 ? "-msp8" :"%<msp8";
     }
 
+  if (is_arch
+      && ARCH_AVRXMEGA3 == arch_id)
+    {
+      // Leave "avrxmega3" alone.  This architectures is the only one
+      // that mixes devices with and without JMP / CALL.
+      rcall_spec = "";
+    }
+  else
+    {
+      rcall_spec = rcall ? "-mshort-calls" : "%<mshort-calls";
+    }
+
   fprintf (f, "#\n"
            "# Auto-generated specs for AVR ");
   if (is_arch)
     fprintf (f, "core architecture %s\n", arch->name);
   else
-    fprintf (f, "device %s (core %s, %d-bit SP)\n",
-             mcu->name, arch->name, sp8 ? 8 : 16);
+    fprintf (f, "device %s (core %s, %d-bit SP%s)\n", mcu->name,
+             arch->name, sp8 ? 8 : 16, rcall ? ", short-calls" : "");
   fprintf (f, "%s\n", header);
 
   if (is_device)
@@ -178,8 +195,10 @@ print_mcu (const avr_mcu_t *mcu)
 
   // avr-gcc specific specs for the compilation / the compiler proper.
 
+  int n_flash = 1 + (mcu->flash_size - 1) / 0x10000;
+
   fprintf (f, "*cc1_n_flash:\n"
-           "\t%%{!mn-flash=*:-mn-flash=%d}\n\n", mcu->n_flash);
+           "\t%%{!mn-flash=*:-mn-flash=%d}\n\n", n_flash);
 
   fprintf (f, "*cc1_rmw:\n%s\n\n", rmw
            ? "\t%{!mno-rmw: -mrmw}"
@@ -188,6 +207,10 @@ print_mcu (const avr_mcu_t *mcu)
   fprintf (f, "*cc1_errata_skip:\n%s\n\n", errata_skip
            ? "\t%{!mno-skip-bug: -mskip-bug}"
            : "\t%{!mskip-bug: -mno-skip-bug}");
+
+  fprintf (f, "*cc1_absdata:\n%s\n\n", absdata
+           ? "\t%{!mno-absdata: -mabsdata}"
+           : "\t%{mabsdata}");
 
   // avr-gcc specific specs for assembling / the assembler.
 
@@ -203,6 +226,11 @@ print_mcu (const avr_mcu_t *mcu)
            : "\t%{mrmw}");
 #endif // have avr-as -mrmw
 
+#ifdef HAVE_AS_AVR_MGCCISR_OPTION
+  fprintf (f, "*asm_gccisr:\n%s\n\n",
+           "\t%{!mno-gas-isr-prologues: -mgcc-isr}");
+#endif // have avr-as -mgcc-isr
+
   fprintf (f, "*asm_errata_skip:\n%s\n\n", errata_skip
            ? "\t%{mno-skip-bug}"
            : "\t%{!mskip-bug: -mno-skip-bug}");
@@ -210,17 +238,16 @@ print_mcu (const avr_mcu_t *mcu)
   // avr-specific specs for linking / the linker.
 
   int wrap_k =
-    str_prefix_p (mcu->name, "at90usb8") ? 8
-    : str_prefix_p (mcu->name, "atmega16") ? 16
-    : (str_prefix_p (mcu->name, "atmega32")
-       || str_prefix_p (mcu->name, "at90can32")) ? 32
-    : (str_prefix_p (mcu->name, "atmega64")
-       || str_prefix_p (mcu->name, "at90can64")
-       || str_prefix_p (mcu->name, "at90usb64")) ? 64
+    mcu->flash_size == 0x2000 ? 8
+    : mcu->flash_size == 0x4000 ? 16
+    : mcu->flash_size == 0x8000 ? 32
+    : mcu->flash_size == 0x10000 ? 64
     : 0;
 
   fprintf (f, "*link_pmem_wrap:\n");
-  if (wrap_k)
+  if (wrap_k == 8)
+    fprintf (f, "\t%%{!mno-pmem-wrap-around: --pmem-wrap-around=8k}");
+  else if (wrap_k > 8)
     fprintf (f, "\t%%{mpmem-wrap-around: --pmem-wrap-around=%dk}", wrap_k);
   fprintf (f, "\n\n");
 
@@ -249,6 +276,7 @@ print_mcu (const avr_mcu_t *mcu)
     {
       fprintf (f, "*self_spec:\n");
       fprintf (f, "\t%%{!mmcu=avr*: %%<mmcu=* -mmcu=%s} ", arch->name);
+      fprintf (f, "%s ", rcall_spec);
       fprintf (f, "%s\n\n", sp8_spec);
 
 #if defined (WITH_AVRLIBC)

@@ -1,3 +1,252 @@
+2018-07-13  Tom de Vries  <tdevries@suse.de>
+
+	* maintainers-verify.sh: New file.
+
+2018-07-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* compare_tests: Print number of tests in each category.
+
+2018-06-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	* vim-gcc-dev/README: New file.
+	* vim-gcc-dev/ftdetect/gcc-dev.vim: New file.
+	* vim-gcc-dev/syntax/gcc-match.vim: New file.
+	* gimple.vim: Move under vim-gcc-dev/syntax/.
+	* gcc-rtl.vim: Likewise.
+
+2018-06-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-rtl.vim: New file.
+
+2018-06-12  Jeff Law  <law@redhat.com>
+
+	* config-list.mk (LIST): Remove alpha-freebsd6.
+
+2018-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85571
+	* compare-lto: New script derived from compare-debug.
+
+2018-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 8.
+
+2018-05-01  Jim Wilson  <jimw@sifive.com>
+
+	* gcc_update: Check for .git as a file.
+
+2018-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* test_summary: Match possible single quotes in configure path.
+
+2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* update-copyright.py: Remove "libcilkrts" reference.
+
+2018-02-19  Yury Gribov  <tetra2005@gmail.com>
+
+	* compare_tests: Use TMPDIR when set.
+	* dg-cmp-results.sh: Ditto.
+	* warn_summary: Ditto.
+
+2018-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* download_prerequisites: Use shasum for FreeBSD and DragonFly.
+
+2018-01-19  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Support new format that can be easily
+	parsed. Add new column to report.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Skip pdt-5.f03 in gfortran.dg subdir.
+
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+            Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* contrib/gcc_update: Ditto.
+
+2017-11-08  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Fix abbreviations for SI units.
+
+2017-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Handle libbacktrace.
+
+2017-09-18  Richard Biener  <rguenther@suse.de>
+
+	* download_prerequisites (isl): Bump version to 0.18.
+
+2017-08-02  Yury Gribov  <tetra2005@gmail.com>
+
+	* mklog: Added new implementation.
+
+2017-08-02  Yury Gribov  <tetra2005@gmail.com>
+
+	* mklog: Rename to ...
+	* mklog.pl: this.
+
+2017-07-17  Yury Gribov  <tetra2005@gmail.com>
+
+	* mklog: Fix extraction of changed file name.
+
+2017-07-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc_update (files_and_dependencies)
+	[gcc/config/avr/avr-tables.opt]: Remove dead entry.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	* gcc.doxy: Add default location for filters and output folder.
+	* filter_gcc_for_doxygen_new: Rename to filter_gcc_for_doxygen.
+	* filter_params.pl: Remove.
+
+2017-06-21  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* dg-cmp-results.sh: Restore filtering on target variant.
+
+2017-06-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* dg-cmp-results.sh: Keep test result lines rather than throwing
+	header and summary to support sum files with multiple tools.
+
+2017-05-31  Martin Liska  <mliska@suse.cz>
+
+	* filter_params.py:
+	Transform ENUM_BITFIELD and comments starting with '/**'
+
+2017-05-31  David Malcolm  <dmalcolm@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	* filter_params.py: New, porting the perl script to python,
+	adding a test suite.
+	* filter_gcc_for_doxygen_new: New file.
+
+2017-05-30  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Add new argument to parse and modify
+	predict.def file.
+	* analyze_brprob_spec.py: Likewise.
+
+2017-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py (TrailingWhitespaceCheck.check): Assert no
+	trailing eol.
+	(TrailingWhitespaceTest): New unit test.
+	(check_GNU_style_file): Remove eol before checking.
+
+2017-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py (check_GNU_style_file): Treat file argument as
+	file handle.  Add and handle file_encoding argument.
+	* check_GNU_style.py (main): Handle '-' file argument.  Call
+	check_GNU_style_file with file handle as argument.
+
+2017-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py: Use import_pip3 to import pip3 packages.
+	(import_pip3): New function.
+
+2017-05-24  Tom de Vries  <tom@codesourcery.com>
+
+	* check_GNU_style_lib.py: New file, factored out of ...
+	* check_GNU_style.py: ... here.  Call main unconditionally.
+
+2017-05-19  Martin Liska  <mliska@suse.cz>
+
+	* check_GNU_style.py: New file.
+
+2007-05-03  Jeff Law  <law@redhat.com>
+
+	* config-list.mk (am33_2.0-linux): Remove from list of targets
+	to build.
+
+2017-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 7.
+
+2017-04-26  Tom de Vries  <tom@codesourcery.com>
+
+	* gen_autofdo_event.py: Fix comment.
+
+2017-04-11  Damian Rouson  <damian@sourceryinstitute.org>
+
+        * download_prerequisites (md5_check): New function emulates Linux
+        'md5 --check' on macOS.  Modified script for macOS compatibility.
+
+2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	* config-list.mki (LIST): Add riscv32-unknown-linux-gun and
+	riscv64-unknown-linux-gnu.
+
+2017-01-31  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* update-copyright.py (Copyright.process_file): Retain original
+	file mode.
+
+2017-01-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update-copyright.py: Fix the name of this script in examples.
+
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add libhsail-rt to self.default_dirs
+	and call self.add_dir on it.  Add Intel Corporation to external
+	authors.
+
+2017-01-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Care for "libhsail-rt".
+
+2017-01-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* patch_tester.sh (TESTLOGS): Remove
+	$TARGET/libjava/testsuite/libjava.sum.
+
+2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* warn_summary: Remove the -java option.
+
+2017-01-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update-copyright.py (LibJavaFilter): Remove.
+
+2017-01-17  Gerald Pfeifer  <gerald@pfeifer.com>	
+	
+	* gcc_update: Remove entries related to GCJ and libgcj.
+	Complete copyright years and adjust my e-mail address.
+
+2017-01-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc_update: Adjust touch list for ARM.
+
+2017-01-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* download_ecj: Remove.
+
+2017-01-05  Martin Liska  <mliska@suse.cz>
+
+	* vimrc: Update indentation definition.
+
+2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (GCCCmdLine): Add include, libcc1, libiberty,
+	libssp, libvtv and lto-plugin to default_dirs.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (TestsuiteFilter): Skip params/README.
+	(GCCCmdLine): Remove libjava and libjava/testsuite add_dir.
+
+2016-12-14  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Add new column to output and new sorting
+	option. Fix coding style to not exceed 80 characters.
+	* analyze_brprob_spec.py: Add new sorting
+	option. Fix coding style to not exceed 80 characters.
+
 2016-10-24  Moritz Klammler  <moritz@glammler.eu>
 
 	PR other/61439

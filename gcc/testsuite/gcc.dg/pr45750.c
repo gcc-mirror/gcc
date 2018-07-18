@@ -11,6 +11,6 @@ int invalid[] = 0; /* { dg-error "invalid initializer" } */
 void foo (void)
 {
   if (((struct S *)undeclared)->i); /* { dg-error "undeclared" } */
+  /* { dg-message "reported only once" "" { target *-*-* } .-1 } */
 }
 
-/* { dg-message "reported only once" "" { target *-*-* } 13 } */

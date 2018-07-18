@@ -13,7 +13,7 @@ program foo
      a(i, i, i, i) = -5
    end forall
 
-  if (sum (a) .ne. 2541.0) call abort ()
+  if (sum (a) .ne. 2541.0) STOP 1
 end
 
 

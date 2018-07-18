@@ -1,3 +1,5 @@
+/* { dg-do run } */
+
 #include <assert.h>
 
 #define test(type)				\

@@ -1,6 +1,6 @@
 /* Definitions for Motorola 68k running Linux-based GNU systems with
    ELF format.
-   Copyright (C) 1995-2016 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -98,9 +98,13 @@ along with GCC; see the file COPYING3.  If not see
       {							\
 	if (ADDRESS_REG_P (operands[0]))		\
 	  return "jmp %%pc@(2,%0:l)";			\
+	else if (TARGET_LONG_JUMP_TABLE_OFFSETS)	\
+	  return "jmp %%pc@(2,%0:l)";			\
 	else						\
 	  return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";	\
       }							\
+    else if (TARGET_LONG_JUMP_TABLE_OFFSETS)		\
+      return "jmp %%pc@(2,%0:l)";			\
     else						\
       return "jmp %%pc@(2,%0:w)";			\
   } while (0)
@@ -188,8 +192,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef FINALIZE_TRAMPOLINE
 #define FINALIZE_TRAMPOLINE(TRAMP)					\
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),	\
-		     LCT_NORMAL, VOIDmode, 2, TRAMP, Pmode,		\
-		     plus_constant (Pmode, TRAMP, TRAMPOLINE_SIZE), \
+		     LCT_NORMAL, VOIDmode, TRAMP, Pmode,		\
+		     plus_constant (Pmode, TRAMP, TRAMPOLINE_SIZE), 	\
 		     Pmode);
 
 /* Clear the instruction cache from `beg' to `end'.  This makes an

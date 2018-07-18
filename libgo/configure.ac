@@ -11,7 +11,7 @@ AC_INIT(package-unused, version-unused,, libgo)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADER(config.h)
 
-libtool_VERSION=10:0:0
+libtool_VERSION=13:0:0
 AC_SUBST(libtool_VERSION)
 
 AM_ENABLE_MULTILIB(, ..)
@@ -30,6 +30,14 @@ AC_PROG_GO
 m4_rename_force([glibgo_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
 AC_SUBST(CFLAGS)
+
+case ${host} in
+  *-*-aix*)
+    # static hash tables crashes on AIX when libgo is built with O2
+    CFLAGS="$CFLAGS -fno-section-anchors"
+    GOCFLAGS="$GOCFLAGS -fno-section-anchors"
+    ;;
+esac
 
 AM_MAINTAINER_MODE
 
@@ -121,6 +129,7 @@ if test "$with_libffi" != no; then
 fi
 AC_SUBST(LIBFFI)
 AC_SUBST(LIBFFIINCS)
+AM_CONDITIONAL(USE_LIBFFI, test "$with_liffi" != "no")
 
 # See if the user wants to configure without libatomic. This is useful if we are
 # on an architecture for which libgo does not need an atomic support library and
@@ -145,7 +154,7 @@ AC_SUBST(go_include)
 # All known GOOS values.  This is the union of all operating systems
 # supported by the gofrontend and all operating systems supported by
 # the gc toolchain.
-ALLGOOS="android darwin dragonfly freebsd irix linux netbsd openbsd plan9 rtems solaris windows"
+ALLGOOS="aix android darwin dragonfly freebsd irix linux netbsd openbsd plan9 rtems solaris windows"
 
 is_darwin=no
 is_freebsd=no
@@ -156,6 +165,7 @@ is_openbsd=no
 is_dragonfly=no
 is_rtems=no
 is_solaris=no
+is_aix=no
 GOOS=unknown
 case ${host} in
   *-*-darwin*)   is_darwin=yes;  GOOS=darwin ;;
@@ -167,6 +177,7 @@ case ${host} in
   *-*-dragonfly*) is_dragonfly=yes; GOOS=dragonfly ;;
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
+  *-*-aix*)      is_aix=yes;     GOOS=aix ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_DARWIN, test $is_darwin = yes)
 AM_CONDITIONAL(LIBGO_IS_FREEBSD, test $is_freebsd = yes)
@@ -177,6 +188,7 @@ AM_CONDITIONAL(LIBGO_IS_OPENBSD, test $is_openbsd = yes)
 AM_CONDITIONAL(LIBGO_IS_DRAGONFLY, test $is_dragonfly = yes)
 AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
+AM_CONDITIONAL(LIBGO_IS_AIX, test $is_aix = yes)
 AM_CONDITIONAL(LIBGO_IS_BSD, test $is_darwin = yes -o $is_dragonfly = yes -o $is_freebsd = yes -o $is_netbsd = yes -o $is_openbsd = yes)
 AC_SUBST(GOOS)
 AC_SUBST(ALLGOOS)
@@ -195,43 +207,43 @@ AC_SUBST(USE_DEJAGNU)
 # All known GOARCH values.  This is the union of all architectures
 # supported by the gofrontend and all architectures supported by the
 # gc toolchain.
-# N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
-ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mipso32 mipsn32 mipso64 mipsn64 mips mipsle mips64 mips64le mips64p32 mips64pe32le ppc ppc64 ppc64le s390 s390x sparc sparc64"
+# To add a new architecture:
+# - add it to this list
+# - if appropriate, add an entry to ALLGOARCHFAMILY below
+# - add an entry to the case on ${host} below to set GOARCH
+# - update goarchList in libgo/go/go/build/syslist.go
+# - update goarch.sh to report the values for this architecture
+# - update go-set-goarch in gcc/testsuite/go.test/go-test.exp
+# - update ptrSizeMap and intSizeMap in libgo/go/cmd/cgo/main.go
+# - update arch lists in libgo/match.sh
+# - update arch lists in libgo/testsuite/gotest
+# - update +build lines in several places
+#   - libgo/go/runtime/lfstack_NNbit.go
+#   - libgo/go/runtime/hashNN.go
+#   - libgo/go/runtime/unalignedN.go
+#   - libgo/go/syscall/endian_XX.go
+#   - possibly others
+# - possibly update files in libgo/go/internal/syscall/unix
+ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le nios2 ppc ppc64 ppc64le riscv riscv64 s390 s390x sh shbe sparc sparc64 wasm"
 
-# All known GOARCH_FAMILY values.
-ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 S390 S390X SPARC SPARC64"
+# All known GOARCH family values.
+ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 NIOS2 PPC PPC64 RISCV RISCV64 S390 S390X SH SPARC SPARC64 WASM"
 
 GOARCH=unknown
-GOARCH_FAMILY=unknown
-GOARCH_BIGENDIAN=0
-GOARCH_CACHELINESIZE=64
-GOARCH_PHYSPAGESIZE=4096
-GOARCH_PCQUANTUM=1
-GOARCH_INT64ALIGN=8
-GOARCH_HUGEPAGESIZE=0
-GOARCH_MINFRAMESIZE=0
 case ${host} in
   alpha*-*-*)
     GOARCH=alpha
-    GOARCH_FAMILY=ALPHA
-    GOARCH_PHYSPAGESIZE=8192
-    GOARCH_PCQUANTUM=4
     ;;
   aarch64-*-*)
     GOARCH=arm64
-    GOARCH_FAMILY=ARM64
-    GOARCH_CACHELINESIZE=32
-    GOARCH_PHYSPAGESIZE=65536
-    GOARCH_PCQUANTUM=4
-    GOARCH_MINFRAMESIZE=8
     ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
     GOARCH=arm
-    GOARCH_FAMILY=ARM
-    GOARCH_CACHELINESIZE=32
-    GOARCH_PCQUANTUM=4
-    GOARCH_INT64ALIGN=4
-    GOARCH_MINFRAMESIZE=4
+    case ${host} in
+      arm*b*-*-*)
+	GOARCH=armbe
+	;;
+    esac
     ;;
 changequote(,)dnl
   i[34567]86-*-* | x86_64-*-*)
@@ -240,29 +252,14 @@ changequote([,])dnl
 #ifdef __x86_64__
 #error 64-bit
 #endif],
-[GOARCH=386
-GOARCH_FAMILY=I386
-GOARCH_INT64ALIGN=4
-GOARCH_HUGEPAGESIZE="1 << 21"
-],
-[GOARCH=amd64
-GOARCH_FAMILY=AMD64
-GOARCH_HUGEPAGESIZE="1 << 21"
-])
+[GOARCH=386],
+[GOARCH=amd64])
     ;;
   ia64-*-*)
     GOARCH=ia64
-    GOARCH_FAMILY=IA64
-    GOARCH_CACHELINESIZE=16384
-    GOARCH_PHYSPAGESIZE=8192
     ;;
   m68k*-*-*)
     GOARCH=m68k
-    GOARCH_FAMILY=M68K
-    GOARCH_BIGENDIAN=1
-    GOARCH_CACHELINESIZE=16
-    GOARCH_PCQUANTUM=4
-    GOARCH_INT64ALIGN=4
     ;;
   mips*-*-*)
     AC_COMPILE_IFELSE([
@@ -280,108 +277,63 @@ GOARCH_HUGEPAGESIZE="1 << 21"
 #error not n64
 #endif],
 [mips_abi="n64"],
-	[AC_COMPILE_IFELSE([
-#if _MIPS_SIM != _ABIO64
-#error not o64
-#endif],
-[mips_abi="o64"],
 	[AC_MSG_ERROR([unknown MIPS ABI])
-[mips_abi="n32"]])])])])
+[mips_abi="n32"]])])])
     case "$mips_abi" in
-    "o32") GOARCH=mipso32 ;;
-    "n32") GOARCH=mipsn32 ;;
-    "n64") GOARCH=mipsn64 ;;
-    "o64") GOARCH=mipso64 ;;
-    esac
-    case "$mips_abi" in
-    "o32" | "n32")
-        GOARCH_FAMILY=MIPS
-	GOARCH_INT64ALIGN=4
-	GOARCH_MINFRAMESIZE=4
-        ;;
-    "n64" | "o64")
-        GOARCH_FAMILY=MIPS64
-	GOARCH_MINFRAMESIZE=8
-        ;;
+    "o32") GOARCH=mips ;;
+    "n32") GOARCH=mips64p32 ;;
+    "n64") GOARCH=mips64 ;;
     esac
     case "${host}" in
-    mips*el)
-        ;;
-    *)
-	GOARCH_BIGENDIAN=1
+    mips*el-*-*)
+        GOARCH="${GOARCH}le"
         ;;
     esac
-    GOARCH_CACHELINESIZE=32
-    GOARCH_PHYSPAGESIZE=16384
-    GOARCH_PCQUANTUM=4
+    ;;
+  nios2-*-*)
+    GOARCH=nios2
     ;;
   rs6000*-*-* | powerpc*-*-*)
     AC_COMPILE_IFELSE([
 #ifdef _ARCH_PPC64
 #error 64-bit
 #endif],
-[GOARCH=ppc
-GOARCH_FAMILY=PPC
-GOARCH_BIGENDIAN=1
-GOARCH_INT64ALIGN=4
-],
+[GOARCH=ppc],
     [
-GOARCH_FAMILY=PPC64
 AC_COMPILE_IFELSE([
 #if defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
 #error 64be
 #endif],
-[GOARCH=ppc64le
-],
-[GOARCH=ppc64
-GOARCH_BIGENDIAN=1
-])])
-    GOARCH_PHYSPAGESIZE=65536
-    GOARCH_PCQUANTUM=4
-    GOARCH_MINFRAMESIZE=32
+[GOARCH=ppc64le],
+[GOARCH=ppc64])])
+    ;;
+  riscv64-*-*)
+    GOARCH=riscv64
     ;;
   s390*-*-*)
     AC_COMPILE_IFELSE([
 #if defined(__s390x__)
 #error 64-bit
 #endif],
-[GOARCH=s390
-GOARCH_FAMILY=S390
-GOARCH_INT64ALIGN=4
-GOARCH_MINFRAMESIZE=4
-], [GOARCH=s390x
-GOARCH_FAMILY=S390X
-GOARCH_MINFRAMESIZE=8
-])
-    GOARCH_BIGENDIAN=1
-    GOARCH_CACHELINESIZE=256
-    GOARCH_PCQUANTUM=2
+[GOARCH=s390],
+[GOARCH=s390x])
+    ;;
+  sh3eb*-*-* | sh4eb*-*-*)
+    GOARCH=shbe
+    ;;
+  sh3*-*-* | sh4*-*-*)
+    GOARCH=sh
     ;;
   sparc*-*-*)
     AC_COMPILE_IFELSE([
 #if defined(__sparcv9) || defined(__arch64__)
 #error 64-bit
 #endif],
-[GOARCH=sparc
-GOARCH_FAMILY=SPARC
-],
-[GOARCH=sparc64
-GOARCH_FAMILY=SPARC64
-])
-    GOARCH_BIGENDIAN=1
-    GOARCH_PHYSPAGESIZE=8192
-    GOARCH_PCQUANTUM=4
+[GOARCH=sparc],
+[GOARCH=sparc64])
     ;;
 esac
 AC_SUBST(GOARCH)
-AC_SUBST(GOARCH_FAMILY)
-AC_SUBST(GOARCH_BIGENDIAN)
-AC_SUBST(GOARCH_CACHELINESIZE)
-AC_SUBST(GOARCH_PHYSPAGESIZE)
-AC_SUBST(GOARCH_PCQUANTUM)
-AC_SUBST(GOARCH_INT64ALIGN)
-AC_SUBST(GOARCH_HUGEPAGESIZE)
-AC_SUBST(GOARCH_MINFRAMESIZE)
 AC_SUBST(ALLGOARCH)
 AC_SUBST(ALLGOARCHFAMILY)
 
@@ -423,6 +375,9 @@ case "$target" in
 	;;
 esac
 AC_SUBST(OSCFLAGS)
+
+dnl Check if assembler supports disabling hardware capability support.
+GCC_CHECK_ASSEMBLER_HWCAP
 
 dnl Use -fsplit-stack when compiling C code if available.
 AC_CACHE_CHECK([whether -fsplit-stack is supported],
@@ -544,14 +499,15 @@ dnl Test whether the compiler supports the -pthread option.
 AC_CACHE_CHECK([whether -pthread is supported],
 [libgo_cv_lib_pthread],
 [CFLAGS_hold=$CFLAGS
-CFLAGS="$CFLAGS -pthread"
+CFLAGS="$CFLAGS -pthread -L../libatomic/.libs"
 AC_COMPILE_IFELSE([[int i;]],
 [libgo_cv_lib_pthread=yes],
 [libgo_cv_lib_pthread=no])
 CFLAGS=$CFLAGS_hold])
 PTHREAD_CFLAGS=
 if test "$libgo_cv_lib_pthread" = yes; then
-  PTHREAD_CFLAGS=-pthread
+  # RISC-V apparently adds -latomic when using -pthread.
+  PTHREAD_CFLAGS="-pthread -L../libatomic/.libs"
 fi
 AC_SUBST(PTHREAD_CFLAGS)
 
@@ -569,7 +525,11 @@ AC_C_BIGENDIAN
 
 GCC_CHECK_UNWIND_GETIPINFO
 
-AC_CHECK_HEADERS(port.h sched.h semaphore.h sys/file.h sys/mman.h syscall.h sys/epoll.h sys/event.h sys/inotify.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h net/if_arp.h net/route.h netpacket/packet.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/fs.h linux/reboot.h netinet/icmp6.h netinet/in_syst.h netinet/ip.h netinet/ip_mroute.h netinet/if_ether.h)
+AC_CHECK_HEADERS(port.h sched.h semaphore.h sys/file.h sys/mman.h syscall.h sys/epoll.h sys/event.h sys/inotify.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h net/if_arp.h net/route.h netpacket/packet.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/fs.h linux/ptrace.h linux/reboot.h netinet/in_syst.h netinet/ip.h netinet/ip_mroute.h netinet/if_ether.h)
+
+AC_CHECK_HEADERS([netinet/icmp6.h], [], [],
+[#include <netinet/in.h>
+])
 
 AC_CHECK_HEADERS([linux/filter.h linux/if_addr.h linux/if_ether.h linux/if_tun.h linux/netlink.h linux/rtnetlink.h], [], [],
 [#ifdef HAVE_SYS_SOCKET_H
@@ -577,31 +537,13 @@ AC_CHECK_HEADERS([linux/filter.h linux/if_addr.h linux/if_ether.h linux/if_tun.h
 #endif
 ])
 
-AC_CACHE_CHECK([whether <ustat.h> can be used],
-[libgo_cv_c_ustat_h],
-[CFLAGS_hold=$CFLAGS
-CFLAGS="$CFLAGS -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE $OSCFLAGS"
-AC_COMPILE_IFELSE(
-[AC_LANG_SOURCE([
-#include <sys/types.h>
-#ifdef HAVE_LINUX_FILTER_H
-#include <linux/filter.h>
-#endif
-#include <ustat.h>
-])], [libgo_cv_c_ustat_h=yes], [libgo_cv_c_ustat_h=no])
-CFLAGS=$CFLAGS_hold])
-if test $libgo_cv_c_ustat_h = yes; then
-  AC_DEFINE(HAVE_USTAT_H, 1,
-    [Define to 1 if you have the <ustat.h> header file and it works.])
-fi
-
 AM_CONDITIONAL(HAVE_SYS_MMAN_H, test "$ac_cv_header_sys_mman_h" = yes)
 
 AC_CHECK_FUNCS(strerror_r strsignal wait4 mincore setenv unsetenv dl_iterate_phdr)
 AM_CONDITIONAL(HAVE_STRERROR_R, test "$ac_cv_func_strerror_r" = yes)
 AM_CONDITIONAL(HAVE_WAIT4, test "$ac_cv_func_wait4" = yes)
 
-AC_CHECK_FUNCS(accept4 dup3 epoll_create1 faccessat fallocate fchmodat fchownat futimesat getxattr inotify_add_watch inotify_init inotify_init1 inotify_rm_watch listxattr mkdirat mknodat open64 openat pipe2 removexattr renameat setxattr sync_file_range splice tee unlinkat unshare utimensat)
+AC_CHECK_FUNCS(accept4 dup3 epoll_create1 faccessat fallocate fchmodat fchownat futimesat getxattr inotify_add_watch inotify_init inotify_init1 inotify_rm_watch listxattr mkdirat mknodat open64 openat pipe2 removexattr renameat setxattr sync_file_range splice syscall tee unlinkat unshare utimensat)
 AC_TYPE_OFF_T
 AC_CHECK_TYPES([loff_t])
 
@@ -696,8 +638,7 @@ fi
 AC_SUBST(STRINGOPS_FLAG)
 
 dnl For x86 we want to compile the math library with -mfancy-math-387
-dnl -funsafe-math-optimizations so that we can use the builtin
-dnl instructions directly.
+dnl so that we can use the builtin instructions directly.
 AC_CACHE_CHECK([whether compiler supports -mfancy-math-387],
 [libgo_cv_c_fancymath],
 [CFLAGS_hold=$CFLAGS
@@ -708,10 +649,9 @@ AC_COMPILE_IFELSE([int i;],
 CFLAGS=$CFLAGS_hold])
 MATH_FLAG=
 if test "$libgo_cv_c_fancymath" = yes; then
-  MATH_FLAG="-mfancy-math-387 -funsafe-math-optimizations"
-else
-  MATH_FLAG="-ffp-contract=off"
+  MATH_FLAG="-mfancy-math-387"
 fi
+MATH_FLAG="${MATH_FLAG} -ffp-contract=off -fno-math-errno -fno-trapping-math"
 AC_SUBST(MATH_FLAG)
 
 CFLAGS_hold=$CFLAGS
@@ -742,7 +682,7 @@ STRUCT_EPOLL_EVENT_FD_OFFSET=${libgo_cv_c_epoll_event_fd_offset}
 AC_SUBST(STRUCT_EPOLL_EVENT_FD_OFFSET)
 
 dnl Check if <sys/stat.h> uses timespec_t for st_?tim members.  Introduced
-dnl in Solaris 12 for XPG7 compatibility.
+dnl in Solaris 11.4 for XPG7 compatibility.
 AC_EGREP_HEADER([timespec_t.*st_atim], [sys/stat.h],
 		[have_stat_timespec=yes], [have_stat_timespec=no])
 AM_CONDITIONAL(HAVE_STAT_TIMESPEC, test $have_stat_timespec = yes)
@@ -932,6 +872,24 @@ CFLAGS=$CFLAGS_hold
 if test "x$libgo_cv_as_x86_64_unwind_section_type" = xyes; then
   AC_DEFINE(HAVE_AS_X86_64_UNWIND_SECTION_TYPE, 1,
 	    [Define if your assembler supports unwind section type.])
+fi
+
+AC_CACHE_CHECK([assembler supports AES instructions],
+libgo_cv_as_x86_aes, [
+libgo_cv_as_x86_aes=yes
+echo 'aesenc %xmm0, %xmm1' > conftest.s
+CFLAGS_hold=$CFLAGS
+if test "$libgo_cv_c_unused_arguments" = yes; then
+  CFLAGS="$CFLAGS -Qunused-arguments"
+fi
+if $CC $CFLAGS -c conftest.s 2>&1 | grep -i error > /dev/null; then
+    libgo_cv_as_x86_aes=no
+fi
+CFLAGS=$CFLAGS_hold
+])
+if test "x$libgo_cv_as_x86_aes" = xyes; then
+  AC_DEFINE(HAVE_AS_X86_AES, 1,
+	    [Define if your assembler supports AES instructions.])
 fi
 
 AC_CACHE_SAVE

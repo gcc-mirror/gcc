@@ -1,7 +1,7 @@
 // PR debug/56819
 // { dg-do compile }
 // { dg-options "-fcompare-debug" }
-// { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } }
+// { dg-xfail-if "" { powerpc-ibm-aix* } }
 
 template <typename>
 struct A

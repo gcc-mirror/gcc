@@ -11,6 +11,7 @@
 #include "go-c.h"
 #include "gogo.h"
 #include "go-diagnostics.h"
+#include "go-encode-id.h"
 #include "operator.h"
 #include "expressions.h"
 #include "statements.h"
@@ -102,6 +103,34 @@ Type::forwarded() const
     {
       t = ftype->real_type();
       ftype = t->forward_declaration_type();
+    }
+  return t;
+}
+
+// Skip alias definitions.
+
+Type*
+Type::unalias()
+{
+  Type* t = this->forwarded();
+  Named_type* nt = t->named_type();
+  while (nt != NULL && nt->is_alias())
+    {
+      t = nt->real_type()->forwarded();
+      nt = t->named_type();
+    }
+  return t;
+}
+
+const Type*
+Type::unalias() const
+{
+  const Type* t = this->forwarded();
+  const Named_type* nt = t->named_type();
+  while (nt != NULL && nt->is_alias())
+    {
+      t = nt->real_type()->forwarded();
+      nt = t->named_type();
     }
   return t;
 }
@@ -316,21 +345,25 @@ bool
 Type::are_identical(const Type* t1, const Type* t2, bool errors_are_identical,
 		    std::string* reason)
 {
+  return Type::are_identical_cmp_tags(t1, t2, COMPARE_TAGS,
+				      errors_are_identical, reason);
+}
+
+// Like are_identical, but with a CMP_TAGS parameter.
+
+bool
+Type::are_identical_cmp_tags(const Type* t1, const Type* t2, Cmp_tags cmp_tags,
+			     bool errors_are_identical, std::string* reason)
+{
   if (t1 == NULL || t2 == NULL)
     {
       // Something is wrong.
       return errors_are_identical ? true : t1 == t2;
     }
 
-  // Skip defined forward declarations.
-  t1 = t1->forwarded();
-  t2 = t2->forwarded();
-
-  // Ignore aliases for purposes of type identity.
-  if (t1->named_type() != NULL && t1->named_type()->is_alias())
-    t1 = t1->named_type()->real_type();
-  if (t2->named_type() != NULL && t2->named_type()->is_alias())
-    t2 = t2->named_type()->real_type();
+  // Skip defined forward declarations.  Ignore aliases.
+  t1 = t1->unalias();
+  t2 = t2->unalias();
 
   if (t1 == t2)
     return true;
@@ -386,31 +419,33 @@ Type::are_identical(const Type* t1, const Type* t2, bool errors_are_identical,
     case TYPE_FUNCTION:
       return t1->function_type()->is_identical(t2->function_type(),
 					       false,
+					       cmp_tags,
 					       errors_are_identical,
 					       reason);
 
     case TYPE_POINTER:
-      return Type::are_identical(t1->points_to(), t2->points_to(),
-				 errors_are_identical, reason);
+      return Type::are_identical_cmp_tags(t1->points_to(), t2->points_to(),
+					  cmp_tags, errors_are_identical,
+					  reason);
 
     case TYPE_STRUCT:
-      return t1->struct_type()->is_identical(t2->struct_type(),
+      return t1->struct_type()->is_identical(t2->struct_type(), cmp_tags,
 					     errors_are_identical);
 
     case TYPE_ARRAY:
-      return t1->array_type()->is_identical(t2->array_type(),
+      return t1->array_type()->is_identical(t2->array_type(), cmp_tags,
 					    errors_are_identical);
 
     case TYPE_MAP:
-      return t1->map_type()->is_identical(t2->map_type(),
+      return t1->map_type()->is_identical(t2->map_type(), cmp_tags,
 					  errors_are_identical);
 
     case TYPE_CHANNEL:
-      return t1->channel_type()->is_identical(t2->channel_type(),
+      return t1->channel_type()->is_identical(t2->channel_type(), cmp_tags,
 					      errors_are_identical);
 
     case TYPE_INTERFACE:
-      return t1->interface_type()->is_identical(t2->interface_type(),
+      return t1->interface_type()->is_identical(t2->interface_type(), cmp_tags,
 						errors_are_identical);
 
     case TYPE_CALL_MULTIPLE_RESULT:
@@ -562,10 +597,10 @@ Type::are_compatible_for_comparison(bool is_equality_op, const Type *t1,
 	  return false;
 	}
 
-      if (t1->named_type() != NULL)
-	return t1->named_type()->named_type_is_comparable(reason);
-      else if (t2->named_type() != NULL)
-	return t2->named_type()->named_type_is_comparable(reason);
+      if (t1->unalias()->named_type() != NULL)
+	return t1->unalias()->named_type()->named_type_is_comparable(reason);
+      else if (t2->unalias()->named_type() != NULL)
+	return t2->unalias()->named_type()->named_type_is_comparable(reason);
       else if (t1->struct_type() != NULL)
 	{
 	  if (t1->struct_type()->is_struct_incomparable())
@@ -643,6 +678,12 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
   if (Type::are_identical(lhs, rhs, true, reason))
     return true;
 
+  // Ignore aliases, except for error messages.
+  const Type* lhs_orig = lhs;
+  const Type* rhs_orig = rhs;
+  lhs = lhs->unalias();
+  rhs = rhs->unalias();
+
   // The types are assignable if they have identical underlying types
   // and either LHS or RHS is not a named type.
   if (((lhs->named_type() != NULL && rhs->named_type() == NULL)
@@ -705,15 +746,16 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
     {
       if (rhs->interface_type() != NULL)
 	reason->assign(_("need explicit conversion"));
-      else if (lhs->named_type() != NULL && rhs->named_type() != NULL)
+      else if (lhs_orig->named_type() != NULL
+	       && rhs_orig->named_type() != NULL)
 	{
-	  size_t len = (lhs->named_type()->name().length()
-			+ rhs->named_type()->name().length()
+	  size_t len = (lhs_orig->named_type()->name().length()
+			+ rhs_orig->named_type()->name().length()
 			+ 100);
 	  char* buf = new char[len];
 	  snprintf(buf, len, _("cannot use type %s as type %s"),
-		   rhs->named_type()->message_name().c_str(),
-		   lhs->named_type()->message_name().c_str());
+		   rhs_orig->named_type()->message_name().c_str(),
+		   lhs_orig->named_type()->message_name().c_str());
 	  reason->assign(buf);
 	  delete[] buf;
 	}
@@ -733,24 +775,45 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
   if (Type::are_assignable(lhs, rhs, reason))
     return true;
 
+  // Ignore aliases.
+  lhs = lhs->unalias();
+  rhs = rhs->unalias();
+
+  // A pointer to a regular type may not be converted to a pointer to
+  // a type that may not live in the heap, except when converting from
+  // unsafe.Pointer.
+  if (lhs->points_to() != NULL
+      && rhs->points_to() != NULL
+      && !lhs->points_to()->in_heap()
+      && rhs->points_to()->in_heap()
+      && !rhs->is_unsafe_pointer_type())
+    {
+      if (reason != NULL)
+	reason->assign(_("conversion from normal type to notinheap type"));
+      return false;
+    }
+
   // The types are convertible if they have identical underlying
-  // types.
+  // types, ignoring struct field tags.
   if ((lhs->named_type() != NULL || rhs->named_type() != NULL)
-      && Type::are_identical(lhs->base(), rhs->base(), true, reason))
+      && Type::are_identical_cmp_tags(lhs->base(), rhs->base(), IGNORE_TAGS,
+				      true, reason))
     return true;
 
   // The types are convertible if they are both unnamed pointer types
-  // and their pointer base types have identical underlying types.
+  // and their pointer base types have identical underlying types,
+  // ignoring struct field tags.
   if (lhs->named_type() == NULL
       && rhs->named_type() == NULL
       && lhs->points_to() != NULL
       && rhs->points_to() != NULL
       && (lhs->points_to()->named_type() != NULL
 	  || rhs->points_to()->named_type() != NULL)
-      && Type::are_identical(lhs->points_to()->base(),
-			     rhs->points_to()->base(),
-			     true,
-			     reason))
+      && Type::are_identical_cmp_tags(lhs->points_to()->base(),
+				      rhs->points_to()->base(),
+				      IGNORE_TAGS,
+				      true,
+				      reason))
     return true;
 
   // Integer and floating point types are convertible to each other.
@@ -816,11 +879,75 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
   return false;
 }
 
+// Copy expressions if it may change the size.
+//
+// The only type that has an expression is an array type.  The only
+// types whose size can be changed by the size of an array type are an
+// array type itself, or a struct type with an array field.
+Type*
+Type::copy_expressions()
+{
+  // This is run during parsing, so types may not be valid yet.
+  // We only have to worry about array type literals.
+  switch (this->classification_)
+    {
+    default:
+      return this;
+
+    case TYPE_ARRAY:
+      {
+	Array_type* at = this->array_type();
+	if (at->length() == NULL)
+	  return this;
+	Expression* len = at->length()->copy();
+	if (at->length() == len)
+	  return this;
+	return Type::make_array_type(at->element_type(), len);
+      }
+
+    case TYPE_STRUCT:
+      {
+	Struct_type* st = this->struct_type();
+	const Struct_field_list* sfl = st->fields();
+	if (sfl == NULL)
+	  return this;
+	bool changed = false;
+	Struct_field_list *nsfl = new Struct_field_list();
+	for (Struct_field_list::const_iterator pf = sfl->begin();
+	     pf != sfl->end();
+	     ++pf)
+	  {
+	    Type* ft = pf->type()->copy_expressions();
+	    Struct_field nf(Typed_identifier((pf->is_anonymous()
+					      ? ""
+					      : pf->field_name()),
+					     ft,
+					     pf->location()));
+	    if (pf->has_tag())
+	      nf.set_tag(pf->tag());
+	    nsfl->push_back(nf);
+	    if (ft != pf->type())
+	      changed = true;
+	  }
+	if (!changed)
+	  {
+	    delete(nsfl);
+	    return this;
+	  }
+	return Type::make_struct_type(nsfl, st->location());
+      }
+    }
+
+  go_unreachable();
+}
+
 // Return a hash code for the type to be used for method lookup.
 
 unsigned int
 Type::hash_for_method(Gogo* gogo) const
 {
+  if (this->named_type() != NULL && this->named_type()->is_alias())
+    return this->named_type()->real_type()->hash_for_method(gogo);
   unsigned int ret = 0;
   if (this->classification_ != TYPE_FORWARD)
     ret += this->classification_;
@@ -863,6 +990,13 @@ Type::get_backend(Gogo* gogo)
 {
   if (this->btype_ != NULL)
     return this->btype_;
+
+  if (this->named_type() != NULL && this->named_type()->is_alias()) {
+    Btype* bt = this->unalias()->get_backend(gogo);
+    if (gogo != NULL && gogo->named_types_are_converted())
+      this->btype_ = bt;
+    return bt;
+  }
 
   if (this->forward_declaration_type() != NULL
       || this->named_type() != NULL)
@@ -1025,6 +1159,8 @@ Type::get_backend_placeholder(Gogo* gogo)
       {
 	Location loc = Linemap::unknown_location();
 	bt = gogo->backend()->placeholder_pointer_type("", loc, false);
+	Pointer_type* pt = this->convert<Pointer_type, TYPE_POINTER>();
+	Type::placeholder_pointers.push_back(pt);
       }
       break;
 
@@ -1163,9 +1299,7 @@ Type::finish_backend(Gogo* gogo, Btype *placeholder)
 Bexpression*
 Type::type_descriptor_pointer(Gogo* gogo, Location location)
 {
-  Type* t = this->forwarded();
-  if (t->named_type() != NULL && t->named_type()->is_alias())
-    t = t->named_type()->real_type();
+  Type* t = this->unalias();
   if (t->type_descriptor_var_ == NULL)
     {
       t->make_type_descriptor_var(gogo);
@@ -1173,7 +1307,12 @@ Type::type_descriptor_pointer(Gogo* gogo, Location location)
     }
   Bexpression* var_expr =
       gogo->backend()->var_expression(t->type_descriptor_var_, location);
-  return gogo->backend()->address_expression(var_expr, location);
+  Bexpression* var_addr =
+      gogo->backend()->address_expression(var_expr, location);
+  Type* td_type = Type::make_type_descriptor_type();
+  Btype* td_btype = td_type->get_backend(gogo);
+  Btype* ptd_btype = gogo->backend()->pointer_type(td_btype);
+  return gogo->backend()->convert_expression(ptd_btype, var_addr, location);
 }
 
 // A mapping from unnamed types to type descriptor variables.
@@ -1217,17 +1356,19 @@ Type::make_type_descriptor_var(Gogo* gogo)
 
       Type* td_type = Type::make_type_descriptor_type();
       Btype* td_btype = td_type->get_backend(gogo);
+      std::string name = gogo->type_descriptor_name(this, nt);
+      std::string asm_name(go_selectively_encode_id(name));
       this->type_descriptor_var_ =
-	gogo->backend()->immutable_struct_reference("__go_tdn_unsafe.Pointer",
-						    td_btype,
-						    bloc);
+	  gogo->backend()->immutable_struct_reference(name, asm_name,
+						      td_btype,
+						      bloc);
 
       if (phash != NULL)
 	*phash = this->type_descriptor_var_;
       return;
     }
 
-  std::string var_name = this->type_descriptor_var_name(gogo, nt);
+  std::string var_name = gogo->type_descriptor_name(this, nt);
 
   // Build the contents of the type descriptor.
   Expression* initializer = this->do_type_descriptor(gogo, NULL);
@@ -1239,10 +1380,11 @@ Type::make_type_descriptor_var(Gogo* gogo)
   const Package* dummy;
   if (this->type_descriptor_defined_elsewhere(nt, &dummy))
     {
+      std::string asm_name(go_selectively_encode_id(var_name));
       this->type_descriptor_var_ =
-	gogo->backend()->immutable_struct_reference(var_name,
-						    initializer_btype,
-						    loc);
+	  gogo->backend()->immutable_struct_reference(var_name, asm_name,
+						      initializer_btype,
+						      loc);
       if (phash != NULL)
 	*phash = this->type_descriptor_var_;
       return;
@@ -1271,8 +1413,9 @@ Type::make_type_descriptor_var(Gogo* gogo)
   // ensure that type_descriptor_pointer will work if called while
   // converting INITIALIZER.
 
+  std::string asm_name(go_selectively_encode_id(var_name));
   this->type_descriptor_var_ =
-    gogo->backend()->immutable_struct(var_name, false, is_common,
+      gogo->backend()->immutable_struct(var_name, asm_name, false, is_common,
 				      initializer_btype, loc);
   if (phash != NULL)
     *phash = this->type_descriptor_var_;
@@ -1285,66 +1428,6 @@ Type::make_type_descriptor_var(Gogo* gogo)
 					     var_name, false, is_common,
 					     initializer_btype, loc,
 					     binitializer);
-}
-
-// Return the name of the type descriptor variable.  If NT is not
-// NULL, use it to get the name.  Otherwise this is an unnamed type.
-
-std::string
-Type::type_descriptor_var_name(Gogo* gogo, Named_type* nt)
-{
-  if (nt == NULL)
-    return "__go_td_" + this->mangled_name(gogo);
-
-  Named_object* no = nt->named_object();
-  unsigned int index;
-  const Named_object* in_function = nt->in_function(&index);
-  std::string ret = "__go_tdn_";
-  if (nt->is_builtin())
-    go_assert(in_function == NULL);
-  else
-    {
-      const std::string& pkgpath(no->package() == NULL
-				 ? gogo->pkgpath_symbol()
-				 : no->package()->pkgpath_symbol());
-      ret.append(pkgpath);
-      ret.append(1, '.');
-      if (in_function != NULL)
-	{
-	  const Typed_identifier* rcvr =
-	    in_function->func_value()->type()->receiver();
-	  if (rcvr != NULL)
-	    {
-	      Named_type* rcvr_type = rcvr->type()->deref()->named_type();
-	      ret.append(Gogo::unpack_hidden_name(rcvr_type->name()));
-	      ret.append(1, '.');
-	    }
-	  ret.append(Gogo::unpack_hidden_name(in_function->name()));
-	  ret.append(1, '.');
-	  if (index > 0)
-	    {
-	      char buf[30];
-	      snprintf(buf, sizeof buf, "%u", index);
-	      ret.append(buf);
-	      ret.append(1, '.');
-	    }
-	}
-    }
-
-  // FIXME: This adds in pkgpath twice for hidden symbols, which is
-  // pointless.
-  const std::string& name(no->name());
-  if (!Gogo::is_hidden_name(name))
-    ret.append(name);
-  else
-    {
-      ret.append(1, '.');
-      ret.append(Gogo::pkgpath_for_symbol(Gogo::hidden_name_pkgpath(name)));
-      ret.append(1, '.');
-      ret.append(Gogo::unpack_hidden_name(name));
-    }
-
-  return ret;
 }
 
 // Return true if this type descriptor is defined in a different
@@ -1397,18 +1480,6 @@ Type::named_type_descriptor(Gogo* gogo, Type* type, Named_type* name)
   return type->do_type_descriptor(gogo, name);
 }
 
-// Generate the GC symbol for this TYPE.  VALS is the data so far in this
-// symbol; extra values will be appended in do_gc_symbol.  OFFSET is the
-// offset into the symbol where the GC data is located.  STACK_SIZE is the
-// size of the GC stack when dealing with array types.
-
-void
-Type::gc_symbol(Gogo* gogo, Type* type, Expression_list** vals,
-		Expression** offset, int stack_size)
-{
-  type->do_gc_symbol(gogo, vals, offset, stack_size);
-}
-
 // Make a builtin struct type from a list of fields.  The fields are
 // pairs of a name and a type.
 
@@ -1429,7 +1500,9 @@ Type::make_builtin_struct_type(int nfields, ...)
 
   va_end(ap);
 
-  return Type::make_struct_type(sfl, bloc);
+  Struct_type* ret = Type::make_struct_type(sfl, bloc);
+  ret->set_is_struct_incomparable();
+  return ret;
 }
 
 // A list of builtin named types.
@@ -1465,8 +1538,8 @@ Type::convert_builtin_named_types(Gogo* gogo)
 }
 
 // Return the type of a type descriptor.  We should really tie this to
-// runtime.Type rather than copying it.  This must match commonType in
-// libgo/go/runtime/type.go.
+// runtime.Type rather than copying it.  This must match the struct "_type"
+// declared in libgo/go/runtime/type.go.
 
 Type*
 Type::make_type_descriptor_type()
@@ -1477,6 +1550,7 @@ Type::make_type_descriptor_type()
       Location bloc = Linemap::predeclared_location();
 
       Type* uint8_type = Type::lookup_integer_type("uint8");
+      Type* pointer_uint8_type = Type::make_pointer_type(uint8_type);
       Type* uint32_type = Type::lookup_integer_type("uint32");
       Type* uintptr_type = Type::lookup_integer_type("uintptr");
       Type* string_type = Type::lookup_string_type();
@@ -1492,7 +1566,6 @@ Type::make_type_descriptor_type()
       Typed_identifier_list *params = new Typed_identifier_list();
       params->push_back(Typed_identifier("key", unsafe_pointer_type, bloc));
       params->push_back(Typed_identifier("seed", uintptr_type, bloc));
-      params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
 
       Typed_identifier_list* results = new Typed_identifier_list();
       results->push_back(Typed_identifier("", uintptr_type, bloc));
@@ -1503,7 +1576,6 @@ Type::make_type_descriptor_type()
       params = new Typed_identifier_list();
       params->push_back(Typed_identifier("key1", unsafe_pointer_type, bloc));
       params->push_back(Typed_identifier("key2", unsafe_pointer_type, bloc));
-      params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
 
       results = new Typed_identifier_list();
       results->push_back(Typed_identifier("", Type::lookup_bool_type(), bloc));
@@ -1513,7 +1585,7 @@ Type::make_type_descriptor_type()
 
       // Forward declaration for the type descriptor type.
       Named_object* named_type_descriptor_type =
-	Named_object::make_type_declaration("commonType", NULL, bloc);
+	Named_object::make_type_declaration("_type", NULL, bloc);
       Type* ft = Type::make_forward_declaration(named_type_descriptor_type);
       Type* pointer_type_descriptor_type = Type::make_pointer_type(ft);
 
@@ -1545,21 +1617,22 @@ Type::make_type_descriptor_type()
       // The type descriptor type.
 
       Struct_type* type_descriptor_type =
-	Type::make_builtin_struct_type(11,
+	Type::make_builtin_struct_type(12,
+				       "size", uintptr_type,
+				       "ptrdata", uintptr_type,
+				       "hash", uint32_type,
 				       "kind", uint8_type,
 				       "align", uint8_type,
 				       "fieldAlign", uint8_type,
-				       "size", uintptr_type,
-				       "hash", uint32_type,
 				       "hashfn", hash_fntype,
 				       "equalfn", equal_fntype,
-				       "gc", uintptr_type,
+				       "gcdata", pointer_uint8_type,
 				       "string", pointer_string_type,
 				       "", pointer_uncommon_type,
 				       "ptrToThis",
 				       pointer_type_descriptor_type);
 
-      Named_type* named = Type::make_builtin_named_type("commonType",
+      Named_type* named = Type::make_builtin_named_type("_type",
 							type_descriptor_type);
 
       named_type_descriptor_type->set_type_value(named);
@@ -1582,6 +1655,88 @@ Type::make_type_descriptor_ptr_type()
   return ret;
 }
 
+// Return the alignment required by the memequalN function.  N is a
+// type size: 16, 32, 64, or 128.  The memequalN functions are defined
+// in libgo/go/runtime/alg.go.
+
+int64_t
+Type::memequal_align(Gogo* gogo, int size)
+{
+  const char* tn;
+  switch (size)
+    {
+    case 16:
+      tn = "int16";
+      break;
+    case 32:
+      tn = "int32";
+      break;
+    case 64:
+      tn = "int64";
+      break;
+    case 128:
+      // The code uses [2]int64, which must have the same alignment as
+      // int64.
+      tn = "int64";
+      break;
+    default:
+      go_unreachable();
+    }
+
+  Type* t = Type::lookup_integer_type(tn);
+
+  int64_t ret;
+  if (!t->backend_type_align(gogo, &ret))
+    go_unreachable();
+  return ret;
+}
+
+// Return whether this type needs specially built type functions.
+// This returns true for types that are comparable and either can not
+// use an identity comparison, or are a non-standard size.
+
+bool
+Type::needs_specific_type_functions(Gogo* gogo)
+{
+  Named_type* nt = this->named_type();
+  if (nt != NULL && nt->is_alias())
+    return false;
+  if (!this->is_comparable())
+    return false;
+  if (!this->compare_is_identity(gogo))
+    return true;
+
+  // We create a few predeclared types for type descriptors; they are
+  // really just for the backend and don't need hash or equality
+  // functions.
+  if (nt != NULL && Linemap::is_predeclared_location(nt->location()))
+    return false;
+
+  int64_t size, align;
+  if (!this->backend_type_size(gogo, &size)
+      || !this->backend_type_align(gogo, &align))
+    {
+      go_assert(saw_errors());
+      return false;
+    }
+  // This switch matches the one in Type::type_functions.
+  switch (size)
+    {
+    case 0:
+    case 1:
+    case 2:
+      return align < Type::memequal_align(gogo, 16);
+    case 4:
+      return align < Type::memequal_align(gogo, 32);
+    case 8:
+      return align < Type::memequal_align(gogo, 64);
+    case 16:
+      return align < Type::memequal_align(gogo, 128);
+    default:
+      return true;
+    }
+}
+
 // Set *HASH_FN and *EQUAL_FN to the runtime functions which compute a
 // hash code for this type and which compare whether two values of
 // this type are equal.  If NAME is not NULL it is the name of this
@@ -1593,6 +1748,11 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 		     Function_type* equal_fntype, Named_object** hash_fn,
 		     Named_object** equal_fn)
 {
+  // If the unaliased type is not a named type, then the type does not
+  // have a name after all.
+  if (name != NULL)
+    name = name->unalias()->named_type();
+
   if (!this->is_comparable())
     {
       *hash_fn = NULL;
@@ -1614,7 +1774,6 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	  params->push_back(Typed_identifier("key", unsafe_pointer_type,
 					     bloc));
 	  params->push_back(Typed_identifier("seed", uintptr_type, bloc));
-	  params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
 
 	  Typed_identifier_list* results = new Typed_identifier_list();
 	  results->push_back(Typed_identifier("", uintptr_type, bloc));
@@ -1628,7 +1787,6 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 					     bloc));
 	  params->push_back(Typed_identifier("key2", unsafe_pointer_type,
 					     bloc));
-	  params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
 
 	  Typed_identifier_list* results = new Typed_identifier_list();
 	  results->push_back(Typed_identifier("", Type::lookup_bool_type(),
@@ -1642,8 +1800,77 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
   const char* equal_fnname;
   if (this->compare_is_identity(gogo))
     {
-      hash_fnname = "__go_type_hash_identity";
-      equal_fnname = "__go_type_equal_identity";
+      int64_t size, align;
+      if (!this->backend_type_size(gogo, &size)
+	  || !this->backend_type_align(gogo, &align))
+	{
+	  go_assert(saw_errors());
+	  return;
+	}
+      bool build_functions = false;
+      // This switch matches the one in Type::needs_specific_type_functions.
+      // The alignment tests are because of the memequal functions,
+      // which assume that the values are aligned as required for an
+      // integer of that size.
+      switch (size)
+	{
+	case 0:
+	  hash_fnname = "runtime.memhash0";
+	  equal_fnname = "runtime.memequal0";
+	  break;
+	case 1:
+	  hash_fnname = "runtime.memhash8";
+	  equal_fnname = "runtime.memequal8";
+	  break;
+	case 2:
+	  if (align < Type::memequal_align(gogo, 16))
+	    build_functions = true;
+	  else
+	    {
+	      hash_fnname = "runtime.memhash16";
+	      equal_fnname = "runtime.memequal16";
+	    }
+	  break;
+	case 4:
+	  if (align < Type::memequal_align(gogo, 32))
+	    build_functions = true;
+	  else
+	    {
+	      hash_fnname = "runtime.memhash32";
+	      equal_fnname = "runtime.memequal32";
+	    }
+	  break;
+	case 8:
+	  if (align < Type::memequal_align(gogo, 64))
+	    build_functions = true;
+	  else
+	    {
+	      hash_fnname = "runtime.memhash64";
+	      equal_fnname = "runtime.memequal64";
+	    }
+	  break;
+	case 16:
+	  if (align < Type::memequal_align(gogo, 128))
+	    build_functions = true;
+	  else
+	    {
+	      hash_fnname = "runtime.memhash128";
+	      equal_fnname = "runtime.memequal128";
+	    }
+	  break;
+	default:
+	  build_functions = true;
+	  break;
+	}
+      if (build_functions)
+	{
+	  // We don't have a built-in function for a type of this size
+	  // and alignment.  Build a function to use that calls the
+	  // generic hash/equality functions for identity, passing the size.
+	  this->specific_type_functions(gogo, name, size, hash_fntype,
+					equal_fntype, hash_fn, equal_fn);
+	  return;
+	}
     }
   else
     {
@@ -1665,18 +1892,40 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	  go_unreachable();
 
 	case Type::TYPE_FLOAT:
-	  hash_fnname = "__go_type_hash_float";
-	  equal_fnname = "__go_type_equal_float";
+	  switch (this->float_type()->bits())
+	    {
+	    case 32:
+	      hash_fnname = "runtime.f32hash";
+	      equal_fnname = "runtime.f32equal";
+	      break;
+	    case 64:
+	      hash_fnname = "runtime.f64hash";
+	      equal_fnname = "runtime.f64equal";
+	      break;
+	    default:
+	      go_unreachable();
+	    }
 	  break;
 
 	case Type::TYPE_COMPLEX:
-	  hash_fnname = "__go_type_hash_complex";
-	  equal_fnname = "__go_type_equal_complex";
+	  switch (this->complex_type()->bits())
+	    {
+	    case 64:
+	      hash_fnname = "runtime.c64hash";
+	      equal_fnname = "runtime.c64equal";
+	      break;
+	    case 128:
+	      hash_fnname = "runtime.c128hash";
+	      equal_fnname = "runtime.c128equal";
+	      break;
+	    default:
+	      go_unreachable();
+	    }
 	  break;
 
 	case Type::TYPE_STRING:
-	  hash_fnname = "__go_type_hash_string";
-	  equal_fnname = "__go_type_equal_string";
+	  hash_fnname = "runtime.strhash";
+	  equal_fnname = "runtime.strequal";
 	  break;
 
 	case Type::TYPE_STRUCT:
@@ -1684,7 +1933,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	    // This is a struct which can not be compared using a
 	    // simple identity function.  We need to build a function
 	    // for comparison.
-	    this->specific_type_functions(gogo, name, hash_fntype,
+	    this->specific_type_functions(gogo, name, -1, hash_fntype,
 					  equal_fntype, hash_fn, equal_fn);
 	    return;
 	  }
@@ -1701,7 +1950,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	      // This is an array which can not be compared using a
 	      // simple identity function.  We need to build a
 	      // function for comparison.
-	      this->specific_type_functions(gogo, name, hash_fntype,
+	      this->specific_type_functions(gogo, name, -1, hash_fntype,
 					    equal_fntype, hash_fn, equal_fn);
 	      return;
 	    }
@@ -1743,11 +1992,13 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 
 Type::Type_functions Type::type_functions_table;
 
-// Handle a type function which is specific to a type: a struct or
-// array which can not use an identity comparison.
+// Handle a type function which is specific to a type: if SIZE == -1,
+// this is a struct or array that can not use an identity comparison.
+// Otherwise, it is a type that uses an identity comparison but is not
+// one of the standard supported sizes.
 
 void
-Type::specific_type_functions(Gogo* gogo, Named_type* name,
+Type::specific_type_functions(Gogo* gogo, Named_type* name, int64_t size,
 			      Function_type* hash_fntype,
 			      Function_type* equal_fntype,
 			      Named_object** hash_fn,
@@ -1765,48 +2016,9 @@ Type::specific_type_functions(Gogo* gogo, Named_type* name,
       return;
     }
 
-  std::string base_name;
-  if (name == NULL)
-    {
-      // Mangled names can have '.' if they happen to refer to named
-      // types in some way.  That's fine if this is simply a named
-      // type, but otherwise it will confuse the code that builds
-      // function identifiers.  Remove '.' when necessary.
-      base_name = this->mangled_name(gogo);
-      size_t i;
-      while ((i = base_name.find('.')) != std::string::npos)
-	base_name[i] = '$';
-      base_name = gogo->pack_hidden_name(base_name, false);
-    }
-  else
-    {
-      // This name is already hidden or not as appropriate.
-      base_name = name->name();
-      unsigned int index;
-      const Named_object* in_function = name->in_function(&index);
-      if (in_function != NULL)
-	{
-	  base_name.append(1, '$');
-	  const Typed_identifier* rcvr =
-	    in_function->func_value()->type()->receiver();
-	  if (rcvr != NULL)
-	    {
-	      Named_type* rcvr_type = rcvr->type()->deref()->named_type();
-	      base_name.append(Gogo::unpack_hidden_name(rcvr_type->name()));
-	      base_name.append(1, '$');
-	    }
-	  base_name.append(Gogo::unpack_hidden_name(in_function->name()));
-	  if (index > 0)
-	    {
-	      char buf[30];
-	      snprintf(buf, sizeof buf, "%u", index);
-	      base_name += '$';
-	      base_name += buf;
-	    }
-	}
-    }
-  std::string hash_name = base_name + "$hash";
-  std::string equal_name = base_name + "$equal";
+  std::string hash_name;
+  std::string equal_name;
+  gogo->specific_type_function_names(this, name, &hash_name, &equal_name);
 
   Location bloc = Linemap::predeclared_location();
 
@@ -1833,11 +2045,13 @@ Type::specific_type_functions(Gogo* gogo, Named_type* name,
   if (!is_defined_elsewhere)
     {
       if (gogo->in_global_scope())
-	this->write_specific_type_functions(gogo, name, hash_name, hash_fntype,
-					    equal_name, equal_fntype);
+	this->write_specific_type_functions(gogo, name, size, hash_name,
+					    hash_fntype, equal_name,
+					    equal_fntype);
       else
-	gogo->queue_specific_type_function(this, name, hash_name, hash_fntype,
-					   equal_name, equal_fntype);
+	gogo->queue_specific_type_function(this, name, size, hash_name,
+					   hash_fntype, equal_name,
+					   equal_fntype);
     }
 }
 
@@ -1845,7 +2059,7 @@ Type::specific_type_functions(Gogo* gogo, Named_type* name,
 // written specially.
 
 void
-Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
+Type::write_specific_type_functions(Gogo* gogo, Named_type* name, int64_t size,
 				    const std::string& hash_name,
 				    Function_type* hash_fntype,
 				    const std::string& equal_name,
@@ -1866,7 +2080,9 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
   hash_fn->func_value()->set_is_type_specific_function();
   gogo->start_block(bloc);
 
-  if (name != NULL && name->real_type()->named_type() != NULL)
+  if (size != -1)
+    this->write_identity_hash(gogo, size);
+  else if (name != NULL && name->real_type()->named_type() != NULL)
     this->write_named_hash(gogo, name, hash_fntype, equal_fntype);
   else if (this->struct_type() != NULL)
     this->struct_type()->write_hash_function(gogo, name, hash_fntype,
@@ -1887,7 +2103,9 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
   equal_fn->func_value()->set_is_type_specific_function();
   gogo->start_block(bloc);
 
-  if (name != NULL && name->real_type()->named_type() != NULL)
+  if (size != -1)
+    this->write_identity_equal(gogo, size);
+  else if (name != NULL && name->real_type()->named_type() != NULL)
     this->write_named_equal(gogo, name);
   else if (this->struct_type() != NULL)
     this->struct_type()->write_equal_function(gogo, name);
@@ -1906,6 +2124,112 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
   equal_fn->func_value()->descriptor(gogo, equal_fn);
 }
 
+// Write a hash function for a type that can use an identity hash but
+// is not one of the standard supported sizes.  For example, this
+// would be used for the type [3]byte.  This builds a return statement
+// that returns a call to the memhash function, passing the key and
+// seed from the function arguments (already constructed before this
+// is called), and the constant size.
+
+void
+Type::write_identity_hash(Gogo* gogo, int64_t size)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  Type* unsafe_pointer_type = Type::make_pointer_type(Type::make_void_type());
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+  Typed_identifier_list* params = new Typed_identifier_list();
+  params->push_back(Typed_identifier("key", unsafe_pointer_type, bloc));
+  params->push_back(Typed_identifier("seed", uintptr_type, bloc));
+  params->push_back(Typed_identifier("size", uintptr_type, bloc));
+
+  Typed_identifier_list* results = new Typed_identifier_list();
+  results->push_back(Typed_identifier("", uintptr_type, bloc));
+
+  Function_type* memhash_fntype = Type::make_function_type(NULL, params,
+							   results, bloc);
+
+  Named_object* memhash =
+    Named_object::make_function_declaration("runtime.memhash", NULL,
+					    memhash_fntype, bloc);
+  memhash->func_declaration_value()->set_asm_name("runtime.memhash");
+
+  Named_object* key_arg = gogo->lookup("key", NULL);
+  go_assert(key_arg != NULL);
+  Named_object* seed_arg = gogo->lookup("seed", NULL);
+  go_assert(seed_arg != NULL);
+
+  Expression* key_ref = Expression::make_var_reference(key_arg, bloc);
+  Expression* seed_ref = Expression::make_var_reference(seed_arg, bloc);
+  Expression* size_arg = Expression::make_integer_int64(size, uintptr_type,
+							bloc);
+  Expression_list* args = new Expression_list();
+  args->push_back(key_ref);
+  args->push_back(seed_ref);
+  args->push_back(size_arg);
+  Expression* func = Expression::make_func_reference(memhash, NULL, bloc);
+  Expression* call = Expression::make_call(func, args, false, bloc);
+
+  Expression_list* vals = new Expression_list();
+  vals->push_back(call);
+  Statement* s = Statement::make_return_statement(vals, bloc);
+  gogo->add_statement(s);
+}
+
+// Write an equality function for a type that can use an identity
+// equality comparison but is not one of the standard supported sizes.
+// For example, this would be used for the type [3]byte.  This builds
+// a return statement that returns a call to the memequal function,
+// passing the two keys from the function arguments (already
+// constructed before this is called), and the constant size.
+
+void
+Type::write_identity_equal(Gogo* gogo, int64_t size)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  Type* unsafe_pointer_type = Type::make_pointer_type(Type::make_void_type());
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+
+  Typed_identifier_list* params = new Typed_identifier_list();
+  params->push_back(Typed_identifier("key1", unsafe_pointer_type, bloc));
+  params->push_back(Typed_identifier("key2", unsafe_pointer_type, bloc));
+  params->push_back(Typed_identifier("size", uintptr_type, bloc));
+
+  Typed_identifier_list* results = new Typed_identifier_list();
+  results->push_back(Typed_identifier("", Type::lookup_bool_type(), bloc));
+
+  Function_type* memequal_fntype = Type::make_function_type(NULL, params,
+							    results, bloc);
+
+  Named_object* memequal =
+    Named_object::make_function_declaration("runtime.memequal", NULL,
+					    memequal_fntype, bloc);
+  memequal->func_declaration_value()->set_asm_name("runtime.memequal");
+
+  Named_object* key1_arg = gogo->lookup("key1", NULL);
+  go_assert(key1_arg != NULL);
+  Named_object* key2_arg = gogo->lookup("key2", NULL);
+  go_assert(key2_arg != NULL);
+
+  Expression* key1_ref = Expression::make_var_reference(key1_arg, bloc);
+  Expression* key2_ref = Expression::make_var_reference(key2_arg, bloc);
+  Expression* size_arg = Expression::make_integer_int64(size, uintptr_type,
+							bloc);
+  Expression_list* args = new Expression_list();
+  args->push_back(key1_ref);
+  args->push_back(key2_ref);
+  args->push_back(size_arg);
+  Expression* func = Expression::make_func_reference(memequal, NULL, bloc);
+  Expression* call = Expression::make_call(func, args, false, bloc);
+
+  Expression_list* vals = new Expression_list();
+  vals->push_back(call);
+  Statement* s = Statement::make_return_statement(vals, bloc);
+  gogo->add_statement(s);
+}
+
 // Write a hash function that simply calls the hash function for a
 // named type.  This is used when one named type is defined as
 // another.  This ensures that this case works when the other named
@@ -1919,6 +2243,11 @@ Type::write_named_hash(Gogo* gogo, Named_type* name,
   Location bloc = Linemap::predeclared_location();
 
   Named_type* base_type = name->real_type()->named_type();
+  while (base_type->is_alias())
+    {
+      base_type = base_type->real_type()->named_type();
+      go_assert(base_type != NULL);
+    }
   go_assert(base_type != NULL);
 
   // The pointer to the type we are going to hash.  This is an
@@ -1930,10 +2259,6 @@ Type::write_named_hash(Gogo* gogo, Named_type* name,
   Named_object* seed_arg = gogo->lookup("seed", NULL);
   go_assert(seed_arg != NULL);
 
-  // The size of the type we are going to hash.
-  Named_object* keysz_arg = gogo->lookup("key_size", NULL);
-  go_assert(keysz_arg != NULL);
-
   Named_object* hash_fn;
   Named_object* equal_fn;
   name->real_type()->type_functions(gogo, base_type, hash_fntype, equal_fntype,
@@ -1942,11 +2267,9 @@ Type::write_named_hash(Gogo* gogo, Named_type* name,
   // Call the hash function for the base type.
   Expression* key_ref = Expression::make_var_reference(key_arg, bloc);
   Expression* seed_ref = Expression::make_var_reference(seed_arg, bloc);
-  Expression* keysz_ref = Expression::make_var_reference(keysz_arg, bloc);
   Expression_list* args = new Expression_list();
   args->push_back(key_ref);
   args->push_back(seed_ref);
-  args->push_back(keysz_ref);
   Expression* func = Expression::make_func_reference(hash_fn, NULL, bloc);
   Expression* call = Expression::make_call(func, args, false, bloc);
 
@@ -1992,10 +2315,10 @@ Type::write_named_equal(Gogo* gogo, Named_type* name)
 
   // Compare the values for equality.
   Expression* t1 = Expression::make_temporary_reference(p1, bloc);
-  t1 = Expression::make_unary(OPERATOR_MULT, t1, bloc);
+  t1 = Expression::make_dereference(t1, Expression::NIL_CHECK_NOT_NEEDED, bloc);
 
   Expression* t2 = Expression::make_temporary_reference(p2, bloc);
-  t2 = Expression::make_unary(OPERATOR_MULT, t2, bloc);
+  t2 = Expression::make_dereference(t2, Expression::NIL_CHECK_NOT_NEEDED, bloc);
 
   Expression* cond = Expression::make_binary(OPERATOR_EQEQ, t1, t2, bloc);
 
@@ -2020,30 +2343,25 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   const Struct_field_list* fields = td_type->struct_type()->fields();
 
   Expression_list* vals = new Expression_list();
-  vals->reserve(9);
+  vals->reserve(12);
 
   if (!this->has_pointer())
     runtime_type_kind |= RUNTIME_TYPE_KIND_NO_POINTERS;
   if (this->points_to() != NULL)
     runtime_type_kind |= RUNTIME_TYPE_KIND_DIRECT_IFACE;
+  int64_t ptrsize;
+  int64_t ptrdata;
+  if (this->needs_gcprog(gogo, &ptrsize, &ptrdata))
+    runtime_type_kind |= RUNTIME_TYPE_KIND_GC_PROG;
+
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("kind"));
-  vals->push_back(Expression::make_integer_ul(runtime_type_kind, p->type(),
-					      bloc));
-
-  ++p;
-  go_assert(p->is_field_name("align"));
-  Expression::Type_info type_info = Expression::TYPE_INFO_ALIGNMENT;
-  vals->push_back(Expression::make_type_info(this, type_info));
-
-  ++p;
-  go_assert(p->is_field_name("fieldAlign"));
-  type_info = Expression::TYPE_INFO_FIELD_ALIGNMENT;
-  vals->push_back(Expression::make_type_info(this, type_info));
-
-  ++p;
   go_assert(p->is_field_name("size"));
-  type_info = Expression::TYPE_INFO_SIZE;
+  Expression::Type_info type_info = Expression::TYPE_INFO_SIZE;
+  vals->push_back(Expression::make_type_info(this, type_info));
+
+  ++p;
+  go_assert(p->is_field_name("ptrdata"));
+  type_info = Expression::TYPE_INFO_DESCRIPTOR_PTRDATA;
   vals->push_back(Expression::make_type_info(this, type_info));
 
   ++p;
@@ -2054,6 +2372,21 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   else
     h = this->hash_for_method(gogo);
   vals->push_back(Expression::make_integer_ul(h, p->type(), bloc));
+
+  ++p;
+  go_assert(p->is_field_name("kind"));
+  vals->push_back(Expression::make_integer_ul(runtime_type_kind, p->type(),
+					      bloc));
+
+  ++p;
+  go_assert(p->is_field_name("align"));
+  type_info = Expression::TYPE_INFO_ALIGNMENT;
+  vals->push_back(Expression::make_type_info(this, type_info));
+
+  ++p;
+  go_assert(p->is_field_name("fieldAlign"));
+  type_info = Expression::TYPE_INFO_FIELD_ALIGNMENT;
+  vals->push_back(Expression::make_type_info(this, type_info));
 
   ++p;
   go_assert(p->is_field_name("hashfn"));
@@ -2081,7 +2414,7 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
     vals->push_back(Expression::make_func_reference(equal_fn, NULL, bloc));
 
   ++p;
-  go_assert(p->is_field_name("gc"));
+  go_assert(p->is_field_name("gcdata"));
   vals->push_back(Expression::make_gc_symbol(this));
 
   ++p;
@@ -2126,14 +2459,22 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   return Expression::make_struct_composite_literal(td_type, vals, bloc);
 }
 
+// The maximum length of a GC ptrmask bitmap.  This corresponds to the
+// length used by the gc toolchain, and also appears in
+// libgo/go/reflect/type.go.
+
+static const int64_t max_ptrmask_bytes = 2048;
+
 // Return a pointer to the Garbage Collection information for this type.
 
 Bexpression*
 Type::gc_symbol_pointer(Gogo* gogo)
 {
-  Type* t = this->forwarded();
-  if (t->named_type() != NULL && t->named_type()->is_alias())
-    t = t->named_type()->real_type();
+  Type* t = this->unalias();
+
+  if (!t->has_pointer())
+    return gogo->backend()->nil_pointer_expression();
+
   if (t->gc_symbol_var_ == NULL)
     {
       t->make_gc_symbol_var(gogo);
@@ -2142,7 +2483,13 @@ Type::gc_symbol_pointer(Gogo* gogo)
   Location bloc = Linemap::predeclared_location();
   Bexpression* var_expr =
       gogo->backend()->var_expression(t->gc_symbol_var_, bloc);
-  return gogo->backend()->address_expression(var_expr, bloc);
+  Bexpression* addr_expr =
+      gogo->backend()->address_expression(var_expr, bloc);
+
+  Type* uint8_type = Type::lookup_integer_type("uint8");
+  Type* pointer_uint8_type = Type::make_pointer_type(uint8_type);
+  Btype* ubtype = pointer_uint8_type->get_backend(gogo);
+  return gogo->backend()->convert_expression(ubtype, addr_expr, bloc);
 }
 
 // A mapping from unnamed types to GC symbol variables.
@@ -2176,10 +2523,20 @@ Type::make_gc_symbol_var(Gogo* gogo)
       phash = &ins.first->second;
     }
 
-  std::string sym_name = this->type_descriptor_var_name(gogo, nt) + "$gc";
+  int64_t ptrsize;
+  int64_t ptrdata;
+  if (!this->needs_gcprog(gogo, &ptrsize, &ptrdata))
+    {
+      this->gc_symbol_var_ = this->gc_ptrmask_var(gogo, ptrsize, ptrdata);
+      if (phash != NULL)
+	*phash = this->gc_symbol_var_;
+      return;
+    }
+
+  std::string sym_name = gogo->gc_symbol_name(this);
 
   // Build the contents of the gc symbol.
-  Expression* sym_init = this->gc_symbol_constructor(gogo);
+  Expression* sym_init = this->gcprog_constructor(gogo, ptrsize, ptrdata);
   Btype* sym_btype = sym_init->type()->get_backend(gogo);
 
   // If the type descriptor for this type is defined somewhere else, so is the
@@ -2187,8 +2544,10 @@ Type::make_gc_symbol_var(Gogo* gogo)
   const Package* dummy;
   if (this->type_descriptor_defined_elsewhere(nt, &dummy))
     {
+      std::string asm_name(go_selectively_encode_id(sym_name));
       this->gc_symbol_var_ =
-	gogo->backend()->implicit_variable_reference(sym_name, sym_btype);
+          gogo->backend()->implicit_variable_reference(sym_name, asm_name,
+                                                       sym_btype);
       if (phash != NULL)
 	*phash = this->gc_symbol_var_;
       return;
@@ -2213,8 +2572,10 @@ Type::make_gc_symbol_var(Gogo* gogo)
   // Since we are building the GC symbol in this package, we must create the
   // variable before converting the initializer to its backend representation
   // because the initializer may refer to the GC symbol for this type.
+  std::string asm_name(go_selectively_encode_id(sym_name));
   this->gc_symbol_var_ =
-    gogo->backend()->implicit_variable(sym_name, sym_btype, false, true, is_common, 0);
+      gogo->backend()->implicit_variable(sym_name, asm_name,
+					 sym_btype, false, true, is_common, 0);
   if (phash != NULL)
     *phash = this->gc_symbol_var_;
 
@@ -2226,49 +2587,665 @@ Type::make_gc_symbol_var(Gogo* gogo)
 					      sym_binit);
 }
 
-// Return an array literal for the Garbage Collection information for this type.
+// Return whether this type needs a GC program, and set *PTRDATA to
+// the size of the pointer data in bytes and *PTRSIZE to the size of a
+// pointer.
 
-Expression*
-Type::gc_symbol_constructor(Gogo* gogo)
+bool
+Type::needs_gcprog(Gogo* gogo, int64_t* ptrsize, int64_t* ptrdata)
 {
-  Location bloc = Linemap::predeclared_location();
+  Type* voidptr = Type::make_pointer_type(Type::make_void_type());
+  if (!voidptr->backend_type_size(gogo, ptrsize))
+    go_unreachable();
 
-  // The common GC Symbol data starts with the width of the type and ends
-  // with the GC Opcode GC_END.
-  // However, for certain types, the GC symbol may include extra information
-  // before the ending opcode, so we pass the expression list into
-  // Type::gc_symbol to allow it to add extra information as is necessary.
-  Expression_list* vals = new Expression_list;
+  if (!this->backend_type_ptrdata(gogo, ptrdata))
+    {
+      go_assert(saw_errors());
+      return false;
+    }
 
-  Type* uintptr_t = Type::lookup_integer_type("uintptr");
-  // width
-  vals->push_back(Expression::make_type_info(this,
-					     Expression::TYPE_INFO_SIZE));
-
-  Expression* offset = Expression::make_integer_ul(0, uintptr_t, bloc);
-
-  this->do_gc_symbol(gogo, &vals, &offset, 0);
-
-  vals->push_back(Expression::make_integer_ul(GC_END, uintptr_t, bloc));
-
-  Expression* len = Expression::make_integer_ul(vals->size() + 1, NULL,
-						bloc);
-  Array_type* gc_symbol_type = Type::make_array_type(uintptr_t, len);
-  return Expression::make_array_composite_literal(gc_symbol_type, vals, bloc);
+  return *ptrdata / *ptrsize > max_ptrmask_bytes;
 }
 
-// Advance the OFFSET of the GC symbol by this type's width.
+// A simple class used to build a GC ptrmask for a type.
+
+class Ptrmask
+{
+ public:
+  Ptrmask(size_t count)
+    : bits_((count + 7) / 8, 0)
+  {}
+
+  void
+  set_from(Gogo*, Type*, int64_t ptrsize, int64_t offset);
+
+  std::string
+  symname() const;
+
+  Expression*
+  constructor(Gogo* gogo) const;
+
+ private:
+  void
+  set(size_t index)
+  { this->bits_.at(index / 8) |= 1 << (index % 8); }
+
+  // The actual bits.
+  std::vector<unsigned char> bits_;
+};
+
+// Set bits in ptrmask starting from OFFSET based on TYPE.  OFFSET
+// counts in bytes.  PTRSIZE is the size of a pointer on the target
+// system.
 
 void
-Type::advance_gc_offset(Expression** offset)
+Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 {
-  if (this->is_error_type())
-    return;
+  switch (type->base()->classification())
+    {
+    default:
+    case Type::TYPE_NIL:
+    case Type::TYPE_CALL_MULTIPLE_RESULT:
+    case Type::TYPE_NAMED:
+    case Type::TYPE_FORWARD:
+      go_unreachable();
 
+    case Type::TYPE_ERROR:
+    case Type::TYPE_VOID:
+    case Type::TYPE_BOOLEAN:
+    case Type::TYPE_INTEGER:
+    case Type::TYPE_FLOAT:
+    case Type::TYPE_COMPLEX:
+    case Type::TYPE_SINK:
+      break;
+
+    case Type::TYPE_FUNCTION:
+    case Type::TYPE_POINTER:
+    case Type::TYPE_MAP:
+    case Type::TYPE_CHANNEL:
+      // These types are all a single pointer.
+      go_assert((offset % ptrsize) == 0);
+      this->set(offset / ptrsize);
+      break;
+
+    case Type::TYPE_STRING:
+      // A string starts with a single pointer.
+      go_assert((offset % ptrsize) == 0);
+      this->set(offset / ptrsize);
+      break;
+
+    case Type::TYPE_INTERFACE:
+      // An interface is two pointers.
+      go_assert((offset % ptrsize) == 0);
+      this->set(offset / ptrsize);
+      this->set((offset / ptrsize) + 1);
+      break;
+
+    case Type::TYPE_STRUCT:
+      {
+	if (!type->has_pointer())
+	  return;
+
+	const Struct_field_list* fields = type->struct_type()->fields();
+	int64_t soffset = 0;
+	for (Struct_field_list::const_iterator pf = fields->begin();
+	     pf != fields->end();
+	     ++pf)
+	  {
+	    int64_t field_align;
+	    if (!pf->type()->backend_type_field_align(gogo, &field_align))
+	      {
+		go_assert(saw_errors());
+		return;
+	      }
+	    soffset = (soffset + (field_align - 1)) &~ (field_align - 1);
+
+	    this->set_from(gogo, pf->type(), ptrsize, offset + soffset);
+
+	    int64_t field_size;
+	    if (!pf->type()->backend_type_size(gogo, &field_size))
+	      {
+		go_assert(saw_errors());
+		return;
+	      }
+	    soffset += field_size;
+	  }
+      }
+      break;
+
+    case Type::TYPE_ARRAY:
+      if (type->is_slice_type())
+	{
+	  // A slice starts with a single pointer.
+	  go_assert((offset % ptrsize) == 0);
+	  this->set(offset / ptrsize);
+	  break;
+	}
+      else
+	{
+	  if (!type->has_pointer())
+	    return;
+
+	  int64_t len;
+	  if (!type->array_type()->int_length(&len))
+	    {
+	      go_assert(saw_errors());
+	      return;
+	    }
+
+	  Type* element_type = type->array_type()->element_type();
+	  int64_t ele_size;
+	  if (!element_type->backend_type_size(gogo, &ele_size))
+	    {
+	      go_assert(saw_errors());
+	      return;
+	    }
+
+	  int64_t eoffset = 0;
+	  for (int64_t i = 0; i < len; i++, eoffset += ele_size)
+	    this->set_from(gogo, element_type, ptrsize, offset + eoffset);
+	  break;
+	}
+    }
+}
+
+// Return a symbol name for this ptrmask.  This is used to coalesce
+// identical ptrmasks, which are common.  The symbol name must use
+// only characters that are valid in symbols.  It's nice if it's
+// short.  We convert it to a string that uses only 32 characters,
+// avoiding digits and u and U.
+
+std::string
+Ptrmask::symname() const
+{
+  const char chars[33] = "abcdefghijklmnopqrstvwxyzABCDEFG";
+  go_assert(chars[32] == '\0');
+  std::string ret;
+  unsigned int b = 0;
+  int remaining = 0;
+  for (std::vector<unsigned char>::const_iterator p = this->bits_.begin();
+       p != this->bits_.end();
+       ++p)
+    {
+      b |= *p << remaining;
+      remaining += 8;
+      while (remaining >= 5)
+	{
+	  ret += chars[b & 0x1f];
+	  b >>= 5;
+	  remaining -= 5;
+	}
+    }
+  while (remaining > 0)
+    {
+      ret += chars[b & 0x1f];
+      b >>= 5;
+      remaining -= 5;
+    }
+  return ret;
+}
+
+// Return a constructor for this ptrmask.  This will be used to
+// initialize the runtime ptrmask value.
+
+Expression*
+Ptrmask::constructor(Gogo* gogo) const
+{
   Location bloc = Linemap::predeclared_location();
-  Expression* width =
-    Expression::make_type_info(this, Expression::TYPE_INFO_SIZE);
-  *offset = Expression::make_binary(OPERATOR_PLUS, *offset, width, bloc);
+  Type* byte_type = gogo->lookup_global("byte")->type_value();
+  Expression* len = Expression::make_integer_ul(this->bits_.size(), NULL,
+						bloc);
+  Array_type* at = Type::make_array_type(byte_type, len);
+  Expression_list* vals = new Expression_list();
+  vals->reserve(this->bits_.size());
+  for (std::vector<unsigned char>::const_iterator p = this->bits_.begin();
+       p != this->bits_.end();
+       ++p)
+    vals->push_back(Expression::make_integer_ul(*p, byte_type, bloc));
+  return Expression::make_array_composite_literal(at, vals, bloc);
+}
+
+// The hash table mapping a ptrmask symbol name to the ptrmask variable.
+Type::GC_gcbits_vars Type::gc_gcbits_vars;
+
+// Return a ptrmask variable for a type.  For a type descriptor this
+// is only used for variables that are small enough to not need a
+// gcprog, but for a global variable this is used for a variable of
+// any size.  PTRDATA is the number of bytes of the type that contain
+// pointer data.  PTRSIZE is the size of a pointer on the target
+// system.
+
+Bvariable*
+Type::gc_ptrmask_var(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
+{
+  Ptrmask ptrmask(ptrdata / ptrsize);
+  if (ptrdata >= ptrsize)
+    ptrmask.set_from(gogo, this, ptrsize, 0);
+  else
+    {
+      // This can happen in error cases.  Just build an empty gcbits.
+      go_assert(saw_errors());
+    }
+
+  std::string sym_name = gogo->ptrmask_symbol_name(ptrmask.symname());
+  Bvariable* bvnull = NULL;
+  std::pair<GC_gcbits_vars::iterator, bool> ins =
+    Type::gc_gcbits_vars.insert(std::make_pair(sym_name, bvnull));
+  if (!ins.second)
+    {
+      // We've already built a GC symbol for this set of gcbits.
+      return ins.first->second;
+    }
+
+  Expression* val = ptrmask.constructor(gogo);
+  Translate_context context(gogo, NULL, NULL, NULL);
+  context.set_is_const();
+  Bexpression* bval = val->get_backend(&context);
+
+  std::string asm_name(go_selectively_encode_id(sym_name));
+  Btype *btype = val->type()->get_backend(gogo);
+  Bvariable* ret = gogo->backend()->implicit_variable(sym_name, asm_name,
+						      btype, false, true,
+						      true, 0);
+  gogo->backend()->implicit_variable_set_init(ret, sym_name, btype, false,
+					      true, true, bval);
+  ins.first->second = ret;
+  return ret;
+}
+
+// A GCProg is used to build a program for the garbage collector.
+// This is used for types with a lot of pointer data, to reduce the
+// size of the data in the compiled program.  The program is expanded
+// at runtime.  For the format, see runGCProg in libgo/go/runtime/mbitmap.go.
+
+class GCProg
+{
+ public:
+  GCProg()
+    : bytes_(), index_(0), nb_(0)
+  {}
+
+  // The number of bits described so far.
+  int64_t
+  bit_index() const
+  { return this->index_; }
+
+  void
+  set_from(Gogo*, Type*, int64_t ptrsize, int64_t offset);
+
+  void
+  end();
+
+  Expression*
+  constructor(Gogo* gogo) const;
+
+ private:
+  void
+  ptr(int64_t);
+
+  bool
+  should_repeat(int64_t, int64_t);
+
+  void
+  repeat(int64_t, int64_t);
+
+  void
+  zero_until(int64_t);
+
+  void
+  lit(unsigned char);
+
+  void
+  varint(int64_t);
+
+  void
+  flushlit();
+
+  // Add a byte to the program.
+  void
+  byte(unsigned char x)
+  { this->bytes_.push_back(x); }
+
+  // The maximum number of bytes of literal bits.
+  static const int max_literal = 127;
+
+  // The program.
+  std::vector<unsigned char> bytes_;
+  // The index of the last bit described.
+  int64_t index_;
+  // The current set of literal bits.
+  unsigned char b_[max_literal];
+  // The current number of literal bits.
+  int nb_;
+};
+
+// Set data in gcprog starting from OFFSET based on TYPE.  OFFSET
+// counts in bytes.  PTRSIZE is the size of a pointer on the target
+// system.
+
+void
+GCProg::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
+{
+  switch (type->base()->classification())
+    {
+    default:
+    case Type::TYPE_NIL:
+    case Type::TYPE_CALL_MULTIPLE_RESULT:
+    case Type::TYPE_NAMED:
+    case Type::TYPE_FORWARD:
+      go_unreachable();
+
+    case Type::TYPE_ERROR:
+    case Type::TYPE_VOID:
+    case Type::TYPE_BOOLEAN:
+    case Type::TYPE_INTEGER:
+    case Type::TYPE_FLOAT:
+    case Type::TYPE_COMPLEX:
+    case Type::TYPE_SINK:
+      break;
+
+    case Type::TYPE_FUNCTION:
+    case Type::TYPE_POINTER:
+    case Type::TYPE_MAP:
+    case Type::TYPE_CHANNEL:
+      // These types are all a single pointer.
+      go_assert((offset % ptrsize) == 0);
+      this->ptr(offset / ptrsize);
+      break;
+
+    case Type::TYPE_STRING:
+      // A string starts with a single pointer.
+      go_assert((offset % ptrsize) == 0);
+      this->ptr(offset / ptrsize);
+      break;
+
+    case Type::TYPE_INTERFACE:
+      // An interface is two pointers.
+      go_assert((offset % ptrsize) == 0);
+      this->ptr(offset / ptrsize);
+      this->ptr((offset / ptrsize) + 1);
+      break;
+
+    case Type::TYPE_STRUCT:
+      {
+	if (!type->has_pointer())
+	  return;
+
+	const Struct_field_list* fields = type->struct_type()->fields();
+	int64_t soffset = 0;
+	for (Struct_field_list::const_iterator pf = fields->begin();
+	     pf != fields->end();
+	     ++pf)
+	  {
+	    int64_t field_align;
+	    if (!pf->type()->backend_type_field_align(gogo, &field_align))
+	      {
+		go_assert(saw_errors());
+		return;
+	      }
+	    soffset = (soffset + (field_align - 1)) &~ (field_align - 1);
+
+	    this->set_from(gogo, pf->type(), ptrsize, offset + soffset);
+
+	    int64_t field_size;
+	    if (!pf->type()->backend_type_size(gogo, &field_size))
+	      {
+		go_assert(saw_errors());
+		return;
+	      }
+	    soffset += field_size;
+	  }
+      }
+      break;
+
+    case Type::TYPE_ARRAY:
+      if (type->is_slice_type())
+	{
+	  // A slice starts with a single pointer.
+	  go_assert((offset % ptrsize) == 0);
+	  this->ptr(offset / ptrsize);
+	  break;
+	}
+      else
+	{
+	  if (!type->has_pointer())
+	    return;
+
+	  int64_t len;
+	  if (!type->array_type()->int_length(&len))
+	    {
+	      go_assert(saw_errors());
+	      return;
+	    }
+
+	  Type* element_type = type->array_type()->element_type();
+
+	  // Flatten array of array to a big array by multiplying counts.
+	  while (element_type->array_type() != NULL
+		 && !element_type->is_slice_type())
+	    {
+	      int64_t ele_len;
+	      if (!element_type->array_type()->int_length(&ele_len))
+		{
+		  go_assert(saw_errors());
+		  return;
+		}
+
+	      len *= ele_len;
+	      element_type = element_type->array_type()->element_type();
+	    }
+
+	  int64_t ele_size;
+	  if (!element_type->backend_type_size(gogo, &ele_size))
+	    {
+	      go_assert(saw_errors());
+	      return;
+	    }
+
+	  go_assert(len > 0 && ele_size > 0);
+
+	  if (!this->should_repeat(ele_size / ptrsize, len))
+	    {
+	      // Cheaper to just emit the bits.
+	      int64_t eoffset = 0;
+	      for (int64_t i = 0; i < len; i++, eoffset += ele_size)
+		this->set_from(gogo, element_type, ptrsize, offset + eoffset);
+	    }
+	  else
+	    {
+	      go_assert((offset % ptrsize) == 0);
+	      go_assert((ele_size % ptrsize) == 0);
+	      this->set_from(gogo, element_type, ptrsize, offset);
+	      this->zero_until((offset + ele_size) / ptrsize);
+	      this->repeat(ele_size / ptrsize, len - 1);
+	    }
+
+	  break;
+	}
+    }
+}
+
+// Emit a 1 into the bit stream of a GC program at the given bit index.
+
+void
+GCProg::ptr(int64_t index)
+{
+  go_assert(index >= this->index_);
+  this->zero_until(index);
+  this->lit(1);
+}
+
+// Return whether it is worthwhile to use a repeat to describe c
+// elements of n bits each, compared to just emitting c copies of the
+// n-bit description.
+
+bool
+GCProg::should_repeat(int64_t n, int64_t c)
+{
+  // Repeat if there is more than 1 item and if the total data doesn't
+  // fit into four bytes.
+  return c > 1 && c * n > 4 * 8;
+}
+
+// Emit an instruction to repeat the description of the last n words c
+// times (including the initial description, so c + 1 times in total).
+
+void
+GCProg::repeat(int64_t n, int64_t c)
+{
+  if (n == 0 || c == 0)
+    return;
+  this->flushlit();
+  if (n < 128)
+    this->byte(0x80 | static_cast<unsigned char>(n & 0x7f));
+  else
+    {
+      this->byte(0x80);
+      this->varint(n);
+    }
+  this->varint(c);
+  this->index_ += n * c;
+}
+
+// Add zeros to the bit stream up to the given index.
+
+void
+GCProg::zero_until(int64_t index)
+{
+  go_assert(index >= this->index_);
+  int64_t skip = index - this->index_;
+  if (skip == 0)
+    return;
+  if (skip < 4 * 8)
+    {
+      for (int64_t i = 0; i < skip; ++i)
+	this->lit(0);
+      return;
+    }
+  this->lit(0);
+  this->flushlit();
+  this->repeat(1, skip - 1);
+}
+
+// Add a single literal bit to the program.
+
+void
+GCProg::lit(unsigned char x)
+{
+  if (this->nb_ == GCProg::max_literal)
+    this->flushlit();
+  this->b_[this->nb_] = x;
+  ++this->nb_;
+  ++this->index_;
+}
+
+// Emit the varint encoding of x.
+
+void
+GCProg::varint(int64_t x)
+{
+  go_assert(x >= 0);
+  while (x >= 0x80)
+    {
+      this->byte(0x80 | static_cast<unsigned char>(x & 0x7f));
+      x >>= 7;
+    }
+  this->byte(static_cast<unsigned char>(x & 0x7f));
+}
+
+// Flush any pending literal bits.
+
+void
+GCProg::flushlit()
+{
+  if (this->nb_ == 0)
+    return;
+  this->byte(static_cast<unsigned char>(this->nb_));
+  unsigned char bits = 0;
+  for (int i = 0; i < this->nb_; ++i)
+    {
+      bits |= this->b_[i] << (i % 8);
+      if ((i + 1) % 8 == 0)
+	{
+	  this->byte(bits);
+	  bits = 0;
+	}
+    }
+  if (this->nb_ % 8 != 0)
+    this->byte(bits);
+  this->nb_ = 0;
+}
+
+// Mark the end of a GC program.
+
+void
+GCProg::end()
+{
+  this->flushlit();
+  this->byte(0);
+}
+
+// Return an Expression for the bytes in a GC program.
+
+Expression*
+GCProg::constructor(Gogo* gogo) const
+{
+  Location bloc = Linemap::predeclared_location();
+
+  // The first four bytes are the length of the program in target byte
+  // order.  Build a struct whose first type is uint32 to make this
+  // work.
+
+  Type* uint32_type = Type::lookup_integer_type("uint32");
+
+  Type* byte_type = gogo->lookup_global("byte")->type_value();
+  Expression* len = Expression::make_integer_ul(this->bytes_.size(), NULL,
+						bloc);
+  Array_type* at = Type::make_array_type(byte_type, len);
+
+  Struct_type* st = Type::make_builtin_struct_type(2, "len", uint32_type,
+						   "bytes", at);
+
+  Expression_list* vals = new Expression_list();
+  vals->reserve(this->bytes_.size());
+  for (std::vector<unsigned char>::const_iterator p = this->bytes_.begin();
+       p != this->bytes_.end();
+       ++p)
+    vals->push_back(Expression::make_integer_ul(*p, byte_type, bloc));
+  Expression* bytes = Expression::make_array_composite_literal(at, vals, bloc);
+
+  vals = new Expression_list();
+  vals->push_back(Expression::make_integer_ul(this->bytes_.size(), uint32_type,
+					      bloc));
+  vals->push_back(bytes);
+
+  return Expression::make_struct_composite_literal(st, vals, bloc);
+}
+
+// Return a composite literal for the garbage collection program for
+// this type.  This is only used for types that are too large to use a
+// ptrmask.
+
+Expression*
+Type::gcprog_constructor(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  GCProg prog;
+  prog.set_from(gogo, this, ptrsize, 0);
+  int64_t offset = prog.bit_index() * ptrsize;
+  prog.end();
+
+  int64_t type_size;
+  if (!this->backend_type_size(gogo, &type_size))
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(bloc);
+    }
+
+  go_assert(offset >= ptrdata && offset <= type_size);
+
+  return prog.constructor(gogo);
 }
 
 // Return a composite literal for the uncommon type information for
@@ -2494,21 +3471,6 @@ Type::reflection(Gogo* gogo) const
   return ret;
 }
 
-// Return a mangled name for the type.
-
-std::string
-Type::mangled_name(Gogo* gogo) const
-{
-  std::string ret;
-
-  // The do_mangled_name virtual function should set RET to the
-  // mangled name.  For a composite type it should append a code for
-  // the composition and then call do_mangled_name on the components.
-  this->do_mangled_name(gogo, &ret);
-
-  return ret;
-}
-
 // Return whether the backend size of the type is known.
 
 bool
@@ -2636,6 +3598,164 @@ Type::backend_type_field_align(Gogo* gogo, int64_t *palign)
   return true;
 }
 
+// Get the ptrdata value for a type.  This is the size of the prefix
+// of the type that contains all pointers.  Store the ptrdata in
+// *PPTRDATA and return whether we found it.
+
+bool
+Type::backend_type_ptrdata(Gogo* gogo, int64_t* pptrdata)
+{
+  *pptrdata = 0;
+
+  if (!this->has_pointer())
+    return true;
+
+  if (!this->is_backend_type_size_known(gogo))
+    return false;
+
+  switch (this->classification_)
+    {
+    case TYPE_ERROR:
+      return true;
+
+    case TYPE_FUNCTION:
+    case TYPE_POINTER:
+    case TYPE_MAP:
+    case TYPE_CHANNEL:
+      // These types are nothing but a pointer.
+      return this->backend_type_size(gogo, pptrdata);
+
+    case TYPE_INTERFACE:
+      // An interface is a struct of two pointers.
+      return this->backend_type_size(gogo, pptrdata);
+
+    case TYPE_STRING:
+      {
+	// A string is a struct whose first field is a pointer, and
+	// whose second field is not.
+	Type* uint8_type = Type::lookup_integer_type("uint8");
+	Type* ptr = Type::make_pointer_type(uint8_type);
+	return ptr->backend_type_size(gogo, pptrdata);
+      }
+
+    case TYPE_NAMED:
+    case TYPE_FORWARD:
+      return this->base()->backend_type_ptrdata(gogo, pptrdata);
+
+    case TYPE_STRUCT:
+      {
+	const Struct_field_list* fields = this->struct_type()->fields();
+	int64_t offset = 0;
+	const Struct_field *ptr = NULL;
+	int64_t ptr_offset = 0;
+	for (Struct_field_list::const_iterator pf = fields->begin();
+	     pf != fields->end();
+	     ++pf)
+	  {
+	    int64_t field_align;
+	    if (!pf->type()->backend_type_field_align(gogo, &field_align))
+	      return false;
+	    offset = (offset + (field_align - 1)) &~ (field_align - 1);
+
+	    if (pf->type()->has_pointer())
+	      {
+		ptr = &*pf;
+		ptr_offset = offset;
+	      }
+
+	    int64_t field_size;
+	    if (!pf->type()->backend_type_size(gogo, &field_size))
+	      return false;
+	    offset += field_size;
+	  }
+
+	if (ptr != NULL)
+	  {
+	    int64_t ptr_ptrdata;
+	    if (!ptr->type()->backend_type_ptrdata(gogo, &ptr_ptrdata))
+	      return false;
+	    *pptrdata = ptr_offset + ptr_ptrdata;
+	  }
+	return true;
+      }
+
+    case TYPE_ARRAY:
+      if (this->is_slice_type())
+	{
+	  // A slice is a struct whose first field is a pointer, and
+	  // whose remaining fields are not.
+	  Type* element_type = this->array_type()->element_type();
+	  Type* ptr = Type::make_pointer_type(element_type);
+	  return ptr->backend_type_size(gogo, pptrdata);
+	}
+      else
+	{
+	  Numeric_constant nc;
+	  if (!this->array_type()->length()->numeric_constant_value(&nc))
+	    return false;
+	  int64_t len;
+	  if (!nc.to_memory_size(&len))
+	    return false;
+
+	  Type* element_type = this->array_type()->element_type();
+	  int64_t ele_size;
+	  int64_t ele_ptrdata;
+	  if (!element_type->backend_type_size(gogo, &ele_size)
+	      || !element_type->backend_type_ptrdata(gogo, &ele_ptrdata))
+	    return false;
+	  go_assert(ele_size > 0 && ele_ptrdata > 0);
+
+	  *pptrdata = (len - 1) * ele_size + ele_ptrdata;
+	  return true;
+	}
+
+    default:
+    case TYPE_VOID:
+    case TYPE_BOOLEAN:
+    case TYPE_INTEGER:
+    case TYPE_FLOAT:
+    case TYPE_COMPLEX:
+    case TYPE_SINK:
+    case TYPE_NIL:
+    case TYPE_CALL_MULTIPLE_RESULT:
+      go_unreachable();
+    }
+}
+
+// Get the ptrdata value to store in a type descriptor.  This is
+// normally the same as backend_type_ptrdata, but for a type that is
+// large enough to use a gcprog we may need to store a different value
+// if it ends with an array.  If the gcprog uses a repeat descriptor
+// for the array, and if the array element ends with non-pointer data,
+// then the gcprog will produce a value that describes the complete
+// array where the backend ptrdata will omit the non-pointer elements
+// of the final array element.  This is a subtle difference but the
+// run time code checks it to verify that it has expanded a gcprog as
+// expected.
+
+bool
+Type::descriptor_ptrdata(Gogo* gogo, int64_t* pptrdata)
+{
+  int64_t backend_ptrdata;
+  if (!this->backend_type_ptrdata(gogo, &backend_ptrdata))
+    return false;
+
+  int64_t ptrsize;
+  if (!this->needs_gcprog(gogo, &ptrsize, &backend_ptrdata))
+    {
+      *pptrdata = backend_ptrdata;
+      return true;
+    }
+
+  GCProg prog;
+  prog.set_from(gogo, this, ptrsize, 0);
+  int64_t offset = prog.bit_index() * ptrsize;
+
+  go_assert(offset >= backend_ptrdata);
+  *pptrdata = offset;
+  return true;
+}
+
 // Default function to export a type.
 
 void
@@ -2670,41 +3790,32 @@ Type::import_type(Import* imp)
     }
 }
 
-// A type used to indicate a parsing error.  This exists to simplify
-// later error detection.
+// Class Error_type.
 
-class Error_type : public Type
+// Return the backend representation of an Error type.
+
+Btype*
+Error_type::do_get_backend(Gogo* gogo)
 {
- public:
-  Error_type()
-    : Type(TYPE_ERROR)
-  { }
+  return gogo->backend()->error_type();
+}
 
- protected:
-  bool
-  do_compare_is_identity(Gogo*)
-  { return false; }
+// Return an expression for the type descriptor for an error type.
 
-  Btype*
-  do_get_backend(Gogo* gogo)
-  { return gogo->backend()->error_type(); }
 
-  Expression*
-  do_type_descriptor(Gogo*, Named_type*)
-  { return Expression::make_error(Linemap::predeclared_location()); }
+Expression*
+Error_type::do_type_descriptor(Gogo*, Named_type*)
+{
+  return Expression::make_error(Linemap::predeclared_location());
+}
 
-  void
-  do_reflection(Gogo*, std::string*) const
-  { go_assert(saw_errors()); }
+// We should not be asked for the reflection string for an error type.
 
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
-  { go_assert(saw_errors()); }
-
-  void
-  do_mangled_name(Gogo*, std::string* ret) const
-  { ret->push_back('E'); }
-};
+void
+Error_type::do_reflection(Gogo*, std::string*) const
+{
+  go_assert(saw_errors());
+}
 
 Type*
 Type::make_error_type()
@@ -2713,40 +3824,15 @@ Type::make_error_type()
   return &singleton_error_type;
 }
 
-// The void type.
+// Class Void_type.
 
-class Void_type : public Type
+// Get the backend representation of a void type.
+
+Btype*
+Void_type::do_get_backend(Gogo* gogo)
 {
- public:
-  Void_type()
-    : Type(TYPE_VOID)
-  { }
-
- protected:
-  bool
-  do_compare_is_identity(Gogo*)
-  { return false; }
-
-  Btype*
-  do_get_backend(Gogo* gogo)
-  { return gogo->backend()->void_type(); }
-
-  Expression*
-  do_type_descriptor(Gogo*, Named_type*)
-  { go_unreachable(); }
-
-  void
-  do_reflection(Gogo*, std::string*) const
-  { }
-
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
-  { }
-
-  void
-  do_mangled_name(Gogo*, std::string* ret) const
-  { ret->push_back('v'); }
-};
+  return gogo->backend()->void_type();
+}
 
 Type*
 Type::make_void_type()
@@ -2755,39 +3841,15 @@ Type::make_void_type()
   return &singleton_void_type;
 }
 
-// The boolean type.
+// Class Boolean_type.
 
-class Boolean_type : public Type
+// Return the backend representation of the boolean type.
+
+Btype*
+Boolean_type::do_get_backend(Gogo* gogo)
 {
- public:
-  Boolean_type()
-    : Type(TYPE_BOOLEAN)
-  { }
-
- protected:
-  bool
-  do_compare_is_identity(Gogo*)
-  { return true; }
-
-  Btype*
-  do_get_backend(Gogo* gogo)
-  { return gogo->backend()->bool_type(); }
-
-  Expression*
-  do_type_descriptor(Gogo*, Named_type* name);
-
-  // We should not be asked for the reflection string of a basic type.
-  void
-  do_reflection(Gogo*, std::string* ret) const
-  { ret->append("bool"); }
-
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int);
-
-  void
-  do_mangled_name(Gogo*, std::string* ret) const
-  { ret->push_back('b'); }
-};
+  return gogo->backend()->bool_type();
+}
 
 // Make the type descriptor.
 
@@ -2803,12 +3865,6 @@ Boolean_type::do_type_descriptor(Gogo* gogo, Named_type* name)
       return Type::type_descriptor(gogo, no->type_value());
     }
 }
-
-// Update the offset of the GC symbol.
-
-void
-Boolean_type::do_gc_symbol(Gogo*, Expression_list**, Expression** offset, int)
-{ this->advance_gc_offset(offset); }
 
 Type*
 Type::make_boolean_type()
@@ -2960,19 +4016,6 @@ Integer_type::do_reflection(Gogo*, std::string*) const
   go_assert(saw_errors());
 }
 
-// Mangled name.
-
-void
-Integer_type::do_mangled_name(Gogo*, std::string* ret) const
-{
-  char buf[100];
-  snprintf(buf, sizeof buf, "i%s%s%de",
-	   this->is_abstract_ ? "a" : "",
-	   this->is_unsigned_ ? "u" : "",
-	   this->bits_);
-  ret->append(buf);
-}
-
 // Make an integer type.
 
 Named_type*
@@ -3095,18 +4138,6 @@ Float_type::do_reflection(Gogo*, std::string*) const
   go_assert(saw_errors());
 }
 
-// Mangled name.
-
-void
-Float_type::do_mangled_name(Gogo*, std::string* ret) const
-{
-  char buf[100];
-  snprintf(buf, sizeof buf, "f%s%de",
-	   this->is_abstract_ ? "a" : "",
-	   this->bits_);
-  ret->append(buf);
-}
-
 // Make a floating point type.
 
 Named_type*
@@ -3222,18 +4253,6 @@ Complex_type::do_reflection(Gogo*, std::string*) const
   go_assert(saw_errors());
 }
 
-// Mangled name.
-
-void
-Complex_type::do_mangled_name(Gogo*, std::string* ret) const
-{
-  char buf[100];
-  snprintf(buf, sizeof buf, "c%s%de",
-	   this->is_abstract_ ? "a" : "",
-	   this->bits_);
-  ret->append(buf);
-}
-
 // Make a complex type.
 
 Named_type*
@@ -3319,28 +4338,6 @@ String_type::do_reflection(Gogo*, std::string* ret) const
   ret->append("string");
 }
 
-// Generate GC symbol for strings.
-
-void
-String_type::do_gc_symbol(Gogo*, Expression_list** vals,
-			  Expression** offset, int)
-{
-  Location bloc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  (*vals)->push_back(Expression::make_integer_ul(GC_STRING, uintptr_type,
-						 bloc));
-  (*vals)->push_back(*offset);
-  this->advance_gc_offset(offset);
-}
-
-// Mangled name of a string type.
-
-void
-String_type::do_mangled_name(Gogo*, std::string* ret) const
-{
-  ret->push_back('z');
-}
-
 // Make a string type.
 
 Type*
@@ -3404,10 +4401,6 @@ class Sink_type : public Type
   { go_unreachable(); }
 
   void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
-  { go_unreachable(); }
-
-  void
   do_mangled_name(Gogo*, std::string*) const
   { go_unreachable(); }
 };
@@ -3448,7 +4441,7 @@ bool
 Function_type::is_valid_redeclaration(const Function_type* t,
 				      std::string* reason) const
 {
-  if (!this->is_identical(t, false, true, reason))
+  if (!this->is_identical(t, false, COMPARE_TAGS, true, reason))
     return false;
 
   // A redeclaration of a function is required to use the same names
@@ -3526,9 +4519,12 @@ Function_type::is_valid_redeclaration(const Function_type* t,
 
 bool
 Function_type::is_identical(const Function_type* t, bool ignore_receiver,
-			    bool errors_are_identical,
+			    Cmp_tags cmp_tags, bool errors_are_identical,
 			    std::string* reason) const
 {
+  if (this->is_backend_function_type() != t->is_backend_function_type())
+    return false;
+
   if (!ignore_receiver)
     {
       const Typed_identifier* r1 = this->receiver();
@@ -3541,8 +4537,8 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
 	}
       if (r1 != NULL)
 	{
-	  if (!Type::are_identical(r1->type(), r2->type(), errors_are_identical,
-				   reason))
+	  if (!Type::are_identical_cmp_tags(r1->type(), r2->type(), cmp_tags,
+					    errors_are_identical, reason))
 	    {
 	      if (reason != NULL && !reason->empty())
 		*reason = "receiver: " + *reason;
@@ -3552,7 +4548,11 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
     }
 
   const Typed_identifier_list* parms1 = this->parameters();
+  if (parms1 != NULL && parms1->empty())
+    parms1 = NULL;
   const Typed_identifier_list* parms2 = t->parameters();
+  if (parms2 != NULL && parms2->empty())
+    parms2 = NULL;
   if ((parms1 != NULL) != (parms2 != NULL))
     {
       if (reason != NULL)
@@ -3573,8 +4573,8 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
 	      return false;
 	    }
 
-	  if (!Type::are_identical(p1->type(), p2->type(),
-				   errors_are_identical, NULL))
+	  if (!Type::are_identical_cmp_tags(p1->type(), p2->type(), cmp_tags,
+					    errors_are_identical, NULL))
 	    {
 	      if (reason != NULL)
 		*reason = _("different parameter types");
@@ -3597,7 +4597,11 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
     }
 
   const Typed_identifier_list* results1 = this->results();
+  if (results1 != NULL && results1->empty())
+    results1 = NULL;
   const Typed_identifier_list* results2 = t->results();
+  if (results2 != NULL && results2->empty())
+    results2 = NULL;
   if ((results1 != NULL) != (results2 != NULL))
     {
       if (reason != NULL)
@@ -3618,8 +4622,9 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
 	      return false;
 	    }
 
-	  if (!Type::are_identical(res1->type(), res2->type(),
-				   errors_are_identical, NULL))
+	  if (!Type::are_identical_cmp_tags(res1->type(), res2->type(),
+					    cmp_tags, errors_are_identical,
+					    NULL))
 	    {
 	      if (reason != NULL)
 		*reason = _("different result types");
@@ -3791,6 +4796,7 @@ Function_type::get_backend_fntype(Gogo* gogo)
 		    }
 		  Struct_type* st = Type::make_struct_type(sfl,
 							   this->location());
+		  st->set_is_struct_incomparable();
 		  ins.first->second = st->get_backend(gogo);
 		}
 	      bresult_struct = ins.first->second;
@@ -3872,7 +4878,7 @@ Function_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(4);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("commonType"));
+  go_assert(p->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_FUNC,
 						    name, NULL, true));
@@ -3987,62 +4993,6 @@ Function_type::do_reflection(Gogo* gogo, std::string* ret) const
       if (results->size() > 1)
 	ret->push_back(')');
     }
-}
-
-// Generate GC symbol for a function type.
-
-void
-Function_type::do_gc_symbol(Gogo*, Expression_list** vals,
-			    Expression** offset, int)
-{
-  Location bloc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-  // We use GC_APTR here because we do not currently have a way to describe the
-  // the type of the possible function closure.  FIXME.
-  (*vals)->push_back(Expression::make_integer_ul(GC_APTR, uintptr_type, bloc));
-  (*vals)->push_back(*offset);
-  this->advance_gc_offset(offset);
-}
-
-// Mangled name.
-
-void
-Function_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('F');
-
-  if (this->receiver_ != NULL)
-    {
-      ret->push_back('m');
-      this->append_mangled_name(this->receiver_->type(), gogo, ret);
-    }
-
-  const Typed_identifier_list* params = this->parameters();
-  if (params != NULL)
-    {
-      ret->push_back('p');
-      for (Typed_identifier_list::const_iterator p = params->begin();
-	   p != params->end();
-	   ++p)
-	this->append_mangled_name(p->type(), gogo, ret);
-      if (this->is_varargs_)
-	ret->push_back('V');
-      ret->push_back('e');
-    }
-
-  const Typed_identifier_list* results = this->results();
-  if (results != NULL)
-    {
-      ret->push_back('r');
-      for (Typed_identifier_list::const_iterator p = results->begin();
-	   p != results->end();
-	   ++p)
-	this->append_mangled_name(p->type(), gogo, ret);
-      ret->push_back('e');
-    }
-
-  ret->push_back('e');
 }
 
 // Export a function type.
@@ -4385,7 +5335,7 @@ Pointer_type::do_type_descriptor(Gogo* gogo, Named_type* name)
       vals->reserve(2);
 
       Struct_field_list::const_iterator p = fields->begin();
-      go_assert(p->is_field_name("commonType"));
+      go_assert(p->is_field_name("_type"));
       vals->push_back(this->type_descriptor_constructor(gogo,
 							RUNTIME_TYPE_KIND_PTR,
 							name, methods, false));
@@ -4405,33 +5355,6 @@ Pointer_type::do_reflection(Gogo* gogo, std::string* ret) const
 {
   ret->push_back('*');
   this->append_reflection(this->to_type_, gogo, ret);
-}
-
-// Generate GC symbol for pointer types.
-
-void
-Pointer_type::do_gc_symbol(Gogo*, Expression_list** vals,
-			   Expression** offset, int)
-{
-  Location loc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-  unsigned long opval = this->to_type_->has_pointer() ? GC_PTR : GC_APTR;
-  (*vals)->push_back(Expression::make_integer_ul(opval, uintptr_type, loc));
-  (*vals)->push_back(*offset);
-
-  if (this->to_type_->has_pointer())
-    (*vals)->push_back(Expression::make_gc_symbol(this->to_type_));
-  this->advance_gc_offset(offset);
-}
-
-// Mangled name.
-
-void
-Pointer_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('p');
-  this->append_mangled_name(this->to_type_, gogo, ret);
 }
 
 // Export.
@@ -4461,14 +5384,22 @@ Pointer_type::do_import(Import* imp)
   return Type::make_pointer_type(to);
 }
 
+// Cache of pointer types. Key is "to" type, value is pointer type
+// that points to key.
+
+Type::Pointer_type_table Type::pointer_types;
+
+// A list of placeholder pointer types.  We keep this so we can ensure
+// they are finalized.
+
+std::vector<Pointer_type*> Type::placeholder_pointers;
+
 // Make a pointer type.
 
 Pointer_type*
 Type::make_pointer_type(Type* to_type)
 {
-  typedef Unordered_map(Type*, Pointer_type*) Hashtable;
-  static Hashtable pointer_types;
-  Hashtable::const_iterator p = pointer_types.find(to_type);
+  Pointer_type_table::const_iterator p = pointer_types.find(to_type);
   if (p != pointer_types.end())
     return p->second;
   Pointer_type* ret = new Pointer_type(to_type);
@@ -4476,42 +5407,47 @@ Type::make_pointer_type(Type* to_type)
   return ret;
 }
 
-// The nil type.  We use a special type for nil because it is not the
-// same as any other type.  In C term nil has type void*, but there is
-// no such type in Go.
+// This helper is invoked immediately after named types have been
+// converted, to clean up any unresolved pointer types remaining in
+// the pointer type cache.
+//
+// The motivation for this routine: occasionally the compiler creates
+// some specific pointer type as part of a lowering operation (ex:
+// pointer-to-void), then Type::backend_type_size() is invoked on the
+// type (which creates a Btype placeholder for it), that placeholder
+// passed somewhere along the line to the back end, but since there is
+// no reference to the type in user code, there is never a call to
+// Type::finish_backend for the type (hence the Btype remains as an
+// unresolved placeholder).  Calling this routine will clean up such
+// instances.
 
-class Nil_type : public Type
+void
+Type::finish_pointer_types(Gogo* gogo)
 {
- public:
-  Nil_type()
-    : Type(TYPE_NIL)
-  { }
+  // We don't use begin() and end() because it is possible to add new
+  // placeholder pointer types as we finalized existing ones.
+  for (size_t i = 0; i < Type::placeholder_pointers.size(); i++)
+    {
+      Pointer_type* pt = Type::placeholder_pointers[i];
+      Type_btypes::iterator tbti = Type::type_btypes.find(pt);
+      if (tbti != Type::type_btypes.end() && tbti->second.is_placeholder)
+        {
+          pt->finish_backend(gogo, tbti->second.btype);
+          tbti->second.is_placeholder = false;
+        }
+    }
+}
 
- protected:
-  bool
-  do_compare_is_identity(Gogo*)
-  { return false; }
+// Class Nil_type.
 
-  Btype*
-  do_get_backend(Gogo* gogo)
-  { return gogo->backend()->pointer_type(gogo->backend()->void_type()); }
+// Get the backend representation of a nil type.  FIXME: Is this ever
+// actually called?
 
-  Expression*
-  do_type_descriptor(Gogo*, Named_type*)
-  { go_unreachable(); }
-
-  void
-  do_reflection(Gogo*, std::string*) const
-  { go_unreachable(); }
-
-  void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
-  { go_unreachable(); }
-
-  void
-  do_mangled_name(Gogo*, std::string* ret) const
-  { ret->push_back('n'); }
-};
+Btype*
+Nil_type::do_get_backend(Gogo* gogo)
+{
+  return gogo->backend()->pointer_type(gogo->backend()->void_type());
+}
 
 // Make the nil type.
 
@@ -4563,10 +5499,6 @@ class Call_multiple_result_type : public Type
   { go_assert(saw_errors()); }
 
   void
-  do_gc_symbol(Gogo*, Expression_list**, Expression**, int)
-  { go_unreachable(); }
-
-  void
   do_mangled_name(Gogo*, std::string*) const
   { go_assert(saw_errors()); }
 
@@ -4609,7 +5541,10 @@ Struct_field::field_name() const
       if (dt->forward_declaration_type() != NULL)
 	return dt->forward_declaration_type()->name();
       else if (dt->named_type() != NULL)
-	return dt->named_type()->name();
+	{
+	  // Note that this can be an alias name.
+	  return dt->named_type()->name();
+	}
       else if (t->is_error_type() || dt->is_error_type())
 	{
 	  static const std::string error_string = "*error*";
@@ -4751,7 +5686,9 @@ Struct_type::do_verify()
       Type* t = p->type();
       if (p->is_anonymous())
 	{
-	  if (t->named_type() != NULL && t->points_to() != NULL)
+	  if ((t->named_type() != NULL && t->points_to() != NULL)
+              || (t->named_type() == NULL && t->points_to() != NULL
+                  && t->points_to()->points_to() != NULL))
 	    {
 	      go_error_at(p->location(), "embedded type may not be a pointer");
 	      p->set_type(Type::make_error_type());
@@ -4789,9 +5726,11 @@ Struct_type::do_has_pointer() const
 // Whether this type is identical to T.
 
 bool
-Struct_type::is_identical(const Struct_type* t,
+Struct_type::is_identical(const Struct_type* t, Cmp_tags cmp_tags,
 			  bool errors_are_identical) const
 {
+  if (this->is_struct_incomparable_ != t->is_struct_incomparable_)
+    return false;
   const Struct_field_list* fields1 = this->fields();
   const Struct_field_list* fields2 = t->fields();
   if (fields1 == NULL || fields2 == NULL)
@@ -4806,20 +5745,23 @@ Struct_type::is_identical(const Struct_type* t,
       if (pf1->field_name() != pf2->field_name())
 	return false;
       if (pf1->is_anonymous() != pf2->is_anonymous()
-	  || !Type::are_identical(pf1->type(), pf2->type(),
-				  errors_are_identical, NULL))
+	  || !Type::are_identical_cmp_tags(pf1->type(), pf2->type(), cmp_tags,
+					   errors_are_identical, NULL))
 	return false;
-      if (!pf1->has_tag())
+      if (cmp_tags == COMPARE_TAGS)
 	{
-	  if (pf2->has_tag())
-	    return false;
-	}
-      else
-	{
-	  if (!pf2->has_tag())
-	    return false;
-	  if (pf1->tag() != pf2->tag())
-	    return false;
+	  if (!pf1->has_tag())
+	    {
+	      if (pf2->has_tag())
+		return false;
+	    }
+	  else
+	    {
+	      if (!pf2->has_tag())
+		return false;
+	      if (pf1->tag() != pf2->tag())
+		return false;
+	    }
 	}
     }
   if (pf2 != fields2->end())
@@ -4914,6 +5856,24 @@ Struct_type::do_needs_key_update()
   return false;
 }
 
+// Return whether this struct type is permitted to be in the heap.
+
+bool
+Struct_type::do_in_heap()
+{
+  const Struct_field_list* fields = this->fields_;
+  if (fields == NULL)
+    return true;
+  for (Struct_field_list::const_iterator pf = fields->begin();
+       pf != fields->end();
+       ++pf)
+    {
+      if (!pf->type()->in_heap())
+	return false;
+    }
+  return true;
+}
+
 // Build identity and hash functions for this struct.
 
 // Hash code.
@@ -4929,7 +5889,10 @@ Struct_type::do_hash_for_method(Gogo* gogo) const
 	   ++pf)
 	ret = (ret << 1) + pf->type()->hash_for_method(gogo);
     }
-  return ret <<= 2;
+  ret <<= 2;
+  if (this->is_struct_incomparable_)
+    ret <<= 1;
+  return ret;
 }
 
 // Find the local field NAME.
@@ -5057,7 +6020,9 @@ Struct_type::field_reference_depth(Expression* struct_expr,
 	  Expression* here = Expression::make_field_reference(struct_expr, i,
 							      location);
 	  if (pf->type()->points_to() != NULL)
-	    here = Expression::make_unary(OPERATOR_MULT, here, location);
+            here = Expression::make_dereference(here,
+                                                Expression::NIL_CHECK_DEFAULT,
+                                                location);
 	  while (sub->expr() != NULL)
 	    {
 	      sub = sub->expr()->deref()->field_reference_expression();
@@ -5255,7 +6220,7 @@ Struct_type::make_struct_type_descriptor_type()
 				       "pkgPath", pointer_string_type,
 				       "typ", ptdt,
 				       "tag", pointer_string_type,
-				       "offset", uintptr_type);
+				       "offsetAnon", uintptr_type);
       Type* nsf = Type::make_builtin_named_type("structField", sf);
 
       Type* slice_type = Type::make_array_type(nsf, NULL);
@@ -5290,7 +6255,7 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   go_assert(methods == NULL || name == NULL);
 
   Struct_field_list::const_iterator ps = fields->begin();
-  go_assert(ps->is_field_name("commonType"));
+  go_assert(ps->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_STRUCT,
 						    name, methods, true));
@@ -5312,14 +6277,9 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 
       Struct_field_list::const_iterator q = f->begin();
       go_assert(q->is_field_name("name"));
-      if (pf->is_anonymous())
-	fvals->push_back(Expression::make_nil(bloc));
-      else
-	{
-	  std::string n = Gogo::unpack_hidden_name(pf->field_name());
-	  Expression* s = Expression::make_string(n, bloc);
-	  fvals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
-	}
+      std::string n = Gogo::unpack_hidden_name(pf->field_name());
+      Expression* s = Expression::make_string(n, bloc);
+      fvals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
 
       ++q;
       go_assert(q->is_field_name("pkgPath"));
@@ -5352,8 +6312,15 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 	}
 
       ++q;
-      go_assert(q->is_field_name("offset"));
-      fvals->push_back(Expression::make_struct_field_offset(this, &*pf));
+      go_assert(q->is_field_name("offsetAnon"));
+      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+      Expression* o = Expression::make_struct_field_offset(this, &*pf);
+      Expression* one = Expression::make_integer_ul(1, uintptr_type, bloc);
+      o = Expression::make_binary(OPERATOR_LSHIFT, o, one, bloc);
+      int av = pf->is_anonymous() ? 1 : 0;
+      Expression* anon = Expression::make_integer_ul(av, uintptr_type, bloc);
+      o = Expression::make_binary(OPERATOR_OR, o, anon, bloc);
+      fvals->push_back(o);
 
       Expression* v = Expression::make_struct_composite_literal(element_type,
 								fvals, bloc);
@@ -5402,7 +6369,6 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
   gogo->add_statement(key);
 
   // Loop over the struct fields.
-  bool first = true;
   const Struct_field_list* fields = this->fields_;
   for (Struct_field_list::const_iterator pf = fields->begin();
        pf != fields->end();
@@ -5411,29 +6377,12 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
       if (Gogo::is_sink_name(pf->field_name()))
 	continue;
 
-      if (first)
-	first = false;
-      else
-	{
-	  // Multiply retval by 33.
-	  Expression* i33 = Expression::make_integer_ul(33, uintptr_type,
-							bloc);
-	  ref = Expression::make_temporary_reference(retval, bloc);
-	  Statement* s = Statement::make_assignment_operation(OPERATOR_MULTEQ,
-							      ref, i33, bloc);
-	  gogo->add_statement(s);
-	}
-
       // Get a pointer to the value of this field.
       Expression* offset = Expression::make_struct_field_offset(this, &*pf);
       ref = Expression::make_temporary_reference(key, bloc);
       Expression* subkey = Expression::make_binary(OPERATOR_PLUS, ref, offset,
 						   bloc);
       subkey = Expression::make_cast(key_arg_type, subkey, bloc);
-
-      // Get the size of this field.
-      Expression* size = Expression::make_type_info(pf->type(),
-						    Expression::TYPE_INFO_SIZE);
 
       // Get the hash function to use for the type of this field.
       Named_object* hash_fn;
@@ -5446,7 +6395,6 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
       Expression_list* args = new Expression_list();
       args->push_back(subkey);
       args->push_back(ref);
-      args->push_back(size);
       Expression* func = Expression::make_func_reference(hash_fn, NULL, bloc);
       Expression* call = Expression::make_call(func, args, false, bloc);
 
@@ -5505,11 +6453,13 @@ Struct_type::write_equal_function(Gogo* gogo, Named_type* name)
 
       // Compare one field in both P1 and P2.
       Expression* f1 = Expression::make_temporary_reference(p1, bloc);
-      f1 = Expression::make_unary(OPERATOR_MULT, f1, bloc);
+      f1 = Expression::make_dereference(f1, Expression::NIL_CHECK_DEFAULT,
+                                        bloc);
       f1 = Expression::make_field_reference(f1, field_index, bloc);
 
       Expression* f2 = Expression::make_temporary_reference(p2, bloc);
-      f2 = Expression::make_unary(OPERATOR_MULT, f2, bloc);
+      f2 = Expression::make_dereference(f2, Expression::NIL_CHECK_DEFAULT,
+                                        bloc);
       f2 = Expression::make_field_reference(f2, field_index, bloc);
 
       Expression* cond = Expression::make_binary(OPERATOR_NOTEQ, f1, f2, bloc);
@@ -5547,12 +6497,17 @@ Struct_type::do_reflection(Gogo* gogo, std::string* ret) const
       if (p != this->fields_->begin())
 	ret->push_back(';');
       ret->push_back(' ');
-      if (p->is_anonymous())
-	ret->push_back('?');
+      if (!p->is_anonymous())
+	{
+	  ret->append(Gogo::unpack_hidden_name(p->field_name()));
+	  ret->push_back(' ');
+	}
+      if (p->is_anonymous()
+	  && p->type()->named_type() != NULL
+	  && p->type()->named_type()->is_alias())
+	p->type()->named_type()->append_reflection_type_name(gogo, true, ret);
       else
-	ret->append(Gogo::unpack_hidden_name(p->field_name()));
-      ret->push_back(' ');
-      this->append_reflection(p->type(), gogo, ret);
+	this->append_reflection(p->type(), gogo, ret);
 
       if (p->has_tag())
 	{
@@ -5583,83 +6538,6 @@ Struct_type::do_reflection(Gogo* gogo, std::string* ret) const
     ret->push_back(' ');
 
   ret->push_back('}');
-}
-
-// Generate GC symbol for struct types.
-
-void
-Struct_type::do_gc_symbol(Gogo* gogo, Expression_list** vals,
-			  Expression** offset, int stack_size)
-{
-  Location bloc = Linemap::predeclared_location();
-  const Struct_field_list* sfl = this->fields();
-  for (Struct_field_list::const_iterator p = sfl->begin();
-       p != sfl->end();
-       ++p)
-    {
-      Expression* field_offset =
-  	Expression::make_struct_field_offset(this, &*p);
-      Expression* o =
-  	Expression::make_binary(OPERATOR_PLUS, *offset, field_offset, bloc);
-      Type::gc_symbol(gogo, p->type(), vals, &o, stack_size);
-    }
-  this->advance_gc_offset(offset);
-}
-
-// Mangled name.
-
-void
-Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('S');
-
-  const Struct_field_list* fields = this->fields_;
-  if (fields != NULL)
-    {
-      for (Struct_field_list::const_iterator p = fields->begin();
-	   p != fields->end();
-	   ++p)
-	{
-	  if (p->is_anonymous())
-	    ret->append("0_");
-	  else
-	    {
-	      std::string n = Gogo::unpack_hidden_name(p->field_name());
-	      char buf[20];
-	      snprintf(buf, sizeof buf, "%u_",
-		       static_cast<unsigned int>(n.length()));
-	      ret->append(buf);
-	      ret->append(n);
-	    }
-	  this->append_mangled_name(p->type(), gogo, ret);
-	  if (p->has_tag())
-	    {
-	      const std::string& tag(p->tag());
-	      std::string out;
-	      for (std::string::const_iterator p = tag.begin();
-		   p != tag.end();
-		   ++p)
-		{
-		  if (ISALNUM(*p) || *p == '_')
-		    out.push_back(*p);
-		  else
-		    {
-		      char buf[20];
-		      snprintf(buf, sizeof buf, ".%x.",
-			       static_cast<unsigned int>(*p));
-		      out.append(buf);
-		    }
-		}
-	      char buf[20];
-	      snprintf(buf, sizeof buf, "T%u_",
-		       static_cast<unsigned int>(out.length()));
-	      ret->append(buf);
-	      ret->append(out);
-	    }
-	}
-    }
-
-  ret->push_back('e');
 }
 
 // If the offset of field INDEX in the backend implementation can be
@@ -5768,6 +6646,7 @@ Struct_type::can_write_to_c_header(
   const Struct_field_list* fields = this->fields_;
   if (fields == NULL || fields->empty())
     return false;
+  int sinks = 0;
   for (Struct_field_list::const_iterator p = fields->begin();
        p != fields->end();
        ++p)
@@ -5776,7 +6655,11 @@ Struct_type::can_write_to_c_header(
 	return false;
       if (!this->can_write_type_to_c_header(p->type(), requires, declare))
 	return false;
+      if (Gogo::message_name(p->field_name()) == "_")
+	sinks++;
     }
+  if (sinks > 1)
+    return false;
   return true;
 }
 
@@ -6043,13 +6926,31 @@ Type::make_struct_type(Struct_field_list* fields,
 
 // Class Array_type.
 
+// Store the length of an array as an int64_t into *PLEN.  Return
+// false if the length can not be determined.  This will assert if
+// called for a slice.
+
+bool
+Array_type::int_length(int64_t* plen)
+{
+  go_assert(this->length_ != NULL);
+  Numeric_constant nc;
+  if (!this->length_->numeric_constant_value(&nc))
+    return false;
+  return nc.to_memory_size(plen);
+}
+
 // Whether two array types are identical.
 
 bool
-Array_type::is_identical(const Array_type* t, bool errors_are_identical) const
+Array_type::is_identical(const Array_type* t, Cmp_tags cmp_tags,
+			 bool errors_are_identical) const
 {
-  if (!Type::are_identical(this->element_type(), t->element_type(),
-			   errors_are_identical, NULL))
+  if (!Type::are_identical_cmp_tags(this->element_type(), t->element_type(),
+				    cmp_tags, errors_are_identical, NULL))
+    return false;
+
+  if (this->is_array_incomparable_ != t->is_array_incomparable_)
     return false;
 
   Expression* l1 = this->length();
@@ -6122,6 +7023,16 @@ Array_type::verify_length()
       return false;
     }
 
+  // For array types, the length expression can be an untyped constant
+  // representable as an int, but we don't allow explicitly non-integer
+  // values such as "float64(10)". See issues #13485 and #13486.
+  if (this->length_->type()->integer_type() == NULL
+      && !this->length_->type()->is_error_type())
+    {
+      go_error_at(this->length_->location(), "invalid array bound");
+      return false;
+    }
+
   Numeric_constant nc;
   if (!this->length_->numeric_constant_value(&nc))
     {
@@ -6184,6 +7095,38 @@ Array_type::do_verify()
   return true;
 }
 
+// Whether the type contains pointers.  This is always true for a
+// slice.  For an array it is true if the element type has pointers
+// and the length is greater than zero.
+
+bool
+Array_type::do_has_pointer() const
+{
+  if (this->length_ == NULL)
+    return true;
+  if (!this->element_type_->has_pointer())
+    return false;
+
+  Numeric_constant nc;
+  if (!this->length_->numeric_constant_value(&nc))
+    {
+      // Error reported elsewhere.
+      return false;
+    }
+
+  unsigned long val;
+  switch (nc.to_unsigned_long(&val))
+    {
+    case Numeric_constant::NC_UL_VALID:
+      return val > 0;
+    case Numeric_constant::NC_UL_BIG:
+      return true;
+    default:
+      // Error reported elsewhere.
+      return false;
+    }
+}
+
 // Whether we can use memcmp to compare this array.
 
 bool
@@ -6216,9 +7159,14 @@ Array_type::do_compare_is_identity(Gogo* gogo)
 unsigned int
 Array_type::do_hash_for_method(Gogo* gogo) const
 {
+  unsigned int ret;
+
   // There is no very convenient way to get a hash code for the
   // length.
-  return this->element_type_->hash_for_method(gogo) + 1;
+  ret = this->element_type_->hash_for_method(gogo) + 1;
+  if (this->is_array_incomparable_)
+    ret <<= 1;
+  return ret;
 }
 
 // Write the hash function for an array which can not use the identify
@@ -6275,14 +7223,6 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
 
   gogo->start_block(bloc);
 
-  // Multiply retval by 33.
-  Expression* i33 = Expression::make_integer_ul(33, uintptr_type, bloc);
-
-  ref = Expression::make_temporary_reference(retval, bloc);
-  Statement* s = Statement::make_assignment_operation(OPERATOR_MULTEQ, ref,
-						      i33, bloc);
-  gogo->add_statement(s);
-
   // Get the hash function for the element type.
   Named_object* hash_fn;
   Named_object* equal_fn;
@@ -6303,7 +7243,6 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
   Expression_list* args = new Expression_list();
   args->push_back(subkey);
   args->push_back(ref);
-  args->push_back(ele_size);
   Expression* func = Expression::make_func_reference(hash_fn, NULL, bloc);
   Expression* call = Expression::make_call(func, args, false, bloc);
 
@@ -6311,7 +7250,7 @@ Array_type::write_hash_function(Gogo* gogo, Named_type* name,
   Temporary_reference_expression* tref =
     Expression::make_temporary_reference(retval, bloc);
   tref->set_is_lvalue();
-  s = Statement::make_assignment(tref, call, bloc);
+  Statement* s = Statement::make_assignment(tref, call, bloc);
   gogo->add_statement(s);
 
   // Increase the element pointer.
@@ -6377,12 +7316,12 @@ Array_type::write_equal_function(Gogo* gogo, Named_type* name)
 
   // Compare element in P1 and P2.
   Expression* e1 = Expression::make_temporary_reference(p1, bloc);
-  e1 = Expression::make_unary(OPERATOR_MULT, e1, bloc);
+  e1 = Expression::make_dereference(e1, Expression::NIL_CHECK_DEFAULT, bloc);
   ref = Expression::make_temporary_reference(index, bloc);
   e1 = Expression::make_array_index(e1, ref, NULL, NULL, bloc);
 
   Expression* e2 = Expression::make_temporary_reference(p2, bloc);
-  e2 = Expression::make_unary(OPERATOR_MULT, e2, bloc);
+  e2 = Expression::make_dereference(e2, Expression::NIL_CHECK_DEFAULT, bloc);
   ref = Expression::make_temporary_reference(index, bloc);
   e2 = Expression::make_array_index(e2, ref, NULL, NULL, bloc);
 
@@ -6491,6 +7430,11 @@ Array_type::get_backend_length(Gogo* gogo)
   go_assert(this->length_ != NULL);
   if (this->blength_ == NULL)
     {
+      if (this->length_->is_error_expression())
+        {
+          this->blength_ = gogo->backend()->error_expression();
+          return this->blength_;
+        }
       Numeric_constant nc;
       mpz_t val;
       if (this->length_->numeric_constant_value(&nc) && nc.to_int(&val))
@@ -6545,7 +7489,7 @@ Array_type::finish_backend_element(Gogo* gogo)
 // Return an expression for a pointer to the values in ARRAY.
 
 Expression*
-Array_type::get_value_pointer(Gogo*, Expression* array) const
+Array_type::get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const
 {
   if (this->length() != NULL)
     {
@@ -6558,6 +7502,25 @@ Array_type::get_value_pointer(Gogo*, Expression* array) const
     }
 
   // Slice.
+
+  if (is_lvalue)
+    {
+      Temporary_reference_expression* tref =
+          array->temporary_reference_expression();
+      Var_expression* ve = array->var_expression();
+      if (tref != NULL)
+        {
+          tref = tref->copy()->temporary_reference_expression();
+          tref->set_is_lvalue();
+          array = tref;
+        }
+      else if (ve != NULL)
+        {
+          ve = new Var_expression(ve->named_object(), ve->location());
+          array = ve;
+        }
+    }
+
   return Expression::make_slice_info(array,
                                      Expression::SLICE_INFO_VALUE_POINTER,
                                      array->location());
@@ -6693,7 +7656,7 @@ Array_type::array_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(3);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("commonType"));
+  go_assert(p->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_ARRAY,
 						    name, NULL, true));
@@ -6732,7 +7695,7 @@ Array_type::slice_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(2);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("commonType"));
+  go_assert(p->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_SLICE,
 						    name, NULL, true));
@@ -6775,149 +7738,6 @@ Array_type::do_reflection(Gogo* gogo, std::string* ret) const
   ret->push_back(']');
 
   this->append_reflection(this->element_type_, gogo, ret);
-}
-
-// GC Symbol construction for array types.
-
-void
-Array_type::do_gc_symbol(Gogo* gogo, Expression_list** vals,
-			 Expression** offset, int stack_size)
-{
-  if (this->length_ == NULL)
-    this->slice_gc_symbol(gogo, vals, offset, stack_size);
-  else
-    this->array_gc_symbol(gogo, vals, offset, stack_size);
-}
-
-// Generate the GC Symbol for a slice.
-
-void
-Array_type::slice_gc_symbol(Gogo* gogo, Expression_list** vals,
-			    Expression** offset, int)
-{
-  Location bloc = Linemap::predeclared_location();
-
-  // Differentiate between slices with zero-length and non-zero-length values.
-  Type* element_type = this->element_type();
-  int64_t element_size;
-  bool ok = element_type->backend_type_size(gogo, &element_size);
-  if (!ok) {
-    go_assert(saw_errors());
-    element_size = 4;
-  }
-
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  unsigned long opval = element_size == 0 ? GC_APTR : GC_SLICE;
-  (*vals)->push_back(Expression::make_integer_ul(opval, uintptr_type, bloc));
-  (*vals)->push_back(*offset);
-
-  if (element_size != 0 && ok)
-    (*vals)->push_back(Expression::make_gc_symbol(element_type));
-  this->advance_gc_offset(offset);
-}
-
-// Generate the GC symbol for an array.
-
-void
-Array_type::array_gc_symbol(Gogo* gogo, Expression_list** vals,
-			    Expression** offset, int stack_size)
-{
-  Location bloc = Linemap::predeclared_location();
-
-  Numeric_constant nc;
-  unsigned long bound;
-  if (!this->length_->numeric_constant_value(&nc)
-      || nc.to_unsigned_long(&bound) == Numeric_constant::NC_UL_NOTINT)
-    {
-      go_assert(saw_errors());
-      return;
-    }
-
-  Btype* pbtype = gogo->backend()->pointer_type(gogo->backend()->void_type());
-  int64_t pwidth = gogo->backend()->type_size(pbtype);
-  int64_t iwidth;
-  bool ok = this->backend_type_size(gogo, &iwidth);
-  if (!ok)
-    {
-      go_assert(saw_errors());
-      iwidth = 4;
-    }
-
-  Type* element_type = this->element_type();
-  if (bound < 1 || !element_type->has_pointer())
-    this->advance_gc_offset(offset);
-  else if (ok && (bound == 1 || iwidth <= 4 * pwidth))
-    {
-      for (unsigned int i = 0; i < bound; ++i)
-	Type::gc_symbol(gogo, element_type, vals, offset, stack_size);
-    }
-  else
-    {
-      Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-      if (stack_size < GC_STACK_CAPACITY)
-  	{
-	  (*vals)->push_back(Expression::make_integer_ul(GC_ARRAY_START,
-							 uintptr_type, bloc));
-  	  (*vals)->push_back(*offset);
-	  Expression* uintptr_len =
-	    Expression::make_cast(uintptr_type, this->length_, bloc);
-  	  (*vals)->push_back(uintptr_len);
-
-	  Expression* width =
-	    Expression::make_type_info(element_type,
-				       Expression::TYPE_INFO_SIZE);
-  	  (*vals)->push_back(width);
-
-	  Expression* offset2 = Expression::make_integer_ul(0, uintptr_type,
-							    bloc);
-
-	  Type::gc_symbol(gogo, element_type, vals, &offset2, stack_size + 1);
-	  (*vals)->push_back(Expression::make_integer_ul(GC_ARRAY_NEXT,
-							 uintptr_type, bloc));
-  	}
-      else
-  	{
-	  (*vals)->push_back(Expression::make_integer_ul(GC_REGION,
-							 uintptr_type, bloc));
-	  (*vals)->push_back(*offset);
-
-	  Expression* width =
-	    Expression::make_type_info(this, Expression::TYPE_INFO_SIZE);
-  	  (*vals)->push_back(width);
-	  (*vals)->push_back(Expression::make_gc_symbol(this));
-  	}
-      this->advance_gc_offset(offset);
-    }
-}
-
-// Mangled name.
-
-void
-Array_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('A');
-  this->append_mangled_name(this->element_type_, gogo, ret);
-  if (this->length_ != NULL)
-    {
-      Numeric_constant nc;
-      if (!this->length_->numeric_constant_value(&nc))
-	{
-	  go_assert(saw_errors());
-	  return;
-	}
-      mpz_t val;
-      if (!nc.to_int(&val))
-	{
-	  go_assert(saw_errors());
-	  return;
-	}
-      char *s = mpz_get_str(NULL, 10, val);
-      ret->append(s);
-      free(s);
-      mpz_clear(val);
-    }
-  ret->push_back('e');
 }
 
 // Make an array type.
@@ -6972,10 +7792,11 @@ Map_type::fat_zero_value(Gogo* gogo)
       // The final type will be set in backend_zero_value.
       Type* uint8_type = Type::lookup_integer_type("uint8");
       Expression* size = Expression::make_integer_ul(0, NULL, bloc);
-      Type* array_type = Type::make_array_type(uint8_type, size);
+      Array_type* array_type = Type::make_array_type(uint8_type, size);
+      array_type->set_is_array_incomparable();
       Variable* var = new Variable(array_type, NULL, true, false, false, bloc);
-      Map_type::zero_value = Named_object::make_variable("go$zerovalue", NULL,
-							 var);
+      std::string name = gogo->map_zero_value_name();
+      Map_type::zero_value = Named_object::make_variable(name, NULL, var);
     }
 
   Expression* z = Expression::make_var_reference(Map_type::zero_value, bloc);
@@ -7016,11 +7837,13 @@ Map_type::backend_zero_value(Gogo* gogo)
   Btype* barray_type = gogo->backend()->array_type(buint8_type, blength);
 
   std::string zname = Map_type::zero_value->name();
+  std::string asm_name(go_selectively_encode_id(zname));
   Bvariable* zvar =
-    gogo->backend()->implicit_variable(zname, barray_type, false, true, true,
-				       Map_type::zero_value_align);
+      gogo->backend()->implicit_variable(zname, asm_name,
+                                         barray_type, false, false, true,
+					 Map_type::zero_value_align);
   gogo->backend()->implicit_variable_set_init(zvar, zname, barray_type,
-					      false, true, true, NULL);
+					      false, false, true, NULL);
   return zvar;
 }
 
@@ -7043,18 +7866,24 @@ Map_type::do_verify()
   // The runtime support uses "map[void]void".
   if (!this->key_type_->is_comparable() && !this->key_type_->is_void_type())
     go_error_at(this->location_, "invalid map key type");
+  if (!this->key_type_->in_heap())
+    go_error_at(this->location_, "go:notinheap map key not allowed");
+  if (!this->val_type_->in_heap())
+    go_error_at(this->location_, "go:notinheap map value not allowed");
   return true;
 }
 
 // Whether two map types are identical.
 
 bool
-Map_type::is_identical(const Map_type* t, bool errors_are_identical) const
+Map_type::is_identical(const Map_type* t, Cmp_tags cmp_tags,
+		       bool errors_are_identical) const
 {
-  return (Type::are_identical(this->key_type(), t->key_type(),
-			      errors_are_identical, NULL)
-	  && Type::are_identical(this->val_type(), t->val_type(),
-				 errors_are_identical, NULL));
+  return (Type::are_identical_cmp_tags(this->key_type(), t->key_type(),
+				       cmp_tags, errors_are_identical, NULL)
+	  && Type::are_identical_cmp_tags(this->val_type(), t->val_type(),
+					  cmp_tags, errors_are_identical,
+					  NULL));
 }
 
 // Hash code.
@@ -7077,7 +7906,7 @@ Map_type::do_get_backend(Gogo* gogo)
   static Btype* backend_map_type;
   if (backend_map_type == NULL)
     {
-      std::vector<Backend::Btyped_identifier> bfields(8);
+      std::vector<Backend::Btyped_identifier> bfields(9);
 
       Location bloc = Linemap::predeclared_location();
 
@@ -7095,29 +7924,34 @@ Map_type::do_get_backend(Gogo* gogo)
       bfields[2].btype = bfields[1].btype;
       bfields[2].location = bloc;
 
-      Type* uint32_type = Type::lookup_integer_type("uint32");
-      bfields[3].name = "hash0";
-      bfields[3].btype = uint32_type->get_backend(gogo);
+      Type* uint16_type = Type::lookup_integer_type("uint16");
+      bfields[3].name = "noverflow";
+      bfields[3].btype = uint16_type->get_backend(gogo);
       bfields[3].location = bloc;
+
+      Type* uint32_type = Type::lookup_integer_type("uint32");
+      bfields[4].name = "hash0";
+      bfields[4].btype = uint32_type->get_backend(gogo);
+      bfields[4].location = bloc;
 
       Btype* bvt = gogo->backend()->void_type();
       Btype* bpvt = gogo->backend()->pointer_type(bvt);
-      bfields[4].name = "buckets";
-      bfields[4].btype = bpvt;
-      bfields[4].location = bloc;
-
-      bfields[5].name = "oldbuckets";
+      bfields[5].name = "buckets";
       bfields[5].btype = bpvt;
       bfields[5].location = bloc;
 
-      Type* uintptr_type = Type::lookup_integer_type("uintptr");
-      bfields[6].name = "nevacuate";
-      bfields[6].btype = uintptr_type->get_backend(gogo);
+      bfields[6].name = "oldbuckets";
+      bfields[6].btype = bpvt;
       bfields[6].location = bloc;
 
-      bfields[7].name = "overflow";
-      bfields[7].btype = bpvt;
+      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+      bfields[7].name = "nevacuate";
+      bfields[7].btype = uintptr_type->get_backend(gogo);
       bfields[7].location = bloc;
+
+      bfields[8].name = "extra";
+      bfields[8].btype = bpvt;
+      bfields[8].location = bloc;
 
       Btype *bt = gogo->backend()->struct_type(bfields);
       bt = gogo->backend()->named_type("runtime.hmap", bt, bloc);
@@ -7213,7 +8047,7 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(12);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("commonType"));
+  go_assert(p->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_MAP,
 						    name, NULL, true));
@@ -7380,7 +8214,8 @@ Map_type::bucket_type(Gogo* gogo, int64_t keysize, int64_t valsize)
 
       Expression* pad_expr = Expression::make_integer_ul(pad, NULL,
 							 this->location_);
-      Type* pad_type = Type::make_array_type(uint8_type, pad_expr);
+      Array_type* pad_type = Type::make_array_type(uint8_type, pad_expr);
+      pad_type->set_is_array_incomparable();
 
       ret = make_builtin_struct_type(5,
 				     "topbits", topbits_type,
@@ -7428,21 +8263,23 @@ Map_type::hmap_type(Type* bucket_type)
 
   Type* int_type = Type::lookup_integer_type("int");
   Type* uint8_type = Type::lookup_integer_type("uint8");
+  Type* uint16_type = Type::lookup_integer_type("uint16");
   Type* uint32_type = Type::lookup_integer_type("uint32");
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
   Type* void_ptr_type = Type::make_pointer_type(Type::make_void_type());
 
   Type* ptr_bucket_type = Type::make_pointer_type(bucket_type);
 
-  Struct_type* ret = make_builtin_struct_type(8,
+  Struct_type* ret = make_builtin_struct_type(9,
 					      "count", int_type,
 					      "flags", uint8_type,
 					      "B", uint8_type,
+					      "noverflow", uint16_type,
 					      "hash0", uint32_type,
 					      "buckets", ptr_bucket_type,
 					      "oldbuckets", ptr_bucket_type,
 					      "nevacuate", uintptr_type,
-					      "overflow", void_ptr_type);
+					      "extra", void_ptr_type);
   ret->set_is_struct_incomparable();
   this->hmap_type_ = ret;
   return ret;
@@ -7475,18 +8312,22 @@ Map_type::hiter_type(Gogo* gogo)
   Type* hmap_type = this->hmap_type(bucket_type);
   Type* hmap_ptr_type = Type::make_pointer_type(hmap_type);
   Type* void_ptr_type = Type::make_pointer_type(Type::make_void_type());
+  Type* bool_type = Type::lookup_bool_type();
 
-  Struct_type* ret = make_builtin_struct_type(12,
+  Struct_type* ret = make_builtin_struct_type(15,
 					      "key", key_ptr_type,
 					      "val", val_ptr_type,
 					      "t", uint8_ptr_type,
 					      "h", hmap_ptr_type,
 					      "buckets", bucket_ptr_type,
 					      "bptr", bucket_ptr_type,
-					      "overflow0", void_ptr_type,
-					      "overflow1", void_ptr_type,
+					      "overflow", void_ptr_type,
+					      "oldoverflow", void_ptr_type,
 					      "startBucket", uintptr_type,
-					      "stuff", uintptr_type,
+					      "offset", uint8_type,
+					      "wrapped", bool_type,
+					      "B", uint8_type,
+					      "i", uint8_type,
 					      "bucket", uintptr_type,
 					      "checkBucket", uintptr_type);
   ret->set_is_struct_incomparable();
@@ -7503,32 +8344,6 @@ Map_type::do_reflection(Gogo* gogo, std::string* ret) const
   this->append_reflection(this->key_type_, gogo, ret);
   ret->append("]");
   this->append_reflection(this->val_type_, gogo, ret);
-}
-
-// Generate GC symbol for a map.
-
-void
-Map_type::do_gc_symbol(Gogo*, Expression_list** vals,
-		       Expression** offset, int)
-{
-  // TODO(cmang): Generate GC data for the Map elements.
-  Location bloc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-  (*vals)->push_back(Expression::make_integer_ul(GC_APTR, uintptr_type, bloc));
-  (*vals)->push_back(*offset);
-  this->advance_gc_offset(offset);
-}
-
-// Mangled name for a map.
-
-void
-Map_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('M');
-  this->append_mangled_name(this->key_type_, gogo, ret);
-  ret->append("__");
-  this->append_mangled_name(this->val_type_, gogo, ret);
 }
 
 // Export a map type.
@@ -7564,6 +8379,19 @@ Type::make_map_type(Type* key_type, Type* val_type, Location location)
 
 // Class Channel_type.
 
+// Verify.
+
+bool
+Channel_type::do_verify()
+{
+  // We have no location for this error, but this is not something the
+  // ordinary user will see.
+  if (!this->element_type_->in_heap())
+    go_error_at(Linemap::unknown_location(),
+		"chan of go:notinheap type not allowed");
+  return true;
+}
+
 // Hash code.
 
 unsigned int
@@ -7582,11 +8410,11 @@ Channel_type::do_hash_for_method(Gogo* gogo) const
 // Whether this type is the same as T.
 
 bool
-Channel_type::is_identical(const Channel_type* t,
+Channel_type::is_identical(const Channel_type* t, Cmp_tags cmp_tags,
 			   bool errors_are_identical) const
 {
-  if (!Type::are_identical(this->element_type(), t->element_type(),
-			   errors_are_identical, NULL))
+  if (!Type::are_identical_cmp_tags(this->element_type(), t->element_type(),
+				    cmp_tags, errors_are_identical, NULL))
     return false;
   return (this->may_send_ == t->may_send_
 	  && this->may_receive_ == t->may_receive_);
@@ -7651,7 +8479,7 @@ Channel_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   vals->reserve(3);
 
   Struct_field_list::const_iterator p = fields->begin();
-  go_assert(p->is_field_name("commonType"));
+  go_assert(p->is_field_name("_type"));
   vals->push_back(this->type_descriptor_constructor(gogo,
 						    RUNTIME_TYPE_KIND_CHAN,
 						    name, NULL, true));
@@ -7688,42 +8516,6 @@ Channel_type::do_reflection(Gogo* gogo, std::string* ret) const
     ret->append("<-");
   ret->push_back(' ');
   this->append_reflection(this->element_type_, gogo, ret);
-}
-
-// Generate GC symbol for channels.
-
-void
-Channel_type::do_gc_symbol(Gogo*, Expression_list** vals,
-			   Expression** offset, int)
-{
-  Location bloc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-  (*vals)->push_back(Expression::make_integer_ul(GC_CHAN_PTR, uintptr_type,
-						 bloc));
-  (*vals)->push_back(*offset);
- 
-  Type* unsafeptr_type = Type::make_pointer_type(Type::make_void_type());
-  Expression* type_descriptor =
-    Expression::make_type_descriptor(this, bloc);
-  type_descriptor =
-    Expression::make_unsafe_cast(unsafeptr_type, type_descriptor, bloc);
-  (*vals)->push_back(type_descriptor);
-  this->advance_gc_offset(offset);
-}
-
-// Mangled name.
-
-void
-Channel_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('C');
-  this->append_mangled_name(this->element_type_, gogo, ret);
-  if (this->may_send_)
-    ret->push_back('s');
-  if (this->may_receive_)
-    ret->push_back('r');
-  ret->push_back('e');
 }
 
 // Export.
@@ -8014,7 +8806,7 @@ Interface_type::is_unexported_method(Gogo* gogo, const std::string& name) const
 // Whether this type is identical with T.
 
 bool
-Interface_type::is_identical(const Interface_type* t,
+Interface_type::is_identical(const Interface_type* t, Cmp_tags cmp_tags,
 			     bool errors_are_identical) const
 {
   // If methods have not been finalized, then we are asking whether
@@ -8045,8 +8837,8 @@ Interface_type::is_identical(const Interface_type* t,
       if (p1 == this->all_methods_->end())
 	break;
       if (p1->name() != p2->name()
-	  || !Type::are_identical(p1->type(), p2->type(),
-				  errors_are_identical, NULL))
+	  || !Type::are_identical_cmp_tags(p1->type(), p2->type(), cmp_tags,
+					   errors_are_identical, NULL))
 	break;
     }
 
@@ -8244,7 +9036,8 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
       Function_type* m_fn_type = m->type()->function_type();
       go_assert(p_fn_type != NULL && m_fn_type != NULL);
       std::string subreason;
-      if (!p_fn_type->is_identical(m_fn_type, true, true, &subreason))
+      if (!p_fn_type->is_identical(m_fn_type, true, COMPARE_TAGS, true,
+				   &subreason))
 	{
 	  if (reason != NULL)
 	    {
@@ -8331,6 +9124,8 @@ Interface_type::get_backend_empty_interface_type(Gogo* gogo)
   return empty_interface_type;
 }
 
+Interface_type::Bmethods_map Interface_type::bmethods_map;
+
 // Return a pointer to the backend representation of the method table.
 
 Btype*
@@ -8338,6 +9133,21 @@ Interface_type::get_backend_methods(Gogo* gogo)
 {
   if (this->bmethods_ != NULL && !this->bmethods_is_placeholder_)
     return this->bmethods_;
+
+  std::pair<Interface_type*, Bmethods_map_entry> val;
+  val.first = this;
+  val.second.btype = NULL;
+  val.second.is_placeholder = false;
+  std::pair<Bmethods_map::iterator, bool> ins =
+    Interface_type::bmethods_map.insert(val);
+  if (!ins.second
+      && ins.first->second.btype != NULL
+      && !ins.first->second.is_placeholder)
+    {
+      this->bmethods_ = ins.first->second.btype;
+      this->bmethods_is_placeholder_ = false;
+      return this->bmethods_;
+    }
 
   Location loc = this->location();
 
@@ -8395,10 +9205,14 @@ Interface_type::get_backend_methods(Gogo* gogo)
   Btype* st = gogo->backend()->struct_type(mfields);
   Btype* ret = gogo->backend()->pointer_type(st);
 
-  if (this->bmethods_ != NULL && this->bmethods_is_placeholder_)
-    gogo->backend()->set_placeholder_pointer_type(this->bmethods_, ret);
+  if (ins.first->second.btype != NULL
+      && ins.first->second.is_placeholder)
+    gogo->backend()->set_placeholder_pointer_type(ins.first->second.btype,
+                                                  ret);
   this->bmethods_ = ret;
+  ins.first->second.btype = ret;
   this->bmethods_is_placeholder_ = false;
+  ins.first->second.is_placeholder = false;
   return ret;
 }
 
@@ -8409,10 +9223,25 @@ Interface_type::get_backend_methods_placeholder(Gogo* gogo)
 {
   if (this->bmethods_ == NULL)
     {
+      std::pair<Interface_type*, Bmethods_map_entry> val;
+      val.first = this;
+      val.second.btype = NULL;
+      val.second.is_placeholder = false;
+      std::pair<Bmethods_map::iterator, bool> ins =
+        Interface_type::bmethods_map.insert(val);
+      if (!ins.second && ins.first->second.btype != NULL)
+        {
+          this->bmethods_ = ins.first->second.btype;
+          this->bmethods_is_placeholder_ = ins.first->second.is_placeholder;
+          return this->bmethods_;
+        }
+
       Location loc = this->location();
-      this->bmethods_ = gogo->backend()->placeholder_pointer_type("", loc,
-								  false);
+      Btype* bt = gogo->backend()->placeholder_pointer_type("", loc, false);
+      this->bmethods_ = bt;
+      ins.first->second.btype = bt;
       this->bmethods_is_placeholder_ = true;
+      ins.first->second.is_placeholder = true;
     }
   return this->bmethods_;
 }
@@ -8540,7 +9369,7 @@ Interface_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   ivals->reserve(2);
 
   Struct_field_list::const_iterator pif = ifields->begin();
-  go_assert(pif->is_field_name("commonType"));
+  go_assert(pif->is_field_name("_type"));
   const int rt = RUNTIME_TYPE_KIND_INTERFACE;
   ivals->push_back(this->type_descriptor_constructor(gogo, rt, name, NULL,
 						     true));
@@ -8646,65 +9475,6 @@ Interface_type::do_reflection(Gogo* gogo, std::string* ret) const
       ret->push_back(' ');
     }
   ret->append("}");
-}
-
-// Generate GC symbol for interface types.
-
-void
-Interface_type::do_gc_symbol(Gogo*, Expression_list** vals,
-			     Expression** offset, int)
-{
-  Location bloc = Linemap::predeclared_location();
-  Type* uintptr_type = Type::lookup_integer_type("uintptr");
-
-  unsigned long opval = this->is_empty() ? GC_EFACE : GC_IFACE;
-  (*vals)->push_back(Expression::make_integer_ul(opval, uintptr_type, bloc));
-  (*vals)->push_back(*offset);
-  this->advance_gc_offset(offset);
-}
-
-// Mangled name.
-
-void
-Interface_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  go_assert(this->methods_are_finalized_);
-
-  ret->push_back('I');
-
-  const Typed_identifier_list* methods = this->all_methods_;
-  if (methods != NULL && !this->seen_)
-    {
-      this->seen_ = true;
-      for (Typed_identifier_list::const_iterator p = methods->begin();
-	   p != methods->end();
-	   ++p)
-	{
-	  if (!p->name().empty())
-	    {
-	      std::string n;
-	      if (!Gogo::is_hidden_name(p->name()))
-		n = p->name();
-	      else
-		{
-		  n = ".";
-		  std::string pkgpath = Gogo::hidden_name_pkgpath(p->name());
-		  n.append(Gogo::pkgpath_for_symbol(pkgpath));
-		  n.append(1, '.');
-		  n.append(Gogo::unpack_hidden_name(p->name()));
-		}
-	      char buf[20];
-	      snprintf(buf, sizeof buf, "%u_",
-		       static_cast<unsigned int>(n.length()));
-	      ret->append(buf);
-	      ret->append(n);
-	    }
-	  this->append_mangled_name(p->type(), gogo, ret);
-	}
-      this->seen_ = false;
-    }
-
-  ret->push_back('e');
 }
 
 // Export.
@@ -8899,7 +9669,9 @@ Interface_type::do_import(Import* imp)
       methods = NULL;
     }
 
-  return Type::make_interface_type(methods, imp->location());
+  Interface_type* ret = Type::make_interface_type(methods, imp->location());
+  ret->package_ = imp->package();
+  return ret;
 }
 
 // Make an interface type.
@@ -8998,7 +9770,12 @@ bool
 Named_method::do_nointerface() const
 {
   Named_object* no = this->named_object_;
-  return no->is_function() && no->func_value()->nointerface();
+  if (no->is_function())
+    return no->func_value()->nointerface();
+  else if (no->is_function_declaration())
+    return no->func_declaration_value()->nointerface();
+  else
+    go_unreachable();
 }
 
 // Class Interface_method.
@@ -9075,18 +9852,6 @@ Named_type::message_name() const
   return this->named_object_->message_name();
 }
 
-// Whether this is an alias.  There are currently only two aliases so
-// we just recognize them by name.
-
-bool
-Named_type::is_alias() const
-{
-  if (!this->is_builtin())
-    return false;
-  const std::string& name(this->name());
-  return name == "byte" || name == "rune";
-}
-
 // Return the base type for this type.  We have to be careful about
 // circular type definitions, which are invalid but may be seen here.
 
@@ -9146,6 +9911,7 @@ Named_type::named_type_is_comparable(std::string* reason) const
 Named_object*
 Named_type::add_method(const std::string& name, Function* function)
 {
+  go_assert(!this->is_alias_);
   if (this->local_methods_ == NULL)
     this->local_methods_ = new Bindings(NULL);
   return this->local_methods_->add_function(name, NULL, function);
@@ -9158,6 +9924,7 @@ Named_type::add_method_declaration(const std::string& name, Package* package,
 				   Function_type* type,
 				   Location location)
 {
+  go_assert(!this->is_alias_);
   if (this->local_methods_ == NULL)
     this->local_methods_ = new Bindings(NULL);
   return this->local_methods_->add_function_declaration(name, package, type,
@@ -9169,6 +9936,7 @@ Named_type::add_method_declaration(const std::string& name, Package* package,
 void
 Named_type::add_existing_method(Named_object* no)
 {
+  go_assert(!this->is_alias_);
   if (this->local_methods_ == NULL)
     this->local_methods_ = new Bindings(NULL);
   this->local_methods_->add_named_object(no);
@@ -9180,9 +9948,49 @@ Named_type::add_existing_method(Named_object* no)
 Named_object*
 Named_type::find_local_method(const std::string& name) const
 {
+  if (this->is_error_)
+    return NULL;
+  if (this->is_alias_)
+    {
+      Named_type* nt = this->type_->named_type();
+      if (nt != NULL)
+	{
+	  if (this->seen_alias_)
+	    return NULL;
+	  this->seen_alias_ = true;
+	  Named_object* ret = nt->find_local_method(name);
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      return NULL;
+    }
   if (this->local_methods_ == NULL)
     return NULL;
   return this->local_methods_->lookup(name);
+}
+
+// Return the list of local methods.
+
+const Bindings*
+Named_type::local_methods() const
+{
+  if (this->is_error_)
+    return NULL;
+  if (this->is_alias_)
+    {
+      Named_type* nt = this->type_->named_type();
+      if (nt != NULL)
+	{
+	  if (this->seen_alias_)
+	    return NULL;
+	  this->seen_alias_ = true;
+	  const Bindings* ret = nt->local_methods();
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      return NULL;
+    }
+  return this->local_methods_;
 }
 
 // Return whether NAME is an unexported field or method, for better
@@ -9192,6 +10000,22 @@ bool
 Named_type::is_unexported_local_method(Gogo* gogo,
 				       const std::string& name) const
 {
+  if (this->is_error_)
+    return false;
+  if (this->is_alias_)
+    {
+      Named_type* nt = this->type_->named_type();
+      if (nt != NULL)
+	{
+	  if (this->seen_alias_)
+	    return false;
+	  this->seen_alias_ = true;
+	  bool ret = nt->is_unexported_local_method(gogo, name);
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      return false;
+    }
   Bindings* methods = this->local_methods_;
   if (methods != NULL)
     {
@@ -9216,6 +10040,8 @@ Named_type::is_unexported_local_method(Gogo* gogo,
 void
 Named_type::finalize_methods(Gogo* gogo)
 {
+  if (this->is_alias_)
+    return;
   if (this->all_methods_ != NULL)
     return;
 
@@ -9236,6 +10062,56 @@ Named_type::finalize_methods(Gogo* gogo)
   Type::finalize_methods(gogo, this, this->location_, &this->all_methods_);
 }
 
+// Return whether this type has any methods.
+
+bool
+Named_type::has_any_methods() const
+{
+  if (this->is_error_)
+    return false;
+  if (this->is_alias_)
+    {
+      if (this->type_->named_type() != NULL)
+	{
+	  if (this->seen_alias_)
+	    return false;
+	  this->seen_alias_ = true;
+	  bool ret = this->type_->named_type()->has_any_methods();
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      if (this->type_->struct_type() != NULL)
+	return this->type_->struct_type()->has_any_methods();
+      return false;
+    }
+  return this->all_methods_ != NULL;
+}
+
+// Return the methods for this type.
+
+const Methods*
+Named_type::methods() const
+{
+  if (this->is_error_)
+    return NULL;
+  if (this->is_alias_)
+    {
+      if (this->type_->named_type() != NULL)
+	{
+	  if (this->seen_alias_)
+	    return NULL;
+	  this->seen_alias_ = true;
+	  const Methods* ret = this->type_->named_type()->methods();
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      if (this->type_->struct_type() != NULL)
+	return this->type_->struct_type()->methods();
+      return NULL;
+    }
+  return this->all_methods_;
+}
+
 // Return the method NAME, or NULL if there isn't one or if it is
 // ambiguous.  Set *IS_AMBIGUOUS if the method exists but is
 // ambiguous.
@@ -9243,6 +10119,26 @@ Named_type::finalize_methods(Gogo* gogo)
 Method*
 Named_type::method_function(const std::string& name, bool* is_ambiguous) const
 {
+  if (this->is_error_)
+    return NULL;
+  if (this->is_alias_)
+    {
+      if (is_ambiguous != NULL)
+	*is_ambiguous = false;
+      if (this->type_->named_type() != NULL)
+	{
+	  if (this->seen_alias_)
+	    return NULL;
+	  this->seen_alias_ = true;
+	  Named_type* nt = this->type_->named_type();
+	  Method* ret = nt->method_function(name, is_ambiguous);
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      if (this->type_->struct_type() != NULL)
+	return this->type_->struct_type()->method_function(name, is_ambiguous);
+      return NULL;
+    }
   return Type::method_function(this->all_methods_, name, is_ambiguous);
 }
 
@@ -9253,6 +10149,25 @@ Named_type::method_function(const std::string& name, bool* is_ambiguous) const
 Expression*
 Named_type::interface_method_table(Interface_type* interface, bool is_pointer)
 {
+  if (this->is_error_)
+    return Expression::make_error(this->location_);
+  if (this->is_alias_)
+    {
+      if (this->type_->named_type() != NULL)
+	{
+	  if (this->seen_alias_)
+	    return Expression::make_error(this->location_);
+	  this->seen_alias_ = true;
+	  Named_type* nt = this->type_->named_type();
+	  Expression* ret = nt->interface_method_table(interface, is_pointer);
+	  this->seen_alias_ = false;
+	  return ret;
+	}
+      if (this->type_->struct_type() != NULL)
+	return this->type_->struct_type()->interface_method_table(interface,
+								  is_pointer);
+      go_unreachable();
+    }
   return Type::interface_method_table(this, interface, is_pointer,
                                       &this->interface_method_tables_,
                                       &this->pointer_interface_method_tables_);
@@ -9371,6 +10286,55 @@ Find_type_use::type(Type* type)
   return TRAVERSE_CONTINUE;
 }
 
+// Look for a circular reference of an alias.
+
+class Find_alias : public Traverse
+{
+ public:
+  Find_alias(Named_type* find_type)
+    : Traverse(traverse_types),
+      find_type_(find_type), found_(false)
+  { }
+
+  // Whether we found the type.
+  bool
+  found() const
+  { return this->found_; }
+
+ protected:
+  int
+  type(Type*);
+
+ private:
+  // The type we are looking for.
+  Named_type* find_type_;
+  // Whether we found the type.
+  bool found_;
+};
+
+int
+Find_alias::type(Type* type)
+{
+  Named_type* nt = type->named_type();
+  if (nt != NULL)
+    {
+      if (nt == this->find_type_)
+	{
+	  this->found_ = true;
+	  return TRAVERSE_EXIT;
+	}
+
+      // We started from `type T1 = T2`, where T1 is find_type_ and T2
+      // is, perhaps indirectly, the parameter TYPE.  If TYPE is not
+      // an alias itself, it's OK if whatever T2 is defined as refers
+      // to T1.
+      if (!nt->is_alias())
+	return TRAVERSE_SKIP_COMPONENTS;
+    }
+
+  return TRAVERSE_CONTINUE;
+}
+
 // Verify that a named type does not refer to itself.
 
 bool
@@ -9379,6 +10343,22 @@ Named_type::do_verify()
   if (this->is_verified_)
     return true;
   this->is_verified_ = true;
+
+  if (this->is_error_)
+    return false;
+
+  if (this->is_alias_)
+    {
+      Find_alias find(this);
+      Type::traverse(this->type_, &find);
+      if (find.found())
+	{
+	  go_error_at(this->location_, "invalid recursive alias %qs",
+		      this->message_name().c_str());
+	  this->is_error_ = true;
+	  return false;
+	}
+    }
 
   Find_type_use find(this);
   Type::traverse(this->type_, &find);
@@ -9480,8 +10460,11 @@ Named_type::do_needs_key_update()
 unsigned int
 Named_type::do_hash_for_method(Gogo* gogo) const
 {
-  if (this->is_alias())
-    return this->type_->named_type()->do_hash_for_method(gogo);
+  if (this->is_error_)
+    return 0;
+
+  // Aliases are handled in Type::hash_for_method.
+  go_assert(!this->is_alias_);
 
   const std::string& name(this->named_object()->name());
   unsigned int ret = Type::hash_string(name, 0);
@@ -9805,15 +10788,10 @@ Named_type::do_get_backend(Gogo* gogo)
       // Don't build a circular data structure.  GENERIC can't handle
       // it.
       if (this->seen_in_get_backend_)
-	{
-	  this->is_circular_ = true;
-	  return gogo->backend()->circular_pointer_type(bt, false);
-	}
+        return gogo->backend()->circular_pointer_type(bt, true);
       this->seen_in_get_backend_ = true;
       bt1 = Type::get_named_base_btype(gogo, base);
       this->seen_in_get_backend_ = false;
-      if (this->is_circular_)
-	bt1 = gogo->backend()->circular_pointer_type(bt, false);
       if (!gogo->backend()->set_placeholder_pointer_type(bt, bt1))
 	bt = gogo->backend()->error_type();
       return bt;
@@ -9822,15 +10800,10 @@ Named_type::do_get_backend(Gogo* gogo)
       // Don't build a circular data structure. GENERIC can't handle
       // it.
       if (this->seen_in_get_backend_)
-	{
-	  this->is_circular_ = true;
-	  return gogo->backend()->circular_pointer_type(bt, false);
-	}
+        return gogo->backend()->circular_pointer_type(bt, false);
       this->seen_in_get_backend_ = true;
       bt1 = Type::get_named_base_btype(gogo, base);
       this->seen_in_get_backend_ = false;
-      if (this->is_circular_)
-	bt1 = gogo->backend()->circular_pointer_type(bt, false);
       if (!gogo->backend()->set_placeholder_pointer_type(bt, bt1))
 	bt = gogo->backend()->error_type();
       return bt;
@@ -9851,8 +10824,17 @@ Named_type::do_get_backend(Gogo* gogo)
 Expression*
 Named_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 {
-  if (name == NULL && this->is_alias())
-    return this->type_->type_descriptor(gogo, this->type_);
+  if (this->is_error_)
+    return Expression::make_error(this->location_);
+  if (name == NULL && this->is_alias_)
+    {
+      if (this->seen_alias_)
+	return Expression::make_error(this->location_);
+      this->seen_alias_ = true;
+      Expression* ret = this->type_->type_descriptor(gogo, NULL);
+      this->seen_alias_ = false;
+      return ret;
+    }
 
   // If NAME is not NULL, then we don't really want the type
   // descriptor for this type; we want the descriptor for the
@@ -9868,9 +10850,25 @@ Named_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 void
 Named_type::do_reflection(Gogo* gogo, std::string* ret) const
 {
-  if (this->is_alias())
+  this->append_reflection_type_name(gogo, false, ret);
+}
+
+// Add to the reflection string.  For an alias we normally use the
+// real name, but if USE_ALIAS is true we use the alias name itself.
+
+void
+Named_type::append_reflection_type_name(Gogo* gogo, bool use_alias,
+					std::string* ret) const
+{
+  if (this->is_error_)
+    return;
+  if (this->is_alias_ && !use_alias)
     {
+      if (this->seen_alias_)
+	return;
+      this->seen_alias_ = true;
       this->append_reflection(this->type_, gogo, ret);
+      this->seen_alias_ = false;
       return;
     }
   if (!this->is_builtin())
@@ -9914,69 +10912,6 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
       ret->push_back('\t');
     }
   ret->append(Gogo::unpack_hidden_name(this->named_object_->name()));
-}
-
-// Generate GC symbol for named types.
-
-void
-Named_type::do_gc_symbol(Gogo* gogo, Expression_list** vals,
-			 Expression** offset, int stack)
-{
-  if (!this->seen_)
-    {
-      this->seen_ = true;
-      Type::gc_symbol(gogo, this->real_type(), vals, offset, stack);
-      this->seen_ = false;
-    }
-}
-
-// Get the mangled name.
-
-void
-Named_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  if (this->is_alias())
-    {
-      this->append_mangled_name(this->type_, gogo, ret);
-      return;
-    }
-  Named_object* no = this->named_object_;
-  std::string name;
-  if (this->is_builtin())
-    go_assert(this->in_function_ == NULL);
-  else
-    {
-      const std::string& pkgpath(no->package() == NULL
-				 ? gogo->pkgpath_symbol()
-				 : no->package()->pkgpath_symbol());
-      name = pkgpath;
-      name.append(1, '.');
-      if (this->in_function_ != NULL)
-	{
-	  const Typed_identifier* rcvr =
-	    this->in_function_->func_value()->type()->receiver();
-	  if (rcvr != NULL)
-	    {
-	      Named_type* rcvr_type = rcvr->type()->deref()->named_type();
-	      name.append(Gogo::unpack_hidden_name(rcvr_type->name()));
-	      name.append(1, '.');
-	    }
-	  name.append(Gogo::unpack_hidden_name(this->in_function_->name()));
-	  name.append(1, '$');
-	  if (this->in_function_index_ > 0)
-	    {
-	      char buf[30];
-	      snprintf(buf, sizeof buf, "%u", this->in_function_index_);
-	      name.append(buf);
-	      name.append(1, '$');
-	    }
-	}
-    }
-  name.append(Gogo::unpack_hidden_name(no->name()));
-  char buf[20];
-  snprintf(buf, sizeof buf, "N%u_", static_cast<unsigned int>(name.length()));
-  ret->append(buf);
-  ret->append(name);
 }
 
 // Export the type.  This is called to export a global type.
@@ -10359,7 +11294,7 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 	package = NULL;
       else
 	package = type->named_type()->named_object()->package();
-      std::string stub_name = name + "$stub";
+      std::string stub_name = gogo->stub_method_name(package, name);
       Named_object* stub;
       if (package != NULL)
 	stub = Named_object::make_function_declaration(stub_name, package,
@@ -10444,7 +11379,8 @@ Type::apply_field_indexes(Expression* expr,
   if (expr->type()->struct_type() == NULL)
     {
       go_assert(expr->type()->points_to() != NULL);
-      expr = Expression::make_unary(OPERATOR_MULT, expr, location);
+      expr = Expression::make_dereference(expr, Expression::NIL_CHECK_DEFAULT,
+                                          location);
       go_assert(expr->type()->struct_type() == stype);
     }
   return Expression::make_field_reference(expr, field_indexes->field_index,
@@ -10548,7 +11484,8 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
       && type->points_to() != NULL
       && type->points_to()->points_to() != NULL)
     {
-      expr = Expression::make_unary(OPERATOR_MULT, expr, location);
+      expr = Expression::make_dereference(expr, Expression::NIL_CHECK_DEFAULT,
+                                          location);
       type = type->points_to();
       if (type->deref()->is_error_type())
 	return Expression::make_error(location);
@@ -10574,12 +11511,25 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	  go_assert(st != NULL);
 	  if (type->struct_type() == NULL)
 	    {
+              if (dereferenced)
+                {
+                  go_error_at(location, "pointer type has no field %qs",
+                              Gogo::message_name(name).c_str());
+                  return Expression::make_error(location);
+                }
 	      go_assert(type->points_to() != NULL);
-	      expr = Expression::make_unary(OPERATOR_MULT, expr,
-					    location);
+              expr = Expression::make_dereference(expr,
+                                                  Expression::NIL_CHECK_DEFAULT,
+                                                  location);
 	      go_assert(expr->type()->struct_type() == st);
 	    }
 	  ret = st->field_reference(expr, name, location);
+          if (ret == NULL)
+            {
+              go_error_at(location, "type has no field %qs",
+                          Gogo::message_name(name).c_str());
+              return Expression::make_error(location);
+            }
 	}
       else if (it != NULL && it->find_method(name) != NULL)
 	ret = Expression::make_interface_field_reference(expr, name,
@@ -10686,9 +11636,9 @@ Type::find_field_or_method(const Type* type,
 			   std::string* ambig2)
 {
   // Named types can have locally defined methods.
-  const Named_type* nt = type->named_type();
+  const Named_type* nt = type->unalias()->named_type();
   if (nt == NULL && type->points_to() != NULL)
-    nt = type->points_to()->named_type();
+    nt = type->points_to()->unalias()->named_type();
   if (nt != NULL)
     {
       Named_object* no = nt->find_local_method(name);
@@ -11096,6 +12046,17 @@ Forward_declaration_type::add_method_declaration(const std::string& name,
   return td->add_method_declaration(name, package, type, location);
 }
 
+// Add an already created object as a method.
+
+void
+Forward_declaration_type::add_existing_method(Named_object* nom)
+{
+  Named_object* no = this->named_object();
+  if (no->is_unknown())
+    no->declare_as_type();
+  no->type_declaration_value()->add_existing_method(nom);
+}
+
 // Traversal.
 
 int
@@ -11154,7 +12115,7 @@ Forward_declaration_type::do_type_descriptor(Gogo* gogo, Named_type* name)
       if (name != NULL)
 	return this->named_type_descriptor(gogo, t, name);
       else
-	return Expression::make_type_descriptor(t, ploc);
+	return Expression::make_error(this->named_object_->location());
     }
 }
 
@@ -11164,31 +12125,6 @@ void
 Forward_declaration_type::do_reflection(Gogo* gogo, std::string* ret) const
 {
   this->append_reflection(this->real_type(), gogo, ret);
-}
-
-// The mangled name.
-
-void
-Forward_declaration_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  if (this->is_defined())
-    this->append_mangled_name(this->real_type(), gogo, ret);
-  else
-    {
-      const Named_object* no = this->named_object();
-      std::string name;
-      if (no->package() == NULL)
-	name = gogo->pkgpath_symbol();
-      else
-	name = no->package()->pkgpath_symbol();
-      name += '.';
-      name += Gogo::unpack_hidden_name(no->name());
-      char buf[20];
-      snprintf(buf, sizeof buf, "N%u_",
-	       static_cast<unsigned int>(name.length()));
-      ret->append(buf);
-      ret->append(name);
-    }
 }
 
 // Export a forward declaration.  This can happen when a defined type

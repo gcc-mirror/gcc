@@ -31,7 +31,7 @@ program main
   type(child) :: infant0, infant1(2)
 
   infant0 = child([component(1),component(2)], 99)
-  if (any (infant0%parent%foo%i .ne. [20, 20])) call abort
+  if (any (infant0%parent%foo%i .ne. [20, 20])) STOP 1
 
 end
 

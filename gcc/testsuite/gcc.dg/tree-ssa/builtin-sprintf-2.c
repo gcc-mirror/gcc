@@ -7,19 +7,26 @@
    The test is compiled with warnings disabled to make sure the absence
    of optimizations does not depend on the presence of warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fprintf-return-value -fdump-tree-optimized -ftrack-macro-expansion=0 -w" } */
+/* { dg-options "-O2 -fprintf-return-value -fdump-tree-optimized -w" } */
 
 #ifndef LINE
 # define LINE 0
 #endif
 
-#define INT_MAX __INT_MAX__
+#define INT_MAX    __INT_MAX__
+#define INT_MIN    (-INT_MAX - 1)
+
+#define LONG_MAX   __LONG_MAX__
+#define LONG_MIN   (-LONG_MAX - 1)
 
 char *buf;
 char buf8k [8192];
 
 #define concat(a, b)   a ## b
 #define CAT(a, b)      concat (a, b)
+
+/* Calls to this function must not be eliminated.  */
+void must_not_eliminate (void);
 
 #define EQL(expect, size, fmt, ...)					\
   void __attribute__ ((noinline, noclone))				\
@@ -30,7 +37,7 @@ char buf8k [8192];
 	char *dst = size < 0 ? buf : buf8k + sizeof buf8k - size;	\
 	int result = __builtin_sprintf (dst, fmt, __VA_ARGS__);		\
 	if (result != expect)						\
-	  __builtin_abort ();						\
+	  must_not_eliminate ();					\
       }									\
   }
 
@@ -46,16 +53,21 @@ char buf8k [8192];
 	char *dst = size < 0 ? buf : buf8k + sizeof buf8k - size;	\
 	int result = __builtin_sprintf (dst, fmt, __VA_ARGS__);		\
 	if (result < min || max < result)				\
-	  __builtin_abort ();						\
+	  must_not_eliminate ();					\
       }									\
   }
 
-extern int i;
-extern long li;
-extern char *str;
+typedef __SIZE_TYPE__ size_t;
 
-extern double d;
-extern long double ld;
+volatile int i;
+volatile unsigned u;
+volatile long li;
+volatile unsigned long lu;
+volatile size_t sz;
+volatile char *str;
+
+volatile double d;
+volatile long double ld;
 
 /* Verify that overflowing the destination object disables the return
    value optimization.  */
@@ -65,6 +77,8 @@ EQL (0, 0, "%-s", "");
 
 EQL (1, 1, "%c",  'x');
 EQL (1, 1, "%-s", "x");
+
+EQL (1, 2, "%c",  'x');
 
 EQL (4, 4, "%4c", 'x');
 
@@ -162,6 +176,20 @@ RNG (0,  4,  7, "%i", i)
 RNG (0,  5,  7, "%i", i)
 RNG (0,  6,  7, "%i", i)
 
+RNG (4,  4, 32, "%i", i)
+RNG (4,  4, 32, "%u", u)
+RNG (4,  4, 32, "%li", li)
+RNG (4,  4, 32, "%lu", lu)
+RNG (4,  4, 32, "%zu", sz)
+
+/* Exercise bug 78586.  */
+RNG (4,  4, 32, "%lu", (unsigned long)i)
+RNG (4,  4, 32, "%lu", (unsigned long)u)
+RNG (4,  4, 32, "%lu", (unsigned long)li)
+RNG (4,  4, 32, "%lu", (unsigned long)lu)
+RNG (4,  4, 32, "%lu", (unsigned long)sz)
+
+
 #if __SIZEOF_INT__ == 4
 
 /* A 32-bit int takes up at most 11 bytes (-2147483648) not including
@@ -215,6 +243,14 @@ RNG (6,  6,  7, "%La",      0.0L)   /* Glibc output: "0x0p+0"  */
 RNG (6,  6,  7, "%La",      ld)
 RNG (6,  6,  7, "%.4096La", ld)
 
+/* Verify that the pound flag with unknown precision prevents the %g
+   directive from trimming trailing zeros as it otherwise does.  As
+   a consequence, the result must be assumed to be as large as
+   precision.  */
+RNG (1,  315,  316, "%#.*g", i, d);
+RNG (1, 4095, 4096, "%#.*g", i, d);
+RNG (1, 4095, 4096, "%#.*g", i, 0.0);
+
 /* Verify that the result of formatting an unknown string isn't optimized
    into a non-negative range.  The string could be longer that 4,095 bytes,
    resulting in the formatting function having undefined behavior (and
@@ -236,21 +272,25 @@ RNG (0,  6,   8, "%s%ls", "1", L"2");
 /* Verify that no call to abort has been eliminated and that each call
    is at the beginning of a basic block (and thus the result of a branch).
    This latter test tries to verify that the test preceding the call to
-   abort has not been eliminated either.
+   the must_not_eliminate() function has not been eliminated either.
 
    The expected output looks something like this:
 
    <bb 2>:
    result_3 = __builtin_sprintf (&MEM[(void *)&buf8k + 8192B], "%c", 32);
    if (result_3 != 0)
-     goto <bb 3>;
+     goto <bb 3>; [50.0%] [count: INV]
    else
-     goto <bb 4>;
+     goto <bb 4>; [50.0%] [count: INV]
 
-   <bb 3>:
-   __builtin_abort ();
+   <bb 3>[50.0%] [count: INV]:
+   must_not_eliminate ();
 
 */
 
-/* { dg-final { scan-tree-dump-times ">:\n *__builtin_abort" 114 "optimized" { target { ilp32 || lp64 } } } } */
-/* { dg-final { scan-tree-dump-times ">:\n *__builtin_abort" 83 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } } */
+/*  Only conditional calls to must_not_eliminate must be made (with
+    any probability):
+    { dg-final { scan-tree-dump-times "> \\\[local count: \[0-9INV\]*\\\]:\n *must_not_eliminate" 127 "optimized" { target { ilp32 || lp64 } } } }
+    { dg-final { scan-tree-dump-times "> \\\[local count: \[0-9INV\]*\\\]:\n *must_not_eliminate" 96 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } }
+    No unconditional calls to abort should be made:
+    { dg-final { scan-tree-dump-not ";\n *must_not_eliminate" "optimized" } } */

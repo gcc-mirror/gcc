@@ -6,7 +6,7 @@
 ! a temporary) match.
 #define TST(b,c,d,e,f,g,r) a=init; a(b:c:d) = a(e:f:g); \
        write(unit=line ,fmt="(9I1)") a;\
-       if (line /= r) call abort ; \
+       if (line /= r) STOP 1; \
        call mytst(b,c,d,e,f,g,r);
 
 program main
@@ -35,5 +35,5 @@ subroutine mytst(b,c,d,e,f,g,r)
   a = (/(i,i=1,9)/)
   a(b:c:d) = a(e:f:g)
   write (unit=line,fmt='(9I1)') a
-  if (line /= r) call abort
+  if (line /= r) STOP 2
 end subroutine mytst

@@ -1,3 +1,5 @@
+/* { dg-add-options stack_size } */
+
 #if defined(STACK_SIZE) && (STACK_SIZE < 65536)
 # define BYTEMEM_SIZE 10000L
 #endif

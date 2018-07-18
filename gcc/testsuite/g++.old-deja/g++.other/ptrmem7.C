@@ -21,7 +21,7 @@ void A::foo ()
 {
   int (A::*ptr1) (int) = &A::ns;
   int (A::*ptr2) (int) = A::ns;           // { dg-error "pointer to member" "err" }
-  // { dg-message "pointer to member" "note" { target *-*-* } 23 }
+  // { dg-message "pointer to member" "note" { target *-*-* } .-1 }
   int (A::*ptr3) (int) = &ns;             // { dg-error "pointer to member" "err" }
   int (A::*ptr4) (int) = ns;              // { dg-error "pointer to member" "err" }
 

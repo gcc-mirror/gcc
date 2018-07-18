@@ -14,4 +14,4 @@ test_all_not_equal (vector long long *arg1_p, vector long long *arg2_p)
   return vec_all_ne (arg_1, arg_2);
 }
 
-/* { dg-final { scan-assembler "vcmpnew." } } */
+/* { dg-final { scan-assembler "vcmpequd." } } */

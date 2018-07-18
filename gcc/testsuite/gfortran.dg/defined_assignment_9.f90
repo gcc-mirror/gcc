@@ -32,7 +32,7 @@ program main
 !    print *, right%foo
     left = right
 !    print *, left%foo
-    if (left%foo%i /= 20) call abort()
+    if (left%foo%i /= 20) STOP 1
   end block
   block
     type(parent), allocatable :: left(:)
@@ -40,6 +40,6 @@ program main
 !    print *, right%foo
     left = right
 !    print *, left%foo
-    if (any (left%foo%i /= 20)) call abort()
+    if (any (left%foo%i /= 20)) STOP 2
   end block
 end

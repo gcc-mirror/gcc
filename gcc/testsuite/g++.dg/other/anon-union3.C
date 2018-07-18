@@ -3,7 +3,7 @@
 class C
 {
   auto union      // { dg-error "storage class" "" { target { ! c++11 } } }
-    {		  // { dg-error "auto" "" { target c++11 } 5 }
+    {		  // { dg-error "auto" "" { target c++11 } .-1 }
       int a;
     };            // { dg-error "multiple types" "" { target c++11 } }
   register union  // { dg-error "storage class" }

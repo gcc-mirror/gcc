@@ -1,5 +1,5 @@
 ;; Predicate definitions for SPARC.
-;; Copyright (C) 2005-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -328,6 +328,33 @@
        (and (match_code "const_int")
             (match_test "SPARC_SIMM5_P (INTVAL (op))"))))
 
+;; Return true if OP is a constant in the range 0..7.  This is an
+;; acceptable second operand for dictunpack instructions setting a
+;; V8QI mode in the destination register.
+(define_predicate "imm5_operand_dictunpack8"
+  (and (match_code "const_int")
+       (match_test "(INTVAL (op) >= 0 && INTVAL (op) < 8)")))
+
+;; Return true if OP is a constant in the range 7..15.  This is an
+;; acceptable second operand for dictunpack instructions setting a
+;; V4HI mode in the destination register.
+(define_predicate "imm5_operand_dictunpack16"
+  (and (match_code "const_int")
+       (match_test "(INTVAL (op) >= 8 && INTVAL (op) < 16)")))
+
+;; Return true if OP is a constant in the range 15..31.  This is an
+;; acceptable second operand for dictunpack instructions setting a
+;; V2SI mode in the destination register.
+(define_predicate "imm5_operand_dictunpack32"
+  (and (match_code "const_int")
+       (match_test "(INTVAL (op) >= 16 && INTVAL (op) < 32)")))
+
+;; Return true if OP is a constant that is representable by a 2-bit
+;; unsigned field.  This is an acceptable third operand for
+;; fpcmp*shl instructions.
+(define_predicate "imm2_operand"
+  (and (match_code "const_int")
+       (match_test "SPARC_IMM2_P (INTVAL (op))")))
 
 ;; Predicates for miscellaneous instructions.
 
@@ -373,6 +400,7 @@
   if (TARGET_ARCH32 && mode == DImode && GET_CODE (op) == CONST_INT)
     return true;
 
+  /* Allow FP constants to be built in integer registers.  */
   if (mclass == MODE_FLOAT && GET_CODE (op) == CONST_DOUBLE)
     return true;
 
@@ -388,7 +416,14 @@
 
   /* Check for valid MEM forms.  */
   if (GET_CODE (op) == MEM)
-    return memory_address_p (mode, XEXP (op, 0));
+    {
+      /* Except when LRA is precisely working hard to make them valid
+	 and relying entirely on the constraints.  */
+      if (lra_in_progress)
+	return true;
+
+      return memory_address_p (mode, XEXP (op, 0));
+    }
 
   return false;
 })
@@ -431,17 +466,17 @@
 {
   switch (GET_MODE (XEXP (op, 0)))
     {
-    case CCmode:
-    case CCXmode:
+    case E_CCmode:
+    case E_CCXmode:
       return true;
-    case CCNZmode:
-    case CCXNZmode:
+    case E_CCNZmode:
+    case E_CCXNZmode:
       return nz_comparison_operator (op, mode);
-    case CCCmode:
-    case CCXCmode:
+    case E_CCCmode:
+    case E_CCXCmode:
       return c_comparison_operator (op, mode);
-    case CCVmode:
-    case CCXVmode:
+    case E_CCVmode:
+    case E_CCXVmode:
       return v_comparison_operator (op, mode);
     default:
       return false;
@@ -454,8 +489,8 @@
 {
   switch (GET_MODE (XEXP (op, 0)))
     {
-    case CCFPmode:
-    case CCFPEmode:
+    case E_CCFPmode:
+    case E_CCFPEmode:
       return true;
     default:
       return false;

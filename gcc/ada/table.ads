@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,9 @@
 --  dimensional arrays. The idea is to mimic the normal Ada semantics for
 --  arrays as closely as possible with the one additional capability of
 --  dynamically modifying the value of the Last attribute.
+
+--  This package uses a very efficient memory management scheme and any
+--  change must be carefully evaluated on compilation of real software.
 
 --  Note that this interface should remain synchronized with those in
 --  GNAT.Table and GNAT.Dynamic_Tables to keep coherency between these
@@ -221,8 +224,8 @@ package Table is
       --  Writes out contents of table using Tree_IO
 
       procedure Tree_Read;
-      --  Initializes table by reading contents previously written
-      --  with the Tree_Write call (also using Tree_IO)
+      --  Initializes table by reading contents previously written with the
+      --  Tree_Write call (also using Tree_IO).
 
    private
 

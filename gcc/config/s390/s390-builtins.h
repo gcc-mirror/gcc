@@ -1,5 +1,5 @@
 /* Common data structures used for builtin handling on S/390.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
 
@@ -144,6 +144,8 @@ extern const unsigned int opflags_builtin[S390_BUILTIN_MAX + 1];
 
 extern const unsigned int
   bflags_overloaded_builtin[S390_OVERLOADED_BUILTIN_MAX + 1];
+extern const unsigned int
+  bflags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1];
 extern const unsigned int
   opflags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1];
 

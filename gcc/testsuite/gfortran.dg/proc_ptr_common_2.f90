@@ -12,7 +12,7 @@ abstract interface
 end interface
 
 procedure(foo), pointer, bind(C) :: proc
-common /com/ proc,r
+common /com/ proc,r  ! { dg-error "PROCEDURE attribute conflicts with COMMON attribute" }
 
 common s
 call s()  ! { dg-error "PROCEDURE attribute conflicts with COMMON attribute" }

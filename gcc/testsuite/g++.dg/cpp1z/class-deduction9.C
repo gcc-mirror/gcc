@@ -1,4 +1,4 @@
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 namespace N {
   template <class T>
@@ -10,7 +10,7 @@ namespace N {
 }
 
 template <class T>
-N::A(T) -> N::A<T>;		// { dg-error "scope" }
+N::A(T) -> N::A<T>;	  // { dg-error "should have been declared inside .N" }
 
 namespace N {
   template <class T>

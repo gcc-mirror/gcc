@@ -17,14 +17,15 @@ endif
 SUBDIRS += lsan asan ubsan
 nodist_saninclude_HEADERS += \
   include/sanitizer/lsan_interface.h \
-  include/sanitizer/asan_interface.h
+  include/sanitizer/asan_interface.h \
+  include/sanitizer/tsan_interface.h
 if TSAN_SUPPORTED
 SUBDIRS += tsan
 endif
 endif
 
 ## May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

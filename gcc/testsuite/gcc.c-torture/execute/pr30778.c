@@ -1,4 +1,4 @@
-extern void *memset (void *, int, unsigned long);
+extern void *memset (void *, int, __SIZE_TYPE__);
 extern void abort (void);
 
 struct reg_stat {

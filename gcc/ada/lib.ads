@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,7 +66,7 @@ package Lib is
 
    --    (a) Corresponding spec for a body
    --    (b) Parent spec of a child library spec
-   --    (d) With'ed specs
+   --    (c) With'ed specs
    --    (d) Parent body of a subunit
    --    (e) Subunits corresponding to any specified stubs
    --    (f) Bodies of inlined subprograms that are called
@@ -302,7 +302,7 @@ package Lib is
    --      No_Name for the main unit.
 
    --    Fatal_Error
-   --      A flag that is initialized to None and gets set to Errorif a fatal
+   --      A flag that is initialized to None and gets set to Error if a fatal
    --      error occurs during the processing of a unit. A fatal error is one
    --      defined as serious enough to stop the next phase of the compiler
    --      from running (i.e. fatal error during parsing stops semantics,
@@ -326,6 +326,19 @@ package Lib is
    --    Ident_String
    --      N_String_Literal node from a valid pragma Ident that applies to
    --      this unit. If no Ident pragma applies to the unit, then Empty.
+
+   --    Is_Predefined_Renaming
+   --      True if this unit is a predefined renaming, as in "Text_IO renames
+   --      Ada.Text_IO").
+
+   --    Is_Internal_Unit
+   --      Same as In_Predefined_Unit, except units in the GNAT hierarchy are
+   --      included.
+
+   --    Is_Predefined_Unit
+   --      True if this unit is predefined (i.e. part of the Ada, System, or
+   --      Interface hierarchies, or Is_Predefined_Renaming). Note that units
+   --      in the GNAT hierarchy are not considered predefined.
 
    --    Loading
    --      A flag that is used to catch circular WITH dependencies. It is set
@@ -356,6 +369,20 @@ package Lib is
    --    OA_Setting
    --      This is a character field containing L if Optimize_Alignment mode
    --      was set locally, and O/T/S for Off/Time/Space default if not.
+
+   --    Primary_Stack_Count
+   --      The number of primary stacks belonging to tasks defined within the
+   --      unit that have no Storage_Size specified when the either restriction
+   --      No_Implicit_Heap_Allocations or No_Implicit_Task_Allocations is
+   --      active. Only used by the binder to generate stacks for these tasks
+   --      at bind time.
+
+   --    Sec_Stack_Count
+   --      The number of secondary stacks belonging to tasks defined within the
+   --      unit that have no Secondary_Stack_Size specified when the either
+   --      the No_Implicit_Heap_Allocations or No_Implicit_Task_Allocations
+   --      restrictions are active. Only used by the binder to generate stacks
+   --      for these tasks at bind time.
 
    --    Serial_Number
    --      This field holds a serial number used by New_Internal_Name to
@@ -428,12 +455,20 @@ package Lib is
    function Generate_Code    (U : Unit_Number_Type) return Boolean;
    function Ident_String     (U : Unit_Number_Type) return Node_Id;
    function Has_RACW         (U : Unit_Number_Type) return Boolean;
+   function Is_Predefined_Renaming
+                             (U : Unit_Number_Type) return Boolean;
+   function Is_Internal_Unit (U : Unit_Number_Type) return Boolean;
+   function Is_Predefined_Unit
+                             (U : Unit_Number_Type) return Boolean;
    function Loading          (U : Unit_Number_Type) return Boolean;
    function Main_CPU         (U : Unit_Number_Type) return Int;
    function Main_Priority    (U : Unit_Number_Type) return Int;
    function Munit_Index      (U : Unit_Number_Type) return Nat;
    function No_Elab_Code_All (U : Unit_Number_Type) return Boolean;
    function OA_Setting       (U : Unit_Number_Type) return Character;
+   function Primary_Stack_Count
+                             (U : Unit_Number_Type) return Int;
+   function Sec_Stack_Count  (U : Unit_Number_Type) return Int;
    function Source_Index     (U : Unit_Number_Type) return Source_File_Index;
    function Unit_File_Name   (U : Unit_Number_Type) return File_Name_Type;
    function Unit_Name        (U : Unit_Number_Type) return Unit_Name_Type;
@@ -465,12 +500,19 @@ package Lib is
    --  avoid registering switches added automatically by the gcc driver at the
    --  end of the command line.
 
-   function Earlier_In_Extended_Unit (S1, S2 : Source_Ptr) return Boolean;
+   function Earlier_In_Extended_Unit
+     (S1 : Source_Ptr;
+      S2 : Source_Ptr) return Boolean;
    --  Given two Sloc values for which In_Same_Extended_Unit is true, determine
    --  if S1 appears before S2. Returns True if S1 appears before S2, and False
    --  otherwise. The result is undefined if S1 and S2 are not in the same
    --  extended unit. Note: this routine will not give reliable results if
    --  called after Sprint has been called with -gnatD set.
+
+   function Earlier_In_Extended_Unit
+     (N1 : Node_Or_Entity_Id;
+      N2 : Node_Or_Entity_Id) return Boolean;
+   --  Same as above, but the inputs denote nodes or entities
 
    procedure Enable_Switch_Storing;
    --  Enable registration of switches by Store_Compilation_Switch. Used to
@@ -493,7 +535,7 @@ package Lib is
    --  Return the Nth stored compilation switch, or null if less than N
    --  switches have been stored. Used by ASIS and back ends written in Ada.
 
-   function Generic_May_Lack_ALI (Sfile : File_Name_Type) return Boolean;
+   function Generic_May_Lack_ALI (Unum : Unit_Number_Type) return Boolean;
    --  Generic units must be separately compiled. Since we always use
    --  macro substitution for generics, the resulting object file is a dummy
    --  one with no code, but the ALI file has the normal form, and we need
@@ -597,7 +639,19 @@ package Lib is
    --  of the descendant packages of one of these three packages).
 
    function In_Predefined_Unit (S : Source_Ptr) return Boolean;
+   pragma Inline (In_Predefined_Unit);
    --  Same function as above but argument is a source pointer
+
+   function In_Internal_Unit (N : Node_Or_Entity_Id) return Boolean;
+   function In_Internal_Unit (S : Source_Ptr) return Boolean;
+   pragma Inline (In_Internal_Unit);
+   --  Same as In_Predefined_Unit, except units in the GNAT hierarchy are
+   --  included.
+
+   function In_Predefined_Renaming (N : Node_Or_Entity_Id) return Boolean;
+   function In_Predefined_Renaming (S : Source_Ptr) return Boolean;
+   pragma Inline (In_Predefined_Renaming);
+   --  Returns True if N or S is in a predefined renaming unit
 
    function In_Same_Code_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
    pragma Inline (In_Same_Code_Unit);
@@ -626,6 +680,13 @@ package Lib is
    --  Determines if the two nodes or entities N1 and N2 are in the same
    --  source unit, the criterion being that Get_Source_Unit yields the
    --  same value for each argument.
+
+   procedure Increment_Primary_Stack_Count (Increment : Int);
+   --  Increment the Primary_Stack_Count field for the current unit by
+   --  Increment.
+
+   procedure Increment_Sec_Stack_Count (Increment : Int);
+   --  Increment the Sec_Stack_Count field for the current unit by Increment
 
    function Increment_Serial_Number return Nat;
    --  Increment Serial_Number field for current unit, and return the
@@ -759,6 +820,8 @@ private
    pragma Inline (Fatal_Error);
    pragma Inline (Generate_Code);
    pragma Inline (Has_RACW);
+   pragma Inline (Increment_Primary_Stack_Count);
+   pragma Inline (Increment_Sec_Stack_Count);
    pragma Inline (Increment_Serial_Number);
    pragma Inline (Loading);
    pragma Inline (Main_CPU);
@@ -771,6 +834,11 @@ private
    pragma Inline (Set_Fatal_Error);
    pragma Inline (Set_Generate_Code);
    pragma Inline (Set_Has_RACW);
+   pragma Inline (Is_Predefined_Renaming);
+   pragma Inline (Is_Internal_Unit);
+   pragma Inline (Is_Predefined_Unit);
+   pragma Inline (Primary_Stack_Count);
+   pragma Inline (Sec_Stack_Count);
    pragma Inline (Set_Loading);
    pragma Inline (Set_Main_CPU);
    pragma Inline (Set_Main_Priority);
@@ -784,29 +852,35 @@ private
    --  The Units Table
 
    type Unit_Record is record
-      Unit_File_Name    : File_Name_Type;
-      Unit_Name         : Unit_Name_Type;
-      Munit_Index       : Nat;
-      Expected_Unit     : Unit_Name_Type;
-      Source_Index      : Source_File_Index;
-      Cunit             : Node_Id;
-      Cunit_Entity      : Entity_Id;
-      Dependency_Num    : Int;
-      Ident_String      : Node_Id;
-      Main_Priority     : Int;
-      Main_CPU          : Int;
-      Serial_Number     : Nat;
-      Version           : Word;
-      Error_Location    : Source_Ptr;
-      Fatal_Error       : Fatal_Type;
-      Generate_Code     : Boolean;
-      Has_RACW          : Boolean;
-      Dynamic_Elab      : Boolean;
-      No_Elab_Code_All  : Boolean;
-      Filler            : Boolean;
-      Loading           : Boolean;
-      OA_Setting        : Character;
-      SPARK_Mode_Pragma : Node_Id;
+      Unit_File_Name         : File_Name_Type;
+      Unit_Name              : Unit_Name_Type;
+      Munit_Index            : Nat;
+      Expected_Unit          : Unit_Name_Type;
+      Source_Index           : Source_File_Index;
+      Cunit                  : Node_Id;
+      Cunit_Entity           : Entity_Id;
+      Dependency_Num         : Int;
+      Ident_String           : Node_Id;
+      Main_Priority          : Int;
+      Main_CPU               : Int;
+      Primary_Stack_Count    : Int;
+      Sec_Stack_Count        : Int;
+      Serial_Number          : Nat;
+      Version                : Word;
+      Error_Location         : Source_Ptr;
+      Fatal_Error            : Fatal_Type;
+      Generate_Code          : Boolean;
+      Has_RACW               : Boolean;
+      Dynamic_Elab           : Boolean;
+      No_Elab_Code_All       : Boolean;
+      Filler                 : Boolean;
+      Loading                : Boolean;
+      OA_Setting             : Character;
+
+      Is_Predefined_Renaming : Boolean;
+      Is_Internal_Unit       : Boolean;
+      Is_Predefined_Unit     : Boolean;
+      Filler2                : Boolean;
    end record;
 
    --  The following representation clause ensures that the above record
@@ -814,32 +888,38 @@ private
    --  written by Tree_Gen, we do not write uninitialized values to the file.
 
    for Unit_Record use record
-      Unit_File_Name    at  0 range 0 .. 31;
-      Unit_Name         at  4 range 0 .. 31;
-      Munit_Index       at  8 range 0 .. 31;
-      Expected_Unit     at 12 range 0 .. 31;
-      Source_Index      at 16 range 0 .. 31;
-      Cunit             at 20 range 0 .. 31;
-      Cunit_Entity      at 24 range 0 .. 31;
-      Dependency_Num    at 28 range 0 .. 31;
-      Ident_String      at 32 range 0 .. 31;
-      Main_Priority     at 36 range 0 .. 31;
-      Main_CPU          at 40 range 0 .. 31;
-      Serial_Number     at 44 range 0 .. 31;
-      Version           at 48 range 0 .. 31;
-      Error_Location    at 52 range 0 .. 31;
-      Fatal_Error       at 56 range 0 ..  7;
-      Generate_Code     at 57 range 0 ..  7;
-      Has_RACW          at 58 range 0 ..  7;
-      Dynamic_Elab      at 59 range 0 ..  7;
-      No_Elab_Code_All  at 60 range 0 ..  7;
-      Filler            at 61 range 0 ..  7;
-      OA_Setting        at 62 range 0 ..  7;
-      Loading           at 63 range 0 ..  7;
-      SPARK_Mode_Pragma at 64 range 0 .. 31;
+      Unit_File_Name         at  0 range 0 .. 31;
+      Unit_Name              at  4 range 0 .. 31;
+      Munit_Index            at  8 range 0 .. 31;
+      Expected_Unit          at 12 range 0 .. 31;
+      Source_Index           at 16 range 0 .. 31;
+      Cunit                  at 20 range 0 .. 31;
+      Cunit_Entity           at 24 range 0 .. 31;
+      Dependency_Num         at 28 range 0 .. 31;
+      Ident_String           at 32 range 0 .. 31;
+      Main_Priority          at 36 range 0 .. 31;
+      Main_CPU               at 40 range 0 .. 31;
+      Primary_Stack_Count    at 44 range 0 .. 31;
+      Sec_Stack_Count        at 48 range 0 .. 31;
+      Serial_Number          at 52 range 0 .. 31;
+      Version                at 56 range 0 .. 31;
+      Error_Location         at 60 range 0 .. 31;
+      Fatal_Error            at 64 range 0 ..  7;
+      Generate_Code          at 65 range 0 ..  7;
+      Has_RACW               at 66 range 0 ..  7;
+      Dynamic_Elab           at 67 range 0 ..  7;
+      No_Elab_Code_All       at 68 range 0 ..  7;
+      Filler                 at 69 range 0 ..  7;
+      OA_Setting             at 70 range 0 ..  7;
+      Loading                at 71 range 0 ..  7;
+
+      Is_Predefined_Renaming at 72 range 0 .. 7;
+      Is_Internal_Unit       at 73 range 0 .. 7;
+      Is_Predefined_Unit     at 74 range 0 .. 7;
+      Filler2                at 75 range 0 .. 7;
    end record;
 
-   for Unit_Record'Size use 68 * 8;
+   for Unit_Record'Size use 76 * 8;
    --  This ensures that we did not leave out any fields
 
    package Units is new Table.Table (

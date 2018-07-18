@@ -1,6 +1,6 @@
 // Support routines for the -*- C++ -*- dynamic memory management.
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -48,12 +48,39 @@ aligned_alloc (std::size_t al, std::size_t sz)
   return nullptr;
 }
 #elif _GLIBCXX_HAVE_MEMALIGN
+#if _GLIBCXX_HOSTED
 #include <malloc.h>
+#else
+extern "C" void *memalign(std::size_t boundary, std::size_t size);
+#endif
 #define aligned_alloc memalign
 #else
-// The C library doesn't provide any aligned allocation functions, declare
-// aligned_alloc and get a link failure if aligned new is used.
-extern "C" void *aligned_alloc(std::size_t, std::size_t);
+#include <stdint.h>
+// The C library doesn't provide any aligned allocation functions, define one.
+// This is a modified version of code from gcc/config/i386/gmm_malloc.h
+static inline void*
+aligned_alloc (std::size_t al, std::size_t sz)
+{
+  // Alignment must be a power of two.
+  if (al & (al - 1))
+    return nullptr;
+  else if (!sz)
+    return nullptr;
+
+  // We need extra bytes to store the original value returned by malloc.
+  if (al < sizeof(void*))
+    al = sizeof(void*);
+  void* const malloc_ptr = malloc(sz + al);
+  if (!malloc_ptr)
+    return nullptr;
+  // Align to the requested value, leaving room for the original malloc value.
+  void* const aligned_ptr = (void *) (((uintptr_t) malloc_ptr + al) & -al);
+
+  // Store the original malloc value where it can be found by operator delete.
+  ((void **) aligned_ptr)[-1] = malloc_ptr;
+
+  return aligned_ptr;
+}
 #endif
 #endif
 

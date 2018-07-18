@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,24 +214,6 @@ package Osint is
    --  a list of valid Unix syntax file or directory specs. If Only_Dirs is
    --  True, then only return directories.
 
-   function To_Canonical_Dir_Spec
-     (Host_Dir     : String;
-      Prefix_Style : Boolean) return String_Access;
-   --  Convert a host syntax directory specification to canonical (Unix)
-   --  syntax. If Prefix_Style then make it a valid file specification prefix.
-   --  A file specification prefix is a directory specification that can be
-   --  appended with a simple file specification to yield a valid absolute
-   --  or relative path to a file. On a conversion to Unix syntax this simply
-   --  means the spec has a trailing slash ("/").
-
-   function To_Canonical_File_Spec
-     (Host_File : String) return String_Access;
-   --  Convert a host syntax file specification to canonical (Unix) syntax
-
-   function To_Canonical_Path_Spec
-     (Host_Path : String) return String_Access;
-   --  Convert a host syntax Path specification to canonical (Unix) syntax
-
    function To_Host_Dir_Spec
      (Canonical_Dir : String;
       Prefix_Style  : Boolean) return String_Access;
@@ -273,10 +255,26 @@ package Osint is
    --  from the disk and then cached in the File_Attributes parameter (possibly
    --  along with other values).
 
-   type File_Attributes is private;
-   Unknown_Attributes : constant File_Attributes;
+   File_Attributes_Size : constant Natural := 32;
+   --  This should be big enough to fit a "struct file_attributes" on any
+   --  system. It doesn't cause any malfunction if it is too big (which avoids
+   --  the need for either mapping the struct exactly or importing the sizeof
+   --  from C, which would result in dynamic code). However, it does waste
+   --  space (e.g. when a component of this type appears in a record, if it is
+   --  unnecessarily large). Note: for runtime units, use System.OS_Constants.
+   --  SIZEOF_struct_file_attributes instead, which has the exact value.
+
+   type File_Attributes is
+     array (1 .. File_Attributes_Size)
+       of System.Storage_Elements.Storage_Element;
+   for File_Attributes'Alignment use Standard'Maximum_Alignment;
+
+   Unknown_Attributes : File_Attributes;
    --  A cache for various attributes for a file (length, accessibility,...)
-   --  This must be initialized to Unknown_Attributes prior to the first call.
+   --  Will be initialized properly at elaboration (for efficiency later on,
+   --  avoid function calls every time we want to reset the attributes) prior
+   --  to the first usage. We cannot make it constant since the compiler may
+   --  put it in a read-only section.
 
    function Is_Directory
      (Name : C_File_Name;
@@ -419,10 +417,12 @@ package Osint is
       Lo  : Source_Ptr;
       Hi  : out Source_Ptr;
       Src : out Source_Buffer_Ptr;
+      FD  : out File_Descriptor;
       T   : File_Type := Source);
    --  Allocates a Source_Buffer of appropriate length and then reads the
    --  entire contents of the source file N into the buffer. The address of
-   --  the allocated buffer is returned in Src.
+   --  the allocated buffer is returned in Src. FD is used for extended error
+   --  information in the case the read fails.
    --
    --  Each line of text is terminated by one of the sequences:
    --
@@ -435,11 +435,8 @@ package Osint is
    --  positions other than the last source character are treated as blanks).
    --
    --  The logical lower bound of the source buffer is the input value of Lo,
-   --  and on exit Hi is set to the logical upper bound of the source buffer.
-   --  Note that the returned value in Src points to an array with a physical
-   --  lower bound of zero. This virtual origin addressing approach means that
-   --  a constrained array pointer can be used with a low bound of zero which
-   --  results in more efficient code.
+   --  and on exit Hi is set to the logical upper bound of the source buffer,
+   --  which is redundant with Src'Last.
    --
    --  If the given file cannot be opened, then the action depends on whether
    --  this file is the current main unit (i.e. its name matches the name
@@ -447,7 +444,11 @@ package Osint is
    --  failure to find the file is a fatal error, an error message is output,
    --  and program execution is terminated. Otherwise (for the case of a
    --  subsidiary source loaded directly or indirectly using with), a file
-   --  not found condition causes null to be set as the result value.
+   --  not found condition causes null to be set as the result value and a
+   --  value of No_Source_File (0) to be set as the FD value. In the related
+   --  case of a file with no read permissions the result is the same except FD
+   --  is set to No_Access_To_Source_File (-1). Upon success FD is set to a
+   --  positive Source_File_Index.
    --
    --  Note that the name passed to this function is the simple file name,
    --  without any directory information. The implementation is responsible
@@ -683,7 +684,7 @@ package Osint is
    --  The suffixes used for the ALI files
 
    function Prep_Suffix return String;
-   --  The suffix used for pre-processed files
+   --  The suffix used for preprocessed files
 
 private
 
@@ -768,23 +769,5 @@ private
    --  in Output_File_Name. A check is made for disk full, and if this is
    --  detected, the file being written is deleted, and a fatal error is
    --  signalled.
-
-   File_Attributes_Size : constant Natural := 32;
-   --  This should be big enough to fit a "struct file_attributes" on any
-   --  system. It doesn't cause any malfunction if it is too big (which avoids
-   --  the need for either mapping the struct exactly or importing the sizeof
-   --  from C, which would result in dynamic code). However, it does waste
-   --  space (e.g. when a component of this type appears in a record, if it is
-   --  unnecessarily large). Note: for runtime units, use System.OS_Constants.
-   --  SIZEOF_struct_file_attributes instead, which has the exact value.
-
-   type File_Attributes is
-     array (1 .. File_Attributes_Size)
-       of System.Storage_Elements.Storage_Element;
-   for File_Attributes'Alignment use Standard'Maximum_Alignment;
-
-   Unknown_Attributes : constant File_Attributes := (others => 0);
-   --  Will be initialized properly at elaboration (for efficiency later on,
-   --  avoid function calls every time we want to reset the attributes).
 
 end Osint;

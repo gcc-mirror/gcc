@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,9 +29,8 @@
 --  is used in the ALI file.
 
 with Namet; use Namet;
+with Table;
 with Types; use Types;
-
-with GNAT.Table;
 
 package SCOs is
 
@@ -152,6 +151,7 @@ package SCOs is
    --      o        object declaration
    --      r        renaming declaration
    --      i        generic instantiation
+   --      d        any other kind of declaration
    --      A        ACCEPT statement (from ACCEPT to end of parameter profile)
    --      C        CASE statement (from CASE to end of expression)
    --      E        EXIT statement
@@ -382,12 +382,13 @@ package SCOs is
       --  For the SCO for a pragma/aspect, gives the pragma/apsect name
    end record;
 
-   package SCO_Table is new GNAT.Table (
+   package SCO_Table is new Table.Table (
      Table_Component_Type => SCO_Table_Entry,
      Table_Index_Type     => Nat,
      Table_Low_Bound      => 1,
      Table_Initial        => 500,
-     Table_Increment      => 300);
+     Table_Increment      => 300,
+     Table_Name           => "Table");
 
    Is_Decision : constant array (Character) of Boolean :=
      ('E' | 'G' | 'I' | 'P' | 'a' | 'A' | 'W' | 'X' => True,
@@ -497,6 +498,11 @@ package SCOs is
    --  Used to index values in this table. Values start at 1 and are assigned
    --  sequentially as entries are constructed.
 
+   Missing_Dep_Num : constant Nat := 0;
+   --  Represents a dependency number for a dependency that is ignored. SCO
+   --  information consumers use this to strip units that must be kept out of
+   --  the coverage analysis.
+
    type SCO_Unit_Table_Entry is record
       File_Name : String_Ptr;
       --  Pointer to file name in ALI file
@@ -505,7 +511,9 @@ package SCOs is
       --  Index for the source file
 
       Dep_Num : Nat;
-      --  Dependency number in ALI file
+      --  Dependency number in ALI file. This is a positive number when the
+      --  dependency is actually available in the context, it is
+      --  Missing_Dep_Num otherwise.
 
       From : Nat;
       --  Starting index in SCO_Table of SCO information for this unit
@@ -522,12 +530,13 @@ package SCOs is
 
    end record;
 
-   package SCO_Unit_Table is new GNAT.Table (
+   package SCO_Unit_Table is new Table.Table (
      Table_Component_Type => SCO_Unit_Table_Entry,
      Table_Index_Type     => SCO_Unit_Index,
      Table_Low_Bound      => 0, -- see note above on sorting
      Table_Initial        => 20,
-     Table_Increment      => 200);
+     Table_Increment      => 200,
+     Table_Name           => "Unit_Table");
 
    -----------------------
    -- Generic instances --
@@ -543,12 +552,13 @@ package SCOs is
       Enclosing_Instance : SCO_Instance_Index;
    end record;
 
-   package SCO_Instance_Table is new GNAT.Table (
+   package SCO_Instance_Table is new Table.Table (
      Table_Component_Type => SCO_Instance_Table_Entry,
      Table_Index_Type     => SCO_Instance_Index,
      Table_Low_Bound      => 1,
      Table_Initial        => 20,
-     Table_Increment      => 200);
+     Table_Increment      => 200,
+     Table_Name           => "Instance_Table");
 
    -----------------
    -- Subprograms --

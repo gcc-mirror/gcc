@@ -19,7 +19,7 @@ contains
     QLA3 = QCA
     QLA3( 2:10:3) = QCA ( 1:5:2) + 1
     QLA1( 2:10:3) = QLA2( 1:5:2) + 1  !failed because of dependency
-    if (any (qla1 .ne. qla3)) call abort
+    if (any (qla1 .ne. qla3)) STOP 1
   END SUBROUTINE
 end module
 

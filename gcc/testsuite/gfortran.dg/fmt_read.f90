@@ -6,6 +6,6 @@
       rewind(7)
       read(7,'(F15.5)') a,b
 !   note the read format is wider than the write
-      if (abs(a-1.0) .gt. 1e-5) call abort
-      if (abs(b-2.0) .gt. 1e-5) call abort
+      if (abs(a-1.0) .gt. 1e-5) STOP 1
+      if (abs(b-2.0) .gt. 1e-5) STOP 2
       end

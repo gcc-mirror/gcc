@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mcpu=8540 -mspe -mabi=spe -mfloat-gprs=single -O0" } */
-/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } { "*" } { "" } } */
+/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } } */
 
 /* (Test with -O0 so we don't optimize any of them away).  */
 
@@ -22,7 +22,7 @@ float fl;
 uint16_t u16;
 int16_t s16;
 
-/* These are the only documented/supported accesor functions for the
+/* These are the only documented/supported accessor functions for the
    SPE builtins.  */
 void
 test_api ()

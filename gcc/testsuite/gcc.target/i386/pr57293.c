@@ -1,4 +1,4 @@
-/* { dg-do compile  { target { ia32 } } } */
+/* { dg-do compile  { target ia32 } } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 /* { dg-final { scan-assembler-not "%ebp" } } */
 

@@ -23,6 +23,7 @@ var transitionFunc = [...]func(context, []byte) (context, int){
 	stateRCDATA:      tSpecialTagEnd,
 	stateAttr:        tAttr,
 	stateURL:         tURL,
+	stateSrcset:      tURL,
 	stateJS:          tJS,
 	stateJSDqStr:     tJSDelimited,
 	stateJSSqStr:     tJSDelimited,
@@ -105,14 +106,23 @@ func tTag(c context, s []byte) (context, int) {
 			err:   errorf(ErrBadHTML, nil, 0, "expected space, attr name, or end of tag, but got %q", s[i:]),
 		}, len(s)
 	}
-	switch attrType(string(s[i:j])) {
-	case contentTypeURL:
-		attr = attrURL
-	case contentTypeCSS:
-		attr = attrStyle
-	case contentTypeJS:
-		attr = attrScript
+
+	attrName := strings.ToLower(string(s[i:j]))
+	if c.element == elementScript && attrName == "type" {
+		attr = attrScriptType
+	} else {
+		switch attrType(attrName) {
+		case contentTypeURL:
+			attr = attrURL
+		case contentTypeCSS:
+			attr = attrStyle
+		case contentTypeJS:
+			attr = attrScript
+		case contentTypeSrcset:
+			attr = attrSrcset
+		}
 	}
+
 	if j == len(s) {
 		state = stateAttrName
 	} else {
@@ -149,10 +159,12 @@ func tAfterName(c context, s []byte) (context, int) {
 }
 
 var attrStartStates = [...]state{
-	attrNone:   stateAttr,
-	attrScript: stateJS,
-	attrStyle:  stateCSS,
-	attrURL:    stateURL,
+	attrNone:       stateAttr,
+	attrScript:     stateJS,
+	attrScriptType: stateAttr,
+	attrStyle:      stateCSS,
+	attrURL:        stateURL,
+	attrSrcset:     stateSrcset,
 }
 
 // tBeforeValue is the context transition function for stateBeforeValue.
@@ -238,7 +250,7 @@ func tAttr(c context, s []byte) (context, int) {
 
 // tURL is the context transition function for the URL state.
 func tURL(c context, s []byte) (context, int) {
-	if bytes.IndexAny(s, "#?") >= 0 {
+	if bytes.ContainsAny(s, "#?") {
 		c.urlPart = urlPartQueryOrFrag
 	} else if len(s) != eatWhiteSpace(s, 0) && c.urlPart == urlPartNone {
 		// HTML5 uses "Valid URL potentially surrounded by spaces" for

@@ -36,8 +36,8 @@ END SUBROUTINE implicit_type
 
 SUBROUTINE specification_expression
   CHARACTER(KIND=selected_char_kind("ascii")) :: x
-! { dg-error "must be an intrinsic function" "" { target "*-*-*" } 38 }
-! { dg-warning "Fortran 2003" "" { target "*-*-*" } 38 }
+! { dg-error "must be an intrinsic function" "" { target "*-*-*" } .-1 }
+! { dg-warning "Fortran 2003" "" { target "*-*-*" } .-2 }
 END SUBROUTINE specification_expression
 
 SUBROUTINE intrinsic_decl

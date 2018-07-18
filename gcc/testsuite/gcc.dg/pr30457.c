@@ -18,8 +18,8 @@ void foo(register short paramN, ...)
   
   /* Undefined by C99 7.15.1.1p2:  */
   (void) va_arg(ap, char); /* { dg-warning "'char' is promoted to 'int' when passed through '...'" "promoted" } */
-  /* { dg-message "note: .so you should pass .int. not .char. to .va_arg.." "int not char" { target *-*-* } 20 } */
-  /* { dg-message "note: if this code is reached, the program will abort"  "will abort" { target *-*-* } 20 } */
+  /* { dg-message "note: .so you should pass .int. not .char. to .va_arg.." "int not char" { target *-*-* } .-1 } */
+  /* { dg-message "note: if this code is reached, the program will abort"  "will abort" { target *-*-* } .-2 } */
 
   va_end(ap);
 }

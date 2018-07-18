@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in arm.c and pe.c
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
@@ -22,6 +22,8 @@
 #ifndef GCC_ARM_PROTOS_H
 #define GCC_ARM_PROTOS_H
 
+#include "sbitmap.h"
+
 extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 extern int use_return_insn (int, rtx);
 extern bool use_simple_return_p (void);
@@ -31,6 +33,7 @@ extern int arm_volatile_func (void);
 extern void arm_expand_prologue (void);
 extern void arm_expand_epilogue (bool);
 extern void arm_declare_function_name (FILE *, const char *, tree);
+extern void arm_asm_declare_function_name (FILE *, const char *, tree);
 extern void thumb2_expand_return (bool);
 extern const char *arm_strip_name_encoding (const char *);
 extern void arm_asm_output_labelref (FILE *, const char *);
@@ -44,7 +47,7 @@ extern unsigned int arm_dbx_register_number (unsigned int);
 extern void arm_output_fn_unwind (FILE *, bool);
 
 extern rtx arm_expand_builtin (tree exp, rtx target, rtx subtarget
-			       ATTRIBUTE_UNUSED, enum machine_mode mode
+			       ATTRIBUTE_UNUSED, machine_mode mode
 			       ATTRIBUTE_UNUSED, int ignore ATTRIBUTE_UNUSED);
 extern tree arm_builtin_decl (unsigned code, bool initialize_p
 			      ATTRIBUTE_UNUSED);
@@ -58,8 +61,6 @@ extern void arm_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,
 				      rtx label_ref);
 extern bool arm_vector_mode_supported_p (machine_mode);
 extern bool arm_small_register_classes_for_mode_p (machine_mode);
-extern int arm_hard_regno_mode_ok (unsigned int, machine_mode);
-extern bool arm_modes_tieable_p (machine_mode, machine_mode);
 extern int const_ok_for_arm (HOST_WIDE_INT);
 extern int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 extern int const_ok_for_dimode_op (HOST_WIDE_INT, enum rtx_code);
@@ -91,7 +92,7 @@ extern rtx neon_make_constant (rtx);
 extern tree arm_builtin_vectorized_function (unsigned int, tree, tree);
 extern void neon_expand_vector_init (rtx, rtx);
 extern void neon_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
-extern void neon_const_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
+extern void arm_const_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT neon_element_bits (machine_mode);
 extern void neon_emit_pair_result_insn (machine_mode,
 					rtx (*) (rtx, rtx, rtx, rtx),
@@ -134,6 +135,7 @@ extern int arm_const_double_inline_cost (rtx);
 extern bool arm_const_double_by_parts (rtx);
 extern bool arm_const_double_by_immediates (rtx);
 extern void arm_emit_call_insn (rtx, rtx, bool);
+bool detect_cmse_nonsecure_call (tree);
 extern const char *output_call (rtx *);
 void arm_emit_movpair (rtx, rtx);
 extern const char *output_mov_long_double_arm_from_arm (rtx *);
@@ -170,10 +172,11 @@ extern void arm_expand_compare_and_swap (rtx op[]);
 extern void arm_split_compare_and_swap (rtx op[]);
 extern void arm_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
 extern rtx arm_load_tp (rtx);
+extern bool arm_coproc_builtin_available (enum unspecv);
+extern bool arm_coproc_ldc_stc_legitimate_address (rtx);
 
 #if defined TREE_CODE
 extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
-extern bool arm_pad_arg_upward (machine_mode, const_tree);
 extern bool arm_pad_reg_upward (machine_mode, tree, int);
 #endif
 extern int arm_apply_result_size (void);
@@ -218,6 +221,11 @@ extern bool arm_change_mode_p (tree);
 
 extern tree arm_valid_target_attribute_tree (tree, struct gcc_options *,
 					     struct gcc_options *);
+extern void arm_configure_build_target (struct arm_build_target *,
+					struct cl_target_option *,
+					struct gcc_options *, bool);
+extern void arm_option_reconfigure_globals (void);
+extern void arm_options_perform_arch_sanity_checks (void);
 extern void arm_pr_long_calls (struct cpp_reader *);
 extern void arm_pr_no_long_calls (struct cpp_reader *);
 extern void arm_pr_long_calls_off (struct cpp_reader *);
@@ -255,13 +263,32 @@ struct cpu_vec_costs {
 
 struct cpu_cost_table;
 
+/* Addressing mode operations.  Used to index tables in struct
+   addr_mode_cost_table.  */
+enum arm_addr_mode_op
+{
+   AMO_DEFAULT,
+   AMO_NO_WB,	/* Offset with no writeback.  */
+   AMO_WB,	/* Offset with writeback.  */
+   AMO_MAX	/* For array size.  */
+};
+
+/* Table of additional costs in units of COSTS_N_INSNS() when using
+   addressing modes for each access type.  */
+struct addr_mode_cost_table
+{
+   const int integer[AMO_MAX];
+   const int fp[AMO_MAX];
+   const int vector[AMO_MAX];
+};
+
 /* Dump function ARM_PRINT_TUNE_INFO should be updated whenever this
    structure is modified.  */
 
 struct tune_params
 {
-  bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
   const struct cpu_cost_table *insn_extra_cost;
+  const struct addr_mode_cost_table *addr_mode_costs;
   bool (*sched_adjust_cost) (rtx_insn *, int, rtx_insn *, int *);
   int (*branch_cost) (bool, bool);
   /* Vectorizer costs.  */
@@ -330,7 +357,6 @@ extern bool arm_validize_comparison (rtx *, rtx *, rtx *);
 
 extern bool arm_gen_setmem (rtx *);
 extern void arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
-extern bool arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 
 extern bool arm_autoinc_modes_ok_p (machine_mode, enum arm_auto_incmodes);
 
@@ -349,201 +375,9 @@ extern void arm_cpu_cpp_builtins (struct cpp_reader *);
 
 extern bool arm_is_constant_pool_ref (rtx);
 
-/* Flags used to identify the presence of processor capabilities.  */
-
-/* Bit values used to identify processor capabilities.  */
-#define FL_NONE	      (0)	      /* No flags.  */
-#define FL_ANY	      (0xffffffff)    /* All flags.  */
-#define FL_CO_PROC    (1 << 0)        /* Has external co-processor bus */
-#define FL_ARCH3M     (1 << 1)        /* Extended multiply */
-#define FL_MODE26     (1 << 2)        /* 26-bit mode support */
-#define FL_MODE32     (1 << 3)        /* 32-bit mode support */
-#define FL_ARCH4      (1 << 4)        /* Architecture rel 4 */
-#define FL_ARCH5      (1 << 5)        /* Architecture rel 5 */
-#define FL_THUMB      (1 << 6)        /* Thumb aware */
-#define FL_LDSCHED    (1 << 7)	      /* Load scheduling necessary */
-#define FL_STRONG     (1 << 8)	      /* StrongARM */
-#define FL_ARCH5E     (1 << 9)        /* DSP extensions to v5 */
-#define FL_XSCALE     (1 << 10)	      /* XScale */
-/* spare	      (1 << 11)	*/
-#define FL_ARCH6      (1 << 12)       /* Architecture rel 6.  Adds
-					 media instructions.  */
-#define FL_VFPV2      (1 << 13)       /* Vector Floating Point V2.  */
-#define FL_WBUF	      (1 << 14)	      /* Schedule for write buffer ops.
-					 Note: ARM6 & 7 derivatives only.  */
-#define FL_ARCH6K     (1 << 15)       /* Architecture rel 6 K extensions.  */
-#define FL_THUMB2     (1 << 16)	      /* Thumb-2.  */
-#define FL_NOTM	      (1 << 17)	      /* Instructions not present in the 'M'
-					 profile.  */
-#define FL_THUMB_DIV  (1 << 18)	      /* Hardware divide (Thumb mode).  */
-#define FL_VFPV3      (1 << 19)       /* Vector Floating Point V3.  */
-#define FL_NEON       (1 << 20)       /* Neon instructions.  */
-#define FL_ARCH7EM    (1 << 21)	      /* Instructions present in the ARMv7E-M
-					 architecture.  */
-#define FL_ARCH7      (1 << 22)       /* Architecture 7.  */
-#define FL_ARM_DIV    (1 << 23)	      /* Hardware divide (ARM mode).  */
-#define FL_ARCH8      (1 << 24)       /* Architecture 8.  */
-#define FL_CRC32      (1 << 25)	      /* ARMv8 CRC32 instructions.  */
-
-#define FL_SMALLMUL   (1 << 26)       /* Small multiply supported.  */
-#define FL_NO_VOLATILE_CE   (1 << 27) /* No volatile memory in IT block.  */
-
-#define FL_IWMMXT     (1 << 29)	      /* XScale v2 or "Intel Wireless MMX technology".  */
-#define FL_IWMMXT2    (1 << 30)       /* "Intel Wireless MMX2 technology".  */
-#define FL_ARCH6KZ    (1 << 31)       /* ARMv6KZ architecture.  */
-
-#define FL2_ARCH8_1   (1 << 0)	      /* Architecture 8.1.  */
-#define FL2_ARCH8_2   (1 << 1)	      /* Architecture 8.2.  */
-#define FL2_FP16INST  (1 << 2)	      /* FP16 Instructions for ARMv8.2 and
-					 later.  */
-
-/* Flags that only effect tuning, not available instructions.  */
-#define FL_TUNE		(FL_WBUF | FL_VFPV2 | FL_STRONG | FL_LDSCHED \
-			 | FL_CO_PROC)
-
-#define FL_FOR_ARCH2		FL_NOTM
-#define FL_FOR_ARCH3		(FL_FOR_ARCH2 | FL_MODE32)
-#define FL_FOR_ARCH3M		(FL_FOR_ARCH3 | FL_ARCH3M)
-#define FL_FOR_ARCH4		(FL_FOR_ARCH3M | FL_ARCH4)
-#define FL_FOR_ARCH4T		(FL_FOR_ARCH4 | FL_THUMB)
-#define FL_FOR_ARCH5		(FL_FOR_ARCH4 | FL_ARCH5)
-#define FL_FOR_ARCH5T		(FL_FOR_ARCH5 | FL_THUMB)
-#define FL_FOR_ARCH5E		(FL_FOR_ARCH5 | FL_ARCH5E)
-#define FL_FOR_ARCH5TE		(FL_FOR_ARCH5E | FL_THUMB)
-#define FL_FOR_ARCH5TEJ		FL_FOR_ARCH5TE
-#define FL_FOR_ARCH6		(FL_FOR_ARCH5TE | FL_ARCH6)
-#define FL_FOR_ARCH6J		FL_FOR_ARCH6
-#define FL_FOR_ARCH6K		(FL_FOR_ARCH6 | FL_ARCH6K)
-#define FL_FOR_ARCH6Z		FL_FOR_ARCH6
-#define FL_FOR_ARCH6ZK		FL_FOR_ARCH6K
-#define FL_FOR_ARCH6KZ		(FL_FOR_ARCH6K | FL_ARCH6KZ)
-#define FL_FOR_ARCH6T2		(FL_FOR_ARCH6 | FL_THUMB2)
-#define FL_FOR_ARCH6M		(FL_FOR_ARCH6 & ~FL_NOTM)
-#define FL_FOR_ARCH7		((FL_FOR_ARCH6T2 & ~FL_NOTM) | FL_ARCH7)
-#define FL_FOR_ARCH7A		(FL_FOR_ARCH7 | FL_NOTM | FL_ARCH6K)
-#define FL_FOR_ARCH7VE		(FL_FOR_ARCH7A | FL_THUMB_DIV | FL_ARM_DIV)
-#define FL_FOR_ARCH7R		(FL_FOR_ARCH7A | FL_THUMB_DIV)
-#define FL_FOR_ARCH7M		(FL_FOR_ARCH7 | FL_THUMB_DIV)
-#define FL_FOR_ARCH7EM		(FL_FOR_ARCH7M | FL_ARCH7EM)
-#define FL_FOR_ARCH8A		(FL_FOR_ARCH7VE | FL_ARCH8)
-#define FL2_FOR_ARCH8_1A	FL2_ARCH8_1
-#define FL2_FOR_ARCH8_2A	(FL2_FOR_ARCH8_1A | FL2_ARCH8_2)
-#define FL_FOR_ARCH8M_BASE	(FL_FOR_ARCH6M | FL_ARCH8 | FL_THUMB_DIV)
-#define FL_FOR_ARCH8M_MAIN	(FL_FOR_ARCH7M | FL_ARCH8)
-
-/* There are too many feature bits to fit in a single word so the set of cpu and
-   fpu capabilities is a structure.  A feature set is created and manipulated
-   with the ARM_FSET macros.  */
-
-typedef struct
-{
-  unsigned long cpu[2];
-} arm_feature_set;
-
-
-/* Initialize a feature set.  */
-
-#define ARM_FSET_MAKE(CPU1,CPU2) { { (CPU1), (CPU2) } }
-
-#define ARM_FSET_MAKE_CPU1(CPU1) ARM_FSET_MAKE ((CPU1), (FL_NONE))
-#define ARM_FSET_MAKE_CPU2(CPU2) ARM_FSET_MAKE ((FL_NONE), (CPU2))
-
-/* Accessors.  */
-
-#define ARM_FSET_CPU1(S) ((S).cpu[0])
-#define ARM_FSET_CPU2(S) ((S).cpu[1])
-
-/* Useful combinations.  */
-
-#define ARM_FSET_EMPTY ARM_FSET_MAKE (FL_NONE, FL_NONE)
-#define ARM_FSET_ANY ARM_FSET_MAKE (FL_ANY, FL_ANY)
-
-/* Tests for a specific CPU feature.  */
-
-#define ARM_FSET_HAS_CPU1(A, F)  \
-  (((A).cpu[0] & ((unsigned long)(F))) == ((unsigned long)(F)))
-#define ARM_FSET_HAS_CPU2(A, F)  \
-  (((A).cpu[1] & ((unsigned long)(F))) == ((unsigned long)(F)))
-#define ARM_FSET_HAS_CPU(A, F1, F2)				\
-  (ARM_FSET_HAS_CPU1 ((A), (F1)) && ARM_FSET_HAS_CPU2 ((A), (F2)))
-
-/* Add a feature to a feature set.  */
-
-#define ARM_FSET_ADD_CPU1(DST, F)		\
-  do {						\
-    (DST).cpu[0] |= (F);			\
-  } while (0)
-
-#define ARM_FSET_ADD_CPU2(DST, F)		\
-  do {						\
-    (DST).cpu[1] |= (F);			\
-  } while (0)
-
-/* Remove a feature from a feature set.  */
-
-#define ARM_FSET_DEL_CPU1(DST, F)		\
-  do {						\
-    (DST).cpu[0] &= ~(F);			\
-  } while (0)
-
-#define ARM_FSET_DEL_CPU2(DST, F)		\
-  do {						\
-    (DST).cpu[1] &= ~(F);			\
-  } while (0)
-
-/* Union of feature sets.  */
-
-#define ARM_FSET_UNION(DST,F1,F2)		\
-  do {						\
-    (DST).cpu[0] = (F1).cpu[0] | (F2).cpu[0];	\
-    (DST).cpu[1] = (F1).cpu[1] | (F2).cpu[1];	\
-  } while (0)
-
-/* Intersection of feature sets.  */
-
-#define ARM_FSET_INTER(DST,F1,F2)		\
-  do {						\
-    (DST).cpu[0] = (F1).cpu[0] & (F2).cpu[0];	\
-    (DST).cpu[1] = (F1).cpu[1] & (F2).cpu[1];	\
-  } while (0)
-
-/* Exclusive disjunction.  */
-
-#define ARM_FSET_XOR(DST,F1,F2)				\
-  do {							\
-    (DST).cpu[0] = (F1).cpu[0] ^ (F2).cpu[0];		\
-    (DST).cpu[1] = (F1).cpu[1] ^ (F2).cpu[1];		\
-  } while (0)
-
-/* Difference of feature sets: F1 excluding the elements of F2.  */
-
-#define ARM_FSET_EXCLUDE(DST,F1,F2)		\
-  do {						\
-    (DST).cpu[0] = (F1).cpu[0] & ~(F2).cpu[0];	\
-    (DST).cpu[1] = (F1).cpu[1] & ~(F2).cpu[1];	\
-  } while (0)
-
-/* Test for an empty feature set.  */
-
-#define ARM_FSET_IS_EMPTY(A)		\
-  (!((A).cpu[0]) && !((A).cpu[1]))
-
-/* Tests whether the cpu features of A are a subset of B.  */
-
-#define ARM_FSET_CPU_SUBSET(A,B)					\
-  ((((A).cpu[0] & (B).cpu[0]) == (A).cpu[0])				\
-   && (((A).cpu[1] & (B).cpu[1]) == (A).cpu[1]))
-
-/* The bits in this mask specify which
-   instructions we are allowed to generate.  */
-extern arm_feature_set insn_flags;
-
 /* The bits in this mask specify which instruction scheduling options should
    be used.  */
-extern arm_feature_set tune_flags;
-
-/* Nonzero if this chip supports the ARM Architecture 3M extensions.  */
-extern int arm_arch3m;
+extern unsigned int tune_flags;
 
 /* Nonzero if this chip supports the ARM Architecture 4 extensions.  */
 extern int arm_arch4;
@@ -551,11 +385,11 @@ extern int arm_arch4;
 /* Nonzero if this chip supports the ARM Architecture 4t extensions.  */
 extern int arm_arch4t;
 
-/* Nonzero if this chip supports the ARM Architecture 5 extensions.  */
-extern int arm_arch5;
+/* Nonzero if this chip supports the ARM Architecture 5t extensions.  */
+extern int arm_arch5t;
 
-/* Nonzero if this chip supports the ARM Architecture 5E extensions.  */
-extern int arm_arch5e;
+/* Nonzero if this chip supports the ARM Architecture 5te extensions.  */
+extern int arm_arch5te;
 
 /* Nonzero if this chip supports the ARM Architecture 6 extensions.  */
 extern int arm_arch6;
@@ -571,6 +405,9 @@ extern int arm_arch6m;
 
 /* Nonzero if this chip supports the ARM 7 extensions.  */
 extern int arm_arch7;
+
+/* Nonzero if this chip supports the Large Physical Address Extension.  */
+extern int arm_arch_lpae;
 
 /* Nonzero if instructions not present in the 'M' profile can be used.  */
 extern int arm_arch_notm;
@@ -630,6 +467,87 @@ extern int arm_arch_no_volatile_ce;
    than core registers.  */
 extern int prefer_neon_for_64bits;
 
+/* Structure defining the current overall architectural target and tuning.  */
+struct arm_build_target
+{
+  /* Name of the target CPU, if known, or NULL if the target CPU was not
+     specified by the user (and inferred from the -march option).  */
+  const char *core_name;
+  /* Name of the target ARCH.  NULL if there is a selected CPU.  */
+  const char *arch_name;
+  /* Preprocessor substring (never NULL).  */
+  const char *arch_pp_name;
+  /* The base architecture value.  */
+  enum base_architecture base_arch;
+  /* The profile letter for the architecture, upper case by convention.  */
+  char profile;
+  /* Bitmap encapsulating the isa_bits for the target environment.  */
+  sbitmap isa;
+  /* Flags used for tuning.  Long term, these move into tune_params.  */
+  unsigned int tune_flags;
+  /* Tables with more detailed tuning information.  */
+  const struct tune_params *tune;
+  /* CPU identifier for the tuning target.  */
+  enum processor_type tune_core;
+};
 
+extern struct arm_build_target arm_active_target;
+
+struct cpu_arch_extension
+{
+  /* Feature name.  */
+  const char *const name;
+  /* True if the option is negative (removes extensions).  */
+  bool remove;
+  /* True if the option is an alias for another option with identical effect;
+     the option will be ignored for canonicalization.  */
+  bool alias;
+  /* The modifier bits.  */
+  const enum isa_feature isa_bits[isa_num_bits];
+};
+
+struct cpu_arch_option
+{
+  /* Name for this option.  */
+  const char *name;
+  /* List of feature extensions permitted.  */
+  const struct cpu_arch_extension *extensions;
+  /* Standard feature bits.  */
+  enum isa_feature isa_bits[isa_num_bits];
+};
+
+struct arch_option
+{
+  /* Common option fields.  */
+  cpu_arch_option common;
+  /* Short string for this architecture.  */
+  const char *arch;
+  /* Base architecture, from which this specific architecture is derived.  */
+  enum base_architecture base_arch;
+  /* The profile letter for the architecture, upper case by convention.  */
+  const char profile;
+  /* Default tune target (in the absence of any more specific data).  */
+  enum processor_type tune_id;
+};
+
+struct cpu_option
+{
+  /* Common option fields.  */
+  cpu_arch_option common;
+  /* Architecture upon which this CPU is based.  */
+  enum arch_type arch;
+};
+
+extern const arch_option all_architectures[];
+extern const cpu_option all_cores[];
+
+const cpu_option *arm_parse_cpu_option_name (const cpu_option *, const char *,
+					     const char *, bool = true);
+const arch_option *arm_parse_arch_option_name (const arch_option *,
+					       const char *, const char *, bool = true);
+void arm_parse_option_features (sbitmap, const cpu_arch_option *,
+				const char *);
+
+void arm_initialize_isa (sbitmap, const enum isa_feature *);
 
 #endif /* ! GCC_ARM_PROTOS_H */

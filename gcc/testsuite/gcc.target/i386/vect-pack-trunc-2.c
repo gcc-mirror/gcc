@@ -25,4 +25,4 @@ avx512bw_test ()
       abort ();
 }
 
-/* { dg-final { scan-assembler-times "vpermi2w\[ \\t\]+\[^\n\]*%zmm" 1 } } */
+/* { dg-final { scan-assembler-times "vperm\[it]2w\[ \\t\]+\[^\n\]*%zmm" 1 } } */

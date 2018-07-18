@@ -4,5 +4,5 @@ c { dg-do run }
         data c/(4e10,0)/
         foo = 4e10
         bar = c
-        if (foo .ne. bar) call abort
+        if (foo .ne. bar) STOP 1
         end

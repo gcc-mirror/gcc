@@ -1,13 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2016 Free Software Foundation, Inc.
-
-   Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
-   behalf of Synopsys Inc.
-
-   Position Independent Code support added,Code cleaned up,
-   Comments and Support For ARC700 instructions added by
-   Saurabh Verma (saurabh.verma@codito.com)
-   Ramana Radhakrishnan(ramana.radhakrishnan@codito.com)
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ARC_H
 #define GCC_ARC_H
 
+#include <stdbool.h>
+
 /* Things to do:
 
    - incscc, decscc?
@@ -38,6 +32,10 @@ along with GCC; see the file COPYING3.  If not see
 #define SYMBOL_FLAG_MEDIUM_CALL	(SYMBOL_FLAG_MACH_DEP << 1)
 #define SYMBOL_FLAG_LONG_CALL	(SYMBOL_FLAG_MACH_DEP << 2)
 #define SYMBOL_FLAG_CMEM	(SYMBOL_FLAG_MACH_DEP << 3)
+
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT	PROCESSOR_arc700
+#endif
 
 /* Check if this symbol has a long_call attribute in its declaration */
 #define SYMBOL_REF_LONG_CALL_P(X)	\
@@ -51,32 +49,11 @@ along with GCC; see the file COPYING3.  If not see
 #define SYMBOL_REF_SHORT_CALL_P(X)	\
 	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_SHORT_CALL) != 0)
 
-#undef ASM_SPEC
-#undef LINK_SPEC
-#undef STARTFILE_SPEC
-#undef ENDFILE_SPEC
-#undef SIZE_TYPE
-#undef PTRDIFF_TYPE
-#undef WCHAR_TYPE
-#undef WCHAR_TYPE_SIZE
-#undef ASM_APP_ON
-#undef ASM_APP_OFF
-#undef CC1_SPEC
-
 /* Names to predefine in the preprocessor for this target machine.  */
 #define TARGET_CPU_CPP_BUILTINS() arc_cpu_cpp_builtins (pfile)
 
-#if DEFAULT_LIBC == LIBC_UCLIBC
-
-#define TARGET_OS_CPP_BUILTINS() \
-  do \
-    { \
-      GNU_USER_TARGET_OS_CPP_BUILTINS (); \
-    } \
-  while (0)
-#endif
-
-/* Match the macros used in the assembler.  */
+/* Macros enabled by specific command line option.  FIXME: to be
+   deprecatd.  */
 #define CPP_SPEC "\
 %{msimd:-D__Xsimd} %{mno-mpy:-D__Xno_mpy} %{mswap:-D__Xswap} \
 %{mmin-max:-D__Xmin_max} %{mEA:-D__Xea} \
@@ -85,128 +62,55 @@ along with GCC; see the file COPYING3.  If not see
 %{mdsp-packa:-D__Xdsp_packa} %{mcrc:-D__Xcrc} %{mdvbf:-D__Xdvbf} \
 %{mtelephony:-D__Xtelephony} %{mxy:-D__Xxy} %{mmul64: -D__Xmult32} \
 %{mlock:-D__Xlock} %{mswape:-D__Xswape} %{mrtsc:-D__Xrtsc} \
-%{mcpu=NPS400:-D__NPS400__} \
-%{mcpu=nps400:-D__NPS400__} \
+%(subtarget_cpp_spec)"
+
+#undef CC1_SPEC
+#define CC1_SPEC "%{EB:%{EL:%emay not use both -EB and -EL}}	\
+%{EB:-mbig-endian} %{EL:-mlittle-endian}			\
+%{G*}								\
 "
+extern const char *arc_cpu_to_as (int argc, const char **argv);
 
-#define CC1_SPEC "\
-%{EB:%{EL:%emay not use both -EB and -EL}} \
-%{EB:-mbig-endian} %{EL:-mlittle-endian} \
-"
+#define EXTRA_SPEC_FUNCTIONS			\
+  { "cpu_to_as", arc_cpu_to_as },
 
-#define ASM_DEFAULT "-mARC700 -mEA"
+/* This macro defines names of additional specifications to put in the specs
+   that can be used in various specifications like CC1_SPEC.  Its definition
+   is an initializer with a subgrouping for each command option.
 
-#define ASM_SPEC  "\
-%{mbig-endian|EB:-EB} %{EL} \
-%{mcpu=ARC600:-mARC600} \
-%{mcpu=ARC601:-mARC601} \
-%{mcpu=ARC700:-mARC700} \
-%{mcpu=ARC700:-mEA} \
-%{!mcpu=*:" ASM_DEFAULT "} \
-%{mbarrel-shifter} %{mno-mpy} %{mmul64} %{mmul32x16:-mdsp-packa} %{mnorm} \
-%{mswap} %{mEA} %{mmin-max} %{mspfp*} %{mdpfp*} %{mfpu=fpuda*:-mfpuda} \
-%{msimd} \
-%{mmac-d16} %{mmac-24} %{mdsp-packa} %{mcrc} %{mdvbf} %{mtelephony} %{mxy} \
-%{mcpu=ARC700|!mcpu=*:%{mlock}} \
-%{mcpu=ARC700|!mcpu=*:%{mswape}} \
-%{mcpu=ARC700|!mcpu=*:%{mrtsc}} \
-%{mcpu=ARCHS:-mHS} \
-%{mcpu=ARCEM:-mEM} \
-%{matomic:-mlock}"
+   Each subgrouping contains a string constant, that defines the
+   specification name, and a string constant that used by the GCC driver
+   program.
 
-#if DEFAULT_LIBC == LIBC_UCLIBC
-/* Note that the default is to link against dynamic libraries, if they are
-   available.  Override with -static.  */
-#define LINK_SPEC "%{h*} \
-		   %{static:-Bstatic} \
-		   %{symbolic:-Bsymbolic} \
-		   %{rdynamic:-export-dynamic}\
-		   -dynamic-linker /lib/ld-uClibc.so.0 \
-		   -X %{mbig-endian:-EB} \
-		   %{EB} %{EL} \
-		   %{marclinux*} \
-		   %{!marclinux*: %{pg|p|profile:-marclinux_prof;: -marclinux}} \
-		   %{!z:-z max-page-size=0x2000 -z common-page-size=0x2000} \
-		   %{shared:-shared}"
-/* Like the standard LINK_COMMAND_SPEC, but add %G when building
-   a shared library with -nostdlib, so that the hidden functions of libgcc
-   will be incorporated.
-   N.B., we don't want a plain -lgcc, as this would lead to re-exporting
-   non-hidden functions, so we have to consider libgcc_s.so.* first, which in
-   turn should be wrapped with --as-needed.  */
-#define LINK_COMMAND_SPEC "\
-%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
-    %(linker) %l " LINK_PIE_SPEC "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\
-    %{s} %{t} %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
-    %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\
-    %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
-	%:include(libgomp.spec)%(link_gomp)}\
-    %(mflib)\
-    %{fprofile-arcs|fprofile-generate|coverage:-lgcov}\
-    %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
-    %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
+   Do not define this macro if it does not need to do anything.  */
+#define EXTRA_SPECS				      \
+  { "subtarget_cpp_spec",	SUBTARGET_CPP_SPEC }, \
+  SUBTARGET_EXTRA_SPECS
 
-#else
-#define LINK_SPEC "%{mbig-endian:-EB} %{EB} %{EL}\
-  %{pg|p:-marcelf_prof;mA7|mARC700|mcpu=arc700|mcpu=ARC700: -marcelf}"
+#ifndef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS
 #endif
 
-#if DEFAULT_LIBC != LIBC_UCLIBC
-#define ARC_TLS_EXTRA_START_SPEC "crttls.o%s"
-
-#define EXTRA_SPECS \
-  { "arc_tls_extra_start_spec", ARC_TLS_EXTRA_START_SPEC }, \
-
-#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti%O%s %{pg|p:crtg.o%s} " \
-  "%(arc_tls_extra_start_spec) crtbegin.o%s"
-#else
-#define STARTFILE_SPEC   "%{!shared:%{!mkernel:crt1.o%s}} crti.o%s \
-  %{!shared:%{pg|p|profile:crtg.o%s} crtbegin.o%s} %{shared:crtbeginS.o%s}"
-
+#ifndef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC ""
 #endif
 
-#if DEFAULT_LIBC != LIBC_UCLIBC
-#define ENDFILE_SPEC "%{pg|p:crtgend.o%s} crtend.o%s crtn%O%s"
-#else
-#define ENDFILE_SPEC "%{!shared:%{pg|p|profile:crtgend.o%s} crtend.o%s} \
-  %{shared:crtendS.o%s} crtn.o%s"
+#undef ASM_SPEC
+#define ASM_SPEC  "%{mbig-endian|EB:-EB} %{EL} "			\
+  "%:cpu_to_as(%{mcpu=*:%*}) %{mspfp*} %{mdpfp*} %{mfpu=fpuda*:-mfpuda}"
 
-#endif
-
-#if DEFAULT_LIBC == LIBC_UCLIBC
-#undef LIB_SPEC
-#define LIB_SPEC  \
-  "%{pthread:-lpthread} \
-   %{shared:-lc} \
-   %{!shared:%{pg|p|profile:-lgmon -u profil --defsym __profil=profil} -lc}"
-#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
-#else
-#undef LIB_SPEC
-/* -lc_p not present for arc-elf32-* : ashwin */
-#define LIB_SPEC "%{!shared:%{g*:-lg} %{pg|p:-lgmon} -lc}"
-#endif
+#define OPTION_DEFAULT_SPECS						\
+  {"cpu", "%{!mcpu=*:%{!mARC*:%{!marc*:%{!mA7:%{!mA6:-mcpu=%(VALUE)}}}}}" }
 
 #ifndef DRIVER_ENDIAN_SELF_SPECS
 #define DRIVER_ENDIAN_SELF_SPECS ""
 #endif
-#ifndef TARGET_SDATA_DEFAULT
-#define TARGET_SDATA_DEFAULT 1
-#endif
-#ifndef TARGET_MMEDIUM_CALLS_DEFAULT
-#define TARGET_MMEDIUM_CALLS_DEFAULT 0
-#endif
 
-#define DRIVER_SELF_SPECS DRIVER_ENDIAN_SELF_SPECS \
-  "%{mARC600|mA6: -mcpu=ARC600 %<mARC600 %<mA6}" \
-  "%{mARC601: -mcpu=ARC601 %<mARC601}" \
-  "%{mARC700|mA7: -mcpu=ARC700 %<mARC700 %<mA7}" \
-  "%{mbarrel_shifte*: -mbarrel-shifte%* %<mbarrel_shifte*}" \
-  "%{mEA: -mea %<mEA}" \
-  "%{mspfp_*: -mspfp-%* %<mspfp_*}" \
-  "%{mdpfp_*: -mdpfp-%* %<mdpfp_*}" \
-  "%{mdsp_pack*: -mdsp-pack%* %<mdsp_pack*}" \
-  "%{mmac_*: -mmac-%* %<mmac_*}" \
-  "%{multcost=*: -mmultcost=%* %<multcost=*}"
+#define DRIVER_SELF_SPECS DRIVER_ENDIAN_SELF_SPECS		   \
+  "%{mARC600|mA6: -mcpu=arc600 %<mARC600 %<mA6 %<mARC600}"	   \
+  "%{mARC601: -mcpu=arc601 %<mARC601}"				   \
+  "%{mARC700|mA7: -mcpu=arc700 %<mARC700 %<mA7}"		   \
+  "%{mEA: -mea %<mEA}"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -225,12 +129,7 @@ along with GCC; see the file COPYING3.  If not see
    default for A7, and only for pre A7 cores when -mnorm is given.  */
 #define TARGET_NORM (TARGET_ARC700 || TARGET_NORM_SET || TARGET_HS)
 /* Indicate if an optimized floating point emulation library is available.  */
-#define TARGET_OPTFPE				\
-   (TARGET_ARC700				\
-    /* We need a barrel shifter and NORM.  */	\
-    || (TARGET_ARC600 && TARGET_NORM_SET)	\
-    || TARGET_HS				\
-    || (TARGET_EM && TARGET_NORM_SET && TARGET_BARREL_SHIFTER))
+#define TARGET_OPTFPE (TARGET_ARC700 || TARGET_FPX_QUARK)
 
 /* Non-zero means the cpu supports swap instruction.  This flag is set by
    default for A7, and only for pre A7 cores when -mswap is given.  */
@@ -242,9 +141,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Should we try to unalign likely taken branches without a delay slot.  */
 #define TARGET_UNALIGN_BRANCH (TARGET_ARC700 && !optimize_size)
 
-/* Should we upsize short delayed branches with a short delay insn?  */
-#define TARGET_UPSIZE_DBR (TARGET_ARC700 && !optimize_size)
-
 /* Should we add padding before a return insn to avoid mispredict?  */
 #define TARGET_PAD_RETURN (TARGET_ARC700 && !optimize_size)
 
@@ -252,21 +148,23 @@ along with GCC; see the file COPYING3.  If not see
    use conditional execution?  */
 #define TARGET_AT_DBR_CONDEXEC  (!TARGET_ARC700 && !TARGET_V2)
 
-#define TARGET_ARC600 (arc_cpu == PROCESSOR_ARC600)
-#define TARGET_ARC601 (arc_cpu == PROCESSOR_ARC601)
-#define TARGET_ARC700 (arc_cpu == PROCESSOR_ARC700	\
-		       || arc_cpu == PROCESSOR_NPS400)
-#define TARGET_EM     (arc_cpu == PROCESSOR_ARCEM)
-#define TARGET_HS     (arc_cpu == PROCESSOR_ARCHS)
-#define TARGET_V2							\
-  ((arc_cpu == PROCESSOR_ARCHS) || (arc_cpu == PROCESSOR_ARCEM))
-
-/* Recast the cpu class to be the cpu attribute.  */
-#define arc_cpu_attr ((enum attr_cpu)arc_cpu)
-
-#ifndef MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS { "mARC700" }
-#endif
+#define TARGET_ARC600 ((arc_selected_cpu->arch_info->arch_id	\
+			== BASE_ARCH_6xx)			\
+		       && (TARGET_BARREL_SHIFTER))
+#define TARGET_ARC601 ((arc_selected_cpu->arch_info->arch_id	\
+			== BASE_ARCH_6xx)			\
+		       && (!TARGET_BARREL_SHIFTER))
+#define TARGET_ARC700 (arc_selected_cpu->arch_info->arch_id	\
+		       == BASE_ARCH_700)
+/* An NPS400 is a specialisation of ARC700, so it is correct for NPS400
+   TARGET_ARC700 is true, and TARGET_NPS400 is true.  */
+#define TARGET_NPS400 ((arc_selected_cpu->arch_info->arch_id	\
+			== BASE_ARCH_700)			\
+		       && (arc_selected_cpu->processor		\
+			   == PROCESSOR_nps400))
+#define TARGET_EM (arc_selected_cpu->arch_info->arch_id == BASE_ARCH_em)
+#define TARGET_HS (arc_selected_cpu->arch_info->arch_id == BASE_ARCH_hs)
+#define TARGET_V2 (TARGET_EM || TARGET_HS)
 
 #ifndef UNALIGNED_ACCESS_DEFAULT
 #define UNALIGNED_ACCESS_DEFAULT 0
@@ -353,8 +251,8 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
    construct.
 */
 
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-(TYPE_MODE (strip_array_types (TREE_TYPE (FIELD))) == DFmode \
+#define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
+(TYPE_MODE (strip_array_types (TYPE)) == DFmode \
  ? MIN ((COMPUTED), 32) : (COMPUTED))
 
 
@@ -369,13 +267,6 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT 32
-
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
 
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)             \
@@ -394,7 +285,7 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* On the ARC the lower address bits are masked to 0 as necessary.  The chip
    won't croak when given an unaligned address, but the insn will still fail
    to produce the correct result.  */
-#define STRICT_ALIGNMENT 1
+#define STRICT_ALIGNMENT (!unaligned_access && !TARGET_HS)
 
 /* Layout of source language data types.  */
 
@@ -409,13 +300,18 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 0
 
-#define SIZE_TYPE "long unsigned int"
-#define PTRDIFF_TYPE "long int"
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
+#undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
+
+#undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-
-/* ashwin : shifted from arc.c:102 */
 #define PROGRAM_COUNTER_REGNO 63
 
 /* Standard register usage.  */
@@ -535,36 +431,6 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
   48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,		\
   27, 28, 29, 30, 31, 63}
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-((GET_MODE_SIZE (MODE) == 16 \
-  && REGNO >= ARC_FIRST_SIMD_VR_REG && REGNO <= ARC_LAST_SIMD_VR_REG) ? 1 \
- : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-extern unsigned int arc_hard_regno_mode_ok[];
-extern unsigned int arc_mode_class[];
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-((arc_hard_regno_mode_ok[REGNO] & arc_mode_class[MODE]) != 0)
-
-/* A C expression that is nonzero if it is desirable to choose
-   register allocation so as to avoid move instructions between a
-   value of mode MODE1 and a value of mode MODE2.
-
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R,
-   MODE2)' are ever different for any R, then `MODES_TIEABLE_P (MODE1,
-   MODE2)' must be zero.  */
-
-/* Tie QI/HI/SI modes together.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-(GET_MODE_CLASS (MODE1) == MODE_INT		\
- && GET_MODE_CLASS (MODE2) == MODE_INT		\
- && GET_MODE_SIZE (MODE1) <= UNITS_PER_WORD	\
- && GET_MODE_SIZE (MODE2) <= UNITS_PER_WORD)
-
 /* Internal macros to classify a register number as to whether it's a
    general purpose register for compact insns (r0-r3,r12-r15), or
    stack pointer (r28).  */
@@ -675,15 +541,15 @@ enum reg_class
   {0x0000f00f, 0x00000000, 0x00000000, 0x00000000, 0x00000000},	     /* 'q', r0-r3, r12-r15 */		\
   {0x1000f00f, 0x00000000, 0x00000000, 0x00000000, 0x00000000},	     /* 'e', r0-r3, r12-r15, sp */	\
   {0x1c001fff, 0x00000000, 0x00000000, 0x00000000, 0x00000000},    /* "Rsc", r0-r12 */ \
-  {0x9fffffff, 0xc0000000, 0x00000000, 0x00000000, 0x00000000},      /* 'r', r0-r28, blink, ap and pcl */	\
+  {0x9fffffff, 0x80000000, 0x00000000, 0x00000000, 0x00000000},      /* 'r', r0-r28, blink, ap and pcl */	\
   {0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'W',  r0-r31 */ \
   /* Include ap / pcl in WRITABLE_CORE_REGS for sake of symmetry.  As these \
      registers are fixed, it does not affect the literal meaning of the \
      constraints, but it makes it a superset of GENERAL_REGS, thus \
      enabling some operations that would otherwise not be possible.  */ \
-  {0xffffffff, 0xd0000000, 0x00000000, 0x00000000, 0x00000000},      /* 'w', r0-r31, r60 */ \
-  {0xffffffff, 0xdfffffff, 0x00000000, 0x00000000, 0x00000000},      /* 'c', r0-r60, ap, pcl */ \
-  {0xffffffff, 0xdfffffff, 0x00000000, 0x00000000, 0x00000000},      /* 'Rac', r0-r60, ap, pcl */ \
+  {0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'w', r0-r31, r60 */ \
+  {0xffffffff, 0x9fffffff, 0x00000000, 0x00000000, 0x00000000},      /* 'c', r0-r60, ap, pcl */ \
+  {0xffffffff, 0x9fffffff, 0x00000000, 0x00000000, 0x00000000},      /* 'Rac', r0-r60, ap, pcl */ \
   {0x0000000f, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'Rcd', r0-r3 */ \
   {0x00000003, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'Rsd', r0-r1 */ \
   {0x9fffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'h',  r0-28, r30 */ \
@@ -734,7 +600,9 @@ extern enum reg_class arc_regno_reg_class[];
 #define REGNO_OK_FOR_BASE_P(REGNO)					\
   ((REGNO) < 29 || ((REGNO) == ARG_POINTER_REGNUM) || ((REGNO) == 63)	\
    || ((unsigned) reg_renumber[REGNO] < 29)				\
-   || ((unsigned) (REGNO) == (unsigned) arc_tp_regno))
+   || ((unsigned) (REGNO) == (unsigned) arc_tp_regno)			\
+   || (fixed_regs[REGNO] == 0 && IN_RANGE (REGNO, 32, 59))		\
+   || ((REGNO) == 30 && fixed_regs[REGNO] == 0))
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) REGNO_OK_FOR_BASE_P(REGNO)
 
@@ -786,12 +654,6 @@ extern enum reg_class arc_regno_reg_class[];
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 1
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET 0
 
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  */
@@ -862,7 +724,7 @@ arc_return_addr_rtx(COUNT,FRAME)
   ((CUM) = 0)
 
 /* The number of registers used for parameter passing.  Local to this file.  */
-#define MAX_ARC_PARM_REGS 8
+#define MAX_ARC_PARM_REGS (TARGET_RF16 ? 4 : 8)
 
 /* 1 if N is a possible register number for function argument passing.  */
 #define FUNCTION_ARG_REGNO_P(N) \
@@ -950,19 +812,21 @@ extern int arc_initial_elimination_offset(int from, int to);
   (OFFSET) = arc_initial_elimination_offset ((FROM), (TO))
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.
-   We actually emit the profiler code at the call site, so leave this one
-   empty.  */
-#define FUNCTION_PROFILER(FILE, LABELNO) \
-  if (TARGET_UCB_MCOUNT) \
-    fprintf (FILE, "\t%s\n", arc_output_libcall ("__mcount"))
+   for profiling a function entry.  */
+#define FUNCTION_PROFILER(FILE, LABELNO)			\
+  do {								\
+  if (flag_pic)							\
+    fprintf (FILE, "\tbl\t__mcount@plt\n");			\
+  else								\
+    fprintf (FILE, "\tbl\t__mcount\n");				\
+  } while (0)
 
 #define NO_PROFILE_COUNTERS  1
 
 /* Trampolines.  */
 
 /* Length in units of the trampoline for entering a nested function.  */
-#define TRAMPOLINE_SIZE 20
+#define TRAMPOLINE_SIZE 16
 
 /* Alignment required for a trampoline in bits .  */
 /* For actual data alignment we just need 32, no more than the stack;
@@ -991,10 +855,10 @@ extern int arc_initial_elimination_offset(int from, int to);
    a special predicate for the memory operand of stores, like for the SH.  */
 
 /* Recognize any constant value that is a valid address.  */
-#define CONSTANT_ADDRESS_P(X) \
-(flag_pic?arc_legitimate_pic_addr_p (X): \
-(GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
- || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST))
+#define CONSTANT_ADDRESS_P(X)					\
+  (flag_pic ? (arc_legitimate_pic_addr_p (X) || LABEL_P (X)):	\
+   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
+    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST))
 
 /* Is the argument a const_int rtx, containing an exact power of 2 */
 #define  IS_POWEROF2_P(X) (! ( (X) & ((X) - 1)) && (X))
@@ -1014,18 +878,15 @@ extern int arc_initial_elimination_offset(int from, int to);
 
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P_NONSTRICT(X) \
-((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER || \
- (unsigned) REGNO (X) < 29 || \
- (unsigned) REGNO (X) == 63 || \
- (unsigned) REGNO (X) == ARG_POINTER_REGNUM)
+#define REG_OK_FOR_INDEX_P_NONSTRICT(X)			\
+  ((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER	\
+   || REGNO_OK_FOR_BASE_P (REGNO (X)))
+
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P_NONSTRICT(X) \
-((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER || \
- (unsigned) REGNO (X) < 29 || \
- (unsigned) REGNO (X) == 63 || \
- (unsigned) REGNO (X) == ARG_POINTER_REGNUM)
+#define REG_OK_FOR_BASE_P_NONSTRICT(X)			\
+  ((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER	\
+   || REGNO_OK_FOR_BASE_P (REGNO (X)))
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P_STRICT(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
@@ -1176,7 +1037,8 @@ arc_select_cc_mode (OP, X, Y)
    check it either.  You need not define this macro if all constants
    (including SYMBOL_REF) can be immediate operands when generating
    position independent code.  */
-#define LEGITIMATE_PIC_OPERAND_P(X)  (arc_legitimate_pic_operand_p(X))
+#define LEGITIMATE_PIC_OPERAND_P(X)  \
+  (!arc_raw_symbolic_reference_mentioned_p ((X), true))
 
 /* PIC and small data don't mix on ARC because they use the same register.  */
 #define SDATA_BASE_REGNUM 26
@@ -1196,10 +1058,12 @@ arc_select_cc_mode (OP, X, Y)
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
+#undef ASM_APP_ON
 #define ASM_APP_ON ""
 
 /* Output to assembler file text saying following lines
    no longer contain unusual constructs.  */
+#undef ASM_APP_OFF
 #define ASM_APP_OFF ""
 
 /* Globalizing directive for a label.  */
@@ -1353,6 +1217,13 @@ extern char rname56[], rname57[], rname58[], rname59[];
   "lp_start", "lp_end" \
 }
 
+#define ADDITIONAL_REGISTER_NAMES		\
+{						\
+  {"ilink",  29},				\
+  {"r29",    29},				\
+  {"r30",    30}				\
+}
+
 /* Entry to the insn conditionalizer.  */
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS) \
   arc_final_prescan_insn (INSN, OPVEC, NOPERANDS)
@@ -1397,9 +1268,9 @@ do {							\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);	\
   switch (GET_MODE (BODY))				\
     {							\
-    case QImode: fprintf (FILE, "\t.byte "); break;	\
-    case HImode: fprintf (FILE, "\t.hword "); break;	\
-    case SImode: fprintf (FILE, "\t.word "); break;	\
+    case E_QImode: fprintf (FILE, "\t.byte "); break;	\
+    case E_HImode: fprintf (FILE, "\t.hword "); break;	\
+    case E_SImode: fprintf (FILE, "\t.word "); break;	\
     default: gcc_unreachable ();			\
     }							\
   assemble_name (FILE, label);				\
@@ -1417,7 +1288,8 @@ do {							\
   do                                                    \
     {                                                   \
       if (GET_CODE (PATTERN (JUMPTABLE)) == ADDR_DIFF_VEC \
-	  && ((GET_MODE_SIZE (GET_MODE (PATTERN (JUMPTABLE))) \
+	  && ((GET_MODE_SIZE (as_a <scalar_int_mode>	\
+			      (GET_MODE (PATTERN (JUMPTABLE)))) \
 	       * XVECLEN (PATTERN (JUMPTABLE), 1) + 1)	\
 	      & 2))					\
       arc_toggle_unalign ();				\
@@ -1434,7 +1306,7 @@ do {							\
    of a loop.  */
 /* On the ARC, align loops to 4 byte boundaries unless doing all-out size
    optimization.  */
-#define LOOP_ALIGN JUMP_ALIGN
+#define LOOP_ALIGN(X) 0
 
 #define LABEL_ALIGN(LABEL) (arc_label_align (LABEL))
 
@@ -1453,10 +1325,6 @@ do { \
     chose what to output.  */
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGNMENT) \
   arc_asm_output_aligned_decl_local (STREAM, DECL, NAME, SIZE, ALIGNMENT, 0)
-
-/* To translate the return value of arc_function_type into a register number
-   to jump through for function return.  */
-extern int arc_return_address_regs[4];
 
 /* Debugging information.  */
 
@@ -1495,17 +1363,11 @@ extern int arc_return_address_regs[4];
 
 /* Frame info.  */
 
-/* Define this macro to 0 if your target supports DWARF 2 frame unwind
-   information, but it does not yet work with exception handling.  */
-/* N.B. the below test is valid in an #if, but not in a C expression.  */
-#if DEFAULT_LIBC == LIBC_UCLIBC
-#define DWARF2_UNWIND_INFO 1
-#else
-#define DWARF2_UNWIND_INFO 0
-#endif
+#define EH_RETURN_DATA_REGNO(N)  ((N) < 2 ? (N) : INVALID_REGNUM)
 
-#define EH_RETURN_DATA_REGNO(N)	\
-  ((N) < 4 ? (N) : INVALID_REGNUM)
+#define EH_RETURN_STACKADJ_RTX   gen_rtx_REG (Pmode, 2)
+
+#define EH_RETURN_HANDLER_RTX    arc_eh_return_address_location ()
 
 /* Turn off splitting of long stabs.  */
 #define DBX_CONTIN_LENGTH 0
@@ -1541,10 +1403,11 @@ extern int arc_return_address_regs[4];
  : SImode)
 
 #define ADDR_VEC_ALIGN(VEC_INSN) \
-  (exact_log2 (GET_MODE_SIZE (GET_MODE (PATTERN (VEC_INSN)))))
+  (exact_log2 (GET_MODE_SIZE (as_a <scalar_int_mode> \
+			      (GET_MODE (PATTERN (VEC_INSN))))))
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
-  ASM_OUTPUT_ALIGN ((FILE), ADDR_VEC_ALIGN (TABLE));
+  ASM_OUTPUT_ALIGN ((FILE), ADDR_VEC_ALIGN (TABLE))
 
 #define INSN_LENGTH_ALIGNMENT(INSN)		  \
   ((JUMP_TABLE_DATA_P (INSN)			  \
@@ -1570,17 +1433,10 @@ extern int arc_return_address_regs[4];
 /* Undo the effects of the movmem pattern presence on STORE_BY_PIECES_P .  */
 #define MOVE_RATIO(SPEED) ((SPEED) ? 15 : 3)
 
-/* Define this to be nonzero if shift instructions ignore all but the low-order
-   few bits. Changed from 1 to 0 for rotate pattern testcases
-   (e.g. 20020226-1.c). This change truncates the upper 27 bits of a word
-   while rotating a word. Came to notice through a combine phase
-   optimization viz. a << (32-b) is equivalent to a << (-b).
+/* Define this to be nonzero if shift instructions ignore all but the
+   low-order few bits.
 */
-#define SHIFT_COUNT_TRUNCATED 0
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
+#define SHIFT_COUNT_TRUNCATED 1
 
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */
@@ -1602,25 +1458,47 @@ extern struct rtx_def *arc_compare_op0, *arc_compare_op1;
 
 /* ARC function types.   */
 enum arc_function_type {
-  ARC_FUNCTION_UNKNOWN, ARC_FUNCTION_NORMAL,
+  /* No function should have the unknown type.  This value is used to
+   indicate the that function type has not yet been computed.  */
+  ARC_FUNCTION_UNKNOWN  = 0,
+
+  /* The normal function type indicates that the function has the
+   standard prologue and epilogue.  */
+  ARC_FUNCTION_NORMAL  = 1 << 0,
   /* These are interrupt handlers.  The name corresponds to the register
      name that contains the return address.  */
-  ARC_FUNCTION_ILINK1, ARC_FUNCTION_ILINK2
+  ARC_FUNCTION_ILINK1  = 1 << 1,
+  ARC_FUNCTION_ILINK2  = 1 << 2,
+  /* Fast interrupt is only available on ARCv2 processors.  */
+  ARC_FUNCTION_FIRQ    = 1 << 3,
+  /* The naked function type indicates that the function does not have
+   prologue or epilogue, and that no stack frame is available.  */
+  ARC_FUNCTION_NAKED   = 1 << 4
 };
-#define ARC_INTERRUPT_P(TYPE) \
-((TYPE) == ARC_FUNCTION_ILINK1 || (TYPE) == ARC_FUNCTION_ILINK2)
 
-/* Compute the type of a function from its DECL.  Needed for EPILOGUE_USES.  */
-struct function;
-extern enum arc_function_type arc_compute_function_type (struct function *);
+/* Check if a function is an interrupt function.  */
+#define ARC_INTERRUPT_P(TYPE)					\
+  (((TYPE) & (ARC_FUNCTION_ILINK1 | ARC_FUNCTION_ILINK2		\
+	      | ARC_FUNCTION_FIRQ)) != 0)
+
+/* Check if a function is a fast interrupt function.  */
+#define ARC_FAST_INTERRUPT_P(TYPE) (((TYPE) & ARC_FUNCTION_FIRQ) != 0)
+
+/* Check if a function is normal, that is, has standard prologue and
+   epilogue.  */
+#define ARC_NORMAL_P(TYPE) (((TYPE) & ARC_FUNCTION_NORMAL) != 0)
+
+/* Check if a function is naked.  */
+#define ARC_NAKED_P(TYPE) (((TYPE) & ARC_FUNCTION_NAKED) != 0)
 
 /* Called by crtstuff.c to make calls to function FUNCTION that are defined in
    SECTION_OP, and then to switch back to text section.  */
 #undef CRT_CALL_STATIC_FUNCTION
-#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC) \
-    asm (SECTION_OP "\n\t"				\
-	"bl @" USER_LABEL_PREFIX #FUNC "\n"		\
-	TEXT_SECTION_ASM_OP);
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)		\
+  asm (SECTION_OP "\n\t"					\
+       "add r12,pcl,@" USER_LABEL_PREFIX #FUNC "@pcl\n\t"	\
+       "jl  [r12]\n"						\
+       TEXT_SECTION_ASM_OP);
 
 /* This macro expands to the name of the scratch register r12, used for
    temporary calculations according to the ABI.  */
@@ -1647,7 +1525,7 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
    && (get_attr_type (X) == TYPE_CALL || get_attr_type (X) == TYPE_SFUNC))
 
 #define INSN_REFERENCES_ARE_DELAYED(insn)				\
-  (INSN_SETS_ARE_DELAYED (insn) && !insn_is_tls_gd_dispatch (insn))
+  (INSN_SETS_ARE_DELAYED (insn))
 
 #define CALL_ATTR(X, NAME) \
   ((CALL_P (X) || NONJUMP_INSN_P (X)) \
@@ -1682,11 +1560,6 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C,STR) ((C) == '`')
 
 #define INIT_EXPANDERS arc_init_expanders ()
-
-#define CFA_FRAME_BASE_OFFSET(FUNDECL) (-arc_decl_pretend_args ((FUNDECL)))
-
-#define ARG_POINTER_CFA_OFFSET(FNDECL) \
-  (FIRST_PARM_OFFSET (FNDECL) + arc_decl_pretend_args ((FNDECL)))
 
 enum
 {
@@ -1732,7 +1605,7 @@ enum
 
 /* FPU defines.  */
 /* Any FPU support.  */
-#define TARGET_HARD_FLOAT (arc_fpu_build != 0)
+#define TARGET_HARD_FLOAT   ((arc_fpu_build & (FPU_SP | FPU_DP)) != 0)
 /* Single precision floating point support.  */
 #define TARGET_FP_SP_BASE   ((arc_fpu_build & FPU_SP) != 0)
 /* Double precision floating point support.  */
@@ -1751,5 +1624,10 @@ enum
 #define TARGET_FP_DP_SQRT   ((arc_fpu_build & FPU_DD) != 0)
 /* Double precision floating point assist instruction support.  */
 #define TARGET_FP_DP_AX     ((arc_fpu_build & FPX_DP) != 0)
+/* Custom FP instructions used by QuarkSE EM cpu.  */
+#define TARGET_FPX_QUARK    (TARGET_EM && TARGET_SPFP		\
+			     && (arc_fpu_build == FPX_QK))
+/* DBNZ support is available for ARCv2 core3 cpus.  */
+#define TARGET_DBNZ (TARGET_V2 && (arc_tune == ARC_TUNE_CORE_3))
 
 #endif /* GCC_ARC_H */

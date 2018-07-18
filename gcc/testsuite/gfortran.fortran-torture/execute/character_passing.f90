@@ -9,7 +9,7 @@
       b='B'
       x = LSAME(a1,a2)
       if ( .not. x ) then
-        call abort  ();
+        STOP 1;
       endif
       end
 

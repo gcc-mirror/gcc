@@ -1,10 +1,10 @@
 struct x {
-    int foo () {}
+    int foo () { return 0; }
 };
 
 template <class T>
 struct vector {
-    T& bar () {}
+    T& bar () { static T a; return a; }
 };
 
 template <class T>

@@ -19,13 +19,13 @@ program test
   xyz(3)%x = 0
 
   write(s,*) xyz(bar())
-  if (trim(adjustl(s)) /= "11111") call abort
+  if (trim(adjustl(s)) /= "11111") STOP 1
 
   a(1)%field = 0
   a(2)%field = 0
   calls = 0
-  if (sum(a(foo(calls))%field) /= 0) call abort
-  if (calls .ne. 1) call abort
+  if (sum(a(foo(calls))%field) /= 0) STOP 2
+  if (calls .ne. 1) STOP 3
 
 contains
 

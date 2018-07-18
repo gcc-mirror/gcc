@@ -1,5 +1,5 @@
 // PR c++/73456
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 template<typename...> struct list {};
 

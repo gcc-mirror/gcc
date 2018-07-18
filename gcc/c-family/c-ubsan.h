@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -28,10 +28,7 @@ extern tree ubsan_instrument_return (location_t);
 extern tree ubsan_instrument_bounds (location_t, tree, tree *, bool);
 extern bool ubsan_array_ref_instrumented_p (const_tree);
 extern void ubsan_maybe_instrument_array_ref (tree *, bool);
-extern void ubsan_maybe_instrument_reference (tree);
+extern void ubsan_maybe_instrument_reference (tree *);
 extern void ubsan_maybe_instrument_member_call (tree, bool);
-
-/* Declare this here as well as in ubsan.h. */
-extern bool do_ubsan_in_current_function (void);
 
 #endif  /* GCC_C_UBSAN_H  */

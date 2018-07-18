@@ -3,7 +3,7 @@ subroutine test (a, b)
    integer, intent (IN) :: a
    integer, intent (OUT) :: b
 
-   if (a .ne. 42) call abort
+   if (a .ne. 42) STOP 1
    b = 43
 end subroutine
 
@@ -15,8 +15,8 @@ program args
    i = 42
    j = 0
    CALL test (i, j)
-   if (i .ne. 42) call abort
-   if (j .ne. 43) call abort
+   if (i .ne. 42) STOP 2
+   if (j .ne. 43) STOP 3
    i = 41
    CALL test (i + 1, j)
 end program

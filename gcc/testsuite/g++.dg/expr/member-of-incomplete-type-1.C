@@ -7,6 +7,6 @@ struct A;
 
 int main()
 {
-    A::g();           // { dg-error "incomplete" "" }
+    A::g();           // { dg-error "incomplete" }
 }
 

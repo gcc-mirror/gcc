@@ -29,14 +29,14 @@ program str
 ! functioning when it should not if the lhs is a substring - PR67977
   tmpstr%text(1:3) = 'foo'
 
-  if (.not.allocated (teststrs%strlist(1)%text)) call abort
-  if (len (tmpstr%text) .ne. strlen) call abort
+  if (.not.allocated (teststrs%strlist(1)%text)) STOP 1
+  if (len (tmpstr%text) .ne. strlen) STOP 2
 
   call move_alloc(tmpstr%text,teststrs%strlist(1)%text)
 
-  if (.not.allocated (teststrs%strlist(1)%text)) call abort
-  if (len (teststrs%strlist(1)%text) .ne. strlen) call abort
-  if (trim (teststrs%strlist(1)%text(1:3)) .ne. 'foo') call abort
+  if (.not.allocated (teststrs%strlist(1)%text)) STOP 3
+  if (len (teststrs%strlist(1)%text) .ne. strlen) STOP 4
+  if (trim (teststrs%strlist(1)%text(1:3)) .ne. 'foo') STOP 5
 
 ! Clean up so that valgrind reports all allocated memory freed.
   if (allocated (teststrs%strlist(1)%text)) deallocate (teststrs%strlist(1)%text)

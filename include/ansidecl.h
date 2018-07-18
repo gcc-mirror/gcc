@@ -1,5 +1,5 @@
 /* ANSI and traditional C compatability macros
-   Copyright (C) 1991-2015 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
 This program is free software; you can redistribute it and/or modify
@@ -252,7 +252,7 @@ So instead we use the macro below and test it against specific values.  */
 # endif /* GNUC >= 3.0 */
 #endif /* ATTRIBUTE_ALIGNED_ALIGNOF */
 
-/* Useful for structures whose layout must much some binary specification
+/* Useful for structures whose layout must match some binary specification
    regardless of the alignment and padding qualities of the compiler.  */
 #ifndef ATTRIBUTE_PACKED
 # define ATTRIBUTE_PACKED __attribute__ ((packed))
@@ -282,6 +282,15 @@ So instead we use the macro below and test it against specific values.  */
 #  define ATTRIBUTE_NO_SANITIZE_UNDEFINED
 # endif /* GNUC >= 4.9 */
 #endif /* ATTRIBUTE_NO_SANITIZE_UNDEFINED */
+
+/* Attribute 'nonstring' was valid as of gcc 8.  */
+#ifndef ATTRIBUTE_NONSTRING
+# if GCC_VERSION >= 8000
+#  define ATTRIBUTE_NONSTRING __attribute__ ((__nonstring__))
+# else
+#  define ATTRIBUTE_NONSTRING
+# endif
+#endif
 
 /* We use __extension__ in some places to suppress -pedantic warnings
    about GCC extensions.  This feature didn't work properly before
@@ -313,6 +322,12 @@ So instead we use the macro below and test it against specific values.  */
 #define ENUM_BITFIELD(TYPE) unsigned int
 #endif
 
+#if __cpp_constexpr >= 200704
+#define CONSTEXPR constexpr
+#else
+#define CONSTEXPR
+#endif
+
 /* C++11 adds the ability to add "override" after an implementation of a
    virtual function in a subclass, to:
      (A) document that this is an override of a virtual function
@@ -328,25 +343,57 @@ So instead we use the macro below and test it against specific values.  */
    For gcc, use "-std=c++11" to enable C++11 support; gcc 6 onwards enables
    this by default (actually GNU++14).  */
 
-#if __cplusplus >= 201103
-/* C++11 claims to be available: use it.  final/override were only
-   implemented in 4.7, though.  */
-# if GCC_VERSION < 4007
+#if defined __cplusplus
+# if __cplusplus >= 201103
+   /* C++11 claims to be available: use it.  Final/override were only
+      implemented in 4.7, though.  */
+#  if GCC_VERSION < 4007
+#   define OVERRIDE
+#   define FINAL
+#  else
+#   define OVERRIDE override
+#   define FINAL final
+#  endif
+# elif GCC_VERSION >= 4007
+   /* G++ 4.7 supports __final in C++98.  */
+#  define OVERRIDE
+#  define FINAL __final
+# else
+   /* No C++11 support; leave the macros empty.  */
 #  define OVERRIDE
 #  define FINAL
-# else
-#  define OVERRIDE override
-#  define FINAL final
 # endif
-#elif GCC_VERSION >= 4007
-/* G++ 4.7 supports __final in C++98.  */
-# define OVERRIDE
-# define FINAL __final
 #else
-/* No C++11 support; leave the macros empty: */
+  /* No C++11 support; leave the macros empty.  */
 # define OVERRIDE
 # define FINAL
 #endif
+
+/* A macro to disable the copy constructor and assignment operator.
+   When building with C++11 and above, the methods are explicitly
+   deleted, causing a compile-time error if something tries to copy.
+   For C++03, this just declares the methods, causing a link-time
+   error if the methods end up called (assuming you don't
+   define them).  For C++03, for best results, place the macro
+   under the private: access specifier, like this,
+
+   class name_lookup
+   {
+     private:
+       DISABLE_COPY_AND_ASSIGN (name_lookup);
+   };
+
+   so that most attempts at copy are caught at compile-time.  */
+
+#if __cplusplus >= 201103
+#define DISABLE_COPY_AND_ASSIGN(TYPE)		\
+  TYPE (const TYPE&) = delete;			\
+  void operator= (const TYPE &) = delete
+  #else
+#define DISABLE_COPY_AND_ASSIGN(TYPE)		\
+  TYPE (const TYPE&);				\
+  void operator= (const TYPE &)
+#endif /* __cplusplus >= 201103 */
 
 #ifdef __cplusplus
 }

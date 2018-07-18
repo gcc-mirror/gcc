@@ -93,4 +93,6 @@ baz ()
 	bar (i, j, 0);
 #pragma omp ordered depend(source)
       }
+
+  return 0;
 }

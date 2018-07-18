@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,6 +302,11 @@ begin
    Write_Switch_Char ("h");
    Write_Line ("Output this usage (help) information");
 
+   --  Line for -gnatH switch
+
+   Write_Switch_Char ("H");
+   Write_Line ("Legacy elaboration checking mode enabled");
+
    --  Line for -gnati switch
 
    Write_Switch_Char ("i?");
@@ -316,6 +321,11 @@ begin
 
    Write_Switch_Char ("jnn");
    Write_Line ("Format error and warning messages to fit nn character lines");
+
+   --  Line for -gnatJ switch
+
+   Write_Switch_Char ("J");
+   Write_Line ("Relaxed elaboration checking mode enabled");
 
    --  Line for -gnatk switch
 
@@ -342,7 +352,7 @@ begin
    --  Line for -gnatn switch
 
    Write_Switch_Char ("n[?]");
-   Write_Line ("Enable pragma Inline (both within and across units, ?=1/2)");
+   Write_Line ("Enable pragma Inline across units (?=1/2 for moderate/full)");
 
    --  Line for -gnato switch
 
@@ -392,7 +402,9 @@ begin
 
    Write_Switch_Char ("R?");
    Write_Line
-     ("List rep info (?=0/1/2/3/m for none/types/all/variable/mechanisms)");
+     ("List rep info (?=0/1/2/3/e/m for none/types/all/symbolic/ext/mech)");
+   Write_Switch_Char ("R?j");
+   Write_Line ("List rep info in the JSON data interchange format");
    Write_Switch_Char ("R?s");
    Write_Line ("List rep info to file.rep instead of standard output");
 
@@ -488,6 +500,7 @@ begin
    Write_Line ("        e    treat all warnings (but not info) as errors");
    Write_Line ("        .e   turn on every optional info/warning " &
                                                   "(no exceptions)");
+   Write_Line ("        E    treat all run-time warnings as errors");
    Write_Line ("        f+   turn on warnings for unreferenced formal");
    Write_Line ("        F*   turn off warnings for unreferenced formal");
    Write_Line ("        .f   turn on warnings for suspicious Subp'Access");
@@ -507,6 +520,10 @@ begin
                                                   "(annex J) feature");
    Write_Line ("        J*   turn off warnings for obsolescent " &
                                                   "(annex J) feature");
+   Write_Line ("        .j+  turn on warnings for late dispatching " &
+                                                  "primitives");
+   Write_Line ("        .J*  turn off warnings for late dispatching " &
+                                                  "primitives");
    Write_Line ("        k+   turn on warnings on constant variable");
    Write_Line ("        K*   turn off warnings on constant variable");
    Write_Line ("        .k   turn on warnings for standard redefinition");
@@ -544,6 +561,10 @@ begin
                                                   "missing parenthesis");
    Write_Line ("        Q    turn off warnings for questionable " &
                                                   "missing parenthesis");
+   Write_Line ("        .q+  turn on warnings for questionable layout of " &
+                                                  "record types");
+   Write_Line ("        .Q*  turn off warnings for questionable layout of " &
+                                                  "record types");
    Write_Line ("        r+   turn on warnings for redundant construct");
    Write_Line ("        R*   turn off warnings for redundant construct");
    Write_Line ("        .r+  turn on warnings for object renaming function");
@@ -668,6 +689,7 @@ begin
    Write_Line ("Distribution stub generation for receiver stubs");
 
    if not Latest_Ada_Only then
+
       --  Line for -gnat83 switch
 
       Write_Switch_Char ("83");

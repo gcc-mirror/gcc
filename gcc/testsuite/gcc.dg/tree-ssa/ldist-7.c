@@ -28,4 +28,4 @@ int loop1 (int k)
   return a[1000-2] + b[1000-1] + c[1000-2] + d[1000-2];
 }
 
-/* { dg-final { scan-tree-dump-times "distributed" 0 "ldist" } } */
+/* { dg-final { scan-tree-dump-times "distributed: " 0 "ldist" } } */

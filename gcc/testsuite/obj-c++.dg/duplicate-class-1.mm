@@ -27,5 +27,5 @@
   return [self test];
 }
 @end
-/* { dg-warning "incomplete implementation" "" { target *-*-* } 29 } */
-/* { dg-warning "not found" "" { target *-*-* } 29 } */
+/* { dg-warning "incomplete implementation" "" { target *-*-* } .-1 } */
+/* { dg-warning "not found" "" { target *-*-* } .-2 } */

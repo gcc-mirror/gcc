@@ -10,8 +10,10 @@ void f();
 
 SA(!noexcept(f()));
 
-void g() throw (int);		// { dg-message "previous declaration" }
-void g() noexcept(false);	// { dg-error "different exception" }
+void g() throw (int);		// { dg-message "previous declaration" "" { target { ! c++17 } } }
+				// { dg-error "dynamic exception specification" "" { target c++17 } .-1 }
+				// { dg-warning "deprecated" "" { target { ! c++17 } } .-2 }
+void g() noexcept(false);	// { dg-error "different exception" "" { target { ! c++17 } } }
 void g();
 
 void h() throw();

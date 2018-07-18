@@ -54,23 +54,48 @@ type Pool struct {
 }
 
 // Local per-P Pool appendix.
-type poolLocal struct {
+type poolLocalInternal struct {
 	private interface{}   // Can be used only by the respective P.
 	shared  []interface{} // Can be used by any P.
 	Mutex                 // Protects shared.
-	pad     [128]byte     // Prevents false sharing.
+}
+
+type poolLocal struct {
+	poolLocalInternal
+
+	// Prevents false sharing on widespread platforms with
+	// 128 mod (cache line size) = 0 .
+	pad [128 - unsafe.Sizeof(poolLocalInternal{})%128]byte
+}
+
+// from runtime
+func fastrand() uint32
+
+var poolRaceHash [128]uint64
+
+// poolRaceAddr returns an address to use as the synchronization point
+// for race detector logic. We don't use the actual pointer stored in x
+// directly, for fear of conflicting with other synchronization on that address.
+// Instead, we hash the pointer to get an index into poolRaceHash.
+// See discussion on golang.org/cl/31589.
+func poolRaceAddr(x interface{}) unsafe.Pointer {
+	ptr := uintptr((*[2]unsafe.Pointer)(unsafe.Pointer(&x))[1])
+	h := uint32((uint64(uint32(ptr)) * 0x85ebca6b) >> 16)
+	return unsafe.Pointer(&poolRaceHash[h%uint32(len(poolRaceHash))])
 }
 
 // Put adds x to the pool.
 func (p *Pool) Put(x interface{}) {
-	if race.Enabled {
-		// Under race detector the Pool degenerates into no-op.
-		// It's conforming, simple and does not introduce excessive
-		// happens-before edges between unrelated goroutines.
-		return
-	}
 	if x == nil {
 		return
+	}
+	if race.Enabled {
+		if fastrand()%4 == 0 {
+			// Randomly drop x on floor.
+			return
+		}
+		race.ReleaseMerge(poolRaceAddr(x))
+		race.Disable()
 	}
 	l := p.pin()
 	if l.private == nil {
@@ -78,12 +103,14 @@ func (p *Pool) Put(x interface{}) {
 		x = nil
 	}
 	runtime_procUnpin()
-	if x == nil {
-		return
+	if x != nil {
+		l.Lock()
+		l.shared = append(l.shared, x)
+		l.Unlock()
 	}
-	l.Lock()
-	l.shared = append(l.shared, x)
-	l.Unlock()
+	if race.Enabled {
+		race.Enable()
+	}
 }
 
 // Get selects an arbitrary item from the Pool, removes it from the
@@ -96,29 +123,34 @@ func (p *Pool) Put(x interface{}) {
 // the result of calling p.New.
 func (p *Pool) Get() interface{} {
 	if race.Enabled {
-		if p.New != nil {
-			return p.New()
-		}
-		return nil
+		race.Disable()
 	}
 	l := p.pin()
 	x := l.private
 	l.private = nil
 	runtime_procUnpin()
-	if x != nil {
-		return x
+	if x == nil {
+		l.Lock()
+		last := len(l.shared) - 1
+		if last >= 0 {
+			x = l.shared[last]
+			l.shared = l.shared[:last]
+		}
+		l.Unlock()
+		if x == nil {
+			x = p.getSlow()
+		}
 	}
-	l.Lock()
-	last := len(l.shared) - 1
-	if last >= 0 {
-		x = l.shared[last]
-		l.shared = l.shared[:last]
+	if race.Enabled {
+		race.Enable()
+		if x != nil {
+			race.Acquire(poolRaceAddr(x))
+		}
 	}
-	l.Unlock()
-	if x != nil {
-		return x
+	if x == nil && p.New != nil {
+		x = p.New()
 	}
-	return p.getSlow()
+	return x
 }
 
 func (p *Pool) getSlow() (x interface{}) {
@@ -139,10 +171,6 @@ func (p *Pool) getSlow() (x interface{}) {
 			break
 		}
 		l.Unlock()
-	}
-
-	if x == nil && p.New != nil {
-		x = p.New()
 	}
 	return x
 }
@@ -220,7 +248,8 @@ func init() {
 }
 
 func indexLocal(l unsafe.Pointer, i int) *poolLocal {
-	return &(*[1000000]poolLocal)(l)[i]
+	lp := unsafe.Pointer(uintptr(l) + uintptr(i)*unsafe.Sizeof(poolLocal{}))
+	return (*poolLocal)(lp)
 }
 
 // Implemented in runtime.

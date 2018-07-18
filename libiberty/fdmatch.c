@@ -1,5 +1,5 @@
 /* Compare two open file descriptors to see if they refer to the same file.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or

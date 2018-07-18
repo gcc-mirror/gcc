@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;   use Atree;
+with Csets;   use Csets;
 with Einfo;   use Einfo;
 with Namet;   use Namet;
 with Nlists;  use Nlists;
@@ -50,7 +51,7 @@ package body Pprint is
       From_Source  : constant Boolean :=
                        Comes_From_Source (Expr)
                          and then not Opt.Debug_Generated_Code;
-      Append_Paren : Boolean := False;
+      Append_Paren : Natural := 0;
       Left         : Node_Id := Original_Node (Expr);
       Right        : Node_Id := Original_Node (Expr);
 
@@ -205,13 +206,14 @@ package body Pprint is
          end if;
 
          case Nkind (Expr) is
-            when N_Defining_Identifier | N_Identifier =>
+            when N_Defining_Identifier
+               | N_Identifier
+            =>
                return Ident_Image (Expr, Expression_Image.Expr, Expand_Type);
 
             when N_Character_Literal =>
                declare
-                  Char : constant Int :=
-                           UI_To_Int (Char_Literal_Value (Expr));
+                  Char : constant Int := UI_To_Int (Char_Literal_Value (Expr));
                begin
                   if Char in 32 .. 127 then
                      return "'" & Character'Val (Char) & "'";
@@ -270,11 +272,43 @@ package body Pprint is
             when N_Attribute_Reference =>
                if Take_Prefix then
                   declare
-                     Id     : constant Attribute_Id :=
-                                Get_Attribute_Id (Attribute_Name (Expr));
-                     Str    : constant String :=
-                                Expr_Name (Prefix (Expr)) & "'"
-                                  & Get_Name_String (Attribute_Name (Expr));
+                     function To_Mixed_Case (S : String) return String;
+                     --  Transform given string into the corresponding one in
+                     --  mixed case form.
+
+                     -------------------
+                     -- To_Mixed_Case --
+                     -------------------
+
+                     function To_Mixed_Case (S : String) return String is
+                        Result : String (S'Range);
+                        Ucase  : Boolean := True;
+
+                     begin
+                        for J in S'Range loop
+                           if Ucase then
+                              Result (J) := Fold_Upper (S (J));
+                           else
+                              Result (J) := Fold_Lower (S (J));
+                           end if;
+
+                           Ucase := (S (J) = '_');
+                        end loop;
+
+                        return Result;
+                     end To_Mixed_Case;
+
+                     Id : constant Attribute_Id :=
+                            Get_Attribute_Id (Attribute_Name (Expr));
+
+                     --  Always use mixed case for attributes
+
+                     Str : constant String :=
+                             Expr_Name (Prefix (Expr))
+                               & "'"
+                               & To_Mixed_Case
+                                   (Get_Name_String (Attribute_Name (Expr)));
+
                      N      : Node_Id;
                      Ranges : List_Id;
 
@@ -323,24 +357,70 @@ package body Pprint is
                end if;
 
             when N_Explicit_Dereference =>
+               Explicit_Dereference : declare
+                  function Deref_Suffix return String;
+                  --  Usually returns ".all", but will return "" if
+                  --  Hide_Temp_Derefs is true and the prefix is a use of a
+                  --  not-from-source object declared as
+                  --    X : constant Some_Access_Type := Some_Expr'Reference;
+                  --  (as is sometimes done in Exp_Util.Remove_Side_Effects).
 
-               --  Return "Foo" instead of "Parameter_Block.Foo.all"
+                  ------------------
+                  -- Deref_Suffix --
+                  ------------------
 
-               if Hide_Parameter_Blocks
-                 and then Nkind (Prefix (Expr)) = N_Selected_Component
-                 and then Present (Etype (Prefix (Expr)))
-                 and then Is_Access_Type (Etype (Prefix (Expr)))
-                 and then Is_Param_Block_Component_Type (Etype (Prefix (Expr)))
-               then
-                  return Expr_Name (Selector_Name (Prefix (Expr)));
+                  function Deref_Suffix return String is
+                     Decl : Node_Id;
 
-               elsif Take_Prefix then
-                  return Expr_Name (Prefix (Expr)) & ".all";
-               else
-                  return ".all";
-               end if;
+                  begin
+                     if Hide_Temp_Derefs
+                       and then Nkind (Prefix (Expr)) = N_Identifier
+                       and then Nkind (Entity (Prefix (Expr))) =
+                                  N_Defining_Identifier
+                     then
+                        Decl := Parent (Entity (Prefix (Expr)));
 
-            when N_Expanded_Name | N_Selected_Component =>
+                        if Present (Decl)
+                          and then Nkind (Decl) = N_Object_Declaration
+                          and then not Comes_From_Source (Decl)
+                          and then Constant_Present (Decl)
+                          and then Present (Sinfo.Expression (Decl))
+                          and then Nkind (Sinfo.Expression (Decl)) =
+                                     N_Reference
+                        then
+                           return "";
+                        end if;
+                     end if;
+
+                     --  The default case
+
+                     return ".all";
+                  end Deref_Suffix;
+
+               --  Start of processing for Explicit_Dereference
+
+               begin
+                  if Hide_Parameter_Blocks
+                    and then Nkind (Prefix (Expr)) = N_Selected_Component
+                    and then Present (Etype (Prefix (Expr)))
+                    and then Is_Access_Type (Etype (Prefix (Expr)))
+                    and then Is_Param_Block_Component_Type
+                               (Etype (Prefix (Expr)))
+                  then
+                     --  Return "Foo" instead of "Parameter_Block.Foo.all"
+
+                     return Expr_Name (Selector_Name (Prefix (Expr)));
+
+                  elsif Take_Prefix then
+                     return Expr_Name (Prefix (Expr)) & Deref_Suffix;
+                  else
+                     return Deref_Suffix;
+                  end if;
+               end Explicit_Dereference;
+
+            when N_Expanded_Name
+               | N_Selected_Component
+            =>
                if Take_Prefix then
                   return
                     Expr_Name (Prefix (Expr)) & "." &
@@ -381,7 +461,9 @@ package body Pprint is
                   end if;
                end;
 
-            when N_Unchecked_Expression | N_Expression_With_Actions =>
+            when N_Expression_With_Actions
+               | N_Unchecked_Expression
+            =>
                return Expr_Name (Expression (Expr));
 
             when N_Raise_Constraint_Error =>
@@ -623,30 +705,35 @@ package body Pprint is
 
       loop
          case Nkind (Left) is
-            when N_And_Then                   |
-                 N_Binary_Op                  |
-                 N_Membership_Test            |
-                 N_Or_Else                    =>
+            when N_And_Then
+               | N_Binary_Op
+               | N_Membership_Test
+               | N_Or_Else
+            =>
                Left := Original_Node (Left_Opnd (Left));
 
-            when N_Attribute_Reference        |
-                 N_Expanded_Name              |
-                 N_Explicit_Dereference       |
-                 N_Indexed_Component          |
-                 N_Reference                  |
-                 N_Selected_Component         |
-                 N_Slice                      =>
+            when N_Attribute_Reference
+               | N_Expanded_Name
+               | N_Explicit_Dereference
+               | N_Indexed_Component
+               | N_Reference
+               | N_Selected_Component
+               | N_Slice
+            =>
                Left := Original_Node (Prefix (Left));
 
-            when N_Defining_Program_Unit_Name |
-                 N_Designator                 |
-                 N_Function_Call              =>
+            when N_Defining_Program_Unit_Name
+               | N_Designator
+               | N_Function_Call
+            =>
                Left := Original_Node (Name (Left));
 
             when N_Range =>
                Left := Original_Node (Low_Bound (Left));
 
-            when N_Type_Conversion =>
+            when N_Qualified_Expression
+               | N_Type_Conversion
+            =>
                Left := Original_Node (Subtype_Mark (Left));
 
             --  For any other item, quit loop
@@ -658,15 +745,31 @@ package body Pprint is
 
       loop
          case Nkind (Right) is
-            when N_And_Then           |
-                 N_Membership_Test    |
-                 N_Op                 |
-                 N_Or_Else            =>
+            when N_And_Then
+               | N_Membership_Test
+               | N_Op
+               | N_Or_Else
+            =>
                Right := Original_Node (Right_Opnd (Right));
 
-            when N_Expanded_Name      |
-                 N_Selected_Component =>
+            when N_Expanded_Name
+               | N_Selected_Component
+            =>
                Right := Original_Node (Selector_Name (Right));
+
+            when N_Qualified_Expression
+               | N_Type_Conversion
+            =>
+               Right := Original_Node (Expression (Right));
+
+               --  If argument does not already account for a closing
+               --  parenthesis, count one here.
+
+               if not Nkind_In (Right, N_Aggregate,
+                                       N_Quantified_Expression)
+               then
+                  Append_Paren := Append_Paren + 1;
+               end if;
 
             when N_Designator =>
                Right := Original_Node (Identifier (Right));
@@ -680,9 +783,16 @@ package body Pprint is
             when N_Parameter_Association =>
                Right := Original_Node (Explicit_Actual_Parameter (Right));
 
+            when N_Component_Association =>
+               if Present (Expression (Right)) then
+                  Right := Expression (Right);
+               else
+                  Right := Last (Choices (Right));
+               end if;
+
             when N_Indexed_Component =>
                Right := Original_Node (Last (Sinfo.Expressions (Right)));
-               Append_Paren := True;
+               Append_Paren := Append_Paren + 1;
 
             when N_Function_Call =>
                if Present (Sinfo.Parameter_Associations (Right)) then
@@ -699,12 +809,15 @@ package body Pprint is
                      while Present (Rover) loop
                         if Comes_From_Source (Original_Node (Rover)) then
                            Right := Original_Node (Rover);
-                           Append_Paren := True;
                            Found := True;
                         end if;
 
                         Next (Rover);
                      end loop;
+
+                     if Found then
+                        Append_Paren := Append_Paren + 1;
+                     end if;
 
                      --  Quit loop if no Comes_From_Source parameters
 
@@ -718,7 +831,37 @@ package body Pprint is
                end if;
 
             when N_Quantified_Expression =>
-               Right := Original_Node (Condition (Right));
+               Right        := Original_Node (Condition (Right));
+               Append_Paren := Append_Paren + 1;
+
+            when N_Aggregate =>
+               declare
+                  Aggr : constant Node_Id := Right;
+                  Sub  : Node_Id;
+
+               begin
+                  Sub := First (Expressions (Aggr));
+                  while Present (Sub) loop
+                     if Sloc (Sub) > Sloc (Right) then
+                        Right := Sub;
+                     end if;
+
+                     Next (Sub);
+                  end loop;
+
+                  Sub := First (Component_Associations (Aggr));
+                  while Present (Sub) loop
+                     if Sloc (Sub) > Sloc (Right) then
+                        Right := Sub;
+                     end if;
+
+                     Next (Sub);
+                  end loop;
+
+                  exit when Right = Aggr;
+
+                  Append_Paren := Append_Paren + 1;
+               end;
 
             --  For all other items, quit the loop
 
@@ -740,6 +883,7 @@ package body Pprint is
          end if;
 
          declare
+            Threshold        : constant := 256;
             Buffer           : String (1 .. Natural (End_Sloc - Scn));
             Index            : Natural := 0;
             Skipping_Comment : Boolean := False;
@@ -749,34 +893,54 @@ package body Pprint is
             if Right /= Expr then
                while Scn < End_Sloc loop
                   case Src (Scn) is
-                  when ' ' | ASCII.HT =>
-                     if not Skipping_Comment and then not Underscore then
-                        Underscore := True;
-                        Index := Index + 1;
-                        Buffer (Index) := ' ';
-                     end if;
 
-                  --  CR/LF/FF is the end of any comment
+                     --  Give up on non ASCII characters
 
-                  when ASCII.LF | ASCII.CR | ASCII.FF =>
-                     Skipping_Comment := False;
+                     when Character'Val (128) .. Character'Last =>
+                        Append_Paren := 0;
+                        Index := 0;
+                        Right := Expr;
+                        exit;
 
-                  when others =>
-                     Underscore := False;
-
-                     if not Skipping_Comment then
-
-                        --  Ignore comment
-
-                        if Src (Scn) = '-' and then Src (Scn + 1) = '-' then
-                           Skipping_Comment := True;
-
-                        else
+                     when ' '
+                        | ASCII.HT
+                     =>
+                        if not Skipping_Comment and then not Underscore then
+                           Underscore := True;
                            Index := Index + 1;
-                           Buffer (Index) := Src (Scn);
+                           Buffer (Index) := ' ';
                         end if;
-                     end if;
+
+                     --  CR/LF/FF is the end of any comment
+
+                     when ASCII.CR
+                        | ASCII.FF
+                        | ASCII.LF
+                     =>
+                        Skipping_Comment := False;
+
+                     when others =>
+                        Underscore := False;
+
+                        if not Skipping_Comment then
+
+                           --  Ignore comment
+
+                           if Src (Scn) = '-' and then Src (Scn + 1) = '-' then
+                              Skipping_Comment := True;
+
+                           else
+                              Index := Index + 1;
+                              Buffer (Index) := Src (Scn);
+                           end if;
+                        end if;
                   end case;
+
+                  --  Give up on too long strings
+
+                  if Index >= Threshold then
+                     return Buffer (1 .. Index) & "...";
+                  end if;
 
                   Scn := Scn + 1;
                end loop;
@@ -793,11 +957,11 @@ package body Pprint is
                   end if;
                end;
 
-            elsif Append_Paren then
-               return Buffer (1 .. Index) & Expr_Name (Right, False) & ')';
-
             else
-               return Buffer (1 .. Index) & Expr_Name (Right, False);
+               return
+                 Buffer (1 .. Index)
+                   & Expr_Name (Right, False)
+                   & (1 .. Append_Paren => ')');
             end if;
          end;
       end;

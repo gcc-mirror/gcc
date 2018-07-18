@@ -1,3 +1,17 @@
 LIB1ASMSRC = arm/lib1funcs.S
 LIB1ASMFUNCS = _thumb1_case_sqi _thumb1_case_uqi _thumb1_case_shi \
 	_thumb1_case_uhi _thumb1_case_si
+
+HAVE_CMSE:=$(findstring __ARM_FEATURE_CMSE,$(shell $(gcc_compile_bare) -dM -E - </dev/null))
+ifneq ($(shell $(gcc_compile_bare) -E -mcmse - </dev/null 2>/dev/null),)
+CMSE_OPTS:=-mcmse
+endif
+
+ifdef HAVE_CMSE
+libgcc-objects += cmse.o cmse_nonsecure_call.o
+
+cmse.o: $(srcdir)/config/arm/cmse.c
+	$(gcc_compile) -c $(CMSE_OPTS) $<
+cmse_nonsecure_call.o: $(srcdir)/config/arm/cmse_nonsecure_call.S
+		       $(gcc_compile) -c $<
+endif

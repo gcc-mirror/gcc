@@ -1,0 +1,355 @@
+// <bit> -*- C++ -*-
+
+// Copyright (C) 2018 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file include/bit
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _GLIBCXX_BIT
+#define _GLIBCXX_BIT 1
+
+#pragma GCC system_header
+
+#if __cplusplus >= 201402L
+
+#include <type_traits>
+#include <limits>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Tp>
+    constexpr _Tp
+    __rotl(_Tp __x, unsigned int __s) noexcept
+    {
+      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      const unsigned __sN = __s % _Nd;
+      return (__x << __sN) | (__x >> ((_Nd - __sN) % _Nd));
+    }
+
+  template<typename _Tp>
+    constexpr _Tp
+    __rotr(_Tp __x, unsigned int __s) noexcept
+    {
+      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      const unsigned __sN = __s % _Nd;
+      return (__x >> __sN) | (__x << ((_Nd - __sN) % _Nd));
+    }
+
+  template<typename _Tp>
+    constexpr int
+    __countl_zero(_Tp __x) noexcept
+    {
+      using __limits = numeric_limits<_Tp>;
+
+      if (__x == 0)
+        return __limits::digits;
+
+      using __limits_ull = numeric_limits<unsigned long long>;
+      using __limits_ul = numeric_limits<unsigned long>;
+      using __limits_u = numeric_limits<unsigned>;
+
+      if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_u::digits)
+	{
+	  constexpr int __diff = __limits_u::digits - __limits::digits;
+	  return __builtin_clz(__x) - __diff;
+	}
+      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ul::digits)
+	{
+	  constexpr int __diff = __limits_ul::digits - __limits::digits;
+	  return __builtin_clzl(__x) - __diff;
+	}
+      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ull::digits)
+	{
+	  constexpr int __diff = __limits_ull::digits - __limits::digits;
+	  return __builtin_clzll(__x) - __diff;
+	}
+      else // (__limits::digits > __limits_ull::digits)
+	{
+	  static_assert(__limits::digits <= (2 * __limits_ull::digits),
+			"Maximum supported integer size is 128-bit");
+
+	  unsigned long long __high = __x >> __limits_ull::digits;
+	  if (__high != 0)
+	    {
+	      constexpr int __diff
+		= (2 * __limits_ull::digits) - __limits::digits;
+	      return __builtin_clzll(__high) - __diff;
+	    }
+	  unsigned long long __low = __x & __limits_ull::max();
+	  return (__limits::digits - __limits_ull::digits)
+	    + __builtin_clzll(__low);
+	}
+    }
+
+  template<typename _Tp>
+    constexpr int
+    __countl_one(_Tp __x) noexcept
+    {
+      if (__x == numeric_limits<_Tp>::max())
+        return numeric_limits<_Tp>::digits;
+      return std::__countl_zero<_Tp>((_Tp)~__x);
+    }
+
+  template<typename _Tp>
+    constexpr int
+    __countr_zero(_Tp __x) noexcept
+    {
+      using __limits = numeric_limits<_Tp>;
+
+      if (__x == 0)
+        return __limits::digits;
+
+      using __limits_ull = numeric_limits<unsigned long long>;
+      using __limits_ul = numeric_limits<unsigned long>;
+      using __limits_u = numeric_limits<unsigned>;
+
+      if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_u::digits)
+	return __builtin_ctz(__x);
+      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ul::digits)
+	return __builtin_ctzl(__x);
+      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ull::digits)
+	return __builtin_ctzll(__x);
+      else // (__limits::digits > __limits_ull::digits)
+	{
+	  static_assert(__limits::digits <= (2 * __limits_ull::digits),
+			"Maximum supported integer size is 128-bit");
+
+	  unsigned long long __low = __x & __limits_ull::max();
+	  if (__low != 0)
+	    return __builtin_ctzll(__low);
+	  unsigned long long __high = __x >> __limits_ull::digits;
+	  return __builtin_ctzll(__high) + __limits_ull::digits;
+	}
+    }
+
+  template<typename _Tp>
+    constexpr int
+    __countr_one(_Tp __x) noexcept
+    {
+      if (__x == numeric_limits<_Tp>::max())
+        return numeric_limits<_Tp>::digits;
+      return std::__countr_zero((_Tp)~__x);
+    }
+
+  template<typename _Tp>
+    constexpr int
+    __popcount(_Tp __x) noexcept
+    {
+      using __limits = numeric_limits<_Tp>;
+
+      if (__x == 0)
+        return 0;
+
+      using __limits_ull = numeric_limits<unsigned long long>;
+      using __limits_ul = numeric_limits<unsigned long>;
+      using __limits_u = numeric_limits<unsigned>;
+
+      if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_u::digits)
+	return __builtin_popcount(__x);
+      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ul::digits)
+	return __builtin_popcountl(__x);
+      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ull::digits)
+	return __builtin_popcountll(__x);
+      else // (__limits::digits > __limits_ull::digits)
+	{
+	  static_assert(__limits::digits <= (2 * __limits_ull::digits),
+			"Maximum supported integer size is 128-bit");
+
+	  unsigned long long __low = __x & __limits_ull::max();
+	  unsigned long long __high = __x >> __limits_ull::digits;
+	  return __builtin_popcountll(__low) + __builtin_popcountll(__high);
+	}
+    }
+
+  template<typename _Tp>
+    constexpr bool
+    __ispow2(_Tp __x) noexcept
+    { return std::__popcount(__x) == 1; }
+
+  template<typename _Tp>
+    constexpr _Tp
+    __ceil2(_Tp __x) noexcept
+    {
+      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      if (__x == 0)
+        return 1;
+      return (_Tp)1u << (_Nd - std::__countl_zero((_Tp)(__x - 1u)));
+    }
+
+  template<typename _Tp>
+    constexpr _Tp
+    __floor2(_Tp __x) noexcept
+    {
+      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      if (__x == 0)
+        return 0;
+      return (_Tp)1u << (_Nd - std::__countl_zero((_Tp)(__x >> 1)));
+    }
+
+  template<typename _Tp>
+    constexpr _Tp
+    __log2p1(_Tp __x) noexcept
+    {
+      constexpr auto _Nd = numeric_limits<_Tp>::digits;
+      if (__x == 0)
+	return 0;
+      return _Nd - std::__countl_zero(__x);
+    }
+
+#if __cplusplus > 201703L
+
+  template<typename _Tp, typename _Up, bool = is_integral_v<_Tp>>
+    struct _If_is_unsigned_integer_type { };
+
+  template<typename _Up>
+    struct _If_is_unsigned_integer_type<bool, _Up, true> { };
+
+  template<typename _Tp, typename _Up>
+    struct _If_is_unsigned_integer_type<_Tp, _Up, true>
+    : enable_if<is_same_v<_Tp, make_unsigned_t<_Tp>>, _Up> { };
+
+  template<typename _Tp, typename _Up = _Tp>
+    using _If_is_unsigned_integer
+      = typename _If_is_unsigned_integer_type<remove_cv_t<_Tp>, _Up>::type;
+
+#if ! __STRICT_ANSI__
+  // [bitops.rot], rotating
+
+  template<typename _Tp>
+    constexpr _If_is_unsigned_integer<_Tp>
+    rotl(_Tp __x, unsigned int __s) noexcept
+    { return std::__rotl(__x, __s); }
+
+  template<typename _Tp>
+    constexpr _If_is_unsigned_integer<_Tp>
+    rotr(_Tp __x, unsigned int __s) noexcept
+    { return std::__rotr(__x, __s); }
+
+  // [bitops.count], counting
+
+  template<typename _Tp>
+    constexpr _If_is_unsigned_integer<_Tp, int>
+    countl_zero(_Tp __x) noexcept
+    { return std::__countl_zero(__x); }
+
+  template<typename _Tp>
+    constexpr _If_is_unsigned_integer<_Tp, int>
+    countl_one(_Tp __x) noexcept
+    { return std::__countl_one(__x); }
+
+  template<typename _Tp>
+    constexpr _If_is_unsigned_integer<_Tp, int>
+    countr_zero(_Tp __x) noexcept
+    { return std::__countr_zero(__x); }
+
+  template<typename _Tp>
+    constexpr _If_is_unsigned_integer<_Tp, int>
+    countr_one(_Tp __x) noexcept
+    { return std::__countr_one(__x); }
+
+  template<typename _Tp>
+    constexpr _If_is_unsigned_integer<_Tp, int>
+    popcount(_Tp __x) noexcept
+    { return std::__popcount(__x); }
+#endif
+
+  // Integral power-of-two operations
+
+  template<typename _Tp>
+    constexpr _If_is_unsigned_integer<_Tp, bool>
+    ispow2(_Tp __x) noexcept
+    { return std::__ispow2(__x); }
+
+  template<typename _Tp>
+    constexpr _If_is_unsigned_integer<_Tp>
+    ceil2(_Tp __x) noexcept
+    { return std::__ceil2(__x); }
+
+  template<typename _Tp>
+    constexpr _If_is_unsigned_integer<_Tp>
+    floor2(_Tp __x) noexcept
+    { return std::__floor2(__x); }
+
+  template<typename _Tp>
+    constexpr _If_is_unsigned_integer<_Tp>
+    log2p1(_Tp __x) noexcept
+    { return std::__log2p1(__x); }
+
+#if ! __STRICT_ANSI__
+  enum class byte : unsigned char;
+
+  constexpr byte
+  rotl(byte __x, unsigned int __s) noexcept
+  { return (byte)std::__rotl((unsigned char)__x, __s); }
+
+  constexpr byte
+  rotr(byte __x, unsigned int __s) noexcept
+  { return (byte)std::__rotr((unsigned char)__x, __s); }
+
+  constexpr int
+  countl_zero(byte __x) noexcept
+  { return std::__countl_zero((unsigned char)__x); }
+
+  constexpr int
+  countl_one(byte __x) noexcept
+  { return std::__countl_one((unsigned char)__x); }
+
+  constexpr int
+  countr_zero(byte __x) noexcept
+  { return std::__countr_zero((unsigned char)__x); }
+
+  constexpr int
+  countr_one(byte __x) noexcept
+  { return std::__countr_one((unsigned char)__x); }
+
+  constexpr int
+  popcount(byte __x) noexcept
+  { return std::__popcount((unsigned char)__x); }
+
+  constexpr bool
+  ispow2(byte __x) noexcept
+  { return std::__ispow2((unsigned char)__x); }
+
+  constexpr byte
+  ceil2(byte __x) noexcept
+  { return (byte)std::__ceil2((unsigned char)__x); }
+
+  constexpr byte
+  floor2(byte __x) noexcept
+  { return (byte)std::__floor2((unsigned char)__x); }
+
+  constexpr byte
+  log2p1(byte __x) noexcept
+  { return (byte)std::__log2p1((unsigned char)__x); }
+#endif
+
+#endif // C++2a
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+#endif // C++14
+#endif // _GLIBCXX_BIT

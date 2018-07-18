@@ -12,6 +12,11 @@ import (
 // Getpagesize returns the underlying system's memory page size.
 func Getpagesize() int { return syscall.Getpagesize() }
 
+// File represents an open file descriptor.
+type File struct {
+	*file // os specific
+}
+
 // A FileInfo describes a file and is returned by Stat and Lstat.
 type FileInfo interface {
 	Name() string       // base name of the file
@@ -40,7 +45,7 @@ const (
 	ModeDir        FileMode = 1 << (32 - 1 - iota) // d: is a directory
 	ModeAppend                                     // a: append-only
 	ModeExclusive                                  // l: exclusive use
-	ModeTemporary                                  // T: temporary file (not backed up)
+	ModeTemporary                                  // T: temporary file; Plan 9 only
 	ModeSymlink                                    // L: symbolic link
 	ModeDevice                                     // D: device file
 	ModeNamedPipe                                  // p: named pipe (FIFO)

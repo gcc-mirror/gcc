@@ -6,7 +6,7 @@ extern void baz (int *);
 int
 foo (int i)
 {
-  int j; /* { dg-warning "'j' may be used uninitialized in this function" "uninitialized" { xfail *-*-* } 9 } */
+  int j; /* { dg-warning "'j' may be used uninitialized in this function" "uninitialized" { xfail *-*-* } } */
 
   if (bar (i)) {
     baz (&j);

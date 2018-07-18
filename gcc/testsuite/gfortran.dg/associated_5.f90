@@ -13,7 +13,7 @@
 
       ptr => ILA1
 
-      if (ASSOCIATED (ptr, ILA1(NF1:NF2,NF4:NF3) ) ) call abort
-      if ( .not. ASSOCIATED(ptr) )  call abort
+      if (ASSOCIATED (ptr, ILA1(NF1:NF2,NF4:NF3) ) ) STOP 1
+      if ( .not. ASSOCIATED(ptr) )  STOP 2
 
       END SUBROUTINE

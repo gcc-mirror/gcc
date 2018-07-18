@@ -66,6 +66,10 @@ main (void)
   if (__builtin_strncasecmp ("aab", "aac", 2) != 0)
     __builtin_abort ();
 
+  /* MEMCMP.  */
+  if (__builtin_memcmp ("aaaaa", "aaaaa", 6) != 0)
+    __builtin_abort ();
+
   return 0;
 }
 
@@ -74,3 +78,4 @@ main (void)
 /* { dg-final { scan-tree-dump-not "__builtin_strncmp" "original" } } */
 /* { dg-final { scan-tree-dump-not "__builtin_strncasecmp" "original" } } */
 /* { dg-final { scan-tree-dump-not "__builtin_memchr" "original" } } */
+/* { dg-final { scan-tree-dump-not "__builtin_memcmp" "original" } } */

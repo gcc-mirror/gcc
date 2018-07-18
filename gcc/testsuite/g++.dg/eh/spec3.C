@@ -12,7 +12,10 @@ struct A : virtual public Base
 
 struct B {};
 
-void func() throw (B,A)
+void func()
+#if __cplusplus <= 201402L
+throw (B,A)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
+#endif
 {
   throw A();
 }

@@ -31,4 +31,4 @@ char * _Atomic restrict h;
 char * _Atomic i;
 char * restrict j;
 
-/* { dg-final { scan-assembler-times "DIE \\(\[^\n\]*\\) DW_TAG_(?:const|volatile|atomic|restrict)_type" 8 { xfail { powerpc-ibm-aix* } } } } */
+/* { dg-final { scan-assembler-times "DIE \\(\[^\n\]*\\) DW_TAG_(?:const|volatile|atomic|restrict)_type" 8 } } */

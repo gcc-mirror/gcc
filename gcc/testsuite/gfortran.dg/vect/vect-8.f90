@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-require-effective-target vect_double }
+! { dg-additional-options "-finline-matmul-limit=0" }
 
 module lfk_prec
  integer, parameter :: dp=kind(1.d0)
@@ -703,4 +704,5 @@ CALL track('KERNEL  ')
 RETURN
 END SUBROUTINE kernel
 
-! { dg-final { scan-tree-dump-times "vectorized 21 loops" 1 "vect" } }
+! { dg-final { scan-tree-dump-times "vectorized 22 loops" 1 "vect" { target vect_intdouble_cvt } } }
+! { dg-final { scan-tree-dump-times "vectorized 17 loops" 1 "vect" { target { ! vect_intdouble_cvt } } } }

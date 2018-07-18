@@ -1,6 +1,6 @@
 ! PR middle-end/66199
 ! { dg-do run }
-! { dg-options "-O2 -fopenmp" }
+! { dg-options "-O2" }
 
   integer :: u(1024), v(1024), w(1024), a, b, c, d, e, a1, b1, a2, b2, d1, d2
   a = 1
@@ -14,12 +14,11 @@
   c = 17
   d = 75
   !$omp target teams distribute parallel do simd default(none) &
-  !$omp& firstprivate (a, b) shared(u, v, w) &
-  !$omp& linear(d) linear(c:5) lastprivate(e)
+  !$omp& firstprivate (a, b, c) shared(u, v, w) &
+  !$omp& linear(d) lastprivate(e)
   do d = a, b
     u(d) = v(d) + w(d)
-    c = c + 5
-    e = c
+    e = c + d * 5
   end do
   a1 = 0
   a2 = 0

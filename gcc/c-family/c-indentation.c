@@ -1,5 +1,5 @@
 /* Implementation of -Wmisleading-indentation
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -70,9 +70,7 @@ get_visual_column (expanded_location exploc, location_t loc,
       return false;
     }
 
-  int line_len;
-  const char *line = location_get_source_line (exploc.file, exploc.line,
-					       &line_len);
+  char_span line = location_get_source_line (exploc.file, exploc.line);
   if (!line)
     return false;
   unsigned int vis_column = 0;
@@ -112,12 +110,11 @@ get_first_nws_vis_column (const char *file, int line_num,
 {
   gcc_assert (first_nws);
 
-  int line_len;
-  const char *line = location_get_source_line (file, line_num, &line_len);
+  char_span line = location_get_source_line (file, line_num);
   if (!line)
     return false;
   unsigned int vis_column = 0;
-  for (int i = 1; i < line_len; i++)
+  for (size_t i = 1; i < line.length (); i++)
     {
       unsigned char ch = line[i - 1];
 
@@ -542,10 +539,10 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 
 /* Return the string identifier corresponding to the given guard token.  */
 
-static const char *
-guard_tinfo_to_string (const token_indent_info &guard_tinfo)
+const char *
+guard_tinfo_to_string (enum rid keyword)
 {
-  switch (guard_tinfo.keyword)
+  switch (keyword)
     {
     case RID_FOR:
       return "for";
@@ -557,6 +554,8 @@ guard_tinfo_to_string (const token_indent_info &guard_tinfo)
       return "while";
     case RID_DO:
       return "do";
+    case RID_SWITCH:
+      return "switch";
     default:
       gcc_unreachable ();
     }
@@ -605,10 +604,10 @@ warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
     {
       if (warning_at (guard_tinfo.location, OPT_Wmisleading_indentation,
 		      "this %qs clause does not guard...",
-		      guard_tinfo_to_string (guard_tinfo)))
+		      guard_tinfo_to_string (guard_tinfo.keyword)))
 	inform (next_tinfo.location,
-		("...this statement, but the latter is misleadingly indented"
-		 " as if it is guarded by the %qs"),
-		guard_tinfo_to_string (guard_tinfo));
+		"...this statement, but the latter is misleadingly indented"
+		" as if it were guarded by the %qs",
+		guard_tinfo_to_string (guard_tinfo.keyword));
     }
 }

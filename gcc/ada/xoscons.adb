@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 --  The base name of the template file is given by Argument (1). This program
 --  generates the spec for this specified unit (let's call it UNIT_NAME).
 
---  It works in conjunction with a C template file which must be pre-processed
+--  It works in conjunction with a C template file which must be preprocessed
 --  and compiled using the cross compiler. Two input files are used:
 --    - the preprocessed C file: UNIT_NAME-tmplt.i
 --    - the generated assembly file: UNIT_NAME-tmplt.s
@@ -152,8 +152,8 @@ procedure XOSCons is
    --  True if S contains Tmpl_Name, possibly with different casing
 
    function Spaces (Count : Integer) return String;
-   --  If Count is positive, return a string of Count spaces, else return an
-   --  empty string.
+   --  If Count is positive, return a string of Count spaces, else return
+   --  an empty string.
 
    ---------
    -- ">" --
@@ -354,7 +354,12 @@ procedure XOSCons is
            Integer (Parse_Int (Line (Index1 .. Index2 - 1), CNU).Abs_Value);
 
          case Info.Kind is
-            when CND | CNU | CNS | C | SUB =>
+            when C
+               | CND
+               | CNS
+               | CNU
+               | SUB
+            =>
                Index1 := Index2 + 1;
                Find_Colon (Index2);
 

@@ -1,6 +1,6 @@
 // Methods for Exception Support for -*- C++ -*-
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,20 +53,33 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  // Copy constructors and assignment operators defined using COW std::string
+  // Copy/move constructors and assignment operators defined using COW string.
+  // These operations are noexcept even though copying a COW string is not,
+  // but we know that the string member in an exception has not been "leaked"
+  // so copying is a simple reference count increment.
 
   logic_error::logic_error(const logic_error& e) noexcept
-  : _M_msg(e._M_msg) { }
+  : exception(e), _M_msg(e._M_msg) { }
 
   logic_error& logic_error::operator=(const logic_error& e) noexcept
   { _M_msg = e._M_msg; return *this; }
 
+  logic_error::logic_error(logic_error&& e) noexcept = default;
+
+  logic_error&
+  logic_error::operator=(logic_error&& e) noexcept = default;
+
   runtime_error::runtime_error(const runtime_error& e) noexcept
-  : _M_msg(e._M_msg) { }
+  : exception(e), _M_msg(e._M_msg) { }
 
   runtime_error&
   runtime_error::operator=(const runtime_error& e) noexcept
   { _M_msg = e._M_msg; return *this; }
+
+  runtime_error::runtime_error(runtime_error&& e) noexcept = default;
+
+  runtime_error&
+  runtime_error::operator=(runtime_error&& e) noexcept = default;
 
   // New C++11 constructors:
 
@@ -208,6 +221,8 @@ extern void* _ZGTtnaX (size_t sz) __attribute__((weak));
 extern void _ZGTtdlPv (void* ptr) __attribute__((weak));
 extern uint8_t _ITM_RU1(const uint8_t *p)
   ITM_REGPARM __attribute__((weak));
+extern uint16_t _ITM_RU2(const uint16_t *p)
+  ITM_REGPARM __attribute__((weak));
 extern uint32_t _ITM_RU4(const uint32_t *p)
   ITM_REGPARM __attribute__((weak));
 extern uint64_t _ITM_RU8(const uint64_t *p)
@@ -272,12 +287,15 @@ _txnal_cow_string_C1_for_exceptions(void* that, const char* s,
 static void* txnal_read_ptr(void* const * ptr)
 {
   static_assert(sizeof(uint64_t) == sizeof(void*)
-		|| sizeof(uint32_t) == sizeof(void*),
-		"Pointers must be 32 bits or 64 bits wide");
+		|| sizeof(uint32_t) == sizeof(void*)
+		|| sizeof(uint16_t) == sizeof(void*),
+		"Pointers must be 16 bits, 32 bits or 64 bits wide");
 #if __UINTPTR_MAX__ == __UINT64_MAX__
   return (void*)_ITM_RU8((const uint64_t*)ptr);
-#else
+#elif __UINTPTR_MAX__ == __UINT32_MAX__
   return (void*)_ITM_RU4((const uint32_t*)ptr);
+#else
+  return (void*)_ITM_RU2((const uint16_t*)ptr);
 #endif
 }
 

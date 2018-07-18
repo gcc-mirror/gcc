@@ -1,4 +1,9 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-stringop-overflow" } */
+/* The loop below writes past the end of the global object a.
+   When the loop is transformed into a call to memcpy the buffer
+   overflow is detected and diagnosed by the -Wstringop-overflow
+   option enabled by default.  */
 
 typedef unsigned size_t;
 struct {

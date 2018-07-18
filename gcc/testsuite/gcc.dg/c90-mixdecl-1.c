@@ -9,5 +9,5 @@ foo (void)
   int i;
   i = 0;
   int j; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "mix|parse" "mixed declarations and code not in C90" { target *-*-* } 11 } */
+  /* { dg-error "mix|parse" "mixed declarations and code not in C90" { target *-*-* } .-1 } */
 }

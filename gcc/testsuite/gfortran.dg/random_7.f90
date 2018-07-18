@@ -13,7 +13,7 @@ program trs
   ! In the current xorshift1024* implementation the last seed value is
   ! special
   seed(size) = check(size)
-  if (any (seed /= check)) call abort
+  if (any (seed /= check)) STOP 1
 contains
   subroutine test_random_seed(size, put, get)
     integer, optional :: size

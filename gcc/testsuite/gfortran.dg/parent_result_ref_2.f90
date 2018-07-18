@@ -30,6 +30,6 @@ contains
 end function g
 
   character(4), external :: f, g
-  if (f ().ne."wxyz") call abort ()
-  if (g ().ne."WXYZ") call abort ()
+  if (f ().ne."wxyz") STOP 1
+  if (g ().ne."WXYZ") STOP 2
 end

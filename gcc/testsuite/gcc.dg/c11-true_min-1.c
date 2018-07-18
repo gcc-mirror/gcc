@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-std=c11" } */
-/* { dg-xfail-run-if "PR58757 -mieee is required to compare denormals" { alpha*-*-* } { "*" } { "" } } */
+/* { dg-xfail-run-if "PR58757 -mieee is required to compare denormals" { alpha*-*-* } } */
 
 /* Test that the smallest positive value is not 0. This needs to be true
    even when denormals are not supported, so we do not pass any flag

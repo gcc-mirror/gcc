@@ -1,5 +1,5 @@
 /* Copy propagation and SSA_NAME replacement support routines.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -66,6 +66,13 @@ along with GCC; see the file COPYING3.  If not see
 struct prop_value_t {
     /* Copy-of value.  */
     tree value;
+};
+
+class copy_prop : public ssa_propagation_engine
+{
+ public:
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
 };
 
 static prop_value_t *copy_of;
@@ -168,7 +175,7 @@ dump_copy_of (FILE *file, tree var)
 
   val = copy_of[SSA_NAME_VERSION (var)].value;
   fprintf (file, " copy-of chain: ");
-  print_generic_expr (file, var, 0);
+  print_generic_expr (file, var);
   fprintf (file, " ");
   if (!val)
     fprintf (file, "[UNDEFINED]");
@@ -177,7 +184,7 @@ dump_copy_of (FILE *file, tree var)
   else
     {
       fprintf (file, "-> ");
-      print_generic_expr (file, val, 0);
+      print_generic_expr (file, val);
       fprintf (file, " ");
       fprintf (file, "[COPY]");
     }
@@ -231,7 +238,7 @@ copy_prop_visit_cond_stmt (gimple *stmt, edge *taken_edge_p)
     {
       fprintf (dump_file, "Trying to determine truth value of ");
       fprintf (dump_file, "predicate ");
-      print_gimple_stmt (dump_file, stmt, 0, 0);
+      print_gimple_stmt (dump_file, stmt, 0);
     }
 
   /* Fold COND and see whether we get a useful result.  */
@@ -263,8 +270,8 @@ copy_prop_visit_cond_stmt (gimple *stmt, edge *taken_edge_p)
    If the new value produced by STMT is varying, return
    SSA_PROP_VARYING.  */
 
-static enum ssa_prop_result
-copy_prop_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *result_p)
+enum ssa_prop_result
+copy_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *result_p)
 {
   enum ssa_prop_result retval;
 
@@ -317,8 +324,8 @@ copy_prop_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *result_p)
 /* Visit PHI node PHI.  If all the arguments produce the same value,
    set it to be the value of the LHS of PHI.  */
 
-static enum ssa_prop_result
-copy_prop_visit_phi_node (gphi *phi)
+enum ssa_prop_result
+copy_prop::visit_phi (gphi *phi)
 {
   enum ssa_prop_result retval;
   unsigned i;
@@ -482,10 +489,16 @@ init_copy_prop (void)
     }
 }
 
+class copy_folder : public substitute_and_fold_engine
+{
+ public:
+  tree get_value (tree) FINAL OVERRIDE;
+};
+
 /* Callback for substitute_and_fold to get at the final copy-of values.  */
 
-static tree
-get_value (tree name)
+tree
+copy_folder::get_value (tree name)
 {
   tree val;
   if (SSA_NAME_VERSION (name) >= n_copy_of)
@@ -550,7 +563,8 @@ fini_copy_prop (void)
 	}
     }
 
-  bool changed = substitute_and_fold (get_value, NULL);
+  class copy_folder copy_folder;
+  bool changed = copy_folder.substitute_and_fold ();
   if (changed)
     {
       free_numbers_of_iterations_estimates (cfun);
@@ -601,7 +615,8 @@ static unsigned int
 execute_copy_prop (void)
 {
   init_copy_prop ();
-  ssa_propagate (copy_prop_visit_stmt, copy_prop_visit_phi_node);
+  class copy_prop copy_prop;
+  copy_prop.ssa_propagate ();
   if (fini_copy_prop ())
     return TODO_cleanup_cfg;
   return 0;

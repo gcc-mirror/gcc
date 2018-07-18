@@ -1,0 +1,5 @@
+(function "example_note"
+  (insn-chain
+    (cnote 1 NOTE_INSN_DELETED)
+  ) ;; insn-chain
+) ;; function

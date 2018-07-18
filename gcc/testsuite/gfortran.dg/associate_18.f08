@@ -25,7 +25,7 @@ program associate_18
   associate(i => av(1))
     i%map = 2
   end associate
-  if (any (av%map /= [2,1])) call abort()
+  if (any (av%map /= [2,1])) STOP 1
   deallocate(av)
 
   allocate(am(3,4))
@@ -33,14 +33,14 @@ program associate_18
     pam%map = 7
     pam(1,2)%map = 8
   end associate
-  if (any (reshape(am%map, [12]) /= [1,1,1, 1,7,7, 1,8,7, 1,1,1])) call abort()
+  if (any (reshape(am%map, [12]) /= [1,1,1, 1,7,7, 1,8,7, 1,1,1])) STOP 2
   deallocate(am)
 
   allocate(pv(2))
   associate(i => pv(1))
     i%map = 2
   end associate
-  if (any (pv%map /= [2,1])) call abort()
+  if (any (pv%map /= [2,1])) STOP 3
   deallocate(pv)
 
   allocate(pm(3,4))
@@ -48,13 +48,13 @@ program associate_18
     ppm%map = 7
     ppm(1,2)%map = 8
   end associate
-  if (any (reshape(pm%map, [12]) /= [1,1,1, 1,7,7, 1,8,7, 1,1,1])) call abort()
+  if (any (reshape(pm%map, [12]) /= [1,1,1, 1,7,7, 1,8,7, 1,1,1])) STOP 4
   deallocate(pm)
 
   associate(i => iv(1))
     i = 7
   end associate
-  if (any (iv /= [7, 17, 17, 17, 17])) call abort()
+  if (any (iv /= [7, 17, 17, 17, 17])) STOP 5
 
   associate(pam => im(2:3, 2:3))
     pam = 9
@@ -64,7 +64,7 @@ program associate_18
     end do
   end associate
   if (any (reshape(im, [20]) /= [23,23,23,23, 23,9,0,23, &
-        23,10,0,23, 23,23,23,23, 23,23,23,23])) call abort()
+        23,10,0,23, 23,23,23,23, 23,23,23,23])) STOP 6
 
   expect(2:3) = 9
   do c = 1, 5
@@ -72,7 +72,7 @@ program associate_18
     associate(pam => im(:, c))
       pam(2:3) = 9
     end associate
-    if (any (reshape(im, [20]) /= expect)) call abort()
+    if (any (reshape(im, [20]) /= expect)) STOP 7
     ! Shift expect
     expect = [expect(17:), expect(:16)]
   end do

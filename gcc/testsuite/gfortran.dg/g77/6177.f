@@ -11,5 +11,5 @@ C
       w(1) = x
       x = conjg(x)
       w(1) = conjg(w(1))
-      if (abs(x-w(1)) .gt. 1.0e-5) call abort
+      if (abs(x-w(1)) .gt. 1.0e-5) STOP 1
       end

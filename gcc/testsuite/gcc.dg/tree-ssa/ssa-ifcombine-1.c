@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-optimized" } */
+/* { dg-options "-O -fdump-tree-optimized-details-blocks" } */
 
 /* Testcase for PR31657.  */
 
@@ -14,3 +14,4 @@ int foo (int x, int a, int b)
 }
 
 /* { dg-final { scan-tree-dump "\\|" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

@@ -1,5 +1,5 @@
 // PR c++/67007
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 template <class U>
 concept bool A =

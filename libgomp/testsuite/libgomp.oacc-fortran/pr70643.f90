@@ -47,5 +47,5 @@ program main
 
     !$acc end data
 
-    if (sum .ne. 4.0) call abort
+    if (sum .ne. 4.0) STOP 1
 end program

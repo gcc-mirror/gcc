@@ -25,7 +25,7 @@ const B b;			// { dg-error "uninitialized const" }
 
 struct C
 {
-  virtual void f() = delete;	// { dg-error "overriding deleted" }
+  virtual void f() = delete;	// { dg-message "overridden" }
 };
 
 struct D: public C

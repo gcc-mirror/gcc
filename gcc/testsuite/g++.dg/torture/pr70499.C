@@ -30,7 +30,7 @@ struct Foo {
 template<typename Tx>  
 __attribute__((__always_inline__)) inline void inlineFunc(Tx hx[]) {
     Tx x = hx[0], y = hx[1];
-    Tx lam[1] = (x*y);
+    Tx lam[1] = {(x*y)};
 }
 
 void FooBarFunc () {

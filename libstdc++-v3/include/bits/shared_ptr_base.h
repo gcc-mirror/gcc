@@ -1,6 +1,6 @@
 // shared_ptr and weak_ptr implementation details -*- C++ -*-
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,9 +49,7 @@
 #ifndef _SHARED_PTR_BASE_H
 #define _SHARED_PTR_BASE_H 1
 
-#if __cpp_rtti
-# include <typeinfo>
-#endif
+#include <typeinfo>
 #include <bits/allocated_ptr.h>
 #include <bits/refwrap.h>
 #include <bits/stl_function.h>
@@ -62,7 +60,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template<typename> class auto_ptr;
+#pragma GCC diagnostic pop
 #endif
 
  /**
@@ -411,6 +412,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Sp_ebo_helper<_Nm, _Tp, true> : private _Tp
     {
       explicit _Sp_ebo_helper(const _Tp& __tp) : _Tp(__tp) { }
+      explicit _Sp_ebo_helper(_Tp&& __tp) : _Tp(std::move(__tp)) { }
 
       static _Tp&
       _S_get(_Sp_ebo_helper& __eboh) { return static_cast<_Tp&>(__eboh); }
@@ -421,6 +423,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Sp_ebo_helper<_Nm, _Tp, false>
     {
       explicit _Sp_ebo_helper(const _Tp& __tp) : _M_tp(__tp) { }
+      explicit _Sp_ebo_helper(_Tp&& __tp) : _M_tp(std::move(__tp)) { }
 
       static _Tp&
       _S_get(_Sp_ebo_helper& __eboh)
@@ -441,7 +444,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       public:
 	_Impl(_Ptr __p, _Deleter __d, const _Alloc& __a) noexcept
-	: _M_ptr(__p), _Del_base(__d), _Alloc_base(__a)
+	: _M_ptr(__p), _Del_base(std::move(__d)), _Alloc_base(__a)
 	{ }
 
 	_Deleter& _M_del() noexcept { return _Del_base::_S_get(*this); }
@@ -455,11 +458,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // __d(__p) must not throw.
       _Sp_counted_deleter(_Ptr __p, _Deleter __d) noexcept
-      : _M_impl(__p, __d, _Alloc()) { }
+      : _M_impl(__p, std::move(__d), _Alloc()) { }
 
       // __d(__p) must not throw.
       _Sp_counted_deleter(_Ptr __p, _Deleter __d, const _Alloc& __a) noexcept
-      : _M_impl(__p, __d, __a) { }
+      : _M_impl(__p, std::move(__d), __a) { }
 
       ~_Sp_counted_deleter() noexcept { }
 
@@ -495,7 +498,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // helpers for make_shared / allocate_shared
 
-  struct _Sp_make_shared_tag { };
+  struct _Sp_make_shared_tag
+  {
+#if !__cpp_rtti
+  private:
+    template<typename _Tp, _Lock_policy _Lp>
+      friend class __shared_ptr;
+    template<typename _Tp, typename _Alloc, _Lock_policy _Lp>
+      friend class _Sp_counted_ptr_inplace;
+
+    static const type_info&
+    _S_ti() noexcept
+    {
+      alignas(type_info) static constexpr _Sp_make_shared_tag __tag;
+      return reinterpret_cast<const type_info&>(__tag);
+    }
+#endif
+  };
 
   template<typename _Tp, typename _Alloc, _Lock_policy _Lp>
     class _Sp_counted_ptr_inplace final : public _Sp_counted_base<_Lp>
@@ -515,6 +534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       using __allocator_type = __alloc_rebind<_Alloc, _Sp_counted_ptr_inplace>;
 
+      // Alloc parameter is not a reference so doesn't alias anything in __args
       template<typename... _Args>
 	_Sp_counted_ptr_inplace(_Alloc __a, _Args&&... __args)
 	: _M_impl(__a)
@@ -548,8 +568,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 #if __cpp_rtti
 	if (__ti == typeid(_Sp_make_shared_tag))
-	  return const_cast<typename remove_cv<_Tp>::type*>(_M_ptr());
+#else
+	if (&__ti == &_Sp_make_shared_tag::_S_ti())
 #endif
+	  return const_cast<typename remove_cv<_Tp>::type*>(_M_ptr());
 	return nullptr;
       }
 
@@ -559,6 +581,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Impl _M_impl;
     };
 
+  // The default deleter for shared_ptr<T[]> and shared_ptr<T[N]>.
+  struct __sp_array_delete
+  {
+    template<typename _Yp>
+      void operator()(_Yp* __p) const { delete[] __p; }
+  };
 
   template<_Lock_policy _Lp>
     class __shared_count
@@ -581,6 +609,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __throw_exception_again;
 	    }
 	}
+
+      template<typename _Ptr>
+	__shared_count(_Ptr __p, /* is_array = */ false_type)
+	: __shared_count(__p)
+	{ }
+
+      template<typename _Ptr>
+	__shared_count(_Ptr __p, /* is_array = */ true_type)
+	: __shared_count(__p, __sp_array_delete{}, allocator<void>())
+	{ }
 
       template<typename _Ptr, typename _Deleter>
 	__shared_count(_Ptr __p, _Deleter __d)
@@ -616,17 +654,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  typename _Sp_cp_type::__allocator_type __a2(__a);
 	  auto __guard = std::__allocate_guarded(__a2);
 	  _Sp_cp_type* __mem = __guard.get();
-	  ::new (__mem) _Sp_cp_type(std::move(__a),
-				    std::forward<_Args>(__args)...);
+	  ::new (__mem) _Sp_cp_type(__a, std::forward<_Args>(__args)...);
 	  _M_pi = __mem;
 	  __guard = nullptr;
 	}
 
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       // Special case for auto_ptr<_Tp> to provide the strong guarantee.
       template<typename _Tp>
         explicit
 	__shared_count(std::auto_ptr<_Tp>&& __r);
+#pragma GCC diagnostic pop
 #endif
 
       // Special case for unique_ptr<_Tp,_Del> to provide the strong guarantee.
@@ -848,8 +888,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_pi = nullptr;
     }
 
-  // Helper traits for shared_ptr
+#define __cpp_lib_shared_ptr_arrays 201603
 
+  // Helper traits for shared_ptr of array:
+
+  // A pointer type Y* is said to be compatible with a pointer type T* when
+  // either Y* is convertible to T* or Y is U[N] and T is U cv [].
   template<typename _Yp_ptr, typename _Tp_ptr>
     struct __sp_compatible_with
     : false_type
@@ -860,17 +904,162 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : is_convertible<_Yp*, _Tp*>::type
     { };
 
-  template<typename _Tp, _Lock_policy _Lp>
-    class __shared_ptr
+  template<typename _Up, size_t _Nm>
+    struct __sp_compatible_with<_Up(*)[_Nm], _Up(*)[]>
+    : true_type
+    { };
+
+  template<typename _Up, size_t _Nm>
+    struct __sp_compatible_with<_Up(*)[_Nm], const _Up(*)[]>
+    : true_type
+    { };
+
+  template<typename _Up, size_t _Nm>
+    struct __sp_compatible_with<_Up(*)[_Nm], volatile _Up(*)[]>
+    : true_type
+    { };
+
+  template<typename _Up, size_t _Nm>
+    struct __sp_compatible_with<_Up(*)[_Nm], const volatile _Up(*)[]>
+    : true_type
+    { };
+
+  // Test conversion from Y(*)[N] to U(*)[N] without forming invalid type Y[N].
+  template<typename _Up, size_t _Nm, typename _Yp, typename = void>
+    struct __sp_is_constructible_arrN
+    : false_type
+    { };
+
+  template<typename _Up, size_t _Nm, typename _Yp>
+    struct __sp_is_constructible_arrN<_Up, _Nm, _Yp, __void_t<_Yp[_Nm]>>
+    : is_convertible<_Yp(*)[_Nm], _Up(*)[_Nm]>::type
+    { };
+
+  // Test conversion from Y(*)[] to U(*)[] without forming invalid type Y[].
+  template<typename _Up, typename _Yp, typename = void>
+    struct __sp_is_constructible_arr
+    : false_type
+    { };
+
+  template<typename _Up, typename _Yp>
+    struct __sp_is_constructible_arr<_Up, _Yp, __void_t<_Yp[]>>
+    : is_convertible<_Yp(*)[], _Up(*)[]>::type
+    { };
+
+  // Trait to check if shared_ptr<T> can be constructed from Y*.
+  template<typename _Tp, typename _Yp>
+    struct __sp_is_constructible;
+
+  // When T is U[N], Y(*)[N] shall be convertible to T*;
+  template<typename _Up, size_t _Nm, typename _Yp>
+    struct __sp_is_constructible<_Up[_Nm], _Yp>
+    : __sp_is_constructible_arrN<_Up, _Nm, _Yp>::type
+    { };
+
+  // when T is U[], Y(*)[] shall be convertible to T*;
+  template<typename _Up, typename _Yp>
+    struct __sp_is_constructible<_Up[], _Yp>
+    : __sp_is_constructible_arr<_Up, _Yp>::type
+    { };
+
+  // otherwise, Y* shall be convertible to T*.
+  template<typename _Tp, typename _Yp>
+    struct __sp_is_constructible
+    : is_convertible<_Yp*, _Tp*>::type
+    { };
+
+
+  // Define operator* and operator-> for shared_ptr<T>.
+  template<typename _Tp, _Lock_policy _Lp,
+	   bool = is_array<_Tp>::value, bool = is_void<_Tp>::value>
+    class __shared_ptr_access
     {
     public:
       using element_type = _Tp;
 
-    private:
-      // Trait to check if shared_ptr<T> can be constructed from Y*.
-      template<typename _Tp1, typename _Yp>
-	using __sp_is_constructible = is_convertible<_Yp*, _Tp1*>;
+      element_type&
+      operator*() const noexcept
+      {
+	__glibcxx_assert(_M_get() != nullptr);
+	return *_M_get();
+      }
 
+      element_type*
+      operator->() const noexcept
+      {
+	_GLIBCXX_DEBUG_PEDASSERT(_M_get() != nullptr);
+	return _M_get();
+      }
+
+    private:
+      element_type*
+      _M_get() const noexcept
+      { return static_cast<const __shared_ptr<_Tp, _Lp>*>(this)->get(); }
+    };
+
+  // Define operator-> for shared_ptr<cv void>.
+  template<typename _Tp, _Lock_policy _Lp>
+    class __shared_ptr_access<_Tp, _Lp, false, true>
+    {
+    public:
+      using element_type = _Tp;
+
+      element_type*
+      operator->() const noexcept
+      {
+	auto __ptr = static_cast<const __shared_ptr<_Tp, _Lp>*>(this)->get();
+	_GLIBCXX_DEBUG_PEDASSERT(__ptr != nullptr);
+	return __ptr;
+      }
+    };
+
+  // Define operator[] for shared_ptr<T[]> and shared_ptr<T[N]>.
+  template<typename _Tp, _Lock_policy _Lp>
+    class __shared_ptr_access<_Tp, _Lp, true, false>
+    {
+    public:
+      using element_type = typename remove_extent<_Tp>::type;
+
+#if __cplusplus <= 201402L
+      [[__deprecated__("shared_ptr<T[]>::operator* is absent from C++17")]]
+      element_type&
+      operator*() const noexcept
+      {
+	__glibcxx_assert(_M_get() != nullptr);
+	return *_M_get();
+      }
+
+      [[__deprecated__("shared_ptr<T[]>::operator-> is absent from C++17")]]
+      element_type*
+      operator->() const noexcept
+      {
+	_GLIBCXX_DEBUG_PEDASSERT(_M_get() != nullptr);
+	return _M_get();
+      }
+#endif
+
+      element_type&
+      operator[](ptrdiff_t __i) const
+      {
+	__glibcxx_assert(_M_get() != nullptr);
+	__glibcxx_assert(!extent<_Tp>::value || __i < extent<_Tp>::value);
+	return _M_get()[__i];
+      }
+
+    private:
+      element_type*
+      _M_get() const noexcept
+      { return static_cast<const __shared_ptr<_Tp, _Lp>*>(this)->get(); }
+    };
+
+  template<typename _Tp, _Lock_policy _Lp>
+    class __shared_ptr
+    : public __shared_ptr_access<_Tp, _Lp>
+    {
+    public:
+      using element_type = typename remove_extent<_Tp>::type;
+
+    private:
       // Constraint for taking ownership of a pointer of type _Yp*:
       template<typename _Yp>
 	using _SafeConv
@@ -888,9 +1077,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Constraint for construction from unique_ptr:
       template<typename _Yp, typename _Del, typename _Res = void,
 	       typename _Ptr = typename unique_ptr<_Yp, _Del>::pointer>
-	using _UniqCompatible = typename enable_if<
-	  is_convertible<_Ptr, element_type*>::value
-	  , _Res>::type;
+	using _UniqCompatible = typename enable_if<__and_<
+	  __sp_compatible_with<_Yp*, _Tp*>, is_convertible<_Ptr, element_type*>
+	  >::value, _Res>::type;
 
       // Constraint for assignment from unique_ptr:
       template<typename _Yp, typename _Del>
@@ -909,7 +1098,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Yp, typename = _SafeConv<_Yp>>
 	explicit
 	__shared_ptr(_Yp* __p)
-	: _M_ptr(__p), _M_refcount(__p)
+	: _M_ptr(__p), _M_refcount(__p, typename is_array<_Tp>::type())
 	{
 	  static_assert( !is_void<_Yp>::value, "incomplete type" );
 	  static_assert( sizeof(_Yp) > 0, "incomplete type" );
@@ -918,9 +1107,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Yp, typename _Deleter, typename = _SafeConv<_Yp>>
 	__shared_ptr(_Yp* __p, _Deleter __d)
-	: _M_ptr(__p), _M_refcount(__p, __d)
+	: _M_ptr(__p), _M_refcount(__p, std::move(__d))
 	{
-	  static_assert(__is_callable<_Deleter(_Yp*)>::value,
+	  static_assert(__is_invocable<_Deleter&, _Yp*&>::value,
 	      "deleter expression d(p) is well-formed");
 	  _M_enable_shared_from_this_with(__p);
 	}
@@ -928,21 +1117,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Yp, typename _Deleter, typename _Alloc,
 	       typename = _SafeConv<_Yp>>
 	__shared_ptr(_Yp* __p, _Deleter __d, _Alloc __a)
-	: _M_ptr(__p), _M_refcount(__p, __d, std::move(__a))
+	: _M_ptr(__p), _M_refcount(__p, std::move(__d), std::move(__a))
 	{
-	  static_assert(__is_callable<_Deleter(_Yp*)>::value,
+	  static_assert(__is_invocable<_Deleter&, _Yp*&>::value,
 	      "deleter expression d(p) is well-formed");
 	  _M_enable_shared_from_this_with(__p);
 	}
 
       template<typename _Deleter>
 	__shared_ptr(nullptr_t __p, _Deleter __d)
-	: _M_ptr(0), _M_refcount(__p, __d)
+	: _M_ptr(0), _M_refcount(__p, std::move(__d))
 	{ }
 
       template<typename _Deleter, typename _Alloc>
         __shared_ptr(nullptr_t __p, _Deleter __d, _Alloc __a)
-	: _M_ptr(0), _M_refcount(__p, __d, std::move(__a))
+	: _M_ptr(0), _M_refcount(__p, std::move(__d), std::move(__a))
 	{ }
 
       template<typename _Yp>
@@ -990,15 +1179,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__shared_ptr(unique_ptr<_Yp, _Del>&& __r)
 	: _M_ptr(__r.get()), _M_refcount()
 	{
-	  auto __raw = _S_raw_ptr(__r.get());
+	  auto __raw = __to_address(__r.get());
 	  _M_refcount = __shared_count<_Lp>(std::move(__r));
 	  _M_enable_shared_from_this_with(__raw);
 	}
 
+#if __cplusplus <= 201402L && _GLIBCXX_USE_DEPRECATED
+    protected:
+      // If an exception is thrown this constructor has no effect.
+      template<typename _Tp1, typename _Del,
+	       typename enable_if<__and_<
+		 __not_<is_array<_Tp>>, is_array<_Tp1>,
+	         is_convertible<typename unique_ptr<_Tp1, _Del>::pointer, _Tp*>
+	       >::value, bool>::type = true>
+	__shared_ptr(unique_ptr<_Tp1, _Del>&& __r, __sp_array_delete)
+	: _M_ptr(__r.get()), _M_refcount()
+	{
+	  auto __raw = __to_address(__r.get());
+	  _M_refcount = __shared_count<_Lp>(std::move(__r));
+	  _M_enable_shared_from_this_with(__raw);
+	}
+    public:
+#endif
+
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       // Postcondition: use_count() == 1 and __r.get() == 0
       template<typename _Yp, typename = _Compatible<_Yp>>
 	__shared_ptr(auto_ptr<_Yp>&& __r);
+#pragma GCC diagnostic pop
 #endif
 
       constexpr __shared_ptr(nullptr_t) noexcept : __shared_ptr() { }
@@ -1013,6 +1223,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       template<typename _Yp>
 	_Assignable<_Yp>
 	operator=(auto_ptr<_Yp>&& __r)
@@ -1020,6 +1232,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __shared_ptr(std::move(__r)).swap(*this);
 	  return *this;
 	}
+#pragma GCC diagnostic pop
 #endif
 
       __shared_ptr&
@@ -1061,27 +1274,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Yp, typename _Deleter>
 	_SafeConv<_Yp>
 	reset(_Yp* __p, _Deleter __d)
-	{ __shared_ptr(__p, __d).swap(*this); }
+	{ __shared_ptr(__p, std::move(__d)).swap(*this); }
 
       template<typename _Yp, typename _Deleter, typename _Alloc>
 	_SafeConv<_Yp>
 	reset(_Yp* __p, _Deleter __d, _Alloc __a)
-        { __shared_ptr(__p, __d, std::move(__a)).swap(*this); }
-
-      // Allow class instantiation when _Tp is [cv-qual] void.
-      typename std::add_lvalue_reference<element_type>::type
-      operator*() const noexcept
-      {
-	__glibcxx_assert(_M_ptr != 0);
-	return *_M_ptr;
-      }
-
-      element_type*
-      operator->() const noexcept
-      {
-	_GLIBCXX_DEBUG_PEDASSERT(_M_ptr != 0);
-	return _M_ptr;
-      }
+        { __shared_ptr(__p, std::move(__d), std::move(__a)).swap(*this); }
 
       element_type*
       get() const noexcept
@@ -1107,15 +1305,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Tp1>
 	bool
-	owner_before(__shared_ptr<_Tp1, _Lp> const& __rhs) const
+	owner_before(__shared_ptr<_Tp1, _Lp> const& __rhs) const noexcept
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
       template<typename _Tp1>
 	bool
-	owner_before(__weak_ptr<_Tp1, _Lp> const& __rhs) const
+	owner_before(__weak_ptr<_Tp1, _Lp> const& __rhs) const noexcept
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
-#if __cpp_rtti
     protected:
       // This constructor is non-standard, it is used by allocate_shared.
       template<typename _Alloc, typename... _Args>
@@ -1126,43 +1323,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  // _M_ptr needs to point to the newly constructed object.
 	  // This relies on _Sp_counted_ptr_inplace::_M_get_deleter.
+#if __cpp_rtti
 	  void* __p = _M_refcount._M_get_deleter(typeid(__tag));
+#else
+	  void* __p = _M_refcount._M_get_deleter(_Sp_make_shared_tag::_S_ti());
+#endif
 	  _M_ptr = static_cast<_Tp*>(__p);
 	  _M_enable_shared_from_this_with(_M_ptr);
 	}
-#else
-      template<typename _Alloc>
-        struct _Deleter
-        {
-          void operator()(typename _Alloc::value_type* __ptr)
-          {
-	    __allocated_ptr<_Alloc> __guard{ _M_alloc, __ptr };
-	    allocator_traits<_Alloc>::destroy(_M_alloc, __guard.get());
-          }
-          _Alloc _M_alloc;
-        };
-
-      template<typename _Alloc, typename... _Args>
-	__shared_ptr(_Sp_make_shared_tag __tag, const _Alloc& __a,
-		     _Args&&... __args)
-	: _M_ptr(), _M_refcount()
-	{
-	  typedef typename allocator_traits<_Alloc>::template
-	    rebind_traits<typename std::remove_cv<_Tp>::type> __traits;
-	  _Deleter<typename __traits::allocator_type> __del = { __a };
-	  auto __guard = std::__allocate_guarded(__del._M_alloc);
-	  auto __ptr = __guard.get();
-	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	  // 2070. allocate_shared should use allocator_traits<A>::construct
-	  __traits::construct(__del._M_alloc, __ptr,
-			      std::forward<_Args>(__args)...);
-	  __guard = nullptr;
-	  __shared_count<_Lp> __count(__ptr, __del, __del._M_alloc);
-	  _M_refcount._M_swap(__count);
-	  _M_ptr = __ptr;
-	  _M_enable_shared_from_this_with(_M_ptr);
-	}
-#endif
 
       template<typename _Tp1, _Lock_policy _Lp1, typename _Alloc,
 	       typename... _Args>
@@ -1193,40 +1361,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Yp>
 	struct __has_esft_base<_Yp, __void_t<__esft_base_t<_Yp>>>
-	: true_type { };
+	: __not_<is_array<_Tp>> { }; // No enable shared_from_this for arrays
 
-      template<typename _Yp>
-	typename enable_if<__has_esft_base<_Yp>::value>::type
-	_M_enable_shared_from_this_with(const _Yp* __p) noexcept
+      template<typename _Yp, typename _Yp2 = typename remove_cv<_Yp>::type>
+	typename enable_if<__has_esft_base<_Yp2>::value>::type
+	_M_enable_shared_from_this_with(_Yp* __p) noexcept
 	{
 	  if (auto __base = __enable_shared_from_this_base(_M_refcount, __p))
-	    __base->_M_weak_assign(const_cast<_Yp*>(__p), _M_refcount);
+	    __base->_M_weak_assign(const_cast<_Yp2*>(__p), _M_refcount);
 	}
 
-      template<typename _Yp>
-	typename enable_if<!__has_esft_base<_Yp>::value>::type
-	_M_enable_shared_from_this_with(const _Yp*) noexcept
+      template<typename _Yp, typename _Yp2 = typename remove_cv<_Yp>::type>
+	typename enable_if<!__has_esft_base<_Yp2>::value>::type
+	_M_enable_shared_from_this_with(_Yp*) noexcept
 	{ }
 
       void*
       _M_get_deleter(const std::type_info& __ti) const noexcept
       { return _M_refcount._M_get_deleter(__ti); }
 
-      template<typename _Tp1>
-	static _Tp1*
-	_S_raw_ptr(_Tp1* __ptr)
-	{ return __ptr; }
-
-      template<typename _Tp1>
-	static auto
-	_S_raw_ptr(_Tp1 __ptr) -> decltype(std::__addressof(*__ptr))
-	{ return std::__addressof(*__ptr); }
-
       template<typename _Tp1, _Lock_policy _Lp1> friend class __shared_ptr;
       template<typename _Tp1, _Lock_policy _Lp1> friend class __weak_ptr;
 
       template<typename _Del, typename _Tp1, _Lock_policy _Lp1>
 	friend _Del* get_deleter(const __shared_ptr<_Tp1, _Lp1>&) noexcept;
+
+      template<typename _Del, typename _Tp1>
+	friend _Del* get_deleter(const shared_ptr<_Tp1>&) noexcept;
 
       element_type*	   _M_ptr;         // Contained pointer.
       __shared_count<_Lp>  _M_refcount;    // Reference counter.
@@ -1341,22 +1502,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>=(nullptr_t, const __shared_ptr<_Tp, _Lp>& __a) noexcept
     { return !(nullptr < __a); }
 
-  template<typename _Sp>
-    struct _Sp_less : public binary_function<_Sp, _Sp, bool>
-    {
-      bool
-      operator()(const _Sp& __lhs, const _Sp& __rhs) const noexcept
-      {
-	typedef typename _Sp::element_type element_type;
-	return std::less<element_type*>()(__lhs.get(), __rhs.get());
-      }
-    };
-
-  template<typename _Tp, _Lock_policy _Lp>
-    struct less<__shared_ptr<_Tp, _Lp>>
-    : public _Sp_less<__shared_ptr<_Tp, _Lp>>
-    { };
-
   // 20.7.2.2.8 shared_ptr specialized algorithms.
   template<typename _Tp, _Lock_policy _Lp>
     inline void
@@ -1428,7 +1573,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using _Assignable = _Compatible<_Yp, __weak_ptr&>;
 
     public:
-      using element_type = _Tp;
+      using element_type = typename remove_extent<_Tp>::type;
 
       constexpr __weak_ptr() noexcept
       : _M_ptr(nullptr), _M_refcount()
@@ -1525,12 +1670,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Tp1>
 	bool
-	owner_before(const __shared_ptr<_Tp1, _Lp>& __rhs) const
+	owner_before(const __shared_ptr<_Tp1, _Lp>& __rhs) const noexcept
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
       template<typename _Tp1>
 	bool
-	owner_before(const __weak_ptr<_Tp1, _Lp>& __rhs) const
+	owner_before(const __weak_ptr<_Tp1, _Lp>& __rhs) const noexcept
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
       void
@@ -1575,15 +1720,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Sp_owner_less : public binary_function<_Tp, _Tp, bool>
     {
       bool
-      operator()(const _Tp& __lhs, const _Tp& __rhs) const
+      operator()(const _Tp& __lhs, const _Tp& __rhs) const noexcept
       { return __lhs.owner_before(__rhs); }
 
       bool
-      operator()(const _Tp& __lhs, const _Tp1& __rhs) const
+      operator()(const _Tp& __lhs, const _Tp1& __rhs) const noexcept
       { return __lhs.owner_before(__rhs); }
 
       bool
-      operator()(const _Tp1& __lhs, const _Tp& __rhs) const
+      operator()(const _Tp1& __lhs, const _Tp& __rhs) const noexcept
       { return __lhs.owner_before(__rhs); }
     };
 
@@ -1592,7 +1737,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       template<typename _Tp, typename _Up>
 	auto
-	operator()(const _Tp& __lhs, const _Up& __rhs) const
+	operator()(const _Tp& __lhs, const _Up& __rhs) const noexcept
 	-> decltype(__lhs.owner_before(__rhs))
 	{ return __lhs.owner_before(__rhs); }
 
@@ -1649,10 +1794,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_weak_assign(_Tp1* __p, const __shared_count<_Lp>& __n) const noexcept
 	{ _M_weak_this._M_assign(__p, __n); }
 
-      friend void
+      friend const __enable_shared_from_this*
       __enable_shared_from_this_base(const __shared_count<_Lp>&,
 				     const __enable_shared_from_this* __p)
       { return __p; }
+
+      template<typename, _Lock_policy>
+	friend class __shared_ptr;
 
       mutable __weak_ptr<_Tp, _Lp>  _M_weak_this;
     };
@@ -1681,7 +1829,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       size_t
       operator()(const __shared_ptr<_Tp, _Lp>& __s) const noexcept
-      { return std::hash<_Tp*>()(__s.get()); }
+      {
+	return hash<typename __shared_ptr<_Tp, _Lp>::element_type*>()(
+	    __s.get());
+      }
     };
 
 _GLIBCXX_END_NAMESPACE_VERSION

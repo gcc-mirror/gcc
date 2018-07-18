@@ -7,9 +7,10 @@
 /* Test that the intrinsics compile with optimization.  All of them
    are defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h,
    mm3dnow.h, fma4intrin.h, xopintrin.h, abmintrin.h, bmiintrin.h,
-   tbmintrin.h, lwpintrin.h, popcntintrin.h, fmaintrin.h and mm_malloc.h 
-   that reference the proper builtin functions.
-
+   tbmintrin.h, lwpintrin.h, popcntintrin.h, fmaintrin.h,
+   avx5124fmapsintrin.h, avx5124vnniwintrin.h, avx512vpopcntdqintrin.h,
+   avx512bitalgintrin.h and mm_malloc.h that reference the proper builtin
+   functions.
    Defining away "extern" and "__inline" results in all of them being
    compiled as proper functions.  */
 
@@ -185,10 +186,14 @@
 #define __builtin_ia32_xabort(M) __builtin_ia32_xabort(1)
 
 /* avx512fintrin.h */
+#define __builtin_ia32_kshiftlihi(A, B) __builtin_ia32_kshiftlihi(A, 8)
+#define __builtin_ia32_kshiftrihi(A, B) __builtin_ia32_kshiftrihi(A, 8)
 #define __builtin_ia32_addpd512_mask(A, B, C, D, E) __builtin_ia32_addpd512_mask(A, B, C, D, 8)
 #define __builtin_ia32_addps512_mask(A, B, C, D, E) __builtin_ia32_addps512_mask(A, B, C, D, 8)
 #define __builtin_ia32_addsd_round(A, B, C) __builtin_ia32_addsd_round(A, B, 8)
+#define __builtin_ia32_addsd_mask_round(A, B, C, D, E) __builtin_ia32_addsd_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_addss_round(A, B, C) __builtin_ia32_addss_round(A, B, 8)
+#define __builtin_ia32_addss_mask_round(A, B, C, D, E) __builtin_ia32_addss_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_alignd512_mask(A, B, F, D, E) __builtin_ia32_alignd512_mask(A, B, 1, D, E)
 #define __builtin_ia32_alignq512_mask(A, B, F, D, E) __builtin_ia32_alignq512_mask(A, B, 1, D, E)
 #define __builtin_ia32_cmpd512_mask(A, B, E, D) __builtin_ia32_cmpd512_mask(A, B, 1, D)
@@ -220,7 +225,9 @@
 #define __builtin_ia32_divpd512_mask(A, B, C, D, E) __builtin_ia32_divpd512_mask(A, B, C, D, 8)
 #define __builtin_ia32_divps512_mask(A, B, C, D, E) __builtin_ia32_divps512_mask(A, B, C, D, 8)
 #define __builtin_ia32_divsd_round(A, B, C) __builtin_ia32_divsd_round(A, B, 8)
+#define __builtin_ia32_divsd_mask_round(A, B, C, D, E) __builtin_ia32_divsd_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_divss_round(A, B, C) __builtin_ia32_divss_round(A, B, 8)
+#define __builtin_ia32_divss_mask_round(A, B, C, D, E) __builtin_ia32_divss_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_extractf32x4_mask(A, E, C, D) __builtin_ia32_extractf32x4_mask(A, 1, C, D)
 #define __builtin_ia32_extractf64x4_mask(A, E, C, D) __builtin_ia32_extractf64x4_mask(A, 1, C, D)
 #define __builtin_ia32_extracti32x4_mask(A, E, C, D) __builtin_ia32_extracti32x4_mask(A, 1, C, D)
@@ -244,11 +251,15 @@
 #define __builtin_ia32_getexppd512_mask(A, B, C, D) __builtin_ia32_getexppd512_mask(A, B, C, 8)
 #define __builtin_ia32_getexpps512_mask(A, B, C, D) __builtin_ia32_getexpps512_mask(A, B, C, 8)
 #define __builtin_ia32_getexpsd128_round(A, B, C) __builtin_ia32_getexpsd128_round(A, B, 4)
+#define __builtin_ia32_getexpsd_mask_round(A, B, C, D, E) __builtin_ia32_getexpsd_mask_round(A, B, C, D, 4)
 #define __builtin_ia32_getexpss128_round(A, B, C) __builtin_ia32_getexpss128_round(A, B, 4)
+#define __builtin_ia32_getexpss_mask_round(A, B, C, D, E) __builtin_ia32_getexpss_mask_round(A, B, C, D, 4)
 #define __builtin_ia32_getmantpd512_mask(A, F, C, D, E) __builtin_ia32_getmantpd512_mask(A, 1, C, D, 8)
 #define __builtin_ia32_getmantps512_mask(A, F, C, D, E) __builtin_ia32_getmantps512_mask(A, 1, C, D, 8)
 #define __builtin_ia32_getmantsd_round(A, B, C, D) __builtin_ia32_getmantsd_round(A, B, 1, 4)
+#define __builtin_ia32_getmantsd_mask_round(A, B, C, W, U, D) __builtin_ia32_getmantsd_mask_round(A, B, 1, W, U, 4)
 #define __builtin_ia32_getmantss_round(A, B, C, D) __builtin_ia32_getmantss_round(A, B, 1, 4)
+#define __builtin_ia32_getmantss_mask_round(A, B, C, W, U, D) __builtin_ia32_getmantss_mask_round(A, B, 1, W, U, 4)
 #define __builtin_ia32_insertf32x4_mask(A, B, F, D, E) __builtin_ia32_insertf32x4_mask(A, B, 1, D, E)
 #define __builtin_ia32_insertf64x4_mask(A, B, F, D, E) __builtin_ia32_insertf64x4_mask(A, B, 1, D, E)
 #define __builtin_ia32_inserti32x4_mask(A, B, F, D, E) __builtin_ia32_inserti32x4_mask(A, B, 1, D, E)
@@ -256,15 +267,21 @@
 #define __builtin_ia32_maxpd512_mask(A, B, C, D, E) __builtin_ia32_maxpd512_mask(A, B, C, D, 8)
 #define __builtin_ia32_maxps512_mask(A, B, C, D, E) __builtin_ia32_maxps512_mask(A, B, C, D, 8)
 #define __builtin_ia32_maxsd_round(A, B, C) __builtin_ia32_maxsd_round(A, B, 4)
+#define __builtin_ia32_maxsd_mask_round(A, B, C, D, E) __builtin_ia32_maxsd_mask_round(A, B, C, D, 4)
 #define __builtin_ia32_maxss_round(A, B, C) __builtin_ia32_maxss_round(A, B, 4)
+#define __builtin_ia32_maxss_mask_round(A, B, C, D, E) __builtin_ia32_maxss_mask_round(A, B, C, D, 4)
 #define __builtin_ia32_minpd512_mask(A, B, C, D, E) __builtin_ia32_minpd512_mask(A, B, C, D, 8)
 #define __builtin_ia32_minps512_mask(A, B, C, D, E) __builtin_ia32_minps512_mask(A, B, C, D, 8)
 #define __builtin_ia32_minsd_round(A, B, C) __builtin_ia32_minsd_round(A, B, 4)
+#define __builtin_ia32_minsd_mask_round(A, B, C, D, E) __builtin_ia32_minsd_mask_round(A, B, C, D, 4)
 #define __builtin_ia32_minss_round(A, B, C) __builtin_ia32_minss_round(A, B, 4)
+#define __builtin_ia32_minss_mask_round(A, B, C, D, E) __builtin_ia32_minss_mask_round(A, B, C, D, 4)
 #define __builtin_ia32_mulpd512_mask(A, B, C, D, E) __builtin_ia32_mulpd512_mask(A, B, C, D, 8)
 #define __builtin_ia32_mulps512_mask(A, B, C, D, E) __builtin_ia32_mulps512_mask(A, B, C, D, 8)
 #define __builtin_ia32_mulsd_round(A, B, C) __builtin_ia32_mulsd_round(A, B, 8)
+#define __builtin_ia32_mulsd_mask_round(A, B, C, D, E) __builtin_ia32_mulsd_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_mulss_round(A, B, C) __builtin_ia32_mulss_round(A, B, 8)
+#define __builtin_ia32_mulss_mask_round(A, B, C, D, E) __builtin_ia32_mulss_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_permdf512_mask(A, E, C, D) __builtin_ia32_permdf512_mask(A, 1, C, D)
 #define __builtin_ia32_permdi512_mask(A, E, C, D) __builtin_ia32_permdi512_mask(A, 1, C, D)
 #define __builtin_ia32_prold512_mask(A, E, C, D) __builtin_ia32_prold512_mask(A, 1, C, D)
@@ -288,8 +305,8 @@
 #define __builtin_ia32_rndscaless_round(A, B, C, D) __builtin_ia32_rndscaless_round(A, B, 1, 4)
 #define __builtin_ia32_scalefpd512_mask(A, B, C, D, E) __builtin_ia32_scalefpd512_mask(A, B, C, D, 8)
 #define __builtin_ia32_scalefps512_mask(A, B, C, D, E) __builtin_ia32_scalefps512_mask(A, B, C, D, 8)
-#define __builtin_ia32_scalefsd_round(A, B, C) __builtin_ia32_scalefsd_round(A, B, 8)
-#define __builtin_ia32_scalefss_round(A, B, C) __builtin_ia32_scalefss_round(A, B, 8)
+#define __builtin_ia32_scalefsd_mask_round(A, B, C, D, E) __builtin_ia32_scalefsd_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_scalefss_mask_round(A, B, C, D, E) __builtin_ia32_scalefss_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_scatterdiv8df(A, B, C, D, F) __builtin_ia32_scatterdiv8df(A, B, C, D, 8)
 #define __builtin_ia32_scatterdiv8di(A, B, C, D, F) __builtin_ia32_scatterdiv8di(A, B, C, D, 8)
 #define __builtin_ia32_scatterdiv16sf(A, B, C, D, F) __builtin_ia32_scatterdiv16sf(A, B, C, D, 8)
@@ -306,12 +323,14 @@
 #define __builtin_ia32_shufps512_mask(A, B, F, D, E) __builtin_ia32_shufps512_mask(A, B, 1, D, E)
 #define __builtin_ia32_sqrtpd512_mask(A, B, C, D) __builtin_ia32_sqrtpd512_mask(A, B, C, 8)
 #define __builtin_ia32_sqrtps512_mask(A, B, C, D) __builtin_ia32_sqrtps512_mask(A, B, C, 8)
-#define __builtin_ia32_sqrtss_round(A, B, C) __builtin_ia32_sqrtss_round(A, B, 8)
-#define __builtin_ia32_sqrtsd_round(A, B, C) __builtin_ia32_sqrtsd_round(A, B, 8)
+#define __builtin_ia32_sqrtss_mask_round(A, B, C, D, E) __builtin_ia32_sqrtss_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_sqrtsd_mask_round(A, B, C, D, E) __builtin_ia32_sqrtsd_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_subpd512_mask(A, B, C, D, E) __builtin_ia32_subpd512_mask(A, B, C, D, 8)
 #define __builtin_ia32_subps512_mask(A, B, C, D, E) __builtin_ia32_subps512_mask(A, B, C, D, 8)
 #define __builtin_ia32_subsd_round(A, B, C) __builtin_ia32_subsd_round(A, B, 8)
+#define __builtin_ia32_subsd_mask_round(A, B, C, D, E) __builtin_ia32_subsd_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_subss_round(A, B, C) __builtin_ia32_subss_round(A, B, 8)
+#define __builtin_ia32_subss_mask_round(A, B, C, D, E) __builtin_ia32_subss_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_ucmpd512_mask(A, B, E, D) __builtin_ia32_ucmpd512_mask(A, B, 1, D)
 #define __builtin_ia32_ucmpq512_mask(A, B, E, D) __builtin_ia32_ucmpq512_mask(A, B, 1, D)
 #define __builtin_ia32_vcomisd(A, B, C, D) __builtin_ia32_vcomisd(A, B, 1, 8)
@@ -387,6 +406,10 @@
 #define __builtin_ia32_sha1rnds4(A, B, C) __builtin_ia32_sha1rnds4(A, B, 1)
 
 /* avx512bwintrin.h */
+#define __builtin_ia32_kshiftlisi(A, B) __builtin_ia32_kshiftlisi(A, 8)
+#define __builtin_ia32_kshiftlidi(A, B) __builtin_ia32_kshiftlidi(A, 8)
+#define __builtin_ia32_kshiftrisi(A, B) __builtin_ia32_kshiftrisi(A, 8)
+#define __builtin_ia32_kshiftridi(A, B) __builtin_ia32_kshiftridi(A, 8)
 #define __builtin_ia32_ucmpw512_mask(A, B, E, D) __builtin_ia32_ucmpw512_mask(A, B, 1, D)
 #define __builtin_ia32_ucmpb512_mask(A, B, E, D) __builtin_ia32_ucmpb512_mask(A, B, 1, D)
 #define __builtin_ia32_psrlwi512_mask(A, E, C, D) __builtin_ia32_psrlwi512_mask(A, 1, C, D)
@@ -403,12 +426,16 @@
 #define __builtin_ia32_pslldq512(A, B) __builtin_ia32_pslldq512(A, 8)
 
 /* avx512dqintrin.h */
-#define __builtin_ia32_reducess(A, B, F) __builtin_ia32_reducess(A, B, 1)
-#define __builtin_ia32_reducesd(A, B, F) __builtin_ia32_reducesd(A, B, 1)
+#define __builtin_ia32_kshiftliqi(A, B) __builtin_ia32_kshiftliqi(A, 8)
+#define __builtin_ia32_kshiftriqi(A, B) __builtin_ia32_kshiftriqi(A, 8)
+#define __builtin_ia32_reducess_mask(A, B, F, W, U) __builtin_ia32_reducess_mask(A, B, 1, W, U)
+#define __builtin_ia32_reducesd_mask(A, B, F, W, U) __builtin_ia32_reducesd_mask(A, B, 1, W, U)
 #define __builtin_ia32_reduceps512_mask(A, E, C, D) __builtin_ia32_reduceps512_mask(A, 1, C, D)
 #define __builtin_ia32_reducepd512_mask(A, E, C, D) __builtin_ia32_reducepd512_mask(A, 1, C, D)
-#define __builtin_ia32_rangess128_round(A, B, I, F) __builtin_ia32_rangess128_round(A, B, 1, 8)
-#define __builtin_ia32_rangesd128_round(A, B, I, F) __builtin_ia32_rangesd128_round(A, B, 1, 8)
+#define __builtin_ia32_rangess128_mask_round(A, B, I, D, E, F) \
+    __builtin_ia32_rangess128_mask_round(A, B, 1, D, E, 8)
+#define __builtin_ia32_rangesd128_mask_round(A, B, I, D, E, F) \
+    __builtin_ia32_rangesd128_mask_round(A, B, 1, D, E, 8)
 #define __builtin_ia32_rangeps512_mask(A, B, I, D, E, F) __builtin_ia32_rangeps512_mask(A, B, 1, D, E, 8)
 #define __builtin_ia32_rangepd512_mask(A, B, I, D, E, F) __builtin_ia32_rangepd512_mask(A, B, 1, D, E, 8)
 #define __builtin_ia32_inserti64x2_512_mask(A, B, F, D, E) __builtin_ia32_inserti64x2_512_mask(A, B, 1, D, E)
@@ -594,6 +621,63 @@
 #define __builtin_ia32_extracti64x2_256_mask(A, E, C, D) __builtin_ia32_extracti64x2_256_mask(A, 1, C, D)
 #define __builtin_ia32_extractf64x2_256_mask(A, E, C, D) __builtin_ia32_extractf64x2_256_mask(A, 1, C, D)
 
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,xsavec,xsaves,clflushopt,avx512bw,avx512dq,avx512vl,avx512vbmi,avx512ifma,clwb,mwaitx,clzero,pku")
+/* gfniintrin.h */
+#define __builtin_ia32_vgf2p8affineinvqb_v16qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v16qi(A, B, 1) 
+#define __builtin_ia32_vgf2p8affineinvqb_v32qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v32qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineinvqb_v64qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v64qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineinvqb_v16qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v16qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineinvqb_v32qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v32qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineinvqb_v64qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v64qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineqb_v16qi(A, B, C) __builtin_ia32_vgf2p8affineqb_v16qi(A, B, 1) 
+#define __builtin_ia32_vgf2p8affineqb_v32qi(A, B, C) __builtin_ia32_vgf2p8affineqb_v32qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineqb_v64qi(A, B, C) __builtin_ia32_vgf2p8affineqb_v64qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineqb_v16qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v16qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineqb_v32qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v32qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineqb_v64qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v64qi_mask(A, B, 1, D, E) 
+
+/* avx512vbmi2intrin.h */
+#define __builtin_ia32_vpshrd_v32hi(A, B, C) __builtin_ia32_vpshrd_v32hi(A, B, 1)
+#define __builtin_ia32_vpshrd_v32hi_mask(A, B, C, D, E)  __builtin_ia32_vpshrd_v32hi_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshrd_v16si(A, B, C) __builtin_ia32_vpshrd_v16si(A, B, 1)
+#define __builtin_ia32_vpshrd_v16si_mask(A, B, C, D, E)  __builtin_ia32_vpshrd_v16si_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshrd_v8di(A, B, C) __builtin_ia32_vpshrd_v8di(A, B, 1)
+#define __builtin_ia32_vpshrd_v8di_mask(A, B, C, D, E)  __builtin_ia32_vpshrd_v8di_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshrd_v16hi(A, B, C) __builtin_ia32_vpshrd_v16hi(A, B, 1)
+#define __builtin_ia32_vpshrd_v16hi_mask(A, B, C, D, E)  __builtin_ia32_vpshrd_v16hi_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshrd_v8si(A, B, C) __builtin_ia32_vpshrd_v8si(A, B, 1)
+#define __builtin_ia32_vpshrd_v8si_mask(A, B, C, D, E)  __builtin_ia32_vpshrd_v8si_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshrd_v4di(A, B, C) __builtin_ia32_vpshrd_v4di(A, B, 1)
+#define __builtin_ia32_vpshrd_v4di_mask(A, B, C, D, E)  __builtin_ia32_vpshrd_v4di_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshrd_v8hi(A, B, C) __builtin_ia32_vpshrd_v8hi(A, B, 1)
+#define __builtin_ia32_vpshrd_v8hi_mask(A, B, C, D, E)  __builtin_ia32_vpshrd_v8hi_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshrd_v4si(A, B, C) __builtin_ia32_vpshrd_v4si(A, B, 1)
+#define __builtin_ia32_vpshrd_v4si_mask(A, B, C, D, E)  __builtin_ia32_vpshrd_v4si_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshrd_v2di(A, B, C) __builtin_ia32_vpshrd_v2di(A, B, 1)
+#define __builtin_ia32_vpshrd_v2di_mask(A, B, C, D, E)  __builtin_ia32_vpshrd_v2di_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v32hi(A, B, C) __builtin_ia32_vpshld_v32hi(A, B, 1)
+#define __builtin_ia32_vpshld_v32hi_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v32hi_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v16si(A, B, C) __builtin_ia32_vpshld_v16si(A, B, 1)
+#define __builtin_ia32_vpshld_v16si_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v16si_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v8di(A, B, C) __builtin_ia32_vpshld_v8di(A, B, 1)
+#define __builtin_ia32_vpshld_v8di_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v8di_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v16hi(A, B, C) __builtin_ia32_vpshld_v16hi(A, B, 1)
+#define __builtin_ia32_vpshld_v16hi_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v16hi_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v8si(A, B, C) __builtin_ia32_vpshld_v8si(A, B, 1)
+#define __builtin_ia32_vpshld_v8si_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v8si_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v4di(A, B, C) __builtin_ia32_vpshld_v4di(A, B, 1)
+#define __builtin_ia32_vpshld_v4di_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v4di_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v8hi(A, B, C) __builtin_ia32_vpshld_v8hi(A, B, 1)
+#define __builtin_ia32_vpshld_v8hi_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v8hi_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v4si(A, B, C) __builtin_ia32_vpshld_v4si(A, B, 1)
+#define __builtin_ia32_vpshld_v4si_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v4si_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v2di(A, B, C) __builtin_ia32_vpshld_v2di(A, B, 1)
+#define __builtin_ia32_vpshld_v2di_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v2di_mask(A, B, 1, D, E)
+
+/* vpclmulqdqintrin.h */
+#define __builtin_ia32_vpclmulqdq_v4di(A, B, C)  __builtin_ia32_vpclmulqdq_v4di(A, B, 1) 
+#define __builtin_ia32_vpclmulqdq_v2di(A, B, C)  __builtin_ia32_vpclmulqdq_v2di(A, B, 1) 
+#define __builtin_ia32_vpclmulqdq_v8di(A, B, C)  __builtin_ia32_vpclmulqdq_v8di(A, B, 1) 
+
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,xsavec,xsaves,clflushopt,avx512bw,avx512dq,avx512vl,avx512vbmi,avx512ifma,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,clwb,mwaitx,clzero,pku,sgx,rdpid,gfni,avx512vbmi2,vpclmulqdq,avx512bitalg,pconfig,wbnoinvd")
 
 #include <x86intrin.h>

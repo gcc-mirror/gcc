@@ -8,4 +8,4 @@
 
 namespace A {}
 
-int A::* p; // { dg-error "is a namespace" "" }
+int A::* p; // { dg-error "is a namespace" }

@@ -2,7 +2,7 @@
    MMU, using ELF at the compiler level but possibly FLT for final
    linked executables and shared libraries in some no-MMU cases, and
    possibly with a choice of libc implementations.
-   Copyright (C) 1995-2016 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
 
@@ -208,8 +208,3 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define TARGET_LIBC_HAS_FUNCTION linux_libc_has_function
 
 #endif
-
-/* The format string to which "%p" corresponds (same in Glibc and
-   uClibc.  */
-#undef TARGET_PRINTF_POINTER_FORMAT
-#define TARGET_PRINTF_POINTER_FORMAT linux_printf_pointer_format

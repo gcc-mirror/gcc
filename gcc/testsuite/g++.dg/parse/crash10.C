@@ -10,4 +10,4 @@
 class 
 {
   typename::
-; // { dg-error "" "" }
+; // { dg-error "" }

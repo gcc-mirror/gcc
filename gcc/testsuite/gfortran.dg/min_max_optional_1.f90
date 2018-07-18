@@ -1,8 +1,8 @@
 ! { dg-do run }
-IF (T1(1.0,1.0) .NE. (1.0,1.0) ) CALL ABORT()
-IF (T1(1.0) .NE. (1.0,0.0)) CALL ABORT()
-IF (M1(1,2,3) .NE. 3) CALL ABORT()
-IF (M1(1,2,A4=4) .NE. 4) CALL ABORT()
+IF (T1(1.0,1.0) .NE. (1.0,1.0) ) STOP 1
+IF (T1(1.0) .NE. (1.0,0.0)) STOP 2
+IF (M1(1,2,3) .NE. 3) STOP 3
+IF (M1(1,2,A4=4) .NE. 4) STOP 4
 CONTAINS
 
 COMPLEX FUNCTION T1(X,Y)

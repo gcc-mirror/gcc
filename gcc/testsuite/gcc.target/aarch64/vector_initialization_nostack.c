@@ -38,16 +38,17 @@ f11 (void)
   return sum;
 }
 
-char arr_c[100][100];
+char arr_c[100];
 char
 f12 (void)
 {
   int i;
   char sum = 0;
   for (i = 0; i < 100; i++)
-    sum += arr_c[i][0] * arr_c[0][i];
+    sum += arr_c[i] * arr_c[i];
   return sum;
 }
 
-
-/* { dg-final { scan-assembler-not "sp" } } */
+/* Fails for fixed-length SVE because we lack a vec_init pattern.
+   A later patch fixes this in generic code.  */
+/* { dg-final { scan-assembler-not "sp" { xfail { aarch64_sve && { ! vect_variable_length } } } } } */

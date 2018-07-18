@@ -44,8 +44,8 @@ program main
   lo = .false.
   lo(3,3) = .true.
   call bar(a,b,c,lo)
-  if (c /= 1) call abort
+  if (c /= 1) STOP 1
   call baz(a,b,res);
-  if (abs(res - 8.1) > 1e-5) call abort
+  if (abs(res - 8.1) > 1e-5) STOP 2
 end program main
 ! { dg-final { scan-tree-dump-times "while" 5 "original" } }

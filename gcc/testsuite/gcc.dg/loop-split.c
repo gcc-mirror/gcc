@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fsplit-loops -fdump-tree-lsplit-details" } */
+/* { dg-require-effective-target int32plus } */
 
 #ifdef __cplusplus
 extern "C" int printf (const char *, ...);

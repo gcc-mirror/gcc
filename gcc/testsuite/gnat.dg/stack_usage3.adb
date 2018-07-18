@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O -fstack-usage" }
+-- { dg-options "-O -Wstack-usage=1024" }
 
 with Ada.Text_IO; use Ada.Text_IO;
 with Stack_Usage3_Pkg; use Stack_Usage3_Pkg;
@@ -27,6 +27,3 @@ begin
    Put_Line (Diag ("Diag line 19"));
    Put_Line (Diag ("Diag line 20"));
 end;
-
--- { dg-final { scan-stack-usage-not "\t\[0-9\]\[0-9\]\[0-9\]\[0-9\]\t" } }
--- { dg-final { cleanup-stack-usage } }

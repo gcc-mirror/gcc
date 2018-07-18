@@ -9,6 +9,7 @@ package httptest
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
 	"log"
@@ -16,7 +17,6 @@ import (
 	"net/http"
 	"net/http/internal"
 	"os"
-	"runtime"
 	"sync"
 	"time"
 )
@@ -36,6 +36,9 @@ type Server struct {
 	// before Start or StartTLS.
 	Config *http.Server
 
+	// certificate is a parsed version of the TLS config certificate, if present.
+	certificate *x509.Certificate
+
 	// wg counts the number of outstanding HTTP requests on this server.
 	// Close blocks until all requests are finished.
 	wg sync.WaitGroup
@@ -43,6 +46,10 @@ type Server struct {
 	mu     sync.Mutex // guards closed and conns
 	closed bool
 	conns  map[net.Conn]http.ConnState // except terminal states
+
+	// client is configured for use with the server.
+	// Its transport is automatically closed when Close is called.
+	client *http.Client
 }
 
 func newLocalListener() net.Listener {
@@ -94,6 +101,9 @@ func (s *Server) Start() {
 	if s.URL != "" {
 		panic("Server already started")
 	}
+	if s.client == nil {
+		s.client = &http.Client{Transport: &http.Transport{}}
+	}
 	s.URL = "http://" + s.Listener.Addr().String()
 	s.wrap()
 	s.goServe()
@@ -108,21 +118,36 @@ func (s *Server) StartTLS() {
 	if s.URL != "" {
 		panic("Server already started")
 	}
+	if s.client == nil {
+		s.client = &http.Client{Transport: &http.Transport{}}
+	}
 	cert, err := tls.X509KeyPair(internal.LocalhostCert, internal.LocalhostKey)
 	if err != nil {
 		panic(fmt.Sprintf("httptest: NewTLSServer: %v", err))
 	}
 
 	existingConfig := s.TLS
-	s.TLS = new(tls.Config)
 	if existingConfig != nil {
-		*s.TLS = *existingConfig
+		s.TLS = existingConfig.Clone()
+	} else {
+		s.TLS = new(tls.Config)
 	}
 	if s.TLS.NextProtos == nil {
 		s.TLS.NextProtos = []string{"http/1.1"}
 	}
 	if len(s.TLS.Certificates) == 0 {
 		s.TLS.Certificates = []tls.Certificate{cert}
+	}
+	s.certificate, err = x509.ParseCertificate(s.TLS.Certificates[0].Certificate[0])
+	if err != nil {
+		panic(fmt.Sprintf("httptest: NewTLSServer: %v", err))
+	}
+	certpool := x509.NewCertPool()
+	certpool.AddCert(s.certificate)
+	s.client.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs: certpool,
+		},
 	}
 	s.Listener = tls.NewListener(s.Listener, s.TLS)
 	s.URL = "https://" + s.Listener.Addr().String()
@@ -186,6 +211,13 @@ func (s *Server) Close() {
 		t.CloseIdleConnections()
 	}
 
+	// Also close the client idle connections.
+	if s.client != nil {
+		if t, ok := s.client.Transport.(closeIdleTransport); ok {
+			t.CloseIdleConnections()
+		}
+	}
+
 	s.wg.Wait()
 }
 
@@ -206,7 +238,7 @@ func (s *Server) CloseClientConnections() {
 	nconn := len(s.conns)
 	ch := make(chan struct{}, nconn)
 	for c := range s.conns {
-		s.closeConnChan(c, ch)
+		go s.closeConnChan(c, ch)
 	}
 	s.mu.Unlock()
 
@@ -226,6 +258,19 @@ func (s *Server) CloseClientConnections() {
 			return
 		}
 	}
+}
+
+// Certificate returns the certificate used by the server, or nil if
+// the server doesn't use TLS.
+func (s *Server) Certificate() *x509.Certificate {
+	return s.certificate
+}
+
+// Client returns an HTTP client configured for making requests to the server.
+// It is configured to trust the server's TLS test certificate and will
+// close its idle connections on Server.Close.
+func (s *Server) Client() *http.Client {
+	return s.client
 }
 
 func (s *Server) goServe() {
@@ -293,15 +338,6 @@ func (s *Server) closeConn(c net.Conn) { s.closeConnChan(c, nil) }
 // closeConnChan is like closeConn, but takes an optional channel to receive a value
 // when the goroutine closing c is done.
 func (s *Server) closeConnChan(c net.Conn, done chan<- struct{}) {
-	if runtime.GOOS == "plan9" {
-		// Go's Plan 9 net package isn't great at unblocking reads when
-		// their underlying TCP connections are closed. Don't trust
-		// that that the ConnState state machine will get to
-		// StateClosed. Instead, just go there directly. Plan 9 may leak
-		// resources if the syscall doesn't end up returning. Oh well.
-		s.forgetConn(c)
-	}
-
 	c.Close()
 	if done != nil {
 		done <- struct{}{}

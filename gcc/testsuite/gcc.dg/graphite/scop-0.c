@@ -1,3 +1,4 @@
+/* { dg-require-effective-target size32plus } */
 int foo (void);
 void bar (void);
 

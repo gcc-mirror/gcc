@@ -12,7 +12,7 @@ template <class U>
 struct B : public A<U>
 {
   A_Type Func(); // { dg-error "does not name a type" "err" } implicit typename
-  // { dg-message "note" "note" { target *-*-* } 14 }
+  // { dg-message "note" "note" { target *-*-* } .-1 }
 };
 
 

@@ -17,5 +17,5 @@ program laplsolv
 
   T(1:n,1)=(T(0:n-1,1)+T(1:n,1+1)+1d0)
 
-  if (any (T(1:n,1) .ne. 1d0 )) call abort ()
+  if (any (T(1:n,1) .ne. 1d0 )) STOP 1
 end program laplsolv

@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do compile }
 
-// Copyright (C) 2016 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,11 +51,31 @@ struct DefaultNoexcept
   DefaultNoexcept& operator=(DefaultNoexcept&&) noexcept = default;
 };
 
+struct MoveCtorOnly
+{
+  MoveCtorOnly() noexcept = delete;
+  MoveCtorOnly(const DefaultNoexcept&) noexcept = delete;
+  MoveCtorOnly(DefaultNoexcept&&) noexcept { }
+  MoveCtorOnly& operator=(const DefaultNoexcept&) noexcept = delete;
+  MoveCtorOnly& operator=(DefaultNoexcept&&) noexcept = delete;
+};
+
+struct nonliteral
+{
+  nonliteral() { }
+
+  bool operator<(const nonliteral&) const;
+  bool operator<=(const nonliteral&) const;
+  bool operator==(const nonliteral&) const;
+  bool operator!=(const nonliteral&) const;
+  bool operator>=(const nonliteral&) const;
+  bool operator>(const nonliteral&) const;
+};
+
 void default_ctor()
 {
   static_assert(is_default_constructible_v<variant<int, string>>, "");
   static_assert(is_default_constructible_v<variant<string, string>>, "");
-  static_assert(!is_default_constructible_v<variant<>>, "");
   static_assert(!is_default_constructible_v<variant<AllDeleted, string>>, "");
   static_assert(is_default_constructible_v<variant<string, AllDeleted>>, "");
 
@@ -68,10 +88,12 @@ void copy_ctor()
 {
   static_assert(is_copy_constructible_v<variant<int, string>>, "");
   static_assert(!is_copy_constructible_v<variant<AllDeleted, string>>, "");
+  static_assert(is_trivially_copy_constructible_v<variant<int>>, "");
+  static_assert(!is_trivially_copy_constructible_v<variant<std::string>>, "");
 
   {
     variant<int> a;
-    static_assert(!noexcept(variant<int>(a)), "");
+    static_assert(noexcept(variant<int>(a)), "");
   }
   {
     variant<string> a;
@@ -83,7 +105,7 @@ void copy_ctor()
   }
   {
     variant<int, char> a;
-    static_assert(!noexcept(variant<int, char>(a)), "");
+    static_assert(noexcept(variant<int, char>(a)), "");
   }
 }
 
@@ -91,6 +113,8 @@ void move_ctor()
 {
   static_assert(is_move_constructible_v<variant<int, string>>, "");
   static_assert(!is_move_constructible_v<variant<AllDeleted, string>>, "");
+  static_assert(is_trivially_move_constructible_v<variant<int>>, "");
+  static_assert(!is_trivially_move_constructible_v<variant<std::string>>, "");
   static_assert(!noexcept(variant<int, Empty>(declval<variant<int, Empty>>())), "");
   static_assert(noexcept(variant<int, DefaultNoexcept>(declval<variant<int, DefaultNoexcept>>())), "");
 }
@@ -107,48 +131,15 @@ void arbitrary_ctor()
 
 void in_place_index_ctor()
 {
-  variant<string, string> a(in_place<0>, "a");
-  variant<string, string> b(in_place<1>, {'a'});
+  variant<string, string> a(in_place_index<0>, "a");
+  variant<string, string> b(in_place_index<1>, {'a'});
 }
 
 void in_place_type_ctor()
 {
-  variant<int, string, int> a(in_place<string>, "a");
-  variant<int, string, int> b(in_place<string>, {'a'});
+  variant<int, string, int> a(in_place_type<string>, "a");
+  variant<int, string, int> b(in_place_type<string>, {'a'});
   static_assert(!is_constructible_v<variant<string, string>, in_place_type_t<string>, const char*>, "");
-}
-
-void uses_alloc_ctors()
-{
-  std::allocator<char> alloc;
-  variant<int> a(allocator_arg, alloc);
-  static_assert(!is_constructible_v<variant<AllDeleted>, allocator_arg_t, std::allocator<char>>, "");
-  {
-    variant<int> b(allocator_arg, alloc, a);
-    static_assert(!is_constructible_v<variant<void>, allocator_arg_t, std::allocator<char>, const variant<void>&>, "");
-  }
-  {
-    variant<int> b(allocator_arg, alloc, std::move(a));
-    static_assert(!is_constructible_v<variant<void>, allocator_arg_t, std::allocator<char>, variant<void>&&>, "");
-  }
-  {
-    variant<string, int> b(allocator_arg, alloc, "a");
-    static_assert(!is_constructible_v<variant<string, string>, allocator_arg_t, std::allocator<char>, const char*>, "");
-  }
-  {
-    variant<string, int> b(allocator_arg, alloc, in_place<0>, "a");
-    variant<string, string> c(allocator_arg, alloc, in_place<1>, "a");
-  }
-  {
-    variant<string, int> b(allocator_arg, alloc, in_place<0>, {'a'});
-    variant<string, string> c(allocator_arg, alloc, in_place<1>, {'a'});
-  }
-  {
-    variant<int, string, int> b(allocator_arg, alloc, in_place<string>, "a");
-  }
-  {
-    variant<int, string, int> b(allocator_arg, alloc, in_place<string>, {'a'});
-  }
 }
 
 void dtor()
@@ -161,19 +152,15 @@ void copy_assign()
 {
   static_assert(is_copy_assignable_v<variant<int, string>>, "");
   static_assert(!is_copy_assignable_v<variant<AllDeleted, string>>, "");
+  static_assert(is_trivially_copy_assignable_v<variant<int>>, "");
+  static_assert(!is_trivially_copy_assignable_v<variant<string>>, "");
   {
     variant<Empty> a;
     static_assert(!noexcept(a = a), "");
   }
   {
     variant<DefaultNoexcept> a;
-    static_assert(!noexcept(a = a), "");
-  }
-
-  {
-    float f1 = 1.0f, f2 = 2.0f;
-    std::variant<float&> v1(f1);
-    v1 = f2;
+    static_assert(noexcept(a = a), "");
   }
 }
 
@@ -181,6 +168,8 @@ void move_assign()
 {
   static_assert(is_move_assignable_v<variant<int, string>>, "");
   static_assert(!is_move_assignable_v<variant<AllDeleted, string>>, "");
+  static_assert(is_trivially_move_assignable_v<variant<int>>, "");
+  static_assert(!is_trivially_move_assignable_v<variant<string>>, "");
   {
     variant<Empty> a;
     static_assert(!noexcept(a = std::move(a)), "");
@@ -203,132 +192,75 @@ void arbitrary_assign()
 
 void test_get()
 {
-  {
-    static_assert(is_same<decltype(get<0>(variant<int, string>())), int&&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, string>())), string&&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, string&>())), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, string&&>())), string&&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, const string>())), const string&&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, const string&>())), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(variant<int, const string&&>())), const string&&>::value, "");
+  static_assert(is_same<decltype(get<0>(variant<int, string>())), int&&>::value, "");
+  static_assert(is_same<decltype(get<1>(variant<int, string>())), string&&>::value, "");
+  static_assert(is_same<decltype(get<1>(variant<int, const string>())), const string&&>::value, "");
 
-    static_assert(is_same<decltype(get<int>(variant<int, string>())), int&&>::value, "");
-    static_assert(is_same<decltype(get<string>(variant<int, string>())), string&&>::value, "");
-    static_assert(is_same<decltype(get<string&>(variant<int, string&>())), string&>::value, "");
-    static_assert(is_same<decltype(get<string&&>(variant<int, string&&>())), string&&>::value, "");
-    static_assert(is_same<decltype(get<const string>(variant<int, const string>())), const string&&>::value, "");
-    static_assert(is_same<decltype(get<const string&>(variant<int, const string&>())), const string&>::value, "");
-    static_assert(is_same<decltype(get<const string&&>(variant<int, const string&&>())), const string&&>::value, "");
-  }
-  {
-    variant<int, string> a;
-    variant<int, string&> b;
-    variant<int, string&&> c;
-    variant<int, const string> d;
-    variant<int, const string&> e;
-    variant<int, const string&&> f;
-
-    static_assert(is_same<decltype(get<0>(a)), int&>::value, "");
-    static_assert(is_same<decltype(get<1>(a)), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(b)), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(c)), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(f)), const string&>::value, "");
-
-    static_assert(is_same<decltype(get<int>(a)), int&>::value, "");
-    static_assert(is_same<decltype(get<string>(a)), string&>::value, "");
-    static_assert(is_same<decltype(get<string&>(b)), string&>::value, "");
-    static_assert(is_same<decltype(get<string&&>(c)), string&>::value, "");
-    static_assert(is_same<decltype(get<const string>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<const string&>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<const string&&>(f)), const string&>::value, "");
-
-    static_assert(is_same<decltype(get_if<0>(&a)), int*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&a)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&b)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&c)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&f)), const string*>::value, "");
-
-    static_assert(is_same<decltype(get_if<int>(&a)), int*>::value, "");
-    static_assert(is_same<decltype(get_if<string>(&a)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<string&>(&b)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<string&&>(&c)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string&>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string&&>(&f)), const string*>::value, "");
-  }
-  {
-    const variant<int, string> a;
-    const variant<int, string&> b;
-    const variant<int, string&&> c;
-    const variant<int, const string> d;
-    const variant<int, const string&> e;
-    const variant<int, const string&&> f;
-
-    static_assert(is_same<decltype(get<0>(a)), const int&>::value, "");
-    static_assert(is_same<decltype(get<1>(a)), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(b)), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(c)), string&>::value, "");
-    static_assert(is_same<decltype(get<1>(d)), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<1>(f)), const string&>::value, "");
-
-    static_assert(is_same<decltype(get<int>(a)), const int&>::value, "");
-    static_assert(is_same<decltype(get<string>(a)), const string&>::value, "");
-    static_assert(is_same<decltype(get<string&>(b)), string&>::value, "");
-    static_assert(is_same<decltype(get<string&&>(c)), string&>::value, "");
-    static_assert(is_same<decltype(get<const string>(d)), const string&>::value, "");
-    static_assert(is_same<decltype(get<const string&>(e)), const string&>::value, "");
-    static_assert(is_same<decltype(get<const string&&>(f)), const string&>::value, "");
-
-    static_assert(is_same<decltype(get_if<0>(&a)), const int*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&a)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&b)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&c)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&d)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<1>(&f)), const string*>::value, "");
-
-    static_assert(is_same<decltype(get_if<int>(&a)), const int*>::value, "");
-    static_assert(is_same<decltype(get_if<string>(&a)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<string&>(&b)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<string&&>(&c)), string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string>(&d)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string&>(&e)), const string*>::value, "");
-    static_assert(is_same<decltype(get_if<const string&&>(&f)), const string*>::value, "");
-  }
+  static_assert(is_same<decltype(get<int>(variant<int, string>())), int&&>::value, "");
+  static_assert(is_same<decltype(get<string>(variant<int, string>())), string&&>::value, "");
+  static_assert(is_same<decltype(get<const string>(variant<int, const string>())), const string&&>::value, "");
 }
 
 void test_relational()
 {
   {
-    const variant<int, string> a, b;
-    (void)(a < b);
-    (void)(a > b);
-    (void)(a <= b);
-    (void)(a == b);
-    (void)(a != b);
-    (void)(a >= b);
+    constexpr variant<int, nonliteral> a(42), b(43);
+    static_assert((a < b), "");
+    static_assert(!(a > b), "");
+    static_assert((a <= b), "");
+    static_assert(!(a == b), "");
+    static_assert((a != b), "");
+    static_assert(!(a >= b), "");
   }
   {
-    const monostate a, b;
-    (void)(a < b);
-    (void)(a > b);
-    (void)(a <= b);
-    (void)(a == b);
-    (void)(a != b);
-    (void)(a >= b);
+    constexpr variant<int, nonliteral> a(42), b(42);
+    static_assert(!(a < b), "");
+    static_assert(!(a > b), "");
+    static_assert((a <= b), "");
+    static_assert((a == b), "");
+    static_assert(!(a != b), "");
+    static_assert((a >= b), "");
+  }
+  {
+    constexpr variant<int, nonliteral> a(43), b(42);
+    static_assert(!(a < b), "");
+    static_assert((a > b), "");
+    static_assert(!(a <= b), "");
+    static_assert(!(a == b), "");
+    static_assert((a != b), "");
+    static_assert((a >= b), "");
+  }
+  {
+    constexpr monostate a, b;
+    static_assert(!(a < b), "");
+    static_assert(!(a > b), "");
+    static_assert((a <= b), "");
+    static_assert((a == b), "");
+    static_assert(!(a != b), "");
+    static_assert((a >= b), "");
   }
 }
 
+// Not swappable, and variant<C> not swappable via the generic std::swap.
+struct C { };
+void swap(C&, C&) = delete;
+
+static_assert( !std::is_swappable_v<variant<C>> );
+static_assert( !std::is_swappable_v<variant<int, C>> );
+static_assert( !std::is_swappable_v<variant<C, int>> );
+
+// Not swappable, and variant<D> not swappable via the generic std::swap.
+struct D { D(D&&) = delete; };
+
+static_assert( !std::is_swappable_v<variant<D>> );
+static_assert( !std::is_swappable_v<variant<int, D>> );
+static_assert( !std::is_swappable_v<variant<D, int>> );
+
 void test_swap()
 {
-  variant<int, string> a, b;
-  a.swap(b);
-  swap(a, b);
+  static_assert(is_swappable_v<variant<int, string>>, "");
+  static_assert(is_swappable_v<variant<MoveCtorOnly>>, "");
+  static_assert(!is_swappable_v<variant<AllDeleted>>, "");
 }
 
 void test_visit()
@@ -344,16 +276,6 @@ void test_visit()
       void operator()(monostate) const {}
       void operator()(const int&) const {}
     };
-    variant<monostate, int&, const int&, int&&, const int&&> a;
-    const variant<monostate, int&, const int&, int&&, const int&&> b;
-    Visitor v;
-    const CVisitor u;
-    static_assert(is_same<void, decltype(visit(Visitor(), a))>::value, "");
-    static_assert(is_same<void, decltype(visit(Visitor(), b))>::value, "");
-    static_assert(is_same<void, decltype(visit(v, a))>::value, "");
-    static_assert(is_same<void, decltype(visit(v, b))>::value, "");
-    static_assert(is_same<void, decltype(visit(u, a))>::value, "");
-    static_assert(is_same<void, decltype(visit(u, b))>::value, "");
   }
   {
     struct Visitor
@@ -365,19 +287,41 @@ void test_visit()
     };
     visit(Visitor(), variant<int, char>(), variant<float, double>());
   }
+  {
+    struct Visitor
+    {
+      constexpr bool operator()(const int&) { return true; }
+      constexpr bool operator()(const nonliteral&) { return false; }
+    };
+    static_assert(visit(Visitor(), variant<int, nonliteral>(0)), "");
+  }
+  {
+    struct Visitor
+    {
+      constexpr bool operator()(const int&) { return true; }
+      constexpr bool operator()(const nonliteral&) { return false; }
+    };
+    static_assert(visit(Visitor(), variant<int, nonliteral>(0)), "");
+  }
+  // PR libstdc++/79513
+  {
+    std::variant<int> v [[gnu::unused]] (5);
+    std::visit([](int&){}, v);
+    std::visit([](int&&){}, std::move(v));
+  }
 }
 
 void test_constexpr()
 {
   constexpr variant<int> a;
   static_assert(holds_alternative<int>(a), "");
-  constexpr variant<int, char> b(in_place<0>, int{});
+  constexpr variant<int, char> b(in_place_index<0>, int{});
   static_assert(holds_alternative<int>(b), "");
-  constexpr variant<int, char> c(in_place<int>, int{});
+  constexpr variant<int, char> c(in_place_type<int>, int{});
   static_assert(holds_alternative<int>(c), "");
-  constexpr variant<int, char> d(in_place<1>, char{});
+  constexpr variant<int, char> d(in_place_index<1>, char{});
   static_assert(holds_alternative<char>(d), "");
-  constexpr variant<int, char> e(in_place<char>, char{});
+  constexpr variant<int, char> e(in_place_type<char>, char{});
   static_assert(holds_alternative<char>(e), "");
   constexpr variant<int, char> f(char{});
   static_assert(holds_alternative<char>(f), "");
@@ -387,27 +331,59 @@ void test_constexpr()
 	constexpr literal() = default;
     };
 
-    struct nonliteral {
-	nonliteral() { }
-    };
-
     constexpr variant<literal, nonliteral> v{};
-    constexpr variant<literal, nonliteral> v1{in_place<literal>};
-    constexpr variant<literal, nonliteral> v2{in_place<0>};
+    constexpr variant<literal, nonliteral> v1{in_place_type<literal>};
+    constexpr variant<literal, nonliteral> v2{in_place_index<0>};
   }
-}
 
-void test_void()
-{
-  static_assert(is_same<int&&, decltype(get<int>(variant<int, void>()))>::value, "");
-  static_assert(!is_default_constructible_v<variant<void, int>>, "");
-  static_assert(!is_copy_constructible_v<variant<int, void>>, "");
-  static_assert(!is_move_constructible_v<variant<int, void>>, "");
-  static_assert(!is_copy_assignable_v<variant<int, void>>, "");
-  static_assert(!is_move_assignable_v<variant<int, void>>, "");
-  variant<int, void, string> v;
-  v = 3;
-  v = "asdf";
+  {
+    constexpr variant<int> a(42);
+    static_assert(get<0>(a) == 42, "");
+  }
+  {
+    constexpr variant<int, nonliteral> a(42);
+    static_assert(get<0>(a) == 42, "");
+  }
+  {
+    constexpr variant<nonliteral, int> a(42);
+    static_assert(get<1>(a) == 42, "");
+  }
+  {
+    constexpr variant<int> a(42);
+    static_assert(get<int>(a) == 42, "");
+  }
+  {
+    constexpr variant<int, nonliteral> a(42);
+    static_assert(get<int>(a) == 42, "");
+  }
+  {
+    constexpr variant<nonliteral, int> a(42);
+    static_assert(get<int>(a) == 42, "");
+  }
+  {
+    constexpr variant<int> a(42);
+    static_assert(get<0>(std::move(a)) == 42, "");
+  }
+  {
+    constexpr variant<int, nonliteral> a(42);
+    static_assert(get<0>(std::move(a)) == 42, "");
+  }
+  {
+    constexpr variant<nonliteral, int> a(42);
+    static_assert(get<1>(std::move(a)) == 42, "");
+  }
+  {
+    constexpr variant<int> a(42);
+    static_assert(get<int>(std::move(a)) == 42, "");
+  }
+  {
+    constexpr variant<int, nonliteral> a(42);
+    static_assert(get<int>(std::move(a)) == 42, "");
+  }
+  {
+    constexpr variant<nonliteral, int> a(42);
+    static_assert(get<int>(std::move(a)) == 42, "");
+  }
 }
 
 void test_pr77641()
@@ -437,9 +413,7 @@ namespace adl_trap
 void test_adl()
 {
    using adl_trap::X;
-   using std::allocator_arg;
    X x;
-   std::allocator<int> a;
    std::initializer_list<int> il;
    adl_trap::Visitor vis;
 
@@ -448,20 +422,132 @@ void test_adl()
    v0.emplace<0>(x);
    v0.emplace<0>(il, x);
    visit(vis, v0);
-   variant<X> v1{in_place<0>, x};
-   variant<X> v2{in_place<X>, x};
-   variant<X> v3{in_place<0>, il, x};
-   variant<X> v4{in_place<X>, il, x};
-   variant<X> v5{allocator_arg, a, in_place<0>, x};
-   variant<X> v6{allocator_arg, a, in_place<X>, x};
-   variant<X> v7{allocator_arg, a, in_place<0>, il, x};
-   variant<X> v8{allocator_arg, a, in_place<X>, il, x};
-   variant<X> v9{allocator_arg, a, in_place<X>, 1};
+   variant<X> v1{in_place_index<0>, x};
+   variant<X> v2{in_place_type<X>, x};
+   variant<X> v3{in_place_index<0>, il, x};
+   variant<X> v4{in_place_type<X>, il, x};
+}
 
-   std::variant<X&> vr0(x);
-   vr0 = x;
-   variant<X&> vr1{in_place<0>, x};
-   variant<X&> vr2{in_place<X&>, x};
-   variant<X&> vr3{allocator_arg, a, in_place<0>, x};
-   variant<X&> vr4{allocator_arg, a, in_place<X&>, x};
+void test_variant_alternative()
+{
+  static_assert(is_same_v<variant_alternative_t<0, variant<int, string>>, int>, "");
+  static_assert(is_same_v<variant_alternative_t<1, variant<int, string>>, string>, "");
+
+  static_assert(is_same_v<variant_alternative_t<0, const variant<int>>, const int>, "");
+  static_assert(is_same_v<variant_alternative_t<0, volatile variant<int>>, volatile int>, "");
+  static_assert(is_same_v<variant_alternative_t<0, const volatile variant<int>>, const volatile int>, "");
+}
+
+template<typename V, typename T>
+  constexpr auto has_type_emplace(int) -> decltype((declval<V>().template emplace<T>(), true))
+  { return true; };
+
+template<typename V, typename T>
+  constexpr bool has_type_emplace(...)
+  { return false; };
+
+template<typename V, size_t N>
+  constexpr auto has_index_emplace(int) -> decltype((declval<V>().template emplace<N>(), true))
+  { return true; };
+
+template<typename V, size_t T>
+  constexpr bool has_index_emplace(...)
+  { return false; };
+
+void test_emplace()
+{
+  static_assert(has_type_emplace<variant<int>, int>(0), "");
+  static_assert(!has_type_emplace<variant<long>, int>(0), "");
+  static_assert(has_index_emplace<variant<int>, 0>(0), "");
+  static_assert(!has_type_emplace<variant<AllDeleted>, AllDeleted>(0), "");
+  static_assert(!has_index_emplace<variant<AllDeleted>, 0>(0), "");
+}
+
+void test_triviality()
+{
+#define TEST_TEMPLATE(DT, CC, MC, CA, MA, CC_VAL, MC_VAL, CA_VAL, MA_VAL) \
+  { \
+    struct A \
+    { \
+      ~A() DT; \
+      A(const A&) CC; \
+      A(A&&) MC; \
+      A& operator=(const A&) CA; \
+      A& operator=(A&&) MA; \
+    }; \
+    static_assert(CC_VAL == is_trivially_copy_constructible_v<variant<A>>, ""); \
+    static_assert(MC_VAL == is_trivially_move_constructible_v<variant<A>>, ""); \
+    static_assert(CA_VAL == is_trivially_copy_assignable_v<variant<A>>, ""); \
+    static_assert(MA_VAL == is_trivially_move_assignable_v<variant<A>>, ""); \
+  }
+  TEST_TEMPLATE(=default, =default, =default, =default, =default,  true,  true,  true,  true)
+  TEST_TEMPLATE(=default, =default, =default, =default,         ,  true,  true,  true, false)
+  TEST_TEMPLATE(=default, =default, =default,         , =default,  true,  true, false,  true)
+  TEST_TEMPLATE(=default, =default, =default,         ,         ,  true,  true, false, false)
+  TEST_TEMPLATE(=default, =default,         , =default, =default,  true, false,  true,  true)
+  TEST_TEMPLATE(=default, =default,         , =default,         ,  true, false,  true, false)
+  TEST_TEMPLATE(=default, =default,         ,         , =default,  true, false, false,  true)
+  TEST_TEMPLATE(=default, =default,         ,         ,         ,  true, false, false, false)
+  TEST_TEMPLATE(=default,         , =default, =default, =default, false,  true,  true,  true)
+  TEST_TEMPLATE(=default,         , =default, =default,         , false,  true,  true, false)
+  TEST_TEMPLATE(=default,         , =default,         , =default, false,  true, false,  true)
+  TEST_TEMPLATE(=default,         , =default,         ,         , false,  true, false, false)
+  TEST_TEMPLATE(=default,         ,         , =default, =default, false, false,  true,  true)
+  TEST_TEMPLATE(=default,         ,         , =default,         , false, false,  true, false)
+  TEST_TEMPLATE(=default,         ,         ,         , =default, false, false, false,  true)
+  TEST_TEMPLATE(=default,         ,         ,         ,         , false, false, false, false)
+  TEST_TEMPLATE(        , =default, =default, =default, =default, false, false, false, false)
+  TEST_TEMPLATE(        , =default, =default, =default,         , false, false, false, false)
+  TEST_TEMPLATE(        , =default, =default,         , =default, false, false, false, false)
+  TEST_TEMPLATE(        , =default, =default,         ,         , false, false, false, false)
+  TEST_TEMPLATE(        , =default,         , =default, =default, false, false, false, false)
+  TEST_TEMPLATE(        , =default,         , =default,         , false, false, false, false)
+  TEST_TEMPLATE(        , =default,         ,         , =default, false, false, false, false)
+  TEST_TEMPLATE(        , =default,         ,         ,         , false, false, false, false)
+  TEST_TEMPLATE(        ,         , =default, =default, =default, false, false, false, false)
+  TEST_TEMPLATE(        ,         , =default, =default,         , false, false, false, false)
+  TEST_TEMPLATE(        ,         , =default,         , =default, false, false, false, false)
+  TEST_TEMPLATE(        ,         , =default,         ,         , false, false, false, false)
+  TEST_TEMPLATE(        ,         ,         , =default, =default, false, false, false, false)
+  TEST_TEMPLATE(        ,         ,         , =default,         , false, false, false, false)
+  TEST_TEMPLATE(        ,         ,         ,         , =default, false, false, false, false)
+  TEST_TEMPLATE(        ,         ,         ,         ,         , false, false, false, false)
+#undef TEST_TEMPLATE
+
+#define TEST_TEMPLATE(CC, MC, CA, MA) \
+  { \
+    struct A \
+    { \
+      A(const A&) CC; \
+      A(A&&) MC; \
+      A& operator=(const A&) CA; \
+      A& operator=(A&&) MA; \
+    }; \
+    static_assert(!is_trivially_copy_constructible_v<variant<AllDeleted, A>>, ""); \
+    static_assert(!is_trivially_move_constructible_v<variant<AllDeleted, A>>, ""); \
+    static_assert(!is_trivially_copy_assignable_v<variant<AllDeleted, A>>, ""); \
+    static_assert(!is_trivially_move_assignable_v<variant<AllDeleted, A>>, ""); \
+  }
+  TEST_TEMPLATE(=default, =default, =default, =default)
+  TEST_TEMPLATE(=default, =default, =default,         )
+  TEST_TEMPLATE(=default, =default,         , =default)
+  TEST_TEMPLATE(=default, =default,         ,         )
+  TEST_TEMPLATE(=default,         , =default, =default)
+  TEST_TEMPLATE(=default,         , =default,         )
+  TEST_TEMPLATE(=default,         ,         , =default)
+  TEST_TEMPLATE(=default,         ,         ,         )
+  TEST_TEMPLATE(        , =default, =default, =default)
+  TEST_TEMPLATE(        , =default, =default,         )
+  TEST_TEMPLATE(        , =default,         , =default)
+  TEST_TEMPLATE(        , =default,         ,         )
+  TEST_TEMPLATE(        ,         , =default, =default)
+  TEST_TEMPLATE(        ,         , =default,         )
+  TEST_TEMPLATE(        ,         ,         , =default)
+  TEST_TEMPLATE(        ,         ,         ,         )
+#undef TEST_TEMPLATE
+
+  static_assert(is_trivially_copy_constructible_v<variant<DefaultNoexcept, int, char, float, double>>, "");
+  static_assert(is_trivially_move_constructible_v<variant<DefaultNoexcept, int, char, float, double>>, "");
+  static_assert(is_trivially_copy_assignable_v<variant<DefaultNoexcept, int, char, float, double>>, "");
+  static_assert(is_trivially_move_assignable_v<variant<DefaultNoexcept, int, char, float, double>>, "");
 }

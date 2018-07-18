@@ -18,5 +18,5 @@ program where_2
    END WHERE
    
    if (any (temp .ne. (/100, 100, 100, 210, 210, 210, 310, 310, 337, 337/))) &
-      call abort
+      STOP 1
 end program

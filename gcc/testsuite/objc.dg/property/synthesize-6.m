@@ -27,6 +27,6 @@
 @implementation Test2
 @synthesize w1;      /* { dg-error "ivar .w1. used by .@synthesize. declaration must be an existing ivar" } */
 @end
-/* { dg-warning "incomplete implementation" "" { target *-*-* } 29 } */
-/* { dg-warning "method definition for .-setW1:. not found" "" { target *-*-* } 29 } */
-/* { dg-warning "method definition for .-w1. not found" "" { target *-*-* } 29 } */
+/* { dg-warning "incomplete implementation" "" { target *-*-* } .-1 } */
+/* { dg-warning "method definition for .-setW1:. not found" "" { target *-*-* } .-2 } */
+/* { dg-warning "method definition for .-w1. not found" "" { target *-*-* } .-3 } */

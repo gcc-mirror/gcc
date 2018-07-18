@@ -1,7 +1,6 @@
 ## Makefile for the toplevel directory of the libssp library.
 ##
-## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
-## Free Software Foundation, Inc.
+## Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ##
 
 AUTOMAKE_OPTIONS = 1.9.5 foreign
@@ -9,7 +8,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 MAINT_CHARSET = latin1
 
 # May be used by various substitution variables.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 if LIBSSP_USE_SYMVER
 if LIBSSP_USE_SYMVER_GNU
@@ -35,6 +34,7 @@ version_dep =
 endif
 
 AM_CFLAGS = -Wall
+AM_CFLAGS += $(XCFLAGS)
 
 toolexeclib_LTLIBRARIES = libssp.la libssp_nonshared.la
 
@@ -54,7 +54,7 @@ libssp_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 
 libssp_nonshared_la_SOURCES = \
 	ssp-local.c
-libssp_nonshared_la_CFLAGS = -prefer-pic
+libssp_nonshared_la_CFLAGS = -prefer-pic $(XCFLAGS)
 libssp_nonshared_la_LIBADD = 
 libssp_nonshared_la_DEPENDENCIES = $(libssp_nonshared_la_LIBADD)
 libssp_nonshared_la_LDFLAGS = -static

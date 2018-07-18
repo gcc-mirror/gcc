@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -307,7 +307,6 @@ package body Sem_Type is
             else
                Get_Next_Interp (I, It);
             end if;
-
          end loop;
 
          All_Interp.Table (All_Interp.Last) := (Name, Typ, Abstr_Op);
@@ -375,7 +374,7 @@ package body Sem_Type is
                      and then not Is_Hidden (Vis_Type))
            or else Nkind (N) = N_Expanded_Name
            or else (Nkind (N) in N_Op and then E = Entity (N))
-           or else In_Instance
+           or else (In_Instance or else In_Inlined_Body)
            or else Ekind (Vis_Type) = E_Anonymous_Access_Type
          then
             null;
@@ -762,15 +761,19 @@ package body Sem_Type is
 
       function Full_View_Covers (Typ1, Typ2 : Entity_Id) return Boolean is
       begin
-         return
-           Is_Private_Type (Typ1)
-             and then
-              ((Present (Full_View (Typ1))
-                 and then Covers (Full_View (Typ1), Typ2))
-                or else (Present (Underlying_Full_View (Typ1))
-                          and then Covers (Underlying_Full_View (Typ1), Typ2))
-                or else Base_Type (Typ1) = Typ2
-                or else Base_Type (Typ2) = Typ1);
+         if Present (Full_View (Typ1))
+           and then Covers (Full_View (Typ1), Typ2)
+         then
+            return True;
+
+         elsif Present (Underlying_Full_View (Typ1))
+           and then Covers (Underlying_Full_View (Typ1), Typ2)
+         then
+            return True;
+
+         else
+            return False;
+         end if;
       end Full_View_Covers;
 
       -----------------
@@ -803,8 +806,8 @@ package body Sem_Type is
    --  Start of processing for Covers
 
    begin
-      --  If either operand missing, then this is an error, but ignore it (and
-      --  pretend we have a cover) if errors already detected, since this may
+      --  If either operand is missing, then this is an error, but ignore it
+      --  and pretend we have a cover if errors already detected since this may
       --  simply mean we have malformed trees or a semantic error upstream.
 
       if No (T1) or else No (T2) then
@@ -826,7 +829,7 @@ package body Sem_Type is
       --  Standard_Void_Type is a special entity that has some, but not all,
       --  properties of types.
 
-      if (T1 = Standard_Void_Type) /= (T2 = Standard_Void_Type) then
+      if T1 = Standard_Void_Type or else T2 = Standard_Void_Type then
          return False;
       end if;
 
@@ -893,8 +896,8 @@ package body Sem_Type is
         or else (T2 = Universal_Real    and then Is_Real_Type (T1))
         or else (T2 = Universal_Fixed   and then Is_Fixed_Point_Type (T1))
         or else (T2 = Any_Fixed         and then Is_Fixed_Point_Type (T1))
-        or else (T2 = Any_String        and then Is_String_Type (T1))
         or else (T2 = Any_Character     and then Is_Character_Type (T1))
+        or else (T2 = Any_String        and then Is_String_Type (T1))
         or else (T2 = Any_Access        and then Is_Access_Type (T1))
       then
          return True;
@@ -917,9 +920,9 @@ package body Sem_Type is
       --  task_type or protected_type that implements the interface.
 
       elsif Ada_Version >= Ada_2005
+        and then Is_Concurrent_Type (T2)
         and then Is_Class_Wide_Type (T1)
         and then Is_Interface (Etype (T1))
-        and then Is_Concurrent_Type (T2)
         and then Interface_Present_In_Ancestor
                    (Typ => BT2, Iface => Etype (T1))
       then
@@ -929,9 +932,9 @@ package body Sem_Type is
       --  object T2 implementing T1.
 
       elsif Ada_Version >= Ada_2005
+        and then Is_Tagged_Type (T2)
         and then Is_Class_Wide_Type (T1)
         and then Is_Interface (Etype (T1))
-        and then Is_Tagged_Type (T2)
       then
          if Interface_Present_In_Ancestor (Typ   => T2,
                                            Iface => Etype (T1))
@@ -1184,19 +1187,16 @@ package body Sem_Type is
       --  whether a partial and a full view match. Verify that types are
       --  legal, to prevent cascaded errors.
 
-      elsif In_Instance
-        and then (Full_View_Covers (T1, T2) or else Full_View_Covers (T2, T1))
-      then
-         return True;
-
-      elsif Is_Type (T2)
-        and then Is_Generic_Actual_Type (T2)
+      elsif Is_Private_Type (T1)
+        and then (In_Instance
+                   or else (Is_Type (T2) and then Is_Generic_Actual_Type (T2)))
         and then Full_View_Covers (T1, T2)
       then
          return True;
 
-      elsif Is_Type (T1)
-        and then Is_Generic_Actual_Type (T1)
+      elsif Is_Private_Type (T2)
+        and then (In_Instance
+                   or else (Is_Type (T1) and then Is_Generic_Actual_Type (T1)))
         and then Full_View_Covers (T2, T1)
       then
          return True;
@@ -1934,6 +1934,18 @@ package body Sem_Type is
             return No_Interp;
          end if;
 
+      --  Two access attribute types may have been created for an expression
+      --  with an implicit dereference, which is automatically overloaded.
+      --  If both access attribute types designate the same object type,
+      --  disambiguation if any will take place elsewhere, so keep any one of
+      --  the interpretations.
+
+      elsif Ekind (It1.Typ) = E_Access_Attribute_Type
+        and then Ekind (It2.Typ) = E_Access_Attribute_Type
+        and then Designated_Type (It1.Typ) = Designated_Type (It2.Typ)
+      then
+         return It1;
+
       --  If two user defined-subprograms are visible, it is a true ambiguity,
       --  unless one of them is an entry and the context is a conditional or
       --  timed entry call, or unless we are within an instance and this is
@@ -2579,7 +2591,6 @@ package body Sem_Type is
 
          loop
             if Present (Interfaces (E))
-              and then Present (Interfaces (E))
               and then not Is_Empty_Elmt_List (Interfaces (E))
             then
                Elmt := First_Elmt (Interfaces (E));
@@ -2694,8 +2705,17 @@ package body Sem_Type is
          if Present (Full_View (Target_Typ)) then
             Target_Typ := Full_View (Target_Typ);
          else
-            pragma Assert (Present (Non_Limited_View (Target_Typ)));
-            Target_Typ := Non_Limited_View (Target_Typ);
+            --  In a spec expression or in an expression function, the use of
+            --  an incomplete type is legal; legality of the conversion will be
+            --  checked at freeze point of related entity.
+
+            if In_Spec_Expression then
+               return True;
+
+            else
+               pragma Assert (Present (Non_Limited_View (Target_Typ)));
+               Target_Typ := Non_Limited_View (Target_Typ);
+            end if;
          end if;
 
          --  Protect the front end against previously detected errors
@@ -2818,11 +2838,9 @@ package body Sem_Type is
          return False;
 
       elsif Nkind (Par) in N_Declaration then
-         if Nkind (Par) = N_Object_Declaration then
-            return Present (Corresponding_Generic_Association (Par));
-         else
-            return False;
-         end if;
+         return
+           Nkind (Par) = N_Object_Declaration
+             and then Present (Corresponding_Generic_Association (Par));
 
       elsif Nkind (Par) = N_Object_Renaming_Declaration then
          return Present (Corresponding_Generic_Association (Par));
@@ -2928,11 +2946,14 @@ package body Sem_Type is
             --  Continue climbing
 
             else
-               --  Use the full-view of private types (if allowed)
+               --  Use the full-view of private types (if allowed). Guard
+               --  against infinite loops when full view has same type as
+               --  parent, as can happen with interface extensions.
 
                if Use_Full_View
                  and then Is_Private_Type (Par)
                  and then Present (Full_View (Par))
+                 and then Par /= Etype (Full_View (Par))
                then
                   Par := Etype (Full_View (Par));
                else

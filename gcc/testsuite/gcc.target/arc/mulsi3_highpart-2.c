@@ -1,5 +1,7 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mARC700 --save-temps -mno-mpy" } */
+/* { dg-skip-if "ARC700 always has mpy option on" { arc700 } } */
+/* { dg-skip-if "ARC600 doesn't have mpy instruction" { arc6xx } } */
+/* { dg-options "-O2 -mmpy-option=0 -w" } */
 
 #include <stdlib.h>
 
@@ -7,7 +9,7 @@
 static int
 id (int i)
 {
-  asm ("": "+Xr" (i));
+  asm ("": "+r" (i));
   return i;
 }
 

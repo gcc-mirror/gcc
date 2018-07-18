@@ -1,5 +1,5 @@
 /* Target-independent configuration for VxWorks and VxWorks AE.   
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -17,10 +17,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-
-/* VxWorks headers are C++-aware.  */
-#undef  NO_IMPLICIT_EXTERN_C
-#define NO_IMPLICIT_EXTERN_C
 
 /* Most of these will probably be overridden by subsequent headers.  We
    undefine them here just in case, and define VXWORKS_ versions of each,
@@ -61,18 +57,16 @@ along with GCC; see the file COPYING3.  If not see
 #undef WINT_TYPE_SIZE
 #define WINT_TYPE_SIZE 16
 
-/* Dwarf2 unwind info is not supported.  */
+/* Dwarf2 unwind info is supported.  */
 #undef DWARF2_UNWIND_INFO
-#define DWARF2_UNWIND_INFO 0
+#define DWARF2_UNWIND_INFO 1
 
 /* VxWorks uses DWARF2.  */
 #define DWARF2_DEBUGGING_INFO 1
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* None of these other formats is supported.  */
-#undef DWARF_DEBUGGING_INFO
 #undef DBX_DEBUGGING_INFO
-#undef SDB_DEBUGGING_INFO
 #undef XCOFF_DEBUGGING_INFO
 #undef VMS_DEBUGGING_INFO
 
@@ -92,3 +86,10 @@ along with GCC; see the file COPYING3.  If not see
 /* We occasionally need to distinguish between the VxWorks variants.  */
 #define VXWORKS_KIND_NORMAL  1
 #define VXWORKS_KIND_AE      2
+
+/*
+ * libitm is not supported on VxWorks. Rather than providing stub
+ * no-op _ITM_registerTMCloneTable/_ITM_deregisterTMCloneTable
+ * functions, simply prevent crtstuff from even referring to those.
+ */
+#define USE_TM_CLONE_REGISTRY 0

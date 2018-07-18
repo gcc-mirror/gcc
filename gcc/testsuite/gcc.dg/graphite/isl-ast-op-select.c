@@ -1,3 +1,5 @@
+/* { dg-require-effective-target size32plus } */
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-O2 -floop-nest-optimize" } */
 
 static void kernel_gemm(int ni, int nj, int nk, double alpha, double beta, double C[1024][1024], double A[1024][1024], double B[1024][1024])

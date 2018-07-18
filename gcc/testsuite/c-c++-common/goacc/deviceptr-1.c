@@ -11,24 +11,24 @@ fun1 (void)
 #pragma acc data deviceptr(fun1) /* { dg-error "'fun1' is not a variable" } */
   ;
 #pragma acc parallel deviceptr(fun1[2:5])
-  /* { dg-error "'fun1' is not a variable" "not a variable" { target *-*-* } 13 } */
-  /* { dg-error "expected '\\\)' before '\\\[' token" "array" { target *-*-* } 13 } */
+  /* { dg-error "'fun1' is not a variable" "not a variable" { target *-*-* } .-1 } */
+  /* { dg-error "expected '\\\)' before '\\\[' token" "array" { target *-*-* } .-2 } */
   ;
 
   int i;
 #pragma acc kernels deviceptr(i) /* { dg-error "'i' is not a pointer variable" } */
   ;
 #pragma acc data deviceptr(i[0:4])
-  /* { dg-error "'i' is not a pointer variable" "not a pointer variable" { target *-*-* } 21 } */
-  /* { dg-error "expected '\\\)' before '\\\[' token" "array" { target *-*-* } 21 } */
+  /* { dg-error "'i' is not a pointer variable" "not a pointer variable" { target *-*-* } .-1 } */
+  /* { dg-error "expected '\\\)' before '\\\[' token" "array" { target *-*-* } .-2 } */
   ;
 
   float fa[10];
 #pragma acc parallel deviceptr(fa) /* { dg-error "'fa' is not a pointer variable" } */
   ;
 #pragma acc kernels deviceptr(fa[1:5])
-  /* { dg-error "'fa' is not a pointer variable" "not a pointer variable" { target *-*-* } 29 } */
-  /* { dg-error "expected '\\\)' before '\\\[' token" "array" { target *-*-* } 29 } */
+  /* { dg-error "'fa' is not a pointer variable" "not a pointer variable" { target *-*-* } .-1 } */
+  /* { dg-error "expected '\\\)' before '\\\[' token" "array" { target *-*-* } .-2 } */
   ;
 
   float *fp;
@@ -44,10 +44,10 @@ fun2 (void)
   int i;
   float *fp;
 #pragma acc kernels deviceptr(fp,u,fun2,i,fp)
-  /* { dg-error "'u' undeclared" "u undeclared" { target *-*-* } 46 } */
-  /* { dg-error "'fun2' is not a variable" "fun2 not a variable" { target *-*-* } 46 } */
-  /* { dg-error "'i' is not a pointer variable" "i not a pointer variable" { target *-*-* } 46 } */
-  /* { dg-error "'fp' appears more than once in data clauses" "fp more than once" { target *-*-* } 46 } */
+  /* { dg-error "'u' undeclared" "u undeclared" { target *-*-* } .-1 } */
+  /* { dg-error "'fun2' is not a variable" "fun2 not a variable" { target *-*-* } .-2 } */
+  /* { dg-error "'i' is not a pointer variable" "i not a pointer variable" { target *-*-* } .-3 } */
+  /* { dg-error "'fp' appears more than once in data clauses" "fp more than once" { target *-*-* } .-4 } */
   ;
 }
 

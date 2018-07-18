@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,8 +30,9 @@
 
 // FIXME make comments doxygen format.
 
+/*
 // This compiler refers to "Regular Expression Matching Can Be Simple And Fast"
-// (http://swtch.com/~rsc/regexp/regexp1.html"),
+// (http://swtch.com/~rsc/regexp/regexp1.html),
 // but doesn't strictly follow it.
 //
 // When compiling, states are *chained* instead of tree- or graph-constructed.
@@ -51,14 +52,15 @@
 // article.
 //
 // That's why we introduced dummy node here ------ "end_tag" is a dummy node.
-// All dummy node will be eliminated at the end of compiling process.
+// All dummy nodes will be eliminated at the end of compilation.
+*/
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace __detail
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace __detail
+{
   template<typename _TraitsT>
     _Compiler<_TraitsT>::
     _Compiler(_IterT __b, _IterT __e,
@@ -292,19 +294,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
-#define __INSERT_REGEX_MATCHER(__func, args...)\
-	do\
+#define __INSERT_REGEX_MATCHER(__func, ...)\
+	do {\
 	  if (!(_M_flags & regex_constants::icase))\
 	    if (!(_M_flags & regex_constants::collate))\
-	      __func<false, false>(args);\
+	      __func<false, false>(__VA_ARGS__);\
 	    else\
-	      __func<false, true>(args);\
+	      __func<false, true>(__VA_ARGS__);\
 	  else\
 	    if (!(_M_flags & regex_constants::collate))\
-	      __func<true, false>(args);\
+	      __func<true, false>(__VA_ARGS__);\
 	    else\
-	      __func<true, true>(args);\
-	while (false)
+	      __func<true, true>(__VA_ARGS__);\
+	} while (false)
 
   template<typename _TraitsT>
     bool
@@ -612,39 +614,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _BracketMatcher<_TraitsT, __icase, __collate>::
     _M_apply(_CharT __ch, false_type) const
     {
-      bool __ret = std::binary_search(_M_char_set.begin(), _M_char_set.end(),
-				      _M_translator._M_translate(__ch));
-      if (!__ret)
-	{
-	  auto __s = _M_translator._M_transform(__ch);
-	  for (auto& __it : _M_range_set)
-	    if (__it.first <= __s && __s <= __it.second)
-	      {
-		__ret = true;
-		break;
-	      }
-	  if (_M_traits.isctype(__ch, _M_class_set))
-	    __ret = true;
-	  else if (std::find(_M_equiv_set.begin(), _M_equiv_set.end(),
-			     _M_traits.transform_primary(&__ch, &__ch+1))
-		   != _M_equiv_set.end())
-	    __ret = true;
-	  else
-	    {
-	      for (auto& __it : _M_neg_class_set)
-		if (!_M_traits.isctype(__ch, __it))
-		  {
-		    __ret = true;
-		    break;
-		  }
-	    }
-	}
-      if (_M_is_non_matching)
-	return !__ret;
-      else
-	return __ret;
+      return [this, __ch]
+      {
+	if (std::binary_search(_M_char_set.begin(), _M_char_set.end(),
+			       _M_translator._M_translate(__ch)))
+	  return true;
+	auto __s = _M_translator._M_transform(__ch);
+	for (auto& __it : _M_range_set)
+	  if (_M_translator._M_match_range(__it.first, __it.second, __s))
+	    return true;
+	if (_M_traits.isctype(__ch, _M_class_set))
+	  return true;
+	if (std::find(_M_equiv_set.begin(), _M_equiv_set.end(),
+		      _M_traits.transform_primary(&__ch, &__ch+1))
+	    != _M_equiv_set.end())
+	  return true;
+	for (auto& __it : _M_neg_class_set)
+	  if (!_M_traits.isctype(__ch, __it))
+	    return true;
+	return false;
+      }() ^ _M_is_non_matching;
     }
+} // namespace __detail
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace __detail
 } // namespace

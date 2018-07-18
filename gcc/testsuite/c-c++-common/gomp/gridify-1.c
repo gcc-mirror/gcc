@@ -51,4 +51,4 @@ foo4 (int j, int n, int *a)
 }
 
 
-/* { dg-final { scan-tree-dump-times "Target construct will be turned into a gridified GPGPU kernel" 4 "omplower" } } */
+/* { dg-final { scan-tree-dump-times "Target construct will be turned into a gridified HSA kernel" 4 "omplower" } } */

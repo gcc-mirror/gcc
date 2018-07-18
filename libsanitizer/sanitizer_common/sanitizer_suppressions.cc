@@ -14,6 +14,7 @@
 #include "sanitizer_allocator_internal.h"
 #include "sanitizer_common.h"
 #include "sanitizer_flags.h"
+#include "sanitizer_file.h"
 #include "sanitizer_libc.h"
 #include "sanitizer_placement_new.h"
 
@@ -48,6 +49,7 @@ void SuppressionContext::ParseFromFile(const char *filename) {
   if (filename[0] == '\0')
     return;
 
+#if !SANITIZER_FUCHSIA
   // If we cannot find the file, check if its location is relative to
   // the location of the executable.
   InternalScopedString new_file_path(kMaxPathLength);
@@ -56,6 +58,7 @@ void SuppressionContext::ParseFromFile(const char *filename) {
                                           new_file_path.size())) {
     filename = new_file_path.data();
   }
+#endif  // !SANITIZER_FUCHSIA
 
   // Read the file.
   VPrintf(1, "%s: reading suppressions file at %s\n",
@@ -125,7 +128,7 @@ void SuppressionContext::Parse(const char *str) {
         Printf("%s: failed to parse suppressions\n", SanitizerToolName);
         Die();
       }
-      Suppression s = {};
+      Suppression s;
       s.type = suppression_types_[type];
       s.templ = (char*)InternalAlloc(end2 - line + 1);
       internal_memcpy(s.templ, line, end2 - line);

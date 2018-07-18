@@ -1,6 +1,6 @@
 /* PR middle-end/45234 */
-/* { dg-do compile } */
-/* { dg-options "-march=i586" { target ia32 } } */
+/* { dg-do compile { target ia32 } } */
+/* { dg-options "-march=i586" } */
 
 struct S { union { double b[4]; } a[18]; } s, a[5];
 void foo (struct S);

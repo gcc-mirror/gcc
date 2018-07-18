@@ -19,7 +19,7 @@ contains
   subroutine sub0(my_int) bind(c)
     integer(my_c_int), value :: my_int
     if(my_int .ne. 1) then
-       call abort()
+       STOP 1
     end if
   end subroutine sub0
 
@@ -27,7 +27,7 @@ contains
     type(my_c_ptr), value :: my_ptr
 
     if(.not. my_c_associated(my_ptr)) then
-       call abort()
+       STOP 2
     end if
   end subroutine sub1
 
@@ -38,10 +38,10 @@ contains
     integer(my_c_long_2), value :: my_long
 
     if(my_int .ne. 1) then
-       call abort()
+       STOP 3
     end if
     if(my_long .ne. 1) then
-       call abort()
+       STOP 4
     end if
   end subroutine sub2
 
@@ -51,11 +51,11 @@ contains
     integer(my_c_int), pointer :: my_f90_c_ptr
 
     if(.not. my_c_associated(cptr1)) then
-       call abort()
+       STOP 5
     end if
 
     if(.not. my_c_associated(cptr1, cptr2)) then
-       call abort()
+       STOP 6
     end if
 
     call my_c_f_pointer(cptr1, my_f90_c_ptr)
@@ -72,11 +72,11 @@ contains
     type(my_c_ptr_local), value :: cptr2
 
     if(.not. my_c_associated_2(cptr1)) then
-       call abort()
+       STOP 7
     end if
     
     if(.not. my_c_associated_2(cptr2)) then
-       call abort()
+       STOP 8
     end if
   end subroutine sub4
 end module iso_c_binding_rename_1

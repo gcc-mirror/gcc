@@ -9,12 +9,12 @@ contains
     integer, dimension (3) :: expected
     integer :: i, i1, i2, i3
     do i = 1, 3
-      if (size (x, i) .ne. expected (i)) call abort
+      if (size (x, i) .ne. expected (i)) STOP 1
     end do
     do i1 = 1, expected (1)
       do i2 = 1, expected (2)
         do i3 = 1, expected (3)
-          if (x (i1, i2, i3) .ne. i1 + i2 * 10 + i3 * 100) call abort
+          if (x (i1, i2, i3) .ne. i1 + i2 * 10 + i3 * 100) STOP 2
         end do
       end do
     end do

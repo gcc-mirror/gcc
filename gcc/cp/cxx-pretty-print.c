@@ -1,5 +1,5 @@
 /* Implementation of subroutines for the GNU C++ pretty-printer.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -88,14 +88,6 @@ pp_cxx_separate_with (cxx_pretty_printer *pp, int c)
 
 /* Expressions.  */
 
-static inline bool
-is_destructor_name (tree name)
-{
-  return name == complete_dtor_identifier
-    || name == base_dtor_identifier
-    || name == deleting_dtor_identifier;
-}
-
 /* conversion-function-id:
       operator conversion-type-id
 
@@ -141,7 +133,7 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
       break;
 
     case OVERLOAD:
-      t = OVL_CURRENT (t);
+      t = OVL_FIRST (t);
       /* FALLTHRU */
     case VAR_DECL:
     case PARM_DECL:
@@ -159,19 +151,10 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
     case IDENTIFIER_NODE:
       if (t == NULL)
 	pp->translate_string ("<unnamed>");
-      else if (IDENTIFIER_TYPENAME_P (t))
+      else if (IDENTIFIER_CONV_OP_P (t))
 	pp_cxx_conversion_function_id (pp, t);
       else
-	{
-	  if (is_destructor_name (t))
-	    {
-	      pp_complement (pp);
-	      /* FIXME: Why is this necessary? */
-	      if (TREE_TYPE (t))
-		t = constructor_name (TREE_TYPE (t));
-	    }
-	  pp_cxx_tree_identifier (pp, t);
-	}
+	pp_cxx_tree_identifier (pp, t);
       break;
 
     case TEMPLATE_ID_EXPR:
@@ -281,7 +264,7 @@ pp_cxx_qualified_id (cxx_pretty_printer *pp, tree t)
 	 FIXME:  This is probably the wrong pretty-printing for conversion
 	 functions and some function templates.  */
     case OVERLOAD:
-      t = OVL_CURRENT (t);
+      t = OVL_FIRST (t);
       /* FALLTHRU */
     case FUNCTION_DECL:
       if (DECL_FUNCTION_MEMBER_P (t))
@@ -350,7 +333,7 @@ void
 cxx_pretty_printer::id_expression (tree t)
 {
   if (TREE_CODE (t) == OVERLOAD)
-    t = OVL_CURRENT (t);
+    t = OVL_FIRST (t);
   if (DECL_P (t) && DECL_CONTEXT (t))
     pp_cxx_qualified_id (this, t);
   else
@@ -916,11 +899,13 @@ cxx_pretty_printer::multiplicative_expression (tree e)
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
     case TRUNC_MOD_EXPR:
+    case EXACT_DIV_EXPR:
+    case RDIV_EXPR:
       multiplicative_expression (TREE_OPERAND (e, 0));
       pp_space (this);
       if (code == MULT_EXPR)
 	pp_star (this);
-      else if (code == TRUNC_DIV_EXPR)
+      else if (code != TRUNC_MOD_EXPR)
 	pp_slash (this);
       else
 	pp_modulo (this);
@@ -1066,7 +1051,7 @@ cxx_pretty_printer::expression (tree t)
       break;
 
     case OVERLOAD:
-      t = OVL_CURRENT (t);
+      t = OVL_FIRST (t);
       /* FALLTHRU */
     case VAR_DECL:
     case PARM_DECL:
@@ -1112,6 +1097,7 @@ cxx_pretty_printer::expression (tree t)
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
     case NOEXCEPT_EXPR:
+    case UNARY_PLUS_EXPR:
       unary_expression (t);
       break;
 
@@ -1129,6 +1115,8 @@ cxx_pretty_printer::expression (tree t)
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
     case TRUNC_MOD_EXPR:
+    case EXACT_DIV_EXPR:
+    case RDIV_EXPR:
       multiplicative_expression (t);
       break;
 
@@ -1714,7 +1702,7 @@ cxx_pretty_printer::abstract_declarator (tree t)
 {
   if (TYPE_PTRMEM_P (t))
     pp_cxx_right_paren (this);
-  else if (POINTER_TYPE_P (t))
+  else if (INDIRECT_TYPE_P (t))
     {
       if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
@@ -2407,7 +2395,7 @@ pp_cxx_offsetof_expression_1 (cxx_pretty_printer *pp, tree t)
     {
     case ARROW_EXPR:
       if (TREE_CODE (TREE_OPERAND (t, 0)) == STATIC_CAST_EXPR
-	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0))))
+	  && INDIRECT_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0))))
 	{
 	  pp->type_id (TREE_TYPE (TREE_TYPE (TREE_OPERAND (t, 0))));
 	  pp_cxx_separate_with (pp, ',');
@@ -2585,6 +2573,9 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_ABSTRACT:
       pp_cxx_ws_string (pp, "__is_abstract");
       break;
+    case CPTK_IS_AGGREGATE:
+      pp_cxx_ws_string (pp, "__is_aggregate");
+      break;
     case CPTK_IS_BASE_OF:
       pp_cxx_ws_string (pp, "__is_base_of");
       break;
@@ -2629,6 +2620,12 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
       break;
     case CPTK_IS_LITERAL_TYPE:
       pp_cxx_ws_string (pp, "__is_literal_type");
+      break;
+    case CPTK_IS_ASSIGNABLE:
+      pp_cxx_ws_string (pp, "__is_assignable");
+      break;
+    case CPTK_IS_CONSTRUCTIBLE:
+      pp_cxx_ws_string (pp, "__is_constructible");
       break;
 
     default:

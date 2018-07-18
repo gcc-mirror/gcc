@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-cddce2" } */
+/* { dg-options "-O1 -fdump-tree-cddce3" } */
       
 extern void abort (void);
 
@@ -33,8 +33,8 @@ delete_dead_jumptables ()
 /* There should be no loads of ->code.  If any exist, then we failed to
    optimize away all the IF statements and the statements feeding
    their conditions.  */
-/* { dg-final { scan-tree-dump-times "->code" 0 "cddce2"} } */
+/* { dg-final { scan-tree-dump-times "->code" 0 "cddce3"} } */
    
 /* There should be no IF statements.  */
-/* { dg-final { scan-tree-dump-times "if " 0 "cddce2"} } */
+/* { dg-final { scan-tree-dump-times "if " 0 "cddce3"} } */
 

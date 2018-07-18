@@ -1,0 +1,1050 @@
+/* Interface between GCC C++ FE and GDB  -*- c -*-
+
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+
+
+
+/* Push namespace NAME as the current binding level, to which
+   newly-introduced decls will be bound.  An empty string identifies
+   the global namespace, whereas NULL identifies an anonymous
+   namespace.  A namespace named NAME is created in the current scope,
+   if needed.
+
+   If the newly-created namespace is to be an inline namespace, see
+   make_namespace_inline.  */
+
+GCC_METHOD1 (int /* bool */, push_namespace,
+	     const char *)	      /* Argument NAME.  */
+
+/* Push TYPE as the current binding level, making its members visible
+   for name lookup.  The current scope before the call must be the
+   scope in which the class was declared.  This should be used if the
+   definition of a class is already finished, but one wishes to define
+   a nested class, or to enter the scope of one of its member
+   functions.  */
+
+GCC_METHOD1 (int /* bool */, push_class,
+	     gcc_type)		/* Argument TYPE.  */
+
+/* Push FUNCTION_DECL as the current (empty) binding level (see
+   reactivate_decl).  The current enclosing scope before the call must
+   be the scope in which the function was declared.  */
+
+GCC_METHOD1 (int /* bool */, push_function,
+	     gcc_decl)	     /* Argument FUNCTION_DECL.  */
+
+/* Make DECL visible (again?) within SCOPE.  When SCOPE is NULL, it
+   means the current scope; if it is not NULL, it must name a function
+   that is currently active, even if not at the top of the binding
+   chain.
+
+   This function can be used to make e.g. a global function or
+   variable visible in a namespace or local scope (overriding another
+   enclosing definition of the same name), but its most common
+   expected use of this primitive, that gives it its name, is to make
+   declarations visible again after reentering a function scope,
+   because when a function is entered with push_function, that does
+   NOT make any of the declarations nested in it visible for name
+   lookup.
+
+   There is a reason/excuse for that: unlike namespaces and classes,
+   G++ doesn't ever have to reenter function scopes, so its name
+   resolution infrastructure is not prepared to do that.  But wait,
+   there is also a good use for this apparent limitation: a function
+   may contain multiple scopes (blocks), and the name may be bound to
+   different symbols in each of these scopes.  With this interface, as
+   we reenter a function scope, we may choose which symbols to make
+   visible for the code snippet, or, if there could be template
+   functions in local scopes, for unresolved names in nested template
+   class default arguments, or in nested template function signatures.
+
+   As for making a local declaration visible for the code snippet,
+   there are two possibilities: a) introduce it upfront, while
+   entering the scope for the user expression (see the enter_scope
+   callback, called by g++ when encountering the push_user_expression
+   pragma), which might save some scope switching and reactivate_decl
+   (though this can't be helped if some declarations have to be
+   introduced and discarded, because of multiple definitions of the
+   same name in different scopes within a function: they have to be
+   defined in discriminator order); or b) introduce it when its name
+   is looked up, entering the scope, introducing the declaration,
+   leaving the scope, and then reactivating the declaration in its
+   local scope.
+
+   Here's some more detail on how reactivate_decl works.  Say there's
+   a function foo whose body looks like this:
+
+   {
+     {
+// point 1
+       class c {} o __attribute__ ((__used__)); // c  , o
+     }
+     struct c {
+       void f() {
+// point 2
+       }
+     } o __attribute__ ((__used__));            // c_0, o_0
+     {
+       class c {} p __attribute__ ((__used__)); // c_1, p
+// point 3
+       o.f();
+     }
+   }
+
+   When we are about to define class c at point 1, we enter the
+   function foo scope, and since no symbols are visible at point 1, we
+   proceed to declare class c.  We may then define the class right
+   away, or, if we leave the function scope, and we later wish to
+   define it, or to define object o, we can reenter the scope and just
+   use the previously-obtained gcc_decl to define the class, without
+   having to reactivate the declaration.
+
+   Now, if we are to set up the binding context for point 2, we have
+   to define c_0::f, and in order to do so, we have to declare and
+   define c_0.  Before we can declare c_0, we MUST at least declare c.
+
+     As a general rule, before we can declare or define any local name
+     with a discriminator, we have to at least declare any other
+     occurrences of the same name in the same enclosing entity with
+     lower or absent discriminator.
+
+   So, we declare c, then we leave the function scope and reenter it
+   so as to declare c_0 (also with name "c", which is why we have to
+   leave and reenter the function scope, otherwise we would get an
+   error because of the duplicate definition; g++ will assign a
+   discriminator because it still remembers there was an earlier
+   declaration of c_0 within the function, it's just no longer in
+   scope), then we can define c_0, including its member function f.
+
+   Likewise, if we wish to define o_0, we have to define o first.  If
+   we wish to declare (and maybe then define) c_1, we have to at least
+   declare (c and then) c_0 first.
+
+   Then, as we set up the binding context to compile a code snippet at
+   point 3, we may choose to activate c_1, o_0 and p upfront,
+   declaring and discarding c, c_0 and o, and then reentering the
+   funciton scope to declare c_1, o_0 and p; or we can wait for oracle
+   lookups of c, o or p.  If c is looked up, and the debugger resolves
+   c in the scope to c_1, it is expected to enter the function scope
+   from the top level, declare c, leave it, reenter it, declare c_0,
+   leave it, reenter it, declare c_1, leave it, and then reactivate
+   c_1 in the function scope.  If c_1 is needed as a complete type,
+   the definition may be given right after the declaration, or the
+   scope will have to be reentered in order to define the class.
+
+.  If the code snippet is at point 2, we don't need to (re)activate
+   any declaration: nothing from any local scope is visible.  Just
+   entering the scope of the class containing member function f
+   reactivates the names of its members, including the class name
+   itself.  */
+
+GCC_METHOD2 (int /* bool */, reactivate_decl,
+	     gcc_decl,		/* Argument DECL.  */
+	     gcc_decl)		/* Argument SCOPE.  */
+
+/* Pop the namespace last entered with push_namespace, or class last
+   entered with push_class, or function last entered with
+   push_function, restoring the binding level in effect before the
+   matching push_* call.  */
+
+GCC_METHOD0 (int /* bool */, pop_binding_level)
+
+/* Return the NAMESPACE_DECL, TYPE_DECL or FUNCTION_DECL of the
+   binding level that would be popped by pop_scope.  */
+
+GCC_METHOD0 (gcc_decl, get_current_binding_level_decl)
+
+/* Make the current binding level an inline namespace.  It must be a
+   namespace to begin with.  It is safe to call this more than once
+   for the same namespace, but after the first call, subsequent ones
+   will not return a success status.  */
+
+GCC_METHOD0 (int /* bool */, make_namespace_inline)
+
+/* Add USED_NS to the namespaces used by the current binding level.
+   Use get_current_binding_level_decl to obtain USED_NS's
+   gcc_decl.  */
+
+GCC_METHOD1 (int /* bool */, add_using_namespace,
+	     gcc_decl)			/* Argument USED_NS.  */
+
+/* Introduce a namespace alias declaration, as in:
+
+   namespace foo = [... ::] bar;
+
+   After this call, namespace TARGET will be visible as ALIAS within
+   the current namespace.  Get the declaration for TARGET by calling
+   get_current_binding_level_decl after pushing into it.  */
+
+GCC_METHOD2 (int /* bool */, add_namespace_alias,
+	     const char *,		/* Argument ALIAS.  */
+	     gcc_decl)			/* Argument TARGET.  */
+
+/* Introduce a using declaration, as in:
+
+   using foo::bar;
+
+   The TARGET decl names the qualifying scope (foo:: above) and the
+   identifier (bar), but that does not mean that only TARGET will be
+   brought into the current scope: all bindings of TARGET's identifier
+   in the qualifying scope will be brought in.
+
+   FLAGS should specify GCC_CP_SYMBOL_USING.  If the current scope is
+   a class scope, visibility flags must be supplied.
+
+   Even when TARGET is template dependent, we don't need to specify
+   whether or not it is a typename: the supplied declaration (that
+   could be a template-dependent type converted to declaration by
+   get_type_decl) indicates so.  */
+
+GCC_METHOD2 (int /* bool */, add_using_decl,
+	     enum gcc_cp_symbol_kind, /* Argument FLAGS.  */
+	     gcc_decl)		      /* Argument TARGET.  */
+
+/* Create a new "decl" in GCC, and bind it in the current binding
+   level.  A decl is a declaration, basically a kind of symbol.
+
+   NAME is the name of the new symbol.  SYM_KIND is the kind of
+   symbol being requested.  SYM_TYPE is the new symbol's C++ type;
+   except for labels, where this is not meaningful and should be
+   zero.  If SUBSTITUTION_NAME is not NULL, then a reference to this
+   decl in the source will later be substituted with a dereference
+   of a variable of the given name.  Otherwise, for symbols having
+   an address (e.g., functions), ADDRESS is the address.  FILENAME
+   and LINE_NUMBER refer to the symbol's source location.  If this
+   is not known, FILENAME can be NULL and LINE_NUMBER can be 0.
+   This function returns the new decl.
+
+   Use this function to register typedefs, functions and variables to
+   namespace and local binding levels, and typedefs, member functions
+   (static or not), and static data members to class binding levels.
+   Class members must have their access controls specified with
+   GCC_CP_ACCESS_* flags in SYM_KIND.
+
+   Note that, since access controls are disabled, we have no means to
+   express private, protected and public.
+
+   There are various flags that can be set in SYM_KIND to specify
+   additional semantics.  Look for GCC_CP_FLAGs in the definition of
+   enum gcc_cp_symbol_kind in gcc-cp-interface.h.
+
+   In order to define member functions, pass GCC_CP_SYMBOL_FUNCTION in
+   SYM_KIND, and a function_type for static member functions or a
+   method type for non-static member functions, including constructors
+   and destructors.  Use build_function_type to create a function
+   type; for a method type, start by creating a function type without
+   any compiler-introduced artificial arguments (the implicit this
+   pointer, and the __in_chrg added to constructors and destructors,
+   and __vtt_parm added to the former), and then use build_method_type
+   to create the method type out of the class type and the function
+   type.
+
+   For operator functions, set GCC_CP_FLAG_SPECIAL_FUNCTION in
+   SYM_KIND, in addition to any other applicable flags, and pass as
+   NAME a string starting with the two-character mangling for operator
+   name: "ps" for unary plus, "mL" for multiply and assign, *=; etc.
+   Use "cv" for type converstion operators (the target type portion
+   may be omitted, as it is taken from the return type in SYM_TYPE).
+   For operator"", use "li" followed by the identifier (the mangled
+   name mandates digits specifying the length of the identifier; if
+   present, they determine the end of the identifier, otherwise, the
+   identifier extents to the end of the string, so that "li3_Kme" and
+   "li_Km" are equivalent).
+
+   Constructors and destructors need special care, because for each
+   constructor and destructor there may be multiple clones defined
+   internally by the compiler.  With build_decl, you can introduce the
+   base declaration of a constructor or a destructor, setting
+   GCC_CP_FLAG_SPECIAL_FUNCTION the flag and using names starting with
+   capital "C" or "D", respectively, followed by a digit (see below),
+   a blank, or NUL ('\0').  DO NOT supply an ADDRESS or a
+   SUBSTITUTION_NAME to build_decl, it would be meaningless (and
+   rejected) for the base declaration; use define_cdtor_clone to
+   introduce the address of each clone.  For constructor templates,
+   declare the template with build_decl, and then, for each
+   specialization, introduce it with
+   build_function_template_specialization, and then define the
+   addresses of each of its clones with define_cdtor_clone.
+
+   NAMEs for GCC_CP_FLAG_SPECIAL_FUNCTION:
+
+     NAME    meaning
+     C?      constructor base declaration (? may be 1, 2, 4, blank or NUL)
+     D?      destructor base declaration (? may be 0, 1, 2, 4, blank or NUL)
+     nw      operator new
+     na      operator new[]
+     dl      operator delete
+     da      operator delete[]
+     ps      operator + (unary)
+     ng      operator - (unary)
+     ad      operator & (unary)
+     de      operator * (unary)
+     co      operator ~
+     pl      operator +
+     mi      operator -
+     ml      operator *
+     dv      operator /
+     rm      operator %
+     an      operator &
+     or      operator |
+     eo      operator ^
+     aS      operator =
+     pL      operator +=
+     mI      operator -=
+     mL      operator *=
+     dV      operator /=
+     rM      operator %=
+     aN      operator &=
+     oR      operator |=
+     eO      operator ^=
+     ls      operator <<
+     rs      operator >>
+     lS      operator <<=
+     rS      operator >>=
+     eq      operator ==
+     ne      operator !=
+     lt      operator <
+     gt      operator >
+     le      operator <=
+     ge      operator >=
+     nt      operator !
+     aa      operator &&
+     oo      operator ||
+     pp      operator ++
+     mm      operator --
+     cm      operator ,
+     pm      operator ->*
+     pt      operator ->
+     cl      operator ()
+     ix      operator []
+     qu      operator ?
+     cv      operator <T> (conversion operator)
+     li<id>  operator "" <id>
+
+   FIXME: How about attributes?  */
+
+GCC_METHOD7 (gcc_decl, build_decl,
+	     const char *,	      /* Argument NAME.  */
+	     enum gcc_cp_symbol_kind, /* Argument SYM_KIND.  */
+	     gcc_type,		      /* Argument SYM_TYPE.  */
+	     const char *,	      /* Argument SUBSTITUTION_NAME.  */
+	     gcc_address,	      /* Argument ADDRESS.  */
+	     const char *,	      /* Argument FILENAME.  */
+	     unsigned int)	      /* Argument LINE_NUMBER.  */
+
+/* Supply the ADDRESS of one of the multiple clones of constructor or
+   destructor CDTOR.  The clone is specified by NAME, using the
+   following name mangling conventions:
+
+     C1      in-charge constructor
+     C2      not-in-charge constructor
+     C4      unified constructor
+     D0      deleting destructor
+     D1      in-charge destructor
+     D2      not-in-charge destructor
+     D4      unified destructor
+
+   The following information is not necessary to use the API.
+
+   C1 initializes an instance of the class (rather than of derived
+   classes), including virtual base classes, whereas C2 initializes a
+   sub-object (of the given class type) of an instance of some derived
+   class (or a full object that doesn't have any virtual base
+   classes).
+
+   D0 and D1 destruct an instance of the class, including virtual base
+   classes, but only the former calls operator delete to release the
+   object's storage at the end; D2 destructs a sub-object (of the
+   given class type) of an instance of a derived class (or a full
+   object that doesn't have any virtual base classes).
+
+   The [CD]4 manglings (and symbol definitions) are non-standard, but
+   GCC uses them in some cases: rather than assuming they are
+   in-charge or not-in-charge, they test the implicit argument that
+   the others ignore to tell how to behave.  These are used instead of
+   cloning when we just can't use aliases.  */
+
+GCC_METHOD3 (gcc_decl, define_cdtor_clone,
+	     const char *,	      /* Argument NAME.  */
+	     gcc_decl,		      /* Argument CDTOR.  */
+	     gcc_address)	      /* Argument ADDRESS.  */
+
+/* Return the type associated with the given declaration.  This is
+   most useful to obtain the type associated with a forward-declared
+   class, because it is the gcc_type, rather than the gcc_decl, that
+   has to be used to build other types, but build_decl returns a
+   gcc_decl rather than a gcc_type.  This call can in theory be used
+   to obtain the type from any other declaration; it is supposed to
+   return the same type that was supplied when the declaration was
+   created.  */
+
+GCC_METHOD1 (gcc_type, get_decl_type,
+	     gcc_decl)            /* Argument DECL.  */
+
+/* Return the declaration for a type.  */
+
+GCC_METHOD1 (gcc_decl, get_type_decl,
+	     gcc_type)            /* Argument TYPE.  */
+
+/* Declare DECL as a friend of the current class scope, if TYPE is
+   NULL, or of TYPE itself otherwise.  DECL may be a function or a
+   class, be they template generics, template specializations or not
+   templates.  TYPE must be a class type (not a template generic).
+
+   The add_friend call cannot introduce a declaration; even if the
+   friend is first declared as a friend in the source code, the
+   declaration belongs in the enclosing namespace, so it must be
+   introduced in that namespace, and the resulting declaration can
+   then be made a friend.
+
+   DECL cannot, however, be a member of a template class generic,
+   because we have no means to introduce their declarations.  This
+   interface has no notion of definitions for template generics.  As a
+   consequence, users of this interface must introduce each friend
+   template member specialization separately, i.e., instead of:
+
+     template <typename T> friend struct X<T>::M;
+
+   they must be declared as if they were:
+
+     friend struct X<onetype>::M;
+     friend struct X<anothertype>::M;
+     ... for each specialization of X.
+
+
+   Specializations of a template can have each others' members as
+   friends:
+
+     template <typename T> class foo {
+       int f();
+       template <typename U> friend int foo<U>::f();
+     };
+
+   It wouldn't always be possible to define all specializations of a
+   template class before introducing the friend declarations in their
+   expanded, per-specialization form.
+
+   In order to simplify such friend declarations, and to enable
+   incremental friend declarations as template specializations are
+   introduced, add_friend can be called after the befriending class is
+   fully defined, passing it a non-NULL TYPE argument naming the
+   befriending class type.  */
+
+GCC_METHOD2 (int /* bool */, add_friend,
+	     gcc_decl,		      /* Argument DECL.  */
+	     gcc_type)		      /* Argument TYPE.  */
+
+/* Return the type of a pointer to a given base type.  */
+
+GCC_METHOD1 (gcc_type, build_pointer_type,
+	     gcc_type)			/* Argument BASE_TYPE.  */
+
+/* Return the type of a reference to a given base type.  */
+
+GCC_METHOD2 (gcc_type, build_reference_type,
+	     gcc_type,			/* Argument BASE_TYPE.  */
+	     enum gcc_cp_ref_qualifiers)   /* Argument RQUALS.  */
+
+/* Create a new pointer-to-member type.  MEMBER_TYPE is the data
+   member type, while CLASS_TYPE is the class type containing the data
+   member.  For pointers to member functions, MEMBER_TYPE must be a
+   method type, and CLASS_TYPE must be specified even though it might
+   be possible to extract it from the method type.  */
+
+GCC_METHOD2 (gcc_type, build_pointer_to_member_type,
+	     gcc_type,			   /* Argument CLASS_TYPE.  */
+	     gcc_type) 			   /* Argument MEMBER_TYPE.  */
+
+/* Start a template parameter list scope and enters it, so that
+   subsequent build_type_template_parameter and
+   build_value_template_parameter calls create template parameters in
+   the list.  The list is closed by a build_decl call with
+   GCC_CP_SYMBOL_FUNCTION or GCC_CP_SYMBOL_CLASS, that, when the scope
+   is a template parameter list, declares a template function or a
+   template class with the then-closed parameter list.  The scope in
+   which the new declaration is to be introduced by build_decl must be
+   entered before calling start_template_decl, and build_decl returns
+   to that scope, from the template parameter list scope, before
+   introducing the declaration.  */
+
+GCC_METHOD0 (int /* bool */, start_template_decl)
+
+/* Build a typename template-parameter (e.g., the T in template
+   <typename T = X>).  Either PACK_P should be nonzero, to indicate an
+   argument pack (the last argument in a variadic template argument
+   list, as in template <typename... T>), or DEFAULT_TYPE may be
+   non-NULL to set the default type argument (e.g. X) for the template
+   parameter.  FILENAME and LINE_NUMBER may specify the source
+   location in which the template parameter was declared.  */
+
+GCC_METHOD5 (gcc_type, build_type_template_parameter,
+	     const char *,			      /* Argument ID.  */
+	     int /* bool */,			  /* Argument PACK_P.  */
+	     gcc_type,			    /* Argument DEFAULT_TYPE.  */
+	     const char *,			/* Argument FILENAME.  */
+	     unsigned int)		     /* Argument LINE_NUMBER.  */
+
+/* Build a template template-parameter (e.g., the T in template
+   <template <[...]> class T = X>).  DEFAULT_TEMPL may be non-NULL to
+   set the default type-template argument (e.g. X) for the template
+   template parameter.  FILENAME and LINE_NUMBER may specify the
+   source location in which the template parameter was declared.  */
+
+GCC_METHOD5 (gcc_utempl, build_template_template_parameter,
+	     const char *,			      /* Argument ID.  */
+	     int /* bool */,			  /* Argument PACK_P.  */
+	     gcc_utempl,		   /* Argument DEFAULT_TEMPL.  */
+	     const char *,			/* Argument FILENAME.  */
+	     unsigned int)		     /* Argument LINE_NUMBER.  */
+
+/* Build a value template-parameter (e.g., the V in template <typename
+   T, T V> or in template <int V = X>).  DEFAULT_VALUE may be non-NULL
+   to set the default value argument for the template parameter (e.g.,
+   X).  FILENAME and LINE_NUMBER may specify the source location in
+   which the template parameter was declared.  */
+
+GCC_METHOD5 (gcc_decl, build_value_template_parameter,
+	     gcc_type,			  	    /* Argument TYPE.  */
+	     const char *,			      /* Argument ID.  */
+	     gcc_expr,			   /* Argument DEFAULT_VALUE.  */
+	     const char *,			/* Argument FILENAME.  */
+	     unsigned int)		     /* Argument LINE_NUMBER.  */
+
+/* Build a template-dependent typename (e.g., typename T::bar or
+   typename T::template bart<X>).  ENCLOSING_TYPE should be the
+   template-dependent nested name specifier (e.g., T), ID should be
+   the name of the member of the ENCLOSING_TYPE (e.g., bar or bart),
+   and TARGS should be non-NULL and specify the template arguments
+   (e.g. <X>) iff ID is to name a class template.
+
+   In this and other calls, a template-dependent nested name specifier
+   may be a template class parameter (build_type_template_parameter),
+   a specialization (returned by build_dependent_type_template_id) of
+   a template template parameter (returned by
+   build_template_template_parameter) or a member type thereof
+   (returned by build_dependent_typename itself).  */
+
+GCC_METHOD3 (gcc_type, build_dependent_typename,
+	     gcc_type,			  /* Argument ENCLOSING_TYPE.  */
+	     const char *,			      /* Argument ID.  */
+	     const struct gcc_cp_template_args *)  /* Argument TARGS.  */
+
+/* Build a template-dependent class template (e.g., T::template bart).
+   ENCLOSING_TYPE should be the template-dependent nested name
+   specifier (e.g., T), ID should be the name of the class template
+   member of the ENCLOSING_TYPE (e.g., bart).  */
+
+GCC_METHOD2 (gcc_utempl, build_dependent_class_template,
+	     gcc_type,			  /* Argument ENCLOSING_TYPE.  */
+	     const char *)			      /* Argument ID.  */
+
+/* Build a template-dependent type template-id (e.g., T<A>).
+   TEMPLATE_DECL should be a template template parameter (e.g., the T
+   in template <template <[...]> class T = X>), and TARGS should
+   specify the template arguments (e.g. <A>).  */
+
+GCC_METHOD2 (gcc_type, build_dependent_type_template_id,
+	     gcc_utempl,		   /* Argument TEMPLATE_DECL.  */
+	     const struct gcc_cp_template_args *)  /* Argument TARGS.  */
+
+/* Build a template-dependent expression (e.g., S::val or S::template
+   mtf<X>, or unqualified f or template tf<X>).
+
+   ENCLOSING_SCOPE should be a template-dependent nested name
+   specifier (e.g., T), a resolved namespace or class decl, or NULL
+   for unqualified names; ID should be the name of the member of the
+   ENCLOSING_SCOPE (e.g., val or mtf) or unqualified overloaded
+   function; and TARGS should list template arguments (e.g. <X>) when
+   mtf or tf are to name a template function, or be NULL otherwise.
+
+   Unqualified names and namespace- or class-qualified names can only
+   resolve to overloaded functions, to be used in contexts that
+   involve overload resolution that cannot be resolved because of
+   template-dependent argument or return types, such as call
+   expressions with template-dependent arguments, conversion
+   expressions to function types with template-dependent argument
+   types or the like.  Other cases of unqualified or
+   non-template-dependent-qualified names should NOT use this
+   function, and use decl_expr to convert the appropriate function or
+   object declaration to an expression.
+
+   If ID is the name of a special member function, FLAGS should be
+   GCC_CP_SYMBOL_FUNCTION|GCC_CP_FLAG_SPECIAL_FUNCTION, and ID should
+   be one of the encodings for special member functions documented in
+   build_decl.  Otherwise, FLAGS should be GCC_CP_SYMBOL_MASK, which
+   suggests the symbol kind is not known (though we know it is not a
+   type).
+
+   If ID denotes a conversion operator, CONV_TYPE should name the
+   target type of the conversion.  Otherwise, CONV_TYPE must be
+   NULL.  */
+
+GCC_METHOD5 (gcc_expr, build_dependent_expr,
+	     gcc_decl,			 /* Argument ENCLOSING_SCOPE.  */
+	     enum gcc_cp_symbol_kind,		   /* Argument FLAGS.  */
+	     const char *,			    /* Argument NAME.  */
+	     gcc_type,			       /* Argument CONV_TYPE.  */
+	     const struct gcc_cp_template_args *)  /* Argument TARGS.  */
+
+/* Build a gcc_expr for the value VALUE in type TYPE.  */
+
+GCC_METHOD2 (gcc_expr, build_literal_expr,
+	     gcc_type,		  /* Argument TYPE.  */
+	     unsigned long)	  /* Argument VALUE.  */
+
+/* Build a gcc_expr that denotes DECL, the declaration of a variable
+   or function in namespace scope, or of a static member variable or
+   function.  Use QUALIFIED_P to build the operand of unary & so as to
+   compute a pointer-to-member, rather than a regular pointer.  */
+
+GCC_METHOD2 (gcc_expr, build_decl_expr,
+	     gcc_decl,			/* Argument DECL.  */
+	     int /* bool */)		/* Argument QUALIFIED_P.  */
+
+/* Build a gcc_expr that denotes the unary operation UNARY_OP applied
+   to the gcc_expr OPERAND.  For non-expr operands, see
+   unary_type_expr.  Besides the UNARY_OP encodings used for operator
+   names, we support "pp_" for preincrement, and "mm_" for
+   predecrement, "nx" for noexcept, "tw" for throw, "tr" for rethrow
+   (pass NULL as the operand), "te" for typeid, "sz" for sizeof, "az"
+   for alignof, "dl" for delete, "gsdl" for ::delete, "da" for
+   delete[], "gsda" for ::delete[], "sp" for pack expansion, "sZ" for
+   sizeof...(function argument pack).  */
+
+GCC_METHOD2 (gcc_expr, build_unary_expr,
+	     const char *,	  /* Argument UNARY_OP.  */
+	     gcc_expr)		  /* Argument OPERAND.  */
+
+/* Build a gcc_expr that denotes the binary operation BINARY_OP
+   applied to gcc_exprs OPERAND1 and OPERAND2.  Besides the BINARY_OP
+   encodings used for operator names, we support "ds" for the operator
+   token ".*" and "dt" for the operator token ".".  When using
+   operators that take a name as their second operand ("." and "->")
+   use decl_expr to convert the gcc_decl of the member name to a
+   gcc_expr, if the member name wasn't created with
+   e.g. build_dependent_expr.  */
+
+GCC_METHOD3 (gcc_expr, build_binary_expr,
+	     const char *,	  /* Argument BINARY_OP.  */
+	     gcc_expr,		  /* Argument OPERAND1.  */
+	     gcc_expr)		  /* Argument OPERAND2.  */
+
+/* Build a gcc_expr that denotes the ternary operation TERNARY_OP
+   applied to gcc_exprs OPERAND1, OPERAND2 and OPERAND3.  The only
+   supported TERNARY_OP is "qu", for the "?:" operator.  */
+
+GCC_METHOD4 (gcc_expr, build_ternary_expr,
+	     const char *,	  /* Argument TERNARY_OP.  */
+	     gcc_expr,		  /* Argument OPERAND1.  */
+	     gcc_expr,		  /* Argument OPERAND2.  */
+	     gcc_expr)		  /* Argument OPERAND3.  */
+
+/* Build a gcc_expr that denotes the unary operation UNARY_OP applied
+   to the gcc_type OPERAND.  Supported unary operations taking types
+   are "ti" for typeid, "st" for sizeof, "at" for alignof, and "sZ"
+   for sizeof...(template argument pack).  */
+
+GCC_METHOD2 (gcc_expr, build_unary_type_expr,
+	     const char *,	  /* Argument UNARY_OP.  */
+	     gcc_type)		  /* Argument OPERAND.  */
+
+/* Build a gcc_expr that denotes the binary operation BINARY_OP
+   applied to gcc_type OPERAND1 and gcc_expr OPERAND2.  Use this for
+   all kinds of (single-argument) type casts ("dc", "sc", "cc", "rc"
+   for dynamic, static, const and reinterpret casts, respectively;
+   "cv" for functional or C-style casts).  */
+
+GCC_METHOD3 (gcc_expr, build_cast_expr,
+	     const char *,	  /* Argument BINARY_OP.  */
+	     gcc_type,		  /* Argument OPERAND1.  */
+	     gcc_expr)		  /* Argument OPERAND2.  */
+
+/* Build a gcc_expr that denotes the conversion of an expression list
+   VALUES to TYPE, with ("tl") or without ("cv") braces, or a braced
+   initializer list of unspecified type (e.g., a component of another
+   braced initializer list; pass "il" for CONV_OP, and NULL for
+   TYPE).  */
+
+GCC_METHOD3 (gcc_expr, build_expression_list_expr,
+	     const char *,			 /* Argument CONV_OP.  */
+	     gcc_type,				    /* Argument TYPE.  */
+	     const struct gcc_cp_function_args *) /* Argument VALUES.  */
+
+/* Build a gcc_expr that denotes a new ("nw") or new[] ("na")
+   expression of TYPE, with or without a GLOBAL_NS qualifier (prefix
+   the NEW_OP with "gs"), with or without PLACEMENT, with or without
+   INITIALIZER.  If it's not a placement new, PLACEMENT must be NULL
+   (rather than a zero-length placement arg list).  If there's no
+   specified initializer, INITIALIZER must be NULL; a zero-length arg
+   list stands for a default initializer.  */
+
+GCC_METHOD4 (gcc_expr, build_new_expr,
+	     const char *,			       /* Argument NEW_OP.  */
+	     const struct gcc_cp_function_args *,   /* Argument PLACEMENT.  */
+	     gcc_type,					 /* Argument TYPE.  */
+	     const struct gcc_cp_function_args *) /* Argument INITIALIZER.  */
+
+/* Return a call expression that calls CALLABLE with arguments ARGS.
+   CALLABLE may be a function, a callable object, a pointer to
+   function, an unresolved expression, an unresolved overload set, an
+   object expression combined with a member function overload set or a
+   pointer-to-member.  If QUALIFIED_P, CALLABLE will be interpreted as
+   a qualified name, preventing virtual function dispatch.  */
+
+GCC_METHOD3 (gcc_expr, build_call_expr,
+	     gcc_expr,			      /* Argument CALLABLE.  */
+	     int /* bool */,		   /* Argument QUALIFIED_P.  */
+	     const struct gcc_cp_function_args *) /* Argument ARGS.  */
+
+/* Return the type of the gcc_expr OPERAND.
+   Use this for decltype.
+   For decltype (auto), pass a NULL OPERAND.
+
+   Note: for template-dependent expressions, the result is NULL,
+   because the type is only computed when template argument
+   substitution is performed.  */
+
+GCC_METHOD1 (gcc_type, get_expr_type,
+	     gcc_expr)		  /* Argument OPERAND.  */
+
+/* Introduce a specialization of a template function.
+
+   TEMPLATE_DECL is the template function, and TARGS are the arguments
+   for the specialization.  ADDRESS is the address of the
+   specialization.  FILENAME and LINE_NUMBER specify the source
+   location associated with the template function specialization.  */
+
+GCC_METHOD5 (gcc_decl, build_function_template_specialization,
+	     gcc_decl,			   /* Argument TEMPLATE_DECL.  */
+	     const struct gcc_cp_template_args *,  /* Argument TARGS.  */
+	     gcc_address,			 /* Argument ADDRESS.  */
+	     const char *,	      /* Argument FILENAME.  */
+	     unsigned int)	      /* Argument LINE_NUMBER.  */
+
+/* Specialize a template class as an incomplete type.  A definition
+   can be supplied later, with start_class_type.
+
+   TEMPLATE_DECL is the template class, and TARGS are the arguments
+   for the specialization.  FILENAME and LINE_NUMBER specify the
+   source location associated with the template class
+   specialization.  */
+
+GCC_METHOD4 (gcc_decl, build_class_template_specialization,
+	     gcc_decl,			   /* Argument TEMPLATE_DECL.  */
+	     const struct gcc_cp_template_args *,  /* Argument TARGS.  */
+	     const char *,	      /* Argument FILENAME.  */
+	     unsigned int)	      /* Argument LINE_NUMBER.  */
+
+/* Start defining a 'class', 'struct' or 'union' type, entering its
+   own binding level.  Initially it has no fields.
+
+   TYPEDECL is the forward-declaration of the type, returned by
+   build_decl.  BASE_CLASSES indicate the base classes of class NAME.
+   FILENAME and LINE_NUMBER specify the source location associated
+   with the class definition, should they be different from those of
+   the forward declaration.  */
+
+GCC_METHOD4 (gcc_type, start_class_type,
+	     gcc_decl,		      /* Argument TYPEDECL.  */
+	     const struct gcc_vbase_array *,/* Argument BASE_CLASSES.  */
+	     const char *,	      /* Argument FILENAME.  */
+	     unsigned int)	      /* Argument LINE_NUMBER.  */
+
+/* Create a new closure class type, record it as the
+   DISCRIMINATOR-numbered closure type in the current scope (or
+   associated with EXTRA_SCOPE, if non-NULL), and enter the closure
+   type's own binding level.  This primitive would sort of combine
+   build_decl and start_class_type, if they could be used to introduce
+   a closure type.  Initially it has no fields.
+
+   FILENAME and LINE_NUMBER specify the source location associated
+   with the class.  EXTRA_SCOPE, if non-NULL, must be a PARM_DECL of
+   the current function, or a FIELD_DECL of the current class.  If it
+   is NULL, the current scope must be a function.  */
+
+GCC_METHOD5 (gcc_type, start_closure_class_type,
+	     int,		      /* Argument DISCRIMINATOR.  */
+	     gcc_decl,		      /* Argument EXTRA_SCOPE.  */
+	     enum gcc_cp_symbol_kind, /* Argument FLAGS.  */
+	     const char *,	      /* Argument FILENAME.  */
+	     unsigned int)	      /* Argument LINE_NUMBER.  */
+
+/* Add a non-static data member to the most-recently-started
+   unfinished struct or union type.  FIELD_NAME is the field's name.
+   FIELD_TYPE is the type of the field.  BITSIZE and BITPOS indicate
+   where in the struct the field occurs.  */
+
+GCC_METHOD5 (gcc_decl, build_field,
+	     const char *,		   /* Argument FIELD_NAME.  */
+	     gcc_type,			   /* Argument FIELD_TYPE.  */
+	     enum gcc_cp_symbol_kind,	   /* Argument FIELD_FLAGS.  */
+	     unsigned long,		   /* Argument BITSIZE.  */
+	     unsigned long)		   /* Argument BITPOS.  */
+
+/* After all the fields have been added to a struct, class or union,
+   the struct or union type must be "finished".  This does some final
+   cleanups in GCC, and pops to the binding level that was in effect
+   before the matching start_class_type or
+   start_closure_class_type.  */
+
+GCC_METHOD1 (int /* bool */, finish_class_type,
+	     unsigned long)		   /* Argument SIZE_IN_BYTES.  */
+
+/* Create a new 'enum' type, and record it in the current binding
+   level.  The new type initially has no associated constants.
+
+   NAME is the enum name.  FILENAME and LINE_NUMBER specify its source
+   location.  */
+
+GCC_METHOD5 (gcc_type, start_enum_type,
+	     const char *,	      /* Argument NAME.  */
+	     gcc_type,		      /* Argument UNDERLYING_INT_TYPE. */
+	     enum gcc_cp_symbol_kind, /* Argument FLAGS.  */
+	     const char *,	      /* Argument FILENAME.  */
+	     unsigned int)	      /* Argument LINE_NUMBER.  */
+
+/* Add a new constant to an enum type.  NAME is the constant's name
+   and VALUE is its value.  Returns a gcc_decl for the constant.  */
+
+GCC_METHOD3 (gcc_decl, build_enum_constant,
+	     gcc_type,		       /* Argument ENUM_TYPE.  */
+	     const char *,	       /* Argument NAME.  */
+	     unsigned long)	       /* Argument VALUE.  */
+
+/* After all the constants have been added to an enum, the type must
+   be "finished".  This does some final cleanups in GCC.  */
+
+GCC_METHOD1 (int /* bool */, finish_enum_type,
+	     gcc_type)		       /* Argument ENUM_TYPE.  */
+
+/* Create a new function type.  RETURN_TYPE is the type returned by
+   the function, and ARGUMENT_TYPES is a vector, of length NARGS, of
+   the argument types.  IS_VARARGS is true if the function is
+   varargs.  */
+
+GCC_METHOD3 (gcc_type, build_function_type,
+	     gcc_type,			   /* Argument RETURN_TYPE.  */
+	     const struct gcc_type_array *,/* Argument ARGUMENT_TYPES.  */
+	     int /* bool */)		   /* Argument IS_VARARGS.  */
+
+/* Create a variant of a function type with an exception
+   specification.  FUNCTION_TYPE is a function or method type.
+   EXCEPT_TYPES is an array with the list of exception types.  Zero as
+   the array length implies throw() AKA noexcept(true); NULL as the
+   pointer to gcc_type_array implies noexcept(false), which is almost
+   equivalent (but distinguishable by the compiler) to an unspecified
+   exception list.  */
+
+GCC_METHOD2 (gcc_type, build_exception_spec_variant,
+	     gcc_type,			   /* Argument FUNCTION_TYPE.  */
+	     const struct gcc_type_array *)/* Argument EXCEPT_TYPES.  */
+
+/* Create a new non-static member function type.  FUNC_TYPE is the
+   method prototype, without the implicit THIS pointer, added as a
+   pointer to the QUALS-qualified CLASS_TYPE.  If CLASS_TYPE is NULL,
+   this creates a cv-qualified (member) function type not associated
+   with any specific class, as needed to support "typedef void f(int)
+   const;", which can later be used to declare member functions and
+   pointers to member functions.  */
+
+GCC_METHOD4 (gcc_type, build_method_type,
+	     gcc_type,			   /* Argument CLASS_TYPE.  */
+	     gcc_type, 			   /* Argument FUNC_TYPE.  */
+	     enum gcc_cp_qualifiers,	   /* Argument QUALS.  */
+	     enum gcc_cp_ref_qualifiers)   /* Argument RQUALS.  */
+
+/* Return a declaration for the (INDEX - 1)th argument of
+   FUNCTION_DECL, i.e., for the first argument, use zero as the index.
+   If FUNCTION_DECL is a non-static member function, use -1 to get the
+   implicit THIS parameter.  */
+
+GCC_METHOD2 (gcc_decl, get_function_parameter_decl,
+	     gcc_decl,			     /* Argument FUNCTION_DECL.  */
+	     int)				     /* Argument INDEX.  */
+
+/* Return a lambda expr that constructs an instance of CLOSURE_TYPE.
+   Only lambda exprs without any captures can be correctly created
+   through these mechanisms; that's all we need to support lambdas
+   expressions in default parameters, the only kind that may have to
+   be introduced through this interface.  */
+
+GCC_METHOD1 (gcc_expr, build_lambda_expr,
+	     gcc_type)			      /* Argument CLOSURE_TYPE.  */
+
+/* Return an integer type with the given properties.  If BUILTIN_NAME
+   is non-NULL, it must name a builtin integral type with the given
+   signedness and size, and that is the type that will be returned.  */
+
+GCC_METHOD3 (gcc_type, get_int_type,
+	     int /* bool */,		   /* Argument IS_UNSIGNED.  */
+	     unsigned long,                /* Argument SIZE_IN_BYTES.  */
+	     const char *)		   /* Argument BUILTIN_NAME.  */
+
+/* Return the 'char' type, a distinct type from both 'signed char' and
+   'unsigned char' returned by int_type.  */
+
+GCC_METHOD0 (gcc_type, get_char_type)
+
+/* Return a floating point type with the given properties.  If BUILTIN_NAME
+   is non-NULL, it must name a builtin integral type with the given
+   signedness and size, and that is the type that will be returned.  */
+
+GCC_METHOD2 (gcc_type, get_float_type,
+	     unsigned long,                /* Argument SIZE_IN_BYTES.  */
+	     const char *)		   /* Argument BUILTIN_NAME.  */
+
+/* Return the 'void' type.  */
+
+GCC_METHOD0 (gcc_type, get_void_type)
+
+/* Return the 'bool' type.  */
+
+GCC_METHOD0 (gcc_type, get_bool_type)
+
+/* Return the std::nullptr_t type.  */
+
+GCC_METHOD0 (gcc_type, get_nullptr_type)
+
+/* Return the nullptr constant.  */
+
+GCC_METHOD0 (gcc_expr, get_nullptr_constant)
+
+/* Create a new array type.  If NUM_ELEMENTS is -1, then the array
+   is assumed to have an unknown length.  */
+
+GCC_METHOD2 (gcc_type, build_array_type,
+	     gcc_type,			  /* Argument ELEMENT_TYPE.  */
+	     int)			  /* Argument NUM_ELEMENTS.  */
+
+/* Create a new array type.  NUM_ELEMENTS is a template-dependent
+   expression.  */
+
+GCC_METHOD2 (gcc_type, build_dependent_array_type,
+	     gcc_type,			  /* Argument ELEMENT_TYPE.  */
+	     gcc_expr)			  /* Argument NUM_ELEMENTS.  */
+
+/* Create a new variably-sized array type.  UPPER_BOUND_NAME is the
+   name of a local variable that holds the upper bound of the array;
+   it is one less than the array size.  */
+
+GCC_METHOD2 (gcc_type, build_vla_array_type,
+	     gcc_type,			  /* Argument ELEMENT_TYPE.  */
+	     const char *)		  /* Argument UPPER_BOUND_NAME.  */
+
+/* Return a qualified variant of a given base type.  QUALIFIERS says
+   which qualifiers to use; it is composed of or'd together
+   constants from 'enum gcc_cp_qualifiers'.  */
+
+GCC_METHOD2 (gcc_type, build_qualified_type,
+	     gcc_type,			      /* Argument UNQUALIFIED_TYPE.  */
+	     enum gcc_cp_qualifiers)	      /* Argument QUALIFIERS.  */
+
+/* Build a complex type given its element type.  */
+
+GCC_METHOD1 (gcc_type, build_complex_type,
+	     gcc_type)			  /* Argument ELEMENT_TYPE.  */
+
+/* Build a vector type given its element type and number of
+   elements.  */
+
+GCC_METHOD2 (gcc_type, build_vector_type,
+	     gcc_type,			  /* Argument ELEMENT_TYPE.  */
+	     int)			  /* Argument NUM_ELEMENTS.  */
+
+/* Build a constant.  NAME is the constant's name and VALUE is its
+   value.  FILENAME and LINE_NUMBER refer to the type's source
+   location.  If this is not known, FILENAME can be NULL and
+   LINE_NUMBER can be 0.  */
+
+GCC_METHOD5 (int /* bool */, build_constant,
+	     gcc_type,		  /* Argument TYPE.  */
+	     const char *,	  /* Argument NAME.  */
+	     unsigned long,	  /* Argument VALUE.  */
+	     const char *,	  /* Argument FILENAME.  */
+	     unsigned int)	  /* Argument LINE_NUMBER.  */
+
+/* Emit an error and return an error type object.  */
+
+GCC_METHOD1 (gcc_type, error,
+	     const char *)		 /* Argument MESSAGE.  */
+
+/* Declare a static_assert with the given CONDITION and ERRORMSG at
+   FILENAME:LINE_NUMBER.  */
+
+GCC_METHOD4 (int /* bool */, add_static_assert,
+	     gcc_expr,     /* Argument CONDITION.  */
+	     const char *, /* Argument ERRORMSG.  */
+	     const char *, /* Argument FILENAME.  */
+	     unsigned int) /* Argument LINE_NUMBER.  */
+
+#if 0
+
+/* FIXME: We don't want to expose the internal implementation detail
+   that default parms are stored in function types, and it's not clear
+   how this or other approaches would interact with the type sharing
+   of e.g. ctor clones, so we're leaving this out, since default args
+   are not even present in debug information anyway.  Besides, the set
+   of default args for a function may grow within its scope, and vary
+   independently in other scopes.  */
+
+/* Create a modified version of a function type that has default
+   values for some of its arguments.  The returned type should ONLY be
+   used to define functions or methods, never to declare parameters,
+   variables, types or the like.
+
+   DEFAULTS must have at most as many N_ELEMENTS as there are
+   arguments without default values in FUNCTION_TYPE.  Say, if
+   FUNCTION_TYPE has an argument list such as (T1, T2, T3, T4 = V0)
+   and DEFAULTS has 2 elements (V1, V2), the returned type will have
+   the following argument list: (T1, T2 = V1, T3 = V2, T4 = V0).
+
+   Any NULL expressions in DEFAULTS will be marked as deferred, and
+   they should be filled in with set_deferred_function_default_args.  */
+
+GCC_METHOD2 (gcc_type, add_function_default_args,
+	     gcc_type,			     /* Argument FUNCTION_TYPE.  */
+	     const struct gcc_cp_function_args *) /* Argument DEFAULTS.  */
+
+/* Fill in the first deferred default args in FUNCTION_DECL with the
+   expressions given in DEFAULTS.  This can be used when the
+   declaration of a parameter is needed to create a default
+   expression, such as taking the size of an earlier parameter, or
+   building a lambda expression in the parameter's context.  */
+
+GCC_METHOD2 (int /* bool */, set_deferred_function_default_args,
+	     gcc_decl,			     /* Argument FUNCTION_DECL.  */
+	     const struct gcc_cp_function_args *) /* Argument DEFAULTS.  */
+
+#endif
+
+
+/* When you add entry points, add them at the end, so that the new API
+   version remains compatible with the old version.
+
+   The following conventions have been observed as to naming entry points:
+
+   - build_* creates (and maybe records) something and returns it;
+   - add_* creates and records something, but doesn't return it;
+   - get_* obtains something without creating it;
+   - start_* marks the beginning of a compound (type, list, ...);
+   - finish_* completes the compound when needed.
+
+  Entry points that return an int (bool) and don't have a return value
+  specification return nonzero (true) on success and zero (false) on
+  failure.  This is in line with libcc1's conventions of returning a
+  zero-initialized value in case of e.g. a transport error.  */

@@ -1,5 +1,5 @@
 ;; Machine description for Visium.
-;; Copyright (C) 2002-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2002-2018 Free Software Foundation, Inc.
 ;; Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
 ;; This file is part of GCC.
@@ -137,9 +137,10 @@
 ;nop           No operation.
 ;multi         Multiple instructions which split.
 ;asm           User asm instructions.
+;trap          Trap instructions.
 
 (define_attr "type"
-"imm_reg,mem_reg,eam_reg,fp_reg,reg_mem,reg_eam,reg_fp,arith,arith2,logic,abs_branch,branch,bmi,call,ret,rfi,dsi,cmp,div,divd,mul,shiftdi,fdiv,fsqrt,ftoi,itof,fmove,fcmp,fp,nop,multi,asm" (const_string "logic"))
+"imm_reg,mem_reg,eam_reg,fp_reg,reg_mem,reg_eam,reg_fp,arith,arith2,logic,abs_branch,branch,bmi,call,ret,rfi,dsi,cmp,div,divd,mul,shiftdi,fdiv,fsqrt,ftoi,itof,fmove,fcmp,fp,nop,multi,asm,trap" (const_string "logic"))
 
 ; Those insns that occupy 4 bytes.
 (define_attr "single_insn" "no,yes"
@@ -205,6 +206,7 @@
 
 (define_mode_iterator QHI [QI HI])
 (define_mode_iterator I [QI HI SI])
+(define_mode_attr b [(QI "8") (HI "16") (SI "32")])
 (define_mode_attr s [(QI ".b") (HI ".w") (SI ".l")])
 
 ; This code iterator allows signed and unsigned widening multiplications
@@ -238,7 +240,7 @@
 ;;
 ;; Substitutions.
 ;;
-;; They are used to define the second instruction of the pairs required by
+;; They are used to define the first instruction of the pairs required by
 ;; the postreload compare elimination pass, with a first variant for the
 ;; logical insns and a second variant for the arithmetic insns.
 ;;
@@ -249,9 +251,9 @@
   [(set (match_operand 0 "") (match_operand 1 ""))
    (clobber (reg:CC R_FLAGS))]
   ""
-  [(set (match_dup 0) (match_dup 1))
-   (set (reg:CC R_FLAGS)
-	(compare:CC (match_dup 1) (const_int 0)))])
+  [(set (reg:CC R_FLAGS)
+	(compare:CC (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (match_dup 1))])
 
 (define_subst_attr "subst_logic" "flags_subst_logic" "_flags" "_set_flags")
 
@@ -259,9 +261,9 @@
   [(set (match_operand 0 "") (match_operand 1 ""))
    (clobber (reg:CC R_FLAGS))]
   ""
-  [(set (match_dup 0) (match_dup 1))
-   (set (reg:CCNZ R_FLAGS)
-	(compare:CCNZ (match_dup 1) (const_int 0)))])
+  [(set (reg:CCNZ R_FLAGS)
+	(compare:CCNZ (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (match_dup 1))])
 
 (define_subst_attr "subst_arith" "flags_subst_arith" "_flags" "_set_flags")
 
@@ -792,23 +794,23 @@
   [(set_attr "type" "arith")])
 
 (define_insn "*add<mode>3_insn_set_carry"
-  [(set (match_operand:QHI 0 "register_operand" "=r")
-	(plus:QHI (match_operand:QHI 1 "register_operand" "%r")
-		  (match_operand:QHI 2 "register_operand" "r")))
-   (set (reg:CCC R_FLAGS)
-	(compare:CCC (plus:QHI (match_dup 1) (match_dup 2))
-		     (match_dup 1)))]
+  [(set (reg:CCC R_FLAGS)
+	(compare:CCC (plus:QHI (match_operand:QHI 1 "register_operand" "%r")
+			       (match_operand:QHI 2 "register_operand" "r"))
+		     (match_dup 1)))
+   (set (match_operand:QHI 0 "register_operand" "=r")
+	(plus:QHI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "add<s>   %0,%1,%2"
   [(set_attr "type" "arith")])
 
 (define_insn "*add<mode>3_insn_set_overflow"
-  [(set (match_operand:QHI 0 "register_operand" "=r")
-	(plus:QHI (match_operand:QHI 1 "register_operand" "%r")
-		  (match_operand:QHI 2 "register_operand" "r")))
-   (set (reg:CCV R_FLAGS)
-	(compare:CCV (plus:QHI (match_dup 1) (match_dup 2))
-		     (unspec:QHI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))]
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (plus:QHI (match_operand:QHI 1 "register_operand" "%r")
+			       (match_operand:QHI 2 "register_operand" "r"))
+		     (unspec:QHI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))
+   (set (match_operand:QHI 0 "register_operand" "=r")
+	(plus:QHI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "add<s>   %0,%1,%2"
   [(set_attr "type" "arith")])
@@ -856,12 +858,12 @@
   [(set_attr "type" "arith")])
 
 (define_insn "addsi3_insn_set_carry"
-  [(set (match_operand:SI 0 "register_operand"          "=r,r")
-	(plus:SI (match_operand:SI 1 "register_operand" "%r,0")
-		 (match_operand:SI 2 "real_add_operand" " r,J")))
-   (set (reg:CCC R_FLAGS)
-	(compare:CCC (plus:SI (match_dup 1) (match_dup 2))
-		     (match_dup 1)))]
+  [(set (reg:CCC R_FLAGS)
+	(compare:CCC (plus:SI (match_operand:SI 1 "register_operand" "%r,0")
+			      (match_operand:SI 2 "real_add_operand" " r,J"))
+		     (match_dup 1)))
+   (set (match_operand:SI 0 "register_operand"          "=r,r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "@
     add.l   %0,%1,%2
@@ -869,12 +871,12 @@
   [(set_attr "type" "arith")])
 
 (define_insn "*addsi3_insn_set_overflow"
-  [(set (match_operand:SI 0 "register_operand"          "=r,r")
-	(plus:SI (match_operand:SI 1 "register_operand" "%r,0")
-		 (match_operand:SI 2 "real_add_operand" " r,J")))
-   (set (reg:CCV R_FLAGS)
-	(compare:CCV (plus:SI (match_dup 1) (match_dup 2))
-		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))]
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (plus:SI (match_operand:SI 1 "register_operand" "%r,0")
+			      (match_operand:SI 2 "real_add_operand" " r,J"))
+		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))
+   (set (match_operand:SI 0 "register_operand"          "=r,r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "@
     add.l   %0,%1,%2
@@ -1007,22 +1009,22 @@
   [(set_attr "type" "arith")])
 
 (define_insn "*sub<mode>3_insn_set_carry"
-  [(set (match_operand:QHI 0 "register_operand" "=r")
-	(minus:QHI (match_operand:QHI 1 "reg_or_0_operand" "rO")
-		   (match_operand:QHI 2 "register_operand" "r")))
-   (set (reg:CC R_FLAGS)
-	(compare:CC (match_dup 1) (match_dup 2)))]
+  [(set (reg:CC R_FLAGS)
+	(compare:CC (match_operand:QHI 1 "reg_or_0_operand" "r0")
+		    (match_operand:QHI 2 "register_operand" "r")))
+   (set (match_operand:QHI 0 "register_operand" "=r")
+	(minus:QHI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "sub<s>   %0,%r1,%2"
   [(set_attr "type" "arith")])
 
 (define_insn "*sub<mode>3_insn_set_overflow"
-  [(set (match_operand:QHI 0 "register_operand" "=r")
-	(minus:QHI (match_operand:QHI 1 "reg_or_0_operand" "rO")
-		   (match_operand:QHI 2 "register_operand" "r")))
-   (set (reg:CCV R_FLAGS)
-	(compare:CCV (minus:QHI (match_dup 1) (match_dup 2))
-		     (unspec:QHI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))]
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (minus:QHI (match_operand:QHI 1 "reg_or_0_operand" "r0")
+				(match_operand:QHI 2 "register_operand" "r"))
+		     (unspec:QHI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))
+   (set (match_operand:QHI 0 "register_operand" "=r")
+	(minus:QHI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "sub<s>   %0,%r1,%2"
   [(set_attr "type" "arith")])
@@ -1070,11 +1072,11 @@
   [(set_attr "type" "arith")])
 
 (define_insn "subsi3_insn_set_carry"
-  [(set (match_operand:SI 0 "register_operand"           "=r,r")
-	(minus:SI (match_operand:SI 1 "register_operand" " r,0")
-		  (match_operand:SI 2 "real_add_operand" " r,J")))
-   (set (reg:CC R_FLAGS)
-	(compare:CC (match_dup 1) (match_dup 2)))]
+  [(set (reg:CC R_FLAGS)
+	(compare:CC (match_operand:SI 1 "register_operand" "r,0")
+		    (match_operand:SI 2 "real_add_operand" "r,J")))
+   (set (match_operand:SI 0 "register_operand"           "=r,r")
+	(minus:SI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "@
     sub.l   %0,%r1,%2
@@ -1082,12 +1084,12 @@
   [(set_attr "type" "arith")])
 
 (define_insn "*subsi3_insn_set_overflow"
-  [(set (match_operand:SI 0 "register_operand"           "=r,r")
-	(minus:SI (match_operand:SI 1 "register_operand" " r,0")
-		  (match_operand:SI 2 "real_add_operand" " r,J")))
-   (set (reg:CCV R_FLAGS)
-	(compare:CCV (minus:SI (match_dup 1) (match_dup 2))
-		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))]
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (minus:SI (match_operand:SI 1 "register_operand" "r,0")
+			       (match_operand:SI 2 "real_add_operand" "r,J"))
+		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))
+   (set (match_operand:SI 0 "register_operand"           "=r,r")
+	(minus:SI (match_dup 1) (match_dup 2)))]
   "reload_completed"
   "@
     sub.l   %0,%1,%2
@@ -1207,20 +1209,21 @@
   [(set_attr "type" "arith")])
 
 (define_insn "negsi2_insn_set_carry"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (neg:SI (match_operand:SI 1 "register_operand" "r")))
-   (set (reg:CCC R_FLAGS)
-	(compare:CCC (not:SI (match_dup 1)) (const_int -1)))]
+  [(set (reg:CCC R_FLAGS)
+	(compare:CCC (not:SI (match_operand:SI 1 "register_operand" "r"))
+		     (const_int -1)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+        (neg:SI (match_dup 1)))]
   "reload_completed"
   "sub.l   %0,r0,%1"
   [(set_attr "type" "arith")])
 
 (define_insn "*neg<mode>2_insn_set_overflow"
-  [(set (match_operand:I 0 "register_operand" "=r")
-	(neg:I (match_operand:I 1 "register_operand" "r")))
-   (set (reg:CCV R_FLAGS)
-	(compare:CCV (neg:I (match_dup 1))
-		     (unspec:I [(match_dup 1)] UNSPEC_NEGV)))]
+  [(set (reg:CCV R_FLAGS)
+	(compare:CCV (neg:I (match_operand:I 1 "register_operand" "r"))
+		     (unspec:I [(match_dup 1)] UNSPEC_NEGV)))
+   (set (match_operand:I 0 "register_operand" "=r")
+	(neg:I (match_dup 1)))]
   "reload_completed"
   "sub<s>   %0,r0,%1"
   [(set_attr "type" "arith")])
@@ -1986,15 +1989,15 @@
 
 ; BITS_BIG_ENDIAN is defined to 1 so operand #1 counts from the MSB.
 
-(define_insn "*btst"
+(define_insn "*btst<mode>"
   [(set (reg:CCC R_FLAGS)
-	(compare:CCC (zero_extract:SI
-		       (match_operand:SI 0 "register_operand" "r")
+	(compare:CCC (zero_extract:I
+		       (match_operand:I 0 "register_operand" "r")
 		       (const_int 1)
 		       (match_operand:QI 1 "const_shift_operand" "K"))
 		     (const_int 0)))]
   "reload_completed"
-  "lsr.l   r0,%0,32-%1"
+  "lsr<s>   r0,%0,<b>-%1"
   [(set_attr "type" "logic")])
 
 ;;
@@ -2142,7 +2145,7 @@
 ;; mantissa) to a quiet NaN (-1). This is acceptable when the data to be
 ;; moved is in fact a floating-point number, but to avoid nasty surprises
 ;; integers must in general be kept out of the floating-point registers.
-;; HARD_REGNO_MODE_OK thus only allows SFmode in these registers.
+;; TARGET_HARD_REGNO_MODE_OK thus only allows SFmode in these registers.
 ;; However, since FTOI and ITOF use floating-point registers for both their
 ;; inputs and outputs, to use these instructions integers must transiently
 ;; occupy such registers. To disguise this from the compiler, UNSPECs are
@@ -2373,11 +2376,11 @@
 }
   [(set_attr "type" "cmp")])
 
-(define_insn_and_split "*cbranchsi4_btst_insn"
+(define_insn_and_split "*cbranch<mode>4_btst_insn"
   [(set (pc)
 	(if_then_else (match_operator 0 "visium_equality_comparison_operator"
-		       [(zero_extract:SI
-			   (match_operand:SI 1 "register_operand" "r")
+		       [(zero_extract:I
+			   (match_operand:I 1 "register_operand" "r")
 			   (const_int 1)
 			   (match_operand:QI 2 "const_shift_operand" "K"))
 		        (const_int 0)])
@@ -2509,6 +2512,20 @@
   ""
   "bra     tr,%0,r0%#		;tablejump"
   [(set_attr "type" "abs_branch")])
+
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; trap instructions
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "stop    0,r0"
+  [(set_attr "type" "trap")])
 
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2945,13 +2962,13 @@
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "nop			;generated nop"
+  "nop			;generated"
   [(set_attr "type" "nop")])
 
 (define_insn "hazard_nop"
   [(unspec_volatile [(const_int 0)] UNSPEC_NOP)]
   ""
-  "nop			;hazard avoidance nop"
+  "nop			;hazard avoidance"
   [(set_attr "type" "nop")])
 
 (define_insn "blockage"

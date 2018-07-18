@@ -681,7 +681,7 @@ j0q (__float128 x)
   if (! finiteq (x))
     {
       if (x != x)
-	return x;
+	return x + x;
       else
 	return 0.0Q;
     }
@@ -691,6 +691,8 @@ j0q (__float128 x)
   xx = fabsq (x);
   if (xx <= 2.0Q)
     {
+      if (xx < 0x1p-57Q)
+	return 1.0Q;
       /* 0 <= x <= 2 */
       z = xx * xx;
       p = z * z * neval (z, J0_2N, NJ0_2N) / deval (z, J0_2D, NJ0_2D);
@@ -698,6 +700,28 @@ j0q (__float128 x)
       p += 1.0Q;
       return p;
     }
+
+  /* X = x - pi/4
+     cos(X) = cos(x) cos(pi/4) + sin(x) sin(pi/4)
+     = 1/sqrt(2) * (cos(x) + sin(x))
+     sin(X) = sin(x) cos(pi/4) - cos(x) sin(pi/4)
+     = 1/sqrt(2) * (sin(x) - cos(x))
+     sin(x) +- cos(x) = -cos(2x)/(sin(x) -+ cos(x))
+     cf. Fdlibm.  */
+  sincosq (xx, &s, &c);
+  ss = s - c;
+  cc = s + c;
+  if (xx <= FLT128_MAX / 2.0Q)
+    {
+      z = -cosq (xx + xx);
+      if ((s * c) < 0)
+	cc = z / ss;
+      else
+	ss = z / cc;
+    }
+
+  if (xx > 0x1p256Q)
+    return ONEOSQPI * cc / sqrtq (xx);
 
   xinv = 1.0Q / xx;
   z = xinv * xinv;
@@ -760,21 +784,6 @@ j0q (__float128 x)
   p = 1.0Q + z * p;
   q = z * xinv * q;
   q = q - 0.125Q * xinv;
-  /* X = x - pi/4
-     cos(X) = cos(x) cos(pi/4) + sin(x) sin(pi/4)
-     = 1/sqrt(2) * (cos(x) + sin(x))
-     sin(X) = sin(x) cos(pi/4) - cos(x) sin(pi/4)
-     = 1/sqrt(2) * (sin(x) - cos(x))
-     sin(x) +- cos(x) = -cos(2x)/(sin(x) -+ cos(x))
-     cf. Fdlibm.  */
-  sincosq (xx, &s, &c);
-  ss = s - c;
-  cc = s + c;
-  z = - cosq (xx + xx);
-  if ((s * c) < 0)
-    cc = z / ss;
-  else
-    ss = z / cc;
   z = ONEOSQPI * (p * cc - q * ss) / sqrtq (xx);
   return z;
 }
@@ -807,7 +816,7 @@ static __float128 Y0_2D[NY0_2D + 1] = {
  /* 1.000000000000000000000000000000000000000E0 */
 };
 
-static const long double U0 = -7.3804295108687225274343927948483016310862e-02Q;
+static const __float128 U0 = -7.3804295108687225274343927948483016310862e-02Q;
 
 /* Bessel function of the second kind, order zero.  */
 
@@ -817,17 +826,12 @@ y0q (__float128 x)
   __float128 xx, xinv, z, p, q, c, s, cc, ss;
 
   if (! finiteq (x))
-    {
-      if (x != x)
-	return x;
-      else
-	return 0.0Q;
-    }
+    return 1 / (x + x * x);
   if (x <= 0.0Q)
     {
       if (x < 0.0Q)
 	return (zero / (zero * x));
-      return -HUGE_VALQ + x;
+      return -1 / zero; /* -inf and divide by zero exception.  */
     }
   xx = fabsq (x);
   if (xx <= 0x1p-57)
@@ -840,6 +844,28 @@ y0q (__float128 x)
       p = TWOOPI * logq (x) * j0q (x) + p;
       return p;
     }
+
+  /* X = x - pi/4
+     cos(X) = cos(x) cos(pi/4) + sin(x) sin(pi/4)
+     = 1/sqrt(2) * (cos(x) + sin(x))
+     sin(X) = sin(x) cos(pi/4) - cos(x) sin(pi/4)
+     = 1/sqrt(2) * (sin(x) - cos(x))
+     sin(x) +- cos(x) = -cos(2x)/(sin(x) -+ cos(x))
+     cf. Fdlibm.  */
+  sincosq (x, &s, &c);
+  ss = s - c;
+  cc = s + c;
+  if (xx <= FLT128_MAX / 2.0Q)
+    {
+      z = -cosq (x + x);
+      if ((s * c) < 0)
+	cc = z / ss;
+      else
+	ss = z / cc;
+    }
+
+  if (xx > 0x1p256Q)
+    return ONEOSQPI * ss / sqrtq (x);
 
   xinv = 1.0Q / xx;
   z = xinv * xinv;
@@ -902,21 +928,6 @@ y0q (__float128 x)
   p = 1.0Q + z * p;
   q = z * xinv * q;
   q = q - 0.125Q * xinv;
-  /* X = x - pi/4
-     cos(X) = cos(x) cos(pi/4) + sin(x) sin(pi/4)
-     = 1/sqrt(2) * (cos(x) + sin(x))
-     sin(X) = sin(x) cos(pi/4) - cos(x) sin(pi/4)
-     = 1/sqrt(2) * (sin(x) - cos(x))
-     sin(x) +- cos(x) = -cos(2x)/(sin(x) -+ cos(x))
-     cf. Fdlibm.  */
-  sincosq (x, &s, &c);
-  ss = s - c;
-  cc = s + c;
-  z = - cosq (x + x);
-  if ((s * c) < 0)
-    cc = z / ss;
-  else
-    ss = z / cc;
   z = ONEOSQPI * (p * ss + q * cc) / sqrtq (x);
   return z;
 }

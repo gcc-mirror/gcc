@@ -32,6 +32,28 @@ sum ()
   return s;
 }
 
+// Check template with default (present)
+
+template<typename T> T
+sum_default_present ()
+{
+  T s = 0;
+  T array[n];
+
+  for (int i = 0; i < n; i++)
+    array[i] = i+1;
+
+#pragma acc enter data copyin (array)
+
+#pragma acc parallel loop num_gangs (10) gang reduction (+:s) default (present)
+  for (int i = 0; i < n; i++)
+    s += array[i];
+
+#pragma acc exit data delete (array)
+
+  return s;
+}
+
 // Check present and async
 
 template<typename T> T
@@ -84,6 +106,9 @@ main()
     __builtin_abort ();
 
   if (sum<int> () != result)
+    __builtin_abort ();
+
+  if (sum_default_present<int> () != result)
     __builtin_abort ();
 
 #pragma acc enter data copyin (a)

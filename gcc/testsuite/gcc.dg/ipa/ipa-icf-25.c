@@ -46,6 +46,6 @@ int main()
   return foo() + bar();
 }
 
-/* { dg-final { scan-ipa-dump "Semantic equality hit:bar->foo" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:zap->zip" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:foo->bar" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:zip->zap" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 2" "icf"  } } */

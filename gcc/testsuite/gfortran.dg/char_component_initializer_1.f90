@@ -14,5 +14,5 @@ program gfcbug62
   type(t_ctl) :: ctl
   integer     :: i,k
 
-  if (tdefi(1) .ne. ctl%tdefi(1)) call abort ()
+  if (tdefi(1) .ne. ctl%tdefi(1)) STOP 1
 end program gfcbug62

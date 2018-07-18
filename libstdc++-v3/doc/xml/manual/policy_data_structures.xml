@@ -169,7 +169,7 @@
 	  <code>push</code> and <code>pop</code> operations, differs from the
 	  others in terms of its invalidation guarantees. Other design
 	  decisions also impact the cost and placement of the overhead, at the
-	  expense of more difference in the the kinds of operations that the
+	  expense of more difference in the kinds of operations that the
 	  underlying data structure can support. These differences pose a
 	  challenge when creating a uniform interface for priority queues.
 	</para>
@@ -4719,7 +4719,7 @@
 	an underlying pairing heap (<xref linkend="biblio.fredman86pairing"/>),
 	binary heap (<xref linkend="biblio.clrs2001"/>),
 	binomial heap (<xref linkend="biblio.clrs2001"/>),
-	a binomial heap with a redundant binary counter (<xref linkend="biblio.maverik_lowerbounds"/>),
+	a binomial heap with a redundant binary counter (<xref linkend="biblio.maverick_lowerbounds"/>),
 	or a thin heap (<xref linkend="biblio.kt99fat_heaps"/>).
 	</para>
 
@@ -5090,7 +5090,8 @@
 
     <para>
       Some test utilities borrow ideas from
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.boost.org/doc/libs/release/libs/timer/index.html">boost::timer</link>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink"
+	    xlink:href="http://www.boost.org/libs/timer/">boost::timer</link>.
     </para>
 
     <para>

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    For ARM with ELF obj format.
-   Copyright (C) 1995-2016 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org> and
    Catherine Moore <clm@cygnus.com>
    
@@ -64,7 +64,7 @@
 %{mapcs-*:-mapcs-%*} \
 %(subtarget_asm_float_spec) \
 %{mthumb-interwork:-mthumb-interwork} \
-%{mfloat-abi=*} %{mfpu=*} \
+%{mfloat-abi=*} %{!mfpu=auto: %{mfpu=*}} \
 %(subtarget_extra_asm_spec)"
 #endif
 
@@ -75,16 +75,7 @@
 
 /* We might need a ARM specific header to function declarations.  */
 #undef  ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)		\
-  do								\
-    {								\
-      ARM_DECLARE_FUNCTION_NAME (FILE, NAME, DECL);		\
-      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");	\
-      ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));		\
-      ASM_OUTPUT_LABEL(FILE, NAME);				\
-      ARM_OUTPUT_FN_UNWIND (FILE, TRUE);			\
-    }								\
-  while (0)
+#define ASM_DECLARE_FUNCTION_NAME arm_asm_declare_function_name
 
 /* We might need an ARM specific trailer for function declarations.  */
 #undef  ASM_DECLARE_FUNCTION_SIZE
@@ -116,10 +107,6 @@
 #define TARGET_DEFAULT (MASK_APCS_FRAME)
 #endif
 
-#ifndef MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS \
-  { "marm", "mlittle-endian", "mfloat-abi=soft", "mno-thumb-interwork", "fno-leading-underscore" }
-#endif
 
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 

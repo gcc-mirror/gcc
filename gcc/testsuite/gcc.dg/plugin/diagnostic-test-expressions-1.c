@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdiagnostics-show-caret" } */
+/* { dg-options "-O -fdiagnostics-show-caret -Wno-psabi" } */
 
 /* This is a collection of unittests to verify that we're correctly
    capturing the source code ranges of various kinds of expression.
@@ -689,3 +689,101 @@ void test_multiple_ordinary_maps (void)
         ~~                      
    { dg-end-multiline-output "" } */
 }
+
+/* Verify that we correctly handle a token that spans multiple
+   physical lines.  */
+
+const char *test_multiline_token (void)
+{
+  __emit_expression_range (0, "foo\
+bar\
+baz");
+/* { dg-warning "range" "" { target *-*-* } .-3 } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, "foo\
+                               ^~~~~
+ bar\
+ ~~~~                           
+ baz");
+ ~~~~                           
+   { dg-end-multiline-output "" } */
+}
+
+/* Various tests of locations involving macros.  */
+
+void test_within_macro_1 (int lhs, int rhs)
+{
+#define MACRO_1(EXPR) EXPR
+
+  __emit_expression_range (0, MACRO_1 (lhs == rhs));
+
+/* { dg-warning "range" "" { target *-*-* } .-2 } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, MACRO_1 (lhs == rhs));
+                                        ~~~~^~~~~~
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+ #define MACRO_1(EXPR) EXPR
+                       ^~~~
+   { dg-end-multiline-output "" } */
+
+#undef MACRO_1
+}
+
+void test_within_macro_2 (int lhs, int rhs)
+{
+#define MACRO_2(EXPR) EXPR
+
+  __emit_expression_range (0, MACRO_2 (MACRO_2 (lhs == rhs)));
+
+/* { dg-warning "range" "" { target *-*-* } .-2 } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, MACRO_2 (MACRO_2 (lhs == rhs)));
+                                                 ~~~~^~~~~~
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, MACRO_2 (MACRO_2 (lhs == rhs)));
+                                        ^~~~~~~
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+ #define MACRO_2(EXPR) EXPR
+                       ^~~~
+   { dg-end-multiline-output "" } */
+
+#undef MACRO_2
+}
+
+void test_within_macro_3 (int lhs, int rhs)
+{
+#define MACRO_3(EXPR) EXPR
+
+  __emit_expression_range (0, MACRO_3 (lhs) == MACRO_3 (rhs));
+
+/* { dg-warning "range" "" { target *-*-* } .-2 } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, MACRO_3 (lhs) == MACRO_3 (rhs));
+                                             ^
+   { dg-end-multiline-output "" } */
+
+#undef MACRO_3
+}
+
+void test_within_macro_4 (int lhs, int rhs)
+{
+#define MACRO_4(EXPR) EXPR
+
+  __emit_expression_range (0, MACRO_4 (MACRO_4 (lhs) == MACRO_4 (rhs)));
+
+/* { dg-warning "range" "" { target *-*-* } .-2 } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, MACRO_4 (MACRO_4 (lhs) == MACRO_4 (rhs)));
+                                                      ^
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+ #define MACRO_4(EXPR) EXPR
+                       ^~~~
+   { dg-end-multiline-output "" } */
+
+#undef MACRO_4
+}
+

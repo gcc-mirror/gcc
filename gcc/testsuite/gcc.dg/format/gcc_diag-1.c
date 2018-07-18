@@ -32,7 +32,7 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
      ullong ull, unsigned int *un, const int *cn, signed char *ss,
      unsigned char *us, const signed char *css, unsigned int u1,
      unsigned int u2, location_t *loc, tree t1, union tree_node *t2,
-     tree *t3, tree t4[])
+     tree *t3, tree t4[], int *v, unsigned v_len)
 {
   /* Acceptable C90 specifiers, flags and modifiers.  */
   diag ("%%");
@@ -70,25 +70,30 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   cdiag ("%m");
   cxxdiag ("%m");
 
-  tdiag ("%D%F%T%V", t1, t1, t1, t1);
-  tdiag ("%+D%+F%+T%+V", t1, t1, t1, t1);
+  /* Quote directives to avoid "warning: conversion used unquoted." */
+  tdiag ("%<%D%F%T%V%>", t1, t1, t1, t1);
+  tdiag ("%<%+D%+F%+T%+V%>", t1, t1, t1, t1);
   tdiag ("%q+D%q+F%q+T%q+V", t1, t1, t1, t1);
-  tdiag ("%D%D%D%D", t1, t2, *t3, t4[5]);
-  cdiag ("%D%F%T%V", t1, t1, t1, t1);
-  cdiag ("%+D%+F%+T%+V", t1, t1, t1, t1);
+  tdiag ("%<%D%D%D%D%>", t1, t2, *t3, t4[5]);
+  cdiag ("%<%D%F%T%V%>", t1, t1, t1, t1);
+  cdiag ("%<%+D%+F%+T%+V%>", t1, t1, t1, t1);
   cdiag ("%q+D%q+F%q+T%q+V", t1, t1, t1, t1);
-  cdiag ("%D%D%D%D", t1, t2, *t3, t4[5]);
-  cdiag ("%E", t1);
-  cxxdiag ("%A%D%E%F%T%V", t1, t1, t1, t1, t1, t1);
-  cxxdiag ("%D%D%D%D", t1, t2, *t3, t4[5]);
-  cxxdiag ("%#A%#D%#E%#F%#T%#V", t1, t1, t1, t1, t1, t1);
-  cxxdiag ("%+A%+D%+E%+F%+T%+V", t1, t1, t1, t1, t1, t1);
-  cxxdiag ("%+#A%+#D%+#E%+#F%+#T%+#V", t1, t1, t1, t1, t1, t1);
+  cdiag ("%<%D%D%D%D%>", t1, t2, *t3, t4[5]);
+  cdiag ("%<%E%>", t1);
+  cxxdiag ("%<%A%D%E%F%T%V%>", t1, t1, t1, t1, t1, t1);
+  cxxdiag ("%<%D%D%D%D%>", t1, t2, *t3, t4[5]);
+  cxxdiag ("%<%#A%#D%#E%#F%#T%#V%>", t1, t1, t1, t1, t1, t1);
+  cxxdiag ("%<%+A%+D%+E%+F%+T%+V%>", t1, t1, t1, t1, t1, t1);
+  cxxdiag ("%<%+#A%+#D%+#E%+#F%+#T%+#V%>", t1, t1, t1, t1, t1, t1);
   cxxdiag ("%C%L%O%P%Q", i, i, i, i, i);
 
   tdiag ("%v%qv%#v", i, i, i);
   cdiag ("%v%qv%#v", i, i, i);
   cxxdiag ("%v%qv%#v", i, i, i);
+
+  tdiag ("%Z", v, v_len);
+  cdiag ("%Z", v, v_len);
+  cxxdiag ("%Z", v, v_len);
 
   /* Bad stuff with extensions.  */
   diag ("%m", i); /* { dg-warning "format" "extra arg" } */
@@ -109,7 +114,7 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   tdiag ("%#D", t1); /* { dg-warning "format" "bogus modifier" } */
   cdiag ("%A", t1); /* { dg-warning "format" "bogus tree" } */
   cdiag ("%#D", t1); /* { dg-warning "format" "bogus modifier" } */
-  cdiag ("%+D", t1);
+  cdiag ("%<%+D%>", t1);
   cxxdiag ("%C"); /* { dg-warning "format" "missing arg" } */
   cxxdiag ("%C", l); /* { dg-warning "format" "wrong arg" } */
   cxxdiag ("%C", i, i); /* { dg-warning "format" "extra arg" } */
@@ -132,6 +137,9 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   tdiag ("%v", t1); /* { dg-warning "format" "wrong arg" } */
   cdiag ("%v", t1); /* { dg-warning "format" "wrong arg" } */
   cxxdiag ("%v", t1); /* { dg-warning "format" "wrong arg" } */
+
+  tdiag ("%Z"); /* { dg-warning "format" "missing arg" } */
+  tdiag ("%Z", t1); /* { dg-warning "format" "wrong arg" } */
 
   /* Standard specifiers not accepted in the diagnostic framework.  */
   diag ("%X\n", u); /* { dg-warning "format" "HEX" } */

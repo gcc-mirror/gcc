@@ -1,6 +1,7 @@
 /* PR c/71719 */
 /* { dg-do compile } */
 /* { dg-options "-Wunused -W -Wno-psabi" } */
+/* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 typedef unsigned V __attribute__ ((vector_size (16)));
 
