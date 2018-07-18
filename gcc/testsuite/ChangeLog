@@ -1,3 +1,13 @@
+2018-07-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR 69558
+	* c-c++-common/cpp/diagnostic-pragma-2.c: New test.
+	* c-c++-common/pr69558.c: Remove xfail.
+	* gcc.dg/cpp/builtin-macro-1.c: Adjust test expectations.
+	* gcc.dg/pr61817-1.c: Likewise.
+	* gcc.dg/pr61817-2.c: Likewise.
+	* g++.dg/plugin/pragma_plugin.c: Warn at expansion_point_location.
+
 2018-07-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/85599
