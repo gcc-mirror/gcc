@@ -2684,6 +2684,7 @@ vect_recog_divmod_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
   switch (rhs_code)
     {
     case TRUNC_DIV_EXPR:
+    case EXACT_DIV_EXPR:
     case TRUNC_MOD_EXPR:
       break;
     default:
@@ -2730,7 +2731,8 @@ vect_recog_divmod_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 
       cond = build2 (LT_EXPR, boolean_type_node, oprnd0,
 		     build_int_cst (itype, 0));
-      if (rhs_code == TRUNC_DIV_EXPR)
+      if (rhs_code == TRUNC_DIV_EXPR
+	  || rhs_code == EXACT_DIV_EXPR)
 	{
 	  tree var = vect_recog_temp_ssa_var (itype, NULL);
 	  tree shift;

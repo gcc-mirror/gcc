@@ -1,3 +1,9 @@
+2018-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86557
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Also handle
+	EXACT_DIV_EXPR.
+
 2018-07-18  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/s390/s390.c (s390_function_profiler): Generate CFI.
