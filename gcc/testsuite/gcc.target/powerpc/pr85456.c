@@ -11,4 +11,5 @@ do_powl (long double a, int i)
   return __builtin_powil (a, i);
 }
 
-/* { dg-final { scan-assembler "bl __powikf2" } } */
+/* { dg-final { scan-assembler "bl __powikf2" { target { powerpc*-*-linux* } } } } */
+/* { dg-final { scan-assembler "bl .__powidf2" { target { powerpc*-*-aix* } } } } */
