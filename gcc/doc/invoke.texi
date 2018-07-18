@@ -3962,6 +3962,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wsizeof-pointer-memaccess @gol
 -Wstrict-aliasing  @gol
 -Wstrict-overflow=1  @gol
+-Wstringop-truncation  @gol
 -Wswitch  @gol
 -Wtautological-compare  @gol
 -Wtrigraphs  @gol
@@ -5382,6 +5383,8 @@ however, are not suitable arguments to functions that expect
 @code{NUL}-terminated strings.  To help detect accidental misuses of
 such arrays GCC issues warnings unless it can prove that the use is
 safe.  @xref{Common Variable Attributes}.
+
+Option @option{-Wstringop-truncation} is enabled by @option{-Wall}.
 
 @item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}
 @opindex Wsuggest-attribute=

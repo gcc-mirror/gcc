@@ -1,3 +1,15 @@
+2018-07-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/85602
+	* calls.c (maybe_warn_nonstring_arg): Handle strncat.
+	* tree-ssa-strlen.c (is_strlen_related_p): Make extern.
+	Handle integer subtraction.
+	(maybe_diag_stxncpy_trunc): Handle nonstring source arguments.
+	* tree-ssa-strlen.h (is_strlen_related_p): Declare.
+	* doc/invoke.texi (-Wstringop-truncation): Update.
+
+gcc/testsuite/ChangeLog:
+
 2018-07-16  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	Backport from mainline
