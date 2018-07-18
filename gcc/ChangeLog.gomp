@@ -1,3 +1,14 @@
+2018-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE): Define.
+	* gimplify.c (gimplify_omp_for): Handle C++ range for loops with
+	NULL TREE_PURPOSE in OMP_FOR_ORIG_DECLS.  Firstprivatize
+	__for_end and __for_range temporaries on OMP_PARALLEL for
+	distribute parallel for{, simd}.
+	* omp-low.c (lower_rec_input_clauses): Handle
+	OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE on OMP_CLAUSE_FIRSTPRIVATE
+	clauses.
+
 2018-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-core.h (enum omp_clause_depend_kind): Add

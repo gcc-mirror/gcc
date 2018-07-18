@@ -1460,6 +1460,11 @@ extern tree maybe_wrap_with_location (tree, location_t);
 #define OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_FIRSTPRIVATE)->base.public_flag)
 
+/* True on a FIRSTPRIVATE clause if only the reference and not what it refers
+   to should be firstprivatized.  */
+#define OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_FIRSTPRIVATE))
+
 /* True on a LASTPRIVATE clause if a FIRSTPRIVATE clause for the same
    decl is present in the chain.  */
 #define OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE(NODE) \

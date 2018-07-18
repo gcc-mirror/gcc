@@ -1,3 +1,37 @@
+2018-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (cp_convert_omp_range_for, cp_finish_omp_range_for,
+	finish_omp_for_block): Declare.
+	* parser.c (cp_parser_for): Pass false as new is_omp argument to
+	cp_parser_range_for.
+	(cp_parser_range_for): Add is_omp argument, return before finalizing
+	if it is true.
+	(cp_convert_omp_range_for, cp_finish_omp_range_for): New functions.
+	(cp_parser_omp_for_loop): Parse C++11 range for loops among omp
+	loops.
+	(cp_parser_omp_simd, cp_parser_omp_for, cp_parser_omp_distribute,
+	cp_parser_omp_taskloop): Call keep_next_level before
+	begin_omp_structured_block and call finish_omp_for_block on
+	finish_omp_structured_block result.
+	* semantics.c (handle_omp_for_class_iterator): Don't create a new
+	TREE_LIST if one has been created already for range for, just fill
+	TREE_PURPOSE and TREE_VALUE.
+	(finish_omp_for): Don't check cond/incr if cond is global_namespace.
+	Pass to c_omp_check_loop_iv_exprs orig_declv if non-NULL.  Don't
+	use IS_EMPTY_STMT on NULL pre_body.
+	(finish_omp_for_block): New function.
+	* pt.c (tsubst_decomp_names): Add forward declaration.
+	(tsubst_omp_for_iterator): Change orig_declv into a reference.
+	Handle range for loops.  Move orig_declv handling after declv/initv
+	handling.
+	(tsubst_expr): Call keep_next_level before begin_omp_structured_block.
+	Call cp_finish_omp_range_for for range for loops and use
+	{begin,finish}_omp_structured_block instead of {push,pop}_stmt_list
+	if there are any range for loops.  Call finish_omp_for_block on
+	finish_omp_structured_block result.
+	(dependent_omp_for_p): Always return true for range for loops if
+	processing_template_decl.
+
 2018-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_var_list_no_open): Fix up depend clause

@@ -16295,10 +16295,13 @@ tsubst_copy_asm_operands (tree t, tree args, tsubst_flags_t complain,
 
 static tree *omp_parallel_combined_clauses;
 
+static tree tsubst_decomp_names (tree, tree, tree, tsubst_flags_t, tree,
+				 tree *, unsigned int *);
+
 /* Substitute one OMP_FOR iterator.  */
 
-static void
-tsubst_omp_for_iterator (tree t, int i, tree declv, tree orig_declv,
+static bool
+tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
 			 tree initv, tree condv, tree incrv, tree *clauses,
 			 tree args, tsubst_flags_t complain, tree in_decl,
 			 bool integral_constant_expression_p)
@@ -16306,26 +16309,56 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree orig_declv,
 #define RECUR(NODE)				\
   tsubst_expr ((NODE), args, complain, in_decl,	\
 	       integral_constant_expression_p)
-  tree decl, init, cond, incr;
+  tree decl, init, cond = NULL_TREE, incr = NULL_TREE;
+  bool ret = false;
 
   init = TREE_VEC_ELT (OMP_FOR_INIT (t), i);
   gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
 
-  if (orig_declv && OMP_FOR_ORIG_DECLS (t))
-    {
-      tree o = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (t), i);
-      if (TREE_CODE (o) == TREE_LIST)
-	TREE_VEC_ELT (orig_declv, i)
-	  = tree_cons (RECUR (TREE_PURPOSE (o)),
-		       RECUR (TREE_VALUE (o)), NULL_TREE);
-      else
-	TREE_VEC_ELT (orig_declv, i) = RECUR (o);
-    }
-
   decl = TREE_OPERAND (init, 0);
   init = TREE_OPERAND (init, 1);
   tree decl_expr = NULL_TREE;
-  if (init && TREE_CODE (init) == DECL_EXPR)
+  bool range_for = TREE_VEC_ELT (OMP_FOR_COND (t), i) == global_namespace;
+  if (range_for)
+    {
+      bool decomp = false;
+      if (decl != error_mark_node && DECL_HAS_VALUE_EXPR_P (decl))
+	{
+	  tree v = DECL_VALUE_EXPR (decl);
+	  if (TREE_CODE (v) == ARRAY_REF
+	      && VAR_P (TREE_OPERAND (v, 0))
+	      && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
+	    {
+	      tree decomp_first = NULL_TREE;
+	      unsigned decomp_cnt = 0;
+	      tree d = tsubst_decl (TREE_OPERAND (v, 0), args, complain);
+	      maybe_push_decl (d);
+	      d = tsubst_decomp_names (d, TREE_OPERAND (v, 0), args, complain,
+				       in_decl, &decomp_first, &decomp_cnt);
+	      decomp = true;
+	      if (d == error_mark_node)
+		decl = error_mark_node;
+	      else
+		for (unsigned int i = 0; i < decomp_cnt; i++)
+		  {
+		    if (!DECL_HAS_VALUE_EXPR_P (decomp_first))
+		      {
+			tree v = build_nt (ARRAY_REF, d,
+					   size_int (decomp_cnt - i - 1),
+					   NULL_TREE, NULL_TREE);
+			SET_DECL_VALUE_EXPR (decomp_first, v);
+			DECL_HAS_VALUE_EXPR_P (decomp_first) = 1;
+		      }
+		    fit_decomposition_lang_decl (decomp_first, d);
+		    decomp_first = DECL_CHAIN (decomp_first);
+		  }
+	    }
+	}
+      decl = tsubst_decl (decl, args, complain);
+      if (!decomp)
+	maybe_push_decl (decl);
+    }
+  else if (init && TREE_CODE (init) == DECL_EXPR)
     {
       /* We need to jump through some hoops to handle declarations in the
 	 init-statement, since we might need to handle auto deduction,
@@ -16372,14 +16405,44 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree orig_declv,
     }
   init = RECUR (init);
 
+  if (orig_declv && OMP_FOR_ORIG_DECLS (t))
+    {
+      tree o = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (t), i);
+      if (TREE_CODE (o) == TREE_LIST)
+	TREE_VEC_ELT (orig_declv, i)
+	  = tree_cons (RECUR (TREE_PURPOSE (o)),
+		       RECUR (TREE_VALUE (o)),
+		       NULL_TREE);
+      else
+	TREE_VEC_ELT (orig_declv, i) = RECUR (o);
+    }
+
+  if (range_for)
+    {
+      tree this_pre_body = NULL_TREE;
+      tree orig_init = NULL_TREE;
+      tree orig_decl = NULL_TREE;
+      cp_convert_omp_range_for (this_pre_body, NULL, decl, orig_decl, init,
+				orig_init, cond, incr);
+      if (orig_decl)
+	{
+	  if (orig_declv == NULL_TREE)
+	    orig_declv = copy_node (declv);
+	  TREE_VEC_ELT (orig_declv, i) = orig_decl;
+	  ret = true;
+	}
+      else if (orig_declv)
+	TREE_VEC_ELT (orig_declv, i) = decl;
+    }
+
   tree auto_node = type_uses_auto (TREE_TYPE (decl));
-  if (auto_node && init)
+  if (!range_for && auto_node && init)
     TREE_TYPE (decl)
       = do_auto_deduction (TREE_TYPE (decl), init, auto_node, complain);
 
   gcc_assert (!type_dependent_expression_p (decl));
 
-  if (!CLASS_TYPE_P (TREE_TYPE (decl)))
+  if (!CLASS_TYPE_P (TREE_TYPE (decl)) || range_for)
     {
       if (decl_expr)
 	{
@@ -16390,22 +16453,27 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree orig_declv,
 	  DECL_INITIAL (DECL_EXPR_DECL (decl_expr)) = init_sav;
 	}
 
-      cond = RECUR (TREE_VEC_ELT (OMP_FOR_COND (t), i));
-      incr = TREE_VEC_ELT (OMP_FOR_INCR (t), i);
-      if (TREE_CODE (incr) == MODIFY_EXPR)
+      if (!range_for)
 	{
-	  tree lhs = RECUR (TREE_OPERAND (incr, 0));
-	  tree rhs = RECUR (TREE_OPERAND (incr, 1));
-	  incr = build_x_modify_expr (EXPR_LOCATION (incr), lhs,
-				      NOP_EXPR, rhs, complain);
+	  cond = RECUR (TREE_VEC_ELT (OMP_FOR_COND (t), i));
+	  incr = TREE_VEC_ELT (OMP_FOR_INCR (t), i);
+	  if (TREE_CODE (incr) == MODIFY_EXPR)
+	    {
+	      tree lhs = RECUR (TREE_OPERAND (incr, 0));
+	      tree rhs = RECUR (TREE_OPERAND (incr, 1));
+	      incr = build_x_modify_expr (EXPR_LOCATION (incr), lhs,
+					  NOP_EXPR, rhs, complain);
+	    }
+	  else
+	    incr = RECUR (incr);
+	  if (orig_declv && !OMP_FOR_ORIG_DECLS (t))
+	    TREE_VEC_ELT (orig_declv, i) = decl;
 	}
-      else
-	incr = RECUR (incr);
       TREE_VEC_ELT (declv, i) = decl;
       TREE_VEC_ELT (initv, i) = init;
       TREE_VEC_ELT (condv, i) = cond;
       TREE_VEC_ELT (incrv, i) = incr;
-      return;
+      return ret;
     }
 
   if (decl_expr)
@@ -16532,10 +16600,13 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree orig_declv,
       break;
     }
 
+  if (orig_declv && !OMP_FOR_ORIG_DECLS (t))
+    TREE_VEC_ELT (orig_declv, i) = decl;
   TREE_VEC_ELT (declv, i) = decl;
   TREE_VEC_ELT (initv, i) = init;
   TREE_VEC_ELT (condv, i) = cond;
   TREE_VEC_ELT (incrv, i) = incr;
+  return false;
 #undef RECUR
 }
 
@@ -17177,6 +17248,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	tree orig_declv = NULL_TREE;
 	tree incrv = NULL_TREE;
 	enum c_omp_region_type ort = C_ORT_OMP;
+	bool any_range_for = false;
 	int i;
 
 	if (TREE_CODE (t) == OACC_LOOP)
@@ -17195,6 +17267,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    incrv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
 	  }
 
+	keep_next_level (true);
 	stmt = begin_omp_structured_block ();
 
 	pre_body = push_stmt_list ();
@@ -17203,14 +17276,31 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
 	if (OMP_FOR_INIT (t) != NULL_TREE)
 	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
-	    tsubst_omp_for_iterator (t, i, declv, orig_declv, initv, condv,
-				     incrv, &clauses, args, complain, in_decl,
-				     integral_constant_expression_p);
+	    any_range_for
+	      |= tsubst_omp_for_iterator (t, i, declv, orig_declv, initv,
+					  condv, incrv, &clauses, args,
+					  complain, in_decl,
+					  integral_constant_expression_p);
 	omp_parallel_combined_clauses = NULL;
 
-	body = push_stmt_list ();
+	if (any_range_for)
+	  {
+	    gcc_assert (orig_declv);
+	    body = begin_omp_structured_block ();
+	    for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
+	      if (TREE_VEC_ELT (orig_declv, i) != TREE_VEC_ELT (declv, i)
+		  && TREE_CODE (TREE_VEC_ELT (orig_declv, i)) == TREE_LIST
+		  && TREE_CHAIN (TREE_VEC_ELT (orig_declv, i)))
+		cp_finish_omp_range_for (TREE_VEC_ELT (orig_declv, i),
+					 TREE_VEC_ELT (declv, i));
+	  }
+	else
+	  body = push_stmt_list ();
 	RECUR (OMP_FOR_BODY (t));
-	body = pop_stmt_list (body);
+	if (any_range_for)
+	  body = finish_omp_structured_block (body);
+	else
+	  body = pop_stmt_list (body);
 
 	if (OMP_FOR_INIT (t) != NULL_TREE)
 	  t = finish_omp_for (EXPR_LOCATION (t), TREE_CODE (t), declv,
@@ -17227,7 +17317,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    add_stmt (t);
 	  }
 
-	add_stmt (finish_omp_structured_block (stmt));
+	add_stmt (finish_omp_for_block (finish_omp_structured_block (stmt),
+					t));
 	pop_omp_privatization_clauses (r);
       }
       break;
@@ -25759,6 +25850,9 @@ dependent_omp_for_p (tree declv, tree initv, tree condv, tree incrv)
 	return true;
 
       if (init && type_dependent_expression_p (init))
+	return true;
+
+      if (cond == global_namespace)
 	return true;
 
       if (type_dependent_expression_p (cond))

@@ -2122,7 +2122,7 @@ static tree cp_parser_for
 static tree cp_parser_c_for
   (cp_parser *, tree, tree, bool, unsigned short);
 static tree cp_parser_range_for
-  (cp_parser *, tree, tree, tree, bool, unsigned short);
+  (cp_parser *, tree, tree, tree, bool, unsigned short, bool);
 static void do_range_for_auto_deduction
   (tree, tree);
 static tree cp_parser_perform_range_for_lookup
@@ -11793,7 +11793,8 @@ cp_parser_for (cp_parser *parser, bool ivdep, unsigned short unroll)
   is_range_for = cp_parser_init_statement (parser, &decl);
 
   if (is_range_for)
-    return cp_parser_range_for (parser, scope, init, decl, ivdep, unroll);
+    return cp_parser_range_for (parser, scope, init, decl, ivdep, unroll,
+				false);
   else
     return cp_parser_c_for (parser, scope, init, ivdep, unroll);
 }
@@ -11851,7 +11852,7 @@ cp_parser_c_for (cp_parser *parser, tree scope, tree init, bool ivdep,
 
 static tree
 cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
-		     bool ivdep, unsigned short unroll)
+		     bool ivdep, unsigned short unroll, bool is_omp)
 {
   tree stmt, range_expr;
   auto_vec <cxx_binding *, 16> bindings;
@@ -11910,6 +11911,11 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
       binding->previous = IDENTIFIER_BINDING (names[i]);
       IDENTIFIER_BINDING (names[i]) = binding;
     }
+
+  /* finish_omp_for has its own code for the following, so just
+     return the range_expr instead.  */
+  if (is_omp)
+    return range_expr;
 
   /* If in template, STMT is converted to a normal for-statement
      at instantiation. If not, it is done just ahead. */
@@ -35791,6 +35797,192 @@ cp_parser_omp_for_loop_init (cp_parser *parser,
   return add_private_clause;
 }
 
+/* Helper for cp_parser_omp_for_loop, handle one range-for loop.  */
+
+void
+cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
+			  tree &decl, tree &orig_decl, tree &init,
+			  tree &orig_init, tree &cond, tree &incr)
+{
+  tree begin, end, range_temp_decl = NULL_TREE;
+  tree iter_type, begin_expr, end_expr;
+
+  if (processing_template_decl)
+    {
+      if (check_for_bare_parameter_packs (init))
+	init = error_mark_node;
+      if (!type_dependent_expression_p (init)
+	  /* do_auto_deduction doesn't mess with template init-lists.  */
+	  && !BRACE_ENCLOSED_INITIALIZER_P (init))
+	{
+	  tree d = decl;
+	  if (decl != error_mark_node && DECL_HAS_VALUE_EXPR_P (decl))
+	    {
+	      tree v = DECL_VALUE_EXPR (decl);
+	      if (TREE_CODE (v) == ARRAY_REF
+		  && VAR_P (TREE_OPERAND (v, 0))
+		  && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
+		d = TREE_OPERAND (v, 0);
+	    }
+	  do_range_for_auto_deduction (d, init);
+	}
+      cond = global_namespace;
+      incr = NULL_TREE;
+      orig_init = init;
+      if (this_pre_body)
+	this_pre_body = pop_stmt_list (this_pre_body);
+      return;
+    }
+
+  init = mark_lvalue_use (init);
+
+  if (decl == error_mark_node || init == error_mark_node)
+    /* If an error happened previously do nothing or else a lot of
+       unhelpful errors would be issued.  */
+    begin_expr = end_expr = iter_type = error_mark_node;
+  else
+    {
+      tree range_temp;
+
+      if (VAR_P (init)
+	  && array_of_runtime_bound_p (TREE_TYPE (init)))
+	/* Can't bind a reference to an array of runtime bound.  */
+	range_temp = init;
+      else
+	{
+	  range_temp = build_range_temp (init);
+	  DECL_NAME (range_temp) = NULL_TREE;
+	  pushdecl (range_temp);
+	  cp_finish_decl (range_temp, init,
+			  /*is_constant_init*/false, NULL_TREE,
+			  LOOKUP_ONLYCONVERTING);
+	  range_temp_decl = range_temp;
+	  range_temp = convert_from_reference (range_temp);
+	}
+      iter_type = cp_parser_perform_range_for_lookup (range_temp,
+						      &begin_expr, &end_expr);
+    }
+
+  tree end_iter_type = iter_type;
+  if (cxx_dialect >= cxx17)
+    end_iter_type = cv_unqualified (TREE_TYPE (end_expr));
+  end = build_decl (input_location, VAR_DECL, NULL_TREE, end_iter_type);
+  TREE_USED (end) = 1;
+  DECL_ARTIFICIAL (end) = 1;
+  pushdecl (end);
+  cp_finish_decl (end, end_expr,
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+
+  /* The new for initialization statement.  */
+  begin = build_decl (input_location, VAR_DECL, NULL_TREE, iter_type);
+  TREE_USED (begin) = 1;
+  DECL_ARTIFICIAL (begin) = 1;
+  pushdecl (begin);
+  orig_init = init;
+  if (CLASS_TYPE_P (iter_type))
+    init = NULL_TREE;
+  else
+    {
+      init = begin_expr;
+      begin_expr = NULL_TREE;
+    }
+  cp_finish_decl (begin, begin_expr,
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+
+  /* The new for condition.  */
+  if (CLASS_TYPE_P (iter_type))
+    cond = build2 (NE_EXPR, boolean_type_node, begin, end);
+  else
+    cond = build_x_binary_op (input_location, NE_EXPR,
+			      begin, ERROR_MARK,
+			      end, ERROR_MARK,
+			      NULL, tf_warning_or_error);
+
+  /* The new increment expression.  */
+  if (CLASS_TYPE_P (iter_type))
+    incr = build2 (PREINCREMENT_EXPR, iter_type, begin, NULL_TREE);
+  else
+    incr = finish_unary_op_expr (input_location,
+				 PREINCREMENT_EXPR, begin,
+				 tf_warning_or_error);
+
+  orig_decl = decl;
+  decl = begin;
+  if (for_block)
+    {
+      vec_safe_push (for_block, this_pre_body);
+      this_pre_body = NULL_TREE;
+    }
+
+  tree decomp_first_name = NULL_TREE;
+  unsigned decomp_cnt = 0;
+  if (orig_decl != error_mark_node && DECL_HAS_VALUE_EXPR_P (orig_decl))
+    {
+      tree v = DECL_VALUE_EXPR (orig_decl);
+      if (TREE_CODE (v) == ARRAY_REF
+	  && VAR_P (TREE_OPERAND (v, 0))
+	  && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
+	{
+	  tree d = orig_decl;
+	  orig_decl = TREE_OPERAND (v, 0);
+	  decomp_cnt = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
+	  decomp_first_name = d;
+	}
+    }
+
+  tree auto_node = type_uses_auto (TREE_TYPE (orig_decl));
+  if (auto_node)
+    {
+      tree t = build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
+				     tf_none);
+      if (!error_operand_p (t))
+	TREE_TYPE (orig_decl) = do_auto_deduction (TREE_TYPE (orig_decl),
+						   t, auto_node);
+    }
+
+  tree v = make_tree_vec (decomp_cnt + 3);
+  TREE_VEC_ELT (v, 0) = range_temp_decl;
+  TREE_VEC_ELT (v, 1) = end;
+  TREE_VEC_ELT (v, 2) = orig_decl;
+  for (unsigned i = 0; i < decomp_cnt; i++)
+    {
+      TREE_VEC_ELT (v, i + 3) = decomp_first_name;
+      decomp_first_name = DECL_CHAIN (decomp_first_name);
+    }
+  orig_decl = tree_cons (NULL_TREE, NULL_TREE, v);
+}
+
+/* Helper for cp_parser_omp_for_loop, finalize part of range for
+   inside of the collapsed body.  */
+
+void
+cp_finish_omp_range_for (tree orig, tree begin)
+{
+  gcc_assert (TREE_CODE (orig) == TREE_LIST
+	      && TREE_CODE (TREE_CHAIN (orig)) == TREE_VEC);
+  tree decl = TREE_VEC_ELT (TREE_CHAIN (orig), 2);
+  tree decomp_first_name = NULL_TREE;
+  unsigned int decomp_cnt = 0;
+
+  if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
+    {
+      decomp_first_name = TREE_VEC_ELT (TREE_CHAIN (orig), 3);
+      decomp_cnt = TREE_VEC_LENGTH (TREE_CHAIN (orig)) - 3;
+      cp_maybe_mangle_decomp (decl, decomp_first_name, decomp_cnt);
+    }
+
+  /* The declaration is initialized with *__begin inside the loop body.  */
+  cp_finish_decl (decl,
+		  build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
+					tf_warning_or_error),
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+  if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
+    cp_finish_decomp (decl, decomp_first_name, decomp_cnt);
+}
+
 /* Parse the restricted form of the for statement allowed by OpenMP.  */
 
 static tree
@@ -35798,7 +35990,8 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 			tree *cclauses, bool *if_p)
 {
   tree init, orig_init, cond, incr, body, decl, pre_body = NULL_TREE, ret;
-  tree real_decl, initv, condv, incrv, declv;
+  tree orig_decl;
+  tree real_decl, initv, condv, incrv, declv, orig_declv;
   tree this_pre_body, cl, ordered_cl = NULL_TREE;
   location_t loc_first;
   bool collapse_err = false;
@@ -35851,6 +36044,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   initv = make_tree_vec (count);
   condv = make_tree_vec (count);
   incrv = make_tree_vec (count);
+  orig_declv = NULL_TREE;
 
   loc_first = cp_lexer_peek_token (parser->lexer)->location;
 
@@ -35872,8 +36066,65 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
       if (!parens.require_open (parser))
 	return NULL;
 
-      init = orig_init = decl = real_decl = NULL;
+      init = orig_init = decl = real_decl = orig_decl = NULL_TREE;
       this_pre_body = push_stmt_list ();
+
+      if (code != OACC_LOOP && cxx_dialect >= cxx11)
+	{
+	  /* Save tokens so that we can put them back.  */
+	  cp_lexer_save_tokens (parser->lexer);
+
+	  /* Look for ':' that is not nested in () or {}.  */
+	  bool is_range_for
+	    = (cp_parser_skip_to_closing_parenthesis_1 (parser,
+							/*recovering=*/false,
+							CPP_COLON,
+							/*consume_paren=*/
+							false) == -1);
+
+	  /* Roll back the tokens we skipped.  */
+	  cp_lexer_rollback_tokens (parser->lexer);
+
+	  if (is_range_for)
+	    {
+	      bool saved_colon_corrects_to_scope_p
+		= parser->colon_corrects_to_scope_p;
+
+	      /* A colon is used in range-based for.  */
+	      parser->colon_corrects_to_scope_p = false;
+
+	      /* Parse the declaration.  */
+	      cp_parser_simple_declaration (parser,
+					    /*function_definition_allowed_p=*/
+					    false, &decl);
+	      parser->colon_corrects_to_scope_p
+		= saved_colon_corrects_to_scope_p;
+
+	      cp_parser_require (parser, CPP_COLON, RT_COLON);
+
+	      init = cp_parser_range_for (parser, NULL_TREE, NULL_TREE, decl,
+					  false, 0, true);
+
+	      cp_convert_omp_range_for (this_pre_body, for_block, decl,
+					orig_decl, init, orig_init,
+					cond, incr);
+	      if (this_pre_body)
+		{
+		  if (pre_body)
+		    {
+		      tree t = pre_body;
+		      pre_body = push_stmt_list ();
+		      add_stmt (t);
+		      add_stmt (this_pre_body);
+		      pre_body = pop_stmt_list (pre_body);
+		    }
+		  else
+		    pre_body = this_pre_body;
+		}
+
+	      goto parse_close_paren;
+	    }
+	}
 
       add_private_clause
 	= cp_parser_omp_for_loop_init (parser, this_pre_body, for_block,
@@ -36001,6 +36252,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	    protected_set_expr_location (incr, input_location);
 	}
 
+    parse_close_paren:
       if (!parens.require_close (parser))
 	cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
 					       /*or_comma=*/false,
@@ -36015,6 +36267,14 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	  orig_inits.safe_grow_cleared (i + 1);
 	  orig_inits[i] = orig_init;
 	}
+      if (orig_decl)
+	{
+	  if (!orig_declv)
+	    orig_declv = copy_node (declv);
+	  TREE_VEC_ELT (orig_declv, i) = orig_decl;
+	}
+      else if (orig_declv)
+	TREE_VEC_ELT (orig_declv, i) = decl;
 
       if (i == count - 1)
 	break;
@@ -36063,15 +36323,27 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 
   /* Note that the grammar doesn't call for a structured block here,
      though the loop as a whole is a structured block.  */
-  body = push_stmt_list ();
+  if (orig_declv)
+    {
+      body = begin_omp_structured_block ();
+      for (i = 0; i < count; i++)
+	if (TREE_VEC_ELT (orig_declv, i) != TREE_VEC_ELT (declv, i))
+	  cp_finish_omp_range_for (TREE_VEC_ELT (orig_declv, i),
+				   TREE_VEC_ELT (declv, i));
+    }
+  else
+    body = push_stmt_list ();
   cp_parser_statement (parser, NULL_TREE, false, if_p);
-  body = pop_stmt_list (body);
+  if (orig_declv)
+    body = finish_omp_structured_block (body);
+  else
+    body = pop_stmt_list (body);
 
   if (declv == NULL_TREE)
     ret = NULL_TREE;
   else
-    ret = finish_omp_for (loc_first, code, declv, NULL, initv, condv, incrv,
-			  body, pre_body, &orig_inits, clauses);
+    ret = finish_omp_for (loc_first, code, declv, orig_declv, initv, condv,
+			  incrv, body, pre_body, &orig_inits, clauses);
 
   while (nbraces)
     {
@@ -36168,13 +36440,14 @@ cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok,
 	}
     }
 
+  keep_next_level (true);
   sb = begin_omp_structured_block ();
   save = cp_parser_begin_omp_structured_block (parser);
 
   ret = cp_parser_omp_for_loop (parser, OMP_SIMD, clauses, cclauses, if_p);
 
   cp_parser_end_omp_structured_block (parser, save);
-  add_stmt (finish_omp_structured_block (sb));
+  add_stmt (finish_omp_for_block (finish_omp_structured_block (sb), ret));
 
   return ret;
 }
@@ -36267,13 +36540,14 @@ cp_parser_omp_for (cp_parser *parser, cp_token *pragma_tok,
       clauses = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
     }
 
+  keep_next_level (true);
   sb = begin_omp_structured_block ();
   save = cp_parser_begin_omp_structured_block (parser);
 
   ret = cp_parser_omp_for_loop (parser, OMP_FOR, clauses, cclauses, if_p);
 
   cp_parser_end_omp_structured_block (parser, save);
-  add_stmt (finish_omp_structured_block (sb));
+  add_stmt (finish_omp_for_block (finish_omp_structured_block (sb), ret));
 
   return ret;
 }
@@ -36857,13 +37131,14 @@ cp_parser_omp_distribute (cp_parser *parser, cp_token *pragma_tok,
       clauses = cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE];
     }
 
+  keep_next_level (true);
   sb = begin_omp_structured_block ();
   save = cp_parser_begin_omp_structured_block (parser);
 
   ret = cp_parser_omp_for_loop (parser, OMP_DISTRIBUTE, clauses, NULL, if_p);
 
   cp_parser_end_omp_structured_block (parser, save);
-  add_stmt (finish_omp_structured_block (sb));
+  add_stmt (finish_omp_for_block (finish_omp_structured_block (sb), ret));
 
   return ret;
 }
@@ -38841,6 +39116,7 @@ cp_parser_omp_taskloop (cp_parser *parser, cp_token *pragma_tok,
       clauses = cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP];
     }
 
+  keep_next_level (true);
   sb = begin_omp_structured_block ();
   save = cp_parser_begin_omp_structured_block (parser);
 
@@ -38848,7 +39124,7 @@ cp_parser_omp_taskloop (cp_parser *parser, cp_token *pragma_tok,
 				if_p);
 
   cp_parser_end_omp_structured_block (parser, save);
-  add_stmt (finish_omp_structured_block (sb));
+  add_stmt (finish_omp_for_block (finish_omp_structured_block (sb), ret));
 
   return ret;
 }

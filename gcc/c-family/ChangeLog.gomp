@@ -1,3 +1,8 @@
+2018-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_check_loop_iv_r): Look for orig decl of C++
+	range for loops too.
+
 2018-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_DEPOBJ.

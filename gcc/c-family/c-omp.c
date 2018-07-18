@@ -1058,7 +1058,13 @@ c_omp_check_loop_iv_r (tree *tp, int *walk_subtrees, void *data)
       for (i = 0; i < TREE_VEC_LENGTH (d->declv); i++)
 	if (*tp == TREE_VEC_ELT (d->declv, i)
 	    || (TREE_CODE (TREE_VEC_ELT (d->declv, i)) == TREE_LIST
-		&& *tp == TREE_PURPOSE (TREE_VEC_ELT (d->declv, i))))
+		&& *tp == TREE_PURPOSE (TREE_VEC_ELT (d->declv, i)))
+	    || (TREE_CODE (TREE_VEC_ELT (d->declv, i)) == TREE_LIST
+		&& TREE_CHAIN (TREE_VEC_ELT (d->declv, i))
+		&& (TREE_CODE (TREE_CHAIN (TREE_VEC_ELT (d->declv, i)))
+		    == TREE_VEC)
+		&& *tp == TREE_VEC_ELT (TREE_CHAIN (TREE_VEC_ELT (d->declv,
+								  i)), 2)))
 	  {
 	    location_t loc = d->expr_loc;
 	    if (loc == UNKNOWN_LOCATION)

@@ -8329,12 +8329,22 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 	= pop_stmt_list (OMP_CLAUSE_LASTPRIVATE_STMT (c));
     }
 
+  if (TREE_CODE (TREE_VEC_ELT (orig_declv, i)) == TREE_LIST)
+    {
+      tree t = TREE_VEC_ELT (orig_declv, i);
+      gcc_assert (TREE_PURPOSE (t) == NULL_TREE
+		  && TREE_VALUE (t) == NULL_TREE
+		  && TREE_CODE (TREE_CHAIN (t)) == TREE_VEC);
+      TREE_PURPOSE (t) = TREE_VEC_ELT (declv, i);
+      TREE_VALUE (t) = last;
+    }
+  else
+    TREE_VEC_ELT (orig_declv, i)
+      = tree_cons (TREE_VEC_ELT (declv, i), last, NULL_TREE);
   TREE_VEC_ELT (declv, i) = decl;
   TREE_VEC_ELT (initv, i) = init;
   TREE_VEC_ELT (condv, i) = cond;
   TREE_VEC_ELT (incrv, i) = incr;
-  TREE_VEC_ELT (orig_declv, i)
-    = tree_cons (TREE_VEC_ELT (orig_declv, i), last, NULL_TREE);
 
   return false;
 }
@@ -8416,6 +8426,9 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
       if (init && EXPR_HAS_LOCATION (init))
 	elocus = EXPR_LOCATION (init);
 
+      if (cond == global_namespace)
+	continue;
+
       if (cond == NULL)
 	{
 	  error_at (elocus, "missing controlling predicate");
@@ -8438,7 +8451,8 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
       tree orig_init;
       FOR_EACH_VEC_ELT (*orig_inits, i, orig_init)
 	if (orig_init
-	    && !c_omp_check_loop_iv_exprs (locus, declv,
+	    && !c_omp_check_loop_iv_exprs (locus, orig_declv
+						  ? orig_declv : declv,
 					   TREE_VEC_ELT (declv, i), orig_init,
 					   NULL_TREE, cp_walk_subtrees))
 	  fail = true;
@@ -8571,7 +8585,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
       i++;
     }
 
-  if (IS_EMPTY_STMT (pre_body))
+  if (pre_body && IS_EMPTY_STMT (pre_body))
     pre_body = NULL;
 
   omp_for = c_finish_omp_for (locus, code, declv, orig_declv, initv, condv,
@@ -8686,6 +8700,51 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	}
 
   return omp_for;
+}
+
+/* Fix up range for decls.  Those decls were pushed into BIND's BIND_EXPR_VARS
+   and need to be moved into the BIND_EXPR inside of the OMP_FOR's body.  */
+
+tree
+finish_omp_for_block (tree bind, tree omp_for)
+{
+  if (omp_for == NULL_TREE
+      || !OMP_FOR_ORIG_DECLS (omp_for)
+      || bind == NULL_TREE
+      || TREE_CODE (bind) != BIND_EXPR)
+    return bind;
+  tree b = NULL_TREE;
+  for (int i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (omp_for)); i++)
+    if (TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (omp_for), i)) == TREE_LIST
+	&& TREE_CHAIN (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (omp_for), i)))
+      {
+	tree v = TREE_CHAIN (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (omp_for), i));
+	gcc_assert (BIND_EXPR_BLOCK (bind)
+		    && (BIND_EXPR_VARS (bind)
+			== BLOCK_VARS (BIND_EXPR_BLOCK (bind))));
+	for (int j = 2; j < TREE_VEC_LENGTH (v); j++)
+	  for (tree *p = &BIND_EXPR_VARS (bind); *p; p = &DECL_CHAIN (*p))
+	    {
+	      if (*p == TREE_VEC_ELT (v, j))
+		{
+		  tree var = *p;
+		  *p = DECL_CHAIN (*p);
+		  if (b == NULL_TREE)
+		    {
+		      b = make_node (BLOCK);
+		      b = build3 (BIND_EXPR, void_type_node, NULL_TREE,
+				  OMP_FOR_BODY (omp_for), b);
+		      TREE_SIDE_EFFECTS (b) = 1;
+		      OMP_FOR_BODY (omp_for) = b;
+		    }
+		  DECL_CHAIN (var) = BIND_EXPR_VARS (b);
+		  BIND_EXPR_VARS (b) = var;
+		  BLOCK_VARS (BIND_EXPR_BLOCK (b)) = var;
+		}
+	    }
+	BLOCK_VARS (BIND_EXPR_BLOCK (bind)) = BIND_EXPR_VARS (bind);
+      }
+  return bind;
 }
 
 void

@@ -1,3 +1,7 @@
+2018-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/for-21.C: New test.
+
 2018-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/depend-6.c: Add test for bit-field in depend

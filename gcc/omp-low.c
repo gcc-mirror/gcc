@@ -4012,7 +4012,9 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  gimplify_assign (ptr, x, ilist);
 		}
 	    }
-	  else if (omp_is_reference (var))
+	  else if (omp_is_reference (var)
+		   && (c_kind != OMP_CLAUSE_FIRSTPRIVATE
+		       || !OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE (c)))
 	    {
 	      /* For references that are being privatized for Fortran,
 		 allocate new backing storage for the new pointer
@@ -4180,7 +4182,9 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	    case OMP_CLAUSE_FIRSTPRIVATE:
 	      if (is_task_ctx (ctx))
 		{
-		  if (omp_is_reference (var) || is_variable_sized (var))
+		  if ((omp_is_reference (var)
+		       && !OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE (c))
+		      || is_variable_sized (var))
 		    goto do_dtor;
 		  else if (is_global_var (maybe_lookup_decl_in_outer_ctx (var,
 									  ctx))
@@ -4191,6 +4195,18 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		      DECL_HAS_VALUE_EXPR_P (new_var) = 1;
 		      goto do_dtor;
 		    }
+		}
+	      if (OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE (c)
+		  && omp_is_reference (var))
+		{
+		  x = build_outer_var_ref (var, ctx);
+		  gcc_assert (TREE_CODE (x) == MEM_REF
+			      && integer_zerop (TREE_OPERAND (x, 1)));
+		  x = TREE_OPERAND (x, 0);
+		  x = lang_hooks.decls.omp_clause_copy_ctor
+						(c, unshare_expr (new_var), x);
+		  gimplify_and_add (x, ilist);
+		  goto do_dtor;
 		}
 	    do_firstprivate:
 	      x = build_outer_var_ref (var, ctx);

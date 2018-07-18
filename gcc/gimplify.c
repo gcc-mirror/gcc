@@ -10259,7 +10259,9 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (inner_for_stmt)); i++)
 	if (OMP_FOR_ORIG_DECLS (inner_for_stmt)
 	    && TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner_for_stmt),
-					i)) == TREE_LIST)
+					i)) == TREE_LIST
+	    && TREE_PURPOSE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner_for_stmt),
+					   i)))
 	  {
 	    tree orig = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner_for_stmt), i);
 	    /* Class iterators aren't allowed on OMP_SIMD, so the only
@@ -10313,6 +10315,43 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	    OMP_CLAUSE_CHAIN (c) = OMP_PARALLEL_CLAUSES (*data[1]);
 	    OMP_PARALLEL_CLAUSES (*data[1]) = c;
 	  }
+      /* Similarly, take care of C++ range for temporaries, those should
+	 be firstprivate on OMP_PARALLEL if any.  */
+      if (data[1])
+	for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (inner_for_stmt)); i++)
+	  if (OMP_FOR_ORIG_DECLS (inner_for_stmt)
+	      && TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner_for_stmt),
+					  i)) == TREE_LIST
+	      && TREE_CHAIN (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner_for_stmt),
+					   i)))
+	    {
+	      tree orig
+		= TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner_for_stmt), i);
+	      tree v = TREE_CHAIN (orig);
+	      tree c = build_omp_clause (UNKNOWN_LOCATION,
+					 OMP_CLAUSE_FIRSTPRIVATE);
+	      /* First add firstprivate clause for the __for_end artificial
+		 decl.  */
+	      OMP_CLAUSE_DECL (c) = TREE_VEC_ELT (v, 1);
+	      if (TREE_CODE (TREE_TYPE (OMP_CLAUSE_DECL (c)))
+		  == REFERENCE_TYPE)
+		OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE (c) = 1;
+	      OMP_CLAUSE_CHAIN (c) = OMP_PARALLEL_CLAUSES (*data[1]);
+	      OMP_PARALLEL_CLAUSES (*data[1]) = c;
+	      if (TREE_VEC_ELT (v, 0))
+		{
+		  /* And now the same for __for_range artificial decl if it
+		     exists.  */
+		  c = build_omp_clause (UNKNOWN_LOCATION,
+					OMP_CLAUSE_FIRSTPRIVATE);
+		  OMP_CLAUSE_DECL (c) = TREE_VEC_ELT (v, 0);
+		  if (TREE_CODE (TREE_TYPE (OMP_CLAUSE_DECL (c)))
+		      == REFERENCE_TYPE)
+		    OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE (c) = 1;
+		  OMP_CLAUSE_CHAIN (c) = OMP_PARALLEL_CLAUSES (*data[1]);
+		  OMP_PARALLEL_CLAUSES (*data[1]) = c;
+		}
+	    }
     }
 
   switch (TREE_CODE (for_stmt))
@@ -10539,7 +10578,11 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	    {
 	      tree orig_decl = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (for_stmt), i);
 	      if (TREE_CODE (orig_decl) == TREE_LIST)
-		orig_decl = TREE_PURPOSE (orig_decl);
+		{
+		  orig_decl = TREE_PURPOSE (orig_decl);
+		  if (!orig_decl)
+		    orig_decl = decl;
+		}
 	      gimplify_omp_ctxp->loop_iter_var.quick_push (orig_decl);
 	    }
 	  else

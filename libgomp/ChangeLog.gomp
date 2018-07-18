@@ -1,3 +1,9 @@
+2018-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/for-23.C: New test.
+	* testsuite/libgomp.c++/for-24.C: New test.
+	* testsuite/libgomp.c++/for-25.C: New test.
+
 2018-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp.h.in (omp_depend_t): New typedef.

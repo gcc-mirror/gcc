@@ -6550,6 +6550,9 @@ extern bool maybe_clone_body			(tree);
 /* In parser.c */
 extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool,
 				  unsigned short);
+extern void cp_convert_omp_range_for (tree &, vec<tree, va_gc> *, tree &,
+				      tree &, tree &, tree &, tree &, tree &);
+extern void cp_finish_omp_range_for (tree, tree);
 extern bool parsing_nsdmi (void);
 extern bool parsing_default_capturing_generic_lambda_in_template (void);
 extern void inject_this_parameter (tree, cp_cv_quals);
@@ -6972,6 +6975,7 @@ extern tree finish_omp_task			(tree, tree);
 extern tree finish_omp_for			(location_t, enum tree_code,
 						 tree, tree, tree, tree, tree,
 						 tree, tree, vec<tree> *, tree);
+extern tree finish_omp_for_block		(tree, tree);
 extern void finish_omp_atomic			(enum tree_code, enum tree_code,
 						 tree, tree, tree, tree, tree,
 						 tree, enum omp_memory_order);
