@@ -1614,8 +1614,22 @@ cond_removal_in_popcount_pattern (basic_block cond_bb, basic_block middle_bb,
       arg = gimple_assign_rhs1 (cast);
     }
 
+  cond = last_stmt (cond_bb);
+
+  /* Cond_bb has a check for b_4 [!=|==] 0 before calling the popcount
+     builtin.  */
+  if (gimple_code (cond) != GIMPLE_COND
+      || (gimple_cond_code (cond) != NE_EXPR
+	  && gimple_cond_code (cond) != EQ_EXPR)
+      || !integer_zerop (gimple_cond_rhs (cond))
+      || arg != gimple_cond_lhs (cond))
+    return false;
+
   /* Canonicalize.  */
-  if (e2->flags & EDGE_TRUE_VALUE)
+  if ((e2->flags & EDGE_TRUE_VALUE
+       && gimple_cond_code (cond) == NE_EXPR)
+      || (e1->flags & EDGE_TRUE_VALUE
+	  && gimple_cond_code (cond) == EQ_EXPR))
     {
       std::swap (arg0, arg1);
       std::swap (e1, e2);
@@ -1623,16 +1637,6 @@ cond_removal_in_popcount_pattern (basic_block cond_bb, basic_block middle_bb,
 
   /* Check PHI arguments.  */
   if (lhs != arg0 || !integer_zerop (arg1))
-    return false;
-
-  cond = last_stmt (cond_bb);
-
-  /* Cond_bb has a check for b_4 != 0 before calling the popcount
-     builtin.  */
-  if (gimple_code (cond) != GIMPLE_COND
-      || gimple_cond_code (cond) != NE_EXPR
-      || !integer_zerop (gimple_cond_rhs (cond))
-      || arg != gimple_cond_lhs (cond))
     return false;
 
   /* And insert the popcount builtin and cast stmt before the cond_bb.  */
