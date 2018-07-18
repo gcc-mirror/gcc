@@ -13797,6 +13797,9 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	      found_decl_spec = true;
 	      if (!is_cv_qualifier)
 		decl_specs->any_type_specifiers_p = true;
+
+	      if ((flags & CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR) != 0)
+		error_at (token->location, "type-specifier invalid in lambda");
 	    }
 	}
 
