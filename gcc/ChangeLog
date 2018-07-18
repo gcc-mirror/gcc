@@ -1,3 +1,9 @@
+2018-07-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/86544
+	* tree-ssa-phiopt.c (cond_removal_in_popcount_pattern): Handle comparision with EQ_EXPR
+	in last stmt.
+
 2018-07-18  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Rename
