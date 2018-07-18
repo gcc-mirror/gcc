@@ -1,3 +1,9 @@
+2018-07-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86190 - bogus -Wsign-conversion warning
+	* typeck.c (cp_build_binary_op): Fix formatting.  Add a warning
+	sentinel.
+
 2018-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59480, DR 136
