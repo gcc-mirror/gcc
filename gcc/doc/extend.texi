@@ -15941,10 +15941,8 @@ The @code{__builtin_dfp_dtstsfi_ov_dd} and
 require that the type of the @code{value} argument be
 @code{__Decimal64} and @code{__Decimal128} respectively.
 
-
-
 @node PowerPC AltiVec/VSX Built-in Functions
-@subsection PowerPC AltiVec Built-in Functions
+@subsection PowerPC AltiVec/VSX Built-in Functions
 
 GCC provides an interface for the PowerPC family of processors to access
 the AltiVec operations described in Motorola's AltiVec Programming
@@ -15968,19 +15966,6 @@ vector signed int
 vector bool int
 vector float
 @end smallexample
-
-If @option{-mvsx} is used the following additional vector types are
-implemented.
-
-@smallexample
-vector unsigned long
-vector signed long
-vector double
-@end smallexample
-
-The long types are only implemented for 64-bit code generation, and
-the long type is only used in the floating point/integer conversion
-instructions.
 
 GCC's implementation of the high-level language interface available from
 C and C++ code differs from Motorola's documentation in several ways.
@@ -16038,6 +16023,16 @@ provided by compliant compilers.  Programmers should preferentially use
 the interfaces described therein.  However, historically GCC has provided
 additional interfaces for access to vector instructions.  These are
 briefly described below.
+
+@menu
+* PowerPC AltiVec Built-in Functions on ISA 2.05::
+* PowerPC AltiVec Built-in Functions Available on ISA 2.06::
+* PowerPC AltiVec Built-in Functions Available on ISA 2.07::
+* PowerPC AltiVec Built-in Functions Available on ISA 3.0::
+@end menu
+
+@node PowerPC AltiVec Built-in Functions on ISA 2.05
+@subsubsection PowerPC AltiVec Built-in Functions on ISA 2.05
 
 The following interfaces are supported for the generic and specific
 AltiVec operations and the AltiVec predicates.  In cases where there
@@ -17581,132 +17576,152 @@ vector unsigned char vec_xor (vector unsigned char, vector bool char);
 vector unsigned char vec_xor (vector unsigned char, vector unsigned char);
 @end smallexample
 
-The following built-in functions which are currently documented in
-this section are not alphabetized with other built-in functions of
-this section because they belong in different sections.
+@node PowerPC AltiVec Built-in Functions Available on ISA 2.06
+@subsubsection PowerPC AltiVec Built-in Functions Available on ISA 2.06
+
+The AltiVec built-in functions described in this section are
+available on the PowerPC family of processors starting with ISA 2.06
+or later.  These are normally enabled by adding @option{-mvsx} to the
+command line.
+
+When @option{-mvsx} is used, the following additional vector types are
+implemented.
 
 @smallexample
-/* __int128, long long, and double arguments and results require -mvsx.  */
+vector unsigned __int128
+vector signed __int128
+vector unsigned long long int
+vector signed long long int
+vector double
+@end smallexample
+
+The long long types are only implemented for 64-bit code generation.
+
+@smallexample
+
 vector bool long long vec_and (vector bool long long int, vector bool long long);
+
 vector double vec_ctf (vector unsigned long, const int);
 vector double vec_ctf (vector signed long, const int);
+
 vector signed long vec_cts (vector double, const int);
+
 vector unsigned long vec_ctu (vector double, const int);
+
 void vec_dst (const unsigned long *, int, const int);
 void vec_dst (const long *, int, const int);
+
 void vec_dststt (const unsigned long *, int, const int);
 void vec_dststt (const long *, int, const int);
+
 void vec_dstt (const unsigned long *, int, const int);
 void vec_dstt (const long *, int, const int);
+
 vector unsigned char vec_lvsl (int, const unsigned long *);
 vector unsigned char vec_lvsl (int, const long *);
+
 vector unsigned char vec_lvsr (int, const unsigned long *);
 vector unsigned char vec_lvsr (int, const long *);
+
 vector double vec_mul (vector double, vector double);
 vector long vec_mul (vector long, vector long);
 vector unsigned long vec_mul (vector unsigned long, vector unsigned long);
+
 vector unsigned long long vec_mule (vector unsigned int, vector unsigned int);
 vector signed long long vec_mule (vector signed int, vector signed int);
+
 vector unsigned long long vec_mulo (vector unsigned int, vector unsigned int);
 vector signed long long vec_mulo (vector signed int, vector signed int);
+
 vector double vec_nabs (vector double);
+
 vector bool long long vec_reve (vector bool long long);
 vector signed long long vec_reve (vector signed long long);
 vector unsigned long long vec_reve (vector unsigned long long);
 vector double vec_sld (vector double, vector double, const int);
+
 vector bool long long int vec_sld (vector bool long long int,
                                    vector bool long long int, const int);
 vector long long int vec_sld (vector long long int, vector  long long int, const int);
 vector unsigned long long int vec_sld (vector unsigned long long int,
                                        vector unsigned long long int, const int);
+
 vector long long int vec_sll (vector long long int, vector unsigned char);
 vector unsigned long long int vec_sll (vector unsigned long long int,
                                        vector unsigned char);
+
 vector signed long long vec_slo (vector signed long long, vector signed char);
 vector signed long long vec_slo (vector signed long long, vector unsigned char);
 vector unsigned long long vec_slo (vector unsigned long long, vector signed char);
 vector unsigned long long vec_slo (vector unsigned long long, vector unsigned char);
+
 vector signed long vec_splat (vector signed long, const int);
 vector unsigned long vec_splat (vector unsigned long, const int);
+
 vector long long int vec_srl (vector long long int, vector unsigned char);
 vector unsigned long long int vec_srl (vector unsigned long long int,
                                        vector unsigned char);
+
 vector long long int vec_sro (vector long long int, vector char);
 vector long long int vec_sro (vector long long int, vector unsigned char);
 vector unsigned long long int vec_sro (vector unsigned long long int, vector char);
 vector unsigned long long int vec_sro (vector unsigned long long int,
                                        vector unsigned char);
+
 vector signed __int128 vec_subc (vector signed __int128, vector signed __int128);
 vector unsigned __int128 vec_subc (vector unsigned __int128, vector unsigned __int128);
+
 vector signed __int128 vec_sube (vector signed __int128, vector signed __int128,
                                  vector signed __int128);
 vector unsigned __int128 vec_sube (vector unsigned __int128, vector unsigned __int128,
                                    vector unsigned __int128);
+
 vector signed __int128 vec_subec (vector signed __int128, vector signed __int128,
                                   vector signed __int128);
 vector unsigned __int128 vec_subec (vector unsigned __int128, vector unsigned __int128,
                                     vector unsigned __int128);
+
 vector double vec_unpackh (vector float);
+
 vector double vec_unpackl (vector float);
 
-/* vec_doublee requires -mvsx.  */
 vector double vec_doublee (vector float);
 vector double vec_doublee (vector signed int);
 vector double vec_doublee (vector unsigned int);
 
-/* vec_doubleo requires -mvsx.  */
 vector double vec_doubleo (vector float);
 vector double vec_doubleo (vector signed int);
 vector double vec_doubleo (vector unsigned int);
 
-/* vec_doubleh requires -mvsx.  */
 vector double vec_doubleh (vector float);
 vector double vec_doubleh (vector signed int);
 vector double vec_doubleh (vector unsigned int);
 
-/* vec_doublel requires -mvsx.  */
 vector double vec_doublel (vector float);
 vector double vec_doublel (vector signed int);
 vector double vec_doublel (vector unsigned int);
 
-/* vec_float requires -mvsx.  */
 vector float vec_float (vector signed int);
 vector float vec_float (vector unsigned int);
 
-/* vec_float2 requires -mvsx.  */
 vector float vec_float2 (vector signed long long, vector signed long long);
 vector float vec_float2 (vector unsigned long long, vector signed long long);
 
-/* vec_floate requires -mvsx.  */
 vector float vec_floate (vector double);
 vector float vec_floate (vector signed long long);
 vector float vec_floate (vector unsigned long long);
 
-/* vec_floato requires -mvsx.  */
 vector float vec_floato (vector double);
 vector float vec_floato (vector signed long long);
 vector float vec_floato (vector unsigned long long);
 
-/* vec_neg requires P8_vector */
-vector signed char vec_neg (vector signed char);
-vector signed short vec_neg (vector signed short);
-vector signed int vec_neg (vector signed int);
-vector signed long long vec_neg (vector signed long long);
-vector float  char vec_neg (vector float);
-vector double vec_neg (vector double);
-
-/* vec_signed requires -mvsx.  */
 vector signed long long vec_signed (vector double);
 vector signed int vec_signed (vector float);
 
-/* vec_signede requires -mvsx.  */
 vector signed int vec_signede (vector double);
-/* vec_signedo requires -mvsx.  */
-vector signed int vec_signedo (vector double);
-/* vec_signed2 requires -mcpu=power8.  */
-vector signed int vec_signed2 (vector double, vector double);
 
-/* vec_sldw requires -mvsx.  */
+vector signed int vec_signedo (vector double);
+
 vector signed char vec_sldw (vector signed char, vector signed char, const int);
 vector unsigned char vec_sldw (vector unsigned char, vector unsigned char, const int);
 vector signed short vec_sldw (vector signed short, vector signed short, const int);
@@ -17719,25 +17734,13 @@ vector signed long long vec_sldw (vector signed long long,
 vector unsigned long long vec_sldw (vector unsigned long long,
                                     vector unsigned long long, const int);
 
-/* vec_unsigned requires -mvsx.  */
 vector signed long long vec_unsigned (vector double);
 vector signed int vec_unsigned (vector float);
 
-/* vec_unsignede requires -mvsx.  */
 vector signed int vec_unsignede (vector double);
 
-/* vec_unsignedo requires -mvsx.  */
 vector signed int vec_unsignedo (vector double);
 
-/* vec_unsignede requires -mcpu=power8.  */
-vector signed int vec_unsigned2 (vector double, vector double);
-
-@end smallexample
-
-If the vector/scalar (VSX) instruction set is available, the following
-additional functions are available:
-
-@smallexample
 vector double vec_abs (vector double);
 vector double vec_add (vector double, vector double);
 vector double vec_and (vector double, vector double);
@@ -17999,6 +18002,9 @@ if the VSX instruction set is available.  The @samp{vec_vsx_ld} and
 @samp{vec_vsx_st} built-in functions always generate the VSX @samp{LXVD2X},
 @samp{LXVW4X}, @samp{STXVD2X}, and @samp{STXVW4X} instructions.
 
+@node PowerPC AltiVec Built-in Functions Available on ISA 2.07
+@subsubsection PowerPC AltiVec Built-in Functions Available on ISA 2.07
+
 If the ISA 2.07 additions to the vector/scalar (power8-vector)
 instruction set are available, the following additional functions are
 available for both 32-bit and 64-bit targets.  For 64-bit targets, you
@@ -18007,6 +18013,17 @@ can use @var{vector long} instead of @var{vector long long},
 @var{vector unsigned long} instead of @var{vector unsigned long long}.
 
 @smallexample
+vector signed char vec_neg (vector signed char);
+vector signed short vec_neg (vector signed short);
+vector signed int vec_neg (vector signed int);
+vector signed long long vec_neg (vector signed long long);
+vector float  char vec_neg (vector float);
+vector double vec_neg (vector double);
+
+vector signed int vec_signed2 (vector double, vector double);
+
+vector signed int vec_unsigned2 (vector double, vector double);
+
 vector long long vec_abs (vector long long);
 
 vector long long vec_add (vector long long, vector long long);
@@ -18365,6 +18382,9 @@ int __builtin_bcdsub_eq (vector __int128_t, vector __int128_t);
 int __builtin_bcdsub_gt (vector __int128_t, vector __int128_t);
 int __builtin_bcdsub_ov (vector __int128_t, vector __int128_t);
 @end smallexample
+
+@node PowerPC AltiVec Built-in Functions Available on ISA 3.0
+@subsubsection PowerPC AltiVec Built-in Functions Available on ISA 3.0
 
 The following additional built-in functions are also available for the
 PowerPC family of processors, starting with ISA 3.0

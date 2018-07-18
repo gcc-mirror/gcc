@@ -1,3 +1,17 @@
+2018-07-18  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Rename
+	this subsection to "PowerPC AltiVec/VSX Built-in Functions".
+	(PowerPC AltiVec/VSX Built-in Functions): New name for subsection
+	previously known as "PowerPC AltiVec Built-in Functions".  Move
+	some material to new subsubsections "PowerPC AltiVec Built-in
+	Functions on ISA 2.06" and "PowerPC AltiVec Built-in Functions on
+	ISA 2.07".
+	(PowerPC Altivec Built-in Functions on ISA 2.05): New subsubsection.
+	(PowerPC Altivec Built-in Functions on ISA 2.06): Likewise.
+	(PowerPC Altivec Built-in Functions on ISA 2.07): Likewise.
+	(PowerPC Altivec Built-in Functions on ISA 3.0): Likewise.
+
 2018-07-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86557
