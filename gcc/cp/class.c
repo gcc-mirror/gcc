@@ -8285,10 +8285,12 @@ note_name_declared_in_class (tree name, tree decl)
 	 A name N used in a class S shall refer to the same declaration
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
-      permerror (input_location, "declaration of %q#D", decl);
-      permerror (location_of ((tree) n->value),
-		 "changes meaning of %qD from %q#D",
-		 OVL_NAME (decl), (tree) n->value);
+      if (permerror (DECL_SOURCE_LOCATION (decl),
+		     "declaration of %q#D changes meaning of %qD",
+		     decl, OVL_NAME (decl)))
+	inform (location_of ((tree) n->value),
+		"%qD declared here as %q#D",
+		OVL_NAME (decl), (tree) n->value);
     }
 }
 

@@ -1,3 +1,25 @@
+2019-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* g++.dg/other/friend8.C: New.
+	* g++.dg/other/friend9.C: Likewise.
+	* g++.dg/other/friend10.C: Likewise.
+	* g++.dg/other/friend11.C: Likewise.
+	* g++.dg/other/friend12.C: Likewise.
+	* g++.dg/parse/defarg4.C: Compile with -fpermissive -w.
+	* g++.dg/parse/defarg8.C: Likewise.
+
+2018-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/ext/uow-3.C: Adjust.
+	* g++.dg/ext/uow-4.C: Likewise.
+	* g++.dg/lookup/name-clash11.C: Likewise.
+	* g++.dg/lookup/name-clash7.C: Likewise.
+	* g++.dg/lookup/redecl1.C: Likewise.
+	* g++.dg/warn/changes-meaning.C: Likewise.
+	* g++.old-deja/g++.jason/scoping8.C: Likewise.
+	* g++.old-deja/g++.law/nest1.C: Likewise.
+
 2018-07-18  Richard Biener  <rguenther@suse.de>
 
 	PR debug/86523

@@ -1,4 +1,4 @@
-// { dg-do compile }
+// { dg-options "-fpermissive -w" }
 
 // Copyright (C) 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 3 Jul 2003 <nathan@codesourcery.com>
