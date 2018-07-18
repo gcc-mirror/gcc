@@ -1,3 +1,9 @@
+2018-07-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86190 - bogus -Wsign-conversion warning
+	* g++.dg/warn/Wsign-conversion-3.C: New test.
+	* g++.dg/warn/Wsign-conversion-4.C: New test.
+
 2018-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59480, DR 136
