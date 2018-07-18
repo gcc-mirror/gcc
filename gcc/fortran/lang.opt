@@ -250,7 +250,7 @@ Fortran Var(flag_warn_frontend_loop_interchange)
 Warn if loops have been interchanged.
 
 Wfunction-elimination
-Fortran Warning Var(warn_function_elimination)
+Fortran Warning Var(warn_function_elimination) LangEnabledBy(Fortran,Wextra)
 Warn about function call elimination.
 
 Wimplicit-interface
