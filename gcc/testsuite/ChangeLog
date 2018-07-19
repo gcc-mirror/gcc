@@ -1,5 +1,9 @@
 2018-07-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* gcc.target/aarch64/profile.c: New test.
+
+2018-07-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	PR target/83009
 	* gcc/target/aarch64/store_v2vec_lanes.c: Add extra tests.
 
