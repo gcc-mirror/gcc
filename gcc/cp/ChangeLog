@@ -1,3 +1,14 @@
+2018-07-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert fix for c++/59480 (and testsuite followup)
+
+	2019-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* decl.c (check_no_redeclaration_friend_default_args): New.
+	(duplicate_decls): Use the latter; also check that a friend
+	declaration specifying default arguments is a definition.
+
 2018-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86550

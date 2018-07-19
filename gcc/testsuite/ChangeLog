@@ -1,3 +1,22 @@
+2018-07-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert fix for c++/59480 (and testsuite followup)
+
+	2018-07-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.old-deja/g++.mike/p784.C: Add -fpermissive.
+
+	2019-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* g++.dg/other/friend8.C: New.
+	* g++.dg/other/friend9.C: Likewise.
+	* g++.dg/other/friend10.C: Likewise.
+	* g++.dg/other/friend11.C: Likewise.
+	* g++.dg/other/friend12.C: Likewise.
+	* g++.dg/parse/defarg4.C: Compile with -fpermissive -w.
+	* g++.dg/parse/defarg8.C: Likewise.
+
 2018-07-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/aarch64/profile.c: New test.
