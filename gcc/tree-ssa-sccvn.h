@@ -65,13 +65,14 @@ typedef struct vn_phi_s
   /* Unique identifier that all expressions with the same value have. */
   unsigned int value_id;
   hashval_t hashcode;
-  vec<tree> phiargs;
   basic_block block;
   /* Controlling condition lhs/rhs.  */
   tree cclhs;
   tree ccrhs;
   tree type;
   tree result;
+  /* The number of args is determined by EDGE_COUT (block->preds).  */
+  tree phiargs[1];
 } *vn_phi_t;
 typedef const struct vn_phi_s *const_vn_phi_t;
 
