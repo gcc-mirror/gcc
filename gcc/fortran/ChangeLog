@@ -1,3 +1,8 @@
+2018-07-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* trans-intrinsic.c: (gfc_conv_intrinsic_minmax): Emit MIN_MAX_EXPR
+	or IFN_FMIN/FMAX sequence to calculate the min/max when possible.
+
 2018-07-18  Janus Weil  <janus@gcc.gnu.org>
 	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 
