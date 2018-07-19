@@ -1,3 +1,7 @@
+2018-07-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.old-deja/g++.mike/p784.C: Add -fpermissive.
+
 2018-07-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/86544
