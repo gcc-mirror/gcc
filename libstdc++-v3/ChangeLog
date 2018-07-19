@@ -1,3 +1,11 @@
+2018-07-19  Glen Joseph Fernandes  <glenjofe@gmail.com>
+
+	* include/bits/stl_algobase.h (__copy_move_a): Used
+	__is_trivially_copyable.
+	(__copy_move_backward_a): Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/1.cc:
+	New test.
+
 2018-07-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86450
