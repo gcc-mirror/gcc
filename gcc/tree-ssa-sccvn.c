@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
-#include "alloc-pool.h"
 #include "ssa.h"
 #include "expmed.h"
 #include "insn-config.h"
@@ -169,11 +168,10 @@ typedef vn_nary_op_table_type::iterator vn_nary_op_iterator_type;
 static int
 vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2);
 
-struct vn_phi_hasher : pointer_hash <vn_phi_s>
+struct vn_phi_hasher : nofree_ptr_hash <vn_phi_s>
 { 
   static inline hashval_t hash (const vn_phi_s *);
   static inline bool equal (const vn_phi_s *, const vn_phi_s *);
-  static inline void remove (vn_phi_s *);
 };
 
 /* Return the computed hashcode for phi operation P1.  */
@@ -190,14 +188,6 @@ inline bool
 vn_phi_hasher::equal (const vn_phi_s *vp1, const vn_phi_s *vp2)
 {
   return vn_phi_eq (vp1, vp2);
-}
-
-/* Free a phi operation structure VP.  */
-
-inline void
-vn_phi_hasher::remove (vn_phi_s *phi)
-{
-  phi->phiargs.release ();
 }
 
 typedef hash_table<vn_phi_hasher> vn_phi_table_type;
@@ -235,11 +225,10 @@ free_reference (vn_reference_s *vr)
 
 /* vn_reference hashtable helpers.  */
 
-struct vn_reference_hasher : pointer_hash <vn_reference_s>
+struct vn_reference_hasher : nofree_ptr_hash <vn_reference_s>
 {
   static inline hashval_t hash (const vn_reference_s *);
   static inline bool equal (const vn_reference_s *, const vn_reference_s *);
-  static inline void remove (vn_reference_s *);
 };
 
 /* Return the hashcode for a given reference operation P1.  */
@@ -256,26 +245,17 @@ vn_reference_hasher::equal (const vn_reference_s *v, const vn_reference_s *c)
   return vn_reference_eq (v, c);
 }
 
-inline void
-vn_reference_hasher::remove (vn_reference_s *v)
-{
-  free_reference (v);
-}
-
 typedef hash_table<vn_reference_hasher> vn_reference_table_type;
 typedef vn_reference_table_type::iterator vn_reference_iterator_type;
 
 
-/* The set of hashtables and alloc_pool's for their items.  */
+/* The set of VN hashtables.  */
 
 typedef struct vn_tables_s
 {
   vn_nary_op_table_type *nary;
   vn_phi_table_type *phis;
   vn_reference_table_type *references;
-  struct obstack nary_obstack;
-  object_allocator<vn_phi_s> *phis_pool;
-  object_allocator<vn_reference_s> *references_pool;
 } *vn_tables_t;
 
 
@@ -310,25 +290,26 @@ static hash_table<vn_constant_hasher> *constant_to_value_id;
 static bitmap constant_value_ids;
 
 
+/* Obstack we allocate the vn-tables elements from.  */
+static obstack vn_tables_obstack;
+/* Special obstack we never unwind.  */
+static obstack vn_tables_insert_obstack;
+
 /* Valid hashtables storing information we have proven to be
    correct.  */
-
 static vn_tables_t valid_info;
 
 /* Optimistic hashtables storing information we are making assumptions about
    during iterations.  */
-
 static vn_tables_t optimistic_info;
 
 /* Pointer to the set of hashtables that is currently being used.
    Should always point to either the optimistic_info, or the
    valid_info.  */
-
 static vn_tables_t current_info;
 
 
 /* Reverse post order index for each basic block.  */
-
 static int *rpo_numbers;
 
 #define SSA_VAL(x) (VN_INFO ((x))->valnum)
@@ -1647,7 +1628,12 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
 				     operands.copy (), value, value_id);
 }
 
-static vn_nary_op_t vn_nary_op_insert_stmt (gimple *stmt, tree result);
+static vn_nary_op_t vn_nary_op_insert_stmt (gimple *, tree);
+static unsigned int vn_nary_length_from_stmt (gimple *);
+static vn_nary_op_t alloc_vn_nary_op_noinit (unsigned int, obstack *);
+static vn_nary_op_t vn_nary_op_insert_into (vn_nary_op_t,
+					    vn_nary_op_table_type *, bool);
+static void init_vn_nary_op_from_stmt (vn_nary_op_t, gimple *);
 
 /* Hook for maybe_push_res_to_seq, lookup the expression in the VN tables.  */
 
@@ -1751,9 +1737,14 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
 	 lookups there will fall back to the valid table.  */
       else if (current_info == optimistic_info)
 	{
-	  current_info = valid_info;
-	  vn_nary_op_insert_stmt (new_stmt, result);
-	  current_info = optimistic_info;
+	  unsigned int length = vn_nary_length_from_stmt (new_stmt);
+	  vn_nary_op_t vno1
+	    = alloc_vn_nary_op_noinit (length, &vn_tables_insert_obstack);
+	  vno1->value_id = VN_INFO (result)->value_id;
+	  vno1->length = length;
+	  vno1->result = result;
+	  init_vn_nary_op_from_stmt (vno1, new_stmt);
+	  vn_nary_op_insert_into (vno1, valid_info->nary, true);
 	}
       else
 	vn_nary_op_insert_stmt (new_stmt, result);
@@ -2620,7 +2611,7 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
   vn_reference_t vr1;
   bool tem;
 
-  vr1 = current_info->references_pool->allocate ();
+  vr1 = XOBNEW (&vn_tables_obstack, vn_reference_s);
   if (TREE_CODE (result) == SSA_NAME)
     vr1->value_id = VN_INFO (result)->value_id;
   else
@@ -2665,7 +2656,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set, tree type,
   vn_reference_s **slot;
   vn_reference_t vr1;
 
-  vr1 = current_info->references_pool->allocate ();
+  vr1 = XOBNEW (&vn_tables_obstack, vn_reference_s);
   vr1->value_id = value_id;
   vr1->vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
   vr1->operands = valueize_refs (operands);
@@ -2931,8 +2922,7 @@ alloc_vn_nary_op_noinit (unsigned int length, struct obstack *stack)
 static vn_nary_op_t
 alloc_vn_nary_op (unsigned int length, tree result, unsigned int value_id)
 {
-  vn_nary_op_t vno1 = alloc_vn_nary_op_noinit (length,
-					       &current_info->nary_obstack);
+  vn_nary_op_t vno1 = alloc_vn_nary_op_noinit (length, &vn_tables_obstack);
 
   vno1->value_id = value_id;
   vno1->length = length;
@@ -3016,8 +3006,8 @@ vn_nary_op_insert_stmt (gimple *stmt, tree result)
 static inline hashval_t
 vn_phi_compute_hash (vn_phi_t vp1)
 {
-  inchash::hash hstate (vp1->phiargs.length () > 2
-			? vp1->block->index : vp1->phiargs.length ());
+  inchash::hash hstate (EDGE_COUNT (vp1->block->preds) > 2
+			? vp1->block->index : EDGE_COUNT (vp1->block->preds));
   tree phi1op;
   tree type;
   edge e;
@@ -3089,10 +3079,10 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 
   if (vp1->block != vp2->block)
     {
-      if (vp1->phiargs.length () != vp2->phiargs.length ())
+      if (EDGE_COUNT (vp1->block->preds) != EDGE_COUNT (vp2->block->preds))
 	return false;
 
-      switch (vp1->phiargs.length ())
+      switch (EDGE_COUNT (vp1->block->preds))
 	{
 	case 1:
 	  /* Single-arg PHIs are just copies.  */
@@ -3167,10 +3157,9 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 
   /* Any phi in the same block will have it's arguments in the
      same edge order, because of how we store phi nodes.  */
-  int i;
-  tree phi1op;
-  FOR_EACH_VEC_ELT (vp1->phiargs, i, phi1op)
+  for (unsigned i = 0; i < EDGE_COUNT (vp1->block->preds); ++i)
     {
+      tree phi1op = vp1->phiargs[i];
       tree phi2op = vp2->phiargs[i];
       if (phi1op == VN_TOP || phi2op == VN_TOP)
 	continue;
@@ -3181,8 +3170,6 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
   return true;
 }
 
-static vec<tree> shared_lookup_phiargs;
-
 /* Lookup PHI in the current hash table, and return the resulting
    value number if it exists in the hash table.  Return NULL_TREE if
    it does not exist in the hash table. */
@@ -3191,38 +3178,38 @@ static tree
 vn_phi_lookup (gimple *phi)
 {
   vn_phi_s **slot;
-  struct vn_phi_s vp1;
+  struct vn_phi_s *vp1;
   edge e;
   edge_iterator ei;
 
-  shared_lookup_phiargs.truncate (0);
-  shared_lookup_phiargs.safe_grow (gimple_phi_num_args (phi));
+  vp1 = XALLOCAVAR (struct vn_phi_s,
+		    sizeof (struct vn_phi_s)
+		    + (gimple_phi_num_args (phi) - 1) * sizeof (tree));
 
   /* Canonicalize the SSA_NAME's to their value number.  */
   FOR_EACH_EDGE (e, ei, gimple_bb (phi)->preds)
     {
       tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
       def = TREE_CODE (def) == SSA_NAME ? SSA_VAL (def) : def;
-      shared_lookup_phiargs[e->dest_idx] = def;
+      vp1->phiargs[e->dest_idx] = def;
     }
-  vp1.type = TREE_TYPE (gimple_phi_result (phi));
-  vp1.phiargs = shared_lookup_phiargs;
-  vp1.block = gimple_bb (phi);
+  vp1->type = TREE_TYPE (gimple_phi_result (phi));
+  vp1->block = gimple_bb (phi);
   /* Extract values of the controlling condition.  */
-  vp1.cclhs = NULL_TREE;
-  vp1.ccrhs = NULL_TREE;
-  basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1.block);
+  vp1->cclhs = NULL_TREE;
+  vp1->ccrhs = NULL_TREE;
+  basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1->block);
   if (EDGE_COUNT (idom1->succs) == 2)
     if (gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1)))
       {
-	vp1.cclhs = vn_valueize (gimple_cond_lhs (last1));
-	vp1.ccrhs = vn_valueize (gimple_cond_rhs (last1));
+	vp1->cclhs = vn_valueize (gimple_cond_lhs (last1));
+	vp1->ccrhs = vn_valueize (gimple_cond_rhs (last1));
       }
-  vp1.hashcode = vn_phi_compute_hash (&vp1);
-  slot = current_info->phis->find_slot_with_hash (&vp1, vp1.hashcode,
+  vp1->hashcode = vn_phi_compute_hash (vp1);
+  slot = current_info->phis->find_slot_with_hash (vp1, vp1->hashcode,
 						  NO_INSERT);
   if (!slot && current_info == optimistic_info)
-    slot = valid_info->phis->find_slot_with_hash (&vp1, vp1.hashcode,
+    slot = valid_info->phis->find_slot_with_hash (vp1, vp1->hashcode,
 						  NO_INSERT);
   if (!slot)
     return NULL_TREE;
@@ -3236,23 +3223,22 @@ static vn_phi_t
 vn_phi_insert (gimple *phi, tree result)
 {
   vn_phi_s **slot;
-  vn_phi_t vp1 = current_info->phis_pool->allocate ();
-  vec<tree> args = vNULL;
+  vn_phi_t vp1 = (vn_phi_t) obstack_alloc (&vn_tables_obstack,
+					   sizeof (vn_phi_s)
+					   + ((gimple_phi_num_args (phi) - 1)
+					      * sizeof (tree)));
   edge e;
   edge_iterator ei;
-
-  args.safe_grow (gimple_phi_num_args (phi));
 
   /* Canonicalize the SSA_NAME's to their value number.  */
   FOR_EACH_EDGE (e, ei, gimple_bb (phi)->preds)
     {
       tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
       def = TREE_CODE (def) == SSA_NAME ? SSA_VAL (def) : def;
-      args[e->dest_idx] = def;
+      vp1->phiargs[e->dest_idx] = def;
     }
   vp1->value_id = VN_INFO (result)->value_id;
   vp1->type = TREE_TYPE (gimple_phi_result (phi));
-  vp1->phiargs = args;
   vp1->block = gimple_bb (phi);
   /* Extract values of the controlling condition.  */
   vp1->cclhs = NULL_TREE;
@@ -3781,7 +3767,7 @@ visit_reference_op_call (tree lhs, gcall *stmt)
 	}
       if (lhs)
 	changed |= set_ssa_val_to (lhs, lhs);
-      vr2 = current_info->references_pool->allocate ();
+      vr2 = XOBNEW (&vn_tables_obstack, vn_reference_s);
       vr2->vuse = vr1.vuse;
       /* As we are not walking the virtual operand chain we know the
 	 shared_lookup_references are still original so we can re-use
@@ -4317,48 +4303,6 @@ sort_scc (vec<tree> scc)
   scc.qsort (compare_ops);
 }
 
-/* Insert the no longer used nary ONARY to the hash INFO.  */
-
-static void
-copy_nary (vn_nary_op_t onary, vn_tables_t info)
-{
-  size_t size = sizeof_vn_nary_op (onary->length);
-  vn_nary_op_t nary = alloc_vn_nary_op_noinit (onary->length,
-					       &info->nary_obstack);
-  memcpy (nary, onary, size);
-  vn_nary_op_insert_into (nary, info->nary, false);
-}
-
-/* Insert the no longer used phi OPHI to the hash INFO.  */
-
-static void
-copy_phi (vn_phi_t ophi, vn_tables_t info)
-{
-  vn_phi_t phi = info->phis_pool->allocate ();
-  vn_phi_s **slot;
-  memcpy (phi, ophi, sizeof (*phi));
-  ophi->phiargs.create (0);
-  slot = info->phis->find_slot_with_hash (phi, phi->hashcode, INSERT);
-  gcc_assert (!*slot);
-  *slot = phi;
-}
-
-/* Insert the no longer used reference OREF to the hash INFO.  */
-
-static void
-copy_reference (vn_reference_t oref, vn_tables_t info)
-{
-  vn_reference_t ref;
-  vn_reference_s **slot;
-  ref = info->references_pool->allocate ();
-  memcpy (ref, oref, sizeof (*ref));
-  oref->operands.create (0);
-  slot = info->references->find_slot_with_hash (ref, ref->hashcode, INSERT);
-  if (*slot)
-    free_reference (*slot);
-  *slot = ref;
-}
-
 /* Process a strongly connected component in the SSA graph.  */
 
 static void
@@ -4410,33 +4354,60 @@ process_scc (vec<tree> scc)
       /* As we are value-numbering optimistically we have to
 	 clear the expression tables and the simplified expressions
 	 in each iteration until we converge.  */
-      optimistic_info->nary->empty ();
-      optimistic_info->phis->empty ();
-      optimistic_info->references->empty ();
-      obstack_free (&optimistic_info->nary_obstack, NULL);
-      gcc_obstack_init (&optimistic_info->nary_obstack);
-      optimistic_info->phis_pool->release ();
-      optimistic_info->references_pool->release ();
+      gcc_assert (optimistic_info->nary->elements () == 0
+		  && optimistic_info->phis->elements () == 0
+		  && optimistic_info->references->elements () == 0);
+      void *ob_top = obstack_alloc (&vn_tables_obstack, 0);
       FOR_EACH_VEC_ELT (scc, i, var)
 	gcc_assert (!VN_INFO (var)->needs_insertion
 		    && VN_INFO (var)->expr == NULL);
       FOR_EACH_VEC_ELT (scc, i, var)
 	changed |= visit_use (var);
+      if (changed)
+	{
+	  optimistic_info->nary->empty ();
+	  optimistic_info->phis->empty ();
+	  FOR_EACH_HASH_TABLE_ELEMENT (*optimistic_info->references,
+				       ref, vn_reference_t, hir)
+	    {
+	      ref->operands.release ();
+	      optimistic_info->references->clear_slot (&*hir);
+	    }
+	  optimistic_info->references->empty ();
+	  obstack_free (&vn_tables_obstack, ob_top);
+	}
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Processing SCC needed %d iterations\n", iterations);
   statistics_histogram_event (cfun, "SCC iterations", iterations);
 
-  /* Finally, copy the contents of the no longer used optimistic
-     table to the valid table.  */
+  /* Finally, move the contents of the no longer used optimistic
+     table to the valid table and clear the optimistic table.  */
   FOR_EACH_HASH_TABLE_ELEMENT (*optimistic_info->nary, nary, vn_nary_op_t, hin)
-    copy_nary (nary, valid_info);
+    {
+      optimistic_info->nary->clear_slot (&*hin);
+      vn_nary_op_insert_into (nary, valid_info->nary, false);
+    }
   FOR_EACH_HASH_TABLE_ELEMENT (*optimistic_info->phis, phi, vn_phi_t, hip)
-    copy_phi (phi, valid_info);
+    {
+      optimistic_info->phis->clear_slot (&*hip);
+      vn_phi_s **slot
+	= valid_info->phis->find_slot_with_hash (phi, phi->hashcode, INSERT);
+      gcc_assert (!*slot);
+      *slot = phi;
+    }
   FOR_EACH_HASH_TABLE_ELEMENT (*optimistic_info->references,
 			       ref, vn_reference_t, hir)
-    copy_reference (ref, valid_info);
+    {
+      optimistic_info->references->clear_slot (&*hir);
+      vn_reference_s **slot
+	= valid_info->references->find_slot_with_hash (ref, ref->hashcode,
+						       INSERT);
+      if (*slot)
+	free_reference (*slot);
+      *slot = ref;
+    }
 
   current_info = valid_info;
 }
@@ -4596,11 +4567,6 @@ allocate_vn_table (vn_tables_t table)
   table->phis = new vn_phi_table_type (23);
   table->nary = new vn_nary_op_table_type (23);
   table->references = new vn_reference_table_type (23);
-
-  gcc_obstack_init (&table->nary_obstack);
-  table->phis_pool = new object_allocator<vn_phi_s> ("VN phis");
-  table->references_pool = new object_allocator<vn_reference_s>
-    ("VN references");
 }
 
 /* Free a value number table.  */
@@ -4608,15 +4574,17 @@ allocate_vn_table (vn_tables_t table)
 static void
 free_vn_table (vn_tables_t table)
 {
+  /* Walk over elements and release vectors.  */
+  vn_reference_iterator_type hir;
+  vn_reference_t vr;
+  FOR_EACH_HASH_TABLE_ELEMENT (*table->references, vr, vn_reference_t, hir)
+    vr->operands.release ();
   delete table->phis;
   table->phis = NULL;
   delete table->nary;
   table->nary = NULL;
   delete table->references;
   table->references = NULL;
-  obstack_free (&table->nary_obstack, NULL);
-  delete table->phis_pool;
-  delete table->references_pool;
 }
 
 static void
@@ -4642,7 +4610,6 @@ init_scc_vn (void)
   vn_ssa_aux_table.safe_grow_cleared (num_ssa_names + 1);
   gcc_obstack_init (&vn_ssa_aux_obstack);
 
-  shared_lookup_phiargs.create (0);
   shared_lookup_references.create (0);
   rpo_numbers = XNEWVEC (int, last_basic_block_for_fn (cfun));
   rpo_numbers_temp =
@@ -4663,6 +4630,8 @@ init_scc_vn (void)
   renumber_gimple_stmt_uids ();
 
   /* Create the valid and optimistic value numbering tables.  */
+  gcc_obstack_init (&vn_tables_obstack);
+  gcc_obstack_init (&vn_tables_insert_obstack);
   valid_info = XCNEW (struct vn_tables_s);
   allocate_vn_table (valid_info);
   optimistic_info = XCNEW (struct vn_tables_s);
@@ -4765,7 +4734,6 @@ free_scc_vn (void)
   delete constant_to_value_id;
   constant_to_value_id = NULL;
   BITMAP_FREE (constant_value_ids);
-  shared_lookup_phiargs.release ();
   shared_lookup_references.release ();
   XDELETEVEC (rpo_numbers);
 
@@ -4783,6 +4751,8 @@ free_scc_vn (void)
   XDELETE (valid_info);
   free_vn_table (optimistic_info);
   XDELETE (optimistic_info);
+  obstack_free (&vn_tables_obstack, NULL);
+  obstack_free (&vn_tables_insert_obstack, NULL);
 
   BITMAP_FREE (const_parms);
 }

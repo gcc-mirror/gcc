@@ -1,3 +1,31 @@
+2018-07-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (struct vn_phi_s): Make phiargs member
+	a trailing array.
+	* tree-ssa-sccvn.c: Remove alloc-pool.h use.
+	(vn_phi_hasher): Derive from nofree_ptr_hash and remove remove method.
+	(vn_reference_hasher): Likewise.
+	(struct vn_tables_s): Remove obstack and alloc-pool members.
+	(vn_tables_obstack, vn_tables_insert_obstack): New global obstacks.
+	(vn_nary_build_or_lookup_1): Manually build in vn_tables_insert_obstack.
+	(vn_reference_insert): Allocate from obstack instead of from alloc-pool.
+	(vn_reference_insert_pieces): Likewise.
+	(alloc_vn_nary_op_noinit): Adjust.
+	(vn_nary_op_insert_stmt): Allocate phiargs in-place.
+	(vn_phi_eq): Adjust.
+	(shared_lookup_phiargs): Remove.
+	(vn_phi_lookup): Allocate temporary vn_phi_s on the stack.
+	(vn_phi_insert): Allocate from obstack instead of from alloc-pool.
+	(visit_reference_op_call): Likewise.
+	(copy_nary, copy_phi, copy_reference): Remove.
+	(process_scc): Rewind the obstack when iterating.  Do not
+	copy the elements to valid_info but just move them from one
+	hashtable to the other.
+	(allocate_vn_table): Adjust.
+	(free_vn_table): Likewise.
+	(init_scc_vn): Likewise.
+	(free_scc_vn): Likewise.
+
 2018-07-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/86560
