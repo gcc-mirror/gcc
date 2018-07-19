@@ -968,64 +968,43 @@ value_range_constant_singleton (value_range *vr)
    indeterminate.  */
 
 static bool
-vrp_int_const_binop (enum tree_code code, tree val1, tree val2, wide_int *res)
+wide_int_binop_overflow (wide_int &res,
+			 enum tree_code code,
+			 const wide_int &w0, const wide_int &w1,
+			 signop sign, bool overflow_undefined)
 {
-  wi::overflow_type overflow = wi::OVF_NONE;
-  signop sign = TYPE_SIGN (TREE_TYPE (val1));
-  wide_int w1 = wi::to_wide (val1);
-  wide_int w2 = wi::to_wide (val2);
-
-  switch (code)
-    {
-    case RSHIFT_EXPR:
-    case LSHIFT_EXPR:
-      w2 = wi::to_wide (val2, TYPE_PRECISION (TREE_TYPE (val1)));
-      /* FALLTHRU */
-    case MULT_EXPR:
-    case TRUNC_DIV_EXPR:
-    case EXACT_DIV_EXPR:
-    case FLOOR_DIV_EXPR:
-    case CEIL_DIV_EXPR:
-    case ROUND_DIV_EXPR:
-      if (!wide_int_binop (*res, code, w1, w2, sign, &overflow))
-	return false;
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
+  wi::overflow_type overflow;
+  if (!wide_int_binop (res, code, w0, w1, sign, &overflow))
+    return false;
 
   /* If the operation overflowed return -INF or +INF depending on the
      operation and the combination of signs of the operands.  */
-  if (overflow
-      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (val1)))
+  if (overflow && overflow_undefined)
     {
-      int sign1 = tree_int_cst_sgn (val1);
-      int sign2 = tree_int_cst_sgn (val2);
+      switch (code)
+	{
+	case MULT_EXPR:
+	  /* For multiplication, the sign of the overflow is given
+	     by the comparison of the signs of the operands.  */
+	  if (sign == UNSIGNED || w0.sign_mask () == w1.sign_mask ())
+	    res = wi::max_value (w0.get_precision (), sign);
+	  else
+	    res = wi::min_value (w0.get_precision (), sign);
+	  return true;
 
-      /* Notice that we only need to handle the restricted set of
-	 operations handled by extract_range_from_binary_expr.
-	 Among them, only multiplication, addition and subtraction
-	 can yield overflow without overflown operands because we
-	 are working with integral types only... except in the
-	 case VAL1 = -INF and VAL2 = -1 which overflows to +INF
-	 for division too.  */
-
-      /* For multiplication, the sign of the overflow is given
-	 by the comparison of the signs of the operands.  */
-      if ((code == MULT_EXPR && sign1 == sign2)
+	case TRUNC_DIV_EXPR:
+	case FLOOR_DIV_EXPR:
+	case CEIL_DIV_EXPR:
+	case EXACT_DIV_EXPR:
+	case ROUND_DIV_EXPR:
 	  /* For division, the only case is -INF / -1 = +INF.  */
-	  || code == TRUNC_DIV_EXPR
-	  || code == FLOOR_DIV_EXPR
-	  || code == CEIL_DIV_EXPR
-	  || code == EXACT_DIV_EXPR
-	  || code == ROUND_DIV_EXPR)
-	*res = wi::max_value (TYPE_PRECISION (TREE_TYPE (val1)), sign);
-      else
-	*res = wi::min_value (TYPE_PRECISION (TREE_TYPE (val1)), sign);
-      return true;
-    }
+	  res = wi::max_value (w0.get_precision (), sign);
+	  return true;
 
+	default:
+	  gcc_unreachable ();
+	}
+    }
   return !overflow;
 }
 
@@ -1127,6 +1106,149 @@ ranges_from_anti_range (value_range *ar,
   return vr0->type != VR_UNDEFINED;
 }
 
+/* Order 2 sets of wide int ranges (w0/w1, w2/w3) and set MIN/MAX
+   accordingly.  */
+
+static void
+wide_int_range_min_max (wide_int &min, wide_int &max,
+			wide_int &w0, wide_int &w1, wide_int &w2, wide_int &w3,
+			signop sign)
+{
+  /* Order pairs w0,w1 and w2,w3.  */
+  if (wi::gt_p (w0, w1, sign))
+    std::swap (w0, w1);
+  if (wi::gt_p (w2, w3, sign))
+    std::swap (w2, w3);
+
+  /* Choose min and max from the ordered pairs.  */
+  min = wi::min (w0, w2, sign);
+  max = wi::max (w1, w3, sign);
+}
+
+/* Calculate the cross product of two sets of ranges (VR0 and VR1) and
+   store the result in [RES_LB, RES_UB].
+
+   CODE is the operation to perform with sign SIGN.
+
+   OVERFLOW_UNDEFINED is set if overflow is undefined for the operation type.
+
+   Return TRUE if we were able to calculate the cross product.  */
+
+bool
+wide_int_range_cross_product (wide_int &res_lb, wide_int &res_ub,
+			      enum tree_code code, signop sign,
+			      const wide_int &vr0_lb, const wide_int &vr0_ub,
+			      const wide_int &vr1_lb, const wide_int &vr1_ub,
+			      bool overflow_undefined)
+{
+  wide_int cp1, cp2, cp3, cp4;
+
+  /* Compute the 4 cross operations, bailing if we get an overflow we
+     can't handle.  */
+
+  if (!wide_int_binop_overflow (cp1, code, vr0_lb, vr1_lb, sign,
+				overflow_undefined))
+    return false;
+
+  if (wi::eq_p (vr0_lb, vr0_ub))
+    cp3 = cp1;
+  else if (!wide_int_binop_overflow (cp3, code, vr0_ub, vr1_lb, sign,
+				     overflow_undefined))
+    return false;
+
+  if (wi::eq_p (vr1_lb, vr1_ub))
+    cp2 = cp1;
+  else if (!wide_int_binop_overflow (cp2, code, vr0_lb, vr1_ub, sign,
+				     overflow_undefined))
+    return false;
+
+  if (wi::eq_p (vr0_lb, vr0_ub))
+    cp4 = cp2;
+  else if (!wide_int_binop_overflow (cp4, code, vr0_ub, vr1_ub, sign,
+				     overflow_undefined))
+    return false;
+
+  wide_int_range_min_max (res_lb, res_ub, cp1, cp2, cp3, cp4, sign);
+  return true;
+}
+
+/* Multiply two ranges when TYPE_OVERFLOW_WRAPS:
+
+     [RES_LB, RES_UB] = [MIN0, MAX0] * [MIN1, MAX1]
+
+   This is basically fancy code so we don't drop to varying with an
+   unsigned [-3,-1]*[-3,-1].  */
+
+bool
+wide_int_range_mult_wrapping (wide_int &res_lb,
+			      wide_int &res_ub,
+			      signop sign,
+			      unsigned prec,
+			      const wide_int &min0_,
+			      const wide_int &max0_,
+			      const wide_int &min1_,
+			      const wide_int &max1_)
+{
+  /* This test requires 2*prec bits if both operands are signed and
+     2*prec + 2 bits if either is not.  Therefore, extend the values
+     using the sign of the result to PREC2.  From here on out,
+     everthing is just signed math no matter what the input types
+     were.  */
+  widest2_int min0 = widest2_int::from (min0_, sign);
+  widest2_int max0 = widest2_int::from (max0_, sign);
+  widest2_int min1 = widest2_int::from (min1_, sign);
+  widest2_int max1 = widest2_int::from (max1_, sign);
+  widest2_int sizem1 = wi::mask <widest2_int> (prec, false);
+  widest2_int size = sizem1 + 1;
+
+  /* Canonicalize the intervals.  */
+  if (sign == UNSIGNED)
+    {
+      if (wi::ltu_p (size, min0 + max0))
+	{
+	  min0 -= size;
+	  max0 -= size;
+	}
+
+      if (wi::ltu_p (size, min1 + max1))
+	{
+	  min1 -= size;
+	  max1 -= size;
+	}
+    }
+
+  widest2_int prod0 = min0 * min1;
+  widest2_int prod1 = min0 * max1;
+  widest2_int prod2 = max0 * min1;
+  widest2_int prod3 = max0 * max1;
+
+  /* Sort the 4 products so that min is in prod0 and max is in
+     prod3.  */
+  /* min0min1 > max0max1 */
+  if (prod0 > prod3)
+    std::swap (prod0, prod3);
+
+  /* min0max1 > max0min1 */
+  if (prod1 > prod2)
+    std::swap (prod1, prod2);
+
+  if (prod0 > prod1)
+    std::swap (prod0, prod1);
+
+  if (prod2 > prod3)
+    std::swap (prod2, prod3);
+
+  /* diff = max - min.  */
+  prod2 = prod3 - prod0;
+  if (wi::geu_p (prod2, sizem1))
+    /* The range covers all values.  */
+    return false;
+
+  res_lb = wide_int::from (prod0, prec, sign);
+  res_ub = wide_int::from (prod3, prec, sign);
+  return true;
+}
+
 /* Helper to extract a value-range *VR for a multiplicative operation
    *VR0 CODE *VR1.  */
 
@@ -1135,10 +1257,6 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
 					enum tree_code code,
 					value_range *vr0, value_range *vr1)
 {
-  enum value_range_type rtype;
-  wide_int val, min, max;
-  tree type;
-
   /* Multiplications, divisions and shifts are a bit tricky to handle,
      depending on the mix of signs we have in the two ranges, we
      need to operate on different values to get the minimum and
@@ -1162,79 +1280,25 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
   gcc_assert (vr0->type == VR_RANGE
 	      && vr0->type == vr1->type);
 
-  rtype = vr0->type;
-  type = TREE_TYPE (vr0->min);
-  signop sgn = TYPE_SIGN (type);
+  tree type = TREE_TYPE (vr0->min);
+  wide_int res_lb, res_ub;
+  wide_int vr0_lb = wi::to_wide (vr0->min);
+  wide_int vr0_ub = wi::to_wide (vr0->max);
+  wide_int vr1_lb = wi::to_wide (vr1->min);
+  wide_int vr1_ub = wi::to_wide (vr1->max);
+  bool overflow_undefined = TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (vr0->min));
 
-  /* Compute the 4 cross operations and their minimum and maximum value.  */
-  if (!vrp_int_const_binop (code, vr0->min, vr1->min, &val))
+  if (!wide_int_range_cross_product (res_lb, res_ub,
+				     code, TYPE_SIGN (type),
+				     vr0_lb, vr0_ub, vr1_lb, vr1_ub,
+				     overflow_undefined))
     {
       set_value_range_to_varying (vr);
       return;
     }
-  min = max = val;
-
-  if (vr1->max != vr1->min)
-    {
-      if (!vrp_int_const_binop (code, vr0->min, vr1->max, &val))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-      if (wi::lt_p (val, min, sgn))
-	min = val;
-      else if (wi::gt_p (val, max, sgn))
-	max = val;
-    }
-
-  if (vr0->max != vr0->min)
-    {
-      if (!vrp_int_const_binop (code, vr0->max, vr1->min, &val))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-      if (wi::lt_p (val, min, sgn))
-	min = val;
-      else if (wi::gt_p (val, max, sgn))
-	max = val;
-    }
-
-  if (vr0->min != vr0->max && vr1->min != vr1->max)
-    {
-      if (!vrp_int_const_binop (code, vr0->max, vr1->max, &val))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-      if (wi::lt_p (val, min, sgn))
-	min = val;
-      else if (wi::gt_p (val, max, sgn))
-	max = val;
-    }
-
-  /* If the new range has its limits swapped around (MIN > MAX),
-     then the operation caused one of them to wrap around, mark
-     the new range VARYING.  */
-  if (wi::gt_p (min, max, sgn))
-    {
-      set_value_range_to_varying (vr);
-      return;
-    }
-
-  /* We punt for [-INF, +INF].
-     We learn nothing when we have INF on both sides.
-     Note that we do accept [-INF, -INF] and [+INF, +INF].  */
-  if (wi::eq_p (min, wi::min_value (TYPE_PRECISION (type), sgn))
-      && wi::eq_p (max, wi::max_value (TYPE_PRECISION (type), sgn)))
-    {
-      set_value_range_to_varying (vr);
-      return;
-    }
-
-  set_value_range (vr, rtype,
-		   wide_int_to_tree (type, min),
-		   wide_int_to_tree (type, max), NULL);
+  set_value_range (vr, VR_RANGE,
+		   wide_int_to_tree (type, res_lb),
+		   wide_int_to_tree (type, res_ub), NULL);
 }
 
 /* For op & or | attempt to optimize:
@@ -1775,104 +1839,32 @@ extract_range_from_binary_expr_1 (value_range *vr,
     }
   else if (code == MULT_EXPR)
     {
-      /* Fancy code so that with unsigned, [-3,-1]*[-3,-1] does not
-	 drop to varying.  This test requires 2*prec bits if both
-	 operands are signed and 2*prec + 2 bits if either is not.  */
-
-      signop sign = TYPE_SIGN (expr_type);
-      unsigned int prec = TYPE_PRECISION (expr_type);
-
       if (!range_int_cst_p (&vr0)
 	  || !range_int_cst_p (&vr1))
 	{
 	  set_value_range_to_varying (vr);
 	  return;
 	}
-
       if (TYPE_OVERFLOW_WRAPS (expr_type))
 	{
-	  typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION * 2) vrp_int;
-	  typedef generic_wide_int
-             <wi::extended_tree <WIDE_INT_MAX_PRECISION * 2> > vrp_int_cst;
-	  vrp_int sizem1 = wi::mask <vrp_int> (prec, false);
-	  vrp_int size = sizem1 + 1;
-
-	  /* Extend the values using the sign of the result to PREC2.
-	     From here on out, everthing is just signed math no matter
-	     what the input types were.  */
-          vrp_int min0 = vrp_int_cst (vr0.min);
-          vrp_int max0 = vrp_int_cst (vr0.max);
-          vrp_int min1 = vrp_int_cst (vr1.min);
-          vrp_int max1 = vrp_int_cst (vr1.max);
-	  /* Canonicalize the intervals.  */
-	  if (sign == UNSIGNED)
+	  signop sign = TYPE_SIGN (expr_type);
+	  unsigned int prec = TYPE_PRECISION (expr_type);
+	  wide_int res_lb, res_ub;
+	  if (!wide_int_range_mult_wrapping (res_lb, res_ub,
+					     sign, prec,
+					     wi::to_wide (vr0.min),
+					     wi::to_wide (vr0.max),
+					     wi::to_wide (vr1.min),
+					     wi::to_wide (vr1.max)))
 	    {
-	      if (wi::ltu_p (size, min0 + max0))
-		{
-		  min0 -= size;
-		  max0 -= size;
-		}
-
-	      if (wi::ltu_p (size, min1 + max1))
-		{
-		  min1 -= size;
-		  max1 -= size;
-		}
-	    }
-
-	  vrp_int prod0 = min0 * min1;
-	  vrp_int prod1 = min0 * max1;
-	  vrp_int prod2 = max0 * min1;
-	  vrp_int prod3 = max0 * max1;
-
-	  /* Sort the 4 products so that min is in prod0 and max is in
-	     prod3.  */
-	  /* min0min1 > max0max1 */
-	  if (prod0 > prod3)
-	    std::swap (prod0, prod3);
-
-	  /* min0max1 > max0min1 */
-	  if (prod1 > prod2)
-	    std::swap (prod1, prod2);
-
-	  if (prod0 > prod1)
-	    std::swap (prod0, prod1);
-
-	  if (prod2 > prod3)
-	    std::swap (prod2, prod3);
-
-	  /* diff = max - min.  */
-	  prod2 = prod3 - prod0;
-	  if (wi::geu_p (prod2, sizem1))
-	    {
-	      /* the range covers all values.  */
 	      set_value_range_to_varying (vr);
 	      return;
 	    }
-
-	  /* The following should handle the wrapping and selecting
-	     VR_ANTI_RANGE for us.  */
-	  min = wide_int_to_tree (expr_type, prod0);
-	  max = wide_int_to_tree (expr_type, prod3);
+	  min = wide_int_to_tree (expr_type, res_lb);
+	  max = wide_int_to_tree (expr_type, res_ub);
 	  set_and_canonicalize_value_range (vr, VR_RANGE, min, max, NULL);
 	  return;
 	}
-
-      /* If we have an unsigned MULT_EXPR with two VR_ANTI_RANGEs,
-	 drop to VR_VARYING.  It would take more effort to compute a
-	 precise range for such a case.  For example, if we have
-	 op0 == 65536 and op1 == 65536 with their ranges both being
-	 ~[0,0] on a 32-bit machine, we would have op0 * op1 == 0, so
-	 we cannot claim that the product is in ~[0,0].  Note that we
-	 are guaranteed to have vr0.type == vr1.type at this
-	 point.  */
-      if (vr0.type == VR_ANTI_RANGE
-	  && !TYPE_OVERFLOW_UNDEFINED (expr_type))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
       extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
       return;
     }

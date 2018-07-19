@@ -5416,6 +5416,11 @@ namespace wi
   };
 }
 
+/* Used to convert a tree to a widest2_int like this:
+   widest2_int foo = widest2_int_cst (some_tree).  */
+typedef generic_wide_int <wi::extended_tree <WIDE_INT_MAX_PRECISION * 2> >
+  widest2_int_cst;
+
 /* Refer to INTEGER_CST T as though it were a widest_int.
 
    This function gives T's actual numerical value, influenced by the

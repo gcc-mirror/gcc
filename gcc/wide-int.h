@@ -322,6 +322,9 @@ class wide_int_storage;
 typedef generic_wide_int <wide_int_storage> wide_int;
 typedef FIXED_WIDE_INT (ADDR_MAX_PRECISION) offset_int;
 typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION) widest_int;
+/* Spelled out explicitly (rather than through FIXED_WIDE_INT)
+   so as not to confuse gengtype.  */
+typedef generic_wide_int < fixed_wide_int_storage <WIDE_INT_MAX_PRECISION * 2> > widest2_int;
 
 /* wi::storage_ref can be a reference to a primitive type,
    so this is the conservatively-correct setting.  */
