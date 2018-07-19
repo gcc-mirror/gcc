@@ -120,6 +120,10 @@ enum aarch64_symbol_type
    ADDR_QUERY_LDP_STP
       Query what is valid for a load/store pair.
 
+   ADDR_QUERY_LDP_STP_N
+      Query what is valid for a load/store pair, but narrow the incoming mode
+      for address checking.  This is used for the store_pair_lanes patterns.
+
    ADDR_QUERY_ANY
       Query what is valid for at least one memory constraint, which may
       allow things that "m" doesn't.  For example, the SVE LDR and STR
@@ -128,6 +132,7 @@ enum aarch64_symbol_type
 enum aarch64_addr_query_type {
   ADDR_QUERY_M,
   ADDR_QUERY_LDP_STP,
+  ADDR_QUERY_LDP_STP_N,
   ADDR_QUERY_ANY
 };
 
