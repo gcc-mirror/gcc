@@ -134,6 +134,13 @@ struct gomp_single;
 struct gomp_target;
 struct gomp_teams;
 
+/* Subclasses of symtab_node, using indentation to show the class
+   hierarchy.  */
+
+class symtab_node;
+  struct cgraph_node;
+  class varpool_node;
+
 union section;
 typedef union section section;
 struct gcc_options;

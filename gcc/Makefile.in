@@ -1427,6 +1427,7 @@ OBJS = \
 	optabs-libfuncs.o \
 	optabs-query.o \
 	optabs-tree.o \
+	optinfo.o \
 	options-save.o \
 	opts-global.o \
 	passes.o \
