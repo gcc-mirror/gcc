@@ -1,3 +1,77 @@
+2018-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add optinfo.o.
+	* coretypes.h (class symtab_node): New forward decl.
+	(struct cgraph_node): New forward decl.
+	(class varpool_node): New forward decl.
+	* dump-context.h: New file.
+	* dumpfile.c: Include "optinfo.h", "dump-context.h", "cgraph.h",
+	"tree-pass.h".
+	(refresh_dumps_are_enabled): Use optinfo_enabled_p.
+	(set_dump_file): Call dumpfile_ensure_any_optinfo_are_flushed.
+	(set_alt_dump_file): Likewise.
+	(dump_context::~dump_context): New dtor.
+	(dump_gimple_stmt): Move implementation to...
+	(dump_context::dump_gimple_stmt): ...this new member function.
+	Add the stmt to any pending optinfo, creating one if need be.
+	(dump_gimple_stmt_loc): Move implementation to...
+	(dump_context::dump_gimple_stmt_loc): ...this new member function.
+	Start a new optinfo and add the stmt to it.
+	(dump_gimple_expr): Move implementation to...
+	(dump_context::dump_gimple_expr): ...this new member function.
+	Add the stmt to any pending optinfo, creating one if need be.
+	(dump_gimple_expr_loc): Move implementation to...
+	(dump_context::dump_gimple_expr_loc): ...this new member function.
+	Start a new optinfo and add the stmt to it.
+	(dump_generic_expr): Move implementation to...
+	(dump_context::dump_generic_expr): ...this new member function.
+	Add the tree to any pending optinfo, creating one if need be.
+	(dump_generic_expr_loc): Move implementation to...
+	(dump_context::dump_generic_expr_loc): ...this new member
+	function.  Add the tree to any pending optinfo, creating one if
+	need be.
+	(dump_printf): Move implementation to...
+	(dump_context::dump_printf_va): ...this new member function.  Add
+	the text to any pending optinfo, creating one if need be.
+	(dump_printf_loc): Move implementation to...
+	(dump_context::dump_printf_loc_va): ...this new member function.
+	Start a new optinfo and add the stmt to it.
+	(dump_dec): Move implementation to...
+	(dump_context::dump_dec): ...this new member function.  Add the
+	value to any pending optinfo, creating one if need be.
+	(dump_context::dump_symtab_node): New member function.
+	(dump_context::get_scope_depth): New member function.
+	(dump_context::begin_scope): New member function.
+	(dump_context::end_scope): New member function.
+	(dump_context::ensure_pending_optinfo): New member function.
+	(dump_context::begin_next_optinfo): New member function.
+	(dump_context::end_any_optinfo): New member function.
+	(dump_context::s_current): New global.
+	(dump_context::s_default): New global.
+	(dump_scope_depth): Delete global.
+	(dumpfile_ensure_any_optinfo_are_flushed): New function.
+	(dump_symtab_node): New function.
+	(get_dump_scope_depth): Reimplement in terms of dump_context.
+	(dump_begin_scope): Likewise.
+	(dump_end_scope): Likewise.
+	(selftest::temp_dump_context::temp_dump_context): New ctor.
+	(selftest::temp_dump_context::~temp_dump_context): New dtor.
+	(selftest::verify_item): New function.
+	(ASSERT_IS_TEXT): New macro.
+	(ASSERT_IS_TREE): New macro.
+	(ASSERT_IS_GIMPLE): New macro.
+	(selftest::test_capture_of_dump_calls): New test.
+	(selftest::dumpfile_c_tests): Call it.
+	* dumpfile.h (dump_printf, dump_printf_loc, dump_basic_block)
+	(dump_generic_expr_loc, dump_generic_expr, dump_gimple_stmt_loc)
+	(dump_gimple_stmt, dump_dec): Gather these related decls and add a
+	descriptive comment.
+	(dump_function, print_combine_total_stats, enable_rtl_dump_file)
+	(dump_node, dump_bb): Move these unrelated decls.
+	(class dump_manager): Add leading comment.
+	* optinfo.cc: New file.
+	* optinfo.h: New file.
+
 2018-07-19  Michael Collison  <michael.collison@arm.com>
 	    Richard Henderson <rth@redhat.com>
 
