@@ -1,5 +1,12 @@
 2018-07-19  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/84047
+	PR tree-optimization/83776
+	* tree-vrp.c (vrp_prop::check_mem_ref): New function.
+	(check_array_bounds): Call it.
+
+2018-07-19  Martin Sebor  <msebor@redhat.com>
+
 	* align.h (align_flags): Use member initialization.
 
 2018-07-19  David Malcolm  <dmalcolm@redhat.com>
