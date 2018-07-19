@@ -1,3 +1,7 @@
+2018-07-19  Martin Sebor  <msebor@redhat.com>
+
+	* align.h (align_flags): Use member initialization.
+
 2018-07-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add optinfo.o.
