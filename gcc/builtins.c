@@ -3192,6 +3192,10 @@ check_access (tree exp, tree, tree, tree dstwrite,
   if (dstwrite)
     get_size_range (dstwrite, range);
 
+  /* This can happen at -O0.  */
+  if (range[0] && TREE_CODE (range[0]) != INTEGER_CST)
+    return false;
+
   tree func = get_callee_fndecl (exp);
 
   /* First check the number of bytes to be written against the maximum
@@ -4454,19 +4458,19 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
   no_overflow = check_access (exp, /*dst=*/NULL_TREE, /*src=*/NULL_TREE,
 			      len, /*maxread=*/NULL_TREE, size,
 			      /*objsize=*/NULL_TREE);
-  if (no_overflow) 
+  if (no_overflow)
     {
       size = compute_objsize (arg2, 0);
       no_overflow = check_access (exp, /*dst=*/NULL_TREE, /*src=*/NULL_TREE,
 				  len,  /*maxread=*/NULL_TREE, size,
 				  /*objsize=*/NULL_TREE);
-    } 
+    }
 
-  /* Due to the performance benefit, always inline the calls first 
+  /* Due to the performance benefit, always inline the calls first
      when result_eq is false.  */
   rtx result = NULL_RTX;
-   
-  if (!result_eq && fcode != BUILT_IN_BCMP && no_overflow) 
+
+  if (!result_eq && fcode != BUILT_IN_BCMP && no_overflow)
     {
       result = inline_expand_builtin_string_cmp (exp, target, true);
       if (result)
@@ -6748,7 +6752,7 @@ expand_builtin_goacc_parlevel_id_size (tree exp, rtx target, int ignore)
   return target;
 }
 
-/* Expand a string compare operation using a sequence of char comparison 
+/* Expand a string compare operation using a sequence of char comparison
    to get rid of the calling overhead, with result going to TARGET if
    that's convenient.
 
@@ -6757,7 +6761,7 @@ expand_builtin_goacc_parlevel_id_size (tree exp, rtx target, int ignore)
    LENGTH is the number of chars to compare;
    CONST_STR_N indicates which source string is the constant string;
    IS_MEMCMP indicates whether it's a memcmp or strcmp.
-   
+  
    to: (assume const_str_n is 2, i.e., arg2 is a constant string)
 
    target = var_str[0] - const_str[0];
@@ -6772,41 +6776,38 @@ expand_builtin_goacc_parlevel_id_size (tree exp, rtx target, int ignore)
   */
 
 static rtx
-inline_string_cmp (rtx target, tree var_str, const char* const_str, 
+inline_string_cmp (rtx target, tree var_str, const char *const_str,
 		   unsigned HOST_WIDE_INT length,
 		   int const_str_n, machine_mode mode,
-		   bool is_memcmp) 
+		   bool is_memcmp)
 {
   HOST_WIDE_INT offset = 0;
-  rtx var_rtx_array 
+  rtx var_rtx_array
     = get_memory_rtx (var_str, build_int_cst (unsigned_type_node,length));
   rtx var_rtx = NULL_RTX;
-  rtx const_rtx = NULL_RTX; 
-  rtx result = target ? target : gen_reg_rtx (mode); 
-  rtx_code_label *ne_label = gen_label_rtx ();  
+  rtx const_rtx = NULL_RTX;
+  rtx result = target ? target : gen_reg_rtx (mode);
+  rtx_code_label *ne_label = gen_label_rtx ();
   tree unit_type_node = is_memcmp ? unsigned_char_type_node : char_type_node;
+  scalar_int_mode unit_mode
+    = as_a <scalar_int_mode> TYPE_MODE (unit_type_node);
 
   start_sequence ();
 
   for (unsigned HOST_WIDE_INT i = 0; i < length; i++)
     {
-      var_rtx 
+      var_rtx
 	= adjust_address (var_rtx_array, TYPE_MODE (unit_type_node), offset);
-      const_rtx 
-	= builtin_memcpy_read_str (CONST_CAST (char *, const_str),
-				   offset,
-    				   as_a <scalar_int_mode> 
-				   TYPE_MODE (unit_type_node));
+      const_rtx = c_readstr (const_str + offset, unit_mode);
       rtx op0 = (const_str_n == 1) ? const_rtx : var_rtx;
       rtx op1 = (const_str_n == 1) ? var_rtx : const_rtx;
-  
-      result = expand_simple_binop (mode, MINUS, op0, op1, 
-			            result, is_memcmp ? 1 : 0, OPTAB_WIDEN);
-      if (i < length - 1) 
-        emit_cmp_and_jump_insns (result, CONST0_RTX (mode), NE, NULL_RTX,
-            		         mode, true, ne_label);
-      offset 
-	+= GET_MODE_SIZE (as_a <scalar_int_mode> TYPE_MODE (unit_type_node));
+
+      result = expand_simple_binop (mode, MINUS, op0, op1,
+				    result, is_memcmp ? 1 : 0, OPTAB_WIDEN);
+      if (i < length - 1)
+	emit_cmp_and_jump_insns (result, CONST0_RTX (mode), NE, NULL_RTX,
+	    			 mode, true, ne_label);
+      offset += GET_MODE_SIZE (unit_mode);
     }
 
   emit_label (ne_label);
@@ -6817,7 +6818,7 @@ inline_string_cmp (rtx target, tree var_str, const char* const_str,
   return result;
 }
 
-/* Inline expansion a call to str(n)cmp, with result going to 
+/* Inline expansion a call to str(n)cmp, with result going to
    TARGET if that's convenient.
    If the call is not been inlined, return NULL_RTX.  */
 static rtx
@@ -6829,7 +6830,7 @@ inline_expand_builtin_string_cmp (tree exp, rtx target, bool is_memcmp)
   bool is_ncmp = (fcode == BUILT_IN_STRNCMP || fcode == BUILT_IN_MEMCMP);
 
   gcc_checking_assert (fcode == BUILT_IN_STRCMP
-		       || fcode == BUILT_IN_STRNCMP 
+		       || fcode == BUILT_IN_STRNCMP
 		       || fcode == BUILT_IN_MEMCMP);
 
   tree arg1 = CALL_EXPR_ARG (exp, 0);
@@ -6842,7 +6843,7 @@ inline_expand_builtin_string_cmp (tree exp, rtx target, bool is_memcmp)
 
   const char *src_str1 = c_getstr (arg1, &len1);
   const char *src_str2 = c_getstr (arg2, &len2);
- 
+
   /* If neither strings is constant string, the call is not qualify.  */
   if (!src_str1 && !src_str2)
     return NULL_RTX;
@@ -6867,16 +6868,16 @@ inline_expand_builtin_string_cmp (tree exp, rtx target, bool is_memcmp)
   if (is_ncmp && (len3 = tree_to_uhwi (len3_tree)) < length)
     length = len3;
 
-  /* If the length of the comparision is larger than the threshold, 
+  /* If the length of the comparision is larger than the threshold,
      do nothing.  */
-  if (length > (unsigned HOST_WIDE_INT) 
+  if (length > (unsigned HOST_WIDE_INT)
 	       PARAM_VALUE (BUILTIN_STRING_CMP_INLINE_LENGTH))
     return NULL_RTX;
 
   machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
 
   /* Now, start inline expansion the call.  */
-  return inline_string_cmp (target, (const_str_n == 1) ? arg2 : arg1, 
+  return inline_string_cmp (target, (const_str_n == 1) ? arg2 : arg1,
 			    (const_str_n == 1) ? src_str1 : src_str2, length,
 			    const_str_n, mode, is_memcmp);
 }
@@ -7282,7 +7283,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	return target;
       break;
 
-    /* Expand it as BUILT_IN_MEMCMP_EQ first. If not successful, change it 
+    /* Expand it as BUILT_IN_MEMCMP_EQ first. If not successful, change it
        back to a BUILT_IN_STRCMP. Remember to delete the 3rd paramater
        when changing it to a strcmp call.  */
     case BUILT_IN_STRCMP_EQ:
@@ -7291,7 +7292,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	return target;
 
       /* Change this call back to a BUILT_IN_STRCMP.  */
-      TREE_OPERAND (exp, 1) 
+      TREE_OPERAND (exp, 1)
 	= build_fold_addr_expr (builtin_decl_explicit (BUILT_IN_STRCMP));
 
       /* Delete the last parameter.  */
@@ -7317,7 +7318,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	return target;
 
       /* Change it back to a BUILT_IN_STRNCMP.  */
-      TREE_OPERAND (exp, 1) 
+      TREE_OPERAND (exp, 1)
 	= build_fold_addr_expr (builtin_decl_explicit (BUILT_IN_STRNCMP));
       /* FALLTHROUGH */
 

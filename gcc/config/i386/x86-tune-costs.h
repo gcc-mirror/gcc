@@ -1518,7 +1518,7 @@ struct processor_costs znver1_cost = {
 /* skylake_cost should produce code tuned for Skylake familly of CPUs.  */
 static stringop_algs skylake_memcpy[2] =   {
   {libcall, {{1024, rep_prefix_4_byte, true}, {-1, libcall, false}}},
-  {libcall, {{16, loop, false}, {512, rep_prefix_8_byte, false},
+  {libcall, {{16, loop, false}, {512, unrolled_loop, false},
              {-1, libcall, false}}}};
 
 static stringop_algs skylake_memset[2] = {
@@ -1526,7 +1526,7 @@ static stringop_algs skylake_memset[2] = {
              {24, loop, true},
              {8192, rep_prefix_4_byte, true},
              {-1, libcall, false}}},
-  {libcall, {{24, loop, true}, {512, rep_prefix_8_byte, false},
+  {libcall, {{24, loop, true}, {512, unrolled_loop, false},
              {-1, libcall, false}}}};
 
 static const

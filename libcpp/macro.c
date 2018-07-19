@@ -1410,29 +1410,25 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
   pfile->about_to_expand_macro_p = false;
   /* Handle built-in macros and the _Pragma operator.  */
   {
-    source_location loc, expand_loc;
+    source_location expand_loc;
 
     if (/* The top-level macro invocation that triggered the expansion
-	   we are looking at is with a standard macro ...*/
+	   we are looking at is with a standard macro ...  */
 	!(pfile->top_most_macro_node->flags & NODE_BUILTIN)
-	/* ... and it's a function-like macro invocation.  */
-	&& pfile->top_most_macro_node->value.macro->fun_like)
-      {
-	/* Then the location of the end of the macro invocation is the
-	   location of the closing parenthesis.  */
-	loc = pfile->cur_token[-1].src_loc;
-	expand_loc = loc;
-      }
+	/* ... and it's a function-like macro invocation,  */
+	&& pfile->top_most_macro_node->value.macro->fun_like
+	/* ... and we are tracking the macro expansion.  */
+	&& CPP_OPTION (pfile, track_macro_expansion))
+      /* Then the location of the end of the macro invocation is the
+	 location of the expansion point of this macro.  */
+      expand_loc = location;
     else
-      {
-	/* Otherwise, the location of the end of the macro invocation is
-	   the location of the expansion point of that top-level macro
-	   invocation.  */
-	loc = location;
-	expand_loc = pfile->invocation_location;
-      }
+      /* Otherwise, the location of the end of the macro invocation is
+	 the location of the expansion point of that top-level macro
+	 invocation.  */
+      expand_loc = pfile->invocation_location;
 
-    return builtin_macro (pfile, node, loc, expand_loc);
+    return builtin_macro (pfile, node, location, expand_loc);
   }
 }
 

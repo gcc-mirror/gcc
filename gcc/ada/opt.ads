@@ -2148,11 +2148,20 @@ package Opt is
    type Config_Switches_Type is private;
    --  Type used to save values of the switches set from Config values
 
-   procedure Save_Opt_Config_Switches (Save : out Config_Switches_Type);
-   --  This procedure saves the current values of the switches which are
-   --  initialized from the above Config values.
+   procedure Register_Config_Switches;
+   --  This procedure is called after processing the gnat.adc file and other
+   --  configuration pragma files to record the values of the Config switches,
+   --  as possibly modified by the use of command line switches and pragmas
+   --  appearing in these files.
 
-   procedure Set_Opt_Config_Switches
+   procedure Restore_Config_Switches (Save : Config_Switches_Type);
+   --  This procedure restores a set of switch values previously saved by a
+   --  call to Save_Config_Switches.
+
+   function Save_Config_Switches return Config_Switches_Type;
+   --  Return the current state of all configuration-related attributes
+
+   procedure Set_Config_Switches
      (Internal_Unit : Boolean;
       Main_Unit     : Boolean);
    --  This procedure sets the switches to the appropriate initial values. The
@@ -2163,16 +2172,6 @@ package Opt is
    --  are normally set false by default for an internal unit, except when the
    --  internal unit is the main unit, in which case we use the command line
    --  settings.
-
-   procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type);
-   --  This procedure restores a set of switch values previously saved by a
-   --  call to Save_Opt_Config_Switches (Save).
-
-   procedure Register_Opt_Config_Switches;
-   --  This procedure is called after processing the gnat.adc file and other
-   --  configuration pragma files to record the values of the Config switches,
-   --  as possibly modified by the use of command line switches and pragmas
-   --  appearing in these files.
 
    ------------------------
    -- Other Global Flags --

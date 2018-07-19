@@ -1,3 +1,35 @@
+2018-07-18  Janus Weil  <janus@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85599
+	* dump-parse-tree.c (show_attr): Add handling of implicit_pure.
+	* frontend-passes.c (do_warn_function_elimination): Do not warn for
+	pure functions.
+	* gfortran.h: Add prototypes for gfc_pure_function and
+	gfc_implicit_pure_function.
+	* gfortran.texi: Add chapter on evaluation of logical expressions.
+	* invoke.texi: Mention that -Wfunction-elimination is implied
+	by -Wextra.
+	* lang.opt: Make -Wextra imply -Wfunction-elimination.
+	* resolve.c (pure_function): Rename to gfc_pure_function.
+	(gfc_implicit_pure_function): New function.
+	(check_pure_function): Use it here.
+	(impure_function_callback): New function.
+	(resolve_operator): Call it via gfc_expr_walker.
+
+2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/83184
+	* decl.c (match_old_style_init): Initialize locus of variable expr when
+	creating a data variable.
+	(match_clist_expr): Verify array is explicit shape/size before
+	attempting to allocate constant array constructor.
+
+2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/86417
+	* module.c (mio_component): Set component->loc when loading from module.
+
 2018-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/86421

@@ -416,6 +416,7 @@ typedef unsigned char uchar;
 #include "insn-modes-inline.h"
 #include "machmode.h"
 #include "double-int.h"
+#include "align.h"
 /* Most host source files will require the following headers.  */
 #if !defined (GENERATOR_FILE)
 #include "real.h"

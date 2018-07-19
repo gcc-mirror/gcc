@@ -3275,6 +3275,8 @@ bool gfc_resolve_intrinsic (gfc_symbol *, locus *);
 bool gfc_explicit_interface_required (gfc_symbol *, char *, int);
 extern int gfc_do_concurrent_flag;
 const char* gfc_lookup_function_fuzzy (const char *, gfc_symtree *);
+int gfc_pure_function (gfc_expr *e, const char **name);
+int gfc_implicit_pure_function (gfc_expr *e);
 
 
 /* array.c */

@@ -1,3 +1,338 @@
+2018-07-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int.h (widest2_int): New.
+	* gimple-fold.c (arith_overflowed_p): Use it.
+	* tree.h (widest2_int_cst): New.
+	* tree-vrp.c (wide_int_binop_overflow): Rename from
+	vrp_int_const_binop.
+	Rewrite to work on trees.
+	(extract_range_from_multiplicative_op_1): Abstract code to...
+	(wide_int_range_min_max): ...here.
+	(wide_int_range_cross_product): ...and here.
+	(extract_range_from_binary_expr_1): Abstract overflow code to...
+	(wide_int_range_mult_wrapping): ...here.
+	* tree-vrp.h (wide_int_range_cross_product): New.
+	(wide_int_range_mult_wrapping): New.
+
+2018-07-19  Andrew Senkevich  <andrew.senkevich@intel.com>
+	    Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/x86-tune-costs.h (skylake_memcpy,
+	skylake_memset): Replace rep_prefix with unrolling for size 512.
+
+2018-07-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/86544
+	* tree-ssa-phiopt.c (cond_removal_in_popcount_pattern): Handle comparision with EQ_EXPR
+	in last stmt.
+
+2018-07-18  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Rename
+	this subsection to "PowerPC AltiVec/VSX Built-in Functions".
+	(PowerPC AltiVec/VSX Built-in Functions): New name for subsection
+	previously known as "PowerPC AltiVec Built-in Functions".  Move
+	some material to new subsubsections "PowerPC AltiVec Built-in
+	Functions on ISA 2.06" and "PowerPC AltiVec Built-in Functions on
+	ISA 2.07".
+	(PowerPC Altivec Built-in Functions on ISA 2.05): New subsubsection.
+	(PowerPC Altivec Built-in Functions on ISA 2.06): Likewise.
+	(PowerPC Altivec Built-in Functions on ISA 2.07): Likewise.
+	(PowerPC Altivec Built-in Functions on ISA 3.0): Likewise.
+
+2018-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86557
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Also handle
+	EXACT_DIV_EXPR.
+
+2018-07-18  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_function_profiler): Generate CFI.
+
+2018-07-17  Jeff Law  <law@redhat.com>
+
+	* config/arm/arm.c (get_label_padding): Update for recent
+	changes to label_to_alignment.
+
+	PR tree-optimization/86010
+	* tree-ssa-dse.c (compute_trims): Fix typo/thinko.
+
+	* config/mips/mips.c (vr4130_align_insns): Update for recent
+	changes to label_to_alignment.
+
+	* config/frv/frv.c (frv_label_align): Update for recent changes
+	to label_to_alignment.
+
+	* config/nios2/nios2.c (nios2_label_align): Update for recent
+	changes which dropped ALIGN_LABELS_LOG.
+
+2018-07-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.md (umulsi3_highpart+1, const_umulsi3_highpart)
+	(smulsi3_highpart+1, const_smulsi3_highpart): Add CC_STATUS_INIT.
+
+2018-07-17  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_label_align): Use align_labels instead of
+	deprecated align_labels_log.
+
+2018-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86456
+	* dwarf2out.c (init_sections_and_labels): Always generate
+	a debug_line_str_section for early LTO debug.
+	(dwarf2out_finish): Reset debug_line_str_hash output early.
+	Bump counter for extra dwarf5 .debug_loc labels to not conflict
+	with fat LTO part.
+	(dwarf2out_early_finish): Output debug_line_str.
+
+2018-07-17  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.c (preferred_la_operand_p): Do not use LA with
+	index register on z196 or later.
+
+2018-07-17  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.c (s390_default_align): Set default function
+	alignment to 16.
+	(s390_override_options_after_change): Call s390_default align.
+	(s390_option_override_internal): Call s390_default_align.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): Define.
+
+2018-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/86542
+	* omp-low.c (create_task_copyfn): Copy over also fields corresponding
+	to _looptemp_ clauses, other than the first two.
+
+2018-07-17  Martin Liska  <mliska@suse.cz>
+
+	* opts.c: Do not enable OPT_falign_* for -Os.
+
+2018-07-17  Martin Liska  <mliska@suse.cz>
+
+	* align.h (MAX_CODE_ALIGN): New.
+	(MAX_CODE_ALIGN_VALUE): New.
+	* common/config/i386/i386-common.c (ix86_handle_option):
+	(MAX_CODE_ALIGN): Moved to align.h.
+	* final.c (MAX_CODE_ALIGN): Likewise.
+	* opts.c (parse_and_check_align_values):
+	(MAX_CODE_ALIGN): Likewise.
+	(MAX_CODE_ALIGN_VALUE): Likewise.
+
+2018-07-17  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/att.h (ASM_OUTPUT_ALIGN): Fix spacing
+        in order to fulfil coding style.
+	* config/i386/cygming.h (ASM_OUTPUT_ALIGN): Likewise.
+	* config/i386/gas.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/x86-64.h (ASM_OUTPUT_MAX_SKIP_PAD): Likewise.
+	* config/iq2000/iq2000.h (ASM_OUTPUT_ALIGN): Likewise.
+	* config/pa/pa.h (ASM_OUTPUT_ALIGN): Likewise.
+	* config/sparc/sol2.h (ASM_OUTPUT_ALIGN_WITH_NOP): Likewise.
+	* config/sparc/sparc.h (ASM_OUTPUT_ALIGN): Likewise.
+	* config/visium/visium.h (ASM_OUTPUT_ALIGN): Likewise.
+	(ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+
+2018-07-17  Martin Liska  <mliska@suse.cz>
+
+	* align.h: New file.
+	* config/alpha/alpha.c (alpha_align_insns_1): Use align_functions directly.
+	* config/i386/i386.c (ix86_avoid_jump_mispredicts): Use new return type
+	align_flags of label_to_alignment.
+	* config/m32r/m32r.h (LOOP_ALIGN): Wrap returned values into align_flags
+	class.
+	* config/m68k/m68k.c: Do not use removed align_labels_value and
+	align_loops_value.
+	* config/nds32/nds32.h (JUMP_ALIGN): Wrap result into align_flags class.
+	(LOOP_ALIGN): Likewise.
+	(LABEL_ALIGN): Likewise.
+	* config/powerpcspe/powerpcspe.c (TARGET_ASM_LOOP_ALIGN_MAX_SKIP):
+	Remove not used macro.
+	(rs6000_loop_align): Change return type to align_flags.
+	(rs6000_loop_align_max_skip): Remove.
+	* config/rs6000/rs6000-protos.h (rs6000_loop_align):
+	Change return type to align_flags.
+	* config/rs6000/rs6000.c (TARGET_ASM_LOOP_ALIGN_MAX_SKIP):
+	Remove not used macro.
+	(rs6000_loop_align):  Change return type to align_flags.
+	(rs6000_loop_align_max_skip): Remove.
+	* config/rx/rx.h (JUMP_ALIGN): Wrap integer values
+	* config/rx/rx-protos.h (rx_align_for_label): Make it
+        static function.
+	* config/rx/rx.c (rx_align_for_label): Change return type
+        to align_flags.
+	(rx_max_skip_for_label): Remove TARGET_ASM_*_ALIGN_MAX_SKIP
+        macro definitions.
+	into align_flags class.
+	(LABEL_ALIGN): Likewise.
+	(LOOP_ALIGN): Likewise.
+	* config/s390/s390.c (s390_label_align): Use align_flags
+	class member.
+	(s390_asm_output_function_label): Likewise.
+	* config/sh/sh.c (sh_override_options_after_change):
+	Use align_flags class directly without macros.
+	(find_barrier): Likewise.
+	(barrier_align): Likewise.
+	(sh_loop_align): Likewise.
+	* config/spu/spu.c (spu_option_override):
+	Use align_flags_tuple::get_value instead of removed macros.
+	(spu_sched_init): Likewise.
+	* config/spu/spu.h (GTY): Likewise.
+	* config/visium/visium.c (visium_option_override):
+	Set "8" as default secondary alignment.
+	* config/visium/visium.h (SUBALIGN_LOG): Define to 3
+	in order to guarantee secondary alignment of 8.
+	* coretypes.h: Include align.h header file.
+	* doc/tm.texi: Remove TARGET_ASM_JUMP_ALIGN_MAX_SKIP,
+	TARGET_ASM_LOOP_ALIGN_MAX_SKIP, TARGET_ASM_LABEL_ALIGN_MAX_SKIP
+        and TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP macros.
+	* doc/tm.texi.in: Likewise.
+	* final.c (struct label_alignment): Remove not used structure.
+	(LABEL_ALIGN): Change type to align_flags.
+	(LOOP_ALIGN): Likewise.
+	(JUMP_ALIGN): Likewise.
+	(default_loop_align_max_skip): Remove.
+	(default_label_align_max_skip): Likewise.
+	(default_jump_align_max_skip): Likewise.
+	(default_label_align_after_barrier_max_skip):
+	(LABEL_TO_ALIGNMENT): Change to access label_align vector.
+	(LABEL_TO_MAX_SKIP): Remove.
+	(label_to_alignment): Return align_flags type instead of integer.
+	(label_to_max_skip): Remove.
+	(align_fuzz): Use align_flags type.
+	(compute_alignments): Use align_flags type and use align_flags::max
+	to combine multiple alignments.
+	(grow_label_align): Grow vec instead of C array.
+	(update_alignments): Assign just LABEL_TO_ALIGNMENT.
+	(shorten_branches):  Use align_flags type and use align_flags::max
+	to combine multiple alignments.
+	(final_scan_insn_1): Remove usage of secondary alignment that comes
+	from label alignment, but instead use proper secondary alignment
+	which is computed in grow_label_align.
+	* flags.h (struct align_flags_tuple): Move to align.h.
+	(struct align_flags): Likewise.
+	(state_align_loops): Rename to align_loops.
+	(state_align_jumps): Rename to align_jumps.
+	(state_align_labels): Rename to align_labels.
+	(state_align_functions): Rename to align_functions.
+	(align_loops_log): Remove.
+	(align_jumps_log): Remove.
+	(align_labels_log): Remove.
+	(align_functions_log): Remove.
+	(align_loops_max_skip): Remove.
+	(align_jumps_max_skip): Remove.
+	(align_labels_max_skip): Remove.
+	(align_functions_max_skip): Remove.
+	(align_loops_value): Remove.
+	(align_jumps_value): Remove.
+	(align_labels_value): Remove.
+	(align_functions_value): Remove.
+	* output.h (label_to_alignment): Change return type to align_flags.
+	(label_to_max_skip): Remove.
+	* target.def: Remove loop_align_max_skip, label_align_max_skip,
+	jump_align_max_skip macros.
+	* targhooks.h (default_loop_align_max_skip): Remove.
+	(default_label_align_max_skip): Likewise.
+	(default_jump_align_max_skip): Likewise.
+	(default_label_align_after_barrier_max_skip): Remove.
+	* toplev.c (read_log_maxskip): Use ::normalize function.
+	(parse_N_M): Remove not used argument and also call ::normalize.
+	(parse_alignment_opts): Do not pass unused arguments.
+	* varasm.c (assemble_start_function): Use directly align_functions
+	instead of removed macros.
+	* system.h: Do not poison removed macros.
+
+2018-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/86539
+	* gimplify.c (gimplify_omp_for): Ensure taskloop firstprivatized init
+	and cond temporaries don't have reference type if iterator has
+	pointer type.  For init use &for_pre_body instead of pre_p if
+	for_pre_body is non-empty.
+
+2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (trunc<mode>sf2): Expand truncates of
+	double-double modes to SFmode directly directly.
+	(trunc<mode>sf2_fprs): Delete.
+
+2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (init_float128_ibm): Use the correct names
+	for conversions between IFmode and the decimal floating point modes.
+	(init_float128_ieee): Use the correct names for conversions between
+	KFmode and the decimal floating point modes.
+
+2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (init_float128_ibm): Use more correct names
+	for the conversions between TDmode and IFmode.
+	(init_float128_ieee): Use more correct names for the conversions
+	between TDmode and KFmode.
+
+2018-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86526
+	* builtins.c (expand_builtin_memcmp): Formatting fixes.
+	(inline_expand_builtin_string_cmp): Likewise.
+	(inline_string_cmp): Likewise.  Use c_readstr instead of
+	builtin_memcpy_read_str.  Add unit_mode temporary.
+
+2018-07-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/86528
+	* builtins.c (check_access): Bail out if range[0] is no INTEGER_CST.
+	* expr.c (string_constant): Fix the element size of ARRAY_TYPE.
+
+2018-07-16  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions):
+	Alphabetize prototypes of built-in functions, separating out
+	built-in functions that are listed in this section but should be
+	described elsewhere.
+
+2018-07-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/86511
+	* expmed.c (emit_store_flag): Do not emit setcc followed by a
+	conditional move when trapping comparison was split to a
+	non-trapping one (and vice versa).
+
+2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_function_profiler): Generate nops
+	instead of profiler call sequences.
+	* config/s390/s390.opt: Add the new option.
+
+2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_function_profiler): Generate
+	__mcount_loc section.
+	* config/s390/s390.opt: Add the new option.
+
+2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* common.opt: Add the new warning.
+	* config/s390/s390.c (s390_function_profiler): Emit "brasl
+	%r0,__fentry__" when -mfentry is specified.
+	(s390_option_override_internal): Disallow -mfentry for 31-bit
+	CPUs.
+	* config/s390/s390.opt: Add the new option.
+
+2018-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86523
+	* dwarf2out.c (dwarf2out_register_external_die): Assign DIE parents
+	for function-local FUNCTION_DECL and RESULT_DECL immediately.
+
+2018-07-16  Martin Liska  <mliska@suse.cz>
+
+        PR ipa/86529
+	* ipa-pure-const.c (malloc_candidate_p): Revert ::get
+        to ::get_create.
+
 2017-07-16  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arcHS.md: Update ARCHS scheduling rules.
@@ -93,11 +428,12 @@
 	when result_eq is false.
 	(expand_builtin_strcmp): Inline the calls first.
 	(expand_builtin_strncmp): Likewise.
-	(inline_string_cmp): New routine. Expand a string compare 
+	(inline_string_cmp): New routine. Expand a string compare
 	call by using a sequence of char comparison.
 	(inline_expand_builtin_string_cmp): New routine. Inline expansion
 	a call to str(n)cmp/memcmp.
-	* doc/invoke.texi (--param builtin-string-cmp-inline-length): New option.
+	* doc/invoke.texi (--param builtin-string-cmp-inline-length):
+	New option.
 	* params.def (BUILTIN_STRING_CMP_INLINE_LENGTH): New.
 
 2018-07-13  Richard Earnshaw  <rearnsha@arm.com>
@@ -691,9 +1027,9 @@
 
 	* config.gcc (riscv*-*-*): When setting xlen, handle riscv-*.
 
-2018-07-05  Indu Bhagat  <indu.bhagat@oracle.com> 
+2018-07-05  Indu Bhagat  <indu.bhagat@oracle.com>
 
-	* config/aarch64/aarch64-simd.md: correct flags text for 
+	* config/aarch64/aarch64-simd.md: correct flags text for
 	MIN_EXPR replacement.
 
 2018-07-05  James Clarke  <jrtc27@jrtc27.com>

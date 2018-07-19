@@ -1,3 +1,5 @@
+// { dg-options "-fpermissive -w" }
+
 struct A {
   static void g(int);
 };

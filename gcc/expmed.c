@@ -6038,6 +6038,11 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       if (!HAVE_conditional_move)
 	return 0;
 
+      /* Do not turn a trapping comparison into a non-trapping one.  */
+      if ((code != EQ && code != NE && code != UNEQ && code != LTGT)
+	  && flag_trapping_math)
+	return 0;
+
       /* Try using a setcc instruction for ORDERED/UNORDERED, followed by a
 	 conditional move.  */
       tem = emit_store_flag_1 (subtarget, first_code, op0, op1, mode, 0,

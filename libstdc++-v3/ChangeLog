@@ -1,3 +1,42 @@
+2018-07-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86450
+	* acinclude.m4 (GLIBCXX_CHECK_COMPILER_FEATURES): Don't define WERROR.
+	(GLIBCXX_EXPORT_FLAGS): Use -Wabi=2 instead of -Wabi.
+	* configure: Regenerate.
+	* configure.ac: Change GLIBCXX_ENABLE_WERROR default to "no".
+	* doc/Makefile.in: Regenerate.
+	* fragment.am: Set WERROR_FLAG to -Werror instead of $(WERROR).
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/debug.cc: Use diagnostic pragmas to suppress warnings
+	from -Wabi=2 that don't affect exported symbols.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+	* src/c++11/compatibility-thread-c++0x.cc [_GLIBCXX_SHARED]
+	(_Async_state_common::_M_join): Simplify use of std::call_once and
+	corresponding explicit instantiation.
+	(_Maybe_wrap_member_pointer, _Bind_simple, _Bind_simple_helper)
+	(__bind_simple): Remove definitions and explicit instantiation that
+	are not required by exported symbols.
+
+2018-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/create_testsuite_files: Fix typo in comment.
+
+	PR libstdc++/86537
+	* include/bits/shared_ptr.h (less<shared_ptr<_Tp>>): Remove
+	non-standard partial specialization.
+	* include/bits/shared_ptr_base.h (_Sp_less): Remove class definition.
+	(less<__shared_ptr<_Tp, _Lp>): Remove partial specialization.
+	* testsuite/20_util/shared_ptr/comparison/86537.cc: New test.
+
 2018-07-16  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Update.

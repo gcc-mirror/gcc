@@ -1,3 +1,48 @@
+2018-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86550
+	* parser.c (cp_parser_decl_specifier_seq): Diagnose invalid type
+	specifier if CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR.
+
+2018-07-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86190 - bogus -Wsign-conversion warning
+	* typeck.c (cp_build_binary_op): Fix formatting.  Add a warning
+	sentinel.
+
+2018-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* decl.c (check_no_redeclaration_friend_default_args): New.
+	(duplicate_decls): Use the latter; also check that a friend
+	declaration specifying default arguments is a definition.
+
+2018-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (note_name_declared_in_class): Prefer permerror + inform
+	to a pair of permerrors; use DECL_SOURCE_LOCATION.
+
+2018-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86523
+	* decl2.c (c_parse_final_cleanups): Call write_out_vars before
+	start_static_storage_duration_function sets current_function_decl.
+
+2018-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86480 - nested variadic lambda and constexpr if.
+	* pt.c (find_parameter_packs_r) [IF_STMT]: Don't walk into
+	IF_STMT_EXTRA_ARGS.
+	* tree.c (cp_walk_subtrees) [DECLTYPE_TYPE]: Set
+	cp_unevaluated_operand.
+	[ALIGNOF_EXPR] [SIZEOF_EXPR] [NOEXCEPT_EXPR]: Likewise.
+
+2018-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (resolve_address_of_overloaded_function): Don't emit an
+	inform if the matching permerror returns false.
+	* pt.c (check_specialization_namespace): Likewise.
+
 2018-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/3698

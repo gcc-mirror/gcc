@@ -1,3 +1,275 @@
+2018-07-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/86544
+	* g++.dg/tree-ssa/pr86544.C: New test.
+
+2018-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86550
+	* g++.dg/cpp0x/lambda/lambda-86550.C: New test.
+
+2018-07-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR 69558
+	* c-c++-common/cpp/diagnostic-pragma-2.c: New test.
+	* c-c++-common/pr69558.c: Remove xfail.
+	* gcc.dg/cpp/builtin-macro-1.c: Adjust test expectations.
+	* gcc.dg/pr61817-1.c: Likewise.
+	* gcc.dg/pr61817-2.c: Likewise.
+	* g++.dg/plugin/pragma_plugin.c: Warn at expansion_point_location.
+
+2018-07-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85599
+	* gfortran.dg/function_optimize_5.f90: Add option
+	'-faggressive-function-elimination' and update dg-warning clauses.
+	* gfortran.dg/short_circuiting.f90: New test.
+
+2018-07-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86190 - bogus -Wsign-conversion warning
+	* g++.dg/warn/Wsign-conversion-3.C: New test.
+	* g++.dg/warn/Wsign-conversion-4.C: New test.
+
+2018-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* g++.dg/other/friend8.C: New.
+	* g++.dg/other/friend9.C: Likewise.
+	* g++.dg/other/friend10.C: Likewise.
+	* g++.dg/other/friend11.C: Likewise.
+	* g++.dg/other/friend12.C: Likewise.
+	* g++.dg/parse/defarg4.C: Compile with -fpermissive -w.
+	* g++.dg/parse/defarg8.C: Likewise.
+
+2018-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/ext/uow-3.C: Adjust.
+	* g++.dg/ext/uow-4.C: Likewise.
+	* g++.dg/lookup/name-clash11.C: Likewise.
+	* g++.dg/lookup/name-clash7.C: Likewise.
+	* g++.dg/lookup/redecl1.C: Likewise.
+	* g++.dg/warn/changes-meaning.C: Likewise.
+	* g++.old-deja/g++.jason/scoping8.C: Likewise.
+	* g++.old-deja/g++.law/nest1.C: Likewise.
+
+2018-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86523
+	* g++.dg/lto/pr86523-3_0.C: New testcase.
+
+2018-07-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.target/m68k/mulsi_highpart.c: New test.
+
+2018-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/cpp/pr61854-c90.c (foo): Expect a note, rather than error.
+	* gcc.dg/cpp/pr61854-c94.c (foo): Likewise.
+	* gcc.dg/cpp/pr61854-4.c (foo): Likewise.
+	* gcc.dg/cpp/pr61854-8.c: New test.
+
+2018-07-17  David Edelsohn <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr85456.c: Require longdouble128.
+
+2018-07-17  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/83184
+	* gfortran.dg/dec_structure_23.f90: Oops, "un-fix" error messages.
+
+2018-07-17  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-unpack-char.c: New.
+	* gcc.target/powerpc/fold-vec-unpack-float.c: New.
+	* gcc.target/powerpc/fold-vec-unpack-int.c: New.
+	* gcc.target/powerpc/fold-vec-unpack-pixel.c: New.
+	* gcc.target/powerpc/fold-vec-unpack-short.c: New.
+
+2018-07-17  David Edelsohn <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr57150.c: Require longdouble128.
+	* gcc.target/powerpc/pr79916.c: Require dfp.
+
+2018-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86456
+	* g++.dg/debug/dwarf2/pr86456.C: New testcase.
+
+2018-07-17  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/function-align1.c: New test.
+	* gcc.target/s390/function-align2.c: New test.
+	* gcc.target/s390/function-align3.c: New test.
+
+2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr55.adb: New test.
+
+2018-07-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/vartrack-1.c (dg-options): Add
+	-fomit-frame-pointer.
+
+2018-07-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/lto/pr86523-1_0.C: Require fpic, shared support.
+	(dg-lto-options): Add -fPIC.
+	* g++.dg/lto/pr86523-2_0.C: Likewise.
+
+2018-07-17  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/powerpc/loop_align.c: Update scanned pattern.
+
+2018-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/generic_call_cw.adb, gnat.dg/generic_call_iface.adb: New
+	testcase.
+
+2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso10.adb, gnat.dg/sso10_pkg.ads: New testcase.
+
+2018-07-17  Patrick Bernardi  <bernardi@adacore.com>
+
+	* gnat.dg/memorytest.adb: New testcase.
+
+2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/config_pragma1.adb, gnat.dg/config_pragma1_pkg.ads: New testcase.
+
+2018-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/equal3.adb: New testcase.
+
+2018-07-17  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/split_args.adb: New testcase.
+
+2018-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/discr54.adb, gnat.dg/discr54_pkg.ads: New testcase.
+
+2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/bip_case_expr.adb, gnat.dg/bip_case_expr_pkg.ads: New testcase.
+
+2018-07-16  Carl Love  <cel@us.ibm.com>
+
+	PR target/86414
+	Forgot the PR number on the commit log.
+
+	2018-07-16  Carl Love  <cel@us.ibm.com>
+
+	PR target/86414
+	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
+	longdouble128.
+	* gcc.target/powerpc/divkc3-3.c: Ditto.
+ 	* gcc.target/powerpc/mulkc3-2.c: Ditto.
+	* gcc.target/powerpc/mulkc3-3.c: Ditto.
+	* gcc.target/powerpc/fold-vec-mergehl-double.c: Update counts.
+	* gcc.target/powerpc/pr85456.c: Make check Linux and AIX specific.
+
+2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/convert-fp-128.c: New testcase.
+	* gcc.target/powerpc/convert-fp-64.c: New testcase.
+
+2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lib/target-supports.exp (check_effective_target_longdouble64,
+	check_effective_target_ppc_float128,
+	check_effective_target_ppc_float128_insns,
+	check_effective_target_powerpc_vsx): New.
+
+2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lib/target-supports.exp (check_ppc_float128_hw_available): Fix
+	syntax error.
+
+2018-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86526
+	* gcc.c-torture/compile/pr86526.c: New test.
+
+2018-07-16  Carl Love  <cel@us.ibm.com>
+
+ 	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
+	longdouble128.
+	* gcc.target/powerpc/divkc3-3.c: Ditto.
+ 	* gcc.target/powerpc/mulkc3-2.c: Ditto.
+	* gcc.target/powerpc/mulkc3-3.c: Ditto.
+	* gcc.target/powerpc/fold-vec-mergehl-double.c: Update counts.
+	* gcc.target/powerpc/pr85456.c: Make check Linux and AIX specific.
+
+2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/83184
+	* gfortran.dg/assumed_rank_14.f90: New testcase.
+	* gfortran.dg/assumed_rank_15.f90: New testcase.
+	* gfortran.dg/dec_structure_8.f90: Update error messages.
+	* gfortran.dg/dec_structure_23.f90: Update error messages.
+
+2018-07-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/86528
+	* gcc.c-torture/execute/pr86528.c: New test.
+	* gcc.dg/Wrestrict-10.c (test_arr_strcat_2): Fix typo.
+
+2018-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/spec40.C: New.
+	* g++.dg/parse/ptrmem8.C: Likewise.
+
+2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/mnop-mcount-m31-fpic.c: New testcase.
+	* gcc.target/s390/mnop-mcount-m31-mzarch.c: New testcase.
+	* gcc.target/s390/mnop-mcount-m31.c: New testcase.
+	* gcc.target/s390/mnop-mcount-m64-mfentry.c: New testcase.
+	* gcc.target/s390/mnop-mcount-m64.c: New testcase.
+
+2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/mrecord-mcount.c: New testcase.
+
+2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/mfentry-m64.c: New testcase.
+
+2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/abstract_state1.adb, gnat.dg/abstract_state1.ads: New
+	testcase.
+
+2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/validity_check3.adb, gnat.dg/validity_check3.ads: New
+	testcase.
+
+2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/wide_wide_value1.adb: New testcase.
+
+2018-07-16  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/bit_order1.adb: New testcase.
+
+2018-07-16  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/iter2.adb, gnat.dg/iter2.ads: New testcase.
+
+2018-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86523
+	* g++.dg/lto/pr86523-1_0.C: New testcase.
+	* g++.dg/lto/pr86523-2_0.C: Likewise.
+
+2018-07-16  Martin Liska  <mliska@suse.cz>
+
+        PR ipa/86529
+	* g++.dg/ipa/pr86529.C: New test.
+
 2018-07-16  Tom de Vries  <tdevries@suse.de>
 
 	PR debug/86455

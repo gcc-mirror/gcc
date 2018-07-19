@@ -4865,7 +4865,19 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       break;
 
     case DECLTYPE_TYPE:
-      WALK_SUBTREE (DECLTYPE_TYPE_EXPR (*tp));
+      ++cp_unevaluated_operand;
+      /* We can't use WALK_SUBTREE here because of the goto.  */
+      result = cp_walk_tree (&DECLTYPE_TYPE_EXPR (*tp), func, data, pset);
+      --cp_unevaluated_operand;
+      *walk_subtrees_p = 0;
+      break;
+
+    case ALIGNOF_EXPR:
+    case SIZEOF_EXPR:
+    case NOEXCEPT_EXPR:
+      ++cp_unevaluated_operand;
+      result = cp_walk_tree (&TREE_OPERAND (*tp, 0), func, data, pset);
+      --cp_unevaluated_operand;
       *walk_subtrees_p = 0;
       break;
  

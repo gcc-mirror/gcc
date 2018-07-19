@@ -1207,24 +1207,26 @@ read_log_maxskip (auto_vec<unsigned> &values, align_flags_tuple *a)
   unsigned n = values.pop ();
   if (n != 0)
     a->log = floor_log2 (n * 2 - 1);
+
   if (values.is_empty ())
     a->maxskip = n ? n - 1 : 0;
   else
     {
       unsigned m = values.pop ();
-      if (m > n)
-	m = n;
       /* -falign-foo=N:M means M-1 max bytes of padding, not M.  */
       if (m > 0)
 	m--;
       a->maxskip = m;
     }
+
+  /* Normalize the tuple.  */
+  a->normalize ();
 }
 
 /* Parse "N[:M[:N2[:M2]]]" string FLAG into a pair of struct align_flags.  */
 
 static void
-parse_N_M (const char *flag, align_flags &a, unsigned int min_align_log)
+parse_N_M (const char *flag, align_flags &a)
 {
   if (flag)
     {
@@ -1269,7 +1271,10 @@ parse_N_M (const char *flag, align_flags &a, unsigned int min_align_log)
 	    {
 	      /* Set N2 unless subalign can never have any effect.  */
 	      if (align > a.levels[0].maxskip + 1)
-		a.levels[1].log = SUBALIGN_LOG;
+		{
+		  a.levels[1].log = SUBALIGN_LOG;
+		  a.levels[1].normalize ();
+		}
 	    }
 	}
 #endif
@@ -1277,40 +1282,17 @@ parse_N_M (const char *flag, align_flags &a, unsigned int min_align_log)
       /* Cache seen value.  */
       cache.put (flag, a);
     }
-  else
-    {
-      /* Reset values to zero.  */
-      for (unsigned i = 0; i < 2; i++)
-	{
-	  a.levels[i].log = 0;
-	  a.levels[i].maxskip = 0;
-	}
-    }
-
-  if ((unsigned int)a.levels[0].log < min_align_log)
-    {
-      a.levels[0].log = min_align_log;
-      a.levels[0].maxskip = (1 << min_align_log) - 1;
-    }
 }
-
-/* Minimum alignment requirements, if arch has them.  */
-
-unsigned int min_align_loops_log = 0;
-unsigned int min_align_jumps_log = 0;
-unsigned int min_align_labels_log = 0;
-unsigned int min_align_functions_log = 0;
 
 /* Process -falign-foo=N[:M[:N2[:M2]]] options.  */
 
 void
 parse_alignment_opts (void)
 {
-  parse_N_M (str_align_loops, state_align_loops, min_align_loops_log);
-  parse_N_M (str_align_jumps, state_align_jumps, min_align_jumps_log);
-  parse_N_M (str_align_labels, state_align_labels, min_align_labels_log);
-  parse_N_M (str_align_functions, state_align_functions,
-	     min_align_functions_log);
+  parse_N_M (str_align_loops, align_loops);
+  parse_N_M (str_align_jumps, align_jumps);
+  parse_N_M (str_align_labels, align_labels);
+  parse_N_M (str_align_functions, align_functions);
 }
 
 /* Process the options that have been parsed.  */

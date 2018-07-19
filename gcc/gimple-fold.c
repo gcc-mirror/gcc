@@ -3986,9 +3986,6 @@ bool
 arith_overflowed_p (enum tree_code code, const_tree type,
 		    const_tree arg0, const_tree arg1)
 {
-  typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION * 2) widest2_int;
-  typedef generic_wide_int <wi::extended_tree <WIDE_INT_MAX_PRECISION * 2> >
-    widest2_int_cst;
   widest2_int warg0 = widest2_int_cst (arg0);
   widest2_int warg1 = widest2_int_cst (arg1);
   widest2_int wres;

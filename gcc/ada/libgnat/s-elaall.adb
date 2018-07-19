@@ -45,7 +45,7 @@ package body System.Elaboration_Allocators is
    procedure Check_Standard_Allocator is
    begin
       if not Elaboration_In_Progress then
-         raise Program_Error with
+         raise Storage_Error with
            "standard allocator after elaboration is complete is not allowed "
            & "(No_Standard_Allocators_After_Elaboration restriction active)";
       end if;

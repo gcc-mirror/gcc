@@ -93,6 +93,9 @@ package Sem_Res is
    procedure Preanalyze_And_Resolve (N : Node_Id);
    --  Same, but use type of node because context does not impose a single type
 
+   procedure Preanalyze_With_Freezing_And_Resolve (N : Node_Id; T : Entity_Id);
+   --  Same, but perform freezing of static expressions of N or its children.
+
    procedure Resolve (N : Node_Id; Typ : Entity_Id);
    procedure Resolve (N : Node_Id; Typ : Entity_Id; Suppress : Check_Id);
    --  Top-level type-checking procedure, called in a complete context. The

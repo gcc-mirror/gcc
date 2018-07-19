@@ -840,17 +840,22 @@ create_var (gfc_expr * e, const char *vname)
 static void
 do_warn_function_elimination (gfc_expr *e)
 {
-  if (e->expr_type != EXPR_FUNCTION)
-    return;
-  if (e->value.function.esym)
-    gfc_warning (OPT_Wfunction_elimination,
-		 "Removing call to function %qs at %L",
-		 e->value.function.esym->name, &(e->where));
-  else if (e->value.function.isym)
-    gfc_warning (OPT_Wfunction_elimination,
-		 "Removing call to function %qs at %L",
-		 e->value.function.isym->name, &(e->where));
+  const char *name;
+  if (e->expr_type == EXPR_FUNCTION
+      && !gfc_pure_function (e, &name) && !gfc_implicit_pure_function (e))
+   {
+      if (name)
+	  gfc_warning (OPT_Wfunction_elimination,
+		      "Removing call to impure function %qs at %L", name,
+		      &(e->where));
+      else
+	  gfc_warning (OPT_Wfunction_elimination,
+		      "Removing call to impure function at %L",
+		      &(e->where));
+   }
 }
+
+
 /* Callback function for the code walker for doing common function
    elimination.  This builds up the list of functions in the expression
    and goes through them to detect duplicates, which it then replaces

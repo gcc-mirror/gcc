@@ -467,6 +467,12 @@ procedure Gnat1drv is
 
          Ineffective_Inline_Warnings := True;
 
+         --  Do not issue warnings for possible propagation of exception.
+         --  GNATprove already issues messages about possible exceptions.
+
+         No_Warn_On_Non_Local_Exception := True;
+         Warn_On_Non_Local_Exception := False;
+
          --  Disable front-end optimizations, to keep the tree as close to the
          --  source code as possible, and also to avoid inconsistencies between
          --  trees when using different optimization switches.

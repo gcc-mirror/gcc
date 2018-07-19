@@ -800,10 +800,10 @@ check_specialization_namespace (tree tmpl)
     return true;
   else
     {
-      permerror (input_location,
-		 "specialization of %qD in different namespace", tmpl);
-      inform (DECL_SOURCE_LOCATION (tmpl),
-	      "  from definition of %q#D", tmpl);
+      if (permerror (input_location,
+		     "specialization of %qD in different namespace", tmpl))
+	inform (DECL_SOURCE_LOCATION (tmpl),
+		"  from definition of %q#D", tmpl);
       return false;
     }
 }
@@ -3864,6 +3864,17 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 	*walk_subtrees = 0;
 	return NULL_TREE;
       }
+
+    case IF_STMT:
+      cp_walk_tree (&IF_COND (t), &find_parameter_packs_r,
+		    ppd, ppd->visited);
+      cp_walk_tree (&THEN_CLAUSE (t), &find_parameter_packs_r,
+		    ppd, ppd->visited);
+      cp_walk_tree (&ELSE_CLAUSE (t), &find_parameter_packs_r,
+		    ppd, ppd->visited);
+      /* Don't walk into IF_STMT_EXTRA_ARGS.  */
+      *walk_subtrees = 0;
+      return NULL_TREE;
 
     default:
       return NULL_TREE;

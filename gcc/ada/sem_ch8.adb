@@ -3782,9 +3782,7 @@ package body Sem_Ch8 is
 
       --  Local variables
 
-      Ghost_Id  : Entity_Id := Empty;
-      Living_Id : Entity_Id := Empty;
-      Pack      : Entity_Id;
+      Pack : Entity_Id;
 
    --  Start of processing for Analyze_Use_Package
 
@@ -3870,22 +3868,9 @@ package body Sem_Ch8 is
          end if;
 
          Use_One_Package (N, Name (N));
-
-         --  Capture the first Ghost package and the first living package
-
-         if Is_Entity_Name (Name (N)) then
-            Pack := Entity (Name (N));
-
-            if Is_Ghost_Entity (Pack) then
-               if No (Ghost_Id) then
-                  Ghost_Id := Pack;
-               end if;
-
-            elsif No (Living_Id) then
-               Living_Id := Pack;
-            end if;
-         end if;
       end if;
+
+      Mark_Ghost_Clause (N);
    end Analyze_Use_Package;
 
    ----------------------

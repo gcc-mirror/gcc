@@ -1,3 +1,8 @@
+2018-07-19  Eli Zaretskii  <eliz@gnu.org>
+
+	* simple-object-elf.c (ENOTSUP): If not defined by errno.h, redirect
+	to ENOSYS.
+
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* simple-object.c (handle_lto_debug_sections): Add rename parameter.

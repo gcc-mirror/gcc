@@ -1177,6 +1177,7 @@ might in some way or another become visible to the programmer.
 @menu
 * KIND Type Parameters::
 * Internal representation of LOGICAL variables::
+* Evaluation of logical expressions::
 * Thread-safety of the runtime library::
 * Data consistency and durability::
 * Files opened without an explicit ACTION= specifier::
@@ -1249,6 +1250,19 @@ values: @code{1} for @code{.TRUE.} and @code{0} for
 @code{.FALSE.}.  Any other integer value results in undefined behavior.
 
 See also @ref{Argument passing conventions} and @ref{Interoperability with C}.
+
+
+@node Evaluation of logical expressions
+@section Evaluation of logical expressions
+
+The Fortran standard does not require the compiler to evaluate all parts of an
+expression, if they do not contribute to the final result.  For logical
+expressions with @code{.AND.} or @code{.OR.} operators, in particular, GNU
+Fortran will optimize out function calls (even to impure functions) if the
+result of the expression can be established without them.  However, since not
+all compilers do that, and such an optimization can potentially modify the
+program flow and subsequent results, GNU Fortran throws warnings for such
+situations with the @option{-Wfunction-elimination} flag.
 
 
 @node Thread-safety of the runtime library

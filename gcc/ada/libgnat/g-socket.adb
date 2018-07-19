@@ -144,8 +144,8 @@ package body GNAT.Sockets is
    --  Symmetric operation
 
    function Image
-     (Val :  Inet_Addr_VN_Type;
-      Hex :  Boolean := False) return String;
+     (Val : Inet_Addr_Bytes;
+      Hex : Boolean := False) return String;
    --  Output an array of inet address components in hex or decimal mode
 
    function Is_IP_Address (Name : String) return Boolean;
@@ -274,6 +274,15 @@ package body GNAT.Sockets is
    --  Return True for an "open" Selector_Type object, i.e. one for which
    --  Create_Selector has been called and Close_Selector has not been called,
    --  or the null selector.
+
+   function Create_Address
+     (Family : Family_Type; Bytes : Inet_Addr_Bytes) return Inet_Addr_Type
+     with Inline;
+   --  Creates address from family and Inet_Addr_Bytes array.
+
+   function Get_Bytes (Addr : Inet_Addr_Type) return Inet_Addr_Bytes
+     with Inline;
+   --  Extract bytes from address
 
    ---------
    -- "+" --
@@ -1314,7 +1323,7 @@ package body GNAT.Sockets is
    -----------
 
    function Image
-     (Val : Inet_Addr_VN_Type;
+     (Val : Inet_Addr_Bytes;
       Hex : Boolean := False) return String
    is
       --  The largest Inet_Addr_Comp_Type image occurs with IPv4. It
@@ -1381,9 +1390,9 @@ package body GNAT.Sockets is
    function Image (Value : Inet_Addr_Type) return String is
    begin
       if Value.Family = Family_Inet then
-         return Image (Inet_Addr_VN_Type (Value.Sin_V4), Hex => False);
+         return Image (Inet_Addr_Bytes (Value.Sin_V4), Hex => False);
       else
-         return Image (Inet_Addr_VN_Type (Value.Sin_V6), Hex => True);
+         return Image (Inet_Addr_Bytes (Value.Sin_V6), Hex => True);
       end if;
    end Image;
 
@@ -2781,5 +2790,122 @@ package body GNAT.Sockets is
    pragma Unreferenced (Sockets_Library_Controller_Object);
    --  The elaboration and finalization of this object perform the required
    --  initialization and cleanup actions for the sockets library.
+
+   --------------------
+   -- Create_Address --
+   --------------------
+
+   function Create_Address
+     (Family : Family_Type; Bytes : Inet_Addr_Bytes) return Inet_Addr_Type
+   is
+     (case Family is
+         when Family_Inet => (Family_Inet, Bytes),
+         when Family_Inet6 => (Family_Inet6, Bytes));
+
+   ---------------
+   -- Get_Bytes --
+   ---------------
+
+   function Get_Bytes (Addr : Inet_Addr_Type) return Inet_Addr_Bytes is
+     (case Addr.Family is
+         when Family_Inet => Addr.Sin_V4,
+         when Family_Inet6 => Addr.Sin_V6);
+
+   ----------
+   -- Mask --
+   ----------
+
+   function Mask
+     (Family : Family_Type;
+      Length : Natural;
+      Host   : Boolean := False) return Inet_Addr_Type
+   is
+      Addr_Len : constant Natural := Inet_Addr_Bytes_Length (Family);
+   begin
+      if Length > 8 * Addr_Len then
+         raise Constraint_Error with
+           "invalid mask length for address family " & Family'Img;
+      end if;
+
+      declare
+         B    : Inet_Addr_Bytes (1 ..  Addr_Len);
+         Part : Inet_Addr_Comp_Type;
+      begin
+         for J in 1 .. Length / 8 loop
+            B (J) := (if Host then 0 else 255);
+         end loop;
+
+         if Length < 8 * Addr_Len then
+            Part := 2 ** (8 - Length mod 8) - 1;
+            B (Length / 8 + 1) := (if Host then Part else not Part);
+
+            for J in Length / 8 + 2 .. B'Last loop
+               B (J) := (if Host then 255 else 0);
+            end loop;
+         end if;
+
+         return Create_Address (Family, B);
+      end;
+   end Mask;
+
+   -----------
+   -- "and" --
+   -----------
+
+   function "and" (Addr, Mask : Inet_Addr_Type) return Inet_Addr_Type is
+   begin
+      if Addr.Family /= Mask.Family then
+         raise Constraint_Error with "incompatible address families";
+      end if;
+
+      declare
+         A : constant Inet_Addr_Bytes := Get_Bytes (Addr);
+         M : constant Inet_Addr_Bytes := Get_Bytes (Mask);
+         R : Inet_Addr_Bytes (A'Range);
+
+      begin
+         for J in A'Range loop
+            R (J) := A (J) and M (J);
+         end loop;
+         return Create_Address (Addr.Family, R);
+      end;
+   end "and";
+
+   ----------
+   -- "or" --
+   ----------
+
+   function "or" (Net, Host : Inet_Addr_Type) return Inet_Addr_Type is
+   begin
+      if Net.Family /= Host.Family then
+         raise Constraint_Error with "incompatible address families";
+      end if;
+
+      declare
+         N : constant Inet_Addr_Bytes := Get_Bytes (Net);
+         H : constant Inet_Addr_Bytes := Get_Bytes (Host);
+         R : Inet_Addr_Bytes (N'Range);
+
+      begin
+         for J in N'Range loop
+            R (J) := N (J) or H (J);
+         end loop;
+         return Create_Address (Net.Family, R);
+      end;
+   end "or";
+
+   -----------
+   -- "not" --
+   -----------
+
+   function "not" (Mask : Inet_Addr_Type) return Inet_Addr_Type is
+      M : constant Inet_Addr_Bytes := Get_Bytes (Mask);
+      R : Inet_Addr_Bytes (M'Range);
+   begin
+      for J in R'Range loop
+         R (J) := not M (J);
+      end loop;
+      return Create_Address (Mask.Family, R);
+   end "not";
 
 end GNAT.Sockets;

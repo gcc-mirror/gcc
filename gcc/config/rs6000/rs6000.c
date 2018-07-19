@@ -1817,9 +1817,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN
 #define TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN invalid_arg_for_unprototyped_fn
 
-#undef TARGET_ASM_LOOP_ALIGN_MAX_SKIP
-#define TARGET_ASM_LOOP_ALIGN_MAX_SKIP rs6000_loop_align_max_skip
-
 #undef TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST rs6000_md_asm_adjust
 
@@ -5275,7 +5272,7 @@ rs6000_builtin_mask_for_load (void)
 }
 
 /* Implement LOOP_ALIGN. */
-int
+align_flags
 rs6000_loop_align (rtx label)
 {
   basic_block bb;
@@ -5283,7 +5280,7 @@ rs6000_loop_align (rtx label)
 
   /* Don't override loop alignment if -falign-loops was specified. */
   if (!can_override_loop_align)
-    return align_loops_log;
+    return align_loops;
 
   bb = BLOCK_FOR_INSN (label);
   ninsns = num_loop_insns(bb->loop_father);
@@ -5295,16 +5292,9 @@ rs6000_loop_align (rtx label)
 	  || rs6000_tune == PROCESSOR_POWER6
 	  || rs6000_tune == PROCESSOR_POWER7
 	  || rs6000_tune == PROCESSOR_POWER8))
-    return 5;
+    return align_flags (5);
   else
-    return align_loops_log;
-}
-
-/* Implement TARGET_LOOP_ALIGN_MAX_SKIP. */
-static int
-rs6000_loop_align_max_skip (rtx_insn *label)
-{
-  return (1 << rs6000_loop_align (label)) - 1;
+    return align_loops;
 }
 
 /* Return true iff, data reference of TYPE can reach vector alignment (16)
@@ -17847,12 +17837,12 @@ init_float128_ibm (machine_mode mode)
      names.  */
   if (mode == IFmode)
     {
-      set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdtf2");
-      set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddtf2");
-      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunctftd2");
-      set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunctfsd2");
-      set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunctfdd2");
-      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtdtf2");
+      set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdtf");
+      set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddtf");
+      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunctdtf");
+      set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunctfsd");
+      set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunctfdd");
+      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtftd");
 
       if (TARGET_POWERPC64)
 	{
@@ -17951,12 +17941,12 @@ init_float128_ieee (machine_mode mode)
       if (mode != TFmode && FLOAT128_IBM_P (TFmode))
 	set_conv_libfunc (trunc_optab, TFmode, mode, "__extendkftf2");
 
-      set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdkf2");
-      set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddkf2");
-      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunckftd2");
-      set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunckfsd2");
-      set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunckfdd2");
-      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtdkf2");
+      set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdkf");
+      set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddkf");
+      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunctdkf");
+      set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunckfsd");
+      set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunckfdd");
+      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendkftd");
 
       set_conv_libfunc (sfix_optab, SImode, mode, "__fixkfsi");
       set_conv_libfunc (ufix_optab, SImode, mode, "__fixunskfsi");
