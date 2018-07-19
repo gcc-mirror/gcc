@@ -1,3 +1,9 @@
+2018-07-19  Andrew Senkevich  <andrew.senkevich@intel.com>
+	    Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/x86-tune-costs.h (skylake_memcpy,
+	skylake_memset): Replace rep_prefix with unrolling for size 512.
+
 2018-07-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/86544
