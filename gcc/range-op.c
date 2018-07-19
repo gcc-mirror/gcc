@@ -878,7 +878,26 @@ op_wi (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
       return true;
       
     case MULT_EXPR:
-      return do_cross_product_irange (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
+      {
+	tree type = r.get_type ();
+	if (TYPE_OVERFLOW_WRAPS (type))
+	  {
+	    wide_int new_lb, new_ub;
+	    wide_int_range_mult_wrapping (new_lb, new_ub,
+					  s, TYPE_PRECISION (type),
+					  lh_lb, lh_ub, rh_lb, rh_ub);
+	    /* If the bounds are swapped, set the overflow bit so
+	       add_to_range can create the range correctly.  */
+	    wi::overflow_type overflow;
+	    if (wi::gt_p (new_lb, new_ub, s))
+	      overflow = wi::OVF_OVERFLOW;
+	    else
+	      overflow = wi::OVF_NONE;
+	    add_to_range (r, new_lb, wi::OVF_NONE, new_ub, overflow);
+	    return true;
+	  }
+	return do_cross_product_irange (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
+      }
 
     default:
       break;
