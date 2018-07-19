@@ -1,6 +1,12 @@
 2018-07-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/86560
+	* gcc.target/i386/pr86560-4.c: New test.
+	* gcc.target/i386/pr86560-5.c: Likewise.
+
+2018-07-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/86560
 	* gcc.target/i386/pr86560-1.c: New test.
 	* gcc.target/i386/pr86560-2.c: Likewise.
 	* gcc.target/i386/pr86560-3.c: Likewise.
