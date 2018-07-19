@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans.h"
 #include "stringpool.h"
 #include "fold-const.h"
+#include "internal-fn.h"
 #include "tree-nested.h"
 #include "stor-layout.h"
 #include "toplev.h"	/* For rest_of_decl_compilation.  */
@@ -3874,14 +3875,15 @@ gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
     minmax (a1, a2, a3, ...)
     {
       mvar = a1;
-      if (a2 .op. mvar || isnan (mvar))
-        mvar = a2;
-      if (a3 .op. mvar || isnan (mvar))
-        mvar = a3;
+      mvar = COMP (mvar, a2)
+      mvar = COMP (mvar, a3)
       ...
-      return mvar
+      return mvar;
     }
- */
+    Where COMP is MIN/MAX_EXPR for integral types or when we don't
+    care about NaNs, or IFN_FMIN/MAX when the target has support for
+    fast NaN-honouring min/max.  When neither holds expand a sequence
+    of explicit comparisons.  */
 
 /* TODO: Mismatching types can occur when specific names are used.
    These should be handled during resolution.  */
@@ -3891,7 +3893,6 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
   tree tmp;
   tree mvar;
   tree val;
-  tree thencase;
   tree *args;
   tree type;
   gfc_actual_arglist *argexpr;
@@ -3912,55 +3913,77 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   mvar = gfc_create_var (type, "M");
   gfc_add_modify (&se->pre, mvar, args[0]);
-  for (i = 1, argexpr = argexpr->next; i < nargs; i++)
-    {
-      tree cond, isnan;
 
+  internal_fn ifn = op == GT_EXPR ? IFN_FMAX : IFN_FMIN;
+
+  for (i = 1, argexpr = argexpr->next; i < nargs; i++, argexpr = argexpr->next)
+    {
+      tree cond = NULL_TREE;
       val = args[i];
 
       /* Handle absent optional arguments by ignoring the comparison.  */
       if (argexpr->expr->expr_type == EXPR_VARIABLE
 	  && argexpr->expr->symtree->n.sym->attr.optional
 	  && TREE_CODE (val) == INDIRECT_REF)
-	cond = fold_build2_loc (input_location,
+	{
+	  cond = fold_build2_loc (input_location,
 				NE_EXPR, logical_type_node,
 				TREE_OPERAND (val, 0),
 			build_int_cst (TREE_TYPE (TREE_OPERAND (val, 0)), 0));
-      else
-      {
-	cond = NULL_TREE;
-
-	/* Only evaluate the argument once.  */
-	if (!VAR_P (val) && !TREE_CONSTANT (val))
-	  val = gfc_evaluate_now (val, &se->pre);
-      }
-
-      thencase = build2_v (MODIFY_EXPR, mvar, convert (type, val));
-
-      tmp = fold_build2_loc (input_location, op, logical_type_node,
-			     convert (type, val), mvar);
-
-      /* FIXME: When the IEEE_ARITHMETIC module is implemented, the call to
-	 __builtin_isnan might be made dependent on that module being loaded,
-	 to help performance of programs that don't rely on IEEE semantics.  */
-      if (FLOAT_TYPE_P (TREE_TYPE (mvar)))
-	{
-	  isnan = build_call_expr_loc (input_location,
-				       builtin_decl_explicit (BUILT_IN_ISNAN),
-				       1, mvar);
-	  tmp = fold_build2_loc (input_location, TRUTH_OR_EXPR,
-				 logical_type_node, tmp,
-				 fold_convert (logical_type_node, isnan));
 	}
-      tmp = build3_v (COND_EXPR, tmp, thencase,
-		      build_empty_stmt (input_location));
+      else if (!VAR_P (val) && !TREE_CONSTANT (val))
+	/* Only evaluate the argument once.  */
+	val = gfc_evaluate_now (val, &se->pre);
+
+      tree calc;
+      /* If we dealing with integral types or we don't care about NaNs
+	 just do a MIN/MAX_EXPR.  */
+      if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+	{
+
+	  tree_code code = op == GT_EXPR ? MAX_EXPR : MIN_EXPR;
+	  calc = fold_build2_loc (input_location, code, type,
+				  convert (type, val), mvar);
+	  tmp = build2_v (MODIFY_EXPR, mvar, calc);
+
+	}
+      /* If we care about NaNs and we have internal functions available for
+	 fmin/fmax to perform the comparison, use those.  */
+      else if (SCALAR_FLOAT_TYPE_P (type)
+	      && direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED))
+	{
+	  calc = build_call_expr_internal_loc (input_location, ifn, type,
+						2, mvar, convert (type, val));
+	  tmp = build2_v (MODIFY_EXPR, mvar, calc);
+
+	}
+      /* Otherwise expand to:
+	mvar = a1;
+	if (a2 .op. mvar || isnan (mvar))
+	  mvar = a2;
+	if (a3 .op. mvar || isnan (mvar))
+	  mvar = a3;
+	...  */
+      else
+	{
+	  tree isnan = build_call_expr_loc (input_location,
+					builtin_decl_explicit (BUILT_IN_ISNAN),
+					1, mvar);
+	  tmp = fold_build2_loc (input_location, op, logical_type_node,
+				 convert (type, val), mvar);
+
+	  tmp = fold_build2_loc (input_location, TRUTH_OR_EXPR,
+				  logical_type_node, tmp,
+				  fold_convert (logical_type_node, isnan));
+	  tmp = build3_v (COND_EXPR, tmp,
+			  build2_v (MODIFY_EXPR, mvar, convert (type, val)),
+			  build_empty_stmt (input_location));
+	}
 
       if (cond != NULL_TREE)
 	tmp = build3_v (COND_EXPR, cond, tmp,
 			build_empty_stmt (input_location));
-
       gfc_add_expr_to_block (&se->pre, tmp);
-      argexpr = argexpr->next;
     }
   se->expr = mvar;
 }
