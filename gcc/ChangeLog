@@ -1,3 +1,62 @@
+2018-07-19  Michael Collison  <michael.collison@arm.com>
+	    Richard Henderson <rth@redhat.com>
+
+	* config/aarch64/aarch64.md (subv<GPI>4, usubv<GPI>4): New patterns.
+	(subti): Handle op1 zero.
+	(subvti4, usub4ti4): New.
+	(*sub<GPI>3_compare1_imm): New.
+	(sub<GPI>3_carryinCV): New.
+	(*sub<GPI>3_carryinCV_z1_z2, *sub<GPI>3_carryinCV_z1): New.
+	(*sub<GPI>3_carryinCV_z2, *sub<GPI>3_carryinCV): New.
+
+2018-07-19  Michael Collison  <michael.collison@arm.com>
+	    Richard Henderson <rth@redhat.com>
+
+	* config/aarch64/aarch64.md: (addv<GPI>4, uaddv<GPI>4): New.
+	(addti3): Create simpler code if low part is already known to be 0.
+	(addvti4, uaddvti4): New.
+	(*add<GPI>3_compareC_cconly_imm): New.
+	(*add<GPI>3_compareC_cconly): New.
+	(*add<GPI>3_compareC_imm): New.
+	(*add<GPI>3_compareC): Rename from add<GPI>3_compare1; do not
+	handle constants within this pattern..
+	(*add<GPI>3_compareV_cconly_imm): New.
+	(*add<GPI>3_compareV_cconly): New.
+	(*add<GPI>3_compareV_imm): New.
+	(add<GPI>3_compareV): New.
+	(add<GPI>3_carryinC, add<GPI>3_carryinV): New.
+	(*add<GPI>3_carryinC_zero, *add<GPI>3_carryinV_zero): New.
+	(*add<GPI>3_carryinC, *add<GPI>3_carryinV): New.
+	((*add<GPI>3_compareC_cconly_imm): Replace 'ne' operator
+	with 'comparison' operator.
+	(*add<GPI>3_compareV_cconly_imm): Ditto.
+	(*add<GPI>3_compareV_cconly): Ditto.
+	(*add<GPI>3_compareV_imm): Ditto.
+	(add<GPI>3_compareV): Ditto.
+	(add<mode>3_carryinC): Ditto.
+	(*add<mode>3_carryinC_zero): Ditto.
+	(*add<mode>3_carryinC): Ditto.
+	(add<mode>3_carryinV): Ditto.
+	(*add<mode>3_carryinV_zero): Ditto.
+	(*add<mode>3_carryinV): Ditto.
+
+2018-07-19  Michael Collison  <michael.collison@arm.com>
+	    Richard Henderson <rth@redhat.com>
+
+	* config/aarch64/aarch64-modes.def (CC_V): New.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_addti_scratch_regs): Declare
+	(aarch64_subvti_scratch_regs): Declare.
+	(aarch64_expand_subvti): Declare.
+	(aarch64_gen_unlikely_cbranch): Declare
+	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Test
+	for signed overflow using CC_Vmode.
+	(aarch64_get_condition_code_1): Handle CC_Vmode.
+	(aarch64_gen_unlikely_cbranch): New function.
+	(aarch64_addti_scratch_regs): New function.
+	(aarch64_subvti_scratch_regs): New function.
+	(aarch64_expand_subvti): New function.
+
 2018-07-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/aarch64/aarch64-option-extensions.def: New entry for profile

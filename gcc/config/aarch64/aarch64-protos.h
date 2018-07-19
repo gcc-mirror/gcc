@@ -472,6 +472,16 @@ void aarch64_relayout_simd_types (void);
 void aarch64_reset_previous_fndecl (void);
 bool aarch64_return_address_signing_enabled (void);
 void aarch64_save_restore_target_globals (tree);
+void aarch64_addti_scratch_regs (rtx, rtx, rtx *,
+				 rtx *, rtx *,
+				 rtx *, rtx *,
+				 rtx *);
+void aarch64_subvti_scratch_regs (rtx, rtx, rtx *,
+				  rtx *, rtx *,
+				  rtx *, rtx *, rtx *);
+void aarch64_expand_subvti (rtx, rtx, rtx,
+			    rtx, rtx, rtx, rtx);
+
 
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);
@@ -498,7 +508,8 @@ void aarch64_split_simd_move (rtx, rtx);
 bool aarch64_float_const_representable_p (rtx);
 
 #if defined (RTX_CODE)
-
+void aarch64_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,
+				   rtx label_ref);
 bool aarch64_legitimate_address_p (machine_mode, rtx, bool,
 				   aarch64_addr_query_type = ADDR_QUERY_M);
 machine_mode aarch64_select_cc_mode (RTX_CODE, rtx, rtx);
