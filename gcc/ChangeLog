@@ -1,3 +1,12 @@
+2018-07-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/86560
+	* config/i386/i386.c (rest_of_insert_endbranch): Lookup
+	indirect_return as function type attribute.
+	(ix86_attribute_table): Change indirect_return to function
+	type attribute.
+	* doc/extend.texi: Update indirect_return attribute.
+
 2018-07-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	* wide-int.h (widest2_int): New.
