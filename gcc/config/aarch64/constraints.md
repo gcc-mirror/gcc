@@ -218,14 +218,6 @@
  (and (match_code "mem")
       (match_test "REG_P (XEXP (op, 0))")))
 
-(define_memory_constraint "Umq"
-  "@internal
-   A memory address which uses a base register with an offset small enough for
-   a load/store pair operation in DI mode."
-   (and (match_code "mem")
-	(match_test "aarch64_legitimate_address_p (DImode, XEXP (op, 0), false,
-						   ADDR_QUERY_LDP_STP)")))
-
 (define_memory_constraint "Ump"
   "@internal
   A memory address suitable for a load/store pair operation."
@@ -233,14 +225,16 @@
        (match_test "aarch64_legitimate_address_p (GET_MODE (op), XEXP (op, 0),
 						  true, ADDR_QUERY_LDP_STP)")))
 
-;; Used for storing two 64-bit values in an AdvSIMD register using an STP
-;; as a 128-bit vec_concat.
-(define_memory_constraint "Uml"
+;; Used for storing or loading pairs in an AdvSIMD register using an STP/LDP
+;; as a vector-concat.  The address mode uses the same constraints as if it
+;; were for a single value.
+(define_memory_constraint "Umn"
   "@internal
   A memory address suitable for a load/store pair operation."
   (and (match_code "mem")
-       (match_test "aarch64_legitimate_address_p (DFmode, XEXP (op, 0), 1,
-						  ADDR_QUERY_LDP_STP)")))
+       (match_test "aarch64_legitimate_address_p (GET_MODE (op), XEXP (op, 0),
+						  true,
+						  ADDR_QUERY_LDP_STP_N)")))
 
 (define_memory_constraint "Utr"
   "@internal

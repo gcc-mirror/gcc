@@ -206,7 +206,8 @@ static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 							 int misalignment,
 							 bool is_packed);
 static machine_mode aarch64_simd_container_mode (scalar_mode, poly_int64);
-static bool aarch64_print_ldpstp_address (FILE *, machine_mode, rtx);
+static bool aarch64_print_address_internal (FILE*, machine_mode, rtx,
+					    aarch64_addr_query_type);
 
 /* Major revision number of the ARM Architecture implemented by the target.  */
 unsigned aarch64_architecture_version;
@@ -5742,9 +5743,17 @@ aarch64_classify_address (struct aarch64_address_info *info,
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
   bool advsimd_struct_p = (vec_flags == (VEC_ADVSIMD | VEC_STRUCT));
   bool load_store_pair_p = (type == ADDR_QUERY_LDP_STP
+			    || type == ADDR_QUERY_LDP_STP_N
 			    || mode == TImode
 			    || mode == TFmode
 			    || (BYTES_BIG_ENDIAN && advsimd_struct_p));
+
+  /* If we are dealing with ADDR_QUERY_LDP_STP_N that means the incoming mode
+     corresponds to the actual size of the memory being loaded/stored and the
+     mode of the corresponding addressing mode is half of that.  */
+  if (type == ADDR_QUERY_LDP_STP_N
+      && known_eq (GET_MODE_SIZE (mode), 16))
+    mode = DFmode;
 
   bool allow_reg_index_p = (!load_store_pair_p
 			    && (known_lt (GET_MODE_SIZE (mode), 16)
@@ -7122,13 +7131,10 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 	    return;
 	  }
 
-	if (code == 'y')
-	  /* LDP/STP which uses a single double-width memory operand.
-	     Adjust the mode to appear like a typical LDP/STP.
-	     Currently this is supported for 16-byte accesses only.  */
-	  mode = DFmode;
-
-	if (!aarch64_print_ldpstp_address (f, mode, XEXP (x, 0)))
+	if (!aarch64_print_address_internal (f, mode, XEXP (x, 0),
+					    code == 'y'
+					    ? ADDR_QUERY_LDP_STP_N
+					    : ADDR_QUERY_LDP_STP))
 	  output_operand_lossage ("invalid operand prefix '%%%c'", code);
       }
       break;
@@ -7249,13 +7255,6 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
       }
 
   return false;
-}
-
-/* Print address 'x' of a LDP/STP with mode 'mode'.  */
-static bool
-aarch64_print_ldpstp_address (FILE *f, machine_mode mode, rtx x)
-{
-  return aarch64_print_address_internal (f, mode, x, ADDR_QUERY_LDP_STP);
 }
 
 /* Print address 'x' of a memory access with mode 'mode'.  */
