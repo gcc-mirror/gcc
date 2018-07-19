@@ -1,3 +1,19 @@
+2018-07-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int.h (widest2_int): New.
+	* gimple-fold.c (arith_overflowed_p): Use it.
+	* tree.h (widest2_int_cst): New.
+	* tree-vrp.c (wide_int_binop_overflow): Rename from
+	vrp_int_const_binop.
+	Rewrite to work on trees.
+	(extract_range_from_multiplicative_op_1): Abstract code to...
+	(wide_int_range_min_max): ...here.
+	(wide_int_range_cross_product): ...and here.
+	(extract_range_from_binary_expr_1): Abstract overflow code to...
+	(wide_int_range_mult_wrapping): ...here.
+	* tree-vrp.h (wide_int_range_cross_product): New.
+	(wide_int_range_mult_wrapping): New.
+
 2018-07-19  Andrew Senkevich  <andrew.senkevich@intel.com>
 	    Julia Koval  <julia.koval@intel.com>
 
