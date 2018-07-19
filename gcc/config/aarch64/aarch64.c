@@ -6414,6 +6414,13 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
       && GET_CODE (y) == ZERO_EXTEND)
     return CC_Cmode;
 
+  /* A test for signed overflow.  */
+  if ((GET_MODE (x) == DImode || GET_MODE (x) == TImode)
+      && code == NE
+      && GET_CODE (x) == PLUS
+      && GET_CODE (y) == SIGN_EXTEND)
+    return CC_Vmode;
+
   /* For everything else, return CCmode.  */
   return CCmode;
 }
@@ -6516,6 +6523,15 @@ aarch64_get_condition_code_1 (machine_mode mode, enum rtx_code comp_code)
 	{
 	case NE: return AARCH64_CS;
 	case EQ: return AARCH64_CC;
+	default: return -1;
+	}
+      break;
+
+    case E_CC_Vmode:
+      switch (comp_code)
+	{
+	case NE: return AARCH64_VS;
+	case EQ: return AARCH64_VC;
 	default: return -1;
 	}
       break;
@@ -16272,6 +16288,131 @@ aarch64_split_dimode_const_store (rtx dst, rtx src)
   emit_move_insn (mem_hi, tmp_reg);
 
   return true;
+}
+
+/* Generate RTL for a conditional branch with rtx comparison CODE in
+   mode CC_MODE.  The destination of the unlikely conditional branch
+   is LABEL_REF.  */
+
+void
+aarch64_gen_unlikely_cbranch (enum rtx_code code, machine_mode cc_mode,
+			      rtx label_ref)
+{
+  rtx x;
+  x = gen_rtx_fmt_ee (code, VOIDmode,
+		      gen_rtx_REG (cc_mode, CC_REGNUM),
+		      const0_rtx);
+
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+			    gen_rtx_LABEL_REF (VOIDmode, label_ref),
+			    pc_rtx);
+  aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+}
+
+/* Generate DImode scratch registers for 128-bit (TImode) addition.
+
+   OP1 represents the TImode destination operand 1
+   OP2 represents the TImode destination operand 2
+   LOW_DEST represents the low half (DImode) of TImode operand 0
+   LOW_IN1 represents the low half (DImode) of TImode operand 1
+   LOW_IN2 represents the low half (DImode) of TImode operand 2
+   HIGH_DEST represents the high half (DImode) of TImode operand 0
+   HIGH_IN1 represents the high half (DImode) of TImode operand 1
+   HIGH_IN2 represents the high half (DImode) of TImode operand 2.  */
+
+void
+aarch64_addti_scratch_regs (rtx op1, rtx op2, rtx *low_dest,
+			    rtx *low_in1, rtx *low_in2,
+			    rtx *high_dest, rtx *high_in1,
+			    rtx *high_in2)
+{
+  *low_dest = gen_reg_rtx (DImode);
+  *low_in1 = gen_lowpart (DImode, op1);
+  *low_in2 = simplify_gen_subreg (DImode, op2, TImode,
+				  subreg_lowpart_offset (DImode, TImode));
+  *high_dest = gen_reg_rtx (DImode);
+  *high_in1 = gen_highpart (DImode, op1);
+  *high_in2 = simplify_gen_subreg (DImode, op2, TImode,
+				   subreg_highpart_offset (DImode, TImode));
+}
+
+/* Generate DImode scratch registers for 128-bit (TImode) subtraction.
+
+   This function differs from 'arch64_addti_scratch_regs' in that
+   OP1 can be an immediate constant (zero). We must call
+   subreg_highpart_offset with DImode and TImode arguments, otherwise
+   VOIDmode will be used for the const_int which generates an internal
+   error from subreg_size_highpart_offset which does not expect a size of zero.
+
+   OP1 represents the TImode destination operand 1
+   OP2 represents the TImode destination operand 2
+   LOW_DEST represents the low half (DImode) of TImode operand 0
+   LOW_IN1 represents the low half (DImode) of TImode operand 1
+   LOW_IN2 represents the low half (DImode) of TImode operand 2
+   HIGH_DEST represents the high half (DImode) of TImode operand 0
+   HIGH_IN1 represents the high half (DImode) of TImode operand 1
+   HIGH_IN2 represents the high half (DImode) of TImode operand 2.  */
+
+
+void
+aarch64_subvti_scratch_regs (rtx op1, rtx op2, rtx *low_dest,
+			     rtx *low_in1, rtx *low_in2,
+			     rtx *high_dest, rtx *high_in1,
+			     rtx *high_in2)
+{
+  *low_dest = gen_reg_rtx (DImode);
+  *low_in1 = simplify_gen_subreg (DImode, op1, TImode,
+				  subreg_lowpart_offset (DImode, TImode));
+
+  *low_in2 = simplify_gen_subreg (DImode, op2, TImode,
+				  subreg_lowpart_offset (DImode, TImode));
+  *high_dest = gen_reg_rtx (DImode);
+
+  *high_in1 = simplify_gen_subreg (DImode, op1, TImode,
+				   subreg_highpart_offset (DImode, TImode));
+  *high_in2 = simplify_gen_subreg (DImode, op2, TImode,
+				   subreg_highpart_offset (DImode, TImode));
+}
+
+/* Generate RTL for 128-bit (TImode) subtraction with overflow.
+
+   OP0 represents the TImode destination operand 0
+   LOW_DEST represents the low half (DImode) of TImode operand 0
+   LOW_IN1 represents the low half (DImode) of TImode operand 1
+   LOW_IN2 represents the low half (DImode) of TImode operand 2
+   HIGH_DEST represents the high half (DImode) of TImode operand 0
+   HIGH_IN1 represents the high half (DImode) of TImode operand 1
+   HIGH_IN2 represents the high half (DImode) of TImode operand 2.  */
+
+void
+aarch64_expand_subvti (rtx op0, rtx low_dest, rtx low_in1,
+		       rtx low_in2, rtx high_dest, rtx high_in1,
+		       rtx high_in2)
+{
+  if (low_in2 == const0_rtx)
+    {
+      low_dest = low_in1;
+      emit_insn (gen_subdi3_compare1 (high_dest, high_in1,
+				      force_reg (DImode, high_in2)));
+    }
+  else
+    {
+      if (CONST_INT_P (low_in2))
+	{
+	  low_in2 = force_reg (DImode, GEN_INT (-UINTVAL (low_in2)));
+	  high_in2 = force_reg (DImode, high_in2);
+	  emit_insn (gen_adddi3_compareC (low_dest, low_in1, low_in2));
+	}
+      else
+	emit_insn (gen_subdi3_compare1 (low_dest, low_in1, low_in2));
+      emit_insn (gen_subdi3_carryinCV (high_dest,
+				       force_reg (DImode, high_in1),
+				       high_in2));
+    }
+
+  emit_move_insn (gen_lowpart (DImode, op0), low_dest);
+  emit_move_insn (gen_highpart (DImode, op0), high_dest);
+
 }
 
 /* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */

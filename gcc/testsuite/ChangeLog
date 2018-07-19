@@ -1,3 +1,19 @@
+2018-07-19  Michael Collison  <michael.collison@arm.com>
+	    Richard Henderson <rth@redhat.com>
+
+	* gcc.target/aarch64/builtin_sadd_128.c: New testcase.
+	* gcc.target/aarch64/builtin_saddl.c: New testcase.
+	* gcc.target/aarch64/builtin_saddll.c: New testcase.
+	* gcc.target/aarch64/builtin_uadd_128.c: New testcase.
+	* gcc.target/aarch64/builtin_uaddl.c: New testcase.
+	* gcc.target/aarch64/builtin_uaddll.c: New testcase.
+	* gcc.target/aarch64/builtin_ssub_128.c: New testcase.
+	* gcc.target/aarch64/builtin_ssubl.c: New testcase.
+	* gcc.target/aarch64/builtin_ssubll.c: New testcase.
+	* gcc.target/aarch64/builtin_usub_128.c: New testcase.
+	* gcc.target/aarch64/builtin_usubl.c: New testcase.
+	* gcc.target/aarch64/builtin_usubll.c: New testcase.
+
 2018-07-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert fix for c++/59480 (and testsuite followup)
