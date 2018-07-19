@@ -1,3 +1,12 @@
+2018-07-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83776
+	PR tree-optimization/84047
+	* gcc.dg/Warray-bounds-29.c: New test.
+	* gcc.dg/Warray-bounds-30.c: New test.
+	* gcc.dg/Warray-bounds-31.c: New test.
+	* gcc.dg/Warray-bounds-32.c: New test.
+
 2018-07-19  Michael Collison  <michael.collison@arm.com>
 	    Richard Henderson <rth@redhat.com>
 

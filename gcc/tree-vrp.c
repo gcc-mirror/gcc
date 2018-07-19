@@ -4753,6 +4753,7 @@ class vrp_prop : public ssa_propagation_engine
   void vrp_finalize (bool);
   void check_all_array_refs (void);
   void check_array_ref (location_t, tree, bool);
+  void check_mem_ref (location_t, tree, bool);
   void search_for_addr_array (tree, location_t);
 
   class vr_values vr_values;
@@ -4905,21 +4906,282 @@ vrp_prop::check_array_ref (location_t location, tree ref,
     }
 }
 
+/* Checks one MEM_REF in REF, located at LOCATION, for out-of-bounds
+   references to string constants.  If VRP can determine that the array
+   subscript is a constant, check if it is outside valid range.
+   If the array subscript is a RANGE, warn if it is non-overlapping
+   with valid range.
+   IGNORE_OFF_BY_ONE is true if the MEM_REF is inside an ADDR_EXPR
+   (used to allow one-past-the-end indices for code that takes
+   the address of the just-past-the-end element of an array).  */
+
+void
+vrp_prop::check_mem_ref (location_t location, tree ref, bool ignore_off_by_one)
+{
+  if (TREE_NO_WARNING (ref))
+    return;
+
+  tree arg = TREE_OPERAND (ref, 0);
+  /* The constant and variable offset of the reference.  */
+  tree cstoff = TREE_OPERAND (ref, 1);
+  tree varoff = NULL_TREE;
+
+  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+
+  /* The array or string constant bounds in bytes.  Initially set
+     to [-MAXOBJSIZE - 1, MAXOBJSIZE]  until a tighter bound is
+     determined.  */
+  offset_int arrbounds[2] = { -maxobjsize - 1, maxobjsize };
+
+  /* The minimum and maximum intermediate offset.  For a reference
+     to be valid, not only does the final offset/subscript must be
+     in bounds but all intermediate offsets should be as well.
+     GCC may be able to deal gracefully with such out-of-bounds
+     offsets so the checking is only enbaled at -Warray-bounds=2
+     where it may help detect bugs in uses of the intermediate
+     offsets that could otherwise not be detectable.  */
+  offset_int ioff = wi::to_offset (fold_convert (ptrdiff_type_node, cstoff));
+  offset_int extrema[2] = { 0, wi::abs (ioff) };
+
+  /* The range of the byte offset into the reference.  */
+  offset_int offrange[2] = { 0, 0 };
+
+  value_range *vr = NULL;
+
+  /* Determine the offsets and increment OFFRANGE for the bounds of each.
+     The loop computes the the range of the final offset for expressions
+     such as (A + i0 + ... + iN)[CSTOFF] where i0 through iN are SSA_NAMEs
+     in some range.  */
+  while (TREE_CODE (arg) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (arg);
+      if (!is_gimple_assign (def))
+	break;
+
+      tree_code code = gimple_assign_rhs_code (def);
+      if (code == POINTER_PLUS_EXPR)
+	{
+	  arg = gimple_assign_rhs1 (def);
+	  varoff = gimple_assign_rhs2 (def);
+	}
+      else if (code == ASSERT_EXPR)
+	{
+	  arg = TREE_OPERAND (gimple_assign_rhs1 (def), 0);
+	  continue;
+	}
+      else
+	return;
+
+      /* VAROFF should always be a SSA_NAME here (and not even
+	 INTEGER_CST) but there's no point in taking chances.  */
+      if (TREE_CODE (varoff) != SSA_NAME)
+	break;
+
+      vr = get_value_range (varoff);
+      if (!vr || vr->type == VR_UNDEFINED || !vr->min || !vr->max)
+	break;
+
+      if (TREE_CODE (vr->min) != INTEGER_CST
+          || TREE_CODE (vr->max) != INTEGER_CST)
+        break;
+
+      if (vr->type == VR_RANGE)
+	{
+	  if (tree_int_cst_lt (vr->min, vr->max))
+	    {
+	      offset_int min
+		= wi::to_offset (fold_convert (ptrdiff_type_node, vr->min));
+	      offset_int max
+		= wi::to_offset (fold_convert (ptrdiff_type_node, vr->max));
+	      if (min < max)
+		{
+		  offrange[0] += min;
+		  offrange[1] += max;
+		}
+	      else
+		{
+		  offrange[0] += max;
+		  offrange[1] += min;
+		}
+	    }
+	  else
+	    {
+	      /* Conservatively add [-MAXOBJSIZE -1, MAXOBJSIZE]
+		 to OFFRANGE.  */
+	      offrange[0] += arrbounds[0];
+	      offrange[1] += arrbounds[1];
+	    }
+	}
+      else
+	{
+	  /* For an anti-range, analogously to the above, conservatively
+	     add [-MAXOBJSIZE -1, MAXOBJSIZE] to OFFRANGE.  */
+	  offrange[0] += arrbounds[0];
+	  offrange[1] += arrbounds[1];
+	}
+
+      /* Keep track of the minimum and maximum offset.  */
+      if (offrange[1] < 0 && offrange[1] < extrema[0])
+	extrema[0] = offrange[1];
+      if (offrange[0] > 0 && offrange[0] > extrema[1])
+	extrema[1] = offrange[0];
+
+      if (offrange[0] < arrbounds[0])
+	offrange[0] = arrbounds[0];
+
+      if (offrange[1] > arrbounds[1])
+	offrange[1] = arrbounds[1];
+    }
+
+  if (TREE_CODE (arg) == ADDR_EXPR)
+    {
+      arg = TREE_OPERAND (arg, 0);
+      if (TREE_CODE (arg) != STRING_CST
+	  && TREE_CODE (arg) != VAR_DECL)
+	return;
+    }
+  else
+    return;
+
+  /* The type of the object being referred to.  It can be an array,
+     string literal, or a non-array type when the MEM_REF represents
+     a reference/subscript via a pointer to an object that is not
+     an element of an array.  References to members of structs and
+     unions are excluded because MEM_REF doesn't make it possible
+     to identify the member where the reference originated.  */
+  tree reftype = TREE_TYPE (arg);
+  if (POINTER_TYPE_P (reftype)
+      || RECORD_OR_UNION_TYPE_P (reftype))
+    return;
+
+  offset_int eltsize;
+  if (TREE_CODE (reftype) == ARRAY_TYPE)
+    {
+      eltsize = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (reftype)));
+
+      if (tree dom = TYPE_DOMAIN (reftype))
+	{
+	  tree bnds[] = { TYPE_MIN_VALUE (dom), TYPE_MAX_VALUE (dom) };
+	  if (array_at_struct_end_p (arg)
+	      || !bnds[0] || !bnds[1])
+	    {
+	      arrbounds[0] = 0;
+	      arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
+	    }
+	  else
+	    {
+	      arrbounds[0] = wi::to_offset (bnds[0]) * eltsize;
+	      arrbounds[1] = (wi::to_offset (bnds[1]) + 1) * eltsize;
+	    }
+	}
+      else
+	{
+	  arrbounds[0] = 0;
+	  arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
+	}
+
+      if (TREE_CODE (ref) == MEM_REF)
+	{
+	  /* For MEM_REF determine a tighter bound of the non-array
+	     element type.  */
+	  tree eltype = TREE_TYPE (reftype);
+	  while (TREE_CODE (eltype) == ARRAY_TYPE)
+	    eltype = TREE_TYPE (eltype);
+	  eltsize = wi::to_offset (TYPE_SIZE_UNIT (eltype));
+	}
+    }
+  else
+    {
+      eltsize = 1;
+      arrbounds[0] = 0;
+      arrbounds[1] = wi::to_offset (TYPE_SIZE_UNIT (reftype));
+    }
+
+  offrange[0] += ioff;
+  offrange[1] += ioff;
+
+  /* Compute the more permissive upper bound when IGNORE_OFF_BY_ONE
+     is set (when taking the address of the one-past-last element
+     of an array) but always use the stricter bound in diagnostics. */
+  offset_int ubound = arrbounds[1];
+  if (ignore_off_by_one)
+    ubound += 1;
+
+  if (offrange[0] >= ubound || offrange[1] < arrbounds[0])
+    {
+      /* Treat a reference to a non-array object as one to an array
+	 of a single element.  */
+      if (TREE_CODE (reftype) != ARRAY_TYPE)
+	reftype = build_array_type_nelts (reftype, 1);
+
+      if (TREE_CODE (ref) == MEM_REF)
+	{
+	  /* Extract the element type out of MEM_REF and use its size
+	     to compute the index to print in the diagnostic; arrays
+	     in MEM_REF don't mean anything.   */
+	  tree type = TREE_TYPE (ref);
+	  while (TREE_CODE (type) == ARRAY_TYPE)
+	    type = TREE_TYPE (type);
+	  tree size = TYPE_SIZE_UNIT (type);
+	  offrange[0] = offrange[0] / wi::to_offset (size);
+	  offrange[1] = offrange[1] / wi::to_offset (size);
+	}
+      else
+	{
+	  /* For anything other than MEM_REF, compute the index to
+	     print in the diagnostic as the offset over element size.  */
+	  offrange[0] = offrange[0] / eltsize;
+	  offrange[1] = offrange[1] / eltsize;
+	}
+
+      if (offrange[0] == offrange[1])
+	warning_at (location, OPT_Warray_bounds,
+		    "array subscript %wi is outside array bounds "
+		    "of %qT",
+		    offrange[0].to_shwi (), reftype);
+      else
+	warning_at (location, OPT_Warray_bounds,
+		    "array subscript [%wi, %wi] is outside array bounds "
+		    "of %qT",
+		    offrange[0].to_shwi (), offrange[1].to_shwi (), reftype);
+      TREE_NO_WARNING (ref) = 1;
+      return;
+    }
+
+  if (warn_array_bounds < 2)
+    return;
+
+  /* At level 2 check also intermediate offsets.  */
+  int i = 0;
+  if (extrema[i] < -arrbounds[1] || extrema[i = 1] > ubound)
+    {
+      HOST_WIDE_INT tmpidx = extrema[i].to_shwi () / eltsize.to_shwi ();
+
+      warning_at (location, OPT_Warray_bounds,
+		  "intermediate array offset %wi is outside array bounds "
+		  "of %qT",
+		  tmpidx,  reftype);
+      TREE_NO_WARNING (ref) = 1;
+    }
+}
+
 /* Searches if the expr T, located at LOCATION computes
    address of an ARRAY_REF, and call check_array_ref on it.  */
 
 void
 vrp_prop::search_for_addr_array (tree t, location_t location)
 {
-  /* Check each ARRAY_REFs in the reference chain. */
+  /* Check each ARRAY_REF and MEM_REF in the reference chain. */
   do
     {
       if (TREE_CODE (t) == ARRAY_REF)
 	check_array_ref (location, t, true /*ignore_off_by_one*/);
+      else if (TREE_CODE (t) == MEM_REF)
+	check_mem_ref (location, t, true /*ignore_off_by_one*/);
 
       t = TREE_OPERAND (t, 0);
     }
-  while (handled_component_p (t));
+  while (handled_component_p (t) || TREE_CODE (t) == MEM_REF);
 
   if (TREE_CODE (t) == MEM_REF
       && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
@@ -5001,7 +5263,8 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
   vrp_prop *vrp_prop = (class vrp_prop *)wi->info;
   if (TREE_CODE (t) == ARRAY_REF)
     vrp_prop->check_array_ref (location, t, false /*ignore_off_by_one*/);
-
+  else if (TREE_CODE (t) == MEM_REF)
+    vrp_prop->check_mem_ref (location, t, false /*ignore_off_by_one*/);
   else if (TREE_CODE (t) == ADDR_EXPR)
     {
       vrp_prop->search_for_addr_array (t, location);
