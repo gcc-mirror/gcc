@@ -83,7 +83,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
-#include "wide-int-aux.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */

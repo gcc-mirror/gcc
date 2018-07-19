@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "range-op.h"
 #include "tree-vrp.h"
-#include "wide-int-aux.h"
 
 inline wide_int
 max_limit (const_tree type)
@@ -723,11 +722,13 @@ operator_ge::op2_irange (irange& r, const irange& lhs, const irange& op1) const
 static bool
 do_cross_product_irange (enum tree_code code, signop s, irange& r,
 			 const wide_int& lh_lb, const wide_int& lh_ub,
-			 const wide_int& rh_lb, const wide_int& rh_ub) 
+			 const wide_int& rh_lb, const wide_int& rh_ub)
 {
   wide_int new_lb, new_ub;
-
-  if (do_cross_product (code, s, new_lb, new_ub, lh_lb, lh_ub, rh_lb, rh_ub))
+  bool overflow_undefined = TYPE_OVERFLOW_UNDEFINED (r.get_type ());
+  if (wide_int_range_cross_product (new_lb, new_ub, code, s,
+				    lh_lb, lh_ub, rh_lb, rh_ub,
+				    overflow_undefined))
     {
       r.union_ (new_lb, new_ub);
       return true;

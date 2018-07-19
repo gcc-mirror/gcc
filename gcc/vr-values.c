@@ -303,6 +303,7 @@ gimple_assign_nonzero_p (gimple *stmt)
 }
 
 /* Return true if STMT is known to compute a non-zero value.  */
+
 static bool
 gimple_stmt_nonzero_p (gimple *stmt)
 {

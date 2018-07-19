@@ -1604,7 +1604,6 @@ OBJS = \
 	vtable-verify.o \
 	web.o \
 	wide-int.o \
-	wide-int-aux.o \
 	wide-int-print.o \
 	xcoffout.o \
 	$(out_object_file) \

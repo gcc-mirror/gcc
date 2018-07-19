@@ -67,7 +67,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "vr-values.h"
 #include "builtins.h"
-#include "wide-int-aux.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
