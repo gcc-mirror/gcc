@@ -1280,39 +1280,6 @@ check_redeclaration_no_default_args (tree decl)
       }
 }
 
-/* NEWDECL is a redeclaration of a function or function template OLDDECL.
-   If either the declaration or the redeclaration is a friend declaration
-   and specifies default arguments issue a diagnostic.   Note: this is to
-   enforce C++17 11.3.6/4: "If a friend declaration specifies a default
-   argument expression, that declaration... shall be the only declaration
-   of the function or function template in the translation unit."  */
-
-static void
-check_no_redeclaration_friend_default_args (tree olddecl, tree newdecl)
-{
-  bool olddecl_friend_p = DECL_FRIEND_P (STRIP_TEMPLATE (olddecl));
-  bool newdecl_friend_p = DECL_FRIEND_P (STRIP_TEMPLATE (newdecl));
-
-  if (!olddecl_friend_p && !newdecl_friend_p)
-    return;
-
-  tree t1 = FUNCTION_FIRST_USER_PARMTYPE (olddecl);
-  tree t2 = FUNCTION_FIRST_USER_PARMTYPE (newdecl);
-
-  for (; t1 && t1 != void_list_node;
-       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
-    if ((olddecl_friend_p && TREE_PURPOSE (t1))
-	|| (newdecl_friend_p && TREE_PURPOSE (t2)))
-      {
-	if (permerror (DECL_SOURCE_LOCATION (newdecl),
-		       "friend declaration of %q#D specifies default "
-		       "arguments and isn't the only declaration", newdecl))
-	  inform (DECL_SOURCE_LOCATION (olddecl),
-		  "previous declaration of %q#D", olddecl);
-	return;
-      }
-}
-
 /* Merge tree bits that correspond to attributes noreturn, nothrow,
    const,  malloc, and pure from NEWDECL with those of OLDDECL.  */
 
@@ -1909,12 +1876,6 @@ next_arg:;
 				olddecl);
 		      }
 		  }
-
-	      /* C++17 11.3.6/4: "If a friend declaration specifies a default
-		 argument expression, that declaration... shall be the only
-		 declaration of the function or function template in the
-		 translation unit."  */
-	      check_no_redeclaration_friend_default_args (olddecl, newdecl);
 	    }
 	}
     }
@@ -2047,18 +2008,11 @@ next_arg:;
 
       if (DECL_FUNCTION_TEMPLATE_P (newdecl))
 	{
+	  /* Per C++11 8.3.6/4, default arguments cannot be added in later
+	     declarations of a function template.  */
 	  if (DECL_SOURCE_LOCATION (newdecl)
 	      != DECL_SOURCE_LOCATION (olddecl))
-	    {
-	      /* Per C++11 8.3.6/4, default arguments cannot be added in
-		 later declarations of a function template.  */
-	      check_redeclaration_no_default_args (newdecl);
-	      /* C++17 11.3.6/4: "If a friend declaration specifies a default
-		 argument expression, that declaration... shall be the only
-		 declaration of the function or function template in the
-		 translation unit."  */
-	      check_no_redeclaration_friend_default_args (olddecl, newdecl);
-	    }
+	    check_redeclaration_no_default_args (newdecl);
 
 	  check_default_args (newdecl);
 
@@ -8807,21 +8761,6 @@ grokfndecl (tree ctype,
 	      return NULL_TREE;
 	    }
 	}
-    }
-
-  /* C++17 11.3.6/4: "If a friend declaration specifies a default argument
-     expression, that declaration shall be a definition..."  */
-  if (friendp && !funcdef_flag)
-    {
-      for (tree t = FUNCTION_FIRST_USER_PARMTYPE (decl);
-	   t && t != void_list_node; t = TREE_CHAIN (t))
-	if (TREE_PURPOSE (t))
-	  {
-	    permerror (DECL_SOURCE_LOCATION (decl),
-		       "friend declaration of %qD specifies default "
-		       "arguments and isn't a definition", decl);
-	    break;
-	  }
     }
 
   /* If this decl has namespace scope, set that up.  */

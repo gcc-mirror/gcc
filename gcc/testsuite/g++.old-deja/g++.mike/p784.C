@@ -1,6 +1,6 @@
 // { dg-do assemble  }
 // { dg-require-effective-target ilp32 } */
-// { dg-options "-w -fpermissive" }
+// { dg-options "-w" }
 // prms-id: 784
 
 //# 1 "GctSymbol.GctSymbol.CHMap.cc"
