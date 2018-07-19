@@ -396,7 +396,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Cp>
     struct __is_member_object_pointer_helper<_Tp _Cp::*>
-    : public integral_constant<bool, !is_function<_Tp>::value> { };
+    : public __not_<is_function<_Tp>>::type { };
 
   /// is_member_object_pointer
   template<typename _Tp>
@@ -411,7 +411,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Cp>
     struct __is_member_function_pointer_helper<_Tp _Cp::*>
-    : public integral_constant<bool, is_function<_Tp>::value> { };
+    : public is_function<_Tp>::type { };
 
   /// is_member_function_pointer
   template<typename _Tp>
@@ -603,7 +603,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_compound
   template<typename _Tp>
     struct is_compound
-    : public integral_constant<bool, !is_fundamental<_Tp>::value> { };
+    : public __not_<is_fundamental<_Tp>>::type { };
 
   template<typename _Tp>
     struct __is_member_pointer_helper
@@ -826,8 +826,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __do_is_nt_destructible_impl
   {
     template<typename _Tp>
-      static integral_constant<bool, noexcept(declval<_Tp&>().~_Tp())>
-        __test(int);
+      static __bool_constant<noexcept(declval<_Tp&>().~_Tp())>
+      __test(int);
 
     template<typename>
       static false_type __test(...);
@@ -1136,8 +1136,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_trivially_constructible
   template<typename _Tp, typename... _Args>
     struct is_trivially_constructible
-    : public __and_<is_constructible<_Tp, _Args...>, __bool_constant<
-		      __is_trivially_constructible(_Tp, _Args...)>>::type
+    : public __bool_constant<__is_trivially_constructible(_Tp, _Args...)>
     { };
 
   /// is_trivially_default_constructible
@@ -1235,9 +1234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_trivially_copy_assignable_impl<_Tp, true>
-    : public __and_<is_copy_assignable<_Tp>,
-		    integral_constant<bool,
-			__is_trivially_assignable(_Tp&, const _Tp&)>>
+    : public __bool_constant<__is_trivially_assignable(_Tp&, const _Tp&)>
     { };
 
   template<typename _Tp>
@@ -1256,9 +1253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_trivially_move_assignable_impl<_Tp, true>
-    : public __and_<is_move_assignable<_Tp>,
-		    integral_constant<bool,
-			__is_trivially_assignable(_Tp&, _Tp&&)>>
+    : public __bool_constant<__is_trivially_assignable(_Tp&, _Tp&&)>
     { };
 
   template<typename _Tp>
@@ -1269,8 +1264,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_trivially_destructible
   template<typename _Tp>
     struct is_trivially_destructible
-    : public __and_<is_destructible<_Tp>, integral_constant<bool,
-			      __has_trivial_destructor(_Tp)>>
+    : public __and_<is_destructible<_Tp>,
+		    __bool_constant<__has_trivial_destructor(_Tp)>>
     { };
 
 

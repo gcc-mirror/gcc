@@ -1,3 +1,21 @@
+2018-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_member_object_pointer_helper): Use
+	__not_<is_function<_Tp>>::type instead of integral_constant.
+	(__is_member_function_pointer_helper): Likewise for
+	is_function<_Tp>::type.
+	(is_compund): Likewise for __not_<is_fundamental<_Tp>>::type.
+	(__do_is_nt_destructible_impl): Use __bool_constant and reindent.
+	(is_trivially_constructible): Remove redundant use of
+	is_constructible.
+	(__is_trivially_copy_assignable_impl): Remove redundant use of
+	is_copy_assignable.
+	(__is_trivially_move_assignable_impl): Remove redundant use of
+	is_move_assignable.
+	(is_trivially_destructible): Use __bool_constant.
+	* testsuite/20_util/is_trivially_assignable/value.cc: Add some more
+	tests for scalar types.
+
 2018-07-19  Glen Joseph Fernandes  <glenjofe@gmail.com>
 
 	* include/bits/stl_algobase.h (__copy_move_a): Used
