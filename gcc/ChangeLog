@@ -1,5 +1,11 @@
 2018-07-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	PR target/83009
+	* config/aarch64/predicates.md (aarch64_mem_pair_lanes_operand): Make
+	address check not strict.
+
+2018-07-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_simd_mov<VQ:mode>): Replace
 	Umq with Umn.
 	(store_pair_lanes<mode>): Likewise.

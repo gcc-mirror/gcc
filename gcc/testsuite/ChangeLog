@@ -1,3 +1,8 @@
+2018-07-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/83009
+	* gcc/target/aarch64/store_v2vec_lanes.c: Add extra tests.
+
 2018-07-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/86560
