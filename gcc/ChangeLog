@@ -1,3 +1,8 @@
+2018-07-20  Martin Liska  <mliska@suse.cz>
+
+	* tree.h (DECL_LOCATION_RANGE): Remove unused macro.
+	(get_decl_source_range): Remove unused function.
+
 2018-07-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.h (struct vn_nary_op_s): Add next member.

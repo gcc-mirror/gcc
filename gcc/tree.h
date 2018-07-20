@@ -2311,9 +2311,6 @@ extern machine_mode vector_type_mode (const_tree);
 #define DECL_IS_BUILTIN(DECL) \
   (LOCATION_LOCUS (DECL_SOURCE_LOCATION (DECL)) <= BUILTINS_LOCATION)
 
-#define DECL_LOCATION_RANGE(NODE) \
-  (get_decl_source_range (DECL_MINIMAL_CHECK (NODE)))
-
 /*  For FIELD_DECLs, this is the RECORD_TYPE, UNION_TYPE, or
     QUAL_UNION_TYPE node that the field is a member of.  For VAR_DECL,
     PARM_DECL, FUNCTION_DECL, LABEL_DECL, RESULT_DECL, and CONST_DECL
@@ -5809,13 +5806,6 @@ set_source_range (tree expr, location_t start, location_t finish);
 
 extern location_t
 set_source_range (tree expr, source_range src_range);
-
-static inline source_range
-get_decl_source_range (tree decl)
-{
-  location_t loc = DECL_SOURCE_LOCATION (decl);
-  return get_range_from_loc (line_table, loc);
-}
 
 /* Return true if it makes sense to promote/demote from_type to to_type. */
 inline bool
