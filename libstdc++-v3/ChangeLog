@@ -1,3 +1,9 @@
+2018-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86595
+	* include/bits/fs_dir.h (directory_entry::refresh(error_code&)): Add
+	noexcept.
+
 2018-07-20  Fangrui Song  <maskray@google.com>
 
 	* include/bits/shared_ptr_base.h (_Sp_make_shared_tag::_S_ti): Use
