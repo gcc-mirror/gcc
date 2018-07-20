@@ -1,3 +1,10 @@
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82063
+	* gfortran.h (gfc_handle_option): Change function argument
+	to HOST_WIDE_INT.
+	* options.c (gfc_handle_option): Same.
+
 2018-07-20  Andrew Benson  <abenson@carnegiescience.edu>
 
 	* gfortran.h (gfc_symbol): Add pointer to next derived type.

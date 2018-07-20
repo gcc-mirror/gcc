@@ -2830,7 +2830,7 @@ unsigned int gfc_option_lang_mask (void);
 void gfc_init_options_struct (struct gcc_options *);
 void gfc_init_options (unsigned int,
 		       struct cl_decoded_option *);
-bool gfc_handle_option (size_t, const char *, int, int, location_t,
+bool gfc_handle_option (size_t, const char *, HOST_WIDE_INT, int, location_t,
 			const struct cl_option_handlers *);
 bool gfc_post_options (const char **);
 char *gfc_get_option_string (void);

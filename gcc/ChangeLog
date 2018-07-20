@@ -1,3 +1,65 @@
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82063
+	* builtins.c (expand_builtin_alloca): Adjust.
+	* calls.c (alloc_max_size): Simplify.
+	* cgraphunit.c (cgraph_node::expand): Adjust.
+	* common.opt (larger_than_size, warn_frame_larger_than): Remove
+	variables.
+	(frame_larger_than_size): Same.
+	(-Wframe-larger-than, -Wlarger-than, -Wstack-usage): Change options
+	to take a HOST_WIDE_INT argument and accept a byte-size suffix.
+	Initialize.
+	* doc/invoke.texi (GCC Command Options): Document option arguments.
+	Explain byte-size arguments and suffixes.
+	(-Wvla-larger-than, -Wno-alloc-size-larger-than): Update.
+	(-Wno-alloca-larger-than, -Wno-vla-larger-than): Same.
+	(-Wframe-larger-than, -Wlarger-than, -Wstack-usage): Same.
+	* doc/options.texi (UInteger): Expand.
+	(Host_Wide_Int, ByteSize): Document new properties.
+	* final.c (final_start_function_1): Include sizes in an error message.
+	* function.c (frame_offset_overflow): Same.
+	* gimple-ssa-warn-alloca.c (pass_walloca::gate): Adjust.
+	(alloca_call_type_by_arg): Change function argument to HOST_WIDE_INT.
+	Diagnose unbounded alloca calls only for limits of less than
+	PTRDIFF_MAX.
+	(alloca_call_type): Adjust.  Diagnose possibly out-of-bounds alloca
+	calls and VLA size only for limits of less than	PTRDIFF_MAX.  Same
+	for alloca(0).
+	(pass_walloca::execute): Adjust.  Diagnose alloca calls in loops
+	only for limits of less than PTRDIFF_MAX.
+	* langhooks-def.h (lhd_handle_option): Change function argument
+	to HOST_WIDE_INT.
+	* langhooks.c (lhd_handle_option): Same.
+	* langhooks.h (handle_option): Same.
+	* opt-functions.awk (switch_bit_fields): Handle Host_Wide_Int and
+	ByteSize flags.
+	(var_type, var_type_struct): Same.
+	(var_set): Handle ByteSize flag.
+	* optc-gen.awk: Add comments to output to ease debugging.  Make
+	use of HOST_WIDE_INT where appropriate.
+	* opts-gen-save.awk:  Use %lx to format unsigned long.
+	* opth-gen.awk: Change function argument to HOST_WIDE_INT.
+	* opts-common.c (integral_argument): Return HOST_WIDE_INT and add
+	arguments.  Parse bytes-size suffixes.
+	(enum_arg_to_value): Change function argument to HOST_WIDE_INT.
+	(enum_value_to_arg): Same.
+	(decode_cmdline_option): Handle cl_host_wide_int.  Adjust.
+	(handle_option): Adjust.
+	(generate_option): Change function argument to HOST_WIDE_INT.
+	(cmdline_handle_error): Adjust.
+	(read_cmdline_option): Change function argument to HOST_WIDE_INT.
+	(set_option): Change function argument to HOST_WIDE_INT.
+	(option_enabled): Handle cl_host_wide_int.
+	(get_option_state): Handle CLVC_SIZE.
+	(control_warning_option): Same.
+	* opts.c (common_handle_option): Change function argument to
+	HOST_WIDE_INT.  Remove handling of OPT_Walloca_larger_than_ and
+	OPT_Wvla_larger_than_.
+	* opts.h (enum cl_var_type): Add an enumerator.
+	* stor-layout.c (layout_decl): Print a more meaningful warning.
+	* toplev.c (output_stack_usage): Adjust.
+
 2018-07-20  Qing Zhao  <qing.zhao@oracle.com>
 
 	* builtins.c (expand_builtin_memcmp): Delete the last parameter for

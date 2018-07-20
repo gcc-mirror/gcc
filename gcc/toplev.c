@@ -1024,7 +1024,7 @@ output_stack_usage (void)
 	       stack_usage_kind_str[stack_usage_kind]);
     }
 
-  if (warn_stack_usage >= 0)
+  if (warn_stack_usage >= 0 && warn_stack_usage < HOST_WIDE_INT_MAX)
     {
       const location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
 
@@ -1034,10 +1034,10 @@ output_stack_usage (void)
 	{
 	  if (stack_usage_kind == DYNAMIC_BOUNDED)
 	    warning_at (loc,
-			OPT_Wstack_usage_, "stack usage might be %wd bytes",
+			OPT_Wstack_usage_, "stack usage might be %wu bytes",
 			stack_usage);
 	  else
-	    warning_at (loc, OPT_Wstack_usage_, "stack usage is %wd bytes",
+	    warning_at (loc, OPT_Wstack_usage_, "stack usage is %wu bytes",
 			stack_usage);
 	}
     }

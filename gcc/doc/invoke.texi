@@ -121,6 +121,21 @@ these have both positive and negative forms; the negative form of
 @option{-ffoo} is @option{-fno-foo}.  This manual documents
 only one of these two forms, whichever one is not the default.
 
+Some options take one or more arguments typically separated either
+by a space or by the equals sign (@samp{=}) from the option name.
+Unless documented otherwise, an argument can be either numeric or
+a string.  Numeric arguments must typically be small unsigned decimal
+or hexadecimal integers.  Hexadecimal arguments must begin with
+the @samp{0x} prefix.  Arguments to options that specify a size
+threshold of some sort may be arbitrarily large decimal or hexadecimal
+integers followed by a byte size suffix designating a multiple of bytes
+such as @code{kB} and @code{KiB} for kilobyte and kibibyte, respectively,
+@code{MB} and @code{MiB} for megabyte and mebibyte, @code{GB} and
+@code{GiB} for gigabyte and gigibyte, and so on.  Such arguments are
+designated by @var{byte-size} in the following text.  Refer to the NIST,
+IEC, and other relevant national and international standards for the full
+listing and explanation of the binary and decimal byte size prefixes.
+
 @c man end
 
 @xref{Option Index}, for an index to GCC's options.
@@ -261,8 +276,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
--Walloc-zero  -Walloc-size-larger-than=@var{n}
--Walloca  -Walloca-larger-than=@var{n} @gol
+-Walloc-zero  -Walloc-size-larger-than=@var{byte-size}
+-Walloca  -Walloca-larger-than=@var{byte-size} @gol
 -Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
 -Wno-attributes  -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
@@ -285,14 +300,15 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-nonliteral -Wformat-overflow=@var{n} @gol
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
 -Wformat-y2k  -Wframe-address @gol
--Wframe-larger-than=@var{len}  -Wno-free-nonheap-object  -Wjump-misses-init @gol
+-Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object @gol
+-Wjump-misses-init @gol
 -Wif-not-aligned @gol
 -Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Winvalid-memory-model  -Wno-invalid-offsetof @gol
--Winvalid-pch  -Wlarger-than=@var{len} @gol
+-Winvalid-pch  -Wlarger-than=@var{byte-size} @gol
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wmissing-attributes -Wmissing-braces @gol
@@ -313,7 +329,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsign-compare  -Wsign-conversion  -Wfloat-conversion @gol
 -Wno-scalar-storage-order  -Wsizeof-pointer-div @gol
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
--Wstack-protector  -Wstack-usage=@var{len}  -Wstrict-aliasing @gol
+-Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
 -Wstringop-overflow=@var{n} -Wstringop-truncation @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
@@ -331,7 +347,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wunused-const-variable  -Wunused-const-variable=@var{n} @gol
 -Wunused-but-set-parameter  -Wunused-but-set-variable @gol
 -Wuseless-cast  -Wvariadic-macros  -Wvector-operation-performance @gol
--Wvla  -Wvla-larger-than=@var{n}  -Wvolatile-register-var  -Wwrite-strings @gol
+-Wvla  -Wvla-larger-than=@var{byte-size}  -Wvolatile-register-var @gol
+-Wwrite-strings @gol
 -Wzero-as-null-pointer-constant  -Whsa}
 
 @item C and Objective-C-only Warning Options
@@ -5523,33 +5540,39 @@ when called with a zero size differs among implementations (and in the case
 of @code{realloc} has been deprecated) relying on it may result in subtle
 portability bugs and should be avoided.
 
-@item -Walloc-size-larger-than=@var{n}
-@opindex Walloc-size-larger-than=@var{n}
+@item -Walloc-size-larger-than=@var{byte-size}
+@opindex Walloc-size-larger-than=
 @opindex Wno-alloc-size-larger-than
 Warn about calls to functions decorated with attribute @code{alloc_size}
 that attempt to allocate objects larger than the specified number of bytes,
 or where the result of the size computation in an integer type with infinite
-precision would exceed @code{SIZE_MAX / 2}.  The option argument @var{n} is
-treated as an integer with infinite precision and may end in one of
-the standard suffixes designating a multiple of bytes such as @code{kB} and
-@code{KiB} for kilobyte and kibibyte, respectively, @code{MB} and @code{MiB}
-for megabyte and mebibyte, and so on.
-@option{-Walloc-size-larger-than=}@var{PTRDIFF_MAX} is enabled by default.
+precision would exceed the value of @samp{PTRDIFF_MAX} on the target.
+@option{-Walloc-size-larger-than=}@samp{PTRDIFF_MAX} is enabled by default.
 Warnings controlled by the option can be disabled either by specifying
-@var{n} of @var{SIZE_MAX} or more or by @option{-Wno-alloc-size-larger-than}.
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-alloc-size-larger-than}.
 @xref{Function Attributes}.
+
+@item -Wno-alloc-size-larger-than
+@opindex Wno-alloc-size-larger-than
+Disable @option{-Walloc-size-larger-than=} warnings.  The option is
+equivalent to @option{-Walloc-size-larger-than=}@samp{SIZE_MAX} or
+larger.
 
 @item -Walloca
 @opindex Wno-alloca
 @opindex Walloca
 This option warns on all uses of @code{alloca} in the source.
 
-@item -Walloca-larger-than=@var{n}
-This option warns on calls to @code{alloca} that are not bounded by a
-controlling predicate limiting its argument of integer type to at most
-@var{n} bytes, or calls to @code{alloca} where the bound is unknown.
-Arguments of non-integer types are considered unbounded even if they
-appear to be constrained to the expected range.
+@item -Walloca-larger-than=@var{byte-size}
+@opindex -Walloca-larger-than=
+@opindex -Wno-alloca-larger-than
+This option warns on calls to @code{alloca} with an integer argument whose
+value is either zero, or that is not bounded by a controlling predicate
+that limits its value to at most @var{byte-size}.  It also warns for calls
+to @code{alloca} where the bound value is unknown.  Arguments of non-integer
+types are considered unbounded even if they appear to be constrained to
+the expected range.
 
 For example, a bounded case of @code{alloca} could be:
 
@@ -5603,10 +5626,16 @@ expected argument to be implicitly cast into the @code{alloca} call.
 
 This option also warns when @code{alloca} is used in a loop.
 
-This warning is not enabled by @option{-Wall}, and is only active when
-@option{-ftree-vrp} is active (default for @option{-O2} and above).
+@option{-Walloca-larger-than=}@samp{PTRDIFF_MAX} is enabled by default
+but is usually only effective  when @option{-ftree-vrp} is active (default
+for @option{-O2} and above).
 
-See also @option{-Wvla-larger-than=@var{n}}.
+See also @option{-Wvla-larger-than=}@samp{byte-size}.
+
+@item -Wno-alloca-larger-than
+@opindex Wno-alloca-larger-than
+Disable @option{-Walloca-larger-than=} warnings.  The option is
+equivalent to @option{-Walloca-larger-than=}@samp{SIZE_MAX} or larger.
 
 @item -Warray-bounds
 @itemx -Warray-bounds=@var{n}
@@ -5954,22 +5983,40 @@ possibly reduce the number of warnings triggered by intentional shadowing.
 
 This warning is enabled by @option{-Wshadow=local}.
 
-@item -Wlarger-than=@var{len}
-@opindex Wlarger-than=@var{len}
-@opindex Wlarger-than-@var{len}
-Warn whenever an object of larger than @var{len} bytes is defined.
+@item -Wlarger-than=@var{byte-size}
+@opindex Wlarger-than=
+@opindex Wlarger-than-@var{byte-size}
+Warn whenever an object is defined whose size exceeds @var{byte-size}.
+@option{-Wlarger-than=}@samp{PTRDIFF_MAX} is enabled by default.
+Warnings controlled by the option can be disabled either by specifying
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-larger-than}.
 
-@item -Wframe-larger-than=@var{len}
-@opindex Wframe-larger-than=@var{len}
-@opindex Wframe-larger-than
-Warn if the size of a function frame is larger than @var{len} bytes.
+@item -Wno-larger-than
+@opindex Wno-larger-than
+Disable @option{-Wlarger-than=} warnings.  The option is equivalent
+to @option{-Wlarger-than=}@samp{SIZE_MAX} or larger.
+
+@item -Wframe-larger-than=@var{byte-size}
+@opindex Wframe-larger-than=
+@opindex Wno-frame-larger-than
+Warn if the size of a function frame exceeds @var{byte-size}.
 The computation done to determine the stack frame size is approximate
 and not conservative.
-The actual requirements may be somewhat greater than @var{len}
+The actual requirements may be somewhat greater than @var{byte-size}
 even if you do not get a warning.  In addition, any space allocated
 via @code{alloca}, variable-length arrays, or related constructs
 is not included by the compiler when determining
 whether or not to issue a warning.
+@option{-Wframe-larger-than=}@samp{PTRDIFF_MAX} is enabled by default.
+Warnings controlled by the option can be disabled either by specifying
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-frame-larger-than}.
+
+@item -Wno-frame-larger-than
+@opindex Wno-frame-larger-than
+Disable @option{-Wframe-larger-than=} warnings.  The option is equivalent
+to @option{-Wframe-larger-than=}@samp{SIZE_MAX} or larger.
 
 @item -Wno-free-nonheap-object
 @opindex Wno-free-nonheap-object
@@ -5977,10 +6024,10 @@ whether or not to issue a warning.
 Do not warn when attempting to free an object that was not allocated
 on the heap.
 
-@item -Wstack-usage=@var{len}
+@item -Wstack-usage=@var{byte-size}
 @opindex Wstack-usage
 @opindex Wno-stack-usage
-Warn if the stack usage of a function might be larger than @var{len} bytes.
+Warn if the stack usage of a function might exceed @var{byte-size}.
 The computation done to determine the stack usage is conservative.
 Any space allocated via @code{alloca}, variable-length arrays, or related
 constructs is included by the compiler when determining whether or not to
@@ -6008,6 +6055,24 @@ If the stack usage is (partly) dynamic and not bounded, it's:
   warning: stack usage might be unbounded
 @end smallexample
 @end itemize
+
+@option{-Wstack-usage=}@samp{PTRDIFF_MAX} is enabled by default.
+Warnings controlled by the option can be disabled either by specifying
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-stack-usage}.
+
+@item -Wno-stack-usage
+@opindex Wno-stack-usage
+Disable @option{-Wstack-usage=} warnings.  The option is equivalent
+to @option{-Wstack-usage=}@samp{SIZE_MAX} or larger.
+
+@item -Wunsafe-loop-optimizations
+@opindex Wunsafe-loop-optimizations
+@opindex Wno-unsafe-loop-optimizations
+Warn if the loop cannot be optimized because the compiler cannot
+assume anything on the bounds of the loop indices.  With
+@option{-funsafe-loop-optimizations} warn if the compiler makes
+such assumptions.
 
 @item -Wno-pedantic-ms-format @r{(MinGW targets only)}
 @opindex Wno-pedantic-ms-format
@@ -7011,21 +7076,29 @@ Warn if a variable-length array is used in the code.
 @option{-Wno-vla} prevents the @option{-Wpedantic} warning of
 the variable-length array.
 
-@item -Wvla-larger-than=@var{n}
-If this option is used, the compiler will warn on uses of
-variable-length arrays where the size is either unbounded, or bounded
-by an argument that can be larger than @var{n} bytes.  This is similar
-to how @option{-Walloca-larger-than=@var{n}} works, but with
-variable-length arrays.
+@item -Wvla-larger-than=@var{byte-size}
+@opindex -Wvla-larger-than=
+@opindex -Wno-vla-larger-than
+If this option is used, the compiler will warn for declarations of
+variable-length arrays whose size is either unbounded, or bounded
+by an argument that allows the array size to exceed @var{byte-size}
+bytes.  This is similar to how @option{-Walloca-larger-than=}@var{byte-size}
+works, but with variable-length arrays.
 
 Note that GCC may optimize small variable-length arrays of a known
 value into plain arrays, so this warning may not get triggered for
 such arrays.
 
-This warning is not enabled by @option{-Wall}, and is only active when
-@option{-ftree-vrp} is active (default for @option{-O2} and above).
+@option{-Wvla-larger-than=}@samp{PTRDIFF_MAX} is enabled by default but
+is typically only effective when @option{-ftree-vrp} is active (default
+for @option{-O2} and above).
 
-See also @option{-Walloca-larger-than=@var{n}}.
+See also @option{-Walloca-larger-than=@var{byte-size}}.
+
+@item -Wno-vla-larger-than
+@opindex Wno-vla-larger-than
+Disable @option{-Wvla-larger-than=} warnings.  The option is equivalent
+to @option{-Wvla-larger-than=}@samp{SIZE_MAX} or larger.
 
 @item -Wvolatile-register-var
 @opindex Wvolatile-register-var

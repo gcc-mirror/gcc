@@ -756,22 +756,19 @@ layout_decl (tree decl, unsigned int known_align)
     DECL_SIZE_UNIT (decl) = variable_size (DECL_SIZE_UNIT (decl));
 
   /* If requested, warn about definitions of large data objects.  */
-  if (warn_larger_than
-      && (code == VAR_DECL || code == PARM_DECL)
+  if ((code == VAR_DECL || code == PARM_DECL)
       && ! DECL_EXTERNAL (decl))
     {
       tree size = DECL_SIZE_UNIT (decl);
 
       if (size != 0 && TREE_CODE (size) == INTEGER_CST
-	  && compare_tree_int (size, larger_than_size) > 0)
+	  && compare_tree_int (size, warn_larger_than_size) > 0)
 	{
-	  int size_as_int = TREE_INT_CST_LOW (size);
+	  unsigned HOST_WIDE_INT uhwisize = tree_to_uhwi (size);
 
-	  if (compare_tree_int (size, size_as_int) == 0)
-	    warning (OPT_Wlarger_than_, "size of %q+D is %d bytes", decl, size_as_int);
-	  else
-	    warning (OPT_Wlarger_than_, "size of %q+D is larger than %wd bytes",
-                     decl, larger_than_size);
+	  warning (OPT_Wlarger_than_, "size of %q+D %wu bytes exceeds "
+		   "maximum object size %wu",
+		   decl, uhwisize, warn_larger_than_size);
 	}
     }
 

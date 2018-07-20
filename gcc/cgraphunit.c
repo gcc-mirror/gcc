@@ -2126,24 +2126,26 @@ cgraph_node::expand (void)
   /* If requested, warn about function definitions where the function will
      return a value (usually of some struct or union type) which itself will
      take up a lot of stack space.  */
-  if (warn_larger_than && !DECL_EXTERNAL (decl) && TREE_TYPE (decl))
+  if (!DECL_EXTERNAL (decl) && TREE_TYPE (decl))
     {
       tree ret_type = TREE_TYPE (TREE_TYPE (decl));
 
       if (ret_type && TYPE_SIZE_UNIT (ret_type)
 	  && TREE_CODE (TYPE_SIZE_UNIT (ret_type)) == INTEGER_CST
 	  && compare_tree_int (TYPE_SIZE_UNIT (ret_type),
-			       larger_than_size) > 0)
+			       warn_larger_than_size) > 0)
 	{
 	  unsigned int size_as_int
 	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
 
 	  if (compare_tree_int (TYPE_SIZE_UNIT (ret_type), size_as_int) == 0)
-	    warning (OPT_Wlarger_than_, "size of return value of %q+D is %u bytes",
+	    warning (OPT_Wlarger_than_,
+		     "size of return value of %q+D is %u bytes",
                      decl, size_as_int);
 	  else
-	    warning (OPT_Wlarger_than_, "size of return value of %q+D is larger than %wd bytes",
-                     decl, larger_than_size);
+	    warning (OPT_Wlarger_than_,
+		     "size of return value of %q+D is larger than %wu bytes",
+	             decl, warn_larger_than_size);
 	}
     }
 

@@ -5093,13 +5093,20 @@ expand_builtin_alloca (tree exp)
   if (!valid_arglist)
     return NULL_RTX;
 
-  if ((alloca_for_var && !warn_vla_limit)
-      || (!alloca_for_var && !warn_alloca_limit))
+  if ((alloca_for_var
+       && warn_vla_limit >= HOST_WIDE_INT_MAX
+       && warn_alloc_size_limit < warn_vla_limit)
+      || (!alloca_for_var
+	  && warn_alloca_limit >= HOST_WIDE_INT_MAX
+	  && warn_alloc_size_limit < warn_alloca_limit
+	  ))
     {
-      /* -Walloca-larger-than and -Wvla-larger-than settings override
-	 the more general -Walloc-size-larger-than so unless either of
-	 the former options is specified check the alloca arguments for
-	 overflow.  */
+      /* -Walloca-larger-than and -Wvla-larger-than settings of
+	 less than HOST_WIDE_INT_MAX override the more general
+	 -Walloc-size-larger-than so unless either of the former
+	 options is smaller than the last one (wchich would imply
+	 that the call was already checked), check the alloca
+	 arguments for overflow.  */
       tree args[] = { CALL_EXPR_ARG (exp, 0), NULL_TREE };
       int idx[] = { 0, -1 };
       maybe_warn_alloc_args_overflow (fndecl, exp, args, idx);
