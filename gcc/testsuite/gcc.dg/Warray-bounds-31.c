@@ -23,7 +23,7 @@ void sink (int, ...);
 
 void narrow_direct_cst (void)
 {
-  T (S1[MIN]);                /* { dg-warning "array subscript -\[0-9\]+ is below array bounds of .char\\\[2]" "" { xfail *-*-* } } */
+  T (S1[MIN]);                /* { dg-warning "array subscript -\[0-9\]+ is below array bounds of .char\\\[2]" "bug 86611" { xfail lp64 } } */
   T (S1[-1]);                 /* { dg-warning "array subscript -1 is below array bounds of .char\\\[2]" } */
   T (S1[0]);
   T (S1[1]);
@@ -37,7 +37,7 @@ void narrow_direct_cst (void)
   T (&S1[3]);                 /* { dg-warning "array subscript 3 is above array bounds of .char\\\[2]" } */
   T (&S1[MAX]);               /* { dg-warning "array subscript \[0-9\]+ is above array bounds of .char\\\[2]" } */
 
-  T (S9[MIN]);                /* { dg-warning "array subscript -\[0-9\]+ is below array bounds of .char\\\[10]" "" { xfail *-*-* } } */
+  T (S9[MIN]);                /* { dg-warning "array subscript -\[0-9\]+ is below array bounds of .char\\\[10]" "xfail lp64" { xfail lp64 } } */
   T (S9[-1]);                 /* { dg-warning "array subscript -1 is below array bounds of .char\\\[10]" } */
   T (S9[9]);
   T (S9[10]);                 /* { dg-warning "array subscript 10 is above array bounds of .char\\\[10]" } */
@@ -69,7 +69,7 @@ void narrow_ptr_index_cst (void)
 {
   const char *p = S7;
 
-  T (p[MIN + 1]);             /* { dg-warning "array subscript -\[0-9\]+ is outside array bounds of .char\\\[8]." "bug 84047" { xfail *-*-* } } */
+  T (p[MIN + 1]);             /* { dg-warning "array subscript -\[0-9\]+ is outside array bounds of .char\\\[8]." "bug 86611" { xfail lp64 } } */
   T (p[-1]);                  /* { dg-warning "array subscript -1 is outside array bounds of .char\\\[8]." } */
   T (p[0]);
   T (p[1]);
@@ -87,7 +87,7 @@ void narrow_ptr_index_cst (void)
   T (&p[MAX]);                /* { dg-warning "array subscript \[0-9\]+ is \(above|outside\) array bounds of .char\\\[8]." } */
 
   const char *q = S8 + 4;
-  T (q[MIN + 1]);             /* { dg-warning "array subscript -?\[0-9\]+ is outside array bounds of .char\\\[9]." "bug 84047" { xfail *-*-* } } */
+  T (q[MIN + 1]);             /* { dg-warning "array subscript -?\[0-9\]+ is outside array bounds of .char\\\[9]." "bug 86611" { xfail lp64 } } */
   T (q[-5]);                  /* { dg-warning "array subscript -1 is outside array bounds of .char\\\[9]." } */
   T (q[-4]);
   T (q[0]);
@@ -97,7 +97,7 @@ void narrow_ptr_index_cst (void)
   T (q[5]);                   /* { dg-warning "array subscript 9 is outside array bounds of .char\\\[9]." } */
   T (q[99]);                  /* { dg-warning "array subscript 103 is outside array bounds of .char\\\[9]." } */
   T (q[MAX - 4]);             /* { dg-warning "array subscript \[0-9\]+ is outside array bounds of .char\\\[9]." } */
-  T (q[MAX - 3]);             /* { dg-warning "array subscript \[0-9\]+ is outside array bounds of .char\\\[9]." "bug 84047" { xfail *-*-* } } */
+  T (q[MAX - 3]);             /* { dg-warning "array subscript -?\[0-9\]+ is outside array bounds of .char\\\[9]." "bug 86611" { xfail lp64 } } */
 
   T (&q[MIN + 1]);            /* { dg-warning "array subscript -?\[0-9\]+ is \(below|outside\) array bounds of .char\\\[9]." } */
   T (&q[-5]);                 /* { dg-warning "array subscript -1 is \(below|outside\) array bounds of .char\\\[9]." } */

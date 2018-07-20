@@ -1,3 +1,13 @@
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86613
+	PR tree-optimization/86611
+	* gcc/testsuite/c-c++-common/Warray-bounds-2.c: Undefine macros and
+	prune duplicate warnings.
+	* gcc/testsuite/gcc.dg/Warray-bounds-31.c: Xfail test cases with
+	data-model-dependencies.
+	* gcc/testsuite/gcc.dg/Warray-bounds-32.c: Ditto.
+
 2018-07-20  Richard Biener  <rguenther@suse.de>
 
 	PR debug/86585
