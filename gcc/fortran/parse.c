@@ -6051,7 +6051,7 @@ add_global_program (void)
 static void
 resolve_all_program_units (gfc_namespace *gfc_global_ns_list)
 {
-  gfc_free_dt_list ();
+  gfc_derived_types = NULL;
   gfc_current_ns = gfc_global_ns_list;
   for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
     {

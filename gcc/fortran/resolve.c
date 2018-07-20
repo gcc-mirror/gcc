@@ -2509,7 +2509,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
       /* Resolve the gsymbol namespace if needed.  */
       if (!gsym->ns->resolved)
 	{
-	  gfc_dt_list *old_dt_list;
+	  gfc_symbol *old_dt_list;
 
 	  /* Stash away derived types so that the backend_decls do not
 	     get mixed up.  */
@@ -13533,16 +13533,19 @@ resolve_typebound_procedures (gfc_symbol* derived)
 static void
 add_dt_to_dt_list (gfc_symbol *derived)
 {
-  gfc_dt_list *dt_list;
-
-  for (dt_list = gfc_derived_types; dt_list; dt_list = dt_list->next)
-    if (derived == dt_list->derived)
-      return;
-
-  dt_list = gfc_get_dt_list ();
-  dt_list->next = gfc_derived_types;
-  dt_list->derived = derived;
-  gfc_derived_types = dt_list;
+  if (!derived->dt_next)
+    {
+      if (gfc_derived_types)
+	{
+	  derived->dt_next = gfc_derived_types->dt_next;
+	  gfc_derived_types->dt_next = derived;
+	}
+      else
+	{
+	  derived->dt_next = derived;
+	}
+      gfc_derived_types = derived;
+    }
 }
 
 
