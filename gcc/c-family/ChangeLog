@@ -1,6 +1,11 @@
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82063
+	* gcc/c-family/c.opt (-Warray-bounds): Remove redundant -Wall.
+
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82063
 	* c-common.h (c_common_handle_option): Change function argument
 	to HOST_WIDE_INT.
 	* c-opts.c (c_common_init_options): Same.
