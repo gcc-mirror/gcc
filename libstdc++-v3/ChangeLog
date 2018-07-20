@@ -1,3 +1,8 @@
+2018-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86603
+	* include/std/version: Move __cpp_lib_list_remove_return_type macro.
+
 2018-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (__is_member_object_pointer_helper): Use
