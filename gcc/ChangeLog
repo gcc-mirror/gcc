@@ -1,3 +1,9 @@
+2018-07-20  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86585
+	* dwarf2out.c (dwarf2out_die_ref_for_decl): Test in_lto_p
+	to cover -flto-partition=none.
+
 2018-07-20  Martin Liska  <mliska@suse.cz>
 
 	* tree.h (DECL_LOCATION_RANGE): Remove unused macro.

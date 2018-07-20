@@ -5851,8 +5851,7 @@ dwarf2out_die_ref_for_decl (tree decl, const char **sym,
 {
   dw_die_ref die;
 
-  if ((flag_wpa || flag_incremental_link == INCREMENTAL_LINK_LTO)
-      && !decl_die_table)
+  if (in_lto_p && !decl_die_table)
     return false;
 
   if (TREE_CODE (decl) == BLOCK)
@@ -5865,8 +5864,7 @@ dwarf2out_die_ref_for_decl (tree decl, const char **sym,
   /* During WPA stage and incremental linking we currently use DIEs
      to store the decl <-> label + offset map.  That's quite inefficient
      but it works for now.  */
-  if (flag_wpa
-      || flag_incremental_link == INCREMENTAL_LINK_LTO)
+  if (in_lto_p)
     {
       dw_die_ref ref = get_AT_ref (die, DW_AT_abstract_origin);
       if (!ref)

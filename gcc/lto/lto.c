@@ -1638,6 +1638,21 @@ unify_scc (struct data_in *data_in, unsigned from,
 	     to the tree node mapping computed by compare_tree_sccs.  */
 	  if (len == 1)
 	    {
+	      /* If we got a debug reference queued, see if the prevailing
+	         tree has a debug reference and if not, register the one
+		 for the tree we are about to throw away.  */
+	      if (dref_queue.length () == 1)
+		{
+		  dref_entry e = dref_queue.pop ();
+		  gcc_assert (e.decl
+			      == streamer_tree_cache_get_tree (cache, from));
+		  const char *sym;
+		  unsigned HOST_WIDE_INT off;
+		  if (!debug_hooks->die_ref_for_decl (pscc->entries[0], &sym,
+						      &off))
+		    debug_hooks->register_external_die (pscc->entries[0],
+							e.sym, e.off);
+		}
 	      lto_maybe_register_decl (data_in, pscc->entries[0], from);
 	      streamer_tree_cache_replace_tree (cache, pscc->entries[0], from);
 	    }
@@ -1669,7 +1684,9 @@ unify_scc (struct data_in *data_in, unsigned from,
 	      free_node (scc->entries[i]);
 	    }
 
-	  /* Drop DIE references.  */
+	  /* Drop DIE references.
+	     ???  Do as in the size-one SCC case which involves sorting
+	     the queue.  */
 	  dref_queue.truncate (0);
 
 	  break;
