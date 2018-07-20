@@ -4,6 +4,7 @@
 	* gcc/testsuite/c-c++-common/pr68657-1.c: Adjust.
 	* gcc/testsuite/c-c++-common/pr68657-2.c: Same.
 	* gcc/testsuite/c-c++-common/pr68657-3.c: Same.
+	* gcc/testsuite/c-c++-common/pr68833-1.c: Same.
 	* gcc.dg/Walloc-size-larger-than-16.c: Same.
 	* gcc.dg/Walloca-larger-than.c: New test.
 	* gcc.dg/Walloca-larger-than-2.c: New test.
