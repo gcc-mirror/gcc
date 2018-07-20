@@ -25,11 +25,10 @@ void sink (int);
 
 void wide_direct_cst (void)
 {
-  T (W9[MIN]);                /* { dg-warning "array subscript -\[0-9\]+ is below array bounds of .\[a-z \]+\\\[10]" "" } */
+  T (W9[MIN]);                /* { dg-warning "array subscript -\[0-9\]+ is below array bounds of .\[a-z \]+\\\[10]" "bug 86611" { xfail ilp32 } } */
   T (W9[-1]);                 /* { dg-warning "array subscript -1 is below array bounds of .\[a-z \]+\\\[10]" } */
   T (W9[11]);                 /* { dg-warning "array subscript 11 is above array bounds of .\[a-z \]+\\\[10]" } */
   T (W9[MAX]);                /* { dg-warning "array subscript \[0-9\]+ is above array bounds of .\[a-z \]+\\\[10]" } */
-
 }
 
 void wide_ptr_deref_cst (void)
