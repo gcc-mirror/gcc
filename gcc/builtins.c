@@ -119,7 +119,7 @@ static rtx expand_builtin_next_arg (void);
 static rtx expand_builtin_va_start (tree);
 static rtx expand_builtin_va_end (tree);
 static rtx expand_builtin_va_copy (tree);
-static rtx inline_expand_builtin_string_cmp (tree, rtx, bool);
+static rtx inline_expand_builtin_string_cmp (tree, rtx);
 static rtx expand_builtin_strcmp (tree, rtx);
 static rtx expand_builtin_strncmp (tree, rtx, machine_mode);
 static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
@@ -4472,7 +4472,7 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
 
   if (!result_eq && fcode != BUILT_IN_BCMP && no_overflow)
     {
-      result = inline_expand_builtin_string_cmp (exp, target, true);
+      result = inline_expand_builtin_string_cmp (exp, target);
       if (result)
 	return result;
     }
@@ -4551,7 +4551,7 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
 
   /* Due to the performance benefit, always inline the calls first.  */
   rtx result = NULL_RTX;
-  result = inline_expand_builtin_string_cmp (exp, target, false);
+  result = inline_expand_builtin_string_cmp (exp, target);
   if (result)
     return result;
 
@@ -4670,7 +4670,7 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
 
   /* Due to the performance benefit, always inline the calls first.  */
   rtx result = NULL_RTX;
-  result = inline_expand_builtin_string_cmp (exp, target, false);
+  result = inline_expand_builtin_string_cmp (exp, target);
   if (result)
     return result;
 
@@ -6764,22 +6764,24 @@ expand_builtin_goacc_parlevel_id_size (tree exp, rtx target, int ignore)
   
    to: (assume const_str_n is 2, i.e., arg2 is a constant string)
 
-   target = var_str[0] - const_str[0];
+   target = (int) (unsigned char) var_str[0]
+	    - (int) (unsigned char) const_str[0];
    if (target != 0)
      goto ne_label;
      ...
-   target = var_str[length - 2] - const_str[length - 2];
+   target = (int) (unsigned char) var_str[length - 2]
+	    - (int) (unsigned char) const_str[length - 2];
    if (target != 0)
      goto ne_label;
-   target = var_str[length - 1] - const_str[length - 1];
+   target = (int) (unsigned char) var_str[length - 1]
+	    - (int) (unsigned char) const_str[length - 1];
    ne_label:
   */
 
 static rtx
 inline_string_cmp (rtx target, tree var_str, const char *const_str,
 		   unsigned HOST_WIDE_INT length,
-		   int const_str_n, machine_mode mode,
-		   bool is_memcmp)
+		   int const_str_n, machine_mode mode)
 {
   HOST_WIDE_INT offset = 0;
   rtx var_rtx_array
@@ -6788,7 +6790,7 @@ inline_string_cmp (rtx target, tree var_str, const char *const_str,
   rtx const_rtx = NULL_RTX;
   rtx result = target ? target : gen_reg_rtx (mode);
   rtx_code_label *ne_label = gen_label_rtx ();
-  tree unit_type_node = is_memcmp ? unsigned_char_type_node : char_type_node;
+  tree unit_type_node = unsigned_char_type_node;
   scalar_int_mode unit_mode
     = as_a <scalar_int_mode> TYPE_MODE (unit_type_node);
 
@@ -6802,8 +6804,10 @@ inline_string_cmp (rtx target, tree var_str, const char *const_str,
       rtx op0 = (const_str_n == 1) ? const_rtx : var_rtx;
       rtx op1 = (const_str_n == 1) ? var_rtx : const_rtx;
 
+      op0 = convert_modes (mode, unit_mode, op0, 1);
+      op1 = convert_modes (mode, unit_mode, op1, 1);
       result = expand_simple_binop (mode, MINUS, op0, op1,
-				    result, is_memcmp ? 1 : 0, OPTAB_WIDEN);
+				    result, 1, OPTAB_WIDEN);
       if (i < length - 1)
 	emit_cmp_and_jump_insns (result, CONST0_RTX (mode), NE, NULL_RTX,
 	    			 mode, true, ne_label);
@@ -6822,7 +6826,7 @@ inline_string_cmp (rtx target, tree var_str, const char *const_str,
    TARGET if that's convenient.
    If the call is not been inlined, return NULL_RTX.  */
 static rtx
-inline_expand_builtin_string_cmp (tree exp, rtx target, bool is_memcmp)
+inline_expand_builtin_string_cmp (tree exp, rtx target)
 {
   tree fndecl = get_callee_fndecl (exp);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
@@ -6832,6 +6836,12 @@ inline_expand_builtin_string_cmp (tree exp, rtx target, bool is_memcmp)
   gcc_checking_assert (fcode == BUILT_IN_STRCMP
 		       || fcode == BUILT_IN_STRNCMP
 		       || fcode == BUILT_IN_MEMCMP);
+
+  /* On a target where the type of the call (int) has same or narrower presicion
+     than unsigned char, give up the inlining expansion.  */
+  if (TYPE_PRECISION (unsigned_char_type_node)
+      >= TYPE_PRECISION (TREE_TYPE (exp)))
+    return NULL_RTX;
 
   tree arg1 = CALL_EXPR_ARG (exp, 0);
   tree arg2 = CALL_EXPR_ARG (exp, 1);
@@ -6879,7 +6889,7 @@ inline_expand_builtin_string_cmp (tree exp, rtx target, bool is_memcmp)
   /* Now, start inline expansion the call.  */
   return inline_string_cmp (target, (const_str_n == 1) ? arg2 : arg1,
 			    (const_str_n == 1) ? src_str1 : src_str2, length,
-			    const_str_n, mode, is_memcmp);
+			    const_str_n, mode);
 }
 
 /* Expand an expression EXP that calls a built-in function,

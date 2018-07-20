@@ -1,3 +1,16 @@
+2018-07-20  Qing Zhao  <qing.zhao@oracle.com>
+
+	* builtins.c (expand_builtin_memcmp): Delete the last parameter for
+	call to inline_expand_builtin_string_cmp.
+	(expand_builtin_strcmp): Likewise.
+	(expand_builtin_strncmp): Likewise.
+	(inline_string_cmp): Delete the last parameter, change char_type_node
+	to unsigned_char_type_node for strcmp/strncmp, add conversions to the
+	two operands.
+	(inline_expand_builtin_string_cmp): Delete the last parameter, give up
+	the inlining expansion on target where the type of the call has same or 
+	narrower precision than unsigned char.
+
 2018-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add json.o and optinfo-emit-json.o.
