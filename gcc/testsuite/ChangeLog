@@ -1,5 +1,20 @@
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/82063
+	* gcc/testsuite/c-c++-common/pr68657-1.c: Adjust.
+	* gcc/testsuite/c-c++-common/pr68657-2.c: Same.
+	* gcc/testsuite/c-c++-common/pr68657-3.c: Same.
+	* gcc.dg/Walloc-size-larger-than-16.c: Same.
+	* gcc.dg/Walloca-larger-than.c: New test.
+	* gcc.dg/Walloca-larger-than-2.c: New test.
+	* gcc.dg/Wframe-larger-than-2.c: New test.
+	* gcc.dg/Wlarger-than3.c: New test.
+	* gcc.dg/Wvla-larger-than-3.c: New test.
+	* gcc.dg/pr42611.c: Adjust.
+	* gnat.dg/frame_overflow.adb: Same.
+
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/86613
 	PR tree-optimization/86611
 	* gcc/testsuite/c-c++-common/Warray-bounds-2.c: Undefine macros and

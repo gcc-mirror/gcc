@@ -1,3 +1,18 @@
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82063
+	* c-common.h (c_common_handle_option): Change function argument
+	to HOST_WIDE_INT.
+	* c-opts.c (c_common_init_options): Same.
+	(c_common_handle_option): Same.  Remove special handling of
+	OPT_Walloca_larger_than_ and OPT_Wvla_larger_than_.
+	* c.opt (-Walloc-size-larger-than, -Walloca-larger-than): Change
+	options to take a HOST_WIDE_INT argument and accept a byte-size
+	suffix.  Initialize.
+	(-Wvla-larger-than): Same.
+	(-Wno-alloc-size-larger-than, -Wno-alloca-larger-than): New.
+	(-Wno-vla-larger-than): Same.
+
 2018-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-attribs.c (c_common_attribute_table): Add

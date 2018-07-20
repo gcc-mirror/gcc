@@ -1778,14 +1778,14 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
       TREE_ASM_WRITTEN (DECL_INITIAL (current_function_decl)) = 1;
     }
 
-  HOST_WIDE_INT min_frame_size = constant_lower_bound (get_frame_size ());
-  if (warn_frame_larger_than
-      && min_frame_size > frame_larger_than_size)
+  unsigned HOST_WIDE_INT min_frame_size
+    = constant_lower_bound (get_frame_size ());
+  if (min_frame_size > (unsigned HOST_WIDE_INT) warn_frame_larger_than_size)
     {
       /* Issue a warning */
       warning (OPT_Wframe_larger_than_,
-	       "the frame size of %wd bytes is larger than %wd bytes",
-	       min_frame_size, frame_larger_than_size);
+	       "the frame size of %wu bytes is larger than %wu bytes",
+	       min_frame_size, warn_frame_larger_than_size);
     }
 
   /* First output the function prologue: code to set up the stack frame.  */
