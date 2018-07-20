@@ -699,7 +699,7 @@ void
 text_info::set_location (unsigned int idx, location_t loc, bool show_caret_p)
 {
   gcc_checking_assert (m_richloc);
-  m_richloc->set_range (line_table, idx, loc, show_caret_p);
+  m_richloc->set_range (idx, loc, show_caret_p);
 }
 
 location_t

@@ -1,3 +1,9 @@
+2018-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_cpp_error): Remove redundant "line_table"
+	parameter from call to rich_location::set_range.
+	(maybe_suggest_missing_token_insertion): Likewise.
+
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82063
