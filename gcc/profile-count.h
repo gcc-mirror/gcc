@@ -59,6 +59,8 @@ enum profile_quality {
   profile_precise
 };
 
+extern const char *profile_quality_as_string (enum profile_quality);
+
 /* The base value for branch probability notes and edge probabilities.  */
 #define REG_BR_PROB_BASE  10000
 
@@ -720,6 +722,9 @@ public:
     {
       return m_quality == profile_precise;
     }
+
+  /* Get the quality of the count.  */
+  enum profile_quality quality () const { return m_quality; }
 
   /* When merging basic blocks, the two different profile counts are unified.
      Return true if this can be done without losing info about profile.

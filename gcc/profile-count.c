@@ -33,6 +33,34 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "sreal.h"
 
+/* Get a string describing QUALITY.  */
+
+const char *
+profile_quality_as_string (enum profile_quality quality)
+{
+  switch (quality)
+    {
+    default:
+      gcc_unreachable ();
+    case profile_uninitialized:
+      return "uninitialized";
+    case profile_guessed_local:
+      return "guessed_local";
+    case profile_guessed_global0:
+      return "guessed_global0";
+    case profile_guessed_global0adjusted:
+      return "guessed_global0adjusted";
+    case profile_guessed:
+      return "guessed";
+    case profile_afdo:
+      return "afdo";
+    case profile_adjusted:
+      return "adjusted";
+    case profile_precise:
+      return "precise";
+    }
+}
+
 /* Dump THIS to F.  */
 
 void

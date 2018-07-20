@@ -1,3 +1,39 @@
+2018-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add json.o and optinfo-emit-json.o.
+	(CFLAGS-optinfo-emit-json.o): Define TARGET_NAME.
+	* common.opt (fsave-optimization-record): New option.
+	* coretypes.h (struct kv_pair): Move here from dumpfile.c.
+	* doc/invoke.texi (-fsave-optimization-record): New option.
+	* dumpfile.c: Include "optinfo-emit-json.h".
+	(struct kv_pair): Move to coretypes.h.
+	(optgroup_options): Make non-static.
+	(dump_context::end_scope): Call
+	optimization_records_maybe_pop_dump_scope.
+	* dumpfile.h (optgroup_options): New decl.
+	* json.cc: New file.
+	* json.h: New file.
+	* optinfo-emit-json.cc: New file.
+	* optinfo-emit-json.h: New file.
+	* optinfo.cc: Include "optinfo-emit-json.h".
+	(optinfo::emit): Call optimization_records_maybe_record_optinfo.
+	(optinfo_enabled_p): Check optimization_records_enabled_p.
+	(optinfo_wants_inlining_info_p): Likewise.
+	* optinfo.h: Update comment.
+	* profile-count.c (profile_quality_as_string): New function.
+	* profile-count.h (profile_quality_as_string): New decl.
+	(profile_count::quality): New accessor.
+	* selftest-run-tests.c (selftest::run_tests): Call json_cc_tests
+	and optinfo_emit_json_cc_tests.
+	* selftest.h (selftest::json_cc_tests): New decl.
+	(selftest::optinfo_emit_json_cc_tests): New decl.
+	* toplev.c: Include "optinfo-emit-json.h".
+	(compile_file): Call optimization_records_finish.
+	(do_compile): Call optimization_records_start.
+	* tree-ssa-live.c: Include optinfo.h.
+	(remove_unused_scope_block_p): Retain inlining information if
+	optinfo_wants_inlining_info_p returns true.
+
 2018-07-20  Richard Biener  <rguenther@suse.de>
 
 	PR debug/86585
