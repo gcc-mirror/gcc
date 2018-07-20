@@ -6133,7 +6133,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
       gcc_unreachable ();
     }
   if (done_lexing)
-    richloc->set_range (line_table, 0, input_location, true);
+    richloc->set_range (0, input_location, true);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
   diagnostic_override_option_index (&diagnostic,
@@ -8174,7 +8174,7 @@ maybe_suggest_missing_token_insertion (rich_location *richloc,
       location_t hint_loc = hint->get_start_loc ();
       location_t old_loc = richloc->get_loc ();
 
-      richloc->set_range (line_table, 0, hint_loc, true);
+      richloc->set_range (0, hint_loc, true);
       richloc->add_range (old_loc, false);
     }
 }

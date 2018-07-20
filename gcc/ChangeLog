@@ -1,3 +1,8 @@
+2018-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.c (text_info::set_location): Remove redundant
+	"line_table" parameter from call to rich_location::set_range.
+
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82063
