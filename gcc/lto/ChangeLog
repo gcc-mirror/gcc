@@ -1,3 +1,9 @@
+2018-07-20  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86585
+	* lto.c (unify_scc): Before we throw away an SCC see if we
+	can amend prevailing single-entry SCC with debug refs.
+
 2018-07-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (do_stream_out): Add PART parameter; open dump file.
