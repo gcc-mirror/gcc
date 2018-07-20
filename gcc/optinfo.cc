@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 
 #include "optinfo.h"
+#include "optinfo-emit-json.h"
 #include "dump-context.h"
 #include "pretty-print.h"
 #include "gimple-pretty-print.h"
@@ -85,7 +86,8 @@ optinfo::~optinfo ()
 void
 optinfo::emit ()
 {
-  /* currently this is a no-op.  */
+  /* -fsave-optimization-record.  */
+  optimization_records_maybe_record_optinfo (this);
 }
 
 /* Update the optinfo's kind based on DUMP_KIND.  */
@@ -221,9 +223,8 @@ optinfo::add_dec (const wide_int_ref &wi, signop sgn)
 
 bool optinfo_enabled_p ()
 {
-  /* Currently no destinations are implemented, just a hook for
-     selftests.  */
-  return dump_context::get ().forcibly_enable_optinfo_p ();
+  return (dump_context::get ().forcibly_enable_optinfo_p ()
+	  || optimization_records_enabled_p ());
 }
 
 /* Return true if any of the active optinfo destinations make use
@@ -232,5 +233,5 @@ bool optinfo_enabled_p ()
 
 bool optinfo_wants_inlining_info_p ()
 {
-  return false;
+  return optimization_records_enabled_p ();
 }

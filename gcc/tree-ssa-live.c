@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "optinfo.h"
 
 static void verify_live_on_entry (tree_live_info_p);
 
@@ -552,7 +553,8 @@ remove_unused_scope_block_p (tree scope, bool in_ctor_dtor_block)
      ;
    /* When not generating debug info we can eliminate info on unused
       variables.  */
-   else if (!flag_auto_profile && debug_info_level == DINFO_LEVEL_NONE)
+   else if (!flag_auto_profile && debug_info_level == DINFO_LEVEL_NONE
+	    && !optinfo_wants_inlining_info_p ())
      {
        /* Even for -g0 don't prune outer scopes from artificial
 	  functions, otherwise diagnostics using tree_nonartificial_location

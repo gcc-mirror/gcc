@@ -332,6 +332,14 @@ namespace gcc {
 
 typedef std::pair <tree, tree> tree_pair;
 
+/* Define a name->value mapping.  */
+template <typename ValueType>
+struct kv_pair
+{
+  const char *const name;	/* the name of the value */
+  const ValueType value;	/* the value of the name */
+};
+
 #else
 
 struct _dont_use_rtx_here_;

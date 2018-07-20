@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dump-context.h"
 #include "cgraph.h"
 #include "tree-pass.h" /* for "current_pass".  */
+#include "optinfo-emit-json.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
@@ -118,14 +119,6 @@ static struct dump_file_info dump_files[TDI_end] =
   DUMP_FILE_INFO (NULL, "ipa-all", DK_ipa, 0),
 };
 
-/* Define a name->number mapping for a dump flag value.  */
-template <typename ValueType>
-struct kv_pair
-{
-  const char *const name;	/* the name of the value */
-  const ValueType value;	/* the value of the name */
-};
-
 /* Table of dump options. This must be consistent with the TDF_* flags
    in dumpfile.h and opt_info_options below. */
 static const kv_pair<dump_flags_t> dump_options[] =
@@ -176,7 +169,7 @@ static const kv_pair<dump_flags_t> optinfo_verbosity_options[] =
 };
 
 /* Flags used for -fopt-info groups.  */
-static const kv_pair<optgroup_flags_t> optgroup_options[] =
+const kv_pair<optgroup_flags_t> optgroup_options[] =
 {
   {"ipa", OPTGROUP_IPA},
   {"loop", OPTGROUP_LOOP},
@@ -801,6 +794,7 @@ dump_context::end_scope ()
 {
   end_any_optinfo ();
   m_scope_depth--;
+  optimization_records_maybe_pop_dump_scope ();
 }
 
 /* Return the optinfo currently being accumulated, creating one if
@@ -827,8 +821,7 @@ dump_context::begin_next_optinfo (const dump_location_t &loc)
 }
 
 /* End any optinfo that has been accumulated within this context; emitting
-   it to any destinations as appropriate - though none have currently been
-   implemented.  */
+   it to any destinations as appropriate, such as optimization records.  */
 
 void
 dump_context::end_any_optinfo ()

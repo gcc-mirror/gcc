@@ -25,11 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    optimization, which can be emitted to zero or more of several
    destinations, such as:
 
-   * as a "remark" through the diagnostics subsystem
-
    * saved to a file as an "optimization record"
-
-   Currently no such destinations are implemented.
 
    They are generated in response to calls to the "dump_*" API in
    dumpfile.h; repeated calls to the "dump_*" API are consolidated

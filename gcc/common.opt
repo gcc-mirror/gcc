@@ -1955,6 +1955,10 @@ fopt-info-
 Common Joined RejectNegative Var(common_deferred_options) Defer
 -fopt-info[-<type>=filename]	Dump compiler optimization details.
 
+fsave-optimization-record
+Common Report Var(flag_save_optimization_record) Optimization
+Write a SRCFILE.opt-record.json file detailing what optimizations were performed.
+
 foptimize-register-move
 Common Ignore
 Does nothing. Preserved for backward compatibility.

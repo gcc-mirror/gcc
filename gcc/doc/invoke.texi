@@ -419,7 +419,8 @@ Objective-C and Objective-C++ Dialects}.
 -freorder-blocks-algorithm=@var{algorithm} @gol
 -freorder-blocks-and-partition  -freorder-functions @gol
 -frerun-cse-after-loop  -freschedule-modulo-scheduled-loops @gol
--frounding-math  -fsched2-use-superblocks  -fsched-pressure @gol
+-frounding-math  -fsave-optimization-record @gol
+-fsched2-use-superblocks  -fsched-pressure @gol
 -fsched-spec-load  -fsched-spec-load-dangerous @gol
 -fsched-stalled-insns-dep[=@var{n}]  -fsched-stalled-insns[=@var{n}] @gol
 -fsched-group-heuristic  -fsched-critical-path-heuristic @gol
@@ -13968,6 +13969,51 @@ in conflict since only one output file is allowed. In this case, only
 the first option takes effect and the subsequent options are
 ignored. Thus only @file{vec.miss} is produced which contains
 dumps from the vectorizer about missed opportunities.
+
+@item -fsave-optimization-record
+@opindex fsave-optimization-record
+Write a SRCFILE.opt-record.json file detailing what optimizations
+were performed, for those optimizations that support @option{-fopt-info}.
+
+This option is experimental and the format of the data within the JSON
+file is subject to change.
+
+It is roughly equivalent to a machine-readable version of
+@option{-fopt-info-all}, as a collection of messages with source file,
+line number and column number, with the following additional data for
+each message:
+
+@itemize @bullet
+
+@item
+the execution count of the code being optimized, along with metadata about
+whether this was from actual profile data, or just an estimate, allowing
+consumers to prioritize messages by code hotness,
+
+@item
+the function name of the code being optimized, where applicable,
+
+@item
+the ``inlining chain'' for the code being optimized, so that when
+a function is inlined into several different places (which might
+themselves be inlined), the reader can distinguish between the copies,
+
+@item
+objects identifying those parts of the message that refer to expressions,
+statements or symbol-table nodes, which of these categories they are, and,
+when available, their source code location,
+
+@item
+the GCC pass that emitted the message, and
+
+@item
+the location in GCC's own code from which the message was emitted
+
+@end itemize
+
+Additionally, some messages are logically nested within other
+messages, reflecting implementation details of the optimization
+passes.
 
 @item -fsched-verbose=@var{n}
 @opindex fsched-verbose

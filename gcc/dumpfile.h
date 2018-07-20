@@ -420,6 +420,7 @@ extern FILE *dump_begin (int, dump_flags_t *, int part=-1);
 extern void dump_end (int, FILE *);
 extern int opt_info_switch_p (const char *);
 extern const char *dump_flag_name (int);
+extern const kv_pair<optgroup_flags_t> optgroup_options[];
 
 /* Global variables used to communicate with passes.  */
 extern FILE *dump_file;
@@ -442,6 +443,7 @@ dump_enabled_p (void)
    (a) the active dump_file, if any
    (b) the -fopt-info destination, if any
    (c) to the "optinfo" destinations, if any:
+       (c.1) as optimization records
 
    dump_* (MSG_*) --> dumpfile.c --+--> (a) dump_file
                                    |
@@ -449,6 +451,7 @@ dump_enabled_p (void)
                                    |
                                    `--> (c) optinfo
                                             `---> optinfo destinations
+                                                  (c.1) optimization records
 
    For optinfos, the dump_*_loc mark the beginning of an optinfo
    instance: all subsequent dump_* calls are consolidated into
