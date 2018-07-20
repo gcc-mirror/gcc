@@ -508,7 +508,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class _Sp_counted_ptr_inplace;
 
     static const type_info&
-    _S_ti() noexcept
+    _S_ti() noexcept _GLIBCXX_VISIBILITY(default)
     {
       alignas(type_info) static constexpr _Sp_make_shared_tag __tag;
       return reinterpret_cast<const type_info&>(__tag);
