@@ -156,7 +156,7 @@ vn_nary_op_hasher::hash (const vn_nary_op_s *vno1)
 inline bool
 vn_nary_op_hasher::equal (const vn_nary_op_s *vno1, const vn_nary_op_s *vno2)
 {
-  return vn_nary_op_eq (vno1, vno2);
+  return vno1 == vno2 || vn_nary_op_eq (vno1, vno2);
 }
 
 typedef hash_table<vn_nary_op_hasher> vn_nary_op_table_type;
@@ -187,7 +187,7 @@ vn_phi_hasher::hash (const vn_phi_s *vp1)
 inline bool
 vn_phi_hasher::equal (const vn_phi_s *vp1, const vn_phi_s *vp2)
 {
-  return vn_phi_eq (vp1, vp2);
+  return vp1 == vp2 || vn_phi_eq (vp1, vp2);
 }
 
 typedef hash_table<vn_phi_hasher> vn_phi_table_type;
@@ -242,7 +242,7 @@ vn_reference_hasher::hash (const vn_reference_s *vr1)
 inline bool
 vn_reference_hasher::equal (const vn_reference_s *v, const vn_reference_s *c)
 {
-  return vn_reference_eq (v, c);
+  return v == c || vn_reference_eq (v, c);
 }
 
 typedef hash_table<vn_reference_hasher> vn_reference_table_type;
@@ -295,18 +295,13 @@ static obstack vn_tables_obstack;
 /* Special obstack we never unwind.  */
 static obstack vn_tables_insert_obstack;
 
+static vn_reference_t last_inserted_ref;
+static vn_phi_t last_inserted_phi;
+static vn_nary_op_t last_inserted_nary;
+
 /* Valid hashtables storing information we have proven to be
    correct.  */
 static vn_tables_t valid_info;
-
-/* Optimistic hashtables storing information we are making assumptions about
-   during iterations.  */
-static vn_tables_t optimistic_info;
-
-/* Pointer to the set of hashtables that is currently being used.
-   Should always point to either the optimistic_info, or the
-   valid_info.  */
-static vn_tables_t current_info;
 
 
 /* Reverse post order index for each basic block.  */
@@ -1548,9 +1543,7 @@ vn_reference_lookup_1 (vn_reference_t vr, vn_reference_t *vnresult)
   hashval_t hash;
 
   hash = vr->hashcode;
-  slot = current_info->references->find_slot_with_hash (vr, hash, NO_INSERT);
-  if (!slot && current_info == optimistic_info)
-    slot = valid_info->references->find_slot_with_hash (vr, hash, NO_INSERT);
+  slot = valid_info->references->find_slot_with_hash (vr, hash, NO_INSERT);
   if (slot)
     {
       if (vnresult)
@@ -1589,9 +1582,7 @@ vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse,
     vr->hashcode = vr->hashcode + SSA_NAME_VERSION (vr->vuse);
 
   hash = vr->hashcode;
-  slot = current_info->references->find_slot_with_hash (vr, hash, NO_INSERT);
-  if (!slot && current_info == optimistic_info)
-    slot = valid_info->references->find_slot_with_hash (vr, hash, NO_INSERT);
+  slot = valid_info->references->find_slot_with_hash (vr, hash, NO_INSERT);
   if (slot)
     return *slot;
 
@@ -1735,7 +1726,7 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
 	 optimistic table gets cleared after each iteration).
 	 We do not need to insert into the optimistic table, as
 	 lookups there will fall back to the valid table.  */
-      else if (current_info == optimistic_info)
+      else
 	{
 	  unsigned int length = vn_nary_length_from_stmt (new_stmt);
 	  vn_nary_op_t vno1
@@ -1745,9 +1736,10 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
 	  vno1->result = result;
 	  init_vn_nary_op_from_stmt (vno1, new_stmt);
 	  vn_nary_op_insert_into (vno1, valid_info->nary, true);
+	  /* Also do not link it into the undo chain.  */
+	  last_inserted_nary = vno1->next;
+	  vno1->next = (vn_nary_op_t)(void *)-1;
 	}
-      else
-	vn_nary_op_insert_stmt (new_stmt, result);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Inserting name ");
@@ -2624,7 +2616,7 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
   vr1->result = TREE_CODE (result) == SSA_NAME ? SSA_VAL (result) : result;
   vr1->result_vdef = vdef;
 
-  slot = current_info->references->find_slot_with_hash (vr1, vr1->hashcode,
+  slot = valid_info->references->find_slot_with_hash (vr1, vr1->hashcode,
 							INSERT);
 
   /* Because we lookup stores using vuses, and value number failures
@@ -2640,6 +2632,8 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
     free_reference (*slot);
 
   *slot = vr1;
+  vr1->next = last_inserted_ref;
+  last_inserted_ref = vr1;
   return vr1;
 }
 
@@ -2667,7 +2661,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set, tree type,
     result = SSA_VAL (result);
   vr1->result = result;
 
-  slot = current_info->references->find_slot_with_hash (vr1, vr1->hashcode,
+  slot = valid_info->references->find_slot_with_hash (vr1, vr1->hashcode,
 							INSERT);
 
   /* At this point we should have all the things inserted that we have
@@ -2678,6 +2672,8 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set, tree type,
     free_reference (*slot);
 
   *slot = vr1;
+  vr1->next = last_inserted_ref;
+  last_inserted_ref = vr1;
   return vr1;
 }
 
@@ -2849,10 +2845,7 @@ vn_nary_op_lookup_1 (vn_nary_op_t vno, vn_nary_op_t *vnresult)
     *vnresult = NULL;
 
   vno->hashcode = vn_nary_op_compute_hash (vno);
-  slot = current_info->nary->find_slot_with_hash (vno, vno->hashcode,
-						  NO_INSERT);
-  if (!slot && current_info == optimistic_info)
-    slot = valid_info->nary->find_slot_with_hash (vno, vno->hashcode,
+  slot = valid_info->nary->find_slot_with_hash (vno, vno->hashcode,
 						  NO_INSERT);
   if (!slot)
     return NULL_TREE;
@@ -2956,6 +2949,8 @@ vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table,
   gcc_assert (!*slot);
 
   *slot = vno;
+  vno->next = last_inserted_nary;
+  last_inserted_nary = vno;
   return vno;
 }
 
@@ -2970,7 +2965,7 @@ vn_nary_op_insert_pieces (unsigned int length, enum tree_code code,
 {
   vn_nary_op_t vno1 = alloc_vn_nary_op (length, result, value_id);
   init_vn_nary_op_from_pieces (vno1, length, code, type, ops);
-  return vn_nary_op_insert_into (vno1, current_info->nary, true);
+  return vn_nary_op_insert_into (vno1, valid_info->nary, true);
 }
 
 /* Insert OP into the current hash table with a value number of
@@ -2985,7 +2980,7 @@ vn_nary_op_insert (tree op, tree result)
 
   vno1 = alloc_vn_nary_op (length, result, VN_INFO (result)->value_id);
   init_vn_nary_op_from_op (vno1, op);
-  return vn_nary_op_insert_into (vno1, current_info->nary, true);
+  return vn_nary_op_insert_into (vno1, valid_info->nary, true);
 }
 
 /* Insert the rhs of STMT into the current hash table with a value number of
@@ -2998,7 +2993,7 @@ vn_nary_op_insert_stmt (gimple *stmt, tree result)
     = alloc_vn_nary_op (vn_nary_length_from_stmt (stmt),
 			result, VN_INFO (result)->value_id);
   init_vn_nary_op_from_stmt (vno1, stmt);
-  return vn_nary_op_insert_into (vno1, current_info->nary, true);
+  return vn_nary_op_insert_into (vno1, valid_info->nary, true);
 }
 
 /* Compute a hashcode for PHI operation VP1 and return it.  */
@@ -3206,10 +3201,7 @@ vn_phi_lookup (gimple *phi)
 	vp1->ccrhs = vn_valueize (gimple_cond_rhs (last1));
       }
   vp1->hashcode = vn_phi_compute_hash (vp1);
-  slot = current_info->phis->find_slot_with_hash (vp1, vp1->hashcode,
-						  NO_INSERT);
-  if (!slot && current_info == optimistic_info)
-    slot = valid_info->phis->find_slot_with_hash (vp1, vp1->hashcode,
+  slot = valid_info->phis->find_slot_with_hash (vp1, vp1->hashcode,
 						  NO_INSERT);
   if (!slot)
     return NULL_TREE;
@@ -3253,11 +3245,13 @@ vn_phi_insert (gimple *phi, tree result)
   vp1->result = result;
   vp1->hashcode = vn_phi_compute_hash (vp1);
 
-  slot = current_info->phis->find_slot_with_hash (vp1, vp1->hashcode, INSERT);
+  slot = valid_info->phis->find_slot_with_hash (vp1, vp1->hashcode, INSERT);
 
   /* Because we iterate over phi operations more than once, it's
      possible the slot might already exist here, hence no assert.*/
   *slot = vp1;
+  vp1->next = last_inserted_phi;
+  last_inserted_phi = vp1;
   return vp1;
 }
 
@@ -3778,10 +3772,12 @@ visit_reference_op_call (tree lhs, gcall *stmt)
       vr2->hashcode = vr1.hashcode;
       vr2->result = lhs;
       vr2->result_vdef = vdef_val;
-      slot = current_info->references->find_slot_with_hash (vr2, vr2->hashcode,
+      slot = valid_info->references->find_slot_with_hash (vr2, vr2->hashcode,
 							    INSERT);
       gcc_assert (!*slot);
       *slot = vr2;
+      vr2->next = last_inserted_ref;
+      last_inserted_ref = vr2;
     }
 
   return changed;
@@ -4312,12 +4308,6 @@ process_scc (vec<tree> scc)
   unsigned int i;
   unsigned int iterations = 0;
   bool changed = true;
-  vn_nary_op_iterator_type hin;
-  vn_phi_iterator_type hip;
-  vn_reference_iterator_type hir;
-  vn_nary_op_t nary;
-  vn_phi_t phi;
-  vn_reference_t ref;
 
   /* If the SCC has a single member, just visit it.  */
   if (scc.length () == 1)
@@ -4344,7 +4334,6 @@ process_scc (vec<tree> scc)
 
   /* Iterate over the SCC with the optimistic table until it stops
      changing.  */
-  current_info = optimistic_info;
   while (changed)
     {
       changed = false;
@@ -4354,10 +4343,10 @@ process_scc (vec<tree> scc)
       /* As we are value-numbering optimistically we have to
 	 clear the expression tables and the simplified expressions
 	 in each iteration until we converge.  */
-      gcc_assert (optimistic_info->nary->elements () == 0
-		  && optimistic_info->phis->elements () == 0
-		  && optimistic_info->references->elements () == 0);
       void *ob_top = obstack_alloc (&vn_tables_obstack, 0);
+      vn_reference_t ref_top = last_inserted_ref;
+      vn_phi_t phi_top = last_inserted_phi;
+      vn_nary_op_t nary_top = last_inserted_nary;
       FOR_EACH_VEC_ELT (scc, i, var)
 	gcc_assert (!VN_INFO (var)->needs_insertion
 		    && VN_INFO (var)->expr == NULL);
@@ -4365,15 +4354,37 @@ process_scc (vec<tree> scc)
 	changed |= visit_use (var);
       if (changed)
 	{
-	  optimistic_info->nary->empty ();
-	  optimistic_info->phis->empty ();
-	  FOR_EACH_HASH_TABLE_ELEMENT (*optimistic_info->references,
-				       ref, vn_reference_t, hir)
+	  for (; last_inserted_nary != nary_top;
+	       last_inserted_nary = last_inserted_nary->next)
 	    {
-	      ref->operands.release ();
-	      optimistic_info->references->clear_slot (&*hir);
+	      vn_nary_op_t *slot;
+	      slot = valid_info->nary->find_slot_with_hash (last_inserted_nary,
+						       last_inserted_nary->hashcode,
+						       NO_INSERT);
+	      gcc_assert (slot);
+	      valid_info->nary->clear_slot (slot);
 	    }
-	  optimistic_info->references->empty ();
+	  for (; last_inserted_phi != phi_top;
+	       last_inserted_phi = last_inserted_phi->next)
+	    {
+	      vn_phi_t *slot;
+	      slot = valid_info->phis->find_slot_with_hash (last_inserted_phi,
+						       last_inserted_phi->hashcode,
+						       NO_INSERT);
+	      gcc_assert (slot);
+	      valid_info->phis->clear_slot (slot);
+	    }
+	  for (; last_inserted_ref != ref_top;
+	       last_inserted_ref = last_inserted_ref->next)
+	    {
+	      vn_reference_t *slot;
+	      slot = valid_info->references->find_slot_with_hash (last_inserted_ref,
+						       last_inserted_ref->hashcode,
+						       NO_INSERT);
+	      gcc_assert (slot);
+	      (*slot)->operands.release ();
+	      valid_info->references->clear_slot (slot);
+	    }
 	  obstack_free (&vn_tables_obstack, ob_top);
 	}
     }
@@ -4381,35 +4392,6 @@ process_scc (vec<tree> scc)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Processing SCC needed %d iterations\n", iterations);
   statistics_histogram_event (cfun, "SCC iterations", iterations);
-
-  /* Finally, move the contents of the no longer used optimistic
-     table to the valid table and clear the optimistic table.  */
-  FOR_EACH_HASH_TABLE_ELEMENT (*optimistic_info->nary, nary, vn_nary_op_t, hin)
-    {
-      optimistic_info->nary->clear_slot (&*hin);
-      vn_nary_op_insert_into (nary, valid_info->nary, false);
-    }
-  FOR_EACH_HASH_TABLE_ELEMENT (*optimistic_info->phis, phi, vn_phi_t, hip)
-    {
-      optimistic_info->phis->clear_slot (&*hip);
-      vn_phi_s **slot
-	= valid_info->phis->find_slot_with_hash (phi, phi->hashcode, INSERT);
-      gcc_assert (!*slot);
-      *slot = phi;
-    }
-  FOR_EACH_HASH_TABLE_ELEMENT (*optimistic_info->references,
-			       ref, vn_reference_t, hir)
-    {
-      optimistic_info->references->clear_slot (&*hir);
-      vn_reference_s **slot
-	= valid_info->references->find_slot_with_hash (ref, ref->hashcode,
-						       INSERT);
-      if (*slot)
-	free_reference (*slot);
-      *slot = ref;
-    }
-
-  current_info = valid_info;
 }
 
 
@@ -4634,9 +4616,9 @@ init_scc_vn (void)
   gcc_obstack_init (&vn_tables_insert_obstack);
   valid_info = XCNEW (struct vn_tables_s);
   allocate_vn_table (valid_info);
-  optimistic_info = XCNEW (struct vn_tables_s);
-  allocate_vn_table (optimistic_info);
-  current_info = valid_info;
+  last_inserted_ref = NULL;
+  last_inserted_phi = NULL;
+  last_inserted_nary = NULL;
 
   /* Create the VN_INFO structures, and initialize value numbers to
      TOP or VARYING for parameters.  */
@@ -4749,8 +4731,6 @@ free_scc_vn (void)
   sccstack.release ();
   free_vn_table (valid_info);
   XDELETE (valid_info);
-  free_vn_table (optimistic_info);
-  XDELETE (optimistic_info);
   obstack_free (&vn_tables_obstack, NULL);
   obstack_free (&vn_tables_insert_obstack, NULL);
 
@@ -4824,7 +4804,7 @@ sccvn_dom_walker::record_cond (basic_block bb,
   tree ops[2] = { lhs, rhs };
   vn_nary_op_t old = NULL;
   if (vn_nary_op_lookup_pieces (2, code, boolean_type_node, ops, &old))
-    current_info->nary->remove_elt_with_hash (old, old->hashcode);
+    valid_info->nary->remove_elt_with_hash (old, old->hashcode);
   vn_nary_op_t cond
     = vn_nary_op_insert_pieces (2, code, boolean_type_node, ops,
 				value
@@ -4890,9 +4870,9 @@ sccvn_dom_walker::after_dom_children (basic_block bb)
     {
       vn_nary_op_t cond = cond_stack.last ().second.first;
       vn_nary_op_t old = cond_stack.last ().second.second;
-      current_info->nary->remove_elt_with_hash (cond, cond->hashcode);
+      valid_info->nary->remove_elt_with_hash (cond, cond->hashcode);
       if (old)
-	vn_nary_op_insert_into (old, current_info->nary, false);
+	vn_nary_op_insert_into (old, valid_info->nary, false);
       cond_stack.pop ();
     }
 }

@@ -35,6 +35,7 @@ extern tree VN_TOP;
 
 typedef struct vn_nary_op_s
 {
+  vn_nary_op_s *next;
   /* Unique identify that all expressions with the same value have. */
   unsigned int value_id;
   ENUM_BITFIELD(tree_code) opcode : 16;
@@ -62,6 +63,7 @@ sizeof_vn_nary_op (unsigned int length)
 
 typedef struct vn_phi_s
 {
+  vn_phi_s *next;
   /* Unique identifier that all expressions with the same value have. */
   unsigned int value_id;
   hashval_t hashcode;
@@ -116,6 +118,7 @@ vn_ref_op_align_unit (vn_reference_op_t op)
 
 typedef struct vn_reference_s
 {
+  vn_reference_s *next;
   /* Unique identifier that all expressions with the same value have. */
   unsigned int value_id;
   hashval_t hashcode;

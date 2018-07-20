@@ -1,3 +1,40 @@
+2018-07-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (struct vn_nary_op_s): Add next member.
+	(struct vn_phi_s): Likewise.
+	(struct vn_reference_s): Likewise.
+	* tree-ssa-sccvn.c (vn_nary_op_hasher::equal): Add shortcut
+	for searching the slot of an entry known to be in the hash itself.
+	(vn_phi_hasher::equal): Likewise.
+	(vn_reference_hasher::equal): Likewise.
+	(last_inserted_ref, last_inserted_phi, last_inserted_nary): New
+	globals.
+	(optimistic_info, current_info): Remove, keeping only valid_info.
+	(vn_reference_lookup_1): Remove fallback lookup.
+	(vn_reference_lookup_2): Likewise.
+	(vn_nary_op_lookup_1): Likewise.
+	(vn_phi_lookup): Likewise.
+	(vn_nary_build_or_lookup_1): Make sure to not chain the built
+	hash element.
+	(vn_reference_insert): Adjust, chain the inserted hash element
+	at last_inserted_ref.
+	(vn_reference_insert_pieces): Likewise.
+	(visit_reference_op_call): Likewise.
+	(vn_nary_op_insert_into): Chain the inserted hash element at
+	last_inserted_nary.
+	(vn_nary_op_insert_pieces): Adjust.
+	(vn_nary_op_insert): Likewise.
+	(vn_nary_op_insert_stmt): Likewise.
+	(vn_phi_insert): Adjust, chain the inserted hash element at
+	last_inserted_phi.
+	(process_scc): Remove clearing and copying the optimistic
+	table.  Instead remove elements inserted during an optimistic
+	iteration from the single table we maintain.
+	(init_scc_vn): Adjust.
+	(free_scc_vn): Likewise.
+	(sccvn_dom_walker::record_cond): Likewise.
+	(sccvn_dom_walker::after_dom_children): Likewise.
+
 2018-07-19  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/84047
