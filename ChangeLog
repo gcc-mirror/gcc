@@ -1,3 +1,8 @@
+2018-07-19  DJ Delorie  <dj@redhat.com>
+
+	* MAINTAINERS (m32c, msp43, rl78, libiberty, build): Remove myself
+	as maintainer.
+
 2018-07-16  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* MAINTAINERS: Adjust email address for me and my colleague Robin
