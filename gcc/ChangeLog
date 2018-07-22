@@ -1,3 +1,10 @@
+2018-07-22  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/86621
+	* gcc/gimple-ssa-warn-alloca.c (alloca_call_type_by_arg): Avoid
+	diagnosing calls with unknown arguments unless -Walloca-larger-than
+	is restricted to less than PTRDIFF_MAX bytes.
+
 2018-07-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/gcov.texi (Invoking Gcov): Editorial changes.
