@@ -214,7 +214,15 @@ alloca_call_type_by_arg (tree arg, tree arg_casted, edge e,
 	    }
 	}
       else
-	return alloca_type_and_limit (ALLOCA_BOUND_UNKNOWN);
+	{
+	  /* Analogous to ALLOCA_UNBOUNDED, when MAX_SIZE is greater
+	     than or equal to PTRDIFF_MAX, treat allocations with
+	     an unknown bound as OK.  */
+	  alloca_type unknown_result
+	    = (max_size < maxobjsize.to_uhwi ()
+	       ? ALLOCA_BOUND_UNKNOWN : ALLOCA_OK);
+	  return alloca_type_and_limit (unknown_result);
+	}
     }
 
   // Similarly, but check for a comparison with an unknown LIMIT.
