@@ -378,12 +378,12 @@ command line option.  The @var{execution_count} is @samp{-} for lines
 containing no code.  Unexecuted lines are marked @samp{#####} or
 @samp{=====}, depending on whether they are reachable by
 non-exceptional paths or only exceptional paths such as C++ exception
-handlers, respectively. Given @samp{-a} option, unexecuted blocks are
+handlers, respectively. Given the @samp{-a} option, unexecuted blocks are
 marked @samp{$$$$$} or @samp{%%%%%}, depending on whether a basic block
 is reachable via non-exceptional or exceptional paths.
 Executed basic blocks having a statement with zero @var{execution_count}
-end with @samp{*} character and are colored with magenta color with @option{-k}
-option.  The functionality is not supported in Ada.
+end with @samp{*} character and are colored with magenta color with
+the @option{-k} option.  This functionality is not supported in Ada.
 
 Note that GCC can completely remove the bodies of functions that are
 not needed -- for instance if they are inlined everywhere.  Such functions
