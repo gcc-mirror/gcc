@@ -1,3 +1,7 @@
+2018-07-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/gcov.texi (Invoking Gcov): Editorial changes.
+
 2018-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* pretty-print.c (text_info::set_location): Remove redundant
