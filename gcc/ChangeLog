@@ -1,5 +1,10 @@
 2018-07-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* gimple-fold.c (gimple_fold_builtin_printf): Don't create a not NUL
+	terminated STRING_CST object.
+
+2018-07-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	hsa-dump.c (dump_hsa_symbol): Avoid out of scope access to buf.
 
 2018-07-23  Segher Boessenkool  <segher@kernel.crashing.org>
