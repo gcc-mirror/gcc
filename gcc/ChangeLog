@@ -1,5 +1,16 @@
 2018-07-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000-p8swap.c (rtx_is_swappable_p): Adjust.
+	* config/rs6000/rs6000-protos.h (rs6000_split_v4si_init): Delete.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Always force
+	the elements into a register.
+	(rs6000_split_v4si_init_di_reg): Delete.
+	(rs6000_split_v4si_init): Delete.
+	* config/rs6000/vsx.md (unspec): Delete UNSPEC_VSX_VEC_INIT.
+	(vsx_init_v4si): Rewrite as a define_expand.
+
+2018-07-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (splitters for rldimi and rlwimi with the
 	zero_extend argument from memory): New.
 
