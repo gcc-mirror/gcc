@@ -388,7 +388,6 @@
    UNSPEC_VSX_VXSIG
    UNSPEC_VSX_VIEXP
    UNSPEC_VSX_VTSTDC
-   UNSPEC_VSX_VEC_INIT
    UNSPEC_VSX_VSIGNED2
 
    UNSPEC_LXVL
@@ -2946,23 +2945,41 @@
 }
   [(set_attr "type" "vecperm")])
 
-;; V4SImode initialization splitter
-(define_insn_and_split "vsx_init_v4si"
-  [(set (match_operand:V4SI 0 "gpc_reg_operand" "=&r")
-	(unspec:V4SI
-	 [(match_operand:SI 1 "reg_or_cint_operand" "rn")
-	  (match_operand:SI 2 "reg_or_cint_operand" "rn")
-	  (match_operand:SI 3 "reg_or_cint_operand" "rn")
-	  (match_operand:SI 4 "reg_or_cint_operand" "rn")]
-	 UNSPEC_VSX_VEC_INIT))
-   (clobber (match_scratch:DI 5 "=&r"))
-   (clobber (match_scratch:DI 6 "=&r"))]
+;; Concatenate 4 SImode elements into a V4SImode reg.
+(define_expand "vsx_init_v4si"
+  [(use (match_operand:V4SI 0 "gpc_reg_operand"))
+   (use (match_operand:SI 1 "gpc_reg_operand"))
+   (use (match_operand:SI 2 "gpc_reg_operand"))
+   (use (match_operand:SI 3 "gpc_reg_operand"))
+   (use (match_operand:SI 4 "gpc_reg_operand"))]
    "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT"
-   "#"
-   "&& reload_completed"
-   [(const_int 0)]
 {
-  rs6000_split_v4si_init (operands);
+  rtx a = gen_reg_rtx (DImode);
+  rtx b = gen_reg_rtx (DImode);
+  rtx c = gen_reg_rtx (DImode);
+  rtx d = gen_reg_rtx (DImode);
+  emit_insn (gen_zero_extendsidi2 (a, operands[1]));
+  emit_insn (gen_zero_extendsidi2 (b, operands[2]));
+  emit_insn (gen_zero_extendsidi2 (c, operands[3]));
+  emit_insn (gen_zero_extendsidi2 (d, operands[4]));
+  if (!BYTES_BIG_ENDIAN)
+    {
+      std::swap (a, b);
+      std::swap (c, d);
+    }
+
+  rtx aa = gen_reg_rtx (DImode);
+  rtx ab = gen_reg_rtx (DImode);
+  rtx cc = gen_reg_rtx (DImode);
+  rtx cd = gen_reg_rtx (DImode);
+  emit_insn (gen_ashldi3 (aa, a, GEN_INT (32)));
+  emit_insn (gen_ashldi3 (cc, c, GEN_INT (32)));
+  emit_insn (gen_iordi3 (ab, aa, b));
+  emit_insn (gen_iordi3 (cd, cc, d));
+
+  rtx abcd = gen_reg_rtx (V2DImode);
+  emit_insn (gen_vsx_concat_v2di (abcd, ab, cd));
+  emit_move_insn (operands[0], gen_lowpart (V4SImode, abcd));
   DONE;
 })
 
