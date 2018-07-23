@@ -1,3 +1,16 @@
+2018-07-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70940
+	* include/experimental/memory_resource
+	(__resource_adaptor_common::_AlignMgr::_M_unadjust): Add assertion.
+	(__resource_adaptor_common::__guaranteed_alignment): New helper to
+	give maximum alignment an allocator guarantees. Specialize for known
+	allocators using new and malloc.
+	(__resource_adaptor_imp::do_allocate): Use __guaranteed_alignment.
+	(__resource_adaptor_imp::do_deallocate): Likewise.
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	Check that new and delete are called with expected sizes.
+
 2018-07-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86595
