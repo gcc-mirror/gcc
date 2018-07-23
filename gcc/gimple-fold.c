@@ -3433,23 +3433,13 @@ gimple_fold_builtin_printf (gimple_stmt_iterator *gsi, tree fmt,
 	      && (int) len > 0)
 	    {
 	      char *newstr;
-	      tree offset_node, string_cst;
 
 	      /* Create a NUL-terminated string that's one char shorter
 		 than the original, stripping off the trailing '\n'.  */
-	      newarg = build_string_literal (len, str);
-	      string_cst = string_constant (newarg, &offset_node);
-	      gcc_checking_assert (string_cst
-				   && (TREE_STRING_LENGTH (string_cst)
-				       == (int) len)
-				   && integer_zerop (offset_node)
-				   && (unsigned char)
-				      TREE_STRING_POINTER (string_cst)[len - 1]
-				      == target_newline);
-	      /* build_string_literal creates a new STRING_CST,
-		 modify it in place to avoid double copying.  */
-	      newstr = CONST_CAST (char *, TREE_STRING_POINTER (string_cst));
+	      newstr = xstrdup (str);
 	      newstr[len - 1] = '\0';
+	      newarg = build_string_literal (len, newstr);
+	      free (newstr);
 	      if (fn_puts)
 		{
 		  gcall *repl = gimple_build_call (fn_puts, 1, newarg);
