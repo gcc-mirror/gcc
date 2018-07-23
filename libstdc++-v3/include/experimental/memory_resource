@@ -36,6 +36,13 @@
 #include <ext/new_allocator.h>
 #include <experimental/bits/lfts_config.h>
 
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  template<typename _Tp> class malloc_allocator;
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace __gnu_cxx
+
 namespace std {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
@@ -307,6 +314,10 @@ namespace pmr {
 	  __orig_ptr = __ptr - _S_read<unsigned int>(__end);
 	else // (__token_size == sizeof(char*))
 	  __orig_ptr = _S_read<char*>(__end);
+	// The adjustment is always less than the requested alignment,
+	// so if that isn't true now then either the wrong size was passed
+	// to deallocate or the token was overwritten by a buffer overflow:
+	__glibcxx_assert(static_cast<size_t>(__ptr - __orig_ptr) < _M_align);
 	return __orig_ptr;
       }
 
@@ -345,6 +356,23 @@ namespace pmr {
 	  return __val;
 	}
     };
+
+    template<typename _Alloc>
+      struct __guaranteed_alignment : std::integral_constant<size_t, 1> { };
+
+    template<typename _Tp>
+      struct __guaranteed_alignment<__gnu_cxx::new_allocator<_Tp>>
+      : std::alignment_of<std::max_align_t>::type { };
+
+    template<typename _Tp>
+      struct __guaranteed_alignment<__gnu_cxx::malloc_allocator<_Tp>>
+      : std::alignment_of<std::max_align_t>::type { };
+
+#if _GLIBCXX_USE_ALLOCATOR_NEW
+    template<typename _Tp>
+      struct __guaranteed_alignment<std::allocator<_Tp>>
+      : std::alignment_of<std::max_align_t>::type { };
+#endif
   };
 
   // 8.7.1 __resource_adaptor_imp
@@ -392,7 +420,7 @@ namespace pmr {
       virtual void*
       do_allocate(size_t __bytes, size_t __alignment) override
       {
-	if (__alignment == 1)
+	if (__alignment <= __guaranteed_alignment<_Alloc>::value)
 	  return _M_alloc.allocate(__bytes);
 
 	const _AlignMgr __mgr(__bytes, __alignment);
@@ -407,7 +435,7 @@ namespace pmr {
       override
       {
 	auto __ptr = static_cast<char*>(__p);
-	if (__alignment == 1)
+	if (__alignment <= __guaranteed_alignment<_Alloc>::value)
 	  {
 	    _M_alloc.deallocate(__ptr, __bytes);
 	    return;
