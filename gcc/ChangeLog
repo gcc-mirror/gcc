@@ -1,3 +1,7 @@
+2018-07-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	hsa-dump.c (dump_hsa_symbol): Avoid out of scope access to buf.
+
 2018-07-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000-p8swap.c (rtx_is_swappable_p): Adjust.
