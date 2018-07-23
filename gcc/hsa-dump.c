@@ -776,11 +776,11 @@ static void
 dump_hsa_symbol (FILE *f, hsa_symbol *symbol)
 {
   const char *name;
+  char buf[64];
   if (symbol->m_name)
     name = symbol->m_name;
   else
     {
-      char buf[64];
       sprintf (buf, "__%s_%i", hsa_seg_name (symbol->m_segment),
 	       symbol->m_name_number);
 
