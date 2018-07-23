@@ -1,5 +1,10 @@
 2018-07-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	PR c/86617
+	* genmatch.c (dt_operand::gen_match_op): Avoid folding volatile values.
+
+2018-07-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	* gimple-fold.c (gimple_fold_builtin_printf): Don't create a not NUL
 	terminated STRING_CST object.
 
