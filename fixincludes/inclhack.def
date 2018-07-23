@@ -924,6 +924,20 @@ fix = {
 };
 
 /*
+ *  AIX unistd.h defines a static function with an empty parameter list.
+ */
+fix = {
+    hackname  = aix_unistd;
+    mach      = "*-*-aix*";
+    files     = unistd.h;
+
+    select    = "[ \t]+static[ \t]+int[ \t]+getdtablesize\\(\\)";
+    c_fix     = format;
+    c_fix_arg = "\tstatic int\t\tgetdtablesize(void)";
+    test_text = "	static int		getdtablesize()";
+};
+
+/*
  *  Fix __assert declaration in assert.h on Alpha OSF/1.
  */
 fix = {
