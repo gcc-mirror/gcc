@@ -1,7 +1,12 @@
+2018-07-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (splitters for rldimi and rlwimi with the
+	zero_extend argument from memory): New.
+
 2018-07-22  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/86621
-	* gcc/gimple-ssa-warn-alloca.c (alloca_call_type_by_arg): Avoid
+	* gimple-ssa-warn-alloca.c (alloca_call_type_by_arg): Avoid
 	diagnosing calls with unknown arguments unless -Walloca-larger-than
 	is restricted to less than PTRDIFF_MAX bytes.
 
