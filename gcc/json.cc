@@ -76,12 +76,15 @@ object::print (pretty_printer *pp) const
   pp_character (pp, '}');
 }
 
-/* Set the json::value * for KEY, taking ownership of VALUE
+/* Set the json::value * for KEY, taking ownership of V
    (and taking a copy of KEY if necessary).  */
 
 void
 object::set (const char *key, value *v)
 {
+  gcc_assert (key);
+  gcc_assert (v);
+
   value **ptr = m_map.get (key);
   if (ptr)
     {
@@ -126,6 +129,15 @@ array::print (pretty_printer *pp) const
   pp_character (pp, ']');
 }
 
+/* Append non-NULL value V to a json::array, taking ownership of V.  */
+
+void
+array::append (value *v)
+{
+  gcc_assert (v);
+  m_elements.safe_push (v);
+}
+
 /* class json::number, a subclass of json::value, wrapping a double.  */
 
 /* Implementation of json::value::print for json::number.  */
@@ -139,6 +151,16 @@ number::print (pretty_printer *pp) const
 }
 
 /* class json::string, a subclass of json::value.  */
+
+/* json::string's ctor.  */
+
+string::string (const char *utf8)
+{
+  gcc_assert (utf8);
+  m_utf8 = xstrdup (utf8);
+}
+
+/* Implementation of json::value::print for json::string.  */
 
 void
 string::print (pretty_printer *pp) const

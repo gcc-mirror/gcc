@@ -202,10 +202,12 @@ optrecord_json_writer::impl_location_to_json (dump_impl_location_t loc)
 json::object *
 optrecord_json_writer::location_to_json (location_t loc)
 {
+  gcc_assert (LOCATION_LOCUS (loc) != UNKNOWN_LOCATION);
+  expanded_location exploc = expand_location (loc);
   json::object *obj = new json::object ();
-  obj->set ("file", new json::string (LOCATION_FILE (loc)));
-  obj->set ("line", new json::number (LOCATION_LINE (loc)));
-  obj->set ("column", new json::number (LOCATION_COLUMN (loc)));
+  obj->set ("file", new json::string (exploc.file));
+  obj->set ("line", new json::number (exploc.line));
+  obj->set ("column", new json::number (exploc.column));
   return obj;
 }
 
@@ -330,7 +332,7 @@ optrecord_json_writer::inlining_chain_to_json (location_t loc)
 	  const char *printable_name
 	    = lang_hooks.decl_printable_name (fndecl, 2);
 	  obj->set ("fndecl", new json::string (printable_name));
-	  if (*locus != UNKNOWN_LOCATION)
+	  if (LOCATION_LOCUS (*locus) != UNKNOWN_LOCATION)
 	    obj->set ("site", location_to_json (*locus));
 	  array->append (obj);
 	}
@@ -371,8 +373,9 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 	    json_item->set ("expr", new json::string (item->get_text ()));
 
 	    /* Capture any location for the node.  */
-	    if (item->get_location () != UNKNOWN_LOCATION)
-	      json_item->set ("location", location_to_json (item->get_location ()));
+	    if (LOCATION_LOCUS (item->get_location ()) != UNKNOWN_LOCATION)
+	      json_item->set ("location",
+			      location_to_json (item->get_location ()));
 
 	    message->append (json_item);
 	  }
@@ -383,8 +386,9 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 	    json_item->set ("stmt", new json::string (item->get_text ()));
 
 	    /* Capture any location for the stmt.  */
-	    if (item->get_location () != UNKNOWN_LOCATION)
-	      json_item->set ("location", location_to_json (item->get_location ()));
+	    if (LOCATION_LOCUS (item->get_location ()) != UNKNOWN_LOCATION)
+	      json_item->set ("location",
+			      location_to_json (item->get_location ()));
 
 	    message->append (json_item);
 	  }
@@ -395,8 +399,9 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 	    json_item->set ("symtab_node", new json::string (item->get_text ()));
 
 	    /* Capture any location for the node.  */
-	    if (item->get_location () != UNKNOWN_LOCATION)
-	      json_item->set ("location", location_to_json (item->get_location ()));
+	    if (LOCATION_LOCUS (item->get_location ()) != UNKNOWN_LOCATION)
+	      json_item->set ("location",
+			      location_to_json (item->get_location ()));
 	    message->append (json_item);
 	  }
 	  break;
