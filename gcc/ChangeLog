@@ -1,3 +1,9 @@
+2018-07-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86618
+	* tree-vect-stmts.c (vectorizable_call): Don't take the address
+	of LOOP_VINFO_MASKS (loop_vinfo) when loop_vinfo is null.
+
 2018-07-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/86636

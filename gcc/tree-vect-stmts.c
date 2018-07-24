@@ -3337,7 +3337,7 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
      needs to be generated.  */
   gcc_assert (ncopies >= 1);
 
-  vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+  vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
