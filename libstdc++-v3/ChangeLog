@@ -1,5 +1,12 @@
 2018-07-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/memory_resource: Adjust comments and
+	whitespace.
+	(__resource_adaptor_imp): Add second template parameter for type of
+	memory resource base class.
+	(memory_resource): Define default constructor, destructor, copy
+	constructor and copy assignment operator as defaulted.
+
 	PR libstdc++/70966
 	* include/experimental/memory_resource (__get_default_resource): Use
 	placement new to create an object with dynamic storage duration.
