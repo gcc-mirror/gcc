@@ -619,6 +619,17 @@
 	* testsuite/libgomp.fortran/do_concurrent_5.f90: Move modified
 	test from gfortran.dg to here.
 
+2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: Revert 259346.
+	* testsuite/libgomp.oacc-fortran/pr84955.f90: Likewise.
+
+2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/84955
+	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: New test.
+	* testsuite/libgomp.oacc-fortran/pr84955.f90: New test.
+
 2018-04-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/85204

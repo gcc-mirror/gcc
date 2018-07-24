@@ -376,7 +376,7 @@
 	* config/aarch64/predicates.md (aarch64_mem_pair_lanes_operand): Use
 	new enum value 'ADDR_QUERY_LDP_STP_N', don't hardcode mode and use
 	'true' rather than '1'.
-	* gcc/config/aarch64/constraints.md (Uml): Likewise.
+	* config/aarch64/constraints.md (Uml): Likewise.
 	(Uml): Rename to Umn.
 	(Umq): Remove.
 
@@ -5072,7 +5072,7 @@
 
 2018-06-07  Carl Love  <cel@us.ibm.com>
 
-	* gcc/config/rs6000/vsx.md (vextract_fp_from_shorth,
+	* config/rs6000/vsx.md (vextract_fp_from_shorth,
 	vextract_fp_from_shortl): Add BE support.
 
 2018-06-07  Paul Koning  <ni1d@arrl.net>
@@ -5104,13 +5104,8 @@
 
 2018-06-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
-	* gcc/config/msp430/msp430.c (msp430_mcu_name): Set the "i" in the
+	* config/msp430/msp430.c (msp430_mcu_name): Set the "i" in the
 	symbol defined for msp430i* devices to be lower case.
-
-	gcc/testsuite/gcc.target/msp430/
-	* msp430i-device-symbol.c: New test.
-	* msp430f-device-symbol.c: New test.
-	* msp430.h: New test header file.
 
 2018-06-07  Richard Biener  <rguenther@suse.de>
 
@@ -5135,7 +5130,7 @@
 
 2018-06-04  Carl Love  <cel@us.ibm.com>
 
-	* gcc/config/rs6000/vsx.md (first_match_index_<mode>): Calculate index
+	* config/rs6000/vsx.md (first_match_index_<mode>): Calculate index
 	using natural element order.  Use gen_lshrsi3 instead of gen_ashrsi3
 	as it is slightly cheaper.
 	(first_match_or_eos_index_<mode>):
@@ -5146,9 +5141,9 @@
 	Calculate index using natural order.
 	(define_insn vclzlsbb): Change to define_insn vclzlsbb_<mode>.
 	for BE and LE modes.
-	* gcc/config/rs6000/rs6000-c.c: Rename P9V_BUILTIN_VCLZLSBB,
+	* config/rs6000/rs6000-c.c: Rename P9V_BUILTIN_VCLZLSBB,
 	P9V_BUILTIN_VCLZLSBB_V16QI.
-	* gcc/config/rs6000/rs6000-builtin.def: Make VCLZLSBB mode
+	* config/rs6000/rs6000-builtin.def: Make VCLZLSBB mode
 	specific.
 
 2018-06-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
@@ -5245,12 +5240,8 @@
 
 2018-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
-	* gcc/config/msp430/msp430.c (msp430_attr): Allow interrupt handlers
+	* config/msp430/msp430.c (msp430_attr): Allow interrupt handlers
 	to be static and remove check on interrupt attribute name.
-
-	gcc/testsuite/gcc.target/msp430/
-	* function-attributes-4.c: New test.
-	* static-interrupts.c: New test.
 
 2018-06-05  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
@@ -6622,7 +6613,7 @@
 2018-05-23  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
 
 	PR target/78849
-	* gcc/tree.c (build_common_tree_nodes): Dont set TYPE_SIZE for __intN
+	* tree.c (build_common_tree_nodes): Dont set TYPE_SIZE for __intN
 	types.
 
 2018-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
@@ -8527,15 +8518,15 @@
 	* config/rs6000/sysv4.h: Remove Xilinx FP support.
 	* config/rs6000/t-rs6000: Ditto.
 	* config/rs6000/t-xilinx: Delete.
-	* gcc/config/rs6000/titan.md: Adjust for fp_type removal.
-	* gcc/config/rs6000/vsx.md: Remove Xilinx FP support.
+	* config/rs6000/titan.md: Adjust for fp_type removal.
+	* config/rs6000/vsx.md: Remove Xilinx FP support.
 	(VStype_simple): Delete.
 	(VSfptype_simple, VSfptype_mul, VSfptype_div, VSfptype_sqrt): Delete.
 	* config/rs6000/xfpu.h: Delete.
 	* config/rs6000/xfpu.md: Delete.
 	* config/rs6000/xilinx.h: Delete.
 	* config/rs6000/xilinx.opt: Delete.
-	* gcc/doc/invoke.texi (RS/6000 and PowerPC Options): Remove
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Remove
 	-msingle-float, -mdouble-float, -msimple-fpu, -mfpu=, and -mxilinx-fpu.
 
 2018-05-04  Tom de Vries  <tom@codesourcery.com>
@@ -8927,7 +8918,7 @@
 	* config/microblaze/microblaze.opt: add new option -mpic-data-text-rel.
 	* config/microblaze/microblaze-protos.h (microblaze_constant_address_p):
 	Add declaration.
-	* gcc/config/microblaze/microblaze.h (microblaze_constant_address_p):
+	* config/microblaze/microblaze.h (microblaze_constant_address_p):
 	CONSTANT_ADDRESS_P definition to microblaze_constant_address_p.
 	* config/microblaze/microblaze.c (TARGET_PIC_DATA_TEXT_REL):
 	New addressing mode for data-text relative position indepenedent code.
@@ -8948,7 +8939,7 @@
 	'TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC' to disable address diff vector
 	table in case of TARGET_PIC_DATA_TEXT_REL.
 	(expand_pic_symbol_ref): Add handling for 'UNSPEC_TEXT'.
-	* gcc/config/microblaze/microblaze.md (TARGET_PIC_DATA_TEXT_REL):
+	* config/microblaze/microblaze.md (TARGET_PIC_DATA_TEXT_REL):
 	Add new macros 'UNSPEC_TEXT',
 	'UNSPEC_SET_TEXT' + add rule for setting r20 in function prologue
 	+ exclude function calls from 'UNSPEC_PLT' in case of data text
@@ -8962,7 +8953,7 @@
 	of addr diff vector generation.
 	* target.def (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC): Add
 	target hook definition.
-	* targhooks.h, gcc/targhooks.c (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC):
+	* targhooks.h, targhooks.c (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC):
 	Add default function for generate_pic_addr_diff_vec -> flag_pic.
 	* doc/invoke.texi (Add new pic option): Add new microblaze pic
 	option for data text relative.
@@ -9797,10 +9788,10 @@
 2018-04-16  Olga Makhotina  <olga.makhotina@intel.com>
 
 	PR target/84331
-	* gcc/config.gcc: Support "skylake".
-	* gcc/config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	* config.gcc: Support "skylake".
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
 	PROCESSOR_SKYLAKE.
-	* gcc/config/i386/i386.c (m_SKYLAKE): Define.
+	* config/i386/i386.c (m_SKYLAKE): Define.
 	(processor_target_table): Add "skylake".
 	(ix86_option_override_internal): Add "skylake".
 	(get_builtin_code_for_version): Handle PROCESSOR_SKYLAKE,
@@ -9808,7 +9799,7 @@
 	(get_builtin_code_for_version): Fix priority for
 	PROCESSOR_ICELAKE_CLIENT, PROCESSOR_ICELAKE_SERVER,
 	PROCESSOR_SKYLAKE-AVX512.
-	* gcc/config/i386/i386.h (processor_costs): Define TARGET_SKYLAKE.
+	* config/i386/i386.h (processor_costs): Define TARGET_SKYLAKE.
 	(processor_type): Add PROCESSOR_SKYLAKE.
 
 2018-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -10088,7 +10079,7 @@
 2018-04-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/85287
-	* gcc/config/rs6000/rs6000.md (allocate_stack): Put the residual size
+	* config/rs6000/rs6000.md (allocate_stack): Put the residual size
 	for stack clash protection in a register whenever we need it to be in
 	a register.
 
@@ -12847,8 +12838,8 @@
 2018-02-27  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/83871
-	* gcc/doc/invoke.texi (-Wmissing-attributes): New option.
-	* gcc/print-tree.c (print_node): Handle DECL_UNINLINABLE.
+	* doc/invoke.texi (-Wmissing-attributes): New option.
+	* print-tree.c (print_node): Handle DECL_UNINLINABLE.
 
 2018-02-27  Martin Sebor  <msebor@redhat.com>
 
@@ -14824,7 +14815,7 @@
 	* config/arc/predicates.md (compact_store_memory_operand): Check
 	for uncached memory accesses.
 	(nonvol_nonimm_operand): Likewise.
-	* gcc/doc/extend.texi (ARC Type Attribute): New subsection.
+	* doc/extend.texi (ARC Type Attribute): New subsection.
 
 2018-01-31  Jakub Jelinek  <jakub@redhat.com>
 
