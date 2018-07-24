@@ -1,3 +1,9 @@
+2018-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70966
+	* include/experimental/memory_resource (__get_default_resource): Use
+	placement new to create an object with dynamic storage duration.
+
 2018-07-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/70940
