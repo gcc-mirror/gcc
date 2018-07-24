@@ -459,12 +459,6 @@ namespace pmr {
     };
 
   // Global memory resources
-  inline std::atomic<memory_resource*>&
-  __get_default_resource()
-  {
-    static atomic<memory_resource*> _S_default_resource(new_delete_resource());
-    return _S_default_resource;
-  }
 
   inline memory_resource*
   new_delete_resource() noexcept
@@ -499,6 +493,16 @@ namespace pmr {
   }
 
   // The default memory resource
+
+  inline std::atomic<memory_resource*>&
+  __get_default_resource()
+  {
+    using type = atomic<memory_resource*>;
+    alignas(type) static unsigned char __buf[sizeof(type)];
+    static type* __r = new(__buf) type(new_delete_resource());
+    return *__r;
+  }
+
   inline memory_resource*
   get_default_resource() noexcept
   { return __get_default_resource().load(); }
