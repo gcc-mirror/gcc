@@ -1,5 +1,10 @@
 2018-07-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86658
+	* include/bits/stl_algobase.h (__niter_wrap<_Iterator>): Pass unused
+	parameter by reference, to avoid copying invalid iterators.
+	* testsuite/25_algorithms/copy/86658.cc: New test.
+
 	* include/std/bit (__countl_zero, __countr_zero, __popcount): Use
 	local variables for number of digits instead of type aliases.
 	(__log2p1): Remove redundant branch also checked in __countl_zero.

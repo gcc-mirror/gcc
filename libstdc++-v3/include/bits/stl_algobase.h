@@ -288,7 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // No need to wrap, iterator already has the right type.
   template<typename _Iterator>
     inline _Iterator
-    __niter_wrap(_Iterator, _Iterator __res)
+    __niter_wrap(const _Iterator&, _Iterator __res)
     { return __res; }
 
   // All of these auxiliary structs serve two purposes.  (1) Replace
