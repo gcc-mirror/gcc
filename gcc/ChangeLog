@@ -1,3 +1,7 @@
+2018-07-24  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Add BIT_FIELD_REF canonicalizations.
+
 2018-07-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c/86617
