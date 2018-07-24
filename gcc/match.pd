@@ -4659,6 +4659,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Canonicalizations of BIT_FIELD_REFs.  */
 
 (simplify
+ (BIT_FIELD_REF (BIT_FIELD_REF @0 @1 @2) @3 @4)
+ (BIT_FIELD_REF @0 @3 { const_binop (PLUS_EXPR, bitsizetype, @2, @4); }))
+
+(simplify
+ (BIT_FIELD_REF (view_convert @0) @1 @2)
+ (BIT_FIELD_REF @0 @1 @2))
+
+(simplify
+ (BIT_FIELD_REF @0 @1 integer_zerop)
+ (if (tree_int_cst_equal (@1, TYPE_SIZE (TREE_TYPE (@0))))
+  (view_convert @0)))
+
+(simplify
  (BIT_FIELD_REF @0 @1 @2)
  (switch
   (if (TREE_CODE (TREE_TYPE (@0)) == COMPLEX_TYPE
