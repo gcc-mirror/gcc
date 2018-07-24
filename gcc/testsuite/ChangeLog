@@ -1,3 +1,8 @@
+2018-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/86636
+	* gcc.c-torture/compile/pr86636.c: New test.
+
 2018-07-24  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* gcc.target/aarch64/vect-su-add-sub.c: New.

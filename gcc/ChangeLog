@@ -1,3 +1,23 @@
+2018-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/86636
+	* json.cc (json::object::set): Fix comment.  Add assertions.
+	(json::array::append): Move here from json.h.  Add comment and an
+	assertion.
+	(json::string::string): Likewise.
+	* json.h (json::array::append): Move to json.cc.
+	(json::string::string): Likewise.
+	* optinfo-emit-json.cc
+	(optrecord_json_writer::impl_location_to_json): Assert that we
+	aren't attempting to write out UNKNOWN_LOCATION, or an ad-hoc
+	wrapper around it.  Expand the location once, rather than three
+	times.
+	(optrecord_json_writer::inlining_chain_to_json): Fix the check for
+	UNKNOWN_LOCATION, to use LOCATION_LOCUS to look through ad-hoc
+	wrappers.
+	(optrecord_json_writer::optinfo_to_json): Likewise, in four
+	places.  Fix some overlong lines.
+
 2018-07-24  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* config/aarch64/aarch64-simd.md

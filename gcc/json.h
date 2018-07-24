@@ -107,7 +107,7 @@ class array : public value
   enum kind get_kind () const FINAL OVERRIDE { return JSON_ARRAY; }
   void print (pretty_printer *pp) const FINAL OVERRIDE;
 
-  void append (value *v) { m_elements.safe_push (v); }
+  void append (value *v);
 
  private:
   auto_vec<value *> m_elements;
@@ -134,7 +134,7 @@ class number : public value
 class string : public value
 {
  public:
-  string (const char *utf8) : m_utf8 (xstrdup (utf8)) {}
+  string (const char *utf8);
   ~string () { free (m_utf8); }
 
   enum kind get_kind () const FINAL OVERRIDE { return JSON_STRING; }
