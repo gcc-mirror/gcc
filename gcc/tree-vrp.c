@@ -1241,12 +1241,8 @@ wide_int_range_mult_wrapping (wide_int &res_lb,
   /* diff = max - min.  */
   prod2 = prod3 - prod0;
   if (wi::geu_p (prod2, sizem1))
-    {
-      /* The range covers all values.  */
-      res_lb = wi::min_value (prec, sign);
-      res_ub = wi::max_value (prec, sign);
-      return false;
-    }
+    /* The range covers all values.  */
+    return false;
 
   res_lb = wide_int::from (prod0, prec, sign);
   res_ub = wide_int::from (prod3, prec, sign);
