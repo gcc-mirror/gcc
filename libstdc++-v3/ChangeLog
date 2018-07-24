@@ -1,5 +1,15 @@
 2018-07-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/uses_allocator.h (__is_erased_or_convertible): Reorder
+	conditions. Add comments.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Adjust dg-error line.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Likewise.
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Likewise.
+
+	* include/bits/uses_allocator.h (__is_erased_or_convertible): Remove.
+	(__uses_allocator_helper): Check conditions directly instead of
+	using __is_erased_or_convertible.
+
 	* include/experimental/memory_resource: Adjust comments and
 	whitespace.
 	(__resource_adaptor_imp): Add second template parameter for type of
