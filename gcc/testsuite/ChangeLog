@@ -1,3 +1,11 @@
+2018-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/86649
+	* g++.dg/tree-ssa-/pr19476-1.C: Check dom2 dump instead of ccp1.
+	* g++.dg/tree-ssa-/pr19476-5.C: Likewise.
+	* g++.dg/tree-ssa-/pr19476-6.C: New test.
+	* g++.dg/tree-ssa-/pr19476-7.C: New test.
+
 2018-07-23  Carl Love  <cel@us.ibm.com>
 
 	PR 86591
@@ -22,10 +30,10 @@
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82063
-	* gcc/testsuite/c-c++-common/pr68657-1.c: Adjust.
-	* gcc/testsuite/c-c++-common/pr68657-2.c: Same.
-	* gcc/testsuite/c-c++-common/pr68657-3.c: Same.
-	* gcc/testsuite/c-c++-common/pr68833-1.c: Same.
+	* c-c++-common/pr68657-1.c: Adjust.
+	* c-c++-common/pr68657-2.c: Same.
+	* c-c++-common/pr68657-3.c: Same.
+	* c-c++-common/pr68833-1.c: Same.
 	* gcc.dg/Walloc-size-larger-than-16.c: Same.
 	* gcc.dg/Walloca-larger-than.c: New test.
 	* gcc.dg/Walloca-larger-than-2.c: New test.
@@ -39,11 +47,11 @@
 
 	PR tree-optimization/86613
 	PR tree-optimization/86611
-	* gcc/testsuite/c-c++-common/Warray-bounds-2.c: Undefine macros and
+	* c-c++-common/Warray-bounds-2.c: Undefine macros and
 	prune duplicate warnings.
-	* gcc/testsuite/gcc.dg/Warray-bounds-31.c: Xfail test cases with
+	* gcc.dg/Warray-bounds-31.c: Xfail test cases with
 	data-model-dependencies.
-	* gcc/testsuite/gcc.dg/Warray-bounds-32.c: Ditto.
+	* gcc.dg/Warray-bounds-32.c: Ditto.
 
 2018-07-20  Richard Biener  <rguenther@suse.de>
 
@@ -2517,6 +2525,12 @@
 
 	* gcc.target/i386/funcspec-56.inc: Test arch=tremont.
 
+2018-06-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/msp430i-device-symbol.c: New test.
+	* gcc.target/msp430/msp430f-device-symbol.c: New test.
+	* gcc.target/msp430/msp430.h: New test header file.
+
 2018-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69615
@@ -2583,6 +2597,11 @@
 
 	PR tree-optimization/86062
 	* g++.dg/tree-ssa/pr86062.C: New testcase.
+
+2018-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/function-attributes-4.c: New test.
+	* gcc.target/msp430/static-interrupts.c: New test.
 
 2018-06-05  Steve Ellcey  <sellcey@cavium.com>
 
@@ -4152,10 +4171,11 @@
 
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
-	* testsuite/brig.dg/test/gimple/smoke_test.hsail: Fix the test
+	* brig.dg/test/gimple/smoke_test.hsail: Fix the test
 	to match the currently produced gimple.
 
 2018-05-04  Carl Love  <cel@us.ibm.com>
+
 	* gcc.target/powerpc/vsx-vector-6.h (foo): Add test for vec_max,
 	vec_trunc.
 	* gcc.target/powerpc/vsx-vector-6-le.c (dg-final): Update xvcmpeqdp,
@@ -4873,7 +4893,7 @@
 2018-04-16  Olga Makhotina  <olga.makhotina@intel.com>
 
 	PR target/84331
-	* gcc/testsuite/gcc.target/i386/funcspec-56.inc: Test arch=skylake.
+	* gcc.target/i386/funcspec-56.inc: Test arch=skylake.
 
 2018-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
@@ -4973,22 +4993,11 @@
 	PR c++/85258
 	* g++.dg/parse/error61.C: New test.
 
-2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
-
-	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: Revert 259346.
-	* testsuite/libgomp.oacc-fortran/pr84955.f90: Likewise.
-
 2018-04-12  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/85347
 	* gcc.target/powerpc/vec-ldl-1.c: Change dejagnu directives to
 	specify -mvsx on gcc command line.
-
-2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
-
-	PR middle-end/84955
-	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: New test.
-	* testsuite/libgomp.oacc-fortran/pr84955.f90: New test.
 
 2018-04-12  Jakub Jelinek  <jakub@redhat.com>
 
@@ -5675,8 +5684,8 @@
 2018-03-27  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR target/85056
-	* testsuite/gcc.target/nvptx/pr85056.c: New test.
-	* testsuite/gcc.target/nvptx/pr85056a.c: New test.
+	* gcc.target/nvptx/pr85056.c: New test.
+	* gcc.target/nvptx/pr85056a.c: New test.
 
 2018-03-27  Richard Biener  <rguenther@suse.de>
 
@@ -5809,7 +5818,7 @@
 2018-03-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR inline-asm/85030
-	* testsuite/gcc.target/i386/pr85030.c: New.
+	* gcc.target/i386/pr85030.c: New.
 
 2018-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
@@ -7447,9 +7456,9 @@
 2018-02-22  Steve Ellcey  <sellcey@cavium.com>
 
 	PR target/83335
-	* gcc/testsuite/gcc.target/aarch64/asm-2.c: Add dg-error for
+	* gcc.target/aarch64/asm-2.c: Add dg-error for
 	ILP32 mode.
-	* gcc/testsuite/gcc.target/aarch64/asm-4.c: New test.
+	* gcc.target/aarch64/asm-4.c: New test.
 
 2018-02-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
