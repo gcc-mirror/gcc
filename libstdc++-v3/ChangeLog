@@ -1,5 +1,39 @@
 2018-07-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* configure: Regenerate.
+	* include/Makefile.am: Add new <memory_resource> header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include <memory_resource> for C++17.
+	* include/std/memory_resource: New header.
+	(memory_resource, polymorphic_allocator, new_delete_resource)
+	(null_memory_resource, set_default_resource, get_default_resource)
+	(pool_options, monotonic_buffer_resource): Define.
+	* src/Makefile.am: Add c++17 directory.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.am: Fix comment.
+	* src/c++17/Makefile.am: Add makefile for new sub-directory.
+	* src/c++17/Makefile.in: Generate.
+	* src/c++17/memory_resource.cc: New.
+	(newdel_res_t, null_res_t, constant_init, newdel_res, null_res)
+	(default_res, new_delete_resource, null_memory_resource)
+	(set_default_resource, get_default_resource): Define.
+	* testsuite/20_util/memory_resource/1.cc: New test.
+	* testsuite/20_util/memory_resource/2.cc: New test.
+	* testsuite/20_util/monotonic_buffer_resource/1.cc: New test.
+	* testsuite/20_util/monotonic_buffer_resource/allocate.cc: New test.
+	* testsuite/20_util/monotonic_buffer_resource/deallocate.cc: New test.
+	* testsuite/20_util/monotonic_buffer_resource/release.cc: New test.
+	* testsuite/20_util/monotonic_buffer_resource/upstream_resource.cc:
+	New test.
+	* testsuite/20_util/polymorphic_allocator/1.cc: New test.
+	* testsuite/20_util/polymorphic_allocator/resource.cc: New test.
+	* testsuite/20_util/polymorphic_allocator/select.cc: New test.
+	* testsuite/util/testsuite_allocator.h (__gnu_test::memory_resource):
+	Define concrete memory resource for testing.
+	(__gnu_test::default_resource_mgr): Define RAII helper for changing
+	default resource.
+
 	PR libstdc++/86658
 	* include/bits/stl_algobase.h (__niter_wrap<_Iterator>): Pass unused
 	parameter by reference, to avoid copying invalid iterators.
