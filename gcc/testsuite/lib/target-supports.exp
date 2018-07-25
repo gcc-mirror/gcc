@@ -2182,7 +2182,7 @@ proc check_ppc_float128_hw_available { } {
 		    __float128 w = -1.0q;
 
 		    __asm__ ("xsaddqp %0,%1,%2" : "+v" (w) : "v" (x), "v" (y));
-		    return ((z != 3.0q) || (z != w);
+		    return ((z != 3.0q) || (z != w));
 		}
 	    } $options
 	}
@@ -2523,6 +2523,22 @@ proc check_effective_target_next_runtime { } {
     }]
 }
 
+# Return 1 if we're generating code for big-endian memory order.
+
+proc check_effective_target_be { } {
+    return [check_no_compiler_messages be object {
+	int dummy[__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? 1 : -1];
+    }]
+}
+
+# Return 1 if we're generating code for little-endian memory order.
+
+proc check_effective_target_le { } {
+    return [check_no_compiler_messages le object {
+	int dummy[__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ ? 1 : -1];
+    }]
+}
+
 # Return 1 if we're generating 32-bit code using default options, 0
 # otherwise.
 
@@ -2665,6 +2681,15 @@ proc check_effective_target_large_double { } {
 proc check_effective_target_longdouble128 { } {
     return [check_no_compiler_messages longdouble128 object {
 	int dummy[sizeof(long double) == 16 ? 1 : -1];
+    }]
+}
+
+# Return 1 if the target supports long double of 64 bits,
+# 0 otherwise.
+
+proc check_effective_target_longdouble64 { } {
+    return [check_no_compiler_messages longdouble64 object {
+	int dummy[sizeof(long double) == 8 ? 1 : -1];
     }]
 }
 
@@ -2877,6 +2902,13 @@ proc check_effective_target_base_quadfloat_support { } {
 	return [check_vsx_hw_available]
     }
     return 1
+}
+
+# Return 1 if the target supports all four forms of fused multiply-add
+# (fma, fms, fnma, and fnms) for both float and double.
+
+proc check_effective_target_scalar_all_fma { } {
+    return [istarget aarch64*-*-*]
 }
 
 # Return 1 if the target supports compiling fixed-point,
@@ -4089,12 +4121,11 @@ proc check_effective_target_arm_fp16_hw { } {
 # extension (eg. ARMv8.1-A) since there is no macro defined for them.  See
 # how only __ARM_ARCH_8A__ is checked for ARMv8.1-A.
 # Usage: /* { dg-require-effective-target arm_arch_v5_ok } */
-#        /* { dg-add-options arm_arch_v5 } */
-#	 /* { dg-require-effective-target arm_arch_v5_multilib } */
+#        /* { dg-add-options arm_arch_v5t } */
+#	 /* { dg-require-effective-target arm_arch_v5t_multilib } */
 foreach { armfunc armflag armdefs } {
 	v4 "-march=armv4 -marm" __ARM_ARCH_4__
 	v4t "-march=armv4t" __ARM_ARCH_4T__
-	v5 "-march=armv5 -marm" __ARM_ARCH_5__
 	v5t "-march=armv5t" __ARM_ARCH_5T__
 	v5te "-march=armv5te" __ARM_ARCH_5TE__
 	v6 "-march=armv6" __ARM_ARCH_6__
@@ -5119,6 +5150,36 @@ proc check_effective_target_powerpc_float128_hw_ok { } {
     }
 }
 
+# Return 1 if current options define float128, 0 otherwise.
+
+proc check_effective_target_ppc_float128 { } {
+    return [check_no_compiler_messages_nocache ppc_float128 object {
+	#ifndef __FLOAT128__
+	  nope no good
+	#endif
+    }]
+}
+
+# Return 1 if current options generate float128 insns, 0 otherwise.
+
+proc check_effective_target_ppc_float128_insns { } {
+    return [check_no_compiler_messages_nocache ppc_float128 object {
+	#ifndef __FLOAT128_HARDWARE__
+	  nope no good
+	#endif
+    }]
+}
+
+# Return 1 if current options generate VSX instructions, 0 otherwise.
+
+proc check_effective_target_powerpc_vsx { } {
+    return [check_no_compiler_messages_nocache powerpc_vsx object {
+	#ifndef __VSX__
+	  nope no vsx
+	#endif
+    }]
+}
+
 # Return 1 if this is a PowerPC target supporting -mvsx
 
 proc check_effective_target_powerpc_vsx_ok { } {
@@ -5566,6 +5627,14 @@ proc check_effective_target_vect_double { } {
     verbose "check_effective_target_vect_double:\
 	     returning $et_vect_double_saved($et_index)" 2
     return $et_vect_double_saved($et_index)
+}
+
+# Return 1 if the target supports conditional addition, subtraction,
+# multiplication, division, minimum and maximum on vectors of double,
+# via the cond_ optabs.  Return 0 otherwise.
+
+proc check_effective_target_vect_double_cond_arith { } {
+    return [check_effective_target_aarch64_sve]
 }
 
 # Return 1 if the target supports hardware vectors of long long, 0 otherwise.
@@ -6281,6 +6350,14 @@ proc check_effective_target_vect_usad_char { } {
     verbose "check_effective_target_vect_usad_char:\
 	     returning $et_vect_usad_char_saved($et_index)" 2
     return $et_vect_usad_char_saved($et_index)
+}
+
+# Return 1 if the target plus current options supports both signed
+# and unsigned average operations on vectors of bytes.
+
+proc check_effective_target_vect_avg_qi {} {
+    return [expr { [istarget aarch64*-*-*]
+		   && ![check_effective_target_aarch64_sve] }]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -8771,6 +8848,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget powerpc*-*-*]
 	 || [istarget nios2*-*-*]
 	 || [istarget riscv*-*-*]
+	 || [istarget v850*-*-*]
 	 || [istarget visium-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1

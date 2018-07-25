@@ -1160,6 +1160,29 @@ requirements of the license of GCC.
     <listitem><para>Add noexcept.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2993"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2993">2993</link>:
+       <emphasis><code>reference_wrapper&lt;T&gt;</code> conversion from <code>T&amp;&amp;</code>
+       </emphasis>
+    </term>
+    <listitem><para>Replaced the constructors with a constrained template,
+      to prevent participation in overload resolution when not valid.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr3074"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#3074">3074</link>:
+       <emphasis>Non-member functions for <code>valarray</code> should only deduce from the <code>valarray</code>
+       </emphasis>
+    </term>
+    <listitem><para>Change scalar operands to be non-deduced context, so that
+      they will allow conversions from other types to the value_type.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr3076"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#3076">3076</link>:
+       <emphasis><code>basic_string</code> CTAD ambiguity
+       </emphasis>
+    </term>
+    <listitem><para>Change constructors to constrained templates.
+    </para></listitem></varlistentry>
+
   </variablelist>
 
  </section>

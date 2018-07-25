@@ -37,23 +37,23 @@ int warn_strcmp_cst_2 (void)
 
 int warn_strncmp_cst_1 (void)
 {
-  return strncmp ("bar", ar5, X);   /* { dg-warning "argument 2 declared attribute .nonstring." } */
+  return strncmp ("12345", ar5, X);   /* { dg-warning "argument 2 declared attribute .nonstring." } */
 }
 
 int warn_strncmp_cst_2 (void)
 {
-  return strncmp (ar5, "foo", X);   /* { dg-warning "argument 1 declared attribute .nonstring." } */
+  return strncmp (ar5, "12345", X);   /* { dg-warning "argument 1 declared attribute .nonstring." } */
 }
 
 
 int nowarn_strncmp_cst_1 (void)
 {
-  return strncmp ("bar", ar5, N);
+  return strncmp ("12345", ar5, N);
 }
 
 int nowarn_strncmp_cst_2 (void)
 {
-  return strncmp (ar5, "foo", N);
+  return strncmp (ar5, "12345", N);
 }
 
 

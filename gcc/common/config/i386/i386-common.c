@@ -273,7 +273,17 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AVX512F_UNSET \
   (OPTION_MASK_ISA_AVX5124FMAPS_UNSET | OPTION_MASK_ISA_AVX5124VNNIW_UNSET)
 #define OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET \
-  (OPTION_MASK_ISA2_AVX512F_UNSET | OPTION_MASK_ISA_MPX)
+  (OPTION_MASK_ISA2_AVX512F_UNSET)
+
+/* Set 1 << value as value of -malign-FLAG option.  */
+
+static void
+set_malign_value (const char **flag, unsigned value)
+{
+  char *r = XNEWVEC (char, 6);
+  sprintf (r, "%d", 1 << value);
+  *flag = r;
+}
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -291,7 +301,7 @@ ix86_handle_option (struct gcc_options *opts,
     case OPT_mgeneral_regs_only:
       if (value)
 	{
-	  /* Disable MPX, MMX, SSE and x87 instructions if only
+	  /* Disable MMX, SSE and x87 instructions if only
 	     general registers are allowed.  */
 	  opts->x_ix86_isa_flags
 	    &= ~OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;
@@ -1308,16 +1318,13 @@ ix86_handle_option (struct gcc_options *opts,
       return true;
 
 
-  /* Comes from final.c -- no real reason to change it.  */
-#define MAX_CODE_ALIGN 16
-
     case OPT_malign_loops_:
       warning_at (loc, 0, "-malign-loops is obsolete, use -falign-loops");
       if (value > MAX_CODE_ALIGN)
 	error_at (loc, "-malign-loops=%d is not between 0 and %d",
 		  value, MAX_CODE_ALIGN);
       else
-	opts->x_align_loops = 1 << value;
+	set_malign_value (&opts->x_str_align_loops, value);
       return true;
 
     case OPT_malign_jumps_:
@@ -1326,7 +1333,7 @@ ix86_handle_option (struct gcc_options *opts,
 	error_at (loc, "-malign-jumps=%d is not between 0 and %d",
 		  value, MAX_CODE_ALIGN);
       else
-	opts->x_align_jumps = 1 << value;
+	set_malign_value (&opts->x_str_align_jumps, value);
       return true;
 
     case OPT_malign_functions_:
@@ -1336,7 +1343,7 @@ ix86_handle_option (struct gcc_options *opts,
 	error_at (loc, "-malign-functions=%d is not between 0 and %d",
 		  value, MAX_CODE_ALIGN);
       else
-	opts->x_align_functions = 1 << value;
+	set_malign_value (&opts->x_str_align_functions, value);
       return true;
 
     case OPT_mbranch_cost_:

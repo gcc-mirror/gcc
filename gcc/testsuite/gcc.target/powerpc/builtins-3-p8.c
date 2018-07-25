@@ -11,12 +11,6 @@ test_eq_long_long (vector bool long long x, vector bool long long y)
 	return vec_cmpeq (x, y);
 }
 
-vector float
-test_pack_float (vector double x, vector double y)
-{
-  return vec_pack (x, y);
-}
-
 vector unsigned char
 test_vsi_packs_vusi_vusi (vector unsigned short x,
                           vector unsigned short y)
@@ -214,11 +208,12 @@ test_neg_double (vector double x)
 /* Expected test results:
 
      test_eq_long_long                         1 vcmpequd inst
-     test_pack_float                           1 vpkudum inst
      test_vsi_packs_vsll_vsll                  1 vpksdss
      test_vui_packs_vull_vull                  1 vpkudus
      test_vui_packs_vssi_vssi                  1 vpkshss
      test_vsi_packsu_vssi_vssi                 1 vpkshus
+     test_vsi_packsu_vsll_vsll                 1 vpksdus
+     test_vsi_packsu_vull_vull                 1 vpkudus
      test_unsigned_char_popcnt_signed_char     1 vpopcntb
      test_unsigned_char_popcnt_unsigned_char   1 vpopcntb
      test_unsigned_short_popcnt_signed_short   1 vpopcnth
@@ -239,13 +234,12 @@ test_neg_double (vector double x)
  */
 
 /* { dg-final { scan-assembler-times "vcmpequd" 1 } } */
-/* { dg-final { scan-assembler-times "vpkudum"  1 } } */
 /* { dg-final { scan-assembler-times "vpksdss"  1 } } */
-/* { dg-final { scan-assembler-times "vpkudus"  1 } } */  
+/* { dg-final { scan-assembler-times "vpkudus"  2 } } */  
 /* { dg-final { scan-assembler-times "vpkuhus"  2 } } */
 /* { dg-final { scan-assembler-times "vpkshss"  1 } } */  
 /* { dg-final { scan-assembler-times "vpkshus"  1 } } */  
-/* { dg-final { scan-assembler-times "vpksdus"  2 } } */  
+/* { dg-final { scan-assembler-times "vpksdus"  1 } } */  
 /* { dg-final { scan-assembler-times "vpkuwus"  2 } } */  
 /* { dg-final { scan-assembler-times "vpopcntb" 2 } } */
 /* { dg-final { scan-assembler-times "vpopcnth" 2 } } */

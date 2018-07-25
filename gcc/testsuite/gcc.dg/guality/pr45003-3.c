@@ -7,7 +7,7 @@ foo (unsigned short *p)
 {
   int a = (short) *p;
   asm volatile ("nop" : : "D" ((int) *p));
-  asm volatile ("nop" : : "D" ((int) *p));	/* { dg-final { gdb-test 10 "a" "-32648" } } */
+  asm volatile ("nop" : : "D" ((int) *p));	/* { dg-final { gdb-test . "a" "-32648" } } */
   return 0;
 }
 
@@ -16,7 +16,7 @@ bar (short *p)
 {
   unsigned int a = (unsigned short) *p;
   asm volatile ("nop" : : "D" ((unsigned int) *p));
-  asm volatile ("nop" : : "D" ((unsigned int) *p));	/* { dg-final { gdb-test 19 "a" "0x8078" } } */
+  asm volatile ("nop" : : "D" ((unsigned int) *p));	/* { dg-final { gdb-test . "a" "0x8078" } } */
   return 0;
 }
 

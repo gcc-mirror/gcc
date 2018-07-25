@@ -1829,9 +1829,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN
 #define TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN invalid_arg_for_unprototyped_fn
 
-#undef TARGET_ASM_LOOP_ALIGN_MAX_SKIP
-#define TARGET_ASM_LOOP_ALIGN_MAX_SKIP rs6000_loop_align_max_skip
-
 #undef TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST rs6000_md_asm_adjust
 
@@ -5406,29 +5403,30 @@ rs6000_option_override_internal (bool global_init_p)
 	  if (rs6000_cpu == PROCESSOR_TITAN
 	      || rs6000_cpu == PROCESSOR_CELL)
 	    {
-	      if (align_functions <= 0)
-		align_functions = 8;
-	      if (align_jumps <= 0)
-		align_jumps = 8;
-	      if (align_loops <= 0)
-		align_loops = 8;
+	      if (flag_align_functions && !str_align_functions)
+		str_align_functions = "8";
+	      if (flag_align_jumps && !str_align_jumps)
+		str_align_jumps = "8";
+	      if (flag_align_loops && !str_align_loops)
+		str_align_loops = "8";
 	    }
 	  if (rs6000_align_branch_targets)
 	    {
-	      if (align_functions <= 0)
-		align_functions = 16;
-	      if (align_jumps <= 0)
-		align_jumps = 16;
-	      if (align_loops <= 0)
+	      if (flag_align_functions && !str_align_functions)
+		str_align_functions = "16";
+	      if (flag_align_jumps && !str_align_jumps)
+		str_align_jumps = "16";
+	      if (flag_align_loops && !str_align_loops)
 		{
 		  can_override_loop_align = 1;
-		  align_loops = 16;
+		  str_align_loops = "16";
 		}
 	    }
-	  if (align_jumps_max_skip <= 0)
-	    align_jumps_max_skip = 15;
-	  if (align_loops_max_skip <= 0)
-	    align_loops_max_skip = 15;
+
+	  if (flag_align_jumps && !str_align_jumps)
+	    str_align_jumps = "16";
+	  if (flag_align_loops && !str_align_loops)
+	    str_align_loops = "16";
 	}
 
       /* Arrange to save and restore machine status around nested functions.  */
@@ -5722,7 +5720,7 @@ rs6000_builtin_mask_for_load (void)
 }
 
 /* Implement LOOP_ALIGN. */
-int
+align_flags
 rs6000_loop_align (rtx label)
 {
   basic_block bb;
@@ -5730,7 +5728,7 @@ rs6000_loop_align (rtx label)
 
   /* Don't override loop alignment if -falign-loops was specified. */
   if (!can_override_loop_align)
-    return align_loops_log;
+    return align_loops;
 
   bb = BLOCK_FOR_INSN (label);
   ninsns = num_loop_insns(bb->loop_father);
@@ -5743,16 +5741,9 @@ rs6000_loop_align (rtx label)
 	  || rs6000_cpu == PROCESSOR_POWER7
 	  || rs6000_cpu == PROCESSOR_POWER8
 	  || rs6000_cpu == PROCESSOR_POWER9))
-    return 5;
+    return align_flags (5);
   else
-    return align_loops_log;
-}
-
-/* Implement TARGET_LOOP_ALIGN_MAX_SKIP. */
-static int
-rs6000_loop_align_max_skip (rtx_insn *label)
-{
-  return (1 << rs6000_loop_align (label)) - 1;
+    return align_loops;
 }
 
 /* Return true iff, data reference of TYPE can reach vector alignment (16)
@@ -37119,13 +37110,6 @@ rs6000_xcoff_visibility (tree decl)
   };
 
   enum symbol_visibility vis = DECL_VISIBILITY (decl);
-
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && cgraph_node::get (decl)
-      && cgraph_node::get (decl)->instrumentation_clone
-      && cgraph_node::get (decl)->instrumented_version)
-    vis = DECL_VISIBILITY (cgraph_node::get (decl)->instrumented_version->decl);
-
   return visibility_types[vis];
 }
 #endif

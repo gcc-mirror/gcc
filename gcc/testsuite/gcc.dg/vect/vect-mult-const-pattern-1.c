@@ -37,5 +37,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vect_recog_mult_pattern: detected" 2 "vect" { target aarch64*-*-* xfail aarch64_sve } } } */
+/* { dg-final { scan-tree-dump {vect_recog_mult_pattern: detected:[^\n]* \* 123} "vect" { target aarch64*-*-* xfail aarch64_sve } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target aarch64*-*-* } } } */

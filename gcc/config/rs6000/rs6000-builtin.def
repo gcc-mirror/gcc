@@ -628,6 +628,17 @@
 		     | RS6000_BTC_BINARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+/* 128-bit __ibm128 floating point builtins (use -mfloat128 to indicate that
+   __ibm128 is available).  */
+#define BU_IBM128_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    (RS6000_BTM_HARD_FLOAT		/* MASK */	\
+		     | RS6000_BTM_FLOAT128),				\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 /* Miscellaneous builtins for instructions added in ISA 3.0.  These
    instructions don't require either the DFP or VSX options, just the basic
    ISA 3.0 enablement since they operate on general purpose registers.  */
@@ -1811,6 +1822,15 @@ BU_VSX_OVERLOAD_1 (VUNSIGNEDE,  "vunsignede")
 BU_VSX_OVERLOAD_1 (VUNSIGNEDO,  "vunsignedo")
 
 /* VSX builtins that are handled as special cases.  */
+
+
+/* NON-TRADITIONAL BEHAVIOR HERE: Besides introducing the
+   __builtin_vec_ld and __builtin_vec_st built-in functions,
+   the VSX_BUILTIN_VEC_LD and VSX_BUILTIN_VEC_ST symbolic constants
+   introduced below are also affiliated with the __builtin_vec_vsx_ld
+   and __builtin_vec_vsx_st functions respectively.  This unnatural
+   binding is formed with explicit calls to the def_builtin function
+   found in rs6000.c.  */
 BU_VSX_OVERLOAD_X (LD,	     "ld")
 BU_VSX_OVERLOAD_X (ST,	     "st")
 BU_VSX_OVERLOAD_X (XL,	     "xl")
@@ -2194,7 +2214,9 @@ BU_P9V_64BIT_AV_X (STXVL,	"stxvl",	MISC)
 BU_P9V_64BIT_AV_X (XST_LEN_R,	"xst_len_r",	MISC)
 
 /* 1 argument vector functions added in ISA 3.0 (power9). */
-BU_P9V_AV_1 (VCLZLSBB, "vclzlsbb",		CONST,	vclzlsbb)
+BU_P9V_AV_1 (VCLZLSBB_V16QI, "vclzlsbb_v16qi",	CONST,	vclzlsbb_v16qi)
+BU_P9V_AV_1 (VCLZLSBB_V8HI, "vclzlsbb_v8hi",	CONST,	vclzlsbb_v8hi)
+BU_P9V_AV_1 (VCLZLSBB_V4SI, "vclzlsbb_v4si",	CONST,	vclzlsbb_v4si)
 BU_P9V_AV_1 (VCTZLSBB_V16QI, "vctzlsbb_v16qi",	CONST,	vctzlsbb_v16qi)
 BU_P9V_AV_1 (VCTZLSBB_V8HI, "vctzlsbb_v8hi",	CONST,	vctzlsbb_v8hi)
 BU_P9V_AV_1 (VCTZLSBB_V4SI, "vctzlsbb_v4si",	CONST,	vctzlsbb_v4si)
@@ -2314,6 +2336,9 @@ BU_P9_64BIT_MISC_0 (DARN,	"darn",			MISC, darn)
 
 BU_LDBL128_2 (PACK_TF,		"pack_longdouble",	CONST,	packtf)
 BU_LDBL128_2 (UNPACK_TF,	"unpack_longdouble",	CONST,	unpacktf)
+
+BU_IBM128_2 (PACK_IF,		"pack_ibm128",		CONST,	packif)
+BU_IBM128_2 (UNPACK_IF,		"unpack_ibm128",	CONST,	unpackif)
 
 BU_P7_MISC_2 (PACK_V1TI,	"pack_vector_int128",	CONST,	packv1ti)
 BU_P7_MISC_2 (UNPACK_V1TI,	"unpack_vector_int128",	CONST,	unpackv1ti)

@@ -81,7 +81,7 @@ extern void fold_loop_internal_call (gimple *, tree);
 extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 				           basic_block, tree);
 extern void dump_function_to_file (tree, FILE *, dump_flags_t);
-extern void debug_function (tree, int) ;
+extern void debug_function (tree, dump_flags_t);
 extern void print_loops_bb (FILE *, basic_block, int, int);
 extern void print_loops (FILE *, int);
 extern void debug (struct loop &ref);

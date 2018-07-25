@@ -570,6 +570,13 @@ package Atree is
    --  are appropriately updated. This function is used only by Sinfo.CN to
    --  change nodes into their corresponding entities.
 
+   type Ignored_Ghost_Record_Proc is access procedure (N : Node_Or_Entity_Id);
+
+   procedure Set_Ignored_Ghost_Recording_Proc
+     (Proc : Ignored_Ghost_Record_Proc);
+   --  Register a procedure that is invoked when an ignored Ghost node or
+   --  entity is created.
+
    type Report_Proc is access procedure (Target : Node_Id; Source : Node_Id);
 
    procedure Set_Reporting_Proc (Proc : Report_Proc);
@@ -1522,6 +1529,9 @@ package Atree is
 
       function Elist29 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist29);
+
+      function Elist30 (N : Node_Id) return Elist_Id;
+      pragma Inline (Elist30);
 
       function Elist36 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist36);
@@ -2888,6 +2898,9 @@ package Atree is
 
       procedure Set_Elist29 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist29);
+
+      procedure Set_Elist30 (N : Node_Id; Val : Elist_Id);
+      pragma Inline (Set_Elist30);
 
       procedure Set_Elist36 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist36);

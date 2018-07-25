@@ -199,8 +199,9 @@ case "${host}" in
     GLIBCXX_CHECK_MATH_SUPPORT
     GLIBCXX_CHECK_STDLIB_SUPPORT
     AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
+    AC_CHECK_FUNCS(_wfopen)
     ;;
-  *-netbsd*)
+  *-netbsd* | *-openbsd*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
     AC_SUBST(SECTION_FLAGS) 
     GLIBCXX_CHECK_LINKER_FEATURES
@@ -217,6 +218,7 @@ case "${host}" in
       AC_DEFINE(HAVE_ISINFL)
       AC_DEFINE(HAVE_ISNANL)
     fi
+    AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     ;;
   *-qnx6.1* | *-qnx6.2*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'

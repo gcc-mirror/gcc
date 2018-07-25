@@ -198,6 +198,16 @@ enum mips_address_type {
   ADDRESS_SYMBOLIC
 };
 
+/* Classifies an unconditional branch of interest for the P6600.  */
+
+enum mips_ucbranch_type
+{
+  /* May not even be a branch.  */
+  UC_UNDEFINED,
+  UC_BALC,
+  UC_OTHER
+};
+
 /* Macros to create an enumeration identifier for a function prototype.  */
 #define MIPS_FTYPE_NAME1(A, B) MIPS_##A##_FTYPE_##B
 #define MIPS_FTYPE_NAME2(A, B, C) MIPS_##A##_FTYPE_##B##_##C
@@ -491,9 +501,9 @@ unsigned int mips_base_compression_flags;
 static int mips_base_schedule_insns; /* flag_schedule_insns */
 static int mips_base_reorder_blocks_and_partition; /* flag_reorder... */
 static int mips_base_move_loop_invariants; /* flag_move_loop_invariants */
-static int mips_base_align_loops; /* align_loops */
-static int mips_base_align_jumps; /* align_jumps */
-static int mips_base_align_functions; /* align_functions */
+static const char *mips_base_align_loops; /* align_loops */
+static const char *mips_base_align_jumps; /* align_jumps */
+static const char *mips_base_align_functions; /* align_functions */
 
 /* Index [M][R] is true if register R is allowed to hold a value of mode M.  */
 static bool mips_hard_regno_mode_ok_p[MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
@@ -1125,6 +1135,19 @@ static const struct mips_rtx_cost_data
     COSTS_N_INSNS (5),            /* int_mult_di */
     COSTS_N_INSNS (36),           /* int_div_si */
     COSTS_N_INSNS (36),           /* int_div_di */
+		    2,            /* branch_cost */
+		    4             /* memory_latency */
+  },
+  { /* P6600 */
+    COSTS_N_INSNS (4),            /* fp_add */
+    COSTS_N_INSNS (5),            /* fp_mult_sf */
+    COSTS_N_INSNS (5),            /* fp_mult_df */
+    COSTS_N_INSNS (17),           /* fp_div_sf */
+    COSTS_N_INSNS (17),           /* fp_div_df */
+    COSTS_N_INSNS (5),            /* int_mult_si */
+    COSTS_N_INSNS (5),            /* int_mult_di */
+    COSTS_N_INSNS (8),            /* int_div_si */
+    COSTS_N_INSNS (8),            /* int_div_di */
 		    2,            /* branch_cost */
 		    4             /* memory_latency */
   }
@@ -14592,6 +14615,7 @@ mips_issue_rate (void)
     case PROCESSOR_LOONGSON_2F:
     case PROCESSOR_LOONGSON_3A:
     case PROCESSOR_P5600:
+    case PROCESSOR_P6600:
       return 4;
 
     case PROCESSOR_XLP:
@@ -14727,7 +14751,7 @@ mips_multipass_dfa_lookahead (void)
   if (TUNE_OCTEON)
     return 2;
 
-  if (TUNE_P5600 || TUNE_I6400)
+  if (TUNE_P5600 || TUNE_P6600 || TUNE_I6400)
     return 4;
 
   return 0;
@@ -17799,7 +17823,7 @@ r10k_insert_cache_barriers (void)
 		  if (r10k_needs_protection_p (insn))
 		    {
 		      emit_insn_before (gen_r10k_cache_barrier (),
-					unprotected_region);
+					as_a <rtx_insn *> (unprotected_region));
 		      unprotected_region = NULL_RTX;
 		    }
 		}
@@ -18515,7 +18539,7 @@ vr4130_align_insns (void)
 	}
 
       /* See whether INSN is an aligned label.  */
-      if (LABEL_P (insn) && label_to_alignment (insn) >= 3)
+      if (LABEL_P (insn) && label_to_alignment (insn).levels[0].log >= 3)
 	aligned_p = true;
     }
   dfa_finish ();
@@ -18647,6 +18671,29 @@ mips_orphaned_high_part_p (mips_offset_table *htab, rtx_insn *insn)
   return false;
 }
 
+/* Subroutine of mips_avoid_hazard.  We classify unconditional branches
+   of interest for the P6600 for performance reasons.  We're interested
+   in differentiating BALC from JIC, JIALC and BC.  */
+
+static enum mips_ucbranch_type
+mips_classify_branch_p6600 (rtx_insn *insn)
+{
+  /* We ignore sequences here as they represent a filled delay slot.  */
+  if (!insn
+      || !USEFUL_INSN_P (insn)
+      || GET_CODE (PATTERN (insn)) == SEQUENCE)
+    return UC_UNDEFINED;
+
+  if (get_attr_jal (insn) == JAL_INDIRECT /* JIC and JIALC.  */
+      || get_attr_type (insn) == TYPE_JUMP) /* BC.  */
+    return UC_OTHER;
+
+  if (CALL_P (insn) && get_attr_jal (insn) == JAL_DIRECT)
+    return UC_BALC;
+
+  return UC_UNDEFINED;
+}
+
 /* Subroutine of mips_reorg_process_insns.  If there is a hazard between
    INSN and a previous instruction, avoid it by inserting nops after
    instruction AFTER.
@@ -18699,14 +18746,40 @@ mips_avoid_hazard (rtx_insn *after, rtx_insn *insn, int *hilo_delay,
 	   && GET_CODE (pattern) != ASM_INPUT
 	   && asm_noperands (pattern) < 0)
     nops = 1;
+  /* The P6600's branch predictor can handle static sequences of back-to-back
+     branches in the following cases:
+
+     (1) BALC followed by any conditional compact branch
+     (2) BALC followed by BALC
+
+     Any other combinations of compact branches will incur performance
+     penalty.  Inserting a no-op only costs space as the dispatch unit will
+     disregard the nop.  */
+  else if (TUNE_P6600 && TARGET_CB_MAYBE && !optimize_size
+	   && ((mips_classify_branch_p6600 (after) == UC_BALC
+		&& mips_classify_branch_p6600 (insn) == UC_OTHER)
+	       || (mips_classify_branch_p6600 (insn) == UC_BALC
+		   && mips_classify_branch_p6600 (after) == UC_OTHER)))
+    nops = 1;
   else
     nops = 0;
 
   /* Insert the nops between this instruction and the previous one.
      Each new nop takes us further from the last hilo hazard.  */
   *hilo_delay += nops;
+
+  /* Move to the next real instruction if we are inserting a NOP and this
+     instruction is a call with debug information.  The reason being that
+     we can't separate the call from the debug info.   */
+  rtx_insn *real_after = after;
+  if (real_after && nops && CALL_P (real_after))
+    while (real_after
+	   && (NOTE_P (NEXT_INSN (real_after))
+	       || BARRIER_P (NEXT_INSN (real_after))))
+      real_after = NEXT_INSN (real_after);
+
   while (nops-- > 0)
-    emit_insn_after (gen_hazard_nop (), after);
+    emit_insn_after (gen_hazard_nop (), real_after);
 
   /* Set up the state for the next instruction.  */
   *hilo_delay += ninsns;
@@ -18716,6 +18789,15 @@ mips_avoid_hazard (rtx_insn *after, rtx_insn *insn, int *hilo_delay,
     switch (get_attr_hazard (insn))
       {
       case HAZARD_NONE:
+	/* For the P6600, flag some unconditional branches as having a
+	   pseudo-forbidden slot.  This will cause additional nop insertion
+	   or SEQUENCE breaking as required.  This is for performance
+	   reasons not correctness.  */
+	if (TUNE_P6600
+	    && !optimize_size
+	    && TARGET_CB_MAYBE
+	    && mips_classify_branch_p6600 (insn) == UC_OTHER)
+	  *fs_delay = true;
 	break;
 
       case HAZARD_FORBIDDEN_SLOT:
@@ -18955,9 +19037,19 @@ mips_reorg_process_insns (void)
 		     and the next useful instruction is a SEQUENCE of a jump
 		     and a non-nop instruction in the delay slot, remove the
 		     sequence and replace it with the delay slot instruction
-		     then the jump to clear the forbidden slot hazard.  */
+		     then the jump to clear the forbidden slot hazard.
 
-		  if (fs_delay)
+		     For the P6600, this optimisation solves the performance
+		     penalty associated with BALC followed by a delay slot
+		     branch.  We do not set fs_delay as we do not want
+		     the full logic of a forbidden slot; the penalty exists
+		     only against branches not the full class of forbidden
+		     slot instructions.  */
+
+		  if (fs_delay || (TUNE_P6600
+				   && TARGET_CB_MAYBE
+				   && mips_classify_branch_p6600 (insn)
+				      == UC_BALC))
 		    {
 		      /* Search onwards from the current position looking for
 			 a SEQUENCE.  We are looking for pipeline hazards here
@@ -19425,9 +19517,9 @@ mips_set_compression_mode (unsigned int compression_mode)
   flag_schedule_insns = mips_base_schedule_insns;
   flag_reorder_blocks_and_partition = mips_base_reorder_blocks_and_partition;
   flag_move_loop_invariants = mips_base_move_loop_invariants;
-  align_loops = mips_base_align_loops;
-  align_jumps = mips_base_align_jumps;
-  align_functions = mips_base_align_functions;
+  str_align_loops = mips_base_align_loops;
+  str_align_jumps = mips_base_align_jumps;
+  str_align_functions = mips_base_align_functions;
   target_flags &= ~(MASK_MIPS16 | MASK_MICROMIPS);
   target_flags |= compression_mode;
 
@@ -19497,12 +19589,12 @@ mips_set_compression_mode (unsigned int compression_mode)
       /* Provide default values for align_* for 64-bit targets.  */
       if (TARGET_64BIT)
 	{
-	  if (align_loops == 0)
-	    align_loops = 8;
-	  if (align_jumps == 0)
-	    align_jumps = 8;
-	  if (align_functions == 0)
-	    align_functions = 8;
+	  if (flag_align_loops && !str_align_loops)
+	    str_align_loops = "8";
+	  if (flag_align_jumps && !str_align_jumps)
+	    str_align_jumps = "8";
+	  if (flag_align_functions && !str_align_functions)
+	    str_align_functions = "8";
 	}
 
       targetm.min_anchor_offset = -32768;
@@ -20186,9 +20278,9 @@ mips_option_override (void)
   mips_base_schedule_insns = flag_schedule_insns;
   mips_base_reorder_blocks_and_partition = flag_reorder_blocks_and_partition;
   mips_base_move_loop_invariants = flag_move_loop_invariants;
-  mips_base_align_loops = align_loops;
-  mips_base_align_jumps = align_jumps;
-  mips_base_align_functions = align_functions;
+  mips_base_align_loops = str_align_loops;
+  mips_base_align_jumps = str_align_jumps;
+  mips_base_align_functions = str_align_functions;
 
   /* Now select the ISA mode.
 

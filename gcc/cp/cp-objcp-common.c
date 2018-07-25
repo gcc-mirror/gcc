@@ -37,7 +37,7 @@ cxx_get_alias_set (tree t)
 
   /* Punt on PMFs until we canonicalize functions properly.  */
   if (TYPE_PTRMEMFUNC_P (t)
-      || (POINTER_TYPE_P (t)
+      || (INDIRECT_TYPE_P (t)
 	  && TYPE_PTRMEMFUNC_P (TREE_TYPE (t))))
     return 0;
 

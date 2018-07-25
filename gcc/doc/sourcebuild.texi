@@ -1177,6 +1177,8 @@ conditions (which are the same as for @code{dg-skip-if}) are met.
 @end table
 
 @subsubsection Verify compiler messages
+Where @var{line} is an accepted argument for these commands, a value of @samp{0}
+can be used if there is no line associated with the message.
 
 @table @code
 @item @{ dg-error @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] ]] @}
@@ -1313,6 +1315,16 @@ By convention, keywords ending in @code{_nocache} can also include options
 specified for the particular test in an earlier @code{dg-options} or
 @code{dg-add-options} directive.
 
+@subsubsection Endianness
+
+@table @code
+@item be
+Target uses big-endian memory order for multi-byte and multi-word data.
+
+@item le
+Target uses little-endian memory order for multi-byte and multi-word data.
+@end table
+
 @subsubsection Data type sizes
 
 @table @code
@@ -1405,6 +1417,10 @@ Target supports Fortran @code{real} kinds larger than @code{real(8)}.
 The target's ABI allows stack variables to be aligned to the preferred
 vector alignment.
 
+@item vect_avg_qi
+Target supports both signed and unsigned averaging operations on vectors
+of bytes.
+
 @item vect_condition
 Target supports vector conditional operations.
 
@@ -1414,6 +1430,11 @@ have different type from the value operands.
 
 @item vect_double
 Target supports hardware vectors of @code{double}.
+
+@item vect_double_cond_arith
+Target supports conditional addition, subtraction, multiplication,
+division, minimum and maximum on vectors of @code{double}, via the
+@code{cond_} optabs.
 
 @item vect_element_align_preferred
 The target's preferred vector alignment is the same as the element
@@ -2250,6 +2271,11 @@ Target supports @option{-pie}, @option{-fpie} and @option{-fPIE}.
 
 @item rdynamic
 Target supports @option{-rdynamic}.
+
+@item scalar_all_fma
+Target supports all four fused multiply-add optabs for both @code{float}
+and @code{double}.  These optabs are: @code{fma_optab}, @code{fms_optab},
+@code{fnma_optab} and @code{fnms_optab}.
 
 @item section_anchors
 Target supports section anchors.

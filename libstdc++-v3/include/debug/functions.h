@@ -40,9 +40,6 @@
 
 namespace __gnu_debug
 {
-  template<typename _Iterator, typename _Sequence>
-    class _Safe_iterator;
-
   template<typename _Sequence>
     struct _Insert_range_from_self_is_safe
     { enum { __value = 0 }; };
@@ -212,29 +209,6 @@ namespace __gnu_debug
     {
       typedef typename std::__is_integer<_InputIterator>::__type _Integral;
       return __foreign_iterator_aux(__it, __other, __other_end, _Integral());
-    }
-
-  /** Checks that __s is non-NULL or __n == 0, and then returns __s. */
-  template<typename _CharT, typename _Integer>
-    inline const _CharT*
-    __check_string(const _CharT* __s,
-		   const _Integer& __n __attribute__((__unused__)))
-    {
-#ifdef _GLIBCXX_DEBUG_PEDANTIC
-      __glibcxx_assert(__s != 0 || __n == 0);
-#endif
-      return __s;
-    }
-
-  /** Checks that __s is non-NULL and then returns __s. */
-  template<typename _CharT>
-    inline const _CharT*
-    __check_string(const _CharT* __s)
-    {
-#ifdef _GLIBCXX_DEBUG_PEDANTIC
-      __glibcxx_assert(__s != 0);
-#endif
-      return __s;
     }
 
   // Can't check if an input iterator sequence is sorted, because we

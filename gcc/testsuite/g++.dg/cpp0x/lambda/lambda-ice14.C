@@ -8,7 +8,7 @@ template<typename R, typename... Args>
 struct function<R (Args...)>
 {
   template<typename F>
-  function(const F&);
+  function(const F&) { }
 };
 
 template<typename T>

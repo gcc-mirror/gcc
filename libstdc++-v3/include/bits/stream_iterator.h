@@ -74,6 +74,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _M_ok(__obj._M_ok)
       { }
 
+#if __cplusplus >= 201103L
+      istream_iterator& operator=(const istream_iterator&) = default;
+#endif
+
       const _Tp&
       operator*() const
       {
@@ -187,6 +191,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Copy constructor.
       ostream_iterator(const ostream_iterator& __obj)
       : _M_stream(__obj._M_stream), _M_string(__obj._M_string)  { }
+
+#if __cplusplus >= 201103L
+      ostream_iterator& operator=(const ostream_iterator&) = default;
+#endif
 
       /// Writes @a value to underlying ostream using operator<<.  If
       /// constructed with delimiter string, writes delimiter to ostream.

@@ -1218,6 +1218,7 @@ brig_function::get_builtin_for_hsa_opcode
     case BRIG_OPCODE_NEXP2:
       builtin = mathfn_built_in (builtin_type, BUILT_IN_EXP2);
       break;
+    case BRIG_OPCODE_FMA:
     case BRIG_OPCODE_NFMA:
       builtin = mathfn_built_in (builtin_type, BUILT_IN_FMA);
       break;
@@ -1460,8 +1461,6 @@ brig_function::get_tree_code_for_hsa_opcode
 	return CALL_EXPR;
       else
 	return MAX_EXPR;
-    case BRIG_OPCODE_FMA:
-      return FMA_EXPR;
     case BRIG_OPCODE_ABS:
       return ABS_EXPR;
     case BRIG_OPCODE_SHL:
@@ -1496,6 +1495,7 @@ brig_function::get_tree_code_for_hsa_opcode
       /* Implement as 1/f (x).  gcc should pattern detect that and
 	 use a native instruction, if available, for it.  */
       return TREE_LIST;
+    case BRIG_OPCODE_FMA:
     case BRIG_OPCODE_FLOOR:
     case BRIG_OPCODE_CEIL:
     case BRIG_OPCODE_SQRT:

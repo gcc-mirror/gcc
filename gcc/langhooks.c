@@ -353,7 +353,8 @@ lhd_complain_wrong_lang_p (const struct cl_option *option ATTRIBUTE_UNUSED)
 bool
 lhd_handle_option (size_t code ATTRIBUTE_UNUSED,
 		   const char *arg ATTRIBUTE_UNUSED,
-		   int value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
+		   HOST_WIDE_INT value ATTRIBUTE_UNUSED,
+		   int kind ATTRIBUTE_UNUSED,
 		   location_t loc ATTRIBUTE_UNUSED,
 		   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {

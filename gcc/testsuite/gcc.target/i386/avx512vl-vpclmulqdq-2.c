@@ -12,6 +12,5 @@
 #undef AVX512F_LEN
 #undef AVX512F_LEN_HALF
 
-#define AVX512F_LEN 128
-#define AVX512F_LEN_HALF 128
-#include "avx512f-vpclmulqdq-2.c"
+void
+test_128 () {}

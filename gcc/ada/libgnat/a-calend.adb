@@ -203,10 +203,6 @@ is
      Ada_Low + Time_Rep (34 * 366 + 102 * 365) * Nanos_In_Day +
      Time_Rep (Leap_Seconds_Count) * Nano;
 
-   Epoch_Offset : constant Time_Rep := (136 * 365 + 44 * 366) * Nanos_In_Day;
-   --  The difference between 2150-1-1 UTC and 1970-1-1 UTC expressed in
-   --  nanoseconds. Note that year 2100 is non-leap.
-
    Cumulative_Days_Before_Month :
      constant array (Month_Number) of Natural :=
        (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
@@ -503,6 +499,15 @@ is
       Split (Date, Y, M, D, S);
       return D;
    end Day;
+
+   ------------------
+   -- Epoch_Offset --
+   ------------------
+
+   function Epoch_Offset return Time_Rep is
+   begin
+      return (136 * 365 + 44 * 366) * Nanos_In_Day;
+   end Epoch_Offset;
 
    -------------
    -- Is_Leap --

@@ -1191,12 +1191,12 @@ can be used for instance to force a core dump to ease debugging.
 Provides an interface allowing to control automatic output upon exception
 occurrences.
 
-.. _`GNAT.Exceptions_(g-expect.ads)`:
+.. _`GNAT.Exceptions_(g-except.ads)`:
 
-``GNAT.Exceptions`` (:file:`g-expect.ads`)
+``GNAT.Exceptions`` (:file:`g-except.ads`)
 ==========================================
 
-.. index:: GNAT.Exceptions (g-expect.ads)
+.. index:: GNAT.Exceptions (g-except.ads)
 
 .. index:: Exceptions, Pure
 

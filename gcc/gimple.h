@@ -145,7 +145,6 @@ enum gf_mask {
     GF_CALL_ALLOCA_FOR_VAR	= 1 << 5,
     GF_CALL_INTERNAL		= 1 << 6,
     GF_CALL_CTRL_ALTERING       = 1 << 7,
-    GF_CALL_WITH_BOUNDS 	= 1 << 8,
     GF_CALL_MUST_TAIL_CALL	= 1 << 9,
     GF_CALL_BY_DESCRIPTOR	= 1 << 10,
     GF_CALL_NOCF_CHECK		= 1 << 11,
@@ -1489,6 +1488,8 @@ bool gimple_call_same_target_p (const gimple *, const gimple *);
 int gimple_call_flags (const gimple *);
 int gimple_call_arg_flags (const gcall *, unsigned);
 int gimple_call_return_flags (const gcall *);
+bool gimple_call_nonnull_result_p (gcall *);
+tree gimple_call_nonnull_arg (gcall *);
 bool gimple_assign_copy_p (gimple *);
 bool gimple_assign_ssa_name_copy_p (gimple *);
 bool gimple_assign_unary_nop_p (gimple *);
@@ -1794,6 +1795,20 @@ static inline bool
 gimple_has_location (const gimple *g)
 {
   return LOCATION_LOCUS (gimple_location (g)) != UNKNOWN_LOCATION;
+}
+
+
+/* Return non-artificial location information for statement G.  */
+
+static inline location_t
+gimple_nonartificial_location (const gimple *g)
+{
+  location_t *ploc = NULL;
+
+  if (tree block = gimple_block (g))
+    ploc = block_nonartificial_location (block);
+
+  return ploc ? *ploc : gimple_location (g);
 }
 
 
@@ -2855,44 +2870,6 @@ gimple_call_internal_p (const gimple *gs)
   const gcall *gc = GIMPLE_CHECK2<const gcall *> (gs);
   return gimple_call_internal_p (gc);
 }
-
-
-/* Return true if call GS is marked as instrumented by
-   Pointer Bounds Checker.  */
-
-static inline bool
-gimple_call_with_bounds_p (const gcall *gs)
-{
-  return (gs->subcode & GF_CALL_WITH_BOUNDS) != 0;
-}
-
-static inline bool
-gimple_call_with_bounds_p (const gimple *gs)
-{
-  const gcall *gc = GIMPLE_CHECK2<const gcall *> (gs);
-  return gimple_call_with_bounds_p (gc);
-}
-
-
-/* If INSTRUMENTED_P is true, marm statement GS as instrumented by
-   Pointer Bounds Checker.  */
-
-static inline void
-gimple_call_set_with_bounds (gcall *gs, bool with_bounds)
-{
-  if (with_bounds)
-    gs->subcode |= GF_CALL_WITH_BOUNDS;
-  else
-    gs->subcode &= ~GF_CALL_WITH_BOUNDS;
-}
-
-static inline void
-gimple_call_set_with_bounds (gimple *gs, bool with_bounds)
-{
-  gcall *gc = GIMPLE_CHECK2<gcall *> (gs);
-  gimple_call_set_with_bounds (gc, with_bounds);
-}
-
 
 /* Return true if call GS is marked as nocf_check.  */
 
@@ -6220,26 +6197,6 @@ static inline void
 gimple_return_set_retval (greturn *gs, tree retval)
 {
   gs->op[0] = retval;
-}
-
-
-/* Return the return bounds for GIMPLE_RETURN GS.  */
-
-static inline tree
-gimple_return_retbnd (const gimple *gs)
-{
-  GIMPLE_CHECK (gs, GIMPLE_RETURN);
-  return gimple_op (gs, 1);
-}
-
-
-/* Set RETVAL to be the return bounds for GIMPLE_RETURN GS.  */
-
-static inline void
-gimple_return_set_retbnd (gimple *gs, tree retval)
-{
-  GIMPLE_CHECK (gs, GIMPLE_RETURN);
-  gimple_set_op (gs, 1, retval);
 }
 
 

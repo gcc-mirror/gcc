@@ -524,7 +524,7 @@ chrec_fold_multiply (tree type,
 static tree
 tree_fold_binomial (tree type, tree n, unsigned int k)
 {
-  bool overflow;
+  wi::overflow_type overflow;
   unsigned int i;
 
   /* Handle the most frequent cases.  */

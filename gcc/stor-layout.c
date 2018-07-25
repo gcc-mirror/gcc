@@ -756,22 +756,19 @@ layout_decl (tree decl, unsigned int known_align)
     DECL_SIZE_UNIT (decl) = variable_size (DECL_SIZE_UNIT (decl));
 
   /* If requested, warn about definitions of large data objects.  */
-  if (warn_larger_than
-      && (code == VAR_DECL || code == PARM_DECL)
+  if ((code == VAR_DECL || code == PARM_DECL)
       && ! DECL_EXTERNAL (decl))
     {
       tree size = DECL_SIZE_UNIT (decl);
 
       if (size != 0 && TREE_CODE (size) == INTEGER_CST
-	  && compare_tree_int (size, larger_than_size) > 0)
+	  && compare_tree_int (size, warn_larger_than_size) > 0)
 	{
-	  int size_as_int = TREE_INT_CST_LOW (size);
+	  unsigned HOST_WIDE_INT uhwisize = tree_to_uhwi (size);
 
-	  if (compare_tree_int (size, size_as_int) == 0)
-	    warning (OPT_Wlarger_than_, "size of %q+D is %d bytes", decl, size_as_int);
-	  else
-	    warning (OPT_Wlarger_than_, "size of %q+D is larger than %wd bytes",
-                     decl, larger_than_size);
+	  warning (OPT_Wlarger_than_, "size of %q+D %wu bytes exceeds "
+		   "maximum object size %wu",
+		   decl, uhwisize, warn_larger_than_size);
 	}
     }
 
@@ -1838,9 +1835,11 @@ compute_record_mode (tree type)
   /* If we only have one real field; use its mode if that mode's size
      matches the type's size.  This only applies to RECORD_TYPE.  This
      does not apply to unions.  */
-  if (TREE_CODE (type) == RECORD_TYPE && mode != VOIDmode
-      && tree_fits_uhwi_p (TYPE_SIZE (type))
-      && known_eq (GET_MODE_BITSIZE (mode), tree_to_uhwi (TYPE_SIZE (type))))
+  poly_uint64 type_size;
+  if (TREE_CODE (type) == RECORD_TYPE
+      && mode != VOIDmode
+      && poly_int_tree_p (TYPE_SIZE (type), &type_size)
+      && known_eq (GET_MODE_BITSIZE (mode), type_size))
     ;
   else
     mode = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1).else_blk ();
@@ -2385,11 +2384,6 @@ layout_type (tree type)
       SET_TYPE_ALIGN (type, 1);
       TYPE_USER_ALIGN (type) = 0;
       SET_TYPE_MODE (type, VOIDmode);
-      break;
-
-    case POINTER_BOUNDS_TYPE:
-      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
-      TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;
 
     case OFFSET_TYPE:

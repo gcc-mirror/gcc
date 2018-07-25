@@ -47,6 +47,8 @@ class evrp_folder : public substitute_and_fold_engine
  public:
   tree get_value (tree) FINAL OVERRIDE;
   evrp_folder (class vr_values *vr_values_) : vr_values (vr_values_) { }
+  bool simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
+    { return vr_values->simplify_stmt_using_ranges (gsi); }
   class vr_values *vr_values;
 
  private:
@@ -175,6 +177,12 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       bool did_replace = evrp_folder.replace_uses_in (stmt);
       if (fold_stmt (&gsi, follow_single_use_edges)
 	  || did_replace)
+	{
+	  stmt = gsi_stmt (gsi);
+	  update_stmt (stmt);
+	  did_replace = true;
+	}
+      if (evrp_folder.simplify_stmt_using_ranges (&gsi))
 	{
 	  stmt = gsi_stmt (gsi);
 	  update_stmt (stmt);

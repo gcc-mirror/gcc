@@ -691,7 +691,7 @@ try_unroll_loop_completely (struct loop *loop,
 			    edge exit, tree niter, bool may_be_zero,
 			    enum unroll_level ul,
 			    HOST_WIDE_INT maxiter,
-			    location_t locus, bool allow_peel)
+			    dump_user_location_t locus, bool allow_peel)
 {
   unsigned HOST_WIDE_INT n_unroll = 0;
   bool n_unroll_found = false;
@@ -1162,7 +1162,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
   tree niter;
   HOST_WIDE_INT maxiter;
   bool modified = false;
-  location_t locus = UNKNOWN_LOCATION;
+  dump_user_location_t locus;
   struct tree_niter_desc niter_desc;
   bool may_be_zero = false;
 
@@ -1177,7 +1177,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
 	= niter_desc.may_be_zero && !integer_zerop (niter_desc.may_be_zero);
     }
   if (TREE_CODE (niter) == INTEGER_CST)
-    locus = gimple_location (last_stmt (exit->src));
+    locus = last_stmt (exit->src);
   else
     {
       /* For non-constant niter fold may_be_zero into niter again.  */
@@ -1204,7 +1204,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
 	niter = find_loop_niter_by_eval (loop, &exit);
 
       if (exit)
-        locus = gimple_location (last_stmt (exit->src));
+        locus = last_stmt (exit->src);
 
       if (TREE_CODE (niter) != INTEGER_CST)
 	exit = NULL;
@@ -1378,17 +1378,37 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
   /* Process inner loops first.  Don't walk loops added by the recursive
      calls because SSA form is not up-to-date.  They can be handled in the
      next iteration.  */
+  bitmap child_father_bbs = NULL;
   for (inner = loop->inner; inner != NULL; inner = inner->next)
     if ((unsigned) inner->num < num)
-      changed |= tree_unroll_loops_completely_1 (may_increase_size,
-						 unroll_outer, father_bbs,
-						 inner);
+      {
+	if (!child_father_bbs)
+	  child_father_bbs = BITMAP_ALLOC (NULL);
+	if (tree_unroll_loops_completely_1 (may_increase_size, unroll_outer,
+					    child_father_bbs, inner))
+	  {
+	    bitmap_ior_into (father_bbs, child_father_bbs);
+	    bitmap_clear (child_father_bbs);
+	    changed = true;
+	  }
+      }
+  if (child_father_bbs)
+    BITMAP_FREE (child_father_bbs);
 
   /* If we changed an inner loop we cannot process outer loops in this
      iteration because SSA form is not up-to-date.  Continue with
      siblings of outer loops instead.  */
   if (changed)
-    return true;
+    {
+      /* If we are recorded as father clear all other fathers that
+         are necessarily covered already to avoid redundant work.  */
+      if (bitmap_bit_p (father_bbs, loop->header->index))
+	{
+	  bitmap_clear (father_bbs);
+	  bitmap_set_bit (father_bbs, loop->header->index);
+	}
+      return true;
+    }
 
   /* Don't unroll #pragma omp simd loops until the vectorizer
      attempts to vectorize those.  */
@@ -1418,7 +1438,13 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 	 computations; otherwise, the size might blow up before the
 	 iteration is complete and the IR eventually cleaned up.  */
       if (loop_outer (loop_father))
-	bitmap_set_bit (father_bbs, loop_father->header->index);
+	{
+	  /* Once we process our father we will have processed
+	     the fathers of our children as well, so avoid doing
+	     redundant work and clear fathers we've gathered sofar.  */
+	  bitmap_clear (father_bbs);
+	  bitmap_set_bit (father_bbs, loop_father->header->index);
+	}
 
       return true;
     }

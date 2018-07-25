@@ -513,8 +513,8 @@ procedure Gnatlink is
                           ("Could not locate linker: " & L_Args.all (1).all);
                      end if;
 
-                     --  The other arguments are passed as-is to the linker
-                     --  and override those coming from --GCC= if any.
+                     --  The other arguments are passed as-is to the linker and
+                     --  override those coming from --GCC= if any.
 
                      if L_Args.all'Last >= 2 then
                         Gcc_Linker_Options.Set_Last (0);

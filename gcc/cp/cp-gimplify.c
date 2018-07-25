@@ -217,7 +217,7 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
     {
       /* If COND is constant, don't bother building an exit.  If it's false,
 	 we won't build a loop.  If it's true, any exits are in the body.  */
-      location_t cloc = EXPR_LOC_OR_LOC (cond, start_locus);
+      location_t cloc = cp_expr_loc_or_loc (cond, start_locus);
       exit = build1_loc (cloc, GOTO_EXPR, void_type_node,
 			 get_bc_label (bc_break));
       exit = fold_build3_loc (cloc, COND_EXPR, void_type_node, cond,
@@ -579,7 +579,7 @@ int
 cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 {
   int saved_stmts_are_full_exprs_p = 0;
-  location_t loc = EXPR_LOC_OR_LOC (*expr_p, input_location);
+  location_t loc = cp_expr_loc_or_loc (*expr_p, input_location);
   enum tree_code code = TREE_CODE (*expr_p);
   enum gimplify_status ret;
 
@@ -783,7 +783,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	{
 	  /* If flag_strong_eval_order, evaluate the object argument first.  */
 	  tree fntype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
-	  if (POINTER_TYPE_P (fntype))
+	  if (INDIRECT_TYPE_P (fntype))
 	    fntype = TREE_TYPE (fntype);
 	  if (TREE_CODE (fntype) == METHOD_TYPE)
 	    {
@@ -1085,6 +1085,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       if (h)
 	{
 	  *stmt_p = h->to;
+	  TREE_USED (h->to) |= TREE_USED (stmt);
 	  *walk_subtrees = 0;
 	  return NULL;
 	}
@@ -1463,6 +1464,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case OMP_FOR:
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
+    case OACC_LOOP:
       genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
       break;
 
@@ -1498,7 +1500,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  tree fn = CALL_EXPR_FN (stmt);
 	  if (fn != NULL_TREE
 	      && !error_operand_p (fn)
-	      && POINTER_TYPE_P (TREE_TYPE (fn))
+	      && INDIRECT_TYPE_P (TREE_TYPE (fn))
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (fn))) == METHOD_TYPE)
 	    {
 	      bool is_ctor
@@ -1620,6 +1622,13 @@ cp_maybe_instrument_return (tree fndecl)
 	case STATEMENT_LIST:
 	  {
 	    tree_stmt_iterator i = tsi_last (t);
+	    while (!tsi_end_p (i))
+	      {
+		tree p = tsi_stmt (i);
+		if (TREE_CODE (p) != DEBUG_BEGIN_STMT)
+		  break;
+		tsi_prev (&i);
+	      }
 	    if (!tsi_end_p (i))
 	      {
 		t = tsi_stmt (i);
@@ -2271,6 +2280,7 @@ cp_fold (tree x)
     case FLOAT_EXPR:
     case NEGATE_EXPR:
     case ABS_EXPR:
+    case ABSU_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
     case FIXED_CONVERT_EXPR:
@@ -2371,21 +2381,26 @@ cp_fold (tree x)
       else
 	x = fold (x);
 
-      if (TREE_NO_WARNING (org_x)
-	  && warn_nonnull_compare
-	  && COMPARISON_CLASS_P (org_x))
+      /* This is only needed for -Wnonnull-compare and only if
+	 TREE_NO_WARNING (org_x), but to avoid that option affecting code
+	 generation, we do it always.  */
+      if (COMPARISON_CLASS_P (org_x))
 	{
 	  if (x == error_mark_node || TREE_CODE (x) == INTEGER_CST)
 	    ;
 	  else if (COMPARISON_CLASS_P (x))
-	    TREE_NO_WARNING (x) = 1;
+	    {
+	      if (TREE_NO_WARNING (org_x) && warn_nonnull_compare)
+		TREE_NO_WARNING (x) = 1;
+	    }
 	  /* Otherwise give up on optimizing these, let GIMPLE folders
 	     optimize those later on.  */
 	  else if (op0 != TREE_OPERAND (org_x, 0)
 		   || op1 != TREE_OPERAND (org_x, 1))
 	    {
 	      x = build2_loc (loc, code, TREE_TYPE (org_x), op0, op1);
-	      TREE_NO_WARNING (x) = 1;
+	      if (TREE_NO_WARNING (org_x) && warn_nonnull_compare)
+		TREE_NO_WARNING (x) = 1;
 	    }
 	  else
 	    x = org_x;

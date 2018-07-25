@@ -104,6 +104,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
+#if __cplusplus > 201703L
+// _GLIBCXX_RESOLVE_LIB_DEFECTS
+// DR 2055. std::move in std::accumulate and other algorithms
+# define _GLIBCXX_MOVE_IF_20(_E) std::move(_E)
+#else
+# define _GLIBCXX_MOVE_IF_20(_E) _E
+#endif
+
   /**
    *  @brief  Accumulate values in a range.
    *
@@ -124,7 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first, __last);
 
       for (; __first != __last; ++__first)
-	__init = __init + *__first;
+	__init = _GLIBCXX_MOVE_IF_20(__init) + *__first;
       return __init;
     }
 
@@ -151,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first, __last);
 
       for (; __first != __last; ++__first)
-	__init = __binary_op(__init, *__first);
+	__init = __binary_op(_GLIBCXX_MOVE_IF_20(__init), *__first);
       return __init;
     }
 
@@ -180,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
 
       for (; __first1 != __last1; ++__first1, (void)++__first2)
-	__init = __init + (*__first1 * *__first2);
+	__init = _GLIBCXX_MOVE_IF_20(__init) + (*__first1 * *__first2);
       return __init;
     }
 
@@ -214,7 +222,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
 
       for (; __first1 != __last1; ++__first1, (void)++__first2)
-	__init = __binary_op1(__init, __binary_op2(*__first1, *__first2));
+	__init = __binary_op1(_GLIBCXX_MOVE_IF_20(__init),
+			      __binary_op2(*__first1, *__first2));
       return __init;
     }
 
@@ -251,7 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       *__result = __value;
       while (++__first != __last)
 	{
-	  __value = __value + *__first;
+	  __value = _GLIBCXX_MOVE_IF_20(__value) + *__first;
 	  *++__result = __value;
 	}
       return ++__result;
@@ -292,7 +301,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       *__result = __value;
       while (++__first != __last)
 	{
-	  __value = __binary_op(__value, *__first);
+	  __value = __binary_op(_GLIBCXX_MOVE_IF_20(__value), *__first);
 	  *++__result = __value;
 	}
       return ++__result;
@@ -332,7 +341,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       while (++__first != __last)
 	{
 	  _ValueType __tmp = *__first;
-	  *++__result = __tmp - __value;
+	  *++__result = __tmp - _GLIBCXX_MOVE_IF_20(__value);
 	  __value = _GLIBCXX_MOVE(__tmp);
 	}
       return ++__result;
@@ -375,11 +384,13 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       while (++__first != __last)
 	{
 	  _ValueType __tmp = *__first;
-	  *++__result = __binary_op(__tmp, __value);
+	  *++__result = __binary_op(__tmp, _GLIBCXX_MOVE_IF_20(__value));
 	  __value = _GLIBCXX_MOVE(__tmp);
 	}
       return ++__result;
     }
+
+#undef _GLIBCXX_MOVE_IF_20
 
 _GLIBCXX_END_NAMESPACE_ALGO
 } // namespace std

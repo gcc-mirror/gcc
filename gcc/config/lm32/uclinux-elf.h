@@ -21,10 +21,6 @@
 /* elfos.h should have already been included.  Now just override
    any conflicting definitions and add any extras.  */
 
-/* Do not assume anything about header files.  */
-#undef NO_IMPLICIT_EXTERN_C
-#define NO_IMPLICIT_EXTERN_C
-
 /* The GNU C++ standard library requires that these macros be defined.  */
 #undef CPLUSPLUS_CPP_SPEC
 #define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"

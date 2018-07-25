@@ -2650,20 +2650,20 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
   tree type = TREE_TYPE (mul_result);
   gimple *use_stmt;
   imm_use_iterator imm_iter;
-  gassign *fma_stmt;
+  gcall *fma_stmt;
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, mul_result)
     {
       gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
-      enum tree_code use_code;
       tree addop, mulop1 = op1, result = mul_result;
       bool negate_p = false;
+      gimple_seq seq = NULL;
 
       if (is_gimple_debug (use_stmt))
 	continue;
 
-      use_code = gimple_assign_rhs_code (use_stmt);
-      if (use_code == NEGATE_EXPR)
+      if (is_gimple_assign (use_stmt)
+	  && gimple_assign_rhs_code (use_stmt) == NEGATE_EXPR)
 	{
 	  result = gimple_assign_lhs (use_stmt);
 	  use_operand_p use_p;
@@ -2674,47 +2674,52 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
 
 	  use_stmt = neguse_stmt;
 	  gsi = gsi_for_stmt (use_stmt);
-	  use_code = gimple_assign_rhs_code (use_stmt);
 	  negate_p = true;
 	}
 
-      if (gimple_assign_rhs1 (use_stmt) == result)
+      tree cond, else_value, ops[3];
+      tree_code code;
+      if (!can_interpret_as_conditional_op_p (use_stmt, &cond, &code,
+					      ops, &else_value))
+	gcc_unreachable ();
+      addop = ops[0] == result ? ops[1] : ops[0];
+
+      if (code == MINUS_EXPR)
 	{
-	  addop = gimple_assign_rhs2 (use_stmt);
-	  /* a * b - c -> a * b + (-c)  */
-	  if (gimple_assign_rhs_code (use_stmt) == MINUS_EXPR)
-	    addop = force_gimple_operand_gsi (&gsi,
-					      build1 (NEGATE_EXPR,
-						      type, addop),
-					      true, NULL_TREE, true,
-					      GSI_SAME_STMT);
-	}
-      else
-	{
-	  addop = gimple_assign_rhs1 (use_stmt);
-	  /* a - b * c -> (-b) * c + a */
-	  if (gimple_assign_rhs_code (use_stmt) == MINUS_EXPR)
+	  if (ops[0] == result)
+	    /* a * b - c -> a * b + (-c)  */
+	    addop = gimple_build (&seq, NEGATE_EXPR, type, addop);
+	  else
+	    /* a - b * c -> (-b) * c + a */
 	    negate_p = !negate_p;
 	}
 
       if (negate_p)
-	mulop1 = force_gimple_operand_gsi (&gsi,
-					   build1 (NEGATE_EXPR,
-						   type, mulop1),
-					   true, NULL_TREE, true,
-					   GSI_SAME_STMT);
+	mulop1 = gimple_build (&seq, NEGATE_EXPR, type, mulop1);
 
-      fma_stmt = gimple_build_assign (gimple_assign_lhs (use_stmt),
-				      FMA_EXPR, mulop1, op2, addop);
+      if (seq)
+	gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
+
+      if (cond)
+	fma_stmt = gimple_build_call_internal (IFN_COND_FMA, 5, cond, mulop1,
+					       op2, addop, else_value);
+      else
+	fma_stmt = gimple_build_call_internal (IFN_FMA, 3, mulop1, op2, addop);
+      gimple_set_lhs (fma_stmt, gimple_get_lhs (use_stmt));
+      gimple_call_set_nothrow (fma_stmt, !stmt_can_throw_internal (use_stmt));
+      gsi_replace (&gsi, fma_stmt, true);
+      /* Follow all SSA edges so that we generate FMS, FNMA and FNMS
+	 regardless of where the negation occurs.  */
+      if (fold_stmt (&gsi, follow_all_ssa_edges))
+	update_stmt (gsi_stmt (gsi));
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Generated FMA ");
-	  print_gimple_stmt (dump_file, fma_stmt, 0, 0);
+	  print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, TDF_NONE);
 	  fprintf (dump_file, "\n");
 	}
 
-      gsi_replace (&gsi, fma_stmt, true);
       widen_mul_stats.fmas_inserted++;
     }
 }
@@ -2862,7 +2867,8 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 
   /* If the target doesn't support it, don't generate it.  We assume that
      if fma isn't available then fms, fnma or fnms are not either.  */
-  if (optab_handler (fma_optab, TYPE_MODE (type)) == CODE_FOR_nothing)
+  optimization_type opt_type = bb_optimization_type (gimple_bb (mul_stmt));
+  if (!direct_internal_fn_supported_p (IFN_FMA, type, opt_type))
     return false;
 
   /* If the multiplication has zero uses, it is kept around probably because
@@ -2882,7 +2888,6 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
      as an addition.  */
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, mul_result)
     {
-      enum tree_code use_code;
       tree result = mul_result;
       bool negate_p = false;
 
@@ -2903,13 +2908,9 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
       if (gimple_bb (use_stmt) != gimple_bb (mul_stmt))
 	return false;
 
-      if (!is_gimple_assign (use_stmt))
-	return false;
-
-      use_code = gimple_assign_rhs_code (use_stmt);
-
       /* A negate on the multiplication leads to FNMA.  */
-      if (use_code == NEGATE_EXPR)
+      if (is_gimple_assign (use_stmt)
+	  && gimple_assign_rhs_code (use_stmt) == NEGATE_EXPR)
 	{
 	  ssa_op_iter iter;
 	  use_operand_p usep;
@@ -2931,17 +2932,20 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  use_stmt = neguse_stmt;
 	  if (gimple_bb (use_stmt) != gimple_bb (mul_stmt))
 	    return false;
-	  if (!is_gimple_assign (use_stmt))
-	    return false;
 
-	  use_code = gimple_assign_rhs_code (use_stmt);
 	  negate_p = true;
 	}
 
-      switch (use_code)
+      tree cond, else_value, ops[3];
+      tree_code code;
+      if (!can_interpret_as_conditional_op_p (use_stmt, &cond, &code, ops,
+					      &else_value))
+	return false;
+
+      switch (code)
 	{
 	case MINUS_EXPR:
-	  if (gimple_assign_rhs2 (use_stmt) == result)
+	  if (ops[1] == result)
 	    negate_p = !negate_p;
 	  break;
 	case PLUS_EXPR:
@@ -2951,47 +2955,50 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  return false;
 	}
 
-      /* If the subtrahend (gimple_assign_rhs2 (use_stmt)) is computed
-	 by a MULT_EXPR that we'll visit later, we might be able to
-	 get a more profitable match with fnma.
-	 OTOH, if we don't, a negate / fma pair has likely lower latency
-	 that a mult / subtract pair.  */
-      if (use_code == MINUS_EXPR && !negate_p
-	  && gimple_assign_rhs1 (use_stmt) == result
-	  && optab_handler (fms_optab, TYPE_MODE (type)) == CODE_FOR_nothing
-	  && optab_handler (fnma_optab, TYPE_MODE (type)) != CODE_FOR_nothing)
+      if (cond)
 	{
-	  tree rhs2 = gimple_assign_rhs2 (use_stmt);
-
-	  if (TREE_CODE (rhs2) == SSA_NAME)
-	    {
-	      gimple *stmt2 = SSA_NAME_DEF_STMT (rhs2);
-	      if (has_single_use (rhs2)
-		  && is_gimple_assign (stmt2)
-		  && gimple_assign_rhs_code (stmt2) == MULT_EXPR)
-	      return false;
-	    }
+	  if (cond == result || else_value == result)
+	    return false;
+	  if (!direct_internal_fn_supported_p (IFN_COND_FMA, type, opt_type))
+	    return false;
 	}
 
-      tree use_rhs1 = gimple_assign_rhs1 (use_stmt);
-      tree use_rhs2 = gimple_assign_rhs2 (use_stmt);
+      /* If the subtrahend (OPS[1]) is computed by a MULT_EXPR that
+	 we'll visit later, we might be able to get a more profitable
+	 match with fnma.
+	 OTOH, if we don't, a negate / fma pair has likely lower latency
+	 that a mult / subtract pair.  */
+      if (code == MINUS_EXPR
+	  && !negate_p
+	  && ops[0] == result
+	  && !direct_internal_fn_supported_p (IFN_FMS, type, opt_type)
+	  && direct_internal_fn_supported_p (IFN_FNMA, type, opt_type)
+	  && TREE_CODE (ops[1]) == SSA_NAME
+	  && has_single_use (ops[1]))
+	{
+	  gimple *stmt2 = SSA_NAME_DEF_STMT (ops[1]);
+	  if (is_gimple_assign (stmt2)
+	      && gimple_assign_rhs_code (stmt2) == MULT_EXPR)
+	    return false;
+	}
+
       /* We can't handle a * b + a * b.  */
-      if (use_rhs1 == use_rhs2)
+      if (ops[0] == ops[1])
 	return false;
       /* If deferring, make sure we are not looking at an instruction that
 	 wouldn't have existed if we were not.  */
       if (state->m_deferring_p
-	  && (state->m_mul_result_set.contains (use_rhs1)
-	      || state->m_mul_result_set.contains (use_rhs2)))
+	  && (state->m_mul_result_set.contains (ops[0])
+	      || state->m_mul_result_set.contains (ops[1])))
 	return false;
 
       if (check_defer)
 	{
-	  tree use_lhs = gimple_assign_lhs (use_stmt);
+	  tree use_lhs = gimple_get_lhs (use_stmt);
 	  if (state->m_last_result)
 	    {
-	      if (use_rhs2 == state->m_last_result
-		  || use_rhs1 == state->m_last_result)
+	      if (ops[1] == state->m_last_result
+		  || ops[0] == state->m_last_result)
 		defer = true;
 	      else
 		defer = false;
@@ -3000,12 +3007,12 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	    {
 	      gcc_checking_assert (!state->m_initial_phi);
 	      gphi *phi;
-	      if (use_rhs1 == result)
-		phi = result_of_phi (use_rhs2);
+	      if (ops[0] == result)
+		phi = result_of_phi (ops[1]);
 	      else
 		{
-		  gcc_assert (use_rhs2 == result);
-		  phi = result_of_phi (use_rhs1);
+		  gcc_assert (ops[1] == result);
+		  phi = result_of_phi (ops[0]);
 		}
 
 	      if (phi)
@@ -3046,7 +3053,7 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Deferred generating FMA for multiplication ");
-	  print_gimple_stmt (dump_file, mul_stmt, 0, 0);
+	  print_gimple_stmt (dump_file, mul_stmt, 0, TDF_NONE);
 	  fprintf (dump_file, "\n");
 	}
 

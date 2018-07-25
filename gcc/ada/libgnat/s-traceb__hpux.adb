@@ -395,9 +395,9 @@ package body System.Traceback is
          return True;
       end Pop_Frame;
 
-      ---------------------------------
-      -- Prepare_State_For_Unwind_Of --
-      ---------------------------------
+      ---------------------------
+      -- Prepare_For_Unwind_Of --
+      ---------------------------
 
       function Prepare_For_Unwind_Of
         (Frame : not null access CFD) return Boolean

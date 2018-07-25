@@ -510,10 +510,10 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fdevirtualize, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fdevirtualize_speculatively, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fipa_sra, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_falign_loops, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_falign_jumps, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_falign_labels, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_falign_functions, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_loops, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_jumps, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_labels, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_functions, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_tail_merge, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_CHEAP },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_foptimize_strlen, NULL, 1 },
@@ -1039,26 +1039,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if ((opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS) && opts->x_flag_tm)
     sorry ("transactional memory is not supported with "
 	   "%<-fsanitize=kernel-address%>");
-
-  /* Comes from final.c -- no real reason to change it.  */
-#define MAX_CODE_ALIGN 16
-#define MAX_CODE_ALIGN_VALUE (1 << MAX_CODE_ALIGN)
-
-  if (opts->x_align_loops > MAX_CODE_ALIGN_VALUE)
-    error_at (loc, "-falign-loops=%d is not between 0 and %d",
-	      opts->x_align_loops, MAX_CODE_ALIGN_VALUE);
-
-  if (opts->x_align_jumps > MAX_CODE_ALIGN_VALUE)
-    error_at (loc, "-falign-jumps=%d is not between 0 and %d",
-	      opts->x_align_jumps, MAX_CODE_ALIGN_VALUE);
-
-  if (opts->x_align_functions > MAX_CODE_ALIGN_VALUE)
-    error_at (loc, "-falign-functions=%d is not between 0 and %d",
-	      opts->x_align_functions, MAX_CODE_ALIGN_VALUE);
-
-  if (opts->x_align_labels > MAX_CODE_ALIGN_VALUE)
-    error_at (loc, "-falign-labels=%d is not between 0 and %d",
-	      opts->x_align_labels, MAX_CODE_ALIGN_VALUE);
 }
 
 #define LEFT_COLUMN	27
@@ -1779,6 +1759,74 @@ parse_no_sanitize_attribute (char *value)
   return flags;
 }
 
+/* Parse -falign-NAME format for a FLAG value.  Return individual
+   parsed integer values into RESULT_VALUES array.  If REPORT_ERROR is
+   set, print error message at LOC location.  */
+
+bool
+parse_and_check_align_values (const char *flag,
+			      const char *name,
+			      auto_vec<unsigned> &result_values,
+			      bool report_error,
+			      location_t loc)
+{
+  char *str = xstrdup (flag);
+  for (char *p = strtok (str, ":"); p; p = strtok (NULL, ":"))
+    {
+      char *end;
+      int v = strtol (p, &end, 10);
+      if (*end != '\0' || v < 0)
+	{
+	  if (report_error)
+	    error_at (loc, "invalid arguments for %<-falign-%s%> option: %qs",
+		      name, flag);
+
+	  return false;
+	}
+
+      result_values.safe_push ((unsigned)v);
+    }
+
+  free (str);
+
+  /* Check that we have a correct number of values.  */
+#ifdef SUBALIGN_LOG
+  unsigned max_valid_values = 4;
+#else
+  unsigned max_valid_values = 2;
+#endif
+
+  if (result_values.is_empty ()
+      || result_values.length () > max_valid_values)
+    {
+      if (report_error)
+	error_at (loc, "invalid number of arguments for %<-falign-%s%> "
+		  "option: %qs", name, flag);
+      return false;
+    }
+
+  for (unsigned i = 0; i < result_values.length (); i++)
+    if (result_values[i] > MAX_CODE_ALIGN_VALUE)
+      {
+	if (report_error)
+	  error_at (loc, "%<-falign-%s%> is not between 0 and %d",
+		    name, MAX_CODE_ALIGN_VALUE);
+	return false;
+      }
+
+  return true;
+}
+
+/* Check that alignment value FLAG for -falign-NAME is valid at a given
+   location LOC.  */
+
+static void
+check_alignment_argument (location_t loc, const char *flag, const char *name)
+{
+  auto_vec<unsigned> align_result;
+  parse_and_check_align_values (flag, name, align_result, true, loc);
+}
+
 /* Handle target- and language-independent options.  Return zero to
    generate an "unknown option" message.  Only options that need
    extra handling need to be listed here; if you simply want
@@ -1796,7 +1844,7 @@ common_handle_option (struct gcc_options *opts,
 {
   size_t scode = decoded->opt_index;
   const char *arg = decoded->arg;
-  int value = decoded->value;
+  HOST_WIDE_INT value = decoded->value;
   enum opt_code code = (enum opt_code) scode;
 
   gcc_assert (decoded->canonical_option_num_elements <= 2);
@@ -1982,6 +2030,9 @@ common_handle_option (struct gcc_options *opts,
       opts->x_exit_after_options = true;
       break;
 
+    case OPT__completion_:
+      break;
+
     case OPT_fsanitize_:
       opts->x_flag_sanitize
 	= parse_sanitizer_options (arg, loc, code,
@@ -2056,22 +2107,11 @@ common_handle_option (struct gcc_options *opts,
 			       opts, opts_set, loc, dc);
       break;
 
-    case OPT_Wlarger_than_:
-      opts->x_larger_than_size = value;
-      opts->x_warn_larger_than = value != -1;
-      break;
-
     case OPT_Wfatal_errors:
       dc->fatal_errors = value;
       break;
 
-    case OPT_Wframe_larger_than_:
-      opts->x_frame_larger_than_size = value;
-      opts->x_warn_frame_larger_than = value != -1;
-      break;
-
     case OPT_Wstack_usage_:
-      opts->x_warn_stack_usage = value;
       opts->x_flag_stack_usage_info = value != -1;
       break;
 
@@ -2231,7 +2271,7 @@ common_handle_option (struct gcc_options *opts,
     case OPT_fpack_struct_:
       if (value <= 0 || (value & (value - 1)) || value > 16)
 	error_at (loc,
-		  "structure alignment must be a small power of two, not %d",
+		  "structure alignment must be a small power of two, not %wu",
 		  value);
       else
 	opts->x_initial_max_fld_align = value;
@@ -2414,7 +2454,7 @@ common_handle_option (struct gcc_options *opts,
       /* FALLTHRU */
     case OPT_gdwarf_:
       if (value < 2 || value > 5)
-	error_at (loc, "dwarf version %d is not supported", value);
+	error_at (loc, "dwarf version %wu is not supported", value);
       else
 	opts->x_dwarf_version = value;
       set_debug_level (DWARF2_DEBUG, false, "", opts, opts_set, loc);
@@ -2496,6 +2536,22 @@ common_handle_option (struct gcc_options *opts,
     case OPT_fipa_icf:
       opts->x_flag_ipa_icf_functions = value;
       opts->x_flag_ipa_icf_variables = value;
+      break;
+
+    case OPT_falign_loops_:
+      check_alignment_argument (loc, arg, "loops");
+      break;
+
+    case OPT_falign_jumps_:
+      check_alignment_argument (loc, arg, "jumps");
+      break;
+
+    case OPT_falign_labels_:
+      check_alignment_argument (loc, arg, "labels");
+      break;
+
+    case OPT_falign_functions_:
+      check_alignment_argument (loc, arg, "functions");
       break;
 
     default:

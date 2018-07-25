@@ -64,6 +64,26 @@ const int internal_fn_flags_array[] = {
   0
 };
 
+/* Return the internal function called NAME, or IFN_LAST if there's
+   no such function.  */
+
+internal_fn
+lookup_internal_fn (const char *name)
+{
+  typedef hash_map<nofree_string_hash, internal_fn> name_to_fn_map_type;
+  static name_to_fn_map_type *name_to_fn_map;
+
+  if (!name_to_fn_map)
+    {
+      name_to_fn_map = new name_to_fn_map_type (IFN_LAST);
+      for (unsigned int i = 0; i < IFN_LAST; ++i)
+	name_to_fn_map->put (internal_fn_name (internal_fn (i)),
+			     internal_fn (i));
+    }
+  internal_fn *entry = name_to_fn_map->get (name);
+  return entry ? *entry : IFN_LAST;
+}
+
 /* Fnspec of each internal function, indexed by function number.  */
 const_tree internal_fn_fnspec_array[IFN_LAST + 1];
 
@@ -90,8 +110,10 @@ init_internal_fns ()
 #define scatter_store_direct { 3, 3, false }
 #define unary_direct { 0, 0, true }
 #define binary_direct { 0, 0, true }
+#define ternary_direct { 0, 0, true }
 #define cond_unary_direct { 1, 1, true }
 #define cond_binary_direct { 1, 1, true }
+#define cond_ternary_direct { 1, 1, true }
 #define while_direct { 0, 2, false }
 #define fold_extract_direct { 2, 2, false }
 #define fold_left_direct { 1, 1, false }
@@ -2870,14 +2892,15 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
   insn_code icode = direct_optab_handler (optab, TYPE_MODE (types.first));
 
   tree lhs = gimple_call_lhs (stmt);
-  tree lhs_type = TREE_TYPE (lhs);
-  rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx lhs_rtx = NULL_RTX;
+  if (lhs)
+    lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
   /* Do not assign directly to a promoted subreg, since there is no
      guarantee that the instruction will leave the upper bits of the
      register in the state required by SUBREG_PROMOTED_SIGN.  */
   rtx dest = lhs_rtx;
-  if (GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
+  if (dest && GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
     dest = NULL_RTX;
 
   create_output_operand (&ops[0], dest, insn_data[icode].operand[0].mode);
@@ -2896,7 +2919,7 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
     }
 
   expand_insn (icode, nargs + 1, ops);
-  if (!rtx_equal_p (lhs_rtx, ops[0].value))
+  if (lhs_rtx && !rtx_equal_p (lhs_rtx, ops[0].value))
     {
       /* If the return value has an integral type, convert the instruction
 	 result to that type.  This is useful for things that return an
@@ -2910,7 +2933,7 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
 	  /* If this is a scalar in a register that is stored in a wider
 	     mode than the declared mode, compute the result into its
 	     declared mode and then convert to the wider mode.  */
-	  gcc_checking_assert (INTEGRAL_TYPE_P (lhs_type));
+	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
 	  rtx tmp = convert_to_mode (GET_MODE (lhs_rtx), ops[0].value, 0);
 	  convert_move (SUBREG_REG (lhs_rtx), tmp,
 			SUBREG_PROMOTED_SIGN (lhs_rtx));
@@ -2919,7 +2942,7 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
 	emit_move_insn (lhs_rtx, ops[0].value);
       else
 	{
-	  gcc_checking_assert (INTEGRAL_TYPE_P (lhs_type));
+	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
 	  convert_move (lhs_rtx, ops[0].value, 0);
 	}
     }
@@ -2962,11 +2985,17 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_binary_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 2)
 
+#define expand_ternary_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
+
 #define expand_cond_unary_optab_fn(FN, STMT, OPTAB) \
-  expand_direct_optab_fn (FN, STMT, OPTAB, 2)
+  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
 
 #define expand_cond_binary_optab_fn(FN, STMT, OPTAB) \
-  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
+  expand_direct_optab_fn (FN, STMT, OPTAB, 4)
+
+#define expand_cond_ternary_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 5)
 
 #define expand_fold_extract_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 3)
@@ -3047,8 +3076,10 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 
 #define direct_unary_optab_supported_p direct_optab_supported_p
 #define direct_binary_optab_supported_p direct_optab_supported_p
+#define direct_ternary_optab_supported_p direct_optab_supported_p
 #define direct_cond_unary_optab_supported_p direct_optab_supported_p
 #define direct_cond_binary_optab_supported_p direct_optab_supported_p
+#define direct_cond_ternary_optab_supported_p direct_optab_supported_p
 #define direct_mask_load_optab_supported_p direct_optab_supported_p
 #define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
@@ -3193,35 +3224,169 @@ static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
   0
 };
 
-/* Return a function that performs the conditional form of CODE, i.e.:
+/* Invoke T(CODE, IFN) for each conditional function IFN that maps to a
+   tree code CODE.  */
+#define FOR_EACH_CODE_MAPPING(T) \
+  T (PLUS_EXPR, IFN_COND_ADD) \
+  T (MINUS_EXPR, IFN_COND_SUB) \
+  T (MULT_EXPR, IFN_COND_MUL) \
+  T (TRUNC_DIV_EXPR, IFN_COND_DIV) \
+  T (TRUNC_MOD_EXPR, IFN_COND_MOD) \
+  T (RDIV_EXPR, IFN_COND_RDIV) \
+  T (MIN_EXPR, IFN_COND_MIN) \
+  T (MAX_EXPR, IFN_COND_MAX) \
+  T (BIT_AND_EXPR, IFN_COND_AND) \
+  T (BIT_IOR_EXPR, IFN_COND_IOR) \
+  T (BIT_XOR_EXPR, IFN_COND_XOR)
 
-     LHS = RHS1 ? RHS2 CODE RHS3 : RHS2
+/* Return a function that only performs CODE when a certain condition is met
+   and that uses a given fallback value otherwise.  For example, if CODE is
+   a binary operation associated with conditional function FN:
 
-   (operating elementwise if the operands are vectors).  Return IFN_LAST
-   if no such function exists.  */
+     LHS = FN (COND, A, B, ELSE)
+
+   is equivalent to the C expression:
+
+     LHS = COND ? A CODE B : ELSE;
+
+   operating elementwise if the operands are vectors.
+
+   Return IFN_LAST if no such function exists.  */
 
 internal_fn
 get_conditional_internal_fn (tree_code code)
 {
   switch (code)
     {
-    case PLUS_EXPR:
-      return IFN_COND_ADD;
-    case MINUS_EXPR:
-      return IFN_COND_SUB;
-    case MIN_EXPR:
-      return IFN_COND_MIN;
-    case MAX_EXPR:
-      return IFN_COND_MAX;
-    case BIT_AND_EXPR:
-      return IFN_COND_AND;
-    case BIT_IOR_EXPR:
-      return IFN_COND_IOR;
-    case BIT_XOR_EXPR:
-      return IFN_COND_XOR;
+#define CASE(CODE, IFN) case CODE: return IFN;
+      FOR_EACH_CODE_MAPPING(CASE)
+#undef CASE
     default:
       return IFN_LAST;
     }
+}
+
+/* If IFN implements the conditional form of a tree code, return that
+   tree code, otherwise return ERROR_MARK.  */
+
+tree_code
+conditional_internal_fn_code (internal_fn ifn)
+{
+  switch (ifn)
+    {
+#define CASE(CODE, IFN) case IFN: return CODE;
+      FOR_EACH_CODE_MAPPING(CASE)
+#undef CASE
+    default:
+      return ERROR_MARK;
+    }
+}
+
+/* Invoke T(IFN) for each internal function IFN that also has an
+   IFN_COND_* form.  */
+#define FOR_EACH_COND_FN_PAIR(T) \
+  T (FMA) \
+  T (FMS) \
+  T (FNMA) \
+  T (FNMS)
+
+/* Return a function that only performs internal function FN when a
+   certain condition is met and that uses a given fallback value otherwise.
+   In other words, the returned function FN' is such that:
+
+     LHS = FN' (COND, A1, ... An, ELSE)
+
+   is equivalent to the C expression:
+
+     LHS = COND ? FN (A1, ..., An) : ELSE;
+
+   operating elementwise if the operands are vectors.
+
+   Return IFN_LAST if no such function exists.  */
+
+internal_fn
+get_conditional_internal_fn (internal_fn fn)
+{
+  switch (fn)
+    {
+#define CASE(NAME) case IFN_##NAME: return IFN_COND_##NAME;
+      FOR_EACH_COND_FN_PAIR(CASE)
+#undef CASE
+    default:
+      return IFN_LAST;
+    }
+}
+
+/* If IFN implements the conditional form of an unconditional internal
+   function, return that unconditional function, otherwise return IFN_LAST.  */
+
+internal_fn
+get_unconditional_internal_fn (internal_fn ifn)
+{
+  switch (ifn)
+    {
+#define CASE(NAME) case IFN_COND_##NAME: return IFN_##NAME;
+      FOR_EACH_COND_FN_PAIR(CASE)
+#undef CASE
+    default:
+      return IFN_LAST;
+    }
+}
+
+/* Return true if STMT can be interpreted as a conditional tree code
+   operation of the form:
+
+     LHS = COND ? OP (RHS1, ...) : ELSE;
+
+   operating elementwise if the operands are vectors.  This includes
+   the case of an all-true COND, so that the operation always happens.
+
+   When returning true, set:
+
+   - *COND_OUT to the condition COND, or to NULL_TREE if the condition
+     is known to be all-true
+   - *CODE_OUT to the tree code
+   - OPS[I] to operand I of *CODE_OUT
+   - *ELSE_OUT to the fallback value ELSE, or to NULL_TREE if the
+     condition is known to be all true.  */
+
+bool
+can_interpret_as_conditional_op_p (gimple *stmt, tree *cond_out,
+				   tree_code *code_out,
+				   tree (&ops)[3], tree *else_out)
+{
+  if (gassign *assign = dyn_cast <gassign *> (stmt))
+    {
+      *cond_out = NULL_TREE;
+      *code_out = gimple_assign_rhs_code (assign);
+      ops[0] = gimple_assign_rhs1 (assign);
+      ops[1] = gimple_assign_rhs2 (assign);
+      ops[2] = gimple_assign_rhs3 (assign);
+      *else_out = NULL_TREE;
+      return true;
+    }
+  if (gcall *call = dyn_cast <gcall *> (stmt))
+    if (gimple_call_internal_p (call))
+      {
+	internal_fn ifn = gimple_call_internal_fn (call);
+	tree_code code = conditional_internal_fn_code (ifn);
+	if (code != ERROR_MARK)
+	  {
+	    *cond_out = gimple_call_arg (call, 0);
+	    *code_out = code;
+	    unsigned int nops = gimple_call_num_args (call) - 2;
+	    for (unsigned int i = 0; i < 3; ++i)
+	      ops[i] = i < nops ? gimple_call_arg (call, i + 1) : NULL_TREE;
+	    *else_out = gimple_call_arg (call, nops + 1);
+	    if (integer_truep (*cond_out))
+	      {
+		*cond_out = NULL_TREE;
+		*else_out = NULL_TREE;
+	      }
+	    return true;
+	  }
+      }
+  return false;
 }
 
 /* Return true if IFN is some form of load from memory.  */
@@ -3301,7 +3466,8 @@ internal_fn_mask_index (internal_fn fn)
       return 4;
 
     default:
-      return -1;
+      return (conditional_internal_fn_code (fn) != ERROR_MARK
+	      || get_unconditional_internal_fn (fn) != IFN_LAST ? 0 : -1);
     }
 }
 
@@ -3364,6 +3530,26 @@ void
 expand_internal_call (gcall *stmt)
 {
   expand_internal_call (gimple_call_internal_fn (stmt), stmt);
+}
+
+/* If TYPE is a vector type, return true if IFN is a direct internal
+   function that is supported for that type.  If TYPE is a scalar type,
+   return true if IFN is a direct internal function that is supported for
+   the target's preferred vector version of TYPE.  */
+
+bool
+vectorized_internal_fn_supported_p (internal_fn ifn, tree type)
+{
+  scalar_mode smode;
+  if (!VECTOR_TYPE_P (type) && is_a <scalar_mode> (TYPE_MODE (type), &smode))
+    {
+      machine_mode vmode = targetm.vectorize.preferred_simd_mode (smode);
+      if (VECTOR_MODE_P (vmode))
+	type = build_vector_type_for_mode (type, vmode);
+    }
+
+  return (VECTOR_MODE_P (TYPE_MODE (type))
+	  && direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED));
 }
 
 void

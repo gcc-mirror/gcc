@@ -2551,14 +2551,14 @@ h8300_insn_length_from_table (rtx_insn *insn, rtx * operands)
     case LENGTH_TABLE_NONE:
       gcc_unreachable ();
 
-    case LENGTH_TABLE_ADDB:
-      return h8300_binary_length (insn, &addb_length_table);
-
-    case LENGTH_TABLE_ADDW:
-      return h8300_binary_length (insn, &addw_length_table);
-
-    case LENGTH_TABLE_ADDL:
-      return h8300_binary_length (insn, &addl_length_table);
+    case LENGTH_TABLE_ADD:
+      if (GET_MODE (operands[0]) == QImode)
+        return h8300_binary_length (insn, &addb_length_table);
+      else if (GET_MODE (operands[0]) == HImode)
+        return h8300_binary_length (insn, &addw_length_table);
+      else if (GET_MODE (operands[0]) == SImode)
+        return h8300_binary_length (insn, &addl_length_table);
+      gcc_unreachable ();
 
     case LENGTH_TABLE_LOGICB:
       return h8300_binary_length (insn, &logicb_length_table);

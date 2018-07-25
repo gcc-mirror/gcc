@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "addresses.h"
 #include "rtl-iter.h"
+#include "hard-reg-set.h"
 
 /* Forward declarations */
 static void set_of_1 (rtx, const_rtx, void *);
@@ -462,6 +463,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, poly_int64 offset, poly_int64 size,
 {
   enum rtx_code code = GET_CODE (x);
   gcc_checking_assert (mode == BLKmode || known_size_p (size));
+  poly_int64 const_x1;
 
   /* The offset must be a multiple of the mode size if we are considering
      unaligned memory references on strict alignment machines.  */
@@ -653,8 +655,8 @@ rtx_addr_can_trap_p_1 (const_rtx x, poly_int64 offset, poly_int64 size,
 	return 0;
 
       /* - or it is an address that can't trap plus a constant integer.  */
-      if (CONST_INT_P (XEXP (x, 1))
-	  && !rtx_addr_can_trap_p_1 (XEXP (x, 0), offset + INTVAL (XEXP (x, 1)),
+      if (poly_int_rtx_p (XEXP (x, 1), &const_x1)
+	  && !rtx_addr_can_trap_p_1 (XEXP (x, 0), offset + const_x1,
 				     size, mode, unaligned_mems))
 	return 0;
 
@@ -1613,15 +1615,16 @@ set_noop_p (const_rtx set)
       int i;
       rtx par = XEXP (src, 1);
       rtx src0 = XEXP (src, 0);
-      int c0 = INTVAL (XVECEXP (par, 0, 0));
-      HOST_WIDE_INT offset = GET_MODE_UNIT_SIZE (GET_MODE (src0)) * c0;
+      poly_int64 c0 = rtx_to_poly_int64 (XVECEXP (par, 0, 0));
+      poly_int64 offset = GET_MODE_UNIT_SIZE (GET_MODE (src0)) * c0;
 
       for (i = 1; i < XVECLEN (par, 0); i++)
-	if (INTVAL (XVECEXP (par, 0, i)) != c0 + i)
+	if (maybe_ne (rtx_to_poly_int64 (XVECEXP (par, 0, i)), c0 + i))
 	  return 0;
       return
-	simplify_subreg_regno (REGNO (src0), GET_MODE (src0),
-			       offset, GET_MODE (dst)) == (int) REGNO (dst);
+	REG_CAN_CHANGE_MODE_P (REGNO (dst), GET_MODE (src0), GET_MODE (dst))
+	&& simplify_subreg_regno (REGNO (src0), GET_MODE (src0),
+				  offset, GET_MODE (dst)) == (int) REGNO (dst);
     }
 
   return (REG_P (src) && REG_P (dst)

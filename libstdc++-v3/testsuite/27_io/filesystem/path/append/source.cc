@@ -36,7 +36,8 @@ using __gnu_test::compare_paths;
 // path::append(InputIterator first, InputIterator last)
 // Equivalent to: return operator/=(path(first, last));
 
-void test(const path& p, std::string_view s)
+template<typename Char>
+void test(const path& p, const Char* s)
 {
   path expected = p;
   expected /= path(s);
@@ -47,8 +48,8 @@ void test(const path& p, std::string_view s)
   path func = p;
   func.append(s);
 
-  __gnu_test::test_container<const char, __gnu_test::input_iterator_wrapper>
-    input_range(s.begin(), s.end());
+  __gnu_test::test_container<const Char, __gnu_test::input_iterator_wrapper>
+    input_range(s, s + std::char_traits<Char>::length(s));
   path range = p;
   range.append(input_range.begin(), input_range.end());
 
@@ -94,7 +95,21 @@ test03()
 {
   for (const path& p : __gnu_test::test_paths)
     for (const path& q : __gnu_test::test_paths)
-      test(p, q.native());
+    {
+      test(p, q.c_str());
+      if constexpr (!std::is_same_v<path::value_type, char>)
+	test(p, q.string().c_str());
+    }
+}
+
+void
+test04()
+{
+#ifdef _GLIBCXX_USE_WCHAR_T
+  test(  "foo", L"/bar" );
+  test( L"foo",  "/bar" );
+  test( L"foo", L"/bar" );
+#endif
 }
 
 int
@@ -103,4 +118,5 @@ main()
   test01();
   test02();
   test03();
+  test04();
 }

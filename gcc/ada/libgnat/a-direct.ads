@@ -231,6 +231,11 @@ package Ada.Directories is
    -- File and directory name operations --
    ----------------------------------------
 
+   type Name_Case_Kind is
+      (Unknown, Case_Sensitive, Case_Insensitive, Case_Preserving);
+   --  The type Name_Case_Kind represents the kind of file-name equivalence
+   --  rule for directories.
+
    function Full_Name (Name : String) return String;
    --  Returns the full name corresponding to the file name specified by Name.
    --  The exception Name_Error is propagated if the string given as Name does
@@ -280,6 +285,16 @@ package Ada.Directories is
    --  is not null and is not a possible extension, or if the string given as
    --  Name is not a possible simple name (if Extension is null) or base name
    --  (if Extension is non-null).
+
+   function Name_Case_Equivalence (Name : String) return Name_Case_Kind;
+   --  Returns the file-name equivalence rule for the directory containing
+   --  Name. Raises Name_Error if Name is not a full name. Returns
+   --  Case_Sensitive if file names that differ only in the case of letters are
+   --  considered different names. If file names that differ only in the case
+   --  of letters are considered the same name, then Case_Preserving is
+   --  returned if names have the case of the file name used when a file is
+   --  created; and Case_Insensitive is returned otherwise. Returns Unknown if
+   --  the file-name equivalence is not known.
 
    --------------------------------
    -- File and directory queries --

@@ -850,20 +850,14 @@ struct arm_build_target arm_active_target;
 /* The following are used in the arm.md file as equivalents to bits
    in the above two flag variables.  */
 
-/* Nonzero if this chip supports the ARM Architecture 3M extensions.  */
-int arm_arch3m = 0;
-
 /* Nonzero if this chip supports the ARM Architecture 4 extensions.  */
 int arm_arch4 = 0;
 
 /* Nonzero if this chip supports the ARM Architecture 4t extensions.  */
 int arm_arch4t = 0;
 
-/* Nonzero if this chip supports the ARM Architecture 5 extensions.  */
-int arm_arch5 = 0;
-
-/* Nonzero if this chip supports the ARM Architecture 5E extensions.  */
-int arm_arch5e = 0;
+/* Nonzero if this chip supports the ARM Architecture 5T extensions.  */
+int arm_arch5t = 0;
 
 /* Nonzero if this chip supports the ARM Architecture 5TE extensions.  */
 int arm_arch5te = 0;
@@ -2958,9 +2952,10 @@ static GTY(()) tree init_optimize;
 static void
 arm_override_options_after_change_1 (struct gcc_options *opts)
 {
-  if (opts->x_align_functions <= 0)
-    opts->x_align_functions = TARGET_THUMB_P (opts->x_target_flags)
-      && opts->x_optimize_size ? 2 : 4;
+  /* -falign-functions without argument: supply one.  */
+  if (opts->x_flag_align_functions && !opts->x_str_align_functions)
+    opts->x_str_align_functions = TARGET_THUMB_P (opts->x_target_flags)
+      && opts->x_optimize_size ? "2" : "4";
 }
 
 /* Implement targetm.override_options_after_change.  */
@@ -3005,7 +3000,8 @@ arm_option_override_internal (struct gcc_options *opts,
   if (TARGET_INTERWORK && !bitmap_bit_p (arm_active_target.isa, isa_bit_thumb))
     {
       /* The default is to enable interworking, so this warning message would
-	 be confusing to users who have just compiled with, eg, -march=armv3.  */
+	 be confusing to users who have just compiled with
+	 eg, -march=armv4.  */
       /* warning (0, "ignoring -minterwork because target CPU does not support THUMB"); */
       opts->x_target_flags &= ~MASK_INTERWORK;
     }
@@ -3237,17 +3233,7 @@ arm_configure_build_target (struct arm_build_target *target,
 	 switches that require certain abilities from the cpu.  */
 
       if (TARGET_INTERWORK || TARGET_THUMB)
-	{
-	  bitmap_set_bit (sought_isa, isa_bit_thumb);
-	  bitmap_set_bit (sought_isa, isa_bit_mode32);
-
-	  /* There are no ARM processors that support both APCS-26 and
-	     interworking.  Therefore we forcibly remove MODE26 from
-	     from the isa features here (if it was set), so that the
-	     search below will always be able to find a compatible
-	     processor.  */
-	  bitmap_clear_bit (default_isa, isa_bit_mode26);
-	}
+	bitmap_set_bit (sought_isa, isa_bit_thumb);
 
       /* If there are such requirements and the default CPU does not
 	 satisfy them, we need to run over the complete list of
@@ -3639,13 +3625,10 @@ arm_option_reconfigure_globals (void)
 
   /* Initialize boolean versions of the architectural flags, for use
      in the arm.md file.  */
-  arm_arch3m = bitmap_bit_p (arm_active_target.isa, isa_bit_armv3m);
   arm_arch4 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv4);
   arm_arch4t = arm_arch4 && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
-  arm_arch5 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5);
-  arm_arch5e = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5e);
-  arm_arch5te = arm_arch5e
-    && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
+  arm_arch5t =  bitmap_bit_p (arm_active_target.isa, isa_bit_armv5t);
+  arm_arch5te = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5te);
   arm_arch6 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6);
   arm_arch6k = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6k);
   arm_arch_notm = bitmap_bit_p (arm_active_target.isa, isa_bit_notm);
@@ -3694,7 +3677,7 @@ arm_option_reconfigure_globals (void)
 void
 arm_options_perform_arch_sanity_checks (void)
 {
-  /* V5 code we generate is completely interworking capable, so we turn off
+  /* V5T code we generate is completely interworking capable, so we turn off
      TARGET_INTERWORK here to avoid many tests later on.  */
 
   /* XXX However, we must pass the right pre-processor defines to CPP
@@ -3702,7 +3685,7 @@ arm_options_perform_arch_sanity_checks (void)
   if (TARGET_INTERWORK)
     arm_cpp_interwork = 1;
 
-  if (arm_arch5)
+  if (arm_arch5t)
     target_flags &= ~MASK_INTERWORK;
 
   if (TARGET_IWMMXT && !ARM_DOUBLEWORD_ALIGN)
@@ -4061,10 +4044,10 @@ use_return_insn (int iscond, rtx sibling)
      the other registers, since that is never slower than executing
      another instruction.
 
-     We test for !arm_arch5 here, because code for any architecture
+     We test for !arm_arch5t here, because code for any architecture
      less than this could potentially be run on one of the buggy
      chips.  */
-  if (stack_adjust == 4 && !arm_arch5 && TARGET_ARM)
+  if (stack_adjust == 4 && !arm_arch5t && TARGET_ARM)
     {
       /* Validate that r3 is a call-clobbered register (always true in
 	 the default abi) ...  */
@@ -10010,8 +9993,7 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
       if (mode == DImode)
 	{
-	  if (arm_arch3m
-	      && GET_CODE (XEXP (x, 0)) == MULT
+	  if (GET_CODE (XEXP (x, 0)) == MULT
 	      && ((GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND
 		   && GET_CODE (XEXP (XEXP (x, 0), 1)) == ZERO_EXTEND)
 		  || (GET_CODE (XEXP (XEXP (x, 0), 0)) == SIGN_EXTEND
@@ -10209,11 +10191,10 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
       if (mode == DImode)
 	{
-	  if (arm_arch3m
-	      && ((GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
-		   && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
-		  || (GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
-		      && GET_CODE (XEXP (x, 1)) == SIGN_EXTEND)))
+	  if ((GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+		&& GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+	       || (GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+		   && GET_CODE (XEXP (x, 1)) == SIGN_EXTEND))
 	    {
 	      if (speed_p)
 		*cost += extra_cost->mult[1].extend;
@@ -15957,7 +15938,7 @@ get_label_padding (rtx label)
 {
   HOST_WIDE_INT align, min_insn_size;
 
-  align = 1 << label_to_alignment (label);
+  align = 1 << label_to_alignment (label).levels[0].log;
   min_insn_size = TARGET_THUMB ? 2 : 4;
   return align > min_insn_size ? align - min_insn_size : 0;
 }
@@ -18097,7 +18078,7 @@ arm_emit_call_insn (rtx pat, rtx addr, bool sibcall)
 const char *
 output_call (rtx *operands)
 {
-  gcc_assert (!arm_arch5); /* Patterns should call blx <reg> directly.  */
+  gcc_assert (!arm_arch5t); /* Patterns should call blx <reg> directly.  */
 
   /* Handle calls to lr using ip (which may be clobbered in subr anyway).  */
   if (REGNO (operands[0]) == LR_REGNUM)
@@ -18483,12 +18464,18 @@ output_move_double (rtx *operands, bool emit, int *count)
       gcc_assert ((REGNO (operands[1]) != IP_REGNUM)
                   || (TARGET_ARM && TARGET_LDRD));
 
+      /* For TARGET_ARM the first source register of an STRD
+	 must be even.  This is usually the case for double-word
+	 values but user assembly constraints can force an odd
+	 starting register.  */
+      bool allow_strd = TARGET_LDRD
+			 && !(TARGET_ARM && (REGNO (operands[1]) & 1) == 1);
       switch (GET_CODE (XEXP (operands[0], 0)))
         {
 	case REG:
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (allow_strd)
 		output_asm_insn ("strd%?\t%1, [%m0]", operands);
 	      else
 		output_asm_insn ("stm%?\t%m0, %M1", operands);
@@ -18496,7 +18483,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  break;
 
         case PRE_INC:
-	  gcc_assert (TARGET_LDRD);
+	  gcc_assert (allow_strd);
 	  if (emit)
 	    output_asm_insn ("strd%?\t%1, [%m0, #8]!", operands);
 	  break;
@@ -18504,7 +18491,7 @@ output_move_double (rtx *operands, bool emit, int *count)
         case PRE_DEC:
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (allow_strd)
 		output_asm_insn ("strd%?\t%1, [%m0, #-8]!", operands);
 	      else
 		output_asm_insn ("stmdb%?\t%m0!, %M1", operands);
@@ -18514,7 +18501,7 @@ output_move_double (rtx *operands, bool emit, int *count)
         case POST_INC:
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (allow_strd)
 		output_asm_insn ("strd%?\t%1, [%m0], #8", operands);
 	      else
 		output_asm_insn ("stm%?\t%m0!, %M1", operands);
@@ -18522,7 +18509,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  break;
 
         case POST_DEC:
-	  gcc_assert (TARGET_LDRD);
+	  gcc_assert (allow_strd);
 	  if (emit)
 	    output_asm_insn ("strd%?\t%1, [%m0], #-8", operands);
 	  break;
@@ -18533,8 +18520,8 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  otherops[1] = XEXP (XEXP (XEXP (operands[0], 0), 1), 0);
 	  otherops[2] = XEXP (XEXP (XEXP (operands[0], 0), 1), 1);
 
-	  /* IWMMXT allows offsets larger than ldrd can handle,
-	     fix these up with a pair of ldr.  */
+	  /* IWMMXT allows offsets larger than strd can handle,
+	     fix these up with a pair of str.  */
 	  if (!TARGET_THUMB2
 	      && CONST_INT_P (otherops[2])
 	      && (INTVAL(otherops[2]) <= -256
@@ -18599,7 +18586,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 		  return "";
 		}
 	    }
-	  if (TARGET_LDRD
+	  if (allow_strd
 	      && (REG_P (otherops[2])
 		  || TARGET_THUMB2
 		  || (CONST_INT_P (otherops[2])
@@ -19732,7 +19719,7 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 	      stack_adjust = offsets->outgoing_args - offsets->saved_regs;
 	      gcc_assert (stack_adjust == 0 || stack_adjust == 4);
 
-	      if (stack_adjust && arm_arch5 && TARGET_ARM)
+	      if (stack_adjust && arm_arch5t && TARGET_ARM)
 		  sprintf (instr, "ldmib%s\t%%|sp, {", conditional);
 	      else
 		{
@@ -19807,7 +19794,7 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 	  break;
 
 	case ARM_FT_INTERWORKED:
-	  gcc_assert (arm_arch5 || arm_arch4t);
+	  gcc_assert (arm_arch5t || arm_arch4t);
 	  sprintf (instr, "bx%s\t%%|lr", conditional);
 	  break;
 
@@ -19855,7 +19842,7 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 	      snprintf (instr, sizeof (instr), "bxns\t%%|lr");
 	    }
 	  /* Use bx if it's available.  */
-	  else if (arm_arch5 || arm_arch4t)
+	  else if (arm_arch5t || arm_arch4t)
 	    sprintf (instr, "bx%s\t%%|lr", conditional);
 	  else
 	    sprintf (instr, "mov%s\t%%|pc, %%|lr", conditional);
@@ -23459,7 +23446,7 @@ arm_final_prescan_insn (rtx_insn *insn)
 		 used since they make interworking inefficient (the
 		 linker can't transform BL<cond> into BLX).  That's
 		 only a problem if the machine has BLX.  */
-	      if (arm_arch5)
+	      if (arm_arch5t)
 		{
 		  fail = TRUE;
 		  break;
@@ -31433,7 +31420,7 @@ arm_coproc_builtin_available (enum unspecv builtin)
       case VUNSPEC_MRC2:
 	/* Only present in ARMv5*, ARMv6 (but not ARMv6-M), ARMv7* and
 	   ARMv8-{A,M}.  */
-	if (arm_arch5)
+	if (arm_arch5t)
 	  return true;
 	break;
       case VUNSPEC_MCRR:
@@ -31525,8 +31512,8 @@ arm_can_change_mode_class (machine_mode from, machine_mode to,
 {
   if (TARGET_BIG_END
       && !(GET_MODE_SIZE (from) == 16 && GET_MODE_SIZE (to) == 8)
-      && (GET_MODE_SIZE (from) > UNITS_PER_WORD
-	  || GET_MODE_SIZE (to) > UNITS_PER_WORD)
+      && (GET_MODE_UNIT_SIZE (from) > UNITS_PER_WORD
+	  || GET_MODE_UNIT_SIZE (to) > UNITS_PER_WORD)
       && reg_classes_intersect_p (VFP_REGS, rclass))
     return false;
   return true;

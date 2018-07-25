@@ -350,12 +350,19 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
 {
   unsigned i, nargs;
   gcall *call;
-  tree fndecl = get_callee_fndecl (t);
 
   gcc_assert (TREE_CODE (t) == CALL_EXPR);
 
   nargs = call_expr_nargs (t);
-  call = gimple_build_call_1 (fndecl ? fndecl : CALL_EXPR_FN (t), nargs);
+
+  tree fndecl = NULL_TREE;
+  if (CALL_EXPR_FN (t) == NULL_TREE)
+    call = gimple_build_call_internal_1 (CALL_EXPR_IFN (t), nargs);
+  else
+    {
+      fndecl = get_callee_fndecl (t);
+      call = gimple_build_call_1 (fndecl ? fndecl : CALL_EXPR_FN (t), nargs);
+    }
 
   for (i = 0; i < nargs; i++)
     gimple_call_set_arg (call, i, CALL_EXPR_ARG (t, i));
@@ -378,7 +385,6 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
   gimple_call_set_nothrow (call, TREE_NOTHROW (t));
   gimple_call_set_by_descriptor (call, CALL_EXPR_BY_DESCRIPTOR (t));
   gimple_set_no_warning (call, TREE_NO_WARNING (t));
-  gimple_call_set_with_bounds (call, CALL_WITH_BOUNDS_P (t));
 
   if (fnptrtype)
     {
@@ -1542,6 +1548,57 @@ gimple_call_return_flags (const gcall *stmt)
 }
 
 
+/* Return true if call STMT is known to return a non-zero result.  */
+
+bool
+gimple_call_nonnull_result_p (gcall *call)
+{
+  tree fndecl = gimple_call_fndecl (call);
+  if (!fndecl)
+    return false;
+  if (flag_delete_null_pointer_checks && !flag_check_new
+      && DECL_IS_OPERATOR_NEW (fndecl)
+      && !TREE_NOTHROW (fndecl))
+    return true;
+
+  /* References are always non-NULL.  */
+  if (flag_delete_null_pointer_checks
+      && TREE_CODE (TREE_TYPE (fndecl)) == REFERENCE_TYPE)
+    return true;
+
+  if (flag_delete_null_pointer_checks
+      && lookup_attribute ("returns_nonnull",
+			   TYPE_ATTRIBUTES (gimple_call_fntype (call))))
+    return true;
+  return gimple_alloca_call_p (call);
+}
+
+
+/* If CALL returns a non-null result in an argument, return that arg.  */
+
+tree
+gimple_call_nonnull_arg (gcall *call)
+{
+  tree fndecl = gimple_call_fndecl (call);
+  if (!fndecl)
+    return NULL_TREE;
+
+  unsigned rf = gimple_call_return_flags (call);
+  if (rf & ERF_RETURNS_ARG)
+    {
+      unsigned argnum = rf & ERF_RETURN_ARG_MASK;
+      if (argnum < gimple_call_num_args (call))
+	{
+	  tree arg = gimple_call_arg (call, argnum);
+	  if (SSA_VAR_P (arg)
+	      && infer_nonnull_range_by_attribute (call, arg))
+	    return arg;
+	}
+    }
+  return NULL_TREE;
+}
+
+
 /* Return true if GS is a copy assignment.  */
 
 bool
@@ -2143,8 +2200,7 @@ get_gimple_rhs_num_ops (enum tree_code code)
       || (SYM) == REALIGN_LOAD_EXPR					    \
       || (SYM) == VEC_COND_EXPR						    \
       || (SYM) == VEC_PERM_EXPR                                             \
-      || (SYM) == BIT_INSERT_EXPR					    \
-      || (SYM) == FMA_EXPR) ? GIMPLE_TERNARY_RHS			    \
+      || (SYM) == BIT_INSERT_EXPR) ? GIMPLE_TERNARY_RHS			    \
    : ((SYM) == CONSTRUCTOR						    \
       || (SYM) == OBJ_TYPE_REF						    \
       || (SYM) == ASSERT_EXPR						    \
@@ -3148,7 +3204,7 @@ static void
 verify_gimple_pp (const char *expected, gimple *stmt)
 {
   pretty_printer pp;
-  pp_gimple_stmt_1 (&pp, stmt, 0 /* spc */, 0 /* flags */);
+  pp_gimple_stmt_1 (&pp, stmt, 0 /* spc */, TDF_NONE /* flags */);
   ASSERT_STREQ (expected, pp_formatted_text (&pp));
 }
 

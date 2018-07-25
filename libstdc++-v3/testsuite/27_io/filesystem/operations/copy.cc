@@ -116,7 +116,7 @@ test03()
   auto to = __gnu_test::nonexistent_path();
 
   // test empty file
-  std::ofstream{from.native()};
+  std::ofstream{from};
   VERIFY( fs::exists(from) );
   VERIFY( fs::file_size(from) == 0 );
   fs::copy(from, to);
@@ -125,7 +125,7 @@ test03()
 
   remove(to);
   VERIFY( !fs::exists(to) );
-  std::ofstream{from.native()} << "Hello, filesystem!";
+  std::ofstream{from} << "Hello, filesystem!";
   VERIFY( fs::file_size(from) != 0 );
   fs::copy(from, to);
   VERIFY( fs::exists(to) );

@@ -1,5 +1,5 @@
 /* { dg-do run { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
-/* { dg-options "-g" } */
+/* { dg-options "-g -fno-ipa-icf" } */
 
 volatile int vv;
 
@@ -9,7 +9,7 @@ foo (long x)
   long f = __builtin_ctzl (x);
   long g = f;
   asm volatile ("" : "+r" (f));
-  vv++;		/* { dg-final { gdb-test 12 "g" "f" } } */
+  vv++;		/* { dg-final { gdb-test . "g" "f" } } */
   return f;
 }
 
@@ -19,7 +19,7 @@ bar (long x)
   long f = __builtin_ctzl (x);
   long g = f;
   asm volatile ("" : "+r" (f));
-  vv++;		/* { dg-final { gdb-test 22 "g" "f" } } */
+  vv++;		/* { dg-final { gdb-test . "g" "f" } } */
   return f;
 }
 

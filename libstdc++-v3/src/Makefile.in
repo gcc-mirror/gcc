@@ -152,7 +152,7 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	$(RECURSIVE_CLEAN_TARGETS:-recursive=) tags TAGS ctags CTAGS
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = c++98 c++11 filesystem
+DIST_SUBDIRS = c++98 c++11 c++17 filesystem
 ABI_TWEAKS_SRCDIR = @ABI_TWEAKS_SRCDIR@
 ACLOCAL = @ACLOCAL@
 ALLOCATOR_H = @ALLOCATOR_H@
@@ -267,7 +267,6 @@ VTV_CXXFLAGS = @VTV_CXXFLAGS@
 VTV_CXXLINKFLAGS = @VTV_CXXLINKFLAGS@
 VTV_PCH_CXXFLAGS = @VTV_PCH_CXXFLAGS@
 WARN_FLAGS = @WARN_FLAGS@
-WERROR = @WERROR@
 XMLLINT = @XMLLINT@
 XSLTPROC = @XSLTPROC@
 XSL_STYLE_DIR = @XSL_STYLE_DIR@
@@ -363,7 +362,7 @@ STAMP = echo timestamp >
 toolexecdir = $(glibcxx_toolexecdir)
 toolexeclibdir = $(glibcxx_toolexeclibdir)
 @ENABLE_WERROR_FALSE@WERROR_FLAG = 
-@ENABLE_WERROR_TRUE@WERROR_FLAG = $(WERROR)
+@ENABLE_WERROR_TRUE@WERROR_FLAG = -Werror
 @ENABLE_EXTERN_TEMPLATE_FALSE@XTEMPLATE_FLAGS = 
 @ENABLE_EXTERN_TEMPLATE_TRUE@XTEMPLATE_FLAGS = -fno-implicit-templates
 
@@ -380,7 +379,7 @@ WARN_CXXFLAGS = \
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 @ENABLE_FILESYSTEM_TS_FALSE@filesystem_dir = 
 @ENABLE_FILESYSTEM_TS_TRUE@filesystem_dir = filesystem
-SUBDIRS = c++98 c++11 $(filesystem_dir)
+SUBDIRS = c++98 c++11 c++17 $(filesystem_dir)
 @VTV_CYGMIN_FALSE@toolexeclib_LTLIBRARIES = libstdc++.la
 
 # Cross compiler support.
@@ -420,13 +419,15 @@ libstdc___la_LIBADD = \
 	$(GLIBCXX_LIBS) \
 	$(top_builddir)/libsupc++/libsupc++convenience.la \
 	$(top_builddir)/src/c++98/libc++98convenience.la \
-	$(top_builddir)/src/c++11/libc++11convenience.la
+	$(top_builddir)/src/c++11/libc++11convenience.la \
+	$(top_builddir)/src/c++17/libc++17convenience.la
 
 libstdc___la_DEPENDENCIES = \
 	${version_dep} \
 	$(top_builddir)/libsupc++/libsupc++convenience.la \
 	$(top_builddir)/src/c++98/libc++98convenience.la \
-	$(top_builddir)/src/c++11/libc++11convenience.la
+	$(top_builddir)/src/c++11/libc++11convenience.la \
+	$(top_builddir)/src/c++17/libc++17convenience.la
 
 libstdc___la_LDFLAGS = \
 	-version-info $(libtool_VERSION) ${version_arg} -lm
@@ -441,8 +442,8 @@ libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
 # Thus, the shared libs have more compat symbols, which can be found
 # segregated in the sources with -D_GLIBCXX_SHARED.
 #
-# In the sub-directories of libsupc++, src/c++98, src/c++11, only
-# -prefer-pic objects are generated for the convenience libraries.
+# In the sub-directories of libsupc++, src/c++98, src/c++11, src/c++17,
+# only -prefer-pic objects are generated for the convenience libraries.
 #
 # In the main src directory, make shared and static objects just for
 # the compat libraries. Shared objects are compiled with -prefer-pic
@@ -901,6 +902,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 vpath % $(top_srcdir)/src/c++98
 vpath % $(top_srcdir)/src/c++11
+vpath % $(top_srcdir)/src/c++17
 @ENABLE_FILESYSTEM_TS_TRUE@vpath % $(top_srcdir)/src/filesystem
 
 # Use special rules for compatibility-ldbl.cc compilation, as we need to

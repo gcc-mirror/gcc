@@ -678,6 +678,20 @@ package GNAT.Command_Line is
    --  so that you can specify the default value directly in the declaration
    --  of the variable). The switch must accept an argument.
 
+   type Value_Callback is access procedure (Switch, Value : String);
+
+   procedure Define_Switch
+     (Config      : in out Command_Line_Configuration;
+      Callback    : not null Value_Callback;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "";
+      Argument    : String := "ARG");
+   --  Call Callback for each instance of Switch. The callback is given the
+   --  actual switch and the corresponding value. The switch must accept
+   --  an argument.
+
    procedure Set_Usage
      (Config   : in out Command_Line_Configuration;
       Usage    : String := "[switches] [arguments]";
@@ -689,7 +703,8 @@ package GNAT.Command_Line is
    --  automatically generated list of supported switches.
 
    procedure Display_Help (Config : Command_Line_Configuration);
-   --  Display the help for the tool (ie its usage, and its supported switches)
+   --  Display the help for the tool (i.e. its usage, and its supported
+   --  switches).
 
    function Get_Switches
      (Config      : Command_Line_Configuration;
@@ -829,9 +844,9 @@ package GNAT.Command_Line is
    --
    --  This function can be used to reset Cmd by passing an empty string
    --
-   --  If an invalid switch is found on the command line (ie wasn't defined in
-   --  the configuration via Define_Switch), and the configuration wasn't set
-   --  to accept all switches (by defining "*" as a valid switch), then an
+   --  If an invalid switch is found on the command line (i.e. wasn't defined
+   --  in the configuration via Define_Switch), and the configuration wasn't
+   --  set to accept all switches (by defining "*" as a valid switch), then an
    --  exception Invalid_Switch is raised. The exception message indicates the
    --  invalid switch.
 
@@ -882,7 +897,7 @@ package GNAT.Command_Line is
    --     -from bar
    --
    --  Note however that Getopt doesn't know how to handle ":" as a separator.
-   --  So the recommendation is to declare the switch as "-from!" (ie no
+   --  So the recommendation is to declare the switch as "-from!" (i.e. no
    --  space between the switch and its parameter). Then Getopt will return
    --  ":bar" as the parameter, and you can trim the ":" in your application.
    --
@@ -1111,7 +1126,8 @@ private
    type Switch_Type is (Switch_Untyped,
                         Switch_Boolean,
                         Switch_Integer,
-                        Switch_String);
+                        Switch_String,
+                        Switch_Callback);
 
    type Switch_Definition (Typ : Switch_Type := Switch_Untyped) is record
       Switch      : GNAT.OS_Lib.String_Access;
@@ -1135,6 +1151,8 @@ private
             Integer_Default : Integer;
          when Switch_String =>
             String_Output   : access GNAT.Strings.String_Access;
+         when Switch_Callback =>
+            Callback        : Value_Callback;
       end case;
    end record;
    type Switch_Definitions is array (Natural range <>) of Switch_Definition;

@@ -9,6 +9,11 @@
 
 
 
+#if defined( AIX_UNISTD_CHECK )
+	static int		getdtablesize(void)
+#endif  /* AIX_UNISTD_CHECK */
+
+
 #if defined( ALPHA_SBRK_CHECK )
 extern void *sbrk(ptrdiff_t increment);
 #endif  /* ALPHA_SBRK_CHECK */

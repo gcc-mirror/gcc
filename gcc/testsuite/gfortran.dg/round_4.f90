@@ -1,4 +1,4 @@
-! { dg-do run { xfail i386-*-freebsd* } }
+! { dg-do run { xfail i?86-*-freebsd* } }
 ! { dg-add-options ieee }
 ! { dg-skip-if "PR libfortran/58015" { hppa*-*-hpux* } }
 ! { dg-skip-if "IBM long double 31 bits of precision, test requires 38" { powerpc*-*-linux* } }

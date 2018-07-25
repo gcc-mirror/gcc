@@ -1199,7 +1199,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
       end Saturate;
 
       -------------
-      -- vmulsxs --
+      -- vmulxsx --
       -------------
 
       function vmulxsx
@@ -2994,9 +2994,9 @@ package body GNAT.Altivec.Low_Level_Vectors is
       return To_Vector (D);
    end vmaxsw;
 
-   --------------
-   -- vmaxsxfp --
-   --------------
+   ------------
+   -- vmaxfp --
+   ------------
 
    function vmaxfp (A : LL_VF; B : LL_VF) return LL_VF is
       VA : constant VF_View := To_View (A);
@@ -3279,7 +3279,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
    end vmsumubm;
 
    --------------
-   -- vmsumumbm --
+   -- vmsummbm --
    --------------
 
    function vmsummbm (A : LL_VSC; B : LL_VSC; C : LL_VSI) return LL_VSI is
@@ -4347,7 +4347,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
    end stvx;
 
    ------------
-   -- stvewx --
+   -- stvebx --
    ------------
 
    procedure stvebx (A : LL_VSC; B : c_int; C : c_ptr) is

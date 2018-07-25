@@ -34,12 +34,103 @@
 #  include <sys/stat.h>
 # endif
 #endif
+#if !_GLIBCXX_USE_UTIMENSAT && _GLIBCXX_HAVE_UTIME_H
+# include <utime.h> // utime
+#endif
+
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+# include <wchar.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace filesystem
 {
+namespace __gnu_posix
+{
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+// Adapt the Windows _wxxx functions to look like POSIX xxx, but for wchar_t*.
+  inline int open(const wchar_t* path, int flags)
+  { return ::_wopen(path, flags); }
+
+  inline int open(const wchar_t* path, int flags, int mode)
+  { return ::_wopen(path, flags, mode); }
+
+  inline int close(int fd)
+  { return ::_close(fd); }
+
+  typedef struct ::_stat stat_type;
+
+  inline int stat(const wchar_t* path, stat_type* buffer)
+  { return ::_wstat(path, buffer); }
+
+  inline lstat(const wchar_t* path, stat_type* buffer)
+  {
+    // TODO symlinks not currently supported
+    return stat(path, buffer);
+  }
+
+  using ::mode_t;
+
+  inline int chmod(const wchar_t* path, mode_t mode)
+  { return ::_wchmod(path, mode); }
+
+  inline int mkdir(const wchar_t* path, mode_t)
+  { return ::_wmkdir(path); }
+
+  inline wchar_t* getcwd(wchar_t* buf, size_t size)
+  { return ::_wgetcwd(buf, size > (size_t)INT_MAX ? INT_MAX : (int)size); }
+
+  inline int chdir(const wchar_t* path)
+  { return ::_wchdir(path); }
+
+#if !_GLIBCXX_USE_UTIMENSAT && _GLIBCXX_HAVE_UTIME_H
+  using utimbuf = _utimbuf;
+
+  inline int utime(const wchar_t* path, utimbuf* times)
+  { return ::_wutime(path, times); }
+#endif
+
+  inline int rename(const wchar_t* oldname, const wchar_t* newname)
+  { return _wrename(oldname, newname); }
+
+  inline int truncate(const wchar_t* path, _off64_t length)
+  {
+    const int fd = ::_wopen(path, _O_BINARY|_O_RDWR);
+    if (fd == -1)
+      return fd;
+    const int ret = ::ftruncate64(fd, length);
+    int err;
+    ::_get_errno(&err);
+    ::_close(fd);
+    ::_set_errno(err);
+    return ret;
+  }
+  using char_type = wchar_t;
+#else // _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  using ::open;
+  using ::close;
+#ifdef _GLIBCXX_HAVE_SYS_STAT_H
+  typedef struct ::stat stat_type;
+  using ::stat;
+  using ::lstat;
+#endif
+  using ::mode_t;
+  using ::chmod;
+  using ::mkdir;
+  using ::getcwd;
+  using ::chdir;
+#if !_GLIBCXX_USE_UTIMENSAT && _GLIBCXX_HAVE_UTIME_H
+  using ::utimbuf;
+  using ::utime;
+#endif
+  using ::rename;
+  using ::truncate;
+  using char_type = char;
+#endif // _GLIBCXX_FILESYSTEM_IS_WINDOWS
+} // namespace __gnu_posix
+
   template<typename Bitmask>
     inline bool is_set(Bitmask obj, Bitmask bits)
     {
@@ -53,7 +144,7 @@ namespace filesystem
   }
 
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
-  typedef struct ::stat stat_type;
+  using __gnu_posix::stat_type;
 
   inline std::chrono::system_clock::time_point
   file_time(const stat_type& st, std::error_code& ec) noexcept
@@ -82,10 +173,16 @@ namespace filesystem
   };
 
   bool
-  do_copy_file(const char* from, const char* to,
+  do_copy_file(const __gnu_posix::char_type* from,
+	       const __gnu_posix::char_type* to,
 	       copy_options_existing_file options,
 	       stat_type* from_st, stat_type* to_st,
 	       std::error_code& ec) noexcept;
+
+  void
+  do_space(const __gnu_posix::char_type* pathname,
+	   uintmax_t& capacity, uintmax_t& free, uintmax_t& available,
+	   std::error_code&);
 
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
 
@@ -95,7 +192,7 @@ namespace filesystem
 _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
-  typedef struct ::stat stat_type;
+  using std::filesystem::__gnu_posix::stat_type;
 
   inline file_type
   make_file_type(const stat_type& st) noexcept
@@ -111,8 +208,10 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       return file_type::block;
     else if (S_ISFIFO(st.st_mode))
       return file_type::fifo;
+#ifdef S_ISLNK // not present in mingw
     else if (S_ISLNK(st.st_mode))
       return file_type::symlink;
+#endif
 #ifdef S_ISSOCK // not present until POSIX:2001
     else if (S_ISSOCK(st.st_mode))
       return file_type::socket;

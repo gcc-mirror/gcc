@@ -18,10 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* VxWorks headers are C++-aware.  */
-#undef  NO_IMPLICIT_EXTERN_C
-#define NO_IMPLICIT_EXTERN_C
-
 /* Most of these will probably be overridden by subsequent headers.  We
    undefine them here just in case, and define VXWORKS_ versions of each,
    to be used in port-specific vxworks.h.  */
@@ -90,3 +86,10 @@ along with GCC; see the file COPYING3.  If not see
 /* We occasionally need to distinguish between the VxWorks variants.  */
 #define VXWORKS_KIND_NORMAL  1
 #define VXWORKS_KIND_AE      2
+
+/*
+ * libitm is not supported on VxWorks. Rather than providing stub
+ * no-op _ITM_registerTMCloneTable/_ITM_deregisterTMCloneTable
+ * functions, simply prevent crtstuff from even referring to those.
+ */
+#define USE_TM_CLONE_REGISTRY 0

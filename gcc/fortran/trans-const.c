@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gfortran.h"
 #include "trans.h"
-#include "diagnostic-core.h"	/* For fatal_error.  */
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "realmpfr.h"
@@ -368,9 +367,7 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 				     expr->representation.string);
 
     default:
-      fatal_error (input_location,
-		   "gfc_conv_constant_to_tree(): invalid type: %s",
-		   gfc_typename (&expr->ts));
+      gcc_unreachable ();
     }
 }
 

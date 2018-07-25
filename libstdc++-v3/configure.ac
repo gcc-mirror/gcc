@@ -175,7 +175,7 @@ GLIBCXX_ENABLE_CXX_FLAGS
 GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 GLIBCXX_ENABLE_EXTERN_TEMPLATE([yes])
 GLIBCXX_ENABLE_PYTHON
-GLIBCXX_ENABLE_WERROR([yes])
+GLIBCXX_ENABLE_WERROR([no])
 GLIBCXX_ENABLE_VTABLE_VERIFY([no])
 
 # Checks for operating systems support that doesn't require linking.
@@ -263,6 +263,7 @@ if $GLIBCXX_IS_NATIVE; then
 
   AC_CHECK_FUNCS(__cxa_thread_atexit_impl __cxa_thread_atexit)
   AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
+  AC_CHECK_FUNCS(_wfopen)
 
   # For iconv support.
   AM_ICONV

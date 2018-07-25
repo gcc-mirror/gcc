@@ -4643,8 +4643,8 @@ c_decl_attributes (tree *node, tree attributes, int flags)
     {
       if (VAR_P (*node)
 	  && !lang_hooks.types.omp_mappable_type (TREE_TYPE (*node)))
-	error ("%q+D in declare target directive does not have mappable type",
-	       *node);
+	attributes = tree_cons (get_identifier ("omp declare target implicit"),
+				NULL_TREE, attributes);
       else
 	attributes = tree_cons (get_identifier ("omp declare target"),
 				NULL_TREE, attributes);
@@ -5223,7 +5223,27 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	diagnose_uninitialized_cst_member (decl, type);
     }
 
-	invoke_plugin_callbacks (PLUGIN_FINISH_DECL, decl);
+  if (flag_openmp
+      && VAR_P (decl)
+      && lookup_attribute ("omp declare target implicit",
+			   DECL_ATTRIBUTES (decl)))
+    {
+      DECL_ATTRIBUTES (decl)
+	= remove_attribute ("omp declare target implicit",
+			    DECL_ATTRIBUTES (decl));
+      if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (decl)))
+	error ("%q+D in declare target directive does not have mappable type",
+	       decl);
+      else if (!lookup_attribute ("omp declare target",
+				  DECL_ATTRIBUTES (decl))
+	       && !lookup_attribute ("omp declare target link",
+				     DECL_ATTRIBUTES (decl)))
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("omp declare target"),
+		       NULL_TREE, DECL_ATTRIBUTES (decl));
+    }
+
+  invoke_plugin_callbacks (PLUGIN_FINISH_DECL, decl);
 }
 
 /* Given a parsed parameter declaration, decode it into a PARM_DECL.
@@ -5758,7 +5778,7 @@ grokdeclarator (const struct c_declarator *declarator,
       /* Issue a warning if this is an ISO C 99 program or if
 	 -Wreturn-type and this is a function, or if -Wimplicit;
 	 prefer the former warning since it is more explicit.  */
-      if ((warn_implicit_int || warn_return_type || flag_isoc99)
+      if ((warn_implicit_int || warn_return_type > 0 || flag_isoc99)
 	  && funcdef_flag)
 	warn_about_return_type = 1;
       else
@@ -8752,7 +8772,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 
   if (warn_about_return_type)
     warn_defaults_to (loc, flag_isoc99 ? OPT_Wimplicit_int
-			   : (warn_return_type ? OPT_Wreturn_type
+			   : (warn_return_type > 0 ? OPT_Wreturn_type
 			      : OPT_Wimplicit_int),
 		      "return type defaults to %<int%>");
 
@@ -9463,8 +9483,9 @@ finish_function (void)
 
   finish_fname_decls ();
 
-  /* Complain if there's just no return statement.  */
-  if (warn_return_type
+  /* Complain if there's no return statement only if option specified on
+     command line.  */
+  if (warn_return_type > 0
       && TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) != VOID_TYPE
       && !current_function_returns_value && !current_function_returns_null
       /* Don't complain if we are no-return.  */
@@ -9607,6 +9628,10 @@ check_for_loop_decls (location_t loc, bool turn_off_iso_c99_error)
 	}
       return NULL_TREE;
     }
+  else
+    pedwarn_c90 (loc, OPT_Wpedantic, "ISO C90 does not support %<for%> loop "
+		 "initial declarations");
+
   /* C99 subclause 6.8.5 paragraph 3:
 
        [#3]  The  declaration  part  of  a for statement shall only

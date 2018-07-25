@@ -96,11 +96,7 @@ extern int insn_current_reference_address (rtx_insn *);
 
 /* Find the alignment associated with a CODE_LABEL.
    Defined in final.c.  */
-extern int label_to_alignment (rtx);
-
-/* Find the alignment maximum skip associated with a CODE_LABEL.
-   Defined in final.c.  */
-extern int label_to_max_skip (rtx);
+extern align_flags label_to_alignment (rtx);
 
 /* Output a LABEL_REF, or a bare CODE_LABEL, as an assembler symbol.  */
 extern void output_asm_label (rtx);
@@ -149,7 +145,7 @@ extern int only_leaf_regs_used (void);
 extern void leaf_renumber_regs_insn (rtx);
 
 /* Locate the proper template for the given insn-code.  */
-extern const char *get_insn_template (int, rtx);
+extern const char *get_insn_template (int, rtx_insn *);
 
 /* Functions in varasm.c.  */
 

@@ -138,6 +138,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       reverse_iterator(const reverse_iterator& __x)
       : current(__x.current) { }
 
+#if __cplusplus >= 201103L
+      reverse_iterator& operator=(const reverse_iterator&) = default;
+#endif
+
       /**
        *  A %reverse_iterator across other types can be copied if the
        *  underlying %iterator can be converted to the type of @c current.

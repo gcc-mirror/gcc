@@ -1,3 +1,19 @@
+2018-06-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libitm/85988
+	* config/linux/x86/tls.h (SEG_READ): Use the offset of
+	__private_tm as base.
+	(SEG_WRITE): Likewise.
+	(SEG_ENCODE_WRITE): Correct the offset of pointer_guard for x32.
+	(gtm_thr): Replace SEG_READ(10) with SEG_READ(0).
+	(set_gtm_thr): Replace SEG_WRITE(10) with SEG_WRITE(0).
+	(abi_disp): Replace SEG_DECODE_READ(11) with SEG_DECODE_READ(1).
+	(set_abi_disp): Replace SEG_ENCODE_WRITE(11) with
+
+2018-05-17  Jason Merrill  <jason@redhat.com>
+
+	* beginend.cc (save): Disable -Werror=deprecated-copy.
+
 2018-05-02  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/85106

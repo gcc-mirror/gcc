@@ -212,9 +212,9 @@ arm_cpu_builtins (struct cpp_reader* pfile)
     {
       int coproc_level = 0x1;
 
-      if (arm_arch5)
+      if (arm_arch5t)
 	coproc_level |= 0x2;
-      if (arm_arch5e)
+      if (arm_arch5te)
 	coproc_level |= 0x4;
       if (arm_arch6)
 	coproc_level |= 0x8;

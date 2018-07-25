@@ -32,10 +32,10 @@ main ()
   struct T t;
   struct U x = foo ("this is x");
   struct S y, z;
-  y.b = n;		/* { dg-final { gdb-test 38 "t.a.a" "17" } } */
-  y.a = 0;		/* { dg-final { gdb-test 38 "*t.a.b" "17" } } */
-  bar (&t, 17, 21);	/* { dg-final { gdb-test 38 "t.b.a" "21" } } */
-  v++;			/* { dg-final { gdb-test 38 "*t.b.b" "21" } } */
+  y.b = n;		/* { dg-final { gdb-test .+3 "t.a.a" "17" } } */
+  y.a = 0;		/* { dg-final { gdb-test .+2 "*t.a.b" "17" } } */
+  bar (&t, 17, 21);	/* { dg-final { gdb-test .+1 "t.b.a" "21" } } */
+  v++;			/* { dg-final { gdb-test . "*t.b.b" "21" } } */
   z = y;
   return 0;
 }

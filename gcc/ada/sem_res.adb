@@ -142,6 +142,12 @@ package body Sem_Res is
    --  a call, so such an operator is not treated as predefined by this
    --  predicate.
 
+   procedure Preanalyze_And_Resolve
+     (N             : Node_Id;
+      T             : Entity_Id;
+      With_Freezing : Boolean);
+   --  Subsidiary of public versions of Preanalyze_And_Resolve.
+
    procedure Replace_Actual_Discriminants (N : Node_Id; Default : Node_Id);
    --  If a default expression in entry call N depends on the discriminants
    --  of the task, it must be replaced with a reference to the discriminant
@@ -1660,10 +1666,21 @@ package body Sem_Res is
    -- Preanalyze_And_Resolve --
    ----------------------------
 
-   procedure Preanalyze_And_Resolve (N : Node_Id; T : Entity_Id) is
-      Save_Full_Analysis : constant Boolean := Full_Analysis;
+   procedure Preanalyze_And_Resolve
+     (N             : Node_Id;
+      T             : Entity_Id;
+      With_Freezing : Boolean)
+   is
+      Save_Full_Analysis   : constant Boolean := Full_Analysis;
+      Save_Must_Not_Freeze : constant Boolean := Must_Not_Freeze (N);
 
    begin
+      pragma Assert (Nkind (N) in N_Subexpr);
+
+      if not With_Freezing then
+         Set_Must_Not_Freeze (N);
+      end if;
+
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
@@ -1690,6 +1707,16 @@ package body Sem_Res is
 
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
+      Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
+   end Preanalyze_And_Resolve;
+
+   ----------------------------
+   -- Preanalyze_And_Resolve --
+   ----------------------------
+
+   procedure Preanalyze_And_Resolve (N : Node_Id; T : Entity_Id) is
+   begin
+      Preanalyze_And_Resolve (N, T, With_Freezing => False);
    end Preanalyze_And_Resolve;
 
    --  Version without context type
@@ -1707,6 +1734,18 @@ package body Sem_Res is
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
    end Preanalyze_And_Resolve;
+
+   ------------------------------------------
+   -- Preanalyze_With_Freezing_And_Resolve --
+   ------------------------------------------
+
+   procedure Preanalyze_With_Freezing_And_Resolve
+     (N : Node_Id;
+      T : Entity_Id)
+   is
+   begin
+      Preanalyze_And_Resolve (N, T, With_Freezing => True);
+   end Preanalyze_With_Freezing_And_Resolve;
 
    ----------------------------------
    -- Replace_Actual_Discriminants --
@@ -2904,13 +2943,6 @@ package body Sem_Res is
             when N_Real_Literal =>
                Resolve_Real_Literal              (N, Ctx_Type);
 
-            when N_Reduction_Expression =>
-               null;
-               --  Resolve (Expression (N),              Ctx_Type);
-
-            when N_Reduction_Expression_Parameter =>
-               null;
-
             when N_Reference =>
                Resolve_Reference                 (N, Ctx_Type);
 
@@ -3674,10 +3706,15 @@ package body Sem_Res is
             --    read     IN, IN OUT
             --    write    IN OUT, OUT
 
-            Build_Variable_Reference_Marker
-              (N     => A,
-               Read  => Ekind (F) /= E_Out_Parameter,
-               Write => Ekind (F) /= E_In_Parameter);
+            if Needs_Variable_Reference_Marker
+                 (N        => A,
+                  Calls_OK => True)
+            then
+               Build_Variable_Reference_Marker
+                 (N     => A,
+                  Read  => Ekind (F) /= E_Out_Parameter,
+                  Write => Ekind (F) /= E_In_Parameter);
+            end if;
 
             Orig_A := Entity (A);
 
@@ -5287,12 +5324,20 @@ package body Sem_Res is
 
             Resolve (N, Universal_Integer);
 
-         elsif Etype (N) = T
-           and then B_Typ /= Universal_Fixed
-         then
-            --  Not a mixed-mode operation, resolve with context
+         elsif Etype (N) = T and then B_Typ /= Universal_Fixed then
 
-            Resolve (N, B_Typ);
+            --  If the operand is part of a fixed multiplication operation,
+            --  a conversion will be applied to each operand, so resolve it
+            --  with its own type.
+
+            if Nkind_In (Parent (N), N_Op_Divide, N_Op_Multiply) then
+               Resolve (N);
+
+            else
+               --  Not a mixed-mode operation, resolve with context
+
+               Resolve (N, B_Typ);
+            end if;
 
          elsif Etype (N) = Any_Fixed then
 
@@ -5368,7 +5413,7 @@ package body Sem_Res is
 
          --  A universal real conditional expression can appear in a fixed-type
          --  context and must be resolved with that context to facilitate the
-         --  code generation to the backend.
+         --  code generation in the back end.
 
          elsif Nkind_In (N, N_Case_Expression, N_If_Expression)
            and then Etype (N) = Universal_Real
@@ -6675,26 +6720,47 @@ package body Sem_Res is
                Cannot_Inline
                  ("cannot inline & (in default expression)?", N, Nam_UA);
 
-            --  Inlining should not be performed during pre-analysis
+            --  Inlining should not be performed during preanalysis
 
             elsif Full_Analysis then
 
-               --  Do not inline calls inside expression functions, as this
+               --  Do not inline calls inside expression functions or functions
+               --  generated by the front end for subtype predicates, as this
                --  would prevent interpreting them as logical formulas in
                --  GNATprove. Only issue a message when the body has been seen,
                --  otherwise this leads to spurious messages on callees that
                --  are themselves expression functions.
 
                if Present (Current_Subprogram)
-                 and then Is_Expression_Function_Or_Completion
-                            (Current_Subprogram)
+                 and then
+                   (Is_Expression_Function_Or_Completion (Current_Subprogram)
+                     or else Is_Predicate_Function (Current_Subprogram)
+                     or else Is_Invariant_Procedure (Current_Subprogram)
+                     or else Is_DIC_Procedure (Current_Subprogram))
                then
                   if Present (Body_Id)
                     and then Present (Body_To_Inline (Nam_Decl))
                   then
-                     Cannot_Inline
-                       ("cannot inline & (inside expression function)?",
-                        N, Nam_UA);
+                     if Is_Predicate_Function (Current_Subprogram) then
+                        Cannot_Inline
+                          ("cannot inline & (inside predicate)?",
+                           N, Nam_UA);
+
+                     elsif Is_Invariant_Procedure (Current_Subprogram) then
+                        Cannot_Inline
+                          ("cannot inline & (inside invariant)?",
+                           N, Nam_UA);
+
+                     elsif Is_DIC_Procedure (Current_Subprogram) then
+                        Cannot_Inline
+                        ("cannot inline & (inside Default_Initial_Condition)?",
+                         N, Nam_UA);
+
+                     else
+                        Cannot_Inline
+                          ("cannot inline & (inside expression function)?",
+                           N, Nam_UA);
+                     end if;
                   end if;
 
                --  With the one-pass inlining technique, a call cannot be
@@ -7300,7 +7366,13 @@ package body Sem_Res is
          end if;
       end if;
 
-      Mark_Use_Clauses (E);
+      --  We may be resolving an entity within expanded code, so a reference to
+      --  an entity should be ignored when calculating effective use clauses to
+      --  avoid inappropriate marking.
+
+      if Comes_From_Source (N) then
+         Mark_Use_Clauses (E);
+      end if;
    end Resolve_Entity_Name;
 
    -------------------
@@ -9033,7 +9105,6 @@ package body Sem_Res is
       elsif Ada_Version >= Ada_2005
         and then Is_Class_Wide_Type (Etype (L))
         and then Is_Interface (Etype (L))
-        and then Is_Class_Wide_Type (Etype (R))
         and then not Is_Interface (Etype (R))
       then
          return;
@@ -9110,22 +9181,51 @@ package body Sem_Res is
       end if;
 
       --  Ada 2005 (AI-231): Generate the null-excluding check in case of
-      --  assignment to a null-excluding object
+      --  assignment to a null-excluding object.
 
       if Ada_Version >= Ada_2005
         and then Can_Never_Be_Null (Typ)
         and then Nkind (Parent (N)) = N_Assignment_Statement
       then
-         if not Inside_Init_Proc then
+         if Inside_Init_Proc then
+
+            --  Decide whether to generate an if_statement around our
+            --  null-excluding check to avoid them on certain internal object
+            --  declarations by looking at the type the current Init_Proc
+            --  belongs to.
+
+            --  Generate:
+            --    if T1b_skip_null_excluding_check then
+            --       [constraint_error "access check failed"]
+            --    end if;
+
+            if Needs_Conditional_Null_Excluding_Check
+                (Etype (First_Formal (Enclosing_Init_Proc)))
+            then
+               Insert_Action (N,
+                 Make_If_Statement (Loc,
+                   Condition       =>
+                     Make_Identifier (Loc,
+                       New_External_Name
+                         (Chars (Typ), "_skip_null_excluding_check")),
+                   Then_Statements =>
+                     New_List (
+                       Make_Raise_Constraint_Error (Loc,
+                         Reason => CE_Access_Check_Failed))));
+
+            --  Otherwise, simply create the check
+
+            else
+               Insert_Action (N,
+                 Make_Raise_Constraint_Error (Loc,
+                   Reason => CE_Access_Check_Failed));
+            end if;
+         else
             Insert_Action
               (Compile_Time_Constraint_Error (N,
                  "(Ada 2005) null not allowed in null-excluding objects??"),
                Make_Raise_Constraint_Error (Loc,
                  Reason => CE_Access_Check_Failed));
-         else
-            Insert_Action (N,
-              Make_Raise_Constraint_Error (Loc,
-                Reason => CE_Access_Check_Failed));
          end if;
       end if;
 
@@ -9792,6 +9892,17 @@ package body Sem_Res is
       Resolve (L, Typ);
       Resolve (H, Base_Type (Typ));
 
+      --  Reanalyze the lower bound after both bounds have been analyzed, so
+      --  that the range is known to be static or not by now. This may trigger
+      --  more compile-time evaluation, which is useful for static analysis
+      --  with GNATprove. This is not needed for compilation or static analysis
+      --  with CodePeer, as full expansion does that evaluation then.
+
+      if GNATprove_Mode then
+         Set_Analyzed (L, False);
+         Resolve (L, Typ);
+      end if;
+
       --  Check for inappropriate range on unordered enumeration type
 
       if Bad_Unordered_Enumeration_Reference (N, Typ)
@@ -10071,6 +10182,17 @@ package body Sem_Res is
          Resolve (P, It1.Typ);
          Set_Etype (N, Typ);
          Set_Entity_With_Checks (S, Comp1);
+
+         --  The type of the context and that of the component are
+         --  compatible and in general identical, but if they are anonymous
+         --  access-to-subprogram types, the relevant type is that of the
+         --  component. This matters in Unnest_Subprograms mode, where the
+         --  relevant context is the one in which the type is declared, not
+         --  the point of use. This determines what activation record to use.
+
+         if Ekind (Typ) = E_Anonymous_Access_Subprogram_Type then
+            Set_Etype (N, Etype (Comp1));
+         end if;
 
       else
          --  Resolve prefix with its type
@@ -10717,7 +10839,9 @@ package body Sem_Res is
          --  whether the evaluation of the string will raise constraint error.
          --  Otherwise we need to transform the string literal into the
          --  corresponding character aggregate and let the aggregate code do
-         --  the checking.
+         --  the checking. We use the same transformation if the component
+         --  type has a static predicate, which will be applied to each
+         --  character when the aggregate is resolved.
 
          if Is_Standard_Character_Type (R_Typ) then
 
@@ -10754,7 +10878,9 @@ package body Sem_Res is
                      end if;
                   end loop;
 
-                  return;
+                  if not Has_Static_Predicate (C_Typ) then
+                     return;
+                  end if;
                end if;
             end;
          end if;
@@ -11788,7 +11914,7 @@ package body Sem_Res is
             Analyze_And_Resolve (String_Literal_Low_Bound (Subtype_Id));
 
             --  Build bona fide subtype for the string, and wrap it in an
-            --  unchecked conversion, because the backend expects the
+            --  unchecked conversion, because the back end expects the
             --  String_Literal_Subtype to have a static lower bound.
 
             Index_Subtype :=
@@ -11798,7 +11924,7 @@ package body Sem_Res is
             Set_Parent (Drange, N);
             Analyze_And_Resolve (Drange, Index_Type);
 
-            --  In the context, the Index_Type may already have a constraint,
+            --  In this context, the Index_Type may already have a constraint,
             --  so use common base type on string subtype. The base type may
             --  be used when generating attributes of the string, for example
             --  in the context of a slice assignment.
@@ -12634,7 +12760,7 @@ package body Sem_Res is
 
             if Ada_Version >= Ada_2012
               and then not Comes_From_Source (N)
-              and then N /= Original_Node (N)
+              and then Is_Rewrite_Substitution (N)
               and then Ekind (Target_Type) = E_General_Access_Type
               and then Ekind (Opnd_Type) = E_Anonymous_Access_Type
             then
@@ -13011,8 +13137,31 @@ package body Sem_Res is
       --  Here we have a real conversion error
 
       else
-         Conversion_Error_NE
-           ("invalid conversion, not compatible with }", N, Opnd_Type);
+         --  Check for missing regular with_clause when only a limited view of
+         --  target is available.
+
+         if From_Limited_With (Opnd_Type) and then In_Package_Body then
+            Conversion_Error_NE
+              ("invalid conversion, not compatible with limited view of }",
+               N, Opnd_Type);
+            Conversion_Error_NE
+              ("\add with_clause for& to current unit!", N, Scope (Opnd_Type));
+
+         elsif Is_Access_Type (Opnd_Type)
+           and then From_Limited_With (Designated_Type (Opnd_Type))
+           and then In_Package_Body
+         then
+            Conversion_Error_NE
+              ("invalid conversion, not compatible with }", N, Opnd_Type);
+            Conversion_Error_NE
+              ("\add with_clause for& to current unit!",
+               N, Scope (Designated_Type (Opnd_Type)));
+
+         else
+            Conversion_Error_NE
+              ("invalid conversion, not compatible with }", N, Opnd_Type);
+         end if;
+
          return False;
       end if;
    end Valid_Conversion;

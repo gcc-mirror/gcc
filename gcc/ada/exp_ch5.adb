@@ -164,7 +164,7 @@ package body Exp_Ch5 is
    --  is the original Assignment node.
 
    --------------------------------------
-   -- Build_Formal_Container_iteration --
+   -- Build_Formal_Container_Iteration --
    --------------------------------------
 
    procedure Build_Formal_Container_Iteration
@@ -237,6 +237,15 @@ package body Exp_Ch5 is
                     New_Occurrence_Of (Cursor, Loc)))),
           Statements => Stats,
           End_Label  => Empty);
+
+      --  If the contruct has a specified loop name, preserve it in the new
+      --  loop, for possible use in exit statements.
+
+      if Present (Identifier (N))
+        and then Comes_From_Source (Identifier (N))
+      then
+         Set_Identifier (New_Loop, Identifier (N));
+      end if;
    end Build_Formal_Container_Iteration;
 
    ------------------------------
@@ -2458,12 +2467,19 @@ package body Exp_Ch5 is
                   --  extension of a limited interface, and the actual is
                   --  limited. This is an error according to AI05-0087, but
                   --  is not caught at the point of instantiation in earlier
-                  --  versions.
+                  --  versions. We also must verify that the limited type does
+                  --  not come from source as corner cases may exist where
+                  --  an assignment was not intended like the pathological case
+                  --  of a raise expression within a return statement.
 
                   --  This is wrong, error messages cannot be issued during
                   --  expansion, since they would be missed in -gnatc mode ???
 
-                  Error_Msg_N ("assignment not available on limited type", N);
+                  if Comes_From_Source (N) then
+                     Error_Msg_N
+                       ("assignment not available on limited type", N);
+                  end if;
+
                   return;
                end if;
 
@@ -3250,6 +3266,12 @@ package body Exp_Ch5 is
       Set_Ekind (Cursor, E_Variable);
       Insert_Action (N, Init);
 
+      --  The loop parameter is declared by an object declaration, but within
+      --  the loop we must prevent user assignments to it; the following flag
+      --  accomplishes that.
+
+      Set_Is_Loop_Parameter (Element);
+
       --  Declaration for Element
 
       Elmt_Decl :=
@@ -3307,15 +3329,6 @@ package body Exp_Ch5 is
       Set_Warnings_Off (Element);
 
       Rewrite (N, New_Loop);
-
-      --  The loop parameter is declared by an object declaration, but within
-      --  the loop we must prevent user assignments to it, so we analyze the
-      --  declaration and reset the entity kind, before analyzing the rest of
-      --  the loop.
-
-      Analyze (Elmt_Decl);
-      Set_Ekind (Defining_Identifier (Elmt_Decl), E_Loop_Parameter);
-
       Analyze (N);
    end Expand_Formal_Container_Element_Loop;
 
@@ -3698,8 +3711,13 @@ package body Exp_Ch5 is
 
       Ind_Comp :=
         Make_Indexed_Component (Loc,
-          Prefix      => Relocate_Node (Array_Node),
+          Prefix      => New_Copy_Tree (Array_Node),
           Expressions => New_List (New_Occurrence_Of (Iterator, Loc)));
+
+      --  Propagate the original node to the copy since the analysis of the
+      --  following object renaming declaration relies on the original node.
+
+      Set_Original_Node (Prefix (Ind_Comp), Original_Node (Array_Node));
 
       Prepend_To (Stats,
         Make_Object_Renaming_Declaration (Loc,
@@ -3742,7 +3760,7 @@ package body Exp_Ch5 is
                   Defining_Identifier         => Iterator,
                   Discrete_Subtype_Definition =>
                     Make_Attribute_Reference (Loc,
-                      Prefix         => Relocate_Node (Array_Node),
+                      Prefix         => New_Copy_Tree (Array_Node),
                       Attribute_Name => Name_Range,
                       Expressions    => New_List (
                         Make_Integer_Literal (Loc, Dim1))),
@@ -3779,7 +3797,7 @@ package body Exp_Ch5 is
                         Defining_Identifier         => Iterator,
                         Discrete_Subtype_Definition =>
                           Make_Attribute_Reference (Loc,
-                            Prefix         => Relocate_Node (Array_Node),
+                            Prefix         => New_Copy_Tree (Array_Node),
                             Attribute_Name => Name_Range,
                             Expressions    => New_List (
                               Make_Integer_Literal (Loc, Dim1))),

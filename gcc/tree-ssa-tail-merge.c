@@ -301,7 +301,15 @@ stmt_local_def (gimple *stmt)
   if (gimple_vdef (stmt) != NULL_TREE
       || gimple_has_side_effects (stmt)
       || gimple_could_trap_p_1 (stmt, false, false)
-      || gimple_vuse (stmt) != NULL_TREE)
+      || gimple_vuse (stmt) != NULL_TREE
+      /* Copied from tree-ssa-ifcombine.c:bb_no_side_effects_p():
+	 const calls don't match any of the above, yet they could
+	 still have some side-effects - they could contain
+	 gimple_could_trap_p statements, like floating point
+	 exceptions or integer division by zero.  See PR70586.
+	 FIXME: perhaps gimple_has_side_effects or gimple_could_trap_p
+	 should handle this.  */
+      || is_gimple_call (stmt))
     return false;
 
   def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);

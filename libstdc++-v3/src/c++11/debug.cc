@@ -40,7 +40,8 @@
 
 #include <cxxabi.h> // for __cxa_demangle
 
-#if defined _GLIBCXX_HAVE_EXECINFO_H
+// libstdc++/85768
+#if 0 // defined _GLIBCXX_HAVE_EXECINFO_H
 # include <execinfo.h> // for backtrace
 #endif
 
@@ -64,6 +65,10 @@ namespace
       & __gnu_internal::mask;
     return __gnu_internal::get_mutex(index);
   }
+
+#pragma GCC diagnostic push
+// Suppress -Wabi=2 warnings due to PR c++/51322 mangling change
+#pragma GCC diagnostic warning "-Wabi=6"
 
   void
   swap_its(__gnu_debug::_Safe_sequence_base& __lhs,
@@ -89,6 +94,7 @@ namespace
     swap_its(__lhs, __lhs._M_const_iterators,
 	     __rhs, __rhs._M_const_iterators);
   }
+#pragma GCC diagnostic pop
 
   template<typename _Action>
     void
@@ -376,9 +382,10 @@ namespace __gnu_debug
   _M_detach()
   {
     if (_M_sequence)
-      _M_sequence->_M_detach(this);
-
-    _M_reset();
+      {
+	_M_sequence->_M_detach(this);
+	_M_reset();
+      }
   }
 
   void
@@ -386,9 +393,10 @@ namespace __gnu_debug
   _M_detach_single() throw ()
   {
     if (_M_sequence)
-      _M_sequence->_M_detach_single(this);
-
-    _M_reset();
+      {
+	_M_sequence->_M_detach_single(this);
+	_M_reset();
+      }
   }
 
   void
@@ -459,9 +467,10 @@ namespace __gnu_debug
   _M_detach()
   {
     if (_M_sequence)
-      _M_get_container()->_M_detach_local(this);
-
-    _M_reset();
+      {
+	_M_get_container()->_M_detach_local(this);
+	_M_reset();
+      }
   }
 
   void
@@ -469,9 +478,10 @@ namespace __gnu_debug
   _M_detach_single() throw ()
   {
     if (_M_sequence)
-      _M_get_container()->_M_detach_local_single(this);
-
-    _M_reset();
+      {
+	_M_get_container()->_M_detach_local_single(this);
+	_M_reset();
+      }
   }
 
   void
@@ -1050,7 +1060,8 @@ namespace __gnu_debug
 	print_literal(ctx, "\n");
       }
 
-#if defined _GLIBCXX_HAVE_EXECINFO_H
+// libstdc++/85768
+#if 0 //defined _GLIBCXX_HAVE_EXECINFO_H
     {
       void* stack[32];
       int nb = backtrace(stack, 32);

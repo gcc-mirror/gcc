@@ -131,6 +131,8 @@ package Rtsfind is
       Ada_Real_Time,
       Ada_Streams,
       Ada_Strings,
+      Ada_Synchronous_Barriers,
+      Ada_Synchronous_Task_Control,
       Ada_Tags,
       Ada_Task_Identification,
       Ada_Task_Termination,
@@ -608,6 +610,10 @@ package Rtsfind is
      RO_WW_Super_String,                 -- Ada.Strings.Wide_Wide_Superbounded
 
      RE_Unbounded_String,                -- Ada.Strings.Unbounded
+
+     RE_Wait_For_Release,                -- Ada.Synchronous_Barriers
+
+     RE_Suspend_Until_True,              -- Ada.Synchronous_Task_Control
 
      RE_Access_Level,                    -- Ada.Tags
      RE_Alignment,                       -- Ada.Tags
@@ -1846,6 +1852,10 @@ package Rtsfind is
      RO_WW_Super_String                  => Ada_Strings_Wide_Wide_Superbounded,
 
      RE_Unbounded_String                 => Ada_Strings_Unbounded,
+
+     RE_Wait_For_Release                 => Ada_Synchronous_Barriers,
+
+     RE_Suspend_Until_True               => Ada_Synchronous_Task_Control,
 
      RE_Access_Level                     => Ada_Tags,
      RE_Alignment                        => Ada_Tags,

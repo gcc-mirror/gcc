@@ -1,4 +1,4 @@
-// { dg-do run { target c++11 } }
+// { dg-do run { target { c++11_only || c++14_only } } }
 // { dg-require-atomic-builtins "" }
 
 // Copyright (C) 2012-2018 Free Software Foundation, Inc.

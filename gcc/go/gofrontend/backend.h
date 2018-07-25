@@ -379,10 +379,6 @@ class Backend
                   const std::vector<Bexpression*>& args,
 		  Bexpression* static_chain, Location) = 0;
 
-  // Return an expression that allocates SIZE bytes on the stack.
-  virtual Bexpression*
-  stack_allocation_expression(int64_t size, Location) = 0;
-
   // Statements.
 
   // Create an error statement.  This is used for cases which should

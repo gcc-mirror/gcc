@@ -69,10 +69,6 @@ extern unsigned int nds32_dbx_register_number (unsigned int);
 
 /* ------------------------------------------------------------------------ */
 
-/* Auxiliary functions for lwm/smw.  */
-
-extern bool nds32_valid_smw_lwm_base_p (rtx);
-
 /* Auxiliary functions for manipulation DI mode.  */
 
 extern rtx nds32_di_high_part_subreg(rtx);
@@ -151,15 +147,16 @@ extern int nds32_can_use_bitci_p (int);
 extern bool nds32_const_double_range_ok_p (rtx, machine_mode,
 					   HOST_WIDE_INT, HOST_WIDE_INT);
 
+extern bool nds32_const_unspec_p (rtx x);
+
 /* Auxiliary function for 'Computing the Length of an Insn'.  */
 
 extern int nds32_adjust_insn_length (rtx_insn *, int);
 
 /* Auxiliary functions for FP_AS_GP detection.  */
 
-extern int nds32_fp_as_gp_check_available (void);
-
 extern bool nds32_symbol_load_store_p (rtx_insn *);
+extern bool nds32_naked_function_p (tree);
 
 /* Auxiliary functions for jump table generation.  */
 
@@ -183,8 +180,44 @@ extern void nds32_expand_float_movcc (rtx *);
 extern enum nds32_expand_result_type nds32_expand_extv (rtx *);
 extern enum nds32_expand_result_type nds32_expand_insv (rtx *);
 
+/* Auxiliary functions for expand PIC instruction.  */
+
+extern void nds32_expand_pic_move (rtx *);
+
+/* Auxiliary functions to legitimize PIC address.  */
+
+extern rtx nds32_legitimize_pic_address (rtx);
+
+/* Auxiliary functions for expand TLS instruction.  */
+
+extern void nds32_expand_tls_move (rtx *);
+
+/* Auxiliary functions to legitimize TLS address.  */
+
+extern rtx nds32_legitimize_tls_address (rtx);
+
+/* Auxiliary functions to identify thread-local symbol.  */
+
+extern bool nds32_tls_referenced_p (rtx);
+
+/* Auxiliary functions for expand ICT instruction.  */
+
+extern void nds32_expand_ict_move (rtx *);
+
+/* Auxiliary functions to legitimize address for indirect-call symbol.  */
+
+extern rtx nds32_legitimize_ict_address (rtx);
+
+/* Auxiliary functions to identify indirect-call symbol.  */
+
+extern bool nds32_indirect_call_referenced_p (rtx);
+
 /* Auxiliary functions to identify long-call symbol.  */
 extern bool nds32_long_call_p (rtx);
+
+/* Auxiliary functions to identify SYMBOL_REF and LABEL_REF pattern.  */
+
+extern bool symbolic_reference_mentioned_p (rtx);
 
 /* Auxiliary functions to identify conditional move comparison operand.  */
 
@@ -208,6 +241,7 @@ extern const char *nds32_output_32bit_load_s (rtx *, int);
 extern const char *nds32_output_float_load(rtx *);
 extern const char *nds32_output_float_store(rtx *);
 extern const char *nds32_output_smw_single_word (rtx *);
+extern const char *nds32_output_smw_double_word (rtx *);
 extern const char *nds32_output_lmw_single_word (rtx *);
 extern const char *nds32_output_double (rtx *, bool);
 extern const char *nds32_output_cbranchsi4_equality_zero (rtx_insn *, rtx *);
@@ -220,7 +254,8 @@ extern const char *nds32_output_unpkd8 (rtx, rtx, rtx, rtx, bool);
 
 extern const char *nds32_output_call (rtx, rtx *, rtx,
 				      const char *, const char *, bool);
-
+extern const char *nds32_output_tls_desc (rtx *);
+extern const char *nds32_output_tls_ie (rtx *);
 
 /* Auxiliary functions to output stack push/pop instruction.  */
 
@@ -275,6 +310,7 @@ extern bool nds32_isr_function_p (tree);
 
 /* Auxiliary functions for cost calculation.  */
 
+extern void nds32_init_rtx_costs (void);
 extern bool nds32_rtx_costs_impl (rtx, machine_mode, int, int, int *, bool);
 extern int nds32_address_cost_impl (rtx, machine_mode, addr_space_t, bool);
 
@@ -288,6 +324,10 @@ extern bool nds32_valid_CVp5_p (rtx);
 extern bool nds32_valid_CVs5_p (rtx);
 extern bool nds32_valid_CVs2_p (rtx);
 extern bool nds32_valid_CVhi_p (rtx);
+
+/* Auxiliary functions for lwm/smw.  */
+
+extern bool nds32_valid_smw_lwm_base_p (rtx);
 
 extern bool nds32_split_double_word_load_store_p (rtx *,bool);
 
@@ -326,5 +366,6 @@ extern bool nds32_use_load_post_increment(machine_mode);
 
 /* Functions for create nds32 specific optimization pass.  */
 extern rtl_opt_pass *make_pass_nds32_relax_opt (gcc::context *);
+extern rtl_opt_pass *make_pass_nds32_fp_as_gp (gcc::context *);
 
 /* ------------------------------------------------------------------------ */

@@ -121,6 +121,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       istreambuf_iterator(streambuf_type* __s) _GLIBCXX_USE_NOEXCEPT
       : _M_sbuf(__s), _M_c(traits_type::eof()) { }
 
+#if __cplusplus >= 201103L
+      istreambuf_iterator&
+      operator=(const istreambuf_iterator&) noexcept = default;
+#endif
+
       ///  Return the current character pointed to by iterator.  This returns
       ///  streambuf.sgetc().  It cannot be assigned.  NB: The result of
       ///  operator*() on an end of stream is undefined.

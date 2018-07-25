@@ -408,7 +408,7 @@ am__objects_56 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_mod_r10.lo _mod_r16.lo
 am__objects_57 = misc_specifics.lo
 am__objects_58 = $(am__objects_55) $(am__objects_56) $(am__objects_57) \
-	dprod_r8.lo f2c_specifics.lo
+	dprod_r8.lo f2c_specifics.lo random_init.lo
 am__objects_59 = $(am__objects_3) $(am__objects_47) $(am__objects_49) \
 	$(am__objects_52) $(am__objects_53) $(am__objects_54) \
 	$(am__objects_58)
@@ -1374,7 +1374,8 @@ $(gfor_built_specific_src) \
 $(gfor_built_specific2_src) \
 $(gfor_misc_specifics) \
 intrinsics/dprod_r8.f90 \
-intrinsics/f2c_specifics.F90
+intrinsics/f2c_specifics.F90 \
+intrinsics/random_init.f90
 
 BUILT_SOURCES = $(gfor_built_src) $(gfor_built_specific_src) \
 	$(gfor_built_specific2_src) $(gfor_misc_specifics) \
@@ -6229,6 +6230,9 @@ selected_real_kind.lo: intrinsics/selected_real_kind.f90
 
 dprod_r8.lo: intrinsics/dprod_r8.f90
 	$(LIBTOOL)  --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o dprod_r8.lo `test -f 'intrinsics/dprod_r8.f90' || echo '$(srcdir)/'`intrinsics/dprod_r8.f90
+
+random_init.lo: intrinsics/random_init.f90
+	$(LIBTOOL)  --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o random_init.lo `test -f 'intrinsics/random_init.f90' || echo '$(srcdir)/'`intrinsics/random_init.f90
 
 mostlyclean-libtool:
 	-rm -f *.lo

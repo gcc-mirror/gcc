@@ -24,7 +24,6 @@ if { ![istarget i?86*-*-*] && ![istarget x86_64-*-*] } then {
 # Load support procs.
 load_lib gcc-dg.exp
 load_lib clearcap.exp
-load_lib mpx-dg.exp
 
 # Return 1 if attribute ms_hook_prologue is supported.
 proc check_effective_target_ms_hook_prologue { } {

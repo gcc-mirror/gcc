@@ -12,4 +12,4 @@ void *h()
 }
 
 /* { dg-final { scan-tree-dump "Function found to be malloc: g" "local-pure-const1" } } */
-/* { dg-final { scan-tree-dump "Function found to be malloc: h" "local-pure-const1" } } */
+/* { dg-final { scan-tree-dump-not "Function found to be malloc: h" "local-pure-const1" } } */

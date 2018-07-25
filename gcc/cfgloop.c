@@ -1800,7 +1800,7 @@ loop_exits_from_bb_p (struct loop *loop, basic_block bb)
 
 /* Return location corresponding to the loop control condition if possible.  */
 
-location_t
+dump_user_location_t
 get_loop_location (struct loop *loop)
 {
   rtx_insn *insn = NULL;
@@ -1819,7 +1819,7 @@ get_loop_location (struct loop *loop)
       FOR_BB_INSNS_REVERSE (desc->in_edge->src, insn)
         {
           if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
-            return INSN_LOCATION (insn);
+            return insn;
         }
     }
   /* If loop has a single exit, then the loop control branch
@@ -1829,24 +1829,24 @@ get_loop_location (struct loop *loop)
       FOR_BB_INSNS_REVERSE (exit->src, insn)
         {
           if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
-            return INSN_LOCATION (insn);
+            return insn;
         }
     }
   /* Next check the latch, to see if it is non-empty.  */
   FOR_BB_INSNS_REVERSE (loop->latch, insn)
     {
       if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
-        return INSN_LOCATION (insn);
+        return insn;
     }
   /* Finally, if none of the above identifies the loop control branch,
      return the first location in the loop header.  */
   FOR_BB_INSNS (loop->header, insn)
     {
       if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
-        return INSN_LOCATION (insn);
+        return insn;
     }
   /* If all else fails, simply return the current function location.  */
-  return DECL_SOURCE_LOCATION (current_function_decl);
+  return dump_user_location_t::from_function_decl (current_function_decl);
 }
 
 /* Records that every statement in LOOP is executed I_BOUND times.

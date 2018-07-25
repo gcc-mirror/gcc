@@ -2893,9 +2893,11 @@ Alternatively, you may run the script using the following command line:
      * ``=>`` in associations, and
      * ``at`` keywords in the component clauses in record representation clauses.
 
+   In addition, ``in`` and ``out`` in parameter specifications are lined up.
 
    .. index:: --no-alignment (gnatpp)
    .. index:: --alignment (gnatpp)
+   .. index:: --no-align-modes (gnatpp)
 
 
    :switch:`--no-alignment`
@@ -2904,6 +2906,10 @@ Alternatively, you may run the script using the following command line:
 
    :switch:`--alignment`
      Set alignment to ON
+
+
+   :switch:`--no-align-modes`
+     Do not line up ``in`` and ``out`` in parameter specifications.
 
    .. _Casing_Control:
 
@@ -3055,6 +3061,14 @@ Alternatively, you may run the script using the following command line:
 
    :switch:`--pragma-mixed-case`
      Pragma names are mixed case (this is the default)
+
+
+   .. index:: --syntax-only (gnatpp)
+
+   :switch:`--syntax-only`
+     Disable the semantic analysis (name resolution) done by libadalang.
+     This means gnatpp will not be able to support any of the
+     "as-declared" switches.
 
 
    .. index:: --dictionary (gnatpp)
@@ -3236,6 +3250,19 @@ Alternatively, you may run the script using the following command line:
      Same as ``--decimal-grouping``, but for based literals. For
      example, with ``--based-grouping=4``, ``16#0001FFFE#`` will be
      changed to ``16#0001_FFFE#``.
+
+
+   .. index:: --split-line-before-record (gnatpp)
+
+   :switch:`--split-line-before-record`
+     Split the line just before ``record`` in a record type declaration.
+
+
+   .. index:: --indent-named-statements (gnatpp)
+
+   :switch:`--indent-named-statements`
+     Named block and loop statements are indented with respect to
+     the name.
 
 
    .. index:: --split-line-before-op (gnatpp)
@@ -4078,8 +4105,8 @@ Alternatively, you may run the script using the following command line:
       for which a body must be created or a library unit body for which subunits
       must be created for the body stubs declared in this body.
       The file name may contain the path information.
-      If the name does not follow GNAT file naming conventions and a set
-      of seitches does not contain a project file that defines naming
+      If the name does not follow GNAT file naming conventions and the set
+      of switches does not contain a project file that defines naming
       conventions, the name of the body file must
       be provided
       explicitly as the value of the :switch:`-o{body-name}` option.
@@ -4146,7 +4173,7 @@ Alternatively, you may run the script using the following command line:
 
   :switch:`--subunits`
     Generate subunits for body stubs. If this switch is specified,
-    ``gnatstub`` expects a library unit body as an agrument file,
+    ``gnatstub`` expects a library unit body as an argument file,
     otherwise a library unit declaration is expected. If a body stub
     already has a corresponding subunit, ``gnatstub`` does not
     generate anything for it.
@@ -4732,6 +4759,13 @@ Alternatively, you may run the script using the following command line:
     Runs ``n`` tests in parallel (default is 1).
 
 
+    .. index:: --copy-environment (gnattest)
+
+  :switch:`--copy-environment={dir}`
+    Contents of ``dir`` directory will be copied to temporary directories
+    created by gnattest in which individual test drivers are spawned.
+
+
   .. _Project_Attributes_for_gnattest:
 
   Project Attributes for ``gnattest``
@@ -4753,6 +4787,9 @@ Alternatively, you may run the script using the following command line:
   * ``Tests_Dir``
        is used to select the same output mode as with the ``--tests-dir`` option.
        This attribute cannot be used together with ``Subdir`` or ``Tests_Root``.
+
+  * ``Stubs_Dir``
+       is used to select the same output mode as with the ``--stubs-dir`` option.
 
   * ``Harness_Dir``
        is used to specify the directory in which to place harness packages and project

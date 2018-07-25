@@ -97,6 +97,8 @@ class GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
   symtab_node
 {
 public:
+  friend class symbol_table;
+
   /* Return name.  */
   const char *name () const;
 
@@ -530,6 +532,9 @@ public:
   /* Set when symbol can be streamed into bytecode for offloading.  */
   unsigned offloadable : 1;
 
+  /* Set when symbol is an IFUNC resolver.  */
+  unsigned ifunc_resolver : 1;
+
 
   /* Ordering of all symtab entries.  */
   int order;
@@ -890,6 +895,8 @@ struct cgraph_edge_hasher : ggc_ptr_hash<cgraph_edge>
 
 struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node {
 public:
+  friend class symbol_table;
+
   /* Remove the node from cgraph and all inline clones inlined into it.
      Skip however removal of FORBIDDEN_NODE and return true if it needs to be
      removed.  This allows to call the function from outer loop walking clone
@@ -1268,6 +1275,12 @@ public:
     dump_cgraph (stderr);
   }
 
+  /* Get unique identifier of the node.  */
+  inline int get_uid ()
+  {
+    return m_uid;
+  }
+
   /* Record that DECL1 and DECL2 are semantically identical function
      versions.  */
   static void record_function_versions (tree decl1, tree decl2);
@@ -1359,13 +1372,6 @@ public:
   cgraph_node *prev_sibling_clone;
   cgraph_node *clones;
   cgraph_node *clone_of;
-  /* If instrumentation_clone is 1 then instrumented_version points
-     to the original function used to make instrumented version.
-     Otherwise points to instrumented version of the function.  */
-  cgraph_node *instrumented_version;
-  /* If instrumentation_clone is 1 then orig_decl is the original
-     function declaration.  */
-  tree orig_decl;
   /* For functions with many calls sites it holds map from call expression
      to the edge to speed up cgraph_edge function.  */
   hash_table<cgraph_edge_hasher> *GTY(()) call_site_hash;
@@ -1394,10 +1400,6 @@ public:
   /* How to scale counts at materialization time; used to merge
      LTO units with different number of profile runs.  */
   int count_materialization_scale;
-  /* Unique id of the node.  */
-  int uid;
-  /* Summary unique id of the node.  */
-  int summary_uid;
   /* ID assigned by the profiling.  */
   unsigned int profile_id;
   /* Time profiler: first run of function.  */
@@ -1430,9 +1432,6 @@ public:
   unsigned calls_comdat_local : 1;
   /* True if node has been created by merge operation in IPA-ICF.  */
   unsigned icf_merged: 1;
-  /* True when function is clone created for Pointer Bounds Checker
-     instrumentation.  */
-  unsigned instrumentation_clone : 1;
   /* True if call to node can't result in a call to free, munmap or
      other operation that could make previously non-trapping memory
      accesses trapping.  */
@@ -1447,6 +1446,9 @@ public:
   unsigned indirect_call_target : 1;
 
 private:
+  /* Unique id of the node.  */
+  int m_uid;
+
   /* Worker for call_for_symbol_and_aliases.  */
   bool call_for_symbol_and_aliases_1 (bool (*callback) (cgraph_node *,
 						        void *),
@@ -1635,6 +1637,7 @@ struct GTY(()) cgraph_indirect_call_info
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
 	    for_user)) cgraph_edge {
   friend class cgraph_node;
+  friend class symbol_table;
 
   /* Remove the edge in the cgraph.  */
   void remove (void);
@@ -1698,6 +1701,12 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Return true if the call can be hot.  */
   bool maybe_hot_p (void);
 
+  /* Get unique identifier of the edge.  */
+  inline int get_uid ()
+  {
+    return m_uid;
+  }
+
   /* Rebuild cgraph edges for current function node.  This needs to be run after
      passes that don't update the cgraph.  */
   static unsigned int rebuild_edges (void);
@@ -1725,8 +1734,6 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* The stmt_uid of call_stmt.  This is used by LTO to recover the call_stmt
      when the function is serialized in.  */
   unsigned int lto_stmt_uid;
-  /* Unique id of the edge.  */
-  int uid;
   /* Whether this edge was made direct by indirect inlining.  */
   unsigned int indirect_inlining_edge : 1;
   /* Whether this edge describes an indirect call with an undetermined
@@ -1770,6 +1777,9 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Expected frequency of executions within the function.  */
   sreal sreal_frequency ();
 private:
+  /* Unique id of the edge.  */
+  int m_uid;
+
   /* Remove the edge from the list of the callers of the callee.  */
   void remove_caller (void);
 
@@ -2020,7 +2030,7 @@ public:
   friend class cgraph_node;
   friend class cgraph_edge;
 
-  symbol_table (): cgraph_max_summary_uid (1)
+  symbol_table (): cgraph_max_uid (1), edges_max_uid (1)
   {
   }
 
@@ -2080,9 +2090,8 @@ public:
   /* Allocate new callgraph node and insert it into basic data structures.  */
   cgraph_node *create_empty (void);
 
-  /* Release a callgraph NODE with UID and put in to the list
-     of free nodes.  */
-  void release_symbol (cgraph_node *node, int uid);
+  /* Release a callgraph NODE.  */
+  void release_symbol (cgraph_node *node);
 
   /* Output all variables enqueued to be assembled.  */
   bool output_variables (void);
@@ -2230,7 +2239,6 @@ public:
 
   int cgraph_count;
   int cgraph_max_uid;
-  int cgraph_max_summary_uid;
 
   int edges_count;
   int edges_max_uid;
@@ -2383,9 +2391,6 @@ bool ipa_discover_readonly_nonaddressable_vars (void);
 /* In varpool.c  */
 tree ctor_for_folding (tree);
 
-/* In tree-chkp.c  */
-extern bool chkp_function_instrumented_p (tree fndecl);
-
 /* In ipa-inline-analysis.c  */
 void initialize_inline_failed (struct cgraph_edge *);
 bool speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining);
@@ -2446,8 +2451,6 @@ symtab_node::get_alias_target (void)
 {
   ipa_ref *ref = NULL;
   iterate_reference (0, ref);
-  if (ref->use == IPA_REF_CHKP)
-    iterate_reference (1, ref);
   gcc_checking_assert (ref->use == IPA_REF_ALIAS);
   return ref->referred;
 }
@@ -2598,7 +2601,7 @@ symbol_table::unregister (symtab_node *node)
 /* Release a callgraph NODE with UID and put in to the list of free nodes.  */
 
 inline void
-symbol_table::release_symbol (cgraph_node *node, int uid)
+symbol_table::release_symbol (cgraph_node *node)
 {
   cgraph_count--;
 
@@ -2606,7 +2609,6 @@ symbol_table::release_symbol (cgraph_node *node, int uid)
      list.  */
   memset (node, 0, sizeof (*node));
   node->type = SYMTAB_FUNCTION;
-  node->uid = uid;
   SET_NEXT_FREE_NODE (node, free_nodes);
   free_nodes = node;
 }
@@ -2624,12 +2626,9 @@ symbol_table::allocate_cgraph_symbol (void)
       free_nodes = NEXT_FREE_NODE (node);
     }
   else
-    {
-      node = ggc_cleared_alloc<cgraph_node> ();
-      node->uid = cgraph_max_uid++;
-    }
+    node = ggc_cleared_alloc<cgraph_node> ();
 
-  node->summary_uid = cgraph_max_summary_uid++;
+  node->m_uid = cgraph_max_uid++;
   return node;
 }
 
@@ -2886,6 +2885,7 @@ cgraph_node::only_called_directly_or_aliased_p (void)
 {
   gcc_assert (!global.inlined_to);
   return (!force_output && !address_taken
+	  && !ifunc_resolver
 	  && !used_from_other_partition
 	  && !DECL_VIRTUAL_P (decl)
 	  && !DECL_STATIC_CONSTRUCTOR (decl)
@@ -2901,12 +2901,6 @@ inline bool
 cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
 {
   gcc_checking_assert (!global.inlined_to);
-  /* Instrumentation clones should not be removed before
-     instrumentation happens.  New callers may appear after
-     instrumentation.  */
-  if (instrumentation_clone
-      && !chkp_function_instrumented_p (decl))
-    return false;
   /* Extern inlines can always go, we will use the external definition.  */
   if (DECL_EXTERNAL (decl))
     return true;
@@ -3312,18 +3306,6 @@ inline bool
 ipa_polymorphic_call_context::useless_p () const
 {
   return (!outer_type && !speculative_outer_type);
-}
-
-/* Return true if NODE is local.  Instrumentation clones are counted as local
-   only when original function is local.  */
-
-static inline bool
-cgraph_local_p (cgraph_node *node)
-{
-  if (!node->instrumentation_clone || !node->instrumented_version)
-    return node->local.local;
-
-  return node->local.local && node->instrumented_version->local.local;
 }
 
 /* When using fprintf (or similar), problems can arise with

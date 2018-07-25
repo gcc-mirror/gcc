@@ -1534,32 +1534,31 @@ Attribute Valid_Scalars
 =======================
 .. index:: Valid_Scalars
 
-The ``'Valid_Scalars`` attribute is intended to make it easier to
-check the validity of scalar subcomponents of composite objects. It
-is defined for any prefix ``X`` that denotes an object.
-The value of this attribute is of the predefined type Boolean.
-``X'Valid_Scalars`` yields True if and only if evaluation of
-``P'Valid`` yields True for every scalar part P of X or if X has
-no scalar parts. It is not specified in what order the scalar parts
-are checked, nor whether any more are checked after any one of them
-is determined to be invalid. If the prefix ``X`` is of a class-wide
-type ``T'Class`` (where ``T`` is the associated specific type),
-or if the prefix ``X`` is of a specific tagged type ``T``, then
-only the scalar parts of components of ``T`` are traversed; in other
-words, components of extensions of ``T`` are not traversed even if
-``T'Class (X)'Tag /= T'Tag`` . The compiler will issue a warning if it can
-be determined at compile time that the prefix of the attribute has no
-scalar parts (e.g., if the prefix is of an access type, an interface type,
-an undiscriminated task type, or an undiscriminated protected type).
+The ``'Valid_Scalars`` attribute is intended to make it easier to check the
+validity of scalar subcomponents of composite objects. The attribute is defined
+for any prefix ``P`` which denotes an object. Prefix ``P`` can be any type
+except for tagged private or ``Unchecked_Union`` types. The value of the
+attribute is of type ``Boolean``.
 
-For scalar types, ``Valid_Scalars`` is equivalent to ``Valid``. The use
-of this attribute is not permitted for ``Unchecked_Union`` types for which
-in general it is not possible to determine the values of the discriminants.
+``P'Valid_Scalars`` yields ``True`` if and only if the evaluation of
+``C'Valid`` yields ``True`` for every scalar subcomponent ``C`` of ``P``, or if
+``P`` has no scalar subcomponents. Attribute ``'Valid_Scalars`` is equivalent
+to attribute ``'Valid`` for scalar types.
 
-Note: ``Valid_Scalars`` can generate a lot of code, especially in the case
-of a large variant record. If the attribute is called in many places in the
-same program applied to objects of the same type, it can reduce program size
-to write a function with a single use of the attribute, and then call that
+It is not specified in what order the subcomponents are checked, nor whether
+any more are checked after any one of them is determined to be invalid. If the
+prefix ``P`` is of a class-wide type ``T'Class`` (where ``T`` is the associated
+specific type), or if the prefix ``P`` is of a specific tagged type ``T``, then
+only the subcomponents of ``T`` are checked; in other words, components of
+extensions of ``T`` are not checked even if ``T'Class (P)'Tag /= T'Tag``.
+
+The compiler will issue a warning if it can be determined at compile time that
+the prefix of the attribute has no scalar subcomponents.
+
+Note: ``Valid_Scalars`` can generate a lot of code, especially in the case of
+a large variant record. If the attribute is called in many places in the same
+program applied to objects of the same type, it can reduce program size to
+write a function with a single use of the attribute, and then call that
 function from multiple places.
 
 Attribute VADS_Size

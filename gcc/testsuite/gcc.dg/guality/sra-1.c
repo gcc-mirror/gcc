@@ -1,6 +1,6 @@
 /* PR debug/43983 */
 /* { dg-do run } */
-/* { dg-options "-g" } */
+/* { dg-options "-g -fno-ipa-icf" } */
 
 struct A { int i; int j; };
 struct B { int : 4; int i : 12; int j : 12; int : 4; };
@@ -17,8 +17,8 @@ f1 (int k)
   struct A a = { 4, k + 6 };
   asm ("" : "+r" (a.i));
   a.j++;
-  bar (a.i);		/* { dg-final { gdb-test 21 "a.i" "4" } } */
-  bar (a.j);		/* { dg-final { gdb-test 21 "a.j" "14" } } */
+  bar (a.i);		/* { dg-final { gdb-test .+1 "a.i" "4" } } */
+  bar (a.j);		/* { dg-final { gdb-test . "a.j" "14" } } */
   return a.i + a.j;
 }
 
@@ -28,8 +28,8 @@ f2 (int k)
   int a[2] = { 4, k + 6 };
   asm ("" : "+r" (a[0]));
   a[1]++;
-  bar (a[0]);		/* { dg-final { gdb-test 32 "a\[0\]" "4" } } */
-  bar (a[1]);		/* { dg-final { gdb-test 32 "a\[1\]" "14" } } */
+  bar (a[0]);		/* { dg-final { gdb-test .+1 "a\[0\]" "4" } } */
+  bar (a[1]);		/* { dg-final { gdb-test . "a\[1\]" "14" } } */
   return a[0] + a[1];
 }
 
@@ -39,8 +39,8 @@ f3 (int k)
   struct B a = { 4, k + 6 };
   asm ("" : "+r" (a.i));
   a.j++;
-  bar (a.i);		/* { dg-final { gdb-test 43 "a.i" "4" } } */
-  bar (a.j);		/* { dg-final { gdb-test 43 "a.j" "14" } } */
+  bar (a.i);		/* { dg-final { gdb-test .+1 "a.i" "4" } } */
+  bar (a.j);		/* { dg-final { gdb-test . "a.j" "14" } } */
   return a.i + a.j;
 }
 

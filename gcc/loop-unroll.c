@@ -189,7 +189,7 @@ static rtx get_expansion (struct var_to_expand *);
    appropriate given the dump or -fopt-info settings.  */
 
 static void
-report_unroll (struct loop *loop, location_t locus)
+report_unroll (struct loop *loop, dump_location_t locus)
 {
   dump_flags_t report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS;
 
@@ -220,7 +220,7 @@ decide_unrolling (int flags)
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       loop->lpt_decision.decision = LPT_NONE;
-      location_t locus = get_loop_location (loop);
+      dump_user_location_t locus = get_loop_location (loop);
 
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, locus,

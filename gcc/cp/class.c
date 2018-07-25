@@ -426,7 +426,7 @@ build_base_path (enum tree_code code,
     {
       expr = cp_build_fold_indirect_ref (expr);
       expr = build_simple_base_path (expr, binfo);
-      if (rvalue)
+      if (rvalue && lvalue_p (expr))
 	expr = move (expr);
       if (want_pointer)
 	expr = build_address (expr);
@@ -2034,6 +2034,7 @@ maybe_warn_about_overly_private_class (tree t)
 {
   int has_member_fn = 0;
   int has_nonprivate_method = 0;
+  bool nonprivate_ctor = false;
 
   if (!warn_ctor_dtor_privacy
       /* If the class has friends, those entities might create and
@@ -2064,7 +2065,11 @@ maybe_warn_about_overly_private_class (tree t)
      non-private statics, we can't ever call any of the private member
      functions.)  */
   for (tree fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
-    if (!DECL_DECLARES_FUNCTION_P (fn))
+    if (TREE_CODE (fn) == USING_DECL
+	&& DECL_NAME (fn) == ctor_identifier
+	&& !TREE_PRIVATE (fn))
+      nonprivate_ctor = true;
+    else if (!DECL_DECLARES_FUNCTION_P (fn))
       /* Not a function.  */;
     else if (DECL_ARTIFICIAL (fn))
       /* We're not interested in compiler-generated methods; they don't
@@ -2126,7 +2131,6 @@ maybe_warn_about_overly_private_class (tree t)
       /* Implicitly generated constructors are always public.  */
       && !CLASSTYPE_LAZY_DEFAULT_CTOR (t))
     {
-      bool nonprivate_ctor = false;
       tree copy_or_move = NULL_TREE;
 
       /* If a non-template class does not define a copy
@@ -2445,7 +2449,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
   over_return = TREE_TYPE (TREE_TYPE (overrider_target));
   base_return = TREE_TYPE (TREE_TYPE (target_fn));
 
-  if (POINTER_TYPE_P (over_return)
+  if (INDIRECT_TYPE_P (over_return)
       && TREE_CODE (over_return) == TREE_CODE (base_return)
       && CLASS_TYPE_P (TREE_TYPE (over_return))
       && CLASS_TYPE_P (TREE_TYPE (base_return))
@@ -4884,7 +4888,7 @@ default_ctor_p (tree fn)
 	  && sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (fn)));
 }
 
-/* Returns true iff class T has a user-defined constructor that can be called
+/* Returns true iff class T has a user-provided constructor that can be called
    with more than zero arguments.  */
 
 bool
@@ -4896,7 +4900,7 @@ type_has_user_nondefault_constructor (tree t)
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
       tree fn = *iter;
-      if (!DECL_ARTIFICIAL (fn)
+      if (user_provided_p (fn)
 	  && (TREE_CODE (fn) == TEMPLATE_DECL
 	      || (skip_artificial_parms_for (fn, DECL_ARGUMENTS (fn))
 		  != NULL_TREE)))
@@ -5171,6 +5175,53 @@ classtype_has_move_assign_or_move_ctor_p (tree t, bool user_p)
   return false;
 }
 
+/* True iff T has a move constructor that is not deleted.  */
+
+bool
+classtype_has_non_deleted_move_ctor (tree t)
+{
+  if (CLASSTYPE_LAZY_MOVE_CTOR (t))
+    lazily_declare_fn (sfk_move_constructor, t);
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    if (move_fn_p (*iter) && !DECL_DELETED_FN (*iter))
+      return true;
+  return false;
+}
+
+/* If T, a class, has a user-provided copy constructor, copy assignment
+   operator, or destructor, returns that function.  Otherwise, null.  */
+
+tree
+classtype_has_user_copy_or_dtor (tree t)
+{
+  if (!CLASSTYPE_LAZY_COPY_CTOR (t))
+    for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+      {
+	tree fn = *iter;
+	if (user_provided_p (fn) && copy_fn_p (fn))
+	  return fn;
+      }
+
+  if (!CLASSTYPE_LAZY_COPY_ASSIGN (t))
+    for (ovl_iterator iter (get_class_binding_direct
+			    (t, assign_op_identifier));
+	 iter; ++iter)
+      {
+	tree fn = *iter;
+	if (user_provided_p (fn) && copy_fn_p (fn))
+	  return fn;
+      }
+
+  if (!CLASSTYPE_LAZY_DESTRUCTOR (t))
+    {
+      tree fn = CLASSTYPE_DESTRUCTOR (t);
+      if (user_provided_p (fn))
+	return fn;
+    }
+
+  return NULL_TREE;
+}
+
 /* Nonzero if we need to build up a constructor call when initializing an
    object of this class, either because it has a user-declared constructor
    or because it doesn't have a default constructor (so we need to give an
@@ -5201,6 +5252,7 @@ type_build_ctor_call (tree t)
     {
       tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
+	  || TREE_DEPRECATED (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
     }
@@ -5228,6 +5280,7 @@ type_build_dtor_call (tree t)
     {
       tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
+	  || TREE_DEPRECATED (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
     }
@@ -5620,9 +5673,9 @@ check_bases_and_members (tree t)
 
 	    if (fn_const_p && !imp_const_p)
 	      /* If the function is defaulted outside the class, we just
-		 give the synthesis error.  */
-	      error ("%q+D declared to take const reference, but implicit "
-		     "declaration would take non-const", fn);
+		 give the synthesis error.  Core Issue #1331 says this is
+		 no longer ill-formed, it is defined as deleted instead.  */
+	      DECL_DELETED_FN (fn) = true;
 	  }
 	defaulted_late_check (fn);
       }
@@ -6445,8 +6498,7 @@ find_flexarrays (tree t, flexmems_t *fmem, bool base_p,
 	 members if it hasn't been yet.  */
       tree eltype = fldtype;
       while (TREE_CODE (eltype) == ARRAY_TYPE
-	     || TYPE_PTR_P (eltype)
-	     || TYPE_REF_P (eltype))
+	     || INDIRECT_TYPE_P (eltype))
 	eltype = TREE_TYPE (eltype);
 
       if (RECORD_OR_UNION_TYPE_P (eltype))
@@ -7108,7 +7160,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
   switch (TREE_CODE (instance))
     {
     case INDIRECT_REF:
-      if (POINTER_TYPE_P (TREE_TYPE (instance)))
+      if (INDIRECT_TYPE_P (TREE_TYPE (instance)))
 	return NULL_TREE;
       else
 	return RECUR (TREE_OPERAND (instance, 0));
@@ -7278,7 +7330,7 @@ resolves_to_fixed_type_p (tree instance, int* nonnull)
   fixed = fixed_type_or_null (instance, nonnull, &cdtorp);
   if (fixed == NULL_TREE)
     return 0;
-  if (POINTER_TYPE_P (t))
+  if (INDIRECT_TYPE_P (t))
     t = TREE_TYPE (t);
   if (!same_type_ignoring_top_level_qualifiers_p (t, fixed))
     return 0;
@@ -7427,8 +7479,8 @@ pop_class_stack (void)
     --current_class_stack[current_class_depth - 1].hidden;
 }
 
-/* Returns 1 if the class type currently being defined is either T or
-   a nested type of T.  Returns the type from the current_class_stack,
+/* If the class type currently being defined is either T or
+   a nested type of T, returns the type from the current_class_stack,
    which might be equivalent to but not equal to T in case of
    constrained partial specializations.  */
 
@@ -7764,7 +7816,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	  instantiation = fn_type_unification (fn, explicit_targs, targs, args,
 					       nargs, ret,
 					      DEDUCE_EXACT, LOOKUP_NORMAL,
-					       false, false);
+					       NULL, false, false);
 	  if (instantiation == error_mark_node)
 	    /* Instantiation failed.  */
 	    continue;
@@ -7867,10 +7919,11 @@ resolve_address_of_overloaded_function (tree target_type,
       if (!(complain & tf_error))
 	return error_mark_node;
 
-      permerror (input_location, "assuming pointer to member %qD", fn);
-      if (!explained)
+      if (permerror (input_location, "assuming pointer to member %qD", fn)
+	  && !explained)
 	{
-	  inform (input_location, "(a pointer to member can only be formed with %<&%E%>)", fn);
+	  inform (input_location, "(a pointer to member can only be "
+		  "formed with %<&%E%>)", fn);
 	  explained = 1;
 	}
     }
@@ -8232,10 +8285,12 @@ note_name_declared_in_class (tree name, tree decl)
 	 A name N used in a class S shall refer to the same declaration
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
-      permerror (input_location, "declaration of %q#D", decl);
-      permerror (location_of ((tree) n->value),
-		 "changes meaning of %qD from %q#D",
-		 OVL_NAME (decl), (tree) n->value);
+      if (permerror (DECL_SOURCE_LOCATION (decl),
+		     "declaration of %q#D changes meaning of %qD",
+		     decl, OVL_NAME (decl)))
+	inform (location_of ((tree) n->value),
+		"%qD declared here as %q#D",
+		OVL_NAME (decl), (tree) n->value);
     }
 }
 

@@ -372,6 +372,61 @@ package body Sem_Elab is
    --  The diagnostics of the ABE mechanism depend on accurate source locations
    --  to determine the spacial relation of nodes.
 
+   -----------------------------------------
+   -- Suppression of elaboration warnings --
+   -----------------------------------------
+
+   --  Elaboration warnings along multiple traversal paths rooted at a scenario
+   --  are suppressed when the scenario has elaboration warnings suppressed.
+   --
+   --    Root scenario
+   --    |
+   --    +-- Child scenario 1
+   --    |   |
+   --    |   +-- Grandchild scenario 1
+   --    |   |
+   --    |   +-- Grandchild scenario N
+   --    |
+   --    +-- Child scenario N
+   --
+   --  If the root scenario has elaboration warnings suppressed, then all its
+   --  child, grandchild, etc. scenarios will have their elaboration warnings
+   --  suppressed.
+   --
+   --  In addition to switch -gnatwL, pragma Warnings may be used to suppress
+   --  elaboration-related warnings when used in the following manner:
+   --
+   --    pragma Warnings ("L");
+   --    <scenario-or-target>
+   --
+   --    <target>
+   --    pragma Warnings (Off, target);
+   --
+   --    pragma Warnings (Off);
+   --    <scenario-or-target>
+   --
+   --  * To suppress elaboration warnings for '[Unrestricted_]Access of
+   --    entries, operators, and subprograms, either:
+   --
+   --      - Suppress the entry, operator, or subprogram, or
+   --      - Suppress the attribute, or
+   --      - Use switch -gnatw.f
+   --
+   --  * To suppress elaboration warnings for calls to entries, operators,
+   --    and subprograms, either:
+   --
+   --      - Suppress the entry, operator, or subprogram, or
+   --      - Suppress the call
+   --
+   --  * To suppress elaboration warnings for instantiations, suppress the
+   --    instantiation.
+   --
+   --  * To suppress elaboration warnings for task activations, either:
+   --
+   --      - Suppress the task object, or
+   --      - Suppress the task type, or
+   --      - Suppress the activation call
+
    --------------
    -- Switches --
    --------------
@@ -445,6 +500,14 @@ package body Sem_Elab is
    --           As a result, the assertion expressions of the pragmas are not
    --           processed.
    --
+   --  -gnatd_s stop elaboration checks on synchronous suspension
+   --
+   --           The ABE mechanism stops the traversal of a task body when it
+   --           encounters a call to one of the following routines:
+   --
+   --             Ada.Synchronous_Barriers.Wait_For_Release
+   --             Ada.Synchronous_Task_Control.Suspend_Until_True
+   --
    --  -gnatd.U ignore indirect calls for static elaboration
    --
    --           The ABE mechanism does not consider '[Unrestricted_]Access of
@@ -499,6 +562,7 @@ package body Sem_Elab is
    --              -gnatd_i
    --              -gnatdL
    --              -gnatd_p
+   --              -gnatd_s
    --              -gnatd.U
    --              -gnatd.y
    --
@@ -718,6 +782,10 @@ package body Sem_Elab is
       --  This flag is set when the Processing phase must not generate any
       --  implicit Elaborate[_All] pragmas.
 
+      Suppress_Warnings : Boolean;
+      --  This flag is set when the Processing phase must not emit any warnings
+      --  on elaboration problems.
+
       Within_Initial_Condition : Boolean;
       --  This flag is set when the Processing phase is currently examining a
       --  scenario which was reached from an initial condition procedure.
@@ -737,6 +805,7 @@ package body Sem_Elab is
 
    Initial_State : constant Processing_Attributes :=
      (Suppress_Implicit_Pragmas   => False,
+      Suppress_Warnings           => False,
       Within_Initial_Condition    => False,
       Within_Instance             => False,
       Within_Partial_Finalization => False,
@@ -748,6 +817,9 @@ package body Sem_Elab is
    type Target_Attributes is record
       Elab_Checks_OK : Boolean;
       --  This flag is set when the target has elaboration checks enabled
+
+      Elab_Warnings_OK : Boolean;
+      --  This flag is set when the target has elaboration warnings enabled
 
       From_Source : Boolean;
       --  This flag is set when the target comes from source
@@ -830,6 +902,9 @@ package body Sem_Elab is
 
       Elab_Checks_OK : Boolean;
       --  This flag is set when the task type has elaboration checks enabled
+
+      Elab_Warnings_OK : Boolean;
+      --  This flag is set when the task type has elaboration warnings enabled
 
       Ghost_Mode_Ignore : Boolean;
       --  This flag is set when the task type appears in a region subject to
@@ -1273,6 +1348,10 @@ package body Sem_Elab is
    --  context ignoring enclosing library levels. Nested_OK should be set when
    --  the context of N1 can enclose that of N2.
 
+   function In_Task_Body (N : Node_Id) return Boolean;
+   pragma Inline (In_Task_Body);
+   --  Determine whether arbitrary node N appears within a task body
+
    procedure Info_Call
      (Call      : Node_Id;
       Target_Id : Entity_Id;
@@ -1525,6 +1604,14 @@ package body Sem_Elab is
    pragma Inline (Is_Suitable_Variable_Reference);
    --  Determine whether arbitrary node N is a suitable variable reference for
    --  ABE processing.
+
+   function Is_Synchronous_Suspension_Call (N : Node_Id) return Boolean;
+   pragma Inline (Is_Synchronous_Suspension_Call);
+   --  Determine whether arbitrary node N denotes a call to one the following
+   --  routines:
+   --
+   --    Ada.Synchronous_Barriers.Wait_For_Release
+   --    Ada.Synchronous_Task_Control.Suspend_Until_True
 
    function Is_Task_Entry (Id : Entity_Id) return Boolean;
    pragma Inline (Is_Task_Entry);
@@ -1780,6 +1867,10 @@ package body Sem_Elab is
    --  suitable elaboration scenarios and process them. State is the current
    --  state of the Processing phase.
 
+   function Unit_Entity (Unit_Id : Entity_Id) return Entity_Id;
+   pragma Inline (Unit_Entity);
+   --  Return the entity of the initial declaration for unit Unit_Id
+
    procedure Update_Elaboration_Scenario (New_N : Node_Id; Old_N : Node_Id);
    pragma Inline (Update_Elaboration_Scenario);
    --  Update all relevant internal data structures when scenario Old_N is
@@ -1981,8 +2072,8 @@ package body Sem_Elab is
       if Legacy_Elaboration_Checks then
          return;
 
-      --  Nothing to do for ASIS. As a result, ABE checks and diagnostics are
-      --  not performed in this mode.
+      --  Nothing to do for ASIS because ABE checks and diagnostics are not
+      --  performed in this mode.
 
       elsif ASIS_Mode then
          return;
@@ -2183,121 +2274,15 @@ package body Sem_Elab is
       Read  : Boolean;
       Write : Boolean)
    is
-      function In_Pragma (Nod : Node_Id) return Boolean;
-      --  Determine whether arbitrary node Nod appears within a pragma
-
-      ---------------
-      -- In_Pragma --
-      ---------------
-
-      function In_Pragma (Nod : Node_Id) return Boolean is
-         Par : Node_Id;
-
-      begin
-         Par := Nod;
-         while Present (Par) loop
-            if Nkind (Par) = N_Pragma then
-               return True;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return False;
-      end In_Pragma;
-
-      --  Local variables
-
       Marker    : Node_Id;
-      Prag      : Node_Id;
       Var_Attrs : Variable_Attributes;
       Var_Id    : Entity_Id;
 
-   --  Start of processing for Build_Variable_Reference_Marker
-
    begin
-      --  Nothing to do when switch -gnatH (legacy elaboration checking mode
-      --  enabled) is in effect because the legacy ABE mechanism does not need
-      --  to carry out this action.
-
-      if Legacy_Elaboration_Checks then
-         return;
-
-      --  Nothing to do for ASIS. As a result, ABE checks and diagnostics are
-      --  not performed in this mode.
-
-      elsif ASIS_Mode then
-         return;
-
-      --  Nothing to do when the reference is being preanalyzed as the marker
-      --  will be inserted in the wrong place.
-
-      elsif Preanalysis_Active then
-         return;
-
-      --  Nothing to do when the input does not denote a reference
-
-      elsif not Nkind_In (N, N_Expanded_Name, N_Identifier) then
-         return;
-
-      --  Nothing to do for internally-generated references
-
-      elsif not Comes_From_Source (N) then
-         return;
-
-      --  Nothing to do when the reference is erroneous, left in a bad state,
-      --  or does not denote a variable.
-
-      elsif not (Present (Entity (N))
-                  and then Ekind (Entity (N)) = E_Variable
-                  and then Entity (N) /= Any_Id)
-      then
-         return;
-      end if;
-
       Extract_Variable_Reference_Attributes
         (Ref    => N,
          Var_Id => Var_Id,
          Attrs  => Var_Attrs);
-
-      Prag := SPARK_Pragma (Var_Id);
-
-      if Comes_From_Source (Var_Id)
-
-         --  Both the variable and the reference must appear in SPARK_Mode On
-         --  regions because this scenario falls under the SPARK rules.
-
-         and then Present (Prag)
-         and then Get_SPARK_Mode_From_Annotation (Prag) = On
-         and then Is_SPARK_Mode_On_Node (N)
-
-         --  The reference must not be considered when it appears in a pragma.
-         --  If the pragma has run-time semantics, then the reference will be
-         --  reconsidered once the pragma is expanded.
-
-         --  Performance note: parent traversal
-
-         and then not In_Pragma (N)
-      then
-         null;
-
-      --  Otherwise the reference is not suitable for ABE processing. This
-      --  prevents the generation of variable markers which will never play
-      --  a role in ABE diagnostics.
-
-      else
-         return;
-      end if;
-
-      --  At this point it is known that the variable reference will play some
-      --  role in ABE checks and diagnostics. Create a corresponding variable
-      --  marker in case the original variable reference is folded or optimized
-      --  away.
 
       Marker := Make_Variable_Reference_Marker (Sloc (N));
 
@@ -2334,12 +2319,19 @@ package body Sem_Elab is
       if Legacy_Elaboration_Checks then
          return;
 
-      --  Nothing to do for ASIS. As a result, no ABE checks and diagnostics
-      --  are performed in this mode.
+      --  Nothing to do for ASIS because ABE checks and diagnostics are not
+      --  performed in this mode.
 
       elsif ASIS_Mode then
          return;
       end if;
+
+      --  Restore the original elaboration model which was in effect when the
+      --  scenarios were first recorded. The model may be specified by pragma
+      --  Elaboration_Checks which appears on the initial declaration of the
+      --  main unit.
+
+      Install_Elaboration_Model (Unit_Entity (Cunit_Entity (Main_Unit)));
 
       --  Examine the context of the main unit and record all units with prior
       --  elaboration with respect to it.
@@ -2514,6 +2506,13 @@ package body Sem_Elab is
          Region    : Node_Id;
 
       begin
+         --  Nothing to do for predefined primitives because they are artifacts
+         --  of tagged type expansion and cannot override source primitives.
+
+         if Is_Predefined_Dispatching_Operation (Prim) then
+            return;
+         end if;
+
          Body_Id := Corresponding_Body (Prim_Decl);
 
          --  Nothing to do when the primitive does not have a corresponding
@@ -4072,6 +4071,7 @@ package body Sem_Elab is
       Attrs.Body_Barf         := Body_Barf;
       Attrs.Body_Decl         := Body_Decl;
       Attrs.Elab_Checks_OK    := Is_Elaboration_Checks_OK_Id (Target_Id);
+      Attrs.Elab_Warnings_OK  := Is_Elaboration_Warnings_OK_Id (Target_Id);
       Attrs.From_Source       := Comes_From_Source (Target_Id);
       Attrs.Ghost_Mode_Ignore := Is_Ignored_Ghost_Entity (Target_Id);
       Attrs.SPARK_Mode_On     :=
@@ -4122,6 +4122,7 @@ package body Sem_Elab is
 
       Attrs.Body_Decl         := Body_Decl;
       Attrs.Elab_Checks_OK    := Is_Elaboration_Checks_OK_Id (Task_Typ);
+      Attrs.Elab_Warnings_OK  := Is_Elaboration_Warnings_OK_Id (Task_Typ);
       Attrs.Ghost_Mode_Ignore := Is_Ignored_Ghost_Entity (Task_Typ);
       Attrs.SPARK_Mode_On     :=
         Present (Prag) and then Get_SPARK_Mode_From_Annotation (Prag) = On;
@@ -4387,27 +4388,27 @@ package body Sem_Elab is
 
       procedure Transition_Body_Declarations
         (Bod  : Node_Id;
-         Curr : in out Node_Id);
+         Curr : out Node_Id);
       pragma Inline (Transition_Body_Declarations);
       --  Update the Curr and Start pointers when construct Bod denotes a block
       --  statement or a suitable body. This routine raises ECR_Found.
 
       procedure Transition_Handled_Statements
         (HSS  : Node_Id;
-         Curr : in out Node_Id);
+         Curr : out Node_Id);
       pragma Inline (Transition_Handled_Statements);
       --  Update the Curr and Start pointers when node HSS denotes a handled
       --  sequence of statements. This routine raises ECR_Found.
 
       procedure Transition_Spec_Declarations
         (Spec : Node_Id;
-         Curr : in out Node_Id);
+         Curr : out Node_Id);
       pragma Inline (Transition_Spec_Declarations);
       --  Update the Curr and Start pointers when construct Spec denotes
       --  a concurrent definition or a package spec. This routine raises
       --  ECR_Found.
 
-      procedure Transition_Unit (Unit : Node_Id; Curr : in out Node_Id);
+      procedure Transition_Unit (Unit : Node_Id; Curr : out Node_Id);
       pragma Inline (Transition_Unit);
       --  Update the Curr and Start pointers when node Unit denotes a potential
       --  compilation unit. This routine raises ECR_Found.
@@ -4800,7 +4801,7 @@ package body Sem_Elab is
 
       procedure Transition_Body_Declarations
         (Bod  : Node_Id;
-         Curr : in out Node_Id)
+         Curr : out Node_Id)
       is
          Decls : constant List_Id := Declarations (Bod);
 
@@ -4828,7 +4829,7 @@ package body Sem_Elab is
 
       procedure Transition_Handled_Statements
         (HSS  : Node_Id;
-         Curr : in out Node_Id)
+         Curr : out Node_Id)
       is
          Bod   : constant Node_Id := Parent (HSS);
          Decls : constant List_Id := Declarations (Bod);
@@ -4879,7 +4880,7 @@ package body Sem_Elab is
 
       procedure Transition_Spec_Declarations
         (Spec : Node_Id;
-         Curr : in out Node_Id)
+         Curr : out Node_Id)
       is
          Prv_Decls : constant List_Id := Private_Declarations (Spec);
          Vis_Decls : constant List_Id := Visible_Declarations (Spec);
@@ -4941,7 +4942,7 @@ package body Sem_Elab is
 
       procedure Transition_Unit
         (Unit : Node_Id;
-         Curr : in out Node_Id)
+         Curr : out Node_Id)
       is
          Context : constant Node_Id := Parent (Unit);
 
@@ -6084,6 +6085,39 @@ package body Sem_Elab is
       return False;
    end In_Same_Context;
 
+   ------------------
+   -- In_Task_Body --
+   ------------------
+
+   function In_Task_Body (N : Node_Id) return Boolean is
+      Par : Node_Id;
+
+   begin
+      --  Climb the parent chain looking for a task body [procedure]
+
+      Par := N;
+      while Present (Par) loop
+         if Nkind (Par) = N_Task_Body then
+            return True;
+
+         elsif Nkind (Par) = N_Subprogram_Body
+           and then Is_Task_Body_Procedure (Par)
+         then
+            return True;
+
+         --  Prevent the search from going too far. Note that this predicate
+         --  shares nodes with the two cases above, and must come last.
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            return False;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return False;
+   end In_Task_Body;
+
    ----------------
    -- Initialize --
    ----------------
@@ -7120,50 +7154,8 @@ package body Sem_Elab is
      (Unit_1 : Entity_Id;
       Unit_2 : Entity_Id) return Boolean
    is
-      function Is_Subunit (Unit_Id : Entity_Id) return Boolean;
-      pragma Inline (Is_Subunit);
-      --  Determine whether unit Unit_Id is a subunit
-
-      function Normalize_Unit (Unit_Id : Entity_Id) return Entity_Id;
-      --  Strip a potential subunit chain ending with unit Unit_Id and return
-      --  the corresponding spec.
-
-      ----------------
-      -- Is_Subunit --
-      ----------------
-
-      function Is_Subunit (Unit_Id : Entity_Id) return Boolean is
-      begin
-         return Nkind (Parent (Unit_Declaration_Node (Unit_Id))) = N_Subunit;
-      end Is_Subunit;
-
-      --------------------
-      -- Normalize_Unit --
-      --------------------
-
-      function Normalize_Unit (Unit_Id : Entity_Id) return Entity_Id is
-         Result : Entity_Id;
-
-      begin
-         --  Eliminate a potential chain of subunits to reach to proper body
-
-         Result := Unit_Id;
-         while Present (Result)
-           and then Result /= Standard_Standard
-           and then Is_Subunit (Result)
-         loop
-            Result := Scope (Result);
-         end loop;
-
-         --  Obtain the entity of the corresponding spec (if any)
-
-         return Unique_Entity (Result);
-      end Normalize_Unit;
-
-   --  Start of processing for Is_Same_Unit
-
    begin
-      return Normalize_Unit (Unit_1) = Normalize_Unit (Unit_2);
+      return Unit_Entity (Unit_1) = Unit_Entity (Unit_2);
    end Is_Same_Unit;
 
    -----------------
@@ -7509,6 +7501,33 @@ package body Sem_Elab is
       return Nkind (N) = N_Variable_Reference_Marker;
    end Is_Suitable_Variable_Reference;
 
+   ------------------------------------
+   -- Is_Synchronous_Suspension_Call --
+   ------------------------------------
+
+   function Is_Synchronous_Suspension_Call (N : Node_Id) return Boolean is
+      Call_Attrs : Call_Attributes;
+      Target_Id  : Entity_Id;
+
+   begin
+      --  To qualify, the call must invoke one of the runtime routines which
+      --  perform synchronous suspension.
+
+      if Is_Suitable_Call (N) then
+         Extract_Call_Attributes
+           (Call      => N,
+            Target_Id => Target_Id,
+            Attrs     => Call_Attrs);
+
+         return
+           Is_RTE (Target_Id, RE_Suspend_Until_True)
+             or else
+           Is_RTE (Target_Id, RE_Wait_For_Release);
+      end if;
+
+      return False;
+   end Is_Synchronous_Suspension_Call;
+
    -------------------
    -- Is_Task_Entry --
    -------------------
@@ -7726,7 +7745,7 @@ package body Sem_Elab is
                      return Decl;
 
                   --  Otherwise the construct terminates the region where the
-                  --  preelabortion-related pragma may appear.
+                  --  preelaboration-related pragma may appear.
 
                   else
                      exit;
@@ -7908,16 +7927,12 @@ package body Sem_Elab is
    ----------------------
 
    function Non_Private_View (Typ : Entity_Id) return Entity_Id is
-      Result : Entity_Id;
-
    begin
-      Result := Typ;
-
-      if Is_Private_Type (Result) and then Present (Full_View (Result)) then
-         Result := Full_View (Result);
+      if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+         return Full_View (Typ);
+      else
+         return Typ;
       end if;
-
-      return Result;
    end Non_Private_View;
 
    -----------------------------
@@ -8416,8 +8431,8 @@ package body Sem_Elab is
       --  component.
 
       procedure Process_Task_Objects (List : List_Id);
-      --  Perform ABE checks and diagnostics for all task objects found in
-      --  the list List.
+      --  Perform ABE checks and diagnostics for all task objects found in the
+      --  list List.
 
       -------------------------
       -- Process_Task_Object --
@@ -8429,30 +8444,54 @@ package body Sem_Elab is
          Comp_Id    : Entity_Id;
          Task_Attrs : Task_Attributes;
 
+         New_State : Processing_Attributes := State;
+         --  Each step of the Processing phase constitutes a new state
+
       begin
          if Is_Task_Type (Typ) then
             Extract_Task_Attributes
               (Typ   => Base_Typ,
                Attrs => Task_Attrs);
 
+            --  Warnings are suppressed when a prior scenario is already in
+            --  that mode, or when the object, activation call, or task type
+            --  have warnings suppressed. Update the state of the Processing
+            --  phase to reflect this.
+
+            New_State.Suppress_Warnings :=
+              New_State.Suppress_Warnings
+                or else not Is_Elaboration_Warnings_OK_Id (Obj_Id)
+                or else not Call_Attrs.Elab_Warnings_OK
+                or else not Task_Attrs.Elab_Warnings_OK;
+
+            --  Update the state of the Processing phase to indicate that any
+            --  further traversal is now within a task body.
+
+            New_State.Within_Task_Body := True;
+
             Process_Single_Activation
               (Call       => Call,
                Call_Attrs => Call_Attrs,
                Obj_Id     => Obj_Id,
                Task_Attrs => Task_Attrs,
-               State      => State);
+               State      => New_State);
 
          --  Examine the component type when the object is an array
 
          elsif Is_Array_Type (Typ) and then Has_Task (Base_Typ) then
-            Process_Task_Object (Obj_Id, Component_Type (Typ));
+            Process_Task_Object
+              (Obj_Id => Obj_Id,
+               Typ    => Component_Type (Typ));
 
          --  Examine individual component types when the object is a record
 
          elsif Is_Record_Type (Typ) and then Has_Task (Base_Typ) then
             Comp_Id := First_Component (Typ);
             while Present (Comp_Id) loop
-               Process_Task_Object (Obj_Id, Etype (Comp_Id));
+               Process_Task_Object
+                 (Obj_Id => Obj_Id,
+                  Typ    => Etype (Comp_Id));
+
                Next_Component (Comp_Id);
             end loop;
          end if;
@@ -8478,7 +8517,9 @@ package body Sem_Elab is
                Item_Typ := Etype (Item_Id);
 
                if Has_Task (Item_Typ) then
-                  Process_Task_Object (Item_Id, Item_Typ);
+                  Process_Task_Object
+                    (Obj_Id => Item_Id,
+                     Typ    => Item_Typ);
                end if;
             end if;
 
@@ -8582,6 +8623,8 @@ package body Sem_Elab is
                     (Marker, False);
          Set_Is_Elaboration_Checks_OK_Node
                     (Marker, Is_Elaboration_Checks_OK_Node (Attr));
+         Set_Is_Elaboration_Warnings_OK_Node
+                    (Marker, Is_Elaboration_Warnings_OK_Node (Attr));
          Set_Is_Source_Call
                     (Marker, Comes_From_Source (Attr));
          Set_Is_SPARK_Mode_On_Node
@@ -8602,6 +8645,9 @@ package body Sem_Elab is
 
       Target_Attrs : Target_Attributes;
 
+      New_State : Processing_Attributes := State;
+      --  Each step of the Processing phase constitutes a new state
+
    --  Start of processing for Process_Conditional_ABE_Access
 
    begin
@@ -8617,6 +8663,21 @@ package body Sem_Elab is
         (Target_Id => Target_Id,
          Attrs     => Target_Attrs);
 
+      --  Warnings are suppressed when a prior scenario is already in that
+      --  mode, or when the attribute or the target have warnings suppressed.
+      --  Update the state of the Processing phase to reflect this.
+
+      New_State.Suppress_Warnings :=
+        New_State.Suppress_Warnings
+          or else not Is_Elaboration_Warnings_OK_Node (Attr)
+          or else not Target_Attrs.Elab_Warnings_OK;
+
+      --  Do not emit any ABE diagnostics when the current or previous scenario
+      --  in this traversal has suppressed elaboration warnings.
+
+      if New_State.Suppress_Warnings then
+         null;
+
       --  Both the attribute and the corresponding body are in the same unit.
       --  The corresponding body must appear prior to the root scenario which
       --  started the recursive search. If this is not the case, then there is
@@ -8624,7 +8685,7 @@ package body Sem_Elab is
       --  Emit a warning only when switch -gnatw.f (warnings on suspucious
       --  'Access) is in effect.
 
-      if Warn_On_Elab_Access
+      elsif Warn_On_Elab_Access
         and then Present (Target_Attrs.Body_Decl)
         and then In_Extended_Main_Code_Unit (Target_Attrs.Body_Decl)
         and then Earlier_In_Extended_Unit (Root, Target_Attrs.Body_Decl)
@@ -8644,7 +8705,7 @@ package body Sem_Elab is
       if Debug_Flag_Dot_O then
          Process_Conditional_ABE
            (N     => Build_Access_Marker (Target_Id),
-            State => State);
+            State => New_State);
 
       --  Otherwise ensure that the unit with the corresponding body is
       --  elaborated prior to the main unit.
@@ -8654,7 +8715,7 @@ package body Sem_Elab is
            (N        => Attr,
             Unit_Id  => Target_Attrs.Unit_Id,
             Prag_Nam => Name_Elaborate_All,
-            State    => State);
+            State    => New_State);
       end if;
    end Process_Conditional_ABE_Access;
 
@@ -8809,11 +8870,17 @@ package body Sem_Elab is
 
          if Earlier_In_Extended_Unit (Root, Task_Attrs.Body_Decl) then
 
+            --  Do not emit any ABE diagnostics when a previous scenario in
+            --  this traversal has suppressed elaboration warnings.
+
+            if State.Suppress_Warnings then
+               null;
+
             --  Do not emit any ABE diagnostics when the activation occurs in
             --  a partial finalization context because this leads to confusing
             --  noise.
 
-            if State.Within_Partial_Finalization then
+            elsif State.Within_Partial_Finalization then
                null;
 
             --  ABE diagnostics are emitted only in the static model because
@@ -8821,9 +8888,7 @@ package body Sem_Elab is
             --  this order diagnostics appear jumbled and result in unwanted
             --  noise.
 
-            elsif Static_Elaboration_Checks
-              and then Call_Attrs.Elab_Warnings_OK
-            then
+            elsif Static_Elaboration_Checks then
                Error_Msg_Sloc := Sloc (Call);
                Error_Msg_N
                  ("??task & will be activated # before elaboration of its "
@@ -8892,11 +8957,6 @@ package body Sem_Elab is
             Ins_Nod => Call,
             Id      => Task_Attrs.Unit_Id);
       end if;
-
-      --  Update the state of the Processing phase to indicate that any further
-      --  traversal is now within a task body.
-
-      New_State.Within_Task_Body := True;
 
       --  Both the activation call and task type are subject to SPARK_Mode
       --  On, this triggers the SPARK rules for task activation. Compared to
@@ -9109,6 +9169,15 @@ package body Sem_Elab is
          return;
       end if;
 
+      --  Warnings are suppressed when a prior scenario is already in that
+      --  mode, or the call or target have warnings suppressed. Update the
+      --  state of the Processing phase to reflect this.
+
+      New_State.Suppress_Warnings :=
+        New_State.Suppress_Warnings
+          or else not Call_Attrs.Elab_Warnings_OK
+          or else not Target_Attrs.Elab_Warnings_OK;
+
       --  The call occurs in an initial condition context when a prior scenario
       --  is already in that mode, or when the target is an Initial_Condition
       --  procedure. Update the state of the Processing phase to reflect this.
@@ -9245,11 +9314,17 @@ package body Sem_Elab is
 
          if Earlier_In_Extended_Unit (Root, Target_Attrs.Body_Decl) then
 
+            --  Do not emit any ABE diagnostics when a previous scenario in
+            --  this traversal has suppressed elaboration warnings.
+
+            if State.Suppress_Warnings then
+               null;
+
             --  Do not emit any ABE diagnostics when the call occurs in a
             --  partial finalization context because this leads to confusing
             --  noise.
 
-            if State.Within_Partial_Finalization then
+            elsif State.Within_Partial_Finalization then
                null;
 
             --  ABE diagnostics are emitted only in the static model because
@@ -9257,9 +9332,7 @@ package body Sem_Elab is
             --  this order diagnostics appear jumbled and result in unwanted
             --  noise.
 
-            elsif Static_Elaboration_Checks
-              and then Call_Attrs.Elab_Warnings_OK
-            then
+            elsif Static_Elaboration_Checks then
                Error_Msg_NE
                  ("??cannot call & before body seen", Call, Target_Id);
                Error_Msg_N ("\Program_Error may be raised at run time", Call);
@@ -9432,11 +9505,17 @@ package body Sem_Elab is
 
          if Earlier_In_Extended_Unit (Call, Target_Attrs.Body_Decl) then
 
+            --  Do not emit any ABE diagnostics when a previous scenario in
+            --  this traversal has suppressed elaboration warnings.
+
+            if State.Suppress_Warnings then
+               null;
+
             --  Do not emit any ABE diagnostics when the call occurs in an
             --  initial condition context because this leads to incorrect
             --  diagnostics.
 
-            if State.Within_Initial_Condition then
+            elsif State.Within_Initial_Condition then
                null;
 
             --  Do not emit any ABE diagnostics when the call occurs in a
@@ -9539,6 +9618,9 @@ package body Sem_Elab is
       SPARK_Rules_On : Boolean;
       --  This flag is set when the SPARK rules are in effect
 
+      New_State : Processing_Attributes := State;
+      --  Each step of the Processing phase constitutes a new state
+
    begin
       Extract_Instantiation_Attributes
         (Exp_Inst => Exp_Inst,
@@ -9603,15 +9685,23 @@ package body Sem_Elab is
 
       elsif Is_Up_Level_Target (Gen_Attrs.Spec_Decl) then
          return;
+      end if;
+
+      --  Warnings are suppressed when a prior scenario is already in that
+      --  mode, or when the instantiation has warnings suppressed. Update
+      --  the state of the processing phase to reflect this.
+
+      New_State.Suppress_Warnings :=
+        New_State.Suppress_Warnings or else not Inst_Attrs.Elab_Warnings_OK;
 
       --  The SPARK rules are in effect
 
-      elsif SPARK_Rules_On then
+      if SPARK_Rules_On then
          Process_Conditional_ABE_Instantiation_SPARK
            (Inst      => Inst,
             Gen_Id    => Gen_Id,
             Gen_Attrs => Gen_Attrs,
-            State     => State);
+            State     => New_State);
 
       --  Otherwise the Ada rules are in effect, or SPARK code is allowed to
       --  violate the SPARK rules.
@@ -9623,7 +9713,7 @@ package body Sem_Elab is
             Inst_Attrs => Inst_Attrs,
             Gen_Id     => Gen_Id,
             Gen_Attrs  => Gen_Attrs,
-            State      => State);
+            State      => New_State);
       end if;
    end Process_Conditional_ABE_Instantiation;
 
@@ -9648,10 +9738,10 @@ package body Sem_Elab is
       --  the generic have active elaboration checks and both are not ignored
       --  Ghost constructs.
 
+      Root : constant Node_Id := Root_Scenario;
+
       New_State : Processing_Attributes := State;
       --  Each step of the Processing phase constitutes a new state
-
-      Root : constant Node_Id := Root_Scenario;
 
    begin
       --  Nothing to do when the instantiation is ABE-safe
@@ -9709,11 +9799,17 @@ package body Sem_Elab is
 
          if Earlier_In_Extended_Unit (Root, Gen_Attrs.Body_Decl) then
 
+            --  Do not emit any ABE diagnostics when a previous scenario in
+            --  this traversal has suppressed elaboration warnings.
+
+            if State.Suppress_Warnings then
+               null;
+
             --  Do not emit any ABE diagnostics when the instantiation occurs
             --  in partial finalization context because this leads to unwanted
             --  noise.
 
-            if State.Within_Partial_Finalization then
+            elsif State.Within_Partial_Finalization then
                null;
 
             --  ABE diagnostics are emitted only in the static model because
@@ -9721,9 +9817,7 @@ package body Sem_Elab is
             --  this order diagnostics appear jumbled and result in unwanted
             --  noise.
 
-            elsif Static_Elaboration_Checks
-              and then Inst_Attrs.Elab_Warnings_OK
-            then
+            elsif Static_Elaboration_Checks then
                Error_Msg_NE
                  ("??cannot instantiate & before body seen", Inst, Gen_Id);
                Error_Msg_N ("\Program_Error may be raised at run time", Inst);
@@ -9923,7 +10017,7 @@ package body Sem_Elab is
       --  spec without a pragma Elaborate_Body is initialized by elaboration
       --  code within the corresponding body.
 
-      if not Warnings_Off (Var_Id)
+      if Is_Elaboration_Warnings_OK_Id (Var_Id)
         and then not Is_Initialized (Var_Decl)
         and then not Has_Pragma_Elaborate_Body (Spec_Id)
       then
@@ -9964,7 +10058,8 @@ package body Sem_Elab is
       --  without pragma Elaborate_Body is further modified by elaboration code
       --  within the corresponding body.
 
-      if Is_Initialized (Var_Decl)
+      if Is_Elaboration_Warnings_OK_Id (Var_Id)
+        and then Is_Initialized (Var_Decl)
         and then not Has_Pragma_Elaborate_Body (Spec_Id)
       then
          Error_Msg_NE
@@ -10615,8 +10710,8 @@ package body Sem_Elab is
       if Legacy_Elaboration_Checks then
          return;
 
-      --  Nothing to do for ASIS. As a result, no ABE checks and diagnostics
-      --  are performed in this mode.
+      --  Nothing to do for ASIS because ABE checks and diagnostics are not
+      --  performed in this mode.
 
       elsif ASIS_Mode then
          return;
@@ -10936,31 +11031,18 @@ package body Sem_Elab is
       procedure Find_And_Process_Nested_Scenarios;
       pragma Inline (Find_And_Process_Nested_Scenarios);
       --  Examine the declarations and statements of subprogram body N for
-      --  suitable scenarios. Save each discovered scenario and process it
-      --  accordingly.
-
-      procedure Process_Nested_Scenarios (Nested : Elist_Id);
-      pragma Inline (Process_Nested_Scenarios);
-      --  Invoke Process_Conditional_ABE on each individual scenario found in
-      --  list Nested.
+      --  suitable scenarios.
 
       ---------------------------------------
       -- Find_And_Process_Nested_Scenarios --
       ---------------------------------------
 
       procedure Find_And_Process_Nested_Scenarios is
-         Body_Id : constant Entity_Id := Defining_Entity (N);
-
          function Is_Potential_Scenario
            (Nod : Node_Id) return Traverse_Result;
          --  Determine whether arbitrary node Nod denotes a suitable scenario.
          --  If it does, save it in the Nested_Scenarios list of the subprogram
          --  body, and process it.
-
-         procedure Save_Scenario (Nod : Node_Id);
-         pragma Inline (Save_Scenario);
-         --  Save scenario Nod in the Nested_Scenarios list of the subprogram
-         --  body.
 
          procedure Traverse_List (List : List_Id);
          pragma Inline (Traverse_List);
@@ -10986,24 +11068,52 @@ package body Sem_Elab is
             if Is_Non_Library_Level_Encapsulator (Nod) then
                return Skip;
 
-            --  Terminate the traversal of a task body with an accept statement
-            --  when no entry calls in elaboration are allowed because the task
-            --  will block at run-time and the remaining statements will not be
-            --  executed.
+            --  Terminate the traversal of a task body when encountering an
+            --  accept or select statement, and
+            --
+            --    * Entry calls during elaboration are not allowed. In this
+            --      case the accept or select statement will cause the task
+            --      to block at elaboration time because there are no entry
+            --      calls to unblock it.
+            --
+            --  or
+            --
+            --    * Switch -gnatd_a (stop elaboration checks on accept or
+            --      select statement) is in effect.
 
-            elsif Nkind_In (Original_Node (Nod), N_Accept_Statement,
-                                                 N_Selective_Accept)
+            elsif (Debug_Flag_Underscore_A
+                    or else Restriction_Active
+                              (No_Entry_Calls_In_Elaboration_Code))
+              and then Nkind_In (Original_Node (Nod), N_Accept_Statement,
+                                                      N_Selective_Accept)
             then
-               if Restriction_Active (No_Entry_Calls_In_Elaboration_Code) then
-                  return Abandon;
+               return Abandon;
 
-               --  The same behavior is achieved when switch -gnatd_a (stop
-               --  elabortion checks on accept or select statement) is in
-               --  effect.
+            --  Terminate the traversal of a task body when encountering a
+            --  suspension call, and
+            --
+            --    * Entry calls during elaboration are not allowed. In this
+            --      case the suspension call emulates an entry call and will
+            --      cause the task to block at elaboration time.
+            --
+            --  or
+            --
+            --    * Switch -gnatd_s (stop elaboration checks on synchronous
+            --      suspension) is in effect.
+            --
+            --  Note that the guard should not be checking the state of flag
+            --  Within_Task_Body because only suspension calls which appear
+            --  immediately within the statements of the task are supported.
+            --  Flag Within_Task_Body carries over to deeper levels of the
+            --  traversal.
 
-               elsif Debug_Flag_Underscore_A then
-                  return Abandon;
-               end if;
+            elsif (Debug_Flag_Underscore_S
+                    or else Restriction_Active
+                              (No_Entry_Calls_In_Elaboration_Code))
+              and then Is_Synchronous_Suspension_Call (Nod)
+              and then In_Task_Body (Nod)
+            then
+               return Abandon;
 
             --  Certain nodes carry semantic lists which act as repositories
             --  until expansion transforms the node and relocates the contents.
@@ -11026,14 +11136,7 @@ package body Sem_Elab is
 
             --  General case
 
-            --  Save a suitable scenario in the Nested_Scenarios list of the
-            --  subprogram body. As a result any subsequent traversals of the
-            --  subprogram body started from a different top-level scenario no
-            --  longer need to reexamine the tree.
-
             elsif Is_Suitable_Scenario (Nod) then
-               Save_Scenario (Nod);
-
                Process_Conditional_ABE
                  (N     => Nod,
                   State => State);
@@ -11041,24 +11144,6 @@ package body Sem_Elab is
 
             return OK;
          end Is_Potential_Scenario;
-
-         -------------------
-         -- Save_Scenario --
-         -------------------
-
-         procedure Save_Scenario (Nod : Node_Id) is
-            Nested : Elist_Id;
-
-         begin
-            Nested := Nested_Scenarios (Body_Id);
-
-            if No (Nested) then
-               Nested := New_Elmt_List;
-               Set_Nested_Scenarios (Body_Id, Nested);
-            end if;
-
-            Append_Elmt (Nod, Nested);
-         end Save_Scenario;
 
          -------------------
          -- Traverse_List --
@@ -11088,28 +11173,6 @@ package body Sem_Elab is
          Traverse_Potential_Scenarios (Handled_Statement_Sequence (N));
       end Find_And_Process_Nested_Scenarios;
 
-      ------------------------------
-      -- Process_Nested_Scenarios --
-      ------------------------------
-
-      procedure Process_Nested_Scenarios (Nested : Elist_Id) is
-         Nested_Elmt : Elmt_Id;
-
-      begin
-         Nested_Elmt := First_Elmt (Nested);
-         while Present (Nested_Elmt) loop
-            Process_Conditional_ABE
-              (N     => Node (Nested_Elmt),
-               State => State);
-
-            Next_Elmt (Nested_Elmt);
-         end loop;
-      end Process_Nested_Scenarios;
-
-      --  Local variables
-
-      Nested : Elist_Id;
-
    --  Start of processing for Traverse_Body
 
    begin
@@ -11134,24 +11197,60 @@ package body Sem_Elab is
          Set_Is_Visited_Body (N);
       end if;
 
-      Nested := Nested_Scenarios (Defining_Entity (N));
+      --  Examine the declarations and statements of the subprogram body for
+      --  suitable scenarios, save and process them accordingly.
 
-      --  The subprogram body was already examined as part of the elaboration
-      --  graph starting from a different top-level scenario. There is no need
-      --  to traverse the declarations and statements again because this will
-      --  yield the exact same scenarios. Use the nested scenarios collected
-      --  during the first inspection of the body.
-
-      if Present (Nested) then
-         Process_Nested_Scenarios (Nested);
-
-      --  Otherwise examine the declarations and statements of the subprogram
-      --  body for suitable scenarios, save and process them accordingly.
-
-      else
-         Find_And_Process_Nested_Scenarios;
-      end if;
+      Find_And_Process_Nested_Scenarios;
    end Traverse_Body;
+
+   -----------------
+   -- Unit_Entity --
+   -----------------
+
+   function Unit_Entity (Unit_Id : Entity_Id) return Entity_Id is
+      function Is_Subunit (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Subunit);
+      --  Determine whether the entity of an initial declaration denotes a
+      --  subunit.
+
+      ----------------
+      -- Is_Subunit --
+      ----------------
+
+      function Is_Subunit (Id : Entity_Id) return Boolean is
+         Decl : constant Node_Id := Unit_Declaration_Node (Id);
+
+      begin
+         return
+           Nkind_In (Decl, N_Generic_Package_Declaration,
+                           N_Generic_Subprogram_Declaration,
+                           N_Package_Declaration,
+                           N_Protected_Type_Declaration,
+                           N_Subprogram_Declaration,
+                           N_Task_Type_Declaration)
+             and then Present (Corresponding_Body (Decl))
+             and then Nkind (Parent (Unit_Declaration_Node
+                        (Corresponding_Body (Decl)))) = N_Subunit;
+      end Is_Subunit;
+
+      --  Local variables
+
+      Id : Entity_Id;
+
+   --  Start of processing for Unit_Entity
+
+   begin
+      Id := Unique_Entity (Unit_Id);
+
+      --  Skip all subunits found in the scope chain which ends at the input
+      --  unit.
+
+      while Is_Subunit (Id) loop
+         Id := Scope (Id);
+      end loop;
+
+      return Id;
+   end Unit_Entity;
 
    ---------------------------------
    -- Update_Elaboration_Scenario --
@@ -12696,7 +12795,7 @@ package body Sem_Elab is
       then
          return;
 
-      --  Nothing to do if call is being pre-analyzed, as when within a
+      --  Nothing to do if call is being preanalyzed, as when within a
       --  pre/postcondition, a predicate, or an invariant.
 
       elsif In_Spec_Expression then

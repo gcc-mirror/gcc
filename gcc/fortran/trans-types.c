@@ -1923,6 +1923,14 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
 
   base_type = gfc_get_array_descriptor_base (dimen, codimen, restricted);
   fat_type = build_distinct_type_copy (base_type);
+  /* Unshare TYPE_FIELDs.  */
+  for (tree *tp = &TYPE_FIELDS (fat_type); *tp; tp = &DECL_CHAIN (*tp))
+    {
+      tree next = DECL_CHAIN (*tp);
+      *tp = copy_node (*tp);
+      DECL_CONTEXT (*tp) = fat_type;
+      DECL_CHAIN (*tp) = next;
+    }
   /* Make sure that nontarget and target array type have the same canonical
      type (and same stub decl for debug info).  */
   base_type = gfc_get_array_descriptor_base (dimen, codimen, false);
@@ -2534,7 +2542,6 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
   bool got_canonical = false;
   bool unlimited_entity = false;
   gfc_component *c;
-  gfc_dt_list *dt;
   gfc_namespace *ns;
   tree tmp;
   bool coarray_flag;
@@ -2599,14 +2606,19 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 	   ns->translated && !got_canonical;
 	   ns = ns->sibling)
 	{
-	  dt = ns->derived_types;
-	  for (; dt && !canonical; dt = dt->next)
+	  if (ns->derived_types)
 	    {
-	      gfc_copy_dt_decls_ifequal (dt->derived, derived, true);
-	      if (derived->backend_decl)
-		got_canonical = true;
-	    }
-	}
+	      for (gfc_symbol *dt = ns->derived_types; dt && !got_canonical;
+		   dt = dt->dt_next)
+		{
+		  gfc_copy_dt_decls_ifequal (dt, derived, true);
+		  if (derived->backend_decl)
+		    got_canonical = true;
+		  if (dt->dt_next == ns->derived_types)
+		    break;
+		}
+ 	    }
+ 	}
     }
 
   /* Store up the canonical type to be added to this one.  */
@@ -2867,8 +2879,12 @@ copy_derived_types:
 	}
     }
 
-  for (dt = gfc_derived_types; dt; dt = dt->next)
-    gfc_copy_dt_decls_ifequal (derived, dt->derived, false);
+  for (gfc_symbol *dt = gfc_derived_types; dt; dt = dt->dt_next)
+    {
+      gfc_copy_dt_decls_ifequal (derived, dt, false);
+      if (dt->dt_next == gfc_derived_types)
+	break;
+    }
 
   return derived->backend_decl;
 }

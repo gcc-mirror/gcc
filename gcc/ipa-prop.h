@@ -544,7 +544,7 @@ struct GTY(()) ipa_agg_replacement_value
 
 /* Structure holding information for the transformation phase of IPA-CP.  */
 
-struct GTY(()) ipcp_transformation_summary
+struct GTY(()) ipcp_transformation
 {
   /* Linked list of known aggregate values.  */
   ipa_agg_replacement_value *agg_values;
@@ -556,7 +556,7 @@ struct GTY(()) ipcp_transformation_summary
 
 void ipa_set_node_agg_value_chain (struct cgraph_node *node,
 				   struct ipa_agg_replacement_value *aggvals);
-void ipcp_grow_transformations_if_necessary (void);
+void ipcp_transformation_initialize (void);
 
 /* ipa_edge_args stores information related to a callsite and particularly its
    arguments.  It can be accessed by the IPA_EDGE_REF macro.  */
@@ -649,13 +649,32 @@ extern GTY(()) ipa_node_params_t * ipa_node_params_sum;
 /* Call summary to store information about edges such as jump functions.  */
 extern GTY(()) ipa_edge_args_sum_t *ipa_edge_args_sum;
 
-/* Vector of IPA-CP transformation data for each clone.  */
-extern GTY(()) vec<ipcp_transformation_summary, va_gc> *ipcp_transformations;
+/* Function summary for IPA-CP transformation.  */
+class ipcp_transformation_t
+: public function_summary<ipcp_transformation *>
+{
+public:
+  ipcp_transformation_t (symbol_table *table, bool ggc):
+    function_summary<ipcp_transformation *> (table, ggc) {}
+
+  ~ipcp_transformation_t () {}
+
+  static ipcp_transformation_t *create_ggc (symbol_table *symtab)
+  {
+    ipcp_transformation_t *summary
+      = new (ggc_cleared_alloc <ipcp_transformation_t> ())
+      ipcp_transformation_t (symtab, true);
+    return summary;
+  }
+};
+
+/* Function summary where the IPA CP transformations are actually stored.  */
+extern GTY(()) function_summary <ipcp_transformation *> *ipcp_transformation_sum;
 
 /* Return the associated parameter/argument info corresponding to the given
    node/edge.  */
-#define IPA_NODE_REF(NODE) (ipa_node_params_sum->get (NODE))
-#define IPA_EDGE_REF(EDGE) (ipa_edge_args_sum->get (EDGE))
+#define IPA_NODE_REF(NODE) (ipa_node_params_sum->get_create (NODE))
+#define IPA_EDGE_REF(EDGE) (ipa_edge_args_sum->get_create (EDGE))
 /* This macro checks validity of index returned by
    ipa_get_param_decl_index function.  */
 #define IS_VALID_JUMP_FUNC_INDEX(I) ((I) != -1)
@@ -664,7 +683,6 @@ extern GTY(()) vec<ipcp_transformation_summary, va_gc> *ipcp_transformations;
 void ipa_create_all_node_params (void);
 void ipa_create_all_edge_args (void);
 void ipa_check_create_edge_args (void);
-void ipa_free_edge_args_substructures (struct ipa_edge_args *);
 void ipa_free_all_node_params (void);
 void ipa_free_all_edge_args (void);
 void ipa_free_all_structures_after_ipa_cp (void);
@@ -695,12 +713,13 @@ ipa_edge_args_info_available_for_edge_p (struct cgraph_edge *edge)
   return ipa_edge_args_sum->exists (edge);
 }
 
-static inline ipcp_transformation_summary *
+static inline ipcp_transformation *
 ipcp_get_transformation_summary (cgraph_node *node)
 {
-  if ((unsigned) node->uid >= vec_safe_length (ipcp_transformations))
+  if (ipcp_transformation_sum == NULL)
     return NULL;
-  return &(*ipcp_transformations)[node->uid];
+
+  return ipcp_transformation_sum->get (node);
 }
 
 /* Return the aggregate replacements for NODE, if there are any.  */
@@ -708,7 +727,7 @@ ipcp_get_transformation_summary (cgraph_node *node)
 static inline struct ipa_agg_replacement_value *
 ipa_get_agg_replacements_for_node (cgraph_node *node)
 {
-  ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+  ipcp_transformation *ts = ipcp_get_transformation_summary (node);
   return ts ? ts->agg_values : NULL;
 }
 

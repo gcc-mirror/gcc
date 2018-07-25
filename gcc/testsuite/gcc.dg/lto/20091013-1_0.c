@@ -1,6 +1,7 @@
 /* { dg-lto-do link } */
 /* { dg-require-effective-target fpic } */
 /* { dg-lto-options {{-fPIC -r -nostdlib -flto} {-fPIC -r -nostdlib -O2 -flto}} } */
+/* { dg-extra-ld-options "-flinker-output=nolto-rel" } */
 
 void * HeapAlloc(void*,unsigned int,unsigned long);
 

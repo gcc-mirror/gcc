@@ -1187,7 +1187,7 @@ do {									     \
    location counter to a multiple of 2**LOG bytes.  */
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
-    fprintf (FILE, "\t.align %d\n", (1<<(LOG)))
+    fprintf (FILE, "\t.align %d\n", (1 << (LOG)))
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.blockz " HOST_WIDE_INT_PRINT_UNSIGNED"\n",		\

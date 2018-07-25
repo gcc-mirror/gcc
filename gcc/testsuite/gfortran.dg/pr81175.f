@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-Ofast -fwrapv" }
+! { dg-options "-Ofast -fwrapv -std=legacy" }
 ! { dg-additional-options "-march=broadwell" { target x86_64-*-* i?86-*-* } }
       SUBROUTINE ECPDRA(IC4C,FP,FQ,G)
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)

@@ -3312,6 +3312,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 
     case NEGATE_EXPR:
     case ABS_EXPR:
+    case ABSU_EXPR:
     case FLOAT_EXPR:
     case EXCESS_PRECISION_EXPR:
       /* These don't change whether an object is nonzero or zero.  */
@@ -5403,10 +5404,8 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
   if (TREE_CODE (TREE_TYPE (param)) != POINTER_TYPE)
     return;
 
-  /* When not optimizing diagnose the simple cases of null arguments.
-     When optimization is enabled defer the checking until expansion
-     when more cases can be detected.  */
-  if (integer_zerop (param))
+  /* Diagnose the simple cases of null arguments.  */
+  if (integer_zerop (fold_for_warn (param)))
     {
       warning_at (pctx->loc, OPT_Wnonnull, "null argument where non-null "
 		  "required (argument %lu)", (unsigned long) param_num);
@@ -6134,7 +6133,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
       gcc_unreachable ();
     }
   if (done_lexing)
-    richloc->set_range (line_table, 0, input_location, true);
+    richloc->set_range (0, input_location, true);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
   diagnostic_override_option_index (&diagnostic,
@@ -8175,7 +8174,7 @@ maybe_suggest_missing_token_insertion (rich_location *richloc,
       location_t hint_loc = hint->get_start_loc ();
       location_t old_loc = richloc->get_loc ();
 
-      richloc->set_range (line_table, 0, hint_loc, true);
+      richloc->set_range (0, hint_loc, true);
       richloc->add_range (old_loc, false);
     }
 }

@@ -3110,28 +3110,6 @@ package body Sprint is
             Sprint_Indented_List (Component_Clauses (Node));
             Write_Indent_Str ("end record;");
 
-         when N_Reduction_Expression =>
-            Write_Str (" for");
-
-            if Present (Iterator_Specification (Node)) then
-               Sprint_Node (Iterator_Specification (Node));
-            else
-               Sprint_Node (Loop_Parameter_Specification (Node));
-            end if;
-
-            Write_Str (" => ");
-            Sprint_Node (Expression (Node));
-            null;
-
-         when N_Reduction_Expression_Parameter =>
-            Write_Char ('<');
-
-            if Present (Expression (Node)) then
-               Sprint_Node (Expression (Node));
-            end if;
-
-            Write_Char ('>');
-
          when N_Reference =>
             Sprint_Node (Prefix (Node));
             Write_Str_With_Col_Check_Sloc ("'reference");

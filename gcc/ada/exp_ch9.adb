@@ -31,7 +31,6 @@ with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Dbug; use Exp_Dbug;
-with Exp_Disp; use Exp_Disp;
 with Exp_Sel;  use Exp_Sel;
 with Exp_Smem; use Exp_Smem;
 with Exp_Tss;  use Exp_Tss;
@@ -474,6 +473,11 @@ package body Exp_Ch9 is
    --    <actual1> := P.<formal1>;
    --    ...
    --    <actualN> := P.<formalN>;
+
+   procedure Reset_Scopes_To (Proc_Body : Node_Id; E : Entity_Id);
+   --  Reset the scope of declarations and blocks at the top level of Proc_Body
+   --  to be E. Used after expanding entry bodies into their corresponding
+   --  procedures.
 
    function Trivial_Accept_OK return Boolean;
    --  If there is no DO-END block for an accept, or if the DO-END block has
@@ -3559,6 +3563,7 @@ package body Exp_Ch9 is
       Bod_Stmts : List_Id;
       Complete  : Node_Id;
       Ohandle   : Node_Id;
+      Proc_Body : Node_Id;
 
       EH_Loc : Source_Ptr;
       --  Used for the exception handler, inserted at end of the body
@@ -3671,7 +3676,7 @@ package body Exp_Ch9 is
          --  Create body of entry procedure. The renaming declarations are
          --  placed ahead of the block that contains the actual entry body.
 
-         return
+         Proc_Body :=
            Make_Subprogram_Body (Loc,
              Specification              => Bod_Spec,
              Declarations               => Bod_Decls,
@@ -3700,6 +3705,9 @@ package body Exp_Ch9 is
                              Name =>
                                New_Occurrence_Of
                                  (RTE (RE_Get_GNAT_Exception), Loc)))))))));
+
+         Reset_Scopes_To (Proc_Body, Bod_Id);
+         return Proc_Body;
       end if;
    end Build_Protected_Entry;
 
@@ -8654,8 +8662,12 @@ package body Exp_Ch9 is
             when N_Implicit_Label_Declaration =>
                null;
 
-            when N_Itype_Reference =>
-               Insert_After (Current_Node, New_Copy (Op_Body));
+            when N_Call_Marker
+               | N_Itype_Reference
+            =>
+               New_Op_Body := New_Copy (Op_Body);
+               Insert_After (Current_Node, New_Op_Body);
+               Current_Node := New_Op_Body;
 
             when N_Freeze_Entity =>
                New_Op_Body := New_Copy (Op_Body);
@@ -10545,11 +10557,14 @@ package body Exp_Ch9 is
          Eloc      : constant Source_Ptr := Sloc (Ename);
          Eent      : constant Entity_Id  := Entity (Ename);
          Index     : constant Node_Id    := Entry_Index (Acc_Stm);
-         Null_Body : Node_Id;
-         Proc_Body : Node_Id;
-         PB_Ent    : Entity_Id;
-         Expr      : Node_Id;
+
          Call      : Node_Id;
+         Expr      : Node_Id;
+         Null_Body : Node_Id;
+         PB_Ent    : Entity_Id;
+         Proc_Body : Node_Id;
+
+      --  Start of processing for Add_Accept
 
       begin
          if No (Ann) then
@@ -10563,9 +10578,7 @@ package body Exp_Ch9 is
                 Entry_Index_Expression (Eloc, Eent, Index, Scope (Eent)),
                 New_Occurrence_Of (RTE (RE_Null_Task_Entry), Eloc)));
          else
-            Expr :=
-              Entry_Index_Expression
-                (Eloc, Eent, Index, Scope (Eent));
+            Expr := Entry_Index_Expression (Eloc, Eent, Index, Scope (Eent));
          end if;
 
          if Present (Handled_Statement_Sequence (Accept_Statement (Alt))) then
@@ -10606,6 +10619,8 @@ package body Exp_Ch9 is
                 Declarations               => Declarations (Acc_Stm),
                 Handled_Statement_Sequence =>
                   Build_Accept_Body (Accept_Statement (Alt)));
+
+            Reset_Scopes_To (Proc_Body, PB_Ent);
 
             --  During the analysis of the body of the accept statement, any
             --  zero cost exception handler records were collected in the
@@ -13300,9 +13315,9 @@ package body Exp_Ch9 is
          Insert_Node := Decl;
       end Add;
 
-      --------------------------
-      -- Replace_Discriminant --
-      --------------------------
+      -------------------
+      -- Replace_Bound --
+      -------------------
 
       function Replace_Bound (Bound : Node_Id) return Node_Id is
       begin
@@ -14709,6 +14724,64 @@ package body Exp_Ch9 is
          return New_List (Make_Null_Statement (Loc));
       end if;
    end Parameter_Block_Unpack;
+
+   ---------------------
+   -- Reset_Scopes_To --
+   ---------------------
+
+   procedure Reset_Scopes_To (Proc_Body : Node_Id; E : Entity_Id) is
+      function Reset_Scope (N : Node_Id) return Traverse_Result;
+      --  Temporaries may have been declared during expansion of the procedure
+      --  alternative. Indicate that their scope is the new body, to prevent
+      --  generation of spurious uplevel references for these entities.
+
+      procedure Reset_Scopes is new Traverse_Proc (Reset_Scope);
+
+      -----------------
+      -- Reset_Scope --
+      -----------------
+
+      function Reset_Scope (N : Node_Id) return Traverse_Result is
+         Decl : Node_Id;
+
+      begin
+         --  If this is a block statement with an Identifier, it forms a scope,
+         --  so we want to reset its scope but not look inside.
+
+         if Nkind (N) = N_Block_Statement
+           and then Present (Identifier (N))
+         then
+            Set_Scope (Entity (Identifier (N)), E);
+            return Skip;
+
+         elsif Nkind (N) = N_Package_Declaration then
+            Set_Scope (Defining_Entity (N), E);
+            return Skip;
+
+         elsif N = Proc_Body then
+
+            --  Scan declarations
+
+            Decl := First (Declarations (N));
+            while Present (Decl) loop
+               Reset_Scopes (Decl);
+               Next (Decl);
+            end loop;
+
+         elsif N /= Proc_Body and then Nkind (N) in N_Proper_Body then
+            return Skip;
+         elsif Nkind (N) = N_Defining_Identifier then
+            Set_Scope (N, E);
+         end if;
+
+         return OK;
+      end Reset_Scope;
+
+   --  Start of processing for Reset_Scopes_To
+
+   begin
+      Reset_Scopes (Proc_Body);
+   end Reset_Scopes_To;
 
    ----------------------
    -- Set_Discriminals --

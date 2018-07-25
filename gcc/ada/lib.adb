@@ -1326,7 +1326,7 @@ package body Lib is
       Write_Str ("=");
       Write_Str (Node_Kind'Image (Nkind (Item)));
 
-      if Item /= Original_Node (Item) then
+      if Is_Rewrite_Substitution (Item) then
          Write_Str (", orig = ");
          Write_Int (Int (Original_Node (Item)));
          Write_Str ("=");

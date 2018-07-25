@@ -59,6 +59,7 @@ selftest::run_tests ()
   /* Low-level data structures.  */
   bitmap_c_tests ();
   sbitmap_c_tests ();
+  dumpfile_c_tests ();
   et_forest_c_tests ();
   hash_map_tests_c_tests ();
   hash_set_tests_c_tests ();
@@ -70,6 +71,9 @@ selftest::run_tests ()
   fibonacci_heap_c_tests ();
   typed_splay_tree_c_tests ();
   unique_ptr_tests_cc_tests ();
+  opt_proposer_c_tests ();
+  json_cc_tests ();
+  optinfo_emit_json_cc_tests ();
 
   /* Mid-level data structures.  */
   input_c_tests ();

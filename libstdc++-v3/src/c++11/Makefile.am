@@ -1,4 +1,4 @@
-## Makefile for the C++03 sources of the GNU C++ Standard library.
+## Makefile for the C++11 sources of the GNU C++ Standard library.
 ##
 ## Copyright (C) 1997-2018 Free Software Foundation, Inc.
 ##

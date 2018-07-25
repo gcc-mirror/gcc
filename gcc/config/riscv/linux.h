@@ -66,3 +66,5 @@ along with GCC; see the file COPYING3.  If not see
       %{rdynamic:-export-dynamic} \
       -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
     %{static:-static}}"
+
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack

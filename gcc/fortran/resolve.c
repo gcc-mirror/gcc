@@ -601,9 +601,10 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
 	}
     }
 
-  /* Fortran 95 Draft Standard, page 51, Section 5.1.1.5, on the Character
+  /* Fortran 2008 Draft Standard, page 535, C418, on type-param-value
      type, lists the only ways a character length value of * can be used:
-     dummy arguments of procedures, named constants, and function results
+     dummy arguments of procedures, named constants, function results and
+     in allocate statements if the allocate_object is an assumed length dummy
      in external functions.  Internal function results and results of module
      procedures are not on this list, ergo, not permitted.  */
 
@@ -996,6 +997,10 @@ resolve_common_blocks (gfc_symtree *common_root)
     resolve_common_blocks (common_root->right);
 
   resolve_common_vars (common_root->n.common, true);
+
+  if (!gfc_notify_std (GFC_STD_F2018_OBS, "COMMON block at %L",
+		       &common_root->n.common->where))
+    return;
 
   /* The common name is a global name - in Fortran 2003 also if it has a
      C binding name, since Fortran 2008 only the C binding name is a global
@@ -2504,7 +2509,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
       /* Resolve the gsymbol namespace if needed.  */
       if (!gsym->ns->resolved)
 	{
-	  gfc_dt_list *old_dt_list;
+	  gfc_symbol *old_dt_list;
 
 	  /* Stash away derived types so that the backend_decls do not
 	     get mixed up.  */
@@ -2936,8 +2941,8 @@ is_external_proc (gfc_symbol *sym)
 static int
 pure_stmt_function (gfc_expr *, gfc_symbol *);
 
-static int
-pure_function (gfc_expr *e, const char **name)
+int
+gfc_pure_function (gfc_expr *e, const char **name)
 {
   int pure;
   gfc_component *comp;
@@ -2977,6 +2982,21 @@ pure_function (gfc_expr *e, const char **name)
 }
 
 
+/* Check if the expression is a reference to an implicitly pure function.  */
+
+int
+gfc_implicit_pure_function (gfc_expr *e)
+{
+  gfc_component *comp = gfc_get_proc_ptr_comp (e);
+  if (comp)
+    return gfc_implicit_pure (comp->ts.interface);
+  else if (e->value.function.esym)
+    return gfc_implicit_pure (e->value.function.esym);
+  else
+    return 0;
+}
+
+
 static bool
 impure_stmt_fcn (gfc_expr *e, gfc_symbol *sym,
 		 int *f ATTRIBUTE_UNUSED)
@@ -2991,7 +3011,7 @@ impure_stmt_fcn (gfc_expr *e, gfc_symbol *sym,
 	|| e->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
     return false;
 
-  return pure_function (e, &name) ? false : true;
+  return gfc_pure_function (e, &name) ? false : true;
 }
 
 
@@ -3007,7 +3027,7 @@ pure_stmt_function (gfc_expr *e, gfc_symbol *sym)
 static bool check_pure_function (gfc_expr *e)
 {
   const char *name = NULL;
-  if (!pure_function (e, &name) && name)
+  if (!gfc_pure_function (e, &name) && name)
     {
       if (forall_flag)
 	{
@@ -3029,7 +3049,8 @@ static bool check_pure_function (gfc_expr *e)
 		     "within a PURE procedure", name, &e->where);
 	  return false;
 	}
-      gfc_unset_implicit_pure (NULL);
+      if (!gfc_implicit_pure_function (e))
+	gfc_unset_implicit_pure (NULL);
     }
   return true;
 }
@@ -3055,8 +3076,8 @@ update_current_proc_array_outer_dependency (gfc_symbol *sym)
 
   /* If SYM has references to outer arrays, so has the procedure calling
      SYM.  If SYM is a procedure pointer, we can assume the worst.  */
-  if (sym->attr.array_outer_dependency
-      || sym->attr.proc_pointer)
+  if ((sym->attr.array_outer_dependency || sym->attr.proc_pointer)
+      && gfc_current_ns->proc_name)
     gfc_current_ns->proc_name->attr.array_outer_dependency = 1;
 }
 
@@ -3099,12 +3120,25 @@ resolve_function (gfc_expr *expr)
       return false;
     }
 
-  /* If this ia a deferred TBP with an abstract interface (which may
+  /* If this is a deferred TBP with an abstract interface (which may
      of course be referenced), expr->value.function.esym will be set.  */
   if (sym && sym->attr.abstract && !expr->value.function.esym)
     {
       gfc_error ("ABSTRACT INTERFACE %qs must not be referenced at %L",
 		 sym->name, &expr->where);
+      return false;
+    }
+
+  /* If this is a deferred TBP with an abstract interface, its result
+     cannot be an assumed length character (F2003: C418).  */
+  if (sym && sym->attr.abstract && sym->attr.function
+      && sym->result->ts.u.cl
+      && sym->result->ts.u.cl->length == NULL
+      && !sym->result->ts.deferred)
+    {
+      gfc_error ("ABSTRACT INTERFACE %qs at %L must not have an assumed "
+		 "character length result (F2008: C418)", sym->name,
+		 &sym->declared_at);
       return false;
     }
 
@@ -3804,6 +3838,41 @@ lookup_uop_fuzzy (const char *op, gfc_symtree *uop)
 }
 
 
+/* Callback finding an impure function as an operand to an .and. or
+   .or.  expression.  Remember the last function warned about to
+   avoid double warnings when recursing.  */
+
+static int
+impure_function_callback (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+			  void *data)
+{
+  gfc_expr *f = *e;
+  const char *name;
+  static gfc_expr *last = NULL;
+  bool *found = (bool *) data;
+
+  if (f->expr_type == EXPR_FUNCTION)
+    {
+      *found = 1;
+      if (f != last && !gfc_pure_function (f, &name)
+	  && !gfc_implicit_pure_function (f))
+	{
+	  if (name)
+	    gfc_warning (OPT_Wfunction_elimination,
+			 "Impure function %qs at %L might not be evaluated",
+			 name, &f->where);
+	  else
+	    gfc_warning (OPT_Wfunction_elimination,
+			 "Impure function at %L might not be evaluated",
+			 &f->where);
+	}
+      last = f;
+    }
+
+  return 0;
+}
+
+
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
 
@@ -3874,7 +3943,13 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg,
+      if (op1->ts.type == BT_DERIVED || op2->ts.type == BT_DERIVED)
+	sprintf (msg,
+	       _("Unexpected derived-type entities in binary intrinsic "
+		 "numeric operator %%<%s%%> at %%L"),
+	       gfc_op2string (e->value.op.op));
+      else
+      	sprintf (msg,
 	       _("Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"),
 	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
@@ -3906,6 +3981,14 @@ resolve_operator (gfc_expr *e)
 	    gfc_convert_type (op1, &e->ts, 2);
 	  else if (op2->ts.kind < e->ts.kind)
 	    gfc_convert_type (op2, &e->ts, 2);
+
+	  if (e->value.op.op == INTRINSIC_AND || e->value.op.op == INTRINSIC_OR)
+	    {
+	      /* Warn about short-circuiting
+	         with impure function as second operand.  */
+	      bool op2_f = false;
+	      gfc_expr_walker (&op2, impure_function_callback, &op2_f);
+	    }
 	  break;
 	}
 
@@ -7763,12 +7846,17 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
       gfc_check_vardef_context (errmsg, false, false, false,
 				_("ERRMSG variable"));
 
+      /* F18:R928  alloc-opt             is ERRMSG = errmsg-variable
+	 F18:R930  errmsg-variable       is scalar-default-char-variable
+	 F18:R906  default-char-variable is variable
+	 F18:C906  default-char-variable shall be default character.  */
       if ((errmsg->ts.type != BT_CHARACTER
 	   && !(errmsg->ref
 		&& (errmsg->ref->type == REF_ARRAY
 		    || errmsg->ref->type == REF_COMPONENT)))
-	  || errmsg->rank > 0 )
-	gfc_error ("Errmsg-variable at %L must be a scalar CHARACTER "
+	  || errmsg->rank > 0
+	  || errmsg->ts.kind != gfc_default_character_kind)
+	gfc_error ("ERRMSG variable at %L shall be a scalar default CHARACTER "
 		   "variable", &errmsg->where);
 
       for (p = code->ext.alloc.list; p; p = p->next)
@@ -9527,6 +9615,7 @@ resolve_sync (gfc_code *code)
     }
 
   /* Check STAT.  */
+  gfc_resolve_expr (code->expr2);
   if (code->expr2
       && (code->expr2->ts.type != BT_INTEGER || code->expr2->rank != 0
 	  || code->expr2->expr_type != EXPR_VARIABLE))
@@ -9534,6 +9623,7 @@ resolve_sync (gfc_code *code)
 	       &code->expr2->where);
 
   /* Check ERRMSG.  */
+  gfc_resolve_expr (code->expr3);
   if (code->expr3
       && (code->expr3->ts.type != BT_CHARACTER || code->expr3->rank != 0
 	  || code->expr3->expr_type != EXPR_VARIABLE))
@@ -9927,6 +10017,9 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
   gfc_forall_iterator *fa;
 
   old_nvar = nvar;
+
+  if (!gfc_notify_std (GFC_STD_F2018_OBS, "FORALL construct at %L", &code->loc))
+    return;
 
   /* Start to resolve a FORALL construct   */
   if (forall_save == 0)
@@ -10364,6 +10457,11 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       && rhs->ts.type == BT_CLASS
       && rhs->expr_type != EXPR_ARRAY)
     gfc_add_data_component (rhs);
+
+  /* Make sure there is a vtable and, in particular, a _copy for the
+     rhs type.  */
+  if (UNLIMITED_POLY (lhs) && lhs->rank && rhs->ts.type != BT_CLASS)
+    gfc_find_vtab (&rhs->ts);
 
   bool caf_convert_to_send = flag_coarray == GFC_FCOARRAY_LIB
       && (lhs_coindexed
@@ -12501,7 +12599,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       while (curr_arg != NULL)
         {
           /* Skip implicitly typed dummy args here.  */
-	  if (curr_arg->sym->attr.implicit_type == 0)
+	  if (curr_arg->sym && curr_arg->sym->attr.implicit_type == 0)
 	    if (!gfc_verify_c_interop_param (curr_arg->sym))
 	      /* If something is found to fail, record the fact so we
 		 can mark the symbol for the procedure as not being
@@ -13435,16 +13533,19 @@ resolve_typebound_procedures (gfc_symbol* derived)
 static void
 add_dt_to_dt_list (gfc_symbol *derived)
 {
-  gfc_dt_list *dt_list;
-
-  for (dt_list = gfc_derived_types; dt_list; dt_list = dt_list->next)
-    if (derived == dt_list->derived)
-      return;
-
-  dt_list = gfc_get_dt_list ();
-  dt_list->next = gfc_derived_types;
-  dt_list->derived = derived;
-  gfc_derived_types = dt_list;
+  if (!derived->dt_next)
+    {
+      if (gfc_derived_types)
+	{
+	  derived->dt_next = gfc_derived_types->dt_next;
+	  gfc_derived_types->dt_next = derived;
+	}
+      else
+	{
+	  derived->dt_next = derived;
+	}
+      gfc_derived_types = derived;
+    }
 }
 
 
@@ -16217,7 +16318,7 @@ resolve_equivalence (gfc_equiv *eq)
 
 static bool
 flag_fn_result_spec (gfc_expr *expr,
-                     gfc_symbol *sym ATTRIBUTE_UNUSED,
+                     gfc_symbol *sym,
                      int *f ATTRIBUTE_UNUSED)
 {
   gfc_namespace *ns;
@@ -16229,6 +16330,13 @@ flag_fn_result_spec (gfc_expr *expr,
       for (ns = s->ns; ns; ns = ns->parent)
 	if (!ns->parent)
 	  break;
+
+      if (sym == s)
+	{
+	  gfc_error ("Self reference in character length expression "
+		     "for %qs at %L", sym->name, &expr->where);
+	  return true;
+	}
 
       if (!s->fn_result_spec
 	  && s->attr.flavor == FL_PARAMETER)
@@ -16312,7 +16420,7 @@ resolve_fntype (gfc_namespace *ns)
       }
 
   if (sym->ts.type == BT_CHARACTER)
-    gfc_traverse_expr (sym->ts.u.cl->length, NULL, flag_fn_result_spec, 0);
+    gfc_traverse_expr (sym->ts.u.cl->length, sym, flag_fn_result_spec, 0);
 }
 
 

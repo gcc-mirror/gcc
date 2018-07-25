@@ -256,6 +256,11 @@ package body Stream_Attributes is
          end loop;
       end if;
 
+      --  The occurrence we're crafting is not currently being
+      --  propagated.
+
+      X.Machine_Occurrence := System.Null_Address;
+
       --  If an exception was converted to a string, it must have
       --  already been raised, so flag it accordingly and we are done.
 

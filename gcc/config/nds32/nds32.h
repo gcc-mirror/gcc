@@ -36,6 +36,16 @@
 #define NDS32_SYMBOL_REF_RODATA_P(x) \
   ((SYMBOL_REF_FLAGS (x) & NDS32_SYMBOL_FLAG_RODATA) != 0)
 
+enum nds32_relax_insn_type
+{
+  RELAX_ORI,
+  RELAX_PLT_ADD,
+  RELAX_TLS_ADD_or_LW,
+  RELAX_TLS_ADD_LW,
+  RELAX_TLS_LW_JRAL,
+  RELAX_DONE
+};
+
 /* Classifies expand result for expand helper function.  */
 enum nds32_expand_result_type
 {
@@ -308,6 +318,10 @@ struct GTY(()) machine_function
        2. The rtl lowering and optimization are close to target code.
 	  For this case we need address to be strictly aligned.  */
   int strict_aligned_p;
+
+  /* Record two similar attributes status.  */
+  int attr_naked_p;
+  int attr_no_prologue_p;
 };
 
 /* A C structure that contains the arguments information.  */
@@ -839,12 +853,24 @@ enum nds32_builtins
 
 #define TARGET_ISA_V3 \
   (nds32_arch_option == ARCH_V3 \
+   || nds32_arch_option == ARCH_V3J \
    || nds32_arch_option == ARCH_V3F \
    || nds32_arch_option == ARCH_V3S)
 #define TARGET_ISA_V3M  (nds32_arch_option == ARCH_V3M)
 
+#define TARGET_PIPELINE_N7 \
+  (nds32_cpu_option == CPU_N7)
+#define TARGET_PIPELINE_N8 \
+  (nds32_cpu_option == CPU_N6 \
+   || nds32_cpu_option == CPU_N8)
 #define TARGET_PIPELINE_N9 \
   (nds32_cpu_option == CPU_N9)
+#define TARGET_PIPELINE_N10 \
+  (nds32_cpu_option == CPU_N10)
+#define TARGET_PIPELINE_N13 \
+  (nds32_cpu_option == CPU_N12 || nds32_cpu_option == CPU_N13)
+#define TARGET_PIPELINE_GRAYWOLF \
+  (nds32_cpu_option == CPU_GRAYWOLF)
 #define TARGET_PIPELINE_SIMPLE \
   (nds32_cpu_option == CPU_SIMPLE)
 
@@ -854,6 +880,12 @@ enum nds32_builtins
    (nds32_cmodel_option == CMODEL_MEDIUM)
 #define TARGET_CMODEL_LARGE \
    (nds32_cmodel_option == CMODEL_LARGE)
+
+#define TARGET_ICT_MODEL_SMALL \
+   (nds32_ict_model == ICT_MODEL_SMALL)
+
+#define TARGET_ICT_MODEL_LARGE \
+   (nds32_ict_model == ICT_MODEL_LARGE)
 
 /* When -mcmodel=small or -mcmodel=medium,
    compiler may generate gp-base instruction directly.  */
@@ -891,6 +923,14 @@ enum nds32_builtins
 
 #define TARGET_CONFIG_FPU_DEFAULT NDS32_CONFIG_FPU_2
 
+/* ------------------------------------------------------------------------ */
+
+#ifdef TARGET_DEFAULT_RELAX
+#  define NDS32_RELAX_SPEC " %{!mno-relax:--relax}"
+#else
+#  define NDS32_RELAX_SPEC " %{mrelax:--relax}"
+#endif
+
 #ifdef TARGET_DEFAULT_EXT_DSP
 #  define NDS32_EXT_DSP_SPEC " %{!mno-ext-dsp:-mext-dsp}"
 #else
@@ -917,6 +957,10 @@ enum nds32_builtins
 #define ASM_SPEC \
   " %{mbig-endian:-EB} %{mlittle-endian:-EL}" \
   " %{march=*:-march=%*}" \
+  " %{mno-16-bit|mno-16bit:-mno-16bit-ext}" \
+  " %{march=v3m:%{!mfull-regs:%{!mreduced-regs:-mreduced-regs}}}" \
+  " %{mfull-regs:-mno-reduced-regs}" \
+  " %{mreduced-regs:-mreduced-regs}" \
   " %{mabi=*:-mabi=v%*}" \
   " %{mconfig-fpu=*:-mfpu-freg=%*}" \
   " %{mext-fpu-mac:-mmac}" \
@@ -925,35 +969,8 @@ enum nds32_builtins
   " %{mno-ext-fpu-sp:-mno-fpu-sp-ext}" \
   " %{mext-fpu-dp:-mfpu-dp-ext}" \
   " %{mno-ext-fpu-sp:-mno-fpu-dp-ext}" \
-  " %{mext-dsp:-mdsp-ext}"
-
-/* If user issues -mrelax, we need to pass '--relax' to linker.  */
-#define LINK_SPEC \
-  " %{mbig-endian:-EB} %{mlittle-endian:-EL}" \
-  " %{mrelax:--relax}"
-
-#define LIB_SPEC \
-  " -lc -lgloss"
-
-/* The option -mno-ctor-dtor can disable constructor/destructor feature
-   by applying different crt stuff.  In the convention, crt0.o is the
-   startup file without constructor/destructor;
-   crt1.o, crti.o, crtbegin.o, crtend.o, and crtn.o are the
-   startup files with constructor/destructor.
-   Note that crt0.o, crt1.o, crti.o, and crtn.o are provided
-   by newlib/mculib/glibc/ublic, while crtbegin.o and crtend.o are
-   currently provided by GCC for nds32 target.
-
-   For nds32 target so far:
-   If -mno-ctor-dtor, we are going to link
-   "crt0.o [user objects]".
-   If general cases, we are going to link
-   "crt1.o crtbegin1.o [user objects] crtend1.o".  */
-#define STARTFILE_SPEC \
-  " %{!mno-ctor-dtor:crt1.o%s;:crt0.o%s}" \
-  " %{!mno-ctor-dtor:crtbegin1.o%s}"
-#define ENDFILE_SPEC \
-  " %{!mno-ctor-dtor:crtend1.o%s}"
+  " %{mext-dsp:-mdsp-ext}" \
+  " %{O|O1|O2|O3|Ofast:-O1;:-Os}"
 
 /* The TARGET_BIG_ENDIAN_DEFAULT is defined if we
    configure gcc with --target=nds32be-* setting.
@@ -964,9 +981,11 @@ enum nds32_builtins
 #  define NDS32_ENDIAN_DEFAULT "mlittle-endian"
 #endif
 
-/* Currently we only have elf toolchain,
-   where -mcmodel=medium is always the default.  */
-#define NDS32_CMODEL_DEFAULT "mcmodel=medium"
+#if TARGET_ELF
+#  define NDS32_CMODEL_DEFAULT "mcmodel=medium"
+#else
+#  define NDS32_CMODEL_DEFAULT "mcmodel=large"
+#endif
 
 #define MULTILIB_DEFAULTS \
   { NDS32_ENDIAN_DEFAULT, NDS32_CMODEL_DEFAULT }
@@ -1461,6 +1480,11 @@ enum reg_class
 
 #define PIC_OFFSET_TABLE_REGNUM GP_REGNUM
 
+#define SYMBOLIC_CONST_P(X)	\
+(GET_CODE (X) == SYMBOL_REF						\
+ || GET_CODE (X) == LABEL_REF						\
+ || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
+
 
 /* Defining the Output Assembler Language.  */
 
@@ -1606,13 +1630,16 @@ enum reg_class
 #define DWARF2_UNWIND_INFO 1
 
 #define JUMP_ALIGN(x) \
-  (align_jumps_log ? align_jumps_log : nds32_target_alignment (x))
+  (align_jumps.levels[0].log \
+   ? align_jumps : align_flags (nds32_target_alignment (x)))
 
 #define LOOP_ALIGN(x) \
-  (align_loops_log ? align_loops_log : nds32_target_alignment (x))
+  (align_loops.levels[0].log \
+   ? align_loops : align_flags (nds32_target_alignment (x)))
 
 #define LABEL_ALIGN(x) \
-  (align_labels_log ? align_labels_log : nds32_target_alignment (x))
+  (align_labels.levels[0].log \
+   ? align_labels : align_flags (nds32_target_alignment (x)))
 
 #define ASM_OUTPUT_ALIGN(stream, power) \
   fprintf (stream, "\t.align\t%d\n", power)

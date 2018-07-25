@@ -198,4 +198,4 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "note: vectorized 1 loops" 10 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 10 "vect" } } */

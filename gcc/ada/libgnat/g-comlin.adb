@@ -1474,6 +1474,29 @@ package body GNAT.Command_Line is
       end if;
    end Define_Switch;
 
+   -------------------
+   -- Define_Switch --
+   -------------------
+
+   procedure Define_Switch
+     (Config      : in out Command_Line_Configuration;
+      Callback    : not null Value_Callback;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "";
+      Argument    : String := "ARG")
+   is
+      Def : Switch_Definition (Switch_Callback);
+   begin
+      if Switch /= "" or else Long_Switch /= "" then
+         Initialize_Switch_Def
+           (Def, Switch, Long_Switch, Help, Section, Argument);
+         Def.Callback := Callback;
+         Add (Config, Def);
+      end if;
+   end Define_Switch;
+
    --------------------
    -- Define_Section --
    --------------------
@@ -3403,6 +3426,10 @@ package body GNAT.Command_Line is
                   Local_Config.Switches (Index).String_Output.all :=
                     new String'(Parameter);
                   return;
+
+               when Switch_Callback =>
+                  Local_Config.Switches (Index).Callback (Switch, Parameter);
+                  return;
             end case;
          end if;
 
@@ -3471,7 +3498,7 @@ package body GNAT.Command_Line is
 
       for S in Local_Config.Switches'Range loop
          case Local_Config.Switches (S).Typ is
-            when Switch_Untyped =>
+            when Switch_Untyped | Switch_Callback =>
                null;   --  Nothing to do
 
             when Switch_Boolean =>

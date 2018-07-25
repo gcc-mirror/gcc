@@ -128,15 +128,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef true_type is_always_equal;
 #endif
 
-      allocator() throw() { }
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3035. std::allocator's constructors should be constexpr
+      _GLIBCXX20_CONSTEXPR
+      allocator() _GLIBCXX_NOTHROW { }
 
-      allocator(const allocator& __a) throw()
+      _GLIBCXX20_CONSTEXPR
+      allocator(const allocator& __a) _GLIBCXX_NOTHROW
       : __allocator_base<_Tp>(__a) { }
 
-      template<typename _Tp1>
-	allocator(const allocator<_Tp1>&) throw() { }
+#if __cplusplus >= 201103L
+      // Avoid implicit deprecation.
+      allocator& operator=(const allocator&) = default;
+#endif
 
-      ~allocator() throw() { }
+      template<typename _Tp1>
+	_GLIBCXX20_CONSTEXPR
+	allocator(const allocator<_Tp1>&) _GLIBCXX_NOTHROW { }
+
+      ~allocator() _GLIBCXX_NOTHROW { }
 
       // Inherit everything else.
     };
@@ -144,25 +154,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _T1, typename _T2>
     inline bool
     operator==(const allocator<_T1>&, const allocator<_T2>&)
-    _GLIBCXX_USE_NOEXCEPT
+    _GLIBCXX_NOTHROW
     { return true; }
 
   template<typename _Tp>
     inline bool
     operator==(const allocator<_Tp>&, const allocator<_Tp>&)
-    _GLIBCXX_USE_NOEXCEPT
+    _GLIBCXX_NOTHROW
     { return true; }
 
   template<typename _T1, typename _T2>
     inline bool
     operator!=(const allocator<_T1>&, const allocator<_T2>&)
-    _GLIBCXX_USE_NOEXCEPT
+    _GLIBCXX_NOTHROW
     { return false; }
 
   template<typename _Tp>
     inline bool
     operator!=(const allocator<_Tp>&, const allocator<_Tp>&)
-    _GLIBCXX_USE_NOEXCEPT
+    _GLIBCXX_NOTHROW
     { return false; }
 
   // Invalid allocator<cv T> partial specializations.

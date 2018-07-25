@@ -1937,7 +1937,7 @@ __gnat_map_signal (int sig,
   Raise_From_Signal_Handler (exception, msg);
 }
 
-#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR >= 7) || defined (__aarch64__)
+#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR >= 7) && !defined (__aarch64__)
 
 /* ARM-vx7 case with arm unwinding exceptions */
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE

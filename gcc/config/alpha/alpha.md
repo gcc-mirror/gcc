@@ -527,21 +527,6 @@
    s%P2add<modesuffix> %1,%3,%0
    s%P2sub<modesuffix> %1,%n3,%0")
 
-(define_insn_and_split "*saddsi_1"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(plus:SI
-	 (subreg:SI
-	  (ashift:DI (match_operand:DI 1 "reg_not_elim_operand" "r,r")
-		     (match_operand:DI 2 "const23_operand" "I,I")) 0)
-	 (match_operand:SI 3 "sext_add_operand" "rI,O")))]
-  ""
-  "#"
-  ""
-  [(set (match_dup 0)
-	(plus:SI (ashift:SI (match_dup 1) (match_dup 2))
-		 (match_dup 3)))]
-  "operands[1] = gen_lowpart (SImode, operands[1]);")
-
 (define_insn "*saddl_se"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(sign_extend:DI
@@ -553,23 +538,6 @@
   "@
    s%P2addl %1,%3,%0
    s%P2subl %1,%n3,%0")
-
-(define_insn_and_split "*saddl_se_1"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(sign_extend:DI
-	 (plus:SI
-	  (subreg:SI
-	   (ashift:DI (match_operand:DI 1 "reg_not_elim_operand" "r,r")
-		      (match_operand:DI 2 "const23_operand" "I,I")) 0)
-	 (match_operand:SI 3 "sext_add_operand" "rI,O"))))]
-  ""
-  "#"
-  ""
-  [(set (match_dup 0)
-	(sign_extend:DI
-	 (plus:SI (ashift:SI (match_dup 1) (match_dup 2))
-		  (match_dup 3))))]
-  "operands[1] = gen_lowpart (SImode, operands[1]);")
 
 (define_split
   [(set (match_operand:DI 0 "register_operand")
@@ -660,21 +628,6 @@
   ""
   "s%P2sub<modesuffix> %1,%3,%0")
 
-(define_insn_and_split "*ssubsi_1"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(minus:SI
-	 (subreg:SI
-	  (ashift:DI (match_operand:DI 1 "reg_not_elim_operand" "r")
-		     (match_operand:DI 2 "const23_operand" "I")) 0)
-	 (match_operand:SI 3 "reg_or_8bit_operand" "rI")))]
-  ""
-  "#"
-  ""
-  [(set (match_dup 0)
-	(minus:SI (ashift:SI (match_dup 1) (match_dup 2))
-		  (match_dup 3)))]
-  "operands[1] = gen_lowpart (SImode, operands[1]);")
-
 (define_insn "*ssubl_se"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
@@ -684,23 +637,6 @@
 	 (match_operand:SI 3 "reg_or_8bit_operand" "rI"))))]
   ""
   "s%P2subl %1,%3,%0")
-
-(define_insn_and_split "*ssubl_se_1"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI
-	 (minus:SI
-	  (subreg:SI
-	   (ashift:DI (match_operand:DI 1 "reg_not_elim_operand" "r")
-		      (match_operand:DI 2 "const23_operand" "I")) 0)
-	 (match_operand:SI 3 "reg_or_8bit_operand" "rI"))))]
-  ""
-  "#"
-  ""
-  [(set (match_dup 0)
-	(sign_extend:DI
-	 (minus:SI (ashift:SI (match_dup 1) (match_dup 2))
-		   (match_dup 3))))]
-  "operands[1] = gen_lowpart (SImode, operands[1]);")
 
 (define_insn "subv<mode>3"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
@@ -1260,13 +1196,25 @@
 }
   [(set_attr "type" "iadd,shift")])
 
-(define_insn "*ashldi_se"
+(define_insn "ashlsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ashift:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
+		   (match_operand:SI 2 "const123_operand" "P")))]
+  ""
+{
+  if (operands[2] == const1_rtx)
+    return "addl %r1,%r1,%0";
+  else
+    return "s%P2addl %r1,0,%0";
+}
+  [(set_attr "type" "iadd")])
+
+(define_insn "*ashlsi_se"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
-	 (subreg:SI (ashift:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-			       (match_operand:DI 2 "const_int_operand" "P"))
-		    0)))]
-  "IN_RANGE (INTVAL (operands[2]), 1, 3)"
+	 (ashift:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
+		    (match_operand:SI 2 "const123_operand" "P"))))]
+  ""
 {
   if (operands[2] == const1_rtx)
     return "addl %r1,%r1,%0";

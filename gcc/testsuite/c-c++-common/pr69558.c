@@ -11,9 +11,9 @@
   _Pragma ("GCC diagnostic pop")
 #define C(x) \
   A \
-  static inline void bar (void) { x (); } /* { dg-bogus "in definition of|deprecated" "" { xfail { c++ } } } */ \
+  static inline void bar (void) { x (); } /* { dg-bogus "in definition of|deprecated" "" } */ \
   B
 
-__attribute__((deprecated)) void foo (void); /* { dg-bogus "declared here" "" { xfail { c++ } } } */
+__attribute__((deprecated)) void foo (void); /* { dg-bogus "declared here" "" } */
 
 C (foo) /* { dg-bogus "is deprecated" } */

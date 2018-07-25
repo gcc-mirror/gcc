@@ -3336,6 +3336,8 @@ stack.
 
 @hook TARGET_REF_MAY_ALIAS_ERRNO
 
+@hook TARGET_TRANSLATE_MODE_ATTRIBUTE
+
 @hook TARGET_SCALAR_MODE_SUPPORTED_P
 
 @hook TARGET_VECTOR_MODE_SUPPORTED_P
@@ -3761,8 +3763,6 @@ These machine description macros help implement varargs:
 
 @hook TARGET_STORE_RETURNED_BOUNDS
 
-@hook TARGET_CHKP_FUNCTION_VALUE_BOUNDS
-
 @hook TARGET_SETUP_INCOMING_VARARG_BOUNDS
 
 @node Trampolines
@@ -4148,6 +4148,8 @@ address;  but often a machine-dependent strategy can generate better code.
 @hook TARGET_GOACC_FORK_JOIN
 
 @hook TARGET_GOACC_REDUCTION
+
+@hook TARGET_PREFERRED_ELSE_VALUE
 
 @node Anchored Addresses
 @section Anchored Addresses
@@ -6522,8 +6524,6 @@ to set the variable @var{align_jumps} in the target's
 selection in @var{align_jumps} in a @code{JUMP_ALIGN} implementation.
 @end defmac
 
-@hook TARGET_ASM_JUMP_ALIGN_MAX_SKIP
-
 @defmac LABEL_ALIGN_AFTER_BARRIER (@var{label})
 The alignment (log base 2) to put in front of @var{label}, which follows
 a @code{BARRIER}.
@@ -6532,8 +6532,6 @@ This macro need not be defined if you don't want any special alignment
 to be done at such a time.  Most machine descriptions do not currently
 define the macro.
 @end defmac
-
-@hook TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
 
 @defmac LOOP_ALIGN (@var{label})
 The alignment (log base 2) to put in front of @var{label} that heads
@@ -6549,8 +6547,6 @@ to set the variable @code{align_loops} in the target's
 selection in @code{align_loops} in a @code{LOOP_ALIGN} implementation.
 @end defmac
 
-@hook TARGET_ASM_LOOP_ALIGN_MAX_SKIP
-
 @defmac LABEL_ALIGN (@var{label})
 The alignment (log base 2) to put in front of @var{label}.
 If @code{LABEL_ALIGN_AFTER_BARRIER} / @code{LOOP_ALIGN} specify a different alignment,
@@ -6561,8 +6557,6 @@ to set the variable @code{align_labels} in the target's
 @code{TARGET_OPTION_OVERRIDE}.  Otherwise, you should try to honor the user's
 selection in @code{align_labels} in a @code{LABEL_ALIGN} implementation.
 @end defmac
-
-@hook TARGET_ASM_LABEL_ALIGN_MAX_SKIP
 
 @defmac ASM_OUTPUT_SKIP (@var{stream}, @var{nbytes})
 A C statement to output to the stdio stream @var{stream} an assembler
@@ -7659,11 +7653,10 @@ files @code{__STDC__} will always expand to 1.
 
 @hook TARGET_CXX_IMPLICIT_EXTERN_C
 
-@defmac NO_IMPLICIT_EXTERN_C
-Define this macro if the system header files support C++ as well as C@.
-This macro inhibits the usual method of using system header files in
-C++, which is to pretend that the file's contents are enclosed in
-@samp{extern "C" @{@dots{}@}}.
+@defmac SYSTEM_IMPLICIT_EXTERN_C
+Define this macro if the system header files do not support C++@.
+This macro handles system header files by pretending that system
+header files are enclosed in @samp{extern "C" @{@dots{}@}}.
 @end defmac
 
 @findex #pragma
@@ -7865,12 +7858,6 @@ to by @var{ce_info}.
 @hook TARGET_BUILTIN_DECL
 
 @hook TARGET_EXPAND_BUILTIN
-
-@hook TARGET_BUILTIN_CHKP_FUNCTION
-@hook TARGET_CHKP_BOUND_TYPE
-@hook TARGET_CHKP_BOUND_MODE
-@hook TARGET_CHKP_MAKE_BOUNDS_CONSTANT
-@hook TARGET_CHKP_INITIALIZE_BOUNDS
 
 @hook TARGET_RESOLVE_OVERLOADED_BUILTIN
 

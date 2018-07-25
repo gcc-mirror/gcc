@@ -756,7 +756,8 @@ finish_static_data_member_decl (tree decl,
   if (LOCAL_CLASS_P (current_class_type)
       /* We already complained about the template definition.  */
       && !DECL_TEMPLATE_INSTANTIATION (decl))
-    permerror (input_location, "local class %q#T shall not have static data member %q#D",
+    permerror (DECL_SOURCE_LOCATION (decl),
+	       "local class %q#T shall not have static data member %q#D",
 	       current_class_type, decl);
   else
     for (tree t = current_class_type; TYPE_P (t);
@@ -1032,7 +1033,7 @@ grokbitfield (const cp_declarator *declarator,
     return void_type_node;
 
   if (!INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value))
-      && (POINTER_TYPE_P (value)
+      && (INDIRECT_TYPE_P (value)
           || !dependent_type_p (TREE_TYPE (value))))
     {
       error ("bit-field %qD with non-integral type", value);
@@ -1386,7 +1387,8 @@ cp_check_const_attributes (tree attributes)
   for (attr = attributes; attr; attr = TREE_CHAIN (attr))
     {
       tree arg;
-      for (arg = TREE_VALUE (attr); arg; arg = TREE_CHAIN (arg))
+      for (arg = TREE_VALUE (attr); arg && TREE_CODE (arg) == TREE_LIST;
+	   arg = TREE_CHAIN (arg))
 	{
 	  tree expr = TREE_VALUE (arg);
 	  if (EXPR_P (expr))
@@ -1488,11 +1490,11 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 	  && DECL_CLASS_SCOPE_P (*decl))
 	error ("%q+D static data member inside of declare target directive",
 	       *decl);
-      else if (!processing_template_decl
-	       && VAR_P (*decl)
-	       && !cp_omp_mappable_type (TREE_TYPE (*decl)))
-	error ("%q+D in declare target directive does not have mappable type",
-	       *decl);
+      else if (VAR_P (*decl)
+	       && (processing_template_decl
+		   || !cp_omp_mappable_type (TREE_TYPE (*decl))))
+	attributes = tree_cons (get_identifier ("omp declare target implicit"),
+				NULL_TREE, attributes);
       else
 	attributes = tree_cons (get_identifier ("omp declare target"),
 				NULL_TREE, attributes);
@@ -1676,7 +1678,7 @@ finish_anon_union (tree anon_union_decl)
    what compiler will be expecting.  */
 
 tree
-coerce_new_type (tree type)
+coerce_new_type (tree type, location_t loc)
 {
   int e = 0;
   tree args = TYPE_ARG_TYPES (type);
@@ -1686,7 +1688,8 @@ coerce_new_type (tree type)
   if (!same_type_p (TREE_TYPE (type), ptr_type_node))
     {
       e = 1;
-      error ("%<operator new%> must return type %qT", ptr_type_node);
+      error_at (loc, "%<operator new%> must return type %qT",
+		ptr_type_node);
     }
 
   if (args && args != void_list_node)
@@ -1697,8 +1700,8 @@ coerce_new_type (tree type)
 	     
 	     The first parameter shall not have an associated default
 	     argument.  */
-	  error ("the first parameter of %<operator new%> cannot "
-		 "have a default argument");
+	  error_at (loc, "the first parameter of %<operator new%> cannot "
+		    "have a default argument");
 	  /* Throw away the default argument.  */
 	  TREE_PURPOSE (args) = NULL_TREE;
 	}
@@ -1713,7 +1716,7 @@ coerce_new_type (tree type)
     e = 2;
 
   if (e == 2)
-    permerror (input_location, "%<operator new%> takes type %<size_t%> (%qT) "
+    permerror (loc, "%<operator new%> takes type %<size_t%> (%qT) "
 	       "as first parameter", size_type_node);
 
   switch (e)
@@ -1732,7 +1735,7 @@ coerce_new_type (tree type)
 }
 
 tree
-coerce_delete_type (tree type)
+coerce_delete_type (tree type, location_t loc)
 {
   int e = 0;
   tree args = TYPE_ARG_TYPES (type);
@@ -1742,7 +1745,8 @@ coerce_delete_type (tree type)
   if (!same_type_p (TREE_TYPE (type), void_type_node))
     {
       e = 1;
-      error ("%<operator delete%> must return type %qT", void_type_node);
+      error_at (loc, "%<operator delete%> must return type %qT",
+		void_type_node);
     }
 
   if (!args || args == void_list_node
@@ -1751,8 +1755,8 @@ coerce_delete_type (tree type)
       e = 2;
       if (args && args != void_list_node)
 	args = TREE_CHAIN (args);
-      error ("%<operator delete%> takes type %qT as first parameter",
-	     ptr_type_node);
+      error_at (loc, "%<operator delete%> takes type %qT as first parameter",
+		ptr_type_node);
     }
   switch (e)
   {
@@ -3595,8 +3599,7 @@ start_static_storage_duration_function (unsigned count)
       priority_info_map = splay_tree_new (splay_tree_compare_ints,
 					  /*delete_key_fn=*/0,
 					  /*delete_value_fn=*/
-					  (splay_tree_delete_value_fn)
-					  (void (*) (void)) free);
+					  splay_tree_delete_pointers);
 
       /* We always need to generate functions for the
 	 DEFAULT_INIT_PRIORITY so enter it now.  That way when we walk
@@ -4751,13 +4754,13 @@ c_parse_final_cleanups (void)
 	     inline, with resulting performance improvements.  */
 	  tree ssdf_body;
 
+	  /* Make sure the back end knows about all the variables.  */
+	  write_out_vars (vars);
+
 	  /* Set the line and file, so that it is obviously not from
 	     the source file.  */
 	  input_location = locus_at_end_of_parsing;
 	  ssdf_body = start_static_storage_duration_function (ssdf_count);
-
-	  /* Make sure the back end knows about all the variables.  */
-	  write_out_vars (vars);
 
 	  /* First generate code to do all the initializations.  */
 	  if (vars)
@@ -5173,6 +5176,57 @@ maybe_instantiate_decl (tree decl)
     }
 }
 
+/* Maybe warn if DECL is deprecated, subject to COMPLAIN.  Returns whether or
+   not a warning was emitted.  */
+
+bool
+cp_warn_deprecated_use (tree decl, tsubst_flags_t complain)
+{
+  if (!(complain & tf_warning) || !decl
+      || deprecated_state == DEPRECATED_SUPPRESS)
+    return false;
+
+  if (!TREE_DEPRECATED (decl))
+    {
+      /* Perhaps this is a deprecated typedef.  */
+      if (TYPE_P (decl) && TYPE_NAME (decl))
+	decl = TYPE_NAME (decl);
+
+      if (!TREE_DEPRECATED (decl))
+	return false;
+    }
+
+  /* Don't warn within members of a deprecated type.  */
+  if (TYPE_P (decl)
+      && currently_open_class (decl))
+    return false;
+
+  bool warned = false;
+  if (cxx_dialect >= cxx11
+      && DECL_P (decl)
+      && DECL_ARTIFICIAL (decl)
+      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+      && copy_fn_p (decl))
+    {
+      /* Don't warn about system library classes (c++/86342).  */
+      if (!DECL_IN_SYSTEM_HEADER (decl))
+	warned = warning (OPT_Wdeprecated_copy,
+			  "implicitly-declared %qD is deprecated", decl);
+      if (warned)
+	{
+	  tree ctx = DECL_CONTEXT (decl);
+	  tree other = classtype_has_user_copy_or_dtor (ctx);
+	  inform (DECL_SOURCE_LOCATION (other),
+		  "because %qT has user-provided %qD",
+		  ctx, other);
+	}
+    }
+  else
+    warned = warn_deprecated_use (decl, NULL_TREE);
+
+  return warned;
+}
+
 /* Mark DECL (either a _DECL or a BASELINK) as "used" in the program.
    If DECL is a specialization or implicitly declared class member,
    generate the actual definition.  Return false if something goes
@@ -5237,9 +5291,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       return false;
     }
 
-  if (TREE_DEPRECATED (decl) && (complain & tf_warning)
-      && deprecated_state != DEPRECATED_SUPPRESS)
-    warn_deprecated_use (decl, NULL_TREE);
+  cp_warn_deprecated_use (decl, complain);
 
   /* We can only check DECL_ODR_USED on variables or functions with
      DECL_LANG_SPECIFIC set, and these are also the only decls that we

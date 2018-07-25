@@ -47,7 +47,10 @@ char* strndup (const char*, size_t);
 
 #define NONSTRING __attribute__ ((nonstring))
 
-char str[4];
+/* STR needs to be bigger than ARR to trigger warnings, otherwise
+   since STR must be a string, using both in a string function
+   can be assumed to be safe even if ARR isn't nul-terminated.  */
+char str[5];
 char arr[4] NONSTRING;
 
 char *ptr;
@@ -55,7 +58,7 @@ char *parr NONSTRING;
 
 struct MemArrays
 {
-  char str[4];
+  char str[5];
   char arr[4] NONSTRING;
   char *parr NONSTRING;
 };
@@ -63,7 +66,7 @@ struct MemArrays
 void sink (int, ...);
 
 
-#define T(call)  sink (0, (call))
+#define T(call)  sink (0, call)
 
 void test_printf (struct MemArrays *p)
 {
@@ -247,14 +250,14 @@ void test_stpncpy_warn (struct MemArrays *p, unsigned n)
 
   T (stpncpy (ptr, str, N + 1));
   T (stpncpy (ptr, arr, N + 1));          /* { dg-warning "argument 2 declared attribute .nonstring. is smaller than the specified bound 5" } */
-  T (stpncpy (arr, str, N + 1));          /* { dg-warning "writing 5 bytes into a region of size 4 overflows " "bug 82609" { xfail c++ } } */
+  T (stpncpy (arr, str, N + 1));          /* { dg-warning "writing 5 bytes into a region of size 4 overflows " } */
 
   T (stpncpy (ptr, ptr, N + 1));
   T (stpncpy (ptr, parr, N + 1));
   T (stpncpy (parr, str, N + 1));
 
   T (stpncpy (ptr, p->arr, N + 1));       /* { dg-warning "argument 2 declared attribute .nonstring. is smaller" } */
-  T (stpncpy (p->arr, p->str, N + 1));    /* { dg-warning "writing 5 bytes into a region of size 4 overflows" "bug 82609" { xfail c++ } } */
+  T (stpncpy (p->arr, p->str, N + 1));    /* { dg-warning "writing 5 bytes into a region of size 4 overflows " } */
   T (stpncpy (p->parr, p->str, N + 1));
 }
 

@@ -658,7 +658,7 @@ sem_function::equals_wpa (sem_item *item,
   cl_optimization *opt1 = opts_for_fn (decl);
   cl_optimization *opt2 = opts_for_fn (item->decl);
 
-  if (opt1 != opt2 && memcmp (opt1, opt2, sizeof(cl_optimization)))
+  if (opt1 != opt2 && !cl_optimization_option_eq (opt1, opt2))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1199,6 +1199,7 @@ sem_function::merge (sem_item *alias_item)
 		     "can not create wrapper of stdarg function.\n");
 	}
       else if (ipa_fn_summaries
+	       && ipa_fn_summaries->get (alias) != NULL
 	       && ipa_fn_summaries->get (alias)->self_size <= 2)
 	{
 	  if (dump_file)
@@ -1220,8 +1221,7 @@ sem_function::merge (sem_item *alias_item)
 	 are not interposable.  */
       redirect_callers
 	= alias->get_availability () > AVAIL_INTERPOSABLE
-	  && original->get_availability () > AVAIL_INTERPOSABLE
-	  && !alias->instrumented_version;
+	  && original->get_availability () > AVAIL_INTERPOSABLE;
       /* TODO: We can redirect, but we need to produce alias of ORIGINAL
 	 with proper properties.  */
       if (!sem_item::compare_referenced_symbol_properties (NULL, original, alias,
@@ -1580,7 +1580,13 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
     }
   else if (RECORD_OR_UNION_TYPE_P (type))
     {
-      gcc_checking_assert (COMPLETE_TYPE_P (type));
+      /* Incomplete types must be skipped here.  */
+      if (!COMPLETE_TYPE_P (type))
+	{
+	  hstate.add_int (RECORD_TYPE);
+	  return;
+	}
+
       hashval_t *val = optimizer->m_type_hash_cache.get (type);
 
       if (!val)
@@ -1591,8 +1597,6 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
 	  hashval_t hash;
 
 	  hstate2.add_int (RECORD_TYPE);
-	  gcc_assert (COMPLETE_TYPE_P (type));
-
 	  for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
 	    if (TREE_CODE (f) == FIELD_DECL)
 	      {
@@ -1979,8 +1983,8 @@ sem_variable::equals (tree t1, tree t2)
 
 	/* Type of the offset on MEM_REF does not matter.  */
 	return return_with_debug (sem_variable::equals (x1, x2)
-			          && wi::to_offset  (y1)
-				     == wi::to_offset  (y2));
+			          && known_eq (wi::to_poly_offset (y1),
+					       wi::to_poly_offset (y2)));
       }
     case ADDR_EXPR:
     case FDESC_EXPR:

@@ -75,6 +75,6 @@ extern void get_working_sets (void);
 
 /* Counter summary from the last set of coverage counts read by
    profile.c.  */
-extern const struct gcov_ctr_summary *profile_info;
+extern const struct gcov_summary *profile_info;
 
 #endif /* PROFILE_H */

@@ -23,4 +23,4 @@ package body Unroll2 is
 
 end Unroll2;
 
--- { dg-final { scan-tree-dump-times "note: loop with 3 iterations completely unrolled" 2 "cunrolli" } }
+-- { dg-final { scan-tree-dump-times "loop with 3 iterations completely unrolled" 2 "cunrolli" } }

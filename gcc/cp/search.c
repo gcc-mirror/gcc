@@ -192,6 +192,9 @@ lookup_base (tree t, tree base, base_access access,
   else
     {
       t = complete_type (TYPE_MAIN_VARIANT (t));
+      if (dependent_type_p (t))
+	if (tree open = currently_open_class (t))
+	  t = open;
       t_binfo = TYPE_BINFO (t);
     }
 
@@ -1117,7 +1120,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
 
   /* Make sure we're looking for a member of the current instantiation in the
      right partial specialization.  */
-  if (flag_concepts && dependent_type_p (type))
+  if (dependent_type_p (type))
     if (tree t = currently_open_class (type))
       type = t;
 
@@ -1868,12 +1871,12 @@ check_final_overrider (tree overrider, tree basefn)
     /* OK */;
   else if ((CLASS_TYPE_P (over_return) && CLASS_TYPE_P (base_return))
 	   || (TREE_CODE (base_return) == TREE_CODE (over_return)
-	       && POINTER_TYPE_P (base_return)))
+	       && INDIRECT_TYPE_P (base_return)))
     {
       /* Potentially covariant.  */
       unsigned base_quals, over_quals;
 
-      fail = !POINTER_TYPE_P (base_return);
+      fail = !INDIRECT_TYPE_P (base_return);
       if (!fail)
 	{
 	  fail = cp_type_quals (base_return) != cp_type_quals (over_return);

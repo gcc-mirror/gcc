@@ -779,6 +779,7 @@ REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
 CONFIGURE_SPECS
+enable_gcov
 enable_shared
 enable_fixed_point
 enable_decimal_float
@@ -914,6 +915,7 @@ enable_vtable_verify
 enable_objc_gc
 with_dwarf2
 enable_shared
+enable_gcov
 with_specs
 with_pkgversion
 with_bugurl
@@ -1634,6 +1636,7 @@ Optional Features:
   --enable-objc-gc        enable the use of Boehm's garbage collector with the
                           GNU Objective-C runtime
   --disable-shared        don't provide a shared libgcc
+  --disable-gcov          don't provide libgcov and related host tools
   --enable-languages=LIST specify which front-ends to build
   --disable-rpath         do not hardcode runtime library paths
   --enable-sjlj-exceptions
@@ -7458,7 +7461,7 @@ else
 
   case $target in
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
-    i?86*-*-elfiamcu | i?86*-*-gnu* | \
+    i?86*-*-elfiamcu | i?86*-*-gnu* | x86_64*-*-gnu* | \
     i?86*-*-mingw* | x86_64*-*-mingw* | \
     i?86*-*-cygwin* | x86_64*-*-cygwin*)
       enable_decimal_float=yes
@@ -7624,6 +7627,15 @@ if test "${enable_shared+set}" = set; then :
 
 else
   enable_shared=yes
+fi
+
+
+
+# Check whether --enable-gcov was given.
+if test "${enable_gcov+set}" = set; then :
+  enableval=$enable_gcov;
+else
+  enable_gcov=yes
 fi
 
 
@@ -18448,7 +18460,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18451 "configure"
+#line 18463 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18554,7 +18566,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18557 "configure"
+#line 18569 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23514,6 +23526,89 @@ $as_echo "#define USE_AS_TRADITIONAL_FORMAT 1" >>confdefs.h
 
 fi
 
+# Test if the assembler supports the section flag 'e' or #exclude for
+# specifying an excluded section.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for section exclude flag" >&5
+$as_echo_n "checking assembler for section exclude flag... " >&6; }
+if test "${gcc_cv_as_section_exclude_e+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_section_exclude_e=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 22 \) \* 1000 + 51`
+  then gcc_cv_as_section_exclude_e=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '.section foo1,"e"
+  .byte 0,0,0,0' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_section_exclude_e=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_section_exclude_e" >&5
+$as_echo "$gcc_cv_as_section_exclude_e" >&6; }
+
+
+if test $gcc_cv_as_section_exclude_e = no; then
+  case "${target}" in
+    # Solaris as uses #exclude instead.
+    *-*-solaris2*)
+      case "${target}" in
+	sparc*-*-solaris2*)
+	  conftest_s='.section "foo1", #exclude'
+	  ;;
+	i?86-*-solaris2* | x86_64-*-solaris2*)
+	  conftest_s='.section foo1, #exclude'
+	  ;;
+      esac
+      ;;
+    esac
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for section exclude flag" >&5
+$as_echo_n "checking assembler for section exclude flag... " >&6; }
+if test "${gcc_cv_as_section_exclude_hash+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_section_exclude_hash=no
+  if test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s
+     .byte 0,0,0,0" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_section_exclude_hash=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_section_exclude_hash" >&5
+$as_echo "$gcc_cv_as_section_exclude_hash" >&6; }
+
+
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GAS_SECTION_EXCLUDE `if test $gcc_cv_as_section_exclude_e = yes || test $gcc_cv_as_section_exclude_hash = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for section merging support" >&5
 $as_echo_n "checking assembler for section merging support... " >&6; }
 if test "${gcc_cv_as_shf_merge+set}" = set; then :
@@ -25669,46 +25764,6 @@ if test $gcc_cv_as_ix86_xbrace_comment = yes; then
 $as_echo "#define HAVE_AS_XBRACE_COMMENT_OPTION 1" >>confdefs.h
 
 fi
-
-
-    # Test if the assembler supports the section flag 'e' for specifying
-    # an excluded section.
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .section with e" >&5
-$as_echo_n "checking assembler for .section with e... " >&6; }
-if test "${gcc_cv_as_section_has_e+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_section_has_e=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 22 \) \* 1000 + 51`
-  then gcc_cv_as_section_has_e=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo '.section foo1,"e"
-.byte 0,0,0,0' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_section_has_e=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_section_has_e" >&5
-$as_echo "$gcc_cv_as_section_has_e" >&6; }
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_GAS_SECTION_EXCLUDE `if test $gcc_cv_as_section_has_e = yes; then echo 1; else echo 0; fi`
-_ACEOF
 
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for filds and fists mnemonics" >&5

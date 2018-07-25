@@ -36,6 +36,7 @@ compilation is specified by a string called a "spec".  */
 #include "obstack.h"
 #include "intl.h"
 #include "prefix.h"
+#include "opt-suggestions.h"
 #include "gcc.h"
 #include "diagnostic.h"
 #include "flags.h"
@@ -219,6 +220,10 @@ static int print_help_list;
 /* Flag saying to print the version of gcc and its sub-processes.  */
 
 static int print_version;
+
+/* Flag that stores string prefix for which we provide bash completion.  */
+
+static const char *completion = NULL;
 
 /* Flag indicating whether we should ONLY print the command and
    arguments (like verbose_flag) without executing the command.
@@ -476,8 +481,11 @@ or with constant text in a single argument.
 	into the sequence of arguments that %o will substitute later.
  %V	indicates that this compilation produces no "output file".
  %W{...}
-	like %{...} but mark last argument supplied within
-	as a file to be deleted on failure.
+	like %{...} but marks the last argument supplied within as a file
+	to be deleted on failure.
+ %@{...}
+	like %{...} but puts the result into a FILE and substitutes @FILE
+	if an @file argument has been supplied.
  %o	substitutes the names of all the output files, with spaces
 	automatically placed around them.  You should write spaces
 	around the %o as well or the results are undefined.
@@ -961,6 +969,7 @@ proper position among the other output files.  */
     -plugin %(linker_plugin_file) \
     -plugin-opt=%(lto_wrapper) \
     -plugin-opt=-fresolution=%u.res \
+    %{flinker-output=*:-plugin-opt=-linker-output-known} \
     %{!nostdlib:%{!nodefaultlibs:%:pass-through-libs(%(link_gcc_c_sequence))}} \
     }" PLUGIN_COND_CLOSE
 #else
@@ -1011,10 +1020,6 @@ proper position among the other output files.  */
 #endif
 #endif
 
-#ifndef CHKP_SPEC
-#define CHKP_SPEC ""
-#endif
-
 /* -u* was put back because both BSD and SysV seem to support it.  */
 /* %{static|no-pie|static-pie:} simply prevents an error message:
    1. If the target machine doesn't handle -static.
@@ -1037,8 +1042,8 @@ proper position among the other output files.  */
    "%{fuse-ld=*:-fuse-ld=%*} " LINK_COMPRESS_DEBUG_SPEC \
    "%X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}} \
-    %{static|no-pie|static-pie:} %{L*} %(mfwrap) %(link_libgcc) " \
-    VTABLE_VERIFICATION_SPEC " " SANITIZER_EARLY_SPEC " %o " CHKP_SPEC " \
+    %{static|no-pie|static-pie:} %@{L*} %(mfwrap) %(link_libgcc) " \
+    VTABLE_VERIFICATION_SPEC " " SANITIZER_EARLY_SPEC " %o "" \
     %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
 	%:include(libgomp.spec)%(link_gomp)}\
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
@@ -1112,7 +1117,7 @@ static const char *trad_capable_cpp =
    therefore no dependency entry, confuses make into thinking a .o
    file that happens to exist is up-to-date.  */
 static const char *cpp_unique_options =
-"%{!Q:-quiet} %{nostdinc*} %{C} %{CC} %{v} %{I*&F*} %{P} %I\
+"%{!Q:-quiet} %{nostdinc*} %{C} %{CC} %{v} %@{I*&F*} %{P} %I\
  %{MD:-MD %{!o:%b.d}%{o*:%.d%*}}\
  %{MMD:-MMD %{!o:%b.d}%{o*:%.d%*}}\
  %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
@@ -1927,8 +1932,13 @@ set_spec (const char *name, const char *spec, bool user_p)
 typedef const char *const_char_p; /* For DEF_VEC_P.  */
 
 /* Vector of pointers to arguments in the current line of specifications.  */
-
 static vec<const_char_p> argbuf;
+
+/* Likewise, but for the current @file.  */
+static vec<const_char_p> at_file_argbuf;
+
+/* Whether an @file is currently open.  */
+static bool in_at_file = false;
 
 /* Were the options -c, -S or -E passed.  */
 static int have_c = 0;
@@ -1969,6 +1979,7 @@ static void
 alloc_args (void)
 {
   argbuf.create (10);
+  at_file_argbuf.create (10);
 }
 
 /* Clear out the vector of arguments (after a command is executed).  */
@@ -1977,6 +1988,7 @@ static void
 clear_args (void)
 {
   argbuf.truncate (0);
+  at_file_argbuf.truncate (0);
 }
 
 /* Add one argument to the vector at the end.
@@ -1989,7 +2001,10 @@ clear_args (void)
 static void
 store_arg (const char *arg, int delete_always, int delete_failure)
 {
-  argbuf.safe_push (arg);
+  if (in_at_file)
+    at_file_argbuf.safe_push (arg);
+  else
+    argbuf.safe_push (arg);
 
   if (delete_always || delete_failure)
     {
@@ -2001,6 +2016,67 @@ store_arg (const char *arg, int delete_always, int delete_failure)
 	arg = p + 1;
       record_temp_file (arg, delete_always, delete_failure);
     }
+}
+
+/* Open a temporary @file into which subsequent arguments will be stored.  */
+
+static void
+open_at_file (void)
+{
+   if (in_at_file)
+     fatal_error (input_location, "cannot open nested response file");
+   else
+     in_at_file = true;
+}
+
+/* Close the temporary @file and add @file to the argument list.  */
+
+static void
+close_at_file (void)
+{
+  if (!in_at_file)
+    fatal_error (input_location, "cannot close nonexistent response file");
+
+  in_at_file = false;
+
+  const unsigned int n_args = at_file_argbuf.length ();
+  if (n_args == 0)
+    return;
+
+  char **argv = (char **) alloca (sizeof (char *) * (n_args + 1));
+  char *temp_file = make_temp_file ("");
+  char *at_argument = concat ("@", temp_file, NULL);
+  FILE *f = fopen (temp_file, "w");
+  int status;
+  unsigned int i;
+
+  /* Copy the strings over.  */
+  for (i = 0; i < n_args; i++)
+    argv[i] = CONST_CAST (char *, at_file_argbuf[i]);
+  argv[i] = NULL;
+
+  at_file_argbuf.truncate (0);
+
+  if (f == NULL)
+    fatal_error (input_location, "could not open temporary response file %s",
+		 temp_file);
+
+  status = writeargv (argv, f);
+
+  if (status)
+    fatal_error (input_location,
+		 "could not write to temporary response file %s",
+		 temp_file);
+
+  status = fclose (f);
+
+  if (status == EOF)
+    fatal_error (input_location, "could not close temporary response file %s",
+		 temp_file);
+
+  store_arg (at_argument, 0, 0);
+
+  record_temp_file (temp_file, !save_temps_flag, !save_temps_flag);
 }
 
 /* Load specs from a file name named FILENAME, replacing occurrences of
@@ -3818,6 +3894,11 @@ driver_handle_option (struct gcc_options *opts,
       add_linker_option ("--version", strlen ("--version"));
       break;
 
+    case OPT__completion_:
+      validated = true;
+      completion = decoded->arg;
+      break;
+
     case OPT__help:
       print_help_list = 1;
 
@@ -5084,39 +5165,6 @@ spec_path (char *path, void *data)
   return NULL;
 }
 
-/* Create a temporary FILE with the contents of ARGV. Add @FILE to the
-   argument list. */
-
-static void
-create_at_file (char **argv)
-{
-  char *temp_file = make_temp_file ("");
-  char *at_argument = concat ("@", temp_file, NULL);
-  FILE *f = fopen (temp_file, "w");
-  int status;
-
-  if (f == NULL)
-    fatal_error (input_location, "could not open temporary response file %s",
-		 temp_file);
-
-  status = writeargv (argv, f);
-
-  if (status)
-    fatal_error (input_location,
-		 "could not write to temporary response file %s",
-		 temp_file);
-
-  status = fclose (f);
-
-  if (EOF == status)
-    fatal_error (input_location, "could not close temporary response file %s",
-		 temp_file);
-
-  store_arg (at_argument, 0, 0);
-
-  record_temp_file (temp_file, !save_temps_flag, !save_temps_flag);
-}
-
 /* True if we should compile INFILE. */
 
 static bool
@@ -5529,41 +5577,22 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	  case 'i':
 	    if (combine_inputs)
 	      {
+		/* We are going to expand `%i' into `@FILE', where FILE
+		   is a newly-created temporary filename.  The filenames
+		   that would usually be expanded in place of %o will be
+		   written to the temporary file.  */
 		if (at_file_supplied)
-		  {
-		    /* We are going to expand `%i' to `@FILE', where FILE
-		       is a newly-created temporary filename.  The filenames
-		       that would usually be expanded in place of %o will be
-		       written to the temporary file.  */
-		    char **argv;
-		    int n_files = 0;
-		    int j;
+		  open_at_file ();
 
-		    for (i = 0; i < n_infiles; i++)
-		      if (compile_input_file_p (&infiles[i]))
-			n_files++;
+		for (i = 0; (int) i < n_infiles; i++)
+		  if (compile_input_file_p (&infiles[i]))
+		    {
+		      store_arg (infiles[i].name, 0, 0);
+		      infiles[i].compiled = true;
+		    }
 
-		    argv = (char **) alloca (sizeof (char *) * (n_files + 1));
-
-		    /* Copy the strings over.  */
-		    for (i = 0, j = 0; i < n_infiles; i++)
-		      if (compile_input_file_p (&infiles[i]))
-			{
-			  argv[j] = CONST_CAST (char *, infiles[i].name);
-			  infiles[i].compiled = true;
-			  j++;
-			}
-		    argv[j] = NULL;
-
-		    create_at_file (argv);
-		  }
-		else
-		  for (i = 0; (int) i < n_infiles; i++)
-		    if (compile_input_file_p (&infiles[i]))
-		      {
-			store_arg (infiles[i].name, 0, 0);
-			infiles[i].compiled = true;
-		      }
+		if (at_file_supplied)
+		  close_at_file ();
 	      }
 	    else
 	      {
@@ -5636,45 +5665,20 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	    break;
 
 	  case 'o':
-	    {
-	      int max = n_infiles;
-	      max += lang_specific_extra_outfiles;
+	    /* We are going to expand `%o' into `@FILE', where FILE
+	       is a newly-created temporary filename.  The filenames
+	       that would usually be expanded in place of %o will be
+	       written to the temporary file.  */
+	    if (at_file_supplied)
+	      open_at_file ();
 
-              if (HAVE_GNU_LD && at_file_supplied)
-                {
-                  /* We are going to expand `%o' to `@FILE', where FILE
-                     is a newly-created temporary filename.  The filenames
-                     that would usually be expanded in place of %o will be
-                     written to the temporary file.  */
+	    for (i = 0; i < n_infiles + lang_specific_extra_outfiles; i++)
+	      if (outfiles[i])
+		store_arg (outfiles[i], 0, 0);
 
-                  char **argv;
-                  int n_files, j;
-
-                  /* Convert OUTFILES into a form suitable for writeargv.  */
-
-                  /* Determine how many are non-NULL.  */
-                  for (n_files = 0, i = 0; i < max; i++)
-                    n_files += outfiles[i] != NULL;
-
-                  argv = (char **) alloca (sizeof (char *) * (n_files + 1));
-
-                  /* Copy the strings over.  */
-                  for (i = 0, j = 0; i < max; i++)
-                    if (outfiles[i])
-                      {
-                        argv[j] = CONST_CAST (char *, outfiles[i]);
-                        j++;
-                      }
-                  argv[j] = NULL;
-
-		  create_at_file (argv);
-                }
-              else
-                for (i = 0; i < max; i++)
-	          if (outfiles[i])
-		    store_arg (outfiles[i], 0, 0);
-	      break;
-	    }
+	    if (at_file_supplied)
+	      close_at_file ();
+	    break;
 
 	  case 'O':
 	    obstack_grow (&obstack, TARGET_OBJECT_SUFFIX, strlen (TARGET_OBJECT_SUFFIX));
@@ -5714,6 +5718,20 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		record_temp_file (argbuf.last (), 0, 1);
 	      break;
 	    }
+
+	  case '@':
+	    /* Handle the {...} following the %@.  */
+	    if (*p != '{')
+	      fatal_error (input_location,
+			   "spec %qs has invalid %<%%@%c%>", spec, *p);
+	    if (at_file_supplied)
+	      open_at_file ();
+	    p = handle_braces (p + 1);
+	    if (at_file_supplied)
+	      close_at_file ();
+	    if (p == 0)
+	      return -1;
+	    break;
 
 	  /* %x{OPTION} records OPTION for %X to output.  */
 	  case 'x':
@@ -7262,8 +7280,7 @@ compare_files (char *cmpfile[])
 
 driver::driver (bool can_finalize, bool debug) :
   explicit_link_files (NULL),
-  decoded_options (NULL),
-  m_option_suggestions (NULL)
+  decoded_options (NULL)
 {
   env.init (can_finalize, debug);
 }
@@ -7272,14 +7289,6 @@ driver::~driver ()
 {
   XDELETEVEC (explicit_link_files);
   XDELETEVEC (decoded_options);
-  if (m_option_suggestions)
-    {
-      int i;
-      char *str;
-      FOR_EACH_VEC_ELT (*m_option_suggestions, i, str)
-	free (str);
-      delete m_option_suggestions;
-    }
 }
 
 /* driver::main is implemented as a series of driver:: method calls.  */
@@ -7299,6 +7308,12 @@ driver::main (int argc, char **argv)
   maybe_putenv_COLLECT_LTO_WRAPPER ();
   maybe_putenv_OFFLOAD_TARGETS ();
   handle_unrecognized_options ();
+
+  if (completion)
+    {
+      m_option_proposer.suggest_completion (completion);
+      return 0;
+    }
 
   if (!maybe_print_and_exit ())
     return 0;
@@ -7768,106 +7783,6 @@ driver::maybe_putenv_OFFLOAD_TARGETS () const
   offload_targets = NULL;
 }
 
-/* Helper function for driver::suggest_option.  Populate
-   m_option_suggestions with candidate strings for misspelled options.
-   The strings will be freed by the driver's dtor.  */
-
-void
-driver::build_option_suggestions (void)
-{
-  gcc_assert (m_option_suggestions == NULL);
-  m_option_suggestions = new auto_vec <char *> ();
-
-  /* We build a vec of m_option_suggestions, using add_misspelling_candidates
-     to add copies of strings, without a leading dash.  */
-
-  for (unsigned int i = 0; i < cl_options_count; i++)
-    {
-      const struct cl_option *option = &cl_options[i];
-      const char *opt_text = option->opt_text;
-      switch (i)
-	{
-	default:
-	  if (option->var_type == CLVC_ENUM)
-	    {
-	      const struct cl_enum *e = &cl_enums[option->var_enum];
-	      for (unsigned j = 0; e->values[j].arg != NULL; j++)
-		{
-		  char *with_arg = concat (opt_text, e->values[j].arg, NULL);
-		  add_misspelling_candidates (m_option_suggestions, option,
-					      with_arg);
-		  free (with_arg);
-		}
-	    }
-	  else
-	    add_misspelling_candidates (m_option_suggestions, option,
-					opt_text);
-	  break;
-
-	case OPT_fsanitize_:
-	case OPT_fsanitize_recover_:
-	  /* -fsanitize= and -fsanitize-recover= can take
-	     a comma-separated list of arguments.  Given that combinations
-	     are supported, we can't add all potential candidates to the
-	     vec, but if we at least add them individually without commas,
-	     we should do a better job e.g. correcting
-	       "-sanitize=address"
-	     to
-	       "-fsanitize=address"
-	     rather than to "-Wframe-address" (PR driver/69265).  */
-	  {
-	    for (int j = 0; sanitizer_opts[j].name != NULL; ++j)
-	      {
-		struct cl_option optb;
-		/* -fsanitize=all is not valid, only -fno-sanitize=all.
-		   So don't register the positive misspelling candidates
-		   for it.  */
-		if (sanitizer_opts[j].flag == ~0U && i == OPT_fsanitize_)
-		  {
-		    optb = *option;
-		    optb.opt_text = opt_text = "-fno-sanitize=";
-		    optb.cl_reject_negative = true;
-		    option = &optb;
-		  }
-		/* Get one arg at a time e.g. "-fsanitize=address".  */
-		char *with_arg = concat (opt_text,
-					 sanitizer_opts[j].name,
-					 NULL);
-		/* Add with_arg and all of its variant spellings e.g.
-		   "-fno-sanitize=address" to candidates (albeit without
-		   leading dashes).  */
-		add_misspelling_candidates (m_option_suggestions, option,
-					    with_arg);
-		free (with_arg);
-	      }
-	  }
-	  break;
-	}
-    }
-}
-
-/* Helper function for driver::handle_unrecognized_options.
-
-   Given an unrecognized option BAD_OPT (without the leading dash),
-   locate the closest reasonable matching option (again, without the
-   leading dash), or NULL.
-
-   The returned string is owned by the driver instance.  */
-
-const char *
-driver::suggest_option (const char *bad_opt)
-{
-  /* Lazily populate m_option_suggestions.  */
-  if (!m_option_suggestions)
-    build_option_suggestions ();
-  gcc_assert (m_option_suggestions);
-
-  /* "m_option_suggestions" is now populated.  Use it.  */
-  return find_closest_string
-    (bad_opt,
-     (auto_vec <const char *> *) m_option_suggestions);
-}
-
 /* Reject switches that no pass was interested in.  */
 
 void
@@ -7876,7 +7791,7 @@ driver::handle_unrecognized_options ()
   for (size_t i = 0; (int) i < n_switches; i++)
     if (! switches[i].validated)
       {
-	const char *hint = suggest_option (switches[i].part1);
+	const char *hint = m_option_proposer.suggest_option (switches[i].part1);
 	if (hint)
 	  error ("unrecognized command line option %<-%s%>;"
 		 " did you mean %<-%s%>?",
@@ -8504,7 +8419,11 @@ validate_switches_from_spec (const char *spec, bool user)
   const char *p = spec;
   char c;
   while ((c = *p++))
-    if (c == '%' && (*p == '{' || *p == '<' || (*p == 'W' && *++p == '{')))
+    if (c == '%'
+	&& (*p == '{'
+	    || *p == '<'
+	    || (*p == 'W' && *++p == '{')
+	    || (*p == '@' && *++p == '{')))
       /* We have a switch spec.  */
       p = validate_switches (p + 1, user);
 }
@@ -8585,6 +8504,8 @@ next_member:
 	      if (*p == '{' || *p == '<')
 		p = validate_switches (p+1, user_spec);
 	      else if (p[0] == 'W' && p[1] == '{')
+		p = validate_switches (p+2, user_spec);
+	      else if (p[0] == '@' && p[1] == '{')
 		p = validate_switches (p+2, user_spec);
 	    }
 	  else
@@ -10144,7 +10065,7 @@ driver::finalize ()
 
   processing_spec_function = 0;
 
-  argbuf.truncate (0);
+  clear_args ();
 
   have_c = 0;
   have_o = 0;

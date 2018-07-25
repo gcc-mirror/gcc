@@ -35,7 +35,7 @@ test01()
   path p = "foo.bar.baz.tar";
   std::vector<std::string> v;
   for (; !p.extension().empty(); p = p.stem())
-    v.push_back(p.extension().native());
+    v.push_back(p.extension().string());
   VERIFY( v.at(0) == ".tar" );
   VERIFY( v.at(1) == ".baz" );
   VERIFY( v.at(2) == ".bar" );

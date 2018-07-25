@@ -1177,7 +1177,7 @@ initialize_node_lattices (struct cgraph_node *node)
   int i;
 
   gcc_checking_assert (node->has_gimple_body_p ());
-  if (cgraph_local_p (node))
+  if (node->local.local)
     {
       int caller_count = 0;
       node->call_for_symbol_thunks_and_aliases (count_callers, &caller_count,
@@ -2271,24 +2271,6 @@ propagate_constants_across_call (struct cgraph_edge *cs)
   if (parms_count == 0)
     return false;
 
-  /* No propagation through instrumentation thunks is available yet.
-     It should be possible with proper mapping of call args and
-     instrumented callee params in the propagation loop below.  But
-     this case mostly occurs when legacy code calls instrumented code
-     and it is not a primary target for optimizations.
-     We detect instrumentation thunks in aliases and thunks chain by
-     checking instrumentation_clone flag for chain source and target.
-     Going through instrumentation thunks we always have it changed
-     from 0 to 1 and all other nodes do not change it.  */
-  if (!cs->callee->instrumentation_clone
-      && callee->instrumentation_clone)
-    {
-      for (i = 0; i < parms_count; i++)
-	ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
-								 i));
-      return ret;
-    }
-
   /* If this call goes through a thunk we must not propagate to the first (0th)
      parameter.  However, we might need to uncover a thunk from below a series
      of aliases first.  */
@@ -3305,8 +3287,9 @@ ipcp_propagate_stage (struct ipa_topo_info *topo)
 				   ipa_get_param_count (info));
 	initialize_node_lattices (node);
       }
-    if (node->definition && !node->alias)
-      overall_size += ipa_fn_summaries->get (node)->self_size;
+    ipa_fn_summary *s = ipa_fn_summaries->get (node);
+    if (node->definition && !node->alias && s != NULL)
+      overall_size += s->self_size;
     max_count = max_count.max (node->count.ipa ());
   }
 
@@ -3392,54 +3375,56 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
     ipa_update_overall_fn_summary (node);
 }
 
-/* Vector of pointers which for linked lists of clones of an original crgaph
-   edge. */
+class edge_clone_summary;
+static call_summary <edge_clone_summary *> *edge_clone_summaries = NULL;
 
-static vec<cgraph_edge *> next_edge_clone;
-static vec<cgraph_edge *> prev_edge_clone;
+/* Edge clone summary.  */
 
-static inline void
-grow_edge_clone_vectors (void)
+struct edge_clone_summary
 {
-  if (next_edge_clone.length ()
-      <=  (unsigned) symtab->edges_max_uid)
-    next_edge_clone.safe_grow_cleared (symtab->edges_max_uid + 1);
-  if (prev_edge_clone.length ()
-      <=  (unsigned) symtab->edges_max_uid)
-    prev_edge_clone.safe_grow_cleared (symtab->edges_max_uid + 1);
-}
+  /* Default constructor.  */
+  edge_clone_summary (): prev_clone (NULL), next_clone (NULL) {}
 
-/* Edge duplication hook to grow the appropriate linked list in
-   next_edge_clone. */
+  /* Default destructor.  */
+  ~edge_clone_summary ()
+  {
+    if (prev_clone)
+      edge_clone_summaries->get (prev_clone)->next_clone = next_clone;
+    if (next_clone)
+      edge_clone_summaries->get (next_clone)->prev_clone = prev_clone;
+  }
 
-static void
-ipcp_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
-			    void *)
+  cgraph_edge *prev_clone;
+  cgraph_edge *next_clone;
+};
+
+class edge_clone_summary_t:
+  public call_summary <edge_clone_summary *>
 {
-  grow_edge_clone_vectors ();
+public:
+  edge_clone_summary_t (symbol_table *symtab):
+    call_summary <edge_clone_summary *> (symtab)
+    {
+      m_initialize_when_cloning = true;
+    }
 
-  struct cgraph_edge *old_next = next_edge_clone[src->uid];
-  if (old_next)
-    prev_edge_clone[old_next->uid] = dst;
-  prev_edge_clone[dst->uid] = src;
+  virtual void duplicate (cgraph_edge *src_edge, cgraph_edge *dst_edge,
+			  edge_clone_summary *src_data,
+			  edge_clone_summary *dst_data);
+};
 
-  next_edge_clone[dst->uid] = old_next;
-  next_edge_clone[src->uid] = dst;
-}
+/* Edge duplication hook.  */
 
-/* Hook that is called by cgraph.c when an edge is removed.  */
-
-static void
-ipcp_edge_removal_hook (struct cgraph_edge *cs, void *)
+void
+edge_clone_summary_t::duplicate (cgraph_edge *src_edge, cgraph_edge *dst_edge,
+				 edge_clone_summary *src_data,
+				 edge_clone_summary *dst_data)
 {
-  grow_edge_clone_vectors ();
-
-  struct cgraph_edge *prev = prev_edge_clone[cs->uid];
-  struct cgraph_edge *next = next_edge_clone[cs->uid];
-  if (prev)
-    next_edge_clone[prev->uid] = next;
-  if (next)
-    prev_edge_clone[next->uid] = prev;
+  if (src_data->next_clone)
+    edge_clone_summaries->get (src_data->next_clone)->prev_clone = dst_edge;
+  dst_data->prev_clone = src_edge;
+  dst_data->next_clone = src_data->next_clone;
+  src_data->next_clone = dst_edge;
 }
 
 /* See if NODE is a clone with a known aggregate value at a given OFFSET of a
@@ -3567,7 +3552,8 @@ cgraph_edge_brings_value_p (cgraph_edge *cs,
 static inline struct cgraph_edge *
 get_next_cgraph_edge_clone (struct cgraph_edge *cs)
 {
-  return next_edge_clone[cs->uid];
+  edge_clone_summary *s = edge_clone_summaries->get (cs);
+  return s != NULL ? s->next_clone : NULL;
 }
 
 /* Given VAL that is intended for DEST, iterate over all its sources and if any
@@ -3871,7 +3857,7 @@ create_specialized_node (struct cgraph_node *node,
   bool have_self_recursive_calls = !self_recursive_calls.is_empty ();
   for (unsigned j = 0; j < self_recursive_calls.length (); j++)
     {
-      cgraph_edge *cs = next_edge_clone[self_recursive_calls[j]->uid];
+      cgraph_edge *cs = get_next_cgraph_edge_clone (self_recursive_calls[j]);
       /* Cloned edges can disappear during cloning as speculation can be
 	 resolved, check that we have one and that it comes from the last
 	 cloning.  */
@@ -3881,8 +3867,8 @@ create_specialized_node (struct cgraph_node *node,
 	 edge would confuse this mechanism, so let's check that does not
 	 happen.  */
       gcc_checking_assert (!cs
-			   || !next_edge_clone[cs->uid]
-			   || next_edge_clone[cs->uid]->caller != new_node);
+			   || !get_next_cgraph_edge_clone (cs)
+			   || get_next_cgraph_edge_clone (cs)->caller != new_node);
     }
   if (have_self_recursive_calls)
     new_node->expand_all_artificial_thunks ();
@@ -3967,9 +3953,7 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 
 	  if (i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
 	      || (i == 0
-		  && call_passes_through_thunk_p (cs))
-	      || (!cs->callee->instrumentation_clone
-		  && cs->callee->function_symbol ()->instrumentation_clone))
+		  && call_passes_through_thunk_p (cs)))
 	    {
 	      newval = NULL_TREE;
 	      break;
@@ -4969,8 +4953,8 @@ ipcp_store_bits_results (void)
       if (!found_useful_result)
 	continue;
 
-      ipcp_grow_transformations_if_necessary ();
-      ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+      ipcp_transformation_initialize ();
+      ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
       vec_safe_reserve_exact (ts->bits, count);
 
       for (unsigned i = 0; i < count; i++)
@@ -5042,8 +5026,8 @@ ipcp_store_vr_results (void)
       if (!found_useful_result)
 	continue;
 
-      ipcp_grow_transformations_if_necessary ();
-      ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+      ipcp_transformation_initialize ();
+      ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
       vec_safe_reserve_exact (ts->m_vr, count);
 
       for (unsigned i = 0; i < count; i++)
@@ -5075,17 +5059,13 @@ ipcp_store_vr_results (void)
 static unsigned int
 ipcp_driver (void)
 {
-  struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
-  struct cgraph_edge_hook_list *edge_removal_hook_holder;
   struct ipa_topo_info topo;
+
+  if (edge_clone_summaries == NULL)
+    edge_clone_summaries = new edge_clone_summary_t (symtab);
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
-  grow_edge_clone_vectors ();
-  edge_duplication_hook_holder
-    = symtab->add_edge_duplication_hook (&ipcp_edge_duplication_hook, NULL);
-  edge_removal_hook_holder
-    = symtab->add_edge_removal_hook (&ipcp_edge_removal_hook, NULL);
 
   if (dump_file)
     {
@@ -5108,10 +5088,8 @@ ipcp_driver (void)
 
   /* Free all IPCP structures.  */
   free_toporder_info (&topo);
-  next_edge_clone.release ();
-  prev_edge_clone.release ();
-  symtab->remove_edge_removal_hook (edge_removal_hook_holder);
-  symtab->remove_edge_duplication_hook (edge_duplication_hook_holder);
+  delete edge_clone_summaries;
+  edge_clone_summaries = NULL;
   ipa_free_all_structures_after_ipa_cp ();
   if (dump_file)
     fprintf (dump_file, "\nIPA constant propagation end\n");

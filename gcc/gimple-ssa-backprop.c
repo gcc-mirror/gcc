@@ -260,6 +260,11 @@ private:
      post-order walk.  */
   auto_sbitmap m_visited_blocks;
 
+  /* A bitmap of phis that we have finished processing in the initial
+     post-order walk, excluding those from blocks mentioned in
+     M_VISITED_BLOCKS.  */
+  auto_bitmap m_visited_phis;
+
   /* A worklist of SSA names whose definitions need to be reconsidered.  */
   auto_vec <tree, 64> m_worklist;
 
@@ -375,6 +380,9 @@ backprop::process_builtin_call_use (gcall *call, tree rhs, usage_info *info)
 
     CASE_CFN_FMA:
     CASE_CFN_FMA_FN:
+    case CFN_FMS:
+    case CFN_FNMA:
+    case CFN_FNMS:
       /* In X * X + Y, where Y is distinct from X, the sign of X doesn't
 	 matter.  */
       if (gimple_call_arg (call, 0) == rhs
@@ -405,6 +413,7 @@ backprop::process_assign_use (gassign *assign, tree rhs, usage_info *info)
   switch (gimple_assign_rhs_code (assign))
     {
     case ABS_EXPR:
+    case ABSU_EXPR:
       /* The sign of the input doesn't matter.  */
       info->flags.ignore_sign = true;
       break;
@@ -418,15 +427,6 @@ backprop::process_assign_use (gassign *assign, tree rhs, usage_info *info)
 	  if (lhs_info)
 	    *info = *lhs_info;
 	}
-      break;
-
-    case FMA_EXPR:
-      /* In X * X + Y, where Y is distinct from X, the sign of X doesn't
-	 matter.  */
-      if (gimple_assign_rhs1 (assign) == rhs
-	  && gimple_assign_rhs2 (assign) == rhs
-	  && gimple_assign_rhs3 (assign) != rhs)
-	info->flags.ignore_sign = true;
       break;
 
     case MULT_EXPR:
@@ -502,8 +502,11 @@ backprop::intersect_uses (tree var, usage_info *info)
     {
       if (is_gimple_debug (stmt))
 	continue;
-      if (is_a <gphi *> (stmt)
-	  && !bitmap_bit_p (m_visited_blocks, gimple_bb (stmt)->index))
+      gphi *phi = dyn_cast <gphi *> (stmt);
+      if (phi
+	  && !bitmap_bit_p (m_visited_blocks, gimple_bb (phi)->index)
+	  && !bitmap_bit_p (m_visited_phis,
+			    SSA_NAME_VERSION (gimple_phi_result (phi))))
 	{
 	  /* Skip unprocessed phis.  */
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -511,7 +514,7 @@ backprop::intersect_uses (tree var, usage_info *info)
 	      fprintf (dump_file, "[BACKEDGE] ");
 	      print_generic_expr (dump_file, var);
 	      fprintf (dump_file, " in ");
-	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
 	    }
 	}
       else
@@ -635,7 +638,12 @@ backprop::process_block (basic_block bb)
     }
   for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi);
        gsi_next (&gpi))
-    process_var (gimple_phi_result (gpi.phi ()));
+    {
+      tree result = gimple_phi_result (gpi.phi ());
+      process_var (result);
+      bitmap_set_bit (m_visited_phis, SSA_NAME_VERSION (result));
+    }
+  bitmap_clear (m_visited_phis);
 }
 
 /* Delete the definition of VAR, which has no uses.  */
@@ -681,6 +689,7 @@ strip_sign_op_1 (tree rhs)
     switch (gimple_assign_rhs_code (assign))
       {
       case ABS_EXPR:
+      case ABSU_EXPR:
       case NEGATE_EXPR:
 	return gimple_assign_rhs1 (assign);
 

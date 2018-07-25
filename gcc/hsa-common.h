@@ -1208,7 +1208,7 @@ public:
 
 enum hsa_function_kind
 {
-  HSA_NONE,
+  HSA_INVALID,
   HSA_KERNEL,
   HSA_FUNCTION
 };
@@ -1234,7 +1234,7 @@ struct hsa_function_summary
 };
 
 inline
-hsa_function_summary::hsa_function_summary (): m_kind (HSA_NONE),
+hsa_function_summary::hsa_function_summary (): m_kind (HSA_INVALID),
   m_bound_function (NULL), m_gpu_implementation_p (false)
 {
 }
@@ -1244,7 +1244,10 @@ class hsa_summary_t: public function_summary <hsa_function_summary *>
 {
 public:
   hsa_summary_t (symbol_table *table):
-    function_summary<hsa_function_summary *> (table) { }
+    function_summary<hsa_function_summary *> (table)
+  {
+    disable_insertion_hook ();
+  }
 
   /* Couple GPU and HOST as gpu-specific and host-specific implementation of
      the same function.  KIND determines whether GPU is a host-invokable kernel
@@ -1408,8 +1411,7 @@ hsa_gpu_implementation_p (tree decl)
     return false;
 
   hsa_function_summary *s = hsa_summaries->get (cgraph_node::get_create (decl));
-
-  return s->m_gpu_implementation_p;
+  return s != NULL && s->m_gpu_implementation_p;
 }
 
 #endif /* HSA_H */

@@ -74,7 +74,7 @@ package body System.Dwarf_Lines is
 
    procedure Read_Aranges_Entry
      (C     : in out Dwarf_Context;
-      Start :    out Integer_Address;
+      Start :    out Storage_Offset;
       Len   :    out Storage_Count);
    --  Read a single .debug_aranges pair
 
@@ -86,7 +86,7 @@ package body System.Dwarf_Lines is
 
    procedure Aranges_Lookup
      (C           : in out Dwarf_Context;
-      Addr        :        Address;
+      Addr        :        Storage_Offset;
       Info_Offset :    out Offset;
       Success     :    out Boolean);
    --  Search for Addr in .debug_aranges and return offset Info_Offset in
@@ -151,7 +151,7 @@ package body System.Dwarf_Lines is
 
    procedure Symbolic_Address
      (C           : in out Dwarf_Context;
-      Addr        :        Address;
+      Addr        :        Storage_Offset;
       Dir_Name    :    out Str_Access;
       File_Name   :    out Str_Access;
       Subprg_Name :    out String_Ptr_Len;
@@ -296,20 +296,22 @@ package body System.Dwarf_Lines is
          return;
       end if;
       for I in Cache'Range loop
-         Put (System.Address_Image (C.Low + Storage_Count (Cache (I).First)));
-         Put (" - ");
-         Put
-           (System.Address_Image
-              (C.Low + Storage_Count (Cache (I).First + Cache (I).Size)));
-         Put (" l@");
-         Put
-           (System.Address_Image
-              (To_Address (Integer_Address (Cache (I).Line))));
-         Put (": ");
-         S    := Read_Symbol (C.Obj.all, Offset (Cache (I).Sym));
-         Name := Object_Reader.Name (C.Obj.all, S);
-         Put (String (Name.Ptr (1 .. Name.Len)));
-         New_Line;
+         declare
+            E : Search_Entry renames Cache (I);
+            Base_Address : constant System.Address :=
+              To_Address (Integer_Address (C.Low + Storage_Count (E.First)));
+         begin
+            Put (System.Address_Image (Base_Address));
+            Put (" - ");
+            Put (System.Address_Image (Base_Address + Storage_Count (E.Size)));
+            Put (" l@");
+            Put (System.Address_Image (To_Address (Integer_Address (E.Line))));
+            Put (": ");
+            S    := Read_Symbol (C.Obj.all, Offset (E.Sym));
+            Name := Object_Reader.Name (C.Obj.all, S);
+            Put (String (Name.Ptr (1 .. Name.Len)));
+            New_Line;
+         end;
       end loop;
    end Dump_Cache;
 
@@ -372,18 +374,19 @@ package body System.Dwarf_Lines is
 
    function Is_Inside (C : Dwarf_Context; Addr : Address) return Boolean is
    begin
-      return (Addr >= To_Address (To_Integer (C.Low) + C.Load_Slide)
-                and Addr <= To_Address (To_Integer (C.High) + C.Load_Slide));
+      return (Addr >= C.Low + C.Load_Address
+                and then Addr <= C.High + C.Load_Address);
    end Is_Inside;
 
-   ---------
-   -- Low --
-   ---------
+   -----------------
+   -- Low_Address --
+   -----------------
 
-   function Low (C : Dwarf_Context) return Address is
+   function Low_Address (C : Dwarf_Context)
+      return System.Address is
    begin
-      return C.Low;
-   end Low;
+      return C.Load_Address + C.Low;
+   end Low_Address;
 
    ----------
    -- Open --
@@ -411,11 +414,12 @@ package body System.Dwarf_Lines is
 
       Success := True;
 
-      --  Get memory bounds
+      --  Get memory bounds for executable code.  Note that such code
+      --  might come from multiple sections.
 
-      Get_Memory_Bounds (C.Obj.all, Lo, Hi);
-      C.Low  := Address (Lo);
-      C.High := Address (Hi);
+      Get_Xcode_Bounds (C.Obj.all, Lo, Hi);
+      C.Low  := Storage_Offset (Lo);
+      C.High := Storage_Offset (Hi);
 
       --  Create a stream for debug sections
 
@@ -779,7 +783,7 @@ package body System.Dwarf_Lines is
 
    procedure Set_Load_Address (C : in out Dwarf_Context; Addr : Address) is
    begin
-      C.Load_Slide := To_Integer (Addr);
+      C.Load_Address := Addr;
    end Set_Load_Address;
 
    ------------------
@@ -874,7 +878,7 @@ package body System.Dwarf_Lines is
 
    procedure Aranges_Lookup
      (C           : in out Dwarf_Context;
-      Addr        :        Address;
+      Addr        :        Storage_Offset;
       Info_Offset :    out Offset;
       Success     :    out Boolean)
    is
@@ -887,13 +891,13 @@ package body System.Dwarf_Lines is
 
          loop
             declare
-               Start : Integer_Address;
+               Start : Storage_Offset;
                Len   : Storage_Count;
             begin
                Read_Aranges_Entry (C, Start, Len);
                exit when Start = 0 and Len = 0;
-               if Addr >= To_Address (Start)
-                 and then Addr < To_Address (Start) + Len
+               if Addr >= Start
+                 and then Addr < Start + Len
                then
                   Success := True;
                   return;
@@ -1160,7 +1164,7 @@ package body System.Dwarf_Lines is
 
    procedure Read_Aranges_Entry
      (C     : in out Dwarf_Context;
-      Start :    out Integer_Address;
+      Start :    out Storage_Offset;
       Len   :    out Storage_Count)
    is
    begin
@@ -1171,7 +1175,7 @@ package body System.Dwarf_Lines is
          begin
             S     := Read (C.Aranges);
             L     := Read (C.Aranges);
-            Start := Integer_Address (S);
+            Start := Storage_Offset (S);
             Len   := Storage_Count (L);
          end;
       elsif Address'Size = 64 then
@@ -1180,7 +1184,7 @@ package body System.Dwarf_Lines is
          begin
             S     := Read (C.Aranges);
             L     := Read (C.Aranges);
-            Start := Integer_Address (S);
+            Start := Storage_Offset (S);
             Len   := Storage_Count (L);
          end;
       else
@@ -1198,6 +1202,9 @@ package body System.Dwarf_Lines is
       --  Phase 1: count number of symbols. Phase 2: fill the cache.
       declare
          S               : Object_Symbol;
+         Val             : uint64;
+         Xcode_Low       : constant uint64 := uint64 (C.Low);
+         Xcode_High      : constant uint64 := uint64 (C.High);
          Sz              : uint32;
          Addr, Prev_Addr : uint32;
          Nbr_Symbols     : Natural;
@@ -1207,22 +1214,31 @@ package body System.Dwarf_Lines is
             S           := First_Symbol (C.Obj.all);
             Prev_Addr   := uint32'Last;
             while S /= Null_Symbol loop
-               --  Discard symbols whose length is 0
+               --  Discard symbols of length 0 or located outside of the
+               --  execution code section outer boundaries.
                Sz := uint32 (Size (S));
+               Val := Value (S);
 
-               --  Try to filter symbols at the same address. This is a best
-               --  effort as they might not be consecutive.
-               Addr := uint32 (Value (S) - uint64 (C.Low));
-               if Sz > 0 and then Addr /= Prev_Addr then
-                  Nbr_Symbols := Nbr_Symbols + 1;
-                  Prev_Addr   := Addr;
+               if Sz > 0
+                 and then Val >= Xcode_Low
+                 and then Val <= Xcode_High
+               then
 
-                  if Phase = 2 then
-                     C.Cache (Nbr_Symbols) :=
-                       (First => Addr,
-                        Size  => Sz,
-                        Sym   => uint32 (Off (S)),
-                        Line  => 0);
+                  Addr := uint32 (Val - Xcode_Low);
+
+                  --  Try to filter symbols at the same address. This is a best
+                  --  effort as they might not be consecutive.
+                  if Addr /= Prev_Addr then
+                     Nbr_Symbols := Nbr_Symbols + 1;
+                     Prev_Addr   := Addr;
+
+                     if Phase = 2 then
+                        C.Cache (Nbr_Symbols) :=
+                          (First => Addr,
+                           Size  => Sz,
+                           Sym   => uint32 (Off (S)),
+                           Line  => 0);
+                     end if;
                   end if;
                end if;
 
@@ -1249,7 +1265,7 @@ package body System.Dwarf_Lines is
          Info_Offset : Offset;
          Line_Offset : Offset;
          Success     : Boolean;
-         Ar_Start    : Integer_Address;
+         Ar_Start    : Storage_Offset;
          Ar_Len      : Storage_Count;
          Start, Len  : uint32;
          First, Last : Natural;
@@ -1270,7 +1286,7 @@ package body System.Dwarf_Lines is
                exit when Ar_Start = 0 and Ar_Len = 0;
 
                Len   := uint32 (Ar_Len);
-               Start := uint32 (Ar_Start - To_Integer (C.Low));
+               Start := uint32 (Ar_Start - C.Low);
 
                --  Search START in the array
                First := Cache'First;
@@ -1319,7 +1335,7 @@ package body System.Dwarf_Lines is
 
    procedure Symbolic_Address
      (C           : in out Dwarf_Context;
-      Addr        :        Address;
+      Addr        :        Storage_Offset;
       Dir_Name    :    out Str_Access;
       File_Name   :    out Str_Access;
       Subprg_Name :    out String_Ptr_Len;
@@ -1384,7 +1400,7 @@ package body System.Dwarf_Lines is
          Line_Num := Natural (Match.Line);
       end Set_Result;
 
-      Addr_Int     : constant Integer_Address := To_Integer (Addr);
+      Addr_Int     : constant uint64 := uint64 (Addr);
       Previous_Row : Line_Info_Registers;
       Info_Offset  : Offset;
       Line_Offset  : Offset;
@@ -1431,7 +1447,7 @@ package body System.Dwarf_Lines is
          --  Search symbol
          S := First_Symbol (C.Obj.all);
          while S /= Null_Symbol loop
-            if Spans (S, uint64 (Addr_Int)) then
+            if Spans (S, Addr_Int) then
                Subprg_Name := Object_Reader.Name (C.Obj.all, S);
                exit;
             end if;
@@ -1479,13 +1495,13 @@ package body System.Dwarf_Lines is
 
          if C.Registers.Is_Row then
             if not Previous_Row.End_Sequence
-              and then Addr_Int >= Integer_Address (Previous_Row.Address)
-              and then Addr_Int < Integer_Address (C.Registers.Address)
+              and then Addr_Int >= Previous_Row.Address
+              and then Addr_Int < C.Registers.Address
             then
                Set_Result (Previous_Row);
                return;
 
-            elsif Addr_Int = Integer_Address (C.Registers.Address) then
+            elsif Addr_Int = C.Registers.Address then
                Set_Result (C.Registers);
                return;
             end if;
@@ -1526,7 +1542,7 @@ package body System.Dwarf_Lines is
       C : Dwarf_Context := Cin;
 
       Addr_In_Traceback : Address;
-      Addr_To_Lookup    : Address;
+      Offset_To_Lookup  : Storage_Offset;
 
       Dir_Name    : Str_Access;
       File_Name   : Str_Access;
@@ -1547,12 +1563,11 @@ package body System.Dwarf_Lines is
 
          Addr_In_Traceback := PC_For (Traceback (J));
 
-         Addr_To_Lookup := To_Address
-           (To_Integer (Addr_In_Traceback) - C.Load_Slide);
+         Offset_To_Lookup := Addr_In_Traceback - C.Load_Address;
 
          Symbolic_Address
            (C,
-            Addr_To_Lookup,
+            Offset_To_Lookup,
             Dir_Name,
             File_Name,
             Subprg_Name,

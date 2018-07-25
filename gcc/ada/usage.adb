@@ -352,7 +352,7 @@ begin
    --  Line for -gnatn switch
 
    Write_Switch_Char ("n[?]");
-   Write_Line ("Enable pragma Inline (both within and across units, ?=1/2)");
+   Write_Line ("Enable pragma Inline across units (?=1/2 for moderate/full)");
 
    --  Line for -gnato switch
 
@@ -403,6 +403,8 @@ begin
    Write_Switch_Char ("R?");
    Write_Line
      ("List rep info (?=0/1/2/3/e/m for none/types/all/symbolic/ext/mech)");
+   Write_Switch_Char ("R?j");
+   Write_Line ("List rep info in the JSON data interchange format");
    Write_Switch_Char ("R?s");
    Write_Line ("List rep info to file.rep instead of standard output");
 

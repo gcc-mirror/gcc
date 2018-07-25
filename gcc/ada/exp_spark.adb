@@ -386,7 +386,7 @@ package body Exp_SPARK is
          --  Remove the entity of the renaming declaration from visibility as
          --  the analysis of the object declaration will reintroduce it again.
 
-         Remove_Entity (Obj_Id);
+         Remove_Entity_And_Homonym (Obj_Id);
          Analyze (N);
 
       --  Otherwise unconditionally remove all side effects from the name

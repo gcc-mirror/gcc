@@ -1,0 +1,13 @@
+This directory serves as a simple Vim addon for GCC development.  It can be
+symlinked or copied into Vim plugin directory as any other plugin.  For
+example, if using vim-pathogen plugin manager:
+
+    ln -s /path/to/gcc/contrib/vim-gcc-dev ~/.vim/bundle/
+
+This adds syntax highlighting rules for the match.pd file and GIMPLE/RTL dumps.
+
+You can also use RTL syntax rules for GCC machine desciption files by adding
+
+    autocmd BufRead *.md  setf gcc-rtl
+
+to your ~/.vimrc file.

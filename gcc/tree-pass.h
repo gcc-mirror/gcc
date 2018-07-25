@@ -47,7 +47,7 @@ struct pass_data
   const char *name;
 
   /* The -fopt-info optimization group flags as defined in dumpfile.h. */
-  unsigned int optinfo_flags;
+  optgroup_flags_t optinfo_flags;
 
   /* The timevar id associated with this pass.  */
   /* ??? Ideally would be dynamically assigned.  */
@@ -339,11 +339,6 @@ extern void register_pass (register_pass_info *);
 extern void register_pass (opt_pass* pass, pass_positioning_ops pos,
 			   const char* ref_pass_name, int ref_pass_inst_number);
 
-extern simple_ipa_opt_pass *make_pass_ipa_chkp_versioning (gcc::context *ctxt);
-extern simple_ipa_opt_pass *make_pass_ipa_chkp_early_produce_thunks (gcc::context *ctxt);
-extern simple_ipa_opt_pass *make_pass_ipa_chkp_produce_thunks (gcc::context *ctxt);
-extern gimple_opt_pass *make_pass_chkp (gcc::context *ctxt);
-extern gimple_opt_pass *make_pass_chkp_opt (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_asan (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_asan_O0 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tsan (gcc::context *ctxt);
@@ -413,6 +408,7 @@ extern gimple_opt_pass *make_pass_strip_predict_hints (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_complex_O0 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_complex (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_switch (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_lower_switch_O0 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_vector (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_vector_ssa (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_omp (gcc::context *ctxt);
@@ -491,7 +487,6 @@ extern simple_ipa_opt_pass *make_pass_ipa_tree_profile (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_auto_profile (gcc::context *ctxt);
 
 extern simple_ipa_opt_pass *make_pass_build_ssa_passes (gcc::context *ctxt);
-extern simple_ipa_opt_pass *make_pass_chkp_instrumentation_passes (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_local_optimization_passes (gcc::context *ctxt);
 
 extern ipa_opt_pass_d *make_pass_ipa_whole_program_visibility (gcc::context

@@ -122,6 +122,10 @@ struct GTY(())  riscv_frame_info {
   HOST_WIDE_INT arg_pointer_offset;
 };
 
+enum riscv_privilege_levels {
+  UNKNOWN_MODE, USER_MODE, SUPERVISOR_MODE, MACHINE_MODE
+};
+
 struct GTY(())  machine_function {
   /* The number of extra stack bytes taken up by register varargs.
      This area is allocated by the callee at the very top of the frame.  */
@@ -129,6 +133,14 @@ struct GTY(())  machine_function {
 
   /* True if current function is a naked function.  */
   bool naked_p;
+
+  /* True if current function is an interrupt function.  */
+  bool interrupt_handler_p;
+  /* For an interrupt handler, indicates the privilege level.  */
+  enum riscv_privilege_levels interrupt_mode;
+
+  /* True if attributes on current function have been checked.  */
+  bool attributes_checked_p;
 
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
@@ -276,6 +288,7 @@ static const struct riscv_tune_info optimize_size_tune_info = {
 };
 
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
+static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
 
 /* Defining target-specific uses of __attribute__.  */
 static const struct attribute_spec riscv_attribute_table[] =
@@ -287,6 +300,9 @@ static const struct attribute_spec riscv_attribute_table[] =
   /* The attribute telling no prologue/epilogue.  */
   { "naked",	0,  0, true, false, false, false,
     riscv_handle_fndecl_attribute, NULL },
+  /* This attribute generates prologue/epilogue for interrupt handlers.  */
+  { "interrupt", 0, 1, false, true, true, false,
+    riscv_handle_type_attribute, NULL },
 
   /* The last attribute spec is set to be NULL.  */
   { NULL,	0,  0, false, false, false, false, NULL, NULL }
@@ -2002,8 +2018,18 @@ riscv_extend_comparands (rtx_code code, rtx *op0, rtx *op1)
   /* Comparisons consider all XLEN bits, so extend sub-XLEN values.  */
   if (GET_MODE_SIZE (word_mode) > GET_MODE_SIZE (GET_MODE (*op0)))
     {
-      /* It is more profitable to zero-extend QImode values.  */
-      if (unsigned_condition (code) == code && GET_MODE (*op0) == QImode)
+      /* It is more profitable to zero-extend QImode values.  But not if the
+	 first operand has already been sign-extended, and the second one is
+	 is a constant or has already been sign-extended also.  */
+      if (unsigned_condition (code) == code
+	  && (GET_MODE (*op0) == QImode
+	      && ! (GET_CODE (*op0) == SUBREG
+		    && SUBREG_PROMOTED_VAR_P (*op0)
+		    && SUBREG_PROMOTED_SIGNED_P (*op0)
+		    && (CONST_INT_P (*op1)
+			|| (GET_CODE (*op1) == SUBREG
+			    && SUBREG_PROMOTED_VAR_P (*op1)
+			    && SUBREG_PROMOTED_SIGNED_P (*op1))))))
 	{
 	  *op0 = gen_rtx_ZERO_EXTEND (word_mode, *op0);
 	  if (CONST_INT_P (*op1))
@@ -2703,7 +2729,55 @@ riscv_handle_fndecl_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
-/* Return true if func is a naked function.  */
+/* Verify type based attributes.  NODE is the what the attribute is being
+   applied to.  NAME is the attribute name.  ARGS are the attribute args.
+   FLAGS gives info about the context.  NO_ADD_ATTRS should be set to true if
+   the attribute should be ignored.  */
+
+static tree
+riscv_handle_type_attribute (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
+			     int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+{
+  /* Check for an argument.  */
+  if (is_attribute_p ("interrupt", name))
+    {
+      if (args)
+	{
+	  tree cst = TREE_VALUE (args);
+	  const char *string;
+
+	  if (TREE_CODE (cst) != STRING_CST)
+	    {
+	      warning (OPT_Wattributes,
+		       "%qE attribute requires a string argument",
+		       name);
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
+
+	  string = TREE_STRING_POINTER (cst);
+	  if (strcmp (string, "user") && strcmp (string, "supervisor")
+	      && strcmp (string, "machine"))
+	    {
+	      warning (OPT_Wattributes,
+		       "argument to %qE attribute is not \"user\", \"supervisor\", or \"machine\"",
+		       name);
+	      *no_add_attrs = true;
+	    }
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* Return true if function TYPE is an interrupt function.  */
+static bool
+riscv_interrupt_type_p (tree type)
+{
+  return lookup_attribute ("interrupt", TYPE_ATTRIBUTES (type)) != NULL;
+}
+
+/* Return true if FUNC is a naked function.  */
 static bool
 riscv_naked_function_p (tree func)
 {
@@ -3209,6 +3283,28 @@ riscv_save_reg_p (unsigned int regno)
   if (regno == RETURN_ADDR_REGNUM && crtl->calls_eh_return)
     return true;
 
+  /* If this is an interrupt handler, then must save extra registers.  */
+  if (cfun->machine->interrupt_handler_p)
+    {
+      /* zero register is always zero.  */
+      if (regno == GP_REG_FIRST)
+	return false;
+
+      /* The function will return the stack pointer to its original value.  */
+      if (regno == STACK_POINTER_REGNUM)
+	return false;
+
+      /* By convention, we assume that gp and tp are safe.  */
+      if (regno == GP_REGNUM || regno == THREAD_POINTER_REGNUM)
+	return false;
+
+      /* We must save every register used in this function.  If this is not a
+	 leaf function, then we must save all temporary registers.  */
+      if (df_regs_ever_live_p (regno)
+	  || (!crtl->is_leaf && call_used_regs[regno]))
+	return true;
+    }
+
   return false;
 }
 
@@ -3216,7 +3312,8 @@ riscv_save_reg_p (unsigned int regno)
 static bool
 riscv_use_save_libcall (const struct riscv_frame_info *frame)
 {
-  if (!TARGET_SAVE_RESTORE || crtl->calls_eh_return || frame_pointer_needed)
+  if (!TARGET_SAVE_RESTORE || crtl->calls_eh_return || frame_pointer_needed
+      || cfun->machine->interrupt_handler_p)
     return false;
 
   return frame->save_libcall_adjustment != 0;
@@ -3275,21 +3372,35 @@ riscv_save_libcall_count (unsigned mask)
    They decrease stack_pointer_rtx but leave frame_pointer_rtx and
    hard_frame_pointer_rtx unchanged.  */
 
+static HOST_WIDE_INT riscv_first_stack_step (struct riscv_frame_info *frame);
+
 static void
 riscv_compute_frame_info (void)
 {
   struct riscv_frame_info *frame;
   HOST_WIDE_INT offset;
+  bool interrupt_save_t1 = false;
   unsigned int regno, i, num_x_saved = 0, num_f_saved = 0;
 
   frame = &cfun->machine->frame;
+
+  /* In an interrupt function, if we have a large frame, then we need to
+     save/restore t1.  We check for this before clearing the frame struct.  */
+  if (cfun->machine->interrupt_handler_p)
+    {
+      HOST_WIDE_INT step1 = riscv_first_stack_step (frame);
+      if (! SMALL_OPERAND (frame->total_size - step1))
+	interrupt_save_t1 = true;
+    }
+
   memset (frame, 0, sizeof (*frame));
 
   if (!cfun->machine->naked_p)
     {
       /* Find out which GPRs we need to save.  */
       for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
-	if (riscv_save_reg_p (regno))
+	if (riscv_save_reg_p (regno)
+	    || (interrupt_save_t1 && (regno == T1_REGNUM)))
 	  frame->mask |= 1 << (regno - GP_REG_FIRST), num_x_saved++;
 
       /* If this function calls eh_return, we must also save and restore the
@@ -3324,7 +3435,14 @@ riscv_compute_frame_info (void)
 
       /* Only use save/restore routines if they don't alter the stack size.  */
       if (RISCV_STACK_ALIGN (num_save_restore * UNITS_PER_WORD) == x_save_size)
-	frame->save_libcall_adjustment = x_save_size;
+	{
+	  /* Libcall saves/restores 3 registers at once, so we need to
+	     allocate 12 bytes for callee-saved register.  */
+	  if (TARGET_RVE)
+	    x_save_size = 3 * UNITS_PER_WORD;
+
+	  frame->save_libcall_adjustment = x_save_size;
+	}
 
       offset += x_save_size;
     }
@@ -3433,23 +3551,45 @@ riscv_save_restore_reg (machine_mode mode, int regno,
    of the frame.  */
 
 static void
-riscv_for_each_saved_reg (HOST_WIDE_INT sp_offset, riscv_save_restore_fn fn)
+riscv_for_each_saved_reg (HOST_WIDE_INT sp_offset, riscv_save_restore_fn fn,
+			  bool epilogue, bool maybe_eh_return)
 {
   HOST_WIDE_INT offset;
 
   /* Save the link register and s-registers. */
   offset = cfun->machine->frame.gp_sp_offset - sp_offset;
-  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+  for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
-	riscv_save_restore_reg (word_mode, regno, offset, fn);
+	bool handle_reg = TRUE;
+
+	/* If this is a normal return in a function that calls the eh_return
+	   builtin, then do not restore the eh return data registers as that
+	   would clobber the return value.  But we do still need to save them
+	   in the prologue, and restore them for an exception return, so we
+	   need special handling here.  */
+	if (epilogue && !maybe_eh_return && crtl->calls_eh_return)
+	  {
+	    unsigned int i, regnum;
+
+	    for (i = 0; (regnum = EH_RETURN_DATA_REGNO (i)) != INVALID_REGNUM;
+		 i++)
+	      if (regno == regnum)
+		{
+		  handle_reg = FALSE;
+		  break;
+		}
+	  }
+
+	if (handle_reg)
+	  riscv_save_restore_reg (word_mode, regno, offset, fn);
 	offset -= UNITS_PER_WORD;
       }
 
   /* This loop must iterate over the same space as its companion in
      riscv_compute_frame_info.  */
   offset = cfun->machine->frame.fp_sp_offset - sp_offset;
-  for (int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+  for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.fmask, regno - FP_REG_FIRST))
       {
 	machine_mode mode = TARGET_DOUBLE_FLOAT ? DFmode : SFmode;
@@ -3595,16 +3735,11 @@ riscv_expand_prologue (void)
   unsigned mask = frame->mask;
   rtx insn;
 
-  if (cfun->machine->naked_p)
-    {
-      if (flag_stack_usage_info)
-	current_function_static_stack_size = 0;
-
-      return;
-    }
-
   if (flag_stack_usage_info)
     current_function_static_stack_size = size;
+
+  if (cfun->machine->naked_p)
+    return;
 
   /* When optimizing for size, call a subroutine to save the registers.  */
   if (riscv_use_save_libcall (frame))
@@ -3630,7 +3765,7 @@ riscv_expand_prologue (void)
 			    GEN_INT (-step1));
       RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
       size -= step1;
-      riscv_for_each_saved_reg (size, riscv_save_reg);
+      riscv_for_each_saved_reg (size, riscv_save_reg, false, false);
     }
 
   frame->mask = mask; /* Undo the above fib.  */
@@ -3692,11 +3827,11 @@ riscv_adjust_libcall_cfi_epilogue ()
   return dwarf;
 }
 
-/* Expand an "epilogue" or "sibcall_epilogue" pattern; SIBCALL_P
-   says which.  */
+/* Expand an "epilogue", "sibcall_epilogue", or "eh_return_internal" pattern;
+   style says which.  */
 
 void
-riscv_expand_epilogue (bool sibcall_p)
+riscv_expand_epilogue (int style)
 {
   /* Split the frame into two.  STEP1 is the amount of stack we should
      deallocate before restoring the registers.  STEP2 is the amount we
@@ -3707,7 +3842,8 @@ riscv_expand_epilogue (bool sibcall_p)
   unsigned mask = frame->mask;
   HOST_WIDE_INT step1 = frame->total_size;
   HOST_WIDE_INT step2 = 0;
-  bool use_restore_libcall = !sibcall_p && riscv_use_save_libcall (frame);
+  bool use_restore_libcall = ((style == NORMAL_RETURN)
+			      && riscv_use_save_libcall (frame));
   rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
   rtx insn;
 
@@ -3717,14 +3853,14 @@ riscv_expand_epilogue (bool sibcall_p)
 
   if (cfun->machine->naked_p)
     {
-      gcc_assert (!sibcall_p);
+      gcc_assert (style == NORMAL_RETURN);
 
       emit_jump_insn (gen_return ());
 
       return;
     }
 
-  if (!sibcall_p && riscv_can_use_return_insn ())
+  if ((style == NORMAL_RETURN) && riscv_can_use_return_insn ())
     {
       emit_jump_insn (gen_return ());
       return;
@@ -3799,7 +3935,8 @@ riscv_expand_epilogue (bool sibcall_p)
     frame->mask = 0; /* Temporarily fib that we need not save GPRs.  */
 
   /* Restore the registers.  */
-  riscv_for_each_saved_reg (frame->total_size - step2, riscv_restore_reg);
+  riscv_for_each_saved_reg (frame->total_size - step2, riscv_restore_reg,
+			    true, style == EXCEPTION_RETURN);
 
   if (use_restore_libcall)
     {
@@ -3838,12 +3975,46 @@ riscv_expand_epilogue (bool sibcall_p)
     }
 
   /* Add in the __builtin_eh_return stack adjustment. */
-  if (crtl->calls_eh_return)
+  if ((style == EXCEPTION_RETURN) && crtl->calls_eh_return)
     emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 			      EH_RETURN_STACKADJ_RTX));
 
-  if (!sibcall_p)
+  /* Return from interrupt.  */
+  if (cfun->machine->interrupt_handler_p)
+    {
+      enum riscv_privilege_levels mode = cfun->machine->interrupt_mode;
+
+      gcc_assert (mode != UNKNOWN_MODE);
+
+      if (mode == MACHINE_MODE)
+	emit_jump_insn (gen_riscv_mret ());
+      else if (mode == SUPERVISOR_MODE)
+	emit_jump_insn (gen_riscv_sret ());
+      else
+	emit_jump_insn (gen_riscv_uret ());
+    }
+  else if (style != SIBCALL_RETURN)
     emit_jump_insn (gen_simple_return_internal (ra));
+}
+
+/* Implement EPILOGUE_USES.  */
+
+bool
+riscv_epilogue_uses (unsigned int regno)
+{
+  if (regno == RETURN_ADDR_REGNUM)
+    return true;
+
+  if (epilogue_completed && cfun->machine->interrupt_handler_p)
+    {
+      /* An interrupt function restores temp regs, so we must indicate that
+	 they are live at function end.  */
+      if (df_regs_ever_live_p (regno)
+	    || (!crtl->is_leaf && call_used_regs[regno]))
+	return true;
+    }
+
+  return false;
 }
 
 /* Return nonzero if this function is known to have a null epilogue.
@@ -3853,7 +4024,8 @@ riscv_expand_epilogue (bool sibcall_p)
 bool
 riscv_can_use_return_insn (void)
 {
-  return reload_completed && cfun->machine->frame.total_size == 0;
+  return (reload_completed && cfun->machine->frame.total_size == 0
+	  && ! cfun->machine->interrupt_handler_p);
 }
 
 /* Implement TARGET_SECONDARY_MEMORY_NEEDED.
@@ -4137,6 +4309,9 @@ riscv_option_override (void)
     error ("requested ABI requires -march to subsume the %qc extension",
 	   UNITS_PER_FP_ARG > 8 ? 'Q' : (UNITS_PER_FP_ARG > 4 ? 'D' : 'F'));
 
+  if (TARGET_RVE && riscv_abi != ABI_ILP32E)
+    error ("rv32e requires ilp32e ABI");
+
   /* We do not yet support ILP32 on RV64.  */
   if (BITS_PER_WORD != POINTER_SIZE)
     error ("ABI requires -march=rv%d", POINTER_SIZE);
@@ -4161,6 +4336,19 @@ riscv_option_override (void)
 static void
 riscv_conditional_register_usage (void)
 {
+  /* We have only x0~x15 on RV32E.  */
+  if (TARGET_RVE)
+    {
+      for (int r = 16; r <= 31; r++)
+	fixed_regs[r] = 1;
+    }
+
+  if (riscv_abi == ABI_ILP32E)
+    {
+      for (int r = 16; r <= 31; r++)
+	call_used_regs[r] = 1;
+    }
+
   if (!TARGET_HARD_FLOAT)
     {
       for (int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
@@ -4333,11 +4521,46 @@ riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
   if (TARGET_SAVE_RESTORE)
     return false;
 
-  /* Don't use sibcall for naked function.  */
+  /* Don't use sibcall for naked functions.  */
   if (cfun->machine->naked_p)
     return false;
 
+  /* Don't use sibcall for interrupt functions.  */
+  if (cfun->machine->interrupt_handler_p)
+    return false;
+
   return true;
+}
+
+/* Get the intterupt type, return UNKNOWN_MODE if it's not
+   interrupt function. */
+static enum riscv_privilege_levels
+riscv_get_interrupt_type (tree decl)
+{
+  gcc_assert (decl != NULL_TREE);
+
+  if ((TREE_CODE(decl) != FUNCTION_DECL)
+      || (!riscv_interrupt_type_p (TREE_TYPE (decl))))
+    return UNKNOWN_MODE;
+
+  tree attr_args
+    = TREE_VALUE (lookup_attribute ("interrupt",
+				    TYPE_ATTRIBUTES (TREE_TYPE (decl))));
+
+  if (attr_args && TREE_CODE (TREE_VALUE (attr_args)) != VOID_TYPE)
+    {
+      const char *string = TREE_STRING_POINTER (TREE_VALUE (attr_args));
+
+      if (!strcmp (string, "user"))
+	return USER_MODE;
+      else if (!strcmp (string, "supervisor"))
+	return SUPERVISOR_MODE;
+      else /* Must be "machine".  */
+	return MACHINE_MODE;
+    }
+  else
+    /* Interrupt attributes are machine mode by default.  */
+    return MACHINE_MODE;
 }
 
 /* Implement `TARGET_SET_CURRENT_FUNCTION'.  */
@@ -4348,10 +4571,60 @@ riscv_set_current_function (tree decl)
   if (decl == NULL_TREE
       || current_function_decl == NULL_TREE
       || current_function_decl == error_mark_node
-      || !cfun->machine)
+      || ! cfun->machine
+      || cfun->machine->attributes_checked_p)
     return;
 
   cfun->machine->naked_p = riscv_naked_function_p (decl);
+  cfun->machine->interrupt_handler_p
+    = riscv_interrupt_type_p (TREE_TYPE (decl));
+
+  if (cfun->machine->naked_p && cfun->machine->interrupt_handler_p)
+    error ("function attributes %qs and %qs are mutually exclusive",
+	   "interrupt", "naked");
+
+  if (cfun->machine->interrupt_handler_p)
+    {
+      tree ret = TREE_TYPE (TREE_TYPE (decl));
+      tree args = TYPE_ARG_TYPES (TREE_TYPE (decl));
+
+      if (TREE_CODE (ret) != VOID_TYPE)
+	error ("%qs function cannot return a value", "interrupt");
+
+      if (args && TREE_CODE (TREE_VALUE (args)) != VOID_TYPE)
+	error ("%qs function cannot have arguments", "interrupt");
+
+      cfun->machine->interrupt_mode = riscv_get_interrupt_type (decl);
+
+      gcc_assert (cfun->machine->interrupt_mode != UNKNOWN_MODE);
+    }
+
+  /* Don't print the above diagnostics more than once.  */
+  cfun->machine->attributes_checked_p = 1;
+}
+
+/* Implement TARGET_MERGE_DECL_ATTRIBUTES. */
+static tree
+riscv_merge_decl_attributes (tree olddecl, tree newdecl)
+{
+  tree combined_attrs;
+
+  enum riscv_privilege_levels old_interrupt_type
+    = riscv_get_interrupt_type (olddecl);
+  enum riscv_privilege_levels new_interrupt_type
+    = riscv_get_interrupt_type (newdecl);
+
+  /* Check old and new has same interrupt type. */
+  if ((old_interrupt_type != UNKNOWN_MODE)
+      && (new_interrupt_type != UNKNOWN_MODE)
+      && (old_interrupt_type != new_interrupt_type))
+    error ("%qs function cannot have different intterupt type.", "interrupt");
+
+  /* Create combined attributes.  */
+  combined_attrs = merge_attributes (DECL_ATTRIBUTES (olddecl),
+                                     DECL_ATTRIBUTES (newdecl));
+
+  return combined_attrs;
 }
 
 /* Implement TARGET_CANNOT_COPY_INSN_P.  */
@@ -4550,11 +4823,18 @@ riscv_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT riscv_constant_alignment
 
+#undef TARGET_MERGE_DECL_ATTRIBUTES
+#define TARGET_MERGE_DECL_ATTRIBUTES riscv_merge_decl_attributes
+
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE riscv_attribute_table
 
 #undef TARGET_WARN_FUNC_RETURN
 #define TARGET_WARN_FUNC_RETURN riscv_warn_func_return
+
+/* The low bit is ignored by jump instructions so is safe to use.  */
+#undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

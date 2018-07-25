@@ -133,6 +133,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       fpos(streamoff __off)
       : _M_off(__off), _M_state() { }
 
+#if __cplusplus >= 201103L
+      fpos(const fpos&) = default;
+      fpos& operator=(const fpos&) = default;
+      ~fpos() = default;
+#endif
+
       /// Convert to streamoff.
       operator streamoff() const { return _M_off; }
 

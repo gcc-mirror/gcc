@@ -11,7 +11,7 @@
 # existing files are listed in "testsuite_files" in the output
 # directory.  Subsequent runs pull the list from that file, allowing
 # users to trim the list down to problematic tests, or just run
-# paticular directories or sub-directories of tests.
+# particular directories or sub-directories of tests.
 #
 # Selecting individual tests can also be done with RUNTESTFLAGS, but
 # that doesn't really do all that we are trying to accomplish here.
