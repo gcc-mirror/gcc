@@ -154,6 +154,12 @@ enum cp_tree_index
     CPTI_AUTO_IDENTIFIER,
     CPTI_DECLTYPE_AUTO_IDENTIFIER,
     CPTI_INIT_LIST_IDENTIFIER,
+    CPTI_FOR_RANGE__IDENTIFIER,
+    CPTI_FOR_BEGIN__IDENTIFIER,
+    CPTI_FOR_END__IDENTIFIER,
+    CPTI_FOR_RANGE_IDENTIFIER,
+    CPTI_FOR_BEGIN_IDENTIFIER,
+    CPTI_FOR_END_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -274,6 +280,12 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define auto_identifier			cp_global_trees[CPTI_AUTO_IDENTIFIER]
 #define decltype_auto_identifier	cp_global_trees[CPTI_DECLTYPE_AUTO_IDENTIFIER]
 #define init_list_identifier		cp_global_trees[CPTI_INIT_LIST_IDENTIFIER]
+#define for_range__identifier		cp_global_trees[CPTI_FOR_RANGE__IDENTIFIER]
+#define for_begin__identifier		cp_global_trees[CPTI_FOR_BEGIN__IDENTIFIER]
+#define for_end__identifier		cp_global_trees[CPTI_FOR_END__IDENTIFIER]
+#define for_range_identifier		cp_global_trees[CPTI_FOR_RANGE_IDENTIFIER]
+#define for_begin_identifier		cp_global_trees[CPTI_FOR_BEGIN_IDENTIFIER]
+#define for_end_identifier		cp_global_trees[CPTI_FOR_END_IDENTIFIER]
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 

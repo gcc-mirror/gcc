@@ -1,3 +1,9 @@
+2018-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85515
+	* g++.dg/pr85515-2.C: Add expected dg-error.
+	* g++.dg/cpp0x/range-for36.C: New test.
+
 2018-07-25  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/uncached-1.c: New test.

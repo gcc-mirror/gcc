@@ -1,3 +1,21 @@
+2018-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85515
+	* cp-tree.h (enum cp_tree_index): Add
+	CPTI_FOR_{RANGE,BEGIN,END}{,_}_IDENTIFIER.
+	(for_range__identifier, for_begin__identifier, for_end__identifier,
+	for_range_identifier, for_begin_identifier, for_end_identifier):
+	Define.
+	* decl.c (initialize_predefined_identifiers): Initialize
+	for_{range,begin,end}{,_}_identifier.
+	* parser.c (build_range_temp): Use for_range__identifier instead of
+	get_identifier ("__for_range").
+	(cp_convert_range_for): Use for_begin__identifier and
+	for_end__identifier instead of get_identifier ("__for_begin") and
+	get_identifier ("__for_end").
+	* semantics.c (finish_for_stmt): Rename "__for_{range,begin,end} "
+	local symbols to "__for_{range,begin,end}".
+
 2018-07-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86569

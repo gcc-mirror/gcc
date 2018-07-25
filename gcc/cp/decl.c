@@ -4044,6 +4044,12 @@ initialize_predefined_identifiers (void)
     {"auto", &auto_identifier, cik_normal},
     {"decltype(auto)", &decltype_auto_identifier, cik_normal},
     {"initializer_list", &init_list_identifier, cik_normal},
+    {"__for_range ", &for_range__identifier, cik_normal},
+    {"__for_begin ", &for_begin__identifier, cik_normal},
+    {"__for_end ", &for_end__identifier, cik_normal},
+    {"__for_range", &for_range_identifier, cik_normal},
+    {"__for_begin", &for_begin_identifier, cik_normal},
+    {"__for_end", &for_end_identifier, cik_normal},
     {NULL, NULL, cik_normal}
   };
 
