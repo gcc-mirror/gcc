@@ -1,3 +1,7 @@
+2018-07-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hwint.c (ceil_log2): Fix comment.  Return 0 for 0.
+
 2018-07-25  Martin Liska  <mliska@suse.cz>
 
         PR middle-end/86645
