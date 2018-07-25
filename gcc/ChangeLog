@@ -1,3 +1,8 @@
+2018-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* optinfo-emit-json.cc (class optrecord_json_writer): Convert
+	field "m_scopes" from vec to auto_vec.
+
 2018-07-25  Martin Liska  <mliska@suse.cz>
 
 	* config/powerpcspe/powerpcspe-protos.h (rs6000_loop_align): Fix
