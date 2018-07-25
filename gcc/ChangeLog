@@ -1,5 +1,12 @@
 2018-07-25  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (compact_memory_operand_p): Check for uncached
+	accesses as well.
+	(arc_is_uncached_mem_p): uncached applies to both the variable and
+	the pointer.
+
+2018-07-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.h (ADDITIONAL_REGISTER_NAMES): Add additional
 	register names.
 

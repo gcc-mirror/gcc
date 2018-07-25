@@ -1,3 +1,8 @@
+2018-07-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/uncached-1.c: New test.
+	* gcc.target/arc/uncached-2.c: Likewise.
+
 2018-07-24  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86622
