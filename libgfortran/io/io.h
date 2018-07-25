@@ -531,7 +531,9 @@ typedef struct st_parameter_dt
 	  /* A flag used to identify when a non-standard expanded namelist read
 	     has occurred.  */
 	  unsigned expanded_read : 1;
-	  /* 13 unused bits.  */
+	  /* Flag to indicate if the statement has async="YES". */
+	  unsigned async : 1;
+	  /* 12 unused bits.  */
 
 	  int child_saved_iostat;
 	  int nml_delim;
@@ -590,7 +592,7 @@ extern char check_st_parameter_dt[sizeof (((st_parameter_dt *) 0)->u.pad)
 typedef struct
 {
   st_parameter_common common;
-  CHARACTER1 (id);
+  GFC_INTEGER_4 *id;
 }
 st_parameter_wait;
 
@@ -658,6 +660,9 @@ typedef struct gfc_unit
   /* Set to 1 if we have read a subrecord.  */
 
   int continued;
+
+  /* Contains the pointer to the async unit.  */
+  struct async_unit *au;
 
   __gthread_mutex_t lock;
   /* Number of threads waiting to acquire this unit's lock.
@@ -815,10 +820,17 @@ extern void next_record (st_parameter_dt *, int);
 internal_proto(next_record);
 
 extern void st_wait (st_parameter_wait *);
-export_proto(st_wait);
+export_proto (st_wait);
+
+extern void st_wait_async (st_parameter_wait *);
+export_proto (st_wait_async);
 
 extern void hit_eof (st_parameter_dt *);
 internal_proto(hit_eof);
+
+extern void transfer_array_inner (st_parameter_dt *, gfc_array_char *, int,
+				  gfc_charlen_type);
+internal_proto (transfer_array_inner);
 
 /* read.c */
 
@@ -988,3 +1000,14 @@ memset4 (gfc_char4_t *p, gfc_char4_t c, int k)
 
 #endif
 
+extern void
+st_write_done_worker (st_parameter_dt *);
+internal_proto (st_write_done_worker);
+
+extern void
+st_read_done_worker (st_parameter_dt *);
+internal_proto (st_read_done_worker);
+
+extern void
+data_transfer_init_worker (st_parameter_dt *, int);
+internal_proto (data_transfer_init_worker);

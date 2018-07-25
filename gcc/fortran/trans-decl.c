@@ -698,7 +698,8 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 	      && CLASS_DATA (sym)->ts.u.derived->attr.has_dtio_procs)))
     TREE_STATIC (decl) = 1;
 
-  if (sym->attr.volatile_)
+  /* Treat asynchronous variables the same as volatile, for now.  */
+  if (sym->attr.volatile_ || sym->attr.asynchronous)
     {
       TREE_THIS_VOLATILE (decl) = 1;
       TREE_SIDE_EFFECTS (decl) = 1;

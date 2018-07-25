@@ -1483,3 +1483,8 @@ GFORTRAN_C99_8 {
     y1f;
     ynf;
 };
+
+GFORTRAN_9 {
+  global:
+  _gfortran_st_wait_async;
+};
