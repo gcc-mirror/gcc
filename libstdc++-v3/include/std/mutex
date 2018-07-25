@@ -41,6 +41,7 @@
 #include <type_traits>
 #include <system_error>
 #include <bits/std_mutex.h>
+#include <bits/unique_lock.h>
 #if ! _GTHREAD_USE_MUTEX_TIMEDLOCK
 # include <condition_variable>
 # include <thread>

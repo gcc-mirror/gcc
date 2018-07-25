@@ -1,3 +1,18 @@
+2018-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new <bits/unique_lock.h> header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/std_mutex.h [!_GLIBCXX_USE_C99_STDINT_TR1] (mutex)
+	(lock_guard): Define independent of _GLIBCXX_USE_C99_STDINT_TR1.
+	(unique_lock): Move definition to ...
+	* include/bits/unique_lock.h: New header.
+	[!_GLIBCXX_USE_C99_STDINT_TR1] (unique_lock): Define unconditionally.
+	[_GLIBCXX_USE_C99_STDINT_TR1] (unique_lock(mutex_type&, time_point))
+	(unique_lock(mutex_type&, duration), unique_lock::try_lock_until)
+	(unique_lock::try_lock_for): Define only when <chrono> is usable.
+	* include/std/condition_variable: Include <bits/unique_lock.h>.
+	* include/std/mutex: Likewise.
+
 2018-07-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver: Export new symbols.
