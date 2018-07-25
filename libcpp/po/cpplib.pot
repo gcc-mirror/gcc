@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2018-04-23 20:24+0000\n"
+"POT-Creation-Date: 2018-07-25 14:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -785,7 +785,7 @@ msgstr ""
 
 #: lex.c:2878
 #: lex.c:2889
-#: lex.c:2912
+#: lex.c:2913
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
@@ -793,11 +793,11 @@ msgstr ""
 msgid "C++ style comments are incompatible with C90"
 msgstr ""
 
-#: lex.c:2918
+#: lex.c:2919
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:3298
+#: lex.c:3299
 #, c-format
 msgid "unspellable token %s"
 msgstr ""
@@ -875,94 +875,94 @@ msgstr ""
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr ""
 
-#: macro.c:2098
+#: macro.c:2094
 #, c-format
 msgid ""
 "invoking macro %s argument %d: empty macro arguments are undefined in ISO C+"
 "+98"
 msgstr ""
 
-#: macro.c:2106
-#: macro.c:2115
+#: macro.c:2102
+#: macro.c:2111
 #, c-format
 msgid ""
 "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr ""
 
-#: macro.c:3073
+#: macro.c:3069
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr ""
 
-#: macro.c:3122
+#: macro.c:3118
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr ""
 
-#: macro.c:3130
+#: macro.c:3126
 msgid "macro parameters must be comma-separated"
 msgstr ""
 
-#: macro.c:3149
+#: macro.c:3145
 msgid "parameter name missing"
 msgstr ""
 
-#: macro.c:3170
+#: macro.c:3166
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr ""
 
-#: macro.c:3174
-#: macro.c:3179
+#: macro.c:3170
+#: macro.c:3175
 msgid "anonymous variadic macros were introduced in C99"
 msgstr ""
 
-#: macro.c:3186
+#: macro.c:3182
 msgid "ISO C++ does not permit named variadic macros"
 msgstr ""
 
-#: macro.c:3189
+#: macro.c:3185
 msgid "ISO C does not permit named variadic macros"
 msgstr ""
 
-#: macro.c:3199
+#: macro.c:3195
 msgid "missing ')' in macro parameter list"
 msgstr ""
 
-#: macro.c:3250
+#: macro.c:3246
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr ""
 
-#: macro.c:3287
+#: macro.c:3283
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr ""
 
-#: macro.c:3290
+#: macro.c:3286
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr ""
 
-#: macro.c:3315
+#: macro.c:3311
 msgid "missing whitespace after the macro name"
 msgstr ""
 
-#: macro.c:3352
+#: macro.c:3348
 msgid "'#' is not followed by a macro parameter"
 msgstr ""
 
-#: macro.c:3519
+#: macro.c:3515
 #, c-format
 msgid "\"%s\" redefined"
 msgstr ""
 
-#: macro.c:3524
+#: macro.c:3520
 msgid "this is the location of the previous definition"
 msgstr ""
 
-#: macro.c:3585
+#: macro.c:3581
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr ""
 
-#: macro.c:3621
+#: macro.c:3617
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr ""
