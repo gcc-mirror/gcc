@@ -1517,8 +1517,7 @@ check_abi_tags (tree t, tree subob, bool just_checking = false)
 	TREE_VALUE (attr) = chainon (data.tags, TREE_VALUE (attr));
       else
 	DECL_ATTRIBUTES (t)
-	  = tree_cons (get_identifier ("abi_tag"), data.tags,
-		       DECL_ATTRIBUTES (t));
+	  = tree_cons (abi_tag_identifier, data.tags, DECL_ATTRIBUTES (t));
     }
 
   mark_abi_tags (t, false);
@@ -1590,8 +1589,7 @@ inherit_targ_abi_tags (tree t)
 	TREE_VALUE (attr) = chainon (data.tags, TREE_VALUE (attr));
       else
 	TYPE_ATTRIBUTES (t)
-	  = tree_cons (get_identifier ("abi_tag"), data.tags,
-		       TYPE_ATTRIBUTES (t));
+	  = tree_cons (abi_tag_identifier, data.tags, TYPE_ATTRIBUTES (t));
     }
 
   mark_abi_tags (t, false);

@@ -10638,7 +10638,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
 	DECL_ARTIFICIAL (fco) = 1;
 	/* Give the object parameter a different name.  */
-	DECL_NAME (DECL_ARGUMENTS (fco)) = get_identifier ("__closure");
+	DECL_NAME (DECL_ARGUMENTS (fco)) = closure_identifier;
       }
     if (template_param_list)
       {
@@ -25341,13 +25341,13 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 				   NULL_TREE);
       /* C++11 noreturn attribute is equivalent to GNU's.  */
       if (is_attribute_p ("noreturn", attr_id))
-	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
       /* C++14 deprecated attribute is equivalent to GNU's.  */
       else if (is_attribute_p ("deprecated", attr_id))
-	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
       /* C++17 fallthrough attribute is equivalent to GNU's.  */
       else if (is_attribute_p ("fallthrough", attr_id))
-	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
       /* Transactional Memory TS optimize_for_synchronized attribute is
 	 equivalent to GNU transaction_callable.  */
       else if (is_attribute_p ("optimize_for_synchronized", attr_id))
@@ -25367,7 +25367,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
     vec<tree, va_gc> *vec;
     int attr_flag = normal_attr;
 
-    if (attr_ns == get_identifier ("gnu")
+    if (attr_ns == gnu_identifier
 	&& attribute_takes_identifier_p (attr_id))
       /* A GNU attribute that takes an identifier in parameter.  */
       attr_flag = id_attr;
@@ -25580,10 +25580,9 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 
       /* Build the C++-11 representation of an 'aligned'
 	 attribute.  */
-      attributes =
-	build_tree_list (build_tree_list (get_identifier ("gnu"),
-					  get_identifier ("aligned")),
-			 alignas_expr);
+      attributes
+	= build_tree_list (build_tree_list (gnu_identifier,
+					    aligned_identifier), alignas_expr);
     }
 
   return attributes;
