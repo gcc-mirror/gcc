@@ -160,6 +160,18 @@ enum cp_tree_index
     CPTI_FOR_RANGE_IDENTIFIER,
     CPTI_FOR_BEGIN_IDENTIFIER,
     CPTI_FOR_END_IDENTIFIER,
+    CPTI_ABI_TAG_IDENTIFIER,
+    CPTI_ALIGNED_IDENTIFIER,
+    CPTI_BEGIN_IDENTIFIER,
+    CPTI_END_IDENTIFIER,
+    CPTI_GET_IDENTIFIER,
+    CPTI_GNU_IDENTIFIER,
+    CPTI_TUPLE_ELEMENT_IDENTIFIER,
+    CPTI_TUPLE_SIZE_IDENTIFIER,
+    CPTI_TYPE_IDENTIFIER,
+    CPTI_VALUE_IDENTIFIER,
+    CPTI_FUN_IDENTIFIER,
+    CPTI_CLOSURE_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -286,6 +298,18 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define for_range_identifier		cp_global_trees[CPTI_FOR_RANGE_IDENTIFIER]
 #define for_begin_identifier		cp_global_trees[CPTI_FOR_BEGIN_IDENTIFIER]
 #define for_end_identifier		cp_global_trees[CPTI_FOR_END_IDENTIFIER]
+#define abi_tag_identifier		cp_global_trees[CPTI_ABI_TAG_IDENTIFIER]
+#define aligned_identifier		cp_global_trees[CPTI_ALIGNED_IDENTIFIER]
+#define begin_identifier		cp_global_trees[CPTI_BEGIN_IDENTIFIER]
+#define end_identifier			cp_global_trees[CPTI_END_IDENTIFIER]
+#define get__identifier			cp_global_trees[CPTI_GET_IDENTIFIER]
+#define gnu_identifier			cp_global_trees[CPTI_GNU_IDENTIFIER]
+#define tuple_element_identifier	cp_global_trees[CPTI_TUPLE_ELEMENT_IDENTIFIER]
+#define tuple_size_identifier		cp_global_trees[CPTI_TUPLE_SIZE_IDENTIFIER]
+#define type_identifier			cp_global_trees[CPTI_TYPE_IDENTIFIER]
+#define value_identifier		cp_global_trees[CPTI_VALUE_IDENTIFIER]
+#define fun_identifier			cp_global_trees[CPTI_FUN_IDENTIFIER]
+#define closure_identifier		cp_global_trees[CPTI_CLOSURE_IDENTIFIER]
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 

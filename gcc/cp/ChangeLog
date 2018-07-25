@@ -1,5 +1,33 @@
 2018-07-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* cp-tree.h (enum cp_tree_index): Add
+	CPTI_{ABI_TAG,ALIGNED,BEGIN,END,GET,TUPLE_{ELEMENT,SIZE}}_IDENTIFIER
+	and CPTI_{GNU,TYPE,VALUE,FUN,CLOSURE}_IDENTIFIER.
+	(abi_tag_identifier, aligned_identifier, begin_identifier,
+	end_identifier, get__identifier, gnu_identifier,
+	tuple_element_identifier, tuple_size_identifier, type_identifier,
+	value_identifier, fun_identifier, closure_identifier): Define.
+	* decl.c (initialize_predefined_identifiers): Initialize the above
+	identifiers.
+	(get_tuple_size): Use tuple_size_identifier instead of
+	get_identifier ("tuple_size") and value_identifier instead of
+	get_identifier ("value").
+	(get_tuple_element_type): Use tuple_element_identifier instead of
+	get_identifier ("tuple_element") and type_identifier instead of
+	get_identifier ("type").
+	(get_tuple_decomp_init): Use get__identifier instead of
+	get_identifier ("get").
+	* lambda.c (maybe_add_lambda_conv_op): Use fun_identifier instead of
+	get_identifier ("_FUN").
+	* parser.c (cp_parser_lambda_declarator_opt): Use closure_identifier
+	instead of get_identifier ("__closure").
+	(cp_parser_std_attribute): Use gnu_identifier instead of
+	get_identifier ("gnu").
+	(cp_parser_std_attribute_spec): Likewise.  Use aligned_identifier
+	instead of get_identifier ("aligned").
+	* class.c (check_abi_tags, inherit_targ_abi_tags): Use
+	abi_tag_identifier instead of get_identifier ("abi_tag").
+
 	PR c++/85515
 	* cp-tree.h (enum cp_tree_index): Add
 	CPTI_FOR_{RANGE,BEGIN,END}{,_}_IDENTIFIER.
