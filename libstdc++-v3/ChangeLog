@@ -1,3 +1,9 @@
+2018-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86676
+	* testsuite/20_util/monotonic_buffer_resource/release.cc: Request
+	same alignment for post-release allocation.
+
 2018-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86676
