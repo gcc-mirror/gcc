@@ -127,7 +127,7 @@ test04()
   VERIFY( mbr.upstream_resource() == &r );
   VERIFY( r.number_of_active_allocations() == 0 );
   // initial buffer should be used again now:
-  p = mbr.allocate(1000);
+  p = mbr.allocate(1000, 16);
   VERIFY( p == p_in_buffer );
   VERIFY( r.allocate_calls == 1 );
 }
