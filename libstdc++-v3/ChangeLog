@@ -1,5 +1,9 @@
 2018-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (glibcxx_SUBDIRS): Add src/c++17.
+	* src/Makefile.am: Add comment.
+	* src/c++17/Makefile.in: Regenerate.
+
 	* include/Makefile.am: Add new <bits/unique_lock.h> header.
 	* include/Makefile.in: Regenerate.
 	* include/bits/std_mutex.h [!_GLIBCXX_USE_C99_STDINT_TR1] (mutex)
