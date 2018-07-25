@@ -1,5 +1,6 @@
 2018-07-25  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/86644
 	* hwint.c (ceil_log2): Fix comment.  Return 0 for 0.
 
 2018-07-25  Martin Liska  <mliska@suse.cz>
