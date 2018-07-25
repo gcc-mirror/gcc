@@ -32,7 +32,8 @@
 #include <memory>			// align, uses_allocator, __uses_alloc
 #include <experimental/utility>		// pair, experimental::erased_type
 #include <atomic>			// atomic
-#include <new>
+#include <new>				// placement new
+#include <cstddef>			// max_align_t
 #include <ext/new_allocator.h>
 #include <debug/assertions.h>
 
