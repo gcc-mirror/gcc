@@ -1,3 +1,15 @@
+2018-07-24  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86622
+	PR tree-optimization/86532
+	* builtins.h (string_length): Declare.
+	* builtins.c (c_strlen): Correct handling of non-constant offsets.	
+	(check_access): Be prepared for non-constant length ranges.
+	(string_length): Make extern.
+	* expr.c (string_constant): Only handle the minor non-constant
+	array index.  Use string_constant to compute the length of
+	a generic string constant.
+
 2018-07-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/86618
