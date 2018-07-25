@@ -1,3 +1,8 @@
+2018-07-25  Martin Liska  <mliska@suse.cz>
+
+	* config/powerpcspe/powerpcspe-protos.h (rs6000_loop_align): Fix
+        return type.
+
 2018-07-25  Richard Biener  <rguenther@suse.de>
 
 	PR debug/86654
