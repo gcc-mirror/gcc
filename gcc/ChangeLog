@@ -1,3 +1,8 @@
+2018-07-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.h (ADDITIONAL_REGISTER_NAMES): Add additional
+	register names.
+
 2018-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* optinfo-emit-json.cc (class optrecord_json_writer): Convert
