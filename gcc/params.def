@@ -1189,6 +1189,8 @@ DEFPARAM (PARAM_MAX_SLSR_CANDIDATE_SCAN,
 	  "strength reduction.",
 	  50, 1, 999999)
 
+/* ASan stands for AddressSanitizer: https://github.com/google/sanitizers.  */
+
 DEFPARAM (PARAM_ASAN_STACK,
          "asan-stack",
          "Enable asan stack protection.",
