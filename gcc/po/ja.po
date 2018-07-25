@@ -1,12 +1,12 @@
 # Japanese messages for GNU gcc
-# Copyright (C) 1999, 2010, 2011 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2010, 2011, 2018 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 #
 # gcc では解釈される書式文字列が数種類あります
 # (1) gcc/pretty-print.c 内にある pp_printf()
 # (2) gettext のドキュメントにある書式
 #    http://www.gnu.org/software/gettext/manual/gettext.html#gcc_002dinternal_002dformat
-# (3) gcc/tree-pretty-print.c 内にある percent_K_format() 
+# (3) gcc/tree-pretty-print.c 内にある percent_K_format()
 # c-format フラグがあっても位置パラメータ (%1$s, %2$d) などは使わないことを推奨します
 #  - 2010/12/27 gcc-4.6-20101218 で確認 (谷口)
 #
@@ -15,13 +15,14 @@
 #    Masahito Yamaga <yamaga@ipc.chiba-u.ac.jp>, 1999.
 #    IIDA Yosiaki <iida@secom.ne.jp>, 1999.
 # Yasuaki Taniguchi <yasuakit@gmail.com>, 2010, 2011
+# Takeshi Hamasaki <hmatrjp@users.sourceforge.jp>, 2018
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.6.1\n"
+"Project-Id-Version: gcc 8.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-05-01 20:30+0000\n"
-"PO-Revision-Date: 2011-10-30 18:48+0900\n"
-"Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
+"PO-Revision-Date: 2018-07-17 22:26+0900\n"
+"Last-Translator: Takeshi Hamasaki <hmatrjp@users.sourceforge.jp>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -29,6 +30,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 2.0.6\n"
 
 #: cfgrtl.c:2679
 msgid "flow control insn inside a basic block"
@@ -37501,12 +37503,12 @@ msgstr "%q+D が再定義されました"
 #: c/c-decl.c:2079 c/c-decl.c:2185
 #, gcc-internal-format
 msgid "static declaration of %q+D follows non-static declaration"
-msgstr "%q+D は静的宣言の後に非静的宣言が続いています"
+msgstr "%q+D の静的宣言が非静的宣言の後に続いています"
 
 #: c/c-decl.c:2089 c/c-decl.c:2097 c/c-decl.c:2175 c/c-decl.c:2182
 #, gcc-internal-format
 msgid "non-static declaration of %q+D follows static declaration"
-msgstr "%q+D は非静的宣言の後に静的宣言が続いています"
+msgstr "%q+D の非静的宣言が静的宣言の後に続いています"
 
 #: c/c-decl.c:2113
 #, gcc-internal-format
@@ -37521,12 +37523,12 @@ msgstr "しかし、ここにはありません"
 #: c/c-decl.c:2134
 #, gcc-internal-format
 msgid "thread-local declaration of %q+D follows non-thread-local declaration"
-msgstr "%q+D のスレッド局所宣言の後に非スレッド局所宣言があります"
+msgstr "%q+D のスレッド局所宣言が非スレッド局所宣言の後に続いています"
 
 #: c/c-decl.c:2137
 #, gcc-internal-format
 msgid "non-thread-local declaration of %q+D follows thread-local declaration"
-msgstr "%q+D の非スレッド局所宣言の後にスレッド局所宣言があります"
+msgstr "%q+D の非スレッド局所宣言がスレッド局所宣言の後に続いています"
 
 #: c/c-decl.c:2167
 #, gcc-internal-format
@@ -51356,7 +51358,6 @@ msgstr ""
 msgid "type %qT of template argument %qE depends on a template parameter"
 msgid_plural "type %qT of template argument %qE depends on template parameters"
 msgstr[0] ""
-msgstr[1] ""
 
 #: cp/pt.c:5066
 #, fuzzy, gcc-internal-format
@@ -51481,14 +51482,12 @@ msgstr ""
 msgid "redeclared with %d template parameter"
 msgid_plural "redeclared with %d template parameters"
 msgstr[0] ""
-msgstr[1] ""
 
 #: cp/pt.c:5910
 #, fuzzy, gcc-internal-format
 msgid "previous declaration %qD used %d template parameter"
 msgid_plural "previous declaration %qD used %d template parameters"
 msgstr[0] "`%s' の宣言は仮引数を覆い隠します"
-msgstr[1] "`%s' の宣言は仮引数を覆い隠します"
 
 #: cp/pt.c:5947
 #, gcc-internal-format
