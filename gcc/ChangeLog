@@ -1,5 +1,10 @@
 2018-07-25  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* common/config/arc/arc-common.c (arc_option_optimization_table):
+	Update default optimizations for size.
+
+2018-07-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (movsf_insn): Add short instruction selection.
 	* config/arc/constraints.md (CfZ): New constraint.
 	* config/arc/fpu.md (addssf3_fpu): Use CfZ constraint.
