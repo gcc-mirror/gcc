@@ -321,6 +321,12 @@
   (and (match_code "const_double")
        (match_test "1")))
 
+(define_constraint "CfZ"
+  "@internal
+   Match a floating-point zero"
+  (and (match_code "const_double")
+       (match_test "op == CONST0_RTX (SFmode)")))
+
 ;; Memory constraints
 (define_memory_constraint "T"
   "@internal
