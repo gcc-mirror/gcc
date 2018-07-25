@@ -1,5 +1,7 @@
 2018-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/memory_resource: Include <cstddef> header.
+
 	* acinclude.m4 (glibcxx_SUBDIRS): Add src/c++17.
 	* src/Makefile.am: Add comment.
 	* src/c++17/Makefile.in: Regenerate.
