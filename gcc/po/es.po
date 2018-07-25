@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-05-01 20:30+0000\n"
-"PO-Revision-Date: 2018-06-19 15:51+0200\n"
+"PO-Revision-Date: 2018-07-07 15:54+0200\n"
 "Last-Translator: Antonio Ceballos Roa <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -36246,17 +36246,17 @@ msgstr "%<#pragma omp declare simd%> debe ir seguida de una declaración o defin
 #: c/c-parser.c:17387
 #, gcc-internal-format
 msgid "%<#pragma omp declare simd%> not immediately followed by a function declaration or definition"
-msgstr ""
+msgstr "%<#pragma omp declare simd%> no inmediatamente seguida de una declaración o definición de función"
 
 #: c/c-parser.c:17395 cp/parser.c:37273
 #, gcc-internal-format
 msgid "%<#pragma omp declare simd%> not immediately followed by a single function declaration or definition"
-msgstr ""
+msgstr "%<#pragma omp declare simd%> no inmediatamente seguida de una declaración o definición de función sencilla"
 
 #: c/c-parser.c:17474 cp/parser.c:37343
 #, gcc-internal-format
 msgid "%<#pragma omp declare target%> with clauses in between %<#pragma omp declare target%> without clauses and %<#pragma omp end declare target%>"
-msgstr ""
+msgstr "%<#pragma omp declare simd%> con cláusulas en medio de %<#pragma omp declare target%> sin cláusulas y %<#pragma omp end declare target%>"
 
 #: c/c-parser.c:17493 cp/parser.c:37362
 #, gcc-internal-format
@@ -36264,72 +36264,64 @@ msgid "%qD specified both in declare target %<link%> and %<to%> clauses"
 msgstr ""
 
 #: c/c-parser.c:17534 cp/parser.c:37409
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<try%>"
+#, gcc-internal-format
 msgid "expected %<target%>"
-msgstr "se esperaba %<try%>"
+msgstr "se esperaba %<target%>"
 
 #: c/c-parser.c:17541 cp/parser.c:37416
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<decltype%>"
+#, gcc-internal-format
 msgid "expected %<declare%>"
-msgstr "se esperaba %<decltype%>"
+msgstr "se esperaba %<declare%>"
 
 #: c/c-parser.c:17547 cp/parser.c:37423
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma GCC pop_options%> without a corresponding %<#pragma GCC push_options%>"
+#, gcc-internal-format
 msgid "%<#pragma omp end declare target%> without corresponding %<#pragma omp declare target%>"
-msgstr "%<#pragma GCC pop_options%> sin un %<#pragma GCC push_options%> correspondiente"
+msgstr "%<#pragma omp end declare target%> sin su correspondiente %<#pragma omp declare target%>"
 
 #: c/c-parser.c:17575
-#, fuzzy, gcc-internal-format
-#| msgid "a template declaration cannot appear at block scope"
+#, gcc-internal-format
 msgid "%<#pragma omp declare reduction%> not at file or block scope"
-msgstr "una declaración de plantilla no puede aparecer en el ámbito de bloque"
+msgstr "%<#pragma omp declare reduction%> no está en ámbito de fichero o de bloque"
 
 #: c/c-parser.c:17652
 #, gcc-internal-format
 msgid "predeclared arithmetic type in %<#pragma omp declare reduction%>"
-msgstr ""
+msgstr "tipo aritmético predeclarado en %<#pragma omp declare reduction%>"
 
 #: c/c-parser.c:17656
 #, gcc-internal-format
 msgid "function or array type in %<#pragma omp declare reduction%>"
-msgstr ""
+msgstr "tipo función o matriz en %<#pragma omp declare reduction%>"
 
 #: c/c-parser.c:17659
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration"
+#, gcc-internal-format
 msgid "%<_Atomic%> qualified type in %<#pragma omp declare reduction%>"
-msgstr "declaración previa"
+msgstr "tipo calificado %<_Atomic%> en %<#pragma omp declare reduction%>"
 
 #: c/c-parser.c:17662
 #, gcc-internal-format
 msgid "const, volatile or restrict qualified type in %<#pragma omp declare reduction%>"
-msgstr ""
+msgstr "tipo calificado const, volatile o restrict en %<#pragma omp declare reduction%>"
 
 #: c/c-parser.c:17670
 #, gcc-internal-format
 msgid "redeclaration of %qs %<#pragma omp declare reduction%> for type %qT"
-msgstr ""
+msgstr "redeclaración de %qs %<#pragma omp declare reduction%> para el tipo %qT"
 
 #: c/c-parser.c:17679
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration"
+#, gcc-internal-format
 msgid "previous %<#pragma omp declare reduction%>"
-msgstr "declaración previa"
+msgstr "%<#pragma omp declare reduction%> previo"
 
 #: c/c-parser.c:17796
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<(%> or end of line"
+#, gcc-internal-format
 msgid "expected %<omp_priv%> or function-name"
-msgstr "se esperaba %<(%> o fin de línea"
+msgstr "se esperaba %<omp_priv%> o nombre-de-función"
 
 #: c/c-parser.c:17807
-#, fuzzy, gcc-internal-format
-#| msgid "expected function"
+#, gcc-internal-format
 msgid "expected function-name %<(%>"
-msgstr "se esperaba función"
+msgstr "se esperaba nombre-de-función %<(%>"
 
 #: c/c-parser.c:17826
 #, gcc-internal-format
@@ -36337,10 +36329,9 @@ msgid "one of the initializer call arguments should be %<&omp_priv%>"
 msgstr ""
 
 #: c/c-parser.c:17947 cp/parser.c:37868
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<#pragma omp section%> or %<}%>"
+#, gcc-internal-format
 msgid "expected %<simd%> or %<reduction%> or %<target%>"
-msgstr "se esperaba %<#pragma omp section%> o %<}%>"
+msgstr "se esperaba %<simd%>, %<reduction%> o %<target%>"
 
 #: c/c-parser.c:18162 cp/semantics.c:7531
 #, gcc-internal-format
@@ -36383,16 +36374,14 @@ msgid "%<__transaction_cancel%> not within %<__transaction_atomic%>"
 msgstr "%<__transaction_cancel%> no está dentro de %<__transaction_atomic%>"
 
 #: c/c-parser.c:18472
-#, fuzzy, gcc-internal-format
-#| msgid "enclosing parallel"
+#, gcc-internal-format
 msgid "no closing brace"
-msgstr "paralelo contenedor"
+msgstr "llave sin cerrar"
 
 #: c/c-typeck.c:223
-#, fuzzy, gcc-internal-format
-#| msgid "%qD has an incomplete type"
+#, gcc-internal-format
 msgid "%qD has an incomplete type %qT"
-msgstr "%qD tiene un tipo de dato incompleto"
+msgstr "%qD tiene un tipo de dato incompleto %qT"
 
 #: c/c-typeck.c:237 c/c-typeck.c:9994 c/c-typeck.c:10036 cp/call.c:4147
 #, gcc-internal-format
@@ -36410,17 +36399,15 @@ msgid "invalid use of array with unspecified bounds"
 msgstr "uso no válido de matrices con límites sin especificar"
 
 #: c/c-typeck.c:259
-#, fuzzy, gcc-internal-format
-#| msgid "invalid use of undefined type %<%s %E%>"
+#, gcc-internal-format
 msgid "invalid use of undefined type %qT"
-msgstr "uso no válido del tipo indefinido %<%s %E%>"
+msgstr "uso no válido del tipo indefinido %qT"
 
 #. If this type has a typedef-name, the TYPE_NAME is a TYPE_DECL.
 #: c/c-typeck.c:262
-#, fuzzy, gcc-internal-format
-#| msgid "invalid use of incomplete typedef %qD"
+#, gcc-internal-format
 msgid "invalid use of incomplete typedef %qT"
-msgstr "uso no válido del typedef incompleto %qD"
+msgstr "uso no válido del typedef incompleto %qT"
 
 #: c/c-typeck.c:335
 #, gcc-internal-format
@@ -36448,10 +36435,9 @@ msgid "can%'t mix operands of decimal float and other float types"
 msgstr "no se pueden mezclar operandos de tipos de coma flotante decimal otros tipos de coma flotante"
 
 #: c/c-typeck.c:1295
-#, fuzzy, gcc-internal-format
-#| msgid "pointer target types incompatible in C++"
+#, gcc-internal-format
 msgid "pointers to arrays with different qualifiers are incompatible in ISO C"
-msgstr "tipos de objetivo a incompatibles en C++"
+msgstr "los punteros a matrices con calificadores distintos son incompatibles en ISO C"
 
 #: c/c-typeck.c:1299
 #, gcc-internal-format
@@ -36474,10 +36460,9 @@ msgid "converting an array compound literal to a pointer is ill-formed in C++"
 msgstr "la conversión de una literal compuesta de matriz a un puntero está malformada en C++"
 
 #: c/c-typeck.c:2417 c/c-typeck.c:8641
-#, fuzzy, gcc-internal-format
-#| msgid "%qT has no member named %qE"
+#, gcc-internal-format
 msgid "%qT has no member named %qE; did you mean %qE?"
-msgstr "%qT no tiene un miembro llamado %qE"
+msgstr "%qT no tiene un miembro llamado %qE; ¿quiso decir %qE?"
 
 #: c/c-typeck.c:2421 c/c-typeck.c:8645
 #, gcc-internal-format
@@ -36498,7 +36483,7 @@ msgstr "al pasar el argumento %d del puntero a la función"
 #: c/c-typeck.c:2493
 #, gcc-internal-format
 msgid "%qE is a pointer; did you mean to use %<->%>?"
-msgstr ""
+msgstr "%qE es un puntero; ¿pretendía utilizar %<->%>?"
 
 #: c/c-typeck.c:2499
 #, gcc-internal-format
@@ -36506,10 +36491,9 @@ msgid "request for member %qE in something not a structure or union"
 msgstr "petición del miembro %qE en algo que no es una estructura o unión"
 
 #: c/c-typeck.c:2550
-#, fuzzy, gcc-internal-format
-#| msgid "dereferencing pointer to incomplete type"
+#, gcc-internal-format
 msgid "dereferencing pointer to incomplete type %qT"
-msgstr "puntero deferenciado a tipo de dato incompleto"
+msgstr "puntero deferenciado al tipo de dato incompleto %qT"
 
 #: c/c-typeck.c:2557
 #, gcc-internal-format
@@ -36549,25 +36533,22 @@ msgstr "se definió la constante enum aquí"
 #: c/c-typeck.c:2905 cp/typeck.c:1698
 #, gcc-internal-format
 msgid "%<sizeof%> on array function parameter %qE will return size of %qT"
-msgstr ""
+msgstr "%<sizeof%> sobre el parámetro matriz %qE de función devolverá el tamaño de %qT"
 
 #: c/c-typeck.c:3053
-#, fuzzy, gcc-internal-format
-#| msgid "called object %qE is not a function"
+#, gcc-internal-format
 msgid "called object %qE is not a function or function pointer"
-msgstr "el objeto %qE llamado no es una función"
+msgstr "el objeto %qE llamado no es una función ni un puntero a función"
 
 #: c/c-typeck.c:3058
-#, fuzzy, gcc-internal-format
-#| msgid "called object %qE is not a function"
+#, gcc-internal-format
 msgid "called object %qD is not a function or function pointer"
-msgstr "el objeto %qE llamado no es una función"
+msgstr "el objeto %qD llamado no es una función ni un puntero a función"
 
 #: c/c-typeck.c:3064
-#, fuzzy, gcc-internal-format
-#| msgid "called object %qE is not a function"
+#, gcc-internal-format
 msgid "called object is not a function or function pointer"
-msgstr "el objeto %qE llamado no es una función"
+msgstr "el objeto llamado no es una función ni un puntero a función"
 
 #. This situation leads to run-time undefined behavior.  We can't,
 #. therefore, simply error unless we can prove that all possible
@@ -36664,10 +36645,9 @@ msgid "comparison between pointer and zero character constant"
 msgstr "comparación entre puntero y entero"
 
 #: c/c-typeck.c:3738 c/c-typeck.c:3745 cp/typeck.c:4775 cp/typeck.c:4795
-#, fuzzy, gcc-internal-format
-#| msgid "cannot dereference, not a pointer"
+#, gcc-internal-format
 msgid "did you mean to dereference the pointer?"
-msgstr "no se puede deferenciar, no es un apuntador"
+msgstr "¿pretendía desreferenciar el puntero?"
 
 #: c/c-typeck.c:3764
 #, gcc-internal-format
@@ -36690,21 +36670,19 @@ msgid "arithmetic on pointer to an incomplete type"
 msgstr "aritmética en puntero a un tipo de dato incompleto"
 
 #: c/c-typeck.c:3852 cp/typeck.c:5562
-#, fuzzy, gcc-internal-format
-#| msgid "arithmetic on pointer to an incomplete type"
+#, gcc-internal-format
 msgid "arithmetic on pointer to an empty aggregate"
-msgstr "aritmética en puntero a un tipo de dato incompleto"
+msgstr "aritmética en puntero a un agregado vacío"
 
 #: c/c-typeck.c:4283
-#, fuzzy, gcc-internal-format
-#| msgid "expected boolean expression"
+#, gcc-internal-format
 msgid "%<~%> on a boolean expression"
-msgstr "se esperaba una expresión booleana"
+msgstr "%<~%> en una expresión booleana"
 
 #: c/c-typeck.c:4287
 #, gcc-internal-format
 msgid "did you mean to use logical not?"
-msgstr ""
+msgstr "¿pretendía utilizar la negación lógica?"
 
 #: c/c-typeck.c:4296
 #, gcc-internal-format
@@ -36727,16 +36705,14 @@ msgid "decrement of enumeration value is invalid in C++"
 msgstr "el decremento de un valor de enumeración es no válido en C++"
 
 #: c/c-typeck.c:4403
-#, fuzzy, gcc-internal-format
-#| msgid "expected boolean expression"
+#, gcc-internal-format
 msgid "increment of a boolean expression"
-msgstr "se esperaba una expresión booleana"
+msgstr "incremento de una expresión booleana"
 
 #: c/c-typeck.c:4406
-#, fuzzy, gcc-internal-format
-#| msgid "expected boolean expression"
+#, gcc-internal-format
 msgid "decrement of a boolean expression"
-msgstr "se esperaba una expresión booleana"
+msgstr "decremento de una expresión booleana"
 
 #: c/c-typeck.c:4422
 #, gcc-internal-format
@@ -36754,16 +36730,14 @@ msgid "wrong type argument to decrement"
 msgstr "argumento de tipo erróneo para el decremento"
 
 #: c/c-typeck.c:4469
-#, fuzzy, gcc-internal-format
-#| msgid "cannot increment a pointer to incomplete type %qT"
+#, gcc-internal-format
 msgid "increment of pointer to an incomplete type %qT"
-msgstr "no se puede incrementar un puntero a un tipo incompleto %qT"
+msgstr "incremento de puntero a un tipo incompleto %qT"
 
 #: c/c-typeck.c:4473
-#, fuzzy, gcc-internal-format
-#| msgid "cannot decrement a pointer to incomplete type %qT"
+#, gcc-internal-format
 msgid "decrement of pointer to an incomplete type %qT"
-msgstr "no se puede decrementar un puntero a un tipo incompleto %qT"
+msgstr "decremento de puntero a un tipo incompleto %qT"
 
 #: c/c-typeck.c:4577
 #, gcc-internal-format
@@ -36833,10 +36807,9 @@ msgid "pointers to disjoint address spaces used in conditional expression"
 msgstr "se usaron punteros a espacios de direcciones discontinuos en la expresión condicional"
 
 #: c/c-typeck.c:5143 c/c-typeck.c:5160
-#, fuzzy, gcc-internal-format
-#| msgid "pointer type mismatch in conditional expression"
+#, gcc-internal-format
 msgid "pointer to array loses qualifier in conditional expression"
-msgstr "los tipos de datos punteros no coinciden en la expresión condicional"
+msgstr "el puntero a matriz pierde el calificador en la expresión condicional"
 
 #: c/c-typeck.c:5148 c/c-typeck.c:5165
 #, gcc-internal-format
@@ -36859,20 +36832,17 @@ msgid "left-hand operand of comma expression has no effect"
 msgstr "el operador del lado izquierdo de la expresión coma no tiene efecto"
 
 #: c/c-typeck.c:5354 c/c-typeck.c:10636
-#, fuzzy, gcc-internal-format
-#| msgid "left-hand operand of comma expression has no effect"
+#, gcc-internal-format
 msgid "right-hand operand of comma expression has no effect"
-msgstr "el operador del lado izquierdo de la expresión coma no tiene efecto"
+msgstr "el operador del lado derecho de la expresión coma no tiene efecto"
 
 #: c/c-typeck.c:5423
 msgid "cast adds %q#v qualifier to function type"
 msgstr "la conversión agrega el calificador %q#v al tipo de función"
 
 #: c/c-typeck.c:5429
-#, fuzzy
-#| msgid "cast discards %q#v qualifier from pointer target type"
 msgid "cast discards %qv qualifier from pointer target type"
-msgstr "la conversión descarta el calificador %q#v del tipo del destino del puntero"
+msgstr "la conversión descarta el calificador %qv del tipo del destino del puntero"
 
 #: c/c-typeck.c:5464
 #, gcc-internal-format
@@ -36950,10 +36920,9 @@ msgid "ISO C forbids conversion of object pointer to function pointer type"
 msgstr "ISO C prohíbe la conversión de objeto apuntador a un tipo de apuntador a función"
 
 #: c/c-typeck.c:5728
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t convert from incomplete type %qT to %qT"
+#, gcc-internal-format
 msgid "cast between incompatible function types from %qT to %qT"
-msgstr "no se puede convertir desde el tipo incompleto %qT a %qT"
+msgstr "conversión entre tipos de función incompatibles desde %qT a %qT"
 
 #: c/c-typeck.c:5815
 #, gcc-internal-format
@@ -36961,10 +36930,9 @@ msgid "defining a type in a cast is invalid in C++"
 msgstr "definir un tipo en una conversión es no válido en C++"
 
 #: c/c-typeck.c:5856
-#, fuzzy, gcc-internal-format
-#| msgid "assignment suppression"
+#, gcc-internal-format
 msgid "assignment to expression with array type"
-msgstr "supresión de la asignación"
+msgstr "asignación a expresión con tipo matriz"
 
 #: c/c-typeck.c:5982
 #, gcc-internal-format
@@ -36992,22 +36960,19 @@ msgid "enum conversion when passing argument %d of %qE is invalid in C++"
 msgstr "la conversión de enum al pasar el argumento %d de %qE es no válido en C++"
 
 #: c/c-typeck.c:6480
-#, fuzzy, gcc-internal-format
-#| msgid "enum conversion in assignment is invalid in C++"
+#, gcc-internal-format
 msgid "enum conversion from %qT to %qT in assignment is invalid in C++"
-msgstr "conversión de enum en una asignación es no válido en C++"
+msgstr "la conversión de enum desde %qT a %qT en una asignación no es válida en C++"
 
 #: c/c-typeck.c:6484
-#, fuzzy, gcc-internal-format
-#| msgid "enum conversion in initialization is invalid in C++"
+#, gcc-internal-format
 msgid "enum conversion from %qT to %qT in initialization is invalid in C++"
-msgstr "la conversión de enum en la inicialización es no válida en C++"
+msgstr "la conversión de enum desde %qT a %qT en una inicialización no es válida en C++"
 
 #: c/c-typeck.c:6489
-#, fuzzy, gcc-internal-format
-#| msgid "enum conversion in return is invalid in C++"
+#, gcc-internal-format
 msgid "enum conversion from %qT to %qT in return is invalid in C++"
-msgstr "conversión enum en devolución es no válida en C++"
+msgstr "la conversión de enum desde %qT a %qT en un return no es válida en C++"
 
 #: c/c-typeck.c:6523
 #, gcc-internal-format
@@ -37122,16 +37087,14 @@ msgid "pointer targets in passing argument %d of %qE differ in signedness"
 msgstr "el puntero que apunta en el paso del argumento %d de %qE difiere en signo"
 
 #: c/c-typeck.c:6913
-#, fuzzy, gcc-internal-format
-#| msgid "pointer targets in assignment differ in signedness"
+#, gcc-internal-format
 msgid "pointer targets in assignment from %qT to %qT differ in signedness"
-msgstr "el puntero que apunta en la asignación difiere en signo"
+msgstr "el puntero que apunta en la asignación de %qT a %qT difiere en signo"
 
 #: c/c-typeck.c:6918
-#, fuzzy, gcc-internal-format
-#| msgid "pointer targets in initialization differ in signedness"
+#, gcc-internal-format
 msgid "pointer targets in initialization of %qT from %qT differ in signedness"
-msgstr "el puntero que apunta en la inicialización difiere en signo"
+msgstr "el puntero que apunta en la inicialización de %qT a %qT difiere en signo"
 
 #: c/c-typeck.c:6923
 #, fuzzy, gcc-internal-format
@@ -37145,22 +37108,19 @@ msgid "passing argument %d of %qE from incompatible pointer type"
 msgstr "se pasa el argumento %d de %qE desde un tipo de puntero incompatible"
 
 #: c/c-typeck.c:6967
-#, fuzzy, gcc-internal-format
-#| msgid "assignment from incompatible pointer type"
+#, gcc-internal-format
 msgid "assignment to %qT from incompatible pointer type %qT"
-msgstr "asignación desde un tipo de puntero incompatible"
+msgstr "asignación a %qT desde un tipo de puntero %qT incompatible"
 
 #: c/c-typeck.c:6972
-#, fuzzy, gcc-internal-format
-#| msgid "initialization from incompatible pointer type"
+#, gcc-internal-format
 msgid "initialization of %qT from incompatible pointer type %qT"
-msgstr "inicialización desde un tipo de puntero incompatible"
+msgstr "inicialización de %qT desde un tipo de puntero %qT incompatible"
 
 #: c/c-typeck.c:6977
-#, fuzzy, gcc-internal-format
-#| msgid "return with value in function with no return type"
+#, gcc-internal-format
 msgid "returning %qT from a function with incompatible return type %qT"
-msgstr "devolución con valor en una función sin tipo de devolución"
+msgstr "se devuelve %qT desde una función con tipo de devolución %qT incompatible"
 
 #. ??? This should not be an error when inlining calls to
 #. unprototyped functions.
@@ -37175,22 +37135,19 @@ msgid "passing argument %d of %qE makes pointer from integer without a cast"
 msgstr "el paso del argumento %d de %qE crea un puntero desde un entero sin una conversión"
 
 #: c/c-typeck.c:7010
-#, fuzzy, gcc-internal-format
-#| msgid "assignment makes pointer from integer without a cast"
+#, gcc-internal-format
 msgid "assignment to %qT from %qT makes pointer from integer without a cast"
-msgstr "la asignación crea un puntero desde un entero sin una conversión"
+msgstr "la asignación a %qT desde %qT crea un puntero desde un entero sin una conversión"
 
 #: c/c-typeck.c:7015
-#, fuzzy, gcc-internal-format
-#| msgid "initialization makes pointer from integer without a cast"
+#, gcc-internal-format
 msgid "initialization of %qT from %qT makes pointer from integer without a cast"
-msgstr "la inicialización crea un puntero desde un entero sin una conversión"
+msgstr "la inicialización de %qT desde %qT crea un puntero desde un entero sin una conversión"
 
 #: c/c-typeck.c:7019
-#, fuzzy, gcc-internal-format
-#| msgid "passing argument %d of %qE makes pointer from integer without a cast"
+#, gcc-internal-format
 msgid "returning %qT from a function with return type %qT makes pointer from integer without a cast"
-msgstr "el paso del argumento %d de %qE crea un puntero desde un entero sin una conversión"
+msgstr "el retorno de %qT desde una función con tipo de retorno %qT crea un puntero desde un entero sin una conversión"
 
 #: c/c-typeck.c:7035
 #, gcc-internal-format
@@ -37198,22 +37155,19 @@ msgid "passing argument %d of %qE makes integer from pointer without a cast"
 msgstr "el paso del argumento %d de %qE crea un entero desde un puntero sin una conversión"
 
 #: c/c-typeck.c:7041
-#, fuzzy, gcc-internal-format
-#| msgid "assignment makes integer from pointer without a cast"
+#, gcc-internal-format
 msgid "assignment to %qT from %qT makes integer from pointer without a cast"
-msgstr "la asignación crea un entero desde un puntero sin una conversión"
+msgstr "la asignación a %qT desde %qT crea un entero desde un puntero sin una conversión"
 
 #: c/c-typeck.c:7046
-#, fuzzy, gcc-internal-format
-#| msgid "initialization makes integer from pointer without a cast"
+#, gcc-internal-format
 msgid "initialization of %qT from %qT makes integer from pointer without a cast"
-msgstr "la inicialización crea un entero desde un puntero sin una conversión"
+msgstr "la inicialización de %qT desde %qT crea un entero desde un puntero sin una conversión"
 
 #: c/c-typeck.c:7050
-#, fuzzy, gcc-internal-format
-#| msgid "passing argument %d of %qE makes integer from pointer without a cast"
+#, gcc-internal-format
 msgid "returning %qT from a function with return type %qT makes integer from pointer without a cast"
-msgstr "el paso del argumento %d de %qE crea un entero desde un puntero sin una conversión"
+msgstr "el retorno de %qT desde una función con tipo de retorno %qT crea un entero desde un puntero sin una conversión"
 
 #: c/c-typeck.c:7073
 #, gcc-internal-format
@@ -37317,10 +37271,9 @@ msgid "missing braces around initializer"
 msgstr "faltan llaves alrededor del inicializador"
 
 #: c/c-typeck.c:8341
-#, fuzzy, gcc-internal-format
-#| msgid "missing initializer for member %qD"
+#, gcc-internal-format
 msgid "missing initializer for field %qD of %qT"
-msgstr "falta el inicializador para el miembro %qD"
+msgstr "falta el inicializador para el campo %qD de %qT"
 
 #: c/c-typeck.c:8365
 #, gcc-internal-format
@@ -37458,10 +37411,9 @@ msgid "ISO C forbids %<return%> with expression, in function returning void"
 msgstr "ISO C prohíbe %<return%> con expresión, en una función que devuelve void"
 
 #: c/c-typeck.c:10236
-#, fuzzy, gcc-internal-format
-#| msgid "function returns address of local variable"
+#, gcc-internal-format
 msgid "function returns address of label"
-msgstr "la función devuelve la dirección de una variable local"
+msgstr "la función devuelve la dirección de una etiqueta"
 
 #: c/c-typeck.c:10327 cp/semantics.c:1171
 #, gcc-internal-format
@@ -37504,16 +37456,14 @@ msgid "break statement used with OpenMP for loop"
 msgstr "se usó la declaración break en un bucle for de OpenMP"
 
 #: c/c-typeck.c:10590
-#, fuzzy, gcc-internal-format
-#| msgid "break statement not within loop or switch"
+#, gcc-internal-format
 msgid "break statement within %<#pragma simd%> loop body"
-msgstr "la declaración break no está dentro de un bucle o switch"
+msgstr "la declaración break está dentro de un bucle %<#pragma simd%>"
 
 #: c/c-typeck.c:10592
-#, fuzzy, gcc-internal-format
-#| msgid "continue statement not within a loop"
+#, gcc-internal-format
 msgid "continue statement within %<#pragma simd%> loop body"
-msgstr "la declaración continue no está dentro de un bucle"
+msgstr "la declaración continue está dentro de un bucle %<#pragma simd%>"
 
 #: c/c-typeck.c:10618 cp/cp-gimplify.c:432
 #, gcc-internal-format
@@ -37536,10 +37486,9 @@ msgid "comparing vectors with different number of elements"
 msgstr "se comparan vectores con números de elementos diferentes"
 
 #: c/c-typeck.c:11509 c/c-typeck.c:11677 cp/typeck.c:5058
-#, fuzzy, gcc-internal-format
-#| msgid "could not find interface for class %qE"
+#, gcc-internal-format
 msgid "could not find an integer type of the same size as %qT"
-msgstr "no se puede encontrar la interfaz para la clase %qE"
+msgstr "no se puede encontrar un tipo entero del mismo tamaño que %qT"
 
 #: c/c-typeck.c:11523 cp/typeck.c:4743
 #, gcc-internal-format
@@ -37625,42 +37574,38 @@ msgstr "se usa un tipo vector cuando se requiere un escalar"
 #: c/c-typeck.c:12340 cp/semantics.c:8508
 #, gcc-internal-format
 msgid "%<#pragma omp cancel%> must specify one of %<parallel%>, %<for%>, %<sections%> or %<taskgroup%> clauses"
-msgstr ""
+msgstr "%<#pragma omp cancel%> debe especificar una de las cláusulas %<parallel%>, %<for%>, %<sections%> o %<taskgroup%>"
 
 #: c/c-typeck.c:12379 cp/semantics.c:8545
 #, gcc-internal-format
 msgid "%<#pragma omp cancellation point%> must specify one of %<parallel%>, %<for%>, %<sections%> or %<taskgroup%> clauses"
-msgstr ""
+msgstr "%<#pragma omp cancellation point%> debe especificar una de las cláusulas %<parallel%>, %<for%>, %<sections%> o %<taskgroup%>"
 
 #: c/c-typeck.c:12423 c/c-typeck.c:13581 c/c-typeck.c:13642 c/c-typeck.c:13704
-#, fuzzy, gcc-internal-format
-#| msgid "%Htoo many %qs clauses"
+#, gcc-internal-format
 msgid "%<_Atomic%> %qE in %qs clause"
-msgstr "%Hdemasiadas cláusulas %qs"
+msgstr "%<_Atomic%> %qE en cláusula %qs"
 
 #: c/c-typeck.c:12436 c/c-typeck.c:13628 cp/semantics.c:4546
 #: cp/semantics.c:6717
 #, gcc-internal-format
 msgid "bit-field %qE in %qs clause"
-msgstr ""
+msgstr "campo de bits %qE en cláusula %qs"
 
 #: c/c-typeck.c:12445 c/c-typeck.c:13652 cp/semantics.c:4556
 #: cp/semantics.c:6735
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a member template function"
+#, gcc-internal-format
 msgid "%qE is a member of a union"
-msgstr "%qD no es una función plantilla miembro"
+msgstr "%qE no es un miembro de una unión"
 
 #: c/c-typeck.c:12455 cp/semantics.c:4570 cp/semantics.c:6760
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a variable in clause %qs"
+#, gcc-internal-format
 msgid "%qD is not a variable in %qs clause"
 msgstr "%qD no es una variable en la cláusula %qs"
 
 #: c/c-typeck.c:12459 c/c-typeck.c:13669 cp/semantics.c:4574
 #: cp/semantics.c:6763
-#, fuzzy, gcc-internal-format
-#| msgid "%qE is not a variable in clause %qs"
+#, gcc-internal-format
 msgid "%qE is not a variable in %qs clause"
 msgstr "%qE no es una variable en la cláusula %qs"
 
@@ -37684,17 +37629,15 @@ msgid "low bound %qE of array section does not have integral type"
 msgstr "el tamaño de la matriz nueva debe tener un tipo integral"
 
 #: c/c-typeck.c:12518 cp/semantics.c:4630
-#, fuzzy, gcc-internal-format
-#| msgid "size in array new must have integral type"
+#, gcc-internal-format
 msgid "length %qE of array section does not have integral type"
-msgstr "el tamaño de la matriz nueva debe tener un tipo integral"
+msgstr "la longitud %qE de la sección de matriz no es de tipo integral"
 
 #: c/c-typeck.c:12545 c/c-typeck.c:12609 c/c-typeck.c:12867
 #: cp/semantics.c:4666 cp/semantics.c:4730
-#, fuzzy, gcc-internal-format
-#| msgid "Array section in '%s' call at %L"
+#, gcc-internal-format
 msgid "zero length array section in %qs clause"
-msgstr "Sección de matriz en la llamada '%s' en %L"
+msgstr "sección de matriz de longitud cero en la cláusula %qs"
 
 #: c/c-typeck.c:12564 cp/semantics.c:4685
 #, gcc-internal-format
@@ -37736,21 +37679,19 @@ msgstr "la expresión de incremento for no tiene efecto"
 
 #: c/c-typeck.c:12701 c/c-typeck.c:12810 cp/semantics.c:4822
 #: cp/semantics.c:4934
-#, fuzzy, gcc-internal-format
-#| msgid "Copy array sections into a contiguous block on procedure entry"
+#, gcc-internal-format
 msgid "array section is not contiguous in %qs clause"
-msgstr "Copia las secciones de matriz en un bloque contiguo en la entrada de procedimiento"
+msgstr "la sección de matriz no es contigua en la cláusula %qs"
 
 #: c/c-typeck.c:12709 cp/semantics.c:4830
-#, fuzzy, gcc-internal-format
-#| msgid "%qD does not have integral or enumeration type"
+#, gcc-internal-format
 msgid "%qE does not have pointer or array type"
-msgstr "%qD no tiene tipo integral o de enumeración"
+msgstr "%qE no es de tipo puntero o matriz"
 
 #: c/c-typeck.c:13103 c/c-typeck.c:13113
 #, gcc-internal-format
 msgid "%qD in %<reduction%> clause is a zero size array"
-msgstr ""
+msgstr "%qD en la cláusula %<reduction%> es una matriz de tamaño cero"
 
 #: c/c-typeck.c:13130
 #, fuzzy, gcc-internal-format
@@ -37778,7 +37719,7 @@ msgstr "se usó la matriz de longitud variable"
 #: c/c-typeck.c:13293 c/c-typeck.c:13836 cp/semantics.c:7249
 #, gcc-internal-format
 msgid "%<nowait%> clause must not be used together with %<copyprivate%>"
-msgstr ""
+msgstr "la cláusula %<nowait%> no debe utilizarse junto con %<copyprivate%>"
 
 #: c/c-typeck.c:13305 cp/semantics.c:7289
 #, gcc-internal-format
@@ -37793,7 +37734,7 @@ msgstr ""
 #: c/c-typeck.c:13327
 #, gcc-internal-format
 msgid "linear clause applied to non-integral non-pointer variable with type %qT"
-msgstr ""
+msgstr "cláusula lineal aplicada a variable no puntero no integral con tipo %qT"
 
 #: c/c-typeck.c:13335
 #, gcc-internal-format
@@ -37812,10 +37753,9 @@ msgid "%qE is not a variable in clause %qs"
 msgstr "%qE no es una variable en la cláusula %qs"
 
 #: c/c-typeck.c:13393 cp/semantics.c:6092
-#, fuzzy, gcc-internal-format
-#| msgid "%qD appears more than once in data clauses"
+#, gcc-internal-format
 msgid "%qD appears more than once in reduction clauses"
-msgstr "%qD aparece más de una vez en las cláusulas de datos"
+msgstr "%qD aparece más de una vez en las cláusulas de reducción"
 
 #: c/c-typeck.c:13404 c/c-typeck.c:13434 c/c-typeck.c:13463
 #, gcc-internal-format
@@ -37851,16 +37791,14 @@ msgid "%qE is not a variable in clause %<lastprivate%>"
 msgstr "%qE no es una variable en la cláusula %<lastprivate%>"
 
 #: c/c-typeck.c:13475 cp/semantics.c:6545
-#, fuzzy, gcc-internal-format
-#| msgid "%qE is not a variable in clause %qs"
+#, gcc-internal-format
 msgid "%qE is not a variable in %<aligned%> clause"
-msgstr "%qE no es una variable en la cláusula %qs"
+msgstr "%qE no es una variable en la cláusula %<saligned%>"
 
 #: c/c-typeck.c:13482
-#, fuzzy, gcc-internal-format
-#| msgid "type to vector delete is neither pointer or array type"
+#, gcc-internal-format
 msgid "%qE in %<aligned%> clause is neither a pointer nor an array"
-msgstr "el tipo de vector delete no es del tipo puntero ni matriz"
+msgstr "%qE en la cláusula %<aligned%> no es un puntero ni una matriz"
 
 #: c/c-typeck.c:13489
 #, fuzzy, gcc-internal-format
@@ -37938,10 +37876,9 @@ msgid "%qE is not an argument in %<uniform%> clause"
 msgstr "%qE no es una variable en la cláusula %qs"
 
 #: c/c-typeck.c:13826
-#, fuzzy, gcc-internal-format
-#| msgid "type to vector delete is neither pointer or array type"
+#, gcc-internal-format
 msgid "%qs variable is neither a pointer nor an array"
-msgstr "el tipo de vector delete no es del tipo puntero ni matriz"
+msgstr "la variable %qs no es un puntero ni una matriz"
 
 #: c/c-typeck.c:13900 cp/semantics.c:6359
 #, gcc-internal-format
@@ -37951,7 +37888,7 @@ msgstr ""
 #: c/c-typeck.c:13931 cp/semantics.c:7141
 #, gcc-internal-format
 msgid "%<inbranch%> clause is incompatible with %<notinbranch%>"
-msgstr ""
+msgstr "la cláusula %<inbranch%> es incompatible con %<notinbranch%>"
 
 #: c/c-typeck.c:13981 cp/semantics.c:7332
 #, gcc-internal-format
@@ -37961,7 +37898,7 @@ msgstr "%qE está predeterminado como %qs para %qs"
 #: c/c-typeck.c:14001 cp/semantics.c:7223
 #, gcc-internal-format
 msgid "%<simdlen%> clause value is bigger than %<safelen%> clause value"
-msgstr ""
+msgstr "el valor de la cláusula %<simdlen%> es mayor que el valor de la cláusula %<safelen%>"
 
 #: c/c-typeck.c:14013 cp/semantics.c:7236
 #, gcc-internal-format
@@ -37976,13 +37913,12 @@ msgstr ""
 #: c/c-typeck.c:14204
 #, gcc-internal-format
 msgid "cannot use %<va_arg%> with reverse storage order"
-msgstr ""
+msgstr "no se puede utilizar %<va_arg%> con orden de almacenamiento inverso"
 
 #: c/c-typeck.c:14209
-#, fuzzy, gcc-internal-format
-#| msgid "first argument to %<va_arg%> not of type %<va_list%>"
+#, gcc-internal-format
 msgid "second argument to %<va_arg%> is of incomplete type %qT"
-msgstr "el primer argumento para %<va_arg%> no es del tipo %<va_list%>"
+msgstr "el segundo argumento para %<va_arg%> es del tipo incompleto %qT"
 
 #: c/c-typeck.c:14215
 #, gcc-internal-format
@@ -37992,23 +37928,22 @@ msgstr "C++ requiere un tipo promovido, no un tipo enum, en %<va_arg%>"
 #: c/gimple-parser.c:539
 #, gcc-internal-format
 msgid "%<&&%> not valid in GIMPLE"
-msgstr ""
+msgstr "%<&&%> no es válido en GIMPLE"
 
 #: c/gimple-parser.c:542
 #, gcc-internal-format
 msgid "%<||%> not valid in GIMPLE"
-msgstr ""
+msgstr "%<||%> no es válido en GIMPLE"
 
 #: c/gimple-parser.c:588
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type argument of unary %<*%>"
+#, gcc-internal-format
 msgid "expected pointer as argument of unary %<*%>"
-msgstr "argumento de tipo no válido del unario %<*%>"
+msgstr "se esperaba un puntero como argumento del unario %<*%>"
 
 #: c/gimple-parser.c:614
 #, gcc-internal-format
 msgid "%<!%> not valid in GIMPLE"
-msgstr ""
+msgstr "%<!%> no es válido en GIMPLE"
 
 #: c/gimple-parser.c:686
 #, fuzzy, gcc-internal-format
@@ -38029,10 +37964,9 @@ msgid "invalid base %qE for SSA name"
 msgstr "nombre de macro no válido"
 
 #: c/gimple-parser.c:835
-#, fuzzy, gcc-internal-format
-#| msgid "invalid %%P operand"
+#, gcc-internal-format
 msgid "invalid type of %<__MEM%> operand"
-msgstr "operando %%P no válido"
+msgstr "tipo no válido de operando %<__MEM%>"
 
 #: c/gimple-parser.c:891 c/gimple-parser.c:899
 #, fuzzy, gcc-internal-format
@@ -38059,47 +37993,39 @@ msgid "expected pass name"
 msgstr "se esperaba un nombre de clase"
 
 #: c/gimple-parser.c:1215
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand"
+#, gcc-internal-format
 msgid "invalid operation"
-msgstr "operando no válido"
+msgstr "operación no válida"
 
 #: c/gimple-parser.c:1380 c/gimple-parser.c:1409
-#, fuzzy, gcc-internal-format
-#| msgid "expected expression"
+#, gcc-internal-format
 msgid "expected goto expression"
-msgstr "se esperaba una expresión"
+msgstr "se esperaba expresión goto"
 
 #: c/gimple-parser.c:1388
-#, fuzzy, gcc-internal-format
-#| msgid "expected statement"
+#, gcc-internal-format
 msgid "expected else statement"
-msgstr "se esperaba una declaración"
+msgstr "se esperaba sentencia else"
 
 #: c/gimple-parser.c:1538
-#, fuzzy, gcc-internal-format
-#| msgid "extra semicolon"
+#, gcc-internal-format
 msgid "expected semicolon"
-msgstr "punto y coma extra"
+msgstr "se esperaba punto y coma"
 
 #: c/gimple-parser.c:1548
-#, fuzzy, gcc-internal-format
-#| msgid "expected selection-statement"
+#, gcc-internal-format
 msgid "expected case label or goto statement"
-msgstr "se esperaba una declaración de selección"
+msgstr "se esperaba etiqueta case o sentencia goto"
 
 #. A bad conversion for 'this' must be discarding cv-quals.
 #: cp/call.c:3409
-#, fuzzy, gcc-internal-format
-#| msgid "passing %qT as %<this%> argument of %q#D discards qualifiers"
+#, gcc-internal-format
 msgid "  passing %qT as %<this%> argument discards qualifiers"
-msgstr "pasar %qT como el argumento %<this%> de %q#D descarta a los calificadores"
+msgstr "pasar %qT como el argumento %<this%> descarta a los calificadores"
 
 #: cp/call.c:3413
-#, fuzzy
-#| msgid "  no known conversion for implicit %<this%> parameter from %qT to %qT"
 msgid "  no known conversion for implicit %<this%> parameter from %qH to %qI"
-msgstr "  no hay una conversión conocida para el parámetro %<this%> implícito de %qT a %qT"
+msgstr "  no hay una conversión conocida para el parámetro %<this%> implícito de %qH a %qI"
 
 #: cp/call.c:3420
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -38109,16 +38035,12 @@ msgstr "  no hay una conversión conocida para el argumento %d de %qT a %qT"
 
 #. Conversion of conversion function return value failed.
 #: cp/call.c:3427
-#, fuzzy
-#| msgid "  for conversion from %qT to %qT"
 msgid "  no known conversion from %qH to %qI"
-msgstr "  para la conversión de %qT a %qT"
+msgstr "  no hay una conversión de %qH a %qI"
 
 #: cp/call.c:3430
-#, fuzzy
-#| msgid "  no known conversion for argument %d from %qT to %qT"
 msgid "  no known conversion for argument %d from %qH to %qI"
-msgstr "  no hay una conversión conocida para el argumento %d de %qT a %qT"
+msgstr "  no hay una conversión conocida para el argumento %d de %qH a %qI"
 
 #: cp/call.c:3441 cp/pt.c:6495
 #, gcc-internal-format, gfc-internal-format
@@ -38128,57 +38050,49 @@ msgstr[0] "  el candidato espera %d argumento, se proporcionaron %d"
 msgstr[1] "  el candidato espera %d argumentos, se proporcionaron %d"
 
 #: cp/call.c:3469
-#, fuzzy, gcc-internal-format
-#| msgid "%s%D(%T, %T, %T) <built-in>"
+#, gcc-internal-format
 msgid "%s%<%D(%T, %T, %T)%> <built-in>"
-msgstr "%s%D(%T, %T, %T) <interno>"
+msgstr "%s%<%D(%T, %T, %T)%> <interno>"
 
 #: cp/call.c:3474
-#, fuzzy, gcc-internal-format
-#| msgid "%s%D(%T, %T) <built-in>"
+#, gcc-internal-format
 msgid "%s%<%D(%T, %T)%> <built-in>"
-msgstr "%s%D(%T, %T) <interno>"
+msgstr "%s%<%D(%T, %T)%> <interno>"
 
 #: cp/call.c:3478
-#, fuzzy, gcc-internal-format
-#| msgid "%s%D(%T) <built-in>"
+#, gcc-internal-format
 msgid "%s%<%D(%T)%> <built-in>"
-msgstr "%s%D(%T) <interno>"
+msgstr "%s%<%D(%T)%> <interno>"
 
 #: cp/call.c:3482
-#, fuzzy, gcc-internal-format
-#| msgid "%s%T <conversion>"
+#, gcc-internal-format
 msgid "%s%qT <conversion>"
-msgstr "%s%T <conversión>"
+msgstr "%s%qT <conversión>"
 
 #: cp/call.c:3484
-#, fuzzy, gcc-internal-format
-#| msgid "%s%#D <near match>"
+#, gcc-internal-format
 msgid "%s%#qD <near match>"
-msgstr "%s%#D <coincidencia cercana>"
+msgstr "%s%#qD <coincidencia cercana>"
 
 #: cp/call.c:3486
-#, fuzzy, gcc-internal-format
-#| msgid "%s%#D <deleted>"
+#, gcc-internal-format
 msgid "%s%#qD <deleted>"
-msgstr "%s%#D <borrado>"
+msgstr "%s%#qD <borrado>"
 
 #: cp/call.c:3488
-#, fuzzy, gcc-internal-format
-#| msgid "%s%#D"
+#, gcc-internal-format
 msgid "%s%#qD"
-msgstr "%s%#D"
+msgstr "%s%#qD"
 
 #: cp/call.c:3492
-#, fuzzy, gcc-internal-format
-#| msgid "  when initialized here"
+#, gcc-internal-format
 msgid "  inherited here"
-msgstr "  cuando se inicializó aquí"
+msgstr "  heredado aquí"
 
 #: cp/call.c:3512
 #, gcc-internal-format
 msgid "  return type %qT of explicit conversion function cannot be converted to %qT with a qualification conversion"
-msgstr " el tipo de devolución %qT de la función de conversiń explícita no se puede convertir a %qT con una conversión de calificación"
+msgstr "  el tipo de devolución %qT de la función de conversiń explícita no se puede convertir a %qT con una conversión de calificación"
 
 #: cp/call.c:3518
 #, gcc-internal-format
@@ -38204,13 +38118,11 @@ msgstr "  un constructor que toma un solo argumento de su propio tipo de clase e
 #: cp/call.c:3559
 #, gcc-internal-format
 msgid "  an inherited constructor is not a candidate for initialization from an expression of the same or derived type"
-msgstr ""
+msgstr "  un constructor interno no es un candidato para la inicialización desde una expresión del mismo tipo o derivado"
 
 #: cp/call.c:3934
-#, fuzzy
-#| msgid "conversion from %qT to %qT is ambiguous"
 msgid "conversion from %qH to %qI is ambiguous"
-msgstr "la conversión de %qT a %qT es ambigua"
+msgstr "la conversión de %qH a %qI es ambigua"
 
 #: cp/call.c:4080
 msgid "initializing %qH with %qI in converted constant expression does not bind directly"
@@ -38235,10 +38147,9 @@ msgstr "la llamada del %<%D(%A)%> sobrecargado es ambigua"
 #. It's no good looking for an overloaded operator() on a
 #. pointer-to-member-function.
 #: cp/call.c:4476
-#, fuzzy, gcc-internal-format
-#| msgid "pointer-to-member function %E cannot be called without an object; consider using .* or ->*"
+#, gcc-internal-format
 msgid "pointer-to-member function %qE cannot be called without an object; consider using %<.*%> or %<->*%>"
-msgstr "la función puntero-a-miembro %E no se puede llamar dentro de un objeto; considere utilizar .* o ->*"
+msgstr "la función puntero-a-miembro %qE no se puede llamar sin un objeto; considere utilizar %<.*%> o %<->*%>"
 
 #: cp/call.c:4547
 #, gcc-internal-format
@@ -38251,34 +38162,29 @@ msgid "call of %<(%T) (%A)%> is ambiguous"
 msgstr "la llamada de %<(%T) (%A)%> es ambigua"
 
 #: cp/call.c:4612
-#, fuzzy, gcc-internal-format
-#| msgid "ambiguous overload for %qs in %<%s %E%>"
+#, gcc-internal-format
 msgid "ambiguous overload for "
-msgstr "sobrecarga ambigua para %qs en %<%s %E%>"
+msgstr "sobrecarga ambigua para "
 
 #: cp/call.c:4613
-#, fuzzy, gcc-internal-format
-#| msgid "no match for %qs in %<%s %E%>"
+#, gcc-internal-format
 msgid "no match for "
-msgstr "no hay coincidencia para %qs en %<%s %E%>"
+msgstr "no hay coincidencia para "
 
 #: cp/call.c:4616
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operands to binary %s (have %qT and %qT)"
+#, gcc-internal-format
 msgid " (operand types are %qT, %qT, and %qT)"
-msgstr "operandos no válidos para el binario %s (se tiene %qT y %qT)"
+msgstr " (los tipos de los operandos son %qT, %qT y %qT)"
 
 #: cp/call.c:4618
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operands to binary %s (have %qT and %qT)"
+#, gcc-internal-format
 msgid " (operand types are %qT and %qT)"
-msgstr "operandos no válidos para el binario %s (se tiene %qT y %qT)"
+msgstr "(los tipos de los operandos son %qT y %qT)"
 
 #: cp/call.c:4620
-#, fuzzy, gcc-internal-format
-#| msgid "operand is r0"
+#, gcc-internal-format
 msgid " (operand type is %qT)"
-msgstr "el operando es r0"
+msgstr "(el tipo del operando %qT)"
 
 #: cp/call.c:4636
 #, fuzzy, gcc-internal-format
@@ -38293,52 +38199,44 @@ msgid "ternary %<operator?:%> in %<%E ? %E : %E%>"
 msgstr "no hay coincidencia para el %<operator?:%> terniario en %<%E ? %E : %E%>"
 
 #: cp/call.c:4649 cp/call.c:4680 cp/call.c:4689
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<operator%>"
+#, gcc-internal-format
 msgid "%<operator%s%>"
-msgstr "se esperaba %<operator%>"
+msgstr "%<operator%s%>"
 
 #: cp/call.c:4652
-#, fuzzy, gcc-internal-format
-#| msgid "no match for %<operator%s%> in %<%E%s%>"
+#, gcc-internal-format
 msgid "%<operator%s%> in %<%E%s%>"
-msgstr "no hay coincidencia para %<operator%s%> en %<%E%s%>"
+msgstr "%<operator%s%> en %<%E%s%>"
 
 #: cp/call.c:4659
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<operator%>"
+#, gcc-internal-format
 msgid "%<operator[]%>"
-msgstr "se esperaba %<operator%>"
+msgstr "%<operator[]%>"
 
 #: cp/call.c:4662
-#, fuzzy, gcc-internal-format
-#| msgid "no match for %<operator[]%> in %<%E[%E]%>"
+#, gcc-internal-format
 msgid "%<operator[]%> in %<%E[%E]%>"
-msgstr "no hay coincidencia para el %<operador[]%> en %<%E[%E]%>"
+msgstr "%<operator[]%> en %<%E[%E]%>"
 
 #: cp/call.c:4670
-#, fuzzy, gcc-internal-format
-#| msgid "%s"
+#, gcc-internal-format
 msgid "%qs"
-msgstr "%s"
+msgstr "%qs"
 
 #: cp/call.c:4673
-#, fuzzy, gcc-internal-format
-#| msgid "no match for %qs in %<%s %E%>"
+#, gcc-internal-format
 msgid "%qs in %<%s %E%>"
-msgstr "no hay coincidencia para %qs en %<%s %E%>"
+msgstr "%qs en %<%s %E%>"
 
 #: cp/call.c:4683
-#, fuzzy, gcc-internal-format
-#| msgid "no match for %<operator%s%> in %<%E %s %E%>"
+#, gcc-internal-format
 msgid "%<operator%s%> in %<%E %s %E%>"
-msgstr "no hay coincidencia para %<operator%s%> en %<%E %s %E%>"
+msgstr "%<operator%s%> en %<%E %s %E%>"
 
 #: cp/call.c:4692
-#, fuzzy, gcc-internal-format
-#| msgid "no match for %<operator%s%> in %<%s%E%>"
+#, gcc-internal-format
 msgid "%<operator%s%> in %<%s%E%>"
-msgstr "no hay coincidencia para %<operador%s%> en %<%s%E%>"
+msgstr "%<operator%s%> en %<%s%E%>"
 
 #: cp/call.c:4801
 #, gcc-internal-format
@@ -38348,19 +38246,16 @@ msgstr "ISO C++ prohíbe la omisión del término medio de una expresión ?:"
 #: cp/call.c:4863
 #, gcc-internal-format
 msgid "inferred scalar type %qT is not an integer or floating point type of the same size as %qT"
-msgstr ""
+msgstr "el tipo escalar %qT inferido no es un tipo entero ni coma flotante del mismo tamaño que %qT"
 
 #: cp/call.c:4880 cp/call.c:4887
-#, fuzzy
-#| msgid "conversion of scalar %qT to vector %qT involves truncation"
 msgid "conversion of scalar %qH to vector %qI involves truncation"
-msgstr "la conversión del escalar %qT al vector %qT implica truncado"
+msgstr "la conversión del escalar %qH al vector %qT implica truncado"
 
 #: cp/call.c:4940
-#, fuzzy, gcc-internal-format
-#| msgid "enumeral mismatch in conditional expression: %qT vs %qT"
+#, gcc-internal-format
 msgid "incompatible vector types in conditional expression: %qT, %qT and %qT"
-msgstr "no coincide el enumeral en la expresión condicional: %qT vs %qT"
+msgstr "tipos de vector incompatibles en la expresión condicional: %qT, %qT y %qT"
 
 #: cp/call.c:5030
 #, gcc-internal-format
@@ -38378,16 +38273,13 @@ msgid "operands to ?: have different types %qT and %qT"
 msgstr "los operandos de ?: tienen tipos diferentes %qT y %qT"
 
 #: cp/call.c:5088
-#, fuzzy, gcc-internal-format
-#| msgid "methods cannot be converted to function pointers"
+#, gcc-internal-format
 msgid "  and each type can be converted to the other"
-msgstr "los métodos no pueden ser convertidos a apuntadores a funciones"
+msgstr "  y cada tipo puede convertirse al otro"
 
 #: cp/call.c:5280
-#, fuzzy
-#| msgid "implicit conversion from %qT to %qT to match other result of conditional"
 msgid "implicit conversion from %qH to %qI to match other result of conditional"
-msgstr "conversión implícita de %qT a %qT para coincidir con otro resultado del condicional"
+msgstr "conversión implícita de %qH a %qI para coincidir con otro resultado del condicional"
 
 #: cp/call.c:5293
 #, gcc-internal-format
