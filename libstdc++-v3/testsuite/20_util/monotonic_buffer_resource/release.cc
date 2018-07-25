@@ -115,9 +115,11 @@ test04()
   unsigned char buffer[1024];
   std::pmr::monotonic_buffer_resource mbr(buffer, sizeof(buffer), &r);
   void* p = mbr.allocate(800, 16);
-  VERIFY( p == buffer );
+  VERIFY( p >= buffer && p < (buffer + 16) );
+  void* const p_in_buffer = p;
   VERIFY( r.allocate_calls == 0 );
   p = mbr.allocate(300, 1);
+  VERIFY( p != buffer );
   VERIFY( p != buffer );
   VERIFY( r.allocate_calls == 1 );
   mbr.release();
@@ -126,7 +128,7 @@ test04()
   VERIFY( r.number_of_active_allocations() == 0 );
   // initial buffer should be used again now:
   p = mbr.allocate(1000);
-  VERIFY( p == buffer );
+  VERIFY( p == p_in_buffer );
   VERIFY( r.allocate_calls == 1 );
 }
 
