@@ -517,11 +517,11 @@ get_pointer_alignment (tree exp)
   return align;
 }
 
-/* Return the number of non-zero elements in the sequence
+/* Return the number of leading non-zero elements in the sequence
    [ PTR, PTR + MAXELTS ) where each element's size is ELTSIZE bytes.
    ELTSIZE must be a power of 2 less than 8.  Used by c_strlen.  */
 
-static unsigned
+unsigned
 string_length (const void *ptr, unsigned eltsize, unsigned maxelts)
 {
   gcc_checking_assert (eltsize == 1 || eltsize == 2 || eltsize == 4);
@@ -605,14 +605,21 @@ c_strlen (tree src, int only_value)
 
   /* Set MAXELTS to sizeof (SRC) / sizeof (*SRC) - 1, the maximum possible
      length of SRC.  Prefer TYPE_SIZE() to TREE_STRING_LENGTH() if possible
-     in case the latter is less than the size of the array.  */
-  HOST_WIDE_INT maxelts = TREE_STRING_LENGTH (src);
+     in case the latter is less than the size of the array, such as when
+     SRC refers to a short string literal used to initialize a large array.
+     In that case, the elements of the array after the terminating NUL are
+     all NUL.  */
+  HOST_WIDE_INT strelts = TREE_STRING_LENGTH (src);
+  strelts = strelts / eltsize - 1;
+
+  HOST_WIDE_INT maxelts = strelts;
   tree type = TREE_TYPE (src);
   if (tree size = TYPE_SIZE_UNIT (type))
     if (tree_fits_shwi_p (size))
-      maxelts = tree_to_uhwi (size);
-
-  maxelts = maxelts / eltsize - 1;
+      {
+	maxelts = tree_to_uhwi (size);
+	maxelts = maxelts / eltsize - 1;
+      }
 
   /* PTR can point to the byte representation of any string type, including
      char* and wchar_t*.  */
@@ -620,10 +627,12 @@ c_strlen (tree src, int only_value)
 
   if (byteoff && TREE_CODE (byteoff) != INTEGER_CST)
     {
-      /* If the string has an internal zero byte (e.g., "foo\0bar"), we can't
-	 compute the offset to the following null if we don't know where to
+      /* If the string has an internal NUL character followed by any
+	 non-NUL characters (e.g., "foo\0bar"), we can't compute
+	 the offset to the following NUL if we don't know where to
 	 start searching for it.  */
-      if (string_length (ptr, eltsize, maxelts) < maxelts)
+      unsigned len = string_length (ptr, eltsize, strelts);
+      if (len < strelts)
 	{
 	  /* Return when an embedded null character is found.  */
 	  return NULL_TREE;
@@ -633,12 +642,17 @@ c_strlen (tree src, int only_value)
 	return ssize_int (0);
 
       /* We don't know the starting offset, but we do know that the string
-	 has no internal zero bytes.  We can assume that the offset falls
-	 within the bounds of the string; otherwise, the programmer deserves
-	 what he gets.  Subtract the offset from the length of the string,
-	 and return that.  This would perhaps not be valid if we were dealing
-	 with named arrays in addition to literal string constants.  */
-      return size_diffop_loc (loc, size_int (maxelts * eltsize), byteoff);
+	 has no internal zero bytes.  If the offset falls within the bounds
+	 of the string subtract the offset from the length of the string,
+	 and return that.  Otherwise the length is zero.  Take care to
+	 use SAVE_EXPR in case the OFFSET has side-effects.  */
+      tree offsave = TREE_SIDE_EFFECTS (byteoff) ? save_expr (byteoff) : byteoff;
+      offsave = fold_convert (ssizetype, offsave);
+      tree condexp = fold_build2_loc (loc, LE_EXPR, boolean_type_node, offsave,
+				      build_int_cst (ssizetype, len * eltsize));
+      tree lenexp = size_diffop_loc (loc, ssize_int (strelts * eltsize), offsave);
+      return fold_build3_loc (loc, COND_EXPR, ssizetype, condexp, lenexp,
+			      build_zero_cst (ssizetype));
     }
 
   /* Offset from the beginning of the string in elements.  */
@@ -3192,15 +3206,13 @@ check_access (tree exp, tree, tree, tree dstwrite,
   if (dstwrite)
     get_size_range (dstwrite, range);
 
-  /* This can happen at -O0.  */
-  if (range[0] && TREE_CODE (range[0]) != INTEGER_CST)
-    return false;
-
   tree func = get_callee_fndecl (exp);
 
   /* First check the number of bytes to be written against the maximum
      object size.  */
-  if (range[0] && tree_int_cst_lt (maxobjsize, range[0]))
+  if (range[0]
+      && TREE_CODE (range[0]) == INTEGER_CST
+      && tree_int_cst_lt (maxobjsize, range[0]))
     {
       if (TREE_NO_WARNING (exp))
 	return false;
@@ -3235,9 +3247,11 @@ check_access (tree exp, tree, tree, tree dstwrite,
   if (range[0] || !exactwrite || integer_all_onesp (dstwrite))
     {
       if (range[0]
+	  && TREE_CODE (range[0]) == INTEGER_CST
 	  && ((tree_fits_uhwi_p (dstsize)
 	       && tree_int_cst_lt (dstsize, range[0]))
-	      || (tree_fits_uhwi_p (dstwrite)
+	      || (dstwrite
+		  && tree_fits_uhwi_p (dstwrite)
 		  && tree_int_cst_lt (dstwrite, range[0]))))
 	{
 	  if (TREE_NO_WARNING (exp))

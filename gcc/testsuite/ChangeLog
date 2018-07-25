@@ -1,3 +1,11 @@
+2018-07-24  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86622
+	PR tree-optimization/86532
+	* gcc.c-torture/execute/strlen-2.c: New test.
+	* gcc.c-torture/execute/strlen-3.c: New test.
+	* gcc.c-torture/execute/strlen-4.c: New test.
+
 2018-07-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/86636
