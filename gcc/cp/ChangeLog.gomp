@@ -1,3 +1,16 @@
+2018-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (finish_omp_atomic): Add LOC argument.
+	* parser.c (cp_parser_omp_atomic): Pass pragma_tok->location as
+	LOC to finish_omp_atomic.
+	(cp_parser_omp_single): Use SET_EXPR_LOCATION.
+	(cp_parser_omp_teams): Force a BIND_EXPR with BLOCK around teams
+	body.
+	* semantics.c (finish_omp_atomic): Add LOC argument, pass it through
+	to c_finish_omp_atomic and set it as location of OMP_ATOMIC* trees.
+	* pt.c (tsubst_expr): Force a BIND_EXPR with BLOCK around teams body.
+	Adjust finish_omp_atomic caller.
+
 2018-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (cp_convert_omp_range_for, cp_finish_omp_range_for,

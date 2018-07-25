@@ -29,30 +29,29 @@
 #include "libgomp.h"
 
 void
-omp_set_default_device (int device_num __attribute__((unused)))
+GOMP_teams_reg (void (*fn) (void *), void *data, unsigned int num_teams,
+		unsigned int thread_limit, unsigned int flags)
 {
+  (void) fn;
+  (void) data;
+  (void) flags;
+  (void) num_teams;
+  (void) thread_limit;
 }
 
 int
-omp_get_default_device (void)
+omp_get_num_teams (void)
 {
-  return 0;
+  return gomp_num_teams_var + 1;
 }
 
 int
-omp_get_num_devices (void)
+omp_get_team_num (void)
 {
-  return 0;
+  int ctaid;
+  asm ("mov.u32 %0, %%ctaid.x;" : "=r" (ctaid));
+  return ctaid;
 }
 
-int
-omp_is_initial_device (void)
-{
-  /* NVPTX is an accelerator-only target.  */
-  return 0;
-}
-
-ialias (omp_set_default_device)
-ialias (omp_get_default_device)
-ialias (omp_get_num_devices)
-ialias (omp_is_initial_device)
+ialias (omp_get_num_teams)
+ialias (omp_get_team_num)

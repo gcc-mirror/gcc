@@ -8748,9 +8748,9 @@ finish_omp_for_block (tree bind, tree omp_for)
 }
 
 void
-finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
-		   tree rhs, tree v, tree lhs1, tree rhs1, tree clauses,
-		   enum omp_memory_order mo)
+finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
+		   tree lhs, tree rhs, tree v, tree lhs1, tree rhs1,
+		   tree clauses, enum omp_memory_order mo)
 {
   tree orig_lhs;
   tree orig_rhs;
@@ -8827,7 +8827,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
 		   "expressions for memory");
 	  return;
 	}
-      stmt = c_finish_omp_atomic (input_location, code, opcode, lhs, rhs,
+      stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs,
 				  v, lhs1, rhs1, swapped, mo,
 				  processing_template_decl != 0);
       if (stmt == error_mark_node)
@@ -8837,8 +8837,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
     {
       if (code == OMP_ATOMIC_READ)
 	{
-	  stmt = build_min_nt_loc (EXPR_LOCATION (orig_lhs),
-				   OMP_ATOMIC_READ, orig_lhs);
+	  stmt = build_min_nt_loc (loc, OMP_ATOMIC_READ, orig_lhs);
 	  OMP_ATOMIC_MEMORY_ORDER (stmt) = mo;
 	  stmt = build2 (MODIFY_EXPR, void_type_node, orig_v, stmt);
 	}
@@ -8853,8 +8852,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
 				     COMPOUND_EXPR, orig_rhs1, stmt);
 	  if (code != OMP_ATOMIC)
 	    {
-	      stmt = build_min_nt_loc (EXPR_LOCATION (orig_lhs1),
-				       code, orig_lhs1, stmt);
+	      stmt = build_min_nt_loc (loc, code, orig_lhs1, stmt);
 	      OMP_ATOMIC_MEMORY_ORDER (stmt) = mo;
 	      stmt = build2 (MODIFY_EXPR, void_type_node, orig_v, stmt);
 	    }
@@ -8862,6 +8860,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
       stmt = build2 (OMP_ATOMIC, void_type_node,
 		     clauses ? clauses : integer_zero_node, stmt);
       OMP_ATOMIC_MEMORY_ORDER (stmt) = mo;
+      SET_EXPR_LOCATION (stmt, loc);
     }
   finish_expr_stmt (stmt);
 }

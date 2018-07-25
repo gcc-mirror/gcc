@@ -35211,8 +35211,8 @@ stmt_done:
     }
 done:
   clauses = finish_omp_clauses (clauses, C_ORT_OMP);
-  finish_omp_atomic (code, opcode, lhs, rhs, v, lhs1, rhs1, clauses,
-		     memory_order);
+  finish_omp_atomic (pragma_tok->location, code, opcode, lhs, rhs, v, lhs1,
+		     rhs1, clauses, memory_order);
   if (!structured_block)
     cp_parser_consume_semicolon_at_end_of_statement (parser);
   return;
@@ -36859,6 +36859,7 @@ cp_parser_omp_single (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 {
   tree stmt = make_node (OMP_SINGLE);
   TREE_TYPE (stmt) = void_type_node;
+  SET_EXPR_LOCATION (stmt, pragma_tok->location);
 
   OMP_SINGLE_CLAUSES (stmt)
     = cp_parser_omp_all_clauses (parser, OMP_SINGLE_CLAUSE_MASK,
@@ -37182,6 +37183,7 @@ cp_parser_omp_teams (cp_parser *parser, cp_token *pragma_tok,
 	  if (!flag_openmp)  /* flag_openmp_simd  */
 	    return cp_parser_omp_distribute (parser, pragma_tok, p_name, mask,
 					     cclauses, if_p);
+	  keep_next_level (true);
 	  sb = begin_omp_structured_block ();
 	  save = cp_parser_begin_omp_structured_block (parser);
 	  ret = cp_parser_omp_distribute (parser, pragma_tok, p_name, mask,
@@ -37217,6 +37219,7 @@ cp_parser_omp_teams (cp_parser *parser, cp_token *pragma_tok,
   tree stmt = make_node (OMP_TEAMS);
   TREE_TYPE (stmt) = void_type_node;
   OMP_TEAMS_CLAUSES (stmt) = clauses;
+  keep_next_level (true);
   OMP_TEAMS_BODY (stmt) = cp_parser_omp_structured_block (parser, if_p);
   SET_EXPR_LOCATION (stmt, loc);
 

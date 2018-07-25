@@ -184,6 +184,7 @@ enum gf_mask {
     GF_OMP_TARGET_KIND_OACC_DECLARE = 10,
     GF_OMP_TARGET_KIND_OACC_HOST_DATA = 11,
     GF_OMP_TEAMS_GRID_PHONY	= 1 << 0,
+    GF_OMP_TEAMS_HOST		= 1 << 1,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
        a thread synchronization via some sort of barrier.  The exact barrier
@@ -638,7 +639,7 @@ struct GTY((tag("GSS_OMP_FOR")))
 };
 
 
-/* GIMPLE_OMP_PARALLEL, GIMPLE_OMP_TARGET, GIMPLE_OMP_TASK */
+/* GIMPLE_OMP_PARALLEL, GIMPLE_OMP_TARGET, GIMPLE_OMP_TASK, GIMPLE_OMP_TEAMS */
 
 struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
   gimple_statement_omp_parallel_layout : public gimple_statement_omp
@@ -664,7 +665,8 @@ struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
 {
     /* No extra fields; adds invariant:
          stmt->code == GIMPLE_OMP_PARALLEL
-	 || stmt->code == GIMPLE_OMP_TASK.  */
+	 || stmt->code == GIMPLE_OMP_TASK
+	 || stmt->code == GIMPLE_OMP_TEAMS.  */
 };
 
 /* GIMPLE_OMP_PARALLEL */
@@ -738,8 +740,7 @@ struct GTY((tag("GSS_OMP_CONTINUE")))
   tree control_use;
 };
 
-/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_TEAMS, GIMPLE_OMP_ORDERED,
-   GIMPLE_OMP_TASKGROUP.  */
+/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_ORDERED, GIMPLE_OMP_TASKGROUP.  */
 
 struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
   gimple_statement_omp_single_layout : public gimple_statement_omp
@@ -757,8 +758,8 @@ struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
          stmt->code == GIMPLE_OMP_SINGLE.  */
 };
 
-struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
-  gomp_teams : public gimple_statement_omp_single_layout
+struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
+  gomp_teams : public gimple_statement_omp_taskreg
 {
     /* No extra fields; adds invariant:
          stmt->code == GIMPLE_OMP_TEAMS.  */
@@ -1123,7 +1124,9 @@ template <>
 inline bool
 is_a_helper <gimple_statement_omp_taskreg *>::test (gimple *gs)
 {
-  return gs->code == GIMPLE_OMP_PARALLEL || gs->code == GIMPLE_OMP_TASK;
+  return (gs->code == GIMPLE_OMP_PARALLEL
+	  || gs->code == GIMPLE_OMP_TASK
+	  || gs->code == GIMPLE_OMP_TEAMS);
 }
 
 template <>
@@ -1339,7 +1342,9 @@ template <>
 inline bool
 is_a_helper <const gimple_statement_omp_taskreg *>::test (const gimple *gs)
 {
-  return gs->code == GIMPLE_OMP_PARALLEL || gs->code == GIMPLE_OMP_TASK;
+  return (gs->code == GIMPLE_OMP_PARALLEL
+	  || gs->code == GIMPLE_OMP_TASK
+	  || gs->code == GIMPLE_OMP_TEAMS);
 }
 
 template <>
@@ -2196,7 +2201,7 @@ static inline unsigned
 gimple_omp_subcode (const gimple *s)
 {
   gcc_gimple_checking_assert (gimple_code (s) >= GIMPLE_OMP_ATOMIC_LOAD
-	      && gimple_code (s) <= GIMPLE_OMP_TEAMS);
+			      && gimple_code (s) <= GIMPLE_OMP_TEAMS);
   return s->subcode;
 }
 
@@ -5920,6 +5925,60 @@ gimple_omp_teams_set_clauses (gomp_teams *omp_teams_stmt, tree clauses)
   omp_teams_stmt->clauses = clauses;
 }
 
+/* Return the child function used to hold the body of OMP_TEAMS_STMT.  */
+
+static inline tree
+gimple_omp_teams_child_fn (const gomp_teams *omp_teams_stmt)
+{
+  return omp_teams_stmt->child_fn;
+}
+
+/* Return a pointer to the child function used to hold the body of
+   OMP_TEAMS_STMT.  */
+
+static inline tree *
+gimple_omp_teams_child_fn_ptr (gomp_teams *omp_teams_stmt)
+{
+  return &omp_teams_stmt->child_fn;
+}
+
+
+/* Set CHILD_FN to be the child function for OMP_TEAMS_STMT.  */
+
+static inline void
+gimple_omp_teams_set_child_fn (gomp_teams *omp_teams_stmt, tree child_fn)
+{
+  omp_teams_stmt->child_fn = child_fn;
+}
+
+
+/* Return the artificial argument used to send variables and values
+   from the parent to the children threads in OMP_TEAMS_STMT.  */
+
+static inline tree
+gimple_omp_teams_data_arg (const gomp_teams *omp_teams_stmt)
+{
+  return omp_teams_stmt->data_arg;
+}
+
+
+/* Return a pointer to the data argument for OMP_TEAMS_STMT.  */
+
+static inline tree *
+gimple_omp_teams_data_arg_ptr (gomp_teams *omp_teams_stmt)
+{
+  return &omp_teams_stmt->data_arg;
+}
+
+
+/* Set DATA_ARG to be the data argument for OMP_TEAMS_STMT.  */
+
+static inline void
+gimple_omp_teams_set_data_arg (gomp_teams *omp_teams_stmt, tree data_arg)
+{
+  omp_teams_stmt->data_arg = data_arg;
+}
+
 /* Return the kernel_phony flag of an OMP_TEAMS_STMT.  */
 
 static inline bool
@@ -5937,6 +5996,25 @@ gimple_omp_teams_set_grid_phony (gomp_teams *omp_teams_stmt, bool value)
     omp_teams_stmt->subcode |= GF_OMP_TEAMS_GRID_PHONY;
   else
     omp_teams_stmt->subcode &= ~GF_OMP_TEAMS_GRID_PHONY;
+}
+
+/* Return the host flag of an OMP_TEAMS_STMT.  */
+
+static inline bool
+gimple_omp_teams_host (const gomp_teams *omp_teams_stmt)
+{
+  return (gimple_omp_subcode (omp_teams_stmt) & GF_OMP_TEAMS_HOST) != 0;
+}
+
+/* Set host flag of an OMP_TEAMS_STMT to VALUE.  */
+
+static inline void
+gimple_omp_teams_set_host (gomp_teams *omp_teams_stmt, bool value)
+{
+  if (value)
+    omp_teams_stmt->subcode |= GF_OMP_TEAMS_HOST;
+  else
+    omp_teams_stmt->subcode &= ~GF_OMP_TEAMS_HOST;
 }
 
 /* Return the clauses associated with OMP_SECTIONS GS.  */

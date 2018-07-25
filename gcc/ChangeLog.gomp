@@ -1,3 +1,55 @@
+2018-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple.h (enum gf_mask): Add GF_OMP_TEAMS_HOST.
+	(struct gimple_statement_omp_taskreg): Add GIMPLE_OMP_TEAMS to
+	comments.
+	(struct gimple_statement_omp_single_layout): And remove here.
+	(struct gomp_teams): Inherit from gimple_statement_omp_taskreg rather
+	than gimple_statement_omp_single_layout.
+	(is_a_helper <gimple_statement_omp_taskreg *>::test): Allow
+	GIMPLE_OMP_TEAMS.
+	(is_a_helper <const gimple_statement_omp_taskreg *>::test): Likewise.
+	(gimple_omp_subcode): Formatting fix.
+	(gimple_omp_teams_child_fn, gimple_omp_teams_child_fn_ptr,
+	gimple_omp_teams_set_child_fn, gimple_omp_teams_data_arg,
+	gimple_omp_teams_data_arg_ptr, gimple_omp_teams_set_data_arg,
+	gimple_omp_teams_host, gimple_omp_teams_set_host): New inline
+	functions.
+	* gimple.def (GIMPLE_OMP_TEAMS): Use GSS_OMP_PARALLEL_LAYOUT instead
+	of GSS_OMP_SINGLE_LAYOUT, adjust comments.
+	* gimplify.c (enum omp_region_type): Reserve bits 1 and 2 for
+	auxiliary flags, renumber values of most of ORT_* enumerators,
+	add ORT_HOST_TEAMS and ORT_COMBINED_HOST_TEAMS enumerators.
+	(maybe_fold_stmt): Don't fold even in host teams regions.
+	(gimplify_scan_omp_clauses, gimplify_omp_for): Adjust tests for
+	ORT_COMBINED_TEAMS.
+	(gimplify_omp_workshare): Set ort to ORT_HOST_TEAMS or
+	ORT_COMBINED_HOST_TEAMS if not inside of target construct.  If
+	host teams, use gimplify_and_return_first etc. for body like
+	for target or target data constructs, and at the end call
+	gimple_omp_teams_set_host on the GIMPLE_OMP_TEAMS object.
+	* omp-builtins.def (BUILT_IN_GOMP_TEAMS_REG): New builtin.
+	* omp-low.c (is_host_teams_ctx): New function.
+	(is_taskreg_ctx): Return true also if is_host_teams_ctx.
+	(scan_sharing_clauses): Don't ignore shared clauses in
+	is_host_teams_ctx contexts.
+	(finish_taskreg_scan): Handle GIMPLE_OMP_TEAMS like
+	GIMPLE_OMP_PARALLEL.
+	(scan_omp_teams): Handle host teams constructs.
+	(check_omp_nesting_restrictions): Allow teams with no outer
+	OpenMP context.  Adjust diagnostics for teams strictly nested into
+	some explicit OpenMP construct other than target.
+	(scan_omp_1_stmt) <case GIMPLE_OMP_TEAMS>: Temporarily bump
+	taskreg_nesting_level while scanning host teams construct.
+	(lower_rec_input_clauses): Don't ignore shared clauses in
+	is_host_teams_ctx contexts.
+	(lower_omp_1): Use lower_omp_taskreg instead of lower_omp_teams
+	for host teams constructs.
+	* omp-expand.c (expand_teams_call): New function.
+	(expand_omp_taskreg): Allow GIMPLE_OMP_TEAMS and call
+	expand_teams_call for it.  Formatting fix.
+	(expand_omp_synch): For host teams call expand_omp_taskreg.
+
 2018-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE): Define.

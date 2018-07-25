@@ -534,7 +534,7 @@ adjust_context_and_scope (tree entry_block, tree child_fndecl)
     }
 }
 
-/* Build the function calls to GOMP_parallel_start etc to actually
+/* Build the function calls to GOMP_parallel etc to actually
    generate the parallel operation.  REGION is the parallel region
    being expanded.  BB is the block where to insert the code.  WS_ARGS
    will be set if this is a call to a combined parallel+workshare
@@ -889,6 +889,59 @@ expand_taskwait_call (basic_block bb, gomp_task *entry_stmt)
 			    false, GSI_CONTINUE_LINKING);
 }
 
+/* Build the function call to GOMP_teams_reg to actually
+   generate the host teams operation.  REGION is the teams region
+   being expanded.  BB is the block where to insert the code.  */
+
+static void
+expand_teams_call (basic_block bb, gomp_teams *entry_stmt)
+{
+  tree clauses = gimple_omp_teams_clauses (entry_stmt);
+  tree num_teams = omp_find_clause (clauses, OMP_CLAUSE_NUM_TEAMS);
+  if (num_teams == NULL_TREE)
+    num_teams = build_int_cst (unsigned_type_node, 0);
+  else
+    {
+      num_teams = OMP_CLAUSE_NUM_TEAMS_EXPR (num_teams);
+      num_teams = fold_convert (unsigned_type_node, num_teams);
+    }
+  tree thread_limit = omp_find_clause (clauses, OMP_CLAUSE_THREAD_LIMIT);
+  if (thread_limit == NULL_TREE)
+    thread_limit = build_int_cst (unsigned_type_node, 0);
+  else
+    {
+      thread_limit = OMP_CLAUSE_THREAD_LIMIT_EXPR (thread_limit);
+      thread_limit = fold_convert (unsigned_type_node, thread_limit);
+    }
+
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
+  tree t = gimple_omp_teams_data_arg (entry_stmt), t1;
+  if (t == NULL)
+    t1 = null_pointer_node;
+  else
+    t1 = build_fold_addr_expr (t);
+  tree child_fndecl = gimple_omp_teams_child_fn (entry_stmt);
+  tree t2 = build_fold_addr_expr (child_fndecl);
+
+  adjust_context_and_scope (gimple_block (entry_stmt), child_fndecl);
+
+  vec<tree, va_gc> *args;
+  vec_alloc (args, 5);
+  args->quick_push (t2);
+  args->quick_push (t1);
+  args->quick_push (num_teams);
+  args->quick_push (thread_limit);
+  /* For future extensibility.  */
+  args->quick_push (build_zero_cst (unsigned_type_node));
+
+  t = build_call_expr_loc_vec (UNKNOWN_LOCATION,
+			       builtin_decl_explicit (BUILT_IN_GOMP_TEAMS_REG),
+			       args);
+
+  force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
+			    false, GSI_CONTINUE_LINKING);
+}
+
 /* Chain all the DECLs in LIST by their TREE_CHAIN fields.  */
 
 static tree
@@ -1171,7 +1224,8 @@ expand_omp_taskreg (struct omp_region *region)
 
       gsi = gsi_last_nondebug_bb (entry_bb);
       gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_PARALLEL
-		  || gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_TASK);
+		  || gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_TASK
+		  || gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_TEAMS);
       gsi_remove (&gsi, true);
 
       new_bb = entry_bb;
@@ -1224,8 +1278,8 @@ expand_omp_taskreg (struct omp_region *region)
 		     effectively doing a STRIP_NOPS.  */
 
 		  if (TREE_CODE (arg) == ADDR_EXPR
-		      && TREE_OPERAND (arg, 0)
-			== gimple_omp_taskreg_data_arg (entry_stmt))
+		      && (TREE_OPERAND (arg, 0)
+			  == gimple_omp_taskreg_data_arg (entry_stmt)))
 		    {
 		      parcopy_stmt = stmt;
 		      break;
@@ -1285,12 +1339,13 @@ expand_omp_taskreg (struct omp_region *region)
       gsi = gsi_last_nondebug_bb (entry_bb);
       stmt = gsi_stmt (gsi);
       gcc_assert (stmt && (gimple_code (stmt) == GIMPLE_OMP_PARALLEL
-			   || gimple_code (stmt) == GIMPLE_OMP_TASK));
+			   || gimple_code (stmt) == GIMPLE_OMP_TASK
+			   || gimple_code (stmt) == GIMPLE_OMP_TEAMS));
       e = split_block (entry_bb, stmt);
       gsi_remove (&gsi, true);
       entry_bb = e->dest;
       edge e2 = NULL;
-      if (gimple_code (entry_stmt) == GIMPLE_OMP_PARALLEL)
+      if (gimple_code (entry_stmt) != GIMPLE_OMP_TASK)
 	single_succ_edge (entry_bb)->flags = EDGE_FALLTHRU;
       else
 	{
@@ -1416,6 +1471,8 @@ expand_omp_taskreg (struct omp_region *region)
   if (gimple_code (entry_stmt) == GIMPLE_OMP_PARALLEL)
     expand_parallel_call (region, new_bb,
 			  as_a <gomp_parallel *> (entry_stmt), ws_args);
+  else if (gimple_code (entry_stmt) == GIMPLE_OMP_TEAMS)
+    expand_teams_call (new_bb, as_a <gomp_teams *> (entry_stmt));
   else
     expand_task_call (region, new_bb, as_a <gomp_task *> (entry_stmt));
   if (gimple_in_ssa_p (cfun))
@@ -6038,6 +6095,12 @@ expand_omp_synch (struct omp_region *region)
 	      || gimple_code (gsi_stmt (si)) == GIMPLE_OMP_ORDERED
 	      || gimple_code (gsi_stmt (si)) == GIMPLE_OMP_CRITICAL
 	      || gimple_code (gsi_stmt (si)) == GIMPLE_OMP_TEAMS);
+  if (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_TEAMS
+      && gimple_omp_teams_host (as_a <gomp_teams *> (gsi_stmt (si))))
+    {
+      expand_omp_taskreg (region);
+      return;
+    }
   gsi_remove (&si, true);
   single_succ_edge (entry_bb)->flags = EDGE_FALLTHRU;
 

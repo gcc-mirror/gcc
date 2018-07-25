@@ -17334,9 +17334,19 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 					  && OMP_TEAMS_COMBINED (t));
       tmp = tsubst_omp_clauses (OMP_CLAUSES (t), C_ORT_OMP, args, complain,
 				in_decl);
-      stmt = push_stmt_list ();
-      RECUR (OMP_BODY (t));
-      stmt = pop_stmt_list (stmt);
+      if (TREE_CODE (t) == OMP_TEAMS)
+	{
+	  keep_next_level (true);
+	  stmt = begin_omp_structured_block ();
+	  RECUR (OMP_BODY (t));
+	  stmt = finish_omp_structured_block (stmt);
+	}
+      else
+	{
+	  stmt = push_stmt_list ();
+	  RECUR (OMP_BODY (t));
+	  stmt = pop_stmt_list (stmt);
+	}
 
       t = copy_node (t);
       OMP_BODY (t) = stmt;
@@ -17489,8 +17499,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    }
 	  lhs = RECUR (TREE_OPERAND (op1, 0));
 	  rhs = RECUR (TREE_OPERAND (op1, 1));
-	  finish_omp_atomic (OMP_ATOMIC, TREE_CODE (op1), lhs, rhs,
-			     NULL_TREE, NULL_TREE, rhs1, tmp,
+	  finish_omp_atomic (EXPR_LOCATION (t), OMP_ATOMIC, TREE_CODE (op1),
+			     lhs, rhs, NULL_TREE, NULL_TREE, rhs1, tmp,
 			     OMP_ATOMIC_MEMORY_ORDER (t));
 	}
       else
@@ -17528,8 +17538,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	      lhs = RECUR (TREE_OPERAND (op1, 0));
 	      rhs = RECUR (TREE_OPERAND (op1, 1));
 	    }
-	  finish_omp_atomic (code, opcode, lhs, rhs, v, lhs1, rhs1, tmp,
-			     OMP_ATOMIC_MEMORY_ORDER (t));
+	  finish_omp_atomic (EXPR_LOCATION (t), code, opcode, lhs, rhs, v,
+			     lhs1, rhs1, tmp, OMP_ATOMIC_MEMORY_ORDER (t));
 	}
       break;
 

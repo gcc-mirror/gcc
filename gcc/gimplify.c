@@ -122,34 +122,36 @@ enum gimplify_omp_var_data
 enum omp_region_type
 {
   ORT_WORKSHARE = 0x00,
-  ORT_SIMD 	= 0x01,
+  ORT_SIMD 	= 0x04,
 
-  ORT_PARALLEL	= 0x02,
-  ORT_COMBINED_PARALLEL = 0x03,
+  ORT_PARALLEL	= 0x08,
+  ORT_COMBINED_PARALLEL = ORT_PARALLEL | 1,
 
-  ORT_TASK	= 0x04,
-  ORT_UNTIED_TASK = 0x05,
+  ORT_TASK	= 0x10,
+  ORT_UNTIED_TASK = ORT_TASK | 1,
 
-  ORT_TEAMS	= 0x08,
-  ORT_COMBINED_TEAMS = 0x09,
+  ORT_TEAMS	= 0x20,
+  ORT_COMBINED_TEAMS = ORT_TEAMS | 1,
+  ORT_HOST_TEAMS = ORT_TEAMS | 2,
+  ORT_COMBINED_HOST_TEAMS = ORT_COMBINED_TEAMS | 2,
 
   /* Data region.  */
-  ORT_TARGET_DATA = 0x10,
+  ORT_TARGET_DATA = 0x40,
 
   /* Data region with offloading.  */
-  ORT_TARGET	= 0x20,
-  ORT_COMBINED_TARGET = 0x21,
+  ORT_TARGET	= 0x80,
+  ORT_COMBINED_TARGET = ORT_TARGET | 1,
 
   /* OpenACC variants.  */
-  ORT_ACC	= 0x40,  /* A generic OpenACC region.  */
+  ORT_ACC	= 0x100,  /* A generic OpenACC region.  */
   ORT_ACC_DATA	= ORT_ACC | ORT_TARGET_DATA, /* Data construct.  */
   ORT_ACC_PARALLEL = ORT_ACC | ORT_TARGET,  /* Parallel construct */
-  ORT_ACC_KERNELS  = ORT_ACC | ORT_TARGET | 0x80,  /* Kernels construct.  */
-  ORT_ACC_HOST_DATA = ORT_ACC | ORT_TARGET_DATA | 0x80,  /* Host data.  */
+  ORT_ACC_KERNELS  = ORT_ACC | ORT_TARGET | 2,  /* Kernels construct.  */
+  ORT_ACC_HOST_DATA = ORT_ACC | ORT_TARGET_DATA | 2,  /* Host data.  */
 
   /* Dummy OpenMP region, used to disable expansion of
      DECL_VALUE_EXPRs in taskloop pre body.  */
-  ORT_NONE	= 0x100
+  ORT_NONE	= 0x200
 };
 
 /* Gimplify hashtable helper.  */
@@ -3167,6 +3169,8 @@ maybe_fold_stmt (gimple_stmt_iterator *gsi)
   struct gimplify_omp_ctx *ctx;
   for (ctx = gimplify_omp_ctxp; ctx; ctx = ctx->outer_context)
     if ((ctx->region_type & (ORT_TARGET | ORT_PARALLEL | ORT_TASK)) != 0)
+      return false;
+    else if ((ctx->region_type & ORT_HOST_TEAMS) == ORT_HOST_TEAMS)
       return false;
   return fold_stmt (gsi);
 }
@@ -8040,7 +8044,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    }
 	  if (outer_ctx
 	      && (outer_ctx->region_type == ORT_COMBINED_PARALLEL
-		  || outer_ctx->region_type == ORT_COMBINED_TEAMS)
+		  || ((outer_ctx->region_type & ORT_COMBINED_TEAMS)
+		      == ORT_COMBINED_TEAMS))
 	      && splay_tree_lookup (outer_ctx->variables,
 				    (splay_tree_key) decl) == NULL)
 	    {
@@ -8088,7 +8093,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 					    GOVD_LASTPRIVATE | GOVD_SEEN);
 			  octx = octx->outer_context;
 			  if (octx
-			      && octx->region_type == ORT_COMBINED_TEAMS
+			      && ((octx->region_type & ORT_COMBINED_TEAMS)
+				  == ORT_COMBINED_TEAMS)
 			      && (splay_tree_lookup (octx->variables,
 						     (splay_tree_key) decl)
 				  == NULL))
@@ -8235,7 +8241,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			   && octx == outer_ctx)
 		    flags = GOVD_SEEN | GOVD_SHARED;
 		  else if (octx
-			   && octx->region_type == ORT_COMBINED_TEAMS)
+			   && ((octx->region_type & ORT_COMBINED_TEAMS)
+			       == ORT_COMBINED_TEAMS))
 		    flags = GOVD_SEEN | GOVD_SHARED;
 		  else if (octx
 			   && octx->region_type == ORT_COMBINED_TARGET)
@@ -10714,7 +10721,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 			    }
 			  if (outer && outer->outer_context
 			      && (outer->outer_context->region_type
-				  == ORT_COMBINED_TEAMS))
+				  & ORT_COMBINED_TEAMS) == ORT_COMBINED_TEAMS)
 			    {
 			      outer = outer->outer_context;
 			      n = splay_tree_lookup (outer->variables,
@@ -10801,7 +10808,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 			    }
 			  if (outer && outer->outer_context
 			      && (outer->outer_context->region_type
-				  == ORT_COMBINED_TEAMS))
+				  & ORT_COMBINED_TEAMS) == ORT_COMBINED_TEAMS)
 			    {
 			      outer = outer->outer_context;
 			      n = splay_tree_lookup (outer->variables,
@@ -11497,6 +11504,12 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
       break;
     case OMP_TEAMS:
       ort = OMP_TEAMS_COMBINED (expr) ? ORT_COMBINED_TEAMS : ORT_TEAMS;
+      if (gimplify_omp_ctxp == NULL
+	  || (gimplify_omp_ctxp->region_type == ORT_TARGET
+	      && gimplify_omp_ctxp->outer_context == NULL
+	      && lookup_attribute ("omp declare target",
+				   DECL_ATTRIBUTES (current_function_decl))))
+	ort = (enum omp_region_type) (ort | ORT_HOST_TEAMS);
       break;
     case OACC_HOST_DATA:
       ort = ORT_ACC_HOST_DATA;
@@ -11508,7 +11521,8 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
 			     TREE_CODE (expr));
   if (TREE_CODE (expr) == OMP_TARGET)
     optimize_target_teams (expr, pre_p);
-  if ((ort & (ORT_TARGET | ORT_TARGET_DATA)) != 0)
+  if ((ort & (ORT_TARGET | ORT_TARGET_DATA)) != 0
+      || (ort & ORT_HOST_TEAMS) == ORT_HOST_TEAMS)
     {
       push_gimplify_context ();
       gimple *g = gimplify_and_return_first (OMP_BODY (expr), &body);
@@ -11579,6 +11593,8 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
       break;
     case OMP_TEAMS:
       stmt = gimple_build_omp_teams (body, OMP_CLAUSES (expr));
+      if ((ort & ORT_HOST_TEAMS) == ORT_HOST_TEAMS)
+	gimple_omp_teams_set_host (as_a <gomp_teams *> (stmt), true);
       break;
     default:
       gcc_unreachable ();

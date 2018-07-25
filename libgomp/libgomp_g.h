@@ -294,6 +294,11 @@ extern void GOMP_target_enter_exit_data (int, size_t, void **, size_t *,
 					 void **);
 extern void GOMP_teams (unsigned int, unsigned int);
 
+/* teams.c */
+
+extern void GOMP_teams_reg (void (*) (void *), void *, unsigned, unsigned,
+			    unsigned);
+
 /* oacc-parallel.c */
 
 extern void GOACC_parallel_keyed (int, void (*) (void *), size_t,

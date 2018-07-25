@@ -1,3 +1,10 @@
+2018-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/teams-1.c: New test.
+	* c-c++-common/gomp/teams-2.c: New test.
+	* g++.dg/gomp/tpl-atomic-2.C: Adjust expected diagnostic lines.
+	* gcc.dg/gomp/teams-1.c: Likewise.
+
 2018-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/gomp/for-21.C: New test.

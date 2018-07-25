@@ -280,12 +280,23 @@ is_taskloop_ctx (omp_context *ctx)
 }
 
 
-/* Return true if CTX is for an omp parallel or omp task.  */
+/* Return true if CTX is for a host omp teams.  */
+
+static inline bool
+is_host_teams_ctx (omp_context *ctx)
+{
+  return gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS
+	 && gimple_omp_teams_host (as_a <gomp_teams *> (ctx->stmt));
+}
+
+/* Return true if CTX is for an omp parallel or omp task or host omp teams
+   (the last one is strictly not a task region in OpenMP speak, but we
+   need to treat it similarly).  */
 
 static inline bool
 is_taskreg_ctx (omp_context *ctx)
 {
-  return is_parallel_ctx (ctx) || is_task_ctx (ctx);
+  return is_parallel_ctx (ctx) || is_task_ctx (ctx) || is_host_teams_ctx (ctx);
 }
 
 /* Return true if EXPR is variable sized.  */
@@ -1011,8 +1022,10 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 
 	case OMP_CLAUSE_SHARED:
 	  decl = OMP_CLAUSE_DECL (c);
-	  /* Ignore shared directives in teams construct.  */
-	  if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS)
+	  /* Ignore shared directives in teams construct inside of
+	     target construct.  */
+	  if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS
+	      && !is_host_teams_ctx (ctx))
 	    {
 	      /* Global variables don't need to be copied,
 		 the receiver side will use them directly.  */
@@ -1393,8 +1406,10 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  break;
 
 	case OMP_CLAUSE_SHARED:
-	  /* Ignore shared directives in teams construct.  */
-	  if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS)
+	  /* Ignore shared directives in teams construct inside of
+	     target construct.  */
+	  if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS
+	      && !is_host_teams_ctx (ctx))
 	    break;
 	  decl = OMP_CLAUSE_DECL (c);
 	  if (is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx)))
@@ -1907,7 +1922,7 @@ finish_taskreg_scan (omp_context *ctx)
     return;
 
   /* If any task_shared_vars were needed, verify all
-     OMP_CLAUSE_SHARED clauses on GIMPLE_OMP_{PARALLEL,TASK}
+     OMP_CLAUSE_SHARED clauses on GIMPLE_OMP_{PARALLEL,TASK,TEAMS}
      statements if use_pointer_for_field hasn't changed
      because of that.  If it did, update field types now.  */
   if (task_shared_vars)
@@ -1951,7 +1966,8 @@ finish_taskreg_scan (omp_context *ctx)
 	  }
     }
 
-  if (gimple_code (ctx->stmt) == GIMPLE_OMP_PARALLEL)
+  if (gimple_code (ctx->stmt) == GIMPLE_OMP_PARALLEL
+      || gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS)
     {
       layout_type (ctx->record_type);
       fixup_child_record_type (ctx);
@@ -2331,8 +2347,32 @@ static void
 scan_omp_teams (gomp_teams *stmt, omp_context *outer_ctx)
 {
   omp_context *ctx = new_omp_context (stmt, outer_ctx);
+
+  if (!gimple_omp_teams_host (stmt))
+    {
+      scan_sharing_clauses (gimple_omp_teams_clauses (stmt), ctx);
+      scan_omp (gimple_omp_body_ptr (stmt), ctx);
+      return;
+    }
+  taskreg_contexts.safe_push (ctx);
+  gcc_assert (taskreg_nesting_level == 1);
+  ctx->field_map = splay_tree_new (splay_tree_compare_pointers, 0, 0);
+  ctx->record_type = lang_hooks.types.make_type (RECORD_TYPE);
+  tree name = create_tmp_var_name (".omp_data_s");
+  name = build_decl (gimple_location (stmt),
+		     TYPE_DECL, name, ctx->record_type);
+  DECL_ARTIFICIAL (name) = 1;
+  DECL_NAMELESS (name) = 1;
+  TYPE_NAME (ctx->record_type) = name;
+  TYPE_ARTIFICIAL (ctx->record_type) = 1;
+  create_omp_child_function (ctx, false);
+  gimple_omp_teams_set_child_fn (stmt, ctx->cb.dst_fn);
+
   scan_sharing_clauses (gimple_omp_teams_clauses (stmt), ctx);
   scan_omp (gimple_omp_body_ptr (stmt), ctx);
+
+  if (TYPE_FIELDS (ctx->record_type) == NULL)
+    ctx->record_type = ctx->receiver_decl = NULL;
 }
 
 /* Check nesting restrictions.  */
@@ -2817,13 +2857,20 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
       }
       break;
     case GIMPLE_OMP_TEAMS:
-      if (ctx == NULL
-	  || gimple_code (ctx->stmt) != GIMPLE_OMP_TARGET
-	  || gimple_omp_target_kind (ctx->stmt) != GF_OMP_TARGET_KIND_REGION)
+      if (ctx == NULL)
+	break;
+      else if (gimple_code (ctx->stmt) != GIMPLE_OMP_TARGET
+	       || (gimple_omp_target_kind (ctx->stmt)
+		   != GF_OMP_TARGET_KIND_REGION))
 	{
+	  /* Teams construct can appear either strictly nested inside of
+	     target construct with no intervening stmts, or can be encountered
+	     only by initial task (so must not appear inside any OpenMP
+	     construct.  */
 	  error_at (gimple_location (stmt),
-		    "%<teams%> construct not closely nested inside of "
-		    "%<target%> construct");
+		    "%<teams%> construct must be closely nested inside of "
+		    "%<target%> construct or not nested in any OpenMP "
+		    "construct");
 	  return false;
 	}
       break;
@@ -3107,7 +3154,14 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_TEAMS:
-      scan_omp_teams (as_a <gomp_teams *> (stmt), ctx);
+      if (gimple_omp_teams_host (as_a <gomp_teams *> (stmt)))
+	{
+	  taskreg_nesting_level++;
+	  scan_omp_teams (as_a <gomp_teams *> (stmt), ctx);
+	  taskreg_nesting_level--;
+	}
+      else
+	scan_omp_teams (as_a <gomp_teams *> (stmt), ctx);
       break;
 
     case GIMPLE_BIND:
@@ -3595,8 +3649,10 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		continue;
 	      break;
 	    case OMP_CLAUSE_SHARED:
-	      /* Ignore shared directives in teams construct.  */
-	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS)
+	      /* Ignore shared directives in teams construct inside
+		 of target construct.  */
+	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS
+		  && !is_host_teams_ctx (ctx))
 		continue;
 	      if (maybe_lookup_decl (OMP_CLAUSE_DECL (c), ctx) == NULL)
 		{
@@ -4077,8 +4133,10 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	  switch (OMP_CLAUSE_CODE (c))
 	    {
 	    case OMP_CLAUSE_SHARED:
-	      /* Ignore shared directives in teams construct.  */
-	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS)
+	      /* Ignore shared directives in teams construct inside
+		 target construct.  */
+	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS
+		  && !is_host_teams_ctx (ctx))
 		continue;
 	      /* Shared global vars are just accessed directly.  */
 	      if (is_global_var (new_var))
@@ -8927,7 +8985,10 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     case GIMPLE_OMP_TEAMS:
       ctx = maybe_lookup_ctx (stmt);
       gcc_assert (ctx);
-      lower_omp_teams (gsi_p, ctx);
+      if (gimple_omp_teams_host (as_a <gomp_teams *> (stmt)))
+	lower_omp_taskreg (gsi_p, ctx);
+      else
+	lower_omp_teams (gsi_p, ctx);
       break;
     case GIMPLE_OMP_GRID_BODY:
       ctx = maybe_lookup_ctx (stmt);

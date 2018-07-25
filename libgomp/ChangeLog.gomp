@@ -1,3 +1,29 @@
+2018-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add teams.c.
+	* libgomp_g.h (GOMP_teams_reg): New prototype.
+	* libgomp.map (GOMP_5.0): Export GOMP_teams_reg.
+	* icv-device.c (omp_get_num_teams, omp_get_team_num): Move these
+	functions to ...
+	* teams.c: ... here.  New file.
+	* config/nvptx/icv-device.c (omp_get_num_teams, omp_get_team_num):
+	Move these functions to ...
+	* config/nvptx/teams.c: ... here.  New file.
+	* testsuite/libgomp.c++/for-16.C: New test.
+	* testsuite/libgomp.c++/for-26.C: New test.
+	* testsuite/libgomp.c-c++-common/for-14.c: New test.
+	* testsuite/libgomp.c-c++-common/for-15.c: New test.
+	* testsuite/libgomp.c-c++-common/pr66199-10.c: New test.
+	* testsuite/libgomp.c-c++-common/pr66199-11.c: New test.
+	* testsuite/libgomp.c-c++-common/pr66199-12.c: New test.
+	* testsuite/libgomp.c-c++-common/pr66199-13.c: New test.
+	* testsuite/libgomp.c-c++-common/pr66199-14.c: New test.
+	* testsuite/libgomp.c/teams-1.c: New test.
+	* testsuite/libgomp.c/teams-2.c: New test.
+	* testsuite/libgomp.c/thread-limit-5.c: New test.
+	* testsuite/libgomp.c/thread-limit-4.c: New test.
+	* Makefile.in: Regenerated.
+
 2018-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c++/for-23.C: New test.

@@ -6,21 +6,21 @@ struct S { int x; } s;
 // even when the templates are never instantiated.
 template<typename T> void f1()
 {
-  #pragma omp atomic
-  s += 1;		// { dg-error "invalid" }
+  #pragma omp atomic	// { dg-error "invalid" }
+  s += 1;
 }
 
 template<typename T> void f2(float *f)
 {
-  #pragma omp atomic
-  *f |= 1;		// { dg-error "invalid|evaluation" }
+  #pragma omp atomic	// { dg-error "invalid" }
+  *f |= 1;		// { dg-error "evaluation" }
 }
 
 // Here the rhs is dependent, but not type dependent.
 template<typename T> void f3(float *f)
 {
-  #pragma omp atomic
-  *f |= sizeof (T);	// { dg-error "invalid|evaluation" }
+  #pragma omp atomic	// { dg-error "invalid" }
+  *f |= sizeof (T);	// { dg-error "evaluation" }
 }
 
 // And the converse, no error here because we're never fed a T.
@@ -35,6 +35,6 @@ template<typename T> void f4(T *t)
 // of the semantic analysis concurrent with that.
 template<typename T> void f5(float *f)
 {
-  #pragma omp atomic
-  *f |= (T)sizeof(T);	// { dg-error "invalid|evaluation" "" { xfail *-*-* } }
+  #pragma omp atomic	// { dg-error "invalid" "" { xfail *-*-* } }
+  *f |= (T)sizeof(T);	// { dg-error "evaluation" "" { xfail *-*-* } }
 }

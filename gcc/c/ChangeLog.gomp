@@ -1,3 +1,9 @@
+2018-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_teams): Force a BIND_EXPR with BLOCK
+	around teams body.  Use SET_EXPR_LOCATION.
+	(c_parser_omp_target): Use SET_EXPR_LOCATION.
+
 2018-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_depobj): New function.

@@ -17418,7 +17418,7 @@ c_parser_omp_teams (location_t loc, c_parser *parser,
 	  if (!flag_openmp)  /* flag_openmp_simd  */
 	    return c_parser_omp_distribute (loc, parser, p_name, mask,
 					    cclauses, if_p);
-	  block = c_begin_compound_stmt (true);
+	  block = c_begin_omp_parallel ();
 	  ret = c_parser_omp_distribute (loc, parser, p_name, mask, cclauses,
 					 if_p);
 	  block = c_end_compound_stmt (loc, block, true);
@@ -17430,6 +17430,7 @@ c_parser_omp_teams (location_t loc, c_parser *parser,
 	  OMP_TEAMS_CLAUSES (ret) = clauses;
 	  OMP_TEAMS_BODY (ret) = block;
 	  OMP_TEAMS_COMBINED (ret) = 1;
+	  SET_EXPR_LOCATION (ret, loc);
 	  return add_stmt (ret);
 	}
     }
@@ -17449,7 +17450,10 @@ c_parser_omp_teams (location_t loc, c_parser *parser,
   tree stmt = make_node (OMP_TEAMS);
   TREE_TYPE (stmt) = void_type_node;
   OMP_TEAMS_CLAUSES (stmt) = clauses;
-  OMP_TEAMS_BODY (stmt) = c_parser_omp_structured_block (parser, if_p);
+  block = c_begin_omp_parallel ();
+  add_stmt (c_parser_omp_structured_block (parser, if_p));
+  OMP_TEAMS_BODY (stmt) = c_end_compound_stmt (loc, block, true);
+  SET_EXPR_LOCATION (stmt, loc);
 
   return add_stmt (stmt);
 }
@@ -17870,6 +17874,7 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context, bool *if_p)
 	  OMP_TARGET_CLAUSES (stmt) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
 	  OMP_TARGET_BODY (stmt) = block;
 	  OMP_TARGET_COMBINED (stmt) = 1;
+	  SET_EXPR_LOCATION (stmt, loc);
 	  add_stmt (stmt);
 	  pc = &OMP_TARGET_CLAUSES (stmt);
 	  goto check_clauses;
