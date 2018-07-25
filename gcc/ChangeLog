@@ -1,3 +1,10 @@
+2018-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86654
+	* dwarf2out.c (dwarf2out_decl): Do not handle nested functions
+	special wrt context_die late.
+	(gen_subprogram_die): Re-use DIEs in local scope.
+
 2018-07-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/86644
