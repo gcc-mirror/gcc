@@ -1,5 +1,11 @@
 2018-07-25  Martin Liska  <mliska@suse.cz>
 
+        PR middle-end/86645
+	* dumpfile.c: And excluded values with TDF_ALL_VALUES.
+	* dumpfile.h (enum dump_flag): Defince TDF_ALL_VALUES.
+
+2018-07-25  Martin Liska  <mliska@suse.cz>
+
         PR sanitizer/79635
 	* params.def: Explain ASan abbreviation and provide
         a documentation link.
