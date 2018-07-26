@@ -2203,50 +2203,24 @@ format_count (gcov_type count)
 }
 
 /* Format a GCOV_TYPE integer as either a percent ratio, or absolute
-   count.  If dp >= 0, format TOP/BOTTOM * 100 to DP decimal places.
-   If DP is zero, no decimal point is printed. Only print 100% when
-   TOP==BOTTOM and only print 0% when TOP=0.  If dp < 0, then simply
+   count.  If DECIMAL_PLACES >= 0, format TOP/BOTTOM * 100 to DECIMAL_PLACES.
+   If DECIMAL_PLACES is zero, no decimal point is printed. Only print 100% when
+   TOP==BOTTOM and only print 0% when TOP=0.  If DECIMAL_PLACES < 0, then simply
    format TOP.  Return pointer to a static string.  */
 
 static char const *
-format_gcov (gcov_type top, gcov_type bottom, int dp)
+format_gcov (gcov_type top, gcov_type bottom, int decimal_places)
 {
   static char buffer[20];
 
-  /* Handle invalid values that would result in a misleading value.  */
-  if (bottom != 0 && top > bottom && dp >= 0)
+  if (decimal_places >= 0)
     {
-      sprintf (buffer, "NAN %%");
-      return buffer;
-    }
+      float ratio = bottom ? 100.0f * top / bottom: 0;
 
-  if (dp >= 0)
-    {
-      float ratio = bottom ? (float)top / bottom : 0;
-      int ix;
-      unsigned limit = 100;
-      unsigned percent;
-
-      for (ix = dp; ix--; )
-	limit *= 10;
-
-      percent = (unsigned) (ratio * limit + (float)0.5);
-      if (percent <= 0 && top)
-	percent = 1;
-      else if (percent >= limit && top != bottom)
-	percent = limit - 1;
-      ix = sprintf (buffer, "%.*u%%", dp + 1, percent);
-      if (dp)
-	{
-	  dp++;
-	  do
-	    {
-	      buffer[ix+1] = buffer[ix];
-	      ix--;
-	    }
-	  while (dp--);
-	  buffer[ix + 1] = '.';
-	}
+      /* Round up to 1% if there's a small non-zero value.  */
+      if (ratio > 0.0f && ratio < 0.5f && decimal_places == 0)
+	ratio = 1.0f;
+      sprintf (buffer, "%.*f%%", decimal_places, ratio);
     }
   else
     return format_count (top);

@@ -1,3 +1,8 @@
+2018-07-26  Martin Liska  <mliska@suse.cz>
+
+        PR gcov-profile/86536
+	* gcc.misc-tests/gcov-pr86536.c: New test.
+
 2018-07-25  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.c-torture/execute/builtins/strnlen.c: Remove DejaGnu directives
