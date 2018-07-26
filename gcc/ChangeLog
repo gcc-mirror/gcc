@@ -1,3 +1,9 @@
+2018-07-26  Martin Liska  <mliska@suse.cz>
+
+        PR lto/86548
+	* lto-wrapper.c: Add linker_output as prefix
+        for ltrans_output_file.
+
 2018-07-26  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/85805

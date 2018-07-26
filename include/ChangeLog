@@ -1,3 +1,8 @@
+2018-07-26  Martin Liska  <mliska@suse.cz>
+
+        PR lto/86548
+	* libiberty.h (make_temp_file_with_prefix): New function.
+
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* simple-object.h (simple_object_copy_lto_debug_sections): Add rename

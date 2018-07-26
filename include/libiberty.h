@@ -239,6 +239,11 @@ extern char *choose_temp_base (void) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
 
 extern char *make_temp_file (const char *) ATTRIBUTE_MALLOC;
 
+/* Return a temporary file name with given PREFIX and SUFFIX
+   or NULL if unable to create one.  */
+
+extern char *make_temp_file_with_prefix (const char *, const char *) ATTRIBUTE_MALLOC;
+
 /* Remove a link to a file unless it is special. */
 
 extern int unlink_if_ordinary (const char *);
