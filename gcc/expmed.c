@@ -4480,6 +4480,11 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		HOST_WIDE_INT d = INTVAL (op1);
 		unsigned HOST_WIDE_INT abs_d;
 
+		/* Not prepared to handle division/remainder by
+		   0xffffffffffffffff8000000000000000 etc.  */
+		if (d == HOST_WIDE_INT_MIN && size > HOST_BITS_PER_WIDE_INT)
+		  break;
+
 		/* Since d might be INT_MIN, we have to cast to
 		   unsigned HOST_WIDE_INT before negating to avoid
 		   undefined signed overflow.  */
@@ -4522,9 +4527,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			     || (optab_handler (sdivmod_optab, int_mode)
 				 != CODE_FOR_nothing)))
 		  ;
-		else if (EXACT_POWER_OF_2_OR_ZERO_P (abs_d)
-			 && (size <= HOST_BITS_PER_WIDE_INT
-			     || abs_d != (unsigned HOST_WIDE_INT) d))
+		else if (EXACT_POWER_OF_2_OR_ZERO_P (abs_d))
 		  {
 		    if (rem_flag)
 		      {
