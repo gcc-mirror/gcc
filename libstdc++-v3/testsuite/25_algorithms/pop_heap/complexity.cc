@@ -18,6 +18,8 @@
 // { dg-do run { target c++11 } }
 // { dg-require-normal-mode "" }
 // { dg-require-cmath "" }
+// { dg-require-cstdint "" }
+// { dg-require-effective-target random_device }
 
 #include <cmath>
 #include <random>
