@@ -1,3 +1,7 @@
+2018-07-26  Release Manager
+
+	* GCC 8.2.0 released.
+
 2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (choices_to_gnu): Rename parameters.  Deal with

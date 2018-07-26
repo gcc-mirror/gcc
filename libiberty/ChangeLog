@@ -1,3 +1,7 @@
+2018-07-26  Release Manager
+
+	* GCC 8.2.0 released.
+
 2018-07-19  Eli Zaretskii  <eliz@gnu.org>
 
 	* simple-object-elf.c (ENOTSUP): If not defined by errno.h, redirect
