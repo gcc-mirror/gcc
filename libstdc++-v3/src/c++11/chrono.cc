@@ -25,8 +25,6 @@
 #include <bits/c++config.h>
 #include <chrono>
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-
 // Conditional inclusion of sys/time.h for gettimeofday
 #if !defined(_GLIBCXX_USE_CLOCK_MONOTONIC) && \
     !defined(_GLIBCXX_USE_CLOCK_REALTIME) && \
@@ -101,5 +99,3 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
-#endif // _GLIBCXX_USE_C99_STDINT_TR1

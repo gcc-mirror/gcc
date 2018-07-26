@@ -31,5 +31,5 @@ void test01()
   test_type d;			// { dg-error "required from here" }
 }
 
-// { dg-error "must be a specialization of ratio" "" { target *-*-* } 319 }
+// { dg-error "must be a specialization of ratio" "" { target *-*-* } 317 }
 // { dg-prune-output "not a member" }

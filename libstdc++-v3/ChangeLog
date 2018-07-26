@@ -1,3 +1,46 @@
+2018-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_futex.h [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(__atomic_futex_unsigned_base): Remove dependency on
+	_GLIBCXX_USE_C99_STDINT_TR1 macro.
+	* include/bits/unique_lock.h [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(unique_lock): Remove dependency on _GLIBCXX_USE_C99_STDINT_TR1.
+	* include/c_global/cstdint [!_GLIBCXX_USE_C99_STDINT_TR1] (intmax_t)
+	(uintmax_t): Define using predefined macros.
+	* include/std/chrono [!_GLIBCXX_USE_C99_STDINT_TR1] (duration)
+	(time_point, system_clock, high_resolution_clock, steady_clock): Remove
+	dependency on _GLIBCXX_USE_C99_STDINT_TR1 macro.
+	(nanoseconds, microseconds, milliseconds, seconds, minutes, hours):
+	[!_GLIBCXX_USE_C99_STDINT_TR1]: Define using __INT64_TYPE__ or
+	long long when <stdint.h> is not usable.
+	* include/std/condition_variable [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(condition_variable, condition_variable_any): Remove dependency on
+	_GLIBCXX_USE_C99_STDINT_TR1.
+	* include/std/future [!_GLIBCXX_USE_C99_STDINT_TR1] (future, promise)
+	(packaged_task, async): Likewise.
+	* include/std/mutex [!_GLIBCXX_USE_C99_STDINT_TR1] (recursive_mutex)
+	(timed_mutex, recursive_timed_mutex, try_lock, lock, scoped_lock)
+	(once_flag, call_once): Likewise.
+	* include/std/ratio [!_GLIBCXX_USE_C99_STDINT_TR1] (ratio): Likewise.
+	* include/std/shared_mutex [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(shared_mutex, shared_timed_mutex, shared_lock): Likewise.
+	* include/std/thread [!_GLIBCXX_USE_C99_STDINT_TR1] (thread)
+	(this_thread::get_id, this_thread::yield, this_thread::sleep_for)
+	(this_thread::sleep_until): Likewise.
+	* src/c++11/chrono.cc: Remove dependency on
+	_GLIBCXX_USE_C99_STDINT_TR1 macro.
+	* src/c++11/condition_variable.cc: Likewise.
+	* src/c++11/futex.cc: Likewise.
+	* src/c++11/future.cc: Likewise.
+	* src/c++11/mutex.cc: Likewise.
+	* src/c++11/thread.cc: Likewise.
+	* testsuite/20_util/duration/literals/range_neg.cc: Adjust dg-error.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Likewise.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+
 2018-07-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/77691

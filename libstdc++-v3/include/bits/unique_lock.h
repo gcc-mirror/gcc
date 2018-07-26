@@ -86,7 +86,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// XXX calling thread owns mutex
       }
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
       template<typename _Clock, typename _Duration>
 	unique_lock(mutex_type& __m,
 		    const chrono::time_point<_Clock, _Duration>& __atime)
@@ -100,7 +99,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_device(std::__addressof(__m)),
 	  _M_owns(_M_device->try_lock_for(__rtime))
 	{ }
-#endif
 
       ~unique_lock()
       {
@@ -159,7 +157,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
       template<typename _Clock, typename _Duration>
 	bool
 	try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
@@ -189,7 +186,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return _M_owns;
 	    }
 	 }
-#endif
 
       void
       unlock()
