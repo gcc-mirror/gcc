@@ -198,6 +198,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 // declared transaction-safe, so we just don't provide transactional clones
 // in this case.
 #if _GLIBCXX_USE_WEAK_REF
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
 extern "C" {
 
@@ -456,4 +457,5 @@ CTORDTOR(15underflow_error, std::underflow_error, runtime_error)
 
 }
 
+#endif  // _GLIBCXX_USE_C99_STDINT_TR1
 #endif  // _GLIBCXX_USE_WEAK_REF
