@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-xfail-run-if "TODO" { openacc_nvidia_accel_selected } { "-O0" "-O1" } { "" } }
 
 program main
   use openacc
@@ -18,10 +17,9 @@ program main
 
   call acc_wait_async (0, 1)
 
-  if (acc_async_test (0) .neqv. .TRUE.) call abort
-
-  if (acc_async_test (1) .neqv. .TRUE.) call abort
-
   call acc_wait (1)
+
+  if (acc_async_test (0) .neqv. .TRUE.) call abort
+  if (acc_async_test (1) .neqv. .TRUE.) call abort
 
 end program
