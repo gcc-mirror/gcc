@@ -1,3 +1,15 @@
+2018-07-26  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86043
+	PR tree-optimization/86042
+	* tree-ssa-strlen.c (handle_builtin_memcpy): Handle strict overlaps.
+	(get_string_cst_length): Rename...
+	(get_min_string_length): ...to this.  Add argument.
+	(handle_char_store): Extend to handle multi-character stores by
+	MEM_REF.
+	* tree.c (initializer_zerop): Use new argument.  Handle MEM_REF.
+	* tree.h (initializer_zerop): Add argument.
+
 2018-07-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/86660
