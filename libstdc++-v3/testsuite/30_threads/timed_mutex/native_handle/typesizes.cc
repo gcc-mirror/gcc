@@ -2,7 +2,6 @@
 // { dg-options "-pthread"  }
 // { dg-require-effective-target c++11 }
 // { dg-require-effective-target pthread }
-// { dg-require-cstdint "" }
 // { dg-require-gthreads-timed "" }
 
 // Copyright (C) 2009-2018 Free Software Foundation, Inc.

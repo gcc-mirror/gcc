@@ -16,7 +16,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
-// { dg-require-cstdint "" }
 // { dg-require-time "" }
 
 #include <thread>
