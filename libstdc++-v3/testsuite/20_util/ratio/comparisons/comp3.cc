@@ -1,5 +1,4 @@
 // { dg-do run { target c++11 } }
-// { dg-require-cstdint "" }
 
 // 2011-02-28  Paolo Carlini  <paolo.carlini@oracle.com>
 

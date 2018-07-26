@@ -1,5 +1,4 @@
 // { dg-do run { target c++11 } }
-// { dg-require-cstdint "" }
 
 // Copyright (C) 2011-2018 Free Software Foundation, Inc.
 //

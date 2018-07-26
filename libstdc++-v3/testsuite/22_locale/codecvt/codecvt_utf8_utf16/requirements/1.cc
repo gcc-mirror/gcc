@@ -16,7 +16,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++11 } }
-// { dg-require-cstdint "" }
 
 #include <codecvt>
 #include <type_traits>
