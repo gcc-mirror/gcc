@@ -1,5 +1,4 @@
 // { dg-do compile { target c++11 } }
-// { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
 // 2008-03-14 Benjamin Kosnik <bkoz@redhat.com>
