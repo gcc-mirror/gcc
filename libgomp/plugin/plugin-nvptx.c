@@ -1204,6 +1204,21 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 	  dims[i] = default_dims[i];
     }
 
+  /* Check if the accelerator has sufficient hardware resources to
+     launch the offloaded kernel.  */
+  if (dims[GOMP_DIM_WORKER] * dims[GOMP_DIM_VECTOR]
+      > targ_fn->max_threads_per_block)
+    {
+      int suggest_workers
+	= targ_fn->max_threads_per_block / dims[GOMP_DIM_VECTOR];
+      GOMP_PLUGIN_fatal ("The Nvidia accelerator has insufficient resources to"
+			 " launch '%s' with num_workers = %d; recompile the"
+			 " program with 'num_workers = %d' on that offloaded"
+			 " region or '-fopenacc-dim=:%d'",
+			 targ_fn->launch->fn, dims[GOMP_DIM_WORKER],
+			 suggest_workers, suggest_workers);
+    }
+
   /* This reserves a chunk of a pre-allocated page of memory mapped on both
      the host and the device. HP is a host pointer to the new chunk, and DP is
      the corresponding device pointer.  */
