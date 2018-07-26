@@ -1,3 +1,11 @@
+2018-07-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/86560
+	* asan/asan_interceptors.cc (swapcontext) Cherry-pick
+	compiler-rt revision 337603.
+	* sanitizer_common/sanitizer_internal_defs.h (__has_attribute):
+	Likewise.
+
 2018-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Revert
