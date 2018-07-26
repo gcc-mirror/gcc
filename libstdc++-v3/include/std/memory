@@ -88,8 +88,7 @@
 #endif
 
 #if __cplusplus >= 201103L
-#  include <cstdint>
-#  ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#include <cstdint>
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -113,7 +112,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 inline void*
 align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
 {
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   const auto __intptr = reinterpret_cast<uintptr_t>(__ptr);
+#else
+  // Cannot use std::uintptr_t so assume that std::size_t can be used instead.
+  static_assert(sizeof(size_t) >= sizeof(void*),
+      "std::size_t must be a suitable substitute for std::uintptr_t");
+  const auto __intptr = reinterpret_cast<unsigned long long>(__ptr);
+#endif
   const auto __aligned = (__intptr - 1u + __align) & -__align;
   const auto __diff = __aligned - __intptr;
   if ((__size + __diff) > __space)
@@ -147,7 +153,6 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-#endif // _GLIBCXX_USE_C99_STDINT_TR1
 #endif // C++11
 
 #endif /* _GLIBCXX_MEMORY */

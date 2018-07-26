@@ -1,5 +1,13 @@
 2018-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/hashtable_policy.h (__detail::__clp2): Use faster
+	implementation that doesn't depend on <stdint.h> types.
+	* include/std/memory (align) [!_GLIBCXX_USE_C99_STDINT_TR1]: Use
+	std::size_t when std::uintptr_t is not usable.
+	[!_GLIBCXX_USE_C99_STDINT_TR1] (pointer_safety, declare_reachable)
+	(undeclare_reachable, declare_no_pointers, undeclare_no_pointers):
+	Define independent of _GLIBCXX_USE_C99_STDINT_TR1.
+
 	* include/bits/basic_string.h [!_GLIBCXX_USE_C99_STDINT_TR1]
 	(hash<u16string>, hash<u32string>): Remove dependency on
 	_GLIBCXX_USE_C99_STDINT_TR1.
