@@ -1,3 +1,7 @@
+2018-07-26  Marek Polacek  <polacek@redhat.com>
+
+	* src/c++98/locale_init.cc: Fix #ifdef condition.
+
 2018-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/18_support/aligned_alloc/aligned_alloc.cc: Add
