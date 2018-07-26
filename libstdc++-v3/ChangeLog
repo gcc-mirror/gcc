@@ -1,3 +1,9 @@
+2018-07-26  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/bits/stl_vector.h (_Vector_impl_data::_M_copy_data): New.
+	(_Vector_impl_data::_M_swap_data): Use _M_copy_data.
+	(vector::_M_move_assign): Reorder the swaps.
+
 2018-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86676
