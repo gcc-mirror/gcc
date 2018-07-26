@@ -1,3 +1,11 @@
+2018-07-26  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (struct ptx_device): Add warp_size,
+	max_threads_per_block and max_threads_per_multiprocessor fields.
+	(nvptx_open_device): Initialize new fields.
+	(nvptx_exec): Use num_sms, and new fields.
+
 2018-07-26  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libgomp.oacc-fortran/lib-12.f90: Move acc_async_test calls

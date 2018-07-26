@@ -414,6 +414,9 @@ struct ptx_device
   int num_sms;
   int regs_per_block;
   int regs_per_sm;
+  int warp_size;
+  int max_threads_per_block;
+  int max_threads_per_multiprocessor;
 
   struct ptx_image_data *images;  /* Images loaded on device.  */
   pthread_mutex_t image_lock;     /* Lock for above list.  */
@@ -800,6 +803,15 @@ nvptx_open_device (int n)
       GOMP_PLUGIN_error ("Only warp size 32 is supported");
       return NULL;
     }
+  ptx_dev->warp_size = pi;
+
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute, &pi,
+		  CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev);
+  ptx_dev->max_threads_per_block = pi;
+
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute, &pi,
+		  CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, dev);
+  ptx_dev->max_threads_per_multiprocessor = pi;
 
   r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &async_engines,
 			 CU_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT, dev);
@@ -1150,33 +1162,20 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 	  for (int i = 0; i < GOMP_DIM_MAX; ++i)
 	    default_dims[i] = GOMP_PLUGIN_acc_default_dim (i);
 
-	  int warp_size, block_size, dev_size, cpu_size;
-	  CUdevice dev = nvptx_thread()->ptx_dev->dev;
-	  /* 32 is the default for known hardware.  */
-	  int gang = 0, worker = 32, vector = 32;
-	  CUdevice_attribute cu_tpb, cu_ws, cu_mpc, cu_tpm;
+	  int gang, worker, vector;
+	  {
+	    int warp_size = nvthd->ptx_dev->warp_size;
+	    int block_size = nvthd->ptx_dev->max_threads_per_block;
+	    int cpu_size = nvthd->ptx_dev->max_threads_per_multiprocessor;
+	    int dev_size = nvthd->ptx_dev->num_sms;
+	    GOMP_PLUGIN_debug (0, " warp_size=%d, block_size=%d,"
+			       " dev_size=%d, cpu_size=%d\n",
+			       warp_size, block_size, dev_size, cpu_size);
 
-	  cu_tpb = CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK;
-	  cu_ws = CU_DEVICE_ATTRIBUTE_WARP_SIZE;
-	  cu_mpc = CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT;
-	  cu_tpm  = CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR;
-
-	  if (CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &block_size, cu_tpb,
-				 dev) == CUDA_SUCCESS
-	      && CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &warp_size, cu_ws,
-				    dev) == CUDA_SUCCESS
-	      && CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &dev_size, cu_mpc,
-				    dev) == CUDA_SUCCESS
-	      && CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &cpu_size, cu_tpm,
-				    dev) == CUDA_SUCCESS)
-	    {
-	      GOMP_PLUGIN_debug (0, " warp_size=%d, block_size=%d,"
-				 " dev_size=%d, cpu_size=%d\n",
-				 warp_size, block_size, dev_size, cpu_size);
-	      gang = (cpu_size / block_size) * dev_size;
-	      worker = block_size / warp_size;
-	      vector = warp_size;
-	    }
+	    gang = (cpu_size / block_size) * dev_size;
+	    worker = block_size / warp_size;
+	    vector = warp_size;
+	  }
 
 	  /* There is no upper bound on the gang size.  The best size
 	     matches the hardware configuration.  Logical gangs are
