@@ -1,8 +1,14 @@
+2018-07-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/85805
+	* combine.c (reg_nonzero_bits_for_combine): Only use the last set
+	value for hard registers if that was written in the same mode.
+
 2018-07-26  Martin Liska  <mliska@suse.cz>
 
-        PR gcov-profile/86536
+	PR gcov-profile/86536
 	* gcov.c (format_gcov): Use printf format %.*f directly
-        and do not handle special values.
+	and do not handle special values.
 
 2018-07-25  Claudiu Zissulescu  <claziss@synopsys.com>
 
