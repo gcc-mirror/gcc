@@ -534,7 +534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_init_facet(new (&messages_w) std::messages<wchar_t>(1));
 #endif
 
-#ifdef _GLIBCXX_NUM_UNICODE_FACETS != 0
+#if _GLIBCXX_NUM_UNICODE_FACETS != 0
     _M_init_facet(new (&codecvt_c16) codecvt<char16_t, char, mbstate_t>(1));
     _M_init_facet(new (&codecvt_c32) codecvt<char32_t, char, mbstate_t>(1));
 #endif
