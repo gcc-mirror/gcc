@@ -1,3 +1,7 @@
+2018-07-26  Marek Polacek  <polacek@redhat.com>
+
+	* testsuite/30_threads/condition_variable_any/cond.cc: New.
+
 2018-07-26  Release Manager
 
 	* GCC 8.2.0 released.
