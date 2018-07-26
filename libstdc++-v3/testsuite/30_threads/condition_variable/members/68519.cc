@@ -19,7 +19,6 @@
 // { dg-options "-pthread"  }
 // { dg-require-effective-target c++11 }
 // { dg-require-effective-target pthread }
-// { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
 #include <condition_variable>
