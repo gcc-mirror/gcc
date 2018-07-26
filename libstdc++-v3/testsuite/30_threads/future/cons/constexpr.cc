@@ -1,6 +1,5 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-fno-inline -g0" }
-// { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-final { scan-assembler-not "_ZNSt6futureIvEC2Ev" } }
 // { dg-final { scan-assembler-not "_ZNSt6futureIiEC2Ev" } }
