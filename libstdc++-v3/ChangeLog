@@ -1,3 +1,9 @@
+2018-07-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/77691
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	xfail execution on 32-bit Solaris/x86.
+
 2018-07-26  Marc Glisse  <marc.glisse@inria.fr>
 
 	* include/bits/stl_vector.h (_Vector_impl_data::_M_copy_data): New.
