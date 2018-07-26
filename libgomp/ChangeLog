@@ -1,5 +1,10 @@
 2018-07-26  Tom de Vries  <tdevries@suse.de>
 
+	* testsuite/libgomp.oacc-fortran/lib-12.f90: Move acc_async_test calls
+	to correct locations.  Remove xfail.
+
+2018-07-26  Tom de Vries  <tdevries@suse.de>
+
 	* testsuite/libgomp.oacc-fortran/lib-13.f90: Replace acc_wait_all with
 	acc_wait.  Move acc_async_test calls to correct locations.  Remove
 	xfail.
