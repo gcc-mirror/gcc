@@ -2326,6 +2326,18 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
       full_string_p = clen > nonzero_chars;
     }
 
+  if (!full_string_p
+      && olddsi
+      && olddsi->nonzero_chars
+      && TREE_CODE (olddsi->nonzero_chars) == INTEGER_CST
+      && tree_int_cst_le (newlen, olddsi->nonzero_chars))
+    {
+      /* The SRC substring being written strictly overlaps
+	 a subsequence of the existing string OLDDSI.  */
+      newlen = olddsi->nonzero_chars;
+      full_string_p = olddsi->full_string_p;
+    }
+
   if (olddsi != NULL && TREE_CODE (len) == SSA_NAME)
     adjust_last_stmt (olddsi, stmt, false);
 
@@ -3131,11 +3143,25 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
 }
 
 /* If RHS, either directly or indirectly, refers to a string of constant
-   length, return it.  Otherwise return a negative value.  */
+   length, return the length.  Otherwise, if it refers to a character
+   constant, return 1 if the constant is non-zero and 0 if it is nul.
+   Otherwise, return a negative value.  */
 
 static HOST_WIDE_INT
-get_string_cst_length (tree rhs)
+get_min_string_length (tree rhs, bool *full_string_p)
 {
+  if (TREE_CODE (TREE_TYPE (rhs)) == INTEGER_TYPE)
+    {
+      if (tree_expr_nonzero_p (rhs))
+	{
+	  *full_string_p = false;
+	  return 1;
+	}
+
+      *full_string_p = true;
+      return 0;
+    }
+
   if (TREE_CODE (rhs) == MEM_REF
       && integer_zerop (TREE_OPERAND (rhs, 1)))
     {
@@ -3152,9 +3178,11 @@ get_string_cst_length (tree rhs)
 		{
 		  strinfo *si = get_strinfo (idx);
 		  if (si
-		      && si->full_string_p
 		      && tree_fits_shwi_p (si->nonzero_chars))
-		    return tree_to_shwi (si->nonzero_chars);
+		    {
+		      *full_string_p = si->full_string_p;
+		      return tree_to_shwi (si->nonzero_chars);
+		    }
 		}
 	    }
 	}
@@ -3165,12 +3193,17 @@ get_string_cst_length (tree rhs)
     rhs = DECL_INITIAL (rhs);
 
   if (rhs && TREE_CODE (rhs) == STRING_CST)
-    return strlen (TREE_STRING_POINTER (rhs));
+    {
+      *full_string_p = true;
+      return strlen (TREE_STRING_POINTER (rhs));
+    }
 
   return -1;
 }
 
-/* Handle a single character store.  */
+/* Handle a single or multiple character store either by single
+   character assignment or by multi-character assignment from
+   MEM_REF.  */
 
 static bool
 handle_char_store (gimple_stmt_iterator *gsi)
@@ -3208,8 +3241,15 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	si = get_strinfo (idx);
     }
 
-  bool storing_zero_p = initializer_zerop (rhs);
-  bool storing_nonzero_p = !storing_zero_p && tree_expr_nonzero_p (rhs);
+  /* STORING_NONZERO_P is true iff not all stored characters are zero.
+     STORING_ALL_ZEROS_P is true iff all stored characters are zero.
+     Both are false when it's impossible to determine which is true.  */
+  bool storing_nonzero_p;
+  bool storing_all_zeros_p = initializer_zerop (rhs, &storing_nonzero_p);
+  if (!storing_nonzero_p)
+    storing_nonzero_p = tree_expr_nonzero_p (rhs);
+  bool full_string_p = storing_all_zeros_p;
+
   /* Set to the length of the string being assigned if known.  */
   HOST_WIDE_INT rhslen;
 
@@ -3217,7 +3257,7 @@ handle_char_store (gimple_stmt_iterator *gsi)
     {
       int cmp = compare_nonzero_chars (si, offset);
       gcc_assert (offset == 0 || cmp >= 0);
-      if (storing_zero_p && cmp == 0 && si->full_string_p)
+      if (storing_all_zeros_p && cmp == 0 && si->full_string_p)
 	{
 	  /* When overwriting a '\0' with a '\0', the store can be removed
 	     if we know it has been stored in the current function.  */
@@ -3260,17 +3300,25 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	  gsi_next (gsi);
 	  return false;
 	}
-      else if (storing_zero_p || storing_nonzero_p || (offset != 0 && cmp > 0))
+      else if (storing_all_zeros_p || storing_nonzero_p || (offset != 0 && cmp > 0))
 	{
-	  /* When storing_nonzero_p, we know that the string now starts
-	     with OFFSET + 1 nonzero characters, but don't know whether
-	     there's a following nul terminator.
+	  /* When STORING_NONZERO_P, we know that the string will start
+	     with at least OFFSET + 1 nonzero characters.  If storing
+	     a single character, set si->NONZERO_CHARS to the result.
+	     If storing multiple characters, try to determine the number
+	     of leading non-zero characters and set si->NONZERO_CHARS to
+	     the result instead.
 
-	     When storing_zero_p, we know that the string is now OFFSET
-	     characters long.
+	     When STORING_ALL_ZEROS_P, we know that the string is now
+	     OFFSET characters long.
 
 	     Otherwise, we're storing an unknown value at offset OFFSET,
 	     so need to clip the nonzero_chars to OFFSET.  */
+	  bool full_string_p = storing_all_zeros_p;
+	  HOST_WIDE_INT len = (storing_nonzero_p
+			       ? get_min_string_length (rhs, &full_string_p)
+			       : 1);
+
 	  location_t loc = gimple_location (stmt);
 	  tree oldlen = si->nonzero_chars;
 	  if (cmp == 0 && si->full_string_p)
@@ -3280,11 +3328,14 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	    adjust_last_stmt (si, stmt, false);
 	  si = unshare_strinfo (si);
 	  if (storing_nonzero_p)
-	    si->nonzero_chars = build_int_cst (size_type_node, offset + 1);
+	    {
+	      gcc_assert (len >= 0);
+	      si->nonzero_chars = build_int_cst (size_type_node, offset + len);
+	    }
 	  else
 	    si->nonzero_chars = build_int_cst (size_type_node, offset);
-	  si->full_string_p = storing_zero_p;
-	  if (storing_zero_p
+	  si->full_string_p = full_string_p;
+	  if (storing_all_zeros_p
 	      && ssaname
 	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ssaname))
 	    si->endptr = ssaname;
@@ -3304,7 +3355,7 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	    si->prev = 0;
 	}
     }
-  else if (idx == 0 && (storing_zero_p || storing_nonzero_p))
+  else if (idx == 0 && (storing_all_zeros_p || storing_nonzero_p))
     {
       if (ssaname)
 	idx = new_stridx (ssaname);
@@ -3313,10 +3364,17 @@ handle_char_store (gimple_stmt_iterator *gsi)
       if (idx != 0)
 	{
 	  tree ptr = (ssaname ? ssaname : build_fold_addr_expr (lhs));
-	  tree len = storing_nonzero_p ? size_one_node : size_zero_node;
-	  si = new_strinfo (ptr, idx, len, storing_zero_p);
+	  HOST_WIDE_INT slen = (storing_all_zeros_p
+				? 0
+				: (storing_nonzero_p
+				   ? get_min_string_length (rhs, &full_string_p)
+				   : -1));
+	  tree len = (slen <= 0
+		      ? size_zero_node
+		      : build_int_cst (size_type_node, slen));
+	  si = new_strinfo (ptr, idx, len, slen >= 0 && full_string_p);
 	  set_strinfo (idx, si);
-	  if (storing_zero_p
+	  if (storing_all_zeros_p
 	      && ssaname
 	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ssaname))
 	    si->endptr = ssaname;
@@ -3325,7 +3383,7 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	}
     }
   else if (idx == 0
-	   && (rhslen = get_string_cst_length (gimple_assign_rhs1 (stmt))) >= 0
+	   && (rhslen = get_min_string_length (rhs, &full_string_p)) >= 0
 	   && ssaname == NULL_TREE
 	   && TREE_CODE (TREE_TYPE (lhs)) == ARRAY_TYPE)
     {
@@ -3336,14 +3394,15 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	  if (idx != 0)
 	    {
 	      si = new_strinfo (build_fold_addr_expr (lhs), idx,
-				build_int_cst (size_type_node, rhslen), true);
+				build_int_cst (size_type_node, rhslen),
+				full_string_p);
 	      set_strinfo (idx, si);
 	      si->dont_invalidate = true;
 	    }
 	}
     }
 
-  if (si != NULL && offset == 0 && storing_zero_p)
+  if (si != NULL && offset == 0 && storing_all_zeros_p)
     {
       /* Allow adjust_last_stmt to remove it if the stored '\0'
 	 is immediately overwritten.  */

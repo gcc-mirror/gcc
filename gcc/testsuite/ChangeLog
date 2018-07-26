@@ -1,3 +1,11 @@
+2018-07-26  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86043
+	PR tree-optimization/86042
+	* gcc/testsuite/gcc.dg/attr-nonstring-2.c: Xfail test cases due to
+	pr86688.
+	* gcc.dg/strlenopt-44.c: New test.
+
 2018-07-26  Martin Liska  <mliska@suse.cz>
 
         PR gcov-profile/86536
