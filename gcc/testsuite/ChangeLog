@@ -1,3 +1,8 @@
+2018-07-26  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/86612
+	* gcc.target/powerpc/pr58673-2.c: Call strdup.
+
 2018-07-26  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86043
