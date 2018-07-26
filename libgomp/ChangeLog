@@ -1,5 +1,11 @@
 2018-07-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/86660
+	* testsuite/libgomp.c++/for-15.C (results): Include it in
+	omp declare target region.
+	(main): Use map (always, tofrom: results) instead of
+	map (tofrom: results).
+
 	PR middle-end/86660
 	* testsuite/libgomp.c/pr86660.c: New test.
 
