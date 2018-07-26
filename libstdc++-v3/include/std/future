@@ -192,7 +192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     future<__async_result_of<_Fn, _Args...>>
     async(_Fn&& __fn, _Args&&... __args);
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#if defined(_GLIBCXX_HAS_GTHREADS)
 
   /// Base class and enclosing scope.
   struct __future_base
@@ -1745,7 +1745,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #endif // _GLIBCXX_ASYNC_ABI_COMPAT
-#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
+#endif // _GLIBCXX_HAS_GTHREADS
 
   // @} group futures
 _GLIBCXX_END_NAMESPACE_VERSION

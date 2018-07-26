@@ -36,9 +36,7 @@
 #else
 
 #include <type_traits>
-#include <cstdint>
-
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#include <cstdint>		// intmax_t, uintmax_t
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -547,8 +545,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // @} group ratio
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
 
 #endif // C++11
 

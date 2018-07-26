@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const char*
   future_error::what() const noexcept { return logic_error::what(); }
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#ifdef _GLIBCXX_HAS_GTHREADS
   __future_base::_Result_base::_Result_base() = default;
 
   __future_base::_Result_base::~_Result_base() = default;
@@ -110,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_cb = &_Make_ready::_S_run;
     __at_thread_exit(this);
   }
-#endif
+#endif // _GLIBCXX_HAS_GTHREADS
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
