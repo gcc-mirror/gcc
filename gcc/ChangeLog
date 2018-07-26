@@ -3,6 +3,10 @@
 	Backported from mainline
 	2018-07-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/86542
+	* omp-low.c (create_task_copyfn): Copy over also fields corresponding
+	to _looptemp_ clauses, other than the first two.
+
 	PR middle-end/86539
 	* gimplify.c (gimplify_omp_for): Ensure taskloop firstprivatized init
 	and cond temporaries don't have reference type if iterator has
