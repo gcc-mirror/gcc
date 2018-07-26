@@ -1,5 +1,74 @@
 2018-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/18_support/numeric_limits/char16_32_t.cc: Qualify names
+	from namespace std.
+	* testsuite/20_util/align/2.cc: Remove dg-require-cstdint directive.
+	* testsuite/20_util/duration/arithmetic/1.cc: Likewise.
+	* testsuite/20_util/duration/arithmetic/2.cc: Likewise.
+	* testsuite/20_util/duration/arithmetic/dr2020.cc: Likewise.
+	* testsuite/20_util/duration/arithmetic/dr934-1.cc: Likewise.
+	* testsuite/20_util/duration/arithmetic/dr934-2.cc: Likewise.
+	* testsuite/20_util/duration/comparison_operators/1.cc: Likewise.
+	* testsuite/20_util/duration/cons/1.cc: Likewise.
+	* testsuite/20_util/duration/cons/1_neg.cc: Likewise.
+	* testsuite/20_util/duration/cons/2.cc: Likewise.
+	* testsuite/20_util/duration/cons/54025.cc: Likewise.
+	* testsuite/20_util/duration/cons/dr974_neg.cc: Likewise.
+	* testsuite/20_util/duration/requirements/explicit_instantiation/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-4.cc: Likewise.
+	* testsuite/20_util/ratio/comparisons/comp1.cc: Likewise.
+	* testsuite/20_util/ratio/comparisons/comp2.cc: Likewise.
+	* testsuite/20_util/ratio/comparisons/comp3.cc: Likewise.
+	* testsuite/20_util/ratio/cons/cons1.cc: Likewise.
+	* testsuite/20_util/ratio/operations/45866.cc: Likewise.
+	* testsuite/20_util/ratio/operations/47913.cc: Likewise.
+	* testsuite/20_util/ratio/operations/53840.cc: Likewise.
+	* testsuite/20_util/ratio/operations/ops1.cc: Likewise.
+	* testsuite/20_util/shared_ptr/atomic/3.cc: Likewise.
+	* testsuite/20_util/system_clock/1.cc: Likewise.
+	* testsuite/20_util/time_point/1.cc: Likewise.
+	* testsuite/20_util/time_point/2.cc: Likewise.
+	* testsuite/20_util/time_point/3.cc: Likewise.
+	* testsuite/20_util/time_point/requirements/explicit_instantiation/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	explicit_instantiation/char16_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	explicit_instantiation/char32_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/
+	explicit_instantiation/char16_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/requirements/
+	explicit_instantiation/char32_t/1.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/char16_t/1.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	explicit_instantiation/char32_t/1.cc: Likewise.
+	* testsuite/21_strings/headers/string/types_std_c++0x.cc: Likewise.
+	* testsuite/22_locale/codecvt/char16_t.cc: Likewise.
+	* testsuite/22_locale/codecvt/char32_t.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf16/requirements/1.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8/requirements/1.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/requirements/1.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/utf8.cc: Likewise.
+	* testsuite/23_containers/vector/bool/72847.cc: Likewise.
+	* testsuite/23_containers/vector/debug/multithreaded_swap.cc:
+	Likewise.
+	* testsuite/experimental/string_view/requirements/
+	explicit_instantiation/char16_t/1.cc: Likewise.
+	* testsuite/experimental/string_view/requirements/
+	explicit_instantiation/char32_t/1.cc: Likewise.
+	* testsuite/ext/vstring/requirements/explicit_instantiation/char16_t/
+	1.cc: Likewise.
+	* testsuite/ext/vstring/requirements/explicit_instantiation/char32_t/
+	1.cc: Likewise.
+
 	* include/ext/throw_allocator.h [!_GLIBCXX_USE_C99_STDINT_TR1]
 	(random_condition, throw_value_random, throw_allocator_random)
 	(std::hash<throw_value_random>): Do not define when <tr1/random> is
