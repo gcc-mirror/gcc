@@ -1,5 +1,12 @@
 2018-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/ext/throw_allocator.h [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(random_condition, throw_value_random, throw_allocator_random)
+	(std::hash<throw_value_random>): Do not define when <tr1/random> is
+	not usable.
+	* src/c++11/cow-stdexcept.cc [!_GLIBCXX_USE_C99_STDINT_TR1]: Do not
+	define transactional memory support when <stdint.h> is not usable.
+
 	* include/bits/hashtable_policy.h (__detail::__clp2): Use faster
 	implementation that doesn't depend on <stdint.h> types.
 	* include/std/memory (align) [!_GLIBCXX_USE_C99_STDINT_TR1]: Use
