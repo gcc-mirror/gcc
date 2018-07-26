@@ -2933,7 +2933,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /// std::hash specialization for __u16vstring.
   template<>
     struct hash<__gnu_cxx::__u16vstring>
@@ -2955,7 +2954,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::_Hash_impl::hash(__s.data(),
                                      __s.length() * sizeof(char32_t)); }
     };
-#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

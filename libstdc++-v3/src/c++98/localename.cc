@@ -269,7 +269,7 @@ const int num_facets = _GLIBCXX_NUM_FACETS + _GLIBCXX_NUM_UNICODE_FACETS
 	_M_init_facet(new std::messages<wchar_t>(__cloc, __s));
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#if _GLIBCXX_NUM_UNICODE_FACETS != 0
         _M_init_facet(new codecvt<char16_t, char, mbstate_t>);
         _M_init_facet(new codecvt<char32_t, char, mbstate_t>);
 #endif

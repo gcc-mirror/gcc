@@ -26,7 +26,6 @@
 #include <cstring>		// std::memcpy, std::memcmp
 #include <bits/stl_algobase.h>	// std::min
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1639,4 +1638,3 @@ template class codecvt_byname<char32_t, char, mbstate_t>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }
-#endif // _GLIBCXX_USE_C99_STDINT_TR1
