@@ -6662,7 +6662,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /// std::hash specialization for u16string.
   template<>
     struct hash<u16string>
@@ -6692,7 +6691,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_fast_hash<hash<u32string>> : std::false_type
     { };
-#endif
 
 #if __cplusplus > 201103L
 
@@ -6716,7 +6714,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string<wchar_t>{__str, __len}; }
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<char16_t>
     operator""s(const char16_t* __str, size_t __len)
@@ -6726,7 +6723,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_string<char32_t>
     operator""s(const char32_t* __str, size_t __len)
     { return basic_string<char32_t>{__str, __len}; }
-#endif
 
 #pragma GCC diagnostic pop
   } // inline namespace string_literals

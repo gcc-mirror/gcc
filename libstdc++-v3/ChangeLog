@@ -1,5 +1,43 @@
 2018-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/basic_string.h [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(hash<u16string>, hash<u32string>): Remove dependency on
+	_GLIBCXX_USE_C99_STDINT_TR1.
+	* include/bits/char_traits.h [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(char_traits<char16_t>, char_traits<char32_t>): Remove dependency on
+	_GLIBCXX_USE_C99_STDINT_TR1. Use __UINT_LEAST16_TYPE__ and
+	__UINT_LEAST32_TYPE__ or make_unsigned when <stdint.h> is not usable.
+	* include/bits/codecvt.h [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(codecvt<char16_t, char, mbstate_t>)
+	(codecvt<char32_t, char, mbstate_t>)
+	(codecvt_byname<char16_t, char, mbstate_t>)
+	(codecvt_byname<char32_t, char, mbstate_t>): Remove dependency
+	on _GLIBCXX_USE_C99_STDINT_TR1.
+	* include/bits/locale_facets.h [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(_GLIBCXX_NUM_UNICODE_FACETS): Likewise.
+	* include/bits/stringfwd.h [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(char_traits<char16_t>, char_traits<char32_t>)
+	(basic_string<char16_t>, basic_string<char32_t>): Remove dependency
+	on _GLIBCXX_USE_C99_STDINT_TR1.
+	* include/experimental/string_view [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(u16string_view, u32string_view, hash<u16string_view>)
+	(hash<u32string_view>, operator""sv(const char16_t, size_t))
+	(operator""sv(const char32_t, size_t)): Likewise.
+	* include/ext/vstring.h [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(hash<__u16vstring>, hash<__u32vstring>): Likewise.
+	* include/ext/vstring_fwd.h [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(__u16vstring, __u16sso_string, __u16rc_string, __u32vstring)
+	(__u32sso_string, __u32rc_string): Likewise.
+	* include/std/codecvt [!_GLIBCXX_USE_C99_STDINT_TR1] (codecvt_mode)
+	(codecvt_utf8, codecvt_utf16, codecvt_utf8_utf16): Likewise.
+	* include/std/string_view [!_GLIBCXX_USE_C99_STDINT_TR1]
+	(u16string_view, u32string_view, hash<u16string_view>)
+	(hash<u32string_view>, operator""sv(const char16_t, size_t))
+	(operator""sv(const char32_t, size_t)): Likewise.
+	* src/c++11/codecvt.cc: Likewise.
+	* src/c++98/locale_init.cc: Likewise.
+	* src/c++98/localename.cc: Likewise.
+
 	* include/bits/atomic_futex.h [!_GLIBCXX_USE_C99_STDINT_TR1]
 	(__atomic_futex_unsigned_base): Remove dependency on
 	_GLIBCXX_USE_C99_STDINT_TR1 macro.
