@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-require-cstdint "" }
 
 // 2007-10-26  Paolo Carlini  <pcarlini@suse.de>
 

@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++14 } }
+// { dg-require-cstdint "" }
 
 #include <experimental/algorithm>
 #include <random>

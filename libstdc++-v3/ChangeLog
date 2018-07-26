@@ -1,5 +1,89 @@
 2018-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/18_support/aligned_alloc/aligned_alloc.cc: Add
+	dg-require-cstdint directive.
+	* testsuite/20_util/allocator/overaligned.cc: Likewise.
+	* testsuite/20_util/any/cons/aligned.cc: Likewise.
+	* testsuite/20_util/monotonic_buffer_resource/allocate.cc: Likewise.
+	* testsuite/20_util/monotonic_buffer_resource/deallocate.cc: Likewise.
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/insert/25288.cc: Likewise.
+	* testsuite/23_containers/set/allocator/move_assign.cc: Likewise.
+	* testsuite/25_algorithms/make_heap/complexity.cc: Likewise.
+	* testsuite/25_algorithms/pop_heap/complexity.cc: Require cstdint and
+	random_device effective-target.
+	* testsuite/25_algorithms/push_heap/complexity.cc: Likewise.
+	* testsuite/25_algorithms/sample/1.cc: Require cstdint.
+	* testsuite/25_algorithms/sample/2.cc: Likewise.
+	* testsuite/25_algorithms/sort_heap/complexity.cc: Require cstdint
+	and random_device.
+	* testsuite/26_numerics/headers/random/types_std_c++0x.cc: Require
+	cstdint.
+	* testsuite/26_numerics/random/chi_squared_distribution/83833.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/requirements/
+	constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/requirements/
+	constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/requirements/
+	constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Likewise.
+	* testsuite/26_numerics/random/seed_seq/cons/65631.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/requirements/
+	constexpr_data.cc: Add dg-require-cstdint directive.
+	* testsuite/26_numerics/random/shuffle_order_engine/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/requirements/
+	constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/
+	64351.cc: Likewise.
+	* testsuite/29_atomics/headers/atomic/types_std_c++0x.cc: Likewise.
+	* testsuite/experimental/algorithm/sample-2.cc: Likewise.
+	* testsuite/experimental/algorithm/sample.cc: Likewise.
+	* testsuite/experimental/algorithm/search.cc: Likewise.
+	* testsuite/experimental/algorithm/shuffle.cc: Likewise.
+	* testsuite/experimental/any/cons/aligned.cc: Likewise.
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	Likewise.
+	* testsuite/experimental/memory_resource/resource_adaptor.cc: Likewise.
+	* testsuite/experimental/random/randint.cc: Likewise.
+	* testsuite/experimental/source_location/1.cc: Likewise.
+	* testsuite/ext/bitmap_allocator/overaligned.cc: Likewise.
+	* testsuite/ext/malloc_allocator/overaligned.cc: Likewise.
+	* testsuite/ext/mt_allocator/overaligned.cc: Likewise.
+	* testsuite/ext/new_allocator/overaligned.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/hash_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/hash_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/list_update_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/list_update_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/tree_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/tree_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/trie_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/trie_set_rand.cc: Likewise.
+	* testsuite/ext/pool_allocator/overaligned.cc: Likewise.
+	* testsuite/ext/throw_allocator/check_allocate_max_size.cc: Likewise.
+	* testsuite/ext/throw_allocator/check_deallocate_null.cc: Likewise.
+	* testsuite/ext/throw_allocator/check_delete.cc: Likewise.
+	* testsuite/ext/throw_allocator/check_new.cc: Likewise.
+	* testsuite/ext/throw_allocator/deallocate_global.cc: Likewise.
+	* testsuite/ext/throw_allocator/deallocate_local.cc: Likewise.
+	* testsuite/ext/throw_allocator/explicit_instantiation.cc: Likewise.
+	* testsuite/ext/throw_allocator/variadic_construct.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cinttypes/functions.cc: Likewise.
+
 	* testsuite/30_threads/recursive_mutex/cons/1.cc: Likewise.
 	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Likewise.
 	* testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Likewise.
