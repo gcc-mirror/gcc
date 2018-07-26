@@ -1,5 +1,9 @@
 2018-07-26  Marek Polacek  <polacek@redhat.com>
 
+	* testsuite/30_threads/condition_variable_any/cond.cc: New.
+
+2018-07-26  Marek Polacek  <polacek@redhat.com>
+
 	* src/c++98/locale_init.cc: Fix #ifdef condition.
 
 2018-07-26  Jonathan Wakely  <jwakely@redhat.com>
