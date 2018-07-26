@@ -1,3 +1,11 @@
+2018-07-26  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline
+	2018-07-26  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/86612
+	* gcc.target/powerpc/pr58673-2.c: Call strdup.
+
 2018-07-26  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
