@@ -1,3 +1,13 @@
+2018-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2018-07-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/86511
+	* expmed.c (emit_store_flag): Do not emit setcc followed by a
+	conditional move when trapping comparison was split to a
+	non-trapping one (and vice versa).
+
 2018-07-26  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
