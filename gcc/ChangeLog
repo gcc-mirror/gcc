@@ -1,3 +1,44 @@
+2018-07-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/constraints.md (wG constraint): Delete, no longer
+	used.
+	* config/rs6000/predicates.md (p9_fusion_reg_operand): Rename
+	predicate to reflect toc fusion has been deleted.
+	(toc_fusion_mem_raw): Delete, no longer used.
+	(toc_fusion_mem_wrapped): Likewise.
+	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Delete toc
+	fusion mask bit.
+	* config/rs6000/rs6000-protos.h (fusion_wrap_memory_address):
+	Delete, no longer used.
+	* config/rs6000/rs6000.c (struct rs6000_reg_addr): Delete fields
+	meant to be used for toc fusion.
+	(rs6000_debug_print_mode): Delete toc fusion debugging.
+	(rs6000_debug_reg_global): Likewise.
+	(rs6000_init_hard_regno_mode_ok): Delete setting up fields for toc
+	fusion and secondary reload support that were never used.
+	(rs6000_option_override_internal): Delete TOC fusion, that was only
+	partially defined, and it did not work unless you also used the
+	-mcmodel= switch.
+	(rs6000_legitimate_address_p): Delete TOC fusion support.
+	(rs6000_opt_masks): Likewise.
+	(fusion_wrap_memory_address): Delete function, no longer used.
+	(fusion_split_address); Delete TOC fusion support.
+	* config/rs6000/rs6000.h (TARGET_TOC_FUSION_INT): Delete, no
+	longer used with toc fusion being deleted.
+	(TARGET_TOC_FUSION_FP): Likewise.
+	* config/rs6000/rs6000.md (UNSPEC_FUSION_ADDIS): Delete TOC fusion
+	UNSPEC.
+	(toc fusion spliter): Delete TOC fusion support.
+	(toc_fusionload_<mode>): Likewise.
+	(toc_fusionload_di): Likewise.
+	(fusion_gpr_load_<mode>): Delete generator function, this insn no
+	longer needs to be named.  Rename predicate to delete TOC fusion.
+	(fusion_gpr_<P:mode>_<GPR_FUSION:mode>_load): Likewise.
+	(fusion_gpr_<P:mode>_<GPR_FUSION:mode>_store): Likewise.
+	(fusion_vsx_<P:mode>_<GPR_FUSION:mode>_load): Likewise.
+	(fusion_vsx_<P:mode>_<GPR_FUSION:mode>_store): Likewise.
+	(p9 fusion peephole2s): Rename predicate to delete TOC fusion.
+
 2018-07-27  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* doc/extend.texi (Basic PowerPC Built-in Functions Available on
