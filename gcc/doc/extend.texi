@@ -15762,9 +15762,9 @@ long long __builtin_divde (long long, long long);
 unsigned long long __builtin_divdeu (unsigned long long, unsigned long long);
 int __builtin_divwe (int, int);
 unsigned int __builtin_divweu (unsigned int, unsigned int);
-vector __int128_t __builtin_pack_vector_int128 (long long, long long);
+vector __int128 __builtin_pack_vector_int128 (long long, long long);
 void __builtin_rs6000_speculation_barrier (void);
-long long __builtin_unpack_vector_int128 (vector __int128_t, signed char);
+long long __builtin_unpack_vector_int128 (vector __int128, signed char);
 @end smallexample
 
 Of these, the @code{__builtin_divde} and @code{__builtin_divdeu} functions
@@ -18331,57 +18331,57 @@ vector unsigned long long vec_vupklsw (vector int);
 If the ISA 2.07 additions to the vector/scalar (power8-vector)
 instruction set are available, the following additional functions are
 available for 64-bit targets.  New vector types
-(@var{vector __int128_t} and @var{vector __uint128_t}) are available
-to hold the @var{__int128_t} and @var{__uint128_t} types to use these
+(@var{vector __int128} and @var{vector __uint128}) are available
+to hold the @var{__int128} and @var{__uint128} types to use these
 builtins.
 
 The normal vector extract, and set operations work on
-@var{vector __int128_t} and @var{vector __uint128_t} types,
+@var{vector __int128} and @var{vector __uint128} types,
 but the index value must be 0.
 
 @smallexample
-vector __int128_t vec_vaddcuq (vector __int128_t, vector __int128_t);
-vector __uint128_t vec_vaddcuq (vector __uint128_t, vector __uint128_t);
+vector __int128 vec_vaddcuq (vector __int128, vector __int128);
+vector __uint128 vec_vaddcuq (vector __uint128, vector __uint128);
 
-vector __int128_t vec_vadduqm (vector __int128_t, vector __int128_t);
-vector __uint128_t vec_vadduqm (vector __uint128_t, vector __uint128_t);
+vector __int128 vec_vadduqm (vector __int128, vector __int128);
+vector __uint128 vec_vadduqm (vector __uint128, vector __uint128);
 
-vector __int128_t vec_vaddecuq (vector __int128_t, vector __int128_t,
-                                vector __int128_t);
-vector __uint128_t vec_vaddecuq (vector __uint128_t, vector __uint128_t,
-                                 vector __uint128_t);
+vector __int128 vec_vaddecuq (vector __int128, vector __int128,
+                                vector __int128);
+vector __uint128 vec_vaddecuq (vector __uint128, vector __uint128,
+                                 vector __uint128);
 
-vector __int128_t vec_vaddeuqm (vector __int128_t, vector __int128_t,
-                                vector __int128_t);
-vector __uint128_t vec_vaddeuqm (vector __uint128_t, vector __uint128_t,
-                                 vector __uint128_t);
+vector __int128 vec_vaddeuqm (vector __int128, vector __int128,
+                                vector __int128);
+vector __uint128 vec_vaddeuqm (vector __uint128, vector __uint128,
+                                 vector __uint128);
 
-vector __int128_t vec_vsubecuq (vector __int128_t, vector __int128_t,
-                                vector __int128_t);
-vector __uint128_t vec_vsubecuq (vector __uint128_t, vector __uint128_t,
-                                 vector __uint128_t);
+vector __int128 vec_vsubecuq (vector __int128, vector __int128,
+                                vector __int128);
+vector __uint128 vec_vsubecuq (vector __uint128, vector __uint128,
+                                 vector __uint128);
 
-vector __int128_t vec_vsubeuqm (vector __int128_t, vector __int128_t,
-                                vector __int128_t);
-vector __uint128_t vec_vsubeuqm (vector __uint128_t, vector __uint128_t,
-                                 vector __uint128_t);
+vector __int128 vec_vsubeuqm (vector __int128, vector __int128,
+                                vector __int128);
+vector __uint128 vec_vsubeuqm (vector __uint128, vector __uint128,
+                                 vector __uint128);
 
-vector __int128_t vec_vsubcuq (vector __int128_t, vector __int128_t);
-vector __uint128_t vec_vsubcuq (vector __uint128_t, vector __uint128_t);
+vector __int128 vec_vsubcuq (vector __int128, vector __int128);
+vector __uint128 vec_vsubcuq (vector __uint128, vector __uint128);
 
-__int128_t vec_vsubuqm (__int128_t, __int128_t);
-__uint128_t vec_vsubuqm (__uint128_t, __uint128_t);
+__int128 vec_vsubuqm (__int128, __int128);
+__uint128 vec_vsubuqm (__uint128, __uint128);
 
-vector __int128_t __builtin_bcdadd (vector __int128_t, vector __int128_t);
-int __builtin_bcdadd_lt (vector __int128_t, vector __int128_t);
-int __builtin_bcdadd_eq (vector __int128_t, vector __int128_t);
-int __builtin_bcdadd_gt (vector __int128_t, vector __int128_t);
-int __builtin_bcdadd_ov (vector __int128_t, vector __int128_t);
-vector __int128_t bcdsub (vector __int128_t, vector __int128_t);
-int __builtin_bcdsub_lt (vector __int128_t, vector __int128_t);
-int __builtin_bcdsub_eq (vector __int128_t, vector __int128_t);
-int __builtin_bcdsub_gt (vector __int128_t, vector __int128_t);
-int __builtin_bcdsub_ov (vector __int128_t, vector __int128_t);
+vector __int128 __builtin_bcdadd (vector __int128, vector __int128);
+int __builtin_bcdadd_lt (vector __int128, vector __int128);
+int __builtin_bcdadd_eq (vector __int128, vector __int128);
+int __builtin_bcdadd_gt (vector __int128, vector __int128);
+int __builtin_bcdadd_ov (vector __int128, vector __int128);
+vector __int128 bcdsub (vector __int128, vector __int128);
+int __builtin_bcdsub_lt (vector __int128, vector __int128);
+int __builtin_bcdsub_eq (vector __int128, vector __int128);
+int __builtin_bcdsub_gt (vector __int128, vector __int128);
+int __builtin_bcdsub_ov (vector __int128, vector __int128);
 @end smallexample
 
 @node PowerPC AltiVec Built-in Functions Available on ISA 3.0
@@ -18751,14 +18751,14 @@ are available:
 @smallexample
 vector long vec_vprtyb (vector long);
 vector unsigned long vec_vprtyb (vector unsigned long);
-vector __int128_t vec_vprtyb (vector __int128_t);
-vector __uint128_t vec_vprtyb (vector __uint128_t);
+vector __int128 vec_vprtyb (vector __int128);
+vector __uint128 vec_vprtyb (vector __uint128);
 
 vector long vec_vprtybd (vector long);
 vector unsigned long vec_vprtybd (vector unsigned long);
 
-vector __int128_t vec_vprtybq (vector __int128_t);
-vector __uint128_t vec_vprtybd (vector __uint128_t);
+vector __int128 vec_vprtybq (vector __int128);
+vector __uint128 vec_vprtybd (vector __uint128);
 @end smallexample
 
 The following built-in vector functions are available for the PowerPC family
@@ -18960,8 +18960,8 @@ are available:
 @smallexample
 vector long vec_revb (vector long);
 vector unsigned long vec_revb (vector unsigned long);
-vector __int128_t vec_revb (vector __int128_t);
-vector __uint128_t vec_revb (vector __uint128_t);
+vector __int128 vec_revb (vector __int128);
+vector __uint128 vec_revb (vector __uint128);
 @end smallexample
 
 The @code{vec_revb} built-in function reverses the bytes on an element
