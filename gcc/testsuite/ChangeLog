@@ -1,3 +1,9 @@
+2018-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/86636
+	* gcc.c-torture/compile/pr86636.c: Add dg-do compile.
+	Add dg-require-effective-target pthread.
+
 2018-07-26  Qing Zhao  <qing.zhao@oracle.com>
 
 	* gcc.dg/strcmpopt_5.c: Change to O2 to enable the transformation.
