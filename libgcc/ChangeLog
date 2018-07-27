@@ -1,3 +1,9 @@
+2018-07-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	Removed.
+
 2018-07-05  James Clarke  <jrtc27@jrtc27.com>
 
 	* configure: Regenerated.
