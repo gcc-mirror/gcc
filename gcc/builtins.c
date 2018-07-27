@@ -6854,6 +6854,11 @@ inline_expand_builtin_string_cmp (tree exp, rtx target)
   unsigned HOST_WIDE_INT length = 0;
   bool is_ncmp = (fcode == BUILT_IN_STRNCMP || fcode == BUILT_IN_MEMCMP);
 
+  /* Do NOT apply this inlining expansion when optimizing for size or 
+     optimization level below 2.  */
+  if (optimize < 2 || optimize_insn_for_size_p ())
+    return NULL_RTX;
+
   gcc_checking_assert (fcode == BUILT_IN_STRCMP
 		       || fcode == BUILT_IN_STRNCMP
 		       || fcode == BUILT_IN_MEMCMP);

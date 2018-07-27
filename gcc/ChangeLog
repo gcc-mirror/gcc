@@ -1,3 +1,8 @@
+2018-07-26  Qing Zhao  <qing.zhao@oracle.com>
+
+	* builtins.c (inline_expand_builtin_string_cmp): Disable inlining
+	when optimization level is lower than 2 or optimize for size.
+
 2018-07-26  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86043
