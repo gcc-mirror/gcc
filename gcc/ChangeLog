@@ -1,3 +1,11 @@
+2018-07-27  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* doc/extend.texi (Basic PowerPC Built-in Functions Available on
+	ISA 2.05):  Replace __uint128_t with __uint128 and __int128_t with
+	__int128 in built-in function prototypes.
+	(PowerPC AltiVec Built-in Functions on ISA 2.07): Likewise.
+	(PowerPC AltiVec Built-in Functions on ISA 3.0): Likewise.
+
 2018-07-27  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86696
