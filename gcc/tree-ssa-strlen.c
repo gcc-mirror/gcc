@@ -3150,7 +3150,7 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
 static HOST_WIDE_INT
 get_min_string_length (tree rhs, bool *full_string_p)
 {
-  if (TREE_CODE (TREE_TYPE (rhs)) == INTEGER_TYPE)
+  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs)))
     {
       if (tree_expr_nonzero_p (rhs))
 	{
@@ -3315,9 +3315,16 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	     Otherwise, we're storing an unknown value at offset OFFSET,
 	     so need to clip the nonzero_chars to OFFSET.  */
 	  bool full_string_p = storing_all_zeros_p;
-	  HOST_WIDE_INT len = (storing_nonzero_p
-			       ? get_min_string_length (rhs, &full_string_p)
-			       : 1);
+	  HOST_WIDE_INT len = 1;
+	  if (storing_nonzero_p)
+	    {
+	      /* Try to get the minimum length of the string (or
+		 individual character) being stored.  If it fails,
+		 STORING_NONZERO_P guarantees it's at least 1.  */
+	      len = get_min_string_length (rhs, &full_string_p);
+	      if (len < 0)
+		len = 1;
+	    }
 
 	  location_t loc = gimple_location (stmt);
 	  tree oldlen = si->nonzero_chars;

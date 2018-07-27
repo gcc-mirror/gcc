@@ -1,3 +1,8 @@
+2018-07-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86696
+	* g++.dg/pr86696.C: New test.
+
 2018-07-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/86636
