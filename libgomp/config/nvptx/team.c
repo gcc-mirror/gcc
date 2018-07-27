@@ -174,5 +174,11 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   gomp_simple_barrier_wait (&pool->threads_dock);
 }
 
+int
+gomp_pause_host (void)
+{
+  return -1;
+}
+
 #include "../../team.c"
 #endif

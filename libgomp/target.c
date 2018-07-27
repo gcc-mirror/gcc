@@ -2503,6 +2503,31 @@ omp_target_disassociate_ptr (const void *ptr, int device_num)
   return ret;
 }
 
+int
+omp_pause_resource (omp_pause_resource_t kind, int device_num)
+{
+  (void) kind;
+  if (device_num == GOMP_DEVICE_HOST_FALLBACK)
+    return gomp_pause_host ();
+  if (device_num < 0 || device_num >= gomp_get_num_devices ())
+    return -1;
+  /* Do nothing for target devices for now.  */
+  return 0;
+}
+
+int
+omp_pause_resource_all (omp_pause_resource_t kind)
+{
+  (void) kind;
+  if (gomp_pause_host ())
+    return -1;
+  /* Do nothing for target devices for now.  */
+  return 0;
+}
+
+ialias (omp_pause_resource)
+ialias (omp_pause_resource_all)
+
 #ifdef PLUGIN_SUPPORT
 
 /* This function tries to load a plugin for DEVICE.  Name of plugin is passed

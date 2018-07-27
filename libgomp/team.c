@@ -32,7 +32,6 @@
 #include <string.h>
 
 #ifdef LIBGOMP_USE_PTHREADS
-/* This attribute contains PTHREAD_CREATE_DETACHED.  */
 pthread_attr_t gomp_thread_attr;
 
 /* This key is for the thread destructor.  */
@@ -135,6 +134,7 @@ gomp_thread_start (void *xdata)
     }
 
   gomp_sem_destroy (&thr->release);
+  pthread_detach (pthread_self ());
   thr->thread_pool = NULL;
   thr->task = NULL;
   return NULL;
@@ -235,6 +235,7 @@ gomp_free_pool_helper (void *thread_pool)
   thr->thread_pool = NULL;
   thr->task = NULL;
 #ifdef LIBGOMP_USE_PTHREADS
+  pthread_detach (pthread_self ());
   pthread_exit (NULL);
 #elif defined(__nvptx__)
   asm ("exit;");
@@ -726,7 +727,6 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
     {
       size_t stacksize;
       pthread_attr_init (&thread_attr);
-      pthread_attr_setdetachstate (&thread_attr, PTHREAD_CREATE_DETACHED);
       if (! pthread_attr_getstacksize (&gomp_thread_attr, &stacksize))
 	pthread_attr_setstacksize (&thread_attr, stacksize);
       attr = &thread_attr;
@@ -1009,6 +1009,76 @@ team_destructor (void)
   /* Without this dlclose on libgomp could lead to subsequent
      crashes.  */
   pthread_key_delete (gomp_thread_destructor);
+}
+
+/* Similar to gomp_free_pool_helper, but don't detach itself,
+   gomp_pause_host will pthread_join those threads.  */
+
+static void
+gomp_pause_pool_helper (void *thread_pool)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_thread_pool *pool
+    = (struct gomp_thread_pool *) thread_pool;
+  gomp_simple_barrier_wait_last (&pool->threads_dock);
+  gomp_sem_destroy (&thr->release);
+  thr->thread_pool = NULL;
+  thr->task = NULL;
+  pthread_exit (NULL);
+}
+
+/* Free a thread pool and release its threads.  Return non-zero on
+   failure.  */
+
+int
+gomp_pause_host (void)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_thread_pool *pool = thr->thread_pool;
+  if (thr->ts.level)
+    return -1;
+  if (pool)
+    {
+      if (pool->threads_used > 0)
+	{
+	  int i;
+	  pthread_t *thrs
+	    = gomp_alloca (sizeof (pthread_t) * pool->threads_used);
+	  for (i = 1; i < pool->threads_used; i++)
+	    {
+	      struct gomp_thread *nthr = pool->threads[i];
+	      nthr->fn = gomp_pause_pool_helper;
+	      nthr->data = pool;
+	      thrs[i] = gomp_thread_to_pthread_t (nthr);
+	    }
+	  /* This barrier undocks threads docked on pool->threads_dock.  */
+	  gomp_simple_barrier_wait (&pool->threads_dock);
+	  /* And this waits till all threads have called gomp_barrier_wait_last
+	     in gomp_pause_pool_helper.  */
+	  gomp_simple_barrier_wait (&pool->threads_dock);
+	  /* Now it is safe to destroy the barrier and free the pool.  */
+	  gomp_simple_barrier_destroy (&pool->threads_dock);
+
+#ifdef HAVE_SYNC_BUILTINS
+	  __sync_fetch_and_add (&gomp_managed_threads,
+				1L - pool->threads_used);
+#else
+	  gomp_mutex_lock (&gomp_managed_threads_lock);
+	  gomp_managed_threads -= pool->threads_used - 1L;
+	  gomp_mutex_unlock (&gomp_managed_threads_lock);
+#endif
+	  for (i = 1; i < pool->threads_used; i++)
+	    pthread_join (thrs[i], NULL);
+	}
+      if (pool->last_team)
+	free_team (pool->last_team);
+#ifndef __nvptx__
+      free (pool->threads);
+      free (pool);
+#endif
+      thr->thread_pool = NULL;
+    }
+  return 0;
 }
 #endif
 

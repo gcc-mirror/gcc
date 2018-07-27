@@ -821,6 +821,7 @@ extern void gomp_team_start (void (*) (void *), void *, unsigned,
 			     unsigned, struct gomp_team *);
 extern void gomp_team_end (void);
 extern void gomp_free_thread (void *);
+extern int gomp_pause_host (void);
 
 /* target.c */
 

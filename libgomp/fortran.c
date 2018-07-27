@@ -84,6 +84,8 @@ ialias_redirect (omp_get_team_num)
 ialias_redirect (omp_is_initial_device)
 ialias_redirect (omp_get_initial_device)
 ialias_redirect (omp_get_max_task_priority)
+ialias_redirect (omp_pause_resource)
+ialias_redirect (omp_pause_resource_all)
 #endif
 
 #ifndef LIBGOMP_GNU_SYMBOL_VERSIONING
@@ -658,4 +660,16 @@ omp_capture_affinity_ (char *buffer, const char *format,
   if (ret < buffer_len)
     memset (buffer + ret, ' ', buffer_len - ret);
   return ret;
+}
+
+int32_t
+omp_pause_resource_ (const int32_t *kind, const int32_t *device_num)
+{
+  return omp_pause_resource (*kind, *device_num);
+}
+
+int32_t
+omp_pause_resource_all_ (const int32_t *kind)
+{
+  return omp_pause_resource_all (*kind);
 }

@@ -1,3 +1,31 @@
+2018-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.map (OMP_5.0): Export omp_pause_resource{,_all}{,_}.
+	* omp.h.in (omp_pause_resource_t): New typedef.
+	(omp_pause_resource, omp_pause_resource_all): New prototypes.
+	* omp_lib.f90.in (omp_pause_resource_kind, omp_pause_soft,
+	omp_pause_hard): New parameters.
+	(omp_pause_resource, omp_pause_resource_all): New interfaces.
+	* omp_lib.h.in (omp_pause_resource_kind, omp_pause_soft,
+	omp_pause_hard): New parameters.
+	(omp_pause_resource, omp_pause_resource_all): New externals.
+	* libgomp.h (gomp_pause_host): New prototype.
+	* team.c (gomp_thread_attr): Remove comment.
+	(gomp_thread_start): Call pthread_detach.
+	(gomp_free_pool_helper): Likewise.
+	(gomp_team_start): Don't call pthread_attr_setdetachstate.
+	(gomp_pause_pool_helper, gomp_pause_host): New functions.
+	* target.c (omp_pause_resource, omp_pause_resource_all): New functions.
+	* env.c (initialize_env): Don't call pthread_attr_setdetachstate.
+	* fortran.c (omp_pause_resource, omp_pause_resource_all): Add
+	ialias_redirect.
+	(omp_pause_resource_, omp_pause_resource_all_): New functions.
+	* config/nvptx/team.c (gomp_pause_host): New function.
+	* config/nvptx/target.c (omp_pause_resource, omp_pause_resource_all):
+	New functions.
+	* testsuite/libgomp.c-c++-common/pause-1.c: New test.
+	* testsuite/libgomp.c-c++-common/pause-2.c: New test.
+
 2018-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (libgomp_la_SOURCES): Add teams.c.

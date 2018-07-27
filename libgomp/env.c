@@ -1348,7 +1348,6 @@ initialize_env (void)
 
   /* Not strictly environment related, but ordering constructors is tricky.  */
   pthread_attr_init (&gomp_thread_attr);
-  pthread_attr_setdetachstate (&gomp_thread_attr, PTHREAD_CREATE_DETACHED);
 
   if (parse_stacksize ("OMP_STACKSIZE", &stacksize)
       || parse_stacksize ("GOMP_STACKSIZE", &stacksize)
