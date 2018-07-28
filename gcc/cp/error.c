@@ -4025,6 +4025,10 @@ defer_phase_2_of_type_diff (deferred_printed_type *deferred,
    %D   declaration.
    %E   expression.
    %F   function declaration.
+   %G   gcall *
+   %H   type difference (from).
+   %I   type difference (to).
+   %K   tree
    %L	language as used in extern "lang".
    %O	binary operator.
    %P   function parameter whose position is indicated by an integer.
@@ -4032,9 +4036,7 @@ defer_phase_2_of_type_diff (deferred_printed_type *deferred,
    %S   substitution (template + args)
    %T   type.
    %V   cv-qualifier.
-   %X   exception-specification.
-   %H   type difference (from)
-   %I   type difference (to).  */
+   %X   exception-specification.  */
 static bool
 cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 	    int precision, bool wide, bool set_locus, bool verbose,
@@ -4076,6 +4078,21 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
       break;
     case 'E': result = expr_to_string (next_tree);		break;
     case 'F': result = fndecl_to_string (next_tree, verbose);	break;
+    case 'G':
+      percent_G_format (text);
+      return true;
+    case 'H':
+      defer_phase_2_of_type_diff (&postprocessor->m_type_a, next_tree,
+				  buffer_ptr, verbose, *quoted);
+      return true;
+    case 'I':
+      defer_phase_2_of_type_diff (&postprocessor->m_type_b, next_tree,
+				  buffer_ptr, verbose, *quoted);
+      return true;
+    case 'K':
+      t = va_arg (*text->args_ptr, tree);
+      percent_K_format (text, t);
+      return true;
     case 'L': result = language_to_string (next_lang);		break;
     case 'O': result = op_to_string (false, next_tcode);	break;
     case 'P': result = parm_to_string (next_int);		break;
@@ -4089,29 +4106,6 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
       break;
     case 'V': result = cv_to_string (next_tree, verbose);	break;
     case 'X': result = eh_spec_to_string (next_tree, verbose);  break;
-
-    case 'G':
-      percent_G_format (text);
-      return true;
-
-    case 'K':
-      t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, t);
-      return true;
-
-    case 'H':
-      {
-	defer_phase_2_of_type_diff (&postprocessor->m_type_a, next_tree,
-				    buffer_ptr, verbose, *quoted);
-	return true;
-      }
-
-    case 'I':
-      {
-	defer_phase_2_of_type_diff (&postprocessor->m_type_b, next_tree,
-				    buffer_ptr, verbose, *quoted);
-	return true;
-      }
 
     default:
       return false;

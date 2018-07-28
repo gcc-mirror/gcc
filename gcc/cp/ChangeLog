@@ -1,3 +1,10 @@
+2018-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (cp_printer): In the leading comment, move "%H" and "%I"
+	into alphabetical order, and add missing "%G" and "%K".  Within
+	the switch statement, move cases 'G', 'H', 'I' and 'K' so that the
+	cases are in alphabetical order.
+
 2018-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (enum cp_tree_index): Add
