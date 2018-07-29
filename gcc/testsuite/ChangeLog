@@ -1,3 +1,11 @@
+2018-07-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Backport from mainline
+	2018-07-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c/86617
+	* gcc.dg/pr86617.c: New test.
+
 2018-07-26  Pat Haugen  <pthaugen@us.ibm.com>
 
 	Backport from mainline
