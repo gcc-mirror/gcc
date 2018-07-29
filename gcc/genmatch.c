@@ -2680,12 +2680,14 @@ dt_operand::gen_match_op (FILE *f, int indent, const char *opname, bool)
   char match_opname[20];
   match_dop->get_name (match_opname);
   if (value_match)
-    fprintf_indent (f, indent, "if (%s == %s || operand_equal_p (%s, %s, 0))\n",
-		    opname, match_opname, opname, match_opname);
+    fprintf_indent (f, indent, "if ((%s == %s && ! TREE_SIDE_EFFECTS (%s)) "
+		    "|| operand_equal_p (%s, %s, 0))\n",
+		    opname, match_opname, opname, opname, match_opname);
   else
-    fprintf_indent (f, indent, "if (%s == %s || (operand_equal_p (%s, %s, 0) "
+    fprintf_indent (f, indent, "if ((%s == %s && ! TREE_SIDE_EFFECTS (%s)) "
+		    "|| (operand_equal_p (%s, %s, 0) "
 		    "&& types_match (%s, %s)))\n",
-		    opname, match_opname, opname, match_opname,
+		    opname, match_opname, opname, opname, match_opname,
 		    opname, match_opname);
   fprintf_indent (f, indent + 2, "{\n");
   return 1;
