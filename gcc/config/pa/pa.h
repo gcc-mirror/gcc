@@ -1182,21 +1182,23 @@ do {									     \
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   pa_output_ascii ((FILE), (P), (SIZE))
 
-/* Jump tables are always placed in the text section.  Technically, it
-   is possible to put them in the readonly data section.  This has the
-   benefit of getting the table out of .text and reducing branch lengths
-   as a result.
+/* Jump tables are always placed in the text section.  We have to do
+   this for the HP-UX SOM target as we can't switch sections in the
+   middle of a function.
 
-   The downside is that an additional insn (addil) is needed to access
+   On ELF targets, it is possible to put them in the readonly-data section.
+   This would get the table out of .text and reduce branch lengths.
+
+   A downside is that an additional insn (addil) is needed to access
    the table when generating PIC code.  The address difference table
-   also has to use 32-bit pc-relative relocations.  Currently, GAS does
-   not support these relocations, although it is easily modified to do
-   this operation.
+   also has to use 32-bit pc-relative relocations.
 
    The table entries need to look like "$L1+(.+8-$L0)-$PIC_pcrel$0"
    when using ELF GAS.  A simple difference can be used when using
-   SOM GAS or the HP assembler.  The final downside is GDB complains
-   about the nesting of the label for the table when debugging.  */
+   the HP assembler.
+
+   The final downside is GDB complains about the nesting of the label
+   for the table.  */
 
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
