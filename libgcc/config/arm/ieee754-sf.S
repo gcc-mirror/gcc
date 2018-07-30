@@ -461,7 +461,7 @@ LSYM(Lml_x):
 	orr	r1, r3, r1, lsr #5
 
 	@ The actual multiplication.
-	@ This code works on architecture versions > 4
+	@ This code works on architecture versions >= 4
 	umull	r3, r1, r0, r1
 
 	@ Put final sign in r0.
