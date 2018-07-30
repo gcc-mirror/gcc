@@ -1,3 +1,7 @@
+2018-07-30  Tom Tromey  <tom@tromey.com>
+
+	* cplus-dem.c (remember_Btype): Don't call memcpy with LEN==0.
+
 2018-07-26  Martin Liska  <mliska@suse.cz>
 
         PR lto/86548
