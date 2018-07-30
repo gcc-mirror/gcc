@@ -1,3 +1,9 @@
+2018-07-30  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+        PR target/86547
+	* lra-constraints.c (spill_hard_reg_in_range): When selecting the
+	hard_regno, make sure no insn between `from` and `to` clobbers it.
+
 2018-07-30  Cesar Philippidis  <cesar@codesourcery.com>
 	    Tom de Vries  <tdevries@suse.de>
 
