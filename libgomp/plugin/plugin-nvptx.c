@@ -417,6 +417,7 @@ struct ptx_device
   int warp_size;
   int max_threads_per_block;
   int max_threads_per_multiprocessor;
+  int default_dims[GOMP_DIM_MAX];
 
   struct ptx_image_data *images;  /* Images loaded on device.  */
   pthread_mutex_t image_lock;     /* Lock for above list.  */
@@ -818,6 +819,9 @@ nvptx_open_device (int n)
   if (r != CUDA_SUCCESS)
     async_engines = 1;
 
+  for (int i = 0; i != GOMP_DIM_MAX; i++)
+    ptx_dev->default_dims[i] = 0;
+
   ptx_dev->images = NULL;
   pthread_mutex_init (&ptx_dev->image_lock, NULL);
 
@@ -1152,15 +1156,22 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 
   if (seen_zero)
     {
-      /* See if the user provided GOMP_OPENACC_DIM environment
-	 variable to specify runtime defaults. */
-      static int default_dims[GOMP_DIM_MAX];
-
       pthread_mutex_lock (&ptx_dev_lock);
-      if (!default_dims[0])
+
+      static int gomp_openacc_dims[GOMP_DIM_MAX];
+      if (!gomp_openacc_dims[0])
 	{
+	  /* See if the user provided GOMP_OPENACC_DIM environment
+	     variable to specify runtime defaults.  */
 	  for (int i = 0; i < GOMP_DIM_MAX; ++i)
-	    default_dims[i] = GOMP_PLUGIN_acc_default_dim (i);
+	    gomp_openacc_dims[i] = GOMP_PLUGIN_acc_default_dim (i);
+	}
+
+      if (!nvthd->ptx_dev->default_dims[0])
+	{
+	  int default_dims[GOMP_DIM_MAX];
+	  for (int i = 0; i < GOMP_DIM_MAX; ++i)
+	    default_dims[i] = gomp_openacc_dims[i];
 
 	  int gang, worker, vector;
 	  {
@@ -1196,12 +1207,15 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 			     default_dims[GOMP_DIM_GANG],
 			     default_dims[GOMP_DIM_WORKER],
 			     default_dims[GOMP_DIM_VECTOR]);
+
+	  for (i = 0; i != GOMP_DIM_MAX; i++)
+	    nvthd->ptx_dev->default_dims[i] = default_dims[i];
 	}
       pthread_mutex_unlock (&ptx_dev_lock);
 
       for (i = 0; i != GOMP_DIM_MAX; i++)
 	if (!dims[i])
-	  dims[i] = default_dims[i];
+	  dims[i] = nvthd->ptx_dev->default_dims[i];
     }
 
   /* Check if the accelerator has sufficient hardware resources to
