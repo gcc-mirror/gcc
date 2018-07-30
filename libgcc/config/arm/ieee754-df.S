@@ -657,7 +657,7 @@ ARM_FUNC_ALIAS aeabi_dmul muldf3
 	beq	LSYM(Lml_1)
 
 	@ Here is the actual multiplication.
-	@ This code works on architecture versions > 4
+	@ This code works on architecture versions >= 4
 	umull	ip, lr, xl, yl
 	mov	r5, #0
 	umlal	lr, r5, xh, yl
