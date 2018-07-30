@@ -141,6 +141,11 @@ init_cuda_lib (void)
 
 #include "secure_getenv.h"
 
+#undef MIN
+#undef MAX
+#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
+#define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
+
 /* Convenience macros for the frequently used CUDA library call and
    error handling sequence as well as CUDA library calls that
    do the error checking themselves or don't do it at all.  */
@@ -1135,6 +1140,7 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   void *kargs[1];
   void *hp, *dp;
   struct nvptx_thread *nvthd = nvptx_thread ();
+  int warp_size = nvthd->ptx_dev->warp_size;
   const char *maybe_abort_msg = "(perhaps abort was called)";
 
   function = targ_fn->fn;
@@ -1175,7 +1181,6 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 
 	  int gang, worker, vector;
 	  {
-	    int warp_size = nvthd->ptx_dev->warp_size;
 	    int block_size = nvthd->ptx_dev->max_threads_per_block;
 	    int cpu_size = nvthd->ptx_dev->max_threads_per_multiprocessor;
 	    int dev_size = nvthd->ptx_dev->num_sms;
@@ -1213,9 +1218,25 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 	}
       pthread_mutex_unlock (&ptx_dev_lock);
 
-      for (i = 0; i != GOMP_DIM_MAX; i++)
-	if (!dims[i])
-	  dims[i] = nvthd->ptx_dev->default_dims[i];
+      {
+	bool default_dim_p[GOMP_DIM_MAX];
+	for (i = 0; i != GOMP_DIM_MAX; i++)
+	  {
+	    default_dim_p[i] = !dims[i];
+	    if (default_dim_p[i])
+	      dims[i] = nvthd->ptx_dev->default_dims[i];
+	  }
+
+	if (default_dim_p[GOMP_DIM_VECTOR])
+	  dims[GOMP_DIM_VECTOR]
+	    = MIN (dims[GOMP_DIM_VECTOR],
+		   (targ_fn->max_threads_per_block / warp_size * warp_size));
+
+	if (default_dim_p[GOMP_DIM_WORKER])
+	  dims[GOMP_DIM_WORKER]
+	    = MIN (dims[GOMP_DIM_WORKER],
+		   targ_fn->max_threads_per_block / dims[GOMP_DIM_VECTOR]);
+      }
     }
 
   /* Check if the accelerator has sufficient hardware resources to
