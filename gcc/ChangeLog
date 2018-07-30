@@ -1,3 +1,12 @@
+2018-07-30  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (PTX_GANG_DEFAULT): Rename to ...
+	(PTX_DEFAULT_RUNTIME_DIM): ... this.
+	(nvptx_goacc_validate_dims): Set default worker and gang dims to
+	PTX_DEFAULT_RUNTIME_DIM.
+	(nvptx_dim_limit): Ignore GOMP_DIM_WORKER.
+
 2018-07-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_addr_vec): Align address table.
