@@ -1,3 +1,9 @@
+2018-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new_opa.cc (operator new(size_t, align_val_t)): Add
+	workaround for aligned_alloc bug on AIX.
+	* testsuite/18_support/new_aligned.cc: New test.
+
 2018-07-26  Marek Polacek  <polacek@redhat.com>
 
 	* testsuite/30_threads/condition_variable_any/cond.cc: New.
