@@ -1,5 +1,12 @@
 2018-07-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86734
+	* include/bits/stl_iterator.h (reverse_iterator::operator->): Call
+	_S_to_pointer (LWG 1052, LWG 2118).
+	(reverse_iterator::_S_to_pointer): Define overloaded helper functions.
+	* testsuite/24_iterators/reverse_iterator/dr1052.cc: New test.
+	* testsuite/24_iterators/reverse_iterator/dr2188.cc: New test.
+
 	* libsupc++/new_opa.cc (operator new(size_t, align_val_t)): Add
 	workaround for aligned_alloc bug on AIX.
 	* testsuite/18_support/new_aligned.cc: New test.
