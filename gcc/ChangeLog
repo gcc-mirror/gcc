@@ -1,3 +1,10 @@
+2018-07-30  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/86673
+	* doc/extend.texi (Global Register Variables): Discourage use of type
+	qualifiers.
+	(Local Register Variables): Likewise.
+
 2018-07-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/86506
