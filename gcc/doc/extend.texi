@@ -9591,6 +9591,11 @@ a global variable the declaration appears outside a function. The
 @code{static}. The register name must be a valid register name for the
 target platform.
 
+Do not use type qualifiers such as @code{const} and @code{volatile}, as
+the outcome may be contrary to expectations.  In  particular, using the
+@code{volatile} qualifier does not fully prevent the compiler from
+optimizing accesses to the register.
+
 Registers are a scarce resource on most systems and allowing the 
 compiler to manage their usage usually results in the best code. However, 
 under special circumstances it can make sense to reserve some globally.
@@ -9697,6 +9702,12 @@ but for a local variable the declaration appears within a function.  The
 @code{register} keyword is required, and cannot be combined with 
 @code{static}.  The register name must be a valid register name for the
 target platform.
+
+Do not use type qualifiers such as @code{const} and @code{volatile}, as
+the outcome may be contrary to expectations. In particular, when the
+@code{const} qualifier is used, the compiler may substitute the
+variable with its initializer in @code{asm} statements, which may cause
+the corresponding operand to appear in a different register.
 
 As with global register variables, it is recommended that you choose 
 a register that is normally saved and restored by function calls on your 
