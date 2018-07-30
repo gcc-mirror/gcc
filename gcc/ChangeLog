@@ -1,3 +1,9 @@
+2018-07-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/86640
+	* config/arm/arm.c (arm_block_set_aligned_vect): Use gen_int_mode
+	instead of GEN_INT.
+
 2018-07-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* tree-ssa-forwprop.c (simplify_builtin_call): Don't create a not NUL
