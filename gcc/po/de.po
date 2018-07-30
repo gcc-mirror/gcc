@@ -8,10 +8,10 @@
 # Roland Illig <roland.illig@gmx.de>, 2015, 2017-2018.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 8.1.0\n"
+"Project-Id-Version: gcc 8.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-07-25 14:25+0000\n"
-"PO-Revision-Date: 2018-05-05 21:15+0200\n"
+"PO-Revision-Date: 2018-07-28 01:30+0200\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0.7\n"
+"X-Generator: Poedit 2.1.1\n"
 
 #: cfgrtl.c:2679
 msgid "flow control insn inside a basic block"
@@ -5169,10 +5169,9 @@ msgid "Operand of unary numeric operator %%<%s%%> at %%L is %s"
 msgstr "Operand des unären numerischen Operators %%<%s%%> bei %%L ist %s"
 
 #: fortran/resolve.c:3879
-#, fuzzy, c-format
-#| msgid "Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"
+#, c-format
 msgid "Unexpected derived-type entities in binary intrinsic numeric operator %%<%s%%> at %%L"
-msgstr "Operanden des binären numerischen Operators %%<%s%%> bei %%L sind %s/%s"
+msgstr "Unerwartete Entitäten mit abgeleitetem Typ im binären intrinsischen numerischen Operator %%<%s%%> bei %%L"
 
 #: fortran/resolve.c:3884
 #, c-format
@@ -16606,22 +16605,19 @@ msgid "in a call to allocation function %qD declared here"
 msgstr "in einem Aufruf der hier deklarierten Allokationsfunktion %qD"
 
 #: calls.c:1835
-#, fuzzy, gcc-internal-format
-#| msgid "%qD argument %i declared attribute %<nonstring%> is smaller than the specified bound %E"
+#, gcc-internal-format
 msgid "%qD argument %i declared attribute %<nonstring%> is smaller than the specified bound %wu"
-msgstr "%qD Argument %i (als Attribut %<nonstring%> deklariert) ist kleiner als die angegebene Grenze %E"
+msgstr "%qD Argument %i (als Attribut %<nonstring%> deklariert) ist kleiner als die angegebene Grenze %wu"
 
 #: calls.c:1841
-#, fuzzy, gcc-internal-format
-#| msgid "%qD argument %i declared attribute %<nonstring%> is smaller than the specified bound %E"
+#, gcc-internal-format
 msgid "%qD argument %i declared attribute %<nonstring%> is smaller than the specified bound [%E, %E]"
-msgstr "%qD Argument %i (als Attribut %<nonstring%> deklariert) ist kleiner als die angegebene Grenze %E"
+msgstr "%qD Argument %i (als Attribut %<nonstring%> deklariert) ist kleiner als die angegebene Grenze [%E, %E]"
 
 #: calls.c:1847
-#, fuzzy, gcc-internal-format
-#| msgid "%qD argument %i declared attribute %<nonstring%> is smaller than the specified bound %E"
+#, gcc-internal-format
 msgid "%qD argument %i declared attribute %<nonstring%> may be smaller than the specified bound [%E, %E]"
-msgstr "%qD Argument %i (als Attribut %<nonstring%> deklariert) ist kleiner als die angegebene Grenze %E"
+msgstr "%qD Argument %i (als Attribut %<nonstring%> deklariert) ist möglicherweise kleiner als die angegebene Grenze [%E, %E]"
 
 #: calls.c:1857
 #, gcc-internal-format
@@ -20131,10 +20127,9 @@ msgid "fopen: %s: %m"
 msgstr "fopen %s: %m"
 
 #: lto-wrapper.c:1508
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Could not open output file '%s'\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "Corrupted ltrans output file %s"
-msgstr "Ausgabedatei »%s« konnte nicht geöffnet werden\n"
+msgstr "Beschädigte ltrans-Ausgabedatei %s"
 
 #: multiple_target.c:76
 #, gcc-internal-format
@@ -21398,7 +21393,7 @@ msgstr "Interner Fehler: function symbol is not function"
 #: symtab.c:1005
 #, gcc-internal-format
 msgid "inconsistent `ifunc' attribute"
-msgstr ""
+msgstr "inkonsistentes `ifunc'-Attribut"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79874
 #: symtab.c:1013
@@ -23940,10 +23935,9 @@ msgid "bytecode stream: tag %s is not in the expected range [%s, %s]"
 msgstr "bytecode stream: tag %s is not in the expected range [%s, %s]"
 
 #: c-family/c-attribs.c:524
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored for %qE"
+#, gcc-internal-format
 msgid "%qE attribute ignored for type %qT"
-msgstr "Attribut %qE ignoriert für %qE"
+msgstr "%qE-Attribut für Typ %qT ignoriert"
 
 #: c-family/c-attribs.c:536
 #, gcc-internal-format
@@ -25577,17 +25571,17 @@ msgstr "%<-fabi-compat-version=1%> wird nicht unterstützt; stattdessen wird »=
 #: c-family/c-opts.c:944
 #, gcc-internal-format
 msgid "-Wabi won't warn about anything"
-msgstr ""
+msgstr "-Wabi wird vor nichts warnen"
 
 #: c-family/c-opts.c:946
 #, gcc-internal-format
 msgid "-Wabi warns about differences from the most up-to-date ABI, which is also used by default"
-msgstr ""
+msgstr "-Wabi warnt vor Abweichungen von der aktuellsten ABI, die ebenfalls standardmäßig verwendet wird"
 
 #: c-family/c-opts.c:949
 #, gcc-internal-format
 msgid "use e.g. -Wabi=11 to warn about changes from GCC 7"
-msgstr ""
+msgstr "Verwenden Sie zum Beispiel -Wabi=11, um vor Änderungen von GCC 7 zu warnen"
 
 #: c-family/c-opts.c:1003
 #, gcc-internal-format
@@ -48309,24 +48303,22 @@ msgstr "Anweisungs-Ausdruck in konstantem Ausdruck"
 #: cp/tree.c:4083
 #, gcc-internal-format
 msgid "-fabi-version=13 (GCC 8.2) fixes the calling convention for %qT, which was accidentally changed in 8.1"
-msgstr ""
+msgstr "-fabi-version=13 (GCC 8.2) korrigiert die Aufrufkonvention für %qT, die in 8.1 versehentlich geändert wurde"
 
 #: cp/tree.c:4087
 #, gcc-internal-format
 msgid "-fabi-version=12 (GCC 8.1) accidentally changes the calling convention for %qT"
-msgstr ""
+msgstr "-fabi-version=12 (GCC 8.1) ändert versehentlich die Aufrufkonvention für %qT"
 
 #: cp/tree.c:4090
-#, fuzzy, gcc-internal-format
-#| msgid "declared here"
+#, gcc-internal-format
 msgid " declared here"
-msgstr "hier deklariert"
+msgstr " hier deklariert"
 
 #: cp/tree.c:4094
-#, fuzzy, gcc-internal-format
-#| msgid "the calling convention for %qT changes in -fabi-version=12 (GCC 8)"
+#, gcc-internal-format
 msgid "the calling convention for %qT changes in -fabi-version=13 (GCC 8.2)"
-msgstr "die Aufrufkonvention für %qT ändert sich mit -fabi-version=12 (GCC 8)"
+msgstr "die Aufrufkonvention für %qT ändert sich mit -fabi-version=13 (GCC 8.2)"
 
 #: cp/tree.c:4096
 #, gcc-internal-format
@@ -49992,10 +49984,9 @@ msgid "Syntax error in array constructor at %C"
 msgstr "Syntaxfehler in Feldkonstruktor bei %C"
 
 #: fortran/array.c:1105
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "ENTRY statement at %C cannot appear in a contained procedure"
+#, gcc-internal-format, gfc-internal-format
 msgid "NULL() at %C cannot appear in an array constructor"
-msgstr "ENTRY-Anweisung bei %C kann nicht in einer enthaltenen Prozedur auftreten"
+msgstr "NULL() bei %C darf nicht in einem Feld-Konstruktor erscheinen"
 
 #: fortran/array.c:1138
 #, gcc-internal-format, gfc-internal-format
@@ -51168,10 +51159,9 @@ msgid "re-initialization of %qs at %L"
 msgstr "Reinitialisierung von %qs bei %L"
 
 #: fortran/data.c:515
-#, fuzzy, gcc-internal-format
-#| msgid "Variable %qs at %C with an initializer already appears in a DATA statement"
+#, gcc-internal-format
 msgid "Nonpointer object %qs with default initialization shall not appear in a DATA statement at %L"
-msgstr "Variable %qs bei %C mit Initialisierung tritt bereits in einer DATA-Anweisung auf"
+msgstr "Nichtzeiger-Objekt %qs mit Standard-Initialisierung darf nicht in einer DATA-Anweisung bei %L erscheinen"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79596
 #: fortran/data.c:738
@@ -51225,10 +51215,9 @@ msgid "Empty old style initializer list at %C"
 msgstr "Leere Initialisierungsliste im alten Stil bei %C"
 
 #: fortran/decl.c:671
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Array component of structure at %C must have an explicit shape"
+#, gcc-internal-format, gfc-internal-format
 msgid "Array in initializer list at %L must have an explicit shape"
-msgstr "Feldkomponente der Struktur bei %C muss eine explizite Form haben"
+msgstr "Feld in der Initialisierungsliste bei %L muss eine explizite Form haben"
 
 #: fortran/decl.c:694
 #, gcc-internal-format, gfc-internal-format
@@ -52688,10 +52677,9 @@ msgid "Derived type name %qs at %C already has a basic type of %s"
 msgstr "Abgeleiteter Typname %qs bei %C hat bereits einen Basistypen von %s"
 
 #: fortran/decl.c:9989
-#, fuzzy, gcc-internal-format
-#| msgid "Derived type name %qs at %C already has a basic type of %s"
+#, gcc-internal-format
 msgid "Derived type name %qs at %C already has a basic type"
-msgstr "Abgeleiteter Typname %qs bei %C hat bereits einen Basistypen von %s"
+msgstr "Abgeleiteter Typname %qs bei %C hat bereits einen Basistyp"
 
 #: fortran/decl.c:10006
 #, gcc-internal-format
@@ -53528,7 +53516,7 @@ msgstr "Ziel der Zeigerinitialisierung für Prozedur bei %L darf kein Prozedurze
 #: fortran/expr.c:4557
 #, gcc-internal-format
 msgid "generate_isocbinding_initializer(): bad iso_c_binding type, expected %<c_ptr%> or %<c_funptr%>"
-msgstr ""
+msgstr "Interner Fehler: generate_isocbinding_initializer(): bad iso_c_binding type, expected %<c_ptr%> or %<c_funptr%>"
 
 #: fortran/expr.c:5568
 #, gcc-internal-format, gfc-internal-format
@@ -56430,10 +56418,9 @@ msgid "%<acc update%> must contain at least one %<device%> or %<host%> or %<self
 msgstr "%<acc update%> bei %L muss mindestens eine %<device%>- oder %<host%>- oder %<self%>-Klausel enthalten"
 
 #: fortran/openmp.c:2180
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid argument to !$ACC WAIT at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid argument to !$ACC WAIT at %C"
-msgstr "Ungültiges Argument von »!$ACC WAIT« bei %L"
+msgstr "Ungültiges Argument für »!$ACC WAIT« bei %C"
 
 #: fortran/openmp.c:2187
 #, gcc-internal-format, gfc-internal-format
@@ -59350,10 +59337,9 @@ msgid "ERRMSG at %L is useless without a STAT tag"
 msgstr "ERRMSG bei %L ist ohne STAT-Marke nutzlos"
 
 #: fortran/resolve.c:7782
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "ERRMSG= argument at %L must be a scalar CHARACTER variable"
+#, gcc-internal-format, gfc-internal-format
 msgid "ERRMSG variable at %L shall be a scalar default CHARACTER variable"
-msgstr "»ERRMSG=«-Argument bei %L muss skalare CHARACTER-Variable sein"
+msgstr "»ERRMSG=«-Variable bei %L muss skalare Default-CHARACTER-Variable sein"
 
 #: fortran/resolve.c:7805
 #, gcc-internal-format, gfc-internal-format
@@ -60704,10 +60690,9 @@ msgid "Substring at %L has length zero"
 msgstr "Teilzeichenkette bei %L hat Länge Null"
 
 #: fortran/resolve.c:16253
-#, fuzzy, gcc-internal-format
-#| msgid "Syntax error in character length specification at %C"
+#, gcc-internal-format
 msgid "Self reference in character length expression for %qs at %L"
-msgstr "Syntaxfehler in Zeichenlängenangabe bei %C"
+msgstr "Selbstreferenz im Zeichenlängenausdruck für %qs bei %L"
 
 #: fortran/resolve.c:16320
 #, gcc-internal-format
@@ -61094,10 +61079,9 @@ msgid "simplify_min_max(): Bad type in arglist"
 msgstr "simplify_min_max(): Bad type in arglist"
 
 #: fortran/simplify.c:5470 fortran/simplify.c:5478
-#, fuzzy, gcc-internal-format
-#| msgid "Argument %<S%> of NEAREST at %L shall not be zero"
+#, gcc-internal-format
 msgid "Argument %qs of MOD at %L shall not be zero"
-msgstr "Argument 'S' von NEAREST bei %L darf nicht Null sein"
+msgstr "Argument %qs von MOD bei %L darf nicht Null sein"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79596
 #: fortran/simplify.c:5484
@@ -61383,10 +61367,9 @@ msgid "Duplicate VOLATILE attribute specified at %L"
 msgstr "Doppeltes VOLATILE-Attribut bei %L angegeben"
 
 #: fortran/symbol.c:1360
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "SAVE attribute at %L cannot be specified in a PURE procedure"
+#, gcc-internal-format, gfc-internal-format
 msgid "VOLATILE attribute at %L cannot be specified in a PURE procedure"
-msgstr "SAVE-Attribut bei %L kann nicht in einer PURE-Prozedur angegeben werden"
+msgstr "VOLATILE-Attribut bei %L darf nicht in einer PURE-Prozedur angegeben werden"
 
 #: fortran/symbol.c:1381
 #, gcc-internal-format, gfc-internal-format
