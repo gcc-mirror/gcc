@@ -1,3 +1,10 @@
+2018-07-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/85160
+	* combine.c (is_just_move): New function.
+	(try_combine): Allow combining two instructions into two if neither of
+	the original instructions was a move.
+
 2018-07-30  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR target/86673
