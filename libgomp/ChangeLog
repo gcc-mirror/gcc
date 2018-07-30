@@ -1,5 +1,11 @@
 2018-07-30  Tom de Vries  <tdevries@suse.de>
 
+	* plugin/plugin-nvptx.c (MIN, MAX): Redefine.
+	(nvptx_exec): Ensure worker and vector default dims don't exceed
+	targ_fn->max_threads_per_block.
+
+2018-07-30  Tom de Vries  <tdevries@suse.de>
+
 	* plugin/plugin-nvptx.c (struct ptx_device): Add default_dims field.
 	(nvptx_open_device): Init default_dims for device.
 	(nvptx_exec): Use default_dims from device.
