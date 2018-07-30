@@ -1,3 +1,8 @@
+2018-07-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/85160
+	* gcc.target/powerpc/combine-2-2.c: New testcase.
+
 2018-07-27  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86696
