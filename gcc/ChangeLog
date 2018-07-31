@@ -1,5 +1,10 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_stmt_in_region_p): Delete.
+	* tree-vectorizer.c (vect_stmt_in_region_p): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vec_info::new_vinfo_for_stmt)
 	(vec_info::set_vinfo_for_stmt, vec_info::free_stmt_vec_infos)
 	(vec_info::free_stmt_vec_info): New private member functions.
