@@ -100,8 +100,7 @@ io/transfer128.c \
 io/unit.c \
 io/unix.c \
 io/write.c \
-io/fbuf.c \
-io/async.c
+io/fbuf.c
 
 endif
 
@@ -109,8 +108,7 @@ gfor_io_headers= \
 io/io.h \
 io/fbuf.h \
 io/format.h \
-io/unix.h \
-io/async.h
+io/unix.h
 
 gfor_helper_src= \
 intrinsics/associated.c \
