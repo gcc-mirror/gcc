@@ -2847,7 +2847,7 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 	  new_stmt_info = loop_vinfo->lookup_def (var);
 	}
 
-      if (prev_stmt_info == NULL_STMT_VEC_INFO)
+      if (prev_stmt_info == NULL)
 	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
       else
 	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
@@ -6578,7 +6578,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  stmt_vec_info new_stmt_info
 	    = vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
 
-	  if (prev_stmt_info == NULL_STMT_VEC_INFO)
+	  if (prev_stmt_info == NULL)
 	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
 	  else
 	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;

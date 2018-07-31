@@ -6755,7 +6755,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (slp_node)
     neutral_op = neutral_op_for_slp_reduction
       (slp_node_instance->reduc_phis, code,
-       REDUC_GROUP_FIRST_ELEMENT (stmt_info) != NULL_STMT_VEC_INFO);
+       REDUC_GROUP_FIRST_ELEMENT (stmt_info) != NULL);
 
   if (double_reduc && reduction_type == FOLD_LEFT_REDUCTION)
     {
