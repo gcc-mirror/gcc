@@ -1,5 +1,20 @@
 2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/aarch64/iterators.md (ALLI_TI): New iterator.
+	* config/aarch64/aarch64.md (despeculate_copy<ALLI_TI:mode>): New
+	expand.
+	(despeculate_copy<ALLI:mode>_insn): New insn.
+	(despeculate_copyti_insn): New insn.
+	(despeculate_simple<ALLI:mode>): New insn
+	(despeculate_simpleti): New insn.
+	* config/aarch64/aarch64.c (aarch64_speculation_safe_value): New
+	function.
+	(TARGET_SPECULATION_SAFE_VALUE): Redefine to
+	aarch64_speculation_safe_value.
+	(aarch64_print_operand): Handle const0_rtx in modifier 'H'.
+
+2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/aarch64/aarch64-speculation.cc: New file.
 	* config/aarch64/aarch64-passes.def (pass_track_speculation): Add
 	before pass_reorder_blocks.
