@@ -103,11 +103,7 @@ vect_init_pattern_stmt (gimple *pattern_stmt, stmt_vec_info orig_stmt_info,
 {
   stmt_vec_info pattern_stmt_info = vinfo_for_stmt (pattern_stmt);
   if (pattern_stmt_info == NULL)
-    {
-      pattern_stmt_info = new_stmt_vec_info (pattern_stmt,
-					     orig_stmt_info->vinfo);
-      set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
-    }
+    pattern_stmt_info = orig_stmt_info->vinfo->add_stmt (pattern_stmt);
   gimple_set_bb (pattern_stmt, gimple_bb (orig_stmt_info->stmt));
 
   STMT_VINFO_RELATED_STMT (pattern_stmt_info) = orig_stmt_info->stmt;
@@ -141,9 +137,7 @@ append_pattern_def_seq (stmt_vec_info stmt_info, gimple *new_stmt,
   vec_info *vinfo = stmt_info->vinfo;
   if (vectype)
     {
-      gcc_assert (!vinfo_for_stmt (new_stmt));
-      stmt_vec_info new_stmt_info = new_stmt_vec_info (new_stmt, vinfo);
-      set_vinfo_for_stmt (new_stmt, new_stmt_info);
+      stmt_vec_info new_stmt_info = vinfo->add_stmt (new_stmt);
       STMT_VINFO_VECTYPE (new_stmt_info) = vectype;
     }
   gimple_seq_add_stmt_without_update (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_info),
@@ -3832,8 +3826,7 @@ vect_recog_bool_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	  rhs = rhs2;
 	}
       pattern_stmt = gimple_build_assign (lhs, SSA_NAME, rhs);
-      pattern_stmt_info = new_stmt_vec_info (pattern_stmt, vinfo);
-      set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
+      pattern_stmt_info = vinfo->add_stmt (pattern_stmt);
       STMT_VINFO_DATA_REF (pattern_stmt_info)
 	= STMT_VINFO_DATA_REF (stmt_vinfo);
       STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
@@ -3958,8 +3951,7 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	}
       gimple_call_set_nothrow (pattern_stmt, true);
 
-      pattern_stmt_info = new_stmt_vec_info (pattern_stmt, vinfo);
-      set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
+      pattern_stmt_info = vinfo->add_stmt (pattern_stmt);
       if (STMT_VINFO_DATA_REF (stmt_vinfo))
 	{
 	  STMT_VINFO_DATA_REF (pattern_stmt_info)
@@ -4290,9 +4282,7 @@ vect_recog_gather_scatter_pattern (stmt_vec_info stmt_info, tree *type_out)
 
   /* Copy across relevant vectorization info and associate DR with the
      new pattern statement instead of the original statement.  */
-  stmt_vec_info pattern_stmt_info = new_stmt_vec_info (pattern_stmt,
-						       loop_vinfo);
-  set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
+  stmt_vec_info pattern_stmt_info = loop_vinfo->add_stmt (pattern_stmt);
   STMT_VINFO_DATA_REF (pattern_stmt_info) = dr;
   STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
     = STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);

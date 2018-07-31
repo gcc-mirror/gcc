@@ -2494,7 +2494,7 @@ _bb_vec_info::_bb_vec_info (gimple_stmt_iterator region_begin_in,
     {
       gimple *stmt = gsi_stmt (gsi);
       gimple_set_uid (stmt, 0);
-      set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, this));
+      add_stmt (stmt);
     }
 
   bb->aux = this;

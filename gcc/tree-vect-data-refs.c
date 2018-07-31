@@ -4850,7 +4850,7 @@ vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
 		 aggr_ptr, loop, &incr_gsi, insert_after,
 		 &indx_before_incr, &indx_after_incr);
       incr = gsi_stmt (incr_gsi);
-      set_vinfo_for_stmt (incr, new_stmt_vec_info (incr, loop_vinfo));
+      loop_vinfo->add_stmt (incr);
 
       /* Copy the points-to information if it exists. */
       if (DR_PTR_INFO (dr))
@@ -4880,7 +4880,7 @@ vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
 		 containing_loop, &incr_gsi, insert_after, &indx_before_incr,
 		 &indx_after_incr);
       incr = gsi_stmt (incr_gsi);
-      set_vinfo_for_stmt (incr, new_stmt_vec_info (incr, loop_vinfo));
+      loop_vinfo->add_stmt (incr);
 
       /* Copy the points-to information if it exists. */
       if (DR_PTR_INFO (dr))

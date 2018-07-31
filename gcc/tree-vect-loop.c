@@ -845,14 +845,14 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
 	{
 	  gimple *phi = gsi_stmt (si);
 	  gimple_set_uid (phi, 0);
-	  set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, this));
+	  add_stmt (phi);
 	}
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
 	  gimple *stmt = gsi_stmt (si);
 	  gimple_set_uid (stmt, 0);
-	  set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, this));
+	  add_stmt (stmt);
 	}
     }
   free (body);
@@ -4665,8 +4665,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       /* Create a vector phi node.  */
       tree new_phi_tree = make_ssa_name (cr_index_vector_type);
       new_phi = create_phi_node (new_phi_tree, loop->header);
-      set_vinfo_for_stmt (new_phi,
-			  new_stmt_vec_info (new_phi, loop_vinfo));
+      loop_vinfo->add_stmt (new_phi);
       add_phi_arg (as_a <gphi *> (new_phi), vec_zero,
 		   loop_preheader_edge (loop), UNKNOWN_LOCATION);
 
@@ -4691,10 +4690,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       gimple *index_condition = gimple_build_assign (induction_index,
 						     index_cond_expr);
       gsi_insert_before (&incr_gsi, index_condition, GSI_SAME_STMT);
-      stmt_vec_info index_vec_info = new_stmt_vec_info (index_condition,
-							loop_vinfo);
+      stmt_vec_info index_vec_info = loop_vinfo->add_stmt (index_condition);
       STMT_VINFO_VECTYPE (index_vec_info) = cr_index_vector_type;
-      set_vinfo_for_stmt (index_condition, index_vec_info);
 
       /* Update the phi with the vec cond.  */
       add_phi_arg (as_a <gphi *> (new_phi), induction_index,
@@ -4741,7 +4738,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
         {
 	  tree new_def = copy_ssa_name (def);
           phi = create_phi_node (new_def, exit_bb);
-          set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, loop_vinfo));
+	  stmt_vec_info phi_info = loop_vinfo->add_stmt (phi);
           if (j == 0)
             new_phis.quick_push (phi);
           else
@@ -4751,7 +4748,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	    }
 
           SET_PHI_ARG_DEF (phi, single_exit (loop)->dest_idx, def);
-          prev_phi_info = vinfo_for_stmt (phi);
+	  prev_phi_info = phi_info;
         }
     }
 
@@ -4768,11 +4765,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	  gphi *outer_phi = create_phi_node (new_result, exit_bb);
 	  SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
 			   PHI_RESULT (phi));
-	  set_vinfo_for_stmt (outer_phi, new_stmt_vec_info (outer_phi,
-							    loop_vinfo));
+	  prev_phi_info = loop_vinfo->add_stmt (outer_phi);
 	  inner_phis.quick_push (phi);
 	  new_phis[i] = outer_phi;
-	  prev_phi_info = vinfo_for_stmt (outer_phi);
           while (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi)))
             {
 	      phi = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi));
@@ -4780,10 +4775,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	      outer_phi = create_phi_node (new_result, exit_bb);
 	      SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
 			       PHI_RESULT (phi));
-	      set_vinfo_for_stmt (outer_phi, new_stmt_vec_info (outer_phi,
-								loop_vinfo));
+	      stmt_vec_info outer_phi_info = loop_vinfo->add_stmt (outer_phi);
 	      STMT_VINFO_RELATED_STMT (prev_phi_info) = outer_phi;
-	      prev_phi_info = vinfo_for_stmt (outer_phi);
+	      prev_phi_info = outer_phi_info;
 	    }
 	}
     }
@@ -5553,10 +5547,9 @@ vect_finalize_reduction:
       gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
       if (nested_in_vect_loop)
         {
-          set_vinfo_for_stmt (epilog_stmt,
-                              new_stmt_vec_info (epilog_stmt, loop_vinfo));
-          STMT_VINFO_RELATED_STMT (vinfo_for_stmt (epilog_stmt)) =
-                STMT_VINFO_RELATED_STMT (vinfo_for_stmt (new_phi));
+	  stmt_vec_info epilog_stmt_info = loop_vinfo->add_stmt (epilog_stmt);
+	  STMT_VINFO_RELATED_STMT (epilog_stmt_info)
+	    = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (new_phi));
 
           if (!double_reduc)
             scalar_results.quick_push (new_temp);
@@ -5697,7 +5690,6 @@ vect_finalize_reduction:
               FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, orig_name)
                 {
                   stmt_vec_info use_stmt_vinfo;
-                  stmt_vec_info new_phi_vinfo;
                   tree vect_phi_init, preheader_arg, vect_phi_res;
                   basic_block bb = gimple_bb (use_stmt);
 		  gimple *use;
@@ -5724,9 +5716,7 @@ vect_finalize_reduction:
 
                   /* Create vector phi node.  */
                   vect_phi = create_phi_node (vec_initial_def, bb);
-                  new_phi_vinfo = new_stmt_vec_info (vect_phi,
-                                    loop_vec_info_for_loop (outer_loop));
-                  set_vinfo_for_stmt (vect_phi, new_phi_vinfo);
+		  loop_vec_info_for_loop (outer_loop)->add_stmt (vect_phi);
 
                   /* Create vs0 - initial def of the double reduction phi.  */
                   preheader_arg = PHI_ARG_DEF_FROM_EDGE (use_stmt,
@@ -6249,8 +6239,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 		  /* Create the reduction-phi that defines the reduction
 		     operand.  */
 		  gimple *new_phi = create_phi_node (vec_dest, loop->header);
-		  set_vinfo_for_stmt (new_phi,
-				      new_stmt_vec_info (new_phi, loop_vinfo));
+		  stmt_vec_info new_phi_info = loop_vinfo->add_stmt (new_phi);
 
 		  if (slp_node)
 		    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_phi);
@@ -6260,7 +6249,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 			STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_phi;
 		      else
 			STMT_VINFO_RELATED_STMT (prev_phi_info) = new_phi;
-		      prev_phi_info = vinfo_for_stmt (new_phi);
+		      prev_phi_info = new_phi_info;
 		    }
 		}
 	    }
@@ -7537,15 +7526,14 @@ vectorizable_induction (gimple *phi,
 	  /* Create the induction-phi that defines the induction-operand.  */
 	  vec_dest = vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_");
 	  induction_phi = create_phi_node (vec_dest, iv_loop->header);
-	  set_vinfo_for_stmt (induction_phi,
-			      new_stmt_vec_info (induction_phi, loop_vinfo));
+	  loop_vinfo->add_stmt (induction_phi);
 	  induc_def = PHI_RESULT (induction_phi);
 
 	  /* Create the iv update inside the loop  */
 	  vec_def = make_ssa_name (vec_dest);
 	  new_stmt = gimple_build_assign (vec_def, PLUS_EXPR, induc_def, vec_step);
 	  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
-	  set_vinfo_for_stmt (new_stmt, new_stmt_vec_info (new_stmt, loop_vinfo));
+	  loop_vinfo->add_stmt (new_stmt);
 
 	  /* Set the arguments of the phi node:  */
 	  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
@@ -7593,8 +7581,7 @@ vectorizable_induction (gimple *phi,
 		  gimple_stmt_iterator tgsi = gsi_for_stmt (iv);
 		  gsi_insert_after (&tgsi, new_stmt, GSI_CONTINUE_LINKING);
 		}
-	      set_vinfo_for_stmt (new_stmt,
-				  new_stmt_vec_info (new_stmt, loop_vinfo));
+	      loop_vinfo->add_stmt (new_stmt);
 	      SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
 	    }
 	}
@@ -7623,8 +7610,7 @@ vectorizable_induction (gimple *phi,
 	  new_bb = gsi_insert_on_edge_immediate (loop_preheader_edge (iv_loop),
 						 new_stmt);
 	  gcc_assert (!new_bb);
-	  set_vinfo_for_stmt (new_stmt,
-			      new_stmt_vec_info (new_stmt, loop_vinfo));
+	  loop_vinfo->add_stmt (new_stmt);
 	}
     }
   else
@@ -7728,15 +7714,14 @@ vectorizable_induction (gimple *phi,
   /* Create the induction-phi that defines the induction-operand.  */
   vec_dest = vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_");
   induction_phi = create_phi_node (vec_dest, iv_loop->header);
-  set_vinfo_for_stmt (induction_phi,
-		      new_stmt_vec_info (induction_phi, loop_vinfo));
+  stmt_vec_info induction_phi_info = loop_vinfo->add_stmt (induction_phi);
   induc_def = PHI_RESULT (induction_phi);
 
   /* Create the iv update inside the loop  */
   vec_def = make_ssa_name (vec_dest);
   new_stmt = gimple_build_assign (vec_def, PLUS_EXPR, induc_def, vec_step);
   gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
-  set_vinfo_for_stmt (new_stmt, new_stmt_vec_info (new_stmt, loop_vinfo));
+  stmt_vec_info new_stmt_info = loop_vinfo->add_stmt (new_stmt);
 
   /* Set the arguments of the phi node:  */
   add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
@@ -7781,7 +7766,7 @@ vectorizable_induction (gimple *phi,
       vec_step = vect_init_vector (phi, new_vec, vectype, NULL);
 
       vec_def = induc_def;
-      prev_stmt_vinfo = vinfo_for_stmt (induction_phi);
+      prev_stmt_vinfo = induction_phi_info;
       for (i = 1; i < ncopies; i++)
 	{
 	  /* vec_i = vec_prev + vec_step  */
@@ -7791,10 +7776,9 @@ vectorizable_induction (gimple *phi,
 	  gimple_assign_set_lhs (new_stmt, vec_def);
  
 	  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
-	  set_vinfo_for_stmt (new_stmt,
-			      new_stmt_vec_info (new_stmt, loop_vinfo));
+	  new_stmt_info = loop_vinfo->add_stmt (new_stmt);
 	  STMT_VINFO_RELATED_STMT (prev_stmt_vinfo) = new_stmt;
-	  prev_stmt_vinfo = vinfo_for_stmt (new_stmt);
+	  prev_stmt_vinfo = new_stmt_info;
 	}
     }
 
