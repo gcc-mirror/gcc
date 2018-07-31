@@ -1136,13 +1136,9 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
   int j;
   FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
 		    j, si)
-    {
-      struct _stmt_vec_info *stmt_info
-	= si->stmt ? vinfo_for_stmt (si->stmt) : NULL_STMT_VEC_INFO;
-      (void) add_stmt_cost (target_cost_data, si->count,
-			    si->kind, stmt_info, si->misalign,
-			    vect_body);
-    }
+    (void) add_stmt_cost (target_cost_data, si->count,
+			  si->kind, si->stmt_info, si->misalign,
+			  vect_body);
   unsigned dummy, body_cost = 0;
   finish_cost (target_cost_data, &dummy, &body_cost, &dummy);
   destroy_cost_data (target_cost_data);
@@ -3344,24 +3340,16 @@ vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
   int j;
   if (peel_iters_prologue)
     FOR_EACH_VEC_ELT (*scalar_cost_vec, j, si)
-	{
-	  stmt_vec_info stmt_info
-	    = si->stmt ? vinfo_for_stmt (si->stmt) : NULL_STMT_VEC_INFO;
-	  retval += record_stmt_cost (prologue_cost_vec,
-				      si->count * peel_iters_prologue,
-				      si->kind, stmt_info, si->misalign,
-				      vect_prologue);
-	}
+      retval += record_stmt_cost (prologue_cost_vec,
+				  si->count * peel_iters_prologue,
+				  si->kind, si->stmt_info, si->misalign,
+				  vect_prologue);
   if (*peel_iters_epilogue)
     FOR_EACH_VEC_ELT (*scalar_cost_vec, j, si)
-	{
-	  stmt_vec_info stmt_info
-	    = si->stmt ? vinfo_for_stmt (si->stmt) : NULL_STMT_VEC_INFO;
-	  retval += record_stmt_cost (epilogue_cost_vec,
-				      si->count * *peel_iters_epilogue,
-				      si->kind, stmt_info, si->misalign,
-				      vect_epilogue);
-	}
+      retval += record_stmt_cost (epilogue_cost_vec,
+				  si->count * *peel_iters_epilogue,
+				  si->kind, si->stmt_info, si->misalign,
+				  vect_epilogue);
 
   return retval;
 }
@@ -3497,13 +3485,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	  int j;
 	  FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
 			    j, si)
-	    {
-	      struct _stmt_vec_info *stmt_info
-		= si->stmt ? vinfo_for_stmt (si->stmt) : NULL_STMT_VEC_INFO;
-	      (void) add_stmt_cost (target_cost_data, si->count,
-				    si->kind, stmt_info, si->misalign,
-				    vect_epilogue);
-	    }
+	    (void) add_stmt_cost (target_cost_data, si->count,
+				  si->kind, si->stmt_info, si->misalign,
+				  vect_epilogue);
 	}
     }
   else if (npeel < 0)
@@ -3535,15 +3519,13 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       int j;
       FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
 	{
-	  struct _stmt_vec_info *stmt_info
-	    = si->stmt ? vinfo_for_stmt (si->stmt) : NULL_STMT_VEC_INFO;
 	  (void) add_stmt_cost (target_cost_data,
 				si->count * peel_iters_prologue,
-				si->kind, stmt_info, si->misalign,
+				si->kind, si->stmt_info, si->misalign,
 				vect_prologue);
 	  (void) add_stmt_cost (target_cost_data,
 				si->count * peel_iters_epilogue,
-				si->kind, stmt_info, si->misalign,
+				si->kind, si->stmt_info, si->misalign,
 				vect_epilogue);
 	}
     }
@@ -3566,20 +3548,12 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 					  &epilogue_cost_vec);
 
       FOR_EACH_VEC_ELT (prologue_cost_vec, j, si)
-	{
-	  struct _stmt_vec_info *stmt_info
-	    = si->stmt ? vinfo_for_stmt (si->stmt) : NULL_STMT_VEC_INFO;
-	  (void) add_stmt_cost (data, si->count, si->kind, stmt_info,
-				si->misalign, vect_prologue);
-	}
+	(void) add_stmt_cost (data, si->count, si->kind, si->stmt_info,
+			      si->misalign, vect_prologue);
 
       FOR_EACH_VEC_ELT (epilogue_cost_vec, j, si)
-	{
-	  struct _stmt_vec_info *stmt_info
-	    = si->stmt ? vinfo_for_stmt (si->stmt) : NULL_STMT_VEC_INFO;
-	  (void) add_stmt_cost (data, si->count, si->kind, stmt_info,
-				si->misalign, vect_epilogue);
-	}
+	(void) add_stmt_cost (data, si->count, si->kind, si->stmt_info,
+			      si->misalign, vect_epilogue);
 
       prologue_cost_vec.release ();
       epilogue_cost_vec.release ();

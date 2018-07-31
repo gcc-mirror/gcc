@@ -116,7 +116,7 @@ struct stmt_info_for_cost {
   int count;
   enum vect_cost_for_stmt kind;
   enum vect_cost_model_location where;
-  gimple *stmt;
+  stmt_vec_info stmt_info;
   int misalign;
 };
 
@@ -1282,10 +1282,7 @@ add_stmt_costs (void *data, stmt_vector_for_cost *cost_vec)
   stmt_info_for_cost *cost;
   unsigned i;
   FOR_EACH_VEC_ELT (*cost_vec, i, cost)
-    add_stmt_cost (data, cost->count, cost->kind,
-		   (cost->stmt
-		    ? vinfo_for_stmt (cost->stmt)
-		    : NULL_STMT_VEC_INFO),
+    add_stmt_cost (data, cost->count, cost->kind, cost->stmt_info,
 		   cost->misalign, cost->where);
 }
 
