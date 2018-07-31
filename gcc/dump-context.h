@@ -39,6 +39,8 @@ class dump_context
 
   ~dump_context ();
 
+  void dump_loc (dump_flags_t dump_kind, const dump_location_t &loc);
+
   void dump_gimple_stmt (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
 			 gimple *gs, int spc);
 

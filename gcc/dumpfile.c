@@ -474,6 +474,27 @@ dump_context::~dump_context ()
   delete m_pending;
 }
 
+/* Print LOC to the appropriate dump destinations, given DUMP_KIND.
+   If optinfos are enabled, begin a new optinfo.  */
+
+void
+dump_context::dump_loc (dump_flags_t dump_kind, const dump_location_t &loc)
+{
+  location_t srcloc = loc.get_location_t ();
+
+  if (dump_file && (dump_kind & pflags))
+    ::dump_loc (dump_kind, dump_file, srcloc);
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    ::dump_loc (dump_kind, alt_dump_file, srcloc);
+
+  if (optinfo_enabled_p ())
+    {
+      optinfo &info = begin_next_optinfo (loc);
+      info.handle_dump_file_kind (dump_kind);
+    }
+}
+
 /* Dump gimple statement GS with SPC indentation spaces and
    EXTRA_DUMP_FLAGS on the dump streams if DUMP_KIND is enabled.  */
 
@@ -504,25 +525,8 @@ dump_context::dump_gimple_stmt_loc (dump_flags_t dump_kind,
 				    dump_flags_t extra_dump_flags,
 				    gimple *gs, int spc)
 {
-  location_t srcloc = loc.get_location_t ();
-  if (dump_file && (dump_kind & pflags))
-    {
-      dump_loc (dump_kind, dump_file, srcloc);
-      print_gimple_stmt (dump_file, gs, spc, dump_flags | extra_dump_flags);
-    }
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-    {
-      dump_loc (dump_kind, alt_dump_file, srcloc);
-      print_gimple_stmt (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
-    }
-
-  if (optinfo_enabled_p ())
-    {
-      optinfo &info = begin_next_optinfo (loc);
-      info.handle_dump_file_kind (dump_kind);
-      info.add_gimple_stmt (gs, spc, dump_flags | extra_dump_flags);
-    }
+  dump_loc (dump_kind, loc);
+  dump_gimple_stmt (dump_kind, extra_dump_flags, gs, spc);
 }
 
 /* Dump gimple statement GS with SPC indentation spaces and
@@ -557,25 +561,8 @@ dump_context::dump_gimple_expr_loc (dump_flags_t dump_kind,
 				    gimple *gs,
 				    int spc)
 {
-  location_t srcloc = loc.get_location_t ();
-  if (dump_file && (dump_kind & pflags))
-    {
-      dump_loc (dump_kind, dump_file, srcloc);
-      print_gimple_expr (dump_file, gs, spc, dump_flags | extra_dump_flags);
-    }
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-    {
-      dump_loc (dump_kind, alt_dump_file, srcloc);
-      print_gimple_expr (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
-    }
-
-  if (optinfo_enabled_p ())
-    {
-      optinfo &info = begin_next_optinfo (loc);
-      info.handle_dump_file_kind (dump_kind);
-      info.add_gimple_expr (gs, spc, dump_flags | extra_dump_flags);
-    }
+  dump_loc (dump_kind, loc);
+  dump_gimple_expr (dump_kind, extra_dump_flags, gs, spc);
 }
 
 
@@ -611,25 +598,8 @@ dump_context::dump_generic_expr_loc (dump_flags_t dump_kind,
 				     dump_flags_t extra_dump_flags,
 				     tree t)
 {
-  location_t srcloc = loc.get_location_t ();
-  if (dump_file && (dump_kind & pflags))
-    {
-      dump_loc (dump_kind, dump_file, srcloc);
-      print_generic_expr (dump_file, t, dump_flags | extra_dump_flags);
-    }
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-    {
-      dump_loc (dump_kind, alt_dump_file, srcloc);
-      print_generic_expr (alt_dump_file, t, dump_flags | extra_dump_flags);
-    }
-
-  if (optinfo_enabled_p ())
-    {
-      optinfo &info = begin_next_optinfo (loc);
-      info.handle_dump_file_kind (dump_kind);
-      info.add_tree (t, dump_flags | extra_dump_flags);
-    }
+  dump_loc (dump_kind, loc);
+  dump_generic_expr (dump_kind, extra_dump_flags, t);
 }
 
 /* Output a formatted message using FORMAT on appropriate dump streams.  */
@@ -672,35 +642,8 @@ dump_context::dump_printf_loc_va (dump_flags_t dump_kind,
 				  const dump_location_t &loc,
 				  const char *format, va_list ap)
 {
-  location_t srcloc = loc.get_location_t ();
-
-  if (dump_file && (dump_kind & pflags))
-    {
-      dump_loc (dump_kind, dump_file, srcloc);
-      va_list aq;
-      va_copy (aq, ap);
-      vfprintf (dump_file, format, aq);
-      va_end (aq);
-    }
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-    {
-      dump_loc (dump_kind, alt_dump_file, srcloc);
-      va_list aq;
-      va_copy (aq, ap);
-      vfprintf (alt_dump_file, format, aq);
-      va_end (aq);
-    }
-
-  if (optinfo_enabled_p ())
-    {
-      optinfo &info = begin_next_optinfo (loc);
-      info.handle_dump_file_kind (dump_kind);
-      va_list aq;
-      va_copy (aq, ap);
-      info.add_printf_va (format, aq);
-      va_end (aq);
-    }
+  dump_loc (dump_kind, loc);
+  dump_printf_va (dump_kind, format, ap);
 }
 
 /* Output VALUE in decimal to appropriate dump streams.  */
@@ -767,13 +710,13 @@ dump_context::begin_scope (const char *name, const dump_location_t &loc)
 
   if (dump_file)
     {
-      dump_loc (MSG_NOTE, dump_file, loc.get_location_t ());
+      ::dump_loc (MSG_NOTE, dump_file, loc.get_location_t ());
       fprintf (dump_file, "=== %s ===\n", name);
     }
 
   if (alt_dump_file)
     {
-      dump_loc (MSG_NOTE, alt_dump_file, loc.get_location_t ());
+      ::dump_loc (MSG_NOTE, alt_dump_file, loc.get_location_t ());
       fprintf (alt_dump_file, "=== %s ===\n", name);
     }
 
