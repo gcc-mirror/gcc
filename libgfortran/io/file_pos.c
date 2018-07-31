@@ -25,7 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "io.h"
 #include "fbuf.h"
 #include "unix.h"
-#include "async.h"
 #include <string.h>
 
 /* file_pos.c-- Implement the file positioning statements, i.e. BACKSPACE,
@@ -188,7 +187,6 @@ void
 st_backspace (st_parameter_filepos *fpp)
 {
   gfc_unit *u;
-  bool needs_unlock = false;
 
   library_start (&fpp->common);
 
@@ -214,17 +212,6 @@ st_backspace (st_parameter_filepos *fpp)
       generate_error (&fpp->common, LIBERROR_OPTION_CONFLICT,
                       "Cannot BACKSPACE an unformatted stream file");
       goto done;
-    }
-
-  if (u->au)
-    {
-      if (async_wait (&(fpp->common), u->au))
-	return;
-      else
-	{
-	  needs_unlock = true;
-	  LOCK (&u->au->io_lock);
-	}
     }
 
   /* Make sure format buffer is flushed and reset.  */
@@ -280,12 +267,7 @@ st_backspace (st_parameter_filepos *fpp)
 
  done:
   if (u != NULL)
-    {
-      unlock_unit (u);
-
-      if (u->au && needs_unlock)
-	UNLOCK (&u->au->io_lock);
-    }
+    unlock_unit (u);
 
   library_end ();
 }
@@ -298,7 +280,6 @@ void
 st_endfile (st_parameter_filepos *fpp)
 {
   gfc_unit *u;
-  bool needs_unlock = false;
 
   library_start (&fpp->common);
 
@@ -311,17 +292,6 @@ st_endfile (st_parameter_filepos *fpp)
 			  "Cannot perform ENDFILE on a file opened "
 			  "for DIRECT access");
 	  goto done;
-	}
-
-      if (u->au)
-	{
-	  if (async_wait (&(fpp->common), u->au))
-	    return;
-	  else
-	    {
-	      needs_unlock = true;
-	      LOCK (&u->au->io_lock);
-	    }
 	}
 
       if (u->flags.access == ACCESS_SEQUENTIAL
@@ -406,11 +376,8 @@ st_endfile (st_parameter_filepos *fpp)
 	}
     }
 
- done:
-  if (u->au && needs_unlock)
-    UNLOCK (&u->au->io_lock);
-
-  unlock_unit (u);
+  done:
+    unlock_unit (u);
 
   library_end ();
 }
@@ -423,7 +390,6 @@ void
 st_rewind (st_parameter_filepos *fpp)
 {
   gfc_unit *u;
-  bool needs_unlock = true;
 
   library_start (&fpp->common);
 
@@ -435,17 +401,6 @@ st_rewind (st_parameter_filepos *fpp)
 			"Cannot REWIND a file opened for DIRECT access");
       else
 	{
-	  if (u->au)
-	    {
-	      if (async_wait (&(fpp->common), u->au))
-		return;
-	      else
-		{
-		  needs_unlock = true;
-		  LOCK (&u->au->io_lock);
-		}
-	    }
-
 	  /* If there are previously written bytes from a write with ADVANCE="no",
 	     add a record marker before performing the ENDFILE.  */
 
@@ -481,10 +436,6 @@ st_rewind (st_parameter_filepos *fpp)
 	}
       /* Update position for INQUIRE.  */
       u->flags.position = POSITION_REWIND;
-
-      if (u->au && needs_unlock)
-	UNLOCK (&u->au->io_lock);
-
       unlock_unit (u);
     }
 
@@ -499,24 +450,12 @@ void
 st_flush (st_parameter_filepos *fpp)
 {
   gfc_unit *u;
-  bool needs_unlock = false;
 
   library_start (&fpp->common);
 
   u = find_unit (fpp->common.unit);
   if (u != NULL)
     {
-      if (u->au)
-	{
-	  if (async_wait (&(fpp->common), u->au))
-	    return;
-	  else
-	    {
-	      needs_unlock = true;
-	      LOCK (&u->au->io_lock);
-	    }
-	}
-
       /* Make sure format buffer is flushed.  */
       if (u->flags.form == FORM_FORMATTED)
         fbuf_flush (u, u->mode);
@@ -529,9 +468,6 @@ st_flush (st_parameter_filepos *fpp)
     /* FLUSH on unconnected unit is illegal: F95 std., 9.3.5. */ 
     generate_error (&fpp->common, LIBERROR_BAD_OPTION,
 			"Specified UNIT in FLUSH is not connected");
-
-  if (needs_unlock)
-    UNLOCK (&u->au->io_lock);
 
   library_end ();
 }

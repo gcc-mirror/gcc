@@ -1,3 +1,17 @@
+2018-07-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Revert 'AsyncI/O patch committed'
+	2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
+		Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* gfortran.texi: Add description of asynchronous I/O.
+	* trans-decl.c (gfc_finish_var_decl): Treat asynchronous variables
+	as volatile.
+	* trans-io.c (gfc_build_io_library_fndecls): Rename st_wait to
+	st_wait_async and change argument spec from ".X" to ".w".
+	(gfc_trans_wait): Pass ID argument via reference.
+
 2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
 	Thomas Koenig <tkoenig@gcc.gnu.org>
 

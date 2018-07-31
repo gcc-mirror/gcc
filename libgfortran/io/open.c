@@ -26,7 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "io.h"
 #include "fbuf.h"
 #include "unix.h"
-#include "async.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -652,12 +651,8 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
   else
     u->fbuf = NULL;
 
-  /* Check if asynchrounous.  */
-  if (flags->async == ASYNC_YES)
-    init_async_unit (u);
-  else
-    u->au = NULL;
-
+    
+    
   return u;
 
  cleanup:
