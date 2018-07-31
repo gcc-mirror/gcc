@@ -1,5 +1,24 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (stmt_vec_info): Move typedef earlier in file.
+	(vec_info::add_stmt): Declare.
+	* tree-vectorizer.c (vec_info::add_stmt): New function.
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Use it.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Likewise.
+	(vect_create_epilog_for_reduction, vectorizable_reduction): Likewise.
+	(vectorizable_induction): Likewise.
+	* tree-vect-slp.c (_bb_vec_info::_bb_vec_info): Likewise.
+	* tree-vect-stmts.c (vect_finish_stmt_generation_1): Likewise.
+	(vectorizable_simd_clone_call, vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	* tree-vect-patterns.c (vect_init_pattern_stmt): Likewise.
+	(vect_recog_bool_pattern, vect_recog_mask_conversion_pattern)
+	(vect_recog_gather_scatter_pattern): Likewise.
+	(append_pattern_def_seq): Likewise.  Remove a check that is
+	performed by add_stmt itself.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (vectorizable_reduction): Fix an instance in
 	which make_ssa_name was called with new_stmt before new_stmt
 	had been created.

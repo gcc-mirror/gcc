@@ -1744,7 +1744,7 @@ vect_finish_stmt_generation_1 (gimple *stmt, gimple *vec_stmt)
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vec_info *vinfo = stmt_info->vinfo;
 
-  set_vinfo_for_stmt (vec_stmt, new_stmt_vec_info (vec_stmt, vinfo));
+  vinfo->add_stmt (vec_stmt);
 
   if (dump_enabled_p ())
     {
@@ -4183,8 +4183,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 		    }
 		  tree phi_res = copy_ssa_name (op);
 		  gphi *new_phi = create_phi_node (phi_res, loop->header);
-		  set_vinfo_for_stmt (new_phi,
-				      new_stmt_vec_info (new_phi, loop_vinfo));
+		  loop_vinfo->add_stmt (new_phi);
 		  add_phi_arg (new_phi, arginfo[i].op,
 			       loop_preheader_edge (loop), UNKNOWN_LOCATION);
 		  enum tree_code code
@@ -4201,8 +4200,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 		    = gimple_build_assign (phi_arg, code, phi_res, tcst);
 		  gimple_stmt_iterator si = gsi_after_labels (loop->header);
 		  gsi_insert_after (&si, new_stmt, GSI_NEW_STMT);
-		  set_vinfo_for_stmt (new_stmt,
-				      new_stmt_vec_info (new_stmt, loop_vinfo));
+		  loop_vinfo->add_stmt (new_stmt);
 		  add_phi_arg (new_phi, phi_arg, loop_latch_edge (loop),
 			       UNKNOWN_LOCATION);
 		  arginfo[i].op = phi_res;
@@ -6731,7 +6729,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		 loop, &incr_gsi, insert_after,
 		 &offvar, NULL);
       incr = gsi_stmt (incr_gsi);
-      set_vinfo_for_stmt (incr, new_stmt_vec_info (incr, loop_vinfo));
+      loop_vinfo->add_stmt (incr);
 
       stride_step = cse_and_gimplify_to_preheader (loop_vinfo, stride_step);
 
@@ -7729,7 +7727,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		 loop, &incr_gsi, insert_after,
 		 &offvar, NULL);
       incr = gsi_stmt (incr_gsi);
-      set_vinfo_for_stmt (incr, new_stmt_vec_info (incr, loop_vinfo));
+      loop_vinfo->add_stmt (incr);
 
       stride_step = cse_and_gimplify_to_preheader (loop_vinfo, stride_step);
 
@@ -8488,8 +8486,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 					        (gimple_assign_rhs1 (stmt))));
 		      new_temp = vect_init_vector (stmt, tem, vectype, NULL);
 		      new_stmt = SSA_NAME_DEF_STMT (new_temp);
-		      set_vinfo_for_stmt (new_stmt,
-					  new_stmt_vec_info (new_stmt, vinfo));
+		      vinfo->add_stmt (new_stmt);
 		    }
 		  else
 		    {

@@ -507,6 +507,17 @@ vec_info_shared::check_datarefs ()
       gcc_unreachable ();
 }
 
+/* Record that STMT belongs to the vectorizable region.  Create and return
+   an associated stmt_vec_info.  */
+
+stmt_vec_info
+vec_info::add_stmt (gimple *stmt)
+{
+  stmt_vec_info res = new_stmt_vec_info (stmt, this);
+  set_vinfo_for_stmt (stmt, res);
+  return res;
+}
+
 /* A helper function to free scev and LOOP niter information, as well as
    clear loop constraint LOOP_C_FINITE.  */
 

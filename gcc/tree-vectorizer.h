@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-hash-traits.h"
 #include "target.h"
 
+typedef struct _stmt_vec_info *stmt_vec_info;
+
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {
   vect_simple_var,
@@ -214,6 +216,8 @@ struct vec_info {
 
   vec_info (vec_kind, void *, vec_info_shared *);
   ~vec_info ();
+
+  stmt_vec_info add_stmt (gimple *);
 
   /* The type of vectorization.  */
   vec_kind kind;
@@ -761,7 +765,7 @@ struct dataref_aux {
 
 typedef struct data_reference *dr_p;
 
-typedef struct _stmt_vec_info {
+struct _stmt_vec_info {
 
   enum stmt_vec_info_type type;
 
@@ -914,7 +918,7 @@ typedef struct _stmt_vec_info {
      and OPERATION_BITS without changing the result.  */
   unsigned int operation_precision;
   signop operation_sign;
-} *stmt_vec_info;
+};
 
 /* Information about a gather/scatter call.  */
 struct gather_scatter_info {
