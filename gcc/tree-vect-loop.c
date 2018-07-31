@@ -4113,10 +4113,8 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
   enum tree_code code = gimple_assign_rhs_code (stmt);
   tree def_for_init;
   tree init_def;
-  bool nested_in_vect_loop = false;
   REAL_VALUE_TYPE real_init_val = dconst0;
   int int_init_val = 0;
-  gimple *def_stmt = NULL;
   gimple_seq stmts = NULL;
 
   gcc_assert (vectype);
@@ -4124,38 +4122,11 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
   gcc_assert (POINTER_TYPE_P (scalar_type) || INTEGRAL_TYPE_P (scalar_type)
 	      || SCALAR_FLOAT_TYPE_P (scalar_type));
 
-  if (nested_in_vect_loop_p (loop, stmt))
-    nested_in_vect_loop = true;
-  else
-    gcc_assert (loop == (gimple_bb (stmt))->loop_father);
-
-  /* In case of double reduction we only create a vector variable to be put
-     in the reduction phi node.  The actual statement creation is done in
-     vect_create_epilog_for_reduction.  */
-  if (adjustment_def && nested_in_vect_loop
-      && TREE_CODE (init_val) == SSA_NAME
-      && (def_stmt = SSA_NAME_DEF_STMT (init_val))
-      && gimple_code (def_stmt) == GIMPLE_PHI
-      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
-      && vinfo_for_stmt (def_stmt)
-      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
-          == vect_double_reduction_def)
-    {
-      *adjustment_def = NULL;
-      return vect_create_destination_var (init_val, vectype);
-    }
+  gcc_assert (nested_in_vect_loop_p (loop, stmt)
+	      || loop == (gimple_bb (stmt))->loop_father);
 
   vect_reduction_type reduction_type
     = STMT_VINFO_VEC_REDUCTION_TYPE (stmt_vinfo);
-
-  /* In case of a nested reduction do not use an adjustment def as
-     that case is not supported by the epilogue generation correctly
-     if ncopies is not one.  */
-  if (adjustment_def && nested_in_vect_loop)
-    {
-      *adjustment_def = NULL;
-      return vect_get_vec_def_for_operand (init_val, stmt);
-    }
 
   switch (code)
     {
@@ -4586,9 +4557,22 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	      || (induc_code == MIN_EXPR
 		  && tree_int_cst_lt (induc_val, initial_def))))
 	induc_val = initial_def;
-      vect_is_simple_use (initial_def, loop_vinfo, &initial_def_dt);
-      vec_initial_def = get_initial_def_for_reduction (stmt, initial_def,
-						       &adjustment_def);
+
+      if (double_reduc)
+	/* In case of double reduction we only create a vector variable
+	   to be put in the reduction phi node.  The actual statement
+	   creation is done later in this function.  */
+	vec_initial_def = vect_create_destination_var (initial_def, vectype);
+      else if (nested_in_vect_loop)
+	{
+	  /* Do not use an adjustment def as that case is not supported
+	     correctly if ncopies is not one.  */
+	  vect_is_simple_use (initial_def, loop_vinfo, &initial_def_dt);
+	  vec_initial_def = vect_get_vec_def_for_operand (initial_def, stmt);
+	}
+      else
+	vec_initial_def = get_initial_def_for_reduction (stmt, initial_def,
+							 &adjustment_def);
       vec_initial_defs.create (1);
       vec_initial_defs.quick_push (vec_initial_def);
     }
