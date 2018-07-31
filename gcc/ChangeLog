@@ -1,5 +1,27 @@
 2018-07-31  Olivier Hainque  <hainque@adacore.com>
 
+	* common.opt (nolibc): New option.
+	* doc/invoke.texi (Link Options): Document it.
+	* gcc.c (LINK_GCC_C_SEQUENCE_SPEC): Honor nolibc.
+	* config/alpha/linux.h: Likewise.
+	* config/arc/elf.h: Likewise.
+	* config/arm/uclinux-elf.h: Likewise.
+	* config/arm/unknown-elf.h: Likewise.
+	* config/avr/avrlibc.h: Likewise.
+	* config/bfin/bfin.h: Likewise.
+	* config/bfin/linux.h: Likewise.
+	* config/bfin/uclinux.h: Likewise.
+	* config/darwin.h: Likewise.
+	* config/darwin10.h: Likewise.
+	* config/darwin12.h: Likewise.
+	* config/gnu-user.h: Likewise.
+	* config/lm32/uclinux-elf.h: Likewise.
+	* config/pa/pa-hpux11.h: Likewise.
+	* config/pa/pa64-hpux.h: Likewise.
+	* config/sparc/sparc.h: Likewise.
+
+2018-07-31  Olivier Hainque  <hainque@adacore.com>
+
 	* gcc.c (getenv_spec_function): Prepend '/' to value for allowed
 	undefined variables.
 

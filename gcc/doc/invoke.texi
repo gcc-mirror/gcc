@@ -517,7 +517,8 @@ Objective-C and Objective-C++ Dialects}.
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library} @gol
--nostartfiles  -nodefaultlibs  -nostdlib  -pie  -pthread  -rdynamic @gol
+-nostartfiles  -nodefaultlibs  -nolibc  -nostdlib @gol
+-pie  -pthread  -rdynamic @gol
 -s  -static -static-pie -static-libgcc  -static-libstdc++ @gol
 -static-libasan  -static-libtsan  -static-liblsan  -static-libubsan @gol
 -shared  -shared-libgcc  -symbolic @gol
@@ -12350,8 +12351,8 @@ link an Objective-C or Objective-C++ program.
 @item -nostartfiles
 @opindex nostartfiles
 Do not use the standard system startup files when linking.
-The standard system libraries are used normally, unless @option{-nostdlib}
-or @option{-nodefaultlibs} is used.
+The standard system libraries are used normally, unless @option{-nostdlib},
+@option{-nolibc}, or @option{-nodefaultlibs} is used.
 
 @item -nodefaultlibs
 @opindex nodefaultlibs
@@ -12367,6 +12368,18 @@ The compiler may generate calls to @code{memcmp},
 These entries are usually resolved by entries in
 libc.  These entry points should be supplied through some other
 mechanism when this option is specified.
+
+@item -nolibc
+@opindex nolibc
+Do not use the C library or system libraries tightly coupled with it when
+linking.  Still link with the startup files, @file{libgcc} or toolchain
+provided language support libraries such as @file{libgnat}, @file{libgfortran}
+or @file{libstdc++} unless options preventing their inclusion are used as
+well.  This typically removes @option{-lc} from the link command line, as well
+as system libraries that normally go with it and become meaningless when
+absence of a C library is assumed, for example @option{-lpthread} or
+@option{-lm} in some configurations.  This is intended for bare-board
+targets when there is indeed no C library available.
 
 @item -nostdlib
 @opindex nostdlib

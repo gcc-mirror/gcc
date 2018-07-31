@@ -872,7 +872,7 @@ proper position among the other output files.  */
    -lgcc and -lc order specially, yet not require them to override all
    of LINK_COMMAND_SPEC.  */
 #ifndef LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC "%G %L %G"
+#define LINK_GCC_C_SEQUENCE_SPEC "%G %{!nolibc:%L %G}"
 #endif
 
 #ifndef LINK_SSP_SPEC
