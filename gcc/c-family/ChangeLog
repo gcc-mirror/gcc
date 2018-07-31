@@ -1,3 +1,12 @@
+2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* c-common.c (speculation_safe_resolve_call): New function.
+	(speculation_safe_resolve_params): New function.
+	(speculation_safe_resolve_return): New function.
+	(resolve_overloaded_builtin): Handle __builtin_speculation_safe_value.
+	* c-cppbuiltin.c (c_cpp_builtins): Add pre-define for
+	__HAVE_SPECULATION_SAFE_VALUE.
+
 2018-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (c_cpp_error): Remove redundant "line_table"

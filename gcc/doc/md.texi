@@ -7032,6 +7032,21 @@ should be defined to an instruction that orders both loads and stores
 before the instruction with respect to loads and stores after the instruction.
 This pattern has no operands.
 
+@cindex @code{speculation_barrier} instruction pattern
+@item @samp{speculation_barrier}
+If the target can support speculative execution, then this pattern should
+be defined to an instruction that will block subsequent execution until
+any prior speculation conditions has been resolved.  The pattern must also
+ensure that the compiler cannot move memory operations past the barrier,
+so it needs to be an UNSPEC_VOLATILE pattern.  The pattern has no
+operands.
+
+If this pattern is not defined then the default expansion of
+@code{__builtin_speculation_safe_value} will emit a warning.  You can
+suppress this warning by defining this pattern with a final condition
+of @code{0} (zero), which tells the compiler that a speculation
+barrier is not needed for this target.
+
 @cindex @code{sync_compare_and_swap@var{mode}} instruction pattern
 @item @samp{sync_compare_and_swap@var{mode}}
 This pattern, if defined, emits code for an atomic compare-and-swap

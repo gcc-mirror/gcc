@@ -1,3 +1,9 @@
+2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* c-c++-common/spec-barrier-1.c: New test.
+	* c-c++-common/spec-barrier-2.c: New test.
+	* gcc.dg/spec-barrier-3.c: New test.
+
 2018-07-31  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86741
