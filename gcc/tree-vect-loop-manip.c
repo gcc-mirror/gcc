@@ -1380,8 +1380,8 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
       stmt_vec_info phi_info = loop_vinfo->lookup_stmt (phi);
       if (dump_enabled_p ())
 	{
-          dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
-          dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
+	  dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi_info->stmt, 0);
 	}
 
       /* Skip virtual phi's. The data dependences that are associated with

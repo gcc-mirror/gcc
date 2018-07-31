@@ -2096,8 +2096,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
                   dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				   "Build SLP failed: unsupported load "
 				   "permutation ");
-		      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,
-					TDF_SLIM, stmt, 0);
+		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,
+				    TDF_SLIM, stmt_info->stmt, 0);
                 }
 	      vect_free_slp_instance (new_instance, false);
               return false;
@@ -2172,8 +2172,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  gcc_assert ((const_nunits & (const_nunits - 1)) == 0);
 	  unsigned group1_size = i & ~(const_nunits - 1);
 
-	  gimple *rest = vect_split_slp_store_group (stmt, group1_size);
-	  bool res = vect_analyze_slp_instance (vinfo, stmt, max_tree_size);
+	  gimple *rest = vect_split_slp_store_group (stmt_info, group1_size);
+	  bool res = vect_analyze_slp_instance (vinfo, stmt_info,
+						max_tree_size);
 	  /* If the first non-match was in the middle of a vector,
 	     skip the rest of that vector.  */
 	  if (group1_size < i)
@@ -2513,7 +2514,6 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 				    stmt_vector_for_cost *cost_vec)
 {
   stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
-  gimple *stmt = stmt_info->stmt;
   gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
 
   /* For BB vectorization vector types are assigned here.
@@ -2567,7 +2567,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
     }
 
   bool dummy;
-  return vect_analyze_stmt (stmt, &dummy, node, node_instance, cost_vec);
+  return vect_analyze_stmt (stmt_info, &dummy, node, node_instance, cost_vec);
 }
 
 /* Analyze statements contained in SLP tree NODE after recursively analyzing

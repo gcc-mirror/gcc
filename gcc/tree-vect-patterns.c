@@ -842,7 +842,7 @@ vect_reassociating_reduction_p (stmt_vec_info stmt_info, tree_code code,
   /* We don't allow changing the order of the computation in the inner-loop
      when doing outer-loop vectorization.  */
   struct loop *loop = LOOP_VINFO_LOOP (loop_info);
-  if (loop && nested_in_vect_loop_p (loop, assign))
+  if (loop && nested_in_vect_loop_p (loop, stmt_info))
     return false;
 
   if (!vect_reassociating_reduction_p (stmt_info))
@@ -1196,7 +1196,7 @@ vect_recog_widen_op_pattern (stmt_vec_info last_stmt_info, tree *type_out,
   auto_vec<tree> dummy_vec;
   if (!vectype
       || !vecitype
-      || !supportable_widening_operation (wide_code, last_stmt,
+      || !supportable_widening_operation (wide_code, last_stmt_info,
 					  vecitype, vectype,
 					  &dummy_code, &dummy_code,
 					  &dummy_int, &dummy_vec))
@@ -3118,11 +3118,11 @@ vect_recog_mixed_size_cond_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
     return NULL;
 
   if ((TREE_CODE (then_clause) != INTEGER_CST
-       && !type_conversion_p (then_clause, last_stmt, false, &orig_type0,
-                              &def_stmt0, &promotion))
+       && !type_conversion_p (then_clause, stmt_vinfo, false, &orig_type0,
+			      &def_stmt0, &promotion))
       || (TREE_CODE (else_clause) != INTEGER_CST
-          && !type_conversion_p (else_clause, last_stmt, false, &orig_type1,
-                                 &def_stmt1, &promotion)))
+	  && !type_conversion_p (else_clause, stmt_vinfo, false, &orig_type1,
+				 &def_stmt1, &promotion)))
     return NULL;
 
   if (orig_type0 && orig_type1
@@ -3709,7 +3709,7 @@ vect_recog_bool_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 
       if (check_bool_pattern (var, vinfo, bool_stmts))
 	{
-	  rhs = adjust_bool_stmts (bool_stmts, TREE_TYPE (lhs), last_stmt);
+	  rhs = adjust_bool_stmts (bool_stmts, TREE_TYPE (lhs), stmt_vinfo);
 	  lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
 	  if (useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
 	    pattern_stmt = gimple_build_assign (lhs, SSA_NAME, rhs);
@@ -3776,7 +3776,7 @@ vect_recog_bool_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
       if (!check_bool_pattern (var, vinfo, bool_stmts))
 	return NULL;
 
-      rhs = adjust_bool_stmts (bool_stmts, type, last_stmt);
+      rhs = adjust_bool_stmts (bool_stmts, type, stmt_vinfo);
 
       lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
       pattern_stmt 
@@ -3800,7 +3800,7 @@ vect_recog_bool_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	return NULL;
 
       if (check_bool_pattern (var, vinfo, bool_stmts))
-	rhs = adjust_bool_stmts (bool_stmts, TREE_TYPE (vectype), last_stmt);
+	rhs = adjust_bool_stmts (bool_stmts, TREE_TYPE (vectype), stmt_vinfo);
       else
 	{
 	  tree type = search_type_for_mask (var, vinfo);
@@ -4234,13 +4234,12 @@ vect_recog_gather_scatter_pattern (stmt_vec_info stmt_info, tree *type_out)
 
   /* Get the boolean that controls whether the load or store happens.
      This is null if the operation is unconditional.  */
-  gimple *stmt = stmt_info->stmt;
-  tree mask = vect_get_load_store_mask (stmt);
+  tree mask = vect_get_load_store_mask (stmt_info);
 
   /* Make sure that the target supports an appropriate internal
      function for the gather/scatter operation.  */
   gather_scatter_info gs_info;
-  if (!vect_check_gather_scatter (stmt, loop_vinfo, &gs_info)
+  if (!vect_check_gather_scatter (stmt_info, loop_vinfo, &gs_info)
       || gs_info.decl)
     return NULL;
 
@@ -4273,7 +4272,7 @@ vect_recog_gather_scatter_pattern (stmt_vec_info stmt_info, tree *type_out)
     }
   else
     {
-      tree rhs = vect_get_store_rhs (stmt);
+      tree rhs = vect_get_store_rhs (stmt_info);
       if (mask != NULL)
 	pattern_stmt = gimple_build_call_internal (IFN_MASK_SCATTER_STORE, 5,
 						   base, offset, scale, rhs,
@@ -4295,7 +4294,7 @@ vect_recog_gather_scatter_pattern (stmt_vec_info stmt_info, tree *type_out)
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   *type_out = vectype;
-  vect_pattern_detected ("gather/scatter pattern", stmt);
+  vect_pattern_detected ("gather/scatter pattern", stmt_info->stmt);
 
   return pattern_stmt;
 }

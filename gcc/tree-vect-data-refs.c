@@ -712,7 +712,7 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
 	     been sunk to (and we verify if we can do that as well).  */
 	  if (gimple_visited_p (stmt))
 	    {
-	      if (stmt != last_store)
+	      if (stmt_info != last_store)
 		continue;
 	      unsigned i;
 	      stmt_vec_info store_info;
@@ -3666,7 +3666,7 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
 
   /* See whether this is already a call to a gather/scatter internal function.
      If not, see whether it's a masked load or store.  */
-  gcall *call = dyn_cast <gcall *> (stmt);
+  gcall *call = dyn_cast <gcall *> (stmt_info->stmt);
   if (call && gimple_call_internal_p (call))
     {
       ifn = gimple_call_internal_fn (call);
@@ -4677,8 +4677,8 @@ vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
   if (loop_vinfo)
     {
       loop = LOOP_VINFO_LOOP (loop_vinfo);
-      nested_in_vect_loop = nested_in_vect_loop_p (loop, stmt);
-      containing_loop = (gimple_bb (stmt))->loop_father;
+      nested_in_vect_loop = nested_in_vect_loop_p (loop, stmt_info);
+      containing_loop = (gimple_bb (stmt_info->stmt))->loop_father;
       pe = loop_preheader_edge (loop);
     }
   else
@@ -4786,7 +4786,7 @@ vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
 
   /* Create: (&(base[init_val+offset]+byte_offset) in the loop preheader.  */
 
-  new_temp = vect_create_addr_base_for_vector_ref (stmt, &new_stmt_list,
+  new_temp = vect_create_addr_base_for_vector_ref (stmt_info, &new_stmt_list,
 						   offset, byte_offset);
   if (new_stmt_list)
     {
@@ -4934,7 +4934,7 @@ bump_vector_ptr (tree dataref_ptr, gimple *ptr_incr, gimple_stmt_iterator *gsi,
     new_dataref_ptr = make_ssa_name (TREE_TYPE (dataref_ptr));
   incr_stmt = gimple_build_assign (new_dataref_ptr, POINTER_PLUS_EXPR,
 				   dataref_ptr, update);
-  vect_finish_stmt_generation (stmt, incr_stmt, gsi);
+  vect_finish_stmt_generation (stmt_info, incr_stmt, gsi);
 
   /* Copy the points-to information if it exists. */
   if (DR_PTR_INFO (dr))
@@ -5282,7 +5282,7 @@ vect_permute_store_chain (vec<tree> dr_chain,
 	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle3_low");
 	  perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR, vect1,
 					   vect2, perm3_mask_low);
-	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	  vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 
 	  vect1 = data_ref;
 	  vect2 = dr_chain[2];
@@ -5293,7 +5293,7 @@ vect_permute_store_chain (vec<tree> dr_chain,
 	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle3_high");
 	  perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR, vect1,
 					   vect2, perm3_mask_high);
-	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	  vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 	  (*result_chain)[j] = data_ref;
 	}
     }
@@ -5332,7 +5332,7 @@ vect_permute_store_chain (vec<tree> dr_chain,
 		high = make_temp_ssa_name (vectype, NULL, "vect_inter_high");
 		perm_stmt = gimple_build_assign (high, VEC_PERM_EXPR, vect1,
 						 vect2, perm_mask_high);
-		vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+		vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 		(*result_chain)[2*j] = high;
 
 		/* Create interleaving stmt:
@@ -5342,7 +5342,7 @@ vect_permute_store_chain (vec<tree> dr_chain,
 		low = make_temp_ssa_name (vectype, NULL, "vect_inter_low");
 		perm_stmt = gimple_build_assign (low, VEC_PERM_EXPR, vect1,
 						 vect2, perm_mask_low);
-		vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+		vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 		(*result_chain)[2*j+1] = low;
 	      }
 	    memcpy (dr_chain.address (), result_chain->address (),
@@ -5415,7 +5415,7 @@ vect_setup_realignment (gimple *stmt, gimple_stmt_iterator *gsi,
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   struct loop *loop = NULL;
   edge pe = NULL;
-  tree scalar_dest = gimple_assign_lhs (stmt);
+  tree scalar_dest = gimple_assign_lhs (stmt_info->stmt);
   tree vec_dest;
   gimple *inc;
   tree ptr;
@@ -5429,13 +5429,13 @@ vect_setup_realignment (gimple *stmt, gimple_stmt_iterator *gsi,
   bool inv_p;
   bool compute_in_loop = false;
   bool nested_in_vect_loop = false;
-  struct loop *containing_loop = (gimple_bb (stmt))->loop_father;
+  struct loop *containing_loop = (gimple_bb (stmt_info->stmt))->loop_father;
   struct loop *loop_for_initial_load = NULL;
 
   if (loop_vinfo)
     {
       loop = LOOP_VINFO_LOOP (loop_vinfo);
-      nested_in_vect_loop = nested_in_vect_loop_p (loop, stmt);
+      nested_in_vect_loop = nested_in_vect_loop_p (loop, stmt_info);
     }
 
   gcc_assert (alignment_support_scheme == dr_explicit_realign
@@ -5518,9 +5518,9 @@ vect_setup_realignment (gimple *stmt, gimple_stmt_iterator *gsi,
 
       gcc_assert (!compute_in_loop);
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
-      ptr = vect_create_data_ref_ptr (stmt, vectype, loop_for_initial_load,
-				      NULL_TREE, &init_addr, NULL, &inc,
-				      true, &inv_p);
+      ptr = vect_create_data_ref_ptr (stmt_info, vectype,
+				      loop_for_initial_load, NULL_TREE,
+				      &init_addr, NULL, &inc, true, &inv_p);
       if (TREE_CODE (ptr) == SSA_NAME)
 	new_temp = copy_ssa_name (ptr);
       else
@@ -5562,7 +5562,7 @@ vect_setup_realignment (gimple *stmt, gimple_stmt_iterator *gsi,
       if (!init_addr)
 	{
 	  /* Generate the INIT_ADDR computation outside LOOP.  */
-	  init_addr = vect_create_addr_base_for_vector_ref (stmt, &stmts,
+	  init_addr = vect_create_addr_base_for_vector_ref (stmt_info, &stmts,
 							    NULL_TREE);
           if (loop)
             {
@@ -5890,7 +5890,7 @@ vect_permute_load_chain (vec<tree> dr_chain,
 	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle3_low");
 	  perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR, first_vect,
 					   second_vect, perm3_mask_low);
-	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	  vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 
 	  /* Create interleaving stmt (high part of):
 	     high = VEC_PERM_EXPR <first_vect, second_vect2, {k, 3 + k, 6 + k,
@@ -5900,7 +5900,7 @@ vect_permute_load_chain (vec<tree> dr_chain,
 	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle3_high");
 	  perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR, first_vect,
 					   second_vect, perm3_mask_high);
-	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	  vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 	  (*result_chain)[k] = data_ref;
 	}
     }
@@ -5935,7 +5935,7 @@ vect_permute_load_chain (vec<tree> dr_chain,
 	      perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR,
 					       first_vect, second_vect,
 					       perm_mask_even);
-	      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	      vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 	      (*result_chain)[j/2] = data_ref;
 
 	      /* data_ref = permute_odd (first_data_ref, second_data_ref);  */
@@ -5943,7 +5943,7 @@ vect_permute_load_chain (vec<tree> dr_chain,
 	      perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR,
 					       first_vect, second_vect,
 					       perm_mask_odd);
-	      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	      vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 	      (*result_chain)[j/2+length/2] = data_ref;
 	    }
 	  memcpy (dr_chain.address (), result_chain->address (),
@@ -6143,26 +6143,26 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	      perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR,
 					       first_vect, first_vect,
 					       perm2_mask1);
-	      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	      vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 	      vect[0] = data_ref;
 
 	      data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle2");
 	      perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR,
 					       second_vect, second_vect,
 					       perm2_mask2);
-	      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	      vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 	      vect[1] = data_ref;
 
 	      data_ref = make_temp_ssa_name (vectype, NULL, "vect_shift");
 	      perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR,
 					       vect[0], vect[1], shift1_mask);
-	      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	      vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 	      (*result_chain)[j/2 + length/2] = data_ref;
 
 	      data_ref = make_temp_ssa_name (vectype, NULL, "vect_select");
 	      perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR,
 					       vect[0], vect[1], select_mask);
-	      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	      vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 	      (*result_chain)[j/2] = data_ref;
 	    }
 	  memcpy (dr_chain.address (), result_chain->address (),
@@ -6259,7 +6259,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	  perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR,
 					   dr_chain[k], dr_chain[k],
 					   perm3_mask);
-	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	  vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 	  vect[k] = data_ref;
 	}
 
@@ -6269,7 +6269,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	  perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR,
 					   vect[k % 3], vect[(k + 1) % 3],
 					   shift1_mask);
-	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	  vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 	  vect_shift[k] = data_ref;
 	}
 
@@ -6280,7 +6280,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 					   vect_shift[(4 - k) % 3],
 					   vect_shift[(3 - k) % 3],
 					   shift2_mask);
-	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	  vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
 	  vect[k] = data_ref;
 	}
 
@@ -6289,13 +6289,13 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
       data_ref = make_temp_ssa_name (vectype, NULL, "vect_shift3");
       perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR, vect[0],
 				       vect[0], shift3_mask);
-      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+      vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
       (*result_chain)[nelt % 3] = data_ref;
 
       data_ref = make_temp_ssa_name (vectype, NULL, "vect_shift4");
       perm_stmt = gimple_build_assign (data_ref, VEC_PERM_EXPR, vect[1],
 				       vect[1], shift4_mask);
-      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+      vect_finish_stmt_generation (stmt_info, perm_stmt, gsi);
       (*result_chain)[0] = data_ref;
       return true;
     }
@@ -6328,10 +6328,10 @@ vect_transform_grouped_load (gimple *stmt, vec<tree> dr_chain, int size,
   mode = TYPE_MODE (STMT_VINFO_VECTYPE (stmt_info));
   if (targetm.sched.reassociation_width (VEC_PERM_EXPR, mode) > 1
       || pow2p_hwi (size)
-      || !vect_shift_permute_load_chain (dr_chain, size, stmt,
+      || !vect_shift_permute_load_chain (dr_chain, size, stmt_info,
 					 gsi, &result_chain))
-    vect_permute_load_chain (dr_chain, size, stmt, gsi, &result_chain);
-  vect_record_grouped_load_vectors (stmt, result_chain);
+    vect_permute_load_chain (dr_chain, size, stmt_info, gsi, &result_chain);
+  vect_record_grouped_load_vectors (stmt_info, result_chain);
   result_chain.release ();
 }
 
