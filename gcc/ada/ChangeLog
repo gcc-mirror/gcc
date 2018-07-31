@@ -1,3 +1,10 @@
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Traverse_Homonyms): Consider generic actuals that
+	may rename a matching class-wide operation only if the renaming
+	declaration for that actual is in an enclosing scope (i.e.
+	within the corrresponding instance).
+
 2018-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb, contracts.adb, exp_aggr.adb, exp_ch5.adb,

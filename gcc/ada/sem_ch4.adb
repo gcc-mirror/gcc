@@ -8977,12 +8977,16 @@ package body Sem_Ch4 is
             --  to same. If in an instance, the operation can be considered
             --  even if hidden (it may be hidden because the instantiation
             --  is expanded after the containing package has been analyzed).
+            --  If the subprogram is a generic actual in an enclosing instance,
+            --  it appears as a renaming that is a candidate interpretation as
+            --  well.
 
             Hom := Current_Entity (Subprog);
             while Present (Hom) loop
                if Ekind_In (Hom, E_Procedure, E_Function)
                  and then Present (Renamed_Entity (Hom))
                  and then Is_Generic_Actual_Subprogram (Hom)
+                 and then In_Open_Scopes (Scope (Hom))
                then
                   Candidate := Renamed_Entity (Hom);
                else
