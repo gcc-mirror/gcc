@@ -227,14 +227,11 @@ vect_element_precision (unsigned int precision)
 static stmt_vec_info
 vect_get_internal_def (vec_info *vinfo, tree op)
 {
-  vect_def_type dt;
-  gimple *def_stmt;
-  if (TREE_CODE (op) != SSA_NAME
-      || !vect_is_simple_use (op, vinfo, &dt, &def_stmt)
-      || dt != vect_internal_def)
-    return NULL;
-
-  return vinfo_for_stmt (def_stmt);
+  stmt_vec_info def_stmt_info = vinfo->lookup_def (op);
+  if (def_stmt_info
+      && STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_internal_def)
+    return def_stmt_info;
+  return NULL;
 }
 
 /* Check whether NAME, an ssa-name used in USE_STMT,
@@ -528,6 +525,7 @@ vect_widened_op_tree (stmt_vec_info stmt_info, tree_code code,
 		      vect_unpromoted_value *unprom, tree *common_type)
 {
   /* Check for an integer operation with the right code.  */
+  vec_info *vinfo = stmt_info->vinfo;
   gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
   if (!assign)
     return 0;
@@ -584,7 +582,7 @@ vect_widened_op_tree (stmt_vec_info stmt_info, tree_code code,
 
 	      /* Recursively process the definition of the operand.  */
 	      stmt_vec_info def_stmt_info
-		= vinfo_for_stmt (SSA_NAME_DEF_STMT (this_unprom->op));
+		= vinfo->lookup_def (this_unprom->op);
 	      nops = vect_widened_op_tree (def_stmt_info, code, widened_code,
 					   shift_p, max_nops, this_unprom,
 					   common_type);

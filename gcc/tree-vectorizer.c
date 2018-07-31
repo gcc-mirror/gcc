@@ -535,6 +535,19 @@ vec_info::lookup_stmt (gimple *stmt)
   return NULL;
 }
 
+/* If NAME is an SSA_NAME and its definition has an associated stmt_vec_info,
+   return that stmt_vec_info, otherwise return null.  It is safe to call
+   this on arbitrary operands.  */
+
+stmt_vec_info
+vec_info::lookup_def (tree name)
+{
+  if (TREE_CODE (name) == SSA_NAME
+      && !SSA_NAME_IS_DEFAULT_DEF (name))
+    return lookup_stmt (SSA_NAME_DEF_STMT (name));
+  return NULL;
+}
+
 /* A helper function to free scev and LOOP niter information, as well as
    clear loop constraint LOOP_C_FINITE.  */
 

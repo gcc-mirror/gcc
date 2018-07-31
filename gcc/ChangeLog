@@ -1,5 +1,21 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vec_info::lookup_def): Declare.
+	* tree-vectorizer.c (vec_info::lookup_def): New function.
+	* tree-vect-patterns.c (vect_get_internal_def): Use it.
+	(vect_widened_op_tree): Likewise.
+	* tree-vect-stmts.c (vect_is_simple_use): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Likewise.
+	(vectorizable_reduction): Likewise.
+	(vect_valid_reduction_input_p): Take a stmt_vec_info instead
+	of a gimple *.
+	(vect_is_slp_reduction): Update calls accordingly.  Use
+	vec_info::lookup_def.
+	(vect_is_simple_reduction): Likewise
+	* tree-vect-slp.c (vect_detect_hybrid_slp_1): Use vec_info::lookup_def.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vec_info::lookup_stmt): Declare.
 	* tree-vectorizer.c (vec_info::lookup_stmt): New function.
 	* tree-vect-loop.c (vect_determine_vf_for_stmt): Use it instead
