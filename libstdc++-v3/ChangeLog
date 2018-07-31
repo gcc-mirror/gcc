@@ -1,5 +1,10 @@
 2018-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/test.xml: Improve documentation on writing tests for
+	newer standards.
+	* doc/xml/manual/using.xml: Document all headers for C++11 and later.
+	* doc/html/*: Regenerate.
+
 	* include/ext/pointer.h [__cplusplus >= 201103L]
 	(_Pointer_adapter::operator bool): Add explicit conversion operator
 	to replace safe bool idiom.
