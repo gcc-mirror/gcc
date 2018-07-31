@@ -1,5 +1,11 @@
 2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/unspecs.md (unspecv): Add VUNSPEC_SPECULATION_BARRIER.
+	* config/arm/arm.md (speculation_barrier): New expand.
+	(speculation_barrier_insn): New pattern.
+
+2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
 	* builtin-types.def (BT_FN_PTR_PTR_VAR): New function type.
 	(BT_FN_I1_I1_VAR, BT_FN_I2_I2_VAR, BT_FN_I4_I4_VAR): Likewise.
 	(BT_FN_I8_I8_VAR, BT_FN_I16_I16_VAR): Likewise.
