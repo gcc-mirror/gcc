@@ -1,3 +1,29 @@
+2018-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2018-05-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85672
+	* include/Makefile.am [!ENABLE_FLOAT128]: Change c++config.h entry
+	to #undef _GLIBCXX_USE_FLOAT128 instead of defining it to zero.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config (_GLIBCXX_USE_FLOAT128): Move definition
+	within conditional block.
+
+	Backport from mainline
+	2018-05-01  Tulio Magno Quites Machado Filho  <tuliom@linux.vnet.ibm.com>
+
+	PR libstdc++/84654
+	* acinclude.m4: Set ENABLE_FLOAT128 instead of _GLIBCXX_USE_FLOAT128.
+	* config.h.in: Remove references to _GLIBCXX_USE_FLOAT128.
+	* configure: Regenerate.
+	* include/Makefile.am: Replace the value of _GLIBCXX_USE_FLOAT128
+	based on ENABLE_FLOAT128.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config: Define _GLIBCXX_USE_FLOAT128.
+	[!defined(__FLOAT128__) && !defined(__SIZEOF_FLOAT128__)]: Undefine
+	_GLIBCXX_USE_FLOAT128.
+
 2018-07-26  Marek Polacek  <polacek@redhat.com>
 
 	* testsuite/30_threads/condition_variable_any/cond.cc: New.
