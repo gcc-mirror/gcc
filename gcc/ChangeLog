@@ -1,5 +1,39 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences):
+	(vect_check_gather_scatter, vect_create_data_ref_ptr, bump_vector_ptr)
+	(vect_permute_store_chain, vect_setup_realignment)
+	(vect_permute_load_chain, vect_shift_permute_load_chain)
+	(vect_transform_grouped_load): Use stmt_vec_info rather than gimple
+	stmts internally, and when passing values to other vectorizer routines.
+	* tree-vect-loop-manip.c (vect_can_advance_ivs_p): Likewise.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1)
+	(vect_analyze_loop_operations, get_initial_def_for_reduction)
+	(vect_create_epilog_for_reduction, vectorize_fold_left_reduction)
+	(vectorizable_reduction, vectorizable_induction)
+	(vectorizable_live_operation, vect_transform_loop_stmt)
+	(vect_transform_loop): Likewise.
+	* tree-vect-patterns.c (vect_reassociating_reduction_p)
+	(vect_recog_widen_op_pattern, vect_recog_mixed_size_cond_pattern)
+	(vect_recog_bool_pattern, vect_recog_gather_scatter_pattern): Likewise.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Likewise.
+	(vect_slp_analyze_node_operations_1): Likewise.
+	* tree-vect-stmts.c (vect_mark_relevant, process_use)
+	(exist_non_indexing_operands_for_use_p, vect_init_vector_1)
+	(vect_mark_stmts_to_be_vectorized, vect_get_vec_def_for_operand)
+	(vect_finish_stmt_generation_1, get_group_load_store_type)
+	(get_load_store_type, vect_build_gather_load_calls)
+	(vectorizable_bswap, vectorizable_call, vectorizable_simd_clone_call)
+	(vect_create_vectorized_demotion_stmts, vectorizable_conversion)
+	(vectorizable_assignment, vectorizable_shift, vectorizable_operation)
+	(vectorizable_store, vectorizable_load, vectorizable_condition)
+	(vectorizable_comparison, vect_analyze_stmt, vect_transform_stmt)
+	(supportable_widening_operation): Likewise.
+	(vect_get_vector_types_for_stmt): Likewise.
+	* tree-vectorizer.h (vect_dr_behavior): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence)
 	(vect_slp_analyze_node_dependences, vect_analyze_data_ref_accesses)
 	(vect_permute_store_chain, vect_permute_load_chain)

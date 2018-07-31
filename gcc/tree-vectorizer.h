@@ -1325,7 +1325,7 @@ vect_dr_behavior (data_reference *dr)
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   if (loop_vinfo == NULL
-      || !nested_in_vect_loop_p (LOOP_VINFO_LOOP (loop_vinfo), stmt))
+      || !nested_in_vect_loop_p (LOOP_VINFO_LOOP (loop_vinfo), stmt_info))
     return &DR_INNERMOST (dr);
   else
     return &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);
