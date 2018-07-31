@@ -3621,13 +3621,14 @@ vect_gather_scatter_fn_p (bool read_p, bool masked_p, tree vectype,
   return true;
 }
 
-/* CALL is a call to an internal gather load or scatter store function.
+/* STMT_INFO is a call to an internal gather load or scatter store function.
    Describe the operation in INFO.  */
 
 static void
-vect_describe_gather_scatter_call (gcall *call, gather_scatter_info *info)
+vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
+				   gather_scatter_info *info)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (call);
+  gcall *call = as_a <gcall *> (stmt_info->stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
 
@@ -3672,7 +3673,7 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
       ifn = gimple_call_internal_fn (call);
       if (internal_gather_scatter_fn_p (ifn))
 	{
-	  vect_describe_gather_scatter_call (call, info);
+	  vect_describe_gather_scatter_call (stmt_info, info);
 	  return true;
 	}
       masked_p = (ifn == IFN_MASK_LOAD || ifn == IFN_MASK_STORE);
