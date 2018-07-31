@@ -918,9 +918,6 @@
 /* Define if fchmodat is available in <sys/stat.h>. */
 #undef _GLIBCXX_USE_FCHMODAT
 
-/* Define if __float128 is supported on this host. */
-#undef _GLIBCXX_USE_FLOAT128
-
 /* Defined if gettimeofday is available. */
 #undef _GLIBCXX_USE_GETTIMEOFDAY
 
