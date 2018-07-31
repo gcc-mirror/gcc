@@ -472,7 +472,7 @@ typedef struct _loop_vec_info : public vec_info {
 
   /* Statements in the loop that have data references that are candidates for a
      runtime (loop versioning) misalignment check.  */
-  auto_vec<gimple *> may_misalign_stmts;
+  auto_vec<stmt_vec_info> may_misalign_stmts;
 
   /* Reduction cycles detected in the loop. Used in loop-aware SLP.  */
   auto_vec<stmt_vec_info> reductions;
