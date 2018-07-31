@@ -11721,7 +11721,7 @@ cp_parser_condition (cp_parser* parser)
       if (cp_parser_parse_definitely (parser))
 	{
 	  tree pushed_scope;
-	  bool non_constant_p;
+	  bool non_constant_p = false;
 	  int flags = LOOKUP_ONLYCONVERTING;
 
 	  if (!cp_parser_check_condition_declarator (parser, declarator, loc))
