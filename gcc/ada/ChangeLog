@@ -1,3 +1,15 @@
+2018-07-31  Javier Miranda  <miranda@adacore.com>
+
+	* sem.ads (Inside_Preanalysis_Without_Freezing): New global
+	counter.
+	* sem.adb (Semantics): This subprogram has now the
+	responsibility of resetting the counter before analyzing a unit,
+	and restoring its previous value before returning.
+	* freeze.adb (Freeze_Entity): Do not freeze if we are
+	preanalyzing without freezing.
+	* sem_res.adb (Preanalyze_And_Resolve): Set & restore
+	In_Preanalysis_Without_Freezing.
+
 2018-07-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Traverse_Homonyms): Consider generic actuals that

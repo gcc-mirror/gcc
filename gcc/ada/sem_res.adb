@@ -1671,14 +1671,17 @@ package body Sem_Res is
       T             : Entity_Id;
       With_Freezing : Boolean)
    is
-      Save_Full_Analysis   : constant Boolean := Full_Analysis;
-      Save_Must_Not_Freeze : constant Boolean := Must_Not_Freeze (N);
-
+      Save_Full_Analysis     : constant Boolean := Full_Analysis;
+      Save_Must_Not_Freeze   : constant Boolean := Must_Not_Freeze (N);
+      Save_Preanalysis_Count : constant Nat :=
+                                 Inside_Preanalysis_Without_Freezing;
    begin
       pragma Assert (Nkind (N) in N_Subexpr);
 
       if not With_Freezing then
          Set_Must_Not_Freeze (N);
+         Inside_Preanalysis_Without_Freezing :=
+           Inside_Preanalysis_Without_Freezing + 1;
       end if;
 
       Full_Analysis := False;
@@ -1708,6 +1711,14 @@ package body Sem_Res is
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
       Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
+
+      if not With_Freezing then
+         Inside_Preanalysis_Without_Freezing :=
+           Inside_Preanalysis_Without_Freezing - 1;
+      end if;
+
+      pragma Assert
+        (Inside_Preanalysis_Without_Freezing = Save_Preanalysis_Count);
    end Preanalyze_And_Resolve;
 
    ----------------------------
