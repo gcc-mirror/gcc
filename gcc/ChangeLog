@@ -1,5 +1,12 @@
 2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
 
+	* targhooks.h (speculation_safe_value_not_needed): New prototype.
+	* targhooks.c (speculation_safe_value_not_needed): New function.
+	* target.def (have_speculation_safe_value): Update documentation.
+	* doc/tm.texi: Regenerated.
+
+2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/aarch64/iterators.md (ALLI_TI): New iterator.
 	* config/aarch64/aarch64.md (despeculate_copy<ALLI_TI:mode>): New
 	expand.

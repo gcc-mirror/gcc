@@ -4166,7 +4166,12 @@ DEFHOOK
  The default implementation returns false if the target does not define\n\
  a pattern named @code{speculation_barrier}.  Else it returns true\n\
  for the first case and whether the pattern is enabled for the current\n\
- compilation for the second case.",
+ compilation for the second case.\n\
+ \n\
+ For targets that have no processors that can execute instructions\n\
+ speculatively an alternative implemenation of this hook is available:\n\
+ simply redefine this hook to @code{speculation_safe_value_not_needed}\n\
+ along with your other target hooks.",
 bool, (bool active), default_have_speculation_safe_value)
 
 DEFHOOK

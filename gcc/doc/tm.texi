@@ -11935,6 +11935,11 @@ This hook is used to determine the level of target support for
  a pattern named @code{speculation_barrier}.  Else it returns true
  for the first case and whether the pattern is enabled for the current
  compilation for the second case.
+ 
+ For targets that have no processors that can execute instructions
+ speculatively an alternative implemenation of this hook is available:
+ simply redefine this hook to @code{speculation_safe_value_not_needed}
+ along with your other target hooks.
 @end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_SPECULATION_SAFE_VALUE (machine_mode @var{mode}, rtx @var{result}, rtx @var{val}, rtx @var{failval})

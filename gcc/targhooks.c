@@ -2324,6 +2324,13 @@ default_have_speculation_safe_value (bool active)
   return false;
 #endif
 }
+/* Alternative implementation of TARGET_HAVE_SPECULATION_SAFE_VALUE
+   that can be used on targets that never have speculative execution.  */
+bool
+speculation_safe_value_not_needed (bool active)
+{
+  return !active;
+}
 
 /* Default implementation of the speculation-safe-load builtin.  This
    implementation simply copies val to result and generates a
