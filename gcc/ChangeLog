@@ -1,5 +1,25 @@
 2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/aarch64/aarch64-speculation.cc: New file.
+	* config/aarch64/aarch64-passes.def (pass_track_speculation): Add
+	before pass_reorder_blocks.
+	* config/aarch64/aarch64-protos.h (make_pass_track_speculation): Add
+	prototype.
+	* config/aarch64/aarch64.c (aarch64_conditional_register_usage): Fix
+	X14 and X15 when tracking speculation.
+	* config/aarch64/aarch64.md (register name constants): Add
+	SPECULATION_TRACKER_REGNUM and SPECULATION_SCRATCH_REGNUM.
+	(unspec): Add UNSPEC_SPECULATION_TRACKER.
+	(speculation_barrier): New insn attribute.
+	(cmp<mode>): Allow SP in comparisons.
+	(speculation_tracker): New insn.
+	(speculation_barrier): Add speculation_barrier attribute.
+	* config/aarch64/t-aarch64: Add make rule for aarch64-speculation.o.
+	* config.gcc (aarch64*-*-*): Add aarch64-speculation.o to extra_objs.
+	* doc/invoke.texi (AArch64 Options): Document -mtrack-speculation.
+
+2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/aarch64/aarch64.md (cb<optab><mode>1): Disable when
 	aarch64_track_speculation is true.
 	(tb<optab><mode>1): Likewise.
