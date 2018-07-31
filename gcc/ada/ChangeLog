@@ -1,3 +1,8 @@
+2018-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.adb (Write_Entity_Flags): Also print
+	Is_Activation_Record flag.
+
 2018-07-31  Piotr Trojanek  <trojanek@adacore.com>
 
 	* exp_aggr.adb, exp_ch4.adb, exp_ch6.adb, lib-xref.adb,
