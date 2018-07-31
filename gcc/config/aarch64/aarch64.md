@@ -88,6 +88,10 @@
     (P13_REGNUM		81)
     (P14_REGNUM		82)
     (P15_REGNUM		83)
+    ;; A couple of call-clobbered registers that we need to reserve when
+    ;; tracking speculation this is not ABI, so is subject to change.
+    (SPECULATION_TRACKER_REGNUM 15)
+    (SPECULATION_SCRATCH_REGNUM 14)
   ]
 )
 
@@ -195,6 +199,7 @@
     UNSPEC_CLASTB
     UNSPEC_FADDA
     UNSPEC_REV_SUBREG
+    UNSPEC_SPECULATION_TRACKER
 ])
 
 (define_c_enum "unspecv" [
@@ -286,6 +291,11 @@
 ;; Strictly for compatibility with AArch32 in pipeline models, since AArch64 has
 ;; no predicated insns.
 (define_attr "predicated" "yes,no" (const_string "no"))
+
+;; Set to true on an insn that requires the speculation tracking state to be
+;; in the tracking register before the insn issues.  Otherwise the compiler
+;; may chose to hold the tracking state encoded in SP.
+(define_attr "speculation_barrier" "true,false" (const_string "false"))
 
 ;; -------------------------------------------------------------------
 ;; Pipeline descriptions and scheduling
@@ -3540,7 +3550,7 @@
 
 (define_insn "cmp<mode>"
   [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_operand:GPI 0 "register_operand" "r,r,r")
+	(compare:CC (match_operand:GPI 0 "register_operand" "rk,rk,rk")
 		    (match_operand:GPI 1 "aarch64_plus_operand" "r,I,J")))]
   ""
   "@
@@ -6549,6 +6559,21 @@
   DONE;
 })
 
+;; Track speculation through conditional branches.  We assume that
+;; SPECULATION_TRACKER_REGNUM is reserved for this purpose when necessary.
+(define_insn "speculation_tracker"
+  [(set (reg:DI SPECULATION_TRACKER_REGNUM)
+	(unspec [(reg:DI SPECULATION_TRACKER_REGNUM) (match_operand 0)]
+	 UNSPEC_SPECULATION_TRACKER))]
+  ""
+  {
+    operands[1] = gen_rtx_REG (DImode, SPECULATION_TRACKER_REGNUM);
+    output_asm_insn ("csel\\t%1, %1, xzr, %m0", operands);
+    return "";
+  }
+  [(set_attr "type" "csel")]
+)
+
 ;; Helper for aarch64.c code.
 (define_expand "set_clobber_cc"
   [(parallel [(set (match_operand 0)
@@ -6561,7 +6586,8 @@
   ""
   "isb\;dsb\\tsy"
   [(set_attr "length" "8")
-   (set_attr "type" "block")]
+   (set_attr "type" "block")
+   (set_attr "speculation_barrier" "true")]
 )
 
 ;; AdvSIMD Stuff

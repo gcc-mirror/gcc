@@ -617,7 +617,7 @@ Objective-C and Objective-C++ Dialects}.
 -mpc-relative-literal-loads @gol
 -msign-return-address=@var{scope} @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
--moverride=@var{string}  -mverbose-cost-dump}
+-moverride=@var{string}  -mverbose-cost-dump -mtrack-speculation} 
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs @gol
@@ -14785,6 +14785,14 @@ This option only has an effect if @option{-ffast-math} or
 @option{-funsafe-math-optimizations} is used as well.  Enabling this reduces
 precision of division results to about 16 bits for
 single precision and to 32 bits for double precision.
+
+@item -mtrack-speculation
+@itemx -mno-track-speculation
+Enable or disable generation of additional code to track speculative
+execution through conditional branches.  The tracking state can then
+be used by the compiler when expanding calls to
+@code{__builtin_speculation_safe_copy} to permit a more efficient code
+sequence to be generated.
 
 @item -march=@var{name}
 @opindex march

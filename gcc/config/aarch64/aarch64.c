@@ -12602,6 +12602,19 @@ aarch64_conditional_register_usage (void)
 	fixed_regs[i] = 1;
 	call_used_regs[i] = 1;
       }
+
+  /* When tracking speculation, we need a couple of call-clobbered registers
+     to track the speculation state.  It would be nice to just use
+     IP0 and IP1, but currently there are numerous places that just
+     assume these registers are free for other uses (eg pointer
+     authentication).  */
+  if (aarch64_track_speculation)
+    {
+      fixed_regs[SPECULATION_TRACKER_REGNUM] = 1;
+      call_used_regs[SPECULATION_TRACKER_REGNUM] = 1;
+      fixed_regs[SPECULATION_SCRATCH_REGNUM] = 1;
+      call_used_regs[SPECULATION_SCRATCH_REGNUM] = 1;
+    }
 }
 
 /* Walk down the type tree of TYPE counting consecutive base elements.
