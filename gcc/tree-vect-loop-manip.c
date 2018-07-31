@@ -2772,9 +2772,9 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
                                    tree *cond_expr,
 				   gimple_seq *cond_expr_stmt_list)
 {
-  vec<gimple *> may_misalign_stmts
+  vec<stmt_vec_info> may_misalign_stmts
     = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
-  gimple *ref_stmt;
+  stmt_vec_info stmt_info;
   int mask = LOOP_VINFO_PTR_MASK (loop_vinfo);
   tree mask_cst;
   unsigned int i;
@@ -2795,23 +2795,22 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   /* Create expression (mask & (dr_1 || ... || dr_n)) where dr_i is the address
      of the first vector of the i'th data reference. */
 
-  FOR_EACH_VEC_ELT (may_misalign_stmts, i, ref_stmt)
+  FOR_EACH_VEC_ELT (may_misalign_stmts, i, stmt_info)
     {
       gimple_seq new_stmt_list = NULL;
       tree addr_base;
       tree addr_tmp_name;
       tree new_or_tmp_name;
       gimple *addr_stmt, *or_stmt;
-      stmt_vec_info stmt_vinfo = vinfo_for_stmt (ref_stmt);
-      tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
+      tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       bool negative = tree_int_cst_compare
-	(DR_STEP (STMT_VINFO_DATA_REF (stmt_vinfo)), size_zero_node) < 0;
+	(DR_STEP (STMT_VINFO_DATA_REF (stmt_info)), size_zero_node) < 0;
       tree offset = negative
 	? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : size_zero_node;
 
       /* create: addr_tmp = (int)(address_of_first_vector) */
       addr_base =
-	vect_create_addr_base_for_vector_ref (ref_stmt, &new_stmt_list,
+	vect_create_addr_base_for_vector_ref (stmt_info, &new_stmt_list,
 					      offset);
       if (new_stmt_list != NULL)
 	gimple_seq_add_seq (cond_expr_stmt_list, new_stmt_list);

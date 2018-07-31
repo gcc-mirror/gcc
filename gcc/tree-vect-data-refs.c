@@ -2231,16 +2231,15 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   if (do_versioning)
     {
-      vec<gimple *> may_misalign_stmts
+      vec<stmt_vec_info> may_misalign_stmts
         = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
-      gimple *stmt;
+      stmt_vec_info stmt_info;
 
       /* It can now be assumed that the data references in the statements
          in LOOP_VINFO_MAY_MISALIGN_STMTS will be aligned in the version
          of the loop being vectorized.  */
-      FOR_EACH_VEC_ELT (may_misalign_stmts, i, stmt)
+      FOR_EACH_VEC_ELT (may_misalign_stmts, i, stmt_info)
         {
-          stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
           dr = STMT_VINFO_DATA_REF (stmt_info);
 	  SET_DR_MISALIGNMENT (dr, 0);
 	  if (dump_enabled_p ())
