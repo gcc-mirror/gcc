@@ -4851,9 +4851,9 @@ vect_pattern_recog_1 (vect_recog_func *recog_func, gimple_stmt_iterator si)
   if (loop_vinfo)
     {
       unsigned ix, ix2;
-      gimple **elem_ptr;
+      stmt_vec_info *elem_ptr;
       VEC_ORDERED_REMOVE_IF (LOOP_VINFO_REDUCTIONS (loop_vinfo), ix, ix2,
-			     elem_ptr, *elem_ptr == stmt);
+			     elem_ptr, *elem_ptr == stmt_info);
     }
 }
 

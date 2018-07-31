@@ -1,5 +1,22 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (_loop_vec_info::reductions): Change from an
+	auto_vec<gimple *> to an auto_vec<stmt_vec_info>.
+	(vect_force_simple_reduction): Take and return stmt_vec_infos rather
+	than gimple stmts.
+	* tree-parloops.c (valid_reduction_p): Take a stmt_vec_info instead
+	of a gimple stmt.
+	(gather_scalar_reductions): Update after above interface changes.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Likewise.
+	(vect_is_simple_reduction): Take and return stmt_vec_infos rather
+	than gimple stmts.
+	(vect_force_simple_reduction): Likewise.
+	* tree-vect-patterns.c (vect_pattern_recog_1): Update use of
+	LOOP_VINFO_REDUCTIONS.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (_stmt_vec_info::reduc_def): Change from
 	a gimple stmt to a stmt_vec_info.
 	* tree-vect-loop.c (vect_active_double_reduction_p)

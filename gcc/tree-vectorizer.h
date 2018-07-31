@@ -475,7 +475,7 @@ typedef struct _loop_vec_info : public vec_info {
   auto_vec<gimple *> may_misalign_stmts;
 
   /* Reduction cycles detected in the loop. Used in loop-aware SLP.  */
-  auto_vec<gimple *> reductions;
+  auto_vec<stmt_vec_info> reductions;
 
   /* All reduction chains in the loop, represented by the first
      stmt in the chain.  */
@@ -1627,8 +1627,8 @@ extern tree vect_create_addr_base_for_vector_ref (gimple *, gimple_seq *,
 
 /* In tree-vect-loop.c.  */
 /* FORNOW: Used in tree-parloops.c.  */
-extern gimple *vect_force_simple_reduction (loop_vec_info, gimple *,
-					    bool *, bool);
+extern stmt_vec_info vect_force_simple_reduction (loop_vec_info, stmt_vec_info,
+						  bool *, bool);
 /* Used in gimple-loop-interchange.c.  */
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
