@@ -84,9 +84,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Loop or bb location, with hotness information.  */
 dump_user_location_t vect_location;
 
-/* Vector mapping GIMPLE stmt to stmt_vec_info. */
-vec<stmt_vec_info> *stmt_vec_info_vec;
-
 /* Dump a cost entry according to args to F.  */
 
 void
@@ -457,7 +454,6 @@ vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in,
     target_cost_data (target_cost_data_in)
 {
   stmt_vec_infos.create (50);
-  set_stmt_vec_info_vec (&stmt_vec_infos);
 }
 
 vec_info::~vec_info ()
@@ -469,7 +465,7 @@ vec_info::~vec_info ()
     vect_free_slp_instance (instance, true);
 
   destroy_cost_data (target_cost_data);
-  free_stmt_vec_infos (&stmt_vec_infos);
+  free_stmt_vec_infos ();
 }
 
 vec_info_shared::vec_info_shared ()
@@ -513,7 +509,7 @@ vec_info_shared::check_datarefs ()
 stmt_vec_info
 vec_info::add_stmt (gimple *stmt)
 {
-  stmt_vec_info res = new_stmt_vec_info (stmt, this);
+  stmt_vec_info res = new_stmt_vec_info (stmt);
   set_vinfo_for_stmt (stmt, res);
   return res;
 }
@@ -617,6 +613,87 @@ vec_info::replace_stmt (gimple_stmt_iterator *gsi, stmt_vec_info stmt_info,
   set_vinfo_for_stmt (new_stmt, stmt_info);
   stmt_info->stmt = new_stmt;
   gsi_replace (gsi, new_stmt, true);
+}
+
+/* Create and initialize a new stmt_vec_info struct for STMT.  */
+
+stmt_vec_info
+vec_info::new_stmt_vec_info (gimple *stmt)
+{
+  stmt_vec_info res = XCNEW (struct _stmt_vec_info);
+  res->vinfo = this;
+  res->stmt = stmt;
+
+  STMT_VINFO_TYPE (res) = undef_vec_info_type;
+  STMT_VINFO_RELEVANT (res) = vect_unused_in_scope;
+  STMT_VINFO_VECTORIZABLE (res) = true;
+  STMT_VINFO_VEC_REDUCTION_TYPE (res) = TREE_CODE_REDUCTION;
+  STMT_VINFO_VEC_CONST_COND_REDUC_CODE (res) = ERROR_MARK;
+
+  if (gimple_code (stmt) == GIMPLE_PHI
+      && is_loop_header_bb_p (gimple_bb (stmt)))
+    STMT_VINFO_DEF_TYPE (res) = vect_unknown_def_type;
+  else
+    STMT_VINFO_DEF_TYPE (res) = vect_internal_def;
+
+  STMT_VINFO_SAME_ALIGN_REFS (res).create (0);
+  STMT_SLP_TYPE (res) = loop_vect;
+
+  /* This is really "uninitialized" until vect_compute_data_ref_alignment.  */
+  res->dr_aux.misalignment = DR_MISALIGNMENT_UNINITIALIZED;
+
+  return res;
+}
+
+/* Associate STMT with INFO.  */
+
+void
+vec_info::set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
+{
+  unsigned int uid = gimple_uid (stmt);
+  if (uid == 0)
+    {
+      gcc_checking_assert (info);
+      uid = stmt_vec_infos.length () + 1;
+      gimple_set_uid (stmt, uid);
+      stmt_vec_infos.safe_push (info);
+    }
+  else
+    {
+      gcc_checking_assert (info == NULL_STMT_VEC_INFO);
+      stmt_vec_infos[uid - 1] = info;
+    }
+}
+
+/* Free the contents of stmt_vec_infos.  */
+
+void
+vec_info::free_stmt_vec_infos (void)
+{
+  unsigned int i;
+  stmt_vec_info info;
+  FOR_EACH_VEC_ELT (stmt_vec_infos, i, info)
+    if (info != NULL_STMT_VEC_INFO)
+      free_stmt_vec_info (info);
+  stmt_vec_infos.release ();
+}
+
+/* Free STMT_INFO.  */
+
+void
+vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
+{
+  if (stmt_info->pattern_stmt_p)
+    {
+      gimple_set_bb (stmt_info->stmt, NULL);
+      tree lhs = gimple_get_lhs (stmt_info->stmt);
+      if (lhs && TREE_CODE (lhs) == SSA_NAME)
+	release_ssa_name (lhs);
+    }
+
+  STMT_VINFO_SAME_ALIGN_REFS (stmt_info).release ();
+  STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
+  free (stmt_info);
 }
 
 /* A helper function to free scev and LOOP niter information, as well as
@@ -973,8 +1050,6 @@ vectorize_loops (void)
 
   if (cfun->has_simduid_loops)
     note_simd_array_uses (&simd_array_to_simduid_htab);
-
-  set_stmt_vec_info_vec (NULL);
 
   /*  ----------- Analyze loops. -----------  */
 

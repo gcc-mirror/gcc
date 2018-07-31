@@ -888,8 +888,6 @@ _loop_vec_info::~_loop_vec_info ()
   gimple_stmt_iterator si;
   int j;
 
-  /* ???  We're releasing loop_vinfos en-block.  */
-  set_stmt_vec_info_vec (&stmt_vec_infos);
   nbbs = loop->num_nodes;
   for (j = 0; j < nbbs; j++)
     {
