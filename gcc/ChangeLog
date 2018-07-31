@@ -1,5 +1,26 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (stmt_vec_info): Temporarily change from
+	a typedef to a wrapper class.
+	(NULL_STMT_VEC_INFO): New macro.
+	(vec_info::stmt_infos): Change to vec<stmt_vec_info>.
+	(stmt_vec_info::operator*): New function.
+	(stmt_vec_info::operator gimple *): Likewise.
+	(set_vinfo_for_stmt): Use NULL_STMT_VEC_INFO.
+	(add_stmt_costs): Likewise.
+	* tree-vect-loop-manip.c (iv_phi_p): Likewise.
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost)
+	(vect_get_known_peeling_cost): Likewise.
+	(vect_estimate_min_profitable_iters): Likewise.
+	* tree-vect-patterns.c (vect_init_pattern_stmt): Likewise.
+	* tree-vect-slp.c (vect_remove_slp_scalar_calls): Likewise.
+	* tree-vect-stmts.c (vect_build_gather_load_calls): Likewise.
+	(vectorizable_store, free_stmt_vec_infos): Likewise.
+	(new_stmt_vec_info): Change return type of xcalloc to
+	_stmt_vec_info *.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vec_info::lookup_single_use): Declare.
 	* tree-vectorizer.c (vec_info::lookup_single_use): New function.
 	* tree-vect-loop.c (vectorizable_reduction): Use it instead of

@@ -1344,7 +1344,7 @@ iv_phi_p (gphi *phi)
     return false;
 
   stmt_vec_info stmt_info = vinfo_for_stmt (phi);
-  gcc_assert (stmt_info != NULL);
+  gcc_assert (stmt_info != NULL_STMT_VEC_INFO);
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
     return false;
