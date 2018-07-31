@@ -6193,11 +6193,11 @@ ensure_base_align (struct data_reference *dr)
 static tree
 get_group_alias_ptr_type (gimple *first_stmt)
 {
+  stmt_vec_info first_stmt_info = vinfo_for_stmt (first_stmt);
   struct data_reference *first_dr, *next_dr;
 
-  first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
-  stmt_vec_info next_stmt_info
-    = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (first_stmt));
+  first_dr = STMT_VINFO_DATA_REF (first_stmt_info);
+  stmt_vec_info next_stmt_info = DR_GROUP_NEXT_ELEMENT (first_stmt_info);
   while (next_stmt_info)
     {
       next_dr = STMT_VINFO_DATA_REF (next_stmt_info);

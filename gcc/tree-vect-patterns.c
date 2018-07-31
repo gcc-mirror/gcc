@@ -3505,6 +3505,8 @@ static tree
 adjust_bool_stmts (hash_set <gimple *> &bool_stmt_set,
 		   tree out_type, gimple *stmt)
 {
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
   /* Gather original stmts in the bool pattern in their order of appearance
      in the IL.  */
   auto_vec<gimple *> bool_stmts (bool_stmt_set.elements ());
@@ -3517,11 +3519,11 @@ adjust_bool_stmts (hash_set <gimple *> &bool_stmt_set,
   hash_map <tree, tree> defs;
   for (unsigned i = 0; i < bool_stmts.length (); ++i)
     adjust_bool_pattern (gimple_assign_lhs (bool_stmts[i]),
-			 out_type, vinfo_for_stmt (stmt), defs);
+			 out_type, stmt_info, defs);
 
   /* Pop the last pattern seq stmt and install it as pattern root for STMT.  */
   gimple *pattern_stmt
-    = gimple_seq_last_stmt (STMT_VINFO_PATTERN_DEF_SEQ (vinfo_for_stmt (stmt)));
+    = gimple_seq_last_stmt (STMT_VINFO_PATTERN_DEF_SEQ (stmt_info));
   return gimple_assign_lhs (pattern_stmt);
 }
 
