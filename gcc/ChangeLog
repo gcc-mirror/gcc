@@ -1,5 +1,30 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vec_info::lookup_dr): New member function.
+	(vect_dr_stmt): Delete.
+	* tree-vectorizer.c (vec_info::lookup_dr): New function.
+	* tree-vect-loop-manip.c (vect_update_inits_of_drs): Use it instead
+	of DR_VECT_AUX.
+	* tree-vect-data-refs.c (vect_analyze_possibly_independent_ddr)
+	(vect_analyze_data_ref_dependence, vect_record_base_alignments)
+	(vect_verify_datarefs_alignment, vect_peeling_supportable)
+	(vect_analyze_data_ref_accesses, vect_prune_runtime_alias_test_list)
+	(vect_analyze_data_refs): Likewise.
+	(vect_slp_analyze_data_ref_dependence): Likewise.  Take a vec_info
+	argument.
+	(vect_find_same_alignment_drs): Likewise.
+	(vect_slp_analyze_node_dependences): Update calls accordingly.
+	(vect_analyze_data_refs_alignment): Likewise.  Use vec_info::lookup_dr
+	instead of DR_VECT_AUX.
+	(vect_get_peeling_costs_all_drs): Take a loop_vec_info instead
+	of a vector data references.  Use vec_info::lookup_dr instead of
+	DR_VECT_AUX.
+	(vect_peeling_hash_get_lowest_cost): Update calls accordingly.
+	(vect_enhance_data_refs_alignment): Likewise.  Use vec_info::lookup_dr
+	instead of DR_VECT_AUX.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (_loop_vec_info::unaligned_dr): Change to
 	dr_vec_info.
 	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Update

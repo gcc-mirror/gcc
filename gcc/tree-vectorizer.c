@@ -562,6 +562,17 @@ vec_info::lookup_single_use (tree lhs)
   return NULL;
 }
 
+/* Return vectorization information about DR.  */
+
+dr_vec_info *
+vec_info::lookup_dr (data_reference *dr)
+{
+  stmt_vec_info stmt_info = lookup_stmt (DR_STMT (dr));
+  /* DR_STMT should never refer to a stmt in a pattern replacement.  */
+  gcc_checking_assert (!is_pattern_stmt_p (stmt_info));
+  return STMT_VINFO_DR_INFO (stmt_info->dr_aux.stmt);
+}
+
 /* Record that NEW_STMT_INFO now implements the same data reference
    as OLD_STMT_INFO.  */
 

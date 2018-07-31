@@ -269,10 +269,10 @@ vect_analyze_possibly_independent_ddr (data_dependence_relation *ddr,
 
 	     Note that the alias checks will be removed if the VF ends up
 	     being small enough.  */
-	  return (!STMT_VINFO_GATHER_SCATTER_P
-		     (vinfo_for_stmt (DR_STMT (DDR_A (ddr))))
-		  && !STMT_VINFO_GATHER_SCATTER_P
-		        (vinfo_for_stmt (DR_STMT (DDR_B (ddr))))
+	  dr_vec_info *dr_info_a = loop_vinfo->lookup_dr (DDR_A (ddr));
+	  dr_vec_info *dr_info_b = loop_vinfo->lookup_dr (DDR_B (ddr));
+	  return (!STMT_VINFO_GATHER_SCATTER_P (dr_info_a->stmt)
+		  && !STMT_VINFO_GATHER_SCATTER_P (dr_info_b->stmt)
 		  && vect_mark_for_runtime_alias_test (ddr, loop_vinfo));
 	}
     }
@@ -296,8 +296,8 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   struct data_reference *dra = DDR_A (ddr);
   struct data_reference *drb = DDR_B (ddr);
-  dr_vec_info *dr_info_a = DR_VECT_AUX (dra);
-  dr_vec_info *dr_info_b = DR_VECT_AUX (drb);
+  dr_vec_info *dr_info_a = loop_vinfo->lookup_dr (dra);
+  dr_vec_info *dr_info_b = loop_vinfo->lookup_dr (drb);
   stmt_vec_info stmtinfo_a = dr_info_a->stmt;
   stmt_vec_info stmtinfo_b = dr_info_b->stmt;
   lambda_vector dist_v;
@@ -604,17 +604,18 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
 /* Function vect_slp_analyze_data_ref_dependence.
 
    Return TRUE if there (might) exist a dependence between a memory-reference
-   DRA and a memory-reference DRB.  When versioning for alias may check a
-   dependence at run-time, return FALSE.  Adjust *MAX_VF according to
-   the data dependence.  */
+   DRA and a memory-reference DRB for VINFO.  When versioning for alias
+   may check a dependence at run-time, return FALSE.  Adjust *MAX_VF
+   according to the data dependence.  */
 
 static bool
-vect_slp_analyze_data_ref_dependence (struct data_dependence_relation *ddr)
+vect_slp_analyze_data_ref_dependence (vec_info *vinfo,
+				      struct data_dependence_relation *ddr)
 {
   struct data_reference *dra = DDR_A (ddr);
   struct data_reference *drb = DDR_B (ddr);
-  dr_vec_info *dr_info_a = DR_VECT_AUX (dra);
-  dr_vec_info *dr_info_b = DR_VECT_AUX (drb);
+  dr_vec_info *dr_info_a = vinfo->lookup_dr (dra);
+  dr_vec_info *dr_info_b = vinfo->lookup_dr (drb);
 
   /* We need to check dependences of statements marked as unvectorizable
      as well, they still can prohibit vectorization.  */
@@ -726,7 +727,8 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
 		  data_reference *store_dr = STMT_VINFO_DATA_REF (store_info);
 		  ddr_p ddr = initialize_data_dependence_relation
 				(dr_a, store_dr, vNULL);
-		  dependent = vect_slp_analyze_data_ref_dependence (ddr);
+		  dependent
+		    = vect_slp_analyze_data_ref_dependence (vinfo, ddr);
 		  free_dependence_relation (ddr);
 		  if (dependent)
 		    break;
@@ -736,7 +738,7 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
 	    {
 	      ddr_p ddr = initialize_data_dependence_relation (dr_a,
 							       dr_b, vNULL);
-	      dependent = vect_slp_analyze_data_ref_dependence (ddr);
+	      dependent = vect_slp_analyze_data_ref_dependence (vinfo, ddr);
 	      free_dependence_relation (ddr);
 	    }
 	  if (dependent)
@@ -848,7 +850,7 @@ vect_record_base_alignments (vec_info *vinfo)
   unsigned int i;
   FOR_EACH_VEC_ELT (vinfo->shared->datarefs, i, dr)
     {
-      dr_vec_info *dr_info = DR_VECT_AUX (dr);
+      dr_vec_info *dr_info = vinfo->lookup_dr (dr);
       stmt_vec_info stmt_info = dr_info->stmt;
       if (!DR_IS_CONDITIONAL_IN_STMT (dr)
 	  && STMT_VINFO_VECTORIZABLE (stmt_info)
@@ -1172,7 +1174,7 @@ vect_verify_datarefs_alignment (loop_vec_info vinfo)
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
-      dr_vec_info *dr_info = DR_VECT_AUX (dr);
+      dr_vec_info *dr_info = vinfo->lookup_dr (dr);
       stmt_vec_info stmt_info = dr_info->stmt;
 
       if (!STMT_VINFO_RELEVANT_P (stmt_info))
@@ -1397,12 +1399,12 @@ vect_peeling_hash_get_most_frequent (_vect_peel_info **slot,
   return 1;
 }
 
-/* Get the costs of peeling NPEEL iterations checking data access costs
-   for all data refs.  If UNKNOWN_MISALIGNMENT is true, we assume DR0_INFO's
-   misalignment will be zero after peeling.  */
+/* Get the costs of peeling NPEEL iterations for LOOP_VINFO, checking
+   data access costs for all data refs.  If UNKNOWN_MISALIGNMENT is true,
+   we assume DR0_INFO's misalignment will be zero after peeling.  */
 
 static void
-vect_get_peeling_costs_all_drs (vec<data_reference_p> datarefs,
+vect_get_peeling_costs_all_drs (loop_vec_info loop_vinfo,
 				dr_vec_info *dr0_info,
 				unsigned int *inside_cost,
 				unsigned int *outside_cost,
@@ -1411,12 +1413,13 @@ vect_get_peeling_costs_all_drs (vec<data_reference_p> datarefs,
 				unsigned int npeel,
 				bool unknown_misalignment)
 {
+  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   unsigned i;
   data_reference *dr;
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
-      dr_vec_info *dr_info = DR_VECT_AUX (dr);
+      dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
       stmt_vec_info stmt_info = dr_info->stmt;
       if (!STMT_VINFO_RELEVANT_P (stmt_info))
 	continue;
@@ -1466,10 +1469,9 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
   body_cost_vec.create (2);
   epilogue_cost_vec.create (2);
 
-  vect_get_peeling_costs_all_drs (LOOP_VINFO_DATAREFS (loop_vinfo),
-				  elem->dr_info, &inside_cost, &outside_cost,
-				  &body_cost_vec, &prologue_cost_vec,
-				  elem->npeel, false);
+  vect_get_peeling_costs_all_drs (loop_vinfo, elem->dr_info, &inside_cost,
+				  &outside_cost, &body_cost_vec,
+				  &prologue_cost_vec, elem->npeel, false);
 
   body_cost_vec.release ();
 
@@ -1550,7 +1552,7 @@ vect_peeling_supportable (loop_vec_info loop_vinfo, dr_vec_info *dr0_info,
       if (dr == dr0_info->dr)
 	continue;
 
-      dr_vec_info *dr_info = DR_VECT_AUX (dr);
+      dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
       stmt_vec_info stmt_info = dr_info->stmt;
       /* For interleaving, only the alignment of the first access
 	 matters.  */
@@ -1732,7 +1734,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
-      dr_vec_info *dr_info = DR_VECT_AUX (dr);
+      dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
       stmt_vec_info stmt_info = dr_info->stmt;
 
       if (!STMT_VINFO_RELEVANT_P (stmt_info))
@@ -1896,7 +1898,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       stmt_vector_for_cost dummy;
       dummy.create (2);
-      vect_get_peeling_costs_all_drs (datarefs, dr0_info,
+      vect_get_peeling_costs_all_drs (loop_vinfo, dr0_info,
 				      &load_inside_cost,
 				      &load_outside_cost,
 				      &dummy, &dummy, estimated_npeels, true);
@@ -1905,7 +1907,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       if (first_store)
 	{
 	  dummy.create (2);
-	  vect_get_peeling_costs_all_drs (datarefs, first_store,
+	  vect_get_peeling_costs_all_drs (loop_vinfo, first_store,
 					  &store_inside_cost,
 					  &store_outside_cost,
 					  &dummy, &dummy,
@@ -1996,7 +1998,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       stmt_vector_for_cost dummy;
       dummy.create (2);
-      vect_get_peeling_costs_all_drs (datarefs, NULL, &nopeel_inside_cost,
+      vect_get_peeling_costs_all_drs (loop_vinfo, NULL, &nopeel_inside_cost,
 				      &nopeel_outside_cost, &dummy, &dummy,
 				      0, false);
       dummy.release ();
@@ -2126,7 +2128,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      {
 		/* Strided accesses perform only component accesses, alignment
 		   is irrelevant for them.  */
-		dr_vec_info *dr_info = DR_VECT_AUX (dr);
+		dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
 		stmt_info = dr_info->stmt;
 		if (STMT_VINFO_STRIDED_P (stmt_info)
 		    && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
@@ -2176,7 +2178,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
     {
       FOR_EACH_VEC_ELT (datarefs, i, dr)
         {
-	  dr_vec_info *dr_info = DR_VECT_AUX (dr);
+	  dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
 	  stmt_vec_info stmt_info = dr_info->stmt;
 
 	  /* For interleaving, only the alignment of the first access
@@ -2291,16 +2293,16 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
 /* Function vect_find_same_alignment_drs.
 
-   Update group and alignment relations according to the chosen
+   Update group and alignment relations in VINFO according to the chosen
    vectorization factor.  */
 
 static void
-vect_find_same_alignment_drs (struct data_dependence_relation *ddr)
+vect_find_same_alignment_drs (vec_info *vinfo, data_dependence_relation *ddr)
 {
   struct data_reference *dra = DDR_A (ddr);
   struct data_reference *drb = DDR_B (ddr);
-  dr_vec_info *dr_info_a = DR_VECT_AUX (dra);
-  dr_vec_info *dr_info_b = DR_VECT_AUX (drb);
+  dr_vec_info *dr_info_a = vinfo->lookup_dr (dra);
+  dr_vec_info *dr_info_b = vinfo->lookup_dr (drb);
   stmt_vec_info stmtinfo_a = dr_info_a->stmt;
   stmt_vec_info stmtinfo_b = dr_info_b->stmt;
 
@@ -2367,7 +2369,7 @@ vect_analyze_data_refs_alignment (loop_vec_info vinfo)
   unsigned int i;
 
   FOR_EACH_VEC_ELT (ddrs, i, ddr)
-    vect_find_same_alignment_drs (ddr);
+    vect_find_same_alignment_drs (vinfo, ddr);
 
   vec<data_reference_p> datarefs = vinfo->shared->datarefs;
   struct data_reference *dr;
@@ -2375,7 +2377,7 @@ vect_analyze_data_refs_alignment (loop_vec_info vinfo)
   vect_record_base_alignments (vinfo);
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
-      dr_vec_info *dr_info = DR_VECT_AUX (dr);
+      dr_vec_info *dr_info = vinfo->lookup_dr (dr);
       if (STMT_VINFO_VECTORIZABLE (dr_info->stmt))
 	vect_compute_data_ref_alignment (dr_info);
     }
@@ -2941,7 +2943,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
   for (i = 0; i < datarefs_copy.length () - 1;)
     {
       data_reference_p dra = datarefs_copy[i];
-      dr_vec_info *dr_info_a = DR_VECT_AUX (dra);
+      dr_vec_info *dr_info_a = vinfo->lookup_dr (dra);
       stmt_vec_info stmtinfo_a = dr_info_a->stmt;
       stmt_vec_info lastinfo = NULL;
       if (!STMT_VINFO_VECTORIZABLE (stmtinfo_a)
@@ -2953,7 +2955,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
       for (i = i + 1; i < datarefs_copy.length (); ++i)
 	{
 	  data_reference_p drb = datarefs_copy[i];
-	  dr_vec_info *dr_info_b = DR_VECT_AUX (drb);
+	  dr_vec_info *dr_info_b = vinfo->lookup_dr (drb);
 	  stmt_vec_info stmtinfo_b = dr_info_b->stmt;
 	  if (!STMT_VINFO_VECTORIZABLE (stmtinfo_b)
 	      || STMT_VINFO_GATHER_SCATTER_P (stmtinfo_b))
@@ -3078,7 +3080,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 
   FOR_EACH_VEC_ELT (datarefs_copy, i, dr)
     {
-      dr_vec_info *dr_info = DR_VECT_AUX (dr);
+      dr_vec_info *dr_info = vinfo->lookup_dr (dr);
       if (STMT_VINFO_VECTORIZABLE (dr_info->stmt)
 	  && !vect_analyze_data_ref_access (dr_info))
 	{
@@ -3438,10 +3440,10 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	  continue;
 	}
 
-      dr_vec_info *dr_info_a = DR_VECT_AUX (DDR_A (ddr));
+      dr_vec_info *dr_info_a = loop_vinfo->lookup_dr (DDR_A (ddr));
       stmt_vec_info stmt_info_a = dr_info_a->stmt;
 
-      dr_vec_info *dr_info_b = DR_VECT_AUX (DDR_B (ddr));
+      dr_vec_info *dr_info_b = loop_vinfo->lookup_dr (DDR_B (ddr));
       stmt_vec_info stmt_info_b = dr_info_b->stmt;
 
       /* Skip the pair if inter-iteration dependencies are irrelevant

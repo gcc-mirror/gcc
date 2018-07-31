@@ -240,6 +240,7 @@ struct vec_info {
   stmt_vec_info lookup_stmt (gimple *);
   stmt_vec_info lookup_def (tree);
   stmt_vec_info lookup_single_use (tree);
+  struct dr_vec_info *lookup_dr (data_reference *);
   void move_dr (stmt_vec_info, stmt_vec_info);
 
   /* The type of vectorization.  */
@@ -1062,8 +1063,6 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define PURE_SLP_STMT(S)                  ((S)->slp_type == pure_slp)
 #define STMT_SLP_TYPE(S)                   (S)->slp_type
 
-#define DR_VECT_AUX(dr) (STMT_VINFO_DR_INFO (vect_dr_stmt (dr)))
-
 #define VECT_MAX_COST 1000
 
 /* The maximum number of intermediate steps required in multi-step type
@@ -1271,20 +1270,6 @@ add_stmt_costs (void *data, stmt_vector_for_cost *cost_vec)
   FOR_EACH_VEC_ELT (*cost_vec, i, cost)
     add_stmt_cost (data, cost->count, cost->kind, cost->stmt_info,
 		   cost->misalign, cost->where);
-}
-
-/* Return the stmt DR is in.  For DR_STMT that have been replaced by
-   a pattern this returns the corresponding pattern stmt.  Otherwise
-   DR_STMT is returned.  */
-
-inline stmt_vec_info
-vect_dr_stmt (data_reference *dr)
-{
-  gimple *stmt = DR_STMT (dr);
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  /* DR_STMT should never refer to a stmt in a pattern replacement.  */
-  gcc_checking_assert (!is_pattern_stmt_p (stmt_info));
-  return stmt_info->dr_aux.stmt;
 }
 
 /*-----------------------------------------------------------------*/
