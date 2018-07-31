@@ -2865,7 +2865,7 @@ vect_build_gather_load_calls (gimple *stmt, gimple_stmt_iterator *gsi,
 	  new_stmt = SSA_NAME_DEF_STMT (var);
 	}
 
-      if (prev_stmt_info == NULL)
+      if (prev_stmt_info == NULL_STMT_VEC_INFO)
 	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
       else
 	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
@@ -6550,7 +6550,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
-	  if (prev_stmt_info == NULL)
+	  if (prev_stmt_info == NULL_STMT_VEC_INFO)
 	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
 	  else
 	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
@@ -9805,7 +9805,7 @@ stmt_vec_info
 new_stmt_vec_info (gimple *stmt, vec_info *vinfo)
 {
   stmt_vec_info res;
-  res = (stmt_vec_info) xcalloc (1, sizeof (struct _stmt_vec_info));
+  res = (_stmt_vec_info *) xcalloc (1, sizeof (struct _stmt_vec_info));
 
   STMT_VINFO_TYPE (res) = undef_vec_info_type;
   STMT_VINFO_STMT (res) = stmt;
@@ -9862,7 +9862,7 @@ free_stmt_vec_infos (vec<stmt_vec_info> *v)
   unsigned int i;
   stmt_vec_info info;
   FOR_EACH_VEC_ELT (*v, i, info)
-    if (info != NULL)
+    if (info != NULL_STMT_VEC_INFO)
       free_stmt_vec_info (STMT_VINFO_STMT (info));
   if (v == stmt_vec_info_vec)
     stmt_vec_info_vec = NULL;

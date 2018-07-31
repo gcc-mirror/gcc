@@ -4039,7 +4039,7 @@ vect_remove_slp_scalar_calls (slp_tree node)
       if (!is_gimple_call (stmt) || gimple_bb (stmt) == NULL)
 	continue;
       stmt_info = vinfo_for_stmt (stmt);
-      if (stmt_info == NULL
+      if (stmt_info == NULL_STMT_VEC_INFO
 	  || is_pattern_stmt_p (stmt_info)
 	  || !PURE_SLP_STMT (stmt_info))
 	continue;

@@ -21,11 +21,30 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_VECTORIZER_H
 #define GCC_TREE_VECTORIZER_H
 
+class stmt_vec_info {
+public:
+  stmt_vec_info () {}
+  stmt_vec_info (struct _stmt_vec_info *ptr) : m_ptr (ptr) {}
+  struct _stmt_vec_info *operator-> () const { return m_ptr; }
+  struct _stmt_vec_info &operator* () const;
+  operator struct _stmt_vec_info * () const { return m_ptr; }
+  operator gimple * () const;
+  operator void * () const { return m_ptr; }
+  operator bool () const { return m_ptr; }
+  bool operator == (const stmt_vec_info &x) { return x.m_ptr == m_ptr; }
+  bool operator == (_stmt_vec_info *x) { return x == m_ptr; }
+  bool operator != (const stmt_vec_info &x) { return x.m_ptr != m_ptr; }
+  bool operator != (_stmt_vec_info *x) { return x != m_ptr; }
+
+private:
+  struct _stmt_vec_info *m_ptr;
+};
+
+#define NULL_STMT_VEC_INFO (stmt_vec_info (NULL))
+
 #include "tree-data-ref.h"
 #include "tree-hash-traits.h"
 #include "target.h"
-
-typedef struct _stmt_vec_info *stmt_vec_info;
 
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {
@@ -229,7 +248,7 @@ struct vec_info {
   vec_info_shared *shared;
 
   /* The mapping of GIMPLE UID to stmt_vec_info.  */
-  vec<struct _stmt_vec_info *> stmt_vec_infos;
+  vec<stmt_vec_info> stmt_vec_infos;
 
   /* All SLP instances.  */
   auto_vec<slp_instance> slp_instances;
@@ -1052,6 +1071,17 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
        && TYPE_PRECISION (TYPE) == 1		\
        && TYPE_UNSIGNED (TYPE)))
 
+inline _stmt_vec_info &
+stmt_vec_info::operator* () const
+{
+  return *m_ptr;
+}
+
+inline stmt_vec_info::operator gimple * () const
+{
+  return m_ptr ? m_ptr->stmt : NULL;
+}
+
 extern vec<stmt_vec_info> *stmt_vec_info_vec;
 
 void set_stmt_vec_info_vec (vec<stmt_vec_info> *);
@@ -1084,7 +1114,7 @@ set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
     }
   else
     {
-      gcc_checking_assert (info == NULL);
+      gcc_checking_assert (info == NULL_STMT_VEC_INFO);
       (*stmt_vec_info_vec)[uid - 1] = info;
     }
 }
@@ -1261,7 +1291,9 @@ add_stmt_costs (void *data, stmt_vector_for_cost *cost_vec)
   unsigned i;
   FOR_EACH_VEC_ELT (*cost_vec, i, cost)
     add_stmt_cost (data, cost->count, cost->kind,
-		   cost->stmt ? vinfo_for_stmt (cost->stmt) : NULL,
+		   (cost->stmt
+		    ? vinfo_for_stmt (cost->stmt)
+		    : NULL_STMT_VEC_INFO),
 		   cost->misalign, cost->where);
 }
 

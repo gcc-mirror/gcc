@@ -103,7 +103,7 @@ vect_init_pattern_stmt (gimple *pattern_stmt, stmt_vec_info orig_stmt_info,
 {
   vec_info *vinfo = orig_stmt_info->vinfo;
   stmt_vec_info pattern_stmt_info = vinfo->lookup_stmt (pattern_stmt);
-  if (pattern_stmt_info == NULL)
+  if (pattern_stmt_info == NULL_STMT_VEC_INFO)
     pattern_stmt_info = orig_stmt_info->vinfo->add_stmt (pattern_stmt);
   gimple_set_bb (pattern_stmt, gimple_bb (orig_stmt_info->stmt));
 
