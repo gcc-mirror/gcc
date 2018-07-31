@@ -216,8 +216,8 @@ vect_preserves_scalar_order_p (gimple *stmt_a, gimple *stmt_b)
     stmtinfo_a = STMT_VINFO_RELATED_STMT (stmtinfo_a);
   if (is_pattern_stmt_p (stmtinfo_b))
     stmtinfo_b = STMT_VINFO_RELATED_STMT (stmtinfo_b);
-  gimple *earlier_stmt = get_earlier_stmt (stmtinfo_a, stmtinfo_b);
-  return !DR_IS_WRITE (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt)));
+  stmt_vec_info earlier_stmt_info = get_earlier_stmt (stmtinfo_a, stmtinfo_b);
+  return !DR_IS_WRITE (STMT_VINFO_DATA_REF (earlier_stmt_info));
 }
 
 /* A subroutine of vect_analyze_data_ref_dependence.  Handle
@@ -671,17 +671,17 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
   /* This walks over all stmts involved in the SLP load/store done
      in NODE verifying we can sink them up to the last stmt in the
      group.  */
-  gimple *last_access = vect_find_last_scalar_stmt_in_slp (node);
+  stmt_vec_info last_access_info = vect_find_last_scalar_stmt_in_slp (node);
   for (unsigned k = 0; k < SLP_INSTANCE_GROUP_SIZE (instance); ++k)
     {
       stmt_vec_info access_info = SLP_TREE_SCALAR_STMTS (node)[k];
-      if (access_info == last_access)
+      if (access_info == last_access_info)
 	continue;
       data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
       ao_ref ref;
       bool ref_initialized_p = false;
       for (gimple_stmt_iterator gsi = gsi_for_stmt (access_info->stmt);
-	   gsi_stmt (gsi) != last_access; gsi_next (&gsi))
+	   gsi_stmt (gsi) != last_access_info->stmt; gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  if (! gimple_vuse (stmt)
@@ -757,14 +757,14 @@ vect_slp_analyze_instance_dependence (slp_instance instance)
     store = NULL;
 
   /* Verify we can sink stores to the vectorized stmt insert location.  */
-  gimple *last_store = NULL;
+  stmt_vec_info last_store_info = NULL;
   if (store)
     {
       if (! vect_slp_analyze_node_dependences (instance, store, vNULL, NULL))
 	return false;
 
       /* Mark stores in this instance and remember the last one.  */
-      last_store = vect_find_last_scalar_stmt_in_slp (store);
+      last_store_info = vect_find_last_scalar_stmt_in_slp (store);
       for (unsigned k = 0; k < SLP_INSTANCE_GROUP_SIZE (instance); ++k)
 	gimple_set_visited (SLP_TREE_SCALAR_STMTS (store)[k]->stmt, true);
     }
@@ -779,7 +779,7 @@ vect_slp_analyze_instance_dependence (slp_instance instance)
     if (! vect_slp_analyze_node_dependences (instance, load,
 					     store
 					     ? SLP_TREE_SCALAR_STMTS (store)
-					     : vNULL, last_store))
+					     : vNULL, last_store_info))
       {
 	res = false;
 	break;
