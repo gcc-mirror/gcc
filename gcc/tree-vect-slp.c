@@ -303,7 +303,6 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
   gimple *stmt = stmts[stmt_num];
   tree oprnd;
   unsigned int i, number_of_oprnds;
-  gimple *def_stmt;
   enum vect_def_type dt = vect_uninitialized_def;
   bool pattern = false;
   slp_oprnd_info oprnd_info;
@@ -357,7 +356,8 @@ again:
 
       oprnd_info = (*oprnds_info)[i];
 
-      if (!vect_is_simple_use (oprnd, vinfo, &dt, &def_stmt))
+      stmt_vec_info def_stmt_info;
+      if (!vect_is_simple_use (oprnd, vinfo, &dt, &def_stmt_info))
 	{
 	  if (dump_enabled_p ())
 	    {
@@ -370,13 +370,10 @@ again:
 	  return -1;
 	}
 
-      /* Check if DEF_STMT is a part of a pattern in LOOP and get the def stmt
-         from the pattern.  Check that all the stmts of the node are in the
-         pattern.  */
-      if (def_stmt && gimple_bb (def_stmt)
-	  && vect_stmt_in_region_p (vinfo, def_stmt)
-	  && vinfo_for_stmt (def_stmt)
-	  && is_pattern_stmt_p (vinfo_for_stmt (def_stmt)))
+      /* Check if DEF_STMT_INFO is a part of a pattern in LOOP and get
+	 the def stmt from the pattern.  Check that all the stmts of the
+	 node are in the pattern.  */
+      if (def_stmt_info && is_pattern_stmt_p (def_stmt_info))
         {
           pattern = true;
           if (!first && !oprnd_info->first_pattern
@@ -405,7 +402,7 @@ again:
 	      return 1;
             }
 
-          dt = STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt));
+	  dt = STMT_VINFO_DEF_TYPE (def_stmt_info);
 
           if (dt == vect_unknown_def_type)
             {
@@ -415,7 +412,7 @@ again:
               return -1;
             }
 
-          switch (gimple_code (def_stmt))
+	  switch (gimple_code (def_stmt_info->stmt))
             {
             case GIMPLE_PHI:
             case GIMPLE_ASSIGN:
@@ -499,7 +496,7 @@ again:
 	case vect_reduction_def:
 	case vect_induction_def:
 	case vect_internal_def:
-	  oprnd_info->def_stmts.quick_push (def_stmt);
+	  oprnd_info->def_stmts.quick_push (def_stmt_info);
 	  break;
 
 	default:

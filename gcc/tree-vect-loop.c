@@ -6090,7 +6090,6 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   int op_type;
   optab optab;
   tree new_temp = NULL_TREE;
-  gimple *def_stmt;
   enum vect_def_type dt, cond_reduc_dt = vect_unknown_def_type;
   gimple *cond_reduc_def_stmt = NULL;
   enum tree_code cond_reduc_op_code = ERROR_MARK;
@@ -6324,13 +6323,14 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       if (i == 0 && code == COND_EXPR)
         continue;
 
-      is_simple_use = vect_is_simple_use (ops[i], loop_vinfo,
-					  &dts[i], &tem, &def_stmt);
+      stmt_vec_info def_stmt_info;
+      is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, &dts[i], &tem,
+					  &def_stmt_info);
       dt = dts[i];
       gcc_assert (is_simple_use);
       if (dt == vect_reduction_def)
 	{
-          reduc_def_stmt = def_stmt;
+	  reduc_def_stmt = def_stmt_info;
 	  reduc_index = i;
 	  continue;
 	}
@@ -6352,11 +6352,11 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	return false;
 
       if (dt == vect_nested_cycle)
-        {
-          found_nested_cycle_def = true;
-          reduc_def_stmt = def_stmt;
-          reduc_index = i;
-        }
+	{
+	  found_nested_cycle_def = true;
+	  reduc_def_stmt = def_stmt_info;
+	  reduc_index = i;
+	}
 
       if (i == 1 && code == COND_EXPR)
 	{
@@ -6367,11 +6367,11 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	      cond_reduc_val = ops[i];
 	    }
 	  if (dt == vect_induction_def
-	      && def_stmt != NULL
-	      && is_nonwrapping_integer_induction (def_stmt, loop))
+	      && def_stmt_info
+	      && is_nonwrapping_integer_induction (def_stmt_info, loop))
 	    {
 	      cond_reduc_dt = dt;
-	      cond_reduc_def_stmt = def_stmt;
+	      cond_reduc_def_stmt = def_stmt_info;
 	    }
 	}
     }
@@ -7958,7 +7958,7 @@ vectorizable_live_operation (gimple *stmt,
   else
     {
       enum vect_def_type dt = STMT_VINFO_DEF_TYPE (stmt_info);
-      vec_lhs = vect_get_vec_def_for_operand_1 (stmt, dt);
+      vec_lhs = vect_get_vec_def_for_operand_1 (stmt_info, dt);
       gcc_checking_assert (ncopies == 1
 			   || !LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
 

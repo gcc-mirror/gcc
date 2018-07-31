@@ -250,7 +250,9 @@ type_conversion_p (tree name, gimple *use_stmt, bool check_sign,
   enum vect_def_type dt;
 
   stmt_vinfo = vinfo_for_stmt (use_stmt);
-  if (!vect_is_simple_use (name, stmt_vinfo->vinfo, &dt, def_stmt))
+  stmt_vec_info def_stmt_info;
+  if (!vect_is_simple_use (name, stmt_vinfo->vinfo, &dt, &def_stmt_info,
+			   def_stmt))
     return false;
 
   if (dt != vect_internal_def
@@ -371,9 +373,10 @@ vect_look_through_possible_promotion (vec_info *vinfo, tree op,
   while (TREE_CODE (op) == SSA_NAME && INTEGRAL_TYPE_P (op_type))
     {
       /* See whether OP is simple enough to vectorize.  */
+      stmt_vec_info def_stmt_info;
       gimple *def_stmt;
       vect_def_type dt;
-      if (!vect_is_simple_use (op, vinfo, &dt, &def_stmt))
+      if (!vect_is_simple_use (op, vinfo, &dt, &def_stmt_info, &def_stmt))
 	break;
 
       /* If OP is the input of a demotion, skip over it to see whether
@@ -407,17 +410,15 @@ vect_look_through_possible_promotion (vec_info *vinfo, tree op,
 	 the cast is potentially vectorizable.  */
       if (!def_stmt)
 	break;
-      if (dt == vect_internal_def)
-	{
-	  caster = vinfo_for_stmt (def_stmt);
-	  /* Ignore pattern statements, since we don't link uses for them.  */
-	  if (single_use_p
-	      && !STMT_VINFO_RELATED_STMT (caster)
-	      && !has_single_use (res))
-	    *single_use_p = false;
-	}
-      else
-	caster = NULL;
+      caster = def_stmt_info;
+
+      /* Ignore pattern statements, since we don't link uses for them.  */
+      if (caster
+	  && single_use_p
+	  && !STMT_VINFO_RELATED_STMT (caster)
+	  && !has_single_use (res))
+	*single_use_p = false;
+
       gassign *assign = dyn_cast <gassign *> (def_stmt);
       if (!assign || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
 	break;
@@ -1988,7 +1989,8 @@ vect_recog_rotate_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
       || !TYPE_UNSIGNED (type))
     return NULL;
 
-  if (!vect_is_simple_use (oprnd1, vinfo, &dt, &def_stmt))
+  stmt_vec_info def_stmt_info;
+  if (!vect_is_simple_use (oprnd1, vinfo, &dt, &def_stmt_info, &def_stmt))
     return NULL;
 
   if (dt != vect_internal_def
