@@ -1,3 +1,9 @@
+2018-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Establish a transient scope to
+	manage the secondary stack when the designated type of an
+	access-to-subprogram requires it.
+
 2018-07-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): To find local

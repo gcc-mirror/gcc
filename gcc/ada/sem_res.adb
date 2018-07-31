@@ -6433,7 +6433,7 @@ package body Sem_Res is
          null;
 
       elsif Expander_Active
-        and then Ekind (Nam) = E_Function
+        and then Ekind_In (Nam, E_Function, E_Subprogram_Type)
         and then Requires_Transient_Scope (Etype (Nam))
       then
          Establish_Transient_Scope (N, Manage_Sec_Stack => True);
