@@ -256,4 +256,19 @@ extern bool dwarf2out_default_as_locview_support (void);
 extern const struct gcc_debug_hooks *
 dump_go_spec_init (const char *, const struct gcc_debug_hooks *);
 
+/* Instance discriminator mapping table.  See final.c.  */
+typedef hash_map<const_tree, int> decl_to_instance_map_t;
+extern decl_to_instance_map_t *decl_to_instance_map;
+
+/* Allocate decl_to_instance_map with COUNT slots to begin wtih, if it
+ * hasn't been allocated yet.  */
+
+static inline decl_to_instance_map_t *
+maybe_create_decl_to_instance_map (int count = 13)
+{
+  if (!decl_to_instance_map)
+    decl_to_instance_map = new decl_to_instance_map_t (count);
+  return decl_to_instance_map;
+}
+
 #endif /* !GCC_DEBUG_H  */

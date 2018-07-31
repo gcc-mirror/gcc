@@ -1,3 +1,18 @@
+2018-07-31  Alexandre Oliva  <oliva@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* debug.h (decl_to_instance_map_t): New type.
+	(decl_to_instance_map): Declare.
+	(maybe_create_decl_to_instance_map): New inline function.
+	* final.c (bb_discriminator, last_bb_discriminator): New statics,
+	to track basic block discriminators.
+	(final_start_function_1): Initialize them.
+	(final_scan_insn_1): On NOTE_INSN_BASIC_BLOCK, track
+	bb_discriminator.
+	(decl_to_instance_map): New variable.
+	(map_decl_to_instance, maybe_set_discriminator): New functions.
+	(notice_source_line): Set discriminator.
+
 2018-07-31  Ian Lance Taylor  <iant@golang.org>
 
 	* targhooks.c (default_have_speculation_safe_value): Add
