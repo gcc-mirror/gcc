@@ -1,5 +1,14 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vec_info::remove_stmt): Declare.
+	* tree-vectorizer.c (vec_info::remove_stmt): New function.
+	* tree-vect-loop-manip.c (vect_set_loop_condition): Use it.
+	* tree-vect-loop.c (vect_transform_loop): Likewise.
+	* tree-vect-slp.c (vect_schedule_slp): Likewise.
+	* tree-vect-stmts.c (vect_remove_stores): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vec_info::lookup_dr): New member function.
 	(vect_dr_stmt): Delete.
 	* tree-vectorizer.c (vec_info::lookup_dr): New function.

@@ -4088,7 +4088,6 @@ vect_schedule_slp (vec_info *vinfo)
       slp_tree root = SLP_INSTANCE_TREE (instance);
       stmt_vec_info store_info;
       unsigned int j;
-      gimple_stmt_iterator gsi;
 
       /* Remove scalar call stmts.  Do not do this for basic-block
 	 vectorization as not all uses may be vectorized.
@@ -4109,11 +4108,7 @@ vect_schedule_slp (vec_info *vinfo)
 	  if (is_pattern_stmt_p (store_info))
 	    store_info = STMT_VINFO_RELATED_STMT (store_info);
 	  /* Free the attached stmt_vec_info and remove the stmt.  */
-	  gsi = gsi_for_stmt (store_info);
-	  unlink_stmt_vdef (store_info);
-	  gsi_remove (&gsi, true);
-	  release_defs (store_info);
-	  free_stmt_vec_info (store_info);
+	  vinfo->remove_stmt (store_info);
         }
     }
 

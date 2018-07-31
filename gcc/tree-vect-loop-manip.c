@@ -935,8 +935,12 @@ vect_set_loop_condition (struct loop *loop, loop_vec_info loop_vinfo,
 						  loop_cond_gsi);
 
   /* Remove old loop exit test.  */
-  gsi_remove (&loop_cond_gsi, true);
-  free_stmt_vec_info (orig_cond);
+  stmt_vec_info orig_cond_info;
+  if (loop_vinfo
+      && (orig_cond_info = loop_vinfo->lookup_stmt (orig_cond)))
+    loop_vinfo->remove_stmt (orig_cond_info);
+  else
+    gsi_remove (&loop_cond_gsi, true);
 
   if (dump_enabled_p ())
     {

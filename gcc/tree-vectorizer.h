@@ -242,6 +242,7 @@ struct vec_info {
   stmt_vec_info lookup_single_use (tree);
   struct dr_vec_info *lookup_dr (data_reference *);
   void move_dr (stmt_vec_info, stmt_vec_info);
+  void remove_stmt (stmt_vec_info);
 
   /* The type of vectorization.  */
   vec_kind kind;
