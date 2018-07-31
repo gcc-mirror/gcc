@@ -94,10 +94,11 @@ vect_pattern_detected (const char *name, gimple *stmt)
     }
 }
 
-/* Associate pattern statement PATTERN_STMT with ORIG_STMT_INFO.
-   Set its vector type to VECTYPE if it doesn't have one already.  */
+/* Associate pattern statement PATTERN_STMT with ORIG_STMT_INFO and
+   return the pattern statement's stmt_vec_info.  Set its vector type to
+   VECTYPE if it doesn't have one already.  */
 
-static void
+static stmt_vec_info
 vect_init_pattern_stmt (gimple *pattern_stmt, stmt_vec_info orig_stmt_info,
 			tree vectype)
 {
@@ -107,11 +108,12 @@ vect_init_pattern_stmt (gimple *pattern_stmt, stmt_vec_info orig_stmt_info,
     pattern_stmt_info = orig_stmt_info->vinfo->add_stmt (pattern_stmt);
   gimple_set_bb (pattern_stmt, gimple_bb (orig_stmt_info->stmt));
 
-  STMT_VINFO_RELATED_STMT (pattern_stmt_info) = orig_stmt_info->stmt;
+  STMT_VINFO_RELATED_STMT (pattern_stmt_info) = orig_stmt_info;
   STMT_VINFO_DEF_TYPE (pattern_stmt_info)
     = STMT_VINFO_DEF_TYPE (orig_stmt_info);
   if (!STMT_VINFO_VECTYPE (pattern_stmt_info))
     STMT_VINFO_VECTYPE (pattern_stmt_info) = vectype;
+  return pattern_stmt_info;
 }
 
 /* Set the pattern statement of ORIG_STMT_INFO to PATTERN_STMT.
@@ -123,8 +125,8 @@ vect_set_pattern_stmt (gimple *pattern_stmt, stmt_vec_info orig_stmt_info,
 		       tree vectype)
 {
   STMT_VINFO_IN_PATTERN_P (orig_stmt_info) = true;
-  STMT_VINFO_RELATED_STMT (orig_stmt_info) = pattern_stmt;
-  vect_init_pattern_stmt (pattern_stmt, orig_stmt_info, vectype);
+  STMT_VINFO_RELATED_STMT (orig_stmt_info)
+    = vect_init_pattern_stmt (pattern_stmt, orig_stmt_info, vectype);
 }
 
 /* Add NEW_STMT to STMT_INFO's pattern definition statements.  If VECTYPE
@@ -634,8 +636,7 @@ vect_split_statement (stmt_vec_info stmt2_info, tree new_rhs,
     {
       /* STMT2_INFO is part of a pattern.  Get the statement to which
 	 the pattern is attached.  */
-      stmt_vec_info orig_stmt2_info
-	= vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt2_info));
+      stmt_vec_info orig_stmt2_info = STMT_VINFO_RELATED_STMT (stmt2_info);
       vect_init_pattern_stmt (stmt1, orig_stmt2_info, vectype);
 
       if (dump_enabled_p ())
@@ -659,7 +660,7 @@ vect_split_statement (stmt_vec_info stmt2_info, tree new_rhs,
 	}
 
       gimple_seq *def_seq = &STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt2_info);
-      if (STMT_VINFO_RELATED_STMT (orig_stmt2_info) == stmt2_info->stmt)
+      if (STMT_VINFO_RELATED_STMT (orig_stmt2_info) == stmt2_info)
 	/* STMT2_INFO is the actual pattern statement.  Add STMT1
 	   to the end of the definition sequence.  */
 	gimple_seq_add_stmt_without_update (def_seq, stmt1);
@@ -4754,8 +4755,7 @@ vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
 	}
 
       /* Switch to the statement that ORIG replaces.  */
-      orig_stmt_info
-	= vinfo_for_stmt (STMT_VINFO_RELATED_STMT (orig_stmt_info));
+      orig_stmt_info = STMT_VINFO_RELATED_STMT (orig_stmt_info);
 
       /* We shouldn't be replacing the main pattern statement.  */
       gcc_assert (STMT_VINFO_RELATED_STMT (orig_stmt_info) != orig_stmt);

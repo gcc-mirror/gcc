@@ -2327,7 +2327,7 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
          original stmt for immediate uses.  */
       if (! STMT_VINFO_IN_PATTERN_P (stmt_vinfo)
 	  && STMT_VINFO_RELATED_STMT (stmt_vinfo))
-	stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
+	stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo)->stmt;
       tree def;
       if (gimple_code (stmt) == GIMPLE_PHI)
 	def = gimple_phi_result (stmt);
@@ -2341,7 +2341,7 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
 	      continue;
 	    if (STMT_VINFO_IN_PATTERN_P (use_vinfo)
 		&& STMT_VINFO_RELATED_STMT (use_vinfo))
-	      use_vinfo = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (use_vinfo));
+	      use_vinfo = STMT_VINFO_RELATED_STMT (use_vinfo);
 	    if (!STMT_SLP_TYPE (use_vinfo)
 		&& (STMT_VINFO_RELEVANT (use_vinfo)
 		    || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (use_vinfo)))
@@ -2446,7 +2446,7 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 	      memset (&wi, 0, sizeof (wi));
 	      wi.info = loop_vinfo;
 	      gimple_stmt_iterator gsi2
-		= gsi_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
+		= gsi_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info)->stmt);
 	      walk_gimple_stmt (&gsi2, vect_detect_hybrid_slp_2,
 				vect_detect_hybrid_slp_1, &wi);
 	      walk_gimple_seq (STMT_VINFO_PATTERN_DEF_SEQ (stmt_info),
@@ -3612,7 +3612,7 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
 	  if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
 	    {
 	      gimple *first_def = SLP_TREE_SCALAR_STMTS (child)[0];
-	      gimple *related
+	      stmt_vec_info related
 		= STMT_VINFO_RELATED_STMT (vinfo_for_stmt (first_def));
 	      tree first_def_op;
 
@@ -3622,7 +3622,8 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
 		first_def_op = gimple_get_lhs (first_def);
 	      if (operand_equal_p (oprnd, first_def_op, 0)
 		  || (related
-		      && operand_equal_p (oprnd, gimple_get_lhs (related), 0)))
+		      && operand_equal_p (oprnd,
+					  gimple_get_lhs (related->stmt), 0)))
 		{
 		  /* The number of vector defs is determined by the number of
 		     vector statements in the node from which we get those
