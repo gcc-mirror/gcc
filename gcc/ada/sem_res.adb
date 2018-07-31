@@ -5035,9 +5035,14 @@ package body Sem_Res is
          end;
       end if;
 
-      --  Check for allocation from an empty storage pool
+      --  Check for allocation from an empty storage pool. But do not complain
+      --  if it's a return statement for a build-in-place function, because the
+      --  allocator is there just in case the caller uses an allocator. If the
+      --  caller does use an allocator, it will be caught at the call site.
 
-      if No_Pool_Assigned (Typ) then
+      if No_Pool_Assigned (Typ)
+        and then not Alloc_For_BIP_Return (N)
+      then
          Error_Msg_N ("allocation from empty storage pool!", N);
 
       --  If the context is an unchecked conversion, as may happen within an
