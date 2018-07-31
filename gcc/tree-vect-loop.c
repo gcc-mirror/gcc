@@ -6162,7 +6162,6 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   auto_vec<gimple *> phis;
   int vec_num;
   tree def0, tem;
-  bool first_p = true;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
   tree cond_reduc_val = NULL_TREE;
 
@@ -6178,15 +6177,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       nested_cycle = true;
     }
 
-  /* In case of reduction chain we switch to the first stmt in the chain, but
-     we don't update STMT_INFO, since only the last stmt is marked as reduction
-     and has reduction properties.  */
-  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info)
-      && REDUC_GROUP_FIRST_ELEMENT (stmt_info) != stmt)
-    {
-      stmt = REDUC_GROUP_FIRST_ELEMENT (stmt_info);
-      first_p = false;
-    }
+  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info))
+    gcc_assert (slp_node && REDUC_GROUP_FIRST_ELEMENT (stmt_info) == stmt);
 
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
@@ -7050,8 +7042,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
   if (!vec_stmt) /* transformation not required.  */
     {
-      if (first_p)
-	vect_model_reduction_cost (stmt_info, reduc_fn, ncopies, cost_vec);
+      vect_model_reduction_cost (stmt_info, reduc_fn, ncopies, cost_vec);
       if (loop_vinfo && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
 	{
 	  if (reduction_type != FOLD_LEFT_REDUCTION

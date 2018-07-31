@@ -1,5 +1,11 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vectorizable_reduction): Assert that the
+	function is not called for second and subsequent members of
+	a reduction group.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (get_initial_def_for_reduction): Move special
 	cases for nested loops from here to ...
 	(vect_create_epilog_for_reduction): ...here.  Only call
