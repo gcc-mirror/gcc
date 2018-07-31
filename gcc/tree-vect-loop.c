@@ -4445,7 +4445,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
   gimple *use_stmt, *reduction_phi = NULL;
   bool nested_in_vect_loop = false;
   auto_vec<gimple *> new_phis;
-  auto_vec<gimple *> inner_phis;
+  auto_vec<stmt_vec_info> inner_phis;
   enum vect_def_type dt = vect_unknown_def_type;
   int j, i;
   auto_vec<tree> scalar_results;
@@ -4455,7 +4455,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
   bool slp_reduc = false;
   bool direct_slp_reduc;
   tree new_phi_result;
-  gimple *inner_phi = NULL;
+  stmt_vec_info inner_phi = NULL;
   tree induction_index = NULL_TREE;
 
   if (slp_node)
@@ -4605,7 +4605,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       tree indx_before_incr, indx_after_incr;
       poly_uint64 nunits_out = TYPE_VECTOR_SUBPARTS (vectype);
 
-      gimple *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
+      gimple *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info)->stmt;
       gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
 
       int scalar_precision
@@ -4738,20 +4738,21 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       inner_phis.create (vect_defs.length ());
       FOR_EACH_VEC_ELT (new_phis, i, phi)
 	{
+	  stmt_vec_info phi_info = loop_vinfo->lookup_stmt (phi);
 	  tree new_result = copy_ssa_name (PHI_RESULT (phi));
 	  gphi *outer_phi = create_phi_node (new_result, exit_bb);
 	  SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
 			   PHI_RESULT (phi));
 	  prev_phi_info = loop_vinfo->add_stmt (outer_phi);
-	  inner_phis.quick_push (phi);
+	  inner_phis.quick_push (phi_info);
 	  new_phis[i] = outer_phi;
-          while (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi)))
+	  while (STMT_VINFO_RELATED_STMT (phi_info))
             {
-	      phi = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi));
-	      new_result = copy_ssa_name (PHI_RESULT (phi));
+	      phi_info = STMT_VINFO_RELATED_STMT (phi_info);
+	      new_result = copy_ssa_name (PHI_RESULT (phi_info->stmt));
 	      outer_phi = create_phi_node (new_result, exit_bb);
 	      SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
-			       PHI_RESULT (phi));
+			       PHI_RESULT (phi_info->stmt));
 	      stmt_vec_info outer_phi_info = loop_vinfo->add_stmt (outer_phi);
 	      STMT_VINFO_RELATED_STMT (prev_phi_info) = outer_phi_info;
 	      prev_phi_info = outer_phi_info;
@@ -5644,7 +5645,8 @@ vect_finalize_reduction:
 	      if (double_reduc)
 		STMT_VINFO_VEC_STMT (exit_phi_vinfo) = inner_phi;
 	      else
-		STMT_VINFO_VEC_STMT (exit_phi_vinfo) = epilog_stmt;
+		STMT_VINFO_VEC_STMT (exit_phi_vinfo)
+		  = vinfo_for_stmt (epilog_stmt);
               if (!double_reduc
                   || STMT_VINFO_DEF_TYPE (exit_phi_vinfo)
                       != vect_double_reduction_def)
@@ -5706,8 +5708,8 @@ vect_finalize_reduction:
                   add_phi_arg (vect_phi, vect_phi_init,
                                loop_preheader_edge (outer_loop),
                                UNKNOWN_LOCATION);
-                  add_phi_arg (vect_phi, PHI_RESULT (inner_phi),
-                               loop_latch_edge (outer_loop), UNKNOWN_LOCATION);
+		  add_phi_arg (vect_phi, PHI_RESULT (inner_phi->stmt),
+			       loop_latch_edge (outer_loop), UNKNOWN_LOCATION);
                   if (dump_enabled_p ())
                     {
                       dump_printf_loc (MSG_NOTE, vect_location,
@@ -5846,7 +5848,7 @@ vect_expand_fold_left (gimple_stmt_iterator *gsi, tree scalar_dest,
 
 static bool
 vectorize_fold_left_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
-			       gimple **vec_stmt, slp_tree slp_node,
+			       stmt_vec_info *vec_stmt, slp_tree slp_node,
 			       gimple *reduc_def_stmt,
 			       tree_code code, internal_fn reduc_fn,
 			       tree ops[3], tree vectype_in,
@@ -6070,7 +6072,7 @@ is_nonwrapping_integer_induction (gimple *stmt, struct loop *loop)
 
 bool
 vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
-			gimple **vec_stmt, slp_tree slp_node,
+			stmt_vec_info *vec_stmt, slp_tree slp_node,
 			slp_instance slp_node_instance,
 			stmt_vector_for_cost *cost_vec)
 {
@@ -6220,7 +6222,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 		  else
 		    {
 		      if (j == 0)
-			STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_phi;
+			STMT_VINFO_VEC_STMT (stmt_info)
+			  = *vec_stmt = new_phi_info;
 		      else
 			STMT_VINFO_RELATED_STMT (prev_phi_info) = new_phi_info;
 		      prev_phi_info = new_phi_info;
@@ -7201,7 +7204,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   /* Finalize the reduction-phi (set its arguments) and create the
      epilog reduction code.  */
   if ((!single_defuse_cycle || code == COND_EXPR) && !slp_node)
-    vect_defs[0] = gimple_get_lhs (*vec_stmt);
+    vect_defs[0] = gimple_get_lhs ((*vec_stmt)->stmt);
 
   vect_create_epilog_for_reduction (vect_defs, stmt, reduc_def_stmt,
 				    epilog_copies, reduc_fn, phis,
@@ -7262,7 +7265,7 @@ vect_worthwhile_without_simd_p (vec_info *vinfo, tree_code code)
 bool
 vectorizable_induction (gimple *phi,
 			gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
-			gimple **vec_stmt, slp_tree slp_node,
+			stmt_vec_info *vec_stmt, slp_tree slp_node,
 			stmt_vector_for_cost *cost_vec)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (phi);
@@ -7700,7 +7703,7 @@ vectorizable_induction (gimple *phi,
   add_phi_arg (induction_phi, vec_def, loop_latch_edge (iv_loop),
 	       UNKNOWN_LOCATION);
 
-  STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = induction_phi;
+  STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = induction_phi_info;
 
   /* In case that vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate
@@ -7779,7 +7782,7 @@ vectorizable_induction (gimple *phi,
 	  gcc_assert (STMT_VINFO_RELEVANT_P (stmt_vinfo)
 		      && !STMT_VINFO_LIVE_P (stmt_vinfo));
 
-	  STMT_VINFO_VEC_STMT (stmt_vinfo) = new_stmt;
+	  STMT_VINFO_VEC_STMT (stmt_vinfo) = new_stmt_info;
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
@@ -7811,7 +7814,7 @@ bool
 vectorizable_live_operation (gimple *stmt,
 			     gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
 			     slp_tree slp_node, int slp_index,
-			     gimple **vec_stmt,
+			     stmt_vec_info *vec_stmt,
 			     stmt_vector_for_cost *)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);

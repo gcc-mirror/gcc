@@ -6401,18 +6401,17 @@ vect_record_grouped_load_vectors (gimple *stmt, vec<tree> result_chain)
             {
               if (!DR_GROUP_SAME_DR_STMT (vinfo_for_stmt (next_stmt)))
                 {
-		  gimple *prev_stmt =
-		    STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt));
+		  stmt_vec_info prev_stmt_info
+		    = STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt));
 		  stmt_vec_info rel_stmt_info
-		    = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt));
+		    = STMT_VINFO_RELATED_STMT (prev_stmt_info);
 		  while (rel_stmt_info)
 		    {
-		      prev_stmt = rel_stmt_info;
+		      prev_stmt_info = rel_stmt_info;
 		      rel_stmt_info = STMT_VINFO_RELATED_STMT (rel_stmt_info);
 		    }
 
-		  STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt))
-		    = new_stmt_info;
+		  STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
                 }
             }
 
