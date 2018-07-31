@@ -1,3 +1,8 @@
+2018-07-31  Piotr Trojanek  <trojanek@adacore.com>
+
+	* ali.adb (Known_ALI_Lines): Remove 'F' as a prefix for lines
+	related to the FORMAL analysis done by GNATprove.
+
 2018-07-31  Javier Miranda  <miranda@adacore.com>
 
 	* sem.ads (Inside_Preanalysis_Without_Freezing): New global
