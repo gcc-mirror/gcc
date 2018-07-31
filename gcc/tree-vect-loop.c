@@ -2145,8 +2145,7 @@ start_over:
 	  if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
 	    {
 	      struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
-	      tree vectype
-		= STMT_VINFO_VECTYPE (vinfo_for_stmt (vect_dr_stmt (dr)));
+	      tree vectype = STMT_VINFO_VECTYPE (vect_dr_stmt (dr));
 	      niters_th += TYPE_VECTOR_SUBPARTS (vectype) - 1;
 	    }
 	  else

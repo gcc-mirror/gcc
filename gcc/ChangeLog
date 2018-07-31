@@ -1,5 +1,27 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_dr_stmt): Return a stmt_vec_info rather
+	than a gimple stmt.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence)
+	(vect_slp_analyze_data_ref_dependence, vect_record_base_alignments)
+	(vect_calculate_target_alignmentm, vect_compute_data_ref_alignment)
+	(vect_update_misalignment_for_peel, vect_verify_datarefs_alignment)
+	(vector_alignment_reachable_p, vect_get_data_access_cost)
+	(vect_get_peeling_costs_all_drs, vect_peeling_hash_get_lowest_cost)
+	(vect_peeling_supportable, vect_enhance_data_refs_alignment)
+	(vect_find_same_alignment_drs, vect_analyze_data_refs_alignment)
+	(vect_analyze_group_access_1, vect_analyze_group_access)
+	(vect_analyze_data_ref_access, vect_analyze_data_ref_accesses)
+	(vect_vfa_access_size, vect_small_gap_p, vect_analyze_data_refs)
+	(vect_supportable_dr_alignment): Remove vinfo_for_stmt from the
+	result of vect_dr_stmt and use the stmt_vec_info instead of
+	the associated gimple stmt.
+	* tree-vect-loop-manip.c (get_misalign_in_elems): Likewise.
+	(vect_gen_prolog_loop_niters): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop_2): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (_slp_tree::stmts): Change from a vec<gimple *>
 	to a vec<stmt_vec_info>.
 	* tree-vect-slp.c (vect_free_slp_tree): Update accordingly.
