@@ -1,3 +1,32 @@
+2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* builtin-types.def (BT_FN_PTR_PTR_VAR): New function type.
+	(BT_FN_I1_I1_VAR, BT_FN_I2_I2_VAR, BT_FN_I4_I4_VAR): Likewise.
+	(BT_FN_I8_I8_VAR, BT_FN_I16_I16_VAR): Likewise.
+	* builtin-attrs.def (ATTR_NOVOPS_NOTHROW_LEAF_LIST): New attribute
+	list.
+	* builtins.def (BUILT_IN_SPECULATION_SAFE_VALUE_N): New builtin.
+	(BUILT_IN_SPECULATION_SAFE_VALUE_PTR): New internal builtin.
+	(BUILT_IN_SPECULATION_SAFE_VALUE_1): Likewise.
+	(BUILT_IN_SPECULATION_SAFE_VALUE_2): Likewise.
+	(BUILT_IN_SPECULATION_SAFE_VALUE_4): Likewise.
+	(BUILT_IN_SPECULATION_SAFE_VALUE_8): Likewise.
+	(BUILT_IN_SPECULATION_SAFE_VALUE_16): Likewise.
+	* builtins.c (expand_speculation_safe_value): New function.
+	(expand_builtin): Call it.
+	* doc/cpp.texi: Document predefine __HAVE_SPECULATION_SAFE_VALUE.
+	* doc/extend.texi: Document __builtin_speculation_safe_value.
+	* doc/md.texi: Document "speculation_barrier" pattern.
+	* doc/tm.texi.in: Pull in TARGET_SPECULATION_SAFE_VALUE and
+	TARGET_HAVE_SPECULATION_SAFE_VALUE.
+	* doc/tm.texi: Regenerated.
+	* target.def (have_speculation_safe_value, speculation_safe_value): New
+	hooks.
+	* targhooks.c (default_have_speculation_safe_value): New function.
+	(default_speculation_safe_value): New function.
+	* targhooks.h (default_have_speculation_safe_value): Add prototype.
+	(default_speculation_safe_value): Add prototype.
+
 2018-07-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* dump-context.h (dump_context::dump_loc): New decl.

@@ -10960,6 +10960,7 @@ is called and the @var{flag} argument passed to it.
 @findex __builtin_powi
 @findex __builtin_powif
 @findex __builtin_powil
+@findex __builtin_speculation_safe_value
 @findex _Exit
 @findex _exit
 @findex abort
@@ -11601,6 +11602,96 @@ at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
 and @option{-Walloca-larger-than}.  @var{max_size} must be a constant integer
 expression, it has no effect on code generation and no attempt is made to
 check its compatibility with @var{size}.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} @var{type} __builtin_speculation_safe_value (@var{type} val, @var{type} failval)
+
+This built-in function can be used to help mitigate against unsafe
+speculative execution.  @var{type} may be any integral type or any
+pointer type.
+
+@enumerate
+@item
+If the CPU is not speculatively executing the code, then @var{val}
+is returned.
+@item
+If the CPU is executing speculatively then either:
+@itemize
+@item
+The function may cause execution to pause until it is known that the
+code is no-longer being executed speculatively (in which case
+@var{val} can be returned, as above); or
+@item
+The function may use target-dependent speculation tracking state to cause
+@var{failval} to be returned when it is known that speculative
+execution has incorrectly predicted a conditional branch operation.
+@end itemize
+@end enumerate
+
+The second argument, @var{failval}, is optional and defaults to zero
+if omitted.
+
+GCC defines the preprocessor macro
+@code{__HAVE_BUILTIN_SPECULATION_SAFE_VALUE} for targets that have been
+updated to support this builtin.
+
+The built-in function can be used where a variable appears to be used in a
+safe way, but the CPU, due to speculative execution may temporarily ignore
+the bounds checks.  Consider, for example, the following function:
+
+@smallexample
+int array[500];
+int f (unsigned untrusted_index)
+@{
+  if (untrusted_index < 500)
+    return array[untrusted_index];
+  return 0;
+@}
+@end smallexample
+
+If the function is called repeatedly with @code{untrusted_index} less
+than the limit of 500, then a branch predictor will learn that the
+block of code that returns a value stored in @code{array} will be
+executed.  If the function is subsequently called with an
+out-of-range value it will still try to execute that block of code
+first until the CPU determines that the prediction was incorrect
+(the CPU will unwind any incorrect operations at that point).
+However, depending on how the result of the function is used, it might be
+possible to leave traces in the cache that can reveal what was stored
+at the out-of-bounds location.  The built-in function can be used to
+provide some protection against leaking data in this way by changing
+the code to:
+
+@smallexample
+int array[500];
+int f (unsigned untrusted_index)
+@{
+  if (untrusted_index < 500)
+    return array[__builtin_speculation_safe_value (untrusted_index)];
+  return 0;
+@}
+@end smallexample
+
+The built-in function will either cause execution to stall until the
+conditional branch has been fully resolved, or it may permit
+speculative execution to continue, but using 0 instead of
+@code{untrusted_value} if that exceeds the limit.
+
+If accessing any memory location is potentially unsafe when speculative
+execution is incorrect, then the code can be rewritten as
+
+@smallexample
+int array[500];
+int f (unsigned untrusted_index)
+@{
+  if (untrusted_index < 500)
+    return *__builtin_speculation_safe_value (&array[untrusted_index], NULL);
+  return 0;
+@}
+@end smallexample
+
+which will cause a @code{NULL} pointer to be used for the unsafe case.
 
 @end deftypefn
 

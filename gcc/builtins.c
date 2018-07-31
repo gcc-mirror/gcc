@@ -6918,6 +6918,55 @@ inline_expand_builtin_string_cmp (tree exp, rtx target)
 			    const_str_n, mode);
 }
 
+/* Expand a call to __builtin_speculation_safe_value_<N>.  MODE
+   represents the size of the first argument to that call, or VOIDmode
+   if the argument is a pointer.  IGNORE will be true if the result
+   isn't used.  */
+static rtx
+expand_speculation_safe_value (machine_mode mode, tree exp, rtx target,
+			       bool ignore)
+{
+  rtx val, failsafe;
+  unsigned nargs = call_expr_nargs (exp);
+
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+
+  if (mode == VOIDmode)
+    {
+      mode = TYPE_MODE (TREE_TYPE (arg0));
+      gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
+    }
+
+  val = expand_expr (arg0, NULL_RTX, mode, EXPAND_NORMAL);
+
+  /* An optional second argument can be used as a failsafe value on
+     some machines.  If it isn't present, then the failsafe value is
+     assumed to be 0.  */
+  if (nargs > 1)
+    {
+      tree arg1 = CALL_EXPR_ARG (exp, 1);
+      failsafe = expand_expr (arg1, NULL_RTX, mode, EXPAND_NORMAL);
+    }
+  else
+    failsafe = const0_rtx;
+
+  /* If the result isn't used, the behavior is undefined.  It would be
+     nice to emit a warning here, but path splitting means this might
+     happen with legitimate code.  So simply drop the builtin
+     expansion in that case; we've handled any side-effects above.  */
+  if (ignore)
+    return const0_rtx;
+
+  /* If we don't have a suitable target, create one to hold the result.  */
+  if (target == NULL || GET_MODE (target) != mode)
+    target = gen_reg_rtx (mode);
+
+  if (GET_MODE (val) != mode && GET_MODE (val) != VOIDmode)
+    val = convert_modes (mode, VOIDmode, val, false);
+
+  return targetm.speculation_safe_value (mode, target, val, failsafe);
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
@@ -8028,6 +8077,17 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
     case BUILT_IN_GOACC_PARLEVEL_ID:
     case BUILT_IN_GOACC_PARLEVEL_SIZE:
       return expand_builtin_goacc_parlevel_id_size (exp, target, ignore);
+
+    case BUILT_IN_SPECULATION_SAFE_VALUE_PTR:
+      return expand_speculation_safe_value (VOIDmode, exp, target, ignore);
+
+    case BUILT_IN_SPECULATION_SAFE_VALUE_1:
+    case BUILT_IN_SPECULATION_SAFE_VALUE_2:
+    case BUILT_IN_SPECULATION_SAFE_VALUE_4:
+    case BUILT_IN_SPECULATION_SAFE_VALUE_8:
+    case BUILT_IN_SPECULATION_SAFE_VALUE_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SPECULATION_SAFE_VALUE_1);
+      return expand_speculation_safe_value (mode, exp, target, ignore);
 
     default:	/* just do library call, if unknown builtin */
       break;

@@ -11924,6 +11924,37 @@ maintainer is familiar with.
 
 @end defmac
 
+@deftypefn {Target Hook} bool TARGET_HAVE_SPECULATION_SAFE_VALUE (bool @var{active})
+This hook is used to determine the level of target support for
+ @code{__builtin_speculation_safe_value}.  If called with an argument
+ of false, it returns true if the target has been modified to support
+ this builtin.  If called with an argument of true, it returns true
+ if the target requires active mitigation execution might be speculative.
+ 
+ The default implementation returns false if the target does not define
+ a pattern named @code{speculation_barrier}.  Else it returns true
+ for the first case and whether the pattern is enabled for the current
+ compilation for the second case.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_SPECULATION_SAFE_VALUE (machine_mode @var{mode}, rtx @var{result}, rtx @var{val}, rtx @var{failval})
+This target hook can be used to generate a target-specific code
+ sequence that implements the @code{__builtin_speculation_safe_value}
+ built-in function.  The function must always return @var{val} in
+ @var{result} in mode @var{mode} when the cpu is not executing
+ speculatively, but must never return that when speculating until it
+ is known that the speculation will not be unwound.  The hook supports
+ two primary mechanisms for implementing the requirements.  The first
+ is to emit a speculation barrier which forces the processor to wait
+ until all prior speculative operations have been resolved; the second
+ is to use a target-specific mechanism that can track the speculation
+ state and to return @var{failval} if it can determine that
+ speculation must be unwound at a later time.
+ 
+ The default implementation simply copies @var{val} to @var{result} and
+ emits a @code{speculation_barrier} instruction if that is defined.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_RUN_TARGET_SELFTESTS (void)
 If selftests are enabled, run any selftests for this target.
 @end deftypefn
