@@ -1,3 +1,7 @@
+2018-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/global.adb, gnat.dg/global.ads: New testcase.
+
 2018-07-31  Gary Dismukes  <dismukes@adacore.com>
 
 	* gnat.dg/block_ext_return_assert_failure.adb: New testcase.
