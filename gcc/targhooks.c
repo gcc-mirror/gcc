@@ -2316,7 +2316,7 @@ default_preferred_else_value (unsigned, tree type, unsigned, tree *)
 
 /* Default implementation of TARGET_HAVE_SPECULATION_SAFE_VALUE.  */
 bool
-default_have_speculation_safe_value (bool active)
+default_have_speculation_safe_value (bool active ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_speculation_barrier
   return active ? HAVE_speculation_barrier : true;

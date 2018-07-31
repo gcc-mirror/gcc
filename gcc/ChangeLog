@@ -1,3 +1,8 @@
+2018-07-31  Ian Lance Taylor  <iant@golang.org>
+
+	* targhooks.c (default_have_speculation_safe_value): Add
+	ATTRIBUTE_UNUSED.
+
 2018-07-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* dump-context.h: Include "pretty-print.h".
