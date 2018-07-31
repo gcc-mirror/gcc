@@ -1,3 +1,8 @@
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/prot5.adb, gnat.dg/prot5_pkg.adb,
+	gnat.dg/prot5_pkg.ads: New testcase.
+
 2018-07-31  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/addr11.adb: New testcase.

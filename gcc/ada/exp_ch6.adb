@@ -6387,6 +6387,30 @@ package body Exp_Ch6 is
          then
             Rec := New_Occurrence_Of (First_Entity (Current_Scope), Sloc (N));
 
+         --  A default parameter of a protected operation may be a call to
+         --  a protected function of the type. This appears as an internal
+         --  call in the profile of the operation, but if the context is an
+         --  external call we must convert the call into an external one,
+         --  using the protected object that is the target, so that:
+
+         --     Prot.P (F)
+         --  is transformed into
+         --     Prot.P (Prot.F)
+
+         elsif Nkind (Parent (N)) = N_Procedure_Call_Statement
+           and then Nkind (Name (Parent (N))) = N_Selected_Component
+           and then Is_Protected_Type (Etype (Prefix (Name (Parent (N)))))
+           and then Is_Entity_Name (Name (N))
+           and then Scope (Entity (Name (N))) =
+                     Etype (Prefix (Name (Parent (N))))
+         then
+            Rewrite (Name (N),
+              Make_Selected_Component (Sloc (N),
+                Prefix => New_Copy_Tree (Prefix (Name (Parent (N)))),
+                Selector_Name => Relocate_Node (Name (N))));
+            Analyze_And_Resolve (N);
+            return;
+
          else
             --  If the context is the initialization procedure for a protected
             --  type, the call is legal because the called entity must be a
