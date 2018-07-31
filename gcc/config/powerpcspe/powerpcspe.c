@@ -6030,6 +6030,7 @@ rs6000_density_test (rs6000_cost_data *data)
   struct loop *loop = data->loop_info;
   basic_block *bbs = get_loop_body (loop);
   int nbbs = loop->num_nodes;
+  loop_vec_info loop_vinfo = loop_vec_info_for_loop (data->loop_info);
   int vec_cost = data->cost[vect_body], not_vec_cost = 0;
   int i, density_pct;
 
@@ -6041,7 +6042,7 @@ rs6000_density_test (rs6000_cost_data *data)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
-	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (stmt);
 
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
 	      && !STMT_VINFO_IN_PATTERN_P (stmt_info))

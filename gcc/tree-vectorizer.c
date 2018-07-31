@@ -518,6 +518,23 @@ vec_info::add_stmt (gimple *stmt)
   return res;
 }
 
+/* If STMT has an associated stmt_vec_info, return that vec_info, otherwise
+   return null.  It is safe to call this function on any statement, even if
+   it might not be part of the vectorizable region.  */
+
+stmt_vec_info
+vec_info::lookup_stmt (gimple *stmt)
+{
+  unsigned int uid = gimple_uid (stmt);
+  if (uid > 0 && uid - 1 < stmt_vec_infos.length ())
+    {
+      stmt_vec_info res = stmt_vec_infos[uid - 1];
+      if (res && res->stmt == stmt)
+	return res;
+    }
+  return NULL;
+}
+
 /* A helper function to free scev and LOOP niter information, as well as
    clear loop constraint LOOP_C_FINITE.  */
 

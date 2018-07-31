@@ -101,7 +101,8 @@ static void
 vect_init_pattern_stmt (gimple *pattern_stmt, stmt_vec_info orig_stmt_info,
 			tree vectype)
 {
-  stmt_vec_info pattern_stmt_info = vinfo_for_stmt (pattern_stmt);
+  vec_info *vinfo = orig_stmt_info->vinfo;
+  stmt_vec_info pattern_stmt_info = vinfo->lookup_stmt (pattern_stmt);
   if (pattern_stmt_info == NULL)
     pattern_stmt_info = orig_stmt_info->vinfo->add_stmt (pattern_stmt);
   gimple_set_bb (pattern_stmt, gimple_bb (orig_stmt_info->stmt));
@@ -4401,6 +4402,7 @@ static bool
 vect_determine_min_output_precision_1 (stmt_vec_info stmt_info, tree lhs)
 {
   /* Take the maximum precision required by users of the result.  */
+  vec_info *vinfo = stmt_info->vinfo;
   unsigned int precision = 0;
   imm_use_iterator iter;
   use_operand_p use;
@@ -4409,10 +4411,8 @@ vect_determine_min_output_precision_1 (stmt_vec_info stmt_info, tree lhs)
       gimple *use_stmt = USE_STMT (use);
       if (is_gimple_debug (use_stmt))
 	continue;
-      if (!vect_stmt_in_region_p (stmt_info->vinfo, use_stmt))
-	return false;
-      stmt_vec_info use_stmt_info = vinfo_for_stmt (use_stmt);
-      if (!use_stmt_info->min_input_precision)
+      stmt_vec_info use_stmt_info = vinfo->lookup_stmt (use_stmt);
+      if (!use_stmt_info || !use_stmt_info->min_input_precision)
 	return false;
       precision = MAX (precision, use_stmt_info->min_input_precision);
     }
@@ -4657,7 +4657,8 @@ vect_determine_precisions (vec_info *vinfo)
 	  basic_block bb = bbs[nbbs - i - 1];
 	  for (gimple_stmt_iterator si = gsi_last_bb (bb);
 	       !gsi_end_p (si); gsi_prev (&si))
-	    vect_determine_stmt_precisions (vinfo_for_stmt (gsi_stmt (si)));
+	    vect_determine_stmt_precisions
+	      (vinfo->lookup_stmt (gsi_stmt (si)));
 	}
     }
   else
@@ -4672,7 +4673,7 @@ vect_determine_precisions (vec_info *vinfo)
 	  else
 	    gsi_prev (&si);
 	  stmt = gsi_stmt (si);
-	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	  stmt_vec_info stmt_info = vinfo->lookup_stmt (stmt);
 	  if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
 	    vect_determine_stmt_precisions (stmt_info);
 	}
@@ -4971,7 +4972,7 @@ vect_pattern_recog (vec_info *vinfo)
 	   gsi_stmt (si) != gsi_stmt (bb_vinfo->region_end); gsi_next (&si))
 	{
 	  gimple *stmt = gsi_stmt (si);
-	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	  stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (stmt);
 	  if (stmt_info && !STMT_VINFO_VECTORIZABLE (stmt_info))
 	    continue;
 

@@ -1,5 +1,27 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vec_info::lookup_stmt): Declare.
+	* tree-vectorizer.c (vec_info::lookup_stmt): New function.
+	* tree-vect-loop.c (vect_determine_vf_for_stmt): Use it instead
+	of vinfo_for_stmt.
+	(vect_determine_vectorization_factor, vect_analyze_scalar_cycles_1)
+	(vect_compute_single_scalar_iteration_cost, vect_analyze_loop_form)
+	(vect_update_vf_for_slp, vect_analyze_loop_operations)
+	(vect_is_slp_reduction, vectorizable_induction)
+	(vect_transform_loop_stmt, vect_transform_loop): Likewise.
+	* tree-vect-patterns.c (vect_init_pattern_stmt):
+	(vect_determine_min_output_precision_1, vect_determine_precisions)
+	(vect_pattern_recog): Likewise.
+	* tree-vect-stmts.c (vect_analyze_stmt, vect_transform_stmt): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_density_test): Likewise.
+	* config/rs6000/rs6000.c (rs6000_density_test): Likewise.
+	* tree-vect-slp.c (vect_detect_hybrid_slp_stmts): Likewise.
+	(vect_detect_hybrid_slp_1, vect_detect_hybrid_slp_2)
+	(vect_detect_hybrid_slp): Likewise.  Change the walk_stmt_info
+	info field from a loop to a loop_vec_info.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (stmt_vec_info): Move typedef earlier in file.
 	(vec_info::add_stmt): Declare.
 	* tree-vectorizer.c (vec_info::add_stmt): New function.
