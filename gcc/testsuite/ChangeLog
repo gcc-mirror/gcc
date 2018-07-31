@@ -1,3 +1,7 @@
+2018-07-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat.dg/block_ext_return_assert_failure.adb: New testcase.
+
 2018-07-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/iter3.adb: New testcase.

@@ -1,3 +1,9 @@
+2018-07-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Replace
+	calls to Current_Scope in three assertions with calls to
+	Current_Subprogram.
+
 2018-07-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_eval.adb (Check_Non_Static_Context): Do not warn on an
