@@ -1,3 +1,10 @@
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (get_initial_def_for_reduction): Move special
+	cases for nested loops from here to ...
+	(vect_create_epilog_for_reduction): ...here.  Only call
+	vect_is_simple_use for inner-loop reductions.
+
 2018-07-31  Martin Liska  <mliska@suse.cz>
 
         PR gcov-profile/85338
