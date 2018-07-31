@@ -888,8 +888,8 @@ package body Contracts is
 
                if not Is_Library_Level_Entity (Obj_Id) then
                   Error_Msg_N
-                    ("volatile variable & must be declared at library level",
-                     Obj_Id);
+                    ("volatile variable & must be declared at library level "
+                     & "(SPARK RM 7.1.3(3))", Obj_Id);
 
                --  An object of a discriminated type cannot be effectively
                --  volatile except for protected objects (SPARK RM 7.1.3(5)).

@@ -5015,9 +5015,10 @@ package body Sem_Res is
                if In_Instance_Body then
                   Error_Msg_Warn := SPARK_Mode /= On;
                   Error_Msg_N
-                    ("type in allocator has deeper level than "
-                     & "designated class-wide type<<", E);
+                    ("type in allocator has deeper level than designated "
+                     & "class-wide type<<", E);
                   Error_Msg_N ("\Program_Error [<<", E);
+
                   Rewrite (N,
                     Make_Raise_Program_Error (Sloc (N),
                       Reason => PE_Accessibility_Check_Failed));
@@ -5028,8 +5029,9 @@ package body Sem_Res is
                --  type. A run-time check will be performed in the instance.
 
                elsif not Is_Generic_Type (Exp_Typ) then
-                  Error_Msg_N ("type in allocator has deeper level than "
-                               & "designated class-wide type", E);
+                  Error_Msg_N
+                    ("type in allocator has deeper level than designated "
+                     & "class-wide type", E);
                end if;
             end if;
          end;

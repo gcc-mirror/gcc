@@ -1421,9 +1421,9 @@ package body Make is
    --------------------------
 
    procedure Check_Linker_Options
-     (E_Stamp   : Time_Stamp_Type;
-      O_File    : out File_Name_Type;
-      O_Stamp   : out Time_Stamp_Type)
+     (E_Stamp : Time_Stamp_Type;
+      O_File  : out File_Name_Type;
+      O_Stamp : out Time_Stamp_Type)
    is
       procedure Check_File (File : File_Name_Type);
       --  Update O_File and O_Stamp if the given file is younger than E_Stamp
@@ -1865,9 +1865,9 @@ package body Make is
 
             if Add_It then
                if not Queue.Insert
-                        ((File    => Sfile,
-                          Unit    => No_Unit_Name,
-                          Index   => 0))
+                        ((File  => Sfile,
+                          Unit  => No_Unit_Name,
+                          Index => 0))
                then
                   if Is_In_Obsoleted (Sfile) then
                      Executable_Obsolete := True;
