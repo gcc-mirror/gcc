@@ -1,18 +1,23 @@
+2018-07-31  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/86640
+	* gcc.target/arm/pr86640.c: New testcase.
+
 2018-07-31  Martin Liska  <mliska@suse.cz>
 
-        PR gcov-profile/85338
-        PR gcov-profile/85350
-        PR gcov-profile/85372
+	PR gcov-profile/85338
+	PR gcov-profile/85350
+	PR gcov-profile/85372
 	* gcc.misc-tests/gcov-pr85338.c: New test.
 	* gcc.misc-tests/gcov-pr85350.c: New test.
 	* gcc.misc-tests/gcov-pr85372.c: New test.
 
 2018-07-31  Martin Liska  <mliska@suse.cz>
 
-        PR gcov-profile/83813
-        PR gcov-profile/84758
-        PR gcov-profile/85217
-        PR gcov-profile/85332
+	PR gcov-profile/83813
+	PR gcov-profile/84758
+	PR gcov-profile/85217
+	PR gcov-profile/85332
 	* gcc.misc-tests/gcov-pr83813.c: New test.
 	* gcc.misc-tests/gcov-pr84758.c: New test.
 	* gcc.misc-tests/gcov-pr85217.c: New test.
