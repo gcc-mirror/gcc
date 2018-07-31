@@ -4763,7 +4763,7 @@ package body Exp_Ch6 is
       --  the pointer to the object) they are always handled by means of
       --  simple return statements.
 
-      pragma Assert (not Is_Thunk (Current_Scope));
+      pragma Assert (not Is_Thunk (Current_Subprogram));
 
       if Nkind (Ret_Obj_Decl) = N_Object_Declaration then
          Exp := Expression (Ret_Obj_Decl);
@@ -4772,9 +4772,9 @@ package body Exp_Ch6 is
          --  then F and G are both b-i-p, or neither b-i-p.
 
          if Nkind (Exp) = N_Function_Call then
-            pragma Assert (Ekind (Current_Scope) = E_Function);
+            pragma Assert (Ekind (Current_Subprogram) = E_Function);
             pragma Assert
-              (Is_Build_In_Place_Function (Current_Scope) =
+              (Is_Build_In_Place_Function (Current_Subprogram) =
                Is_Build_In_Place_Function_Call (Exp));
             null;
          end if;
