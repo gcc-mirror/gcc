@@ -201,21 +201,23 @@ vect_free_oprnd_info (vec<slp_oprnd_info> &oprnds_info)
 int
 vect_get_place_in_interleaving_chain (gimple *stmt, gimple *first_stmt)
 {
-  gimple *next_stmt = first_stmt;
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  stmt_vec_info first_stmt_info = vinfo_for_stmt (first_stmt);
+  stmt_vec_info next_stmt_info = first_stmt_info;
   int result = 0;
 
-  if (first_stmt != DR_GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
+  if (first_stmt_info != DR_GROUP_FIRST_ELEMENT (stmt_info))
     return -1;
 
   do
     {
-      if (next_stmt == stmt)
+      if (next_stmt_info == stmt_info)
 	return result;
-      next_stmt = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
-      if (next_stmt)
-	result += DR_GROUP_GAP (vinfo_for_stmt (next_stmt));
+      next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
+      if (next_stmt_info)
+	result += DR_GROUP_GAP (next_stmt_info);
     }
-  while (next_stmt);
+  while (next_stmt_info);
 
   return -1;
 }
@@ -3577,7 +3579,6 @@ void
 vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
 		   vec<vec<tree> > *vec_oprnds)
 {
-  gimple *first_stmt;
   int number_of_vects = 0, i;
   unsigned int child_index = 0;
   HOST_WIDE_INT lhs_size_unit, rhs_size_unit;
@@ -3586,7 +3587,7 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
   tree oprnd;
   bool vectorized_defs;
 
-  first_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[0];
+  stmt_vec_info first_stmt_info = SLP_TREE_SCALAR_STMTS (slp_node)[0];
   FOR_EACH_VEC_ELT (ops, i, oprnd)
     {
       /* For each operand we check if it has vectorized definitions in a child
@@ -3637,8 +3638,8 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
                  vect_schedule_slp_instance (), fix it by replacing LHS with
                  RHS, if necessary.  See vect_get_smallest_scalar_type () for
                  details.  */
-              vect_get_smallest_scalar_type (first_stmt, &lhs_size_unit,
-                                             &rhs_size_unit);
+	      vect_get_smallest_scalar_type (first_stmt_info, &lhs_size_unit,
+					     &rhs_size_unit);
               if (rhs_size_unit != lhs_size_unit)
                 {
                   number_of_vects *= rhs_size_unit;
