@@ -99,7 +99,7 @@ vect_lanes_optab_supported_p (const char *name, convert_optab optab,
 }
 
 
-/* Return the smallest scalar part of STMT.
+/* Return the smallest scalar part of STMT_INFO.
    This is used to determine the vectype of the stmt.  We generally set the
    vectype according to the type of the result (lhs).  For stmts whose
    result-type is different than the type of the arguments (e.g., demotion,
@@ -117,10 +117,11 @@ vect_lanes_optab_supported_p (const char *name, convert_optab optab,
    types.  */
 
 tree
-vect_get_smallest_scalar_type (gimple *stmt, HOST_WIDE_INT *lhs_size_unit,
-                               HOST_WIDE_INT *rhs_size_unit)
+vect_get_smallest_scalar_type (stmt_vec_info stmt_info,
+			       HOST_WIDE_INT *lhs_size_unit,
+			       HOST_WIDE_INT *rhs_size_unit)
 {
-  tree scalar_type = gimple_expr_type (stmt);
+  tree scalar_type = gimple_expr_type (stmt_info->stmt);
   HOST_WIDE_INT lhs, rhs;
 
   /* During the analysis phase, this function is called on arbitrary
@@ -130,7 +131,7 @@ vect_get_smallest_scalar_type (gimple *stmt, HOST_WIDE_INT *lhs_size_unit,
 
   lhs = rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (scalar_type));
 
-  gassign *assign = dyn_cast <gassign *> (stmt);
+  gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
   if (assign
       && (gimple_assign_cast_p (assign)
 	  || gimple_assign_rhs_code (assign) == DOT_PROD_EXPR
@@ -191,16 +192,14 @@ vect_check_nonzero_value (loop_vec_info loop_vinfo, tree value)
   LOOP_VINFO_CHECK_NONZERO (loop_vinfo).safe_push (value);
 }
 
-/* Return true if we know that the order of vectorized STMT_A and
-   vectorized STMT_B will be the same as the order of STMT_A and STMT_B.
-   At least one of the statements is a write.  */
+/* Return true if we know that the order of vectorized STMTINFO_A and
+   vectorized STMTINFO_B will be the same as the order of STMTINFO_A and
+   STMTINFO_B.  At least one of the statements is a write.  */
 
 static bool
-vect_preserves_scalar_order_p (gimple *stmt_a, gimple *stmt_b)
+vect_preserves_scalar_order_p (stmt_vec_info stmtinfo_a,
+			       stmt_vec_info stmtinfo_b)
 {
-  stmt_vec_info stmtinfo_a = vinfo_for_stmt (stmt_a);
-  stmt_vec_info stmtinfo_b = vinfo_for_stmt (stmt_b);
-
   /* Single statements are always kept in their original order.  */
   if (!STMT_VINFO_GROUPED_ACCESS (stmtinfo_a)
       && !STMT_VINFO_GROUPED_ACCESS (stmtinfo_b))
@@ -666,7 +665,7 @@ vect_slp_analyze_data_ref_dependence (struct data_dependence_relation *ddr)
 static bool
 vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
 				   vec<stmt_vec_info> stores,
-				   gimple *last_store)
+				   stmt_vec_info last_store_info)
 {
   /* This walks over all stmts involved in the SLP load/store done
      in NODE verifying we can sink them up to the last stmt in the
@@ -712,7 +711,7 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
 	     been sunk to (and we verify if we can do that as well).  */
 	  if (gimple_visited_p (stmt))
 	    {
-	      if (stmt_info != last_store)
+	      if (stmt_info != last_store_info)
 		continue;
 	      unsigned i;
 	      stmt_vec_info store_info;
@@ -2843,20 +2842,20 @@ strip_conversion (tree op)
   return gimple_assign_rhs1 (stmt);
 }
 
-/* Return true if vectorizable_* routines can handle statements STMT1
-   and STMT2 being in a single group.  */
+/* Return true if vectorizable_* routines can handle statements STMT1_INFO
+   and STMT2_INFO being in a single group.  */
 
 static bool
-can_group_stmts_p (gimple *stmt1, gimple *stmt2)
+can_group_stmts_p (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
 {
-  if (gimple_assign_single_p (stmt1))
-    return gimple_assign_single_p (stmt2);
+  if (gimple_assign_single_p (stmt1_info->stmt))
+    return gimple_assign_single_p (stmt2_info->stmt);
 
-  gcall *call1 = dyn_cast <gcall *> (stmt1);
+  gcall *call1 = dyn_cast <gcall *> (stmt1_info->stmt);
   if (call1 && gimple_call_internal_p (call1))
     {
       /* Check for two masked loads or two masked stores.  */
-      gcall *call2 = dyn_cast <gcall *> (stmt2);
+      gcall *call2 = dyn_cast <gcall *> (stmt2_info->stmt);
       if (!call2 || !gimple_call_internal_p (call2))
 	return false;
       internal_fn ifn = gimple_call_internal_fn (call1);
@@ -3643,17 +3642,16 @@ vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
   info->memory_type = TREE_TYPE (DR_REF (dr));
 }
 
-/* Return true if a non-affine read or write in STMT is suitable for a
+/* Return true if a non-affine read or write in STMT_INFO is suitable for a
    gather load or scatter store.  Describe the operation in *INFO if so.  */
 
 bool
-vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
+vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 			   gather_scatter_info *info)
 {
   HOST_WIDE_INT scale = 1;
   poly_int64 pbitpos, pbitsize;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree offtype = NULL_TREE;
   tree decl = NULL_TREE, base, off;
@@ -4473,7 +4471,7 @@ vect_duplicate_ssa_name_ptr_info (tree name, data_reference *dr)
    that will be accessed for a data reference.
 
    Input:
-   STMT: The statement containing the data reference.
+   STMT_INFO: The statement containing the data reference.
    NEW_STMT_LIST: Must be initialized to NULL_TREE or a statement list.
    OFFSET: Optional. If supplied, it is be added to the initial address.
    LOOP:    Specify relative to which loop-nest should the address be computed.
@@ -4502,12 +4500,11 @@ vect_duplicate_ssa_name_ptr_info (tree name, data_reference *dr)
    FORNOW: We are only handling array accesses with step 1.  */
 
 tree
-vect_create_addr_base_for_vector_ref (gimple *stmt,
+vect_create_addr_base_for_vector_ref (stmt_vec_info stmt_info,
 				      gimple_seq *new_stmt_list,
 				      tree offset,
 				      tree byte_offset)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   const char *base_name;
   tree addr_base;
@@ -4588,26 +4585,26 @@ vect_create_addr_base_for_vector_ref (gimple *stmt,
 /* Function vect_create_data_ref_ptr.
 
    Create a new pointer-to-AGGR_TYPE variable (ap), that points to the first
-   location accessed in the loop by STMT, along with the def-use update
+   location accessed in the loop by STMT_INFO, along with the def-use update
    chain to appropriately advance the pointer through the loop iterations.
    Also set aliasing information for the pointer.  This pointer is used by
    the callers to this function to create a memory reference expression for
    vector load/store access.
 
    Input:
-   1. STMT: a stmt that references memory. Expected to be of the form
+   1. STMT_INFO: a stmt that references memory. Expected to be of the form
          GIMPLE_ASSIGN <name, data-ref> or
 	 GIMPLE_ASSIGN <data-ref, name>.
    2. AGGR_TYPE: the type of the reference, which should be either a vector
         or an array.
    3. AT_LOOP: the loop where the vector memref is to be created.
    4. OFFSET (optional): an offset to be added to the initial address accessed
-        by the data-ref in STMT.
+	by the data-ref in STMT_INFO.
    5. BSI: location where the new stmts are to be placed if there is no loop
    6. ONLY_INIT: indicate if ap is to be updated in the loop, or remain
         pointing to the initial address.
    7. BYTE_OFFSET (optional, defaults to NULL): a byte offset to be added
-	to the initial address accessed by the data-ref in STMT.  This is
+	to the initial address accessed by the data-ref in STMT_INFO.  This is
 	similar to OFFSET, but OFFSET is counted in elements, while BYTE_OFFSET
 	in bytes.
    8. IV_STEP (optional, defaults to NULL): the amount that should be added
@@ -4643,14 +4640,13 @@ vect_create_addr_base_for_vector_ref (gimple *stmt,
    4. Return the pointer.  */
 
 tree
-vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
-			  tree offset, tree *initial_address,
-			  gimple_stmt_iterator *gsi, gimple **ptr_incr,
-			  bool only_init, bool *inv_p, tree byte_offset,
-			  tree iv_step)
+vect_create_data_ref_ptr (stmt_vec_info stmt_info, tree aggr_type,
+			  struct loop *at_loop, tree offset,
+			  tree *initial_address, gimple_stmt_iterator *gsi,
+			  gimple **ptr_incr, bool only_init, bool *inv_p,
+			  tree byte_offset, tree iv_step)
 {
   const char *base_name;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
   bool nested_in_vect_loop = false;
@@ -4905,7 +4901,7 @@ vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
 	      the loop.  The increment amount across iterations is expected
 	      to be vector_size.
    BSI - location where the new update stmt is to be placed.
-   STMT - the original scalar memory-access stmt that is being vectorized.
+   STMT_INFO - the original scalar memory-access stmt that is being vectorized.
    BUMP - optional. The offset by which to bump the pointer. If not given,
 	  the offset is assumed to be vector_size.
 
@@ -4915,9 +4911,8 @@ vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
 
 tree
 bump_vector_ptr (tree dataref_ptr, gimple *ptr_incr, gimple_stmt_iterator *gsi,
-		 gimple *stmt, tree bump)
+		 stmt_vec_info stmt_info, tree bump)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree update = TYPE_SIZE_UNIT (vectype);
@@ -5217,11 +5212,10 @@ vect_store_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count,
 void
 vect_permute_store_chain (vec<tree> dr_chain,
 			  unsigned int length,
-			  gimple *stmt,
+			  stmt_vec_info stmt_info,
 			  gimple_stmt_iterator *gsi,
 			  vec<tree> *result_chain)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vect1, vect2, high, low;
   gimple *perm_stmt;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -5368,12 +5362,12 @@ vect_permute_store_chain (vec<tree> dr_chain,
    dr_explicit_realign_optimized.
 
    The code above sets up a new (vector) pointer, pointing to the first
-   location accessed by STMT, and a "floor-aligned" load using that pointer.
-   It also generates code to compute the "realignment-token" (if the relevant
-   target hook was defined), and creates a phi-node at the loop-header bb
-   whose arguments are the result of the prolog-load (created by this
-   function) and the result of a load that takes place in the loop (to be
-   created by the caller to this function).
+   location accessed by STMT_INFO, and a "floor-aligned" load using that
+   pointer.  It also generates code to compute the "realignment-token"
+   (if the relevant target hook was defined), and creates a phi-node at the
+   loop-header bb whose arguments are the result of the prolog-load (created
+   by this function) and the result of a load that takes place in the loop
+   (to be created by the caller to this function).
 
    For the case of dr_explicit_realign_optimized:
    The caller to this function uses the phi-result (msq) to create the
@@ -5392,8 +5386,8 @@ vect_permute_store_chain (vec<tree> dr_chain,
       result = realign_load (msq, lsq, realignment_token);
 
    Input:
-   STMT - (scalar) load stmt to be vectorized. This load accesses
-          a memory location that may be unaligned.
+   STMT_INFO - (scalar) load stmt to be vectorized. This load accesses
+	       a memory location that may be unaligned.
    BSI - place where new code is to be inserted.
    ALIGNMENT_SUPPORT_SCHEME - which of the two misalignment handling schemes
 			      is used.
@@ -5404,13 +5398,12 @@ vect_permute_store_chain (vec<tree> dr_chain,
    Return value - the result of the loop-header phi node.  */
 
 tree
-vect_setup_realignment (gimple *stmt, gimple_stmt_iterator *gsi,
+vect_setup_realignment (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
                         tree *realignment_token,
 			enum dr_alignment_support alignment_support_scheme,
 			tree init_addr,
 			struct loop **at_loop)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
@@ -5839,11 +5832,10 @@ vect_load_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count,
 static void
 vect_permute_load_chain (vec<tree> dr_chain,
 			 unsigned int length,
-			 gimple *stmt,
+			 stmt_vec_info stmt_info,
 			 gimple_stmt_iterator *gsi,
 			 vec<tree> *result_chain)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree data_ref, first_vect, second_vect;
   tree perm_mask_even, perm_mask_odd;
   tree perm3_mask_low, perm3_mask_high;
@@ -6043,11 +6035,10 @@ vect_permute_load_chain (vec<tree> dr_chain,
 static bool
 vect_shift_permute_load_chain (vec<tree> dr_chain,
 			       unsigned int length,
-			       gimple *stmt,
+			       stmt_vec_info stmt_info,
 			       gimple_stmt_iterator *gsi,
 			       vec<tree> *result_chain)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vect[3], vect_shift[3], data_ref, first_vect, second_vect;
   tree perm2_mask1, perm2_mask2, perm3_mask;
   tree select_mask, shift1_mask, shift2_mask, shift3_mask, shift4_mask;
@@ -6311,10 +6302,9 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 */
 
 void
-vect_transform_grouped_load (gimple *stmt, vec<tree> dr_chain, int size,
-			     gimple_stmt_iterator *gsi)
+vect_transform_grouped_load (stmt_vec_info stmt_info, vec<tree> dr_chain,
+			     int size, gimple_stmt_iterator *gsi)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   machine_mode mode;
   vec<tree> result_chain = vNULL;
 
@@ -6337,13 +6327,13 @@ vect_transform_grouped_load (gimple *stmt, vec<tree> dr_chain, int size,
 }
 
 /* RESULT_CHAIN contains the output of a group of grouped loads that were
-   generated as part of the vectorization of STMT.  Assign the statement
+   generated as part of the vectorization of STMT_INFO.  Assign the statement
    for each vector to the associated scalar statement.  */
 
 void
-vect_record_grouped_load_vectors (gimple *stmt, vec<tree> result_chain)
+vect_record_grouped_load_vectors (stmt_vec_info stmt_info,
+				  vec<tree> result_chain)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vec_info *vinfo = stmt_info->vinfo;
   stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
   unsigned int i, gap_count;

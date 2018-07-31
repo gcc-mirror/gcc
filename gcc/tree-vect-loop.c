@@ -648,12 +648,12 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
     vect_analyze_scalar_cycles_1 (loop_vinfo, loop->inner);
 }
 
-/* Transfer group and reduction information from STMT to its pattern stmt.  */
+/* Transfer group and reduction information from STMT_INFO to its
+   pattern stmt.  */
 
 static void
-vect_fixup_reduc_chain (gimple *stmt)
+vect_fixup_reduc_chain (stmt_vec_info stmt_info)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   stmt_vec_info firstp = STMT_VINFO_RELATED_STMT (stmt_info);
   stmt_vec_info stmtp;
   gcc_assert (!REDUC_GROUP_FIRST_ELEMENT (firstp)
@@ -3998,15 +3998,15 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies,
 /* Function get_initial_def_for_reduction
 
    Input:
-   STMT - a stmt that performs a reduction operation in the loop.
+   STMT_VINFO - a stmt that performs a reduction operation in the loop.
    INIT_VAL - the initial value of the reduction variable
 
    Output:
    ADJUSTMENT_DEF - a tree that holds a value to be added to the final result
         of the reduction (used for adjusting the epilog - see below).
-   Return a vector variable, initialized according to the operation that STMT
-        performs. This vector will be used as the initial value of the
-        vector of partial results.
+   Return a vector variable, initialized according to the operation that
+	STMT_VINFO performs. This vector will be used as the initial value
+	of the vector of partial results.
 
    Option1 (adjust in epilog): Initialize the vector as follows:
      add/bit or/xor:    [0,0,...,0,0]
@@ -4027,7 +4027,7 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies,
    for (i=0;i<n;i++)
      s = s + a[i];
 
-   STMT is 's = s + a[i]', and the reduction variable is 's'.
+   STMT_VINFO is 's = s + a[i]', and the reduction variable is 's'.
    For a vector of 4 units, we want to return either [0,0,0,init_val],
    or [0,0,0,0] and let the caller know that it needs to adjust
    the result at the end by 'init_val'.
@@ -4039,10 +4039,9 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies,
    A cost model should help decide between these two schemes.  */
 
 tree
-get_initial_def_for_reduction (gimple *stmt, tree init_val,
+get_initial_def_for_reduction (stmt_vec_info stmt_vinfo, tree init_val,
                                tree *adjustment_def)
 {
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree scalar_type = TREE_TYPE (init_val);
@@ -4321,7 +4320,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
   
    VECT_DEFS is list of vector of partial results, i.e., the lhs's of vector 
      reduction statements. 
-   STMT is the scalar reduction stmt that is being vectorized.
+   STMT_INFO is the scalar reduction stmt that is being vectorized.
    NCOPIES is > 1 in case the vectorization factor (VF) is bigger than the
      number of elements that we can fit in a vectype (nunits).  In this case
      we have to generate more than one vector stmt - i.e - we need to "unroll"
@@ -4334,7 +4333,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
      statement that is defined by REDUCTION_PHI.
    DOUBLE_REDUC is TRUE if double reduction phi nodes should be handled.
    SLP_NODE is an SLP node containing a group of reduction statements. The 
-     first one in this group is STMT.
+     first one in this group is STMT_INFO.
    INDUC_VAL is for INTEGER_INDUC_COND_REDUCTION the value to use for the case
      when the COND_EXPR is never true in the loop.  For MAX_EXPR, it needs to
      be smaller than any value of the IV in the loop, for MIN_EXPR larger than
@@ -4359,8 +4358,8 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 
         loop:
           vec_def = phi <null, null>            # REDUCTION_PHI
-          VECT_DEF = vector_stmt                # vectorized form of STMT
-          s_loop = scalar_stmt                  # (scalar) STMT
+          VECT_DEF = vector_stmt                # vectorized form of STMT_INFO
+          s_loop = scalar_stmt                  # (scalar) STMT_INFO
         loop_exit:
           s_out0 = phi <s_loop>                 # (scalar) EXIT_PHI
           use <s_out0>
@@ -4370,8 +4369,8 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 
         loop:
           vec_def = phi <vec_init, VECT_DEF>    # REDUCTION_PHI
-          VECT_DEF = vector_stmt                # vectorized form of STMT
-          s_loop = scalar_stmt                  # (scalar) STMT
+          VECT_DEF = vector_stmt                # vectorized form of STMT_INFO
+          s_loop = scalar_stmt                  # (scalar) STMT_INFO
         loop_exit:
           s_out0 = phi <s_loop>                 # (scalar) EXIT_PHI
           v_out1 = phi <VECT_DEF>               # NEW_EXIT_PHI
@@ -4383,7 +4382,8 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 */
 
 static void
-vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
+vect_create_epilog_for_reduction (vec<tree> vect_defs,
+				  stmt_vec_info stmt_info,
 				  gimple *reduc_def_stmt,
 				  int ncopies, internal_fn reduc_fn,
 				  vec<stmt_vec_info> reduction_phis,
@@ -4393,7 +4393,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 				  tree induc_val, enum tree_code induc_code,
 				  tree neutral_op)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   stmt_vec_info prev_phi_info;
   tree vectype;
   machine_mode mode;
@@ -5816,9 +5815,9 @@ vect_expand_fold_left (gimple_stmt_iterator *gsi, tree scalar_dest,
   return lhs;
 }
 
-/* Perform an in-order reduction (FOLD_LEFT_REDUCTION).  STMT is the
+/* Perform an in-order reduction (FOLD_LEFT_REDUCTION).  STMT_INFO is the
    statement that sets the live-out value.  REDUC_DEF_STMT is the phi
-   statement.  CODE is the operation performed by STMT and OPS are
+   statement.  CODE is the operation performed by STMT_INFO and OPS are
    its scalar operands.  REDUC_INDEX is the index of the operand in
    OPS that is set by REDUC_DEF_STMT.  REDUC_FN is the function that
    implements in-order reduction, or IFN_LAST if we should open-code it.
@@ -5826,14 +5825,14 @@ vect_expand_fold_left (gimple_stmt_iterator *gsi, tree scalar_dest,
    that should be used to control the operation in a fully-masked loop.  */
 
 static bool
-vectorize_fold_left_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorize_fold_left_reduction (stmt_vec_info stmt_info,
+			       gimple_stmt_iterator *gsi,
 			       stmt_vec_info *vec_stmt, slp_tree slp_node,
 			       gimple *reduc_def_stmt,
 			       tree_code code, internal_fn reduc_fn,
 			       tree ops[3], tree vectype_in,
 			       int reduc_index, vec_loop_masks *masks)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
@@ -5962,16 +5961,16 @@ vectorize_fold_left_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
 /* Function is_nonwrapping_integer_induction.
 
-   Check if STMT (which is part of loop LOOP) both increments and
+   Check if STMT_VINO (which is part of loop LOOP) both increments and
    does not cause overflow.  */
 
 static bool
-is_nonwrapping_integer_induction (gimple *stmt, struct loop *loop)
+is_nonwrapping_integer_induction (stmt_vec_info stmt_vinfo, struct loop *loop)
 {
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  gphi *phi = as_a <gphi *> (stmt_vinfo->stmt);
   tree base = STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (stmt_vinfo);
   tree step = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo);
-  tree lhs_type = TREE_TYPE (gimple_phi_result (stmt));
+  tree lhs_type = TREE_TYPE (gimple_phi_result (phi));
   widest_int ni, max_loop_value, lhs_max;
   wi::overflow_type overflow = wi::OVF_NONE;
 
@@ -6004,17 +6003,18 @@ is_nonwrapping_integer_induction (gimple *stmt, struct loop *loop)
 
 /* Function vectorizable_reduction.
 
-   Check if STMT performs a reduction operation that can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
+   Check if STMT_INFO performs a reduction operation that can be vectorized.
+   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
    stmt to replace it, put it in VEC_STMT, and insert it at GSI.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.
+   Return true if STMT_INFO is vectorizable in this way.
 
    This function also handles reduction idioms (patterns) that have been
-   recognized in advance during vect_pattern_recog.  In this case, STMT may be
-   of this form:
+   recognized in advance during vect_pattern_recog.  In this case, STMT_INFO
+   may be of this form:
      X = pattern_expr (arg0, arg1, ..., X)
-   and it's STMT_VINFO_RELATED_STMT points to the last stmt in the original
-   sequence that had been detected and replaced by the pattern-stmt (STMT).
+   and its STMT_VINFO_RELATED_STMT points to the last stmt in the original
+   sequence that had been detected and replaced by the pattern-stmt
+   (STMT_INFO).
 
    This function also handles reduction of condition expressions, for example:
      for (int i = 0; i < N; i++)
@@ -6026,9 +6026,9 @@ is_nonwrapping_integer_induction (gimple *stmt, struct loop *loop)
    index into the vector of results.
 
    In some cases of reduction patterns, the type of the reduction variable X is
-   different than the type of the other arguments of STMT.
-   In such cases, the vectype that is used when transforming STMT into a vector
-   stmt is different than the vectype that is used to determine the
+   different than the type of the other arguments of STMT_INFO.
+   In such cases, the vectype that is used when transforming STMT_INFO into
+   a vector stmt is different than the vectype that is used to determine the
    vectorization factor, because it consists of a different number of elements
    than the actual number of elements that are being operated upon in parallel.
 
@@ -6052,14 +6052,13 @@ is_nonwrapping_integer_induction (gimple *stmt, struct loop *loop)
    does *NOT* necessarily hold for reduction patterns.  */
 
 bool
-vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			stmt_vec_info *vec_stmt, slp_tree slp_node,
 			slp_instance slp_node_instance,
 			stmt_vector_for_cost *cost_vec)
 {
   tree vec_dest;
   tree scalar_dest;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
   tree vectype_in = NULL_TREE;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -6247,7 +6246,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
         inside the loop body. The last operand is the reduction variable,
         which is defined by the loop-header-phi.  */
 
-  gcc_assert (is_gimple_assign (stmt));
+  gassign *stmt = as_a <gassign *> (stmt_info->stmt);
 
   /* Flatten RHS.  */
   switch (get_gimple_rhs_class (gimple_assign_rhs_code (stmt)))
@@ -7240,18 +7239,17 @@ vect_worthwhile_without_simd_p (vec_info *vinfo, tree_code code)
 
 /* Function vectorizable_induction
 
-   Check if PHI performs an induction computation that can be vectorized.
+   Check if STMT_INFO performs an induction computation that can be vectorized.
    If VEC_STMT is also passed, vectorize the induction PHI: create a vectorized
    phi to replace it, put it in VEC_STMT, and add it to the same basic block.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+   Return true if STMT_INFO is vectorizable in this way.  */
 
 bool
-vectorizable_induction (gimple *phi,
+vectorizable_induction (stmt_vec_info stmt_info,
 			gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
 			stmt_vec_info *vec_stmt, slp_tree slp_node,
 			stmt_vector_for_cost *cost_vec)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (phi);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   unsigned ncopies;
@@ -7276,9 +7274,9 @@ vectorizable_induction (gimple *phi,
   edge latch_e;
   tree loop_arg;
   gimple_stmt_iterator si;
-  basic_block bb = gimple_bb (phi);
 
-  if (gimple_code (phi) != GIMPLE_PHI)
+  gphi *phi = dyn_cast <gphi *> (stmt_info->stmt);
+  if (!phi)
     return false;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
@@ -7426,6 +7424,7 @@ vectorizable_induction (gimple *phi,
     }
 
   /* Find the first insertion point in the BB.  */
+  basic_block bb = gimple_bb (phi);
   si = gsi_after_labels (bb);
 
   /* For SLP induction we have to generate several IVs as for example
@@ -7791,17 +7790,16 @@ vectorizable_induction (gimple *phi,
 
 /* Function vectorizable_live_operation.
 
-   STMT computes a value that is used outside the loop.  Check if
+   STMT_INFO computes a value that is used outside the loop.  Check if
    it can be supported.  */
 
 bool
-vectorizable_live_operation (gimple *stmt,
+vectorizable_live_operation (stmt_vec_info stmt_info,
 			     gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
 			     slp_tree slp_node, int slp_index,
 			     stmt_vec_info *vec_stmt,
 			     stmt_vector_for_cost *)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   imm_use_iterator imm_iter;
@@ -7908,8 +7906,9 @@ vectorizable_live_operation (gimple *stmt,
     }
 
   /* If stmt has a related stmt, then use that for getting the lhs.  */
-  if (is_pattern_stmt_p (stmt_info))
-    stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+  gimple *stmt = (is_pattern_stmt_p (stmt_info)
+		  ? STMT_VINFO_RELATED_STMT (stmt_info)->stmt
+		  : stmt_info->stmt);
 
   lhs = (is_a <gphi *> (stmt)) ? gimple_phi_result (stmt)
 	: gimple_get_lhs (stmt);
@@ -8010,17 +8009,17 @@ vectorizable_live_operation (gimple *stmt,
   return true;
 }
 
-/* Kill any debug uses outside LOOP of SSA names defined in STMT.  */
+/* Kill any debug uses outside LOOP of SSA names defined in STMT_INFO.  */
 
 static void
-vect_loop_kill_debug_uses (struct loop *loop, gimple *stmt)
+vect_loop_kill_debug_uses (struct loop *loop, stmt_vec_info stmt_info)
 {
   ssa_op_iter op_iter;
   imm_use_iterator imm_iter;
   def_operand_p def_p;
   gimple *ustmt;
 
-  FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt, op_iter, SSA_OP_DEF)
+  FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt_info->stmt, op_iter, SSA_OP_DEF)
     {
       FOR_EACH_IMM_USE_STMT (ustmt, imm_iter, DEF_FROM_PTR (def_p))
 	{

@@ -236,22 +236,20 @@ vect_get_internal_def (vec_info *vinfo, tree op)
   return NULL;
 }
 
-/* Check whether NAME, an ssa-name used in USE_STMT,
+/* Check whether NAME, an ssa-name used in STMT_VINFO,
    is a result of a type promotion, such that:
      DEF_STMT: NAME = NOP (name0)
    If CHECK_SIGN is TRUE, check that either both types are signed or both are
    unsigned.  */
 
 static bool
-type_conversion_p (tree name, gimple *use_stmt, bool check_sign,
+type_conversion_p (tree name, stmt_vec_info stmt_vinfo, bool check_sign,
 		   tree *orig_type, gimple **def_stmt, bool *promotion)
 {
-  stmt_vec_info stmt_vinfo;
   tree type = TREE_TYPE (name);
   tree oprnd0;
   enum vect_def_type dt;
 
-  stmt_vinfo = vinfo_for_stmt (use_stmt);
   stmt_vec_info def_stmt_info;
   if (!vect_is_simple_use (name, stmt_vinfo->vinfo, &dt, &def_stmt_info,
 			   def_stmt))
@@ -3498,15 +3496,13 @@ sort_after_uid (const void *p1, const void *p2)
 }
 
 /* Create pattern stmts for all stmts participating in the bool pattern
-   specified by BOOL_STMT_SET and its root STMT with the desired type
+   specified by BOOL_STMT_SET and its root STMT_INFO with the desired type
    OUT_TYPE.  Return the def of the pattern root.  */
 
 static tree
 adjust_bool_stmts (hash_set <gimple *> &bool_stmt_set,
-		   tree out_type, gimple *stmt)
+		   tree out_type, stmt_vec_info stmt_info)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-
   /* Gather original stmts in the bool pattern in their order of appearance
      in the IL.  */
   auto_vec<gimple *> bool_stmts (bool_stmt_set.elements ());
@@ -4126,19 +4122,19 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
   return pattern_stmt;
 }
 
-/* STMT is a load or store.  If the load or store is conditional, return
+/* STMT_INFO is a load or store.  If the load or store is conditional, return
    the boolean condition under which it occurs, otherwise return null.  */
 
 static tree
-vect_get_load_store_mask (gimple *stmt)
+vect_get_load_store_mask (stmt_vec_info stmt_info)
 {
-  if (gassign *def_assign = dyn_cast <gassign *> (stmt))
+  if (gassign *def_assign = dyn_cast <gassign *> (stmt_info->stmt))
     {
       gcc_assert (gimple_assign_single_p (def_assign));
       return NULL_TREE;
     }
 
-  if (gcall *def_call = dyn_cast <gcall *> (stmt))
+  if (gcall *def_call = dyn_cast <gcall *> (stmt_info->stmt))
     {
       internal_fn ifn = gimple_call_internal_fn (def_call);
       int mask_index = internal_fn_mask_index (ifn);
