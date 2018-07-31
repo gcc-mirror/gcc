@@ -1,3 +1,7 @@
+2018-07-31  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/addr11.adb: New testcase.
+
 2018-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/global.adb, gnat.dg/global.ads: New testcase.
