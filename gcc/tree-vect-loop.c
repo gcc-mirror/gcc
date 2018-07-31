@@ -2186,8 +2186,7 @@ again:
   FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), i, instance)
     {
       stmt_vec_info vinfo;
-      vinfo = vinfo_for_stmt
-	  (SLP_TREE_SCALAR_STMTS (SLP_INSTANCE_TREE (instance))[0]);
+      vinfo = SLP_TREE_SCALAR_STMTS (SLP_INSTANCE_TREE (instance))[0];
       if (! STMT_VINFO_GROUPED_ACCESS (vinfo))
 	continue;
       vinfo = vinfo_for_stmt (DR_GROUP_FIRST_ELEMENT (vinfo));
@@ -2199,7 +2198,7 @@ again:
        return false;
       FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), j, node)
 	{
-	  vinfo = vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (node)[0]);
+	  vinfo = SLP_TREE_SCALAR_STMTS (node)[0];
 	  vinfo = vinfo_for_stmt (DR_GROUP_FIRST_ELEMENT (vinfo));
 	  bool single_element_p = !DR_GROUP_NEXT_ELEMENT (vinfo);
 	  size = DR_GROUP_SIZE (vinfo);
@@ -2442,12 +2441,11 @@ static tree
 neutral_op_for_slp_reduction (slp_tree slp_node, tree_code code,
 			      bool reduc_chain)
 {
-  vec<gimple *> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
-  gimple *stmt = stmts[0];
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
+  stmt_vec_info stmt_vinfo = stmts[0];
   tree vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
   tree scalar_type = TREE_TYPE (vector_type);
-  struct loop *loop = gimple_bb (stmt)->loop_father;
+  struct loop *loop = gimple_bb (stmt_vinfo->stmt)->loop_father;
   gcc_assert (loop);
 
   switch (code)
@@ -2473,7 +2471,8 @@ neutral_op_for_slp_reduction (slp_tree slp_node, tree_code code,
 	 has only a single initial value, so that value is neutral for
 	 all statements.  */
       if (reduc_chain)
-	return PHI_ARG_DEF_FROM_EDGE (stmt, loop_preheader_edge (loop));
+	return PHI_ARG_DEF_FROM_EDGE (stmt_vinfo->stmt,
+				      loop_preheader_edge (loop));
       return NULL_TREE;
 
     default:
@@ -4182,9 +4181,8 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 				unsigned int number_of_vectors,
 				bool reduc_chain, tree neutral_op)
 {
-  vec<gimple *> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
-  gimple *stmt = stmts[0];
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
+  stmt_vec_info stmt_vinfo = stmts[0];
   unsigned HOST_WIDE_INT nunits;
   unsigned j, number_of_places_left_in_vector;
   tree vector_type;
@@ -4201,7 +4199,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 
   gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def);
 
-  loop = (gimple_bb (stmt))->loop_father;
+  loop = (gimple_bb (stmt_vinfo->stmt))->loop_father;
   gcc_assert (loop);
   edge pe = loop_preheader_edge (loop);
 
@@ -4234,7 +4232,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
   elts.quick_grow (nunits);
   for (j = 0; j < number_of_copies; j++)
     {
-      for (i = group_size - 1; stmts.iterate (i, &stmt); i--)
+      for (i = group_size - 1; stmts.iterate (i, &stmt_vinfo); i--)
         {
 	  tree op;
 	  /* Get the def before the loop.  In reduction chain we have only
@@ -4244,7 +4242,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 	      && neutral_op)
 	    op = neutral_op;
 	  else
-	    op = PHI_ARG_DEF_FROM_EDGE (stmt, pe);
+	    op = PHI_ARG_DEF_FROM_EDGE (stmt_vinfo->stmt, pe);
 
           /* Create 'vect_ = {op0,op1,...,opn}'.  */
           number_of_places_left_in_vector--;
@@ -5128,7 +5126,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       gcc_assert (pow2p_hwi (group_size));
 
       slp_tree orig_phis_slp_node = slp_node_instance->reduc_phis;
-      vec<gimple *> orig_phis = SLP_TREE_SCALAR_STMTS (orig_phis_slp_node);
+      vec<stmt_vec_info> orig_phis
+	= SLP_TREE_SCALAR_STMTS (orig_phis_slp_node);
       gimple_seq seq = NULL;
 
       /* Build a vector {0, 1, 2, ...}, with the same number of elements
@@ -5159,7 +5158,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	  if (!neutral_op)
 	    {
 	      tree scalar_value
-		= PHI_ARG_DEF_FROM_EDGE (orig_phis[i],
+		= PHI_ARG_DEF_FROM_EDGE (orig_phis[i]->stmt,
 					 loop_preheader_edge (loop));
 	      vector_identity = gimple_build_vector_from_val (&seq, vectype,
 							      scalar_value);
@@ -5572,12 +5571,13 @@ vect_finalize_reduction:
      the loop exit phi node.  */
   if (REDUC_GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
     {
-      gimple *dest_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
+      stmt_vec_info dest_stmt_info
+	= SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
       /* Handle reduction patterns.  */
-      if (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (dest_stmt)))
-	dest_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (dest_stmt));
+      if (STMT_VINFO_RELATED_STMT (dest_stmt_info))
+	dest_stmt_info = STMT_VINFO_RELATED_STMT (dest_stmt_info);
 
-      scalar_dest = gimple_assign_lhs (dest_stmt);
+      scalar_dest = gimple_assign_lhs (dest_stmt_info->stmt);
       group_size = 1;
     }
 
@@ -5607,13 +5607,12 @@ vect_finalize_reduction:
 
       if (slp_reduc)
         {
-	  gimple *current_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[k];
+	  stmt_vec_info scalar_stmt_info = SLP_TREE_SCALAR_STMTS (slp_node)[k];
 
-	  orig_stmt_info
-	    = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (current_stmt));
+	  orig_stmt_info = STMT_VINFO_RELATED_STMT (scalar_stmt_info);
 	  /* SLP statements can't participate in patterns.  */
 	  gcc_assert (!orig_stmt_info);
-	  scalar_dest = gimple_assign_lhs (current_stmt);
+	  scalar_dest = gimple_assign_lhs (scalar_stmt_info->stmt);
         }
 
       phis.create (3);
@@ -5881,23 +5880,23 @@ vectorize_fold_left_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   tree op0 = ops[1 - reduc_index];
 
   int group_size = 1;
-  gimple *scalar_dest_def;
+  stmt_vec_info scalar_dest_def_info;
   auto_vec<tree> vec_oprnds0;
   if (slp_node)
     {
       vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL, slp_node);
       group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
-      scalar_dest_def = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
+      scalar_dest_def_info = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
     }
   else
     {
       tree loop_vec_def0 = vect_get_vec_def_for_operand (op0, stmt);
       vec_oprnds0.create (1);
       vec_oprnds0.quick_push (loop_vec_def0);
-      scalar_dest_def = stmt;
+      scalar_dest_def_info = stmt_info;
     }
 
-  tree scalar_dest = gimple_assign_lhs (scalar_dest_def);
+  tree scalar_dest = gimple_assign_lhs (scalar_dest_def_info->stmt);
   tree scalar_type = TREE_TYPE (scalar_dest);
   tree reduc_var = gimple_phi_result (reduc_def_stmt);
 
@@ -5964,10 +5963,11 @@ vectorize_fold_left_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       if (i == vec_num - 1)
 	{
 	  gimple_set_lhs (new_stmt, scalar_dest);
-	  new_stmt_info = vect_finish_replace_stmt (scalar_dest_def, new_stmt);
+	  new_stmt_info = vect_finish_replace_stmt (scalar_dest_def_info,
+						    new_stmt);
 	}
       else
-	new_stmt_info = vect_finish_stmt_generation (scalar_dest_def,
+	new_stmt_info = vect_finish_stmt_generation (scalar_dest_def_info,
 						     new_stmt, gsi);
 
       if (slp_node)

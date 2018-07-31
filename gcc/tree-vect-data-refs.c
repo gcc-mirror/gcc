@@ -665,7 +665,8 @@ vect_slp_analyze_data_ref_dependence (struct data_dependence_relation *ddr)
 
 static bool
 vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
-				   vec<gimple *> stores, gimple *last_store)
+				   vec<stmt_vec_info> stores,
+				   gimple *last_store)
 {
   /* This walks over all stmts involved in the SLP load/store done
      in NODE verifying we can sink them up to the last stmt in the
@@ -673,13 +674,13 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
   gimple *last_access = vect_find_last_scalar_stmt_in_slp (node);
   for (unsigned k = 0; k < SLP_INSTANCE_GROUP_SIZE (instance); ++k)
     {
-      gimple *access = SLP_TREE_SCALAR_STMTS (node)[k];
-      if (access == last_access)
+      stmt_vec_info access_info = SLP_TREE_SCALAR_STMTS (node)[k];
+      if (access_info == last_access)
 	continue;
-      data_reference *dr_a = STMT_VINFO_DATA_REF (vinfo_for_stmt (access));
+      data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
       ao_ref ref;
       bool ref_initialized_p = false;
-      for (gimple_stmt_iterator gsi = gsi_for_stmt (access);
+      for (gimple_stmt_iterator gsi = gsi_for_stmt (access_info->stmt);
 	   gsi_stmt (gsi) != last_access; gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -712,11 +713,10 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
 	      if (stmt != last_store)
 		continue;
 	      unsigned i;
-	      gimple *store;
-	      FOR_EACH_VEC_ELT (stores, i, store)
+	      stmt_vec_info store_info;
+	      FOR_EACH_VEC_ELT (stores, i, store_info)
 		{
-		  data_reference *store_dr
-		    = STMT_VINFO_DATA_REF (vinfo_for_stmt (store));
+		  data_reference *store_dr = STMT_VINFO_DATA_REF (store_info);
 		  ddr_p ddr = initialize_data_dependence_relation
 				(dr_a, store_dr, vNULL);
 		  dependent = vect_slp_analyze_data_ref_dependence (ddr);
@@ -753,7 +753,7 @@ vect_slp_analyze_instance_dependence (slp_instance instance)
 
   /* The stores of this instance are at the root of the SLP tree.  */
   slp_tree store = SLP_INSTANCE_TREE (instance);
-  if (! STMT_VINFO_DATA_REF (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (store)[0])))
+  if (! STMT_VINFO_DATA_REF (SLP_TREE_SCALAR_STMTS (store)[0]))
     store = NULL;
 
   /* Verify we can sink stores to the vectorized stmt insert location.  */
@@ -766,7 +766,7 @@ vect_slp_analyze_instance_dependence (slp_instance instance)
       /* Mark stores in this instance and remember the last one.  */
       last_store = vect_find_last_scalar_stmt_in_slp (store);
       for (unsigned k = 0; k < SLP_INSTANCE_GROUP_SIZE (instance); ++k)
-	gimple_set_visited (SLP_TREE_SCALAR_STMTS (store)[k], true);
+	gimple_set_visited (SLP_TREE_SCALAR_STMTS (store)[k]->stmt, true);
     }
 
   bool res = true;
@@ -788,7 +788,7 @@ vect_slp_analyze_instance_dependence (slp_instance instance)
   /* Unset the visited flag.  */
   if (store)
     for (unsigned k = 0; k < SLP_INSTANCE_GROUP_SIZE (instance); ++k)
-      gimple_set_visited (SLP_TREE_SCALAR_STMTS (store)[k], false);
+      gimple_set_visited (SLP_TREE_SCALAR_STMTS (store)[k]->stmt, false);
 
   return res;
 }
@@ -2389,10 +2389,11 @@ vect_slp_analyze_and_verify_node_alignment (slp_tree node)
   /* We vectorize from the first scalar stmt in the node unless
      the node is permuted in which case we start from the first
      element in the group.  */
-  gimple *first_stmt = SLP_TREE_SCALAR_STMTS (node)[0];
-  data_reference_p first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
+  stmt_vec_info first_stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
+  gimple *first_stmt = first_stmt_info->stmt;
+  data_reference_p first_dr = STMT_VINFO_DATA_REF (first_stmt_info);
   if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
-    first_stmt = DR_GROUP_FIRST_ELEMENT (vinfo_for_stmt (first_stmt));
+    first_stmt = DR_GROUP_FIRST_ELEMENT (first_stmt_info);
 
   data_reference_p dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
   vect_compute_data_ref_alignment (dr);
@@ -2429,7 +2430,7 @@ vect_slp_analyze_and_verify_instance_alignment (slp_instance instance)
       return false;
 
   node = SLP_INSTANCE_TREE (instance);
-  if (STMT_VINFO_DATA_REF (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (node)[0]))
+  if (STMT_VINFO_DATA_REF (SLP_TREE_SCALAR_STMTS (node)[0])
       && ! vect_slp_analyze_and_verify_node_alignment
 	     (SLP_INSTANCE_TREE (instance)))
     return false;

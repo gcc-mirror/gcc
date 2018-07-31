@@ -806,7 +806,7 @@ vect_prologue_cost_for_slp_op (slp_tree node, stmt_vec_info stmt_info,
 			       unsigned opno, enum vect_def_type dt,
 			       stmt_vector_for_cost *cost_vec)
 {
-  gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0];
+  gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0]->stmt;
   tree op = gimple_op (stmt, opno);
   unsigned prologue_cost = 0;
 
@@ -838,11 +838,11 @@ vect_prologue_cost_for_slp_op (slp_tree node, stmt_vec_info stmt_info,
     {
       unsigned si = j % group_size;
       if (nelt == 0)
-	elt = gimple_op (SLP_TREE_SCALAR_STMTS (node)[si], opno);
+	elt = gimple_op (SLP_TREE_SCALAR_STMTS (node)[si]->stmt, opno);
       /* ???  We're just tracking whether all operands of a single
 	 vector initializer are the same, ideally we'd check if
 	 we emitted the same one already.  */
-      else if (elt != gimple_op (SLP_TREE_SCALAR_STMTS (node)[si],
+      else if (elt != gimple_op (SLP_TREE_SCALAR_STMTS (node)[si]->stmt,
 				 opno))
 	elt = NULL_TREE;
       nelt++;
@@ -889,7 +889,7 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
       /* Scan operands and account for prologue cost of constants/externals.
 	 ???  This over-estimates cost for multiple uses and should be
 	 re-engineered.  */
-      gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0];
+      gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0]->stmt;
       tree lhs = gimple_get_lhs (stmt);
       for (unsigned i = 0; i < gimple_num_ops (stmt); ++i)
 	{
@@ -5532,12 +5532,15 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
 	 a scalar shift.  */
       if (slp_node)
 	{
-	  vec<gimple *> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
-	  gimple *slpstmt;
+	  vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
+	  stmt_vec_info slpstmt_info;
 
-	  FOR_EACH_VEC_ELT (stmts, k, slpstmt)
-	    if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
-	      scalar_shift_arg = false;
+	  FOR_EACH_VEC_ELT (stmts, k, slpstmt_info)
+	    {
+	      gassign *slpstmt = as_a <gassign *> (slpstmt_info->stmt);
+	      if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
+		scalar_shift_arg = false;
+	    }
 	}
 
       /* If the shift amount is computed by a pattern stmt we cannot
@@ -7421,7 +7424,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi,
   vec<tree> dr_chain = vNULL;
   bool grouped_load = false;
   gimple *first_stmt;
-  gimple *first_stmt_for_drptr = NULL;
+  stmt_vec_info first_stmt_info_for_drptr = NULL;
   bool inv_p;
   bool compute_in_loop = false;
   struct loop *at_loop;
@@ -7930,7 +7933,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi,
       /* For BB vectorization always use the first stmt to base
 	 the data ref pointer on.  */
       if (bb_vinfo)
-	first_stmt_for_drptr = SLP_TREE_SCALAR_STMTS (slp_node)[0];
+	first_stmt_info_for_drptr = SLP_TREE_SCALAR_STMTS (slp_node)[0];
 
       /* Check if the chain of loads is already vectorized.  */
       if (STMT_VINFO_VEC_STMT (vinfo_for_stmt (first_stmt))
@@ -8180,17 +8183,17 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi,
 	      dataref_offset = build_int_cst (ref_type, 0);
 	      inv_p = false;
 	    }
-	  else if (first_stmt_for_drptr
-		   && first_stmt != first_stmt_for_drptr)
+	  else if (first_stmt_info_for_drptr
+		   && first_stmt != first_stmt_info_for_drptr)
 	    {
 	      dataref_ptr
-		= vect_create_data_ref_ptr (first_stmt_for_drptr, aggr_type,
-					    at_loop, offset, &dummy, gsi,
-					    &ptr_incr, simd_lane_access_p,
+		= vect_create_data_ref_ptr (first_stmt_info_for_drptr,
+					    aggr_type, at_loop, offset, &dummy,
+					    gsi, &ptr_incr, simd_lane_access_p,
 					    &inv_p, byte_offset, bump);
 	      /* Adjust the pointer by the difference to first_stmt.  */
 	      data_reference_p ptrdr
-		= STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt_for_drptr));
+		= STMT_VINFO_DATA_REF (first_stmt_info_for_drptr);
 	      tree diff = fold_convert (sizetype,
 					size_binop (MINUS_EXPR,
 						    DR_INIT (first_dr),
@@ -9391,13 +9394,12 @@ can_vectorize_live_stmts (gimple *stmt, gimple_stmt_iterator *gsi,
 {
   if (slp_node)
     {
-      gimple *slp_stmt;
+      stmt_vec_info slp_stmt_info;
       unsigned int i;
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt)
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt_info)
 	{
-	  stmt_vec_info slp_stmt_info = vinfo_for_stmt (slp_stmt);
 	  if (STMT_VINFO_LIVE_P (slp_stmt_info)
-	      && !vectorizable_live_operation (slp_stmt, gsi, slp_node, i,
+	      && !vectorizable_live_operation (slp_stmt_info, gsi, slp_node, i,
 					       vec_stmt, cost_vec))
 	    return false;
 	}
