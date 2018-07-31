@@ -1,5 +1,15 @@
 2018-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86751
+	* include/bits/stl_pair.h (__pair_base): New class with deleted copy
+	assignment operator.
+	(pair): Derive from __pair_base.
+	(pair::operator=): Remove deleted overload.
+	* python/libstdcxx/v6/printers.py (StdPairPrinter): New pretty printer
+	so that new base class isn't shown in GDB.
+	* testsuite/20_util/pair/86751.cc: New test.
+	* testsuite/20_util/pair/ref_assign.cc: New test.
+
 	* include/bits/c++config (_GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP)
 	(_GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE): Move definitions here.
 	(_GLIBCXX_HAVE_BUILTIN_LAUNDER): Likewise. Use !__is_identifier

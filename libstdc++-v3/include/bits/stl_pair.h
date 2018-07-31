@@ -185,8 +185,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __nonesuch_no_braces : std::__nonesuch {
     explicit __nonesuch_no_braces(const __nonesuch&) = delete;
   };
+#endif // C++11
 
-#endif
+  class __pair_base
+  {
+#if __cplusplus >= 201103L
+    template<typename _T1, typename _T2> friend struct pair;
+    __pair_base() = default;
+    ~__pair_base() = default;
+    __pair_base(const __pair_base&) = default;
+    __pair_base& operator=(const __pair_base&) = delete;
+#endif // C++11
+  };
 
  /**
    *  @brief Struct holding two objects of arbitrary type.
@@ -196,6 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _T1, typename _T2>
     struct pair
+    : private __pair_base
     {
       typedef _T1 first_type;    /// @c first_type is the first bound type
       typedef _T2 second_type;   /// @c second_type is the second bound type
@@ -376,17 +387,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       pair&
       operator=(typename conditional<
-		__not_<__and_<is_copy_assignable<_T1>,
-		              is_copy_assignable<_T2>>>::value,
-		const pair&, const __nonesuch_no_braces&>::type __p) = delete;
-
-      pair&
-      operator=(typename conditional<
 		__and_<is_move_assignable<_T1>,
 		       is_move_assignable<_T2>>::value,
 		pair&&, __nonesuch_no_braces&&>::type __p)
       noexcept(__and_<is_nothrow_move_assignable<_T1>,
-	              is_nothrow_move_assignable<_T2>>::value)
+		      is_nothrow_move_assignable<_T2>>::value)
       {
 	first = std::forward<first_type>(__p.first);
 	second = std::forward<second_type>(__p.second);
