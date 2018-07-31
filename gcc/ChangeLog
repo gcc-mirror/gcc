@@ -1,5 +1,17 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-data-refs.c (vect_record_base_alignment): Replace vec_info
+	and gimple stmt arguments with a stmt_vec_info.
+	(vect_record_base_alignments): Update calls accordingly.
+	* tree-vect-slp.c (vect_record_max_nunits): Replace vec_info
+	and gimple stmt arguments with a stmt_vec_info.
+	(vect_build_slp_tree_1): Remove vinfo argument and update call
+	to vect_record_max_nunits.
+	(vect_build_slp_tree_2): Update calls to vect_build_slp_tree_1
+	and vect_record_max_nunits.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (nested_in_vect_loop_p): Move further down
 	file and take a stmt_vec_info instead of a gimple stmt.
 	(supportable_widening_operation, vect_finish_replace_stmt)

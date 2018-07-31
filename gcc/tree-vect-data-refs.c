@@ -794,14 +794,14 @@ vect_slp_analyze_instance_dependence (slp_instance instance)
   return res;
 }
 
-/* Record in VINFO the base alignment guarantee given by DRB.  STMT is
-   the statement that contains DRB, which is useful for recording in the
-   dump file.  */
+/* Record the base alignment guarantee given by DRB, which occurs
+   in STMT_INFO.  */
 
 static void
-vect_record_base_alignment (vec_info *vinfo, gimple *stmt,
+vect_record_base_alignment (stmt_vec_info stmt_info,
 			    innermost_loop_behavior *drb)
 {
+  vec_info *vinfo = stmt_info->vinfo;
   bool existed;
   innermost_loop_behavior *&entry
     = vinfo->base_alignments.get_or_insert (drb->base_address, &existed);
@@ -820,7 +820,7 @@ vect_record_base_alignment (vec_info *vinfo, gimple *stmt,
 			   "  misalignment: %d\n", drb->base_misalignment);
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "  based on:     ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt_info->stmt, 0);
 	}
     }
 }
@@ -847,13 +847,13 @@ vect_record_base_alignments (vec_info *vinfo)
 	  && STMT_VINFO_VECTORIZABLE (stmt_info)
 	  && !STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 	{
-	  vect_record_base_alignment (vinfo, stmt_info, &DR_INNERMOST (dr));
+	  vect_record_base_alignment (stmt_info, &DR_INNERMOST (dr));
 
 	  /* If DR is nested in the loop that is being vectorized, we can also
 	     record the alignment of the base wrt the outer loop.  */
 	  if (loop && nested_in_vect_loop_p (loop, stmt_info))
 	    vect_record_base_alignment
-		(vinfo, stmt_info, &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info));
+	      (stmt_info, &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info));
 	}
     }
 }

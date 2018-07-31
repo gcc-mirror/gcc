@@ -609,14 +609,14 @@ compatible_calls_p (gcall *call1, gcall *call2)
 }
 
 /* A subroutine of vect_build_slp_tree for checking VECTYPE, which is the
-   caller's attempt to find the vector type in STMT with the narrowest
+   caller's attempt to find the vector type in STMT_INFO with the narrowest
    element type.  Return true if VECTYPE is nonnull and if it is valid
-   for VINFO.  When returning true, update MAX_NUNITS to reflect the
-   number of units in VECTYPE.  VINFO, GORUP_SIZE and MAX_NUNITS are
-   as for vect_build_slp_tree.  */
+   for STMT_INFO.  When returning true, update MAX_NUNITS to reflect the
+   number of units in VECTYPE.  GROUP_SIZE and MAX_NUNITS are as for
+   vect_build_slp_tree.  */
 
 static bool
-vect_record_max_nunits (vec_info *vinfo, gimple *stmt, unsigned int group_size,
+vect_record_max_nunits (stmt_vec_info stmt_info, unsigned int group_size,
 			tree vectype, poly_uint64 *max_nunits)
 {
   if (!vectype)
@@ -625,7 +625,8 @@ vect_record_max_nunits (vec_info *vinfo, gimple *stmt, unsigned int group_size,
 	{
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			   "Build SLP failed: unsupported data-type in ");
-	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+			    stmt_info->stmt, 0);
 	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 	}
       /* Fatal mismatch.  */
@@ -636,7 +637,7 @@ vect_record_max_nunits (vec_info *vinfo, gimple *stmt, unsigned int group_size,
      before adjusting *max_nunits for basic-block vectorization.  */
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   unsigned HOST_WIDE_INT const_nunits;
-  if (is_a <bb_vec_info> (vinfo)
+  if (STMT_VINFO_BB_VINFO (stmt_info)
       && (!nunits.is_constant (&const_nunits)
 	  || const_nunits > group_size))
     {
@@ -696,7 +697,7 @@ vect_two_operations_perm_ok_p (vec<stmt_vec_info> stmts,
    to (B1 <= A1 ? X1 : Y1); or be inverted to (A1 < B1) ? Y1 : X1.  */
 
 static bool
-vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
+vect_build_slp_tree_1 (unsigned char *swap,
 		       vec<stmt_vec_info> stmts, unsigned int group_size,
 		       poly_uint64 *max_nunits, bool *matches,
 		       bool *two_operators)
@@ -763,7 +764,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       if (!vect_get_vector_types_for_stmt (stmt_info, &vectype,
 					   &nunits_vectype)
 	  || (nunits_vectype
-	      && !vect_record_max_nunits (vinfo, stmt_info, group_size,
+	      && !vect_record_max_nunits (stmt_info, group_size,
 					  nunits_vectype, max_nunits)))
 	{
 	  /* Fatal mismatch.  */
@@ -1207,8 +1208,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
     {
       tree scalar_type = TREE_TYPE (PHI_RESULT (stmt));
       tree vectype = get_vectype_for_scalar_type (scalar_type);
-      if (!vect_record_max_nunits (vinfo, stmt_info, group_size, vectype,
-				   max_nunits))
+      if (!vect_record_max_nunits (stmt_info, group_size, vectype, max_nunits))
 	return NULL;
 
       vect_def_type def_type = STMT_VINFO_DEF_TYPE (stmt_info);
@@ -1241,7 +1241,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 
   bool two_operators = false;
   unsigned char *swap = XALLOCAVEC (unsigned char, group_size);
-  if (!vect_build_slp_tree_1 (vinfo, swap, stmts, group_size,
+  if (!vect_build_slp_tree_1 (swap, stmts, group_size,
 			      &this_max_nunits, matches, &two_operators))
     return NULL;
 
