@@ -1,5 +1,15 @@
 2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/aarch64/aarch64.md (cb<optab><mode>1): Disable when
+	aarch64_track_speculation is true.
+	(tb<optab><mode>1): Likewise.
+	* config/aarch64/aarch64.c (aarch64_split_compare_regs): Do not
+	generate CB[N]Z when tracking speculation.
+	(aarch64_split_compare_and_swap): Likewise.
+	(aarch64_split_atomic_op): Likewise.
+
+2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/aarch64/aarch64.opt (mtrack-speculation): New target option.
 
 2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
