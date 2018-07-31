@@ -1,5 +1,15 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (_loop_vec_info::unaligned_dr): Change to
+	dr_vec_info.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Update
+	accordingly.
+	* tree-vect-loop.c (vect_analyze_loop_2): Likewise.
+	* tree-vect-loop-manip.c (get_misalign_in_elems): Likewise.
+	(vect_gen_prolog_loop_niters): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (set_dr_misalignment, dr_misalignment)
 	(DR_TARGET_ALIGNMENT, aligned_access_p, known_alignment_for_access_p)
 	(vect_known_alignment_in_bytes, vect_dr_behavior)

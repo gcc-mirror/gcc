@@ -437,7 +437,7 @@ typedef struct _loop_vec_info : public vec_info {
   tree mask_compare_type;
 
   /* Unknown DRs according to which loop was peeled.  */
-  struct data_reference *unaligned_dr;
+  struct dr_vec_info *unaligned_dr;
 
   /* peeling_for_alignment indicates whether peeling for alignment will take
      place, and what the peeling factor should be:
