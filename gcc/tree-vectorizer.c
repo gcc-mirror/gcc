@@ -595,6 +595,7 @@ void
 vec_info::remove_stmt (stmt_vec_info stmt_info)
 {
   gcc_assert (!stmt_info->pattern_stmt_p);
+  set_vinfo_for_stmt (stmt_info->stmt, NULL);
   gimple_stmt_iterator si = gsi_for_stmt (stmt_info->stmt);
   unlink_stmt_vdef (stmt_info->stmt);
   gsi_remove (&si, true);

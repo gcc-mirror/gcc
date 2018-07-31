@@ -2490,17 +2490,8 @@ _bb_vec_info::~_bb_vec_info ()
 {
   for (gimple_stmt_iterator si = region_begin;
        gsi_stmt (si) != gsi_stmt (region_end); gsi_next (&si))
-    {
-      gimple *stmt = gsi_stmt (si);
-      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-
-      if (stmt_info)
-        /* Free stmt_vec_info.  */
-        free_stmt_vec_info (stmt);
-
-      /* Reset region marker.  */
-      gimple_set_uid (stmt, -1);
-    }
+    /* Reset region marker.  */
+    gimple_set_uid (gsi_stmt (si), -1);
 
   bb->aux = NULL;
 }

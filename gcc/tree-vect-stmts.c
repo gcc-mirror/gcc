@@ -9918,7 +9918,7 @@ free_stmt_vec_infos (vec<stmt_vec_info> *v)
   stmt_vec_info info;
   FOR_EACH_VEC_ELT (*v, i, info)
     if (info != NULL_STMT_VEC_INFO)
-      free_stmt_vec_info (STMT_VINFO_STMT (info));
+      free_stmt_vec_info (info);
   if (v == stmt_vec_info_vec)
     stmt_vec_info_vec = NULL;
   v->release ();
@@ -9928,44 +9928,18 @@ free_stmt_vec_infos (vec<stmt_vec_info> *v)
 /* Free stmt vectorization related info.  */
 
 void
-free_stmt_vec_info (gimple *stmt)
+free_stmt_vec_info (stmt_vec_info stmt_info)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-
-  if (!stmt_info)
-    return;
-
-  /* Check if this statement has a related "pattern stmt"
-     (introduced by the vectorizer during the pattern recognition
-     pass).  Free pattern's stmt_vec_info and def stmt's stmt_vec_info
-     too.  */
-  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+  if (stmt_info->pattern_stmt_p)
     {
-      if (gimple_seq seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info))
-	for (gimple_stmt_iterator si = gsi_start (seq);
-	     !gsi_end_p (si); gsi_next (&si))
-	  {
-	    gimple *seq_stmt = gsi_stmt (si);
-	    gimple_set_bb (seq_stmt, NULL);
-	    tree lhs = gimple_get_lhs (seq_stmt);
-	    if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	      release_ssa_name (lhs);
-	    free_stmt_vec_info (seq_stmt);
-	  }
-      stmt_vec_info patt_stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
-      if (patt_stmt_info)
-	{
-	  gimple_set_bb (patt_stmt_info->stmt, NULL);
-	  tree lhs = gimple_get_lhs (patt_stmt_info->stmt);
-	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	    release_ssa_name (lhs);
-	  free_stmt_vec_info (patt_stmt_info);
-	}
+      gimple_set_bb (stmt_info->stmt, NULL);
+      tree lhs = gimple_get_lhs (stmt_info->stmt);
+      if (lhs && TREE_CODE (lhs) == SSA_NAME)
+	release_ssa_name (lhs);
     }
 
   STMT_VINFO_SAME_ALIGN_REFS (stmt_info).release ();
   STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
-  set_vinfo_for_stmt (stmt, NULL);
   free (stmt_info);
 }
 

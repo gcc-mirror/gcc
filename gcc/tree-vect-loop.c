@@ -894,9 +894,6 @@ _loop_vec_info::~_loop_vec_info ()
   for (j = 0; j < nbbs; j++)
     {
       basic_block bb = bbs[j];
-      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
-        free_stmt_vec_info (gsi_stmt (si));
-
       for (si = gsi_start_bb (bb); !gsi_end_p (si); )
         {
 	  gimple *stmt = gsi_stmt (si);
@@ -936,9 +933,6 @@ _loop_vec_info::~_loop_vec_info ()
 		    }
 		}
 	    }
-
-	  /* Free stmt_vec_info.  */
-	  free_stmt_vec_info (stmt);
           gsi_next (&si);
         }
     }
