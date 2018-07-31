@@ -1,5 +1,59 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (nested_in_vect_loop_p): Move further down
+	file and take a stmt_vec_info instead of a gimple stmt.
+	(supportable_widening_operation, vect_finish_replace_stmt)
+	(vect_finish_stmt_generation, vect_get_store_rhs)
+	(vect_get_vec_def_for_operand_1, vect_get_vec_def_for_operand)
+	(vect_get_vec_defs, vect_init_vector, vect_transform_stmt)
+	(vect_remove_stores, vect_analyze_stmt, vectorizable_condition)
+	(vect_get_smallest_scalar_type, vect_check_gather_scatter)
+	(vect_create_data_ref_ptr, bump_vector_ptr)
+	(vect_permute_store_chain, vect_setup_realignment)
+	(vect_transform_grouped_load, vect_record_grouped_load_vectors)
+	(vect_create_addr_base_for_vector_ref, vectorizable_live_operation)
+	(vectorizable_reduction, vectorizable_induction)
+	(get_initial_def_for_reduction, is_simple_and_all_uses_invariant)
+	(vect_get_place_in_interleaving_chain): Take stmt_vec_infos rather
+	than gimple stmts as arguments.
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type)
+	(vect_preserves_scalar_order_p, vect_slp_analyze_node_dependences)
+	(can_group_stmts_p, vect_check_gather_scatter)
+	(vect_create_addr_base_for_vector_ref, vect_create_data_ref_ptr)
+	(bump_vector_ptr, vect_permute_store_chain, vect_setup_realignment)
+	(vect_permute_load_chain, vect_shift_permute_load_chain)
+	(vect_transform_grouped_load)
+	(vect_record_grouped_load_vectors): Likewise.
+	* tree-vect-loop.c (vect_fixup_reduc_chain)
+	(get_initial_def_for_reduction, vect_create_epilog_for_reduction)
+	(vectorize_fold_left_reduction, is_nonwrapping_integer_induction)
+	(vectorizable_reduction, vectorizable_induction)
+	(vectorizable_live_operation, vect_loop_kill_debug_uses): Likewise.
+	* tree-vect-patterns.c (type_conversion_p, adjust_bool_stmts)
+	(vect_get_load_store_mask): Likewise.
+	* tree-vect-slp.c (vect_get_place_in_interleaving_chain)
+	(vect_analyze_slp_instance, vect_mask_constant_operand_p): Likewise.
+	* tree-vect-stmts.c (vect_mark_relevant)
+	(is_simple_and_all_uses_invariant)
+	(exist_non_indexing_operands_for_use_p, process_use)
+	(vect_init_vector_1, vect_init_vector, vect_get_vec_def_for_operand_1)
+	(vect_get_vec_def_for_operand, vect_get_vec_defs)
+	(vect_finish_stmt_generation_1, vect_finish_replace_stmt)
+	(vect_finish_stmt_generation, vect_truncate_gather_scatter_offset)
+	(compare_step_with_zero, vect_get_store_rhs, get_group_load_store_type)
+	(get_negative_load_store_type, get_load_store_type)
+	(vect_check_load_store_mask, vect_check_store_rhs)
+	(vect_build_gather_load_calls, vect_get_strided_load_store_ops)
+	(vectorizable_bswap, vectorizable_call, vectorizable_simd_clone_call)
+	(vect_create_vectorized_demotion_stmts, vectorizable_conversion)
+	(vectorizable_assignment, vectorizable_shift, vectorizable_operation)
+	(get_group_alias_ptr_type, vectorizable_store, hoist_defs_of_uses)
+	(vectorizable_load, vectorizable_condition, vectorizable_comparison)
+	(vect_analyze_stmt, vect_transform_stmt, vect_remove_stores)
+	(supportable_widening_operation): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-data-refs.c (vect_describe_gather_scatter_call): Take
 	a stmt_vec_info instead of a gcall.
 	(vect_check_gather_scatter): Update call accordingly.

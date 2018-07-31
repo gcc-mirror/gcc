@@ -195,14 +195,14 @@ vect_free_oprnd_info (vec<slp_oprnd_info> &oprnds_info)
 }
 
 
-/* Find the place of the data-ref in STMT in the interleaving chain that starts
-   from FIRST_STMT.  Return -1 if the data-ref is not a part of the chain.  */
+/* Find the place of the data-ref in STMT_INFO in the interleaving chain
+   that starts from FIRST_STMT_INFO.  Return -1 if the data-ref is not a part
+   of the chain.  */
 
 int
-vect_get_place_in_interleaving_chain (gimple *stmt, gimple *first_stmt)
+vect_get_place_in_interleaving_chain (stmt_vec_info stmt_info,
+				      stmt_vec_info first_stmt_info)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  stmt_vec_info first_stmt_info = vinfo_for_stmt (first_stmt);
   stmt_vec_info next_stmt_info = first_stmt_info;
   int result = 0;
 
@@ -1918,9 +1918,8 @@ calculate_unrolling_factor (poly_uint64 nunits, unsigned int group_size)
 
 static bool
 vect_analyze_slp_instance (vec_info *vinfo,
-			   gimple *stmt, unsigned max_tree_size)
+			   stmt_vec_info stmt_info, unsigned max_tree_size)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   slp_instance new_instance;
   slp_tree node;
   unsigned int group_size;
@@ -3118,13 +3117,12 @@ vect_slp_bb (basic_block bb)
 
 
 /* Return 1 if vector type of boolean constant which is OPNUM
-   operand in statement STMT is a boolean vector.  */
+   operand in statement STMT_VINFO is a boolean vector.  */
 
 static bool
-vect_mask_constant_operand_p (gimple *stmt, int opnum)
+vect_mask_constant_operand_p (stmt_vec_info stmt_vinfo, int opnum)
 {
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
-  enum tree_code code = gimple_expr_code (stmt);
+  enum tree_code code = gimple_expr_code (stmt_vinfo->stmt);
   tree op, vectype;
   enum vect_def_type dt;
 
@@ -3132,6 +3130,7 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
      on the other comparison operand.  */
   if (TREE_CODE_CLASS (code) == tcc_comparison)
     {
+      gassign *stmt = as_a <gassign *> (stmt_vinfo->stmt);
       if (opnum)
 	op = gimple_assign_rhs1 (stmt);
       else
@@ -3145,6 +3144,7 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
 
   if (code == COND_EXPR)
     {
+      gassign *stmt = as_a <gassign *> (stmt_vinfo->stmt);
       tree cond = gimple_assign_rhs1 (stmt);
 
       if (TREE_CODE (cond) == SSA_NAME)

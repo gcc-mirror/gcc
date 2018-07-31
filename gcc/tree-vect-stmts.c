@@ -192,13 +192,12 @@ vect_clobber_variable (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
 /* Function vect_mark_relevant.
 
-   Mark STMT as "relevant for vectorization" and add it to WORKLIST.  */
+   Mark STMT_INFO as "relevant for vectorization" and add it to WORKLIST.  */
 
 static void
-vect_mark_relevant (vec<stmt_vec_info> *worklist, gimple *stmt,
+vect_mark_relevant (vec<stmt_vec_info> *worklist, stmt_vec_info stmt_info,
 		    enum vect_relevant relevant, bool live_p)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   enum vect_relevant save_relevant = STMT_VINFO_RELEVANT (stmt_info);
   bool save_live_p = STMT_VINFO_LIVE_P (stmt_info);
 
@@ -229,7 +228,6 @@ vect_mark_relevant (vec<stmt_vec_info> *worklist, gimple *stmt,
       gcc_assert (STMT_VINFO_RELATED_STMT (stmt_info) == old_stmt_info);
       save_relevant = STMT_VINFO_RELEVANT (stmt_info);
       save_live_p = STMT_VINFO_LIVE_P (stmt_info);
-      stmt = stmt_info->stmt;
     }
 
   STMT_VINFO_LIVE_P (stmt_info) |= live_p;
@@ -251,15 +249,17 @@ vect_mark_relevant (vec<stmt_vec_info> *worklist, gimple *stmt,
 
 /* Function is_simple_and_all_uses_invariant
 
-   Return true if STMT is simple and all uses of it are invariant.  */
+   Return true if STMT_INFO is simple and all uses of it are invariant.  */
 
 bool
-is_simple_and_all_uses_invariant (gimple *stmt, loop_vec_info loop_vinfo)
+is_simple_and_all_uses_invariant (stmt_vec_info stmt_info,
+				  loop_vec_info loop_vinfo)
 {
   tree op;
   ssa_op_iter iter;
 
-  if (!is_gimple_assign (stmt))
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
     return false;
 
   FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
@@ -361,14 +361,13 @@ vect_stmt_relevant_p (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 
 /* Function exist_non_indexing_operands_for_use_p
 
-   USE is one of the uses attached to STMT.  Check if USE is
-   used in STMT for anything other than indexing an array.  */
+   USE is one of the uses attached to STMT_INFO.  Check if USE is
+   used in STMT_INFO for anything other than indexing an array.  */
 
 static bool
-exist_non_indexing_operands_for_use_p (tree use, gimple *stmt)
+exist_non_indexing_operands_for_use_p (tree use, stmt_vec_info stmt_info)
 {
   tree operand;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
   /* USE corresponds to some operand in STMT.  If there is no data
      reference in STMT, then any operand that corresponds to USE
@@ -428,7 +427,7 @@ exist_non_indexing_operands_for_use_p (tree use, gimple *stmt)
    Function process_use.
 
    Inputs:
-   - a USE in STMT in a loop represented by LOOP_VINFO
+   - a USE in STMT_VINFO in a loop represented by LOOP_VINFO
    - RELEVANT - enum value to be set in the STMT_VINFO of the stmt
      that defined USE.  This is done by calling mark_relevant and passing it
      the WORKLIST (to add DEF_STMT to the WORKLIST in case it is relevant).
@@ -438,25 +437,24 @@ exist_non_indexing_operands_for_use_p (tree use, gimple *stmt)
    Outputs:
    Generally, LIVE_P and RELEVANT are used to define the liveness and
    relevance info of the DEF_STMT of this USE:
-       STMT_VINFO_LIVE_P (DEF_STMT_info) <-- live_p
-       STMT_VINFO_RELEVANT (DEF_STMT_info) <-- relevant
+       STMT_VINFO_LIVE_P (DEF_stmt_vinfo) <-- live_p
+       STMT_VINFO_RELEVANT (DEF_stmt_vinfo) <-- relevant
    Exceptions:
    - case 1: If USE is used only for address computations (e.g. array indexing),
    which does not need to be directly vectorized, then the liveness/relevance
    of the respective DEF_STMT is left unchanged.
-   - case 2: If STMT is a reduction phi and DEF_STMT is a reduction stmt, we
-   skip DEF_STMT cause it had already been processed.
-   - case 3: If DEF_STMT and STMT are in different nests, then  "relevant" will
-   be modified accordingly.
+   - case 2: If STMT_VINFO is a reduction phi and DEF_STMT is a reduction stmt,
+   we skip DEF_STMT cause it had already been processed.
+   - case 3: If DEF_STMT and STMT_VINFO are in different nests, then
+   "relevant" will be modified accordingly.
 
    Return true if everything is as expected. Return false otherwise.  */
 
 static bool
-process_use (gimple *stmt, tree use, loop_vec_info loop_vinfo,
+process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
 	     enum vect_relevant relevant, vec<stmt_vec_info> *worklist,
 	     bool force)
 {
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   stmt_vec_info dstmt_vinfo;
   basic_block bb, def_bb;
   enum vect_def_type dt;
@@ -1342,12 +1340,12 @@ vect_get_load_cost (stmt_vec_info stmt_info, int ncopies,
 }
 
 /* Insert the new stmt NEW_STMT at *GSI or at the appropriate place in
-   the loop preheader for the vectorized stmt STMT.  */
+   the loop preheader for the vectorized stmt STMT_VINFO.  */
 
 static void
-vect_init_vector_1 (gimple *stmt, gimple *new_stmt, gimple_stmt_iterator *gsi)
+vect_init_vector_1 (stmt_vec_info stmt_vinfo, gimple *new_stmt,
+		    gimple_stmt_iterator *gsi)
 {
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   if (gsi)
     vect_finish_stmt_generation (stmt_vinfo, new_stmt, gsi);
   else
@@ -1396,12 +1394,12 @@ vect_init_vector_1 (gimple *stmt, gimple *new_stmt, gimple_stmt_iterator *gsi)
    Place the initialization at BSI if it is not NULL.  Otherwise, place the
    initialization at the loop preheader.
    Return the DEF of INIT_STMT.
-   It will be used in the vectorization of STMT.  */
+   It will be used in the vectorization of STMT_INFO.  */
 
 tree
-vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
+vect_init_vector (stmt_vec_info stmt_info, tree val, tree type,
+		  gimple_stmt_iterator *gsi)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   gimple *init_stmt;
   tree new_temp;
 
@@ -1456,15 +1454,15 @@ vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 
 /* Function vect_get_vec_def_for_operand_1.
 
-   For a defining stmt DEF_STMT of a scalar stmt, return a vector def with type
-   DT that will be used in the vectorized stmt.  */
+   For a defining stmt DEF_STMT_INFO of a scalar stmt, return a vector def
+   with type DT that will be used in the vectorized stmt.  */
 
 tree
-vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
+vect_get_vec_def_for_operand_1 (stmt_vec_info def_stmt_info,
+				enum vect_def_type dt)
 {
   tree vec_oprnd;
   stmt_vec_info vec_stmt_info;
-  stmt_vec_info def_stmt_info = NULL;
 
   switch (dt)
     {
@@ -1478,8 +1476,6 @@ vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
     case vect_internal_def:
       {
         /* Get the def from the vectorized stmt.  */
-        def_stmt_info = vinfo_for_stmt (def_stmt);
-
 	vec_stmt_info = STMT_VINFO_VEC_STMT (def_stmt_info);
 	/* Get vectorized pattern statement.  */
 	if (!vec_stmt_info
@@ -1501,10 +1497,9 @@ vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
     case vect_nested_cycle:
     case vect_induction_def:
       {
-	gcc_assert (gimple_code (def_stmt) == GIMPLE_PHI);
+	gcc_assert (gimple_code (def_stmt_info->stmt) == GIMPLE_PHI);
 
 	/* Get the def from the vectorized stmt.  */
-	def_stmt_info = vinfo_for_stmt (def_stmt);
 	vec_stmt_info = STMT_VINFO_VEC_STMT (def_stmt_info);
 	if (gphi *phi = dyn_cast <gphi *> (vec_stmt_info->stmt))
 	  vec_oprnd = PHI_RESULT (phi);
@@ -1521,8 +1516,8 @@ vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
 
 /* Function vect_get_vec_def_for_operand.
 
-   OP is an operand in STMT.  This function returns a (vector) def that will be
-   used in the vectorized stmt for STMT.
+   OP is an operand in STMT_VINFO.  This function returns a (vector) def
+   that will be used in the vectorized stmt for STMT_VINFO.
 
    In the case that OP is an SSA_NAME which is defined in the loop, then
    STMT_VINFO_VEC_STMT of the defining stmt holds the relevant def.
@@ -1532,12 +1527,11 @@ vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
    vector invariant.  */
 
 tree
-vect_get_vec_def_for_operand (tree op, gimple *stmt, tree vectype)
+vect_get_vec_def_for_operand (tree op, stmt_vec_info stmt_vinfo, tree vectype)
 {
   gimple *def_stmt;
   enum vect_def_type dt;
   bool is_simple_use;
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
 
   if (dump_enabled_p ())
@@ -1683,12 +1677,11 @@ vect_get_vec_defs_for_stmt_copy (enum vect_def_type *dt,
 /* Get vectorized definitions for OP0 and OP1.  */
 
 void
-vect_get_vec_defs (tree op0, tree op1, gimple *stmt,
+vect_get_vec_defs (tree op0, tree op1, stmt_vec_info stmt_info,
 		   vec<tree> *vec_oprnds0,
 		   vec<tree> *vec_oprnds1,
 		   slp_tree slp_node)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   if (slp_node)
     {
       int nops = (op1 == NULL_TREE) ? 1 : 2;
@@ -1727,9 +1720,8 @@ vect_get_vec_defs (tree op0, tree op1, gimple *stmt,
    statement and create and return a stmt_vec_info for it.  */
 
 static stmt_vec_info
-vect_finish_stmt_generation_1 (gimple *stmt, gimple *vec_stmt)
+vect_finish_stmt_generation_1 (stmt_vec_info stmt_info, gimple *vec_stmt)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vec_info *vinfo = stmt_info->vinfo;
 
   stmt_vec_info vec_stmt_info = vinfo->add_stmt (vec_stmt);
@@ -1752,14 +1744,13 @@ vect_finish_stmt_generation_1 (gimple *stmt, gimple *vec_stmt)
   return vec_stmt_info;
 }
 
-/* Replace the scalar statement STMT with a new vector statement VEC_STMT,
-   which sets the same scalar result as STMT did.  Create and return a
+/* Replace the scalar statement STMT_INFO with a new vector statement VEC_STMT,
+   which sets the same scalar result as STMT_INFO did.  Create and return a
    stmt_vec_info for VEC_STMT.  */
 
 stmt_vec_info
-vect_finish_replace_stmt (gimple *stmt, gimple *vec_stmt)
+vect_finish_replace_stmt (stmt_vec_info stmt_info, gimple *vec_stmt)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   gcc_assert (gimple_get_lhs (stmt_info->stmt) == gimple_get_lhs (vec_stmt));
 
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt_info->stmt);
@@ -1768,14 +1759,13 @@ vect_finish_replace_stmt (gimple *stmt, gimple *vec_stmt)
   return vect_finish_stmt_generation_1 (stmt_info, vec_stmt);
 }
 
-/* Add VEC_STMT to the vectorized implementation of STMT and insert it
+/* Add VEC_STMT to the vectorized implementation of STMT_INFO and insert it
    before *GSI.  Create and return a stmt_vec_info for VEC_STMT.  */
 
 stmt_vec_info
-vect_finish_stmt_generation (gimple *stmt, gimple *vec_stmt,
+vect_finish_stmt_generation (stmt_vec_info stmt_info, gimple *vec_stmt,
 			     gimple_stmt_iterator *gsi)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   gcc_assert (gimple_code (stmt_info->stmt) != GIMPLE_LABEL);
 
   if (!gsi_end_p (*gsi)
@@ -1976,22 +1966,21 @@ prepare_load_store_mask (tree mask_type, tree loop_mask, tree vec_mask,
 }
 
 /* Determine whether we can use a gather load or scatter store to vectorize
-   strided load or store STMT by truncating the current offset to a smaller
-   width.  We need to be able to construct an offset vector:
+   strided load or store STMT_INFO by truncating the current offset to a
+   smaller width.  We need to be able to construct an offset vector:
 
      { 0, X, X*2, X*3, ... }
 
-   without loss of precision, where X is STMT's DR_STEP.
+   without loss of precision, where X is STMT_INFO's DR_STEP.
 
    Return true if this is possible, describing the gather load or scatter
    store in GS_INFO.  MASKED_P is true if the load or store is conditional.  */
 
 static bool
-vect_truncate_gather_scatter_offset (gimple *stmt, loop_vec_info loop_vinfo,
-				     bool masked_p,
+vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
+				     loop_vec_info loop_vinfo, bool masked_p,
 				     gather_scatter_info *gs_info)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree step = DR_STEP (dr);
   if (TREE_CODE (step) != INTEGER_CST)
@@ -2112,14 +2101,13 @@ vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info,
   return true;
 }
 
-/* STMT is a non-strided load or store, meaning that it accesses
+/* STMT_INFO is a non-strided load or store, meaning that it accesses
    elements with a known constant step.  Return -1 if that step
    is negative, 0 if it is zero, and 1 if it is greater than zero.  */
 
 static int
-compare_step_with_zero (gimple *stmt)
+compare_step_with_zero (stmt_vec_info stmt_info)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   return tree_int_cst_compare (vect_dr_behavior (dr)->step,
 			       size_zero_node);
@@ -2144,29 +2132,29 @@ perm_mask_for_reverse (tree vectype)
   return vect_gen_perm_mask_checked (vectype, indices);
 }
 
-/* STMT is either a masked or unconditional store.  Return the value
+/* STMT_INFO is either a masked or unconditional store.  Return the value
    being stored.  */
 
 tree
-vect_get_store_rhs (gimple *stmt)
+vect_get_store_rhs (stmt_vec_info stmt_info)
 {
-  if (gassign *assign = dyn_cast <gassign *> (stmt))
+  if (gassign *assign = dyn_cast <gassign *> (stmt_info->stmt))
     {
       gcc_assert (gimple_assign_single_p (assign));
       return gimple_assign_rhs1 (assign);
     }
-  if (gcall *call = dyn_cast <gcall *> (stmt))
+  if (gcall *call = dyn_cast <gcall *> (stmt_info->stmt))
     {
       internal_fn ifn = gimple_call_internal_fn (call);
       int index = internal_fn_stored_value_index (ifn);
       gcc_assert (index >= 0);
-      return gimple_call_arg (stmt, index);
+      return gimple_call_arg (call, index);
     }
   gcc_unreachable ();
 }
 
 /* A subroutine of get_load_store_type, with a subset of the same
-   arguments.  Handle the case where STMT is part of a grouped load
+   arguments.  Handle the case where STMT_INFO is part of a grouped load
    or store.
 
    For stores, the statements in the group are all consecutive
@@ -2175,12 +2163,11 @@ vect_get_store_rhs (gimple *stmt)
    as well as at the end.  */
 
 static bool
-get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
+get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 			   bool masked_p, vec_load_store_type vls_type,
 			   vect_memory_access_type *memory_access_type,
 			   gather_scatter_info *gs_info)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vec_info *vinfo = stmt_info->vinfo;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
@@ -2350,15 +2337,14 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
 }
 
 /* A subroutine of get_load_store_type, with a subset of the same
-   arguments.  Handle the case where STMT is a load or store that
+   arguments.  Handle the case where STMT_INFO is a load or store that
    accesses consecutive elements with a negative step.  */
 
 static vect_memory_access_type
-get_negative_load_store_type (gimple *stmt, tree vectype,
+get_negative_load_store_type (stmt_vec_info stmt_info, tree vectype,
 			      vec_load_store_type vls_type,
 			      unsigned int ncopies)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   dr_alignment_support alignment_support_scheme;
 
@@ -2400,7 +2386,7 @@ get_negative_load_store_type (gimple *stmt, tree vectype,
   return VMAT_CONTIGUOUS_REVERSE;
 }
 
-/* Analyze load or store statement STMT of type VLS_TYPE.  Return true
+/* Analyze load or store statement STMT_INFO of type VLS_TYPE.  Return true
    if there is a memory access type that the vectorized form can use,
    storing it in *MEMORY_ACCESS_TYPE if so.  If we decide to use gathers
    or scatters, fill in GS_INFO accordingly.
@@ -2411,12 +2397,12 @@ get_negative_load_store_type (gimple *stmt, tree vectype,
    NCOPIES is the number of vector statements that will be needed.  */
 
 static bool
-get_load_store_type (gimple *stmt, tree vectype, bool slp, bool masked_p,
-		     vec_load_store_type vls_type, unsigned int ncopies,
+get_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
+		     bool masked_p, vec_load_store_type vls_type,
+		     unsigned int ncopies,
 		     vect_memory_access_type *memory_access_type,
 		     gather_scatter_info *gs_info)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vec_info *vinfo = stmt_info->vinfo;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -2496,12 +2482,12 @@ get_load_store_type (gimple *stmt, tree vectype, bool slp, bool masked_p,
 }
 
 /* Return true if boolean argument MASK is suitable for vectorizing
-   conditional load or store STMT.  When returning true, store the type
+   conditional load or store STMT_INFO.  When returning true, store the type
    of the definition in *MASK_DT_OUT and the type of the vectorized mask
    in *MASK_VECTYPE_OUT.  */
 
 static bool
-vect_check_load_store_mask (gimple *stmt, tree mask,
+vect_check_load_store_mask (stmt_vec_info stmt_info, tree mask,
 			    vect_def_type *mask_dt_out,
 			    tree *mask_vectype_out)
 {
@@ -2521,7 +2507,6 @@ vect_check_load_store_mask (gimple *stmt, tree mask,
       return false;
     }
 
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   enum vect_def_type mask_dt;
   tree mask_vectype;
   if (!vect_is_simple_use (mask, stmt_info->vinfo, &mask_dt, &mask_vectype))
@@ -2566,13 +2551,14 @@ vect_check_load_store_mask (gimple *stmt, tree mask,
 }
 
 /* Return true if stored value RHS is suitable for vectorizing store
-   statement STMT.  When returning true, store the type of the
+   statement STMT_INFO.  When returning true, store the type of the
    definition in *RHS_DT_OUT, the type of the vectorized store value in
    *RHS_VECTYPE_OUT and the type of the store in *VLS_TYPE_OUT.  */
 
 static bool
-vect_check_store_rhs (gimple *stmt, tree rhs, vect_def_type *rhs_dt_out,
-		      tree *rhs_vectype_out, vec_load_store_type *vls_type_out)
+vect_check_store_rhs (stmt_vec_info stmt_info, tree rhs,
+		      vect_def_type *rhs_dt_out, tree *rhs_vectype_out,
+		      vec_load_store_type *vls_type_out)
 {
   /* In the case this is a store from a constant make sure
      native_encode_expr can handle it.  */
@@ -2584,7 +2570,6 @@ vect_check_store_rhs (gimple *stmt, tree rhs, vect_def_type *rhs_dt_out,
       return false;
     }
 
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   enum vect_def_type rhs_dt;
   tree rhs_vectype;
   if (!vect_is_simple_use (rhs, stmt_info->vinfo, &rhs_dt, &rhs_vectype))
@@ -2666,18 +2651,19 @@ vect_build_zero_merge_argument (stmt_vec_info stmt_info, tree vectype)
   return vect_init_vector (stmt_info, merge, vectype, NULL);
 }
 
-/* Build a gather load call while vectorizing STMT.  Insert new instructions
-   before GSI and add them to VEC_STMT.  GS_INFO describes the gather load
-   operation.  If the load is conditional, MASK is the unvectorized
-   condition and MASK_DT is its definition type, otherwise MASK is null.  */
+/* Build a gather load call while vectorizing STMT_INFO.  Insert new
+   instructions before GSI and add them to VEC_STMT.  GS_INFO describes
+   the gather load operation.  If the load is conditional, MASK is the
+   unvectorized condition and MASK_DT is its definition type, otherwise
+   MASK is null.  */
 
 static void
-vect_build_gather_load_calls (gimple *stmt, gimple_stmt_iterator *gsi,
+vect_build_gather_load_calls (stmt_vec_info stmt_info,
+			      gimple_stmt_iterator *gsi,
 			      stmt_vec_info *vec_stmt,
-			      gather_scatter_info *gs_info, tree mask,
-			      vect_def_type mask_dt)
+			      gather_scatter_info *gs_info,
+			      tree mask, vect_def_type mask_dt)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -2897,7 +2883,7 @@ vect_get_gather_scatter_ops (struct loop *loop, stmt_vec_info stmt_info,
 
 /* Prepare to implement a grouped or strided load or store using
    the gather load or scatter store operation described by GS_INFO.
-   STMT is the load or store statement.
+   STMT_INFO is the load or store statement.
 
    Set *DATAREF_BUMP to the amount that should be added to the base
    address after each copy of the vectorized statement.  Set *VEC_OFFSET
@@ -2905,11 +2891,11 @@ vect_get_gather_scatter_ops (struct loop *loop, stmt_vec_info stmt_info,
    I * DR_STEP / SCALE.  */
 
 static void
-vect_get_strided_load_store_ops (gimple *stmt, loop_vec_info loop_vinfo,
+vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
+				 loop_vec_info loop_vinfo,
 				 gather_scatter_info *gs_info,
 				 tree *dataref_bump, tree *vec_offset)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -2963,13 +2949,13 @@ vect_get_data_ptr_increment (data_reference *dr, tree aggr_type,
 /* Check and perform vectorization of BUILT_IN_BSWAP{16,32,64}.  */
 
 static bool
-vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorizable_bswap (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    stmt_vec_info *vec_stmt, slp_tree slp_node,
 		    tree vectype_in, enum vect_def_type *dt,
 		    stmt_vector_for_cost *cost_vec)
 {
   tree op, vectype;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  gcall *stmt = as_a <gcall *> (stmt_info->stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   unsigned ncopies;
   unsigned HOST_WIDE_INT nunits, num_bytes;
@@ -3103,13 +3089,13 @@ simple_integer_narrowing (tree vectype_out, tree vectype_in,
 
 /* Function vectorizable_call.
 
-   Check if GS performs a function call that can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at BSI.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+   Check if STMT_INFO performs a function call that can be vectorized.
+   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
+   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
-vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi,
+vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		   stmt_vec_info *vec_stmt, slp_tree slp_node,
 		   stmt_vector_for_cost *cost_vec)
 {
@@ -3118,7 +3104,7 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi,
   tree scalar_dest;
   tree op;
   tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE;
-  stmt_vec_info stmt_info = vinfo_for_stmt (gs), prev_stmt_info;
+  stmt_vec_info prev_stmt_info;
   tree vectype_out, vectype_in;
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
@@ -3747,14 +3733,15 @@ simd_clone_subparts (tree vectype)
 
 /* Function vectorizable_simd_clone_call.
 
-   Check if STMT performs a function call that can be vectorized
+   Check if STMT_INFO performs a function call that can be vectorized
    by calling a simd clone of the function.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at BSI.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
+   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
-vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorizable_simd_clone_call (stmt_vec_info stmt_info,
+			      gimple_stmt_iterator *gsi,
 			      stmt_vec_info *vec_stmt, slp_tree slp_node,
 			      stmt_vector_for_cost *)
 {
@@ -3762,7 +3749,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
   tree scalar_dest;
   tree op, type;
   tree vec_oprnd0 = NULL_TREE;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt), prev_stmt_info;
+  stmt_vec_info prev_stmt_info;
   tree vectype;
   unsigned int nunits;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -3778,7 +3765,8 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
   vec<constructor_elt, va_gc> *ret_ctor_elts = NULL;
 
   /* Is STMT a vectorizable call?   */
-  if (!is_gimple_call (stmt))
+  gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt);
+  if (!stmt)
     return false;
 
   fndecl = gimple_call_fndecl (stmt);
@@ -4487,7 +4475,8 @@ vect_get_loop_based_defs (tree *oprnd, stmt_vec_info stmt_info,
 
 static void
 vect_create_vectorized_demotion_stmts (vec<tree> *vec_oprnds,
-				       int multi_step_cvt, gimple *stmt,
+				       int multi_step_cvt,
+				       stmt_vec_info stmt_info,
 				       vec<tree> vec_dsts,
 				       gimple_stmt_iterator *gsi,
 				       slp_tree slp_node, enum tree_code code,
@@ -4495,7 +4484,6 @@ vect_create_vectorized_demotion_stmts (vec<tree> *vec_oprnds,
 {
   unsigned int i;
   tree vop0, vop1, new_tmp, vec_dest;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
   vec_dest = vec_dsts.pop ();
 
@@ -4606,13 +4594,13 @@ vect_create_vectorized_promotion_stmts (vec<tree> *vec_oprnds0,
 }
 
 
-/* Check if STMT performs a conversion operation, that can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
+/* Check if STMT_INFO performs a conversion operation that can be vectorized.
+   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
    stmt to replace it, put it in VEC_STMT, and insert it at GSI.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+   Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
-vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			 stmt_vec_info *vec_stmt, slp_tree slp_node,
 			 stmt_vector_for_cost *cost_vec)
 {
@@ -4620,7 +4608,6 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
   tree scalar_dest;
   tree op0, op1 = NULL_TREE;
   tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   enum tree_code code, code1 = ERROR_MARK, code2 = ERROR_MARK;
   enum tree_code codecvt1 = ERROR_MARK, codecvt2 = ERROR_MARK;
@@ -4655,7 +4642,8 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
       && ! vec_stmt)
     return false;
 
-  if (!is_gimple_assign (stmt))
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
     return false;
 
   if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
@@ -5220,20 +5208,19 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 
 /* Function vectorizable_assignment.
 
-   Check if STMT performs an assignment (copy) that can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at BSI.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+   Check if STMT_INFO performs an assignment (copy) that can be vectorized.
+   If VEC_STMT is also passed, vectorize the STMT_INFO: create a vectorized
+   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
-vectorizable_assignment (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorizable_assignment (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			 stmt_vec_info *vec_stmt, slp_tree slp_node,
 			 stmt_vector_for_cost *cost_vec)
 {
   tree vec_dest;
   tree scalar_dest;
   tree op;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   tree new_temp;
   enum vect_def_type dt[1] = {vect_unknown_def_type};
@@ -5256,7 +5243,8 @@ vectorizable_assignment (gimple *stmt, gimple_stmt_iterator *gsi,
     return false;
 
   /* Is vectorizable assignment?  */
-  if (!is_gimple_assign (stmt))
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
     return false;
 
   scalar_dest = gimple_assign_lhs (stmt);
@@ -5422,13 +5410,13 @@ vect_supportable_shift (enum tree_code code, tree scalar_type)
 
 /* Function vectorizable_shift.
 
-   Check if STMT performs a shift operation that can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at BSI.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+   Check if STMT_INFO performs a shift operation that can be vectorized.
+   If VEC_STMT is also passed, vectorize the STMT_INFO: create a vectorized
+   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
-vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    stmt_vec_info *vec_stmt, slp_tree slp_node,
 		    stmt_vector_for_cost *cost_vec)
 {
@@ -5436,7 +5424,6 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
   tree scalar_dest;
   tree op0, op1 = NULL;
   tree vec_oprnd1 = NULL_TREE;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   enum tree_code code;
@@ -5470,7 +5457,8 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
     return false;
 
   /* Is STMT a vectorizable binary/unary operation?   */
-  if (!is_gimple_assign (stmt))
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
     return false;
 
   if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
@@ -5789,21 +5777,20 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
 
 /* Function vectorizable_operation.
 
-   Check if STMT performs a binary, unary or ternary operation that can
+   Check if STMT_INFO performs a binary, unary or ternary operation that can
    be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at BSI.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
+   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
-vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			stmt_vec_info *vec_stmt, slp_tree slp_node,
 			stmt_vector_for_cost *cost_vec)
 {
   tree vec_dest;
   tree scalar_dest;
   tree op0, op1 = NULL_TREE, op2 = NULL_TREE;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   enum tree_code code, orig_code;
@@ -5836,7 +5823,8 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
     return false;
 
   /* Is STMT a vectorizable binary/unary operation?   */
-  if (!is_gimple_assign (stmt))
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
     return false;
 
   if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
@@ -6215,12 +6203,11 @@ ensure_base_align (struct data_reference *dr)
 
 /* Function get_group_alias_ptr_type.
 
-   Return the alias type for the group starting at FIRST_STMT.  */
+   Return the alias type for the group starting at FIRST_STMT_INFO.  */
 
 static tree
-get_group_alias_ptr_type (gimple *first_stmt)
+get_group_alias_ptr_type (stmt_vec_info first_stmt_info)
 {
-  stmt_vec_info first_stmt_info = vinfo_for_stmt (first_stmt);
   struct data_reference *first_dr, *next_dr;
 
   first_dr = STMT_VINFO_DATA_REF (first_stmt_info);
@@ -6244,21 +6231,20 @@ get_group_alias_ptr_type (gimple *first_stmt)
 
 /* Function vectorizable_store.
 
-   Check if STMT defines a non scalar data-ref (array/pointer/structure) that
-   can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at BSI.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+   Check if STMT_INFO defines a non scalar data-ref (array/pointer/structure)
+   that can be vectorized.
+   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
+   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
-vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    stmt_vec_info *vec_stmt, slp_tree slp_node,
 		    stmt_vector_for_cost *cost_vec)
 {
   tree data_ref;
   tree op;
   tree vec_oprnd = NULL_TREE;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info), *first_dr = NULL;
   tree elem_type;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -7350,19 +7336,19 @@ permute_vec_elements (tree x, tree y, tree mask_vec, stmt_vec_info stmt_info,
   return data_ref;
 }
 
-/* Hoist the definitions of all SSA uses on STMT out of the loop LOOP,
+/* Hoist the definitions of all SSA uses on STMT_INFO out of the loop LOOP,
    inserting them on the loops preheader edge.  Returns true if we
-   were successful in doing so (and thus STMT can be moved then),
+   were successful in doing so (and thus STMT_INFO can be moved then),
    otherwise returns false.  */
 
 static bool
-hoist_defs_of_uses (gimple *stmt, struct loop *loop)
+hoist_defs_of_uses (stmt_vec_info stmt_info, struct loop *loop)
 {
   ssa_op_iter i;
   tree op;
   bool any = false;
 
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt_info->stmt, i, SSA_OP_USE)
     {
       gimple *def_stmt = SSA_NAME_DEF_STMT (op);
       if (!gimple_nop_p (def_stmt)
@@ -7390,7 +7376,7 @@ hoist_defs_of_uses (gimple *stmt, struct loop *loop)
   if (!any)
     return true;
 
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt_info->stmt, i, SSA_OP_USE)
     {
       gimple *def_stmt = SSA_NAME_DEF_STMT (op);
       if (!gimple_nop_p (def_stmt)
@@ -7407,14 +7393,14 @@ hoist_defs_of_uses (gimple *stmt, struct loop *loop)
 
 /* vectorizable_load.
 
-   Check if STMT reads a non scalar data-ref (array/pointer/structure) that
-   can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at BSI.
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+   Check if STMT_INFO reads a non scalar data-ref (array/pointer/structure)
+   that can be vectorized.
+   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
+   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
-vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		   stmt_vec_info *vec_stmt, slp_tree slp_node,
 		   slp_instance slp_node_instance,
 		   stmt_vector_for_cost *cost_vec)
@@ -7422,11 +7408,10 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi,
   tree scalar_dest;
   tree vec_dest = NULL;
   tree data_ref = NULL;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   stmt_vec_info prev_stmt_info;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
-  struct loop *containing_loop = (gimple_bb (stmt))->loop_father;
+  struct loop *containing_loop = gimple_bb (stmt_info->stmt)->loop_father;
   bool nested_in_vect_loop = false;
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info), *first_dr = NULL;
   tree elem_type;
@@ -8532,6 +8517,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi,
 		      && !nested_in_vect_loop
 		      && hoist_defs_of_uses (stmt_info, loop))
 		    {
+		      gassign *stmt = as_a <gassign *> (stmt_info->stmt);
 		      if (dump_enabled_p ())
 			{
 			  dump_printf_loc (MSG_NOTE, vect_location,
@@ -8730,19 +8716,19 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
 
 /* vectorizable_condition.
 
-   Check if STMT is conditional modify expression that can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
+   Check if STMT_INFO is conditional modify expression that can be vectorized.
+   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
    stmt using VEC_COND_EXPR  to replace it, put it in VEC_STMT, and insert it
    at GSI.
 
-   When STMT is vectorized as nested cycle, REDUC_DEF is the vector variable
-   to be used at REDUC_INDEX (in then clause if REDUC_INDEX is 1, and in
-   else clause if it is 2).
+   When STMT_INFO is vectorized as a nested cycle, REDUC_DEF is the vector
+   variable to be used at REDUC_INDEX (in then clause if REDUC_INDEX is 1,
+   and in else clause if it is 2).
 
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+   Return true if STMT_INFO is vectorizable in this way.  */
 
 bool
-vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			stmt_vec_info *vec_stmt, tree reduc_def,
 			int reduc_index, slp_tree slp_node,
 			stmt_vector_for_cost *cost_vec)
@@ -8751,7 +8737,6 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
   tree vec_dest = NULL_TREE;
   tree cond_expr, cond_expr0 = NULL_TREE, cond_expr1 = NULL_TREE;
   tree then_clause, else_clause;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree comp_vectype = NULL_TREE;
   tree vec_cond_lhs = NULL_TREE, vec_cond_rhs = NULL_TREE;
   tree vec_then_clause = NULL_TREE, vec_else_clause = NULL_TREE;
@@ -8800,7 +8785,8 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
     }
 
   /* Is vectorizable conditional operation?  */
-  if (!is_gimple_assign (stmt))
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
     return false;
 
   code = gimple_assign_rhs_code (stmt);
@@ -9138,19 +9124,18 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 
 /* vectorizable_comparison.
 
-   Check if STMT is comparison expression that can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT: create a vectorized
+   Check if STMT_INFO is comparison expression that can be vectorized.
+   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
    comparison, put it in VEC_STMT, and insert it at GSI.
 
-   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+   Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
-vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
+vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			 stmt_vec_info *vec_stmt, tree reduc_def,
 			 slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   tree lhs, rhs1, rhs2;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree vec_rhs1 = NULL_TREE, vec_rhs2 = NULL_TREE;
@@ -9197,7 +9182,8 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
       return false;
     }
 
-  if (!is_gimple_assign (stmt))
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
     return false;
 
   code = gimple_assign_rhs_code (stmt);
@@ -9446,10 +9432,10 @@ can_vectorize_live_stmts (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 /* Make sure the statement is vectorizable.  */
 
 bool
-vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node,
-		   slp_instance node_instance, stmt_vector_for_cost *cost_vec)
+vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
+		   slp_tree node, slp_instance node_instance,
+		   stmt_vector_for_cost *cost_vec)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vec_info *vinfo = stmt_info->vinfo;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   enum vect_relevant relevance = STMT_VINFO_RELEVANT (stmt_info);
@@ -9525,7 +9511,6 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node,
 	      || STMT_VINFO_LIVE_P (pattern_stmt_info)))
         {
           /* Analyze PATTERN_STMT instead of the original stmt.  */
-	  stmt = pattern_stmt_info->stmt;
 	  stmt_info = pattern_stmt_info;
           if (dump_enabled_p ())
             {
@@ -9682,14 +9667,13 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node,
 
 /* Function vect_transform_stmt.
 
-   Create a vectorized stmt to replace STMT, and insert it at BSI.  */
+   Create a vectorized stmt to replace STMT_INFO, and insert it at BSI.  */
 
 bool
-vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
+vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		     bool *grouped_store, slp_tree slp_node,
                      slp_instance slp_node_instance)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vec_info *vinfo = stmt_info->vinfo;
   bool is_store = false;
   stmt_vec_info vec_stmt = NULL;
@@ -9703,6 +9687,7 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
 		        (LOOP_VINFO_LOOP (STMT_VINFO_LOOP_VINFO (stmt_info)),
 			 stmt_info));
 
+  gimple *stmt = stmt_info->stmt;
   switch (STMT_VINFO_TYPE (stmt_info))
     {
     case type_demotion_vec_info_type:
@@ -9861,9 +9846,9 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
    stmt_vec_info.  */
 
 void
-vect_remove_stores (gimple *first_stmt)
+vect_remove_stores (stmt_vec_info first_stmt_info)
 {
-  stmt_vec_info next_stmt_info = vinfo_for_stmt (first_stmt);
+  stmt_vec_info next_stmt_info = first_stmt_info;
   gimple_stmt_iterator next_si;
 
   while (next_stmt_info)
@@ -10329,13 +10314,12 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
    widening operation (short in the above example).  */
 
 bool
-supportable_widening_operation (enum tree_code code, gimple *stmt,
+supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
 				tree vectype_out, tree vectype_in,
                                 enum tree_code *code1, enum tree_code *code2,
                                 int *multi_step_cvt,
                                 vec<tree> *interm_types)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *vect_loop = NULL;
   machine_mode vec_mode;
