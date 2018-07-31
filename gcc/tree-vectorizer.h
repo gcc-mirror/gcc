@@ -1634,7 +1634,7 @@ extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 extern tree cse_and_gimplify_to_preheader (loop_vec_info, tree);
 
 /* In tree-vect-slp.c.  */
-extern void vect_free_slp_instance (slp_instance);
+extern void vect_free_slp_instance (slp_instance, bool);
 extern bool vect_transform_slp_perm_load (slp_tree, vec<tree> ,
 					  gimple_stmt_iterator *, poly_uint64,
 					  slp_instance, bool, unsigned *);

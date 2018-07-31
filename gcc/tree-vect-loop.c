@@ -2229,7 +2229,7 @@ again:
   LOOP_VINFO_VECT_FACTOR (loop_vinfo) = saved_vectorization_factor;
   /* Free the SLP instances.  */
   FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), j, instance)
-    vect_free_slp_instance (instance);
+    vect_free_slp_instance (instance, false);
   LOOP_VINFO_SLP_INSTANCES (loop_vinfo).release ();
   /* Reset SLP type to loop_vect on all stmts.  */
   for (i = 0; i < LOOP_VINFO_LOOP (loop_vinfo)->num_nodes; ++i)
@@ -8683,7 +8683,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
      won't work.  */
   slp_instance instance;
   FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), i, instance)
-    vect_free_slp_instance (instance);
+    vect_free_slp_instance (instance, true);
   LOOP_VINFO_SLP_INSTANCES (loop_vinfo).release ();
   /* Clear-up safelen field since its value is invalid after vectorization
      since vectorized loop can have loop-carried dependencies.  */

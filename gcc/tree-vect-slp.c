@@ -47,25 +47,32 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 
 
-/* Recursively free the memory allocated for the SLP tree rooted at NODE.  */
+/* Recursively free the memory allocated for the SLP tree rooted at NODE.
+   FINAL_P is true if we have vectorized the instance or if we have
+   made a final decision not to vectorize the statements in any way.  */
 
 static void
-vect_free_slp_tree (slp_tree node)
+vect_free_slp_tree (slp_tree node, bool final_p)
 {
   int i;
   slp_tree child;
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_free_slp_tree (child);
+    vect_free_slp_tree (child, final_p);
 
-  gimple *stmt;
-  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
-    /* After transform some stmts are removed and thus their vinfo is gone.  */
-    if (vinfo_for_stmt (stmt))
-      {
-	gcc_assert (STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmt)) > 0);
-	STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmt))--;
-      }
+  /* Don't update STMT_VINFO_NUM_SLP_USES if it isn't relevant.
+     Some statements might no longer exist, after having been
+     removed by vect_transform_stmt.  Updating the remaining
+     statements would be redundant.  */
+  if (!final_p)
+    {
+      gimple *stmt;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
+	{
+	  gcc_assert (STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmt)) > 0);
+	  STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmt))--;
+	}
+    }
 
   SLP_TREE_CHILDREN (node).release ();
   SLP_TREE_SCALAR_STMTS (node).release ();
@@ -76,12 +83,14 @@ vect_free_slp_tree (slp_tree node)
 }
 
 
-/* Free the memory allocated for the SLP instance.  */
+/* Free the memory allocated for the SLP instance.  FINAL_P is true if we
+   have vectorized the instance or if we have made a final decision not
+   to vectorize the statements in any way.  */
 
 void
-vect_free_slp_instance (slp_instance instance)
+vect_free_slp_instance (slp_instance instance, bool final_p)
 {
-  vect_free_slp_tree (SLP_INSTANCE_TREE (instance));
+  vect_free_slp_tree (SLP_INSTANCE_TREE (instance), final_p);
   SLP_INSTANCE_LOADS (instance).release ();
   free (instance);
 }
@@ -1284,7 +1293,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
       if (++this_tree_size > max_tree_size)
 	{
 	  FOR_EACH_VEC_ELT (children, j, child)
-	    vect_free_slp_tree (child);
+	    vect_free_slp_tree (child, false);
 	  vect_free_oprnd_info (oprnds_info);
 	  return NULL;
 	}
@@ -1315,7 +1324,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		  this_loads.truncate (old_nloads);
 		  this_tree_size = old_tree_size;
 		  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
-		    vect_free_slp_tree (grandchild);
+		    vect_free_slp_tree (grandchild, false);
 		  SLP_TREE_CHILDREN (child).truncate (0);
 
 		  dump_printf_loc (MSG_NOTE, vect_location,
@@ -1495,7 +1504,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		      this_loads.truncate (old_nloads);
 		      this_tree_size = old_tree_size;
 		      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
-			vect_free_slp_tree (grandchild);
+			vect_free_slp_tree (grandchild, false);
 		      SLP_TREE_CHILDREN (child).truncate (0);
 
 		      dump_printf_loc (MSG_NOTE, vect_location,
@@ -1519,7 +1528,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 fail:
       gcc_assert (child == NULL);
       FOR_EACH_VEC_ELT (children, j, child)
-	vect_free_slp_tree (child);
+	vect_free_slp_tree (child, false);
       vect_free_oprnd_info (oprnds_info);
       return NULL;
     }
@@ -2036,13 +2045,13 @@ vect_analyze_slp_instance (vec_info *vinfo,
 				 "Build SLP failed: store group "
 				 "size not a multiple of the vector size "
 				 "in basic block SLP\n");
-	      vect_free_slp_tree (node);
+	      vect_free_slp_tree (node, false);
 	      loads.release ();
 	      return false;
 	    }
 	  /* Fatal mismatch.  */
 	  matches[group_size / const_max_nunits * const_max_nunits] = false;
-	  vect_free_slp_tree (node);
+	  vect_free_slp_tree (node, false);
 	  loads.release ();
 	}
       else
@@ -2102,7 +2111,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 		      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,
 					TDF_SLIM, stmt, 0);
                 }
-              vect_free_slp_instance (new_instance);
+	      vect_free_slp_instance (new_instance, false);
               return false;
             }
         }
@@ -2133,7 +2142,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Built SLP cancelled: can use "
 				 "load/store-lanes\n");
-	      vect_free_slp_instance (new_instance);
+	      vect_free_slp_instance (new_instance, false);
 	      return false;
 	    }
 	}
@@ -2668,7 +2677,7 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
 			    SLP_TREE_SCALAR_STMTS
 			      (SLP_INSTANCE_TREE (instance))[0], 0);
-	  vect_free_slp_instance (instance);
+	  vect_free_slp_instance (instance, false);
           vinfo->slp_instances.ordered_remove (i);
 	  cost_vec.release ();
 	}
@@ -2947,7 +2956,7 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
 			    SLP_TREE_SCALAR_STMTS
 			      (SLP_INSTANCE_TREE (instance))[0], 0);
-	  vect_free_slp_instance (instance);
+	  vect_free_slp_instance (instance, false);
 	  BB_VINFO_SLP_INSTANCES (bb_vinfo).ordered_remove (i);
 	  continue;
 	}
