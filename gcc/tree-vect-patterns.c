@@ -4720,29 +4720,29 @@ const unsigned int NUM_PATTERNS = ARRAY_SIZE (vect_vect_recog_func_ptrs);
 /* Mark statements that are involved in a pattern.  */
 
 static inline void
-vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
+vect_mark_pattern_stmts (stmt_vec_info orig_stmt_info, gimple *pattern_stmt,
                          tree pattern_vectype)
 {
-  stmt_vec_info orig_stmt_info = vinfo_for_stmt (orig_stmt);
   gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt_info);
 
-  bool old_pattern_p = is_pattern_stmt_p (orig_stmt_info);
-  if (old_pattern_p)
+  gimple *orig_pattern_stmt = NULL;
+  if (is_pattern_stmt_p (orig_stmt_info))
     {
       /* We're replacing a statement in an existing pattern definition
 	 sequence.  */
+      orig_pattern_stmt = orig_stmt_info->stmt;
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "replacing earlier pattern ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, orig_stmt, 0);
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, orig_pattern_stmt, 0);
 	}
 
       /* To keep the book-keeping simple, just swap the lhs of the
 	 old and new statements, so that the old one has a valid but
 	 unused lhs.  */
-      tree old_lhs = gimple_get_lhs (orig_stmt);
-      gimple_set_lhs (orig_stmt, gimple_get_lhs (pattern_stmt));
+      tree old_lhs = gimple_get_lhs (orig_pattern_stmt);
+      gimple_set_lhs (orig_pattern_stmt, gimple_get_lhs (pattern_stmt));
       gimple_set_lhs (pattern_stmt, old_lhs);
 
       if (dump_enabled_p ())
@@ -4755,7 +4755,8 @@ vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
       orig_stmt_info = STMT_VINFO_RELATED_STMT (orig_stmt_info);
 
       /* We shouldn't be replacing the main pattern statement.  */
-      gcc_assert (STMT_VINFO_RELATED_STMT (orig_stmt_info) != orig_stmt);
+      gcc_assert (STMT_VINFO_RELATED_STMT (orig_stmt_info)->stmt
+		  != orig_pattern_stmt);
     }
 
   if (def_seq)
@@ -4763,13 +4764,14 @@ vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
 	 !gsi_end_p (si); gsi_next (&si))
       vect_init_pattern_stmt (gsi_stmt (si), orig_stmt_info, pattern_vectype);
 
-  if (old_pattern_p)
+  if (orig_pattern_stmt)
     {
       vect_init_pattern_stmt (pattern_stmt, orig_stmt_info, pattern_vectype);
 
       /* Insert all the new pattern statements before the original one.  */
       gimple_seq *orig_def_seq = &STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt_info);
-      gimple_stmt_iterator gsi = gsi_for_stmt (orig_stmt, orig_def_seq);
+      gimple_stmt_iterator gsi = gsi_for_stmt (orig_pattern_stmt,
+					       orig_def_seq);
       gsi_insert_seq_before_without_update (&gsi, def_seq, GSI_SAME_STMT);
       gsi_insert_before_without_update (&gsi, pattern_stmt, GSI_SAME_STMT);
 
@@ -4785,12 +4787,12 @@ vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
    Input:
    PATTERN_RECOG_FUNC: A pointer to a function that detects a certain
         computation pattern.
-   STMT: A stmt from which the pattern search should start.
+   STMT_INFO: A stmt from which the pattern search should start.
 
    If PATTERN_RECOG_FUNC successfully detected the pattern, it creates
    a sequence of statements that has the same functionality and can be
-   used to replace STMT.  It returns the last statement in the sequence
-   and adds any earlier statements to STMT's STMT_VINFO_PATTERN_DEF_SEQ.
+   used to replace STMT_INFO.  It returns the last statement in the sequence
+   and adds any earlier statements to STMT_INFO's STMT_VINFO_PATTERN_DEF_SEQ.
    PATTERN_RECOG_FUNC also sets *TYPE_OUT to the vector type of the final
    statement, having first checked that the target supports the new operation
    in that type.
@@ -4799,10 +4801,10 @@ vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
    for vect_recog_pattern.  */
 
 static void
-vect_pattern_recog_1 (vect_recog_func *recog_func, gimple_stmt_iterator si)
+vect_pattern_recog_1 (vect_recog_func *recog_func, stmt_vec_info stmt_info)
 {
-  gimple *stmt = gsi_stmt (si), *pattern_stmt;
-  stmt_vec_info stmt_info;
+  vec_info *vinfo = stmt_info->vinfo;
+  gimple *pattern_stmt;
   loop_vec_info loop_vinfo;
   tree pattern_vectype;
 
@@ -4810,13 +4812,12 @@ vect_pattern_recog_1 (vect_recog_func *recog_func, gimple_stmt_iterator si)
      leave the original statement alone, since the first match wins.
      Instead try to match against the definition statements that feed
      the main pattern statement.  */
-  stmt_info = vinfo_for_stmt (stmt);
   if (STMT_VINFO_IN_PATTERN_P (stmt_info))
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start (STMT_VINFO_PATTERN_DEF_SEQ (stmt_info));
 	   !gsi_end_p (gsi); gsi_next (&gsi))
-	vect_pattern_recog_1 (recog_func, gsi);
+	vect_pattern_recog_1 (recog_func, vinfo->lookup_stmt (gsi_stmt (gsi)));
       return;
     }
 
@@ -4841,7 +4842,7 @@ vect_pattern_recog_1 (vect_recog_func *recog_func, gimple_stmt_iterator si)
     }
 
   /* Mark the stmts that are involved in the pattern. */
-  vect_mark_pattern_stmts (stmt, pattern_stmt, pattern_vectype);
+  vect_mark_pattern_stmts (stmt_info, pattern_stmt, pattern_vectype);
 
   /* Patterns cannot be vectorized using SLP, because they change the order of
      computation.  */
@@ -4957,9 +4958,13 @@ vect_pattern_recog (vec_info *vinfo)
 	{
 	  basic_block bb = bbs[i];
 	  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-	    /* Scan over all generic vect_recog_xxx_pattern functions.  */
-	    for (j = 0; j < NUM_PATTERNS; j++)
-	      vect_pattern_recog_1 (&vect_vect_recog_func_ptrs[j], si);
+	    {
+	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
+	      /* Scan over all generic vect_recog_xxx_pattern functions.  */
+	      for (j = 0; j < NUM_PATTERNS; j++)
+		vect_pattern_recog_1 (&vect_vect_recog_func_ptrs[j],
+				      stmt_info);
+	    }
 	}
     }
   else
@@ -4975,7 +4980,7 @@ vect_pattern_recog (vec_info *vinfo)
 
 	  /* Scan over all generic vect_recog_xxx_pattern functions.  */
 	  for (j = 0; j < NUM_PATTERNS; j++)
-	    vect_pattern_recog_1 (&vect_vect_recog_func_ptrs[j], si);
+	    vect_pattern_recog_1 (&vect_vect_recog_func_ptrs[j], stmt_info);
 	}
     }
 }
