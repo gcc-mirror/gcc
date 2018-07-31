@@ -1514,11 +1514,11 @@ extern tree vect_get_vec_def_for_operand_1 (stmt_vec_info, enum vect_def_type);
 extern tree vect_get_vec_def_for_operand (tree, stmt_vec_info, tree = NULL);
 extern void vect_get_vec_defs (tree, tree, stmt_vec_info, vec<tree> *,
 			       vec<tree> *, slp_tree);
-extern void vect_get_vec_defs_for_stmt_copy (enum vect_def_type *,
+extern void vect_get_vec_defs_for_stmt_copy (vec_info *,
 					     vec<tree> *, vec<tree> *);
 extern tree vect_init_vector (stmt_vec_info, tree, tree,
                               gimple_stmt_iterator *);
-extern tree vect_get_vec_def_for_stmt_copy (enum vect_def_type, tree);
+extern tree vect_get_vec_def_for_stmt_copy (vec_info *, tree);
 extern bool vect_transform_stmt (stmt_vec_info, gimple_stmt_iterator *,
                                  bool *, slp_tree, slp_instance);
 extern void vect_remove_stores (stmt_vec_info);

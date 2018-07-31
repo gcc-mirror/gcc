@@ -1580,8 +1580,7 @@ vect_get_vec_def_for_operand (tree op, stmt_vec_info stmt_vinfo, tree vectype)
    created in case the vectorized result cannot fit in one vector, and several
    copies of the vector-stmt are required.  In this case the vector-def is
    retrieved from the vector stmt recorded in the STMT_VINFO_RELATED_STMT field
-   of the stmt that defines VEC_OPRND.
-   DT is the type of the vector def VEC_OPRND.
+   of the stmt that defines VEC_OPRND.  VINFO describes the vectorization.
 
    Context:
         In case the vectorization factor (VF) is bigger than the number
@@ -1625,29 +1624,24 @@ vect_get_vec_def_for_operand (tree op, stmt_vec_info stmt_vinfo, tree vectype)
    STMT_VINFO_RELATED_STMT field of 'VS1.0' we obtain the next copy - 'VS1.1',
    and return its def ('vx.1').
    Overall, to create the above sequence this function will be called 3 times:
-        vx.1 = vect_get_vec_def_for_stmt_copy (dt, vx.0);
-        vx.2 = vect_get_vec_def_for_stmt_copy (dt, vx.1);
-        vx.3 = vect_get_vec_def_for_stmt_copy (dt, vx.2);  */
+	vx.1 = vect_get_vec_def_for_stmt_copy (vinfo, vx.0);
+	vx.2 = vect_get_vec_def_for_stmt_copy (vinfo, vx.1);
+	vx.3 = vect_get_vec_def_for_stmt_copy (vinfo, vx.2);  */
 
 tree
-vect_get_vec_def_for_stmt_copy (enum vect_def_type dt, tree vec_oprnd)
+vect_get_vec_def_for_stmt_copy (vec_info *vinfo, tree vec_oprnd)
 {
-  gimple *vec_stmt_for_operand;
-  stmt_vec_info def_stmt_info;
-
-  /* Do nothing; can reuse same def.  */
-  if (dt == vect_external_def || dt == vect_constant_def )
+  stmt_vec_info def_stmt_info = vinfo->lookup_def (vec_oprnd);
+  if (!def_stmt_info)
+    /* Do nothing; can reuse same def.  */
     return vec_oprnd;
 
-  vec_stmt_for_operand = SSA_NAME_DEF_STMT (vec_oprnd);
-  def_stmt_info = vinfo_for_stmt (vec_stmt_for_operand);
+  def_stmt_info = STMT_VINFO_RELATED_STMT (def_stmt_info);
   gcc_assert (def_stmt_info);
-  vec_stmt_for_operand = STMT_VINFO_RELATED_STMT (def_stmt_info);
-  gcc_assert (vec_stmt_for_operand);
-  if (gimple_code (vec_stmt_for_operand) == GIMPLE_PHI)
-    vec_oprnd = PHI_RESULT (vec_stmt_for_operand);
+  if (gphi *phi = dyn_cast <gphi *> (def_stmt_info->stmt))
+    vec_oprnd = PHI_RESULT (phi);
   else
-    vec_oprnd = gimple_get_lhs (vec_stmt_for_operand);
+    vec_oprnd = gimple_get_lhs (def_stmt_info->stmt);
   return vec_oprnd;
 }
 
@@ -1656,19 +1650,19 @@ vect_get_vec_def_for_stmt_copy (enum vect_def_type dt, tree vec_oprnd)
    stmt.  See vect_get_vec_def_for_stmt_copy () for details.  */
 
 void
-vect_get_vec_defs_for_stmt_copy (enum vect_def_type *dt,
+vect_get_vec_defs_for_stmt_copy (vec_info *vinfo,
 				 vec<tree> *vec_oprnds0,
 				 vec<tree> *vec_oprnds1)
 {
   tree vec_oprnd = vec_oprnds0->pop ();
 
-  vec_oprnd = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd);
+  vec_oprnd = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd);
   vec_oprnds0->quick_push (vec_oprnd);
 
   if (vec_oprnds1 && vec_oprnds1->length ())
     {
       vec_oprnd = vec_oprnds1->pop ();
-      vec_oprnd = vect_get_vec_def_for_stmt_copy (dt[1], vec_oprnd);
+      vec_oprnd = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd);
       vec_oprnds1->quick_push (vec_oprnd);
     }
 }
@@ -2662,7 +2656,7 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 			      gimple_stmt_iterator *gsi,
 			      stmt_vec_info *vec_stmt,
 			      gather_scatter_info *gs_info,
-			      tree mask, vect_def_type mask_dt)
+			      tree mask)
 {
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -2767,8 +2761,8 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 	op = vec_oprnd0
 	  = vect_get_vec_def_for_operand (gs_info->offset, stmt_info);
       else
-	op = vec_oprnd0
-	  = vect_get_vec_def_for_stmt_copy (gs_info->offset_dt, vec_oprnd0);
+	op = vec_oprnd0 = vect_get_vec_def_for_stmt_copy (loop_vinfo,
+							  vec_oprnd0);
 
       if (!useless_type_conversion_p (idxtype, TREE_TYPE (op)))
 	{
@@ -2791,7 +2785,8 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 	      if (j == 0)
 		vec_mask = vect_get_vec_def_for_operand (mask, stmt_info);
 	      else
-		vec_mask = vect_get_vec_def_for_stmt_copy (mask_dt, vec_mask);
+		vec_mask = vect_get_vec_def_for_stmt_copy (loop_vinfo,
+							   vec_mask);
 
 	      mask_op = vec_mask;
 	      if (!useless_type_conversion_p (masktype, TREE_TYPE (vec_mask)))
@@ -2951,11 +2946,11 @@ vect_get_data_ptr_increment (data_reference *dr, tree aggr_type,
 static bool
 vectorizable_bswap (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    stmt_vec_info *vec_stmt, slp_tree slp_node,
-		    tree vectype_in, enum vect_def_type *dt,
-		    stmt_vector_for_cost *cost_vec)
+		    tree vectype_in, stmt_vector_for_cost *cost_vec)
 {
   tree op, vectype;
   gcall *stmt = as_a <gcall *> (stmt_info->stmt);
+  vec_info *vinfo = stmt_info->vinfo;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   unsigned ncopies;
   unsigned HOST_WIDE_INT nunits, num_bytes;
@@ -3021,7 +3016,7 @@ vectorizable_bswap (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (j == 0)
 	vect_get_vec_defs (op, NULL, stmt_info, &vec_oprnds, NULL, slp_node);
       else
-        vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds, NULL);
+	vect_get_vec_defs_for_stmt_copy (vinfo, &vec_oprnds, NULL);
 
       /* Arguments are ready. create the new vector stmt.  */
       unsigned i;
@@ -3301,7 +3296,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		   || gimple_call_builtin_p (stmt, BUILT_IN_BSWAP32)
 		   || gimple_call_builtin_p (stmt, BUILT_IN_BSWAP64)))
 	return vectorizable_bswap (stmt_info, gsi, vec_stmt, slp_node,
-				   vectype_in, dt, cost_vec);
+				   vectype_in, cost_vec);
       else
 	{
 	  if (dump_enabled_p ())
@@ -3450,7 +3445,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  = vect_get_vec_def_for_operand (op, stmt_info);
 	      else
 		vec_oprnd0
-		  = vect_get_vec_def_for_stmt_copy (dt[i], orig_vargs[i]);
+		  = vect_get_vec_def_for_stmt_copy (vinfo, orig_vargs[i]);
 
 	      orig_vargs[i] = vargs[i] = vec_oprnd0;
 	    }
@@ -3582,16 +3577,16 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  vec_oprnd0
 		    = vect_get_vec_def_for_operand (op, stmt_info);
 		  vec_oprnd1
-		    = vect_get_vec_def_for_stmt_copy (dt[i], vec_oprnd0);
+		    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd0);
 		}
 	      else
 		{
 		  vec_oprnd1 = gimple_call_arg (new_stmt_info->stmt,
 						2 * i + 1);
 		  vec_oprnd0
-		    = vect_get_vec_def_for_stmt_copy (dt[i], vec_oprnd1);
+		    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd1);
 		  vec_oprnd1
-		    = vect_get_vec_def_for_stmt_copy (dt[i], vec_oprnd0);
+		    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd0);
 		}
 
 	      vargs.quick_push (vec_oprnd0);
@@ -4103,7 +4098,7 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
 			  vec_oprnd0 = arginfo[i].op;
 			  if ((m & (k - 1)) == 0)
 			    vec_oprnd0
-			      = vect_get_vec_def_for_stmt_copy (arginfo[i].dt,
+			      = vect_get_vec_def_for_stmt_copy (vinfo,
 								vec_oprnd0);
 			}
 		      arginfo[i].op = vec_oprnd0;
@@ -4134,7 +4129,7 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
 			      = vect_get_vec_def_for_operand (op, stmt_info);
 			  else
 			    vec_oprnd0
-			      = vect_get_vec_def_for_stmt_copy (arginfo[i].dt,
+			      = vect_get_vec_def_for_stmt_copy (vinfo,
 								arginfo[i].op);
 			  arginfo[i].op = vec_oprnd0;
 			  if (k == 1)
@@ -4440,9 +4435,9 @@ vect_gen_widened_results_half (enum tree_code code,
 
 static void
 vect_get_loop_based_defs (tree *oprnd, stmt_vec_info stmt_info,
-			  enum vect_def_type dt, vec<tree> *vec_oprnds,
-			  int multi_step_cvt)
+			  vec<tree> *vec_oprnds, int multi_step_cvt)
 {
+  vec_info *vinfo = stmt_info->vinfo;
   tree vec_oprnd;
 
   /* Get first vector operand.  */
@@ -4451,12 +4446,12 @@ vect_get_loop_based_defs (tree *oprnd, stmt_vec_info stmt_info,
   if (TREE_CODE (TREE_TYPE (*oprnd)) != VECTOR_TYPE)
     vec_oprnd = vect_get_vec_def_for_operand (*oprnd, stmt_info);
   else
-    vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, *oprnd);
+    vec_oprnd = vect_get_vec_def_for_stmt_copy (vinfo, *oprnd);
 
   vec_oprnds->quick_push (vec_oprnd);
 
   /* Get second vector operand.  */
-  vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
+  vec_oprnd = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd);
   vec_oprnds->quick_push (vec_oprnd);
 
   *oprnd = vec_oprnd;
@@ -4464,7 +4459,7 @@ vect_get_loop_based_defs (tree *oprnd, stmt_vec_info stmt_info,
   /* For conversion in multiple steps, continue to get operands
      recursively.  */
   if (multi_step_cvt)
-    vect_get_loop_based_defs (oprnd, stmt_info, dt, vec_oprnds,
+    vect_get_loop_based_defs (oprnd, stmt_info, vec_oprnds,
 			      multi_step_cvt - 1);
 }
 
@@ -4983,7 +4978,7 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    vect_get_vec_defs (op0, NULL, stmt_info, &vec_oprnds0,
 			       NULL, slp_node);
 	  else
-	    vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds0, NULL);
+	    vect_get_vec_defs_for_stmt_copy (vinfo, &vec_oprnds0, NULL);
 
 	  FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
 	    {
@@ -5070,7 +5065,7 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    }
 	  else
 	    {
-	      vec_oprnd0 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd0);
+	      vec_oprnd0 = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd0);
 	      vec_oprnds0.truncate (0);
 	      vec_oprnds0.quick_push (vec_oprnd0);
 	      if (op_type == binary_op)
@@ -5078,7 +5073,7 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  if (code == WIDEN_LSHIFT_EXPR)
 		    vec_oprnd1 = op1;
 		  else
-		    vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt[1],
+		    vec_oprnd1 = vect_get_vec_def_for_stmt_copy (vinfo,
 								 vec_oprnd1);
 		  vec_oprnds1.truncate (0);
 		  vec_oprnds1.quick_push (vec_oprnd1);
@@ -5160,8 +5155,7 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  else
 	    {
 	      vec_oprnds0.truncate (0);
-	      vect_get_loop_based_defs (&last_oprnd, stmt_info, dt[0],
-					&vec_oprnds0,
+	      vect_get_loop_based_defs (&last_oprnd, stmt_info, &vec_oprnds0,
 					vect_pow2 (multi_step_cvt) - 1);
 	    }
 
@@ -5338,7 +5332,7 @@ vectorizable_assignment (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (j == 0)
 	vect_get_vec_defs (op, NULL, stmt_info, &vec_oprnds, NULL, slp_node);
       else
-        vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds, NULL);
+	vect_get_vec_defs_for_stmt_copy (vinfo, &vec_oprnds, NULL);
 
       /* Arguments are ready. create the new vector stmt.  */
       stmt_vec_info new_stmt_info = NULL;
@@ -5742,7 +5736,7 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			       slp_node);
         }
       else
-        vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds0, &vec_oprnds1);
+	vect_get_vec_defs_for_stmt_copy (vinfo, &vec_oprnds0, &vec_oprnds1);
 
       /* Arguments are ready.  Create the new vector stmt.  */
       stmt_vec_info new_stmt_info = NULL;
@@ -6120,11 +6114,11 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	}
       else
 	{
-	  vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds0, &vec_oprnds1);
+	  vect_get_vec_defs_for_stmt_copy (vinfo, &vec_oprnds0, &vec_oprnds1);
 	  if (op_type == ternary_op)
 	    {
 	      tree vec_oprnd = vec_oprnds2.pop ();
-	      vec_oprnds2.quick_push (vect_get_vec_def_for_stmt_copy (dt[2],
+	      vec_oprnds2.quick_push (vect_get_vec_def_for_stmt_copy (vinfo,
 							           vec_oprnd));
 	    }
 	}
@@ -6533,7 +6527,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      if (modifier == WIDEN)
 		{
 		  src = vec_oprnd1
-		    = vect_get_vec_def_for_stmt_copy (rhs_dt, vec_oprnd1);
+		    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd1);
 		  op = permute_vec_elements (vec_oprnd0, vec_oprnd0, perm_mask,
 					     stmt_info, gsi);
 		}
@@ -6542,8 +6536,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  src = permute_vec_elements (vec_oprnd1, vec_oprnd1, perm_mask,
 					      stmt_info, gsi);
 		  op = vec_oprnd0
-		    = vect_get_vec_def_for_stmt_copy (gs_info.offset_dt,
-						      vec_oprnd0);
+		    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd0);
 		}
 	      else
 		gcc_unreachable ();
@@ -6551,10 +6544,9 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  else
 	    {
 	      src = vec_oprnd1
-		= vect_get_vec_def_for_stmt_copy (rhs_dt, vec_oprnd1);
+		= vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd1);
 	      op = vec_oprnd0
-		= vect_get_vec_def_for_stmt_copy (gs_info.offset_dt,
-						  vec_oprnd0);
+		= vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnd0);
 	    }
 
 	  if (!useless_type_conversion_p (srctype, TREE_TYPE (src)))
@@ -6811,11 +6803,8 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  if (slp)
 		    vec_oprnd = vec_oprnds[j];
 		  else
-		    {
-		      vect_is_simple_use (op, vinfo, &rhs_dt);
-		      vec_oprnd = vect_get_vec_def_for_stmt_copy (rhs_dt,
-								  vec_oprnd);
-		    }
+		    vec_oprnd = vect_get_vec_def_for_stmt_copy (vinfo,
+								vec_oprnd);
 		}
 	      /* Pun the vector to extract from if necessary.  */
 	      if (lvectype != vectype)
@@ -7060,19 +7049,17 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  for (i = 0; i < group_size; i++)
 	    {
 	      op = oprnds[i];
-	      vect_is_simple_use (op, vinfo, &rhs_dt);
-	      vec_oprnd = vect_get_vec_def_for_stmt_copy (rhs_dt, op);
+	      vec_oprnd = vect_get_vec_def_for_stmt_copy (vinfo, op);
 	      dr_chain[i] = vec_oprnd;
 	      oprnds[i] = vec_oprnd;
 	    }
 	  if (mask)
-	    vec_mask = vect_get_vec_def_for_stmt_copy (mask_dt, vec_mask);
+	    vec_mask = vect_get_vec_def_for_stmt_copy (vinfo, vec_mask);
 	  if (dataref_offset)
 	    dataref_offset
 	      = int_const_binop (PLUS_EXPR, dataref_offset, bump);
 	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-	    vec_offset = vect_get_vec_def_for_stmt_copy (gs_info.offset_dt,
-							 vec_offset);
+	    vec_offset = vect_get_vec_def_for_stmt_copy (vinfo, vec_offset);
 	  else
 	    dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
 					   stmt_info, bump);
@@ -7680,8 +7667,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
   if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
     {
-      vect_build_gather_load_calls (stmt_info, gsi, vec_stmt, &gs_info, mask,
-				    mask_dt);
+      vect_build_gather_load_calls (stmt_info, gsi, vec_stmt, &gs_info, mask);
       return true;
     }
 
@@ -8233,13 +8219,12 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    dataref_offset = int_const_binop (PLUS_EXPR, dataref_offset,
 					      bump);
 	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-	    vec_offset = vect_get_vec_def_for_stmt_copy (gs_info.offset_dt,
-							 vec_offset);
+	    vec_offset = vect_get_vec_def_for_stmt_copy (vinfo, vec_offset);
 	  else
 	    dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
 					   stmt_info, bump);
 	  if (mask)
-	    vec_mask = vect_get_vec_def_for_stmt_copy (mask_dt, vec_mask);
+	    vec_mask = vect_get_vec_def_for_stmt_copy (vinfo, vec_mask);
 	}
 
       if (grouped_load || slp_perm)
@@ -8733,6 +8718,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			int reduc_index, slp_tree slp_node,
 			stmt_vector_for_cost *cost_vec)
 {
+  vec_info *vinfo = stmt_info->vinfo;
   tree scalar_dest = NULL_TREE;
   tree vec_dest = NULL_TREE;
   tree cond_expr, cond_expr0 = NULL_TREE, cond_expr1 = NULL_TREE;
@@ -8994,16 +8980,14 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       else
 	{
 	  vec_cond_lhs
-	    = vect_get_vec_def_for_stmt_copy (dts[0],
-					      vec_oprnds0.pop ());
+	    = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnds0.pop ());
 	  if (!masked)
 	    vec_cond_rhs
-	      = vect_get_vec_def_for_stmt_copy (dts[1],
-						vec_oprnds1.pop ());
+	      = vect_get_vec_def_for_stmt_copy (vinfo, vec_oprnds1.pop ());
 
-	  vec_then_clause = vect_get_vec_def_for_stmt_copy (dts[2],
+	  vec_then_clause = vect_get_vec_def_for_stmt_copy (vinfo,
 							    vec_oprnds2.pop ());
-	  vec_else_clause = vect_get_vec_def_for_stmt_copy (dts[3],
+	  vec_else_clause = vect_get_vec_def_for_stmt_copy (vinfo,
 							    vec_oprnds3.pop ());
 	}
 
@@ -9135,6 +9119,7 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			 stmt_vec_info *vec_stmt, tree reduc_def,
 			 slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
+  vec_info *vinfo = stmt_info->vinfo;
   tree lhs, rhs1, rhs2;
   tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -9331,9 +9316,9 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	}
       else
 	{
-	  vec_rhs1 = vect_get_vec_def_for_stmt_copy (dts[0],
+	  vec_rhs1 = vect_get_vec_def_for_stmt_copy (vinfo,
 						     vec_oprnds0.pop ());
-	  vec_rhs2 = vect_get_vec_def_for_stmt_copy (dts[1],
+	  vec_rhs2 = vect_get_vec_def_for_stmt_copy (vinfo,
 						     vec_oprnds1.pop ());
 	}
 
