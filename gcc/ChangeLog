@@ -1,5 +1,12 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (_stmt_vec_info::pattern_stmt_p): New field.
+	(is_pattern_stmt_p): Use it.
+	* tree-vect-patterns.c (vect_init_pattern_stmt): Set pattern_stmt_p
+	on pattern statements.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-patterns.c (vect_mark_pattern_stmts): Take the
 	original stmt as a stmt_vec_info rather than a gimple stmt.
 	(vect_pattern_recog_1): Take the statement directly as a
