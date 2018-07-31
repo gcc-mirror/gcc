@@ -1,5 +1,28 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vect_analyze_loop_operations): Look up the
+	statement before passing it to vect_analyze_stmt.
+	(vect_create_epilog_for_reduction): Use a stmt_vec_info to walk
+	the chain of phi vector definitions.  Track the exit phi via its
+	stmt_vec_info.
+	(vectorizable_reduction): Set cond_stmt_vinfo directly from the
+	STMT_VINFO_REDUC_DEF.
+	* tree-vect-slp.c (vect_get_place_in_interleaving_chain): Use
+	stmt_vec_infos to handle the statement chains.
+	(vect_get_slp_defs): Record the first statement in the node
+	using a stmt_vec_info.
+	* tree-vect-stmts.c (vect_mark_stmts_to_be_vectorized): Look up
+	statements here and pass their stmt_vec_info down to subroutines.
+	(vect_init_vector_1): Hoist call to vinfo_for_stmt and pass it
+	down to vect_finish_stmt_generation.
+	(vect_init_vector, vect_get_vec_defs, vect_finish_replace_stmt)
+	(vect_finish_stmt_generation): Call vinfo_for_stmt and pass
+	stmt_vec_infos to subroutines.
+	(vect_remove_stores): Use stmt_vec_infos to handle the statement
+	chains.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences):
 	(vect_check_gather_scatter, vect_create_data_ref_ptr, bump_vector_ptr)
 	(vect_permute_store_chain, vect_setup_realignment)

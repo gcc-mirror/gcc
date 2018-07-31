@@ -622,7 +622,6 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
   unsigned int i;
   stmt_vec_info stmt_vinfo;
   basic_block bb;
-  gimple *phi;
   bool live_p;
   enum vect_relevant relevant;
 
@@ -636,27 +635,27 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
       bb = bbs[i];
       for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  phi = gsi_stmt (si);
+	  stmt_vec_info phi_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location, "init: phi relevant? ");
-	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
+	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi_info->stmt, 0);
 	    }
 
-	  if (vect_stmt_relevant_p (phi, loop_vinfo, &relevant, &live_p))
-	    vect_mark_relevant (&worklist, phi, relevant, live_p);
+	  if (vect_stmt_relevant_p (phi_info, loop_vinfo, &relevant, &live_p))
+	    vect_mark_relevant (&worklist, phi_info, relevant, live_p);
 	}
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  stmt = gsi_stmt (si);
+	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location, "init: stmt relevant? ");
-	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt_info->stmt, 0);
 	    }
 
-	  if (vect_stmt_relevant_p (stmt, loop_vinfo, &relevant, &live_p))
-	    vect_mark_relevant (&worklist, stmt, relevant, live_p);
+	  if (vect_stmt_relevant_p (stmt_info, loop_vinfo, &relevant, &live_p))
+	    vect_mark_relevant (&worklist, stmt_info, relevant, live_p);
 	}
     }
 
@@ -1350,11 +1349,11 @@ vect_get_load_cost (stmt_vec_info stmt_info, int ncopies,
 static void
 vect_init_vector_1 (gimple *stmt, gimple *new_stmt, gimple_stmt_iterator *gsi)
 {
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   if (gsi)
-    vect_finish_stmt_generation (stmt, new_stmt, gsi);
+    vect_finish_stmt_generation (stmt_vinfo, new_stmt, gsi);
   else
     {
-      stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
       loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
 
       if (loop_vinfo)
@@ -1404,6 +1403,7 @@ vect_init_vector_1 (gimple *stmt, gimple *new_stmt, gimple_stmt_iterator *gsi)
 tree
 vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 {
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   gimple *init_stmt;
   tree new_temp;
 
@@ -1427,7 +1427,7 @@ vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 		  new_temp = make_ssa_name (TREE_TYPE (type));
 		  init_stmt = gimple_build_assign (new_temp, COND_EXPR,
 						   val, true_val, false_val);
-		  vect_init_vector_1 (stmt, init_stmt, gsi);
+		  vect_init_vector_1 (stmt_info, init_stmt, gsi);
 		  val = new_temp;
 		}
 	    }
@@ -1443,7 +1443,7 @@ vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 							      val));
 	      else
 		init_stmt = gimple_build_assign (new_temp, NOP_EXPR, val);
-	      vect_init_vector_1 (stmt, init_stmt, gsi);
+	      vect_init_vector_1 (stmt_info, init_stmt, gsi);
 	      val = new_temp;
 	    }
 	}
@@ -1452,7 +1452,7 @@ vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 
   new_temp = vect_get_new_ssa_name (type, vect_simple_var, "cst_");
   init_stmt = gimple_build_assign  (new_temp, val);
-  vect_init_vector_1 (stmt, init_stmt, gsi);
+  vect_init_vector_1 (stmt_info, init_stmt, gsi);
   return new_temp;
 }
 
@@ -1690,6 +1690,7 @@ vect_get_vec_defs (tree op0, tree op1, gimple *stmt,
 		   vec<tree> *vec_oprnds1,
 		   slp_tree slp_node)
 {
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   if (slp_node)
     {
       int nops = (op1 == NULL_TREE) ? 1 : 2;
@@ -1711,13 +1712,13 @@ vect_get_vec_defs (tree op0, tree op1, gimple *stmt,
       tree vec_oprnd;
 
       vec_oprnds0->create (1);
-      vec_oprnd = vect_get_vec_def_for_operand (op0, stmt);
+      vec_oprnd = vect_get_vec_def_for_operand (op0, stmt_info);
       vec_oprnds0->quick_push (vec_oprnd);
 
       if (op1)
 	{
 	  vec_oprnds1->create (1);
-	  vec_oprnd = vect_get_vec_def_for_operand (op1, stmt);
+	  vec_oprnd = vect_get_vec_def_for_operand (op1, stmt_info);
 	  vec_oprnds1->quick_push (vec_oprnd);
 	}
     }
@@ -1760,12 +1761,13 @@ vect_finish_stmt_generation_1 (gimple *stmt, gimple *vec_stmt)
 stmt_vec_info
 vect_finish_replace_stmt (gimple *stmt, gimple *vec_stmt)
 {
-  gcc_assert (gimple_get_lhs (stmt) == gimple_get_lhs (vec_stmt));
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  gcc_assert (gimple_get_lhs (stmt_info->stmt) == gimple_get_lhs (vec_stmt));
 
-  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt_info->stmt);
   gsi_replace (&gsi, vec_stmt, false);
 
-  return vect_finish_stmt_generation_1 (stmt, vec_stmt);
+  return vect_finish_stmt_generation_1 (stmt_info, vec_stmt);
 }
 
 /* Add VEC_STMT to the vectorized implementation of STMT and insert it
@@ -1775,7 +1777,8 @@ stmt_vec_info
 vect_finish_stmt_generation (gimple *stmt, gimple *vec_stmt,
 			     gimple_stmt_iterator *gsi)
 {
-  gcc_assert (gimple_code (stmt) != GIMPLE_LABEL);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  gcc_assert (gimple_code (stmt_info->stmt) != GIMPLE_LABEL);
 
   if (!gsi_end_p (*gsi)
       && gimple_has_mem_ops (vec_stmt))
@@ -1804,7 +1807,7 @@ vect_finish_stmt_generation (gimple *stmt, gimple *vec_stmt,
 	}
     }
   gsi_insert_before (gsi, vec_stmt, GSI_SAME_STMT);
-  return vect_finish_stmt_generation_1 (stmt, vec_stmt);
+  return vect_finish_stmt_generation_1 (stmt_info, vec_stmt);
 }
 
 /* We want to vectorize a call to combined function CFN with function
@@ -9856,23 +9859,21 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
 void
 vect_remove_stores (gimple *first_stmt)
 {
-  gimple *next = first_stmt;
+  stmt_vec_info next_stmt_info = vinfo_for_stmt (first_stmt);
   gimple_stmt_iterator next_si;
 
-  while (next)
+  while (next_stmt_info)
     {
-      stmt_vec_info stmt_info = vinfo_for_stmt (next);
-
-      stmt_vec_info tmp = DR_GROUP_NEXT_ELEMENT (stmt_info);
-      if (is_pattern_stmt_p (stmt_info))
-	next = STMT_VINFO_RELATED_STMT (stmt_info);
+      stmt_vec_info tmp = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
+      if (is_pattern_stmt_p (next_stmt_info))
+	next_stmt_info = STMT_VINFO_RELATED_STMT (next_stmt_info);
       /* Free the attached stmt_vec_info and remove the stmt.  */
-      next_si = gsi_for_stmt (next);
-      unlink_stmt_vdef (next);
+      next_si = gsi_for_stmt (next_stmt_info->stmt);
+      unlink_stmt_vdef (next_stmt_info->stmt);
       gsi_remove (&next_si, true);
-      release_defs (next);
-      free_stmt_vec_info (next);
-      next = tmp;
+      release_defs (next_stmt_info->stmt);
+      free_stmt_vec_info (next_stmt_info);
+      next_stmt_info = tmp;
     }
 }
 
