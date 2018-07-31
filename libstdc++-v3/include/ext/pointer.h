@@ -356,6 +356,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _Storage_policy::get()[__index]; }
 
       // To allow implicit conversion to "bool", for "if (ptr)..."
+#if __cplusplus >= 201103L
+      explicit operator bool() const { return _Storage_policy::get() != 0; }
+#else
     private:
       typedef element_type*(_Pointer_adapter::*__unspecified_bool_type)() const;
 
@@ -370,6 +373,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline bool
       operator!() const 
       { return (_Storage_policy::get() == 0); }
+#endif
   
       // Pointer differences
       inline friend std::ptrdiff_t 

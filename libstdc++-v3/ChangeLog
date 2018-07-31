@@ -1,3 +1,9 @@
+2018-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/pointer.h [__cplusplus >= 201103L]
+	(_Pointer_adapter::operator bool): Add explicit conversion operator
+	to replace safe bool idiom.
+
 2018-07-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86734
