@@ -1,6 +1,12 @@
 2018-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-07-20  Fangrui Song  <maskray@google.com>
+
+	* include/bits/shared_ptr_base.h (_Sp_make_shared_tag::_S_ti): Use
+	_GLIBCXX_VISIBILITY(default).
+
+	Backport from mainline
 	2018-07-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86734
