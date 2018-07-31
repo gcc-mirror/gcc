@@ -1,5 +1,17 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-data-refs.c (vect_check_gather_scatter): Pass the
+	gcall rather than the generic gimple stmt to gimple_call_internal_fn.
+	(vect_get_smallest_scalar_type, can_group_stmts_p): Use dyn_cast
+	to get gassigns and gcalls, rather than operating on generc gimple
+	stmts.
+	* tree-vect-stmts.c (exist_non_indexing_operands_for_use_p)
+	(vect_mark_stmts_to_be_vectorized, vectorizable_store)
+	(vectorizable_load, vect_analyze_stmt): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise gphi.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (get_earlier_stmt, get_later_stmt): Take and
 	return stmt_vec_infos rather than gimple stmts.  Do not accept
 	null arguments.

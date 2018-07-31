@@ -6109,9 +6109,9 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     gcc_assert (slp_node
 		&& REDUC_GROUP_FIRST_ELEMENT (stmt_info) == stmt_info);
 
-  if (gimple_code (stmt) == GIMPLE_PHI)
+  if (gphi *phi = dyn_cast <gphi *> (stmt))
     {
-      tree phi_result = gimple_phi_result (stmt);
+      tree phi_result = gimple_phi_result (phi);
       /* Analysis is fully done on the reduction stmt invocation.  */
       if (! vec_stmt)
 	{
@@ -6141,7 +6141,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       for (unsigned k = 1; k < gimple_num_ops (reduc_stmt); ++k)
 	{
 	  tree op = gimple_op (reduc_stmt, k);
-	  if (op == gimple_phi_result (stmt))
+	  if (op == phi_result)
 	    continue;
 	  if (k == 1
 	      && gimple_assign_rhs_code (reduc_stmt) == COND_EXPR)

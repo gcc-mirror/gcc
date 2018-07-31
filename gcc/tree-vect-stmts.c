@@ -389,30 +389,31 @@ exist_non_indexing_operands_for_use_p (tree use, gimple *stmt)
      Therefore, all we need to check is if STMT falls into the
      first case, and whether var corresponds to USE.  */
 
-  if (!gimple_assign_copy_p (stmt))
+  gassign *assign = dyn_cast <gassign *> (stmt);
+  if (!assign || !gimple_assign_copy_p (assign))
     {
-      if (is_gimple_call (stmt)
-	  && gimple_call_internal_p (stmt))
+      gcall *call = dyn_cast <gcall *> (stmt);
+      if (call && gimple_call_internal_p (call))
 	{
-	  internal_fn ifn = gimple_call_internal_fn (stmt);
+	  internal_fn ifn = gimple_call_internal_fn (call);
 	  int mask_index = internal_fn_mask_index (ifn);
 	  if (mask_index >= 0
-	      && use == gimple_call_arg (stmt, mask_index))
+	      && use == gimple_call_arg (call, mask_index))
 	    return true;
 	  int stored_value_index = internal_fn_stored_value_index (ifn);
 	  if (stored_value_index >= 0
-	      && use == gimple_call_arg (stmt, stored_value_index))
+	      && use == gimple_call_arg (call, stored_value_index))
 	    return true;
 	  if (internal_gather_scatter_fn_p (ifn)
-	      && use == gimple_call_arg (stmt, 1))
+	      && use == gimple_call_arg (call, 1))
 	    return true;
 	}
       return false;
     }
 
-  if (TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME)
+  if (TREE_CODE (gimple_assign_lhs (assign)) == SSA_NAME)
     return false;
-  operand = gimple_assign_rhs1 (stmt);
+  operand = gimple_assign_rhs1 (assign);
   if (TREE_CODE (operand) != SSA_NAME)
     return false;
 
@@ -739,10 +740,10 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
           /* Pattern statements are not inserted into the code, so
              FOR_EACH_PHI_OR_STMT_USE optimizes their operands out, and we
              have to scan the RHS or function arguments instead.  */
-          if (is_gimple_assign (stmt))
-            {
-	      enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
-	      tree op = gimple_assign_rhs1 (stmt);
+	  if (gassign *assign = dyn_cast <gassign *> (stmt))
+	    {
+	      enum tree_code rhs_code = gimple_assign_rhs_code (assign);
+	      tree op = gimple_assign_rhs1 (assign);
 
 	      i = 1;
 	      if (rhs_code == COND_EXPR && COMPARISON_CLASS_P (op))
@@ -754,25 +755,25 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 		    return false;
 		  i = 2;
 		}
-	      for (; i < gimple_num_ops (stmt); i++)
-                {
-		  op = gimple_op (stmt, i);
+	      for (; i < gimple_num_ops (assign); i++)
+		{
+		  op = gimple_op (assign, i);
                   if (TREE_CODE (op) == SSA_NAME
 		      && !process_use (stmt, op, loop_vinfo, relevant,
 				       &worklist, false))
                     return false;
                  }
             }
-          else if (is_gimple_call (stmt))
-            {
-              for (i = 0; i < gimple_call_num_args (stmt); i++)
-                {
-                  tree arg = gimple_call_arg (stmt, i);
+	  else if (gcall *call = dyn_cast <gcall *> (stmt))
+	    {
+	      for (i = 0; i < gimple_call_num_args (call); i++)
+		{
+		  tree arg = gimple_call_arg (call, i);
 		  if (!process_use (stmt, arg, loop_vinfo, relevant,
 				    &worklist, false))
                     return false;
-                }
-            }
+		}
+	    }
         }
       else
         FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, iter, SSA_OP_USE)
@@ -6274,9 +6275,9 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi,
   /* Is vectorizable store? */
 
   tree mask = NULL_TREE, mask_vectype = NULL_TREE;
-  if (is_gimple_assign (stmt))
+  if (gassign *assign = dyn_cast <gassign *> (stmt))
     {
-      tree scalar_dest = gimple_assign_lhs (stmt);
+      tree scalar_dest = gimple_assign_lhs (assign);
       if (TREE_CODE (scalar_dest) == VIEW_CONVERT_EXPR
 	  && is_pattern_stmt_p (stmt_info))
 	scalar_dest = TREE_OPERAND (scalar_dest, 0);
@@ -7445,13 +7446,13 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi,
     return false;
 
   tree mask = NULL_TREE, mask_vectype = NULL_TREE;
-  if (is_gimple_assign (stmt))
+  if (gassign *assign = dyn_cast <gassign *> (stmt))
     {
-      scalar_dest = gimple_assign_lhs (stmt);
+      scalar_dest = gimple_assign_lhs (assign);
       if (TREE_CODE (scalar_dest) != SSA_NAME)
 	return false;
 
-      tree_code code = gimple_assign_rhs_code (stmt);
+      tree_code code = gimple_assign_rhs_code (assign);
       if (code != ARRAY_REF
 	  && code != BIT_FIELD_REF
 	  && code != INDIRECT_REF
@@ -9557,9 +9558,9 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node,
   if (STMT_VINFO_RELEVANT_P (stmt_info))
     {
       gcc_assert (!VECTOR_MODE_P (TYPE_MODE (gimple_expr_type (stmt))));
+      gcall *call = dyn_cast <gcall *> (stmt);
       gcc_assert (STMT_VINFO_VECTYPE (stmt_info)
-		  || (is_gimple_call (stmt)
-		      && gimple_call_lhs (stmt) == NULL_TREE));
+		  || (call && gimple_call_lhs (call) == NULL_TREE));
       *need_to_vectorize = true;
     }
 

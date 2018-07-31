@@ -130,15 +130,16 @@ vect_get_smallest_scalar_type (gimple *stmt, HOST_WIDE_INT *lhs_size_unit,
 
   lhs = rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (scalar_type));
 
-  if (is_gimple_assign (stmt)
-      && (gimple_assign_cast_p (stmt)
-          || gimple_assign_rhs_code (stmt) == DOT_PROD_EXPR
-          || gimple_assign_rhs_code (stmt) == WIDEN_SUM_EXPR
-          || gimple_assign_rhs_code (stmt) == WIDEN_MULT_EXPR
-          || gimple_assign_rhs_code (stmt) == WIDEN_LSHIFT_EXPR
-          || gimple_assign_rhs_code (stmt) == FLOAT_EXPR))
+  gassign *assign = dyn_cast <gassign *> (stmt);
+  if (assign
+      && (gimple_assign_cast_p (assign)
+	  || gimple_assign_rhs_code (assign) == DOT_PROD_EXPR
+	  || gimple_assign_rhs_code (assign) == WIDEN_SUM_EXPR
+	  || gimple_assign_rhs_code (assign) == WIDEN_MULT_EXPR
+	  || gimple_assign_rhs_code (assign) == WIDEN_LSHIFT_EXPR
+	  || gimple_assign_rhs_code (assign) == FLOAT_EXPR))
     {
-      tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
+      tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (assign));
 
       rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (rhs_type));
       if (rhs < lhs)
@@ -2850,21 +2851,23 @@ can_group_stmts_p (gimple *stmt1, gimple *stmt2)
   if (gimple_assign_single_p (stmt1))
     return gimple_assign_single_p (stmt2);
 
-  if (is_gimple_call (stmt1) && gimple_call_internal_p (stmt1))
+  gcall *call1 = dyn_cast <gcall *> (stmt1);
+  if (call1 && gimple_call_internal_p (call1))
     {
       /* Check for two masked loads or two masked stores.  */
-      if (!is_gimple_call (stmt2) || !gimple_call_internal_p (stmt2))
+      gcall *call2 = dyn_cast <gcall *> (stmt2);
+      if (!call2 || !gimple_call_internal_p (call2))
 	return false;
-      internal_fn ifn = gimple_call_internal_fn (stmt1);
+      internal_fn ifn = gimple_call_internal_fn (call1);
       if (ifn != IFN_MASK_LOAD && ifn != IFN_MASK_STORE)
 	return false;
-      if (ifn != gimple_call_internal_fn (stmt2))
+      if (ifn != gimple_call_internal_fn (call2))
 	return false;
 
       /* Check that the masks are the same.  Cope with casts of masks,
 	 like those created by build_mask_conversion.  */
-      tree mask1 = gimple_call_arg (stmt1, 2);
-      tree mask2 = gimple_call_arg (stmt2, 2);
+      tree mask1 = gimple_call_arg (call1, 2);
+      tree mask2 = gimple_call_arg (call2, 2);
       if (!operand_equal_p (mask1, mask2, 0))
 	{
 	  mask1 = strip_conversion (mask1);
@@ -3665,7 +3668,7 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
   gcall *call = dyn_cast <gcall *> (stmt);
   if (call && gimple_call_internal_p (call))
     {
-      ifn = gimple_call_internal_fn (stmt);
+      ifn = gimple_call_internal_fn (call);
       if (internal_gather_scatter_fn_p (ifn))
 	{
 	  vect_describe_gather_scatter_call (call, info);
