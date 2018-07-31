@@ -7210,9 +7210,10 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	      if (op_type == ternary_op)
 		vop[2] = vec_oprnds2[i];
 
-	      new_temp = make_ssa_name (vec_dest, new_stmt);
-	      new_stmt = gimple_build_assign (new_temp, code,
+	      new_stmt = gimple_build_assign (vec_dest, code,
 					      vop[0], vop[1], vop[2]);
+	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      gimple_assign_set_lhs (new_stmt, new_temp);
 	    }
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
