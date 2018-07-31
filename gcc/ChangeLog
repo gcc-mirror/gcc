@@ -1,5 +1,16 @@
 2018-07-31  Martin Liska  <mliska@suse.cz>
 
+        PR gcov-profile/85338
+        PR gcov-profile/85350
+        PR gcov-profile/85372
+        * profile.c (struct location_triplet): New.
+	(struct location_triplet_hash): Likewise.
+	(output_location): Do not output a BB that
+        is already recorded for a line.
+	(branch_prob): Use streamed_locations.
+
+2018-07-31  Martin Liska  <mliska@suse.cz>
+
         PR gcov-profile/85370
 	* coverage.c (coverage_begin_function): Do not mark target
         clones as artificial functions.
