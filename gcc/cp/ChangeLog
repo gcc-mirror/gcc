@@ -1,3 +1,10 @@
+2018-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	P1008R1 - prohibit aggregates with user-declared constructors
+	* class.c (check_bases_and_members): For C++2a set
+	CLASSTYPE_NON_AGGREGATE based on TYPE_HAS_USER_CONSTRUCTOR rather than
+	type_has_user_provided_or_explicit_constructor.
+
 2018-07-31  Martin Liska  <mliska@suse.cz>
 
         PR c++/86653
