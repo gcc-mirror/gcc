@@ -679,43 +679,40 @@ static const format_char_info asm_fprintf_char_table[] =
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
+/* GCC-specific format_char_info arrays.  */
+
+/* The conversion specifiers implemented within pp_format, and thus supported
+   by all pretty_printer instances within GCC.  */
+
+#define PP_FORMAT_CHAR_TABLE \
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL }, \
+  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL }, \
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL }, \
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL }, \
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "pq", "cR", NULL }, \
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c",  NULL }, \
+  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "//cR",   NULL }, \
+  { "<",   0, STD_C89, NOARGUMENTS, "",      "<",   NULL }, \
+  { ">",   0, STD_C89, NOARGUMENTS, "",      ">",   NULL }, \
+  { "'" ,  0, STD_C89, NOARGUMENTS, "",      "",    NULL }, \
+  { "R",   0, STD_C89, NOARGUMENTS, "",     "\\",   NULL }, \
+  { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL }, \
+  { "Z",   1, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "", &gcc_diag_char_table[0] }
+
 static const format_char_info gcc_diag_char_table[] =
 {
-  /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "pq", "cR", NULL },
-  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c",  NULL },
+  /* The conversion specifiers implemented within pp_format.  */
+  PP_FORMAT_CHAR_TABLE,
 
-  /* Custom conversion specifiers.  */
-
-  /* G requires a "gcall*" argument at runtime.  */
-  { "G",   1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "\"",   NULL },
-  /* K requires a "tree" argument at runtime.  */
-  { "K",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "\"",   NULL },
-
-  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "//cR",   NULL },
-  { "<",   0, STD_C89, NOARGUMENTS, "",      "<",   NULL },
-  { ">",   0, STD_C89, NOARGUMENTS, "",      ">",   NULL },
-  { "'" ,  0, STD_C89, NOARGUMENTS, "",      "",    NULL },
-  { "R",   0, STD_C89, NOARGUMENTS, "",     "\\",   NULL },
-  { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info gcc_tdiag_char_table[] =
 {
-  /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "pq", "cR", NULL },
-  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c",  NULL },
+  /* The conversion specifiers implemented within pp_format.  */
+  PP_FORMAT_CHAR_TABLE,
 
-  /* Custom conversion specifiers.  */
+  /* Custom conversion specifiers implemented by default_tree_printer.  */
 
   /* These will require a "tree" at runtime.  */
   { "DFTV", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "'",   NULL },
@@ -725,29 +722,15 @@ static const format_char_info gcc_tdiag_char_table[] =
   /* G requires a "gcall*" argument at runtime.  */
   { "G", 1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
-  { "v",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
-
-  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "/cR",   NULL },
-  { "<",   0, STD_C89, NOARGUMENTS, "",      "<",   NULL },
-  { ">",   0, STD_C89, NOARGUMENTS, "",      ">",   NULL },
-  { "'",   0, STD_C89, NOARGUMENTS, "",      "",    NULL },
-  { "R",   0, STD_C89, NOARGUMENTS, "",     "\\",   NULL },
-  { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
-  { "Z",   1, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "", &gcc_tdiag_char_table[0] },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info gcc_cdiag_char_table[] =
 {
-  /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "pq", "cR", NULL },
-  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c",  NULL },
+  /* The conversion specifiers implemented within pp_format.  */
+  PP_FORMAT_CHAR_TABLE,
 
-  /* Custom conversion specifiers.  */
+  /* Custom conversion specifiers implemented by c_tree_printer.  */
 
   /* These will require a "tree" at runtime.  */
   { "DFTV", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "'",   NULL },
@@ -759,33 +742,20 @@ static const format_char_info gcc_cdiag_char_table[] =
 
   { "v",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
-  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "/cR",   NULL },
-  { "<",   0, STD_C89, NOARGUMENTS, "",      "<",  NULL },
-  { ">",   0, STD_C89, NOARGUMENTS, "",      ">",  NULL },
-  { "'",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
-  { "R",   0, STD_C89, NOARGUMENTS, "",     "\\",  NULL },
-  { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
-  { "Z",   1, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "", &gcc_tdiag_char_table[0] },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info gcc_cxxdiag_char_table[] =
 {
-  /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "pq", "cR", NULL },
-  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c",  NULL },
+  /* The conversion specifiers implemented within pp_format.  */
+  PP_FORMAT_CHAR_TABLE,
 
-  /* Custom conversion specifiers.  */
+  /* Custom conversion specifiers implemented by cp_printer.  */
 
   /* These will require a "tree" at runtime.  */
   { "ADFHISTVX",1,STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "'",   NULL },
   { "E", 1,STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
   { "K", 1, STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "\"",   NULL },
-  { "v", 0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
   /* G requires a "gcall*" argument at runtime.  */
   { "G", 1, STD_C89,{ T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "\"",   NULL },
@@ -793,13 +763,6 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   /* These accept either an 'int' or an 'enum tree_code' (which is handled as an 'int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
 
-  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "/cR",   NULL },
-  { "<",   0, STD_C89, NOARGUMENTS, "",      "<",   NULL },
-  { ">",   0, STD_C89, NOARGUMENTS, "",      ">",   NULL },
-  { "'",   0, STD_C89, NOARGUMENTS, "",      "",    NULL },
-  { "R",   0, STD_C89, NOARGUMENTS, "",      "\\",  NULL },
-  { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
-  { "Z",   1, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "", &gcc_tdiag_char_table[0] },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
