@@ -876,7 +876,7 @@ struct _stmt_vec_info {
   stmt_vec_info next_element;
   /* For data-refs, in case that two or more stmts share data-ref, this is the
      pointer to the previously detected stmt with the same dr.  */
-  gimple *same_dr_stmt;
+  stmt_vec_info same_dr_stmt;
   /* The size of the group.  */
   unsigned int size;
   /* For stores, number of stores from this group seen. We vectorize the last
