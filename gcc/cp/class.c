@@ -5571,7 +5571,9 @@ check_bases_and_members (tree t)
      Again, other conditions for being an aggregate are checked
      elsewhere.  */
   CLASSTYPE_NON_AGGREGATE (t)
-    |= (type_has_user_provided_or_explicit_constructor (t)
+    |= ((cxx_dialect < cxx2a
+	 ? type_has_user_provided_or_explicit_constructor (t)
+	 : TYPE_HAS_USER_CONSTRUCTOR (t))
 	|| TYPE_POLYMORPHIC_P (t));
   /* This is the C++98/03 definition of POD; it changed in C++0x, but we
      retain the old definition internally for ABI reasons.  */

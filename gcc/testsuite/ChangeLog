@@ -1,3 +1,12 @@
+2018-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	P1008R1 - prohibit aggregates with user-declared constructors
+	* g++.dg/ext/is_aggregate.C: Add tests with deleted or defaulted ctor.
+	* g++.dg/cpp0x/defaulted1.C (main): Ifdef out for C++2a B b = {1};.
+	* g++.dg/cpp0x/deleted2.C: Expect error for C++2a.
+	* g++.dg/cpp2a/aggr1.C: New test.
+	* g++.dg/cpp2a/aggr2.C: New test.
+
 2018-07-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/86640
