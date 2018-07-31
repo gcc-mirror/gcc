@@ -10310,14 +10310,11 @@ supportable_widening_operation (enum tree_code code, gimple *stmt,
              same operation.  One such an example is s += a * b, where elements
              in a and b cannot be reordered.  Here we check if the vector defined
              by STMT is only directly used in the reduction statement.  */
-          tree lhs = gimple_assign_lhs (stmt);
-          use_operand_p dummy;
-          gimple *use_stmt;
-          stmt_vec_info use_stmt_info = NULL;
-          if (single_imm_use (lhs, &dummy, &use_stmt)
-              && (use_stmt_info = vinfo_for_stmt (use_stmt))
-              && STMT_VINFO_DEF_TYPE (use_stmt_info) == vect_reduction_def)
-            return true;
+	  tree lhs = gimple_assign_lhs (stmt);
+	  stmt_vec_info use_stmt_info = loop_info->lookup_single_use (lhs);
+	  if (use_stmt_info
+	      && STMT_VINFO_DEF_TYPE (use_stmt_info) == vect_reduction_def)
+	    return true;
         }
       c1 = VEC_WIDEN_MULT_LO_EXPR;
       c2 = VEC_WIDEN_MULT_HI_EXPR;

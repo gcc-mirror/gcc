@@ -6138,6 +6138,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
+      tree phi_result = gimple_phi_result (stmt);
       /* Analysis is fully done on the reduction stmt invocation.  */
       if (! vec_stmt)
 	{
@@ -6158,7 +6159,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       if (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (reduc_stmt)))
 	reduc_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (reduc_stmt));
 
-      if (STMT_VINFO_VEC_REDUCTION_TYPE (vinfo_for_stmt (reduc_stmt))
+      stmt_vec_info reduc_stmt_info = vinfo_for_stmt (reduc_stmt);
+      if (STMT_VINFO_VEC_REDUCTION_TYPE (reduc_stmt_info)
 	  == EXTRACT_LAST_REDUCTION)
 	/* Leave the scalar phi in place.  */
 	return true;
@@ -6185,15 +6187,12 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       else
 	ncopies = vect_get_num_copies (loop_vinfo, vectype_in);
 
-      use_operand_p use_p;
-      gimple *use_stmt;
+      stmt_vec_info use_stmt_info;
       if (ncopies > 1
-	  && (STMT_VINFO_RELEVANT (vinfo_for_stmt (reduc_stmt))
-	      <= vect_used_only_live)
-	  && single_imm_use (gimple_phi_result (stmt), &use_p, &use_stmt)
-	  && (use_stmt == reduc_stmt
-	      || (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (use_stmt))
-		  == reduc_stmt)))
+	  && STMT_VINFO_RELEVANT (reduc_stmt_info) <= vect_used_only_live
+	  && (use_stmt_info = loop_vinfo->lookup_single_use (phi_result))
+	  && (use_stmt_info == reduc_stmt_info
+	      || STMT_VINFO_RELATED_STMT (use_stmt_info) == reduc_stmt))
 	single_defuse_cycle = true;
 
       /* Create the destination vector  */
@@ -6955,13 +6954,13 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
    This only works when we see both the reduction PHI and its only consumer
    in vectorizable_reduction and there are no intermediate stmts
    participating.  */
-  use_operand_p use_p;
-  gimple *use_stmt;
+  stmt_vec_info use_stmt_info;
+  tree reduc_phi_result = gimple_phi_result (reduc_def_stmt);
   if (ncopies > 1
       && (STMT_VINFO_RELEVANT (stmt_info) <= vect_used_only_live)
-      && single_imm_use (gimple_phi_result (reduc_def_stmt), &use_p, &use_stmt)
-      && (use_stmt == stmt
-	  || STMT_VINFO_RELATED_STMT (vinfo_for_stmt (use_stmt)) == stmt))
+      && (use_stmt_info = loop_vinfo->lookup_single_use (reduc_phi_result))
+      && (use_stmt_info == stmt_info
+	  || STMT_VINFO_RELATED_STMT (use_stmt_info) == stmt))
     {
       single_defuse_cycle = true;
       epilog_copies = 1;

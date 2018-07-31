@@ -1,5 +1,13 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vec_info::lookup_single_use): Declare.
+	* tree-vectorizer.c (vec_info::lookup_single_use): New function.
+	* tree-vect-loop.c (vectorizable_reduction): Use it instead of
+	a single_imm_use-based sequence.
+	* tree-vect-stmts.c (supportable_widening_operation): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vec_info::lookup_def): Declare.
 	* tree-vectorizer.c (vec_info::lookup_def): New function.
 	* tree-vect-patterns.c (vect_get_internal_def): Use it.

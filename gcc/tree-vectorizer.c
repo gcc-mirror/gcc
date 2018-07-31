@@ -548,6 +548,20 @@ vec_info::lookup_def (tree name)
   return NULL;
 }
 
+/* See whether there is a single non-debug statement that uses LHS and
+   whether that statement has an associated stmt_vec_info.  Return the
+   stmt_vec_info if so, otherwise return null.  */
+
+stmt_vec_info
+vec_info::lookup_single_use (tree lhs)
+{
+  use_operand_p dummy;
+  gimple *use_stmt;
+  if (single_imm_use (lhs, &dummy, &use_stmt))
+    return lookup_stmt (use_stmt);
+  return NULL;
+}
+
 /* A helper function to free scev and LOOP niter information, as well as
    clear loop constraint LOOP_C_FINITE.  */
 

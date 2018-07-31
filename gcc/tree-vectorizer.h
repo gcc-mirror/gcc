@@ -220,6 +220,7 @@ struct vec_info {
   stmt_vec_info add_stmt (gimple *);
   stmt_vec_info lookup_stmt (gimple *);
   stmt_vec_info lookup_def (tree);
+  stmt_vec_info lookup_single_use (tree);
 
   /* The type of vectorization.  */
   vec_kind kind;
