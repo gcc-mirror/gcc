@@ -7278,7 +7278,7 @@ package body Exp_Aggr is
                 (Nkind (Expr_Q) = N_Type_Conversion
                   or else
                     (Is_Entity_Name (Expr_Q)
-                      and then Ekind (Entity (Expr_Q)) in Formal_Kind))
+                      and then Is_Formal (Entity (Expr_Q))))
               and then Tagged_Type_Expansion
             then
                Static_Components := False;

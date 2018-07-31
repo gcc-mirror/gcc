@@ -1,5 +1,11 @@
 2018-07-31  Piotr Trojanek  <trojanek@adacore.com>
 
+	* exp_aggr.adb, exp_ch4.adb, exp_ch6.adb, lib-xref.adb,
+	repinfo.adb, sem_ch9.adb: Minor replace Ekind membership tests
+	with a wrapper routine.
+
+2018-07-31  Piotr Trojanek  <trojanek@adacore.com>
+
 	* ali.adb (Known_ALI_Lines): Remove 'F' as a prefix for lines
 	related to the FORMAL analysis done by GNATprove.
 
