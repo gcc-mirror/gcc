@@ -259,6 +259,16 @@ package body Exp_Unst is
       if Subps_Index (E) = Uint_0 then
          E := Ultimate_Alias (E);
 
+         --  The body of a protected operation has a different name and
+         --  has been scanned at this point, and thus has an entry in
+         --  the subprogram table.
+
+         if E = Sub
+           and then Convention (E) = Convention_Protected
+         then
+            E := Protected_Body_Subprogram (E);
+         end if;
+
          if Ekind (E) = E_Function
            and then Rewritten_For_C (E)
            and then Present (Corresponding_Procedure (E))
@@ -494,12 +504,13 @@ package body Exp_Unst is
 
                   if Is_Entity_Name (N) then
                      if Present (Entity (N))
+                       and then not Is_Type (Entity (N))
                        and then Present (Enclosing_Subprogram (Entity (N)))
                        and then Ekind (Entity (N)) /= E_Discriminant
                      then
                         Note_Uplevel_Ref
                           (E      => Entity (N),
-                           N      => Ref,
+                           N      => Empty,
                            Caller => Current_Subprogram,
                            Callee => Enclosing_Subprogram (Entity (N)));
                      end if;
@@ -538,9 +549,12 @@ package body Exp_Unst is
                   elsif Nkind (N) in N_Unary_Op then
                      Note_Uplevel_Bound (Right_Opnd (N), Ref);
 
-                  --  Explicit dereference case
+                  --  Explicit dereference and selected component case
 
-                  elsif Nkind (N) = N_Explicit_Dereference then
+                  elsif Nkind_In (N,
+                    N_Explicit_Dereference,
+                    N_Selected_Component)
+                  then
                      Note_Uplevel_Bound (Prefix (N), Ref);
 
                   --  Conversion case
@@ -861,6 +875,20 @@ package body Exp_Unst is
                         Check_Static_Type
                           (Etype (Expression (Expression (N))), Empty,  DT);
                      end;
+
+                  --  For a Return or Free (all other nodes we handle here),
+                  --  we usually need the size of the object, so we need to be
+                  --  sure that any nonstatic bounds of the expression's type
+                  --  that are uplevel are handled.
+
+                  elsif Nkind (N) /= N_Allocator
+                    and then Present (Expression (N))
+                  then
+                     declare
+                        DT : Boolean := False;
+                     begin
+                        Check_Static_Type (Etype (Expression (N)), Empty,  DT);
+                     end;
                   end if;
 
                --  A 'Access reference is a (potential) call. So is 'Address,
@@ -1141,10 +1169,7 @@ package body Exp_Unst is
 
                            begin
                               Check_Static_Type (Ent, N, DT);
-
-                              if Is_Static_Type (Ent) then
-                                 return OK;
-                              end if;
+                              return OK;
                            end;
                         end if;
 
@@ -1336,10 +1361,7 @@ package body Exp_Unst is
                     and then Ekind (URJ.Ent) /= E_Discriminant
                   then
                      Set_Is_Uplevel_Referenced_Entity (URJ.Ent);
-
-                     if not Is_Type (URJ.Ent) then
-                        Append_New_Elmt (URJ.Ent, SUBT.Uents);
-                     end if;
+                     Append_New_Elmt (URJ.Ent, SUBT.Uents);
                   end if;
 
                   --  And set uplevel indication for caller
@@ -1395,7 +1417,8 @@ package body Exp_Unst is
                      Write_Eol;
                   end if;
 
-                  --  Rewrite declaration and body to null statements
+                  --  Rewrite declaration, body, and corresponding freeze node
+                  --  to null statements.
 
                   --  A subprogram instantiation does not have an explicit
                   --  body. If unused, we could remove the corresponding
@@ -1407,6 +1430,11 @@ package body Exp_Unst is
                      if Present (Spec) then
                         Decl := Parent (Declaration_Node (Spec));
                         Rewrite (Decl, Make_Null_Statement (Sloc (Decl)));
+
+                        if Present (Freeze_Node (Spec)) then
+                           Rewrite (Freeze_Node (Spec),
+                                    Make_Null_Statement (Sloc (Decl)));
+                        end if;
                      end if;
 
                      Rewrite (STJ.Bod, Make_Null_Statement (Sloc (STJ.Bod)));
@@ -1829,7 +1857,11 @@ package body Exp_Unst is
                         Decl_Assign := Empty;
                      end if;
 
-                     Prepend_List_To (Declarations (STJ.Bod), Decls);
+                     if No (Declarations (STJ.Bod)) then
+                        Set_Declarations (STJ.Bod, Decls);
+                     else
+                        Prepend_List_To (Declarations (STJ.Bod), Decls);
+                     end if;
 
                      --  Analyze the newly inserted declarations. Note that we
                      --  do not need to establish the whole scope stack, since
@@ -1987,24 +2019,10 @@ package body Exp_Unst is
             --  Also ignore if no reference was specified or if the rewriting
             --  has already been done (this can happen if the N_Identifier
             --  occurs more than one time in the tree).
-           --  Also ignore uplevel references to bounds of types that come
-           --  from the original type reference.
 
-            if Is_Type (UPJ.Ent)
-              or else No (UPJ.Ref)
+            if No (UPJ.Ref)
               or else not Is_Entity_Name (UPJ.Ref)
               or else not Present (Entity (UPJ.Ref))
-              or else Is_Type (Entity (UPJ.Ref))
-            then
-               goto Continue;
-            end if;
-
-            --  Also ignore uplevel references to bounds of types that come
-            --  from the original type reference.
-
-            if Is_Entity_Name (UPJ.Ref)
-              and then Present (Entity (UPJ.Ref))
-              and then Is_Type (Entity (UPJ.Ref))
             then
                goto Continue;
             end if;
@@ -2347,13 +2365,12 @@ package body Exp_Unst is
                   Unnest_Subprogram (Spec_Id, N);
                end if;
             end;
-         end if;
 
          --  The proper body of a stub may contain nested subprograms, and
          --  therefore must be visited explicitly. Nested stubs are examined
          --  recursively in Visit_Node.
 
-         if Nkind (N) in N_Body_Stub then
+         elsif Nkind (N) in N_Body_Stub then
             Do_Search (Library_Unit (N));
          end if;
 
