@@ -472,8 +472,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 		... = a[i];
 		a[i+1] = ...;
 	     where loads from the group interleave with the store.  */
-	  if (!vect_preserves_scalar_order_p (vect_dr_stmt(dra),
-					      vect_dr_stmt (drb)))
+	  if (!vect_preserves_scalar_order_p (stmtinfo_a, stmtinfo_b))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -673,6 +672,7 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
      in NODE verifying we can sink them up to the last stmt in the
      group.  */
   stmt_vec_info last_access_info = vect_find_last_scalar_stmt_in_slp (node);
+  vec_info *vinfo = last_access_info->vinfo;
   for (unsigned k = 0; k < SLP_INSTANCE_GROUP_SIZE (instance); ++k)
     {
       stmt_vec_info access_info = SLP_TREE_SCALAR_STMTS (node)[k];
@@ -691,7 +691,8 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
 
 	  /* If we couldn't record a (single) data reference for this
 	     stmt we have to resort to the alias oracle.  */
-	  data_reference *dr_b = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt));
+	  stmt_vec_info stmt_info = vinfo->lookup_stmt (stmt);
+	  data_reference *dr_b = STMT_VINFO_DATA_REF (stmt_info);
 	  if (!dr_b)
 	    {
 	      /* We are moving a store or sinking a load - this means
@@ -2951,7 +2952,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	      || data_ref_compare_tree (DR_BASE_ADDRESS (dra),
 					DR_BASE_ADDRESS (drb)) != 0
 	      || data_ref_compare_tree (DR_OFFSET (dra), DR_OFFSET (drb)) != 0
-	      || !can_group_stmts_p (vect_dr_stmt (dra), vect_dr_stmt (drb)))
+	      || !can_group_stmts_p (stmtinfo_a, stmtinfo_b))
 	    break;
 
 	  /* Check that the data-refs have the same constant size.  */
@@ -3040,11 +3041,11 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	  /* Link the found element into the group list.  */
 	  if (!DR_GROUP_FIRST_ELEMENT (stmtinfo_a))
 	    {
-	      DR_GROUP_FIRST_ELEMENT (stmtinfo_a) = vect_dr_stmt (dra);
+	      DR_GROUP_FIRST_ELEMENT (stmtinfo_a) = stmtinfo_a;
 	      lastinfo = stmtinfo_a;
 	    }
-	  DR_GROUP_FIRST_ELEMENT (stmtinfo_b) = vect_dr_stmt (dra);
-	  DR_GROUP_NEXT_ELEMENT (lastinfo) = vect_dr_stmt (drb);
+	  DR_GROUP_FIRST_ELEMENT (stmtinfo_b) = stmtinfo_a;
+	  DR_GROUP_NEXT_ELEMENT (lastinfo) = stmtinfo_b;
 	  lastinfo = stmtinfo_b;
 	}
     }
@@ -5219,9 +5220,10 @@ vect_permute_store_chain (vec<tree> dr_chain,
 			  gimple_stmt_iterator *gsi,
 			  vec<tree> *result_chain)
 {
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vect1, vect2, high, low;
   gimple *perm_stmt;
-  tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree perm_mask_low, perm_mask_high;
   tree data_ref;
   tree perm3_mask_low, perm3_mask_high;
@@ -5840,11 +5842,12 @@ vect_permute_load_chain (vec<tree> dr_chain,
 			 gimple_stmt_iterator *gsi,
 			 vec<tree> *result_chain)
 {
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree data_ref, first_vect, second_vect;
   tree perm_mask_even, perm_mask_odd;
   tree perm3_mask_low, perm3_mask_high;
   gimple *perm_stmt;
-  tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   unsigned int i, j, log_length = exact_log2 (length);
 
   result_chain->quick_grow (length);
@@ -6043,14 +6046,14 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 			       gimple_stmt_iterator *gsi,
 			       vec<tree> *result_chain)
 {
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vect[3], vect_shift[3], data_ref, first_vect, second_vect;
   tree perm2_mask1, perm2_mask2, perm3_mask;
   tree select_mask, shift1_mask, shift2_mask, shift3_mask, shift4_mask;
   gimple *perm_stmt;
 
-  tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   unsigned int i;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
 
   unsigned HOST_WIDE_INT nelt, vf;
@@ -6310,6 +6313,7 @@ void
 vect_transform_grouped_load (gimple *stmt, vec<tree> dr_chain, int size,
 			     gimple_stmt_iterator *gsi)
 {
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   machine_mode mode;
   vec<tree> result_chain = vNULL;
 
@@ -6321,7 +6325,7 @@ vect_transform_grouped_load (gimple *stmt, vec<tree> dr_chain, int size,
   /* If reassociation width for vector type is 2 or greater target machine can
      execute 2 or more vector instructions in parallel.  Otherwise try to
      get chain for loads group using vect_shift_permute_load_chain.  */
-  mode = TYPE_MODE (STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt)));
+  mode = TYPE_MODE (STMT_VINFO_VECTYPE (stmt_info));
   if (targetm.sched.reassociation_width (VEC_PERM_EXPR, mode) > 1
       || pow2p_hwi (size)
       || !vect_shift_permute_load_chain (dr_chain, size, stmt,

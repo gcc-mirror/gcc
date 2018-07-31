@@ -1377,6 +1377,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
       tree evolution_part;
 
       gphi *phi = gsi.phi ();
+      stmt_vec_info phi_info = loop_vinfo->lookup_stmt (phi);
       if (dump_enabled_p ())
 	{
           dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
@@ -1397,8 +1398,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 
       /* Analyze the evolution function.  */
 
-      evolution_part
-	= STMT_VINFO_LOOP_PHI_EVOLUTION_PART (vinfo_for_stmt (phi));
+      evolution_part = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (phi_info);
       if (evolution_part == NULL_TREE)
         {
 	  if (dump_enabled_p ())
@@ -1500,6 +1500,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 
       gphi *phi = gsi.phi ();
       gphi *phi1 = gsi1.phi ();
+      stmt_vec_info phi_info = loop_vinfo->lookup_stmt (phi);
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
@@ -1517,7 +1518,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 	}
 
       type = TREE_TYPE (gimple_phi_result (phi));
-      step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (vinfo_for_stmt (phi));
+      step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (phi_info);
       step_expr = unshare_expr (step_expr);
 
       /* FORNOW: We do not support IVs whose evolution function is a polynomial

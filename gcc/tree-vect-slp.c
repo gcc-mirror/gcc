@@ -2157,8 +2157,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
      vector size.  */
   unsigned HOST_WIDE_INT const_nunits;
   if (is_a <bb_vec_info> (vinfo)
-      && STMT_VINFO_GROUPED_ACCESS (vinfo_for_stmt (stmt))
-      && DR_GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt))
+      && STMT_VINFO_GROUPED_ACCESS (stmt_info)
+      && DR_GROUP_FIRST_ELEMENT (stmt_info)
       && nunits.is_constant (&const_nunits))
     {
       /* We consider breaking the group only on VF boundaries from the existing
@@ -2693,6 +2693,7 @@ vect_bb_slp_scalar_cost (basic_block bb,
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     {
       gimple *stmt = stmt_info->stmt;
+      vec_info *vinfo = stmt_info->vinfo;
       ssa_op_iter op_iter;
       def_operand_p def_p;
 
@@ -2709,12 +2710,14 @@ vect_bb_slp_scalar_cost (basic_block bb,
 	  imm_use_iterator use_iter;
 	  gimple *use_stmt;
 	  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, DEF_FROM_PTR (def_p))
-	    if (!is_gimple_debug (use_stmt)
-		&& (! vect_stmt_in_region_p (stmt_info->vinfo, use_stmt)
-		    || ! PURE_SLP_STMT (vinfo_for_stmt (use_stmt))))
+	    if (!is_gimple_debug (use_stmt))
 	      {
-		(*life)[i] = true;
-		BREAK_FROM_IMM_USE_STMT (use_iter);
+		stmt_vec_info use_stmt_info = vinfo->lookup_stmt (use_stmt);
+		if (!use_stmt_info || !PURE_SLP_STMT (use_stmt_info))
+		  {
+		    (*life)[i] = true;
+		    BREAK_FROM_IMM_USE_STMT (use_iter);
+		  }
 	      }
 	}
       if ((*life)[i])

@@ -3252,7 +3252,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
     }
 
   /* Dissolve group eventually half-built by vect_is_slp_reduction.  */
-  stmt_vec_info first = REDUC_GROUP_FIRST_ELEMENT (vinfo_for_stmt (def_stmt));
+  stmt_vec_info first = REDUC_GROUP_FIRST_ELEMENT (def_stmt_info);
   while (first)
     {
       stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (first);
@@ -4784,7 +4784,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
      # b1 = phi <b2, b0>
      a2 = operation (a1)
      b2 = operation (b1)  */
-  slp_reduc = (slp_node && !REDUC_GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)));
+  slp_reduc = (slp_node && !REDUC_GROUP_FIRST_ELEMENT (stmt_info));
 
   /* True if we should implement SLP_REDUC using native reduction operations
      instead of scalar operations.  */
@@ -4799,7 +4799,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 
      we may end up with more than one vector result.  Here we reduce them to
      one vector.  */
-  if (REDUC_GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) || direct_slp_reduc)
+  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info) || direct_slp_reduc)
     {
       tree first_vect = PHI_RESULT (new_phis[0]);
       gassign *new_vec_stmt = NULL;
@@ -5544,7 +5544,7 @@ vect_finalize_reduction:
      necessary, hence we set here REDUC_GROUP_SIZE to 1.  SCALAR_DEST is the
      LHS of the last stmt in the reduction chain, since we are looking for
      the loop exit phi node.  */
-  if (REDUC_GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
+  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info))
     {
       stmt_vec_info dest_stmt_info
 	= SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
@@ -6095,8 +6095,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   tree cond_reduc_val = NULL_TREE;
 
   /* Make sure it was already recognized as a reduction computation.  */
-  if (STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) != vect_reduction_def
-      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) != vect_nested_cycle)
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def
+      && STMT_VINFO_DEF_TYPE (stmt_info) != vect_nested_cycle)
     return false;
 
   if (nested_in_vect_loop_p (loop, stmt))
@@ -6789,7 +6789,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
   if (reduction_type == FOLD_LEFT_REDUCTION
       && slp_node
-      && !REDUC_GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
+      && !REDUC_GROUP_FIRST_ELEMENT (stmt_info))
     {
       /* We cannot use in-order reductions in this case because there is
 	 an implicit reassociation of the operations involved.  */
@@ -6818,7 +6818,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
   /* Check extra constraints for variable-length unchained SLP reductions.  */
   if (STMT_SLP_TYPE (stmt_info)
-      && !REDUC_GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt))
+      && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
       && !nunits_out.is_constant ())
     {
       /* We checked above that we could build the initial vector when

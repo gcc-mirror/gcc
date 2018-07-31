@@ -1,5 +1,21 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence)
+	(vect_slp_analyze_node_dependences, vect_analyze_data_ref_accesses)
+	(vect_permute_store_chain, vect_permute_load_chain)
+	(vect_shift_permute_load_chain, vect_transform_grouped_load): Avoid
+	repeated stmt_vec_info lookups.
+	* tree-vect-loop-manip.c (vect_can_advance_ivs_p): Likewise.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	* tree-vect-loop.c (vect_is_simple_reduction): Likewise.
+	(vect_create_epilog_for_reduction, vectorizable_reduction): Likewise.
+	* tree-vect-patterns.c (adjust_bool_stmts): Likewise.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Likewise.
+	(vect_bb_slp_scalar_cost): Likewise.
+	* tree-vect-stmts.c (get_group_alias_ptr_type): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-data-refs.c (vect_check_gather_scatter): Pass the
 	gcall rather than the generic gimple stmt to gimple_call_internal_fn.
 	(vect_get_smallest_scalar_type, can_group_stmts_p): Use dyn_cast
