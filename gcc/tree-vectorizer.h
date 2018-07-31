@@ -1548,9 +1548,9 @@ extern void free_stmt_vec_info (gimple *stmt);
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
 				  int, enum vect_cost_model_location);
-extern void vect_finish_replace_stmt (gimple *, gimple *);
-extern void vect_finish_stmt_generation (gimple *, gimple *,
-                                         gimple_stmt_iterator *);
+extern stmt_vec_info vect_finish_replace_stmt (gimple *, gimple *);
+extern stmt_vec_info vect_finish_stmt_generation (gimple *, gimple *,
+						  gimple_stmt_iterator *);
 extern bool vect_mark_stmts_to_be_vectorized (loop_vec_info);
 extern tree vect_get_store_rhs (gimple *);
 extern tree vect_get_vec_def_for_operand_1 (gimple *, enum vect_def_type);

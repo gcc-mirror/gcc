@@ -1,5 +1,24 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_finish_replace_stmt): Return a stmt_vec_info
+	(vect_finish_stmt_generation): Likewise.
+	* tree-vect-stmts.c (vect_finish_stmt_generation_1): Likewise.
+	(vect_finish_replace_stmt, vect_finish_stmt_generation): Likewise.
+	(vect_build_gather_load_calls): Use the return value of the above
+	functions instead of a separate call to vinfo_for_stmt.  Use narrow
+	scopes for the input gimple stmt and wider scopes for the associated
+	stmt_vec_info.  Use vec_info::lookup_def when setting these
+	stmt_vec_infos from an SSA_NAME definition.
+	(vectorizable_bswap, vectorizable_call, vectorizable_simd_clone_call)
+	(vect_create_vectorized_demotion_stmts, vectorizable_conversion)
+	(vectorizable_assignment, vectorizable_shift, vectorizable_operation)
+	(vectorizable_store, vectorizable_load, vectorizable_condition)
+	(vectorizable_comparison): Likewise.
+	* tree-vect-loop.c (vectorize_fold_left_reduction): Likewise.
+	(vectorizable_reduction): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_is_simple_use): Add an optional
 	stmt_vec_info * parameter before the optional gimple **.
 	* tree-vect-stmts.c (vect_is_simple_use): Likewise.

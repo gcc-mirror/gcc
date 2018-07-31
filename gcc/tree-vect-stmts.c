@@ -1729,15 +1729,15 @@ vect_get_vec_defs (tree op0, tree op1, gimple *stmt,
 
 /* Helper function called by vect_finish_replace_stmt and
    vect_finish_stmt_generation.  Set the location of the new
-   statement and create a stmt_vec_info for it.  */
+   statement and create and return a stmt_vec_info for it.  */
 
-static void
+static stmt_vec_info
 vect_finish_stmt_generation_1 (gimple *stmt, gimple *vec_stmt)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vec_info *vinfo = stmt_info->vinfo;
 
-  vinfo->add_stmt (vec_stmt);
+  stmt_vec_info vec_stmt_info = vinfo->add_stmt (vec_stmt);
 
   if (dump_enabled_p ())
     {
@@ -1753,12 +1753,15 @@ vect_finish_stmt_generation_1 (gimple *stmt, gimple *vec_stmt)
   int lp_nr = lookup_stmt_eh_lp (stmt);
   if (lp_nr != 0 && stmt_could_throw_p (vec_stmt))
     add_stmt_to_eh_lp (vec_stmt, lp_nr);
+
+  return vec_stmt_info;
 }
 
 /* Replace the scalar statement STMT with a new vector statement VEC_STMT,
-   which sets the same scalar result as STMT did.  */
+   which sets the same scalar result as STMT did.  Create and return a
+   stmt_vec_info for VEC_STMT.  */
 
-void
+stmt_vec_info
 vect_finish_replace_stmt (gimple *stmt, gimple *vec_stmt)
 {
   gcc_assert (gimple_get_lhs (stmt) == gimple_get_lhs (vec_stmt));
@@ -1766,14 +1769,13 @@ vect_finish_replace_stmt (gimple *stmt, gimple *vec_stmt)
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   gsi_replace (&gsi, vec_stmt, false);
 
-  vect_finish_stmt_generation_1 (stmt, vec_stmt);
+  return vect_finish_stmt_generation_1 (stmt, vec_stmt);
 }
 
-/* Function vect_finish_stmt_generation.
+/* Add VEC_STMT to the vectorized implementation of STMT and insert it
+   before *GSI.  Create and return a stmt_vec_info for VEC_STMT.  */
 
-   Insert a new stmt.  */
-
-void
+stmt_vec_info
 vect_finish_stmt_generation (gimple *stmt, gimple *vec_stmt,
 			     gimple_stmt_iterator *gsi)
 {
@@ -1806,7 +1808,7 @@ vect_finish_stmt_generation (gimple *stmt, gimple *vec_stmt,
 	}
     }
   gsi_insert_before (gsi, vec_stmt, GSI_SAME_STMT);
-  vect_finish_stmt_generation_1 (stmt, vec_stmt);
+  return vect_finish_stmt_generation_1 (stmt, vec_stmt);
 }
 
 /* We want to vectorize a call to combined function CFN with function
@@ -2774,7 +2776,6 @@ vect_build_gather_load_calls (gimple *stmt, gimple_stmt_iterator *gsi,
   for (int j = 0; j < ncopies; ++j)
     {
       tree op, var;
-      gimple *new_stmt;
       if (modifier == WIDEN && (j & 1))
 	op = permute_vec_elements (vec_oprnd0, vec_oprnd0,
 				   perm_mask, stmt, gsi);
@@ -2791,7 +2792,7 @@ vect_build_gather_load_calls (gimple *stmt, gimple_stmt_iterator *gsi,
 				TYPE_VECTOR_SUBPARTS (idxtype)));
 	  var = vect_get_new_ssa_name (idxtype, vect_simple_var);
 	  op = build1 (VIEW_CONVERT_EXPR, idxtype, op);
-	  new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
+	  gassign *new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	  op = var;
 	}
@@ -2816,8 +2817,8 @@ vect_build_gather_load_calls (gimple *stmt, gimple_stmt_iterator *gsi,
 			       TYPE_VECTOR_SUBPARTS (masktype)));
 		  var = vect_get_new_ssa_name (masktype, vect_simple_var);
 		  mask_op = build1 (VIEW_CONVERT_EXPR, masktype, mask_op);
-		  new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR,
-						  mask_op);
+		  gassign *new_stmt
+		    = gimple_build_assign (var, VIEW_CONVERT_EXPR, mask_op);
 		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		  mask_op = var;
 		}
@@ -2825,27 +2826,28 @@ vect_build_gather_load_calls (gimple *stmt, gimple_stmt_iterator *gsi,
 	  src_op = mask_op;
 	}
 
-      new_stmt = gimple_build_call (gs_info->decl, 5, src_op, ptr, op,
-				    mask_op, scale);
+      gcall *new_call = gimple_build_call (gs_info->decl, 5, src_op, ptr, op,
+					   mask_op, scale);
 
+      stmt_vec_info new_stmt_info;
       if (!useless_type_conversion_p (vectype, rettype))
 	{
 	  gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (vectype),
 				TYPE_VECTOR_SUBPARTS (rettype)));
 	  op = vect_get_new_ssa_name (rettype, vect_simple_var);
-	  gimple_call_set_lhs (new_stmt, op);
-	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  gimple_call_set_lhs (new_call, op);
+	  vect_finish_stmt_generation (stmt, new_call, gsi);
 	  var = make_ssa_name (vec_dest);
 	  op = build1 (VIEW_CONVERT_EXPR, vectype, op);
-	  new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
+	  gassign *new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
+	  new_stmt_info = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	}
       else
 	{
-	  var = make_ssa_name (vec_dest, new_stmt);
-	  gimple_call_set_lhs (new_stmt, var);
+	  var = make_ssa_name (vec_dest, new_call);
+	  gimple_call_set_lhs (new_call, var);
+	  new_stmt_info = vect_finish_stmt_generation (stmt, new_call, gsi);
 	}
-
-      vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
       if (modifier == NARROW)
 	{
@@ -2855,14 +2857,14 @@ vect_build_gather_load_calls (gimple *stmt, gimple_stmt_iterator *gsi,
 	      continue;
 	    }
 	  var = permute_vec_elements (prev_res, var, perm_mask, stmt, gsi);
-	  new_stmt = SSA_NAME_DEF_STMT (var);
+	  new_stmt_info = loop_vinfo->lookup_def (var);
 	}
 
       if (prev_stmt_info == NULL_STMT_VEC_INFO)
-	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
       else
-	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-      prev_stmt_info = vinfo_for_stmt (new_stmt);
+	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+      prev_stmt_info = new_stmt_info;
     }
 }
 
@@ -3023,7 +3025,7 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
 
   /* Transform.  */
   vec<tree> vec_oprnds = vNULL;
-  gimple *new_stmt = NULL;
+  stmt_vec_info new_stmt_info = NULL;
   stmt_vec_info prev_stmt_info = NULL;
   for (unsigned j = 0; j < ncopies; j++)
     {
@@ -3038,6 +3040,7 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
       tree vop;
       FOR_EACH_VEC_ELT (vec_oprnds, i, vop)
        {
+	 gimple *new_stmt;
 	 tree tem = make_ssa_name (char_vectype);
 	 new_stmt = gimple_build_assign (tem, build1 (VIEW_CONVERT_EXPR,
 						      char_vectype, vop));
@@ -3049,20 +3052,20 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
 	 tem = make_ssa_name (vectype);
 	 new_stmt = gimple_build_assign (tem, build1 (VIEW_CONVERT_EXPR,
 						      vectype, tem2));
-	 vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	 new_stmt_info = vect_finish_stmt_generation (stmt, new_stmt, gsi);
          if (slp_node)
-           SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	   SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
        }
 
       if (slp_node)
         continue;
 
       if (j == 0)
-        STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
       else
-        STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
 
-      prev_stmt_info = vinfo_for_stmt (new_stmt);
+      prev_stmt_info = new_stmt_info;
     }
 
   vec_oprnds.release ();
@@ -3123,7 +3126,6 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     = { vect_unknown_def_type, vect_unknown_def_type, vect_unknown_def_type,
 	vect_unknown_def_type };
   int ndts = ARRAY_SIZE (dt);
-  gimple *new_stmt = NULL;
   int ncopies, j;
   auto_vec<tree, 8> vargs;
   auto_vec<tree, 8> orig_vargs;
@@ -3361,6 +3363,7 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   bool masked_loop_p = loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
 
+  stmt_vec_info new_stmt_info = NULL;
   prev_stmt_info = NULL;
   if (modifier == NONE || ifn != IFN_LAST)
     {
@@ -3399,16 +3402,19 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 			= gimple_build_call_internal_vec (ifn, vargs);
 		      gimple_call_set_lhs (call, half_res);
 		      gimple_call_set_nothrow (call, true);
-		      new_stmt = call;
-		      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		      new_stmt_info
+			= vect_finish_stmt_generation (stmt, call, gsi);
 		      if ((i & 1) == 0)
 			{
 			  prev_res = half_res;
 			  continue;
 			}
 		      new_temp = make_ssa_name (vec_dest);
-		      new_stmt = gimple_build_assign (new_temp, convert_code,
-						      prev_res, half_res);
+		      gimple *new_stmt
+			= gimple_build_assign (new_temp, convert_code,
+					       prev_res, half_res);
+		      new_stmt_info
+			= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		    }
 		  else
 		    {
@@ -3431,10 +3437,10 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		      new_temp = make_ssa_name (vec_dest, call);
 		      gimple_call_set_lhs (call, new_temp);
 		      gimple_call_set_nothrow (call, true);
-		      new_stmt = call;
+		      new_stmt_info
+			= vect_finish_stmt_generation (stmt, call, gsi);
 		    }
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-		  SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+		  SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
 		}
 
 	      for (i = 0; i < nargs; i++)
@@ -3475,7 +3481,9 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      gimple *init_stmt = gimple_build_assign (new_var, cst);
 	      vect_init_vector_1 (stmt, init_stmt, NULL);
 	      new_temp = make_ssa_name (vec_dest);
-	      new_stmt = gimple_build_assign (new_temp, new_var);
+	      gimple *new_stmt = gimple_build_assign (new_temp, new_var);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	    }
 	  else if (modifier == NARROW)
 	    {
@@ -3486,16 +3494,17 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      gcall *call = gimple_build_call_internal_vec (ifn, vargs);
 	      gimple_call_set_lhs (call, half_res);
 	      gimple_call_set_nothrow (call, true);
-	      new_stmt = call;
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      new_stmt_info = vect_finish_stmt_generation (stmt, call, gsi);
 	      if ((j & 1) == 0)
 		{
 		  prev_res = half_res;
 		  continue;
 		}
 	      new_temp = make_ssa_name (vec_dest);
-	      new_stmt = gimple_build_assign (new_temp, convert_code,
-					      prev_res, half_res);
+	      gassign *new_stmt = gimple_build_assign (new_temp, convert_code,
+						       prev_res, half_res);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	    }
 	  else
 	    {
@@ -3504,19 +3513,18 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		call = gimple_build_call_internal_vec (ifn, vargs);
 	      else
 		call = gimple_build_call_vec (fndecl, vargs);
-	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      new_temp = make_ssa_name (vec_dest, call);
 	      gimple_call_set_lhs (call, new_temp);
 	      gimple_call_set_nothrow (call, true);
-	      new_stmt = call;
+	      new_stmt_info = vect_finish_stmt_generation (stmt, call, gsi);
 	    }
-	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
 	  if (j == (modifier == NARROW ? 1 : 0))
-	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
 	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
 
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+	  prev_stmt_info = new_stmt_info;
 	}
     }
   else if (modifier == NARROW)
@@ -3560,9 +3568,9 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		  new_temp = make_ssa_name (vec_dest, call);
 		  gimple_call_set_lhs (call, new_temp);
 		  gimple_call_set_nothrow (call, true);
-		  new_stmt = call;
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-		  SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt, call, gsi);
+		  SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
 		}
 
 	      for (i = 0; i < nargs; i++)
@@ -3585,7 +3593,8 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		}
 	      else
 		{
-		  vec_oprnd1 = gimple_call_arg (new_stmt, 2*i + 1);
+		  vec_oprnd1 = gimple_call_arg (new_stmt_info->stmt,
+						2 * i + 1);
 		  vec_oprnd0
 		    = vect_get_vec_def_for_stmt_copy (dt[i], vec_oprnd1);
 		  vec_oprnd1
@@ -3596,17 +3605,17 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      vargs.quick_push (vec_oprnd1);
 	    }
 
-	  new_stmt = gimple_build_call_vec (fndecl, vargs);
+	  gcall *new_stmt = gimple_build_call_vec (fndecl, vargs);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  gimple_call_set_lhs (new_stmt, new_temp);
-	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  new_stmt_info = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
 	  if (j == 0)
-	    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+	    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt_info;
 	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
 
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+	  prev_stmt_info = new_stmt_info;
 	}
 
       *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
@@ -3629,7 +3638,8 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
   lhs = gimple_get_lhs (stmt_info->stmt);
 
-  new_stmt = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
+  gassign *new_stmt
+    = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
   set_vinfo_for_stmt (new_stmt, stmt_info);
   set_vinfo_for_stmt (stmt_info->stmt, NULL);
   STMT_VINFO_STMT (stmt_info) = new_stmt;
@@ -3752,7 +3762,6 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
   vec_info *vinfo = stmt_info->vinfo;
   struct loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
   tree fndecl, new_temp;
-  gimple *new_stmt = NULL;
   int ncopies, j;
   auto_vec<simd_call_arg_info> arginfo;
   vec<tree> vargs = vNULL;
@@ -4106,7 +4115,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 			= build3 (BIT_FIELD_REF, atype, vec_oprnd0,
 				  bitsize_int (prec),
 				  bitsize_int ((m & (k - 1)) * prec));
-		      new_stmt
+		      gassign *new_stmt
 			= gimple_build_assign (make_ssa_name (atype),
 					       vec_oprnd0);
 		      vect_finish_stmt_generation (stmt, new_stmt, gsi);
@@ -4142,7 +4151,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 		      else
 			{
 			  vec_oprnd0 = build_constructor (atype, ctor_elts);
-			  new_stmt
+			  gassign *new_stmt
 			    = gimple_build_assign (make_ssa_name (atype),
 						   vec_oprnd0);
 			  vect_finish_stmt_generation (stmt, new_stmt, gsi);
@@ -4189,7 +4198,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 			       ncopies * nunits);
 		  tree tcst = wide_int_to_tree (type, cst);
 		  tree phi_arg = copy_ssa_name (op);
-		  new_stmt
+		  gassign *new_stmt
 		    = gimple_build_assign (phi_arg, code, phi_res, tcst);
 		  gimple_stmt_iterator si = gsi_after_labels (loop->header);
 		  gsi_insert_after (&si, new_stmt, GSI_NEW_STMT);
@@ -4211,8 +4220,9 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 			       j * nunits);
 		  tree tcst = wide_int_to_tree (type, cst);
 		  new_temp = make_ssa_name (TREE_TYPE (op));
-		  new_stmt = gimple_build_assign (new_temp, code,
-						  arginfo[i].op, tcst);
+		  gassign *new_stmt
+		    = gimple_build_assign (new_temp, code,
+					   arginfo[i].op, tcst);
 		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		  vargs.safe_push (new_temp);
 		}
@@ -4228,7 +4238,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 	    }
 	}
 
-      new_stmt = gimple_build_call_vec (fndecl, vargs);
+      gcall *new_call = gimple_build_call_vec (fndecl, vargs);
       if (vec_dest)
 	{
 	  gcc_assert (ratype || simd_clone_subparts (rtype) == nunits);
@@ -4236,12 +4246,13 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 	    new_temp = create_tmp_var (ratype);
 	  else if (simd_clone_subparts (vectype)
 		   == simd_clone_subparts (rtype))
-	    new_temp = make_ssa_name (vec_dest, new_stmt);
+	    new_temp = make_ssa_name (vec_dest, new_call);
 	  else
-	    new_temp = make_ssa_name (rtype, new_stmt);
-	  gimple_call_set_lhs (new_stmt, new_temp);
+	    new_temp = make_ssa_name (rtype, new_call);
+	  gimple_call_set_lhs (new_call, new_temp);
 	}
-      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+      stmt_vec_info new_stmt_info
+	= vect_finish_stmt_generation (stmt, new_call, gsi);
 
       if (vec_dest)
 	{
@@ -4264,15 +4275,18 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 		  else
 		    t = build3 (BIT_FIELD_REF, vectype, new_temp,
 				bitsize_int (prec), bitsize_int (l * prec));
-		  new_stmt
+		  gimple *new_stmt
 		    = gimple_build_assign (make_ssa_name (vectype), t);
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-		  if (j == 0 && l == 0)
-		    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
-		  else
-		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
-		  prev_stmt_info = vinfo_for_stmt (new_stmt);
+		  if (j == 0 && l == 0)
+		    STMT_VINFO_VEC_STMT (stmt_info)
+		      = *vec_stmt = new_stmt_info;
+		  else
+		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+
+		  prev_stmt_info = new_stmt_info;
 		}
 
 	      if (ratype)
@@ -4293,9 +4307,10 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 		    {
 		      tree tem = build4 (ARRAY_REF, rtype, new_temp,
 					 size_int (m), NULL_TREE, NULL_TREE);
-		      new_stmt
+		      gimple *new_stmt
 			= gimple_build_assign (make_ssa_name (rtype), tem);
-		      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		      new_stmt_info
+			= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		      CONSTRUCTOR_APPEND_ELT (ret_ctor_elts, NULL_TREE,
 					      gimple_assign_lhs (new_stmt));
 		    }
@@ -4306,16 +4321,17 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 	      if ((j & (k - 1)) != k - 1)
 		continue;
 	      vec_oprnd0 = build_constructor (vectype, ret_ctor_elts);
-	      new_stmt
+	      gimple *new_stmt
 		= gimple_build_assign (make_ssa_name (vec_dest), vec_oprnd0);
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
 	      if ((unsigned) j == k - 1)
-		STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+		STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
 	      else
-		STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+		STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
 
-	      prev_stmt_info = vinfo_for_stmt (new_stmt);
+	      prev_stmt_info = new_stmt_info;
 	      continue;
 	    }
 	  else if (ratype)
@@ -4323,19 +4339,20 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 	      tree t = build_fold_addr_expr (new_temp);
 	      t = build2 (MEM_REF, vectype, t,
 			  build_int_cst (TREE_TYPE (t), 0));
-	      new_stmt
+	      gimple *new_stmt
 		= gimple_build_assign (make_ssa_name (vec_dest), t);
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	      vect_clobber_variable (stmt, gsi, new_temp);
 	    }
 	}
 
       if (j == 0)
-	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
       else
-	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
 
-      prev_stmt_info = vinfo_for_stmt (new_stmt);
+      prev_stmt_info = new_stmt_info;
     }
 
   vargs.release ();
@@ -4348,6 +4365,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
   if (slp_node)
     return true;
 
+  gimple *new_stmt;
   if (scalar_dest)
     {
       type = TREE_TYPE (scalar_dest);
@@ -4465,7 +4483,6 @@ vect_create_vectorized_demotion_stmts (vec<tree> *vec_oprnds,
 {
   unsigned int i;
   tree vop0, vop1, new_tmp, vec_dest;
-  gimple *new_stmt;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
   vec_dest = vec_dsts.pop ();
@@ -4475,10 +4492,11 @@ vect_create_vectorized_demotion_stmts (vec<tree> *vec_oprnds,
       /* Create demotion operation.  */
       vop0 = (*vec_oprnds)[i];
       vop1 = (*vec_oprnds)[i + 1];
-      new_stmt = gimple_build_assign (vec_dest, code, vop0, vop1);
+      gassign *new_stmt = gimple_build_assign (vec_dest, code, vop0, vop1);
       new_tmp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_tmp);
-      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+      stmt_vec_info new_stmt_info
+	= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
       if (multi_step_cvt)
 	/* Store the resulting vector for next recursive call.  */
@@ -4489,15 +4507,15 @@ vect_create_vectorized_demotion_stmts (vec<tree> *vec_oprnds,
 	     vectors in SLP_NODE or in vector info of the scalar statement
 	     (or in STMT_VINFO_RELATED_STMT chain).  */
 	  if (slp_node)
-	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
 	  else
 	    {
 	      if (!*prev_stmt_info)
-		STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+		STMT_VINFO_VEC_STMT (stmt_info) = new_stmt_info;
 	      else
-		STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt;
+		STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt_info;
 
-	      *prev_stmt_info = vinfo_for_stmt (new_stmt);
+	      *prev_stmt_info = new_stmt_info;
 	    }
 	}
     }
@@ -4595,7 +4613,6 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
   tree new_temp;
   enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
   int ndts = 2;
-  gimple *new_stmt = NULL;
   stmt_vec_info prev_stmt_info;
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
@@ -4965,31 +4982,37 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 
 	  FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
 	    {
+	      stmt_vec_info new_stmt_info;
 	      /* Arguments are ready, create the new vector stmt.  */
 	      if (code1 == CALL_EXPR)
 		{
-		  new_stmt = gimple_build_call (decl1, 1, vop0);
+		  gcall *new_stmt = gimple_build_call (decl1, 1, vop0);
 		  new_temp = make_ssa_name (vec_dest, new_stmt);
 		  gimple_call_set_lhs (new_stmt, new_temp);
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		}
 	      else
 		{
 		  gcc_assert (TREE_CODE_LENGTH (code1) == unary_op);
-		  new_stmt = gimple_build_assign (vec_dest, code1, vop0);
+		  gassign *new_stmt
+		    = gimple_build_assign (vec_dest, code1, vop0);
 		  new_temp = make_ssa_name (vec_dest, new_stmt);
 		  gimple_assign_set_lhs (new_stmt, new_temp);
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		}
 
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	      if (slp_node)
-		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
 	      else
 		{
 		  if (!prev_stmt_info)
-		    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+		    STMT_VINFO_VEC_STMT (stmt_info)
+		      = *vec_stmt = new_stmt_info;
 		  else
-		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-		  prev_stmt_info = vinfo_for_stmt (new_stmt);
+		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+		  prev_stmt_info = new_stmt_info;
 		}
 	    }
 	}
@@ -5075,36 +5098,39 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 
 	  FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
 	    {
+	      stmt_vec_info new_stmt_info;
 	      if (cvt_type)
 		{
 		  if (codecvt1 == CALL_EXPR)
 		    {
-		      new_stmt = gimple_build_call (decl1, 1, vop0);
+		      gcall *new_stmt = gimple_build_call (decl1, 1, vop0);
 		      new_temp = make_ssa_name (vec_dest, new_stmt);
 		      gimple_call_set_lhs (new_stmt, new_temp);
+		      new_stmt_info
+			= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		    }
 		  else
 		    {
 		      gcc_assert (TREE_CODE_LENGTH (codecvt1) == unary_op);
 		      new_temp = make_ssa_name (vec_dest);
-		      new_stmt = gimple_build_assign (new_temp, codecvt1,
-						      vop0);
+		      gassign *new_stmt
+			= gimple_build_assign (new_temp, codecvt1, vop0);
+		      new_stmt_info
+			= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		    }
-
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		}
 	      else
-		new_stmt = SSA_NAME_DEF_STMT (vop0);
+		new_stmt_info = vinfo->lookup_def (vop0);
 
 	      if (slp_node)
-		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
 	      else
 		{
 		  if (!prev_stmt_info)
-		    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+		    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt_info;
 		  else
-		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-		  prev_stmt_info = vinfo_for_stmt (new_stmt);
+		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+		  prev_stmt_info = new_stmt_info;
 		}
 	    }
 	}
@@ -5136,19 +5162,20 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 	      {
 		if (codecvt1 == CALL_EXPR)
 		  {
-		    new_stmt = gimple_build_call (decl1, 1, vop0);
+		    gcall *new_stmt = gimple_build_call (decl1, 1, vop0);
 		    new_temp = make_ssa_name (vec_dest, new_stmt);
 		    gimple_call_set_lhs (new_stmt, new_temp);
+		    vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		  }
 		else
 		  {
 		    gcc_assert (TREE_CODE_LENGTH (codecvt1) == unary_op);
 		    new_temp = make_ssa_name (vec_dest);
-		    new_stmt = gimple_build_assign (new_temp, codecvt1,
-						    vop0);
+		    gassign *new_stmt
+		      = gimple_build_assign (new_temp, codecvt1, vop0);
+		    vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		  }
 
-		vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		vec_oprnds0[i] = new_temp;
 	      }
 
@@ -5196,7 +5223,6 @@ vectorizable_assignment (gimple *stmt, gimple_stmt_iterator *gsi,
   tree vop;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   vec_info *vinfo = stmt_info->vinfo;
-  gimple *new_stmt = NULL;
   stmt_vec_info prev_stmt_info = NULL;
   enum tree_code code;
   tree vectype_in;
@@ -5306,28 +5332,29 @@ vectorizable_assignment (gimple *stmt, gimple_stmt_iterator *gsi,
         vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds, NULL);
 
       /* Arguments are ready. create the new vector stmt.  */
+      stmt_vec_info new_stmt_info = NULL;
       FOR_EACH_VEC_ELT (vec_oprnds, i, vop)
        {
 	 if (CONVERT_EXPR_CODE_P (code)
 	     || code == VIEW_CONVERT_EXPR)
 	   vop = build1 (VIEW_CONVERT_EXPR, vectype, vop);
-         new_stmt = gimple_build_assign (vec_dest, vop);
+	 gassign *new_stmt = gimple_build_assign (vec_dest, vop);
          new_temp = make_ssa_name (vec_dest, new_stmt);
          gimple_assign_set_lhs (new_stmt, new_temp);
-         vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	 new_stmt_info = vect_finish_stmt_generation (stmt, new_stmt, gsi);
          if (slp_node)
-           SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	   SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
        }
 
       if (slp_node)
         continue;
 
       if (j == 0)
-        STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
       else
-        STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
 
-      prev_stmt_info = vinfo_for_stmt (new_stmt);
+      prev_stmt_info = new_stmt_info;
     }
 
   vec_oprnds.release ();
@@ -5398,7 +5425,6 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
   machine_mode optab_op2_mode;
   enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
   int ndts = 2;
-  gimple *new_stmt = NULL;
   stmt_vec_info prev_stmt_info;
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
@@ -5706,25 +5732,26 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
         vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds0, &vec_oprnds1);
 
       /* Arguments are ready.  Create the new vector stmt.  */
+      stmt_vec_info new_stmt_info = NULL;
       FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
         {
           vop1 = vec_oprnds1[i];
-	  new_stmt = gimple_build_assign (vec_dest, code, vop0, vop1);
+	  gassign *new_stmt = gimple_build_assign (vec_dest, code, vop0, vop1);
           new_temp = make_ssa_name (vec_dest, new_stmt);
           gimple_assign_set_lhs (new_stmt, new_temp);
-          vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  new_stmt_info = vect_finish_stmt_generation (stmt, new_stmt, gsi);
           if (slp_node)
-            SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
         }
 
       if (slp_node)
         continue;
 
       if (j == 0)
-        STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
       else
-        STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-      prev_stmt_info = vinfo_for_stmt (new_stmt);
+	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+      prev_stmt_info = new_stmt_info;
     }
 
   vec_oprnds0.release ();
@@ -5762,7 +5789,6 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
   enum vect_def_type dt[3]
     = {vect_unknown_def_type, vect_unknown_def_type, vect_unknown_def_type};
   int ndts = 3;
-  gimple *new_stmt = NULL;
   stmt_vec_info prev_stmt_info;
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
@@ -6090,37 +6116,41 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
 	}
 
       /* Arguments are ready.  Create the new vector stmt.  */
+      stmt_vec_info new_stmt_info = NULL;
       FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
         {
 	  vop1 = ((op_type == binary_op || op_type == ternary_op)
 		  ? vec_oprnds1[i] : NULL_TREE);
 	  vop2 = ((op_type == ternary_op)
 		  ? vec_oprnds2[i] : NULL_TREE);
-	  new_stmt = gimple_build_assign (vec_dest, code, vop0, vop1, vop2);
+	  gassign *new_stmt = gimple_build_assign (vec_dest, code,
+						   vop0, vop1, vop2);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  gimple_assign_set_lhs (new_stmt, new_temp);
-	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  new_stmt_info = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	  if (vec_cvt_dest)
 	    {
 	      new_temp = build1 (VIEW_CONVERT_EXPR, vectype_out, new_temp);
-	      new_stmt = gimple_build_assign (vec_cvt_dest, VIEW_CONVERT_EXPR,
-					      new_temp);
+	      gassign *new_stmt
+		= gimple_build_assign (vec_cvt_dest, VIEW_CONVERT_EXPR,
+				       new_temp);
 	      new_temp = make_ssa_name (vec_cvt_dest, new_stmt);
 	      gimple_assign_set_lhs (new_stmt, new_temp);
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	    }
           if (slp_node)
-	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
         }
 
       if (slp_node)
         continue;
 
       if (j == 0)
-	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
       else
-	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-      prev_stmt_info = vinfo_for_stmt (new_stmt);
+	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+      prev_stmt_info = new_stmt_info;
     }
 
   vec_oprnds0.release ();
@@ -6230,7 +6260,6 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   vec_info *vinfo = stmt_info->vinfo;
   tree aggr_type;
   gather_scatter_info gs_info;
-  gimple *new_stmt;
   poly_uint64 vf;
   vec_load_store_type vls_type;
   tree ref_type;
@@ -6520,7 +6549,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 				    TYPE_VECTOR_SUBPARTS (srctype)));
 	      var = vect_get_new_ssa_name (srctype, vect_simple_var);
 	      src = build1 (VIEW_CONVERT_EXPR, srctype, src);
-	      new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR, src);
+	      gassign *new_stmt
+		= gimple_build_assign (var, VIEW_CONVERT_EXPR, src);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	      src = var;
 	    }
@@ -6531,21 +6561,22 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 				    TYPE_VECTOR_SUBPARTS (idxtype)));
 	      var = vect_get_new_ssa_name (idxtype, vect_simple_var);
 	      op = build1 (VIEW_CONVERT_EXPR, idxtype, op);
-	      new_stmt = gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
+	      gassign *new_stmt
+		= gimple_build_assign (var, VIEW_CONVERT_EXPR, op);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	      op = var;
 	    }
 
-	  new_stmt
+	  gcall *new_stmt
 	    = gimple_build_call (gs_info.decl, 5, ptr, mask, op, src, scale);
-
-	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  stmt_vec_info new_stmt_info
+	    = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
 	  if (prev_stmt_info == NULL_STMT_VEC_INFO)
-	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
 	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+	  prev_stmt_info = new_stmt_info;
 	}
       return true;
     }
@@ -6806,7 +6837,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
 		  /* And store it to *running_off.  */
 		  assign = gimple_build_assign (newref, elem);
-		  vect_finish_stmt_generation (stmt, assign, gsi);
+		  stmt_vec_info assign_info
+		    = vect_finish_stmt_generation (stmt, assign, gsi);
 
 		  group_el += lnel;
 		  if (! slp
@@ -6825,10 +6857,10 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		    {
 		      if (j == 0 && i == 0)
 			STMT_VINFO_VEC_STMT (stmt_info)
-			    = *vec_stmt = assign;
+			    = *vec_stmt = assign_info;
 		      else
-			STMT_VINFO_RELATED_STMT (prev_stmt_info) = assign;
-		      prev_stmt_info = vinfo_for_stmt (assign);
+			STMT_VINFO_RELATED_STMT (prev_stmt_info) = assign_info;
+		      prev_stmt_info = assign_info;
 		    }
 		}
 	    }
@@ -6931,7 +6963,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   tree vec_mask = NULL_TREE;
   for (j = 0; j < ncopies; j++)
     {
-
+      stmt_vec_info new_stmt_info;
       if (j == 0)
 	{
           if (slp)
@@ -7081,15 +7113,14 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      gimple_call_set_lhs (call, data_ref);
 	    }
 	  gimple_call_set_nothrow (call, true);
-	  new_stmt = call;
-	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  new_stmt_info = vect_finish_stmt_generation (stmt, call, gsi);
 
 	  /* Record that VEC_ARRAY is now dead.  */
 	  vect_clobber_variable (stmt, gsi, vec_array);
 	}
       else
 	{
-	  new_stmt = NULL;
+	  new_stmt_info = NULL;
 	  if (grouped_store)
 	    {
 	      if (j == 0)
@@ -7126,8 +7157,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		      (IFN_SCATTER_STORE, 4, dataref_ptr, vec_offset,
 		       scale, vec_oprnd);
 		  gimple_call_set_nothrow (call, true);
-		  new_stmt = call;
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt, call, gsi);
 		  break;
 		}
 
@@ -7186,7 +7217,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 						  dataref_ptr, ptr,
 						  final_mask, vec_oprnd);
 		  gimple_call_set_nothrow (call, true);
-		  new_stmt = call;
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt, call, gsi);
 		}
 	      else
 		{
@@ -7206,9 +7238,11 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		      = build_aligned_type (TREE_TYPE (data_ref),
 					    TYPE_ALIGN (elem_type));
 		  vect_copy_ref_info (data_ref, DR_REF (first_dr));
-		  new_stmt = gimple_build_assign (data_ref, vec_oprnd);
+		  gassign *new_stmt
+		    = gimple_build_assign (data_ref, vec_oprnd);
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		}
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
 	      if (slp)
 		continue;
@@ -7221,10 +7255,10 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       if (!slp)
 	{
 	  if (j == 0)
-	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
 	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+	  prev_stmt_info = new_stmt_info;
 	}
     }
 
@@ -7370,7 +7404,6 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   tree elem_type;
   tree new_temp;
   machine_mode mode;
-  gimple *new_stmt = NULL;
   tree dummy;
   enum dr_alignment_support alignment_support_scheme;
   tree dataref_ptr = NULL_TREE;
@@ -7812,14 +7845,17 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	{
 	  if (nloads > 1)
 	    vec_alloc (v, nloads);
+	  stmt_vec_info new_stmt_info = NULL;
 	  for (i = 0; i < nloads; i++)
 	    {
 	      tree this_off = build_int_cst (TREE_TYPE (alias_off),
 					     group_el * elsz + cst_offset);
 	      tree data_ref = build2 (MEM_REF, ltype, running_off, this_off);
 	      vect_copy_ref_info (data_ref, DR_REF (first_dr));
-	      new_stmt = gimple_build_assign (make_ssa_name (ltype), data_ref);
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      gassign *new_stmt
+		= gimple_build_assign (make_ssa_name (ltype), data_ref);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	      if (nloads > 1)
 		CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 					gimple_assign_lhs (new_stmt));
@@ -7841,31 +7877,33 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    {
 	      tree vec_inv = build_constructor (lvectype, v);
 	      new_temp = vect_init_vector (stmt, vec_inv, lvectype, gsi);
-	      new_stmt = SSA_NAME_DEF_STMT (new_temp);
+	      new_stmt_info = vinfo->lookup_def (new_temp);
 	      if (lvectype != vectype)
 		{
-		  new_stmt = gimple_build_assign (make_ssa_name (vectype),
-						  VIEW_CONVERT_EXPR,
-						  build1 (VIEW_CONVERT_EXPR,
-							  vectype, new_temp));
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		  gassign *new_stmt
+		    = gimple_build_assign (make_ssa_name (vectype),
+					   VIEW_CONVERT_EXPR,
+					   build1 (VIEW_CONVERT_EXPR,
+						   vectype, new_temp));
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		}
 	    }
 
 	  if (slp)
 	    {
 	      if (slp_perm)
-		dr_chain.quick_push (gimple_assign_lhs (new_stmt));
+		dr_chain.quick_push (gimple_assign_lhs (new_stmt_info->stmt));
 	      else
-		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
 	    }
 	  else
 	    {
 	      if (j == 0)
-		STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+		STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
 	      else
-		STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	      prev_stmt_info = vinfo_for_stmt (new_stmt);
+		STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+	      prev_stmt_info = new_stmt_info;
 	    }
 	}
       if (slp_perm)
@@ -8122,6 +8160,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   poly_uint64 group_elt = 0;
   for (j = 0; j < ncopies; j++)
     {
+      stmt_vec_info new_stmt_info = NULL;
       /* 1. Create the vector or array pointer update chain.  */
       if (j == 0)
 	{
@@ -8228,8 +8267,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    }
 	  gimple_call_set_lhs (call, vec_array);
 	  gimple_call_set_nothrow (call, true);
-	  new_stmt = call;
-	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  new_stmt_info = vect_finish_stmt_generation (stmt, call, gsi);
 
 	  /* Extract each vector into an SSA_NAME.  */
 	  for (i = 0; i < vec_num; i++)
@@ -8264,6 +8302,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 					       stmt, bump);
 
 	      /* 2. Create the vector-load in the loop.  */
+	      gimple *new_stmt = NULL;
 	      switch (alignment_support_scheme)
 		{
 		case dr_aligned:
@@ -8421,7 +8460,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		}
 	      new_temp = make_ssa_name (vec_dest, new_stmt);
 	      gimple_set_lhs (new_stmt, new_temp);
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
 	      /* 3. Handle explicit realignment if necessary/supported.
 		 Create in loop:
@@ -8437,7 +8477,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 						  msq, lsq, realignment_token);
 		  new_temp = make_ssa_name (vec_dest, new_stmt);
 		  gimple_assign_set_lhs (new_stmt, new_temp);
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
 		  if (alignment_support_scheme == dr_explicit_realign_optimized)
 		    {
@@ -8477,7 +8518,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 					        (gimple_assign_rhs1 (stmt))));
 		      new_temp = vect_init_vector (stmt, tem, vectype, NULL);
 		      new_stmt = SSA_NAME_DEF_STMT (new_temp);
-		      vinfo->add_stmt (new_stmt);
+		      new_stmt_info = vinfo->add_stmt (new_stmt);
 		    }
 		  else
 		    {
@@ -8485,7 +8526,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		      gsi_next (&gsi2);
 		      new_temp = vect_init_vector (stmt, scalar_dest,
 						   vectype, &gsi2);
-		      new_stmt = SSA_NAME_DEF_STMT (new_temp);
+		      new_stmt_info = vinfo->lookup_def (new_temp);
 		    }
 		}
 
@@ -8494,7 +8535,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		  tree perm_mask = perm_mask_for_reverse (vectype);
 		  new_temp = permute_vec_elements (new_temp, new_temp,
 						   perm_mask, stmt, gsi);
-		  new_stmt = SSA_NAME_DEF_STMT (new_temp);
+		  new_stmt_info = vinfo->lookup_def (new_temp);
 		}
 
 	      /* Collect vector loads and later create their permutation in
@@ -8504,7 +8545,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
 	      /* Store vector loads in the corresponding SLP_NODE.  */
 	      if (slp && !slp_perm)
-		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
 
 	      /* With SLP permutation we load the gaps as well, without
 	         we need to skip the gaps after we manage to fully load
@@ -8561,10 +8602,10 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
           else
 	    {
 	      if (j == 0)
-	        STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	        STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
 	      else
-	        STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	      prev_stmt_info = vinfo_for_stmt (new_stmt);
+	        STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+	      prev_stmt_info = new_stmt_info;
 	    }
         }
       dr_chain.release ();
@@ -8869,7 +8910,7 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
   /* Handle cond expr.  */
   for (j = 0; j < ncopies; j++)
     {
-      gimple *new_stmt = NULL;
+      stmt_vec_info new_stmt_info = NULL;
       if (j == 0)
 	{
           if (slp_node)
@@ -8974,6 +9015,7 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 	      else
 		{
 		  new_temp = make_ssa_name (vec_cmp_type);
+		  gassign *new_stmt;
 		  if (bitop1 == BIT_NOT_EXPR)
 		    new_stmt = gimple_build_assign (new_temp, bitop1,
 						    vec_cond_rhs);
@@ -9005,19 +9047,19 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 	      if (!is_gimple_val (vec_compare))
 		{
 		  tree vec_compare_name = make_ssa_name (vec_cmp_type);
-		  new_stmt = gimple_build_assign (vec_compare_name,
-						  vec_compare);
+		  gassign *new_stmt = gimple_build_assign (vec_compare_name,
+							   vec_compare);
 		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		  vec_compare = vec_compare_name;
 		}
 	      gcc_assert (reduc_index == 2);
-	      new_stmt = gimple_build_call_internal
+	      gcall *new_stmt = gimple_build_call_internal
 		(IFN_FOLD_EXTRACT_LAST, 3, else_clause, vec_compare,
 		 vec_then_clause);
 	      gimple_call_set_lhs (new_stmt, scalar_dest);
 	      SSA_NAME_DEF_STMT (scalar_dest) = new_stmt;
 	      if (stmt == gsi_stmt (*gsi))
-		vect_finish_replace_stmt (stmt, new_stmt);
+		new_stmt_info = vect_finish_replace_stmt (stmt, new_stmt);
 	      else
 		{
 		  /* In this case we're moving the definition to later in the
@@ -9025,30 +9067,32 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 		     lhs are in phi statements.  */
 		  gimple_stmt_iterator old_gsi = gsi_for_stmt (stmt);
 		  gsi_remove (&old_gsi, true);
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		}
 	    }
 	  else
 	    {
 	      new_temp = make_ssa_name (vec_dest);
-	      new_stmt = gimple_build_assign (new_temp, VEC_COND_EXPR,
-					      vec_compare, vec_then_clause,
-					      vec_else_clause);
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      gassign *new_stmt
+		= gimple_build_assign (new_temp, VEC_COND_EXPR, vec_compare,
+				       vec_then_clause, vec_else_clause);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	    }
           if (slp_node)
-            SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
         }
 
         if (slp_node)
           continue;
 
-        if (j == 0)
-          STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
-        else
-          STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	if (j == 0)
+	  STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
+	else
+	  STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
 
-        prev_stmt_info = vinfo_for_stmt (new_stmt);
+	prev_stmt_info = new_stmt_info;
     }
 
   vec_oprnds0.release ();
@@ -9244,7 +9288,7 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
   /* Handle cmp expr.  */
   for (j = 0; j < ncopies; j++)
     {
-      gassign *new_stmt = NULL;
+      stmt_vec_info new_stmt_info = NULL;
       if (j == 0)
 	{
 	  if (slp_node)
@@ -9286,18 +9330,21 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
 	  new_temp = make_ssa_name (mask);
 	  if (bitop1 == NOP_EXPR)
 	    {
-	      new_stmt = gimple_build_assign (new_temp, code,
-					      vec_rhs1, vec_rhs2);
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      gassign *new_stmt = gimple_build_assign (new_temp, code,
+						       vec_rhs1, vec_rhs2);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	    }
 	  else
 	    {
+	      gassign *new_stmt;
 	      if (bitop1 == BIT_NOT_EXPR)
 		new_stmt = gimple_build_assign (new_temp, bitop1, vec_rhs2);
 	      else
 		new_stmt = gimple_build_assign (new_temp, bitop1, vec_rhs1,
 						vec_rhs2);
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	      if (bitop2 != NOP_EXPR)
 		{
 		  tree res = make_ssa_name (mask);
@@ -9306,22 +9353,23 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
 		  else
 		    new_stmt = gimple_build_assign (res, bitop2, vec_rhs1,
 						    new_temp);
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		  new_stmt_info
+		    = vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		}
 	    }
 	  if (slp_node)
-	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
 	}
 
       if (slp_node)
 	continue;
 
       if (j == 0)
-	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
       else
-	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
 
-      prev_stmt_info = vinfo_for_stmt (new_stmt);
+      prev_stmt_info = new_stmt_info;
     }
 
   vec_oprnds0.release ();
