@@ -9377,6 +9377,7 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node,
 		   slp_instance node_instance, stmt_vector_for_cost *cost_vec)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  vec_info *vinfo = stmt_info->vinfo;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   enum vect_relevant relevance = STMT_VINFO_RELEVANT (stmt_info);
   bool ok;
@@ -9407,8 +9408,10 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node,
       for (si = gsi_start (pattern_def_seq); !gsi_end_p (si); gsi_next (&si))
 	{
 	  gimple *pattern_def_stmt = gsi_stmt (si);
-	  if (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_def_stmt))
-	      || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_def_stmt)))
+	  stmt_vec_info pattern_def_stmt_info
+	    = vinfo->lookup_stmt (gsi_stmt (si));
+	  if (STMT_VINFO_RELEVANT_P (pattern_def_stmt_info)
+	      || STMT_VINFO_LIVE_P (pattern_def_stmt_info))
 	    {
 	      /* Analyze def stmt of STMT if it's a pattern stmt.  */
 	      if (dump_enabled_p ())
@@ -9605,9 +9608,10 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
 		     bool *grouped_store, slp_tree slp_node,
                      slp_instance slp_node_instance)
 {
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  vec_info *vinfo = stmt_info->vinfo;
   bool is_store = false;
   gimple *vec_stmt = NULL;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   bool done;
 
   gcc_assert (slp_node || !PURE_SLP_STMT (stmt_info));
@@ -9728,7 +9732,6 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
       imm_use_iterator imm_iter;
       use_operand_p use_p;
       tree scalar_dest;
-      gimple *exit_phi;
 
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
@@ -9743,13 +9746,12 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
         scalar_dest = gimple_assign_lhs (stmt);
 
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
-       {
-         if (!flow_bb_inside_loop_p (innerloop, gimple_bb (USE_STMT (use_p))))
-           {
-             exit_phi = USE_STMT (use_p);
-             STMT_VINFO_VEC_STMT (vinfo_for_stmt (exit_phi)) = vec_stmt;
-           }
-       }
+	if (!flow_bb_inside_loop_p (innerloop, gimple_bb (USE_STMT (use_p))))
+	  {
+	    stmt_vec_info exit_phi_info
+	      = vinfo->lookup_stmt (USE_STMT (use_p));
+	    STMT_VINFO_VEC_STMT (exit_phi_info) = vec_stmt;
+	  }
     }
 
   /* Handle stmts whose DEF is used outside the loop-nest that is

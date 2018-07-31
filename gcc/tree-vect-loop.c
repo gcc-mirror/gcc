@@ -213,6 +213,7 @@ static bool
 vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
 			    vec<stmt_vec_info > *mask_producers)
 {
+  vec_info *vinfo = stmt_info->vinfo;
   if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_NOTE, vect_location, "==> examining statement: ");
@@ -231,7 +232,7 @@ vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
       for (gimple_stmt_iterator si = gsi_start (pattern_def_seq);
 	   !gsi_end_p (si); gsi_next (&si))
 	{
-	  stmt_vec_info def_stmt_info = vinfo_for_stmt (gsi_stmt (si));
+	  stmt_vec_info def_stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
@@ -306,7 +307,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	   gsi_next (&si))
 	{
 	  phi = si.phi ();
-	  stmt_info = vinfo_for_stmt (phi);
+	  stmt_info = loop_vinfo->lookup_stmt (phi);
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location, "==> examining phi: ");
@@ -366,7 +367,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
       for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
 	   gsi_next (&si))
 	{
-	  stmt_info = vinfo_for_stmt (gsi_stmt (si));
+	  stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  if (!vect_determine_vf_for_stmt (stmt_info, &vectorization_factor,
 					   &mask_producers))
 	    return false;
@@ -487,7 +488,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
       gphi *phi = gsi.phi ();
       tree access_fn = NULL;
       tree def = PHI_RESULT (phi);
-      stmt_vec_info stmt_vinfo = vinfo_for_stmt (phi);
+      stmt_vec_info stmt_vinfo = loop_vinfo->lookup_stmt (phi);
 
       if (dump_enabled_p ())
 	{
@@ -1101,7 +1102,7 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
         {
 	  gimple *stmt = gsi_stmt (si);
-          stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (stmt);
 
           if (!is_gimple_assign (stmt) && !is_gimple_call (stmt))
             continue;
@@ -1390,10 +1391,14 @@ vect_analyze_loop_form (struct loop *loop, vec_info_shared *shared)
         }
     }
 
-  STMT_VINFO_TYPE (vinfo_for_stmt (loop_cond)) = loop_exit_ctrl_vec_info_type;
+  stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (loop_cond);
+  STMT_VINFO_TYPE (loop_cond_info) = loop_exit_ctrl_vec_info_type;
   if (inner_loop_cond)
-    STMT_VINFO_TYPE (vinfo_for_stmt (inner_loop_cond))
-      = loop_exit_ctrl_vec_info_type;
+    {
+      stmt_vec_info inner_loop_cond_info
+	= loop_vinfo->lookup_stmt (inner_loop_cond);
+      STMT_VINFO_TYPE (inner_loop_cond_info) = loop_exit_ctrl_vec_info_type;
+    }
 
   gcc_assert (!loop->aux);
   loop->aux = loop_vinfo;
@@ -1432,7 +1437,7 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
 	   gsi_next (&si))
 	{
 	  gimple *stmt = gsi_stmt (si);
-	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info)
 	      && STMT_VINFO_RELATED_STMT (stmt_info))
 	    {
@@ -1532,7 +1537,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
           gphi *phi = si.phi ();
           ok = true;
 
-          stmt_info = vinfo_for_stmt (phi);
+	  stmt_info = loop_vinfo->lookup_stmt (phi);
           if (dump_enabled_p ())
             {
               dump_printf_loc (MSG_NOTE, vect_location, "examining phi: ");
@@ -2238,13 +2243,13 @@ again:
       for (gimple_stmt_iterator si = gsi_start_phis (bb);
 	   !gsi_end_p (si); gsi_next (&si))
 	{
-	  stmt_vec_info stmt_info = vinfo_for_stmt (gsi_stmt (si));
+	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  STMT_SLP_TYPE (stmt_info) = loop_vect;
 	}
       for (gimple_stmt_iterator si = gsi_start_bb (bb);
 	   !gsi_end_p (si); gsi_next (&si))
 	{
-	  stmt_vec_info stmt_info = vinfo_for_stmt (gsi_stmt (si));
+	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  STMT_SLP_TYPE (stmt_info) = loop_vect;
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 	    {
@@ -2253,10 +2258,8 @@ again:
 	      STMT_SLP_TYPE (stmt_info) = loop_vect;
 	      for (gimple_stmt_iterator pi = gsi_start (pattern_def_seq);
 		   !gsi_end_p (pi); gsi_next (&pi))
-		{
-		  gimple *pstmt = gsi_stmt (pi);
-		  STMT_SLP_TYPE (vinfo_for_stmt (pstmt)) = loop_vect;
-		}
+		STMT_SLP_TYPE (loop_vinfo->lookup_stmt (gsi_stmt (pi)))
+		  = loop_vect;
 	    }
 	}
     }
@@ -2602,7 +2605,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
         return false;
 
       /* Insert USE_STMT into reduction chain.  */
-      use_stmt_info = vinfo_for_stmt (loop_use_stmt);
+      use_stmt_info = loop_info->lookup_stmt (loop_use_stmt);
       if (current_stmt)
         {
           current_stmt_info = vinfo_for_stmt (current_stmt);
@@ -5549,7 +5552,7 @@ vect_finalize_reduction:
         {
 	  stmt_vec_info epilog_stmt_info = loop_vinfo->add_stmt (epilog_stmt);
 	  STMT_VINFO_RELATED_STMT (epilog_stmt_info)
-	    = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (new_phi));
+	    = STMT_VINFO_RELATED_STMT (loop_vinfo->lookup_stmt (new_phi));
 
           if (!double_reduc)
             scalar_results.quick_push (new_temp);
@@ -5653,7 +5656,8 @@ vect_finalize_reduction:
         {
           if (outer_loop)
             {
-              stmt_vec_info exit_phi_vinfo = vinfo_for_stmt (exit_phi);
+	      stmt_vec_info exit_phi_vinfo
+		= loop_vinfo->lookup_stmt (exit_phi);
               gphi *vect_phi;
 
               /* FORNOW. Currently not supporting the case that an inner-loop
@@ -5700,7 +5704,7 @@ vect_finalize_reduction:
                       || gimple_phi_num_args (use_stmt) != 2
                       || bb->loop_father != outer_loop)
                     continue;
-                  use_stmt_vinfo = vinfo_for_stmt (use_stmt);
+		  use_stmt_vinfo = loop_vinfo->lookup_stmt (use_stmt);
                   if (!use_stmt_vinfo
                       || STMT_VINFO_DEF_TYPE (use_stmt_vinfo)
                           != vect_double_reduction_def)
@@ -7377,7 +7381,7 @@ vectorizable_induction (gimple *phi,
 	}
       if (exit_phi)
 	{
-	  stmt_vec_info exit_phi_vinfo  = vinfo_for_stmt (exit_phi);
+	  stmt_vec_info exit_phi_vinfo = loop_vinfo->lookup_stmt (exit_phi);
 	  if (!(STMT_VINFO_RELEVANT_P (exit_phi_vinfo)
 		&& !STMT_VINFO_LIVE_P (exit_phi_vinfo)))
 	    {
@@ -7801,7 +7805,7 @@ vectorizable_induction (gimple *phi,
         }
       if (exit_phi)
 	{
-	  stmt_vec_info stmt_vinfo = vinfo_for_stmt (exit_phi);
+	  stmt_vec_info stmt_vinfo = loop_vinfo->lookup_stmt (exit_phi);
 	  /* FORNOW. Currently not supporting the case that an inner-loop induction
 	     is not used in the outer-loop (i.e. only outside the outer-loop).  */
 	  gcc_assert (STMT_VINFO_RELEVANT_P (stmt_vinfo)
@@ -8260,7 +8264,7 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, gimple *stmt,
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (stmt);
   if (!stmt_info)
     return;
 
@@ -8463,7 +8467,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
                                "------>vectorizing phi: ");
 	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
 	    }
-	  stmt_info = vinfo_for_stmt (phi);
+	  stmt_info = loop_vinfo->lookup_stmt (phi);
 	  if (!stmt_info)
 	    continue;
 
@@ -8504,7 +8508,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	    }
 	  else
 	    {
-	      stmt_info = vinfo_for_stmt (stmt);
+	      stmt_info = loop_vinfo->lookup_stmt (stmt);
 
 	      /* vector stmts created in the outer-loop during vectorization of
 		 stmts in an inner-loop may not have a stmt_info, and do not
