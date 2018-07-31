@@ -1,3 +1,97 @@
+2018-07-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* dump-context.h: Include "pretty-print.h".
+	(dump_context::refresh_dumps_are_enabled): New decl.
+	(dump_context::emit_item): New decl.
+	(class dump_context): Add fields "m_test_pp" and
+	"m_test_pp_flags".
+	(temp_dump_context::temp_dump_context): Add param "test_pp_flags".
+	(temp_dump_context::get_dumped_text): New decl.
+	(class temp_dump_context): Add field "m_pp".
+	* dumpfile.c (refresh_dumps_are_enabled): Convert to...
+	(dump_context::refresh_dumps_are_enabled): ...and add a test for
+	m_test_pp.
+	(set_dump_file): Update for above change.
+	(set_alt_dump_file): Likewise.
+	(dump_loc): New overload, taking a pretty_printer *.
+	(dump_context::dump_loc): Call end_any_optinfo.  Dump the location
+	to any test pretty-printer.
+	(make_item_for_dump_gimple_stmt): New function, adapted from
+	optinfo::add_gimple_stmt.
+	(dump_context::dump_gimple_stmt): Call it, and use the result,
+	eliminating the direct usage of dump_file and alt_dump_file in
+	favor of indirectly using them via emit_item.
+	(make_item_for_dump_gimple_expr): New function, adapted from
+	optinfo::add_gimple_expr.
+	(dump_context::dump_gimple_expr): Call it, and use the result,
+	eliminating the direct usage of dump_file and alt_dump_file in
+	favor of indirectly using them via emit_item.
+	(make_item_for_dump_generic_expr): New function, adapted from
+	optinfo::add_tree.
+	(dump_context::dump_generic_expr): Call it, and use the result,
+	eliminating the direct usage of dump_file and alt_dump_file in
+	favor of indirectly using them via emit_item.
+	(make_item_for_dump_printf_va): New function, adapted from
+	optinfo::add_printf_va.
+	(make_item_for_dump_printf): New function.
+	(dump_context::dump_printf_va): Call make_item_for_dump_printf_va,
+	and use the result, eliminating the direct usage of dump_file and
+	alt_dump_file in favor of indirectly using them via emit_item.
+	(make_item_for_dump_dec): New function.
+	(dump_context::dump_dec): Call it, and use the result,
+	eliminating the direct usage of dump_file and alt_dump_file in
+	favor of indirectly using them via emit_item.
+	(make_item_for_dump_symtab_node): New function, adapted from
+	optinfo::add_symtab_node.
+	(dump_context::dump_symtab_node): Call it, and use the result,
+	eliminating the direct usage of dump_file and alt_dump_file in
+	favor of indirectly using them via emit_item.
+	(dump_context::begin_scope): Reimplement, avoiding direct usage
+	of dump_file and alt_dump_file in favor of indirectly using them
+	via emit_item.
+	(dump_context::emit_item): New member function.
+	(temp_dump_context::temp_dump_context): Add param "test_pp_flags".
+	Set up test pretty-printer on the underlying context.  Call
+	refresh_dumps_are_enabled.
+	(temp_dump_context::~temp_dump_context): Call
+	refresh_dumps_are_enabled.
+	(temp_dump_context::get_dumped_text): New member function.
+	(selftest::verify_dumped_text): New function.
+	(ASSERT_DUMPED_TEXT_EQ): New macro.
+	(selftest::test_capture_of_dump_calls): Run all tests twice, with
+	and then without optinfo enabled.  Add uses of
+	ASSERT_DUMPED_TEXT_EQ to all tests.  Add test of nested scopes.
+	* dumpfile.h: Update comment for the dump_* API.
+	* optinfo-emit-json.cc
+	(selftest::test_building_json_from_dump_calls): Update for new
+	param for temp_dump_context ctor.
+	* optinfo.cc (optinfo_item::optinfo_item): Remove "owned" param
+	and "m_owned" field.
+	(optinfo_item::~optinfo_item): Likewise.
+	(optinfo::add_item): New member function.
+	(optinfo::emit): Update comment.
+	(optinfo::add_string): Delete.
+	(optinfo::add_printf): Delete.
+	(optinfo::add_printf_va): Delete.
+	(optinfo::add_gimple_stmt): Delete.
+	(optinfo::add_gimple_expr): Delete.
+	(optinfo::add_tree): Delete.
+	(optinfo::add_symtab_node): Delete.
+	(optinfo::add_dec): Delete.
+	* optinfo.h (class dump_context): New forward decl.
+	(optinfo::add_item): New decl.
+	(optinfo::add_string): Delete.
+	(optinfo::add_printf): Delete.
+	(optinfo::add_printf_va): Delete.
+	(optinfo::add_gimple_stmt): Delete.
+	(optinfo::add_gimple_expr): Delete.
+	(optinfo::add_tree): Delete.
+	(optinfo::add_symtab_node): Delete.
+	(optinfo::add_dec): Delete.
+	(optinfo::add_poly_int): Delete.
+	(optinfo_item::optinfo_item): Remove "owned" param.
+	(class optinfo_item): Remove field "m_owned".
+
 2018-07-31  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	PR middle-end/86705
