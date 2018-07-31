@@ -1,3 +1,12 @@
+2018-07-31  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_expand_setmem): Make the unrolling to
+	depend on whether prefetch instructions will be emitted or not.
+	Use TARGET_SETMEM_PFD for checking whether prefetch instructions
+	will be emitted or not.
+	* config/s390/s390.h (TARGET_SETMEM_PREFETCH_DISTANCE)
+	(TARGET_SETMEM_PFD): New macros.
+
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vectorizer.h (stmt_vec_info): Turn back into a typedef.
