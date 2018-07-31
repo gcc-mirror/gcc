@@ -871,9 +871,9 @@ struct _stmt_vec_info {
 
   /* Interleaving and reduction chains info.  */
   /* First element in the group.  */
-  gimple *first_element;
+  stmt_vec_info first_element;
   /* Pointer to the next element in the group.  */
-  gimple *next_element;
+  stmt_vec_info next_element;
   /* For data-refs, in case that two or more stmts share data-ref, this is the
      pointer to the previously detected stmt with the same dr.  */
   gimple *same_dr_stmt;

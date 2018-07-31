@@ -1,5 +1,29 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (_stmt_vec_info::first_element): Change from
+	a gimple stmt to a stmt_vec_info.
+	(_stmt_vec_info::next_element): Likewise.
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel)
+	(vect_slp_analyze_and_verify_node_alignment)
+	(vect_analyze_group_access_1, vect_analyze_group_access)
+	(vect_small_gap_p, vect_prune_runtime_alias_test_list)
+	(vect_create_data_ref_ptr, vect_record_grouped_load_vectors)
+	(vect_supportable_dr_alignment): Update accordingly.
+	* tree-vect-loop.c (vect_fixup_reduc_chain): Likewise.
+	(vect_fixup_scalar_cycles_with_patterns, vect_is_slp_reduction)
+	(vect_is_simple_reduction, vectorizable_reduction): Likewise.
+	* tree-vect-patterns.c (vect_reassociating_reduction_p): Likewise.
+	* tree-vect-slp.c (vect_build_slp_tree_1)
+	(vect_attempt_slp_rearrange_stmts, vect_supported_load_permutation_p)
+	(vect_split_slp_store_group, vect_analyze_slp_instance)
+	(vect_analyze_slp, vect_transform_slp_perm_load): Likewise.
+	* tree-vect-stmts.c (vect_model_store_cost, vect_model_load_cost)
+	(get_group_load_store_type, get_load_store_type)
+	(get_group_alias_ptr_type, vectorizable_store, vectorizable_load)
+	(vect_transform_stmt, vect_remove_stores): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_dr_stmt): Return a stmt_vec_info rather
 	than a gimple stmt.
 	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence)

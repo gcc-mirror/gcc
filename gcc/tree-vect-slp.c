@@ -712,7 +712,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   int icode;
   machine_mode optab_op2_mode;
   machine_mode vec_mode;
-  gimple *first_load = NULL, *prev_first_load = NULL;
+  stmt_vec_info first_load = NULL, prev_first_load = NULL;
 
   /* For every stmt in NODE find its def stmt/s.  */
   stmt_vec_info stmt_info;
@@ -1692,8 +1692,7 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
   FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
     {
       stmt_vec_info first_stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
-      first_stmt_info
-	= vinfo_for_stmt (DR_GROUP_FIRST_ELEMENT (first_stmt_info));
+      first_stmt_info = DR_GROUP_FIRST_ELEMENT (first_stmt_info);
       /* But we have to keep those permutations that are required because
          of handling of gaps.  */
       if (known_eq (unrolling_factor, 1U)
@@ -1717,7 +1716,6 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
   unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (slp_instn);
   unsigned int i, j, k, next;
   slp_tree node;
-  gimple *next_load;
 
   if (dump_enabled_p ())
     {
@@ -1766,26 +1764,25 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 	  if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	    continue;
 	  bool subchain_p = true;
-          next_load = NULL;
+	  stmt_vec_info next_load_info = NULL;
 	  stmt_vec_info load_info;
 	  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), j, load_info)
 	    {
 	      if (j != 0
-		  && (next_load != load_info
+		  && (next_load_info != load_info
 		      || DR_GROUP_GAP (load_info) != 1))
 		{
 		  subchain_p = false;
 		  break;
 		}
-	      next_load = DR_GROUP_NEXT_ELEMENT (load_info);
+	      next_load_info = DR_GROUP_NEXT_ELEMENT (load_info);
 	    }
 	  if (subchain_p)
 	    SLP_TREE_LOAD_PERMUTATION (node).release ();
 	  else
 	    {
 	      stmt_vec_info group_info = SLP_TREE_SCALAR_STMTS (node)[0];
-	      group_info
-		= vinfo_for_stmt (DR_GROUP_FIRST_ELEMENT (group_info));
+	      group_info = DR_GROUP_FIRST_ELEMENT (group_info);
 	      unsigned HOST_WIDE_INT nunits;
 	      unsigned k, maxk = 0;
 	      FOR_EACH_VEC_ELT (SLP_TREE_LOAD_PERMUTATION (node), j, k)
@@ -1868,33 +1865,33 @@ static gimple *
 vect_split_slp_store_group (gimple *first_stmt, unsigned group1_size)
 {
   stmt_vec_info first_vinfo = vinfo_for_stmt (first_stmt);
-  gcc_assert (DR_GROUP_FIRST_ELEMENT (first_vinfo) == first_stmt);
+  gcc_assert (DR_GROUP_FIRST_ELEMENT (first_vinfo) == first_vinfo);
   gcc_assert (group1_size > 0);
   int group2_size = DR_GROUP_SIZE (first_vinfo) - group1_size;
   gcc_assert (group2_size > 0);
   DR_GROUP_SIZE (first_vinfo) = group1_size;
 
-  gimple *stmt = first_stmt;
+  stmt_vec_info stmt_info = first_vinfo;
   for (unsigned i = group1_size; i > 1; i--)
     {
-      stmt = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (stmt));
-      gcc_assert (DR_GROUP_GAP (vinfo_for_stmt (stmt)) == 1);
+      stmt_info = DR_GROUP_NEXT_ELEMENT (stmt_info);
+      gcc_assert (DR_GROUP_GAP (stmt_info) == 1);
     }
   /* STMT is now the last element of the first group.  */
-  gimple *group2 = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (stmt));
-  DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (stmt)) = 0;
+  stmt_vec_info group2 = DR_GROUP_NEXT_ELEMENT (stmt_info);
+  DR_GROUP_NEXT_ELEMENT (stmt_info) = 0;
 
-  DR_GROUP_SIZE (vinfo_for_stmt (group2)) = group2_size;
-  for (stmt = group2; stmt; stmt = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (stmt)))
+  DR_GROUP_SIZE (group2) = group2_size;
+  for (stmt_info = group2; stmt_info;
+       stmt_info = DR_GROUP_NEXT_ELEMENT (stmt_info))
     {
-      DR_GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = group2;
-      gcc_assert (DR_GROUP_GAP (vinfo_for_stmt (stmt)) == 1);
+      DR_GROUP_FIRST_ELEMENT (stmt_info) = group2;
+      gcc_assert (DR_GROUP_GAP (stmt_info) == 1);
     }
 
   /* For the second group, the DR_GROUP_GAP is that before the original group,
      plus skipping over the first vector.  */
-  DR_GROUP_GAP (vinfo_for_stmt (group2))
-    = DR_GROUP_GAP (first_vinfo) + group1_size;
+  DR_GROUP_GAP (group2) = DR_GROUP_GAP (first_vinfo) + group1_size;
 
   /* DR_GROUP_GAP of the first group now has to skip over the second group too.  */
   DR_GROUP_GAP (first_vinfo) += group2_size;
@@ -1928,8 +1925,6 @@ vect_analyze_slp_instance (vec_info *vinfo,
   slp_tree node;
   unsigned int group_size;
   tree vectype, scalar_type = NULL_TREE;
-  gimple *next;
-  stmt_vec_info next_info;
   unsigned int i;
   vec<slp_tree> loads;
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
@@ -1970,34 +1965,32 @@ vect_analyze_slp_instance (vec_info *vinfo,
 
   /* Create a node (a root of the SLP tree) for the packed grouped stores.  */
   scalar_stmts.create (group_size);
-  next = stmt;
+  stmt_vec_info next_info = stmt_info;
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
       /* Collect the stores and store them in SLP_TREE_SCALAR_STMTS.  */
-      while (next)
+      while (next_info)
         {
-	  next_info = vinfo_for_stmt (next);
 	  if (STMT_VINFO_IN_PATTERN_P (next_info)
 	      && STMT_VINFO_RELATED_STMT (next_info))
 	    scalar_stmts.safe_push (STMT_VINFO_RELATED_STMT (next_info));
 	  else
 	    scalar_stmts.safe_push (next_info);
-          next = DR_GROUP_NEXT_ELEMENT (vinfo_for_stmt (next));
+	  next_info = DR_GROUP_NEXT_ELEMENT (next_info);
         }
     }
   else if (!dr && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
     {
       /* Collect the reduction stmts and store them in
 	 SLP_TREE_SCALAR_STMTS.  */
-      while (next)
+      while (next_info)
         {
-	  next_info = vinfo_for_stmt (next);
 	  if (STMT_VINFO_IN_PATTERN_P (next_info)
 	      && STMT_VINFO_RELATED_STMT (next_info))
 	    scalar_stmts.safe_push (STMT_VINFO_RELATED_STMT (next_info));
 	  else
 	    scalar_stmts.safe_push (next_info);
-          next = REDUC_GROUP_NEXT_ELEMENT (vinfo_for_stmt (next));
+	  next_info = REDUC_GROUP_NEXT_ELEMENT (next_info);
         }
       /* Mark the first element of the reduction chain as reduction to properly
 	 transform the node.  In the reduction analysis phase only the last
@@ -2067,15 +2060,14 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  vec<unsigned> load_permutation;
 	  int j;
 	  stmt_vec_info load_info;
-	  gimple *first_stmt;
 	  bool this_load_permuted = false;
 	  load_permutation.create (group_size);
-	  first_stmt = DR_GROUP_FIRST_ELEMENT
+	  stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT
 	    (SLP_TREE_SCALAR_STMTS (load_node)[0]);
 	  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (load_node), j, load_info)
 	    {
 	      int load_place = vect_get_place_in_interleaving_chain
-		(load_info, first_stmt);
+		(load_info, first_stmt_info);
 	      gcc_assert (load_place != -1);
 	      if (load_place != j)
 		this_load_permuted = true;
@@ -2086,8 +2078,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	         a gap either because the group is larger than the SLP
 		 group-size or because there is a gap between the groups.  */
 	      && (known_eq (unrolling_factor, 1U)
-		  || (group_size == DR_GROUP_SIZE (vinfo_for_stmt (first_stmt))
-		      && DR_GROUP_GAP (vinfo_for_stmt (first_stmt)) == 0)))
+		  || (group_size == DR_GROUP_SIZE (first_stmt_info)
+		      && DR_GROUP_GAP (first_stmt_info) == 0)))
 	    {
 	      load_permutation.release ();
 	      continue;
@@ -2122,11 +2114,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  slp_tree load_node;
 	  FOR_EACH_VEC_ELT (loads, i, load_node)
 	    {
-	      gimple *first_stmt = DR_GROUP_FIRST_ELEMENT
+	      stmt_vec_info stmt_vinfo = DR_GROUP_FIRST_ELEMENT
 		(SLP_TREE_SCALAR_STMTS (load_node)[0]);
-	      stmt_vec_info stmt_vinfo = vinfo_for_stmt (first_stmt);
-		  /* Use SLP for strided accesses (or if we
-		     can't load-lanes).  */
+	      /* Use SLP for strided accesses (or if we can't load-lanes).  */
 	      if (STMT_VINFO_STRIDED_P (stmt_vinfo)
 		  || ! vect_load_lanes_supported
 			(STMT_VINFO_VECTYPE (stmt_vinfo),
@@ -2230,11 +2220,11 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 					     max_tree_size))
 	      {
 		/* Dissolve reduction chain group.  */
-		gimple *next, *stmt = first_element;
+		gimple *stmt = first_element;
 		while (stmt)
 		  {
 		    stmt_vec_info vinfo = vinfo_for_stmt (stmt);
-		    next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
+		    stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
 		    REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
 		    REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
 		    stmt = next;
@@ -3698,7 +3688,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
     return false;
 
-  stmt_info = vinfo_for_stmt (DR_GROUP_FIRST_ELEMENT (stmt_info));
+  stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
 
   mode = TYPE_MODE (vectype);
 
