@@ -4049,11 +4049,8 @@ vect_remove_slp_scalar_calls (slp_tree node)
 	continue;
       lhs = gimple_call_lhs (stmt);
       new_stmt = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
-      set_vinfo_for_stmt (new_stmt, stmt_info);
-      set_vinfo_for_stmt (stmt, NULL);
-      STMT_VINFO_STMT (stmt_info) = new_stmt;
       gsi = gsi_for_stmt (stmt);
-      gsi_replace (&gsi, new_stmt, false);
+      stmt_info->vinfo->replace_stmt (&gsi, stmt_info, new_stmt);
       SSA_NAME_DEF_STMT (gimple_assign_lhs (new_stmt)) = new_stmt;
     }
 }
