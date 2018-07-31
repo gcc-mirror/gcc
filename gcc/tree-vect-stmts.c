@@ -194,7 +194,7 @@ vect_clobber_variable (gimple *stmt, gimple_stmt_iterator *gsi, tree var)
    Mark STMT as "relevant for vectorization" and add it to WORKLIST.  */
 
 static void
-vect_mark_relevant (vec<gimple *> *worklist, gimple *stmt,
+vect_mark_relevant (vec<stmt_vec_info> *worklist, gimple *stmt,
 		    enum vect_relevant relevant, bool live_p)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -453,7 +453,7 @@ exist_non_indexing_operands_for_use_p (tree use, gimple *stmt)
 
 static bool
 process_use (gimple *stmt, tree use, loop_vec_info loop_vinfo,
-	     enum vect_relevant relevant, vec<gimple *> *worklist,
+	     enum vect_relevant relevant, vec<stmt_vec_info> *worklist,
 	     bool force)
 {
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
@@ -618,16 +618,14 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   unsigned int nbbs = loop->num_nodes;
   gimple_stmt_iterator si;
-  gimple *stmt;
   unsigned int i;
-  stmt_vec_info stmt_vinfo;
   basic_block bb;
   bool live_p;
   enum vect_relevant relevant;
 
   DUMP_VECT_SCOPE ("vect_mark_stmts_to_be_vectorized");
 
-  auto_vec<gimple *, 64> worklist;
+  auto_vec<stmt_vec_info, 64> worklist;
 
   /* 1. Init worklist.  */
   for (i = 0; i < nbbs; i++)
@@ -665,17 +663,17 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
       use_operand_p use_p;
       ssa_op_iter iter;
 
-      stmt = worklist.pop ();
+      stmt_vec_info stmt_vinfo = worklist.pop ();
       if (dump_enabled_p ())
 	{
-          dump_printf_loc (MSG_NOTE, vect_location, "worklist: examine stmt: ");
-          dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "worklist: examine stmt: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt_vinfo->stmt, 0);
 	}
 
       /* Examine the USEs of STMT. For each USE, mark the stmt that defines it
 	 (DEF_STMT) as relevant/irrelevant according to the relevance property
 	 of STMT.  */
-      stmt_vinfo = vinfo_for_stmt (stmt);
       relevant = STMT_VINFO_RELEVANT (stmt_vinfo);
 
       /* Generally, the relevance property of STMT (in STMT_VINFO_RELEVANT) is

@@ -1,5 +1,13 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Change the type
+	of the worklist from a vector of gimple stmts to a vector of
+	stmt_vec_infos.
+	* tree-vect-stmts.c (vect_mark_relevant, process_use)
+	(vect_mark_stmts_to_be_vectorized): Likewise
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (vect_analyze_loop_operations): Look up the
 	statement before passing it to vect_analyze_stmt.
 	(vect_create_epilog_for_reduction): Use a stmt_vec_info to walk
