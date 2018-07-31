@@ -32,8 +32,8 @@ void test_diag (tree t, gcall *gc)
   diag ("%>");   /* { dg-warning "unmatched quoting directive " } */
   diag ("%<foo%<bar%>%>");   /* { dg-warning "nested quoting directive" } */
 
-  diag ("%G", gc);
-  diag ("%K", t);
+  diag ("%G", gc); /* { dg-warning "format" } */
+  diag ("%K", t); /* { dg-warning "format" } */
 
   diag ("%R");       /* { dg-warning "unmatched color reset directive" } */
   diag ("%r", "");   /* { dg-warning "unterminated color directive" } */
@@ -41,9 +41,6 @@ void test_diag (tree t, gcall *gc)
   diag ("%r%R", "");
   diag ("%r%r%R", "", "");
   diag ("%r%R%r%R", "", "");
-
-  diag ("%<%G%>", gc);  /* { dg-warning ".G. conversion used within a quoted sequence" } */
-  diag ("%<%K%>", t);   /* { dg-warning ".K. conversion used within a quoted sequence" } */
 
   diag ("%<%R%>");      /* { dg-warning "unmatched color reset directive" } */
   diag ("%<%r%>", "");  /* { dg-warning "unterminated color directive" } */

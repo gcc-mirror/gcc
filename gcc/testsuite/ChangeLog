@@ -1,3 +1,10 @@
+2018-07-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/format/gcc_diag-1.c (foo): Update the %v tests for
+	tdiag and cxxdiag.
+	* gcc.dg/format/gcc_diag-10.c (test_diag): Update tests of %G
+	and %K.
+
 2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
 
 	* c-c++-common/spec-barrier-1.c: New test.

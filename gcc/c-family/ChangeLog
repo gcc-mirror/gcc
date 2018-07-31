@@ -1,3 +1,16 @@
+2018-07-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (PP_FORMAT_CHAR_TABLE): New macro, based on existing
+	table entries for gcc_diag_char_table, and the 'Z' entry from
+	gcc_tdiag_char_table, changing the "chain" entry for 'Z' from
+	&gcc_tdiag_char_table[0] to &gcc_diag_char_table[0].
+	(gcc_diag_char_table): Use PP_FORMAT_CHAR_TABLE, implicitly
+	adding missing "Z" for this table.  Remove erroneous "G" and "K"
+	entries.
+	(gcc_tdiag_char_table): Use PP_FORMAT_CHAR_TABLE.  Remove "v".
+	(gcc_cdiag_char_table): Use PP_FORMAT_CHAR_TABLE.
+	(gcc_cxxdiag_char_table): Use PP_FORMAT_CHAR_TABLE.  Remove "v".
+
 2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
 
 	* c-common.c (speculation_safe_resolve_call): New function.
