@@ -1,5 +1,14 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-patterns.c (vect_mark_pattern_stmts): Take the
+	original stmt as a stmt_vec_info rather than a gimple stmt.
+	(vect_pattern_recog_1): Take the statement directly as a
+	stmt_vec_info, rather than via a gimple_stmt_iterator.
+	Update call to vect_mark_pattern_stmts.
+	(vect_pattern_recog): Update calls accordingly.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_get_vec_defs_for_stmt_copy)
 	(vect_get_vec_def_for_stmt_copy): Take a vec_info rather than
 	a vect_def_type for the first argument.
