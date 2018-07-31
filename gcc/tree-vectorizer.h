@@ -1294,15 +1294,15 @@ vect_dr_stmt (data_reference *dr)
 #define DR_MISALIGNMENT_UNINITIALIZED (-2)
 
 inline void
-set_dr_misalignment (struct data_reference *dr, int val)
+set_dr_misalignment (dr_vec_info *dr_info, int val)
 {
-  DR_VECT_AUX (dr)->misalignment = val;
+  dr_info->misalignment = val;
 }
 
 inline int
-dr_misalignment (struct data_reference *dr)
+dr_misalignment (dr_vec_info *dr_info)
 {
-  int misalign = DR_VECT_AUX (dr)->misalignment;
+  int misalign = dr_info->misalignment;
   gcc_assert (misalign != DR_MISALIGNMENT_UNINITIALIZED);
   return misalign;
 }
@@ -1313,52 +1313,51 @@ dr_misalignment (struct data_reference *dr)
 #define SET_DR_MISALIGNMENT(DR, VAL) set_dr_misalignment (DR, VAL)
 
 /* Only defined once DR_MISALIGNMENT is defined.  */
-#define DR_TARGET_ALIGNMENT(DR) DR_VECT_AUX (DR)->target_alignment
+#define DR_TARGET_ALIGNMENT(DR) ((DR)->target_alignment)
 
-/* Return true if data access DR is aligned to its target alignment
+/* Return true if data access DR_INFO is aligned to its target alignment
    (which may be less than a full vector).  */
 
 static inline bool
-aligned_access_p (struct data_reference *data_ref_info)
+aligned_access_p (dr_vec_info *dr_info)
 {
-  return (DR_MISALIGNMENT (data_ref_info) == 0);
+  return (DR_MISALIGNMENT (dr_info) == 0);
 }
 
 /* Return TRUE if the alignment of the data access is known, and FALSE
    otherwise.  */
 
 static inline bool
-known_alignment_for_access_p (struct data_reference *data_ref_info)
+known_alignment_for_access_p (dr_vec_info *dr_info)
 {
-  return (DR_MISALIGNMENT (data_ref_info) != DR_MISALIGNMENT_UNKNOWN);
+  return (DR_MISALIGNMENT (dr_info) != DR_MISALIGNMENT_UNKNOWN);
 }
 
 /* Return the minimum alignment in bytes that the vectorized version
-   of DR is guaranteed to have.  */
+   of DR_INFO is guaranteed to have.  */
 
 static inline unsigned int
-vect_known_alignment_in_bytes (struct data_reference *dr)
+vect_known_alignment_in_bytes (dr_vec_info *dr_info)
 {
-  if (DR_MISALIGNMENT (dr) == DR_MISALIGNMENT_UNKNOWN)
-    return TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr)));
-  if (DR_MISALIGNMENT (dr) == 0)
-    return DR_TARGET_ALIGNMENT (dr);
-  return DR_MISALIGNMENT (dr) & -DR_MISALIGNMENT (dr);
+  if (DR_MISALIGNMENT (dr_info) == DR_MISALIGNMENT_UNKNOWN)
+    return TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_info->dr)));
+  if (DR_MISALIGNMENT (dr_info) == 0)
+    return DR_TARGET_ALIGNMENT (dr_info);
+  return DR_MISALIGNMENT (dr_info) & -DR_MISALIGNMENT (dr_info);
 }
 
-/* Return the behavior of DR with respect to the vectorization context
+/* Return the behavior of DR_INFO with respect to the vectorization context
    (which for outer loop vectorization might not be the behavior recorded
-   in DR itself).  */
+   in DR_INFO itself).  */
 
 static inline innermost_loop_behavior *
-vect_dr_behavior (data_reference *dr)
+vect_dr_behavior (dr_vec_info *dr_info)
 {
-  gimple *stmt = DR_STMT (dr);
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  stmt_vec_info stmt_info = dr_info->stmt;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   if (loop_vinfo == NULL
       || !nested_in_vect_loop_p (LOOP_VINFO_LOOP (loop_vinfo), stmt_info))
-    return &DR_INNERMOST (dr);
+    return &DR_INNERMOST (dr_info->dr);
   else
     return &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);
 }
@@ -1451,17 +1450,17 @@ vect_max_vf (loop_vec_info loop_vinfo)
   return MAX_VECTORIZATION_FACTOR;
 }
 
-/* Return the size of the value accessed by unvectorized data reference DR.
-   This is only valid once STMT_VINFO_VECTYPE has been calculated for the
-   associated gimple statement, since that guarantees that DR accesses
-   either a scalar or a scalar equivalent.  ("Scalar equivalent" here
-   includes things like V1SI, which can be vectorized in the same way
+/* Return the size of the value accessed by unvectorized data reference
+   DR_INFO.  This is only valid once STMT_VINFO_VECTYPE has been calculated
+   for the associated gimple statement, since that guarantees that DR_INFO
+   accesses either a scalar or a scalar equivalent.  ("Scalar equivalent"
+   here includes things like V1SI, which can be vectorized in the same way
    as a plain SI.)  */
 
 inline unsigned int
-vect_get_scalar_dr_size (struct data_reference *dr)
+vect_get_scalar_dr_size (dr_vec_info *dr_info)
 {
-  return tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr))));
+  return tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_info->dr))));
 }
 
 /* Source location + hotness information. */
@@ -1561,7 +1560,7 @@ extern tree vect_get_mask_type_for_stmt (stmt_vec_info);
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);
 extern enum dr_alignment_support vect_supportable_dr_alignment
-                                           (struct data_reference *, bool);
+                                           (dr_vec_info *, bool);
 extern tree vect_get_smallest_scalar_type (stmt_vec_info, HOST_WIDE_INT *,
                                            HOST_WIDE_INT *);
 extern bool vect_analyze_data_ref_dependences (loop_vec_info, unsigned int *);
