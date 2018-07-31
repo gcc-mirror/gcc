@@ -7242,21 +7242,19 @@ package body Exp_Aggr is
             --  constraint error.
 
             declare
-               Comp : Entity_Id;
+               Comp : constant Entity_Id := First (Choices (C));
                Indx : Node_Id;
 
             begin
-               Comp := First (Choices (C));
                if Present (Etype (Comp))
                  and then Is_Array_Type (Etype (Comp))
                then
                   Indx := First_Index (Etype (Comp));
-
                   while Present (Indx) loop
-                     if Nkind (Type_Low_Bound (Etype (Indx)))
-                       = N_Raise_Constraint_Error
-                     or else Nkind (Type_High_Bound (Etype (Indx)))
-                       = N_Raise_Constraint_Error
+                     if Nkind (Type_Low_Bound (Etype (Indx))) =
+                          N_Raise_Constraint_Error
+                       or else Nkind (Type_High_Bound (Etype (Indx))) =
+                                 N_Raise_Constraint_Error
                      then
                         return False;
                      end if;
@@ -7276,10 +7274,11 @@ package body Exp_Aggr is
             --  the machine.)
 
             if Is_Tagged_Type (Etype (Expr_Q))
-              and then (Nkind (Expr_Q) = N_Type_Conversion
-                         or else (Is_Entity_Name (Expr_Q)
-                                    and then
-                                      Ekind (Entity (Expr_Q)) in Formal_Kind))
+              and then
+                (Nkind (Expr_Q) = N_Type_Conversion
+                  or else
+                    (Is_Entity_Name (Expr_Q)
+                      and then Ekind (Entity (Expr_Q)) in Formal_Kind))
               and then Tagged_Type_Expansion
             then
                Static_Components := False;

@@ -1533,7 +1533,7 @@ package body Exp_Ch5 is
 
             A :=
               Make_Assignment_Statement (Loc,
-                Name =>
+                Name       =>
                   Make_Selected_Component (Loc,
                     Prefix        => Duplicate_Subexpr (Lhs),
                     Selector_Name =>

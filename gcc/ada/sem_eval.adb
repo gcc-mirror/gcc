@@ -5688,8 +5688,8 @@ package body Sem_Eval is
    -------------------------
 
    procedure Rewrite_In_Raise_CE (N : Node_Id; Exp : Node_Id) is
-      Typ  : constant Entity_Id := Etype (N);
       Stat : constant Boolean   := Is_Static_Expression (N);
+      Typ  : constant Entity_Id := Etype (N);
 
    begin
       --  If we want to raise CE in the condition of a N_Raise_CE node, we

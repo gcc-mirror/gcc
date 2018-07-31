@@ -1,3 +1,9 @@
+2018-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb, contracts.adb, exp_aggr.adb, exp_ch5.adb,
+	exp_disp.adb, make.adb, sem_ch4.adb, sem_eval.adb, sem_res.adb,
+	usage.adb: Minor reformatting.
+
 2018-07-31  Bob Duff  <duff@adacore.com>
 
 	* sem_res.adb (Resolve_Allocator): Do not complain about the
