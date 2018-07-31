@@ -562,6 +562,21 @@ vec_info::lookup_single_use (tree lhs)
   return NULL;
 }
 
+/* Record that NEW_STMT_INFO now implements the same data reference
+   as OLD_STMT_INFO.  */
+
+void
+vec_info::move_dr (stmt_vec_info new_stmt_info, stmt_vec_info old_stmt_info)
+{
+  gcc_assert (!is_pattern_stmt_p (old_stmt_info));
+  STMT_VINFO_DR_INFO (old_stmt_info)->stmt = new_stmt_info;
+  new_stmt_info->dr_aux = old_stmt_info->dr_aux;
+  STMT_VINFO_DR_WRT_VEC_LOOP (new_stmt_info)
+    = STMT_VINFO_DR_WRT_VEC_LOOP (old_stmt_info);
+  STMT_VINFO_GATHER_SCATTER_P (new_stmt_info)
+    = STMT_VINFO_GATHER_SCATTER_P (old_stmt_info);
+}
+
 /* A helper function to free scev and LOOP niter information, as well as
    clear loop constraint LOOP_C_FINITE.  */
 

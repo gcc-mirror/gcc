@@ -240,6 +240,7 @@ struct vec_info {
   stmt_vec_info lookup_stmt (gimple *);
   stmt_vec_info lookup_def (tree);
   stmt_vec_info lookup_single_use (tree);
+  void move_dr (stmt_vec_info, stmt_vec_info);
 
   /* The type of vectorization.  */
   vec_kind kind;
@@ -767,7 +768,11 @@ enum vect_memory_access_type {
   VMAT_GATHER_SCATTER
 };
 
-struct dataref_aux {
+struct dr_vec_info {
+  /* The data reference itself.  */
+  data_reference *dr;
+  /* The statement that contains the data reference.  */
+  stmt_vec_info stmt;
   /* The misalignment in bytes of the reference, or -1 if not known.  */
   int misalignment;
   /* The byte alignment that we'd ideally like the reference to have,
@@ -818,11 +823,7 @@ struct _stmt_vec_info {
      data-ref (array/pointer/struct access). A GIMPLE stmt is expected to have
      at most one such data-ref.  */
 
-  /* Information about the data-ref (access function, etc),
-     relative to the inner-most containing loop.  */
-  struct data_reference *data_ref_info;
-
-  dataref_aux dr_aux;
+  dr_vec_info dr_aux;
 
   /* Information about the data-ref relative to this loop
      nest (the loop that is being considered for vectorization).  */
@@ -996,7 +997,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_VECTYPE(S)              (S)->vectype
 #define STMT_VINFO_VEC_STMT(S)             (S)->vectorized_stmt
 #define STMT_VINFO_VECTORIZABLE(S)         (S)->vectorizable
-#define STMT_VINFO_DATA_REF(S)             (S)->data_ref_info
+#define STMT_VINFO_DATA_REF(S)             ((S)->dr_aux.dr + 0)
 #define STMT_VINFO_GATHER_SCATTER_P(S)	   (S)->gather_scatter_p
 #define STMT_VINFO_STRIDED_P(S)	   	   (S)->strided_p
 #define STMT_VINFO_MEMORY_ACCESS_TYPE(S)   (S)->memory_access_type
@@ -1017,13 +1018,17 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_DR_STEP_ALIGNMENT(S) \
   (S)->dr_wrt_vec_loop.step_alignment
 
+#define STMT_VINFO_DR_INFO(S) \
+  (gcc_checking_assert ((S)->dr_aux.stmt == (S)), &(S)->dr_aux)
+
 #define STMT_VINFO_IN_PATTERN_P(S)         (S)->in_pattern_p
 #define STMT_VINFO_RELATED_STMT(S)         (S)->related_stmt
 #define STMT_VINFO_PATTERN_DEF_SEQ(S)      (S)->pattern_def_seq
 #define STMT_VINFO_SAME_ALIGN_REFS(S)      (S)->same_align_refs
 #define STMT_VINFO_SIMD_CLONE_INFO(S)	   (S)->simd_clone_info
 #define STMT_VINFO_DEF_TYPE(S)             (S)->def_type
-#define STMT_VINFO_GROUPED_ACCESS(S)      ((S)->data_ref_info && DR_GROUP_FIRST_ELEMENT(S))
+#define STMT_VINFO_GROUPED_ACCESS(S) \
+  ((S)->dr_aux.dr && DR_GROUP_FIRST_ELEMENT(S))
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED(S) (S)->loop_phi_evolution_base_unchanged
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_PART(S) (S)->loop_phi_evolution_part
 #define STMT_VINFO_MIN_NEG_DIST(S)	(S)->min_neg_dist
@@ -1031,16 +1036,25 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_REDUC_TYPE(S)	(S)->reduc_type
 #define STMT_VINFO_REDUC_DEF(S)		(S)->reduc_def
 
-#define DR_GROUP_FIRST_ELEMENT(S)  (gcc_checking_assert ((S)->data_ref_info), (S)->first_element)
-#define DR_GROUP_NEXT_ELEMENT(S)   (gcc_checking_assert ((S)->data_ref_info), (S)->next_element)
-#define DR_GROUP_SIZE(S)           (gcc_checking_assert ((S)->data_ref_info), (S)->size)
-#define DR_GROUP_STORE_COUNT(S)    (gcc_checking_assert ((S)->data_ref_info), (S)->store_count)
-#define DR_GROUP_GAP(S)            (gcc_checking_assert ((S)->data_ref_info), (S)->gap)
-#define DR_GROUP_SAME_DR_STMT(S)   (gcc_checking_assert ((S)->data_ref_info), (S)->same_dr_stmt)
+#define DR_GROUP_FIRST_ELEMENT(S) \
+  (gcc_checking_assert ((S)->dr_aux.dr), (S)->first_element)
+#define DR_GROUP_NEXT_ELEMENT(S) \
+  (gcc_checking_assert ((S)->dr_aux.dr), (S)->next_element)
+#define DR_GROUP_SIZE(S) \
+  (gcc_checking_assert ((S)->dr_aux.dr), (S)->size)
+#define DR_GROUP_STORE_COUNT(S) \
+  (gcc_checking_assert ((S)->dr_aux.dr), (S)->store_count)
+#define DR_GROUP_GAP(S) \
+  (gcc_checking_assert ((S)->dr_aux.dr), (S)->gap)
+#define DR_GROUP_SAME_DR_STMT(S) \
+  (gcc_checking_assert ((S)->dr_aux.dr), (S)->same_dr_stmt)
 
-#define REDUC_GROUP_FIRST_ELEMENT(S)	(gcc_checking_assert (!(S)->data_ref_info), (S)->first_element)
-#define REDUC_GROUP_NEXT_ELEMENT(S)	(gcc_checking_assert (!(S)->data_ref_info), (S)->next_element)
-#define REDUC_GROUP_SIZE(S)		(gcc_checking_assert (!(S)->data_ref_info), (S)->size)
+#define REDUC_GROUP_FIRST_ELEMENT(S) \
+  (gcc_checking_assert (!(S)->dr_aux.dr), (S)->first_element)
+#define REDUC_GROUP_NEXT_ELEMENT(S) \
+  (gcc_checking_assert (!(S)->dr_aux.dr), (S)->next_element)
+#define REDUC_GROUP_SIZE(S) \
+  (gcc_checking_assert (!(S)->dr_aux.dr), (S)->size)
 
 #define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_scope)
 
@@ -1048,7 +1062,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define PURE_SLP_STMT(S)                  ((S)->slp_type == pure_slp)
 #define STMT_SLP_TYPE(S)                   (S)->slp_type
 
-#define DR_VECT_AUX(dr) (&vinfo_for_stmt (DR_STMT (dr))->dr_aux)
+#define DR_VECT_AUX(dr) (STMT_VINFO_DR_INFO (vect_dr_stmt (dr)))
 
 #define VECT_MAX_COST 1000
 
@@ -1259,6 +1273,20 @@ add_stmt_costs (void *data, stmt_vector_for_cost *cost_vec)
 		   cost->misalign, cost->where);
 }
 
+/* Return the stmt DR is in.  For DR_STMT that have been replaced by
+   a pattern this returns the corresponding pattern stmt.  Otherwise
+   DR_STMT is returned.  */
+
+inline stmt_vec_info
+vect_dr_stmt (data_reference *dr)
+{
+  gimple *stmt = DR_STMT (dr);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  /* DR_STMT should never refer to a stmt in a pattern replacement.  */
+  gcc_checking_assert (!is_pattern_stmt_p (stmt_info));
+  return stmt_info->dr_aux.stmt;
+}
+
 /*-----------------------------------------------------------------*/
 /* Info on data references alignment.                              */
 /*-----------------------------------------------------------------*/
@@ -1268,8 +1296,7 @@ add_stmt_costs (void *data, stmt_vector_for_cost *cost_vec)
 inline void
 set_dr_misalignment (struct data_reference *dr, int val)
 {
-  dataref_aux *data_aux = DR_VECT_AUX (dr);
-  data_aux->misalignment = val;
+  DR_VECT_AUX (dr)->misalignment = val;
 }
 
 inline int
@@ -1334,22 +1361,6 @@ vect_dr_behavior (data_reference *dr)
     return &DR_INNERMOST (dr);
   else
     return &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);
-}
-
-/* Return the stmt DR is in.  For DR_STMT that have been replaced by
-   a pattern this returns the corresponding pattern stmt.  Otherwise
-   DR_STMT is returned.  */
-
-inline stmt_vec_info
-vect_dr_stmt (data_reference *dr)
-{
-  gimple *stmt = DR_STMT (dr);
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
-    return STMT_VINFO_RELATED_STMT (stmt_info);
-  /* DR_STMT should never refer to a stmt in a pattern replacement.  */
-  gcc_checking_assert (!STMT_VINFO_RELATED_STMT (stmt_info));
-  return stmt_info;
 }
 
 /* Return true if the vect cost model is unlimited.  */

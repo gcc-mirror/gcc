@@ -1,5 +1,32 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vec_info::move_dr): New member function.
+	(dataref_aux): Rename to...
+	(dr_vec_info): ...this and add "dr" and "stmt" fields.
+	(_stmt_vec_info::dr_aux): Update accordingly.
+	(_stmt_vec_info::data_ref_info): Delete.
+	(STMT_VINFO_GROUPED_ACCESS, DR_GROUP_FIRST_ELEMENT)
+	(DR_GROUP_NEXT_ELEMENT, DR_GROUP_SIZE, DR_GROUP_STORE_COUNT)
+	(DR_GROUP_GAP, DR_GROUP_SAME_DR_STMT, REDUC_GROUP_FIRST_ELEMENT):
+	(REDUC_GROUP_NEXT_ELEMENT, REDUC_GROUP_SIZE): Use dr_aux.dr instead
+	of data_ref.
+	(STMT_VINFO_DATA_REF): Likewise.  Turn into an lvalue.
+	(STMT_VINFO_DR_INFO): New macro.
+	(DR_VECT_AUX): Use STMT_VINFO_DR_INKFO and vect_dr_stmt.
+	(set_dr_misalignment): Update after rename of dataref_aux.
+	(vect_dr_stmt): Move earlier in file.  Return dr_aux.stmt.
+	* tree-vect-stmts.c (new_stmt_vec_info): Remove redundant
+	initialization of STMT_VINFO_DATA_REF.
+	* tree-vectorizer.c (vec_info::move_dr): New function.
+	* tree-vect-patterns.c (vect_recog_bool_pattern)
+	(vect_recog_mask_conversion_pattern)
+	(vect_recog_gather_scatter_pattern): Use it.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Initialize
+	the "dr" and "stmt" fields of dr_vec_info instead of
+	STMT_VINFO_DATA_REF.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (_stmt_vec_info::pattern_stmt_p): New field.
 	(is_pattern_stmt_p): Use it.
 	* tree-vect-patterns.c (vect_init_pattern_stmt): Set pattern_stmt_p

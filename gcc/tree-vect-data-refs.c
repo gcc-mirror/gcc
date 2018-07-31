@@ -4120,7 +4120,10 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
       poly_uint64 vf;
 
       gcc_assert (DR_REF (dr));
-      stmt_vec_info stmt_info = vect_dr_stmt (dr);
+      stmt_vec_info stmt_info = vinfo->lookup_stmt (DR_STMT (dr));
+      gcc_assert (!stmt_info->dr_aux.dr);
+      stmt_info->dr_aux.dr = dr;
+      stmt_info->dr_aux.stmt = stmt_info;
 
       /* Check that analysis of the data-ref succeeded.  */
       if (!DR_BASE_ADDRESS (dr) || !DR_OFFSET (dr) || !DR_INIT (dr)
@@ -4291,9 +4294,6 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 			   STMT_VINFO_DR_STEP_ALIGNMENT (stmt_info));
 	    }
 	}
-
-      gcc_assert (!STMT_VINFO_DATA_REF (stmt_info));
-      STMT_VINFO_DATA_REF (stmt_info) = dr;
 
       /* Set vectype for STMT.  */
       scalar_type = TREE_TYPE (DR_REF (dr));
