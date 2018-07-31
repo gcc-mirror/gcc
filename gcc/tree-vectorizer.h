@@ -921,7 +921,7 @@ struct _stmt_vec_info {
   /* On a reduction PHI the def returned by vect_force_simple_reduction.
      On the def returned by vect_force_simple_reduction the
      corresponding PHI.  */
-  gimple *reduc_def;
+  stmt_vec_info reduc_def;
 
   /* The number of scalar stmt references from active SLP instances.  */
   unsigned int num_slp_uses;

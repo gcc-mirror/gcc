@@ -1,5 +1,13 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (_stmt_vec_info::reduc_def): Change from
+	a gimple stmt to a stmt_vec_info.
+	* tree-vect-loop.c (vect_active_double_reduction_p)
+	(vect_force_simple_reduction, vectorizable_reduction): Update
+	accordingly.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (_slp_tree::vec_stmts): Change from a
 	vec<gimple *> to a vec<stmt_vec_info>.
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Change
