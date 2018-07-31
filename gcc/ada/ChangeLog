@@ -1,3 +1,9 @@
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Protected_Subprogram_Call): Handle
+	properly a protected call that includes a default parameter that
+	is a call to a protected function of the same type.
+
 2018-07-31  Justin Squirek  <squirek@adacore.com>
 
 	* lib-writ.adb (Write_With_Lines): Modfiy the generation of
