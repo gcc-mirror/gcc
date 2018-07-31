@@ -5048,9 +5048,12 @@ vrp_prop::check_mem_ref (location_t location, tree ref, bool ignore_off_by_one)
      a reference/subscript via a pointer to an object that is not
      an element of an array.  References to members of structs and
      unions are excluded because MEM_REF doesn't make it possible
-     to identify the member where the reference originated.  */
+     to identify the member where the reference originated.
+     Incomplete types are excluded as well because their size is
+     not known.  */
   tree reftype = TREE_TYPE (arg);
   if (POINTER_TYPE_P (reftype)
+      || !COMPLETE_TYPE_P (reftype)
       || RECORD_OR_UNION_TYPE_P (reftype))
     return;
 

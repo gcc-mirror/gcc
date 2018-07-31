@@ -1,3 +1,8 @@
+2018-07-31  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86741
+	* gcc.dg/Warray-bounds-33.c: New test.
+
 2018-07-31  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/memset-1.c: Improve testcase.

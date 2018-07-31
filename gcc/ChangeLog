@@ -1,3 +1,8 @@
+2018-07-31  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86741
+	* tree-vrp.c (vrp_prop::check_mem_ref): Avoid incomplete types.
+
 2018-07-31  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390.c (s390_expand_setmem): Make the unrolling to
