@@ -1,5 +1,9 @@
 2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/aarch64/aarch64.opt (mtrack-speculation): New target option.
+
+2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/aarch64.md (unspecv): Add UNSPECV_SPECULAION_BARRIER.
 	(speculation_barrier): New insn.
 
