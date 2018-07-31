@@ -677,13 +677,13 @@ vect_fixup_reduc_chain (gimple *stmt)
 static void
 vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
 {
-  gimple *first;
+  stmt_vec_info first;
   unsigned i;
 
   FOR_EACH_VEC_ELT (LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo), i, first)
-    if (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (first)))
+    if (STMT_VINFO_IN_PATTERN_P (first))
       {
-	stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (vinfo_for_stmt (first));
+	stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (first);
 	while (next)
 	  {
 	    if (! STMT_VINFO_IN_PATTERN_P (next))
@@ -696,7 +696,7 @@ vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
 	  {
 	    vect_fixup_reduc_chain (first);
 	    LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo)[i]
-	      = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (first));
+	      = STMT_VINFO_RELATED_STMT (first);
 	  }
       }
 }

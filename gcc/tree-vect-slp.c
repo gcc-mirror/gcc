@@ -2202,7 +2202,7 @@ bool
 vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 {
   unsigned int i;
-  gimple *first_element;
+  stmt_vec_info first_element;
 
   DUMP_VECT_SCOPE ("vect_analyze_slp");
 
@@ -2220,17 +2220,15 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 					     max_tree_size))
 	      {
 		/* Dissolve reduction chain group.  */
-		gimple *stmt = first_element;
-		while (stmt)
+		stmt_vec_info vinfo = first_element;
+		while (vinfo)
 		  {
-		    stmt_vec_info vinfo = vinfo_for_stmt (stmt);
 		    stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
 		    REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
 		    REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
-		    stmt = next;
+		    vinfo = next;
 		  }
-		STMT_VINFO_DEF_TYPE (vinfo_for_stmt (first_element))
-		  = vect_internal_def;
+		STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
 	      }
 	}
 
