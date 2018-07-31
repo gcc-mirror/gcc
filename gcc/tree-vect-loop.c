@@ -474,7 +474,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 {
   basic_block bb = loop->header;
   tree init, step;
-  auto_vec<gimple *, 64> worklist;
+  auto_vec<stmt_vec_info, 64> worklist;
   gphi_iterator gsi;
   bool double_reduc;
 
@@ -543,9 +543,9 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
   /* Second - identify all reductions and nested cycles.  */
   while (worklist.length () > 0)
     {
-      gimple *phi = worklist.pop ();
+      stmt_vec_info stmt_vinfo = worklist.pop ();
+      gphi *phi = as_a <gphi *> (stmt_vinfo->stmt);
       tree def = PHI_RESULT (phi);
-      stmt_vec_info stmt_vinfo = vinfo_for_stmt (phi);
 
       if (dump_enabled_p ())
         {
