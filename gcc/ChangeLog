@@ -1,5 +1,19 @@
 2018-07-31  Olivier Hainque  <hainque@adacore.com>
 
+	* gcc.c (handle_spec_function): Accept a soft_matched_part
+	argument, as do_spec_1.  Pass it down to ...
+	(eval_spec_function): Accept a soft_matched_part argument,
+	and pass it down to ...
+	(do_spec_2): Accept a soft_matched_part argument, and pass
+	it down to do_spec_1.
+	(do_spec_1): Pass soft_matched_part to handle_spec_function.
+	(handle_braces): Update call to handle_spec_function.
+	(driver::set_up_specs): Update calls to do_spec_2.
+	(compare_debug_dump_opt_spec_function): Likewise.
+	(compare_debug_self_opt_spec_function): Likewise.
+
+2018-07-31  Olivier Hainque  <hainque@adacore.com>
+
 	* common.opt (nolibc): New option.
 	* doc/invoke.texi (Link Options): Document it.
 	* gcc.c (LINK_GCC_C_SEQUENCE_SPEC): Honor nolibc.
