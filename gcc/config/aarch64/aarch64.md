@@ -205,6 +205,7 @@
     UNSPECV_SET_FPSR		; Represent assign of FPSR content.
     UNSPECV_BLOCKAGE		; Represent a blockage
     UNSPECV_PROBE_STACK_RANGE	; Represent stack range probing.
+    UNSPECV_SPECULATION_BARRIER ; Represent speculation barrier.
   ]
 )
 
@@ -6553,6 +6554,15 @@
   [(parallel [(set (match_operand 0)
 		   (match_operand 1))
 	      (clobber (reg:CC CC_REGNUM))])])
+
+;; Hard speculation barrier.
+(define_insn "speculation_barrier"
+  [(unspec_volatile [(const_int 0)] UNSPECV_SPECULATION_BARRIER)]
+  ""
+  "isb\;dsb\\tsy"
+  [(set_attr "length" "8")
+   (set_attr "type" "block")]
+)
 
 ;; AdvSIMD Stuff
 (include "aarch64-simd.md")
