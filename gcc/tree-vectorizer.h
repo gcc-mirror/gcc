@@ -812,7 +812,7 @@ struct _stmt_vec_info {
   tree vectype;
 
   /* The vectorized version of the stmt.  */
-  gimple *vectorized_stmt;
+  stmt_vec_info vectorized_stmt;
 
 
   /* The following is relevant only for stmts that contain a non-scalar
@@ -1560,7 +1560,7 @@ extern void vect_remove_stores (gimple *);
 extern bool vect_analyze_stmt (gimple *, bool *, slp_tree, slp_instance,
 			       stmt_vector_for_cost *);
 extern bool vectorizable_condition (gimple *, gimple_stmt_iterator *,
-				    gimple **, tree, int, slp_tree,
+				    stmt_vec_info *, tree, int, slp_tree,
 				    stmt_vector_for_cost *);
 extern void vect_get_load_cost (stmt_vec_info, int, bool,
 				unsigned int *, unsigned int *,
@@ -1649,13 +1649,13 @@ extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,
 extern struct loop *vect_transform_loop (loop_vec_info);
 extern loop_vec_info vect_analyze_loop_form (struct loop *, vec_info_shared *);
 extern bool vectorizable_live_operation (gimple *, gimple_stmt_iterator *,
-					 slp_tree, int, gimple **,
+					 slp_tree, int, stmt_vec_info *,
 					 stmt_vector_for_cost *);
 extern bool vectorizable_reduction (gimple *, gimple_stmt_iterator *,
-				    gimple **, slp_tree, slp_instance,
+				    stmt_vec_info *, slp_tree, slp_instance,
 				    stmt_vector_for_cost *);
 extern bool vectorizable_induction (gimple *, gimple_stmt_iterator *,
-				    gimple **, slp_tree,
+				    stmt_vec_info *, slp_tree,
 				    stmt_vector_for_cost *);
 extern tree get_initial_def_for_reduction (gimple *, tree, tree *);
 extern bool vect_worthwhile_without_simd_p (vec_info *, tree_code);

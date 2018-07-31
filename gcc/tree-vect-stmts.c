@@ -1465,7 +1465,7 @@ tree
 vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
 {
   tree vec_oprnd;
-  gimple *vec_stmt;
+  stmt_vec_info vec_stmt_info;
   stmt_vec_info def_stmt_info = NULL;
 
   switch (dt)
@@ -1482,21 +1482,19 @@ vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
         /* Get the def from the vectorized stmt.  */
         def_stmt_info = vinfo_for_stmt (def_stmt);
 
-        vec_stmt = STMT_VINFO_VEC_STMT (def_stmt_info);
-        /* Get vectorized pattern statement.  */
-        if (!vec_stmt
-            && STMT_VINFO_IN_PATTERN_P (def_stmt_info)
-            && !STMT_VINFO_RELEVANT (def_stmt_info))
-	  vec_stmt = (STMT_VINFO_VEC_STMT
-		      (STMT_VINFO_RELATED_STMT (def_stmt_info)));
-        gcc_assert (vec_stmt);
-	if (gimple_code (vec_stmt) == GIMPLE_PHI)
-	  vec_oprnd = PHI_RESULT (vec_stmt);
-	else if (is_gimple_call (vec_stmt))
-	  vec_oprnd = gimple_call_lhs (vec_stmt);
+	vec_stmt_info = STMT_VINFO_VEC_STMT (def_stmt_info);
+	/* Get vectorized pattern statement.  */
+	if (!vec_stmt_info
+	    && STMT_VINFO_IN_PATTERN_P (def_stmt_info)
+	    && !STMT_VINFO_RELEVANT (def_stmt_info))
+	  vec_stmt_info = (STMT_VINFO_VEC_STMT
+			   (STMT_VINFO_RELATED_STMT (def_stmt_info)));
+	gcc_assert (vec_stmt_info);
+	if (gphi *phi = dyn_cast <gphi *> (vec_stmt_info->stmt))
+	  vec_oprnd = PHI_RESULT (phi);
 	else
-	  vec_oprnd = gimple_assign_lhs (vec_stmt);
-        return vec_oprnd;
+	  vec_oprnd = gimple_get_lhs (vec_stmt_info->stmt);
+	return vec_oprnd;
       }
 
     /* operand is defined by a loop header phi.  */
@@ -1507,14 +1505,14 @@ vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
       {
 	gcc_assert (gimple_code (def_stmt) == GIMPLE_PHI);
 
-        /* Get the def from the vectorized stmt.  */
-        def_stmt_info = vinfo_for_stmt (def_stmt);
-        vec_stmt = STMT_VINFO_VEC_STMT (def_stmt_info);
-	if (gimple_code (vec_stmt) == GIMPLE_PHI)
-	  vec_oprnd = PHI_RESULT (vec_stmt);
+	/* Get the def from the vectorized stmt.  */
+	def_stmt_info = vinfo_for_stmt (def_stmt);
+	vec_stmt_info = STMT_VINFO_VEC_STMT (def_stmt_info);
+	if (gphi *phi = dyn_cast <gphi *> (vec_stmt_info->stmt))
+	  vec_oprnd = PHI_RESULT (phi);
 	else
-	  vec_oprnd = gimple_get_lhs (vec_stmt);
-        return vec_oprnd;
+	  vec_oprnd = gimple_get_lhs (vec_stmt_info->stmt);
+	return vec_oprnd;
       }
 
     default:
@@ -2674,8 +2672,9 @@ vect_build_zero_merge_argument (gimple *stmt, tree vectype)
 
 static void
 vect_build_gather_load_calls (gimple *stmt, gimple_stmt_iterator *gsi,
-			      gimple **vec_stmt, gather_scatter_info *gs_info,
-			      tree mask, vect_def_type mask_dt)
+			      stmt_vec_info *vec_stmt,
+			      gather_scatter_info *gs_info, tree mask,
+			      vect_def_type mask_dt)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -2960,7 +2959,7 @@ vect_get_data_ptr_increment (data_reference *dr, tree aggr_type,
 
 static bool
 vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
-		    gimple **vec_stmt, slp_tree slp_node,
+		    stmt_vec_info *vec_stmt, slp_tree slp_node,
 		    tree vectype_in, enum vect_def_type *dt,
 		    stmt_vector_for_cost *cost_vec)
 {
@@ -3104,8 +3103,9 @@ simple_integer_narrowing (tree vectype_out, tree vectype_in,
    Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
 
 static bool
-vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
-		   slp_tree slp_node, stmt_vector_for_cost *cost_vec)
+vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi,
+		   stmt_vec_info *vec_stmt, slp_tree slp_node,
+		   stmt_vector_for_cost *cost_vec)
 {
   gcall *stmt;
   tree vec_dest;
@@ -3745,7 +3745,7 @@ simd_clone_subparts (tree vectype)
 
 static bool
 vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
-			      gimple **vec_stmt, slp_tree slp_node,
+			      stmt_vec_info *vec_stmt, slp_tree slp_node,
 			      stmt_vector_for_cost *)
 {
   tree vec_dest;
@@ -4596,7 +4596,7 @@ vect_create_vectorized_promotion_stmts (vec<tree> *vec_oprnds0,
 
 static bool
 vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
-			 gimple **vec_stmt, slp_tree slp_node,
+			 stmt_vec_info *vec_stmt, slp_tree slp_node,
 			 stmt_vector_for_cost *cost_vec)
 {
   tree vec_dest;
@@ -5204,7 +5204,7 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 
 static bool
 vectorizable_assignment (gimple *stmt, gimple_stmt_iterator *gsi,
-			 gimple **vec_stmt, slp_tree slp_node,
+			 stmt_vec_info *vec_stmt, slp_tree slp_node,
 			 stmt_vector_for_cost *cost_vec)
 {
   tree vec_dest;
@@ -5405,7 +5405,7 @@ vect_supportable_shift (enum tree_code code, tree scalar_type)
 
 static bool
 vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
-                    gimple **vec_stmt, slp_tree slp_node,
+		    stmt_vec_info *vec_stmt, slp_tree slp_node,
 		    stmt_vector_for_cost *cost_vec)
 {
   tree vec_dest;
@@ -5769,7 +5769,7 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
 
 static bool
 vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
-			gimple **vec_stmt, slp_tree slp_node,
+			stmt_vec_info *vec_stmt, slp_tree slp_node,
 			stmt_vector_for_cost *cost_vec)
 {
   tree vec_dest;
@@ -6222,8 +6222,9 @@ get_group_alias_ptr_type (gimple *first_stmt)
    Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
 
 static bool
-vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
-                    slp_tree slp_node, stmt_vector_for_cost *cost_vec)
+vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi,
+		    stmt_vec_info *vec_stmt, slp_tree slp_node,
+		    stmt_vector_for_cost *cost_vec)
 {
   tree data_ref;
   tree op;
@@ -7385,8 +7386,9 @@ hoist_defs_of_uses (gimple *stmt, struct loop *loop)
    Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
 
 static bool
-vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
-                   slp_tree slp_node, slp_instance slp_node_instance,
+vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi,
+		   stmt_vec_info *vec_stmt, slp_tree slp_node,
+		   slp_instance slp_node_instance,
 		   stmt_vector_for_cost *cost_vec)
 {
   tree scalar_dest;
@@ -8710,8 +8712,9 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
 
 bool
 vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
-			gimple **vec_stmt, tree reduc_def, int reduc_index,
-			slp_tree slp_node, stmt_vector_for_cost *cost_vec)
+			stmt_vec_info *vec_stmt, tree reduc_def,
+			int reduc_index, slp_tree slp_node,
+			stmt_vector_for_cost *cost_vec)
 {
   tree scalar_dest = NULL_TREE;
   tree vec_dest = NULL_TREE;
@@ -9111,7 +9114,7 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 
 static bool
 vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
-			 gimple **vec_stmt, tree reduc_def,
+			 stmt_vec_info *vec_stmt, tree reduc_def,
 			 slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   tree lhs, rhs1, rhs2;
@@ -9383,7 +9386,7 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
 
 static bool
 can_vectorize_live_stmts (gimple *stmt, gimple_stmt_iterator *gsi,
-			  slp_tree slp_node, gimple **vec_stmt,
+			  slp_tree slp_node, stmt_vec_info *vec_stmt,
 			  stmt_vector_for_cost *cost_vec)
 {
   if (slp_node)
@@ -9647,11 +9650,11 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vec_info *vinfo = stmt_info->vinfo;
   bool is_store = false;
-  gimple *vec_stmt = NULL;
+  stmt_vec_info vec_stmt = NULL;
   bool done;
 
   gcc_assert (slp_node || !PURE_SLP_STMT (stmt_info));
-  gimple *old_vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
+  stmt_vec_info old_vec_stmt_info = STMT_VINFO_VEC_STMT (stmt_info);
 
   bool nested_p = (STMT_VINFO_LOOP_VINFO (stmt_info)
 		   && nested_in_vect_loop_p
@@ -9752,7 +9755,7 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
      This would break hybrid SLP vectorization.  */
   if (slp_node)
     gcc_assert (!vec_stmt
-		&& STMT_VINFO_VEC_STMT (stmt_info) == old_vec_stmt);
+		&& STMT_VINFO_VEC_STMT (stmt_info) == old_vec_stmt_info);
 
   /* Handle inner-loop stmts whose DEF is used in the loop-nest that
      is being vectorized, but outside the immediately enclosing loop.  */

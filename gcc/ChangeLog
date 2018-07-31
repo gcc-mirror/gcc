@@ -1,5 +1,33 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (_stmt_vec_info::vectorized_stmt): Change from
+	a gimple stmt to a stmt_vec_info.
+	(vectorizable_condition, vectorizable_live_operation)
+	(vectorizable_reduction, vectorizable_induction): Pass back the
+	vectorized statement as a stmt_vec_info.
+	* tree-vect-data-refs.c (vect_record_grouped_load_vectors): Update
+	use of STMT_VINFO_VEC_STMT.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Likewise,
+	accumulating the inner phis that feed the STMT_VINFO_VEC_STMT
+	as stmt_vec_infos rather than gimple stmts.
+	(vectorize_fold_left_reduction): Change vec_stmt from a gimple stmt
+	to a stmt_vec_info.
+	(vectorizable_live_operation): Likewise.
+	(vectorizable_reduction, vectorizable_induction): Likewise,
+	updating use of STMT_VINFO_VEC_STMT.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand_1): Update use
+	of STMT_VINFO_VEC_STMT.
+	(vect_build_gather_load_calls, vectorizable_bswap, vectorizable_call)
+	(vectorizable_simd_clone_call, vectorizable_conversion)
+	(vectorizable_assignment, vectorizable_shift, vectorizable_operation)
+	(vectorizable_store, vectorizable_load, vectorizable_condition)
+	(vectorizable_comparison, can_vectorize_live_stmts): Change vec_stmt
+	from a gimple stmt to a stmt_vec_info.
+	(vect_transform_stmt): Update use of STMT_VINFO_VEC_STMT.  Pass a
+	pointer to a stmt_vec_info to the vectorizable_* routines.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (_stmt_vec_info::related_stmt): Change from
 	a gimple stmt to a stmt_vec_info.
 	(is_pattern_stmt_p): Update accordingly.
