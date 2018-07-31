@@ -1,5 +1,23 @@
 2018-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/c++config (_GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP)
+	(_GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE): Move definitions here.
+	(_GLIBCXX_HAVE_BUILTIN_LAUNDER): Likewise. Use !__is_identifier
+	instead of __has_builtin.
+	* include/std/type_traits (_GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP)
+	(_GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE): Remove definitions from here.
+	* include/std/version [!_GLIBCXX_HAS_GTHREADS]
+	(__cpp_lib_shared_timed_mutex, __cpp_lib_scoped_lock)
+	(__cpp_lib_shared_mutex): Don't define when Gthreads not in use.
+	[!_GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP]
+	(__cpp_lib_has_unique_object_representations): Don't define when
+	builtin not available.
+	[!_GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE] (__cpp_lib_is_aggregate):
+	Likewise.
+	[!_GLIBCXX_HAVE_BUILTIN_LAUNDER] (__cpp_lib_launder): Likewise.
+	* libsupc++/new (_GLIBCXX_HAVE_BUILTIN_LAUNDER): Remove definition
+	from here.
+
 	* doc/xml/manual/test.xml: Improve documentation on writing tests for
 	newer standards.
 	* doc/xml/manual/using.xml: Document all headers for C++11 and later.
