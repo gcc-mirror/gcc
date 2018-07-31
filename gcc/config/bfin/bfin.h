@@ -204,7 +204,7 @@
 #endif
 
 #define LINK_GCC_C_SEQUENCE_SPEC "\
-  %{mfast-fp:-lbffastfp} %G %L %{mfast-fp:-lbffastfp} %G \
+  %{mfast-fp:-lbffastfp} %G %{!nolibc:%L} %{mfast-fp:-lbffastfp} %G \
 "
 
 #undef  ASM_SPEC
