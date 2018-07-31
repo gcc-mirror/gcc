@@ -6785,6 +6785,12 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       break;
 
     case 'H':
+      if (x == const0_rtx)
+	{
+	  asm_fprintf (f, "xzr");
+	  break;
+	}
+
       if (!REG_P (x) || !GP_REGNUM_P (REGNO (x) + 1))
 	{
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
@@ -17778,6 +17784,45 @@ aarch64_select_early_remat_modes (sbitmap modes)
     }
 }
 
+/* Override the default target speculation_safe_value.  */
+static rtx
+aarch64_speculation_safe_value (machine_mode mode,
+				rtx result, rtx val, rtx failval)
+{
+  /* Maybe we should warn if falling back to hard barriers.  They are
+     likely to be noticably more expensive than the alternative below.  */
+  if (!aarch64_track_speculation)
+    return default_speculation_safe_value (mode, result, val, failval);
+
+  if (!REG_P (val))
+    val = copy_to_mode_reg (mode, val);
+
+  if (!aarch64_reg_or_zero (failval, mode))
+    failval = copy_to_mode_reg (mode, failval);
+
+  switch (mode)
+    {
+    case E_QImode:
+      emit_insn (gen_despeculate_copyqi (result, val, failval));
+      break;
+    case E_HImode:
+      emit_insn (gen_despeculate_copyhi (result, val, failval));
+      break;
+    case E_SImode:
+      emit_insn (gen_despeculate_copysi (result, val, failval));
+      break;
+    case E_DImode:
+      emit_insn (gen_despeculate_copydi (result, val, failval));
+      break;
+    case E_TImode:
+      emit_insn (gen_despeculate_copyti (result, val, failval));
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  return result;
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -18249,6 +18294,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SELECT_EARLY_REMAT_MODES
 #define TARGET_SELECT_EARLY_REMAT_MODES aarch64_select_early_remat_modes
+
+#undef TARGET_SPECULATION_SAFE_VALUE
+#define TARGET_SPECULATION_SAFE_VALUE aarch64_speculation_safe_value
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

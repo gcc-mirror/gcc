@@ -6590,6 +6590,103 @@
    (set_attr "speculation_barrier" "true")]
 )
 
+;; Support for __builtin_speculation_safe_value when we have speculation
+;; tracking enabled.  Use the speculation tracker to decide whether to
+;; copy operand 1 to the target, or to copy the fail value (operand 2).
+(define_expand "despeculate_copy<ALLI_TI:mode>"
+  [(set (match_operand:ALLI_TI 0 "register_operand" "=r")
+	(unspec_volatile:ALLI_TI
+	 [(match_operand:ALLI_TI 1 "register_operand" "r")
+	  (match_operand:ALLI_TI 2 "aarch64_reg_or_zero" "rZ")
+	  (use (reg:DI SPECULATION_TRACKER_REGNUM))
+	  (clobber (reg:CC CC_REGNUM))] UNSPECV_SPECULATION_BARRIER))]
+  ""
+  "
+  {
+    if (operands[2] == const0_rtx)
+      {
+	rtx tracker;
+	if (<MODE>mode == TImode)
+	  tracker = gen_rtx_REG (DImode, SPECULATION_TRACKER_REGNUM);
+	else
+	  tracker = gen_rtx_REG (<MODE>mode, SPECULATION_TRACKER_REGNUM);
+
+	emit_insn (gen_despeculate_simple<mode> (operands[0], operands[1],
+						 tracker));
+	DONE;
+      }
+  }
+  "
+)
+
+;; Patterns to match despeculate_copy<mode>.  Note that "hint 0x14" is the
+;; encoding for CSDB, but will work in older versions of the assembler.
+(define_insn "*despeculate_copy<ALLI:mode>_insn"
+  [(set (match_operand:ALLI 0 "register_operand" "=r")
+	(unspec_volatile:ALLI
+	 [(match_operand:ALLI 1 "register_operand" "r")
+	  (match_operand:ALLI 2 "aarch64_reg_or_zero" "rZ")
+	  (use (reg:DI SPECULATION_TRACKER_REGNUM))
+	  (clobber (reg:CC CC_REGNUM))] UNSPECV_SPECULATION_BARRIER))]
+  ""
+  {
+    operands[3] = gen_rtx_REG (DImode, SPECULATION_TRACKER_REGNUM);
+    output_asm_insn ("cmp\\t%3, #0\;csel\\t%<w>0, %<w>1, %<w>2, ne\;hint\t0x14 // csdb",
+		     operands);
+    return "";
+  }
+  [(set_attr "length" "12")
+   (set_attr "type" "block")
+   (set_attr "speculation_barrier" "true")]
+)
+
+;; Pattern to match despeculate_copyti
+(define_insn "*despeculate_copyti_insn"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(unspec_volatile:TI
+	 [(match_operand:TI 1 "register_operand" "r")
+	  (match_operand:TI 2 "aarch64_reg_or_zero" "rZ")
+	  (use (reg:DI SPECULATION_TRACKER_REGNUM))
+	  (clobber (reg:CC CC_REGNUM))] UNSPECV_SPECULATION_BARRIER))]
+  ""
+  {
+    operands[3] = gen_rtx_REG (DImode, SPECULATION_TRACKER_REGNUM);
+    output_asm_insn
+      ("cmp\\t%3, #0\;csel\\t%0, %1, %2, ne\;csel\\t%H0, %H1, %H2, ne\;hint\t0x14 // csdb",
+       operands);
+    return "";
+  }
+  [(set_attr "length" "16")
+   (set_attr "type" "block")
+   (set_attr "speculation_barrier" "true")]
+)
+
+(define_insn "despeculate_simple<ALLI:mode>"
+  [(set (match_operand:ALLI 0 "register_operand" "=r")
+	(unspec_volatile:ALLI
+	 [(match_operand:ALLI 1 "register_operand" "r")
+	  (use (match_operand:ALLI 2 "register_operand" ""))]
+	 UNSPECV_SPECULATION_BARRIER))]
+  ""
+  "and\\t%<w>0, %<w>1, %<w>2\;hint\t0x14 // csdb"
+  [(set_attr "type" "block")
+   (set_attr "length" "8")
+   (set_attr "speculation_barrier" "true")]
+)
+
+(define_insn "despeculate_simpleti"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(unspec_volatile:TI
+	 [(match_operand:TI 1 "register_operand" "r")
+	  (use (match_operand:DI 2 "register_operand" ""))]
+	 UNSPECV_SPECULATION_BARRIER))]
+  ""
+  "and\\t%0, %1, %2\;and\\t%H0, %H1, %2\;hint\t0x14 // csdb"
+  [(set_attr "type" "block")
+   (set_attr "length" "12")
+   (set_attr "speculation_barrier" "true")]
+)
+
 ;; AdvSIMD Stuff
 (include "aarch64-simd.md")
 
