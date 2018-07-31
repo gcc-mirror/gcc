@@ -820,7 +820,7 @@ vect_reassociating_reduction_p (stmt_vec_info stmt_vinfo)
 {
   return (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
 	  ? STMT_VINFO_REDUC_TYPE (stmt_vinfo) != FOLD_LEFT_REDUCTION
-	  : REDUC_GROUP_FIRST_ELEMENT (stmt_vinfo) != NULL);
+	  : REDUC_GROUP_FIRST_ELEMENT (stmt_vinfo) != NULL_STMT_VEC_INFO);
 }
 
 /* As above, but also require it to have code CODE and to be a reduction
