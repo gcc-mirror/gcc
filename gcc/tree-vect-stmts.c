@@ -98,9 +98,7 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
       && STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     kind = vector_scatter_store;
 
-  stmt_info_for_cost si = { count, kind, where,
-      stmt_info ? STMT_VINFO_STMT (stmt_info) : NULL,
-      misalign };
+  stmt_info_for_cost si = { count, kind, where, stmt_info, misalign };
   body_cost_vec->safe_push (si);
 
   tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
