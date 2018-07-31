@@ -5861,7 +5861,7 @@ vectorize_fold_left_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
-  gimple *new_stmt = NULL;
+  stmt_vec_info new_stmt_info = NULL;
 
   int ncopies;
   if (slp_node)
@@ -5917,6 +5917,7 @@ vectorize_fold_left_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   tree def0;
   FOR_EACH_VEC_ELT (vec_oprnds0, i, def0)
     {
+      gimple *new_stmt;
       tree mask = NULL_TREE;
       if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
 	mask = vect_get_loop_mask (gsi, masks, vec_num, vectype_in, i);
@@ -5965,17 +5966,18 @@ vectorize_fold_left_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       if (i == vec_num - 1)
 	{
 	  gimple_set_lhs (new_stmt, scalar_dest);
-	  vect_finish_replace_stmt (scalar_dest_def, new_stmt);
+	  new_stmt_info = vect_finish_replace_stmt (scalar_dest_def, new_stmt);
 	}
       else
-	vect_finish_stmt_generation (scalar_dest_def, new_stmt, gsi);
+	new_stmt_info = vect_finish_stmt_generation (scalar_dest_def,
+						     new_stmt, gsi);
 
       if (slp_node)
-	SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
     }
 
   if (!slp_node)
-    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
 
   return true;
 }
@@ -6102,7 +6104,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   int epilog_copies;
   stmt_vec_info prev_stmt_info, prev_phi_info;
   bool single_defuse_cycle = false;
-  gimple *new_stmt = NULL;
+  stmt_vec_info new_stmt_info = NULL;
   int j;
   tree ops[3];
   enum vect_def_type dts[3];
@@ -7130,19 +7132,19 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	      gcc_assert (reduc_index != -1 || ! single_defuse_cycle);
 
 	      if (single_defuse_cycle && reduc_index == 0)
-		vec_oprnds0[0] = gimple_get_lhs (new_stmt);
+		vec_oprnds0[0] = gimple_get_lhs (new_stmt_info->stmt);
 	      else
 		vec_oprnds0[0]
 		  = vect_get_vec_def_for_stmt_copy (dts[0], vec_oprnds0[0]);
 	      if (single_defuse_cycle && reduc_index == 1)
-		vec_oprnds1[0] = gimple_get_lhs (new_stmt);
+		vec_oprnds1[0] = gimple_get_lhs (new_stmt_info->stmt);
 	      else
 		vec_oprnds1[0]
 		  = vect_get_vec_def_for_stmt_copy (dts[1], vec_oprnds1[0]);
 	      if (op_type == ternary_op)
 		{
 		  if (single_defuse_cycle && reduc_index == 2)
-		    vec_oprnds2[0] = gimple_get_lhs (new_stmt);
+		    vec_oprnds2[0] = gimple_get_lhs (new_stmt_info->stmt);
 		  else
 		    vec_oprnds2[0] 
 		      = vect_get_vec_def_for_stmt_copy (dts[2], vec_oprnds2[0]);
@@ -7169,23 +7171,24 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	      new_temp = make_ssa_name (vec_dest, call);
 	      gimple_call_set_lhs (call, new_temp);
 	      gimple_call_set_nothrow (call, true);
-	      new_stmt = call;
+	      new_stmt_info = vect_finish_stmt_generation (stmt, call, gsi);
 	    }
 	  else
 	    {
 	      if (op_type == ternary_op)
 		vop[2] = vec_oprnds2[i];
 
-	      new_stmt = gimple_build_assign (vec_dest, code,
-					      vop[0], vop[1], vop[2]);
+	      gassign *new_stmt = gimple_build_assign (vec_dest, code,
+						       vop[0], vop[1], vop[2]);
 	      new_temp = make_ssa_name (vec_dest, new_stmt);
 	      gimple_assign_set_lhs (new_stmt, new_temp);
+	      new_stmt_info
+		= vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	    }
-	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
           if (slp_node)
             {
-              SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	      SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
               vect_defs.quick_push (new_temp);
             }
           else
@@ -7196,11 +7199,11 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
         continue;
 
       if (j == 0)
-	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
       else
-	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
 
-      prev_stmt_info = vinfo_for_stmt (new_stmt);
+      prev_stmt_info = new_stmt_info;
     }
 
   /* Finalize the reduction-phi (set its arguments) and create the
