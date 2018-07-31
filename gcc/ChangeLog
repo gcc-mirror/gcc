@@ -1,3 +1,13 @@
+2018-07-31  Alexandre Oliva <oliva@adacore.com>
+
+	* gimple-streamer-in.c (input_bb): Restore BB discriminator.
+	* gimple-streamer-out.c (output_bb): Save it.
+	* lto-streamer-in.c (input_struct_function_base): Restore
+	instance discriminator if available.  Create map on demand.
+	* lto-streamer-out.c (output_struct_function_base): Save it if
+	available.
+	* final.c (decl_to_instance_map): Document LTO strategy.
+
 2018-07-31  Alexandre Oliva  <oliva@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 

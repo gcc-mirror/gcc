@@ -3154,7 +3154,11 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p,
 
 
 /* Map DECLs to instance discriminators.  This is allocated and
-   defined in ada/gcc-interfaces/trans.c, when compiling with -gnateS.  */
+   defined in ada/gcc-interfaces/trans.c, when compiling with -gnateS.
+   Mappings from this table are saved and restored for LTO, so
+   link-time compilation will have this map set, at least in
+   partitions containing at least one DECL with an associated instance
+   discriminator.  */
 
 decl_to_instance_map_t *decl_to_instance_map;
 
