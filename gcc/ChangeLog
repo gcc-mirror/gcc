@@ -1,5 +1,20 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (free_stmt_vec_info): Take a stmt_vec_info
+	rather than a gimple stmt.
+	* tree-vect-stmts.c (free_stmt_vec_info): Likewise.  Don't free
+	information for pattern statements when passed the original
+	statement; instead wait to be passed the pattern statement itself.
+	Don't call set_vinfo_for_stmt here.
+	(free_stmt_vec_infos): Update call to free_stmt_vec_info.
+	* tree-vect-loop.c (_loop_vec_info::~loop_vec_info): Don't free
+	stmt_vec_infos here.
+	* tree-vect-slp.c (_bb_vec_info::~bb_vec_info): Likewise.
+	* tree-vectorizer.c (vec_info::remove_stmt): Nullify the statement's
+	stmt_vec_infos entry.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vec_info::replace_stmt): Declare.
 	* tree-vectorizer.c (vec_info::replace_stmt): New function.
 	* tree-vect-slp.c (vect_remove_slp_scalar_calls): Use it.

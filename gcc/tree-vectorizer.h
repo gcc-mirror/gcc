@@ -1503,7 +1503,7 @@ extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
 					     enum tree_code *,
 					     int *, vec<tree> *);
 extern stmt_vec_info new_stmt_vec_info (gimple *stmt, vec_info *);
-extern void free_stmt_vec_info (gimple *stmt);
+extern void free_stmt_vec_info (stmt_vec_info);
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
 				  int, enum vect_cost_model_location);
