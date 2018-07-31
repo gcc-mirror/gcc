@@ -442,19 +442,27 @@ dump_enabled_p (void)
 }
 
 /* The following API calls (which *don't* take a "FILE *")
-   write the output to zero or more locations:
-   (a) the active dump_file, if any
-   (b) the -fopt-info destination, if any
-   (c) to the "optinfo" destinations, if any:
-       (c.1) as optimization records
+   write the output to zero or more locations.
 
-   dump_* (MSG_*) --> dumpfile.c --+--> (a) dump_file
-                                   |
-                                   +--> (b) alt_dump_file
-                                   |
-                                   `--> (c) optinfo
-                                            `---> optinfo destinations
-                                                  (c.1) optimization records
+   Some destinations are written to immediately as dump_* calls
+   are made; for others, the output is consolidated into an "optinfo"
+   instance (with its own metadata), and only emitted once the optinfo
+   is complete.
+
+   The destinations are:
+
+   (a) the "immediate" destinations:
+       (a.1) the active dump_file, if any
+       (a.2) the -fopt-info destination, if any
+   (b) the "optinfo" destinations, if any:
+       (b.1) as optimization records
+
+   dump_* (MSG_*) --> dumpfile.c --> items --> (a.1) dump_file
+                                       |   `-> (a.2) alt_dump_file
+                                       |
+                                       `--> (b) optinfo
+                                                `---> optinfo destinations
+                                                      (b.1) optimization records
 
    For optinfos, the dump_*_loc mark the beginning of an optinfo
    instance: all subsequent dump_* calls are consolidated into

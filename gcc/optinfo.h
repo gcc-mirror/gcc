@@ -92,6 +92,8 @@ enum optinfo_kind
 
 extern const char *optinfo_kind_to_string (enum optinfo_kind kind);
 
+class dump_context;
+
 /* A bundle of information describing part of an optimization.  */
 
 class optinfo
@@ -120,41 +122,14 @@ class optinfo
   location_t get_location_t () const { return m_loc.get_location_t (); }
   profile_count get_count () const { return m_loc.get_count (); }
 
+  void add_item (optinfo_item *item);
+
  private:
   void emit ();
 
   /* Pre-canned ways of manipulating the optinfo, for use by friend class
      dump_context.  */
   void handle_dump_file_kind (dump_flags_t);
-  void add_string (const char *str);
-  void add_printf (const char *format, ...) ATTRIBUTE_PRINTF_2;
-  void add_printf_va (const char *format, va_list ap) ATTRIBUTE_PRINTF (2, 0);
-  void add_gimple_stmt (gimple *stmt, int spc, dump_flags_t dump_flags);
-  void add_gimple_expr (gimple *stmt, int spc, dump_flags_t dump_flags);
-  void add_tree (tree node, dump_flags_t dump_flags);
-  void add_symtab_node (symtab_node *node);
-  void add_dec (const wide_int_ref &wi, signop sgn);
-
-  template<unsigned int N, typename C>
-  void add_poly_int (const poly_int<N, C> &value)
-  {
-    /* Compare with dump_dec (MSG_NOTE, ).  */
-
-    STATIC_ASSERT (poly_coeff_traits<C>::signedness >= 0);
-    signop sgn = poly_coeff_traits<C>::signedness ? SIGNED : UNSIGNED;
-
-    if (value.is_constant ())
-      add_dec (value.coeffs[0], sgn);
-    else
-      {
-	add_string ("[");
-	for (unsigned int i = 0; i < N; ++i)
-	  {
-	    add_dec (value.coeffs[i], sgn);
-	    add_string (i == N - 1 ? "]" : ",");
-	  }
-      }
-  }
 
  private:
   dump_location_t m_loc;
@@ -179,7 +154,7 @@ class optinfo_item
 {
  public:
   optinfo_item (enum optinfo_item_kind kind, location_t location,
-		char *text, bool owned);
+		char *text);
   ~optinfo_item ();
 
   enum optinfo_item_kind get_kind () const { return m_kind; }
@@ -191,9 +166,8 @@ class optinfo_item
   enum optinfo_item_kind m_kind;
   location_t m_location;
 
-  /* The textual form of the item.  */
+  /* The textual form of the item, owned by the item.  */
   char *m_text;
-  bool m_owned;
 };
 
 #endif /* #ifndef GCC_OPTINFO_H */
