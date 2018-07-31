@@ -1,5 +1,13 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vect_valid_reduction_input_p): New function,
+	split out from...
+	(vect_is_slp_reduction): ...here...
+	(vect_is_simple_reduction): ...and here.  Remove repetition of tests
+	that are already known to be false.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_free_slp_instance): Add a final_p parameter.
 	* tree-vect-slp.c (vect_free_slp_tree): Likewise.  Don't update
 	STMT_VINFO_NUM_SLP_USES when it's true.

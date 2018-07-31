@@ -2501,6 +2501,21 @@ report_vect_op (dump_flags_t msg_type, gimple *stmt, const char *msg)
   dump_gimple_stmt (msg_type, TDF_SLIM, stmt, 0);
 }
 
+/* DEF_STMT occurs in a loop that contains a potential reduction operation.
+   Return true if the results of DEF_STMT are something that can be
+   accumulated by such a reduction.  */
+
+static bool
+vect_valid_reduction_input_p (gimple *def_stmt)
+{
+  stmt_vec_info def_stmt_info = vinfo_for_stmt (def_stmt);
+  return (is_gimple_assign (def_stmt)
+	  || is_gimple_call (def_stmt)
+	  || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_induction_def
+	  || (gimple_code (def_stmt) == GIMPLE_PHI
+	      && STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_internal_def
+	      && !is_loop_header_bb_p (gimple_bb (def_stmt))));
+}
 
 /* Detect SLP reduction of the form:
 
@@ -2624,16 +2639,9 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 	     ("vect_internal_def"), or it's an induction (defined by a
 	     loop-header phi-node).  */
           if (def_stmt
-              && gimple_bb (def_stmt)
+	      && gimple_bb (def_stmt)
 	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
-              && (is_gimple_assign (def_stmt)
-                  || is_gimple_call (def_stmt)
-                  || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
-                           == vect_induction_def
-                  || (gimple_code (def_stmt) == GIMPLE_PHI
-                      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
-                                  == vect_internal_def
-                      && !is_loop_header_bb_p (gimple_bb (def_stmt)))))
+	      && vect_valid_reduction_input_p (def_stmt))
 	    {
 	      lhs = gimple_assign_lhs (next_stmt);
 	      next_stmt = REDUC_GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
@@ -2654,16 +2662,9 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
             ("vect_internal_def"), or it's an induction (defined by a
             loop-header phi-node).  */
           if (def_stmt
-              && gimple_bb (def_stmt)
+	      && gimple_bb (def_stmt)
 	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
-              && (is_gimple_assign (def_stmt)
-                  || is_gimple_call (def_stmt)
-                  || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
-                              == vect_induction_def
-                  || (gimple_code (def_stmt) == GIMPLE_PHI
-                      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
-                                  == vect_internal_def
-                      && !is_loop_header_bb_p (gimple_bb (def_stmt)))))
+	      && vect_valid_reduction_input_p (def_stmt))
   	    {
 	      if (dump_enabled_p ())
 		{
@@ -3196,15 +3197,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
       && (code == COND_EXPR
 	  || !def1 || gimple_nop_p (def1)
 	  || !flow_bb_inside_loop_p (loop, gimple_bb (def1))
-          || (def1 && flow_bb_inside_loop_p (loop, gimple_bb (def1))
-              && (is_gimple_assign (def1)
-		  || is_gimple_call (def1)
-  	          || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1))
-                      == vect_induction_def
-   	          || (gimple_code (def1) == GIMPLE_PHI
-	              && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1))
-                          == vect_internal_def
- 	              && !is_loop_header_bb_p (gimple_bb (def1)))))))
+	  || vect_valid_reduction_input_p (def1)))
     {
       if (dump_enabled_p ())
 	report_vect_op (MSG_NOTE, def_stmt, "detected reduction: ");
@@ -3215,15 +3208,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
       && (code == COND_EXPR
 	  || !def2 || gimple_nop_p (def2)
 	  || !flow_bb_inside_loop_p (loop, gimple_bb (def2))
-	  || (def2 && flow_bb_inside_loop_p (loop, gimple_bb (def2))
-	      && (is_gimple_assign (def2)
-		  || is_gimple_call (def2)
-		  || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
-		       == vect_induction_def
-		  || (gimple_code (def2) == GIMPLE_PHI
-		      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
-			   == vect_internal_def
-		      && !is_loop_header_bb_p (gimple_bb (def2)))))))
+	  || vect_valid_reduction_input_p (def2)))
     {
       if (! nested_in_vect_loop && orig_code != MINUS_EXPR)
 	{
