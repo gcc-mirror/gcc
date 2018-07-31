@@ -1560,7 +1560,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 static tree
 get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
 {
-  dr_vec_info *dr_info = DR_VECT_AUX (LOOP_VINFO_UNALIGNED_DR (loop_vinfo));
+  dr_vec_info *dr_info = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
   stmt_vec_info stmt_info = dr_info->stmt;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 
@@ -1627,7 +1627,7 @@ static tree
 vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
 			     basic_block bb, int *bound)
 {
-  dr_vec_info *dr_info = DR_VECT_AUX (LOOP_VINFO_UNALIGNED_DR (loop_vinfo));
+  dr_vec_info *dr_info = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
   tree var;
   tree niters_type = TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo));
   gimple_seq stmts = NULL, new_stmts = NULL;

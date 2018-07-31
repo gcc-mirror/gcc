@@ -2135,7 +2135,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 		vect_update_misalignment_for_peel (dr_info, dr0_info, npeel);
 	      }
 
-          LOOP_VINFO_UNALIGNED_DR (loop_vinfo) = dr0_info->dr;
+          LOOP_VINFO_UNALIGNED_DR (loop_vinfo) = dr0_info;
           if (npeel)
             LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) = npeel;
           else

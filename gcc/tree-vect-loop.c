@@ -2142,8 +2142,7 @@ start_over:
 	  /* Niters for peeled prolog loop.  */
 	  if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
 	    {
-	      dr_vec_info *dr_info
-		= DR_VECT_AUX (LOOP_VINFO_UNALIGNED_DR (loop_vinfo));
+	      dr_vec_info *dr_info = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
 	      tree vectype = STMT_VINFO_VECTYPE (dr_info->stmt);
 	      niters_th += TYPE_VECTOR_SUBPARTS (vectype) - 1;
 	    }
