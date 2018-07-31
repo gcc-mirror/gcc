@@ -1,3 +1,8 @@
+2018-07-31  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86687
+	* g++.dg/guality/pr86687.C: New test.
+
 2018-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	P1008R1 - prohibit aggregates with user-declared constructors
