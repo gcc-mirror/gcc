@@ -1,5 +1,12 @@
 2018-07-31  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_unst.adb (Subp_Index): In the case of a protected
+	operation, the relevant entry is the generated
+	protected_subprogram_body into which the original body is
+	rewritten. Assorted cleanup and optimizations.
+
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_attr.adb (Expand_Attribute, case Fixed_Value): Set the
 	base type of the result to ensure that proper overflow and range
 	checks are generated.  If the target is a fixed-point tyoe,
