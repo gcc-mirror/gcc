@@ -1,3 +1,8 @@
+2018-07-31  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.c (getenv_spec_function): Prepend '/' to value for allowed
+	undefined variables.
+
 2018-07-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/86640

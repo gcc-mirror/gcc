@@ -9244,7 +9244,11 @@ print_multilib_info (void)
    Returns the value of the environment variable given by its first argument,
    concatenated with the second argument.  If the variable is not defined, a
    fatal error is issued unless such undefs are internally allowed, in which
-   case the variable name is used as the variable value.  */
+   case the variable name prefixed by a '/' is used as the variable value.
+
+   The leading '/' allows using the result at a spot where a full path would
+   normally be expected and when the actual value doesn't really matter since
+   undef vars are allowed.  */
 
 static const char *
 getenv_spec_function (int argc, const char **argv)
@@ -9262,8 +9266,15 @@ getenv_spec_function (int argc, const char **argv)
   varname = argv[0];
   value = env.get (varname);
 
+  /* If the variable isn't defined and this is allowed, craft our expected
+     return value.  Assume variable names used in specs strings don't contain
+     any active spec character so don't need escaping.  */
   if (!value && spec_undefvar_allowed)
-    value = varname;
+    {
+      result = XNEWVAR (char, strlen(varname) + 2);
+      sprintf (result, "/%s", varname);
+      return result;
+    }
 
   if (!value)
     fatal_error (input_location,
