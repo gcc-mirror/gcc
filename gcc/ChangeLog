@@ -1,5 +1,20 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (_slp_tree::vec_stmts): Change from a
+	vec<gimple *> to a vec<stmt_vec_info>.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Change
+	the reduction_phis argument from a vec<gimple *> to a
+	vec<stmt_vec_info>.
+	(vectorizable_reduction): Likewise the phis local variable that
+	is passed to vect_create_epilog_for_reduction.  Update for new type
+	of SLP_TREE_VEC_STMTS.
+	(vectorizable_induction): Update for new type of SLP_TREE_VEC_STMTS.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-slp.c (vect_get_slp_vect_defs): Likewise.
+	(vect_transform_slp_perm_load, vect_schedule_slp_instance): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (_stmt_vec_info::vectorized_stmt): Change from
 	a gimple stmt to a stmt_vec_info.
 	(vectorizable_condition, vectorizable_live_operation)

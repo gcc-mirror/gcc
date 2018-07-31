@@ -143,7 +143,7 @@ struct _slp_tree {
      permutation.  */
   vec<unsigned> load_permutation;
   /* Vectorized stmt/s.  */
-  vec<gimple *> vec_stmts;
+  vec<stmt_vec_info> vec_stmts;
   /* Number of vector stmts that are created to replace the group of scalar
      stmts. It is calculated during the transformation phase as the number of
      scalar elements in one scalar iteration (GROUP_SIZE) multiplied by VF
