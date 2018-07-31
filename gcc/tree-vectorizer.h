@@ -21,26 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_VECTORIZER_H
 #define GCC_TREE_VECTORIZER_H
 
-class stmt_vec_info {
-public:
-  stmt_vec_info () {}
-  stmt_vec_info (struct _stmt_vec_info *ptr) : m_ptr (ptr) {}
-  struct _stmt_vec_info *operator-> () const { return m_ptr; }
-  struct _stmt_vec_info &operator* () const;
-  operator struct _stmt_vec_info * () const { return m_ptr; }
-  operator gimple * () const;
-  operator void * () const { return m_ptr; }
-  operator bool () const { return m_ptr; }
-  bool operator == (const stmt_vec_info &x) { return x.m_ptr == m_ptr; }
-  bool operator == (_stmt_vec_info *x) { return x == m_ptr; }
-  bool operator != (const stmt_vec_info &x) { return x.m_ptr != m_ptr; }
-  bool operator != (_stmt_vec_info *x) { return x != m_ptr; }
-
-private:
-  struct _stmt_vec_info *m_ptr;
-};
-
-#define NULL_STMT_VEC_INFO (stmt_vec_info (NULL))
+typedef struct _stmt_vec_info *stmt_vec_info;
 
 #include "tree-data-ref.h"
 #include "tree-hash-traits.h"
@@ -1090,17 +1071,6 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 	|| TREE_CODE (TYPE) == ENUMERAL_TYPE)	\
        && TYPE_PRECISION (TYPE) == 1		\
        && TYPE_UNSIGNED (TYPE)))
-
-inline _stmt_vec_info &
-stmt_vec_info::operator* () const
-{
-  return *m_ptr;
-}
-
-inline stmt_vec_info::operator gimple * () const
-{
-  return m_ptr ? m_ptr->stmt : NULL;
-}
 
 static inline bool
 nested_in_vect_loop_p (struct loop *loop, stmt_vec_info stmt_info)

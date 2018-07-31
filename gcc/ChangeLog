@@ -1,5 +1,20 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (stmt_vec_info): Turn back into a typedef.
+	(NULL_STMT_VEC_INFO): Delete.
+	(stmt_vec_info::operator*): Likewise.
+	(stmt_vec_info::operator gimple *): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Use NULL instead
+	of NULL_STMT_VEC_INFO.
+	* tree-vect-patterns.c (vect_init_pattern_stmt): Likewise.
+	(vect_reassociating_reduction_p): Likewise.
+	* tree-vect-stmts.c (vect_build_gather_load_calls): Likewise.
+	(vectorizable_store): Likewise.
+	* tree-vectorizer.c (vec_info::set_vinfo_for_stmt): Likewise.
+	(vec_info::free_stmt_vec_infos): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_stmt_in_region_p): Delete.
 	* tree-vectorizer.c (vect_stmt_in_region_p): Likewise.
 

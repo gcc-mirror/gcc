@@ -660,7 +660,7 @@ vec_info::set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
     }
   else
     {
-      gcc_checking_assert (info == NULL_STMT_VEC_INFO);
+      gcc_checking_assert (info == NULL);
       stmt_vec_infos[uid - 1] = info;
     }
 }
@@ -673,7 +673,7 @@ vec_info::free_stmt_vec_infos (void)
   unsigned int i;
   stmt_vec_info info;
   FOR_EACH_VEC_ELT (stmt_vec_infos, i, info)
-    if (info != NULL_STMT_VEC_INFO)
+    if (info != NULL)
       free_stmt_vec_info (info);
   stmt_vec_infos.release ();
 }
