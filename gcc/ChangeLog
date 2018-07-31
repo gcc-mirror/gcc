@@ -1,5 +1,20 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (get_earlier_stmt, get_later_stmt): Take and
+	return stmt_vec_infos rather than gimple stmts.  Do not accept
+	null arguments.
+	(vect_find_last_scalar_stmt_in_slp): Return a stmt_vec_info instead
+	of a gimple stmt.
+	* tree-vect-slp.c (vect_find_last_scalar_stmt_in_slp): Likewise.
+	Update use of get_later_stmt.
+	(vect_get_constant_vectors): Update call accordingly.
+	(vect_schedule_slp_instance): Likewise
+	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences): Likewise.
+	(vect_slp_analyze_instance_dependence): Likewise.
+	(vect_preserves_scalar_order_p): Update use of get_earlier_stmt.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (stmt_info_for_cost::stmt): Replace with...
 	(stmt_info_for_cost::stmt_info): ...this new field.
 	(add_stmt_costs): Update accordingly.

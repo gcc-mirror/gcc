@@ -1838,18 +1838,17 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 
 /* Find the last store in SLP INSTANCE.  */
 
-gimple *
+stmt_vec_info
 vect_find_last_scalar_stmt_in_slp (slp_tree node)
 {
-  gimple *last = NULL;
+  stmt_vec_info last = NULL;
   stmt_vec_info stmt_vinfo;
 
   for (int i = 0; SLP_TREE_SCALAR_STMTS (node).iterate (i, &stmt_vinfo); i++)
     {
       if (is_pattern_stmt_p (stmt_vinfo))
-	last = get_later_stmt (STMT_VINFO_RELATED_STMT (stmt_vinfo), last);
-      else
-	last = get_later_stmt (stmt_vinfo, last);
+	stmt_vinfo = STMT_VINFO_RELATED_STMT (stmt_vinfo);
+      last = last ? get_later_stmt (stmt_vinfo, last) : stmt_vinfo;
     }
 
   return last;
@@ -3480,8 +3479,9 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 	      gimple_stmt_iterator gsi;
 	      if (place_after_defs)
 		{
-		  gsi = gsi_for_stmt
-		          (vect_find_last_scalar_stmt_in_slp (slp_node));
+		  stmt_vec_info last_stmt_info
+		    = vect_find_last_scalar_stmt_in_slp (slp_node);
+		  gsi = gsi_for_stmt (last_stmt_info->stmt);
 		  init = vect_init_vector (stmt_vinfo, vec_cst, vector_type,
 					   &gsi);
 		}
@@ -3910,7 +3910,8 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 
   /* Vectorized stmts go before the last scalar stmt which is where
      all uses are ready.  */
-  si = gsi_for_stmt (vect_find_last_scalar_stmt_in_slp (node));
+  stmt_vec_info last_stmt_info = vect_find_last_scalar_stmt_in_slp (node);
+  si = gsi_for_stmt (last_stmt_info->stmt);
 
   /* Mark the first element of the reduction chain as reduction to properly
      transform the node.  In the analysis phase only the last element of the

@@ -1119,68 +1119,36 @@ set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
     }
 }
 
-/* Return the earlier statement between STMT1 and STMT2.  */
+/* Return the earlier statement between STMT1_INFO and STMT2_INFO.  */
 
-static inline gimple *
-get_earlier_stmt (gimple *stmt1, gimple *stmt2)
+static inline stmt_vec_info
+get_earlier_stmt (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
 {
-  unsigned int uid1, uid2;
+  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (stmt1_info)
+			|| !STMT_VINFO_RELATED_STMT (stmt1_info))
+		       && (STMT_VINFO_IN_PATTERN_P (stmt2_info)
+			   || !STMT_VINFO_RELATED_STMT (stmt2_info)));
 
-  if (stmt1 == NULL)
-    return stmt2;
-
-  if (stmt2 == NULL)
-    return stmt1;
-
-  uid1 = gimple_uid (stmt1);
-  uid2 = gimple_uid (stmt2);
-
-  if (uid1 == 0 || uid2 == 0)
-    return NULL;
-
-  gcc_assert (uid1 <= stmt_vec_info_vec->length ()
-	      && uid2 <= stmt_vec_info_vec->length ());
-  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt1))
-			|| !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt1)))
-		       && (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt2))
-			   || !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt2))));
-
-  if (uid1 < uid2)
-    return stmt1;
+  if (gimple_uid (stmt1_info->stmt) < gimple_uid (stmt2_info->stmt))
+    return stmt1_info;
   else
-    return stmt2;
+    return stmt2_info;
 }
 
-/* Return the later statement between STMT1 and STMT2.  */
+/* Return the later statement between STMT1_INFO and STMT2_INFO.  */
 
-static inline gimple *
-get_later_stmt (gimple *stmt1, gimple *stmt2)
+static inline stmt_vec_info
+get_later_stmt (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
 {
-  unsigned int uid1, uid2;
+  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (stmt1_info)
+			|| !STMT_VINFO_RELATED_STMT (stmt1_info))
+		       && (STMT_VINFO_IN_PATTERN_P (stmt2_info)
+			   || !STMT_VINFO_RELATED_STMT (stmt2_info)));
 
-  if (stmt1 == NULL)
-    return stmt2;
-
-  if (stmt2 == NULL)
-    return stmt1;
-
-  uid1 = gimple_uid (stmt1);
-  uid2 = gimple_uid (stmt2);
-
-  if (uid1 == 0 || uid2 == 0)
-    return NULL;
-
-  gcc_assert (uid1 <= stmt_vec_info_vec->length ()
-	      && uid2 <= stmt_vec_info_vec->length ());
-  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt1))
-			|| !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt1)))
-		       && (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt2))
-			   || !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt2))));
-
-  if (uid1 > uid2)
-    return stmt1;
+  if (gimple_uid (stmt1_info->stmt) > gimple_uid (stmt2_info->stmt))
+    return stmt1_info;
   else
-    return stmt2;
+    return stmt2_info;
 }
 
 /* Return TRUE if a statement represented by STMT_INFO is a part of a
@@ -1674,7 +1642,7 @@ extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_get_slp_defs (vec<tree> , slp_tree, vec<vec<tree> > *);
 extern bool vect_slp_bb (basic_block);
-extern gimple *vect_find_last_scalar_stmt_in_slp (slp_tree);
+extern stmt_vec_info vect_find_last_scalar_stmt_in_slp (slp_tree);
 extern bool is_simple_and_all_uses_invariant (gimple *, loop_vec_info);
 extern bool can_duplicate_and_interleave_p (unsigned int, machine_mode,
 					    unsigned int * = NULL,
