@@ -1,5 +1,11 @@
 2018-07-31  Martin Liska  <mliska@suse.cz>
 
+        PR gcov-profile/85370
+	* coverage.c (coverage_begin_function): Do not mark target
+        clones as artificial functions.
+
+2018-07-31  Martin Liska  <mliska@suse.cz>
+
         PR gcov-profile/83813
         PR gcov-profile/84758
         PR gcov-profile/85217
