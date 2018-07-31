@@ -1,5 +1,28 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (_stmt_vec_info::related_stmt): Change from
+	a gimple stmt to a stmt_vec_info.
+	(is_pattern_stmt_p): Update accordingly.
+	* tree-vect-data-refs.c (vect_preserves_scalar_order_p): Likewise.
+	(vect_record_grouped_load_vectors): Likewise.
+	* tree-vect-loop.c (vect_determine_vf_for_stmt): Likewise.
+	(vect_fixup_reduc_chain, vect_update_vf_for_slp): Likewise.
+	(vect_model_reduction_cost): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vectorizable_reduction, vectorizable_induction): Likewise.
+	* tree-vect-patterns.c (vect_init_pattern_stmt): Likewise.
+	Return the stmt_vec_info for the pattern statement.
+	(vect_set_pattern_stmt): Update use of STMT_VINFO_RELATED_STMT.
+	(vect_split_statement, vect_mark_pattern_stmts): Likewise.
+	* tree-vect-slp.c (vect_detect_hybrid_slp_stmts): Likewise.
+	(vect_detect_hybrid_slp, vect_get_slp_defs): Likewise.
+	* tree-vect-stmts.c (vect_mark_relevant): Likewise.
+	(vect_get_vec_def_for_operand_1, vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call, vect_analyze_stmt, new_stmt_vec_info)
+	(free_stmt_vec_info, vect_is_simple_use): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_finish_replace_stmt): Return a stmt_vec_info
 	(vect_finish_stmt_generation): Likewise.
 	* tree-vect-stmts.c (vect_finish_stmt_generation_1): Likewise.

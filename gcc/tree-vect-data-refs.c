@@ -213,10 +213,10 @@ vect_preserves_scalar_order_p (gimple *stmt_a, gimple *stmt_b)
      current position (but could happen earlier).  Reordering is therefore
      only possible if the first access is a write.  */
   if (is_pattern_stmt_p (stmtinfo_a))
-    stmt_a = STMT_VINFO_RELATED_STMT (stmtinfo_a);
+    stmtinfo_a = STMT_VINFO_RELATED_STMT (stmtinfo_a);
   if (is_pattern_stmt_p (stmtinfo_b))
-    stmt_b = STMT_VINFO_RELATED_STMT (stmtinfo_b);
-  gimple *earlier_stmt = get_earlier_stmt (stmt_a, stmt_b);
+    stmtinfo_b = STMT_VINFO_RELATED_STMT (stmtinfo_b);
+  gimple *earlier_stmt = get_earlier_stmt (stmtinfo_a, stmtinfo_b);
   return !DR_IS_WRITE (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt)));
 }
 
@@ -6359,8 +6359,10 @@ vect_transform_grouped_load (gimple *stmt, vec<tree> dr_chain, int size,
 void
 vect_record_grouped_load_vectors (gimple *stmt, vec<tree> result_chain)
 {
-  gimple *first_stmt = DR_GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt));
-  gimple *next_stmt, *new_stmt;
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  vec_info *vinfo = stmt_info->vinfo;
+  gimple *first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
+  gimple *next_stmt;
   unsigned int i, gap_count;
   tree tmp_data_ref;
 
@@ -6389,29 +6391,28 @@ vect_record_grouped_load_vectors (gimple *stmt, vec<tree> result_chain)
 
       while (next_stmt)
         {
-	  new_stmt = SSA_NAME_DEF_STMT (tmp_data_ref);
+	  stmt_vec_info new_stmt_info = vinfo->lookup_def (tmp_data_ref);
 	  /* We assume that if VEC_STMT is not NULL, this is a case of multiple
 	     copies, and we put the new vector statement in the first available
 	     RELATED_STMT.  */
 	  if (!STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt)))
-	    STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt)) = new_stmt;
+	    STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt)) = new_stmt_info;
 	  else
             {
               if (!DR_GROUP_SAME_DR_STMT (vinfo_for_stmt (next_stmt)))
                 {
 		  gimple *prev_stmt =
 		    STMT_VINFO_VEC_STMT (vinfo_for_stmt (next_stmt));
-		  gimple *rel_stmt =
-		    STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt));
-	          while (rel_stmt)
+		  stmt_vec_info rel_stmt_info
+		    = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt));
+		  while (rel_stmt_info)
 		    {
-		      prev_stmt = rel_stmt;
-		      rel_stmt =
-                        STMT_VINFO_RELATED_STMT (vinfo_for_stmt (rel_stmt));
+		      prev_stmt = rel_stmt_info;
+		      rel_stmt_info = STMT_VINFO_RELATED_STMT (rel_stmt_info);
 		    }
 
-  	          STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt)) =
-                    new_stmt;
+		  STMT_VINFO_RELATED_STMT (vinfo_for_stmt (prev_stmt))
+		    = new_stmt_info;
                 }
             }
 

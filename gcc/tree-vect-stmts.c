@@ -202,7 +202,6 @@ vect_mark_relevant (vec<gimple *> *worklist, gimple *stmt,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   enum vect_relevant save_relevant = STMT_VINFO_RELEVANT (stmt_info);
   bool save_live_p = STMT_VINFO_LIVE_P (stmt_info);
-  gimple *pattern_stmt;
 
   if (dump_enabled_p ())
     {
@@ -222,17 +221,16 @@ vect_mark_relevant (vec<gimple *> *worklist, gimple *stmt,
 	 as relevant/live because it's not going to be vectorized.
 	 Instead mark the pattern-stmt that replaces it.  */
 
-      pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
-
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "last stmt in pattern. don't mark"
 			 " relevant/live.\n");
-      stmt_info = vinfo_for_stmt (pattern_stmt);
-      gcc_assert (STMT_VINFO_RELATED_STMT (stmt_info) == stmt);
+      stmt_vec_info old_stmt_info = stmt_info;
+      stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
+      gcc_assert (STMT_VINFO_RELATED_STMT (stmt_info) == old_stmt_info);
       save_relevant = STMT_VINFO_RELEVANT (stmt_info);
       save_live_p = STMT_VINFO_LIVE_P (stmt_info);
-      stmt = pattern_stmt;
+      stmt = stmt_info->stmt;
     }
 
   STMT_VINFO_LIVE_P (stmt_info) |= live_p;
@@ -1489,8 +1487,8 @@ vect_get_vec_def_for_operand_1 (gimple *def_stmt, enum vect_def_type dt)
         if (!vec_stmt
             && STMT_VINFO_IN_PATTERN_P (def_stmt_info)
             && !STMT_VINFO_RELEVANT (def_stmt_info))
-          vec_stmt = STMT_VINFO_VEC_STMT (vinfo_for_stmt (
-                       STMT_VINFO_RELATED_STMT (def_stmt_info)));
+	  vec_stmt = (STMT_VINFO_VEC_STMT
+		      (STMT_VINFO_RELATED_STMT (def_stmt_info)));
         gcc_assert (vec_stmt);
 	if (gimple_code (vec_stmt) == GIMPLE_PHI)
 	  vec_oprnd = PHI_RESULT (vec_stmt);
@@ -3635,7 +3633,7 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     return true;
 
   if (is_pattern_stmt_p (stmt_info))
-    stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
+    stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
   lhs = gimple_get_lhs (stmt_info->stmt);
 
   gassign *new_stmt
@@ -4370,7 +4368,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
     {
       type = TREE_TYPE (scalar_dest);
       if (is_pattern_stmt_p (stmt_info))
-	lhs = gimple_call_lhs (STMT_VINFO_RELATED_STMT (stmt_info));
+	lhs = gimple_call_lhs (STMT_VINFO_RELATED_STMT (stmt_info)->stmt);
       else
 	lhs = gimple_call_lhs (stmt);
       new_stmt = gimple_build_assign (lhs, build_zero_cst (type));
@@ -9420,7 +9418,6 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node,
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   enum vect_relevant relevance = STMT_VINFO_RELEVANT (stmt_info);
   bool ok;
-  gimple *pattern_stmt;
   gimple_seq pattern_def_seq;
 
   if (dump_enabled_p ())
@@ -9482,18 +9479,18 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node,
      traversal, don't analyze pattern stmts instead, the pattern stmts
      already will be part of SLP instance.  */
 
-  pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+  stmt_vec_info pattern_stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
   if (!STMT_VINFO_RELEVANT_P (stmt_info)
       && !STMT_VINFO_LIVE_P (stmt_info))
     {
       if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-          && pattern_stmt
-          && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
-              || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
+	  && pattern_stmt_info
+	  && (STMT_VINFO_RELEVANT_P (pattern_stmt_info)
+	      || STMT_VINFO_LIVE_P (pattern_stmt_info)))
         {
           /* Analyze PATTERN_STMT instead of the original stmt.  */
-          stmt = pattern_stmt;
-          stmt_info = vinfo_for_stmt (pattern_stmt);
+	  stmt = pattern_stmt_info->stmt;
+	  stmt_info = pattern_stmt_info;
           if (dump_enabled_p ())
             {
               dump_printf_loc (MSG_NOTE, vect_location,
@@ -9511,9 +9508,9 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node,
     }
   else if (STMT_VINFO_IN_PATTERN_P (stmt_info)
 	   && node == NULL
-           && pattern_stmt
-           && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
-               || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
+	   && pattern_stmt_info
+	   && (STMT_VINFO_RELEVANT_P (pattern_stmt_info)
+	       || STMT_VINFO_LIVE_P (pattern_stmt_info)))
     {
       /* Analyze PATTERN_STMT too.  */
       if (dump_enabled_p ())
@@ -9523,7 +9520,7 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node,
           dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
         }
 
-      if (!vect_analyze_stmt (pattern_stmt, need_to_vectorize, node,
+      if (!vect_analyze_stmt (pattern_stmt_info, need_to_vectorize, node,
 			      node_instance, cost_vec))
         return false;
    }
@@ -9855,7 +9852,6 @@ new_stmt_vec_info (gimple *stmt, vec_info *vinfo)
   STMT_VINFO_VEC_STMT (res) = NULL;
   STMT_VINFO_VECTORIZABLE (res) = true;
   STMT_VINFO_IN_PATTERN_P (res) = false;
-  STMT_VINFO_RELATED_STMT (res) = NULL;
   STMT_VINFO_PATTERN_DEF_SEQ (res) = NULL;
   STMT_VINFO_DATA_REF (res) = NULL;
   STMT_VINFO_VEC_REDUCTION_TYPE (res) = TREE_CODE_REDUCTION;
@@ -9936,16 +9932,14 @@ free_stmt_vec_info (gimple *stmt)
 	      release_ssa_name (lhs);
 	    free_stmt_vec_info (seq_stmt);
 	  }
-      stmt_vec_info patt_info
-	= vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
-      if (patt_info)
+      stmt_vec_info patt_stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
+      if (patt_stmt_info)
 	{
-	  gimple *patt_stmt = STMT_VINFO_STMT (patt_info);
-	  gimple_set_bb (patt_stmt, NULL);
-	  tree lhs = gimple_get_lhs (patt_stmt);
+	  gimple_set_bb (patt_stmt_info->stmt, NULL);
+	  tree lhs = gimple_get_lhs (patt_stmt_info->stmt);
 	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	    release_ssa_name (lhs);
-	  free_stmt_vec_info (patt_stmt);
+	  free_stmt_vec_info (patt_stmt_info);
 	}
     }
 
@@ -10143,8 +10137,8 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
 	{
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
 	    {
-	      def_stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-	      stmt_vinfo = vinfo_for_stmt (def_stmt);
+	      stmt_vinfo = STMT_VINFO_RELATED_STMT (stmt_vinfo);
+	      def_stmt = stmt_vinfo->stmt;
 	    }
 	  switch (gimple_code (def_stmt))
 	    {

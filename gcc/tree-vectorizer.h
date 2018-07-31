@@ -847,7 +847,7 @@ struct _stmt_vec_info {
         related_stmt of the "pattern stmt" points back to this stmt (which is
         the last stmt in the original sequence of stmts that constitutes the
         pattern).  */
-  gimple *related_stmt;
+  stmt_vec_info related_stmt;
 
   /* Used to keep a sequence of def stmts of a pattern stmt if such exists.
      The sequence is attached to the original statement rather than the
@@ -1189,16 +1189,8 @@ get_later_stmt (gimple *stmt1, gimple *stmt2)
 static inline bool
 is_pattern_stmt_p (stmt_vec_info stmt_info)
 {
-  gimple *related_stmt;
-  stmt_vec_info related_stmt_info;
-
-  related_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
-  if (related_stmt
-      && (related_stmt_info = vinfo_for_stmt (related_stmt))
-      && STMT_VINFO_IN_PATTERN_P (related_stmt_info))
-    return true;
-
-  return false;
+  stmt_vec_info related_stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
+  return related_stmt_info && STMT_VINFO_IN_PATTERN_P (related_stmt_info);
 }
 
 /* Return true if BB is a loop header.  */
