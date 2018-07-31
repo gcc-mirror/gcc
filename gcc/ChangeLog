@@ -1,5 +1,29 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-data-refs.c (vect_describe_gather_scatter_call): Take
+	a stmt_vec_info instead of a gcall.
+	(vect_check_gather_scatter): Update call accordingly.
+	* tree-vect-loop-manip.c (iv_phi_p): Take a stmt_vec_info instead
+	of a gphi.
+	(vect_can_advance_ivs_p, vect_update_ivs_after_vectorizer)
+	(slpeel_update_phi_nodes_for_loops):): Update calls accordingly.
+	* tree-vect-loop.c (vect_transform_loop_stmt): Take a stmt_vec_info
+	instead of a gimple stmt.
+	(vect_transform_loop): Update calls accordingly.
+	* tree-vect-slp.c (vect_split_slp_store_group): Take and return
+	stmt_vec_infos instead of gimple stmts.
+	(vect_analyze_slp_instance): Update use accordingly.
+	* tree-vect-stmts.c (read_vector_array, write_vector_array)
+	(vect_clobber_variable, vect_stmt_relevant_p, permute_vec_elements)
+	(vect_use_strided_gather_scatters_p, vect_build_all_ones_mask)
+	(vect_build_zero_merge_argument, vect_get_gather_scatter_ops)
+	(vect_gen_widened_results_half, vect_get_loop_based_defs)
+	(vect_create_vectorized_promotion_stmts, can_vectorize_live_stmts):
+	Take a stmt_vec_info instead of a gimple stmt and pass stmt_vec_infos
+	down to subroutines.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Change the type
 	of the worklist from a vector of gimple stmts to a vector of
 	stmt_vec_infos.

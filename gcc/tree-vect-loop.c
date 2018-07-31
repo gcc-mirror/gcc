@@ -8207,21 +8207,18 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
     scale_bbs_frequencies (&loop->latch, 1, exit_l->probability / prob);
 }
 
-/* Vectorize STMT if relevant, inserting any new instructions before GSI.
-   When vectorizing STMT as a store, set *SEEN_STORE to its stmt_vec_info.
+/* Vectorize STMT_INFO if relevant, inserting any new instructions before GSI.
+   When vectorizing STMT_INFO as a store, set *SEEN_STORE to its stmt_vec_info.
    *SLP_SCHEDULE is a running record of whether we have called
    vect_schedule_slp.  */
 
 static void
-vect_transform_loop_stmt (loop_vec_info loop_vinfo, gimple *stmt,
+vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 			  gimple_stmt_iterator *gsi,
 			  stmt_vec_info *seen_store, bool *slp_scheduled)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (stmt);
-  if (!stmt_info)
-    return;
 
   if (dump_enabled_p ())
     {
@@ -8476,15 +8473,19 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		      gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
 		      for (gimple_stmt_iterator subsi = gsi_start (def_seq);
 			   !gsi_end_p (subsi); gsi_next (&subsi))
-			vect_transform_loop_stmt (loop_vinfo,
-						  gsi_stmt (subsi), &si,
-						  &seen_store,
-						  &slp_scheduled);
-		      gimple *pat_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
-		      vect_transform_loop_stmt (loop_vinfo, pat_stmt, &si,
+			{
+			  stmt_vec_info pat_stmt_info
+			    = loop_vinfo->lookup_stmt (gsi_stmt (subsi));
+			  vect_transform_loop_stmt (loop_vinfo, pat_stmt_info,
+						    &si, &seen_store,
+						    &slp_scheduled);
+			}
+		      stmt_vec_info pat_stmt_info
+			= STMT_VINFO_RELATED_STMT (stmt_info);
+		      vect_transform_loop_stmt (loop_vinfo, pat_stmt_info, &si,
 						&seen_store, &slp_scheduled);
 		    }
-		  vect_transform_loop_stmt (loop_vinfo, stmt, &si,
+		  vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
 					    &seen_store, &slp_scheduled);
 		}
 	      if (seen_store)

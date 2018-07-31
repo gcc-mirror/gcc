@@ -1335,16 +1335,16 @@ find_loop_location (struct loop *loop)
   return dump_user_location_t ();
 }
 
-/* Return true if PHI defines an IV of the loop to be vectorized.  */
+/* Return true if the phi described by STMT_INFO defines an IV of the
+   loop to be vectorized.  */
 
 static bool
-iv_phi_p (gphi *phi)
+iv_phi_p (stmt_vec_info stmt_info)
 {
+  gphi *phi = as_a <gphi *> (stmt_info->stmt);
   if (virtual_operand_p (PHI_RESULT (phi)))
     return false;
 
-  stmt_vec_info stmt_info = vinfo_for_stmt (phi);
-  gcc_assert (stmt_info != NULL_STMT_VEC_INFO);
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
     return false;
@@ -1388,7 +1388,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 	 virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.
 
 	 Skip reduction phis.  */
-      if (!iv_phi_p (phi))
+      if (!iv_phi_p (phi_info))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -1509,7 +1509,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 	}
 
       /* Skip reduction and virtual phis.  */
-      if (!iv_phi_p (phi))
+      if (!iv_phi_p (phi_info))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -2088,7 +2088,8 @@ slpeel_update_phi_nodes_for_loops (loop_vec_info loop_vinfo,
       tree arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, first_latch_e);
       /* Generate lcssa PHI node for the first loop.  */
       gphi *vect_phi = (loop == first) ? orig_phi : update_phi;
-      if (create_lcssa_for_iv_phis || !iv_phi_p (vect_phi))
+      stmt_vec_info vect_phi_info = loop_vinfo->lookup_stmt (vect_phi);
+      if (create_lcssa_for_iv_phis || !iv_phi_p (vect_phi_info))
 	{
 	  tree new_res = copy_ssa_name (PHI_RESULT (orig_phi));
 	  gphi *lcssa_phi = create_phi_node (new_res, between_bb);

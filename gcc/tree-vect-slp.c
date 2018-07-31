@@ -1856,16 +1856,15 @@ vect_find_last_scalar_stmt_in_slp (slp_tree node)
   return last;
 }
 
-/* Splits a group of stores, currently beginning at FIRST_STMT, into two groups:
-   one (still beginning at FIRST_STMT) of size GROUP1_SIZE (also containing
-   the first GROUP1_SIZE stmts, since stores are consecutive), the second
-   containing the remainder.
+/* Splits a group of stores, currently beginning at FIRST_VINFO, into
+   two groups: one (still beginning at FIRST_VINFO) of size GROUP1_SIZE
+   (also containing the first GROUP1_SIZE stmts, since stores are
+   consecutive), the second containing the remainder.
    Return the first stmt in the second group.  */
 
-static gimple *
-vect_split_slp_store_group (gimple *first_stmt, unsigned group1_size)
+static stmt_vec_info
+vect_split_slp_store_group (stmt_vec_info first_vinfo, unsigned group1_size)
 {
-  stmt_vec_info first_vinfo = vinfo_for_stmt (first_stmt);
   gcc_assert (DR_GROUP_FIRST_ELEMENT (first_vinfo) == first_vinfo);
   gcc_assert (group1_size > 0);
   int group2_size = DR_GROUP_SIZE (first_vinfo) - group1_size;
@@ -2174,7 +2173,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  gcc_assert ((const_nunits & (const_nunits - 1)) == 0);
 	  unsigned group1_size = i & ~(const_nunits - 1);
 
-	  gimple *rest = vect_split_slp_store_group (stmt_info, group1_size);
+	  stmt_vec_info rest = vect_split_slp_store_group (stmt_info,
+							   group1_size);
 	  bool res = vect_analyze_slp_instance (vinfo, stmt_info,
 						max_tree_size);
 	  /* If the first non-match was in the middle of a vector,
