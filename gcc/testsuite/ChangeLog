@@ -1,5 +1,14 @@
 2018-07-31  Martin Liska  <mliska@suse.cz>
 
+        PR gcov-profile/85338
+        PR gcov-profile/85350
+        PR gcov-profile/85372
+	* gcc.misc-tests/gcov-pr85338.c: New test.
+	* gcc.misc-tests/gcov-pr85350.c: New test.
+	* gcc.misc-tests/gcov-pr85372.c: New test.
+
+2018-07-31  Martin Liska  <mliska@suse.cz>
+
         PR gcov-profile/83813
         PR gcov-profile/84758
         PR gcov-profile/85217
