@@ -259,7 +259,7 @@ struct vec_info {
 
   /* All interleaving chains of stores, represented by the first
      stmt in the chain.  */
-  auto_vec<gimple *> grouped_stores;
+  auto_vec<stmt_vec_info> grouped_stores;
 
   /* Cost data used by the target cost model.  */
   void *target_cost_data;
@@ -479,7 +479,7 @@ typedef struct _loop_vec_info : public vec_info {
 
   /* All reduction chains in the loop, represented by the first
      stmt in the chain.  */
-  auto_vec<gimple *> reduction_chains;
+  auto_vec<stmt_vec_info> reduction_chains;
 
   /* Cost vector for a single scalar iteration.  */
   auto_vec<stmt_info_for_cost> scalar_cost_vec;
