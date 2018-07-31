@@ -1,5 +1,12 @@
 2018-07-31  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): To find local
+	subprograms in the elaboration code for a package body, recurse
+	through nested statement sequences because a compiler-generated
+	procedure may appear within a condition statement.
+
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch6.adb (Expand_Protected_Subprogram_Call): Handle
 	properly a protected call that includes a default parameter that
 	is a call to a protected function of the same type.
