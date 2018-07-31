@@ -1,5 +1,10 @@
 2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/pdp11/pdp11.c (TARGET_HAVE_SPECULATION_SAFE_VALUE): Redefine
+	to speculation_safe_value_not_needed.
+
+2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
 	* targhooks.h (speculation_safe_value_not_needed): New prototype.
 	* targhooks.c (speculation_safe_value_not_needed): New function.
 	* target.def (have_speculation_safe_value): Update documentation.
