@@ -1,5 +1,19 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_is_simple_use): Add an optional
+	stmt_vec_info * parameter before the optional gimple **.
+	* tree-vect-stmts.c (vect_is_simple_use): Likewise.
+	(process_use, vect_get_vec_def_for_operand_1): Update callers.
+	(vect_get_vec_def_for_operand, vectorizable_shift): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-patterns.c (type_conversion_p): Likewise.
+	(vect_look_through_possible_promotion): Likewise.
+	(vect_recog_rotate_pattern): Likewise.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (stmt_vec_info): Temporarily change from
 	a typedef to a wrapper class.
 	(NULL_STMT_VEC_INFO): New macro.
