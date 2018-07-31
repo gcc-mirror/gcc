@@ -1,3 +1,13 @@
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_Attribute, case Fixed_Value): Set the
+	base type of the result to ensure that proper overflow and range
+	checks are generated.  If the target is a fixed-point tyoe,
+	generate the required overflow and range checks explicitly,
+	rather than relying on Apply_Type_Conversion_Checks, which might
+	simply set the Do_Range_Check flag and rely on the backend to
+	add the check.
+
 2018-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_res.adb (Resolve_Call): Establish a transient scope to
