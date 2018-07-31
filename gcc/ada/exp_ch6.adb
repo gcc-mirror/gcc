@@ -6799,7 +6799,7 @@ package body Exp_Ch6 is
         and then (Nkind_In (Exp, N_Type_Conversion,
                                  N_Unchecked_Type_Conversion)
                     or else (Is_Entity_Name (Exp)
-                               and then Ekind (Entity (Exp)) in Formal_Kind))
+                               and then Is_Formal (Entity (Exp))))
       then
          --  When the return type is limited, perform a check that the tag of
          --  the result is the same as the tag of the return type.
@@ -6877,7 +6877,7 @@ package body Exp_Ch6 is
             or else Nkind_In (Exp, N_Type_Conversion,
                                    N_Unchecked_Type_Conversion)
             or else (Is_Entity_Name (Exp)
-                      and then Ekind (Entity (Exp)) in Formal_Kind)
+                      and then Is_Formal (Entity (Exp)))
             or else Scope_Depth (Enclosing_Dynamic_Scope (Etype (Exp))) >
                       Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))
       then
