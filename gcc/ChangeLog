@@ -1,3 +1,18 @@
+2018-07-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* dump-context.h (dump_context::dump_loc): New decl.
+	* dumpfile.c (dump_context::dump_loc): New member function.
+	(dump_context::dump_gimple_stmt_loc): Reimplement using dump_loc
+	and dump_gimple_stmt.
+	(dump_context::dump_gimple_expr_loc): Likewise, using
+	dump_gimple_expr.
+	(dump_context::dump_generic_expr_loc): Likewise, using
+	dump_generic_expr.
+	(dump_context::dump_printf_loc_va): Likewise, using
+	dump_printf_va.
+	(dump_context::begin_scope): Explicitly using the global function
+	"dump_loc", rather than the member function.
+
 2018-07-31  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86741
