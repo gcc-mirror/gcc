@@ -1,5 +1,57 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (set_dr_misalignment, dr_misalignment)
+	(DR_TARGET_ALIGNMENT, aligned_access_p, known_alignment_for_access_p)
+	(vect_known_alignment_in_bytes, vect_dr_behavior)
+	(vect_get_scalar_dr_size): Take references as dr_vec_infos
+	instead of data_references.  Update calls to other routines for
+	which the same change has been made.
+	* tree-vect-data-refs.c (vect_preserves_scalar_order_p): Take
+	dr_vec_infos instead of stmt_vec_infos.
+	(vect_analyze_data_ref_dependence): Update call accordingly.
+	(vect_slp_analyze_data_ref_dependence)
+	(vect_record_base_alignments): Use DR_VECT_AUX.
+	(vect_calculate_target_alignment, vect_compute_data_ref_alignment)
+	(vect_update_misalignment_for_peel, verify_data_ref_alignment)
+	(vector_alignment_reachable_p, vect_get_data_access_cost)
+	(vect_peeling_supportable, vect_analyze_group_access_1)
+	(vect_analyze_group_access, vect_analyze_data_ref_access)
+	(vect_vfa_segment_size, vect_vfa_access_size, vect_vfa_align)
+	(vect_compile_time_alias, vect_small_gap_p)
+	(vectorizable_with_step_bound_p, vect_duplicate_ssa_name_ptr_info):
+	(vect_supportable_dr_alignment): Take references as dr_vec_infos
+	instead of data_references.  Update calls to other routines for
+	which the same change has been made.
+	(vect_verify_datarefs_alignment, vect_get_peeling_costs_all_drs)
+	(vect_find_same_alignment_drs, vect_analyze_data_refs_alignment)
+	(vect_slp_analyze_and_verify_node_alignment)
+	(vect_analyze_data_ref_accesses, vect_prune_runtime_alias_test_list)
+	(vect_create_addr_base_for_vector_ref, vect_create_data_ref_ptr)
+	(vect_setup_realignment): Use dr_vec_infos.  Update calls after
+	above changes.
+	(_vect_peel_info::dr): Replace with...
+	(_vect_peel_info::dr_info): ...this new field.
+	(vect_peeling_hash_get_most_frequent)
+	(vect_peeling_hash_choose_best_peeling): Update accordingly.
+	(vect_peeling_hash_get_lowest_cost):
+	(vect_enhance_data_refs_alignment): Likewise.  Update calls to other
+	routines for which the same change has been made.
+	(vect_peeling_hash_insert): Likewise.  Take a dr_vec_info instead of a
+	data_reference.
+	* tree-vect-loop-manip.c (get_misalign_in_elems)
+	(vect_gen_prolog_loop_niters): Use dr_vec_infos.  Update calls after
+	above changes.
+	* tree-vect-loop.c (vect_analyze_loop_2): Likewise.
+	* tree-vect-stmts.c (vect_get_store_cost, vect_get_load_cost)
+	(vect_truncate_gather_scatter_offset, compare_step_with_zero)
+	(get_group_load_store_type, get_negative_load_store_type)
+	(vect_get_data_ptr_increment, vectorizable_store)
+	(vectorizable_load): Likewise.
+	(ensure_base_align): Take a dr_vec_info instead of a data_reference.
+	Update calls to other routines for which the same change has been made.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vec_info::move_dr): New member function.
 	(dataref_aux): Rename to...
 	(dr_vec_info): ...this and add "dr" and "stmt" fields.

@@ -1560,14 +1560,15 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 static tree
 get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
 {
-  struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
-  stmt_vec_info stmt_info = vect_dr_stmt (dr);
+  dr_vec_info *dr_info = DR_VECT_AUX (LOOP_VINFO_UNALIGNED_DR (loop_vinfo));
+  stmt_vec_info stmt_info = dr_info->stmt;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 
-  unsigned int target_align = DR_TARGET_ALIGNMENT (dr);
+  unsigned int target_align = DR_TARGET_ALIGNMENT (dr_info);
   gcc_assert (target_align != 0);
 
-  bool negative = tree_int_cst_compare (DR_STEP (dr), size_zero_node) < 0;
+  bool negative = tree_int_cst_compare (DR_STEP (dr_info->dr),
+					size_zero_node) < 0;
   tree offset = (negative
 		 ? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1)
 		 : size_zero_node);
@@ -1626,14 +1627,14 @@ static tree
 vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
 			     basic_block bb, int *bound)
 {
-  struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
+  dr_vec_info *dr_info = DR_VECT_AUX (LOOP_VINFO_UNALIGNED_DR (loop_vinfo));
   tree var;
   tree niters_type = TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo));
   gimple_seq stmts = NULL, new_stmts = NULL;
   tree iters, iters_name;
-  stmt_vec_info stmt_info = vect_dr_stmt (dr);
+  stmt_vec_info stmt_info = dr_info->stmt;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  unsigned int target_align = DR_TARGET_ALIGNMENT (dr);
+  unsigned int target_align = DR_TARGET_ALIGNMENT (dr_info);
 
   if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
     {
@@ -1658,7 +1659,8 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
 
       /* Create:  (niters_type) ((align_in_elems - misalign_in_elems)
 				 & (align_in_elems - 1)).  */
-      bool negative = tree_int_cst_compare (DR_STEP (dr), size_zero_node) < 0;
+      bool negative = tree_int_cst_compare (DR_STEP (dr_info->dr),
+					    size_zero_node) < 0;
       if (negative)
 	iters = fold_build2 (MINUS_EXPR, type, misalign_in_elems,
 			     align_in_elems_tree);

@@ -1057,8 +1057,9 @@ vect_get_store_cost (stmt_vec_info stmt_info, int ncopies,
 		     unsigned int *inside_cost,
 		     stmt_vector_for_cost *body_cost_vec)
 {
-  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  int alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
+  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
+  int alignment_support_scheme
+    = vect_supportable_dr_alignment (dr_info, false);
 
   switch (alignment_support_scheme)
     {
@@ -1079,7 +1080,8 @@ vect_get_store_cost (stmt_vec_info stmt_info, int ncopies,
         /* Here, we assign an additional cost for the unaligned store.  */
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies,
 					  unaligned_store, stmt_info,
-					  DR_MISALIGNMENT (dr), vect_body);
+					  DR_MISALIGNMENT (dr_info),
+					  vect_body);
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
                            "vect_model_store_cost: unaligned supported by "
@@ -1236,8 +1238,9 @@ vect_get_load_cost (stmt_vec_info stmt_info, int ncopies,
 		    stmt_vector_for_cost *body_cost_vec,
 		    bool record_prologue_costs)
 {
-  data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  int alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
+  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
+  int alignment_support_scheme
+    = vect_supportable_dr_alignment (dr_info, false);
 
   switch (alignment_support_scheme)
     {
@@ -1257,7 +1260,8 @@ vect_get_load_cost (stmt_vec_info stmt_info, int ncopies,
         /* Here, we assign an additional cost for the unaligned load.  */
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies,
 					  unaligned_load, stmt_info,
-					  DR_MISALIGNMENT (dr), vect_body);
+					  DR_MISALIGNMENT (dr_info),
+					  vect_body);
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
@@ -1975,7 +1979,8 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
 				     loop_vec_info loop_vinfo, bool masked_p,
 				     gather_scatter_info *gs_info)
 {
-  data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
+  data_reference *dr = dr_info->dr;
   tree step = DR_STEP (dr);
   if (TREE_CODE (step) != INTEGER_CST)
     {
@@ -2003,7 +2008,7 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
     count = max_iters.to_shwi ();
 
   /* Try scales of 1 and the element size.  */
-  int scales[] = { 1, vect_get_scalar_dr_size (dr) };
+  int scales[] = { 1, vect_get_scalar_dr_size (dr_info) };
   wi::overflow_type overflow = wi::OVF_NONE;
   for (int i = 0; i < 2; ++i)
     {
@@ -2102,8 +2107,8 @@ vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info,
 static int
 compare_step_with_zero (stmt_vec_info stmt_info)
 {
-  data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  return tree_int_cst_compare (vect_dr_behavior (dr)->step,
+  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
+  return tree_int_cst_compare (vect_dr_behavior (dr_info)->step,
 			       size_zero_node);
 }
 
@@ -2166,7 +2171,7 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
   stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-  data_reference *first_dr = STMT_VINFO_DATA_REF (first_stmt_info);
+  dr_vec_info *first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
   unsigned int group_size = DR_GROUP_SIZE (first_stmt_info);
   bool single_element_p = (stmt_info == first_stmt_info
 			   && !DR_GROUP_NEXT_ELEMENT (stmt_info));
@@ -2218,8 +2223,8 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 	     be a multiple of B and so we are guaranteed to access a
 	     non-gap element in the same B-sized block.  */
 	  if (overrun_p
-	      && gap < (vect_known_alignment_in_bytes (first_dr)
-			/ vect_get_scalar_dr_size (first_dr)))
+	      && gap < (vect_known_alignment_in_bytes (first_dr_info)
+			/ vect_get_scalar_dr_size (first_dr_info)))
 	    overrun_p = false;
 	  if (overrun_p && !can_overrun_p)
 	    {
@@ -2246,8 +2251,8 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 	 same B-sized block.  */
       if (would_overrun_p
 	  && !masked_p
-	  && gap < (vect_known_alignment_in_bytes (first_dr)
-		    / vect_get_scalar_dr_size (first_dr)))
+	  && gap < (vect_known_alignment_in_bytes (first_dr_info)
+		    / vect_get_scalar_dr_size (first_dr_info)))
 	would_overrun_p = false;
 
       if (!STMT_VINFO_STRIDED_P (stmt_info)
@@ -2339,7 +2344,7 @@ get_negative_load_store_type (stmt_vec_info stmt_info, tree vectype,
 			      vec_load_store_type vls_type,
 			      unsigned int ncopies)
 {
-  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   dr_alignment_support alignment_support_scheme;
 
   if (ncopies > 1)
@@ -2350,7 +2355,7 @@ get_negative_load_store_type (stmt_vec_info stmt_info, tree vectype,
       return VMAT_ELEMENTWISE;
     }
 
-  alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
+  alignment_support_scheme = vect_supportable_dr_alignment (dr_info, false);
   if (alignment_support_scheme != dr_aligned
       && alignment_support_scheme != dr_unaligned_supported)
     {
@@ -2923,19 +2928,19 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
 }
 
 /* Return the amount that should be added to a vector pointer to move
-   to the next or previous copy of AGGR_TYPE.  DR is the data reference
+   to the next or previous copy of AGGR_TYPE.  DR_INFO is the data reference
    being vectorized and MEMORY_ACCESS_TYPE describes the type of
    vectorization.  */
 
 static tree
-vect_get_data_ptr_increment (data_reference *dr, tree aggr_type,
+vect_get_data_ptr_increment (dr_vec_info *dr_info, tree aggr_type,
 			     vect_memory_access_type memory_access_type)
 {
   if (memory_access_type == VMAT_INVARIANT)
     return size_zero_node;
 
   tree iv_step = TYPE_SIZE_UNIT (aggr_type);
-  tree step = vect_dr_behavior (dr)->step;
+  tree step = vect_dr_behavior (dr_info)->step;
   if (tree_int_cst_sgn (step) == -1)
     iv_step = fold_build1 (NEGATE_EXPR, TREE_TYPE (iv_step), iv_step);
   return iv_step;
@@ -6169,19 +6174,20 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   return true;
 }
 
-/* A helper function to ensure data reference DR's base alignment.  */
+/* A helper function to ensure data reference DR_INFO's base alignment.  */
 
 static void
-ensure_base_align (struct data_reference *dr)
+ensure_base_align (dr_vec_info *dr_info)
 {
-  if (DR_VECT_AUX (dr)->misalignment == DR_MISALIGNMENT_UNINITIALIZED)
+  if (dr_info->misalignment == DR_MISALIGNMENT_UNINITIALIZED)
     return;
 
-  if (DR_VECT_AUX (dr)->base_misaligned)
+  if (dr_info->base_misaligned)
     {
-      tree base_decl = DR_VECT_AUX (dr)->base_decl;
+      tree base_decl = dr_info->base_decl;
 
-      unsigned int align_base_to = DR_TARGET_ALIGNMENT (dr) * BITS_PER_UNIT;
+      unsigned int align_base_to
+	= DR_TARGET_ALIGNMENT (dr_info) * BITS_PER_UNIT;
 
       if (decl_in_symtab_p (base_decl))
 	symtab_node::get (base_decl)->increase_alignment (align_base_to);
@@ -6190,7 +6196,7 @@ ensure_base_align (struct data_reference *dr)
 	  SET_DECL_ALIGN (base_decl, align_base_to);
           DECL_USER_ALIGN (base_decl) = 1;
 	}
-      DR_VECT_AUX (dr)->base_misaligned = false;
+      dr_info->base_misaligned = false;
     }
 }
 
@@ -6239,7 +6245,6 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   tree data_ref;
   tree op;
   tree vec_oprnd = NULL_TREE;
-  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info), *first_dr = NULL;
   tree elem_type;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
@@ -6401,19 +6406,20 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	return false;
     }
 
+  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info), *first_dr_info = NULL;
   grouped_store = (STMT_VINFO_GROUPED_ACCESS (stmt_info)
 		   && memory_access_type != VMAT_GATHER_SCATTER
 		   && (slp || memory_access_type != VMAT_CONTIGUOUS));
   if (grouped_store)
     {
       first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-      first_dr = STMT_VINFO_DATA_REF (first_stmt_info);
+      first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
       group_size = DR_GROUP_SIZE (first_stmt_info);
     }
   else
     {
       first_stmt_info = stmt_info;
-      first_dr = dr;
+      first_dr_info = dr_info;
       group_size = vec_num = 1;
     }
 
@@ -6435,7 +6441,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
   /* Transform.  */
 
-  ensure_base_align (dr);
+  ensure_base_align (dr_info);
 
   if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
     {
@@ -6614,7 +6620,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  first_stmt_info = SLP_TREE_SCALAR_STMTS (slp_node)[0];
 	  gcc_assert (DR_GROUP_FIRST_ELEMENT (first_stmt_info)
 		      == first_stmt_info);
-	  first_dr = STMT_VINFO_DATA_REF (first_stmt_info);
+	  first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
 	  op = vect_get_store_rhs (first_stmt_info);
         } 
       else
@@ -6625,7 +6631,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       ref_type = get_group_alias_ptr_type (first_stmt_info);
     }
   else
-    ref_type = reference_alias_ptr_type (DR_REF (first_dr));
+    ref_type = reference_alias_ptr_type (DR_REF (first_dr_info->dr));
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -6651,11 +6657,11 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
       stride_base
 	= fold_build_pointer_plus
-	    (DR_BASE_ADDRESS (first_dr),
+	    (DR_BASE_ADDRESS (first_dr_info->dr),
 	     size_binop (PLUS_EXPR,
-			 convert_to_ptrofftype (DR_OFFSET (first_dr)),
-			 convert_to_ptrofftype (DR_INIT (first_dr))));
-      stride_step = fold_convert (sizetype, DR_STEP (first_dr));
+			 convert_to_ptrofftype (DR_OFFSET (first_dr_info->dr)),
+			 convert_to_ptrofftype (DR_INIT (first_dr_info->dr))));
+      stride_step = fold_convert (sizetype, DR_STEP (first_dr_info->dr));
 
       /* For a store with loop-invariant (but other than power-of-2)
          stride (i.e. not a grouped access) like so:
@@ -6835,7 +6841,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 						 group_el * elsz);
 		  newref = build2 (MEM_REF, ltype,
 				   running_off, this_off);
-		  vect_copy_ref_info (newref, DR_REF (first_dr));
+		  vect_copy_ref_info (newref, DR_REF (first_dr_info->dr));
 
 		  /* And store it to *running_off.  */
 		  assign = gimple_build_assign (newref, elem);
@@ -6878,7 +6884,8 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   auto_vec<tree> dr_chain (group_size);
   oprnds.create (group_size);
 
-  alignment_support_scheme = vect_supportable_dr_alignment (first_dr, false);
+  alignment_support_scheme
+    = vect_supportable_dr_alignment (first_dr_info, false);
   gcc_assert (alignment_support_scheme);
   vec_loop_masks *loop_masks
     = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
@@ -6916,7 +6923,8 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	aggr_type = build_array_type_nelts (elem_type, vec_num * nunits);
       else
 	aggr_type = vectype;
-      bump = vect_get_data_ptr_increment (dr, aggr_type, memory_access_type);
+      bump = vect_get_data_ptr_increment (dr_info, aggr_type,
+					  memory_access_type);
     }
 
   if (mask)
@@ -7011,14 +7019,14 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  bool simd_lane_access_p
 	    = STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info);
 	  if (simd_lane_access_p
-	      && TREE_CODE (DR_BASE_ADDRESS (first_dr)) == ADDR_EXPR
-	      && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (first_dr), 0))
-	      && integer_zerop (DR_OFFSET (first_dr))
-	      && integer_zerop (DR_INIT (first_dr))
+	      && TREE_CODE (DR_BASE_ADDRESS (first_dr_info->dr)) == ADDR_EXPR
+	      && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (first_dr_info->dr), 0))
+	      && integer_zerop (DR_OFFSET (first_dr_info->dr))
+	      && integer_zerop (DR_INIT (first_dr_info->dr))
 	      && alias_sets_conflict_p (get_alias_set (aggr_type),
 					get_alias_set (TREE_TYPE (ref_type))))
 	    {
-	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr));
+	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr_info->dr));
 	      dataref_offset = build_int_cst (ref_type, 0);
 	      inv_p = false;
 	    }
@@ -7175,16 +7183,16 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		   vect_permute_store_chain().  */
 		vec_oprnd = result_chain[i];
 
-	      align = DR_TARGET_ALIGNMENT (first_dr);
-	      if (aligned_access_p (first_dr))
+	      align = DR_TARGET_ALIGNMENT (first_dr_info);
+	      if (aligned_access_p (first_dr_info))
 		misalign = 0;
-	      else if (DR_MISALIGNMENT (first_dr) == -1)
+	      else if (DR_MISALIGNMENT (first_dr_info) == -1)
 		{
-		  align = dr_alignment (vect_dr_behavior (first_dr));
+		  align = dr_alignment (vect_dr_behavior (first_dr_info));
 		  misalign = 0;
 		}
 	      else
-		misalign = DR_MISALIGNMENT (first_dr);
+		misalign = DR_MISALIGNMENT (first_dr_info);
 	      if (dataref_offset == NULL_TREE
 		  && TREE_CODE (dataref_ptr) == SSA_NAME)
 		set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
@@ -7227,9 +7235,9 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 					  dataref_offset
 					  ? dataref_offset
 					  : build_int_cst (ref_type, 0));
-		  if (aligned_access_p (first_dr))
+		  if (aligned_access_p (first_dr_info))
 		    ;
-		  else if (DR_MISALIGNMENT (first_dr) == -1)
+		  else if (DR_MISALIGNMENT (first_dr_info) == -1)
 		    TREE_TYPE (data_ref)
 		      = build_aligned_type (TREE_TYPE (data_ref),
 					    align * BITS_PER_UNIT);
@@ -7237,7 +7245,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    TREE_TYPE (data_ref)
 		      = build_aligned_type (TREE_TYPE (data_ref),
 					    TYPE_ALIGN (elem_type));
-		  vect_copy_ref_info (data_ref, DR_REF (first_dr));
+		  vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
 		  gassign *new_stmt
 		    = gimple_build_assign (data_ref, vec_oprnd);
 		  new_stmt_info
@@ -7400,7 +7408,6 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   struct loop *loop = NULL;
   struct loop *containing_loop = gimple_bb (stmt_info->stmt)->loop_father;
   bool nested_in_vect_loop = false;
-  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info), *first_dr = NULL;
   tree elem_type;
   tree new_temp;
   machine_mode mode;
@@ -7663,7 +7670,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
   /* Transform.  */
 
-  ensure_base_align (dr);
+  dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info), *first_dr_info = NULL;
+  ensure_base_align (dr_info);
 
   if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
     {
@@ -7692,12 +7700,12 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (grouped_load)
 	{
 	  first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-	  first_dr = STMT_VINFO_DATA_REF (first_stmt_info);
+	  first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
 	}
       else
 	{
 	  first_stmt_info = stmt_info;
-	  first_dr = dr;
+	  first_dr_info = dr_info;
 	}
       if (slp && grouped_load)
 	{
@@ -7712,16 +7720,16 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		 * vect_get_place_in_interleaving_chain (stmt_info,
 							 first_stmt_info));
 	  group_size = 1;
-	  ref_type = reference_alias_ptr_type (DR_REF (dr));
+	  ref_type = reference_alias_ptr_type (DR_REF (dr_info->dr));
 	}
 
       stride_base
 	= fold_build_pointer_plus
-	    (DR_BASE_ADDRESS (first_dr),
+	    (DR_BASE_ADDRESS (first_dr_info->dr),
 	     size_binop (PLUS_EXPR,
-			 convert_to_ptrofftype (DR_OFFSET (first_dr)),
-			 convert_to_ptrofftype (DR_INIT (first_dr))));
-      stride_step = fold_convert (sizetype, DR_STEP (first_dr));
+			 convert_to_ptrofftype (DR_OFFSET (first_dr_info->dr)),
+			 convert_to_ptrofftype (DR_INIT (first_dr_info->dr))));
+      stride_step = fold_convert (sizetype, DR_STEP (first_dr_info->dr));
 
       /* For a load with loop-invariant (but other than power-of-2)
          stride (i.e. not a grouped access) like so:
@@ -7850,7 +7858,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      tree this_off = build_int_cst (TREE_TYPE (alias_off),
 					     group_el * elsz + cst_offset);
 	      tree data_ref = build2 (MEM_REF, ltype, running_off, this_off);
-	      vect_copy_ref_info (data_ref, DR_REF (first_dr));
+	      vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
 	      gassign *new_stmt
 		= gimple_build_assign (make_ssa_name (ltype), data_ref);
 	      new_stmt_info
@@ -7946,7 +7954,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
 	  return true;
 	}
-      first_dr = STMT_VINFO_DATA_REF (first_stmt_info);
+      first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
       group_gap_adj = 0;
 
       /* VEC_NUM is the number of vect stmts to be created for this group.  */
@@ -7980,13 +7988,14 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   else
     {
       first_stmt_info = stmt_info;
-      first_dr = dr;
+      first_dr_info = dr_info;
       group_size = vec_num = 1;
       group_gap_adj = 0;
-      ref_type = reference_alias_ptr_type (DR_REF (first_dr));
+      ref_type = reference_alias_ptr_type (DR_REF (first_dr_info->dr));
     }
 
-  alignment_support_scheme = vect_supportable_dr_alignment (first_dr, false);
+  alignment_support_scheme
+    = vect_supportable_dr_alignment (first_dr_info, false);
   gcc_assert (alignment_support_scheme);
   vec_loop_masks *loop_masks
     = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
@@ -8105,7 +8114,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
      nested within an outer-loop that is being vectorized.  */
 
   if (nested_in_vect_loop
-      && !multiple_p (DR_STEP_ALIGNMENT (dr),
+      && !multiple_p (DR_STEP_ALIGNMENT (dr_info->dr),
 		      GET_MODE_SIZE (TYPE_MODE (vectype))))
     {
       gcc_assert (alignment_support_scheme != dr_explicit_realign_optimized);
@@ -8151,7 +8160,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	aggr_type = build_array_type_nelts (elem_type, vec_num * nunits);
       else
 	aggr_type = vectype;
-      bump = vect_get_data_ptr_increment (dr, aggr_type, memory_access_type);
+      bump = vect_get_data_ptr_increment (dr_info, aggr_type,
+					  memory_access_type);
     }
 
   tree vec_mask = NULL_TREE;
@@ -8166,16 +8176,16 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  bool simd_lane_access_p
 	    = STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info);
 	  if (simd_lane_access_p
-	      && TREE_CODE (DR_BASE_ADDRESS (first_dr)) == ADDR_EXPR
-	      && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (first_dr), 0))
-	      && integer_zerop (DR_OFFSET (first_dr))
-	      && integer_zerop (DR_INIT (first_dr))
+	      && TREE_CODE (DR_BASE_ADDRESS (first_dr_info->dr)) == ADDR_EXPR
+	      && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (first_dr_info->dr), 0))
+	      && integer_zerop (DR_OFFSET (first_dr_info->dr))
+	      && integer_zerop (DR_INIT (first_dr_info->dr))
 	      && alias_sets_conflict_p (get_alias_set (aggr_type),
 					get_alias_set (TREE_TYPE (ref_type)))
 	      && (alignment_support_scheme == dr_aligned
 		  || alignment_support_scheme == dr_unaligned_supported))
 	    {
-	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr));
+	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr_info->dr));
 	      dataref_offset = build_int_cst (ref_type, 0);
 	      inv_p = false;
 	    }
@@ -8190,10 +8200,11 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      /* Adjust the pointer by the difference to first_stmt.  */
 	      data_reference_p ptrdr
 		= STMT_VINFO_DATA_REF (first_stmt_info_for_drptr);
-	      tree diff = fold_convert (sizetype,
-					size_binop (MINUS_EXPR,
-						    DR_INIT (first_dr),
-						    DR_INIT (ptrdr)));
+	      tree diff
+		= fold_convert (sizetype,
+				size_binop (MINUS_EXPR,
+					    DR_INIT (first_dr_info->dr),
+					    DR_INIT (ptrdr)));
 	      dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
 					     stmt_info, diff);
 	    }
@@ -8326,19 +8337,20 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			break;
 		      }
 
-		    align = DR_TARGET_ALIGNMENT (dr);
+		    align = DR_TARGET_ALIGNMENT (dr_info);
 		    if (alignment_support_scheme == dr_aligned)
 		      {
-			gcc_assert (aligned_access_p (first_dr));
+			gcc_assert (aligned_access_p (first_dr_info));
 			misalign = 0;
 		      }
-		    else if (DR_MISALIGNMENT (first_dr) == -1)
+		    else if (DR_MISALIGNMENT (first_dr_info) == -1)
 		      {
-			align = dr_alignment (vect_dr_behavior (first_dr));
+			align = dr_alignment
+			  (vect_dr_behavior (first_dr_info));
 			misalign = 0;
 		      }
 		    else
-		      misalign = DR_MISALIGNMENT (first_dr);
+		      misalign = DR_MISALIGNMENT (first_dr_info);
 		    if (dataref_offset == NULL_TREE
 			&& TREE_CODE (dataref_ptr) == SSA_NAME)
 		      set_ptr_info_alignment (get_ptr_info (dataref_ptr),
@@ -8365,7 +8377,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 					 : build_int_cst (ref_type, 0));
 			if (alignment_support_scheme == dr_aligned)
 			  ;
-			else if (DR_MISALIGNMENT (first_dr) == -1)
+			else if (DR_MISALIGNMENT (first_dr_info) == -1)
 			  TREE_TYPE (data_ref)
 			    = build_aligned_type (TREE_TYPE (data_ref),
 						  align * BITS_PER_UNIT);
@@ -8392,7 +8404,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		      ptr = copy_ssa_name (dataref_ptr);
 		    else
 		      ptr = make_ssa_name (TREE_TYPE (dataref_ptr));
-		    unsigned int align = DR_TARGET_ALIGNMENT (first_dr);
+		    unsigned int align = DR_TARGET_ALIGNMENT (first_dr_info);
 		    new_stmt = gimple_build_assign
 				 (ptr, BIT_AND_EXPR, dataref_ptr,
 				  build_int_cst
@@ -8402,7 +8414,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    data_ref
 		      = build2 (MEM_REF, vectype, ptr,
 				build_int_cst (ref_type, 0));
-		    vect_copy_ref_info (data_ref, DR_REF (first_dr));
+		    vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
 		    vec_dest = vect_create_destination_var (scalar_dest,
 							    vectype);
 		    new_stmt = gimple_build_assign (vec_dest, data_ref);
@@ -8436,7 +8448,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		      new_temp = copy_ssa_name (dataref_ptr);
 		    else
 		      new_temp = make_ssa_name (TREE_TYPE (dataref_ptr));
-		    unsigned int align = DR_TARGET_ALIGNMENT (first_dr);
+		    unsigned int align = DR_TARGET_ALIGNMENT (first_dr_info);
 		    new_stmt = gimple_build_assign
 		      (new_temp, BIT_AND_EXPR, dataref_ptr,
 		       build_int_cst (TREE_TYPE (dataref_ptr),
@@ -8454,7 +8466,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      /* DATA_REF is null if we've already built the statement.  */
 	      if (data_ref)
 		{
-		  vect_copy_ref_info (data_ref, DR_REF (first_dr));
+		  vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
 		  new_stmt = gimple_build_assign (vec_dest, data_ref);
 		}
 	      new_temp = make_ssa_name (vec_dest, new_stmt);
