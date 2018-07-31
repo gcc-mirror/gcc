@@ -1,5 +1,34 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_get_vec_defs_for_stmt_copy)
+	(vect_get_vec_def_for_stmt_copy): Take a vec_info rather than
+	a vect_def_type for the first argument.
+	* tree-vect-stmts.c (vect_get_vec_defs_for_stmt_copy): Likewise.
+	(vect_get_vec_def_for_stmt_copy): Likewise.  Return the original
+	operand if it isn't defined by a vectorized statement.
+	(vect_build_gather_load_calls): Remove the mask_dt argument and
+	update calls to vect_get_vec_def_for_stmt_copy.
+	(vectorizable_bswap): Likewise the dt argument.
+	(vectorizable_call): Update calls to vectorizable_bswap and
+	vect_get_vec_def_for_stmt_copy.
+	(vectorizable_simd_clone_call, vectorizable_assignment)
+	(vectorizable_shift, vectorizable_operation, vectorizable_condition)
+	(vectorizable_comparison): Update calls to
+	vect_get_vec_def_for_stmt_copy.
+	(vectorizable_store): Likewise.  Remove now-unnecessary calls to
+	vect_is_simple_use.
+	(vect_get_loop_based_defs): Remove dt argument and update call
+	to vect_get_vec_def_for_stmt_copy.
+	(vectorizable_conversion): Update calls to vect_get_loop_based_defs
+	and vect_get_vec_def_for_stmt_copy.
+	(vectorizable_load): Update calls to vect_build_gather_load_calls
+	and vect_get_vec_def_for_stmt_copy.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction)
+	(vectorizable_reduction, vectorizable_live_operation): Update calls
+	to vect_get_vec_def_for_stmt_copy.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-data-refs.c (vect_record_base_alignment): Replace vec_info
 	and gimple stmt arguments with a stmt_vec_info.
 	(vect_record_base_alignments): Update calls accordingly.

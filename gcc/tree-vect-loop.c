@@ -4421,7 +4421,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
   bool nested_in_vect_loop = false;
   auto_vec<gimple *> new_phis;
   auto_vec<stmt_vec_info> inner_phis;
-  enum vect_def_type dt = vect_unknown_def_type;
   int j, i;
   auto_vec<tree> scalar_results;
   unsigned int group_size = 1, k, ratio;
@@ -4528,8 +4527,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 	      phi_info = STMT_VINFO_RELATED_STMT (phi_info);
 	      if (nested_in_vect_loop)
 		vec_init_def
-		  = vect_get_vec_def_for_stmt_copy (initial_def_dt,
-						    vec_init_def);
+		  = vect_get_vec_def_for_stmt_copy (loop_vinfo, vec_init_def);
 	    }
 
 	  /* Set the loop-entry arg of the reduction-phi.  */
@@ -4556,7 +4554,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 
           /* Set the loop-latch arg for the reduction-phi.  */
           if (j > 0)
-            def = vect_get_vec_def_for_stmt_copy (vect_unknown_def_type, def);
+	    def = vect_get_vec_def_for_stmt_copy (loop_vinfo, def);
 
 	  add_phi_arg (phi, def, loop_latch_edge (loop), UNKNOWN_LOCATION);
 
@@ -4697,7 +4695,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
             new_phis.quick_push (phi);
           else
 	    {
-	      def = vect_get_vec_def_for_stmt_copy (dt, def);
+	      def = vect_get_vec_def_for_stmt_copy (loop_vinfo, def);
 	      STMT_VINFO_RELATED_STMT (prev_phi_info) = phi_info;
 	    }
 
@@ -7111,19 +7109,22 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		vec_oprnds0[0] = gimple_get_lhs (new_stmt_info->stmt);
 	      else
 		vec_oprnds0[0]
-		  = vect_get_vec_def_for_stmt_copy (dts[0], vec_oprnds0[0]);
+		  = vect_get_vec_def_for_stmt_copy (loop_vinfo,
+						    vec_oprnds0[0]);
 	      if (single_defuse_cycle && reduc_index == 1)
 		vec_oprnds1[0] = gimple_get_lhs (new_stmt_info->stmt);
 	      else
 		vec_oprnds1[0]
-		  = vect_get_vec_def_for_stmt_copy (dts[1], vec_oprnds1[0]);
+		  = vect_get_vec_def_for_stmt_copy (loop_vinfo,
+						    vec_oprnds1[0]);
 	      if (op_type == ternary_op)
 		{
 		  if (single_defuse_cycle && reduc_index == 2)
 		    vec_oprnds2[0] = gimple_get_lhs (new_stmt_info->stmt);
 		  else
 		    vec_oprnds2[0] 
-		      = vect_get_vec_def_for_stmt_copy (dts[2], vec_oprnds2[0]);
+		      = vect_get_vec_def_for_stmt_copy (loop_vinfo,
+							vec_oprnds2[0]);
 		}
             }
         }
@@ -7945,8 +7946,7 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
 
       /* For multiple copies, get the last copy.  */
       for (int i = 1; i < ncopies; ++i)
-	vec_lhs = vect_get_vec_def_for_stmt_copy (vect_unknown_def_type,
-						  vec_lhs);
+	vec_lhs = vect_get_vec_def_for_stmt_copy (loop_vinfo, vec_lhs);
 
       /* Get the last lane in the vector.  */
       bitstart = int_const_binop (MINUS_EXPR, vec_bitsize, bitsize);
