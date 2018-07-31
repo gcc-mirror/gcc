@@ -1,5 +1,10 @@
 2018-07-31  Arnaud Charlet  <charlet@adacore.com>
 
+	* gnatlink.adb: Fix potential Constraint_Error if
+	Library_Version is too long.
+
+2018-07-31  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_elab.adb: Remove duplicate condition detected by CodePeer.
 
 2018-07-31  Ed Schonberg  <schonberg@adacore.com>
