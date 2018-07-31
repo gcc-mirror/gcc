@@ -1,5 +1,11 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vectorizable_reduction): Fix an instance in
+	which make_ssa_name was called with new_stmt before new_stmt
+	had been created.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (vect_valid_reduction_input_p): New function,
 	split out from...
 	(vect_is_slp_reduction): ...here...
