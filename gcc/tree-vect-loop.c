@@ -546,7 +546,6 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
       gimple *phi = worklist.pop ();
       tree def = PHI_RESULT (phi);
       stmt_vec_info stmt_vinfo = vinfo_for_stmt (phi);
-      gimple *reduc_stmt;
 
       if (dump_enabled_p ())
         {
@@ -557,9 +556,10 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
       gcc_assert (!virtual_operand_p (def)
 		  && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
 
-      reduc_stmt = vect_force_simple_reduction (loop_vinfo, phi,
-						&double_reduc, false);
-      if (reduc_stmt)
+      stmt_vec_info reduc_stmt_info
+	= vect_force_simple_reduction (loop_vinfo, stmt_vinfo,
+				       &double_reduc, false);
+      if (reduc_stmt_info)
         {
           if (double_reduc)
             {
@@ -568,8 +568,8 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 				 "Detected double reduction.\n");
 
               STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_double_reduction_def;
-              STMT_VINFO_DEF_TYPE (vinfo_for_stmt (reduc_stmt)) =
-                                                    vect_double_reduction_def;
+	      STMT_VINFO_DEF_TYPE (reduc_stmt_info)
+		= vect_double_reduction_def;
             }
           else
             {
@@ -580,8 +580,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 				     "Detected vectorizable nested cycle.\n");
 
                   STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_nested_cycle;
-                  STMT_VINFO_DEF_TYPE (vinfo_for_stmt (reduc_stmt)) =
-                                                             vect_nested_cycle;
+		  STMT_VINFO_DEF_TYPE (reduc_stmt_info) = vect_nested_cycle;
                 }
               else
                 {
@@ -590,13 +589,13 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 				     "Detected reduction.\n");
 
                   STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_reduction_def;
-                  STMT_VINFO_DEF_TYPE (vinfo_for_stmt (reduc_stmt)) =
-                                                           vect_reduction_def;
+		  STMT_VINFO_DEF_TYPE (reduc_stmt_info) = vect_reduction_def;
                   /* Store the reduction cycles for possible vectorization in
                      loop-aware SLP if it was not detected as reduction
 		     chain.  */
-		  if (! REDUC_GROUP_FIRST_ELEMENT (vinfo_for_stmt (reduc_stmt)))
-		    LOOP_VINFO_REDUCTIONS (loop_vinfo).safe_push (reduc_stmt);
+		  if (! REDUC_GROUP_FIRST_ELEMENT (reduc_stmt_info))
+		    LOOP_VINFO_REDUCTIONS (loop_vinfo).safe_push
+		      (reduc_stmt_info);
                 }
             }
         }
@@ -2530,8 +2529,8 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
   struct loop *loop = (gimple_bb (phi))->loop_father;
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   enum tree_code code;
-  gimple *current_stmt = NULL, *loop_use_stmt = NULL, *first, *next_stmt;
-  stmt_vec_info use_stmt_info, current_stmt_info;
+  gimple *loop_use_stmt = NULL, *first, *next_stmt;
+  stmt_vec_info use_stmt_info, current_stmt_info = NULL;
   tree lhs;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
@@ -2593,9 +2592,8 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 
       /* Insert USE_STMT into reduction chain.  */
       use_stmt_info = loop_info->lookup_stmt (loop_use_stmt);
-      if (current_stmt)
+      if (current_stmt_info)
         {
-          current_stmt_info = vinfo_for_stmt (current_stmt);
 	  REDUC_GROUP_NEXT_ELEMENT (current_stmt_info) = loop_use_stmt;
           REDUC_GROUP_FIRST_ELEMENT (use_stmt_info)
             = REDUC_GROUP_FIRST_ELEMENT (current_stmt_info);
@@ -2604,7 +2602,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 	REDUC_GROUP_FIRST_ELEMENT (use_stmt_info) = loop_use_stmt;
 
       lhs = gimple_assign_lhs (loop_use_stmt);
-      current_stmt = loop_use_stmt;
+      current_stmt_info = use_stmt_info;
       size++;
    }
 
@@ -2614,7 +2612,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
   /* Swap the operands, if needed, to make the reduction operand be the second
      operand.  */
   lhs = PHI_RESULT (phi);
-  next_stmt = REDUC_GROUP_FIRST_ELEMENT (vinfo_for_stmt (current_stmt));
+  next_stmt = REDUC_GROUP_FIRST_ELEMENT (current_stmt_info);
   while (next_stmt)
     {
       if (gimple_assign_rhs2 (next_stmt) == lhs)
@@ -2671,7 +2669,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
     }
 
   /* Save the chain for further analysis in SLP detection.  */
-  first = REDUC_GROUP_FIRST_ELEMENT (vinfo_for_stmt (current_stmt));
+  first = REDUC_GROUP_FIRST_ELEMENT (current_stmt_info);
   LOOP_VINFO_REDUCTION_CHAINS (loop_info).safe_push (first);
   REDUC_GROUP_SIZE (vinfo_for_stmt (first)) = size;
 
@@ -2867,15 +2865,16 @@ pop:
 
 */
 
-static gimple *
-vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
+static stmt_vec_info
+vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 			  bool *double_reduc,
 			  bool need_wrapping_integral_overflow,
 			  enum vect_reduction_type *v_reduc_type)
 {
+  gphi *phi = as_a <gphi *> (phi_info->stmt);
   struct loop *loop = (gimple_bb (phi))->loop_father;
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
-  gimple *def_stmt, *phi_use_stmt = NULL;
+  gimple *phi_use_stmt = NULL;
   enum tree_code orig_code, code;
   tree op1, op2, op3 = NULL_TREE, op4 = NULL_TREE;
   tree type;
@@ -2937,13 +2936,16 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
       return NULL;
     }
 
-  def_stmt = SSA_NAME_DEF_STMT (loop_arg);
-  if (is_gimple_assign (def_stmt))
+  stmt_vec_info def_stmt_info = loop_info->lookup_def (loop_arg);
+  if (!def_stmt_info)
+    return NULL;
+
+  if (gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt))
     {
       name = gimple_assign_lhs (def_stmt);
       phi_def = false;
     }
-  else if (gimple_code (def_stmt) == GIMPLE_PHI)
+  else if (gphi *def_stmt = dyn_cast <gphi *> (def_stmt_info->stmt))
     {
       name = PHI_RESULT (def_stmt);
       phi_def = true;
@@ -2954,13 +2956,11 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 	{
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			   "reduction: unhandled reduction operation: ");
-	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, def_stmt, 0);
+	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+			    def_stmt_info->stmt, 0);
 	}
       return NULL;
     }
-
-  if (! flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
-    return NULL;
 
   nloop_uses = 0;
   auto_vec<gphi *, 3> lcphis;
@@ -2987,6 +2987,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
      defined in the inner loop.  */
   if (phi_def)
     {
+      gphi *def_stmt = as_a <gphi *> (def_stmt_info->stmt);
       op1 = PHI_ARG_DEF (def_stmt, 0);
 
       if (gimple_phi_num_args (def_stmt) != 1
@@ -3012,7 +3013,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 			    "detected double reduction: ");
 
           *double_reduc = true;
-          return def_stmt;
+	  return def_stmt_info;
         }
 
       return NULL;
@@ -3038,6 +3039,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 	  }
     }
 
+  gassign *def_stmt = as_a <gassign *> (def_stmt_info->stmt);
   bool nested_in_vect_loop = flow_loop_nested_p (vect_loop, loop);
   code = orig_code = gimple_assign_rhs_code (def_stmt);
 
@@ -3178,7 +3180,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
     {
       if (dump_enabled_p ())
 	report_vect_op (MSG_NOTE, def_stmt, "detected reduction: ");
-      return def_stmt;
+      return def_stmt_info;
     }
 
   if (def1_info
@@ -3237,7 +3239,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
             report_vect_op (MSG_NOTE, def_stmt, "detected reduction: ");
         }
 
-      return def_stmt;
+      return def_stmt_info;
     }
 
   /* Try to find SLP reduction chain.  */
@@ -3250,7 +3252,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
         report_vect_op (MSG_NOTE, def_stmt,
 			"reduction: detected reduction chain: ");
 
-      return def_stmt;
+      return def_stmt_info;
     }
 
   /* Dissolve group eventually half-built by vect_is_slp_reduction.  */
@@ -3264,9 +3266,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
     }
 
   /* Look for the expression computing loop_arg from loop PHI result.  */
-  if (check_reduction_path (vect_location, loop, as_a <gphi *> (phi), loop_arg,
-			    code))
-    return def_stmt;
+  if (check_reduction_path (vect_location, loop, phi, loop_arg, code))
+    return def_stmt_info;
 
   if (dump_enabled_p ())
     {
@@ -3281,25 +3282,24 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
    in-place if it enables detection of more reductions.  Arguments
    as there.  */
 
-gimple *
-vect_force_simple_reduction (loop_vec_info loop_info, gimple *phi,
+stmt_vec_info
+vect_force_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 			     bool *double_reduc,
 			     bool need_wrapping_integral_overflow)
 {
   enum vect_reduction_type v_reduc_type;
-  gimple *def = vect_is_simple_reduction (loop_info, phi, double_reduc,
-					  need_wrapping_integral_overflow,
-					  &v_reduc_type);
-  if (def)
+  stmt_vec_info def_info
+    = vect_is_simple_reduction (loop_info, phi_info, double_reduc,
+				need_wrapping_integral_overflow,
+				&v_reduc_type);
+  if (def_info)
     {
-      stmt_vec_info phi_info = vinfo_for_stmt (phi);
-      stmt_vec_info def_info = vinfo_for_stmt (def);
       STMT_VINFO_REDUC_TYPE (phi_info) = v_reduc_type;
       STMT_VINFO_REDUC_DEF (phi_info) = def_info;
       STMT_VINFO_REDUC_TYPE (def_info) = v_reduc_type;
       STMT_VINFO_REDUC_DEF (def_info) = phi_info;
     }
-  return def;
+  return def_info;
 }
 
 /* Calculate cost of peeling the loop PEEL_ITERS_PROLOGUE times.  */

@@ -1931,6 +1931,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
   unsigned int group_size;
   tree vectype, scalar_type = NULL_TREE;
   gimple *next;
+  stmt_vec_info next_info;
   unsigned int i;
   vec<slp_tree> loads;
   struct data_reference *dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt));
@@ -2008,9 +2009,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
   else
     {
       /* Collect reduction statements.  */
-      vec<gimple *> reductions = as_a <loop_vec_info> (vinfo)->reductions;
-      for (i = 0; reductions.iterate (i, &next); i++)
-	scalar_stmts.safe_push (next);
+      vec<stmt_vec_info> reductions = as_a <loop_vec_info> (vinfo)->reductions;
+      for (i = 0; reductions.iterate (i, &next_info); i++)
+	scalar_stmts.safe_push (next_info);
     }
 
   loads.create (group_size);
