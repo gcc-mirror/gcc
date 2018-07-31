@@ -212,6 +212,7 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
   streamer_write_uhwi (ob, bb->index);
   bb->count.stream_out (ob);
   streamer_write_hwi (ob, bb->flags);
+  streamer_write_hwi (ob, bb->discriminator);
 
   if (!gsi_end_p (bsi) || phi_nodes (bb))
     {

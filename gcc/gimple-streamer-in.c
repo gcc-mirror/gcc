@@ -270,6 +270,7 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
     bb->count
       = bb->count.apply_scale (count_materialization_scale, REG_BR_PROB_BASE);
   bb->flags = streamer_read_hwi (ib);
+  bb->discriminator = streamer_read_hwi (ib);
 
   /* LTO_bb1 has statements.  LTO_bb0 does not.  */
   if (tag == LTO_bb0)
