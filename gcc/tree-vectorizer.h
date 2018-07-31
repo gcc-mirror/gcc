@@ -138,7 +138,7 @@ struct _slp_tree {
   /* Nodes that contain def-stmts of this node statements operands.  */
   vec<slp_tree> children;
   /* A group of scalar stmts to be vectorized together.  */
-  vec<gimple *> stmts;
+  vec<stmt_vec_info> stmts;
   /* Load permutation relative to the stores, NULL if there is no
      permutation.  */
   vec<unsigned> load_permutation;

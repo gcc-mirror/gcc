@@ -1,5 +1,48 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (_slp_tree::stmts): Change from a vec<gimple *>
+	to a vec<stmt_vec_info>.
+	* tree-vect-slp.c (vect_free_slp_tree): Update accordingly.
+	(vect_create_new_slp_node): Take a vec<gimple *> instead of a
+	vec<stmt_vec_info>.
+	(_slp_oprnd_info::def_stmts): Change from a vec<gimple *>
+	to a vec<stmt_vec_info>.
+	(bst_traits::value_type, bst_traits::value_type): Likewise.
+	(bst_traits::hash): Update accordingly.
+	(vect_get_and_check_slp_defs): Change the stmts parameter from
+	a vec<gimple *> to a vec<stmt_vec_info>.
+	(vect_two_operations_perm_ok_p, vect_build_slp_tree_1): Likewise.
+	(vect_build_slp_tree): Likewise.
+	(vect_build_slp_tree_2): Likewise.  Update uses of
+	SLP_TREE_SCALAR_STMTS.
+	(vect_print_slp_tree): Update uses of SLP_TREE_SCALAR_STMTS.
+	(vect_mark_slp_stmts, vect_mark_slp_stmts_relevant)
+	(vect_slp_rearrange_stmts, vect_attempt_slp_rearrange_stmts)
+	(vect_supported_load_permutation_p, vect_find_last_scalar_stmt_in_slp)
+	(vect_detect_hybrid_slp_stmts, vect_slp_analyze_node_operations_1)
+	(vect_slp_analyze_node_operations, vect_slp_analyze_operations)
+	(vect_bb_slp_scalar_cost, vect_slp_analyze_bb_1)
+	(vect_get_constant_vectors, vect_get_slp_defs)
+	(vect_transform_slp_perm_load, vect_schedule_slp_instance)
+	(vect_remove_slp_scalar_calls, vect_schedule_slp): Likewise.
+	(vect_analyze_slp_instance): Build up a vec of stmt_vec_infos
+	instead of gimple stmts.
+	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences): Change
+	the stores parameter for a vec<gimple *> to a vec<stmt_vec_info>.
+	(vect_slp_analyze_instance_dependence): Update uses of
+	SLP_TREE_SCALAR_STMTS.
+	(vect_slp_analyze_and_verify_node_alignment): Likewise.
+	(vect_slp_analyze_and_verify_instance_alignment): Likewise.
+	* tree-vect-loop.c (neutral_op_for_slp_reduction): Likewise.
+	(get_initial_defs_for_reduction): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vectorize_fold_left_reduction): Likewise.
+	* tree-vect-stmts.c (vect_prologue_cost_for_slp_op): Likewise.
+	(vect_model_simple_cost, vectorizable_shift, vectorizable_load)
+	(can_vectorize_live_stmts): Likewise.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (_loop_vec_info::reductions): Change from an
 	auto_vec<gimple *> to an auto_vec<stmt_vec_info>.
 	(vect_force_simple_reduction): Take and return stmt_vec_infos rather
