@@ -1,3 +1,9 @@
+2018-07-31  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Do not complain about the
+	implicit allocator that occurs in the expansion of a return
+	statement for a build-in-place function.
+
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82063
