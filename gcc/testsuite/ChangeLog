@@ -1,3 +1,7 @@
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/iter3.adb: New testcase.
+
 2018-07-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Revert 'AsyncI/O patch committed'

@@ -1,3 +1,10 @@
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb (Check_Non_Static_Context): Do not warn on an
+	integer literal greater than the upper bound of
+	Universal_Integer'Last when expansion is disabled, to avoid a
+	spurious warning over ranges involving 64-bit modular types.
+
 2018-07-31  Arnaud Charlet  <charlet@adacore.com>
 
 	* einfo.adb (Write_Entity_Flags): Also print

@@ -547,9 +547,15 @@ package body Sem_Eval is
       --  called in contexts like the expression of a number declaration where
       --  we certainly want to allow out of range values.
 
+      --  We inhibit the warning when expansion is disabled, because the
+      --  preanalysis of a range of a 64-bit modular type may appear to
+      --  violate the constraint on non-static Universal_Integer. If there
+      --  is a true overflow it will be diagnosed during full analysis.
+
       if Etype (N) = Universal_Integer
         and then Nkind (N) = N_Integer_Literal
         and then Nkind (Parent (N)) in N_Subexpr
+        and then Expander_Active
         and then
           (Intval (N) < Expr_Value (Type_Low_Bound (Universal_Integer))
              or else
