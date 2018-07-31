@@ -1,6 +1,13 @@
 2018-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new_opa.cc (operator new(size_t, align_val_t)): Add
+	workaround for aligned_alloc bug on AIX.
+	* testsuite/18_support/new_aligned.cc: New test.
+
+	Backport from mainline
 	2018-07-20  Fangrui Song  <maskray@google.com>
 
 	* include/bits/shared_ptr_base.h (_Sp_make_shared_tag::_S_ti): Use
