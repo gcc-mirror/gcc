@@ -10092,11 +10092,11 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
   else
     {
       gimple *def_stmt = SSA_NAME_DEF_STMT (operand);
-      if (! vect_stmt_in_region_p (vinfo, def_stmt))
+      stmt_vec_info stmt_vinfo = vinfo->lookup_def (operand);
+      if (!stmt_vinfo)
 	*dt = vect_external_def;
       else
 	{
-	  stmt_vec_info stmt_vinfo = vinfo_for_stmt (def_stmt);
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
 	    {
 	      def_stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);

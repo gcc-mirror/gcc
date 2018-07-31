@@ -1569,26 +1569,19 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
               if (STMT_VINFO_RELEVANT_P (stmt_info))
                 {
                   tree phi_op;
-		  gimple *op_def_stmt;
 
                   if (gimple_phi_num_args (phi) != 1)
                     return false;
 
                   phi_op = PHI_ARG_DEF (phi, 0);
-                  if (TREE_CODE (phi_op) != SSA_NAME)
+		  stmt_vec_info op_def_info = loop_vinfo->lookup_def (phi_op);
+		  if (!op_def_info)
                     return false;
 
-                  op_def_stmt = SSA_NAME_DEF_STMT (phi_op);
-		  if (gimple_nop_p (op_def_stmt)
-		      || !flow_bb_inside_loop_p (loop, gimple_bb (op_def_stmt))
-		      || !vinfo_for_stmt (op_def_stmt))
-                    return false;
-
-                  if (STMT_VINFO_RELEVANT (vinfo_for_stmt (op_def_stmt))
-                        != vect_used_in_outer
-                      && STMT_VINFO_RELEVANT (vinfo_for_stmt (op_def_stmt))
-                           != vect_used_in_outer_by_reduction)
-                    return false;
+		  if (STMT_VINFO_RELEVANT (op_def_info) != vect_used_in_outer
+		      && (STMT_VINFO_RELEVANT (op_def_info)
+			  != vect_used_in_outer_by_reduction))
+		    return false;
                 }
 
               continue;
@@ -2504,20 +2497,19 @@ report_vect_op (dump_flags_t msg_type, gimple *stmt, const char *msg)
   dump_gimple_stmt (msg_type, TDF_SLIM, stmt, 0);
 }
 
-/* DEF_STMT occurs in a loop that contains a potential reduction operation.
-   Return true if the results of DEF_STMT are something that can be
-   accumulated by such a reduction.  */
+/* DEF_STMT_INFO occurs in a loop that contains a potential reduction
+   operation.  Return true if the results of DEF_STMT_INFO are something
+   that can be accumulated by such a reduction.  */
 
 static bool
-vect_valid_reduction_input_p (gimple *def_stmt)
+vect_valid_reduction_input_p (stmt_vec_info def_stmt_info)
 {
-  stmt_vec_info def_stmt_info = vinfo_for_stmt (def_stmt);
-  return (is_gimple_assign (def_stmt)
-	  || is_gimple_call (def_stmt)
+  return (is_gimple_assign (def_stmt_info->stmt)
+	  || is_gimple_call (def_stmt_info->stmt)
 	  || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_induction_def
-	  || (gimple_code (def_stmt) == GIMPLE_PHI
+	  || (gimple_code (def_stmt_info->stmt) == GIMPLE_PHI
 	      && STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_internal_def
-	      && !is_loop_header_bb_p (gimple_bb (def_stmt))));
+	      && !is_loop_header_bb_p (gimple_bb (def_stmt_info->stmt))));
 }
 
 /* Detect SLP reduction of the form:
@@ -2633,18 +2625,14 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
       if (gimple_assign_rhs2 (next_stmt) == lhs)
 	{
 	  tree op = gimple_assign_rhs1 (next_stmt);
-	  gimple *def_stmt = NULL;
-
-          if (TREE_CODE (op) == SSA_NAME)
-            def_stmt = SSA_NAME_DEF_STMT (op);
+	  stmt_vec_info def_stmt_info = loop_info->lookup_def (op);
 
 	  /* Check that the other def is either defined in the loop
 	     ("vect_internal_def"), or it's an induction (defined by a
 	     loop-header phi-node).  */
-          if (def_stmt
-	      && gimple_bb (def_stmt)
-	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
-	      && vect_valid_reduction_input_p (def_stmt))
+	  if (def_stmt_info
+	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt))
+	      && vect_valid_reduction_input_p (def_stmt_info))
 	    {
 	      lhs = gimple_assign_lhs (next_stmt);
 	      next_stmt = REDUC_GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
@@ -2656,18 +2644,14 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
       else
 	{
           tree op = gimple_assign_rhs2 (next_stmt);
-	  gimple *def_stmt = NULL;
-
-          if (TREE_CODE (op) == SSA_NAME)
-            def_stmt = SSA_NAME_DEF_STMT (op);
+	  stmt_vec_info def_stmt_info = loop_info->lookup_def (op);
 
           /* Check that the other def is either defined in the loop
             ("vect_internal_def"), or it's an induction (defined by a
             loop-header phi-node).  */
-          if (def_stmt
-	      && gimple_bb (def_stmt)
-	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
-	      && vect_valid_reduction_input_p (def_stmt))
+	  if (def_stmt_info
+	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt))
+	      && vect_valid_reduction_input_p (def_stmt_info))
   	    {
 	      if (dump_enabled_p ())
 		{
@@ -2896,7 +2880,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 {
   struct loop *loop = (gimple_bb (phi))->loop_father;
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
-  gimple *def_stmt, *def1 = NULL, *def2 = NULL, *phi_use_stmt = NULL;
+  gimple *def_stmt, *phi_use_stmt = NULL;
   enum tree_code orig_code, code;
   tree op1, op2, op3 = NULL_TREE, op4 = NULL_TREE;
   tree type;
@@ -3020,7 +3004,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
           return NULL;
         }
 
-      def1 = SSA_NAME_DEF_STMT (op1);
+      gimple *def1 = SSA_NAME_DEF_STMT (op1);
       if (gimple_bb (def1)
 	  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
           && loop->inner
@@ -3178,14 +3162,9 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
      1) integer arithmetic and no trapv
      2) floating point arithmetic, and special flags permit this optimization
      3) nested cycle (i.e., outer loop vectorization).  */
-  if (TREE_CODE (op1) == SSA_NAME)
-    def1 = SSA_NAME_DEF_STMT (op1);
-
-  if (TREE_CODE (op2) == SSA_NAME)
-    def2 = SSA_NAME_DEF_STMT (op2);
-
-  if (code != COND_EXPR
-      && ((!def1 || gimple_nop_p (def1)) && (!def2 || gimple_nop_p (def2))))
+  stmt_vec_info def1_info = loop_info->lookup_def (op1);
+  stmt_vec_info def2_info = loop_info->lookup_def (op2);
+  if (code != COND_EXPR && !def1_info && !def2_info)
     {
       if (dump_enabled_p ())
 	report_vect_op (MSG_NOTE, def_stmt, "reduction: no defs for operands: ");
@@ -3196,22 +3175,22 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
      the other def is either defined in the loop ("vect_internal_def"),
      or it's an induction (defined by a loop-header phi-node).  */
 
-  if (def2 && def2 == phi
+  if (def2_info
+      && def2_info->stmt == phi
       && (code == COND_EXPR
-	  || !def1 || gimple_nop_p (def1)
-	  || !flow_bb_inside_loop_p (loop, gimple_bb (def1))
-	  || vect_valid_reduction_input_p (def1)))
+	  || !def1_info
+	  || vect_valid_reduction_input_p (def1_info)))
     {
       if (dump_enabled_p ())
 	report_vect_op (MSG_NOTE, def_stmt, "detected reduction: ");
       return def_stmt;
     }
 
-  if (def1 && def1 == phi
+  if (def1_info
+      && def1_info->stmt == phi
       && (code == COND_EXPR
-	  || !def2 || gimple_nop_p (def2)
-	  || !flow_bb_inside_loop_p (loop, gimple_bb (def2))
-	  || vect_valid_reduction_input_p (def2)))
+	  || !def2_info
+	  || vect_valid_reduction_input_p (def2_info)))
     {
       if (! nested_in_vect_loop && orig_code != MINUS_EXPR)
 	{
@@ -6131,9 +6110,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   bool nested_cycle = false, found_nested_cycle_def = false;
   bool double_reduc = false;
   basic_block def_bb;
-  struct loop * def_stmt_loop, *outer_loop = NULL;
+  struct loop * def_stmt_loop;
   tree def_arg;
-  gimple *def_arg_stmt;
   auto_vec<tree> vec_oprnds0;
   auto_vec<tree> vec_oprnds1;
   auto_vec<tree> vec_oprnds2;
@@ -6151,7 +6129,6 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
   if (nested_in_vect_loop_p (loop, stmt))
     {
-      outer_loop = loop;
       loop = loop->inner;
       nested_cycle = true;
     }
@@ -6731,13 +6708,10 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       def_stmt_loop = def_bb->loop_father;
       def_arg = PHI_ARG_DEF_FROM_EDGE (reduc_def_stmt,
                                        loop_preheader_edge (def_stmt_loop));
-      if (TREE_CODE (def_arg) == SSA_NAME
-          && (def_arg_stmt = SSA_NAME_DEF_STMT (def_arg))
-          && gimple_code (def_arg_stmt) == GIMPLE_PHI
-          && flow_bb_inside_loop_p (outer_loop, gimple_bb (def_arg_stmt))
-          && vinfo_for_stmt (def_arg_stmt)
-          && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_arg_stmt))
-              == vect_double_reduction_def)
+      stmt_vec_info def_arg_stmt_info = loop_vinfo->lookup_def (def_arg);
+      if (def_arg_stmt_info
+	  && (STMT_VINFO_DEF_TYPE (def_arg_stmt_info)
+	      == vect_double_reduction_def))
         double_reduc = true;
     }
 

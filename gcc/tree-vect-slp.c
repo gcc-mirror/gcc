@@ -2389,11 +2389,8 @@ vect_detect_hybrid_slp_1 (tree *tp, int *, void *data)
   if (wi->is_lhs)
     return NULL_TREE;
 
-  stmt_vec_info def_stmt_info;
-  if (TREE_CODE (*tp) == SSA_NAME
-      && !SSA_NAME_IS_DEFAULT_DEF (*tp)
-      && (def_stmt_info = loop_vinfo->lookup_stmt (SSA_NAME_DEF_STMT (*tp)))
-      && PURE_SLP_STMT (def_stmt_info))
+  stmt_vec_info def_stmt_info = loop_vinfo->lookup_def (*tp);
+  if (def_stmt_info && PURE_SLP_STMT (def_stmt_info))
     {
       if (dump_enabled_p ())
 	{
