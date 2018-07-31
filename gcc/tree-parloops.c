@@ -2592,10 +2592,6 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
   auto_vec<gphi *, 4> double_reduc_phis;
   auto_vec<gimple *, 4> double_reduc_stmts;
 
-  vec<stmt_vec_info> stmt_vec_infos;
-  stmt_vec_infos.create (50);
-  set_stmt_vec_info_vec (&stmt_vec_infos);
-
   vec_info_shared shared;
   simple_loop_info = vect_analyze_loop_form (loop, &shared);
   if (simple_loop_info == NULL)
@@ -2679,14 +2675,11 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
     }
 
  gather_done:
-  /* Release the claim on gimple_uid.  */
-  free_stmt_vec_infos (&stmt_vec_infos);
-
   if (reduction_list->elements () == 0)
     return;
 
   /* As gimple_uid is used by the vectorizer in between vect_analyze_loop_form
-     and free_stmt_vec_info_vec, we can set gimple_uid of reduc_phi stmts only
+     and delete simple_loop_info, we can set gimple_uid of reduc_phi stmts only
      now.  */
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)

@@ -267,6 +267,12 @@ struct vec_info {
 
   /* Cost data used by the target cost model.  */
   void *target_cost_data;
+
+private:
+  stmt_vec_info new_stmt_vec_info (gimple *stmt);
+  void set_vinfo_for_stmt (gimple *, stmt_vec_info);
+  void free_stmt_vec_infos ();
+  void free_stmt_vec_info (stmt_vec_info);
 };
 
 struct _loop_vec_info;
@@ -1096,43 +1102,6 @@ inline stmt_vec_info::operator gimple * () const
   return m_ptr ? m_ptr->stmt : NULL;
 }
 
-extern vec<stmt_vec_info> *stmt_vec_info_vec;
-
-void set_stmt_vec_info_vec (vec<stmt_vec_info> *);
-void free_stmt_vec_infos (vec<stmt_vec_info> *);
-
-/* Return a stmt_vec_info corresponding to STMT.  */
-
-static inline stmt_vec_info
-vinfo_for_stmt (gimple *stmt)
-{
-  int uid = gimple_uid (stmt);
-  if (uid <= 0)
-    return NULL;
-
-  return (*stmt_vec_info_vec)[uid - 1];
-}
-
-/* Set vectorizer information INFO for STMT.  */
-
-static inline void
-set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
-{
-  unsigned int uid = gimple_uid (stmt);
-  if (uid == 0)
-    {
-      gcc_checking_assert (info);
-      uid = stmt_vec_info_vec->length () + 1;
-      gimple_set_uid (stmt, uid);
-      stmt_vec_info_vec->safe_push (info);
-    }
-  else
-    {
-      gcc_checking_assert (info == NULL_STMT_VEC_INFO);
-      (*stmt_vec_info_vec)[uid - 1] = info;
-    }
-}
-
 static inline bool
 nested_in_vect_loop_p (struct loop *loop, stmt_vec_info stmt_info)
 {
@@ -1502,8 +1471,6 @@ extern bool supportable_widening_operation (enum tree_code, stmt_vec_info,
 extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
 					     enum tree_code *,
 					     int *, vec<tree> *);
-extern stmt_vec_info new_stmt_vec_info (gimple *stmt, vec_info *);
-extern void free_stmt_vec_info (stmt_vec_info);
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
 				  int, enum vect_cost_model_location);

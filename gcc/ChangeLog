@@ -1,5 +1,31 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vec_info::new_vinfo_for_stmt)
+	(vec_info::set_vinfo_for_stmt, vec_info::free_stmt_vec_infos)
+	(vec_info::free_stmt_vec_info): New private member functions.
+	(set_stmt_vec_info_vec, free_stmt_vec_infos, vinfo_for_stmt)
+	(set_vinfo_for_stmt, new_stmt_vec_info, free_stmt_vec_info): Delete.
+	* tree-parloops.c (gather_scalar_reductions): Remove calls to
+	set_stmt_vec_info_vec and free_stmt_vec_infos.
+	* tree-vect-loop.c (_loop_vec_info): Remove call to
+	set_stmt_vec_info_vec.
+	* tree-vect-stmts.c (new_stmt_vec_info, set_stmt_vec_info_vec)
+	(free_stmt_vec_infos, free_stmt_vec_info): Delete in favor of...
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info)
+	(vec_info::set_vinfo_for_stmt, vec_info::free_stmt_vec_infos)
+	(vec_info::free_stmt_vec_info): ...these new functions.  Remove
+	assignments in {vec_info::,}new_stmt_vec_info that are redundant
+	with the clearing in the xcalloc.
+	(stmt_vec_info_vec): Delete.
+	(vec_info::vec_info): Don't call set_stmt_vec_info_vec.
+	(vectorize_loops): Likewise.
+	(vec_info::~vec_info): Remove argument from call to
+	free_stmt_vec_infos.
+	(vec_info::add_stmt): Remove vinfo argument from call to
+	new_stmt_vec_info.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (free_stmt_vec_info): Take a stmt_vec_info
 	rather than a gimple stmt.
 	* tree-vect-stmts.c (free_stmt_vec_info): Likewise.  Don't free
