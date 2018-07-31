@@ -1370,7 +1370,7 @@ vect_dr_behavior (data_reference *dr)
    a pattern this returns the corresponding pattern stmt.  Otherwise
    DR_STMT is returned.  */
 
-inline gimple *
+inline stmt_vec_info
 vect_dr_stmt (data_reference *dr)
 {
   gimple *stmt = DR_STMT (dr);
@@ -1379,7 +1379,7 @@ vect_dr_stmt (data_reference *dr)
     return STMT_VINFO_RELATED_STMT (stmt_info);
   /* DR_STMT should never refer to a stmt in a pattern replacement.  */
   gcc_checking_assert (!STMT_VINFO_RELATED_STMT (stmt_info));
-  return stmt;
+  return stmt_info;
 }
 
 /* Return true if the vect cost model is unlimited.  */
