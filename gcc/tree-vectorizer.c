@@ -711,33 +711,6 @@ vect_free_loop_info_assumptions (struct loop *loop)
   loop_constraint_clear (loop, LOOP_C_FINITE);
 }
 
-/* Return whether STMT is inside the region we try to vectorize.  */
-
-bool
-vect_stmt_in_region_p (vec_info *vinfo, gimple *stmt)
-{
-  if (!gimple_bb (stmt))
-    return false;
-
-  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
-    {
-      struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-      if (!flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
-	return false;
-    }
-  else
-    {
-      bb_vec_info bb_vinfo = as_a <bb_vec_info> (vinfo);
-      if (gimple_bb (stmt) != BB_VINFO_BB (bb_vinfo)
-	  || gimple_uid (stmt) == -1U
-	  || gimple_code (stmt) == GIMPLE_PHI)
-	return false;
-    }
-
-  return true;
-}
-
-
 /* If LOOP has been versioned during ifcvt, return the internal call
    guarding it.  */
 
