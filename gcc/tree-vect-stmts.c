@@ -9845,8 +9845,8 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 void
 vect_remove_stores (stmt_vec_info first_stmt_info)
 {
+  vec_info *vinfo = first_stmt_info->vinfo;
   stmt_vec_info next_stmt_info = first_stmt_info;
-  gimple_stmt_iterator next_si;
 
   while (next_stmt_info)
     {
@@ -9854,11 +9854,7 @@ vect_remove_stores (stmt_vec_info first_stmt_info)
       if (is_pattern_stmt_p (next_stmt_info))
 	next_stmt_info = STMT_VINFO_RELATED_STMT (next_stmt_info);
       /* Free the attached stmt_vec_info and remove the stmt.  */
-      next_si = gsi_for_stmt (next_stmt_info->stmt);
-      unlink_stmt_vdef (next_stmt_info->stmt);
-      gsi_remove (&next_si, true);
-      release_defs (next_stmt_info->stmt);
-      free_stmt_vec_info (next_stmt_info);
+      vinfo->remove_stmt (next_stmt_info);
       next_stmt_info = tmp;
     }
 }

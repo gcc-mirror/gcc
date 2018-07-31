@@ -8487,28 +8487,18 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		  vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
 					    &seen_store, &slp_scheduled);
 		}
+	      gsi_next (&si);
 	      if (seen_store)
 		{
 		  if (STMT_VINFO_GROUPED_ACCESS (seen_store))
-		    {
-		      /* Interleaving.  If IS_STORE is TRUE, the
-			 vectorization of the interleaving chain was
-			 completed - free all the stores in the chain.  */
-		      gsi_next (&si);
-		      vect_remove_stores (DR_GROUP_FIRST_ELEMENT (seen_store));
-		    }
+		    /* Interleaving.  If IS_STORE is TRUE, the
+		       vectorization of the interleaving chain was
+		       completed - free all the stores in the chain.  */
+		    vect_remove_stores (DR_GROUP_FIRST_ELEMENT (seen_store));
 		  else
-		    {
-		      /* Free the attached stmt_vec_info and remove the
-			 stmt.  */
-		      free_stmt_vec_info (stmt);
-		      unlink_stmt_vdef (stmt);
-		      gsi_remove (&si, true);
-		      release_defs (stmt);
-		    }
+		    /* Free the attached stmt_vec_info and remove the stmt.  */
+		    loop_vinfo->remove_stmt (stmt_info);
 		}
-	      else
-		gsi_next (&si);
 	    }
 	}
 

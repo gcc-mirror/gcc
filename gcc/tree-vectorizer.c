@@ -588,6 +588,20 @@ vec_info::move_dr (stmt_vec_info new_stmt_info, stmt_vec_info old_stmt_info)
     = STMT_VINFO_GATHER_SCATTER_P (old_stmt_info);
 }
 
+/* Permanently remove the statement described by STMT_INFO from the
+   function.  */
+
+void
+vec_info::remove_stmt (stmt_vec_info stmt_info)
+{
+  gcc_assert (!stmt_info->pattern_stmt_p);
+  gimple_stmt_iterator si = gsi_for_stmt (stmt_info->stmt);
+  unlink_stmt_vdef (stmt_info->stmt);
+  gsi_remove (&si, true);
+  release_defs (stmt_info->stmt);
+  free_stmt_vec_info (stmt_info);
+}
+
 /* A helper function to free scev and LOOP niter information, as well as
    clear loop constraint LOOP_C_FINITE.  */
 
