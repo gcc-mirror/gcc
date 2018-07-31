@@ -1,5 +1,12 @@
 2018-07-31  Arnaud Charlet  <charlet@adacore.com>
 
+	* clean.adb, gnatchop.adb, gnatfind.adb, gnatls.adb,
+	gnatmake.ads, gnatxref.adb, make.adb, make.ads, make_util.ads,
+	sfn_scan.adb, vxaddr2line.adb, xeinfo.adb, xoscons.adb,
+	xr_tabls.adb, xref_lib.adb: Address CodePeer messages.
+
+2018-07-31  Arnaud Charlet  <charlet@adacore.com>
+
 	* gnatlink.adb: Fix potential Constraint_Error if
 	Library_Version is too long.
 

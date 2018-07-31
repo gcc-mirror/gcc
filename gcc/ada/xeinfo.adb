@@ -151,6 +151,7 @@ procedure XEinfo is
    Lastinlined : Boolean;
 
    procedure Badfunc;
+   pragma No_Return (Badfunc);
    --  Signal bad function in body
 
    function Getlin return VString;
