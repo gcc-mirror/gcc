@@ -690,7 +690,7 @@
 				(const_int 0))
 			   (label_ref (match_operand 1 "" ""))
 			   (pc)))]
-  ""
+  "!aarch64_track_speculation"
   {
     if (get_attr_length (insn) == 8)
       return aarch64_gen_far_branch (operands, 1, "Lcb", "<inv_cb>\\t%<w>0, ");
@@ -720,7 +720,7 @@
 	     (label_ref (match_operand 2 "" ""))
 	     (pc)))
    (clobber (reg:CC CC_REGNUM))]
-  ""
+  "!aarch64_track_speculation"
   {
     if (get_attr_length (insn) == 8)
       {
@@ -756,7 +756,7 @@
 			   (label_ref (match_operand 1 "" ""))
 			   (pc)))
    (clobber (reg:CC CC_REGNUM))]
-  ""
+  "!aarch64_track_speculation"
   {
     if (get_attr_length (insn) == 8)
       {
