@@ -791,6 +791,12 @@ struct _stmt_vec_info {
   /* Stmt is part of some pattern (computation idiom)  */
   bool in_pattern_p;
 
+  /* True if the statement was created during pattern recognition as
+     part of the replacement for RELATED_STMT.  This implies that the
+     statement isn't part of any basic block, although for convenience
+     its gimple_bb is the same as for RELATED_STMT.  */
+  bool pattern_stmt_p;
+
   /* Is this statement vectorizable or should it be skipped in (partial)
      vectorization.  */
   bool vectorizable;
@@ -1157,8 +1163,7 @@ get_later_stmt (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
 static inline bool
 is_pattern_stmt_p (stmt_vec_info stmt_info)
 {
-  stmt_vec_info related_stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
-  return related_stmt_info && STMT_VINFO_IN_PATTERN_P (related_stmt_info);
+  return stmt_info->pattern_stmt_p;
 }
 
 /* Return true if BB is a loop header.  */
