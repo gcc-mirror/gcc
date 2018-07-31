@@ -7590,8 +7590,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi,
 	 we have to give up.  */
       if (DR_GROUP_SAME_DR_STMT (stmt_info)
 	  && (STMT_SLP_TYPE (stmt_info)
-	      != STMT_SLP_TYPE (vinfo_for_stmt
-				 (DR_GROUP_SAME_DR_STMT (stmt_info)))))
+	      != STMT_SLP_TYPE (DR_GROUP_SAME_DR_STMT (stmt_info))))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

@@ -1,5 +1,11 @@
 2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (_stmt_vec_info::same_dr_stmt): Change from
+	a gimple stmt to a stmt_vec_info.
+	* tree-vect-stmts.c (vectorizable_load): Update accordingly.
+
+2018-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vec_info::grouped_stores): Change from
 	an auto_vec<gimple *> to an auto_vec<stmt_vec_info>.
 	(_loop_vec_info::reduction_chains): Likewise.
