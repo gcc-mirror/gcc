@@ -243,6 +243,7 @@ struct vec_info {
   struct dr_vec_info *lookup_dr (data_reference *);
   void move_dr (stmt_vec_info, stmt_vec_info);
   void remove_stmt (stmt_vec_info);
+  void replace_stmt (gimple_stmt_iterator *, stmt_vec_info, gimple *);
 
   /* The type of vectorization.  */
   vec_kind kind;

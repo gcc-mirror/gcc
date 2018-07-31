@@ -3634,10 +3634,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
   gassign *new_stmt
     = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
-  set_vinfo_for_stmt (new_stmt, stmt_info);
-  set_vinfo_for_stmt (stmt_info->stmt, NULL);
-  STMT_VINFO_STMT (stmt_info) = new_stmt;
-  gsi_replace (gsi, new_stmt, false);
+  vinfo->replace_stmt (gsi, stmt_info, new_stmt);
 
   return true;
 }
@@ -4375,10 +4372,7 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
     }
   else
     new_stmt = gimple_build_nop ();
-  set_vinfo_for_stmt (new_stmt, stmt_info);
-  set_vinfo_for_stmt (stmt, NULL);
-  STMT_VINFO_STMT (stmt_info) = new_stmt;
-  gsi_replace (gsi, new_stmt, true);
+  vinfo->replace_stmt (gsi, stmt_info, new_stmt);
   unlink_stmt_vdef (stmt);
 
   return true;

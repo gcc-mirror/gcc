@@ -602,6 +602,22 @@ vec_info::remove_stmt (stmt_vec_info stmt_info)
   free_stmt_vec_info (stmt_info);
 }
 
+/* Replace the statement at GSI by NEW_STMT, both the vectorization
+   information and the function itself.  STMT_INFO describes the statement
+   at GSI.  */
+
+void
+vec_info::replace_stmt (gimple_stmt_iterator *gsi, stmt_vec_info stmt_info,
+			gimple *new_stmt)
+{
+  gimple *old_stmt = stmt_info->stmt;
+  gcc_assert (!stmt_info->pattern_stmt_p && old_stmt == gsi_stmt (*gsi));
+  set_vinfo_for_stmt (old_stmt, NULL);
+  set_vinfo_for_stmt (new_stmt, stmt_info);
+  stmt_info->stmt = new_stmt;
+  gsi_replace (gsi, new_stmt, true);
+}
+
 /* A helper function to free scev and LOOP niter information, as well as
    clear loop constraint LOOP_C_FINITE.  */
 
