@@ -1,3 +1,12 @@
+2018-07-31  Martin Liska  <mliska@suse.cz>
+
+        PR gcov-profile/83813
+        PR gcov-profile/84758
+        PR gcov-profile/85217
+        PR gcov-profile/85332
+	* profile.c (branch_prob): Do not record GOTO expressions
+        for GIMPLE statements which locations are already streamed.
+
 2018-07-31  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc.c (handle_spec_function): Accept a soft_matched_part

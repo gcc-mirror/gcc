@@ -1256,6 +1256,8 @@ branch_prob (void)
       /* Initialize the output.  */
       output_location (NULL, 0, NULL, NULL);
 
+      hash_set<int_hash <location_t, 0, 2> > seen_locations;
+
       FOR_EACH_BB_FN (bb, cfun)
 	{
 	  gimple_stmt_iterator gsi;
@@ -1263,8 +1265,9 @@ branch_prob (void)
 
 	  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb)
 	    {
-	      expanded_location curr_location =
-		expand_location (DECL_SOURCE_LOCATION (current_function_decl));
+	      location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
+	      seen_locations.add (loc);
+	      expanded_location curr_location = expand_location (loc);
 	      output_location (curr_location.file, curr_location.line,
 			       &offset, bb);
 	    }
@@ -1272,17 +1275,25 @@ branch_prob (void)
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
-	      if (!RESERVED_LOCATION_P (gimple_location (stmt)))
-		output_location (gimple_filename (stmt), gimple_lineno (stmt),
-				 &offset, bb);
+	      location_t loc = gimple_location (stmt);
+	      if (!RESERVED_LOCATION_P (loc))
+		{
+		  seen_locations.add (loc);
+		  output_location (gimple_filename (stmt), gimple_lineno (stmt),
+				   &offset, bb);
+		}
 	    }
 
-	  /* Notice GOTO expressions eliminated while constructing the CFG.  */
+	  /* Notice GOTO expressions eliminated while constructing the CFG.
+	     It's hard to distinguish such expression, but goto_locus should
+	     not be any of already seen location.  */
+	  location_t loc;
 	  if (single_succ_p (bb)
-	      && !RESERVED_LOCATION_P (single_succ_edge (bb)->goto_locus))
+	      && (loc = single_succ_edge (bb)->goto_locus)
+	      && !RESERVED_LOCATION_P (loc)
+	      && !seen_locations.contains (loc))
 	    {
-	      expanded_location curr_location
-		= expand_location (single_succ_edge (bb)->goto_locus);
+	      expanded_location curr_location = expand_location (loc);
 	      output_location (curr_location.file, curr_location.line,
 			       &offset, bb);
 	    }

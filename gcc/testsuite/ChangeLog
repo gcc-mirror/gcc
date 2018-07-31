@@ -1,3 +1,14 @@
+2018-07-31  Martin Liska  <mliska@suse.cz>
+
+        PR gcov-profile/83813
+        PR gcov-profile/84758
+        PR gcov-profile/85217
+        PR gcov-profile/85332
+	* gcc.misc-tests/gcov-pr83813.c: New test.
+	* gcc.misc-tests/gcov-pr84758.c: New test.
+	* gcc.misc-tests/gcov-pr85217.c: New test.
+	* gcc.misc-tests/gcov-pr85332.c: New test.
+
 2018-07-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/prot5.adb, gnat.dg/prot5_pkg.adb,
