@@ -124,10 +124,16 @@ proc gfortran-dg-prune { system text } {
 # as c-torture does.
 proc gfortran-dg-runtest { testcases flags default-extra-flags } {
     global runtests
-    global DG_TORTURE_OPTIONS torture_with_loops
+    global torture_with_loops
 
-    torture-init
-    set-torture-options $DG_TORTURE_OPTIONS
+    # Some callers set torture options themselves; don't override those.
+    set existing_torture_options [torture-options-exist]
+    if { $existing_torture_options == 0 } {
+	global DG_TORTURE_OPTIONS
+	torture-init
+	set-torture-options $DG_TORTURE_OPTIONS
+    }
+    dump-torture-options
 
     foreach test $testcases {
 	# If we're only testing specific files and this isn't one of
@@ -154,7 +160,9 @@ proc gfortran-dg-runtest { testcases flags default-extra-flags } {
 	}
     }
 
-    torture-finish
+    if { $existing_torture_options == 0 } {
+	torture-finish
+    }
 }
 
 proc gfortran-dg-debug-runtest { target_compile trivial opt_opts testcases } {

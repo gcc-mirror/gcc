@@ -240,11 +240,14 @@ compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail,
 
   /* Now identify how much, if any of the tail we can chop off.  */
   HOST_WIDE_INT const_size;
+  int last_live = bitmap_last_set_bit (live);
   if (ref->size.is_constant (&const_size))
     {
       int last_orig = (const_size / BITS_PER_UNIT) - 1;
-      int last_live = bitmap_last_set_bit (live);
-      *trim_tail = (last_orig - last_live) & ~0x1;
+      /* We can leave inconvenient amounts on the tail as
+	 residual handling in mem* and str* functions is usually
+	 reasonably efficient.  */
+      *trim_tail = last_orig - last_live;
     }
   else
     *trim_tail = 0;
@@ -252,7 +255,12 @@ compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail,
   /* Identify how much, if any of the head we can chop off.  */
   int first_orig = 0;
   int first_live = bitmap_first_set_bit (live);
-  *trim_head = (first_live - first_orig) & ~0x1;
+  *trim_head = first_live - first_orig;
+
+  /* If more than a word remains, then make sure to keep the
+     starting point at least word aligned.  */
+  if (last_live - first_live > UNITS_PER_WORD)
+    *trim_head &= ~(UNITS_PER_WORD - 1);
 
   if ((*trim_head || *trim_tail)
       && dump_file && (dump_flags & TDF_DETAILS))

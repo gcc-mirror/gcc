@@ -506,6 +506,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param  __s  Source C string.
        *  @param  __a  Allocator to use (default is default allocator).
        */
+#if __cpp_deduction_guides && ! defined _GLIBCXX_DEFINING_STRING_INSTANTIATIONS
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3076. basic_string CTAD ambiguity
+      template<typename = _RequireAllocator<_Alloc>>
+#endif
       basic_string(const _CharT* __s, const _Alloc& __a = _Alloc())
       : _M_dataplus(_M_local_data(), __a)
       { _M_construct(__s, __s ? __s + traits_type::length(__s) : __s+npos); }
@@ -516,6 +521,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param  __c  Character to use.
        *  @param  __a  Allocator to use (default is default allocator).
        */
+#if __cpp_deduction_guides && ! defined _GLIBCXX_DEFINING_STRING_INSTANTIATIONS
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3076. basic_string CTAD ambiguity
+      template<typename = _RequireAllocator<_Alloc>>
+#endif
       basic_string(size_type __n, _CharT __c, const _Alloc& __a = _Alloc())
       : _M_dataplus(_M_local_data(), __a)
       { _M_construct(__n, __c); }
@@ -715,7 +725,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  The contents of @a str are moved into this string (without copying).
        *  @a str is a valid, but unspecified string.
        **/
-      // PR 58265, this should be noexcept.
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2063. Contradictory requirements for string move assignment
       basic_string&
@@ -1588,12 +1597,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param __l  The initializer_list of characters to insert.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        */
+      iterator
+      insert(const_iterator __p, initializer_list<_CharT> __l)
+      { return this->insert(__p, __l.begin(), __l.end()); }
+
+#ifdef _GLIBCXX_DEFINING_STRING_INSTANTIATIONS
+      // See PR libstdc++/83328
       void
       insert(iterator __p, initializer_list<_CharT> __l)
       {
 	_GLIBCXX_DEBUG_PEDASSERT(__p >= begin() && __p <= end());
 	this->insert(__p - begin(), __l.begin(), __l.size());
       }
+#endif
 #endif // C++11
 
       /**
@@ -3469,6 +3485,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        */
       basic_string()
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
+      _GLIBCXX_NOEXCEPT
       : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
 #else
       : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc()){ }
@@ -3625,7 +3642,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @param  __str  Source string.
        */
       basic_string&
-      operator=(const basic_string& __str) 
+      operator=(const basic_string& __str)
       { return this->assign(__str); }
 
       /**
@@ -3658,9 +3675,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  The contents of @a str are moved into this string (without copying).
        *  @a str is a valid, but unspecified string.
        **/
-      // PR 58265, this should be noexcept.
       basic_string&
       operator=(basic_string&& __str)
+      _GLIBCXX_NOEXCEPT_IF(allocator_traits<_Alloc>::is_always_equal::value)
       {
 	// NB: DR 1204.
 	this->swap(__str);
@@ -4257,9 +4274,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  This function sets this string to the exact contents of @a __str.
        *  @a __str is a valid, but unspecified string.
        */
-      // PR 58265, this should be noexcept.
       basic_string&
       assign(basic_string&& __str)
+      noexcept(allocator_traits<_Alloc>::is_always_equal::value)
       {
 	this->swap(__str);
 	return *this;
@@ -5094,9 +5111,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  Exchanges the contents of this string with that of @a __s in constant
        *  time.
       */
-      // PR 58265, this should be noexcept.
       void
-      swap(basic_string& __s);
+      swap(basic_string& __s)
+      _GLIBCXX_NOEXCEPT_IF(allocator_traits<_Alloc>::is_always_equal::value);
 
       // String operations:
       /**
@@ -5130,7 +5147,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       _CharT*
       data() noexcept
-      { return _M_data(); }
+      {
+	_M_leak();
+	return _M_data();
+      }
 #endif
 
       /**
@@ -5873,6 +5893,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	   typename = _RequireAllocator<_Allocator>>
     basic_string(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> basic_string<_CharT, char_traits<_CharT>, _Allocator>;
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3075. basic_string needs deduction guides from basic_string_view
+  template<typename _CharT, typename _Traits,
+	   typename _Allocator = allocator<_CharT>,
+	   typename = _RequireAllocator<_Allocator>>
+    basic_string(basic_string_view<_CharT, _Traits>, const _Allocator& = _Allocator())
+      -> basic_string<_CharT, _Traits, _Allocator>;
+
+  template<typename _CharT, typename _Traits,
+	   typename _Allocator = allocator<_CharT>,
+	   typename = _RequireAllocator<_Allocator>>
+    basic_string(basic_string_view<_CharT, _Traits>,
+		 typename basic_string<_CharT, _Traits, _Allocator>::size_type,
+		 typename basic_string<_CharT, _Traits, _Allocator>::size_type,
+		 const _Allocator& = _Allocator())
+      -> basic_string<_CharT, _Traits, _Allocator>;
 _GLIBCXX_END_NAMESPACE_CXX11
 #endif
 
@@ -6625,7 +6662,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /// std::hash specialization for u16string.
   template<>
     struct hash<u16string>
@@ -6655,7 +6691,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_fast_hash<hash<u32string>> : std::false_type
     { };
-#endif
 
 #if __cplusplus > 201103L
 
@@ -6679,7 +6714,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string<wchar_t>{__str, __len}; }
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<char16_t>
     operator""s(const char16_t* __str, size_t __len)
@@ -6689,7 +6723,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_string<char32_t>
     operator""s(const char32_t* __str, size_t __len)
     { return basic_string<char32_t>{__str, __len}; }
-#endif
 
 #pragma GCC diagnostic pop
   } // inline namespace string_literals

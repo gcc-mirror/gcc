@@ -44,6 +44,8 @@ const char *section_name_prefix = LTO_SECTION_NAME_PREFIX;
 /* Set when streaming LTO for offloading compiler.  */
 bool lto_stream_offload_p;
 
+FILE *streamer_dump_file;
+
 /* Return a string representing LTO tag TAG.  */
 
 const char *

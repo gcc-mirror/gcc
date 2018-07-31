@@ -1,3 +1,24 @@
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82063
+	* brig/brig-lang.c (brig_langhook_handle_option): Change function
+	argument to HOST_WIDE_INT.
+
+2018-07-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR hsa/86371
+	* Make-lang.in (BRIGINCLUDES): Remove erroneous include path in $HOME.
+
+2018-06-28  Martin Liska  <mliska@suse.cz>
+
+	* brigspec.c: Add missing header file inclusion.
+
+2018-06-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* brigfrontend/brig-to-generic.cc
+	(brig_to_generic::write_globals): Use TDF_NONE rather than 0.
+	(dump_function): Likewise.
+
 2018-05-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* brigfrontend/brig-function.cc

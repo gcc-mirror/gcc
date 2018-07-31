@@ -3755,8 +3755,7 @@ ipa_devirt (void)
 	      {
 		if (dump_enabled_p ())
                   {
-                    location_t locus = gimple_location_safe (e->call_stmt);
-                    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
+                    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, e->call_stmt,
 				     "speculatively devirtualizing call "
 				     "in %s to %s\n",
 				     n->dump_name (),

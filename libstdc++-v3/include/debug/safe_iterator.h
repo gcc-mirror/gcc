@@ -180,7 +180,7 @@ namespace __gnu_debug
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	  _GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-				|| __x.base() == _Iterator(),
+				|| __x.base() == _MutableIterator(),
 				_M_message(__msg_init_const_singular)
 				._M_iterator(*this, "this")
 				._M_iterator(__x, "other"));
@@ -861,6 +861,11 @@ namespace __gnu_debug
 
       return __res;
     }
+
+  template<typename _Iterator, typename _Sequence, typename _Size>
+    inline bool
+    __can_advance(const _Safe_iterator<_Iterator, _Sequence>& __it, _Size __n)
+    { return __it._M_can_advance(__n); }
 
 #if __cplusplus < 201103L
   template<typename _Iterator, typename _Sequence>

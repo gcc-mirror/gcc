@@ -3,7 +3,7 @@
 
 #include "avx-cvt-1.c"
 
-/* { dg-final { scan-tree-dump-times "note: vectorized 1 loops in function" 6 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 6 "vect" } } */
 /* { dg-final { scan-assembler "vcvttpd2dq(y\[^\n\r\]*%xmm|\[^\n\r\]*xmm\[^\n\r\]*YMMWORD PTR)" } } */
 /* { dg-final { scan-assembler "vcvtdq2ps\[^\n\r\]*ymm" } } */
 /* { dg-final { scan-assembler "vcvtps2pd\[^\n\r\]*(%xmm\[^\n\r\]*%ymm|ymm\[^\n\r\]*xmm)" } } */

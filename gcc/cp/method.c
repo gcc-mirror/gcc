@@ -1216,7 +1216,7 @@ is_trivially_xible (enum tree_code code, tree to, tree from)
   tree expr;
   expr = is_xible_helper (code, to, from, /*trivial*/true);
 
-  if (expr == error_mark_node)
+  if (expr == NULL_TREE || expr == error_mark_node)
     return false;
   tree nt = cp_walk_tree_without_duplicates (&expr, check_nontriv, NULL);
   return !nt;
@@ -1539,10 +1539,15 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     {
       /* "The closure type associated with a lambda-expression has a deleted
 	 default constructor and a deleted copy assignment operator."
-         This is diagnosed in maybe_explain_implicit_delete.  */
+	 This is diagnosed in maybe_explain_implicit_delete.
+	 In C++2a, only lambda-expressions with lambda-captures have those
+	 deleted.  */
       if (LAMBDA_TYPE_P (ctype)
-	  && (sfk == sfk_constructor
-	      || sfk == sfk_copy_assignment))
+	  && (sfk == sfk_constructor || sfk == sfk_copy_assignment)
+	  && (cxx_dialect < cxx2a
+	      || LAMBDA_EXPR_CAPTURE_LIST (CLASSTYPE_LAMBDA_EXPR (ctype))
+	      || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE
+				(CLASSTYPE_LAMBDA_EXPR (ctype)) != CPLD_NONE))
 	{
 	  *deleted_p = true;
 	  return;

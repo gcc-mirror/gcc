@@ -822,6 +822,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
   if (decl_maybe_constant_var_p (decl) || TREE_STATIC (decl))
     {
       bool const_init;
+      tree oldval = value;
       value = fold_non_dependent_expr (value);
       if (DECL_DECLARED_CONSTEXPR_P (decl)
 	  || (DECL_IN_AGGR_P (decl)
@@ -847,6 +848,8 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       /* FIXME setting TREE_CONSTANT on refs breaks the back end.  */
       if (!TYPE_REF_P (type))
 	TREE_CONSTANT (decl) = const_init && decl_maybe_constant_var_p (decl);
+      if (!const_init)
+	value = oldval;
     }
   value = cp_fully_fold (value);
 
@@ -899,7 +902,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
       return ok;
     }
 
-  init = fold_non_dependent_expr (init);
+  init = fold_non_dependent_expr (init, complain);
 
   if (TREE_CODE (type) == INTEGER_TYPE
       && TREE_CODE (ftype) == REAL_TYPE)
@@ -959,7 +962,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
 
   if (!ok)
     {
-      location_t loc = EXPR_LOC_OR_LOC (init, input_location);
+      location_t loc = cp_expr_loc_or_loc (init, input_location);
       if (cxx_dialect == cxx98)
 	{
 	  if (complain & tf_warning)
@@ -1032,7 +1035,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     init = TREE_OPERAND (init, 0);
 
-  location_t loc = EXPR_LOC_OR_LOC (init, input_location);
+  location_t loc = cp_expr_loc_or_loc (init, input_location);
 
   /* Initialization of an array of chars from a string constant. The initializer
      can be optionally enclosed in braces, but reshape_init has already removed
@@ -1254,7 +1257,7 @@ massage_init_elt (tree type, tree init, int nested, tsubst_flags_t complain)
     init = TARGET_EXPR_INITIAL (init);
   /* When we defer constant folding within a statement, we may want to
      defer this folding as well.  */
-  tree t = fold_non_dependent_expr (init);
+  tree t = fold_non_dependent_expr (init, complain);
   t = maybe_constant_init (t);
   if (TREE_CONSTANT (t))
     init = t;
@@ -1293,7 +1296,7 @@ process_init_constructor_array (tree type, tree init, int nested,
       if (nested == 2 && !domain && !vec_safe_is_empty (v))
 	{
 	  if (complain & tf_error)
-	    error_at (EXPR_LOC_OR_LOC (init, input_location),
+	    error_at (cp_expr_loc_or_loc (init, input_location),
 		      "initialization of flexible array member "
 		      "in a nested context");
 	  return PICFLAG_ERRONEOUS;
@@ -1362,8 +1365,22 @@ process_init_constructor_array (tree type, tree init, int nested,
 	if (next)
 	  {
 	    flags |= picflag_from_initializer (next);
-	    CONSTRUCTOR_APPEND_ELT (v, size_int (i), next);
+	    if (len > i+1
+		&& (initializer_constant_valid_p (next, TREE_TYPE (next))
+		    == null_pointer_node))
+	      {
+		tree range = build2 (RANGE_EXPR, size_type_node,
+				     build_int_cst (size_type_node, i),
+				     build_int_cst (size_type_node, len - 1));
+		CONSTRUCTOR_APPEND_ELT (v, range, next);
+		break;
+	      }
+	    else
+	      CONSTRUCTOR_APPEND_ELT (v, size_int (i), next);
 	  }
+	else
+	  /* Don't bother checking all the other elements.  */
+	  break;
       }
 
   CONSTRUCTOR_ELTS (init) = v;

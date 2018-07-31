@@ -2597,7 +2597,8 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
   stmt_vec_infos.create (50);
   set_stmt_vec_info_vec (&stmt_vec_infos);
 
-  simple_loop_info = vect_analyze_loop_form (loop);
+  vec_info_shared shared;
+  simple_loop_info = vect_analyze_loop_form (loop, &shared);
   if (simple_loop_info == NULL)
     goto gather_done;
 
@@ -2636,7 +2637,8 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
   if (!double_reduc_phis.is_empty ())
     {
-      simple_loop_info = vect_analyze_loop_form (loop->inner);
+      vec_info_shared shared;
+      simple_loop_info = vect_analyze_loop_form (loop->inner, &shared);
       if (simple_loop_info)
 	{
 	  gphi *phi;
@@ -3284,7 +3286,6 @@ parallelize_loops (bool oacc_kernels_p)
   struct tree_niter_desc niter_desc;
   struct obstack parloop_obstack;
   HOST_WIDE_INT estimated;
-  source_location loop_loc;
 
   /* Do not parallelize loops in the functions created by parallelization.  */
   if (!oacc_kernels_p
@@ -3409,7 +3410,7 @@ parallelize_loops (bool oacc_kernels_p)
       changed = true;
       skip_loop = loop->inner;
 
-      loop_loc = find_loop_location (loop);
+      dump_user_location_t loop_loc = find_loop_location (loop);
       if (loop->inner)
 	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
 			 "parallelizing outer loop %d\n", loop->num);

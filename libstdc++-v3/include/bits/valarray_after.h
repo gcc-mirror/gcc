@@ -529,7 +529,8 @@ namespace __detail
                                                                        \
   template<typename _Tp>                                               \
     inline _Expr<_BinClos<_UFun, _ValArray, _Constant, _Tp, _Tp>, _Tp> \
-    _Fun(const valarray<_Tp>& __v, const _Tp& __t)                     \
+    _Fun(const valarray<_Tp>& __v,				       \
+	 const typename valarray<_Tp>::value_type& __t)                \
     {                                                                  \
       typedef _BinClos<_UFun, _ValArray, _Constant, _Tp, _Tp> _Closure;\
       return _Expr<_Closure, _Tp>(_Closure(__v, __t));                 \
@@ -537,7 +538,8 @@ namespace __detail
 								       \
   template<typename _Tp>                                               \
     inline _Expr<_BinClos<_UFun, _Constant, _ValArray, _Tp, _Tp>, _Tp> \
-    _Fun(const _Tp& __t, const valarray<_Tp>& __v)                     \
+    _Fun(const typename valarray<_Tp>::value_type& __t,		       \
+	 const valarray<_Tp>& __v)                                     \
     {                                                                  \
       typedef _BinClos<_UFun, _Constant, _ValArray, _Tp, _Tp> _Closure;\
       return _Expr<_Closure, _Tp>(_Closure(__t, __v));                 \

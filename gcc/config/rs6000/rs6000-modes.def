@@ -18,16 +18,39 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* IBM 128-bit floating point.  IFmode and KFmode use the fractional float
-   support in order to declare 3 128-bit floating point types.  */
-FRACTIONAL_FLOAT_MODE (IF, 106, 16, ibm_extended_format);
+/* We order the 3 128-bit floating point types so that IFmode (IBM 128-bit
+   floating point) is the 128-bit floating point type with the highest
+   precision (128 bits).  This so that machine independent parts of the
+   compiler do not try to widen IFmode to TFmode on ISA 3.0 (power9) that has
+   hardware support for IEEE 128-bit.  We set TFmode (long double mode) in
+   between, and KFmode (explicit __float128) below it.
+
+   Previously, IFmode and KFmode were defined to be fractional modes and TFmode
+   was the standard mode.  Since IFmode does not define the normal arithmetic
+   insns (other than neg/abs), on a ISA 3.0 system, the machine independent
+   parts of the compiler would see that TFmode has the necessary hardware
+   support, and widen the operation from IFmode to TFmode.  However, IEEE
+   128-bit is not strictly a super-set of IBM extended double and the
+   conversion to/from IEEE 128-bit was a function call.
+
+   We now make IFmode the highest fractional mode, which means its values are
+   not considered for widening.  Since we don't define insns for IFmode, the
+   IEEE 128-bit modes would not widen to IFmode.  */
+
+#ifndef RS6000_MODES_H
+#include "config/rs6000/rs6000-modes.h"
+#endif
+
+/* IBM 128-bit floating point.  */
+FRACTIONAL_FLOAT_MODE (IF, FLOAT_PRECISION_IFmode, 16, ibm_extended_format);
 
 /* Explicit IEEE 128-bit floating point.  */
-FRACTIONAL_FLOAT_MODE (KF, 113, 16, ieee_quad_format);
+FRACTIONAL_FLOAT_MODE (KF, FLOAT_PRECISION_KFmode, 16, ieee_quad_format);
 
-/* 128-bit floating point.  ABI_V4 uses IEEE quad, AIX/Darwin
-   adjust this in rs6000_option_override_internal.  */
-FLOAT_MODE (TF, 16, ieee_quad_format);
+/* 128-bit floating point, either IBM 128-bit or IEEE 128-bit.  This is
+   adjusted in rs6000_option_override_internal to be the appropriate floating
+   point type.  */
+FRACTIONAL_FLOAT_MODE (TF, FLOAT_PRECISION_TFmode, 16, ieee_quad_format);
 
 /* Add any extra modes needed to represent the condition code.
 

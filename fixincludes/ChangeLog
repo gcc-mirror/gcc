@@ -1,3 +1,23 @@
+2018-07-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_unistd): New.
+	* fixincl.x: Regenerate.
+	* tests/base/unistd.h [AIX_UNISTD_CHECK]: New test.
+
+2018-06-27  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* tests/base/ioLib.h [VXWORKS_IOLIB_INCLUDE_UNISTD_CHECK]: Add
+	missing hunk.
+
+2018-06-12    Rasmus Villemoes <rasmus.villemoes@prevas.dk>
+
+	* genfixes: exit 1 when autogen not found.
+	* genfixes: Remove some redundant code.
+	* genfixes: Update URL to autogen source code.
+
+	* inclhack.def: Fix fixup for assert.h on vxworks.
+	* fixincl.x: Regenerate.
+
 2018-05-25  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
 
 	* inclhack.def (vxworks_iolib_include_unistd): New fix.

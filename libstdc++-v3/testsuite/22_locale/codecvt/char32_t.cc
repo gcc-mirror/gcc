@@ -1,5 +1,4 @@
 // { dg-do run { target c++11 } }
-// { dg-require-cstdint "" }
 
 // 2014-04-24 Rüdiger Sonderfeld
 

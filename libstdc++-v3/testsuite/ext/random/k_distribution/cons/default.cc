@@ -25,6 +25,7 @@
 
 #include <ext/random>
 #include <testsuite_hooks.h>
+#include <testsuite_common_types.h>
 
 void
 test01()
@@ -38,9 +39,17 @@ test01()
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 
+void
+test02()
+{
+  __gnu_test::implicitly_default_constructible test;
+  test.operator()<__gnu_cxx::k_distribution<>>();
+  test.operator()<__gnu_cxx::k_distribution<>::param_type>();
+}
+
 int
 main()
 {
   test01();
-  return 0;
+  test02();
 }

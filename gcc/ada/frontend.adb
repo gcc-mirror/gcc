@@ -303,7 +303,7 @@ begin
       --  capture the values of the configuration switches (see Opt for further
       --  details).
 
-      Opt.Register_Opt_Config_Switches;
+      Register_Config_Switches;
 
       --  Check for file which contains No_Body pragma
 
@@ -451,11 +451,6 @@ begin
 
                Check_Elaboration_Scenarios;
 
-               --  Remove any ignored Ghost code as it must not appear in the
-               --  executable.
-
-               Remove_Ignored_Ghost_Code;
-
             --  Examine all top level scenarios collected during analysis and
             --  resolution in order to diagnose conditional ABEs, even in the
             --  presence of serious errors.
@@ -466,7 +461,9 @@ begin
 
             --  At this stage we can unnest subprogram bodies if required
 
-            Exp_Unst.Unnest_Subprograms (Cunit (Main_Unit));
+            if Total_Errors_Detected = 0 then
+               Exp_Unst.Unnest_Subprograms (Cunit (Main_Unit));
+            end if;
 
             --  List library units if requested
 
@@ -481,6 +478,14 @@ begin
             Sem_Warn.Output_Unreferenced_Messages;
             Sem_Warn.Check_Unused_Withs;
             Sem_Warn.Output_Unused_Warnings_Off_Warnings;
+
+            --  Remove any ignored Ghost code as it must not appear in the
+            --  executable. This action must be performed last because it
+            --  heavily alters the tree.
+
+            if Operating_Mode = Generate_Code or else GNATprove_Mode then
+               Remove_Ignored_Ghost_Code;
+            end if;
          end if;
       end if;
    end;

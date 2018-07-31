@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=archs -O1 -mmpy-option=plus_dmpy" } */
+/* { dg-options "-mcpu=archs -O1 -mmpy-option=plus_dmpy -w" } */
 
 /* Check how we generate umaddsidi4 patterns.  */
 long a;

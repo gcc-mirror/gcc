@@ -402,7 +402,7 @@ static void
 print_pbb_body (FILE *file, poly_bb_p pbb)
 {
   fprintf (file, "Body (\n");
-  dump_bb (file, pbb_bb (pbb), 0, 0);
+  dump_bb (file, pbb_bb (pbb), 0, TDF_NONE);
   fprintf (file, ")\n");
 }
 

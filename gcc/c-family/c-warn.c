@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "gimplify.h"
 #include "c-family/c-indentation.h"
+#include "calls.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -792,13 +793,32 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
     {
       /* The argument type may be an array.  Diagnose bounded string
 	 copy functions that specify the bound in terms of the source
-	 argument rather than the destination.  */
+	 argument rather than the destination unless they are equal
+	 to one another.  Handle constant sizes and also try to handle
+	 sizeof expressions involving VLAs.  */
       if (strop && !cmp && fncode != BUILT_IN_STRNDUP && src)
 	{
 	  tem = tree_strip_nop_conversions (src);
 	  if (TREE_CODE (tem) == ADDR_EXPR)
 	    tem = TREE_OPERAND (tem, 0);
-	  if (operand_equal_p (tem, sizeof_arg[idx], OEP_ADDRESS_OF))
+
+	  /* Avoid diagnosing sizeof SRC when SRC is declared with
+	     attribute nonstring.  */
+	  tree dummy;
+	  if (get_attr_nonstring_decl (tem, &dummy))
+	    return;
+
+	  tree d = tree_strip_nop_conversions (dest);
+	  if (TREE_CODE (d) == ADDR_EXPR)
+	    d = TREE_OPERAND (d, 0);
+
+	  tree dstsz = TYPE_SIZE_UNIT (TREE_TYPE (d));
+	  tree srcsz = TYPE_SIZE_UNIT (TREE_TYPE (tem));
+
+	  if ((!dstsz
+	       || !srcsz
+	       || !operand_equal_p (dstsz, srcsz, OEP_LEXICOGRAPHIC))
+	      && operand_equal_p (tem, sizeof_arg[idx], OEP_ADDRESS_OF))
 	    warning_at (sizeof_arg_loc[idx], OPT_Wsizeof_pointer_memaccess,
 			"argument to %<sizeof%> in %qD call is the same "
 			"expression as the source; did you mean to use "

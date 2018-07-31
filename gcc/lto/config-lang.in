@@ -19,7 +19,6 @@
 
 language="lto"
 compilers="lto1\$(exeext)"
-stagestuff="lto1\$(exeext)"
 
 gtfiles="\$(srcdir)/lto/lto-tree.h \$(srcdir)/lto/lto-lang.c \$(srcdir)/lto/lto.c \$(srcdir)/lto/lto.h"
 

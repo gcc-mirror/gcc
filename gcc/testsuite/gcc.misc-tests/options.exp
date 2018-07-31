@@ -52,6 +52,10 @@ proc check_for_all_options {language gcc_options compiler_pattern as_pattern ld_
     }
     set gcc_output [gcc_target_compile $filename.c $filename.x executable $gcc_options]
     remote_file build delete $filename.c $filename.x $filename.gcno
+    set dumpfiles [glob -nocomplain $filename.c.*]
+    foreach dumpfile $dumpfiles {
+	remote_file build delete $dumpfile
+    }   
 
     if {![regexp -- "/${compiler}(\\.exe)? -quiet.*$compiler_pattern" $gcc_output]} {
 	fail "$test (compiler options)"
@@ -69,5 +73,39 @@ proc check_for_all_options {language gcc_options compiler_pattern as_pattern ld_
 }
 
 check_for_all_options c {--coverage} {-fprofile-arcs -ftest-coverage} {} {-lgcov}
+
+proc get_dump_flags {} {
+    set res [list]
+
+    global srcdir
+    set file "$srcdir/../dumpfile.c"
+    
+    set a [open $file]
+    set lines [split [read $a] "\n"]
+    close $a
+
+    set domatch 0
+    foreach line $lines {
+	if { [regexp "dump_options.* =" $line] } {
+	    set domatch 1
+	} elseif { [regexp "^\};" $line] } {
+	    set domatch 0
+	}
+	if { $domatch } {
+	    if { [regexp "\"(.*)\"" $line match submatch] } {
+		lappend res $submatch
+	    }
+	}
+    }
+
+    return $res
+}
+
+foreach flag [get_dump_flags] {
+    check_for_all_options c -fdump-tree-all-$flag {} {} {}
+    check_for_all_options c -fdump-ipa-all-$flag {} {} {}
+    check_for_all_options c -fdump-rtl-all-$flag {} {} {}
+    check_for_all_options c -fdump-lang-all-$flag {} {} {}
+}
 
 gcc_parallel_test_enable 1

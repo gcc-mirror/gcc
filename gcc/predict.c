@@ -1629,7 +1629,8 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
       && tree_fits_shwi_p (compare_base))
     {
       int probability;
-      bool overflow, overall_overflow = false;
+      wi::overflow_type overflow;
+      bool overall_overflow = false;
       widest_int compare_count, tem;
 
       /* (loop_bound - base) / compare_step */

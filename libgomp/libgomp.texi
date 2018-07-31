@@ -74,7 +74,7 @@ Boston, MA 02110-1301, USA@*
 
 This manual documents the usage of libgomp, the GNU Offloading and
 Multi Processing Runtime Library.  This includes the GNU
-implementation of the @uref{http://www.openmp.org, OpenMP} Application
+implementation of the @uref{https://www.openmp.org, OpenMP} Application
 Programming Interface (API) for multi-platform shared-memory parallel
 programming in C/C++ and Fortran, and the GNU implementation of the
 @uref{https://www.openacc.org, OpenACC} Application Programming
@@ -139,7 +139,7 @@ arranges for automatic linking of the OpenMP runtime library
 (@ref{Runtime Library Routines}).
 
 A complete description of all OpenMP directives accepted may be found in 
-the @uref{http://www.openmp.org, OpenMP Application Program Interface} manual,
+the @uref{https://www.openmp.org, OpenMP Application Program Interface} manual,
 version 4.5.
 
 
@@ -230,7 +230,7 @@ which enclose the calling call.
 @ref{omp_get_level}, @ref{omp_get_max_active_levels}, @ref{omp_set_max_active_levels}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.20.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.20.
 @end table
 
 
@@ -259,7 +259,7 @@ zero to @code{omp_get_level} -1 is returned; if @var{level} is
 @ref{omp_get_level}, @ref{omp_get_thread_num}, @ref{omp_get_team_size}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.18.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.18.
 @end table
 
 
@@ -287,7 +287,7 @@ deactivated.
 @ref{OMP_CANCELLATION}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.9.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.9.
 @end table
 
 
@@ -312,7 +312,7 @@ Get the default device for target regions without device clause.
 @ref{OMP_DEFAULT_DEVICE}, @ref{omp_set_default_device}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.30.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.30.
 @end table
 
 
@@ -344,7 +344,7 @@ disabled by default.
 @ref{omp_set_dynamic}, @ref{OMP_DYNAMIC}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.8.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.8.
 @end table
 
 
@@ -370,7 +370,7 @@ which enclose the calling call.
 @ref{omp_get_active_level}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.17.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.17.
 @end table
 
 
@@ -395,7 +395,7 @@ This function obtains the maximum allowed number of nested, active parallel regi
 @ref{omp_set_max_active_levels}, @ref{omp_get_active_level}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.16.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.16.
 @end table
 
 
@@ -417,7 +417,7 @@ This function obtains the maximum allowed priority number for tasks.
 @end multitable
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.29.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.29.
 @end table
 
 
@@ -442,7 +442,7 @@ that does not use the clause @code{num_threads}.
 @ref{omp_set_num_threads}, @ref{omp_set_dynamic}, @ref{omp_get_thread_limit}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.3.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.3.
 @end table
 
 
@@ -474,7 +474,7 @@ disabled by default.
 @ref{omp_set_nested}, @ref{OMP_NESTED}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.11.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.11.
 @end table
 
 
@@ -496,7 +496,7 @@ Returns the number of target devices.
 @end multitable
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.31.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.31.
 @end table
 
 
@@ -518,7 +518,7 @@ Returns the number of processors online on that device.
 @end multitable
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.5.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.5.
 @end table
 
 
@@ -540,7 +540,7 @@ Returns the number of teams in the current team region.
 @end multitable
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.32.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.32.
 @end table
 
 
@@ -573,7 +573,7 @@ one thread per CPU online is used.
 @ref{omp_get_max_threads}, @ref{omp_set_num_threads}, @ref{OMP_NUM_THREADS}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.2.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.2.
 @end table
 
 
@@ -601,7 +601,7 @@ set via @env{OMP_PROC_BIND}.  Possible values are @code{omp_proc_bind_false},
 @ref{OMP_PROC_BIND}, @ref{OMP_PLACES}, @ref{GOMP_CPU_AFFINITY},
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.22.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.22.
 @end table
 
 
@@ -631,7 +631,7 @@ set to the value @code{omp_sched_static}, @code{omp_sched_dynamic},
 @ref{omp_set_schedule}, @ref{OMP_SCHEDULE}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.13.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.13.
 @end table
 
 
@@ -653,7 +653,7 @@ Returns the team number of the calling thread.
 @end multitable
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.33.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.33.
 @end table
 
 
@@ -683,7 +683,7 @@ to @code{omp_get_num_threads}.
 @ref{omp_get_num_threads}, @ref{omp_get_level}, @ref{omp_get_ancestor_thread_num}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.19.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.19.
 @end table
 
 
@@ -708,7 +708,7 @@ Return the maximum number of threads of the program.
 @ref{omp_get_max_threads}, @ref{OMP_THREAD_LIMIT}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.14.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.14.
 @end table
 
 
@@ -737,7 +737,7 @@ value of the master thread of a team is always 0.
 @ref{omp_get_num_threads}, @ref{omp_get_ancestor_thread_num}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.4.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.4.
 @end table
 
 
@@ -761,7 +761,7 @@ their language-specific counterparts.
 @end multitable
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.6.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.6.
 @end table
 
 
@@ -784,7 +784,7 @@ and @code{false} represent their language-specific counterparts.
 @end multitable
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.21.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.21.
 @end table
 
 
@@ -808,7 +808,7 @@ their language-specific counterparts.
 @end multitable
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.34.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.34.
 @end table
 
 
@@ -835,7 +835,7 @@ shall be a nonnegative device number.
 @ref{OMP_DEFAULT_DEVICE}, @ref{omp_get_default_device}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.29.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.29.
 @end table
 
 
@@ -864,7 +864,7 @@ adjustment of team sizes and @code{false} disables it.
 @ref{OMP_DYNAMIC}, @ref{omp_get_dynamic}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.7.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.7.
 @end table
 
 
@@ -891,7 +891,7 @@ parallel regions.
 @ref{omp_get_max_active_levels}, @ref{omp_get_active_level}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.15.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.15.
 @end table
 
 
@@ -920,7 +920,7 @@ dynamic adjustment of team sizes and @code{false} disables it.
 @ref{OMP_NESTED}, @ref{omp_get_nested}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.10.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.10.
 @end table
 
 
@@ -948,7 +948,7 @@ argument of @code{omp_set_num_threads} shall be a positive integer.
 @ref{OMP_NUM_THREADS}, @ref{omp_get_num_threads}, @ref{omp_get_max_threads}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.1.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.1.
 @end table
 
 
@@ -981,7 +981,7 @@ For @code{omp_sched_auto} the @var{chunk_size} argument is ignored.
 @ref{OMP_SCHEDULE}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.2.12.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.12.
 @end table
 
 
@@ -1008,7 +1008,7 @@ an unlocked state.
 @ref{omp_destroy_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.3.1.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.1.
 @end table
 
 
@@ -1037,7 +1037,7 @@ a deadlock occurs.
 @ref{omp_init_lock}, @ref{omp_test_lock}, @ref{omp_unset_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.3.4.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.4.
 @end table
 
 
@@ -1067,7 +1067,7 @@ does not block if the lock is not available.  This function returns
 @ref{omp_init_lock}, @ref{omp_set_lock}, @ref{omp_set_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.3.6.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.6.
 @end table
 
 
@@ -1097,7 +1097,7 @@ again, set the lock to itself.
 @ref{omp_set_lock}, @ref{omp_test_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.3.5.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.5.
 @end table
 
 
@@ -1124,7 +1124,7 @@ in the unlocked state.
 @ref{omp_init_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.3.3.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.3.
 @end table
 
 
@@ -1151,7 +1151,7 @@ an unlocked state and the nesting count is set to zero.
 @ref{omp_destroy_nest_lock}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.3.1.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.1.
 @end table
 
 
@@ -1179,7 +1179,7 @@ nesting count for the lock is incremented.
 @ref{omp_init_nest_lock}, @ref{omp_unset_nest_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.3.4.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.4.
 @end table
 
 
@@ -1210,7 +1210,7 @@ is returned.  Otherwise, the return value equals zero.
 @ref{omp_init_lock}, @ref{omp_set_lock}, @ref{omp_set_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.3.6.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.6.
 @end table
 
 
@@ -1240,7 +1240,7 @@ one of them is chosen to, again, set the lock to itself.
 @ref{omp_set_nest_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.3.5.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.5.
 @end table
 
 
@@ -1267,7 +1267,7 @@ in the unlocked state and its nesting count must equal zero.
 @ref{omp_init_lock}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.3.3.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.3.3.
 @end table
 
 
@@ -1293,7 +1293,7 @@ successive clock ticks.
 @ref{omp_get_wtime}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.4.2.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.4.2.
 @end table
 
 
@@ -1321,7 +1321,7 @@ guaranteed not to change during the execution of the program.
 @ref{omp_get_wtick}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 3.4.1.
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.4.1.
 @end table
 
 
@@ -1372,7 +1372,7 @@ if unset, cancellation is disabled and the @code{cancel} construct is ignored.
 @ref{omp_get_cancellation}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.11
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.11
 @end table
 
 
@@ -1390,7 +1390,7 @@ this information will not be shown.
 
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.12
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.12
 @end table
 
 
@@ -1411,7 +1411,7 @@ device number 0 will be used.
 @ref{omp_get_default_device}, @ref{omp_set_default_device},
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.13
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.13
 @end table
 
 
@@ -1430,7 +1430,7 @@ disabled by default.
 @ref{omp_set_dynamic}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.3
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.3
 @end table
 
 
@@ -1448,7 +1448,7 @@ If undefined, the number of active levels is unlimited.
 @ref{omp_set_max_active_levels}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.9
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.9
 @end table
 
 
@@ -1468,7 +1468,7 @@ integer, and zero is allowed.  If undefined, the default priority is
 @ref{omp_get_max_task_priority}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.14
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.14
 @end table
 
 
@@ -1488,7 +1488,7 @@ regions are disabled by default.
 @ref{omp_set_nested}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.6
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.6
 @end table
 
 
@@ -1508,7 +1508,7 @@ level.  If undefined one thread per CPU is used.
 @ref{omp_set_num_threads}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.2
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.2
 @end table
 
 
@@ -1535,7 +1535,7 @@ When undefined, @env{OMP_PROC_BIND} defaults to @code{TRUE} when
 @ref{OMP_PLACES}, @ref{GOMP_CPU_AFFINITY}, @ref{omp_get_proc_bind}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.4
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.4
 @end table
 
 
@@ -1577,7 +1577,7 @@ between CPUs following no placement policy.
 @ref{OMP_DISPLAY_ENV}
 
 @item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.5
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.5
 @end table
 
 
@@ -1597,7 +1597,7 @@ stack size is left unchanged.  If undefined, the stack size is system
 dependent.
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.7
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.7
 @end table
 
 
@@ -1618,7 +1618,7 @@ dynamic scheduling and a chunk size of 1 is used.
 @ref{omp_set_schedule}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Sections 2.7.1.1 and 4.1
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Sections 2.7.1.1 and 4.1
 @end table
 
 
@@ -1636,7 +1636,7 @@ the number of threads is not limited.
 @ref{OMP_NUM_THREADS}, @ref{omp_get_thread_limit}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.10
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.10
 @end table
 
 
@@ -1656,7 +1656,7 @@ before waiting passively.
 @ref{GOMP_SPINCOUNT}
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.5}, Section 4.8
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.8
 @end table
 
 

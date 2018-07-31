@@ -63,9 +63,6 @@ struct copy_body_data
   /* The VAR_DECL for the return value.  */
   tree retvar;
 
-  /* The VAR_DECL for the return bounds.  */
-  tree retbnd;
-
   /* Assign statements that need bounds copy.  */
   vec<gimple *> assign_stmts;
 
@@ -82,6 +79,9 @@ struct copy_body_data
   /* GIMPLE_CALL if va arg parameter packs should be expanded or NULL
      is not.  */
   gcall *call_stmt;
+
+  /* > 0 if we are remapping a type currently.  */
+  int remapping_type_depth;
 
   /* Exception landing pad the inlined call lies in.  */
   int eh_lp_nr;
@@ -113,11 +113,14 @@ struct copy_body_data
   /* True if this statement will need to be regimplified.  */
   bool regimplify;
 
-  /* True if trees should not be unshared.  */
+  /* True if trees may not be unshared.  */
   bool do_not_unshare;
 
-  /* > 0 if we are remapping a type currently.  */
-  int remapping_type_depth;
+  /* True if new declarations may not be created during type remapping.  */
+  bool prevent_decl_creation_for_types;
+
+  /* True if the location information will need to be reset.  */
+  bool reset_location;
 
   /* A function to be called when duplicating BLOCK nodes.  */
   void (*transform_lang_insert_block) (tree);
@@ -148,9 +151,6 @@ struct copy_body_data
   /* A list of addressable local variables remapped into the caller
      when inlining a call within an OpenMP SIMD-on-SIMT loop.  */
   vec<tree> *dst_simt_vars;
-
-  /* Do not create new declarations when within type remapping.  */
-  bool prevent_decl_creation_for_types;
 };
 
 /* Weights of constructions for estimate_num_insns.  */

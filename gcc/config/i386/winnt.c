@@ -922,11 +922,14 @@ i386_pe_seh_cold_init (FILE *f, const char *name)
     fprintf (f, "\t.seh_stackalloc\t" HOST_WIDE_INT_PRINT_DEC "\n", offset);
 
   for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (seh->reg_offset[regno] > 0)
+    if (seh->reg_offset[regno] > 0 && seh->reg_offset[regno] <= alloc_offset)
       {
-	fputs ((SSE_REGNO_P (regno) ? "\t.seh_savexmm\t"
-	       : GENERAL_REGNO_P (regno) ?  "\t.seh_savereg\t"
-		 : (gcc_unreachable (), "")), f);
+	if (SSE_REGNO_P (regno))
+	  fputs ("\t.seh_savexmm\t", f);
+	else if (GENERAL_REGNO_P (regno))
+	  fputs ("\t.seh_savereg\t", f);
+	else
+	  gcc_unreachable ();
 	print_reg (gen_rtx_REG (DImode, regno), 0, f);
 	fprintf (f, ", " HOST_WIDE_INT_PRINT_DEC "\n",
 		 alloc_offset - seh->reg_offset[regno]);
@@ -949,6 +952,20 @@ i386_pe_seh_cold_init (FILE *f, const char *name)
       offset = seh->sp_offset - alloc_offset;
       if (offset > 0 && offset < SEH_MAX_FRAME_SIZE)
 	fprintf (f, "\t.seh_stackalloc\t" HOST_WIDE_INT_PRINT_DEC "\n", offset);
+
+      for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if (seh->reg_offset[regno] > alloc_offset)
+	  {
+	    if (SSE_REGNO_P (regno))
+	      fputs ("\t.seh_savexmm\t", f);
+	    else if (GENERAL_REGNO_P (regno))
+	      fputs ("\t.seh_savereg\t", f);
+	    else
+	      gcc_unreachable ();
+	    print_reg (gen_rtx_REG (DImode, regno), 0, f);
+	    fprintf (f, ", " HOST_WIDE_INT_PRINT_DEC "\n",
+		     seh->sp_offset - seh->reg_offset[regno]);
+	  }
     }
 
   fputs ("\t.seh_endprologue\n", f);

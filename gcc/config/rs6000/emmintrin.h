@@ -1884,6 +1884,30 @@ _mm_xor_pd (__m128d __A, __m128d __B)
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_and_si128 (__m128i __A, __m128i __B)
+{
+  return (__m128i)vec_and ((__v2di) __A, (__v2di) __B);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_andnot_si128 (__m128i __A, __m128i __B)
+{
+  return (__m128i)vec_andc ((__v2di) __B, (__v2di) __A);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_or_si128 (__m128i __A, __m128i __B)
+{
+  return (__m128i)vec_or ((__v2di) __A, (__v2di) __B);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_xor_si128 (__m128i __A, __m128i __B)
+{
+  return (__m128i)vec_xor ((__v2di) __A, (__v2di) __B);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmpeq_epi8 (__m128i __A, __m128i __B)
 {
   return (__m128i) vec_cmpeq ((__v16qi) __A, (__v16qi)__B);
@@ -2333,3 +2357,4 @@ _mm_castsi128_pd(__m128i __A)
 }
 
 #endif /* EMMINTRIN_H_ */
+

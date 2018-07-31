@@ -413,6 +413,7 @@ backprop::process_assign_use (gassign *assign, tree rhs, usage_info *info)
   switch (gimple_assign_rhs_code (assign))
     {
     case ABS_EXPR:
+    case ABSU_EXPR:
       /* The sign of the input doesn't matter.  */
       info->flags.ignore_sign = true;
       break;
@@ -688,6 +689,7 @@ strip_sign_op_1 (tree rhs)
     switch (gimple_assign_rhs_code (assign))
       {
       case ABS_EXPR:
+      case ABSU_EXPR:
       case NEGATE_EXPR:
 	return gimple_assign_rhs1 (assign);
 

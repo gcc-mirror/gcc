@@ -48,6 +48,10 @@ with GNAT.Heap_Sort_G;
 
 package body Atree is
 
+   Ignored_Ghost_Recording_Proc : Ignored_Ghost_Record_Proc := null;
+   --  This soft link captures the procedure invoked during the creation of an
+   --  ignored Ghost node or entity.
+
    Locked : Boolean := False;
    --  Compiling with assertions enabled, node contents modifications are
    --  permitted only when this switch is set to False; compiling without
@@ -683,12 +687,21 @@ package body Atree is
    -----------------
 
    procedure Change_Node (N : Node_Id; New_Node_Kind : Node_Kind) is
-      Save_Sloc    : constant Source_Ptr := Sloc (N);
+
+      --  Flags table attributes
+
+      Save_CA     : constant Boolean := Flags.Table (N).Check_Actuals;
+      Save_Is_IGN : constant Boolean := Flags.Table (N).Is_Ignored_Ghost_Node;
+
+      --  Nodes table attributes
+
+      Save_CFS     : constant Boolean    := Nodes.Table (N).Comes_From_Source;
       Save_In_List : constant Boolean    := Nodes.Table (N).In_List;
       Save_Link    : constant Union_Id   := Nodes.Table (N).Link;
-      Save_CFS     : constant Boolean    := Nodes.Table (N).Comes_From_Source;
       Save_Posted  : constant Boolean    := Nodes.Table (N).Error_Posted;
-      Par_Count    : Nat                 := 0;
+      Save_Sloc    : constant Source_Ptr := Sloc (N);
+
+      Par_Count : Nat := 0;
 
    begin
       if Nkind (N) in N_Subexpr then
@@ -703,7 +716,9 @@ package body Atree is
       Nodes.Table (N).Nkind             := New_Node_Kind;
       Nodes.Table (N).Error_Posted      := Save_Posted;
 
-      Flags.Table (N) := Default_Flags;
+      Flags.Table (N)                       := Default_Flags;
+      Flags.Table (N).Check_Actuals         := Save_CA;
+      Flags.Table (N).Is_Ignored_Ghost_Node := Save_Is_IGN;
 
       if New_Node_Kind in N_Subexpr then
          Set_Paren_Count (N, Par_Count);
@@ -1606,6 +1621,13 @@ package body Atree is
          end if;
 
          Set_Is_Ignored_Ghost_Node (N);
+
+         --  Record the ignored Ghost node or entity in order to eliminate it
+         --  from the tree later.
+
+         if Ignored_Ghost_Recording_Proc /= null then
+            Ignored_Ghost_Recording_Proc.all (N);
+         end if;
       end if;
    end Mark_New_Ghost_Node;
 
@@ -1629,8 +1651,8 @@ package body Atree is
       if Source > Empty_Or_Error then
          New_Id := Allocate_Initialize_Node (Source, Has_Extension (Source));
 
-         Nodes.Table (New_Id).Link := Empty_List_Or_Node;
          Nodes.Table (New_Id).In_List := False;
+         Nodes.Table (New_Id).Link    := Empty_List_Or_Node;
 
          --  If the original is marked as a rewrite insertion, then unmark the
          --  copy, since we inserted the original, not the copy.
@@ -2164,7 +2186,7 @@ package body Atree is
       --  If the node being relocated was a rewriting of some original node,
       --  then the relocated node has the same original node.
 
-      if Orig_Nodes.Table (Source) /= Source then
+      if Is_Rewrite_Substitution (Source) then
          Orig_Nodes.Table (New_Node) := Orig_Nodes.Table (Source);
       end if;
 
@@ -2218,16 +2240,24 @@ package body Atree is
    -------------
 
    procedure Rewrite (Old_Node, New_Node : Node_Id) is
-      Old_Error_P : constant Boolean  := Nodes.Table (Old_Node).Error_Posted;
-      --  This field is always preserved in the new node
 
-      Old_Has_Aspects : constant Boolean := Nodes.Table (Old_Node).Has_Aspects;
-      --  This field is always preserved in the new node
+      --  Flags table attributes
 
-      Old_Paren_Count     : Nat;
+      Old_CA     : constant Boolean := Flags.Table (Old_Node).Check_Actuals;
+      Old_Is_IGN : constant Boolean :=
+                     Flags.Table (Old_Node).Is_Ignored_Ghost_Node;
+
+      --  Nodes table attributes
+
+      Old_Error_Posted : constant Boolean :=
+                           Nodes.Table (Old_Node).Error_Posted;
+      Old_Has_Aspects  : constant Boolean :=
+                           Nodes.Table (Old_Node).Has_Aspects;
+
       Old_Must_Not_Freeze : Boolean;
-      --  These fields are preserved in the new node only if the new node
-      --  and the old node are both subexpression nodes.
+      Old_Paren_Count     : Nat;
+      --  These fields are preserved in the new node only if the new node and
+      --  the old node are both subexpression nodes.
 
       --  Note: it is a violation of abstraction levels for Must_Not_Freeze
       --  to be referenced like this. ???
@@ -2244,11 +2274,11 @@ package body Atree is
       pragma Debug (New_Node_Debugging_Output (New_Node));
 
       if Nkind (Old_Node) in N_Subexpr then
-         Old_Paren_Count     := Paren_Count (Old_Node);
          Old_Must_Not_Freeze := Must_Not_Freeze (Old_Node);
+         Old_Paren_Count     := Paren_Count (Old_Node);
       else
-         Old_Paren_Count     := 0;
          Old_Must_Not_Freeze := False;
+         Old_Paren_Count     := 0;
       end if;
 
       --  Allocate a new node, to be used to preserve the original contents
@@ -2274,8 +2304,11 @@ package body Atree is
       --  Copy substitute node into place, preserving old fields as required
 
       Copy_Node (Source => New_Node, Destination => Old_Node);
-      Nodes.Table (Old_Node).Error_Posted := Old_Error_P;
+      Nodes.Table (Old_Node).Error_Posted := Old_Error_Posted;
       Nodes.Table (Old_Node).Has_Aspects  := Old_Has_Aspects;
+
+      Flags.Table (Old_Node).Check_Actuals         := Old_CA;
+      Flags.Table (Old_Node).Is_Ignored_Ghost_Node := Old_Is_IGN;
 
       if Nkind (New_Node) in N_Subexpr then
          Set_Paren_Count     (Old_Node, Old_Paren_Count);
@@ -2368,6 +2401,18 @@ package body Atree is
       pragma Assert (N <= Nodes.Last);
       Nodes.Table (N).Has_Aspects := Val;
    end Set_Has_Aspects;
+
+   --------------------------------------
+   -- Set_Ignored_Ghost_Recording_Proc --
+   --------------------------------------
+
+   procedure Set_Ignored_Ghost_Recording_Proc
+     (Proc : Ignored_Ghost_Record_Proc)
+   is
+   begin
+      pragma Assert (Ignored_Ghost_Recording_Proc = null);
+      Ignored_Ghost_Recording_Proc := Proc;
+   end Set_Ignored_Ghost_Recording_Proc;
 
    -------------------------------
    -- Set_Is_Ignored_Ghost_Node --

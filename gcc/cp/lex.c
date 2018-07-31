@@ -491,7 +491,7 @@ tree
 unqualified_name_lookup_error (tree name, location_t loc)
 {
   if (loc == UNKNOWN_LOCATION)
-    loc = EXPR_LOC_OR_LOC (name, input_location);
+    loc = cp_expr_loc_or_loc (name, input_location);
 
   if (IDENTIFIER_ANY_OP_P (name))
     error_at (loc, "%qD not defined", name);
@@ -852,9 +852,9 @@ maybe_add_lang_type_raw (tree t)
 }
 
 tree
-cxx_make_type (enum tree_code code)
+cxx_make_type (enum tree_code code MEM_STAT_DECL)
 {
-  tree t = make_node (code);
+  tree t = make_node (code PASS_MEM_STAT);
 
   if (maybe_add_lang_type_raw (t))
     {
@@ -868,10 +868,18 @@ cxx_make_type (enum tree_code code)
   return t;
 }
 
+/* A wrapper without the memory stats for LANG_HOOKS_MAKE_TYPE.  */
+
 tree
-make_class_type (enum tree_code code)
+cxx_make_type_hook (enum tree_code code)
 {
-  tree t = cxx_make_type (code);
+  return cxx_make_type (code);
+}
+
+tree
+make_class_type (enum tree_code code MEM_STAT_DECL)
+{
+  tree t = cxx_make_type (code PASS_MEM_STAT);
   SET_CLASS_TYPE_P (t, 1);
   return t;
 }

@@ -68,9 +68,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef uniform_int_distribution<_IntType> distribution_type;
 
+	param_type() : param_type(0) { }
+
 	explicit
-	param_type(_IntType __a = 0,
-		   _IntType __b = std::numeric_limits<_IntType>::max())
+	param_type(_IntType __a,
+		   _IntType __b = numeric_limits<_IntType>::max())
 	: _M_a(__a), _M_b(__b)
 	{
 	  __glibcxx_assert(_M_a <= _M_b);
@@ -101,9 +103,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @brief Constructs a uniform distribution object.
        */
+      uniform_int_distribution() : uniform_int_distribution(0) { }
+
+      /**
+       * @brief Constructs a uniform distribution object.
+       */
       explicit
-      uniform_int_distribution(_IntType __a = 0,
-			   _IntType __b = std::numeric_limits<_IntType>::max())
+      uniform_int_distribution(_IntType __a,
+			       _IntType __b = numeric_limits<_IntType>::max())
       : _M_param(__a, __b)
       { }
 

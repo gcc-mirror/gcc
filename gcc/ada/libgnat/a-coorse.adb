@@ -480,6 +480,14 @@ package body Ada.Containers.Ordered_Sets is
          raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
+      if Checks
+        and then (Left (Position.Node) = Position.Node
+                   or else
+                  Right (Position.Node) = Position.Node)
+      then
+         raise Program_Error with "dangling cursor";
+      end if;
+
       pragma Assert (Vet (Position.Container.Tree, Position.Node),
                      "bad cursor in Element");
 

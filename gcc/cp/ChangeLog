@@ -1,3 +1,511 @@
+2018-07-31  Martin Liska  <mliska@suse.cz>
+
+        PR c++/86653
+	* parser.c (cp_parser_condition): Initialize non_constant_p
+        to false.
+
+2018-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (cp_printer): In the leading comment, move "%H" and "%I"
+	into alphabetical order, and add missing "%G" and "%K".  Within
+	the switch statement, move cases 'G', 'H', 'I' and 'K' so that the
+	cases are in alphabetical order.
+
+2018-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (enum cp_tree_index): Add
+	CPTI_{ABI_TAG,ALIGNED,BEGIN,END,GET,TUPLE_{ELEMENT,SIZE}}_IDENTIFIER
+	and CPTI_{GNU,TYPE,VALUE,FUN,CLOSURE}_IDENTIFIER.
+	(abi_tag_identifier, aligned_identifier, begin_identifier,
+	end_identifier, get__identifier, gnu_identifier,
+	tuple_element_identifier, tuple_size_identifier, type_identifier,
+	value_identifier, fun_identifier, closure_identifier): Define.
+	* decl.c (initialize_predefined_identifiers): Initialize the above
+	identifiers.
+	(get_tuple_size): Use tuple_size_identifier instead of
+	get_identifier ("tuple_size") and value_identifier instead of
+	get_identifier ("value").
+	(get_tuple_element_type): Use tuple_element_identifier instead of
+	get_identifier ("tuple_element") and type_identifier instead of
+	get_identifier ("type").
+	(get_tuple_decomp_init): Use get__identifier instead of
+	get_identifier ("get").
+	* lambda.c (maybe_add_lambda_conv_op): Use fun_identifier instead of
+	get_identifier ("_FUN").
+	* parser.c (cp_parser_lambda_declarator_opt): Use closure_identifier
+	instead of get_identifier ("__closure").
+	(cp_parser_std_attribute): Use gnu_identifier instead of
+	get_identifier ("gnu").
+	(cp_parser_std_attribute_spec): Likewise.  Use aligned_identifier
+	instead of get_identifier ("aligned").
+	* class.c (check_abi_tags, inherit_targ_abi_tags): Use
+	abi_tag_identifier instead of get_identifier ("abi_tag").
+
+	PR c++/85515
+	* cp-tree.h (enum cp_tree_index): Add
+	CPTI_FOR_{RANGE,BEGIN,END}{,_}_IDENTIFIER.
+	(for_range__identifier, for_begin__identifier, for_end__identifier,
+	for_range_identifier, for_begin_identifier, for_end_identifier):
+	Define.
+	* decl.c (initialize_predefined_identifiers): Initialize
+	for_{range,begin,end}{,_}_identifier.
+	* parser.c (build_range_temp): Use for_range__identifier instead of
+	get_identifier ("__for_range").
+	(cp_convert_range_for): Use for_begin__identifier and
+	for_end__identifier instead of get_identifier ("__for_begin") and
+	get_identifier ("__for_end").
+	* semantics.c (finish_for_stmt): Rename "__for_{range,begin,end} "
+	local symbols to "__for_{range,begin,end}".
+
+2018-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86569
+	* cp-gimplify.c (cp_fold): Don't fold comparisons into other kind
+	of expressions other than INTEGER_CST regardless of TREE_NO_WARNING
+	or warn_nonnull_compare.
+
+2018-07-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert fix for c++/59480 (and testsuite followup)
+
+	2019-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* decl.c (check_no_redeclaration_friend_default_args): New.
+	(duplicate_decls): Use the latter; also check that a friend
+	declaration specifying default arguments is a definition.
+
+2018-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86550
+	* parser.c (cp_parser_decl_specifier_seq): Diagnose invalid type
+	specifier if CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR.
+
+2018-07-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86190 - bogus -Wsign-conversion warning
+	* typeck.c (cp_build_binary_op): Fix formatting.  Add a warning
+	sentinel.
+
+2018-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* decl.c (check_no_redeclaration_friend_default_args): New.
+	(duplicate_decls): Use the latter; also check that a friend
+	declaration specifying default arguments is a definition.
+
+2018-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (note_name_declared_in_class): Prefer permerror + inform
+	to a pair of permerrors; use DECL_SOURCE_LOCATION.
+
+2018-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86523
+	* decl2.c (c_parse_final_cleanups): Call write_out_vars before
+	start_static_storage_duration_function sets current_function_decl.
+
+2018-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86480 - nested variadic lambda and constexpr if.
+	* pt.c (find_parameter_packs_r) [IF_STMT]: Don't walk into
+	IF_STMT_EXTRA_ARGS.
+	* tree.c (cp_walk_subtrees) [DECLTYPE_TYPE]: Set
+	cp_unevaluated_operand.
+	[ALIGNOF_EXPR] [SIZEOF_EXPR] [NOEXCEPT_EXPR]: Likewise.
+
+2018-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (resolve_address_of_overloaded_function): Don't emit an
+	inform if the matching permerror returns false.
+	* pt.c (check_specialization_namespace): Likewise.
+
+2018-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/3698
+	PR c++/86208
+	* cp-gimplify.c (cp_genericize_r): When using extern_decl_map, or
+	in TREE_USED flag from stmt to h->to.
+
+2018-07-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86374
+	* pt.c (lookup_template_class_1): Use tsubst_aggr_type for
+	contexts that are classes.
+	* parser.c (cp_parser_template_id): Combine entering_scope decl &
+	initializer.
+
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c (cplus_decl_attributes): Don't diagnose vars without mappable
+	type here, instead add "omp declare target implicit" attribute.  Add
+	that attribute instead of "omp declare target" also when
+	processing_template_decl.
+	* decl.c (cp_finish_decl): Diagnose vars without mappable type here,
+	and before calling cp_omp_mappable_type call complete_type.
+
+2018-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/86406
+	* cp-gimplify.c (cp_maybe_instrument_return): Skip trailing
+	DEBUG_BEGIN_STMTs.
+
+	PR c++/86443
+	* semantics.c (handle_omp_for_class_iterator): Remove lastp argument,
+	instead of setting *lastp turn orig_declv elt into a TREE_LIST.
+	(finish_omp_for): Adjust handle_omp_for_class_iterator caller.
+	* pt.c (tsubst_omp_for_iterator): Allow OMP_FOR_ORIG_DECLS to contain
+	TREE_LIST for both the original class iterator and the "last" helper
+	var.
+
+2018-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use rich_location::add_range in three
+	more places; include gcc-rich-location.h.
+
+2018-07-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* decl.c (build_enumerator): Change overflow type to overflow_type.
+	* init.c (build_new_1): Same.
+
+2018-07-05  Nathan Sidwell  <nathan@acm.org>
+
+	* cp/decl.c (decls_match): Check SYSTEM_IMPLICIT_EXTERN_C not
+	NO_IMPLICIT_EXTERN_C.
+	* cp/parser.c (cp_parser_parameter_declaration_clause): Likewise.
+
+2018-07-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/86398
+	* method.c (is_trivially_xible): Return false
+	if is_xible_helper returns a NULL_TREE.
+
+2018-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (min_location): New.
+	(smallest_type_quals_location): Use the latter.
+	(check_concept_fn): Use DECL_SOURCE_LOCATION.
+	(grokdeclarator): Use accurate locations in a number of error
+	messages involving ds_thread, ds_storage_class, ds_virtual,
+	ds_constexpr, ds_typedef and ds_friend; exploit min_location.
+
+2018-07-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86201
+	* typeck.c (cp_build_binary_op): Check c_inhibit_evaluation_warnings.
+
+2018-07-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86378 - functional cast in noexcept-specifier.
+	* tree.c (strip_typedefs_expr) [TREE_LIST]: Fix iteration.
+
+2018-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (set_and_check_decl_spec_loc): Use rich_location::add_range
+	in error message about __thread and thread_local at the same time.
+
+2018-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86184
+	* tree.c (cp_save_expr): Don't call save_expr for TARGET_EXPRs.
+
+2018-06-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (cp_parser_error_1): After issuing a conflict marker
+	error, consume tokens until the end of the source line.
+
+2018-06-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86342 - -Wdeprecated-copy and system headers.
+	* decl2.c (cp_warn_deprecated_use): Don't warn about declarations
+	in system headers.
+
+2018-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/86329
+	* name-lookup.c (consider_binding_level): Filter out names that
+	match anon_aggrname_p.
+
+2018-06-27  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.c (do_pushtag): If we skip a class level, also skip
+	its template level.
+
+2018-06-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86320 - memory-hog with std::array of pair
+	* typeck2.c (process_init_constructor_array): Only compute a
+	constant initializer once.
+
+	PR c++/80290 - memory-hog with std::pair.
+	* pt.c (fn_type_unification): Add convs parameter.
+	(check_non_deducible_conversion): Remember conversion.
+	(check_non_deducible_conversions): New.  Do checks here.
+	(type_unification_real): Not here.  Remove flags parm.
+	* call.c (add_function_candidate): Make convs a parameter.
+	Don't recalculate the conversion if it's already set.
+	(add_template_candidate_real): Allocate convs here.
+	(good_conversion, conv_flags): New.
+
+2018-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86291
+	* parser.c (cp_parser_omp_for_loop_init): Change for_block argument
+	type from vec<tree, va_gc> * to vec<tree, va_gc> *&.
+
+2018-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (bad_specifiers): Add const location_t* parameter and
+	use locations in error messages about 'inline' and 'virtual'.
+	(mark_inline_variable): Add location_t parameter and use it in
+	error_at and pedwarn messages.
+	(grokdeclarator): Use declspecs->locations[ds_constexpr],
+	declspecs->locations[ds_concept], declspecs->locations[ds_virtual],
+	declspecs->locations[ds_inline] in many error messages; adjust
+	bad_specifiers and mark_inline_variable calls.
+	(grokvardecl): Use declspecs->locations[ds_concept] in error message.
+
+2018-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86219 - ICE with erroneous initializer in template.
+	* constexpr.c (fold_non_dependent_expr): Add complain parm.
+	* call.c, expr.c, init.c, pt.c, semantics.c, typeck.c, typeck2.c:
+	Pass it.
+	* call.c (build_cxx_call): Don't mess with builtins in a template.
+	* typeck2.c (store_init_value): If fold_non_dependent_expr didn't
+	produce a constant value, go back to the uninstantiated form.
+
+	Avoid taking the address of something just because it's in parens.
+	* constexpr.c (same_type_ignoring_tlq_and_bounds_p): New.
+	(cxx_fold_indirect_ref): Use it.
+	(cxx_eval_constant_expression) [VIEW_CONVERT_EXPR]: Use it.
+	* cp-tree.h (REF_PARENTHESIZED_P): Allow VIEW_CONVERT_EXPR.
+	* semantics.c (force_paren_expr): Use VIEW_CONVERT_EXPR instead of
+	static_cast to reference type.
+	(maybe_undo_parenthesized_ref): Handle VIEW_CONVERT_EXPR.
+
+2018-06-21  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst) [TEMPLATE_TYPE_PARM]: Use TEMPLATE_PARM_DESCENDANTS.
+
+	* name-lookup.c (do_push_to_top_level): Don't allocate
+	current_lang_base.
+	(do_pop_from_top_level): Release current_lang_base.
+
+	Let -fmem-report see callers of cxx_make_type.
+	* lex.c (cxx_make_type): Add MEM_STAT_DECL.
+	(make_class_type): Likewise.
+	(cxx_make_type_hook): New.
+	* cp-objcp-common.h (LANG_HOOKS_MAKE_TYPE): Use cxx_make_type_hook.
+
+2018-06-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/85634
+	* friend.c (add_friend): Keep lookup sets of tempate sets.
+
+2018-06-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokfndecl): Add const cp_decl_specifier_seq* parameter;
+	tidy handling of a null location_t argument; use proper location
+	information in a few additional error messages.
+	(grokdeclarator): Update calls.
+
+2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_name): Add support for finalize
+	and if_present. Make present_or_{copy,copyin,copyout,create} aliases
+	to their non-present_or_* counterparts. Make 'self' an alias to
+	PRAGMA_OACC_CLAUSE_HOST.
+	(cp_parser_oacc_data_clause): Update GOMP mappings for
+	PRAGMA_OACC_CLAUSE_{COPY,COPYIN,COPYOUT,CREATE,DELETE}. Remove
+	PRAGMA_OACC_CLAUSE_{SELF,PRESENT_OR_*}.
+	(cp_parser_oacc_all_clauses): Handle finalize and if_present clauses.
+	Remove support for present_or_* clauses.
+	(OACC_KERNELS_CLAUSE_MASK): Remove PRESENT_OR_* clauses.
+	(OACC_PARALLEL_CLAUSE_MASK): Likewise.
+	(OACC_DECLARE_CLAUSE_MASK): Likewise.
+	(OACC_DATA_CLAUSE_MASK): Likewise.
+	(OACC_ENTER_DATA_CLAUSE_MASK): Remove PRESENT_OR_* clauses.
+	(OACC_EXIT_DATA_CLAUSE_MASK): Add FINALIZE clause.
+	(OACC_UPDATE_CLAUSE_MASK): Remove SELF, add IF_PRESENT.
+	(cp_parser_oacc_declare): Remove PRESENT_OR_* clauses.
+	* pt.c (tsubst_omp_clauses): Handle IF_PRESENT and FINALIZE.
+	* semantics.c (finish_omp_clauses): Handle IF_PRESENT and FINALIZE.
+
+2018-06-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86240
+	* constexpr.c (cxx_eval_constant_expression): Handle ABSU_EXPR.
+	(fold_simple_1): Likewise.
+	* error.c (dump_expr): Likewise.
+
+2018-06-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/85634
+	* cp-tree.h (lookup_keep): Drop KEEP parm.
+	(lookup_list_keep): Delete.
+	(maybe_get_fns): Declare.
+	* parser.c (cp_parser_primary_expression): Call lookup_keep here.
+	(cp_parser_template_id): Not here ...
+	* decl.c (cp_finish_decl): ... nor here ...
+	* init.c (build_raw_new_expr): ... nor here ...
+	* pt.c (process_template_parm): ... nor here ...
+	* semantics.c (perform_koenig_lookup): Call lookup_keep.
+	(finish_call_expr): Not here.
+	* tree.c (ovl_cache): Delete.
+	(ovl_make, ovl_copy): No cache.
+	(lookup_keep): Always keep.
+	(lookup_list_keep): Delete.
+	(maybe_get_fns): New, broken out of ...
+	(get_fns): ... here.  Call it.
+	(built_min_nt_loc, build_min, build_min_non_dep): Drop lookup_keep.
+	(build_min_nt_call_vec): Likewise.
+
+2018-06-19  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (CONSTRUCTOR_NO_IMPLICIT_ZERO): Remove.
+	* constexpr.c: Use CONSTRUCTOR_NO_CLEARING instead.
+
+	PR c++/86182 - ICE with anonymous union passed to template.
+	* pt.c (tsubst_expr) [DECL_EXPR]: Handle an anonymous union type
+	used to declare a named variable.
+
+2018-06-18  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (cp_expr_location): New.
+	* cp-tree.h (cp_expr_loc_or_loc): New.
+	* call.c, cvt.c, constexpr.c, constraint.cc, cp-gimplify.c, decl.c,
+	error.c, init.c, lex.c, parser.c, pt.c, semantics.c, typeck.c,
+	typeck2.c: Use it instead of EXPR_LOC_OR_LOC.
+
+	* parser.c (cp_parser_lambda_expression): Use a range for
+	LAMBDA_EXPR_LOCATION.
+
+	PR c++/86200 - ICE with unexpanded pack in lambda parameter.
+	* pt.c (find_parameter_packs_r) [LAMBDA_EXPR]: Also look into the
+	function type.
+
+	PR c++/81060 - ICE with unexpanded parameter pack.
+	* pt.c (check_for_bare_parameter_packs): Add loc parameter.
+	* decl.c (grokdeclarator): Call it for qualifying_scope.
+
+	PR c++/86171 - ICE with recursive alias instantiation.
+	* pt.c (tsubst_decl): Handle recursive alias instantiation.
+
+2018-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (duplicate_decls): Consistently use DECL_SOURCE_LOCATION
+	in errors about redefined default arguments; tidy.
+
+2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* constexpr.c (potential_constant_expression_1): Handle ABSU_EXPR.
+	* cp-gimplify.c (cp_fold): Likewise.
+
+2018-06-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86147 - wrong capture for template argument.
+	* expr.c (mark_use): Look through NOP_EXPR.
+
+	* name-lookup.c (do_pushtag): Don't look through complete types, but
+	don't add to them either.  Get context from current_binding_level.
+	* pt.c (tsubst_default_argument): Use push_to/pop_from_top_level.
+
+	* decl.c (start_enum): Do compare dependent underlying type.
+
+	PR c++/82882 - ICE with lambda in template default argument.
+	* lambda.c (record_null_lambda_scope): New.
+	* pt.c (tsubst_lambda_expr): Use it.
+	* name-lookup.c (do_pushtag): Don't give a lambda DECL_CONTEXT of a
+	function that isn't open.
+
+	* tree.c (maybe_warn_parm_abi): Inform the location of the class.
+
+2018-06-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86063
+	* decl2.c (cp_check_const_attributes): Skip trees that are not
+	TREE_LISTs.
+
+2018-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	P0624R2 - Default constructible and assignable stateless lambdas
+	* method.c (synthesized_method_walk): For C++2a don't mark
+	sfk_constructor or sfk_copy_assignment as deleted if lambda has
+	no lambda-captures.
+
+2018-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (duplicate_decls): Use DECL_SOURCE_LOCATION in
+	OPT_Wshadow warning_at.
+	(grokfndecl): Consistently use the location_t argument in
+	literal operator diagnostic messages.
+	(grokdeclarator): Use declspecs->locations[ds_storage_class]
+	in error_at call.
+	* decl2.c (finish_static_data_member_decl): Use DECL_SOURCE_LOCATION
+	in permerror call.
+
+2018-06-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86099 - ICE with trivial copy and non-trivial default ctor.
+	* constexpr.c (instantiate_cx_fn_r): Don't synthesize trivial
+	constructors.
+
+	PR c++/86094 - wrong code with defaulted move ctor.
+	* class.c (classtype_has_non_deleted_move_ctor): New.
+	* tree.c (maybe_warn_parm_abi, type_has_nontrivial_copy_init):
+	Handle v12 breakage.
+
+2018-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86098 - ICE with template placeholder for TTP.
+	* typeck.c (structural_comptypes) [TEMPLATE_TYPE_PARM]: Check
+	CLASS_PLACEHOLDER_TEMPLATE.
+
+2018-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (coerce_new_type, coerce_delete_type): Add location_t
+	parameter and adjust error_at calls.
+	* decl.c (grok_op_properties): Adjust calls.
+	* cp-tree.h (oerce_new_type, coerce_delete_type): Adjust decls.
+
+2018-06-12  Marek Polacek  <polacek@redhat.com>
+
+	Core issue 1331 - const mismatch with defaulted copy constructor
+	* class.c (check_bases_and_members): When checking a defaulted
+	function, mark it as deleted rather than giving an error.
+
+2018-06-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85792 -Wctor-dtor-privacy and inherited constructor.
+	* class.c (maybe_warn_about_overly_private_class): Handle inherited
+	constructors.
+
+	PR c++/85963 - -Wunused-but-set with ?: in template.
+	* pt.c (tsubst_copy_and_build) [COND_EXPR]: Call mark_rvalue_use.
+
+2018-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grok_op_properties): Consistently use the location
+	of the decl; remove special casing of POSTINCREMENT_EXPR and
+	POSTDECREMENT_EXPR wrt default arguments.
+
+2018-06-05  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_binary_expression): Special case comparison
+	of pointers to members of the same union.
+
+2018-06-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86094 - wrong code with defaulted move ctor.
+	* tree.c (type_has_nontrivial_copy_init): Fix move ctor handling.
+
+2018-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokfndecl): Use the location_t argument in two more places.
+
 2018-06-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85977

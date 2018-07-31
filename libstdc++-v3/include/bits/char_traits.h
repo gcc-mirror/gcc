@@ -41,7 +41,7 @@
 #include <cwchar>               // For WEOF, wmemmove, wmemset, etc.
 
 #ifndef _GLIBCXX_ALWAYS_INLINE
-#define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
+# define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
 #endif
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
@@ -143,8 +143,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return !eq_int_type(__c, eof()) ? __c : to_int_type(char_type()); }
     };
 
-#define __cpp_lib_constexpr_char_traits 201611
-
   template<typename _CharT>
     _GLIBCXX14_CONSTEXPR int
     char_traits<_CharT>::
@@ -216,7 +214,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#if __cplusplus > 201402
+#if __cplusplus >= 201703L
+#define __cpp_lib_constexpr_char_traits 201611
+
   /**
    *  @brief Determine whether the characters of a NULL-terminated
    *  string are known at compile time.
@@ -299,7 +299,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX17_CONSTEXPR int
       compare(const char_type* __s1, const char_type* __s2, size_t __n)
       {
-#if __cplusplus > 201402
+#if __cplusplus >= 201703L
 	if (__builtin_constant_p(__n)
 	    && __constant_char_array_p(__s1, __n)
 	    && __constant_char_array_p(__s2, __n))
@@ -313,7 +313,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX17_CONSTEXPR size_t
       length(const char_type* __s)
       {
-#if __cplusplus > 201402
+#if __cplusplus >= 201703L
 	if (__constant_string_p(__s))
 	  return __gnu_cxx::char_traits<char_type>::length(__s);
 #endif
@@ -323,7 +323,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX17_CONSTEXPR const char_type*
       find(const char_type* __s, size_t __n, const char_type& __a)
       {
-#if __cplusplus > 201402
+#if __cplusplus >= 201703L
 	if (__builtin_constant_p(__n)
 	    && __builtin_constant_p(__a)
 	    && __constant_char_array_p(__s, __n))
@@ -408,7 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX17_CONSTEXPR int
       compare(const char_type* __s1, const char_type* __s2, size_t __n)
       {
-#if __cplusplus > 201402
+#if __cplusplus >= 201703L
 	if (__builtin_constant_p(__n)
 	    && __constant_char_array_p(__s1, __n)
 	    && __constant_char_array_p(__s2, __n))
@@ -423,7 +423,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX17_CONSTEXPR size_t
       length(const char_type* __s)
       {
-#if __cplusplus > 201402
+#if __cplusplus >= 201703L
 	if (__constant_string_p(__s))
 	  return __gnu_cxx::char_traits<char_type>::length(__s);
 	else
@@ -434,7 +434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX17_CONSTEXPR const char_type*
       find(const char_type* __s, size_t __n, const char_type& __a)
       {
-#if __cplusplus > 201402
+#if __cplusplus >= 201703L
 	if (__builtin_constant_p(__n)
 	    && __builtin_constant_p(__a)
 	    && __constant_char_array_p(__s, __n))
@@ -495,8 +495,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#if ((__cplusplus >= 201103L) \
-     && defined(_GLIBCXX_USE_C99_STDINT_TR1))
+#if __cplusplus >= 201103L
 
 #include <cstdint>
 
@@ -508,7 +507,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct char_traits<char16_t>
     {
       typedef char16_t          char_type;
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
       typedef uint_least16_t    int_type;
+#elif defined __UINT_LEAST16_TYPE__
+      typedef __UINT_LEAST16_TYPE__	    int_type;
+#else
+      typedef make_unsigned<char16_t>::type int_type;
+#endif
       typedef streamoff         off_type;
       typedef u16streampos      pos_type;
       typedef mbstate_t         state_type;
@@ -605,7 +610,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct char_traits<char32_t>
     {
       typedef char32_t          char_type;
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
       typedef uint_least32_t    int_type;
+#elif defined __UINT_LEAST32_TYPE__
+      typedef __UINT_LEAST32_TYPE__	    int_type;
+#else
+      typedef make_unsigned<char32_t>::type int_type;
+#endif
       typedef streamoff         off_type;
       typedef u32streampos      pos_type;
       typedef mbstate_t         state_type;
@@ -701,6 +712,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#endif 
+#endif  // C++11
 
 #endif // _CHAR_TRAITS_H

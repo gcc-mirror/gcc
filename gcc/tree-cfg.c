@@ -3722,6 +3722,20 @@ verify_gimple_assign_unary (gassign *stmt)
     case CONJ_EXPR:
       break;
 
+    case ABSU_EXPR:
+      if (!ANY_INTEGRAL_TYPE_P (lhs_type)
+	  || !TYPE_UNSIGNED (lhs_type)
+	  || !ANY_INTEGRAL_TYPE_P (rhs1_type)
+	  || TYPE_UNSIGNED (rhs1_type)
+	  || element_precision (lhs_type) != element_precision (rhs1_type))
+	{
+	  error ("invalid types for ABSU_EXPR");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
+	}
+      return false;
+
     case VEC_DUPLICATE_EXPR:
       if (TREE_CODE (lhs_type) != VECTOR_TYPE
 	  || !useless_type_conversion_p (TREE_TYPE (lhs_type), rhs1_type))
@@ -5272,6 +5286,8 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
   FOR_EACH_BB_FN (bb, fn)
     {
       gimple_stmt_iterator gsi;
+      edge_iterator ei;
+      edge e;
 
       for (gphi_iterator gpi = gsi_start_phis (bb);
 	   !gsi_end_p (gpi);
@@ -5393,6 +5409,10 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	    debug_gimple_stmt (stmt);
 	  err |= err2;
 	}
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->goto_locus != UNKNOWN_LOCATION)
+	  err |= verify_location (&blocks, e->goto_locus);
     }
 
   hash_map<gimple *, int> *eh_table = get_eh_throw_stmt_table (cfun);
@@ -6745,7 +6765,16 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
 	;
       else if (block == p->orig_block
 	       || p->orig_block == NULL_TREE)
-	TREE_SET_BLOCK (t, p->new_block);
+	{
+	  /* tree_node_can_be_shared says we can share invariant
+	     addresses but unshare_expr copies them anyways.  Make sure
+	     to unshare before adjusting the block in place - we do not
+	     always see a copy here.  */
+	  if (TREE_CODE (t) == ADDR_EXPR
+	      && is_gimple_min_invariant (t))
+	    *tp = t = unshare_expr (t);
+	  TREE_SET_BLOCK (t, p->new_block);
+	}
       else if (flag_checking)
 	{
 	  while (block && TREE_CODE (block) == BLOCK && block != p->orig_block)
@@ -8967,8 +8996,6 @@ gimplify_build3 (gimple_stmt_iterator *gsi, enum tree_code code,
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
   ret = fold_build3_loc (loc, code, type, a, b, c);
-  STRIP_NOPS (ret);
-
   return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
                                    GSI_SAME_STMT);
 }
@@ -8983,8 +9010,6 @@ gimplify_build2 (gimple_stmt_iterator *gsi, enum tree_code code,
   tree ret;
 
   ret = fold_build2_loc (gimple_location (gsi_stmt (*gsi)), code, type, a, b);
-  STRIP_NOPS (ret);
-
   return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
                                    GSI_SAME_STMT);
 }
@@ -8999,8 +9024,6 @@ gimplify_build1 (gimple_stmt_iterator *gsi, enum tree_code code, tree type,
   tree ret;
 
   ret = fold_build1_loc (gimple_location (gsi_stmt (*gsi)), code, type, a);
-  STRIP_NOPS (ret);
-
   return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
                                    GSI_SAME_STMT);
 }

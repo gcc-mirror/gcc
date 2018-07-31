@@ -545,8 +545,8 @@ DEBUG_FUNCTION void
 debug (edge_def &ref)
 {
   /* FIXME (crowl): Is this desireable?  */
-  dump_edge_info (stderr, &ref, 0, false);
-  dump_edge_info (stderr, &ref, 0, true);
+  dump_edge_info (stderr, &ref, TDF_NONE, false);
+  dump_edge_info (stderr, &ref, TDF_NONE, true);
 }
 
 DEBUG_FUNCTION void

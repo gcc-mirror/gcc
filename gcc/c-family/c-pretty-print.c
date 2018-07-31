@@ -2341,7 +2341,7 @@ c_pretty_printer::statement (tree stmt)
   if (pp_needs_newline (this))
     pp_newline_and_indent (this, 0);
 
-  dump_generic_node (this, stmt, pp_indentation (this), 0, true);
+  dump_generic_node (this, stmt, pp_indentation (this), TDF_NONE, true);
 }
 
 

@@ -61,7 +61,6 @@ extern void rs6000_expand_vector_set (rtx, rtx, int);
 extern void rs6000_expand_vector_extract (rtx, rtx, rtx);
 extern void rs6000_split_vec_extract_var (rtx, rtx, rtx, rtx, rtx);
 extern rtx rs6000_adjust_vec_address (rtx, rtx, rtx, rtx, machine_mode);
-extern void rs6000_split_v4si_init (rtx []);
 extern void altivec_expand_vec_perm_le (rtx op[4]);
 extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
@@ -98,7 +97,6 @@ extern void expand_fusion_p9_load (rtx *);
 extern void expand_fusion_p9_store (rtx *);
 extern const char *emit_fusion_p9_load (rtx, rtx, rtx);
 extern const char *emit_fusion_p9_store (rtx, rtx, rtx);
-extern rtx fusion_wrap_memory_address (rtx);
 extern enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx,
 							    enum reg_class);
 extern enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
@@ -156,7 +154,7 @@ extern rtx rs6000_machopic_legitimize_pic_address (rtx, machine_mode,
 						   rtx);
 extern rtx rs6000_address_for_fpconvert (rtx);
 extern rtx rs6000_allocate_stack_temp (machine_mode, bool, bool);
-extern int rs6000_loop_align (rtx);
+extern align_flags rs6000_loop_align (rtx);
 extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
 #endif /* RTX_CODE */
 

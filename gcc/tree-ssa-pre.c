@@ -2781,7 +2781,6 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	      args.quick_push (arg);
 	    }
 	  gcall *call = gimple_build_call_vec (fn, args);
-	  gimple_call_set_with_bounds (call, currop->with_bounds);
 	  if (sc)
 	    gimple_call_set_chain (call, sc);
 	  tree forcedname = make_ssa_name (currop->type);

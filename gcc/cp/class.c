@@ -1517,8 +1517,7 @@ check_abi_tags (tree t, tree subob, bool just_checking = false)
 	TREE_VALUE (attr) = chainon (data.tags, TREE_VALUE (attr));
       else
 	DECL_ATTRIBUTES (t)
-	  = tree_cons (get_identifier ("abi_tag"), data.tags,
-		       DECL_ATTRIBUTES (t));
+	  = tree_cons (abi_tag_identifier, data.tags, DECL_ATTRIBUTES (t));
     }
 
   mark_abi_tags (t, false);
@@ -1590,8 +1589,7 @@ inherit_targ_abi_tags (tree t)
 	TREE_VALUE (attr) = chainon (data.tags, TREE_VALUE (attr));
       else
 	TYPE_ATTRIBUTES (t)
-	  = tree_cons (get_identifier ("abi_tag"), data.tags,
-		       TYPE_ATTRIBUTES (t));
+	  = tree_cons (abi_tag_identifier, data.tags, TYPE_ATTRIBUTES (t));
     }
 
   mark_abi_tags (t, false);
@@ -2034,6 +2032,7 @@ maybe_warn_about_overly_private_class (tree t)
 {
   int has_member_fn = 0;
   int has_nonprivate_method = 0;
+  bool nonprivate_ctor = false;
 
   if (!warn_ctor_dtor_privacy
       /* If the class has friends, those entities might create and
@@ -2064,7 +2063,11 @@ maybe_warn_about_overly_private_class (tree t)
      non-private statics, we can't ever call any of the private member
      functions.)  */
   for (tree fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
-    if (!DECL_DECLARES_FUNCTION_P (fn))
+    if (TREE_CODE (fn) == USING_DECL
+	&& DECL_NAME (fn) == ctor_identifier
+	&& !TREE_PRIVATE (fn))
+      nonprivate_ctor = true;
+    else if (!DECL_DECLARES_FUNCTION_P (fn))
       /* Not a function.  */;
     else if (DECL_ARTIFICIAL (fn))
       /* We're not interested in compiler-generated methods; they don't
@@ -2126,7 +2129,6 @@ maybe_warn_about_overly_private_class (tree t)
       /* Implicitly generated constructors are always public.  */
       && !CLASSTYPE_LAZY_DEFAULT_CTOR (t))
     {
-      bool nonprivate_ctor = false;
       tree copy_or_move = NULL_TREE;
 
       /* If a non-template class does not define a copy
@@ -5171,6 +5173,19 @@ classtype_has_move_assign_or_move_ctor_p (tree t, bool user_p)
   return false;
 }
 
+/* True iff T has a move constructor that is not deleted.  */
+
+bool
+classtype_has_non_deleted_move_ctor (tree t)
+{
+  if (CLASSTYPE_LAZY_MOVE_CTOR (t))
+    lazily_declare_fn (sfk_move_constructor, t);
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    if (move_fn_p (*iter) && !DECL_DELETED_FN (*iter))
+      return true;
+  return false;
+}
+
 /* If T, a class, has a user-provided copy constructor, copy assignment
    operator, or destructor, returns that function.  Otherwise, null.  */
 
@@ -5656,9 +5671,9 @@ check_bases_and_members (tree t)
 
 	    if (fn_const_p && !imp_const_p)
 	      /* If the function is defaulted outside the class, we just
-		 give the synthesis error.  */
-	      error ("%q+D declared to take const reference, but implicit "
-		     "declaration would take non-const", fn);
+		 give the synthesis error.  Core Issue #1331 says this is
+		 no longer ill-formed, it is defined as deleted instead.  */
+	      DECL_DELETED_FN (fn) = true;
 	  }
 	defaulted_late_check (fn);
       }
@@ -7799,7 +7814,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	  instantiation = fn_type_unification (fn, explicit_targs, targs, args,
 					       nargs, ret,
 					      DEDUCE_EXACT, LOOKUP_NORMAL,
-					       false, false);
+					       NULL, false, false);
 	  if (instantiation == error_mark_node)
 	    /* Instantiation failed.  */
 	    continue;
@@ -7902,10 +7917,11 @@ resolve_address_of_overloaded_function (tree target_type,
       if (!(complain & tf_error))
 	return error_mark_node;
 
-      permerror (input_location, "assuming pointer to member %qD", fn);
-      if (!explained)
+      if (permerror (input_location, "assuming pointer to member %qD", fn)
+	  && !explained)
 	{
-	  inform (input_location, "(a pointer to member can only be formed with %<&%E%>)", fn);
+	  inform (input_location, "(a pointer to member can only be "
+		  "formed with %<&%E%>)", fn);
 	  explained = 1;
 	}
     }
@@ -8267,10 +8283,12 @@ note_name_declared_in_class (tree name, tree decl)
 	 A name N used in a class S shall refer to the same declaration
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
-      permerror (input_location, "declaration of %q#D", decl);
-      permerror (location_of ((tree) n->value),
-		 "changes meaning of %qD from %q#D",
-		 OVL_NAME (decl), (tree) n->value);
+      if (permerror (DECL_SOURCE_LOCATION (decl),
+		     "declaration of %q#D changes meaning of %qD",
+		     decl, OVL_NAME (decl)))
+	inform (location_of ((tree) n->value),
+		"%qD declared here as %q#D",
+		OVL_NAME (decl), (tree) n->value);
     }
 }
 

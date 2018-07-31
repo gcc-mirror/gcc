@@ -2072,8 +2072,8 @@ package body Sem_Elab is
       if Legacy_Elaboration_Checks then
          return;
 
-      --  Nothing to do for ASIS. As a result, ABE checks and diagnostics are
-      --  not performed in this mode.
+      --  Nothing to do for ASIS because ABE checks and diagnostics are not
+      --  performed in this mode.
 
       elsif ASIS_Mode then
          return;
@@ -2274,165 +2274,15 @@ package body Sem_Elab is
       Read  : Boolean;
       Write : Boolean)
    is
-      function In_Compilation_Instance_Formal_Part
-        (Nod : Node_Id) return Boolean;
-      --  Determine whether arbitrary node Nod appears within the formal part
-      --  of an instantiation which acts as a compilation unit.
-
-      function In_Pragma (Nod : Node_Id) return Boolean;
-      --  Determine whether arbitrary node Nod appears within a pragma
-
-      -----------------------------------------
-      -- In_Compilation_Instance_Formal_Part --
-      -----------------------------------------
-
-      function In_Compilation_Instance_Formal_Part
-        (Nod : Node_Id) return Boolean
-      is
-         Par : Node_Id;
-
-      begin
-         Par := Nod;
-         while Present (Par) loop
-            if Nkind (Par) = N_Generic_Association
-              and then Nkind (Parent (Par)) in N_Generic_Instantiation
-              and then Nkind (Parent (Parent (Par))) = N_Compilation_Unit
-            then
-               return True;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return False;
-      end In_Compilation_Instance_Formal_Part;
-
-      ---------------
-      -- In_Pragma --
-      ---------------
-
-      function In_Pragma (Nod : Node_Id) return Boolean is
-         Par : Node_Id;
-
-      begin
-         Par := Nod;
-         while Present (Par) loop
-            if Nkind (Par) = N_Pragma then
-               return True;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return False;
-      end In_Pragma;
-
-      --  Local variables
-
       Marker    : Node_Id;
-      Prag      : Node_Id;
       Var_Attrs : Variable_Attributes;
       Var_Id    : Entity_Id;
 
-   --  Start of processing for Build_Variable_Reference_Marker
-
    begin
-      --  Nothing to do when switch -gnatH (legacy elaboration checking mode
-      --  enabled) is in effect because the legacy ABE mechanism does not need
-      --  to carry out this action.
-
-      if Legacy_Elaboration_Checks then
-         return;
-
-      --  Nothing to do for ASIS. As a result, ABE checks and diagnostics are
-      --  not performed in this mode.
-
-      elsif ASIS_Mode then
-         return;
-
-      --  Nothing to do when the reference is being preanalyzed as the marker
-      --  will be inserted in the wrong place.
-
-      elsif Preanalysis_Active then
-         return;
-
-      --  Nothing to do when the input does not denote a reference
-
-      elsif not Nkind_In (N, N_Expanded_Name, N_Identifier) then
-         return;
-
-      --  Nothing to do for internally-generated references
-
-      elsif not Comes_From_Source (N) then
-         return;
-
-      --  Nothing to do when the reference is erroneous, left in a bad state,
-      --  or does not denote a variable.
-
-      elsif not (Present (Entity (N))
-                  and then Ekind (Entity (N)) = E_Variable
-                  and then Entity (N) /= Any_Id)
-      then
-         return;
-
-      --  Nothing to do when the reference appears within the formal part of
-      --  an instantiation which acts as compilation unit because there is no
-      --  proper context for the insertion of the marker.
-
-      --  Performance note: parent traversal
-
-      elsif In_Compilation_Instance_Formal_Part (N) then
-         return;
-      end if;
-
       Extract_Variable_Reference_Attributes
         (Ref    => N,
          Var_Id => Var_Id,
          Attrs  => Var_Attrs);
-
-      Prag := SPARK_Pragma (Var_Id);
-
-      if Comes_From_Source (Var_Id)
-
-         --  Both the variable and the reference must appear in SPARK_Mode On
-         --  regions because this scenario falls under the SPARK rules.
-
-         and then Present (Prag)
-         and then Get_SPARK_Mode_From_Annotation (Prag) = On
-         and then Is_SPARK_Mode_On_Node (N)
-
-         --  The reference must not be considered when it appears in a pragma.
-         --  If the pragma has run-time semantics, then the reference will be
-         --  reconsidered once the pragma is expanded.
-
-         --  Performance note: parent traversal
-
-         and then not In_Pragma (N)
-      then
-         null;
-
-      --  Otherwise the reference is not suitable for ABE processing. This
-      --  prevents the generation of variable markers which will never play
-      --  a role in ABE diagnostics.
-
-      else
-         return;
-      end if;
-
-      --  At this point it is known that the variable reference will play some
-      --  role in ABE checks and diagnostics. Create a corresponding variable
-      --  marker in case the original variable reference is folded or optimized
-      --  away.
 
       Marker := Make_Variable_Reference_Marker (Sloc (N));
 
@@ -2469,8 +2319,8 @@ package body Sem_Elab is
       if Legacy_Elaboration_Checks then
          return;
 
-      --  Nothing to do for ASIS. As a result, no ABE checks and diagnostics
-      --  are performed in this mode.
+      --  Nothing to do for ASIS because ABE checks and diagnostics are not
+      --  performed in this mode.
 
       elsif ASIS_Mode then
          return;
@@ -4913,7 +4763,6 @@ package body Sem_Elab is
            and then not Comes_From_Source (N)
            and then Present (Context)
            and then Nkind (Context) = N_Handled_Sequence_Of_Statements
-           and then not Comes_From_Source (N)
          then
             return False;
          end if;
@@ -10860,8 +10709,8 @@ package body Sem_Elab is
       if Legacy_Elaboration_Checks then
          return;
 
-      --  Nothing to do for ASIS. As a result, no ABE checks and diagnostics
-      --  are performed in this mode.
+      --  Nothing to do for ASIS because ABE checks and diagnostics are not
+      --  performed in this mode.
 
       elsif ASIS_Mode then
          return;

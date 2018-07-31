@@ -954,6 +954,16 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
       <entry>Library Fundamentals 2 TS</entry>
     </row>
 
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4531.html">
+	  N4531
+	</link>
+      </entry>
+      <entry>std::rand replacement, revision 3</entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
 
   </tbody>
 </tgroup>

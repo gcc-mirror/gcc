@@ -1,5 +1,5 @@
 // PR c++/83489
-// { dg-options "-Wabi" }
+// { dg-options "-Wabi=11" }
 
 struct A
 {

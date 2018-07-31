@@ -48,9 +48,6 @@
     }						\
   while (false)
 
-/* Do not assume anything about header files.  */
-#define NO_IMPLICIT_EXTERN_C
-
 /* The GNU C++ standard library requires that these macros be defined.  */
 #undef CPLUSPLUS_CPP_SPEC
 #define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
@@ -70,8 +67,8 @@
 
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static|static-pie:--start-group} %G %L \
-   %{static|static-pie:--end-group}%{!static:%{!static-pie:%G %L}}"
+  "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
+   %{static|static-pie:--end-group}%{!static:%{!static-pie:%G %{!nolibc:%L}}}"
 
 /* Use --as-needed -lgcc_s for eh support.  */
 #ifdef HAVE_LD_AS_NEEDED

@@ -1373,7 +1373,19 @@ cont1:
 	  strcat (ltrans_output_file, ".ltrans.out");
 	}
       else
-	ltrans_output_file = make_temp_file (".ltrans.out");
+	{
+	  char *prefix = NULL;
+	  if (linker_output)
+	    {
+	      prefix = (char *) xmalloc (strlen (linker_output) + 2);
+	      strcpy (prefix, linker_output);
+	      strcat (prefix, ".");
+	    }
+
+	  ltrans_output_file = make_temp_file_with_prefix (prefix,
+							   ".ltrans.out");
+	  free (prefix);
+	}
       list_option_full = (char *) xmalloc (sizeof (char) *
 		         (strlen (ltrans_output_file) + list_option_len + 1));
       tmp = list_option_full;

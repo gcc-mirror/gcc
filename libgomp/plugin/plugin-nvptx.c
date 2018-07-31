@@ -141,6 +141,11 @@ init_cuda_lib (void)
 
 #include "secure_getenv.h"
 
+#undef MIN
+#undef MAX
+#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
+#define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
+
 /* Convenience macros for the frequently used CUDA library call and
    error handling sequence as well as CUDA library calls that
    do the error checking themselves or don't do it at all.  */
@@ -414,6 +419,10 @@ struct ptx_device
   int num_sms;
   int regs_per_block;
   int regs_per_sm;
+  int warp_size;
+  int max_threads_per_block;
+  int max_threads_per_multiprocessor;
+  int default_dims[GOMP_DIM_MAX];
 
   struct ptx_image_data *images;  /* Images loaded on device.  */
   pthread_mutex_t image_lock;     /* Lock for above list.  */
@@ -800,11 +809,23 @@ nvptx_open_device (int n)
       GOMP_PLUGIN_error ("Only warp size 32 is supported");
       return NULL;
     }
+  ptx_dev->warp_size = pi;
+
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute, &pi,
+		  CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev);
+  ptx_dev->max_threads_per_block = pi;
+
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute, &pi,
+		  CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, dev);
+  ptx_dev->max_threads_per_multiprocessor = pi;
 
   r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &async_engines,
 			 CU_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT, dev);
   if (r != CUDA_SUCCESS)
     async_engines = 1;
+
+  for (int i = 0; i != GOMP_DIM_MAX; i++)
+    ptx_dev->default_dims[i] = 0;
 
   ptx_dev->images = NULL;
   pthread_mutex_init (&ptx_dev->image_lock, NULL);
@@ -1119,6 +1140,7 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   void *kargs[1];
   void *hp, *dp;
   struct nvptx_thread *nvthd = nvptx_thread ();
+  int warp_size = nvthd->ptx_dev->warp_size;
   const char *maybe_abort_msg = "(perhaps abort was called)";
 
   function = targ_fn->fn;
@@ -1140,43 +1162,36 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 
   if (seen_zero)
     {
-      /* See if the user provided GOMP_OPENACC_DIM environment
-	 variable to specify runtime defaults. */
-      static int default_dims[GOMP_DIM_MAX];
-
       pthread_mutex_lock (&ptx_dev_lock);
-      if (!default_dims[0])
+
+      static int gomp_openacc_dims[GOMP_DIM_MAX];
+      if (!gomp_openacc_dims[0])
 	{
+	  /* See if the user provided GOMP_OPENACC_DIM environment
+	     variable to specify runtime defaults.  */
 	  for (int i = 0; i < GOMP_DIM_MAX; ++i)
-	    default_dims[i] = GOMP_PLUGIN_acc_default_dim (i);
+	    gomp_openacc_dims[i] = GOMP_PLUGIN_acc_default_dim (i);
+	}
 
-	  int warp_size, block_size, dev_size, cpu_size;
-	  CUdevice dev = nvptx_thread()->ptx_dev->dev;
-	  /* 32 is the default for known hardware.  */
-	  int gang = 0, worker = 32, vector = 32;
-	  CUdevice_attribute cu_tpb, cu_ws, cu_mpc, cu_tpm;
+      if (!nvthd->ptx_dev->default_dims[0])
+	{
+	  int default_dims[GOMP_DIM_MAX];
+	  for (int i = 0; i < GOMP_DIM_MAX; ++i)
+	    default_dims[i] = gomp_openacc_dims[i];
 
-	  cu_tpb = CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK;
-	  cu_ws = CU_DEVICE_ATTRIBUTE_WARP_SIZE;
-	  cu_mpc = CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT;
-	  cu_tpm  = CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR;
+	  int gang, worker, vector;
+	  {
+	    int block_size = nvthd->ptx_dev->max_threads_per_block;
+	    int cpu_size = nvthd->ptx_dev->max_threads_per_multiprocessor;
+	    int dev_size = nvthd->ptx_dev->num_sms;
+	    GOMP_PLUGIN_debug (0, " warp_size=%d, block_size=%d,"
+			       " dev_size=%d, cpu_size=%d\n",
+			       warp_size, block_size, dev_size, cpu_size);
 
-	  if (CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &block_size, cu_tpb,
-				 dev) == CUDA_SUCCESS
-	      && CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &warp_size, cu_ws,
-				    dev) == CUDA_SUCCESS
-	      && CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &dev_size, cu_mpc,
-				    dev) == CUDA_SUCCESS
-	      && CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &cpu_size, cu_tpm,
-				    dev) == CUDA_SUCCESS)
-	    {
-	      GOMP_PLUGIN_debug (0, " warp_size=%d, block_size=%d,"
-				 " dev_size=%d, cpu_size=%d\n",
-				 warp_size, block_size, dev_size, cpu_size);
-	      gang = (cpu_size / block_size) * dev_size;
-	      worker = block_size / warp_size;
-	      vector = warp_size;
-	    }
+	    gang = (cpu_size / block_size) * dev_size;
+	    worker = block_size / warp_size;
+	    vector = warp_size;
+	  }
 
 	  /* There is no upper bound on the gang size.  The best size
 	     matches the hardware configuration.  Logical gangs are
@@ -1197,12 +1212,46 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 			     default_dims[GOMP_DIM_GANG],
 			     default_dims[GOMP_DIM_WORKER],
 			     default_dims[GOMP_DIM_VECTOR]);
+
+	  for (i = 0; i != GOMP_DIM_MAX; i++)
+	    nvthd->ptx_dev->default_dims[i] = default_dims[i];
 	}
       pthread_mutex_unlock (&ptx_dev_lock);
 
-      for (i = 0; i != GOMP_DIM_MAX; i++)
-	if (!dims[i])
-	  dims[i] = default_dims[i];
+      {
+	bool default_dim_p[GOMP_DIM_MAX];
+	for (i = 0; i != GOMP_DIM_MAX; i++)
+	  {
+	    default_dim_p[i] = !dims[i];
+	    if (default_dim_p[i])
+	      dims[i] = nvthd->ptx_dev->default_dims[i];
+	  }
+
+	if (default_dim_p[GOMP_DIM_VECTOR])
+	  dims[GOMP_DIM_VECTOR]
+	    = MIN (dims[GOMP_DIM_VECTOR],
+		   (targ_fn->max_threads_per_block / warp_size * warp_size));
+
+	if (default_dim_p[GOMP_DIM_WORKER])
+	  dims[GOMP_DIM_WORKER]
+	    = MIN (dims[GOMP_DIM_WORKER],
+		   targ_fn->max_threads_per_block / dims[GOMP_DIM_VECTOR]);
+      }
+    }
+
+  /* Check if the accelerator has sufficient hardware resources to
+     launch the offloaded kernel.  */
+  if (dims[GOMP_DIM_WORKER] * dims[GOMP_DIM_VECTOR]
+      > targ_fn->max_threads_per_block)
+    {
+      int suggest_workers
+	= targ_fn->max_threads_per_block / dims[GOMP_DIM_VECTOR];
+      GOMP_PLUGIN_fatal ("The Nvidia accelerator has insufficient resources to"
+			 " launch '%s' with num_workers = %d; recompile the"
+			 " program with 'num_workers = %d' on that offloaded"
+			 " region or '-fopenacc-dim=:%d'",
+			 targ_fn->launch->fn, dims[GOMP_DIM_WORKER],
+			 suggest_workers, suggest_workers);
     }
 
   /* This reserves a chunk of a pre-allocated page of memory mapped on both

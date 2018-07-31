@@ -1098,6 +1098,15 @@ match_array_cons_element (gfc_constructor_base *result)
   if (m != MATCH_YES)
     return m;
 
+  if (expr->expr_type == EXPR_FUNCTION
+      && expr->ts.type == BT_UNKNOWN
+      && strcmp(expr->symtree->name, "null") == 0)
+   {
+      gfc_error ("NULL() at %C cannot appear in an array constructor");
+      gfc_free_expr (expr);
+      return MATCH_ERROR;
+   }
+
   gfc_constructor_append_expr (result, expr, &gfc_current_locus);
   return MATCH_YES;
 }
@@ -2031,7 +2040,9 @@ got_charlen:
 	  gfc_ref *ref;
 	  for (ref = p->expr->ref; ref; ref = ref->next)
 	    if (ref->type == REF_SUBSTRING
+		&& ref->u.ss.start
 		&& ref->u.ss.start->expr_type == EXPR_CONSTANT
+		&& ref->u.ss.end
 		&& ref->u.ss.end->expr_type == EXPR_CONSTANT)
 	      break;
 

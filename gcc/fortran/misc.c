@@ -286,7 +286,7 @@ get_c_kind(const char *c_kind_name, CInteropKind_t kinds_table[])
 
 
 /* For a given name TYPO, determine the best candidate from CANDIDATES
-   perusing Levenshtein distance.  Frees CANDIDATES before returning.  */
+   using get_edit_distance.  Frees CANDIDATES before returning.  */
 
 const char *
 gfc_closest_fuzzy_match (const char *typo, char **candidates)
@@ -299,7 +299,7 @@ gfc_closest_fuzzy_match (const char *typo, char **candidates)
 
   while (cand && *cand)
     {
-      edit_distance_t dist = levenshtein_distance (typo, tl, *cand,
+      edit_distance_t dist = get_edit_distance (typo, tl, *cand,
 	  strlen (*cand));
       if (dist < best_distance)
 	{

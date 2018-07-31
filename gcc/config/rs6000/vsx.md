@@ -388,7 +388,6 @@
    UNSPEC_VSX_VXSIG
    UNSPEC_VSX_VIEXP
    UNSPEC_VSX_VTSTDC
-   UNSPEC_VSX_VEC_INIT
    UNSPEC_VSX_VSIGNED2
 
    UNSPEC_LXVL
@@ -1194,7 +1193,7 @@
 ;;              VSX store  VSX load   VSX move  VSX->GPR   GPR->VSX    LQ (GPR)
 ;;              STQ (GPR)  GPR load   GPR store GPR move   XXSPLTIB    VSPLTISW
 ;;              VSX 0/-1   GPR 0/-1   VMX const GPR const  LVX (VMX)   STVX (VMX)
-(define_insn "*vsx_mov<mode>_64bit"
+(define_insn "vsx_mov<mode>_64bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      <VSa>,     <VSa>,     r,         we,        ?wQ,
                 ?&r,       ??r,       ??Y,       <??r>,     wo,        v,
@@ -2946,23 +2945,41 @@
 }
   [(set_attr "type" "vecperm")])
 
-;; V4SImode initialization splitter
-(define_insn_and_split "vsx_init_v4si"
-  [(set (match_operand:V4SI 0 "gpc_reg_operand" "=&r")
-	(unspec:V4SI
-	 [(match_operand:SI 1 "reg_or_cint_operand" "rn")
-	  (match_operand:SI 2 "reg_or_cint_operand" "rn")
-	  (match_operand:SI 3 "reg_or_cint_operand" "rn")
-	  (match_operand:SI 4 "reg_or_cint_operand" "rn")]
-	 UNSPEC_VSX_VEC_INIT))
-   (clobber (match_scratch:DI 5 "=&r"))
-   (clobber (match_scratch:DI 6 "=&r"))]
+;; Concatenate 4 SImode elements into a V4SImode reg.
+(define_expand "vsx_init_v4si"
+  [(use (match_operand:V4SI 0 "gpc_reg_operand"))
+   (use (match_operand:SI 1 "gpc_reg_operand"))
+   (use (match_operand:SI 2 "gpc_reg_operand"))
+   (use (match_operand:SI 3 "gpc_reg_operand"))
+   (use (match_operand:SI 4 "gpc_reg_operand"))]
    "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT"
-   "#"
-   "&& reload_completed"
-   [(const_int 0)]
 {
-  rs6000_split_v4si_init (operands);
+  rtx a = gen_reg_rtx (DImode);
+  rtx b = gen_reg_rtx (DImode);
+  rtx c = gen_reg_rtx (DImode);
+  rtx d = gen_reg_rtx (DImode);
+  emit_insn (gen_zero_extendsidi2 (a, operands[1]));
+  emit_insn (gen_zero_extendsidi2 (b, operands[2]));
+  emit_insn (gen_zero_extendsidi2 (c, operands[3]));
+  emit_insn (gen_zero_extendsidi2 (d, operands[4]));
+  if (!BYTES_BIG_ENDIAN)
+    {
+      std::swap (a, b);
+      std::swap (c, d);
+    }
+
+  rtx aa = gen_reg_rtx (DImode);
+  rtx ab = gen_reg_rtx (DImode);
+  rtx cc = gen_reg_rtx (DImode);
+  rtx cd = gen_reg_rtx (DImode);
+  emit_insn (gen_ashldi3 (aa, a, GEN_INT (32)));
+  emit_insn (gen_ashldi3 (cc, c, GEN_INT (32)));
+  emit_insn (gen_iordi3 (ab, aa, b));
+  emit_insn (gen_iordi3 (cd, cc, d));
+
+  rtx abcd = gen_reg_rtx (V2DImode);
+  emit_insn (gen_vsx_concat_v2di (abcd, ab, cd));
+  emit_move_insn (operands[0], gen_lowpart (V4SImode, abcd));
   DONE;
 })
 
@@ -3934,7 +3951,7 @@
 
   operands[5] = gen_rtx_REG (V4SFmode, tmp_regno);
   operands[6] = gen_rtx_REG (V4SImode, tmp_regno);
-  operands[7] = GEN_INT (BYTES_BIG_ENDIAN ? 1 : 2);
+  operands[7] = GEN_INT (BYTES_BIG_ENDIAN ? 0 : 3);
   operands[8] = gen_rtx_REG (V4SImode, reg_or_subregno (operands[0]));
 }
   [(set_attr "type" "vecperm")
@@ -5214,8 +5231,9 @@
    UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTH))]
   "TARGET_P9_VECTOR"
 {
-  int vals[16] = {15, 14, 0, 0, 13, 12, 0, 0, 11, 10, 0, 0, 9, 8, 0, 0};
   int i;
+  int vals_le[16] = {15, 14, 0, 0, 13, 12, 0, 0, 11, 10, 0, 0, 9, 8, 0, 0};
+  int vals_be[16] = {7, 6, 0, 0, 5, 4, 0, 0, 3, 2, 0, 0, 1, 0, 0, 0};
 
   rtx rvals[16];
   rtx mask = gen_reg_rtx (V16QImode);
@@ -5223,11 +5241,15 @@
   rtvec v;
 
   for (i = 0; i < 16; i++)
-    rvals[i] = GEN_INT (vals[i]);
+    if (!BYTES_BIG_ENDIAN)
+      rvals[i] = GEN_INT (vals_le[i]);
+    else
+      rvals[i] = GEN_INT (vals_be[i]);
 
   /* xvcvhpsp - vector convert F16 to vector F32 requires the four F16
      inputs in half words 1,3,5,7 (IBM numbering).  Use xxperm to move
-     src half words 0,1,2,3 for the conversion instruction.  */
+     src half words 0,1,2,3 (LE), src half words 4,5,6,7 (BE) for the
+     conversion instruction.  */
   v = gen_rtvec_v (16, rvals);
   emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_altivec_vperm_v8hiv16qi (tmp, operands[1],
@@ -5244,7 +5266,9 @@
 	UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTL))]
   "TARGET_P9_VECTOR"
 {
-  int vals[16] = {7, 6, 0, 0, 5, 4, 0, 0, 3, 2, 0, 0, 1, 0, 0, 0};
+  int vals_le[16] = {7, 6, 0, 0, 5, 4, 0, 0, 3, 2, 0, 0, 1, 0, 0, 0};
+  int vals_be[16] = {15, 14, 0, 0, 13, 12, 0, 0, 11, 10, 0, 0, 9, 8, 0, 0};
+
   int i;
   rtx rvals[16];
   rtx mask = gen_reg_rtx (V16QImode);
@@ -5252,11 +5276,15 @@
   rtvec v;
 
   for (i = 0; i < 16; i++)
-    rvals[i] = GEN_INT (vals[i]);
+    if (!BYTES_BIG_ENDIAN)
+      rvals[i] = GEN_INT (vals_le[i]);
+    else
+      rvals[i] = GEN_INT (vals_be[i]);
 
   /* xvcvhpsp - vector convert F16 to vector F32 requires the four F16
      inputs in half words 1,3,5,7 (IBM numbering).  Use xxperm to move
-     src half words 4,5,6,7 for the conversion instruction.  */
+     src half words 4,5,6,7 (LE), src half words 0,1,2,3 (BE) for the
+     conversion instruction.  */
   v = gen_rtvec_v (16, rvals);
   emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_altivec_vperm_v8hiv16qi (tmp, operands[1],

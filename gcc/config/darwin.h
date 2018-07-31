@@ -43,9 +43,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DARWIN_X86 0
 #define DARWIN_PPC 0
 
-/* Don't assume anything about the header files.  */
-#define NO_IMPLICIT_EXTERN_C
-
 /* Suppress g++ attempt to link in the math library automatically. */
 #define MATH_LIBRARY ""
 
@@ -213,7 +210,7 @@ extern GTY(()) int darwin_ms_struct;
 /* We only want one instance of %G, since libSystem (Darwin's -lc) does not depend
    on libgcc.  */
 #undef  LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC "%G %L"
+#define LINK_GCC_C_SEQUENCE_SPEC "%G %{!nolibc:%L}"
 
 /* ld64 supports a sysroot, it just has a different name and there's no easy
    way to check for it at config time.  */

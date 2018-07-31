@@ -200,7 +200,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	    {
 	      gcc_assert (!e->callee->alias);
 	      if (overall_size)
-	        *overall_size -= ipa_fn_summaries->get (e->callee)->size;
+		*overall_size -= ipa_fn_summaries->get (e->callee)->size;
 	      nfunctions_inlined++;
 	    }
 	  duplicate = false;

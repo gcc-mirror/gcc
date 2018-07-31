@@ -36,11 +36,15 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  // This is used for std::experimental::erased_type from Library Fundamentals.
   struct __erased_type { };
 
+  // This also supports the "type-erased allocator" protocol from the
+  // Library Fundamentals TS, where allocator_type is erased_type.
+  // The second condition will always be false for types not using the TS.
   template<typename _Alloc, typename _Tp>
     using __is_erased_or_convertible
-      = __or_<is_same<_Tp, __erased_type>, is_convertible<_Alloc, _Tp>>;
+      = __or_<is_convertible<_Alloc, _Tp>, is_same<_Tp, __erased_type>>;
 
   /// [allocator.tag]
   struct allocator_arg_t { explicit allocator_arg_t() = default; };

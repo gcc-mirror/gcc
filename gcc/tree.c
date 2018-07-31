@@ -343,6 +343,8 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_VECTOR_LENGTH  */
   3, /* OMP_CLAUSE_TILE  */
   2, /* OMP_CLAUSE__GRIDDIM_  */
+  0, /* OMP_CLAUSE_IF_PRESENT */
+  0, /* OMP_CLAUSE_FINALIZE */
 };
 
 const char * const omp_clause_code_name[] =
@@ -413,7 +415,9 @@ const char * const omp_clause_code_name[] =
   "num_workers",
   "vector_length",
   "tile",
-  "_griddim_"
+  "_griddim_",
+  "if_present",
+  "finalize",
 };
 
 
@@ -827,7 +831,6 @@ tree_code_size (enum tree_code code)
 	case UNION_TYPE:
 	case QUAL_UNION_TYPE:
 	case VOID_TYPE:
-	case POINTER_BOUNDS_TYPE:
 	case FUNCTION_TYPE:
 	case METHOD_TYPE:
 	case LANG_TYPE:		return sizeof (tree_type_non_common);
@@ -1508,7 +1511,6 @@ wide_int_to_tree_1 (tree type, const wide_int_ref &pcst)
 
 	case POINTER_TYPE:
 	case REFERENCE_TYPE:
-	case POINTER_BOUNDS_TYPE:
 	  /* Cache NULL pointer and zero bounds.  */
 	  if (hwi == 0)
 	    {
@@ -3783,7 +3785,6 @@ type_contains_placeholder_1 (const_tree type)
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:
-    case POINTER_BOUNDS_TYPE:
     case COMPLEX_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
@@ -5072,6 +5073,7 @@ free_lang_data_in_binfo (tree binfo)
   BINFO_BASE_ACCESSES (binfo) = NULL;
   BINFO_INHERITANCE_CHAIN (binfo) = NULL_TREE;
   BINFO_SUBVTT_INDEX (binfo) = NULL_TREE;
+  BINFO_VPTR_FIELD (binfo) = NULL_TREE;
 
   FOR_EACH_VEC_ELT (*BINFO_BASE_BINFOS (binfo), i, t)
     free_lang_data_in_binfo (t);
@@ -5133,10 +5135,7 @@ free_lang_data_in_type (tree type)
 	else
 	  *prev = DECL_CHAIN (member);
 
-      /* FIXME: C FE uses TYPE_VFIELD to record C_TYPE_INCOMPLETE_VARS
- 	 and danagle the pointer from time to time.  */
-      if (TYPE_VFIELD (type) && TREE_CODE (TYPE_VFIELD (type)) != FIELD_DECL)
-        TYPE_VFIELD (type) = NULL_TREE;
+      TYPE_VFIELD (type) = NULL_TREE;
 
       if (TYPE_BINFO (type))
 	{
@@ -5176,7 +5175,10 @@ free_lang_data_in_type (tree type)
   /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
      TYPE_DECL if the type doesn't have linkage.  */
   if (! type_with_linkage_p (type))
-    TYPE_NAME (type) = TYPE_IDENTIFIER (type);
+    {
+      TYPE_NAME (type) = TYPE_IDENTIFIER (type);
+      TYPE_STUB_DECL (type) = NULL;
+    }
 }
 
 
@@ -5278,6 +5280,7 @@ free_lang_data_in_decl (tree decl)
   free_lang_data_in_one_sizepos (&DECL_SIZE_UNIT (decl));
   if (TREE_CODE (decl) == FIELD_DECL)
     {
+      DECL_FCONTEXT (decl) = NULL;
       free_lang_data_in_one_sizepos (&DECL_FIELD_OFFSET (decl));
       if (TREE_CODE (DECL_CONTEXT (decl)) == QUAL_UNION_TYPE)
 	DECL_QUALIFIER (decl) = NULL_TREE;
@@ -5355,6 +5358,7 @@ free_lang_data_in_decl (tree decl)
       DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
       DECL_VISIBILITY_SPECIFIED (decl) = 0;
       DECL_INITIAL (decl) = NULL_TREE;
+      DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
     }
   else if (TREE_CODE (decl) == FIELD_DECL)
     DECL_INITIAL (decl) = NULL_TREE;
@@ -5467,10 +5471,6 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  fld_worklist_push (DECL_ARGUMENTS (t), fld);
 	  fld_worklist_push (DECL_RESULT (t), fld);
 	}
-      else if (TREE_CODE (t) == TYPE_DECL)
-	{
-	  fld_worklist_push (DECL_ORIGINAL_TYPE (t), fld);
-	}
       else if (TREE_CODE (t) == FIELD_DECL)
 	{
 	  fld_worklist_push (DECL_FIELD_OFFSET (t), fld);
@@ -5559,10 +5559,22 @@ find_decls_types_r (tree *tp, int *ws, void *data)
     }
   else if (TREE_CODE (t) == BLOCK)
     {
-      tree tem;
-      for (tem = BLOCK_VARS (t); tem; tem = TREE_CHAIN (tem))
-	fld_worklist_push (tem, fld);
-      for (tem = BLOCK_SUBBLOCKS (t); tem; tem = BLOCK_CHAIN (tem))
+      for (tree *tem = &BLOCK_VARS (t); *tem; )
+	{
+	  if (TREE_CODE (*tem) != VAR_DECL
+	      || !auto_var_in_fn_p (*tem, DECL_CONTEXT (*tem)))
+	    {
+	      gcc_assert (TREE_CODE (*tem) != RESULT_DECL
+			  && TREE_CODE (*tem) != PARM_DECL);
+	      *tem = TREE_CHAIN (*tem);
+	    }
+	  else 
+	    {
+	      fld_worklist_push (*tem, fld);
+	      tem = &TREE_CHAIN (*tem);
+	    }
+	}
+      for (tree tem = BLOCK_SUBBLOCKS (t); tem; tem = BLOCK_CHAIN (tem))
 	fld_worklist_push (tem, fld);
       fld_worklist_push (BLOCK_ABSTRACT_ORIGIN (t), fld);
     }
@@ -6626,7 +6638,8 @@ type_hash_canon (unsigned int hashcode, tree type)
   if (*loc)
     {
       tree t1 = ((type_hash *) *loc)->type;
-      gcc_assert (TYPE_MAIN_VARIANT (t1) == t1);
+      gcc_assert (TYPE_MAIN_VARIANT (t1) == t1
+		  && t1 != type);
       if (TYPE_UID (type) + 1 == next_type_uid)
 	--next_type_uid;
       /* Free also min/max values and the cache for integer
@@ -9910,8 +9923,6 @@ build_common_tree_nodes (bool signed_char)
   void_type_node = make_node (VOID_TYPE);
   layout_type (void_type_node);
 
-  pointer_bounds_type_node = targetm.chkp_bound_type ();
-
   /* We are not going to have real types in C with less than byte alignment,
      so we might as well not have any types that claim to have it.  */
   SET_TYPE_ALIGN (void_type_node, BITS_PER_UNIT);
@@ -10632,61 +10643,124 @@ vector_cst_elt (const_tree t, unsigned int i)
 }
 
 /* Given an initializer INIT, return TRUE if INIT is zero or some
-   aggregate of zeros.  Otherwise return FALSE.  */
+   aggregate of zeros.  Otherwise return FALSE.  If NONZERO is not
+   null, set *NONZERO if and only if INIT is known not to be all
+   zeros.  The combination of return value of false and *NONZERO
+   false implies that INIT may but need not be all zeros.  Other
+   combinations indicate definitive answers.  */
+
 bool
-initializer_zerop (const_tree init)
+initializer_zerop (const_tree init, bool *nonzero /* = NULL */)
 {
-  tree elt;
+  bool dummy;
+  if (!nonzero)
+    nonzero = &dummy;
+
+  /* Conservatively clear NONZERO and set it only if INIT is definitely
+     not all zero.  */
+  *nonzero = false;
 
   STRIP_NOPS (init);
+
+  unsigned HOST_WIDE_INT off = 0;
 
   switch (TREE_CODE (init))
     {
     case INTEGER_CST:
-      return integer_zerop (init);
+      if (integer_zerop (init))
+	return true;
+
+      *nonzero = true;
+      return false;
 
     case REAL_CST:
       /* ??? Note that this is not correct for C4X float formats.  There,
 	 a bit pattern of all zeros is 1.0; 0.0 is encoded with the most
 	 negative exponent.  */
-      return real_zerop (init)
-	&& ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (init));
+      if (real_zerop (init)
+	  && !REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (init)))
+	return true;
+
+      *nonzero = true;
+      return false;
 
     case FIXED_CST:
-      return fixed_zerop (init);
+      if (fixed_zerop (init))
+	return true;
+
+      *nonzero = true;
+      return false;
 
     case COMPLEX_CST:
-      return integer_zerop (init)
-	|| (real_zerop (init)
-	    && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_REALPART (init)))
-	    && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_IMAGPART (init))));
+      if (integer_zerop (init)
+	  || (real_zerop (init)
+	      && !REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_REALPART (init)))
+	      && !REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_IMAGPART (init)))))
+	return true;
+
+      *nonzero = true;
+      return false;
 
     case VECTOR_CST:
-      return (VECTOR_CST_NPATTERNS (init) == 1
-	      && VECTOR_CST_DUPLICATE_P (init)
-	      && initializer_zerop (VECTOR_CST_ENCODED_ELT (init, 0)));
+      if (VECTOR_CST_NPATTERNS (init) == 1
+	  && VECTOR_CST_DUPLICATE_P (init)
+	  && initializer_zerop (VECTOR_CST_ENCODED_ELT (init, 0)))
+	return true;
+
+      *nonzero = true;
+      return false;
 
     case CONSTRUCTOR:
       {
-	unsigned HOST_WIDE_INT idx;
-
 	if (TREE_CLOBBER_P (init))
 	  return false;
+
+	unsigned HOST_WIDE_INT idx;
+	tree elt;
+
 	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), idx, elt)
-	  if (!initializer_zerop (elt))
+	  if (!initializer_zerop (elt, nonzero))
 	    return false;
+
 	return true;
       }
 
+    case MEM_REF:
+      {
+	tree arg = TREE_OPERAND (init, 0);
+	if (TREE_CODE (arg) != ADDR_EXPR)
+	  return false;
+	tree offset = TREE_OPERAND (init, 1);
+	if (TREE_CODE (offset) != INTEGER_CST
+	    || !tree_fits_uhwi_p (offset))
+	  return false;
+	off = tree_to_uhwi (offset);
+	if (INT_MAX < off)
+	  return false;
+	arg = TREE_OPERAND (arg, 0);
+	if (TREE_CODE (arg) != STRING_CST)
+	  return false;
+	init = arg;
+      }
+      /* Fall through.  */
+
     case STRING_CST:
       {
-	int i;
+	gcc_assert (off <= INT_MAX);
+
+	int i = off;
+	int n = TREE_STRING_LENGTH (init);
+	if (n <= i)
+	  return false;
 
 	/* We need to loop through all elements to handle cases like
 	   "\0" and "\0foobar".  */
-	for (i = 0; i < TREE_STRING_LENGTH (init); ++i)
+	for (i = 0; i < n; ++i)
 	  if (TREE_STRING_POINTER (init)[i] != '\0')
-	    return false;
+	    {
+	      *nonzero = true;
+	      return false;
+	    }
 
 	return true;
       }
@@ -11583,6 +11657,8 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE__SIMT_:
+	case OMP_CLAUSE_IF_PRESENT:
+	case OMP_CLAUSE_FINALIZE:
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_LASTPRIVATE:
@@ -11957,30 +12033,18 @@ cl_option_hasher::equal (tree x, tree y)
 {
   const_tree const xt = x;
   const_tree const yt = y;
-  const char *xp;
-  const char *yp;
-  size_t len;
 
   if (TREE_CODE (xt) != TREE_CODE (yt))
     return 0;
 
   if (TREE_CODE (xt) == OPTIMIZATION_NODE)
-    {
-      xp = (const char *)TREE_OPTIMIZATION (xt);
-      yp = (const char *)TREE_OPTIMIZATION (yt);
-      len = sizeof (struct cl_optimization);
-    }
-
+    return cl_optimization_option_eq (TREE_OPTIMIZATION (xt),
+				      TREE_OPTIMIZATION (yt));
   else if (TREE_CODE (xt) == TARGET_OPTION_NODE)
-    {
-      return cl_target_option_eq (TREE_TARGET_OPTION (xt),
-				  TREE_TARGET_OPTION (yt));
-    }
-
+    return cl_target_option_eq (TREE_TARGET_OPTION (xt),
+				TREE_TARGET_OPTION (yt));
   else
     gcc_unreachable ();
-
-  return (memcmp (xp, yp, len) == 0);
 }
 
 /* Build an OPTIMIZATION_NODE based on the options in OPTS.  */
@@ -12427,13 +12491,103 @@ typedef_variant_p (const_tree type)
   return is_typedef_decl (TYPE_NAME (type));
 }
 
+/* A class to handle converting a string that might contain
+   control characters, (eg newline, form-feed, etc), into one
+   in which contains escape sequences instead.  */
+
+class escaped_string
+{
+ public:
+  escaped_string () { m_owned = false; m_str = NULL; };
+  ~escaped_string () { if (m_owned) free (m_str); }
+  operator const char *() const { return (const char *) m_str; }
+  void escape (const char *);
+ private:
+  char *m_str;
+  bool  m_owned;
+};
+
+/* PR 84195: Replace control characters in "unescaped" with their
+   escaped equivalents.  Allow newlines if -fmessage-length has
+   been set to a non-zero value.  This is done here, rather than
+   where the attribute is recorded as the message length can
+   change between these two locations.  */
+
+void
+escaped_string::escape (const char *unescaped)
+{
+  char *escaped;
+  size_t i, new_i, len;
+
+  if (m_owned)
+    free (m_str);
+
+  m_str = const_cast<char *> (unescaped);
+  m_owned = false;
+
+  if (unescaped == NULL || *unescaped == 0)
+    return;
+
+  len = strlen (unescaped);
+  escaped = NULL;
+  new_i = 0;
+
+  for (i = 0; i < len; i++)
+    {
+      char c = unescaped[i];
+
+      if (!ISCNTRL (c))
+	{
+	  if (escaped)
+	    escaped[new_i++] = c;
+	  continue;
+	}
+
+      if (c != '\n' || !pp_is_wrapping_line (global_dc->printer))
+	{
+	  if (escaped == NULL)
+	    {
+	      /* We only allocate space for a new string if we
+		 actually encounter a control character that
+		 needs replacing.  */
+	      escaped = (char *) xmalloc (len * 2 + 1);
+	      strncpy (escaped, unescaped, i);
+	      new_i = i;
+	    }
+
+	  escaped[new_i++] = '\\';
+
+	  switch (c)
+	    {
+	    case '\a': escaped[new_i++] = 'a'; break;
+	    case '\b': escaped[new_i++] = 'b'; break;
+	    case '\f': escaped[new_i++] = 'f'; break;
+	    case '\n': escaped[new_i++] = 'n'; break;
+	    case '\r': escaped[new_i++] = 'r'; break;
+	    case '\t': escaped[new_i++] = 't'; break;
+	    case '\v': escaped[new_i++] = 'v'; break;
+	    default:   escaped[new_i++] = '?'; break;
+	    }
+	}
+      else if (escaped)
+	escaped[new_i++] = c;
+    }
+
+  if (escaped)
+    {
+      escaped[new_i] = 0;
+      m_str = escaped;
+      m_owned = true;
+    }
+}
+
 /* Warn about a use of an identifier which was marked deprecated.  Returns
    whether a warning was given.  */
 
 bool
 warn_deprecated_use (tree node, tree attr)
 {
-  const char *msg;
+  escaped_string msg;
 
   if (node == 0 || !warn_deprecated_decl)
     return false;
@@ -12455,16 +12609,14 @@ warn_deprecated_use (tree node, tree attr)
     attr = lookup_attribute ("deprecated", attr);
 
   if (attr)
-    msg = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)));
-  else
-    msg = NULL;
+    msg.escape (TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
 
   bool w = false;
   if (DECL_P (node))
     {
       if (msg)
 	w = warning (OPT_Wdeprecated_declarations,
-		     "%qD is deprecated: %s", node, msg);
+		     "%qD is deprecated: %s", node, (const char *) msg);
       else
 	w = warning (OPT_Wdeprecated_declarations,
 		     "%qD is deprecated", node);
@@ -12489,7 +12641,7 @@ warn_deprecated_use (tree node, tree attr)
 	{
 	  if (msg)
 	    w = warning (OPT_Wdeprecated_declarations,
-			 "%qE is deprecated: %s", what, msg);
+			 "%qE is deprecated: %s", what, (const char *) msg);
 	  else
 	    w = warning (OPT_Wdeprecated_declarations,
 			 "%qE is deprecated", what);
@@ -12498,11 +12650,12 @@ warn_deprecated_use (tree node, tree attr)
 	{
 	  if (msg)
 	    w = warning (OPT_Wdeprecated_declarations,
-			 "type is deprecated: %s", msg);
+			 "type is deprecated: %s", (const char *) msg);
 	  else
 	    w = warning (OPT_Wdeprecated_declarations,
 			 "type is deprecated");
 	}
+
       if (w && decl)
 	inform (DECL_SOURCE_LOCATION (decl), "declared here");
     }
@@ -14541,6 +14694,49 @@ test_location_wrappers ()
   check_strip_nops (wrapped_int_var, int_var);
 }
 
+/* Check that string escaping works correctly.  */
+
+static void
+test_escaped_strings (void)
+{
+  int saved_cutoff;
+  escaped_string msg;
+
+  msg.escape (NULL);
+  /* ASSERT_STREQ does not accept NULL as a valid test
+     result, so we have to use ASSERT_EQ instead.  */
+  ASSERT_EQ (NULL, (const char *) msg);
+
+  msg.escape ("");
+  ASSERT_STREQ ("", (const char *) msg);
+
+  msg.escape ("foobar");
+  ASSERT_STREQ ("foobar", (const char *) msg);
+
+  /* Ensure that we have -fmessage-length set to 0.  */
+  saved_cutoff = pp_line_cutoff (global_dc->printer);
+  pp_line_cutoff (global_dc->printer) = 0;
+
+  msg.escape ("foo\nbar");
+  ASSERT_STREQ ("foo\\nbar", (const char *) msg);
+
+  msg.escape ("\a\b\f\n\r\t\v");
+  ASSERT_STREQ ("\\a\\b\\f\\n\\r\\t\\v", (const char *) msg);
+
+  /* Now repeat the tests with -fmessage-length set to 5.  */
+  pp_line_cutoff (global_dc->printer) = 5;
+
+  /* Note that the newline is not translated into an escape.  */
+  msg.escape ("foo\nbar");
+  ASSERT_STREQ ("foo\nbar", (const char *) msg);
+
+  msg.escape ("\a\b\f\n\r\t\v");
+  ASSERT_STREQ ("\\a\\b\\f\n\\r\\t\\v", (const char *) msg);
+
+  /* Restore the original message length setting.  */
+  pp_line_cutoff (global_dc->printer) = saved_cutoff;
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -14551,6 +14747,7 @@ tree_c_tests ()
   test_labels ();
   test_vector_cst_patterns ();
   test_location_wrappers ();
+  test_escaped_strings ();
 }
 
 } // namespace selftest

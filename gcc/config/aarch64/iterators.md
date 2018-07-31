@@ -84,6 +84,9 @@
 ;; Quad vector modes.
 (define_mode_iterator VQ [V16QI V8HI V4SI V2DI V8HF V4SF V2DF])
 
+;; Copy of the above.
+(define_mode_iterator VQ2 [V16QI V8HI V4SI V2DI V8HF V4SF V2DF])
+
 ;; Quad integer vector modes.
 (define_mode_iterator VQ_I [V16QI V8HI V4SI V2DI])
 
@@ -468,6 +471,10 @@
     UNSPEC_COND_DIV	; Used in aarch64-sve.md.
     UNSPEC_COND_MAX	; Used in aarch64-sve.md.
     UNSPEC_COND_MIN	; Used in aarch64-sve.md.
+    UNSPEC_COND_FMLA	; Used in aarch64-sve.md.
+    UNSPEC_COND_FMLS	; Used in aarch64-sve.md.
+    UNSPEC_COND_FNMLA	; Used in aarch64-sve.md.
+    UNSPEC_COND_FNMLS	; Used in aarch64-sve.md.
     UNSPEC_COND_LT	; Used in aarch64-sve.md.
     UNSPEC_COND_LE	; Used in aarch64-sve.md.
     UNSPEC_COND_EQ	; Used in aarch64-sve.md.
@@ -1204,11 +1211,11 @@
 ;; SVE floating-point unary operations.
 (define_code_iterator SVE_FP_UNARY [neg abs sqrt])
 
+;; SVE integer binary operations.
 (define_code_iterator SVE_INT_BINARY [plus minus mult smax umax smin umin
 				      and ior xor])
 
-(define_code_iterator SVE_INT_BINARY_REV [minus])
-
+;; SVE integer binary division operations.
 (define_code_iterator SVE_INT_BINARY_SD [div udiv])
 
 ;; SVE integer comparisons.
@@ -1399,6 +1406,19 @@
 			      (not "not")
 			      (popcount "cnt")])
 
+(define_code_attr sve_int_op_rev [(plus "add")
+			          (minus "subr")
+			          (mult "mul")
+			          (div "sdivr")
+			          (udiv "udivr")
+			          (smin "smin")
+			          (smax "smax")
+			          (umin "umin")
+			          (umax "umax")
+			          (and "and")
+			          (ior "orr")
+			          (xor "eor")])
+
 ;; The floating-point SVE instruction that implements an rtx code.
 (define_code_attr sve_fp_op [(plus "fadd")
 			     (neg "fneg")
@@ -1444,6 +1464,10 @@
 			      UNSPEC_SRHADD UNSPEC_URHADD
 			      UNSPEC_SHSUB UNSPEC_UHSUB
 			      UNSPEC_SRHSUB UNSPEC_URHSUB])
+
+(define_int_iterator HADD [UNSPEC_SHADD UNSPEC_UHADD])
+
+(define_int_iterator RHADD [UNSPEC_SRHADD UNSPEC_URHADD])
 
 (define_int_iterator DOTPROD [UNSPEC_SDOT UNSPEC_UDOT])
 
@@ -1547,7 +1571,10 @@
 					 UNSPEC_COND_MUL UNSPEC_COND_DIV
 					 UNSPEC_COND_MAX UNSPEC_COND_MIN])
 
-(define_int_iterator SVE_COND_FP_BINARY_REV [UNSPEC_COND_SUB UNSPEC_COND_DIV])
+(define_int_iterator SVE_COND_FP_TERNARY [UNSPEC_COND_FMLA
+					  UNSPEC_COND_FMLS
+					  UNSPEC_COND_FNMLA
+					  UNSPEC_COND_FNMLS])
 
 (define_int_iterator SVE_COND_FP_CMP [UNSPEC_COND_LT UNSPEC_COND_LE
 				      UNSPEC_COND_EQ UNSPEC_COND_NE
@@ -1581,7 +1608,11 @@
 			(UNSPEC_COND_MUL "mul")
 			(UNSPEC_COND_DIV "div")
 			(UNSPEC_COND_MAX "smax")
-			(UNSPEC_COND_MIN "smin")])
+			(UNSPEC_COND_MIN "smin")
+			(UNSPEC_COND_FMLA "fma")
+			(UNSPEC_COND_FMLS "fnma")
+			(UNSPEC_COND_FNMLA "fnms")
+			(UNSPEC_COND_FNMLS "fms")])
 
 (define_int_attr  maxmin_uns [(UNSPEC_UMAXV "umax")
 			      (UNSPEC_UMINV "umin")
@@ -1669,8 +1700,10 @@
 
 (define_int_attr u [(UNSPEC_SQSHLU "u") (UNSPEC_SQSHL "") (UNSPEC_UQSHL "")
 		    (UNSPEC_SQSHRUN "u") (UNSPEC_SQRSHRUN "u")
-                    (UNSPEC_SQSHRN "")  (UNSPEC_UQSHRN "")
-                    (UNSPEC_SQRSHRN "") (UNSPEC_UQRSHRN "")])
+		    (UNSPEC_SQSHRN "")  (UNSPEC_UQSHRN "")
+		    (UNSPEC_SQRSHRN "") (UNSPEC_UQRSHRN "")
+		    (UNSPEC_SHADD "") (UNSPEC_UHADD "u")
+		    (UNSPEC_SRHADD "") (UNSPEC_URHADD "u")])
 
 (define_int_attr addsub [(UNSPEC_SHADD "add")
 			 (UNSPEC_UHADD "add")
@@ -1798,6 +1831,23 @@
 			    (UNSPEC_COND_DIV "fdiv")
 			    (UNSPEC_COND_MAX "fmaxnm")
 			    (UNSPEC_COND_MIN "fminnm")])
+
+(define_int_attr sve_fp_op_rev [(UNSPEC_COND_ADD "fadd")
+			        (UNSPEC_COND_SUB "fsubr")
+			        (UNSPEC_COND_MUL "fmul")
+			        (UNSPEC_COND_DIV "fdivr")
+			        (UNSPEC_COND_MAX "fmaxnm")
+			        (UNSPEC_COND_MIN "fminnm")])
+
+(define_int_attr sve_fmla_op [(UNSPEC_COND_FMLA "fmla")
+			      (UNSPEC_COND_FMLS "fmls")
+			      (UNSPEC_COND_FNMLA "fnmla")
+			      (UNSPEC_COND_FNMLS "fnmls")])
+
+(define_int_attr sve_fmad_op [(UNSPEC_COND_FMLA "fmad")
+			      (UNSPEC_COND_FMLS "fmsb")
+			      (UNSPEC_COND_FNMLA "fnmad")
+			      (UNSPEC_COND_FNMLS "fnmsb")])
 
 (define_int_attr commutative [(UNSPEC_COND_ADD "true")
 			      (UNSPEC_COND_SUB "false")

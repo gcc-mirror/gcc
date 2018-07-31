@@ -41,4 +41,7 @@ AARCH64_EXTRA_TUNING_OPTION ("slow_unaligned_ldpw", SLOW_UNALIGNED_LDPW)
    are not considered cheap.  */
 AARCH64_EXTRA_TUNING_OPTION ("cheap_shift_extend", CHEAP_SHIFT_EXTEND)
 
+/* Disallow load/store pair instructions on Q-registers.  */
+AARCH64_EXTRA_TUNING_OPTION ("no_ldp_stp_qregs", NO_LDP_STP_QREGS)
+
 #undef AARCH64_EXTRA_TUNING_OPTION

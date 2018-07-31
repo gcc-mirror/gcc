@@ -15509,7 +15509,7 @@ fi
 
 
 # Check for functions needed.
-for ac_func in clock_getres clock_gettime clock_settime
+for ac_func in clock_getres clock_gettime clock_settime lstat readlink
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

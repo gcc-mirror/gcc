@@ -1,3 +1,42 @@
+2018-07-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/86560
+	* asan/asan_interceptors.cc (swapcontext) Cherry-pick
+	compiler-rt revision 337603.
+	* sanitizer_common/sanitizer_internal_defs.h (__has_attribute):
+	Likewise.
+
+2018-07-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert
+	2018-07-04  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/84250
+	* Makefile.am: Reorder libs.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.am: Define DCAN_SANITIZE_UB=1, add dependancy from
+	libsanitizer_ubsan.la.
+	* asan/Makefile.in: Regenerate.
+	* ubsan/Makefile.am: Define new libsanitizer_ubsan.la library.
+	* ubsan/Makefile.in: Regenerate.
+
+2018-07-04  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/84250
+	* Makefile.am: Reorder libs.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.am: Define DCAN_SANITIZE_UB=1, add dependancy from
+	libsanitizer_ubsan.la.
+	* asan/Makefile.in: Regenerate.
+	* ubsan/Makefile.am: Define new libsanitizer_ubsan.la library.
+	* ubsan/Makefile.in: Regenerate.
+
+2018-06-13  Denis Khalikov  <d.khalikov@partner.samsung.com>
+
+        PR sanitizer/86090
+        * configure.ac: Check for lstat and readlink.
+        * configure, config.h.in: Rebuild.
+
 2018-05-31  Matthias Klose  <doko@ubuntu.com>
 
 	PR sanitizer/86012

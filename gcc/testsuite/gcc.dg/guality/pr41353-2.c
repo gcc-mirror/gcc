@@ -8,8 +8,8 @@ int vari __attribute__((used)) = 17, varj;
 __attribute__((noinline)) int
 f1 (void)
 {
-  int vari1 = 2 * vari; /* { dg-final { gdb-test 13 "vari1" "2 * 17" } } */
-  int vari2 = 3 * vari; /* { dg-final { gdb-test 13 "vari2" "3 * 17" } } */
+  int vari1 = 2 * vari; /* { dg-final { gdb-test .+2 "vari1" "2 * 17" } } */
+  int vari2 = 3 * vari; /* { dg-final { gdb-test .+1 "vari2" "3 * 17" } } */
   return varj;
 }
 

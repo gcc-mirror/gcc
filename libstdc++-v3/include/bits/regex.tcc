@@ -500,7 +500,7 @@ namespace __detail
 	   typename _Rx_traits>
     bool
     regex_iterator<_Bi_iter, _Ch_type, _Rx_traits>::
-    operator==(const regex_iterator& __rhs) const
+    operator==(const regex_iterator& __rhs) const noexcept
     {
       if (_M_pregex == nullptr && __rhs._M_pregex == nullptr)
 	return true;

@@ -28,9 +28,12 @@ func (p *Process) blockUntilWaitable() (bool, error) {
 	// We don't care about the values it returns.
 	var siginfo [16]uint64
 	psig := &siginfo[0]
-	_, _, e := syscall.Syscall6(syscall.SYS_WAITID, _P_PID, uintptr(p.Pid), uintptr(unsafe.Pointer(psig)), syscall.WEXITED|syscall.WNOWAIT, 0, 0)
+	r, _, e := syscall.Syscall6(syscall.SYS_WAITID, _P_PID, uintptr(p.Pid), uintptr(unsafe.Pointer(psig)), syscall.WEXITED|syscall.WNOWAIT, 0, 0)
 	runtime.KeepAlive(p)
-	if e != 0 {
+	// Check r as well as e because syscall.Syscall6 currently
+	// just returns errno, and the SIGCHLD signal handler may
+	// change errno. See https://gcc.gnu.org/PR86331.
+	if r != 0 && e != 0 {
 		// waitid has been available since Linux 2.6.9, but
 		// reportedly is not available in Ubuntu on Windows.
 		// See issue 16610.

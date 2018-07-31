@@ -69,6 +69,7 @@
   p5600
   m5100
   i6400
+  p6600
 ])
 
 (define_c_enum "unspec" [
@@ -1152,6 +1153,7 @@
 (include "i6400.md")
 (include "p5600.md")
 (include "m5100.md")
+(include "p6600.md")
 (include "4k.md")
 (include "5k.md")
 (include "20kc.md")

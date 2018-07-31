@@ -59,7 +59,8 @@ along with GCC; see the file COPYING3.  If not see
    - binary: a normal binary optab, such as vec_interleave_lo_<mode>
    - ternary: a normal ternary optab, such as fma<mode>4
 
-   - cond_binary: a conditional binary optab, such as add<mode>cc
+   - cond_binary: a conditional binary optab, such as cond_add<mode>
+   - cond_ternary: a conditional ternary optab, such as cond_fma_rev<mode>
 
    - fold_left: for scalar = FN (scalar, vector), keyed off the vector mode
 
@@ -143,6 +144,11 @@ DEF_INTERNAL_OPTAB_FN (FMS, ECF_CONST, fms, ternary)
 DEF_INTERNAL_OPTAB_FN (FNMA, ECF_CONST, fnma, ternary)
 DEF_INTERNAL_OPTAB_FN (FNMS, ECF_CONST, fnms, ternary)
 
+DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_FLOOR, ECF_CONST | ECF_NOTHROW, first,
+			      savg_floor, uavg_floor, binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_CEIL, ECF_CONST | ECF_NOTHROW, first,
+			      savg_ceil, uavg_ceil, binary)
+
 DEF_INTERNAL_OPTAB_FN (COND_ADD, ECF_CONST, cond_add, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_SUB, ECF_CONST, cond_sub, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_MUL, ECF_CONST, cond_smul, cond_binary)
@@ -161,6 +167,11 @@ DEF_INTERNAL_OPTAB_FN (COND_IOR, ECF_CONST | ECF_NOTHROW,
 		       cond_ior, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_XOR, ECF_CONST | ECF_NOTHROW,
 		       cond_xor, cond_binary)
+
+DEF_INTERNAL_OPTAB_FN (COND_FMA, ECF_CONST, cond_fma, cond_ternary)
+DEF_INTERNAL_OPTAB_FN (COND_FMS, ECF_CONST, cond_fms, cond_ternary)
+DEF_INTERNAL_OPTAB_FN (COND_FNMA, ECF_CONST, cond_fnma, cond_ternary)
+DEF_INTERNAL_OPTAB_FN (COND_FNMS, ECF_CONST, cond_fnms, cond_ternary)
 
 DEF_INTERNAL_OPTAB_FN (RSQRT, ECF_CONST, rsqrt, unary)
 
@@ -230,7 +241,7 @@ DEF_INTERNAL_OPTAB_FN (XORSIGN, ECF_CONST, xorsign, binary)
 DEF_INTERNAL_FLT_FN (LDEXP, ECF_CONST, ldexp, binary)
 
 /* Ternary math functions.  */
-DEF_INTERNAL_FLT_FN (FMA, ECF_CONST, fma, ternary)
+DEF_INTERNAL_FLT_FLOATN_FN (FMA, ECF_CONST, fma, ternary)
 
 /* Unary integer ops.  */
 DEF_INTERNAL_INT_FN (CLRSB, ECF_CONST | ECF_NOTHROW, clrsb, unary)

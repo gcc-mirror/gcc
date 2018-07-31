@@ -1083,7 +1083,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	    print_gimple_stmt (dump_file, cur_stmt, 0);
 	  else
 	    {
-	      print_generic_expr (dump_file, tgt, 0);
+	      print_generic_expr (dump_file, tgt, TDF_NONE);
 	      fprintf (dump_file, "\n");
 	    }
 	}
@@ -1153,7 +1153,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	print_gimple_stmt (dump_file, cur_stmt, 0);
       else
 	{
-	  print_generic_expr (dump_file, tgt, 0);
+	  print_generic_expr (dump_file, tgt, TDF_NONE);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -2020,7 +2020,7 @@ merged_store_group::apply_stores ()
 	  if (ret)
 	    {
 	      fputs ("After writing ", dump_file);
-	      print_generic_expr (dump_file, cst, 0);
+	      print_generic_expr (dump_file, cst, TDF_NONE);
 	      fprintf (dump_file, " of size " HOST_WIDE_INT_PRINT_DEC
 		       " at position %d\n", info->bitsize, pos_in_buffer);
 	      fputs ("  the merged value contains ", dump_file);
@@ -2702,7 +2702,12 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	{
 	  /* Only allow overlapping stores of constants.  */
 	  if (info->rhs_code == INTEGER_CST
-	      && merged_store->stores[0]->rhs_code == INTEGER_CST)
+	      && merged_store->stores[0]->rhs_code == INTEGER_CST
+	      && check_no_overlap (m_store_info, i, INTEGER_CST,
+				   MAX (merged_store->last_order, info->order),
+				   MAX (merged_store->start
+					+ merged_store->width,
+					info->bitpos + info->bitsize)))
 	    {
 	      merged_store->merge_overlapping (info);
 	      goto done;
@@ -2732,10 +2737,8 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	      info->ops_swapped_p = true;
 	    }
 	  if (check_no_overlap (m_store_info, i, info->rhs_code,
-				MAX (merged_store->last_order,
-				     info->order),
-				MAX (merged_store->start
-				     + merged_store->width,
+				MAX (merged_store->last_order, info->order),
+				MAX (merged_store->start + merged_store->width,
 				     info->bitpos + info->bitsize)))
 	    {
 	      /* Turn MEM_REF into BIT_INSERT_EXPR for bit-field stores.  */

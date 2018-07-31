@@ -37,4 +37,4 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
-  "--start-group %G %L --end-group"
+  "--start-group %G %{!nolibc:%L} --end-group"

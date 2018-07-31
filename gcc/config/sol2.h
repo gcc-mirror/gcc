@@ -113,6 +113,7 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_define ("_XOPEN_SOURCE=600");		\
 	builtin_define ("_LARGEFILE_SOURCE=1");		\
 	builtin_define ("_LARGEFILE64_SOURCE=1");	\
+	builtin_define ("_FILE_OFFSET_BITS=64");	\
 	builtin_define ("__EXTENSIONS__");		\
       }							\
     TARGET_SUB_OS_CPP_BUILTINS();			\
@@ -422,9 +423,6 @@ along with GCC; see the file COPYING3.  If not see
    produce the same format.  */
 #define NM_FLAGS "-png"
 
-/* The system headers under Solaris 2 are C++-aware since 2.0.  */
-#define NO_IMPLICIT_EXTERN_C
-
 #define STDC_0_IN_SYSTEM_HEADERS 1
 
 /* Support Solaris-specific format checking for cmn_err.  */

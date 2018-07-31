@@ -18,11 +18,14 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(define_register_constraint "a" "LOAD_FPU_REGS"
+  "FPU register that can be directly loaded from memory")
+
 (define_register_constraint "f" "FPU_REGS"
   "Any FPU register")
 
-(define_register_constraint "a" "LOAD_FPU_REGS"
-  "FPU register that can be directly loaded from memory")
+(define_register_constraint "h" "NO_LOAD_FPU_REGS"
+  "FPU register that cannot be directly loaded from memory")
 
 (define_register_constraint "d" "MUL_REGS"
   "General register that can be used for 16-bit multiply (odd numbered)")
@@ -60,7 +63,7 @@
 (define_constraint "O"
   "Integer constant for which several individual shifts are better than one big one"
   (and (match_code "const_int")
-       (match_test "abs (ival) > 1 && abs (ival) <= 4")))
+       (match_test "pdp11_small_shift (ival)")))
 
 (define_constraint "G"
   "Defines a real zero constant."
@@ -78,4 +81,10 @@
   (and (match_code "mem")
        (match_test "memory_address_p (GET_MODE (op), XEXP (op, 0))
                     && simple_memory_operand (op, GET_MODE (op))")))
+
+(define_constraint "D"
+  "Memory reference that is encoded within the opcode, and not push or pop"
+  (and (match_code "mem")
+       (match_test "memory_address_p (GET_MODE (op), XEXP (op, 0))
+                    && no_side_effect_operand (op, GET_MODE (op))")))
 

@@ -1,11 +1,11 @@
 // PR c++/28513
 
-class foo {			// { dg-error "changes meaning" }
+class foo {			// { dg-message "declared here" }
 public:
   typedef int bar;
 };
 
 class baz {
 public:
-  foo::bar foo;			// { dg-error "declaration" }
+  foo::bar foo;			// { dg-error "changes meaning" }
 };

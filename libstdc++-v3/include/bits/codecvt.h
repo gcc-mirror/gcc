@@ -459,7 +459,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif //_GLIBCXX_USE_WCHAR_T
 
 #if __cplusplus >= 201103L
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /** @brief  Class codecvt<char16_t, char, mbstate_t> specialization.
    *
    *  Converts between UTF-16 and UTF-8.
@@ -574,7 +573,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       do_max_length() const throw();
     };
 
-#endif // _GLIBCXX_USE_C99_STDINT_TR1
 #endif // C++11
 
   /// class codecvt_byname [22.2.1.6].
@@ -605,7 +603,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~codecvt_byname() { }
     };
 
-#if __cplusplus >= 201103L && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#if __cplusplus >= 201103L
   template<>
     class codecvt_byname<char16_t, char, mbstate_t>
     : public codecvt<char16_t, char, mbstate_t>
@@ -641,7 +639,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual
       ~codecvt_byname() { }
     };
-#endif
+#endif // C++11
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
@@ -668,7 +666,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     has_facet<codecvt<wchar_t, char, mbstate_t> >(const locale&);
 #endif
 
-#if __cplusplus >= 201103L && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#if __cplusplus >= 201103L
   extern template class codecvt_byname<char16_t, char, mbstate_t>;
   extern template class codecvt_byname<char32_t, char, mbstate_t>;
 #endif

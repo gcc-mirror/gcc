@@ -58,9 +58,54 @@ void test02() // check binary operators
   VERIFY( (u>=v)[0] == (1>=3) );
 }
 
+void test03() // check binary operators with scalar operands
+{
+  std::valarray<int> u(1);
+  u[0]=1;
+  long v = 3; // LWG 3074 allows scalar operand to be different to value_type.
+
+  VERIFY( (u+ v)[0] == (1+ 3) );
+  VERIFY( (u- v)[0] == (1- 3) );
+  VERIFY( (u* v)[0] == (1* 3) );
+  VERIFY( (u/ v)[0] == (1/ 3) );
+  VERIFY( (u% v)[0] == (1% 3) );
+  VERIFY( (u^ v)[0] == (1^ 3) );
+  VERIFY( (u& v)[0] == (1& 3) );
+  VERIFY( (u| v)[0] == (1| 3) );
+  VERIFY( (u<<v)[0] == (1<<3) );
+  VERIFY( (u>>v)[0] == (1>>3) );
+  VERIFY( (u&&v)[0] == (1&&3) );
+  VERIFY( (u||v)[0] == (1||3) );
+  VERIFY( (u==v)[0] == (1==3) );
+  VERIFY( (u!=v)[0] == (1!=3) );
+  VERIFY( (u< v)[0] == (1< 3) );
+  VERIFY( (u> v)[0] == (1> 3) );
+  VERIFY( (u<=v)[0] == (1<=3) );
+  VERIFY( (u>=v)[0] == (1>=3) );
+
+  VERIFY( (v+ u)[0] == (3+ 1) );
+  VERIFY( (v- u)[0] == (3- 1) );
+  VERIFY( (v* u)[0] == (3* 1) );
+  VERIFY( (v/ u)[0] == (3/ 1) );
+  VERIFY( (v% u)[0] == (3% 1) );
+  VERIFY( (v^ u)[0] == (3^ 1) );
+  VERIFY( (v& u)[0] == (3& 1) );
+  VERIFY( (v| u)[0] == (3| 1) );
+  VERIFY( (v<<u)[0] == (3<<1) );
+  VERIFY( (v>>u)[0] == (3>>1) );
+  VERIFY( (v&&u)[0] == (3&&1) );
+  VERIFY( (v||u)[0] == (3||1) );
+  VERIFY( (v==u)[0] == (3==1) );
+  VERIFY( (v!=u)[0] == (3!=1) );
+  VERIFY( (v< u)[0] == (3< 1) );
+  VERIFY( (v> u)[0] == (3> 1) );
+  VERIFY( (v<=u)[0] == (3<=1) );
+  VERIFY( (v>=u)[0] == (3>=1) );
+}
+
 int main()
 {
   test01();
   test02();
-  return 0;
+  test03();
 }

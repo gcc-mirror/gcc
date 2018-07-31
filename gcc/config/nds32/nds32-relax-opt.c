@@ -304,7 +304,7 @@ nds32_pic_tls_symbol_type (rtx x)
 
 /* Group the relax candidates with group id.  */
 static void
-nds32_group_insns (rtx sethi)
+nds32_group_insns (rtx_insn *sethi)
 {
   df_ref def_record, use_record;
   df_link *link;
@@ -435,7 +435,7 @@ nds32_float_reg_load_store_p (rtx_insn *insn)
    flsi $rt, [$ra + offset] */
 
 static void
-nds32_group_float_insns (rtx insn)
+nds32_group_float_insns (rtx_insn *insn)
 {
   df_ref def_record, use_record;
   df_link *link;

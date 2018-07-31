@@ -24,7 +24,7 @@
 
 /** @file bits/c++config.h
  *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{iosfwd}
+ *  Do not attempt to use it directly. @headername{version}
  */
 
 #ifndef _GLIBCXX_CXX_CONFIG_H
@@ -122,15 +122,23 @@
 #endif
 
 #ifndef _GLIBCXX17_CONSTEXPR
-# if __cplusplus > 201402L
+# if __cplusplus >= 201703L
 #  define _GLIBCXX17_CONSTEXPR constexpr
 # else
 #  define _GLIBCXX17_CONSTEXPR
 # endif
 #endif
 
+#ifndef _GLIBCXX20_CONSTEXPR
+# if __cplusplus > 201703L
+#  define _GLIBCXX20_CONSTEXPR constexpr
+# else
+#  define _GLIBCXX20_CONSTEXPR
+# endif
+#endif
+
 #ifndef _GLIBCXX17_INLINE
-# if __cplusplus > 201402L
+# if __cplusplus >= 201703L
 #  define _GLIBCXX17_INLINE inline
 # else
 #  define _GLIBCXX17_INLINE

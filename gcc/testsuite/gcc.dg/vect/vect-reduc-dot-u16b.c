@@ -10,11 +10,8 @@
 unsigned short X[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 unsigned short Y[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
-/* short->int->int dot product. 
-   Currently not detected as a dot-product pattern: the multiplication 
-   promotes the ushorts to int, and then the product is promoted to unsigned 
-   int for the addition.  Which results in an int->unsigned int cast, which 
-   since no bits are modified in the cast should be trivially vectorizable.  */
+/* ushort->int->uint dot product: the multiplication promotes the ushorts
+   to int, and then the product is converted to uint for the addition.  */
 __attribute__ ((noinline)) unsigned int
 foo2(int len) {
   int i;
@@ -47,12 +44,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vect_recog_dot_prod_pattern: detected" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vect_recog_dot_prod_pattern: detected" 1 "vect" } } */
 
-/* Once the dot-product pattern is detected, we expect
-   that loop to be vectorized on vect_udot_hi targets (targets that support 
-   dot-product of unsigned shorts) and targets that support widening multiplication.  */
-/* The induction loop in main is vectorized.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail *-*-* } } } */ 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_pack_trunc } } } */ 
-
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_pack_trunc || vect_udot_hi } } } } */ 

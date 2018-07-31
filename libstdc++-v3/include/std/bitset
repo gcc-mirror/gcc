@@ -816,6 +816,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _M_bpos = _Base::_S_whichbit(__pos);
 	}
 
+#if __cplusplus >= 201103L
+	reference(const reference&) = default;
+#endif
+
 	~reference() _GLIBCXX_NOEXCEPT
 	{ }
 

@@ -42,8 +42,8 @@ namespace GTM HIDDEN {
 
 #ifdef __x86_64__
 #ifdef __LP64__
-# define SEG_READ(OFS)		"movq\t%%fs:(" #OFS "*8),%0"
-# define SEG_WRITE(OFS)		"movq\t%0,%%fs:(" #OFS "*8)"
+# define SEG_READ(OFS)		"movq\t%%fs:(80+" #OFS "*8),%0"
+# define SEG_WRITE(OFS)		"movq\t%0,%%fs:(80+" #OFS "*8)"
 # define SEG_DECODE_READ(OFS)	SEG_READ(OFS) "\n\t" \
 				"rorq\t$17,%0\n\t" \
 				"xorq\t%%fs:48,%0"
@@ -52,18 +52,18 @@ namespace GTM HIDDEN {
 				SEG_WRITE(OFS)
 #else
 // For X32.
-# define SEG_READ(OFS)          "movl\t%%fs:(" #OFS "*4),%0"
-# define SEG_WRITE(OFS)         "movl\t%0,%%fs:(" #OFS "*4)"
+# define SEG_READ(OFS)          "movl\t%%fs:(48+" #OFS "*4),%0"
+# define SEG_WRITE(OFS)         "movl\t%0,%%fs:(48+" #OFS "*4)"
 # define SEG_DECODE_READ(OFS)   SEG_READ(OFS) "\n\t" \
 				"rorl\t$9,%0\n\t" \
-				"xorl\t%%fs:24,%0"
-# define SEG_ENCODE_WRITE(OFS)  "xorl\t%%fs:24,%0\n\t" \
+				"xorl\t%%fs:28,%0"
+# define SEG_ENCODE_WRITE(OFS)  "xorl\t%%fs:28,%0\n\t" \
 				"roll\t$9,%0\n\t" \
 				SEG_WRITE(OFS)
 #endif
 #else
-# define SEG_READ(OFS)  "movl\t%%gs:(" #OFS "*4),%0"
-# define SEG_WRITE(OFS) "movl\t%0,%%gs:(" #OFS "*4)"
+# define SEG_READ(OFS)  "movl\t%%gs:(36+" #OFS "*4),%0"
+# define SEG_WRITE(OFS) "movl\t%0,%%gs:(36+" #OFS "*4)"
 # define SEG_DECODE_READ(OFS)	SEG_READ(OFS) "\n\t" \
 				"rorl\t$9,%0\n\t" \
 				"xorl\t%%gs:24,%0"
@@ -75,26 +75,26 @@ namespace GTM HIDDEN {
 static inline struct gtm_thread *gtm_thr(void)
 {
   struct gtm_thread *r;
-  asm volatile (SEG_READ(10) : "=r"(r));
+  asm volatile (SEG_READ(0) : "=r"(r));
   return r;
 }
 
 static inline void set_gtm_thr(struct gtm_thread *x)
 {
-  asm volatile (SEG_WRITE(10) : : "r"(x));
+  asm volatile (SEG_WRITE(0) : : "r"(x));
 }
 
 static inline struct abi_dispatch *abi_disp(void)
 {
   struct abi_dispatch *r;
-  asm volatile (SEG_DECODE_READ(11) : "=r"(r));
+  asm volatile (SEG_DECODE_READ(1) : "=r"(r));
   return r;
 }
 
 static inline void set_abi_disp(struct abi_dispatch *x)
 {
   void *scratch;
-  asm volatile (SEG_ENCODE_WRITE(11) : "=r"(scratch) : "0"(x));
+  asm volatile (SEG_ENCODE_WRITE(1) : "=r"(scratch) : "0"(x));
 }
 
 #undef SEG_READ

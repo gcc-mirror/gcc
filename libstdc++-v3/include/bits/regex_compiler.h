@@ -154,42 +154,25 @@ namespace __detail
     };
 
   template<typename _Tp>
-    struct __has_contiguous_iter : std::false_type { };
-
-  template<typename _Ch, typename _Tr, typename _Alloc>
-    struct __has_contiguous_iter<std::basic_string<_Ch, _Tr, _Alloc>>
-    : std::true_type
-    { };
-
-  template<typename _Tp, typename _Alloc>
-    struct __has_contiguous_iter<std::vector<_Tp, _Alloc>>
-    : std::true_type
-    { };
-
-  template<typename _Tp>
-    struct __is_contiguous_normal_iter : std::false_type { };
-
-  template<typename _CharT>
-    struct __is_contiguous_normal_iter<_CharT*> : std::true_type { };
+    struct __is_contiguous_iter : is_pointer<_Tp>::type { };
 
   template<typename _Tp, typename _Cont>
     struct
-    __is_contiguous_normal_iter<__gnu_cxx::__normal_iterator<_Tp, _Cont>>
-    : __has_contiguous_iter<_Cont>::type
-    { };
+    __is_contiguous_iter<__gnu_cxx::__normal_iterator<_Tp*, _Cont>>
+    : true_type { };
 
   template<typename _Iter, typename _TraitsT>
-    using __enable_if_contiguous_normal_iter
-      = typename enable_if< __is_contiguous_normal_iter<_Iter>::value,
-                           std::shared_ptr<const _NFA<_TraitsT>> >::type;
+    using __enable_if_contiguous_iter
+      = __enable_if_t< __is_contiguous_iter<_Iter>::value,
+                       std::shared_ptr<const _NFA<_TraitsT>> >;
 
   template<typename _Iter, typename _TraitsT>
-    using __disable_if_contiguous_normal_iter
-      = typename enable_if< !__is_contiguous_normal_iter<_Iter>::value,
-                           std::shared_ptr<const _NFA<_TraitsT>> >::type;
+    using __disable_if_contiguous_iter
+      = __enable_if_t< !__is_contiguous_iter<_Iter>::value,
+                       std::shared_ptr<const _NFA<_TraitsT>> >;
 
   template<typename _TraitsT, typename _FwdIter>
-    inline __enable_if_contiguous_normal_iter<_FwdIter, _TraitsT>
+    inline __enable_if_contiguous_iter<_FwdIter, _TraitsT>
     __compile_nfa(_FwdIter __first, _FwdIter __last,
 		  const typename _TraitsT::locale_type& __loc,
 		  regex_constants::syntax_option_type __flags)
@@ -201,7 +184,7 @@ namespace __detail
     }
 
   template<typename _TraitsT, typename _FwdIter>
-    inline __disable_if_contiguous_normal_iter<_FwdIter, _TraitsT>
+    inline __disable_if_contiguous_iter<_FwdIter, _TraitsT>
     __compile_nfa(_FwdIter __first, _FwdIter __last,
 		  const typename _TraitsT::locale_type& __loc,
 		  regex_constants::syntax_option_type __flags)

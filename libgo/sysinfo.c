@@ -144,9 +144,6 @@
 #if defined(HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>
 #endif
-#if defined(HAVE_USTAT_H)
-#include <ustat.h>
-#endif
 #if defined(HAVE_UTIME_H)
 #include <utime.h>
 #endif

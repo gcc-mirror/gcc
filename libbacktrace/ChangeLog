@@ -1,3 +1,9 @@
+2018-06-21 Denis Khalikov <d.khalikov@partner.samsung.com>
+
+	PR other/86198
+	* elf.c (elf_add): Increase ".note.gnu.build-id" section size
+	checking up to 36 bytes.
+
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.

@@ -3,10 +3,18 @@
 #include <sys/types.h>
 #endif
 
+/* If some target has a Max alignment less than 16, please create
+   a #ifdef around the alignment and add your alignment.  */
+#ifdef __pdp11__
+#define ALIGNMENT 2
+#else
+#define ALIGNMENT 16
+#endif
+
 extern void abort (void);
 
 extern int inside_main;
-void *chk_fail_buf[256] __attribute__((aligned (16)));
+void *chk_fail_buf[256] __attribute__((aligned (ALIGNMENT)));
 volatile int chk_fail_allowed, chk_calls;
 volatile int memcpy_disallowed, mempcpy_disallowed, memmove_disallowed;
 volatile int memset_disallowed, strcpy_disallowed, stpcpy_disallowed;

@@ -66,6 +66,10 @@ namespace
     return __gnu_internal::get_mutex(index);
   }
 
+#pragma GCC diagnostic push
+// Suppress -Wabi=2 warnings due to PR c++/51322 mangling change
+#pragma GCC diagnostic warning "-Wabi=6"
+
   void
   swap_its(__gnu_debug::_Safe_sequence_base& __lhs,
 	   __gnu_debug::_Safe_iterator_base*& __lhs_its,
@@ -90,6 +94,7 @@ namespace
     swap_its(__lhs, __lhs._M_const_iterators,
 	     __rhs, __rhs._M_const_iterators);
   }
+#pragma GCC diagnostic pop
 
   template<typename _Action>
     void

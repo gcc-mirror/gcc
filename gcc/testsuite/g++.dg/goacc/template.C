@@ -1,4 +1,4 @@
-#pragma acc routine
+#pragma acc routine seq
 template <typename T> T
 accDouble(int val)
 {
@@ -31,7 +31,7 @@ oacc_parallel_copy (T a)
 
 #pragma acc parallel num_gangs (a) if (1)
   {
-#pragma acc loop independent collapse (2) gang
+#pragma acc loop independent collapse (2)
     for (int i = 0; i < a; i++)
       for (int j = 0; j < 5; j++)
 	b = a;
@@ -86,6 +86,8 @@ oacc_parallel_copy (T a)
 #pragma acc update self (b)
 #pragma acc update device (b)
 #pragma acc exit data delete (b)
+#pragma acc exit data finalize copyout (b)
+#pragma acc exit data delete (b) finalize
 
   return b;
 }
@@ -132,6 +134,13 @@ oacc_kernels_copy (T a)
   {
     b = a;
   }
+
+#pragma acc update host (b)
+#pragma acc update self (b)
+#pragma acc update device (b)
+#pragma acc exit data delete (b)
+#pragma acc exit data finalize copyout (b)
+#pragma acc exit data delete (b) finalize
 
   return b;
 }

@@ -1,3 +1,50 @@
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (c_decl_attributes): Don't diagnose vars without mappable
+	type here, instead add "omp declare target implicit" attribute.
+	(finish_decl): Diagnose vars without mappable type here.
+
+2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Add support for finalize
+	and if_present. Make present_or_{copy,copyin,copyout,create} aliases
+	to their non-present_or_* counterparts. Make 'self' an alias to
+	PRAGMA_OACC_CLAUSE_HOST.
+	(c_parser_oacc_data_clause): Update GOMP mappings for
+	PRAGMA_OACC_CLAUSE_{COPY,COPYIN,COPYOUT,CREATE,DELETE}. Remove
+	PRAGMA_OACC_CLAUSE_{SELF,PRESENT_OR_*}.
+	(c_parser_oacc_all_clauses): Handle finalize and if_present clauses.
+	Remove support for present_or_* clauses.
+	(OACC_KERNELS_CLAUSE_MASK): Remove PRESENT_OR_* clauses.
+	(OACC_PARALLEL_CLAUSE_MASK): Likewise.
+	(OACC_DECLARE_CLAUSE_MASK): Likewise.
+	(OACC_DATA_CLAUSE_MASK): Likewise.
+	(OACC_ENTER_DATA_CLAUSE_MASK): Remove PRESENT_OR_* clauses.
+	(OACC_EXIT_DATA_CLAUSE_MASK): Add FINALIZE clause.
+	(OACC_UPDATE_CLAUSE_MASK): Remove SELF, add IF_PRESENT.
+	(c_parser_oacc_declare): Remove PRESENT_OR_* clauses.
+	* c-typeck.c (c_finish_omp_clauses): Handle IF_PRESENT and FINALIZE.
+
+2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* c-typeck.c (build_unary_op): Handle ABSU_EXPR;
+	* gimple-parser.c (c_parser_gimple_statement): Likewise.
+	(c_parser_gimple_unary_expression): Likewise.
+
+2018-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/86093
+	* c-typeck.c (pointer_diff): Cast both pointers to unqualified types
+	before doing POINTER_DIFF_EXPR.
+
+2018-06-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/85318
+	* c-decl.c (check_for_loop_decls): Add -Wc90-c99-compat warning about
+	for loop initial declarations.
+
 2018-05-30  David Pagan  <dave.pagan@oracle.com>
 
 	PR c/55976

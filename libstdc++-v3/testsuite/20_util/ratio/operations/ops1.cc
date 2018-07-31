@@ -1,5 +1,4 @@
 // { dg-do run { target c++11 } }
-// { dg-require-cstdint "" }
 
 // 2008-07-03 Chris Fairles <chris.fairles@gmail.com>
 

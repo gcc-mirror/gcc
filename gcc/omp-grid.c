@@ -91,7 +91,7 @@ struct grid_prop
   bool tiling;
   /* Location of the target construct for optimization information
      messages.  */
-  location_t target_loc;
+  dump_user_location_t target_loc;
   /* The collapse clause of the involved loops.  Collapse value of all of them
      must be the same for gridification to take place.  */
   size_t collapse;
@@ -177,10 +177,10 @@ grid_find_single_omp_among_assignments_1 (gimple_seq seq, grid_prop *grid,
 				   GRID_MISSED_MSG_PREFIX "%s construct "
 				   "contains multiple OpenMP constructs\n",
 				   name);
-		  dump_printf_loc (MSG_NOTE, gimple_location (*ret),
+		  dump_printf_loc (MSG_NOTE, *ret,
 				   "The first OpenMP construct within "
 				   "a parallel\n");
-		  dump_printf_loc (MSG_NOTE, gimple_location (stmt),
+		  dump_printf_loc (MSG_NOTE, stmt,
 				   "The second OpenMP construct within "
 				   "a parallel\n");
 		}
@@ -195,7 +195,7 @@ grid_find_single_omp_among_assignments_1 (gimple_seq seq, grid_prop *grid,
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, grid->target_loc,
 			       GRID_MISSED_MSG_PREFIX "%s construct contains "
 			       "a complex statement\n", name);
-	      dump_printf_loc (MSG_NOTE, gimple_location (stmt),
+	      dump_printf_loc (MSG_NOTE, stmt,
 			       "This statement cannot be analyzed for "
 			       "gridification\n");
 	    }
@@ -286,7 +286,7 @@ grid_find_ungridifiable_statement (gimple_stmt_iterator *gsi,
    loop that is evaluated for possible gridification.  */
 
 static bool
-grid_parallel_clauses_gridifiable (gomp_parallel *par, location_t tloc)
+grid_parallel_clauses_gridifiable (gomp_parallel *par, dump_user_location_t tloc)
 {
   tree clauses = gimple_omp_parallel_clauses (par);
   while (clauses)
@@ -300,7 +300,7 @@ grid_parallel_clauses_gridifiable (gomp_parallel *par, location_t tloc)
 			       GRID_MISSED_MSG_PREFIX "because there is "
 			       "a num_threads clause of the parallel "
 			       "construct\n");
-	      dump_printf_loc (MSG_NOTE, gimple_location (par),
+	      dump_printf_loc (MSG_NOTE, par,
 			       "Parallel construct has a num_threads clause\n");
 	    }
 	  return false;
@@ -311,7 +311,7 @@ grid_parallel_clauses_gridifiable (gomp_parallel *par, location_t tloc)
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, tloc,
 			       GRID_MISSED_MSG_PREFIX "a reduction clause "
 			       "is present\n ");
-	      dump_printf_loc (MSG_NOTE, gimple_location (par),
+	      dump_printf_loc (MSG_NOTE, par,
 			       "Parallel construct has a reduction clause\n");
 	    }
 	  return false;
@@ -341,7 +341,7 @@ grid_inner_loop_gridifiable_p (gomp_for *gfor, grid_prop *grid)
 			   GRID_MISSED_MSG_PREFIX "the inner loop "
 			   "loop bounds computation contains a complex "
 			   "statement\n");
-	  dump_printf_loc (MSG_NOTE, gimple_location (gfor),
+	  dump_printf_loc (MSG_NOTE, gfor,
 			   "Loop construct cannot be analyzed for "
 			   "gridification\n");
 	}
@@ -361,7 +361,7 @@ grid_inner_loop_gridifiable_p (gomp_for *gfor, grid_prop *grid)
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, grid->target_loc,
 				   GRID_MISSED_MSG_PREFIX "the inner loop "
 				   "has a non-automatic schedule clause\n");
-		  dump_printf_loc (MSG_NOTE, gimple_location (gfor),
+		  dump_printf_loc (MSG_NOTE, gfor,
 				   "Loop construct has a non automatic "
 				   "schedule clause\n");
 		}
@@ -375,7 +375,7 @@ grid_inner_loop_gridifiable_p (gomp_for *gfor, grid_prop *grid)
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, grid->target_loc,
 			       GRID_MISSED_MSG_PREFIX "a reduction "
 			       "clause is present\n ");
-	      dump_printf_loc (MSG_NOTE, gimple_location (gfor),
+	      dump_printf_loc (MSG_NOTE, gfor,
 			       "Loop construct has a reduction schedule "
 			       "clause\n");
 	    }
@@ -404,7 +404,7 @@ grid_inner_loop_gridifiable_p (gomp_for *gfor, grid_prop *grid)
 			     GRID_MISSED_MSG_PREFIX "the inner loop contains "
 			     "statement %s which cannot be transformed\n",
 			     gimple_code_name[(int) gimple_code (bad)]);
-	  dump_printf_loc (MSG_NOTE, gimple_location (bad),
+	  dump_printf_loc (MSG_NOTE, bad,
 			   "This statement cannot be analyzed for "
 			   "gridification\n");
 	}
@@ -422,7 +422,7 @@ grid_inner_loop_gridifiable_p (gomp_for *gfor, grid_prop *grid)
 static bool
 grid_dist_follows_simple_pattern (gomp_for *dist, grid_prop *grid)
 {
-  location_t tloc = grid->target_loc;
+  dump_user_location_t tloc = grid->target_loc;
   gimple *stmt = grid_find_single_omp_among_assignments (gimple_omp_body (dist),
 							 grid, "distribute");
   gomp_parallel *par;
@@ -468,7 +468,7 @@ grid_gfor_follows_tiling_pattern (gomp_for *gfor, grid_prop *grid)
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, grid->target_loc,
 			   GRID_MISSED_MSG_PREFIX "an inner loop is not "
 			   "a simple for loop\n");
-	  dump_printf_loc (MSG_NOTE, gimple_location (gfor),
+	  dump_printf_loc (MSG_NOTE, gfor,
 			   "This statement is not a simple for loop\n");
 	}
       return false;
@@ -484,7 +484,7 @@ grid_gfor_follows_tiling_pattern (gomp_for *gfor, grid_prop *grid)
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, grid->target_loc,
 			   GRID_MISSED_MSG_PREFIX "an inner loop does not "
 			   "have use the same collapse clause\n");
-	  dump_printf_loc (MSG_NOTE, gimple_location (gfor),
+	  dump_printf_loc (MSG_NOTE, gfor,
 			   "Loop construct uses a different collapse clause\n");
 	}
       return false;
@@ -524,7 +524,7 @@ grid_gfor_follows_tiling_pattern (gomp_for *gfor, grid_prop *grid)
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, grid->target_loc,
 			       GRID_MISSED_MSG_PREFIX "the distribute and "
 			       "an internal loop do not agree on tile size\n");
-	      dump_printf_loc (MSG_NOTE, gimple_location (gfor),
+	      dump_printf_loc (MSG_NOTE, gfor,
 			       "Loop construct does not seem to loop over "
 			       "a tile size\n");
 	    }
@@ -636,7 +636,7 @@ grid_dist_follows_tiling_pattern (gimple_seq seq, grid_prop *grid,
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, grid->target_loc,
 				   GRID_MISSED_MSG_PREFIX "the distribute "
 				   "construct contains a try..catch region\n");
-		  dump_printf_loc (MSG_NOTE, gimple_location (try_stmt),
+		  dump_printf_loc (MSG_NOTE, try_stmt,
 				   "This statement cannot be analyzed for "
 				   "tiled gridification\n");
 		}
@@ -661,7 +661,7 @@ grid_dist_follows_tiling_pattern (gimple_seq seq, grid_prop *grid,
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, grid->target_loc,
 			       GRID_MISSED_MSG_PREFIX "the distribute "
 			       "construct contains a call\n");
-	      dump_printf_loc (MSG_NOTE, gimple_location (stmt),
+	      dump_printf_loc (MSG_NOTE, stmt,
 			       "This statement cannot be analyzed for "
 			       "tiled gridification\n");
 	    }
@@ -677,7 +677,7 @@ grid_dist_follows_tiling_pattern (gimple_seq seq, grid_prop *grid,
 				   GRID_MISSED_MSG_PREFIX "a parallel "
 				   "construct contains another parallel "
 				   "construct\n");
-		  dump_printf_loc (MSG_NOTE, gimple_location (stmt),
+		  dump_printf_loc (MSG_NOTE, stmt,
 				   "This parallel construct is nested in "
 				   "another one\n");
 		}
@@ -698,7 +698,7 @@ grid_dist_follows_tiling_pattern (gimple_seq seq, grid_prop *grid,
 				   GRID_MISSED_MSG_PREFIX "a loop "
 				   "construct is not nested within a parallel "
 				   "construct\n");
-		  dump_printf_loc (MSG_NOTE, gimple_location (stmt),
+		  dump_printf_loc (MSG_NOTE, stmt,
 				   "This loop construct is not nested in "
 				   "a parallel construct\n");
 		}
@@ -714,7 +714,7 @@ grid_dist_follows_tiling_pattern (gimple_seq seq, grid_prop *grid,
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, grid->target_loc,
 			       GRID_MISSED_MSG_PREFIX "the distribute "
 			       "construct contains a complex statement\n");
-	      dump_printf_loc (MSG_NOTE, gimple_location (stmt),
+	      dump_printf_loc (MSG_NOTE, stmt,
 			       "This statement cannot be analyzed for "
 			       "tiled gridification\n");
 	    }
@@ -734,7 +734,7 @@ grid_target_follows_gridifiable_pattern (gomp_target *target, grid_prop *grid)
   if (gimple_omp_target_kind (target) != GF_OMP_TARGET_KIND_REGION)
     return false;
 
-  location_t tloc = gimple_location (target);
+  dump_user_location_t tloc = target;
   grid->target_loc = tloc;
   gimple *stmt
     = grid_find_single_omp_among_assignments (gimple_omp_body (target),
@@ -1257,14 +1257,13 @@ grid_attempt_target_gridification (gomp_target *target,
 				   gbind *tgt_bind)
 {
   /* removed group_size */
-  grid_prop grid;
-  memset (&grid, 0, sizeof (grid));
+  grid_prop grid = {};
   if (!target || !grid_target_follows_gridifiable_pattern (target, &grid))
     return;
 
   location_t loc = gimple_location (target);
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, target,
 		     "Target construct will be turned into a gridified HSA "
 		     "kernel\n");
 

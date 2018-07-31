@@ -157,7 +157,6 @@ target_libraries="target-libgcc \
 		target-libstdc++-v3 \
 		target-libsanitizer \
 		target-libvtv \
-		target-libmpx \
 		target-libssp \
 		target-libquadmath \
 		target-libgfortran \
@@ -600,22 +599,6 @@ if test -d ${srcdir}/libvtv; then
     fi
 fi
 
-
-# Enable libmpx on supported systems by request.
-if test -d ${srcdir}/libmpx; then
-    if test x$enable_libmpx = x; then
-       AC_MSG_CHECKING([for libmpx support])
-       if (srcdir=${srcdir}/libmpx; \
-               . ${srcdir}/configure.tgt; \
-               test "$LIBMPX_SUPPORTED" != "yes")
-       then
-           AC_MSG_RESULT([no])
-           noconfigdirs="$noconfigdirs target-libmpx"
-       else
-           AC_MSG_RESULT([yes])
-       fi
-    fi
-fi
 
 # Disable libhsail-rt on unsupported systems.
 if test -d ${srcdir}/libhsail-rt; then
@@ -2696,16 +2679,6 @@ if echo " ${target_configdirs} " | grep " libvtv " > /dev/null 2>&1 &&
   bootstrap_target_libs=${bootstrap_target_libs}target-libvtv,
 fi
 
-# If we are building libmpx and $BUILD_CONFIG contains bootstrap-mpx,
-# bootstrap it.
-if echo " ${target_configdirs} " | grep " libmpx " > /dev/null 2>&1; then
-  case "$BUILD_CONFIG" in
-    *bootstrap-mpx* )
-      bootstrap_target_libs=${bootstrap_target_libs}target-libmpx,
-      ;;
-  esac
-fi
-
 # Determine whether gdb needs tk/tcl or not.
 # Use 'maybe' since enable_gdbtk might be true even if tk isn't available
 # and in that case we want gdb to be built without tk.  Ugh!
@@ -2746,7 +2719,9 @@ INSTALL_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-install-/g`
 # extrasub-{build,host,target} not because there is any reason to split
 # the substitutions up that way, but only to remain below the limit of
 # 99 commands in a script, for HP-UX sed.
-# Do not nest @if/@endif pairs, because configure will not warn you at all.
+
+# Do not nest @if/@endif or @unless/@endunless pairs, because
+# configure will not warn you at all.
 
 case "$enable_bootstrap:$ENABLE_GOLD: $configdirs :,$stage1_languages," in
   yes:yes:*\ gold\ *:*,c++,*) ;;
@@ -2765,8 +2740,10 @@ for module in ${build_configdirs} ; do
   extrasub_build="$extrasub_build
 /^@if build-$module\$/d
 /^@endif build-$module\$/d
+/^@unless build-$module\$/,/^@endunless build-$module\$/d
 /^@if build-$module-$bootstrap_suffix\$/d
-/^@endif build-$module-$bootstrap_suffix\$/d"
+/^@endif build-$module-$bootstrap_suffix\$/d
+/^@unless build-$module-$bootstrap_suffix\$/,/^@endunless build-$module-$bootstrap_suffix\$/d"
 done
 extrasub_host=
 for module in ${configdirs} ; do
@@ -2785,8 +2762,10 @@ for module in ${configdirs} ; do
   extrasub_host="$extrasub_host
 /^@if $module\$/d
 /^@endif $module\$/d
+/^@unless $module\$/,/^@endunless $module\$/d
 /^@if $module-$host_bootstrap_suffix\$/d
-/^@endif $module-$host_bootstrap_suffix\$/d"
+/^@endif $module-$host_bootstrap_suffix\$/d
+/^@unless $module-$host_bootstrap_suffix\$/,/^@endunless $module-$host_bootstrap_suffix\$/d"
 done
 extrasub_target=
 for module in ${target_configdirs} ; do
@@ -2805,13 +2784,17 @@ for module in ${target_configdirs} ; do
   extrasub_target="$extrasub_target
 /^@if target-$module\$/d
 /^@endif target-$module\$/d
+/^@unless target-$module\$/,/^@endunless target-$module\$/d
 /^@if target-$module-$target_bootstrap_suffix\$/d
-/^@endif target-$module-$target_bootstrap_suffix\$/d"
+/^@endif target-$module-$target_bootstrap_suffix\$/d
+/^@unless target-$module-$target_bootstrap_suffix\$/,/^@endunless target-$module-$target_bootstrap_suffix\$/d"
 done
 
 # Do the final fixup along with target modules.
 extrasub_target="$extrasub_target
-/^@if /,/^@endif /d"
+/^@if /,/^@endif /d
+/^@unless /d
+/^@endunless /d"
 
 # Create the serialization dependencies.  This uses a temporary file.
 

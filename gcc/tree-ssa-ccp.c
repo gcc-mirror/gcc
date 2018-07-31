@@ -138,7 +138,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "params.h"
 #include "builtins.h"
-#include "tree-chkp.h"
 #include "cfgloop.h"
 #include "stor-layout.h"
 #include "optabs-query.h"
@@ -2080,8 +2079,6 @@ insert_clobber_before_stack_restore (tree saved_val, tree var,
     else if (gimple_assign_ssa_name_copy_p (stmt))
       insert_clobber_before_stack_restore (gimple_assign_lhs (stmt), var,
 					   visited);
-    else if (chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDRET))
-      continue;
     else
       gcc_assert (is_gimple_debug (stmt));
 }

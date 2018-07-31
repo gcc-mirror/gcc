@@ -2952,9 +2952,10 @@ static GTY(()) tree init_optimize;
 static void
 arm_override_options_after_change_1 (struct gcc_options *opts)
 {
-  if (opts->x_align_functions <= 0)
-    opts->x_align_functions = TARGET_THUMB_P (opts->x_target_flags)
-      && opts->x_optimize_size ? 2 : 4;
+  /* -falign-functions without argument: supply one.  */
+  if (opts->x_flag_align_functions && !opts->x_str_align_functions)
+    opts->x_str_align_functions = TARGET_THUMB_P (opts->x_target_flags)
+      && opts->x_optimize_size ? "2" : "4";
 }
 
 /* Implement targetm.override_options_after_change.  */
@@ -15937,7 +15938,7 @@ get_label_padding (rtx label)
 {
   HOST_WIDE_INT align, min_insn_size;
 
-  align = 1 << label_to_alignment (label);
+  align = 1 << label_to_alignment (label).levels[0].log;
   min_insn_size = TARGET_THUMB ? 2 : 4;
   return align > min_insn_size ? align - min_insn_size : 0;
 }
@@ -18463,12 +18464,18 @@ output_move_double (rtx *operands, bool emit, int *count)
       gcc_assert ((REGNO (operands[1]) != IP_REGNUM)
                   || (TARGET_ARM && TARGET_LDRD));
 
+      /* For TARGET_ARM the first source register of an STRD
+	 must be even.  This is usually the case for double-word
+	 values but user assembly constraints can force an odd
+	 starting register.  */
+      bool allow_strd = TARGET_LDRD
+			 && !(TARGET_ARM && (REGNO (operands[1]) & 1) == 1);
       switch (GET_CODE (XEXP (operands[0], 0)))
         {
 	case REG:
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (allow_strd)
 		output_asm_insn ("strd%?\t%1, [%m0]", operands);
 	      else
 		output_asm_insn ("stm%?\t%m0, %M1", operands);
@@ -18476,7 +18483,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  break;
 
         case PRE_INC:
-	  gcc_assert (TARGET_LDRD);
+	  gcc_assert (allow_strd);
 	  if (emit)
 	    output_asm_insn ("strd%?\t%1, [%m0, #8]!", operands);
 	  break;
@@ -18484,7 +18491,7 @@ output_move_double (rtx *operands, bool emit, int *count)
         case PRE_DEC:
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (allow_strd)
 		output_asm_insn ("strd%?\t%1, [%m0, #-8]!", operands);
 	      else
 		output_asm_insn ("stmdb%?\t%m0!, %M1", operands);
@@ -18494,7 +18501,7 @@ output_move_double (rtx *operands, bool emit, int *count)
         case POST_INC:
 	  if (emit)
 	    {
-	      if (TARGET_LDRD)
+	      if (allow_strd)
 		output_asm_insn ("strd%?\t%1, [%m0], #8", operands);
 	      else
 		output_asm_insn ("stm%?\t%m0!, %M1", operands);
@@ -18502,7 +18509,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  break;
 
         case POST_DEC:
-	  gcc_assert (TARGET_LDRD);
+	  gcc_assert (allow_strd);
 	  if (emit)
 	    output_asm_insn ("strd%?\t%1, [%m0], #-8", operands);
 	  break;
@@ -18513,8 +18520,8 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  otherops[1] = XEXP (XEXP (XEXP (operands[0], 0), 1), 0);
 	  otherops[2] = XEXP (XEXP (XEXP (operands[0], 0), 1), 1);
 
-	  /* IWMMXT allows offsets larger than ldrd can handle,
-	     fix these up with a pair of ldr.  */
+	  /* IWMMXT allows offsets larger than strd can handle,
+	     fix these up with a pair of str.  */
 	  if (!TARGET_THUMB2
 	      && CONST_INT_P (otherops[2])
 	      && (INTVAL(otherops[2]) <= -256
@@ -18579,7 +18586,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 		  return "";
 		}
 	    }
-	  if (TARGET_LDRD
+	  if (allow_strd
 	      && (REG_P (otherops[2])
 		  || TARGET_THUMB2
 		  || (CONST_INT_P (otherops[2])
@@ -30039,7 +30046,6 @@ arm_block_set_aligned_vect (rtx dstbase,
   rtx dst, addr, mem;
   rtx val_vec, reg;
   machine_mode mode;
-  unsigned HOST_WIDE_INT v = value;
   unsigned int offset = 0;
 
   gcc_assert ((align & 0x3) == 0);
@@ -30058,10 +30064,8 @@ arm_block_set_aligned_vect (rtx dstbase,
 
   dst = copy_addr_to_reg (XEXP (dstbase, 0));
 
-  v = sext_hwi (v, BITS_PER_WORD);
-
   reg = gen_reg_rtx (mode);
-  val_vec = gen_const_vec_duplicate (mode, GEN_INT (v));
+  val_vec = gen_const_vec_duplicate (mode, gen_int_mode (value, QImode));
   /* Emit instruction loading the constant value.  */
   emit_move_insn (reg, val_vec);
 
@@ -31505,8 +31509,8 @@ arm_can_change_mode_class (machine_mode from, machine_mode to,
 {
   if (TARGET_BIG_END
       && !(GET_MODE_SIZE (from) == 16 && GET_MODE_SIZE (to) == 8)
-      && (GET_MODE_SIZE (from) > UNITS_PER_WORD
-	  || GET_MODE_SIZE (to) > UNITS_PER_WORD)
+      && (GET_MODE_UNIT_SIZE (from) > UNITS_PER_WORD
+	  || GET_MODE_UNIT_SIZE (to) > UNITS_PER_WORD)
       && reg_classes_intersect_p (VFP_REGS, rclass))
     return false;
   return true;

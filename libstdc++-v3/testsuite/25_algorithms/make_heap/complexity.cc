@@ -16,6 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
+// { dg-require-cstdint "" }
+// { dg-require-effective-target random_device }
 
 #include <random>
 #include <vector>

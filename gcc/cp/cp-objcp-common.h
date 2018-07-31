@@ -34,6 +34,7 @@ extern tree cp_unit_size_without_reusable_padding (tree);
 extern tree cp_get_global_decls ();
 extern tree cp_pushdecl (tree);
 extern void cp_register_dumps (gcc::dump_manager *);
+extern tree cxx_make_type_hook			(tree_code);
 
 /* Lang hooks that are shared between C++ and ObjC++ are defined here.  Hooks
    specific to C++ or ObjC++ go in cp/cp-lang.c and objcp/objcp-lang.c,
@@ -126,7 +127,7 @@ extern void cp_register_dumps (gcc::dump_manager *);
 #define LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN cp_type_quals
 
 #undef LANG_HOOKS_MAKE_TYPE
-#define LANG_HOOKS_MAKE_TYPE cxx_make_type
+#define LANG_HOOKS_MAKE_TYPE cxx_make_type_hook
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE c_common_type_for_mode
 #undef LANG_HOOKS_TYPE_FOR_SIZE

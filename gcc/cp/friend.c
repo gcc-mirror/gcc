@@ -173,6 +173,12 @@ add_friend (tree type, tree decl, bool complain)
   if (decl == error_mark_node)
     return;
 
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_TEMPLATE_INSTANTIATION (decl))
+    /* We'll have parsed this as a declaration, and therefore not
+       marked the lookup set for keeping.  Do that now.  */
+    lookup_keep (DECL_TI_TEMPLATE (decl));
+
   typedecl = TYPE_MAIN_DECL (type);
   list = DECL_FRIENDLIST (typedecl);
   name = DECL_NAME (decl);

@@ -4072,7 +4072,7 @@ package body Exp_Ch4 is
          --  we avoid never-ending loops expanding them, and we also ensure
          --  the back end never receives nonbinary modular type expressions.
 
-         if Nkind_In (Nkind (N), N_Op_And, N_Op_Or) then
+         if Nkind_In (Nkind (N), N_Op_And, N_Op_Or, N_Op_Xor) then
             Set_Left_Opnd (Op_Expr,
               Unchecked_Convert_To (Standard_Unsigned,
                 New_Copy_Tree (Left_Opnd (N))));
@@ -4561,12 +4561,14 @@ package body Exp_Ch4 is
          end if;
       end if;
 
-      --  If no storage pool has been specified and we have the restriction
+      --  If no storage pool has been specified, or the storage pool
+      --  is System.Pool_Global.Global_Pool_Object, and the restriction
       --  No_Standard_Allocators_After_Elaboration is present, then generate
       --  a call to Elaboration_Allocators.Check_Standard_Allocator.
 
       if Nkind (N) = N_Allocator
-        and then No (Storage_Pool (N))
+        and then (No (Storage_Pool (N))
+                   or else Is_RTE (Storage_Pool (N), RE_Global_Pool_Object))
         and then Restriction_Active (No_Standard_Allocators_After_Elaboration)
       then
          Insert_Action (N,
@@ -10019,6 +10021,8 @@ package body Exp_Ch4 is
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));
       end if;
+
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Xor;
 
    ----------------------
@@ -12154,12 +12158,11 @@ package body Exp_Ch4 is
       --  Generates the following code: (assuming that Typ has one Discr and
       --  component C2 is also a record)
 
-      --   True
-      --     and then Lhs.Discr1 = Rhs.Discr1
-      --     and then Lhs.C1 = Rhs.C1
-      --     and then Lhs.C2.C1=Rhs.C2.C1 and then ... Lhs.C2.Cn=Rhs.C2.Cn
-      --     and then ...
-      --     and then Lhs.Cmpn = Rhs.Cmpn
+      --  Lhs.Discr1 = Rhs.Discr1
+      --    and then Lhs.C1 = Rhs.C1
+      --    and then Lhs.C2.C1=Rhs.C2.C1 and then ... Lhs.C2.Cn=Rhs.C2.Cn
+      --    and then ...
+      --    and then Lhs.Cmpn = Rhs.Cmpn
 
       Result := New_Occurrence_Of (Standard_True, Loc);
       C := Element_To_Compare (First_Entity (Typ));
@@ -12171,7 +12174,6 @@ package body Exp_Ch4 is
 
          begin
             if First_Time then
-               First_Time := False;
                New_Lhs := Lhs;
                New_Rhs := Rhs;
             else
@@ -12199,13 +12201,28 @@ package body Exp_Ch4 is
                Set_Etype (Result, Standard_Boolean);
                exit;
             else
-               Result :=
-                 Make_And_Then (Loc,
-                   Left_Opnd  => Result,
-                   Right_Opnd => Check);
+               if First_Time then
+                  Result := Check;
+
+               --  Generate logical "and" for CodePeer to simplify the
+               --  generated code and analysis.
+
+               elsif CodePeer_Mode then
+                  Result :=
+                    Make_Op_And (Loc,
+                      Left_Opnd  => Result,
+                      Right_Opnd => Check);
+
+               else
+                  Result :=
+                    Make_And_Then (Loc,
+                      Left_Opnd  => Result,
+                      Right_Opnd => Check);
+               end if;
             end if;
          end;
 
+         First_Time := False;
          C := Element_To_Compare (Next_Entity (C));
       end loop;
 
@@ -12231,7 +12248,7 @@ package body Exp_Ch4 is
 
       function Make_Cond (Alt : Node_Id) return Node_Id is
          Cond : Node_Id;
-         L    : constant Node_Id := New_Copy (Lop);
+         L    : constant Node_Id := New_Copy_Tree (Lop);
          R    : constant Node_Id := Relocate_Node (Alt);
 
       begin
@@ -12530,7 +12547,7 @@ package body Exp_Ch4 is
             Sel_Comp := Parent (Sel_Comp);
          end loop;
 
-         return Ekind (Entity (Prefix (Sel_Comp))) in Formal_Kind;
+         return Is_Formal (Entity (Prefix (Sel_Comp)));
       end Prefix_Is_Formal_Parameter;
 
    --  Start of processing for Has_Inferable_Discriminants

@@ -83,6 +83,12 @@ package body Sem_Ch5 is
    --  messages. This variable is recursively saved on entry to processing the
    --  construct, and restored on exit.
 
+   function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean;
+   --  N is the node for an arbitrary construct. This function searches the
+   --  construct N to see if any expressions within it contain function
+   --  calls that use the secondary stack, returning True if any such call
+   --  is found, and False otherwise.
+
    procedure Preanalyze_Range (R_Copy : Node_Id);
    --  Determine expected type of range or domain of iteration of Ada 2012
    --  loop by analyzing separate copy. Do the analysis and resolution of the
@@ -2692,12 +2698,6 @@ package body Sem_Ch5 is
       --  forms. In this case it is not sufficent to check the static predicate
       --  function only, look for a dynamic predicate aspect as well.
 
-      function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean;
-      --  N is the node for an arbitrary construct. This function searches the
-      --  construct N to see if any expressions within it contain function
-      --  calls that use the secondary stack, returning True if any such call
-      --  is found, and False otherwise.
-
       procedure Process_Bounds (R : Node_Id);
       --  If the iteration is given by a range, create temporaries and
       --  assignment statements block to capture the bounds and perform
@@ -2781,65 +2781,6 @@ package body Sem_Ch5 is
             Set_No_Dynamic_Predicate_On_Actual (T);
          end if;
       end Check_Predicate_Use;
-
-      ------------------------------------
-      -- Has_Call_Using_Secondary_Stack --
-      ------------------------------------
-
-      function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean is
-         function Check_Call (N : Node_Id) return Traverse_Result;
-         --  Check if N is a function call which uses the secondary stack
-
-         ----------------
-         -- Check_Call --
-         ----------------
-
-         function Check_Call (N : Node_Id) return Traverse_Result is
-            Nam  : Node_Id;
-            Subp : Entity_Id;
-            Typ  : Entity_Id;
-
-         begin
-            if Nkind (N) = N_Function_Call then
-               Nam := Name (N);
-
-               --  Obtain the subprogram being invoked
-
-               loop
-                  if Nkind (Nam) = N_Explicit_Dereference then
-                     Nam := Prefix (Nam);
-
-                  elsif Nkind (Nam) = N_Selected_Component then
-                     Nam := Selector_Name (Nam);
-
-                  else
-                     exit;
-                  end if;
-               end loop;
-
-               Subp := Entity (Nam);
-               Typ  := Etype (Subp);
-
-               if Requires_Transient_Scope (Typ) then
-                  return Abandon;
-
-               elsif Sec_Stack_Needed_For_Return (Subp) then
-                  return Abandon;
-               end if;
-            end if;
-
-            --  Continue traversing the tree
-
-            return OK;
-         end Check_Call;
-
-         function Check_Calls is new Traverse_Func (Check_Call);
-
-      --  Start of processing for Has_Call_Using_Secondary_Stack
-
-      begin
-         return Check_Calls (N) = Abandon;
-      end Has_Call_Using_Secondary_Stack;
 
       --------------------
       -- Process_Bounds --
@@ -3644,6 +3585,58 @@ package body Sem_Ch5 is
          end;
       end if;
 
+      --  Wrap the loop in a block when the evaluation of the loop iterator
+      --  relies on the secondary stack. Required to ensure releasing the
+      --  secondary stack as soon as the loop completes.
+
+      if Present (Iter)
+        and then Present (Loop_Parameter_Specification (Iter))
+        and then not Is_Wrapped_In_Block (N)
+      then
+         declare
+            LPS : constant Node_Id := Loop_Parameter_Specification (Iter);
+            DSD : constant Node_Id :=
+                    Original_Node (Discrete_Subtype_Definition (LPS));
+
+            Block_Id  : Entity_Id;
+            Block_Nod : Node_Id;
+            HB        : Node_Id;
+            LB        : Node_Id;
+
+         begin
+            if Nkind (DSD) = N_Subtype_Indication
+              and then Nkind (Range_Expression (Constraint (DSD))) = N_Range
+            then
+               LB :=
+                 New_Copy_Tree
+                   (Low_Bound (Range_Expression (Constraint (DSD))));
+               HB :=
+                 New_Copy_Tree
+                   (High_Bound (Range_Expression (Constraint (DSD))));
+
+               Preanalyze (LB);
+               Preanalyze (HB);
+
+               if Has_Call_Using_Secondary_Stack (LB)
+                 or else Has_Call_Using_Secondary_Stack (HB)
+               then
+                  Block_Nod :=
+                    Make_Block_Statement (Loc,
+                      Declarations               => New_List,
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements => New_List (Relocate_Node (N))));
+
+                  Add_Block_Identifier (Block_Nod, Block_Id);
+                  Set_Uses_Sec_Stack (Block_Id);
+                  Rewrite (N, Block_Nod);
+                  Analyze (N);
+                  return;
+               end if;
+            end if;
+         end;
+      end if;
+
       --  Kill current values on entry to loop, since statements in the body of
       --  the loop may have been executed before the loop is entered. Similarly
       --  we kill values after the loop, since we do not know that the body of
@@ -4071,6 +4064,65 @@ package body Sem_Ch5 is
          end;
       end if;
    end Check_Unreachable_Code;
+
+   ------------------------------------
+   -- Has_Call_Using_Secondary_Stack --
+   ------------------------------------
+
+   function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean is
+      function Check_Call (N : Node_Id) return Traverse_Result;
+      --  Check if N is a function call which uses the secondary stack
+
+      ----------------
+      -- Check_Call --
+      ----------------
+
+      function Check_Call (N : Node_Id) return Traverse_Result is
+         Nam  : Node_Id;
+         Subp : Entity_Id;
+         Typ  : Entity_Id;
+
+      begin
+         if Nkind (N) = N_Function_Call then
+            Nam := Name (N);
+
+            --  Obtain the subprogram being invoked
+
+            loop
+               if Nkind (Nam) = N_Explicit_Dereference then
+                  Nam := Prefix (Nam);
+
+               elsif Nkind (Nam) = N_Selected_Component then
+                  Nam := Selector_Name (Nam);
+
+               else
+                  exit;
+               end if;
+            end loop;
+
+            Subp := Entity (Nam);
+            Typ  := Etype (Subp);
+
+            if Requires_Transient_Scope (Typ) then
+               return Abandon;
+
+            elsif Sec_Stack_Needed_For_Return (Subp) then
+               return Abandon;
+            end if;
+         end if;
+
+         --  Continue traversing the tree
+
+         return OK;
+      end Check_Call;
+
+      function Check_Calls is new Traverse_Func (Check_Call);
+
+   --  Start of processing for Has_Call_Using_Secondary_Stack
+
+   begin
+      return Check_Calls (N) = Abandon;
+   end Has_Call_Using_Secondary_Stack;
 
    ----------------------
    -- Preanalyze_Range --

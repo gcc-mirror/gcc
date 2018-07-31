@@ -2,6 +2,6 @@
 
 extern "C" { // { dg-message "1: 'extern .C.' linkage started here" }
 
-constexpr double operator"" _deg ( double degrees ); // { dg-error "literal operator with C linkage" }
+constexpr double operator"" _deg ( double degrees ); // { dg-error "18:literal operator with C linkage" }
 
 }

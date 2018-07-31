@@ -381,8 +381,8 @@
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
 {
   rtx ext = gen_reg_rtx (SImode);
-  emit_move_insn (ext, gen_lowpart (SImode, operands[1]));
-  operands[1] = ext;
+  emit_move_insn (ext, gen_lowpart (SImode, operands[2]));
+  operands[2] = ext;
 })
 
 ;; Multiply and add packed integers.

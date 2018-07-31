@@ -4,39 +4,39 @@
 // aren't emitted into assembly even at -O0.
 // { dg-final { scan-assembler-not "inlvarvariable" } }
 
-inline int inlvarvariable1 = 1;				// { dg-warning "inline variables are only available with" "" { target c++14_down } }
-const inline int inlvarvariable2 = 2;			// { dg-warning "inline variables are only available with" "" { target c++14_down } }
+inline int inlvarvariable1 = 1;				// { dg-warning "1:inline variables are only available with" "" { target c++14_down } }
+const inline int inlvarvariable2 = 2;			// { dg-warning "7:inline variables are only available with" "" { target c++14_down } }
 namespace N
 {
-  int inline inlvarvariable3;				// { dg-warning "inline variables are only available with" "" { target c++14_down } }
-  const int inline inlvarvariable4 = 4;			// { dg-warning "inline variables are only available with" "" { target c++14_down } }
+  int inline inlvarvariable3;				// { dg-warning "7:inline variables are only available with" "" { target c++14_down } }
+  const int inline inlvarvariable4 = 4;			// { dg-warning "13:inline variables are only available with" "" { target c++14_down } }
 }
 struct S
 {
-  static inline double inlvarvariable5 = 5.0;		// { dg-warning "inline variables are only available with" "" { target c++14_down } }
+  static inline double inlvarvariable5 = 5.0;		// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }
 #if __cplusplus >= 201103L
   static constexpr int inlvarvariable6 = 6;
-  static inline constexpr int inlvarvariable7 = 7;	// { dg-warning "inline variables are only available with" "" { target { c++11 && c++14_down } } }
+  static inline constexpr int inlvarvariable7 = 7;	// { dg-warning "10:inline variables are only available with" "" { target { c++11 && c++14_down } } }
 #endif
 };
 template <int N>					// { dg-warning "variable templates only available with" "" { target c++11_down } .+1 }
-inline int inlvarvariable8;				// { dg-warning "inline variables are only available with" "" { target c++14_down } }
+inline int inlvarvariable8;				// { dg-warning "1:inline variables are only available with" "" { target c++14_down } }
 template <int N>					// { dg-warning "variable templates only available with" "" { target c++11_down } .+1 }
-const int inline inlvarvariable9 = 9;			// { dg-warning "inline variables are only available with" "" { target c++14_down } }
+const int inline inlvarvariable9 = 9;			// { dg-warning "11:inline variables are only available with" "" { target c++14_down } }
 namespace N
 {
   template <int N>					// { dg-warning "variable templates only available with" "" { target c++11_down } .+1 }
-  int inline inlvarvariable10 = 10;			// { dg-warning "inline variables are only available with" "" { target c++14_down } }
+  int inline inlvarvariable10 = 10;			// { dg-warning "7:inline variables are only available with" "" { target c++14_down } }
   template <int N>					// { dg-warning "variable templates only available with" "" { target c++11_down } .+1 }
-  const inline double inlvarvariable11 = 11.0;		// { dg-warning "inline variables are only available with" "" { target c++14_down } }
+  const inline double inlvarvariable11 = 11.0;		// { dg-warning "9:inline variables are only available with" "" { target c++14_down } }
 }
 template <int N>
 struct T
 {
-  static inline int inlvarvariable12 = 12;		// { dg-warning "inline variables are only available with" "" { target c++14_down } }
+  static inline int inlvarvariable12 = 12;		// { dg-warning "10:inline variables are only available with" "" { target c++14_down } }
 #if __cplusplus >= 201103L
   static constexpr int inlvarvariable13 = 13;
-  static inline constexpr double inlvarvariable14 = 14.0; // { dg-warning "inline variables are only available with" "" { target { c++11 && c++14_down } } }
+  static inline constexpr double inlvarvariable14 = 14.0; // { dg-warning "10:inline variables are only available with" "" { target { c++11 && c++14_down } } }
 #endif
 };
 #if __cplusplus < 201103L

@@ -754,8 +754,7 @@ func_checker::compare_gimple_call (gcall *s1, gcall *s2)
       || gimple_call_return_slot_opt_p (s1) != gimple_call_return_slot_opt_p (s2)
       || gimple_call_from_thunk_p (s1) != gimple_call_from_thunk_p (s2)
       || gimple_call_va_arg_pack_p (s1) != gimple_call_va_arg_pack_p (s2)
-      || gimple_call_alloca_for_var_p (s1) != gimple_call_alloca_for_var_p (s2)
-      || gimple_call_with_bounds_p (s1) != gimple_call_with_bounds_p (s2))
+      || gimple_call_alloca_for_var_p (s1) != gimple_call_alloca_for_var_p (s2))
     return false;
 
   if (gimple_call_internal_p (s1)

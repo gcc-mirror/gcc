@@ -175,8 +175,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_XSAVEOPT_P(x)	TARGET_ISA_XSAVEOPT_P(x)
 #define TARGET_PREFETCHWT1	TARGET_ISA_PREFETCHWT1
 #define TARGET_PREFETCHWT1_P(x)	TARGET_ISA_PREFETCHWT1_P(x)
-#define TARGET_MPX	TARGET_ISA_MPX
-#define TARGET_MPX_P(x)	TARGET_ISA_MPX_P(x)
 #define TARGET_CLWB	TARGET_ISA_CLWB
 #define TARGET_CLWB_P(x)	TARGET_ISA_CLWB_P(x)
 #define TARGET_MWAITX	TARGET_ISA_MWAITX
@@ -1157,9 +1155,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
 
-#define VALID_BND_REG_MODE(MODE) \
-  (TARGET_64BIT ? (MODE) == BND64mode : (MODE) == BND32mode)
-
 #define VALID_DFP_MODE_P(MODE) \
   ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
 
@@ -1261,9 +1256,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define FIRST_MASK_REG  MASK0_REG
 #define LAST_MASK_REG   MASK7_REG
 
-#define FIRST_BND_REG  BND0_REG
-#define LAST_BND_REG   BND3_REG
-
 /* Override this in other tm.h files to cope with various OS lossage
    requiring a frame pointer.  */
 #ifndef SUBTARGET_FRAME_POINTER_REQUIRED
@@ -1345,7 +1337,6 @@ enum reg_class
   NO_REX_SSE_REGS,
   SSE_REGS,
   EVEX_SSE_REGS,
-  BND_REGS,
   ALL_SSE_REGS,
   MMX_REGS,
   FP_TOP_SSE_REGS,
@@ -1408,7 +1399,6 @@ enum reg_class
    "NO_REX_SSE_REGS",			\
    "SSE_REGS",				\
    "EVEX_SSE_REGS",			\
-   "BND_REGS",				\
    "ALL_SSE_REGS",			\
    "MMX_REGS",				\
    "FP_TOP_SSE_REGS",			\
@@ -1451,7 +1441,6 @@ enum reg_class
 { 0x1fe00000,  0x000000,    0x0 },       /* NO_REX_SSE_REGS */           \
 { 0x1fe00000,  0x1fe000,    0x0 },       /* SSE_REGS */                  \
        { 0x0,0xffe00000,   0x1f },       /* EVEX_SSE_REGS */             \
-       { 0x0,       0x0,0x1e000 },       /* BND_REGS */			 \
 { 0x1fe00000,0xffffe000,   0x1f },       /* ALL_SSE_REGS */              \
 { 0xe0000000,      0x1f,    0x0 },       /* MMX_REGS */                  \
 { 0x1fe00100,0xffffe000,   0x1f },       /* FP_TOP_SSE_REG */            \
@@ -1525,9 +1514,6 @@ enum reg_class
 
 #define CC_REG_P(X) (REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define CC_REGNO_P(X) ((X) == FLAGS_REG || (X) == FPSR_REG)
-
-#define BND_REG_P(X) (REG_P (X) && BND_REGNO_P (REGNO (X)))
-#define BND_REGNO_P(N) IN_RANGE ((N), FIRST_BND_REG, LAST_BND_REG)
 
 #define MOD4_SSE_REG_P(X) (REG_P (X) && MOD4_SSE_REGNO_P (REGNO (X)))
 #define MOD4_SSE_REGNO_P(N) ((N) == XMM0_REG  \
@@ -1670,9 +1656,6 @@ typedef struct ix86_args {
   int float_in_sse;		/* Set to 1 or 2 for 32bit targets if
 				   SFmode/DFmode arguments should be passed
 				   in SSE registers.  Otherwise 0.  */
-  int bnd_regno;                /* next available bnd register number */
-  int bnds_in_bt;               /* number of bounds expected in BT.  */
-  int force_bnd_pass;           /* number of bounds expected for stdarg arg.  */
   int stdarg;                   /* Set to 1 if function is stdarg.  */
   enum calling_abi call_abi;	/* Set to SYSV_ABI for sysv abi. Otherwise
  				   MS_ABI for ms abi.  */
@@ -1964,9 +1947,6 @@ do {							\
 #define STACK_SAVEAREA_MODE(LEVEL)			\
   ((LEVEL) == SAVE_NONLOCAL ? (TARGET_64BIT ? TImode : DImode) : Pmode)
 
-/* Specify the machine mode that bounds have.  */
-#define BNDmode (ix86_pmode == PMODE_DI ? BND64mode : BND32mode)
-
 /* A C expression whose value is zero if pointers that need to be extended
    from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and
    greater then zero if they are zero-extended and less then zero if the
@@ -2221,7 +2201,7 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define ASM_OUTPUT_MAX_SKIP_PAD(FILE, LOG, MAX_SKIP)			\
   if ((LOG) != 0)							\
     {									\
-      if ((MAX_SKIP) == 0)						\
+      if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1 << (LOG)) - 1)		\
         fprintf ((FILE), "\t.p2align %d\n", (LOG));			\
       else								\
         fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
@@ -2257,15 +2237,6 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 /* Default threshold for putting data in large sections
    with x86-64 medium memory model */
 #define DEFAULT_LARGE_SECTION_THRESHOLD 65536
-
-/* Adjust the length of the insn with the length of BND prefix.  */
-
-#define ADJUST_INSN_LENGTH(INSN, LENGTH)		\
-do {							\
-  if (NONDEBUG_INSN_P (INSN) && INSN_CODE (INSN) >= 0	\
-      && get_attr_maybe_prefix_bnd (INSN))		\
-    LENGTH += ix86_bnd_prefixed_insn_p (INSN);		\
-} while (0)
 
 /* Which processor to tune code generation for.  These must be in sync
    with processor_target_table in i386.c.  */ 

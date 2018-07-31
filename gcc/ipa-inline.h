@@ -38,7 +38,7 @@ struct edge_growth_cache_entry
       hints (hints) {}
 };
 
-extern vec<edge_growth_cache_entry> edge_growth_cache;
+extern call_summary<edge_growth_cache_entry *> *edge_growth_cache;
 
 /* In ipa-inline-analysis.c  */
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
@@ -47,7 +47,6 @@ bool growth_likely_positive (struct cgraph_node *, int);
 int do_estimate_edge_size (struct cgraph_edge *edge);
 sreal do_estimate_edge_time (struct cgraph_edge *edge);
 ipa_hints do_estimate_edge_hints (struct cgraph_edge *edge);
-void initialize_growth_caches (void);
 void free_growth_caches (void);
 
 /* In ipa-inline.c  */
@@ -69,11 +68,12 @@ extern int nfunctions_inlined;
 static inline int
 estimate_edge_size (struct cgraph_edge *edge)
 {
-  int ret;
-  if ((int)edge_growth_cache.length () <= edge->uid
-      || !(ret = edge_growth_cache[edge->uid].size))
+  edge_growth_cache_entry *entry;
+  if (edge_growth_cache == NULL
+      || (entry = edge_growth_cache->get (edge)) == NULL
+      || entry->size == 0)
     return do_estimate_edge_size (edge);
-  return ret - (ret > 0);
+  return entry->size - (entry->size > 0);
 }
 
 /* Return estimated callee growth after inlining EDGE.  */
@@ -81,10 +81,9 @@ estimate_edge_size (struct cgraph_edge *edge)
 static inline int
 estimate_edge_growth (struct cgraph_edge *edge)
 {
-  gcc_checking_assert (ipa_call_summaries->get (edge)->call_stmt_size
-		       || !edge->callee->analyzed);
-  return (estimate_edge_size (edge)
-	  - ipa_call_summaries->get (edge)->call_stmt_size);
+  ipa_call_summary *s = ipa_call_summaries->get (edge);
+  gcc_checking_assert (s->call_stmt_size || !edge->callee->analyzed);
+  return (estimate_edge_size (edge) - s->call_stmt_size);
 }
 
 /* Return estimated callee runtime increase after inlining
@@ -93,13 +92,14 @@ estimate_edge_growth (struct cgraph_edge *edge)
 static inline sreal
 estimate_edge_time (struct cgraph_edge *edge, sreal *nonspec_time = NULL)
 {
-  sreal ret;
-  if ((int)edge_growth_cache.length () <= edge->uid
-      || !edge_growth_cache[edge->uid].size)
+  edge_growth_cache_entry *entry;
+  if (edge_growth_cache == NULL
+      || (entry = edge_growth_cache->get (edge)) == NULL
+      || entry->time == 0)
     return do_estimate_edge_time (edge);
   if (nonspec_time)
-    *nonspec_time = edge_growth_cache[edge->uid].nonspec_time;
-  return edge_growth_cache[edge->uid].time;
+    *nonspec_time = edge_growth_cache->get (edge)->nonspec_time;
+  return entry->time;
 }
 
 
@@ -109,23 +109,12 @@ estimate_edge_time (struct cgraph_edge *edge, sreal *nonspec_time = NULL)
 static inline ipa_hints
 estimate_edge_hints (struct cgraph_edge *edge)
 {
-  ipa_hints ret;
-  if ((int)edge_growth_cache.length () <= edge->uid
-      || !(ret = edge_growth_cache[edge->uid].hints))
+  edge_growth_cache_entry *entry;
+  if (edge_growth_cache == NULL
+      || (entry = edge_growth_cache->get (edge)) == NULL
+      || entry->hints == 0)
     return do_estimate_edge_hints (edge);
-  return ret - 1;
-}
-
-/* Reset cached value for EDGE.  */
-
-static inline void
-reset_edge_growth_cache (struct cgraph_edge *edge)
-{
-  if ((int)edge_growth_cache.length () > edge->uid)
-    {
-      struct edge_growth_cache_entry zero (0, 0, 0, 0);
-      edge_growth_cache[edge->uid] = zero;
-    }
+  return entry->hints - 1;
 }
 
 #endif /* GCC_IPA_INLINE_H */

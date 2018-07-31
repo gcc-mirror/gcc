@@ -3735,7 +3735,7 @@ so certain warnings should be suppressed.
 @item 4
 This indicates that the following text should be treated as being
 wrapped in an implicit @code{extern "C"} block.
-@c maybe cross reference NO_IMPLICIT_EXTERN_C
+@c maybe cross reference SYSTEM_IMPLICIT_EXTERN_C
 @end table
 
 As an extension, the preprocessor accepts linemarkers in non-assembler

@@ -47,6 +47,8 @@ c-common.h, not after.
    but not all node kinds do (e.g. constants, and references to
    params, locals, etc), so we stash a copy here.  */
 
+extern location_t cp_expr_location		(const_tree);
+
 class cp_expr
 {
 public:
@@ -54,7 +56,7 @@ public:
     m_value (NULL), m_loc (UNKNOWN_LOCATION) {}
 
   cp_expr (tree value) :
-    m_value (value), m_loc (EXPR_LOCATION (m_value)) {}
+    m_value (value), m_loc (cp_expr_location (m_value)) {}
 
   cp_expr (tree value, location_t loc):
     m_value (value), m_loc (loc) {}
@@ -152,6 +154,24 @@ enum cp_tree_index
     CPTI_AUTO_IDENTIFIER,
     CPTI_DECLTYPE_AUTO_IDENTIFIER,
     CPTI_INIT_LIST_IDENTIFIER,
+    CPTI_FOR_RANGE__IDENTIFIER,
+    CPTI_FOR_BEGIN__IDENTIFIER,
+    CPTI_FOR_END__IDENTIFIER,
+    CPTI_FOR_RANGE_IDENTIFIER,
+    CPTI_FOR_BEGIN_IDENTIFIER,
+    CPTI_FOR_END_IDENTIFIER,
+    CPTI_ABI_TAG_IDENTIFIER,
+    CPTI_ALIGNED_IDENTIFIER,
+    CPTI_BEGIN_IDENTIFIER,
+    CPTI_END_IDENTIFIER,
+    CPTI_GET_IDENTIFIER,
+    CPTI_GNU_IDENTIFIER,
+    CPTI_TUPLE_ELEMENT_IDENTIFIER,
+    CPTI_TUPLE_SIZE_IDENTIFIER,
+    CPTI_TYPE_IDENTIFIER,
+    CPTI_VALUE_IDENTIFIER,
+    CPTI_FUN_IDENTIFIER,
+    CPTI_CLOSURE_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -272,6 +292,24 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define auto_identifier			cp_global_trees[CPTI_AUTO_IDENTIFIER]
 #define decltype_auto_identifier	cp_global_trees[CPTI_DECLTYPE_AUTO_IDENTIFIER]
 #define init_list_identifier		cp_global_trees[CPTI_INIT_LIST_IDENTIFIER]
+#define for_range__identifier		cp_global_trees[CPTI_FOR_RANGE__IDENTIFIER]
+#define for_begin__identifier		cp_global_trees[CPTI_FOR_BEGIN__IDENTIFIER]
+#define for_end__identifier		cp_global_trees[CPTI_FOR_END__IDENTIFIER]
+#define for_range_identifier		cp_global_trees[CPTI_FOR_RANGE_IDENTIFIER]
+#define for_begin_identifier		cp_global_trees[CPTI_FOR_BEGIN_IDENTIFIER]
+#define for_end_identifier		cp_global_trees[CPTI_FOR_END_IDENTIFIER]
+#define abi_tag_identifier		cp_global_trees[CPTI_ABI_TAG_IDENTIFIER]
+#define aligned_identifier		cp_global_trees[CPTI_ALIGNED_IDENTIFIER]
+#define begin_identifier		cp_global_trees[CPTI_BEGIN_IDENTIFIER]
+#define end_identifier			cp_global_trees[CPTI_END_IDENTIFIER]
+#define get__identifier			cp_global_trees[CPTI_GET_IDENTIFIER]
+#define gnu_identifier			cp_global_trees[CPTI_GNU_IDENTIFIER]
+#define tuple_element_identifier	cp_global_trees[CPTI_TUPLE_ELEMENT_IDENTIFIER]
+#define tuple_size_identifier		cp_global_trees[CPTI_TUPLE_SIZE_IDENTIFIER]
+#define type_identifier			cp_global_trees[CPTI_TYPE_IDENTIFIER]
+#define value_identifier		cp_global_trees[CPTI_VALUE_IDENTIFIER]
+#define fun_identifier			cp_global_trees[CPTI_FUN_IDENTIFIER]
+#define closure_identifier		cp_global_trees[CPTI_CLOSURE_IDENTIFIER]
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 
@@ -385,7 +423,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_FINAL_P (in FUNCTION_DECL)
       QUALIFIED_NAME_IS_TEMPLATE (in SCOPE_REF)
       DECLTYPE_FOR_INIT_CAPTURE (in DECLTYPE_TYPE)
-      CONSTRUCTOR_NO_IMPLICIT_ZERO (in CONSTRUCTOR)
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
       OVL_USING_P (in OVERLOAD)
@@ -398,7 +435,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TARGET_EXPR_DIRECT_INIT_P (in TARGET_EXPR)
       FNDECL_USED_AUTO (in FUNCTION_DECL)
       DECLTYPE_FOR_LAMBDA_PROXY (in DECLTYPE_TYPE)
-      REF_PARENTHESIZED_P (in COMPONENT_REF, INDIRECT_REF, SCOPE_REF)
+      REF_PARENTHESIZED_P (in COMPONENT_REF, INDIRECT_REF, SCOPE_REF, VIEW_CONVERT_EXPR)
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
       OVL_HIDDEN_P (in OVERLOAD)
@@ -3675,7 +3712,7 @@ struct GTY(()) lang_decl {
    of the time in C++14 mode.  */
 
 #define REF_PARENTHESIZED_P(NODE) \
-  TREE_LANG_FLAG_2 (TREE_CHECK3 ((NODE), COMPONENT_REF, INDIRECT_REF, SCOPE_REF))
+  TREE_LANG_FLAG_2 (TREE_CHECK4 ((NODE), COMPONENT_REF, INDIRECT_REF, SCOPE_REF, VIEW_CONVERT_EXPR))
 
 /* Nonzero if this AGGR_INIT_EXPR provides for initialization via a
    constructor call, rather than an ordinary function call.  */
@@ -4133,11 +4170,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* True if NODE is a init-list used as a direct-initializer, i.e.
    B b{1,2}, not B b({1,2}) or B b = {1,2}.  */
 #define CONSTRUCTOR_IS_DIRECT_INIT(NODE) (TREE_LANG_FLAG_0 (CONSTRUCTOR_CHECK (NODE)))
-
-/* True if an uninitialized element in NODE should not be treated as
-   implicitly value-initialized.  Only used in constexpr evaluation.  */
-#define CONSTRUCTOR_NO_IMPLICIT_ZERO(NODE) \
-  (TREE_LANG_FLAG_1 (CONSTRUCTOR_CHECK (NODE)))
 
 /* True if this CONSTRUCTOR should not be used as a variable initializer
    because it was loaded from a constexpr variable with mutable fields.  */
@@ -6045,6 +6077,8 @@ extern bool can_convert_arg			(tree, tree, tree, int,
 						 tsubst_flags_t);
 extern bool can_convert_arg_bad			(tree, tree, tree, int,
 						 tsubst_flags_t);
+extern int conv_flags				(int, int, tree, tree, int);
+extern struct conversion * good_conversion	(tree, tree, tree, int, tsubst_flags_t);
 extern location_t get_fndecl_argument_location  (tree, int);
 
 
@@ -6163,6 +6197,7 @@ extern bool trivial_default_constructor_is_constexpr (tree);
 extern bool type_has_constexpr_default_constructor (tree);
 extern bool type_has_virtual_destructor		(tree);
 extern bool classtype_has_move_assign_or_move_ctor_p (tree, bool user_declared);
+extern bool classtype_has_non_deleted_move_ctor (tree);
 extern tree classtype_has_user_copy_or_dtor	(tree);
 extern bool type_build_ctor_call		(tree);
 extern bool type_build_dtor_call		(tree);
@@ -6346,8 +6381,8 @@ extern bool attributes_naming_typedef_ok	(tree);
 extern void cplus_decl_attributes		(tree *, tree, int);
 extern void finish_anon_union			(tree);
 extern void cxx_post_compilation_parsing_cleanups (void);
-extern tree coerce_new_type			(tree);
-extern tree coerce_delete_type			(tree);
+extern tree coerce_new_type			(tree, location_t);
+extern tree coerce_delete_type			(tree, location_t);
 extern void comdat_linkage			(tree);
 extern void determine_visibility		(tree);
 extern void constrain_class_visibility		(tree);
@@ -6498,8 +6533,8 @@ extern void retrofit_lang_decl			(tree);
 extern void fit_decomposition_lang_decl		(tree, tree);
 extern tree copy_decl				(tree CXX_MEM_STAT_INFO);
 extern tree copy_type				(tree CXX_MEM_STAT_INFO);
-extern tree cxx_make_type			(enum tree_code);
-extern tree make_class_type			(enum tree_code);
+extern tree cxx_make_type			(enum tree_code CXX_MEM_STAT_INFO);
+extern tree make_class_type			(enum tree_code CXX_MEM_STAT_INFO);
 extern const char *get_identifier_kind_name	(tree);
 extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
@@ -6610,6 +6645,7 @@ extern tree instantiate_template		(tree, tree, tsubst_flags_t);
 extern tree fn_type_unification			(tree, tree, tree,
 						 const tree *, unsigned int,
 						 tree, unification_kind_t, int,
+						 struct conversion **,
 						 bool, bool);
 extern void mark_decl_instantiated		(tree, int);
 extern int more_specialized_fn			(tree, tree, int);
@@ -6625,7 +6661,7 @@ extern bool template_parameter_pack_p           (const_tree);
 extern bool function_parameter_pack_p		(const_tree);
 extern bool function_parameter_expanded_from_pack_p (tree, tree);
 extern tree make_pack_expansion                 (tree, tsubst_flags_t = tf_warning_or_error);
-extern bool check_for_bare_parameter_packs      (tree);
+extern bool check_for_bare_parameter_packs      (tree, location_t = UNKNOWN_LOCATION);
 extern tree build_template_info			(tree, tree);
 extern tree get_template_info			(const_tree);
 extern vec<qualified_typedef_usage_t, va_gc> *get_types_needing_access_check (tree);
@@ -7017,6 +7053,7 @@ extern tree finish_builtin_launder		(location_t, tree,
 						 tsubst_flags_t);
 extern void start_lambda_scope			(tree);
 extern void record_lambda_scope			(tree);
+extern void record_null_lambda_scope		(tree);
 extern void finish_lambda_scope			(void);
 extern tree start_lambda_function		(tree fn, tree lambda_expr);
 extern void finish_lambda_function		(tree body);
@@ -7096,11 +7133,11 @@ extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree fns, tree lookup);
 extern tree lookup_maybe_add			(tree fns, tree lookup,
 						 bool deduping);
-extern void lookup_keep				(tree lookup, bool keep);
-extern void lookup_list_keep			(tree list, bool keep);
+extern void lookup_keep				(tree lookup);
 extern int is_overloaded_fn			(tree) ATTRIBUTE_PURE;
 extern bool really_overloaded_fn		(tree) ATTRIBUTE_PURE;
 extern tree dependent_name			(tree);
+extern tree maybe_get_fns			(tree) ATTRIBUTE_PURE;
 extern tree get_fns				(tree) ATTRIBUTE_PURE;
 extern tree get_first_fn			(tree) ATTRIBUTE_PURE;
 extern tree ovl_scope				(tree);
@@ -7315,11 +7352,21 @@ extern tree finish_binary_fold_expr          (tree, tree, int);
 extern void require_complete_eh_spec_types	(tree, tree);
 extern void cxx_incomplete_type_diagnostic	(location_t, const_tree,
 						 const_tree, diagnostic_t);
+
+inline location_t
+cp_expr_loc_or_loc (const_tree t, location_t or_loc)
+{
+  location_t loc = cp_expr_location (t);
+  if (loc == UNKNOWN_LOCATION)
+    loc = or_loc;
+  return loc;
+}
+
 inline void
 cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
 				diagnostic_t diag_kind)
 {
-  cxx_incomplete_type_diagnostic (EXPR_LOC_OR_LOC (value, input_location),
+  cxx_incomplete_type_diagnostic (cp_expr_loc_or_loc (value, input_location),
 				  value, type, diag_kind);
 }
 
@@ -7526,7 +7573,7 @@ extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE);
-extern tree fold_non_dependent_expr		(tree);
+extern tree fold_non_dependent_expr		(tree, tsubst_flags_t = tf_warning_or_error);
 extern tree fold_simple				(tree);
 extern bool is_sub_constant_expr                (tree);
 extern bool reduced_constant_expression_p       (tree);

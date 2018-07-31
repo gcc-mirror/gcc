@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "optabs-query.h"
 #include "omp-general.h"
-#include "ipa-chkp.h"
 #include "tree-cfg.h"
 #include "fold-const-call.h"
 #include "stringpool.h"
@@ -348,8 +347,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 		  {
 		    if (dump_enabled_p ())
 		      {
-			location_t loc = gimple_location_safe (stmt);
-			dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
 					 "resolving virtual function address "
 					 "reference to function %s\n",
 					 targets.length () == 1
@@ -647,7 +645,7 @@ size_must_be_zero_p (tree size)
   if (integer_zerop (size))
     return true;
 
-  if (TREE_CODE (size) != SSA_NAME)
+  if (TREE_CODE (size) != SSA_NAME || !INTEGRAL_TYPE_P (TREE_TYPE (size)))
     return false;
 
   wide_int min, max;
@@ -727,18 +725,6 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
       tree srctype, desttype;
       unsigned int src_align, dest_align;
       tree off0;
-
-      /* Inlining of memcpy/memmove may cause bounds lost (if we copy
-	 pointers as wide integer) and also may result in huge function
-	 size because of inlined bounds copy.  Thus don't inline for
-	 functions we want to instrument.  */
-      if (flag_check_pointer_bounds
-	  && chkp_instrumentable_p (cfun->decl)
-	  /* Even if data may contain pointers we can inline if copy
-	     less than a pointer size.  */
-	  && (!tree_fits_uhwi_p (len)
-	      || compare_tree_int (len, POINTER_SIZE_UNITS) >= 0))
-	return false;
 
       /* Build accesses at offset zero with a ref-all character type.  */
       off0 = build_int_cst (build_pointer_type_for_mode (char_type_node,
@@ -2064,10 +2050,12 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
   if (!nowarn && cmpsrc == 0)
     {
       tree fndecl = gimple_call_fndecl (stmt);
-
-      /* To avoid certain truncation the specified bound should also
-	 not be equal to (or less than) the length of the source.  */
       location_t loc = gimple_location (stmt);
+
+      /* To avoid possible overflow the specified bound should also
+	 not be equal to the length of the source, even when the size
+	 of the destination is unknown (it's not an uncommon mistake
+	 to specify as the bound to strncpy the length of the source).  */
       if (warning_at (loc, OPT_Wstringop_overflow_,
 		      "%G%qD specified bound %E equals source length",
 		      stmt, fndecl, len))
@@ -3445,23 +3433,13 @@ gimple_fold_builtin_printf (gimple_stmt_iterator *gsi, tree fmt,
 	      && (int) len > 0)
 	    {
 	      char *newstr;
-	      tree offset_node, string_cst;
 
 	      /* Create a NUL-terminated string that's one char shorter
 		 than the original, stripping off the trailing '\n'.  */
-	      newarg = build_string_literal (len, str);
-	      string_cst = string_constant (newarg, &offset_node);
-	      gcc_checking_assert (string_cst
-				   && (TREE_STRING_LENGTH (string_cst)
-				       == (int) len)
-				   && integer_zerop (offset_node)
-				   && (unsigned char)
-				      TREE_STRING_POINTER (string_cst)[len - 1]
-				      == target_newline);
-	      /* build_string_literal creates a new STRING_CST,
-		 modify it in place to avoid double copying.  */
-	      newstr = CONST_CAST (char *, TREE_STRING_POINTER (string_cst));
+	      newstr = xstrdup (str);
 	      newstr[len - 1] = '\0';
+	      newarg = build_string_literal (len, newstr);
+	      free (newstr);
 	      if (fn_puts)
 		{
 		  gcall *repl = gimple_build_call (fn_puts, 1, newarg);
@@ -3551,9 +3529,10 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
       return true;
     }
 
-  tree lhs = gimple_call_lhs (stmt);
-  if (lhs && TREE_CODE (lhs) == SSA_NAME)
-    set_range_info (lhs, VR_RANGE, minlen, maxlen);
+  if (tree lhs = gimple_call_lhs (stmt))
+    if (TREE_CODE (lhs) == SSA_NAME
+	&& INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+      set_range_info (lhs, VR_RANGE, minlen, maxlen);
 
   return false;
 }
@@ -3997,9 +3976,6 @@ bool
 arith_overflowed_p (enum tree_code code, const_tree type,
 		    const_tree arg0, const_tree arg1)
 {
-  typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION * 2) widest2_int;
-  typedef generic_wide_int <wi::extended_tree <WIDE_INT_MAX_PRECISION * 2> >
-    widest2_int_cst;
   widest2_int warg0 = widest2_int_cst (arg0);
   widest2_int warg1 = widest2_int_cst (arg1);
   widest2_int wres;
@@ -4073,8 +4049,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	      tree lhs = gimple_call_lhs (stmt);
 	      if (dump_enabled_p ())
 		{
-		  location_t loc = gimple_location_safe (stmt);
-		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
 				   "folding virtual function call to %s\n",
 		 		   targets.length () == 1
 		  		   ? targets[0]->name ()
@@ -6488,14 +6463,19 @@ get_base_constructor (tree base, poly_int64_pod *bit_offset,
     }
 }
 
-/* CTOR is CONSTRUCTOR of an array type.  Fold reference of type TYPE and size
-   SIZE to the memory at bit OFFSET.  */
+/* CTOR is CONSTRUCTOR of an array type.  Fold a reference of SIZE bits
+   to the memory at bit OFFSET.     When non-null, TYPE is the expected
+   type of the reference; otherwise the type of the referenced element
+   is used instead. When SIZE is zero, attempt to fold a reference to
+   the entire element which OFFSET refers to.  Increment *SUBOFF by
+   the bit offset of the accessed element.  */
 
 static tree
 fold_array_ctor_reference (tree type, tree ctor,
 			   unsigned HOST_WIDE_INT offset,
 			   unsigned HOST_WIDE_INT size,
-			   tree from_decl)
+			   tree from_decl,
+			   unsigned HOST_WIDE_INT *suboff)
 {
   offset_int low_bound;
   offset_int elt_size;
@@ -6520,12 +6500,13 @@ fold_array_ctor_reference (tree type, tree ctor,
     return NULL_TREE;
   elt_size = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))));
 
-  /* We can handle only constantly sized accesses that are known to not
-     be larger than size of array element.  */
-  if (!TYPE_SIZE_UNIT (type)
-      || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
-      || elt_size < wi::to_offset (TYPE_SIZE_UNIT (type))
-      || elt_size == 0)
+  /* When TYPE is non-null, verify that it specifies a constant-sized
+     accessed not larger than size of array element.  */
+  if (type
+      && (!TYPE_SIZE_UNIT (type)
+	  || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
+	  || elt_size < wi::to_offset (TYPE_SIZE_UNIT (type))
+	  || elt_size == 0))
     return NULL_TREE;
 
   /* Compute the array index we look for.  */
@@ -6541,21 +6522,42 @@ fold_array_ctor_reference (tree type, tree ctor,
   if (inner_offset + size > elt_size.to_uhwi () * BITS_PER_UNIT)
     return NULL_TREE;
   if (tree val = get_array_ctor_element_at_index (ctor, access_index))
-    return fold_ctor_reference (type, val, inner_offset, size, from_decl);
+    {
+      if (!size && TREE_CODE (val) != CONSTRUCTOR)
+	{
+	  /* For the final reference to the entire accessed element
+	     (SIZE is zero), reset INNER_OFFSET, disegard TYPE (which
+	     may be null) in favor of the type of the element, and set
+	     SIZE to the size of the accessed element.  */
+	  inner_offset = 0;
+	  type = TREE_TYPE (val);
+	  size = elt_size.to_uhwi () * BITS_PER_UNIT;
+	}
 
-  /* When memory is not explicitely mentioned in constructor,
-     it is 0 (or out of range).  */
-  return build_zero_cst (type);
+      *suboff += (access_index * elt_size * BITS_PER_UNIT).to_uhwi ();
+      return fold_ctor_reference (type, val, inner_offset, size, from_decl,
+				  suboff);
+    }
+
+  /* Memory not explicitly mentioned in constructor is 0 (or
+     the reference is out of range).  */
+  return type ? build_zero_cst (type) : NULL_TREE;
 }
 
-/* CTOR is CONSTRUCTOR of an aggregate or vector.
-   Fold reference of type TYPE and size SIZE to the memory at bit OFFSET.  */
+/* CTOR is CONSTRUCTOR of an aggregate or vector.  Fold a reference
+   of SIZE bits to the memory at bit OFFSET.   When non-null, TYPE
+   is the expected type of the reference; otherwise the type of
+   the referenced member is used instead.  When SIZE is zero,
+   attempt to fold a reference to the entire member which OFFSET
+   refers to; in this case.  Increment *SUBOFF by the bit offset
+   of the accessed member.  */
 
 static tree
 fold_nonarray_ctor_reference (tree type, tree ctor,
 			      unsigned HOST_WIDE_INT offset,
 			      unsigned HOST_WIDE_INT size,
-			      tree from_decl)
+			      tree from_decl,
+			      unsigned HOST_WIDE_INT *suboff)
 {
   unsigned HOST_WIDE_INT cnt;
   tree cfield, cval;
@@ -6566,8 +6568,13 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
       tree byte_offset = DECL_FIELD_OFFSET (cfield);
       tree field_offset = DECL_FIELD_BIT_OFFSET (cfield);
       tree field_size = DECL_SIZE (cfield);
-      offset_int bitoffset;
-      offset_int bitoffset_end, access_end;
+
+      if (!field_size)
+	{
+	  /* Determine the size of the flexible array member from
+	     the size of the initializer provided for it.  */
+	  field_size = TYPE_SIZE (TREE_TYPE (cval));
+	}
 
       /* Variable sized objects in static constructors makes no sense,
 	 but field_size can be NULL for flexible array members.  */
@@ -6578,50 +6585,82 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 		      : TREE_CODE (TREE_TYPE (cfield)) == ARRAY_TYPE));
 
       /* Compute bit offset of the field.  */
-      bitoffset = (wi::to_offset (field_offset)
-		   + (wi::to_offset (byte_offset) << LOG2_BITS_PER_UNIT));
+      offset_int bitoffset
+	= (wi::to_offset (field_offset)
+	   + (wi::to_offset (byte_offset) << LOG2_BITS_PER_UNIT));
       /* Compute bit offset where the field ends.  */
+      offset_int bitoffset_end;
       if (field_size != NULL_TREE)
 	bitoffset_end = bitoffset + wi::to_offset (field_size);
       else
 	bitoffset_end = 0;
 
-      access_end = offset_int (offset) + size;
+      /* Compute the bit offset of the end of the desired access.
+	 As a special case, if the size of the desired access is
+	 zero, assume the access is to the entire field (and let
+	 the caller make any necessary adjustments by storing
+	 the actual bounds of the field in FIELDBOUNDS).  */
+      offset_int access_end = offset_int (offset);
+      if (size)
+	access_end += size;
+      else
+	access_end = bitoffset_end;
 
-      /* Is there any overlap between [OFFSET, OFFSET+SIZE) and
-	 [BITOFFSET, BITOFFSET_END)?  */
+      /* Is there any overlap between the desired access at
+	 [OFFSET, OFFSET+SIZE) and the offset of the field within
+	 the object at [BITOFFSET, BITOFFSET_END)?  */
       if (wi::cmps (access_end, bitoffset) > 0
 	  && (field_size == NULL_TREE
 	      || wi::lts_p (offset, bitoffset_end)))
 	{
-	  offset_int inner_offset = offset_int (offset) - bitoffset;
-	  /* We do have overlap.  Now see if field is large enough to
-	     cover the access.  Give up for accesses spanning multiple
-	     fields.  */
+	  *suboff += bitoffset.to_uhwi ();
+
+	  if (!size && TREE_CODE (cval) != CONSTRUCTOR)
+	    {
+	      /* For the final reference to the entire accessed member
+		 (SIZE is zero), reset OFFSET, disegard TYPE (which may
+		 be null) in favor of the type of the member, and set
+		 SIZE to the size of the accessed member.  */
+	      offset = bitoffset.to_uhwi ();
+	      type = TREE_TYPE (cval);
+	      size = (bitoffset_end - bitoffset).to_uhwi ();
+	    }
+
+	  /* We do have overlap.  Now see if the field is large enough
+	     to cover the access.  Give up for accesses that extend
+	     beyond the end of the object or that span multiple fields.  */
 	  if (wi::cmps (access_end, bitoffset_end) > 0)
 	    return NULL_TREE;
 	  if (offset < bitoffset)
 	    return NULL_TREE;
+
+	  offset_int inner_offset = offset_int (offset) - bitoffset;
 	  return fold_ctor_reference (type, cval,
 				      inner_offset.to_uhwi (), size,
-				      from_decl);
+				      from_decl, suboff);
 	}
     }
-  /* When memory is not explicitely mentioned in constructor, it is 0.  */
-  return build_zero_cst (type);
+  /* Memory not explicitly mentioned in constructor is 0.  */
+  return type ? build_zero_cst (type) : NULL_TREE;
 }
 
-/* CTOR is value initializing memory, fold reference of type TYPE and
-   size POLY_SIZE to the memory at bit POLY_OFFSET.  */
+/* CTOR is value initializing memory.  Fold a reference of TYPE and
+   bit size POLY_SIZE to the memory at bit POLY_OFFSET.  When SIZE
+   is zero, attempt to fold a reference to the entire subobject
+   which OFFSET refers to.  This is used when folding accesses to
+   string members of aggregates.  When non-null, set *SUBOFF to
+   the bit offset of the accessed subobject.  */
 
 tree
-fold_ctor_reference (tree type, tree ctor, poly_uint64 poly_offset,
-		     poly_uint64 poly_size, tree from_decl)
+fold_ctor_reference (tree type, tree ctor, const poly_uint64 &poly_offset,
+		     const poly_uint64 &poly_size, tree from_decl,
+		     unsigned HOST_WIDE_INT *suboff /* = NULL */)
 {
   tree ret;
 
   /* We found the field with exact match.  */
-  if (useless_type_conversion_p (type, TREE_TYPE (ctor))
+  if (type
+      && useless_type_conversion_p (type, TREE_TYPE (ctor))
       && known_eq (poly_offset, 0U))
     return canonicalize_constructor_val (unshare_expr (ctor), from_decl);
 
@@ -6662,14 +6701,17 @@ fold_ctor_reference (tree type, tree ctor, poly_uint64 poly_offset,
     }
   if (TREE_CODE (ctor) == CONSTRUCTOR)
     {
+      unsigned HOST_WIDE_INT dummy = 0;
+      if (!suboff)
+	suboff = &dummy;
 
       if (TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (ctor)) == VECTOR_TYPE)
 	return fold_array_ctor_reference (type, ctor, offset, size,
-					  from_decl);
-      else
-	return fold_nonarray_ctor_reference (type, ctor, offset, size,
-					     from_decl);
+					  from_decl, suboff);
+
+      return fold_nonarray_ctor_reference (type, ctor, offset, size,
+					   from_decl, suboff);
     }
 
   return NULL_TREE;

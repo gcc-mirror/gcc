@@ -444,6 +444,7 @@ FUNC:_ZNKSt13basic_fstreamIwSt11char_traitsIwEE7is_openEv@GLIBCXX_3.4
 FUNC:_ZNKSt13basic_istreamIwSt11char_traitsIwEE6gcountEv@@GLIBCXX_3.4
 FUNC:_ZNKSt13basic_istreamIwSt11char_traitsIwEE6sentrycvbEv@@GLIBCXX_3.4
 FUNC:_ZNKSt13basic_ostreamIwSt11char_traitsIwEE6sentrycvbEv@@GLIBCXX_3.4
+FUNC:_ZNKSt13random_device13_M_getentropyEv@@GLIBCXX_3.4.25
 FUNC:_ZNKSt13runtime_error4whatEv@@GLIBCXX_3.4
 FUNC:_ZNKSt14basic_ifstreamIcSt11char_traitsIcEE5rdbufEv@@GLIBCXX_3.4
 FUNC:_ZNKSt14basic_ifstreamIcSt11char_traitsIcEE7is_openEv@@GLIBCXX_3.4.5
@@ -4237,6 +4238,8 @@ OBJECT:0:GLIBCXX_3.4.20
 OBJECT:0:GLIBCXX_3.4.21
 OBJECT:0:GLIBCXX_3.4.22
 OBJECT:0:GLIBCXX_3.4.23
+OBJECT:0:GLIBCXX_3.4.24
+OBJECT:0:GLIBCXX_3.4.25
 OBJECT:0:GLIBCXX_3.4.3
 OBJECT:0:GLIBCXX_3.4.4
 OBJECT:0:GLIBCXX_3.4.5

@@ -54,13 +54,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "langhooks.h"
 #include "common/common-target.h"
+#include "tree-dfa.h"
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
 #include "tree-ssa-address.h"
 #include "builtins.h"
-#include "tree-chkp.h"
-#include "rtl-chkp.h"
 #include "ccmp.h"
+#include "gimple-fold.h"
 #include "rtx-vector-builder.h"
 
 
@@ -1614,12 +1614,13 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 
   /* Set MEM_SIZE as appropriate for this block copy.  The main place this
      can be incorrect is coming from __builtin_memcpy.  */
-  if (CONST_INT_P (size))
+  poly_int64 const_size;
+  if (poly_int_rtx_p (size, &const_size))
     {
       x = shallow_copy_rtx (x);
       y = shallow_copy_rtx (y);
-      set_mem_size (x, INTVAL (size));
-      set_mem_size (y, INTVAL (size));
+      set_mem_size (x, const_size);
+      set_mem_size (y, const_size);
     }
 
   if (CONST_INT_P (size) && can_move_by_pieces (INTVAL (size), align))
@@ -2148,7 +2149,7 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type,
   for (i = start; i < XVECLEN (dst, 0); i++)
     {
       machine_mode mode = GET_MODE (XEXP (XVECEXP (dst, 0, i), 0));
-      poly_int64 bytepos = INTVAL (XEXP (XVECEXP (dst, 0, i), 1));
+      poly_int64 bytepos = rtx_to_poly_int64 (XEXP (XVECEXP (dst, 0, i), 1));
       poly_int64 bytelen = GET_MODE_SIZE (mode);
       poly_int64 shift = 0;
 
@@ -2479,7 +2480,8 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	{
 	  inner = GET_MODE (tmps[start]);
 	  bytepos = subreg_lowpart_offset (inner, outer);
-	  if (known_eq (INTVAL (XEXP (XVECEXP (src, 0, start), 1)), bytepos))
+	  if (known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0, start), 1)),
+			bytepos))
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[start],
 					  inner, 0);
@@ -2498,7 +2500,8 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	{
 	  inner = GET_MODE (tmps[finish - 1]);
 	  bytepos = subreg_lowpart_offset (inner, outer);
-	  if (known_eq (INTVAL (XEXP (XVECEXP (src, 0, finish - 1), 1)),
+	  if (known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0,
+							  finish - 1), 1)),
 			bytepos))
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[finish - 1],
@@ -2520,7 +2523,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
   /* Process the pieces.  */
   for (i = start; i < finish; i++)
     {
-      poly_int64 bytepos = INTVAL (XEXP (XVECEXP (src, 0, i), 1));
+      poly_int64 bytepos = rtx_to_poly_int64 (XEXP (XVECEXP (src, 0, i), 1));
       machine_mode mode = GET_MODE (tmps[i]);
       poly_int64 bytelen = GET_MODE_SIZE (mode);
       poly_uint64 adj_bytelen;
@@ -2976,9 +2979,10 @@ clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
 
   /* If OBJECT is not BLKmode and SIZE is the same size as its mode,
      just move a zero.  Otherwise, do this a piece at a time.  */
+  poly_int64 size_val;
   if (mode != BLKmode
-      && CONST_INT_P (size)
-      && known_eq (INTVAL (size), GET_MODE_SIZE (mode)))
+      && poly_int_rtx_p (size, &size_val)
+      && known_eq (size_val, GET_MODE_SIZE (mode)))
     {
       rtx zero = CONST0_RTX (mode);
       if (zero != NULL)
@@ -3914,9 +3918,10 @@ push_block (rtx size, poly_int64 extra, int below)
     }
   else
     {
-      if (CONST_INT_P (size))
+      poly_int64 csize;
+      if (poly_int_rtx_p (size, &csize))
 	temp = plus_constant (Pmode, virtual_outgoing_args_rtx,
-			      -INTVAL (size) - (below ? 0 : extra));
+			      -csize - (below ? 0 : extra));
       else if (maybe_ne (extra, 0) && !below)
 	temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
 			     negate_rtx (Pmode, plus_constant (Pmode, size,
@@ -4036,11 +4041,10 @@ find_args_size_adjust (rtx_insn *insn)
       /* Look for a trivial adjustment, otherwise assume nothing.  */
       /* Note that the SPU restore_stack_block pattern refers to
 	 the stack pointer in V4SImode.  Consider that non-trivial.  */
+      poly_int64 offset;
       if (SCALAR_INT_MODE_P (GET_MODE (dest))
-	  && GET_CODE (SET_SRC (set)) == PLUS
-	  && XEXP (SET_SRC (set), 0) == stack_pointer_rtx
-	  && CONST_INT_P (XEXP (SET_SRC (set), 1)))
-	return INTVAL (XEXP (SET_SRC (set), 1));
+	  && strip_offset (SET_SRC (set), &offset) == stack_pointer_rtx)
+	return offset;
       /* ??? Reload can generate no-op moves, which will be cleaned
 	 up later.  Recognize it and continue searching.  */
       else if (rtx_equal_p (dest, SET_SRC (set)))
@@ -4078,8 +4082,7 @@ find_args_size_adjust (rtx_insn *insn)
 	  addr = XEXP (addr, 1);
 	  gcc_assert (GET_CODE (addr) == PLUS);
 	  gcc_assert (XEXP (addr, 0) == stack_pointer_rtx);
-	  gcc_assert (CONST_INT_P (XEXP (addr, 1)));
-	  return INTVAL (XEXP (addr, 1));
+	  return rtx_to_poly_int64 (XEXP (addr, 1));
 	default:
 	  gcc_unreachable ();
 	}
@@ -4421,15 +4424,16 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	  /* Get the address of the stack space.
 	     In this case, we do not deal with EXTRA separately.
 	     A single stack adjust will do.  */
+	  poly_int64 offset;
 	  if (! args_addr)
 	    {
 	      temp = push_block (size, extra, where_pad == PAD_DOWNWARD);
 	      extra = 0;
 	    }
-	  else if (CONST_INT_P (args_so_far))
+	  else if (poly_int_rtx_p (args_so_far, &offset))
 	    temp = memory_address (BLKmode,
 				   plus_constant (Pmode, args_addr,
-						  skip + INTVAL (args_so_far)));
+						  skip + offset));
 	  else
 	    temp = memory_address (BLKmode,
 				   plus_constant (Pmode,
@@ -5148,12 +5152,12 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  gcc_checking_assert (COMPLEX_MODE_P (to_mode));
 	  poly_int64 mode_bitsize = GET_MODE_BITSIZE (to_mode);
 	  unsigned short inner_bitsize = GET_MODE_UNIT_BITSIZE (to_mode);
-	  if (TYPE_MODE (TREE_TYPE (from)) == GET_MODE (to_rtx)
-	      && COMPLEX_MODE_P (GET_MODE (to_rtx))
+	  if (TYPE_MODE (TREE_TYPE (from)) == to_mode
 	      && known_eq (bitpos, 0)
 	      && known_eq (bitsize, mode_bitsize))
 	    result = store_expr (from, to_rtx, false, nontemporal, reversep);
-	  else if (known_eq (bitsize, inner_bitsize)
+	  else if (TYPE_MODE (TREE_TYPE (from)) == GET_MODE_INNER (to_mode)
+		   && known_eq (bitsize, inner_bitsize)
 		   && (known_eq (bitpos, 0)
 		       || known_eq (bitpos, inner_bitsize)))
 	    result = store_expr (from, XEXP (to_rtx, maybe_ne (bitpos, 0)),
@@ -5283,13 +5287,9 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    || TREE_CODE (to) == SSA_NAME))
     {
       rtx value;
-      rtx bounds;
 
       push_temp_slots ();
       value = expand_normal (from);
-
-      /* Split value and bounds to store them separately.  */
-      chkp_split_slot (value, &value, &bounds);
 
       if (to_rtx == 0)
 	to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_WRITE);
@@ -5323,14 +5323,6 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	       TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (to))));
 
 	  emit_move_insn (to_rtx, value);
-	}
-
-      /* Store bounds if required.  */
-      if (bounds
-	  && (BOUNDED_P (to) || chkp_type_has_pointer (TREE_TYPE (to))))
-	{
-	  gcc_assert (MEM_P (to_rtx));
-	  chkp_emit_bounds_store (bounds, value, to_rtx);
 	}
 
       preserve_temp_slots (to_rtx);
@@ -5403,7 +5395,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
   /* Compute FROM and store the value in the rtx we got.  */
 
   push_temp_slots ();
-  result = store_expr_with_bounds (from, to_rtx, 0, nontemporal, false, to);
+  result = store_expr (from, to_rtx, 0, nontemporal, false);
   preserve_temp_slots (result);
   pop_temp_slots ();
   return;
@@ -5442,14 +5434,11 @@ emit_storent_insn (rtx to, rtx from)
 
    If NONTEMPORAL is true, try using a nontemporal store instruction.
 
-   If REVERSE is true, the store is to be done in reverse order.
-
-   If BTARGET is not NULL then computed bounds of EXP are
-   associated with BTARGET.  */
+   If REVERSE is true, the store is to be done in reverse order.  */
 
 rtx
-store_expr_with_bounds (tree exp, rtx target, int call_param_p,
-			bool nontemporal, bool reverse, tree btarget)
+store_expr (tree exp, rtx target, int call_param_p,
+			bool nontemporal, bool reverse)
 {
   rtx temp;
   rtx alt_rtl = NULL_RTX;
@@ -5470,9 +5459,8 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
 	 part.  */
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
 		   call_param_p ? EXPAND_STACK_PARM : EXPAND_NORMAL);
-      return store_expr_with_bounds (TREE_OPERAND (exp, 1), target,
-				     call_param_p, nontemporal, reverse,
-				     btarget);
+      return store_expr (TREE_OPERAND (exp, 1), target,
+				     call_param_p, nontemporal, reverse);
     }
   else if (TREE_CODE (exp) == COND_EXPR && GET_MODE (target) == BLKmode)
     {
@@ -5487,13 +5475,13 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1,
 		 profile_probability::uninitialized ());
-      store_expr_with_bounds (TREE_OPERAND (exp, 1), target, call_param_p,
-			      nontemporal, reverse, btarget);
+      store_expr (TREE_OPERAND (exp, 1), target, call_param_p,
+		  nontemporal, reverse);
       emit_jump_insn (targetm.gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
-      store_expr_with_bounds (TREE_OPERAND (exp, 2), target, call_param_p,
-			      nontemporal, reverse, btarget);
+      store_expr (TREE_OPERAND (exp, 2), target, call_param_p,
+		  nontemporal, reverse);
       emit_label (lab2);
       OK_DEFER_POP;
 
@@ -5546,18 +5534,6 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
       temp = expand_expr (exp, inner_target, VOIDmode,
 			  call_param_p ? EXPAND_STACK_PARM : EXPAND_NORMAL);
 
-      /* Handle bounds returned by call.  */
-      if (TREE_CODE (exp) == CALL_EXPR)
-	{
-	  rtx bounds;
-	  chkp_split_slot (temp, &temp, &bounds);
-	  if (bounds && btarget)
-	    {
-	      gcc_assert (TREE_CODE (btarget) == SSA_NAME);
-	      rtx tmp = targetm.calls.load_returned_bounds (bounds);
-	      chkp_set_rtl_bounds (btarget, tmp);
-	    }
-	}
 
       /* If TEMP is a VOIDmode constant, use convert_modes to make
 	 sure that we properly convert it.  */
@@ -5639,19 +5615,6 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
 			       (call_param_p
 				? EXPAND_STACK_PARM : EXPAND_NORMAL),
 			       &alt_rtl, false);
-
-      /* Handle bounds returned by call.  */
-      if (TREE_CODE (exp) == CALL_EXPR)
-	{
-	  rtx bounds;
-	  chkp_split_slot (temp, &temp, &bounds);
-	  if (bounds && btarget)
-	    {
-	      gcc_assert (TREE_CODE (btarget) == SSA_NAME);
-	      rtx tmp = targetm.calls.load_returned_bounds (bounds);
-	      chkp_set_rtl_bounds (btarget, tmp);
-	    }
-	}
     }
 
   /* If TEMP is a VOIDmode constant and the mode of the type of EXP is not
@@ -5767,12 +5730,11 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
 
 	      /* Figure out how much is left in TARGET that we have to clear.
 		 Do all calculations in pointer_mode.  */
-	      if (CONST_INT_P (copy_size_rtx))
+	      poly_int64 const_copy_size;
+	      if (poly_int_rtx_p (copy_size_rtx, &const_copy_size))
 		{
-		  size = plus_constant (address_mode, size,
-					-INTVAL (copy_size_rtx));
-		  target = adjust_address (target, BLKmode,
-					   INTVAL (copy_size_rtx));
+		  size = plus_constant (address_mode, size, -const_copy_size);
+		  target = adjust_address (target, BLKmode, const_copy_size);
 		}
 	      else
 		{
@@ -5830,15 +5792,6 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
     }
 
   return NULL_RTX;
-}
-
-/* Same as store_expr_with_bounds but ignoring bounds of EXP.  */
-rtx
-store_expr (tree exp, rtx target, int call_param_p, bool nontemporal,
-	    bool reverse)
-{
-  return store_expr_with_bounds (exp, target, call_param_p, nontemporal,
-				 reverse, NULL);
 }
 
 /* Return true if field F of structure TYPE is a flexible array.  */
@@ -9011,6 +8964,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       return REDUCE_BIT_FIELD (temp);
 
     case ABS_EXPR:
+    case ABSU_EXPR:
       op0 = expand_expr (treeop0, subtarget,
 			 VOIDmode, EXPAND_NORMAL);
       if (modifier == EXPAND_STACK_PARM)
@@ -9022,7 +8976,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 
       /* Unsigned abs is simply the operand.  Testing here means we don't
 	 risk generating incorrect code below.  */
-      if (TYPE_UNSIGNED (type))
+      if (TYPE_UNSIGNED (TREE_TYPE (treeop0)))
 	return op0;
 
       return expand_abs (mode, op0, target, unsignedp,
@@ -10954,11 +10908,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	if (fndecl && DECL_BUILT_IN (fndecl))
 	  {
 	    gcc_assert (DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_FRONTEND);
-	    if (CALL_WITH_BOUNDS_P (exp))
-	      return expand_builtin_with_bounds (exp, target, subtarget,
-						 tmode, ignore);
-	    else
-	      return expand_builtin (exp, target, subtarget, tmode, ignore);
+	    return expand_builtin (exp, target, subtarget, tmode, ignore);
 	  }
       }
       return expand_call (exp, target, ignore);
@@ -11259,10 +11209,10 @@ reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
   if (target && GET_MODE (target) != GET_MODE (exp))
     target = 0;
   /* For constant values, reduce using build_int_cst_type. */
-  if (CONST_INT_P (exp))
+  poly_int64 const_exp;
+  if (poly_int_rtx_p (exp, &const_exp))
     {
-      HOST_WIDE_INT value = INTVAL (exp);
-      tree t = build_int_cst_type (type, value);
+      tree t = build_int_cst_type (type, const_exp);
       return expand_expr (t, target, VOIDmode, EXPAND_NORMAL);
     }
   else if (TYPE_UNSIGNED (type))
@@ -11319,61 +11269,48 @@ is_aligning_offset (const_tree offset, const_tree exp)
 }
 
 /* Return the tree node if an ARG corresponds to a string constant or zero
-   if it doesn't.  If we return nonzero, set *PTR_OFFSET to the offset
-   in bytes within the string that ARG is accessing.  The type of the
-   offset will be `sizetype'.  */
+   if it doesn't.  If we return nonzero, set *PTR_OFFSET to the (possibly
+   non-constant) offset in bytes within the string that ARG is accessing.
+   The type of the offset is sizetype.  */
 
 tree
 string_constant (tree arg, tree *ptr_offset)
 {
-  tree array, offset, lower_bound;
+  tree array;
   STRIP_NOPS (arg);
+
+  /* Non-constant index into the character array in an ARRAY_REF
+     expression or null.  */
+  tree varidx = NULL_TREE;
+
+  poly_int64 base_off = 0;
 
   if (TREE_CODE (arg) == ADDR_EXPR)
     {
-      if (TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST)
+      arg = TREE_OPERAND (arg, 0);
+      tree ref = arg;
+      if (TREE_CODE (arg) == ARRAY_REF)
 	{
-	  *ptr_offset = size_zero_node;
-	  return TREE_OPERAND (arg, 0);
-	}
-      else if (TREE_CODE (TREE_OPERAND (arg, 0)) == VAR_DECL)
-	{
-	  array = TREE_OPERAND (arg, 0);
-	  offset = size_zero_node;
-	}
-      else if (TREE_CODE (TREE_OPERAND (arg, 0)) == ARRAY_REF)
-	{
-	  array = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
-	  offset = TREE_OPERAND (TREE_OPERAND (arg, 0), 1);
-	  if (TREE_CODE (array) != STRING_CST && !VAR_P (array))
-	    return 0;
-
-	  /* Check if the array has a nonzero lower bound.  */
-	  lower_bound = array_ref_low_bound (TREE_OPERAND (arg, 0));
-	  if (!integer_zerop (lower_bound))
+	  tree idx = TREE_OPERAND (arg, 1);
+	  if (TREE_CODE (idx) != INTEGER_CST)
 	    {
-	      /* If the offset and base aren't both constants, return 0.  */
-	      if (TREE_CODE (lower_bound) != INTEGER_CST)
-	        return 0;
-	      if (TREE_CODE (offset) != INTEGER_CST)
-		return 0;
-	      /* Adjust offset by the lower bound.  */
-	      offset = size_diffop (fold_convert (sizetype, offset),
-				    fold_convert (sizetype, lower_bound));
+	      /* From a pointer (but not array) argument extract the variable
+		 index to prevent get_addr_base_and_unit_offset() from failing
+		 due to it.  Use it later to compute the non-constant offset
+		 into the string and return it to the caller.  */
+	      varidx = idx;
+	      ref = TREE_OPERAND (arg, 0);
+
+	      if (TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE)
+		return NULL_TREE;
 	    }
 	}
-      else if (TREE_CODE (TREE_OPERAND (arg, 0)) == MEM_REF)
-	{
-	  array = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
-	  offset = TREE_OPERAND (TREE_OPERAND (arg, 0), 1);
-	  if (TREE_CODE (array) != ADDR_EXPR)
-	    return 0;
-	  array = TREE_OPERAND (array, 0);
-	  if (TREE_CODE (array) != STRING_CST && !VAR_P (array))
-	    return 0;
-	}
-      else
-	return 0;
+      array = get_addr_base_and_unit_offset (ref, &base_off);
+      if (!array
+	  || (TREE_CODE (array) != VAR_DECL
+	      && TREE_CODE (array) != CONST_DECL
+	      && TREE_CODE (array) != STRING_CST))
+	return NULL_TREE;
     }
   else if (TREE_CODE (arg) == PLUS_EXPR || TREE_CODE (arg) == POINTER_PLUS_EXPR)
     {
@@ -11383,62 +11320,118 @@ string_constant (tree arg, tree *ptr_offset)
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
 
-      if (TREE_CODE (arg0) == ADDR_EXPR
-	  && (TREE_CODE (TREE_OPERAND (arg0, 0)) == STRING_CST
-	      || TREE_CODE (TREE_OPERAND (arg0, 0)) == VAR_DECL))
-	{
-	  array = TREE_OPERAND (arg0, 0);
-	  offset = arg1;
-	}
-      else if (TREE_CODE (arg1) == ADDR_EXPR
-	       && (TREE_CODE (TREE_OPERAND (arg1, 0)) == STRING_CST
-		   || TREE_CODE (TREE_OPERAND (arg1, 0)) == VAR_DECL))
-	{
-	  array = TREE_OPERAND (arg1, 0);
-	  offset = arg0;
-	}
+      if (TREE_CODE (arg0) == ADDR_EXPR)
+	;   /* Do nothing.  */
+      else if (TREE_CODE (arg1) == ADDR_EXPR)
+	std::swap (arg0, arg1);
       else
-	return 0;
+	return NULL_TREE;
+
+      tree offset;
+      if (tree str = string_constant (arg0, &offset))
+	{
+	  /* Avoid pointers to arrays (see bug 86622).  */
+	  if (POINTER_TYPE_P (TREE_TYPE (arg))
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE
+	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == ARRAY_REF)
+	    return NULL_TREE;
+
+	  tree type = TREE_TYPE (arg1);
+	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, arg1);
+	  return str;
+	}
+      return NULL_TREE;
     }
+  else if (DECL_P (arg))
+    array = arg;
   else
-    return 0;
+    return NULL_TREE;
+
+  tree offset = wide_int_to_tree (sizetype, base_off);
+  if (varidx)
+    {
+      if (TREE_CODE (TREE_TYPE (array)) != ARRAY_TYPE)
+	return NULL_TREE;
+
+      gcc_assert (TREE_CODE (arg) == ARRAY_REF);
+      tree chartype = TREE_TYPE (TREE_TYPE (TREE_OPERAND (arg, 0)));
+      if (TREE_CODE (chartype) != INTEGER_TYPE)
+	return NULL;
+
+      tree charsize = array_ref_element_size (arg);
+      /* Set the non-constant offset to the non-constant index scaled
+	 by the size of the character type.  */
+      offset = fold_build2 (MULT_EXPR, TREE_TYPE (offset),
+			    fold_convert (sizetype, varidx), charsize);
+    }
 
   if (TREE_CODE (array) == STRING_CST)
     {
       *ptr_offset = fold_convert (sizetype, offset);
       return array;
     }
-  else if (VAR_P (array) || TREE_CODE (array) == CONST_DECL)
+
+  if (!VAR_P (array) && TREE_CODE (array) != CONST_DECL)
+    return NULL_TREE;
+
+  tree init = ctor_for_folding (array);
+
+  /* Handle variables initialized with string literals.  */
+  if (!init || init == error_mark_node)
+    return NULL_TREE;
+  if (TREE_CODE (init) == CONSTRUCTOR)
     {
-      int length;
-      tree init = ctor_for_folding (array);
+      /* Convert the 64-bit constant offset to a wider type to avoid
+	 overflow.  */
+      offset_int wioff;
+      if (!base_off.is_constant (&wioff))
+	return NULL_TREE;
 
-      /* Variables initialized to string literals can be handled too.  */
-      if (init == error_mark_node
-	  || !init
-	  || TREE_CODE (init) != STRING_CST)
-	return 0;
+      wioff *= BITS_PER_UNIT;
+      if (!wi::fits_uhwi_p (wioff))
+	return NULL_TREE;
 
-      /* Avoid const char foo[4] = "abcde";  */
-      if (DECL_SIZE_UNIT (array) == NULL_TREE
-	  || TREE_CODE (DECL_SIZE_UNIT (array)) != INTEGER_CST
-	  || (length = TREE_STRING_LENGTH (init)) <= 0
-	  || compare_tree_int (DECL_SIZE_UNIT (array), length) < 0)
-	return 0;
+      base_off = wioff.to_uhwi ();
+      unsigned HOST_WIDE_INT fieldoff = 0;
+      init = fold_ctor_reference (NULL_TREE, init, base_off, 0, array,
+				  &fieldoff);
+      HOST_WIDE_INT cstoff;
+      if (!base_off.is_constant (&cstoff))
+	return NULL_TREE;
 
-      /* If variable is bigger than the string literal, OFFSET must be constant
-	 and inside of the bounds of the string literal.  */
-      offset = fold_convert (sizetype, offset);
-      if (compare_tree_int (DECL_SIZE_UNIT (array), length) > 0
-	  && (! tree_fits_uhwi_p (offset)
-	      || compare_tree_int (offset, length) >= 0))
-	return 0;
-
-      *ptr_offset = offset;
-      return init;
+      cstoff = (cstoff - fieldoff) / BITS_PER_UNIT;
+      tree off = build_int_cst (sizetype, cstoff);
+      if (varidx)
+	offset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset), offset, off);
+      else
+	offset = off;
     }
 
-  return 0;
+  if (!init || TREE_CODE (init) != STRING_CST)
+    return NULL_TREE;
+
+  tree array_size = DECL_SIZE_UNIT (array);
+  if (!array_size || TREE_CODE (array_size) != INTEGER_CST)
+    return NULL_TREE;
+
+  /* Avoid returning a string that doesn't fit in the array
+     it is stored in, like
+     const char a[4] = "abcde";
+     but do handle those that fit even if they have excess
+     initializers, such as in
+     const char a[4] = "abc\000\000";
+     The excess elements contribute to TREE_STRING_LENGTH()
+     but not to strlen().  */
+  unsigned HOST_WIDE_INT charsize
+    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (init))));
+  unsigned HOST_WIDE_INT length = TREE_STRING_LENGTH (init);
+  length = string_length (TREE_STRING_POINTER (init), charsize,
+			  length / charsize);
+  if (compare_tree_int (array_size, length + 1) < 0)
+    return NULL_TREE;
+
+  *ptr_offset = offset;
+  return init;
 }
 
 /* Generate code to calculate OPS, and exploded expression

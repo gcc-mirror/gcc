@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=gnu" }
 ! Test character variables in data statements
 ! Also substrings of character variables.
 ! PR14976 PR16228 

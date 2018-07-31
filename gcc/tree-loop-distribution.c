@@ -3117,7 +3117,7 @@ pass_loop_distribution::execute (function *fun)
 	    break;
 
 	  const char *str = loop->inner ? " nest" : "";
-	  location_t loc = find_loop_location (loop);
+	  dump_user_location_t loc = find_loop_location (loop);
 	  if (!cd)
 	    {
 	      calculate_dominance_info (CDI_DOMINATORS);

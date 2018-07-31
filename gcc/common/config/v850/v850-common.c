@@ -122,7 +122,8 @@ static const struct default_options v850_option_optimization_table[] =
   };
 
 #undef  TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (MASK_DEFAULT | MASK_APP_REGS)
+#define TARGET_DEFAULT_TARGET_FLAGS \
+  (MASK_DEFAULT | MASK_APP_REGS | MASK_BIG_SWITCH)
 #undef  TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION v850_handle_option
 #undef  TARGET_OPTION_OPTIMIZATION_TABLE

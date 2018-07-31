@@ -187,93 +187,86 @@ package body System.OS_Lib is
      (Arg_String : String) return Argument_List_Access
    is
       Max_Args : constant Integer := Arg_String'Length;
-      New_Argv : Argument_List (1 .. Max_Args);
-      Idx      : Integer;
-      New_Argc : Natural := 0;
-
-      Cleaned     : String (1 .. Arg_String'Length);
-      Cleaned_Idx : Natural;
-      --  A cleaned up version of the argument. This function is taking
-      --  backslash escapes when computing the bounds for arguments. It is
-      --  then removing the extra backslashes from the argument.
 
       Backslash_Is_Sep : constant Boolean := Directory_Separator = '\';
       --  Whether '\' is a directory separator (as on Windows), or a way to
       --  quote special characters.
 
+      Backqd   : Boolean := False;
+      Idx      : Integer;
+      New_Argc : Natural := 0;
+      New_Argv : Argument_List (1 .. Max_Args);
+      Quoted   : Boolean := False;
+
+      Cleaned     : String (1 .. Arg_String'Length);
+      Cleaned_Idx : Natural;
+      --  A cleaned up version of the argument. This function is taking
+      --  backslash escapes when computing the bounds for arguments. It
+      --  is then removing the extra backslashes from the argument.
+
    begin
       Idx := Arg_String'First;
 
       loop
+         --  Skip extraneous spaces
+
+         while Idx <= Arg_String'Last and then Arg_String (Idx) = ' ' loop
+            Idx := Idx + 1;
+         end loop;
+
          exit when Idx > Arg_String'Last;
 
-         declare
-            Backqd  : Boolean := False;
-            Quoted  : Boolean := False;
+         Cleaned_Idx := Cleaned'First;
+         Backqd      := False;
+         Quoted      := False;
 
-         begin
-            Cleaned_Idx := Cleaned'First;
+         loop
+            --  An unquoted space is the end of an argument
 
-            loop
-               --  An unquoted space is the end of an argument
+            if not (Backqd or Quoted) and then Arg_String (Idx) = ' ' then
+               exit;
 
-               if not (Backqd or Quoted)
-                 and then Arg_String (Idx) = ' '
-               then
-                  exit;
+            --  Start of a quoted string
 
-               --  Start of a quoted string
+            elsif not (Backqd or Quoted) and then Arg_String (Idx) = '"' then
+               Quoted := True;
+               Cleaned (Cleaned_Idx) := Arg_String (Idx);
+               Cleaned_Idx := Cleaned_Idx + 1;
 
-               elsif not (Backqd or Quoted)
-                 and then Arg_String (Idx) = '"'
-               then
-                  Quoted := True;
-                  Cleaned (Cleaned_Idx) := Arg_String (Idx);
-                  Cleaned_Idx := Cleaned_Idx + 1;
+            --  End of a quoted string and end of an argument
 
-               --  End of a quoted string and end of an argument
-
-               elsif (Quoted and not Backqd)
-                 and then Arg_String (Idx) = '"'
-               then
-                  Cleaned (Cleaned_Idx) := Arg_String (Idx);
-                  Cleaned_Idx := Cleaned_Idx + 1;
-                  Idx := Idx + 1;
-                  exit;
-
-               --  Turn off backquoting after advancing one character
-
-               elsif Backqd then
-                  Backqd := False;
-                  Cleaned (Cleaned_Idx) := Arg_String (Idx);
-                  Cleaned_Idx := Cleaned_Idx + 1;
-
-               --  Following character is backquoted
-
-               elsif not Backslash_Is_Sep and then Arg_String (Idx) = '\' then
-                  Backqd := True;
-
-               else
-                  Cleaned (Cleaned_Idx) := Arg_String (Idx);
-                  Cleaned_Idx := Cleaned_Idx + 1;
-               end if;
-
+            elsif (Quoted and not Backqd) and then Arg_String (Idx) = '"' then
+               Cleaned (Cleaned_Idx) := Arg_String (Idx);
+               Cleaned_Idx := Cleaned_Idx + 1;
                Idx := Idx + 1;
-               exit when Idx > Arg_String'Last;
-            end loop;
+               exit;
 
-            --  Found an argument
+            --  Turn off backquoting after advancing one character
 
-            New_Argc := New_Argc + 1;
-            New_Argv (New_Argc) :=
-              new String'(Cleaned (Cleaned'First .. Cleaned_Idx - 1));
+            elsif Backqd then
+               Backqd := False;
+               Cleaned (Cleaned_Idx) := Arg_String (Idx);
+               Cleaned_Idx := Cleaned_Idx + 1;
 
-            --  Skip extraneous spaces
+            --  Following character is backquoted
 
-            while Idx <= Arg_String'Last and then Arg_String (Idx) = ' ' loop
-               Idx := Idx + 1;
-            end loop;
-         end;
+            elsif not Backslash_Is_Sep and then Arg_String (Idx) = '\' then
+               Backqd := True;
+
+            else
+               Cleaned (Cleaned_Idx) := Arg_String (Idx);
+               Cleaned_Idx := Cleaned_Idx + 1;
+            end if;
+
+            Idx := Idx + 1;
+            exit when Idx > Arg_String'Last;
+         end loop;
+
+         --  Found an argument
+
+         New_Argc := New_Argc + 1;
+         New_Argv (New_Argc) :=
+           new String'(Cleaned (Cleaned'First .. Cleaned_Idx - 1));
       end loop;
 
       return new Argument_List'(New_Argv (1 .. New_Argc));

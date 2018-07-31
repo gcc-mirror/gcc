@@ -3,7 +3,7 @@
 
 struct A
 {
-  operator int&(int);  // { dg-error "no arguments" }
+  operator int&(int);  // { dg-error "3:.A::operator int&\\(int\\). must have no arguments" }
 };
 
 A a;

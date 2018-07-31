@@ -391,6 +391,17 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       typedef __true_type __type;
     };
 
+#if __cplusplus >= 201703L
+  enum class byte : unsigned char;
+
+  template<>
+    struct __is_byte<byte>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif // C++17
+
   //
   // Move iterator type
   //

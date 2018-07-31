@@ -62,7 +62,6 @@ extern void test_pku (void)			__attribute__((__target__("pku")));
 extern void test_lwp (void)			__attribute__((__target__("lwp")));
 extern void test_hle (void)			__attribute__((__target__("hle")));
 extern void test_fxsr (void)			__attribute__((__target__("fxsr")));
-extern void test_mpx (void)			__attribute__((__target__("mpx")));
 extern void test_clwb (void)			__attribute__((__target__("clwb")));
 
 extern void test_cld (void)			__attribute__((__target__("cld")));
@@ -130,7 +129,6 @@ extern void test_no_pku (void)			__attribute__((__target__("no-pku")));
 extern void test_no_lwp (void)			__attribute__((__target__("no-lwp")));
 extern void test_no_hle (void)			__attribute__((__target__("no-hle")));
 extern void test_no_fxsr (void)			__attribute__((__target__("no-fxsr")));
-extern void test_no_mpx (void)			__attribute__((__target__("no-mpx")));
 extern void test_no_clwb (void)			__attribute__((__target__("no-clwb")));
 
 extern void test_no_cld (void)			__attribute__((__target__("no-cld")));

@@ -47,6 +47,11 @@ namespace __gnu_debug
 		   const std::reverse_iterator<_Iterator>& __last)
     { return __get_distance(__last.base(), __first.base()); }
 
+  template<typename _Iterator, typename _Size>
+    inline bool
+    __can_advance(const std::reverse_iterator<_Iterator>& __it, _Size __n)
+    { return __can_advance(__it.base(), -__n); }
+
 #if __cplusplus < 201103L
   template<typename _Iterator>
     struct __is_safe_random_iterator<std::reverse_iterator<_Iterator> >
@@ -96,6 +101,11 @@ namespace __gnu_debug
 		   const std::move_iterator<_Iterator>& __last)
     { return __get_distance(__first.base(), __last.base()); }
 
+  template<typename _Iterator, typename _Size>
+    inline bool
+    __can_advance(const std::move_iterator<_Iterator>& __it, _Size __n)
+    { return __can_advance(__it.base(), __n); }
+
   template<typename _Iterator>
     inline auto
     __unsafe(const std::move_iterator<_Iterator>& __it)
@@ -108,6 +118,19 @@ namespace __gnu_debug
     -> decltype(std::make_move_iterator(__base(__it.base())))
     { return std::make_move_iterator(__base(__it.base())); }
 #endif
+}
+
+namespace std
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Iterator, typename _Container, typename _Sequence>
+    _Iterator
+    __niter_base(const __gnu_debug::_Safe_iterator<
+		 __gnu_cxx::__normal_iterator<_Iterator, _Container>,
+		 _Sequence>&);
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #endif

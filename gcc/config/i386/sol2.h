@@ -51,9 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_SUN_TLS
 #define TARGET_SUN_TLS 1
 
-/* Solaris 2/Intel as chokes on #line directives before Solaris 10.  */
 #undef CPP_SPEC
-#define CPP_SPEC "%{,assembler-with-cpp:-P} %(cpp_subtarget)"
+#define CPP_SPEC "%(cpp_subtarget)"
 
 /* GNU as understands --32 and --64, but the native Solaris
    assembler requires -xarch=generic or -xarch=generic64 instead.  */

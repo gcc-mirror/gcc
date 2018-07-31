@@ -291,7 +291,8 @@ enum procedure_type
   PROC_INTRINSIC, PROC_ST_FUNCTION, PROC_EXTERNAL
 };
 
-/* Intent types.  */
+/* Intent types. Note that these values are also used in another enum in
+   decl.c (match_attr_spec).  */
 enum sym_intent
 { INTENT_UNKNOWN = 0, INTENT_IN, INTENT_OUT, INTENT_INOUT
 };
@@ -1343,6 +1344,7 @@ typedef struct gfc_omp_clauses
   gfc_expr_list *tile_list;
   unsigned async:1, gang:1, worker:1, vector:1, seq:1, independent:1;
   unsigned wait:1, par_auto:1, gang_static:1;
+  unsigned if_present:1, finalize:1;
   locus loc;
 
 }
@@ -1612,6 +1614,9 @@ typedef struct gfc_symbol
 
   /* Link to corresponding association-list if this is an associate name.  */
   struct gfc_association_list *assoc;
+
+  /* Link to next entry in derived type list */
+  struct gfc_symbol *dt_next;
 }
 gfc_symbol;
 
@@ -1713,18 +1718,8 @@ typedef struct gfc_symtree
 }
 gfc_symtree;
 
-/* A linked list of derived types in the namespace.  */
-typedef struct gfc_dt_list
-{
-  struct gfc_symbol *derived;
-  struct gfc_dt_list *next;
-}
-gfc_dt_list;
-
-#define gfc_get_dt_list() XCNEW (gfc_dt_list)
-
-  /* A list of all derived types.  */
-  extern gfc_dt_list *gfc_derived_types;
+/* A list of all derived types.  */
+extern gfc_symbol *gfc_derived_types;
 
 typedef struct gfc_oacc_routine_name
 {
@@ -1810,7 +1805,7 @@ typedef struct gfc_namespace
 
   gfc_charlen *cl_list;
 
-  gfc_dt_list *derived_types;
+  gfc_symbol *derived_types;
 
   int save_all, seen_save, seen_implicit_none;
 
@@ -2143,6 +2138,10 @@ typedef struct gfc_expr
 
   /* Will require finalization after use.  */
   unsigned int must_finalize : 1;
+
+  /* Set this if no range check should be performed on this expression.  */
+
+  unsigned int no_bounds_check : 1;
 
   /* If an expression comes from a Hollerith constant or compile-time
      evaluation of a transfer statement, it may have a prescribed target-
@@ -2831,7 +2830,7 @@ unsigned int gfc_option_lang_mask (void);
 void gfc_init_options_struct (struct gcc_options *);
 void gfc_init_options (unsigned int,
 		       struct cl_decoded_option *);
-bool gfc_handle_option (size_t, const char *, int, int, location_t,
+bool gfc_handle_option (size_t, const char *, HOST_WIDE_INT, int, location_t,
 			const struct cl_option_handlers *);
 bool gfc_post_options (const char **);
 char *gfc_get_option_string (void);
@@ -3269,6 +3268,8 @@ bool gfc_resolve_intrinsic (gfc_symbol *, locus *);
 bool gfc_explicit_interface_required (gfc_symbol *, char *, int);
 extern int gfc_do_concurrent_flag;
 const char* gfc_lookup_function_fuzzy (const char *, gfc_symtree *);
+int gfc_pure_function (gfc_expr *e, const char **name);
+int gfc_implicit_pure_function (gfc_expr *e);
 
 
 /* array.c */

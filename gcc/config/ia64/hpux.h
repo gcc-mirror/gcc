@@ -185,9 +185,6 @@ do {								\
 
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) ((MODE) == TFmode)
 
-/* HP-UX headers are C++-compatible.  */
-#define NO_IMPLICIT_EXTERN_C
-
 /* HP-UX uses PROFILE_HOOK instead of FUNCTION_PROFILER but we need a
    FUNCTION_PROFILER defined because its use is not ifdefed.  When using
    PROFILE_HOOK, the profile call comes after the prologue.  */

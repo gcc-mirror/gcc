@@ -11,6 +11,10 @@
 #include <stddef.h>
 #include <string.h>
 
+#undef memcpy
+#undef strcpy
+#undef strncpy
+
 #define MAX  (__SIZE_MAX__ / 2)
 
 void sink (void*);
@@ -210,3 +214,5 @@ void call_strncpy_dstarray_diff_neg (const char *s, size_t n)
 
   sink (&ar10);
 }
+
+/* { dg-prune-output "outside array bounds" } */

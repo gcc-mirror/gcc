@@ -122,6 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 235 No specification of default ctor for reverse_iterator
+      // 1012. reverse_iterator default ctor should value initialize
       _GLIBCXX17_CONSTEXPR
       reverse_iterator() : current() { }
 
@@ -182,7 +183,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       _GLIBCXX17_CONSTEXPR pointer
       operator->() const
-      { return &(operator*()); }
+      {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 1052. operator-> should also support smart pointers
+	_Iterator __tmp = current;
+	--__tmp;
+	return _S_to_pointer(__tmp);
+      }
 
       /**
        *  @return  @c *this
@@ -286,6 +293,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX17_CONSTEXPR reference
       operator[](difference_type __n) const
       { return *(*this + __n); }
+
+    private:
+      template<typename _Tp>
+	static _GLIBCXX17_CONSTEXPR _Tp*
+	_S_to_pointer(_Tp* __p)
+        { return __p; }
+
+      template<typename _Tp>
+	static _GLIBCXX17_CONSTEXPR pointer
+	_S_to_pointer(_Tp __t)
+        { return __t.operator->(); }
     };
 
   //@{

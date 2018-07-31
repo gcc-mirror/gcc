@@ -19,6 +19,12 @@ int v4;
 int v5, v6, v7, v8;
 #pragma acc declare create(v5, v6) copyin(v7, v8)
 
+int v9;
+#pragma acc declare present_or_copyin(v9)
+
+int v10;
+#pragma acc declare present_or_create(v10)
+
 void
 f (void)
 {
@@ -48,6 +54,12 @@ f (void)
 
   extern int ve4;
 #pragma acc declare link(ve4)
+
+  extern int ve5;
+#pragma acc declare present_or_copyin(ve5)
+ 
+  extern int ve6;
+#pragma acc declare present_or_create(ve6)
 
   int va5;
 #pragma acc declare copy(va5)

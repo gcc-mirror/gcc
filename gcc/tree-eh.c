@@ -2028,7 +2028,7 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
       /* FALLTHRU */
 
     case GIMPLE_ASSIGN:
-      /* If the stmt can throw use a new temporary for the assignment
+      /* If the stmt can throw, use a new temporary for the assignment
          to a LHS.  This makes sure the old value of the LHS is
 	 available on the EH edge.  Only do so for statements that
 	 potentially fall through (no noreturn calls e.g.), otherwise
@@ -2469,6 +2469,10 @@ operation_could_trap_helper_p (enum tree_code op,
       /* These operations don't trap with floating point.  */
       if (honor_trapv)
 	return true;
+      return false;
+
+    case ABSU_EXPR:
+      /* ABSU_EXPR never traps.  */
       return false;
 
     case PLUS_EXPR:

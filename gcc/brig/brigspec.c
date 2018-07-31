@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "opt-suggestions.h"
 #include "gcc.h"
 #include "opts.h"
 

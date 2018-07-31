@@ -5279,7 +5279,7 @@ convert_callers_for_node (struct cgraph_node *node,
     }
 
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (bitmap_set_bit (recomputed_callers, cs->caller->uid)
+    if (bitmap_set_bit (recomputed_callers, cs->caller->get_uid ())
 	&& gimple_in_ssa_p (DECL_STRUCT_FUNCTION (cs->caller->decl)))
       compute_fn_summary (cs->caller, true);
   BITMAP_FREE (recomputed_callers);
@@ -5458,6 +5458,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
     }
 
   if ((DECL_ONE_ONLY (node->decl) || DECL_EXTERNAL (node->decl))
+      && ipa_fn_summaries->get (node)
       && ipa_fn_summaries->get (node)->size >= MAX_INLINE_INSNS_AUTO)
     {
       if (dump_file)

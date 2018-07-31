@@ -96,8 +96,14 @@ extern tree omit_two_operands_loc (location_t, tree, tree, tree, tree);
 extern tree invert_truthvalue_loc (location_t, tree);
 extern tree fold_unary_to_constant (enum tree_code, tree, tree);
 extern tree fold_binary_to_constant (enum tree_code, tree, tree, tree);
+extern tree fold_bit_and_mask (tree, tree, enum tree_code,
+			       tree, enum tree_code, tree, tree,
+			       tree, enum tree_code, tree, tree, tree *);
 extern tree fold_read_from_constant_string (tree);
-extern tree int_const_binop (enum tree_code, const_tree, const_tree);
+extern bool wide_int_binop (wide_int &res, enum tree_code,
+			    const wide_int &arg1, const wide_int &arg2,
+			    signop, wi::overflow_type *);
+extern tree int_const_binop (enum tree_code, const_tree, const_tree, int = 1);
 #define build_fold_addr_expr(T)\
         build_fold_addr_expr_loc (UNKNOWN_LOCATION, (T))
 extern tree build_fold_addr_expr_loc (location_t, tree);
@@ -124,6 +130,7 @@ extern enum tree_code swap_tree_comparison (enum tree_code);
 
 extern bool ptr_difference_const (tree, tree, poly_int64_pod *);
 extern enum tree_code invert_tree_comparison (enum tree_code, bool);
+extern bool inverse_conditions_p (const_tree, const_tree);
 
 extern bool tree_unary_nonzero_warnv_p (enum tree_code, tree, tree, bool *);
 extern bool tree_binary_nonzero_warnv_p (enum tree_code, tree, tree, tree op1,
@@ -180,7 +187,8 @@ extern bool expr_not_equal_to (tree t, const wide_int &);
 extern tree const_unop (enum tree_code, tree, tree);
 extern tree const_binop (enum tree_code, tree, tree, tree);
 extern bool negate_mathfn_p (combined_fn);
-extern const char *c_getstr (tree, unsigned HOST_WIDE_INT *strlen = NULL);
+extern const char *c_getstr (tree, unsigned HOST_WIDE_INT * = NULL,
+			     unsigned HOST_WIDE_INT * = NULL);
 extern wide_int tree_nonzero_bits (const_tree);
 
 /* Return OFF converted to a pointer offset type suitable as offset for

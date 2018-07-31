@@ -3443,9 +3443,13 @@ package body Sem_Ch13 is
 
                   --  We do not do this in ASIS mode, as ASIS relies on the
                   --  original node representing the complete expression, when
-                  --  retrieving it through the source aspect table.
+                  --  retrieving it through the source aspect table. Also, we
+                  --  don't do this in GNATprove mode, because it brings no
+                  --  benefit for proof and causes annoynace for flow analysis,
+                  --  which prefers to be as close to the original source code
+                  --  as possible.
 
-                  if not ASIS_Mode
+                  if not (ASIS_Mode or GNATprove_Mode)
                     and then (Pname = Name_Postcondition
                                or else not Class_Present (Aspect))
                   then
@@ -5327,6 +5331,10 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("Bit_Order can only be defined for record type", Nam);
 
+            elsif Is_Tagged_Type (U_Ent) and then Is_Derived_Type (U_Ent) then
+               Error_Msg_N
+                 ("Bit_Order cannot be defined for record extensions", Nam);
+
             elsif Duplicate_Clause then
                null;
 
@@ -5340,10 +5348,8 @@ package body Sem_Ch13 is
                   Flag_Non_Static_Expr
                     ("Bit_Order requires static expression!", Expr);
 
-               else
-                  if (Expr_Value (Expr) = 0) /= Bytes_Big_Endian then
-                     Set_Reverse_Bit_Order (Base_Type (U_Ent), True);
-                  end if;
+               elsif (Expr_Value (Expr) = 0) /= Bytes_Big_Endian then
+                  Set_Reverse_Bit_Order (Base_Type (U_Ent), True);
                end if;
             end if;
 
@@ -11110,13 +11116,27 @@ package body Sem_Ch13 is
 
       --  If we have a type with predicates, build predicate function. This is
       --  not needed in the generic case, nor within TSS subprograms and other
-      --  predefined primitives.
+      --  predefined primitives. For a derived type, ensure that the parent
+      --  type is already frozen so that its predicate function has been
+      --  constructed already. This is necessary if the parent is declared
+      --  in a nested package and its own freeze point has not been reached.
 
       if Is_Type (E)
         and then Nongeneric_Case
         and then not Within_Internal_Subprogram
         and then Has_Predicates (E)
       then
+         declare
+            Atyp : constant Entity_Id := Nearest_Ancestor (E);
+         begin
+            if Present (Atyp)
+              and then Has_Predicates (Atyp)
+              and then not Is_Frozen (Atyp)
+            then
+               Freeze_Before (N, Atyp);
+            end if;
+         end;
+
          Build_Predicate_Functions (E, N);
       end if;
 

@@ -27,9 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_EMBMEDANY
 
-/* Don't assume anything about the header files.  */
-#define NO_IMPLICIT_EXTERN_C
-
 #undef ASM_SPEC
 #define ASM_SPEC "\
 -s %{" FPIE_OR_FPIC_SPEC ":-K PIC} \

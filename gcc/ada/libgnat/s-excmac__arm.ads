@@ -58,6 +58,7 @@ package System.Exceptions.Machine is
       URC_INSTALL_CONTEXT,
       URC_CONTINUE_UNWIND,
       URC_FAILURE);
+   pragma Convention (C, Unwind_Reason_Code);
 
    pragma Unreferenced
      (URC_OK,
@@ -71,9 +72,7 @@ package System.Exceptions.Machine is
       URC_CONTINUE_UNWIND,
       URC_FAILURE);
 
-   pragma Convention (C, Unwind_Reason_Code);
-   subtype Unwind_Action is Unwind_Reason_Code;
-   --  Phase identifiers
+   --  ARM Unwinding State
 
    type uint32_t is mod 2**32;
    pragma Convention (C, uint32_t);

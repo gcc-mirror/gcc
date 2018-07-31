@@ -15,9 +15,11 @@ program main
 
 end program main
 
+! The xfails occur in light of the new OpenACC data semantics.
+
 ! { dg-final { scan-tree-dump-times "clique 1 base 1" 4 "ealias" } }
-! { dg-final { scan-tree-dump-times "clique 1 base 2" 1 "ealias" } }
-! { dg-final { scan-tree-dump-times "clique 1 base 3" 1 "ealias" } }
-! { dg-final { scan-tree-dump-times "clique 1 base 4" 1 "ealias" } }
-! { dg-final { scan-tree-dump-times "clique 1 base 5" 1 "ealias" } }
+! { dg-final { scan-tree-dump-times "clique 1 base 2" 1 "ealias" { xfail *-*-* } } }
+! { dg-final { scan-tree-dump-times "clique 1 base 3" 1 "ealias" { xfail *-*-* } } }
+! { dg-final { scan-tree-dump-times "clique 1 base 4" 1 "ealias" { xfail *-*-* } } }
+! { dg-final { scan-tree-dump-times "clique 1 base 5" 1 "ealias" { xfail *-*-* } } }
 ! { dg-final { scan-tree-dump-times "(?n)clique .* base .*" 8 "ealias" } }

@@ -2061,6 +2061,34 @@ proc check_effective_target_cxx11-abi { } {
     return 0
 }
 
+# Return 1 if std::random_device should be usable using the current flags, 0 otherwise.
+proc check_effective_target_random_device { } {
+    global cxxflags
+
+    # Set up and preprocess a C++ test program that depends
+    # on std::random_device being usable.
+    set src random_device[pid].cc
+
+    set f [open $src "w"]
+    puts $f "#include <bits/c++config.h>"
+    puts $f "#if ! _GLIBCXX_USE_RANDOM_TR1"
+    puts $f "#  error No working std::random_device available"
+    puts $f "#endif"
+    close $f
+
+    set lines [v3_target_compile $src /dev/null preprocess ""]
+    file delete $src
+
+    if [string match "" $lines] {
+	# No error message, preprocessing succeeded.
+	verbose "check_v3_random_device: `1'" 2
+	return 1
+    }
+
+    verbose "check_v3_random_device: `0'" 2
+    return 0
+}
+
 set additional_prunes ""
 
 if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \

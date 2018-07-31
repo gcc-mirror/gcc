@@ -201,7 +201,7 @@ case "${host}" in
     AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     AC_CHECK_FUNCS(_wfopen)
     ;;
-  *-netbsd*)
+  *-netbsd* | *-openbsd*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
     AC_SUBST(SECTION_FLAGS) 
     GLIBCXX_CHECK_LINKER_FEATURES

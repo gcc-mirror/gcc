@@ -10680,6 +10680,8 @@ pa_output_addr_vec (rtx lab, rtx body)
 {
   int idx, vlen = XVECLEN (body, 0);
 
+  if (!TARGET_SOM)
+    fputs ("\t.align 4\n", asm_out_file);
   targetm.asm_out.internal_label (asm_out_file, "L", CODE_LABEL_NUMBER (lab));
   if (TARGET_GAS)
     fputs ("\t.begin_brtab\n", asm_out_file);

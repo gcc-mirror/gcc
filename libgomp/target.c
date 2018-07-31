@@ -859,6 +859,7 @@ gomp_map_vars (struct gomp_device_descr *devicep, size_t mapnum,
 		tgt->list[i].offset = 0;
 		tgt->list[i].length = k->host_end - k->host_start;
 		k->refcount = 1;
+		k->dynamic_refcount = 0;
 		tgt->refcount++;
 		array->left = NULL;
 		array->right = NULL;
@@ -1011,6 +1012,23 @@ gomp_unmap_tgt (struct target_mem_desc *tgt)
   free (tgt);
 }
 
+attribute_hidden bool
+gomp_remove_var (struct gomp_device_descr *devicep, splay_tree_key k)
+{
+  bool is_tgt_unmapped = false;
+  splay_tree_remove (&devicep->mem_map, k);
+  if (k->link_key)
+    splay_tree_insert (&devicep->mem_map, (splay_tree_node) k->link_key);
+  if (k->tgt->refcount > 1)
+    k->tgt->refcount--;
+  else
+    {
+      is_tgt_unmapped = true;
+      gomp_unmap_tgt (k->tgt);
+    }
+  return is_tgt_unmapped;
+}
+
 /* Unmap variables described by TGT.  If DO_COPYFROM is true, copy relevant
    variables back from device to host: if it is false, it is assumed that this
    has been done already.  */
@@ -1059,16 +1077,7 @@ gomp_unmap_vars (struct target_mem_desc *tgt, bool do_copyfrom)
 				      + tgt->list[i].offset),
 			    tgt->list[i].length);
       if (do_unmap)
-	{
-	  splay_tree_remove (&devicep->mem_map, k);
-	  if (k->link_key)
-	    splay_tree_insert (&devicep->mem_map,
-			       (splay_tree_node) k->link_key);
-	  if (k->tgt->refcount > 1)
-	    k->tgt->refcount--;
-	  else
-	    gomp_unmap_tgt (k->tgt);
-	}
+	gomp_remove_var (devicep, k);
     }
 
   if (tgt->refcount > 1)
@@ -1298,17 +1307,7 @@ gomp_unload_image_from_device (struct gomp_device_descr *devicep,
       else
 	{
 	  splay_tree_key n = splay_tree_lookup (&devicep->mem_map, &k);
-	  splay_tree_remove (&devicep->mem_map, n);
-	  if (n->link_key)
-	    {
-	      if (n->tgt->refcount > 1)
-		n->tgt->refcount--;
-	      else
-		{
-		  is_tgt_unmapped = true;
-		  gomp_unmap_tgt (n->tgt);
-		}
-	    }
+	  is_tgt_unmapped = gomp_remove_var (devicep, n);
 	}
     }
 

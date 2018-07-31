@@ -642,8 +642,7 @@ build_sender_ref (tree var, omp_context *ctx)
    BASE_POINTERS_RESTRICT, declare the field with restrict.  */
 
 static void
-install_var_field (tree var, bool by_ref, int mask, omp_context *ctx,
-		   bool base_pointers_restrict = false)
+install_var_field (tree var, bool by_ref, int mask, omp_context *ctx)
 {
   tree field, type, sfield = NULL_TREE;
   splay_tree_key key = (splay_tree_key) var;
@@ -674,11 +673,7 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx,
       type = build_pointer_type (build_pointer_type (type));
     }
   else if (by_ref)
-    {
-      type = build_pointer_type (type);
-      if (base_pointers_restrict)
-	type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
-    }
+    type = build_pointer_type (type);
   else if ((mask & 3) == 1 && omp_is_reference (var))
     type = TREE_TYPE (type);
 
@@ -992,12 +987,10 @@ fixup_child_record_type (omp_context *ctx)
 }
 
 /* Instantiate decls as necessary in CTX to satisfy the data sharing
-   specified by CLAUSES.  If BASE_POINTERS_RESTRICT, install var field with
-   restrict.  */
+   specified by CLAUSES.  */
 
 static void
-scan_sharing_clauses (tree clauses, omp_context *ctx,
-		      bool base_pointers_restrict = false)
+scan_sharing_clauses (tree clauses, omp_context *ctx)
 {
   tree c, decl;
   bool scan_array_reductions = false;
@@ -1190,13 +1183,16 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	  /* Global variables with "omp declare target" attribute
 	     don't need to be copied, the receiver side will use them
 	     directly.  However, global variables with "omp declare target link"
-	     attribute need to be copied.  */
+	     attribute need to be copied.  Or when ALWAYS modifier is used.  */
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 	      && DECL_P (decl)
 	      && ((OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FIRSTPRIVATE_POINTER
 		   && (OMP_CLAUSE_MAP_KIND (c)
 		       != GOMP_MAP_FIRSTPRIVATE_REFERENCE))
 		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_TO
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_FROM
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_TOFROM
 	      && is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx))
 	      && varpool_node::get_create (decl)->offloadable
 	      && !lookup_attribute ("omp declare target link",
@@ -1256,8 +1252,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 		      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 		    install_var_field (decl, true, 7, ctx);
 		  else
-		    install_var_field (decl, true, 3, ctx,
-				       base_pointers_restrict);
+		    install_var_field (decl, true, 3, ctx);
 		  if (is_gimple_omp_offloaded (ctx->stmt)
 		      && !OMP_CLAUSE_MAP_IN_REDUCTION (c))
 		    install_var_local (decl, ctx);
@@ -1328,6 +1323,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE__SIMT_:
 	case OMP_CLAUSE_DEFAULT:
+	case OMP_CLAUSE_IF_PRESENT:
+	case OMP_CLAUSE_FINALIZE:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -1499,6 +1496,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE__GRIDDIM_:
 	case OMP_CLAUSE__SIMT_:
+	case OMP_CLAUSE_IF_PRESENT:
+	case OMP_CLAUSE_FINALIZE:
 	  break;
 
 	case OMP_CLAUSE__CACHE_:
@@ -2266,68 +2265,6 @@ scan_omp_single (gomp_single *stmt, omp_context *outer_ctx)
     layout_type (ctx->record_type);
 }
 
-/* Return true if the CLAUSES of an omp target guarantee that the base pointers
-   used in the corresponding offloaded function are restrict.  */
-
-static bool
-omp_target_base_pointers_restrict_p (tree clauses)
-{
-  /* The analysis relies on the GOMP_MAP_FORCE_* mapping kinds, which are only
-     used by OpenACC.  */
-  if (flag_openacc == 0)
-    return false;
-
-  /* I.  Basic example:
-
-       void foo (void)
-       {
-	 unsigned int a[2], b[2];
-
-	 #pragma acc kernels \
-	   copyout (a) \
-	   copyout (b)
-	 {
-	   a[0] = 0;
-	   b[0] = 1;
-	 }
-       }
-
-     After gimplification, we have:
-
-       #pragma omp target oacc_kernels \
-	 map(force_from:a [len: 8]) \
-	 map(force_from:b [len: 8])
-       {
-	 a[0] = 0;
-	 b[0] = 1;
-       }
-
-     Because both mappings have the force prefix, we know that they will be
-     allocated when calling the corresponding offloaded function, which means we
-     can mark the base pointers for a and b in the offloaded function as
-     restrict.  */
-
-  tree c;
-  for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-    {
-      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
-	return false;
-
-      switch (OMP_CLAUSE_MAP_KIND (c))
-	{
-	case GOMP_MAP_FORCE_ALLOC:
-	case GOMP_MAP_FORCE_TO:
-	case GOMP_MAP_FORCE_FROM:
-	case GOMP_MAP_FORCE_TOFROM:
-	  break;
-	default:
-	  return false;
-	}
-    }
-
-  return true;
-}
-
 /* Scan a GIMPLE_OMP_TARGET.  */
 
 static void
@@ -2349,20 +2286,13 @@ scan_omp_target (gomp_target *stmt, omp_context *outer_ctx)
   TYPE_NAME (ctx->record_type) = name;
   TYPE_ARTIFICIAL (ctx->record_type) = 1;
 
-  bool base_pointers_restrict = false;
   if (offloaded)
     {
       create_omp_child_function (ctx, false);
       gimple_omp_target_set_child_fn (stmt, ctx->cb.dst_fn);
-
-      base_pointers_restrict = omp_target_base_pointers_restrict_p (clauses);
-      if (base_pointers_restrict
-	  && dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "Base pointers in offloaded function are restrict\n");
     }
 
-  scan_sharing_clauses (clauses, ctx, base_pointers_restrict);
+  scan_sharing_clauses (clauses, ctx);
   scan_omp (gimple_omp_body_ptr (stmt), ctx);
 
   if (TYPE_FIELDS (ctx->record_type) == NULL)
@@ -7099,6 +7029,7 @@ create_task_copyfn (gomp_task *task_stmt, omp_context *ctx)
   splay_tree_node n;
   struct omp_taskcopy_context tcctx;
   location_t loc = gimple_location (task_stmt);
+  size_t looptempno = 0;
 
   child_fn = gimple_omp_task_copy_fn (task_stmt);
   child_cfun = DECL_STRUCT_FUNCTION (child_fn);
@@ -7212,6 +7143,15 @@ create_task_copyfn (gomp_task *task_stmt, omp_context *ctx)
 	t = build2 (MODIFY_EXPR, TREE_TYPE (dst), dst, src);
 	append_to_statement_list (t, &list);
 	break;
+      case OMP_CLAUSE__LOOPTEMP_:
+	/* Fields for first two _looptemp_ clauses are initialized by
+	   GOMP_taskloop*, the rest are handled like firstprivate.  */
+        if (looptempno < 2)
+	  {
+	    looptempno++;
+	    break;
+	  }
+	/* FALLTHRU */
       case OMP_CLAUSE_FIRSTPRIVATE:
 	decl = OMP_CLAUSE_DECL (c);
 	if (is_variable_sized (decl))
@@ -7237,7 +7177,10 @@ create_task_copyfn (gomp_task *task_stmt, omp_context *ctx)
 	  src = decl;
 	dst = build_simple_mem_ref_loc (loc, arg);
 	dst = omp_build_component_ref (dst, f);
-	t = lang_hooks.decls.omp_clause_copy_ctor (c, dst, src);
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE__LOOPTEMP_)
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (dst), dst, src);
+	else
+	  t = lang_hooks.decls.omp_clause_copy_ctor (c, dst, src);
 	append_to_statement_list (t, &list);
 	break;
       case OMP_CLAUSE_PRIVATE:

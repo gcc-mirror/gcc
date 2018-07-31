@@ -917,17 +917,17 @@ add (const Ca &a, const poly_int_pod<N, Cb> &b)
 template<unsigned int N, typename Ca, typename Cb>
 inline poly_int<N, WI_BINARY_RESULT (Ca, Cb)>
 add (const poly_int_pod<N, Ca> &a, const poly_int_pod<N, Cb> &b,
-     signop sgn, bool *overflow)
+     signop sgn, wi::overflow_type *overflow)
 {
   typedef WI_BINARY_RESULT (Ca, Cb) C;
   poly_int<N, C> r;
   POLY_SET_COEFF (C, r, 0, wi::add (a.coeffs[0], b.coeffs[0], sgn, overflow));
   for (unsigned int i = 1; i < N; i++)
     {
-      bool suboverflow;
+      wi::overflow_type suboverflow;
       POLY_SET_COEFF (C, r, i, wi::add (a.coeffs[i], b.coeffs[i], sgn,
 					&suboverflow));
-      *overflow |= suboverflow;
+      wi::accumulate_overflow (*overflow, suboverflow);
     }
   return r;
 }
@@ -1016,17 +1016,17 @@ sub (const Ca &a, const poly_int_pod<N, Cb> &b)
 template<unsigned int N, typename Ca, typename Cb>
 inline poly_int<N, WI_BINARY_RESULT (Ca, Cb)>
 sub (const poly_int_pod<N, Ca> &a, const poly_int_pod<N, Cb> &b,
-     signop sgn, bool *overflow)
+     signop sgn, wi::overflow_type *overflow)
 {
   typedef WI_BINARY_RESULT (Ca, Cb) C;
   poly_int<N, C> r;
   POLY_SET_COEFF (C, r, 0, wi::sub (a.coeffs[0], b.coeffs[0], sgn, overflow));
   for (unsigned int i = 1; i < N; i++)
     {
-      bool suboverflow;
+      wi::overflow_type suboverflow;
       POLY_SET_COEFF (C, r, i, wi::sub (a.coeffs[i], b.coeffs[i], sgn,
 					&suboverflow));
-      *overflow |= suboverflow;
+      wi::accumulate_overflow (*overflow, suboverflow);
     }
   return r;
 }
@@ -1060,16 +1060,16 @@ neg (const poly_int_pod<N, Ca> &a)
 
 template<unsigned int N, typename Ca>
 inline poly_int<N, WI_UNARY_RESULT (Ca)>
-neg (const poly_int_pod<N, Ca> &a, bool *overflow)
+neg (const poly_int_pod<N, Ca> &a, wi::overflow_type *overflow)
 {
   typedef WI_UNARY_RESULT (Ca) C;
   poly_int<N, C> r;
   POLY_SET_COEFF (C, r, 0, wi::neg (a.coeffs[0], overflow));
   for (unsigned int i = 1; i < N; i++)
     {
-      bool suboverflow;
+      wi::overflow_type suboverflow;
       POLY_SET_COEFF (C, r, i, wi::neg (a.coeffs[i], &suboverflow));
-      *overflow |= suboverflow;
+      wi::accumulate_overflow (*overflow, suboverflow);
     }
   return r;
 }
@@ -1136,16 +1136,16 @@ mul (const Ca &a, const poly_int_pod<N, Cb> &b)
 template<unsigned int N, typename Ca, typename Cb>
 inline poly_int<N, WI_BINARY_RESULT (Ca, Cb)>
 mul (const poly_int_pod<N, Ca> &a, const Cb &b,
-     signop sgn, bool *overflow)
+     signop sgn, wi::overflow_type *overflow)
 {
   typedef WI_BINARY_RESULT (Ca, Cb) C;
   poly_int<N, C> r;
   POLY_SET_COEFF (C, r, 0, wi::mul (a.coeffs[0], b, sgn, overflow));
   for (unsigned int i = 1; i < N; i++)
     {
-      bool suboverflow;
+      wi::overflow_type suboverflow;
       POLY_SET_COEFF (C, r, i, wi::mul (a.coeffs[i], b, sgn, &suboverflow));
-      *overflow |= suboverflow;
+      wi::accumulate_overflow (*overflow, suboverflow);
     }
   return r;
 }
@@ -2346,6 +2346,27 @@ can_div_trunc_p (const poly_int_pod<N, Ca> &a, Cb b,
   return true;
 }
 
+/* Return true if we can compute A / B at compile time, rounding towards zero.
+   Store the result in QUOTIENT if so.
+
+   This handles cases in which either B is constant or the result is
+   constant.  */
+
+template<unsigned int N, typename Ca, typename Cb, typename Cq>
+inline bool
+can_div_trunc_p (const poly_int_pod<N, Ca> &a,
+		 const poly_int_pod<N, Cb> &b,
+		 poly_int_pod<N, Cq> *quotient)
+{
+  if (b.is_constant ())
+    return can_div_trunc_p (a, b.coeffs[0], quotient);
+  if (!can_div_trunc_p (a, b, &quotient->coeffs[0]))
+    return false;
+  for (unsigned int i = 1; i < N; ++i)
+    quotient->coeffs[i] = 0;
+  return true;
+}
+
 /* Return true if there is some constant Q and polynomial r such that:
 
      (1) a = b * Q + r
@@ -2397,6 +2418,25 @@ print_dec (const poly_int_pod<N, C> &value, FILE *file)
   STATIC_ASSERT (poly_coeff_traits<C>::signedness >= 0);
   print_dec (value, file,
 	     poly_coeff_traits<C>::signedness ? SIGNED : UNSIGNED);
+}
+
+/* Use print_hex to print VALUE to FILE.  */
+
+template<unsigned int N, typename C>
+void
+print_hex (const poly_int_pod<N, C> &value, FILE *file)
+{
+  if (value.is_constant ())
+    print_hex (value.coeffs[0], file);
+  else
+    {
+      fprintf (file, "[");
+      for (unsigned int i = 0; i < N; ++i)
+	{
+	  print_hex (value.coeffs[i], file);
+	  fputc (i == N - 1 ? ']' : ',', file);
+	}
+    }
 }
 
 /* Helper for calculating the distance between two points P1 and P2,

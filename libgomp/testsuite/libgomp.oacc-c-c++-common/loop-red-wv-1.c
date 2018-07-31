@@ -1,6 +1,3 @@
-/* { dg-do run } */
-/* { dg-additional-options "-O2" } */
-
 #include <stdio.h>
 #include <openacc.h>
 #include <gomp-constants.h>

@@ -74,49 +74,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Function end macros.  Variants for interworking.  */
 
-#if defined(__ARM_ARCH_2__)
-# define __ARM_ARCH__ 2
-#endif
-
-#if defined(__ARM_ARCH_3__)
-# define __ARM_ARCH__ 3
-#endif
-
-#if defined(__ARM_ARCH_3M__) || defined(__ARM_ARCH_4__) \
-	|| defined(__ARM_ARCH_4T__)
-/* We use __ARM_ARCH__ set to 4 here, but in reality it's any processor with
-   long multiply instructions.  That includes v3M.  */
-# define __ARM_ARCH__ 4
-#endif
-	
-#if defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) \
-	|| defined(__ARM_ARCH_5E__) || defined(__ARM_ARCH_5TE__) \
-	|| defined(__ARM_ARCH_5TEJ__)
-# define __ARM_ARCH__ 5
-#endif
-
-#if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) \
-	|| defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) \
-	|| defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__) \
-	|| defined(__ARM_ARCH_6M__)
-# define __ARM_ARCH__ 6
-#endif
-
-#if defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) \
-	|| defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) \
-	|| defined(__ARM_ARCH_7EM__)
-# define __ARM_ARCH__ 7
-#endif
-
-#if defined(__ARM_ARCH_8A__) || defined(__ARM_ARCH_8M_BASE__) \
-	|| defined(__ARM_ARCH_8M_MAIN__) || defined(__ARM_ARCH_8R__)
-# define __ARM_ARCH__ 8
-#endif
-
-#ifndef __ARM_ARCH__
-#error Unable to determine architecture.
-#endif
-
 /* There are times when we might prefer Thumb1 code even if ARM code is
    permitted, for example, the code might be smaller, or there might be
    interworking problems with switching to ARM state if interworking is
@@ -135,13 +92,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* How to return from a function call depends on the architecture variant.  */
 
-#if (__ARM_ARCH__ > 4) || defined(__ARM_ARCH_4T__)
+#if (__ARM_ARCH > 4) || defined(__ARM_ARCH_4T__)
 
 # define RET		bx	lr
 # define RETc(x)	bx##x	lr
 
 /* Special precautions for interworking on armv4t.  */
-# if (__ARM_ARCH__ == 4)
+# if (__ARM_ARCH == 4)
 
 /* Always use bx, not ldr pc.  */
 #  if (defined(__thumb__) || defined(__THUMB_INTERWORK__))
@@ -544,7 +501,7 @@ pc		.req	r15
 /* ------------------------------------------------------------------------ */	
 .macro ARM_DIV_BODY dividend, divisor, result, curbit
 
-#if __ARM_ARCH__ >= 5 && ! defined (__OPTIMIZE_SIZE__)
+#if defined (__ARM_FEATURE_CLZ) && ! defined (__OPTIMIZE_SIZE__)
 
 #if defined (__thumb2__)
 	clz	\curbit, \dividend
@@ -584,8 +541,8 @@ pc		.req	r15
 	.endr
 #endif
 
-#else /* __ARM_ARCH__ < 5 || defined (__OPTIMIZE_SIZE__) */
-#if __ARM_ARCH__ >= 5
+#else /* !defined (__ARM_FEATURE_CLZ) || defined (__OPTIMIZE_SIZE__) */
+#if defined (__ARM_FEATURE_CLZ)
 
 	clz	\curbit, \divisor
 	clz	\result, \dividend
@@ -595,7 +552,7 @@ pc		.req	r15
 	mov	\curbit, \curbit, lsl \result
 	mov	\result, #0
 	
-#else /* __ARM_ARCH__ < 5 */
+#else /* !defined (__ARM_FEATURE_CLZ) */
 
 	@ Initially shift the divisor left 3 bits if possible,
 	@ set curbit accordingly.  This allows for curbit to be located
@@ -626,7 +583,7 @@ pc		.req	r15
 
 	mov	\result, #0
 
-#endif /* __ARM_ARCH__ < 5 */
+#endif /* !defined (__ARM_FEATURE_CLZ) */
 
 	@ Division loop
 1:	cmp	\dividend, \divisor
@@ -651,13 +608,13 @@ pc		.req	r15
 	movne	\divisor,  \divisor, lsr #4
 	bne	1b
 
-#endif /* __ARM_ARCH__ < 5 || defined (__OPTIMIZE_SIZE__) */
+#endif /* !defined (__ARM_FEATURE_CLZ) || defined (__OPTIMIZE_SIZE__) */
 
 .endm
 /* ------------------------------------------------------------------------ */	
 .macro ARM_DIV2_ORDER divisor, order
 
-#if __ARM_ARCH__ >= 5
+#if defined (__ARM_FEATURE_CLZ)
 
 	clz	\order, \divisor
 	rsb	\order, \order, #31
@@ -687,7 +644,7 @@ pc		.req	r15
 /* ------------------------------------------------------------------------ */
 .macro ARM_MOD_BODY dividend, divisor, order, spare
 
-#if __ARM_ARCH__ >= 5 && ! defined (__OPTIMIZE_SIZE__)
+#if defined(__ARM_FEATURE_CLZ) && ! defined (__OPTIMIZE_SIZE__)
 
 	clz	\order, \divisor
 	clz	\spare, \dividend
@@ -702,15 +659,15 @@ pc		.req	r15
 	subcs	\dividend, \dividend, \divisor, lsl #shift
 	.endr
 
-#else /* __ARM_ARCH__ < 5 || defined (__OPTIMIZE_SIZE__) */
-#if __ARM_ARCH__ >= 5
+#else /* !defined (__ARM_FEATURE_CLZ) || defined (__OPTIMIZE_SIZE__) */
+#if defined (__ARM_FEATURE_CLZ)
 
 	clz	\order, \divisor
 	clz	\spare, \dividend
 	sub	\order, \order, \spare
 	mov	\divisor, \divisor, lsl \order
 	
-#else /* __ARM_ARCH__ < 5 */
+#else /* !defined (__ARM_FEATURE_CLZ) */
 
 	mov	\order, #0
 
@@ -732,7 +689,7 @@ pc		.req	r15
 	addlo	\order, \order, #1
 	blo	1b
 
-#endif /* __ARM_ARCH__ < 5 */
+#endif /* !defined (__ARM_FEATURE_CLZ) */
 
 	@ Perform all needed substractions to keep only the reminder.
 	@ Do comparisons in batch of 4 first.
@@ -770,7 +727,7 @@ pc		.req	r15
 	subhs	\dividend, \dividend, \divisor
 5:
 
-#endif /* __ARM_ARCH__ < 5 || defined (__OPTIMIZE_SIZE__) */
+#endif /* !defined (__ARM_FEATURE_CLZ) || defined (__OPTIMIZE_SIZE__) */
 
 .endm
 /* ------------------------------------------------------------------------ */
@@ -1560,7 +1517,7 @@ LSYM(Lover12):
 @ EABI GNU/Linux call to cacheflush syscall.
 	ARM_FUNC_START clear_cache
 	do_push	{r7}
-#if __ARM_ARCH__ >= 7 || defined(__ARM_ARCH_6T2__)
+#if __ARM_ARCH >= 7 || defined(__ARM_ARCH_6T2__)
 	movw	r7, #2
 	movt	r7, #0xf
 #else
@@ -1699,13 +1656,6 @@ LSYM(Lover12):
 
 #endif /* __symbian__ */
 
-#if (__ARM_ARCH_ISA_THUMB == 2	\
-     || (__ARM_ARCH_ISA_ARM	\
-	 && (__ARM_ARCH__ > 5	\
-	     || (__ARM_ARCH__ == 5 && __ARM_ARCH_ISA_THUMB))))
-#define HAVE_ARM_CLZ 1
-#endif
-
 #ifdef L_clzsi2
 #ifdef NOT_ISA_TARGET_32BIT
 FUNC_START clzsi2
@@ -1736,7 +1686,7 @@ FUNC_START clzsi2
 	FUNC_END clzsi2
 #else
 ARM_FUNC_START clzsi2
-# if defined(HAVE_ARM_CLZ)
+# if defined (__ARM_FEATURE_CLZ)
 	clz	r0, r0
 	RET
 # else
@@ -1760,13 +1710,13 @@ ARM_FUNC_START clzsi2
 .align 2
 1:
 .byte 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
-# endif /* !HAVE_ARM_CLZ */
+# endif /* !defined (__ARM_FEATURE_CLZ) */
 	FUNC_END clzsi2
 #endif
 #endif /* L_clzsi2 */
 
 #ifdef L_clzdi2
-#if !defined(HAVE_ARM_CLZ)
+#if !defined (__ARM_FEATURE_CLZ)
 
 # ifdef NOT_ISA_TARGET_32BIT
 FUNC_START clzdi2
@@ -1800,7 +1750,7 @@ ARM_FUNC_START clzdi2
 # endif
 	FUNC_END clzdi2
 
-#else /* HAVE_ARM_CLZ */
+#else /* defined (__ARM_FEATURE_CLZ) */
 
 ARM_FUNC_START clzdi2
 	cmp	xxh, #0
@@ -1848,7 +1798,7 @@ FUNC_START ctzsi2
 ARM_FUNC_START ctzsi2
 	rsb	r1, r0, #0
 	and	r0, r0, r1
-# if defined(HAVE_ARM_CLZ)
+# if defined (__ARM_FEATURE_CLZ)
 	clz	r0, r0
 	rsb	r0, r0, #31
 	RET
@@ -1873,7 +1823,7 @@ ARM_FUNC_START ctzsi2
 .align 2
 1:
 .byte	27, 28, 29, 29, 30, 30, 30, 30, 31, 31, 31, 31, 31, 31, 31, 31
-# endif /* !HAVE_ARM_CLZ */
+# endif /* !defined (__ARM_FEATURE_CLZ) */
 	FUNC_END ctzsi2
 #endif
 #endif /* L_clzsi2 */
@@ -1887,7 +1837,7 @@ ARM_FUNC_START ctzsi2
    not support Thumb instructions.  (This can be a multilib option).  */
 #if defined __ARM_ARCH_4T__ || defined __ARM_ARCH_5T__\
       || defined __ARM_ARCH_5TE__ || defined __ARM_ARCH_5TEJ__ \
-      || __ARM_ARCH__ >= 6
+      || __ARM_ARCH >= 6
 
 #if defined L_call_via_rX
 

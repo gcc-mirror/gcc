@@ -241,6 +241,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
             is_constructible<_OuterAlloc, _Alloc>::value
           >::type;
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2975. Missing case for pair construction in scoped [...] allocators
+      template<typename _Tp>
+	struct __not_pair { using type = void; };
+
+      template<typename _Tp, typename _Up>
+	struct __not_pair<pair<_Tp, _Up>> { };
+
     public:
       typedef _OuterAlloc                       outer_allocator_type;
       typedef typename __inner_type::__type     inner_allocator_type;
@@ -348,13 +356,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __traits::max_size(outer_allocator()); }
 
       template<typename _Tp, typename... _Args>
-        void construct(_Tp* __p, _Args&&... __args)
-        {
-          auto& __inner = inner_allocator();
-          auto __use_tag
-            = __use_alloc<_Tp, inner_allocator_type, _Args...>(__inner);
-          _M_construct(__use_tag, __p, std::forward<_Args>(__args)...);
-        }
+	typename __not_pair<_Tp>::type
+	construct(_Tp* __p, _Args&&... __args)
+	{
+	  auto& __inner = inner_allocator();
+	  auto __use_tag
+	    = __use_alloc<_Tp, inner_allocator_type, _Args...>(__inner);
+	  _M_construct(__use_tag, __p, std::forward<_Args>(__args)...);
+	}
 
       template<typename _T1, typename _T2, typename... _Args1,
 	       typename... _Args2>

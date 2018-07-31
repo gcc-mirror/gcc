@@ -120,6 +120,10 @@ enum aarch64_symbol_type
    ADDR_QUERY_LDP_STP
       Query what is valid for a load/store pair.
 
+   ADDR_QUERY_LDP_STP_N
+      Query what is valid for a load/store pair, but narrow the incoming mode
+      for address checking.  This is used for the store_pair_lanes patterns.
+
    ADDR_QUERY_ANY
       Query what is valid for at least one memory constraint, which may
       allow things that "m" doesn't.  For example, the SVE LDR and STR
@@ -128,6 +132,7 @@ enum aarch64_symbol_type
 enum aarch64_addr_query_type {
   ADDR_QUERY_M,
   ADDR_QUERY_LDP_STP,
+  ADDR_QUERY_LDP_STP_N,
   ADDR_QUERY_ANY
 };
 
@@ -250,9 +255,9 @@ struct tune_params
   int memmov_cost;
   int issue_rate;
   unsigned int fusible_ops;
-  int function_align;
-  int jump_align;
-  int loop_align;
+  const char *function_align;
+  const char *jump_align;
+  const char *loop_align;
   int int_reassoc_width;
   int fp_reassoc_width;
   int vec_reassoc_width;
@@ -467,6 +472,16 @@ void aarch64_relayout_simd_types (void);
 void aarch64_reset_previous_fndecl (void);
 bool aarch64_return_address_signing_enabled (void);
 void aarch64_save_restore_target_globals (tree);
+void aarch64_addti_scratch_regs (rtx, rtx, rtx *,
+				 rtx *, rtx *,
+				 rtx *, rtx *,
+				 rtx *);
+void aarch64_subvti_scratch_regs (rtx, rtx, rtx *,
+				  rtx *, rtx *,
+				  rtx *, rtx *, rtx *);
+void aarch64_expand_subvti (rtx, rtx, rtx,
+			    rtx, rtx, rtx, rtx);
+
 
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);
@@ -493,7 +508,8 @@ void aarch64_split_simd_move (rtx, rtx);
 bool aarch64_float_const_representable_p (rtx);
 
 #if defined (RTX_CODE)
-
+void aarch64_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,
+				   rtx label_ref);
 bool aarch64_legitimate_address_p (machine_mode, rtx, bool,
 				   aarch64_addr_query_type = ADDR_QUERY_M);
 machine_mode aarch64_select_cc_mode (RTX_CODE, rtx, rtx);
@@ -513,7 +529,6 @@ bool aarch64_gen_adjusted_ldpstp (rtx *, bool, scalar_mode, RTX_CODE);
 void aarch64_expand_sve_vec_cmp_int (rtx, rtx_code, rtx, rtx);
 bool aarch64_expand_sve_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void aarch64_expand_sve_vcond (machine_mode, machine_mode, rtx *);
-void aarch64_sve_prepare_conditional_op (rtx *, unsigned int, bool);
 #endif /* RTX_CODE */
 
 void aarch64_init_builtins (void);

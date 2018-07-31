@@ -1177,6 +1177,8 @@ conditions (which are the same as for @code{dg-skip-if}) are met.
 @end table
 
 @subsubsection Verify compiler messages
+Where @var{line} is an accepted argument for these commands, a value of @samp{0}
+can be used if there is no line associated with the message.
 
 @table @code
 @item @{ dg-error @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] ]] @}
@@ -1414,6 +1416,10 @@ Target supports Fortran @code{real} kinds larger than @code{real(8)}.
 @item vect_align_stack_vars
 The target's ABI allows stack variables to be aligned to the preferred
 vector alignment.
+
+@item vect_avg_qi
+Target supports both signed and unsigned averaging operations on vectors
+of bytes.
 
 @item vect_condition
 Target supports vector conditional operations.

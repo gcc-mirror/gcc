@@ -1722,7 +1722,13 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
         (subreg:TI (reg:TI 180 [orig:107 __comp ] [107]) 0)) {*movti_internal_rex64}
 
      Two reload hard registers will be allocated to reg180 to save TImode data
-     in LRA_assign.  */
+     in LRA_assign.
+
+     For LRA pseudos this should normally be handled by the biggest_mode
+     mechanism.  However, it's possible for new uses of an LRA pseudo
+     to be introduced after we've allocated it, such as when undoing
+     inheritance, and the allocated register might not then be appropriate
+     for the new uses.  */
   else if (REG_P (reg)
 	   && REGNO (reg) >= FIRST_PSEUDO_REGISTER
 	   && (hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
@@ -1731,7 +1737,9 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	   && (regclass = lra_get_allocno_class (REGNO (reg)))
 	   && (type != OP_IN
 	       || !in_hard_reg_set_p (reg_class_contents[regclass],
-				      mode, hard_regno)))
+				      mode, hard_regno)
+	       || overlaps_hard_reg_set_p (lra_no_alloc_regs,
+					   mode, hard_regno)))
     {
       /* The class will be defined later in curr_insn_transform.  */
       enum reg_class rclass
@@ -5714,9 +5722,19 @@ spill_hard_reg_in_range (int regno, enum reg_class rclass, rtx_insn *from, rtx_i
 	  || TEST_HARD_REG_BIT (ignore, hard_regno))
 	continue;
       for (insn = from; insn != NEXT_INSN (to); insn = NEXT_INSN (insn))
-	if (bitmap_bit_p (&lra_reg_info[hard_regno].insn_bitmap,
-			  INSN_UID (insn)))
-	  break;
+	{
+	  lra_insn_recog_data_t id = lra_insn_recog_data[uid = INSN_UID (insn)];
+	  struct lra_static_insn_data *static_id = id->insn_static_data;
+	  struct lra_insn_reg *reg;
+
+	  if (bitmap_bit_p (&lra_reg_info[hard_regno].insn_bitmap, uid))
+	    break;
+	  for (reg = static_id->hard_regs; reg != NULL; reg = reg->next)
+	    if (reg->regno == hard_regno)
+	      break;
+	  if (reg != NULL)
+	    break;
+	}
       if (insn != NEXT_INSN (to))
 	continue;
       if (split_reg (TRUE, hard_regno, from, NULL, to))

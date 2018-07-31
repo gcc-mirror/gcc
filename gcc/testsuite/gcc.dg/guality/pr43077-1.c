@@ -7,16 +7,16 @@ int varb;
 int __attribute__((noinline))
 fn1 (void)
 {
-  int vara = (varb == 3);		/* { dg-final { gdb-test 11 "vara" "0" } } */
-  asm volatile ("" : : "g" (vara));	/* { dg-final { gdb-test 11 "varb" "2" } } */
+  int vara = (varb == 3);		/* { dg-final { gdb-test .+1 "vara" "0" } } */
+  asm volatile ("" : : "g" (vara));	/* { dg-final { gdb-test . "varb" "2" } } */
   return 0;
 }
 
 int __attribute__((noinline))
 fn2 (void)
 {
-  int vara = (varb == 3);		/* { dg-final { gdb-test 19 "vara" "1" } } */
-  asm volatile ("" : : "g" (vara));	/* { dg-final { gdb-test 19 "varb" "3" } } */
+  int vara = (varb == 3);		/* { dg-final { gdb-test .+1 "vara" "1" } } */
+  asm volatile ("" : : "g" (vara));	/* { dg-final { gdb-test . "varb" "3" } } */
   return 0;
 }
 
@@ -33,12 +33,12 @@ fn3 (void)
 {
   unsigned long a = 0, b = 0, c = 0;
   a = foo (&b, &c);
-					/* { dg-final { gdb-test 42 "a" "1" } } */
-					/* { dg-final { gdb-test 42 "b" "2" } } */
-					/* { dg-final { gdb-test 42 "c" "3" } } */
-  unsigned long vara = a;		/* { dg-final { gdb-test 42 "vara" "1" } } */
-  unsigned long varb = b;		/* { dg-final { gdb-test 42 "varb" "2" } } */
-  unsigned long varc = c;		/* { dg-final { gdb-test 42 "varc" "3" } } */
+					/* { dg-final { gdb-test .+6 "a" "1" } } */
+					/* { dg-final { gdb-test .+5 "b" "2" } } */
+					/* { dg-final { gdb-test .+4 "c" "3" } } */
+  unsigned long vara = a;		/* { dg-final { gdb-test .+3 "vara" "1" } } */
+  unsigned long varb = b;		/* { dg-final { gdb-test .+2 "varb" "2" } } */
+  unsigned long varc = c;		/* { dg-final { gdb-test .+1 "varc" "3" } } */
   asm volatile ("" : : "g" (vara), "g" (varb), "g" (varc));
   return a;
 }

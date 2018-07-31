@@ -41,8 +41,6 @@
 #include <ctime>
 #include <bits/parse_numbers.h> // for literals support.
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -325,8 +323,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	duration(const duration&) = default;
 
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3050. Conversion specification problem in chrono::duration
 	template<typename _Rep2, typename = _Require<
-		 is_convertible<_Rep2, rep>,
+		 is_convertible<const _Rep2&, rep>,
 		 __or_<__is_float<rep>, __not_<__is_float<_Rep2>>>>>
 	  constexpr explicit duration(const _Rep2& __rep)
 	  : __r(static_cast<rep>(__rep)) { }
@@ -471,10 +471,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // SFINAE helper to obtain common_type<_Rep1, _Rep2> only if _Rep2
     // is implicitly convertible to it.
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3050. Conversion specification problem in chrono::duration constructor
     template<typename _Rep1, typename _Rep2,
 	     typename _CRep = typename common_type<_Rep1, _Rep2>::type>
-      using __common_rep_t
-	= typename enable_if<is_convertible<_Rep2, _CRep>::value, _CRep>::type;
+      using __common_rep_t = typename
+	enable_if<is_convertible<const _Rep2&, _CRep>::value, _CRep>::type;
 
     template<typename _Rep1, typename _Period, typename _Rep2>
       constexpr duration<__common_rep_t<_Rep1, _Rep2>, _Period>
@@ -589,23 +591,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 const duration<_Rep2, _Period2>& __rhs)
       { return !(__lhs < __rhs); }
 
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+# define _GLIBCXX_CHRONO_INT64_T int64_t
+#elif defined __INT64_TYPE__
+# define _GLIBCXX_CHRONO_INT64_T __INT64_TYPE__
+#else
+    static_assert(std::numeric_limits<unsigned long long>::digits >= 64,
+	"Representation type for nanoseconds must have at least 64 bits");
+# define _GLIBCXX_CHRONO_INT64_T long long
+#endif
+
     /// nanoseconds
-    typedef duration<int64_t, nano> 	    nanoseconds;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T, nano> 	    nanoseconds;
 
     /// microseconds
-    typedef duration<int64_t, micro> 	    microseconds;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T, micro> 	    microseconds;
 
     /// milliseconds
-    typedef duration<int64_t, milli> 	    milliseconds;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T, milli> 	    milliseconds;
 
     /// seconds
-    typedef duration<int64_t> 		    seconds;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T> 		    seconds;
 
     /// minutes
-    typedef duration<int64_t, ratio< 60>>   minutes;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T, ratio< 60>>   minutes;
 
     /// hours
-    typedef duration<int64_t, ratio<3600>>  hours;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T, ratio<3600>>  hours;
+
+#undef _GLIBCXX_CHRONO_INT64_T
 
     /// time_point
     template<typename _Clock, typename _Dur>
@@ -975,8 +989,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
 
 #endif // C++11
 

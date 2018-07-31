@@ -5403,8 +5403,8 @@ nios2_label_align (rtx label)
   int n = CODE_LABEL_NUMBER (label);
 
   if (label_align && n >= min_labelno && n <= max_labelno)
-    return MAX (label_align[n - min_labelno], align_labels_log);
-  return align_labels_log;
+    return MAX (label_align[n - min_labelno], align_labels.levels[0].log);
+  return align_labels.levels[0].log;
 }
 
 /* Implement ADJUST_REG_ALLOC_ORDER.  We use the default ordering

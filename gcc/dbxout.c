@@ -2379,10 +2379,6 @@ dbxout_type (tree type, int full)
       dbxout_type (TREE_TYPE (type), 0);
       break;
 
-    case POINTER_BOUNDS_TYPE:
-      /* No debug info for pointer bounds type supported yet.  */
-      break;
-
     default:
       /* A C++ function with deduced return type can have a TEMPLATE_TYPE_PARM
 	 named 'auto' in its type.

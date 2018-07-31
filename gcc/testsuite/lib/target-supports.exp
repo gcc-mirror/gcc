@@ -2182,7 +2182,7 @@ proc check_ppc_float128_hw_available { } {
 		    __float128 w = -1.0q;
 
 		    __asm__ ("xsaddqp %0,%1,%2" : "+v" (w) : "v" (x), "v" (y));
-		    return ((z != 3.0q) || (z != w);
+		    return ((z != 3.0q) || (z != w));
 		}
 	    } $options
 	}
@@ -2681,6 +2681,15 @@ proc check_effective_target_large_double { } {
 proc check_effective_target_longdouble128 { } {
     return [check_no_compiler_messages longdouble128 object {
 	int dummy[sizeof(long double) == 16 ? 1 : -1];
+    }]
+}
+
+# Return 1 if the target supports long double of 64 bits,
+# 0 otherwise.
+
+proc check_effective_target_longdouble64 { } {
+    return [check_no_compiler_messages longdouble64 object {
+	int dummy[sizeof(long double) == 8 ? 1 : -1];
     }]
 }
 
@@ -5141,6 +5150,36 @@ proc check_effective_target_powerpc_float128_hw_ok { } {
     }
 }
 
+# Return 1 if current options define float128, 0 otherwise.
+
+proc check_effective_target_ppc_float128 { } {
+    return [check_no_compiler_messages_nocache ppc_float128 object {
+	#ifndef __FLOAT128__
+	  nope no good
+	#endif
+    }]
+}
+
+# Return 1 if current options generate float128 insns, 0 otherwise.
+
+proc check_effective_target_ppc_float128_insns { } {
+    return [check_no_compiler_messages_nocache ppc_float128 object {
+	#ifndef __FLOAT128_HARDWARE__
+	  nope no good
+	#endif
+    }]
+}
+
+# Return 1 if current options generate VSX instructions, 0 otherwise.
+
+proc check_effective_target_powerpc_vsx { } {
+    return [check_no_compiler_messages_nocache powerpc_vsx object {
+	#ifndef __VSX__
+	  nope no vsx
+	#endif
+    }]
+}
+
 # Return 1 if this is a PowerPC target supporting -mvsx
 
 proc check_effective_target_powerpc_vsx_ok { } {
@@ -6311,6 +6350,14 @@ proc check_effective_target_vect_usad_char { } {
     verbose "check_effective_target_vect_usad_char:\
 	     returning $et_vect_usad_char_saved($et_index)" 2
     return $et_vect_usad_char_saved($et_index)
+}
+
+# Return 1 if the target plus current options supports both signed
+# and unsigned average operations on vectors of bytes.
+
+proc check_effective_target_vect_avg_qi {} {
+    return [expr { [istarget aarch64*-*-*]
+		   && ![check_effective_target_aarch64_sve] }]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -8801,6 +8848,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget powerpc*-*-*]
 	 || [istarget nios2*-*-*]
 	 || [istarget riscv*-*-*]
+	 || [istarget v850*-*-*]
 	 || [istarget visium-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1

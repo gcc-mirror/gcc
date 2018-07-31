@@ -1375,6 +1375,11 @@ structural_comptypes (tree t1, tree t2, int strict)
 	 template parameters set, they can't be equal.  */
       if (!comp_template_parms_position (t1, t2))
 	return false;
+      /* If T1 and T2 don't represent the same class template deduction,
+         they aren't equal.  */
+      if (CLASS_PLACEHOLDER_TEMPLATE (t1)
+	  != CLASS_PLACEHOLDER_TEMPLATE (t2))
+	return false;
       /* Constrained 'auto's are distinct from parms that don't have the same
 	 constraints.  */
       if (!equivalent_placeholder_constraints (t1, t2))
@@ -1985,7 +1990,7 @@ decay_conversion (tree exp,
 {
   tree type;
   enum tree_code code;
-  location_t loc = EXPR_LOC_OR_LOC (exp, input_location);
+  location_t loc = cp_expr_loc_or_loc (exp, input_location);
 
   type = TREE_TYPE (exp);
   if (type == error_mark_node)
@@ -2249,7 +2254,7 @@ static tree
 rationalize_conditional_expr (enum tree_code code, tree t,
                               tsubst_flags_t complain)
 {
-  location_t loc = EXPR_LOC_OR_LOC (t, input_location);
+  location_t loc = cp_expr_loc_or_loc (t, input_location);
 
   /* For MIN_EXPR or MAX_EXPR, fold-const.c has arranged things so that
      the first operand is always the one to be used if both operands
@@ -4158,7 +4163,7 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
       || TREE_NO_WARNING (op))
     return;
 
-  tree cop = fold_non_dependent_expr (op);
+  tree cop = fold_non_dependent_expr (op, complain);
 
   if (TREE_CODE (cop) == ADDR_EXPR
       && decl_with_nonnull_addr_p (TREE_OPERAND (cop, 0))
@@ -4475,7 +4480,7 @@ cp_build_binary_op (location_t location,
 	      || code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE))
 	{
 	  enum tree_code tcode0 = code0, tcode1 = code1;
-	  tree cop1 = fold_non_dependent_expr (op1);
+	  tree cop1 = fold_non_dependent_expr (op1, complain);
 	  doing_div_or_mod = true;
 	  warn_for_div_by_zero (location, cop1);
 
@@ -4514,7 +4519,7 @@ cp_build_binary_op (location_t location,
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:
       {
-	tree cop1 = fold_non_dependent_expr (op1);
+	tree cop1 = fold_non_dependent_expr (op1, complain);
 	doing_div_or_mod = true;
 	warn_for_div_by_zero (location, cop1);
       }
@@ -4609,7 +4614,7 @@ cp_build_binary_op (location_t location,
 	}
       else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  tree const_op1 = fold_non_dependent_expr (op1);
+	  tree const_op1 = fold_non_dependent_expr (op1, complain);
 	  if (TREE_CODE (const_op1) != INTEGER_CST)
 	    const_op1 = op1;
 	  result_type = type0;
@@ -4655,10 +4660,10 @@ cp_build_binary_op (location_t location,
 	}
       else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  tree const_op0 = fold_non_dependent_expr (op0);
+	  tree const_op0 = fold_non_dependent_expr (op0, complain);
 	  if (TREE_CODE (const_op0) != INTEGER_CST)
 	    const_op0 = op0;
-	  tree const_op1 = fold_non_dependent_expr (op1);
+	  tree const_op1 = fold_non_dependent_expr (op1, complain);
 	  if (TREE_CODE (const_op1) != INTEGER_CST)
 	    const_op1 = op1;
 	  result_type = type0;
@@ -4729,6 +4734,7 @@ cp_build_binary_op (location_t location,
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
 	goto vector_compare;
       if ((complain & tf_warning)
+	  && c_inhibit_evaluation_warnings == 0
 	  && (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1)))
 	warning (OPT_Wfloat_equal,
 		 "comparing floating point with == or != is unsafe");
@@ -5306,12 +5312,13 @@ cp_build_binary_op (location_t location,
 
       if (short_compare)
 	{
-	  /* We call shorten_compare only for diagnostic-reason.  */
-	  tree xop0 = fold_simple (op0), xop1 = fold_simple (op1),
-	       xresult_type = result_type;
+	  /* We call shorten_compare only for diagnostics.  */
+	  tree xop0 = fold_simple (op0);
+	  tree xop1 = fold_simple (op1);
+	  tree xresult_type = result_type;
 	  enum tree_code xresultcode = resultcode;
 	  shorten_compare (location, &xop0, &xop1, &xresult_type,
-			       &xresultcode);
+			   &xresultcode);
 	}
 
       if ((short_compare || code == MIN_EXPR || code == MAX_EXPR)
@@ -5344,6 +5351,7 @@ cp_build_binary_op (location_t location,
      otherwise, it will be given type RESULT_TYPE.  */
   if (! converted)
     {
+      warning_sentinel w (warn_sign_conversion, short_compare);
       if (TREE_TYPE (op0) != result_type)
 	op0 = cp_convert_and_check (result_type, op0, complain);
       if (TREE_TYPE (op1) != result_type)
@@ -5365,8 +5373,8 @@ cp_build_binary_op (location_t location,
       /* OP0 and/or OP1 might have side-effects.  */
       op0 = cp_save_expr (op0);
       op1 = cp_save_expr (op1);
-      op0 = fold_non_dependent_expr (op0);
-      op1 = fold_non_dependent_expr (op1);
+      op0 = fold_non_dependent_expr (op0, complain);
+      op1 = fold_non_dependent_expr (op1, complain);
       if (doing_div_or_mod
 	  && sanitize_flags_p (SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
 	{
@@ -6036,7 +6044,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 {
   /* No default_conversion here.  It causes trouble for ADDR_EXPR.  */
   tree arg = xarg;
-  location_t location = EXPR_LOC_OR_LOC (arg, input_location);
+  location_t location = cp_expr_loc_or_loc (arg, input_location);
   tree argtype = 0;
   const char *errstring = NULL;
   tree val;
@@ -6588,7 +6596,7 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
       && !CONSTRUCTOR_IS_DIRECT_INIT (expr))
     {
       if (complain & tf_error)
-	pedwarn (EXPR_LOC_OR_LOC (expr, input_location), 0,
+	pedwarn (cp_expr_loc_or_loc (expr, input_location), 0,
 		 "list-initializer for non-class type must not "
 		 "be parenthesized");
       else
@@ -8797,7 +8805,7 @@ convert_for_assignment (tree type, tree rhs,
 		}
 	      else if (fndecl)
 		{
-		  error_at (EXPR_LOC_OR_LOC (rhs, input_location),
+		  error_at (cp_expr_loc_or_loc (rhs, input_location),
 			    "cannot convert %qH to %qI",
 			    rhstype, type);
 		  inform (get_fndecl_argument_location (fndecl, parmnum),
@@ -8899,7 +8907,7 @@ convert_for_assignment (tree type, tree rhs,
       && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
       && (complain & tf_warning))
     {
-      location_t loc = EXPR_LOC_OR_LOC (rhs, input_location);
+      location_t loc = cp_expr_loc_or_loc (rhs, input_location);
 
       warning_at (loc, OPT_Wparentheses,
 		  "suggest parentheses around assignment used as truth value");
@@ -9011,7 +9019,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 {
   tree valtype = TREE_TYPE (DECL_RESULT (current_function_decl));
   tree whats_returned = fold_for_warn (retval);
-  location_t loc = EXPR_LOC_OR_LOC (retval, input_location);
+  location_t loc = cp_expr_loc_or_loc (retval, input_location);
 
   for (;;)
     {

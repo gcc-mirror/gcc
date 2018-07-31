@@ -3782,9 +3782,7 @@ package body Sem_Ch8 is
 
       --  Local variables
 
-      Ghost_Id  : Entity_Id := Empty;
-      Living_Id : Entity_Id := Empty;
-      Pack      : Entity_Id;
+      Pack : Entity_Id;
 
    --  Start of processing for Analyze_Use_Package
 
@@ -3870,22 +3868,9 @@ package body Sem_Ch8 is
          end if;
 
          Use_One_Package (N, Name (N));
-
-         --  Capture the first Ghost package and the first living package
-
-         if Is_Entity_Name (Name (N)) then
-            Pack := Entity (Name (N));
-
-            if Is_Ghost_Entity (Pack) then
-               if No (Ghost_Id) then
-                  Ghost_Id := Pack;
-               end if;
-
-            elsif No (Living_Id) then
-               Living_Id := Pack;
-            end if;
-         end if;
       end if;
+
+      Mark_Ghost_Clause (N);
    end Analyze_Use_Package;
 
    ----------------------
@@ -5423,8 +5408,6 @@ package body Sem_Ch8 is
 
       --  Local variables
 
-      Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
-
       Nested_Inst : Entity_Id := Empty;
       --  The entity of a nested instance which appears within Inst (if any)
 
@@ -5970,11 +5953,19 @@ package body Sem_Ch8 is
       --  reference is a write when it appears on the left hand side of an
       --  assignment.
 
-      if not Within_Subprogram_Call (N) then
-         Build_Variable_Reference_Marker
-           (N     => N,
-            Read  => not Is_Assignment_LHS,
-            Write => Is_Assignment_LHS);
+      if Needs_Variable_Reference_Marker
+           (N        => N,
+            Calls_OK => False)
+      then
+         declare
+            Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+
+         begin
+            Build_Variable_Reference_Marker
+              (N     => N,
+               Read  => not Is_Assignment_LHS,
+               Write => Is_Assignment_LHS);
+         end;
       end if;
    end Find_Direct_Name;
 
@@ -6047,8 +6038,7 @@ package body Sem_Ch8 is
 
       --  Local variables
 
-      Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
-      Selector          : constant Node_Id := Selector_Name (N);
+      Selector : constant Node_Id := Selector_Name (N);
 
       Candidate : Entity_Id := Empty;
       P_Name    : Entity_Id;
@@ -6621,11 +6611,19 @@ package body Sem_Ch8 is
       --  reference is a write when it appears on the left hand side of an
       --  assignment.
 
-      if not Within_Subprogram_Call (N) then
-         Build_Variable_Reference_Marker
-           (N     => N,
-            Read  => not Is_Assignment_LHS,
-            Write => Is_Assignment_LHS);
+      if Needs_Variable_Reference_Marker
+           (N        => N,
+            Calls_OK => False)
+      then
+         declare
+            Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+
+         begin
+            Build_Variable_Reference_Marker
+              (N     => N,
+               Read  => not Is_Assignment_LHS,
+               Write => Is_Assignment_LHS);
+         end;
       end if;
    end Find_Expanded_Name;
 
@@ -8301,7 +8299,6 @@ package body Sem_Ch8 is
    ----------------------
 
    procedure Mark_Use_Clauses (Id : Node_Or_Entity_Id) is
-
       procedure Mark_Parameters (Call : Entity_Id);
       --  Perform use_type_clause marking for all parameters in a subprogram
       --  or operator call.

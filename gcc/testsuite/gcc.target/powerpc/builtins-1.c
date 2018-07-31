@@ -81,14 +81,6 @@ int main ()
   vector unsigned long long uq = vec_nor (ua, ud);
   vector unsigned long long ur = vec_nor (ud, ua);
 
-  vector long long ls = vec_or (la, lb);
-  vector long long lt = vec_or (la, ld);
-  vector long long lu = vec_or (ld, la);
-
-  vector unsigned long long us = vec_or (ua, ub);
-  vector unsigned long long ut = vec_or (ua, ud);
-  vector unsigned long long uu = vec_or (ud, ua);
-
   vector unsigned char ca = {0,4,8,1,5,9,2,6,10,3,7,11,15,12,14,13};
   vector unsigned char cbb = {5,4,8,3,1,9,2,6,10,3,7,11,15,12,14,13};
 
@@ -267,7 +259,6 @@ int main ()
   vector short signed int z_vss1 = vec_splat (ssa, 2);
   vector unsigned short int z_vuss1 = vec_splat (usa, 1);
 
-
   return 0;
 }
 
@@ -285,21 +276,20 @@ int main ()
    vec_any_lt          vcmpgtud.
    vec_any_le          vcmpgtud.
    vec_and             xxland
-   vec_andc            xxland
+   vec_andc            xxlandc
    vec_cntlz           vclzd, vclzb, vclzw, vclzh
-   xvcpsgnsp           vec_cpsgn
+   vec_cpsgn           xvcpsgnsp           
    vec_ctf             xvmuldp 
-   vec_cts             xvcvdpsxds, vctsxs
-   vec_ctu             xvcvdpuxds, vctuxs
+   vec_cts             vctsxs
+   vec_ctu             vctuxs
    vec_div             divd, divdu | __divdi3(), __udivdi3()
    vec_mergel          vmrghb, vmrghh, xxmrghw
-   vec_mergeh          xxmrglw, vmrglh
+   vec_mergeh          xxmrglw, vmrglh, vmrglb
    vec_mul             mulld | mullw, mulhwu
    vec_nor             xxlnor
-   vec_or              xxlor
-   vec_packsu          vpksdus
-   vec_                perm vperm
-   vec_                round xvrdpi
+   vec_packsu          vpkudus
+   vec_perm            vperm
+   vec_round           xvrdpi
    vec_sel             xxsel
    vec_xor             xxlxor 
    vec_rsqrt           xvrsqrtesp
@@ -333,9 +323,7 @@ int main ()
 /* { dg-final { scan-assembler-times "xxmrglw" 8 } } */
 /* { dg-final { scan-assembler-times "vmrglh" 8 } } */
 /* { dg-final { scan-assembler-times "xxlnor" 6 } } */
-/* { dg-final { scan-assembler-times "xxlor" 11 { target { ilp32 } } } } */
-/* { dg-final { scan-assembler-times "xxlor" 7  { target { lp64 } } } } */
-/* { dg-final { scan-assembler-times "vpksdus" 2 } } */
+/* { dg-final { scan-assembler-times {\mvpkudus\M} 1 } } */
 /* { dg-final { scan-assembler-times "vperm" 4 } } */
 /* { dg-final { scan-assembler-times "xvrdpi" 2 } } */
 /* { dg-final { scan-assembler-times "xxsel" 10 } } */
@@ -343,8 +331,10 @@ int main ()
 /* { dg-final { scan-assembler-times "divd" 8  { target lp64 } } } */
 /* { dg-final { scan-assembler-times "divdu" 2  { target lp64 } } } */
 /* { dg-final { scan-assembler-times "mulld" 4  { target lp64 } } } */
-/* { dg-final { scan-assembler-times "bl __divdi3" 3  { target ilp32 } } } */
-/* { dg-final { scan-assembler-times "bl __udivdi3" 3  { target ilp32 } } } */
+/* check for both .__divdi3 (AIX) and __divdi3 (Linux) */
+/* { dg-final { scan-assembler-times {\mbl \.?__divdi3\M} 2   { target { ilp32 } } } } */
+/* check for both .__udivdi3 (AIX) and __udivdi3 (Linux) */
+/* { dg-final { scan-assembler-times {\mbl \.?__udivdi3\M} 2  { target { ilp32 } } } } */
 /* { dg-final { scan-assembler-times "mullw" 12  { target ilp32 } } } */
 /* { dg-final { scan-assembler-times "mulhwu" 4  { target ilp32 } } } */
 /* { dg-final { scan-assembler-times "xxmrgld" 0 } } */

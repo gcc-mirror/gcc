@@ -3419,19 +3419,24 @@ class Traverse
 class Statement_inserter
 {
  public:
+  typedef Unordered_set(Statement*) Statements;
+
   // Empty constructor.
   Statement_inserter()
-    : block_(NULL), pindex_(NULL), gogo_(NULL), var_(NULL)
+      : block_(NULL), pindex_(NULL), gogo_(NULL), var_(NULL),
+        statements_added_(NULL)
   { }
 
   // Constructor for a statement in a block.
-  Statement_inserter(Block* block, size_t *pindex)
-    : block_(block), pindex_(pindex), gogo_(NULL), var_(NULL)
+  Statement_inserter(Block* block, size_t *pindex, Statements *added = NULL)
+      : block_(block), pindex_(pindex), gogo_(NULL), var_(NULL),
+        statements_added_(added)
   { }
 
   // Constructor for a global variable.
-  Statement_inserter(Gogo* gogo, Variable* var)
-    : block_(NULL), pindex_(NULL), gogo_(gogo), var_(var)
+  Statement_inserter(Gogo* gogo, Variable* var, Statements *added = NULL)
+      : block_(NULL), pindex_(NULL), gogo_(gogo), var_(var),
+        statements_added_(added)
   { go_assert(var->is_global()); }
 
   // We use the default copy constructor and assignment operator.
@@ -3451,6 +3456,8 @@ class Statement_inserter
   Gogo* gogo_;
   // The global variable, when looking at an initializer expression.
   Variable* var_;
+  // If non-null, a set to record new statements inserted (non-owned).
+  Statements* statements_added_;
 };
 
 // When translating the gogo IR into the backend data structure, this

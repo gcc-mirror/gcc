@@ -1034,7 +1034,7 @@ package Einfo is
 --       base type).
 --
 --       In all other cases Discriminant_Constraint contains the empty
---       Elist (ie it is initialized with a call to New_Elmt_List).
+--       Elist (i.e. it is initialized with a call to New_Elmt_List).
 
 --    Discriminant_Default_Value (Node20)
 --       Defined in discriminants. Points to the node representing the
@@ -3139,8 +3139,8 @@ package Einfo is
 --       flag may be set for any other functions or procedures that are known
 --       to be side effect free, so in the case of subprograms, the Is_Pure
 --       flag may be used by the optimizer to imply that it can assume freedom
---       from side effects (other than those resulting from assignment to out
---       parameters, or to objects designated by access parameters).
+--       from side effects (other than those resulting from assignment to Out
+--       or In Out parameters, or to objects designated by access parameters).
 
 --    Is_Pure_Unit_Access_Type (Flag189)
 --       Defined in access type and subtype entities. Set if the type or
@@ -4222,8 +4222,9 @@ package Einfo is
 --       could be obtained by rummaging around the tree, but it is more
 --       convenient to have it immediately at hand in the entity. The
 --       contents of Scalar_Range can either be an N_Subtype_Indication
---       node (with a constraint), or a Range node, but not a simple
---       subtype reference (a subtype is converted into a range).
+--       node (with a constraint), a Range node, or an Integer_Type_Definition,
+--       but not a simple subtype reference (a subtype is converted into a
+--       explicit range).
 
 --    Scale_Value (Uint16)
 --       Defined in decimal fixed-point types and subtypes. Contains the scale

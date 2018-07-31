@@ -30,6 +30,11 @@
 #include "config/rs6000/rs6000-opts.h"
 #endif
 
+/* 128-bit floating point precision values.  */
+#ifndef RS6000_MODES_H
+#include "config/rs6000/rs6000-modes.h"
+#endif
+
 /* Definitions for the object file format.  These are set at
    compile-time.  */
 
@@ -539,16 +544,12 @@ extern int rs6000_vector_align[];
 #define TARGET_ALIGN_NATURAL 0
 #endif
 
-#define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
+/* We use values 126..128 to pick the appropriate long double type (IFmode,
+   KFmode, TFmode).  */
+#define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size > 64)
 #define TARGET_IEEEQUAD rs6000_ieeequad
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
 #define TARGET_LDBRX (TARGET_POPCNTD || rs6000_cpu == PROCESSOR_CELL)
-
-/* Define as 1 if we support multilibs for switching long double between IEEE
-   128-bit floating point and IBM extended double.  */
-#ifndef TARGET_IEEEQUAD_MULTILIB
-#define TARGET_IEEEQUAD_MULTILIB 0
-#endif
 
 /* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
    Enable 32-bit fcfid's on any of the switches for newer ISA machines.  */
@@ -697,19 +698,6 @@ extern int rs6000_vector_align[];
 
 #define TARGET_FRSQRTE	(TARGET_HARD_FLOAT \
 			 && (TARGET_PPC_GFXOPT || VECTOR_UNIT_VSX_P (DFmode)))
-
-/* Conditions to allow TOC fusion for loading/storing integers.  */
-#define TARGET_TOC_FUSION_INT	(TARGET_P8_FUSION			\
-				 && TARGET_TOC_FUSION			\
-				 && (TARGET_CMODEL != CMODEL_SMALL)	\
-				 && TARGET_POWERPC64)
-
-/* Conditions to allow TOC fusion for loading/storing floating point.  */
-#define TARGET_TOC_FUSION_FP	(TARGET_P9_FUSION			\
-				 && TARGET_TOC_FUSION			\
-				 && (TARGET_CMODEL != CMODEL_SMALL)	\
-				 && TARGET_POWERPC64			\
-				 && TARGET_HARD_FLOAT)
 
 /* Macro to say whether we can do optimizations where we need to do parts of
    the calculation in 64-bit GPRs and then is transfered to the vector
@@ -865,9 +853,8 @@ extern unsigned char rs6000_recip_bits[];
    words.  */
 #define DOUBLE_TYPE_SIZE 64
 
-/* A C expression for the size in bits of the type `long double' on
-   the target machine.  If you don't define this, the default is two
-   words.  */
+/* A C expression for the size in bits of the type `long double' on the target
+   machine.  If you don't define this, the default is two words.  */
 #define LONG_DOUBLE_TYPE_SIZE rs6000_long_double_type_size
 
 /* Work around rs6000_long_double_type_size dependency in ada/targtyps.c.  */

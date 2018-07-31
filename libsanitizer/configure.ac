@@ -93,7 +93,7 @@ AM_CONDITIONAL(TSAN_SUPPORTED, [test "x$TSAN_SUPPORTED" = "xyes"])
 AM_CONDITIONAL(LSAN_SUPPORTED, [test "x$LSAN_SUPPORTED" = "xyes"])
 
 # Check for functions needed.
-AC_CHECK_FUNCS(clock_getres clock_gettime clock_settime)
+AC_CHECK_FUNCS(clock_getres clock_gettime clock_settime lstat readlink)
 
 # Common libraries that we need to link against for all sanitizer libs.
 link_sanitizer_common='-lpthread -lm'

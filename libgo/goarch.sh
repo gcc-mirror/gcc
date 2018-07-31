@@ -153,6 +153,11 @@ case $goarch in
 		;;
 	esac
 	;;
+    riscv)
+	family=RISCV
+	pcquantum=2
+	ptrsize=4
+	;;
     riscv64)
 	family=RISCV64
 	pcquantum=2
@@ -197,6 +202,10 @@ case $goarch in
 	bigendian=true
 	defaultphyspagesize=8192
 	pcquantum=4
+	;;
+    wasm)
+	family=WASM
+	defaultphyspagesize=65536
 	;;
     *)
 	echo 1>&2 "unrecognized goarch value \"$goarch\""

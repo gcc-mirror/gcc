@@ -541,6 +541,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
            "Position cursor of function Element is bad";
       end if;
 
+      if Checks
+        and then (Left (Position.Node) = Position.Node
+                   or else
+                  Right (Position.Node) = Position.Node)
+      then
+         raise Program_Error with "dangling cursor";
+      end if;
+
       pragma Assert (Vet (Position.Container.Tree, Position.Node),
                      "Position cursor of function Element is bad");
 

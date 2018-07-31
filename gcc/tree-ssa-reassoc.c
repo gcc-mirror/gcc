@@ -1606,7 +1606,7 @@ undistribute_ops_list (enum tree_code opcode,
     {
       fprintf (dump_file, "searching for un-distribute opportunities ");
       print_generic_expr (dump_file,
-	(*ops)[bitmap_first_set_bit (candidates)]->op, 0);
+	(*ops)[bitmap_first_set_bit (candidates)]->op, TDF_NONE);
       fprintf (dump_file, " %d\n", nr_candidates);
     }
 
@@ -2168,8 +2168,13 @@ init_range_entry (struct range_entry *r, tree exp, gimple *stmt)
 	  continue;
 	CASE_CONVERT:
 	  if (is_bool)
-	    goto do_default;
-	  if (TYPE_PRECISION (TREE_TYPE (arg0)) == 1)
+	    {
+	      if ((TYPE_PRECISION (exp_type) == 1
+		   || TREE_CODE (exp_type) == BOOLEAN_TYPE)
+		  && TYPE_PRECISION (TREE_TYPE (arg0)) > 1)
+		return;
+	    }
+	  else if (TYPE_PRECISION (TREE_TYPE (arg0)) == 1)
 	    {
 	      if (TYPE_UNSIGNED (TREE_TYPE (arg0)))
 		is_bool = true;

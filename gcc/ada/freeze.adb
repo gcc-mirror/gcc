@@ -5280,6 +5280,12 @@ package body Freeze is
          Result := No_List;
          goto Leave;
 
+      --  Do not freeze if we are preanalyzing without freezing
+
+      elsif Inside_Preanalysis_Without_Freezing > 0 then
+         Result := No_List;
+         goto Leave;
+
       elsif Ekind (E) = E_Generic_Package then
          Result := Freeze_Generic_Entities (E);
          goto Leave;
@@ -6936,20 +6942,6 @@ package body Freeze is
    -----------------------
 
    procedure Freeze_Expression (N : Node_Id) is
-      In_Spec_Exp : constant Boolean := In_Spec_Expression;
-      Typ         : Entity_Id;
-      Nam         : Entity_Id;
-      Desig_Typ   : Entity_Id;
-      P           : Node_Id;
-      Parent_P    : Node_Id;
-
-      Freeze_Outside : Boolean := False;
-      --  This flag is set true if the entity must be frozen outside the
-      --  current subprogram. This happens in the case of expander generated
-      --  subprograms (_Init_Proc, _Input, _Output, _Read, _Write) which do
-      --  not freeze all entities like other bodies, but which nevertheless
-      --  may reference entities that have to be frozen before the body and
-      --  obviously cannot be frozen inside the body.
 
       function Find_Aggregate_Component_Desig_Type return Entity_Id;
       --  If the expression is an array aggregate, the type of the component
@@ -7038,6 +7030,30 @@ package body Freeze is
          end if;
       end In_Expanded_Body;
 
+      --  Local variables
+
+      In_Spec_Exp : constant Boolean := In_Spec_Expression;
+
+      Desig_Typ : Entity_Id;
+      Nam       : Entity_Id;
+      P         : Node_Id;
+      Parent_P  : Node_Id;
+      Typ       : Entity_Id;
+
+      Freeze_Outside : Boolean := False;
+      --  This flag is set true if the entity must be frozen outside the
+      --  current subprogram. This happens in the case of expander generated
+      --  subprograms (_Init_Proc, _Input, _Output, _Read, _Write) which do
+      --  not freeze all entities like other bodies, but which nevertheless
+      --  may reference entities that have to be frozen before the body and
+      --  obviously cannot be frozen inside the body.
+
+      Freeze_Outside_Subp  : Entity_Id := Empty;
+      --  This entity is set if we are inside a subprogram body and the frozen
+      --  entity is defined in the enclosing scope of this subprogram. In such
+      --  case we must skip the subprogram body when climbing the parents chain
+      --  to locate the correct placement for the freezing node.
+
    --  Start of processing for Freeze_Expression
 
    begin
@@ -7081,8 +7097,8 @@ package body Freeze is
          if not Is_Frozen (Etype (N)) then
             Typ := Etype (N);
 
-         --  Base type may be an derived numeric type that is frozen at
-         --  the point of declaration, but first_subtype is still unfrozen.
+         --  Base type may be an derived numeric type that is frozen at the
+         --  point of declaration, but first_subtype is still unfrozen.
 
          elsif not Is_Frozen (First_Subtype (Etype (N))) then
             Typ := First_Subtype (Etype (N));
@@ -7138,8 +7154,7 @@ package body Freeze is
             if Is_Array_Type (Etype (N))
               and then Is_Access_Type (Component_Type (Etype (N)))
             then
-
-               --  Check whether aggregate includes allocators.
+               --  Check whether aggregate includes allocators
 
                Desig_Typ := Find_Aggregate_Component_Desig_Type;
             end if;
@@ -7181,253 +7196,335 @@ package body Freeze is
          return;
       end if;
 
-      --  Examine the enclosing context by climbing the parent chain. The
-      --  traversal serves two purposes - to detect scenarios where freezeing
-      --  is not needed and to find the proper insertion point for the freeze
-      --  nodes. Although somewhat similar to Insert_Actions, this traversal
-      --  is freezing semantics-sensitive. Inserting freeze nodes blindly in
-      --  the tree may result in types being frozen too early.
+      --  Check if we are inside a subprogram body and the frozen entity is
+      --  defined in the enclosing scope of this subprogram. In such case we
+      --  must skip the subprogram when climbing the parents chain to locate
+      --  the correct placement for the freezing node.
+
+      --  This is not needed for default expressions and other spec expressions
+      --  in generic units since the Move_Freeze_Nodes mechanism (sem_ch12.adb)
+      --  takes care of placing them at the proper place, after the generic
+      --  unit.
+
+      if Present (Nam)
+        and then Scope (Nam) /= Current_Scope
+        and then not (In_Spec_Exp and then Inside_A_Generic)
+      then
+         declare
+            S : Entity_Id := Current_Scope;
+
+         begin
+            while Present (S)
+              and then In_Same_Source_Unit (Nam, S)
+            loop
+               if Scope (S) = Scope (Nam) then
+                  if Is_Subprogram (S) and then Has_Completion (S) then
+                     Freeze_Outside_Subp := S;
+                  end if;
+
+                  exit;
+               end if;
+
+               S := Scope (S);
+            end loop;
+         end;
+      end if;
+
+      --  Examine the enclosing context by climbing the parent chain
+
+      --  If we identified that we must freeze the entity outside of a given
+      --  subprogram then we just climb up to that subprogram checking if some
+      --  enclosing node is marked as Must_Not_Freeze (since in such case we
+      --  must not freeze yet this entity).
 
       P := N;
-      loop
-         Parent_P := Parent (P);
 
-         --  If we don't have a parent, then we are not in a well-formed tree.
-         --  This is an unusual case, but there are some legitimate situations
-         --  in which this occurs, notably when the expressions in the range of
-         --  a type declaration are resolved. We simply ignore the freeze
-         --  request in this case. Is this right ???
+      if Present (Freeze_Outside_Subp) then
+         loop
+            --  Do not freeze the current expression if another expression in
+            --  the chain of parents must not be frozen.
 
-         if No (Parent_P) then
-            return;
-         end if;
+            if Nkind (P) in N_Subexpr and then Must_Not_Freeze (P) then
+               return;
+            end if;
 
-         --  See if we have got to an appropriate point in the tree
+            Parent_P := Parent (P);
 
-         case Nkind (Parent_P) is
+            --  If we don't have a parent, then we are not in a well-formed
+            --  tree. This is an unusual case, but there are some legitimate
+            --  situations in which this occurs, notably when the expressions
+            --  in the range of a type declaration are resolved. We simply
+            --  ignore the freeze request in this case.
 
-            --  A special test for the exception of (RM 13.14(8)) for the case
-            --  of per-object expressions (RM 3.8(18)) occurring in component
-            --  definition or a discrete subtype definition. Note that we test
-            --  for a component declaration which includes both cases we are
-            --  interested in, and furthermore the tree does not have explicit
-            --  nodes for either of these two constructs.
+            if No (Parent_P) then
+               return;
+            end if;
 
-            when N_Component_Declaration =>
+            exit when
+              Nkind (Parent_P) = N_Subprogram_Body
+                and then Unique_Defining_Entity (Parent_P) =
+                           Freeze_Outside_Subp;
 
-               --  The case we want to test for here is an identifier that is
-               --  a per-object expression, this is either a discriminant that
-               --  appears in a context other than the component declaration
-               --  or it is a reference to the type of the enclosing construct.
+            P := Parent_P;
+         end loop;
 
-               --  For either of these cases, we skip the freezing
+      --  Otherwise the traversal serves two purposes - to detect scenarios
+      --  where freezeing is not needed and to find the proper insertion point
+      --  for the freeze nodes. Although somewhat similar to Insert_Actions,
+      --  this traversal is freezing semantics-sensitive. Inserting freeze
+      --  nodes blindly in the tree may result in types being frozen too early.
 
-               if not In_Spec_Expression
-                 and then Nkind (N) = N_Identifier
-                 and then (Present (Entity (N)))
-               then
-                  --  We recognize the discriminant case by just looking for
-                  --  a reference to a discriminant. It can only be one for
-                  --  the enclosing construct. Skip freezing in this case.
+      else
+         loop
+            --  Do not freeze the current expression if another expression in
+            --  the chain of parents must not be frozen.
 
-                  if Ekind (Entity (N)) = E_Discriminant then
-                     return;
+            if Nkind (P) in N_Subexpr and then Must_Not_Freeze (P) then
+               return;
+            end if;
 
-                  --  For the case of a reference to the enclosing record,
-                  --  (or task or protected type), we look for a type that
-                  --  matches the current scope.
+            Parent_P := Parent (P);
 
-                  elsif Entity (N) = Current_Scope then
-                     return;
-                  end if;
-               end if;
+            --  If we don't have a parent, then we are not in a well-formed
+            --  tree. This is an unusual case, but there are some legitimate
+            --  situations in which this occurs, notably when the expressions
+            --  in the range of a type declaration are resolved. We simply
+            --  ignore the freeze request in this case. Is this right ???
 
-            --  If we have an enumeration literal that appears as the choice in
-            --  the aggregate of an enumeration representation clause, then
-            --  freezing does not occur (RM 13.14(10)).
+            if No (Parent_P) then
+               return;
+            end if;
 
-            when N_Enumeration_Representation_Clause =>
+            --  See if we have got to an appropriate point in the tree
 
-               --  The case we are looking for is an enumeration literal
+            case Nkind (Parent_P) is
 
-               if (Nkind (N) = N_Identifier or Nkind (N) = N_Character_Literal)
-                 and then Is_Enumeration_Type (Etype (N))
-               then
-                  --  If enumeration literal appears directly as the choice,
-                  --  do not freeze (this is the normal non-overloaded case)
+               --  A special test for the exception of (RM 13.14(8)) for the
+               --  case of per-object expressions (RM 3.8(18)) occurring in
+               --  component definition or a discrete subtype definition. Note
+               --  that we test for a component declaration which includes both
+               --  cases we are interested in, and furthermore the tree does
+               --  not have explicit nodes for either of these two constructs.
 
-                  if Nkind (Parent (N)) = N_Component_Association
-                    and then First (Choices (Parent (N))) = N
+               when N_Component_Declaration =>
+
+                  --  The case we want to test for here is an identifier that
+                  --  is a per-object expression, this is either a discriminant
+                  --  that appears in a context other than the component
+                  --  declaration or it is a reference to the type of the
+                  --  enclosing construct.
+
+                  --  For either of these cases, we skip the freezing
+
+                  if not In_Spec_Expression
+                    and then Nkind (N) = N_Identifier
+                    and then (Present (Entity (N)))
                   then
-                     return;
+                     --  We recognize the discriminant case by just looking for
+                     --  a reference to a discriminant. It can only be one for
+                     --  the enclosing construct. Skip freezing in this case.
 
-                  --  If enumeration literal appears as the name of function
-                  --  which is the choice, then also do not freeze. This
-                  --  happens in the overloaded literal case, where the
-                  --  enumeration literal is temporarily changed to a function
-                  --  call for overloading analysis purposes.
+                     if Ekind (Entity (N)) = E_Discriminant then
+                        return;
 
-                  elsif Nkind (Parent (N)) = N_Function_Call
-                     and then
-                       Nkind (Parent (Parent (N))) = N_Component_Association
-                     and then
-                       First (Choices (Parent (Parent (N)))) = Parent (N)
-                  then
-                     return;
-                  end if;
-               end if;
+                     --  For the case of a reference to the enclosing record,
+                     --  (or task or protected type), we look for a type that
+                     --  matches the current scope.
 
-            --  Normally if the parent is a handled sequence of statements,
-            --  then the current node must be a statement, and that is an
-            --  appropriate place to insert a freeze node.
-
-            when N_Handled_Sequence_Of_Statements =>
-
-               --  An exception occurs when the sequence of statements is for
-               --  an expander generated body that did not do the usual freeze
-               --  all operation. In this case we usually want to freeze
-               --  outside this body, not inside it, and we skip past the
-               --  subprogram body that we are inside.
-
-               if In_Expanded_Body (Parent_P) then
-                  declare
-                     Subp : constant Node_Id := Parent (Parent_P);
-                     Spec : Entity_Id;
-
-                  begin
-                     --  Freeze the entity only when it is declared inside the
-                     --  body of the expander generated procedure. This case
-                     --  is recognized by the scope of the entity or its type,
-                     --  which is either the spec for some enclosing body, or
-                     --  (in the case of init_procs, for which there are no
-                     --  separate specs) the current scope.
-
-                     if Nkind (Subp) = N_Subprogram_Body then
-                        Spec := Corresponding_Spec (Subp);
-
-                        if (Present (Typ) and then Scope (Typ) = Spec)
-                             or else
-                           (Present (Nam) and then Scope (Nam) = Spec)
-                        then
-                           exit;
-
-                        elsif Present (Typ)
-                          and then Scope (Typ) = Current_Scope
-                          and then Defining_Entity (Subp) = Current_Scope
-                        then
-                           exit;
-                        end if;
+                     elsif Entity (N) = Current_Scope then
+                        return;
                      end if;
+                  end if;
 
-                     --  An expression function may act as a completion of
-                     --  a function declaration. As such, it can reference
-                     --  entities declared between the two views:
+               --  If we have an enumeration literal that appears as the choice
+               --  in the aggregate of an enumeration representation clause,
+               --  then freezing does not occur (RM 13.14(10)).
 
-                     --     Hidden [];                             -- 1
-                     --     function F return ...;
-                     --     private
-                     --        function Hidden return ...;
-                     --        function F return ... is (Hidden);  -- 2
+               when N_Enumeration_Representation_Clause =>
 
-                     --  Refering to the example above, freezing the expression
-                     --  of F (2) would place Hidden's freeze node (1) in the
-                     --  wrong place. Avoid explicit freezing and let the usual
-                     --  scenarios do the job - for example, reaching the end
-                     --  of the private declarations, or a call to F.
+                  --  The case we are looking for is an enumeration literal
 
-                     if Nkind (Original_Node (Subp)) =
-                                                N_Expression_Function
+                  if Nkind_In (N, N_Identifier, N_Character_Literal)
+                    and then Is_Enumeration_Type (Etype (N))
+                  then
+                     --  If enumeration literal appears directly as the choice,
+                     --  do not freeze (this is the normal non-overloaded case)
+
+                     if Nkind (Parent (N)) = N_Component_Association
+                       and then First (Choices (Parent (N))) = N
                      then
-                        null;
+                        return;
 
-                     --  Freeze outside the body
+                     --  If enumeration literal appears as the name of function
+                     --  which is the choice, then also do not freeze. This
+                     --  happens in the overloaded literal case, where the
+                     --  enumeration literal is temporarily changed to a
+                     --  function call for overloading analysis purposes.
 
-                     else
-                        Parent_P := Parent (Parent_P);
-                        Freeze_Outside := True;
+                     elsif Nkind (Parent (N)) = N_Function_Call
+                        and then Nkind (Parent (Parent (N))) =
+                                   N_Component_Association
+                        and then First (Choices (Parent (Parent (N)))) =
+                                   Parent (N)
+                     then
+                        return;
                      end if;
-                  end;
+                  end if;
 
-               --  Here if normal case where we are in handled statement
-               --  sequence and want to do the insertion right there.
+               --  Normally if the parent is a handled sequence of statements,
+               --  then the current node must be a statement, and that is an
+               --  appropriate place to insert a freeze node.
 
-               else
+               when N_Handled_Sequence_Of_Statements =>
+
+                  --  An exception occurs when the sequence of statements is
+                  --  for an expander generated body that did not do the usual
+                  --  freeze all operation. In this case we usually want to
+                  --  freeze outside this body, not inside it, and we skip
+                  --  past the subprogram body that we are inside.
+
+                  if In_Expanded_Body (Parent_P) then
+                     declare
+                        Subp : constant Node_Id := Parent (Parent_P);
+                        Spec : Entity_Id;
+
+                     begin
+                        --  Freeze the entity only when it is declared inside
+                        --  the body of the expander generated procedure.
+                        --  This case is recognized by the scope of the entity
+                        --  or its type, which is either the spec for some
+                        --  enclosing body, or (in the case of init_procs,
+                        --  for which there are no separate specs) the current
+                        --  scope.
+
+                        if Nkind (Subp) = N_Subprogram_Body then
+                           Spec := Corresponding_Spec (Subp);
+
+                           if (Present (Typ) and then Scope (Typ) = Spec)
+                                or else
+                              (Present (Nam) and then Scope (Nam) = Spec)
+                           then
+                              exit;
+
+                           elsif Present (Typ)
+                             and then Scope (Typ) = Current_Scope
+                             and then Defining_Entity (Subp) = Current_Scope
+                           then
+                              exit;
+                           end if;
+                        end if;
+
+                        --  An expression function may act as a completion of
+                        --  a function declaration. As such, it can reference
+                        --  entities declared between the two views:
+
+                        --     Hidden [];                             -- 1
+                        --     function F return ...;
+                        --     private
+                        --        function Hidden return ...;
+                        --        function F return ... is (Hidden);  -- 2
+
+                        --  Refering to the example above, freezing the
+                        --  expression of F (2) would place Hidden's freeze
+                        --  node (1) in the wrong place. Avoid explicit
+                        --  freezing and let the usual scenarios do the job
+                        --  (for example, reaching the end of the private
+                        --  declarations, or a call to F.)
+
+                        if Nkind (Original_Node (Subp)) = N_Expression_Function
+                        then
+                           null;
+
+                        --  Freeze outside the body
+
+                        else
+                           Parent_P := Parent (Parent_P);
+                           Freeze_Outside := True;
+                        end if;
+                     end;
+
+                  --  Here if normal case where we are in handled statement
+                  --  sequence and want to do the insertion right there.
+
+                  else
+                     exit;
+                  end if;
+
+               --  If parent is a body or a spec or a block, then the current
+               --  node is a statement or declaration and we can insert the
+               --  freeze node before it.
+
+               when N_Block_Statement
+                  | N_Entry_Body
+                  | N_Package_Body
+                  | N_Package_Specification
+                  | N_Protected_Body
+                  | N_Subprogram_Body
+                  | N_Task_Body
+               =>
                   exit;
-               end if;
 
-            --  If parent is a body or a spec or a block, then the current node
-            --  is a statement or declaration and we can insert the freeze node
-            --  before it.
+               --  The expander is allowed to define types in any statements
+               --  list, so any of the following parent nodes also mark a
+               --  freezing point if the actual node is in a list of
+               --  statements or declarations.
 
-            when N_Block_Statement
-               | N_Entry_Body
-               | N_Package_Body
-               | N_Package_Specification
-               | N_Protected_Body
-               | N_Subprogram_Body
-               | N_Task_Body
-            =>
-               exit;
+               when N_Abortable_Part
+                  | N_Accept_Alternative
+                  | N_And_Then
+                  | N_Case_Statement_Alternative
+                  | N_Compilation_Unit_Aux
+                  | N_Conditional_Entry_Call
+                  | N_Delay_Alternative
+                  | N_Elsif_Part
+                  | N_Entry_Call_Alternative
+                  | N_Exception_Handler
+                  | N_Extended_Return_Statement
+                  | N_Freeze_Entity
+                  | N_If_Statement
+                  | N_Or_Else
+                  | N_Selective_Accept
+                  | N_Triggering_Alternative
+               =>
+                  exit when Is_List_Member (P);
 
-            --  The expander is allowed to define types in any statements list,
-            --  so any of the following parent nodes also mark a freezing point
-            --  if the actual node is in a list of statements or declarations.
+               --  Freeze nodes produced by an expression coming from the
+               --  Actions list of a N_Expression_With_Actions node must remain
+               --  within the Actions list. Inserting the freeze nodes further
+               --  up the tree may lead to use before declaration issues in the
+               --  case of array types.
 
-            when N_Abortable_Part
-               | N_Accept_Alternative
-               | N_And_Then
-               | N_Case_Statement_Alternative
-               | N_Compilation_Unit_Aux
-               | N_Conditional_Entry_Call
-               | N_Delay_Alternative
-               | N_Elsif_Part
-               | N_Entry_Call_Alternative
-               | N_Exception_Handler
-               | N_Extended_Return_Statement
-               | N_Freeze_Entity
-               | N_If_Statement
-               | N_Or_Else
-               | N_Selective_Accept
-               | N_Triggering_Alternative
-            =>
-               exit when Is_List_Member (P);
+               when N_Expression_With_Actions =>
+                  if Is_List_Member (P)
+                    and then List_Containing (P) = Actions (Parent_P)
+                  then
+                     exit;
+                  end if;
 
-            --  Freeze nodes produced by an expression coming from the Actions
-            --  list of a N_Expression_With_Actions node must remain within the
-            --  Actions list. Inserting the freeze nodes further up the tree
-            --  may lead to use before declaration issues in the case of array
-            --  types.
+               --  Note: N_Loop_Statement is a special case. A type that
+               --  appears in the source can never be frozen in a loop (this
+               --  occurs only because of a loop expanded by the expander), so
+               --  we keep on going. Otherwise we terminate the search. Same
+               --  is true of any entity which comes from source. (if they
+               --  have predefined type, that type does not appear to come
+               --  from source, but the entity should not be frozen here).
 
-            when N_Expression_With_Actions =>
-               if Is_List_Member (P)
-                 and then List_Containing (P) = Actions (Parent_P)
-               then
-                  exit;
-               end if;
+               when N_Loop_Statement =>
+                  exit when not Comes_From_Source (Etype (N))
+                    and then (No (Nam) or else not Comes_From_Source (Nam));
 
-            --  Note: N_Loop_Statement is a special case. A type that appears
-            --  in the source can never be frozen in a loop (this occurs only
-            --  because of a loop expanded by the expander), so we keep on
-            --  going. Otherwise we terminate the search. Same is true of any
-            --  entity which comes from source. (if they have predefined type,
-            --  that type does not appear to come from source, but the entity
-            --  should not be frozen here).
+               --  For all other cases, keep looking at parents
 
-            when N_Loop_Statement =>
-               exit when not Comes_From_Source (Etype (N))
-                 and then (No (Nam) or else not Comes_From_Source (Nam));
+               when others =>
+                  null;
+            end case;
 
-            --  For all other cases, keep looking at parents
+            --  We fall through the case if we did not yet find the proper
+            --  place in the free for inserting the freeze node, so climb.
 
-            when others =>
-               null;
-         end case;
-
-         --  We fall through the case if we did not yet find the proper
-         --  place in the free for inserting the freeze node, so climb.
-
-         P := Parent_P;
-      end loop;
+            P := Parent_P;
+         end loop;
+      end if;
 
       --  If the expression appears in a record or an initialization procedure,
       --  the freeze nodes are collected and attached to the current scope, to

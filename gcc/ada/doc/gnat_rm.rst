@@ -14,7 +14,7 @@ GNAT Reference Manual
 
     .. only:: GPL
 
-       *GNAT GPL Edition*
+       *GNAT Community Edition*
 
        | Version |version|
        | Date: |today|

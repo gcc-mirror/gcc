@@ -137,8 +137,10 @@ SUBDIRS =@subdirs@ build
 
 # Selection of languages to be made.
 CONFIG_LANGUAGES = @all_selected_languages@
-LANGUAGES = c gcov$(exeext) gcov-dump$(exeext) gcov-tool$(exeext) \
-            $(CONFIG_LANGUAGES)
+LANGUAGES = c $(CONFIG_LANGUAGES)
+ifeq (@enable_gcov@,yes)
+LANGUAGES += gcov$(exeext) gcov-dump$(exeext) gcov-tool$(exeext)
+endif
 
 # Default values for variables overridden in Makefile fragments.
 # CFLAGS is for the user to override to, e.g., do a cross build with -O2.
@@ -1154,6 +1156,7 @@ FLAGS_TO_PASS = \
 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
 	"LN=$(LN)" \
 	"LN_S=$(LN_S)" \
+	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
 	"MAKEINFO=$(MAKEINFO)" \
 	"MAKEINFOFLAGS=$(MAKEINFOFLAGS)" \
 	"MAKEOVERRIDES=" \
@@ -1355,7 +1358,6 @@ OBJS = \
 	incpath.o \
 	init-regs.o \
 	internal-fn.o \
-	ipa-chkp.o \
 	ipa-cp.o \
 	ipa-devirt.o \
 	ipa-fnsummary.o \
@@ -1385,6 +1387,7 @@ OBJS = \
 	ira-color.o \
 	ira-emit.o \
 	ira-lives.o \
+	json.o \
 	jump.o \
 	langhooks.o \
 	lcm.o \
@@ -1425,6 +1428,8 @@ OBJS = \
 	optabs-libfuncs.o \
 	optabs-query.o \
 	optabs-tree.o \
+	optinfo.o \
+	optinfo-emit-json.o \
 	options-save.o \
 	opts-global.o \
 	passes.o \
@@ -1452,7 +1457,6 @@ OBJS = \
 	reload1.o \
 	reorg.o \
 	resource.o \
-	rtl-chkp.o \
 	rtl-error.o \
 	rtl-tests.o \
 	rtl.o \
@@ -1518,8 +1522,6 @@ OBJS = \
 	tree-outof-ssa.o \
 	tree-parloops.o \
 	tree-phinodes.o \
-	tree-chkp.o \
-	tree-chkp-opt.o \
 	tree-predcom.o \
 	tree-pretty-print.o \
 	tree-profile.o \
@@ -1617,7 +1619,7 @@ OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 # compiler and containing target-dependent code.
 OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
 	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
-	hash-table.o file-find.o spellcheck.o selftest.o
+	hash-table.o file-find.o spellcheck.o selftest.o opt-suggestions.o
 
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
@@ -2251,6 +2253,7 @@ s-bversion: BASE-VER
 	$(STAMP) s-bversion
 
 CFLAGS-toplev.o += -DTARGET_NAME=\"$(target_noncanonical)\"
+CFLAGS-optinfo-emit-json.o += -DTARGET_NAME=\"$(target_noncanonical)\"
 
 pass-instances.def: $(srcdir)/passes.def $(PASSES_EXTRA) \
 		    $(srcdir)/gen-pass-instances.awk
@@ -2552,7 +2555,6 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/stringpool.c $(srcdir)/tree.c $(srcdir)/varasm.c \
   $(srcdir)/gimple.h \
   $(srcdir)/gimple-ssa.h \
-  $(srcdir)/tree-chkp.c \
   $(srcdir)/tree-ssanames.c $(srcdir)/tree-eh.c $(srcdir)/tree-ssa-address.c \
   $(srcdir)/tree-cfg.c $(srcdir)/tree-ssa-loop-ivopts.c \
   $(srcdir)/tree-dfa.c \
@@ -3512,7 +3514,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   tree-ssa-loop-niter.h tree-ssa-ter.h tree-ssa-threadedge.h \
   tree-ssa-threadupdate.h inchash.h wide-int.h signop.h hash-map.h \
   hash-set.h dominance.h cfg.h cfgrtl.h cfganal.h cfgbuild.h cfgcleanup.h \
-  lcm.h cfgloopmanip.h file-prefix-map.h builtins.def chkp-builtins.def \
+  lcm.h cfgloopmanip.h file-prefix-map.h builtins.def \
   pass-instances.def params.list
 
 # generate the 'build fragment' b-header-vars

@@ -21,6 +21,7 @@
 #ifndef GCC_TREE_SSA_STRLEN_H
 #define GCC_TREE_SSA_STRLEN_H
 
+extern bool is_strlen_related_p (tree, tree);
 extern bool maybe_diag_stxncpy_trunc (gimple_stmt_iterator, tree, tree);
 
 #endif   // GCC_TREE_SSA_STRLEN_H

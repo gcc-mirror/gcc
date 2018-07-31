@@ -3112,6 +3112,7 @@ fold_rtx (rtx x, rtx_insn *insn)
   int i;
   rtx new_rtx = 0;
   int changed = 0;
+  poly_int64 xval;
 
   /* Operands of X.  */
   /* Workaround -Wmaybe-uninitialized false positive during
@@ -3592,12 +3593,11 @@ fold_rtx (rtx x, rtx_insn *insn)
 	case MINUS:
 	  /* If we have (MINUS Y C), see if Y is known to be (PLUS Z C2).
 	     If so, produce (PLUS Z C2-C).  */
-	  if (const_arg1 != 0 && CONST_INT_P (const_arg1))
+	  if (const_arg1 != 0 && poly_int_rtx_p (const_arg1, &xval))
 	    {
 	      rtx y = lookup_as_function (XEXP (x, 0), PLUS);
-	      if (y && CONST_INT_P (XEXP (y, 1)))
-		return fold_rtx (plus_constant (mode, copy_rtx (y),
-						-INTVAL (const_arg1)),
+	      if (y && poly_int_rtx_p (XEXP (y, 1)))
+		return fold_rtx (plus_constant (mode, copy_rtx (y), -xval),
 				 NULL);
 	    }
 

@@ -254,7 +254,6 @@ extern void expand_assignment (tree, tree, bool);
    and storing the value into TARGET.
    If SUGGEST_REG is nonzero, copy the value through a register
    and return that register, if that is possible.  */
-extern rtx store_expr_with_bounds (tree, rtx, int, bool, bool, tree);
 extern rtx store_expr (tree, rtx, int, bool, bool);
 
 /* Given an rtx that may include add and multiply operations,

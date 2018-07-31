@@ -202,7 +202,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "tree-nested.h"
 #include "dbgcnt.h"
-#include "tree-chkp.h"
 #include "lto-section-names.h"
 #include "stringpool.h"
 #include "attribs.h"
@@ -865,9 +864,6 @@ varpool_node::finalize_decl (tree decl)
       || (node->no_reorder
 	  && symtab->state == EXPANSION))
     node->assemble_decl ();
-
-  if (DECL_INITIAL (decl))
-    chkp_register_var_initializer (decl);
 }
 
 /* EDGE is an polymorphic call.  Mark all possible targets as reachable
@@ -932,18 +928,13 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	    }
           if (dump_enabled_p ())
             {
-	      location_t locus = gimple_location_safe (edge->call_stmt);
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, edge->call_stmt,
 			       "devirtualizing call in %s to %s\n",
 			       edge->caller->name (), target->name ());
 	    }
 
 	  edge->make_direct (target);
 	  edge->redirect_call_stmt_to_callee ();
-
-	  /* Call to __builtin_unreachable shouldn't be instrumented.  */
-	  if (!targets.length ())
-	    gimple_call_set_with_bounds (edge->call_stmt, false);
 
 	  if (symtab->dump_file)
 	    {
@@ -1812,7 +1803,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       int i;
       tree resdecl;
       tree restmp = NULL;
-      tree resbnd = NULL;
 
       gcall *call;
       greturn *ret;
@@ -1924,7 +1914,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       callees->call_stmt = call;
       gimple_call_set_from_thunk (call, true);
-      gimple_call_set_with_bounds (call, instrumentation_clone);
 
       /* Return slot optimization is always possible and in fact requred to
          return values with DECL_BY_REFERENCE.  */
@@ -1942,17 +1931,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       gsi_insert_after (&bsi, call, GSI_NEW_STMT);
       if (!alias_is_noreturn)
 	{
-	  if (instrumentation_clone
-	      && !DECL_BY_REFERENCE (resdecl)
-	      && restmp
-	      && BOUNDED_P (restmp))
-	    {
-	      resbnd = chkp_insert_retbnd_call (NULL, restmp, &bsi);
-	      create_edge (get_create (gimple_call_fndecl (gsi_stmt (bsi))),
-			   as_a <gcall *> (gsi_stmt (bsi)),
-			   callees->count);
-	    }
-
 	  if (restmp && !this_adjusting
 	      && (fixed_offset || virtual_offset))
 	    {
@@ -2015,7 +1993,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	    ret = gimple_build_return (restmp);
 	  else
 	    ret = gimple_build_return (resdecl);
-	  gimple_return_set_retbnd (ret, resbnd);
 
 	  gsi_insert_after (&bsi, ret, GSI_NEW_STMT);
 	}
@@ -2149,24 +2126,26 @@ cgraph_node::expand (void)
   /* If requested, warn about function definitions where the function will
      return a value (usually of some struct or union type) which itself will
      take up a lot of stack space.  */
-  if (warn_larger_than && !DECL_EXTERNAL (decl) && TREE_TYPE (decl))
+  if (!DECL_EXTERNAL (decl) && TREE_TYPE (decl))
     {
       tree ret_type = TREE_TYPE (TREE_TYPE (decl));
 
       if (ret_type && TYPE_SIZE_UNIT (ret_type)
 	  && TREE_CODE (TYPE_SIZE_UNIT (ret_type)) == INTEGER_CST
 	  && compare_tree_int (TYPE_SIZE_UNIT (ret_type),
-			       larger_than_size) > 0)
+			       warn_larger_than_size) > 0)
 	{
 	  unsigned int size_as_int
 	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
 
 	  if (compare_tree_int (TYPE_SIZE_UNIT (ret_type), size_as_int) == 0)
-	    warning (OPT_Wlarger_than_, "size of return value of %q+D is %u bytes",
+	    warning (OPT_Wlarger_than_,
+		     "size of return value of %q+D is %u bytes",
                      decl, size_as_int);
 	  else
-	    warning (OPT_Wlarger_than_, "size of return value of %q+D is larger than %wd bytes",
-                     decl, larger_than_size);
+	    warning (OPT_Wlarger_than_,
+		     "size of return value of %q+D is larger than %wu bytes",
+	             decl, warn_larger_than_size);
 	}
     }
 
@@ -2503,13 +2482,9 @@ void
 symbol_table::output_weakrefs (void)
 {
   symtab_node *node;
-  cgraph_node *cnode;
   FOR_EACH_SYMBOL (node)
     if (node->alias
         && !TREE_ASM_WRITTEN (node->decl)
-	&& (!(cnode = dyn_cast <cgraph_node *> (node))
-	    || !cnode->instrumented_version
-	    || !TREE_ASM_WRITTEN (cnode->instrumented_version->decl))
 	&& node->weakref)
       {
 	tree target;

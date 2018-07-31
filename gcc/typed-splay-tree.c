@@ -47,6 +47,9 @@ test_str_to_int ()
   t.insert ("a", 1);
   t.insert ("b", 2);
   t.insert ("c", 3);
+  t.insert ("d", 4);
+
+  t.remove ("d");
 
   ASSERT_EQ (1, t.lookup ("a"));
   ASSERT_EQ (2, t.lookup ("b"));

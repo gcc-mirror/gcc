@@ -4835,7 +4835,7 @@ find_last_same_clock (rtx_insn *insn)
    the SEQUENCEs that represent execute packets.  */
 
 static void
-reorg_split_calls (rtx_insn **call_labels)
+reorg_split_calls (rtx_code_label **call_labels)
 {
   unsigned int reservation_mask = 0;
   rtx_insn *insn = get_insns ();
@@ -5009,7 +5009,7 @@ reorg_split_calls (rtx_insn **call_labels)
    scheduling was run earlier.  */
 
 static void
-reorg_emit_nops (rtx_insn **call_labels)
+reorg_emit_nops (rtx_code_label **call_labels)
 {
   bool first;
   rtx last_call;
@@ -5947,7 +5947,7 @@ c6x_reorg (void)
     }
   sched_no_dce = false;
 
-  rtx_insn **call_labels = XCNEWVEC (rtx_insn *, get_max_uid () + 1);
+  rtx_code_label **call_labels = XCNEWVEC (rtx_code_label *, get_max_uid () + 1);
 
   reorg_split_calls (call_labels);
 

@@ -44,6 +44,7 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -167,11 +168,24 @@ package body Exp_Prag is
       Prag_Id : constant Pragma_Id := Get_Pragma_Id (Pname);
 
    begin
-      --  Rewrite pragma ignored by Ignore_Pragma to null statement, so that
-      --  the back end doesn't see it. The same goes for pragma
-      --  Default_Scalar_Storage_Order if the -gnatI switch was given.
+      --  Suppress the expansion of an ignored assertion pragma. Such a pragma
+      --  should not be transformed into a null statment because:
+      --
+      --    * The pragma may be part of the rep item chain of a type, in which
+      --      case rewriting it will destroy the chain.
+      --
+      --    * The analysis of the pragma may involve two parts (see routines
+      --      Analyze_xxx_In_Decl_Part). The second part of the analysis will
+      --      not happen if the pragma is rewritten.
 
-      if Should_Ignore_Pragma_Sem (N)
+      if Assertion_Expression_Pragma (Prag_Id) and then Is_Ignored (N) then
+         return;
+
+      --  Rewrite the pragma into a null statement when it is ignored using
+      --  pragma Ignore_Pragma, or denotes Default_Scalar_Storage_Order and
+      --  compilation switch -gnatI is in effect.
+
+      elsif Should_Ignore_Pragma_Sem (N)
         or else (Prag_Id = Pragma_Default_Scalar_Storage_Order
                   and then Ignore_Rep_Clauses)
       then

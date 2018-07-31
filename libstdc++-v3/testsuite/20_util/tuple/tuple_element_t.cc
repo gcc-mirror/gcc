@@ -19,6 +19,12 @@
 
 #include <tuple>
 
+#ifndef __cpp_lib_tuple_element_t
+# error "Feature-test macro for tuple_element_t missing"
+#elif __cpp_lib_tuple_element_t != 201402
+# error "Feature-test macro for tuple_element_t has wrong value"
+#endif
+
 using namespace std;
 
 struct foo

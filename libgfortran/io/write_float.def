@@ -135,6 +135,7 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
   w = f->u.real.w;
   d = f->u.real.d;
   p = dtp->u.p.scale_factor;
+  *len = 0;
 
   rchar = '5';
 

@@ -201,7 +201,6 @@ namespace
   fake_messages_w messages_w;
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   typedef char fake_codecvt_c16[sizeof(codecvt<char16_t, char, mbstate_t>)]
   __attribute__ ((aligned(__alignof__(codecvt<char16_t, char, mbstate_t>))));
   fake_codecvt_c16 codecvt_c16;
@@ -209,7 +208,6 @@ namespace
   typedef char fake_codecvt_c32[sizeof(codecvt<char32_t, char, mbstate_t>)]
   __attribute__ ((aligned(__alignof__(codecvt<char32_t, char, mbstate_t>))));
   fake_codecvt_c32 codecvt_c32;
-#endif
 
   // Storage for "C" locale caches.
   typedef char fake_num_cache_c[sizeof(std::__numpunct_cache<char>)]
@@ -329,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     &std::ctype<wchar_t>::id,
     &codecvt<wchar_t, char, mbstate_t>::id,
 #endif
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#if _GLIBCXX_NUM_UNICODE_FACETS != 0
     &codecvt<char16_t, char, mbstate_t>::id,
     &codecvt<char32_t, char, mbstate_t>::id,
 #endif
@@ -536,7 +534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_init_facet(new (&messages_w) std::messages<wchar_t>(1));
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#if _GLIBCXX_NUM_UNICODE_FACETS != 0
     _M_init_facet(new (&codecvt_c16) codecvt<char16_t, char, mbstate_t>(1));
     _M_init_facet(new (&codecvt_c32) codecvt<char32_t, char, mbstate_t>(1));
 #endif

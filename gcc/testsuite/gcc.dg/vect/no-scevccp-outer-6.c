@@ -52,4 +52,5 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED." 1 "vect" { xfail { unaligned_stack || { vect_no_align && { ! vect_hw_misalign } } } } } } */
-/* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected" 1 "vect" { xfail *-*-* } } } */
+/* Exclude widening of i * 4 in the calculation of a[i].  */
+/* { dg-final { scan-tree-dump-times {vect_recog_widen_mult_pattern: detected: [^\n]* \* ([^4]|4[^;])} 1 "vect" { xfail *-*-* } } } */

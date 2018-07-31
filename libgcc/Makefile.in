@@ -36,6 +36,7 @@ SHELL = @SHELL@
 
 cpu_type = @cpu_type@
 enable_shared = @enable_shared@
+enable_gcov = @enable_gcov@
 double_type_size = @double_type_size@
 long_double_type_size = @long_double_type_size@
 decimal_float = @decimal_float@
@@ -941,7 +942,10 @@ libgcc.a libgcov.a libunwind.a libgcc_eh.a:
 
 	$(RANLIB) $@
 
-all: libgcc.a libgcov.a
+all: libgcc.a
+ifeq ($(enable_gcov),yes)
+all: libgcov.a
+endif
 
 ifneq ($(LIBUNWIND),)
 all: libunwind.a
@@ -1164,9 +1168,11 @@ install-leaf: $(install-shared) $(install-libunwind)
 	$(INSTALL_DATA) libgcc.a $(DESTDIR)$(inst_libdir)/
 	chmod 644 $(DESTDIR)$(inst_libdir)/libgcc.a
 	$(RANLIB) $(DESTDIR)$(inst_libdir)/libgcc.a
+ifeq ($(enable_gcov),yes)
 	$(INSTALL_DATA) libgcov.a $(DESTDIR)$(inst_libdir)/
 	chmod 644 $(DESTDIR)$(inst_libdir)/libgcov.a
 	$(RANLIB) $(DESTDIR)$(inst_libdir)/libgcov.a
+endif
 
 	parts="$(INSTALL_PARTS)";				\
 	for file in $$parts; do					\

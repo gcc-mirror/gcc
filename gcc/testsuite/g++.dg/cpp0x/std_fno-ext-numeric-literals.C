@@ -97,19 +97,19 @@ main()
   auto Qfp = 1.0Q;
 }
 
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 7 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 11 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 15 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 19 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 25 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 29 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 33 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 37 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 43 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 47 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 51 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 55 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 61 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 65 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 69 }
-// { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 73 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 7 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 11 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 15 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 19 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 25 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 29 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 33 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 37 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 43 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 47 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 51 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 55 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 61 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 65 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 69 }
+// { dg-warning "1:literal operator suffixes not preceded by" "" { target *-*-* } 73 }

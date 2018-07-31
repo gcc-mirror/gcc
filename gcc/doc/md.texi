@@ -2966,11 +2966,19 @@ memory with a single instruction.
 Odd numbered general registers (R1, R3, R5).  These are used for
 16-bit multiply operations.
 
+@item D
+A memory reference that is encoded within the opcode, but not
+auto-increment or auto-decrement.
+
 @item f
 Any of the floating point registers (AC0 through AC5).
 
 @item G
 Floating point constant 0.
+
+@item h
+Floating point registers AC4 and AC5.  These cannot be loaded from/to
+memory with a single instruction.
 
 @item I
 An integer constant that fits in 16 bits.
@@ -2992,7 +3000,7 @@ The integer constant @minus{}1.
 The integer constant 0.
 
 @item O
-Integer constants @minus{}4 through @minus{}1 and 1 through 4; shifts by these
+Integer constants 0 through 3; shifts by these
 amounts are handled as multiple single-bit shifts rather than a single
 variable-length shift.
 
@@ -4188,12 +4196,6 @@ VSIB address operand.
 
 @item Ts
 Address operand without segment register.
-
-@item Ti
-MPX address operand without index.
-
-@item Tb
-MPX address operand without base.
 
 @end table
 
@@ -5597,6 +5599,34 @@ Other shift and rotate instructions, analogous to the
 Vector shift and rotate instructions that take vectors as operand 2
 instead of a scalar type.
 
+@cindex @code{avg@var{m}3_floor} instruction pattern
+@cindex @code{uavg@var{m}3_floor} instruction pattern
+@item @samp{avg@var{m}3_floor}
+@itemx @samp{uavg@var{m}3_floor}
+Signed and unsigned average instructions.  These instructions add
+operands 1 and 2 without truncation, divide the result by 2,
+round towards -Inf, and store the result in operand 0.  This is
+equivalent to the C code:
+@smallexample
+narrow op0, op1, op2;
+@dots{}
+op0 = (narrow) (((wide) op1 + (wide) op2) >> 1);
+@end smallexample
+where the sign of @samp{narrow} determines whether this is a signed
+or unsigned operation.
+
+@cindex @code{avg@var{m}3_ceil} instruction pattern
+@cindex @code{uavg@var{m}3_ceil} instruction pattern
+@item @samp{avg@var{m}3_ceil}
+@itemx @samp{uavg@var{m}3_ceil}
+Like @samp{avg@var{m}3_floor} and @samp{uavg@var{m}3_floor}, but round
+towards +Inf.  This is equivalent to the C code:
+@smallexample
+narrow op0, op1, op2;
+@dots{}
+op0 = (narrow) (((wide) op1 + (wide) op2 + 1) >> 1);
+@end smallexample
+
 @cindex @code{bswap@var{m}2} instruction pattern
 @item @samp{bswap@var{m}2}
 Reverse the order of bytes of operand 1 and store the result in operand 0.
@@ -6408,6 +6438,23 @@ Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
 integer if @var{m} is scalar, otherwise it has the mode returned by
 @code{TARGET_VECTORIZE_GET_MASK_MODE}.
 
+@cindex @code{cond_fma@var{mode}} instruction pattern
+@cindex @code{cond_fms@var{mode}} instruction pattern
+@cindex @code{cond_fnma@var{mode}} instruction pattern
+@cindex @code{cond_fnms@var{mode}} instruction pattern
+@item @samp{cond_fma@var{mode}}
+@itemx @samp{cond_fms@var{mode}}
+@itemx @samp{cond_fnma@var{mode}}
+@itemx @samp{cond_fnms@var{mode}}
+Like @samp{cond_add@var{m}}, except that the conditional operation
+takes 3 operands rather than two.  For example, the vector form of
+@samp{cond_fma@var{mode}} is equivalent to:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
+@end smallexample
+
 @cindex @code{neg@var{mode}cc} instruction pattern
 @item @samp{neg@var{mode}cc}
 Similar to @samp{mov@var{mode}cc} but for conditional negation.  Conditionally
@@ -6650,17 +6697,6 @@ table it uses.  Its assembler code normally has no need to use the
 second operand, but you should incorporate it in the RTL pattern so
 that the jump optimizer will not delete the table as unreachable code.
 
-
-@cindex @code{decrement_and_branch_until_zero} instruction pattern
-@item @samp{decrement_and_branch_until_zero}
-Conditional branch instruction that decrements a register and
-jumps if the register is nonzero.  Operand 0 is the register to
-decrement and test; operand 1 is the label to jump to if the
-register is nonzero.  @xref{Looping Patterns}.
-
-This optional instruction pattern is only used by the combiner,
-typically for loops reversed by the loop optimizer when strength
-reduction is enabled.
 
 @cindex @code{doloop_end} instruction pattern
 @item @samp{doloop_end}
@@ -7485,66 +7521,11 @@ iterations.  This avoids the need for fetching and executing a
 @samp{dbra}-like instruction and avoids pipeline stalls associated with
 the jump.
 
-GCC has three special named patterns to support low overhead looping.
-They are @samp{decrement_and_branch_until_zero}, @samp{doloop_begin},
-and @samp{doloop_end}.  The first pattern,
-@samp{decrement_and_branch_until_zero}, is not emitted during RTL
-generation but may be emitted during the instruction combination phase.
-This requires the assistance of the loop optimizer, using information
-collected during strength reduction, to reverse a loop to count down to
-zero.  Some targets also require the loop optimizer to add a
-@code{REG_NONNEG} note to indicate that the iteration count is always
-positive.  This is needed if the target performs a signed loop
-termination test.  For example, the 68000 uses a pattern similar to the
-following for its @code{dbra} instruction:
-
-@smallexample
-@group
-(define_insn "decrement_and_branch_until_zero"
-  [(set (pc)
-        (if_then_else
-          (ge (plus:SI (match_operand:SI 0 "general_operand" "+d*am")
-                       (const_int -1))
-              (const_int 0))
-          (label_ref (match_operand 1 "" ""))
-          (pc)))
-   (set (match_dup 0)
-        (plus:SI (match_dup 0)
-                 (const_int -1)))]
-  "find_reg_note (insn, REG_NONNEG, 0)"
-  "@dots{}")
-@end group
-@end smallexample
-
-Note that since the insn is both a jump insn and has an output, it must
-deal with its own reloads, hence the `m' constraints.  Also note that
-since this insn is generated by the instruction combination phase
-combining two sequential insns together into an implicit parallel insn,
-the iteration counter needs to be biased by the same amount as the
-decrement operation, in this case @minus{}1.  Note that the following similar
-pattern will not be matched by the combiner.
-
-@smallexample
-@group
-(define_insn "decrement_and_branch_until_zero"
-  [(set (pc)
-        (if_then_else
-          (ge (match_operand:SI 0 "general_operand" "+d*am")
-              (const_int 1))
-          (label_ref (match_operand 1 "" ""))
-          (pc)))
-   (set (match_dup 0)
-        (plus:SI (match_dup 0)
-                 (const_int -1)))]
-  "find_reg_note (insn, REG_NONNEG, 0)"
-  "@dots{}")
-@end group
-@end smallexample
-
-The other two special looping patterns, @samp{doloop_begin} and
-@samp{doloop_end}, are emitted by the loop optimizer for certain
-well-behaved loops with a finite number of loop iterations using
-information collected during strength reduction.
+GCC has two special named patterns to support low overhead looping.
+They are @samp{doloop_begin} and @samp{doloop_end}.  These are emitted
+by the loop optimizer for certain well-behaved loops with a finite
+number of loop iterations using information collected during strength
+reduction.
 
 The @samp{doloop_end} pattern describes the actual looping instruction
 (or the implicit looping operation) and the @samp{doloop_begin} pattern
@@ -7564,14 +7545,64 @@ desired special iteration counter register was not allocated, this
 machine dependent reorg pass could emit a traditional compare and jump
 instruction pair.
 
-The essential difference between the
-@samp{decrement_and_branch_until_zero} and the @samp{doloop_end}
-patterns is that the loop optimizer allocates an additional pseudo
-register for the latter as an iteration counter.  This pseudo register
-cannot be used within the loop (i.e., general induction variables cannot
-be derived from it), however, in many cases the loop induction variable
-may become redundant and removed by the flow pass.
+For the @samp{doloop_end} pattern, the loop optimizer allocates an
+additional pseudo register as an iteration counter.  This pseudo
+register cannot be used within the loop (i.e., general induction
+variables cannot be derived from it), however, in many cases the loop
+induction variable may become redundant and removed by the flow pass.
 
+The @samp{doloop_end} pattern must have a specific structure to be
+handled correctly by GCC.  The example below is taken (slightly
+simplified) from the PDP-11 target:
+
+@smallexample
+@group
+(define_insn "doloop_end"
+  [(set (pc)
+        (if_then_else
+         (ne (match_operand:HI 0 "nonimmediate_operand" "+r,!m")
+             (const_int 1))
+         (label_ref (match_operand 1 "" ""))
+         (pc)))
+   (set (match_dup 0)
+        (plus:HI (match_dup 0)
+              (const_int -1)))]
+  ""
+  
+  @{
+    if (which_alternative == 0)
+      return "sob %0,%l1";
+
+    /* emulate sob */
+    output_asm_insn ("dec %0", operands);
+    return "bne %l1";
+  @})
+@end group
+@end smallexample
+
+The first part of the pattern describes the branch condition.  GCC
+supports three cases for the way the target machine handles the loop
+counter:
+@itemize @bullet
+@item Loop terminates when the loop register decrements to zero.  This
+is represented by a @code{ne} comparison of the register (its old value)
+with constant 1 (as in the example above).
+@item Loop terminates when the loop register decrements to @minus{}1.
+This is represented by a @code{ne} comparison of the register with
+constant zero.
+@item Loop terminates when the loop register decrements to a negative
+value.  This is represented by a @code{ge} comparison of the register
+with constant zero.  For this case, GCC will attach a @code{REG_NONNEG}
+note to the @code{doloop_end} insn if it can determine that the register
+will be non-negative.
+@end itemize
+
+Since the @code{doloop_end} insn is a jump insn that also has an output,
+the reload pass does not handle the output operand.  Therefore, the
+constraint must allow for that operand to be in memory rather than a
+register.  In the example shown above, that is handled by using a loop
+instruction sequence that can handle memory operands when the memory
+alternative appears.
 
 @end ifset
 @ifset INTERNALS
@@ -8029,6 +8060,30 @@ generated code or emit some insns whose pattern is not fixed.  Unlike
 those in @code{define_expand}, however, these statements must not
 generate any new pseudo-registers.  Once reload has completed, they also
 must not allocate any space in the stack frame.
+
+There are two special macros defined for use in the preparation statements:
+@code{DONE} and @code{FAIL}.  Use them with a following semicolon,
+as a statement.
+
+@table @code
+
+@findex DONE
+@item DONE
+Use the @code{DONE} macro to end RTL generation for the splitter.  The
+only RTL insns generated as replacement for the matched input insn will
+be those already emitted by explicit calls to @code{emit_insn} within
+the preparation statements; the replacement pattern is not used.
+
+@findex FAIL
+@item FAIL
+Make the @code{define_split} fail on this occasion.  When a @code{define_split}
+fails, it means that the splitter was not truly available for the inputs
+it was given, and the input insn will not be split.
+@end table
+
+If the preparation falls through (invokes neither @code{DONE} nor
+@code{FAIL}), then the @code{define_split} uses the replacement
+template.
 
 Patterns are matched against @var{insn-pattern} in two different
 circumstances.  If an insn needs to be split for delay slot scheduling
@@ -8584,6 +8639,33 @@ so here's a silly made-up example:
    (set (match_dup 3) (match_dup 4))]
   "")
 @end smallexample
+
+There are two special macros defined for use in the preparation statements:
+@code{DONE} and @code{FAIL}.  Use them with a following semicolon,
+as a statement.
+
+@table @code
+
+@findex DONE
+@item DONE
+Use the @code{DONE} macro to end RTL generation for the peephole.  The
+only RTL insns generated as replacement for the matched input insn will
+be those already emitted by explicit calls to @code{emit_insn} within
+the preparation statements; the replacement pattern is not used.
+
+@findex FAIL
+@item FAIL
+Make the @code{define_peephole2} fail on this occasion.  When a @code{define_peephole2}
+fails, it means that the replacement was not truly available for the
+particular inputs it was given.  In that case, GCC may still apply a
+later @code{define_peephole2} that also matches the given insn pattern.
+(Note that this is different from @code{define_split}, where @code{FAIL}
+prevents the input insn from being split at all.)
+@end table
+
+If the preparation falls through (invokes neither @code{DONE} nor
+@code{FAIL}), then the @code{define_peephole2} uses the replacement
+template.
 
 @noindent
 If we had not added the @code{(match_dup 4)} in the middle of the input
@@ -10182,7 +10264,11 @@ the expression from the original pattern, which matched
 @code{match_operand N} from the input pattern.  As a consequence,
 @code{match_dup} cannot be used to point to @code{match_operand}s from
 the output pattern, it should always refer to a @code{match_operand}
-from the input pattern.
+from the input pattern.  If a @code{match_dup N} occurs more than once
+in the output template, its first occurrence is replaced with the
+expression from the original pattern, and the subsequent expressions
+are replaced with @code{match_dup N}, i.e., a reference to the first
+expression.
 
 In the output template one can refer to the expressions from the
 original pattern and create new ones.  For instance, some operands could

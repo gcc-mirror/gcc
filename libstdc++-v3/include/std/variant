@@ -710,7 +710,8 @@ namespace __variant
     };
 
   // Helper for variant(_Tp&&) and variant::operator=(_Tp&&).
-  // __accepted_index maps the arbitrary _Tp to an alternative type in _Variant.
+  // __accepted_index maps an arbitrary _Tp to an alternative type in _Variant
+  // (or to variant_npos).
   template<typename _Tp, typename _Variant, typename = void>
     struct __accepted_index
     { static constexpr size_t value = variant_npos; };
@@ -718,8 +719,7 @@ namespace __variant
   template<typename _Tp, typename... _Types>
     struct __accepted_index<
       _Tp, variant<_Types...>,
-      decltype(__overload_set<_Types...>::_S_fun(std::declval<_Tp>()),
-	       std::declval<void>())>
+      void_t<decltype(__overload_set<_Types...>::_S_fun(std::declval<_Tp>()))>>
     {
       static constexpr size_t value = sizeof...(_Types) - 1
 	- decltype(__overload_set<_Types...>::

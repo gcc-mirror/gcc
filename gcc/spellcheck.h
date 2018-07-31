@@ -25,11 +25,11 @@ const edit_distance_t MAX_EDIT_DISTANCE = UINT_MAX;
 
 /* spellcheck.c  */
 extern edit_distance_t
-levenshtein_distance (const char *s, int len_s,
-		      const char *t, int len_t);
+get_edit_distance (const char *s, int len_s,
+		   const char *t, int len_t);
 
 extern edit_distance_t
-levenshtein_distance (const char *s, const char *t);
+get_edit_distance (const char *s, const char *t);
 
 extern const char *
 find_closest_string (const char *target,
@@ -73,7 +73,7 @@ struct edit_distance_traits<const char *>
 
    This type accumulates the best possible match against GOAL_TYPE for
    a sequence of elements of CANDIDATE_TYPE, whilst minimizing the
-   number of calls to levenshtein_distance and to
+   number of calls to get_edit_distance and to
    edit_distance_traits<T>::get_length.  */
 
 template <typename GOAL_TYPE, typename CANDIDATE_TYPE>
@@ -126,9 +126,9 @@ class best_match
     /* Otherwise, compute the distance and see if the candidate
        has beaten the previous best value.  */
     edit_distance_t dist
-      = levenshtein_distance (m_goal, m_goal_len,
-			      candidate_traits::get_string (candidate),
-			      candidate_len);
+      = get_edit_distance (m_goal, m_goal_len,
+			   candidate_traits::get_string (candidate),
+			   candidate_len);
     if (dist < m_best_distance)
       {
 	m_best_distance = dist;

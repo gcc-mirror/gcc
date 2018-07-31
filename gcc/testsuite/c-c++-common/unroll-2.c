@@ -10,12 +10,12 @@ void test (void)
   #pragma GCC unroll 8
   for (unsigned long i = 1; i <= 8; ++i)
     bar(i);
-  /* { dg-final { scan-tree-dump "11:.*: note: loop with 7 iterations completely unrolled" "cunroll" } } */
+  /* { dg-final { scan-tree-dump "11:.*: loop with 7 iterations completely unrolled" "cunroll" } } */
 
   #pragma GCC unroll 8
   for (unsigned long i = 1; i <= 7; ++i)
     bar(i);
-  /* { dg-final { scan-tree-dump "16:.*: note: loop with 6 iterations completely unrolled" "cunroll" } } */
+  /* { dg-final { scan-tree-dump "16:.*: loop with 6 iterations completely unrolled" "cunroll" } } */
 
   #pragma GCC unroll 8
   for (unsigned long i = 1; i <= 15; ++i)

@@ -37,6 +37,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 
+/* LTO specific dumps.  */
+int lto_link_dump_id, decl_merge_dump_id, partition_dump_id;
+
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
 static tree handle_const_attribute (tree *, tree, tree, int, bool *);
@@ -824,7 +827,8 @@ lto_init_options_struct (struct gcc_options *opts)
 const char *resolution_file_name;
 static bool
 lto_handle_option (size_t scode, const char *arg,
-		   int value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
+		   HOST_WIDE_INT value ATTRIBUTE_UNUSED,
+		   int kind ATTRIBUTE_UNUSED,
 		   location_t loc ATTRIBUTE_UNUSED,
 		   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
@@ -1375,6 +1379,23 @@ lto_init (void)
   return true;
 }
 
+/* Register c++-specific dumps.  */
+
+void
+lto_register_dumps (gcc::dump_manager *dumps)
+{
+  lto_link_dump_id = dumps->dump_register
+    (".lto-link", "ipa-lto-link", "ipa-lto-link",
+     DK_ipa, OPTGROUP_NONE, false);
+  decl_merge_dump_id = dumps->dump_register
+    (".lto-decl-merge", "ipa-lto-decl-merge", "ipa-lto-decl-merge",
+     DK_ipa, OPTGROUP_NONE, false);
+  partition_dump_id = dumps->dump_register
+    (".lto-partition", "ipa-lto-partition", "ipa-lto-partition",
+     DK_ipa, OPTGROUP_NONE, false);
+}
+
+
 /* Initialize tree structures required by the LTO front end.  */
 
 static void lto_init_ts (void)
@@ -1390,6 +1411,8 @@ static void lto_init_ts (void)
 #define LANG_HOOKS_COMPLAIN_WRONG_LANG_P lto_complain_wrong_lang_p
 #undef LANG_HOOKS_INIT_OPTIONS_STRUCT
 #define LANG_HOOKS_INIT_OPTIONS_STRUCT lto_init_options_struct
+#undef LANG_HOOKS_REGISTER_DUMPS
+#define LANG_HOOKS_REGISTER_DUMPS lto_register_dumps
 #undef LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION lto_handle_option
 #undef LANG_HOOKS_POST_OPTIONS

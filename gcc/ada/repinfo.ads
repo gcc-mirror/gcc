@@ -379,9 +379,7 @@ package Repinfo is
    type Discrim_List is array (Pos range <>) of Uint;
    --  Type used to represent list of discriminant values
 
-   function Rep_Value
-     (Val : Node_Ref_Or_Val;
-      D   : Discrim_List) return Uint;
+   function Rep_Value (Val : Node_Ref_Or_Val; D : Discrim_List) return Uint;
    --  Given the contents of a First_Bit_Position or Esize field containing
    --  a node reference (i.e. a negative Uint value) and D, the list of
    --  discriminant values, returns the interpreted value of this field.

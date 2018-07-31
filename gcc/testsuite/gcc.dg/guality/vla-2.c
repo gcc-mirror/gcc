@@ -13,7 +13,7 @@ fn2 (int i)
 {
   int a[i];
   fn1 (a, i);
-  fn1 (a, i);		/* { dg-final { gdb-test 16 "sizeof (a)" "5 * sizeof (int)" } } */
+  fn1 (a, i);		/* { dg-final { gdb-test . "sizeof (a)" "5 * sizeof (int)" } } */
   return i;
 }
 
@@ -22,7 +22,7 @@ fn3 (int i)
 {
   int a[i];
   fn1 (a, i);
-  fn1 (a, i);		/* { dg-final { gdb-test 25 "sizeof (a)" "6 * sizeof (int)" } } */
+  fn1 (a, i);		/* { dg-final { gdb-test . "sizeof (a)" "6 * sizeof (int)" } } */
   return i;
 }
 

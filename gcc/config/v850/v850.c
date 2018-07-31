@@ -68,8 +68,6 @@ data_area_stack_element * data_area_stack = NULL;
    function is an interrupt handler.  */
 static int v850_interrupt_cache_p = FALSE;
 
-rtx v850_compare_op0, v850_compare_op1;
-
 /* Whether current function is an interrupt handler.  */
 static int v850_interrupt_p = FALSE;
 
@@ -418,7 +416,9 @@ v850_print_operand (FILE * file, rtx x, int code)
     case 'b':
     case 'B':
     case 'C':
-      switch ((code == 'B' || code == 'C')
+    case 'd':
+    case 'D':
+      switch ((code == 'B' || code == 'C' || code == 'D')
 	      ? reverse_condition (GET_CODE (x)) : GET_CODE (x))
 	{
 	  case NE:
@@ -434,7 +434,10 @@ v850_print_operand (FILE * file, rtx x, int code)
 	      fprintf (file, "e");
 	    break;
 	  case GE:
-	    fprintf (file, "ge");
+	    if (code == 'D' || code == 'd')
+	      fprintf (file, "p");
+	    else
+	      fprintf (file, "ge");
 	    break;
 	  case GT:
 	    fprintf (file, "gt");
@@ -443,7 +446,10 @@ v850_print_operand (FILE * file, rtx x, int code)
 	    fprintf (file, "le");
 	    break;
 	  case LT:
-	    fprintf (file, "lt");
+	    if (code == 'D' || code == 'd')
+	      fprintf (file, "n");
+	    else
+	      fprintf (file, "lt");
 	    break;
 	  case GEU:
 	    fprintf (file, "nl");
@@ -905,7 +911,7 @@ output_move_single (rtx * operands)
 }
 
 machine_mode
-v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1 ATTRIBUTE_UNUSED)
+v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1)
 {
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
     {
@@ -927,11 +933,20 @@ v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1 ATTRIBUTE_UNUSED)
 	  gcc_unreachable ();
 	}
     }
+
+  if (op1 == const0_rtx
+      && (cond == EQ || cond == NE || cond == LT || cond == GE)
+      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
+	  || GET_CODE (op0) == NEG || GET_CODE (op0) == AND
+	  || GET_CODE (op0) == IOR || GET_CODE (op0) == XOR
+	  || GET_CODE (op0) == NOT || GET_CODE (op0) == ASHIFT))
+    return CCNZmode;
+
   return CCmode;
 }
 
 machine_mode
-v850_gen_float_compare (enum rtx_code cond, machine_mode mode ATTRIBUTE_UNUSED, rtx op0, rtx op1)
+v850_gen_float_compare (enum rtx_code cond, machine_mode mode, rtx op0, rtx op1)
 {
   if (GET_MODE (op0) == DFmode)
     {
@@ -960,7 +975,7 @@ v850_gen_float_compare (enum rtx_code cond, machine_mode mode ATTRIBUTE_UNUSED, 
 	  gcc_unreachable ();
 	}
     }
-  else if (GET_MODE (v850_compare_op0) == SFmode)
+  else if (mode == SFmode)
     {
       switch (cond)
 	{
@@ -991,25 +1006,6 @@ v850_gen_float_compare (enum rtx_code cond, machine_mode mode ATTRIBUTE_UNUSED, 
     gcc_unreachable ();
 
   return v850_select_cc_mode (cond, op0, op1);
-}
-
-rtx
-v850_gen_compare (enum rtx_code cond, machine_mode mode, rtx op0, rtx op1)
-{
-  if (GET_MODE_CLASS(GET_MODE (op0)) != MODE_FLOAT)
-    {
-      emit_insn (gen_cmpsi_insn (op0, op1));
-      return gen_rtx_fmt_ee (cond, mode, gen_rtx_REG(CCmode, CC_REGNUM), const0_rtx);
-    }
-  else
-    {
-      rtx cc_reg;
-      mode = v850_gen_float_compare (cond, mode, op0, op1);
-      cc_reg = gen_rtx_REG (mode, CC_REGNUM);
-      emit_insn (gen_rtx_SET (cc_reg, gen_rtx_REG (mode, FCC_REGNUM)));
-
-      return gen_rtx_fmt_ee (cond, mode, cc_reg, const0_rtx);
-    }
 }
 
 /* Return maximum offset supported for a short EP memory reference of mode
@@ -1635,7 +1631,7 @@ increment_stack (signed int amount, bool in_prologue)
       inc = reg;
     }
 
-  inc = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, inc));
+  inc = emit_insn (gen_addsi3_clobber_flags (stack_pointer_rtx, stack_pointer_rtx, inc));
   if (in_prologue)
     F (inc);
 }
@@ -1712,7 +1708,7 @@ expand_prologue (void)
 
 	  save_all = gen_rtx_PARALLEL
 	    (VOIDmode,
-	     rtvec_alloc (num_save + 1
+	     rtvec_alloc (num_save + 2
 			  + (TARGET_DISABLE_CALLT ? (TARGET_LONG_CALLS ? 2 : 1) : 0)));
 
 	  XVECEXP (save_all, 0, 0)
@@ -1731,13 +1727,16 @@ expand_prologue (void)
 			       save_regs[i]);
 	    }
 
+	  XVECEXP (save_all, 0, num_save + 1)
+	    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, CC_REGNUM));
+
 	  if (TARGET_DISABLE_CALLT)
 	    {
-	      XVECEXP (save_all, 0, num_save + 1)
+	      XVECEXP (save_all, 0, num_save + 2)
 		= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 10));
 
 	      if (TARGET_LONG_CALLS)
-		XVECEXP (save_all, 0, num_save + 2)
+		XVECEXP (save_all, 0, num_save + 3)
 		  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 11));
 	    }
 
@@ -1983,55 +1982,6 @@ expand_epilogue (void)
 
   v850_interrupt_cache_p = FALSE;
   v850_interrupt_p = FALSE;
-}
-
-/* Update the condition code from the insn.  */
-void
-notice_update_cc (rtx body, rtx_insn *insn)
-{
-  switch (get_attr_cc (insn))
-    {
-    case CC_NONE:
-      /* Insn does not affect CC at all.  */
-      break;
-
-    case CC_NONE_0HIT:
-      /* Insn does not change CC, but the 0'th operand has been changed.  */
-      if (cc_status.value1 != 0
-	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value1))
-	cc_status.value1 = 0;
-      break;
-
-    case CC_SET_ZN:
-      /* Insn sets the Z,N flags of CC to recog_data.operand[0].
-	 V,C is in an unusable state.  */
-      CC_STATUS_INIT;
-      cc_status.flags |= CC_OVERFLOW_UNUSABLE | CC_NO_CARRY;
-      cc_status.value1 = recog_data.operand[0];
-      break;
-
-    case CC_SET_ZNV:
-      /* Insn sets the Z,N,V flags of CC to recog_data.operand[0].
-  	 C is in an unusable state.  */
-      CC_STATUS_INIT;
-      cc_status.flags |= CC_NO_CARRY;
-      cc_status.value1 = recog_data.operand[0];
-      break;
-
-    case CC_COMPARE:
-      /* The insn is a compare instruction.  */
-      CC_STATUS_INIT;
-      cc_status.value1 = SET_SRC (body);
-      break;
-
-    case CC_CLOBBER:
-      /* Insn doesn't leave CC in a usable state.  */
-      CC_STATUS_INIT;
-      break;
-
-    default:
-      break;
-    }
 }
 
 /* Retrieve the data area that has been chosen for the given decl.  */
@@ -2379,7 +2329,7 @@ construct_save_jarl (rtx op)
   stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1));
 
   /* Each push will put 4 bytes from the stack....  */
-  stack_bytes += (count - (TARGET_LONG_CALLS ? 3 : 2)) * 4;
+  stack_bytes += (count - (TARGET_LONG_CALLS ? 4 : 3)) * 4;
 
   /* Make sure that the amount we are popping either 0 or 16 bytes.  */
   if (stack_bytes != 0)
@@ -2390,7 +2340,7 @@ construct_save_jarl (rtx op)
 
   /* Now compute the bit mask of registers to push.  */
   mask = 0;
-  for (i = 1; i < count - (TARGET_LONG_CALLS ? 2 : 1); i++)
+  for (i = 1; i < count - (TARGET_LONG_CALLS ? 3 : 2); i++)
     {
       rtx vector_element = XVECEXP (op, 0, i);
       
@@ -3129,7 +3079,10 @@ v850_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
     return true;
   if (GET_CODE (x) == PLUS
       && v850_rtx_ok_for_base_p (XEXP (x, 0), strict_p)
-      && constraint_satisfied_p (XEXP (x,1), CONSTRAINT_K)
+      && (constraint_satisfied_p (XEXP (x, 1), CONSTRAINT_K)
+	  || (TARGET_V850E2V3_UP
+	      && (mode == SImode || mode == HImode || mode == QImode)
+	      && constraint_satisfied_p (XEXP (x, 1), CONSTRAINT_W)))
       && ((mode == QImode || INTVAL (XEXP (x, 1)) % 2 == 0)
 	   && CONST_OK_FOR_K (INTVAL (XEXP (x, 1))
 			      + (GET_MODE_NUNITS (mode) * UNITS_PER_WORD))))
@@ -3359,9 +3312,6 @@ v850_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P v850_legitimate_constant_p
 
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
-
 #undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P v850_legitimate_address_p
 
@@ -3373,6 +3323,9 @@ v850_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 #undef  TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P v850_modes_tieable_p
+
+#undef TARGET_FLAGS_REGNUM
+#define TARGET_FLAGS_REGNUM 32
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

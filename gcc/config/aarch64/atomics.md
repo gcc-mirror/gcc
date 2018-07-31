@@ -530,7 +530,7 @@
 )
 
 (define_insn "aarch64_store_exclusive<mode>"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "=&r")
     (unspec_volatile:SI [(const_int 0)] UNSPECV_SX))
    (set (match_operand:ALLI 1 "aarch64_sync_memory_operand" "=Q")
     (unspec_volatile:ALLI

@@ -428,7 +428,7 @@ package body Repinfo is
 
                   List_Entities (E, Bytes_Big_Endian, True);
 
-               elsif Ekind (E) in Formal_Kind and then In_Subprogram then
+               elsif Is_Formal (E) and then In_Subprogram then
                   null;
 
                elsif Ekind_In (E, E_Entry,
@@ -1772,11 +1772,15 @@ package body Repinfo is
       begin
          if List_Representation_Info_To_JSON then
             Write_Line (",");
-            Write_Str ("  """ & Attr_Name & """: ""System.");
+            Write_Str ("  """);
+            Write_Str (Attr_Name);
+            Write_Str (""": ""System.");
          else
             Write_Str ("for ");
             List_Name (Ent);
-            Write_Str ("'" & Attr_Name & " use System.");
+            Write_Char (''');
+            Write_Str (Attr_Name);
+            Write_Str (" use System.");
          end if;
 
          if Bytes_Big_Endian xor Is_Reversed then
@@ -1962,10 +1966,8 @@ package body Repinfo is
    -- Rep_Value --
    ---------------
 
-   function Rep_Value
-     (Val : Node_Ref_Or_Val;
-      D   : Discrim_List) return Uint
-   is
+   function Rep_Value (Val : Node_Ref_Or_Val; D : Discrim_List) return Uint is
+
       function B (Val : Boolean) return Uint;
       --  Returns Uint_0 for False, Uint_1 for True
 

@@ -950,20 +950,35 @@ package body Lib.Writ is
                Write_Info_Tab (25);
 
                if Is_Spec_Name (Uname) then
-                  Body_Fname :=
-                    Get_File_Name
-                      (Get_Body_Name (Uname),
-                       Subunit => False, May_Fail => True);
 
-                  Body_Index :=
-                    Get_Unit_Index
-                      (Get_Body_Name (Uname));
+                  --  In GNATprove mode we must write the spec of a unit which
+                  --  requires a body if that body is not found. This will
+                  --  allow partial analysis on incomplete sources.
 
-                  if Body_Fname = No_File then
-                     Body_Fname := Get_File_Name (Uname, Subunit => False);
-                     Body_Index := Get_Unit_Index (Uname);
+                  if GNATprove_Mode then
+
+                     Body_Fname :=
+                       Get_File_Name (Get_Body_Name (Uname),
+                                       Subunit => False, May_Fail => True);
+
+                     Body_Index := Get_Unit_Index (Get_Body_Name (Uname));
+
+                     if Body_Fname = No_File then
+                        Body_Fname := Get_File_Name (Uname, Subunit => False);
+                        Body_Index := Get_Unit_Index (Uname);
+                     end if;
+
+                  --  In the normal path we don't allow failure in fetching the
+                  --  name of the desired body unit so that it may be properly
+                  --  referenced in the output ali - even if it is missing.
+
+                  else
+                     Body_Fname :=
+                       Get_File_Name (Get_Body_Name (Uname),
+                                       Subunit => False, May_Fail => False);
+
+                     Body_Index := Get_Unit_Index (Get_Body_Name (Uname));
                   end if;
-
                else
                   Body_Fname := Get_File_Name (Uname, Subunit => False);
                   Body_Index := Get_Unit_Index (Uname);

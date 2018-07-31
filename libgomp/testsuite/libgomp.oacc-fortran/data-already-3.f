@@ -13,5 +13,3 @@
       END
 
 ! { dg-output "CheCKpOInT(\n|\r\n|\r).*" }
-! { dg-output "already mapped to" }
-! { dg-shouldfail "" }

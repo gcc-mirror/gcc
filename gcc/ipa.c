@@ -225,13 +225,8 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 		       (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
 
 	  if (dump_enabled_p ())
-            {
-	      location_t locus;
-	      if (edge->call_stmt)
-		locus = gimple_location (edge->call_stmt);
-	      else
-		locus = UNKNOWN_LOCATION;
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
+	    {
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, edge->call_stmt,
 			       "devirtualizing call in %s to %s\n",
 			       edge->caller->dump_name (),
 			       target->dump_name ());
@@ -240,13 +235,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	  if (ipa_fn_summaries)
 	    ipa_update_overall_fn_summary (node);
 	  else if (edge->call_stmt)
-	    {
-	      edge->redirect_call_stmt_to_callee ();
-
-	      /* Call to __builtin_unreachable shouldn't be instrumented.  */
-	      if (!targets.length ())
-		gimple_call_set_with_bounds (edge->call_stmt, false);
-	    }
+	    edge->redirect_call_stmt_to_callee ();
 	}
     }
 }
@@ -462,20 +451,6 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	      if (cnode->global.inlined_to)
 	        body_needed_for_clonning.add (cnode->decl);
 
-	      /* For instrumentation clones we always need original
-		 function node for proper LTO privatization.  */
-	      if (cnode->instrumentation_clone
-		  && cnode->definition)
-		{
-		  gcc_assert (cnode->instrumented_version || in_lto_p);
-		  if (cnode->instrumented_version)
-		    {
-		      enqueue_node (cnode->instrumented_version, &first,
-				    &reachable);
-		      reachable.add (cnode->instrumented_version);
-		    }
-		}
-
 	      /* For non-inline clones, force their origins to the boundary and ensure
 		 that body is not removed.  */
 	      while (cnode->clone_of)
@@ -643,8 +618,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	    }
 	  /* Keep body if it may be useful for constant folding.  */
 	  if ((flag_wpa || flag_incremental_link == INCREMENTAL_LINK_LTO)
-	      || ((init = ctor_for_folding (vnode->decl)) == error_mark_node
-	          && !POINTER_BOUNDS_P (vnode->decl)))
+	      || ((init = ctor_for_folding (vnode->decl)) == error_mark_node))
 	    vnode->remove_initializer ();
 	  else
 	    DECL_INITIAL (vnode->decl) = init;
@@ -669,10 +643,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	&& !node->used_from_other_partition)
       {
 	if (!node->call_for_symbol_and_aliases
-	    (has_addr_references_p, NULL, true)
-	    && (!node->instrumentation_clone
-		|| !node->instrumented_version
-		|| !node->instrumented_version->address_taken))
+	    (has_addr_references_p, NULL, true))
 	  {
 	    if (file)
 	      fprintf (file, " %s", node->name ());
@@ -740,8 +711,6 @@ process_references (varpool_node *vnode,
 	process_references (dyn_cast<varpool_node *> (ref->referring), written,
 			    address_taken, read, explicit_refs);
 	break;
-      case IPA_REF_CHKP:
-	gcc_unreachable ();
       }
 }
 
@@ -847,9 +816,8 @@ ipa_discover_readonly_nonaddressable_vars (void)
 }
 
 /* Generate and emit a static constructor or destructor.  WHICH must
-   be one of 'I' (for a constructor), 'D' (for a destructor), 'P'
-   (for chp static vars constructor) or 'B' (for chkp static bounds
-   constructor).  BODY is a STATEMENT_LIST containing GENERIC
+   be one of 'I' (for a constructor), 'D' (for a destructor).
+   BODY is a STATEMENT_LIST containing GENERIC
    statements.  PRIORITY is the initialization priority for this
    constructor or destructor.
 
@@ -912,20 +880,6 @@ cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final)
       DECL_STATIC_CONSTRUCTOR (decl) = 1;
       decl_init_priority_insert (decl, priority);
       break;
-    case 'P':
-      DECL_STATIC_CONSTRUCTOR (decl) = 1;
-      DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("chkp ctor"),
-					  NULL,
-					  NULL_TREE);
-      decl_init_priority_insert (decl, priority);
-      break;
-    case 'B':
-      DECL_STATIC_CONSTRUCTOR (decl) = 1;
-      DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("bnd_legacy"),
-					  NULL,
-					  NULL_TREE);
-      decl_init_priority_insert (decl, priority);
-      break;
     case 'D':
       DECL_STATIC_DESTRUCTOR (decl) = 1;
       decl_fini_priority_insert (decl, priority);
@@ -943,9 +897,8 @@ cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final)
 }
 
 /* Generate and emit a static constructor or destructor.  WHICH must
-   be one of 'I' (for a constructor), 'D' (for a destructor), 'P'
-   (for chkp static vars constructor) or 'B' (for chkp static bounds
-   constructor).  BODY is a STATEMENT_LIST containing GENERIC
+   be one of 'I' (for a constructor) or 'D' (for a destructor).
+   BODY is a STATEMENT_LIST containing GENERIC
    statements.  PRIORITY is the initialization priority for this
    constructor or destructor.  */
 

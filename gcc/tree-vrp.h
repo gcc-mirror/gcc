@@ -102,6 +102,19 @@ extern bool vrp_val_is_min (const_tree);
 extern bool vrp_val_is_max (const_tree);
 extern void copy_value_range (value_range *, value_range *);
 extern void set_value_range_to_value (value_range *, tree, bitmap);
+extern bool wide_int_range_cross_product (wide_int &res_lb, wide_int &res_ub,
+					  enum tree_code code, signop sign,
+					  const wide_int &, const wide_int &,
+					  const wide_int &, const wide_int &,
+					  bool overflow_undefined);
+extern bool wide_int_range_mult_wrapping (wide_int &res_lb,
+					  wide_int &res_ub,
+					  signop sign,
+					  unsigned prec,
+					  const wide_int &min0_,
+					  const wide_int &max0_,
+					  const wide_int &min1_,
+					  const wide_int &max1_);
 extern void extract_range_from_binary_expr_1 (value_range *, enum tree_code,
 					      tree, value_range *,
 					      value_range *);
@@ -112,8 +125,14 @@ extern bool range_int_cst_p (value_range *);
 extern int operand_less_p (tree, tree);
 extern bool find_case_label_range (gswitch *, tree, tree, size_t *, size_t *);
 extern bool find_case_label_index (gswitch *, size_t, tree, size_t *);
+extern void zero_nonzero_bits_from_bounds (signop, const wide_int&,
+					   const wide_int&, wide_int *,
+					   wide_int *);
 extern bool zero_nonzero_bits_from_vr (const tree, value_range *,
 				       wide_int *, wide_int *);
+extern bool range_easy_mask_min_max (tree_code,
+				     const wide_int &lb, const wide_int &ub,
+				     const wide_int &mask);
 extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern bool range_int_cst_singleton_p (value_range *);
 extern int value_inside_range (tree, tree, tree);

@@ -287,6 +287,7 @@ package body SPARK_Specific is
 
          Set_Ekind       (Heap, E_Variable);
          Set_Is_Internal (Heap, True);
+         Set_Scope       (Heap, Standard_Standard);
          Set_Has_Fully_Qualified_Name (Heap);
       end Create_Heap;
 

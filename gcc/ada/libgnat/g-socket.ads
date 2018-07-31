@@ -489,7 +489,32 @@ package GNAT.Sockets is
    No_Port : constant Port_Type;
    --  Uninitialized port number
 
-   type Inet_Addr_Type (Family : Family_Type := Family_Inet) is private;
+   type Inet_Addr_Comp_Type is mod 2 ** 8;
+   --  Octet for Internet address
+
+   Inet_Addr_Bytes_Length : constant array (Family_Type) of Positive :=
+     (Family_Inet => 4, Family_Inet6 => 16);
+
+   type Inet_Addr_Bytes is array (Natural range <>) of Inet_Addr_Comp_Type;
+
+   subtype Inet_Addr_V4_Type is
+     Inet_Addr_Bytes (1 ..  Inet_Addr_Bytes_Length (Family_Inet));
+   subtype Inet_Addr_V6_Type is
+     Inet_Addr_Bytes (1 ..  Inet_Addr_Bytes_Length (Family_Inet6));
+
+   subtype Inet_Addr_VN_Type is Inet_Addr_Bytes;
+   --  For backwards compatibility
+
+   type Inet_Addr_Type (Family : Family_Type := Family_Inet) is record
+      case Family is
+         when Family_Inet =>
+            Sin_V4 : Inet_Addr_V4_Type := (others => 0);
+
+         when Family_Inet6 =>
+            Sin_V6 : Inet_Addr_V6_Type := (others => 0);
+      end case;
+   end record;
+
    --  An Internet address depends on an address family (IPv4 contains 4 octets
    --  and IPv6 contains 16 octets). Any_Inet_Addr is a special value treated
    --  like a wildcard enabling all addresses. No_Inet_Addr provides a special
@@ -505,6 +530,23 @@ package GNAT.Sockets is
    Unspecified_Group_Inet_Addr : constant Inet_Addr_Type;
    All_Hosts_Group_Inet_Addr   : constant Inet_Addr_Type;
    All_Routers_Group_Inet_Addr : constant Inet_Addr_Type;
+
+   --  Functions to handle masks and prefixes
+
+   function Mask
+     (Family : Family_Type;
+      Length : Natural;
+      Host   : Boolean := False) return Inet_Addr_Type;
+   --  Return an address mask of the given family with the given prefix length.
+   --  If Host is False, this is a network mask (i.e. network bits are 1,
+   --  and host bits are 0); if Host is True, this is a host mask (i.e.
+   --  network bits are 0, and host bits are 1).
+
+   function "and" (Addr, Mask : Inet_Addr_Type) return Inet_Addr_Type;
+   function "or" (Net, Host : Inet_Addr_Type) return Inet_Addr_Type;
+   function "not" (Mask : Inet_Addr_Type) return Inet_Addr_Type;
+   --  Bit-wise operations on inet addresses (both operands must have the
+   --  same address family).
 
    type Sock_Addr_Type (Family : Family_Type := Family_Inet) is record
       Addr : Inet_Addr_Type (Family);
@@ -1211,24 +1253,6 @@ private
       Set : aliased Fd_Set;
       --  Underlying socket set. Note that the contents of this component is
       --  undefined if Last = No_Socket.
-   end record;
-
-   subtype Inet_Addr_Comp_Type is Natural range 0 .. 255;
-   --  Octet for Internet address
-
-   type Inet_Addr_VN_Type is array (Natural range <>) of Inet_Addr_Comp_Type;
-
-   subtype Inet_Addr_V4_Type is Inet_Addr_VN_Type (1 ..  4);
-   subtype Inet_Addr_V6_Type is Inet_Addr_VN_Type (1 .. 16);
-
-   type Inet_Addr_Type (Family : Family_Type := Family_Inet) is record
-      case Family is
-         when Family_Inet =>
-            Sin_V4 : Inet_Addr_V4_Type := (others => 0);
-
-         when Family_Inet6 =>
-            Sin_V6 : Inet_Addr_V6_Type := (others => 0);
-      end case;
    end record;
 
    Any_Port : constant Port_Type := 0;

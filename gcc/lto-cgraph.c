@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "ipa-utils.h"
 #include "omp-offload.h"
-#include "ipa-chkp.h"
 #include "stringpool.h"
 #include "attribs.h"
 
@@ -544,7 +543,6 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 		/* When doing incremental link, we will get new resolution
 		   info next time we process the file.  */
 		flag_incremental_link ? LDPR_UNKNOWN : node->resolution);
-  bp_pack_value (&bp, node->instrumentation_clone, 1);
   bp_pack_value (&bp, node->split_part, 1);
   streamer_write_bitpack (&bp);
   streamer_write_data_stream (ob->main_stream, section, strlen (section) + 1);
@@ -564,9 +562,6 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
     streamer_write_hwi_stream (ob->main_stream, node->get_init_priority ());
   if (DECL_STATIC_DESTRUCTOR (node->decl))
     streamer_write_hwi_stream (ob->main_stream, node->get_fini_priority ());
-
-  if (node->instrumentation_clone)
-    lto_output_fn_decl_index (ob->decl_state, ob->main_stream, node->orig_decl);
 }
 
 /* Output the varpool NODE to OB. 
@@ -775,33 +770,11 @@ output_refs (lto_symtab_encoder_t encoder)
     {
       symtab_node *node = lto_symtab_encoder_deref (encoder, i);
 
-      /* IPA_REF_ALIAS and IPA_REF_CHKP references are always preserved
+      /* IPA_REF_ALIAS references are always preserved
 	 in the boundary.  Alias node can't have other references and
 	 can be always handled as if it's not in the boundary.  */
       if (!node->alias && !lto_symtab_encoder_in_partition_p (encoder, node))
-	{
-	  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
-	  /* Output IPA_REF_CHKP reference.  */
-	  if (cnode
-	      && cnode->instrumented_version
-	      && !cnode->instrumentation_clone)
-	    {
-	      for (int i = 0; node->iterate_reference (i, ref); i++)
-		if (ref->use == IPA_REF_CHKP)
-		  {
-		    if (lto_symtab_encoder_lookup (encoder, ref->referred)
-			!= LCC_NOT_FOUND)
-		      {
-			int nref = lto_symtab_encoder_lookup (encoder, node);
-			streamer_write_gcov_count_stream (ob->main_stream, 1);
-			streamer_write_uhwi_stream (ob->main_stream, nref);
-			lto_output_ref (ob, ref, encoder);
-		      }
-		    break;
-		  }
-	    }
-	  continue;
-	}
+	continue;
 
       count = node->ref_list.nreferences ();
       if (count)
@@ -913,8 +886,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	      && (((vnode->ctor_useable_for_folding_p ()
 		   && (!DECL_VIRTUAL_P (vnode->decl)
 		       || !flag_wpa
-		       || flag_ltrans_devirtualize))
-		  || POINTER_BOUNDS_P (vnode->decl))))
+		       || flag_ltrans_devirtualize)))))
 	    {
 	      lto_set_symtab_encoder_encode_initializer (encoder, vnode);
 	      create_references (encoder, vnode);
@@ -1204,7 +1176,6 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->parallelized_function = bp_unpack_value (bp, 1);
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
-  node->instrumentation_clone = bp_unpack_value (bp, 1);
   node->split_part = bp_unpack_value (bp, 1);
   gcc_assert (flag_ltrans
 	      || (!node->in_other_partition
@@ -1297,7 +1268,7 @@ input_node (struct lto_file_decl_data *file_data,
      functions, they are expected to be read more than once.  */
   if (node->aux && !DECL_BUILT_IN (node->decl))
     internal_error ("bytecode stream: found multiple instances of cgraph "
-		    "node with uid %d", node->uid);
+		    "node with uid %d", node->get_uid ());
 
   node->tp_first_run = streamer_read_uhwi (ib);
 
@@ -1339,13 +1310,6 @@ input_node (struct lto_file_decl_data *file_data,
     node->set_init_priority (streamer_read_hwi (ib));
   if (DECL_STATIC_DESTRUCTOR (node->decl))
     node->set_fini_priority (streamer_read_hwi (ib));
-
-  if (node->instrumentation_clone)
-    {
-      decl_index = streamer_read_uhwi (ib);
-      fn_decl = lto_file_decl_data_get_fn_decl (file_data, decl_index);
-      node->orig_decl = fn_decl;
-    }
 
   return node;
 }
@@ -1588,35 +1552,6 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 	      = dyn_cast<cgraph_node *> (nodes[ref]);
 	  else
 	    cnode->global.inlined_to = NULL;
-
-	  /* Compute instrumented_version.  */
-	  if (cnode->instrumentation_clone)
-	    {
-	      gcc_assert (cnode->orig_decl);
-
-	      cnode->instrumented_version = cgraph_node::get (cnode->orig_decl);
-	      if (cnode->instrumented_version)
-		{
-		  /* We may have multiple nodes for a single function which
-		     will be merged later.  To have a proper merge we need
-		     to keep instrumentation_version reference between nodes
-		     consistent: each instrumented_version reference should
-		     have proper reverse reference.  Thus don't break existing
-		     instrumented_version reference if it already exists.  */
-		  if (cnode->instrumented_version->instrumented_version)
-		    cnode->instrumented_version = NULL;
-		  else
-		    cnode->instrumented_version->instrumented_version = cnode;
-		}
-
-	      /* Restore decl names reference except for wrapper functions.  */
-	      if (!chkp_wrap_function (cnode->orig_decl))
-		{
-		  tree name = DECL_ASSEMBLER_NAME (cnode->decl);
-		  IDENTIFIER_TRANSPARENT_ALIAS (name) = 1;
-		  TREE_CHAIN (name) = DECL_ASSEMBLER_NAME (cnode->orig_decl);
-		}
-	    }
 	}
 
       ref = (int) (intptr_t) node->same_comdat_group;

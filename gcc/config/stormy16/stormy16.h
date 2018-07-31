@@ -476,5 +476,3 @@ enum reg_class
 #define Pmode HImode
 
 #define FUNCTION_MODE HImode
-
-#define NO_IMPLICIT_EXTERN_C

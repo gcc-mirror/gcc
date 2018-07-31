@@ -34,7 +34,7 @@
 /* Special builtins.  */
 DEF_BUILTIN (NOP,        0, void_ftype_void,        nothing,     1)
 DEF_BUILTIN (RTIE,       0, void_ftype_void,        rtie,        1)
-DEF_BUILTIN (SYNC,       0, void_ftype_void,        sync,        TARGET_ARC700)
+DEF_BUILTIN (SYNC,       0, void_ftype_void,        sync,        1)
 DEF_BUILTIN (BRK,        0, void_ftype_void,        brk,         1)
 DEF_BUILTIN (SWI,        0, void_ftype_void,        swi,         1)
 DEF_BUILTIN (UNIMP_S,    0, void_ftype_void,        unimp_s,     !TARGET_ARC600_FAMILY)

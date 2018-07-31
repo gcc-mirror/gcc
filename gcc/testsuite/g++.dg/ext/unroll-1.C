@@ -16,4 +16,4 @@ bar (int *a, int *b, int *c)
   foo <int> (a, b, c);
 }
 
-// { dg-final { scan-tree-dump "note: loop with 8 iterations completely unrolled" "cunrolli" } }
+// { dg-final { scan-tree-dump "loop with 8 iterations completely unrolled" "cunrolli" } }

@@ -3840,7 +3840,12 @@ pointer_diff (location_t loc, tree op0, tree op1, tree *instrument_expr)
     op0 = build_binary_op (loc, MINUS_EXPR, convert (inttype, op0),
 			   convert (inttype, op1), false);
   else
-    op0 = build2_loc (loc, POINTER_DIFF_EXPR, inttype, op0, op1);
+    {
+      /* Cast away qualifiers.  */
+      op0 = convert (c_common_type (TREE_TYPE (op0), TREE_TYPE (op0)), op0);
+      op1 = convert (c_common_type (TREE_TYPE (op1), TREE_TYPE (op1)), op1);
+      op0 = build2_loc (loc, POINTER_DIFF_EXPR, inttype, op0, op1);
+    }
 
   /* This generates an error if op1 is pointer to incomplete type.  */
   if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (orig_op1))))
@@ -4308,6 +4313,16 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
       if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE))
 	{
 	  error_at (location, "wrong type argument to abs");
+	  return error_mark_node;
+	}
+      else if (!noconvert)
+	arg = default_conversion (arg);
+      break;
+
+    case ABSU_EXPR:
+      if (!(typecode == INTEGER_TYPE))
+	{
+	  error_at (location, "wrong type argument to absu");
 	  return error_mark_node;
 	}
       else if (!noconvert)
@@ -13882,6 +13897,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_WORKER:
 	case OMP_CLAUSE_VECTOR:
 	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE_IF_PRESENT:
+	case OMP_CLAUSE_FINALIZE:
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 

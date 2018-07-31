@@ -138,8 +138,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       refresh(__ec);
     }
 
-    void refresh() { _M_type = symlink_status().type(); }
-    void refresh(error_code& __ec) { _M_type = symlink_status(__ec).type(); }
+    void
+    refresh()
+    { _M_type = symlink_status().type(); }
+
+    void
+    refresh(error_code& __ec) noexcept
+    { _M_type = symlink_status(__ec).type(); }
 
     // observers
     const filesystem::path& path() const noexcept { return _M_path; }

@@ -1158,7 +1158,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Let the compiler synthesize the copy and assignment
       // operator.  It always does a pretty good job.
-      // complex& operator=(const complex&);
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex& operator=(const complex&) = default;
+#endif
 
       template<typename _Tp>
         complex&
@@ -1308,7 +1310,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // The compiler will synthesize this, efficiently.
-      // complex& operator=(const complex&);
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex& operator=(const complex&) = default;
+#endif
 
       template<typename _Tp>
         complex&
@@ -1460,7 +1464,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // The compiler knows how to do this efficiently
-      // complex& operator=(const complex&);
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex& operator=(const complex&) = default;
+#endif
 
       template<typename _Tp>
         complex&

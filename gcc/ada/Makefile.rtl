@@ -17,11 +17,14 @@
 #along with GCC; see the file COPYING3.  If not see
 #<http://www.gnu.org/licenses/>.
 
-# This makefile fragment is included in the ada Makefile (both Unix
-# and Windows).
+# This makefile fragment is included in the ada Makefile.
 
-# Its purpose is to allow the separate maintainence of the list of
-# GNATRTL objects, which frequently changes.
+# Its purpose is to allow the separate maintenance of the list of
+# GNATRTL objects and target pairs, which frequently changes.
+
+ifndef ADAC
+ADAC=$(CC)
+endif
 
 # Objects needed only for tasking
 GNATRTL_TASKING_OBJS= \
@@ -1957,19 +1960,17 @@ endif
 # Cygwin/Mingw32
 ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   # Cygwin provides a full Posix environment, and so we use the default
-  # versions of s-memory and g-socthi rather than the Windows-specific
-  # MinGW versions.  Ideally we would use all the default versions for
-  # Cygwin and none of the MinGW versions, but for historical reasons
-  # the Cygwin port has always been a CygMing frankenhybrid and it is
-  # a long-term project to disentangle them.
+  # versions g-socthi rather than the Windows-specific MinGW version.
+  # Ideally we would use all the default versions for Cygwin and none
+  # of the MinGW versions, but for historical reasons the Cygwin port
+  # has always been a CygMing frankenhybrid and it is a long-term project
+  # to disentangle them.
   ifeq ($(strip $(filter-out cygwin%,$(target_os))),)
     LIBGNAT_TARGET_PAIRS = \
-    s-memory.adb<libgnat/s-memory.adb \
     g-socthi.ads<libgnat/g-socthi.ads \
     g-socthi.adb<libgnat/g-socthi.adb
   else
     LIBGNAT_TARGET_PAIRS = \
-    s-memory.adb<libgnat/s-memory__mingw.adb \
     g-socthi.ads<libgnat/g-socthi__mingw.ads \
     g-socthi.adb<libgnat/g-socthi__mingw.adb
   endif
@@ -2465,6 +2466,34 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
+# RISC-V Linux
+ifeq ($(strip $(filter-out riscv% linux%,$(target_cpu) $(target_os))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<libgnarl/a-intnam__linux.ads \
+  s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
+  s-intman.adb<libgnarl/s-intman__posix.adb \
+  s-linux.ads<libgnarl/s-linux__riscv.ads \
+  s-osinte.adb<libgnarl/s-osinte__posix.adb \
+  s-osinte.ads<libgnarl/s-osinte__linux.ads \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
+  s-taprop.adb<libgnarl/s-taprop__linux.adb \
+  s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
+  s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
+  s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads \
+  s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  g-sercom.adb<libgnat/g-sercom__linux.adb \
+  system.ads<libgnat/system-linux-riscv.ads
+
+  TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
+
+  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
+  EH_MECHANISM=-gcc
+  THREADSLIB = -lpthread
+  GNATLIB_SHARED = gnatlib-shared-dual
+  GMEM_LIB = gmemlib
+  LIBRARY_VERSION := $(LIB_VERSION)
+endif
+
 # Darwin (Mac OS X)
 ifeq ($(strip $(filter-out darwin%,$(target_os))),)
   SO_OPTS = -shared-libgcc
@@ -2682,15 +2711,16 @@ setup-rts: force
 # optimization. We don't want inlining, either.
 
 s-traceb.o  : s-traceb.adb s-traceb.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(NO_INLINE_ADAFLAGS) \
-	      $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) \
+	  $(NO_INLINE_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) $< \
+	  $(OUTPUT_OPTION)
 
 # compile s-tasdeb.o without optimization and with debug info so that it is
 # always possible to set conditional breakpoints on tasks.
 
 s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \
-	      $< $(OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \
+	  $< $(OUTPUT_OPTION)
 
 # force no function reordering on a-except.o because of the exclusion bounds
 # mechanism (see the source file for more detailed information).
@@ -2699,35 +2729,36 @@ s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
 # use -O1 otherwise gdb isn't able to get a full backtrace on mips targets.
 
 a-except.o  : a-except.adb a-except.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(NO_INLINE_ADAFLAGS) \
-	      $(NO_REORDER_ADAFLAGS) -O1 $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) \
+	  $(NO_INLINE_ADAFLAGS) $(NO_REORDER_ADAFLAGS) -O1 $(ADA_INCLUDES) \
+	  $< $(OUTPUT_OPTION)
 
 # compile s-excdeb.o without optimization and with debug info to let the
 # debugger set breakpoints and inspect subprogram parameters on exception
 # related events.
 
 s-excdeb.o  : s-excdeb.adb s-excdeb.ads s-except.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \
-	      $< $(OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
+	  $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
 # force debugging information on s-assert.o so that it is always
 # possible to set breakpoint on assert failures.
 
 s-assert.o  : s-assert.adb s-assert.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
-	      $< $(OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
+	  $< $(OUTPUT_OPTION)
 
 # force debugging information on a-tags.o so that the debugger can find
 # the description of Ada.Tags.Type_Specific_Data.
 
 a-tags.o  : a-tags.adb a-tags.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
-	      $< $(OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
+	  $< $(OUTPUT_OPTION)
 
 # force no sibling call optimization on s-memory.o to avoid turning the
 # tail recursion in Alloc into a loop that confuses branch prediction.
 
 s-memory.o  : s-memory.adb s-memory.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) \
-	      $< $(OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) \
+	  $< $(OUTPUT_OPTION)
 

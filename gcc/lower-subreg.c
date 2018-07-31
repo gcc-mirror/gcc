@@ -497,7 +497,16 @@ find_decomposable_subregs (rtx *loc, enum classify_move_insn *pcmi)
 	     were the same number and size of pieces.  Hopefully this
 	     doesn't happen much.  */
 
-	  if (outer_words == 1 && inner_words > 1)
+	  if (outer_words == 1
+	      && inner_words > 1
+	      /* Don't allow to decompose floating point subregs of
+		 multi-word pseudos if the floating point mode does
+		 not have word size, because otherwise we'd generate
+		 a subreg with that floating mode from a different
+		 sized integral pseudo which is not allowed by
+		 validate_subreg.  */
+	      && (!FLOAT_MODE_P (GET_MODE (x))
+		  || outer_size == UNITS_PER_WORD))
 	    {
 	      bitmap_set_bit (decomposable_context, regno);
 	      iter.skip_subrtxes ();

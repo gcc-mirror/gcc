@@ -1475,7 +1475,7 @@ __gnat_set_file_time_name (char *name, time_t time_stamp)
   utimbuf.modtime = time_stamp;
 
   /* Set access time to now in local time.  */
-  t = time ((time_t) 0);
+  t = time (NULL);
   utimbuf.actime = mktime (localtime (&t));
 
   utime (name, &utimbuf);

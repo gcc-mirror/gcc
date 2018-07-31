@@ -3522,14 +3522,6 @@ package body Sinfo is
       return Flag13 (N);
    end Was_Originally_Stub;
 
-   function Withed_Body
-      (N : Node_Id) return Node_Id is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_With_Clause);
-      return Node1 (N);
-   end Withed_Body;
-
    --------------------------
    -- Field Set Procedures --
    --------------------------
@@ -5350,6 +5342,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Allocator);
+      pragma Assert (not Val
+        or else not Is_Static_Coextension (N));
       Set_Flag18 (N, Val);
    end Set_Is_Dynamic_Coextension;
 
@@ -5613,6 +5607,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Allocator);
+      pragma Assert (not Val
+        or else not Is_Dynamic_Coextension (N));
       Set_Flag14 (N, Val);
    end Set_Is_Static_Coextension;
 
@@ -6985,14 +6981,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Task_Body);
       Set_Flag13 (N, Val);
    end Set_Was_Originally_Stub;
-
-   procedure Set_Withed_Body
-     (N : Node_Id; Val : Node_Id) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_With_Clause);
-      Set_Node1 (N, Val);
-   end Set_Withed_Body;
 
    -------------------------
    -- Iterator Procedures --

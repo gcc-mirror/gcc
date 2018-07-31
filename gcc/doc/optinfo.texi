@@ -168,7 +168,7 @@ when any of the following flags is enabled
 
 @example
 int report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_RTL | TDF_DETAILS;
-dump_printf_loc (report_flags, locus,
+dump_printf_loc (report_flags, insn,
                  "loop turned into non-loop; it never loops.\n");
 @end example
 
@@ -181,7 +181,19 @@ Output gimple statement.
 
 Note that the above methods also have variants prefixed with
 @code{_loc}, such as @code{dump_printf_loc}, which are similar except
-they also output the source location information.
+they also output the source location information.  The @code{_loc} variants
+take a @code{const dump_location_t &}.  This class can be constructed from
+a @code{gimple *} or from a @code{rtx_insn *}, and so callers can pass
+a @code{gimple *} or a @code{rtx_insn *} as the @code{_loc} argument.
+The @code{dump_location_t} constructor will extract the source location
+from the statement or instruction, along with the profile count, and
+the location in GCC's own source code (or the plugin) from which the dump
+call was emitted.  Only the source location is currently used.
+There is also a @code{dump_user_location_t} class, capturing the
+source location and profile count, but not the dump emission location,
+so that locations in the user's code can be passed around.  This
+can also be constructed from a @code{gimple *} and from a @code{rtx_insn *},
+and it too can be passed as the @code{_loc} argument.
 
 @end ftable
 

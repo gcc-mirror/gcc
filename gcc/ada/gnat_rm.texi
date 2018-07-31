@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , May 22, 2018
+GNAT Reference Manual , Jun 06, 2018
 
 AdaCore
 
@@ -1761,7 +1761,7 @@ documentation.
 Syntax:
 
 @example
-pragma Assertion_Policy (CHECK | DISABLE | IGNORE);
+pragma Assertion_Policy (CHECK | DISABLE | IGNORE | SUPPRESSIBLE);
 
 pragma Assertion_Policy (
     ASSERTION_KIND => POLICY_IDENTIFIER

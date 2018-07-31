@@ -10,5 +10,4 @@ program p
   x = '0' // [character :: 1d1]     ! { dg-error "Incompatible typespec for" }
   x = '0' // [character :: (0.,1.)] ! { dg-error "Incompatible typespec for" }
   x = '0' // [character :: .true.]  ! { dg-error "Incompatible typespec for" }
-  x = '0' // [character :: null()]  ! { dg-error "Incompatible typespec for" }
 end

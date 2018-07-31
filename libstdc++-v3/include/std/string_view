@@ -96,8 +96,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr basic_string_view(const basic_string_view&) noexcept = default;
 
-      constexpr basic_string_view(const _CharT* __str) noexcept
-      : _M_len{__str == nullptr ? 0 : traits_type::length(__str)},
+      __attribute__((__nonnull__)) constexpr
+      basic_string_view(const _CharT* __str) noexcept
+      : _M_len{traits_type::length(__str)},
 	_M_str{__str}
       { }
 
@@ -270,11 +271,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return this->substr(__pos1, __n1).compare(__str.substr(__pos2, __n2));
       }
 
-      constexpr int
+      __attribute__((__nonnull__)) constexpr int
       compare(const _CharT* __str) const noexcept
       { return this->compare(basic_string_view{__str}); }
 
-      constexpr int
+      __attribute__((__nonnull__)) constexpr int
       compare(size_type __pos1, size_type __n1, const _CharT* __str) const
       { return this->substr(__pos1, __n1).compare(basic_string_view{__str}); }
 
@@ -296,7 +297,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr size_type
       find(const _CharT* __str, size_type __pos, size_type __n) const noexcept;
 
-      constexpr size_type
+      __attribute__((__nonnull__)) constexpr size_type
       find(const _CharT* __str, size_type __pos = 0) const noexcept
       { return this->find(__str, __pos, traits_type::length(__str)); }
 
@@ -310,7 +311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr size_type
       rfind(const _CharT* __str, size_type __pos, size_type __n) const noexcept;
 
-      constexpr size_type
+      __attribute__((__nonnull__)) constexpr size_type
       rfind(const _CharT* __str, size_type __pos = npos) const noexcept
       { return this->rfind(__str, __pos, traits_type::length(__str)); }
 
@@ -323,9 +324,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->find(__c, __pos); }
 
       constexpr size_type
-      find_first_of(const _CharT* __str, size_type __pos, size_type __n) const noexcept;
+      find_first_of(const _CharT* __str, size_type __pos,
+		    size_type __n) const noexcept;
 
-      constexpr size_type
+      __attribute__((__nonnull__)) constexpr size_type
       find_first_of(const _CharT* __str, size_type __pos = 0) const noexcept
       { return this->find_first_of(__str, __pos, traits_type::length(__str)); }
 
@@ -342,7 +344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       find_last_of(const _CharT* __str, size_type __pos,
 		   size_type __n) const noexcept;
 
-      constexpr size_type
+      __attribute__((__nonnull__)) constexpr size_type
       find_last_of(const _CharT* __str, size_type __pos = npos) const noexcept
       { return this->find_last_of(__str, __pos, traits_type::length(__str)); }
 
@@ -358,7 +360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       find_first_not_of(const _CharT* __str,
 			size_type __pos, size_type __n) const noexcept;
 
-      constexpr size_type
+      __attribute__((__nonnull__)) constexpr size_type
       find_first_not_of(const _CharT* __str, size_type __pos = 0) const noexcept
       {
 	return this->find_first_not_of(__str, __pos,
@@ -377,7 +379,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       find_last_not_of(const _CharT* __str,
 		       size_type __pos, size_type __n) const noexcept;
 
-      constexpr size_type
+      __attribute__((__nonnull__)) constexpr size_type
       find_last_not_of(const _CharT* __str,
 		       size_type __pos = npos) const noexcept
       {
@@ -553,10 +555,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   using wstring_view = basic_string_view<wchar_t>;
 #endif
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+
   using u16string_view = basic_string_view<char16_t>;
   using u32string_view = basic_string_view<char32_t>;
-#endif
 
   // [string.view.hash], hash support:
 
@@ -592,7 +593,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   template<>
     struct hash<u16string_view>
     : public __hash_base<size_t, u16string_view>
@@ -620,7 +620,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_fast_hash<hash<u32string_view>> : std::false_type
     { };
-#endif
 
   inline namespace literals
   {
@@ -638,7 +637,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string_view<wchar_t>{__str, __len}; }
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
     inline constexpr basic_string_view<char16_t>
     operator""sv(const char16_t* __str, size_t __len) noexcept
     { return basic_string_view<char16_t>{__str, __len}; }
@@ -646,7 +644,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr basic_string_view<char32_t>
     operator""sv(const char32_t* __str, size_t __len) noexcept
     { return basic_string_view<char32_t>{__str, __len}; }
-#endif
+
 #pragma GCC diagnostic pop
   } // namespace string_literals
   } // namespace literals

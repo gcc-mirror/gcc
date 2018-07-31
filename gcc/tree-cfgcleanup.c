@@ -346,8 +346,11 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
       if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun) || (e->flags & EDGE_EH))
 	return false;
       /* If goto_locus of any of the edges differs, prevent removing
-	 the forwarder block for -O0.  */
-      else if (optimize == 0 && e->goto_locus != locus)
+	 the forwarder block when not optimizing.  */
+      else if (!optimize
+	       && (LOCATION_LOCUS (e->goto_locus) != UNKNOWN_LOCATION
+		   || LOCATION_LOCUS (locus) != UNKNOWN_LOCATION)
+	       && e->goto_locus != locus)
 	return false;
   }
 
@@ -362,7 +365,10 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	case GIMPLE_LABEL:
 	  if (DECL_NONLOCAL (gimple_label_label (as_a <glabel *> (stmt))))
 	    return false;
-	  if (optimize == 0 && gimple_location (stmt) != locus)
+	  if (!optimize
+	      && (gimple_has_location (stmt)
+		  || LOCATION_LOCUS (locus) != UNKNOWN_LOCATION)
+	      && gimple_location (stmt) != locus)
 	    return false;
 	  break;
 

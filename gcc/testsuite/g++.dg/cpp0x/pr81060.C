@@ -7,5 +7,5 @@ template<typename... T> struct A
 };
 
 template<typename... T>
-const int A<T>::i // { dg-error "template definition of non-template" }
+const int A<T>::i // { dg-error "packs not expanded" }
 = []{ return 0; }(); // BOOM!

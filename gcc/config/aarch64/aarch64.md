@@ -251,9 +251,6 @@
 ;; will be disabled when !TARGET_SVE.
 (define_attr "sve" "no,yes" (const_string "no"))
 
-(define_attr "length" ""
-  (const_int 4))
-
 ;; Attribute that controls whether an alternative is enabled or not.
 ;; Currently it is only used to disable alternatives which touch fp or simd
 ;; registers when -mgeneral-regs-only is specified.
@@ -276,6 +273,14 @@
 ;; 0 :=: no
 ;; 1 :=: yes
 (define_attr "far_branch" "" (const_int 0))
+
+;; Attribute that specifies whether the alternative uses MOVPRFX.
+(define_attr "movprfx" "no,yes" (const_string "no"))
+
+(define_attr "length" ""
+  (cond [(eq_attr "movprfx" "yes")
+           (const_int 8)
+        ] (const_int 4)))
 
 ;; Strictly for compatibility with AArch32 in pipeline models, since AArch64 has
 ;; no predicated insns.
@@ -1161,13 +1166,14 @@
 )
 
 (define_insn "*movhf_aarch64"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w  ,w,m,r,m ,r")
-	(match_operand:HF 1 "general_operand"      "Y ,?rY, w,w,Ufc,Uvi,m,w,m,rY,r"))]
+  [(set (match_operand:HF 0 "nonimmediate_operand" "=w,w  , w,?r,w,w  ,w  ,w,m,r,m ,r")
+	(match_operand:HF 1 "general_operand"      "Y ,?rY,?r, w,w,Ufc,Uvi,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], HFmode)
     || aarch64_reg_or_fp_zero (operands[1], HFmode))"
   "@
    movi\\t%0.4h, #0
    fmov\\t%h0, %w1
+   dup\\t%w0.4h, %w1
    umov\\t%w0, %1.h[0]
    mov\\t%0.h[0], %1.h[0]
    fmov\\t%h0, %1
@@ -1177,10 +1183,10 @@
    ldrh\\t%w0, %1
    strh\\t%w1, %0
    mov\\t%w0, %w1"
-  [(set_attr "type" "neon_move,f_mcr,neon_to_gp,neon_move,fconsts, \
+  [(set_attr "type" "neon_move,f_mcr,neon_move,neon_to_gp, neon_move,fconsts, \
 		     neon_move,f_loads,f_stores,load_4,store_4,mov_reg")
-   (set_attr "simd" "yes,*,yes,yes,*,yes,*,*,*,*,*")
-   (set_attr "fp16"   "*,yes,*,*,yes,*,*,*,*,*,*")]
+   (set_attr "simd" "yes,*,yes,yes,yes,*,yes,*,*,*,*,*")
+   (set_attr "fp16"   "*,yes,*,*,*,yes,*,*,*,*,*,*")]
 )
 
 (define_insn "*movsf_aarch64"
@@ -1720,24 +1726,132 @@
   }
 )
 
+(define_expand "addv<mode>4"
+  [(match_operand:GPI 0 "register_operand")
+   (match_operand:GPI 1 "register_operand")
+   (match_operand:GPI 2 "register_operand")
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  emit_insn (gen_add<mode>3_compareV (operands[0], operands[1], operands[2]));
+  aarch64_gen_unlikely_cbranch (NE, CC_Vmode, operands[3]);
+
+  DONE;
+})
+
+(define_expand "uaddv<mode>4"
+  [(match_operand:GPI 0 "register_operand")
+   (match_operand:GPI 1 "register_operand")
+   (match_operand:GPI 2 "register_operand")
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  emit_insn (gen_add<mode>3_compareC (operands[0], operands[1], operands[2]));
+  aarch64_gen_unlikely_cbranch (NE, CC_Cmode, operands[3]);
+
+  DONE;
+})
+
 (define_expand "addti3"
   [(set (match_operand:TI 0 "register_operand" "")
 	(plus:TI (match_operand:TI 1 "register_operand" "")
-		 (match_operand:TI 2 "register_operand" "")))]
+		 (match_operand:TI 2 "aarch64_reg_or_imm" "")))]
   ""
 {
-  rtx low = gen_reg_rtx (DImode);
-  emit_insn (gen_adddi3_compareC (low, gen_lowpart (DImode, operands[1]),
-				  gen_lowpart (DImode, operands[2])));
+  rtx low_dest, op1_low, op2_low, high_dest, op1_high, op2_high;
 
-  rtx high = gen_reg_rtx (DImode);
-  emit_insn (gen_adddi3_carryin (high, gen_highpart (DImode, operands[1]),
-				 gen_highpart (DImode, operands[2])));
+  aarch64_addti_scratch_regs (operands[1], operands[2],
+			      &low_dest, &op1_low, &op2_low,
+			      &high_dest, &op1_high, &op2_high);
 
-  emit_move_insn (gen_lowpart (DImode, operands[0]), low);
-  emit_move_insn (gen_highpart (DImode, operands[0]), high);
+  if (op2_low == const0_rtx)
+    {
+      low_dest = op1_low;
+      if (!aarch64_pluslong_operand (op2_high, DImode))
+	op2_high = force_reg (DImode, op2_high);
+      emit_insn (gen_adddi3 (high_dest, op1_high, op2_high));
+    }
+  else
+    {
+      emit_insn (gen_adddi3_compareC (low_dest, op1_low,
+				      force_reg (DImode, op2_low)));
+      emit_insn (gen_adddi3_carryin (high_dest, op1_high,
+				     force_reg (DImode, op2_high)));
+    }
+
+  emit_move_insn (gen_lowpart (DImode, operands[0]), low_dest);
+  emit_move_insn (gen_highpart (DImode, operands[0]), high_dest);
+
   DONE;
 })
+
+(define_expand "addvti4"
+  [(match_operand:TI 0 "register_operand" "")
+   (match_operand:TI 1 "register_operand" "")
+   (match_operand:TI 2 "aarch64_reg_or_imm" "")
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  rtx low_dest, op1_low, op2_low, high_dest, op1_high, op2_high;
+
+  aarch64_addti_scratch_regs (operands[1], operands[2],
+			      &low_dest, &op1_low, &op2_low,
+			      &high_dest, &op1_high, &op2_high);
+
+  if (op2_low == const0_rtx)
+    {
+      low_dest = op1_low;
+      emit_insn (gen_adddi3_compareV (high_dest, op1_high,
+				      force_reg (DImode, op2_high)));
+    }
+  else
+    {
+      emit_insn (gen_adddi3_compareC (low_dest, op1_low,
+				      force_reg (DImode, op2_low)));
+      emit_insn (gen_adddi3_carryinV (high_dest, op1_high,
+				      force_reg (DImode, op2_high)));
+    }
+
+  emit_move_insn (gen_lowpart (DImode, operands[0]), low_dest);
+  emit_move_insn (gen_highpart (DImode, operands[0]), high_dest);
+
+  aarch64_gen_unlikely_cbranch (NE, CC_Vmode, operands[3]);
+  DONE;
+})
+
+(define_expand "uaddvti4"
+  [(match_operand:TI 0 "register_operand" "")
+   (match_operand:TI 1 "register_operand" "")
+   (match_operand:TI 2 "aarch64_reg_or_imm" "")
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  rtx low_dest, op1_low, op2_low, high_dest, op1_high, op2_high;
+
+  aarch64_addti_scratch_regs (operands[1], operands[2],
+			      &low_dest, &op1_low, &op2_low,
+			      &high_dest, &op1_high, &op2_high);
+
+  if (op2_low == const0_rtx)
+    {
+      low_dest = op1_low;
+      emit_insn (gen_adddi3_compareC (high_dest, op1_high,
+				      force_reg (DImode, op2_high)));
+    }
+  else
+    {
+      emit_insn (gen_adddi3_compareC (low_dest, op1_low,
+				      force_reg (DImode, op2_low)));
+      emit_insn (gen_adddi3_carryinC (high_dest, op1_high,
+				      force_reg (DImode, op2_high)));
+    }
+
+  emit_move_insn (gen_lowpart (DImode, operands[0]), low_dest);
+  emit_move_insn (gen_highpart (DImode, operands[0]), high_dest);
+
+  aarch64_gen_unlikely_cbranch (NE, CC_Cmode, operands[3]);
+  DONE;
+ })
 
 (define_insn "add<mode>3_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
@@ -1824,7 +1938,7 @@
 
 (define_insn "add<mode>3_compareC"
   [(set (reg:CC_C CC_REGNUM)
-	(ne:CC_C
+	(compare:CC_C
 	  (plus:<DWI>
 	    (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r"))
 	    (zero_extend:<DWI> (match_operand:GPI 2 "register_operand" "r")))
@@ -1837,10 +1951,71 @@
   [(set_attr "type" "alus_sreg")]
 )
 
+(define_insn "*add<mode>3_compareV_cconly_imm"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:<DWI>
+	    (sign_extend:<DWI> (match_operand:GPI 0 "register_operand" "r,r"))
+	    (match_operand:<DWI> 1 "const_scalar_int_operand" ""))
+	  (sign_extend:<DWI>
+	   (plus:GPI
+	    (match_dup 0)
+	    (match_operand:GPI 2 "aarch64_plus_immediate" "I,J")))))]
+  "INTVAL (operands[1]) == INTVAL (operands[2])"
+  "@
+  cmn\\t%<w>0, %<w>1
+  cmp\\t%<w>0, #%n1"
+  [(set_attr "type" "alus_imm")]
+)
+
+(define_insn "*add<mode>3_compareV_cconly"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:<DWI>
+	    (sign_extend:<DWI> (match_operand:GPI 0 "register_operand" "r"))
+	    (sign_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
+	  (sign_extend:<DWI> (plus:GPI (match_dup 0) (match_dup 1)))))]
+  ""
+  "cmn\\t%<w>0, %<w>1"
+  [(set_attr "type" "alus_sreg")]
+)
+
+(define_insn "*add<mode>3_compareV_imm"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:<DWI>
+	    (sign_extend:<DWI>
+	      (match_operand:GPI 1 "register_operand" "r,r"))
+	    (match_operand:GPI 2 "aarch64_plus_immediate" "I,J"))
+	  (sign_extend:<DWI>
+	    (plus:GPI (match_dup 1) (match_dup 2)))))
+   (set (match_operand:GPI 0 "register_operand" "=r,r")
+	(plus:GPI (match_dup 1) (match_dup 2)))]
+   ""
+   "@
+   adds\\t%<w>0, %<w>1, %<w>2
+   subs\\t%<w>0, %<w>1, #%n2"
+  [(set_attr "type" "alus_imm,alus_imm")]
+)
+
+(define_insn "add<mode>3_compareV"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:<DWI>
+	    (sign_extend:<DWI> (match_operand:GPI 1 "register_operand" "r"))
+	    (sign_extend:<DWI> (match_operand:GPI 2 "register_operand" "r")))
+	  (sign_extend:<DWI> (plus:GPI (match_dup 1) (match_dup 2)))))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(plus:GPI (match_dup 1) (match_dup 2)))]
+  ""
+  "adds\\t%<w>0, %<w>1, %<w>2"
+  [(set_attr "type" "alus_sreg")]
+)
+
 (define_insn "*adds_shift_imm_<mode>"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
-	 (plus:GPI (ASHIFT:GPI 
+	 (plus:GPI (ASHIFT:GPI
 		    (match_operand:GPI 1 "register_operand" "r")
 		    (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))
 		   (match_operand:GPI 3 "register_operand" "r"))
@@ -2207,6 +2382,138 @@
   [(set_attr "type" "adc_reg")]
 )
 
+(define_expand "add<mode>3_carryinC"
+  [(parallel
+     [(set (match_dup 3)
+	   (compare:CC_C
+	     (plus:<DWI>
+	       (plus:<DWI>
+		 (match_dup 4)
+		 (zero_extend:<DWI>
+		   (match_operand:GPI 1 "register_operand" "")))
+	       (zero_extend:<DWI>
+		 (match_operand:GPI 2 "register_operand" "")))
+	   (zero_extend:<DWI>
+	     (plus:GPI
+	       (plus:GPI (match_dup 5) (match_dup 1))
+	       (match_dup 2)))))
+      (set (match_operand:GPI 0 "register_operand")
+	   (plus:GPI
+	     (plus:GPI (match_dup 5) (match_dup 1))
+	     (match_dup 2)))])]
+   ""
+{
+  operands[3] = gen_rtx_REG (CC_Cmode, CC_REGNUM);
+  operands[4] = gen_rtx_NE (<DWI>mode, operands[3], const0_rtx);
+  operands[5] = gen_rtx_NE (<MODE>mode, operands[3], const0_rtx);
+})
+
+(define_insn "*add<mode>3_carryinC_zero"
+  [(set (reg:CC_C CC_REGNUM)
+	(compare:CC_C
+	  (plus:<DWI>
+	    (match_operand:<DWI> 2 "aarch64_carry_operation" "")
+	    (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
+	  (zero_extend:<DWI>
+	    (plus:GPI
+	      (match_operand:GPI 3 "aarch64_carry_operation" "")
+	      (match_dup 1)))))
+   (set (match_operand:GPI 0 "register_operand")
+	(plus:GPI (match_dup 3) (match_dup 1)))]
+   ""
+   "adcs\\t%<w>0, %<w>1, <w>zr"
+  [(set_attr "type" "adc_reg")]
+)
+
+(define_insn "*add<mode>3_carryinC"
+  [(set (reg:CC_C CC_REGNUM)
+	(compare:CC_C
+	  (plus:<DWI>
+	    (plus:<DWI>
+	      (match_operand:<DWI> 3 "aarch64_carry_operation" "")
+	      (zero_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
+	    (zero_extend:<DWI> (match_operand:GPI 2 "register_operand" "r")))
+	  (zero_extend:<DWI>
+	    (plus:GPI
+	      (plus:GPI
+		(match_operand:GPI 4 "aarch64_carry_operation" "")
+		(match_dup 1))
+	      (match_dup 2)))))
+   (set (match_operand:GPI 0 "register_operand")
+	(plus:GPI
+	  (plus:GPI (match_dup 4) (match_dup 1))
+	  (match_dup 2)))]
+   ""
+   "adcs\\t%<w>0, %<w>1, %<w>2"
+  [(set_attr "type" "adc_reg")]
+)
+
+(define_expand "add<mode>3_carryinV"
+  [(parallel
+     [(set (reg:CC_V CC_REGNUM)
+	   (compare:CC_V
+	     (plus:<DWI>
+	       (plus:<DWI>
+		 (match_dup 3)
+		 (sign_extend:<DWI>
+		   (match_operand:GPI 1 "register_operand" "")))
+	       (sign_extend:<DWI>
+		 (match_operand:GPI 2 "register_operand" "")))
+	   (sign_extend:<DWI>
+	     (plus:GPI
+	       (plus:GPI (match_dup 4) (match_dup 1))
+	       (match_dup 2)))))
+      (set (match_operand:GPI 0 "register_operand")
+	   (plus:GPI
+	     (plus:GPI (match_dup 4) (match_dup 1))
+	     (match_dup 2)))])]
+   ""
+{
+  rtx cc = gen_rtx_REG (CC_Cmode, CC_REGNUM);
+  operands[3] = gen_rtx_NE (<DWI>mode, cc, const0_rtx);
+  operands[4] = gen_rtx_NE (<MODE>mode, cc, const0_rtx);
+})
+
+(define_insn "*add<mode>3_carryinV_zero"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:<DWI>
+	    (match_operand:<DWI> 2 "aarch64_carry_operation" "")
+	    (sign_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
+	  (sign_extend:<DWI>
+	    (plus:GPI
+	      (match_operand:GPI 3 "aarch64_carry_operation" "")
+	      (match_dup 1)))))
+   (set (match_operand:GPI 0 "register_operand")
+	(plus:GPI (match_dup 3) (match_dup 1)))]
+   ""
+   "adcs\\t%<w>0, %<w>1, <w>zr"
+  [(set_attr "type" "adc_reg")]
+)
+
+(define_insn "*add<mode>3_carryinV"
+  [(set (reg:CC_V CC_REGNUM)
+	(compare:CC_V
+	  (plus:<DWI>
+	    (plus:<DWI>
+	      (match_operand:<DWI> 3 "aarch64_carry_operation" "")
+	      (sign_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
+	    (sign_extend:<DWI> (match_operand:GPI 2 "register_operand" "r")))
+	  (sign_extend:<DWI>
+	    (plus:GPI
+	      (plus:GPI
+		(match_operand:GPI 4 "aarch64_carry_operation" "")
+		(match_dup 1))
+	      (match_dup 2)))))
+   (set (match_operand:GPI 0 "register_operand")
+	(plus:GPI
+	  (plus:GPI (match_dup 4) (match_dup 1))
+	  (match_dup 2)))]
+   ""
+   "adcs\\t%<w>0, %<w>1, %<w>2"
+  [(set_attr "type" "adc_reg")]
+)
+
 (define_insn "*add_uxt<mode>_shift2"
   [(set (match_operand:GPI 0 "register_operand" "=rk")
 	(plus:GPI (and:GPI
@@ -2303,22 +2610,87 @@
    (set_attr "simd" "*,yes")]
 )
 
+(define_expand "subv<mode>4"
+  [(match_operand:GPI 0 "register_operand")
+   (match_operand:GPI 1 "aarch64_reg_or_zero")
+   (match_operand:GPI 2 "aarch64_reg_or_zero")
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  emit_insn (gen_sub<mode>3_compare1 (operands[0], operands[1], operands[2]));
+  aarch64_gen_unlikely_cbranch (NE, CC_Vmode, operands[3]);
+
+  DONE;
+})
+
+(define_expand "usubv<mode>4"
+  [(match_operand:GPI 0 "register_operand")
+   (match_operand:GPI 1 "aarch64_reg_or_zero")
+   (match_operand:GPI 2 "aarch64_reg_or_zero")
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  emit_insn (gen_sub<mode>3_compare1 (operands[0], operands[1], operands[2]));
+  aarch64_gen_unlikely_cbranch (LTU, CCmode, operands[3]);
+
+  DONE;
+})
+
 (define_expand "subti3"
   [(set (match_operand:TI 0 "register_operand" "")
-	(minus:TI (match_operand:TI 1 "register_operand" "")
+	(minus:TI (match_operand:TI 1 "aarch64_reg_or_zero" "")
 		  (match_operand:TI 2 "register_operand" "")))]
   ""
 {
-  rtx low = gen_reg_rtx (DImode);
-  emit_insn (gen_subdi3_compare1 (low, gen_lowpart (DImode, operands[1]),
-				  gen_lowpart (DImode, operands[2])));
+  rtx low_dest, op1_low, op2_low, high_dest, op1_high, op2_high;
 
-  rtx high = gen_reg_rtx (DImode);
-  emit_insn (gen_subdi3_carryin (high, gen_highpart (DImode, operands[1]),
-				 gen_highpart (DImode, operands[2])));
+  aarch64_subvti_scratch_regs (operands[1], operands[2],
+			       &low_dest, &op1_low, &op2_low,
+			       &high_dest, &op1_high, &op2_high);
 
-  emit_move_insn (gen_lowpart (DImode, operands[0]), low);
-  emit_move_insn (gen_highpart (DImode, operands[0]), high);
+  emit_insn (gen_subdi3_compare1 (low_dest, op1_low, op2_low));
+  emit_insn (gen_subdi3_carryin (high_dest, op1_high, op2_high));
+
+  emit_move_insn (gen_lowpart (DImode, operands[0]), low_dest);
+  emit_move_insn (gen_highpart (DImode, operands[0]), high_dest);
+  DONE;
+})
+
+(define_expand "subvti4"
+  [(match_operand:TI 0 "register_operand")
+   (match_operand:TI 1 "aarch64_reg_or_zero")
+   (match_operand:TI 2 "aarch64_reg_or_imm")
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  rtx low_dest, op1_low, op2_low, high_dest, op1_high, op2_high;
+
+  aarch64_subvti_scratch_regs (operands[1], operands[2],
+			       &low_dest, &op1_low, &op2_low,
+			       &high_dest, &op1_high, &op2_high);
+  aarch64_expand_subvti (operands[0], low_dest, op1_low, op2_low,
+			 high_dest, op1_high, op2_high);
+
+  aarch64_gen_unlikely_cbranch (NE, CC_Vmode, operands[3]);
+  DONE;
+})
+
+(define_expand "usubvti4"
+  [(match_operand:TI 0 "register_operand")
+   (match_operand:TI 1 "aarch64_reg_or_zero")
+   (match_operand:TI 2 "aarch64_reg_or_imm")
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  rtx low_dest, op1_low, op2_low, high_dest, op1_high, op2_high;
+
+  aarch64_subvti_scratch_regs (operands[1], operands[2],
+				    &low_dest, &op1_low, &op2_low,
+			       &high_dest, &op1_high, &op2_high);
+  aarch64_expand_subvti (operands[0], low_dest, op1_low, op2_low,
+			 high_dest, op1_high, op2_high);
+
+  aarch64_gen_unlikely_cbranch (LTU, CCmode, operands[3]);
   DONE;
 })
 
@@ -2345,6 +2717,22 @@
   ""
   "subs\\t%w0, %w1, %w2"
   [(set_attr "type" "alus_sreg")]
+)
+
+(define_insn "*sub<mode>3_compare1_imm"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (match_operand:GPI 1 "aarch64_reg_or_zero" "rZ,rZ")
+	  (match_operand:GPI 2 "aarch64_plus_immediate" "I,J")))
+   (set (match_operand:GPI 0 "register_operand" "=r,r")
+	(plus:GPI
+	  (match_dup 1)
+	  (match_operand:GPI 3 "aarch64_plus_immediate" "J,I")))]
+  "UINTVAL (operands[2]) == -UINTVAL (operands[3])"
+  "@
+  subs\\t%<w>0, %<w>1, #%n3
+  adds\\t%<w>0, %<w>1, %3"
+  [(set_attr "type" "alus_imm")]
 )
 
 (define_insn "sub<mode>3_compare1"
@@ -2660,6 +3048,85 @@
 	    (match_operand:SI 2 "register_operand" "r"))))]
    ""
    "sbc\\t%w0, %w1, %w2"
+  [(set_attr "type" "adc_reg")]
+)
+
+(define_expand "sub<mode>3_carryinCV"
+  [(parallel
+     [(set (reg:CC CC_REGNUM)
+	   (compare:CC
+	     (sign_extend:<DWI>
+	       (match_operand:GPI 1 "aarch64_reg_or_zero" ""))
+	     (plus:<DWI>
+	       (sign_extend:<DWI>
+		 (match_operand:GPI 2 "register_operand" ""))
+	       (ltu:<DWI> (reg:CC CC_REGNUM) (const_int 0)))))
+      (set (match_operand:GPI 0 "register_operand" "")
+	   (minus:GPI
+	     (minus:GPI (match_dup 1) (match_dup 2))
+	     (ltu:GPI (reg:CC CC_REGNUM) (const_int 0))))])]
+   ""
+)
+
+(define_insn "*sub<mode>3_carryinCV_z1_z2"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (const_int 0)
+	  (match_operand:<DWI> 2 "aarch64_borrow_operation" "")))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(neg:GPI (match_operand:GPI 1 "aarch64_borrow_operation" "")))]
+   ""
+   "sbcs\\t%<w>0, <w>zr, <w>zr"
+  [(set_attr "type" "adc_reg")]
+)
+
+(define_insn "*sub<mode>3_carryinCV_z1"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (const_int 0)
+	  (plus:<DWI>
+	    (sign_extend:<DWI>
+	      (match_operand:GPI 1 "register_operand" "r"))
+	    (match_operand:<DWI> 2 "aarch64_borrow_operation" ""))))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(minus:GPI
+	  (neg:GPI (match_dup 1))
+	  (match_operand:GPI 3 "aarch64_borrow_operation" "")))]
+   ""
+   "sbcs\\t%<w>0, <w>zr, %<w>1"
+  [(set_attr "type" "adc_reg")]
+)
+
+(define_insn "*sub<mode>3_carryinCV_z2"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (sign_extend:<DWI>
+	    (match_operand:GPI 1 "register_operand" "r"))
+	  (match_operand:<DWI> 2 "aarch64_borrow_operation" "")))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(minus:GPI
+	  (match_dup 1)
+	  (match_operand:GPI 3 "aarch64_borrow_operation" "")))]
+   ""
+   "sbcs\\t%<w>0, %<w>1, <w>zr"
+  [(set_attr "type" "adc_reg")]
+)
+
+(define_insn "*sub<mode>3_carryinCV"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (sign_extend:<DWI>
+	    (match_operand:GPI 1 "register_operand" "r"))
+	  (plus:<DWI>
+	    (sign_extend:<DWI>
+	      (match_operand:GPI 2 "register_operand" "r"))
+	    (match_operand:<DWI> 3 "aarch64_borrow_operation" ""))))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(minus:GPI
+	  (minus:GPI (match_dup 1) (match_dup 2))
+	  (match_operand:GPI 4 "aarch64_borrow_operation" "")))]
+   ""
+   "sbcs\\t%<w>0, %<w>1, %<w>2"
   [(set_attr "type" "adc_reg")]
 )
 

@@ -9,7 +9,7 @@ f1 (unsigned long x)
   long f = (x << 12) | (x >> (64 - 12));
   long g = f;
   asm volatile ("" : "+r" (f));
-  vv++;		/* { dg-final { gdb-test 12 "g" "f" } } */
+  vv++;		/* { dg-final { gdb-test . "g" "f" } } */
   return f;
 }
 
@@ -19,7 +19,7 @@ f2 (unsigned long x, int y)
   long f = (x << y) | (x >> (64 - y));
   long g = f;
   asm volatile ("" : "+r" (f));
-  vv++;		/* { dg-final { gdb-test 22 "g" "f" } } */
+  vv++;		/* { dg-final { gdb-test . "g" "f" } } */
   return f;
 }
 
@@ -29,7 +29,7 @@ f3 (unsigned long x, int y)
   long f = (x >> y) | (x << (64 - y));
   long g = f;
   asm volatile ("" : "+r" (f));
-  vv++;		/* { dg-final { gdb-test 32 "g" "f" } } */
+  vv++;		/* { dg-final { gdb-test . "g" "f" } } */
   return f;
 }
 
@@ -39,7 +39,7 @@ f4 (unsigned int x)
   unsigned int f = (x << 12) | (x >> (32 - 12));
   unsigned int g = f;
   asm volatile ("" : "+r" (f));
-  vv++;		/* { dg-final { gdb-test 42 "g" "f" } } */
+  vv++;		/* { dg-final { gdb-test . "g" "f" } } */
   return f;
 }
 
@@ -49,7 +49,7 @@ f5 (unsigned int x, int y)
   unsigned int f = (x << y) | (x >> (32 - y));
   unsigned int g = f;
   asm volatile ("" : "+r" (f));
-  vv++;		/* { dg-final { gdb-test 52 "g" "f" } } */
+  vv++;		/* { dg-final { gdb-test . "g" "f" } } */
   return f;
 }
 
@@ -59,7 +59,7 @@ f6 (unsigned int x, int y)
   unsigned int f = (x >> y) | (x << (32 - y));
   unsigned int g = f;
   asm volatile ("" : "+r" (f));
-  vv++;		/* { dg-final { gdb-test 62 "g" "f" } } */
+  vv++;		/* { dg-final { gdb-test . "g" "f" } } */
   return f;
 }
 

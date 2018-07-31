@@ -396,7 +396,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Cp>
     struct __is_member_object_pointer_helper<_Tp _Cp::*>
-    : public integral_constant<bool, !is_function<_Tp>::value> { };
+    : public __not_<is_function<_Tp>>::type { };
 
   /// is_member_object_pointer
   template<typename _Tp>
@@ -411,7 +411,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Cp>
     struct __is_member_function_pointer_helper<_Tp _Cp::*>
-    : public integral_constant<bool, is_function<_Tp>::value> { };
+    : public is_function<_Tp>::type { };
 
   /// is_member_function_pointer
   template<typename _Tp>
@@ -603,7 +603,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_compound
   template<typename _Tp>
     struct is_compound
-    : public integral_constant<bool, !is_fundamental<_Tp>::value> { };
+    : public __not_<is_fundamental<_Tp>>::type { };
 
   template<typename _Tp>
     struct __is_member_pointer_helper
@@ -826,8 +826,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __do_is_nt_destructible_impl
   {
     template<typename _Tp>
-      static integral_constant<bool, noexcept(declval<_Tp&>().~_Tp())>
-        __test(int);
+      static __bool_constant<noexcept(declval<_Tp&>().~_Tp())>
+      __test(int);
 
     template<typename>
       static false_type __test(...);
@@ -1159,21 +1159,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_implicitly_default_constructible_impl
-      : public __do_is_implicitly_default_constructible_impl
-  {
-    typedef decltype(__test(declval<_Tp>())) type;
-  };
+    : public __do_is_implicitly_default_constructible_impl
+    {
+      typedef decltype(__test(declval<_Tp>())) type;
+    };
 
   template<typename _Tp>
     struct __is_implicitly_default_constructible_safe
-      : public __is_implicitly_default_constructible_impl<_Tp>::type
-  { };
+    : public __is_implicitly_default_constructible_impl<_Tp>::type
+    { };
 
   template <typename _Tp>
     struct __is_implicitly_default_constructible
-      : public __and_<is_default_constructible<_Tp>,
-                      __is_implicitly_default_constructible_safe<_Tp>>
-  { };
+    : public __and_<is_default_constructible<_Tp>,
+		    __is_implicitly_default_constructible_safe<_Tp>>
+    { };
 
   /// is_trivially_copy_constructible
 
@@ -1234,9 +1234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_trivially_copy_assignable_impl<_Tp, true>
-    : public __and_<is_copy_assignable<_Tp>,
-		    integral_constant<bool,
-			__is_trivially_assignable(_Tp&, const _Tp&)>>
+    : public __bool_constant<__is_trivially_assignable(_Tp&, const _Tp&)>
     { };
 
   template<typename _Tp>
@@ -1255,9 +1253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_trivially_move_assignable_impl<_Tp, true>
-    : public __and_<is_move_assignable<_Tp>,
-		    integral_constant<bool,
-			__is_trivially_assignable(_Tp&, _Tp&&)>>
+    : public __bool_constant<__is_trivially_assignable(_Tp&, _Tp&&)>
     { };
 
   template<typename _Tp>
@@ -1268,8 +1264,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_trivially_destructible
   template<typename _Tp>
     struct is_trivially_destructible
-    : public __and_<is_destructible<_Tp>, integral_constant<bool,
-			      __has_trivial_destructor(_Tp)>>
+    : public __and_<is_destructible<_Tp>,
+		    __bool_constant<__has_trivial_destructor(_Tp)>>
     { };
 
 
@@ -1341,13 +1337,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
            bool = __or_<is_void<_From>, is_function<_To>,
                         is_array<_To>>::value>
     struct __is_convertible_helper
-    { typedef typename is_void<_To>::type type; };
+    {
+      typedef typename is_void<_To>::type type;
+#if __cplusplus > 201703L
+      typedef type __is_nothrow_type;
+#endif
+    };
 
   template<typename _From, typename _To>
     class __is_convertible_helper<_From, _To, false>
     {
-       template<typename _To1>
-	static void __test_aux(_To1);
+      template<typename _To1>
+	static void __test_aux(_To1) noexcept;
 
       template<typename _From1, typename _To1,
 	       typename = decltype(__test_aux<_To1>(std::declval<_From1>()))>
@@ -1358,8 +1359,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static false_type
 	__test(...);
 
+#if __cplusplus > 201703L
+      template<typename _From1, typename _To1,
+	       bool _NoEx = noexcept(__test_aux<_To1>(std::declval<_From1>()))>
+	static __bool_constant<_NoEx>
+	__test_nothrow(int);
+
+      template<typename, typename>
+	static false_type
+	__test_nothrow(...);
+#endif
+
     public:
       typedef decltype(__test<_From, _To>(0)) type;
+
+#if __cplusplus > 201703L
+      typedef decltype(__test_nothrow<_From, _To>(0)) __is_nothrow_type;
+#endif
     };
 
 
@@ -1369,6 +1385,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_convertible_helper<_From, _To>::type
     { };
 
+#if __cplusplus > 201703L
+  /// is_nothrow_convertible
+  template<typename _From, typename _To>
+    struct is_nothrow_convertible
+    : public __is_convertible_helper<_From, _To>::__is_nothrow_type
+    { };
+
+  /// is_nothrow_convertible_v
+  template<typename _From, typename _To>
+    inline constexpr bool is_nothrow_convertible_v
+      = is_nothrow_convertible<_From, _To>::value;
+#endif // C++2a
 
   // Const-volatile modifications.
 
@@ -2331,7 +2359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __invoke_result<_Functor, _ArgTypes...>
     { };
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
   /// Alias template for aligned_storage
   template<size_t _Len, size_t _Align =
 	    __alignof__(typename __aligned_storage_msa<_Len>::__type)>
@@ -2363,11 +2391,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Alias template for result_of
   template<typename _Tp>
     using result_of_t = typename result_of<_Tp>::type;
-#endif
+#endif // C++14
 
+  // __enable_if_t (std::enable_if_t for C++11)
+  template<bool _Cond, typename _Tp = void>
+    using __enable_if_t = typename enable_if<_Cond, _Tp>::type;
+
+  // __void_t (std::void_t for C++11)
   template<typename...> using __void_t = void;
 
-#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+#if __cplusplus >= 201703L || !defined(__STRICT_ANSI__) // c++17 or gnu++11
 #define __cpp_lib_void_t 201411
   /// A metafunction that always yields void, used for detecting valid types.
   template<typename...> using void_t = void;
@@ -2990,6 +3023,13 @@ template <typename _From, typename _To>
 
   template<typename _Tp>
     using remove_cvref_t = __remove_cvref_t<_Tp>;
+
+  /// Identity metafunction.
+  template<typename _Tp>
+    struct type_identity { using type = _Tp; };
+
+  template<typename _Tp>
+    using type_identity_t = typename type_identity<_Tp>::type;
 
 #endif // C++2a
 

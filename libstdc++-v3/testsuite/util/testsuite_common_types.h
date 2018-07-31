@@ -687,6 +687,26 @@ namespace __gnu_test
   };
 
 #if __cplusplus >= 201103L
+  // Generator to test non-explicit default constructor.
+  struct implicitly_default_constructible
+  {
+    template<typename _Tp>
+      void
+      operator()()
+      {
+	struct _Concept
+	{
+	  struct Aggregate { _Tp v; };
+
+	  void __constraint()
+	  { Aggregate __v __attribute__((unused)) = { }; }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
+
   // Generator to test default constructor.
   struct constexpr_default_constructible
   {

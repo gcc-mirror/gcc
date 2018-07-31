@@ -1,3 +1,61 @@
+2018-07-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/ieee754-df.S: Fix comment for code working on
+	architectures >= 4.
+	* config/arm/ieee754-sf.S: Likewise.
+
+2018-07-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	Removed.
+
+2018-07-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* configure: Regenerated.
+
+2018-06-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (install_leaf): Use enable_gcov instead of
+	enable_libgcov.
+
+2018-06-27  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* configure.ac: Add --disable-gcov option.
+	* configure: Regenerate.
+	* Makefile.in: Honour @enable_gcov@.
+
+2018-06-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/lib1funcs.S (__ARM_ARCH__): Remove definitions, use
+	__ARM_ARCH and __ARM_FEATURE_CLZ instead.
+	(HAVE_ARM_CLZ): Remove definition, use __ARM_FEATURE_CLZ instead.
+	* config/arm/ieee754-df.S: Use __ARM_FEATURE_CLZ instead of
+	__ARM_ARCH__.
+	* config/arm/ieee754-sf.S: Likewise.
+	* config/arm/libunwind.S: Use __ARM_ARCH instead of __ARM_ARCH__.
+
+2018-06-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/ieee754-df.S: Remove code for __ARM_ARCH__ < 4, no
+	longer supported.
+	* config/arm/ieee754-sf.S: Likewise.
+
+2018-06-20  Than McIntosh  <thanm@google.com>
+
+	PR libgcc/86213
+	* generic-morestack.c (allocate_segment): Move calls to getenv and
+	getpagesize to __morestack_load_mmap.
+	(__morestack_load_mmap) Initialize static_pagesize and
+	use_guard_page here so as to avoid clobbering SSE regs during a
+	__morestack call.
+
+2018-06-18  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/t-float128 (FP128_CFLAGS_SW): Compile float128
+	support modules with -mno-gnu-attribute.
+	* config/rs6000/t-float128-hw (FP128_CFLAGS_HW): Likewise.
+
 2018-06-07  Olivier Hainque  <hainque@adacore.com>
 
 	* config/t-vxworks (LIBGCC_INCLUDES): Add

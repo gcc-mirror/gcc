@@ -228,7 +228,7 @@ move_elim_pass (void)
     }
 
   if (dump_file)
-    print_rtl_with_bb (dump_file, get_insns (), 0);
+    print_rtl_with_bb (dump_file, get_insns (), TDF_NONE);
 
   return 0;
 }
@@ -4317,7 +4317,7 @@ rl78_reorg (void)
   if (dump_file)
     {
       fprintf (dump_file, "\n================DEVIRT:=AFTER=ALLOC=PHYSICAL=REGISTERS================\n");
-      print_rtl_with_bb (dump_file, get_insns (), 0);
+      print_rtl_with_bb (dump_file, get_insns (), TDF_NONE);
     }
 
   rl78_propogate_register_origins ();
@@ -4326,7 +4326,7 @@ rl78_reorg (void)
   if (dump_file)
     {
       fprintf (dump_file, "\n================DEVIRT:=AFTER=PROPOGATION=============================\n");
-      print_rtl_with_bb (dump_file, get_insns (), 0);
+      print_rtl_with_bb (dump_file, get_insns (), TDF_NONE);
       fprintf (dump_file, "\n======================================================================\n");
     }
 
