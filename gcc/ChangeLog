@@ -1,3 +1,9 @@
+2018-08-01  Tom de Vries  <tdevries@suse.de>
+
+	PR target/86800
+	* config/nvptx/nvptx.c (TARGET_HAVE_SPECULATION_SAFE_VALUE): Define to
+	speculation_safe_value_not_needed.
+
 2018-08-01  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (visit_phi): Compare invariant addresses
