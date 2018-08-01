@@ -1,5 +1,16 @@
 2018-08-01  Martin Liska  <mliska@suse.cz>
 
+	* gcc.dg/tree-prof/stringop-1.c: Adjust scanned pattern.
+	* gcc.dg/tree-prof/stringop-2.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-1.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-2.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-3.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-4.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-5.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-7.c: Likewise.
+
+2018-08-01  Martin Liska  <mliska@suse.cz>
+
         PR value-prof/35543
 	* gcc.dg/tree-prof/val-prof-7.c: Add __builtin_memmove.
 

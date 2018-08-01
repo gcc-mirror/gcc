@@ -13,5 +13,5 @@ main()
 	return 0;
 }
 /* autofdo does not do value profiling so far */
-/* { dg-final-use-not-autofdo { scan-ipa-dump "Div.mod by constant b.*=997 transformation on insn" "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Transformation done: div.mod by constant 997" "profile" } } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */
