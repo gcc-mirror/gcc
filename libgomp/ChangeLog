@@ -1,3 +1,11 @@
+2018-08-01  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris <jnorris@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (struct map): Removed.
+	(map_init, map_pop): Remove use of struct map. (map_push):
+	Likewise and change argument list.
+	* testsuite/libgomp.oacc-c-c++-common/mapping-1.c: New
+
 2018-08-01  Tom de Vries  <tdevries@suse.de>
 
 	* plugin/cuda-lib.def: New file.  Factor out of ...

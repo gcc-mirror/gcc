@@ -177,13 +177,6 @@ struct nvptx_thread
   struct ptx_device *ptx_dev;
 };
 
-struct map
-{
-  int     async;
-  size_t  size;
-  char    mappings[0];
-};
-
 static bool
 map_init (struct ptx_stream *s)
 {
@@ -217,16 +210,12 @@ map_fini (struct ptx_stream *s)
 static void
 map_pop (struct ptx_stream *s)
 {
-  struct map *m;
-
   assert (s != NULL);
   assert (s->h_next);
   assert (s->h_prev);
   assert (s->h_tail);
 
-  m = s->h_tail;
-
-  s->h_tail += m->size;
+  s->h_tail = s->h_next;
 
   if (s->h_tail >= s->h_end)
     s->h_tail = s->h_begin + (int) (s->h_tail - s->h_end);
@@ -244,37 +233,27 @@ map_pop (struct ptx_stream *s)
 }
 
 static void
-map_push (struct ptx_stream *s, int async, size_t size, void **h, void **d)
+map_push (struct ptx_stream *s, size_t size, void **h, void **d)
 {
   int left;
   int offset;
-  struct map *m;
 
   assert (s != NULL);
 
   left = s->h_end - s->h_next;
-  size += sizeof (struct map);
 
   assert (s->h_prev);
   assert (s->h_next);
 
   if (size >= left)
     {
-      m = s->h_prev;
-      m->size += left;
-      s->h_next = s->h_begin;
-
-      if (s->h_next + size > s->h_end)
-	GOMP_PLUGIN_fatal ("unable to push map");
+      assert (s->h_next == s->h_prev);
+      s->h_next = s->h_prev = s->h_tail = s->h_begin;
     }
 
   assert (s->h_next);
 
-  m = s->h_next;
-  m->async = async;
-  m->size = size;
-
-  offset = (void *)&m->mappings[0] - s->h;
+  offset = s->h_next - s->h;
 
   *d = (void *)(s->d + offset);
   *h = (void *)(s->h + offset);
@@ -1210,7 +1189,7 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   /* This reserves a chunk of a pre-allocated page of memory mapped on both
      the host and the device. HP is a host pointer to the new chunk, and DP is
      the corresponding device pointer.  */
-  map_push (dev_str, async, mapnum * sizeof (void *), &hp, &dp);
+  map_push (dev_str, mapnum * sizeof (void *), &hp, &dp);
 
   GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
 
