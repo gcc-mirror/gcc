@@ -9316,6 +9316,65 @@ output_init_element (location_t loc, tree value, tree origtype,
     output_pending_init_elements (0, braced_init_obstack);
 }
 
+/* For two FIELD_DECLs in the same chain, return -1 if field1
+   comes before field2, 1 if field1 comes after field2 and
+   0 if field1 == field2.  */
+
+static int
+init_field_decl_cmp (tree field1, tree field2)
+{
+  if (field1 == field2)
+    return 0;
+
+  tree bitpos1 = bit_position (field1);
+  tree bitpos2 = bit_position (field2);
+  if (tree_int_cst_equal (bitpos1, bitpos2))
+    {
+      /* If one of the fields has non-zero bitsize, then that
+	 field must be the last one in a sequence of zero
+	 sized fields, fields after it will have bigger
+	 bit_position.  */
+      if (TREE_TYPE (field1) != error_mark_node
+	  && COMPLETE_TYPE_P (TREE_TYPE (field1))
+	  && integer_nonzerop (TREE_TYPE (field1)))
+	return 1;
+      if (TREE_TYPE (field2) != error_mark_node
+	  && COMPLETE_TYPE_P (TREE_TYPE (field2))
+	  && integer_nonzerop (TREE_TYPE (field2)))
+	return -1;
+      /* Otherwise, fallback to DECL_CHAIN walk to find out
+	 which field comes earlier.  Walk chains of both
+	 fields, so that if field1 and field2 are close to each
+	 other in either order, it is found soon even for large
+	 sequences of zero sized fields.  */
+      tree f1 = field1, f2 = field2;
+      while (1)
+	{
+	  f1 = DECL_CHAIN (f1);
+	  f2 = DECL_CHAIN (f2);
+	  if (f1 == NULL_TREE)
+	    {
+	      gcc_assert (f2);
+	      return 1;
+	    }
+	  if (f2 == NULL_TREE)
+	    return -1;
+	  if (f1 == field2)
+	    return -1;
+	  if (f2 == field1)
+	    return 1;
+	  if (!tree_int_cst_equal (bit_position (f1), bitpos1))
+	    return 1;
+	  if (!tree_int_cst_equal (bit_position (f2), bitpos1))
+	    return -1;
+	}
+    }
+  else if (tree_int_cst_lt (bitpos1, bitpos2))
+    return -1;
+  else
+    return 1;
+}
+
 /* Output any pending elements which have become next.
    As we output elements, constructor_unfilled_{fields,index}
    advances, which may cause other elements to become next;
@@ -9387,25 +9446,18 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
 	}
       else if (RECORD_OR_UNION_TYPE_P (constructor_type))
 	{
-	  tree ctor_unfilled_bitpos, elt_bitpos;
-
 	  /* If the current record is complete we are done.  */
 	  if (constructor_unfilled_fields == NULL_TREE)
 	    break;
 
-	  ctor_unfilled_bitpos = bit_position (constructor_unfilled_fields);
-	  elt_bitpos = bit_position (elt->purpose);
-	  /* We can't compare fields here because there might be empty
-	     fields in between.  */
-	  if (tree_int_cst_equal (elt_bitpos, ctor_unfilled_bitpos))
-	    {
-	      constructor_unfilled_fields = elt->purpose;
-	      output_init_element (input_location, elt->value, elt->origtype,
-				   true, TREE_TYPE (elt->purpose),
-				   elt->purpose, false, false,
-				   braced_init_obstack);
-	    }
-	  else if (tree_int_cst_lt (ctor_unfilled_bitpos, elt_bitpos))
+	  int cmp = init_field_decl_cmp (constructor_unfilled_fields,
+					 elt->purpose);
+	  if (cmp == 0)
+	    output_init_element (input_location, elt->value, elt->origtype,
+				 true, TREE_TYPE (elt->purpose),
+				 elt->purpose, false, false,
+				 braced_init_obstack);
+	  else if (cmp < 0)
 	    {
 	      /* Advance to the next smaller node.  */
 	      if (elt->left)
@@ -9431,8 +9483,8 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
 		    elt = elt->parent;
 		  elt = elt->parent;
 		  if (elt
-		      && (tree_int_cst_lt (ctor_unfilled_bitpos,
-					   bit_position (elt->purpose))))
+		      && init_field_decl_cmp (constructor_unfilled_fields,
+					      elt->purpose) < 0)
 		    {
 		      next = elt->purpose;
 		      break;
