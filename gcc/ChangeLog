@@ -1,5 +1,15 @@
 2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_create_data_ref_ptr): Remove inv_p
+	parameter.
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Likewise.
+	When creating an iv, assert that the step is not known to be zero.
+	(vect_setup_realignment): Update call accordingly.
+	* tree-vect-stmts.c (vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.  Handle VMAT_INVARIANT separately.
+
+2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_stmt_to_vectorize): New function.
 	* tree-vect-loop.c (vect_update_vf_for_slp): Use it.
 	(vectorizable_reduction): Likewise.
