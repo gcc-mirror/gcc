@@ -1,5 +1,12 @@
 2018-08-01  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/rs6000/rs6000.md (speculation_barrier): Renamed from
+	rs6000_speculation_barrier.
+	* config/rs6000/rs6000.c (rs6000_expand_builtin): Adjust for
+	new barrier pattern name.
+
+2018-08-01  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/i386/i386.md (unspecv): Add UNSPECV_SPECULATION_BARRIER.
 	(speculation_barrier): New insn.
 
