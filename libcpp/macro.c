@@ -312,7 +312,7 @@ static cpp_macro *create_iso_definition (cpp_reader *);
 
 /* #define directive parsing and handling.  */
 
-static cpp_token *lex_expansion_token (cpp_reader *, cpp_macro *);
+static cpp_macro *lex_expansion_token (cpp_reader *, cpp_macro *);
 static bool warn_of_redefinition (cpp_reader *, cpp_hashnode *,
 				  const cpp_macro *);
 static bool parse_params (cpp_reader *, unsigned *, bool *);
@@ -1234,13 +1234,14 @@ funlike_invocation_p (cpp_reader *pfile, cpp_hashnode *node,
 static inline unsigned int
 macro_real_token_count (const cpp_macro *macro)
 {
-  unsigned int i;
   if (__builtin_expect (!macro->extra_tokens, true))
     return macro->count;
-  for (i = 0; i < macro->count; i++)
-    if (macro->exp.tokens[i].type == CPP_PASTE)
-      return i;
-  abort ();
+
+  for (unsigned i = macro->count; i--;)
+    if (macro->exp.tokens[i].type != CPP_PASTE)
+      return i + 1;
+
+  return 0;
 }
 
 /* Push the context of a macro with hash entry NODE onto the context
@@ -1779,7 +1780,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	      arg->stringified = stringify_arg (pfile, arg);
 	  }
 	else if ((src->flags & PASTE_LEFT)
-		 || (src > macro->exp.tokens && (src[-1].flags & PASTE_LEFT)))
+		 || (src != macro->exp.tokens && (src[-1].flags & PASTE_LEFT)))
 	  total += arg->count - 1;
 	else
 	  {
@@ -3236,13 +3237,15 @@ parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
 
 /* Lex a token from the expansion of MACRO, but mark parameters as we
    find them and warn of traditional stringification.  */
-static cpp_token *
+static cpp_macro *
 lex_expansion_token (cpp_reader *pfile, cpp_macro *macro)
 {
-  void *base = _cpp_reserve_room (pfile, macro->count * sizeof (cpp_token),
-				  sizeof (cpp_token));
+  macro = (cpp_macro *)_cpp_reserve_room (pfile,
+					  sizeof (cpp_macro) - sizeof (cpp_token)
+					  + macro->count * sizeof (cpp_token),
+					  sizeof (cpp_token));
   cpp_token *saved_cur_token = pfile->cur_token;
-  pfile->cur_token = &((cpp_token *) base)[macro->count++];
+  pfile->cur_token = &macro->exp.tokens[macro->count];
   cpp_token *token = _cpp_lex_direct (pfile);
   pfile->cur_token = saved_cur_token;
 
@@ -3260,7 +3263,7 @@ lex_expansion_token (cpp_reader *pfile, cpp_macro *macro)
 	   && (token->type == CPP_STRING || token->type == CPP_CHAR))
     check_trad_stringification (pfile, macro, &token->val.str);
 
-  return token;
+  return macro;
 }
 
 static cpp_macro *
@@ -3335,7 +3338,10 @@ create_iso_definition (cpp_reader *pfile)
 	}
     }
 
-  macro = _cpp_new_macro (pfile, cmk_macro);
+  macro = _cpp_construct_macro (pfile, cmk_macro,
+				_cpp_reserve_room (pfile, 0,
+						   sizeof (cpp_macro)));
+
   if (!token)
     {
       macro->variadic = varadic;
@@ -3345,17 +3351,19 @@ create_iso_definition (cpp_reader *pfile)
     }
   else
     {
-      /* Preserve the token we peeked.  */
-      void *base = _cpp_reserve_room (pfile, 0, sizeof (cpp_token));
-      *(cpp_token *)base = *token;
-      token = (cpp_token *)base;
+      /* Preserve the token we peeked, there is already a single slot for it.  */
+      macro->exp.tokens[0] = *token;
+      token = &macro->exp.tokens[0];
       macro->count = 1;
     }
 
   for (vaopt_state vaopt_tracker (pfile, macro->variadic, true);; token = NULL)
     {
       if (!token)
-	token = lex_expansion_token (pfile, macro);
+	{
+	  macro = lex_expansion_token (pfile, macro);
+	  token = &macro->exp.tokens[macro->count++];
+	}
 
       /* Check the stringifying # constraint 6.10.3.2.1 of
 	 function-like macros when lexing the subsequent token.  */
@@ -3439,8 +3447,9 @@ create_iso_definition (cpp_reader *pfile)
   /* Don't count the CPP_EOF.  */
   macro->count--;
 
-  macro->exp.tokens = (cpp_token *)_cpp_commit_buff
-    (pfile, sizeof (cpp_token) * macro->count);
+  macro = (cpp_macro *)_cpp_commit_buff
+    (pfile, sizeof (cpp_macro) - sizeof (cpp_token)
+     + sizeof (cpp_token) * macro->count);
 
   /* Clear whitespace on first token for warn_of_redefinition().  */
   if (macro->count)
@@ -3477,15 +3486,10 @@ create_iso_definition (cpp_reader *pfile)
 }
 
 cpp_macro *
-_cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind)
+_cpp_construct_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
 {
-  cpp_macro *macro;
+  cpp_macro *macro = (cpp_macro *) placement;
 
-  if (pfile->hash_table->alloc_subobject)
-    macro = (cpp_macro *) pfile->hash_table->alloc_subobject
-      (sizeof (cpp_macro));
-  else
-    macro = (cpp_macro *) _cpp_aligned_alloc (pfile, sizeof (cpp_macro));
   macro->line = pfile->directive_line;
   macro->parm.params = 0;
   macro->paramc = 0;
@@ -3500,6 +3504,18 @@ _cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind)
   macro->kind = kind;
 
   return macro;
+}
+
+cpp_macro *
+_cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind)
+{
+  void *placement;
+
+  if (pfile->hash_table->alloc_subobject)
+    placement = pfile->hash_table->alloc_subobject (sizeof (cpp_macro));
+  else
+    placement = _cpp_aligned_alloc (pfile, sizeof (cpp_macro));
+  return _cpp_construct_macro (pfile, kind, placement);
 }
 
 /* Parse a macro and save its expansion.  Returns nonzero on success.  */
@@ -3655,7 +3671,7 @@ cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
       unsigned int count = macro_real_token_count (macro);
       for (i = 0; i < count; i++)
 	{
-	  cpp_token *token = &macro->exp.tokens[i];
+	  const cpp_token *token = &macro->exp.tokens[i];
 
 	  if (token->type == CPP_MACRO_ARG)
 	    len += NODE_LEN (token->val.macro_arg.spelling);
@@ -3719,7 +3735,7 @@ cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
       unsigned int count = macro_real_token_count (macro);
       for (i = 0; i < count; i++)
 	{
-	  cpp_token *token = &macro->exp.tokens[i];
+	  const cpp_token *token = &macro->exp.tokens[i];
 
 	  if (token->flags & PREV_WHITE)
 	    *buffer++ = ' ';

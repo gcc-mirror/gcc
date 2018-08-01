@@ -89,7 +89,7 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
 
   for (j = 0; j < macro->count; j++)
     {
-      cpp_token *token = &macro->exp.tokens[j];
+      const cpp_token *token = &macro->exp.tokens[j];
 
       if (token->flags & PREV_WHITE)
 	(*buffer_len)++;
@@ -275,7 +275,7 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 
 	  for (i = 0; supported && i < macro->count; i++)
 	    {
-	      cpp_token *token = &macro->exp.tokens[i];
+	      const cpp_token *token = &macro->exp.tokens[i];
 	      int is_one = 0;
 
 	      if (token->flags & PREV_WHITE)

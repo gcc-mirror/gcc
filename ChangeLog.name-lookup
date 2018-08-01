@@ -1,3 +1,20 @@
+2018-08-01  Nathan Sidwell  <nathan@acm.org>
+
+	Macro tokens are trailing array
+	libcpp/
+	* include/cpp-id-data.h (cpp_macro): Move tokens to trailing array.
+	* internal.h (_cpp_construct_macro): Declare.
+	* macro.c (lex_expansion): Return macro pointer, adjust.
+	(macro_real_token_count): Count backwards.
+	(replace_args): Use pointer equality, not orderedness.
+	(create_iso_definition): Adjust for trailing token array.
+	(_cpp_construct_macro): New, broken out of ...
+	(_cpp_new_macro): ... here.  Call it.
+	(cpp_macro_definition): Constify token pointer.
+	gcc/c-family/
+	* c-ada-spec.c (macro_length): Constify token pointer.
+	(dump_ada_macros): Likewise.
+
 2018-07-17  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

@@ -55,17 +55,6 @@ struct GTY(()) cpp_macro {
     cpp_macro *GTY ((tag ("true"))) next;
   } GTY ((desc ("%1.kind == cmk_assert"))) parm;
 
-  union cpp_exp_u
-  {
-    /* Replacement tokens (ISO), or assertion body value.  */
-    cpp_token * GTY ((tag ("false"), length ("%1.count"))) tokens;
-
-    /* Replacement text (traditional).  See comment at top of
-       cpptrad.c for how traditional function-like macros are
-       encoded.  */
-    const unsigned char * GTY ((tag ("true"))) text;
-  } GTY ((desc ("%1.kind == cmk_traditional"))) exp;
-
   /* Definition line number.  */
   source_location line;
 
@@ -97,4 +86,15 @@ struct GTY(()) cpp_macro {
   unsigned int extra_tokens : 1;
 
   /* 9 bits spare (32-bit). 41 on 64-bit target.  */
+
+  union cpp_exp_u
+  {
+    /* Trailing array of replacement tokens (ISO), or assertion body value.  */
+    cpp_token GTY ((tag ("false"), length ("%1.count"))) tokens[1];
+
+    /* Pointer to replacement text (traditional).  See comment at top
+       of cpptrad.c for how traditional function-like macros are
+       encoded.  */
+    const unsigned char *GTY ((tag ("true"))) text;
+  } GTY ((desc ("%1.kind == cmk_traditional"))) exp;
 };
