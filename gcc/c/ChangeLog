@@ -1,3 +1,10 @@
+2018-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85704
+	* c-typeck.c (init_field_decl_cmp): New function.
+	(output_pending_init_elements): Use it for field comparisons
+	instead of pure bit_position comparisons.
+
 2018-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (c_decl_attributes): Don't diagnose vars without mappable
