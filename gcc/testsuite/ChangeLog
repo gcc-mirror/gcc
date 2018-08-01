@@ -1,3 +1,7 @@
+2018-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/pr84512.c: Xfail on alpha*-*-*.
+
 2018-08-01  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-prof/stringop-1.c: Adjust scanned pattern.
