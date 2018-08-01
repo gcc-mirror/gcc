@@ -1,5 +1,9 @@
 2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* match.pd: Optimise pointer range checks.
+
+2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/86758
 	* tree-vect-stmts.c (vectorizable_simd_clone_call): Don't try
 	to remove pattern statements.

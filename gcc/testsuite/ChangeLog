@@ -1,5 +1,10 @@
 2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/pointer-range-check-1.c: New test.
+	* gcc.dg/pointer-range-check-2.c: Likewise.
+
+2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/86749
 	* gcc.dg/vect/pr86749.c: New test.
 
