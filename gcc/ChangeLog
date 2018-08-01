@@ -1,3 +1,12 @@
+2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_stmt_to_vectorize): New function.
+	* tree-vect-loop.c (vect_update_vf_for_slp): Use it.
+	(vectorizable_reduction): Likewise.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Likewise.
+	(vect_detect_hybrid_slp_stmts): Likewise.
+	* tree-vect-stmts.c (vect_is_simple_use): Likewise.
+
 2018-08-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp (zero_nonzero_bits_from_bounds): Rename to...

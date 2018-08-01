@@ -1969,11 +1969,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
       /* Collect the stores and store them in SLP_TREE_SCALAR_STMTS.  */
       while (next_info)
         {
-	  if (STMT_VINFO_IN_PATTERN_P (next_info)
-	      && STMT_VINFO_RELATED_STMT (next_info))
-	    scalar_stmts.safe_push (STMT_VINFO_RELATED_STMT (next_info));
-	  else
-	    scalar_stmts.safe_push (next_info);
+	  scalar_stmts.safe_push (vect_stmt_to_vectorize (next_info));
 	  next_info = DR_GROUP_NEXT_ELEMENT (next_info);
         }
     }
@@ -1983,11 +1979,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	 SLP_TREE_SCALAR_STMTS.  */
       while (next_info)
         {
-	  if (STMT_VINFO_IN_PATTERN_P (next_info)
-	      && STMT_VINFO_RELATED_STMT (next_info))
-	    scalar_stmts.safe_push (STMT_VINFO_RELATED_STMT (next_info));
-	  else
-	    scalar_stmts.safe_push (next_info);
+	  scalar_stmts.safe_push (vect_stmt_to_vectorize (next_info));
 	  next_info = REDUC_GROUP_NEXT_ELEMENT (next_info);
         }
       /* Mark the first element of the reduction chain as reduction to properly
@@ -2325,9 +2317,7 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
 	    use_vinfo = loop_vinfo->lookup_stmt (use_stmt);
 	    if (!use_vinfo)
 	      continue;
-	    if (STMT_VINFO_IN_PATTERN_P (use_vinfo)
-		&& STMT_VINFO_RELATED_STMT (use_vinfo))
-	      use_vinfo = STMT_VINFO_RELATED_STMT (use_vinfo);
+	    use_vinfo = vect_stmt_to_vectorize (use_vinfo);
 	    if (!STMT_SLP_TYPE (use_vinfo)
 		&& (STMT_VINFO_RELEVANT (use_vinfo)
 		    || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (use_vinfo)))

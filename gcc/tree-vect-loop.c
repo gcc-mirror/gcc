@@ -1424,9 +1424,7 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
 	   gsi_next (&si))
 	{
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
-	  if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-	      && STMT_VINFO_RELATED_STMT (stmt_info))
-	    stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
+	  stmt_info = vect_stmt_to_vectorize (stmt_info);
 	  if ((STMT_VINFO_RELEVANT_P (stmt_info)
 	       || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
 	      && !PURE_SLP_STMT (stmt_info))
@@ -6111,8 +6109,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	return true;
 
       stmt_vec_info reduc_stmt_info = STMT_VINFO_REDUC_DEF (stmt_info);
-      if (STMT_VINFO_IN_PATTERN_P (reduc_stmt_info))
-	reduc_stmt_info = STMT_VINFO_RELATED_STMT (reduc_stmt_info);
+      reduc_stmt_info = vect_stmt_to_vectorize (reduc_stmt_info);
 
       if (STMT_VINFO_VEC_REDUCTION_TYPE (reduc_stmt_info)
 	  == EXTRACT_LAST_REDUCTION)
@@ -6145,8 +6142,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (ncopies > 1
 	  && STMT_VINFO_RELEVANT (reduc_stmt_info) <= vect_used_only_live
 	  && (use_stmt_info = loop_vinfo->lookup_single_use (phi_result))
-	  && (use_stmt_info == reduc_stmt_info
-	      || STMT_VINFO_RELATED_STMT (use_stmt_info) == reduc_stmt_info))
+	  && vect_stmt_to_vectorize (use_stmt_info) == reduc_stmt_info)
 	single_defuse_cycle = true;
 
       /* Create the destination vector  */
@@ -6915,8 +6911,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (ncopies > 1
       && (STMT_VINFO_RELEVANT (stmt_info) <= vect_used_only_live)
       && (use_stmt_info = loop_vinfo->lookup_single_use (reduc_phi_result))
-      && (use_stmt_info == stmt_info
-	  || STMT_VINFO_RELATED_STMT (use_stmt_info) == stmt_info))
+      && vect_stmt_to_vectorize (use_stmt_info) == stmt_info)
     {
       single_defuse_cycle = true;
       epilog_copies = 1;

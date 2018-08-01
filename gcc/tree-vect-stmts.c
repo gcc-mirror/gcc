@@ -10031,11 +10031,8 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
 	*dt = vect_external_def;
       else
 	{
-	  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-	    {
-	      stmt_vinfo = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-	      def_stmt = stmt_vinfo->stmt;
-	    }
+	  stmt_vinfo = vect_stmt_to_vectorize (stmt_vinfo);
+	  def_stmt = stmt_vinfo->stmt;
 	  switch (gimple_code (def_stmt))
 	    {
 	    case GIMPLE_PHI:
