@@ -1,3 +1,8 @@
+2018-08-01  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c (__gcov_indirect_call_profiler_v2): Do not
+        check that  __gcov_indirect_call_callee is non-null.
+
 2018-07-30  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/ieee754-df.S: Fix comment for code working on
