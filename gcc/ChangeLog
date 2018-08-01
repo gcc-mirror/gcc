@@ -1,5 +1,11 @@
 2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_schedule_slp): Return void.
+	* tree-vect-slp.c (vect_schedule_slp_instance): Likewise.
+	(vect_schedule_slp): Likewise.
+
+2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-loop.c (vect_transform_loop_stmt): Remove slp_scheduled
 	argument.
 	(vect_transform_loop): Update calls accordingly.  Schedule SLP

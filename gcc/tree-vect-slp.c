@@ -3849,11 +3849,11 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 
 /* Vectorize SLP instance tree in postorder.  */
 
-static bool
+static void
 vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 			    scalar_stmts_to_slp_tree_map_t *bst_map)
 {
-  bool grouped_store, is_store;
+  bool grouped_store;
   gimple_stmt_iterator si;
   stmt_vec_info stmt_info;
   unsigned int group_size;
@@ -3862,14 +3862,14 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   slp_tree child;
 
   if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
-    return false;
+    return;
 
   /* See if we have already vectorized the same set of stmts and reuse their
      vectorized stmts.  */
   if (slp_tree *leader = bst_map->get (SLP_TREE_SCALAR_STMTS (node)))
     {
       SLP_TREE_VEC_STMTS (node).safe_splice (SLP_TREE_VEC_STMTS (*leader));
-      return false;
+      return;
     }
 
   bst_map->put (SLP_TREE_SCALAR_STMTS (node).copy (), node);
@@ -3991,11 +3991,10 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 	    }
 	  v0.release ();
 	  v1.release ();
-	  return false;
+	  return;
 	}
     }
-  is_store = vect_transform_stmt (stmt_info, &si, &grouped_store, node,
-				  instance);
+  vect_transform_stmt (stmt_info, &si, &grouped_store, node, instance);
 
   /* Restore stmt def-types.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
@@ -4005,8 +4004,6 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 	FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (child), j, child_stmt_info)
 	  STMT_VINFO_DEF_TYPE (child_stmt_info) = vect_internal_def;
       }
-
-  return is_store;
 }
 
 /* Replace scalar calls from SLP node NODE with setting of their lhs to zero.
@@ -4048,14 +4045,12 @@ vect_remove_slp_scalar_calls (slp_tree node)
 
 /* Generate vector code for all SLP instances in the loop/basic block.  */
 
-bool
+void
 vect_schedule_slp (vec_info *vinfo)
 {
   vec<slp_instance> slp_instances;
   slp_instance instance;
   unsigned int i;
-  bool is_store = false;
-
 
   scalar_stmts_to_slp_tree_map_t *bst_map
     = new scalar_stmts_to_slp_tree_map_t ();
@@ -4063,8 +4058,8 @@ vect_schedule_slp (vec_info *vinfo)
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       /* Schedule the tree of INSTANCE.  */
-      is_store = vect_schedule_slp_instance (SLP_INSTANCE_TREE (instance),
-                                             instance, bst_map);
+      vect_schedule_slp_instance (SLP_INSTANCE_TREE (instance),
+				  instance, bst_map);
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "vectorizing stmts using SLP.\n");
@@ -4099,6 +4094,4 @@ vect_schedule_slp (vec_info *vinfo)
 	  vinfo->remove_stmt (store_info);
         }
     }
-
-  return is_store;
 }
