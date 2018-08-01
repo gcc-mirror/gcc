@@ -1,5 +1,14 @@
 2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_transform_stmt): Remove grouped_store
+	argument.
+	* tree-vect-stmts.c (vect_transform_stmt): Likewise.
+	* tree-vect-loop.c (vect_transform_loop_stmt): Update call accordingly.
+	(vect_transform_loop): Likewise.
+	* tree-vect-slp.c (vect_schedule_slp_instance): Likewise.
+
+2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_schedule_slp): Return void.
 	* tree-vect-slp.c (vect_schedule_slp_instance): Likewise.
 	(vect_schedule_slp): Likewise.

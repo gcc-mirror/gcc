@@ -3853,7 +3853,6 @@ static void
 vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 			    scalar_stmts_to_slp_tree_map_t *bst_map)
 {
-  bool grouped_store;
   gimple_stmt_iterator si;
   stmt_vec_info stmt_info;
   unsigned int group_size;
@@ -3945,11 +3944,11 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 	  vec<stmt_vec_info> v1;
 	  unsigned j;
 	  tree tmask = NULL_TREE;
-	  vect_transform_stmt (stmt_info, &si, &grouped_store, node, instance);
+	  vect_transform_stmt (stmt_info, &si, node, instance);
 	  v0 = SLP_TREE_VEC_STMTS (node).copy ();
 	  SLP_TREE_VEC_STMTS (node).truncate (0);
 	  gimple_assign_set_rhs_code (stmt, ocode);
-	  vect_transform_stmt (stmt_info, &si, &grouped_store, node, instance);
+	  vect_transform_stmt (stmt_info, &si, node, instance);
 	  gimple_assign_set_rhs_code (stmt, code0);
 	  v1 = SLP_TREE_VEC_STMTS (node).copy ();
 	  SLP_TREE_VEC_STMTS (node).truncate (0);
@@ -3994,7 +3993,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 	  return;
 	}
     }
-  vect_transform_stmt (stmt_info, &si, &grouped_store, node, instance);
+  vect_transform_stmt (stmt_info, &si, node, instance);
 
   /* Restore stmt def-types.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
