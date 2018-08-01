@@ -4399,6 +4399,14 @@ vect_determine_min_output_precision_1 (stmt_vec_info stmt_info, tree lhs)
       stmt_vec_info use_stmt_info = vinfo->lookup_stmt (use_stmt);
       if (!use_stmt_info || !use_stmt_info->min_input_precision)
 	return false;
+      /* The input precision recorded for COND_EXPRs applies only to the
+	 "then" and "else" values.  */
+      gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
+      if (assign
+	  && gimple_assign_rhs_code (assign) == COND_EXPR
+	  && use->use != gimple_assign_rhs2_ptr (assign)
+	  && use->use != gimple_assign_rhs3_ptr (assign))
+	return false;
       precision = MAX (precision, use_stmt_info->min_input_precision);
     }
 
