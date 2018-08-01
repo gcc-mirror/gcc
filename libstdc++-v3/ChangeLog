@@ -1,5 +1,9 @@
 2018-08-01  Mike Crowe  <mac@mcrowe.com>
 
+	* include/std/condition_variable (wait_for): Use steady_clock.
+
+2018-08-01  Mike Crowe  <mac@mcrowe.com>
+
 	* include/std/condition_variable (wait_until): Only report timeout
 	if we really have timed out when measured against the
 	caller-supplied clock.
