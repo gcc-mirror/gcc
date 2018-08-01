@@ -9662,8 +9662,7 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 
 bool
 vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
-		     bool *grouped_store, slp_tree slp_node,
-                     slp_instance slp_node_instance)
+		     slp_tree slp_node, slp_instance slp_node_instance)
 {
   vec_info *vinfo = stmt_info->vinfo;
   bool is_store = false;
@@ -9727,7 +9726,6 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	     last store in the chain is reached.  Store stmts before the last
 	     one are skipped, and there vec_stmt_info shouldn't be freed
 	     meanwhile.  */
-	  *grouped_store = true;
 	  stmt_vec_info group_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
 	  if (DR_GROUP_STORE_COUNT (group_info) == DR_GROUP_SIZE (group_info))
 	    is_store = true;

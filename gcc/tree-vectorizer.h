@@ -1459,7 +1459,7 @@ extern tree vect_init_vector (stmt_vec_info, tree, tree,
                               gimple_stmt_iterator *);
 extern tree vect_get_vec_def_for_stmt_copy (vec_info *, tree);
 extern bool vect_transform_stmt (stmt_vec_info, gimple_stmt_iterator *,
-                                 bool *, slp_tree, slp_instance);
+				 slp_tree, slp_instance);
 extern void vect_remove_stores (stmt_vec_info);
 extern bool vect_analyze_stmt (stmt_vec_info, bool *, slp_tree, slp_instance,
 			       stmt_vector_for_cost *);

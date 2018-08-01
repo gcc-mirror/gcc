@@ -8243,8 +8243,7 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform statement.\n");
 
-  bool grouped_store = false;
-  if (vect_transform_stmt (stmt_info, gsi, &grouped_store, NULL, NULL))
+  if (vect_transform_stmt (stmt_info, gsi, NULL, NULL))
     *seen_store = stmt_info;
 }
 
@@ -8425,7 +8424,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location, "transform phi.\n");
-	      vect_transform_stmt (stmt_info, NULL, NULL, NULL, NULL);
+	      vect_transform_stmt (stmt_info, NULL, NULL, NULL);
 	    }
 	}
 
