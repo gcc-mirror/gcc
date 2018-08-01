@@ -1,3 +1,9 @@
+2018-08-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/86661
+	* class.c (note_name_declared_in_class): Use location_of in permerror
+	instead of DECL_SOURCE_LOCATION (for OVERLOADs).
+
 2018-07-31  Tom de Vries  <tdevries@suse.de>
 
 	PR debug/86687
