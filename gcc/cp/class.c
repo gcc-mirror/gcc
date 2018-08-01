@@ -8285,7 +8285,7 @@ note_name_declared_in_class (tree name, tree decl)
 	 A name N used in a class S shall refer to the same declaration
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
-      if (permerror (DECL_SOURCE_LOCATION (decl),
+      if (permerror (location_of (decl),
 		     "declaration of %q#D changes meaning of %qD",
 		     decl, OVL_NAME (decl)))
 	inform (location_of ((tree) n->value),
