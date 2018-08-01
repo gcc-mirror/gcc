@@ -1,5 +1,13 @@
 2018-08-01  Martin Liska  <mliska@suse.cz>
 
+	* value-prof.c (gimple_divmod_fixed_value_transform): Unify
+        format how successful transformation is dumped.
+	(gimple_mod_pow2_value_transform): Likewise.
+	(gimple_mod_subtract_transform): Likewise.
+	(gimple_stringops_transform): Likewise.
+
+2018-08-01  Martin Liska  <mliska@suse.cz>
+
         PR value-prof/35543
 	* value-prof.c (interesting_stringop_to_profile_p):
         Simplify the code and add BUILT_IN_MEMMOVE.

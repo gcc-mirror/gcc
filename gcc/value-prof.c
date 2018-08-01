@@ -821,12 +821,9 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
 
   if (dump_file)
     {
-      fprintf (dump_file, "Div/mod by constant ");
-      print_generic_expr (dump_file, value, TDF_SLIM);
-      fprintf (dump_file, "=");
+      fprintf (dump_file, "Transformation done: div/mod by constant ");
       print_generic_expr (dump_file, tree_val, TDF_SLIM);
-      fprintf (dump_file, " transformation on insn ");
-      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      fprintf (dump_file, "\n");
     }
 
   gimple_assign_set_rhs_from_tree (si, result);
@@ -956,17 +953,14 @@ gimple_mod_pow2_value_transform (gimple_stmt_iterator *si)
       || optimize_bb_for_size_p (gimple_bb (stmt)))
     return false;
 
-  if (dump_file)
-    {
-      fprintf (dump_file, "Mod power of 2 transformation on insn ");
-      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-    }
-
   /* Compute probability of taking the optimal path.  */
   all = count + wrong_values;
 
   if (check_counter (stmt, "pow2", &count, &all, gimple_bb (stmt)->count))
     return false;
+
+  if (dump_file)
+    fprintf (dump_file, "Transformation done: mod power of 2\n");
 
   if (all > 0)
     prob = profile_probability::probability_in_gcov_type (count, all);
@@ -1151,10 +1145,7 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
 
   gimple_remove_histogram_value (cfun, stmt, histogram);
   if (dump_file)
-    {
-      fprintf (dump_file, "Mod subtract transformation on insn ");
-      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-    }
+    fprintf (dump_file, "Transformation done: mod subtract\n");
 
   /* Compute probability of taking the optimal path(s).  */
   if (all > 0)
@@ -1742,11 +1733,9 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
     }
 
   if (dump_file)
-    {
-      fprintf (dump_file, "Single value %i stringop transformation on ",
-	       (int)val);
-      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-    }
+    fprintf (dump_file,
+	     "Transformation done: single value %i stringop for %s\n",
+	     (int)val, built_in_names[(int)fcode]);
 
   gimple_stringop_fixed_value (stmt, tree_val, prob, count, all);
 
