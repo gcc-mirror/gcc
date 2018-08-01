@@ -1,3 +1,8 @@
+2018-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85704
+	* gcc.c-torture/compile/pr85704.c: New test.
+
 2018-07-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Backport from mainline
