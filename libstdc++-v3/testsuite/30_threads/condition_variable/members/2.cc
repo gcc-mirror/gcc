@@ -51,8 +51,60 @@ void test01()
     }
 }
 
+struct slow_clock
+{
+  using rep = std::chrono::system_clock::rep;
+  using period = std::chrono::system_clock::period;
+  using duration = std::chrono::system_clock::duration;
+  using time_point = std::chrono::time_point<slow_clock, duration>;
+  static constexpr bool is_steady = false;
+
+  static time_point now()
+  {
+    auto real = std::chrono::system_clock::now();
+    return time_point{real.time_since_epoch() / 3};
+  }
+};
+
+
+void test01_alternate_clock()
+{
+  try
+    {
+      std::condition_variable c1;
+      std::mutex m;
+      std::unique_lock<std::mutex> l(m);
+      auto const expire = slow_clock::now() + std::chrono::seconds(1);
+
+      while (slow_clock::now() < expire)
+       {
+         auto const result = c1.wait_until(l, expire);
+
+         // If wait_until returns before the timeout has expired when
+         // measured against the supplied clock, then wait_until must
+         // return no_timeout.
+         if (slow_clock::now() < expire)
+           VERIFY(result == std::cv_status::no_timeout);
+
+         // If wait_until returns timeout then the timeout must have
+         // expired.
+         if (result == std::cv_status::timeout)
+           VERIFY(slow_clock::now() >= expire);
+       }
+    }
+  catch (const std::system_error& e)
+    {
+      VERIFY( false );
+    }
+  catch (...)
+    {
+      VERIFY( false );
+    }
+}
+
 int main()
 {
   test01();
+  test01_alternate_clock();
   return 0;
 }

@@ -117,7 +117,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const auto __delta = __atime - __c_entry;
 	const auto __s_atime = __s_entry + __delta;
 
-	return __wait_until_impl(__lock, __s_atime);
+	if (__wait_until_impl(__lock, __s_atime) == cv_status::no_timeout)
+	  return cv_status::no_timeout;
+	// We got a timeout when measured against __clock_t but
+	// we need to check against the caller-supplied clock
+	// to tell whether we should return a timeout.
+	if (_Clock::now() < __atime)
+	  return cv_status::no_timeout;
+	return cv_status::timeout;
       }
 
     template<typename _Clock, typename _Duration, typename _Predicate>
