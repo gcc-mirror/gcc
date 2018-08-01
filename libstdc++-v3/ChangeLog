@@ -1,3 +1,10 @@
+2018-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure: Regenerate.
+	* configure.ac: Add -D_GLIBCXX_ASSERTIONS to default DEBUG_FLAGS.
+	* src/c++11/futex.cc: Use __glibcxx_assert instead of
+	_GLIBCXX_DEBUG_ASSERT.
+
 2018-08-01  Mike Crowe  <mac@mcrowe.com>
 
 	* include/std/condition_variable (wait_for): Use steady_clock.
