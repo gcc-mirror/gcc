@@ -3941,6 +3941,8 @@ static bool
 visit_phi (gimple *phi)
 {
   tree result, sameval = VN_TOP, seen_undef = NULL_TREE;
+  tree sameval_base = NULL_TREE;
+  poly_int64 soff, doff;
   unsigned n_executable = 0;
   bool allsame = true;
   edge_iterator ei;
@@ -3971,6 +3973,23 @@ visit_phi (gimple *phi)
 	  sameval = def;
 	else if (!expressions_equal_p (def, sameval))
 	  {
+	    /* We know we're arriving only with invariant addresses here,
+	       try harder comparing them.  We can do some caching here
+	       which we cannot do in expressions_equal_p.  */
+	    if (TREE_CODE (def) == ADDR_EXPR
+		&& TREE_CODE (sameval) == ADDR_EXPR
+		&& sameval_base != (void *)-1)
+	      {
+		if (!sameval_base)
+		  sameval_base = get_addr_base_and_unit_offset
+				   (TREE_OPERAND (sameval, 0), &soff);
+		if (!sameval_base)
+		  sameval_base = (tree)(void *)-1;
+		else if ((get_addr_base_and_unit_offset
+			    (TREE_OPERAND (def, 0), &doff) == sameval_base)
+			 && known_eq (soff, doff))
+		  continue;
+	      }
 	    allsame = false;
 	    break;
 	  }
