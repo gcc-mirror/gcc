@@ -4368,7 +4368,7 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
     }
   else
     new_stmt = gimple_build_nop ();
-  vinfo->replace_stmt (gsi, stmt_info, new_stmt);
+  vinfo->replace_stmt (gsi, vect_orig_stmt (stmt_info), new_stmt);
   unlink_stmt_vdef (stmt);
 
   return true;
