@@ -1,3 +1,10 @@
+2018-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_reduction): Add IS_OMP argument,
+	parse reduction modifiers.
+	(c_parser_oacc_all_clauses, c_parser_omp_all_clauses): Adjust
+	c_parser_omp_clause_reduction callers.
+
 2018-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_teams): Force a BIND_EXPR with BLOCK

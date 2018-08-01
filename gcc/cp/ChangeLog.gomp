@@ -1,3 +1,10 @@
+2018-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_reduction): Add IS_OMP argument,
+	parse reduction modifiers.
+	(cp_parser_oacc_all_clauses, cp_parser_omp_all_clauses): Adjust
+	cp_parser_omp_clause_reduction callers.
+
 2018-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (finish_omp_atomic): Add LOC argument.

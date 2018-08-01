@@ -1,3 +1,11 @@
+2018-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_REDUCTION_TASK, OMP_CLAUSE_REDUCTION_INSCAN):
+	Define.
+	* tree-pretty-print.c (dump_omp_clause): Print reduction modifiers.
+	* gimplify.c (gimplify_scan_omp_clauses): Handle
+	OMP_CLAUSE_REDUCTION_TASK diagnostics.
+
 2018-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple.h (enum gf_mask): Add GF_OMP_TEAMS_HOST.

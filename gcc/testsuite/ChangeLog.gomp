@@ -1,3 +1,8 @@
+2018-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/reduction-task-1.c: New test.
+	* c-c++-common/gomp/reduction-task-2.c: New test.
+
 2018-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/teams-1.c: New test.

@@ -32931,18 +32931,46 @@ cp_parser_omp_clause_ordered (cp_parser *parser,
      id-expression
 
    OpenMP 5.0:
+   reduction ( reduction-modifier, reduction-operator : variable-list )
    in_reduction ( reduction-operator : variable-list )
    task_reduction ( reduction-operator : variable-list )  */
 
 static tree
 cp_parser_omp_clause_reduction (cp_parser *parser, enum omp_clause_code kind,
-				tree list)
+				bool is_omp, tree list)
 {
   enum tree_code code = ERROR_MARK;
   tree nlist, c, id = NULL_TREE;
+  bool task = false;
+  bool inscan = false;
 
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return list;
+
+  if (kind == OMP_CLAUSE_REDUCTION && is_omp)
+    {
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_DEFAULT)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COMMA))
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_lexer_consume_token (parser->lexer);
+	}
+      else if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	       && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COMMA))
+	{
+	  tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+	  const char *p = IDENTIFIER_POINTER (id);
+	  if (strcmp (p, "task") == 0)
+	    task = true;
+	  else if (strcmp (p, "inscan") == 0)
+	    inscan = true;
+	  if (task || inscan)
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	}
+    }
 
   switch (cp_lexer_peek_token (parser->lexer)->type)
     {
@@ -33021,6 +33049,10 @@ cp_parser_omp_clause_reduction (cp_parser *parser, enum omp_clause_code kind,
   for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
     {
       OMP_CLAUSE_REDUCTION_CODE (c) = code;
+      if (task)
+	OMP_CLAUSE_REDUCTION_TASK (c) = 1;
+      else if (inscan)
+	OMP_CLAUSE_REDUCTION_INSCAN (c) = 1;
       OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) = id;
     }
 
@@ -34272,7 +34304,7 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OACC_CLAUSE_REDUCTION:
 	  clauses
 	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
-					      clauses);
+					      false, clauses);
 	  c_name = "reduction";
 	  break;
 	case PRAGMA_OACC_CLAUSE_SEQ:
@@ -34422,7 +34454,7 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_IN_REDUCTION:
 	  clauses
 	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_IN_REDUCTION,
-					      clauses);
+					      true, clauses);
 	  c_name = "in_reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_LASTPRIVATE:
@@ -34466,7 +34498,7 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_REDUCTION:
 	  clauses
 	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
-					      clauses);
+					      true, clauses);
 	  c_name = "reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_SCHEDULE:
@@ -34483,7 +34515,7 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses
 	    = cp_parser_omp_clause_reduction (parser,
 					      OMP_CLAUSE_TASK_REDUCTION,
-					      clauses);
+					      true, clauses);
 	  c_name = "task_reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_UNTIED:

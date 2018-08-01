@@ -1614,6 +1614,14 @@ extern tree maybe_wrap_with_location (tree, location_t);
   (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_REDUCTION, \
 			   OMP_CLAUSE_IN_REDUCTION)->base.public_flag)
 
+/* True if a REDUCTION clause has task reduction-modifier.  */
+#define OMP_CLAUSE_REDUCTION_TASK(NODE) \
+  TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION))
+
+/* True if a REDUCTION clause has inscan reduction-modifier.  */
+#define OMP_CLAUSE_REDUCTION_INSCAN(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION))
+
 /* True if a LINEAR clause doesn't need copy in.  True for iterator vars which
    are always initialized inside of the loop construct, false otherwise.  */
 #define OMP_CLAUSE_LINEAR_NO_COPYIN(NODE) \

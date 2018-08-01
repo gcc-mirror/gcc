@@ -1,3 +1,7 @@
+2018-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses): Handle OMP_CLAUSE_REDUCTION_TASK.
+
 2018-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_omp_check_loop_iv_r): Look for orig decl of C++

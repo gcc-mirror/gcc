@@ -7960,6 +7960,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
   hash_map<tree, tree> *struct_map_to_clause = NULL;
   tree *prev_list_p = NULL;
   int handled_depend_iterators = -1;
+  int nowait = -1;
 
   ctx = new_omp_context (region_type);
   outer_ctx = ctx->outer_context;
@@ -8113,6 +8114,32 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    }
 	  goto do_add;
 	case OMP_CLAUSE_REDUCTION:
+	  if (OMP_CLAUSE_REDUCTION_TASK (c))
+	    {
+	      if (region_type == ORT_WORKSHARE)
+		{
+		  if (nowait == -1)
+		    nowait = omp_find_clause (*list_p,
+					      OMP_CLAUSE_NOWAIT) != NULL_TREE;
+		  if (nowait
+		      && (outer_ctx == NULL
+			  || outer_ctx->region_type != ORT_COMBINED_PARALLEL))
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%<task%> reduction modifier on a construct "
+				"with a %<nowait%> clause");
+		      OMP_CLAUSE_REDUCTION_TASK (c) = 0;
+		    }
+		}
+	      else if ((region_type & ORT_PARALLEL) != ORT_PARALLEL)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "invalid %<task%> reduction modifier on construct "
+			    "other than %<parallel%>, %<for%> or %<sections%>");
+		  OMP_CLAUSE_REDUCTION_TASK (c) = 0;
+		}
+	    }
+	  /* FALLTHRU */
 	case OMP_CLAUSE_IN_REDUCTION:
 	case OMP_CLAUSE_TASK_REDUCTION:
 	  flags = GOVD_REDUCTION | GOVD_SEEN | GOVD_EXPLICIT;
@@ -9016,6 +9043,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  break;
 
 	case OMP_CLAUSE_NOWAIT:
+	  nowait = 1;
+	  break;
+
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:

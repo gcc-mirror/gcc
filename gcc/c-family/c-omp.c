@@ -1590,6 +1590,28 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	   Duplicate it on all of them, but omit on for or sections if
 	   parallel is present.  */
 	case OMP_CLAUSE_REDUCTION:
+	  if (OMP_CLAUSE_REDUCTION_TASK (clauses))
+	    {
+	      if (code == OMP_SIMD /* || code == OMP_LOOP */)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (clauses),
+			    "invalid %<task%> reduction modifier on construct "
+			    "combined with %<simd%>" /* or %<loop%> */);
+		  OMP_CLAUSE_REDUCTION_TASK (clauses) = 0;
+		}
+	      else if (code != OMP_SECTIONS
+		       && (mask & (OMP_CLAUSE_MASK_1
+				   << PRAGMA_OMP_CLAUSE_SCHEDULE)) == 0
+		       && (mask & (OMP_CLAUSE_MASK_1
+				   << PRAGMA_OMP_CLAUSE_SCHEDULE)) == 0)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (clauses),
+			    "invalid %<task%> reduction modifier on construct "
+			    "not combined with %<parallel%>, %<for%> or "
+			    "%<sections%>");
+		  OMP_CLAUSE_REDUCTION_TASK (clauses) = 0;
+		}
+	    }
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)) != 0)
 	    {
 	      if (code == OMP_SIMD)
@@ -1618,9 +1640,9 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		    = OMP_CLAUSE_REDUCTION_PLACEHOLDER (clauses);
 		  OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c)
 		    = OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clauses);
-		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL];
-		  cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL] = c;
-		  s = C_OMP_CLAUSE_SPLIT_TEAMS;
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
+		  cclauses[C_OMP_CLAUSE_SPLIT_TEAMS] = c;
+		  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 		}
 	      else if ((mask & (OMP_CLAUSE_MASK_1
 				<< PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0)

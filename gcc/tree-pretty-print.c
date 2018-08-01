@@ -477,6 +477,13 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       /* FALLTHRU */
     case OMP_CLAUSE_REDUCTION:
       pp_string (pp, "reduction(");
+      if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_REDUCTION)
+	{
+	  if (OMP_CLAUSE_REDUCTION_TASK (clause))
+	    pp_string (pp, "task,");
+	  else if (OMP_CLAUSE_REDUCTION_INSCAN (clause))
+	    pp_string (pp, "inscan,");
+	}
       if (OMP_CLAUSE_REDUCTION_CODE (clause) != ERROR_MARK)
 	{
 	  pp_string (pp,
