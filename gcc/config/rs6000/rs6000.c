@@ -15836,7 +15836,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case MISC_BUILTIN_SPEC_BARRIER:
       {
-	emit_insn (gen_rs6000_speculation_barrier ());
+	emit_insn (gen_speculation_barrier ());
 	return NULL_RTX;
       }
 
