@@ -24,12 +24,18 @@ void memset_test_ ## N (int len) \
 { \
   __builtin_memset (buffer1, 'c', len); \
 } \
+__attribute__((noinline)) \
+void memmove_test_ ## N (int len) \
+{ \
+  __builtin_memmove (buffer1, buffer2, len); \
+} \
  \
 void test_stringops_ ## N(int len) \
 { \
   memcpy_test_## N (len); \
   mempcpy_test_ ## N (len); \
   memset_test_ ## N (len); \
+  memmove_test_ ## N (len); \
 } \
  \
 void test_stringops_with_values_ ## N (int common, int not_common) \
@@ -70,3 +76,7 @@ int main() {
 /* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 8 stringop transformation on __builtin_memset" "profile" } } */
 /* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 55 stringop transformation on __builtin_memset" "profile" } } */
 /* { dg-final-use-not-autofdo { scan-ipa-dump-times "Single value 32 stringop transformation on __builtin_memset" 0 "profile" } } */
+
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 8 stringop transformation on __builtin_memmove" "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 55 stringop transformation on __builtin_memmove" "profile" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Single value 32 stringop transformation on __builtin_memmove" 0 "profile" } } */
