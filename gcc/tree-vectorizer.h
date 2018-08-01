@@ -1527,7 +1527,7 @@ extern bool vect_analyze_data_refs (vec_info *, poly_uint64 *);
 extern void vect_record_base_alignments (vec_info *);
 extern tree vect_create_data_ref_ptr (stmt_vec_info, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
-				      gimple **, bool, bool *,
+				      gimple **, bool,
 				      tree = NULL_TREE, tree = NULL_TREE);
 extern tree bump_vector_ptr (tree, gimple *, gimple_stmt_iterator *,
 			     stmt_vec_info, tree);

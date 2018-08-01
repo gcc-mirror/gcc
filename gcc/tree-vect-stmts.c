@@ -6254,7 +6254,6 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   unsigned int group_size, i;
   vec<tree> oprnds = vNULL;
   vec<tree> result_chain = vNULL;
-  bool inv_p;
   tree offset = NULL_TREE;
   vec<tree> vec_oprnds = vNULL;
   bool slp = (slp_node != NULL);
@@ -7018,22 +7017,16 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    {
 	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr_info->dr));
 	      dataref_offset = build_int_cst (ref_type, 0);
-	      inv_p = false;
 	    }
 	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-	    {
-	      vect_get_gather_scatter_ops (loop, stmt_info, &gs_info,
-					   &dataref_ptr, &vec_offset);
-	      inv_p = false;
-	    }
+	    vect_get_gather_scatter_ops (loop, stmt_info, &gs_info,
+					 &dataref_ptr, &vec_offset);
 	  else
 	    dataref_ptr
 	      = vect_create_data_ref_ptr (first_stmt_info, aggr_type,
 					  simd_lane_access_p ? loop : NULL,
 					  offset, &dummy, gsi, &ptr_incr,
-					  simd_lane_access_p, &inv_p,
-					  NULL_TREE, bump);
-	  gcc_assert (bb_vinfo || !inv_p);
+					  simd_lane_access_p, NULL_TREE, bump);
 	}
       else
 	{
@@ -7419,7 +7412,6 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   bool grouped_load = false;
   stmt_vec_info first_stmt_info;
   stmt_vec_info first_stmt_info_for_drptr = NULL;
-  bool inv_p;
   bool compute_in_loop = false;
   struct loop *at_loop;
   int vec_num;
@@ -7666,6 +7658,63 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
     {
       vect_build_gather_load_calls (stmt_info, gsi, vec_stmt, &gs_info, mask);
+      return true;
+    }
+
+  if (memory_access_type == VMAT_INVARIANT)
+    {
+      gcc_assert (!grouped_load && !mask && !bb_vinfo);
+      /* If we have versioned for aliasing or the loop doesn't
+	 have any data dependencies that would preclude this,
+	 then we are sure this is a loop invariant load and
+	 thus we can insert it on the preheader edge.  */
+      bool hoist_p = (LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo)
+		      && !nested_in_vect_loop
+		      && hoist_defs_of_uses (stmt_info, loop));
+      if (hoist_p)
+	{
+	  gassign *stmt = as_a <gassign *> (stmt_info->stmt);
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "hoisting out of the vectorized loop: ");
+	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	    }
+	  scalar_dest = copy_ssa_name (scalar_dest);
+	  tree rhs = unshare_expr (gimple_assign_rhs1 (stmt));
+	  gsi_insert_on_edge_immediate
+	    (loop_preheader_edge (loop),
+	     gimple_build_assign (scalar_dest, rhs));
+	}
+      /* These copies are all equivalent, but currently the representation
+	 requires a separate STMT_VINFO_VEC_STMT for each one.  */
+      prev_stmt_info = NULL;
+      gimple_stmt_iterator gsi2 = *gsi;
+      gsi_next (&gsi2);
+      for (j = 0; j < ncopies; j++)
+	{
+	  stmt_vec_info new_stmt_info;
+	  if (hoist_p)
+	    {
+	      new_temp = vect_init_vector (stmt_info, scalar_dest,
+					   vectype, NULL);
+	      gimple *new_stmt = SSA_NAME_DEF_STMT (new_temp);
+	      new_stmt_info = vinfo->add_stmt (new_stmt);
+	    }
+	  else
+	    {
+	      new_temp = vect_init_vector (stmt_info, scalar_dest,
+					   vectype, &gsi2);
+	      new_stmt_info = vinfo->lookup_def (new_temp);
+	    }
+	  if (slp)
+	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt_info);
+	  else if (j == 0)
+	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
+	  else
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+	  prev_stmt_info = new_stmt_info;
+	}
       return true;
     }
 
@@ -8177,7 +8226,6 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    {
 	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr_info->dr));
 	      dataref_offset = build_int_cst (ref_type, 0);
-	      inv_p = false;
 	    }
 	  else if (first_stmt_info_for_drptr
 		   && first_stmt_info != first_stmt_info_for_drptr)
@@ -8186,7 +8234,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		= vect_create_data_ref_ptr (first_stmt_info_for_drptr,
 					    aggr_type, at_loop, offset, &dummy,
 					    gsi, &ptr_incr, simd_lane_access_p,
-					    &inv_p, byte_offset, bump);
+					    byte_offset, bump);
 	      /* Adjust the pointer by the difference to first_stmt.  */
 	      data_reference_p ptrdr
 		= STMT_VINFO_DATA_REF (first_stmt_info_for_drptr);
@@ -8199,16 +8247,13 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 					     stmt_info, diff);
 	    }
 	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-	    {
-	      vect_get_gather_scatter_ops (loop, stmt_info, &gs_info,
-					   &dataref_ptr, &vec_offset);
-	      inv_p = false;
-	    }
+	    vect_get_gather_scatter_ops (loop, stmt_info, &gs_info,
+					 &dataref_ptr, &vec_offset);
 	  else
 	    dataref_ptr
 	      = vect_create_data_ref_ptr (first_stmt_info, aggr_type, at_loop,
 					  offset, &dummy, gsi, &ptr_incr,
-					  simd_lane_access_p, &inv_p,
+					  simd_lane_access_p,
 					  byte_offset, bump);
 	  if (mask)
 	    vec_mask = vect_get_vec_def_for_operand (mask, stmt_info,
@@ -8489,47 +8534,6 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 				     loop_latch_edge (containing_loop),
 				     UNKNOWN_LOCATION);
 		      msq = lsq;
-		    }
-		}
-
-	      /* 4. Handle invariant-load.  */
-	      if (inv_p && !bb_vinfo)
-		{
-		  gcc_assert (!grouped_load);
-		  /* If we have versioned for aliasing or the loop doesn't
-		     have any data dependencies that would preclude this,
-		     then we are sure this is a loop invariant load and
-		     thus we can insert it on the preheader edge.  */
-		  if (LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo)
-		      && !nested_in_vect_loop
-		      && hoist_defs_of_uses (stmt_info, loop))
-		    {
-		      gassign *stmt = as_a <gassign *> (stmt_info->stmt);
-		      if (dump_enabled_p ())
-			{
-			  dump_printf_loc (MSG_NOTE, vect_location,
-					   "hoisting out of the vectorized "
-					   "loop: ");
-			  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-			}
-		      tree tem = copy_ssa_name (scalar_dest);
-		      gsi_insert_on_edge_immediate
-			(loop_preheader_edge (loop),
-			 gimple_build_assign (tem,
-					      unshare_expr
-					        (gimple_assign_rhs1 (stmt))));
-		      new_temp = vect_init_vector (stmt_info, tem,
-						   vectype, NULL);
-		      new_stmt = SSA_NAME_DEF_STMT (new_temp);
-		      new_stmt_info = vinfo->add_stmt (new_stmt);
-		    }
-		  else
-		    {
-		      gimple_stmt_iterator gsi2 = *gsi;
-		      gsi_next (&gsi2);
-		      new_temp = vect_init_vector (stmt_info, scalar_dest,
-						   vectype, &gsi2);
-		      new_stmt_info = vinfo->lookup_def (new_temp);
 		    }
 		}
 
