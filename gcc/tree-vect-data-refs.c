@@ -214,10 +214,8 @@ vect_preserves_scalar_order_p (dr_vec_info *dr_info_a, dr_vec_info *dr_info_b)
      (but could happen later) while reads will happen no later than their
      current position (but could happen earlier).  Reordering is therefore
      only possible if the first access is a write.  */
-  if (is_pattern_stmt_p (stmtinfo_a))
-    stmtinfo_a = STMT_VINFO_RELATED_STMT (stmtinfo_a);
-  if (is_pattern_stmt_p (stmtinfo_b))
-    stmtinfo_b = STMT_VINFO_RELATED_STMT (stmtinfo_b);
+  stmtinfo_a = vect_orig_stmt (stmtinfo_a);
+  stmtinfo_b = vect_orig_stmt (stmtinfo_b);
   stmt_vec_info earlier_stmt_info = get_earlier_stmt (stmtinfo_a, stmtinfo_b);
   return !DR_IS_WRITE (STMT_VINFO_DATA_REF (earlier_stmt_info));
 }

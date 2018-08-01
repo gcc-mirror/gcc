@@ -3628,8 +3628,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (slp_node)
     return true;
 
-  if (is_pattern_stmt_p (stmt_info))
-    stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
+  stmt_info = vect_orig_stmt (stmt_info);
   lhs = gimple_get_lhs (stmt_info->stmt);
 
   gassign *new_stmt
@@ -4364,10 +4363,7 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
   if (scalar_dest)
     {
       type = TREE_TYPE (scalar_dest);
-      if (is_pattern_stmt_p (stmt_info))
-	lhs = gimple_call_lhs (STMT_VINFO_RELATED_STMT (stmt_info)->stmt);
-      else
-	lhs = gimple_call_lhs (stmt);
+      lhs = gimple_call_lhs (vect_orig_stmt (stmt_info)->stmt);
       new_stmt = gimple_build_assign (lhs, build_zero_cst (type));
     }
   else
@@ -9843,8 +9839,7 @@ vect_remove_stores (stmt_vec_info first_stmt_info)
   while (next_stmt_info)
     {
       stmt_vec_info tmp = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
-      if (is_pattern_stmt_p (next_stmt_info))
-	next_stmt_info = STMT_VINFO_RELATED_STMT (next_stmt_info);
+      next_stmt_info = vect_orig_stmt (next_stmt_info);
       /* Free the attached stmt_vec_info and remove the stmt.  */
       vinfo->remove_stmt (next_stmt_info);
       next_stmt_info = tmp;

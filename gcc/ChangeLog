@@ -1,5 +1,17 @@
 2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (vect_orig_stmt): New function.
+	* tree-vect-data-refs.c (vect_preserves_scalar_order_p): Use it.
+	* tree-vect-loop.c (vect_model_reduction_cost): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-slp.c (vect_find_last_scalar_stmt_in_slp): Likewise.
+	(vect_detect_hybrid_slp_stmts, vect_schedule_slp): Likewise.
+	* tree-vect-stmts.c (vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call, vect_remove_stores): Likewise.
+
+2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_transform_stmt): Remove grouped_store
 	argument.
 	* tree-vect-stmts.c (vect_transform_stmt): Likewise.

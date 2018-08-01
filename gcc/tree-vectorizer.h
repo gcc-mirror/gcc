@@ -1120,6 +1120,17 @@ is_pattern_stmt_p (stmt_vec_info stmt_info)
   return stmt_info->pattern_stmt_p;
 }
 
+/* If STMT_INFO is a pattern statement, return the statement that it
+   replaces, otherwise return STMT_INFO itself.  */
+
+inline stmt_vec_info
+vect_orig_stmt (stmt_vec_info stmt_info)
+{
+  if (is_pattern_stmt_p (stmt_info))
+    return STMT_VINFO_RELATED_STMT (stmt_info);
+  return stmt_info;
+}
+
 /* Return true if BB is a loop header.  */
 
 static inline bool
