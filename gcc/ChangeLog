@@ -1,3 +1,9 @@
+2018-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/86724
+	* graphite.h: Include isl/id.h and isl/space.h to allow build
+	with ISL 0.20.
+
 2018-08-01 Jan Willem Jagersma  <jwjagersma@gmail.com>
 
 	PR target/86651
