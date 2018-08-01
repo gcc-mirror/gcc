@@ -3033,15 +3033,16 @@
   [(set_attr "type" "neon_to_gp<q>")]
 )
 
-(define_insn "*aarch64_get_lane_zero_extendsi<mode>"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(zero_extend:SI
+(define_insn "*aarch64_get_lane_zero_extend<GPI:mode><VDQQH:mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(zero_extend:GPI
 	  (vec_select:<VEL>
 	    (match_operand:VDQQH 1 "register_operand" "w")
 	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
   "TARGET_SIMD"
   {
-    operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
+    operands[2] = aarch64_endian_lane_rtx (<VDQQH:MODE>mode,
+					   INTVAL (operands[2]));
     return "umov\\t%w0, %1.<Vetype>[%2]";
   }
   [(set_attr "type" "neon_to_gp<q>")]
