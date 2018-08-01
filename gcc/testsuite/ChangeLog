@@ -1,5 +1,11 @@
 2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR target/86753
+	* gcc.target/aarch64/sve/vcond_4.c: XFAIL positive tests.
+	* gcc.target/aarch64/sve/vcond_5.c: Likewise.
+
+2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/pointer-range-check-1.c: New test.
 	* gcc.dg/pointer-range-check-2.c: Likewise.
 
