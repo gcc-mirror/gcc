@@ -1131,6 +1131,17 @@ vect_orig_stmt (stmt_vec_info stmt_info)
   return stmt_info;
 }
 
+/* If STMT_INFO has been replaced by a pattern statement, return the
+   replacement statement, otherwise return STMT_INFO itself.  */
+
+inline stmt_vec_info
+vect_stmt_to_vectorize (stmt_vec_info stmt_info)
+{
+  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+    return STMT_VINFO_RELATED_STMT (stmt_info);
+  return stmt_info;
+}
+
 /* Return true if BB is a loop header.  */
 
 static inline bool
