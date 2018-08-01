@@ -1,3 +1,42 @@
+2018-08-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp (zero_nonzero_bits_from_bounds): Rename to...
+	(wide_int_set_zero_nonzero_bits): ...this.
+	(zero_nonzero_bits_from_vr): Rename to...
+	(vrp_set_zero_nonzero_bits): ...this.
+	(extract_range_from_multiplicative_op_1): Abstract wide int
+	code...
+	(wide_int_range_multiplicative_op): ...here.
+	(extract_range_from_binary_expr_1): Extract wide int binary
+	operations into their own functions.
+	(wide_int_range_lshift): New.
+	(wide_int_range_can_optimize_bit_op): New.
+	(wide_int_range_shift_undefined_p): New.
+	(wide_int_range_bit_xor): New.
+	(wide_int_range_bit_ior): New.
+	(wide_int_range_bit_and): New.
+	(wide_int_range_trunc_mod): New.
+	(extract_range_into_wide_ints): New.
+	(vrp_shift_undefined_p): New.
+	(extract_range_from_multiplicative_op): New.
+	(vrp_can_optimize_bit_op): New.
+	* tree-vrp.h (value_range::dump): New.
+	(wide_int_range_multiplicative_op): New.
+	(wide_int_range_lshift):New.
+	(wide_int_range_shift_undefined_p): New.
+	(wide_int_range_bit_xor): New.
+	(wide_int_range_bit_ior): New.
+	(wide_int_range_bit_and): New.
+	(wide_int_range_trunc_mod): New.
+	(zero_nonzero_bits_from_bounds): Rename to...
+	(wide_int_set_zero_nonzero_bits): ...this.
+	(zero_nonzero_bits_from_vr): Rename to...
+	(vrp_set_zero_nonzero_bits): ...this.
+	(range_easy_mask_min_max): Rename to...
+	(wide_int_range_can_optimize_bit_op): this.
+	* vr-values.c (simplify_bit_ops_using_ranges): Rename
+	zero_nonzero_bits_from_vr into vrp_set_zero_nonzero_bits.
+
 2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vectorizer.h (vect_orig_stmt): New function.
