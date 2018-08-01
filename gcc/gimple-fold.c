@@ -1657,7 +1657,6 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
       if (!nonstring)
 	{
 	  tree fndecl = gimple_call_fndecl (stmt);
-	  gcall *call = as_a <gcall *> (stmt);
 
 	  /* Warn about the lack of nul termination: the result is not
 	     a (nul-terminated) string.  */
@@ -1666,11 +1665,11 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
 	    warning_at (loc, OPT_Wstringop_truncation,
 			"%G%qD destination unchanged after copying no bytes "
 			"from a string of length %E",
-			call, fndecl, slen);
+			stmt, fndecl, slen);
 	  else
 	    warning_at (loc, OPT_Wstringop_truncation,
 			"%G%qD destination unchanged after copying no bytes",
-			call, fndecl);
+			stmt, fndecl);
 	}
 
       replace_call_with_value (gsi, dest);
@@ -1991,7 +1990,7 @@ gimple_fold_builtin_strcat_chk (gimple_stmt_iterator *gsi)
 static bool
 gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
 {
-  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  gimple *stmt = gsi_stmt (*gsi);
   tree dst = gimple_call_arg (stmt, 0);
   tree src = gimple_call_arg (stmt, 1);
   tree len = gimple_call_arg (stmt, 2);

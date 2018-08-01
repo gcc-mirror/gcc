@@ -1627,8 +1627,7 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 	  tree type = TREE_TYPE (oldlen);
 	  oldlen = fold_build2 (PLUS_EXPR, type, oldlen,
 				build_int_cst (type, 1));
-	  check_bounds_or_overlap (as_a <gcall *>(stmt), olddsi->ptr, src,
-				   oldlen, NULL_TREE);
+	  check_bounds_or_overlap (stmt, olddsi->ptr, src, oldlen, NULL_TREE);
 	}
 
       return;
@@ -1715,8 +1714,7 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
   if (const strinfo *chksi = olddsi ? olddsi : dsi)
     if (si
-	&& !check_bounds_or_overlap (as_a <gcall *>(stmt), chksi->ptr, si->ptr,
-				     NULL_TREE, len))
+	&& !check_bounds_or_overlap (stmt, chksi->ptr, si->ptr, NULL_TREE, len))
       {
 	gimple_set_no_warning (stmt, true);
 	set_no_warning = true;
@@ -2031,8 +2029,6 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 	  lenrange[0] = wi::shwi (0, prec);
 	}
 
-      gcall *call = as_a <gcall *> (stmt);
-
       /* Set to true for strncat whose bound is derived from the length
 	 of the destination (the expected usage pattern).  */
       bool cat_dstlen_bounded = false;
@@ -2048,7 +2044,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 			  "%G%qD output truncated before terminating nul "
 			  "copying %E bytes from a string of the same "
 			  "length",
-			  call, func, cnt);
+			  stmt, func, cnt);
       else if (!cat_dstlen_bounded)
 	{
 	  if (wi::geu_p (lenrange[0], cntrange[1]))
@@ -2062,12 +2058,12 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 				  "from a string of length %wu",
 				  "%G%qD output truncated copying %E bytes "
 				  "from a string of length %wu",
-				  call, func, cnt, lenrange[0].to_uhwi ());
+				  stmt, func, cnt, lenrange[0].to_uhwi ());
 
 	      return warning_at (callloc, OPT_Wstringop_truncation,
 				 "%G%qD output truncated copying between %wu "
 				 "and %wu bytes from a string of length %wu",
-				 call, func, cntrange[0].to_uhwi (),
+				 stmt, func, cntrange[0].to_uhwi (),
 				 cntrange[1].to_uhwi (), lenrange[0].to_uhwi ());
 	    }
 	  else if (wi::geu_p (lenrange[1], cntrange[1]))
@@ -2081,12 +2077,12 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 				  "byte from a string of length %wu",
 				  "%G%qD output may be truncated copying %E "
 				  "bytes from a string of length %wu",
-				  call, func, cnt, lenrange[1].to_uhwi ());
+				  stmt, func, cnt, lenrange[1].to_uhwi ());
 
 	      return warning_at (callloc, OPT_Wstringop_truncation,
 				 "%G%qD output may be truncated copying between "
 				 "%wu and %wu bytes from a string of length %wu",
-				 call, func, cntrange[0].to_uhwi (),
+				 stmt, func, cntrange[0].to_uhwi (),
 				 cntrange[1].to_uhwi (), lenrange[1].to_uhwi ());
 	    }
 	}
@@ -2102,7 +2098,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 	  return warning_at (callloc, OPT_Wstringop_truncation,
 			     "%G%qD output may be truncated copying between "
 			     "%wu and %wu bytes from a string of length %wu",
-			     call, func, cntrange[0].to_uhwi (),
+			     stmt, func, cntrange[0].to_uhwi (),
 			     cntrange[1].to_uhwi (), lenrange[0].to_uhwi ());
 	}
     }
@@ -2122,7 +2118,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
       if (cntrange[0] == cntrange[1])
 	return warning_at (callloc, OPT_Wstringop_truncation,
 			   "%G%qD specified bound %E equals destination size",
-			   as_a <gcall *> (stmt), func, cnt);
+			   stmt, func, cnt);
     }
 
   return false;
@@ -2180,8 +2176,7 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
   else
     srcsize = NULL_TREE;
 
-  if (!check_bounds_or_overlap (as_a <gcall *>(stmt), dst, src,
-				dstsize, srcsize))
+  if (!check_bounds_or_overlap (stmt, dst, src, dstsize, srcsize))
     {
       gimple_set_no_warning (stmt, true);
       return;
@@ -2222,13 +2217,13 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
       && warning_at (callloc, OPT_Wstringop_truncation,
 		     "%G%qD output truncated before terminating nul "
 		     "copying as many bytes from a string as its length",
-		     as_a <gcall *>(stmt), func))
+		     stmt, func))
     warned = true;
   else if (silen && is_strlen_related_p (src, silen->ptr))
     warned = warning_at (callloc, OPT_Wstringop_overflow_,
 			 "%G%qD specified bound depends on the length "
 			 "of the source argument",
-			 as_a <gcall *>(stmt), func);
+			 stmt, func);
   if (warned)
     {
       location_t strlenloc = pss->second;
@@ -2479,8 +2474,7 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
 	tree sptr = si && si->ptr ? si->ptr : src;
 
-	if (!check_bounds_or_overlap (as_a <gcall *>(stmt), dst, sptr,
-				      NULL_TREE, slen))
+	if (!check_bounds_or_overlap (stmt, dst, sptr, NULL_TREE, slen))
 	  {
 	    gimple_set_no_warning (stmt, true);
 	    set_no_warning = true;
@@ -2590,8 +2584,7 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
       tree sptr = si && si->ptr ? si->ptr : src;
 
-      if (!check_bounds_or_overlap (as_a <gcall *>(stmt), dst, sptr,
-				    dstlen, srcsize))
+      if (!check_bounds_or_overlap (stmt, dst, sptr, dstlen, srcsize))
 	{
 	  gimple_set_no_warning (stmt, true);
 	  set_no_warning = true;

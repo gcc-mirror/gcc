@@ -1,3 +1,14 @@
+2018-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* c-family/c-format.c (gcc_tdiag_char_table): Update comment for "%G".
+	(gcc_cdiag_char_table, gcc_cxxdiag_char_table): Same.
+ 	(init_dynamic_diag_info): Update from "gcall *" to "gimple *".
+ 	* c-format.h (T89_G): Update to be "gimple *" rather than
+ 	"gcall *".
+	(local_gcall_ptr_node): Rename...
+ 	(local_gimple_ptr_node): ...to this.
+
 2018-07-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-format.c (PP_FORMAT_CHAR_TABLE): New macro, based on existing

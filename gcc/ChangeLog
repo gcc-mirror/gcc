@@ -1,3 +1,31 @@
+2018-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* gimple-pretty-print.c (percent_G_format): Accept a "gimple *"
+	rather than a "gcall *".  Directly pass the data of interest
+ 	to percent_K_format, rather than building a temporary CALL_EXPR
+ 	to hold it.
+	* gimple-fold.c (gimple_fold_builtin_strncpy): Adjust.
+	(gimple_fold_builtin_strncat): Adjust.
+	* gimple-ssa-warn-restrict.h (check_bounds_or_overlap): Replace
+	gcall* argument with gimple*.
+	* gimple-ssa-warn-restrict.c (check_call): Same.
+	(wrestrict_dom_walker::before_dom_children): Same.
+	(builtin_access::builtin_access): Same.
+	(check_bounds_or_overlap): Same
+	(maybe_diag_overlap): Same.
+	(maybe_diag_offset_bounds): Same.
+	* tree-diagnostic.c (default_tree_printer): Move usage of
+	EXPR_LOCATION (t) and TREE_BLOCK (t) from within percent_K_format
+	to this callsite.
+	* tree-pretty-print.c (percent_K_format): Add argument.
+	* tree-pretty-print.h: Add argument.
+	* tree-ssa-ccp.c (pass_post_ipa_warn::execute): Adjust.
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Adjust.
+	(maybe_diag_stxncpy_trunc): Same.
+	(handle_builtin_stxncpy): Same.
+	(handle_builtin_strcat): Same.
+
 2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* match.pd: Optimise pointer range checks.

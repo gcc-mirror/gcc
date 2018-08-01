@@ -1,3 +1,8 @@
+2018-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* gcc.dg/format/gcc_diag-10.c: Adjust.
+
 2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/var_stride_2.c: Update expected form
