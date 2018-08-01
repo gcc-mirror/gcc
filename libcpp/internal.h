@@ -622,8 +622,7 @@ cpp_in_primary_file (cpp_reader *pfile)
 }
 
 /* In macro.c */
-extern cpp_macro *_cpp_construct_macro (cpp_reader *, cpp_macro_kind, void *);
-extern cpp_macro *_cpp_new_macro (cpp_reader *, cpp_macro_kind);
+extern cpp_macro *_cpp_new_macro (cpp_reader *, cpp_macro_kind, void *);
 extern void _cpp_free_definition (cpp_hashnode *);
 extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *);
 extern void _cpp_pop_context (cpp_reader *);

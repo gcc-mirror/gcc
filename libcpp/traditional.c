@@ -1209,7 +1209,8 @@ _cpp_create_trad_definition (cpp_reader *pfile)
 
   if (fun_like >= 0)
     {
-      macro = _cpp_new_macro (pfile, cmk_traditional);
+      macro = _cpp_new_macro (pfile, cmk_traditional,
+			      _cpp_aligned_alloc (pfile, sizeof (cpp_macro)));
       macro->parm.params = params;
       macro->paramc = nparms;
       macro->fun_like = fun_like != 0;

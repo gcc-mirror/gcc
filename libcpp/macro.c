@@ -3338,9 +3338,8 @@ create_iso_definition (cpp_reader *pfile)
 	}
     }
 
-  macro = _cpp_construct_macro (pfile, cmk_macro,
-				_cpp_reserve_room (pfile, 0,
-						   sizeof (cpp_macro)));
+  macro = _cpp_new_macro (pfile, cmk_macro,
+			  _cpp_reserve_room (pfile, 0, sizeof (cpp_macro)));
 
   if (!token)
     {
@@ -3486,7 +3485,7 @@ create_iso_definition (cpp_reader *pfile)
 }
 
 cpp_macro *
-_cpp_construct_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
+_cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
 {
   cpp_macro *macro = (cpp_macro *) placement;
 
@@ -3504,18 +3503,6 @@ _cpp_construct_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
   macro->kind = kind;
 
   return macro;
-}
-
-cpp_macro *
-_cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind)
-{
-  void *placement;
-
-  if (pfile->hash_table->alloc_subobject)
-    placement = pfile->hash_table->alloc_subobject (sizeof (cpp_macro));
-  else
-    placement = _cpp_aligned_alloc (pfile, sizeof (cpp_macro));
-  return _cpp_construct_macro (pfile, kind, placement);
 }
 
 /* Parse a macro and save its expansion.  Returns nonzero on success.  */

@@ -1,5 +1,13 @@
 2018-08-01  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* internal.h (_cpp_construct_macro): Rename to ...
+	(_cpp_new_macro): ... here.  Kill old declaration.
+	* macro.c (_cpp_construct_macro): Rename to ...
+	(_cpp_new_macro): ... here.  Kill old definition.
+	(create_iso_definition): Adjust.
+	* traditional.c (_cpp_create_trad_definition): Adjust.
+
 	Macro tokens are trailing array
 	libcpp/
 	* include/cpp-id-data.h (cpp_macro): Move tokens to trailing array.
