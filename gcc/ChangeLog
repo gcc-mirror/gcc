@@ -1,5 +1,12 @@
 2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vect_transform_loop_stmt): Remove slp_scheduled
+	argument.
+	(vect_transform_loop): Update calls accordingly.  Schedule SLP
+	instances before the main loop, if any exist.
+
+2018-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/86749
 	* tree-vect-patterns.c (vect_determine_min_output_precision_1):
 	If the lhs is used in a COND_EXPR, check that it is being used
