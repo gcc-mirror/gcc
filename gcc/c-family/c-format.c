@@ -56,7 +56,7 @@ struct function_format_info
 
 /* Initialized in init_dynamic_diag_info.  */
 static GTY(()) tree local_tree_type_node;
-static GTY(()) tree local_gcall_ptr_node;
+static GTY(()) tree local_gimple_ptr_node;
 static GTY(()) tree locus;
 
 static bool decode_format_attr (tree, function_format_info *, int);
@@ -719,7 +719,7 @@ static const format_char_info gcc_tdiag_char_table[] =
   { "E", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
   { "K", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
-  /* G requires a "gcall*" argument at runtime.  */
+  /* G requires a "gimple*" argument at runtime.  */
   { "G", 1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
@@ -737,7 +737,7 @@ static const format_char_info gcc_cdiag_char_table[] =
   { "E",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
   { "K",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
-  /* G requires a "gcall*" argument at runtime.  */
+  /* G requires a "gimple*" argument at runtime.  */
   { "G",   1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
   { "v",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
@@ -757,7 +757,7 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   { "E", 1,STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
   { "K", 1, STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "\"",   NULL },
 
-  /* G requires a "gcall*" argument at runtime.  */
+  /* G requires a "gimple*" argument at runtime.  */
   { "G", 1, STD_C89,{ T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "\"",   NULL },
 
   /* These accept either an 'int' or an 'enum tree_code' (which is handled as an 'int'.)  */
@@ -3838,27 +3838,27 @@ init_dynamic_diag_info (void)
 	local_tree_type_node = void_type_node;
     }
 
-  /* Similar to the above but for gcall*.  */
-  if (!local_gcall_ptr_node
-      || local_gcall_ptr_node == void_type_node)
+  /* Similar to the above but for gimple*.  */
+  if (!local_gimple_ptr_node
+      || local_gimple_ptr_node == void_type_node)
     {
-      if ((local_gcall_ptr_node = maybe_get_identifier ("gcall")))
+      if ((local_gimple_ptr_node = maybe_get_identifier ("gimple")))
 	{
-	  local_gcall_ptr_node
-	    = identifier_global_value (local_gcall_ptr_node);
-	  if (local_gcall_ptr_node)
+	  local_gimple_ptr_node
+	    = identifier_global_value (local_gimple_ptr_node);
+	  if (local_gimple_ptr_node)
 	    {
-	      if (TREE_CODE (local_gcall_ptr_node) != TYPE_DECL)
+	      if (TREE_CODE (local_gimple_ptr_node) != TYPE_DECL)
 		{
-		  error ("%<gcall%> is not defined as a type");
-		  local_gcall_ptr_node = 0;
+		  error ("%<gimple%> is not defined as a type");
+		  local_gimple_ptr_node = 0;
 		}
 	      else
-		local_gcall_ptr_node = TREE_TYPE (local_gcall_ptr_node);
+		local_gimple_ptr_node = TREE_TYPE (local_gimple_ptr_node);
 	    }
 	}
       else
-	local_gcall_ptr_node = void_type_node;
+	local_gimple_ptr_node = void_type_node;
     }
 
   static tree hwi;

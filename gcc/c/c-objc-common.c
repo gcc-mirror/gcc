@@ -67,7 +67,7 @@ c_objc_common_init (void)
    %D: a general decl,
    %E: an identifier or expression,
    %F: a function declaration,
-   %G: a Gimple call statement,
+   %G: a Gimple statement,
    %K: a CALL_EXPR,
    %T: a type.
    %V: a list of type qualifiers from a tree.
@@ -99,7 +99,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
   if (*spec == 'K')
     {
       t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, t);
+      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
       return true;
     }
 

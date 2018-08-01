@@ -15,9 +15,9 @@ typedef struct location_s
 union tree_node;
 typedef union tree_node *tree;
 
-/* Define gcall as a dummy type.  The typedef must be provided for
+/* Define gimple as a dummy type.  The typedef must be provided for
    the C test to find the symbol.  */
-typedef struct gcall gcall;
+typedef struct gimple gimple;
 
 #define FORMAT(kind) __attribute__ ((format (__gcc_## kind ##__, 1, 2)))
 
@@ -26,7 +26,7 @@ void cdiag (const char*, ...) FORMAT (cdiag);
 void tdiag (const char*, ...) FORMAT (tdiag);
 void cxxdiag (const char*, ...) FORMAT (cxxdiag);
 
-void test_diag (tree t, gcall *gc)
+void test_diag (tree t, gimple *gc)
 {
   diag ("%<");   /* { dg-warning "unterminated quoting directive" } */
   diag ("%>");   /* { dg-warning "unmatched quoting directive " } */
@@ -47,7 +47,7 @@ void test_diag (tree t, gcall *gc)
   diag ("%<%r%R%>", "");
 }
 
-void test_cdiag (tree t, gcall *gc)
+void test_cdiag (tree t, gimple *gc)
 {
   cdiag ("%<");   /* { dg-warning "unterminated quoting directive" } */
   cdiag ("%>");   /* { dg-warning "unmatched quoting directive " } */
@@ -87,7 +87,7 @@ void test_cdiag (tree t, gcall *gc)
   cdiag ("%<%qT%>", t);  /* { dg-warning ".q. flag used within a quoted sequence" } */
 }
 
-void test_tdiag (tree t, gcall *gc)
+void test_tdiag (tree t, gimple *gc)
 {
   tdiag ("%<");       /* { dg-warning "unterminated quoting directive" } */
   tdiag ("%>");       /* { dg-warning "unmatched quoting directive " } */
@@ -124,7 +124,7 @@ void test_tdiag (tree t, gcall *gc)
   tdiag ("%<%qT%>", t);  /* { dg-warning ".q. flag used within a quoted sequence" } */
 }
 
-void test_cxxdiag (tree t, gcall *gc)
+void test_cxxdiag (tree t, gimple *gc)
 {
   cxxdiag ("%A", t);     /* { dg-warning ".A. conversion used unquoted" } */
   cxxdiag ("%D", t);     /* { dg-warning ".D. conversion used unquoted" } */

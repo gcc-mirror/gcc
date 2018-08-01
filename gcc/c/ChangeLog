@@ -1,3 +1,9 @@
+2018-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* c-objc-common.c (c_tree_printer): Move usage of EXPR_LOCATION (t)
+	and TREE_BLOCK (t) from within percent_K_format	to this callsite.
+
 2018-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/85704

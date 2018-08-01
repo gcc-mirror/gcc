@@ -4091,7 +4091,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
       return true;
     case 'K':
       t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, t);
+      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
       return true;
     case 'L': result = language_to_string (next_lang);		break;
     case 'O': result = op_to_string (false, next_tcode);	break;
