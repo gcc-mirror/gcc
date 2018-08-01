@@ -8199,14 +8199,12 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
 }
 
 /* Vectorize STMT_INFO if relevant, inserting any new instructions before GSI.
-   When vectorizing STMT_INFO as a store, set *SEEN_STORE to its stmt_vec_info.
-   *SLP_SCHEDULE is a running record of whether we have called
-   vect_schedule_slp.  */
+   When vectorizing STMT_INFO as a store, set *SEEN_STORE to its
+   stmt_vec_info.  */
 
 static void
 vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
-			  gimple_stmt_iterator *gsi,
-			  stmt_vec_info *seen_store, bool *slp_scheduled)
+			  gimple_stmt_iterator *gsi, stmt_vec_info *seen_store)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
@@ -8237,24 +8235,10 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 	dump_printf_loc (MSG_NOTE, vect_location, "multiple-types.\n");
     }
 
-  /* SLP.  Schedule all the SLP instances when the first SLP stmt is
-     reached.  */
-  if (slp_vect_type slptype = STMT_SLP_TYPE (stmt_info))
-    {
-
-      if (!*slp_scheduled)
-	{
-	  *slp_scheduled = true;
-
-	  DUMP_VECT_SCOPE ("scheduling SLP instances");
-
-	  vect_schedule_slp (loop_vinfo);
-	}
-
-      /* Hybrid SLP stmts must be vectorized in addition to SLP.  */
-      if (slptype == pure_slp)
-	return;
-    }
+  /* Pure SLP statements have already been vectorized.  We still need
+     to apply loop vectorization to hybrid SLP statements.  */
+  if (PURE_SLP_STMT (stmt_info))
+    return;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform statement.\n");
@@ -8284,7 +8268,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   tree niters_vector_mult_vf = NULL_TREE;
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   unsigned int lowest_vf = constant_lower_bound (vf);
-  bool slp_scheduled = false;
   gimple *stmt;
   bool check_profitability = false;
   unsigned int th;
@@ -8390,6 +8373,14 @@ vect_transform_loop (loop_vec_info loop_vinfo)
     /* This will deal with any possible peeling.  */
     vect_prepare_for_masked_peels (loop_vinfo);
 
+  /* Schedule the SLP instances first, then handle loop vectorization
+     below.  */
+  if (!loop_vinfo->slp_instances.is_empty ())
+    {
+      DUMP_VECT_SCOPE ("scheduling SLP instances");
+      vect_schedule_slp (loop_vinfo);
+    }
+
   /* FORNOW: the vectorizer supports only loops which body consist
      of one basic block (header + empty latch). When the vectorizer will
      support more involved loop forms, the order by which the BBs are
@@ -8468,16 +8459,15 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 			  stmt_vec_info pat_stmt_info
 			    = loop_vinfo->lookup_stmt (gsi_stmt (subsi));
 			  vect_transform_loop_stmt (loop_vinfo, pat_stmt_info,
-						    &si, &seen_store,
-						    &slp_scheduled);
+						    &si, &seen_store);
 			}
 		      stmt_vec_info pat_stmt_info
 			= STMT_VINFO_RELATED_STMT (stmt_info);
 		      vect_transform_loop_stmt (loop_vinfo, pat_stmt_info, &si,
-						&seen_store, &slp_scheduled);
+						&seen_store);
 		    }
 		  vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
-					    &seen_store, &slp_scheduled);
+					    &seen_store);
 		}
 	      gsi_next (&si);
 	      if (seen_store)
