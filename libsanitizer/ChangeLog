@@ -1,3 +1,10 @@
+2018-08-01  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/86759
+	* tsan/tsan_platform.h: Cherry-pick compiler-rt revision 318044.
+	* tsan/tsan_platform_linux.cc: Cherry-pick compiler-rt revision
+	319180.
+
 2018-07-26  Release Manager
 
 	* GCC 8.2.0 released.
