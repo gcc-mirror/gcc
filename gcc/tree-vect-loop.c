@@ -834,11 +834,18 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
     scalar_loop (NULL),
     orig_loop_info (NULL)
 {
-  /* Create/Update stmt_info for all stmts in the loop.  */
-  basic_block *body = get_loop_body (loop);
-  for (unsigned int i = 0; i < loop->num_nodes; i++)
+  /* CHECKME: We want to visit all BBs before their successors (except for
+     latch blocks, for which this assertion wouldn't hold).  In the simple
+     case of the loop forms we allow, a dfs order of the BBs would the same
+     as reversed postorder traversal, so we are safe.  */
+
+  unsigned int nbbs = dfs_enumerate_from (loop->header, 0, bb_in_loop_p,
+					  bbs, loop->num_nodes, loop);
+  gcc_assert (nbbs == loop->num_nodes);
+
+  for (unsigned int i = 0; i < nbbs; i++)
     {
-      basic_block bb = body[i];
+      basic_block bb = bbs[i];
       gimple_stmt_iterator si;
 
       for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
@@ -855,16 +862,6 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
 	  add_stmt (stmt);
 	}
     }
-  free (body);
-
-  /* CHECKME: We want to visit all BBs before their successors (except for
-     latch blocks, for which this assertion wouldn't hold).  In the simple
-     case of the loop forms we allow, a dfs order of the BBs would the same
-     as reversed postorder traversal, so we are safe.  */
-
-  unsigned int nbbs = dfs_enumerate_from (loop->header, 0, bb_in_loop_p,
-					  bbs, loop->num_nodes, loop);
-  gcc_assert (nbbs == loop->num_nodes);
 }
 
 /* Free all levels of MASKS.  */
