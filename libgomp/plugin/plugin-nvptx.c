@@ -52,57 +52,10 @@
 #if PLUGIN_NVPTX_DYNAMIC
 # include <dlfcn.h>
 
-# define CUDA_CALLS \
-CUDA_ONE_CALL (cuCtxCreate)		\
-CUDA_ONE_CALL (cuCtxDestroy)		\
-CUDA_ONE_CALL (cuCtxGetCurrent)		\
-CUDA_ONE_CALL (cuCtxGetDevice)		\
-CUDA_ONE_CALL (cuCtxPopCurrent)		\
-CUDA_ONE_CALL (cuCtxPushCurrent)	\
-CUDA_ONE_CALL (cuCtxSynchronize)	\
-CUDA_ONE_CALL (cuDeviceGet)		\
-CUDA_ONE_CALL (cuDeviceGetAttribute)	\
-CUDA_ONE_CALL (cuDeviceGetCount)	\
-CUDA_ONE_CALL (cuEventCreate)		\
-CUDA_ONE_CALL (cuEventDestroy)		\
-CUDA_ONE_CALL (cuEventElapsedTime)	\
-CUDA_ONE_CALL (cuEventQuery)		\
-CUDA_ONE_CALL (cuEventRecord)		\
-CUDA_ONE_CALL (cuEventSynchronize)	\
-CUDA_ONE_CALL (cuFuncGetAttribute)	\
-CUDA_ONE_CALL (cuGetErrorString)	\
-CUDA_ONE_CALL (cuInit)			\
-CUDA_ONE_CALL (cuLaunchKernel)		\
-CUDA_ONE_CALL (cuLinkAddData)		\
-CUDA_ONE_CALL (cuLinkComplete)		\
-CUDA_ONE_CALL (cuLinkCreate)		\
-CUDA_ONE_CALL (cuLinkDestroy)		\
-CUDA_ONE_CALL (cuMemAlloc)		\
-CUDA_ONE_CALL (cuMemAllocHost)		\
-CUDA_ONE_CALL (cuMemcpy)		\
-CUDA_ONE_CALL (cuMemcpyDtoDAsync)	\
-CUDA_ONE_CALL (cuMemcpyDtoH)		\
-CUDA_ONE_CALL (cuMemcpyDtoHAsync)	\
-CUDA_ONE_CALL (cuMemcpyHtoD)		\
-CUDA_ONE_CALL (cuMemcpyHtoDAsync)	\
-CUDA_ONE_CALL (cuMemFree)		\
-CUDA_ONE_CALL (cuMemFreeHost)		\
-CUDA_ONE_CALL (cuMemGetAddressRange)	\
-CUDA_ONE_CALL (cuMemHostGetDevicePointer)\
-CUDA_ONE_CALL (cuModuleGetFunction)	\
-CUDA_ONE_CALL (cuModuleGetGlobal)	\
-CUDA_ONE_CALL (cuModuleLoad)		\
-CUDA_ONE_CALL (cuModuleLoadData)	\
-CUDA_ONE_CALL (cuModuleUnload)		\
-CUDA_ONE_CALL (cuStreamCreate)		\
-CUDA_ONE_CALL (cuStreamDestroy)		\
-CUDA_ONE_CALL (cuStreamQuery)		\
-CUDA_ONE_CALL (cuStreamSynchronize)	\
-CUDA_ONE_CALL (cuStreamWaitEvent)
 # define CUDA_ONE_CALL(call) \
   __typeof (call) *call;
 struct cuda_lib_s {
-  CUDA_CALLS
+#include "cuda-lib.def"
 } cuda_lib;
 
 /* -1 if init_cuda_lib has not been called yet, false
@@ -127,7 +80,7 @@ init_cuda_lib (void)
   cuda_lib.call = dlsym (h, #call);	\
   if (cuda_lib.call == NULL)		\
     return false;
-  CUDA_CALLS
+#include "cuda-lib.def"
   cuda_lib_inited = true;
   return true;
 }

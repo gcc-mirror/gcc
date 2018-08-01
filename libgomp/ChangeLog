@@ -1,3 +1,10 @@
+2018-08-01  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/cuda-lib.def: New file.  Factor out of ...
+	* plugin/plugin-nvptx.c (CUDA_CALLS): ... here.
+	(struct cuda_lib_s, init_cuda_lib): Include cuda-lib.def instead of
+	using CUDA_CALLS.
+
 2018-07-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Revert 'AsyncI/O patch committed'.
