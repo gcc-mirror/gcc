@@ -1,3 +1,11 @@
+2018-08-01  Mike Crowe  <mac@mcrowe.com>
+
+	* include/std/condition_variable (wait_until): Only report timeout
+	if we really have timed out when measured against the
+	caller-supplied clock.
+	* testsuite/30_threads/condition_variable/members/2.cc: Add test
+	case to confirm above behaviour.
+
 2018-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60555
