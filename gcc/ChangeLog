@@ -1,3 +1,15 @@
+2018-08-01 Jan Willem Jagersma  <jwjagersma@gmail.com>
+
+	PR target/86651
+	* dwarf2out.c (dwarf2out_early_finish): Do not generate assembly in LTO
+	mode for COFF targets.
+	* defaults.h (TARGET_COFF): Define.
+	* config/i386/djgpp.h (TARGET_ASM_LTO_START, TARGET_ASM_LTO_END,
+	TARGET_COFF): Define.
+	(i386_djgpp_asm_lto_start, i386_djgpp_asm_lto_end): Declare.
+	* config/i386/djgpp.c (saved_debug_info_level): New static variable.
+	(i386_djgpp_asm_lto_start, i386_djgpp_asm_lto_end): New functions.
+
 2018-07-31  Alexandre Oliva <oliva@adacore.com>
 
 	* gimple-streamer-in.c (input_bb): Restore BB discriminator.

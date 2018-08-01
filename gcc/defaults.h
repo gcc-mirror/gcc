@@ -1282,6 +1282,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_PECOFF 0
 #endif
 
+#ifndef TARGET_COFF
+#define TARGET_COFF 0
+#endif
+
 #ifndef EH_RETURN_HANDLER_RTX
 #define EH_RETURN_HANDLER_RTX NULL
 #endif

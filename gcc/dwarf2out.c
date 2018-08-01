@@ -31942,10 +31942,10 @@ dwarf2out_early_finish (const char *filename)
 
   /* Do not generate DWARF assembler now when not producing LTO bytecode.  */
   if ((!flag_generate_lto && !flag_generate_offload)
-      /* FIXME: Disable debug info generation for PE-COFF targets since the
+      /* FIXME: Disable debug info generation for (PE-)COFF targets since the
 	 copy_lto_debug_sections operation of the simple object support in
 	 libiberty is not implemented for them yet.  */
-      || TARGET_PECOFF)
+      || TARGET_PECOFF || TARGET_COFF)
     return;
 
   /* Now as we are going to output for LTO initialize sections and labels
