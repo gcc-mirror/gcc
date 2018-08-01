@@ -1,3 +1,7 @@
+2018-08-01  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-68.c: New testcase.
+
 2018-08-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/plugin/poly-int-07_plugin.c (dg-options): Use -O0.

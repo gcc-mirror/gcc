@@ -1,3 +1,8 @@
+2018-08-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (visit_phi): Compare invariant addresses
+	as base and offset.
+
 2018-08-01  Martin Liska  <mliska@suse.cz>
 
 	* value-prof.c (gimple_divmod_fixed_value_transform): Unify
