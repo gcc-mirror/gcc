@@ -1527,14 +1527,11 @@ interesting_stringop_to_profile_p (gcall *call, int *size_arg)
   enum built_in_function fcode;
 
   fcode = DECL_FUNCTION_CODE (gimple_call_fndecl (call));
-  if (fcode != BUILT_IN_MEMCPY && fcode != BUILT_IN_MEMPCPY
-      && fcode != BUILT_IN_MEMSET && fcode != BUILT_IN_BZERO)
-    return false;
-
   switch (fcode)
     {
      case BUILT_IN_MEMCPY:
      case BUILT_IN_MEMPCPY:
+     case BUILT_IN_MEMMOVE:
        *size_arg = 2;
        return validate_gimple_arglist (call, POINTER_TYPE, POINTER_TYPE,
 				       INTEGER_TYPE, VOID_TYPE);
@@ -1547,7 +1544,7 @@ interesting_stringop_to_profile_p (gcall *call, int *size_arg)
        return validate_gimple_arglist (call, POINTER_TYPE, INTEGER_TYPE,
 				       VOID_TYPE);
      default:
-       gcc_unreachable ();
+       return false;
     }
 }
 
@@ -1710,6 +1707,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
     {
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMPCPY:
+    case BUILT_IN_MEMMOVE:
       src = gimple_call_arg (stmt, 1);
       src_align = get_pointer_alignment (src);
       if (!can_move_by_pieces (val, MIN (dest_align, src_align)))
