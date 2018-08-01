@@ -1,5 +1,14 @@
 2018-08-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-parser.c (c_parser_omp_clause_depend): Adjust parsing for
+	dependence type to be no longer optional and dependence modifier
+	separated from dependence type by comma rather than colon.  Parse
+	depobj dependence type.
+	(c_parser_omp_depobj): Use OMP_CLAUSE_DEPEND_SOURCE instead of
+	OMP_CLAUSE_DEPEND_UNSPECIFIED.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_DEPEND_DEPOBJ
+	instead of OMP_CLAUSE_DEPEND_UNSPECIFIED, adjust diagnostics.
+
 	* c-parser.c (c_parser_omp_clause_reduction): Add IS_OMP argument,
 	parse reduction modifiers.
 	(c_parser_oacc_all_clauses, c_parser_omp_all_clauses): Adjust

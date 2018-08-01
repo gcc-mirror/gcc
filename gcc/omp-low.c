@@ -7386,7 +7386,7 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 	case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
 	  cnt[1]++;
 	  break;
-	case OMP_CLAUSE_DEPEND_UNSPECIFIED:
+	case OMP_CLAUSE_DEPEND_DEPOBJ:
 	  cnt[3]++;
 	  break;
 	case OMP_CLAUSE_DEPEND_SOURCE:
@@ -7443,7 +7443,7 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 		if (i != 1)
 		  continue;
 		break;
-	      case OMP_CLAUSE_DEPEND_UNSPECIFIED:
+	      case OMP_CLAUSE_DEPEND_DEPOBJ:
 		if (i != 3)
 		  continue;
 		break;

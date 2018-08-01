@@ -51,16 +51,16 @@ bar ()
   {
     int i;
     for (i = 0; i < 64; i++)
-      #pragma omp task depend (iterator (j=i:i+1) : out : foo (1, j, 0)[0])
+      #pragma omp task depend (iterator (j=i:i+1) , out : foo (1, j, 0)[0])
 	arr[i] = i;
-    #pragma omp task depend (iterator (int k=beg:end:step,long int l=0:4:1) : inout : \
+    #pragma omp task depend (iterator (int k=beg:end:step,long int l=0:4:1) , inout : \
 			     foo (2, k, l)[0], foo (3, l, k)[0]) private (i)
     for (i = 0; i < 64; i++)
       if (arr[i] != i)
 	abort ();
       else
 	arr[i] = arr[i] + 1;
-    #pragma omp task depend (iterator (int *p=&arr3[64]:&arr3[0]:-1) : in : \
+    #pragma omp task depend (iterator (int *p=&arr3[64]:&arr3[0]:-1), in : \
 			     foo (4, 0, p - &arr3[0])[0]) depend (in : beg)
     for (i = 0; i < 64; i++)
       if (arr[i] != i + 1)
@@ -79,16 +79,16 @@ baz (A beg, A end, A step)
   {
     int i;
     for (i = 0; i < 64; i++)
-      #pragma omp task depend (iterator (A j=i:i+1) : out : foo (1, j, 0)[0])
+      #pragma omp task depend (iterator (A j=i:i+1),out : foo (1, j, 0)[0])
 	arr[i] = i;
-    #pragma omp task depend (iterator (A k=beg:end:step,B l=0:4:1) : inout : \
+    #pragma omp task depend (iterator (A k=beg:end:step,B l=0:4:1), inout : \
 			     foo (2, k, l)[0], foo (3, l, k)[0]) private (i)
     for (i = 0; i < 64; i++)
       if (arr[i] != i)
 	abort ();
       else
 	arr[i] = arr[i] + 1;
-    #pragma omp task depend (iterator (C p=&arr3[64]:&arr3[0]:-1) : in : \
+    #pragma omp task depend (iterator (C p=&arr3[64]:&arr3[0]:-1), in : \
 			     foo (4, 0, p - &arr3[0])[0]) depend (in : beg)
     for (i = 0; i < 64; i++)
       if (arr[i] != i + 1)

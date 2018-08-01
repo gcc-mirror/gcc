@@ -12,9 +12,9 @@ dep (omp_depend_t &d1, omp_depend_t *d2)
   #pragma omp parallel
   #pragma omp single
   {
-    #pragma omp task shared (x) depend(*d2)
+    #pragma omp task shared (x) depend(depobj:*d2)
     x = 2;
-    #pragma omp task shared (x) depend(d1)
+    #pragma omp task shared (x) depend(depobj : d1)
     if (x != 2)
       abort ();
   }
@@ -34,9 +34,9 @@ dep2 (T &d2)
     #pragma omp depobj (d1) depend(out: x)
     #pragma omp depobj (*&d2) depend (in:x)
     #pragma omp depobj(d2)update(in)
-    #pragma omp task shared (x) depend(d1)
+    #pragma omp task shared (x) depend(depobj :d1)
     x = 2;
-    #pragma omp task shared (x) depend(d2)
+    #pragma omp task shared (x) depend(depobj: d2)
     if (x != 2)
       abort ();
     #pragma omp taskwait
@@ -57,9 +57,9 @@ dep3 (void)
     {
       #pragma omp depobj(d[0]) depend(out:x)
       #pragma omp depobj(d[1]) depend(in: x)
-      #pragma omp task shared (x) depend(*d)
+      #pragma omp task shared (x) depend(depobj:*d)
       x = 2;
-      #pragma omp task shared (x) depend(*(d + 1))
+      #pragma omp task shared (x) depend(depobj:*(d + 1))
       if (x != 2)
 	abort ();
     }
@@ -79,10 +79,10 @@ antidep (void)
   #pragma omp parallel
   #pragma omp single
   {
-    #pragma omp task shared(xx) depend(dd2)
+    #pragma omp task shared(xx) depend(depobj:dd2)
     if (xx != 1)
       abort ();
-    #pragma omp task shared(xx) depend(dd1)
+    #pragma omp task shared(xx) depend(depobj:dd1)
     xx = 2;
   }
 }

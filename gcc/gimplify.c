@@ -7547,7 +7547,7 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	  case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
 	    i = 1;
 	    break;
-	  case OMP_CLAUSE_DEPEND_UNSPECIFIED:
+	  case OMP_CLAUSE_DEPEND_DEPOBJ:
 	    i = 3;
 	    break;
 	  case OMP_CLAUSE_DEPEND_SOURCE:
@@ -7761,7 +7761,7 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	  case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
 	    i = 1;
 	    break;
-	  case OMP_CLAUSE_DEPEND_UNSPECIFIED:
+	  case OMP_CLAUSE_DEPEND_DEPOBJ:
 	    i = 3;
 	    break;
 	  case OMP_CLAUSE_DEPEND_SOURCE:

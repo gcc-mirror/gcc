@@ -19,37 +19,37 @@ foo (int *p, int i)
   v++;
   #pragma omp task depend (mutexinoutset: p[0]) depend (out: p[1])
   v++;
-  #pragma omp task depend (iterator (j=0:2) : out : p[j])
+  #pragma omp task depend (iterator (j=0:2) , out : p[j])
   v++;
-  #pragma omp task depend (iterator (j=0:2) : in : p[j])
+  #pragma omp task depend (iterator (j=0:2) , in : p[j])
   v++;
-  #pragma omp task depend (iterator (j=0:2) : inout : p[j])
+  #pragma omp task depend (iterator (j=0:2) , inout : p[j])
   v++;
-  #pragma omp task depend (iterator (j=0:2) : mutexinoutset : p[j])
+  #pragma omp task depend (iterator (j=0:2) , mutexinoutset : p[j])
   v++;
-  #pragma omp task depend (iterator (j=0:2) : out : p[j]) depend (iterator (j=0:2) : in : p[j + 2])
+  #pragma omp task depend (iterator (j=0:2) , out : p[j]) depend (iterator (j=0:2) , in : p[j + 2])
   v++;
-  #pragma omp task depend (iterator (j=0:2) : in : p[j]) depend (iterator (j=0:2) : inout : p[j + 2])
+  #pragma omp task depend (iterator (j=0:2) , in : p[j]) depend (iterator (j=0:2) , inout : p[j + 2])
   v++;
-  #pragma omp task depend (iterator (j=0:2) : inout : p[j]) depend (iterator (j=0:2) : mutexinoutset : p[j + 2])
+  #pragma omp task depend (iterator (j=0:2) , inout : p[j]) depend (iterator (j=0:2) , mutexinoutset : p[j + 2])
   v++;
-  #pragma omp task depend (iterator (j=0:2) : mutexinoutset : p[j]) depend (iterator (j=0:2) : out : p[j + 2])
+  #pragma omp task depend (iterator (j=0:2) , mutexinoutset : p[j]) depend (iterator (j=0:2) , out : p[j + 2])
   v++;
-  #pragma omp task depend (iterator (j=0:i) : out : p[j])
+  #pragma omp task depend (iterator (j=0:i) , out : p[j])
   v++;
-  #pragma omp task depend (iterator (j=0:i) : in : p[j])
+  #pragma omp task depend (iterator (j=0:i) , in : p[j])
   v++;
-  #pragma omp task depend (iterator (j=0:i) : inout : p[j])
+  #pragma omp task depend (iterator (j=0:i) , inout : p[j])
   v++;
-  #pragma omp task depend (iterator (j=0:i) : mutexinoutset : p[j])
+  #pragma omp task depend (iterator (j=0:i) , mutexinoutset : p[j])
   v++;
-  #pragma omp task depend (iterator (j=0:i) : out : p[j]) depend (iterator (j=0:i) : in : p[j + 2])
+  #pragma omp task depend (iterator (j=0:i) , out : p[j]) depend (iterator (j=0:i) , in : p[j + 2])
   v++;
-  #pragma omp task depend (iterator (j=0:i) : in : p[j]) depend (iterator (j=0:i) : inout : p[j + 2])
+  #pragma omp task depend (iterator (j=0:i) , in : p[j]) depend (iterator (j=0:i) , inout : p[j + 2])
   v++;
-  #pragma omp task depend (iterator (j=0:i) : inout : p[j]) depend (iterator (j=0:i) : mutexinoutset : p[j + 2])
+  #pragma omp task depend (iterator (j=0:i) , inout : p[j]) depend (iterator (j=0:i) , mutexinoutset : p[j + 2])
   v++;
-  #pragma omp task depend (iterator (j=0:i) : mutexinoutset : p[j]) depend (iterator (j=0:i) : out : p[j + 2])
+  #pragma omp task depend (iterator (j=0:i) , mutexinoutset : p[j]) depend (iterator (j=0:i) , out : p[j + 2])
   v++;
 }
 

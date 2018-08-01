@@ -1,5 +1,13 @@
 2018-08-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-core.h (enum omp_clause_depend_kind): Remove
+	OMP_CLAUSE_DEPEND_UNSPECIFIED, add OMP_CLAUSE_DEPEND_DEPOBJ.
+	* gimplify.c (gimplify_omp_depend): Handle OMP_CLAUSE_DEPEND_DEPOBJ
+	instead of OMP_CLAUSE_DEPEND_UNSPECIFIED.
+	* omp-low.c (lower_depend_clauses): Likewise.
+	* tree-pretty-print.c (dump_omp_clause): Likewise, print the
+	dependence type unconditionally.
+
 	* tree.h (OMP_CLAUSE_REDUCTION_TASK, OMP_CLAUSE_REDUCTION_INSCAN):
 	Define.
 	* tree-pretty-print.c (dump_omp_clause): Print reduction modifiers.

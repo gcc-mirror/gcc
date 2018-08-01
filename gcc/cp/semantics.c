@@ -6843,12 +6843,11 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      if (handle_omp_array_sections (c, ort))
 		remove = true;
-	      else if (OMP_CLAUSE_DEPEND_KIND (c)
-		       == OMP_CLAUSE_DEPEND_UNSPECIFIED)
+	      else if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_DEPOBJ)
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%<depend%> clause without dependence type "
-			    "on array section");
+			    "%<depend%> clause with %<depobj%> dependence "
+			    "type on array section");
 		  remove = true;
 		}
 	      break;
@@ -6884,7 +6883,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"bit-field %qE in %qs clause", t, "depend");
 	      remove = true;
 	    }
-	  else if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_UNSPECIFIED)
+	  else if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_DEPOBJ)
 	    {
 	      if (!c_omp_depend_t_p (TYPE_REF_P (TREE_TYPE (t))
 				     ? TREE_TYPE (TREE_TYPE (t))
@@ -6892,7 +6891,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "%qE does not have %<omp_depend_t%> type in "
-			    "%<depend%> clause without dependence type", t);
+			    "%<depend%> clause with %<depobj%> dependence "
+			    "type", t);
 		  remove = true;
 		}
 	    }
@@ -6902,7 +6902,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE should not have %<omp_depend_t%> type in "
-			"%<depend%> clause with dependence type", t);
+			"%<depend%> clause with dependence type other than "
+			"%<depobj%>", t);
 	      remove = true;
 	    }
 	  if (!remove)

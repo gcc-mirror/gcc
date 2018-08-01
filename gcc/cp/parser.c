@@ -33771,13 +33771,22 @@ cp_parser_omp_iterators (cp_parser *parser)
    OpenMP 4.5:
    depend ( source )
 
-   depend ( sink : vec ) */
+   depend ( sink : vec )
+
+   OpenMP 5.0:
+   depend ( depend-modifier , depend-kind: variable-list )
+
+   depend-kind:
+     in | out | inout | mutexinoutset | depobj
+
+   depend-modifier:
+     iterator ( iterators-definition )  */
 
 static tree
 cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
 {
   tree nlist, c, iterators = NULL_TREE;
-  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_UNSPECIFIED;
+  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_LAST;
 
   matching_parens parens;
   if (!parens.require_open (parser))
@@ -33786,44 +33795,18 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
   do
     {
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
-	break;
+	goto invalid_kind;
 
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
 
-      if (strcmp ("iterator", p) == 0
-	  && iterators == NULL_TREE
-	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN))
+      if (strcmp ("iterator", p) == 0 && iterators == NULL_TREE)
 	{
-	  cp_lexer_save_tokens (parser->lexer);
-	  cp_lexer_consume_token (parser->lexer);
-	  cp_lexer_consume_token (parser->lexer);
-	  bool is_iter
-	    = (cp_parser_skip_to_closing_parenthesis (parser, false, false,
-						      /*consume_paren=*/true)
-	       && cp_lexer_next_token_is (parser->lexer, CPP_COLON));
-
-	  /* Roll back the tokens we skipped.  */
-	  cp_lexer_rollback_tokens (parser->lexer);
-
-	  if (is_iter)
-	    {
-	      begin_scope (sk_omp, NULL);
-	      iterators = cp_parser_omp_iterators (parser);
-	      cp_parser_require (parser, CPP_COLON, RT_COLON);
-	      continue;
-	    }
+	  begin_scope (sk_omp, NULL);
+	  iterators = cp_parser_omp_iterators (parser);
+	  cp_parser_require (parser, CPP_COMMA, RT_COMMA);
+	  continue;
 	}
-      if (strcmp ("source", p) == 0
-	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_CLOSE_PAREN))
-	{
-	  /* FIXME: this is ambiguous.  */
-	  kind = OMP_CLAUSE_DEPEND_SOURCE;
-	  break;
-	}
-
-      if (!cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON))
-	break;
       if (strcmp ("in", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_IN;
       else if (strcmp ("inout", p) == 0)
@@ -33832,16 +33815,19 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
 	kind = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
       else if (strcmp ("out", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_OUT;
+      else if (strcmp ("depobj", p) == 0)
+	kind = OMP_CLAUSE_DEPEND_DEPOBJ;
       else if (strcmp ("sink", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_SINK;
+      else if (strcmp ("source", p) == 0)
+	kind = OMP_CLAUSE_DEPEND_SOURCE;
       else
 	goto invalid_kind;
       break;
     }
   while (1);
 
-  if (kind != OMP_CLAUSE_DEPEND_UNSPECIFIED)
-    cp_lexer_consume_token (parser->lexer);
+  cp_lexer_consume_token (parser->lexer);
 
   if (iterators
       && (kind == OMP_CLAUSE_DEPEND_SOURCE || kind == OMP_CLAUSE_DEPEND_SINK))
@@ -33865,8 +33851,7 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
       return c;
     }
 
-  if (kind != OMP_CLAUSE_DEPEND_UNSPECIFIED
-      && !cp_parser_require (parser, CPP_COLON, RT_COLON))
+  if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
     goto resync_fail;
 
   if (kind == OMP_CLAUSE_DEPEND_SINK)
@@ -35354,7 +35339,7 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
 					   /*consume_paren=*/true);
 
   tree clause = NULL_TREE;
-  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_UNSPECIFIED;
+  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_SOURCE;
   location_t c_loc = cp_lexer_peek_token (parser->lexer)->location;
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
@@ -35394,7 +35379,7 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
 		  else if (!strcmp ("mutexinoutset", p2))
 		    kind = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
 		}
-	      if (kind == OMP_CLAUSE_DEPEND_UNSPECIFIED)
+	      if (kind == OMP_CLAUSE_DEPEND_SOURCE)
 		{
 		  clause = error_mark_node;
 		  error_at (c2_loc, "expected %<in%>, %<out%>, %<inout%> or "
@@ -35410,7 +35395,7 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
 	    clause = error_mark_node;
 	}
     }
-  if (!clause && kind == OMP_CLAUSE_DEPEND_UNSPECIFIED)
+  if (!clause && kind == OMP_CLAUSE_DEPEND_SOURCE)
     {
       clause = error_mark_node;
       error_at (c_loc, "expected %<depend%>, %<destroy%> or %<update%> clause");

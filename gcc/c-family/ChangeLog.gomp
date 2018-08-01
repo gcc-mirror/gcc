@@ -1,5 +1,10 @@
 2018-08-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-omp.c (c_finish_omp_depobj): Test for OMP_CLAUSE_DEPEND_DEPOBJ
+	on clause instead of OMP_CLAUSE_DEPEND_UNSPECIFIED, adjust diagnostics
+	in that case.  Expect kind to be OMP_CLAUSE_DEPEND_SOURCE if clause
+	is specified, rather than OMP_CLAUSE_DEPEND_UNSPECIFIED.
+
 	* c-omp.c (c_omp_split_clauses): Handle OMP_CLAUSE_REDUCTION_TASK.
 
 2018-07-18  Jakub Jelinek  <jakub@redhat.com>

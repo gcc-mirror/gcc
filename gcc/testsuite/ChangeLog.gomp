@@ -1,5 +1,24 @@
 2018-08-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/depend-iterator-1.c (foo, bar, baz): Separate
+	dependence modifier from type with comma instead of colon.
+	* c-c++-common/gomp/taskwait-depend-1.c (foo): Likewise.
+	* c-c++-common/gomp/depobj-1.c (f1, f2, f3): Likewise.  Add depobj: to
+	depend clauses without dependence type.  Add an extra test for depobj
+	construct with depobj: type on depend clause and omp_depend_t type of
+	the lvalue.
+	* c-c++-common/gomp/depend-iterator-2.c (f1, f2, f3): Separate
+	dependence modifier from type with comma instead of colon.  Adjust
+	diagnostics for dependence type no longer being optional.
+	* g++.dg/gomp/depend-iterator-1.C (foo, bar, baz): Separate
+	dependence modifier from type with comma instead of colon.
+	* g++.dg/gomp/depend-iterator-2.C (f1, f2, f3, f4): Likewise.  Adjust
+	diagnostics for dependence type no longer being optional.
+	* g++.dg/gomp/depobj-1.C (f1, f2, f4, f5): Separate dependence modifier
+	from type with comma instead of colon.  Add depobj: to depend clauses
+	without dependence type.  Add an extra test for depobj construct with
+	depobj: type on depend clause and omp_depend_t type of the lvalue.
+
 	* c-c++-common/gomp/reduction-task-1.c: New test.
 	* c-c++-common/gomp/reduction-task-2.c: New test.
 

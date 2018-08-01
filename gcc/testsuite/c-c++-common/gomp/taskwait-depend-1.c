@@ -1,7 +1,7 @@
 void
 foo (int *p)
 {
-  #pragma omp taskwait depend(iterator(i = 0:16) : in : p[i]) depend(out : p[32])
+  #pragma omp taskwait depend(iterator(i = 0:16) , in : p[i]) depend(out : p[32])
 }
 
 void

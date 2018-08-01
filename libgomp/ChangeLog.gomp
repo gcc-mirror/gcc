@@ -1,3 +1,15 @@
+2018-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/depend-iterator-1.c (main): Separate
+	dependence modifier from type with comma instead of colon.
+	* testsuite/libgomp.c-c++-common/depend-iterator-2.c (foo): Likewise.
+	* testsuite/libgomp.c-c++-common/depobj-1.c (dep, dep2, dep3,
+	antidep): Add depobj: to depend clauses without dependence type.
+	* testsuite/libgomp.c++/depend-iterator-1.C (bar, baz): Separate
+	dependence modifier from type with comma instead of colon.
+	* testsuite/libgomp.c++/depobj-1.C (dep, dep2, dep3, antidep): Add
+	depobj: to depend clauses without dependence type.
+
 2018-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.map (OMP_5.0): Export omp_pause_resource{,_all}{,_}.

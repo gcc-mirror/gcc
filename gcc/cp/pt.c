@@ -17359,7 +17359,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       r = RECUR (OMP_DEPOBJ_DEPOBJ (t));
       if (OMP_DEPOBJ_CLAUSES (t) && OMP_DEPOBJ_CLAUSES (t) != error_mark_node)
 	{
-	  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_UNSPECIFIED;
+	  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_SOURCE;
 	  if (TREE_CODE (OMP_DEPOBJ_CLAUSES (t)) == OMP_CLAUSE)
 	    {
 	      tmp = tsubst_omp_clauses (OMP_DEPOBJ_CLAUSES (t), C_ORT_OMP,
@@ -17377,7 +17377,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	}
       else
 	finish_omp_depobj (EXPR_LOCATION (t), r,
-			   OMP_CLAUSE_DEPEND_UNSPECIFIED,
+			   OMP_CLAUSE_DEPEND_SOURCE,
 			   OMP_DEPOBJ_CLAUSES (t));
       break;
 

@@ -477,10 +477,10 @@ c_finish_omp_depobj (location_t loc, tree depobj,
 		  "construct");
       switch (OMP_CLAUSE_DEPEND_KIND (clause))
 	{
-	case OMP_CLAUSE_DEPEND_UNSPECIFIED:
+	case OMP_CLAUSE_DEPEND_DEPOBJ:
 	  error_at (OMP_CLAUSE_LOCATION (clause),
-		    "dependence type must be specified in %<depend%> clause "
-		    "on %<depobj%> construct");
+		    "%<depobj%> dependence type specified in %<depend%> "
+		    "clause on %<depobj%> construct");
 	  return;
 	case OMP_CLAUSE_DEPEND_SOURCE:
 	case OMP_CLAUSE_DEPEND_SINK:
@@ -519,7 +519,7 @@ c_finish_omp_depobj (location_t loc, tree depobj,
 	}
     }
   else
-    gcc_assert (kind != OMP_CLAUSE_DEPEND_UNSPECIFIED);
+    gcc_assert (kind != OMP_CLAUSE_DEPEND_SOURCE);
 
   if (depobj == error_mark_node)
     return;

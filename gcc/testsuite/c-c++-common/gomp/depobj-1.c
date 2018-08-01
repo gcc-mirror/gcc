@@ -14,10 +14,10 @@ f1 (void)
 {
   #pragma omp depobj(depobj) depend(in : a)
   #pragma omp depobj(depobj) update(inout)
-  #pragma omp task depend (depobj)
+  #pragma omp task depend (depobj: depobj)
   ;
   #pragma omp depobj(depobj) destroy
-  #pragma omp task depend (iterator (i=1:3) : *(depobja + i))
+  #pragma omp task depend (iterator (i=1:3) , depobj: *(depobja + i))
   ;
   #pragma omp depobj(pdepobj[0]) depend(mutexinoutset:a)
   #pragma omp depobj(*pdepobj) destroy
@@ -36,7 +36,8 @@ f2 (void)
   #pragma omp depobj (depobjb) depend(in: a)		/* { dg-error "type of 'depobj' expression is not 'omp_depend_t'" } */
   #pragma omp depobj (pdepobj) depend(in: a)		/* { dg-error "type of 'depobj' expression is not 'omp_depend_t'" } */
   #pragma omp depobj (a) destroy			/* { dg-error "type of 'depobj' expression is not 'omp_depend_t'" } */
-  #pragma omp depobj (depobj) depend(a)			/* { dg-error "does not have 'omp_depend_t' type in 'depend' clause without dependence type" } */
+  #pragma omp depobj (depobj) depend(depobj:a)		/* { dg-error "does not have 'omp_depend_t' type in 'depend' clause with 'depobj' dependence type" } */
+  #pragma omp depobj (depobj) depend(depobj:*depobjb)	/* { dg-error "'depobj' dependence type specified in 'depend' clause on 'depobj' construct" } */
   #pragma omp depobj (depobj) update(foobar)		/* { dg-error "expected 'in', 'out', 'inout' or 'mutexinoutset'" } */
   #pragma omp depobj (depobj) depend(in: *depobja)	/* { dg-error "should not have 'omp_depend_t' type in 'depend' clause with dependence type" } */
   #pragma omp depobj (depobj) depend(in: a) depend(in: b)	/* { dg-error "expected" } */
@@ -44,7 +45,7 @@ f2 (void)
   #pragma omp depobj (depobj) depend(in: a, b)		/* { dg-error "more than one locator in 'depend' clause on 'depobj' construct" } */
   #pragma omp depobj (depobj) depend(source)		/* { dg-error "'depend\\(source\\)' is only allowed in 'omp ordered'" } */
   #pragma omp depobj (depobj) depend(sink: i + 1, j - 1)	/* { dg-error "'depend\\(sink\\)' is only allowed in 'omp ordered'" } */
-  #pragma omp depobj (depobj) depend(iterator (i = 0:2) : in : a)	/* { dg-error "'iterator' modifier may not be specified on 'depobj' construct" } */
+  #pragma omp depobj (depobj) depend(iterator (i = 0:2) , in : a)	/* { dg-error "'iterator' modifier may not be specified on 'depobj' construct" } */
   if (0)
     #pragma omp depobj (depobj) destroy			/* { dg-error "'#pragma omp depobj' may only be used in compound statements" } */
     ;
@@ -53,9 +54,9 @@ f2 (void)
 void
 f3 (void)
 {
-  #pragma omp task depend (depobja[1:2])		/* { dg-error "'depend' clause without dependence type on array section" } */
+  #pragma omp task depend (depobj: depobja[1:2])	/* { dg-error "'depend' clause with 'depobj' dependence type on array section" } */
   ;
-  #pragma omp task depend (a)				/* { dg-error "'a' does not have 'omp_depend_t' type in 'depend' clause without dependence type" } */
+  #pragma omp task depend (depobj: a)			/* { dg-error "'a' does not have 'omp_depend_t' type in 'depend' clause with 'depobj' dependence type" } */
   ;
   #pragma omp task depend (in: depobj)			/* { dg-error "'depobj' should not have 'omp_depend_t' type in 'depend' clause with dependence type" } */
   ;
