@@ -1,3 +1,8 @@
+2018-08-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/i386/i386.md (unspecv): Add UNSPECV_SPECULATION_BARRIER.
+	(speculation_barrier): New insn.
+
 2018-08-01  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/86724
