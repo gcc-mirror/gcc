@@ -1848,8 +1848,7 @@ vect_find_last_scalar_stmt_in_slp (slp_tree node)
 
   for (int i = 0; SLP_TREE_SCALAR_STMTS (node).iterate (i, &stmt_vinfo); i++)
     {
-      if (is_pattern_stmt_p (stmt_vinfo))
-	stmt_vinfo = STMT_VINFO_RELATED_STMT (stmt_vinfo);
+      stmt_vinfo = vect_orig_stmt (stmt_vinfo);
       last = last ? get_later_stmt (stmt_vinfo, last) : stmt_vinfo;
     }
 
@@ -2314,10 +2313,7 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
       gcc_checking_assert (PURE_SLP_STMT (stmt_vinfo));
       /* If we get a pattern stmt here we have to use the LHS of the
          original stmt for immediate uses.  */
-      gimple *stmt = stmt_vinfo->stmt;
-      if (! STMT_VINFO_IN_PATTERN_P (stmt_vinfo)
-	  && STMT_VINFO_RELATED_STMT (stmt_vinfo))
-	stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo)->stmt;
+      gimple *stmt = vect_orig_stmt (stmt_vinfo)->stmt;
       tree def;
       if (gimple_code (stmt) == GIMPLE_PHI)
 	def = gimple_phi_result (stmt);
@@ -4087,8 +4083,7 @@ vect_schedule_slp (vec_info *vinfo)
 	  if (!STMT_VINFO_DATA_REF (store_info))
 	    break;
 
-	  if (is_pattern_stmt_p (store_info))
-	    store_info = STMT_VINFO_RELATED_STMT (store_info);
+	  store_info = vect_orig_stmt (store_info);
 	  /* Free the attached stmt_vec_info and remove the stmt.  */
 	  vinfo->remove_stmt (store_info);
         }

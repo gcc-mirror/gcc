@@ -3814,10 +3814,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
 
   vectype = STMT_VINFO_VECTYPE (stmt_info);
   mode = TYPE_MODE (vectype);
-  stmt_vec_info orig_stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
-
-  if (!orig_stmt_info)
-    orig_stmt_info = stmt_info;
+  stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
 
   code = gimple_assign_rhs_code (orig_stmt_info->stmt);
 
@@ -4738,13 +4735,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
          Otherwise (it is a regular reduction) - the tree-code and scalar-def
          are taken from STMT.  */
 
-  stmt_vec_info orig_stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
-  if (!orig_stmt_info)
-    {
-      /* Regular reduction  */
-      orig_stmt_info = stmt_info;
-    }
-  else
+  stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
+  if (orig_stmt_info != stmt_info)
     {
       /* Reduction pattern  */
       gcc_assert (STMT_VINFO_IN_PATTERN_P (orig_stmt_info));
@@ -5540,11 +5532,7 @@ vect_finalize_reduction:
   if (REDUC_GROUP_FIRST_ELEMENT (stmt_info))
     {
       stmt_vec_info dest_stmt_info
-	= SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
-      /* Handle reduction patterns.  */
-      if (STMT_VINFO_RELATED_STMT (dest_stmt_info))
-	dest_stmt_info = STMT_VINFO_RELATED_STMT (dest_stmt_info);
-
+	= vect_orig_stmt (SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1]);
       scalar_dest = gimple_assign_lhs (dest_stmt_info->stmt);
       group_size = 1;
     }
@@ -7898,10 +7886,8 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
       return true;
     }
 
-  /* If stmt has a related stmt, then use that for getting the lhs.  */
-  gimple *stmt = (is_pattern_stmt_p (stmt_info)
-		  ? STMT_VINFO_RELATED_STMT (stmt_info)->stmt
-		  : stmt_info->stmt);
+  /* Use the lhs of the original scalar statement.  */
+  gimple *stmt = vect_orig_stmt (stmt_info)->stmt;
 
   lhs = (is_a <gphi *> (stmt)) ? gimple_phi_result (stmt)
 	: gimple_get_lhs (stmt);
