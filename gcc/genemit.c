@@ -761,7 +761,7 @@ print_overload_arguments (overloaded_name *oname)
     printf ("%s%s arg%d", i == 0 ? "" : ", ", oname->arg_types[i], i);
 }
 
-/* Print code to test whether INSTANCE should be chosne, given that
+/* Print code to test whether INSTANCE should be chosen, given that
    argument N of the overload is available as "arg<N>".  */
 
 static void
