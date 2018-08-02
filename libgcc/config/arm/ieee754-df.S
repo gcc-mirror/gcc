@@ -1,7 +1,7 @@
 /* ieee754-df.S double-precision floating point support for ARM
 
    Copyright (C) 2003-2018 Free Software Foundation, Inc.
-   Contributed by Nicolas Pitre (nico@cam.org)
+   Contributed by Nicolas Pitre (nico@fluxnic.net)
 
    This file is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -238,9 +238,10 @@ LSYM(Lad_a):
 	movs	ip, ip, lsl #1
 	adcs	xl, xl, xl
 	adc	xh, xh, xh
-	tst	xh, #0x00100000
-	sub	r4, r4, #1
-	bne	LSYM(Lad_e)
+	subs	r4, r4, #1
+	do_it	hs
+	cmphs	xh, #0x00100000
+	bhs	LSYM(Lad_e)
 
 	@ No rounding necessary since ip will always be 0 at this point.
 LSYM(Lad_l):
