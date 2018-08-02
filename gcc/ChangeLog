@@ -1,3 +1,8 @@
+2018-08-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_float_const_representable_p):
+	Allow HFmode constants if TARGET_FP_F16INST.
+
 2018-08-02  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	PR target/86014
