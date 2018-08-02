@@ -1,3 +1,12 @@
+2018-08-02  Andreas Schwab  <schwab@linux-m68k.org>
+
+	Backport from mainline
+	2018-07-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/86820
+	* config/m68k/m68k.md (umulsi3_highpart+1, const_umulsi3_highpart)
+	(smulsi3_highpart+1, const_smulsi3_highpart): Add CC_STATUS_INIT.
+
 2018-08-01  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/86724
