@@ -15476,7 +15476,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 
 	  if (dwarf_strict && dwarf_version < 5)
 	    break;
-	  if (REGNO (rtl) > FIRST_PSEUDO_REGISTER)
+	  if (REGNO (rtl) >= FIRST_PSEUDO_REGISTER)
 	    break;
 	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)

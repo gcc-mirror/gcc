@@ -1,3 +1,11 @@
+2018-07-19  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/nds32/nds32.c (nds32_hard_regno_mode_ok): Replace > with >=.
+	* df-problems.c (df_remove_dead_eq_notes): Replace > with >=.
+	* dwarf2out.c (mem_loc_descriptor): Replace > with >=.
+	* lra-constraints.c (spill_hard_reg_in_range): Replace <= with <.
+	* lra-remat.c (call_used_input_regno_present_p): Replace <= with <.
+
 2018-08-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (diagnostic_show_locus): Use
