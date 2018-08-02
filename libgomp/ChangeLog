@@ -1,3 +1,14 @@
+2018-08-02  Tom de Vries  <tdevries@suse.de>
+
+	PR target/86660
+	* testsuite/libgomp.oacc-c++/routine-1-auto.C: Remove -fno-exceptions.
+	* testsuite/libgomp.oacc-c++/routine-1-template-auto.C: Same.
+	* testsuite/libgomp.oacc-c++/routine-1-template-trailing-return-type.C:
+	Same.
+	* testsuite/libgomp.oacc-c++/routine-1-template.C: Same.
+	* testsuite/libgomp.oacc-c++/routine-1-trailing-return-type.C: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-1.c: Same.
+
 2018-08-01  Cesar Philippidis  <cesar@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 
