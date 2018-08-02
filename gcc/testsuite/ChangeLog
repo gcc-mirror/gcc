@@ -269,7 +269,7 @@
 
 2018-07-24  Matthew Malcomson  <matthew.malcomson@arm.com>
 
-	* gcc.target/aarch64/vect-su-add-sub.c: New.
+	* gcc.target/aarch64/simd/vect_su_add_sub.c: New.
 
 2018-07-24  Jakub Jelinek  <jakub@redhat.com>
 
