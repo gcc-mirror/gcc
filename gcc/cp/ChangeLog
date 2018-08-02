@@ -1,3 +1,10 @@
+2018-08-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (cxx_print_error_function): Duplicate "file" before
+	passing it to pp_set_prefix.
+	(cp_print_error_function): Use pp_take_prefix when saving the
+	existing prefix.
+
 2018-08-01  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86650
