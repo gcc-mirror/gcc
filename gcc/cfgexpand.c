@@ -1252,10 +1252,10 @@ set_parm_rtl (tree parm, rtx x)
 	 allocate it, which means that in-frame portion is just a
 	 pointer.  ??? We've got a pseudo for sure here, do we
 	 actually dynamically allocate its spilling area if needed?
-	 ??? Isn't it a problem when POINTER_SIZE also exceeds
-	 MAX_SUPPORTED_STACK_ALIGNMENT, as on cris and lm32?  */
+	 ??? Isn't it a problem when Pmode alignment also exceeds
+	 MAX_SUPPORTED_STACK_ALIGNMENT, as can happen on cris and lm32?  */
       if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
-	align = POINTER_SIZE;
+	align = GET_MODE_ALIGNMENT (Pmode);
 
       record_alignment_for_reg_var (align);
     }
@@ -1375,7 +1375,7 @@ expand_one_ssa_partition (tree var)
   /* If the variable alignment is very large we'll dynamicaly allocate
      it, which means that in-frame portion is just a pointer.  */
   if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
-    align = POINTER_SIZE;
+    align = GET_MODE_ALIGNMENT (Pmode);
 
   record_alignment_for_reg_var (align);
 
@@ -1592,7 +1592,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
       /* If the variable alignment is very large we'll dynamicaly allocate
 	 it, which means that in-frame portion is just a pointer.  */
       if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
-	align = POINTER_SIZE;
+	align = GET_MODE_ALIGNMENT (Pmode);
     }
 
   record_alignment_for_reg_var (align);
