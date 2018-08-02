@@ -1,3 +1,12 @@
+2018-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86816
+	* tree-ssa-tail-merge.c (tail_merge_valueize): New function
+	which checks for value availability before querying it.
+	(gvn_uses_equal): Use it.
+	(same_succ_hash): Likewise.
+	(gimple_equal_p): Likewise.
+
 2018-08-02  Nick Clifton  <nickc@redhat.com>
 
 	PR target/86789
