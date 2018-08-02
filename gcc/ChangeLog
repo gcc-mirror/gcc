@@ -1,12 +1,16 @@
 2018-08-02  Nick Clifton  <nickc@redhat.com>
 
+	PR target/86787
+	* config/iq2000/iq2000.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
 	PR target/86782
 	* config/frv/frv.c (TARGET_HAVE_SPECULATION_SAFE_VALUE): Define to
 	speculation_safe_value_not_needed.
 
 	PR target/86781
-	* config/fr30/fr30.c (TARGET_HAVE_SPECULATION_SAFE_VALUE): Define to
-	speculation_safe_value_not_needed.
+	* config/fr30/fr30.c (TARGET_HAVE_SPECULATION_SAFE_VALUE): Define
+	to speculation_safe_value_not_needed.
 
 2018-08-02  Richard Sandiford  <richard.sandiford@arm.com>
 
