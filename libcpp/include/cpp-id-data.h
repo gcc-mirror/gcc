@@ -23,13 +23,6 @@ typedef unsigned char uchar;
 
 #define UC (const unsigned char *)  /* Intended use: UC"string" */
 
-/* Chained list of answers to an assertion.  */
-struct GTY(()) answer {
-  struct answer *next;
-  unsigned int count;
-  cpp_token GTY ((length ("%h.count"))) exp[1];
-};
-
 /* The kind of the cpp_macro.  */
 enum cpp_macro_kind {
   cmk_macro,	/* An ISO macro (token expansion).  */

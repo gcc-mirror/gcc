@@ -1,5 +1,17 @@
 2018-08-02  Nathan Sidwell  <nathan@acm.org>
 
+	Asserts are now macro variants
+	libcpp/
+	* directives.c (parse_answer, parse_assertion, find_answer): Use
+	cpp_macro, not struct answer.
+	(do_assert, do_unassert): Adjust.
+	* include/cpp-id-data.h (struct answer): Delete.
+	* include/cpplib.h (NTV_ANSWER): Delete.
+	(CPP_HASNODE_VALUE_IDX): Adjust.
+	(_cpp_hashnode_value): Remove answer.
+	(cpp_macro_p): Make outline ...
+	* macro.c (cpp_macro_p): ... here.
+
 	Assert body is back as trailing array
 	libcpp/
 	* include/cpp-id-data.h (struct answer): Make body a trailing array
@@ -7,7 +19,6 @@
 	* directives.c (parse_answer, parse_assertion, find_answer):
 	Return whole answer struct.
 	(_cpp_test_assertion, do_assert, do_unassert): Adjust.
-
 
 2018-08-01  Nathan Sidwell  <nathan@acm.org>
 

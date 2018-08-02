@@ -36,7 +36,6 @@ typedef struct cpp_macro cpp_macro;
 typedef struct cpp_callbacks cpp_callbacks;
 typedef struct cpp_dir cpp_dir;
 
-struct answer;
 struct _cpp_file;
 
 /* The first three groups, apart from '=', can appear in preprocessor
@@ -731,7 +730,6 @@ enum cpp_builtin_type
 
 enum {
   NTV_MACRO,
-  NTV_ANSWER,
   NTV_BUILTIN,
   NTV_ARGUMENT,
   NTV_NONE
@@ -741,7 +739,7 @@ enum {
   ((HNODE.flags & NODE_MACRO_ARG) ? NTV_ARGUMENT		\
    : HNODE.type == NT_MACRO ? ((HNODE.flags & NODE_BUILTIN) 	\
 			       ? NTV_BUILTIN : NTV_MACRO)	\
-   : HNODE.type == NT_ASSERTION ? NTV_ANSWER			\
+   : HNODE.type == NT_ASSERTION ? NTV_MACRO			\
    : NTV_NONE)
 
 /* The common part of an identifier node shared amongst all 3 C front
@@ -749,10 +747,8 @@ enum {
    identifiers in the grammatical sense.  */
 
 union GTY(()) _cpp_hashnode_value {
-  /* If a macro.  */
+  /* Macro or assert  */
   cpp_macro * GTY((tag ("NTV_MACRO"))) macro;
-  /* Answers to an assertion.  */
-  struct answer * GTY ((tag ("NTV_ANSWER"))) answers;
   /* Code for a builtin macro.  */
   enum cpp_builtin_type GTY ((tag ("NTV_BUILTIN"))) builtin;
   /* Macro argument index.  */
@@ -890,11 +886,7 @@ extern int cpp_avoid_paste (cpp_reader *, const cpp_token *,
 extern const cpp_token *cpp_get_token (cpp_reader *);
 extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 						     source_location *);
-inline bool cpp_macro_p (cpp_hashnode *node, bool builtin_ok = false)
-{
-  return (node->type == NT_MACRO
-	  && (builtin_ok || !(node->flags & NODE_BUILTIN)));
-}
+extern bool cpp_macro_p (cpp_hashnode *node, bool builtin_ok = false);
 extern bool cpp_fun_like_macro_p (cpp_hashnode *);
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  cpp_hashnode *);

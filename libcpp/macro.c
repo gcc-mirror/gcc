@@ -3607,7 +3607,18 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
     }
 }
 
-/* Returns true of NODE is a function-like macro.  */
+/* Returns true if NODE is a macro.  */
+bool
+cpp_macro_p (cpp_hashnode *node, bool builtin_ok)
+{
+  if (node->type != NT_MACRO)
+    return false;
+  if (node->flags & NODE_BUILTIN)
+    return builtin_ok;
+  return node->value.macro->kind != cmk_assert;
+}
+
+/* Returns true if NODE is a function-like macro.  */
 bool
 cpp_fun_like_macro_p (cpp_hashnode *node)
 {
