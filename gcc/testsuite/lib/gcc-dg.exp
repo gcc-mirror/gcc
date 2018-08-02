@@ -114,6 +114,23 @@ if [info exists ADDITIONAL_TORTURE_OPTIONS] {
 	[concat $DG_TORTURE_OPTIONS $ADDITIONAL_TORTURE_OPTIONS]
 }
 
+proc dg-final { args } {
+    upvar dg-final-code final-code
+
+    if { [llength $args] > 2 } {
+	error "[lindex $args 0]: too many arguments"
+    }
+    set line [lindex $args 0]
+    set code [lindex $args 1]
+    set directive [lindex $code 0]
+    switch $directive {
+	gdb-test {
+	    set code [linsert $code 1 $line]
+	}
+    }
+    append final-code "$code\n"
+}
+
 global orig_environment_saved
 
 # Deduce generated files from tool flags, return finalcode string
@@ -1039,6 +1056,53 @@ proc dg-line { linenr varname } {
     }
 }
 
+# Get the absolute line number corresponding to:
+# - a relative line number (a non-null useline is required), or
+# - a line number variable reference.
+# Argument 0 is the line number on which line was used
+# Argument 1 is the relative line number or line number variable reference
+#
+proc get-absolute-line { useline line } {
+    if { "$line" == "." } {
+	return $useline
+    }
+
+    if { [regsub "^\.\[+-\](\[0-9\]+)$" $line "\\1" num] && $useline != "" } {
+	# Handle relative line specification, .+1 or .-1 etc.
+	set num [expr $useline [string index $line 1] $num]
+	return $num
+    }
+
+    if { ! [regsub "^(\[a-zA-Z\]\[a-zA-Z0-9_\]*)$" $line "\\1" varname] } {
+	return $line
+    }
+
+    # Handle linenr variable defined by dg-line
+    set org_varname $varname
+    set varname "saved_linenr_$varname"
+    eval global $varname
+
+    # Generate used-but-not-defined error.
+    eval set var_defined [info exists $varname]
+    if { ! $var_defined } {
+	if { "$useline" != "" } {
+	    error "dg-line var $org_varname used at line $useline, but not defined"
+	} else {
+	    error "dg-line var $org_varname used, but not defined"
+	}
+	return
+    }
+
+    # Note that varname has been used.
+    set varname_used "used_$varname"
+    eval global $varname_used
+    eval set $varname_used 1
+
+    # Get line number from var and use it.
+    eval set num \$$varname
+    set line $num
+}
+
 # Modify the regular expression saved by a DejaGnu message directive to
 # include a prefix and to force the expression to match a single line.
 # MSGPROC is the procedure to call.
@@ -1049,34 +1113,8 @@ proc process-message { msgproc msgprefix dgargs } {
     upvar dg-messages dg-messages
 
     if { [llength $dgargs] == 5 } {
-	if { [regsub "^\.\[+-\](\[0-9\]+)$" [lindex $dgargs 4] "\\1" num] } {
-	    # Handle relative line specification, .+1 or .-1 etc.
-	    set num [expr [lindex $dgargs 0] [string index [lindex $dgargs 4] 1] $num]
-	    set dgargs [lreplace $dgargs 4 4 $num]
-	} elseif { [regsub "^(\[a-zA-Z\]\[a-zA-Z0-9_\]*)$" [lindex $dgargs 4] "\\1" varname] } {
-	    # Handle linenr variable defined by dg-line
-
-	    set org_varname $varname
-	    set varname "saved_linenr_$varname"
-	    eval global $varname
-
-	    # Generate used-but-not-defined error.
-	    eval set var_defined [info exists $varname]
-	    if { ! $var_defined } {
-		set linenr [expr [lindex $dgargs 0]]
-		error "dg-line var $org_varname used at line $linenr, but not defined"
-		return
-	    }
-
-	    # Note that varname has been used.
-	    set varname_used "used_$varname"
-	    eval global $varname_used
-	    eval set $varname_used 1
-
-	    # Get line number from var and use it.
-	    eval set num \$$varname
-	    set dgargs [lreplace $dgargs 4 4 $num]
-	}
+	set num [get-absolute-line [lindex $dgargs 0] [lindex $dgargs 4]]
+	set dgargs [lreplace $dgargs 4 4 $num]
     }
 
     # Process the dg- directive, including adding the regular expression

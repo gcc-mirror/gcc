@@ -5353,6 +5353,7 @@ find_func_clobbers (struct function *fn, gimple *origt)
       /* For callees without function info (that's external functions),
 	 ESCAPED is clobbered and used.  */
       if (cfi->decl
+	  && TREE_CODE (cfi->decl) == FUNCTION_DECL
 	  && !cfi->is_fn_info)
 	{
 	  varinfo_t vi;

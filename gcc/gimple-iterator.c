@@ -619,6 +619,18 @@ gsi_for_stmt (gimple *stmt)
   return i;
 }
 
+/* Get an iterator for STMT, which is known to belong to SEQ.  This is
+   equivalent to starting at the beginning of SEQ and searching forward
+   until STMT is found.  */
+
+gimple_stmt_iterator
+gsi_for_stmt (gimple *stmt, gimple_seq *seq)
+{
+  gimple_stmt_iterator i = gsi_start_1 (seq);
+  i.ptr = stmt;
+  return i;
+}
+
 /* Finds iterator for PHI.  */
 
 gphi_iterator

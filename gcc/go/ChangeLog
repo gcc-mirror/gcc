@@ -1,3 +1,15 @@
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82063
+	* go-lang.c (go_langhook_handle_option): Change function argument
+	to HOST_WIDE_INT.
+
+2018-06-28  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/86343
+	* go-gcc.cc (Gcc_backend::set_placeholder_struct_type): Call
+	build_variant_type_copy rather than build_distinct_type_copy.
+
 2018-06-08  Cherry Zhang  <cherryyz@google.com>
 
 	* go-gcc.cc (class Gcc_backend): Remove

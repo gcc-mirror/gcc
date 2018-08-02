@@ -25,60 +25,60 @@ extern void sink (int, void*);
 /* Exercise %a.  */
 void test_a (int w, int p, double x)
 {
-  T1 ("%.*a", 0);     /* { dg-warning "between 6 and 10 bytes" } */
-  T1 ("%.*a", 1);     /* { dg-warning "between 8 and 12 bytes" } */
-  T1 ("%.*a", 2);     /* { dg-warning "between 9 and 13 bytes" } */
-  T1 ("%.*a", 99);    /* { dg-warning "between 106 and 110 bytes" } */
-  T1 ("%.*a", 199);   /* { dg-warning "between 206 and 210 bytes" } */
-  T1 ("%.*a", 1099);  /* { dg-warning "between 1106 and 1110 bytes" } */
+  T1 ("%.*a", 0);     /* { dg-warning "between 3 and 10 bytes" } */
+  T1 ("%.*a", 1);     /* { dg-warning "between 3 and 12 bytes" } */
+  T1 ("%.*a", 2);     /* { dg-warning "between 3 and 13 bytes" } */
+  T1 ("%.*a", 99);    /* { dg-warning "between 3 and 110 bytes" } */
+  T1 ("%.*a", 199);   /* { dg-warning "between 3 and 210 bytes" } */
+  T1 ("%.*a", 1099);  /* { dg-warning "between 3 and 1110 bytes" } */
 
-  T1 ("%*.a", 0);     /* { dg-warning "between 6 and 10 bytes" } */
-  T1 ("%*.a", 1);     /* { dg-warning "between 6 and 10 bytes" } */
-  T1 ("%*.a", 3);     /* { dg-warning "between 6 and 10 bytes" } */
+  T1 ("%*.a", 0);     /* { dg-warning "between 3 and 10 bytes" } */
+  T1 ("%*.a", 1);     /* { dg-warning "between 3 and 10 bytes" } */
+  T1 ("%*.a", 3);     /* { dg-warning "between 3 and 10 bytes" } */
   T1 ("%*.a", 6);     /* { dg-warning "between 6 and 10 bytes" } */
   T1 ("%*.a", 7);     /* { dg-warning "between 7 and 10 bytes" } */
 
-  T1 ("%*.a", w);     /* { dg-warning "writing between 6 and 2147483648 bytes" } */
-  T1 ("%*.0a", w);    /* { dg-warning "writing between 6 and 2147483648 bytes" } */
-  T1 ("%*.1a", w);    /* { dg-warning "writing between 8 and 2147483648 bytes" } */
-  T1 ("%*.2a", w);    /* { dg-warning "writing between 9 and 2147483648 bytes" } */
+  T1 ("%*.a", w);     /* { dg-warning "writing between 3 and 2147483648 bytes" } */
+  T1 ("%*.0a", w);    /* { dg-warning "writing between 3 and 2147483648 bytes" } */
+  T1 ("%*.1a", w);    /* { dg-warning "writing between 3 and 2147483648 bytes" } */
+  T1 ("%*.2a", w);    /* { dg-warning "writing between 3 and 2147483648 bytes" } */
 
-  T1 ("%.*a",  p);    /* { dg-warning "writing between 6 and 2147483658 bytes" } */
-  T1 ("%1.*a", p);    /* { dg-warning "writing between 6 and 2147483658 bytes" } */
-  T1 ("%2.*a", p);    /* { dg-warning "writing between 6 and 2147483658 bytes" } */
-  T1 ("%3.*a", p);    /* { dg-warning "writing between 6 and 2147483658 bytes" } */
+  T1 ("%.*a",  p);    /* { dg-warning "writing between 3 and 2147483658 bytes" } */
+  T1 ("%1.*a", p);    /* { dg-warning "writing between 3 and 2147483658 bytes" } */
+  T1 ("%2.*a", p);    /* { dg-warning "writing between 3 and 2147483658 bytes" } */
+  T1 ("%3.*a", p);    /* { dg-warning "writing between 3 and 2147483658 bytes" } */
 
-  T2 ("%*.*a", w, p); /* { dg-warning "writing between 6 and 2147483658 bytes" } */
+  T2 ("%*.*a", w, p); /* { dg-warning "writing between 3 and 2147483658 bytes" } */
 }
 
 /* Exercise %e.  */
 void test_e (int w, int p, double x)
 {
-  T1 ("%.*e", 0);     /* { dg-warning "between 5 and 7 bytes" } */
-  T1 ("%.*e", 1);     /* { dg-warning "between 7 and 9 bytes" } */
-  T1 ("%.*e", 2);     /* { dg-warning "between 8 and 10 bytes" } */
-  T1 ("%.*e", 99);    /* { dg-warning "between 105 and 107 bytes" } */
-  T1 ("%.*e", 199);   /* { dg-warning "between 205 and 207 bytes" } */
-  T1 ("%.*e", 1099);  /* { dg-warning "between 1105 and 1107 bytes" } */
+  T1 ("%.*e", 0);     /* { dg-warning "between 3 and 7 bytes" } */
+  T1 ("%.*e", 1);     /* { dg-warning "between 3 and 9 bytes" } */
+  T1 ("%.*e", 2);     /* { dg-warning "between 3 and 10 bytes" } */
+  T1 ("%.*e", 99);    /* { dg-warning "between 3 and 107 bytes" } */
+  T1 ("%.*e", 199);   /* { dg-warning "between 3 and 207 bytes" } */
+  T1 ("%.*e", 1099);  /* { dg-warning "between 3 and 1107 bytes" } */
 
-  T1 ("%*.e", 0);     /* { dg-warning "between 5 and 7 bytes" } */
-  T1 ("%*.e", 1);     /* { dg-warning "between 5 and 7 bytes" } */
-  T1 ("%*.e", 1);     /* { dg-warning "between 5 and 7 bytes" } */
-  T1 ("%*.e", 3);     /* { dg-warning "between 5 and 7 bytes" } */
+  T1 ("%*.e", 0);     /* { dg-warning "between 3 and 7 bytes" } */
+  T1 ("%*.e", 1);     /* { dg-warning "between 3 and 7 bytes" } */
+  T1 ("%*.e", 1);     /* { dg-warning "between 3 and 7 bytes" } */
+  T1 ("%*.e", 3);     /* { dg-warning "between 3 and 7 bytes" } */
   T1 ("%*.e", 6);     /* { dg-warning "between 6 and 7 bytes" } */
   T1 ("%*.e", 7);     /* { dg-warning "writing 7 bytes" } */
 
-  T1 ("%*.e", w);     /* { dg-warning "writing between 5 and 2147483648 bytes" } */
-  T1 ("%*.0e", w);    /* { dg-warning "writing between 5 and 2147483648 bytes" } */
-  T1 ("%*.1e", w);    /* { dg-warning "writing between 7 and 2147483648 bytes" } */
-  T1 ("%*.2e", w);    /* { dg-warning "writing between 8 and 2147483648 bytes" } */
+  T1 ("%*.e", w);     /* { dg-warning "writing between 3 and 2147483648 bytes" } */
+  T1 ("%*.0e", w);    /* { dg-warning "writing between 3 and 2147483648 bytes" } */
+  T1 ("%*.1e", w);    /* { dg-warning "writing between 3 and 2147483648 bytes" } */
+  T1 ("%*.2e", w);    /* { dg-warning "writing between 3 and 2147483648 bytes" } */
 
-  T1 ("%.*e",  p);    /* { dg-warning "writing between 5 and 2147483655 bytes" } */
-  T1 ("%1.*e", p);    /* { dg-warning "writing between 5 and 2147483655 bytes" } */
-  T1 ("%2.*e", p);    /* { dg-warning "writing between 5 and 2147483655 bytes" } */
-  T1 ("%3.*e", p);    /* { dg-warning "writing between 5 and 2147483655 bytes" } */
+  T1 ("%.*e",  p);    /* { dg-warning "writing between 3 and 2147483655 bytes" } */
+  T1 ("%1.*e", p);    /* { dg-warning "writing between 3 and 2147483655 bytes" } */
+  T1 ("%2.*e", p);    /* { dg-warning "writing between 3 and 2147483655 bytes" } */
+  T1 ("%3.*e", p);    /* { dg-warning "writing between 3 and 2147483655 bytes" } */
 
-  T2 ("%*.*e", w, p); /* { dg-warning "writing between 5 and 2147483655 bytes" } */
+  T2 ("%*.*e", w, p); /* { dg-warning "writing between 3 and 2147483655 bytes" } */
 }
 
 /* Exercise %f.  */
@@ -86,10 +86,10 @@ void test_f (int w, int p, double x)
 {
   T1 ("%.*f", 0);           /* { dg-warning "between 1 and 310 bytes" } */
   T1 ("%.*f", 1);           /* { dg-warning "between 3 and 312 bytes" } */
-  T1 ("%.*f", 2);           /* { dg-warning "between 4 and 313 bytes" } */
-  T1 ("%.*f", 99);          /* { dg-warning "between 101 and 410 bytes" } */
-  T1 ("%.*f", 199);         /* { dg-warning "between 201 and 510 bytes" } */
-  T1 ("%.*f", 1099);        /* { dg-warning "between 1101 and 1410 bytes" } */
+  T1 ("%.*f", 2);           /* { dg-warning "between 3 and 313 bytes" } */
+  T1 ("%.*f", 99);          /* { dg-warning "between 3 and 410 bytes" } */
+  T1 ("%.*f", 199);         /* { dg-warning "between 3 and 510 bytes" } */
+  T1 ("%.*f", 1099);        /* { dg-warning "between 3 and 1410 bytes" } */
 
   T2 ("%*.*f", 0, 0);       /* { dg-warning "between 1 and 310 bytes" } */
   T2 ("%*.*f", 1, 0);       /* { dg-warning "between 1 and 310 bytes" } */
@@ -97,13 +97,13 @@ void test_f (int w, int p, double x)
   T2 ("%*.*f", 3, 0);       /* { dg-warning "between 3 and 310 bytes" } */
   T2 ("%*.*f", 310, 0);     /* { dg-warning "writing 310 bytes" } */
   T2 ("%*.*f", 311, 0);     /* { dg-warning "writing 311 bytes" } */
-  T2 ("%*.*f", 312, 312);   /* { dg-warning "between 314 and 623 bytes" } */
-  T2 ("%*.*f", 312, 313);   /* { dg-warning "between 315 and 624 bytes" } */
+  T2 ("%*.*f", 312, 312);   /* { dg-warning "between 312 and 623 bytes" } */
+  T2 ("%*.*f", 312, 313);   /* { dg-warning "between 312 and 624 bytes" } */
 
   T1 ("%*.f", w);           /* { dg-warning "writing between 1 and 2147483648 bytes" } */
   T1 ("%*.0f", w);          /* { dg-warning "writing between 1 and 2147483648 bytes" } */
   T1 ("%*.1f", w);          /* { dg-warning "writing between 3 and 2147483648 bytes" } */
-  T1 ("%*.2f", w);          /* { dg-warning "writing between 4 and 2147483648 bytes" } */
+  T1 ("%*.2f", w);          /* { dg-warning "writing between 3 and 2147483648 bytes" } */
 
   T1 ("%.*f",  p);          /* { dg-warning "writing between 1 and 2147483958 bytes" } */
   T1 ("%1.*f", p);          /* { dg-warning "writing between 1 and 2147483958 bytes" } */
@@ -138,85 +138,85 @@ void test_g (double x)
 /* Exercise %a.  */
 void test_a_va (va_list va)
 {
-  T ("%.0a");       /* { dg-warning "between 6 and 10 bytes" } */
-  T ("%.1a");       /* { dg-warning "between 8 and 12 bytes" } */
-  T ("%.2a");       /* { dg-warning "between 9 and 13 bytes" } */
-  T ("%.99a");      /* { dg-warning "between 106 and 110 bytes" } */
-  T ("%.199a");     /* { dg-warning "between 206 and 210 bytes" } */
-  T ("%.1099a");    /* { dg-warning "between 1106 and 1110 bytes" } */
+  T ("%.0a");       /* { dg-warning "between 3 and 10 bytes" } */
+  T ("%.1a");       /* { dg-warning "between 3 and 12 bytes" } */
+  T ("%.2a");       /* { dg-warning "between 3 and 13 bytes" } */
+  T ("%.99a");      /* { dg-warning "between 3 and 110 bytes" } */
+  T ("%.199a");     /* { dg-warning "between 3 and 210 bytes" } */
+  T ("%.1099a");    /* { dg-warning "between 3 and 1110 bytes" } */
 
-  T ("%0.a");       /* { dg-warning "between 6 and 10 bytes" } */
-  T ("%1.a");       /* { dg-warning "between 6 and 10 bytes" } */
-  T ("%3.a");       /* { dg-warning "between 6 and 10 bytes" } */
+  T ("%0.a");       /* { dg-warning "between 3 and 10 bytes" } */
+  T ("%1.a");       /* { dg-warning "between 3 and 10 bytes" } */
+  T ("%3.a");       /* { dg-warning "between 3 and 10 bytes" } */
   T ("%6.a");       /* { dg-warning "between 6 and 10 bytes" } */
   T ("%7.a");       /* { dg-warning "between 7 and 10 bytes" } */
 
-  T ("%*.a");       /* { dg-warning "writing between 6 and 2147483648 bytes" } */
-  T ("%*.0a");      /* { dg-warning "writing between 6 and 2147483648 bytes" } */
-  T ("%*.1a");      /* { dg-warning "writing between 8 and 2147483648 bytes" } */
-  T ("%*.2a");      /* { dg-warning "writing between 9 and 2147483648 bytes" } */
+  T ("%*.a");       /* { dg-warning "writing between 3 and 2147483648 bytes" } */
+  T ("%*.0a");      /* { dg-warning "writing between 3 and 2147483648 bytes" } */
+  T ("%*.1a");      /* { dg-warning "writing between 3 and 2147483648 bytes" } */
+  T ("%*.2a");      /* { dg-warning "writing between 3 and 2147483648 bytes" } */
 
-  T ("%.*a");       /* { dg-warning "writing between 6 and 2147483658 bytes" } */
-  T ("%1.*a");      /* { dg-warning "writing between 6 and 2147483658 bytes" } */
-  T ("%2.*a");      /* { dg-warning "writing between 6 and 2147483658 bytes" } */
+  T ("%.*a");       /* { dg-warning "writing between 3 and 2147483658 bytes" } */
+  T ("%1.*a");      /* { dg-warning "writing between 3 and 2147483658 bytes" } */
+  T ("%2.*a");      /* { dg-warning "writing between 3 and 2147483658 bytes" } */
   T ("%6.*a");      /* { dg-warning "writing between 6 and 2147483658 bytes" } */
   T ("%9.*a");      /* { dg-warning "writing between 9 and 2147483658 bytes" } */
 
-  T ("%*.*a");      /* { dg-warning "writing between 6 and 2147483658 bytes" } */
+  T ("%*.*a");      /* { dg-warning "writing between 3 and 2147483658 bytes" } */
 }
 
 /* Exercise %e.  */
 void test_e_va (va_list va)
 {
-  T ("%e");         /* { dg-warning "between 12 and 14 bytes" } */
-  T ("%+e");        /* { dg-warning "between 13 and 14 bytes" } */
-  T ("% e");        /* { dg-warning "between 13 and 14 bytes" } */
-  T ("%#e");        /* { dg-warning "between 12 and 14 bytes" } */
-  T ("%#+e");       /* { dg-warning "between 13 and 14 bytes" } */
-  T ("%# e");       /* { dg-warning "between 13 and 14 bytes" } */
+  T ("%e");         /* { dg-warning "between 3 and 14 bytes" } */
+  T ("%+e");        /* { dg-warning "between 4 and 14 bytes" } */
+  T ("% e");        /* { dg-warning "between 4 and 14 bytes" } */
+  T ("%#e");        /* { dg-warning "between 3 and 14 bytes" } */
+  T ("%#+e");       /* { dg-warning "between 4 and 14 bytes" } */
+  T ("%# e");       /* { dg-warning "between 4 and 14 bytes" } */
 
-  T ("%.e");        /* { dg-warning "between 5 and 7 bytes" } */
-  T ("%.0e");       /* { dg-warning "between 5 and 7 bytes" } */
-  T ("%.1e");       /* { dg-warning "between 7 and 9 bytes" } */
-  T ("%.2e");       /* { dg-warning "between 8 and 10 bytes" } */
-  T ("%.99e");      /* { dg-warning "between 105 and 107 bytes" } */
-  T ("%.199e");     /* { dg-warning "between 205 and 207 bytes" } */
-  T ("%.1099e");    /* { dg-warning "between 1105 and 1107 bytes" } */
+  T ("%.e");        /* { dg-warning "between 3 and 7 bytes" } */
+  T ("%.0e");       /* { dg-warning "between 3 and 7 bytes" } */
+  T ("%.1e");       /* { dg-warning "between 3 and 9 bytes" } */
+  T ("%.2e");       /* { dg-warning "between 3 and 10 bytes" } */
+  T ("%.99e");      /* { dg-warning "between 3 and 107 bytes" } */
+  T ("%.199e");     /* { dg-warning "between 3 and 207 bytes" } */
+  T ("%.1099e");    /* { dg-warning "between 3 and 1107 bytes" } */
 
-  T ("%0.e");       /* { dg-warning "between 5 and 7 bytes" } */
-  T ("%1.e");       /* { dg-warning "between 5 and 7 bytes" } */
-  T ("%1.e");       /* { dg-warning "between 5 and 7 bytes" } */
-  T ("%3.e");       /* { dg-warning "between 5 and 7 bytes" } */
+  T ("%0.e");       /* { dg-warning "between 3 and 7 bytes" } */
+  T ("%1.e");       /* { dg-warning "between 3 and 7 bytes" } */
+  T ("%1.e");       /* { dg-warning "between 3 and 7 bytes" } */
+  T ("%3.e");       /* { dg-warning "between 3 and 7 bytes" } */
   T ("%6.e");       /* { dg-warning "between 6 and 7 bytes" } */
   T ("%7.e");       /* { dg-warning "writing 7 bytes" } */
 
-  T ("%.*e");       /* { dg-warning "writing between 5 and 2147483655 bytes" } */
-  T ("%1.*e");      /* { dg-warning "writing between 5 and 2147483655 bytes" } */
+  T ("%.*e");       /* { dg-warning "writing between 3 and 2147483655 bytes" } */
+  T ("%1.*e");      /* { dg-warning "writing between 3 and 2147483655 bytes" } */
   T ("%6.*e");      /* { dg-warning "writing between 6 and 2147483655 bytes" } */
   T ("%9.*e");      /* { dg-warning "writing between 9 and 2147483655 bytes" } */
 
-  T ("%*.*e");      /* { dg-warning "writing between 5 and 2147483655 bytes" } */
+  T ("%*.*e");      /* { dg-warning "writing between 3 and 2147483655 bytes" } */
 }
 
 /* Exercise %f.  */
 void test_f_va (va_list va)
 {
-  T ("%f");         /* { dg-warning "between 8 and 317 bytes" } */
-  T ("%+f");        /* { dg-warning "between 9 and 317 bytes" } */
-  T ("% f");        /* { dg-warning "between 9 and 317 bytes" } */
-  T ("%#f");        /* { dg-warning "between 8 and 317 bytes" } */
-  T ("%+f");        /* { dg-warning "between 9 and 317 bytes" } */
-  T ("% f");        /* { dg-warning "between 9 and 317 bytes" } */
-  T ("%#+f");       /* { dg-warning "between 9 and 317 bytes" } */
-  T ("%# f");       /* { dg-warning "between 9 and 317 bytes" } */
+  T ("%f");         /* { dg-warning "between 3 and 317 bytes" } */
+  T ("%+f");        /* { dg-warning "between 4 and 317 bytes" } */
+  T ("% f");        /* { dg-warning "between 4 and 317 bytes" } */
+  T ("%#f");        /* { dg-warning "between 3 and 317 bytes" } */
+  T ("%+f");        /* { dg-warning "between 4 and 317 bytes" } */
+  T ("% f");        /* { dg-warning "between 4 and 317 bytes" } */
+  T ("%#+f");       /* { dg-warning "between 4 and 317 bytes" } */
+  T ("%# f");       /* { dg-warning "between 4 and 317 bytes" } */
 
   T ("%.f");        /* { dg-warning "between 1 and 310 bytes" } */
   T ("%.0f");       /* { dg-warning "between 1 and 310 bytes" } */
   T ("%.1f");       /* { dg-warning "between 3 and 312 bytes" } */
-  T ("%.2f");       /* { dg-warning "between 4 and 313 bytes" } */
-  T ("%.99f");      /* { dg-warning "between 101 and 410 bytes" } */
-  T ("%.199f");     /* { dg-warning "between 201 and 510 bytes" } */
-  T ("%.1099f");    /* { dg-warning "between 1101 and 1410 bytes" } */
+  T ("%.2f");       /* { dg-warning "between 3 and 313 bytes" } */
+  T ("%.99f");      /* { dg-warning "between 3 and 410 bytes" } */
+  T ("%.199f");     /* { dg-warning "between 3 and 510 bytes" } */
+  T ("%.1099f");    /* { dg-warning "between 3 and 1410 bytes" } */
 
   T ("%0.0f");      /* { dg-warning "between 1 and 310 bytes" } */
   T ("%1.0f");      /* { dg-warning "between 1 and 310 bytes" } */
@@ -224,8 +224,8 @@ void test_f_va (va_list va)
   T ("%3.0f");      /* { dg-warning "between 3 and 310 bytes" } */
   T ("%310.0f");    /* { dg-warning "writing 310 bytes" } */
   T ("%311.0f");    /* { dg-warning "writing 311 bytes" } */
-  T ("%312.312f");  /* { dg-warning "between 314 and 623 bytes" } */
-  T ("%312.313f");  /* { dg-warning "between 315 and 624 bytes" } */
+  T ("%312.312f");  /* { dg-warning "between 312 and 623 bytes" } */
+  T ("%312.313f");  /* { dg-warning "between 312 and 624 bytes" } */
 
   T ("%.*f");       /* { dg-warning "writing between 1 and 2147483958 bytes" } */
   T ("%1.*f");      /* { dg-warning "writing between 1 and 2147483958 bytes" } */

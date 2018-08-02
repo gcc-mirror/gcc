@@ -1,4 +1,8 @@
 // { dg-do run { target c++14 } }
+// { dg-require-cstdint "" }
+// { dg-require-effective-target random_device }
+// { dg-require-effective-target tls_runtime }
+// { dg-add-options tls }
 
 // Derived from: 2010-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
 

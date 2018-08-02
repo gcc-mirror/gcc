@@ -58,23 +58,41 @@ name (void)								     \
     = (NEED_EXC || NEED_ERRNO) ? __builtin_inf##l1 ()			     \
       : fn (MAX1, __builtin_inf ());					     \
   CHECK (__builtin_isinf##l1 (m) && !__builtin_signbit (m));		     \
-  const type n = fn (DENORM_MIN1, 12.0##L2);				     \
+  const type n								     \
+    = (NEED_EXC || NEED_ERRNO) ? 2.0##L1 * DENORM_MIN1			     \
+      : fn (DENORM_MIN1, 12.0##L2);					     \
   CHECK (n == 2.0##L1 * DENORM_MIN1);					     \
-  const type o = fn (n, 24.0##L2);					     \
+  const type o								     \
+    = (NEED_EXC || NEED_ERRNO) ? 3.0##L1 * DENORM_MIN1			     \
+      : fn (n, 24.0##L2);						     \
   CHECK (o == 3.0##L1 * DENORM_MIN1);					     \
-  const type p = fn (o, 132.0##L2);					     \
+  const type p								     \
+    = (NEED_EXC || NEED_ERRNO) ? 4.0##L1 * DENORM_MIN1			     \
+      : fn (o, 132.0##L2);						     \
   CHECK (p == 4.0##L1 * DENORM_MIN1);					     \
-  const type q = fn (2.0##L1 * DENORM_MIN1, -__builtin_inf ());		     \
+  const type q								     \
+    = (NEED_EXC || NEED_ERRNO) ? DENORM_MIN1				     \
+      : fn (2.0##L1 * DENORM_MIN1, -__builtin_inf ());			     \
   CHECK (q == DENORM_MIN1);						     \
-  const type r = fn (3.0##L1 * DENORM_MIN1, DENORM_MIN2);		     \
+  const type r								     \
+    = (NEED_EXC || NEED_ERRNO) ? 2.0##L1 * DENORM_MIN1			     \
+      : fn (3.0##L1 * DENORM_MIN1, DENORM_MIN2);			     \
   CHECK (r == 2.0##L1 * DENORM_MIN1);					     \
-  const type s = fn (4.0##L1 * DENORM_MIN1, 2.0##L2 * DENORM_MIN2);	     \
+  const type s								     \
+    = (NEED_EXC || NEED_ERRNO) ? 3.0##L1 * DENORM_MIN1			     \
+      : fn (4.0##L1 * DENORM_MIN1, 2.0##L2 * DENORM_MIN2);		     \
   CHECK (s == 3.0##L1 * DENORM_MIN1);					     \
-  const type t = fn (MIN1, 0.0##L2);					     \
+  const type t								     \
+    = (NEED_EXC || NEED_ERRNO) ? MIN1 - DENORM_MIN1			     \
+      : fn (MIN1, 0.0##L2);						     \
   CHECK (t == MIN1 - DENORM_MIN1);					     \
-  const type u = fn (MIN1 - DENORM_MIN1, -MIN2);			     \
+  const type u								     \
+    = (NEED_EXC || NEED_ERRNO) ? MIN1 - 2.0##L1 * DENORM_MIN1		     \
+      : fn (MIN1 - DENORM_MIN1, -MIN2);					     \
   CHECK (u == MIN1 - 2.0##L1 * DENORM_MIN1);				     \
-  const type v = fn (MIN1 - 2.0##L1 * DENORM_MIN1, 100.0##L2);		     \
+  const type v								     \
+    = (NEED_EXC || NEED_ERRNO) ? MIN1 - DENORM_MIN1			     \
+      : fn (MIN1 - 2.0##L1 * DENORM_MIN1, 100.0##L2);			     \
   CHECK (v == MIN1 - DENORM_MIN1);					     \
   const type w = fn (MIN1 - DENORM_MIN1, MAX2);				     \
   CHECK (w == MIN1);							     \
@@ -82,9 +100,13 @@ name (void)								     \
   CHECK (x == MIN1 + DENORM_MIN1);					     \
   const type y = fn (MIN1 + DENORM_MIN1, __builtin_inf##l2 ());		     \
   CHECK (y == MIN1 + 2.0##L1 * DENORM_MIN1);				     \
-  const type z = fn (MIN1 / 2.0##L1, -MIN2);				     \
+  const type z								     \
+    = (NEED_EXC || NEED_ERRNO) ? MIN1 / 2.0##L1 - DENORM_MIN1		     \
+      : fn (MIN1 / 2.0##L1, -MIN2);					     \
   CHECK (z == MIN1 / 2.0##L1 - DENORM_MIN1);				     \
-  const type aa = fn (-MIN1 / 4.0##L1, MIN2);				     \
+  const type aa								     \
+    = (NEED_EXC || NEED_ERRNO) ? -MIN1 / 4.0##L1 + DENORM_MIN1		     \
+      : fn (-MIN1 / 4.0##L1, MIN2);					     \
   CHECK (aa == -MIN1 / 4.0##L1 + DENORM_MIN1);				     \
   const type ab = fn (MIN1 * 2.0##L1, -MIN2);				     \
   CHECK (ab == MIN1 * 2.0##L1 - DENORM_MIN1);				     \
@@ -92,9 +114,13 @@ name (void)								     \
   CHECK (ac == MIN1 * 4.0##L1 - DENORM_MIN1 * 2.0##L1);			     \
   const type ad = fn (MIN1 * 64.0##L1, MIN2);				     \
   CHECK (ad == MIN1 * 64.0##L1 - DENORM_MIN1 * 32.0##L1);		     \
-  const type ae = fn (MIN1 / 2.0##L1 - DENORM_MIN1, 100.0##L2);		     \
+  const type ae								     \
+    = (NEED_EXC || NEED_ERRNO) ? MIN1 / 2.0##L1				     \
+      : fn (MIN1 / 2.0##L1 - DENORM_MIN1, 100.0##L2);			     \
   CHECK (ae == MIN1 / 2.0##L1);						     \
-  const type af = fn (-MIN1 / 4 + DENORM_MIN1, -100.0##L2);		     \
+  const type af								     \
+    = (NEED_EXC || NEED_ERRNO) ? -MIN1 / 4.0##L1			     \
+      : fn (-MIN1 / 4 + DENORM_MIN1, -100.0##L2);			     \
   CHECK (af == -MIN1 / 4.0##L1);					     \
   const type ag = fn (MIN1 * 2.0##L1 - DENORM_MIN1, 100.0##L2);		     \
   CHECK (ag == MIN1 * 2.0##L1);						     \

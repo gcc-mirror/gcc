@@ -342,12 +342,16 @@ get_coverage_counts (unsigned counter, unsigned expected,
       static int warned = 0;
 
       if (!warned++ && dump_enabled_p ())
-	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
-                         (flag_guess_branch_prob
-                          ? "file %s not found, execution counts estimated\n"
-                          : "file %s not found, execution counts assumed to "
-                            "be zero\n"),
-                         da_file_name);
+	{
+	  dump_user_location_t loc
+	    = dump_user_location_t::from_location_t (input_location);
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			   (flag_guess_branch_prob
+			    ? "file %s not found, execution counts estimated\n"
+			    : "file %s not found, execution counts assumed to "
+			    "be zero\n"),
+			   da_file_name);
+	}
       return NULL;
     }
   if (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID))
@@ -378,7 +382,9 @@ get_coverage_counts (unsigned counter, unsigned expected,
 		    "its profile data (counter %qs)", id, ctr_names[counter]);
       if (warning_printed && dump_enabled_p ())
 	{
-          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
+	  dump_user_location_t loc
+	    = dump_user_location_t::from_location_t (input_location);
+          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
                            "use -Wno-error=coverage-mismatch to tolerate "
                            "the mismatch but performance may drop if the "
                            "function is hot\n");
@@ -386,7 +392,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
 	  if (!seen_error ()
 	      && !warned++)
 	    {
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
                                "coverage mismatch ignored\n");
 	      dump_printf (MSG_OPTIMIZED_LOCATIONS,
                            flag_guess_branch_prob
@@ -650,7 +656,8 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   gcov_write_unsigned (cfg_checksum);
   gcov_write_string (IDENTIFIER_POINTER
 		     (DECL_ASSEMBLER_NAME (current_function_decl)));
-  gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl));
+  gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl)
+		       && !DECL_FUNCTION_VERSIONED (current_function_decl));
   gcov_write_filename (xloc.file);
   gcov_write_unsigned (xloc.line);
   gcov_write_unsigned (xloc.column);
@@ -1214,8 +1221,24 @@ coverage_init (const char *filename)
     g->get_passes ()->get_pass_profile ()->static_pass_number;
   g->get_dumps ()->dump_start (profile_pass_num, NULL);
 
-  if (!profile_data_prefix && !IS_ABSOLUTE_PATH (filename))
-    profile_data_prefix = getpwd ();
+  if (!IS_ABSOLUTE_PATH (filename))
+    {
+      /* When a profile_data_prefix is provided, then mangle full path
+	 of filename in order to prevent file path clashing.  */
+      if (profile_data_prefix)
+	{
+#if HAVE_DOS_BASED_FILE_SYSTEM
+	  const char *separator = "\\";
+#else
+	  const char *separator = "/";
+#endif
+	  filename = concat (getpwd (), separator, filename, NULL);
+	  filename = mangle_path (filename);
+	  len = strlen (filename);
+	}
+      else
+	profile_data_prefix = getpwd ();
+    }
 
   if (profile_data_prefix)
     prefix_len = strlen (profile_data_prefix);

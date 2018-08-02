@@ -128,12 +128,13 @@
 // #include <execution>
 #include <filesystem>
 #include <optional>
-// #include <memory_resource>
+#include <memory_resource>
 #include <string_view>
 #include <variant>
 #endif
 
 #if __cplusplus > 201703L
+#include <bit>
 // #include <compare>
 // #include <span>
 // #include <syncstream>

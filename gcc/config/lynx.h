@@ -165,12 +165,6 @@ along with GCC; see the file COPYING3.  If not see
 # define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 #endif
 
-/* We have C++ support in our system headers.  */
-
-#ifndef NO_IMPLICIT_EXTERN_C
-# define NO_IMPLICIT_EXTERN_C
-#endif
-
 #ifndef TARGET_POSIX_IO
 # define TARGET_POSIX_IO
 #endif

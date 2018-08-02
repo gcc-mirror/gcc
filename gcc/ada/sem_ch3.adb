@@ -605,6 +605,10 @@ package body Sem_Ch3 is
    --  Create a new ordinary fixed point type, and apply the constraint to
    --  obtain subtype of it.
 
+   procedure Preanalyze_Default_Expression (N : Node_Id; T : Entity_Id);
+   --  Wrapper on Preanalyze_Spec_Expression for default expressions, so that
+   --  In_Default_Expr can be properly adjusted.
+
    procedure Prepare_Private_Subtype_Completion
      (Id          : Entity_Id;
       Related_Nod : Node_Id);
@@ -18615,11 +18619,13 @@ package body Sem_Ch3 is
       --  A named subtype does not inherit the predicate function of its
       --  parent but an itype declared for a loop index needs the discrete
       --  predicate information of its parent to execute the loop properly.
+      --  A non-discrete type may has a static predicate (for example True)
+      --  but has no static_discrete_predicate.
 
       if Is_Itype (Subt) and then Present (Predicate_Function (Par)) then
          Set_Subprograms_For_Type (Subt, Subprograms_For_Type (Par));
 
-         if Has_Static_Predicate (Par) then
+         if Has_Static_Predicate (Par) and then Is_Discrete_Type (Par) then
             Set_Static_Discrete_Predicate
               (Subt, Static_Discrete_Predicate (Par));
          end if;
@@ -19816,11 +19822,17 @@ package body Sem_Ch3 is
    -----------------------------------
 
    procedure Preanalyze_Default_Expression (N : Node_Id; T : Entity_Id) is
-      Save_In_Default_Expr : constant Boolean := In_Default_Expr;
+      Save_In_Default_Expr    : constant Boolean := In_Default_Expr;
+      Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
+
    begin
-      In_Default_Expr := True;
-      Preanalyze_Spec_Expression (N, T);
-      In_Default_Expr := Save_In_Default_Expr;
+      In_Default_Expr    := True;
+      In_Spec_Expression := True;
+
+      Preanalyze_With_Freezing_And_Resolve (N, T);
+
+      In_Default_Expr    := Save_In_Default_Expr;
+      In_Spec_Expression := Save_In_Spec_Expression;
    end Preanalyze_Default_Expression;
 
    --------------------------------
@@ -20125,7 +20137,7 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  A discriminant cannot be effectively volatile (SPARK RM 7.1.3(6)).
+         --  A discriminant cannot be effectively volatile (SPARK RM 7.1.3(4)).
          --  This check is relevant only when SPARK_Mode is on as it is not a
          --  standard Ada legality rule.
 

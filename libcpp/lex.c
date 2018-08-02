@@ -2919,10 +2919,10 @@ _cpp_lex_direct (cpp_reader *pfile)
 		   && CPP_PEDANTIC (pfile)
 		   && ! buffer->warned_cplusplus_comments)
 	    {
-	      cpp_error (pfile, CPP_DL_PEDWARN,
-			 "C++ style comments are not allowed in ISO C90");
-	      cpp_error (pfile, CPP_DL_PEDWARN,
-			 "(this will be reported only once per input file)");
+	      if (cpp_error (pfile, CPP_DL_PEDWARN,
+			     "C++ style comments are not allowed in ISO C90"))
+		cpp_error (pfile, CPP_DL_NOTE,
+			   "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;
 	    }
 	  /* Or if specifically desired via -Wc90-c99-compat.  */
@@ -2930,10 +2930,10 @@ _cpp_lex_direct (cpp_reader *pfile)
 		   && ! CPP_OPTION (pfile, cplusplus)
 		   && ! buffer->warned_cplusplus_comments)
 	    {
-	      cpp_error (pfile, CPP_DL_WARNING,
-			 "C++ style comments are incompatible with C90");
-	      cpp_error (pfile, CPP_DL_WARNING,
-			 "(this will be reported only once per input file)");
+	      if (cpp_error (pfile, CPP_DL_WARNING,
+			     "C++ style comments are incompatible with C90"))
+		cpp_error (pfile, CPP_DL_NOTE,
+			   "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;
 	    }
 	  /* In C89/C94, C++ style comments are forbidden.  */
@@ -2953,11 +2953,12 @@ _cpp_lex_direct (cpp_reader *pfile)
 		}
 	      else if (! buffer->warned_cplusplus_comments)
 		{
-		  cpp_error (pfile, CPP_DL_ERROR,
-			     "C++ style comments are not allowed in ISO C90");
-		  cpp_error (pfile, CPP_DL_ERROR,
-			     "(this will be reported only once per input "
-			     "file)");
+		  if (cpp_error (pfile, CPP_DL_ERROR,
+				 "C++ style comments are not allowed in "
+				 "ISO C90"))
+		    cpp_error (pfile, CPP_DL_NOTE,
+			       "(this will be reported only once per input "
+			       "file)");
 		  buffer->warned_cplusplus_comments = 1;
 		}
 	    }

@@ -31,6 +31,10 @@
 #include <ext/pointer.h>
 #include <ext/alloc_traits.h>
 #include <testsuite_hooks.h>
+#if __cplusplus >= 201703L
+# include <memory_resource>
+# include <new>
+#endif
 
 namespace __gnu_test
 {
@@ -691,7 +695,161 @@ namespace __gnu_test
       using PointerBase_void::PointerBase_void;
       typedef Derived pointer;
     };
-#endif
+#endif // C++11
+
+#if __cplusplus >= 201703L && __cpp_aligned_new
+    // A concrete memory_resource, with error checking.
+    class memory_resource : public std::pmr::memory_resource
+    {
+    public:
+      memory_resource()
+      : lists(new allocation_lists)
+      { }
+
+      memory_resource(const memory_resource& r) noexcept
+      : lists(r.lists)
+      { lists->refcount++; }
+
+      memory_resource& operator=(const memory_resource&) = delete;
+
+      ~memory_resource()
+      {
+	if (lists->refcount-- == 1)
+	  delete lists;  // last one out turns out the lights
+      }
+
+      struct bad_size { };
+      struct bad_alignment { };
+      struct bad_address { };
+
+      // Deallocate everything (moving the tracking info to the freed list)
+      void
+      deallocate_everything()
+      {
+	while (lists->active)
+	  {
+	    auto a = lists->active;
+	    // Intentionally virtual dispatch, to inform derived classes:
+	    this->do_deallocate(a->p, a->bytes, a->alignment);
+	  }
+      }
+
+      // Clear the freed list
+      void
+      forget_freed_allocations()
+      { lists->forget_allocations(lists->freed); }
+
+      // Count how many allocations have been done and not freed.
+      std::size_t
+      number_of_active_allocations() const noexcept
+      {
+	std::size_t n = 0;
+	for (auto a = lists->active; a != nullptr; a = a->next)
+	  ++n;
+	return n;
+      }
+
+    protected:
+      void*
+      do_allocate(std::size_t bytes, std::size_t alignment) override
+      {
+	// TODO perform a single allocation and put the allocation struct
+	// in the buffer using placement new? It means deallocation won't
+	// actually return memory to the OS, as it will stay in lists->freed.
+	//
+	// TODO adjust the returned pointer to be minimally aligned?
+	// e.g. if alignment==1 don't return something aligned to 2 bytes.
+	// Maybe not worth it, at least monotonic_buffer_resource will
+	// never ask upstream for anything with small alignment.
+	void* p = ::operator new(bytes, std::align_val_t(alignment));
+	lists->active = new allocation{p, bytes, alignment, lists->active};
+	return p;
+      }
+
+      void
+      do_deallocate(void* p, std::size_t bytes, std::size_t alignment) override
+      {
+	allocation** aptr = &lists->active;
+	while (*aptr)
+	  {
+	    allocation* a = *aptr;
+	    if (p == a->p)
+	      {
+		if (bytes != a->bytes)
+		  throw bad_size();
+		if (alignment != a->alignment)
+		  throw bad_alignment();
+		::operator delete(p, bytes, std::align_val_t(alignment));
+		*aptr = a->next;
+		a->next = lists->freed;
+		lists->freed = a;
+		return;
+	      }
+	    aptr = &a->next;
+	  }
+	throw bad_address();
+      }
+
+      bool
+      do_is_equal(const std::pmr::memory_resource& r) const noexcept override
+      {
+	// Equality is determined by sharing the same allocation_lists object.
+	if (auto p = dynamic_cast<const memory_resource*>(&r))
+	  return p->lists == lists;
+	return false;
+      }
+
+    private:
+      struct allocation
+      {
+	void* p;
+	std::size_t bytes;
+	std::size_t alignment;
+	allocation* next;
+      };
+
+      // Maintain list of allocated blocks and list of freed blocks.
+      // Copies of this memory_resource share the same ref-counted lists.
+      struct allocation_lists
+      {
+	unsigned refcount = 1;
+	allocation* active = nullptr;
+	allocation* freed = nullptr;
+
+	void forget_allocations(allocation*& list)
+	{
+	  while (list)
+	    {
+	      auto p = list;
+	      list = list->next;
+	      delete p;
+	    }
+	}
+
+	~allocation_lists()
+	{
+	  forget_allocations(active); // Anything in this list is a leak!
+	  forget_allocations(freed);
+	}
+      };
+
+      allocation_lists* lists;
+    };
+
+    // Set the default resource, and restore the previous one on destruction.
+    struct default_resource_mgr
+    {
+      explicit default_resource_mgr(std::pmr::memory_resource* r)
+      : prev(std::pmr::set_default_resource(r))
+      { }
+
+      ~default_resource_mgr()
+      { std::pmr::set_default_resource(prev); }
+
+      std::pmr::memory_resource* prev;
+    };
+
+#endif // C++17 && aligned-new
 
 } // namespace __gnu_test
 

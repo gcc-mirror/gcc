@@ -1488,6 +1488,8 @@ bool gimple_call_same_target_p (const gimple *, const gimple *);
 int gimple_call_flags (const gimple *);
 int gimple_call_arg_flags (const gcall *, unsigned);
 int gimple_call_return_flags (const gcall *);
+bool gimple_call_nonnull_result_p (gcall *);
+tree gimple_call_nonnull_arg (gcall *);
 bool gimple_assign_copy_p (gimple *);
 bool gimple_assign_ssa_name_copy_p (gimple *);
 bool gimple_assign_unary_nop_p (gimple *);
@@ -6195,26 +6197,6 @@ static inline void
 gimple_return_set_retval (greturn *gs, tree retval)
 {
   gs->op[0] = retval;
-}
-
-
-/* Return the return bounds for GIMPLE_RETURN GS.  */
-
-static inline tree
-gimple_return_retbnd (const gimple *gs)
-{
-  GIMPLE_CHECK (gs, GIMPLE_RETURN);
-  return gimple_op (gs, 1);
-}
-
-
-/* Set RETVAL to be the return bounds for GIMPLE_RETURN GS.  */
-
-static inline void
-gimple_return_set_retbnd (gimple *gs, tree retval)
-{
-  GIMPLE_CHECK (gs, GIMPLE_RETURN);
-  gimple_set_op (gs, 1, retval);
 }
 
 

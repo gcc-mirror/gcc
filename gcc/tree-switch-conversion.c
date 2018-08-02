@@ -1121,6 +1121,8 @@ jump_table_cluster::find_jump_tables (vec<cluster *> &clusters)
 	      && can_be_handled (clusters, j, i - 1))
 	    min[i] = min_cluster_item (min[j].m_count + 1, j, s);
 	}
+
+      gcc_checking_assert (min[i].m_count != INT_MAX);
     }
 
   /* No result.  */
@@ -1172,8 +1174,14 @@ jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
   if (!flag_jump_tables)
     return false;
 
-  unsigned HOST_WIDE_INT max_ratio = optimize_insn_for_size_p () ? 3 : 8;
+  /* For algorithm correctness, jump table for a single case must return
+     true.  We bail out in is_beneficial if it's called just for
+     a single case.  */
+  if (start == end)
+    return true;
 
+  unsigned HOST_WIDE_INT max_ratio
+    = optimize_insn_for_size_p () ? max_ratio_for_size : max_ratio_for_speed;
   unsigned HOST_WIDE_INT range = get_range (clusters[start]->get_low (),
 					    clusters[end]->get_high ());
   /* Check overflow.  */
@@ -1197,8 +1205,17 @@ bool
 jump_table_cluster::is_beneficial (const vec<cluster *> &,
 				   unsigned start, unsigned end)
 {
+  /* Single case bail out.  */
+  if (start == end)
+    return false;
+
   return end - start + 1 >= case_values_threshold ();
 }
+
+/* Definition of jump_table_cluster constants.  */
+
+const unsigned HOST_WIDE_INT jump_table_cluster::max_ratio_for_size;
+const unsigned HOST_WIDE_INT jump_table_cluster::max_ratio_for_speed;
 
 /* Find bit tests of given CLUSTERS, where all members of the vector
    are of type simple_cluster.  New clusters are returned.  */
@@ -1226,6 +1243,8 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
 	      && can_be_handled (clusters, j, i - 1))
 	    min[i] = min_cluster_item (min[j].m_count + 1, j, INT_MAX);
 	}
+
+      gcc_checking_assert (min[i].m_count != INT_MAX);
     }
 
   /* No result.  */
@@ -1277,6 +1296,12 @@ bool
 bit_test_cluster::can_be_handled (const vec<cluster *> &clusters,
 				  unsigned start, unsigned end)
 {
+  /* For algorithm correctness, bit test for a single case must return
+     true.  We bail out in is_beneficial if it's called just for
+     a single case.  */
+  if (start == end)
+    return true;
+
   unsigned HOST_WIDE_INT range = get_range (clusters[start]->get_low (),
 					    clusters[end]->get_high ());
   auto_bitmap dest_bbs;
@@ -1308,6 +1333,10 @@ bool
 bit_test_cluster::is_beneficial (const vec<cluster *> &clusters,
 				 unsigned start, unsigned end)
 {
+  /* Single case bail out.  */
+  if (start == end)
+    return false;
+
   auto_bitmap dest_bbs;
 
   for (unsigned i = start; i <= end; i++)
@@ -1599,7 +1628,7 @@ switch_decision_tree::analyze_switch_statement ()
   /* Find jump table clusters.  */
   vec<cluster *> output = jump_table_cluster::find_jump_tables (clusters);
 
-  /* Find jump table clusters.  */
+  /* Find bit test clusters.  */
   vec<cluster *> output2;
   auto_vec<cluster *> tmp;
   output2.create (1);
@@ -1708,8 +1737,12 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
   /* Do not do an extra work for a single cluster.  */
   if (clusters.length () == 1
       && clusters[0]->get_type () != SIMPLE_CASE)
-    clusters[0]->emit (index_expr, index_type,
-		       gimple_switch_default_label (m_switch), m_default_bb);
+    {
+      cluster *c = clusters[0];
+      c->emit (index_expr, index_type,
+	       gimple_switch_default_label (m_switch), m_default_bb);
+      redirect_edge_succ (single_succ_edge (bb), c->m_case_bb);
+    }
   else
     {
       emit (bb, index_expr, default_edge->probability, index_type);

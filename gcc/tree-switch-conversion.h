@@ -257,6 +257,12 @@ struct jump_table_cluster: public group_cluster
 
   /* Return whether jump table expansion is allowed.  */
   static bool is_enabled (void);
+
+  /* Max growth ratio for code that is optimized for size.  */
+  static const unsigned HOST_WIDE_INT max_ratio_for_size = 3;
+
+  /* Max growth ratio for code that is optimized for speed.  */
+  static const unsigned HOST_WIDE_INT max_ratio_for_speed = 8;
 };
 
 /* A GIMPLE switch statement can be expanded to a short sequence of bit-wise

@@ -11,7 +11,7 @@ int main()
   for (i = 3; i < 7; ++i)
     {
       extern int i;
-      asm volatile (NOP : : : "memory"); /* { dg-final { gdb-test 14 "i" "0" } } */
+      asm volatile (NOP : : : "memory"); /* { dg-final { gdb-test . "i" "0" } } */
     }
   return 0;
 }

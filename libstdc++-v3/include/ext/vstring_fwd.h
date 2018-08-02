@@ -66,9 +66,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 std::allocator<wchar_t>, __rc_string_base> __wrc_string;
 #endif  
 
-#if ((__cplusplus >= 201103L) \
-     && defined(_GLIBCXX_USE_C99_STDINT_TR1))
-
+#if __cplusplus >= 201103L
   typedef __versa_string<char16_t>                          __u16vstring;
   typedef __u16vstring                                      __u16sso_string;
   typedef 
@@ -80,8 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   typedef 
   __versa_string<char32_t, std::char_traits<char32_t>,
 		 std::allocator<char32_t>, __rc_string_base> __u32rc_string;
-
-#endif
+#endif // C++11
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -489,7 +489,7 @@ while (0)
 
 #define ASM_OUTPUT_ALIGN(STREAM,LOG)					\
   if ((LOG) != 0)                       				\
-    fprintf (STREAM, "\t.balign %d\n", 1<<(LOG))
+    fprintf (STREAM, "\t.balign %d\n", 1 << (LOG))
 
 
 /* Macros Affecting all Debug Formats.  */

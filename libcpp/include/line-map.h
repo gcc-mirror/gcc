@@ -70,8 +70,8 @@ enum lc_reason
   LC_RENAME_VERBATIM,	/* Likewise, but "" != stdin.  */
   LC_ENTER_MACRO,	/* Begin macro expansion.  */
   LC_MODULE,		/* A (C++) Module.  */
-  LC_HWM
   /* FIXME: add support for stringize and paste.  */
+  LC_HWM /* High Water Mark.  */
 };
 
 /* The typedef "source_location" is a key within the location database,
@@ -377,8 +377,9 @@ typedef size_t (*line_map_round_alloc_size_func) (size_t);
    the map that is active right before the location of the invocation
    of PLUS.  */
 
-/* This contains GTY mark up to support precompiled headers.  */
-struct GTY((tag ("-1"), desc ("MAP_ORDINARY_P (&%h)"))) line_map {
+/* This contains GTY mark-up to support precompiled headers.
+   line_map is an abstract class, only derived objects exist.  */
+struct GTY((tag ("0"), desc ("MAP_ORDINARY_P (&%h) ? 1 : 2"))) line_map {
   source_location start_location;
 
   /* Size and alignment is (usually) 4 bytes.  */
@@ -396,7 +397,7 @@ struct GTY((tag ("-1"), desc ("MAP_ORDINARY_P (&%h)"))) line_map {
    means "entire file/line" or "unknown line/column" or "not applicable".)
 
    The highest possible source location is MAX_SOURCE_LOCATION.  */
-struct GTY((tag ("true"))) line_map_ordinary : public line_map {
+struct GTY((tag ("1"))) line_map_ordinary : public line_map {
   /* Base class is 4 bytes.  */
 
   /* 4 bytes of integers, each 1 byte for easy extraction/insertion.  */
@@ -453,7 +454,7 @@ struct cpp_hashnode;
    
    The offset from START_LOCATION is used to index into
    MACRO_LOCATIONS; this holds the original location of the token.  */
-struct GTY((tag ("false"))) line_map_macro : public line_map {
+struct GTY((tag ("2"))) line_map_macro : public line_map {
   /* Base is 4 bytes.  */
 
   /* The number of tokens inside the replacement-list of MACRO.  */
@@ -1628,8 +1629,7 @@ class rich_location
   add_range (source_location loc,  bool show_caret_p);
 
   void
-  set_range (line_maps *set, unsigned int idx, source_location loc,
-	     bool show_caret_p);
+  set_range (unsigned int idx, source_location loc, bool show_caret_p);
 
   unsigned int get_num_locations () const { return m_ranges.count (); }
 

@@ -58,8 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<> struct char_traits<wchar_t>;
 #endif
 
-#if ((__cplusplus >= 201103L) \
-     && defined(_GLIBCXX_USE_C99_STDINT_TR1))
+#if __cplusplus >= 201103L
   template<> struct char_traits<char16_t>;
   template<> struct char_traits<char32_t>;
 #endif
@@ -78,8 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   typedef basic_string<wchar_t> wstring;   
 #endif
 
-#if ((__cplusplus >= 201103L) \
-     && defined(_GLIBCXX_USE_C99_STDINT_TR1))
+#if __cplusplus >= 201103L
   /// A string of @c char16_t
   typedef basic_string<char16_t> u16string; 
 

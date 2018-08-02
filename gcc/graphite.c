@@ -412,7 +412,7 @@ graphite_transform_loops (void)
 	changed = true;
 	if (graphite_regenerate_ast_isl (scop))
 	  {
-	    location_t loc = find_loop_location
+	    dump_user_location_t loc = find_loop_location
 	      (scops[i]->scop_info->region.entry->dest->loop_father);
 	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
 			     "loop nest optimized\n");

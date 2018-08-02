@@ -893,6 +893,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
       //@}
 
+#if __cplusplus > 201703L
+      //@{
+      /**
+       *  @brief  Finds whether an element with the given key exists.
+       *  @param  __x  Key of (key, value) pairs to be located.
+       *  @return  True if there is any element with the specified key.
+       */
+      bool
+      contains(const key_type& __x) const
+      { return _M_t.find(__x) != _M_t.end(); }
+
+      template<typename _Kt>
+	auto
+	contains(const _Kt& __x) const
+	-> decltype(_M_t._M_find_tr(__x), void(), true)
+	{ return _M_t._M_find_tr(__x) != _M_t.end(); }
+      //@}
+#endif
+
       //@{
       /**
        *  @brief Finds the beginning of a subsequence matching given key.

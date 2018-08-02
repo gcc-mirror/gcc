@@ -19982,8 +19982,18 @@ package body Sem_Prag is
                      if not Comes_From_Source (Item_Id) then
                         null;
 
+                     --  Do not consider generic formals or their corresponding
+                     --  actuals because they are not part of a visible state.
+                     --  Note that both entities are marked as hidden.
+
+                     elsif Is_Hidden (Item_Id) then
+                        null;
+
                      --  The Part_Of indicator turns an abstract state or an
                      --  object into a constituent of the encapsulating state.
+                     --  Note that constants are considered here even though
+                     --  they may not depend on variable input. This check is
+                     --  left to the SPARK prover.
 
                      elsif Ekind_In (Item_Id, E_Abstract_State,
                                               E_Constant,
@@ -28775,7 +28785,17 @@ package body Sem_Prag is
             if not Comes_From_Source (Item_Id) then
                null;
 
-            --  A visible state has been found
+            --  Do not consider generic formals or their corresponding actuals
+            --  because they are not part of a visible state. Note that both
+            --  entities are marked as hidden.
+
+            elsif Is_Hidden (Item_Id) then
+               null;
+
+            --  A visible state has been found. Note that constants are not
+            --  considered here because it is not possible to determine whether
+            --  they depend on variable input. This check is left to the SPARK
+            --  prover.
 
             elsif Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
                return True;
@@ -28897,9 +28917,9 @@ package body Sem_Prag is
          --  A package instantiation does not need a Part_Of indicator when the
          --  related generic template has no visible state.
 
-         elsif Ekind (Pack_Id) = E_Package
-           and then Is_Generic_Instance (Pack_Id)
-           and then not Has_Visible_State (Pack_Id)
+         elsif Ekind (Item_Id) = E_Package
+           and then Is_Generic_Instance (Item_Id)
+           and then not Has_Visible_State (Item_Id)
          then
             null;
 
@@ -29621,6 +29641,16 @@ package body Sem_Prag is
                --  for an expression function.
 
                if Nkind (Original_Node (Stmt)) = N_Expression_Function then
+                  return Stmt;
+
+               --  The subprogram declaration is an internally generated spec
+               --  for a stand-alone subrogram body declared inside a protected
+               --  body.
+
+               elsif Present (Corresponding_Body (Stmt))
+                 and then Comes_From_Source (Corresponding_Body (Stmt))
+                 and then Is_Protected_Type (Current_Scope)
+               then
                   return Stmt;
 
                --  The subprogram is actually an instance housed within an

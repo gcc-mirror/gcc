@@ -406,13 +406,11 @@
   return FP_REGNO_P (r);
 })
 
-;; Return true if this is a register that can has D-form addressing (GPR and
-;; traditional FPR registers for scalars).  ISA 3.0 (power9) adds D-form
-;; addressing for scalars in Altivec registers.
-;;
-;; If this is a pseudo only allow for GPR fusion in power8.  If we have the
-;; power9 fusion allow the floating point types.
-(define_predicate "toc_fusion_or_p9_reg_operand"
+;; Return true if this is a register that can has D-form addressing (GPR,
+;; traditional FPR registers, and Altivec registers for scalars).  Unlike
+;; power8 fusion, this fusion does not depend on putting the ADDIS instruction
+;; into the GPR register being loaded.
+(define_predicate "p9_fusion_reg_operand"
   (match_code "reg,subreg")
 {
   HOST_WIDE_INT r;
@@ -1662,35 +1660,6 @@
     op = XEXP (op, 0);
 
   return GET_CODE (op) == UNSPEC && XINT (op, 1) == UNSPEC_TOCREL;
-})
-
-;; Match the TOC memory operand that can be fused with an addis instruction.
-;; This is used in matching a potential fused address before register
-;; allocation.
-(define_predicate "toc_fusion_mem_raw"
-  (match_code "mem")
-{
-  if (!TARGET_TOC_FUSION_INT || !can_create_pseudo_p ())
-    return false;
-
-  return small_toc_ref (XEXP (op, 0), Pmode);
-})
-
-;; Match the memory operand that has been fused with an addis instruction and
-;; wrapped inside of an (unspec [...] UNSPEC_FUSION_ADDIS) wrapper.
-(define_predicate "toc_fusion_mem_wrapped"
-  (match_code "mem")
-{
-  rtx addr;
-
-  if (!TARGET_TOC_FUSION_INT)
-    return false;
-
-  if (!MEM_P (op))
-    return false;
-
-  addr = XEXP (op, 0);
-  return (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_FUSION_ADDIS);
 })
 
 ;; Match the first insn (addis) in fusing the combination of addis and loads to

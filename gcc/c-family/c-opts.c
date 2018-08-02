@@ -262,7 +262,7 @@ c_common_init_options (unsigned int decoded_options_count,
    form of an -f or -W option was given.  Returns false if the switch was
    invalid, true if valid.  Use HANDLERS in recursive handle_option calls.  */
 bool
-c_common_handle_option (size_t scode, const char *arg, int value,
+c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 			int kind, location_t loc,
 			const struct cl_option_handlers *handlers)
 {
@@ -379,16 +379,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       /* ??? Don't add new options here. Use LangEnabledBy in c.opt.  */
 
       cpp_opts->warn_num_sign_change = value;
-      break;
-
-    case OPT_Walloca_larger_than_:
-      if (!value)
-	inform (loc, "-Walloca-larger-than=0 is meaningless");
-      break;
-
-    case OPT_Wvla_larger_than_:
-      if (!value)
-	inform (loc, "-Wvla-larger-than=0 is meaningless");
       break;
 
     case OPT_Wunknown_pragmas:

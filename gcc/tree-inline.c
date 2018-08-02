@@ -208,17 +208,22 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  n = id->decl_map->get (val);
 	  if (n != NULL)
 	    val = *n;
-	  if (TREE_CODE (val) != PARM_DECL)
+	  if (TREE_CODE (val) != PARM_DECL
+	      && !(VAR_P (val) && DECL_ABSTRACT_ORIGIN (val)))
 	    {
 	      processing_debug_stmt = -1;
 	      return name;
 	    }
+	  n = id->decl_map->get (val);
+	  if (n && TREE_CODE (*n) == DEBUG_EXPR_DECL)
+	    return *n;
 	  def_temp = gimple_build_debug_source_bind (vexpr, val, NULL);
 	  DECL_ARTIFICIAL (vexpr) = 1;
 	  TREE_TYPE (vexpr) = TREE_TYPE (name);
 	  SET_DECL_MODE (vexpr, DECL_MODE (SSA_NAME_VAR (name)));
 	  gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
+	  insert_decl_map (id, val, vexpr);
 	  return vexpr;
 	}
 
@@ -718,6 +723,7 @@ remap_block (tree *block, copy_body_data *id)
 }
 
 /* Copy the whole block tree and root it in id->block.  */
+
 static tree
 remap_blocks (tree block, copy_body_data *id)
 {
@@ -738,6 +744,7 @@ remap_blocks (tree block, copy_body_data *id)
 }
 
 /* Remap the block tree rooted at BLOCK to nothing.  */
+
 static void
 remap_blocks_to_null (tree block, copy_body_data *id)
 {
@@ -745,6 +752,27 @@ remap_blocks_to_null (tree block, copy_body_data *id)
   insert_decl_map (id, block, NULL_TREE);
   for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
     remap_blocks_to_null (t, id);
+}
+
+/* Remap the location info pointed to by LOCUS.  */
+
+static location_t
+remap_location (location_t locus, copy_body_data *id)
+{
+  if (LOCATION_BLOCK (locus))
+    {
+      tree *n = id->decl_map->get (LOCATION_BLOCK (locus));
+      gcc_assert (n);
+      if (*n)
+	return set_block (locus, *n);
+    }
+
+  locus = LOCATION_LOCUS (locus);
+
+  if (locus != UNKNOWN_LOCATION && id->block)
+    return set_block (locus, id->block);
+
+  return locus;
 }
 
 static void
@@ -1359,35 +1387,24 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
       && (gimple_debug_nonbind_marker_p (stmt)
 	  ? !DECL_STRUCT_FUNCTION (id->dst_fn)->debug_nonbind_markers
 	  : !opt_for_fn (id->dst_fn, flag_var_tracking_assignments)))
-    return stmts;
+    return NULL;
 
   /* Begin by recognizing trees that we'll completely rewrite for the
      inlining context.  Our output for these trees is completely
-     different from out input (e.g. RETURN_EXPR is deleted, and morphs
+     different from our input (e.g. RETURN_EXPR is deleted and morphs
      into an edge).  Further down, we'll handle trees that get
      duplicated and/or tweaked.  */
 
-  /* When requested, GIMPLE_RETURNs should be transformed to just the
+  /* When requested, GIMPLE_RETURN should be transformed to just the
      contained GIMPLE_ASSIGN.  The branch semantics of the return will
      be handled elsewhere by manipulating the CFG rather than the
      statement.  */
   if (gimple_code (stmt) == GIMPLE_RETURN && id->transform_return_to_modify)
     {
       tree retval = gimple_return_retval (as_a <greturn *> (stmt));
-      tree retbnd = gimple_return_retbnd (stmt);
-      tree bndslot = id->retbnd;
-
-      if (retbnd && bndslot)
-	{
-	  gimple *bndcopy = gimple_build_assign (bndslot, retbnd);
-	  memset (&wi, 0, sizeof (wi));
-	  wi.info = id;
-	  walk_gimple_op (bndcopy, remap_gimple_op_r, &wi);
-	  gimple_seq_add_stmt (&stmts, bndcopy);
-	}
 
       /* If we're returning something, just turn that into an
-	 assignment into the equivalent of the original RESULT_DECL.
+	 assignment to the equivalent of the original RESULT_DECL.
 	 If RETVAL is just the result decl, the result decl has
 	 already been set (e.g. a recent "foo (&result_decl, ...)");
 	 just toss the entire GIMPLE_RETURN.  */
@@ -1404,7 +1421,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  skip_first = true;
 	}
       else
-	return stmts;
+	return NULL;
     }
   else if (gimple_has_substatements (stmt))
     {
@@ -1618,6 +1635,8 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	    = gimple_build_debug_bind (gimple_debug_bind_get_var (stmt),
 				       gimple_debug_bind_get_value (stmt),
 				       stmt);
+	  if (id->reset_location)
+	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
 	  gimple_seq_add_stmt (&stmts, copy);
 	  return stmts;
@@ -1628,6 +1647,8 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	                   (gimple_debug_source_bind_get_var (stmt),
 			    gimple_debug_source_bind_get_value (stmt),
 			    stmt);
+	  if (id->reset_location)
+	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
 	  gimple_seq_add_stmt (&stmts, copy);
 	  return stmts;
@@ -1641,11 +1662,12 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	    return stmts;
 
 	  gdebug *copy = as_a <gdebug *> (gimple_copy (stmt));
+	  if (id->reset_location)
+	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
 	  gimple_seq_add_stmt (&stmts, copy);
 	  return stmts;
 	}
-      gcc_checking_assert (!is_gimple_debug (stmt));
 
       /* Create a new deep copy of the statement.  */
       copy = gimple_copy (stmt);
@@ -1731,8 +1753,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  }
     }
 
-  /* If STMT has a block defined, map it to the newly constructed
-     block.  */
+  /* If STMT has a block defined, map it to the newly constructed block.  */
   if (gimple_block (copy))
     {
       tree *n;
@@ -1741,12 +1762,11 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
       gimple_set_block (copy, *n);
     }
 
-  if (gimple_debug_bind_p (copy) || gimple_debug_source_bind_p (copy)
-      || gimple_debug_nonbind_marker_p (copy))
-    {
-      gimple_seq_add_stmt (&stmts, copy);
-      return stmts;
-    }
+  if (id->reset_location)
+    gimple_set_location (copy, input_location);
+
+  /* Debug statements ought to be rebuilt and not copied.  */
+  gcc_checking_assert (!is_gimple_debug (copy));
 
   /* Remap all the operands in COPY.  */
   memset (&wi, 0, sizeof (wi));
@@ -2145,7 +2165,8 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
 
 static bool
 copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
-		   basic_block ret_bb, basic_block abnormal_goto_dest)
+		   basic_block ret_bb, basic_block abnormal_goto_dest,
+		   copy_body_data *id)
 {
   basic_block new_bb = (basic_block) bb->aux;
   edge_iterator ei;
@@ -2160,6 +2181,7 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
       {
 	edge new_edge;
 	int flags = old_edge->flags;
+	location_t locus = old_edge->goto_locus;
 
 	/* Return edges do get a FALLTHRU flag when they get inlined.  */
 	if (old_edge->dest->index == EXIT_BLOCK
@@ -2167,8 +2189,11 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	    && old_edge->dest->aux != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  flags |= EDGE_FALLTHRU;
 
-	new_edge = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
+	new_edge
+	  = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
 	new_edge->probability = old_edge->probability;
+	if (!id->reset_location)
+	  new_edge->goto_locus = remap_location (locus, id);
       }
 
   if (bb->index == ENTRY_BLOCK || bb->index == EXIT_BLOCK)
@@ -2365,16 +2390,10 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 		      inserted = true;
 		    }
 		  locus = gimple_phi_arg_location_from_edge (phi, old_edge);
-		  if (LOCATION_BLOCK (locus))
-		    {
-		      tree *n;
-		      n = id->decl_map->get (LOCATION_BLOCK (locus));
-		      gcc_assert (n);
-		      locus = set_block (locus, *n);
-		    }
+		  if (id->reset_location)
+		    locus = input_location;
 		  else
-		    locus = LOCATION_LOCUS (locus);
-
+		    locus = remap_location (locus, id);
 		  add_phi_arg (new_phi, new_arg, new_edge, locus);
 		}
 	    }
@@ -2705,7 +2724,7 @@ copy_cfg_body (copy_body_data * id,
     if (!id->blocks_to_copy
 	|| (bb->index > 0 && bitmap_bit_p (id->blocks_to_copy, bb->index)))
       need_debug_cleanup |= copy_edges_for_bb (bb, num, den, exit_block_map,
-					       abnormal_goto_dest);
+					       abnormal_goto_dest, id);
 
   if (new_entry)
     {
@@ -4256,7 +4275,7 @@ reset_debug_binding (copy_body_data *id, tree srcvar, gimple_seq *bindings)
   if (!VAR_P (*remappedvarp))
     return;
 
-  if (*remappedvarp == id->retvar || *remappedvarp == id->retbnd)
+  if (*remappedvarp == id->retvar)
     return;
 
   tree tvar = target_for_debug_bind (*remappedvarp);
@@ -4498,8 +4517,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
       prepend_lexical_block (gimple_block (stmt), id->block);
     }
 
-  /* Local declarations will be replaced by their equivalents in this
-     map.  */
+  /* Local declarations will be replaced by their equivalents in this map.  */
   st = id->decl_map;
   id->decl_map = new hash_map<tree, tree>;
   dst = id->debug_map;
@@ -4508,6 +4526,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   /* Record the function we are about to inline.  */
   id->src_fn = fn;
   id->src_cfun = DECL_STRUCT_FUNCTION (fn);
+  id->reset_location = DECL_IGNORED_P (fn);
   id->call_stmt = call_stmt;
 
   /* When inlining into an OpenMP SIMD-on-SIMT loop, arrange for new automatic
@@ -4816,7 +4835,6 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 
   id->block = NULL_TREE;
   id->retvar = NULL_TREE;
-  id->retbnd = NULL_TREE;
   successfully_inlined = true;
 
  egress:

@@ -225,13 +225,8 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 		       (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
 
 	  if (dump_enabled_p ())
-            {
-	      location_t locus;
-	      if (edge->call_stmt)
-		locus = gimple_location (edge->call_stmt);
-	      else
-		locus = UNKNOWN_LOCATION;
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
+	    {
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, edge->call_stmt,
 			       "devirtualizing call in %s to %s\n",
 			       edge->caller->dump_name (),
 			       target->dump_name ());

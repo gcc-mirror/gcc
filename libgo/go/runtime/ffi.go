@@ -225,11 +225,40 @@ func structToFFI(typ *structtype) *__ffi_type {
 		return emptyStructToFFI()
 	}
 
-	fields := make([]*__ffi_type, c+1)
+	fields := make([]*__ffi_type, 0, c+1)
+	checkPad := false
 	for i, v := range typ.fields {
-		fields[i] = typeToFFI(v.typ)
+		// Skip zero-sized fields; they confuse libffi,
+		// and there is no value to pass in any case.
+		// We do have to check whether the alignment of the
+		// zero-sized field introduces any padding for the
+		// next field.
+		if v.typ.size == 0 {
+			checkPad = true
+			continue
+		}
+
+		if checkPad {
+			off := uintptr(0)
+			for j := i - 1; j >= 0; j-- {
+				if typ.fields[j].typ.size > 0 {
+					off = typ.fields[j].offset() + typ.fields[j].typ.size
+					break
+				}
+			}
+			off += uintptr(v.typ.align) - 1
+			off &^= uintptr(v.typ.align) - 1
+			if off != v.offset() {
+				fields = append(fields, padFFI(v.offset()-off))
+			}
+			checkPad = false
+		}
+
+		fields = append(fields, typeToFFI(v.typ))
 	}
-	fields[c] = nil
+
+	fields = append(fields, nil)
+
 	return &__ffi_type{
 		_type:    _FFI_TYPE_STRUCT,
 		elements: &fields[0],
@@ -299,6 +328,19 @@ func emptyStructToFFI() *__ffi_type {
 	elements := make([]*__ffi_type, 2)
 	elements[0] = ffi_type_void()
 	elements[1] = nil
+	return &__ffi_type{
+		_type:    _FFI_TYPE_STRUCT,
+		elements: &elements[0],
+	}
+}
+
+// padFFI returns a padding field of the given size
+func padFFI(size uintptr) *__ffi_type {
+	elements := make([]*__ffi_type, size+1)
+	for i := uintptr(0); i < size; i++ {
+		elements[i] = ffi_type_uint8()
+	}
+	elements[size] = nil
 	return &__ffi_type{
 		_type:    _FFI_TYPE_STRUCT,
 		elements: &elements[0],

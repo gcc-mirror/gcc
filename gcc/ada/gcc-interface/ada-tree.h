@@ -83,11 +83,11 @@ do {							 \
   ((TREE_CODE (NODE) == INTEGER_TYPE || TREE_CODE (NODE) == ARRAY_TYPE) \
    && TYPE_PACKED_ARRAY_TYPE_P (NODE))
 
-/* For FUNCTION_TYPEs, nonzero if the function returns by direct reference,
-   i.e. the callee returns a pointer to a memory location it has allocated
-   and the caller only needs to dereference the pointer.  */
+/* For FUNCTION_TYPE and METHOD_TYPE, nonzero if the function returns by
+   direct reference, i.e. the callee returns a pointer to a memory location
+   it has allocated and the caller only needs to dereference the pointer.  */
 #define TYPE_RETURN_BY_DIRECT_REF_P(NODE) \
-  TYPE_LANG_FLAG_0 (FUNCTION_TYPE_CHECK (NODE))
+  TYPE_LANG_FLAG_0 (FUNC_OR_METHOD_CHECK (NODE))
 
 /* For INTEGER_TYPE, nonzero if this is a modular type with a modulus that
    is not equal to two to the power of its mode's size.  */
@@ -97,10 +97,10 @@ do {							 \
    an Ada array other than the first.  */
 #define TYPE_MULTI_ARRAY_P(NODE) TYPE_LANG_FLAG_1 (ARRAY_TYPE_CHECK (NODE))
 
-/* For FUNCTION_TYPE, nonzero if this denotes a function returning an
-   unconstrained array or record.  */
+/* For FUNCTION_TYPE and METHOD_TYPE, nonzero if function returns an
+   unconstrained array or record type.  */
 #define TYPE_RETURN_UNCONSTRAINED_P(NODE) \
-  TYPE_LANG_FLAG_1 (FUNCTION_TYPE_CHECK (NODE))
+  TYPE_LANG_FLAG_1 (FUNC_OR_METHOD_CHECK (NODE))
 
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this denotes
    a justified modular type (will only be true for RECORD_TYPE).  */
@@ -228,12 +228,11 @@ do {							 \
 #define TYPE_GCC_MAX_VALUE(NODE) \
   (TYPE_MAX_VALUE_RAW (NUMERICAL_TYPE_CHECK (NODE)))
 
-/* For a FUNCTION_TYPE, if the subprogram has parameters passed by copy in/
-   copy out, this is the list of nodes used to specify the return values of
-   the out (or in out) parameters that are passed by copy in/copy out.  For
-   a full description of the copy in/copy out parameter passing mechanism
-   refer to the routine gnat_to_gnu_entity.  */
-#define TYPE_CI_CO_LIST(NODE) TYPE_LANG_SLOT_1 (FUNCTION_TYPE_CHECK (NODE))
+/* For a FUNCTION_TYPE and METHOD_TYPE, if the function has parameters passed
+   by copy in/copy out, this is the list of nodes used to specify the return
+   values of these parameters.  For a full description of the copy in/copy out
+   parameter passing mechanism refer to the routine gnat_to_gnu_entity.  */
+#define TYPE_CI_CO_LIST(NODE) TYPE_LANG_SLOT_1 (FUNC_OR_METHOD_CHECK (NODE))
 
 /* For an ARRAY_TYPE with variable size, this is the padding type built for
    the array type when it is itself the component type of another array.  */

@@ -1673,6 +1673,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { splice(__position, std::move(__x), __first, __last); }
 #endif
 
+    private:
+#if __cplusplus > 201703L
+# define __cpp_lib_list_remove_return_type 201806L
+      typedef size_type __remove_return_type;
+# define _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG \
+      __attribute__((__abi_tag__("__cxx20")))
+#else
+      typedef void __remove_return_type;
+# define _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG
+#endif
+    public:
+
       /**
        *  @brief  Remove all elements equal to value.
        *  @param  __value  The value to remove.
@@ -1684,7 +1696,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  touched in any way.  Managing the pointer is the user's
        *  responsibility.
        */
-      void
+      _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG
+      __remove_return_type
       remove(const _Tp& __value);
 
       /**
@@ -1699,7 +1712,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  responsibility.
        */
       template<typename _Predicate>
-	void
+	__remove_return_type
 	remove_if(_Predicate);
 
       /**
@@ -1712,7 +1725,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  the pointed-to memory is not touched in any way.  Managing
        *  the pointer is the user's responsibility.
        */
-      void
+      _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG
+      __remove_return_type
       unique();
 
       /**
@@ -1728,8 +1742,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Managing the pointer is the user's responsibility.
        */
       template<typename _BinaryPredicate>
-	void
+	__remove_return_type
 	unique(_BinaryPredicate);
+
+#undef _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG
 
       /**
        *  @brief  Merge sorted lists.

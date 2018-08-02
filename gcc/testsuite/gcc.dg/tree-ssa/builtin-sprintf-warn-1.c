@@ -1377,7 +1377,8 @@ void test_sprintf_chk_e_nonconst (int w, int p, double d)
   T (-1, "%*.*E",  w, p, d);
   T (-1, "%*.*lE", w, p, d);
 
-  T ( 0, "%E",          d);           /* { dg-warning "writing between 12 and 14 bytes into a region of size 0" } */
+  /* The least number of bytes %E can produce is 3 for "inf" and "nan".  */
+  T ( 0, "%E",          d);           /* { dg-warning "writing between 3 and 14 bytes into a region of size 0" } */
   T ( 0, "%e",          d);           /* { dg-warning "into a region" } */
   T ( 1, "%E",          d);           /* { dg-warning "into a region" } */
   T ( 1, "%e",          d);           /* { dg-warning "into a region" } */
@@ -1389,22 +1390,22 @@ void test_sprintf_chk_e_nonconst (int w, int p, double d)
   T (14, "%E",          d);
   T (14, "%e",          d);
 
-  T ( 0, "%+E",         d);           /* { dg-warning "writing between 13 and 14 bytes into a region of size 0" } */
-  T ( 0, "%-e",         d);           /* { dg-warning "writing between 12 and 14 bytes into a region of size 0" } */
-  T ( 0, "% E",         d);           /* { dg-warning "writing between 13 and 14 bytes into a region of size 0" } */
+  T ( 0, "%+E",         d);           /* { dg-warning "writing between 4 and 14 bytes into a region of size 0" } */
+  T ( 0, "%-e",         d);           /* { dg-warning "writing between 3 and 14 bytes into a region of size 0" } */
+  T ( 0, "% E",         d);           /* { dg-warning "writing between 4 and 14 bytes into a region of size 0" } */
 
-  /* The range of output of "%.0e" is between 5 and 7 bytes (not counting
+  /* The range of output of "%.0e" is between 3 and 7 bytes (not counting
      the terminating NUL.  */
-  T ( 5, "%.0e",        d);           /* { dg-warning "writing a terminating nul past the end" } */
+  T ( 5, "%.0e",        d);           /* { dg-warning "may write a terminating nul past the end" } */
   T ( 6, "%.0e",        d);           /* 1e+00 */
 
-  /* The range of output of "%.1e" is between 7 and 9 bytes (not counting
+  /* The range of output of "%.1e" is between 3 and 9 bytes (not counting
      the terminating NUL.  */
-  T ( 7, "%.1e",        d);           /* { dg-warning "writing a terminating nul past the end" } */
+  T ( 7, "%.1e",        d);           /* { dg-warning "may write a terminating nul past the end" } */
   T ( 8, "%.1e",        d);
 
-  T ( 0, "%*e",      0, d);           /* { dg-warning "writing between 12 and 14 bytes into a region of size 0" } */
-  T ( 0, "%*e",      w, d);           /* { dg-warning "writing 12 or more bytes into a region of size 0|writing between 12 and \[0-9\]+ bytes into a region of size 0" } */
+  T ( 0, "%*e",      0, d);           /* { dg-warning "writing between 3 and 14 bytes into a region of size 0" } */
+  T ( 0, "%*e",      w, d);           /* { dg-warning "writing 3 or more bytes into a region of size 0|writing between 3 and \[0-9\]+ bytes into a region of size 0" } */
 }
 
 void test_sprintf_chk_f_nonconst (double d)

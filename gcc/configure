@@ -779,6 +779,7 @@ REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
 CONFIGURE_SPECS
+enable_gcov
 enable_shared
 enable_fixed_point
 enable_decimal_float
@@ -914,6 +915,7 @@ enable_vtable_verify
 enable_objc_gc
 with_dwarf2
 enable_shared
+enable_gcov
 with_specs
 with_pkgversion
 with_bugurl
@@ -1634,6 +1636,7 @@ Optional Features:
   --enable-objc-gc        enable the use of Boehm's garbage collector with the
                           GNU Objective-C runtime
   --disable-shared        don't provide a shared libgcc
+  --disable-gcov          don't provide libgcov and related host tools
   --enable-languages=LIST specify which front-ends to build
   --disable-rpath         do not hardcode runtime library paths
   --enable-sjlj-exceptions
@@ -7458,7 +7461,7 @@ else
 
   case $target in
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
-    i?86*-*-elfiamcu | i?86*-*-gnu* | \
+    i?86*-*-elfiamcu | i?86*-*-gnu* | x86_64*-*-gnu* | \
     i?86*-*-mingw* | x86_64*-*-mingw* | \
     i?86*-*-cygwin* | x86_64*-*-cygwin*)
       enable_decimal_float=yes
@@ -7624,6 +7627,15 @@ if test "${enable_shared+set}" = set; then :
 
 else
   enable_shared=yes
+fi
+
+
+
+# Check whether --enable-gcov was given.
+if test "${enable_gcov+set}" = set; then :
+  enableval=$enable_gcov;
+else
+  enable_gcov=yes
 fi
 
 
@@ -18740,7 +18752,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18743 "configure"
+#line 18755 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18846,7 +18858,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18849 "configure"
+#line 18861 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -20011,20 +20023,20 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	      prelink_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $objs $libobjs $compile_deplibs~
-		compile_command="$compile_command `find $tpldir -name \*.o | $NL2SP`"'
+		compile_command="$compile_command `find $tpldir -name \*.o | sort | $NL2SP`"'
 	      old_archive_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $oldobjs$old_deplibs~
-		$AR $AR_FLAGS $oldlib$oldobjs$old_deplibs `find $tpldir -name \*.o | $NL2SP`~
+		$AR $AR_FLAGS $oldlib$oldobjs$old_deplibs `find $tpldir -name \*.o | sort | $NL2SP`~
 		$RANLIB $oldlib'
 	      archive_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $predep_objects $libobjs $deplibs $convenience $postdep_objects~
-		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'
+		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | sort | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'
 	      archive_expsym_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $predep_objects $libobjs $deplibs $convenience $postdep_objects~
-		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname ${wl}-retain-symbols-file ${wl}$export_symbols -o $lib'
+		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | sort | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname ${wl}-retain-symbols-file ${wl}$export_symbols -o $lib'
 	      ;;
 	    *) # Version 6 and above use weak symbols
 	      archive_cmds_CXX='$CC -shared $pic_flag $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'

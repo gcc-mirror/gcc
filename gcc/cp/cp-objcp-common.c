@@ -455,7 +455,7 @@ cp_common_init_ts (void)
 /* Handle C++-specficic options here.  Punt to c_common otherwise.  */
 
 bool
-cp_handle_option (size_t scode, const char *arg, int value,
+cp_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 		  int kind, location_t loc,
 		  const struct cl_option_handlers *handlers)
 {

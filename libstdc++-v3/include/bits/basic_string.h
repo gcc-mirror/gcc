@@ -725,7 +725,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  The contents of @a str are moved into this string (without copying).
        *  @a str is a valid, but unspecified string.
        **/
-      // PR 58265, this should be noexcept.
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2063. Contradictory requirements for string move assignment
       basic_string&
@@ -3486,6 +3485,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        */
       basic_string()
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
+      _GLIBCXX_NOEXCEPT
       : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
 #else
       : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc()){ }
@@ -3642,7 +3642,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @param  __str  Source string.
        */
       basic_string&
-      operator=(const basic_string& __str) 
+      operator=(const basic_string& __str)
       { return this->assign(__str); }
 
       /**
@@ -3675,9 +3675,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  The contents of @a str are moved into this string (without copying).
        *  @a str is a valid, but unspecified string.
        **/
-      // PR 58265, this should be noexcept.
       basic_string&
       operator=(basic_string&& __str)
+      _GLIBCXX_NOEXCEPT_IF(allocator_traits<_Alloc>::is_always_equal::value)
       {
 	// NB: DR 1204.
 	this->swap(__str);
@@ -4274,9 +4274,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  This function sets this string to the exact contents of @a __str.
        *  @a __str is a valid, but unspecified string.
        */
-      // PR 58265, this should be noexcept.
       basic_string&
       assign(basic_string&& __str)
+      noexcept(allocator_traits<_Alloc>::is_always_equal::value)
       {
 	this->swap(__str);
 	return *this;
@@ -5111,9 +5111,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  Exchanges the contents of this string with that of @a __s in constant
        *  time.
       */
-      // PR 58265, this should be noexcept.
       void
-      swap(basic_string& __s);
+      swap(basic_string& __s)
+      _GLIBCXX_NOEXCEPT_IF(allocator_traits<_Alloc>::is_always_equal::value);
 
       // String operations:
       /**
@@ -6662,7 +6662,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /// std::hash specialization for u16string.
   template<>
     struct hash<u16string>
@@ -6692,7 +6691,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_fast_hash<hash<u32string>> : std::false_type
     { };
-#endif
 
 #if __cplusplus > 201103L
 
@@ -6716,7 +6714,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string<wchar_t>{__str, __len}; }
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<char16_t>
     operator""s(const char16_t* __str, size_t __len)
@@ -6726,7 +6723,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_string<char32_t>
     operator""s(const char32_t* __str, size_t __len)
     { return basic_string<char32_t>{__str, __len}; }
-#endif
 
 #pragma GCC diagnostic pop
   } // inline namespace string_literals

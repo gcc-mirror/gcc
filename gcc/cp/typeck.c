@@ -4734,6 +4734,7 @@ cp_build_binary_op (location_t location,
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
 	goto vector_compare;
       if ((complain & tf_warning)
+	  && c_inhibit_evaluation_warnings == 0
 	  && (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1)))
 	warning (OPT_Wfloat_equal,
 		 "comparing floating point with == or != is unsafe");
@@ -5311,12 +5312,13 @@ cp_build_binary_op (location_t location,
 
       if (short_compare)
 	{
-	  /* We call shorten_compare only for diagnostic-reason.  */
-	  tree xop0 = fold_simple (op0), xop1 = fold_simple (op1),
-	       xresult_type = result_type;
+	  /* We call shorten_compare only for diagnostics.  */
+	  tree xop0 = fold_simple (op0);
+	  tree xop1 = fold_simple (op1);
+	  tree xresult_type = result_type;
 	  enum tree_code xresultcode = resultcode;
 	  shorten_compare (location, &xop0, &xop1, &xresult_type,
-			       &xresultcode);
+			   &xresultcode);
 	}
 
       if ((short_compare || code == MIN_EXPR || code == MAX_EXPR)
@@ -5349,6 +5351,7 @@ cp_build_binary_op (location_t location,
      otherwise, it will be given type RESULT_TYPE.  */
   if (! converted)
     {
+      warning_sentinel w (warn_sign_conversion, short_compare);
       if (TREE_TYPE (op0) != result_type)
 	op0 = cp_convert_and_check (result_type, op0, complain);
       if (TREE_TYPE (op1) != result_type)

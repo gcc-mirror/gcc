@@ -19,8 +19,26 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Add any extra modes needed to represent the condition code.
-   CCFPmode is used for FPU, but should we use a separate reg? */
 
-CC_MODE (CCFP);
+   The default CCmode is the CPU condition codes, as set by compare;
+   all conditional branches are valid with this.
+
+   CCNZmode is the CPU condition code as a side effect of arithmetic
+   or logic operations where N and Z reflect sign and zero status of
+   the result, but the V bit is not meaningful.  Unsigned conditional
+   branches don't apply then (no such thing when comparing with zero)
+   and signed branches that use V need to clear V first if they are to
+   be used.  CCNZ mode appears in side effects (implicit compare with
+   zero) if V is not forced to 0 by the instruction.  In such cases, V
+   often reflects signed overflow of the operation, which means a
+   signed branch will get the sign backwards.  This applies both to
+   some float and integer operations.
+
+   These modes are used both in the FPU and the CPU, since they have
+   the same meaning, and also because the FPU condition codes are
+   copied to the CPU before being used in conditional branches.  */
+
+CC_MODE (CCNZ);
+
 RESET_FLOAT_FORMAT (SF, pdp11_f_format);
 RESET_FLOAT_FORMAT (DF, pdp11_d_format);

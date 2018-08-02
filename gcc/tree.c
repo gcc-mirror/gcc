@@ -5280,6 +5280,7 @@ free_lang_data_in_decl (tree decl)
   free_lang_data_in_one_sizepos (&DECL_SIZE_UNIT (decl));
   if (TREE_CODE (decl) == FIELD_DECL)
     {
+      DECL_FCONTEXT (decl) = NULL;
       free_lang_data_in_one_sizepos (&DECL_FIELD_OFFSET (decl));
       if (TREE_CODE (DECL_CONTEXT (decl)) == QUAL_UNION_TYPE)
 	DECL_QUALIFIER (decl) = NULL_TREE;
@@ -5357,6 +5358,7 @@ free_lang_data_in_decl (tree decl)
       DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
       DECL_VISIBILITY_SPECIFIED (decl) = 0;
       DECL_INITIAL (decl) = NULL_TREE;
+      DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
     }
   else if (TREE_CODE (decl) == FIELD_DECL)
     DECL_INITIAL (decl) = NULL_TREE;
@@ -5468,10 +5470,6 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	{
 	  fld_worklist_push (DECL_ARGUMENTS (t), fld);
 	  fld_worklist_push (DECL_RESULT (t), fld);
-	}
-      else if (TREE_CODE (t) == TYPE_DECL)
-	{
-	  fld_worklist_push (DECL_ORIGINAL_TYPE (t), fld);
 	}
       else if (TREE_CODE (t) == FIELD_DECL)
 	{
@@ -10645,61 +10643,124 @@ vector_cst_elt (const_tree t, unsigned int i)
 }
 
 /* Given an initializer INIT, return TRUE if INIT is zero or some
-   aggregate of zeros.  Otherwise return FALSE.  */
+   aggregate of zeros.  Otherwise return FALSE.  If NONZERO is not
+   null, set *NONZERO if and only if INIT is known not to be all
+   zeros.  The combination of return value of false and *NONZERO
+   false implies that INIT may but need not be all zeros.  Other
+   combinations indicate definitive answers.  */
+
 bool
-initializer_zerop (const_tree init)
+initializer_zerop (const_tree init, bool *nonzero /* = NULL */)
 {
-  tree elt;
+  bool dummy;
+  if (!nonzero)
+    nonzero = &dummy;
+
+  /* Conservatively clear NONZERO and set it only if INIT is definitely
+     not all zero.  */
+  *nonzero = false;
 
   STRIP_NOPS (init);
+
+  unsigned HOST_WIDE_INT off = 0;
 
   switch (TREE_CODE (init))
     {
     case INTEGER_CST:
-      return integer_zerop (init);
+      if (integer_zerop (init))
+	return true;
+
+      *nonzero = true;
+      return false;
 
     case REAL_CST:
       /* ??? Note that this is not correct for C4X float formats.  There,
 	 a bit pattern of all zeros is 1.0; 0.0 is encoded with the most
 	 negative exponent.  */
-      return real_zerop (init)
-	&& ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (init));
+      if (real_zerop (init)
+	  && !REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (init)))
+	return true;
+
+      *nonzero = true;
+      return false;
 
     case FIXED_CST:
-      return fixed_zerop (init);
+      if (fixed_zerop (init))
+	return true;
+
+      *nonzero = true;
+      return false;
 
     case COMPLEX_CST:
-      return integer_zerop (init)
-	|| (real_zerop (init)
-	    && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_REALPART (init)))
-	    && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_IMAGPART (init))));
+      if (integer_zerop (init)
+	  || (real_zerop (init)
+	      && !REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_REALPART (init)))
+	      && !REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_IMAGPART (init)))))
+	return true;
+
+      *nonzero = true;
+      return false;
 
     case VECTOR_CST:
-      return (VECTOR_CST_NPATTERNS (init) == 1
-	      && VECTOR_CST_DUPLICATE_P (init)
-	      && initializer_zerop (VECTOR_CST_ENCODED_ELT (init, 0)));
+      if (VECTOR_CST_NPATTERNS (init) == 1
+	  && VECTOR_CST_DUPLICATE_P (init)
+	  && initializer_zerop (VECTOR_CST_ENCODED_ELT (init, 0)))
+	return true;
+
+      *nonzero = true;
+      return false;
 
     case CONSTRUCTOR:
       {
-	unsigned HOST_WIDE_INT idx;
-
 	if (TREE_CLOBBER_P (init))
 	  return false;
+
+	unsigned HOST_WIDE_INT idx;
+	tree elt;
+
 	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), idx, elt)
-	  if (!initializer_zerop (elt))
+	  if (!initializer_zerop (elt, nonzero))
 	    return false;
+
 	return true;
       }
 
+    case MEM_REF:
+      {
+	tree arg = TREE_OPERAND (init, 0);
+	if (TREE_CODE (arg) != ADDR_EXPR)
+	  return false;
+	tree offset = TREE_OPERAND (init, 1);
+	if (TREE_CODE (offset) != INTEGER_CST
+	    || !tree_fits_uhwi_p (offset))
+	  return false;
+	off = tree_to_uhwi (offset);
+	if (INT_MAX < off)
+	  return false;
+	arg = TREE_OPERAND (arg, 0);
+	if (TREE_CODE (arg) != STRING_CST)
+	  return false;
+	init = arg;
+      }
+      /* Fall through.  */
+
     case STRING_CST:
       {
-	int i;
+	gcc_assert (off <= INT_MAX);
+
+	int i = off;
+	int n = TREE_STRING_LENGTH (init);
+	if (n <= i)
+	  return false;
 
 	/* We need to loop through all elements to handle cases like
 	   "\0" and "\0foobar".  */
-	for (i = 0; i < TREE_STRING_LENGTH (init); ++i)
+	for (i = 0; i < n; ++i)
 	  if (TREE_STRING_POINTER (init)[i] != '\0')
-	    return false;
+	    {
+	      *nonzero = true;
+	      return false;
+	    }
 
 	return true;
       }
@@ -11972,30 +12033,18 @@ cl_option_hasher::equal (tree x, tree y)
 {
   const_tree const xt = x;
   const_tree const yt = y;
-  const char *xp;
-  const char *yp;
-  size_t len;
 
   if (TREE_CODE (xt) != TREE_CODE (yt))
     return 0;
 
   if (TREE_CODE (xt) == OPTIMIZATION_NODE)
-    {
-      xp = (const char *)TREE_OPTIMIZATION (xt);
-      yp = (const char *)TREE_OPTIMIZATION (yt);
-      len = sizeof (struct cl_optimization);
-    }
-
+    return cl_optimization_option_eq (TREE_OPTIMIZATION (xt),
+				      TREE_OPTIMIZATION (yt));
   else if (TREE_CODE (xt) == TARGET_OPTION_NODE)
-    {
-      return cl_target_option_eq (TREE_TARGET_OPTION (xt),
-				  TREE_TARGET_OPTION (yt));
-    }
-
+    return cl_target_option_eq (TREE_TARGET_OPTION (xt),
+				TREE_TARGET_OPTION (yt));
   else
     gcc_unreachable ();
-
-  return (memcmp (xp, yp, len) == 0);
 }
 
 /* Build an OPTIMIZATION_NODE based on the options in OPTS.  */

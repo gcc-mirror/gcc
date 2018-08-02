@@ -1085,6 +1085,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       if (h)
 	{
 	  *stmt_p = h->to;
+	  TREE_USED (h->to) |= TREE_USED (stmt);
 	  *walk_subtrees = 0;
 	  return NULL;
 	}
@@ -1621,6 +1622,13 @@ cp_maybe_instrument_return (tree fndecl)
 	case STATEMENT_LIST:
 	  {
 	    tree_stmt_iterator i = tsi_last (t);
+	    while (!tsi_end_p (i))
+	      {
+		tree p = tsi_stmt (i);
+		if (TREE_CODE (p) != DEBUG_BEGIN_STMT)
+		  break;
+		tsi_prev (&i);
+	      }
 	    if (!tsi_end_p (i))
 	      {
 		t = tsi_stmt (i);
@@ -2373,21 +2381,26 @@ cp_fold (tree x)
       else
 	x = fold (x);
 
-      if (TREE_NO_WARNING (org_x)
-	  && warn_nonnull_compare
-	  && COMPARISON_CLASS_P (org_x))
+      /* This is only needed for -Wnonnull-compare and only if
+	 TREE_NO_WARNING (org_x), but to avoid that option affecting code
+	 generation, we do it always.  */
+      if (COMPARISON_CLASS_P (org_x))
 	{
 	  if (x == error_mark_node || TREE_CODE (x) == INTEGER_CST)
 	    ;
 	  else if (COMPARISON_CLASS_P (x))
-	    TREE_NO_WARNING (x) = 1;
+	    {
+	      if (TREE_NO_WARNING (org_x) && warn_nonnull_compare)
+		TREE_NO_WARNING (x) = 1;
+	    }
 	  /* Otherwise give up on optimizing these, let GIMPLE folders
 	     optimize those later on.  */
 	  else if (op0 != TREE_OPERAND (org_x, 0)
 		   || op1 != TREE_OPERAND (org_x, 1))
 	    {
 	      x = build2_loc (loc, code, TREE_TYPE (org_x), op0, op1);
-	      TREE_NO_WARNING (x) = 1;
+	      if (TREE_NO_WARNING (org_x) && warn_nonnull_compare)
+		TREE_NO_WARNING (x) = 1;
 	    }
 	  else
 	    x = org_x;

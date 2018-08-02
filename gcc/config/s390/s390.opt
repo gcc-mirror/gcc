@@ -293,3 +293,17 @@ locations which have been patched as part of using one of the
 -mindirect-branch* or -mfunction-return* options.  The sections
 consist of an array of 32 bit elements. Each entry holds the offset
 from the entry to the patched location.
+
+mfentry
+Target Report Var(flag_fentry)
+Emit profiling counter call at function entry before prologue. The compiled
+code will require a 64-bit CPU and glibc 2.29 or newer to run.
+
+mrecord-mcount
+Target Report Var(flag_record_mcount)
+Generate __mcount_loc section with all _mcount and __fentry__ calls.
+
+mnop-mcount
+Target Report Var(flag_nop_mcount)
+Generate mcount/__fentry__ calls as nops. To activate they need to be
+patched in.

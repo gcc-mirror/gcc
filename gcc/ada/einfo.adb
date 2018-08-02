@@ -5972,7 +5972,7 @@ package body Einfo is
    procedure Set_Is_Uplevel_Referenced_Entity (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Constant, E_Variable, E_Discriminant)
+        (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable)
           or else Is_Formal (Id)
           or else Is_Type (Id));
       Set_Flag283 (Id, V);
@@ -8385,7 +8385,7 @@ package body Einfo is
 
    function Is_Wrapper_Package (Id : E) return B is
    begin
-      return (Ekind (Id) = E_Package and then Present (Related_Instance (Id)));
+      return Ekind (Id) = E_Package and then Present (Related_Instance (Id));
    end Is_Wrapper_Package;
 
    -----------------
@@ -9815,6 +9815,7 @@ package body Einfo is
       W ("Is_Abstract_Subprogram",          Flag19  (Id));
       W ("Is_Abstract_Type",                Flag146 (Id));
       W ("Is_Access_Constant",              Flag69  (Id));
+      W ("Is_Activation_Record",            Flag305 (Id));
       W ("Is_Actual_Subtype",               Flag293 (Id));
       W ("Is_Ada_2005_Only",                Flag185 (Id));
       W ("Is_Ada_2012_Only",                Flag199 (Id));

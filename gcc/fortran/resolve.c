@@ -601,7 +601,7 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
 	}
     }
 
-  /* Fortran 2003 Draft Standard, page 535, C418, on type-param-value
+  /* Fortran 2008 Draft Standard, page 535, C418, on type-param-value
      type, lists the only ways a character length value of * can be used:
      dummy arguments of procedures, named constants, function results and
      in allocate statements if the allocate_object is an assumed length dummy
@@ -2509,7 +2509,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
       /* Resolve the gsymbol namespace if needed.  */
       if (!gsym->ns->resolved)
 	{
-	  gfc_dt_list *old_dt_list;
+	  gfc_symbol *old_dt_list;
 
 	  /* Stash away derived types so that the backend_decls do not
 	     get mixed up.  */
@@ -2941,8 +2941,8 @@ is_external_proc (gfc_symbol *sym)
 static int
 pure_stmt_function (gfc_expr *, gfc_symbol *);
 
-static int
-pure_function (gfc_expr *e, const char **name)
+int
+gfc_pure_function (gfc_expr *e, const char **name)
 {
   int pure;
   gfc_component *comp;
@@ -2982,6 +2982,21 @@ pure_function (gfc_expr *e, const char **name)
 }
 
 
+/* Check if the expression is a reference to an implicitly pure function.  */
+
+int
+gfc_implicit_pure_function (gfc_expr *e)
+{
+  gfc_component *comp = gfc_get_proc_ptr_comp (e);
+  if (comp)
+    return gfc_implicit_pure (comp->ts.interface);
+  else if (e->value.function.esym)
+    return gfc_implicit_pure (e->value.function.esym);
+  else
+    return 0;
+}
+
+
 static bool
 impure_stmt_fcn (gfc_expr *e, gfc_symbol *sym,
 		 int *f ATTRIBUTE_UNUSED)
@@ -2996,7 +3011,7 @@ impure_stmt_fcn (gfc_expr *e, gfc_symbol *sym,
 	|| e->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
     return false;
 
-  return pure_function (e, &name) ? false : true;
+  return gfc_pure_function (e, &name) ? false : true;
 }
 
 
@@ -3012,7 +3027,7 @@ pure_stmt_function (gfc_expr *e, gfc_symbol *sym)
 static bool check_pure_function (gfc_expr *e)
 {
   const char *name = NULL;
-  if (!pure_function (e, &name) && name)
+  if (!gfc_pure_function (e, &name) && name)
     {
       if (forall_flag)
 	{
@@ -3034,7 +3049,8 @@ static bool check_pure_function (gfc_expr *e)
 		     "within a PURE procedure", name, &e->where);
 	  return false;
 	}
-      gfc_unset_implicit_pure (NULL);
+      if (!gfc_implicit_pure_function (e))
+	gfc_unset_implicit_pure (NULL);
     }
   return true;
 }
@@ -3117,10 +3133,11 @@ resolve_function (gfc_expr *expr)
      cannot be an assumed length character (F2003: C418).  */
   if (sym && sym->attr.abstract && sym->attr.function
       && sym->result->ts.u.cl
-      && sym->result->ts.u.cl->length == NULL)
+      && sym->result->ts.u.cl->length == NULL
+      && !sym->result->ts.deferred)
     {
       gfc_error ("ABSTRACT INTERFACE %qs at %L must not have an assumed "
-		 "character length result (F2003: C418)", sym->name,
+		 "character length result (F2008: C418)", sym->name,
 		 &sym->declared_at);
       return false;
     }
@@ -3821,6 +3838,41 @@ lookup_uop_fuzzy (const char *op, gfc_symtree *uop)
 }
 
 
+/* Callback finding an impure function as an operand to an .and. or
+   .or.  expression.  Remember the last function warned about to
+   avoid double warnings when recursing.  */
+
+static int
+impure_function_callback (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+			  void *data)
+{
+  gfc_expr *f = *e;
+  const char *name;
+  static gfc_expr *last = NULL;
+  bool *found = (bool *) data;
+
+  if (f->expr_type == EXPR_FUNCTION)
+    {
+      *found = 1;
+      if (f != last && !gfc_pure_function (f, &name)
+	  && !gfc_implicit_pure_function (f))
+	{
+	  if (name)
+	    gfc_warning (OPT_Wfunction_elimination,
+			 "Impure function %qs at %L might not be evaluated",
+			 name, &f->where);
+	  else
+	    gfc_warning (OPT_Wfunction_elimination,
+			 "Impure function at %L might not be evaluated",
+			 &f->where);
+	}
+      last = f;
+    }
+
+  return 0;
+}
+
+
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
 
@@ -3929,6 +3981,14 @@ resolve_operator (gfc_expr *e)
 	    gfc_convert_type (op1, &e->ts, 2);
 	  else if (op2->ts.kind < e->ts.kind)
 	    gfc_convert_type (op2, &e->ts, 2);
+
+	  if (e->value.op.op == INTRINSIC_AND || e->value.op.op == INTRINSIC_OR)
+	    {
+	      /* Warn about short-circuiting
+	         with impure function as second operand.  */
+	      bool op2_f = false;
+	      gfc_expr_walker (&op2, impure_function_callback, &op2_f);
+	    }
 	  break;
 	}
 
@@ -13473,16 +13533,19 @@ resolve_typebound_procedures (gfc_symbol* derived)
 static void
 add_dt_to_dt_list (gfc_symbol *derived)
 {
-  gfc_dt_list *dt_list;
-
-  for (dt_list = gfc_derived_types; dt_list; dt_list = dt_list->next)
-    if (derived == dt_list->derived)
-      return;
-
-  dt_list = gfc_get_dt_list ();
-  dt_list->next = gfc_derived_types;
-  dt_list->derived = derived;
-  gfc_derived_types = dt_list;
+  if (!derived->dt_next)
+    {
+      if (gfc_derived_types)
+	{
+	  derived->dt_next = gfc_derived_types->dt_next;
+	  gfc_derived_types->dt_next = derived;
+	}
+      else
+	{
+	  derived->dt_next = derived;
+	}
+      gfc_derived_types = derived;
+    }
 }
 
 

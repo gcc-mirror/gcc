@@ -2848,6 +2848,8 @@ mio_component (gfc_component *c, int vtype)
   if (c->attr.proc_pointer)
     mio_typebound_proc (&c->tb);
 
+  c->loc = gfc_current_locus;
+
   mio_rparen ();
 }
 
@@ -4098,6 +4100,9 @@ static const mstring omp_declare_simd_clauses[] =
     minit ("UNIFORM", 3),
     minit ("LINEAR", 4),
     minit ("ALIGNED", 5),
+    minit ("LINEAR_REF", 33),
+    minit ("LINEAR_VAL", 34),
+    minit ("LINEAR_UVAL", 35),
     minit (NULL, -1)
 };
 
@@ -4140,7 +4145,10 @@ mio_omp_declare_simd (gfc_namespace *ns, gfc_omp_declare_simd **odsp)
 	    }
 	  for (n = ods->clauses->lists[OMP_LIST_LINEAR]; n; n = n->next)
 	    {
-	      mio_name (4, omp_declare_simd_clauses);
+	      if (n->u.linear_op == OMP_LINEAR_DEFAULT)
+		mio_name (4, omp_declare_simd_clauses);
+	      else
+		mio_name (32 + n->u.linear_op, omp_declare_simd_clauses);
 	      mio_symbol_ref (&n->sym);
 	      mio_expr (&n->expr);
 	    }
@@ -4181,11 +4189,20 @@ mio_omp_declare_simd (gfc_namespace *ns, gfc_omp_declare_simd **odsp)
 	    case 4:
 	    case 5:
 	      *ptrs[t - 3] = n = gfc_get_omp_namelist ();
+	    finish_namelist:
+	      n->where = gfc_current_locus;
 	      ptrs[t - 3] = &n->next;
 	      mio_symbol_ref (&n->sym);
 	      if (t != 3)
 		mio_expr (&n->expr);
 	      break;
+	    case 33:
+	    case 34:
+	    case 35:
+	      *ptrs[1] = n = gfc_get_omp_namelist ();
+	      n->u.linear_op = (enum gfc_omp_linear_op) (t - 32);
+	      t = 4;
+	      goto finish_namelist;
 	    }
 	}
     }

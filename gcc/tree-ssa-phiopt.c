@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-inline.h"
 #include "params.h"
+#include "case-cfn-macros.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool);
 static bool conditional_replacement (basic_block, basic_block,
@@ -57,6 +58,8 @@ static bool minmax_replacement (basic_block, basic_block,
 				edge, edge, gimple *, tree, tree);
 static bool abs_replacement (basic_block, basic_block,
 			     edge, edge, gimple *, tree, tree);
+static bool cond_removal_in_popcount_pattern (basic_block, basic_block,
+					      edge, edge, gimple *, tree, tree);
 static bool cond_store_replacement (basic_block, basic_block, edge, edge,
 				    hash_set<tree> *);
 static bool cond_if_else_store_replacement (basic_block, basic_block, basic_block);
@@ -331,6 +334,9 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 	  if (conditional_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
+	    cfgchanged = true;
+	  else if (cond_removal_in_popcount_pattern (bb, bb1, e1, e2,
+						     phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (minmax_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
@@ -1224,7 +1230,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	{
 	  if (cmp == LT_EXPR)
 	    {
-	      bool overflow;
+	      wi::overflow_type overflow;
 	      wide_int alt = wi::sub (wi::to_wide (larger), 1,
 				      TYPE_SIGN (TREE_TYPE (larger)),
 				      &overflow);
@@ -1233,7 +1239,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	    }
 	  else
 	    {
-	      bool overflow;
+	      wi::overflow_type overflow;
 	      wide_int alt = wi::add (wi::to_wide (larger), 1,
 				      TYPE_SIGN (TREE_TYPE (larger)),
 				      &overflow);
@@ -1250,9 +1256,9 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	 Likewise larger >= CST is equivalent to larger > CST-1.  */
       if (TREE_CODE (smaller) == INTEGER_CST)
 	{
+	  wi::overflow_type overflow;
 	  if (cmp == GT_EXPR)
 	    {
-	      bool overflow;
 	      wide_int alt = wi::add (wi::to_wide (smaller), 1,
 				      TYPE_SIGN (TREE_TYPE (smaller)),
 				      &overflow);
@@ -1261,7 +1267,6 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	    }
 	  else
 	    {
-	      bool overflow;
 	      wide_int alt = wi::sub (wi::to_wide (smaller), 1,
 				      TYPE_SIGN (TREE_TYPE (smaller)),
 				      &overflow);
@@ -1514,6 +1519,140 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
 
+  return true;
+}
+
+/* Convert
+
+   <bb 2>
+   if (b_4(D) != 0)
+   goto <bb 3>
+   else
+   goto <bb 4>
+
+   <bb 3>
+   _2 = (unsigned long) b_4(D);
+   _9 = __builtin_popcountl (_2);
+   OR
+   _9 = __builtin_popcountl (b_4(D));
+
+   <bb 4>
+   c_12 = PHI <0(2), _9(3)>
+
+   Into
+   <bb 2>
+   _2 = (unsigned long) b_4(D);
+   _9 = __builtin_popcountl (_2);
+   OR
+   _9 = __builtin_popcountl (b_4(D));
+
+   <bb 4>
+   c_12 = PHI <_9(2)>
+*/
+
+static bool
+cond_removal_in_popcount_pattern (basic_block cond_bb, basic_block middle_bb,
+				  edge e1, edge e2,
+				  gimple *phi, tree arg0, tree arg1)
+{
+  gimple *cond;
+  gimple_stmt_iterator gsi, gsi_from;
+  gimple *popcount;
+  gimple *cast = NULL;
+  tree lhs, arg;
+
+  /* Check that
+   _2 = (unsigned long) b_4(D);
+   _9 = __builtin_popcountl (_2);
+   OR
+   _9 = __builtin_popcountl (b_4(D));
+   are the only stmts in the middle_bb.  */
+
+  gsi = gsi_start_nondebug_after_labels_bb (middle_bb);
+  if (gsi_end_p (gsi))
+    return false;
+  cast = gsi_stmt (gsi);
+  gsi_next_nondebug (&gsi);
+  if (!gsi_end_p (gsi))
+    {
+      popcount = gsi_stmt (gsi);
+      gsi_next_nondebug (&gsi);
+      if (!gsi_end_p (gsi))
+	return false;
+    }
+  else
+    {
+      popcount = cast;
+      cast = NULL;
+    }
+
+  /* Check that we have a popcount builtin.  */
+  if (!is_gimple_call (popcount))
+    return false;
+  combined_fn cfn = gimple_call_combined_fn (popcount);
+  switch (cfn)
+    {
+    CASE_CFN_POPCOUNT:
+      break;
+    default:
+      return false;
+    }
+
+  arg = gimple_call_arg (popcount, 0);
+  lhs = gimple_get_lhs (popcount);
+
+  if (cast)
+    {
+      /* We have a cast stmt feeding popcount builtin.  */
+      /* Check that we have a cast prior to that.  */
+      if (gimple_code (cast) != GIMPLE_ASSIGN
+	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (cast)))
+	return false;
+      /* Result of the cast stmt is the argument to the builtin.  */
+      if (arg != gimple_assign_lhs (cast))
+	return false;
+      arg = gimple_assign_rhs1 (cast);
+    }
+
+  cond = last_stmt (cond_bb);
+
+  /* Cond_bb has a check for b_4 [!=|==] 0 before calling the popcount
+     builtin.  */
+  if (gimple_code (cond) != GIMPLE_COND
+      || (gimple_cond_code (cond) != NE_EXPR
+	  && gimple_cond_code (cond) != EQ_EXPR)
+      || !integer_zerop (gimple_cond_rhs (cond))
+      || arg != gimple_cond_lhs (cond))
+    return false;
+
+  /* Canonicalize.  */
+  if ((e2->flags & EDGE_TRUE_VALUE
+       && gimple_cond_code (cond) == NE_EXPR)
+      || (e1->flags & EDGE_TRUE_VALUE
+	  && gimple_cond_code (cond) == EQ_EXPR))
+    {
+      std::swap (arg0, arg1);
+      std::swap (e1, e2);
+    }
+
+  /* Check PHI arguments.  */
+  if (lhs != arg0 || !integer_zerop (arg1))
+    return false;
+
+  /* And insert the popcount builtin and cast stmt before the cond_bb.  */
+  gsi = gsi_last_bb (cond_bb);
+  if (cast)
+    {
+      gsi_from = gsi_for_stmt (cast);
+      gsi_move_before (&gsi_from, &gsi);
+      reset_flow_sensitive_info (gimple_get_lhs (cast));
+    }
+  gsi_from = gsi_for_stmt (popcount);
+  gsi_move_before (&gsi_from, &gsi);
+  reset_flow_sensitive_info (gimple_get_lhs (popcount));
+
+  /* Now update the PHI and remove unneeded bbs.  */
+  replace_phi_edge_with_variable (cond_bb, e2, phi, lhs);
   return true;
 }
 

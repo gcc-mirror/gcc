@@ -87,9 +87,9 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   cxxdiag ("%<%+#A%+#D%+#E%+#F%+#T%+#V%>", t1, t1, t1, t1, t1, t1);
   cxxdiag ("%C%L%O%P%Q", i, i, i, i, i);
 
-  tdiag ("%v%qv%#v", i, i, i);
+  tdiag ("%v", i); /* { dg-warning "format" } */
   cdiag ("%v%qv%#v", i, i, i);
-  cxxdiag ("%v%qv%#v", i, i, i);
+  cxxdiag ("%v", i); /* { dg-warning "format" } */
 
   tdiag ("%Z", v, v_len);
   cdiag ("%Z", v, v_len);

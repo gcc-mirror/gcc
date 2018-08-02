@@ -566,6 +566,55 @@ gcov_read_counter (void)
   return value;
 }
 
+/* Mangle filename path of BASE and output new allocated pointer with
+   mangled path.  */
+
+char *
+mangle_path (char const *base)
+{
+  /* Convert '/' to '#', convert '..' to '^',
+     convert ':' to '~' on DOS based file system.  */
+  const char *probe;
+  char *buffer = (char *)xmalloc (strlen (base) + 10);
+  char *ptr = buffer;
+
+#if HAVE_DOS_BASED_FILE_SYSTEM
+  if (base[0] && base[1] == ':')
+    {
+      ptr[0] = base[0];
+      ptr[1] = '~';
+      ptr += 2;
+      base += 2;
+    }
+#endif
+  for (; *base; base = probe)
+    {
+      size_t len;
+
+      for (probe = base; *probe; probe++)
+	if (*probe == '/')
+	  break;
+      len = probe - base;
+      if (len == 2 && base[0] == '.' && base[1] == '.')
+	*ptr++ = '^';
+      else
+	{
+	  memcpy (ptr, base, len);
+	  ptr += len;
+	}
+      if (*probe)
+	{
+	  *ptr++ = '#';
+	  probe++;
+	}
+    }
+
+  /* Terminate the string.  */
+  *ptr = '\0';
+
+  return buffer;
+}
+
 /* We need to expose the below function when compiling for gcov-tool.  */
 
 #if !IN_LIBGCOV || defined (IN_GCOV_TOOL)

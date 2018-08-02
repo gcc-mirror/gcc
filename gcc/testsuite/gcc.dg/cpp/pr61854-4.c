@@ -12,5 +12,5 @@ foo (void)
   // But error here.
 #endif
   /* { dg-error "C\\+\\+ style comments are not allowed in ISO C90" "comments"  { target *-*-*} 12 } */
-  /* { dg-error "reported only once" ""  { target *-*-*} 12 } */
+  /* { dg-message "note: \[^\n\r]*reported only once" ""  { target *-*-*} 12 } */
 }

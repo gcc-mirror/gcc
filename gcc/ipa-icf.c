@@ -658,7 +658,7 @@ sem_function::equals_wpa (sem_item *item,
   cl_optimization *opt1 = opts_for_fn (decl);
   cl_optimization *opt2 = opts_for_fn (item->decl);
 
-  if (opt1 != opt2 && memcmp (opt1, opt2, sizeof(cl_optimization)))
+  if (opt1 != opt2 && !cl_optimization_option_eq (opt1, opt2))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{

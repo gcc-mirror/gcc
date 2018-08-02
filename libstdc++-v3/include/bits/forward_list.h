@@ -1156,6 +1156,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { _M_splice_after(__pos, __before, __last); }
       // @}
 
+    private:
+#if __cplusplus > 201703L
+# define __cpp_lib_list_remove_return_type 201806L
+      using __remove_return_type = size_type;
+# define _GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG \
+      __attribute__((__abi_tag__("__cxx20")))
+#else
+      using __remove_return_type = void;
+# define _GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG
+#endif
+    public:
+
       /**
        *  @brief  Remove all elements equal to value.
        *  @param  __val  The value to remove.
@@ -1167,7 +1179,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  touched in any way.  Managing the pointer is the user's
        *  responsibility.
        */
-      void
+      _GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG
+      __remove_return_type
       remove(const _Tp& __val);
 
       /**
@@ -1182,7 +1195,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  responsibility.
        */
       template<typename _Pred>
-	void
+	__remove_return_type
 	remove_if(_Pred __pred);
 
       /**
@@ -1195,9 +1208,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the pointed-to memory is not touched in any way.  Managing
        *  the pointer is the user's responsibility.
        */
-      void
+      _GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG
+      __remove_return_type
       unique()
-      { unique(std::equal_to<_Tp>()); }
+      { return unique(std::equal_to<_Tp>()); }
+
+#undef _GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG
 
       /**
        *  @brief  Remove consecutive elements satisfying a predicate.
@@ -1212,7 +1228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Managing the pointer is the user's responsibility.
        */
       template<typename _BinPred>
-	void
+	__remove_return_type
 	unique(_BinPred __binary_pred);
 
       /**

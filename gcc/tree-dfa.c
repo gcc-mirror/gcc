@@ -992,6 +992,9 @@ dump_enumerated_decls_push (tree *tp, int *walk_subtrees, void *data)
 void
 dump_enumerated_decls (FILE *file, dump_flags_t flags)
 {
+  if (!cfun->cfg)
+    return;
+
   basic_block bb;
   struct walk_stmt_info wi;
   auto_vec<numbered_tree, 40> decl_list;

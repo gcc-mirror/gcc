@@ -75,7 +75,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   powerpc-eabispe powerpc-eabisimaltivec powerpc-eabisim ppc-elf \
   powerpc-eabialtivec powerpc-xilinx-eabi powerpc-eabi \
   powerpc-rtems powerpc-linux_spe \
-  powerpc-linux_paired powerpc64-linux_altivec \
+  powerpc64-linux_altivec \
   powerpc-wrs-vxworks powerpc-wrs-vxworksae powerpc-wrs-vxworksmils \
   powerpc-lynxos powerpcle-elf \
   powerpcle-eabisim powerpcle-eabi \

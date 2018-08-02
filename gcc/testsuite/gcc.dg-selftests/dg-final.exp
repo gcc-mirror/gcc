@@ -25,29 +25,47 @@ load_lib "scanasm.exp"
 load_lib "scanwpaipa.exp"
 load_lib "scanltranstree.exp"
 load_lib "scanoffloadtree.exp"
+load_lib "gcc-dg.exp"
+
+proc verify_call_1 { args } {
+    set call_name [lindex $args 0]
+    set call_args [lindex $args 1]
+    set expected_error [lindex $args 2]
+    set testid [lindex $args 3]
+
+    set errMsg ""
+    catch {
+	eval $call_name $call_args
+    } errMsg
+
+    if { "$errMsg" != "$expected_error" } {
+	send_log "For call $call_name $call_args\n"
+	send_log "expected: $expected_error\n"
+	send_log "but got: $errMsg\n"
+	fail "$testid"
+	return
+    } else {
+	pass "$testid"	
+    }
+}
+
+proc verify_call { args } {
+    set call_name [lindex $args 0]
+    set call_args [lindex $args 1]
+    set expected_error [lindex $args 2]
+    verify_call_1 $call_name $call_args "$call_name: $expected_error" \
+	"$call_name: $expected_error"
+}
+
+proc verify_call_np { args } {
+    set call_name [lindex $args 0]
+    set call_args [lindex $args 1]
+    set expected_error [lindex $args 2]
+    verify_call_1 $call_name $call_args "$expected_error" \
+	"$call_name: $expected_error"
+}
 
 proc dg_final_directive_check_num_args {} {
-    proc verify_call { args } {
-	set call_name [lindex $args 0]
-	set call_args [lindex $args 1]
-	set expected_error [lindex $args 2]
-
-	set errMsg ""
-	catch {
-	    eval $call_name $call_args
-	} errMsg
-
-	if { "$errMsg" != "$call_name: $expected_error" } {
-	    send_log "For call $call_name $call_args\n"
-	    send_log "expected: $call_name: $expected_error\n"
-	    send_log "but got: $errMsg\n"
-	    fail "$call_name: $expected_error"
-	    return
-	} else {
-	    pass "$call_name: $expected_error"	
-	}
-    }
-
     proc verify_args { args } {
 	set proc_name [lindex $args 0]
 	set min [lindex $args 1]
@@ -98,9 +116,17 @@ proc dg_final_directive_check_num_args {} {
     unset testname_with_flags
 }
 
+proc dg_final_directive_check_utils {} {
+    verify_call_np get-absolute-line [list "" bla] \
+	"dg-line var bla used, but not defined"
+    verify_call_np get-absolute-line [list 1 bla] \
+	"dg-line var bla used at line 1, but not defined"
+}
+
 if ![gcc_parallel_test_run_p dg-final] {
     return
 }
 gcc_parallel_test_enable 0
 dg_final_directive_check_num_args
+dg_final_directive_check_utils
 gcc_parallel_test_enable 1

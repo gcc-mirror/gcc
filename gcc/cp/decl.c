@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimplify.h"
 #include "asan.h"
+#include "gcc-rich-location.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -980,7 +981,7 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 	{
 	  if (!prototype_p (f2) && DECL_EXTERN_C_P (olddecl)
 	      && (DECL_BUILT_IN (olddecl)
-#ifndef NO_IMPLICIT_EXTERN_C
+#ifdef SYSTEM_IMPLICIT_EXTERN_C
 		  || (DECL_IN_SYSTEM_HEADER (newdecl) && !DECL_CLASS_SCOPE_P (newdecl))
 		  || (DECL_IN_SYSTEM_HEADER (olddecl) && !DECL_CLASS_SCOPE_P (olddecl))
 #endif
@@ -990,7 +991,7 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 	      if (p1 == void_list_node)
 		TREE_TYPE (newdecl) = TREE_TYPE (olddecl);
 	    }
-#ifndef NO_IMPLICIT_EXTERN_C
+#ifdef SYSTEM_IMPLICIT_EXTERN_C
 	  else if (!prototype_p (f1)
 		   && (DECL_EXTERN_C_P (olddecl)
 		       && DECL_IN_SYSTEM_HEADER (olddecl)
@@ -4065,6 +4066,24 @@ initialize_predefined_identifiers (void)
     {"auto", &auto_identifier, cik_normal},
     {"decltype(auto)", &decltype_auto_identifier, cik_normal},
     {"initializer_list", &init_list_identifier, cik_normal},
+    {"__for_range ", &for_range__identifier, cik_normal},
+    {"__for_begin ", &for_begin__identifier, cik_normal},
+    {"__for_end ", &for_end__identifier, cik_normal},
+    {"__for_range", &for_range_identifier, cik_normal},
+    {"__for_begin", &for_begin_identifier, cik_normal},
+    {"__for_end", &for_end_identifier, cik_normal},
+    {"abi_tag", &abi_tag_identifier, cik_normal},
+    {"aligned", &aligned_identifier, cik_normal},
+    {"begin", &begin_identifier, cik_normal},
+    {"end", &end_identifier, cik_normal},
+    {"get", &get__identifier, cik_normal},
+    {"gnu", &gnu_identifier, cik_normal},
+    {"tuple_element", &tuple_element_identifier, cik_normal},
+    {"tuple_size", &tuple_size_identifier, cik_normal},
+    {"type", &type_identifier, cik_normal},
+    {"value", &value_identifier, cik_normal},
+    {"_FUN", &fun_identifier, cik_normal},
+    {"__closure", &closure_identifier, cik_normal},
     {NULL, NULL, cik_normal}
   };
 
@@ -7252,6 +7271,27 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   if (was_readonly)
     TREE_READONLY (decl) = 1;
 
+  if (flag_openmp
+      && VAR_P (decl)
+      && lookup_attribute ("omp declare target implicit",
+			   DECL_ATTRIBUTES (decl)))
+    {
+      DECL_ATTRIBUTES (decl)
+	= remove_attribute ("omp declare target implicit",
+			    DECL_ATTRIBUTES (decl));
+      complete_type (TREE_TYPE (decl));
+      if (!cp_omp_mappable_type (TREE_TYPE (decl)))
+	error ("%q+D in declare target directive does not have mappable type",
+	       decl);
+      else if (!lookup_attribute ("omp declare target",
+				  DECL_ATTRIBUTES (decl))
+	       && !lookup_attribute ("omp declare target link",
+				     DECL_ATTRIBUTES (decl)))
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("omp declare target"),
+		       NULL_TREE, DECL_ATTRIBUTES (decl));
+    }
+
   invoke_plugin_callbacks (PLUGIN_FINISH_DECL, decl);
 }
 
@@ -7337,14 +7377,14 @@ get_tuple_size (tree type)
 {
   tree args = make_tree_vec (1);
   TREE_VEC_ELT (args, 0) = type;
-  tree inst = lookup_template_class (get_identifier ("tuple_size"), args,
+  tree inst = lookup_template_class (tuple_size_identifier, args,
 				     /*in_decl*/NULL_TREE,
 				     /*context*/std_node,
 				     /*entering_scope*/false, tf_none);
   inst = complete_type (inst);
   if (inst == error_mark_node || !COMPLETE_TYPE_P (inst))
     return NULL_TREE;
-  tree val = lookup_qualified_name (inst, get_identifier ("value"),
+  tree val = lookup_qualified_name (inst, value_identifier,
 				    /*type*/false, /*complain*/false);
   if (TREE_CODE (val) == VAR_DECL || TREE_CODE (val) == CONST_DECL)
     val = maybe_constant_value (val);
@@ -7362,12 +7402,12 @@ get_tuple_element_type (tree type, unsigned i)
   tree args = make_tree_vec (2);
   TREE_VEC_ELT (args, 0) = build_int_cst (integer_type_node, i);
   TREE_VEC_ELT (args, 1) = type;
-  tree inst = lookup_template_class (get_identifier ("tuple_element"), args,
+  tree inst = lookup_template_class (tuple_element_identifier, args,
 				     /*in_decl*/NULL_TREE,
 				     /*context*/std_node,
 				     /*entering_scope*/false,
 				     tf_warning_or_error);
-  return make_typename_type (inst, get_identifier ("type"),
+  return make_typename_type (inst, type_identifier,
 			     none_type, tf_warning_or_error);
 }
 
@@ -7376,7 +7416,6 @@ get_tuple_element_type (tree type, unsigned i)
 static tree
 get_tuple_decomp_init (tree decl, unsigned i)
 {
-  tree get_id = get_identifier ("get");
   tree targs = make_tree_vec (1);
   TREE_VEC_ELT (targs, 0) = build_int_cst (integer_type_node, i);
 
@@ -7389,7 +7428,7 @@ get_tuple_decomp_init (tree decl, unsigned i)
       || TYPE_REF_IS_RVALUE (etype))
     e = move (e);
 
-  tree fns = lookup_qualified_name (TREE_TYPE (e), get_id,
+  tree fns = lookup_qualified_name (TREE_TYPE (e), get__identifier,
 				    /*type*/false, /*complain*/false);
   bool use_member_get = false;
 
@@ -7421,7 +7460,7 @@ get_tuple_decomp_init (tree decl, unsigned i)
   else
     {
       vec<tree,va_gc> *args = make_tree_vector_single (e);
-      fns = lookup_template_function (get_id, targs);
+      fns = lookup_template_function (get__identifier, targs);
       fns = perform_koenig_lookup (fns, args, tf_warning_or_error);
       return finish_call_expr (fns, &args, /*novirt*/false,
 			       /*koenig*/true, tf_warning_or_error);
@@ -8576,15 +8615,18 @@ check_concept_fn (tree fn)
 {
   // A constraint is nullary.
   if (DECL_ARGUMENTS (fn))
-    error ("concept %q#D declared with function parameters", fn);
+    error_at (DECL_SOURCE_LOCATION (fn),
+	      "concept %q#D declared with function parameters", fn);
 
   // The declared return type of the concept shall be bool, and
   // it shall not be deduced from it definition.
   tree type = TREE_TYPE (TREE_TYPE (fn));
   if (is_auto (type))
-    error ("concept %q#D declared with a deduced return type", fn);
+    error_at (DECL_SOURCE_LOCATION (fn),
+	      "concept %q#D declared with a deduced return type", fn);
   else if (type != boolean_type_node)
-    error ("concept %q#D with non-%<bool%> return type %qT", fn, type);
+    error_at (DECL_SOURCE_LOCATION (fn),
+	      "concept %q#D with non-%<bool%> return type %qT", fn, type);
 }
 
 /* Helper function.  Replace the temporary this parameter injected
@@ -9830,6 +9872,18 @@ create_array_type_for_decl (tree name, tree type, tree size)
   return build_cplus_array_type (type, itype);
 }
 
+/* Returns the smallest location that is not UNKNOWN_LOCATION.  */
+
+static location_t
+min_location (location_t loca, location_t locb)
+{
+  if (loca == UNKNOWN_LOCATION
+      || (locb != UNKNOWN_LOCATION
+	  && linemap_location_before_p (line_table, locb, loca)))
+    return locb;
+  return loca;
+}
+
 /* Returns the smallest location != UNKNOWN_LOCATION among the
    three stored in LOCATIONS[ds_const], LOCATIONS[ds_volatile],
    and LOCATIONS[ds_restrict].  */
@@ -9842,13 +9896,11 @@ smallest_type_quals_location (int type_quals, const location_t* locations)
   if (type_quals & TYPE_QUAL_CONST)
     loc = locations[ds_const];
 
-  if ((type_quals & TYPE_QUAL_VOLATILE)
-      && (loc == UNKNOWN_LOCATION || locations[ds_volatile] < loc))
-    loc = locations[ds_volatile];
+  if (type_quals & TYPE_QUAL_VOLATILE)
+    loc = min_location (loc, locations[ds_volatile]);
 
-  if ((type_quals & TYPE_QUAL_RESTRICT)
-      && (loc == UNKNOWN_LOCATION || locations[ds_restrict] < loc))
-    loc = locations[ds_restrict];
+  if (type_quals & TYPE_QUAL_RESTRICT)
+    loc = min_location (loc, locations[ds_restrict]);
 
   return loc;
 }
@@ -10602,9 +10654,18 @@ grokdeclarator (const cp_declarator *declarator,
       int ok = 0;
 
       if (signed_p && unsigned_p)
-	error_at (loc, "%<signed%> and %<unsigned%> specified together");
+	{
+	  gcc_rich_location richloc (declspecs->locations[ds_signed]);
+	  richloc.add_range (declspecs->locations[ds_unsigned], false);
+	  error_at (&richloc,
+		    "%<signed%> and %<unsigned%> specified together");
+	}
       else if (long_p && short_p)
-	error_at (loc, "%<long%> and %<short%> specified together");
+	{
+	  gcc_rich_location richloc (declspecs->locations[ds_long]);
+	  richloc.add_range (declspecs->locations[ds_short], false);
+	  error_at (&richloc, "%<long%> and %<short%> specified together");
+	}
       else if (TREE_CODE (type) != INTEGER_TYPE
 	       || type == char16_type_node || type == char32_type_node
 	       || ((long_p || short_p)
@@ -10745,14 +10806,20 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (staticp == 2)
 	{
-	  error ("member %qD cannot be declared both %<virtual%> "
-		 "and %<static%>", dname);
+	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
+	  richloc.add_range (declspecs->locations[ds_storage_class], false);
+	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
+		    "and %<static%>", dname);
 	  storage_class = sc_none;
 	  staticp = 0;
 	}
       if (constexpr_p)
-	error ("member %qD cannot be declared both %<virtual%> "
-	       "and %<constexpr%>", dname);
+	{
+	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
+	  richloc.add_range (declspecs->locations[ds_constexpr], false);
+	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
+		    "and %<constexpr%>", dname);
+	}
     }
   friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);
 
@@ -10761,18 +10828,27 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (typedef_p)
 	{
-	  error ("typedef declaration invalid in parameter declaration");
+	  error_at (declspecs->locations[ds_typedef],
+		    "typedef declaration invalid in parameter declaration");
 	  return error_mark_node;
 	}
       else if (template_parm_flag && storage_class != sc_none)
 	{
-	  error ("storage class specified for template parameter %qs", name);
+	  error_at (min_location (declspecs->locations[ds_thread],
+				  declspecs->locations[ds_storage_class]),
+		    "storage class specified for template parameter %qs",
+		    name);
 	  return error_mark_node;
 	}
       else if (storage_class == sc_static
 	       || storage_class == sc_extern
 	       || thread_p)
-	error ("storage class specifiers invalid in parameter declarations");
+	{
+	  error_at (min_location (declspecs->locations[ds_thread],
+				  declspecs->locations[ds_storage_class]),
+		    "storage class specified for parameter %qs", name);
+	  return error_mark_node;
+	}
 
       /* Function parameters cannot be concept. */
       if (concept_p)
@@ -10906,15 +10982,15 @@ grokdeclarator (const cp_declarator *declarator,
 	;
       else
 	{
+	  location_t loc
+	    = min_location (declspecs->locations[ds_thread],
+			    declspecs->locations[ds_storage_class]);
 	  if (decl_context == FIELD)
-	    error ("storage class specified for %qs", name);
+	    error_at (loc, "storage class specified for %qs", name);
+	  else if (decl_context == PARM || decl_context == CATCHPARM)
+	    error_at (loc, "storage class specified for parameter %qs", name);
 	  else
-	    {
-	      if (decl_context == PARM || decl_context == CATCHPARM)
-		error ("storage class specified for parameter %qs", name);
-	      else
-		error ("storage class specified for typename");
-	    }
+	    error_at (loc, "storage class specified for typename");
 	  if (storage_class == sc_register
 	      || storage_class == sc_auto
 	      || storage_class == sc_extern
@@ -10935,7 +11011,8 @@ grokdeclarator (const cp_declarator *declarator,
 	   && storage_class != sc_static)
     {
       if (declspecs->gnu_thread_keyword_p)
-	pedwarn (input_location, 0, "function-scope %qs implicitly auto and "
+	pedwarn (declspecs->locations[ds_thread],
+		 0, "function-scope %qs implicitly auto and "
 		 "declared %<__thread%>", name);
 
       /* When thread_local is applied to a variable of block scope the
@@ -10947,7 +11024,10 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (storage_class && friendp)
     {
-      error ("storage class specifiers invalid in friend function declarations");
+      error_at (min_location (declspecs->locations[ds_thread],
+			      declspecs->locations[ds_storage_class]),
+		"storage class specifiers invalid in friend function "
+		"declarations");
       storage_class = sc_none;
       staticp = 0;
     }
@@ -11273,7 +11353,9 @@ grokdeclarator (const cp_declarator *declarator,
 		if (virtualp)
 		  {
 		    /* Cannot be both friend and virtual.  */
-		    error ("virtual functions cannot be friends");
+		    gcc_rich_location richloc (declspecs->locations[ds_virtual]);
+		    richloc.add_range (declspecs->locations[ds_friend], false);
+		    error_at (&richloc, "virtual functions cannot be friends");
 		    friendp = 0;
 		  }
 		if (decl_context == NORMAL)
@@ -12407,15 +12489,18 @@ grokdeclarator (const cp_declarator *declarator,
 	else if (thread_p)
 	  {
 	    if (declspecs->gnu_thread_keyword_p)
-	      error ("storage class %<__thread%> invalid for function %qs",
-		     name);
+	      error_at (declspecs->locations[ds_thread],
+			"storage class %<__thread%> invalid for function %qs",
+			name);
 	    else
-	      error ("storage class %<thread_local%> invalid for function %qs",
-		     name);
+	      error_at (declspecs->locations[ds_thread],
+			"storage class %<thread_local%> invalid for "
+			"function %qs", name);
 	  }
 
         if (virt_specifiers)
-          error ("virt-specifiers in %qs not allowed outside a class definition", name);
+          error ("virt-specifiers in %qs not allowed outside a class "
+		 "definition", name);
 	/* Function declaration not at top level.
 	   Storage classes other than `extern' are not allowed
 	   and `extern' makes no difference.  */
@@ -14636,7 +14721,6 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 	  if (TYPE_VALUES (enumtype))
 	    {
 	      tree prev_value;
-	      bool overflowed;
 
 	      /* C++03 7.2/4: If no initializer is specified for the first
 		 enumerator, the type is an unspecified integral
@@ -14650,6 +14734,7 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 		value = error_mark_node;
 	      else
 		{
+		  wi::overflow_type overflowed;
 		  tree type = TREE_TYPE (prev_value);
 		  signop sgn = TYPE_SIGN (type);
 		  widest_int wi = wi::add (wi::to_widest (prev_value), 1, sgn,
@@ -14676,7 +14761,7 @@ incremented enumerator value is too large for %<unsigned long%>") : G_("\
 incremented enumerator value is too large for %<long%>"));
 			}
 		      if (type == NULL_TREE)
-			overflowed = true;
+		        overflowed = wi::OVF_UNKNOWN;
 		      else
 			value = wide_int_to_tree (type, wi);
 		    }

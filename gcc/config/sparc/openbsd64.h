@@ -41,9 +41,6 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-/* Inherited from sp64-elf.  */
-#undef NO_IMPLICIT_EXTERN_C
-
 #undef ASM_SPEC
 #define ASM_SPEC "\
 -s %{" FPIE_OR_FPIC_SPEC ":-K PIC} \

@@ -928,8 +928,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	    }
           if (dump_enabled_p ())
             {
-	      location_t locus = gimple_location_safe (edge->call_stmt);
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, edge->call_stmt,
 			       "devirtualizing call in %s to %s\n",
 			       edge->caller->name (), target->name ());
 	    }
@@ -1804,7 +1803,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       int i;
       tree resdecl;
       tree restmp = NULL;
-      tree resbnd = NULL;
 
       gcall *call;
       greturn *ret;
@@ -1995,7 +1993,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	    ret = gimple_build_return (restmp);
 	  else
 	    ret = gimple_build_return (resdecl);
-	  gimple_return_set_retbnd (ret, resbnd);
 
 	  gsi_insert_after (&bsi, ret, GSI_NEW_STMT);
 	}
@@ -2129,24 +2126,26 @@ cgraph_node::expand (void)
   /* If requested, warn about function definitions where the function will
      return a value (usually of some struct or union type) which itself will
      take up a lot of stack space.  */
-  if (warn_larger_than && !DECL_EXTERNAL (decl) && TREE_TYPE (decl))
+  if (!DECL_EXTERNAL (decl) && TREE_TYPE (decl))
     {
       tree ret_type = TREE_TYPE (TREE_TYPE (decl));
 
       if (ret_type && TYPE_SIZE_UNIT (ret_type)
 	  && TREE_CODE (TYPE_SIZE_UNIT (ret_type)) == INTEGER_CST
 	  && compare_tree_int (TYPE_SIZE_UNIT (ret_type),
-			       larger_than_size) > 0)
+			       warn_larger_than_size) > 0)
 	{
 	  unsigned int size_as_int
 	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
 
 	  if (compare_tree_int (TYPE_SIZE_UNIT (ret_type), size_as_int) == 0)
-	    warning (OPT_Wlarger_than_, "size of return value of %q+D is %u bytes",
+	    warning (OPT_Wlarger_than_,
+		     "size of return value of %q+D is %u bytes",
                      decl, size_as_int);
 	  else
-	    warning (OPT_Wlarger_than_, "size of return value of %q+D is larger than %wd bytes",
-                     decl, larger_than_size);
+	    warning (OPT_Wlarger_than_,
+		     "size of return value of %q+D is larger than %wu bytes",
+	             decl, warn_larger_than_size);
 	}
     }
 

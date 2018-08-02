@@ -274,6 +274,7 @@ for (i = 0; i < n_opts; i++) {
 	j++;
 }
 
+optindex = 0
 for (i = 0; i < n_opts; i++) {
 	# With identical flags, pick only the last one.  The
 	# earlier loop ensured that it has all flags merged,
@@ -303,20 +304,20 @@ for (i = 0; i < n_opts; i++) {
 		comma = ""
 
 	if (help[i] == "")
-		hlp = "0"
+		hlp = "NULL"
 	else
 		hlp = quote help[i] quote;
 
 	missing_arg_error = opt_args("MissingArgError", flags[i])
 	if (missing_arg_error == "")
-		missing_arg_error = "0"
+		missing_arg_error = "NULL"
 	else
 		missing_arg_error = quote missing_arg_error quote
 
 
 	warn_message = opt_args("Warn", flags[i])
 	if (warn_message == "")
-		warn_message = "0"
+		warn_message = "NULL"
 	else
 		warn_message = quote warn_message quote
 
@@ -378,10 +379,11 @@ for (i = 0; i < n_opts; i++) {
 	}
 	# Split the printf after %u to work around an ia64-hp-hpux11.23
 	# awk bug.
-	printf("  { %c-%s%c,\n    %s,\n    %s,\n    %s,\n    %s, %s, %u,",
+	printf(" /* [%i] = */ {\n", optindex)
+	printf("    %c-%s%c,\n    %s,\n    %s,\n    %s,\n    %s, %s, %u,",
 	       quote, opts[i], quote, hlp, missing_arg_error, warn_message,
 	       alias_data, back_chain[i], len)
-	printf(" %d,\n", idx)
+	printf(" /* .neg_idx = */ %d,\n", idx)
 	condition = opt_args("Condition", flags[i])
 	cl_flags = switch_flags(flags[i])
 	cl_bit_fields = switch_bit_fields(flags[i])
@@ -402,7 +404,10 @@ for (i = 0; i < n_opts; i++) {
 	printf("    %s, %s, %s }%s\n", var_ref(opts[i], flags[i]),
 	       var_set(flags[i]), integer_range_info(opt_args("IntegerRange", flags[i]),
 		    opt_args("Init", flags[i]), opts[i]), comma)
-}
+
+	# Bump up the informational option index.
+	++optindex
+ }
 
 print "};"
 
@@ -417,7 +422,7 @@ print "                           const struct cl_option_handlers *handlers, "
 print "                           diagnostic_context *dc)                    "
 print "{                                                                     "
 print "  size_t scode = decoded->opt_index;                                  "
-print "  int value = decoded->value;                                         "
+print "  HOST_WIDE_INT value = decoded->value;                               "
 print "  enum opt_code code = (enum opt_code) scode;                         "
 print "                                                                      "
 print "  gcc_assert (decoded->canonical_option_num_elements <= 2);           "
@@ -467,7 +472,7 @@ for (i = 0; i < n_langs; i++) {
     print "bool                                                                  "
     print lang_name "_handle_option_auto (struct gcc_options *opts" mark_unused ",              "
     print "                           struct gcc_options *opts_set" mark_unused ",              "
-    print "                           size_t scode" mark_unused ", const char *arg" mark_unused ", int value" mark_unused ",  "
+    print "                           size_t scode" mark_unused ", const char *arg" mark_unused ", HOST_WIDE_INT value" mark_unused ",  "
     print "                           unsigned int lang_mask" mark_unused ", int kind" mark_unused ",          "
     print "                           location_t loc" mark_unused ",                            "
     print "                           const struct cl_option_handlers *handlers" mark_unused ", "

@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+#include "toplev.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -351,6 +352,9 @@ static machine_mode m68k_promote_function_mode (const_tree, machine_mode,
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE m68k_promote_function_mode
+
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -651,15 +655,19 @@ m68k_option_override (void)
     }
 
 #ifndef ASM_OUTPUT_ALIGN_WITH_NOP
-  if (align_labels > 2)
+  parse_alignment_opts ();
+  int label_alignment = align_labels.levels[0].get_value ();
+  if (label_alignment > 2)
     {
-      warning (0, "-falign-labels=%d is not supported", align_labels);
-      align_labels = 0;
+      warning (0, "-falign-labels=%d is not supported", label_alignment);
+      str_align_labels = "1";
     }
-  if (align_loops > 2)
+
+  int loop_alignment = align_loops.levels[0].get_value ();
+  if (loop_alignment > 2)
     {
-      warning (0, "-falign-loops=%d is not supported", align_loops);
-      align_loops = 0;
+      warning (0, "-falign-loops=%d is not supported", loop_alignment);
+      str_align_loops = "1";
     }
 #endif
 

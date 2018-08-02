@@ -1,6 +1,7 @@
 // __gnu_pbds::test::basic_type has ambiguous string conversions in C++17
 // { dg-do run { target { ! c++17 } } }
 // { dg-require-time "" }
+// { dg-require-cstdint "" }
 
 // -*- C++ -*-
 

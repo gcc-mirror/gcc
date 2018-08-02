@@ -67,6 +67,16 @@ cortex-a57-fma-steering.o: $(srcdir)/config/aarch64/cortex-a57-fma-steering.c \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/aarch64/cortex-a57-fma-steering.c
 
+aarch64-speculation.o: $(srcdir)/config/aarch64/aarch64-speculation.cc \
+    $(CONFIG_H) \
+    $(SYSTEM_H) \
+    $(TM_H) \
+    $(TARGET_H) \
+    $(RTL_BASE_H) \
+    $(TREE_PASS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_SPPFLAGS) $(INCLUDES) \
+	  $(srcdir)/config/aarch64/aarch64-speculation.cc
+
 comma=,
 MULTILIB_OPTIONS    = $(subst $(comma),/, $(patsubst %, mabi=%, $(subst $(comma),$(comma)mabi=,$(TM_MULTILIB_CONFIG))))
 MULTILIB_DIRNAMES   = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))

@@ -752,6 +752,92 @@ output_peephole2_scratches (rtx split)
     }
 }
 
+/* Print "arg<N>" parameter declarations for each argument N of ONAME.  */
+
+static void
+print_overload_arguments (overloaded_name *oname)
+{
+  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+    printf ("%s%s arg%d", i == 0 ? "" : ", ", oname->arg_types[i], i);
+}
+
+/* Print code to test whether INSTANCE should be chosen, given that
+   argument N of the overload is available as "arg<N>".  */
+
+static void
+print_overload_test (overloaded_instance *instance)
+{
+  for (unsigned int i = 0; i < instance->arg_values.length (); ++i)
+    printf ("%sarg%d == %s", i == 0 ? "  if (" : "\n      && ",
+	    i, instance->arg_values[i]);
+  printf (")\n");
+}
+
+/* Emit a maybe_code_for_* function for ONAME.  */
+
+static void
+handle_overloaded_code_for (overloaded_name *oname)
+{
+  /* Print the function prototype.  */
+  printf ("\ninsn_code\nmaybe_code_for_%s (", oname->name);
+  print_overload_arguments (oname);
+  printf (")\n{\n");
+
+  /* Use a sequence of "if" statements for each instance.  */
+  for (overloaded_instance *instance = oname->first_instance;
+       instance; instance = instance->next)
+    {
+      print_overload_test (instance);
+      printf ("    return CODE_FOR_%s;\n", instance->name);
+    }
+
+  /* Return null if no match was found.  */
+  printf ("  return CODE_FOR_nothing;\n}\n");
+}
+
+/* Emit a maybe_gen_* function for ONAME.  */
+
+static void
+handle_overloaded_gen (overloaded_name *oname)
+{
+  /* All patterns must have the same number of operands.  */
+  pattern_stats stats;
+  get_pattern_stats (&stats, XVEC (oname->first_instance->insn, 1));
+  for (overloaded_instance *instance = oname->first_instance->next;
+       instance; instance = instance->next)
+    {
+      pattern_stats stats2;
+      get_pattern_stats (&stats2, XVEC (instance->insn, 1));
+      if (stats.num_generator_args != stats2.num_generator_args)
+	fatal_at (get_file_location (instance->insn),
+		  "inconsistent number of operands for '%s'; "
+		  "this instance has %d, but previous instances had %d",
+		  oname->name, stats2.num_generator_args,
+		  stats.num_generator_args);
+    }
+
+  /* Print the function prototype.  */
+  printf ("\nrtx\nmaybe_gen_%s (", oname->name);
+  print_overload_arguments (oname);
+  for (int i = 0; i < stats.num_generator_args; ++i)
+    printf (", rtx x%d", i);
+  printf (")\n{\n");
+
+  /* Use maybe_code_for_*, instead of duplicating the selection logic here.  */
+  printf ("  insn_code code = maybe_code_for_%s (", oname->name);
+  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+    printf ("%sarg%d", i == 0 ? "" : ", ", i);
+  printf (");\n"
+	  "  if (code != CODE_FOR_nothing)\n"
+	  "    return GEN_FCN (code) (");
+  for (int i = 0; i < stats.num_generator_args; ++i)
+    printf ("%sx%d", i == 0 ? "" : ", ", i);
+  printf (");\n"
+	  "  else\n"
+	  "    return NULL_RTX;\n"
+	  "}\n");
+}
+
 int
 main (int argc, const char **argv)
 {
@@ -839,6 +925,13 @@ from the machine description file `md'.  */\n\n");
      clobber a hard reg.  */
   output_add_clobbers ();
   output_added_clobbers_hard_reg_p ();
+
+  for (overloaded_name *oname = rtx_reader_ptr->get_overloads ();
+       oname; oname = oname->next)
+    {
+      handle_overloaded_code_for (oname);
+      handle_overloaded_gen (oname);
+    }
 
   fflush (stdout);
   return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);

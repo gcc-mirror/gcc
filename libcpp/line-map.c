@@ -803,7 +803,7 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 	  max_column_hint = 0;
 	  column_bits = 0;
 	  range_bits = 0;
-	  if (highest > LINE_MAP_MAX_LOCATION)
+	  if (highest >= LINE_MAP_MAX_LOCATION)
 	    return 0;
 	}
       else
@@ -841,7 +841,7 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 
   /* Locations of ordinary tokens are always lower than locations of
      macro tokens.  */
-  if (r >= LINEMAPS_MACRO_LOWEST_LOCATION (set))
+  if (r >= LINE_MAP_MAX_LOCATION)
     return 0;
 
   set->highest_line = r;
@@ -2175,8 +2175,8 @@ rich_location::add_range (source_location loc, bool show_caret_p)
    - the "%C" and "%L" format codes in the Fortran frontend.  */
 
 void
-rich_location::set_range (line_maps * /*set*/, unsigned int idx,
-			  source_location loc, bool show_caret_p)
+rich_location::set_range (unsigned int idx, source_location loc,
+			  bool show_caret_p)
 {
   /* We can either overwrite an existing range, or add one exactly
      on the end of the array.  */

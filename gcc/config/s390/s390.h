@@ -181,6 +181,16 @@ enum processor_flags
 
 #define TARGET_AVOID_CMP_AND_BRANCH (s390_tune == PROCESSOR_2817_Z196)
 
+/* Issue a write prefetch for the +4 cache line.  */
+#define TARGET_SETMEM_PREFETCH_DISTANCE 1024
+
+/* Expand to a C expressions evaluating to true if a setmem to VAL of
+   length LEN should be emitted using prefetch instructions.  */
+#define TARGET_SETMEM_PFD(VAL,LEN)					\
+  (TARGET_Z10								\
+   && (s390_tune < PROCESSOR_2964_Z13 || (VAL) != const0_rtx)		\
+   && (!CONST_INT_P (LEN) || INTVAL ((LEN)) > TARGET_SETMEM_PREFETCH_DISTANCE))
+
 /* Run-time target specification.  */
 
 /* Defaults for option flags defined only on some subtargets.  */

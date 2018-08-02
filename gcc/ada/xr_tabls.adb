@@ -761,6 +761,9 @@ package body Xr_Tabls is
       With_Dir : Boolean := False;
       Strip    : Natural    := 0) return String
    is
+      pragma Annotate (CodePeer, Skip_Analysis);
+      --  ??? To disable false positives currently generated
+
       Tmp : GNAT.OS_Lib.String_Access;
 
       function Internal_Strip (Full_Name : String) return String;

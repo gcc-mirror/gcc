@@ -197,10 +197,10 @@ package body Inline is
 
    function Has_Single_Return (N : Node_Id) return Boolean;
    --  In general we cannot inline functions that return unconstrained type.
-   --  However, we can handle such functions if all return statements return a
-   --  local variable that is the only declaration in the body of the function.
-   --  In that case the call can be replaced by that local variable as is done
-   --  for other inlined calls.
+   --  However, we can handle such functions if all return statements return
+   --  a local variable that is the first declaration in the body of the
+   --  function. In that case the call can be replaced by that local
+   --  variable as is done for other inlined calls.
 
    function In_Main_Unit_Or_Subunit (E : Entity_Id) return Boolean;
    --  Return True if E is in the main unit or its spec or in a subunit
@@ -1085,33 +1085,9 @@ package body Inline is
          Cannot_Inline ("cannot inline & (multiple returns)?", N, Spec_Id);
          return;
 
-      --  Functions that return unconstrained composite types require
-      --  secondary stack handling, and cannot currently be inlined, unless
-      --  all return statements return a local variable that is the first
-      --  local declaration in the body.
-
-      elsif Ekind (Spec_Id) = E_Function
-        and then not Is_Scalar_Type (Etype (Spec_Id))
-        and then not Is_Access_Type (Etype (Spec_Id))
-        and then not Is_Constrained (Etype (Spec_Id))
-      then
-         if not Has_Single_Return (N)
-
-           --  Skip inlining if the function returns an unconstrained type
-           --  using an extended return statement, since this part of the
-           --  new inlining model is not yet supported by the current
-           --  implementation. ???
-
-           or else (Returns_Unconstrained_Type (Spec_Id)
-                     and then Has_Extended_Return)
-         then
-            Cannot_Inline
-              ("cannot inline & (unconstrained return type)?", N, Spec_Id);
-            return;
-         end if;
-
-      --  Ditto for functions that return controlled types, where controlled
-      --  actions interfere in complex ways with inlining.
+      --  Functions that return controlled types cannot currently be inlined
+      --  because they require secondary stack handling; controlled actions
+      --  may also interfere in complex ways with inlining.
 
       elsif Ekind (Spec_Id) = E_Function
         and then Needs_Finalization (Etype (Spec_Id))
@@ -1234,10 +1210,37 @@ package body Inline is
          Restore_Env;
       end if;
 
+      --  Functions that return unconstrained composite types require
+      --  secondary stack handling, and cannot currently be inlined, unless
+      --  all return statements return a local variable that is the first
+      --  local declaration in the body. We had to delay this check until
+      --  the body of the function is analyzed since Has_Single_Return()
+      --  requires a minimum decoration.
+
+      if Ekind (Spec_Id) = E_Function
+        and then not Is_Scalar_Type (Etype (Spec_Id))
+        and then not Is_Access_Type (Etype (Spec_Id))
+        and then not Is_Constrained (Etype (Spec_Id))
+      then
+         if not Has_Single_Return (Body_To_Analyze)
+
+           --  Skip inlining if the function returns an unconstrained type
+           --  using an extended return statement, since this part of the
+           --  new inlining model is not yet supported by the current
+           --  implementation. ???
+
+           or else (Returns_Unconstrained_Type (Spec_Id)
+                     and then Has_Extended_Return)
+         then
+            Cannot_Inline
+              ("cannot inline & (unconstrained return type)?", N, Spec_Id);
+            return;
+         end if;
+
       --  If secondary stack is used, there is no point in inlining. We have
       --  already issued the warning in this case, so nothing to do.
 
-      if Uses_Secondary_Stack (Body_To_Analyze) then
+      elsif Uses_Secondary_Stack (Body_To_Analyze) then
          return;
       end if;
 
@@ -3292,8 +3295,8 @@ package body Inline is
                  and then Ekind (F) /= E_Out_Parameter
                  and then not Same_Type (Etype (F), Etype (A))
                then
-                  pragma Assert (not (Is_By_Reference_Type (Etype (A))));
-                  pragma Assert (not (Is_Limited_Type (Etype (A))));
+                  pragma Assert (not Is_By_Reference_Type (Etype (A)));
+                  pragma Assert (not Is_Limited_Type (Etype (A)));
 
                   Append_To (Decls,
                     Make_Object_Declaration (Loc,
@@ -3904,25 +3907,31 @@ package body Inline is
             if Present (Expression (N))
               and then Is_Entity_Name (Expression (N))
             then
+               pragma Assert (Present (Entity (Expression (N))));
+
                if No (Return_Statement) then
                   Return_Statement := N;
                   return OK;
 
-               elsif Chars (Expression (N)) =
-                     Chars (Expression (Return_Statement))
-               then
-                  return OK;
-
                else
-                  return Abandon;
+                  pragma Assert
+                    (Present (Entity (Expression (Return_Statement))));
+
+                  if Entity (Expression (N)) =
+                       Entity (Expression (Return_Statement))
+                  then
+                     return OK;
+                  else
+                     return Abandon;
+                  end if;
                end if;
 
-            --  A return statement within an extended return is a noop
-            --  after inlining.
+            --  A return statement within an extended return is a noop after
+            --  inlining.
 
             elsif No (Expression (N))
-              and then
-                Nkind (Parent (Parent (N))) = N_Extended_Return_Statement
+              and then Nkind (Parent (Parent (N))) =
+                         N_Extended_Return_Statement
             then
                return OK;
 
@@ -3961,10 +3970,11 @@ package body Inline is
          return True;
 
       else
-         return Present (Declarations (N))
-           and then Present (First (Declarations (N)))
-           and then Chars (Expression (Return_Statement)) =
-                    Chars (Defining_Identifier (First (Declarations (N))));
+         return
+           Present (Declarations (N))
+             and then Present (First (Declarations (N)))
+             and then Entity (Expression (Return_Statement)) =
+                        Defining_Identifier (First (Declarations (N)));
       end if;
    end Has_Single_Return;
 

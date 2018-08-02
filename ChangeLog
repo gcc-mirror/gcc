@@ -1,3 +1,58 @@
+2018-07-19  DJ Delorie  <dj@redhat.com>
+
+	* MAINTAINERS (m32c, msp43, rl78, libiberty, build): Remove myself
+	as maintainer.
+
+2018-07-16  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* MAINTAINERS: Adjust email address for me and my colleague Robin
+	Dapp.
+
+2018-07-13  H.J. Lu  <hongjiu.lu@intel.com>
+	    Sunil K Pandey  <sunil.k.pandey@intel.com>
+
+	PR target/84413
+	* config/i386/i386.c (m_CORE_AVX512): New.
+	(m_CORE_AVX2): Likewise.
+	(m_CORE_ALL): Add m_CORE_AVX2.
+	* config/i386/x86-tune.def: Replace m_HASWELL with m_CORE_AVX2.
+	Replace m_SKYLAKE_AVX512 with m_CORE_AVX512 on avx256_optimal
+	and remove the rest of m_SKYLAKE_AVX512.
+
+2018-07-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.sub: Sync with upstream version 2018-07-03.
+
+2018-07-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.guess: Sync with upstream version 2018-06-26.
+	* config.sub: Sync with upstream version 2018-07-02.
+
+2018-06-19  Bernhard M. Wiedemann  <bwiedemann@suse.de>
+
+        * libtool.m4: Sort output of 'find' to enable deterministic builds.
+	* ltmain.sh: Likewise.
+
+2018-07-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* contrib/config-list.mk: Remove powerpc-linux_paired.
+
+2018-06-29  Alexandre Oliva <oliva@adacore.com>
+
+	* configure.ac: Introduce support for @unless/@endunless.
+	* Makefile.tpl (dep-kind): Rewrite with cond; return
+	postbootstrap in some cases.
+	(make-postboot-dep, postboot-targets): New.
+	(dependencies): Do not output postbootstrap dependencies at
+	first.  Output non-target ones changed for configure to depend
+	on stage_last @if gcc-bootstrap, and the original deps @unless
+	gcc-bootstrap.
+	* configure.in, Makefile.in: Rebuilt.
+
+2018-06-28  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* MAINTAINERS (write after approval): Add myself.
+
 2018-06-26  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* MAINTAINERS (write after approval): Add myself.

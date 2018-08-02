@@ -2820,6 +2820,20 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
       if (cp_lexer_peek_conflict_marker (parser->lexer, token->type, &loc))
 	{
 	  error_at (loc, "version control conflict marker in file");
+	  expanded_location token_exploc = expand_location (token->location);
+	  /* Consume tokens until the end of the source line.  */
+	  while (1)
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      cp_token *next = cp_lexer_peek_token (parser->lexer);
+	      if (next == NULL)
+		break;
+	      expanded_location next_exploc = expand_location (next->location);
+	      if (next_exploc.file != token_exploc.file)
+		break;
+	      if (next_exploc.line != token_exploc.line)
+		break;
+	    }
 	  return;
 	}
     }
@@ -10580,7 +10594,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
 	DECL_ARTIFICIAL (fco) = 1;
 	/* Give the object parameter a different name.  */
-	DECL_NAME (DECL_ARGUMENTS (fco)) = get_identifier ("__closure");
+	DECL_NAME (DECL_ARGUMENTS (fco)) = closure_identifier;
       }
     if (template_param_list)
       {
@@ -11663,7 +11677,7 @@ cp_parser_condition (cp_parser* parser)
       if (cp_parser_parse_definitely (parser))
 	{
 	  tree pushed_scope;
-	  bool non_constant_p;
+	  bool non_constant_p = false;
 	  int flags = LOOKUP_ONLYCONVERTING;
 
 	  if (!cp_parser_check_condition_declarator (parser, declarator, loc))
@@ -11894,8 +11908,8 @@ build_range_temp (tree range_expr)
 				  type_uses_auto (range_type));
 
   /* Create the __range variable.  */
-  range_temp = build_decl (input_location, VAR_DECL,
-			   get_identifier ("__for_range"), range_type);
+  range_temp = build_decl (input_location, VAR_DECL, for_range__identifier,
+			   range_type);
   TREE_USED (range_temp) = 1;
   DECL_ARTIFICIAL (range_temp) = 1;
 
@@ -12002,8 +12016,8 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
     }
 
   /* The new for initialization statement.  */
-  begin = build_decl (input_location, VAR_DECL,
-		      get_identifier ("__for_begin"), iter_type);
+  begin = build_decl (input_location, VAR_DECL, for_begin__identifier,
+		      iter_type);
   TREE_USED (begin) = 1;
   DECL_ARTIFICIAL (begin) = 1;
   pushdecl (begin);
@@ -12013,8 +12027,7 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 
   if (cxx_dialect >= cxx17)
     iter_type = cv_unqualified (TREE_TYPE (end_expr));
-  end = build_decl (input_location, VAR_DECL,
-		    get_identifier ("__for_end"), iter_type);
+  end = build_decl (input_location, VAR_DECL, for_end__identifier, iter_type);
   TREE_USED (end) = 1;
   DECL_ARTIFICIAL (end) = 1;
   pushdecl (end);
@@ -14105,6 +14118,9 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	      found_decl_spec = true;
 	      if (!is_cv_qualifier)
 		decl_specs->any_type_specifiers_p = true;
+
+	      if ((flags & CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR) != 0)
+		error_at (token->location, "type-specifier invalid in lambda");
 	    }
 	}
 
@@ -16281,15 +16297,14 @@ cp_parser_template_id (cp_parser *parser,
   else if (DECL_TYPE_TEMPLATE_P (templ)
 	   || DECL_TEMPLATE_TEMPLATE_PARM_P (templ))
     {
-      bool entering_scope;
       /* In "template <typename T> ... A<T>::", A<T> is the abstract A
 	 template (rather than some instantiation thereof) only if
 	 is not nested within some other construct.  For example, in
 	 "template <typename T> void f(T) { A<T>::", A<T> is just an
 	 instantiation of A.  */
-      entering_scope = (template_parm_scope_p ()
-			&& cp_lexer_next_token_is (parser->lexer,
-						   CPP_SCOPE));
+      bool entering_scope
+	= (template_parm_scope_p ()
+	   && cp_lexer_next_token_is (parser->lexer, CPP_SCOPE));
       template_id
 	= finish_template_type (templ, arguments, entering_scope);
     }
@@ -21671,7 +21686,7 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
   else if (token->type == CPP_CLOSE_PAREN)
     /* There are no parameters.  */
     {
-#ifndef NO_IMPLICIT_EXTERN_C
+#ifdef SYSTEM_IMPLICIT_EXTERN_C
       if (in_system_header_at (input_location)
 	  && current_class_type == NULL
 	  && current_lang_name == lang_name_c)
@@ -25648,13 +25663,13 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 				   NULL_TREE);
       /* C++11 noreturn attribute is equivalent to GNU's.  */
       if (is_attribute_p ("noreturn", attr_id))
-	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
       /* C++14 deprecated attribute is equivalent to GNU's.  */
       else if (is_attribute_p ("deprecated", attr_id))
-	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
       /* C++17 fallthrough attribute is equivalent to GNU's.  */
       else if (is_attribute_p ("fallthrough", attr_id))
-	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
       /* Transactional Memory TS optimize_for_synchronized attribute is
 	 equivalent to GNU transaction_callable.  */
       else if (is_attribute_p ("optimize_for_synchronized", attr_id))
@@ -25674,7 +25689,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
     vec<tree, va_gc> *vec;
     int attr_flag = normal_attr;
 
-    if (attr_ns == get_identifier ("gnu")
+    if (attr_ns == gnu_identifier
 	&& attribute_takes_identifier_p (attr_id))
       /* A GNU attribute that takes an identifier in parameter.  */
       attr_flag = id_attr;
@@ -25887,10 +25902,9 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 
       /* Build the C++-11 representation of an 'aligned'
 	 attribute.  */
-      attributes =
-	build_tree_list (build_tree_list (get_identifier ("gnu"),
-					  get_identifier ("aligned")),
-			 alignas_expr);
+      attributes
+	= build_tree_list (build_tree_list (gnu_identifier,
+					    aligned_identifier), alignas_expr);
     }
 
   return attributes;
@@ -28680,12 +28694,15 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
       else if (ds == ds_thread)
 	{
 	  bool gnu = token_is__thread (token);
+	  gcc_rich_location richloc (location);
 	  if (gnu != decl_specs->gnu_thread_keyword_p)
-	    error_at (location,
-		      "both %<__thread%> and %<thread_local%> specified");
+	    {
+	      richloc.add_range (decl_specs->locations[ds_thread], false);
+	      error_at (&richloc,
+			"both %<__thread%> and %<thread_local%> specified");
+	    }
 	  else
 	    {
-	      gcc_rich_location richloc (location);
 	      richloc.add_fixit_remove ();
 	      error_at (&richloc, "duplicate %qD", token->u.value);
 	    }

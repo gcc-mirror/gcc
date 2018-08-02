@@ -78,6 +78,15 @@ extern void assert_str_contains (const location &loc,
 				 const char *val_haystack,
 				 const char *val_needle);
 
+/* Implementation detail of ASSERT_STR_STARTSWITH.  */
+
+extern void assert_str_startswith (const location &loc,
+				   const char *desc_str,
+				   const char *desc_prefix,
+				   const char *val_str,
+				   const char *val_prefix);
+
+
 /* A named temporary file for use in selftests.
    Usable for writing out files, and as the base class for
    temp_source_file.
@@ -102,6 +111,26 @@ class temp_source_file : public named_temp_file
  public:
   temp_source_file (const location &loc, const char *suffix,
 		    const char *content);
+};
+
+/* RAII-style class for avoiding introducing locale-specific differences
+   in strings containing localized quote marks, by temporarily overriding
+   the "open_quote" and "close_quote" globals to something hardcoded.
+
+   Specifically, the C locale's values are used:
+   - open_quote becomes "`"
+   - close_quote becomes "'"
+   for the lifetime of the object.  */
+
+class auto_fix_quotes
+{
+ public:
+  auto_fix_quotes ();
+  ~auto_fix_quotes ();
+
+ private:
+  const char *m_saved_open_quote;
+  const char *m_saved_close_quote;
 };
 
 /* Various selftests involving location-handling require constructing a
@@ -188,6 +217,7 @@ extern void attribute_c_tests ();
 extern void bitmap_c_tests ();
 extern void diagnostic_c_tests ();
 extern void diagnostic_show_locus_c_tests ();
+extern void dumpfile_c_tests ();
 extern void edit_context_c_tests ();
 extern void et_forest_c_tests ();
 extern void fibonacci_heap_c_tests ();
@@ -198,6 +228,8 @@ extern void gimple_c_tests ();
 extern void hash_map_tests_c_tests ();
 extern void hash_set_tests_c_tests ();
 extern void input_c_tests ();
+extern void json_cc_tests ();
+extern void optinfo_emit_json_cc_tests ();
 extern void predict_c_tests ();
 extern void pretty_print_c_tests ();
 extern void read_rtl_function_c_tests ();
@@ -216,6 +248,7 @@ extern void unique_ptr_tests_cc_tests ();
 extern void vec_c_tests ();
 extern void vec_perm_indices_c_tests ();
 extern void wide_int_cc_tests ();
+extern void opt_proposer_c_tests ();
 
 extern int num_passes;
 
@@ -399,6 +432,16 @@ extern int num_passes;
   SELFTEST_BEGIN_STMT							\
   ::selftest::assert_str_contains (SELFTEST_LOCATION, #HAYSTACK, #NEEDLE, \
 				   (HAYSTACK), (NEEDLE));		\
+  SELFTEST_END_STMT
+
+/* Evaluate STR and PREFIX and determine if STR starts with PREFIX.
+     ::selftest::pass if STR does start with PREFIX.
+     ::selftest::fail if does not, or either is NULL.  */
+
+#define ASSERT_STR_STARTSWITH(STR, PREFIX)				    \
+  SELFTEST_BEGIN_STMT							    \
+  ::selftest::assert_str_startswith (SELFTEST_LOCATION, #STR, #PREFIX,	    \
+				     (STR), (PREFIX));			    \
   SELFTEST_END_STMT
 
 /* Evaluate PRED1 (VAL1), calling ::selftest::pass if it is true,

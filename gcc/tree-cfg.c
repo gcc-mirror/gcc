@@ -5286,6 +5286,8 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
   FOR_EACH_BB_FN (bb, fn)
     {
       gimple_stmt_iterator gsi;
+      edge_iterator ei;
+      edge e;
 
       for (gphi_iterator gpi = gsi_start_phis (bb);
 	   !gsi_end_p (gpi);
@@ -5407,6 +5409,10 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	    debug_gimple_stmt (stmt);
 	  err |= err2;
 	}
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->goto_locus != UNKNOWN_LOCATION)
+	  err |= verify_location (&blocks, e->goto_locus);
     }
 
   hash_map<gimple *, int> *eh_table = get_eh_throw_stmt_table (cfun);

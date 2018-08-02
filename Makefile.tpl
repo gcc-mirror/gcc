@@ -1828,25 +1828,46 @@ configure-target-[+module+]: maybe-all-gcc[+
    (define dep-maybe (lambda ()
       (if (exist? "hard") "" "maybe-")))
 
-   ;; dep-kind returns "normal" if the dependency is on an "install" target,
-   ;; or if either module is not bootstrapped.  It returns "bootstrap" for
-   ;; configure or build dependencies between bootstrapped modules; it returns
-   ;; "prebootstrap" for configure or build dependencies of bootstrapped
-   ;; modules on a build module (e.g. all-gcc on all-build-bison).  All this
-   ;; is only necessary for host modules.
+   ;; dep-kind returns returns "prebootstrap" for configure or build
+   ;; dependencies of bootstrapped modules on a build module
+   ;; (e.g. all-gcc on all-build-bison); "normal" if the dependency is
+   ;; on an "install" target, or if the dependence module is not
+   ;; bootstrapped; otherwise, it returns "bootstrap" or
+   ;; "postbootstrap" depending on whether the dependent module is
+   ;; bootstrapped.  All this is only necessary for host and target
+   ;; modules.  It might seem like, in order to avoid build races, we
+   ;; might need more elaborate detection between prebootstrap and
+   ;; postbootstrap modules, but there are no host prebootstrap
+   ;; modules.  If there were any non-bootstrap host modules that
+   ;; bootstrap modules depended on, we'd get unsatisfied per-stage
+   ;; dependencies on them, which would be immediately noticed.
    (define dep-kind (lambda ()
-      (if (and (hash-ref boot-modules (dep-module "module"))
-	       (=* (dep-module "on") "build-"))
-	  "prebootstrap"
+      (cond
+       ((and (hash-ref boot-modules (dep-module "module"))
+	     (=* (dep-module "on") "build-"))
+	"prebootstrap")
 
-	  (if (or (= (dep-subtarget "on") "install-")
-		  (not (hash-ref boot-modules (dep-module "module")))
-		  (not (hash-ref boot-modules (dep-module "on"))))
-              "normal"
-	      "bootstrap"))))
+       ((or (= (dep-subtarget "on") "install-")
+	    (not (hash-ref boot-modules (dep-module "on"))))
+	"normal")
+
+       ((hash-ref boot-modules (dep-module "module"))
+	"bootstrap")
+
+       (1 "postbootstrap"))))
+
+   (define make-postboot-dep (lambda ()
+     (let ((target (dep-module "module")) (dep "stage_last"))
+       (unless (= (hash-ref postboot-targets target) dep)
+	 (hash-create-handle! postboot-targets target dep)
+	 ;; All non-bootstrap modules' configure target already
+	 ;; depend on dep.
+	 (unless (=* target "target-")
+           (string-append "configure-" target ": " dep "\n"))))))
 
    ;; We now build the hash table that is used by dep-kind.
    (define boot-modules (make-hash-table 113))
+   (define postboot-targets (make-hash-table 113))
 +]
 
 [+ FOR host_modules +][+
@@ -1863,18 +1884,23 @@ configure-target-[+module+]: maybe-all-gcc[+
 # to check for bootstrap/prebootstrap dependencies.  To resolve
 # prebootstrap dependencies, prebootstrap modules are gathered in
 # a hash table.
-[+ FOR dependencies +][+ (make-dep "" "") +]
-[+ CASE (dep-kind) +]
-[+ == "prebootstrap"
-     +][+ FOR bootstrap_stage +]
-[+ (make-dep (dep-stage) "") +][+
-       ENDFOR bootstrap_stage +]
-[+ == "bootstrap"
-     +][+ FOR bootstrap_stage +]
-[+ (make-dep (dep-stage) (dep-stage)) +][+
-       ENDFOR bootstrap_stage +]
-[+ ESAC +][+
-ENDFOR dependencies +]
+[+ FOR dependencies +][+ CASE (dep-kind) +]
+[+ == "prebootstrap" +][+ (make-dep "" "") +][+ FOR bootstrap_stage +]
+[+ (make-dep (dep-stage) "") +][+ ENDFOR bootstrap_stage +]
+[+ == "bootstrap" +][+ (make-dep "" "") +][+ FOR bootstrap_stage +]
+[+ (make-dep (dep-stage) (dep-stage)) +][+ ENDFOR bootstrap_stage +]
+[+ == "normal" +][+ (make-dep "" "") +]
+[+ ESAC +][+ ENDFOR dependencies +]
+
+@if gcc-bootstrap
+[+ FOR dependencies +][+ CASE (dep-kind) +]
+[+ == "postbootstrap" +][+ (make-postboot-dep) +][+ ESAC +][+
+ENDFOR dependencies +]@endif gcc-bootstrap
+
+@unless gcc-bootstrap
+[+ FOR dependencies +][+ CASE (dep-kind) +]
+[+ == "postbootstrap" +][+ (make-dep "" "") +]
+[+ ESAC +][+ ENDFOR dependencies +]@endunless gcc-bootstrap
 
 # Dependencies for target modules on other target modules are
 # described by lang_env_dependencies; the defaults apply to anything

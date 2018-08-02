@@ -1216,7 +1216,7 @@ is_trivially_xible (enum tree_code code, tree to, tree from)
   tree expr;
   expr = is_xible_helper (code, to, from, /*trivial*/true);
 
-  if (expr == error_mark_node)
+  if (expr == NULL_TREE || expr == error_mark_node)
     return false;
   tree nt = cp_walk_tree_without_duplicates (&expr, check_nontriv, NULL);
   return !nt;

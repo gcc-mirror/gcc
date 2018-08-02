@@ -7,11 +7,11 @@ int bar1 (int i)
 {
   const char *foo = "foo";
   asm volatile ("" : "+r" (i) : : "memory");
-  i++;	/* { dg-final { gdb-test 10 "*foo" "'f'" } } */
+  i++;	/* { dg-final { gdb-test . "*foo" "'f'" } } */
   asm volatile ("" : "+r" (i) : : "memory");
   foo = "bar";
   asm volatile ("" : "+r" (i) : : "memory");
-  i++;	/* { dg-final { gdb-test 14 "*foo" "'b'" } } */
+  i++;	/* { dg-final { gdb-test . "*foo" "'b'" } } */
   asm volatile ("" : "+r" (i) : : "memory");
   return i;
 }
@@ -21,7 +21,7 @@ int bar2 (int i)
 {
   const char *foo = "foo";
   asm volatile ("" : "+r" (i) : : "memory");
-  i++;	/* { dg-final { gdb-test 24 "*foo" "'f'" } } */
+  i++;	/* { dg-final { gdb-test . "*foo" "'f'" } } */
   asm volatile ("" : "+r" (i) : : "memory");
   return i;
 }

@@ -41,7 +41,7 @@
 #include <cwchar>               // For WEOF, wmemmove, wmemset, etc.
 
 #ifndef _GLIBCXX_ALWAYS_INLINE
-#define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
+# define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
 #endif
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
@@ -495,8 +495,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#if ((__cplusplus >= 201103L) \
-     && defined(_GLIBCXX_USE_C99_STDINT_TR1))
+#if __cplusplus >= 201103L
 
 #include <cstdint>
 
@@ -508,7 +507,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct char_traits<char16_t>
     {
       typedef char16_t          char_type;
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
       typedef uint_least16_t    int_type;
+#elif defined __UINT_LEAST16_TYPE__
+      typedef __UINT_LEAST16_TYPE__	    int_type;
+#else
+      typedef make_unsigned<char16_t>::type int_type;
+#endif
       typedef streamoff         off_type;
       typedef u16streampos      pos_type;
       typedef mbstate_t         state_type;
@@ -605,7 +610,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct char_traits<char32_t>
     {
       typedef char32_t          char_type;
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
       typedef uint_least32_t    int_type;
+#elif defined __UINT_LEAST32_TYPE__
+      typedef __UINT_LEAST32_TYPE__	    int_type;
+#else
+      typedef make_unsigned<char32_t>::type int_type;
+#endif
       typedef streamoff         off_type;
       typedef u32streampos      pos_type;
       typedef mbstate_t         state_type;
@@ -701,6 +712,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#endif 
+#endif  // C++11
 
 #endif // _CHAR_TRAITS_H

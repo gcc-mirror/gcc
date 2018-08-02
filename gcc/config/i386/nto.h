@@ -98,8 +98,6 @@ crti.o%s \
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
-#define NO_IMPLICIT_EXTERN_C 1
-
 #define TARGET_POSIX_IO
 
 #undef DBX_REGISTER_NUMBER

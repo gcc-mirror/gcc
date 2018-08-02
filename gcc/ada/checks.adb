@@ -1873,29 +1873,36 @@ package body Checks is
       pragma Assert (Do_Division_Check (N));
 
       Loc   : constant Source_Ptr := Sloc (N);
-      Right : constant Node_Id    := Right_Opnd (N);
+      Right : constant Node_Id := Right_Opnd (N);
+      Opnd  : Node_Id;
 
    begin
       if Expander_Active
         and then not Backend_Divide_Checks_On_Target
         and then Check_Needed (Right, Division_Check)
+
+        --  See if division by zero possible, and if so generate test. This
+        --  part of the test is not controlled by the -gnato switch, since it
+        --  is a Division_Check and not an Overflow_Check.
+
+        and then Do_Division_Check (N)
       then
-         --  See if division by zero possible, and if so generate test. This
-         --  part of the test is not controlled by the -gnato switch, since
-         --  it is a Division_Check and not an Overflow_Check.
+         Set_Do_Division_Check (N, False);
 
-         if Do_Division_Check (N) then
-            Set_Do_Division_Check (N, False);
-
-            if (not ROK) or else (Rlo <= 0 and then 0 <= Rhi) then
-               Insert_Action (N,
-                 Make_Raise_Constraint_Error (Loc,
-                   Condition =>
-                     Make_Op_Eq (Loc,
-                       Left_Opnd  => Duplicate_Subexpr_Move_Checks (Right),
-                       Right_Opnd => Make_Integer_Literal (Loc, 0)),
-                   Reason => CE_Divide_By_Zero));
+         if (not ROK) or else (Rlo <= 0 and then 0 <= Rhi) then
+            if Is_Floating_Point_Type (Etype (N)) then
+               Opnd := Make_Real_Literal (Loc, Ureal_0);
+            else
+               Opnd := Make_Integer_Literal (Loc, 0);
             end if;
+
+            Insert_Action (N,
+              Make_Raise_Constraint_Error (Loc,
+                Condition =>
+                  Make_Op_Eq (Loc,
+                    Left_Opnd  => Duplicate_Subexpr_Move_Checks (Right),
+                    Right_Opnd => Opnd),
+                Reason    => CE_Divide_By_Zero));
          end if;
       end if;
    end Apply_Division_Check;
@@ -3541,6 +3548,7 @@ package body Checks is
                  and then not GNATprove_Mode
                then
                   Apply_Float_Conversion_Check (Expr, Target_Type);
+
                else
                   Apply_Scalar_Range_Check
                     (Expr, Target_Type, Fixed_Int => Conv_OK);

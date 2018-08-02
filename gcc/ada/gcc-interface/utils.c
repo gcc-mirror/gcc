@@ -391,15 +391,13 @@ make_dummy_type (Entity_Id gnat_type)
 
   SET_DUMMY_NODE (gnat_equiv, gnu_type);
 
-  /* Create a debug type so that debug info consumers only see an unspecified
-     type.  */
+  /* Create a debug type so that debuggers only see an unspecified type.  */
   if (Needs_Debug_Info (gnat_type))
     {
       debug_type = make_node (LANG_TYPE);
-      SET_TYPE_DEBUG_TYPE (gnu_type, debug_type);
-
       TYPE_NAME (debug_type) = TYPE_NAME (gnu_type);
       TYPE_ARTIFICIAL (debug_type) = TYPE_ARTIFICIAL (gnu_type);
+      SET_TYPE_DEBUG_TYPE (gnu_type, debug_type);
     }
 
   return gnu_type;
@@ -1073,7 +1071,9 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
 
   finish_record_type (new_type, nreverse (new_field_list), 2, false);
   relate_alias_sets (new_type, type, ALIAS_SET_COPY);
-  if (TYPE_STUB_DECL (type))
+  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+    SET_TYPE_DEBUG_TYPE (new_type, TYPE_DEBUG_TYPE (type));
+  else if (TYPE_STUB_DECL (type))
     SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
 			    DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
 
@@ -1417,7 +1417,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     }
 
   if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-    SET_TYPE_DEBUG_TYPE (record, type);
+    SET_TYPE_DEBUG_TYPE (record, maybe_debug_type (type));
 
   /* Unless debugging information isn't being written for the input type,
      write a record that shows what we are a subtype of and also make a
@@ -1684,7 +1684,7 @@ record_builtin_type (const char *name, tree type, bool artificial_p)
   integral types are unsigned.
 
   Unfortunately the signedness of 'char' in C is implementation-defined
-  and GCC even has the option -fsigned-char to toggle it at run time.
+  and GCC even has the option -f[un]signed-char to toggle it at run time.
   Since GNAT's philosophy is to be compatible with C by default, to wit
   Interfaces.C.char is defined as a mere copy of Character, we may need
   to declare character types as signed types in GENERIC and generate the
@@ -2938,37 +2938,6 @@ value_factor_p (tree value, HOST_WIDE_INT factor)
   return false;
 }
 
-/* Return whether GNAT_NODE is a defining identifier for a renaming that comes
-   from the parameter association for the instantiation of a generic.  We do
-   not want to emit source location for them: the code generated for their
-   initialization is likely to disturb debugging.  */
-
-bool
-renaming_from_instantiation_p (Node_Id gnat_node)
-{
-  if (Nkind (gnat_node) != N_Defining_Identifier
-      || !Is_Object (gnat_node)
-      || Comes_From_Source (gnat_node)
-      || !Present (Renamed_Object (gnat_node)))
-    return false;
-
-  /* Get the object declaration of the renamed object, if any and if the
-     renamed object is a mere identifier.  */
-  gnat_node = Renamed_Object (gnat_node);
-  if (Nkind (gnat_node) != N_Identifier)
-    return false;
-
-  gnat_node = Entity (gnat_node);
-  if (!Present (Parent (gnat_node)))
-    return false;
-
-  gnat_node = Parent (gnat_node);
-  return
-   (Present (gnat_node)
-    && Nkind (gnat_node) == N_Object_Declaration
-    && Present (Corresponding_Generic_Association (gnat_node)));
-}
-
 /* Defer the initialization of DECL's DECL_CONTEXT attribute, scheduling to
    feed it with the elaboration of GNAT_SCOPE.  */
 
@@ -3222,9 +3191,9 @@ create_label_decl (tree name, Node_Id gnat_node)
 }
 
 /* Return a FUNCTION_DECL node.  NAME is the name of the subprogram, ASM_NAME
-   its assembler name, TYPE its type (a FUNCTION_TYPE node), PARAM_DECL_LIST
-   the list of its parameters (a list of PARM_DECL nodes chained through the
-   DECL_CHAIN field).
+   its assembler name, TYPE its type (a FUNCTION_TYPE or METHOD_TYPE node),
+   PARAM_DECL_LIST the list of its parameters (a list of PARM_DECL nodes
+   chained through the DECL_CHAIN field).
 
    INLINE_STATUS describes the inline flags to be set on the FUNCTION_DECL.
 
@@ -3329,6 +3298,9 @@ finish_subprog_decl (tree decl, tree asm_name, tree type)
 
   /* Propagate the "const" property.  */
   TREE_READONLY (decl) = TYPE_READONLY (type);
+
+  /* Propagate the "pure" property.  */
+  DECL_PURE_P (decl) = TYPE_RESTRICT (type);
 
   /* Propagate the "noreturn" property.  */
   TREE_THIS_VOLATILE (decl) = TYPE_VOLATILE (type);
@@ -3617,7 +3589,7 @@ gnat_useless_type_conversion (tree expr)
   return false;
 }
 
-/* Return true if T, a FUNCTION_TYPE, has the specified list of flags.  */
+/* Return true if T, a {FUNCTION,METHOD}_TYPE, has the specified flags.  */
 
 bool
 fntype_same_flags_p (const_tree t, tree cico_list, bool return_unconstrained_p,

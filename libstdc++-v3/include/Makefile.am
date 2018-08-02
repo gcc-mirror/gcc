@@ -30,6 +30,7 @@ std_headers = \
 	${std_srcdir}/any \
 	${std_srcdir}/array \
 	${std_srcdir}/atomic \
+	${std_srcdir}/bit \
 	${std_srcdir}/bitset \
 	${std_srcdir}/charconv \
 	${std_srcdir}/chrono \
@@ -53,6 +54,7 @@ std_headers = \
 	${std_srcdir}/locale \
 	${std_srcdir}/map \
 	${std_srcdir}/memory \
+	${std_srcdir}/memory_resource \
 	${std_srcdir}/mutex \
 	${std_srcdir}/numeric \
 	${std_srcdir}/optional \
@@ -197,6 +199,7 @@ bits_headers = \
 	${bits_srcdir}/stringfwd.h \
 	${bits_srcdir}/string_view.tcc \
 	${bits_srcdir}/uniform_int_dist.h \
+	${bits_srcdir}/unique_lock.h \
 	${bits_srcdir}/unique_ptr.h \
 	${bits_srcdir}/unordered_map.h \
 	${bits_srcdir}/unordered_set.h \

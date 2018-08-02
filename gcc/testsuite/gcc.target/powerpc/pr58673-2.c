@@ -140,7 +140,7 @@ pr_ff (t_coupl_rec * tcr, real time, t_idef * idef, t_commrec * cr, int nfile,
 									   malloc
 									   (__len);
 									   __retval;}
-	    )):	    __strdup (eoNames[i])));
+	    )):	    strdup (eoNames[i])));
 	      raleg[j++] =
 		(__extension__
 		 (__builtin_constant_p (buf)
@@ -165,7 +165,7 @@ pr_ff (t_coupl_rec * tcr, real time, t_idef * idef, t_commrec * cr, int nfile,
 									   malloc
 									   (__len);
 									   __retval;}
-	    )):	    __strdup (buf)));
+	    )):	    strdup (buf)));
 	    }
 	}
       if (tcr->nLJ)

@@ -86,16 +86,23 @@ package body System.WCh_WtS is
      (S  : Wide_String;
       EM : WC_Encoding_Method) return String
    is
-      R  : String (S'First .. S'First + 5 * S'Length); -- worst case length
-      RP : Natural;
+      Max_Chars : constant Natural := WC_Longest_Sequences (EM);
+
+      Result     : String (S'First .. S'First + Max_Chars * S'Length);
+      Result_Idx : Natural;
 
    begin
-      RP := R'First - 1;
-      for SP in S'Range loop
-         Store_UTF_32_Character (Wide_Character'Pos (S (SP)), R, RP, EM);
+      Result_Idx := Result'First - 1;
+
+      for S_Idx in S'Range loop
+         Store_UTF_32_Character
+           (U  => Wide_Character'Pos (S (S_Idx)),
+            S  => Result,
+            P  => Result_Idx,
+            EM => EM);
       end loop;
 
-      return R (R'First .. RP);
+      return Result (Result'First .. Result_Idx);
    end Wide_String_To_String;
 
    --------------------------------
@@ -106,17 +113,23 @@ package body System.WCh_WtS is
      (S  : Wide_Wide_String;
       EM : WC_Encoding_Method) return String
    is
-      R  : String (S'First .. S'First + 7 * S'Length); -- worst case length
-      RP : Natural;
+      Max_Chars : constant Natural := WC_Longest_Sequences (EM);
+
+      Result     : String (S'First .. S'First + Max_Chars * S'Length);
+      Result_Idx : Natural;
 
    begin
-      RP := R'First - 1;
+      Result_Idx := Result'First - 1;
 
-      for SP in S'Range loop
-         Store_UTF_32_Character (Wide_Wide_Character'Pos (S (SP)), R, RP, EM);
+      for S_Idx in S'Range loop
+         Store_UTF_32_Character
+           (U  => Wide_Wide_Character'Pos (S (S_Idx)),
+            S  => Result,
+            P  => Result_Idx,
+            EM => EM);
       end loop;
 
-      return R (R'First .. RP);
+      return Result (Result'First .. Result_Idx);
    end Wide_Wide_String_To_String;
 
 end System.WCh_WtS;

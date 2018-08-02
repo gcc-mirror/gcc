@@ -2,7 +2,7 @@
 # Configuration validation subroutine script.
 #   Copyright 1992-2018 Free Software Foundation, Inc.
 
-timestamp='2018-05-24'
+timestamp='2018-07-03'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -625,7 +625,7 @@ case $basic_machine in
 	| powerpc | powerpc64 | powerpc64le | powerpcle \
 	| pru \
 	| pyramid \
-	| riscv32 | riscv64 \
+	| riscv | riscv32 | riscv64 \
 	| rl78 | rx \
 	| score \
 	| sh | sh[1234] | sh[24]a | sh[24]aeb | sh[23]e | sh[234]eb | sheb | shbe | shle | sh[1234]le | sh3ele \
@@ -752,7 +752,7 @@ case $basic_machine in
 	| powerpc-* | powerpc64-* | powerpc64le-* | powerpcle-* \
 	| pru-* \
 	| pyramid-* \
-	| riscv32-* | riscv64-* \
+	| riscv-* | riscv32-* | riscv64-* \
 	| rl78-* | romp-* | rs6000-* | rx-* \
 	| sh-* | sh[1234]-* | sh[24]a-* | sh[24]aeb-* | sh[23]e-* | sh[34]eb-* | sheb-* | shbe-* \
 	| shle-* | sh[1234]le-* | sh3ele-* | sh64-* | sh64le-* \

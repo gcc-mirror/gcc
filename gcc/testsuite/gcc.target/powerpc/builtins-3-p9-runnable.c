@@ -30,6 +30,48 @@ int main() {
    printf ("                                0B011110100000000, 0B1011010000000000};\n\n");
 #endif
 
+   /* The ABI lists the builtins as:
+
+        vec_extract_fp32_from_shorth()
+        vec_extract_fp32_from_shortl()
+
+      GCC will also accept and map the builtin names
+
+        vec_extract_fp_from_shorth()
+        vec_extract_fp_from_shortl()
+
+      to the same builtins internally.  For completeness,
+      test both builtin function names.  */
+
+   vfexpt = (vector float){1.0, -2.0, 0.0, 8.5};
+   vfr = vec_extract_fp32_from_shorth(vusha);
+
+#ifdef DEBUG
+   printf ("vec_extract_fp32_from_shorth\n");
+   for (i=0; i<4; i++)
+     printf("result[%d] = %f; expected[%d] = %f\n",
+	    i, vfr[i], i, vfexpt[i]);
+#endif
+
+   for (i=0; i<4; i++) {
+      if (vfr[i] != vfexpt[i])
+         abort();
+   }
+
+   vfexpt = (vector float){1.5, 0.5, 1.25, -0.25};
+   vfr = vec_extract_fp32_from_shortl(vusha);
+
+#ifdef DEBUG
+   printf ("\nvec_extract_fp32_from_shortl\n");
+   for (i=0; i<4; i++)
+     printf("result[%d] = %f; expected[%d] = %f\n",
+	    i, vfr[i], i, vfexpt[i]);
+#endif
+
+    for (i=0; i<4; i++) {
+      if (vfr[i] != vfexpt[i])
+         abort();
+   }
    vfexpt = (vector float){1.0, -2.0, 0.0, 8.5};
    vfr = vec_extract_fp_from_shorth(vusha);
 

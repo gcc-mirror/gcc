@@ -160,7 +160,7 @@ optimize_isl (scop_p scop)
   if (!scop->transformed_schedule
       || isl_ctx_last_error (scop->isl_context) != isl_error_none)
     {
-      location_t loc = find_loop_location
+      dump_user_location_t loc = find_loop_location
 	(scop->scop_info->region.entry->dest->loop_father);
       if (isl_ctx_last_error (scop->isl_context) == isl_error_quota)
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
@@ -182,7 +182,7 @@ optimize_isl (scop_p scop)
 
   if (same_schedule)
     {
-      location_t loc = find_loop_location
+      dump_user_location_t loc = find_loop_location
 	(scop->scop_info->region.entry->dest->loop_father);
       dump_printf_loc (MSG_NOTE, loc,
 		       "loop nest not optimized, optimized schedule is "

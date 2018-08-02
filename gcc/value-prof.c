@@ -585,10 +585,11 @@ check_counter (gimple *stmt, const char * name,
   gcov_type bb_count = bb_count_d.ipa ().to_gcov_type ();
   if (*all != bb_count || *count > *all)
     {
-      location_t locus;
-      locus = (stmt != NULL)
-              ? gimple_location (stmt)
-              : DECL_SOURCE_LOCATION (current_function_decl);
+      dump_user_location_t locus;
+      locus = ((stmt != NULL)
+	       ? dump_user_location_t (stmt)
+	       : dump_user_location_t::from_function_decl
+		   (current_function_decl));
       if (flag_profile_correction)
         {
           if (dump_enabled_p ())
@@ -603,7 +604,7 @@ check_counter (gimple *stmt, const char * name,
 	}
       else
 	{
-	  error_at (locus, "corrupted value profile: %s "
+	  error_at (locus.get_location_t (), "corrupted value profile: %s "
 		    "profile counter (%d out of %d) inconsistent with "
 		    "basic-block count (%d)",
 		    name,
@@ -820,12 +821,9 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
 
   if (dump_file)
     {
-      fprintf (dump_file, "Div/mod by constant ");
-      print_generic_expr (dump_file, value, TDF_SLIM);
-      fprintf (dump_file, "=");
+      fprintf (dump_file, "Transformation done: div/mod by constant ");
       print_generic_expr (dump_file, tree_val, TDF_SLIM);
-      fprintf (dump_file, " transformation on insn ");
-      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      fprintf (dump_file, "\n");
     }
 
   gimple_assign_set_rhs_from_tree (si, result);
@@ -955,17 +953,14 @@ gimple_mod_pow2_value_transform (gimple_stmt_iterator *si)
       || optimize_bb_for_size_p (gimple_bb (stmt)))
     return false;
 
-  if (dump_file)
-    {
-      fprintf (dump_file, "Mod power of 2 transformation on insn ");
-      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-    }
-
   /* Compute probability of taking the optimal path.  */
   all = count + wrong_values;
 
   if (check_counter (stmt, "pow2", &count, &all, gimple_bb (stmt)->count))
     return false;
+
+  if (dump_file)
+    fprintf (dump_file, "Transformation done: mod power of 2\n");
 
   if (all > 0)
     prob = profile_probability::probability_in_gcov_type (count, all);
@@ -1150,10 +1145,7 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
 
   gimple_remove_histogram_value (cfun, stmt, histogram);
   if (dump_file)
-    {
-      fprintf (dump_file, "Mod subtract transformation on insn ");
-      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-    }
+    fprintf (dump_file, "Transformation done: mod subtract\n");
 
   /* Compute probability of taking the optimal path(s).  */
   if (all > 0)
@@ -1271,13 +1263,11 @@ find_func_by_profile_id (int profile_id)
 bool
 check_ic_target (gcall *call_stmt, struct cgraph_node *target)
 {
-   location_t locus;
    if (gimple_check_call_matching_types (call_stmt, target->decl, true))
      return true;
 
-   locus =  gimple_location (call_stmt);
    if (dump_enabled_p ())
-     dump_printf_loc (MSG_MISSED_OPTIMIZATION, locus,
+     dump_printf_loc (MSG_MISSED_OPTIMIZATION, call_stmt,
                       "Skipping target %s with mismatching types for icall\n",
                       target->name ());
    return false;
@@ -1528,14 +1518,11 @@ interesting_stringop_to_profile_p (gcall *call, int *size_arg)
   enum built_in_function fcode;
 
   fcode = DECL_FUNCTION_CODE (gimple_call_fndecl (call));
-  if (fcode != BUILT_IN_MEMCPY && fcode != BUILT_IN_MEMPCPY
-      && fcode != BUILT_IN_MEMSET && fcode != BUILT_IN_BZERO)
-    return false;
-
   switch (fcode)
     {
      case BUILT_IN_MEMCPY:
      case BUILT_IN_MEMPCPY:
+     case BUILT_IN_MEMMOVE:
        *size_arg = 2;
        return validate_gimple_arglist (call, POINTER_TYPE, POINTER_TYPE,
 				       INTEGER_TYPE, VOID_TYPE);
@@ -1548,7 +1535,7 @@ interesting_stringop_to_profile_p (gcall *call, int *size_arg)
        return validate_gimple_arglist (call, POINTER_TYPE, INTEGER_TYPE,
 				       VOID_TYPE);
      default:
-       gcc_unreachable ();
+       return false;
     }
 }
 
@@ -1711,6 +1698,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
     {
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMPCPY:
+    case BUILT_IN_MEMMOVE:
       src = gimple_call_arg (stmt, 1);
       src_align = get_pointer_alignment (src);
       if (!can_move_by_pieces (val, MIN (dest_align, src_align)))
@@ -1745,11 +1733,9 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
     }
 
   if (dump_file)
-    {
-      fprintf (dump_file, "Single value %i stringop transformation on ",
-	       (int)val);
-      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-    }
+    fprintf (dump_file,
+	     "Transformation done: single value %i stringop for %s\n",
+	     (int)val, built_in_names[(int)fcode]);
 
   gimple_stringop_fixed_value (stmt, tree_val, prob, count, all);
 

@@ -192,7 +192,7 @@ static struct z_candidate *add_conv_candidate
 	 tree, tsubst_flags_t);
 static struct z_candidate *add_function_candidate
 	(struct z_candidate **, tree, tree, tree, const vec<tree, va_gc> *, tree,
-	 tree, int, tsubst_flags_t);
+	 tree, int, conversion**, tsubst_flags_t);
 static conversion *implicit_conversion (tree, tree, tree, bool, int,
 					tsubst_flags_t);
 static conversion *reference_binding (tree, tree, tree, bool, int,
@@ -1929,6 +1929,23 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
   return NULL;
 }
 
+/* Like implicit_conversion, but return NULL if the conversion is bad.
+
+   This is not static so that check_non_deducible_conversion can call it within
+   add_template_candidate_real as part of overload resolution; it should not be
+   called outside of overload resolution.  */
+
+conversion *
+good_conversion (tree to, tree from, tree expr,
+		 int flags, tsubst_flags_t complain)
+{
+  conversion *c = implicit_conversion (to, from, expr, /*cast*/false,
+				       flags, complain);
+  if (c && c->bad_p)
+    c = NULL;
+  return c;
+}
+
 /* Add a new entry to the list of candidates.  Used by the add_*_candidate
    functions.  ARGS will not be changed until a single candidate is
    selected.  */
@@ -1975,6 +1992,37 @@ remaining_arguments (tree arg)
   return n;
 }
 
+/* [over.match.copy]: When initializing a temporary object (12.2) to be bound
+   to the first parameter of a constructor where the parameter is of type
+   "reference to possibly cv-qualified T" and the constructor is called with a
+   single argument in the context of direct-initialization of an object of type
+   "cv2 T", explicit conversion functions are also considered.
+
+   So set LOOKUP_COPY_PARM to let reference_binding know that
+   it's being called in that context.  */
+
+int
+conv_flags (int i, int nargs, tree fn, tree arg, int flags)
+{
+  int lflags = flags;
+  tree t;
+  if (i == 0 && nargs == 1 && DECL_CONSTRUCTOR_P (fn)
+      && (t = FUNCTION_FIRST_USER_PARMTYPE (fn))
+      && (same_type_ignoring_top_level_qualifiers_p
+	  (non_reference (TREE_VALUE (t)), DECL_CONTEXT (fn))))
+    {
+      if (!(flags & LOOKUP_ONLYCONVERTING))
+	lflags |= LOOKUP_COPY_PARM;
+      if ((flags & LOOKUP_LIST_INIT_CTOR)
+	  && BRACE_ENCLOSED_INITIALIZER_P (arg))
+	lflags |= LOOKUP_NO_CONVERSION;
+    }
+  else
+    lflags |= LOOKUP_ONLYCONVERTING;
+
+  return lflags;
+}
+
 /* Create an overload candidate for the function or method FN called
    with the argument list FIRST_ARG/ARGS and add it to CANDIDATES.
    FLAGS is passed on to implicit_conversion.
@@ -1989,11 +2037,11 @@ add_function_candidate (struct z_candidate **candidates,
 			tree fn, tree ctype, tree first_arg,
 			const vec<tree, va_gc> *args, tree access_path,
 			tree conversion_path, int flags,
+			conversion **convs,
 			tsubst_flags_t complain)
 {
   tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (fn));
   int i, len;
-  conversion **convs;
   tree parmnode;
   tree orig_first_arg = first_arg;
   int skip;
@@ -2025,7 +2073,8 @@ add_function_candidate (struct z_candidate **candidates,
     skip = 0;
 
   len = vec_safe_length (args) - skip + (first_arg != NULL_TREE ? 1 : 0);
-  convs = alloc_conversions (len);
+  if (!convs)
+    convs = alloc_conversions (len);
 
   /* 13.3.2 - Viable functions [over.match.viable]
      First, to be a viable function, a candidate function shall have enough
@@ -2122,6 +2171,13 @@ add_function_candidate (struct z_candidate **candidates,
       if (parmnode == void_list_node)
 	break;
 
+      if (convs[i])
+	{
+	  /* Already set during deduction.  */
+	  parmnode = TREE_CHAIN (parmnode);
+	  continue;
+	}
+
       if (i == 0 && first_arg != NULL_TREE)
 	arg = first_arg;
       else
@@ -2135,7 +2191,6 @@ add_function_candidate (struct z_candidate **candidates,
       if (parmnode)
 	{
 	  tree parmtype = TREE_VALUE (parmnode);
-	  int lflags = flags;
 
 	  parmnode = TREE_CHAIN (parmnode);
 
@@ -2173,32 +2228,7 @@ add_function_candidate (struct z_candidate **candidates,
 		}
 	    }
 
-	  /* Core issue 899: When [copy-]initializing a temporary to be bound
-	     to the first parameter of a copy constructor (12.8) called with
-	     a single argument in the context of direct-initialization,
-	     explicit conversion functions are also considered.
-
-	     So set LOOKUP_COPY_PARM to let reference_binding know that
-	     it's being called in that context.  We generalize the above
-	     to handle move constructors and template constructors as well;
-	     the standardese should soon be updated similarly.  */
-	  if (ctype && i == 0 && (len-skip == 1)
-	      && DECL_CONSTRUCTOR_P (fn)
-	      && parmtype != error_mark_node
-	      && (same_type_ignoring_top_level_qualifiers_p
-		  (non_reference (parmtype), ctype)))
-	    {
-	      if (!(flags & LOOKUP_ONLYCONVERTING))
-		lflags |= LOOKUP_COPY_PARM;
-	      /* We allow user-defined conversions within init-lists, but
-		 don't list-initialize the copy parm, as that would mean
-		 using two levels of braces for the same type.  */
-	      if ((flags & LOOKUP_LIST_INIT_CTOR)
-		  && BRACE_ENCLOSED_INITIALIZER_P (arg))
-		lflags |= LOOKUP_NO_CONVERSION;
-	    }
-	  else
-	    lflags |= LOOKUP_ONLYCONVERTING;
+	  int lflags = conv_flags (i, len-skip, fn, arg, flags);
 
 	  t = implicit_conversion (parmtype, argtype, arg,
 				   /*c_cast_p=*/false, lflags, complain);
@@ -3102,6 +3132,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   tree fn;
   struct rejection_reason *reason = NULL;
   int errs;
+  conversion **convs = NULL;
 
   /* We don't do deduction on the in-charge parameter, the VTT
      parameter or 'this'.  */
@@ -3176,11 +3207,13 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   gcc_assert (ia == nargs_without_in_chrg);
 
   errs = errorcount+sorrycount;
+  if (!obj)
+    convs = alloc_conversions (nargs);
   fn = fn_type_unification (tmpl, explicit_targs, targs,
 			    args_without_in_chrg,
 			    nargs_without_in_chrg,
-			    return_type, strict, flags, false,
-			    complain & tf_decltype);
+			    return_type, strict, flags, convs,
+			    false, complain & tf_decltype);
 
   if (fn == error_mark_node)
     {
@@ -3216,7 +3249,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   else
     cand = add_function_candidate (candidates, fn, ctype,
 				   first_arg, arglist, access_path,
-				   conversion_path, flags, complain);
+				   conversion_path, flags, convs, complain);
   if (DECL_TI_TEMPLATE (fn) != tmpl)
     /* This situation can occur if a member template of a template
        class is specialized.  Then, instantiate_template might return
@@ -3541,7 +3574,7 @@ print_z_candidate (location_t loc, const char *msgstr,
 			       r->u.template_unification.return_type,
 			       r->u.template_unification.strict,
 			       r->u.template_unification.flags,
-			       true, false);
+			       NULL, true, false);
 	  break;
 	case rr_invalid_copy:
 	  inform (cloc,
@@ -5517,6 +5550,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 				access_path,
 				conversion_path,
 				flags,
+				NULL,
 				complain);
     }
 }

@@ -20,6 +20,6 @@ main()
    return 0;
 }
 /* autofdo doesn't support value profiling for now: */
-/* { dg-final-use-not-autofdo { scan-ipa-dump "Single value 4 stringop" "profile"} } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Transformation done: single value 4 stringop" "profile"} } */
 /* The versioned memset of size 4 should be optimized to an assignment.  */
 /* { dg-final-use-not-autofdo { scan-tree-dump "MEM\\\[\\(void .\\)&a\\\] = 168430090" "optimized"} } */

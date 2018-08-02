@@ -41,6 +41,7 @@
 #include "stmt.h"
 #include "varasm.h"
 #include "output.h"
+#include "debug.h"
 #include "libfuncs.h"	/* For set_stack_check_libfunc.  */
 #include "tree-iterator.h"
 #include "gimplify.h"
@@ -246,7 +247,7 @@ static tree maybe_implicit_deref (tree);
 static void set_expr_location_from_node (tree, Node_Id, bool = false);
 static void set_gnu_expr_location_from_node (tree, Node_Id);
 static bool set_end_locus_from_node (tree, Node_Id);
-static int lvalue_required_p (Node_Id, tree, bool, bool, bool);
+static int lvalue_required_p (Node_Id, tree, bool, bool);
 static tree build_raise_check (int, enum exception_info_kind);
 static tree create_init_temporary (const char *, tree, tree *, Node_Id);
 
@@ -255,6 +256,12 @@ static tree create_init_temporary (const char *, tree, tree *, Node_Id);
 static const char *extract_encoding (const char *) ATTRIBUTE_UNUSED;
 static const char *decode_name (const char *) ATTRIBUTE_UNUSED;
 
+/* This makes gigi's file_info_ptr visible in this translation unit,
+   so that Sloc_to_locus can look it up when deciding whether to map
+   decls to instances.  */
+
+static struct File_Info_Type *file_map;
+
 /* This is the main program of the back-end.  It sets up all the table
    structures and then generates code.  */
 
@@ -299,6 +306,12 @@ gigi (Node_Id gnat_root,
   List_Headers_Ptr = list_headers_ptr;
 
   type_annotate_only = (gigi_operating_mode == 1);
+
+  if (Generate_SCO_Instance_Table != 0)
+    {
+      file_map = file_info_ptr;
+      maybe_create_decl_to_instance_map (number_file);
+    }
 
   for (i = 0; i < number_file; i++)
     {
@@ -701,6 +714,7 @@ gigi (Node_Id gnat_root,
     }
 
   /* Destroy ourselves.  */
+  file_map = NULL;
   destroy_gnat_decl ();
   destroy_gnat_utils ();
 
@@ -806,8 +820,8 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
    is the type that will be used for GNAT_NODE in the translated GNU tree.
    CONSTANT indicates whether the underlying object represented by GNAT_NODE
    is constant in the Ada sense.  If it is, ADDRESS_OF_CONSTANT indicates
-   whether its value is the address of a constant and ALIASED whether it is
-   aliased.  If it isn't, ADDRESS_OF_CONSTANT and ALIASED are ignored.
+   whether its value is the address of another constant.  If it isn't, then
+   ADDRESS_OF_CONSTANT is ignored.
 
    The function climbs up the GNAT tree starting from the node and returns 1
    upon encountering a node that effectively requires an lvalue downstream.
@@ -816,7 +830,7 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
 
 static int
 lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
-		   bool address_of_constant, bool aliased)
+		   bool address_of_constant)
 {
   Node_Id gnat_parent = Parent (gnat_node), gnat_temp;
 
@@ -861,14 +875,12 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
       if (Prefix (gnat_parent) != gnat_node)
 	return 0;
 
-      aliased |= Has_Aliased_Components (Etype (gnat_node));
       return lvalue_required_p (gnat_parent, gnu_type, constant,
-				address_of_constant, aliased);
+				address_of_constant);
 
     case N_Selected_Component:
-      aliased |= Is_Aliased (Entity (Selector_Name (gnat_parent)));
       return lvalue_required_p (gnat_parent, gnu_type, constant,
-				address_of_constant, aliased);
+				address_of_constant);
 
     case N_Object_Renaming_Declaration:
       /* We need to preserve addresses through a renaming.  */
@@ -908,7 +920,7 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 	 an intermediate conversion that is meant to be purely formal.  */
      return lvalue_required_p (gnat_parent,
 			       get_unpadded_type (Etype (gnat_parent)),
-			       constant, address_of_constant, aliased);
+			       constant, address_of_constant);
 
     case N_Allocator:
       /* We should only reach here through the N_Qualified_Expression case.
@@ -922,7 +934,7 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
       if (constant && address_of_constant)
 	return lvalue_required_p (gnat_parent,
 				  get_unpadded_type (Etype (gnat_parent)),
-				  true, false, true);
+				  true, false);
 
       /* ... fall through ... */
 
@@ -1123,8 +1135,8 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       && !Is_Imported (gnat_temp)
       && Present (Address_Clause (gnat_temp)))
     {
-      require_lvalue = lvalue_required_p (gnat_node, gnu_result_type, true,
-					  false, Is_Aliased (gnat_temp));
+      require_lvalue
+	= lvalue_required_p (gnat_node, gnu_result_type, true, false);
       use_constant_initializer = !require_lvalue;
     }
 
@@ -1161,7 +1173,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       else if (TREE_CODE (gnu_result) == CONST_DECL
 	       && !(DECL_CONST_ADDRESS_P (gnu_result)
 		    && lvalue_required_p (gnat_node, gnu_result_type, true,
-					  true, false)))
+					  true)))
 	gnu_result = DECL_INITIAL (gnu_result);
 
       /* If it's a renaming pointer, get to the renamed object.  */
@@ -1201,7 +1213,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       if ((!constant_only || address_of_constant) && require_lvalue < 0)
 	require_lvalue
 	  = lvalue_required_p (gnat_node, gnu_result_type, true,
-			       address_of_constant, Is_Aliased (gnat_temp));
+			       address_of_constant);
 
       /* Finally retrieve the initializer if this is deemed valid.  */
       if ((constant_only && !address_of_constant) || !require_lvalue)
@@ -1217,8 +1229,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
     {
       if (require_lvalue < 0)
 	require_lvalue
-	  = lvalue_required_p (gnat_node, gnu_result_type, true, false,
-			       Is_Aliased (gnat_temp));
+	  = lvalue_required_p (gnat_node, gnu_result_type, true, false);
       if (!require_lvalue)
 	gnu_result = fold_constant_decl_in_expr (gnu_result);
     }
@@ -1229,7 +1240,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      of a discriminated type whose full view can be elaborated statically, to
      avoid problematic conversions to the nominal subtype.  But remove any
      padding from the resulting type.  */
-  if (TREE_CODE (TREE_TYPE (gnu_result)) == FUNCTION_TYPE
+  if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_result))
       || Is_Constr_Subt_For_UN_Aliased (gnat_temp_type)
       || (Ekind (gnat_temp) == E_Constant
 	  && Present (Full_View (gnat_temp))
@@ -1733,15 +1744,14 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	 since it can use a special calling convention on some platforms,
 	 which cannot be propagated to the access type.  */
       else if (attribute == Attr_Access
-	       && Nkind (gnat_prefix) == N_Identifier
-	       && is_cplusplus_method (Entity (gnat_prefix)))
+	       && TREE_CODE (TREE_TYPE (gnu_prefix)) == METHOD_TYPE)
 	post_error ("access to C++ constructor or member function not allowed",
 		    gnat_node);
 
       /* For other address attributes applied to a nested function,
 	 find an inner ADDR_EXPR and annotate it so that we can issue
 	 a useful warning with -Wtrampolines.  */
-      else if (TREE_CODE (TREE_TYPE (gnu_prefix)) == FUNCTION_TYPE)
+      else if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_prefix)))
 	{
 	  gnu_expr = remove_conversions (gnu_result, false);
 
@@ -3775,7 +3785,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     }
 
   /* Set the line number in the decl to correspond to that of the body.  */
-  if (!Sloc_to_locus (Sloc (gnat_node), &locus))
+  if (!Sloc_to_locus (Sloc (gnat_node), &locus, false, gnu_subprog_decl))
     locus = input_location;
   DECL_SOURCE_LOCATION (gnu_subprog_decl) = locus;
 
@@ -4286,7 +4296,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   Node_Id gnat_actual;
   bool sync;
 
-  gcc_assert (TREE_CODE (gnu_subprog_type) == FUNCTION_TYPE);
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (gnu_subprog_type));
 
   /* If we are calling a stubbed function, raise Program_Error, but Elaborate
      all our args first.  */
@@ -7860,7 +7870,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  || kind == N_Indexed_Component
 	  || kind == N_Selected_Component)
       && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE
-      && !lvalue_required_p (gnat_node, gnu_result_type, false, false, false))
+      && !lvalue_required_p (gnat_node, gnu_result_type, false, false))
     {
       gnu_result
 	= build_binary_op (NE_EXPR, gnu_result_type,
@@ -8122,9 +8132,7 @@ add_stmt_force (tree gnu_stmt)
 void
 add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node)
 {
-  /* Do not emit a location for renamings that come from generic instantiation,
-     they are likely to disturb debugging.  */
-  if (Present (gnat_node) && !renaming_from_instantiation_p (gnat_node))
+  if (Present (gnat_node))
     set_expr_location_from_node (gnu_stmt, gnat_node);
   add_stmt (gnu_stmt);
 }
@@ -8140,10 +8148,10 @@ add_stmt_with_node_force (tree gnu_stmt, Node_Id gnat_node)
 }
 
 /* Add a declaration statement for GNU_DECL to the current statement group.
-   Get SLOC from Entity_Id.  */
+   Get the SLOC to be put onto the statement from GNAT_NODE.  */
 
 void
-add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
+add_decl_expr (tree gnu_decl, Node_Id gnat_node)
 {
   tree type = TREE_TYPE (gnu_decl);
   tree gnu_stmt, gnu_init;
@@ -8182,7 +8190,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	MARK_VISITED (TYPE_ADA_SIZE (type));
     }
   else
-    add_stmt_with_node (gnu_stmt, gnat_entity);
+    add_stmt_with_node (gnu_stmt, gnat_node);
 
   /* If this is a variable and an initializer is attached to it, it must be
      valid for the context.  Similar to init_const in create_var_decl.  */
@@ -8206,7 +8214,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	gnu_decl = convert (TREE_TYPE (TYPE_FIELDS (type)), gnu_decl);
 
       gnu_stmt = build_binary_op (INIT_EXPR, NULL_TREE, gnu_decl, gnu_init);
-      add_stmt_with_node (gnu_stmt, gnat_entity);
+      add_stmt_with_node (gnu_stmt, gnat_node);
     }
 }
 
@@ -8748,7 +8756,7 @@ process_freeze_entity (Node_Id gnat_node)
   if (gnu_old
       && ((TREE_CODE (gnu_old) == FUNCTION_DECL
 	   && (kind == E_Function || kind == E_Procedure))
-	  || (TREE_CODE (TREE_TYPE (gnu_old)) == FUNCTION_TYPE
+	  || (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_old))
 	      && kind == E_Subprogram_Type)))
     return;
 
@@ -9976,12 +9984,14 @@ maybe_implicit_deref (tree exp)
   return exp;
 }
 
-/* Convert SLOC into LOCUS.  Return true if SLOC corresponds to a source code
-   location and false if it doesn't.  If CLEAR_COLUMN is true, set the column
-   information to 0.  */
+/* Convert SLOC into LOCUS.  Return true if SLOC corresponds to a
+   source code location and false if it doesn't.  If CLEAR_COLUMN is
+   true, set the column information to 0.  If DECL is given and SLOC
+   refers to a File with an instance, map DECL to that instance.  */
 
 bool
-Sloc_to_locus (Source_Ptr Sloc, location_t *locus, bool clear_column)
+Sloc_to_locus (Source_Ptr Sloc, location_t *locus, bool clear_column,
+	       const_tree decl)
 {
   if (Sloc == No_Location)
     return false;
@@ -10005,7 +10015,36 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus, bool clear_column)
   *locus
     = linemap_position_for_line_and_column (line_table, map, line, column);
 
+  if (file_map && file_map[file - 1].Instance)
+    decl_to_instance_map->put (decl, file_map[file - 1].Instance);
+
   return true;
+}
+
+/* Return whether GNAT_NODE is a defining identifier for a renaming that comes
+   from the parameter association for the instantiation of a generic.  We do
+   not want to emit source location for them: the code generated for their
+   initialization is likely to disturb debugging.  */
+
+bool
+renaming_from_instantiation_p (Node_Id gnat_node)
+{
+  if (Nkind (gnat_node) != N_Defining_Identifier
+      || !Is_Object (gnat_node)
+      || Comes_From_Source (gnat_node)
+      || !Present (Renamed_Object (gnat_node)))
+    return false;
+
+  /* Get the object declaration of the renamed object, if any and if the
+     renamed object is a mere identifier.  */
+  gnat_node = Renamed_Object (gnat_node);
+  if (Nkind (gnat_node) != N_Identifier)
+    return false;
+
+  gnat_node = Parent (Entity (gnat_node));
+  return (Present (gnat_node)
+	  && Nkind (gnat_node) == N_Object_Declaration
+	  && Present (Corresponding_Generic_Association (gnat_node)));
 }
 
 /* Similar to set_expr_location, but start with the Sloc of GNAT_NODE and
@@ -10016,6 +10055,16 @@ static void
 set_expr_location_from_node (tree node, Node_Id gnat_node, bool clear_column)
 {
   location_t locus;
+
+  /* Do not set a location for constructs likely to disturb debugging.  */
+  if (Nkind (gnat_node) == N_Defining_Identifier)
+    {
+      if (Is_Type (gnat_node) && Is_Actual_Subtype (gnat_node))
+	return;
+
+      if (renaming_from_instantiation_p (gnat_node))
+	return;
+    }
 
   if (!Sloc_to_locus (Sloc (gnat_node), &locus, clear_column))
     return;

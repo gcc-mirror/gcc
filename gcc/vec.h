@@ -1462,6 +1462,15 @@ vec_alloc (vec<T> *&v, unsigned nelems CXX_MEM_STAT_INFO)
 }
 
 
+/* A subclass of auto_vec <char *> that frees all of its elements on
+   deletion.  */
+
+class auto_string_vec : public auto_vec <char *>
+{
+ public:
+  ~auto_string_vec ();
+};
+
 /* Conditionally allocate heap memory for VEC and its internal vector.  */
 
 template<typename T>
@@ -1553,6 +1562,18 @@ vec<T, va_heap, vl_ptr>::iterate (unsigned ix, T **ptr) const
   for (I = vec_safe_length (V) - 1;			\
        vec_safe_iterate ((V), (I), &(P));	\
        (I)--)
+
+/* auto_string_vec's dtor, freeing all contained strings, automatically
+   chaining up to ~auto_vec <char *>, which frees the internal buffer.  */
+
+inline
+auto_string_vec::~auto_string_vec ()
+{
+  int i;
+  char *str;
+  FOR_EACH_VEC_ELT (*this, i, str)
+    free (str);
+}
 
 
 /* Return a copy of this vector.  */

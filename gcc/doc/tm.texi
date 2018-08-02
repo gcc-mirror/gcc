@@ -4255,6 +4255,14 @@ hook returns true for both @code{ptr_mode} and @code{Pmode}.
 Define this to return nonzero if the memory reference @var{ref}  may alias with the system C library errno location.  The default  version of this hook assumes the system C library errno location  is either a declaration of type int or accessed by dereferencing  a pointer to int.
 @end deftypefn
 
+@deftypefn {Target Hook} machine_mode TARGET_TRANSLATE_MODE_ATTRIBUTE (machine_mode @var{mode})
+Define this hook if during mode attribute processing, the port should
+translate machine_mode @var{mode} to another mode.  For example, rs6000's
+@code{KFmode}, when it is the same as @code{TFmode}.
+
+The default version of the hook returns that mode that was passed in.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_SCALAR_MODE_SUPPORTED_P (scalar_mode @var{mode})
 Define this to return nonzero if the port is prepared to handle
 insns involving scalar mode @var{mode}.  For a scalar mode to be
@@ -6038,6 +6046,22 @@ instructions.  @var{call} is gimple statement containing the call to
 the function.  This hook removes statement @var{call} after the
 expanded sequence has been inserted.  This hook is also responsible
 for allocating any storage for reductions when necessary.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_PREFERRED_ELSE_VALUE (unsigned @var{ifn}, tree @var{type}, unsigned @var{nops}, tree *@var{ops})
+This hook returns the target's preferred final argument for a call
+to conditional internal function @var{ifn} (really of type
+@code{internal_fn}).  @var{type} specifies the return type of the
+function and @var{ops} are the operands to the conditional operation,
+of which there are @var{nops}.
+
+For example, if @var{ifn} is @code{IFN_COND_ADD}, the hook returns
+a value of type @var{type} that should be used when @samp{@var{ops}[0]}
+and @samp{@var{ops}[1]} are conditionally added together.
+
+This hook is only relevant if the target supports conditional patterns
+like @code{cond_add@var{m}}.  The default implementation returns a zero
+constant of type @var{type}.
 @end deftypefn
 
 @node Anchored Addresses
@@ -9536,12 +9560,6 @@ to set the variable @var{align_jumps} in the target's
 selection in @var{align_jumps} in a @code{JUMP_ALIGN} implementation.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_JUMP_ALIGN_MAX_SKIP (rtx_insn *@var{label})
-The maximum number of bytes to skip before @var{label} when applying
-@code{JUMP_ALIGN}.  This works only if
-@code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
-@end deftypefn
-
 @defmac LABEL_ALIGN_AFTER_BARRIER (@var{label})
 The alignment (log base 2) to put in front of @var{label}, which follows
 a @code{BARRIER}.
@@ -9550,12 +9568,6 @@ This macro need not be defined if you don't want any special alignment
 to be done at such a time.  Most machine descriptions do not currently
 define the macro.
 @end defmac
-
-@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP (rtx_insn *@var{label})
-The maximum number of bytes to skip before @var{label} when applying
-@code{LABEL_ALIGN_AFTER_BARRIER}.  This works only if
-@code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
-@end deftypefn
 
 @defmac LOOP_ALIGN (@var{label})
 The alignment (log base 2) to put in front of @var{label} that heads
@@ -9571,12 +9583,6 @@ to set the variable @code{align_loops} in the target's
 selection in @code{align_loops} in a @code{LOOP_ALIGN} implementation.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_ASM_LOOP_ALIGN_MAX_SKIP (rtx_insn *@var{label})
-The maximum number of bytes to skip when applying @code{LOOP_ALIGN} to
-@var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is
-defined.
-@end deftypefn
-
 @defmac LABEL_ALIGN (@var{label})
 The alignment (log base 2) to put in front of @var{label}.
 If @code{LABEL_ALIGN_AFTER_BARRIER} / @code{LOOP_ALIGN} specify a different alignment,
@@ -9587,12 +9593,6 @@ to set the variable @code{align_labels} in the target's
 @code{TARGET_OPTION_OVERRIDE}.  Otherwise, you should try to honor the user's
 selection in @code{align_labels} in a @code{LABEL_ALIGN} implementation.
 @end defmac
-
-@deftypefn {Target Hook} int TARGET_ASM_LABEL_ALIGN_MAX_SKIP (rtx_insn *@var{label})
-The maximum number of bytes to skip when applying @code{LABEL_ALIGN}
-to @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN}
-is defined.
-@end deftypefn
 
 @defmac ASM_OUTPUT_SKIP (@var{stream}, @var{nbytes})
 A C statement to output to the stdio stream @var{stream} an assembler
@@ -11149,11 +11149,10 @@ Define this hook to return the name of a header file to be included at the start
 Define this hook to add target-specific C++ implicit extern C functions. If this function returns true for the name of a file-scope function, that function implicitly gets extern "C" linkage rather than whatever language linkage the declaration would normally have.  An example of such function is WinMain on Win32 targets.
 @end deftypefn
 
-@defmac NO_IMPLICIT_EXTERN_C
-Define this macro if the system header files support C++ as well as C@.
-This macro inhibits the usual method of using system header files in
-C++, which is to pretend that the file's contents are enclosed in
-@samp{extern "C" @{@dots{}@}}.
+@defmac SYSTEM_IMPLICIT_EXTERN_C
+Define this macro if the system header files do not support C++@.
+This macro handles system header files by pretending that system
+header files are enclosed in @samp{extern "C" @{@dots{}@}}.
 @end defmac
 
 @findex #pragma
@@ -11924,6 +11923,42 @@ All and all it does not take long to convert ports that the
 maintainer is familiar with.
 
 @end defmac
+
+@deftypefn {Target Hook} bool TARGET_HAVE_SPECULATION_SAFE_VALUE (bool @var{active})
+This hook is used to determine the level of target support for
+ @code{__builtin_speculation_safe_value}.  If called with an argument
+ of false, it returns true if the target has been modified to support
+ this builtin.  If called with an argument of true, it returns true
+ if the target requires active mitigation execution might be speculative.
+ 
+ The default implementation returns false if the target does not define
+ a pattern named @code{speculation_barrier}.  Else it returns true
+ for the first case and whether the pattern is enabled for the current
+ compilation for the second case.
+ 
+ For targets that have no processors that can execute instructions
+ speculatively an alternative implemenation of this hook is available:
+ simply redefine this hook to @code{speculation_safe_value_not_needed}
+ along with your other target hooks.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_SPECULATION_SAFE_VALUE (machine_mode @var{mode}, rtx @var{result}, rtx @var{val}, rtx @var{failval})
+This target hook can be used to generate a target-specific code
+ sequence that implements the @code{__builtin_speculation_safe_value}
+ built-in function.  The function must always return @var{val} in
+ @var{result} in mode @var{mode} when the cpu is not executing
+ speculatively, but must never return that when speculating until it
+ is known that the speculation will not be unwound.  The hook supports
+ two primary mechanisms for implementing the requirements.  The first
+ is to emit a speculation barrier which forces the processor to wait
+ until all prior speculative operations have been resolved; the second
+ is to use a target-specific mechanism that can track the speculation
+ state and to return @var{failval} if it can determine that
+ speculation must be unwound at a later time.
+ 
+ The default implementation simply copies @var{val} to @var{result} and
+ emits a @code{speculation_barrier} instruction if that is defined.
+@end deftypefn
 
 @deftypefn {Target Hook} void TARGET_RUN_TARGET_SELFTESTS (void)
 If selftests are enabled, run any selftests for this target.

@@ -121,6 +121,21 @@ these have both positive and negative forms; the negative form of
 @option{-ffoo} is @option{-fno-foo}.  This manual documents
 only one of these two forms, whichever one is not the default.
 
+Some options take one or more arguments typically separated either
+by a space or by the equals sign (@samp{=}) from the option name.
+Unless documented otherwise, an argument can be either numeric or
+a string.  Numeric arguments must typically be small unsigned decimal
+or hexadecimal integers.  Hexadecimal arguments must begin with
+the @samp{0x} prefix.  Arguments to options that specify a size
+threshold of some sort may be arbitrarily large decimal or hexadecimal
+integers followed by a byte size suffix designating a multiple of bytes
+such as @code{kB} and @code{KiB} for kilobyte and kibibyte, respectively,
+@code{MB} and @code{MiB} for megabyte and mebibyte, @code{GB} and
+@code{GiB} for gigabyte and gigibyte, and so on.  Such arguments are
+designated by @var{byte-size} in the following text.  Refer to the NIST,
+IEC, and other relevant national and international standards for the full
+listing and explanation of the binary and decimal byte size prefixes.
+
 @c man end
 
 @xref{Option Index}, for an index to GCC's options.
@@ -262,8 +277,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
--Walloc-zero  -Walloc-size-larger-than=@var{n}
--Walloca  -Walloca-larger-than=@var{n} @gol
+-Walloc-zero  -Walloc-size-larger-than=@var{byte-size}
+-Walloca  -Walloca-larger-than=@var{byte-size} @gol
 -Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
 -Wno-attributes  -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
@@ -286,14 +301,15 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-nonliteral -Wformat-overflow=@var{n} @gol
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
 -Wformat-y2k  -Wframe-address @gol
--Wframe-larger-than=@var{len}  -Wno-free-nonheap-object  -Wjump-misses-init @gol
+-Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object @gol
+-Wjump-misses-init @gol
 -Wif-not-aligned @gol
 -Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Winvalid-memory-model  -Wno-invalid-offsetof @gol
--Winvalid-pch  -Wlarger-than=@var{len} @gol
+-Winvalid-pch  -Wlarger-than=@var{byte-size} @gol
 -Wlegacy-header @gol
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
@@ -315,7 +331,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsign-compare  -Wsign-conversion  -Wfloat-conversion @gol
 -Wno-scalar-storage-order  -Wsizeof-pointer-div @gol
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
--Wstack-protector  -Wstack-usage=@var{len}  -Wstrict-aliasing @gol
+-Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
 -Wstringop-overflow=@var{n} -Wstringop-truncation @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
@@ -333,7 +349,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wunused-const-variable  -Wunused-const-variable=@var{n} @gol
 -Wunused-but-set-parameter  -Wunused-but-set-variable @gol
 -Wuseless-cast  -Wvariadic-macros  -Wvector-operation-performance @gol
--Wvla  -Wvla-larger-than=@var{n}  -Wvolatile-register-var  -Wwrite-strings @gol
+-Wvla  -Wvla-larger-than=@var{byte-size}  -Wvolatile-register-var @gol
+-Wwrite-strings @gol
 -Wzero-as-null-pointer-constant  -Whsa}
 
 @item C and Objective-C-only Warning Options
@@ -356,6 +373,7 @@ Objective-C and Objective-C++ Dialects}.
 -ginternal-reset-location-views  -gno-internal-reset-location-views @gol
 -ginline-points  -gno-inline-points @gol
 -gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
+-gsplit-dwarf @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
 -fno-eliminate-unused-debug-types @gol
 -femit-struct-debug-baseonly  -femit-struct-debug-reduced @gol
@@ -366,9 +384,11 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
-@gccoptlist{-faggressive-loop-optimizations  -falign-functions[=@var{n}] @gol
--falign-jumps[=@var{n}] @gol
--falign-labels[=@var{n}]  -falign-loops[=@var{n}] @gol
+@gccoptlist{-faggressive-loop-optimizations @gol
+-falign-functions[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
+-falign-jumps[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
+-falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
+-falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}] @gol
 -fauto-inc-dec  -fbranch-probabilities @gol
 -fbranch-target-load-optimize  -fbranch-target-load-optimize2 @gol
@@ -418,7 +438,8 @@ Objective-C and Objective-C++ Dialects}.
 -freorder-blocks-algorithm=@var{algorithm} @gol
 -freorder-blocks-and-partition  -freorder-functions @gol
 -frerun-cse-after-loop  -freschedule-modulo-scheduled-loops @gol
--frounding-math  -fsched2-use-superblocks  -fsched-pressure @gol
+-frounding-math  -fsave-optimization-record @gol
+-fsched2-use-superblocks  -fsched-pressure @gol
 -fsched-spec-load  -fsched-spec-load-dangerous @gol
 -fsched-stalled-insns-dep[=@var{n}]  -fsched-stalled-insns[=@var{n}] @gol
 -fsched-group-heuristic  -fsched-critical-path-heuristic @gol
@@ -499,7 +520,8 @@ Objective-C and Objective-C++ Dialects}.
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library} @gol
--nostartfiles  -nodefaultlibs  -nostdlib  -pie  -pthread  -rdynamic @gol
+-nostartfiles  -nodefaultlibs  -nolibc  -nostdlib @gol
+-pie  -pthread  -rdynamic @gol
 -s  -static -static-pie -static-libgcc  -static-libstdc++ @gol
 -static-libasan  -static-libtsan  -static-liblsan  -static-libubsan @gol
 -shared  -shared-libgcc  -symbolic @gol
@@ -598,7 +620,7 @@ Objective-C and Objective-C++ Dialects}.
 -mpc-relative-literal-loads @gol
 -msign-return-address=@var{scope} @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
--moverride=@var{string}  -mverbose-cost-dump}
+-moverride=@var{string}  -mverbose-cost-dump -mtrack-speculation} 
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs @gol
@@ -972,11 +994,9 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
--mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
--mint16  -mno-int32  -mfloat32  -mno-float64 @gol
--mfloat64  -mno-float32  -mabshi  -mno-abshi @gol
--mbranch-expensive  -mbranch-cheap @gol
--munix-asm  -mdec-asm}
+-mint32  -mno-int16 -mint16  -mno-int32 @gol
+-mfloat32  -mno-float64 -mfloat64  -mno-float32 @gol
+-msplit -munix-asm  -mdec-asm -mgnu-asm}
 
 @emph{picoChip Options}
 @gccoptlist{-mae=@var{ae_type}  -mvliw-lookahead=@var{N} @gol
@@ -5557,33 +5577,39 @@ when called with a zero size differs among implementations (and in the case
 of @code{realloc} has been deprecated) relying on it may result in subtle
 portability bugs and should be avoided.
 
-@item -Walloc-size-larger-than=@var{n}
-@opindex Walloc-size-larger-than=@var{n}
+@item -Walloc-size-larger-than=@var{byte-size}
+@opindex Walloc-size-larger-than=
 @opindex Wno-alloc-size-larger-than
 Warn about calls to functions decorated with attribute @code{alloc_size}
 that attempt to allocate objects larger than the specified number of bytes,
 or where the result of the size computation in an integer type with infinite
-precision would exceed @code{SIZE_MAX / 2}.  The option argument @var{n} is
-treated as an integer with infinite precision and may end in one of
-the standard suffixes designating a multiple of bytes such as @code{kB} and
-@code{KiB} for kilobyte and kibibyte, respectively, @code{MB} and @code{MiB}
-for megabyte and mebibyte, and so on.
-@option{-Walloc-size-larger-than=}@var{PTRDIFF_MAX} is enabled by default.
+precision would exceed the value of @samp{PTRDIFF_MAX} on the target.
+@option{-Walloc-size-larger-than=}@samp{PTRDIFF_MAX} is enabled by default.
 Warnings controlled by the option can be disabled either by specifying
-@var{n} of @var{SIZE_MAX} or more or by @option{-Wno-alloc-size-larger-than}.
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-alloc-size-larger-than}.
 @xref{Function Attributes}.
+
+@item -Wno-alloc-size-larger-than
+@opindex Wno-alloc-size-larger-than
+Disable @option{-Walloc-size-larger-than=} warnings.  The option is
+equivalent to @option{-Walloc-size-larger-than=}@samp{SIZE_MAX} or
+larger.
 
 @item -Walloca
 @opindex Wno-alloca
 @opindex Walloca
 This option warns on all uses of @code{alloca} in the source.
 
-@item -Walloca-larger-than=@var{n}
-This option warns on calls to @code{alloca} that are not bounded by a
-controlling predicate limiting its argument of integer type to at most
-@var{n} bytes, or calls to @code{alloca} where the bound is unknown.
-Arguments of non-integer types are considered unbounded even if they
-appear to be constrained to the expected range.
+@item -Walloca-larger-than=@var{byte-size}
+@opindex -Walloca-larger-than=
+@opindex -Wno-alloca-larger-than
+This option warns on calls to @code{alloca} with an integer argument whose
+value is either zero, or that is not bounded by a controlling predicate
+that limits its value to at most @var{byte-size}.  It also warns for calls
+to @code{alloca} where the bound value is unknown.  Arguments of non-integer
+types are considered unbounded even if they appear to be constrained to
+the expected range.
 
 For example, a bounded case of @code{alloca} could be:
 
@@ -5637,10 +5663,16 @@ expected argument to be implicitly cast into the @code{alloca} call.
 
 This option also warns when @code{alloca} is used in a loop.
 
-This warning is not enabled by @option{-Wall}, and is only active when
-@option{-ftree-vrp} is active (default for @option{-O2} and above).
+@option{-Walloca-larger-than=}@samp{PTRDIFF_MAX} is enabled by default
+but is usually only effective  when @option{-ftree-vrp} is active (default
+for @option{-O2} and above).
 
-See also @option{-Wvla-larger-than=@var{n}}.
+See also @option{-Wvla-larger-than=}@samp{byte-size}.
+
+@item -Wno-alloca-larger-than
+@opindex Wno-alloca-larger-than
+Disable @option{-Walloca-larger-than=} warnings.  The option is
+equivalent to @option{-Walloca-larger-than=}@samp{SIZE_MAX} or larger.
 
 @item -Warray-bounds
 @itemx -Warray-bounds=@var{n}
@@ -5988,22 +6020,40 @@ possibly reduce the number of warnings triggered by intentional shadowing.
 
 This warning is enabled by @option{-Wshadow=local}.
 
-@item -Wlarger-than=@var{len}
-@opindex Wlarger-than=@var{len}
-@opindex Wlarger-than-@var{len}
-Warn whenever an object of larger than @var{len} bytes is defined.
+@item -Wlarger-than=@var{byte-size}
+@opindex Wlarger-than=
+@opindex Wlarger-than-@var{byte-size}
+Warn whenever an object is defined whose size exceeds @var{byte-size}.
+@option{-Wlarger-than=}@samp{PTRDIFF_MAX} is enabled by default.
+Warnings controlled by the option can be disabled either by specifying
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-larger-than}.
 
-@item -Wframe-larger-than=@var{len}
-@opindex Wframe-larger-than=@var{len}
-@opindex Wframe-larger-than
-Warn if the size of a function frame is larger than @var{len} bytes.
+@item -Wno-larger-than
+@opindex Wno-larger-than
+Disable @option{-Wlarger-than=} warnings.  The option is equivalent
+to @option{-Wlarger-than=}@samp{SIZE_MAX} or larger.
+
+@item -Wframe-larger-than=@var{byte-size}
+@opindex Wframe-larger-than=
+@opindex Wno-frame-larger-than
+Warn if the size of a function frame exceeds @var{byte-size}.
 The computation done to determine the stack frame size is approximate
 and not conservative.
-The actual requirements may be somewhat greater than @var{len}
+The actual requirements may be somewhat greater than @var{byte-size}
 even if you do not get a warning.  In addition, any space allocated
 via @code{alloca}, variable-length arrays, or related constructs
 is not included by the compiler when determining
 whether or not to issue a warning.
+@option{-Wframe-larger-than=}@samp{PTRDIFF_MAX} is enabled by default.
+Warnings controlled by the option can be disabled either by specifying
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-frame-larger-than}.
+
+@item -Wno-frame-larger-than
+@opindex Wno-frame-larger-than
+Disable @option{-Wframe-larger-than=} warnings.  The option is equivalent
+to @option{-Wframe-larger-than=}@samp{SIZE_MAX} or larger.
 
 @item -Wno-free-nonheap-object
 @opindex Wno-free-nonheap-object
@@ -6011,10 +6061,10 @@ whether or not to issue a warning.
 Do not warn when attempting to free an object that was not allocated
 on the heap.
 
-@item -Wstack-usage=@var{len}
+@item -Wstack-usage=@var{byte-size}
 @opindex Wstack-usage
 @opindex Wno-stack-usage
-Warn if the stack usage of a function might be larger than @var{len} bytes.
+Warn if the stack usage of a function might exceed @var{byte-size}.
 The computation done to determine the stack usage is conservative.
 Any space allocated via @code{alloca}, variable-length arrays, or related
 constructs is included by the compiler when determining whether or not to
@@ -6042,6 +6092,24 @@ If the stack usage is (partly) dynamic and not bounded, it's:
   warning: stack usage might be unbounded
 @end smallexample
 @end itemize
+
+@option{-Wstack-usage=}@samp{PTRDIFF_MAX} is enabled by default.
+Warnings controlled by the option can be disabled either by specifying
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-stack-usage}.
+
+@item -Wno-stack-usage
+@opindex Wno-stack-usage
+Disable @option{-Wstack-usage=} warnings.  The option is equivalent
+to @option{-Wstack-usage=}@samp{SIZE_MAX} or larger.
+
+@item -Wunsafe-loop-optimizations
+@opindex Wunsafe-loop-optimizations
+@opindex Wno-unsafe-loop-optimizations
+Warn if the loop cannot be optimized because the compiler cannot
+assume anything on the bounds of the loop indices.  With
+@option{-funsafe-loop-optimizations} warn if the compiler makes
+such assumptions.
 
 @item -Wno-pedantic-ms-format @r{(MinGW targets only)}
 @opindex Wno-pedantic-ms-format
@@ -7052,21 +7120,29 @@ Warn if a variable-length array is used in the code.
 @option{-Wno-vla} prevents the @option{-Wpedantic} warning of
 the variable-length array.
 
-@item -Wvla-larger-than=@var{n}
-If this option is used, the compiler will warn on uses of
-variable-length arrays where the size is either unbounded, or bounded
-by an argument that can be larger than @var{n} bytes.  This is similar
-to how @option{-Walloca-larger-than=@var{n}} works, but with
-variable-length arrays.
+@item -Wvla-larger-than=@var{byte-size}
+@opindex -Wvla-larger-than=
+@opindex -Wno-vla-larger-than
+If this option is used, the compiler will warn for declarations of
+variable-length arrays whose size is either unbounded, or bounded
+by an argument that allows the array size to exceed @var{byte-size}
+bytes.  This is similar to how @option{-Walloca-larger-than=}@var{byte-size}
+works, but with variable-length arrays.
 
 Note that GCC may optimize small variable-length arrays of a known
 value into plain arrays, so this warning may not get triggered for
 such arrays.
 
-This warning is not enabled by @option{-Wall}, and is only active when
-@option{-ftree-vrp} is active (default for @option{-O2} and above).
+@option{-Wvla-larger-than=}@samp{PTRDIFF_MAX} is enabled by default but
+is typically only effective when @option{-ftree-vrp} is active (default
+for @option{-O2} and above).
 
-See also @option{-Walloca-larger-than=@var{n}}.
+See also @option{-Walloca-larger-than=@var{byte-size}}.
+
+@item -Wno-vla-larger-than
+@opindex Wno-vla-larger-than
+Disable @option{-Wvla-larger-than=} warnings.  The option is equivalent
+to @option{-Wvla-larger-than=}@samp{SIZE_MAX} or larger.
 
 @item -Wvolatile-register-var
 @opindex Wvolatile-register-var
@@ -9284,18 +9360,35 @@ The @option{-fstrict-aliasing} option is enabled at levels
 
 @item -falign-functions
 @itemx -falign-functions=@var{n}
+@itemx -falign-functions=@var{n}:@var{m}
+@itemx -falign-functions=@var{n}:@var{m}:@var{n2}
+@itemx -falign-functions=@var{n}:@var{m}:@var{n2}:@var{m2}
 @opindex falign-functions
 Align the start of functions to the next power-of-two greater than
-@var{n}, skipping up to @var{n} bytes.  For instance,
-@option{-falign-functions=32} aligns functions to the next 32-byte
-boundary, but @option{-falign-functions=24} aligns to the next
-32-byte boundary only if this can be done by skipping 23 bytes or less.
+@var{n}, skipping up to @var{m}-1 bytes.  This ensures that at least
+the first @var{m} bytes of the function can be fetched by the CPU
+without crossing an @var{n}-byte alignment boundary.
 
-@option{-fno-align-functions} and @option{-falign-functions=1} are
-equivalent and mean that functions are not aligned.
+If @var{m} is not specified, it defaults to @var{n}.
+
+Examples: @option{-falign-functions=32} aligns functions to the next
+32-byte boundary, @option{-falign-functions=24} aligns to the next
+32-byte boundary only if this can be done by skipping 23 bytes or less,
+@option{-falign-functions=32:7} aligns to the next
+32-byte boundary only if this can be done by skipping 6 bytes or less.
+
+The second pair of @var{n2}:@var{m2} values allows you to specify
+a secondary alignment: @option{-falign-functions=64:7:32:3} aligns to
+the next 64-byte boundary if this can be done by skipping 6 bytes or less,
+otherwise aligns to the next 32-byte boundary if this can be done
+by skipping 2 bytes or less.
+If @var{m2} is not specified, it defaults to @var{n2}.
 
 Some assemblers only support this flag when @var{n} is a power of two;
 in that case, it is rounded up.
+
+@option{-fno-align-functions} and @option{-falign-functions=1} are
+equivalent and mean that functions are not aligned.
 
 If @var{n} is not specified or is zero, use a machine-dependent default.
 The maximum allowed @var{n} option value is 65536.
@@ -9310,12 +9403,13 @@ skip more bytes than the size of the function.
 
 @item -falign-labels
 @itemx -falign-labels=@var{n}
+@itemx -falign-labels=@var{n}:@var{m}
+@itemx -falign-labels=@var{n}:@var{m}:@var{n2}
+@itemx -falign-labels=@var{n}:@var{m}:@var{n2}:@var{m2}
 @opindex falign-labels
-Align all branch targets to a power-of-two boundary, skipping up to
-@var{n} bytes like @option{-falign-functions}.  This option can easily
-make code slower, because it must insert dummy operations for when the
-branch target is reached in the usual flow of the code.
+Align all branch targets to a power-of-two boundary.
 
+Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-labels} and @option{-falign-labels=1} are
 equivalent and mean that labels are not aligned.
 
@@ -9330,12 +9424,15 @@ Enabled at levels @option{-O2}, @option{-O3}.
 
 @item -falign-loops
 @itemx -falign-loops=@var{n}
+@itemx -falign-loops=@var{n}:@var{m}
+@itemx -falign-loops=@var{n}:@var{m}:@var{n2}
+@itemx -falign-loops=@var{n}:@var{m}:@var{n2}:@var{m2}
 @opindex falign-loops
-Align loops to a power-of-two boundary, skipping up to @var{n} bytes
-like @option{-falign-functions}.  If the loops are
-executed many times, this makes up for any execution of the dummy
-operations.
+Align loops to a power-of-two boundary.  If the loops are executed
+many times, this makes up for any execution of the dummy padding
+instructions.
 
+Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-loops} and @option{-falign-loops=1} are
 equivalent and mean that loops are not aligned.
 The maximum allowed @var{n} option value is 65536.
@@ -9346,12 +9443,15 @@ Enabled at levels @option{-O2}, @option{-O3}.
 
 @item -falign-jumps
 @itemx -falign-jumps=@var{n}
+@itemx -falign-jumps=@var{n}:@var{m}
+@itemx -falign-jumps=@var{n}:@var{m}:@var{n2}
+@itemx -falign-jumps=@var{n}:@var{m}:@var{n2}:@var{m2}
 @opindex falign-jumps
 Align branch targets to a power-of-two boundary, for branch targets
-where the targets can only be reached by jumping, skipping up to @var{n}
-bytes like @option{-falign-functions}.  In this case, no dummy operations
-need be executed.
+where the targets can only be reached by jumping.  In this case,
+no dummy operations need be executed.
 
+Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-jumps} and @option{-falign-jumps=1} are
 equivalent and mean that loops are not aligned.
 
@@ -10612,6 +10712,11 @@ Control the probability of the expression having the specified value. This
 parameter takes a percentage (i.e. 0 ... 100) as input.
 The default probability of 90 is obtained empirically.
 
+@item builtin-string-cmp-inline-length
+The maximum length of a constant string for a builtin string cmp call 
+eligible for inlining.
+The default value is 3.
+
 @item align-threshold
 
 Select fraction of the maximal frequency of executions of a basic block in
@@ -11396,6 +11501,10 @@ and used by @option{-fprofile-use} and @option{-fbranch-probabilities}
 and its related options.  Both absolute and relative paths can be used.
 By default, GCC uses the current directory as @var{path}, thus the
 profile data file appears in the same directory as the object file.
+In order to prevent the file name clashing, if the object file name is
+not an absolute path, we mangle the absolute path of the
+@file{@var{sourcename}.gcda} file and use it as the file name of a
+@file{.gcda} file.
 
 When an executable is run in a massive parallel environment, it is recommended
 to save profile to different folders.  That can be done with variables
@@ -12285,8 +12394,8 @@ link an Objective-C or Objective-C++ program.
 @item -nostartfiles
 @opindex nostartfiles
 Do not use the standard system startup files when linking.
-The standard system libraries are used normally, unless @option{-nostdlib}
-or @option{-nodefaultlibs} is used.
+The standard system libraries are used normally, unless @option{-nostdlib},
+@option{-nolibc}, or @option{-nodefaultlibs} is used.
 
 @item -nodefaultlibs
 @opindex nodefaultlibs
@@ -12302,6 +12411,18 @@ The compiler may generate calls to @code{memcmp},
 These entries are usually resolved by entries in
 libc.  These entry points should be supplied through some other
 mechanism when this option is specified.
+
+@item -nolibc
+@opindex nolibc
+Do not use the C library or system libraries tightly coupled with it when
+linking.  Still link with the startup files, @file{libgcc} or toolchain
+provided language support libraries such as @file{libgnat}, @file{libgfortran}
+or @file{libstdc++} unless options preventing their inclusion are used as
+well.  This typically removes @option{-lc} from the link command line, as well
+as system libraries that normally go with it and become meaningless when
+absence of a C library is assumed, for example @option{-lpthread} or
+@option{-lm} in some configurations.  This is intended for bare-board
+targets when there is indeed no C library available.
 
 @item -nostdlib
 @opindex nostdlib
@@ -13986,6 +14107,51 @@ the first option takes effect and the subsequent options are
 ignored. Thus only @file{vec.miss} is produced which contains
 dumps from the vectorizer about missed opportunities.
 
+@item -fsave-optimization-record
+@opindex fsave-optimization-record
+Write a SRCFILE.opt-record.json file detailing what optimizations
+were performed, for those optimizations that support @option{-fopt-info}.
+
+This option is experimental and the format of the data within the JSON
+file is subject to change.
+
+It is roughly equivalent to a machine-readable version of
+@option{-fopt-info-all}, as a collection of messages with source file,
+line number and column number, with the following additional data for
+each message:
+
+@itemize @bullet
+
+@item
+the execution count of the code being optimized, along with metadata about
+whether this was from actual profile data, or just an estimate, allowing
+consumers to prioritize messages by code hotness,
+
+@item
+the function name of the code being optimized, where applicable,
+
+@item
+the ``inlining chain'' for the code being optimized, so that when
+a function is inlined into several different places (which might
+themselves be inlined), the reader can distinguish between the copies,
+
+@item
+objects identifying those parts of the message that refer to expressions,
+statements or symbol-table nodes, which of these categories they are, and,
+when available, their source code location,
+
+@item
+the GCC pass that emitted the message, and
+
+@item
+the location in GCC's own code from which the message was emitted
+
+@end itemize
+
+Additionally, some messages are logically nested within other
+messages, reflecting implementation details of the optimization
+passes.
+
 @item -fsched-verbose=@var{n}
 @opindex fsched-verbose
 On targets that use instruction scheduling, this option controls the
@@ -14671,6 +14837,14 @@ This option only has an effect if @option{-ffast-math} or
 precision of division results to about 16 bits for
 single precision and to 32 bits for double precision.
 
+@item -mtrack-speculation
+@itemx -mno-track-speculation
+Enable or disable generation of additional code to track speculative
+execution through conditional branches.  The tracking state can then
+be used by the compiler when expanding calls to
+@code{__builtin_speculation_safe_copy} to permit a more efficient code
+sequence to be generated.
+
 @item -march=@var{name}
 @opindex march
 Specify the name of the target architecture and, optionally, one or
@@ -14716,18 +14890,19 @@ Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
 @samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
-@samp{exynos-m1}, @samp{falkor}, @samp{qdf24xx}, @samp{saphira},
-@samp{xgene1}, @samp{vulcan}, @samp{thunderx},
+@samp{cortex-a76}, @samp{exynos-m1}, @samp{falkor}, @samp{qdf24xx},
+@samp{saphira}, @samp{xgene1}, @samp{vulcan}, @samp{thunderx},
 @samp{thunderxt88}, @samp{thunderxt88p1}, @samp{thunderxt81},
 @samp{thunderxt83}, @samp{thunderx2t99}, @samp{cortex-a57.cortex-a53},
 @samp{cortex-a72.cortex-a53}, @samp{cortex-a73.cortex-a35},
 @samp{cortex-a73.cortex-a53}, @samp{cortex-a75.cortex-a55},
+@samp{cortex-a76.cortex-a55}
 @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
-@samp{cortex-a75.cortex-a55} specify that GCC should tune for a
-big.LITTLE system.
+@samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55} specify that GCC
+should tune for a big.LITTLE system.
 
 Additionally on native AArch64 GNU/Linux systems the value
 @samp{native} tunes performance to the host system.  This option has no effect
@@ -14861,6 +15036,9 @@ instructions. Use of this option with architectures prior to Armv8.2-A is not su
 @item sm4
 Enable the sm3 and sm4 crypto extension.  This also enables Advanced SIMD instructions.
 Use of this option with architectures prior to Armv8.2-A is not supported.
+@item profile
+Enable the Statistical Profiling extension.  This option is only to enable the
+extension at the assembler level and does not affect code generation.
 
 @end table
 
@@ -16258,8 +16436,8 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-a9}, @samp{cortex-a12}, @samp{cortex-a15}, @samp{cortex-a17},
 @samp{cortex-a32}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
-@samp{cortex-r4}, @samp{cortex-r4f}, @samp{cortex-r5}, @samp{cortex-r7},
-@samp{cortex-r8}, @samp{cortex-r52},
+@samp{cortex-a76}, @samp{cortex-r4}, @samp{cortex-r4f}, @samp{cortex-r5},
+@samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52},
 @samp{cortex-m33},
 @samp{cortex-m23},
 @samp{cortex-m7},
@@ -16283,7 +16461,7 @@ of the code for a big.LITTLE system.  Permissible names are:
 @samp{cortex-a15.cortex-a7}, @samp{cortex-a17.cortex-a7},
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a72.cortex-a35}, @samp{cortex-a73.cortex-a53},
-@samp{cortex-a75.cortex-a55}.
+@samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55}.
 
 @option{-mtune=generic-@var{arch}} specifies that GCC should tune the
 performance for a blend of processors within architecture @var{arch}.
@@ -22068,7 +22246,7 @@ These options are defined for the PDP-11:
 @item -mfpu
 @opindex mfpu
 Use hardware FPP floating point.  This is the default.  (FIS floating
-point on the PDP-11/40 is not supported.)
+point on the PDP-11/40 is not supported.)  Implies -m45.
 
 @item -msoft-float
 @opindex msoft-float
@@ -22084,7 +22262,7 @@ Return floating-point results in memory.  This is the default.
 
 @item -m40
 @opindex m40
-Generate code for a PDP-11/40.
+Generate code for a PDP-11/40.  Implies -msoft-float -mno-split.
 
 @item -m45
 @opindex m45
@@ -22092,16 +22270,7 @@ Generate code for a PDP-11/45.  This is the default.
 
 @item -m10
 @opindex m10
-Generate code for a PDP-11/10.
-
-@item -mbcopy-builtin
-@opindex mbcopy-builtin
-Use inline @code{movmemhi} patterns for copying memory.  This is the
-default.
-
-@item -mbcopy
-@opindex mbcopy
-Do not use inline @code{movmemhi} patterns for copying memory.
+Generate code for a PDP-11/10.  Implies -msoft-float -mno-split.
 
 @item -mint16
 @itemx -mno-int32
@@ -22127,32 +22296,21 @@ Use 64-bit @code{float}.  This is the default.
 @opindex mno-float64
 Use 32-bit @code{float}.
 
-@item -mabshi
-@opindex mabshi
-Use @code{abshi2} pattern.  This is the default.
-
-@item -mno-abshi
-@opindex mno-abshi
-Do not use @code{abshi2} pattern.
-
-@item -mbranch-expensive
-@opindex mbranch-expensive
-Pretend that branches are expensive.  This is for experimenting with
-code generation only.
-
-@item -mbranch-cheap
-@opindex mbranch-cheap
-Do not pretend that branches are expensive.  This is the default.
+@item -msplit
+@opindex msplit
+Target has split instruction and data space.  Implies -m45.
 
 @item -munix-asm
 @opindex munix-asm
-Use Unix assembler syntax.  This is the default when configured for
-@samp{pdp11-*-bsd}.
+Use Unix assembler syntax.
 
 @item -mdec-asm
 @opindex mdec-asm
-Use DEC assembler syntax.  This is the default when configured for any
-PDP-11 target other than @samp{pdp11-*-bsd}.
+Use DEC assembler syntax.
+
+@item -mgnu-asm
+@opindex mgnu-asm
+Use GNU assembler syntax.  This is the default.
 @end table
 
 @node picoChip Options

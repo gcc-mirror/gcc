@@ -34,6 +34,9 @@ void test01()
   typedef propagating_allocator<C, false> alloc_type;
   typedef std::basic_string<C, traits, alloc_type> test_type;
 
+  static_assert(std::is_move_assignable<test_type>::value, "");
+  static_assert(!std::is_nothrow_move_assignable<test_type>::value, "");
+
   test_type v1(alloc_type(1));
   v1.assign(1, c);
   test_type v2(alloc_type(2));

@@ -55,8 +55,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __cow_string();
     __cow_string(const std::string&);
     __cow_string(const char*, size_t);
-    __cow_string(const __cow_string&) _GLIBCXX_USE_NOEXCEPT;
-    __cow_string& operator=(const __cow_string&) _GLIBCXX_USE_NOEXCEPT;
+    __cow_string(const __cow_string&) _GLIBCXX_NOTHROW;
+    __cow_string& operator=(const __cow_string&) _GLIBCXX_NOTHROW;
     ~__cow_string();
 #if __cplusplus >= 201103L
     __cow_string(__cow_string&&) noexcept;
@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       char _M_bytes[sizeof(__str)];
     };
 
-    __sso_string() _GLIBCXX_USE_NOEXCEPT;
+    __sso_string() _GLIBCXX_NOTHROW;
     __sso_string(const std::string&);
     __sso_string(const char*, size_t);
     __sso_string(const __sso_string&);
@@ -122,19 +122,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
     explicit
     logic_error(const char*) _GLIBCXX_TXN_SAFE;
+
+    logic_error(logic_error&&) noexcept;
+    logic_error& operator=(logic_error&&) noexcept;
 #endif
 
 #if _GLIBCXX_USE_CXX11_ABI || _GLIBCXX_DEFINE_STDEXCEPT_COPY_OPS
-    logic_error(const logic_error&) _GLIBCXX_USE_NOEXCEPT;
-    logic_error& operator=(const logic_error&) _GLIBCXX_USE_NOEXCEPT;
+    logic_error(const logic_error&) _GLIBCXX_NOTHROW;
+    logic_error& operator=(const logic_error&) _GLIBCXX_NOTHROW;
+#elif __cplusplus >= 201103L
+    logic_error(const logic_error&) = default;
+    logic_error& operator=(const logic_error&) = default;
 #endif
 
-    virtual ~logic_error() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
+    virtual ~logic_error() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
 
     /** Returns a C-style character string describing the general cause of
      *  the current error (the same string passed to the ctor).  */
     virtual const char*
-    what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
+    what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
 
 # ifdef _GLIBCXX_TM_TS_INTERNAL
     friend void*
@@ -152,8 +158,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit domain_error(const char*) _GLIBCXX_TXN_SAFE;
     domain_error(const domain_error&) = default;
     domain_error& operator=(const domain_error&) = default;
+    domain_error(domain_error&&) = default;
+    domain_error& operator=(domain_error&&) = default;
 #endif
-    virtual ~domain_error() _GLIBCXX_USE_NOEXCEPT;
+    virtual ~domain_error() _GLIBCXX_NOTHROW;
   };
 
   /** Thrown to report invalid arguments to functions.  */
@@ -165,8 +173,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit invalid_argument(const char*) _GLIBCXX_TXN_SAFE;
     invalid_argument(const invalid_argument&) = default;
     invalid_argument& operator=(const invalid_argument&) = default;
+    invalid_argument(invalid_argument&&) = default;
+    invalid_argument& operator=(invalid_argument&&) = default;
 #endif
-    virtual ~invalid_argument() _GLIBCXX_USE_NOEXCEPT;
+    virtual ~invalid_argument() _GLIBCXX_NOTHROW;
   };
 
   /** Thrown when an object is constructed that would exceed its maximum
@@ -179,8 +189,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit length_error(const char*) _GLIBCXX_TXN_SAFE;
     length_error(const length_error&) = default;
     length_error& operator=(const length_error&) = default;
+    length_error(length_error&&) = default;
+    length_error& operator=(length_error&&) = default;
 #endif
-    virtual ~length_error() _GLIBCXX_USE_NOEXCEPT;
+    virtual ~length_error() _GLIBCXX_NOTHROW;
   };
 
   /** This represents an argument whose value is not within the expected
@@ -193,8 +205,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit out_of_range(const char*) _GLIBCXX_TXN_SAFE;
     out_of_range(const out_of_range&) = default;
     out_of_range& operator=(const out_of_range&) = default;
+    out_of_range(out_of_range&&) = default;
+    out_of_range& operator=(out_of_range&&) = default;
 #endif
-    virtual ~out_of_range() _GLIBCXX_USE_NOEXCEPT;
+    virtual ~out_of_range() _GLIBCXX_NOTHROW;
   };
 
   /** Runtime errors represent problems outside the scope of a program;
@@ -214,19 +228,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
     explicit
     runtime_error(const char*) _GLIBCXX_TXN_SAFE;
+
+    runtime_error(runtime_error&&) noexcept;
+    runtime_error& operator=(runtime_error&&) noexcept;
 #endif
 
 #if _GLIBCXX_USE_CXX11_ABI || _GLIBCXX_DEFINE_STDEXCEPT_COPY_OPS
-    runtime_error(const runtime_error&) _GLIBCXX_USE_NOEXCEPT;
-    runtime_error& operator=(const runtime_error&) _GLIBCXX_USE_NOEXCEPT;
+    runtime_error(const runtime_error&) _GLIBCXX_NOTHROW;
+    runtime_error& operator=(const runtime_error&) _GLIBCXX_NOTHROW;
+#elif __cplusplus >= 201103L
+    runtime_error(const runtime_error&) = default;
+    runtime_error& operator=(const runtime_error&) = default;
 #endif
 
-    virtual ~runtime_error() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
+    virtual ~runtime_error() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
 
     /** Returns a C-style character string describing the general cause of
      *  the current error (the same string passed to the ctor).  */
     virtual const char*
-    what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
+    what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW;
 
 # ifdef _GLIBCXX_TM_TS_INTERNAL
     friend void*
@@ -243,8 +263,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit range_error(const char*) _GLIBCXX_TXN_SAFE;
     range_error(const range_error&) = default;
     range_error& operator=(const range_error&) = default;
+    range_error(range_error&&) = default;
+    range_error& operator=(range_error&&) = default;
 #endif
-    virtual ~range_error() _GLIBCXX_USE_NOEXCEPT;
+    virtual ~range_error() _GLIBCXX_NOTHROW;
   };
 
   /** Thrown to indicate arithmetic overflow.  */
@@ -256,8 +278,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit overflow_error(const char*) _GLIBCXX_TXN_SAFE;
     overflow_error(const overflow_error&) = default;
     overflow_error& operator=(const overflow_error&) = default;
+    overflow_error(overflow_error&&) = default;
+    overflow_error& operator=(overflow_error&&) = default;
 #endif
-    virtual ~overflow_error() _GLIBCXX_USE_NOEXCEPT;
+    virtual ~overflow_error() _GLIBCXX_NOTHROW;
   };
 
   /** Thrown to indicate arithmetic underflow.  */
@@ -269,8 +293,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit underflow_error(const char*) _GLIBCXX_TXN_SAFE;
     underflow_error(const underflow_error&) = default;
     underflow_error& operator=(const underflow_error&) = default;
+    underflow_error(underflow_error&&) = default;
+    underflow_error& operator=(underflow_error&&) = default;
 #endif
-    virtual ~underflow_error() _GLIBCXX_USE_NOEXCEPT;
+    virtual ~underflow_error() _GLIBCXX_NOTHROW;
   };
 
   // @} group exceptions

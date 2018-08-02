@@ -75,7 +75,7 @@ package body Xref_Lib is
 
    procedure Open
      (Name         : String;
-      File         : out ALI_File;
+      File         : in out ALI_File;
       Dependencies : Boolean := False);
    --  Open a new ALI file. If Dependencies is True, the insert every library
    --  file 'with'ed in the files database (used for gnatxref)
@@ -688,7 +688,7 @@ package body Xref_Lib is
 
    procedure Open
      (Name         : String;
-      File         : out ALI_File;
+      File         : in out ALI_File;
       Dependencies : Boolean := False)
    is
       Ali : String_Access renames File.Buffer;

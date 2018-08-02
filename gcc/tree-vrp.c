@@ -956,170 +956,119 @@ value_range_constant_singleton (value_range *vr)
   return NULL_TREE;
 }
 
-/* Wrapper around int_const_binop.  Return true if we can compute the
-   result; i.e. if the operation doesn't overflow or if the overflow is
-   undefined.  In the latter case (if the operation overflows and
-   overflow is undefined), then adjust the result to be -INF or +INF
-   depending on CODE, VAL1 and VAL2.  Return the value in *RES.
+/* Wrapper around wide_int_binop that adjusts for overflow.
+
+   Return true if we can compute the result; i.e. if the operation
+   doesn't overflow or if the overflow is undefined.  In the latter
+   case (if the operation overflows and overflow is undefined), then
+   adjust the result to be -INF or +INF depending on CODE, VAL1 and
+   VAL2.  Return the value in *RES.
 
    Return false for division by zero, for which the result is
    indeterminate.  */
 
 static bool
-vrp_int_const_binop (enum tree_code code, tree val1, tree val2, wide_int *res)
+wide_int_binop_overflow (wide_int &res,
+			 enum tree_code code,
+			 const wide_int &w0, const wide_int &w1,
+			 signop sign, bool overflow_undefined)
 {
-  bool overflow = false;
-  signop sign = TYPE_SIGN (TREE_TYPE (val1));
+  wi::overflow_type overflow;
+  if (!wide_int_binop (res, code, w0, w1, sign, &overflow))
+    return false;
 
-  switch (code)
+  /* If the operation overflowed return -INF or +INF depending on the
+     operation and the combination of signs of the operands.  */
+  if (overflow && overflow_undefined)
     {
-    case RSHIFT_EXPR:
-    case LSHIFT_EXPR:
-      {
-	wide_int wval2 = wi::to_wide (val2, TYPE_PRECISION (TREE_TYPE (val1)));
-	if (wi::neg_p (wval2))
-	  {
-	    wval2 = -wval2;
-	    if (code == RSHIFT_EXPR)
-	      code = LSHIFT_EXPR;
-	    else
-	      code = RSHIFT_EXPR;
-	  }
+      switch (code)
+	{
+	case MULT_EXPR:
+	  /* For multiplication, the sign of the overflow is given
+	     by the comparison of the signs of the operands.  */
+	  if (sign == UNSIGNED || w0.sign_mask () == w1.sign_mask ())
+	    res = wi::max_value (w0.get_precision (), sign);
+	  else
+	    res = wi::min_value (w0.get_precision (), sign);
+	  return true;
 
-	if (code == RSHIFT_EXPR)
-	  /* It's unclear from the C standard whether shifts can overflow.
-	     The following code ignores overflow; perhaps a C standard
-	     interpretation ruling is needed.  */
-	  *res = wi::rshift (wi::to_wide (val1), wval2, sign);
-	else
-	  *res = wi::lshift (wi::to_wide (val1), wval2);
-	break;
-      }
-
-    case MULT_EXPR:
-      *res = wi::mul (wi::to_wide (val1),
-		      wi::to_wide (val2), sign, &overflow);
-      break;
-
-    case TRUNC_DIV_EXPR:
-    case EXACT_DIV_EXPR:
-      if (val2 == 0)
-	return false;
-      else
-	*res = wi::div_trunc (wi::to_wide (val1),
-			      wi::to_wide (val2), sign, &overflow);
-      break;
-
-    case FLOOR_DIV_EXPR:
-      if (val2 == 0)
-	return false;
-      *res = wi::div_floor (wi::to_wide (val1),
-			    wi::to_wide (val2), sign, &overflow);
-      break;
-
-    case CEIL_DIV_EXPR:
-      if (val2 == 0)
-	return false;
-      *res = wi::div_ceil (wi::to_wide (val1),
-			   wi::to_wide (val2), sign, &overflow);
-      break;
-
-    case ROUND_DIV_EXPR:
-      if (val2 == 0)
-	return false;
-      *res = wi::div_round (wi::to_wide (val1),
-			    wi::to_wide (val2), sign, &overflow);
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  if (overflow
-      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (val1)))
-    {
-      /* If the operation overflowed return -INF or +INF depending
-	 on the operation and the combination of signs of the operands.  */
-      int sgn1 = tree_int_cst_sgn (val1);
-      int sgn2 = tree_int_cst_sgn (val2);
-
-      /* Notice that we only need to handle the restricted set of
-	 operations handled by extract_range_from_binary_expr.
-	 Among them, only multiplication, addition and subtraction
-	 can yield overflow without overflown operands because we
-	 are working with integral types only... except in the
-	 case VAL1 = -INF and VAL2 = -1 which overflows to +INF
-	 for division too.  */
-
-      /* For multiplication, the sign of the overflow is given
-	 by the comparison of the signs of the operands.  */
-      if ((code == MULT_EXPR && sgn1 == sgn2)
-          /* For addition, the operands must be of the same sign
-	     to yield an overflow.  Its sign is therefore that
-	     of one of the operands, for example the first.  */
-	  || (code == PLUS_EXPR && sgn1 >= 0)
-	  /* For subtraction, operands must be of
-	     different signs to yield an overflow.  Its sign is
-	     therefore that of the first operand or the opposite of
-	     that of the second operand.  A first operand of 0 counts
-	     as positive here, for the corner case 0 - (-INF), which
-	     overflows, but must yield +INF.  */
-	  || (code == MINUS_EXPR && sgn1 >= 0)
+	case TRUNC_DIV_EXPR:
+	case FLOOR_DIV_EXPR:
+	case CEIL_DIV_EXPR:
+	case EXACT_DIV_EXPR:
+	case ROUND_DIV_EXPR:
 	  /* For division, the only case is -INF / -1 = +INF.  */
-	  || code == TRUNC_DIV_EXPR
-	  || code == FLOOR_DIV_EXPR
-	  || code == CEIL_DIV_EXPR
-	  || code == EXACT_DIV_EXPR
-	  || code == ROUND_DIV_EXPR)
-	*res = wi::max_value (TYPE_PRECISION (TREE_TYPE (val1)),
-			      TYPE_SIGN (TREE_TYPE (val1)));
-      else
-	*res = wi::min_value (TYPE_PRECISION (TREE_TYPE (val1)),
-			      TYPE_SIGN (TREE_TYPE (val1)));
-      return true;
-    }
+	  res = wi::max_value (w0.get_precision (), sign);
+	  return true;
 
+	default:
+	  gcc_unreachable ();
+	}
+    }
   return !overflow;
 }
 
+/* For range [LB, UB] compute two wide_int bit masks.
 
-/* For range VR compute two wide_int bitmasks.  In *MAY_BE_NONZERO
-   bitmask if some bit is unset, it means for all numbers in the range
-   the bit is 0, otherwise it might be 0 or 1.  In *MUST_BE_NONZERO
-   bitmask if some bit is set, it means for all numbers in the range
-   the bit is 1, otherwise it might be 0 or 1.  */
+   In the MAY_BE_NONZERO bit mask, if some bit is unset, it means that
+   for all numbers in the range the bit is 0, otherwise it might be 0
+   or 1.
+
+   In the MUST_BE_NONZERO bit mask, if some bit is set, it means that
+   for all numbers in the range the bit is 1, otherwise it might be 0
+   or 1.  */
+
+void
+wide_int_set_zero_nonzero_bits (signop sign,
+				const wide_int &lb, const wide_int &ub,
+				wide_int &may_be_nonzero,
+				wide_int &must_be_nonzero)
+{
+  may_be_nonzero = wi::minus_one (lb.get_precision ());
+  must_be_nonzero = wi::zero (lb.get_precision ());
+
+  if (wi::eq_p (lb, ub))
+    {
+      may_be_nonzero = lb;
+      must_be_nonzero = may_be_nonzero;
+    }
+  else if (wi::ge_p (lb, 0, sign) || wi::lt_p (ub, 0, sign))
+    {
+      wide_int xor_mask = lb ^ ub;
+      may_be_nonzero = lb | ub;
+      must_be_nonzero = lb & ub;
+      if (xor_mask != 0)
+	{
+	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
+				    may_be_nonzero.get_precision ());
+	  may_be_nonzero = may_be_nonzero | mask;
+	  must_be_nonzero = wi::bit_and_not (must_be_nonzero, mask);
+	}
+    }
+}
+
+/* Value range wrapper for wide_int_set_zero_nonzero_bits.
+
+   Compute MAY_BE_NONZERO and MUST_BE_NONZERO bit masks for range in VR.
+
+   Return TRUE if VR was a constant range and we were able to compute
+   the bit masks.  */
 
 bool
-zero_nonzero_bits_from_vr (const tree expr_type,
+vrp_set_zero_nonzero_bits (const tree expr_type,
 			   value_range *vr,
 			   wide_int *may_be_nonzero,
 			   wide_int *must_be_nonzero)
 {
-  *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
-  *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
   if (!range_int_cst_p (vr))
-    return false;
-
-  if (range_int_cst_singleton_p (vr))
     {
-      *may_be_nonzero = wi::to_wide (vr->min);
-      *must_be_nonzero = *may_be_nonzero;
+      *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
+      *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
+      return false;
     }
-  else if (tree_int_cst_sgn (vr->min) >= 0
-	   || tree_int_cst_sgn (vr->max) < 0)
-    {
-      wide_int xor_mask = wi::to_wide (vr->min) ^ wi::to_wide (vr->max);
-      *may_be_nonzero = wi::to_wide (vr->min) | wi::to_wide (vr->max);
-      *must_be_nonzero = wi::to_wide (vr->min) & wi::to_wide (vr->max);
-      if (xor_mask != 0)
-	{
-	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
-				    may_be_nonzero->get_precision ());
-	  *may_be_nonzero = *may_be_nonzero | mask;
-	  *must_be_nonzero = wi::bit_and_not (*must_be_nonzero, mask);
-	}
-    }
-
+  wide_int_set_zero_nonzero_bits (TYPE_SIGN (expr_type),
+				 wi::to_wide (vr->min), wi::to_wide (vr->max),
+				 *may_be_nonzero, *must_be_nonzero);
   return true;
 }
 
@@ -1165,18 +1114,173 @@ ranges_from_anti_range (value_range *ar,
   return vr0->type != VR_UNDEFINED;
 }
 
-/* Helper to extract a value-range *VR for a multiplicative operation
-   *VR0 CODE *VR1.  */
+/* Order 2 sets of wide int ranges (w0/w1, w2/w3) and set MIN/MAX
+   accordingly.  */
 
 static void
-extract_range_from_multiplicative_op_1 (value_range *vr,
-					enum tree_code code,
-					value_range *vr0, value_range *vr1)
+wide_int_range_min_max (wide_int &min, wide_int &max,
+			wide_int &w0, wide_int &w1, wide_int &w2, wide_int &w3,
+			signop sign)
 {
-  enum value_range_type rtype;
-  wide_int val, min, max;
-  tree type;
+  /* Order pairs w0,w1 and w2,w3.  */
+  if (wi::gt_p (w0, w1, sign))
+    std::swap (w0, w1);
+  if (wi::gt_p (w2, w3, sign))
+    std::swap (w2, w3);
 
+  /* Choose min and max from the ordered pairs.  */
+  min = wi::min (w0, w2, sign);
+  max = wi::max (w1, w3, sign);
+}
+
+/* Calculate the cross product of two sets of ranges (VR0 and VR1) and
+   store the result in [RES_LB, RES_UB].
+
+   CODE is the operation to perform with sign SIGN.
+
+   OVERFLOW_UNDEFINED is set if overflow is undefined for the operation type.
+
+   Return TRUE if we were able to calculate the cross product.  */
+
+bool
+wide_int_range_cross_product (wide_int &res_lb, wide_int &res_ub,
+			      enum tree_code code, signop sign,
+			      const wide_int &vr0_lb, const wide_int &vr0_ub,
+			      const wide_int &vr1_lb, const wide_int &vr1_ub,
+			      bool overflow_undefined)
+{
+  wide_int cp1, cp2, cp3, cp4;
+
+  /* Compute the 4 cross operations, bailing if we get an overflow we
+     can't handle.  */
+
+  if (!wide_int_binop_overflow (cp1, code, vr0_lb, vr1_lb, sign,
+				overflow_undefined))
+    return false;
+
+  if (wi::eq_p (vr0_lb, vr0_ub))
+    cp3 = cp1;
+  else if (!wide_int_binop_overflow (cp3, code, vr0_ub, vr1_lb, sign,
+				     overflow_undefined))
+    return false;
+
+  if (wi::eq_p (vr1_lb, vr1_ub))
+    cp2 = cp1;
+  else if (!wide_int_binop_overflow (cp2, code, vr0_lb, vr1_ub, sign,
+				     overflow_undefined))
+    return false;
+
+  if (wi::eq_p (vr0_lb, vr0_ub))
+    cp4 = cp2;
+  else if (!wide_int_binop_overflow (cp4, code, vr0_ub, vr1_ub, sign,
+				     overflow_undefined))
+    return false;
+
+  wide_int_range_min_max (res_lb, res_ub, cp1, cp2, cp3, cp4, sign);
+  return true;
+}
+
+/* Multiply two ranges when TYPE_OVERFLOW_WRAPS:
+
+     [RES_LB, RES_UB] = [MIN0, MAX0] * [MIN1, MAX1]
+
+   This is basically fancy code so we don't drop to varying with an
+   unsigned [-3,-1]*[-3,-1].
+
+   Return TRUE if we were able to perform the operation.  */
+
+bool
+wide_int_range_mult_wrapping (wide_int &res_lb,
+			      wide_int &res_ub,
+			      signop sign,
+			      unsigned prec,
+			      const wide_int &min0_,
+			      const wide_int &max0_,
+			      const wide_int &min1_,
+			      const wide_int &max1_)
+{
+  /* This test requires 2*prec bits if both operands are signed and
+     2*prec + 2 bits if either is not.  Therefore, extend the values
+     using the sign of the result to PREC2.  From here on out,
+     everthing is just signed math no matter what the input types
+     were.  */
+  widest2_int min0 = widest2_int::from (min0_, sign);
+  widest2_int max0 = widest2_int::from (max0_, sign);
+  widest2_int min1 = widest2_int::from (min1_, sign);
+  widest2_int max1 = widest2_int::from (max1_, sign);
+  widest2_int sizem1 = wi::mask <widest2_int> (prec, false);
+  widest2_int size = sizem1 + 1;
+
+  /* Canonicalize the intervals.  */
+  if (sign == UNSIGNED)
+    {
+      if (wi::ltu_p (size, min0 + max0))
+	{
+	  min0 -= size;
+	  max0 -= size;
+	}
+
+      if (wi::ltu_p (size, min1 + max1))
+	{
+	  min1 -= size;
+	  max1 -= size;
+	}
+    }
+
+  widest2_int prod0 = min0 * min1;
+  widest2_int prod1 = min0 * max1;
+  widest2_int prod2 = max0 * min1;
+  widest2_int prod3 = max0 * max1;
+
+  /* Sort the 4 products so that min is in prod0 and max is in
+     prod3.  */
+  /* min0min1 > max0max1 */
+  if (prod0 > prod3)
+    std::swap (prod0, prod3);
+
+  /* min0max1 > max0min1 */
+  if (prod1 > prod2)
+    std::swap (prod1, prod2);
+
+  if (prod0 > prod1)
+    std::swap (prod0, prod1);
+
+  if (prod2 > prod3)
+    std::swap (prod2, prod3);
+
+  /* diff = max - min.  */
+  prod2 = prod3 - prod0;
+  if (wi::geu_p (prod2, sizem1))
+    /* The range covers all values.  */
+    return false;
+
+  res_lb = wide_int::from (prod0, prec, sign);
+  res_ub = wide_int::from (prod3, prec, sign);
+  return true;
+}
+
+/* Perform multiplicative operation CODE on two ranges:
+
+     [RES_LB, RES_UB] = [VR0_LB, VR0_UB] .CODE. [VR1_LB, VR1_LB]
+
+   Return TRUE if we were able to perform the operation.
+
+   NOTE: If code is MULT_EXPR and TYPE_OVERFLOW_WRAPS, the resulting
+   range must be canonicalized by the caller because its components
+   may be swapped.  */
+
+bool
+wide_int_range_multiplicative_op (wide_int &res_lb, wide_int &res_ub,
+				  enum tree_code code,
+				  signop sign,
+				  unsigned prec,
+				  const wide_int &vr0_lb,
+				  const wide_int &vr0_ub,
+				  const wide_int &vr1_lb,
+				  const wide_int &vr1_ub,
+				  bool overflow_undefined,
+				  bool overflow_wraps)
+{
   /* Multiplications, divisions and shifts are a bit tricky to handle,
      depending on the mix of signs we have in the two ranges, we
      need to operate on different values to get the minimum and
@@ -1189,6 +1293,380 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
      (MIN0 OP MIN1, MIN0 OP MAX1, MAX0 OP MIN1 and MAX0 OP MAX0 OP
      MAX1) and then figure the smallest and largest values to form
      the new range.  */
+  if (code == MULT_EXPR && overflow_wraps)
+    return wide_int_range_mult_wrapping (res_lb, res_ub,
+					 sign, prec,
+					 vr0_lb, vr0_ub, vr1_lb, vr1_ub);
+  return wide_int_range_cross_product (res_lb, res_ub,
+				       code, sign,
+				       vr0_lb, vr0_ub, vr1_lb, vr1_ub,
+				       overflow_undefined);
+}
+
+/* Perform a left shift operation on two ranges:
+
+     [RES_LB, RES_UB] = [VR0_LB, VR0_UB] << [VR1_LB, VR1_LB]
+
+   Return TRUE if we were able to perform the operation.
+
+   NOTE: The resulting range must be canonicalized by the caller
+   because its contents components may be swapped.  */
+
+bool
+wide_int_range_lshift (wide_int &res_lb, wide_int &res_ub,
+		       signop sign, unsigned prec,
+		       const wide_int &vr0_lb, const wide_int &vr0_ub,
+		       const wide_int &vr1_lb, const wide_int &vr1_ub,
+		       bool overflow_undefined, bool overflow_wraps)
+{
+  /* Transform left shifts by constants into multiplies.  */
+  if (wi::eq_p (vr1_lb, vr1_ub))
+    {
+      int shift = wi::extract_uhwi (vr1_ub, 0, vr1_ub.get_precision ());
+      wide_int tmp = wi::set_bit_in_zero (shift, prec);
+      return wide_int_range_multiplicative_op (res_lb, res_ub,
+					       MULT_EXPR, sign, prec,
+					       vr0_lb, vr0_ub, tmp, tmp,
+					       overflow_undefined,
+					       /*overflow_wraps=*/true);
+    }
+
+  int overflow_pos = prec;
+  if (sign == SIGNED)
+    overflow_pos -= 1;
+  int bound_shift = overflow_pos - vr1_ub.to_shwi ();
+  /* If bound_shift == HOST_BITS_PER_WIDE_INT, the llshift can
+     overflow.  However, for that to happen, vr1.max needs to be
+     zero, which means vr1 is a singleton range of zero, which
+     means it should be handled by the previous LSHIFT_EXPR
+     if-clause.  */
+  wide_int bound = wi::set_bit_in_zero (bound_shift, prec);
+  wide_int complement = ~(bound - 1);
+  wide_int low_bound, high_bound;
+  bool in_bounds = false;
+  if (sign == UNSIGNED)
+    {
+      low_bound = bound;
+      high_bound = complement;
+      if (wi::ltu_p (vr0_ub, low_bound))
+	{
+	  /* [5, 6] << [1, 2] == [10, 24].  */
+	  /* We're shifting out only zeroes, the value increases
+	     monotonically.  */
+	  in_bounds = true;
+	}
+      else if (wi::ltu_p (high_bound, vr0_lb))
+	{
+	  /* [0xffffff00, 0xffffffff] << [1, 2]
+	     == [0xfffffc00, 0xfffffffe].  */
+	  /* We're shifting out only ones, the value decreases
+	     monotonically.  */
+	  in_bounds = true;
+	}
+    }
+  else
+    {
+      /* [-1, 1] << [1, 2] == [-4, 4].  */
+      low_bound = complement;
+      high_bound = bound;
+      if (wi::lts_p (vr0_ub, high_bound)
+	  && wi::lts_p (low_bound, vr0_lb))
+	{
+	  /* For non-negative numbers, we're shifting out only
+	     zeroes, the value increases monotonically.
+	     For negative numbers, we're shifting out only ones, the
+	     value decreases monotomically.  */
+	  in_bounds = true;
+	}
+    }
+  if (in_bounds)
+    return wide_int_range_multiplicative_op (res_lb, res_ub,
+					     LSHIFT_EXPR, sign, prec,
+					     vr0_lb, vr0_ub,
+					     vr1_lb, vr1_ub,
+					     overflow_undefined,
+					     overflow_wraps);
+  return false;
+}
+
+/* Return TRUE if a bit operation on two ranges can be easily
+   optimized in terms of a mask.
+
+   Basically, for BIT_AND_EXPR or BIT_IOR_EXPR see if we can optimize:
+
+	[LB, UB] op Z
+   into:
+	[LB op Z, UB op Z]
+
+   It is up to the caller to perform the actual folding above.  */
+
+bool
+wide_int_range_can_optimize_bit_op (tree_code code,
+				    const wide_int &lb, const wide_int &ub,
+				    const wide_int &mask)
+
+{
+  if (code != BIT_AND_EXPR && code != BIT_IOR_EXPR)
+    return false;
+  /* If Z is a constant which (for op | its bitwise not) has n
+     consecutive least significant bits cleared followed by m 1
+     consecutive bits set immediately above it and either
+     m + n == precision, or (x >> (m + n)) == (y >> (m + n)).
+
+     The least significant n bits of all the values in the range are
+     cleared or set, the m bits above it are preserved and any bits
+     above these are required to be the same for all values in the
+     range.  */
+
+  wide_int w = mask;
+  int m = 0, n = 0;
+  if (code == BIT_IOR_EXPR)
+    w = ~w;
+  if (wi::eq_p (w, 0))
+    n = w.get_precision ();
+  else
+    {
+      n = wi::ctz (w);
+      w = ~(w | wi::mask (n, false, w.get_precision ()));
+      if (wi::eq_p (w, 0))
+	m = w.get_precision () - n;
+      else
+	m = wi::ctz (w) - n;
+    }
+  wide_int new_mask = wi::mask (m + n, true, w.get_precision ());
+  if ((new_mask & lb) == (new_mask & ub))
+    return true;
+
+  return false;
+}
+
+/* Return TRUE if shifting by range [MIN, MAX] is undefined behavior.
+
+   FIXME: Make this inline when it moves outside of tree-vrp.  */
+
+bool
+wide_int_range_shift_undefined_p (signop sign, unsigned prec,
+				  const wide_int &min, const wide_int &max)
+{
+  /* ?? Note: The original comment said this only applied to
+     RSHIFT_EXPR, but it was being applied to both left and right
+     shifts.  Is this OK?  */
+
+  /* Shifting by any values outside [0..prec-1], gets undefined
+     behavior from the shift operation.  We cannot even trust
+     SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
+     shifts, and the operation at the tree level may be widened.  */
+  return wi::lt_p (min, 0, sign) || wi::ge_p (max, prec, sign);
+}
+
+/* Calculate the XOR of two ranges and store the result in [WMIN,WMAX].
+   The two input ranges are described by their MUST_BE_NONZERO and
+   MAY_BE_NONZERO bit masks.
+
+   Return TRUE if we were able to successfully calculate the new range.  */
+
+bool
+wide_int_range_bit_xor (wide_int &wmin, wide_int &wmax,
+			signop sign,
+			unsigned prec,
+			const wide_int &must_be_nonzero0,
+			const wide_int &may_be_nonzero0,
+			const wide_int &must_be_nonzero1,
+			const wide_int &may_be_nonzero1)
+{
+  wide_int result_zero_bits = ((must_be_nonzero0 & must_be_nonzero1)
+			       | ~(may_be_nonzero0 | may_be_nonzero1));
+  wide_int result_one_bits
+    = (wi::bit_and_not (must_be_nonzero0, may_be_nonzero1)
+       | wi::bit_and_not (must_be_nonzero1, may_be_nonzero0));
+  wmax = ~result_zero_bits;
+  wmin = result_one_bits;
+  /* If the range has all positive or all negative values, the result
+     is better than VARYING.  */
+  if (wi::lt_p (wmin, 0, sign) || wi::ge_p (wmax, 0, sign))
+    return true;
+  wmin = wi::min_value (prec, sign);
+  wmax = wi::max_value (prec, sign);
+  return false;
+}
+
+/* Calculate the IOR of two ranges and store the result in [WMIN,WMAX].
+   Return TRUE if we were able to successfully calculate the new range.  */
+
+bool
+wide_int_range_bit_ior (wide_int &wmin, wide_int &wmax,
+			signop sign,
+			const wide_int &vr0_min,
+			const wide_int &vr0_max,
+			const wide_int &vr1_min,
+			const wide_int &vr1_max,
+			const wide_int &must_be_nonzero0,
+			const wide_int &may_be_nonzero0,
+			const wide_int &must_be_nonzero1,
+			const wide_int &may_be_nonzero1)
+{
+  wmin = must_be_nonzero0 | must_be_nonzero1;
+  wmax = may_be_nonzero0 | may_be_nonzero1;
+  /* If the input ranges contain only positive values we can
+     truncate the minimum of the result range to the maximum
+     of the input range minima.  */
+  if (wi::ge_p (vr0_min, 0, sign)
+      && wi::ge_p (vr1_min, 0, sign))
+    {
+      wmin = wi::max (wmin, vr0_min, sign);
+      wmin = wi::max (wmin, vr1_min, sign);
+    }
+  /* If either input range contains only negative values
+     we can truncate the minimum of the result range to the
+     respective minimum range.  */
+  if (wi::lt_p (vr0_max, 0, sign))
+    wmin = wi::max (wmin, vr0_min, sign);
+  if (wi::lt_p (vr1_max, 0, sign))
+    wmin = wi::max (wmin, vr1_min, sign);
+  /* If the limits got swapped around, indicate error so we can adjust
+     the range to VARYING.  */
+  if (wi::gt_p (wmin, wmax,sign))
+    return false;
+  return true;
+}
+
+/* Calculate the bitwise AND of two ranges and store the result in [WMIN,WMAX].
+   Return TRUE if we were able to successfully calculate the new range.  */
+
+bool
+wide_int_range_bit_and (wide_int &wmin, wide_int &wmax,
+			signop sign,
+			unsigned prec,
+			const wide_int &vr0_min,
+			const wide_int &vr0_max,
+			const wide_int &vr1_min,
+			const wide_int &vr1_max,
+			const wide_int &must_be_nonzero0,
+			const wide_int &may_be_nonzero0,
+			const wide_int &must_be_nonzero1,
+			const wide_int &may_be_nonzero1)
+{
+  wmin = must_be_nonzero0 & must_be_nonzero1;
+  wmax = may_be_nonzero0 & may_be_nonzero1;
+  /* If both input ranges contain only negative values we can
+     truncate the result range maximum to the minimum of the
+     input range maxima.  */
+  if (wi::lt_p (vr0_max, 0, sign) && wi::lt_p (vr1_max, 0, sign))
+    {
+      wmax = wi::min (wmax, vr0_max, sign);
+      wmax = wi::min (wmax, vr1_max, sign);
+    }
+  /* If either input range contains only non-negative values
+     we can truncate the result range maximum to the respective
+     maximum of the input range.  */
+  if (wi::ge_p (vr0_min, 0, sign))
+    wmax = wi::min (wmax, vr0_max, sign);
+  if (wi::ge_p (vr1_min, 0, sign))
+    wmax = wi::min (wmax, vr1_max, sign);
+  /* PR68217: In case of signed & sign-bit-CST should
+     result in [-INF, 0] instead of [-INF, INF].  */
+  if (wi::gt_p (wmin, wmax, sign))
+    {
+      wide_int sign_bit = wi::set_bit_in_zero (prec - 1, prec);
+      if (sign == SIGNED
+	  && ((wi::eq_p (vr0_min, vr0_max)
+	       && !wi::cmps (vr0_min, sign_bit))
+	      || (wi::eq_p (vr1_min, vr1_max)
+		  && !wi::cmps (vr1_min, sign_bit))))
+	{
+	  wmin = wi::min_value (prec, sign);
+	  wmax = wi::zero (prec);
+	}
+    }
+  /* If the limits got swapped around, indicate error so we can adjust
+     the range to VARYING.  */
+  if (wi::gt_p (wmin, wmax,sign))
+    return false;
+  return true;
+}
+
+/* Calculate TRUNC_MOD_EXPR on two ranges and store the result in
+   [WMIN,WMAX].  */
+
+void
+wide_int_range_trunc_mod (wide_int &wmin, wide_int &wmax,
+			  signop sign,
+			  unsigned prec,
+			  const wide_int &vr0_min,
+			  const wide_int &vr0_max,
+			  const wide_int &vr1_min,
+			  const wide_int &vr1_max)
+{
+  wide_int tmp;
+
+  /* ABS (A % B) < ABS (B) and either
+     0 <= A % B <= A or A <= A % B <= 0.  */
+  wmax = vr1_max - 1;
+  if (sign == SIGNED)
+    {
+      tmp = -1 - vr1_min;
+      wmax = wi::smax (wmax, tmp);
+    }
+
+  if (sign == UNSIGNED)
+    wmin = wi::zero (prec);
+  else
+    {
+      wmin = -wmax;
+      tmp = vr0_min;
+      if (wi::gts_p (tmp, 0))
+	tmp = wi::zero (prec);
+      wmin = wi::smax (wmin, tmp);
+    }
+  tmp = vr0_max;
+  if (sign == SIGNED && wi::neg_p (tmp))
+    tmp = wi::zero (prec);
+  wmax = wi::min (wmax, tmp, sign);
+}
+
+/* Extract the components of a value range into a pair of wide ints in
+   [WMIN, WMAX].
+
+   If the value range is anything but a VR_RANGE of constants, the
+   resulting wide ints are set to [-MIN, +MAX] for the type.  */
+
+static void inline
+extract_range_into_wide_ints (value_range *vr,
+			      signop sign, unsigned prec,
+			      wide_int *wmin, wide_int *wmax)
+{
+  if (range_int_cst_p (vr))
+    {
+      *wmin = wi::to_wide (vr->min);
+      *wmax = wi::to_wide (vr->max);
+    }
+  else
+    {
+      *wmin = wi::min_value (prec, sign);
+      *wmax = wi::max_value (prec, sign);
+    }
+}
+
+/* Value range wrapper for wide_int_range_shift_undefined_p.  */
+
+static inline bool
+vrp_shift_undefined_p (const value_range &shifter, unsigned prec)
+{
+  tree type = TREE_TYPE (shifter.min);
+  return wide_int_range_shift_undefined_p (TYPE_SIGN (type), prec,
+					   wi::to_wide (shifter.min),
+					   wi::to_wide (shifter.max));
+}
+
+/* Value range wrapper for wide_int_range_multiplicative_op:
+
+     *VR = *VR0 .CODE. *VR1.  */
+
+static void
+extract_range_from_multiplicative_op (value_range *vr,
+				      enum tree_code code,
+				      value_range *vr0, value_range *vr1)
+{
   gcc_assert (code == MULT_EXPR
 	      || code == TRUNC_DIV_EXPR
 	      || code == FLOOR_DIV_EXPR
@@ -1197,82 +1675,236 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
 	      || code == ROUND_DIV_EXPR
 	      || code == RSHIFT_EXPR
 	      || code == LSHIFT_EXPR);
-  gcc_assert (vr0->type == VR_RANGE
-	      && vr0->type == vr1->type);
+  gcc_assert (vr0->type == VR_RANGE && vr0->type == vr1->type);
 
-  rtype = vr0->type;
-  type = TREE_TYPE (vr0->min);
-  signop sgn = TYPE_SIGN (type);
+  tree type = TREE_TYPE (vr0->min);
+  wide_int res_lb, res_ub;
+  wide_int vr0_lb = wi::to_wide (vr0->min);
+  wide_int vr0_ub = wi::to_wide (vr0->max);
+  wide_int vr1_lb = wi::to_wide (vr1->min);
+  wide_int vr1_ub = wi::to_wide (vr1->max);
+  bool overflow_undefined = TYPE_OVERFLOW_UNDEFINED (type);
+  bool overflow_wraps = TYPE_OVERFLOW_WRAPS (type);
+  unsigned prec = TYPE_PRECISION (type);
 
-  /* Compute the 4 cross operations and their minimum and maximum value.  */
-  if (!vrp_int_const_binop (code, vr0->min, vr1->min, &val))
+  if (wide_int_range_multiplicative_op (res_lb, res_ub,
+					 code, TYPE_SIGN (type), prec,
+					 vr0_lb, vr0_ub, vr1_lb, vr1_ub,
+					 overflow_undefined, overflow_wraps))
+    set_and_canonicalize_value_range (vr, VR_RANGE,
+				      wide_int_to_tree (type, res_lb),
+				      wide_int_to_tree (type, res_ub), NULL);
+  else
+    set_value_range_to_varying (vr);
+}
+
+/* Value range wrapper for wide_int_range_can_optimize_bit_op.
+
+   If a bit operation on two ranges can be easily optimized in terms
+   of a mask, store the optimized new range in VR and return TRUE.  */
+
+static bool
+vrp_can_optimize_bit_op (value_range *vr, enum tree_code code,
+			 value_range *vr0, value_range *vr1)
+{
+  tree lower_bound, upper_bound, mask;
+  if (code != BIT_AND_EXPR && code != BIT_IOR_EXPR)
+    return false;
+  if (range_int_cst_singleton_p (vr1))
     {
-      set_value_range_to_varying (vr);
-      return;
+      if (!range_int_cst_p (vr0))
+	return false;
+      mask = vr1->min;
+      lower_bound = vr0->min;
+      upper_bound = vr0->max;
     }
-  min = max = val;
-
-  if (vr1->max != vr1->min)
+  else if (range_int_cst_singleton_p (vr0))
     {
-      if (!vrp_int_const_binop (code, vr0->min, vr1->max, &val))
+      if (!range_int_cst_p (vr1))
+	return false;
+      mask = vr0->min;
+      lower_bound = vr1->min;
+      upper_bound = vr1->max;
+    }
+  else
+    return false;
+  if (wide_int_range_can_optimize_bit_op (code,
+					  wi::to_wide (lower_bound),
+					  wi::to_wide (upper_bound),
+					  wi::to_wide (mask)))
+    {
+      tree min = int_const_binop (code, lower_bound, mask);
+      tree max = int_const_binop (code, upper_bound, mask);
+      set_value_range (vr, VR_RANGE, min, max, NULL);
+      return true;
+    }
+  return false;
+}
+
+/* If BOUND will include a symbolic bound, adjust it accordingly,
+   otherwise leave it as is.
+
+   CODE is the original operation that combined the bounds (PLUS_EXPR
+   or MINUS_EXPR).
+
+   TYPE is the type of the original operation.
+
+   SYM_OPn is the symbolic for OPn if it has a symbolic.
+
+   NEG_OPn is TRUE if the OPn was negated.  */
+
+static void
+adjust_symbolic_bound (tree &bound, enum tree_code code, tree type,
+		       tree sym_op0, tree sym_op1,
+		       bool neg_op0, bool neg_op1)
+{
+  bool minus_p = (code == MINUS_EXPR);
+  /* If the result bound is constant, we're done; otherwise, build the
+     symbolic lower bound.  */
+  if (sym_op0 == sym_op1)
+    ;
+  else if (sym_op0)
+    bound = build_symbolic_expr (type, sym_op0,
+				 neg_op0, bound);
+  else if (sym_op1)
+    {
+      /* We may not negate if that might introduce
+	 undefined overflow.  */
+      if (!minus_p
+	  || neg_op1
+	  || TYPE_OVERFLOW_WRAPS (type))
+	bound = build_symbolic_expr (type, sym_op1,
+				     neg_op1 ^ minus_p, bound);
+      else
+	bound = NULL_TREE;
+    }
+}
+
+/* Combine OP1 and OP1, which are two parts of a bound, into one wide
+   int bound according to CODE.  CODE is the operation combining the
+   bound (either a PLUS_EXPR or a MINUS_EXPR).
+
+   TYPE is the type of the combine operation.
+
+   WI is the wide int to store the result.
+
+   OVF is -1 if an underflow occurred, +1 if an overflow occurred or 0
+   if over/underflow occurred.  */
+
+static void
+combine_bound (enum tree_code code, wide_int &wi, wi::overflow_type &ovf,
+	       tree type, tree op0, tree op1)
+{
+  bool minus_p = (code == MINUS_EXPR);
+  const signop sgn = TYPE_SIGN (type);
+  const unsigned int prec = TYPE_PRECISION (type);
+
+  /* Combine the bounds, if any.  */
+  if (op0 && op1)
+    {
+      if (minus_p)
+	wi = wi::sub (wi::to_wide (op0), wi::to_wide (op1), sgn, &ovf);
+      else
+	wi = wi::add (wi::to_wide (op0), wi::to_wide (op1), sgn, &ovf);
+    }
+  else if (op0)
+    wi = wi::to_wide (op0);
+  else if (op1)
+    {
+      if (minus_p)
+	wi = wi::neg (wi::to_wide (op1), &ovf);
+      else
+	wi = wi::to_wide (op1);
+    }
+  else
+    wi = wi::shwi (0, prec);
+}
+
+/* Given a range in [WMIN, WMAX], adjust it for possible overflow and
+   put the result in VR.
+
+   TYPE is the type of the range.
+
+   MIN_OVF and MAX_OVF indicate what type of overflow, if any,
+   occurred while originally calculating WMIN or WMAX.  -1 indicates
+   underflow.  +1 indicates overflow.  0 indicates neither.  */
+
+static void
+set_value_range_with_overflow (value_range &vr,
+			       tree type,
+			       const wide_int &wmin, const wide_int &wmax,
+			       wi::overflow_type min_ovf,
+			       wi::overflow_type max_ovf)
+{
+  const signop sgn = TYPE_SIGN (type);
+  const unsigned int prec = TYPE_PRECISION (type);
+  vr.type = VR_RANGE;
+  vr.equiv = NULL;
+  if (TYPE_OVERFLOW_WRAPS (type))
+    {
+      /* If overflow wraps, truncate the values and adjust the
+	 range kind and bounds appropriately.  */
+      wide_int tmin = wide_int::from (wmin, prec, sgn);
+      wide_int tmax = wide_int::from (wmax, prec, sgn);
+      if ((min_ovf != wi::OVF_NONE) == (max_ovf != wi::OVF_NONE))
 	{
-	  set_value_range_to_varying (vr);
+	  /* No overflow or both overflow or underflow.  The
+	     range kind stays VR_RANGE.  */
+	  vr.min = wide_int_to_tree (type, tmin);
+	  vr.max = wide_int_to_tree (type, tmax);
+	}
+      else if ((min_ovf == wi::OVF_UNDERFLOW && max_ovf == wi::OVF_NONE)
+	       || (max_ovf == wi::OVF_OVERFLOW && min_ovf == wi::OVF_NONE))
+	{
+	  /* Min underflow or max overflow.  The range kind
+	     changes to VR_ANTI_RANGE.  */
+	  bool covers = false;
+	  wide_int tem = tmin;
+	  vr.type = VR_ANTI_RANGE;
+	  tmin = tmax + 1;
+	  if (wi::cmp (tmin, tmax, sgn) < 0)
+	    covers = true;
+	  tmax = tem - 1;
+	  if (wi::cmp (tmax, tem, sgn) > 0)
+	    covers = true;
+	  /* If the anti-range would cover nothing, drop to varying.
+	     Likewise if the anti-range bounds are outside of the
+	     types values.  */
+	  if (covers || wi::cmp (tmin, tmax, sgn) > 0)
+	    {
+	      set_value_range_to_varying (&vr);
+	      return;
+	    }
+	  vr.min = wide_int_to_tree (type, tmin);
+	  vr.max = wide_int_to_tree (type, tmax);
+	}
+      else
+	{
+	  /* Other underflow and/or overflow, drop to VR_VARYING.  */
+	  set_value_range_to_varying (&vr);
 	  return;
 	}
-      if (wi::lt_p (val, min, sgn))
-	min = val;
-      else if (wi::gt_p (val, max, sgn))
-	max = val;
     }
-
-  if (vr0->max != vr0->min)
+  else
     {
-      if (!vrp_int_const_binop (code, vr0->max, vr1->min, &val))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-      if (wi::lt_p (val, min, sgn))
-	min = val;
-      else if (wi::gt_p (val, max, sgn))
-	max = val;
-    }
+      /* If overflow does not wrap, saturate to the types min/max
+	 value.  */
+      wide_int type_min = wi::min_value (prec, sgn);
+      wide_int type_max = wi::max_value (prec, sgn);
+      if (min_ovf == wi::OVF_UNDERFLOW)
+	vr.min = wide_int_to_tree (type, type_min);
+      else if (min_ovf == wi::OVF_OVERFLOW)
+	vr.min = wide_int_to_tree (type, type_max);
+      else
+	vr.min = wide_int_to_tree (type, wmin);
 
-  if (vr0->min != vr0->max && vr1->min != vr1->max)
-    {
-      if (!vrp_int_const_binop (code, vr0->max, vr1->max, &val))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-      if (wi::lt_p (val, min, sgn))
-	min = val;
-      else if (wi::gt_p (val, max, sgn))
-	max = val;
+      if (max_ovf == wi::OVF_UNDERFLOW)
+	vr.max = wide_int_to_tree (type, type_min);
+      else if (max_ovf == wi::OVF_OVERFLOW)
+	vr.max = wide_int_to_tree (type, type_max);
+      else
+	vr.max = wide_int_to_tree (type, wmax);
     }
-
-  /* If the new range has its limits swapped around (MIN > MAX),
-     then the operation caused one of them to wrap around, mark
-     the new range VARYING.  */
-  if (wi::gt_p (min, max, sgn))
-    {
-      set_value_range_to_varying (vr);
-      return;
-    }
-
-  /* We punt for [-INF, +INF].
-     We learn nothing when we have INF on both sides.
-     Note that we do accept [-INF, -INF] and [+INF, +INF].  */
-  if (wi::eq_p (min, wi::min_value (TYPE_PRECISION (type), sgn))
-      && wi::eq_p (max, wi::max_value (TYPE_PRECISION (type), sgn)))
-    {
-      set_value_range_to_varying (vr);
-      return;
-    }
-
-  set_value_range (vr, rtype,
-		   wide_int_to_tree (type, min),
-		   wide_int_to_tree (type, max), NULL);
 }
 
 /* Extract range information from a binary operation CODE based on
@@ -1284,6 +1916,8 @@ extract_range_from_binary_expr_1 (value_range *vr,
 				  enum tree_code code, tree expr_type,
 				  value_range *vr0_, value_range *vr1_)
 {
+  signop sign = TYPE_SIGN (expr_type);
+  unsigned int prec = TYPE_PRECISION (expr_type);
   value_range vr0 = *vr0_, vr1 = *vr1_;
   value_range vrtem0 = VR_INITIALIZER, vrtem1 = VR_INITIALIZER;
   enum value_range_type type;
@@ -1471,6 +2105,8 @@ extract_range_from_binary_expr_1 (value_range *vr,
       tree sym_max_op1 = NULL_TREE;
       bool neg_min_op0, neg_min_op1, neg_max_op0, neg_max_op1;
 
+      neg_min_op0 = neg_min_op1 = neg_max_op0 = neg_max_op1 = false;
+
       /* If we have a PLUS or MINUS with two VR_RANGEs, either constant or
 	 single-symbolic ranges, try to compute the precise resulting range,
 	 but only if we know that this resulting range will also be constant
@@ -1495,240 +2131,41 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	      || (sym_max_op0 == sym_max_op1
 		  && neg_max_op0 == (minus_p ? neg_max_op1 : !neg_max_op1))))
 	{
-	  const signop sgn = TYPE_SIGN (expr_type);
-	  const unsigned int prec = TYPE_PRECISION (expr_type);
-	  wide_int type_min, type_max, wmin, wmax;
-	  int min_ovf = 0;
-	  int max_ovf = 0;
+	  wide_int wmin, wmax;
+	  wi::overflow_type min_ovf = wi::OVF_NONE;
+	  wi::overflow_type max_ovf = wi::OVF_NONE;
 
-	  /* Get the lower and upper bounds of the type.  */
-	  if (TYPE_OVERFLOW_WRAPS (expr_type))
-	    {
-	      type_min = wi::min_value (prec, sgn);
-	      type_max = wi::max_value (prec, sgn);
-	    }
-	  else
-	    {
-	      type_min = wi::to_wide (vrp_val_min (expr_type));
-	      type_max = wi::to_wide (vrp_val_max (expr_type));
-	    }
-
-	  /* Combine the lower bounds, if any.  */
-	  if (min_op0 && min_op1)
-	    {
-	      if (minus_p)
-		{
-		  wmin = wi::to_wide (min_op0) - wi::to_wide (min_op1);
-
-		  /* Check for overflow.  */
-		  if (wi::cmp (0, wi::to_wide (min_op1), sgn)
-		      != wi::cmp (wmin, wi::to_wide (min_op0), sgn))
-		    min_ovf = wi::cmp (wi::to_wide (min_op0),
-				       wi::to_wide (min_op1), sgn);
-		}
-	      else
-		{
-		  wmin = wi::to_wide (min_op0) + wi::to_wide (min_op1);
-
-		  /* Check for overflow.  */
-		  if (wi::cmp (wi::to_wide (min_op1), 0, sgn)
-		      != wi::cmp (wmin, wi::to_wide (min_op0), sgn))
-		    min_ovf = wi::cmp (wi::to_wide (min_op0), wmin, sgn);
-		}
-	    }
-	  else if (min_op0)
-	    wmin = wi::to_wide (min_op0);
-	  else if (min_op1)
-	    {
-	      if (minus_p)
-		{
-		  wmin = -wi::to_wide (min_op1);
-
-		  /* Check for overflow.  */
-		  if (sgn == SIGNED
-		      && wi::neg_p (wi::to_wide (min_op1))
-		      && wi::neg_p (wmin))
-		    min_ovf = 1;
-		  else if (sgn == UNSIGNED && wi::to_wide (min_op1) != 0)
-		    min_ovf = -1;
-		}
-	      else
-		wmin = wi::to_wide (min_op1);
-	    }
-	  else
-	    wmin = wi::shwi (0, prec);
-
-	  /* Combine the upper bounds, if any.  */
-	  if (max_op0 && max_op1)
-	    {
-	      if (minus_p)
-		{
-		  wmax = wi::to_wide (max_op0) - wi::to_wide (max_op1);
-
-		  /* Check for overflow.  */
-		  if (wi::cmp (0, wi::to_wide (max_op1), sgn)
-		      != wi::cmp (wmax, wi::to_wide (max_op0), sgn))
-		    max_ovf = wi::cmp (wi::to_wide (max_op0),
-				       wi::to_wide (max_op1), sgn);
-		}
-	      else
-		{
-		  wmax = wi::to_wide (max_op0) + wi::to_wide (max_op1);
-
-		  if (wi::cmp (wi::to_wide (max_op1), 0, sgn)
-		      != wi::cmp (wmax, wi::to_wide (max_op0), sgn))
-		    max_ovf = wi::cmp (wi::to_wide (max_op0), wmax, sgn);
-		}
-	    }
-	  else if (max_op0)
-	    wmax = wi::to_wide (max_op0);
-	  else if (max_op1)
-	    {
-	      if (minus_p)
-		{
-		  wmax = -wi::to_wide (max_op1);
-
-		  /* Check for overflow.  */
-		  if (sgn == SIGNED
-		      && wi::neg_p (wi::to_wide (max_op1))
-		      && wi::neg_p (wmax))
-		    max_ovf = 1;
-		  else if (sgn == UNSIGNED && wi::to_wide (max_op1) != 0)
-		    max_ovf = -1;
-		}
-	      else
-		wmax = wi::to_wide (max_op1);
-	    }
-	  else
-	    wmax = wi::shwi (0, prec);
-
-	  /* Check for type overflow.  */
-	  if (min_ovf == 0)
-	    {
-	      if (wi::cmp (wmin, type_min, sgn) == -1)
-		min_ovf = -1;
-	      else if (wi::cmp (wmin, type_max, sgn) == 1)
-		min_ovf = 1;
-	    }
-	  if (max_ovf == 0)
-	    {
-	      if (wi::cmp (wmax, type_min, sgn) == -1)
-		max_ovf = -1;
-	      else if (wi::cmp (wmax, type_max, sgn) == 1)
-		max_ovf = 1;
-	    }
+	  /* Build the bounds.  */
+	  combine_bound (code, wmin, min_ovf, expr_type, min_op0, min_op1);
+	  combine_bound (code, wmax, max_ovf, expr_type, max_op0, max_op1);
 
 	  /* If we have overflow for the constant part and the resulting
 	     range will be symbolic, drop to VR_VARYING.  */
-	  if ((min_ovf && sym_min_op0 != sym_min_op1)
-	      || (max_ovf && sym_max_op0 != sym_max_op1))
+	  if (((bool)min_ovf && sym_min_op0 != sym_min_op1)
+	      || ((bool)max_ovf && sym_max_op0 != sym_max_op1))
 	    {
 	      set_value_range_to_varying (vr);
 	      return;
 	    }
 
-	  if (TYPE_OVERFLOW_WRAPS (expr_type))
-	    {
-	      /* If overflow wraps, truncate the values and adjust the
-		 range kind and bounds appropriately.  */
-	      wide_int tmin = wide_int::from (wmin, prec, sgn);
-	      wide_int tmax = wide_int::from (wmax, prec, sgn);
-	      if (min_ovf == max_ovf)
-		{
-		  /* No overflow or both overflow or underflow.  The
-		     range kind stays VR_RANGE.  */
-		  min = wide_int_to_tree (expr_type, tmin);
-		  max = wide_int_to_tree (expr_type, tmax);
-		}
-	      else if ((min_ovf == -1 && max_ovf == 0)
-		       || (max_ovf == 1 && min_ovf == 0))
-		{
-		  /* Min underflow or max overflow.  The range kind
-		     changes to VR_ANTI_RANGE.  */
-		  bool covers = false;
-		  wide_int tem = tmin;
-		  type = VR_ANTI_RANGE;
-		  tmin = tmax + 1;
-		  if (wi::cmp (tmin, tmax, sgn) < 0)
-		    covers = true;
-		  tmax = tem - 1;
-		  if (wi::cmp (tmax, tem, sgn) > 0)
-		    covers = true;
-		  /* If the anti-range would cover nothing, drop to varying.
-		     Likewise if the anti-range bounds are outside of the
-		     types values.  */
-		  if (covers || wi::cmp (tmin, tmax, sgn) > 0)
-		    {
-		      set_value_range_to_varying (vr);
-		      return;
-		    }
-		  min = wide_int_to_tree (expr_type, tmin);
-		  max = wide_int_to_tree (expr_type, tmax);
-		}
-	      else
-		{
-		  /* Other underflow and/or overflow, drop to VR_VARYING.  */
-		  set_value_range_to_varying (vr);
-		  return;
-		}
-	    }
-	  else
-	    {
-	      /* If overflow does not wrap, saturate to the types min/max
-	         value.  */
-	      if (min_ovf == -1)
-		min = wide_int_to_tree (expr_type, type_min);
-	      else if (min_ovf == 1)
-		min = wide_int_to_tree (expr_type, type_max);
-	      else
-		min = wide_int_to_tree (expr_type, wmin);
+	  /* Adjust the range for possible overflow.  */
+	  set_value_range_with_overflow (*vr, expr_type,
+					 wmin, wmax, min_ovf, max_ovf);
+	  if (vr->type == VR_VARYING)
+	    return;
 
-	      if (max_ovf == -1)
-		max = wide_int_to_tree (expr_type, type_min);
-	      else if (max_ovf == 1)
-		max = wide_int_to_tree (expr_type, type_max);
-	      else
-		max = wide_int_to_tree (expr_type, wmax);
-	    }
-
-	  /* If the result lower bound is constant, we're done;
-	     otherwise, build the symbolic lower bound.  */
-	  if (sym_min_op0 == sym_min_op1)
-	    ;
-	  else if (sym_min_op0)
-	    min = build_symbolic_expr (expr_type, sym_min_op0,
-				       neg_min_op0, min);
-	  else if (sym_min_op1)
-	    {
-	      /* We may not negate if that might introduce
-		 undefined overflow.  */
-	      if (! minus_p
-		  || neg_min_op1
-		  || TYPE_OVERFLOW_WRAPS (expr_type))
-		min = build_symbolic_expr (expr_type, sym_min_op1,
-					   neg_min_op1 ^ minus_p, min);
-	      else
-		min = NULL_TREE;
-	    }
-
-	  /* Likewise for the upper bound.  */
-	  if (sym_max_op0 == sym_max_op1)
-	    ;
-	  else if (sym_max_op0)
-	    max = build_symbolic_expr (expr_type, sym_max_op0,
-				       neg_max_op0, max);
-	  else if (sym_max_op1)
-	    {
-	      /* We may not negate if that might introduce
-		 undefined overflow.  */
-	      if (! minus_p
-		  || neg_max_op1
-		  || TYPE_OVERFLOW_WRAPS (expr_type))
-		max = build_symbolic_expr (expr_type, sym_max_op1,
-					   neg_max_op1 ^ minus_p, max);
-	      else
-		max = NULL_TREE;
-	    }
+	  /* Build the symbolic bounds if needed.  */
+	  adjust_symbolic_bound (vr->min, code, expr_type,
+				 sym_min_op0, sym_min_op1,
+				 neg_min_op0, neg_min_op1);
+	  adjust_symbolic_bound (vr->max, code, expr_type,
+				 sym_max_op0, sym_max_op1,
+				 neg_max_op0, neg_max_op1);
+	  /* ?? It would probably be cleaner to eliminate min/max/type
+	     entirely and hold these values in VR directly.  */
+	  min = vr->min;
+	  max = vr->max;
+	  type = vr->type;
 	}
       else
 	{
@@ -1798,118 +2235,20 @@ extract_range_from_binary_expr_1 (value_range *vr,
     }
   else if (code == MULT_EXPR)
     {
-      /* Fancy code so that with unsigned, [-3,-1]*[-3,-1] does not
-	 drop to varying.  This test requires 2*prec bits if both
-	 operands are signed and 2*prec + 2 bits if either is not.  */
-
-      signop sign = TYPE_SIGN (expr_type);
-      unsigned int prec = TYPE_PRECISION (expr_type);
-
       if (!range_int_cst_p (&vr0)
 	  || !range_int_cst_p (&vr1))
 	{
 	  set_value_range_to_varying (vr);
 	  return;
 	}
-
-      if (TYPE_OVERFLOW_WRAPS (expr_type))
-	{
-	  typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION * 2) vrp_int;
-	  typedef generic_wide_int
-             <wi::extended_tree <WIDE_INT_MAX_PRECISION * 2> > vrp_int_cst;
-	  vrp_int sizem1 = wi::mask <vrp_int> (prec, false);
-	  vrp_int size = sizem1 + 1;
-
-	  /* Extend the values using the sign of the result to PREC2.
-	     From here on out, everthing is just signed math no matter
-	     what the input types were.  */
-          vrp_int min0 = vrp_int_cst (vr0.min);
-          vrp_int max0 = vrp_int_cst (vr0.max);
-          vrp_int min1 = vrp_int_cst (vr1.min);
-          vrp_int max1 = vrp_int_cst (vr1.max);
-	  /* Canonicalize the intervals.  */
-	  if (sign == UNSIGNED)
-	    {
-	      if (wi::ltu_p (size, min0 + max0))
-		{
-		  min0 -= size;
-		  max0 -= size;
-		}
-
-	      if (wi::ltu_p (size, min1 + max1))
-		{
-		  min1 -= size;
-		  max1 -= size;
-		}
-	    }
-
-	  vrp_int prod0 = min0 * min1;
-	  vrp_int prod1 = min0 * max1;
-	  vrp_int prod2 = max0 * min1;
-	  vrp_int prod3 = max0 * max1;
-
-	  /* Sort the 4 products so that min is in prod0 and max is in
-	     prod3.  */
-	  /* min0min1 > max0max1 */
-	  if (prod0 > prod3)
-	    std::swap (prod0, prod3);
-
-	  /* min0max1 > max0min1 */
-	  if (prod1 > prod2)
-	    std::swap (prod1, prod2);
-
-	  if (prod0 > prod1)
-	    std::swap (prod0, prod1);
-
-	  if (prod2 > prod3)
-	    std::swap (prod2, prod3);
-
-	  /* diff = max - min.  */
-	  prod2 = prod3 - prod0;
-	  if (wi::geu_p (prod2, sizem1))
-	    {
-	      /* the range covers all values.  */
-	      set_value_range_to_varying (vr);
-	      return;
-	    }
-
-	  /* The following should handle the wrapping and selecting
-	     VR_ANTI_RANGE for us.  */
-	  min = wide_int_to_tree (expr_type, prod0);
-	  max = wide_int_to_tree (expr_type, prod3);
-	  set_and_canonicalize_value_range (vr, VR_RANGE, min, max, NULL);
-	  return;
-	}
-
-      /* If we have an unsigned MULT_EXPR with two VR_ANTI_RANGEs,
-	 drop to VR_VARYING.  It would take more effort to compute a
-	 precise range for such a case.  For example, if we have
-	 op0 == 65536 and op1 == 65536 with their ranges both being
-	 ~[0,0] on a 32-bit machine, we would have op0 * op1 == 0, so
-	 we cannot claim that the product is in ~[0,0].  Note that we
-	 are guaranteed to have vr0.type == vr1.type at this
-	 point.  */
-      if (vr0.type == VR_ANTI_RANGE
-	  && !TYPE_OVERFLOW_UNDEFINED (expr_type))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
+      extract_range_from_multiplicative_op (vr, code, &vr0, &vr1);
       return;
     }
   else if (code == RSHIFT_EXPR
 	   || code == LSHIFT_EXPR)
     {
-      /* If we have a RSHIFT_EXPR with any shift values outside [0..prec-1],
-	 then drop to VR_VARYING.  Outside of this range we get undefined
-	 behavior from the shift operation.  We cannot even trust
-	 SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
-	 shifts, and the operation at the tree level may be widened.  */
       if (range_int_cst_p (&vr1)
-	  && compare_tree_int (vr1.min, 0) >= 0
-	  && compare_tree_int (vr1.max, TYPE_PRECISION (expr_type)) == -1)
+	  && !vrp_shift_undefined_p (vr1, prec))
 	{
 	  if (code == RSHIFT_EXPR)
 	    {
@@ -1922,91 +2261,25 @@ extract_range_from_binary_expr_1 (value_range *vr,
 		  vr0.min = vrp_val_min (expr_type);
 		  vr0.max = vrp_val_max (expr_type);
 		}
-	      extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
-	      return;
-	    }
-	  /* We can map lshifts by constants to MULT_EXPR handling.  */
-	  else if (code == LSHIFT_EXPR
-		   && range_int_cst_singleton_p (&vr1))
-	    {
-	      bool saved_flag_wrapv;
-	      value_range vr1p = VR_INITIALIZER;
-	      vr1p.type = VR_RANGE;
-	      vr1p.min = (wide_int_to_tree
-			  (expr_type,
-			   wi::set_bit_in_zero (tree_to_shwi (vr1.min),
-						TYPE_PRECISION (expr_type))));
-	      vr1p.max = vr1p.min;
-	      /* We have to use a wrapping multiply though as signed overflow
-		 on lshifts is implementation defined in C89.  */
-	      saved_flag_wrapv = flag_wrapv;
-	      flag_wrapv = 1;
-	      extract_range_from_binary_expr_1 (vr, MULT_EXPR, expr_type,
-						&vr0, &vr1p);
-	      flag_wrapv = saved_flag_wrapv;
+	      extract_range_from_multiplicative_op (vr, code, &vr0, &vr1);
 	      return;
 	    }
 	  else if (code == LSHIFT_EXPR
 		   && range_int_cst_p (&vr0))
 	    {
-	      int prec = TYPE_PRECISION (expr_type);
-	      int overflow_pos = prec;
-	      int bound_shift;
-	      wide_int low_bound, high_bound;
-	      bool uns = TYPE_UNSIGNED (expr_type);
-	      bool in_bounds = false;
-
-	      if (!uns)
-		overflow_pos -= 1;
-
-	      bound_shift = overflow_pos - tree_to_shwi (vr1.max);
-	      /* If bound_shift == HOST_BITS_PER_WIDE_INT, the llshift can
-		 overflow.  However, for that to happen, vr1.max needs to be
-		 zero, which means vr1 is a singleton range of zero, which
-		 means it should be handled by the previous LSHIFT_EXPR
-		 if-clause.  */
-	      wide_int bound = wi::set_bit_in_zero (bound_shift, prec);
-	      wide_int complement = ~(bound - 1);
-
-	      if (uns)
+	      wide_int res_lb, res_ub;
+	      if (wide_int_range_lshift (res_lb, res_ub, sign, prec,
+					 wi::to_wide (vr0.min),
+					 wi::to_wide (vr0.max),
+					 wi::to_wide (vr1.min),
+					 wi::to_wide (vr1.max),
+					 TYPE_OVERFLOW_UNDEFINED (expr_type),
+					 TYPE_OVERFLOW_WRAPS (expr_type)))
 		{
-		  low_bound = bound;
-		  high_bound = complement;
-		  if (wi::ltu_p (wi::to_wide (vr0.max), low_bound))
-		    {
-		      /* [5, 6] << [1, 2] == [10, 24].  */
-		      /* We're shifting out only zeroes, the value increases
-			 monotonically.  */
-		      in_bounds = true;
-		    }
-		  else if (wi::ltu_p (high_bound, wi::to_wide (vr0.min)))
-		    {
-		      /* [0xffffff00, 0xffffffff] << [1, 2]
-		         == [0xfffffc00, 0xfffffffe].  */
-		      /* We're shifting out only ones, the value decreases
-			 monotonically.  */
-		      in_bounds = true;
-		    }
-		}
-	      else
-		{
-		  /* [-1, 1] << [1, 2] == [-4, 4].  */
-		  low_bound = complement;
-		  high_bound = bound;
-		  if (wi::lts_p (wi::to_wide (vr0.max), high_bound)
-		      && wi::lts_p (low_bound, wi::to_wide (vr0.min)))
-		    {
-		      /* For non-negative numbers, we're shifting out only
-			 zeroes, the value increases monotonically.
-			 For negative numbers, we're shifting out only ones, the
-			 value decreases monotomically.  */
-		      in_bounds = true;
-		    }
-		}
-
-	      if (in_bounds)
-		{
-		  extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
+		  min = wide_int_to_tree (expr_type, res_lb);
+		  max = wide_int_to_tree (expr_type, res_ub);
+		  set_and_canonicalize_value_range (vr, VR_RANGE,
+						    min, max, NULL);
 		  return;
 		}
 	    }
@@ -2120,7 +2393,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	}
       else if (range_int_cst_p (&vr0) && range_int_cst_p (&vr1))
 	{
-	  extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
+	  extract_range_from_multiplicative_op (vr, code, &vr0, &vr1);
 	  return;
 	}
     }
@@ -2131,212 +2404,83 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	  set_value_range_to_undefined (vr);
 	  return;
 	}
-      /* ABS (A % B) < ABS (B) and either
-	 0 <= A % B <= A or A <= A % B <= 0.  */
-      type = VR_RANGE;
-      signop sgn = TYPE_SIGN (expr_type);
-      unsigned int prec = TYPE_PRECISION (expr_type);
       wide_int wmin, wmax, tmp;
-      if (vr1.type == VR_RANGE && !symbolic_range_p (&vr1))
-	{
-	  wmax = wi::to_wide (vr1.max) - 1;
-	  if (sgn == SIGNED)
-	    {
-	      tmp = -1 - wi::to_wide (vr1.min);
-	      wmax = wi::smax (wmax, tmp);
-	    }
-	}
-      else
-	{
-	  wmax = wi::max_value (prec, sgn);
-	  /* X % INT_MIN may be INT_MAX.  */
-	  if (sgn == UNSIGNED)
-	    wmax = wmax - 1;
-	}
-
-      if (sgn == UNSIGNED)
-	wmin = wi::zero (prec);
-      else
-	{
-	  wmin = -wmax;
-	  if (vr0.type == VR_RANGE && TREE_CODE (vr0.min) == INTEGER_CST)
-	    {
-	      tmp = wi::to_wide (vr0.min);
-	      if (wi::gts_p (tmp, 0))
-		tmp = wi::zero (prec);
-	      wmin = wi::smax (wmin, tmp);
-	    }
-	}
-
-      if (vr0.type == VR_RANGE && TREE_CODE (vr0.max) == INTEGER_CST)
-	{
-	  tmp = wi::to_wide (vr0.max);
-	  if (sgn == SIGNED && wi::neg_p (tmp))
-	    tmp = wi::zero (prec);
-	  wmax = wi::min (wmax, tmp, sgn);
-	}
-
+      wide_int vr0_min, vr0_max, vr1_min, vr1_max;
+      extract_range_into_wide_ints (&vr0, sign, prec, &vr0_min, &vr0_max);
+      extract_range_into_wide_ints (&vr1, sign, prec, &vr1_min, &vr1_max);
+      wide_int_range_trunc_mod (wmin, wmax, sign, prec,
+				vr0_min, vr0_max, vr1_min, vr1_max);
       min = wide_int_to_tree (expr_type, wmin);
       max = wide_int_to_tree (expr_type, wmax);
+      set_value_range (vr, VR_RANGE, min, max, NULL);
+      return;
     }
   else if (code == BIT_AND_EXPR || code == BIT_IOR_EXPR || code == BIT_XOR_EXPR)
     {
-      bool int_cst_range0, int_cst_range1;
+      if (vrp_can_optimize_bit_op (vr, code, &vr0, &vr1))
+	return;
+
       wide_int may_be_nonzero0, may_be_nonzero1;
       wide_int must_be_nonzero0, must_be_nonzero1;
-
-      int_cst_range0 = zero_nonzero_bits_from_vr (expr_type, &vr0,
-						  &may_be_nonzero0,
-						  &must_be_nonzero0);
-      int_cst_range1 = zero_nonzero_bits_from_vr (expr_type, &vr1,
-						  &may_be_nonzero1,
-						  &must_be_nonzero1);
-
-      if (code == BIT_AND_EXPR || code == BIT_IOR_EXPR)
+      wide_int wmin, wmax;
+      wide_int vr0_min, vr0_max, vr1_min, vr1_max;
+      vrp_set_zero_nonzero_bits (expr_type, &vr0,
+				 &may_be_nonzero0, &must_be_nonzero0);
+      vrp_set_zero_nonzero_bits (expr_type, &vr1,
+				 &may_be_nonzero1, &must_be_nonzero1);
+      extract_range_into_wide_ints (&vr0, sign, prec, &vr0_min, &vr0_max);
+      extract_range_into_wide_ints (&vr1, sign, prec, &vr1_min, &vr1_max);
+      if (code == BIT_AND_EXPR)
 	{
-	  value_range *vr0p = NULL, *vr1p = NULL;
-	  if (range_int_cst_singleton_p (&vr1))
+	  if (wide_int_range_bit_and (wmin, wmax, sign, prec,
+				      vr0_min, vr0_max,
+				      vr1_min, vr1_max,
+				      must_be_nonzero0,
+				      may_be_nonzero0,
+				      must_be_nonzero1,
+				      may_be_nonzero1))
 	    {
-	      vr0p = &vr0;
-	      vr1p = &vr1;
+	      min = wide_int_to_tree (expr_type, wmin);
+	      max = wide_int_to_tree (expr_type, wmax);
+	      set_value_range (vr, VR_RANGE, min, max, NULL);
 	    }
-	  else if (range_int_cst_singleton_p (&vr0))
-	    {
-	      vr0p = &vr1;
-	      vr1p = &vr0;
-	    }
-	  /* For op & or | attempt to optimize:
-	     [x, y] op z into [x op z, y op z]
-	     if z is a constant which (for op | its bitwise not) has n
-	     consecutive least significant bits cleared followed by m 1
-	     consecutive bits set immediately above it and either
-	     m + n == precision, or (x >> (m + n)) == (y >> (m + n)).
-	     The least significant n bits of all the values in the range are
-	     cleared or set, the m bits above it are preserved and any bits
-	     above these are required to be the same for all values in the
-	     range.  */
-	  if (vr0p && range_int_cst_p (vr0p))
-	    {
-	      wide_int w = wi::to_wide (vr1p->min);
-	      int m = 0, n = 0;
-	      if (code == BIT_IOR_EXPR)
-		w = ~w;
-	      if (wi::eq_p (w, 0))
-		n = TYPE_PRECISION (expr_type);
-	      else
-		{
-		  n = wi::ctz (w);
-		  w = ~(w | wi::mask (n, false, w.get_precision ()));
-		  if (wi::eq_p (w, 0))
-		    m = TYPE_PRECISION (expr_type) - n;
-		  else
-		    m = wi::ctz (w) - n;
-		}
-	      wide_int mask = wi::mask (m + n, true, w.get_precision ());
-	      if ((mask & wi::to_wide (vr0p->min))
-		  == (mask & wi::to_wide (vr0p->max)))
-		{
-		  min = int_const_binop (code, vr0p->min, vr1p->min);
-		  max = int_const_binop (code, vr0p->max, vr1p->min);
-		}
-	    }
-	}
-
-      type = VR_RANGE;
-      if (min && max)
-	/* Optimized above already.  */;
-      else if (code == BIT_AND_EXPR)
-	{
-	  min = wide_int_to_tree (expr_type,
-				  must_be_nonzero0 & must_be_nonzero1);
-	  wide_int wmax = may_be_nonzero0 & may_be_nonzero1;
-	  /* If both input ranges contain only negative values we can
-	     truncate the result range maximum to the minimum of the
-	     input range maxima.  */
-	  if (int_cst_range0 && int_cst_range1
-	      && tree_int_cst_sgn (vr0.max) < 0
-	      && tree_int_cst_sgn (vr1.max) < 0)
-	    {
-	      wmax = wi::min (wmax, wi::to_wide (vr0.max),
-			      TYPE_SIGN (expr_type));
-	      wmax = wi::min (wmax, wi::to_wide (vr1.max),
-			      TYPE_SIGN (expr_type));
-	    }
-	  /* If either input range contains only non-negative values
-	     we can truncate the result range maximum to the respective
-	     maximum of the input range.  */
-	  if (int_cst_range0 && tree_int_cst_sgn (vr0.min) >= 0)
-	    wmax = wi::min (wmax, wi::to_wide (vr0.max),
-			    TYPE_SIGN (expr_type));
-	  if (int_cst_range1 && tree_int_cst_sgn (vr1.min) >= 0)
-	    wmax = wi::min (wmax, wi::to_wide (vr1.max),
-			    TYPE_SIGN (expr_type));
-	  max = wide_int_to_tree (expr_type, wmax);
-	  cmp = compare_values (min, max);
-	  /* PR68217: In case of signed & sign-bit-CST should
-	     result in [-INF, 0] instead of [-INF, INF].  */
-	  if (cmp == -2 || cmp == 1)
-	    {
-	      wide_int sign_bit
-		= wi::set_bit_in_zero (TYPE_PRECISION (expr_type) - 1,
-				       TYPE_PRECISION (expr_type));
-	      if (!TYPE_UNSIGNED (expr_type)
-		  && ((int_cst_range0
-		       && value_range_constant_singleton (&vr0)
-		       && !wi::cmps (wi::to_wide (vr0.min), sign_bit))
-		      || (int_cst_range1
-			  && value_range_constant_singleton (&vr1)
-			  && !wi::cmps (wi::to_wide (vr1.min), sign_bit))))
-		{
-		  min = TYPE_MIN_VALUE (expr_type);
-		  max = build_int_cst (expr_type, 0);
-		}
-	    }
+	  else
+	    set_value_range_to_varying (vr);
+	  return;
 	}
       else if (code == BIT_IOR_EXPR)
 	{
-	  max = wide_int_to_tree (expr_type,
-				  may_be_nonzero0 | may_be_nonzero1);
-	  wide_int wmin = must_be_nonzero0 | must_be_nonzero1;
-	  /* If the input ranges contain only positive values we can
-	     truncate the minimum of the result range to the maximum
-	     of the input range minima.  */
-	  if (int_cst_range0 && int_cst_range1
-	      && tree_int_cst_sgn (vr0.min) >= 0
-	      && tree_int_cst_sgn (vr1.min) >= 0)
+	  if (wide_int_range_bit_ior (wmin, wmax, sign,
+				      vr0_min, vr0_max,
+				      vr1_min, vr1_max,
+				      must_be_nonzero0,
+				      may_be_nonzero0,
+				      must_be_nonzero1,
+				      may_be_nonzero1))
 	    {
-	      wmin = wi::max (wmin, wi::to_wide (vr0.min),
-			      TYPE_SIGN (expr_type));
-	      wmin = wi::max (wmin, wi::to_wide (vr1.min),
-			      TYPE_SIGN (expr_type));
+	      min = wide_int_to_tree (expr_type, wmin);
+	      max = wide_int_to_tree (expr_type, wmax);
+	      set_value_range (vr, VR_RANGE, min, max, NULL);
 	    }
-	  /* If either input range contains only negative values
-	     we can truncate the minimum of the result range to the
-	     respective minimum range.  */
-	  if (int_cst_range0 && tree_int_cst_sgn (vr0.max) < 0)
-	    wmin = wi::max (wmin, wi::to_wide (vr0.min),
-			    TYPE_SIGN (expr_type));
-	  if (int_cst_range1 && tree_int_cst_sgn (vr1.max) < 0)
-	    wmin = wi::max (wmin, wi::to_wide (vr1.min),
-			    TYPE_SIGN (expr_type));
-	  min = wide_int_to_tree (expr_type, wmin);
+	  else
+	    set_value_range_to_varying (vr);
+	  return;
 	}
       else if (code == BIT_XOR_EXPR)
 	{
-	  wide_int result_zero_bits = ((must_be_nonzero0 & must_be_nonzero1)
-				       | ~(may_be_nonzero0 | may_be_nonzero1));
-	  wide_int result_one_bits
-	    = (wi::bit_and_not (must_be_nonzero0, may_be_nonzero1)
-	       | wi::bit_and_not (must_be_nonzero1, may_be_nonzero0));
-	  max = wide_int_to_tree (expr_type, ~result_zero_bits);
-	  min = wide_int_to_tree (expr_type, result_one_bits);
-	  /* If the range has all positive or all negative values the
-	     result is better than VARYING.  */
-	  if (tree_int_cst_sgn (min) < 0
-	      || tree_int_cst_sgn (max) >= 0)
-	    ;
+	  if (wide_int_range_bit_xor (wmin, wmax, sign, prec,
+				      must_be_nonzero0,
+				      may_be_nonzero0,
+				      must_be_nonzero1,
+				      may_be_nonzero1))
+	    {
+	      min = wide_int_to_tree (expr_type, wmin);
+	      max = wide_int_to_tree (expr_type, wmax);
+	      set_value_range (vr, VR_RANGE, min, max, NULL);
+	    }
 	  else
-	    max = min = NULL_TREE;
+	    set_value_range_to_varying (vr);
+	  return;
 	}
     }
   else
@@ -2372,6 +2516,85 @@ extract_range_from_binary_expr_1 (value_range *vr,
     }
   else
     set_value_range (vr, type, min, max, NULL);
+}
+
+/* Calculates the absolute value of a range and puts the result in VR.
+   VR0 is the input range.  TYPE is the type of the resulting
+   range.  */
+
+static void
+extract_range_from_abs_expr (value_range &vr, tree type, value_range &vr0)
+{
+  /* Pass through vr0 in the easy cases.  */
+  if (TYPE_UNSIGNED (type)
+      || value_range_nonnegative_p (&vr0))
+    {
+      copy_value_range (&vr, &vr0);
+      return;
+    }
+
+  /* For the remaining varying or symbolic ranges we can't do anything
+     useful.  */
+  if (vr0.type == VR_VARYING
+      || symbolic_range_p (&vr0))
+    {
+      set_value_range_to_varying (&vr);
+      return;
+    }
+
+  /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
+     useful range.  */
+  if (!TYPE_OVERFLOW_UNDEFINED (type)
+      && ((vr0.type == VR_RANGE
+	   && vrp_val_is_min (vr0.min))
+	  || (vr0.type == VR_ANTI_RANGE
+	      && !vrp_val_is_min (vr0.min))))
+    {
+      set_value_range_to_varying (&vr);
+      return;
+    }
+
+  /* ABS_EXPR may flip the range around, if the original range
+     included negative values.  */
+  tree min, max;
+  if (!vrp_val_is_min (vr0.min))
+    min = fold_unary_to_constant (ABS_EXPR, type, vr0.min);
+  else
+    min = TYPE_MAX_VALUE (type);
+
+  if (!vrp_val_is_min (vr0.max))
+    max = fold_unary_to_constant (ABS_EXPR, type, vr0.max);
+  else
+    max = TYPE_MAX_VALUE (type);
+
+  int cmp = compare_values (min, max);
+  gcc_assert (vr0.type != VR_ANTI_RANGE);
+
+  /* If the range contains zero then we know that the minimum value in the
+     range will be zero.  */
+  if (range_includes_zero_p (vr0.min, vr0.max) == 1)
+    {
+      if (cmp == 1)
+	max = min;
+      min = build_int_cst (type, 0);
+    }
+  else
+    {
+      /* If the range was reversed, swap MIN and MAX.  */
+      if (cmp == 1)
+	std::swap (min, max);
+    }
+
+  cmp = compare_values (min, max);
+  if (cmp == -2 || cmp == 1)
+    {
+      /* If the new range has its limits swapped around (MIN > MAX),
+	 then the operation caused one of them to wrap around, mark
+	 the new range VARYING.  */
+      set_value_range_to_varying (&vr);
+    }
+  else
+    set_value_range (&vr, vr0.type, min, max, NULL);
 }
 
 /* Extract range information from a unary operation CODE based on
@@ -2504,117 +2727,7 @@ extract_range_from_unary_expr (value_range *vr,
       return;
     }
   else if (code == ABS_EXPR)
-    {
-      tree min, max;
-      int cmp;
-
-      /* Pass through vr0 in the easy cases.  */
-      if (TYPE_UNSIGNED (type)
-	  || value_range_nonnegative_p (&vr0))
-	{
-	  copy_value_range (vr, &vr0);
-	  return;
-	}
-
-      /* For the remaining varying or symbolic ranges we can't do anything
-	 useful.  */
-      if (vr0.type == VR_VARYING
-	  || symbolic_range_p (&vr0))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
-         useful range.  */
-      if (!TYPE_OVERFLOW_UNDEFINED (type)
-	  && ((vr0.type == VR_RANGE
-	       && vrp_val_is_min (vr0.min))
-	      || (vr0.type == VR_ANTI_RANGE
-		  && !vrp_val_is_min (vr0.min))))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* ABS_EXPR may flip the range around, if the original range
-	 included negative values.  */
-      if (!vrp_val_is_min (vr0.min))
-	min = fold_unary_to_constant (code, type, vr0.min);
-      else
-	min = TYPE_MAX_VALUE (type);
-
-      if (!vrp_val_is_min (vr0.max))
-	max = fold_unary_to_constant (code, type, vr0.max);
-      else
-	max = TYPE_MAX_VALUE (type);
-
-      cmp = compare_values (min, max);
-
-      /* If a VR_ANTI_RANGEs contains zero, then we have
-	 ~[-INF, min(MIN, MAX)].  */
-      if (vr0.type == VR_ANTI_RANGE)
-	{
-	  if (range_includes_zero_p (vr0.min, vr0.max) == 1)
-	    {
-	      /* Take the lower of the two values.  */
-	      if (cmp != 1)
-		max = min;
-
-	      /* Create ~[-INF, min (abs(MIN), abs(MAX))]
-	         or ~[-INF + 1, min (abs(MIN), abs(MAX))] when
-		 flag_wrapv is set and the original anti-range doesn't include
-	         TYPE_MIN_VALUE, remember -TYPE_MIN_VALUE = TYPE_MIN_VALUE.  */
-	      if (TYPE_OVERFLOW_WRAPS (type))
-		{
-		  tree type_min_value = TYPE_MIN_VALUE (type);
-
-		  min = (vr0.min != type_min_value
-			 ? int_const_binop (PLUS_EXPR, type_min_value,
-					    build_int_cst (TREE_TYPE (type_min_value), 1))
-			 : type_min_value);
-		}
-	      else
-		min = TYPE_MIN_VALUE (type);
-	    }
-	  else
-	    {
-	      /* All else has failed, so create the range [0, INF], even for
-	         flag_wrapv since TYPE_MIN_VALUE is in the original
-	         anti-range.  */
-	      vr0.type = VR_RANGE;
-	      min = build_int_cst (type, 0);
-	      max = TYPE_MAX_VALUE (type);
-	    }
-	}
-
-      /* If the range contains zero then we know that the minimum value in the
-         range will be zero.  */
-      else if (range_includes_zero_p (vr0.min, vr0.max) == 1)
-	{
-	  if (cmp == 1)
-	    max = min;
-	  min = build_int_cst (type, 0);
-	}
-      else
-	{
-          /* If the range was reversed, swap MIN and MAX.  */
-	  if (cmp == 1)
-	    std::swap (min, max);
-	}
-
-      cmp = compare_values (min, max);
-      if (cmp == -2 || cmp == 1)
-	{
-	  /* If the new range has its limits swapped around (MIN > MAX),
-	     then the operation caused one of them to wrap around, mark
-	     the new range VARYING.  */
-	  set_value_range_to_varying (vr);
-	}
-      else
-	set_value_range (vr, vr0.type, min, max, NULL);
-      return;
-    }
+    return extract_range_from_abs_expr (*vr, type, vr0);
 
   /* For unhandled operations fall back to varying.  */
   set_value_range_to_varying (vr);
@@ -2693,6 +2806,12 @@ debug_value_range (value_range *vr)
 {
   dump_value_range (stderr, vr);
   fprintf (stderr, "\n");
+}
+
+void
+value_range::dump ()
+{
+  debug_value_range (this);
 }
 
 
@@ -4840,6 +4959,7 @@ class vrp_prop : public ssa_propagation_engine
   void vrp_finalize (bool);
   void check_all_array_refs (void);
   void check_array_ref (location_t, tree, bool);
+  void check_mem_ref (location_t, tree, bool);
   void search_for_addr_array (tree, location_t);
 
   class vr_values vr_values;
@@ -4992,21 +5112,285 @@ vrp_prop::check_array_ref (location_t location, tree ref,
     }
 }
 
+/* Checks one MEM_REF in REF, located at LOCATION, for out-of-bounds
+   references to string constants.  If VRP can determine that the array
+   subscript is a constant, check if it is outside valid range.
+   If the array subscript is a RANGE, warn if it is non-overlapping
+   with valid range.
+   IGNORE_OFF_BY_ONE is true if the MEM_REF is inside an ADDR_EXPR
+   (used to allow one-past-the-end indices for code that takes
+   the address of the just-past-the-end element of an array).  */
+
+void
+vrp_prop::check_mem_ref (location_t location, tree ref, bool ignore_off_by_one)
+{
+  if (TREE_NO_WARNING (ref))
+    return;
+
+  tree arg = TREE_OPERAND (ref, 0);
+  /* The constant and variable offset of the reference.  */
+  tree cstoff = TREE_OPERAND (ref, 1);
+  tree varoff = NULL_TREE;
+
+  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+
+  /* The array or string constant bounds in bytes.  Initially set
+     to [-MAXOBJSIZE - 1, MAXOBJSIZE]  until a tighter bound is
+     determined.  */
+  offset_int arrbounds[2] = { -maxobjsize - 1, maxobjsize };
+
+  /* The minimum and maximum intermediate offset.  For a reference
+     to be valid, not only does the final offset/subscript must be
+     in bounds but all intermediate offsets should be as well.
+     GCC may be able to deal gracefully with such out-of-bounds
+     offsets so the checking is only enbaled at -Warray-bounds=2
+     where it may help detect bugs in uses of the intermediate
+     offsets that could otherwise not be detectable.  */
+  offset_int ioff = wi::to_offset (fold_convert (ptrdiff_type_node, cstoff));
+  offset_int extrema[2] = { 0, wi::abs (ioff) };
+
+  /* The range of the byte offset into the reference.  */
+  offset_int offrange[2] = { 0, 0 };
+
+  value_range *vr = NULL;
+
+  /* Determine the offsets and increment OFFRANGE for the bounds of each.
+     The loop computes the the range of the final offset for expressions
+     such as (A + i0 + ... + iN)[CSTOFF] where i0 through iN are SSA_NAMEs
+     in some range.  */
+  while (TREE_CODE (arg) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (arg);
+      if (!is_gimple_assign (def))
+	break;
+
+      tree_code code = gimple_assign_rhs_code (def);
+      if (code == POINTER_PLUS_EXPR)
+	{
+	  arg = gimple_assign_rhs1 (def);
+	  varoff = gimple_assign_rhs2 (def);
+	}
+      else if (code == ASSERT_EXPR)
+	{
+	  arg = TREE_OPERAND (gimple_assign_rhs1 (def), 0);
+	  continue;
+	}
+      else
+	return;
+
+      /* VAROFF should always be a SSA_NAME here (and not even
+	 INTEGER_CST) but there's no point in taking chances.  */
+      if (TREE_CODE (varoff) != SSA_NAME)
+	break;
+
+      vr = get_value_range (varoff);
+      if (!vr || vr->type == VR_UNDEFINED || !vr->min || !vr->max)
+	break;
+
+      if (TREE_CODE (vr->min) != INTEGER_CST
+          || TREE_CODE (vr->max) != INTEGER_CST)
+        break;
+
+      if (vr->type == VR_RANGE)
+	{
+	  if (tree_int_cst_lt (vr->min, vr->max))
+	    {
+	      offset_int min
+		= wi::to_offset (fold_convert (ptrdiff_type_node, vr->min));
+	      offset_int max
+		= wi::to_offset (fold_convert (ptrdiff_type_node, vr->max));
+	      if (min < max)
+		{
+		  offrange[0] += min;
+		  offrange[1] += max;
+		}
+	      else
+		{
+		  offrange[0] += max;
+		  offrange[1] += min;
+		}
+	    }
+	  else
+	    {
+	      /* Conservatively add [-MAXOBJSIZE -1, MAXOBJSIZE]
+		 to OFFRANGE.  */
+	      offrange[0] += arrbounds[0];
+	      offrange[1] += arrbounds[1];
+	    }
+	}
+      else
+	{
+	  /* For an anti-range, analogously to the above, conservatively
+	     add [-MAXOBJSIZE -1, MAXOBJSIZE] to OFFRANGE.  */
+	  offrange[0] += arrbounds[0];
+	  offrange[1] += arrbounds[1];
+	}
+
+      /* Keep track of the minimum and maximum offset.  */
+      if (offrange[1] < 0 && offrange[1] < extrema[0])
+	extrema[0] = offrange[1];
+      if (offrange[0] > 0 && offrange[0] > extrema[1])
+	extrema[1] = offrange[0];
+
+      if (offrange[0] < arrbounds[0])
+	offrange[0] = arrbounds[0];
+
+      if (offrange[1] > arrbounds[1])
+	offrange[1] = arrbounds[1];
+    }
+
+  if (TREE_CODE (arg) == ADDR_EXPR)
+    {
+      arg = TREE_OPERAND (arg, 0);
+      if (TREE_CODE (arg) != STRING_CST
+	  && TREE_CODE (arg) != VAR_DECL)
+	return;
+    }
+  else
+    return;
+
+  /* The type of the object being referred to.  It can be an array,
+     string literal, or a non-array type when the MEM_REF represents
+     a reference/subscript via a pointer to an object that is not
+     an element of an array.  References to members of structs and
+     unions are excluded because MEM_REF doesn't make it possible
+     to identify the member where the reference originated.
+     Incomplete types are excluded as well because their size is
+     not known.  */
+  tree reftype = TREE_TYPE (arg);
+  if (POINTER_TYPE_P (reftype)
+      || !COMPLETE_TYPE_P (reftype)
+      || RECORD_OR_UNION_TYPE_P (reftype))
+    return;
+
+  offset_int eltsize;
+  if (TREE_CODE (reftype) == ARRAY_TYPE)
+    {
+      eltsize = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (reftype)));
+
+      if (tree dom = TYPE_DOMAIN (reftype))
+	{
+	  tree bnds[] = { TYPE_MIN_VALUE (dom), TYPE_MAX_VALUE (dom) };
+	  if (array_at_struct_end_p (arg)
+	      || !bnds[0] || !bnds[1])
+	    {
+	      arrbounds[0] = 0;
+	      arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
+	    }
+	  else
+	    {
+	      arrbounds[0] = wi::to_offset (bnds[0]) * eltsize;
+	      arrbounds[1] = (wi::to_offset (bnds[1]) + 1) * eltsize;
+	    }
+	}
+      else
+	{
+	  arrbounds[0] = 0;
+	  arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
+	}
+
+      if (TREE_CODE (ref) == MEM_REF)
+	{
+	  /* For MEM_REF determine a tighter bound of the non-array
+	     element type.  */
+	  tree eltype = TREE_TYPE (reftype);
+	  while (TREE_CODE (eltype) == ARRAY_TYPE)
+	    eltype = TREE_TYPE (eltype);
+	  eltsize = wi::to_offset (TYPE_SIZE_UNIT (eltype));
+	}
+    }
+  else
+    {
+      eltsize = 1;
+      arrbounds[0] = 0;
+      arrbounds[1] = wi::to_offset (TYPE_SIZE_UNIT (reftype));
+    }
+
+  offrange[0] += ioff;
+  offrange[1] += ioff;
+
+  /* Compute the more permissive upper bound when IGNORE_OFF_BY_ONE
+     is set (when taking the address of the one-past-last element
+     of an array) but always use the stricter bound in diagnostics. */
+  offset_int ubound = arrbounds[1];
+  if (ignore_off_by_one)
+    ubound += 1;
+
+  if (offrange[0] >= ubound || offrange[1] < arrbounds[0])
+    {
+      /* Treat a reference to a non-array object as one to an array
+	 of a single element.  */
+      if (TREE_CODE (reftype) != ARRAY_TYPE)
+	reftype = build_array_type_nelts (reftype, 1);
+
+      if (TREE_CODE (ref) == MEM_REF)
+	{
+	  /* Extract the element type out of MEM_REF and use its size
+	     to compute the index to print in the diagnostic; arrays
+	     in MEM_REF don't mean anything.   */
+	  tree type = TREE_TYPE (ref);
+	  while (TREE_CODE (type) == ARRAY_TYPE)
+	    type = TREE_TYPE (type);
+	  tree size = TYPE_SIZE_UNIT (type);
+	  offrange[0] = offrange[0] / wi::to_offset (size);
+	  offrange[1] = offrange[1] / wi::to_offset (size);
+	}
+      else
+	{
+	  /* For anything other than MEM_REF, compute the index to
+	     print in the diagnostic as the offset over element size.  */
+	  offrange[0] = offrange[0] / eltsize;
+	  offrange[1] = offrange[1] / eltsize;
+	}
+
+      if (offrange[0] == offrange[1])
+	warning_at (location, OPT_Warray_bounds,
+		    "array subscript %wi is outside array bounds "
+		    "of %qT",
+		    offrange[0].to_shwi (), reftype);
+      else
+	warning_at (location, OPT_Warray_bounds,
+		    "array subscript [%wi, %wi] is outside array bounds "
+		    "of %qT",
+		    offrange[0].to_shwi (), offrange[1].to_shwi (), reftype);
+      TREE_NO_WARNING (ref) = 1;
+      return;
+    }
+
+  if (warn_array_bounds < 2)
+    return;
+
+  /* At level 2 check also intermediate offsets.  */
+  int i = 0;
+  if (extrema[i] < -arrbounds[1] || extrema[i = 1] > ubound)
+    {
+      HOST_WIDE_INT tmpidx = extrema[i].to_shwi () / eltsize.to_shwi ();
+
+      warning_at (location, OPT_Warray_bounds,
+		  "intermediate array offset %wi is outside array bounds "
+		  "of %qT",
+		  tmpidx,  reftype);
+      TREE_NO_WARNING (ref) = 1;
+    }
+}
+
 /* Searches if the expr T, located at LOCATION computes
    address of an ARRAY_REF, and call check_array_ref on it.  */
 
 void
 vrp_prop::search_for_addr_array (tree t, location_t location)
 {
-  /* Check each ARRAY_REFs in the reference chain. */
+  /* Check each ARRAY_REF and MEM_REF in the reference chain. */
   do
     {
       if (TREE_CODE (t) == ARRAY_REF)
 	check_array_ref (location, t, true /*ignore_off_by_one*/);
+      else if (TREE_CODE (t) == MEM_REF)
+	check_mem_ref (location, t, true /*ignore_off_by_one*/);
 
       t = TREE_OPERAND (t, 0);
     }
-  while (handled_component_p (t));
+  while (handled_component_p (t) || TREE_CODE (t) == MEM_REF);
 
   if (TREE_CODE (t) == MEM_REF
       && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
@@ -5088,7 +5472,8 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
   vrp_prop *vrp_prop = (class vrp_prop *)wi->info;
   if (TREE_CODE (t) == ARRAY_REF)
     vrp_prop->check_array_ref (location, t, false /*ignore_off_by_one*/);
-
+  else if (TREE_CODE (t) == MEM_REF)
+    vrp_prop->check_mem_ref (location, t, false /*ignore_off_by_one*/);
   else if (TREE_CODE (t) == ADDR_EXPR)
     {
       vrp_prop->search_for_addr_array (t, location);

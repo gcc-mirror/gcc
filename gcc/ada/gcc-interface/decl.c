@@ -52,23 +52,19 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-/* "stdcall" and "thiscall" conventions should be processed in a specific way
-   on 32-bit x86/Windows only.  The macros below are helpers to avoid having
-   to check for a Windows specific attribute throughout this unit.  */
+/* The "stdcall" convention is really supported on 32-bit x86/Windows only.
+   The following macro is a helper to avoid having to check for a Windows
+   specific attribute throughout this unit.  */
 
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
 #ifdef TARGET_64BIT
 #define Has_Stdcall_Convention(E) \
   (!TARGET_64BIT && Convention (E) == Convention_Stdcall)
-#define Has_Thiscall_Convention(E) \
-  (!TARGET_64BIT && is_cplusplus_method (E))
 #else
 #define Has_Stdcall_Convention(E) (Convention (E) == Convention_Stdcall)
-#define Has_Thiscall_Convention(E) (is_cplusplus_method (E))
 #endif
 #else
 #define Has_Stdcall_Convention(E) 0
-#define Has_Thiscall_Convention(E) 0
 #endif
 
 #define STDCALL_PREFIX "_imp__"
@@ -273,7 +269,9 @@ static bool intrin_profiles_compatible_p (intrin_binding_t *);
 tree
 gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 {
-  /* Contains the kind of the input GNAT node.  */
+  /* The construct that declared the entity.  */
+  const Node_Id gnat_decl = Declaration_Node (gnat_entity);
+  /* The kind of the entity.  */
   const Entity_Kind kind = Ekind (gnat_entity);
   /* True if this is a type.  */
   const bool is_type = IN (kind, Type_Kind);
@@ -430,11 +428,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      || Is_Public (gnat_entity));
 
   /* Get the name of the entity and set up the line number and filename of
-     the original definition for use in any decl we make.  Make sure we do not
-     inherit another source location.  */
+     the original definition for use in any decl we make.  Make sure we do
+     not inherit another source location.  */
   gnu_entity_name = get_entity_name (gnat_entity);
-  if (Sloc (gnat_entity) != No_Location
-      && !renaming_from_instantiation_p (gnat_entity))
+  if (!renaming_from_instantiation_p (gnat_entity))
     Sloc_to_locus (Sloc (gnat_entity), &input_location);
 
   /* For cases when we are not defining (i.e., we are referencing from
@@ -579,7 +576,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       if (definition
 	  && !gnu_expr
 	  && No (Address_Clause (gnat_entity))
-	  && !No_Initialization (Declaration_Node (gnat_entity))
+	  && !No_Initialization (gnat_decl)
 	  && No (Renamed_Object (gnat_entity)))
 	{
 	  gnu_decl = error_mark_node;
@@ -612,9 +609,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 may contain N_Expression_With_Actions nodes and thus declarations of
 	 objects from other units that we need to discard.  */
       if (!definition
-	  && !No_Initialization (Declaration_Node (gnat_entity))
+	  && !No_Initialization (gnat_decl)
 	  && !Is_Dispatch_Table_Entity (gnat_entity)
-	  && Present (gnat_temp = Expression (Declaration_Node (gnat_entity)))
+	  && Present (gnat_temp = Expression (gnat_decl))
 	  && Nkind (gnat_temp) != N_Allocator
 	  && (!type_annotate_only || Compile_Time_Known_Value (gnat_temp)))
 	gnu_expr = gnat_to_gnu_external (gnat_temp);
@@ -635,9 +632,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     && !(kind == E_Variable
 		  && Present (Linker_Section_Pragma (gnat_entity)))
 	     && !Treat_As_Volatile (gnat_entity)
-	     && (((Nkind (Declaration_Node (gnat_entity))
-		   == N_Object_Declaration)
-		  && Present (Expression (Declaration_Node (gnat_entity))))
+	     && (((Nkind (gnat_decl) == N_Object_Declaration)
+		  && Present (Expression (gnat_decl)))
 		 || Present (Renamed_Object (gnat_entity))
 		 || imported_p));
 	bool inner_const_flag = const_flag;
@@ -651,7 +647,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	bool used_by_ref = false;
 	tree gnu_ext_name = NULL_TREE;
 	tree renamed_obj = NULL_TREE;
-	tree gnu_object_size;
+	tree gnu_ada_size = NULL_TREE;
 
 	/* We need to translate the renamed object even though we are only
 	   referencing the renaming.  But it may contain a call for which
@@ -756,8 +752,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  {
 	    if (gnu_expr && kind == E_Constant)
 	      {
-		tree size = TYPE_SIZE (TREE_TYPE (gnu_expr));
-		if (CONTAINS_PLACEHOLDER_P (size))
+		gnu_size = TYPE_SIZE (TREE_TYPE (gnu_expr));
+		gnu_ada_size = TYPE_ADA_SIZE (TREE_TYPE (gnu_expr));
+		if (CONTAINS_PLACEHOLDER_P (gnu_size))
 		  {
 		    /* If the initializing expression is itself a constant,
 		       despite having a nominal type with self-referential
@@ -769,27 +766,38 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			&& (TREE_READONLY (TREE_OPERAND (gnu_expr, 0))
 			    || DECL_READONLY_ONCE_ELAB
 			       (TREE_OPERAND (gnu_expr, 0))))
-		      gnu_size = DECL_SIZE (TREE_OPERAND (gnu_expr, 0));
+		      {
+			gnu_size = DECL_SIZE (TREE_OPERAND (gnu_expr, 0));
+			gnu_ada_size = gnu_size;
+		      }
 		    else
-		      gnu_size
-			= SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, gnu_expr);
+		      {
+			gnu_size
+			  = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_size,
+							    gnu_expr);
+			gnu_ada_size
+			  = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_ada_size,
+							    gnu_expr);
+		      }
 		  }
-		else
-		  gnu_size = size;
 	      }
 	    /* We may have no GNU_EXPR because No_Initialization is
 	       set even though there's an Expression.  */
 	    else if (kind == E_Constant
-		     && (Nkind (Declaration_Node (gnat_entity))
-			 == N_Object_Declaration)
-		     && Present (Expression (Declaration_Node (gnat_entity))))
-	      gnu_size
-		= TYPE_SIZE (gnat_to_gnu_type
-			     (Etype
-			      (Expression (Declaration_Node (gnat_entity)))));
+		     && Nkind (gnat_decl) == N_Object_Declaration
+		     && Present (Expression (gnat_decl)))
+	      {
+		tree gnu_expr_type
+		  = gnat_to_gnu_type (Etype (Expression (gnat_decl)));
+		gnu_size = TYPE_SIZE (gnu_expr_type);
+		gnu_ada_size = TYPE_ADA_SIZE (gnu_expr_type);
+	      }
 	    else
 	      {
 		gnu_size = max_size (TYPE_SIZE (gnu_type), true);
+		/* We can be called on unconstrained arrays in this mode.  */
+		if (!type_annotate_only)
+		  gnu_ada_size = max_size (TYPE_ADA_SIZE (gnu_type), true);
 		mutable_p = true;
 	      }
 
@@ -905,13 +913,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* Make a new type with the desired size and alignment, if needed.
 	   But do not take into account alignment promotions to compute the
 	   size of the object.  */
-	gnu_object_size = gnu_size ? gnu_size : TYPE_SIZE (gnu_type);
+	tree gnu_object_size = gnu_size ? gnu_size : TYPE_SIZE (gnu_type);
 	if (gnu_size || align > 0)
 	  {
 	    tree orig_type = gnu_type;
 
 	    gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
 				       false, false, definition, true);
+
+	    /* If the nominal subtype of the object is unconstrained and its
+	       size is not fixed, compute the Ada size from the Ada size of
+	       the subtype and/or the expression; this will make it possible
+	       for gnat_type_max_size to easily compute a maximum size.  */
+	    if (gnu_ada_size && gnu_size && !TREE_CONSTANT (gnu_size))
+	      SET_TYPE_ADA_SIZE (gnu_type, gnu_ada_size);
 
 	    /* If a padding record was made, declare it now since it will
 	       never be declared otherwise.  This is necessary to ensure
@@ -954,8 +969,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	       function call is a constant object.  Therefore, it can be the
 	       inner object of a constant renaming and the renaming must be
 	       fully instantiated, i.e. it cannot be a reference to (part of)
-	       an existing object.  And treat other rvalues (addresses, null
-	       expressions, constructors and literals) the same way.  */
+	       an existing object.  And treat other rvalues the same way.  */
 	    tree inner = gnu_expr;
 	    while (handled_component_p (inner) || CONVERT_EXPR_P (inner))
 	      inner = TREE_OPERAND (inner, 0);
@@ -966,11 +980,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      inner = TREE_OPERAND (inner, 1);
 	    if ((TREE_CODE (inner) == CALL_EXPR
 		 && !call_is_atomic_load (inner))
-		|| TREE_CODE (inner) == ADDR_EXPR
-		|| TREE_CODE (inner) == NULL_EXPR
-		|| TREE_CODE (inner) == PLUS_EXPR
 		|| TREE_CODE (inner) == CONSTRUCTOR
 		|| CONSTANT_CLASS_P (inner)
+		|| COMPARISON_CLASS_P (inner)
+		|| BINARY_CLASS_P (inner)
+		|| EXPRESSION_CLASS_P (inner)
 		/* We need to detect the case where a temporary is created to
 		   hold the return value, since we cannot safely rename it at
 		   top level as it lives only in the elaboration routine.  */
@@ -992,7 +1006,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		   underlying object lives only in the elaboration routine.  */
 		|| (TREE_CODE (inner) == INDIRECT_REF
 		    && (inner
-			  = remove_conversions (TREE_OPERAND (inner, 0), true))
+			= remove_conversions (TREE_OPERAND (inner, 0), true))
 		    && TREE_CODE (inner) == VAR_DECL
 		    && DECL_RETURN_VALUE_P (inner)))
 	      ;
@@ -2942,23 +2956,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
        the tree.  */
 
     case E_Record_Type:
-      if (Has_Complex_Representation (gnat_entity))
-	{
-	  gnu_type
-	    = build_complex_type
-	      (get_unpadded_type
-	       (Etype (Defining_Entity
-		       (First (Component_Items
-			       (Component_List
-				(Type_Definition
-				 (Declaration_Node (gnat_entity)))))))));
-
-	  break;
-	}
-
       {
-	Node_Id full_definition = Declaration_Node (gnat_entity);
-	Node_Id record_definition = Type_Definition (full_definition);
+	Node_Id record_definition = Type_Definition (gnat_decl);
+
+	if (Has_Complex_Representation (gnat_entity))
+	  {
+	    const Node_Id first_component
+	      = First (Component_Items (Component_List (record_definition)));
+	    tree gnu_component_type
+	      = get_unpadded_type (Etype (Defining_Entity (first_component)));
+	    gnu_type = build_complex_type (gnu_component_type);
+	    break;
+	  }
+
 	Node_Id gnat_constr;
 	Entity_Id gnat_field, gnat_parent_type;
 	tree gnu_field, gnu_field_list = NULL_TREE;
@@ -3968,11 +3978,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 	     get_identifier ("stdcall"), NULL_TREE,
 	     gnat_entity);
-	else if (Has_Thiscall_Convention (gnat_entity))
-	  prepend_one_attribute
-	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
-	     get_identifier ("thiscall"), NULL_TREE,
-	     gnat_entity);
 
 	/* If we should request stack realignment for a foreign convention
 	   subprogram, do so.  Note that this applies to task entry points
@@ -4826,11 +4831,12 @@ get_unpadded_type (Entity_Id gnat_entity)
 /* Return whether the E_Subprogram_Type/E_Function/E_Procedure GNAT_ENTITY is
    a C++ imported method or equivalent.
 
-   We use the predicate on 32-bit x86/Windows to find out whether we need to
-   use the "thiscall" calling convention for GNAT_ENTITY.  This convention is
-   used for C++ methods (functions with METHOD_TYPE) by the back-end.  */
+   We use the predicate to find out whether we need to use METHOD_TYPE instead
+   of FUNCTION_TYPE for GNAT_ENTITY for the sake compatibility with C++.  This
+   in turn determines whether the "thiscall" calling convention is used by the
+   back-end for GNAT_ENTITY on 32-bit x86/Windows.  */
 
-bool
+static bool
 is_cplusplus_method (Entity_Id gnat_entity)
 {
   /* A constructor is a method on the C++ side.  We deal with it now because
@@ -5228,7 +5234,6 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
 	     && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_param_type)))
 	gnu_param_type = TREE_TYPE (gnu_param_type);
 
-      by_component_ptr = true;
       gnu_param_type = TREE_TYPE (gnu_param_type);
 
       if (ro_param)
@@ -5236,12 +5241,21 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
 	  = change_qualified_type (gnu_param_type, TYPE_QUAL_CONST);
 
       gnu_param_type = build_pointer_type (gnu_param_type);
+      by_component_ptr = true;
     }
 
   /* Fat pointers are passed as thin pointers for foreign conventions.  */
   else if (foreign && TYPE_IS_FAT_POINTER_P (gnu_param_type))
     gnu_param_type
       = make_type_from_size (gnu_param_type, size_int (POINTER_SIZE), 0);
+
+  /* Use a pointer type for the "this" pointer of C++ constructors.  */
+  else if (Chars (gnat_param) == Name_uInit && Is_Constructor (gnat_subprog))
+    {
+      gcc_assert (mech == By_Reference);
+      gnu_param_type = build_pointer_type (gnu_param_type);
+      by_ref = true;
+    }
 
   /* If we were requested or muss pass by reference, do so.
      If we were requested to pass by copy, do so.
@@ -5542,6 +5556,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			  bool debug_info_p, tree *param_list)
 {
   const Entity_Kind kind = Ekind (gnat_subprog);
+  const bool method_p = is_cplusplus_method (gnat_subprog);
   Entity_Id gnat_return_type = Etype (gnat_subprog);
   Entity_Id gnat_param;
   tree gnu_type = present_gnu_tree (gnat_subprog)
@@ -5561,14 +5576,15 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   /* Fields in return type of procedure with copy-in copy-out parameters.  */
   tree gnu_field_list = NULL_TREE;
   /* The semantics of "pure" in Ada essentially matches that of "const"
-     in the back-end.  In particular, both properties are orthogonal to
-     the "nothrow" property if the EH circuitry is explicit in the
-     internal representation of the back-end.  If we are to completely
+     or "pure" in GCC.  In particular, both properties are orthogonal
+     to the "nothrow" property if the EH circuitry is explicit in the
+     internal representation of the middle-end.  If we are to completely
      hide the EH circuitry from it, we need to declare that calls to pure
      Ada subprograms that can throw have side effects since they can
-     trigger an "abnormal" transfer of control flow; thus they can be
-     neither "const" nor "pure" in the back-end sense.  */
+     trigger an "abnormal" transfer of control flow; therefore, they can
+     be neither "const" nor "pure" in the GCC sense.  */
   bool const_flag = (Back_End_Exceptions () && Is_Pure (gnat_subprog));
+  bool pure_flag = false;
   bool return_by_direct_ref_p = false;
   bool return_by_invisi_ref_p = false;
   bool return_unconstrained_p = false;
@@ -5582,7 +5598,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
     gnu_return_type = void_type_node;
 
   else if (gnu_type
-	   && TREE_CODE (gnu_type) == FUNCTION_TYPE
+	   && FUNC_OR_METHOD_TYPE_P (gnu_type)
 	   && !TYPE_IS_DUMMY_P (TREE_TYPE (gnu_type)))
     {
       gnu_return_type = TREE_TYPE (gnu_type);
@@ -5727,7 +5743,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
      Similarly, if the function returns an unconstrained type, then the
      function will allocate the return value on the secondary stack and
      thus calls to it cannot be CSE'ed, lest the stack be reclaimed.  */
-  if (TREE_CODE (gnu_return_type) == VOID_TYPE || return_unconstrained_p)
+  if (VOID_TYPE_P (gnu_return_type) || return_unconstrained_p)
     const_flag = false;
 
   /* Loop over the parameters and get their associated GCC tree.  While doing
@@ -5846,16 +5862,23 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	{
 	  gnu_param_type_list
 	    = tree_cons (NULL_TREE, gnu_param_type, gnu_param_type_list);
-	  gnu_param_list = chainon (gnu_param, gnu_param_list);
+	  DECL_CHAIN (gnu_param) = gnu_param_list;
+	  gnu_param_list = gnu_param;
 	  save_gnu_tree (gnat_param, gnu_param, false);
 
-	  /* If a parameter is a pointer, a function may modify memory through
-	     it and thus shouldn't be considered a const function.   Also, the
-	     memory may be modified between two calls, so they can't be CSE'ed.
-	     The latter case also handles by-ref parameters.  */
-	  if (POINTER_TYPE_P (gnu_param_type)
-	      || TYPE_IS_FAT_POINTER_P (gnu_param_type))
-	    const_flag = false;
+	  /* A pure function in the Ada sense which takes an access parameter
+	     may modify memory through it and thus need be considered neither
+	     const nor pure in the GCC sense.  Likewise it if takes a by-ref
+	     In Out or Out parameter.  But if it takes a by-ref In parameter,
+	     then it may only read memory through it and can be considered
+	     pure in the GCC sense.  */
+	  if ((const_flag || pure_flag)
+	      && (POINTER_TYPE_P (gnu_param_type)
+		  || TYPE_IS_FAT_POINTER_P (gnu_param_type)))
+	    {
+	      const_flag = false;
+	      pure_flag = DECL_POINTS_TO_READONLY_P (gnu_param);
+	    }
 	}
 
       /* If the parameter uses the copy-in copy-out mechanism, allocate a field
@@ -5953,18 +5976,37 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   /* The lists have been built in reverse.  */
   gnu_param_type_list = nreverse (gnu_param_type_list);
   gnu_param_type_list = chainon (gnu_param_type_list, void_list_node);
-  *param_list = nreverse (gnu_param_list);
+  gnu_param_list = nreverse (gnu_param_list);
   gnu_cico_list = nreverse (gnu_cico_list);
+
+  /* Turn imported C++ constructors into their callable form as done in the
+     front-end, i.e. add the "this" pointer and void the return type.  */
+  if (method_p
+      && Is_Constructor (gnat_subprog)
+      && !VOID_TYPE_P (gnu_return_type))
+    {
+      tree gnu_param_type
+	= build_pointer_type (gnat_to_gnu_profile_type (gnat_return_type));
+      tree gnu_param_name = get_identifier (Get_Name_String (Name_uInit));
+      tree gnu_param
+	= build_decl (input_location, PARM_DECL, gnu_param_name,
+		      gnu_param_type);
+      gnu_param_type_list
+	= tree_cons (NULL_TREE, gnu_param_type, gnu_param_type_list);
+      DECL_CHAIN (gnu_param) = gnu_param_list;
+      gnu_param_list = gnu_param;
+      gnu_return_type = void_type_node;
+    }
 
   /* If the profile is incomplete, we only set the (temporary) return and
      parameter types; otherwise, we build the full type.  In either case,
      we reuse an already existing GCC tree that we built previously here.  */
   if (incomplete_profile_p)
     {
-      if (gnu_type && TREE_CODE (gnu_type) == FUNCTION_TYPE)
+      if (gnu_type && FUNC_OR_METHOD_TYPE_P (gnu_type))
 	;
       else
-	gnu_type = make_node (FUNCTION_TYPE);
+	gnu_type = make_node (method_p ? METHOD_TYPE : FUNCTION_TYPE);
       TREE_TYPE (gnu_type) = gnu_return_type;
       TYPE_ARG_TYPES (gnu_type) = gnu_param_type_list;
       TYPE_RETURN_UNCONSTRAINED_P (gnu_type) = return_unconstrained_p;
@@ -5973,10 +6015,16 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
     }
   else
     {
-      if (gnu_type && TREE_CODE (gnu_type) == FUNCTION_TYPE)
+      if (gnu_type && FUNC_OR_METHOD_TYPE_P (gnu_type))
 	{
 	  TREE_TYPE (gnu_type) = gnu_return_type;
 	  TYPE_ARG_TYPES (gnu_type) = gnu_param_type_list;
+	  if (method_p)
+	    {
+	      tree gnu_basetype = TREE_TYPE (TREE_VALUE (gnu_param_type_list));
+	      TYPE_METHOD_BASETYPE (gnu_type)
+		= TYPE_MAIN_VARIANT (gnu_basetype);
+	    }
 	  TYPE_CI_CO_LIST (gnu_type) = gnu_cico_list;
 	  TYPE_RETURN_UNCONSTRAINED_P (gnu_type) = return_unconstrained_p;
 	  TYPE_RETURN_BY_DIRECT_REF_P (gnu_type) = return_by_direct_ref_p;
@@ -5986,8 +6034,16 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	}
       else
 	{
-	  gnu_type
-	    = build_function_type (gnu_return_type, gnu_param_type_list);
+	  if (method_p)
+	    {
+	      tree gnu_basetype = TREE_TYPE (TREE_VALUE (gnu_param_type_list));
+	      gnu_type
+		= build_method_type_directly (gnu_basetype, gnu_return_type,
+					      TREE_CHAIN (gnu_param_type_list));
+	    }
+	  else
+	    gnu_type
+	      = build_function_type (gnu_return_type, gnu_param_type_list);
 
 	  /* GNU_TYPE may be shared since GCC hashes types.  Unshare it if it
 	     has a different TYPE_CI_CO_LIST or flags.  */
@@ -6006,6 +6062,9 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
       if (const_flag)
 	gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_CONST);
+
+      if (pure_flag)
+	gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_RESTRICT);
 
       if (No_Return (gnat_subprog))
 	gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
@@ -6044,6 +6103,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	    post_error ("?gcc intrinsic not found for&!", gnat_subprog);
 	}
     }
+
+  *param_list = gnu_param_list;
 
   return gnu_type;
 }
@@ -6644,65 +6705,44 @@ elaborate_reference (tree ref, Entity_Id gnat_entity, bool definition,
    the value passed against the list of choices.  */
 
 static tree
-choices_to_gnu (tree operand, Node_Id choices)
+choices_to_gnu (tree gnu_operand, Node_Id gnat_choices)
 {
-  Node_Id choice;
-  Node_Id gnat_temp;
-  tree result = boolean_false_node;
-  tree this_test, low = 0, high = 0, single = 0;
+  tree gnu_result = boolean_false_node, gnu_type;
 
-  for (choice = First (choices); Present (choice); choice = Next (choice))
+  gnu_operand = maybe_character_value (gnu_operand);
+  gnu_type = TREE_TYPE (gnu_operand);
+
+  for (Node_Id gnat_choice = First (gnat_choices);
+       Present (gnat_choice);
+       gnat_choice = Next (gnat_choice))
     {
-      switch (Nkind (choice))
+      tree gnu_low = NULL_TREE, gnu_high = NULL_TREE;
+      tree gnu_test;
+
+      switch (Nkind (gnat_choice))
 	{
 	case N_Range:
-	  low = gnat_to_gnu (Low_Bound (choice));
-	  high = gnat_to_gnu (High_Bound (choice));
-
-	  this_test
-	    = build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
-			       build_binary_op (GE_EXPR, boolean_type_node,
-						operand, low, true),
-			       build_binary_op (LE_EXPR, boolean_type_node,
-						operand, high, true),
-			       true);
-
+	  gnu_low = gnat_to_gnu (Low_Bound (gnat_choice));
+	  gnu_high = gnat_to_gnu (High_Bound (gnat_choice));
 	  break;
 
 	case N_Subtype_Indication:
-	  gnat_temp = Range_Expression (Constraint (choice));
-	  low = gnat_to_gnu (Low_Bound (gnat_temp));
-	  high = gnat_to_gnu (High_Bound (gnat_temp));
-
-	  this_test
-	    = build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
-			       build_binary_op (GE_EXPR, boolean_type_node,
-						operand, low, true),
-			       build_binary_op (LE_EXPR, boolean_type_node,
-						operand, high, true),
-			       true);
+	  gnu_low = gnat_to_gnu (Low_Bound (Range_Expression
+					    (Constraint (gnat_choice))));
+	  gnu_high = gnat_to_gnu (High_Bound (Range_Expression
+					      (Constraint (gnat_choice))));
 	  break;
 
 	case N_Identifier:
 	case N_Expanded_Name:
-	  /* This represents either a subtype range, an enumeration
-	     literal, or a constant  Ekind says which.  If an enumeration
-	     literal or constant, fall through to the next case.  */
-	  if (Ekind (Entity (choice)) != E_Enumeration_Literal
-	      && Ekind (Entity (choice)) != E_Constant)
+	  /* This represents either a subtype range or a static value of
+	     some kind; Ekind says which.  */
+	  if (Is_Type (Entity (gnat_choice)))
 	    {
-	      tree type = gnat_to_gnu_type (Entity (choice));
+	      tree gnu_type = get_unpadded_type (Entity (gnat_choice));
 
-	      low = TYPE_MIN_VALUE (type);
-	      high = TYPE_MAX_VALUE (type);
-
-	      this_test
-		= build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
-				   build_binary_op (GE_EXPR, boolean_type_node,
-						    operand, low, true),
-				   build_binary_op (LE_EXPR, boolean_type_node,
-						    operand, high, true),
-				   true);
+	      gnu_low = TYPE_MIN_VALUE (gnu_type);
+	      gnu_high = TYPE_MAX_VALUE (gnu_type);
 	      break;
 	    }
 
@@ -6710,27 +6750,49 @@ choices_to_gnu (tree operand, Node_Id choices)
 
 	case N_Character_Literal:
 	case N_Integer_Literal:
-	  single = gnat_to_gnu (choice);
-	  this_test = build_binary_op (EQ_EXPR, boolean_type_node, operand,
-				       single, true);
+	  gnu_low = gnat_to_gnu (gnat_choice);
 	  break;
 
 	case N_Others_Choice:
-	  this_test = boolean_true_node;
 	  break;
 
 	default:
 	  gcc_unreachable ();
 	}
 
-      if (result == boolean_false_node)
-	result = this_test;
+      /* Everything should be folded into constants at this point.  */
+      gcc_assert (!gnu_low  || TREE_CODE (gnu_low)  == INTEGER_CST);
+      gcc_assert (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST);
+
+      if (gnu_low && TREE_TYPE (gnu_low) != gnu_type)
+	gnu_low = convert (gnu_type, gnu_low);
+      if (gnu_high && TREE_TYPE (gnu_high) != gnu_type)
+	gnu_high = convert (gnu_type, gnu_high);
+
+      if (gnu_low && gnu_high)
+	gnu_test
+	  = build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
+			     build_binary_op (GE_EXPR, boolean_type_node,
+					      gnu_operand, gnu_low, true),
+			     build_binary_op (LE_EXPR, boolean_type_node,
+					      gnu_operand, gnu_high, true),
+			     true);
+      else if (gnu_low)
+	gnu_test
+	  = build_binary_op (EQ_EXPR, boolean_type_node, gnu_operand, gnu_low,
+			     true);
       else
-	result = build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node, result,
-				  this_test, true);
+	gnu_test = boolean_true_node;
+
+      if (gnu_result == boolean_false_node)
+	gnu_result = gnu_test;
+      else
+	gnu_result
+	  = build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node, gnu_result,
+			     gnu_test, true);
     }
 
-  return result;
+  return gnu_result;
 }
 
 /* Adjust PACKED setting as passed to gnat_to_gnu_field for a field of
@@ -9832,6 +9894,7 @@ substitute_in_type (tree t, tree f, tree r)
       return build_complex_type (nt);
 
     case FUNCTION_TYPE:
+    case METHOD_TYPE:
       /* These should never show up here.  */
       gcc_unreachable ();
 

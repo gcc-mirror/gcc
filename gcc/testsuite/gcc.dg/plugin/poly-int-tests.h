@@ -4087,7 +4087,7 @@ test_wide_int_add ()
   typedef poly_int<N, wide_int> T;
   typedef poly_helper<T> ph;
 
-  bool overflow;
+  wi::overflow_type overflow;
   ASSERT_KNOWN_EQ (wi::add (ph::make (wi::uhwi (15, 4),
 				      wi::uhwi (4, 4),
 				      wi::uhwi (2, 4)),
@@ -4098,7 +4098,7 @@ test_wide_int_add ()
 		   ph::make (wi::uhwi (0, 4),
 			     wi::uhwi (4, 4),
 			     wi::uhwi (2, 4)));
-  ASSERT_TRUE (overflow);
+  ASSERT_TRUE ((bool)overflow);
   ASSERT_KNOWN_EQ (wi::add (ph::make (wi::uhwi (30, 5),
 				      wi::uhwi (6, 5),
 				      wi::uhwi (11, 5)),
@@ -4109,7 +4109,7 @@ test_wide_int_add ()
 		   ph::make (wi::uhwi (31, 5),
 			     wi::uhwi (0, 5),
 			     wi::uhwi (30, 5)));
-  ASSERT_EQ (overflow, N >= 2);
+  ASSERT_EQ ((bool)overflow, N >= 2);
   ASSERT_KNOWN_EQ (wi::add (ph::make (wi::uhwi (1, 6),
 				      wi::uhwi (63, 6),
 				      wi::uhwi (50, 6)),
@@ -4120,7 +4120,7 @@ test_wide_int_add ()
 		   ph::make (wi::uhwi (62, 6),
 			     wi::uhwi (63, 6),
 			     wi::uhwi (36, 6)));
-  ASSERT_EQ (overflow, N == 3);
+  ASSERT_EQ ((bool)overflow, N == 3);
 
   ASSERT_KNOWN_EQ (wi::add (ph::make (wi::shwi (7, 4),
 				      wi::shwi (7, 4),
@@ -4132,7 +4132,7 @@ test_wide_int_add ()
 		   ph::make (wi::shwi (-8, 4),
 			     wi::shwi (7, 4),
 			     wi::shwi (-8, 4)));
-  ASSERT_TRUE (overflow);
+  ASSERT_TRUE ((bool)overflow);
   ASSERT_KNOWN_EQ (wi::add (ph::make (wi::shwi (-1, 5),
 				      wi::shwi (6, 5),
 				      wi::shwi (11, 5)),
@@ -4143,7 +4143,7 @@ test_wide_int_add ()
 		   ph::make (wi::shwi (14, 5),
 			     wi::shwi (-15, 5),
 			     wi::shwi (-4, 5)));
-  ASSERT_EQ (overflow, N >= 2);
+  ASSERT_EQ ((bool)overflow, N >= 2);
   ASSERT_KNOWN_EQ (wi::add (ph::make (wi::shwi (4, 6),
 				      wi::shwi (0, 6),
 				      wi::shwi (-1, 6)),
@@ -4154,7 +4154,7 @@ test_wide_int_add ()
 		   ph::make (wi::shwi (-28, 6),
 			     wi::shwi (-32, 6),
 			     wi::shwi (31, 6)));
-  ASSERT_EQ (overflow, N == 3);
+  ASSERT_EQ ((bool)overflow, N == 3);
 }
 
 /* Test wi::sub for poly_int<N, wide_int>.  */
@@ -4166,7 +4166,7 @@ test_wide_int_sub ()
   typedef poly_int<N, wide_int> T;
   typedef poly_helper<T> ph;
 
-  bool overflow;
+  wi::overflow_type overflow;
   ASSERT_KNOWN_EQ (wi::sub (ph::make (wi::uhwi (0, 4),
 				      wi::uhwi (4, 4),
 				      wi::uhwi (2, 4)),
@@ -4177,7 +4177,7 @@ test_wide_int_sub ()
 		   ph::make (wi::uhwi (15, 4),
 			     wi::uhwi (4, 4),
 			     wi::uhwi (2, 4)));
-  ASSERT_TRUE (overflow);
+  ASSERT_TRUE ((bool)overflow);
   ASSERT_KNOWN_EQ (wi::sub (ph::make (wi::uhwi (30, 5),
 				      wi::uhwi (29, 5),
 				      wi::uhwi (11, 5)),
@@ -4188,7 +4188,7 @@ test_wide_int_sub ()
 		   ph::make (wi::uhwi (29, 5),
 			     wi::uhwi (30, 5),
 			     wi::uhwi (2, 5)));
-  ASSERT_EQ (overflow, N >= 2);
+  ASSERT_EQ ((bool)overflow, N >= 2);
   ASSERT_KNOWN_EQ (wi::sub (ph::make (wi::uhwi (0, 6),
 				      wi::uhwi (63, 6),
 				      wi::uhwi (0, 6)),
@@ -4199,7 +4199,7 @@ test_wide_int_sub ()
 		   ph::make (wi::uhwi (0, 6),
 			     wi::uhwi (63, 6),
 			     wi::uhwi (12, 6)));
-  ASSERT_EQ (overflow, N == 3);
+  ASSERT_EQ ((bool)overflow, N == 3);
 
   ASSERT_KNOWN_EQ (wi::sub (ph::make (wi::shwi (-8, 4),
 				      wi::shwi (5, 4),
@@ -4211,7 +4211,7 @@ test_wide_int_sub ()
 		   ph::make (wi::shwi (7, 4),
 			     wi::shwi (5, 4),
 			     wi::shwi (-7, 4)));
-  ASSERT_TRUE (overflow);
+  ASSERT_TRUE ((bool)overflow);
   ASSERT_KNOWN_EQ (wi::sub (ph::make (wi::shwi (-1, 5),
 				      wi::shwi (-7, 5),
 				      wi::shwi (0, 5)),
@@ -4222,7 +4222,7 @@ test_wide_int_sub ()
 		   ph::make (wi::shwi (-16, 5),
 			     wi::shwi (14, 5),
 			     wi::shwi (15, 5)));
-  ASSERT_EQ (overflow, N >= 2);
+  ASSERT_EQ ((bool)overflow, N >= 2);
   ASSERT_KNOWN_EQ (wi::sub (ph::make (wi::shwi (-32, 6),
 				      wi::shwi (-1, 6),
 				      wi::shwi (0, 6)),
@@ -4233,7 +4233,7 @@ test_wide_int_sub ()
 		   ph::make (wi::shwi (0, 6),
 			     wi::shwi (31, 6),
 			     wi::shwi (-32, 6)));
-  ASSERT_EQ (overflow, N == 3);
+  ASSERT_EQ ((bool)overflow, N == 3);
 }
 
 /* Test wi::mul for poly_int<N, wide_int>.  */
@@ -4245,7 +4245,7 @@ test_wide_int_mul ()
   typedef poly_int<N, wide_int> T;
   typedef poly_helper<T> ph;
 
-  bool overflow;
+  wi::overflow_type overflow;
   ASSERT_KNOWN_EQ (wi::mul (ph::make (wi::uhwi (4, 4),
 				      wi::uhwi (3, 4),
 				      wi::uhwi (2, 4)), 4,
@@ -4253,7 +4253,7 @@ test_wide_int_mul ()
 		   ph::make (wi::uhwi (0, 4),
 			     wi::uhwi (12, 4),
 			     wi::uhwi (8, 4)));
-  ASSERT_TRUE (overflow);
+  ASSERT_TRUE ((bool)overflow);
   ASSERT_KNOWN_EQ (wi::mul (ph::make (wi::uhwi (15, 5),
 				      wi::uhwi (31, 5),
 				      wi::uhwi (7, 5)), 2,
@@ -4261,7 +4261,7 @@ test_wide_int_mul ()
 		   ph::make (wi::uhwi (30, 5),
 			     wi::uhwi (30, 5),
 			     wi::uhwi (14, 5)));
-  ASSERT_EQ (overflow, N >= 2);
+  ASSERT_EQ ((bool)overflow, N >= 2);
   ASSERT_KNOWN_EQ (wi::mul (ph::make (wi::uhwi (1, 6),
 				      wi::uhwi (0, 6),
 				      wi::uhwi (2, 6)), 63,
@@ -4269,7 +4269,7 @@ test_wide_int_mul ()
 		   ph::make (wi::uhwi (63, 6),
 			     wi::uhwi (0, 6),
 			     wi::uhwi (62, 6)));
-  ASSERT_EQ (overflow, N == 3);
+  ASSERT_EQ ((bool)overflow, N == 3);
 
   ASSERT_KNOWN_EQ (wi::mul (ph::make (wi::shwi (-1, 4),
 				      wi::shwi (1, 4),
@@ -4278,7 +4278,7 @@ test_wide_int_mul ()
 		   ph::make (wi::shwi (-8, 4),
 			     wi::shwi (-8, 4),
 			     wi::shwi (0, 4)));
-  ASSERT_TRUE (overflow);
+  ASSERT_TRUE ((bool)overflow);
   ASSERT_KNOWN_EQ (wi::mul (ph::make (wi::shwi (2, 5),
 				      wi::shwi (-3, 5),
 				      wi::shwi (1, 5)), 6,
@@ -4286,7 +4286,7 @@ test_wide_int_mul ()
 		   ph::make (wi::shwi (12, 5),
 			     wi::shwi (14, 5),
 			     wi::shwi (6, 5)));
-  ASSERT_EQ (overflow, N >= 2);
+  ASSERT_EQ ((bool)overflow, N >= 2);
   ASSERT_KNOWN_EQ (wi::mul (ph::make (wi::shwi (5, 6),
 				      wi::shwi (-6, 6),
 				      wi::shwi (7, 6)), -5,
@@ -4294,7 +4294,7 @@ test_wide_int_mul ()
 		   ph::make (wi::shwi (-25, 6),
 			     wi::shwi (30, 6),
 			     wi::shwi (29, 6)));
-  ASSERT_EQ (overflow, N == 3);
+  ASSERT_EQ ((bool)overflow, N == 3);
 }
 
 /* Test wi::neg for poly_int<N, wide_int>.  */
@@ -4306,28 +4306,28 @@ test_wide_int_neg ()
   typedef poly_int<N, wide_int> T;
   typedef poly_helper<T> ph;
 
-  bool overflow;
+  wi::overflow_type overflow;
   ASSERT_KNOWN_EQ (wi::neg (ph::make (wi::shwi (-8, 4),
 				      wi::shwi (7, 4),
 				      wi::shwi (-7, 4)), &overflow),
 		   ph::make (wi::shwi (-8, 4),
 			     wi::shwi (-7, 4),
 			     wi::shwi (7, 4)));
-  ASSERT_TRUE (overflow);
+  ASSERT_TRUE ((bool)overflow);
   ASSERT_KNOWN_EQ (wi::neg (ph::make (wi::shwi (-15, 5),
 				      wi::shwi (-16, 5),
 				      wi::shwi (15, 5)), &overflow),
 		   ph::make (wi::shwi (15, 5),
 			     wi::shwi (-16, 5),
 			     wi::shwi (-15, 5)));
-  ASSERT_EQ (overflow, N >= 2);
+  ASSERT_EQ ((bool)overflow, N >= 2);
   ASSERT_KNOWN_EQ (wi::neg (ph::make (wi::shwi (-28, 6),
 				      wi::shwi (30, 6),
 				      wi::shwi (-32, 6)), &overflow),
 		   ph::make (wi::shwi (28, 6),
 			     wi::shwi (-30, 6),
 			     wi::shwi (-32, 6)));
-  ASSERT_EQ (overflow, N == 3);
+  ASSERT_EQ ((bool)overflow, N == 3);
 }
 
 /* Test poly_int<N, C> for things that only make sense when C is an

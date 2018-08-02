@@ -82,6 +82,7 @@
 (include ("arc700.md"))
 (include ("arcEM.md"))
 (include ("arcHS.md"))
+(include ("arcHS4x.md"))
 
 ;; Predicates
 
@@ -205,7 +206,7 @@
    simd_vcompare, simd_vpermute, simd_vpack, simd_vpack_with_acc,
    simd_valign, simd_valign_with_acc, simd_vcontrol,
    simd_vspecial_3cycle, simd_vspecial_4cycle, simd_dma, mul16_em, div_rem,
-   fpu, block"
+   fpu, fpu_fuse, fpu_sdiv, fpu_ddiv, fpu_cvt, block"
   (cond [(eq_attr "is_sfunc" "yes")
 	 (cond [(match_test "!TARGET_LONG_CALLS_SET && (!TARGET_MEDIUM_CALLS || GET_CODE (PATTERN (insn)) != COND_EXEC)") (const_string "call")
 		(match_test "flag_pic") (const_string "sfunc")]
@@ -599,7 +600,8 @@
 ;;   somehow modify them to become inelegible for delay slots if a decision
 ;;   is made that makes conditional execution required.
 
-(define_attr "tune" "none,arc600,arc700_4_2_std,arc700_4_2_xmac, core_3"
+(define_attr "tune" "none,arc600,arc700_4_2_std,arc700_4_2_xmac, core_3, \
+archs4x, archs4xd, archs4xd_slow"
   (const
    (cond [(symbol_ref "arc_tune == TUNE_ARC600")
 	  (const_string "arc600")
@@ -608,13 +610,27 @@
 	  (symbol_ref "arc_tune == TUNE_ARC700_4_2_XMAC")
 	  (const_string "arc700_4_2_xmac")
 	  (symbol_ref "arc_tune == ARC_TUNE_CORE_3")
-	  (const_string "core_3")]
+	  (const_string "core_3")
+	  (symbol_ref "arc_tune == TUNE_ARCHS4X")
+	  (const_string "archs4x")
+	  (ior (symbol_ref "arc_tune == TUNE_ARCHS4XD")
+	       (symbol_ref "arc_tune == TUNE_ARCHS4XD_SLOW"))
+	  (const_string "archs4xd")]
 	 (const_string "none"))))
 
 (define_attr "tune_arc700" "false,true"
   (if_then_else (eq_attr "tune" "arc700_4_2_std, arc700_4_2_xmac")
 		(const_string "true")
 		(const_string "false")))
+
+(define_attr "tune_dspmpy" "none, slow, fast"
+  (const
+  (cond [(ior (symbol_ref "arc_tune == TUNE_ARCHS4X")
+	      (symbol_ref "arc_tune == TUNE_ARCHS4XD"))
+	 (const_string "fast")
+	 (symbol_ref "arc_tune == TUNE_ARCHS4XD_SLOW")
+	 (const_string "slow")]
+	(const_string "none"))))
 
 ;; Move instructions.
 (define_expand "movqi"
@@ -966,7 +982,7 @@
     }
   "
   [(set_attr "iscompact" "maybe,maybe,false,false,false,false,false,false")
-   (set_attr "type" "compare,compare,compare,compare,compare,compare,shift,compare")
+   (set_attr "type" "compare,compare,compare,compare,compare,compare,binary,compare")
    (set_attr "length" "*,*,4,4,4,4,4,8")
    (set_attr "predicable" "no,yes,no,yes,no,no,no,yes")
    (set_attr "cond" "set_zn")])
@@ -1278,19 +1294,24 @@
   "if (prepare_move_operands (operands, SFmode)) DONE;")
 
 (define_insn "*movsf_insn"
-  [(set (match_operand:SF 0 "move_dest_operand"    "=h,w,w,r,m")
-	(match_operand:SF 1 "move_src_operand"   "hCm1,c,E,m,c"))]
+  [(set (match_operand:SF 0 "move_dest_operand"   "=h,h,   r,r,  q,S,Usc,r,m")
+	(match_operand:SF 1 "move_src_operand"  "hCfZ,E,rCfZ,E,Uts,q,  E,m,r"))]
   "register_operand (operands[0], SFmode)
    || register_operand (operands[1], SFmode)"
   "@
-   mov%? %0,%1
-   mov%? %0,%1
-   mov%? %0,%1 ; %A1
-   ld%U1%V1 %0,%1
-   st%U0%V0 %1,%0"
-  [(set_attr "type" "move,move,move,load,store")
-   (set_attr "predicable" "no,yes,yes,no,no")
-   (set_attr "iscompact" "true,false,false,false,false")])
+   mov%?\\t%0,%1
+   mov%?\\t%0,%1 ; %A1
+   mov%?\\t%0,%1
+   mov%?\\t%0,%1 ; %A1
+   ld%?%U1\\t%0,%1
+   st%?\\t%1,%0
+   st%U0%V0\\t%1,%0
+   ld%U1%V1\\t%0,%1
+   st%U0%V0\\t%1,%0"
+  [(set_attr "type" "move,move,move,move,load,store,store,load,store")
+   (set_attr "predicable" "no,no,yes,yes,no,no,no,no,no")
+   (set_attr "length" "*,*,4,*,*,*,*,*,*")
+   (set_attr "iscompact" "true,true_limm,false,false,true,true,false,false,false")])
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "move_dest_operand" "")

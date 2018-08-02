@@ -827,7 +827,8 @@ lto_init_options_struct (struct gcc_options *opts)
 const char *resolution_file_name;
 static bool
 lto_handle_option (size_t scode, const char *arg,
-		   int value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
+		   HOST_WIDE_INT value ATTRIBUTE_UNUSED,
+		   int kind ATTRIBUTE_UNUSED,
 		   location_t loc ATTRIBUTE_UNUSED,
 		   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {

@@ -3456,7 +3456,7 @@ pass_post_ipa_warn::execute (function *fun)
 		      location_t loc = gimple_location (stmt);
 		      if (warning_at (loc, OPT_Wnonnull,
 				      "%Gargument %u null where non-null "
-				      "expected", as_a <gcall *>(stmt), i + 1))
+				      "expected", stmt, i + 1))
 			{
 			  tree fndecl = gimple_call_fndecl (stmt);
 			  if (fndecl && DECL_IS_BUILTIN (fndecl))

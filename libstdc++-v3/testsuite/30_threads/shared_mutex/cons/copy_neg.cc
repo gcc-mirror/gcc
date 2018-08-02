@@ -1,6 +1,5 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++17" }
-// { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
 // Copyright (C) 2015-2018 Free Software Foundation, Inc.

@@ -1,6 +1,7 @@
 /* PR c/55976 */
 /* { dg-do compile } */
 /* { dg-options "-Werror=return-type" } */
+/* { dg-prune-output "some warnings being treated as errors" } */
 
 /* Verify warnings for return type become errors.  */
 

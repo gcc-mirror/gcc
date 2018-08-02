@@ -1748,10 +1748,20 @@ GLIBCXX_3.4.21 {
     _ZStplI[cw]St11char_traitsI[cw]ESaI[cw]EENSt7__cxx1112basic_stringIT_T0_T1_EE*;
 
     # ABI-tagged stringstreams
-    _ZNSt7__cxx1115basic_stringbuf*;
-    _ZNSt7__cxx1118basic_stringstream*;
-    _ZNSt7__cxx1119basic_istringstream*;
-    _ZNSt7__cxx1119basic_ostringstream*;
+#   _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]*__xfer_bufptrs*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[a1346789]*;
+#   _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]*;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a34]*;
+#   _ZNSt7__cxx1119basic_istringstreamI[cw]St11char_traitsI[cw]*;
+#   _ZNSt7__cxx1119basic_ostringstreamI[cw]St11char_traitsI[cw]*;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a34]*;
     _ZNKSt7__cxx1115basic_stringbuf*;
     _ZNKSt7__cxx1118basic_stringstream*;
     _ZNKSt7__cxx1119basic_istringstream*;
@@ -2014,6 +2024,26 @@ GLIBCXX_3.4.26 {
     # std::basic_string::insert(const_iterator, initializer_list)
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertEN9__gnu_cxx17__normal_iteratorIPK[cw]S4_EESt16initializer_listI[cw]E;
 
+    # std::logic_error move operations
+    _ZNSt11logic_errorC[12]EOS_;
+    _ZNSt11logic_erroraSEOS_;
+    # std::runtime_error move operations
+    _ZNSt13runtime_errorC[12]EOS_;
+    _ZNSt13runtime_erroraSEOS_;
+
+    # Default constructors for stringstreams
+    _ZNSt15basic_stringbuf[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt18basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt19basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt7__cxx1115basic_stringbuf[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+
+    _ZNSt3pmr19new_delete_resourceEv;
+    _ZNSt3pmr20null_memory_resourceEv;
+    _ZNSt3pmr20get_default_resourceEv;
+    _ZNSt3pmr20set_default_resourceEPNS_15memory_resourceE;
+
 } GLIBCXX_3.4.25;
 
 # Symbols in the support library (libsupc++) have their own tag.
@@ -2149,14 +2179,10 @@ CXXABI_1.3.3 {
 
 #ifdef HAVE_EXCEPTION_PTR_SINCE_GCC46
     # exception_ptr
-    _ZNSt15__exception_ptr13exception_ptrC1Ev;
-    _ZNSt15__exception_ptr13exception_ptrC2Ev;
-    _ZNSt15__exception_ptr13exception_ptrC1ERKS0_;
-    _ZNSt15__exception_ptr13exception_ptrC2ERKS0_;
-    _ZNSt15__exception_ptr13exception_ptrC1EMS0_FvvE;
-    _ZNSt15__exception_ptr13exception_ptrC2EMS0_FvvE;
-    _ZNSt15__exception_ptr13exception_ptrD1Ev;
-    _ZNSt15__exception_ptr13exception_ptrD2Ev;
+    _ZNSt15__exception_ptr13exception_ptrC[12]Ev;
+    _ZNSt15__exception_ptr13exception_ptrC[12]ERKS0_;
+    _ZNSt15__exception_ptr13exception_ptrC[12]EMS0_FvvE;
+    _ZNSt15__exception_ptr13exception_ptrD[12]Ev;
     _ZNSt15__exception_ptr13exception_ptraSERKS0_;
     _ZNKSt15__exception_ptr13exception_ptrcvMS0_FvvEEv;
     _ZNKSt15__exception_ptr13exception_ptrntEv;

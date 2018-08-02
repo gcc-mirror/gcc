@@ -19,8 +19,15 @@
 
 // 21.3.5.4 basic_string::insert
 
-#include <string>
 #include <testsuite_hooks.h>
+
+#ifdef _GLIBCXX_DEBUG
+#include <debug/string>
+using namespace __gnu_debug;
+#else
+#include <string>
+using namespace std;
+#endif
 
 // More
 //   string& insert(size_type __p, const char* s, size_type n);
@@ -28,7 +35,7 @@
 // but now s points inside the _Rep
 void test02(void)
 {
-  std::string str01;
+  string str01;
   const char* title = "Everything was beautiful, and nothing hurt";
   // Increasing size: str01 is reallocated every time.
   str01 = title;

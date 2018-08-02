@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dumpfile.h"
 #include "ipa-fnsummary.h"
+#include "optinfo-emit-json.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -490,6 +491,8 @@ compile_file (void)
      necessary.  */
   if (lang_hooks.decls.post_compilation_parsing_cleanups)
     lang_hooks.decls.post_compilation_parsing_cleanups ();
+
+  optimization_records_finish ();
 
   if (seen_error ())
     return;
@@ -1025,7 +1028,7 @@ output_stack_usage (void)
 	       stack_usage_kind_str[stack_usage_kind]);
     }
 
-  if (warn_stack_usage >= 0)
+  if (warn_stack_usage >= 0 && warn_stack_usage < HOST_WIDE_INT_MAX)
     {
       const location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
 
@@ -1035,10 +1038,10 @@ output_stack_usage (void)
 	{
 	  if (stack_usage_kind == DYNAMIC_BOUNDED)
 	    warning_at (loc,
-			OPT_Wstack_usage_, "stack usage might be %wd bytes",
+			OPT_Wstack_usage_, "stack usage might be %wu bytes",
 			stack_usage);
 	  else
-	    warning_at (loc, OPT_Wstack_usage_, "stack usage is %wd bytes",
+	    warning_at (loc, OPT_Wstack_usage_, "stack usage is %wu bytes",
 			stack_usage);
 	}
     }
@@ -1201,29 +1204,102 @@ target_supports_section_anchors_p (void)
   return true;
 }
 
-/* Default the align_* variables to 1 if they're still unset, and
-   set up the align_*_log variables.  */
+/* Parse "N[:M][:...]" into struct align_flags A.
+   VALUES contains parsed values (in reverse order), all processed
+   values are popped.  */
+
 static void
-init_alignments (void)
+read_log_maxskip (auto_vec<unsigned> &values, align_flags_tuple *a)
 {
-  if (align_loops <= 0)
-    align_loops = 1;
-  if (align_loops_max_skip > align_loops)
-    align_loops_max_skip = align_loops - 1;
-  align_loops_log = floor_log2 (align_loops * 2 - 1);
-  if (align_jumps <= 0)
-    align_jumps = 1;
-  if (align_jumps_max_skip > align_jumps)
-    align_jumps_max_skip = align_jumps - 1;
-  align_jumps_log = floor_log2 (align_jumps * 2 - 1);
-  if (align_labels <= 0)
-    align_labels = 1;
-  align_labels_log = floor_log2 (align_labels * 2 - 1);
-  if (align_labels_max_skip > align_labels)
-    align_labels_max_skip = align_labels - 1;
-  if (align_functions <= 0)
-    align_functions = 1;
-  align_functions_log = floor_log2 (align_functions * 2 - 1);
+  unsigned n = values.pop ();
+  if (n != 0)
+    a->log = floor_log2 (n * 2 - 1);
+
+  if (values.is_empty ())
+    a->maxskip = n ? n - 1 : 0;
+  else
+    {
+      unsigned m = values.pop ();
+      /* -falign-foo=N:M means M-1 max bytes of padding, not M.  */
+      if (m > 0)
+	m--;
+      a->maxskip = m;
+    }
+
+  /* Normalize the tuple.  */
+  a->normalize ();
+}
+
+/* Parse "N[:M[:N2[:M2]]]" string FLAG into a pair of struct align_flags.  */
+
+static void
+parse_N_M (const char *flag, align_flags &a)
+{
+  if (flag)
+    {
+      static hash_map <nofree_string_hash, align_flags> cache;
+      align_flags *entry = cache.get (flag);
+      if (entry)
+	{
+	  a = *entry;
+	  return;
+	}
+
+      auto_vec<unsigned> result_values;
+      bool r = parse_and_check_align_values (flag, NULL, result_values, false,
+					     UNKNOWN_LOCATION);
+      if (!r)
+	return;
+
+      /* Reverse values for easier manipulation.  */
+      result_values.reverse ();
+
+      read_log_maxskip (result_values, &a.levels[0]);
+      if (!result_values.is_empty ())
+	read_log_maxskip (result_values, &a.levels[1]);
+#ifdef SUBALIGN_LOG
+      else
+	{
+	  /* N2[:M2] is not specified.  This arch has a default for N2.
+	     Before -falign-foo=N:M:N2:M2 was introduced, x86 had a tweak.
+	     -falign-functions=N with N > 8 was adding secondary alignment.
+	     -falign-functions=10 was emitting this before every function:
+			.p2align 4,,9
+			.p2align 3
+	     Now this behavior (and more) can be explicitly requested:
+	     -falign-functions=16:10:8
+	     Retain old behavior if N2 is missing: */
+
+	  int align = 1 << a.levels[0].log;
+	  int subalign = 1 << SUBALIGN_LOG;
+
+	  if (a.levels[0].log > SUBALIGN_LOG
+	      && a.levels[0].maxskip >= subalign - 1)
+	    {
+	      /* Set N2 unless subalign can never have any effect.  */
+	      if (align > a.levels[0].maxskip + 1)
+		{
+		  a.levels[1].log = SUBALIGN_LOG;
+		  a.levels[1].normalize ();
+		}
+	    }
+	}
+#endif
+
+      /* Cache seen value.  */
+      cache.put (flag, a);
+    }
+}
+
+/* Process -falign-foo=N[:M[:N2[:M2]]] options.  */
+
+void
+parse_alignment_opts (void)
+{
+  parse_N_M (str_align_loops, align_loops);
+  parse_N_M (str_align_jumps, align_jumps);
+  parse_N_M (str_align_labels, align_labels);
+  parse_N_M (str_align_functions, align_functions);
 }
 
 /* Process the options that have been parsed.  */
@@ -1726,9 +1802,6 @@ process_options (void)
 static void
 backend_init_target (void)
 {
-  /* Initialize alignment variables.  */
-  init_alignments ();
-
   /* This depends on stack_pointer_rtx.  */
   init_fake_stack_mems ();
 
@@ -2051,6 +2124,8 @@ do_compile ()
       int i;
 
       timevar_start (TV_PHASE_SETUP);
+
+      optimization_records_start ();
 
       /* This must be run always, because it is needed to compute the FP
 	 predefined macros, such as __LDBL_MAX__, for targets using non

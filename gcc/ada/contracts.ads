@@ -35,6 +35,7 @@ package Contracts is
    --  [generic] package, package body, protected unit, [generic] subprogram,
    --  subprogram body, variable or task unit denoted by Id. The following are
    --  valid pragmas:
+   --
    --    Abstract_State
    --    Async_Readers
    --    Async_Writers
@@ -66,6 +67,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of entry or
    --  subprogram body Body_Id as if they appeared at the end of a declarative
    --  region. Pragmas in question are:
+   --
    --    Contract_Cases   (stand alone subprogram body)
    --    Depends          (stand alone subprogram body)
    --    Global           (stand alone subprogram body)
@@ -82,6 +84,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of entry or
    --  subprogram Subp_Id as if they appeared at the end of a declarative
    --  region. The pragmas in question are:
+   --
    --    Contract_Cases
    --    Depends
    --    Global
@@ -98,6 +101,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of object Obj_Id as
    --  if they appeared at the end of the declarative region. The pragmas to be
    --  considered are:
+   --
    --    Async_Readers
    --    Async_Writers
    --    Depends           (single concurrent object)
@@ -115,6 +119,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of package body
    --  Body_Id as if they appeared at the end of a declarative region. The
    --  pragmas that are considered are:
+   --
    --    Refined_State
    --
    --  Freeze_Id is the entity of a [generic] package body or a [generic]
@@ -124,9 +129,9 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of package Pack_Id
    --  as if they appeared at the end of a declarative region. The pragmas
    --  that are considered are:
+   --
    --    Initial_Condition
    --    Initializes
-   --    Part_Of
 
    procedure Analyze_Protected_Contract (Prot_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of protected unit
@@ -137,6 +142,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of subprogram body
    --  stub Stub_Id as if they appeared at the end of a declarative region. The
    --  pragmas in question are:
+   --
    --    Contract_Cases
    --    Depends
    --    Global
@@ -151,6 +157,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of task unit Task_Id
    --  as if they appeared at the end of a declarative region. The pragmas in
    --  question are:
+   --
    --    Depends
    --    Global
 

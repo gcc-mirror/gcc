@@ -1,3 +1,8 @@
+2018-07-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* dfp.m4 (enable_decimal_float): Enable for x86_64*-*-gnu* to
+	catch x86_64 kFreeBSD and Hurd.
+
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
 	* bootstrap-mpx.mk: Remove.

@@ -1,7 +1,7 @@
 /* ieee754-sf.S single-precision floating point support for ARM
 
    Copyright (C) 2003-2018 Free Software Foundation, Inc.
-   Contributed by Nicolas Pitre (nico@cam.org)
+   Contributed by Nicolas Pitre (nico@fluxnic.net)
 
    This file is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -168,10 +168,11 @@ LSYM(Lad_e):
 LSYM(Lad_a):
 	movs	r1, r1, lsl #1
 	adc	r0, r0, r0
-	tst	r0, #0x00800000
-	sub	r2, r2, #1
-	bne	LSYM(Lad_e)
-	
+	subs	r2, r2, #1
+	do_it	hs
+	cmphs	r0, #0x00800000
+	bhs	LSYM(Lad_e)
+
 	@ No rounding necessary since r1 will always be 0 at this point.
 LSYM(Lad_l):
 
@@ -461,7 +462,7 @@ LSYM(Lml_x):
 	orr	r1, r3, r1, lsr #5
 
 	@ The actual multiplication.
-	@ This code works on architecture versions > 4
+	@ This code works on architecture versions >= 4
 	umull	r3, r1, r0, r1
 
 	@ Put final sign in r0.

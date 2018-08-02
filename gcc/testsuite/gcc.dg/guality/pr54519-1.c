@@ -15,12 +15,12 @@ fn2 (int x, int y, int z)
   if (x != z)
     {
       fn1 (x);
-      fn1 (x);		/* { dg-final { gdb-test 20 "x" "36" } } */
-      if (x == 36)	/* { dg-final { gdb-test 20 "y" "25" } } */
-	fn1 (x);	/* { dg-final { gdb-test 20 "z" "6" } } */
-      fn1 (x);		/* { dg-final { gdb-test 23 "x" "98" } } */
-      if (x == 98)	/* { dg-final { gdb-test 23 "y" "117" } } */
-	fn1 (x);	/* { dg-final { gdb-test 23 "z" "8" } } */
+      fn1 (x);		/* { dg-final { gdb-test .+2 "x" "36" } } */
+      if (x == 36)	/* { dg-final { gdb-test .+1 "y" "25" } } */
+	fn1 (x);	/* { dg-final { gdb-test . "z" "6" } } */
+      fn1 (x);		/* { dg-final { gdb-test .+2 "x" "98" } } */
+      if (x == 98)	/* { dg-final { gdb-test .+1 "y" "117" } } */
+	fn1 (x);	/* { dg-final { gdb-test . "z" "8" } } */
       fn1 (x);
       fn1 (x + a);
     }

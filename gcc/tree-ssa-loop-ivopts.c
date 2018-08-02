@@ -7535,7 +7535,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
 
   gcc_assert (!data->niters);
   data->current_loop = loop;
-  data->loop_loc = find_loop_location (loop);
+  data->loop_loc = find_loop_location (loop).get_location_t ();
   data->speed = optimize_loop_for_speed_p (loop);
 
   if (dump_file && (dump_flags & TDF_DETAILS))

@@ -70,7 +70,6 @@ i386 vector ISA extns	Kirill Yukhin		<kirill.yukhin@gmail.com>
 ia64 port		Jim Wilson		<wilson@tuliptree.org>
 iq2000 port		Nick Clifton		<nickc@redhat.com>
 lm32 port		Sebastien Bourdeauducq	<sebastien@milkymist.org>
-m32c port		DJ Delorie		<dj@redhat.com>
 m32r port		Nick Clifton		<nickc@redhat.com>
 m68k port (?)		Jeff Law		<law@redhat.com>
 m68k port		Andreas Schwab		<schwab@linux-m68k.org>
@@ -82,7 +81,6 @@ mmix port		Hans-Peter Nilsson	<hp@bitrange.com>
 mn10300 port		Jeff Law		<law@redhat.com>
 mn10300 port		Alexandre Oliva		<aoliva@redhat.com>
 moxie port		Anthony Green		<green@moxielogic.com>
-msp430 port		DJ Delorie		<dj@redhat.com>
 msp430 port		Nick Clifton		<nickc@redhat.com>
 nds32 port		Chung-Ju Wu		<jasonwucj@gmail.com>
 nds32 port		Shiva Chen		<shiva0217@gmail.com>
@@ -95,14 +93,13 @@ riscv port		Kito Cheng		<kito.cheng@gmail.com>
 riscv port		Palmer Dabbelt		<palmer@sifive.com>
 riscv port		Andrew Waterman		<andrew@sifive.com>
 riscv port		Jim Wilson		<jimw@sifive.com>
-rl78 port		DJ Delorie		<dj@redhat.com>
 rs6000/powerpc port	David Edelsohn		<dje.gcc@gmail.com>
 rs6000/powerpc port	Segher Boessenkool	<segher@kernel.crashing.org>
 rs6000 vector extns	Aldy Hernandez		<aldyh@redhat.com>
 rx port			Nick Clifton		<nickc@redhat.com>
 s390 port		Hartmut Penner		<hepenner@us.ibm.com>
 s390 port		Ulrich Weigand		<uweigand@de.ibm.com>
-s390 port		Andreas Krebbel		<Andreas.Krebbel@de.ibm.com>
+s390 port		Andreas Krebbel		<krebbel@linux.ibm.com>
 sh port			Alexandre Oliva		<aoliva@redhat.com>
 sh port			Oleg Endo		<olegendo@gcc.gnu.org>
 sparc port		David S. Miller		<davem@redhat.com>
@@ -165,7 +162,6 @@ libdecnumber		Ben Elliston		<bje@gnu.org>
 libgcc			Ian Lance Taylor	<ian@airs.com>
 libgo			Ian Lance Taylor	<ian@airs.com>
 libgomp			Jakub Jelinek		<jakub@redhat.com>
-libiberty		DJ Delorie		<dj@redhat.com>
 libiberty		Ian Lance Taylor	<ian@airs.com>
 libitm			Torvald Riegel		<triegel@redhat.com>
 libobjc			Nicola Pero		<nicola.pero@meta-innovation.com>
@@ -209,7 +205,6 @@ i18n			Joseph Myers		<joseph@codesourcery.com>
 diagnostic messages	Dodji Seketeli		<dodji@redhat.com>
 diagnostic messages	David Malcolm		<dmalcolm@redhat.com>
 build machinery (*.in)	Paolo Bonzini		<bonzini@gnu.org>
-build machinery (*.in)	DJ Delorie		<dj@redhat.com>
 build machinery (*.in)	Nathanael Nerode	<neroden@gcc.gnu.org>
 build machinery (*.in)	Alexandre Oliva		<aoliva@redhat.com>
 build machinery (*.in)	Ralf Wildenhues		<Ralf.Wildenhues@gmx.de>
@@ -353,7 +348,7 @@ Ludovic Courtès					<ludo@gnu.org>
 Lawrence Crowl					<crowl@google.com>
 Ian Dall					<ian@beware.dropbear.id.au>
 David Daney					<david.daney@caviumnetworks.com>
-Robin Dapp					<rdapp@linux.vnet.ibm.com>
+Robin Dapp					<rdapp@linux.ibm.com>
 Simon Dardis					<simon.dardis@imgtec.com>
 Sudakshina Das					<sudi.das@arm.com>
 Bud Davis					<jmdavis@link.com>
@@ -614,6 +609,7 @@ Edmar Wienskoski				<edmar@freescale.com>
 Ollie Wild					<aaw@google.com>
 Kevin Williams					<kevin.williams@inria.fr>
 Carlo Wood					<carlo@alinoe.com>
+Jackson Woodruff				<jackson.woodruff@arm.com>
 Mingjie Xing					<mingjie.xing@gmail.com>
 Chenghua Xu					<paul.hua.gm@gmail.com>
 Canqun Yang					<canqun@nudt.edu.cn>

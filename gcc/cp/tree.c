@@ -1735,9 +1735,9 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
 	tree it;
 	for (it = t; it; it = TREE_CHAIN (it))
 	  {
-	    tree val = strip_typedefs_expr (TREE_VALUE (t), remove_attributes);
+	    tree val = strip_typedefs_expr (TREE_VALUE (it), remove_attributes);
 	    vec_safe_push (vec, val);
-	    if (val != TREE_VALUE (t))
+	    if (val != TREE_VALUE (it))
 	      changed = true;
 	    gcc_assert (TREE_PURPOSE (it) == NULL_TREE);
 	  }
@@ -4917,7 +4917,19 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       break;
 
     case DECLTYPE_TYPE:
-      WALK_SUBTREE (DECLTYPE_TYPE_EXPR (*tp));
+      ++cp_unevaluated_operand;
+      /* We can't use WALK_SUBTREE here because of the goto.  */
+      result = cp_walk_tree (&DECLTYPE_TYPE_EXPR (*tp), func, data, pset);
+      --cp_unevaluated_operand;
+      *walk_subtrees_p = 0;
+      break;
+
+    case ALIGNOF_EXPR:
+    case SIZEOF_EXPR:
+    case NOEXCEPT_EXPR:
+      ++cp_unevaluated_operand;
+      result = cp_walk_tree (&TREE_OPERAND (*tp, 0), func, data, pset);
+      --cp_unevaluated_operand;
       *walk_subtrees_p = 0;
       break;
  
@@ -4970,6 +4982,11 @@ cp_save_expr (tree expr)
      tree codes.  */
   if (processing_template_decl)
     return expr;
+
+  /* TARGET_EXPRs are only expanded once.  */
+  if (TREE_CODE (expr) == TARGET_EXPR)
+    return expr;
+
   return save_expr (expr);
 }
 

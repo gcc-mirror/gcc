@@ -1,3 +1,44 @@
+2018-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location::set_range): Remove redundant
+	line_maps * parameter.
+	* line-map.c (rich_location::set_range): Likewise.
+
+2018-07-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR 69558
+	* macro.c (enter_macro_context): Change the location info for builtin
+	macros and _Pragma from location of the closing parenthesis to location
+	of the macro expansion point.
+
+2018-07-17  Jason Franklin  <j_fra@fastmail.us>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* lex.c (_cpp_lex_direct): Use CPP_DL_NOTE instead of CPP_DL_PEDWARN,
+	CPP_DL_WARNING or CPP_DL_ERROR for note that diagnostics for C++ style
+	comments is reported only once per file and guard those calls on the
+	preceding cpp_error returning true.
+
+2018-07-03  Nathan Sidwell  <nathan@acm.org>
+
+	Reorg line_map data structures for better packing.
+	* include/line-map.h (enum lc_reason): Add LC_HWM.
+	(LINE_MAP_MAX_LOCATION): Define here.
+	(struct line_map): Move reason field to line_map_ordinary.  Adjust
+	GTY tagging.
+	(struct line_map_ordinary): Reorder fields for less padding.
+	(struct line_map_macro): Likewise.
+	(MAP_ORDINARY_P): New.
+	(linemap_check_ordinary, linemap_check_macro): Adjust.
+	* line-map.c (LINE_MAP_MAX_SOURCE_LOCATION): Delete.
+	(new_linemap): Take start_location, not reason.  Adjust.
+	(linemap_add, linemap_enter_macro): Adjust.
+	(linemap_line_start): Likewise.
+	(linemap_macro_expansion_map_p): Use MAP_ORDINARY_P.
+	(linemap_macro_loc_to_spelling_point): Likewise.
+	(linemap_macro_loc_to_def_point): Likewise.
+	(linemap_dump): Likewise.
+
 2018-05-23  Jason Merrill  <jason@redhat.com>
 
 	* system.h: #include <new> earlier.

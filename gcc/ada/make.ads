@@ -29,6 +29,7 @@
 package Make is
 
    procedure Gnatmake;
+   pragma No_Return (Gnatmake);
    --  The driver of gnatmake. For more information on gnatmake and its
    --  precise usage please refer to the gnat documentation.
 

@@ -53,6 +53,13 @@ with Tbuild;   use Tbuild;
 
 package body Contracts is
 
+   procedure Analyze_Package_Instantiation_Contract (Inst_Id : Entity_Id);
+   --  Analyze all delayed pragmas chained on the contract of package
+   --  instantiation Inst_Id as if they appear at the end of a declarative
+   --  region. The pragmas in question are:
+   --
+   --    Part_Of
+
    procedure Build_And_Analyze_Contract_Only_Subprograms (L : List_Id);
    --  (CodePeer): Subsidiary procedure to Analyze_Contracts which builds the
    --  contract-only subprogram body of eligible subprograms found in L, adds
@@ -385,6 +392,11 @@ package body Contracts is
 
          elsif Nkind (Decl) = N_Object_Declaration then
             Analyze_Object_Contract (Defining_Entity (Decl));
+
+         --  Package instantiation
+
+         elsif Nkind (Decl) = N_Package_Instantiation then
+            Analyze_Package_Instantiation_Contract (Defining_Entity (Decl));
 
          --  Protected units
 
@@ -876,8 +888,8 @@ package body Contracts is
 
                if not Is_Library_Level_Entity (Obj_Id) then
                   Error_Msg_N
-                    ("volatile variable & must be declared at library level",
-                     Obj_Id);
+                    ("volatile variable & must be declared at library level "
+                     & "(SPARK RM 7.1.3(3))", Obj_Id);
 
                --  An object of a discriminated type cannot be effectively
                --  volatile except for protected objects (SPARK RM 7.1.3(5)).
@@ -1074,17 +1086,6 @@ package body Contracts is
          end if;
       end if;
 
-      --  Check whether the lack of indicator Part_Of agrees with the placement
-      --  of the package instantiation with respect to the state space.
-
-      if Is_Generic_Instance (Pack_Id) then
-         Prag := Get_Pragma (Pack_Id, Pragma_Part_Of);
-
-         if No (Prag) then
-            Check_Missing_Part_Of (Pack_Id);
-         end if;
-      end if;
-
       --  Restore the SPARK_Mode of the enclosing context after all delayed
       --  pragmas have been analyzed.
 
@@ -1099,6 +1100,62 @@ package body Contracts is
             Gen_Id => Pack_Id);
       end if;
    end Analyze_Package_Contract;
+
+   --------------------------------------------
+   -- Analyze_Package_Instantiation_Contract --
+   --------------------------------------------
+
+   --  WARNING: This routine manages SPARK regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  SPARK mode.
+
+   procedure Analyze_Package_Instantiation_Contract (Inst_Id : Entity_Id) is
+      Inst_Spec : constant Node_Id :=
+                    Instance_Spec (Unit_Declaration_Node (Inst_Id));
+
+      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK_Mode-related data to restore on exit
+
+      Pack_Id : Entity_Id;
+      Prag    : Node_Id;
+
+   begin
+      --  Nothing to do when the package instantiation is erroneous or left
+      --  partially decorated.
+
+      if No (Inst_Spec) then
+         return;
+      end if;
+
+      Pack_Id := Defining_Entity (Inst_Spec);
+      Prag    := Get_Pragma (Pack_Id, Pragma_Part_Of);
+
+      --  Due to the timing of contract analysis, delayed pragmas may be
+      --  subject to the wrong SPARK_Mode, usually that of the enclosing
+      --  context. To remedy this, restore the original SPARK_Mode of the
+      --  related package.
+
+      Set_SPARK_Mode (Pack_Id);
+
+      --  Check whether the lack of indicator Part_Of agrees with the placement
+      --  of the package instantiation with respect to the state space. Nested
+      --  package instantiations do not need to be checked because they inherit
+      --  Part_Of indicator of the outermost package instantiation (see routine
+      --  Propagate_Part_Of in Sem_Prag).
+
+      if In_Instance then
+         null;
+
+      elsif No (Prag) then
+         Check_Missing_Part_Of (Pack_Id);
+      end if;
+
+      --  Restore the SPARK_Mode of the enclosing context after all delayed
+      --  pragmas have been analyzed.
+
+      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+   end Analyze_Package_Instantiation_Contract;
 
    --------------------------------
    -- Analyze_Protected_Contract --

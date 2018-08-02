@@ -286,6 +286,11 @@ package Sem is
    --  freezing nodes can modify the status of this flag, any other client
    --  should regard it as read-only.
 
+   Inside_Preanalysis_Without_Freezing : Nat := 0;
+   --  Flag indicating whether we are preanalyzing an expression performing no
+   --  freezing. Non-zero means we are inside (it is actually a level counter
+   --  to deal with nested calls).
+
    Unloaded_Subunits : Boolean := False;
    --  This flag is set True if we have subunits that are not loaded. This
    --  occurs when the main unit is a subunit, and contains lower level

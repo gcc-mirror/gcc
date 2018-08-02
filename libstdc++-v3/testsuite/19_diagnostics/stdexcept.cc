@@ -219,9 +219,37 @@ void test02()
     }
 }
 
+void test03()
+{
+  std::logic_error le1("");
+  // Copy constructor:
+  std::logic_error le2(le1);
+  // Copy assignment operator:
+  le1 = le2;
+#if __cplusplus >= 201103L
+  // Move constructor:
+  std::logic_error le3 = std::move(le1);
+  // Move assignment operator:
+  le1 = std::move(le3);
+#endif
+
+  std::runtime_error re1("");
+  // Copy constructor:
+  std::runtime_error re2(re1);
+  // Copy assignment operator:
+  re1 = re2;
+#if __cplusplus >= 201103L
+  // Move constructor:
+  std::runtime_error re3 = std::move(re1);
+  // Move assignment operator:
+  re1 = std::move(re3);
+#endif
+}
+
 int main(void)
 {
   test01();
   test02();
+  test03();
   return 0;
 }

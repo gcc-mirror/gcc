@@ -1,3 +1,42 @@
+2018-08-02  Nicolas Pitre <nico@fluxnic.net>
+
+	PR libgcc/86512
+	* config/arm/ieee754-df.S: Don't shortcut denormal handling when
+	exponent goes negative. Update my email address.
+	* config/arm/ieee754-sf.S: Likewise.
+
+2018-08-01  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c (__gcov_indirect_call_profiler_v2): Do not
+        check that  __gcov_indirect_call_callee is non-null.
+
+2018-07-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/ieee754-df.S: Fix comment for code working on
+	architectures >= 4.
+	* config/arm/ieee754-sf.S: Likewise.
+
+2018-07-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	Removed.
+
+2018-07-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* configure: Regenerated.
+
+2018-06-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (install_leaf): Use enable_gcov instead of
+	enable_libgcov.
+
+2018-06-27  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* configure.ac: Add --disable-gcov option.
+	* configure: Regenerate.
+	* Makefile.in: Honour @enable_gcov@.
+
 2018-06-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/lib1funcs.S (__ARM_ARCH__): Remove definitions, use

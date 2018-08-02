@@ -57,21 +57,21 @@ with Tbuild;   use Tbuild;
 
 function Par (Configuration_Pragmas : Boolean) return List_Id is
 
-   Num_Library_Units : Natural := 0;
-   --  Count number of units parsed (relevant only in syntax check only mode,
-   --  since in semantics check mode only a single unit is permitted anyway).
-
-   Save_Config_Switches : Config_Switches_Type;
-   --  Variable used to save values of config switches while we parse the
-   --  new unit, to be restored on exit for proper recursive behavior.
+   Inside_Record_Definition : Boolean := False;
+   --  True within a record definition. Used to control warning for
+   --  redefinition of standard entities (not issued for field names).
 
    Loop_Block_Count : Nat := 0;
    --  Counter used for constructing loop/block names (see the routine
    --  Par.Ch5.Get_Loop_Block_Name).
 
-   Inside_Record_Definition : Boolean := False;
-   --  True within a record definition. Used to control warning for
-   --  redefinition of standard entities (not issued for field names).
+   Num_Library_Units : Natural := 0;
+   --  Count number of units parsed (relevant only in syntax check only mode,
+   --  since in semantics check mode only a single unit is permitted anyway).
+
+   Save_Config_Attrs : Config_Switches_Type;
+   --  Variable used to save values of config switches while we parse the
+   --  new unit, to be restored on exit for proper recursive behavior.
 
    --------------------
    -- Error Recovery --
@@ -1517,7 +1517,7 @@ begin
    --  Normal case of compilation unit
 
    else
-      Save_Opt_Config_Switches (Save_Config_Switches);
+      Save_Config_Attrs := Save_Config_Switches;
 
       --  The following loop runs more than once in syntax check mode
       --  where we allow multiple compilation units in the same file
@@ -1525,7 +1525,7 @@ begin
       --  we get to the unit we want.
 
       for Ucount in Pos loop
-         Set_Opt_Config_Switches
+         Set_Config_Switches
            (Is_Internal_Unit (Current_Source_Unit),
             Main_Unit => Current_Source_Unit = Main_Unit);
 
@@ -1661,7 +1661,7 @@ begin
 
          end if;
 
-         Restore_Opt_Config_Switches (Save_Config_Switches);
+         Restore_Config_Switches (Save_Config_Attrs);
       end loop;
 
       --  Now that we have completely parsed the source file, we can complete
@@ -1690,7 +1690,7 @@ begin
 
       --  Restore settings of switches saved on entry
 
-      Restore_Opt_Config_Switches (Save_Config_Switches);
+      Restore_Config_Switches (Save_Config_Attrs);
       Set_Comes_From_Source_Default (False);
    end if;
 
