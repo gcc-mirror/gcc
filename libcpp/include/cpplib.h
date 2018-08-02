@@ -673,7 +673,7 @@ struct cpp_dir
 /* The structure of a node in the hash table.  The hash table has
    entries for all identifiers: either macros defined by #define
    commands (type NT_MACRO), assertions created with #assert
-   (NT_ASSERTION), or neither of the above (NT_VOID).  Builtin macros
+   (NT_MACRO), or neither of the above (NT_VOID).  Builtin macros
    like __LINE__ are flagged NODE_BUILTIN.  Poisoned identifiers are
    flagged NODE_POISONED.  NODE_OPERATOR (C++ only) indicates an
    identifier that behaves like an operator such as "xor".
@@ -698,8 +698,7 @@ struct cpp_dir
 enum node_type
 {
   NT_VOID = 0,	   /* No definition yet.  */
-  NT_MACRO,	   /* A macro of some form.  */
-  NT_ASSERTION	   /* Predicate for #assert.  */
+  NT_MACRO	   /* A macro or assert.  */
 };
 
 /* Different flavors of builtin macro.  _Pragma is an operator, but we
@@ -731,16 +730,13 @@ enum cpp_builtin_type
 enum {
   NTV_MACRO,
   NTV_BUILTIN,
-  NTV_ARGUMENT,
-  NTV_NONE
+  NTV_ARGUMENT
 };
 
 #define CPP_HASHNODE_VALUE_IDX(HNODE)				\
-  ((HNODE.flags & NODE_MACRO_ARG) ? NTV_ARGUMENT		\
-   : HNODE.type == NT_MACRO ? ((HNODE.flags & NODE_BUILTIN) 	\
-			       ? NTV_BUILTIN : NTV_MACRO)	\
-   : HNODE.type == NT_ASSERTION ? NTV_MACRO			\
-   : NTV_NONE)
+  ((HNODE).flags & NODE_MACRO_ARG ? NTV_ARGUMENT		\
+   : (HNODE).flags & NODE_BUILTIN ? NTV_BUILTIN			\
+   : NTV_MACRO)
 
 /* The common part of an identifier node shared amongst all 3 C front
    ends.  Also used to store CPP identifiers, which are a superset of

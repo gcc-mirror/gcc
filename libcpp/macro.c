@@ -3057,6 +3057,7 @@ _cpp_free_definition (cpp_hashnode *h)
   h->type = NT_VOID;
   /* Clear builtin flag in case of redefinition.  */
   h->flags &= ~(NODE_BUILTIN | NODE_DISABLED | NODE_USED);
+  h->value.macro = NULL;
 }
 
 /* Save parameter NODE (spelling SPELLING) to the parameter list of
@@ -3540,10 +3541,8 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 				 node->value.macro->line, 0,
 			 "this is the location of the previous definition");
 	}
+      _cpp_free_definition (node);
     }
-
-  if (node->type != NT_VOID)
-    _cpp_free_definition (node);
 
   /* Enter definition in hash table.  */
   node->type = NT_MACRO;

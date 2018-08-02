@@ -2290,7 +2290,7 @@ static cpp_macro **
 find_answer (cpp_hashnode *node, const cpp_macro *candidate)
 {
   unsigned int i;
-  cpp_macro **result;
+  cpp_macro **result = NULL;
 
   for (result = &node->value.macro; *result; result = &(*result)->parm.next)
     {
@@ -2325,8 +2325,10 @@ _cpp_test_assertion (cpp_reader *pfile, unsigned int *value)
   *value = 0;
 
   if (node)
-    *value = (node->type == NT_ASSERTION &&
-	      (answer == 0 || *find_answer (node, answer) != 0));
+    {
+      if (node->value.macro)
+	*value = !answer || *find_answer (node, answer);
+    }
   else if (pfile->cur_token[-1].type == CPP_EOF)
     _cpp_backup_tokens (pfile, 1);
 
@@ -2343,19 +2345,13 @@ do_assert (cpp_reader *pfile)
 
   if (node)
     {
-      cpp_macro *next = NULL;
-
       /* Place the new answer in the answer list.  First check there
          is not a duplicate.  */
-      if (node->type == NT_ASSERTION)
+      if (*find_answer (node, answer))
 	{
-	  if (*find_answer (node, answer))
-	    {
-	      cpp_error (pfile, CPP_DL_WARNING, "\"%s\" re-asserted",
-			 NODE_NAME (node) + 1);
-	      return;
-	    }
-	  next = node->value.macro;
+	  cpp_error (pfile, CPP_DL_WARNING, "\"%s\" re-asserted",
+		     NODE_NAME (node) + 1);
+	  return;
 	}
 
       /* Commit or allocate storage for the answer.  */
@@ -2363,9 +2359,9 @@ do_assert (cpp_reader *pfile)
 	(pfile, sizeof (cpp_macro) - sizeof (cpp_token)
 	 + sizeof (cpp_token) * answer->count);
 
-      answer->parm.next = next;
+      answer->parm.next = node->value.macro;
 
-      node->type = NT_ASSERTION;
+      node->type = NT_MACRO;
       node->value.macro = answer;
 
       check_eol (pfile, false);
@@ -2376,12 +2372,11 @@ do_assert (cpp_reader *pfile)
 static void
 do_unassert (cpp_reader *pfile)
 {
-  cpp_hashnode *node;
   cpp_macro *answer;
+  cpp_hashnode *node = parse_assertion (pfile, T_UNASSERT, &answer);
 
-  node = parse_assertion (pfile, T_UNASSERT, &answer);
   /* It isn't an error to #unassert something that isn't asserted.  */
-  if (node && node->type == NT_ASSERTION)
+  if (node)
     {
       if (answer)
 	{

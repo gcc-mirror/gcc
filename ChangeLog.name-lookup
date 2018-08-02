@@ -1,5 +1,18 @@
 2018-08-02  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* include/cpplib.h (enum node_type): Remove NT_ASSERTION.
+	(NTV_NONE): Delete.
+	(CPP_HASHNODE_VALUE_IDX): Adjust.
+	* macro.c (_cpp_free_definition): Zap macro pointer.
+	(_cpp_create_definition): Move _cpp_free_definition call.
+	* directives.c (find_answer): Initialize result.
+	(_cpp_test_assertion): Check macro pointer.
+	(do_assert): Likewise.
+	(do_unassert): Don't node type.
+	* pch.c (write_macdef, count_Defs, write_defs)
+	(save_macros): Adjust fo loss of NT_ASSERTION.
+
 	Asserts are now macro variants
 	libcpp/
 	* directives.c (parse_answer, parse_assertion, find_answer): Use
