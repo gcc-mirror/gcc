@@ -5709,7 +5709,7 @@ spill_hard_reg_in_range (int regno, enum reg_class rclass, rtx_insn *from, rtx_i
       struct lra_insn_reg *reg;
       
       for (reg = id->regs; reg != NULL; reg = reg->next)
-	if (reg->regno <= FIRST_PSEUDO_REGISTER)
+	if (reg->regno < FIRST_PSEUDO_REGISTER)
 	  SET_HARD_REG_BIT (ignore, reg->regno);
       for (reg = static_id->hard_regs; reg != NULL; reg = reg->next)
 	SET_HARD_REG_BIT (ignore, reg->regno);
