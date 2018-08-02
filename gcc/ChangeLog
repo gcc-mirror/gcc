@@ -1,3 +1,11 @@
+2018-08-02  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.c (select_block_compare_mode): Move test
+	for word_mode_ok here instead of passing as argument.
+	(expand_block_compare): Change select_block_compare_mode() call.
+	(expand_strncmp_gpr_sequence): New function.
+	(expand_strn_compare): Make use of expand_strncmp_gpr_sequence.
+
 2018-08-02  Jeff Law  <law@redhat.com>
 
 	PR target/86790
