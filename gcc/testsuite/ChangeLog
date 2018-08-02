@@ -1,5 +1,10 @@
 2018-08-02  Richard Biener  <rguenther@suse.de>
 
+	PR c++/86763
+	* g++.dg/torture/pr86763.C: New testcase.
+
+2018-08-02  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/86816
 	* g++.dg/torture/pr86816.C: New testcase.
 
