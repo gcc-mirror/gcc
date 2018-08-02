@@ -1,3 +1,15 @@
+2018-08-02  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	Backport from mainline
+	2018-07-31  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR middle-end/86705
+	* gcc/cfgexpand.c (set_parm_rtl): Use the alignment of Pmode when
+	MAX_SUPPORTED_STACK_ALIGNMENT would otherwise be exceeded by the
+	requested variable alignment.
+	(expand_one_ssa_partition): Likewise.
+	(expand_one_var): Likewise.
+
 2018-08-01  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/86724
