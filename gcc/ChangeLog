@@ -1,3 +1,7 @@
+2018-08-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.c (print_overload_test): Fix typo.
+
 2018-08-02  Richard Biener  <rguenther@suse.de>
 
 	PR c++/86763
