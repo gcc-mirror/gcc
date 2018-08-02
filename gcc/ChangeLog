@@ -1,3 +1,9 @@
+2018-08-02  Jeff Law  <law@redhat.com>
+
+	PR target/86784
+	* config/h8300/h8300.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
 2018-08-02  Tom de Vries  <tdevries@suse.de>
 
 	PR target/86660
