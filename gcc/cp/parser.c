@@ -33733,7 +33733,7 @@ cp_parser_omp_iterators (cp_parser *parser)
       DECL_CONTEXT (iter_var) = current_function_decl;
       pushdecl (iter_var);
 
-      *last = make_tree_vec (5);
+      *last = make_tree_vec (6);
       TREE_VEC_ELT (*last, 0) = iter_var;
       TREE_VEC_ELT (*last, 1) = begin;
       TREE_VEC_ELT (*last, 2) = end;
@@ -33867,7 +33867,7 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
 	  if (iterators == error_mark_node)
 	    iterators = NULL_TREE;
 	  else
-	    TREE_VEC_ELT (iterators, 4) = block;
+	    TREE_VEC_ELT (iterators, 5) = block;
 	}
 
       for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))

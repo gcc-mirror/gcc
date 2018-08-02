@@ -1,3 +1,9 @@
+2018-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/depend-iterator-1.c: Add tests for
+	unsigned iterators, add gaps in between different arr2 bits.
+	* testsuite/libgomp.c++/depend-iterator-1.C: Likewise.
+
 2018-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/depend-iterator-1.c (main): Separate

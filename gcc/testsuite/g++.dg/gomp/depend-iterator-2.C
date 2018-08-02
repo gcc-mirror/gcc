@@ -43,7 +43,9 @@ f1 ()
   ;
   #pragma omp task depend (iterator (i = 0:4, j = 2:8:i) , in : a)	// { dg-error "step expression refers to outer iterator 'i'" }
   ;
-  #pragma omp task depend (iterator (i = 1.25:2.5:3.5) , in : a)
+  #pragma omp task depend (iterator (i = 1.25:2.5:3) , in : a)
+  ;
+  #pragma omp task depend (iterator (i = 1:2:3.5) , in : a)		// { dg-error "iterator step with non-integral type" }
   ;
   #pragma omp task depend (iterator (W *p = 23 : h) , in : a)
   ;
@@ -81,9 +83,11 @@ f3 ()
   ;
   #pragma omp task depend (iterator (i = 2:*d:2) , in : a)	// { dg-error "invalid cast from type 'S' to type 'int'" }
   ;
-  #pragma omp task depend (iterator (i = 2:4:*d) , in : a)	// { dg-error "invalid cast from type 'S' to type 'int'" }
+  #pragma omp task depend (iterator (i = 2:4:*d) , in : a)	// { dg-error "iterator step with non-integral type" }
   ;
-  #pragma omp task depend (iterator (i = 1.25:2.5:3.5) , in : a)
+  #pragma omp task depend (iterator (i = 1.25:2.5:3) , in : a)
+  ;
+  #pragma omp task depend (iterator (i = 1:2:3.5) , in : a)	// { dg-error "iterator step with non-integral type" }
   ;
   #pragma omp task depend (iterator (W *p = 23 : h) , in : a)
   ;

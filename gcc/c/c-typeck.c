@@ -13112,6 +13112,7 @@ c_omp_finish_iterators (tree iter)
       tree begin = TREE_VEC_ELT (it, 1);
       tree end = TREE_VEC_ELT (it, 2);
       tree step = TREE_VEC_ELT (it, 3);
+      tree orig_step;
       tree type = TREE_TYPE (var);
       location_t loc = DECL_SOURCE_LOCATION (var);
       if (type == error_mark_node)
@@ -13138,11 +13139,24 @@ c_omp_finish_iterators (tree iter)
 	  ret = true;
 	  continue;
 	}
-
+      else if (step == error_mark_node
+	       || TREE_TYPE (step) == error_mark_node)
+	{
+	  ret = true;
+	  continue;
+	}
+      else if (!INTEGRAL_TYPE_P (TREE_TYPE (step)))
+	{
+	  error_at (EXPR_LOC_OR_LOC (step, loc),
+		    "iterator step with non-integral type");
+	  ret = true;
+	  continue;
+	}
       begin = c_fully_fold (build_c_cast (loc, type, begin), false, NULL);
       end = c_fully_fold (build_c_cast (loc, type, end), false, NULL);
+      orig_step = save_expr (c_fully_fold (step, false, NULL));
       tree stype = POINTER_TYPE_P (type) ? sizetype : type;
-      step = c_fully_fold (build_c_cast (loc, stype, step), false, NULL);
+      step = c_fully_fold (build_c_cast (loc, stype, orig_step), false, NULL);
       if (POINTER_TYPE_P (type))
 	{
 	  begin = save_expr (begin);
@@ -13161,7 +13175,8 @@ c_omp_finish_iterators (tree iter)
 
       if (begin == error_mark_node
 	  || end == error_mark_node
-	  || step == error_mark_node)
+	  || step == error_mark_node
+	  || orig_step == error_mark_node)
 	{
 	  ret = true;
 	  continue;
@@ -13211,6 +13226,7 @@ c_omp_finish_iterators (tree iter)
       TREE_VEC_ELT (it, 1) = begin;
       TREE_VEC_ELT (it, 2) = end;
       TREE_VEC_ELT (it, 3) = step;
+      TREE_VEC_ELT (it, 4) = orig_step;
     }
   return ret;
 }

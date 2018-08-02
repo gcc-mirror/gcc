@@ -7572,7 +7572,9 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 				       is_gimple_val, fb_rvalue) == GS_ERROR
 			|| gimplify_expr (&TREE_VEC_ELT (it, 2), pre_p, NULL,
 					  is_gimple_val, fb_rvalue) == GS_ERROR
-			|| (gimplify_expr (&TREE_VEC_ELT (it, 3), pre_p, NULL,
+			|| gimplify_expr (&TREE_VEC_ELT (it, 3), pre_p, NULL,
+					  is_gimple_val, fb_rvalue) == GS_ERROR
+			|| (gimplify_expr (&TREE_VEC_ELT (it, 4), pre_p, NULL,
 					   is_gimple_val, fb_rvalue)
 			    == GS_ERROR))
 		      return 2;
@@ -7580,12 +7582,13 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 		    tree begin = TREE_VEC_ELT (it, 1);
 		    tree end = TREE_VEC_ELT (it, 2);
 		    tree step = TREE_VEC_ELT (it, 3);
+		    tree orig_step = TREE_VEC_ELT (it, 4);
 		    tree type = TREE_TYPE (var);
 		    tree stype = TREE_TYPE (step);
 		    location_t loc = DECL_SOURCE_LOCATION (var);
 		    tree endmbegin;
 		    /* Compute count for this iterator as
-		       step > 0
+		       orig_step > 0
 		       ? (begin < end ? (end - begin + (step - 1)) / step : 0)
 		       : (begin > end ? (end - begin + (step + 1)) / step : 0)
 		       and compute product of those for the entire depend
@@ -7608,8 +7611,14 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 					   pos, step);
 		    tree neg = fold_build2_loc (loc, PLUS_EXPR, stype,
 						endmbegin, stepp1);
+		    if (TYPE_UNSIGNED (stype))
+		      {
+			neg = fold_build1_loc (loc, NEGATE_EXPR, stype, neg);
+			step = fold_build1_loc (loc, NEGATE_EXPR, stype, step);
+		      }
 		    neg = fold_build2_loc (loc, TRUNC_DIV_EXPR, stype,
 					   neg, step);
+		    step = NULL_TREE;
 		    tree cond = fold_build2_loc (loc, LT_EXPR,
 						 boolean_type_node,
 						 begin, end);
@@ -7619,8 +7628,10 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 					    end, begin);
 		    neg = fold_build3_loc (loc, COND_EXPR, stype, cond, neg,
 					   build_int_cst (stype, 0));
+		    tree osteptype = TREE_TYPE (orig_step);
 		    cond = fold_build2_loc (loc, GT_EXPR, boolean_type_node,
-					    step, build_int_cst (stype, 0));
+					    orig_step,
+					    build_int_cst (osteptype, 0));
 		    tree cnt = fold_build3_loc (loc, COND_EXPR, stype,
 						cond, pos, neg);
 		    cnt = fold_convert_loc (loc, sizetype, cnt);
@@ -7779,7 +7790,7 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	      {
 		if (last_bind)
 		  gimplify_and_add (last_bind, pre_p);
-		tree block = TREE_VEC_ELT (TREE_PURPOSE (t), 4);
+		tree block = TREE_VEC_ELT (TREE_PURPOSE (t), 5);
 		last_bind = build3 (BIND_EXPR, void_type_node,
 				    BLOCK_VARS (block), NULL, block);
 		TREE_SIDE_EFFECTS (last_bind) = 1;
@@ -7791,8 +7802,8 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 		    tree begin = TREE_VEC_ELT (it, 1);
 		    tree end = TREE_VEC_ELT (it, 2);
 		    tree step = TREE_VEC_ELT (it, 3);
+		    tree orig_step = TREE_VEC_ELT (it, 4);
 		    tree type = TREE_TYPE (var);
-		    tree stype = TREE_TYPE (step);
 		    location_t loc = DECL_SOURCE_LOCATION (var);
 		    /* Emit:
 		       var = begin;
@@ -7801,7 +7812,7 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 		       ...
 		       var = var + step;
 		       cond_label:
-		       if (step > 0) {
+		       if (orig_step > 0) {
 			 if (var < end) goto beg_label;
 		       } else {
 			 if (var > end) goto beg_label;
@@ -7846,8 +7857,10 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 		      = fold_build3_loc (loc, COND_EXPR, void_type_node,
 					 cond, build_and_jump (&beg_label),
 					 void_node);
+		    tree osteptype = TREE_TYPE (orig_step);
 		    cond = fold_build2_loc (loc, GT_EXPR, boolean_type_node,
-					    step, build_int_cst (stype, 0));
+					    orig_step,
+					    build_int_cst (osteptype, 0));
 		    tem = fold_build3_loc (loc, COND_EXPR, void_type_node,
 					   cond, pos, neg);
 		    append_to_statement_list_force (tem, p);

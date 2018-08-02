@@ -5868,6 +5868,7 @@ cp_omp_finish_iterators (tree iter)
       tree begin = TREE_VEC_ELT (it, 1);
       tree end = TREE_VEC_ELT (it, 2);
       tree step = TREE_VEC_ELT (it, 3);
+      tree orig_step;
       tree type = TREE_TYPE (var);
       location_t loc = DECL_SOURCE_LOCATION (var);
       if (type == error_mark_node)
@@ -5890,12 +5891,31 @@ cp_omp_finish_iterators (tree iter)
 	  ret = true;
 	  continue;
 	}
+      if (type_dependent_expression_p (begin)
+	  || type_dependent_expression_p (end)
+	  || type_dependent_expression_p (step))
+	continue;
+      else if (error_operand_p (step))
+	{
+	  ret = true;
+	  continue;
+	}
+      else if (!INTEGRAL_TYPE_P (TREE_TYPE (step)))
+	{
+	  error_at (EXPR_LOC_OR_LOC (step, loc),
+		    "iterator step with non-integral type");
+	  ret = true;
+	  continue;
+	}
 
       begin = mark_rvalue_use (begin);
       end = mark_rvalue_use (end);
       step = mark_rvalue_use (step);
       begin = cp_build_c_cast (type, begin, tf_warning_or_error);
       end = cp_build_c_cast (type, end, tf_warning_or_error);
+      orig_step = step;
+      if (!processing_template_decl)
+	step = orig_step = save_expr (step);
       tree stype = POINTER_TYPE_P (type) ? sizetype : type;
       step = cp_build_c_cast (stype, step, tf_warning_or_error);
       if (POINTER_TYPE_P (type) && !processing_template_decl)
@@ -5912,6 +5932,7 @@ cp_omp_finish_iterators (tree iter)
 	  begin = maybe_constant_value (begin);
 	  end = maybe_constant_value (end);
 	  step = maybe_constant_value (step);
+	  orig_step = maybe_constant_value (orig_step);
 	}
       if (integer_zerop (step))
 	{
@@ -5922,7 +5943,8 @@ cp_omp_finish_iterators (tree iter)
 
       if (begin == error_mark_node
 	  || end == error_mark_node
-	  || step == error_mark_node)
+	  || step == error_mark_node
+	  || orig_step == error_mark_node)
 	{
 	  ret = true;
 	  continue;
@@ -5933,6 +5955,8 @@ cp_omp_finish_iterators (tree iter)
 	  begin = fold_build_cleanup_point_expr (TREE_TYPE (begin), begin);
 	  end = fold_build_cleanup_point_expr (TREE_TYPE (end), end);
 	  step = fold_build_cleanup_point_expr (TREE_TYPE (step), step);
+	  orig_step = fold_build_cleanup_point_expr (TREE_TYPE (orig_step),
+						     orig_step);
 	}
       hash_set<tree> pset;
       tree it2;
@@ -5969,7 +5993,13 @@ cp_omp_finish_iterators (tree iter)
 	}
       TREE_VEC_ELT (it, 1) = begin;
       TREE_VEC_ELT (it, 2) = end;
-      TREE_VEC_ELT (it, 3) = step;
+      if (processing_template_decl)
+	TREE_VEC_ELT (it, 3) = orig_step;
+      else
+	{
+	  TREE_VEC_ELT (it, 3) = step;
+	  TREE_VEC_ELT (it, 4) = orig_step;
+	}
     }
   return ret;
 }

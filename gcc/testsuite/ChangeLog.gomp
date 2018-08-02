@@ -1,3 +1,11 @@
+2018-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/depend-iterator-2.c (f1): Adjust expected
+	diagnostics, split the test with step 3.5 into one where only
+	begin/end are floating point, and one where only step is floating
+	point.
+	* g++.dg/gomp/depend-iterator-2.C (f1, f3): Likewise.
+
 2018-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/depend-iterator-1.c (foo, bar, baz): Separate

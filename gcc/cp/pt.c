@@ -15983,7 +15983,7 @@ tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
 	      TREE_CHAIN (*tp) = NULL_TREE;
 	      tp = &TREE_CHAIN (*tp);
 	    }
-	  TREE_VEC_ELT (ret, 4) = poplevel (1, 1, 0);
+	  TREE_VEC_ELT (ret, 5) = poplevel (1, 1, 0);
 	  iterator_cache[0] = TREE_PURPOSE (decl);
 	  iterator_cache[1] = ret;
 	}

@@ -1,3 +1,11 @@
+2018-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_omp_depend): Load block from elt 5 instead
+	of 4, in 4 expect to find original step expression, gimplify it and
+	use it to determine if iterating upwards or downwards.  When iterating
+	downwards with unsigned iterator type, negate both the difference and
+	step before division.
+
 2018-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-core.h (enum omp_clause_depend_kind): Remove

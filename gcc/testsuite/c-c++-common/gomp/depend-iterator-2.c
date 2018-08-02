@@ -52,10 +52,11 @@ f1 (void)
   ;								/* { dg-error "invalid cast from type 'S' to type 'int'" "" { target c++ } .-1 } */
   #pragma omp task depend (iterator (i = 2:*d:2) , in : a)	/* { dg-error "aggregate value used where an integer was expected" "" { target c } } */
   ;								/* { dg-error "invalid cast from type 'S' to type 'int'" "" { target c++ } .-1 } */
-  #pragma omp task depend (iterator (i = 2:4:*d) , in : a)	/* { dg-error "aggregate value used where an integer was expected" "" { target c } } */
-  ;								/* { dg-error "invalid cast from type 'S' to type 'int'" "" { target c++ } .-1 } */
-								/* { dg-error "iterator 'i' has zero step" "" { target c } .-2 } */
-  #pragma omp task depend (iterator (i = 1.25:2.5:3.5) , in : a)
+  #pragma omp task depend (iterator (i = 2:4:*d) , in : a)	/* { dg-error "iterator step with non-integral type" } */
+  ;
+  #pragma omp task depend (iterator (i = 1.25:2.5:3) , in : a)
+  ;
+  #pragma omp task depend (iterator (i = 1:2:3.5) , in : a)	/* { dg-error "iterator step with non-integral type" } */
   ;
   #pragma omp task depend (iterator (int *p = 23 : h) , in : a)
   ;

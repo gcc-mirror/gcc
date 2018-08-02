@@ -1,3 +1,15 @@
+2018-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_iterators): Build vector with 6 elts
+	instead of 5.
+	(cp_parser_omp_clause_depend): Put block into elt 5 instead of 4.
+	* semantics.c (cp_omp_finish_iterators): Remove iterator if step is
+	errorneous, diagnose if step doesn't have integral type.  Remember
+	original step expression wrapped with save_expr and store that to
+	elt 4.  If processing_template_decl, punt earlier if begin/end/step
+	are type dependent expression, and only update step to the orig_step.
+	* pt.c (tsubst_omp_clause_decl): Put block into elt 5 instead of 4.
+
 2018-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_depend): Adjust parsing for
