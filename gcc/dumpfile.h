@@ -285,10 +285,10 @@ class dump_user_location_t
   dump_user_location_t () : m_count (), m_loc (UNKNOWN_LOCATION) {}
 
   /* Construct from a gimple statement (using its location and hotness).  */
-  dump_user_location_t (gimple *stmt);
+  dump_user_location_t (const gimple *stmt);
 
   /* Construct from an RTL instruction (using its location and hotness).  */
-  dump_user_location_t (rtx_insn *insn);
+  dump_user_location_t (const rtx_insn *insn);
 
   /* Construct from a location_t.  This one is deprecated (since it doesn't
      capture hotness information); it thus needs to be spelled out.  */
@@ -363,7 +363,7 @@ class dump_location_t
   }
 
   /* Construct from a gimple statement (using its location and hotness).  */
-  dump_location_t (gimple *stmt,
+  dump_location_t (const gimple *stmt,
 		   const dump_impl_location_t &impl_location
 		     = dump_impl_location_t ())
   : m_user_location (dump_user_location_t (stmt)),
@@ -372,7 +372,7 @@ class dump_location_t
   }
 
   /* Construct from an RTL instruction (using its location and hotness).  */
-  dump_location_t (rtx_insn *insn,
+  dump_location_t (const rtx_insn *insn,
 		   const dump_impl_location_t &impl_location
 		   = dump_impl_location_t ())
   : m_user_location (dump_user_location_t (insn)),
