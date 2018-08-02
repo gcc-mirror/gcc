@@ -6105,18 +6105,8 @@ stack_protect_prologue (void)
 {
   tree guard_decl = targetm.stack_protect_guard ();
   rtx x, y;
-  struct expand_operand ops[2];
 
   x = expand_normal (crtl->stack_protect_guard);
-  create_fixed_operand (&ops[0], x);
-  create_fixed_operand (&ops[1], DECL_RTL (guard_decl));
-  /* Allow the target to compute address of Y and copy it to X without
-     leaking Y into a register.  This combined address + copy pattern allows
-     the target to prevent spilling of any intermediate results by splitting
-     it after register allocator.  */
-  if (maybe_expand_insn (targetm.code_for_stack_protect_combined_set, 2, ops))
-    return;
-
   if (guard_decl)
     y = expand_normal (guard_decl);
   else

@@ -89,44 +89,6 @@
 	(process_file): Move functions processing to
         process_all_functions.
 
-2018-08-02  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
-
-	PR target/85434
-	* target-insns.def (stack_protect_combined_set): Define new standard
-	pattern name.
-	(stack_protect_combined_test): Likewise.
-	* cfgexpand.c (stack_protect_prologue): Try new
-	stack_protect_combined_set pattern first.
-	* function.c (stack_protect_epilogue): Try new
-	stack_protect_combined_test pattern first.
-	* config/arm/arm.c (require_pic_register): Add pic_reg and compute_now
-	parameters to control which register to use as PIC register and force
-	reloading PIC register respectively.  Insert in the stream of insns if
-	possible.
-	(legitimize_pic_address): Expose above new parameters in prototype and
-	adapt recursive calls accordingly.
-	(arm_legitimize_address): Adapt to new legitimize_pic_address
-	prototype.
-	(thumb_legitimize_address): Likewise.
-	(arm_emit_call_insn): Adapt to new require_pic_register prototype.
-	* config/arm/arm-protos.h (legitimize_pic_address): Adapt to prototype
-	change.
-	* config/arm/arm.md (movsi expander): Adapt to legitimize_pic_address
-	prototype change.
-	(stack_protect_combined_set): New insn_and_split pattern.
-	(stack_protect_set): New insn pattern.
-	(stack_protect_combined_test): New insn_and_split pattern.
-	(stack_protect_test): New insn pattern.
-	* config/arm/unspecs.md (UNSPEC_SP_SET): New unspec.
-	(UNSPEC_SP_TEST): Likewise.
-	* doc/md.texi (stack_protect_combined_set): Document new standard
-	pattern name.
-	(stack_protect_set): Clarify that the operand for guard's address is
-	legal.
-	(stack_protect_combined_test): Document new standard pattern name.
-	(stack_protect_test): Clarify that the operand for guard's address is
-	legal.
-
 2018-08-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* dumpfile.c (dump_user_location_t::dump_user_location_t): Add
