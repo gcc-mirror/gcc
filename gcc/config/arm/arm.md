@@ -6021,7 +6021,8 @@
       operands[1] = legitimize_pic_address (operands[1], SImode,
 					    (!can_create_pseudo_p ()
 					     ? operands[0]
-					     : 0));
+					     : NULL_RTX), NULL_RTX,
+					    false /*compute_now*/);
   }
   "
 )
@@ -8633,6 +8634,95 @@
   [(set_attr "type" "multiple")
    (set_attr "conds" "clob")]
 )
+
+;; Named patterns for stack smashing protection.
+(define_insn_and_split "stack_protect_combined_set"
+  [(set (match_operand:SI 0 "memory_operand" "=m")
+	(unspec:SI [(match_operand:SI 1 "memory_operand" "X")]
+		   UNSPEC_SP_SET))
+   (match_scratch:SI 2 "=r")
+   (match_scratch:SI 3 "=r")]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (unspec:SI [(mem:SI (match_dup 2))]
+					    UNSPEC_SP_SET))
+	      (clobber (match_dup 2))])]
+  "
+{
+  rtx addr = XEXP (operands[1], 0);
+  if (flag_pic)
+    {
+      /* Forces recomputing of GOT base now.  */
+      operands[1] = legitimize_pic_address (addr, SImode, operands[2],
+					    operands[3], true /*compute_now*/);
+    }
+  else
+    {
+      if (!address_operand (addr, SImode))
+	operands[1] = force_const_mem (SImode, addr);
+      emit_move_insn (operands[2], operands[1]);
+    }
+}"
+)
+
+(define_insn "stack_protect_set"
+  [(set (match_operand:SI 0 "memory_operand" "=m")
+	(unspec:SI [(mem:SI (match_operand:SI 1 "register_operand" "r"))]
+	 UNSPEC_SP_SET))
+   (clobber (match_dup 1))]
+  ""
+  "ldr\\t%1, [%1]\;str\\t%1, %0\;mov\t%1,0"
+  [(set_attr "length" "12")
+   (set_attr "type" "multiple")])
+
+(define_insn_and_split "stack_protect_combined_test"
+  [(set (pc)
+	(if_then_else
+		(eq (match_operand:SI 0 "memory_operand" "m")
+		    (unspec:SI [(match_operand:SI 1 "memory_operand" "X")]
+			       UNSPEC_SP_TEST))
+		(label_ref (match_operand 2))
+		(pc)))
+   (match_scratch:SI 3 "=r")
+   (match_scratch:SI 4 "=r")]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  rtx eq, addr;
+
+  addr = XEXP (operands[1], 0);
+  if (flag_pic)
+    {
+      /* Forces recomputing of GOT base now.  */
+      operands[1] = legitimize_pic_address (addr, SImode, operands[3],
+					    operands[4],
+					    true /*compute_now*/);
+    }
+  else
+    {
+      if (!address_operand (addr, SImode))
+	operands[1] = force_const_mem (SImode, addr);
+      emit_move_insn (operands[3], operands[1]);
+    }
+  emit_insn (gen_stack_protect_test (operands[4], operands[0], operands[3]));
+  eq = gen_rtx_EQ (VOIDmode, operands[4], const0_rtx);
+  emit_jump_insn (gen_cbranchsi4 (eq, operands[4], const0_rtx, operands[2]));
+  DONE;
+})
+
+(define_insn "stack_protect_test"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "memory_operand" "m")
+		    (mem:SI (match_operand:SI 2 "register_operand" "r"))]
+	 UNSPEC_SP_TEST))
+   (clobber (match_dup 2))]
+  ""
+  "ldr\t%0, [%2]\;ldr\t%2, %1\;eor\t%0, %2, %0"
+  [(set_attr "length" "12")
+   (set_attr "type" "multiple")])
 
 (define_expand "casesi"
   [(match_operand:SI 0 "s_register_operand" "")	; index to jump on
