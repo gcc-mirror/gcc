@@ -14969,8 +14969,8 @@ aarch64_float_const_representable_p (rtx x)
   if (!CONST_DOUBLE_P (x))
     return false;
 
-  /* We don't support HFmode constants yet.  */
-  if (GET_MODE (x) == VOIDmode || GET_MODE (x) == HFmode)
+  if (GET_MODE (x) == VOIDmode
+      || (GET_MODE (x) == HFmode && !TARGET_FP_F16INST))
     return false;
 
   r = *CONST_DOUBLE_REAL_VALUE (x);

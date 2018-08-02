@@ -1,3 +1,15 @@
+2018-08-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/f16_mov_immediate_1.c: Expect fmov immediate
+	to be used.
+	* gcc.target/aarch64/f16_mov_immediate_2.c: Likewise.
+	* gcc.target/aarch64/f16_mov_immediate_3.c: Force +nofp16.
+	* gcc.target/aarch64/sve/single_1.c: Except fmov immediate to be used
+	for .h.
+	* gcc.target/aarch64/sve/single_2.c: Likewise.
+	* gcc.target/aarch64/sve/single_3.c: Likewise.
+	* gcc.target/aarch64/sve/single_4.c: Likewise.
+
 2018-08-02  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	PR target/86014
