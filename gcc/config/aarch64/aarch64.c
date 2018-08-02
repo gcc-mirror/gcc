@@ -17270,9 +17270,26 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 	return false;
     }
 
-  /* Check if addresses are clobbered by load.  */
-  if (load)
-    for (int i = 0; i < num_insns; i++)
+  /* Check if the registers are of same class.  */
+  rclass = REG_P (reg[0]) && FP_REGNUM_P (REGNO (reg[0]))
+    ? FP_REGS : GENERAL_REGS;
+
+  for (int i = 1; i < num_insns; i++)
+    if (REG_P (reg[i]) && FP_REGNUM_P (REGNO (reg[i])))
+      {
+	if (rclass != FP_REGS)
+	  return false;
+      }
+    else
+      {
+	if (rclass != GENERAL_REGS)
+	  return false;
+      }
+
+  /* Only the last register in the order in which they occur
+     may be clobbered by the load.  */
+  if (rclass == GENERAL_REGS && load)
+    for (int i = 0; i < num_insns - 1; i++)
       if (reg_mentioned_p (reg[i], mem[i]))
 	return false;
 
@@ -17311,22 +17328,6 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
       && !optimize_size
       && MEM_ALIGN (mem[0]) < 8 * BITS_PER_UNIT)
     return false;
-
-  /* Check if the registers are of same class.  */
-  rclass = REG_P (reg[0]) && FP_REGNUM_P (REGNO (reg[0]))
-    ? FP_REGS : GENERAL_REGS;
-
-  for (int i = 1; i < num_insns; i++)
-    if (REG_P (reg[i]) && FP_REGNUM_P (REGNO (reg[i])))
-      {
-	if (rclass != FP_REGS)
-	  return false;
-      }
-    else
-      {
-	if (rclass != GENERAL_REGS)
-	  return false;
-      }
 
   return true;
 }
