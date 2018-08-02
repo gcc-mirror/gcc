@@ -397,7 +397,7 @@ dump_open_alternate_stream (struct dump_file_info *dfi)
 /* Construct a dump_user_location_t from STMT (using its location and
    hotness).  */
 
-dump_user_location_t::dump_user_location_t (gimple *stmt)
+dump_user_location_t::dump_user_location_t (const gimple *stmt)
 : m_count (), m_loc (UNKNOWN_LOCATION)
 {
   if (stmt)
@@ -411,7 +411,7 @@ dump_user_location_t::dump_user_location_t (gimple *stmt)
 /* Construct a dump_user_location_t from an RTL instruction (using its
    location and hotness).  */
 
-dump_user_location_t::dump_user_location_t (rtx_insn *insn)
+dump_user_location_t::dump_user_location_t (const rtx_insn *insn)
 : m_count (), m_loc (UNKNOWN_LOCATION)
 {
   if (insn)

@@ -1,3 +1,11 @@
+2018-08-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.c (dump_user_location_t::dump_user_location_t): Add
+	"const" to the "gimple *" and "rtx_insn *" parameters.
+	* dumpfile.h (dump_user_location_t::dump_user_location_t):
+	Likewise.
+	(dump_location_t::dump_location_t): Likewise.
+
 2018-08-01  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86650
