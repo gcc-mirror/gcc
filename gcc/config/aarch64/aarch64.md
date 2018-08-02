@@ -5989,7 +5989,7 @@
 ;; -------------------------------------------------------------------
 ;; Reload Scalar Floating point modes from constant pool.
 ;; The AArch64 port doesn't have __int128 constant move support.
-(define_expand "aarch64_reload_movcp<GPF_TF:mode><P:mode>"
+(define_expand "@aarch64_reload_movcp<GPF_TF:mode><P:mode>"
  [(set (match_operand:GPF_TF 0 "register_operand" "=w")
        (mem:GPF_TF (match_operand 1 "aarch64_constant_pool_symref" "S")))
   (clobber (match_operand:P 2 "register_operand" "=&r"))]
@@ -6002,7 +6002,7 @@
 )
 
 ;; Reload Vector modes from constant pool.
-(define_expand "aarch64_reload_movcp<VALL:mode><P:mode>"
+(define_expand "@aarch64_reload_movcp<VALL:mode><P:mode>"
  [(set (match_operand:VALL 0 "register_operand" "=w")
        (mem:VALL (match_operand 1 "aarch64_constant_pool_symref" "S")))
   (clobber (match_operand:P 2 "register_operand" "=&r"))]
@@ -6014,7 +6014,7 @@
  }
 )
 
-(define_expand "aarch64_reload_mov<mode>"
+(define_expand "@aarch64_reload_mov<mode>"
   [(set (match_operand:TX 0 "register_operand" "=w")
         (match_operand:TX 1 "register_operand" "w"))
    (clobber (match_operand:DI 2 "register_operand" "=&r"))
@@ -6034,7 +6034,7 @@
 ;; after or during reload as we don't want these patterns to start
 ;; kicking in during the combiner.
 
-(define_insn "aarch64_movdi_<mode>low"
+(define_insn "@aarch64_movdi_<mode>low"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extract:DI (match_operand:TX 1 "register_operand" "w")
 			 (const_int 64) (const_int 0)))]
@@ -6044,7 +6044,7 @@
    (set_attr "length" "4")
   ])
 
-(define_insn "aarch64_movdi_<mode>high"
+(define_insn "@aarch64_movdi_<mode>high"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extract:DI (match_operand:TX 1 "register_operand" "w")
 			 (const_int 64) (const_int 64)))]
@@ -6054,7 +6054,7 @@
    (set_attr "length" "4")
   ])
 
-(define_insn "aarch64_mov<mode>high_di"
+(define_insn "@aarch64_mov<mode>high_di"
   [(set (zero_extract:TX (match_operand:TX 0 "register_operand" "+w")
                          (const_int 64) (const_int 64))
         (zero_extend:TX (match_operand:DI 1 "register_operand" "r")))]
@@ -6064,7 +6064,7 @@
    (set_attr "length" "4")
   ])
 
-(define_insn "aarch64_mov<mode>low_di"
+(define_insn "@aarch64_mov<mode>low_di"
   [(set (match_operand:TX 0 "register_operand" "=w")
         (zero_extend:TX (match_operand:DI 1 "register_operand" "r")))]
   "TARGET_FLOAT && (reload_completed || reload_in_progress)"

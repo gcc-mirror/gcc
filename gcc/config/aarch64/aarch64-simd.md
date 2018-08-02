@@ -257,7 +257,7 @@
   DONE;
 })
 
-(define_expand "aarch64_split_simd_mov<mode>"
+(define_expand "@aarch64_split_simd_mov<mode>"
   [(set (match_operand:VQ 0)
         (match_operand:VQ 1))]
   "TARGET_SIMD"
@@ -559,7 +559,7 @@
   [(set_attr "type" "neon<fp>_mul_<stype>_scalar<q>")]
 )
 
-(define_insn "aarch64_rsqrte<mode>"
+(define_insn "@aarch64_rsqrte<mode>"
   [(set (match_operand:VHSDF_HSDF 0 "register_operand" "=w")
 	(unspec:VHSDF_HSDF [(match_operand:VHSDF_HSDF 1 "register_operand" "w")]
 		     UNSPEC_RSQRTE))]
@@ -567,7 +567,7 @@
   "frsqrte\\t%<v>0<Vmtype>, %<v>1<Vmtype>"
   [(set_attr "type" "neon_fp_rsqrte_<stype><q>")])
 
-(define_insn "aarch64_rsqrts<mode>"
+(define_insn "@aarch64_rsqrts<mode>"
   [(set (match_operand:VHSDF_HSDF 0 "register_operand" "=w")
 	(unspec:VHSDF_HSDF [(match_operand:VHSDF_HSDF 1 "register_operand" "w")
 			    (match_operand:VHSDF_HSDF 2 "register_operand" "w")]
@@ -3145,7 +3145,7 @@
 }
 )
 
-(define_expand "aarch64_simd_combine<mode>"
+(define_expand "@aarch64_simd_combine<mode>"
   [(match_operand:<VDBL> 0 "register_operand")
    (match_operand:VDC 1 "register_operand")
    (match_operand:VDC 2 "register_operand")]
@@ -5878,7 +5878,7 @@
 )
 
 
-(define_insn "aarch64_frecpe<mode>"
+(define_insn "@aarch64_frecpe<mode>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
 	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")]
 	 UNSPEC_FRECPE))]
@@ -5896,7 +5896,7 @@
   [(set_attr "type" "neon_fp_recp<FRECP:frecp_suffix>_<GPF_F16:stype>")]
 )
 
-(define_insn "aarch64_frecps<mode>"
+(define_insn "@aarch64_frecps<mode>"
   [(set (match_operand:VHSDF_HSDF 0 "register_operand" "=w")
 	(unspec:VHSDF_HSDF
 	  [(match_operand:VHSDF_HSDF 1 "register_operand" "w")

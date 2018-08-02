@@ -1,5 +1,77 @@
 2018-08-02  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/md.texi: Expand the documentation of instruction names
+	to mention port-local uses.  Document '@' in pattern names.
+	* read-md.h (overloaded_instance, overloaded_name): New structs.
+	(mapping): Declare.
+	(md_reader::handle_overloaded_name): New member function.
+	(md_reader::get_overloads): Likewise.
+	(md_reader::m_first_overload): New member variable.
+	(md_reader::m_next_overload_ptr): Likewise.
+	(md_reader::m_overloads_htab): Likewise.
+	* read-md.c (md_reader::md_reader): Initialize m_first_overload,
+	m_next_overload_ptr and m_overloads_htab.
+	* read-rtl.c (iterator_group): Add "type" and "get_c_token" fields.
+	(get_mode_token, get_code_token, get_int_token): New functions.
+	(map_attr_string): Add an optional argument that passes back
+	the associated iterator.
+	(overloaded_name_hash, overloaded_name_eq_p, named_rtx_p):
+	(md_reader::handle_overloaded_name, add_overload_instance): New
+	functions.
+	(apply_iterators): Handle '@' names.  Report an error if '@'
+	is used without iterators.
+	(initialize_iterators): Initialize the new iterator_group fields.
+	* genopinit.c (handle_overloaded_code_for)
+	(handle_overloaded_gen): New functions.
+	(main): Use them to print declarations of maybe_code_for_* and
+	maybe_gen_* functions, and inline definitions of code_for_* and gen_*.
+	* genemit.c (print_overload_arguments, print_overload_test)
+	(handle_overloaded_code_for, handle_overloaded_gen): New functions.
+	(main): Use it to print definitions of maybe_code_for_* and
+	maybe_gen_* functions.
+	* config/aarch64/aarch64.c (aarch64_split_128bit_move): Use
+	gen_aarch64_mov{low,high}_di and gen_aarch64_movdi_{low,high}
+	instead of explicit mode checks.
+	(aarch64_split_simd_combine): Likewise gen_aarch64_simd_combine.
+	(aarch64_split_simd_move): Likewise gen_aarch64_split_simd_mov.
+	(aarch64_emit_load_exclusive): Likewise gen_aarch64_load_exclusive.
+	(aarch64_emit_store_exclusive): Likewise gen_aarch64_store_exclusive.
+	(aarch64_expand_compare_and_swap): Likewise
+	gen_aarch64_compare_and_swap and gen_aarch64_compare_and_swap_lse
+	(aarch64_gen_atomic_cas): Likewise gen_aarch64_atomic_cas.
+	(aarch64_emit_atomic_swap): Likewise gen_aarch64_atomic_swp.
+	(aarch64_constant_pool_reload_icode): Delete.
+	(aarch64_secondary_reload): Use code_for_aarch64_reload_movcp
+	instead of aarch64_constant_pool_reload_icode.  Use
+	code_for_aarch64_reload_mov instead of explicit mode checks.
+	(rsqrte_type, get_rsqrte_type, rsqrts_type, get_rsqrts_type): Delete.
+	(aarch64_emit_approx_sqrt): Use gen_aarch64_rsqrte instead of
+	get_rsqrte_type and gen_aarch64_rsqrts instead of gen_rqrts_type.
+	(recpe_type, get_recpe_type, recps_type, get_recps_type): Delete.
+	(aarch64_emit_approx_div): Use gen_aarch64_frecpe instead of
+	get_recpe_type and gen_aarch64_frecps instead of get_recps_type.
+	(aarch64_atomic_load_op_code): Delete.
+	(aarch64_emit_atomic_load_op): Likewise.
+	(aarch64_gen_atomic_ldop): Use UNSPECV_ATOMIC_* instead of
+	aarch64_atomic_load_op_code.  Use gen_aarch64_atomic_load
+	instead of aarch64_emit_atomic_load_op.
+	* config/aarch64/aarch64.md (aarch64_reload_movcp<GPF_TF:mode><P:mode>)
+	(aarch64_reload_movcp<VALL:mode><P:mode>, aarch64_reload_mov<mode>)
+	(aarch64_movdi_<mode>low, aarch64_movdi_<mode>high)
+	(aarch64_mov<mode>high_di, aarch64_mov<mode>low_di): Add a '@'
+	character before the pattern name.
+	* config/aarch64/aarch64-simd.md (aarch64_split_simd_mov<mode>)
+	(aarch64_rsqrte<mode>, aarch64_rsqrts<mode>)
+	(aarch64_simd_combine<mode>, aarch64_frecpe<mode>)
+	(aarch64_frecps<mode>): Likewise.
+	* config/aarch64/atomics.md (atomic_compare_and_swap<mode>)
+	(aarch64_compare_and_swap<mode>, aarch64_compare_and_swap<mode>_lse)
+	(aarch64_load_exclusive<mode>, aarch64_store_exclusive<mode>)
+	(aarch64_atomic_swp<mode>, aarch64_atomic_cas<mode>)
+	(aarch64_atomic_load<atomic_ldop><mode>): Likewise.
+
+2018-08-02  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_float_const_representable_p):
 	Allow HFmode constants if TARGET_FP_F16INST.
 
