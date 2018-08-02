@@ -1,3 +1,8 @@
+2018-08-02  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	PR target/86014
+	* gcc.target/aarch64/ldp_stp_13.c: New test.
+
 2018-08-02  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
 
 	PR target/85434
