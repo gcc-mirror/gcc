@@ -1,3 +1,8 @@
+2018-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86816
+	* g++.dg/torture/pr86816.C: New testcase.
+
 2018-08-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/f16_mov_immediate_1.c: Expect fmov immediate
