@@ -15,11 +15,6 @@
 	PR target/86014
 	* gcc.target/aarch64/ldp_stp_13.c: New test.
 
-2018-08-02  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
-
-	PR target/85434
-	* gcc.target/arm/pr85434.c: New test.
-
 2018-08-01  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86650
