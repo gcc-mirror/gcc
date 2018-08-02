@@ -7369,20 +7369,26 @@ legitimate_pic_operand_p (rtx x)
 }
 
 /* Record that the current function needs a PIC register.  Initialize
-   cfun->machine->pic_reg if we have not already done so.  */
+   cfun->machine->pic_reg if we have not already done so.
+
+   A new pseudo register is used for the PIC register if possible, otherwise
+   PIC_REG must be non NULL and is used instead.  COMPUTE_NOW forces the PIC
+   register to be loaded, irregardless of whether it was loaded previously.  */
 
 static void
-require_pic_register (void)
+require_pic_register (rtx pic_reg, bool compute_now)
 {
   /* A lot of the logic here is made obscure by the fact that this
      routine gets called as part of the rtx cost estimation process.
      We don't want those calls to affect any assumptions about the real
      function; and further, we can't call entry_of_function() until we
      start the real expansion process.  */
-  if (!crtl->uses_pic_offset_table)
+  if (!crtl->uses_pic_offset_table || compute_now)
     {
-      gcc_assert (can_create_pseudo_p ());
+      gcc_assert (can_create_pseudo_p ()
+		  || (pic_reg != NULL_RTX && GET_MODE (pic_reg) == Pmode));
       if (arm_pic_register != INVALID_REGNUM
+	  && can_create_pseudo_p ()
 	  && !(TARGET_THUMB1 && arm_pic_register > LAST_LO_REGNUM))
 	{
 	  if (!cfun->machine->pic_reg)
@@ -7399,7 +7405,8 @@ require_pic_register (void)
 	  rtx_insn *seq, *insn;
 
 	  if (!cfun->machine->pic_reg)
-	    cfun->machine->pic_reg = gen_reg_rtx (Pmode);
+	    cfun->machine->pic_reg =
+	      can_create_pseudo_p () ? gen_reg_rtx (Pmode) : pic_reg;
 
 	  /* Play games to avoid marking the function as needing pic
 	     if we are being called as part of the cost-estimation
@@ -7410,7 +7417,8 @@ require_pic_register (void)
 	      start_sequence ();
 
 	      if (TARGET_THUMB1 && arm_pic_register != INVALID_REGNUM
-		  && arm_pic_register > LAST_LO_REGNUM)
+		  && arm_pic_register > LAST_LO_REGNUM
+		  && can_create_pseudo_p ())
 		emit_move_insn (cfun->machine->pic_reg,
 				gen_rtx_REG (Pmode, arm_pic_register));
 	      else
@@ -7427,15 +7435,29 @@ require_pic_register (void)
 	         we can't yet emit instructions directly in the final
 		 insn stream.  Queue the insns on the entry edge, they will
 		 be committed after everything else is expanded.  */
-	      insert_insn_on_edge (seq,
-				   single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	      if (currently_expanding_to_rtl)
+		insert_insn_on_edge (seq,
+				     single_succ_edge
+				     (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	      else
+		emit_insn (seq);
 	    }
 	}
     }
 }
 
+/* Legitimize PIC load to ORIG into REG.  If REG is NULL, a new pseudo is
+   created to hold the result of the load.  If not NULL, PIC_REG indicates
+   which register to use as PIC register, otherwise it is decided by register
+   allocator.  COMPUTE_NOW forces the PIC register to be loaded at the current
+   location in the instruction stream, irregardless of whether it was loaded
+   previously.
+
+   Returns the register REG into which the PIC load is performed.  */
+
 rtx
-legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
+legitimize_pic_address (rtx orig, machine_mode mode, rtx reg, rtx pic_reg,
+			bool compute_now)
 {
   if (GET_CODE (orig) == SYMBOL_REF
       || GET_CODE (orig) == LABEL_REF)
@@ -7469,7 +7491,7 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	  rtx mem;
 
 	  /* If this function doesn't have a pic register, create one now.  */
-	  require_pic_register ();
+	  require_pic_register (pic_reg, compute_now);
 
 	  pat = gen_calculate_pic_address (reg, cfun->machine->pic_reg, orig);
 
@@ -7520,9 +7542,11 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 
       gcc_assert (GET_CODE (XEXP (orig, 0)) == PLUS);
 
-      base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg);
+      base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg,
+				     pic_reg, compute_now);
       offset = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
-				       base == reg ? 0 : reg);
+				       base == reg ? 0 : reg, pic_reg,
+				       compute_now);
 
       if (CONST_INT_P (offset))
 	{
@@ -8707,7 +8731,8 @@ arm_legitimize_address (rtx x, rtx orig_x, machine_mode mode)
     {
       /* We need to find and carefully transform any SYMBOL and LABEL
 	 references; so go back to the original address expression.  */
-      rtx new_x = legitimize_pic_address (orig_x, mode, NULL_RTX);
+      rtx new_x = legitimize_pic_address (orig_x, mode, NULL_RTX, NULL_RTX,
+					  false /*compute_now*/);
 
       if (new_x != orig_x)
 	x = new_x;
@@ -8775,7 +8800,8 @@ thumb_legitimize_address (rtx x, rtx orig_x, machine_mode mode)
     {
       /* We need to find and carefully transform any SYMBOL and LABEL
 	 references; so go back to the original address expression.  */
-      rtx new_x = legitimize_pic_address (orig_x, mode, NULL_RTX);
+      rtx new_x = legitimize_pic_address (orig_x, mode, NULL_RTX, NULL_RTX,
+					  false /*compute_now*/);
 
       if (new_x != orig_x)
 	x = new_x;
@@ -18059,7 +18085,7 @@ arm_emit_call_insn (rtx pat, rtx addr, bool sibcall)
 	  ? !targetm.binds_local_p (SYMBOL_REF_DECL (addr))
 	  : !SYMBOL_REF_LOCAL_P (addr)))
     {
-      require_pic_register ();
+      require_pic_register (NULL_RTX, false /*compute_now*/);
       use_reg (&CALL_INSN_FUNCTION_USAGE (insn), cfun->machine->pic_reg);
     }
 

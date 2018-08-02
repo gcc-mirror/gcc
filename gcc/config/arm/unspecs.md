@@ -86,6 +86,9 @@
   UNSPEC_PROBE_STACK    ; Probe stack memory reference
   UNSPEC_NONSECURE_MEM	; Represent non-secure memory in ARMv8-M with
 			; security extension
+  UNSPEC_SP_SET		; Represent the setting of stack protector's canary
+  UNSPEC_SP_TEST	; Represent the testing of stack protector's canary
+			; against the guard.
 ])
 
 (define_c_enum "unspec" [

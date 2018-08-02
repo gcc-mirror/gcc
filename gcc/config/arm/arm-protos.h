@@ -67,7 +67,7 @@ extern int const_ok_for_dimode_op (HOST_WIDE_INT, enum rtx_code);
 extern int arm_split_constant (RTX_CODE, machine_mode, rtx,
 			       HOST_WIDE_INT, rtx, rtx, int);
 extern int legitimate_pic_operand_p (rtx);
-extern rtx legitimize_pic_address (rtx, machine_mode, rtx);
+extern rtx legitimize_pic_address (rtx, machine_mode, rtx, rtx, bool);
 extern rtx legitimize_tls_address (rtx, rtx);
 extern bool arm_legitimate_address_p (machine_mode, rtx, bool);
 extern int arm_legitimate_address_outer_p (machine_mode, rtx, RTX_CODE, int);
