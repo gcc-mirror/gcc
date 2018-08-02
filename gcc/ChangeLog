@@ -1,3 +1,11 @@
+2018-08-02  Tom de Vries  <tdevries@suse.de>
+
+	PR target/86660
+	* common/config/nvptx/nvptx-common.c (nvptx_except_unwind_info): New
+	function.  Return UI_TARGET unconditionally.
+	(TARGET_EXCEPT_UNWIND_INFO): Redefine to nvptx_except_unwind_info.
+	* config/nvptx/nvptx.c (TARGET_ASM_BYTE_OP): Emit commented out '.byte'.
+
 2018-08-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* genemit.c (print_overload_test): Fix typo.
