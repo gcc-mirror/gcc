@@ -3327,6 +3327,9 @@ v850_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 #undef TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM 32
 
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-v850.h"
