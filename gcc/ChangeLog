@@ -27,6 +27,14 @@
 
 2018-08-02  Nick Clifton  <nickc@redhat.com>
 
+	PR target/86813
+	* config/stormy16/stormy16.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
+	PR target/86810
+	* config/v850/v850.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
 	PR target/86810
 	* config/v850/v850.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
 	Define to speculation_safe_value_not_needed.
