@@ -1,3 +1,10 @@
+2018-08-02  Nicolas Pitre <nico@fluxnic.net>
+
+	PR libgcc/86512
+	* config/arm/ieee754-df.S: Don't shortcut denormal handling when
+	exponent goes negative. Update my email address.
+	* config/arm/ieee754-sf.S: Likewise.
+
 2018-08-01  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-profiler.c (__gcov_indirect_call_profiler_v2): Do not
