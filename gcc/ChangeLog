@@ -19,6 +19,10 @@
 
 2018-08-02  Nick Clifton  <nickc@redhat.com>
 
+	PR target/86803
+	* config/rx/rx.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
 	PR target/86797
 	* config/msp430/msp430.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
 	Define to speculation_safe_value_not_needed.
