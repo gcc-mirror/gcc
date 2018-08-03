@@ -1,3 +1,8 @@
+2018-08-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define.
+
 2018-08-03  Jeff Law  <law@redhat.com>
 
 	PR target/86795
