@@ -1,3 +1,9 @@
+2018-08-03  Siddhesh Poyarekar  <siddhesh@sourceware.org>
+
+	* config/aarch64/falkor.md (falkor_am_1_vxvy_vxvy): Move
+	neon_dup_q to...
+	(falkor_am_1_gtov_gtov): ... a new insn reservation.
+
 2018-07-19  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/nds32/nds32.c (nds32_hard_regno_mode_ok): Replace > with >=.
