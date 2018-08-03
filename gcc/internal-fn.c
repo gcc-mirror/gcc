@@ -3183,6 +3183,42 @@ direct_internal_fn_supported_p (internal_fn fn, tree type,
   return direct_internal_fn_supported_p (fn, tree_pair (type, type), opt_type);
 }
 
+/* If FN is commutative in two consecutive arguments, return the
+   index of the first, otherwise return -1.  */
+
+int
+first_commutative_argument (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_FMA:
+    case IFN_FMS:
+    case IFN_FNMA:
+    case IFN_FNMS:
+    case IFN_AVG_FLOOR:
+    case IFN_AVG_CEIL:
+    case IFN_FMIN:
+    case IFN_FMAX:
+      return 0;
+
+    case IFN_COND_ADD:
+    case IFN_COND_MUL:
+    case IFN_COND_MIN:
+    case IFN_COND_MAX:
+    case IFN_COND_AND:
+    case IFN_COND_IOR:
+    case IFN_COND_XOR:
+    case IFN_COND_FMA:
+    case IFN_COND_FMS:
+    case IFN_COND_FNMA:
+    case IFN_COND_FNMS:
+      return 1;
+
+    default:
+      return -1;
+    }
+}
+
 /* Return true if IFN_SET_EDOM is supported.  */
 
 bool

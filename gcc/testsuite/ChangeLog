@@ -1,3 +1,11 @@
+2018-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-over-widen-1.c: Expect AVG_FLOOR to be used
+	on vect_avg_qi targets.
+	* gcc.dg/vect/bb-slp-over-widen-2.c: Likewise.
+	* gcc.dg/vect/bb-slp-pow-1.c: New test.
+	* gcc.dg/vect/vect-avg-15.c: Likewise.
+
 2018-08-03  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/predict-1.c: Adjust scanned pattern to cover 2 digits.
