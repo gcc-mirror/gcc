@@ -605,13 +605,14 @@ struct cpp_callbacks
   int (*has_attribute) (cpp_reader *);
 
   /* Callback that can change a user builtin into normal macro.  */
-  bool (*user_builtin_macro) (cpp_reader *, cpp_hashnode *);
+  bool (*user_builtin_macro) (cpp_reader *, cpp_hashnode *, unsigned);
 
   /* Callback to parse SOURCE_DATE_EPOCH from environment.  */
   time_t (*get_source_date_epoch) (cpp_reader *);
 
   /* Callback for providing suggestions for misspelled directives.  */
-  const char *(*get_suggestion) (cpp_reader *, const char *, const char *const *);
+  const char *(*get_suggestion) (cpp_reader *, const char *,
+				 const char *const *);
 
   /* Callback for when a comment is encountered, giving the location
      of the opening slash, a pointer to the content (which is not
@@ -918,6 +919,11 @@ extern void cpp_define_formatted (cpp_reader *pfile,
 extern void cpp_assert (cpp_reader *, const char *);
 extern void cpp_undef (cpp_reader *, const char *);
 extern void cpp_unassert (cpp_reader *, const char *);
+
+/* Mark a node as a lazily defined macro.  */
+extern cpp_macro *cpp_define_lazily (cpp_reader *, cpp_hashnode *node, int);
+/* Supply the definition of a lazily-defined macro.  */
+extern void cpp_define_lazy (cpp_reader *, cpp_hashnode *node, cpp_macro *);
 
 /* Undefine all macros and assertions.  */
 extern void cpp_undef_all (cpp_reader *);

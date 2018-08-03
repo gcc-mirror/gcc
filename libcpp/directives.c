@@ -1969,7 +1969,8 @@ do_ifdef (cpp_reader *pfile)
 		{
 		  if ((node->flags & NODE_BUILTIN)
 		      && pfile->cb.user_builtin_macro)
-		    pfile->cb.user_builtin_macro (pfile, node);
+		    pfile->cb.user_builtin_macro (pfile, node,
+						  node->value.builtin);
 		  if (pfile->cb.used_define)
 		    pfile->cb.used_define (pfile, pfile->directive_line, node);
 		}
@@ -2015,7 +2016,8 @@ do_ifndef (cpp_reader *pfile)
 		{
 		  if ((node->flags & NODE_BUILTIN)
 		      && pfile->cb.user_builtin_macro)
-		    pfile->cb.user_builtin_macro (pfile, node);
+		    pfile->cb.user_builtin_macro (pfile, node,
+						  node->value.builtin);
 		  if (pfile->cb.used_define)
 		    pfile->cb.used_define (pfile, pfile->directive_line, node);
 		}

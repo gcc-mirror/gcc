@@ -1582,32 +1582,35 @@ static GTY(()) struct lazy_hex_fp_value_struct
 static GTY(()) int lazy_hex_fp_value_count;
 
 static bool
-lazy_hex_fp_value (cpp_reader *pfile ATTRIBUTE_UNUSED,
-		   cpp_hashnode *node)
+lazy_hex_fp_value (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
 {
   REAL_VALUE_TYPE real;
   char dec_str[64], buf1[256];
-  unsigned int idx;
-  if (node->value.builtin < BT_FIRST_USER
-      || (int) node->value.builtin >= BT_FIRST_USER + lazy_hex_fp_value_count)
+  if (num < unsigned (BT_FIRST_USER)
+      || num >= unsigned (BT_FIRST_USER + lazy_hex_fp_value_count))
     return false;
 
-  idx = node->value.builtin - BT_FIRST_USER;
-  real_from_string (&real, lazy_hex_fp_values[idx].hex_str);
+  num -= BT_FIRST_USER;
+  real_from_string (&real, lazy_hex_fp_values[num].hex_str);
   real_to_decimal_for_mode (dec_str, &real, sizeof (dec_str),
-			    lazy_hex_fp_values[idx].digits, 0,
-			    lazy_hex_fp_values[idx].mode);
+			    lazy_hex_fp_values[num].digits, 0,
+			    lazy_hex_fp_values[num].mode);
 
-  sprintf (buf1, "%s%s", dec_str, lazy_hex_fp_values[idx].fp_suffix);
-  node->flags &= ~(NODE_BUILTIN | NODE_USED);
-  node->value.macro = lazy_hex_fp_values[idx].macro;
-  for (idx = 0; idx < node->value.macro->count; idx++)
-    if (node->value.macro->exp.tokens[idx].type == CPP_NUMBER)
-      break;
-  gcc_assert (idx < node->value.macro->count);
-  node->value.macro->exp.tokens[idx].val.str.len = strlen (buf1);
-  node->value.macro->exp.tokens[idx].val.str.text
-    = (const unsigned char *) ggc_strdup (buf1);
+  size_t len
+    = sprintf (buf1, "%s%s", dec_str, lazy_hex_fp_values[num].fp_suffix);
+  gcc_assert (len < sizeof (buf1));
+  cpp_macro *macro = lazy_hex_fp_values[num].macro;
+  for (unsigned idx = 0; idx < macro->count; idx++)
+    if (macro->exp.tokens[idx].type == CPP_NUMBER)
+      {
+	macro->exp.tokens[idx].val.str.len = len;
+	macro->exp.tokens[idx].val.str.text
+	  = (const unsigned char *) ggc_strdup (buf1);
+	break;
+      }
+
+  cpp_define_lazy (pfile, node, macro);
+  
   return true;
 }
 
@@ -1639,10 +1642,9 @@ builtin_define_with_hex_fp_value (const char *macro,
       lazy_hex_fp_values[lazy_hex_fp_value_count].mode = TYPE_MODE (type);
       lazy_hex_fp_values[lazy_hex_fp_value_count].digits = digits;
       lazy_hex_fp_values[lazy_hex_fp_value_count].fp_suffix = fp_suffix;
-      lazy_hex_fp_values[lazy_hex_fp_value_count].macro = node->value.macro;
-      node->flags |= NODE_BUILTIN;
-      node->value.builtin
-	= (enum cpp_builtin_type) (BT_FIRST_USER + lazy_hex_fp_value_count);
+      lazy_hex_fp_values[lazy_hex_fp_value_count].macro
+	= cpp_define_lazily (parse_in, node,
+			     BT_FIRST_USER + lazy_hex_fp_value_count);
       lazy_hex_fp_value_count++;
       return;
     }

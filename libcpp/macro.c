@@ -1277,7 +1277,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
     {
       node->flags |= NODE_USED;
       if ((!pfile->cb.user_builtin_macro
-	   || !pfile->cb.user_builtin_macro (pfile, node))
+	   || !pfile->cb.user_builtin_macro (pfile, node, node->value.builtin))
 	  && pfile->cb.used_define)
 	pfile->cb.used_define (pfile, pfile->directive_line, node);
     }
@@ -3011,7 +3011,7 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
      unless Wbuiltin-macro-redefined.  */
   if (node->flags & NODE_BUILTIN
       && (!pfile->cb.user_builtin_macro
-	  || !pfile->cb.user_builtin_macro (pfile, node)))
+	  || !pfile->cb.user_builtin_macro (pfile, node, node->value.builtin)))
     return CPP_OPTION (pfile, warn_builtin_macro_redefined);
 
   /* Redefinitions of conditional (context-sensitive) macros, on
@@ -3564,6 +3564,26 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   return true;
 }
 
+extern cpp_macro *
+cpp_define_lazily (cpp_reader *, cpp_hashnode *node, int num)
+{
+  cpp_macro *macro = node->value.macro;
+
+  node->type = NT_MACRO;
+  node->flags |= NODE_BUILTIN;
+
+  node->value.builtin = (enum cpp_builtin_type) (num);
+
+  return macro;
+}
+
+extern void
+cpp_define_lazy (cpp_reader *, cpp_hashnode *node, cpp_macro *macro)
+{
+  node->flags &= ~(NODE_BUILTIN | NODE_USED);
+  node->value.macro = macro;
+}
+
 /* Warn if a token in STRING matches one of a function-like MACRO's
    parameters.  */
 static void
@@ -3640,7 +3660,7 @@ cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
     {
       if (node->type != NT_MACRO
 	  || !pfile->cb.user_builtin_macro
-          || !pfile->cb.user_builtin_macro (pfile, node))
+          || !pfile->cb.user_builtin_macro (pfile, node, node->value.builtin))
 	{
 	  cpp_error (pfile, CPP_DL_ICE,
 		     "invalid hash type %d in cpp_macro_definition",

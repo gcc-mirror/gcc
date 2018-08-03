@@ -1,3 +1,20 @@
+2018-08-03  Nathan Sidwell  <nathan@acm.org>
+
+	An API for lazy builtin macros.
+	libcpp/
+	* include/libcpp.h (struct cpp_callbacks): Adjust
+	user_builtin_macro callback.
+	(cpp_define_lazily, cpp_define_lazy): Declare.
+	* macro.c (enter_macro_context, warn_of_redefinition): Adjust.
+	(cpp_define_lazily, cpp_define_lazy): Define.
+	(cpp_macro_definition): Adjust.
+	* pch.c (write_macrdef, save_macros): Likewise.
+	* directives.c (do_ifdef, do_ifndef): Adjust.
+	* expr.c (parse_defined): Likewise.
+	gcc/c-family/
+	* c-cppbuiltin.c (lazy_hex_fp_value): Adjust for API changes.
+	(builtin_define_with_hex_fp_valye): Likewise.
+
 2018-08-02  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

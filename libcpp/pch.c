@@ -62,7 +62,7 @@ write_macdef (cpp_reader *pfile, cpp_hashnode *hn, void *file_p)
       if (hn->flags & NODE_BUILTIN)
 	{
 	  if (!pfile->cb.user_builtin_macro
-	      || !pfile->cb.user_builtin_macro (pfile, hn))
+	      || !pfile->cb.user_builtin_macro (pfile, hn, hn->value.builtin))
 	    return 1;
 	}
       else if (hn->value.macro->kind == cmk_assert)
@@ -762,7 +762,7 @@ save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
   if (h->flags & NODE_BUILTIN)
     {
       if (r->cb.user_builtin_macro)
-	r->cb.user_builtin_macro (r, h);
+	r->cb.user_builtin_macro (r, h, h->value.builtin);
     }
   else if (h->value.macro->kind == cmk_assert)
     return 1;
