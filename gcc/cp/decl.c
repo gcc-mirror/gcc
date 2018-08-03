@@ -15710,6 +15710,22 @@ maybe_save_function_definition (tree fun)
     register_constexpr_fundef (fun, DECL_SAVED_TREE (fun));
 }
 
+/* Attempt to add a fix-it hint to RICHLOC suggesting the insertion
+   of "return *this;" immediately before its location, using FNDECL's
+   first statement (if any) to give the indentation, if appropriate.  */
+
+static void
+add_return_star_this_fixit (gcc_rich_location *richloc, tree fndecl)
+{
+  location_t indent = UNKNOWN_LOCATION;
+  tree stmts = expr_first (DECL_SAVED_TREE (fndecl));
+  if (stmts)
+    indent = EXPR_LOCATION (stmts);
+  richloc->add_fixit_insert_formatted ("return *this;",
+				       richloc->get_loc (),
+				       indent);
+}
+
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
    for the function definition. INLINE_P is TRUE if we just
@@ -15903,8 +15919,21 @@ finish_function (bool inline_p)
       && !DECL_DESTRUCTOR_P (fndecl)
       && targetm.warn_func_return (fndecl))
     {
-      warning (OPT_Wreturn_type,
- 	       "no return statement in function returning non-void");
+      gcc_rich_location richloc (input_location);
+      /* Potentially add a "return *this;" fix-it hint for
+	 assignment operators.  */
+      if (IDENTIFIER_ASSIGN_OP_P (DECL_NAME (fndecl)))
+	{
+	  tree valtype = TREE_TYPE (DECL_RESULT (fndecl));
+	  if (TREE_CODE (valtype) == REFERENCE_TYPE
+	      && same_type_ignoring_top_level_qualifiers_p
+		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref)))
+	    if (global_dc->option_enabled (OPT_Wreturn_type,
+					   global_dc->option_state))
+	      add_return_star_this_fixit (&richloc, fndecl);
+	}
+      warning_at (&richloc, OPT_Wreturn_type,
+		  "no return statement in function returning non-void");
       TREE_NO_WARNING (fndecl) = 1;
     }
 
