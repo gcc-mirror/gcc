@@ -5,6 +5,12 @@
 	(cp_print_error_function): Use pp_take_prefix when saving the
 	existing prefix.
 
+2018-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR c++/86763
+	* class.c (layout_class_type): Copy TYPE_TYPELESS_STORAGE
+	to the CLASSTYPE_AS_BASE.
+
 2018-08-01  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86650

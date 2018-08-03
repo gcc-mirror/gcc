@@ -92,12 +92,6 @@
 
 2018-08-02  Richard Biener  <rguenther@suse.de>
 
-	PR c++/86763
-	* class.c (layout_class_type): Copy TYPE_TYPELESS_STORAGE
-	to the CLASSTYPE_AS_BASE.
-
-2018-08-02  Richard Biener  <rguenther@suse.de>
-
 	PR tree-optimization/86816
 	* tree-ssa-tail-merge.c (tail_merge_valueize): New function
 	which checks for value availability before querying it.
