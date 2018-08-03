@@ -1,3 +1,14 @@
+2018-08-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/predict-1.c: Adjust scanned pattern to cover 2 digits.
+	* gcc.dg/predict-13.c:Likewise.
+	* gcc.dg/predict-3.c:Likewise.
+	* gcc.dg/predict-4.c:Likewise.
+	* gcc.dg/predict-5.c:Likewise.
+	* gcc.dg/predict-6.c:Likewise.
+	* gcc.dg/predict-9.c:Likewise.
+	* gfortran.dg/predict-1.f90:Likewise.
+
 2018-08-02  Richard Biener  <rguenther@suse.de>
 
 	PR c++/86763
