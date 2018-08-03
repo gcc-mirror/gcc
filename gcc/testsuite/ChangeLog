@@ -1,3 +1,8 @@
+2018-08-03  Bogdan Harjoc  <harjoc@gmail.com>
+
+	PR c/86690
+	* gcc.dg/union-duplicate-field.c: New test.
+
 2018-08-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86706
