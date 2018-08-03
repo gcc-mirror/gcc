@@ -1,3 +1,16 @@
+2018-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/gcov.texi (-x): Remove duplicate "to".
+	* doc/invoke.texi (-Wnoexcept-type): Remove duplicate "calls".
+	(-Wif-not-aligned): Remove duplicate "is".
+	(-flto): Remove duplicate "the".
+	(MicroBlaze Options): In examples of "-mcpu=cpu-type", remove
+	duplicate "v5.00.b".
+	(MSP430 Options): Remove duplicate "and" from the description
+	of "-mgprel-sec=regexp".
+	(x86 Options): Remove duplicate copies of "vmldLog102" and
+	vmlsLog104 from description of "-mveclibabi=type".
+
 2018-08-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* internal-fn.h (first_commutative_argument): Declare.

@@ -340,7 +340,7 @@ Print verbose informations related to basic blocks and arcs.
 
 @item -x
 @itemx --hash-filenames
-By default, gcov uses the full pathname of the source files to to create
+By default, gcov uses the full pathname of the source files to create
 an output filename.  This can lead to long filenames that can overflow
 filesystem limits.  This option creates names of the form
 @file{@var{source-file}##@var{md5}.gcov},
