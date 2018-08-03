@@ -1,3 +1,12 @@
+2018-08-03  David Malcolm  <dmalcolm@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* decl.c: Include "gcc-rich-location.h".
+	(add_return_star_this_fixit): New function.
+	(finish_function): When warning about missing return statements in
+	functions returning non-void, add a "return *this;" fix-it hint for
+	assignment operators.
+
 2018-08-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86706
