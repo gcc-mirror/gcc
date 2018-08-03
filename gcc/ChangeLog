@@ -1,3 +1,11 @@
+2018-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* internal-fn.h (first_commutative_argument): Declare.
+	* internal-fn.c (first_commutative_argument): New function.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Remove extra
+	restrictions for pattern statements.  Use first_commutative_argument
+	to look for commutative operands in calls to internal functions.
+
 2018-08-03  Aldy Hernandez  <aldyh@redhat.com>
 
 	* Makefile.in (wide-int-range.o): New.
