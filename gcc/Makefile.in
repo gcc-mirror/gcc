@@ -1601,6 +1601,7 @@ OBJS = \
 	web.o \
 	wide-int.o \
 	wide-int-print.o \
+	wide-int-range.o \
 	xcoffout.o \
 	$(out_object_file) \
 	$(EXTRA_OBJS) \
