@@ -1,3 +1,11 @@
+2018-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/system_error.cc
+	(system_error_category::default_error_condition): Add workaround for
+	ENOTEMPTY and EEXIST having the same value on AIX.
+	* testsuite/19_diagnostics/error_category/system_category.cc: Add
+	extra testcases for EDOM, EILSEQ, ERANGE, EEXIST and ENOTEMPTY.
+
 2018-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* configure: Regenerate.
