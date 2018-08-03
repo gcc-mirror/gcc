@@ -1,3 +1,11 @@
+2018-08-03  Tom de Vries  <tdevries@suse.de>
+
+	* common/config/nvptx/nvptx-common.c (nvptx_except_unwind_info): Return
+	UI_NONE.
+	* config/nvptx/nvptx.c (TARGET_ASM_BYTE_OP): Remove define.
+	* except.c (output_function_exception_table): Do early exit if
+	targetm_common.except_unwind_info (&global_options) == UI_NONE.
+
 2018-08-03  Martin Liska  <mliska@suse.cz>
 
 	* predict.c (dump_prediction): Change to 2 digits
