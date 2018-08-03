@@ -1,3 +1,8 @@
+2018-08-03  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (dump_prediction): Change to 2 digits
+        in fraction part.
+
 2018-08-03  Siddhesh Poyarekar  <siddhesh@sourceware.org>
 
 	* config/aarch64/falkor.md (falkor_am_1_vxvy_vxvy): Move
