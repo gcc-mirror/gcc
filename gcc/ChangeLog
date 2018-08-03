@@ -1,3 +1,11 @@
+2018-08-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (wide-int-range.o): New.
+	* tree-vrp.c: Move all the wide_int_* functions to...
+	* wide-int-range.cc: ...here.
+	* tree-vrp.h: Move all the wide_int_* prototypes to...
+	* wide-int-range.h: ...here.
+
 2018-08-03  Tom de Vries  <tdevries@suse.de>
 
 	* common/config/nvptx/nvptx-common.c (nvptx_except_unwind_info): Return
