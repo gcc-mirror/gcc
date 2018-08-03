@@ -1,3 +1,9 @@
+2018-08-03  Jeff Law  <law@redhat.com>
+
+	PR target/86795
+	* config/mn10300/mn10300.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
 2018-08-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/gcov.texi (-x): Remove duplicate "to".
