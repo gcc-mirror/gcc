@@ -1,3 +1,8 @@
+2018-08-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86706
+	* g++.dg/template/pr86706.C: New test.
+
 2018-08-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/vect/bb-slp-over-widen-1.c: Expect AVG_FLOOR to be used
@@ -9,13 +14,13 @@
 2018-08-03  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/predict-1.c: Adjust scanned pattern to cover 2 digits.
-	* gcc.dg/predict-13.c:Likewise.
-	* gcc.dg/predict-3.c:Likewise.
-	* gcc.dg/predict-4.c:Likewise.
-	* gcc.dg/predict-5.c:Likewise.
-	* gcc.dg/predict-6.c:Likewise.
-	* gcc.dg/predict-9.c:Likewise.
-	* gfortran.dg/predict-1.f90:Likewise.
+	* gcc.dg/predict-13.c: Likewise.
+	* gcc.dg/predict-3.c: Likewise.
+	* gcc.dg/predict-4.c: Likewise.
+	* gcc.dg/predict-5.c: Likewise.
+	* gcc.dg/predict-6.c: Likewise.
+	* gcc.dg/predict-9.c: Likewise.
+	* gfortran.dg/predict-1.f90: Likewise.
 
 2018-08-02  Richard Biener  <rguenther@suse.de>
 
@@ -11397,7 +11402,7 @@
 2018-02-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84125
-	* g++.dg/cpp1y/lambda-generic-84125.C:New test.
+	* g++.dg/cpp1y/lambda-generic-84125.C: New test.
 
 2018-01-30  Jeff Law  <law@redhat.com>
 
