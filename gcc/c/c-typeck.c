@@ -2207,9 +2207,14 @@ lookup_field (tree type, tree component)
   /* If TYPE_LANG_SPECIFIC is set, then it is a sorted array of pointers
      to the field elements.  Use a binary search on this array to quickly
      find the element.  Otherwise, do a linear search.  TYPE_LANG_SPECIFIC
-     will always be set for structures which have many elements.  */
+     will always be set for structures which have many elements.
 
-  if (TYPE_LANG_SPECIFIC (type) && TYPE_LANG_SPECIFIC (type)->s)
+     Duplicate field checking replaces duplicates with NULL_TREE so
+     TYPE_LANG_SPECIFIC arrays are potentially no longer sorted.  In that
+     case just iterate using DECL_CHAIN.  */
+
+  if (TYPE_LANG_SPECIFIC (type) && TYPE_LANG_SPECIFIC (type)->s
+      && !seen_error ())
     {
       int bot, top, half;
       tree *field_array = &TYPE_LANG_SPECIFIC (type)->s->elts[0];
