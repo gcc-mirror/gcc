@@ -1,3 +1,8 @@
+2018-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/86153
+	* g++.dg/pr83239.C (dg-options): Add -finline-limit=500.
+
 2018-08-03  David Malcolm  <dmalcolm@redhat.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
@@ -117,7 +122,7 @@
 
 2018-08-01  Martin Liska  <mliska@suse.cz>
 
-        PR value-prof/35543
+	PR value-prof/35543
 	* gcc.dg/tree-prof/val-prof-7.c: Add __builtin_memmove.
 
 2018-08-01  Sam Tebbs  <sam.tebbs@arm.com>
@@ -130,7 +135,7 @@
 	* gcc.c-torture/compile/pr85704.c: New test.
 
 2018-07-31  Alexandre Oliva  <oliva@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/dinst.adb: New.
 	* gnat.dg/dinst_pkg.ads, gnat.dg/dinst_pkg.adb: New.
@@ -263,7 +268,7 @@
 
 2018-07-26  Martin Liska  <mliska@suse.cz>
 
-        PR gcov-profile/86536
+	PR gcov-profile/86536
 	* gcc.misc-tests/gcov-pr86536.c: New test.
 
 2018-07-25  Martin Sebor  <msebor@redhat.com>
@@ -584,7 +589,8 @@
 
 2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
-	* gnat.dg/config_pragma1.adb, gnat.dg/config_pragma1_pkg.ads: New testcase.
+	* gnat.dg/config_pragma1.adb, gnat.dg/config_pragma1_pkg.ads:
+	New testcase.
 
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
@@ -600,7 +606,8 @@
 
 2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
-	* gnat.dg/bip_case_expr.adb, gnat.dg/bip_case_expr_pkg.ads: New testcase.
+	* gnat.dg/bip_case_expr.adb, gnat.dg/bip_case_expr_pkg.ads:
+	New testcase.
 
 2018-07-16  Carl Love  <cel@us.ibm.com>
 
@@ -613,7 +620,7 @@
 	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
 	longdouble128.
 	* gcc.target/powerpc/divkc3-3.c: Ditto.
- 	* gcc.target/powerpc/mulkc3-2.c: Ditto.
+	* gcc.target/powerpc/mulkc3-2.c: Ditto.
 	* gcc.target/powerpc/mulkc3-3.c: Ditto.
 	* gcc.target/powerpc/fold-vec-mergehl-double.c: Update counts.
 	* gcc.target/powerpc/pr85456.c: Make check Linux and AIX specific.
@@ -642,10 +649,10 @@
 
 2018-07-16  Carl Love  <cel@us.ibm.com>
 
- 	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
+	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
 	longdouble128.
 	* gcc.target/powerpc/divkc3-3.c: Ditto.
- 	* gcc.target/powerpc/mulkc3-2.c: Ditto.
+	* gcc.target/powerpc/mulkc3-2.c: Ditto.
 	* gcc.target/powerpc/mulkc3-3.c: Ditto.
 	* gcc.target/powerpc/fold-vec-mergehl-double.c: Update counts.
 	* gcc.target/powerpc/pr85456.c: Make check Linux and AIX specific.
@@ -715,7 +722,7 @@
 
 2018-07-16  Martin Liska  <mliska@suse.cz>
 
-        PR ipa/86529
+	PR ipa/86529
 	* g++.dg/ipa/pr86529.C: New test.
 
 2018-07-16  Tom de Vries  <tdevries@suse.de>
@@ -809,7 +816,7 @@
 
 2018-07-12  Kito Cheng  <kito.cheng@gmail.com>
 
-        * gcc.target/riscv/interrupt-conflict-mode.c: New.
+	* gcc.target/riscv/interrupt-conflict-mode.c: New.
 
 2018-07-12  Jakub Jelinek  <jakub@redhat.com>
 
@@ -942,7 +949,7 @@
 
 2018-07-10  Martin Liska  <mliska@suse.cz>
 
-        PR testsuite/86445
+	PR testsuite/86445
 	* gcc.dg/pr84100.c: Change it back to dg-bogus.
 
 2018-07-10  Jakub Jelinek  <jakub@redhat.com>
@@ -1354,7 +1361,7 @@
 
 2018-07-02  Martin Liska  <mliska@suse.cz>
 
-        PR testsuite/86366
+	PR testsuite/86366
 	* gcc.dg/profile-dir-1.c: Fix scanned pattern.
 	* gcc.dg/profile-dir-2.c: Likewise.
 	* gcc.dg/profile-dir-3.c: Likewise.
@@ -1388,12 +1395,12 @@
 
 2018-07-02  Martin Liska  <mliska@suse.cz>
 
-        PR ipa/86279
+	PR ipa/86279
 	* gcc.dg/ipa/pr86279.c: New test.
 
 2018-07-02  Martin Liska  <mliska@suse.cz>
 
-        PR ipa/86323
+	PR ipa/86323
 	* g++.dg/ipa/pr86323.C: New test.
 
 2018-07-01  Tom de Vries  <tdevries@suse.de>
@@ -1516,7 +1523,7 @@
 
 2018-06-29  Martin Liska  <mliska@suse.cz>
 
-        PR tree-optimization/86263
+	PR tree-optimization/86263
 	* gcc.dg/tree-ssa/pr86263.c: New test.
 
 2018-06-28  Carl Love  <cel@us.ibm.com>
@@ -1629,7 +1636,7 @@
 2018-06-25  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/p9-extract-1.c: Make second argument of
- 	vec_extract a signed int. Add vec_extract tests for bool char
+	vec_extract a signed int. Add vec_extract tests for bool char
 	and bool int.
 	* gcc.target/powerpc/p9-extract-4.c:  New test file for long long
 	vec_extract tests.
@@ -1707,14 +1714,14 @@
 
 2018-06-22  Carl Love  <cel@us.ibm.com>
 
- 	* gcc.target/powerpc/altivec-7.c: Add qualifiers for counts on AIX
+	* gcc.target/powerpc/altivec-7.c: Add qualifiers for counts on AIX
 	versus Linux.  Change checks for xxlnor, xxland and xxlxor to also look
 	for the vnor, vand and vxor instructions.
 	* gcc.target/powerpc/builtins-1.c: Move vec_or tests to a new file.
 	Remove counts for xxlor. Fix match on bl __divdi3 and bl __udivdi3.
 	* gcc.target/powerpc/builtins-4.c: Fix matching for vsl instructions.
 	* gcc.target/powerpc/builtins-5.c: New test file for vec_or test cases.
- 	* gcc.target/powerpc/vsx-vector-6.p7.c: Fix xxlnor BE expected count.
+	* gcc.target/powerpc/vsx-vector-6.p7.c: Fix xxlnor BE expected count.
 	Add -dp to dg-options, update expected counts.
 
 2018-06-22  Paul Koning  <ni1d@arrl.net>
@@ -2244,7 +2251,7 @@
 
 2018-06-11  Martin Liska  <mliska@suse.cz>
 
-        PR tree-optimization/86089
+	PR tree-optimization/86089
 	* gcc.dg/tree-ssa/pr86089.c: New test.
 
 2018-06-11  Julia Koval  <julia.koval@intel.com>
@@ -2362,18 +2369,18 @@
 
 2018-06-08  Carl Love  <cel@us.ibm.com>
 
- 	* gcc.target/powerpc/p8vector-builtin-3.c: Add vec_pack test. Update
+	* gcc.target/powerpc/p8vector-builtin-3.c: Add vec_pack test. Update
 	vpkudum counts.
- 	* gcc.target/powerpc/p9-extract-3.c: Make second argument of
+	* gcc.target/powerpc/p9-extract-3.c: Make second argument of
 	vec_extract a signed int.
- 	* gcc.target/powerpc/vec-cmp.c: Add vec_cmple, vec_cmpge tests. Update,
+	* gcc.target/powerpc/vec-cmp.c: Add vec_cmple, vec_cmpge tests. Update,
 	vcmpgtsb, vcmpgtub, vcmpgtsh, vcmpgtuh, vcmpgtsw, vcmpgtsw, vcmpgtuw,
 	vcmpgtsd, vcmpgtud.
 	* gcc.target/powerpc/vsx-extract-4.c: Make second argument of
 	vec_extract a signed int.
 	* gcc.target/powerpc/vsx-extract-5.c: Make second argument of
 	vec_extract a signed int.
- 	* gcc.target/powerpc/vsx-vector-7.c (foo): Add tests for vec_sel and
+	* gcc.target/powerpc/vsx-vector-7.c (foo): Add tests for vec_sel and
 	vec_xor builtins.  Update xxsel, xxlxor counts.
 
 2018-06-08  Steven G. Kargl  <kargl@gcc.gnu.org>
@@ -2808,8 +2815,8 @@
 
 2018-06-07  Carl Love  <cel@us.ibm.com>
 
-        * gcc.target/powerpc/vsu/vec-cntlz-lsbb-2.c (dg-error): Update expected
-        error message.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-2.c (dg-error): Update expected
+	error message.
 
 2018-06-07  Marek Polacek  <polacek@redhat.com>
 
@@ -4120,7 +4127,7 @@
 	* g++.dg/cpp0x/initlist-throw1.C: New test.
 	* g++.dg/cpp0x/initlist-throw2.C: New test.
 
-2018-05-16 Carl Love  <cel@us.ibm.com>
+2018-05-16  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/vsx-vector-6-be.c: Remove file.
 	* gcc.target/powerpc/vsx-vector-6-le.c (dg-final): Update counts for
@@ -4670,7 +4677,7 @@
 	* gcc.target/arc/store-merge-1.c: New test.
 	* gcc.target/arc/add_n-combine.c: Update test.
 
-2018-04-30 Andrew Sadek  <andrew.sadek.se@gmail.com>
+2018-04-30  Andrew Sadek  <andrew.sadek.se@gmail.com>
 
 	Microblaze Target: PIC data text relative
 
