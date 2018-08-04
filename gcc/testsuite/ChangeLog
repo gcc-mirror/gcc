@@ -1,3 +1,7 @@
+2018-08-04  Tom de Vries  <tdevries@suse.de>
+
+	* lib/gcc-gdb-test.exp: Use absolute line number in pass/fail line.
+
 2018-08-04  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gcc.dg/guality/const-volatile.c: Remove duplicate test
