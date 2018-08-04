@@ -1,3 +1,7 @@
+2018-08-04  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.dg/guality/const-volatile.c: Remove duplicate test
+	"type:cvip".
 
 2018-08-04  Janus Weil  <janus@gcc.gnu.org>
 
