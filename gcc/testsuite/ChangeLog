@@ -1,3 +1,8 @@
+2018-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/86153
+	* g++.dg/pr83239.C (dg-options): Add -finline-limit=500.
+
 2018-08-02  Andreas Schwab  <schwab@linux-m68k.org>
 
 	Backport from mainline
@@ -50,10 +55,10 @@
 	2018-07-16  Carl Love  <cel@us.ibm.com>
 
 	PR target/86414
- 	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
+	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
 	longdouble128.
 	* gcc.target/powerpc/divkc3-3.c: Ditto.
- 	* gcc.target/powerpc/mulkc3-2.c: Ditto.
+	* gcc.target/powerpc/mulkc3-2.c: Ditto.
 	* gcc.target/powerpc/mulkc3-3.c: Ditto.
 	* gcc.target/powerpc/fold-vec-mergehl-double.c: Update counts.
 	* gcc.target/powerpc/pr85456.c: Make check Linux and AIX specific.
@@ -785,7 +790,7 @@ Add test case that was supposed to be added in commit 255556 on 2017-12-11.
 	Backport from mainline
 	2018-05-11  Martin Liska  <mliska@suse.cz>
 
-        PR sanitizer/85556
+	PR sanitizer/85556
 	* c-c++-common/ubsan/attrib-6.c: New test.
 
 2018-05-22  Martin Sebor  <msebor@redhat.com>
@@ -1485,11 +1490,11 @@ Add test case that was supposed to be added in commit 255556 on 2017-12-11.
 
 2018-04-13  Andreas Krebbel  <krebbel@linux.ibm.com>
 
-        PR testsuite/85326
-        * gcc.target/s390/pr77822-1.C: Rename to ...
-        * gcc.target/s390/pr77822-1.c: ... this. Add asm scan check.
-        * gcc.target/s390/pr77822-2.c: Add asm scan check.
-        * gcc.target/s390/s390.exp: Remove C from testcase regexps.
+	PR testsuite/85326
+	* gcc.target/s390/pr77822-1.C: Rename to ...
+	* gcc.target/s390/pr77822-1.c: ... this. Add asm scan check.
+	* gcc.target/s390/pr77822-2.c: Add asm scan check.
+	* gcc.target/s390/s390.exp: Remove C from testcase regexps.
 
 2018-04-13  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -2822,7 +2827,7 @@ Add test case that was supposed to be added in commit 255556 on 2017-12-11.
 	* g++.dg/cpp2a/desig7.C: New test.
 
 2018-03-16  Mark Doffman  <mark.doffman@codethink.co.uk>
-            Jim MacArthur  <jim.macarthur@codethink.co.uk>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
 
 	* gfortran.dg/automatic_1.f90: New test.
 	* gfortran.dg/automatic_repeat.f90: New test
@@ -4057,9 +4062,9 @@ Add test case that was supposed to be added in commit 255556 on 2017-12-11.
 
 2018-02-20  Jeff Law  <law@redhat.com>
 
-        PR middle-end/82123
-        PR tree-optimization/81592
-        PR middle-end/79257
+	PR middle-end/82123
+	PR tree-optimization/81592
+	PR middle-end/79257
 	* gcc.dg/pr81592.c: New test.
 	* gcc.dg/pr82123.c: New test.
 	* gcc.dg/builtin-unreachable-6.c: Turn off VRP.
@@ -6783,7 +6788,7 @@ Add test case that was supposed to be added in commit 255556 on 2017-12-11.
 
 2018-02-14  Carl Love  <cel@us.ibm.com>
 
-        * gcc.target/powerpc/builtins-4-int128-runnable.c
+	* gcc.target/powerpc/builtins-4-int128-runnable.c
 	(dg-require-effective-target): Change vsx_hw to p8vector_hw.
 	(dg-options): Change -maltivec -mvsx to -mpower8-vector.
 
