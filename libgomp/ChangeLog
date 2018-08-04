@@ -1,3 +1,10 @@
+2018-08-04  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/configfrag.ac: For --without-cuda-driver, set
+	CUDA_DRIVER_INCLUDE and CUDA_DRIVER_LIB to no.  Handle
+	CUDA_DRIVER_INCLUDE == no and CUDA_DRIVER_LIB == no.
+	* configure: Regenerate.
+
 2018-08-02  Tom de Vries  <tdevries@suse.de>
 
 	PR target/86660
