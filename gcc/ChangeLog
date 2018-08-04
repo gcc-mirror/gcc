@@ -1,3 +1,9 @@
+2018-08-04  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86571
+	* gimple-ssa-sprintf.c (format_floating): Extend upper bound of
+	NaN output to 4.
+
 2018-08-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
