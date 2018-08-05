@@ -421,7 +421,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return reverse_iterator<_Iterator>(__x.base() - __n); }
 
 #if __cplusplus >= 201103L
-  // Same as C++14 make_reverse_iterator but used in C++03 mode too.
+  // Same as C++14 make_reverse_iterator but used in C++11 mode too.
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR reverse_iterator<_Iterator>
     __make_reverse_iterator(_Iterator __i)
