@@ -1,3 +1,8 @@
+2018-08-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/86386
+	* gcc.target/i386/pr86386.c: New file.
+
 2018-08-04  Tom de Vries  <tdevries@suse.de>
 
 	* lib/gcc-gdb-test.exp: Use absolute line number in pass/fail line.
