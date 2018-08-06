@@ -52,10 +52,13 @@
 #if PLUGIN_NVPTX_DYNAMIC
 # include <dlfcn.h>
 
-# define CUDA_ONE_CALL(call) \
-  __typeof (call) *call;
 struct cuda_lib_s {
+
+# define CUDA_ONE_CALL(call)			\
+  __typeof (call) *call;
 #include "cuda-lib.def"
+# undef CUDA_ONE_CALL
+
 } cuda_lib;
 
 /* -1 if init_cuda_lib has not been called yet, false
@@ -74,18 +77,19 @@ init_cuda_lib (void)
   cuda_lib_inited = false;
   if (h == NULL)
     return false;
-# undef CUDA_ONE_CALL
+
 # define CUDA_ONE_CALL(call) CUDA_ONE_CALL_1 (call)
 # define CUDA_ONE_CALL_1(call) \
   cuda_lib.call = dlsym (h, #call);	\
   if (cuda_lib.call == NULL)		\
     return false;
 #include "cuda-lib.def"
+# undef CUDA_ONE_CALL
+# undef CUDA_ONE_CALL_1
+
   cuda_lib_inited = true;
   return true;
 }
-# undef CUDA_ONE_CALL
-# undef CUDA_ONE_CALL_1
 # define CUDA_CALL_PREFIX cuda_lib.
 #else
 # define CUDA_CALL_PREFIX
