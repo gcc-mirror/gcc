@@ -1,3 +1,8 @@
+2018-08-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86767
+	* g++.dg/cpp1y/constexpr-86767.C: New test.
+
 2018-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/torture/pr86763.C (dg-additional-options): Add -lrt
