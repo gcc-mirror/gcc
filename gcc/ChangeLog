@@ -1,4 +1,21 @@
 2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* emit-rtl.c (verify_rtx_sharing): Check for CLOBBER_HIGH.
+	(copy_insn_1): Likewise.
+	(gen_hard_reg_clobber_high): New gen function.
+	* genconfig.c (walk_insn_part): Check for CLOBBER_HIGH.
+	* genemit.c (gen_exp): Likewise.
+	(gen_emit_seq): Pass through info.
+	(gen_insn): Check for CLOBBER_HIGH.
+	(gen_expand): Pass through info.
+	(gen_split): Likewise.
+	(output_add_clobbers): Likewise.
+	* genrecog.c (validate_pattern): Check for CLOBBER_HIGH.
+	(remove_clobbers): Likewise.
+	* rtl.h (gen_hard_reg_clobber_high): New declaration.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
 	* doc/rtl.texi (clobber_high): Add.
 	(parallel): Add in clobber high
 	* rtl.c (rtl_check_failed_code3): Add function.
