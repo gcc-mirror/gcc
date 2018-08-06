@@ -1,3 +1,9 @@
+2018-08-07  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (struct cuda_lib_s, init_cuda_lib): Put
+	CUDA_ONE_CALL defines right before the cuda-lib.def include, and the
+	corresponding undefs right after.
+
 2018-08-04  Tom de Vries  <tdevries@suse.de>
 
 	* plugin/configfrag.ac: For --without-cuda-driver, set
