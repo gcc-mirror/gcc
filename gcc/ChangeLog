@@ -1,5 +1,70 @@
 2018-08-06  Alan Hayward  <alan.hayward@arm.com>
 
+	* alias.c (record_set): Check for clobber high.
+	* cfgexpand.c (expand_gimple_stmt): Likewise.
+	* combine-stack-adj.c (single_set_for_csa): Likewise.
+	* combine.c (find_single_use_1): Likewise.
+	(set_nonzero_bits_and_sign_copies): Likewise.
+	(get_combine_src_dest): Likewise.
+	(is_parallel_of_n_reg_sets): Likewise.
+	(try_combine): Likewise.
+	(record_dead_and_set_regs_1): Likewise.
+	(reg_dead_at_p_1): Likewise.
+	(reg_dead_at_p): Likewise.
+	* dce.c (deletable_insn_p): Likewise.
+	(mark_nonreg_stores_1): Likewise.
+	(mark_nonreg_stores_2): Likewise.
+	* df-scan.c (df_find_hard_reg_defs): Likewise.
+	(df_uses_record): Likewise.
+	(df_get_call_refs): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	* haifa-sched.c (haifa_classify_rtx): Likewise.
+	* ira-build.c (create_insn_allocnos): Likewise.
+	* ira-costs.c (scan_one_insn): Likewise.
+	* ira.c (equiv_init_movable_p): Likewise.
+	(rtx_moveable_p): Likewise.
+	(interesting_dest_for_shprep): Likewise.
+	* jump.c (mark_jump_label_1): Likewise.
+	* postreload-gcse.c (record_opr_changes): Likewise.
+	* postreload.c (reload_cse_simplify): Likewise.
+	(struct reg_use): Add source expr.
+	(reload_combine): Check for clobber high.
+	(reload_combine_note_use): Likewise.
+	(reload_cse_move2add): Likewise.
+	(move2add_note_store): Likewise.
+	* print-rtl.c (print_pattern): Likewise.
+	* recog.c (decode_asm_operands): Likewise.
+	(store_data_bypass_p): Likewise.
+	(if_test_bypass_p): Likewise.
+	* regcprop.c (kill_clobbered_value): Likewise.
+	(kill_set_value): Likewise.
+	* reginfo.c (reg_scan_mark_refs): Likewise.
+	* reload1.c (maybe_fix_stack_asms): Likewise.
+	(eliminate_regs_1): Likewise.
+	(elimination_effects): Likewise.
+	(mark_not_eliminable): Likewise.
+	(scan_paradoxical_subregs): Likewise.
+	(forget_old_reloads_1): Likewise.
+	* reorg.c (find_end_label): Likewise.
+	(try_merge_delay_insns): Likewise.
+	(redundant_insn): Likewise.
+	(own_thread_p): Likewise.
+	(fill_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	(dbr_schedule): Likewise.
+	* resource.c (update_live_status): Likewise.
+	(mark_referenced_resources): Likewise.
+	(mark_set_resources): Likewise.
+	* rtl.c (copy_rtx): Likewise.
+	* rtlanal.c (reg_referenced_p): Likewise.
+	(single_set_2): Likewise.
+	(noop_move_p): Likewise.
+	(note_stores): Likewise.
+	* sched-deps.c (sched_analyze_reg): Likewise.
+	(sched_analyze_insn): Likewise.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
 	* cse.c (invalidate_reg): New function extracted from...
 	(invalidate): ...here.
 	(canonicalize_insn): Check for clobber high.

@@ -1100,6 +1100,10 @@ reg_scan_mark_refs (rtx x, rtx_insn *insn)
 	reg_scan_mark_refs (XEXP (XEXP (x, 0), 0), insn);
       break;
 
+    case CLOBBER_HIGH:
+      gcc_assert (!(MEM_P (XEXP (x, 0))));
+      break;
+
     case SET:
       /* Count a set of the destination if it is a register.  */
       for (dest = SET_DEST (x);

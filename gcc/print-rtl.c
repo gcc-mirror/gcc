@@ -1742,6 +1742,7 @@ print_pattern (pretty_printer *pp, const_rtx x, int verbose)
       print_exp (pp, x, verbose);
       break;
     case CLOBBER:
+    case CLOBBER_HIGH:
     case USE:
       pp_printf (pp, "%s ", GET_RTX_NAME (GET_CODE (x)));
       print_value (pp, XEXP (x, 0), verbose);
