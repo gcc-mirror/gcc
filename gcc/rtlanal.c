@@ -6551,3 +6551,32 @@ tls_referenced_p (const_rtx x)
       return true;
   return false;
 }
+
+/* Return true if reg REGNO with mode REG_MODE would be clobbered by the
+   clobber_high operand in CLOBBER_HIGH_OP.  */
+
+bool
+reg_is_clobbered_by_clobber_high (unsigned int regno, machine_mode reg_mode,
+				  const_rtx clobber_high_op)
+{
+  unsigned int clobber_regno = REGNO (clobber_high_op);
+  machine_mode clobber_mode = GET_MODE (clobber_high_op);
+  unsigned char regno_nregs = hard_regno_nregs (regno, reg_mode);
+
+  /* Clobber high should always span exactly one register.  */
+  gcc_assert (REG_NREGS (clobber_high_op) == 1);
+
+  /* Clobber high needs to match with one of the registers in X.  */
+  if (clobber_regno < regno || clobber_regno >= regno + regno_nregs)
+    return false;
+
+  gcc_assert (reg_mode != BLKmode && clobber_mode != BLKmode);
+
+  if (reg_mode == VOIDmode)
+    return clobber_mode != VOIDmode;
+
+  /* Clobber high will clobber if its size might be greater than the size of
+     register regno.  */
+  return maybe_gt (exact_div (GET_MODE_SIZE (reg_mode), regno_nregs),
+		 GET_MODE_SIZE (clobber_mode));
+}
