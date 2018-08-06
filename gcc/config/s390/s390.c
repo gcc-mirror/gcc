@@ -390,6 +390,11 @@ static unsigned vfu_longrunning[NUM_SIDES];
    base and index are registers of the class ADDR_REGS,
    displacement is an unsigned 12-bit immediate constant.  */
 
+/* The max number of insns of backend generated memset/memcpy/memcmp
+   loops.  This value is used in the unroll adjust hook to detect such
+   loops.  Current max is 9 coming from the memcmp loop.  */
+#define BLOCK_MEM_OPS_LOOP_INSNS 9
+
 struct s390_address
 {
   rtx base;
@@ -15385,9 +15390,29 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
   for (i = 0; i < loop->num_nodes; i++)
     FOR_BB_INSNS (bbs[i], insn)
       if (INSN_P (insn) && INSN_CODE (insn) != -1)
-	FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
-	  if (MEM_P (*iter))
-	    mem_count += 1;
+	{
+	  rtx set;
+
+	  /* The runtime of small loops with memory block operations
+	     will be determined by the memory operation.  Doing
+	     unrolling doesn't help here.  Measurements to confirm
+	     this where only done on recent CPU levels.  So better do
+	     not change anything for older CPUs.  */
+	  if (s390_tune >= PROCESSOR_2964_Z13
+	      && loop->ninsns <= BLOCK_MEM_OPS_LOOP_INSNS
+	      && ((set = single_set (insn)) != NULL_RTX)
+	      && ((GET_MODE (SET_DEST (set)) == BLKmode
+		   && (GET_MODE (SET_SRC (set)) == BLKmode
+		       || SET_SRC (set) == const0_rtx))
+		  || (GET_CODE (SET_SRC (set)) == COMPARE
+		      && GET_MODE (XEXP (SET_SRC (set), 0)) == BLKmode
+		      && GET_MODE (XEXP (SET_SRC (set), 1)) == BLKmode)))
+	    return 1;
+
+	  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+	    if (MEM_P (*iter))
+	      mem_count += 1;
+	}
   free (bbs);
 
   /* Prevent division by zero, and we do not need to adjust nunroll in this case.  */
