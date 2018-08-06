@@ -1,3 +1,11 @@
+2018-08-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR target/86662
+	* gcc/tree.c (build_common_tree_nodes): Initialize integer_types array
+	with all enabled __intN types.
+
+	* gcc/testsuite/gcc.target/msp430/pr86662.c: New test.
+
 2018-08-06  Alan Hayward  <alan.hayward@arm.com>
 
 	* alias.c (record_set): Check for clobber high.
