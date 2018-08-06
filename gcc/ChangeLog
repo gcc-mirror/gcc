@@ -1,3 +1,8 @@
+2018-08-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_loop_unroll_adjust): Prevent small
+	loops with memory block operations from getting unrolled.
+
 2018-08-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/86807
