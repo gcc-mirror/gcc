@@ -1,5 +1,17 @@
 2018-08-06  Alan Hayward  <alan.hayward@arm.com>
 
+	* lra-eliminations.c (lra_eliminate_regs_1): Check for clobber high.
+	(mark_not_eliminable): Likewise.
+	* lra-int.h (struct lra_insn_reg): Add clobber high marker.
+	* lra-lives.c (process_bb_lives): Check for clobber high.
+	* lra.c (new_insn_reg): Remember clobber highs.
+	(collect_non_operand_hard_regs): Check for clobber high.
+	(lra_set_insn_recog_data): Likewise.
+	(add_regs_to_insn_regno_info): Likewise.
+	(lra_update_insn_regno_info): Likewise.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
 	* rtl.h (reg_is_clobbered_by_clobber_high): Add declarations.
 	* rtlanal.c (reg_is_clobbered_by_clobber_high): Add function.
 
