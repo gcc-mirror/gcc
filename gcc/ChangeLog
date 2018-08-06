@@ -1,3 +1,9 @@
+2018-08-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/86807
+	* config/spu/spu.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
 2018-08-06  Jeff Law  <law@redhat.com>
 
 	* reload1.c (forget_old_reloads_1): Adjust CLOBBER_HIGH
