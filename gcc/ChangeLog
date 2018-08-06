@@ -1,3 +1,10 @@
+2018-08-06  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (dom_opt_dom_walker::optimize_stmt): Pass down
+	the vr_values instance to cprop_into_stmt.
+	(cprop_into_stmt): Pass vr_values instance down to cprop_operand.
+	(cprop_operand): Also query EVRP to determine if OP is a constant.
+	
 2018-08-06  Nathan Sidwell  <nathan@acm.org>
 
 	* diagnostic.c (diagnostic_report_current_module): Reroll
