@@ -1,3 +1,9 @@
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* gcc.target/aarch64/sve/tls_preserve_1.c: New test.
+	* gcc.target/aarch64/sve/tls_preserve_2.c: New test.
+	* gcc.target/aarch64/sve/tls_preserve_3.c: New test.
+
 2018-08-06  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/nomemloopunroll-1.c: New test.
