@@ -1,3 +1,7 @@
+2018-08-06  Naveen H.S  <naveenh@marvell.com>
+
+	* MAINTAINERS: Update my email address.
+
 2018-07-19  DJ Delorie  <dj@redhat.com>
 
 	* MAINTAINERS (m32c, msp43, rl78, libiberty, build): Remove myself
