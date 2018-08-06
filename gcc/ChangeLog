@@ -1,3 +1,8 @@
+2018-08-06  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostic.c (diagnostic_report_current_module): Reroll
+	included-at loop.  Translate text.
+
 2018-08-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* function-tests.c (selftest::test_expansion_to_rtl): Call
