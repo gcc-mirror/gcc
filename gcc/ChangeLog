@@ -1,3 +1,9 @@
+2018-08-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/86807
+	* config/pa/pa.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
 2018-08-06  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (dom_opt_dom_walker::optimize_stmt): Pass down
