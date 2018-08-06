@@ -304,6 +304,10 @@ copy_rtx (rtx orig)
 	return orig;
       break;
 
+    case CLOBBER_HIGH:
+	gcc_assert (REG_P (XEXP (orig, 0)));
+	return orig;
+
     case CONST:
       if (shared_const_p (orig))
 	return orig;

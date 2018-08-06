@@ -145,6 +145,7 @@ deletable_insn_p (rtx_insn *insn, bool fast, bitmap arg_stores)
       return false;
 
     case CLOBBER:
+    case CLOBBER_HIGH:
       if (fast)
 	{
 	  /* A CLOBBER of a dead pseudo register serves no purpose.
@@ -213,7 +214,10 @@ static void
 mark_nonreg_stores_1 (rtx dest, const_rtx pattern, void *data)
 {
   if (GET_CODE (pattern) != CLOBBER && !REG_P (dest))
-    mark_insn ((rtx_insn *) data, true);
+    {
+      gcc_checking_assert (GET_CODE (pattern) != CLOBBER_HIGH);
+      mark_insn ((rtx_insn *) data, true);
+    }
 }
 
 
@@ -224,7 +228,10 @@ static void
 mark_nonreg_stores_2 (rtx dest, const_rtx pattern, void *data)
 {
   if (GET_CODE (pattern) != CLOBBER && !REG_P (dest))
-    mark_insn ((rtx_insn *) data, false);
+    {
+      gcc_checking_assert (GET_CODE (pattern) != CLOBBER_HIGH);
+      mark_insn ((rtx_insn *) data, false);
+    }
 }
 
 

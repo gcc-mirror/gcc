@@ -3750,6 +3750,7 @@ expand_gimple_stmt (gimple *stmt)
 	      /* If we want exceptions for non-call insns, any
 		 may_trap_p instruction may throw.  */
 	      && GET_CODE (PATTERN (insn)) != CLOBBER
+	      && GET_CODE (PATTERN (insn)) != CLOBBER_HIGH
 	      && GET_CODE (PATTERN (insn)) != USE
 	      && insn_could_throw_p (insn))
 	    make_reg_eh_region_note (insn, 0, lp_nr);

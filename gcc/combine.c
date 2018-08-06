@@ -570,6 +570,7 @@ find_single_use_1 (rtx dest, rtx *loc)
     case SYMBOL_REF:
     CASE_CONST_ANY:
     case CLOBBER:
+    case CLOBBER_HIGH:
       return 0;
 
     case SET:
@@ -1752,6 +1753,9 @@ set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
 	  return;
 	}
 
+      /* Should not happen as we only using pseduo registers.  */
+      gcc_assert (GET_CODE (set) != CLOBBER_HIGH);
+
       /* If this register is being initialized using itself, and the
 	 register is uninitialized in this basic block, and there are
 	 no LOG_LINKS which set the register, then part of the
@@ -1910,6 +1914,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
 
 	      /* We can ignore CLOBBERs.  */
 	    case CLOBBER:
+	    case CLOBBER_HIGH:
 	      break;
 
 	    case SET:
@@ -2570,10 +2575,17 @@ is_parallel_of_n_reg_sets (rtx pat, int n)
 	|| !REG_P (SET_DEST (XVECEXP (pat, 0, i))))
       return false;
   for ( ; i < len; i++)
-    if (GET_CODE (XVECEXP (pat, 0, i)) != CLOBBER
-	|| XEXP (XVECEXP (pat, 0, i), 0) == const0_rtx)
-      return false;
-
+    switch (GET_CODE (XVECEXP (pat, 0, i)))
+      {
+      case CLOBBER:
+	if (XEXP (XVECEXP (pat, 0, i), 0) == const0_rtx)
+	  return false;
+	break;
+      case CLOBBER_HIGH:
+	break;
+      default:
+	return false;
+      }
   return true;
 }
 
@@ -2860,7 +2872,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       for (i = 0; ok && i < XVECLEN (p2, 0); i++)
 	{
 	  if ((GET_CODE (XVECEXP (p2, 0, i)) == SET
-	       || GET_CODE (XVECEXP (p2, 0, i)) == CLOBBER)
+	       || GET_CODE (XVECEXP (p2, 0, i)) == CLOBBER
+	       || GET_CODE (XVECEXP (p2, 0, i)) == CLOBBER_HIGH)
 	      && reg_overlap_mentioned_p (SET_DEST (PATTERN (i3)),
 					  SET_DEST (XVECEXP (p2, 0, i))))
 	    ok = false;
@@ -13315,6 +13328,15 @@ record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
 			      ? SET_SRC (setter)
 			      : gen_lowpart (GET_MODE (dest),
 					     SET_SRC (setter)));
+      else if (GET_CODE (setter) == CLOBBER_HIGH)
+	{
+	  reg_stat_type *rsp = &reg_stat[REGNO (dest)];
+	  if (rsp->last_set_value
+	      && reg_is_clobbered_by_clobber_high
+		   (REGNO (dest), GET_MODE (rsp->last_set_value),
+		    XEXP (setter, 0)))
+	    record_value_for_reg (dest, NULL, NULL_RTX);
+	}
       else
 	record_value_for_reg (dest, record_dead_insn, NULL_RTX);
     }
@@ -13735,6 +13757,7 @@ get_last_value (const_rtx x)
 
 static unsigned int reg_dead_regno, reg_dead_endregno;
 static int reg_dead_flag;
+rtx reg_dead_reg;
 
 /* Function called via note_stores from reg_dead_at_p.
 
@@ -13747,6 +13770,10 @@ reg_dead_at_p_1 (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
   unsigned int regno, endregno;
 
   if (!REG_P (dest))
+    return;
+
+  if (GET_CODE (x) == CLOBBER_HIGH
+      && !reg_is_clobbered_by_clobber_high (reg_dead_reg, XEXP (x, 0)))
     return;
 
   regno = REGNO (dest);
@@ -13772,6 +13799,7 @@ reg_dead_at_p (rtx reg, rtx_insn *insn)
   /* Set variables for reg_dead_at_p_1.  */
   reg_dead_regno = REGNO (reg);
   reg_dead_endregno = END_REGNO (reg);
+  reg_dead_reg = reg;
 
   reg_dead_flag = 0;
 
