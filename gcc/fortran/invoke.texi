@@ -1056,8 +1056,9 @@ off via @option{-Wno-align-commons}. See also @option{-falign-commons}.
 @opindex @code{Wfunction-elimination}
 @cindex function elimination
 @cindex warnings, function elimination
-Warn if any calls to functions are eliminated by the optimizations
+Warn if any calls to impure functions are eliminated by the optimizations
 enabled by the @option{-ffrontend-optimize} option.
+This option is implied by @option{-Wextra}.
 
 @item -Wrealloc-lhs
 @opindex @code{Wrealloc-lhs}

@@ -7238,6 +7238,32 @@ package body Exp_Aggr is
                Expr_Q := Expression (C);
             end if;
 
+            --  Return False for array components whose bounds raise
+            --  constraint error.
+
+            declare
+               Comp : constant Entity_Id := First (Choices (C));
+               Indx : Node_Id;
+
+            begin
+               if Present (Etype (Comp))
+                 and then Is_Array_Type (Etype (Comp))
+               then
+                  Indx := First_Index (Etype (Comp));
+                  while Present (Indx) loop
+                     if Nkind (Type_Low_Bound (Etype (Indx))) =
+                          N_Raise_Constraint_Error
+                       or else Nkind (Type_High_Bound (Etype (Indx))) =
+                                 N_Raise_Constraint_Error
+                     then
+                        return False;
+                     end if;
+
+                     Indx := Next_Index (Indx);
+                  end loop;
+               end if;
+            end;
+
             --  Return False if the aggregate has any associations for tagged
             --  components that may require tag adjustment.
 
@@ -7248,10 +7274,11 @@ package body Exp_Aggr is
             --  the machine.)
 
             if Is_Tagged_Type (Etype (Expr_Q))
-              and then (Nkind (Expr_Q) = N_Type_Conversion
-                         or else (Is_Entity_Name (Expr_Q)
-                                    and then
-                                      Ekind (Entity (Expr_Q)) in Formal_Kind))
+              and then
+                (Nkind (Expr_Q) = N_Type_Conversion
+                  or else
+                    (Is_Entity_Name (Expr_Q)
+                      and then Is_Formal (Entity (Expr_Q))))
               and then Tagged_Type_Expansion
             then
                Static_Components := False;

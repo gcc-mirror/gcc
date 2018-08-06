@@ -3432,210 +3432,6 @@ Gogo::check_types_in_block(Block* block)
   block->traverse(&traverse);
 }
 
-// A traversal class used to find a single shortcut operator within an
-// expression.
-
-class Find_shortcut : public Traverse
-{
- public:
-  Find_shortcut()
-    : Traverse(traverse_blocks
-	       | traverse_statements
-	       | traverse_expressions),
-      found_(NULL)
-  { }
-
-  // A pointer to the expression which was found, or NULL if none was
-  // found.
-  Expression**
-  found() const
-  { return this->found_; }
-
- protected:
-  int
-  block(Block*)
-  { return TRAVERSE_SKIP_COMPONENTS; }
-
-  int
-  statement(Block*, size_t*, Statement*)
-  { return TRAVERSE_SKIP_COMPONENTS; }
-
-  int
-  expression(Expression**);
-
- private:
-  Expression** found_;
-};
-
-// Find a shortcut expression.
-
-int
-Find_shortcut::expression(Expression** pexpr)
-{
-  Expression* expr = *pexpr;
-  Binary_expression* be = expr->binary_expression();
-  if (be == NULL)
-    return TRAVERSE_CONTINUE;
-  Operator op = be->op();
-  if (op != OPERATOR_OROR && op != OPERATOR_ANDAND)
-    return TRAVERSE_CONTINUE;
-  go_assert(this->found_ == NULL);
-  this->found_ = pexpr;
-  return TRAVERSE_EXIT;
-}
-
-// A traversal class used to turn shortcut operators into explicit if
-// statements.
-
-class Shortcuts : public Traverse
-{
- public:
-  Shortcuts(Gogo* gogo)
-    : Traverse(traverse_variables
-	       | traverse_statements),
-      gogo_(gogo)
-  { }
-
- protected:
-  int
-  variable(Named_object*);
-
-  int
-  statement(Block*, size_t*, Statement*);
-
- private:
-  // Convert a shortcut operator.
-  Statement*
-  convert_shortcut(Block* enclosing, Expression** pshortcut);
-
-  // The IR.
-  Gogo* gogo_;
-};
-
-// Remove shortcut operators in a single statement.
-
-int
-Shortcuts::statement(Block* block, size_t* pindex, Statement* s)
-{
-  // FIXME: This approach doesn't work for switch statements, because
-  // we add the new statements before the whole switch when we need to
-  // instead add them just before the switch expression.  The right
-  // fix is probably to lower switch statements with nonconstant cases
-  // to a series of conditionals.
-  if (s->switch_statement() != NULL)
-    return TRAVERSE_CONTINUE;
-
-  while (true)
-    {
-      Find_shortcut find_shortcut;
-
-      // If S is a variable declaration, then ordinary traversal won't
-      // do anything.  We want to explicitly traverse the
-      // initialization expression if there is one.
-      Variable_declaration_statement* vds = s->variable_declaration_statement();
-      Expression* init = NULL;
-      if (vds == NULL)
-	s->traverse_contents(&find_shortcut);
-      else
-	{
-	  init = vds->var()->var_value()->init();
-	  if (init == NULL)
-	    return TRAVERSE_CONTINUE;
-	  init->traverse(&init, &find_shortcut);
-	}
-      Expression** pshortcut = find_shortcut.found();
-      if (pshortcut == NULL)
-	return TRAVERSE_CONTINUE;
-
-      Statement* snew = this->convert_shortcut(block, pshortcut);
-      block->insert_statement_before(*pindex, snew);
-      ++*pindex;
-
-      if (pshortcut == &init)
-	vds->var()->var_value()->set_init(init);
-    }
-}
-
-// Remove shortcut operators in the initializer of a global variable.
-
-int
-Shortcuts::variable(Named_object* no)
-{
-  if (no->is_result_variable())
-    return TRAVERSE_CONTINUE;
-  Variable* var = no->var_value();
-  Expression* init = var->init();
-  if (!var->is_global() || init == NULL)
-    return TRAVERSE_CONTINUE;
-
-  while (true)
-    {
-      Find_shortcut find_shortcut;
-      init->traverse(&init, &find_shortcut);
-      Expression** pshortcut = find_shortcut.found();
-      if (pshortcut == NULL)
-	return TRAVERSE_CONTINUE;
-
-      Statement* snew = this->convert_shortcut(NULL, pshortcut);
-      var->add_preinit_statement(this->gogo_, snew);
-      if (pshortcut == &init)
-	var->set_init(init);
-    }
-}
-
-// Given an expression which uses a shortcut operator, return a
-// statement which implements it, and update *PSHORTCUT accordingly.
-
-Statement*
-Shortcuts::convert_shortcut(Block* enclosing, Expression** pshortcut)
-{
-  Binary_expression* shortcut = (*pshortcut)->binary_expression();
-  Expression* left = shortcut->left();
-  Expression* right = shortcut->right();
-  Location loc = shortcut->location();
-
-  Block* retblock = new Block(enclosing, loc);
-  retblock->set_end_location(loc);
-
-  Temporary_statement* ts = Statement::make_temporary(shortcut->type(),
-						      left, loc);
-  retblock->add_statement(ts);
-
-  Block* block = new Block(retblock, loc);
-  block->set_end_location(loc);
-  Expression* tmpref = Expression::make_temporary_reference(ts, loc);
-  Statement* assign = Statement::make_assignment(tmpref, right, loc);
-  block->add_statement(assign);
-
-  Expression* cond = Expression::make_temporary_reference(ts, loc);
-  if (shortcut->binary_expression()->op() == OPERATOR_OROR)
-    cond = Expression::make_unary(OPERATOR_NOT, cond, loc);
-
-  Statement* if_statement = Statement::make_if_statement(cond, block, NULL,
-							 loc);
-  retblock->add_statement(if_statement);
-
-  *pshortcut = Expression::make_temporary_reference(ts, loc);
-
-  delete shortcut;
-
-  // Now convert any shortcut operators in LEFT and RIGHT.
-  Shortcuts shortcuts(this->gogo_);
-  retblock->traverse(&shortcuts);
-
-  return Statement::make_block_statement(retblock, loc);
-}
-
-// Turn shortcut operators into explicit if statements.  Doing this
-// considerably simplifies the order of evaluation rules.
-
-void
-Gogo::remove_shortcuts()
-{
-  Shortcuts shortcuts(this);
-  this->traverse(&shortcuts);
-}
-
 // A traversal class which finds all the expressions which must be
 // evaluated in order within a statement or larger expression.  This
 // is used to implement the rules about order of evaluation.
@@ -3689,6 +3485,18 @@ class Find_eval_ordering : public Traverse
 int
 Find_eval_ordering::expression(Expression** expression_pointer)
 {
+  Binary_expression* binexp = (*expression_pointer)->binary_expression();
+  if (binexp != NULL
+      && (binexp->op() == OPERATOR_ANDAND || binexp->op() == OPERATOR_OROR))
+    {
+      // Shortcut expressions may potentially have side effects which need
+      // to be ordered, so add them to the list.
+      // We don't order its subexpressions here since they may be evaluated
+      // conditionally. This is handled in remove_shortcuts.
+      this->exprs_.push_back(expression_pointer);
+      return TRAVERSE_SKIP_COMPONENTS;
+    }
+
   // We have to look at subexpressions before this one.
   if ((*expression_pointer)->traverse_subexpressions(this) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
@@ -3923,6 +3731,215 @@ Gogo::order_evaluations()
 {
   Order_eval order_eval(this);
   this->traverse(&order_eval);
+}
+
+// A traversal class used to find a single shortcut operator within an
+// expression.
+
+class Find_shortcut : public Traverse
+{
+ public:
+  Find_shortcut()
+    : Traverse(traverse_blocks
+	       | traverse_statements
+	       | traverse_expressions),
+      found_(NULL)
+  { }
+
+  // A pointer to the expression which was found, or NULL if none was
+  // found.
+  Expression**
+  found() const
+  { return this->found_; }
+
+ protected:
+  int
+  block(Block*)
+  { return TRAVERSE_SKIP_COMPONENTS; }
+
+  int
+  statement(Block*, size_t*, Statement*)
+  { return TRAVERSE_SKIP_COMPONENTS; }
+
+  int
+  expression(Expression**);
+
+ private:
+  Expression** found_;
+};
+
+// Find a shortcut expression.
+
+int
+Find_shortcut::expression(Expression** pexpr)
+{
+  Expression* expr = *pexpr;
+  Binary_expression* be = expr->binary_expression();
+  if (be == NULL)
+    return TRAVERSE_CONTINUE;
+  Operator op = be->op();
+  if (op != OPERATOR_OROR && op != OPERATOR_ANDAND)
+    return TRAVERSE_CONTINUE;
+  go_assert(this->found_ == NULL);
+  this->found_ = pexpr;
+  return TRAVERSE_EXIT;
+}
+
+// A traversal class used to turn shortcut operators into explicit if
+// statements.
+
+class Shortcuts : public Traverse
+{
+ public:
+  Shortcuts(Gogo* gogo)
+    : Traverse(traverse_variables
+	       | traverse_statements),
+      gogo_(gogo)
+  { }
+
+ protected:
+  int
+  variable(Named_object*);
+
+  int
+  statement(Block*, size_t*, Statement*);
+
+ private:
+  // Convert a shortcut operator.
+  Statement*
+  convert_shortcut(Block* enclosing, Expression** pshortcut);
+
+  // The IR.
+  Gogo* gogo_;
+};
+
+// Remove shortcut operators in a single statement.
+
+int
+Shortcuts::statement(Block* block, size_t* pindex, Statement* s)
+{
+  // FIXME: This approach doesn't work for switch statements, because
+  // we add the new statements before the whole switch when we need to
+  // instead add them just before the switch expression.  The right
+  // fix is probably to lower switch statements with nonconstant cases
+  // to a series of conditionals.
+  if (s->switch_statement() != NULL)
+    return TRAVERSE_CONTINUE;
+
+  while (true)
+    {
+      Find_shortcut find_shortcut;
+
+      // If S is a variable declaration, then ordinary traversal won't
+      // do anything.  We want to explicitly traverse the
+      // initialization expression if there is one.
+      Variable_declaration_statement* vds = s->variable_declaration_statement();
+      Expression* init = NULL;
+      if (vds == NULL)
+	s->traverse_contents(&find_shortcut);
+      else
+	{
+	  init = vds->var()->var_value()->init();
+	  if (init == NULL)
+	    return TRAVERSE_CONTINUE;
+	  init->traverse(&init, &find_shortcut);
+	}
+      Expression** pshortcut = find_shortcut.found();
+      if (pshortcut == NULL)
+	return TRAVERSE_CONTINUE;
+
+      Statement* snew = this->convert_shortcut(block, pshortcut);
+      block->insert_statement_before(*pindex, snew);
+      ++*pindex;
+
+      if (pshortcut == &init)
+	vds->var()->var_value()->set_init(init);
+    }
+}
+
+// Remove shortcut operators in the initializer of a global variable.
+
+int
+Shortcuts::variable(Named_object* no)
+{
+  if (no->is_result_variable())
+    return TRAVERSE_CONTINUE;
+  Variable* var = no->var_value();
+  Expression* init = var->init();
+  if (!var->is_global() || init == NULL)
+    return TRAVERSE_CONTINUE;
+
+  while (true)
+    {
+      Find_shortcut find_shortcut;
+      init->traverse(&init, &find_shortcut);
+      Expression** pshortcut = find_shortcut.found();
+      if (pshortcut == NULL)
+	return TRAVERSE_CONTINUE;
+
+      Statement* snew = this->convert_shortcut(NULL, pshortcut);
+      var->add_preinit_statement(this->gogo_, snew);
+      if (pshortcut == &init)
+	var->set_init(init);
+    }
+}
+
+// Given an expression which uses a shortcut operator, return a
+// statement which implements it, and update *PSHORTCUT accordingly.
+
+Statement*
+Shortcuts::convert_shortcut(Block* enclosing, Expression** pshortcut)
+{
+  Binary_expression* shortcut = (*pshortcut)->binary_expression();
+  Expression* left = shortcut->left();
+  Expression* right = shortcut->right();
+  Location loc = shortcut->location();
+
+  Block* retblock = new Block(enclosing, loc);
+  retblock->set_end_location(loc);
+
+  Temporary_statement* ts = Statement::make_temporary(shortcut->type(),
+						      left, loc);
+  retblock->add_statement(ts);
+
+  Block* block = new Block(retblock, loc);
+  block->set_end_location(loc);
+  Expression* tmpref = Expression::make_temporary_reference(ts, loc);
+  Statement* assign = Statement::make_assignment(tmpref, right, loc);
+  block->add_statement(assign);
+
+  Expression* cond = Expression::make_temporary_reference(ts, loc);
+  if (shortcut->binary_expression()->op() == OPERATOR_OROR)
+    cond = Expression::make_unary(OPERATOR_NOT, cond, loc);
+
+  Statement* if_statement = Statement::make_if_statement(cond, block, NULL,
+							 loc);
+  retblock->add_statement(if_statement);
+
+  *pshortcut = Expression::make_temporary_reference(ts, loc);
+
+  delete shortcut;
+
+  // Now convert any shortcut operators in LEFT and RIGHT.
+  // LEFT and RIGHT were skipped in the top level
+  // Gogo::order_evaluations. We need to order their
+  // components first.
+  Order_eval order_eval(this->gogo_);
+  retblock->traverse(&order_eval);
+  Shortcuts shortcuts(this->gogo_);
+  retblock->traverse(&shortcuts);
+
+  return Statement::make_block_statement(retblock, loc);
+}
+
+// Turn shortcut operators into explicit if statements.  Doing this
+// considerably simplifies the order of evaluation rules.
+
+void
+Gogo::remove_shortcuts()
+{
+  Shortcuts shortcuts(this);
+  this->traverse(&shortcuts);
 }
 
 // Traversal to flatten parse tree after order of evaluation rules are applied.
@@ -7604,7 +7621,7 @@ Named_object::get_backend(Gogo* gogo, std::vector<Bexpression*>& const_decls,
     case NAMED_OBJECT_TYPE:
       {
         Named_type* named_type = this->u_.type_value;
-	if (!Gogo::is_erroneous_name(this->name_))
+	if (!Gogo::is_erroneous_name(this->name_) && !named_type->is_alias())
 	  type_decls.push_back(named_type->get_backend(gogo));
 
         // We need to produce a type descriptor for every named

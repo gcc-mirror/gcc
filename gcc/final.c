@@ -122,11 +122,19 @@ static int last_linenum;
 /* Column number of last NOTE.  */
 static int last_columnnum;
 
-/* Last discriminator written to assembly.  */
+/* Discriminator written to assembly.  */
 static int last_discriminator;
 
-/* Discriminator of current block.  */
+/* Discriminator to be written to assembly for current instruction.
+   Note: actual usage depends on loc_discriminator_kind setting.  */
 static int discriminator;
+
+/* Discriminator identifying current basic block among others sharing
+   the same locus.  */
+static int bb_discriminator;
+
+/* Basic block discriminator for previous instruction.  */
+static int last_bb_discriminator;
 
 /* Highest line number in current block.  */
 static int high_block_linenum;
@@ -327,15 +335,9 @@ int insn_current_align;
    for each insn we'll call the alignment chain of this insn in the following
    comments.  */
 
-struct label_alignment
-{
-  short alignment;
-  short max_skip;
-};
-
 static rtx *uid_align;
 static int *uid_shuid;
-static struct label_alignment *label_align;
+static vec<align_flags> label_align;
 
 /* Indicate that branch shortening hasn't yet been done.  */
 
@@ -473,11 +475,11 @@ get_attr_min_length (rtx_insn *insn)
    address mod X to one mod Y, which is Y - X.  */
 
 #ifndef LABEL_ALIGN
-#define LABEL_ALIGN(LABEL) align_labels_log
+#define LABEL_ALIGN(LABEL) align_labels
 #endif
 
 #ifndef LOOP_ALIGN
-#define LOOP_ALIGN(LABEL) align_loops_log
+#define LOOP_ALIGN(LABEL) align_loops
 #endif
 
 #ifndef LABEL_ALIGN_AFTER_BARRIER
@@ -485,32 +487,8 @@ get_attr_min_length (rtx_insn *insn)
 #endif
 
 #ifndef JUMP_ALIGN
-#define JUMP_ALIGN(LABEL) align_jumps_log
+#define JUMP_ALIGN(LABEL) align_jumps
 #endif
-
-int
-default_label_align_after_barrier_max_skip (rtx_insn *insn ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-int
-default_loop_align_max_skip (rtx_insn *insn ATTRIBUTE_UNUSED)
-{
-  return align_loops_max_skip;
-}
-
-int
-default_label_align_max_skip (rtx_insn *insn ATTRIBUTE_UNUSED)
-{
-  return align_labels_max_skip;
-}
-
-int
-default_jump_align_max_skip (rtx_insn *insn ATTRIBUTE_UNUSED)
-{
-  return align_jumps_max_skip;
-}
 
 #ifndef ADDR_VEC_ALIGN
 static int
@@ -536,27 +514,16 @@ final_addr_vec_align (rtx_jump_table_data *addr_vec)
 static int min_labelno, max_labelno;
 
 #define LABEL_TO_ALIGNMENT(LABEL) \
-  (label_align[CODE_LABEL_NUMBER (LABEL) - min_labelno].alignment)
-
-#define LABEL_TO_MAX_SKIP(LABEL) \
-  (label_align[CODE_LABEL_NUMBER (LABEL) - min_labelno].max_skip)
+  (label_align[CODE_LABEL_NUMBER (LABEL) - min_labelno])
 
 /* For the benefit of port specific code do this also as a function.  */
 
-int
+align_flags
 label_to_alignment (rtx label)
 {
   if (CODE_LABEL_NUMBER (label) <= max_labelno)
     return LABEL_TO_ALIGNMENT (label);
-  return 0;
-}
-
-int
-label_to_max_skip (rtx label)
-{
-  if (CODE_LABEL_NUMBER (label) <= max_labelno)
-    return LABEL_TO_MAX_SKIP (label);
-  return 0;
+  return align_flags ();
 }
 
 /* The differences in addresses
@@ -604,8 +571,8 @@ align_fuzz (rtx start, rtx end, int known_align_log, unsigned int growth)
       align_addr = INSN_ADDRESSES (uid) - insn_lengths[uid];
       if (uid_shuid[uid] > end_shuid)
 	break;
-      known_align_log = LABEL_TO_ALIGNMENT (align_label);
-      new_align = 1 << known_align_log;
+      align_flags alignment = LABEL_TO_ALIGNMENT (align_label);
+      new_align = 1 << alignment.levels[0].log;
       if (new_align < known_align)
 	continue;
       fuzz += (-align_addr ^ growth) & (new_align - known_align);
@@ -667,18 +634,14 @@ insn_current_reference_address (rtx_insn *branch)
 unsigned int
 compute_alignments (void)
 {
-  int log, max_skip, max_log;
   basic_block bb;
+  align_flags max_alignment;
 
-  if (label_align)
-    {
-      free (label_align);
-      label_align = 0;
-    }
+  label_align.truncate (0);
 
   max_labelno = max_label_num ();
   min_labelno = get_first_label_num ();
-  label_align = XCNEWVEC (struct label_alignment, max_labelno - min_labelno + 1);
+  label_align.safe_grow_cleared (max_labelno - min_labelno + 1);
 
   /* If not optimizing or optimizing for size, don't assign any alignments.  */
   if (! optimize || optimize_function_for_size_p (cfun))
@@ -718,8 +681,7 @@ compute_alignments (void)
 		     bb_loop_depth (bb));
 	  continue;
 	}
-      max_log = LABEL_ALIGN (label);
-      max_skip = targetm.asm_out.label_align_max_skip (label);
+      max_alignment = LABEL_ALIGN (label);
       profile_count fallthru_count = profile_count::zero ();
       profile_count branch_count = profile_count::zero ();
 
@@ -765,14 +727,10 @@ compute_alignments (void)
 		      <= ENTRY_BLOCK_PTR_FOR_FN (cfun)
 			   ->count.apply_scale (1, 2)))))
 	{
-	  log = JUMP_ALIGN (label);
+	  align_flags alignment = JUMP_ALIGN (label);
 	  if (dump_file)
 	    fprintf (dump_file, "  jump alignment added.\n");
-	  if (max_log < log)
-	    {
-	      max_log = log;
-	      max_skip = targetm.asm_out.jump_align_max_skip (label);
-	    }
+	  max_alignment = align_flags::max (max_alignment, alignment);
 	}
       /* In case block is frequent and reached mostly by non-fallthru edge,
 	 align it.  It is most likely a first block of loop.  */
@@ -785,17 +743,12 @@ compute_alignments (void)
 	      > fallthru_count.apply_scale
 		    (PARAM_VALUE (PARAM_ALIGN_LOOP_ITERATIONS), 1)))
 	{
-	  log = LOOP_ALIGN (label);
+	  align_flags alignment = LOOP_ALIGN (label);
 	  if (dump_file)
 	    fprintf (dump_file, "  internal loop alignment added.\n");
-	  if (max_log < log)
-	    {
-	      max_log = log;
-	      max_skip = targetm.asm_out.loop_align_max_skip (label);
-	    }
+	  max_alignment = align_flags::max (max_alignment, alignment);
 	}
-      LABEL_TO_ALIGNMENT (label) = max_log;
-      LABEL_TO_MAX_SKIP (label) = max_skip;
+      LABEL_TO_ALIGNMENT (label) = max_alignment;
     }
 
   loop_optimizer_finalize ();
@@ -817,14 +770,11 @@ grow_label_align (void)
   n_labels = max_labelno - min_labelno + 1;
   n_old_labels = old - min_labelno + 1;
 
-  label_align = XRESIZEVEC (struct label_alignment, label_align, n_labels);
+  label_align.safe_grow_cleared (n_labels);
 
   /* Range of labels grows monotonically in the function.  Failing here
      means that the initialization of array got lost.  */
   gcc_assert (n_old_labels <= n_labels);
-
-  memset (label_align + n_old_labels, 0,
-          (n_labels - n_old_labels) * sizeof (struct label_alignment));
 }
 
 /* Update the already computed alignment information.  LABEL_PAIRS is a vector
@@ -842,10 +792,7 @@ update_alignments (vec<rtx> &label_pairs)
 
   FOR_EACH_VEC_ELT (label_pairs, i, iter)
     if (i & 1)
-      {
-	LABEL_TO_ALIGNMENT (label) = LABEL_TO_ALIGNMENT (iter);
-	LABEL_TO_MAX_SKIP (label) = LABEL_TO_MAX_SKIP (iter);
-      }
+      LABEL_TO_ALIGNMENT (label) = LABEL_TO_ALIGNMENT (iter);
     else
       label = iter;
 }
@@ -903,9 +850,6 @@ shorten_branches (rtx_insn *first)
   rtx_insn *insn;
   int max_uid;
   int i;
-  int max_log;
-  int max_skip;
-#define MAX_CODE_ALIGN 16
   rtx_insn *seq;
   int something_changed = 1;
   char *varying_length;
@@ -926,17 +870,14 @@ shorten_branches (rtx_insn *first)
 
   /* Initialize label_align and set up uid_shuid to be strictly
      monotonically rising with insn order.  */
-  /* We use max_log here to keep track of the maximum alignment we want to
+  /* We use alignment here to keep track of the maximum alignment we want to
      impose on the next CODE_LABEL (or the current one if we are processing
      the CODE_LABEL itself).  */
 
-  max_log = 0;
-  max_skip = 0;
+  align_flags max_alignment;
 
   for (insn = get_insns (), i = 1; insn; insn = NEXT_INSN (insn))
     {
-      int log;
-
       INSN_SHUID (insn) = i++;
       if (INSN_P (insn))
 	continue;
@@ -944,22 +885,14 @@ shorten_branches (rtx_insn *first)
       if (rtx_code_label *label = dyn_cast <rtx_code_label *> (insn))
 	{
 	  /* Merge in alignments computed by compute_alignments.  */
-	  log = LABEL_TO_ALIGNMENT (label);
-	  if (max_log < log)
-	    {
-	      max_log = log;
-	      max_skip = LABEL_TO_MAX_SKIP (label);
-	    }
+	  align_flags alignment = LABEL_TO_ALIGNMENT (label);
+	  max_alignment = align_flags::max (max_alignment, alignment);
 
 	  rtx_jump_table_data *table = jump_table_for_label (label);
 	  if (!table)
 	    {
-	      log = LABEL_ALIGN (label);
-	      if (max_log < log)
-		{
-		  max_log = log;
-		  max_skip = targetm.asm_out.label_align_max_skip (label);
-		}
+	      align_flags alignment = LABEL_ALIGN (label);
+	      max_alignment = align_flags::max (max_alignment, alignment);
 	    }
 	  /* ADDR_VECs only take room if read-only data goes into the text
 	     section.  */
@@ -967,17 +900,11 @@ shorten_branches (rtx_insn *first)
 	       || readonly_data_section == text_section)
 	      && table)
 	    {
-	      log = ADDR_VEC_ALIGN (table);
-	      if (max_log < log)
-		{
-		  max_log = log;
-		  max_skip = targetm.asm_out.label_align_max_skip (label);
-		}
+	      align_flags alignment = align_flags (ADDR_VEC_ALIGN (table));
+	      max_alignment = align_flags::max (max_alignment, alignment);
 	    }
-	  LABEL_TO_ALIGNMENT (label) = max_log;
-	  LABEL_TO_MAX_SKIP (label) = max_skip;
-	  max_log = 0;
-	  max_skip = 0;
+	  LABEL_TO_ALIGNMENT (label) = max_alignment;
+	  max_alignment = align_flags ();
 	}
       else if (BARRIER_P (insn))
 	{
@@ -987,12 +914,9 @@ shorten_branches (rtx_insn *first)
 	       label = NEXT_INSN (label))
 	    if (LABEL_P (label))
 	      {
-		log = LABEL_ALIGN_AFTER_BARRIER (insn);
-		if (max_log < log)
-		  {
-		    max_log = log;
-		    max_skip = targetm.asm_out.label_align_after_barrier_max_skip (label);
-		  }
+		align_flags alignment
+		  = align_flags (LABEL_ALIGN_AFTER_BARRIER (insn));
+		max_alignment = align_flags::max (max_alignment, alignment);
 		break;
 	      }
 	}
@@ -1023,11 +947,12 @@ shorten_branches (rtx_insn *first)
     {
       int uid = INSN_UID (seq);
       int log;
-      log = (LABEL_P (seq) ? LABEL_TO_ALIGNMENT (seq) : 0);
+      log = (LABEL_P (seq) ? LABEL_TO_ALIGNMENT (seq).levels[0].log : 0);
       uid_align[uid] = align_tab[0];
       if (log)
 	{
 	  /* Found an alignment label.  */
+	  gcc_checking_assert (log < MAX_CODE_ALIGN + 1);
 	  uid_align[uid] = align_tab[log];
 	  for (i = log - 1; i >= 0; i--)
 	    align_tab[i] = seq;
@@ -1078,8 +1003,10 @@ shorten_branches (rtx_insn *first)
 		  max = shuid;
 		  max_lab = lab;
 		}
-	      if (min_align > LABEL_TO_ALIGNMENT (lab))
-		min_align = LABEL_TO_ALIGNMENT (lab);
+
+	      int label_alignment = LABEL_TO_ALIGNMENT (lab).levels[0].log;
+	      if (min_align > label_alignment)
+		min_align = label_alignment;
 	    }
 	  XEXP (pat, 2) = gen_rtx_LABEL_REF (Pmode, min_lab);
 	  XEXP (pat, 3) = gen_rtx_LABEL_REF (Pmode, max_lab);
@@ -1113,7 +1040,7 @@ shorten_branches (rtx_insn *first)
 
       if (LABEL_P (insn))
 	{
-	  int log = LABEL_TO_ALIGNMENT (insn);
+	  int log = LABEL_TO_ALIGNMENT (insn).levels[0].log;
 	  if (log)
 	    {
 	      int align = 1 << log;
@@ -1221,7 +1148,7 @@ shorten_branches (rtx_insn *first)
 
 	  if (rtx_code_label *label = dyn_cast <rtx_code_label *> (insn))
 	    {
-	      int log = LABEL_TO_ALIGNMENT (label);
+	      int log = LABEL_TO_ALIGNMENT (label).levels[0].log;
 
 #ifdef CASE_VECTOR_SHORTEN_MODE
 	      /* If the mode of a following jump table was changed, we
@@ -1296,7 +1223,7 @@ shorten_branches (rtx_insn *first)
 		   prev = PREV_INSN (prev))
 		if (varying_length[INSN_UID (prev)] & 2)
 		  {
-		    rel_align = LABEL_TO_ALIGNMENT (prev);
+		    rel_align = LABEL_TO_ALIGNMENT (prev).levels[0].log;
 		    break;
 		  }
 
@@ -1782,6 +1709,7 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
   last_linenum = LOCATION_LINE (prologue_location);
   last_columnnum = LOCATION_COLUMN (prologue_location);
   last_discriminator = discriminator = 0;
+  last_bb_discriminator = bb_discriminator = 0;
 
   high_block_linenum = high_function_linenum = last_linenum;
 
@@ -1859,14 +1787,14 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
       TREE_ASM_WRITTEN (DECL_INITIAL (current_function_decl)) = 1;
     }
 
-  HOST_WIDE_INT min_frame_size = constant_lower_bound (get_frame_size ());
-  if (warn_frame_larger_than
-      && min_frame_size > frame_larger_than_size)
+  unsigned HOST_WIDE_INT min_frame_size
+    = constant_lower_bound (get_frame_size ());
+  if (min_frame_size > (unsigned HOST_WIDE_INT) warn_frame_larger_than_size)
     {
       /* Issue a warning */
       warning (OPT_Wframe_larger_than_,
-	       "the frame size of %wd bytes is larger than %wd bytes",
-	       min_frame_size, frame_larger_than_size);
+	       "the frame size of %wu bytes is larger than %wu bytes",
+	       min_frame_size, warn_frame_larger_than_size);
     }
 
   /* First output the function prologue: code to set up the stack frame.  */
@@ -2317,8 +2245,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  if (targetm.asm_out.unwind_emit)
 	    targetm.asm_out.unwind_emit (asm_out_file, insn);
 
-          discriminator = NOTE_BASIC_BLOCK (insn)->discriminator;
-
+	  bb_discriminator = NOTE_BASIC_BLOCK (insn)->discriminator;
 	  break;
 
 	case NOTE_INSN_EH_REGION_BEG:
@@ -2519,26 +2446,20 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	 some insn, e.g. sh.c output_branchy_insn.  */
       if (CODE_LABEL_NUMBER (insn) <= max_labelno)
 	{
-	  int align = LABEL_TO_ALIGNMENT (insn);
-#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
-	  int max_skip = LABEL_TO_MAX_SKIP (insn);
-#endif
-
-	  if (align && NEXT_INSN (insn))
+	  align_flags alignment = LABEL_TO_ALIGNMENT (insn);
+	  if (alignment.levels[0].log && NEXT_INSN (insn))
 	    {
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
-	      ASM_OUTPUT_MAX_SKIP_ALIGN (file, align, max_skip);
-	      /* Above, we don't know whether a label, jump or loop
-		 alignment was used.  Conservatively apply
-		 label subalignment, not jump or loop
-		 subalignment (they are almost always larger).  */
-	      ASM_OUTPUT_MAX_SKIP_ALIGN (file, state_align_labels.levels[1].log,
-					 state_align_labels.levels[1].maxskip);
+	      /* Output both primary and secondary alignment.  */
+	      ASM_OUTPUT_MAX_SKIP_ALIGN (file, alignment.levels[0].log,
+					 alignment.levels[0].maxskip);
+	      ASM_OUTPUT_MAX_SKIP_ALIGN (file, alignment.levels[1].log,
+					 alignment.levels[1].maxskip);
 #else
 #ifdef ASM_OUTPUT_ALIGN_WITH_NOP
-              ASM_OUTPUT_ALIGN_WITH_NOP (file, align);
+              ASM_OUTPUT_ALIGN_WITH_NOP (file, alignment.levels[0].log);
 #else
-	      ASM_OUTPUT_ALIGN (file, align);
+	      ASM_OUTPUT_ALIGN (file, alignment.levels[0].log);
 #endif
 #endif
 	    }
@@ -3231,6 +3152,62 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p,
 }
 
 
+
+/* Map DECLs to instance discriminators.  This is allocated and
+   defined in ada/gcc-interfaces/trans.c, when compiling with -gnateS.
+   Mappings from this table are saved and restored for LTO, so
+   link-time compilation will have this map set, at least in
+   partitions containing at least one DECL with an associated instance
+   discriminator.  */
+
+decl_to_instance_map_t *decl_to_instance_map;
+
+/* Return the instance number assigned to DECL.  */
+
+static inline int
+map_decl_to_instance (const_tree decl)
+{
+  int *inst;
+
+  if (!decl_to_instance_map || !decl || !DECL_P (decl))
+    return 0;
+
+  inst = decl_to_instance_map->get (decl);
+
+  if (!inst)
+    return 0;
+
+  return *inst;
+}
+
+/* Set DISCRIMINATOR to the appropriate value, possibly derived from LOC.  */
+
+static inline void
+maybe_set_discriminator (location_t loc)
+{
+  if (!decl_to_instance_map)
+    discriminator = bb_discriminator;
+  else
+    {
+      tree block = LOCATION_BLOCK (loc);
+
+      while (block && TREE_CODE (block) == BLOCK
+	     && !inlined_function_outer_scope_p (block))
+	block = BLOCK_SUPERCONTEXT (block);
+
+      tree decl;
+
+      if (!block)
+	decl = current_function_decl;
+      else if (DECL_P (block))
+	decl = block;
+      else
+	decl = block_ultimate_origin (block);
+
+      discriminator = map_decl_to_instance (decl);
+    }
+}
+
 /* Return whether a source line note needs to be emitted before INSN.
    Sets IS_STMT to TRUE if the line should be marked as a possible
    breakpoint location.  */
@@ -3265,6 +3242,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
+      maybe_set_discriminator (loc);
       force_source_line = true;
     }
   else if (override_filename)
@@ -3279,6 +3257,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
+      maybe_set_discriminator (INSN_LOCATION (insn));
     }
   else
     {

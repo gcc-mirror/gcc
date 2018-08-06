@@ -84,9 +84,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Loop or bb location, with hotness information.  */
 dump_user_location_t vect_location;
 
-/* Vector mapping GIMPLE stmt to stmt_vec_info. */
-vec<stmt_vec_info> *stmt_vec_info_vec;
-
 /* Dump a cost entry according to args to F.  */
 
 void
@@ -457,7 +454,6 @@ vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in,
     target_cost_data (target_cost_data_in)
 {
   stmt_vec_infos.create (50);
-  set_stmt_vec_info_vec (&stmt_vec_infos);
 }
 
 vec_info::~vec_info ()
@@ -466,10 +462,10 @@ vec_info::~vec_info ()
   unsigned int i;
 
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
-    vect_free_slp_instance (instance);
+    vect_free_slp_instance (instance, true);
 
   destroy_cost_data (target_cost_data);
-  free_stmt_vec_infos (&stmt_vec_infos);
+  free_stmt_vec_infos ();
 }
 
 vec_info_shared::vec_info_shared ()
@@ -507,6 +503,199 @@ vec_info_shared::check_datarefs ()
       gcc_unreachable ();
 }
 
+/* Record that STMT belongs to the vectorizable region.  Create and return
+   an associated stmt_vec_info.  */
+
+stmt_vec_info
+vec_info::add_stmt (gimple *stmt)
+{
+  stmt_vec_info res = new_stmt_vec_info (stmt);
+  set_vinfo_for_stmt (stmt, res);
+  return res;
+}
+
+/* If STMT has an associated stmt_vec_info, return that vec_info, otherwise
+   return null.  It is safe to call this function on any statement, even if
+   it might not be part of the vectorizable region.  */
+
+stmt_vec_info
+vec_info::lookup_stmt (gimple *stmt)
+{
+  unsigned int uid = gimple_uid (stmt);
+  if (uid > 0 && uid - 1 < stmt_vec_infos.length ())
+    {
+      stmt_vec_info res = stmt_vec_infos[uid - 1];
+      if (res && res->stmt == stmt)
+	return res;
+    }
+  return NULL;
+}
+
+/* If NAME is an SSA_NAME and its definition has an associated stmt_vec_info,
+   return that stmt_vec_info, otherwise return null.  It is safe to call
+   this on arbitrary operands.  */
+
+stmt_vec_info
+vec_info::lookup_def (tree name)
+{
+  if (TREE_CODE (name) == SSA_NAME
+      && !SSA_NAME_IS_DEFAULT_DEF (name))
+    return lookup_stmt (SSA_NAME_DEF_STMT (name));
+  return NULL;
+}
+
+/* See whether there is a single non-debug statement that uses LHS and
+   whether that statement has an associated stmt_vec_info.  Return the
+   stmt_vec_info if so, otherwise return null.  */
+
+stmt_vec_info
+vec_info::lookup_single_use (tree lhs)
+{
+  use_operand_p dummy;
+  gimple *use_stmt;
+  if (single_imm_use (lhs, &dummy, &use_stmt))
+    return lookup_stmt (use_stmt);
+  return NULL;
+}
+
+/* Return vectorization information about DR.  */
+
+dr_vec_info *
+vec_info::lookup_dr (data_reference *dr)
+{
+  stmt_vec_info stmt_info = lookup_stmt (DR_STMT (dr));
+  /* DR_STMT should never refer to a stmt in a pattern replacement.  */
+  gcc_checking_assert (!is_pattern_stmt_p (stmt_info));
+  return STMT_VINFO_DR_INFO (stmt_info->dr_aux.stmt);
+}
+
+/* Record that NEW_STMT_INFO now implements the same data reference
+   as OLD_STMT_INFO.  */
+
+void
+vec_info::move_dr (stmt_vec_info new_stmt_info, stmt_vec_info old_stmt_info)
+{
+  gcc_assert (!is_pattern_stmt_p (old_stmt_info));
+  STMT_VINFO_DR_INFO (old_stmt_info)->stmt = new_stmt_info;
+  new_stmt_info->dr_aux = old_stmt_info->dr_aux;
+  STMT_VINFO_DR_WRT_VEC_LOOP (new_stmt_info)
+    = STMT_VINFO_DR_WRT_VEC_LOOP (old_stmt_info);
+  STMT_VINFO_GATHER_SCATTER_P (new_stmt_info)
+    = STMT_VINFO_GATHER_SCATTER_P (old_stmt_info);
+}
+
+/* Permanently remove the statement described by STMT_INFO from the
+   function.  */
+
+void
+vec_info::remove_stmt (stmt_vec_info stmt_info)
+{
+  gcc_assert (!stmt_info->pattern_stmt_p);
+  set_vinfo_for_stmt (stmt_info->stmt, NULL);
+  gimple_stmt_iterator si = gsi_for_stmt (stmt_info->stmt);
+  unlink_stmt_vdef (stmt_info->stmt);
+  gsi_remove (&si, true);
+  release_defs (stmt_info->stmt);
+  free_stmt_vec_info (stmt_info);
+}
+
+/* Replace the statement at GSI by NEW_STMT, both the vectorization
+   information and the function itself.  STMT_INFO describes the statement
+   at GSI.  */
+
+void
+vec_info::replace_stmt (gimple_stmt_iterator *gsi, stmt_vec_info stmt_info,
+			gimple *new_stmt)
+{
+  gimple *old_stmt = stmt_info->stmt;
+  gcc_assert (!stmt_info->pattern_stmt_p && old_stmt == gsi_stmt (*gsi));
+  set_vinfo_for_stmt (old_stmt, NULL);
+  set_vinfo_for_stmt (new_stmt, stmt_info);
+  stmt_info->stmt = new_stmt;
+  gsi_replace (gsi, new_stmt, true);
+}
+
+/* Create and initialize a new stmt_vec_info struct for STMT.  */
+
+stmt_vec_info
+vec_info::new_stmt_vec_info (gimple *stmt)
+{
+  stmt_vec_info res = XCNEW (struct _stmt_vec_info);
+  res->vinfo = this;
+  res->stmt = stmt;
+
+  STMT_VINFO_TYPE (res) = undef_vec_info_type;
+  STMT_VINFO_RELEVANT (res) = vect_unused_in_scope;
+  STMT_VINFO_VECTORIZABLE (res) = true;
+  STMT_VINFO_VEC_REDUCTION_TYPE (res) = TREE_CODE_REDUCTION;
+  STMT_VINFO_VEC_CONST_COND_REDUC_CODE (res) = ERROR_MARK;
+
+  if (gimple_code (stmt) == GIMPLE_PHI
+      && is_loop_header_bb_p (gimple_bb (stmt)))
+    STMT_VINFO_DEF_TYPE (res) = vect_unknown_def_type;
+  else
+    STMT_VINFO_DEF_TYPE (res) = vect_internal_def;
+
+  STMT_VINFO_SAME_ALIGN_REFS (res).create (0);
+  STMT_SLP_TYPE (res) = loop_vect;
+
+  /* This is really "uninitialized" until vect_compute_data_ref_alignment.  */
+  res->dr_aux.misalignment = DR_MISALIGNMENT_UNINITIALIZED;
+
+  return res;
+}
+
+/* Associate STMT with INFO.  */
+
+void
+vec_info::set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
+{
+  unsigned int uid = gimple_uid (stmt);
+  if (uid == 0)
+    {
+      gcc_checking_assert (info);
+      uid = stmt_vec_infos.length () + 1;
+      gimple_set_uid (stmt, uid);
+      stmt_vec_infos.safe_push (info);
+    }
+  else
+    {
+      gcc_checking_assert (info == NULL);
+      stmt_vec_infos[uid - 1] = info;
+    }
+}
+
+/* Free the contents of stmt_vec_infos.  */
+
+void
+vec_info::free_stmt_vec_infos (void)
+{
+  unsigned int i;
+  stmt_vec_info info;
+  FOR_EACH_VEC_ELT (stmt_vec_infos, i, info)
+    if (info != NULL)
+      free_stmt_vec_info (info);
+  stmt_vec_infos.release ();
+}
+
+/* Free STMT_INFO.  */
+
+void
+vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
+{
+  if (stmt_info->pattern_stmt_p)
+    {
+      gimple_set_bb (stmt_info->stmt, NULL);
+      tree lhs = gimple_get_lhs (stmt_info->stmt);
+      if (lhs && TREE_CODE (lhs) == SSA_NAME)
+	release_ssa_name (lhs);
+    }
+
+  STMT_VINFO_SAME_ALIGN_REFS (stmt_info).release ();
+  STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
+  free (stmt_info);
+}
+
 /* A helper function to free scev and LOOP niter information, as well as
    clear loop constraint LOOP_C_FINITE.  */
 
@@ -521,33 +710,6 @@ vect_free_loop_info_assumptions (struct loop *loop)
   free_numbers_of_iterations_estimates (loop);
   loop_constraint_clear (loop, LOOP_C_FINITE);
 }
-
-/* Return whether STMT is inside the region we try to vectorize.  */
-
-bool
-vect_stmt_in_region_p (vec_info *vinfo, gimple *stmt)
-{
-  if (!gimple_bb (stmt))
-    return false;
-
-  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
-    {
-      struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-      if (!flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
-	return false;
-    }
-  else
-    {
-      bb_vec_info bb_vinfo = as_a <bb_vec_info> (vinfo);
-      if (gimple_bb (stmt) != BB_VINFO_BB (bb_vinfo)
-	  || gimple_uid (stmt) == -1U
-	  || gimple_code (stmt) == GIMPLE_PHI)
-	return false;
-    }
-
-  return true;
-}
-
 
 /* If LOOP has been versioned during ifcvt, return the internal call
    guarding it.  */
@@ -861,8 +1023,6 @@ vectorize_loops (void)
 
   if (cfun->has_simduid_loops)
     note_simd_array_uses (&simd_array_to_simduid_htab);
-
-  set_stmt_vec_info_vec (NULL);
 
   /*  ----------- Analyze loops. -----------  */
 

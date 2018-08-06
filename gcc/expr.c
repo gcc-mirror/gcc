@@ -54,11 +54,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "langhooks.h"
 #include "common/common-target.h"
+#include "tree-dfa.h"
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
 #include "tree-ssa-address.h"
 #include "builtins.h"
 #include "ccmp.h"
+#include "gimple-fold.h"
 #include "rtx-vector-builder.h"
 
 
@@ -11267,61 +11269,48 @@ is_aligning_offset (const_tree offset, const_tree exp)
 }
 
 /* Return the tree node if an ARG corresponds to a string constant or zero
-   if it doesn't.  If we return nonzero, set *PTR_OFFSET to the offset
-   in bytes within the string that ARG is accessing.  The type of the
-   offset will be `sizetype'.  */
+   if it doesn't.  If we return nonzero, set *PTR_OFFSET to the (possibly
+   non-constant) offset in bytes within the string that ARG is accessing.
+   The type of the offset is sizetype.  */
 
 tree
 string_constant (tree arg, tree *ptr_offset)
 {
-  tree array, offset, lower_bound;
+  tree array;
   STRIP_NOPS (arg);
+
+  /* Non-constant index into the character array in an ARRAY_REF
+     expression or null.  */
+  tree varidx = NULL_TREE;
+
+  poly_int64 base_off = 0;
 
   if (TREE_CODE (arg) == ADDR_EXPR)
     {
-      if (TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST)
+      arg = TREE_OPERAND (arg, 0);
+      tree ref = arg;
+      if (TREE_CODE (arg) == ARRAY_REF)
 	{
-	  *ptr_offset = size_zero_node;
-	  return TREE_OPERAND (arg, 0);
-	}
-      else if (TREE_CODE (TREE_OPERAND (arg, 0)) == VAR_DECL)
-	{
-	  array = TREE_OPERAND (arg, 0);
-	  offset = size_zero_node;
-	}
-      else if (TREE_CODE (TREE_OPERAND (arg, 0)) == ARRAY_REF)
-	{
-	  array = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
-	  offset = TREE_OPERAND (TREE_OPERAND (arg, 0), 1);
-	  if (TREE_CODE (array) != STRING_CST && !VAR_P (array))
-	    return 0;
-
-	  /* Check if the array has a nonzero lower bound.  */
-	  lower_bound = array_ref_low_bound (TREE_OPERAND (arg, 0));
-	  if (!integer_zerop (lower_bound))
+	  tree idx = TREE_OPERAND (arg, 1);
+	  if (TREE_CODE (idx) != INTEGER_CST)
 	    {
-	      /* If the offset and base aren't both constants, return 0.  */
-	      if (TREE_CODE (lower_bound) != INTEGER_CST)
-	        return 0;
-	      if (TREE_CODE (offset) != INTEGER_CST)
-		return 0;
-	      /* Adjust offset by the lower bound.  */
-	      offset = size_diffop (fold_convert (sizetype, offset),
-				    fold_convert (sizetype, lower_bound));
+	      /* From a pointer (but not array) argument extract the variable
+		 index to prevent get_addr_base_and_unit_offset() from failing
+		 due to it.  Use it later to compute the non-constant offset
+		 into the string and return it to the caller.  */
+	      varidx = idx;
+	      ref = TREE_OPERAND (arg, 0);
+
+	      if (TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE)
+		return NULL_TREE;
 	    }
 	}
-      else if (TREE_CODE (TREE_OPERAND (arg, 0)) == MEM_REF)
-	{
-	  array = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
-	  offset = TREE_OPERAND (TREE_OPERAND (arg, 0), 1);
-	  if (TREE_CODE (array) != ADDR_EXPR)
-	    return 0;
-	  array = TREE_OPERAND (array, 0);
-	  if (TREE_CODE (array) != STRING_CST && !VAR_P (array))
-	    return 0;
-	}
-      else
-	return 0;
+      array = get_addr_base_and_unit_offset (ref, &base_off);
+      if (!array
+	  || (TREE_CODE (array) != VAR_DECL
+	      && TREE_CODE (array) != CONST_DECL
+	      && TREE_CODE (array) != STRING_CST))
+	return NULL_TREE;
     }
   else if (TREE_CODE (arg) == PLUS_EXPR || TREE_CODE (arg) == POINTER_PLUS_EXPR)
     {
@@ -11331,62 +11320,118 @@ string_constant (tree arg, tree *ptr_offset)
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
 
-      if (TREE_CODE (arg0) == ADDR_EXPR
-	  && (TREE_CODE (TREE_OPERAND (arg0, 0)) == STRING_CST
-	      || TREE_CODE (TREE_OPERAND (arg0, 0)) == VAR_DECL))
-	{
-	  array = TREE_OPERAND (arg0, 0);
-	  offset = arg1;
-	}
-      else if (TREE_CODE (arg1) == ADDR_EXPR
-	       && (TREE_CODE (TREE_OPERAND (arg1, 0)) == STRING_CST
-		   || TREE_CODE (TREE_OPERAND (arg1, 0)) == VAR_DECL))
-	{
-	  array = TREE_OPERAND (arg1, 0);
-	  offset = arg0;
-	}
+      if (TREE_CODE (arg0) == ADDR_EXPR)
+	;   /* Do nothing.  */
+      else if (TREE_CODE (arg1) == ADDR_EXPR)
+	std::swap (arg0, arg1);
       else
-	return 0;
+	return NULL_TREE;
+
+      tree offset;
+      if (tree str = string_constant (arg0, &offset))
+	{
+	  /* Avoid pointers to arrays (see bug 86622).  */
+	  if (POINTER_TYPE_P (TREE_TYPE (arg))
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE
+	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == ARRAY_REF)
+	    return NULL_TREE;
+
+	  tree type = TREE_TYPE (arg1);
+	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, arg1);
+	  return str;
+	}
+      return NULL_TREE;
     }
+  else if (DECL_P (arg))
+    array = arg;
   else
-    return 0;
+    return NULL_TREE;
+
+  tree offset = wide_int_to_tree (sizetype, base_off);
+  if (varidx)
+    {
+      if (TREE_CODE (TREE_TYPE (array)) != ARRAY_TYPE)
+	return NULL_TREE;
+
+      gcc_assert (TREE_CODE (arg) == ARRAY_REF);
+      tree chartype = TREE_TYPE (TREE_TYPE (TREE_OPERAND (arg, 0)));
+      if (TREE_CODE (chartype) != INTEGER_TYPE)
+	return NULL;
+
+      tree charsize = array_ref_element_size (arg);
+      /* Set the non-constant offset to the non-constant index scaled
+	 by the size of the character type.  */
+      offset = fold_build2 (MULT_EXPR, TREE_TYPE (offset),
+			    fold_convert (sizetype, varidx), charsize);
+    }
 
   if (TREE_CODE (array) == STRING_CST)
     {
       *ptr_offset = fold_convert (sizetype, offset);
       return array;
     }
-  else if (VAR_P (array) || TREE_CODE (array) == CONST_DECL)
+
+  if (!VAR_P (array) && TREE_CODE (array) != CONST_DECL)
+    return NULL_TREE;
+
+  tree init = ctor_for_folding (array);
+
+  /* Handle variables initialized with string literals.  */
+  if (!init || init == error_mark_node)
+    return NULL_TREE;
+  if (TREE_CODE (init) == CONSTRUCTOR)
     {
-      int length;
-      tree init = ctor_for_folding (array);
+      /* Convert the 64-bit constant offset to a wider type to avoid
+	 overflow.  */
+      offset_int wioff;
+      if (!base_off.is_constant (&wioff))
+	return NULL_TREE;
 
-      /* Variables initialized to string literals can be handled too.  */
-      if (init == error_mark_node
-	  || !init
-	  || TREE_CODE (init) != STRING_CST)
-	return 0;
+      wioff *= BITS_PER_UNIT;
+      if (!wi::fits_uhwi_p (wioff))
+	return NULL_TREE;
 
-      /* Avoid const char foo[4] = "abcde";  */
-      if (DECL_SIZE_UNIT (array) == NULL_TREE
-	  || TREE_CODE (DECL_SIZE_UNIT (array)) != INTEGER_CST
-	  || (length = TREE_STRING_LENGTH (init)) <= 0
-	  || compare_tree_int (DECL_SIZE_UNIT (array), length) < 0)
-	return 0;
+      base_off = wioff.to_uhwi ();
+      unsigned HOST_WIDE_INT fieldoff = 0;
+      init = fold_ctor_reference (NULL_TREE, init, base_off, 0, array,
+				  &fieldoff);
+      HOST_WIDE_INT cstoff;
+      if (!base_off.is_constant (&cstoff))
+	return NULL_TREE;
 
-      /* If variable is bigger than the string literal, OFFSET must be constant
-	 and inside of the bounds of the string literal.  */
-      offset = fold_convert (sizetype, offset);
-      if (compare_tree_int (DECL_SIZE_UNIT (array), length) > 0
-	  && (! tree_fits_uhwi_p (offset)
-	      || compare_tree_int (offset, length) >= 0))
-	return 0;
-
-      *ptr_offset = offset;
-      return init;
+      cstoff = (cstoff - fieldoff) / BITS_PER_UNIT;
+      tree off = build_int_cst (sizetype, cstoff);
+      if (varidx)
+	offset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset), offset, off);
+      else
+	offset = off;
     }
 
-  return 0;
+  if (!init || TREE_CODE (init) != STRING_CST)
+    return NULL_TREE;
+
+  tree array_size = DECL_SIZE_UNIT (array);
+  if (!array_size || TREE_CODE (array_size) != INTEGER_CST)
+    return NULL_TREE;
+
+  /* Avoid returning a string that doesn't fit in the array
+     it is stored in, like
+     const char a[4] = "abcde";
+     but do handle those that fit even if they have excess
+     initializers, such as in
+     const char a[4] = "abc\000\000";
+     The excess elements contribute to TREE_STRING_LENGTH()
+     but not to strlen().  */
+  unsigned HOST_WIDE_INT charsize
+    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (init))));
+  unsigned HOST_WIDE_INT length = TREE_STRING_LENGTH (init);
+  length = string_length (TREE_STRING_POINTER (init), charsize,
+			  length / charsize);
+  if (compare_tree_int (array_size, length + 1) < 0)
+    return NULL_TREE;
+
+  *ptr_offset = offset;
+  return init;
 }
 
 /* Generate code to calculate OPS, and exploded expression

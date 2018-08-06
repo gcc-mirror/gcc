@@ -26,6 +26,6 @@ test01()
 
   // std::numeric_limits<int64_t>::max() == 9223372036854775807;
   auto h = 9223372036854775808h;
-  // { dg-error "cannot be represented" "" { target *-*-* } 898 }
+  // { dg-error "cannot be represented" "" { target *-*-* } 908 }
 }
 // { dg-prune-output "in constexpr expansion" } // needed for -O0

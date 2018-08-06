@@ -466,7 +466,7 @@ visium_option_override (void)
       else
 	{
 	  /* But not if they are too far away from a 256-byte boundary.  */
-	  str_align_loops = "256:32";
+	  str_align_loops = "256:32:8";
 	}
     }
 

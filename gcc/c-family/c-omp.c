@@ -827,7 +827,9 @@ c_omp_check_loop_iv_r (tree *tp, int *walk_subtrees, void *data)
     {
       int i;
       for (i = 0; i < TREE_VEC_LENGTH (d->declv); i++)
-	if (*tp == TREE_VEC_ELT (d->declv, i))
+	if (*tp == TREE_VEC_ELT (d->declv, i)
+	    || (TREE_CODE (TREE_VEC_ELT (d->declv, i)) == TREE_LIST
+		&& *tp == TREE_PURPOSE (TREE_VEC_ELT (d->declv, i))))
 	  {
 	    location_t loc = d->expr_loc;
 	    if (loc == UNKNOWN_LOCATION)
@@ -894,7 +896,9 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 	 expression then involves the subtraction and always refers
 	 to the original value.  The C++ FE needs to warn on those
 	 earlier.  */
-      if (decl == TREE_VEC_ELT (declv, i))
+      if (decl == TREE_VEC_ELT (declv, i)
+	  || (TREE_CODE (TREE_VEC_ELT (declv, i)) == TREE_LIST
+	      && decl == TREE_PURPOSE (TREE_VEC_ELT (declv, i))))
 	{
 	  data.expr_loc = EXPR_LOCATION (cond);
 	  data.kind = 1;

@@ -37,6 +37,7 @@
 
 #include <chrono>
 #include <bits/std_mutex.h>
+#include <bits/unique_lock.h>
 #include <ext/concurrence.h>
 #include <bits/alloc_traits.h>
 #include <bits/allocator.h>
@@ -44,7 +45,7 @@
 #include <bits/shared_ptr.h>
 #include <bits/cxxabi_forced.h>
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#if defined(_GLIBCXX_HAS_GTHREADS)
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -65,6 +66,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class condition_variable
   {
     typedef chrono::system_clock	__clock_t;
+    typedef chrono::steady_clock	__steady_clock_t;
     typedef __gthread_cond_t		__native_type;
 
 #ifdef __GTHREAD_COND_INIT
@@ -116,7 +118,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const auto __delta = __atime - __c_entry;
 	const auto __s_atime = __s_entry + __delta;
 
-	return __wait_until_impl(__lock, __s_atime);
+	if (__wait_until_impl(__lock, __s_atime) == cv_status::no_timeout)
+	  return cv_status::no_timeout;
+	// We got a timeout when measured against __clock_t but
+	// we need to check against the caller-supplied clock
+	// to tell whether we should return a timeout.
+	if (_Clock::now() < __atime)
+	  return cv_status::no_timeout;
+	return cv_status::timeout;
       }
 
     template<typename _Clock, typename _Duration, typename _Predicate>
@@ -136,11 +145,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       wait_for(unique_lock<mutex>& __lock,
 	       const chrono::duration<_Rep, _Period>& __rtime)
       {
-	using __dur = typename __clock_t::duration;
+	using __dur = typename __steady_clock_t::duration;
 	auto __reltime = chrono::duration_cast<__dur>(__rtime);
 	if (__reltime < __rtime)
 	  ++__reltime;
-	return wait_until(__lock, __clock_t::now() + __reltime);
+	return wait_until(__lock, __steady_clock_t::now() + __reltime);
       }
 
     template<typename _Rep, typename _Period, typename _Predicate>
@@ -318,8 +327,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
-
+#endif // _GLIBCXX_HAS_GTHREADS
 #endif // C++11
-
 #endif // _GLIBCXX_CONDITION_VARIABLE

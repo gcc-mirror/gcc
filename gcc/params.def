@@ -446,6 +446,10 @@ DEFPARAM(BUILTIN_EXPECT_PROBABILITY,
 	 "builtin-expect-probability",
 	 "Set the estimated probability in percentage for builtin expect. The default value is 90% probability.",
 	 90, 0, 100)
+DEFPARAM(BUILTIN_STRING_CMP_INLINE_LENGTH,
+	 "builtin-string-cmp-inline-length",
+	 "The maximum length of a constant string for a builtin string cmp call eligible for inlining. The default value is 3.",
+	 3, 0, 100)
 DEFPARAM(TRACER_DYNAMIC_COVERAGE_FEEDBACK,
 	 "tracer-dynamic-coverage-feedback",
 	 "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available.",
@@ -1184,6 +1188,8 @@ DEFPARAM (PARAM_MAX_SLSR_CANDIDATE_SCAN,
 	  "Maximum length of candidate scans for straight-line "
 	  "strength reduction.",
 	  50, 1, 999999)
+
+/* ASan stands for AddressSanitizer: https://github.com/google/sanitizers.  */
 
 DEFPARAM (PARAM_ASAN_STACK,
          "asan-stack",

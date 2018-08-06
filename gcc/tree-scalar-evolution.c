@@ -3185,7 +3185,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
 		       && wi::le_p (base_max, type_max, sgn));
 
   /* Account the possible increment in the last ieration.  */
-  bool overflow = false;
+  wi::overflow_type overflow = wi::OVF_NONE;
   nit = wi::add (nit, 1, SIGNED, &overflow);
   if (overflow)
     return true;
@@ -3202,7 +3202,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
      the type.  */
   if (sgn == UNSIGNED || !wi::neg_p (step_max))
     {
-      bool overflow = false;
+      wi::overflow_type overflow = wi::OVF_NONE;
       if (wi::gtu_p (wi::mul (step_max, nit2, UNSIGNED, &overflow),
 		     type_max - base_max)
 	  || overflow)
@@ -3211,7 +3211,8 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
   /* If step can be negative, check that nit*(-step) <= base_min-type_min.  */
   if (sgn == SIGNED && wi::neg_p (step_min))
     {
-      bool overflow = false, overflow2 = false;
+      wi::overflow_type overflow, overflow2;
+      overflow = overflow2 = wi::OVF_NONE;
       if (wi::gtu_p (wi::mul (wi::neg (step_min, &overflow2),
 		     nit2, UNSIGNED, &overflow),
 		     base_min - type_min)
@@ -3315,7 +3316,7 @@ simple_iv_with_niters (struct loop *wrto_loop, struct loop *use_loop,
   enum tree_code code;
   tree type, ev, base, e;
   wide_int extreme;
-  bool folded_casts, overflow;
+  bool folded_casts;
 
   iv->base = NULL_TREE;
   iv->step = NULL_TREE;
@@ -3424,7 +3425,7 @@ simple_iv_with_niters (struct loop *wrto_loop, struct loop *use_loop,
       code = GT_EXPR;
       extreme = wi::max_value (type);
     }
-  overflow = false;
+  wi::overflow_type overflow = wi::OVF_NONE;
   extreme = wi::sub (extreme, wi::to_wide (iv->step),
 		     TYPE_SIGN (type), &overflow);
   if (overflow)
@@ -3507,6 +3508,18 @@ expression_expensive_p (tree expr)
 	  return true;
       return false;
     }
+
+  if (code == COND_EXPR)
+    return (expression_expensive_p (TREE_OPERAND (expr, 0))
+	    || (EXPR_P (TREE_OPERAND (expr, 1))
+		&& EXPR_P (TREE_OPERAND (expr, 2)))
+	    /* If either branch has side effects or could trap.  */
+	    || TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1))
+	    || generic_expr_could_trap_p (TREE_OPERAND (expr, 1))
+	    || TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0))
+	    || generic_expr_could_trap_p (TREE_OPERAND (expr, 0))
+	    || expression_expensive_p (TREE_OPERAND (expr, 1))
+	    || expression_expensive_p (TREE_OPERAND (expr, 2)));
 
   switch (TREE_CODE_CLASS (code))
     {

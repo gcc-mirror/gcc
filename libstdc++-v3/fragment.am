@@ -14,9 +14,9 @@ toolexecdir = $(glibcxx_toolexecdir)
 toolexeclibdir = $(glibcxx_toolexeclibdir)
 
 if ENABLE_WERROR
-WERROR_FLAG=$(WERROR)
+WERROR_FLAG = -Werror
 else
-WERROR_FLAG=
+WERROR_FLAG =
 endif
 
 if ENABLE_EXTERN_TEMPLATE

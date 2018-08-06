@@ -103,11 +103,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
 	void
+	_M_copy_data(_Vector_impl_data const& __x) _GLIBCXX_NOEXCEPT
+	{
+	  _M_start = __x._M_start;
+	  _M_finish = __x._M_finish;
+	  _M_end_of_storage = __x._M_end_of_storage;
+	}
+
+	void
 	_M_swap_data(_Vector_impl_data& __x) _GLIBCXX_NOEXCEPT
 	{
-	  std::swap(_M_start, __x._M_start);
-	  std::swap(_M_finish, __x._M_finish);
-	  std::swap(_M_end_of_storage, __x._M_end_of_storage);
+	  // Do not use std::swap(_M_start, __x._M_start), etc as it loses
+	  // information used by TBAA.
+	  _Vector_impl_data __tmp;
+	  __tmp._M_copy_data(*this);
+	  _M_copy_data(__x);
+	  __x._M_copy_data(__tmp);
 	}
       };
 
@@ -1731,8 +1742,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_move_assign(vector&& __x, true_type) noexcept
       {
 	vector __tmp(get_allocator());
-	this->_M_impl._M_swap_data(__tmp._M_impl);
 	this->_M_impl._M_swap_data(__x._M_impl);
+	__tmp._M_impl._M_swap_data(__x._M_impl);
 	std::__alloc_on_move(_M_get_Tp_allocator(), __x._M_get_Tp_allocator());
       }
 

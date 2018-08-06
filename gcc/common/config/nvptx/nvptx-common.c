@@ -30,10 +30,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "flags.h"
 
+enum unwind_info_type
+nvptx_except_unwind_info (struct gcc_options *opts ATTRIBUTE_UNUSED)
+{
+  return UI_NONE;
+}
+
 #undef TARGET_HAVE_NAMED_SECTIONS
 #define TARGET_HAVE_NAMED_SECTIONS false
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS MASK_ABI64
+
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO nvptx_except_unwind_info
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

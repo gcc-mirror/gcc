@@ -555,10 +555,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_WCHAR_T
   using wstring_view = basic_string_view<wchar_t>;
 #endif
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+
   using u16string_view = basic_string_view<char16_t>;
   using u32string_view = basic_string_view<char32_t>;
-#endif
 
   // [string.view.hash], hash support:
 
@@ -594,7 +593,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   template<>
     struct hash<u16string_view>
     : public __hash_base<size_t, u16string_view>
@@ -622,7 +620,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_fast_hash<hash<u32string_view>> : std::false_type
     { };
-#endif
 
   inline namespace literals
   {
@@ -640,7 +637,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string_view<wchar_t>{__str, __len}; }
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
     inline constexpr basic_string_view<char16_t>
     operator""sv(const char16_t* __str, size_t __len) noexcept
     { return basic_string_view<char16_t>{__str, __len}; }
@@ -648,7 +644,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr basic_string_view<char32_t>
     operator""sv(const char32_t* __str, size_t __len) noexcept
     { return basic_string_view<char32_t>{__str, __len}; }
-#endif
+
 #pragma GCC diagnostic pop
   } // namespace string_literals
   } // namespace literals

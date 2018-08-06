@@ -138,7 +138,6 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_NEHALEM (HOST_WIDE_INT_1U<<PROCESSOR_NEHALEM)
 #define m_SANDYBRIDGE (HOST_WIDE_INT_1U<<PROCESSOR_SANDYBRIDGE)
 #define m_HASWELL (HOST_WIDE_INT_1U<<PROCESSOR_HASWELL)
-#define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_HASWELL)
 #define m_BONNELL (HOST_WIDE_INT_1U<<PROCESSOR_BONNELL)
 #define m_SILVERMONT (HOST_WIDE_INT_1U<<PROCESSOR_SILVERMONT)
 #define m_KNL (HOST_WIDE_INT_1U<<PROCESSOR_KNL)
@@ -148,6 +147,10 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_CANNONLAKE (HOST_WIDE_INT_1U<<PROCESSOR_CANNONLAKE)
 #define m_ICELAKE_CLIENT (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_CLIENT)
 #define m_ICELAKE_SERVER (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_SERVER)
+#define m_CORE_AVX512 (m_SKYLAKE_AVX512 | m_CANNONLAKE \
+		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER)
+#define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_CORE_AVX512)
+#define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2)
 #define m_GOLDMONT (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT)
 #define m_GOLDMONT_PLUS (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT_PLUS)
 #define m_TREMONT (HOST_WIDE_INT_1U<<PROCESSOR_TREMONT)
@@ -2632,16 +2635,23 @@ rest_of_insert_endbranch (void)
 		{
 		  rtx call = get_call_rtx_from (insn);
 		  rtx fnaddr = XEXP (call, 0);
+		  tree fndecl = NULL_TREE;
 
 		  /* Also generate ENDBRANCH for non-tail call which
 		     may return via indirect branch.  */
-		  if (MEM_P (fnaddr)
-		      && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
+		  if (GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
+		    fndecl = SYMBOL_REF_DECL (XEXP (fnaddr, 0));
+		  if (fndecl == NULL_TREE)
+		    fndecl = MEM_EXPR (fnaddr);
+		  if (fndecl
+		      && TREE_CODE (TREE_TYPE (fndecl)) != FUNCTION_TYPE
+		      && TREE_CODE (TREE_TYPE (fndecl)) != METHOD_TYPE)
+		    fndecl = NULL_TREE;
+		  if (fndecl && TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
 		    {
-		      tree fndecl = SYMBOL_REF_DECL (XEXP (fnaddr, 0));
-		      if (fndecl
-			  && lookup_attribute ("indirect_return",
-					       DECL_ATTRIBUTES (fndecl)))
+		      tree fntype = TREE_TYPE (fndecl);
+		      if (lookup_attribute ("indirect_return",
+					    TYPE_ATTRIBUTES (fntype)))
 			need_endbr = true;
 		    }
 		}
@@ -13271,12 +13281,14 @@ ix86_finalize_stack_frame_flags (void)
 	  recompute_frame_layout_p = true;
 	}
     }
-  else if (crtl->max_used_stack_slot_alignment
-	   > crtl->preferred_stack_boundary)
+  else if (crtl->max_used_stack_slot_alignment >= 128)
     {
-      /* We don't need to realign stack.  But we still need to keep
-	 stack frame properly aligned to satisfy the largest alignment
-	 of stack slots.  */
+      /* We don't need to realign stack.  max_used_stack_alignment is
+	 used to decide how stack frame should be aligned.  This is
+	 independent of any psABIs nor 32-bit vs 64-bit.  It is always
+	 safe to compute max_used_stack_alignment.  We compute it only
+	 if 128-bit aligned load/store may be generated on misaligned
+	 stack slot which will lead to segfault.   */
       if (ix86_find_max_used_stack_alignment (stack_alignment, true))
 	cfun->machine->max_used_stack_alignment
 	  = stack_alignment / BITS_PER_UNIT;
@@ -41924,8 +41936,9 @@ ix86_avoid_jump_mispredicts (void)
 
       if (LABEL_P (insn))
 	{
-	  int align = label_to_alignment (insn);
-	  int max_skip = label_to_max_skip (insn);
+	  align_flags alignment = label_to_alignment (insn);
+	  int align = alignment.levels[0].log;
+	  int max_skip = alignment.levels[0].maxskip;
 
 	  if (max_skip > 15)
 	    max_skip = 15;
@@ -45916,8 +45929,8 @@ static const struct attribute_spec ix86_attribute_table[] =
     ix86_handle_fndecl_attribute, NULL },
   { "function_return", 1, 1, true, false, false, false,
     ix86_handle_fndecl_attribute, NULL },
-  { "indirect_return", 0, 0, true, false, false, false,
-    ix86_handle_fndecl_attribute, NULL },
+  { "indirect_return", 0, 0, false, true, true, false,
+    NULL, NULL },
 
   /* End element.  */
   { NULL, 0, 0, false, false, false, false, NULL, NULL }

@@ -260,7 +260,7 @@ compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail,
   /* If more than a word remains, then make sure to keep the
      starting point at least word aligned.  */
   if (last_live - first_live > UNITS_PER_WORD)
-    *trim_head &= (UNITS_PER_WORD - 1);
+    *trim_head &= ~(UNITS_PER_WORD - 1);
 
   if ((*trim_head || *trim_tail)
       && dump_file && (dump_flags & TDF_DETAILS))

@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-cstdint "" }
 
 // 2006-01-30  Paolo Carlini  <pcarlini@suse.de>
 //

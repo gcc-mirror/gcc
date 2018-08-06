@@ -1624,7 +1624,7 @@ package body Sem_Ch10 is
          --  Retain and restore the configuration options of the enclosing
          --  context as the proper body may introduce a set of its own.
 
-         Save_Opt_Config_Switches (Opts);
+         Opts := Save_Config_Switches;
 
          --  Indicate that the body of the package exists. If we are doing
          --  only semantic analysis, the stub stands for the body. If we are
@@ -1644,7 +1644,7 @@ package body Sem_Ch10 is
          Generate_Reference (Nam, Id, 'b');
          Analyze_Proper_Body (N, Nam);
 
-         Restore_Opt_Config_Switches (Opts);
+         Restore_Config_Switches (Opts);
       end if;
    end Analyze_Package_Body_Stub;
 
@@ -1985,7 +1985,7 @@ package body Sem_Ch10 is
          --  Retain and restore the configuration options of the enclosing
          --  context as the proper body may introduce a set of its own.
 
-         Save_Opt_Config_Switches (Opts);
+         Opts := Save_Config_Switches;
 
          Set_Scope (Id, Current_Scope);
          Set_Ekind (Id, E_Protected_Body);
@@ -2000,7 +2000,7 @@ package body Sem_Ch10 is
          Generate_Reference (Nam, Id, 'b');
          Analyze_Proper_Body (N, Etype (Nam));
 
-         Restore_Opt_Config_Switches (Opts);
+         Restore_Config_Switches (Opts);
       end if;
    end Analyze_Protected_Body_Stub;
 
@@ -2045,7 +2045,7 @@ package body Sem_Ch10 is
       --  Retain and restore the configuration options of the enclosing context
       --  as the proper body may introduce a set of its own.
 
-      Save_Opt_Config_Switches (Opts);
+      Opts := Save_Config_Switches;
 
       --  Treat stub as a body, which checks conformance if there is a previous
       --  declaration, or else introduces entity and its signature.
@@ -2053,7 +2053,7 @@ package body Sem_Ch10 is
       Analyze_Subprogram_Body (N);
       Analyze_Proper_Body (N, Empty);
 
-      Restore_Opt_Config_Switches (Opts);
+      Restore_Config_Switches (Opts);
    end Analyze_Subprogram_Body_Stub;
 
    ---------------------

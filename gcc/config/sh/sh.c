@@ -1015,7 +1015,7 @@ sh_override_options_after_change (void)
   parse_alignment_opts ();
   if (flag_align_jumps && !str_align_jumps)
     str_align_jumps = "2";
-  else if (align_jumps_value < 2)
+  else if (align_jumps.levels[0].get_value () < 2)
     str_align_jumps = "2";
 
   if (flag_align_functions && !str_align_functions)
@@ -1028,12 +1028,13 @@ sh_override_options_after_change (void)
     {
       /* Parse values so that we can compare for current value.  */
       parse_alignment_opts ();
-      int min_align = MAX (align_loops_value, align_jumps_value);
+      int min_align = MAX (align_loops.levels[0].get_value (),
+			   align_jumps.levels[0].get_value ());
 
       /* Also take possible .long constants / mova tables into account.	*/
       if (min_align < 4)
 	min_align = 4;
-      if (align_functions_value < min_align)
+      if (align_functions.levels[0].get_value () < min_align)
 	{
 	  char *r = XNEWVEC (char, 16);
 	  sprintf (r, "%d", min_align);
@@ -4986,7 +4987,7 @@ find_barrier (int num_mova, rtx_insn *mova, rtx_insn *from)
 	  && CODE_LABEL_NUMBER (from) <= max_labelno_before_reorg)
 	{
 	  if (optimize)
-	    new_align = 1 << label_to_alignment (from);
+	    new_align = 1 << label_to_alignment (from).levels[0].log;
 	  else if (BARRIER_P (prev_nonnote_insn (from)))
 	    new_align = 1 << barrier_align (from);
 	  else
@@ -5118,7 +5119,7 @@ find_barrier (int num_mova, rtx_insn *mova, rtx_insn *from)
 		  && (prev_nonnote_insn (from)
 		      == XEXP (MOVA_LABELREF (mova), 0))))
 	    num_mova--;
-	  if (barrier_align (next_real_insn (from)) == align_jumps_log)
+	  if (barrier_align (next_real_insn (from)) == align_jumps.levels[0].log)
 	    {
 	      /* We have just passed the barrier in front of the
 		 ADDR_DIFF_VEC, which is stored in found_barrier.  Since
@@ -5752,7 +5753,7 @@ barrier_align (rtx_insn *barrier_or_label)
       return ((optimize_size
 	       || ((unsigned) XVECLEN (pat, 1) * GET_MODE_SIZE (GET_MODE (pat))
 		   <= (unsigned) 1 << (CACHE_LOG - 2)))
-	      ? 1 : align_jumps_log);
+	      ? 1 : align_jumps.levels[0].log);
     }
 
   rtx_insn *next = next_active_insn (barrier_or_label);
@@ -5770,7 +5771,7 @@ barrier_align (rtx_insn *barrier_or_label)
     return 0;
 
   if (! TARGET_SH2 || ! optimize)
-    return align_jumps_log;
+    return align_jumps.levels[0].log;
 
   /* When fixing up pcloads, a constant table might be inserted just before
      the basic block that ends with the barrier.  Thus, we can't trust the
@@ -5848,7 +5849,7 @@ barrier_align (rtx_insn *barrier_or_label)
 	}
     }
 
-  return align_jumps_log;
+  return align_jumps.levels[0].log;
 }
 
 /* If we are inside a phony loop, almost any kind of label can turn up as the
@@ -5874,7 +5875,7 @@ sh_loop_align (rtx_insn *label)
       || recog_memoized (next) == CODE_FOR_consttable_2)
     return 0;
 
-  return align_loops_log;
+  return align_loops.levels[0].log;
 }
 
 /* Do a final pass over the function, just before delayed branch
@@ -10888,12 +10889,6 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       else if (CONST_OK_FOR_ADD (vcall_offset))
 	{
 	  emit_insn (gen_add2_insn (scratch0, GEN_INT (vcall_offset)));
-	  offset_addr = scratch0;
-	}
-      else if (scratch0 != scratch1)
-	{
-	  emit_move_insn (scratch1, GEN_INT (vcall_offset));
-	  emit_insn (gen_add2_insn (scratch0, scratch1));
 	  offset_addr = scratch0;
 	}
       else

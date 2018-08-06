@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target trampolines } */
 /* { dg-additional-options "-fipa-pta" } */
 
 void callme (void (*callback) (void));

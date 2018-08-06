@@ -46,6 +46,8 @@ update_cloned_parm (tree parm, tree cloned_parm, bool first)
   /* We may have taken its address.  */
   TREE_ADDRESSABLE (cloned_parm) = TREE_ADDRESSABLE (parm);
 
+  DECL_BY_REFERENCE (cloned_parm) = DECL_BY_REFERENCE (parm);
+
   /* The definition might have different constness.  */
   TREE_READONLY (cloned_parm) = TREE_READONLY (parm);
 

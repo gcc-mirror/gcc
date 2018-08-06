@@ -134,6 +134,13 @@ struct gomp_single;
 struct gomp_target;
 struct gomp_teams;
 
+/* Subclasses of symtab_node, using indentation to show the class
+   hierarchy.  */
+
+class symtab_node;
+  struct cgraph_node;
+  class varpool_node;
+
 union section;
 typedef union section section;
 struct gcc_options;
@@ -325,6 +332,14 @@ namespace gcc {
 
 typedef std::pair <tree, tree> tree_pair;
 
+/* Define a name->value mapping.  */
+template <typename ValueType>
+struct kv_pair
+{
+  const char *const name;	/* the name of the value */
+  const ValueType value;	/* the value of the name */
+};
+
 #else
 
 struct _dont_use_rtx_here_;
@@ -416,6 +431,7 @@ typedef unsigned char uchar;
 #include "insn-modes-inline.h"
 #include "machmode.h"
 #include "double-int.h"
+#include "align.h"
 /* Most host source files will require the following headers.  */
 #if !defined (GENERATOR_FILE)
 #include "real.h"

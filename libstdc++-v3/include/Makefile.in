@@ -204,7 +204,6 @@ VTV_CXXFLAGS = @VTV_CXXFLAGS@
 VTV_CXXLINKFLAGS = @VTV_CXXLINKFLAGS@
 VTV_PCH_CXXFLAGS = @VTV_PCH_CXXFLAGS@
 WARN_FLAGS = @WARN_FLAGS@
-WERROR = @WERROR@
 XMLLINT = @XMLLINT@
 XSLTPROC = @XSLTPROC@
 XSL_STYLE_DIR = @XSL_STYLE_DIR@
@@ -300,7 +299,7 @@ STAMP = echo timestamp >
 toolexecdir = $(glibcxx_toolexecdir)
 toolexeclibdir = $(glibcxx_toolexeclibdir)
 @ENABLE_WERROR_FALSE@WERROR_FLAG = 
-@ENABLE_WERROR_TRUE@WERROR_FLAG = $(WERROR)
+@ENABLE_WERROR_TRUE@WERROR_FLAG = -Werror
 @ENABLE_EXTERN_TEMPLATE_FALSE@XTEMPLATE_FLAGS = 
 @ENABLE_EXTERN_TEMPLATE_TRUE@XTEMPLATE_FLAGS = -fno-implicit-templates
 
@@ -348,6 +347,7 @@ std_headers = \
 	${std_srcdir}/locale \
 	${std_srcdir}/map \
 	${std_srcdir}/memory \
+	${std_srcdir}/memory_resource \
 	${std_srcdir}/mutex \
 	${std_srcdir}/numeric \
 	${std_srcdir}/optional \
@@ -492,6 +492,7 @@ bits_headers = \
 	${bits_srcdir}/stringfwd.h \
 	${bits_srcdir}/string_view.tcc \
 	${bits_srcdir}/uniform_int_dist.h \
+	${bits_srcdir}/unique_lock.h \
 	${bits_srcdir}/unique_ptr.h \
 	${bits_srcdir}/unordered_map.h \
 	${bits_srcdir}/unordered_set.h \

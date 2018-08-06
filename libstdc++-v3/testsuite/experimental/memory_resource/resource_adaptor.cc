@@ -1,4 +1,5 @@
 // { dg-do run { target c++14 } }
+// { dg-require-cstdint "" }
 // { dg-xfail-run-if "PR libstdc++/77691" { { i?86-*-solaris2.* x86_64-*-solaris2.* } && ilp32 } }
 
 // Copyright (C) 2016-2018 Free Software Foundation, Inc.

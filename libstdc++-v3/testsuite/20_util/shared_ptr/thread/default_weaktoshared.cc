@@ -21,6 +21,7 @@
 // { dg-options "-pthread"  }
 // { dg-require-effective-target c++11 }
 // { dg-require-effective-target pthread }
+// { dg-require-cstdint "" }
 
 #include <memory>
 #include <random>

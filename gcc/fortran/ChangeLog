@@ -1,3 +1,104 @@
+2018-08-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45521
+	* interface.c (gfc_compare_interfaces): Apply additional
+	distinguishability criteria of F08 to operator interfaces.
+
+2018-07-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Revert 'AsyncI/O patch committed'
+	2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
+		Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* gfortran.texi: Add description of asynchronous I/O.
+	* trans-decl.c (gfc_finish_var_decl): Treat asynchronous variables
+	as volatile.
+	* trans-io.c (gfc_build_io_library_fndecls): Rename st_wait to
+	st_wait_async and change argument spec from ".X" to ".w".
+	(gfc_trans_wait): Pass ID argument via reference.
+
+2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* gfortran.texi: Add description of asynchronous I/O.
+	* trans-decl.c (gfc_finish_var_decl): Treat asynchronous variables
+	as volatile.
+	* trans-io.c (gfc_build_io_library_fndecls): Rename st_wait to
+	st_wait_async and change argument spec from ".X" to ".w".
+	(gfc_trans_wait): Pass ID argument via reference.
+
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82063
+	* gfortran.h (gfc_handle_option): Change function argument
+	to HOST_WIDE_INT.
+	* options.c (gfc_handle_option): Same.
+
+2018-07-20  Andrew Benson  <abenson@carnegiescience.edu>
+
+	* gfortran.h (gfc_symbol): Add pointer to next derived type.
+	(gfc_dt_list, gfc_get_dt_list): Remove.
+	(gfc_namespace): Replace gfc_dt_list with gfc_symbol.
+	* parse.c (resolve_all_program_units): Replace gfc_free_dt_list() with
+	simple nullification of gfc_derived_types.
+	* resolve.c (resolve_global_procedure): Replace gfc_dt_list with
+	gfc_symbol.
+	(add_dt_to_dt_list): Change derived type linked list insertion to
+	utilize dt_next pointers in gfc_symbol.
+	* symbol.c (gfc_new_symbol, gfc_free_dt_list, gfc_symbol_done2)
+	(get_iso_c_binding_dt, generate_isocbinding_symbol): Remove
+	gfc_free_dt_list as gfc_dt_list is obsoleted. Change derived type
+	linked list search/insertion to utilize dt_next pointers in gfc_symbol.
+	* trans-types.c (gfc_get_derived_type): Change derived type linked
+	list search to utilize dt_next pointers in gfc_symbol.
+
+2018-07-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* trans-intrinsic.c: (gfc_conv_intrinsic_minmax): Emit MIN_MAX_EXPR
+	or IFN_FMIN/FMAX sequence to calculate the min/max when possible.
+
+2018-07-18  Janus Weil  <janus@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85599
+	* dump-parse-tree.c (show_attr): Add handling of implicit_pure.
+	* frontend-passes.c (do_warn_function_elimination): Do not warn for
+	pure functions.
+	* gfortran.h: Add prototypes for gfc_pure_function and
+	gfc_implicit_pure_function.
+	* gfortran.texi: Add chapter on evaluation of logical expressions.
+	* invoke.texi: Mention that -Wfunction-elimination is implied
+	by -Wextra.
+	* lang.opt: Make -Wextra imply -Wfunction-elimination.
+	* resolve.c (pure_function): Rename to gfc_pure_function.
+	(gfc_implicit_pure_function): New function.
+	(check_pure_function): Use it here.
+	(impure_function_callback): New function.
+	(resolve_operator): Call it via gfc_expr_walker.
+
+2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/83184
+	* decl.c (match_old_style_init): Initialize locus of variable expr when
+	creating a data variable.
+	(match_clist_expr): Verify array is explicit shape/size before
+	attempting to allocate constant array constructor.
+
+2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/86417
+	* module.c (mio_component): Set component->loc when loading from module.
+
+2018-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/86421
+	* module.c (omp_declare_simd_clauses): Add LINEAR with _REF, _VAL and
+	_UVAL suffixes.
+	(mio_omp_declare_simd): Save and restore ref, val and uval modifiers
+	on linear clauses.  Initialize n->where to gfc_current_locus.
+
 2018-07-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/86408

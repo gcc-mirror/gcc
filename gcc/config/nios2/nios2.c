@@ -5403,8 +5403,8 @@ nios2_label_align (rtx label)
   int n = CODE_LABEL_NUMBER (label);
 
   if (label_align && n >= min_labelno && n <= max_labelno)
-    return MAX (label_align[n - min_labelno], align_labels_log);
-  return align_labels_log;
+    return MAX (label_align[n - min_labelno], align_labels.levels[0].log);
+  return align_labels.levels[0].log;
 }
 
 /* Implement ADJUST_REG_ALLOC_ORDER.  We use the default ordering
@@ -5571,6 +5571,9 @@ nios2_adjust_reg_alloc_order (void)
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

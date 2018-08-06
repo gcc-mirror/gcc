@@ -128,7 +128,7 @@
      must be available to all hosted implementations.  Actually, the
      word "files" is a misnomer, since the contents of the
      headers don't necessarily have to be in any kind of external
-     file.  The only rule is that when one <code>#include</code>'s a
+     file.  The only rule is that when one <code>#include</code>s a
      header, the contents of that header become available, no matter
      how.
    </para>
@@ -140,16 +140,24 @@
    <para>
      There are two main types of include files: header files related
      to a specific version of the ISO C++ standard (called Standard
-     Headers), and all others (TR1, C++ ABI, and Extensions).
+     Headers), and all others (TS, TR1, C++ ABI, and Extensions).
    </para>
 
    <para>
-     Two dialects of standard headers are supported, corresponding to
-     the 1998 standard as updated for 2003, and the current 2011 standard.
+     Multiple dialects of standard headers are supported, corresponding to
+     the 1998 standard as updated for 2003, the 2011 standard, the 2014
+     standard, and so on.
    </para>
 
    <para>
-     C++98/03 include files. These are available in the default compilation mode, i.e. <code>-std=c++98</code> or <code>-std=gnu++98</code>.
+     <xref linkend="table.cxx98_headers"/> and
+     <xref linkend="table.cxx98_cheaders"/> and
+     <xref linkend="table.cxx98_deprheaders"/>
+     show the C++98/03 include files.
+     These are available in the C++98 compilation mode,
+     i.e. <code>-std=c++98</code> or <code>-std=gnu++98</code>.
+     Unless specified otherwise below, they are also available in later modes
+     (C++11, C++14 etc).
    </para>
 
 <table frame="all" xml:id="table.cxx98_headers">
@@ -207,6 +215,7 @@
 <row>
 <entry><filename class="headerfile">valarray</filename></entry>
 <entry><filename class="headerfile">vector</filename></entry>
+<entry namest="c3" nameend="c5"/>
 </row>
 </tbody>
 </tgroup>
@@ -248,14 +257,38 @@
 <entry><filename class="headerfile">ctime</filename></entry>
 <entry><filename class="headerfile">cwchar</filename></entry>
 <entry><filename class="headerfile">cwctype</filename></entry>
+<entry namest="c4" nameend="c5"/>
 </row>
 </tbody>
 </tgroup>
 </table>
 
 <para>
-C++11 include files. These are only available in C++11 compilation
+  The following header is deprecated
+  and might be removed from a future C++ standard.
+</para>
+
+<table frame="all" xml:id="table.cxx98_deprheaders">
+<title>C++ 1998 Deprecated Library Header</title>
+
+<tgroup cols="1" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<tbody>
+<row>
+<entry><filename class="headerfile">strstream</filename></entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+<xref linkend="table.cxx11_headers"/> and
+<xref linkend="table.cxx11_cheaders"/> show the C++11 include files.
+These are available in C++11 compilation
 mode, i.e. <literal>-std=c++11</literal> or <literal>-std=gnu++11</literal>.
+Including these headers in C++98/03 mode may result in compilation errors.
+Unless specified otherwise below, they are also available in later modes
+(C++14 etc).
 </para>
 
 <para/>
@@ -271,72 +304,32 @@ mode, i.e. <literal>-std=c++11</literal> or <literal>-std=gnu++11</literal>.
 <tbody>
 
 <row>
-<entry><filename class="headerfile">algorithm</filename></entry>
 <entry><filename class="headerfile">array</filename></entry>
-<entry><filename class="headerfile">bitset</filename></entry>
+<entry><filename class="headerfile">atomic</filename></entry>
 <entry><filename class="headerfile">chrono</filename></entry>
-<entry><filename class="headerfile">complex</filename></entry>
-</row>
-<row>
+<entry><filename class="headerfile">codecvt</filename></entry>
 <entry><filename class="headerfile">condition_variable</filename></entry>
-<entry><filename class="headerfile">deque</filename></entry>
-<entry><filename class="headerfile">exception</filename></entry>
-<entry><filename class="headerfile">forward_list</filename></entry>
-<entry><filename class="headerfile">fstream</filename></entry>
 </row>
 <row>
-<entry><filename class="headerfile">functional</filename></entry>
+<entry><filename class="headerfile">forward_list</filename></entry>
 <entry><filename class="headerfile">future</filename></entry>
 <entry><filename class="headerfile">initalizer_list</filename></entry>
-<entry><filename class="headerfile">iomanip</filename></entry>
-<entry><filename class="headerfile">ios</filename></entry>
-</row>
-<row>
-<entry><filename class="headerfile">iosfwd</filename></entry>
-<entry><filename class="headerfile">iostream</filename></entry>
-<entry><filename class="headerfile">istream</filename></entry>
-<entry><filename class="headerfile">iterator</filename></entry>
-<entry><filename class="headerfile">limits</filename></entry>
-</row>
-<row>
-<entry><filename class="headerfile">list</filename></entry>
-<entry><filename class="headerfile">locale</filename></entry>
-<entry><filename class="headerfile">map</filename></entry>
-<entry><filename class="headerfile">memory</filename></entry>
 <entry><filename class="headerfile">mutex</filename></entry>
-</row>
-<row>
-<entry><filename class="headerfile">new</filename></entry>
-<entry><filename class="headerfile">numeric</filename></entry>
-<entry><filename class="headerfile">ostream</filename></entry>
-<entry><filename class="headerfile">queue</filename></entry>
 <entry><filename class="headerfile">random</filename></entry>
 </row>
 <row>
 <entry><filename class="headerfile">ratio</filename></entry>
 <entry><filename class="headerfile">regex</filename></entry>
-<entry><filename class="headerfile">set</filename></entry>
-<entry><filename class="headerfile">sstream</filename></entry>
-<entry><filename class="headerfile">stack</filename></entry>
-</row>
-<row>
-<entry><filename class="headerfile">stdexcept</filename></entry>
-<entry><filename class="headerfile">streambuf</filename></entry>
-<entry><filename class="headerfile">string</filename></entry>
+<entry><filename class="headerfile">scoped_allocator</filename></entry>
 <entry><filename class="headerfile">system_error</filename></entry>
 <entry><filename class="headerfile">thread</filename></entry>
 </row>
 <row>
 <entry><filename class="headerfile">tuple</filename></entry>
+<entry><filename class="headerfile">typeindex</filename></entry>
 <entry><filename class="headerfile">type_traits</filename></entry>
-<entry><filename class="headerfile">typeinfo</filename></entry>
 <entry><filename class="headerfile">unordered_map</filename></entry>
 <entry><filename class="headerfile">unordered_set</filename></entry>
-</row>
-<row>
-<entry><filename class="headerfile">utility</filename></entry>
-<entry><filename class="headerfile">valarray</filename></entry>
-<entry><filename class="headerfile">vector</filename></entry>
 </row>
 
 </tbody>
@@ -356,39 +349,231 @@ mode, i.e. <literal>-std=c++11</literal> or <literal>-std=gnu++11</literal>.
 <colspec colname="c5"/>
 <tbody>
 <row>
-<entry><filename class="headerfile">cassert</filename></entry>
 <entry><filename class="headerfile">ccomplex</filename></entry>
-<entry><filename class="headerfile">cctype</filename></entry>
-<entry><filename class="headerfile">cerrno</filename></entry>
 <entry><filename class="headerfile">cfenv</filename></entry>
-</row>
-<row>
-<entry><filename class="headerfile">cfloat</filename></entry>
 <entry><filename class="headerfile">cinttypes</filename></entry>
-<entry><filename class="headerfile">ciso646</filename></entry>
-<entry><filename class="headerfile">climits</filename></entry>
-<entry><filename class="headerfile">clocale</filename></entry>
-</row>
-<row>
-<entry><filename class="headerfile">cmath</filename></entry>
-<entry><filename class="headerfile">csetjmp</filename></entry>
-<entry><filename class="headerfile">csignal</filename></entry>
-<entry><filename class="headerfile">cstdarg</filename></entry>
+<entry><filename class="headerfile">cstdalign</filename></entry>
 <entry><filename class="headerfile">cstdbool</filename></entry>
 </row>
 <row>
-<entry><filename class="headerfile">cstddef</filename></entry>
 <entry><filename class="headerfile">cstdint</filename></entry>
-<entry><filename class="headerfile">cstdlib</filename></entry>
-<entry><filename class="headerfile">cstdio</filename></entry>
-<entry><filename class="headerfile">cstring</filename></entry>
+<entry><filename class="headerfile">ctgmath</filename></entry>
+<entry><filename class="headerfile">cuchar</filename></entry>
+<entry namest="c4" nameend="c5"/>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+<xref linkend="table.cxx14_headers"/> shows the C++14 include file.
+This is available in C++14 compilation
+mode, i.e. <literal>-std=c++14</literal> or <literal>-std=gnu++14</literal>.
+Including this header in C++98/03 mode or C++11 will not result in
+compilation errors, but will not define anything.
+Unless specified otherwise below, it is also available in later modes
+(C++17 etc).
+</para>
+
+<para/>
+<table frame="all" xml:id="table.cxx14_headers">
+<title>C++ 2014 Library Header</title>
+
+<tgroup cols="1" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<tbody>
+<row>
+<entry><filename class="headerfile">shared_mutex</filename></entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+<xref linkend="table.cxx17_headers"/> shows the C++17 include files.
+These are available in C++17 compilation
+mode, i.e. <literal>-std=c++17</literal> or <literal>-std=gnu++17</literal>.
+Including these headers in earlier modes will not result in
+compilation errors, but will not define anything.
+Unless specified otherwise below, they are also available in later modes
+(C++20 etc).
+</para>
+
+<para/>
+<table frame="all" xml:id="table.cxx17_headers">
+<title>C++ 2017 Library Headers</title>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
+<tbody>
+<row>
+<entry><filename class="headerfile">any</filename></entry>
+<entry><filename class="headerfile">charconv</filename></entry>
+<entry><filename class="headerfile">execution</filename></entry>
+<entry><filename class="headerfile">filesystem</filename></entry>
+<entry><filename class="headerfile">memory_resource</filename></entry>
 </row>
 <row>
+<entry><filename class="headerfile">optional</filename></entry>
+<entry><filename class="headerfile">string_view</filename></entry>
+<entry><filename class="headerfile">variant</filename></entry>
+<entry namest="c4" nameend="c5"/>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+<xref linkend="table.cxx20_headers"/>
+shows the C++2a include files.
+These are available in C++2a compilation
+mode, i.e. <literal>-std=c++2a</literal> or <literal>-std=gnu++2a</literal>.
+Including these headers in earlier modes will not result in
+compilation errors, but will not define anything.
+<!--
+Unless specified otherwise below, they are also available in later modes
+(C++23 etc).
+-->
+</para>
+
+<para/>
+<table frame="all" xml:id="table.cxx20_headers">
+<title>C++ 2020 Library Headers</title>
+
+<tgroup cols="2" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<!--
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
+-->
+<tbody>
+<row>
+<entry><filename class="headerfile">bit</filename></entry>
+<entry><filename class="headerfile">version</filename></entry>
+</row>
+<!-- TODO compare, concepts, contract, span, syncstream -->
+</tbody>
+</tgroup>
+</table>
+
+<para>
+  The following headers have been removed in the C++2a working draft.
+  They are still available when using this implementation, but in future
+  they might start to produce warnings or errors when included in C++2a mode.
+  Programs that intend to be portable should not include them.
+</para>
+
+<table frame="all" xml:id="table.cxx20_deprheaders">
+<title>C++ 2020 Obsolete Headers</title>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
+<tbody>
+<row>
+<entry><filename class="headerfile">ccomplex</filename></entry>
+<entry><filename class="headerfile">ciso646</filename></entry>
+<entry><filename class="headerfile">cstdalign</filename></entry>
+<entry><filename class="headerfile">cstdbool</filename></entry>
 <entry><filename class="headerfile">ctgmath</filename></entry>
-<entry><filename class="headerfile">ctime</filename></entry>
-<entry><filename class="headerfile">cuchar</filename></entry>
-<entry><filename class="headerfile">cwchar</filename></entry>
-<entry><filename class="headerfile">cwctype</filename></entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+<xref linkend="table.filesystemts_headers"/>,
+shows the additional include file define by the
+File System Technical Specification, ISO/IEC TS 18822.
+This is available in C++11 and later compilation modes.
+Including this header in earlier modes will not result in
+compilation errors, but will not define anything.
+</para>
+
+<para/>
+<table frame="all" xml:id="table.filesystemts_headers">
+<title>File System TS Header</title>
+
+<tgroup cols="1" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<tbody>
+<row>
+<entry><filename class="headerfile">experimental/filesystem</filename></entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+
+<para>
+<xref linkend="table.libfundts_headers"/>,
+shows the additional include files define by the C++ Extensions for 
+Library Fundamentals Technical Specification, ISO/IEC TS 19568.
+These are available in C++14 and later compilation modes.
+Including these headers in earlier modes will not result in
+compilation errors, but will not define anything.
+</para>
+
+<para/>
+<table frame="all" xml:id="table.libfundts_headers">
+<title>Library Fundamentals TS Headers</title>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
+<tbody>
+<row>
+<entry><filename class="headerfile">experimental/algorithm</filename></entry>
+<entry><filename class="headerfile">experimental/any</filename></entry>
+<entry><filename class="headerfile">experimental/array</filename></entry>
+<entry><filename class="headerfile">experimental/chrono</filename></entry>
+<entry><filename class="headerfile">experimental/deque</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">experimental/forward_list</filename></entry>
+<entry><filename class="headerfile">experimental/functional</filename></entry>
+<entry><filename class="headerfile">experimental/iterator</filename></entry>
+<entry><filename class="headerfile">experimental/list</filename></entry>
+<entry><filename class="headerfile">experimental/map</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">experimental/memory</filename></entry>
+<entry><filename class="headerfile">experimental/memory_resource</filename></entry>
+<entry><filename class="headerfile">experimental/optional</filename></entry>
+<entry><filename class="headerfile">experimental/propagate_const</filename></entry>
+<entry><filename class="headerfile">experimental/random</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">experimental/ratio</filename></entry>
+<entry><filename class="headerfile">experimental/regex</filename></entry>
+<entry><filename class="headerfile">experimental/set</filename></entry>
+<entry><filename class="headerfile">experimental/source_location</filename></entry>
+<entry><filename class="headerfile">experimental/string</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">experimental/string_view</filename></entry>
+<entry><filename class="headerfile">experimental/ssytem_error</filename></entry>
+<entry><filename class="headerfile">experimental/tuple</filename></entry>
+<entry><filename class="headerfile">experimental/type_traits</filename></entry>
+<entry><filename class="headerfile">experimental/unordered_map</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">experimental/unordered_set</filename></entry>
+<entry><filename class="headerfile">experimental/utility</filename></entry>
+<entry><filename class="headerfile">experimental/vector</filename></entry>
+<entry namest="c4" nameend="c5"/>
 </row>
 </tbody>
 </tgroup>
@@ -426,6 +611,7 @@ mode, i.e. <literal>-std=c++11</literal> or <literal>-std=gnu++11</literal>.
 </row>
 <row>
 <entry><filename class="headerfile">tr1/utility</filename></entry>
+<entry namest="c2" nameend="c5"/>
 </row>
 
 </tbody>
@@ -566,6 +752,7 @@ compiler supports scalar decimal floating-point types defined via
 </row>
 <row>
 <entry><filename class="headerfile">ext/vstring.h</filename></entry>
+<entry namest="c2" nameend="c5"/>
 </row>
 
 </tbody>
@@ -586,18 +773,22 @@ compiler supports scalar decimal floating-point types defined via
 <tbody>
 
 <row>
+<entry><filename class="headerfile">debug/array</filename></entry>
 <entry><filename class="headerfile">debug/bitset</filename></entry>
 <entry><filename class="headerfile">debug/deque</filename></entry>
+<entry><filename class="headerfile">debug/forward_list</filename></entry>
 <entry><filename class="headerfile">debug/list</filename></entry>
+</row>
+<row>
 <entry><filename class="headerfile">debug/map</filename></entry>
 <entry><filename class="headerfile">debug/set</filename></entry>
-</row>
-
-<row>
 <entry><filename class="headerfile">debug/string</filename></entry>
 <entry><filename class="headerfile">debug/unordered_map</filename></entry>
 <entry><filename class="headerfile">debug/unordered_set</filename></entry>
+</row>
+<row>
 <entry><filename class="headerfile">debug/vector</filename></entry>
+<entry namest="c2" nameend="c5"/>
 </row>
 
 </tbody>

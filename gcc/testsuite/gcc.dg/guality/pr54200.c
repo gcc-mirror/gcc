@@ -17,7 +17,7 @@ foo (int z, int x, int b)
   else
     {
       int a = (x + z) + b;
-      return a; /* { dg-final { gdb-test 20 "z" "3" } } */
+      return a; /* { dg-final { gdb-test . "z" "3" } } */
     }
 }
 

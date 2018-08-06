@@ -238,13 +238,11 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 
    OFFSET is the current read offset from the beginning of the block.
    BYTES is the number of bytes remaining to be read.
-   ALIGN is the minimum alignment of the memory blocks being compared in bytes.
-   WORD_MODE_OK indicates using WORD_MODE is allowed, else SImode is
-   the largest allowable mode.  */
+   ALIGN is the minimum alignment of the memory blocks being compared in bytes.  */
 static machine_mode
 select_block_compare_mode (unsigned HOST_WIDE_INT offset,
 			   unsigned HOST_WIDE_INT bytes,
-			   unsigned HOST_WIDE_INT align, bool word_mode_ok)
+			   unsigned HOST_WIDE_INT align)
 {
   /* First see if we can do a whole load unit
      as that will be more efficient than a larger load + shift.  */
@@ -256,6 +254,11 @@ select_block_compare_mode (unsigned HOST_WIDE_INT offset,
 
   /* The most we can read without potential page crossing.  */
   unsigned HOST_WIDE_INT maxread = ROUND_UP (bytes, align);
+
+  /* If we have an LE target without ldbrx and word_mode is DImode,
+     then we must avoid using word_mode.  */
+  int word_mode_ok = !(!BYTES_BIG_ENDIAN && !TARGET_LDBRX
+		       && word_mode == DImode);
 
   if (word_mode_ok && bytes >= UNITS_PER_WORD)
     return word_mode;
@@ -1382,16 +1385,11 @@ expand_block_compare (rtx operands[])
   else
     cond = gen_reg_rtx (CCmode);
 
-  /* If we have an LE target without ldbrx and word_mode is DImode,
-     then we must avoid using word_mode.  */
-  int word_mode_ok = !(!BYTES_BIG_ENDIAN && !TARGET_LDBRX
-		       && word_mode == DImode);
-
   /* Strategy phase.  How many ops will this take and should we expand it?  */
 
   unsigned HOST_WIDE_INT offset = 0;
   machine_mode load_mode =
-    select_block_compare_mode (offset, bytes, base_align, word_mode_ok);
+    select_block_compare_mode (offset, bytes, base_align);
   unsigned int load_mode_size = GET_MODE_SIZE (load_mode);
 
   /* We don't want to generate too much code.  The loop code can take
@@ -1445,8 +1443,7 @@ expand_block_compare (rtx operands[])
   while (bytes > 0)
     {
       unsigned int align = compute_current_alignment (base_align, offset);
-      load_mode = select_block_compare_mode (offset, bytes,
-					     align, word_mode_ok);
+      load_mode = select_block_compare_mode (offset, bytes, align);
       load_mode_size = GET_MODE_SIZE (load_mode);
       if (bytes >= load_mode_size)
 	cmp_bytes = load_mode_size;
@@ -1698,261 +1695,36 @@ expand_strncmp_align_check (rtx strncmp_label, rtx src_addr, HOST_WIDE_INT bytes
   LABEL_NUSES (strncmp_label) += 1;
 }
 
-/* Generate the final sequence that identifies the differing
-   byte and generates the final result, taking into account
-   zero bytes:
-   
-   cmpb              cmpb_result1, src1, src2
-   cmpb              cmpb_result2, src1, zero
-   orc               cmpb_result1, cmp_result1, cmpb_result2
-   cntlzd            get bit of first zero/diff byte
-   addi              convert for rldcl use
-   rldcl rldcl       extract diff/zero byte
-   subf              subtract for final result
-
-   STR1 is the reg rtx for data from string 1.
-   STR2 is the reg rtx for data from string 2.
-   RESULT is the reg rtx for the comparison result.  */
-
+/* Generate the sequence of compares for strcmp/strncmp using gpr instructions.
+   BYTES_TO_COMPARE is the number of bytes to be compared.
+   BASE_ALIGN is the smaller of the alignment of the two strings.
+   ORIG_SRC1 is the unmodified rtx for the first string.
+   ORIG_SRC2 is the unmodified rtx for the second string.
+   TMP_REG_SRC1 is the register for loading the first string.
+   TMP_REG_SRC2 is the register for loading the second string.
+   RESULT_REG is the rtx for the result register.
+   EQUALITY_COMPARE_REST is a flag to indicate we need to make a cleanup call
+   to strcmp/strncmp if we have equality at the end of the inline comparison.
+   CLEANUP_LABEL is rtx for a label we generate if we need code to clean up
+   and generate the final comparison result.
+   FINAL_MOVE_LABEL is rtx for a label we can branch to when we can just 
+   set the final result.  */
 static void
-emit_final_str_compare_gpr (rtx str1, rtx str2, rtx result)
+expand_strncmp_gpr_sequence(unsigned HOST_WIDE_INT bytes_to_compare,
+			    unsigned int base_align,
+			    rtx orig_src1, rtx orig_src2,
+			    rtx tmp_reg_src1, rtx tmp_reg_src2, rtx result_reg,
+			    bool equality_compare_rest, rtx &cleanup_label,
+			    rtx final_move_label)
 {
-  machine_mode m = GET_MODE (str1);
-  rtx cmpb_diff = gen_reg_rtx (m);
-  rtx cmpb_zero = gen_reg_rtx (m);
-  rtx rot_amt = gen_reg_rtx (m);
-  rtx zero_reg = gen_reg_rtx (m);
-
-  rtx rot1_1 = gen_reg_rtx (m);
-  rtx rot1_2 = gen_reg_rtx (m);
-  rtx rot2_1 = gen_reg_rtx (m);
-  rtx rot2_2 = gen_reg_rtx (m);
-
-  if (m == SImode)
-    {
-      emit_insn (gen_cmpbsi3 (cmpb_diff, str1, str2));
-      emit_insn (gen_movsi (zero_reg, GEN_INT (0)));
-      emit_insn (gen_cmpbsi3 (cmpb_zero, str1, zero_reg));
-      emit_insn (gen_one_cmplsi2 (cmpb_diff,cmpb_diff));
-      emit_insn (gen_iorsi3 (cmpb_diff, cmpb_diff, cmpb_zero));
-      emit_insn (gen_clzsi2 (rot_amt, cmpb_diff));
-      emit_insn (gen_addsi3 (rot_amt, rot_amt, GEN_INT (8)));
-      emit_insn (gen_rotlsi3 (rot1_1, str1,
-			      gen_lowpart (SImode, rot_amt)));
-      emit_insn (gen_andsi3_mask (rot1_2, rot1_1, GEN_INT (0xff)));
-      emit_insn (gen_rotlsi3 (rot2_1, str2,
-			      gen_lowpart (SImode, rot_amt)));
-      emit_insn (gen_andsi3_mask (rot2_2, rot2_1, GEN_INT (0xff)));
-      emit_insn (gen_subsi3 (result, rot1_2, rot2_2));
-    }
-  else if (m == DImode)
-    {
-      emit_insn (gen_cmpbdi3 (cmpb_diff, str1, str2));
-      emit_insn (gen_movdi (zero_reg, GEN_INT (0)));
-      emit_insn (gen_cmpbdi3 (cmpb_zero, str1, zero_reg));
-      emit_insn (gen_one_cmpldi2 (cmpb_diff,cmpb_diff));
-      emit_insn (gen_iordi3 (cmpb_diff, cmpb_diff, cmpb_zero));
-      emit_insn (gen_clzdi2 (rot_amt, cmpb_diff));
-      emit_insn (gen_adddi3 (rot_amt, rot_amt, GEN_INT (8)));
-      emit_insn (gen_rotldi3 (rot1_1, str1,
-			      gen_lowpart (SImode, rot_amt)));
-      emit_insn (gen_anddi3_mask (rot1_2, rot1_1, GEN_INT (0xff)));
-      emit_insn (gen_rotldi3 (rot2_1, str2,
-			      gen_lowpart (SImode, rot_amt)));
-      emit_insn (gen_anddi3_mask (rot2_2, rot2_1, GEN_INT (0xff)));
-      emit_insn (gen_subdi3 (result, rot1_2, rot2_2));
-    }
-  else
-    gcc_unreachable ();
-    
-  return;
-}
-
-/* Expand a string compare operation with length, and return
-   true if successful. Return false if we should let the
-   compiler generate normal code, probably a strncmp call.
-
-   OPERANDS[0] is the target (result).
-   OPERANDS[1] is the first source.
-   OPERANDS[2] is the second source.
-   If NO_LENGTH is zero, then:
-   OPERANDS[3] is the length.
-   OPERANDS[4] is the alignment in bytes.
-   If NO_LENGTH is nonzero, then:
-   OPERANDS[3] is the alignment in bytes.  */
-bool
-expand_strn_compare (rtx operands[], int no_length)
-{
-  rtx target = operands[0];
-  rtx orig_src1 = operands[1];
-  rtx orig_src2 = operands[2];
-  rtx bytes_rtx, align_rtx;
-  if (no_length)
-    {
-      bytes_rtx = NULL;
-      align_rtx = operands[3];
-    }
-  else
-    {
-      bytes_rtx = operands[3];
-      align_rtx = operands[4];
-    }
+  unsigned int word_mode_size = GET_MODE_SIZE (word_mode);
+  machine_mode load_mode;
+  unsigned int load_mode_size;
   unsigned HOST_WIDE_INT cmp_bytes = 0;
+  unsigned HOST_WIDE_INT offset = 0;
   rtx src1_addr = force_reg (Pmode, XEXP (orig_src1, 0));
   rtx src2_addr = force_reg (Pmode, XEXP (orig_src2, 0));
 
-  /* If we have a length, it must be constant. This simplifies things
-     a bit as we don't have to generate code to check if we've exceeded
-     the length. Later this could be expanded to handle this case.  */
-  if (!no_length && !CONST_INT_P (bytes_rtx))
-    return false;
-
-  /* This must be a fixed size alignment.  */
-  if (!CONST_INT_P (align_rtx))
-    return false;
-
-  unsigned int base_align = UINTVAL (align_rtx);
-  unsigned int align1 = MEM_ALIGN (orig_src1) / BITS_PER_UNIT;
-  unsigned int align2 = MEM_ALIGN (orig_src2) / BITS_PER_UNIT;
-
-  /* targetm.slow_unaligned_access -- don't do unaligned stuff.  */
-  if (targetm.slow_unaligned_access (word_mode, align1)
-      || targetm.slow_unaligned_access (word_mode, align2))
-    return false;
-
-  gcc_assert (GET_MODE (target) == SImode);
-
-  /* If we have an LE target without ldbrx and word_mode is DImode,
-     then we must avoid using word_mode.  */
-  int word_mode_ok = !(!BYTES_BIG_ENDIAN && !TARGET_LDBRX
-		       && word_mode == DImode);
-
-  unsigned int word_mode_size = GET_MODE_SIZE (word_mode);
-
-  unsigned HOST_WIDE_INT offset = 0;
-  unsigned HOST_WIDE_INT bytes; /* N from the strncmp args if available.  */
-  unsigned HOST_WIDE_INT compare_length; /* How much to compare inline.  */
-  if (no_length)
-    /* Use this as a standin to determine the mode to use.  */
-    bytes = rs6000_string_compare_inline_limit * word_mode_size;
-  else
-    bytes = UINTVAL (bytes_rtx);
-
-  machine_mode load_mode =
-    select_block_compare_mode (offset, bytes, base_align, word_mode_ok);
-  unsigned int load_mode_size = GET_MODE_SIZE (load_mode);
-  compare_length = rs6000_string_compare_inline_limit * load_mode_size;
-
-  /* If we have equality at the end of the last compare and we have not
-     found the end of the string, we need to call strcmp/strncmp to
-     compare the remainder.  */
-  bool equality_compare_rest = false;
-
-  if (no_length)
-    {
-      bytes = compare_length;
-      equality_compare_rest = true;
-    }
-  else
-    {
-      if (bytes <= compare_length)
-	compare_length = bytes;
-      else
-	equality_compare_rest = true;
-    }
-
-  rtx result_reg = gen_reg_rtx (word_mode);
-  rtx final_move_label = gen_label_rtx ();
-  rtx final_label = gen_label_rtx ();
-  rtx begin_compare_label = NULL;
-  unsigned int required_align = 8;
-
-  if (base_align < required_align)
-    {
-      /* Generate code that checks distance to 4k boundary for this case.  */
-      begin_compare_label = gen_label_rtx ();
-      rtx strncmp_label = gen_label_rtx ();
-      rtx jmp;
-
-      /* Strncmp for power8 in glibc does this:
-	 rldicl r8,r3,0,52
-	 cmpldi cr7,r8,4096-16
-	 bgt    cr7,L(pagecross) */
-
-      /* Make sure that the length we use for the alignment test and
-         the subsequent code generation are in agreement so we do not
-         go past the length we tested for a 4k boundary crossing.  */
-      unsigned HOST_WIDE_INT align_test = compare_length;
-      if (align_test < 8)
-        {
-          align_test = HOST_WIDE_INT_1U << ceil_log2 (align_test);
-          base_align = align_test;
-        }
-      else
-        {
-          align_test = ROUND_UP (align_test, required_align);
-          base_align = required_align;
-        }
-
-      if (align1 < required_align)
-        expand_strncmp_align_check (strncmp_label, src1_addr, align_test);
-      if (align2 < required_align)
-        expand_strncmp_align_check (strncmp_label, src2_addr, align_test);
-
-      /* Now generate the following sequence:
-	 - branch to begin_compare
-	 - strncmp_label
-	 - call to strncmp
-	 - branch to final_label
-	 - begin_compare_label */
-
-      rtx cmp_ref = gen_rtx_LABEL_REF (VOIDmode, begin_compare_label);
-      jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, cmp_ref));
-      JUMP_LABEL (jmp) = begin_compare_label;
-      LABEL_NUSES (begin_compare_label) += 1;
-      emit_barrier ();
-
-      emit_label (strncmp_label);
-
-      if (no_length)
-	{
-	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
-	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target),
-				   force_reg (Pmode, src1_addr), Pmode,
-				   force_reg (Pmode, src2_addr), Pmode);
-	}
-      else
-	{
-	  /* -m32 -mpowerpc64 results in word_mode being DImode even
-	     though otherwise it is 32-bit. The length arg to strncmp
-	     is a size_t which will be the same size as pointers.  */
-	  rtx len_rtx = gen_reg_rtx (Pmode);
-	  emit_move_insn (len_rtx, gen_int_mode (bytes, Pmode));
-
-	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
-	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target),
-				   force_reg (Pmode, src1_addr), Pmode,
-				   force_reg (Pmode, src2_addr), Pmode,
-				   len_rtx, Pmode);
-	}
-
-      rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
-      jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, fin_ref));
-      JUMP_LABEL (jmp) = final_label;
-      LABEL_NUSES (final_label) += 1;
-      emit_barrier ();
-      emit_label (begin_compare_label);
-    }
-
-  rtx cleanup_label = NULL;
-  rtx tmp_reg_src1 = gen_reg_rtx (word_mode);
-  rtx tmp_reg_src2 = gen_reg_rtx (word_mode);
-
-  /* Generate a sequence of GPR or VEC/VSX instructions to compare out
-     to the length specified.  */
-  unsigned HOST_WIDE_INT bytes_to_compare = compare_length;
   while (bytes_to_compare > 0)
     {
       /* GPR compare sequence:
@@ -1971,8 +1743,7 @@ expand_strn_compare (rtx operands[], int no_length)
          result is zero because the strings are exactly equal.  */
       
       unsigned int align = compute_current_alignment (base_align, offset);
-      load_mode = select_block_compare_mode (offset, bytes_to_compare,
-					     align, word_mode_ok);
+      load_mode = select_block_compare_mode (offset, bytes_to_compare, align);
       load_mode_size = GET_MODE_SIZE (load_mode);
       if (bytes_to_compare >= load_mode_size)
 	cmp_bytes = load_mode_size;
@@ -2105,6 +1876,268 @@ expand_strn_compare (rtx operands[], int no_length)
       bytes_to_compare -= cmp_bytes;
     }
 
+}
+
+/* Generate the final sequence that identifies the differing
+   byte and generates the final result, taking into account
+   zero bytes:
+   
+   cmpb              cmpb_result1, src1, src2
+   cmpb              cmpb_result2, src1, zero
+   orc               cmpb_result1, cmp_result1, cmpb_result2
+   cntlzd            get bit of first zero/diff byte
+   addi              convert for rldcl use
+   rldcl rldcl       extract diff/zero byte
+   subf              subtract for final result
+
+   STR1 is the reg rtx for data from string 1.
+   STR2 is the reg rtx for data from string 2.
+   RESULT is the reg rtx for the comparison result.  */
+
+static void
+emit_final_str_compare_gpr (rtx str1, rtx str2, rtx result)
+{
+  machine_mode m = GET_MODE (str1);
+  rtx cmpb_diff = gen_reg_rtx (m);
+  rtx cmpb_zero = gen_reg_rtx (m);
+  rtx rot_amt = gen_reg_rtx (m);
+  rtx zero_reg = gen_reg_rtx (m);
+
+  rtx rot1_1 = gen_reg_rtx (m);
+  rtx rot1_2 = gen_reg_rtx (m);
+  rtx rot2_1 = gen_reg_rtx (m);
+  rtx rot2_2 = gen_reg_rtx (m);
+
+  if (m == SImode)
+    {
+      emit_insn (gen_cmpbsi3 (cmpb_diff, str1, str2));
+      emit_insn (gen_movsi (zero_reg, GEN_INT (0)));
+      emit_insn (gen_cmpbsi3 (cmpb_zero, str1, zero_reg));
+      emit_insn (gen_one_cmplsi2 (cmpb_diff,cmpb_diff));
+      emit_insn (gen_iorsi3 (cmpb_diff, cmpb_diff, cmpb_zero));
+      emit_insn (gen_clzsi2 (rot_amt, cmpb_diff));
+      emit_insn (gen_addsi3 (rot_amt, rot_amt, GEN_INT (8)));
+      emit_insn (gen_rotlsi3 (rot1_1, str1,
+			      gen_lowpart (SImode, rot_amt)));
+      emit_insn (gen_andsi3_mask (rot1_2, rot1_1, GEN_INT (0xff)));
+      emit_insn (gen_rotlsi3 (rot2_1, str2,
+			      gen_lowpart (SImode, rot_amt)));
+      emit_insn (gen_andsi3_mask (rot2_2, rot2_1, GEN_INT (0xff)));
+      emit_insn (gen_subsi3 (result, rot1_2, rot2_2));
+    }
+  else if (m == DImode)
+    {
+      emit_insn (gen_cmpbdi3 (cmpb_diff, str1, str2));
+      emit_insn (gen_movdi (zero_reg, GEN_INT (0)));
+      emit_insn (gen_cmpbdi3 (cmpb_zero, str1, zero_reg));
+      emit_insn (gen_one_cmpldi2 (cmpb_diff,cmpb_diff));
+      emit_insn (gen_iordi3 (cmpb_diff, cmpb_diff, cmpb_zero));
+      emit_insn (gen_clzdi2 (rot_amt, cmpb_diff));
+      emit_insn (gen_adddi3 (rot_amt, rot_amt, GEN_INT (8)));
+      emit_insn (gen_rotldi3 (rot1_1, str1,
+			      gen_lowpart (SImode, rot_amt)));
+      emit_insn (gen_anddi3_mask (rot1_2, rot1_1, GEN_INT (0xff)));
+      emit_insn (gen_rotldi3 (rot2_1, str2,
+			      gen_lowpart (SImode, rot_amt)));
+      emit_insn (gen_anddi3_mask (rot2_2, rot2_1, GEN_INT (0xff)));
+      emit_insn (gen_subdi3 (result, rot1_2, rot2_2));
+    }
+  else
+    gcc_unreachable ();
+    
+  return;
+}
+
+/* Expand a string compare operation with length, and return
+   true if successful. Return false if we should let the
+   compiler generate normal code, probably a strncmp call.
+
+   OPERANDS[0] is the target (result).
+   OPERANDS[1] is the first source.
+   OPERANDS[2] is the second source.
+   If NO_LENGTH is zero, then:
+   OPERANDS[3] is the length.
+   OPERANDS[4] is the alignment in bytes.
+   If NO_LENGTH is nonzero, then:
+   OPERANDS[3] is the alignment in bytes.  */
+bool
+expand_strn_compare (rtx operands[], int no_length)
+{
+  rtx target = operands[0];
+  rtx orig_src1 = operands[1];
+  rtx orig_src2 = operands[2];
+  rtx bytes_rtx, align_rtx;
+  if (no_length)
+    {
+      bytes_rtx = NULL;
+      align_rtx = operands[3];
+    }
+  else
+    {
+      bytes_rtx = operands[3];
+      align_rtx = operands[4];
+    }
+
+  rtx src1_addr = force_reg (Pmode, XEXP (orig_src1, 0));
+  rtx src2_addr = force_reg (Pmode, XEXP (orig_src2, 0));
+
+  /* If we have a length, it must be constant. This simplifies things
+     a bit as we don't have to generate code to check if we've exceeded
+     the length. Later this could be expanded to handle this case.  */
+  if (!no_length && !CONST_INT_P (bytes_rtx))
+    return false;
+
+  /* This must be a fixed size alignment.  */
+  if (!CONST_INT_P (align_rtx))
+    return false;
+
+  unsigned int base_align = UINTVAL (align_rtx);
+  unsigned int align1 = MEM_ALIGN (orig_src1) / BITS_PER_UNIT;
+  unsigned int align2 = MEM_ALIGN (orig_src2) / BITS_PER_UNIT;
+
+  /* targetm.slow_unaligned_access -- don't do unaligned stuff.  */
+  if (targetm.slow_unaligned_access (word_mode, align1)
+      || targetm.slow_unaligned_access (word_mode, align2))
+    return false;
+
+  gcc_assert (GET_MODE (target) == SImode);
+
+  unsigned int word_mode_size = GET_MODE_SIZE (word_mode);
+
+  unsigned HOST_WIDE_INT offset = 0;
+  unsigned HOST_WIDE_INT bytes; /* N from the strncmp args if available.  */
+  unsigned HOST_WIDE_INT compare_length; /* How much to compare inline.  */
+  if (no_length)
+    /* Use this as a standin to determine the mode to use.  */
+    bytes = rs6000_string_compare_inline_limit * word_mode_size;
+  else
+    bytes = UINTVAL (bytes_rtx);
+
+  machine_mode load_mode =
+    select_block_compare_mode (0, bytes, base_align);
+  unsigned int load_mode_size = GET_MODE_SIZE (load_mode);
+  compare_length = rs6000_string_compare_inline_limit * load_mode_size;
+
+  /* If we have equality at the end of the last compare and we have not
+     found the end of the string, we need to call strcmp/strncmp to
+     compare the remainder.  */
+  bool equality_compare_rest = false;
+
+  if (no_length)
+    {
+      bytes = compare_length;
+      equality_compare_rest = true;
+    }
+  else
+    {
+      if (bytes <= compare_length)
+	compare_length = bytes;
+      else
+	equality_compare_rest = true;
+    }
+
+  rtx result_reg = gen_reg_rtx (word_mode);
+  rtx final_move_label = gen_label_rtx ();
+  rtx final_label = gen_label_rtx ();
+  rtx begin_compare_label = NULL;
+  unsigned int required_align = 8;
+
+  required_align = 8;
+
+  if (base_align < required_align)
+    {
+      /* Generate code that checks distance to 4k boundary for this case.  */
+      begin_compare_label = gen_label_rtx ();
+      rtx strncmp_label = gen_label_rtx ();
+      rtx jmp;
+
+      /* Strncmp for power8 in glibc does this:
+	 rldicl r8,r3,0,52
+	 cmpldi cr7,r8,4096-16
+	 bgt    cr7,L(pagecross) */
+
+      /* Make sure that the length we use for the alignment test and
+         the subsequent code generation are in agreement so we do not
+         go past the length we tested for a 4k boundary crossing.  */
+      unsigned HOST_WIDE_INT align_test = compare_length;
+      if (align_test < 8)
+        {
+          align_test = HOST_WIDE_INT_1U << ceil_log2 (align_test);
+          base_align = align_test;
+        }
+      else
+        {
+          align_test = ROUND_UP (align_test, required_align);
+          base_align = required_align;
+        }
+
+      if (align1 < required_align)
+        expand_strncmp_align_check (strncmp_label, src1_addr, align_test);
+      if (align2 < required_align)
+        expand_strncmp_align_check (strncmp_label, src2_addr, align_test);
+
+      /* Now generate the following sequence:
+	 - branch to begin_compare
+	 - strncmp_label
+	 - call to strncmp
+	 - branch to final_label
+	 - begin_compare_label */
+
+      rtx cmp_ref = gen_rtx_LABEL_REF (VOIDmode, begin_compare_label);
+      jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, cmp_ref));
+      JUMP_LABEL (jmp) = begin_compare_label;
+      LABEL_NUSES (begin_compare_label) += 1;
+      emit_barrier ();
+
+      emit_label (strncmp_label);
+
+      if (no_length)
+	{
+	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
+	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
+				   target, LCT_NORMAL, GET_MODE (target),
+				   force_reg (Pmode, src1_addr), Pmode,
+				   force_reg (Pmode, src2_addr), Pmode);
+	}
+      else
+	{
+	  /* -m32 -mpowerpc64 results in word_mode being DImode even
+	     though otherwise it is 32-bit. The length arg to strncmp
+	     is a size_t which will be the same size as pointers.  */
+	  rtx len_rtx = gen_reg_rtx (Pmode);
+	  emit_move_insn (len_rtx, gen_int_mode (bytes, Pmode));
+
+	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
+	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
+				   target, LCT_NORMAL, GET_MODE (target),
+				   force_reg (Pmode, src1_addr), Pmode,
+				   force_reg (Pmode, src2_addr), Pmode,
+				   len_rtx, Pmode);
+	}
+
+      rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
+      jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, fin_ref));
+      JUMP_LABEL (jmp) = final_label;
+      LABEL_NUSES (final_label) += 1;
+      emit_barrier ();
+      emit_label (begin_compare_label);
+    }
+
+  rtx cleanup_label = NULL;
+  rtx tmp_reg_src1 = gen_reg_rtx (word_mode);
+  rtx tmp_reg_src2 = gen_reg_rtx (word_mode);
+
+  /* Generate a sequence of GPR or VEC/VSX instructions to compare out
+     to the length specified.  */
+  expand_strncmp_gpr_sequence(compare_length, base_align,
+			      orig_src1, orig_src2,
+			      tmp_reg_src1, tmp_reg_src2,
+			      result_reg,
+			      equality_compare_rest,
+			      cleanup_label, final_move_label);
+
+  offset = compare_length;
+  
   if (equality_compare_rest)
     {
       /* Update pointers past what has been compared already.  */

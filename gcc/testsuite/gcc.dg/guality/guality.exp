@@ -62,7 +62,8 @@ proc guality_transform_options { args } {
 }
 
 global DG_TORTURE_OPTIONS
-set guality_dg_torture_options [guality_transform_options $DG_TORTURE_OPTIONS]
+set guality_dg_torture_options [guality_minimal_options $DG_TORTURE_OPTIONS]
+set guality_dg_torture_options [guality_transform_options $guality_dg_torture_options]
 set guality_lto_torture_options [guality_transform_options $LTO_TORTURE_OPTIONS]
 torture-init
 set-torture-options \

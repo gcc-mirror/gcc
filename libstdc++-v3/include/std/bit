@@ -62,45 +62,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countl_zero(_Tp __x) noexcept
     {
-      using __limits = numeric_limits<_Tp>;
+      constexpr auto _Nd = numeric_limits<_Tp>::digits;
 
       if (__x == 0)
-        return __limits::digits;
+        return _Nd;
 
-      using __limits_ull = numeric_limits<unsigned long long>;
-      using __limits_ul = numeric_limits<unsigned long>;
-      using __limits_u = numeric_limits<unsigned>;
+      constexpr auto _Nd_ull = numeric_limits<unsigned long long>::digits;
+      constexpr auto _Nd_ul = numeric_limits<unsigned long>::digits;
+      constexpr auto _Nd_u = numeric_limits<unsigned>::digits;
 
-      if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_u::digits)
+      if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_u)
 	{
-	  constexpr int __diff = __limits_u::digits - __limits::digits;
+	  constexpr int __diff = _Nd_u - _Nd;
 	  return __builtin_clz(__x) - __diff;
 	}
-      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ul::digits)
+      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ul)
 	{
-	  constexpr int __diff = __limits_ul::digits - __limits::digits;
+	  constexpr int __diff = _Nd_ul - _Nd;
 	  return __builtin_clzl(__x) - __diff;
 	}
-      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ull::digits)
+      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ull)
 	{
-	  constexpr int __diff = __limits_ull::digits - __limits::digits;
+	  constexpr int __diff = _Nd_ull - _Nd;
 	  return __builtin_clzll(__x) - __diff;
 	}
-      else // (__limits::digits > __limits_ull::digits)
+      else // (_Nd > _Nd_ull)
 	{
-	  static_assert(__limits::digits <= (2 * __limits_ull::digits),
+	  static_assert(_Nd <= (2 * _Nd_ull),
 			"Maximum supported integer size is 128-bit");
 
-	  unsigned long long __high = __x >> __limits_ull::digits;
+	  unsigned long long __high = __x >> _Nd_ull;
 	  if (__high != 0)
 	    {
-	      constexpr int __diff
-		= (2 * __limits_ull::digits) - __limits::digits;
+	      constexpr int __diff = (2 * _Nd_ull) - _Nd;
 	      return __builtin_clzll(__high) - __diff;
 	    }
-	  unsigned long long __low = __x & __limits_ull::max();
-	  return (__limits::digits - __limits_ull::digits)
-	    + __builtin_clzll(__low);
+	  constexpr auto __max_ull = numeric_limits<unsigned long long>::max();
+	  unsigned long long __low = __x & __max_ull;
+	  return (_Nd - _Nd_ull) + __builtin_clzll(__low);
 	}
     }
 
@@ -117,31 +116,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countr_zero(_Tp __x) noexcept
     {
-      using __limits = numeric_limits<_Tp>;
+      constexpr auto _Nd = numeric_limits<_Tp>::digits;
 
       if (__x == 0)
-        return __limits::digits;
+        return _Nd;
 
-      using __limits_ull = numeric_limits<unsigned long long>;
-      using __limits_ul = numeric_limits<unsigned long>;
-      using __limits_u = numeric_limits<unsigned>;
+      constexpr auto _Nd_ull = numeric_limits<unsigned long long>::digits;
+      constexpr auto _Nd_ul = numeric_limits<unsigned long>::digits;
+      constexpr auto _Nd_u = numeric_limits<unsigned>::digits;
 
-      if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_u::digits)
+      if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_u)
 	return __builtin_ctz(__x);
-      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ul::digits)
+      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ul)
 	return __builtin_ctzl(__x);
-      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ull::digits)
+      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ull)
 	return __builtin_ctzll(__x);
-      else // (__limits::digits > __limits_ull::digits)
+      else // (_Nd > _Nd_ull)
 	{
-	  static_assert(__limits::digits <= (2 * __limits_ull::digits),
+	  static_assert(_Nd <= (2 * _Nd_ull),
 			"Maximum supported integer size is 128-bit");
 
-	  unsigned long long __low = __x & __limits_ull::max();
+	  constexpr auto __max_ull = numeric_limits<unsigned long long>::max();
+	  unsigned long long __low = __x & __max_ull;
 	  if (__low != 0)
 	    return __builtin_ctzll(__low);
-	  unsigned long long __high = __x >> __limits_ull::digits;
-	  return __builtin_ctzll(__high) + __limits_ull::digits;
+	  unsigned long long __high = __x >> _Nd_ull;
+	  return __builtin_ctzll(__high) + _Nd_ull;
 	}
     }
 
@@ -158,28 +158,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __popcount(_Tp __x) noexcept
     {
-      using __limits = numeric_limits<_Tp>;
+      constexpr auto _Nd = numeric_limits<_Tp>::digits;
 
       if (__x == 0)
         return 0;
 
-      using __limits_ull = numeric_limits<unsigned long long>;
-      using __limits_ul = numeric_limits<unsigned long>;
-      using __limits_u = numeric_limits<unsigned>;
+      constexpr auto _Nd_ull = numeric_limits<unsigned long long>::digits;
+      constexpr auto _Nd_ul = numeric_limits<unsigned long>::digits;
+      constexpr auto _Nd_u = numeric_limits<unsigned>::digits;
 
-      if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_u::digits)
+      if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_u)
 	return __builtin_popcount(__x);
-      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ul::digits)
+      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ul)
 	return __builtin_popcountl(__x);
-      else if _GLIBCXX17_CONSTEXPR (__limits::digits <= __limits_ull::digits)
+      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ull)
 	return __builtin_popcountll(__x);
-      else // (__limits::digits > __limits_ull::digits)
+      else // (_Nd > _Nd_ull)
 	{
-	  static_assert(__limits::digits <= (2 * __limits_ull::digits),
+	  static_assert(_Nd <= (2 * _Nd_ull),
 			"Maximum supported integer size is 128-bit");
 
-	  unsigned long long __low = __x & __limits_ull::max();
-	  unsigned long long __high = __x >> __limits_ull::digits;
+	  constexpr auto __max_ull = numeric_limits<unsigned long long>::max();
+	  unsigned long long __low = __x & __max_ull;
+	  unsigned long long __high = __x >> _Nd_ull;
 	  return __builtin_popcountll(__low) + __builtin_popcountll(__high);
 	}
     }
@@ -214,8 +215,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __log2p1(_Tp __x) noexcept
     {
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
-      if (__x == 0)
-	return 0;
       return _Nd - std::__countl_zero(__x);
     }
 

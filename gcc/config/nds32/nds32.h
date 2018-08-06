@@ -1630,13 +1630,16 @@ enum reg_class
 #define DWARF2_UNWIND_INFO 1
 
 #define JUMP_ALIGN(x) \
-  (align_jumps_log ? align_jumps_log : nds32_target_alignment (x))
+  (align_jumps.levels[0].log \
+   ? align_jumps : align_flags (nds32_target_alignment (x)))
 
 #define LOOP_ALIGN(x) \
-  (align_loops_log ? align_loops_log : nds32_target_alignment (x))
+  (align_loops.levels[0].log \
+   ? align_loops : align_flags (nds32_target_alignment (x)))
 
 #define LABEL_ALIGN(x) \
-  (align_labels_log ? align_labels_log : nds32_target_alignment (x))
+  (align_labels.levels[0].log \
+   ? align_labels : align_flags (nds32_target_alignment (x)))
 
 #define ASM_OUTPUT_ALIGN(stream, power) \
   fprintf (stream, "\t.align\t%d\n", power)

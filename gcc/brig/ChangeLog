@@ -1,3 +1,9 @@
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82063
+	* brig/brig-lang.c (brig_langhook_handle_option): Change function
+	argument to HOST_WIDE_INT.
+
 2018-07-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR hsa/86371

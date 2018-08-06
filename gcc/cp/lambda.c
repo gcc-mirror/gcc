@@ -1214,8 +1214,7 @@ maybe_add_lambda_conv_op (tree type)
 
   /* Now build up the thunk to be returned.  */
 
-  name = get_identifier ("_FUN");
-  tree statfn = build_lang_decl (FUNCTION_DECL, name, stattype);
+  tree statfn = build_lang_decl (FUNCTION_DECL, fun_identifier, stattype);
   SET_DECL_LANGUAGE (statfn, lang_cplusplus);
   fn = statfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);

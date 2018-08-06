@@ -935,8 +935,12 @@ vect_set_loop_condition (struct loop *loop, loop_vec_info loop_vinfo,
 						  loop_cond_gsi);
 
   /* Remove old loop exit test.  */
-  gsi_remove (&loop_cond_gsi, true);
-  free_stmt_vec_info (orig_cond);
+  stmt_vec_info orig_cond_info;
+  if (loop_vinfo
+      && (orig_cond_info = loop_vinfo->lookup_stmt (orig_cond)))
+    loop_vinfo->remove_stmt (orig_cond_info);
+  else
+    gsi_remove (&loop_cond_gsi, true);
 
   if (dump_enabled_p ())
     {
@@ -1335,16 +1339,16 @@ find_loop_location (struct loop *loop)
   return dump_user_location_t ();
 }
 
-/* Return true if PHI defines an IV of the loop to be vectorized.  */
+/* Return true if the phi described by STMT_INFO defines an IV of the
+   loop to be vectorized.  */
 
 static bool
-iv_phi_p (gphi *phi)
+iv_phi_p (stmt_vec_info stmt_info)
 {
+  gphi *phi = as_a <gphi *> (stmt_info->stmt);
   if (virtual_operand_p (PHI_RESULT (phi)))
     return false;
 
-  stmt_vec_info stmt_info = vinfo_for_stmt (phi);
-  gcc_assert (stmt_info != NULL);
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
     return false;
@@ -1377,17 +1381,18 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
       tree evolution_part;
 
       gphi *phi = gsi.phi ();
+      stmt_vec_info phi_info = loop_vinfo->lookup_stmt (phi);
       if (dump_enabled_p ())
 	{
-          dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
-          dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
+	  dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi_info->stmt, 0);
 	}
 
       /* Skip virtual phi's. The data dependences that are associated with
 	 virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.
 
 	 Skip reduction phis.  */
-      if (!iv_phi_p (phi))
+      if (!iv_phi_p (phi_info))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -1397,8 +1402,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 
       /* Analyze the evolution function.  */
 
-      evolution_part
-	= STMT_VINFO_LOOP_PHI_EVOLUTION_PART (vinfo_for_stmt (phi));
+      evolution_part = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (phi_info);
       if (evolution_part == NULL_TREE)
         {
 	  if (dump_enabled_p ())
@@ -1500,6 +1504,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 
       gphi *phi = gsi.phi ();
       gphi *phi1 = gsi1.phi ();
+      stmt_vec_info phi_info = loop_vinfo->lookup_stmt (phi);
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
@@ -1508,7 +1513,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 	}
 
       /* Skip reduction and virtual phis.  */
-      if (!iv_phi_p (phi))
+      if (!iv_phi_p (phi_info))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -1517,7 +1522,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 	}
 
       type = TREE_TYPE (gimple_phi_result (phi));
-      step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (vinfo_for_stmt (phi));
+      step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (phi_info);
       step_expr = unshare_expr (step_expr);
 
       /* FORNOW: We do not support IVs whose evolution function is a polynomial
@@ -1559,19 +1564,19 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 static tree
 get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
 {
-  struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
-  gimple *dr_stmt = vect_dr_stmt (dr);
-  stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
+  dr_vec_info *dr_info = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
+  stmt_vec_info stmt_info = dr_info->stmt;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 
-  unsigned int target_align = DR_TARGET_ALIGNMENT (dr);
+  unsigned int target_align = DR_TARGET_ALIGNMENT (dr_info);
   gcc_assert (target_align != 0);
 
-  bool negative = tree_int_cst_compare (DR_STEP (dr), size_zero_node) < 0;
+  bool negative = tree_int_cst_compare (DR_STEP (dr_info->dr),
+					size_zero_node) < 0;
   tree offset = (negative
 		 ? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1)
 		 : size_zero_node);
-  tree start_addr = vect_create_addr_base_for_vector_ref (dr_stmt, seq,
+  tree start_addr = vect_create_addr_base_for_vector_ref (stmt_info, seq,
 							  offset);
   tree type = unsigned_type_for (TREE_TYPE (start_addr));
   tree target_align_minus_1 = build_int_cst (type, target_align - 1);
@@ -1626,15 +1631,14 @@ static tree
 vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
 			     basic_block bb, int *bound)
 {
-  struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
+  dr_vec_info *dr_info = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
   tree var;
   tree niters_type = TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo));
   gimple_seq stmts = NULL, new_stmts = NULL;
   tree iters, iters_name;
-  gimple *dr_stmt = vect_dr_stmt (dr);
-  stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
+  stmt_vec_info stmt_info = dr_info->stmt;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  unsigned int target_align = DR_TARGET_ALIGNMENT (dr);
+  unsigned int target_align = DR_TARGET_ALIGNMENT (dr_info);
 
   if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
     {
@@ -1659,7 +1663,8 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
 
       /* Create:  (niters_type) ((align_in_elems - misalign_in_elems)
 				 & (align_in_elems - 1)).  */
-      bool negative = tree_int_cst_compare (DR_STEP (dr), size_zero_node) < 0;
+      bool negative = tree_int_cst_compare (DR_STEP (dr_info->dr),
+					    size_zero_node) < 0;
       if (negative)
 	iters = fold_build2 (MINUS_EXPR, type, misalign_in_elems,
 			     align_in_elems_tree);
@@ -1753,8 +1758,8 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters,
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
-      gimple *stmt = DR_STMT (dr);
-      if (!STMT_VINFO_GATHER_SCATTER_P (vinfo_for_stmt (stmt)))
+      dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
+      if (!STMT_VINFO_GATHER_SCATTER_P (dr_info->stmt))
 	vect_update_init_of_dr (dr, niters, code);
     }
 }
@@ -2089,7 +2094,8 @@ slpeel_update_phi_nodes_for_loops (loop_vec_info loop_vinfo,
       tree arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, first_latch_e);
       /* Generate lcssa PHI node for the first loop.  */
       gphi *vect_phi = (loop == first) ? orig_phi : update_phi;
-      if (create_lcssa_for_iv_phis || !iv_phi_p (vect_phi))
+      stmt_vec_info vect_phi_info = loop_vinfo->lookup_stmt (vect_phi);
+      if (create_lcssa_for_iv_phis || !iv_phi_p (vect_phi_info))
 	{
 	  tree new_res = copy_ssa_name (PHI_RESULT (orig_phi));
 	  gphi *lcssa_phi = create_phi_node (new_res, between_bb);
@@ -2774,9 +2780,9 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
                                    tree *cond_expr,
 				   gimple_seq *cond_expr_stmt_list)
 {
-  vec<gimple *> may_misalign_stmts
+  vec<stmt_vec_info> may_misalign_stmts
     = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
-  gimple *ref_stmt;
+  stmt_vec_info stmt_info;
   int mask = LOOP_VINFO_PTR_MASK (loop_vinfo);
   tree mask_cst;
   unsigned int i;
@@ -2797,23 +2803,22 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   /* Create expression (mask & (dr_1 || ... || dr_n)) where dr_i is the address
      of the first vector of the i'th data reference. */
 
-  FOR_EACH_VEC_ELT (may_misalign_stmts, i, ref_stmt)
+  FOR_EACH_VEC_ELT (may_misalign_stmts, i, stmt_info)
     {
       gimple_seq new_stmt_list = NULL;
       tree addr_base;
       tree addr_tmp_name;
       tree new_or_tmp_name;
       gimple *addr_stmt, *or_stmt;
-      stmt_vec_info stmt_vinfo = vinfo_for_stmt (ref_stmt);
-      tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
+      tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       bool negative = tree_int_cst_compare
-	(DR_STEP (STMT_VINFO_DATA_REF (stmt_vinfo)), size_zero_node) < 0;
+	(DR_STEP (STMT_VINFO_DATA_REF (stmt_info)), size_zero_node) < 0;
       tree offset = negative
 	? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : size_zero_node;
 
       /* create: addr_tmp = (int)(address_of_first_vector) */
       addr_base =
-	vect_create_addr_base_for_vector_ref (ref_stmt, &new_stmt_list,
+	vect_create_addr_base_for_vector_ref (stmt_info, &new_stmt_list,
 					      offset);
       if (new_stmt_list != NULL)
 	gimple_seq_add_seq (cond_expr_stmt_list, new_stmt_list);

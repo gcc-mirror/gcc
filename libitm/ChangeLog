@@ -1,3 +1,8 @@
+2018-08-03  Sergei Trofimovich  <slyfox@gentoo.org>
+
+	* config/sh/sjlj.S: Adjust to use PIC vs normal code to avoid
+	absolute relocation in a shared library.
+
 2018-06-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libitm/85988

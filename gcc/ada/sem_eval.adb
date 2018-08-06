@@ -104,7 +104,7 @@ package body Sem_Eval is
    --  Used to convert unsigned (modular) values for folding logical ops
 
    --  The following declarations are used to maintain a cache of nodes that
-   --  have compile time known values. The cache is maintained only for
+   --  have compile-time-known values. The cache is maintained only for
    --  discrete types (the most common case), and is populated by calls to
    --  Compile_Time_Known_Value and Expr_Value, but only used by Expr_Value
    --  since it is possible for the status to change (in particular it is
@@ -171,7 +171,7 @@ package body Sem_Eval is
    --  result is No_Match, then it continues and checks the next element. If
    --  the result is Match or Non_Static, this result is immediately given
    --  as the result without checking the rest of the list. Expr can be of
-   --  discrete, real, or string type and must be a compile time known value
+   --  discrete, real, or string type and must be a compile-time-known value
    --  (it is an error to make the call if these conditions are not met).
 
    function Find_Universal_Operator_Type (N : Node_Id) return Entity_Id;
@@ -231,7 +231,7 @@ package body Sem_Eval is
 
    procedure Out_Of_Range (N : Node_Id);
    --  This procedure is called if it is determined that node N, which appears
-   --  in a non-static context, is a compile time known value which is outside
+   --  in a non-static context, is a compile-time-known value which is outside
    --  its range, i.e. the range of Etype. This is used in contexts where
    --  this is an illegality if N is static, and should generate a warning
    --  otherwise.
@@ -547,9 +547,15 @@ package body Sem_Eval is
       --  called in contexts like the expression of a number declaration where
       --  we certainly want to allow out of range values.
 
+      --  We inhibit the warning when expansion is disabled, because the
+      --  preanalysis of a range of a 64-bit modular type may appear to
+      --  violate the constraint on non-static Universal_Integer. If there
+      --  is a true overflow it will be diagnosed during full analysis.
+
       if Etype (N) = Universal_Integer
         and then Nkind (N) = N_Integer_Literal
         and then Nkind (Parent (N)) in N_Subexpr
+        and then Expander_Active
         and then
           (Intval (N) < Expr_Value (Type_Low_Bound (Universal_Integer))
              or else
@@ -840,7 +846,7 @@ package body Sem_Eval is
 
       function Is_Same_Value (L, R : Node_Id) return Boolean;
       --  Returns True iff L and R represent expressions that definitely have
-      --  identical (but not necessarily compile time known) values Indeed the
+      --  identical (but not necessarily compile-time-known) values Indeed the
       --  caller is expected to have already dealt with the cases of compile
       --  time known values, so these are not tested here.
 
@@ -1043,7 +1049,7 @@ package body Sem_Eval is
          then
             return True;
 
-         --  Or if they are compile time known and identical
+         --  Or if they are compile-time-known and identical
 
          elsif Compile_Time_Known_Value (Lf)
                  and then
@@ -1192,7 +1198,7 @@ package body Sem_Eval is
             return Unknown;
          end if;
 
-      --  Case where comparison involves two compile time known values
+      --  Case where comparison involves two compile-time-known values
 
       elsif Compile_Time_Known_Value (L)
               and then
@@ -1515,7 +1521,7 @@ package body Sem_Eval is
          end if;
 
          --  Next attempt is to see if we have an entity compared with a
-         --  compile time known value, where there is a current value
+         --  compile-time-known value, where there is a current value
          --  conditional for the entity which can tell us the result.
 
          declare
@@ -1667,7 +1673,7 @@ package body Sem_Eval is
             return False;
          end if;
 
-         --  Otherwise check bounds for compile time known
+         --  Otherwise check bounds for compile-time-known
 
          if not Compile_Time_Known_Value (Type_Low_Bound (Typ)) then
             return False;
@@ -1705,33 +1711,50 @@ package body Sem_Eval is
       end if;
 
       --  If we have an entity name, then see if it is the name of a constant
-      --  and if so, test the corresponding constant value, or the name of
-      --  an enumeration literal, which is always a constant.
+      --  and if so, test the corresponding constant value, or the name of an
+      --  enumeration literal, which is always a constant.
 
       if Present (Etype (Op)) and then Is_Entity_Name (Op) then
          declare
-            E : constant Entity_Id := Entity (Op);
-            V : Node_Id;
+            Ent : constant Entity_Id := Entity (Op);
+            Val : Node_Id;
 
          begin
-            --  Never known at compile time if it is a packed array value.
-            --  We might want to try to evaluate these at compile time one
-            --  day, but we do not make that attempt now.
+            --  Never known at compile time if it is a packed array value. We
+            --  might want to try to evaluate these at compile time one day,
+            --  but we do not make that attempt now.
 
             if Is_Packed_Array_Impl_Type (Etype (Op)) then
                return False;
-            end if;
 
-            if Ekind (E) = E_Enumeration_Literal then
+            elsif Ekind (Ent) = E_Enumeration_Literal then
                return True;
 
-            elsif Ekind (E) = E_Constant then
-               V := Constant_Value (E);
-               return Present (V) and then Compile_Time_Known_Value (V);
+            elsif Ekind (Ent) = E_Constant then
+               Val := Constant_Value (Ent);
+
+               if Present (Val) then
+
+                  --  Guard against an illegal deferred constant whose full
+                  --  view is initialized with a reference to itself. Treat
+                  --  this case as a value not known at compile time.
+
+                  if Is_Entity_Name (Val) and then Entity (Val) = Ent then
+                     return False;
+                  else
+                     return Compile_Time_Known_Value (Val);
+                  end if;
+
+               --  Otherwise, the constant does not have a compile-time-known
+               --  value.
+
+               else
+                  return False;
+               end if;
             end if;
          end;
 
-      --  We have a value, see if it is compile time known
+      --  We have a value, see if it is compile-time-known
 
       else
          --  Integer literals are worth storing in the cache
@@ -1794,7 +1817,7 @@ package body Sem_Eval is
             end if;
          end;
 
-      --  We have a value, see if it is compile time known
+      --  We have a value, see if it is compile-time-known
 
       else
          if Compile_Time_Known_Value (Op) then
@@ -2616,7 +2639,7 @@ package body Sem_Eval is
                   if List_Length (Expressions (Arr)) >= Lin then
                      Elm := Pick (Expressions (Arr), Lin);
 
-                     --  If the resulting expression is compile time known,
+                     --  If the resulting expression is compile-time-known,
                      --  then we can rewrite the indexed component with this
                      --  value, being sure to mark the result as non-static.
                      --  We also reset the Sloc, in case this generates an
@@ -2671,9 +2694,7 @@ package body Sem_Eval is
    --  the expander that do not correspond to static expressions.
 
    procedure Eval_Integer_Literal (N : Node_Id) is
-      T : constant Entity_Id := Etype (N);
-
-      function In_Any_Integer_Context return Boolean;
+      function In_Any_Integer_Context (Context : Node_Id) return Boolean;
       --  If the literal is resolved with a specific type in a context where
       --  the expected type is Any_Integer, there are no range checks on the
       --  literal. By the time the literal is evaluated, it carries the type
@@ -2684,44 +2705,54 @@ package body Sem_Eval is
       -- In_Any_Integer_Context --
       ----------------------------
 
-      function In_Any_Integer_Context return Boolean is
-         Par : constant Node_Id   := Parent (N);
-         K   : constant Node_Kind := Nkind (Par);
-
+      function In_Any_Integer_Context (Context : Node_Id) return Boolean is
       begin
          --  Any_Integer also appears in digits specifications for real types,
          --  but those have bounds smaller that those of any integer base type,
          --  so we can safely ignore these cases.
 
-         return Nkind_In (K, N_Number_Declaration,
-                             N_Attribute_Reference,
-                             N_Attribute_Definition_Clause,
-                             N_Modular_Type_Definition,
-                             N_Signed_Integer_Type_Definition);
+         return
+           Nkind_In (Context, N_Attribute_Definition_Clause,
+                              N_Attribute_Reference,
+                              N_Modular_Type_Definition,
+                              N_Number_Declaration,
+                              N_Signed_Integer_Type_Definition);
       end In_Any_Integer_Context;
+
+      --  Local variables
+
+      Par : constant Node_Id   := Parent (N);
+      Typ : constant Entity_Id := Etype (N);
 
    --  Start of processing for Eval_Integer_Literal
 
    begin
-
       --  If the literal appears in a non-expression context, then it is
       --  certainly appearing in a non-static context, so check it. This is
       --  actually a redundant check, since Check_Non_Static_Context would
       --  check it, but it seems worthwhile to optimize out the call.
 
-      --  An exception is made for a literal in an if or case expression
+      --  Additionally, when the literal appears within an if or case
+      --  expression it must be checked as well. However, due to the literal
+      --  appearing within a conditional statement, expansion greatly changes
+      --  the nature of its context and performing some of the checks within
+      --  Check_Non_Static_Context on an expanded literal may lead to spurious
+      --  and misleading warnings.
 
-      if (Nkind_In (Parent (N), N_If_Expression, N_Case_Expression_Alternative)
+      if (Nkind_In (Par, N_Case_Expression_Alternative, N_If_Expression)
            or else Nkind (Parent (N)) not in N_Subexpr)
-        and then not In_Any_Integer_Context
+        and then (not Nkind_In (Par, N_Case_Expression_Alternative,
+                                     N_If_Expression)
+                   or else Comes_From_Source (N))
+        and then not In_Any_Integer_Context (Par)
       then
          Check_Non_Static_Context (N);
       end if;
 
       --  Modular integer literals must be in their base range
 
-      if Is_Modular_Integer_Type (T)
-        and then Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True)
+      if Is_Modular_Integer_Type (Typ)
+        and then Is_Out_Of_Range (N, Base_Type (Typ), Assume_Valid => True)
       then
          Out_Of_Range (N);
       end if;
@@ -4174,9 +4205,9 @@ package body Sem_Eval is
       Val    : Uint;
 
    begin
-      --  If already in cache, then we know it's compile time known and we can
+      --  If already in cache, then we know it's compile-time-known and we can
       --  return the value that was previously stored in the cache since
-      --  compile time known values cannot change.
+      --  compile-time-known values cannot change.
 
       if CV_Ent.N = N then
          return CV_Ent.V;
@@ -4691,7 +4722,7 @@ package body Sem_Eval is
          end if;
 
          --  If bounds not comparable at compile time, then the bounds of T2
-         --  must be compile time known or we cannot answer the query.
+         --  must be compile-time-known or we cannot answer the query.
 
          if not Compile_Time_Known_Value (L2)
            or else not Compile_Time_Known_Value (H2)
@@ -5663,8 +5694,8 @@ package body Sem_Eval is
    -------------------------
 
    procedure Rewrite_In_Raise_CE (N : Node_Id; Exp : Node_Id) is
-      Typ  : constant Entity_Id := Etype (N);
       Stat : constant Boolean   := Is_Static_Expression (N);
+      Typ  : constant Entity_Id := Etype (N);
 
    begin
       --  If we want to raise CE in the condition of a N_Raise_CE node, we
@@ -5682,9 +5713,16 @@ package body Sem_Eval is
       --  Else build an explicit N_Raise_CE
 
       else
-         Rewrite (N,
-           Make_Raise_Constraint_Error (Sloc (Exp),
-             Reason => CE_Range_Check_Failed));
+         if Nkind (Exp) = N_Raise_Constraint_Error then
+            Rewrite (N,
+              Make_Raise_Constraint_Error (Sloc (Exp),
+                Reason => Reason (Exp)));
+         else
+            Rewrite (N,
+              Make_Raise_Constraint_Error (Sloc (Exp),
+                Reason => CE_Range_Check_Failed));
+         end if;
+
          Set_Raises_Constraint_Error (N);
          Set_Etype (N, Typ);
       end if;
@@ -6364,7 +6402,7 @@ package body Sem_Eval is
 
       pragma Warnings (Off, Assume_Valid);
       --  For now Assume_Valid is unreferenced since the current implementation
-      --  always returns Unknown if N is not a compile time known value, but we
+      --  always returns Unknown if N is not a compile-time-known value, but we
       --  keep the parameter to allow for future enhancements in which we try
       --  to get the information in the variable case as well.
 
@@ -6397,7 +6435,7 @@ package body Sem_Eval is
 
       --  Never known if this is a generic type, since the bounds of generic
       --  types are junk. Note that if we only checked for static expressions
-      --  (instead of compile time known values) below, we would not need this
+      --  (instead of compile-time-known values) below, we would not need this
       --  check, because values of a generic type can never be static, but they
       --  can be known at compile time.
 

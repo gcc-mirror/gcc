@@ -1198,6 +1198,10 @@ reg_referenced_p (const_rtx x, const_rtx body)
 	  return 1;
       return 0;
 
+    case CLOBBER_HIGH:
+      gcc_assert (REG_P (XEXP (body, 0)));
+      return 0;
+
     case COND_EXEC:
       if (reg_overlap_mentioned_p (x, COND_EXEC_TEST (body)))
 	return 1;
@@ -1420,7 +1424,11 @@ set_of_1 (rtx x, const_rtx pat, void *data1)
 {
   struct set_of_data *const data = (struct set_of_data *) (data1);
   if (rtx_equal_p (x, data->pat)
-      || (!MEM_P (x) && reg_overlap_mentioned_p (data->pat, x)))
+      || (GET_CODE (pat) == CLOBBER_HIGH
+	  && REGNO(data->pat) == REGNO(XEXP (pat, 0))
+	  && reg_is_clobbered_by_clobber_high (data->pat, XEXP (pat, 0)))
+      || (GET_CODE (pat) != CLOBBER_HIGH && !MEM_P (x)
+	  && reg_overlap_mentioned_p (data->pat, x)))
     data->found = pat;
 }
 
@@ -1509,6 +1517,7 @@ single_set_2 (const rtx_insn *insn, const_rtx pat)
 	    {
 	    case USE:
 	    case CLOBBER:
+	    case CLOBBER_HIGH:
 	      break;
 
 	    case SET:
@@ -1663,7 +1672,8 @@ noop_move_p (const rtx_insn *insn)
 	  rtx tem = XVECEXP (pat, 0, i);
 
 	  if (GET_CODE (tem) == USE
-	      || GET_CODE (tem) == CLOBBER)
+	      || GET_CODE (tem) == CLOBBER
+	      || GET_CODE (tem) == CLOBBER_HIGH)
 	    continue;
 
 	  if (GET_CODE (tem) != SET || ! set_noop_p (tem))
@@ -1895,7 +1905,9 @@ note_stores (const_rtx x, void (*fun) (rtx, const_rtx, void *), void *data)
   if (GET_CODE (x) == COND_EXEC)
     x = COND_EXEC_CODE (x);
 
-  if (GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
+  if (GET_CODE (x) == SET
+      || GET_CODE (x) == CLOBBER
+      || GET_CODE (x) == CLOBBER_HIGH)
     {
       rtx dest = SET_DEST (x);
 
@@ -6550,4 +6562,33 @@ tls_referenced_p (const_rtx x)
     if (GET_CODE (*iter) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (*iter) != 0)
       return true;
   return false;
+}
+
+/* Return true if reg REGNO with mode REG_MODE would be clobbered by the
+   clobber_high operand in CLOBBER_HIGH_OP.  */
+
+bool
+reg_is_clobbered_by_clobber_high (unsigned int regno, machine_mode reg_mode,
+				  const_rtx clobber_high_op)
+{
+  unsigned int clobber_regno = REGNO (clobber_high_op);
+  machine_mode clobber_mode = GET_MODE (clobber_high_op);
+  unsigned char regno_nregs = hard_regno_nregs (regno, reg_mode);
+
+  /* Clobber high should always span exactly one register.  */
+  gcc_assert (REG_NREGS (clobber_high_op) == 1);
+
+  /* Clobber high needs to match with one of the registers in X.  */
+  if (clobber_regno < regno || clobber_regno >= regno + regno_nregs)
+    return false;
+
+  gcc_assert (reg_mode != BLKmode && clobber_mode != BLKmode);
+
+  if (reg_mode == VOIDmode)
+    return clobber_mode != VOIDmode;
+
+  /* Clobber high will clobber if its size might be greater than the size of
+     register regno.  */
+  return maybe_gt (exact_div (GET_MODE_SIZE (reg_mode), regno_nregs),
+		 GET_MODE_SIZE (clobber_mode));
 }

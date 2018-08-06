@@ -107,7 +107,7 @@ extern GTY(()) int spu_tune;
 	(GET_CODE (X) == SYMBOL_REF \
           && (SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_ALIGN1) == 0 \
 	  && (! SYMBOL_REF_FUNCTION_P (X) \
-	      || align_functions_value >= 16))
+	      || align_functions.levels[0].get_value () >= 16))
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
 

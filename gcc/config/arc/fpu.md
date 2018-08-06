@@ -6,34 +6,34 @@
 
 ;; Addition
 (define_insn "*addsf3_fpu"
-  [(set (match_operand:SF 0 "register_operand"           "=r,r,r,r,r")
-	(plus:SF (match_operand:SF 1 "nonmemory_operand" "%0,r,0,r,F")
-		 (match_operand:SF 2 "nonmemory_operand"  "r,r,F,F,r")))]
+  [(set (match_operand:SF 0 "register_operand"           "=r,r,  r,r,r,r")
+	(plus:SF (match_operand:SF 1 "nonmemory_operand" "%0,r,  r,0,r,F")
+		 (match_operand:SF 2 "nonmemory_operand"  "r,r,CfZ,F,F,r")))]
   "TARGET_FP_SP_BASE
    && (register_operand (operands[1], SFmode)
        || register_operand (operands[2], SFmode))"
-  "fsadd%? %0,%1,%2"
-  [(set_attr "length" "4,4,8,8,8")
+  "fsadd%?\\t%0,%1,%2"
+  [(set_attr "length" "4,4,4,8,8,8")
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu")
-   (set_attr "predicable" "yes,no,yes,no,no")
-   (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
+   (set_attr "predicable" "yes,no,no,yes,no,no")
+   (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond,nocond")
    ])
 
 ;; Subtraction
 (define_insn "*subsf3_fpu"
-  [(set (match_operand:SF 0 "register_operand"           "=r,r,r,r,r")
-	(minus:SF (match_operand:SF 1 "nonmemory_operand" "0,r,0,r,F")
-		  (match_operand:SF 2 "nonmemory_operand" "r,r,F,F,r")))]
+  [(set (match_operand:SF 0 "register_operand"           "=r,r,  r,r,r,r")
+	(minus:SF (match_operand:SF 1 "nonmemory_operand" "0,r,  r,0,r,F")
+		  (match_operand:SF 2 "nonmemory_operand" "r,r,CfZ,F,F,r")))]
   "TARGET_FP_SP_BASE
    && (register_operand (operands[1], SFmode)
        || register_operand (operands[2], SFmode))"
-  "fssub%? %0,%1,%2"
-  [(set_attr "length" "4,4,8,8,8")
+  "fssub%?\\t%0,%1,%2"
+  [(set_attr "length" "4,4,4,8,8,8")
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu")
-   (set_attr "predicable" "yes,no,yes,no,no")
-   (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
+   (set_attr "predicable" "yes,no,no,yes,no,no")
+   (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond,nocond")
    ])
 
 ;; Multiplication
@@ -44,7 +44,7 @@
   "TARGET_FP_SP_BASE
    && (register_operand (operands[1], SFmode)
        || register_operand (operands[2], SFmode))"
-  "fsmul%? %0,%1,%2"
+  "fsmul%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,8,8,8")
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu")
@@ -98,7 +98,7 @@
    (set_attr "predicable" "yes,no,yes,no,no")
    (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_fuse")])
 
 (define_insn "fnmasf4_fpu"
   [(set (match_operand:SF 0 "register_operand"                  "=r,r,r,r,r")
@@ -108,12 +108,12 @@
   "TARGET_FP_SP_FUSED
    && (register_operand (operands[1], SFmode)
        || register_operand (operands[2], SFmode))"
-  "fsmsub%? %0,%1,%2"
+  "fsmsub%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,8,8,8")
    (set_attr "predicable" "yes,no,yes,no,no")
    (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_fuse")])
 
 (define_expand "fmadf4"
   [(match_operand:DF 0 "even_register_operand" "")
@@ -178,12 +178,12 @@
 		(match_operand:DF 2 "even_register_operand"  "r,r")
 		(reg:DF ARCV2_ACC)))]
   "TARGET_FP_DP_FUSED"
-  "fdmadd%? %0,%1,%2"
+  "fdmadd%?\\t%0,%1,%2"
   [(set_attr "length" "4,4")
    (set_attr "predicable" "yes,no")
    (set_attr "cond" "canuse,nocond")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_fuse")])
 
 (define_insn "fnmadf4_fpu"
   [(set (match_operand:DF 0 "even_register_operand"                 "=r,r")
@@ -191,12 +191,12 @@
 		(match_operand:DF 2 "even_register_operand"          "r,r")
 		(reg:DF ARCV2_ACC)))]
   "TARGET_FP_DP_FUSED"
-  "fdmsub%? %0,%1,%2"
+  "fdmsub%?\\t%0,%1,%2"
   [(set_attr "length" "4,4")
    (set_attr "predicable" "yes,no")
    (set_attr "cond" "canuse,nocond")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_fuse")])
 
 ;; Division
 (define_insn "*divsf3_fpu"
@@ -206,10 +206,10 @@
   "TARGET_FP_SP_SQRT
    && (register_operand (operands[1], SFmode)
        || register_operand (operands[2], SFmode))"
-  "fsdiv%? %0,%1,%2"
+  "fsdiv%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,8,8,8")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")
+   (set_attr "type" "fpu_sdiv")
    (set_attr "predicable" "yes,no,yes,no,no")
    (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
    ])
@@ -225,31 +225,31 @@
   [(set (match_operand:SF 0 "register_operand"           "=r,r")
 	(sqrt:SF (match_operand:SF 1 "nonmemory_operand"  "r,F")))]
   "TARGET_FP_SP_SQRT"
-  "fssqrt %0,%1"
+  "fssqrt\\t%0,%1"
   [(set_attr "length" "4,8")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_sdiv")])
 
 ;; Comparison
 (define_insn "*cmpsf_fpu"
   [(set (reg:CC_FPU CC_REG)
-	(compare:CC_FPU (match_operand:SF 0 "register_operand"  "r,r")
-			(match_operand:SF 1 "nonmemory_operand" "r,F")))]
+	(compare:CC_FPU (match_operand:SF 0 "register_operand"  "r,  r,r")
+			(match_operand:SF 1 "nonmemory_operand" "r,CfZ,F")))]
   "TARGET_FP_SP_BASE"
-  "fscmp%? %0, %1"
-  [(set_attr "length" "4,8")
+  "fscmp%?\\t%0,%1"
+  [(set_attr "length" "4,4,8")
    (set_attr "iscompact" "false")
    (set_attr "cond" "set")
    (set_attr "type" "fpu")
-   (set_attr "predicable" "yes,yes")])
+   (set_attr "predicable" "yes")])
 
 (define_insn "*cmpsf_fpu_uneq"
   [(set (reg:CC_FPU_UNEQ CC_REG)
 	(compare:CC_FPU_UNEQ
-	 (match_operand:SF 0 "register_operand"  "r,r")
-	 (match_operand:SF 1 "nonmemory_operand" "r,F")))]
+	 (match_operand:SF 0 "register_operand"  "r,  r,r")
+	 (match_operand:SF 1 "nonmemory_operand" "r,CfZ,F")))]
   "TARGET_FP_SP_BASE"
-  "fscmp %0, %1\\n\\tmov.v.f 0,0\\t;set Z flag"
-  [(set_attr "length" "8,12")
+  "fscmp\\t%0,%1\\n\\tmov.v.f\\t0,0\\t;set Z flag"
+  [(set_attr "length" "8,8,12")
    (set_attr "iscompact" "false")
    (set_attr "cond" "set")
    (set_attr "type" "fpu")])
@@ -273,7 +273,6 @@
    (set_attr "predicable" "yes,no")
    (set_attr "cond" "canuse,nocond")
    ])
-
 
 ;; Subtraction
 (define_insn "*subdf3_fpu"
@@ -312,7 +311,7 @@
   "fddiv%? %0,%1,%2"
   [(set_attr "length" "4,4")
    (set_attr "iscompact" "false")
-   (set_attr "type" "fpu")
+   (set_attr "type" "fpu_ddiv")
    (set_attr "predicable" "yes,no")
    (set_attr "cond" "canuse,nocond")
    ])
@@ -324,7 +323,7 @@
   "TARGET_FP_DP_SQRT"
   "fdsqrt %0,%1"
   [(set_attr "length" "4")
-   (set_attr "type" "fpu")])
+   (set_attr "type" "fpu_ddiv")])
 
 ;; Comparison
 (define_insn "*cmpdf_fpu"

@@ -73,8 +73,8 @@ void test_strnlen_string_cst (void)
   T (3, "12",  3, 1);
   T (3, "12",  3, 9);
   T (3, "123", 3, 1);
-  T (3, "123", 3, 4);               /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound 4" } */
-  T (3, "123", 3, 9);               /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound 9" } */
+  T (3, "123", 3, 4);               /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound 4" "bug 86688" { xfail *-*-* } } */
+  T (3, "123", 3, 9);               /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound 9" "bug 86688" { xfail *-*-* } } */
 
   T (5, "1",   2, 1);
   T (5, "1",   2, 2);
@@ -110,6 +110,6 @@ void test_strnlen_string_range (void)
 {
   T (3, "1",   2, UR (0, 1));
   T (3, "1",   2, UR (3, 9));
-  T (3, "123", 3, UR (4, 5));       /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound \\\[4, 5]" } */
-  T (3, "123", 3, UR (5, 9));       /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound \\\[5, 9]" } */
+  T (3, "123", 3, UR (4, 5));       /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound \\\[4, 5]" "bug 86688" { xfail *-*-* } } */
+  T (3, "123", 3, UR (5, 9));       /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound \\\[5, 9]" "bug 86688" { xfail *-*-* } } */
 }

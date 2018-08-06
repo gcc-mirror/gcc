@@ -1361,7 +1361,12 @@ c_cpp_builtins (cpp_reader *pfile)
     cpp_define (pfile, "__WCHAR_UNSIGNED__");
 
   cpp_atomic_builtins (pfile);
-    
+
+  /* Show support for __builtin_speculation_safe_value () if the target
+     has been updated to fully support it.  */
+  if (targetm.have_speculation_safe_value (false))
+    cpp_define (pfile, "__HAVE_SPECULATION_SAFE_VALUE");
+
 #ifdef DWARF2_UNWIND_INFO
   if (dwarf2out_do_cfi_asm ())
     cpp_define (pfile, "__GCC_HAVE_DWARF2_CFI_ASM");

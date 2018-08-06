@@ -441,9 +441,8 @@ extern int may_call_alloca;
 
 #define MOVE_MAX 2
 
-/* Nonzero if access to memory by byte is slow and undesirable. -
-*/
-#define SLOW_BYTE_ACCESS 0
+/* Nonzero if access to memory by byte is no faster than by word.  */
+#define SLOW_BYTE_ACCESS 1
 
 /* Do not break .stabs pseudos into continuations.  */
 #define DBX_CONTIN_LENGTH 0
@@ -453,8 +452,7 @@ extern int may_call_alloca;
 
 #define SELECT_CC_MODE(OP,X,Y) pdp11_cc_mode (OP, X, Y)
 
-/* Enable compare elimination pass.
-   FIXME: how can this be enabled for two registers?  */
+/* Enable compare elimination pass.  */
 #undef TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM CC_REGNUM
 

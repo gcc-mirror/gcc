@@ -919,16 +919,89 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
     free (histogram_counts[t]);
 }
 
+/* Location triplet which records a location.  */
+struct location_triplet
+{
+  const char *filename;
+  int lineno;
+  int bb_index;
+};
+
+/* Traits class for streamed_locations hash set below.  */
+
+struct location_triplet_hash : typed_noop_remove <location_triplet>
+{
+  typedef location_triplet value_type;
+  typedef location_triplet compare_type;
+
+  static hashval_t
+  hash (const location_triplet &ref)
+  {
+    inchash::hash hstate (0);
+    if (ref.filename)
+      hstate.add_int (strlen (ref.filename));
+    hstate.add_int (ref.lineno);
+    hstate.add_int (ref.bb_index);
+    return hstate.end ();
+  }
+
+  static bool
+  equal (const location_triplet &ref1, const location_triplet &ref2)
+  {
+    return ref1.lineno == ref2.lineno
+      && ref1.bb_index == ref2.bb_index
+      && ref1.filename != NULL
+      && ref2.filename != NULL
+      && strcmp (ref1.filename, ref2.filename) == 0;
+  }
+
+  static void
+  mark_deleted (location_triplet &ref)
+  {
+    ref.lineno = -1;
+  }
+
+  static void
+  mark_empty (location_triplet &ref)
+  {
+    ref.lineno = -2;
+  }
+
+  static bool
+  is_deleted (const location_triplet &ref)
+  {
+    return ref.lineno == -1;
+  }
+
+  static bool
+  is_empty (const location_triplet &ref)
+  {
+    return ref.lineno == -2;
+  }
+};
+
+
+
+
 /* When passed NULL as file_name, initialize.
    When passed something else, output the necessary commands to change
    line to LINE and offset to FILE_NAME.  */
 static void
-output_location (char const *file_name, int line,
+output_location (hash_set<location_triplet_hash> *streamed_locations,
+		 char const *file_name, int line,
 		 gcov_position_t *offset, basic_block bb)
 {
   static char const *prev_file_name;
   static int prev_line;
   bool name_differs, line_differs;
+
+  location_triplet triplet;
+  triplet.filename = file_name;
+  triplet.lineno = line;
+  triplet.bb_index = bb ? bb->index : 0;
+
+  if (streamed_locations->add (triplet))
+    return;
 
   if (!file_name)
     {
@@ -1017,6 +1090,8 @@ branch_prob (void)
 
   flow_call_edges_add (NULL);
   add_noreturn_fake_exit_edges ();
+
+  hash_set <location_triplet_hash> streamed_locations;
 
   /* We can't handle cyclic regions constructed using abnormal edges.
      To avoid these we replace every source of abnormal edge by a fake
@@ -1254,7 +1329,9 @@ branch_prob (void)
 
       /* Line numbers.  */
       /* Initialize the output.  */
-      output_location (NULL, 0, NULL, NULL);
+      output_location (&streamed_locations, NULL, 0, NULL, NULL);
+
+      hash_set<int_hash <location_t, 0, 2> > seen_locations;
 
       FOR_EACH_BB_FN (bb, cfun)
 	{
@@ -1263,28 +1340,37 @@ branch_prob (void)
 
 	  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb)
 	    {
-	      expanded_location curr_location =
-		expand_location (DECL_SOURCE_LOCATION (current_function_decl));
-	      output_location (curr_location.file, curr_location.line,
-			       &offset, bb);
+	      location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
+	      seen_locations.add (loc);
+	      expanded_location curr_location = expand_location (loc);
+	      output_location (&streamed_locations, curr_location.file,
+			       curr_location.line, &offset, bb);
 	    }
 
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
-	      if (!RESERVED_LOCATION_P (gimple_location (stmt)))
-		output_location (gimple_filename (stmt), gimple_lineno (stmt),
-				 &offset, bb);
+	      location_t loc = gimple_location (stmt);
+	      if (!RESERVED_LOCATION_P (loc))
+		{
+		  seen_locations.add (loc);
+		  output_location (&streamed_locations, gimple_filename (stmt),
+				   gimple_lineno (stmt), &offset, bb);
+		}
 	    }
 
-	  /* Notice GOTO expressions eliminated while constructing the CFG.  */
+	  /* Notice GOTO expressions eliminated while constructing the CFG.
+	     It's hard to distinguish such expression, but goto_locus should
+	     not be any of already seen location.  */
+	  location_t loc;
 	  if (single_succ_p (bb)
-	      && !RESERVED_LOCATION_P (single_succ_edge (bb)->goto_locus))
+	      && (loc = single_succ_edge (bb)->goto_locus)
+	      && !RESERVED_LOCATION_P (loc)
+	      && !seen_locations.contains (loc))
 	    {
-	      expanded_location curr_location
-		= expand_location (single_succ_edge (bb)->goto_locus);
-	      output_location (curr_location.file, curr_location.line,
-			       &offset, bb);
+	      expanded_location curr_location = expand_location (loc);
+	      output_location (&streamed_locations, curr_location.file,
+			       curr_location.line, &offset, bb);
 	    }
 
 	  if (offset)

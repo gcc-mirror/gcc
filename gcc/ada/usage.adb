@@ -461,6 +461,7 @@ begin
    Write_Line ("        I    turn off checking for in params");
    Write_Line ("        m    turn on checking for in out params");
    Write_Line ("        M    turn off checking for in out params");
+   Write_Line ("        n    turn off all validity checks (including RM)");
    Write_Line ("        o    turn on checking for operators/attributes");
    Write_Line ("        O    turn off checking for operators/attributes");
    Write_Line ("        p    turn on checking for parameters");
@@ -471,7 +472,6 @@ begin
    Write_Line ("        S    turn off checking for subscripts");
    Write_Line ("        t    turn on checking for tests");
    Write_Line ("        T    turn off checking for tests");
-   Write_Line ("        n    turn off all validity checks (including RM)");
 
    --  Lines for -gnatw switch
 

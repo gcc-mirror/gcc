@@ -52,57 +52,10 @@
 #if PLUGIN_NVPTX_DYNAMIC
 # include <dlfcn.h>
 
-# define CUDA_CALLS \
-CUDA_ONE_CALL (cuCtxCreate)		\
-CUDA_ONE_CALL (cuCtxDestroy)		\
-CUDA_ONE_CALL (cuCtxGetCurrent)		\
-CUDA_ONE_CALL (cuCtxGetDevice)		\
-CUDA_ONE_CALL (cuCtxPopCurrent)		\
-CUDA_ONE_CALL (cuCtxPushCurrent)	\
-CUDA_ONE_CALL (cuCtxSynchronize)	\
-CUDA_ONE_CALL (cuDeviceGet)		\
-CUDA_ONE_CALL (cuDeviceGetAttribute)	\
-CUDA_ONE_CALL (cuDeviceGetCount)	\
-CUDA_ONE_CALL (cuEventCreate)		\
-CUDA_ONE_CALL (cuEventDestroy)		\
-CUDA_ONE_CALL (cuEventElapsedTime)	\
-CUDA_ONE_CALL (cuEventQuery)		\
-CUDA_ONE_CALL (cuEventRecord)		\
-CUDA_ONE_CALL (cuEventSynchronize)	\
-CUDA_ONE_CALL (cuFuncGetAttribute)	\
-CUDA_ONE_CALL (cuGetErrorString)	\
-CUDA_ONE_CALL (cuInit)			\
-CUDA_ONE_CALL (cuLaunchKernel)		\
-CUDA_ONE_CALL (cuLinkAddData)		\
-CUDA_ONE_CALL (cuLinkComplete)		\
-CUDA_ONE_CALL (cuLinkCreate)		\
-CUDA_ONE_CALL (cuLinkDestroy)		\
-CUDA_ONE_CALL (cuMemAlloc)		\
-CUDA_ONE_CALL (cuMemAllocHost)		\
-CUDA_ONE_CALL (cuMemcpy)		\
-CUDA_ONE_CALL (cuMemcpyDtoDAsync)	\
-CUDA_ONE_CALL (cuMemcpyDtoH)		\
-CUDA_ONE_CALL (cuMemcpyDtoHAsync)	\
-CUDA_ONE_CALL (cuMemcpyHtoD)		\
-CUDA_ONE_CALL (cuMemcpyHtoDAsync)	\
-CUDA_ONE_CALL (cuMemFree)		\
-CUDA_ONE_CALL (cuMemFreeHost)		\
-CUDA_ONE_CALL (cuMemGetAddressRange)	\
-CUDA_ONE_CALL (cuMemHostGetDevicePointer)\
-CUDA_ONE_CALL (cuModuleGetFunction)	\
-CUDA_ONE_CALL (cuModuleGetGlobal)	\
-CUDA_ONE_CALL (cuModuleLoad)		\
-CUDA_ONE_CALL (cuModuleLoadData)	\
-CUDA_ONE_CALL (cuModuleUnload)		\
-CUDA_ONE_CALL (cuStreamCreate)		\
-CUDA_ONE_CALL (cuStreamDestroy)		\
-CUDA_ONE_CALL (cuStreamQuery)		\
-CUDA_ONE_CALL (cuStreamSynchronize)	\
-CUDA_ONE_CALL (cuStreamWaitEvent)
 # define CUDA_ONE_CALL(call) \
   __typeof (call) *call;
 struct cuda_lib_s {
-  CUDA_CALLS
+#include "cuda-lib.def"
 } cuda_lib;
 
 /* -1 if init_cuda_lib has not been called yet, false
@@ -127,7 +80,7 @@ init_cuda_lib (void)
   cuda_lib.call = dlsym (h, #call);	\
   if (cuda_lib.call == NULL)		\
     return false;
-  CUDA_CALLS
+#include "cuda-lib.def"
   cuda_lib_inited = true;
   return true;
 }
@@ -140,6 +93,11 @@ init_cuda_lib (void)
 #endif
 
 #include "secure_getenv.h"
+
+#undef MIN
+#undef MAX
+#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
+#define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 /* Convenience macros for the frequently used CUDA library call and
    error handling sequence as well as CUDA library calls that
@@ -219,13 +177,6 @@ struct nvptx_thread
   struct ptx_device *ptx_dev;
 };
 
-struct map
-{
-  int     async;
-  size_t  size;
-  char    mappings[0];
-};
-
 static bool
 map_init (struct ptx_stream *s)
 {
@@ -259,16 +210,12 @@ map_fini (struct ptx_stream *s)
 static void
 map_pop (struct ptx_stream *s)
 {
-  struct map *m;
-
   assert (s != NULL);
   assert (s->h_next);
   assert (s->h_prev);
   assert (s->h_tail);
 
-  m = s->h_tail;
-
-  s->h_tail += m->size;
+  s->h_tail = s->h_next;
 
   if (s->h_tail >= s->h_end)
     s->h_tail = s->h_begin + (int) (s->h_tail - s->h_end);
@@ -286,37 +233,27 @@ map_pop (struct ptx_stream *s)
 }
 
 static void
-map_push (struct ptx_stream *s, int async, size_t size, void **h, void **d)
+map_push (struct ptx_stream *s, size_t size, void **h, void **d)
 {
   int left;
   int offset;
-  struct map *m;
 
   assert (s != NULL);
 
   left = s->h_end - s->h_next;
-  size += sizeof (struct map);
 
   assert (s->h_prev);
   assert (s->h_next);
 
   if (size >= left)
     {
-      m = s->h_prev;
-      m->size += left;
-      s->h_next = s->h_begin;
-
-      if (s->h_next + size > s->h_end)
-	GOMP_PLUGIN_fatal ("unable to push map");
+      assert (s->h_next == s->h_prev);
+      s->h_next = s->h_prev = s->h_tail = s->h_begin;
     }
 
   assert (s->h_next);
 
-  m = s->h_next;
-  m->async = async;
-  m->size = size;
-
-  offset = (void *)&m->mappings[0] - s->h;
+  offset = s->h_next - s->h;
 
   *d = (void *)(s->d + offset);
   *h = (void *)(s->h + offset);
@@ -414,6 +351,10 @@ struct ptx_device
   int num_sms;
   int regs_per_block;
   int regs_per_sm;
+  int warp_size;
+  int max_threads_per_block;
+  int max_threads_per_multiprocessor;
+  int default_dims[GOMP_DIM_MAX];
 
   struct ptx_image_data *images;  /* Images loaded on device.  */
   pthread_mutex_t image_lock;     /* Lock for above list.  */
@@ -800,11 +741,23 @@ nvptx_open_device (int n)
       GOMP_PLUGIN_error ("Only warp size 32 is supported");
       return NULL;
     }
+  ptx_dev->warp_size = pi;
+
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute, &pi,
+		  CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev);
+  ptx_dev->max_threads_per_block = pi;
+
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute, &pi,
+		  CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, dev);
+  ptx_dev->max_threads_per_multiprocessor = pi;
 
   r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &async_engines,
 			 CU_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT, dev);
   if (r != CUDA_SUCCESS)
     async_engines = 1;
+
+  for (int i = 0; i != GOMP_DIM_MAX; i++)
+    ptx_dev->default_dims[i] = 0;
 
   ptx_dev->images = NULL;
   pthread_mutex_init (&ptx_dev->image_lock, NULL);
@@ -1119,6 +1072,7 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   void *kargs[1];
   void *hp, *dp;
   struct nvptx_thread *nvthd = nvptx_thread ();
+  int warp_size = nvthd->ptx_dev->warp_size;
   const char *maybe_abort_msg = "(perhaps abort was called)";
 
   function = targ_fn->fn;
@@ -1140,43 +1094,36 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 
   if (seen_zero)
     {
-      /* See if the user provided GOMP_OPENACC_DIM environment
-	 variable to specify runtime defaults. */
-      static int default_dims[GOMP_DIM_MAX];
-
       pthread_mutex_lock (&ptx_dev_lock);
-      if (!default_dims[0])
+
+      static int gomp_openacc_dims[GOMP_DIM_MAX];
+      if (!gomp_openacc_dims[0])
 	{
+	  /* See if the user provided GOMP_OPENACC_DIM environment
+	     variable to specify runtime defaults.  */
 	  for (int i = 0; i < GOMP_DIM_MAX; ++i)
-	    default_dims[i] = GOMP_PLUGIN_acc_default_dim (i);
+	    gomp_openacc_dims[i] = GOMP_PLUGIN_acc_default_dim (i);
+	}
 
-	  int warp_size, block_size, dev_size, cpu_size;
-	  CUdevice dev = nvptx_thread()->ptx_dev->dev;
-	  /* 32 is the default for known hardware.  */
-	  int gang = 0, worker = 32, vector = 32;
-	  CUdevice_attribute cu_tpb, cu_ws, cu_mpc, cu_tpm;
+      if (!nvthd->ptx_dev->default_dims[0])
+	{
+	  int default_dims[GOMP_DIM_MAX];
+	  for (int i = 0; i < GOMP_DIM_MAX; ++i)
+	    default_dims[i] = gomp_openacc_dims[i];
 
-	  cu_tpb = CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK;
-	  cu_ws = CU_DEVICE_ATTRIBUTE_WARP_SIZE;
-	  cu_mpc = CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT;
-	  cu_tpm  = CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR;
+	  int gang, worker, vector;
+	  {
+	    int block_size = nvthd->ptx_dev->max_threads_per_block;
+	    int cpu_size = nvthd->ptx_dev->max_threads_per_multiprocessor;
+	    int dev_size = nvthd->ptx_dev->num_sms;
+	    GOMP_PLUGIN_debug (0, " warp_size=%d, block_size=%d,"
+			       " dev_size=%d, cpu_size=%d\n",
+			       warp_size, block_size, dev_size, cpu_size);
 
-	  if (CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &block_size, cu_tpb,
-				 dev) == CUDA_SUCCESS
-	      && CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &warp_size, cu_ws,
-				    dev) == CUDA_SUCCESS
-	      && CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &dev_size, cu_mpc,
-				    dev) == CUDA_SUCCESS
-	      && CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &cpu_size, cu_tpm,
-				    dev) == CUDA_SUCCESS)
-	    {
-	      GOMP_PLUGIN_debug (0, " warp_size=%d, block_size=%d,"
-				 " dev_size=%d, cpu_size=%d\n",
-				 warp_size, block_size, dev_size, cpu_size);
-	      gang = (cpu_size / block_size) * dev_size;
-	      worker = block_size / warp_size;
-	      vector = warp_size;
-	    }
+	    gang = (cpu_size / block_size) * dev_size;
+	    worker = block_size / warp_size;
+	    vector = warp_size;
+	  }
 
 	  /* There is no upper bound on the gang size.  The best size
 	     matches the hardware configuration.  Logical gangs are
@@ -1197,18 +1144,52 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 			     default_dims[GOMP_DIM_GANG],
 			     default_dims[GOMP_DIM_WORKER],
 			     default_dims[GOMP_DIM_VECTOR]);
+
+	  for (i = 0; i != GOMP_DIM_MAX; i++)
+	    nvthd->ptx_dev->default_dims[i] = default_dims[i];
 	}
       pthread_mutex_unlock (&ptx_dev_lock);
 
-      for (i = 0; i != GOMP_DIM_MAX; i++)
-	if (!dims[i])
-	  dims[i] = default_dims[i];
+      {
+	bool default_dim_p[GOMP_DIM_MAX];
+	for (i = 0; i != GOMP_DIM_MAX; i++)
+	  {
+	    default_dim_p[i] = !dims[i];
+	    if (default_dim_p[i])
+	      dims[i] = nvthd->ptx_dev->default_dims[i];
+	  }
+
+	if (default_dim_p[GOMP_DIM_VECTOR])
+	  dims[GOMP_DIM_VECTOR]
+	    = MIN (dims[GOMP_DIM_VECTOR],
+		   (targ_fn->max_threads_per_block / warp_size * warp_size));
+
+	if (default_dim_p[GOMP_DIM_WORKER])
+	  dims[GOMP_DIM_WORKER]
+	    = MIN (dims[GOMP_DIM_WORKER],
+		   targ_fn->max_threads_per_block / dims[GOMP_DIM_VECTOR]);
+      }
+    }
+
+  /* Check if the accelerator has sufficient hardware resources to
+     launch the offloaded kernel.  */
+  if (dims[GOMP_DIM_WORKER] * dims[GOMP_DIM_VECTOR]
+      > targ_fn->max_threads_per_block)
+    {
+      int suggest_workers
+	= targ_fn->max_threads_per_block / dims[GOMP_DIM_VECTOR];
+      GOMP_PLUGIN_fatal ("The Nvidia accelerator has insufficient resources to"
+			 " launch '%s' with num_workers = %d; recompile the"
+			 " program with 'num_workers = %d' on that offloaded"
+			 " region or '-fopenacc-dim=:%d'",
+			 targ_fn->launch->fn, dims[GOMP_DIM_WORKER],
+			 suggest_workers, suggest_workers);
     }
 
   /* This reserves a chunk of a pre-allocated page of memory mapped on both
      the host and the device. HP is a host pointer to the new chunk, and DP is
      the corresponding device pointer.  */
-  map_push (dev_str, async, mapnum * sizeof (void *), &hp, &dp);
+  map_push (dev_str, mapnum * sizeof (void *), &hp, &dp);
 
   GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
 

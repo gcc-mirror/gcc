@@ -24,13 +24,14 @@
 
 #include <mutex>
 #include <chrono>
+#include <cstdint>
 #include <system_error>
 #include <testsuite_hooks.h>
 
 int main()
 {
   typedef std::timed_mutex mutex_type;
-  typedef std::chrono::duration<int64_t, std::pico> picoseconds;
+  typedef std::chrono::duration<std::int64_t, std::pico> picoseconds;
 
   try 
     {

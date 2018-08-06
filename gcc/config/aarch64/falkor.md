@@ -322,6 +322,12 @@
        (eq_attr "type" "neon_from_gp_q"))
   "falkor_gtov,falkor_gtov")
 
+;; DUP  does not use vector pipes in Q mode, only gtov+gtov.
+(define_insn_reservation "falkor_am_1_gtov_gtov" 1
+  (and (eq_attr "tune" "falkor")
+       (eq_attr "type" "neon_dup_q"))
+  "falkor_gtov*2")
+
 ;; neon_to_gp_q is used for 32-bit ARM instructions that move 64-bits of data
 ;; so no use needed here.
 
@@ -337,7 +343,7 @@
 
 (define_insn_reservation "falkor_am_1_vxvy_vxvy" 1
   (and (eq_attr "tune" "falkor")
-       (eq_attr "type" "neon_bsl_q,neon_dup_q,neon_ext_q,neon_move_q,neon_rev_q,neon_tbl1_q,neon_permute_q"))
+       (eq_attr "type" "neon_bsl_q,neon_ext_q,neon_move_q,neon_rev_q,neon_tbl1_q,neon_permute_q"))
   "falkor_vxvy+falkor_vxvy")
 
 (define_insn_reservation "falkor_am_2_vxvy" 2

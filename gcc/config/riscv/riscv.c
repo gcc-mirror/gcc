@@ -123,7 +123,7 @@ struct GTY(())  riscv_frame_info {
 };
 
 enum riscv_privilege_levels {
-  USER_MODE, SUPERVISOR_MODE, MACHINE_MODE
+  UNKNOWN_MODE, USER_MODE, SUPERVISOR_MODE, MACHINE_MODE
 };
 
 struct GTY(())  machine_function {
@@ -3984,6 +3984,8 @@ riscv_expand_epilogue (int style)
     {
       enum riscv_privilege_levels mode = cfun->machine->interrupt_mode;
 
+      gcc_assert (mode != UNKNOWN_MODE);
+
       if (mode == MACHINE_MODE)
 	emit_jump_insn (gen_riscv_mret ());
       else if (mode == SUPERVISOR_MODE)
@@ -4530,6 +4532,37 @@ riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
   return true;
 }
 
+/* Get the intterupt type, return UNKNOWN_MODE if it's not
+   interrupt function. */
+static enum riscv_privilege_levels
+riscv_get_interrupt_type (tree decl)
+{
+  gcc_assert (decl != NULL_TREE);
+
+  if ((TREE_CODE(decl) != FUNCTION_DECL)
+      || (!riscv_interrupt_type_p (TREE_TYPE (decl))))
+    return UNKNOWN_MODE;
+
+  tree attr_args
+    = TREE_VALUE (lookup_attribute ("interrupt",
+				    TYPE_ATTRIBUTES (TREE_TYPE (decl))));
+
+  if (attr_args && TREE_CODE (TREE_VALUE (attr_args)) != VOID_TYPE)
+    {
+      const char *string = TREE_STRING_POINTER (TREE_VALUE (attr_args));
+
+      if (!strcmp (string, "user"))
+	return USER_MODE;
+      else if (!strcmp (string, "supervisor"))
+	return SUPERVISOR_MODE;
+      else /* Must be "machine".  */
+	return MACHINE_MODE;
+    }
+  else
+    /* Interrupt attributes are machine mode by default.  */
+    return MACHINE_MODE;
+}
+
 /* Implement `TARGET_SET_CURRENT_FUNCTION'.  */
 /* Sanity cheching for above function attributes.  */
 static void
@@ -4554,9 +4587,6 @@ riscv_set_current_function (tree decl)
     {
       tree ret = TREE_TYPE (TREE_TYPE (decl));
       tree args = TYPE_ARG_TYPES (TREE_TYPE (decl));
-      tree attr_args
-	= TREE_VALUE (lookup_attribute ("interrupt",
-					TYPE_ATTRIBUTES (TREE_TYPE (decl))));
 
       if (TREE_CODE (ret) != VOID_TYPE)
 	error ("%qs function cannot return a value", "interrupt");
@@ -4564,24 +4594,37 @@ riscv_set_current_function (tree decl)
       if (args && TREE_CODE (TREE_VALUE (args)) != VOID_TYPE)
 	error ("%qs function cannot have arguments", "interrupt");
 
-      if (attr_args && TREE_CODE (TREE_VALUE (attr_args)) != VOID_TYPE)
-	{
-	  const char *string = TREE_STRING_POINTER (TREE_VALUE (attr_args));
+      cfun->machine->interrupt_mode = riscv_get_interrupt_type (decl);
 
-	  if (!strcmp (string, "user"))
-	    cfun->machine->interrupt_mode = USER_MODE;
-	  else if (!strcmp (string, "supervisor"))
-	    cfun->machine->interrupt_mode = SUPERVISOR_MODE;
-	  else /* Must be "machine".  */
-	    cfun->machine->interrupt_mode = MACHINE_MODE;
-	}
-      else
-	/* Interrupt attributes are machine mode by default.  */
-	cfun->machine->interrupt_mode = MACHINE_MODE;
+      gcc_assert (cfun->machine->interrupt_mode != UNKNOWN_MODE);
     }
 
   /* Don't print the above diagnostics more than once.  */
   cfun->machine->attributes_checked_p = 1;
+}
+
+/* Implement TARGET_MERGE_DECL_ATTRIBUTES. */
+static tree
+riscv_merge_decl_attributes (tree olddecl, tree newdecl)
+{
+  tree combined_attrs;
+
+  enum riscv_privilege_levels old_interrupt_type
+    = riscv_get_interrupt_type (olddecl);
+  enum riscv_privilege_levels new_interrupt_type
+    = riscv_get_interrupt_type (newdecl);
+
+  /* Check old and new has same interrupt type. */
+  if ((old_interrupt_type != UNKNOWN_MODE)
+      && (new_interrupt_type != UNKNOWN_MODE)
+      && (old_interrupt_type != new_interrupt_type))
+    error ("%qs function cannot have different intterupt type.", "interrupt");
+
+  /* Create combined attributes.  */
+  combined_attrs = merge_attributes (DECL_ATTRIBUTES (olddecl),
+                                     DECL_ATTRIBUTES (newdecl));
+
+  return combined_attrs;
 }
 
 /* Implement TARGET_CANNOT_COPY_INSN_P.  */
@@ -4780,11 +4823,18 @@ riscv_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT riscv_constant_alignment
 
+#undef TARGET_MERGE_DECL_ATTRIBUTES
+#define TARGET_MERGE_DECL_ATTRIBUTES riscv_merge_decl_attributes
+
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE riscv_attribute_table
 
 #undef TARGET_WARN_FUNC_RETURN
 #define TARGET_WARN_FUNC_RETURN riscv_warn_func_return
+
+/* The low bit is ignored by jump instructions so is safe to use.  */
+#undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

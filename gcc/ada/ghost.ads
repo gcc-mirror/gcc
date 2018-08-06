@@ -31,10 +31,6 @@ with Types; use Types;
 
 package Ghost is
 
-   procedure Add_Ignored_Ghost_Unit (Unit : Node_Id);
-   --  Add a single ignored Ghost compilation unit to the internal table for
-   --  post processing.
-
    procedure Check_Ghost_Completion
      (Prev_Id  : Entity_Id;
       Compl_Id : Entity_Id);

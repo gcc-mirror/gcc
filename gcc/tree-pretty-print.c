@@ -3980,15 +3980,14 @@ newline_and_indent (pretty_printer *pp, int spc)
 
 /* Handle the %K format for TEXT.  Separate from default_tree_printer
    so it can also be used in front ends.
-   Argument is a statement from which EXPR_LOCATION and TREE_BLOCK will
-   be recorded.  */
+   The location LOC and BLOCK are expected to be extracted by the caller
+   from the %K argument arg via EXPR_LOCATION(arg) and TREE_BLOCK(arg).  */
 
 void
-percent_K_format (text_info *text, tree t)
+percent_K_format (text_info *text, location_t loc, tree block)
 {
-  text->set_location (0, EXPR_LOCATION (t), true);
+  text->set_location (0, loc, true);
   gcc_assert (pp_ti_abstract_origin (text) != NULL);
-  tree block = TREE_BLOCK (t);
   *pp_ti_abstract_origin (text) = NULL;
 
   if (in_lto_p)

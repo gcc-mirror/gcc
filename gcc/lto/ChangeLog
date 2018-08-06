@@ -1,3 +1,21 @@
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82063
+	* lto-lang.c (lto_handle_option): Change function argument
+	to HOST_WIDE_INT.
+
+2018-07-20  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86585
+	* lto.c (unify_scc): Before we throw away an SCC see if we
+	can amend prevailing single-entry SCC with debug refs.
+
+2018-07-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (do_stream_out): Add PART parameter; open dump file.
+	(stream_out): Add PART parameter; pass it to do_stream_out.
+	(lto_wpa_write_files): Update call of stream_out.
+
 2018-07-04  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/66240

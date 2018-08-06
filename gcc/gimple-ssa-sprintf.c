@@ -2014,8 +2014,15 @@ format_floating (const directive &dir, tree arg, vr_values *)
 
       res.range.likely = res.range.min;
       res.range.max = res.range.min;
-      /* The inlikely maximum is "[-/+]infinity" or "[-/+]nan".  */
-      res.range.unlikely = sign + (real_isinf (rvp) ? 8 : 3);
+      /* The unlikely maximum is "[-/+]infinity" or "[-/+][qs]nan".
+	 For NaN, the C/POSIX standards specify two formats:
+	   "[-/+]nan"
+	 and
+	   "[-/+]nan(n-char-sequence)"
+	 No known printf implementation outputs the latter format but AIX
+	 outputs QNaN and SNaN for quiet and signalling NaN, respectively,
+	 so the unlikely maximum reflects that.  */
+      res.range.unlikely = sign + (real_isinf (rvp) ? 8 : 4);
 
       /* The range for infinity and NaN is known unless either width
 	 or precision is unknown.  Width has the same effect regardless

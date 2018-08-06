@@ -333,7 +333,7 @@ __gcov_indirect_call_profiler_v2 (gcov_type value, void* cur_func)
      function may have multiple descriptors and we need to dereference
      the descriptors to see if they point to the same function.  */
   if (cur_func == __gcov_indirect_call_callee
-      || (__LIBGCC_VTABLE_USES_DESCRIPTORS__ && __gcov_indirect_call_callee
+      || (__LIBGCC_VTABLE_USES_DESCRIPTORS__
           && *(void **) cur_func == *(void **) __gcov_indirect_call_callee))
     __gcov_one_value_profiler_body (__gcov_indirect_call_counters, value, 0);
 

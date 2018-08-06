@@ -1222,77 +1222,8 @@ alloc_max_size (void)
   if (alloc_object_size_limit)
     return alloc_object_size_limit;
 
-  alloc_object_size_limit = max_object_size ();
-
-  if (!warn_alloc_size_limit)
-    return alloc_object_size_limit;
-
-  const char *optname = "-Walloc-size-larger-than=";
-
-  char *end = NULL;
-  errno = 0;
-  unsigned HOST_WIDE_INT unit = 1;
-  unsigned HOST_WIDE_INT limit
-    = strtoull (warn_alloc_size_limit, &end, 10);
-
-  /* If the value is too large to be represented use the maximum
-     representable value that strtoull sets limit to (setting
-     errno to ERANGE).  */
-
-  if (end && *end)
-    {
-      /* Numeric option arguments are at most INT_MAX.  Make it
-	 possible to specify a larger value by accepting common
-	 suffixes.  */
-      if (!strcmp (end, "kB"))
-	unit = 1000;
-      else if (!strcasecmp (end, "KiB") || !strcmp (end, "KB"))
-	unit = 1024;
-      else if (!strcmp (end, "MB"))
-	unit = HOST_WIDE_INT_UC (1000) * 1000;
-      else if (!strcasecmp (end, "MiB"))
-	unit = HOST_WIDE_INT_UC (1024) * 1024;
-      else if (!strcasecmp (end, "GB"))
-	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000;
-      else if (!strcasecmp (end, "GiB"))
-	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024;
-      else if (!strcasecmp (end, "TB"))
-	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000;
-      else if (!strcasecmp (end, "TiB"))
-	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024;
-      else if (!strcasecmp (end, "PB"))
-	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000 * 1000;
-      else if (!strcasecmp (end, "PiB"))
-	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024 * 1024;
-      else if (!strcasecmp (end, "EB"))
-	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000 * 1000
-	  * 1000;
-      else if (!strcasecmp (end, "EiB"))
-	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024 * 1024
-	  * 1024;
-      else
-	{
-	  /* This could mean an unknown suffix or a bad prefix, like
-	     "+-1".  */
-	  warning_at (UNKNOWN_LOCATION, 0,
-		      "invalid argument %qs to %qs",
-		      warn_alloc_size_limit, optname);
-
-	  /* Ignore the limit extracted by strtoull.  */
-	  unit = 0;
-	}
-    }
-
-  if (unit)
-    {
-      widest_int w = wi::mul (limit, unit);
-      if (w < wi::to_widest (alloc_object_size_limit))
-	alloc_object_size_limit
-	  = wide_int_to_tree (ptrdiff_type_node, w);
-      else
-	alloc_object_size_limit = build_all_ones_cst (size_type_node);
-    }
-
+  alloc_object_size_limit
+    = build_int_cst (size_type_node, warn_alloc_size_limit);
 
   return alloc_object_size_limit;
 }
@@ -1517,7 +1448,7 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
       wide_int x = wi::to_wide (argrange[0][0], szprec);
       wide_int y = wi::to_wide (argrange[1][0], szprec);
 
-      bool vflow;
+      wi::overflow_type vflow;
       wide_int prod = wi::umul (x, y, &vflow);
 
       if (vflow)

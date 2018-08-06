@@ -65,46 +65,6 @@ the string should contain a tab, a pseudo-op, and then another tab.",
 DEFHOOKPOD (aligned_op, "*", struct asm_int_op, TARGET_ASM_ALIGNED_INT_OP)
 DEFHOOKPOD (unaligned_op, "*", struct asm_int_op, TARGET_ASM_UNALIGNED_INT_OP)
 
-/* The maximum number of bytes to skip when applying
-   LABEL_ALIGN_AFTER_BARRIER.  */
-DEFHOOK
-(label_align_after_barrier_max_skip,
- "The maximum number of bytes to skip before @var{label} when applying\n\
-@code{LABEL_ALIGN_AFTER_BARRIER}.  This works only if\n\
-@code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.",
- int, (rtx_insn *label),
- default_label_align_after_barrier_max_skip)
-
-/* The maximum number of bytes to skip when applying
-   LOOP_ALIGN.  */
-DEFHOOK
-(loop_align_max_skip,
- "The maximum number of bytes to skip when applying @code{LOOP_ALIGN} to\n\
-@var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is\n\
-defined.",
- int, (rtx_insn *label),
- default_loop_align_max_skip)
-
-/* The maximum number of bytes to skip when applying
-   LABEL_ALIGN.  */
-DEFHOOK
-(label_align_max_skip,
- "The maximum number of bytes to skip when applying @code{LABEL_ALIGN}\n\
-to @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN}\n\
-is defined.",
- int, (rtx_insn *label),
- default_label_align_max_skip)
-
-/* The maximum number of bytes to skip when applying
-   JUMP_ALIGN.  */
-DEFHOOK
-(jump_align_max_skip,
- "The maximum number of bytes to skip before @var{label} when applying\n\
-@code{JUMP_ALIGN}.  This works only if\n\
-@code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.",
- int, (rtx_insn *label),
- default_jump_align_max_skip)
-
 /* Try to output the assembler code for an integer object whose
    value is given by X.  SIZE is the size of the object in bytes and
    ALIGNED_P indicates whether it is aligned.  Return true if
@@ -2040,6 +2000,25 @@ HOOK_VECTOR_END (vectorize)
 #define HOOK_PREFIX "TARGET_"
 
 DEFHOOK
+(preferred_else_value,
+ "This hook returns the target's preferred final argument for a call\n\
+to conditional internal function @var{ifn} (really of type\n\
+@code{internal_fn}).  @var{type} specifies the return type of the\n\
+function and @var{ops} are the operands to the conditional operation,\n\
+of which there are @var{nops}.\n\
+\n\
+For example, if @var{ifn} is @code{IFN_COND_ADD}, the hook returns\n\
+a value of type @var{type} that should be used when @samp{@var{ops}[0]}\n\
+and @samp{@var{ops}[1]} are conditionally added together.\n\
+\n\
+This hook is only relevant if the target supports conditional patterns\n\
+like @code{cond_add@var{m}}.  The default implementation returns a zero\n\
+constant of type @var{type}.",
+ tree,
+ (unsigned ifn, tree type, unsigned nops, tree *ops),
+ default_preferred_else_value)
+
+DEFHOOK
 (record_offload_symbol,
  "Used when offloaded functions are seen in the compilation unit and no named\n\
 sections are available.  It is called once for each symbol that must be\n\
@@ -3310,6 +3289,16 @@ constants can be done inline.  The function\n\
  HOST_WIDE_INT, (const_tree constant, HOST_WIDE_INT basic_align),
  default_constant_alignment)
 
+DEFHOOK
+(translate_mode_attribute,
+ "Define this hook if during mode attribute processing, the port should\n\
+translate machine_mode @var{mode} to another mode.  For example, rs6000's\n\
+@code{KFmode}, when it is the same as @code{TFmode}.\n\
+\n\
+The default version of the hook returns that mode that was passed in.",
+ machine_mode, (machine_mode mode),
+ default_translate_mode_attribute)
+
 /* True if MODE is valid for the target.  By "valid", we mean able to
    be manipulated in non-trivial ways.  In particular, this means all
    the arithmetic is supported.  */
@@ -4165,6 +4154,46 @@ DEFHOOK
  otherwise return false.  The default implementation always returns true.",
  bool, (void),
  hook_bool_void_true)
+
+DEFHOOK
+(have_speculation_safe_value,
+"This hook is used to determine the level of target support for\n\
+ @code{__builtin_speculation_safe_value}.  If called with an argument\n\
+ of false, it returns true if the target has been modified to support\n\
+ this builtin.  If called with an argument of true, it returns true\n\
+ if the target requires active mitigation execution might be speculative.\n\
+ \n\
+ The default implementation returns false if the target does not define\n\
+ a pattern named @code{speculation_barrier}.  Else it returns true\n\
+ for the first case and whether the pattern is enabled for the current\n\
+ compilation for the second case.\n\
+ \n\
+ For targets that have no processors that can execute instructions\n\
+ speculatively an alternative implemenation of this hook is available:\n\
+ simply redefine this hook to @code{speculation_safe_value_not_needed}\n\
+ along with your other target hooks.",
+bool, (bool active), default_have_speculation_safe_value)
+
+DEFHOOK
+(speculation_safe_value,
+"This target hook can be used to generate a target-specific code\n\
+ sequence that implements the @code{__builtin_speculation_safe_value}\n\
+ built-in function.  The function must always return @var{val} in\n\
+ @var{result} in mode @var{mode} when the cpu is not executing\n\
+ speculatively, but must never return that when speculating until it\n\
+ is known that the speculation will not be unwound.  The hook supports\n\
+ two primary mechanisms for implementing the requirements.  The first\n\
+ is to emit a speculation barrier which forces the processor to wait\n\
+ until all prior speculative operations have been resolved; the second\n\
+ is to use a target-specific mechanism that can track the speculation\n\
+ state and to return @var{failval} if it can determine that\n\
+ speculation must be unwound at a later time.\n\
+ \n\
+ The default implementation simply copies @var{val} to @var{result} and\n\
+ emits a @code{speculation_barrier} instruction if that is defined.",
+rtx, (machine_mode mode, rtx result, rtx val, rtx failval),
+ default_speculation_safe_value)
+ 
 
 DEFHOOK
 (can_use_doloop_p,

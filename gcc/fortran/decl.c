@@ -534,6 +534,7 @@ match_old_style_init (const char *name)
   newdata = gfc_get_data ();
   newdata->var = gfc_get_data_variable ();
   newdata->var->expr = gfc_get_variable_expr (st);
+  newdata->var->expr->where = sym->declared_at;
   newdata->where = gfc_current_locus;
 
   /* Match initial value list. This also eats the terminal '/'.  */
@@ -659,7 +660,7 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
 {
   gfc_constructor_base array_head = NULL;
   gfc_expr *expr = NULL;
-  match m;
+  match m = MATCH_ERROR;
   locus where;
   mpz_t repeat, cons_size, as_size;
   bool scalar;
@@ -667,18 +668,27 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
 
   gcc_assert (ts);
 
-  mpz_init_set_ui (repeat, 0);
-  scalar = !as || !as->rank;
-
   /* We have already matched '/' - now look for a constant list, as with
      top_val_list from decl.c, but append the result to an array.  */
   if (gfc_match ("/") == MATCH_YES)
     {
       gfc_error ("Empty old style initializer list at %C");
-      goto cleanup;
+      return MATCH_ERROR;
     }
 
   where = gfc_current_locus;
+  scalar = !as || !as->rank;
+
+  if (!scalar && !spec_size (as, &as_size))
+    {
+      gfc_error ("Array in initializer list at %L must have an explicit shape",
+		 as->type == AS_EXPLICIT ? &as->upper[0]->where : &where);
+      /* Nothing to cleanup yet.  */
+      return MATCH_ERROR;
+    }
+
+  mpz_init_set_ui (repeat, 0);
+
   for (;;)
     {
       m = match_data_constant (&expr);
@@ -708,7 +718,10 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
 
           m = match_data_constant (&expr);
           if (m == MATCH_NO)
-            gfc_error ("Expected data constant after repeat spec at %C");
+	    {
+	      m = MATCH_ERROR;
+	      gfc_error ("Expected data constant after repeat spec at %C");
+	    }
           if (m != MATCH_YES)
             goto cleanup;
         }
@@ -751,6 +764,9 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
         goto syntax;
     }
 
+  /* If we break early from here out, we encountered an error.  */
+  m = MATCH_ERROR;
+
   /* Set up expr as an array constructor. */
   if (!scalar)
     {
@@ -763,25 +779,13 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
 
       /* Validate sizes.  We built expr ourselves, so cons_size will be
 	 constant (we fail above for non-constant expressions).
-	 We still need to verify that the array-spec has constant size.  */
-      cmp = 0;
+	 We still need to verify that the sizes match.  */
       gcc_assert (gfc_array_size (expr, &cons_size));
-      if (!spec_size (as, &as_size))
-	{
-	  gfc_error ("Expected constant array-spec in initializer list at %L",
-		     as->type == AS_EXPLICIT ? &as->upper[0]->where : &where);
-	  cmp = -1;
-	}
-      else
-	{
-	  /* Make sure the specs are of the same size.  */
-	  cmp = mpz_cmp (cons_size, as_size);
-	  if (cmp < 0)
-	    gfc_error ("Not enough elements in array initializer at %C");
-	  else if (cmp > 0)
-	    gfc_error ("Too many elements in array initializer at %C");
-	  mpz_clear (as_size);
-	}
+      cmp = mpz_cmp (cons_size, as_size);
+      if (cmp < 0)
+	gfc_error ("Not enough elements in array initializer at %C");
+      else if (cmp > 0)
+	gfc_error ("Too many elements in array initializer at %C");
       mpz_clear (cons_size);
       if (cmp)
 	goto cleanup;
@@ -796,10 +800,11 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
     expr->ts.u.cl->length_from_typespec = 1;
 
   *result = expr;
-  mpz_clear (repeat);
-  return MATCH_YES;
+  m = MATCH_YES;
+  goto done;
 
 syntax:
+  m = MATCH_ERROR;
   gfc_error ("Syntax error in old style initializer list at %C");
 
 cleanup:
@@ -807,8 +812,12 @@ cleanup:
     expr->value.constructor = NULL;
   gfc_free_expr (expr);
   gfc_constructor_free (array_head);
+
+done:
   mpz_clear (repeat);
-  return MATCH_ERROR;
+  if (!scalar)
+    mpz_clear (as_size);
+  return m;
 }
 
 

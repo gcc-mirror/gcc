@@ -63,6 +63,7 @@ procedure Gnatxref is
    --  Display the usage
 
    procedure Write_Usage;
+   pragma No_Return (Write_Usage);
    --  Print a small help page for program usage
 
    --------------------

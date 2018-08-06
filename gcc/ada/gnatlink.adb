@@ -1102,8 +1102,10 @@ procedure Gnatlink is
                   --  We will be looking for the static version of the library
                   --  as it is in the same directory as the shared version.
 
-                  if Next_Line (Nlast - Library_Version'Length + 1 .. Nlast) =
-                       Library_Version
+                  if Nlast >= Library_Version'Length
+                    and then Next_Line
+                      (Nlast - Library_Version'Length + 1 .. Nlast)
+                        = Library_Version
                   then
                      --  Set Last to point to last character before the
                      --  library version.

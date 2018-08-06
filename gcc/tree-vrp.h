@@ -49,6 +49,9 @@ struct GTY((for_user)) value_range
   /* Set of SSA names whose value ranges are equivalent to this one.
      This set is only valid when TYPE is VR_RANGE or VR_ANTI_RANGE.  */
   bitmap equiv;
+
+  /* Dump value range to stderr.  */
+  void dump ();
 };
 
 extern void vrp_intersect_ranges (value_range *vr0, value_range *vr1);
@@ -112,7 +115,7 @@ extern bool range_int_cst_p (value_range *);
 extern int operand_less_p (tree, tree);
 extern bool find_case_label_range (gswitch *, tree, tree, size_t *, size_t *);
 extern bool find_case_label_index (gswitch *, size_t, tree, size_t *);
-extern bool zero_nonzero_bits_from_vr (const tree, value_range *,
+extern bool vrp_set_zero_nonzero_bits (const tree, value_range *,
 				       wide_int *, wide_int *);
 extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern bool range_int_cst_singleton_p (value_range *);

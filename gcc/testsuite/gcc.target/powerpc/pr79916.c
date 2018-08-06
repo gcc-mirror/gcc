@@ -1,4 +1,5 @@
 /* { dg-do compile  { target { powerpc*-*-* } } } */
+/* { dg-require-effective-target dfp } */
 /* { dg-options "-fno-expensive-optimizations --param ira-max-conflict-table-size=0 -mno-popcntd -O3" } */
 
 #define PASTE2(A,B) A ## B

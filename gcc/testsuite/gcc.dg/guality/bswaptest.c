@@ -9,7 +9,7 @@ foo (long x)
   long f = __builtin_bswap64 (x);
   long g = f;
   asm volatile ("" : "+r" (f));
-  vv++;		/* { dg-final { gdb-test 12 "g" "f" } } */
+  vv++;		/* { dg-final { gdb-test . "g" "f" } } */
   return f;
 }
 
@@ -19,7 +19,7 @@ bar (int x)
   int f = __builtin_bswap32 (x);
   int g = f;
   asm volatile ("" : "+r" (f));
-  vv++;		/* { dg-final { gdb-test 22 "g" "f" } } */
+  vv++;		/* { dg-final { gdb-test . "g" "f" } } */
   return f;
 }
 

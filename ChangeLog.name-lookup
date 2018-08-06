@@ -1,3 +1,7 @@
+2018-08-06  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r263332.
+
 2018-08-03  Nathan Sidwell  <nathan@acm.org>
 
 	An API for lazy builtin macros.

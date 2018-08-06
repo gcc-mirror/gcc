@@ -2182,7 +2182,7 @@ proc check_ppc_float128_hw_available { } {
 		    __float128 w = -1.0q;
 
 		    __asm__ ("xsaddqp %0,%1,%2" : "+v" (w) : "v" (x), "v" (y));
-		    return ((z != 3.0q) || (z != w);
+		    return ((z != 3.0q) || (z != w));
 		}
 	    } $options
 	}
@@ -2681,6 +2681,15 @@ proc check_effective_target_large_double { } {
 proc check_effective_target_longdouble128 { } {
     return [check_no_compiler_messages longdouble128 object {
 	int dummy[sizeof(long double) == 16 ? 1 : -1];
+    }]
+}
+
+# Return 1 if the target supports long double of 64 bits,
+# 0 otherwise.
+
+proc check_effective_target_longdouble64 { } {
+    return [check_no_compiler_messages longdouble64 object {
+	int dummy[sizeof(long double) == 8 ? 1 : -1];
     }]
 }
 
@@ -5139,6 +5148,36 @@ proc check_effective_target_powerpc_float128_hw_ok { } {
     } else {
 	return 0
     }
+}
+
+# Return 1 if current options define float128, 0 otherwise.
+
+proc check_effective_target_ppc_float128 { } {
+    return [check_no_compiler_messages_nocache ppc_float128 object {
+	#ifndef __FLOAT128__
+	  nope no good
+	#endif
+    }]
+}
+
+# Return 1 if current options generate float128 insns, 0 otherwise.
+
+proc check_effective_target_ppc_float128_insns { } {
+    return [check_no_compiler_messages_nocache ppc_float128 object {
+	#ifndef __FLOAT128_HARDWARE__
+	  nope no good
+	#endif
+    }]
+}
+
+# Return 1 if current options generate VSX instructions, 0 otherwise.
+
+proc check_effective_target_powerpc_vsx { } {
+    return [check_no_compiler_messages_nocache powerpc_vsx object {
+	#ifndef __VSX__
+	  nope no vsx
+	#endif
+    }]
 }
 
 # Return 1 if this is a PowerPC target supporting -mvsx

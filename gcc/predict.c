@@ -734,7 +734,7 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
   else
     edge_info_str[0] = '\0';
 
-  fprintf (file, "  %s heuristics%s%s: %.1f%%",
+  fprintf (file, "  %s heuristics%s%s: %.2f%%",
 	   predictor_info[predictor].name,
 	   edge_info_str, reason_messages[reason],
 	   probability * 100.0 / REG_BR_PROB_BASE);
@@ -1629,7 +1629,8 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
       && tree_fits_shwi_p (compare_base))
     {
       int probability;
-      bool overflow, overall_overflow = false;
+      wi::overflow_type overflow;
+      bool overall_overflow = false;
       widest_int compare_count, tem;
 
       /* (loop_bound - base) / compare_step */

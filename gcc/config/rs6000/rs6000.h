@@ -699,19 +699,6 @@ extern int rs6000_vector_align[];
 #define TARGET_FRSQRTE	(TARGET_HARD_FLOAT \
 			 && (TARGET_PPC_GFXOPT || VECTOR_UNIT_VSX_P (DFmode)))
 
-/* Conditions to allow TOC fusion for loading/storing integers.  */
-#define TARGET_TOC_FUSION_INT	(TARGET_P8_FUSION			\
-				 && TARGET_TOC_FUSION			\
-				 && (TARGET_CMODEL != CMODEL_SMALL)	\
-				 && TARGET_POWERPC64)
-
-/* Conditions to allow TOC fusion for loading/storing floating point.  */
-#define TARGET_TOC_FUSION_FP	(TARGET_P9_FUSION			\
-				 && TARGET_TOC_FUSION			\
-				 && (TARGET_CMODEL != CMODEL_SMALL)	\
-				 && TARGET_POWERPC64			\
-				 && TARGET_HARD_FLOAT)
-
 /* Macro to say whether we can do optimizations where we need to do parts of
    the calculation in 64-bit GPRs and then is transfered to the vector
    registers.  */

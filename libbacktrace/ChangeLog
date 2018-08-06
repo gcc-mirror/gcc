@@ -1,3 +1,21 @@
+2018-08-05 Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure.ac: Move define of HAVE_ZLIB into check for -lz.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
+2018-08-01  Tony Reix  <tony.reix@atos.net>
+
+	* xcoff.c (struct xcoff_line, struct xcoff_line_vector): Remove.
+	(struct xcoff_func, struct xcoff_func_vector): New structs.
+	(xcoff_syminfo): Drop leading dot from symbol name.
+	(xcoff_line_compare, xcoff_line_search): Remove.
+	(xcoff_func_compare, xcoff_func_search): New static functions.
+	(xcoff_lookup_pc): Search function table.
+	(xcoff_add_line, xcoff_process_linenos): Remove.
+	(xcoff_initialize_fileline): Build function table.
+
 2018-06-21 Denis Khalikov <d.khalikov@partner.samsung.com>
 
 	PR other/86198

@@ -10,8 +10,8 @@ __attribute__((noinline, noclone)) void
 foo (void)
 {
   static const char a[] = "abcdefg";
-  const char *b = a;		/* { dg-final { gdb-test 14 "c\[2\]" "'o'" } } */
-  asm (NOP : : : "memory");	/* { dg-final { gdb-test 14 "b\[4\]" "'e'" } } */
+  const char *b = a;		/* { dg-final { gdb-test .+1 "c\[2\]" "'o'" } } */
+  asm (NOP : : : "memory");	/* { dg-final { gdb-test . "b\[4\]" "'e'" } } */
 }
 
 int

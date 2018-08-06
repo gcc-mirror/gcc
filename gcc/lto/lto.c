@@ -1638,6 +1638,21 @@ unify_scc (struct data_in *data_in, unsigned from,
 	     to the tree node mapping computed by compare_tree_sccs.  */
 	  if (len == 1)
 	    {
+	      /* If we got a debug reference queued, see if the prevailing
+	         tree has a debug reference and if not, register the one
+		 for the tree we are about to throw away.  */
+	      if (dref_queue.length () == 1)
+		{
+		  dref_entry e = dref_queue.pop ();
+		  gcc_assert (e.decl
+			      == streamer_tree_cache_get_tree (cache, from));
+		  const char *sym;
+		  unsigned HOST_WIDE_INT off;
+		  if (!debug_hooks->die_ref_for_decl (pscc->entries[0], &sym,
+						      &off))
+		    debug_hooks->register_external_die (pscc->entries[0],
+							e.sym, e.off);
+		}
 	      lto_maybe_register_decl (data_in, pscc->entries[0], from);
 	      streamer_tree_cache_replace_tree (cache, pscc->entries[0], from);
 	    }
@@ -1669,7 +1684,9 @@ unify_scc (struct data_in *data_in, unsigned from,
 	      free_node (scc->entries[i]);
 	    }
 
-	  /* Drop DIE references.  */
+	  /* Drop DIE references.
+	     ???  Do as in the size-one SCC case which involves sorting
+	     the queue.  */
 	  dref_queue.truncate (0);
 
 	  break;
@@ -2326,13 +2343,15 @@ static lto_file *current_lto_file;
 /* Actually stream out ENCODER into TEMP_FILENAME.  */
 
 static void
-do_stream_out (char *temp_filename, lto_symtab_encoder_t encoder)
+do_stream_out (char *temp_filename, lto_symtab_encoder_t encoder, int part)
 {
   lto_file *file = lto_obj_file_open (temp_filename, true);
   if (!file)
     fatal_error (input_location, "lto_obj_file_open() failed");
   lto_set_current_out_file (file);
 
+  gcc_assert (!dump_file);
+  streamer_dump_file = dump_begin (TDI_lto_stream_out, NULL, part);
   ipa_write_optimization_summaries (encoder);
 
   free (CONST_CAST (char *, file->filename));
@@ -2340,6 +2359,11 @@ do_stream_out (char *temp_filename, lto_symtab_encoder_t encoder)
   lto_set_current_out_file (NULL);
   lto_obj_file_close (file);
   free (file);
+  if (streamer_dump_file)
+    {
+      dump_end (TDI_lto_stream_out, streamer_dump_file);
+      streamer_dump_file = NULL;
+    }
 }
 
 /* Wait for forked process and signal errors.  */
@@ -2372,14 +2396,14 @@ wait_for_child ()
 
 static void
 stream_out (char *temp_filename, lto_symtab_encoder_t encoder,
-	    bool ARG_UNUSED (last))
+	    bool ARG_UNUSED (last), int part)
 {
 #ifdef HAVE_WORKING_FORK
   static int nruns;
 
   if (lto_parallelism <= 1)
     {
-      do_stream_out (temp_filename, encoder);
+      do_stream_out (temp_filename, encoder, part);
       return;
     }
 
@@ -2399,12 +2423,12 @@ stream_out (char *temp_filename, lto_symtab_encoder_t encoder,
       if (!cpid)
 	{
 	  setproctitle ("lto1-wpa-streaming");
-	  do_stream_out (temp_filename, encoder);
+	  do_stream_out (temp_filename, encoder, part);
 	  exit (0);
 	}
       /* Fork failed; lets do the job ourseleves.  */
       else if (cpid == -1)
-        do_stream_out (temp_filename, encoder);
+        do_stream_out (temp_filename, encoder, part);
       else
 	nruns++;
     }
@@ -2412,13 +2436,13 @@ stream_out (char *temp_filename, lto_symtab_encoder_t encoder,
   else
     {
       int i;
-      do_stream_out (temp_filename, encoder);
+      do_stream_out (temp_filename, encoder, part);
       for (i = 0; i < nruns; i++)
 	wait_for_child ();
     }
   asm_nodes_output = true;
 #else
-  do_stream_out (temp_filename, encoder);
+  do_stream_out (temp_filename, encoder, part);
 #endif
 }
 
@@ -2508,7 +2532,7 @@ lto_wpa_write_files (void)
 	}
       gcc_checking_assert (lto_symtab_encoder_size (part->encoder) || !i);
 
-      stream_out (temp_filename, part->encoder, i == n_sets - 1);
+      stream_out (temp_filename, part->encoder, i == n_sets - 1, i);
 
       part->encoder = NULL;
 

@@ -74,23 +74,6 @@ int flag_generate_lto
 Variable
 int flag_generate_offload = 0
 
-; True to warn about any objects definitions whose size is larger
-; than N bytes.  Also want about function definitions whose returned
-; values are larger than N bytes, where N is 'larger_than_size'.
-Variable
-bool warn_larger_than
-
-Variable
-HOST_WIDE_INT larger_than_size
-
-; True to warn about any function whose frame size is larger
-; than N bytes.
-Variable
-bool warn_frame_larger_than
-
-Variable
-HOST_WIDE_INT frame_larger_than_size
-
 ; Nonzero means we should be saving declaration info into a .X file.
 Variable
 int flag_gen_aux_info = 0
@@ -571,6 +554,11 @@ Wattribute-alias
 Common Var(warn_attributes) Init(1) Warning
 Warn about type safety and similar errors in attribute alias and related.
 
+Wcannot-profile
+Common Var(warn_cannot_profile) Init(1) Warning
+Warn when profiling instrumentation was requested, but could not be applied to
+a certain function.
+
 Wcast-align
 Common Var(warn_cast_align) Warning
 Warn about pointer casts which increase alignment.
@@ -608,8 +596,8 @@ Common Var(flag_fatal_errors)
 Exit on the first error occurred.
 
 Wframe-larger-than=
-Common RejectNegative Joined UInteger Warning
--Wframe-larger-than=<number>	Warn if a function's stack frame requires more than <number> bytes.
+Common RejectNegative Joined Host_Wide_Int ByteSize Warning Var(warn_frame_larger_than_size) Init(HOST_WIDE_INT_MAX)
+-Wframe-larger-than=<byte-size>	Warn if a function's stack frame requires in excess of <byte-size>.
 
 Wfree-nonheap-object
 Common Var(warn_free_nonheap_object) Init(1) Warning
@@ -638,8 +626,8 @@ Wlarger-than-
 Common RejectNegative Joined Warning Undocumented Alias(Wlarger-than=)
 
 Wlarger-than=
-Common RejectNegative Joined UInteger Warning
--Wlarger-than=<number>	Warn if an object is larger than <number> bytes.
+Common RejectNegative Joined Host_Wide_Int ByteSize Warning Var(warn_larger_than_size) Init(HOST_WIDE_INT_MAX)
+-Wlarger-than=<byte-size>	Warn if an object's size exceeds <byte-size>.
 
 Wnonnull-compare
 Var(warn_nonnull_compare) Warning
@@ -711,8 +699,8 @@ Common Var(warn_stack_protect) Warning
 Warn when not issuing stack smashing protection for some reason.
 
 Wstack-usage=
-Common Joined RejectNegative UInteger Var(warn_stack_usage) Warning
--Wstack-usage=<number>	Warn if stack usage might be larger than specified amount.
+Common Joined RejectNegative Host_Wide_Int ByteSize Var(warn_stack_usage) Warning Init(HOST_WIDE_INT_MAX)
+-Wstack-usage=<byte-size>	Warn if stack usage might exceed <byte-size>.
 
 Wstrict-aliasing
 Common Warning
@@ -987,7 +975,7 @@ Common Report Var(flag_align_loops) Optimization
 Align the start of loops.
 
 falign-loops=
-Common RejectNegative Joined Var(str_align_loops)
+Common RejectNegative Joined Var(str_align_loops) Optimization
 
 fargument-alias
 Common Ignore
@@ -1949,6 +1937,10 @@ Enable all optimization info dumps on stderr.
 fopt-info-
 Common Joined RejectNegative Var(common_deferred_options) Defer
 -fopt-info[-<type>=filename]	Dump compiler optimization details.
+
+fsave-optimization-record
+Common Report Var(flag_save_optimization_record) Optimization
+Write a SRCFILE.opt-record.json file detailing what optimizations were performed.
 
 foptimize-register-move
 Common Ignore
@@ -3046,6 +3038,9 @@ nodefaultlibs
 Driver
 
 nostartfiles
+Driver
+
+nolibc
 Driver
 
 nostdlib

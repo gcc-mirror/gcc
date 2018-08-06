@@ -2906,6 +2906,101 @@
 	  UNSPEC_SEL))]
 )
 
+;; Predicated floating-point ternary operations with select.
+(define_expand "cond_<optab><mode>"
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (unspec:SVE_F
+	     [(match_operand:SVE_F 2 "register_operand")
+	      (match_operand:SVE_F 3 "register_operand")
+	      (match_operand:SVE_F 4 "register_operand")]
+	     SVE_COND_FP_TERNARY)
+	   (match_operand:SVE_F 5 "aarch64_simd_reg_or_zero")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+{
+  /* Swap the multiplication operands if the fallback value is the
+     second of the two.  */
+  if (rtx_equal_p (operands[3], operands[5]))
+    std::swap (operands[2], operands[3]);
+})
+
+;; Predicated floating-point ternary operations using the FMAD-like form.
+(define_insn "*cond_<optab><mode>_2"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand:SVE_F 2 "register_operand" "0, w")
+	      (match_operand:SVE_F 3 "register_operand" "w, w")
+	      (match_operand:SVE_F 4 "register_operand" "w, w")]
+	     SVE_COND_FP_TERNARY)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
+   movprfx\t%0, %2\;<sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated floating-point ternary operations using the FMLA-like form.
+(define_insn "*cond_<optab><mode>_4"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand:SVE_F 2 "register_operand" "w, w")
+	      (match_operand:SVE_F 3 "register_operand" "w, w")
+	      (match_operand:SVE_F 4 "register_operand" "0, w")]
+	     SVE_COND_FP_TERNARY)
+	   (match_dup 4)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %4\;<sve_fmad_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated floating-point ternary operations in which the value for
+;; inactive lanes is distinct from the other inputs.
+(define_insn_and_split "*cond_<optab><mode>_any"
+  [(set (match_operand:SVE_F 0 "register_operand" "=&w, &w, ?&w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand:SVE_F 2 "register_operand" "w, w, w")
+	      (match_operand:SVE_F 3 "register_operand" "w, w, w")
+	      (match_operand:SVE_F 4 "register_operand" "w, w, w")]
+	     SVE_COND_FP_TERNARY)
+	   (match_operand:SVE_F 5 "aarch64_simd_reg_or_zero" "Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && !rtx_equal_p (operands[2], operands[5])
+   && !rtx_equal_p (operands[3], operands[5])
+   && !rtx_equal_p (operands[4], operands[5])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %4.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/m, %4.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   #"
+  "&& reload_completed
+   && !CONSTANT_P (operands[5])
+   && !rtx_equal_p (operands[0], operands[5])"
+  [(set (match_dup 0)
+	(unspec:SVE_F [(match_dup 1) (match_dup 4) (match_dup 5)] UNSPEC_SEL))
+   (set (match_dup 0)
+	(unspec:SVE_F
+	  [(match_dup 1)
+	   (unspec:SVE_F [(match_dup 2) (match_dup 3) (match_dup 0)]
+			 SVE_COND_FP_TERNARY)
+           (match_dup 0)]
+	  UNSPEC_SEL))]
+  ""
+  [(set_attr "movprfx" "yes")]
+)
+
 ;; Shift an SVE vector left and insert a scalar into element 0.
 (define_insn "vec_shl_insert_<mode>"
   [(set (match_operand:SVE_ALL 0 "register_operand" "=w, w")

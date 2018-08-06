@@ -483,6 +483,22 @@ arc_autovectorize_vector_sizes (vector_sizes *sizes)
     }
 }
 
+
+/* Implements target hook TARGET_SCHED_ISSUE_RATE.  */
+static int
+arc_sched_issue_rate (void)
+{
+  switch (arc_tune)
+    {
+    case TUNE_ARCHS4X:
+    case TUNE_ARCHS4XD:
+      return 3;
+    default:
+      break;
+    }
+  return 1;
+}
+
 /* TARGET_PRESERVE_RELOAD_P is still awaiting patch re-evaluation / review.  */
 static bool arc_preserve_reload_p (rtx in) ATTRIBUTE_UNUSED;
 static rtx arc_delegitimize_address (rtx);
@@ -564,6 +580,9 @@ static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 
 #undef  TARGET_SCHED_ADJUST_PRIORITY
 #define TARGET_SCHED_ADJUST_PRIORITY arc_sched_adjust_priority
+
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE arc_sched_issue_rate
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P arc_vector_mode_supported_p
@@ -9743,18 +9762,19 @@ arc_scheduling_not_expected (void)
   return cfun->machine->arc_reorg_started;
 }
 
+/* Code has a minimum p2 alignment of 1, which we must restore after
+   an ADDR_DIFF_VEC.  */
+
 int
 arc_label_align (rtx_insn *label)
 {
-  /* Code has a minimum p2 alignment of 1, which we must restore after an
-     ADDR_DIFF_VEC.  */
-  if (align_labels_log < 1)
+  if (align_labels.levels[0].log < 1)
     {
       rtx_insn *next = next_nonnote_nondebug_insn (label);
       if (INSN_P (next) && recog_memoized (next) >= 0)
 	return 1;
     }
-  return align_labels_log;
+  return align_labels.levels[0].log;
 }
 
 /* Return true if LABEL is in executable code.  */
@@ -10400,6 +10420,10 @@ compact_memory_operand_p (rtx op, machine_mode mode,
   if (MEM_VOLATILE_P (op) && !TARGET_VOLATILE_CACHE_SET)
     return false;
 
+  /* likewise for uncached types.  */
+  if (arc_is_uncached_mem_p (op))
+    return false;
+
   if (mode == VOIDmode)
     mode = GET_MODE (op);
 
@@ -10683,28 +10707,36 @@ arc_handle_uncached_attribute (tree *node,
 bool
 arc_is_uncached_mem_p (rtx pat)
 {
-  tree attrs;
-  tree ttype;
-  struct mem_attrs *refattrs;
+  tree attrs = NULL_TREE;
+  tree addr;
 
   if (!MEM_P (pat))
     return false;
 
   /* Get the memory attributes.  */
-  refattrs = MEM_ATTRS (pat);
-  if (!refattrs
-      || !refattrs->expr)
+  addr = MEM_EXPR (pat);
+  if (!addr)
     return false;
 
-  /* Get the type declaration.  */
-  ttype = TREE_TYPE (refattrs->expr);
-  if (!ttype)
-    return false;
+  /* Get the attributes.  */
+  if (TREE_CODE (addr) == MEM_REF)
+    {
+      attrs = TYPE_ATTRIBUTES (TREE_TYPE (addr));
+      if (lookup_attribute ("uncached", attrs))
+	return true;
 
-  /* Get the type attributes.  */
-  attrs = TYPE_ATTRIBUTES (ttype);
-  if (lookup_attribute ("uncached", attrs))
-    return true;
+      attrs = TYPE_ATTRIBUTES (TREE_TYPE (TREE_OPERAND (addr, 0)));
+      if (lookup_attribute ("uncached", attrs))
+	return true;
+    }
+
+  /* For COMPONENT_REF, use the FIELD_DECL from tree operand 1.  */
+  if (TREE_CODE (addr) == COMPONENT_REF)
+    {
+      attrs = TYPE_ATTRIBUTES (TREE_TYPE (TREE_OPERAND (addr, 1)));
+      if (lookup_attribute ("uncached", attrs))
+	return true;
+    }
   return false;
 }
 

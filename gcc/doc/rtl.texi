@@ -3296,6 +3296,18 @@ There is one other known use for clobbering a pseudo register in a
 clobbered by the insn.  In this case, using the same pseudo register in
 the clobber and elsewhere in the insn produces the expected results.
 
+@findex clobber_high
+@item (clobber_high @var{x})
+Represents the storing or possible storing of an unpredictable,
+undescribed value into the upper parts of @var{x}. The mode of the expression
+represents the lower parts of the register which will not be overwritten.
+@code{reg} must be a reg expression.
+
+One place this is used is when calling into functions where the registers are
+preserved, but only up to a given number of bits.  For example when using
+Aarch64 SVE, calling a TLS descriptor will cause only the lower 128 bits of
+each of the vector registers to be preserved.
+
 @findex use
 @item (use @var{x})
 Represents the use of the value of @var{x}.  It indicates that the
@@ -3349,7 +3361,8 @@ Represents several side effects performed in parallel.  The square
 brackets stand for a vector; the operand of @code{parallel} is a
 vector of expressions.  @var{x0}, @var{x1} and so on are individual
 side effect expressions---expressions of code @code{set}, @code{call},
-@code{return}, @code{simple_return}, @code{clobber} or @code{use}.
+@code{return}, @code{simple_return}, @code{clobber} @code{use} or
+@code{clobber_high}.
 
 ``In parallel'' means that first all the values used in the individual
 side-effects are computed, and second all the actual side-effects are
@@ -4151,11 +4164,11 @@ This means it appears in a @code{post_inc}, @code{pre_inc},
 @findex REG_NONNEG
 @item REG_NONNEG
 The register @var{op} is known to have a nonnegative value when this
-insn is reached.  This is used so that decrement and branch until zero
-instructions, such as the m68k dbra, can be matched.
+insn is reached.  This is used by special looping instructions
+that terminate when the register goes negative.
 
-The @code{REG_NONNEG} note is added to insns only if the machine
-description has a @samp{decrement_and_branch_until_zero} pattern.
+The @code{REG_NONNEG} note is added only to @samp{doloop_end}
+insns, if its pattern uses a @code{ge} condition.
 
 @findex REG_LABEL_OPERAND
 @item REG_LABEL_OPERAND

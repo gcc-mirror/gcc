@@ -72,6 +72,7 @@ extern void default_print_operand_address (FILE *, machine_mode, rtx);
 extern bool default_print_operand_punct_valid_p (unsigned char);
 extern tree default_mangle_assembler_name (const char *);
 
+extern machine_mode default_translate_mode_attribute (machine_mode);
 extern bool default_scalar_mode_supported_p (scalar_mode);
 extern bool default_libgcc_floating_mode_supported_p (scalar_float_mode);
 extern opt_scalar_float_mode default_floatn_mode (int, bool);
@@ -235,10 +236,6 @@ extern enum unwind_info_type default_debug_unwind_info (void);
 
 extern void default_canonicalize_comparison (int *, rtx *, rtx *, bool);
 
-extern int default_label_align_after_barrier_max_skip (rtx_insn *);
-extern int default_loop_align_max_skip (rtx_insn *);
-extern int default_label_align_max_skip (rtx_insn *);
-extern int default_jump_align_max_skip (rtx_insn *);
 extern section * default_function_section(tree decl, enum node_frequency freq,
 					  bool startup, bool exit);
 extern unsigned int default_dwarf_poly_indeterminate_value (unsigned int,
@@ -282,5 +279,10 @@ extern enum flt_eval_method
 default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED);
 extern bool default_stack_clash_protection_final_dynamic_probe (rtx);
 extern void default_select_early_remat_modes (sbitmap);
+extern tree default_preferred_else_value (unsigned, tree, unsigned, tree *);
+
+extern bool default_have_speculation_safe_value (bool);
+extern bool speculation_safe_value_not_needed (bool);
+extern rtx default_speculation_safe_value (machine_mode, rtx, rtx, rtx);
 
 #endif /* GCC_TARGHOOKS_H */

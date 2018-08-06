@@ -16,7 +16,8 @@ f (TYPE *x, TYPE *y, int n, int m)
 /* { dg-final { scan-assembler {\tldr\tw[0-9]+} } } */
 /* { dg-final { scan-assembler {\tstr\tw[0-9]+} } } */
 /* Should multiply by (257-1)*4 rather than (VF-1)*4.  */
-/* { dg-final { scan-assembler-times {\tlsl\tx[0-9]+, x[0-9]+, 10\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tsbfiz\tx[0-9]+, x2, 10, 32\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tsbfiz\tx[0-9]+, x3, 10, 32\n} 1 } } */
 /* { dg-final { scan-assembler {\tcmp\tw2, 0} } } */
 /* { dg-final { scan-assembler {\tcmp\tw3, 0} } } */
 /* { dg-final { scan-assembler-times {\tcsel\tx[0-9]+} 4 } } */

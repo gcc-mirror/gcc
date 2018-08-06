@@ -716,6 +716,8 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" ELEMENTAL", dumpfile);
   if (attr->pure)
     fputs (" PURE", dumpfile);
+  if (attr->implicit_pure)
+    fputs (" IMPLICIT_PURE", dumpfile);
   if (attr->recursive)
     fputs (" RECURSIVE", dumpfile);
 

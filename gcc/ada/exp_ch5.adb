@@ -1531,11 +1531,22 @@ package body Exp_Ch5 is
                    Selector_Name => New_Occurrence_Of (Disc, Loc));
             end if;
 
+            --  Generate the assignment statement. When the left-hand side
+            --  is an object with an address clause present, force generated
+            --  temporaries to be renamings so as to correctly assign to any
+            --  overlaid objects.
+
             A :=
               Make_Assignment_Statement (Loc,
-                Name =>
+                Name       =>
                   Make_Selected_Component (Loc,
-                    Prefix        => Duplicate_Subexpr (Lhs),
+                    Prefix        =>
+                      Duplicate_Subexpr
+                        (Exp          => Lhs,
+                         Name_Req     => False,
+                         Renaming_Req =>
+                           Is_Entity_Name (Lhs)
+                             and then Present (Address_Clause (Entity (Lhs)))),
                     Selector_Name =>
                       New_Occurrence_Of (Find_Component (L_Typ, C), Loc)),
                 Expression => Expr);
@@ -3711,8 +3722,13 @@ package body Exp_Ch5 is
 
       Ind_Comp :=
         Make_Indexed_Component (Loc,
-          Prefix      => Relocate_Node (Array_Node),
+          Prefix      => New_Copy_Tree (Array_Node),
           Expressions => New_List (New_Occurrence_Of (Iterator, Loc)));
+
+      --  Propagate the original node to the copy since the analysis of the
+      --  following object renaming declaration relies on the original node.
+
+      Set_Original_Node (Prefix (Ind_Comp), Original_Node (Array_Node));
 
       Prepend_To (Stats,
         Make_Object_Renaming_Declaration (Loc,
@@ -3755,7 +3771,7 @@ package body Exp_Ch5 is
                   Defining_Identifier         => Iterator,
                   Discrete_Subtype_Definition =>
                     Make_Attribute_Reference (Loc,
-                      Prefix         => Relocate_Node (Array_Node),
+                      Prefix         => New_Copy_Tree (Array_Node),
                       Attribute_Name => Name_Range,
                       Expressions    => New_List (
                         Make_Integer_Literal (Loc, Dim1))),
@@ -3792,7 +3808,7 @@ package body Exp_Ch5 is
                         Defining_Identifier         => Iterator,
                         Discrete_Subtype_Definition =>
                           Make_Attribute_Reference (Loc,
-                            Prefix         => Relocate_Node (Array_Node),
+                            Prefix         => New_Copy_Tree (Array_Node),
                             Attribute_Name => Name_Range,
                             Expressions    => New_List (
                               Make_Integer_Literal (Loc, Dim1))),

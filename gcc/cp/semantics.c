@@ -1060,7 +1060,35 @@ finish_for_stmt (tree for_stmt)
 		     : &FOR_SCOPE (for_stmt));
   tree scope = *scope_ptr;
   *scope_ptr = NULL;
+
+  /* During parsing of the body, range for uses "__for_{range,begin,end} "
+     decl names to make those unaccessible by code in the body.
+     Change it to ones with underscore instead of space, so that it can
+     be inspected in the debugger.  */
+  tree range_for_decl[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
+  gcc_assert (CPTI_FOR_BEGIN__IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 1
+	      && CPTI_FOR_END__IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 2
+	      && CPTI_FOR_RANGE_IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 3
+	      && CPTI_FOR_BEGIN_IDENTIFIER == CPTI_FOR_BEGIN__IDENTIFIER + 3
+	      && CPTI_FOR_END_IDENTIFIER == CPTI_FOR_END__IDENTIFIER + 3);
+  for (int i = 0; i < 3; i++)
+    {
+      tree id = cp_global_trees[CPTI_FOR_RANGE__IDENTIFIER + i];
+      if (IDENTIFIER_BINDING (id)
+	  && IDENTIFIER_BINDING (id)->scope == current_binding_level)
+	{
+	  range_for_decl[i] = IDENTIFIER_BINDING (id)->value;
+	  gcc_assert (VAR_P (range_for_decl[i])
+		      && DECL_ARTIFICIAL (range_for_decl[i]));
+	}
+    }
+
   add_stmt (do_poplevel (scope));
+
+  for (int i = 0; i < 3; i++)
+    if (range_for_decl[i])
+      DECL_NAME (range_for_decl[i])
+	= cp_global_trees[CPTI_FOR_RANGE_IDENTIFIER + i];
 }
 
 /* Begin a range-for-statement.  Returns a new RANGE_FOR_STMT.
@@ -7679,7 +7707,7 @@ static bool
 handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 			       tree declv, tree orig_declv, tree initv,
 			       tree condv, tree incrv, tree *body,
-			       tree *pre_body, tree &clauses, tree *lastp,
+			       tree *pre_body, tree &clauses,
 			       int collapse, int ordered)
 {
   tree diff, iter_init, iter_incr = NULL, last;
@@ -7983,7 +8011,8 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
   TREE_VEC_ELT (initv, i) = init;
   TREE_VEC_ELT (condv, i) = cond;
   TREE_VEC_ELT (incrv, i) = incr;
-  *lastp = last;
+  TREE_VEC_ELT (orig_declv, i)
+    = tree_cons (TREE_VEC_ELT (orig_declv, i), last, NULL_TREE);
 
   return false;
 }
@@ -8002,7 +8031,6 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 {
   tree omp_for = NULL, orig_incr = NULL;
   tree decl = NULL, init, cond, incr;
-  tree last = NULL_TREE;
   location_t elocus;
   int i;
   int collapse = 1;
@@ -8169,7 +8197,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	    }
 	  if (handle_omp_for_class_iterator (i, locus, code, declv, orig_declv,
 					     initv, condv, incrv, &body,
-					     &pre_body, clauses, &last,
+					     &pre_body, clauses,
 					     collapse, ordered))
 	    return NULL;
 	  continue;

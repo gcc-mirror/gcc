@@ -121,6 +121,21 @@ these have both positive and negative forms; the negative form of
 @option{-ffoo} is @option{-fno-foo}.  This manual documents
 only one of these two forms, whichever one is not the default.
 
+Some options take one or more arguments typically separated either
+by a space or by the equals sign (@samp{=}) from the option name.
+Unless documented otherwise, an argument can be either numeric or
+a string.  Numeric arguments must typically be small unsigned decimal
+or hexadecimal integers.  Hexadecimal arguments must begin with
+the @samp{0x} prefix.  Arguments to options that specify a size
+threshold of some sort may be arbitrarily large decimal or hexadecimal
+integers followed by a byte size suffix designating a multiple of bytes
+such as @code{kB} and @code{KiB} for kilobyte and kibibyte, respectively,
+@code{MB} and @code{MiB} for megabyte and mebibyte, @code{GB} and
+@code{GiB} for gigabyte and gigibyte, and so on.  Such arguments are
+designated by @var{byte-size} in the following text.  Refer to the NIST,
+IEC, and other relevant national and international standards for the full
+listing and explanation of the binary and decimal byte size prefixes.
+
 @c man end
 
 @xref{Option Index}, for an index to GCC's options.
@@ -261,8 +276,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
--Walloc-zero  -Walloc-size-larger-than=@var{n}
--Walloca  -Walloca-larger-than=@var{n} @gol
+-Walloc-zero  -Walloc-size-larger-than=@var{byte-size}
+-Walloca  -Walloca-larger-than=@var{byte-size} @gol
 -Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
 -Wno-attributes  -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
@@ -285,14 +300,15 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-nonliteral -Wformat-overflow=@var{n} @gol
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
 -Wformat-y2k  -Wframe-address @gol
--Wframe-larger-than=@var{len}  -Wno-free-nonheap-object  -Wjump-misses-init @gol
+-Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object @gol
+-Wjump-misses-init @gol
 -Wif-not-aligned @gol
 -Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Winvalid-memory-model  -Wno-invalid-offsetof @gol
--Winvalid-pch  -Wlarger-than=@var{len} @gol
+-Winvalid-pch  -Wlarger-than=@var{byte-size} @gol
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wmissing-attributes -Wmissing-braces @gol
@@ -313,7 +329,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsign-compare  -Wsign-conversion  -Wfloat-conversion @gol
 -Wno-scalar-storage-order  -Wsizeof-pointer-div @gol
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
--Wstack-protector  -Wstack-usage=@var{len}  -Wstrict-aliasing @gol
+-Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
 -Wstringop-overflow=@var{n} -Wstringop-truncation @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
@@ -331,7 +347,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wunused-const-variable  -Wunused-const-variable=@var{n} @gol
 -Wunused-but-set-parameter  -Wunused-but-set-variable @gol
 -Wuseless-cast  -Wvariadic-macros  -Wvector-operation-performance @gol
--Wvla  -Wvla-larger-than=@var{n}  -Wvolatile-register-var  -Wwrite-strings @gol
+-Wvla  -Wvla-larger-than=@var{byte-size}  -Wvolatile-register-var @gol
+-Wwrite-strings @gol
 -Wzero-as-null-pointer-constant  -Whsa}
 
 @item C and Objective-C-only Warning Options
@@ -419,7 +436,8 @@ Objective-C and Objective-C++ Dialects}.
 -freorder-blocks-algorithm=@var{algorithm} @gol
 -freorder-blocks-and-partition  -freorder-functions @gol
 -frerun-cse-after-loop  -freschedule-modulo-scheduled-loops @gol
--frounding-math  -fsched2-use-superblocks  -fsched-pressure @gol
+-frounding-math  -fsave-optimization-record @gol
+-fsched2-use-superblocks  -fsched-pressure @gol
 -fsched-spec-load  -fsched-spec-load-dangerous @gol
 -fsched-stalled-insns-dep[=@var{n}]  -fsched-stalled-insns[=@var{n}] @gol
 -fsched-group-heuristic  -fsched-critical-path-heuristic @gol
@@ -499,7 +517,8 @@ Objective-C and Objective-C++ Dialects}.
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library} @gol
--nostartfiles  -nodefaultlibs  -nostdlib  -pie  -pthread  -rdynamic @gol
+-nostartfiles  -nodefaultlibs  -nolibc  -nostdlib @gol
+-pie  -pthread  -rdynamic @gol
 -s  -static -static-pie -static-libgcc  -static-libstdc++ @gol
 -static-libasan  -static-libtsan  -static-liblsan  -static-libubsan @gol
 -shared  -shared-libgcc  -symbolic @gol
@@ -598,7 +617,7 @@ Objective-C and Objective-C++ Dialects}.
 -mpc-relative-literal-loads @gol
 -msign-return-address=@var{scope} @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
--moverride=@var{string}  -mverbose-cost-dump}
+-moverride=@var{string}  -mverbose-cost-dump -mtrack-speculation} 
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs @gol
@@ -3037,7 +3056,7 @@ void h() @{ f(g); @}
 @end smallexample
 
 @noindent
-In C++14, @code{f} calls calls @code{f<void(*)()>}, but in
+In C++14, @code{f} calls @code{f<void(*)()>}, but in
 C++17 it calls @code{f<void(*)()noexcept>}.
 
 @item -Wclass-memaccess @r{(C++ and Objective-C++ only)}
@@ -4568,7 +4587,7 @@ The @option{-Wimplicit-fallthrough=3} warning is enabled by @option{-Wextra}.
 @opindex Wif-not-aligned
 @opindex Wno-if-not-aligned
 Control if warning triggered by the @code{warn_if_not_aligned} attribute
-should be issued.  This is is enabled by default.
+should be issued.  This is enabled by default.
 Use @option{-Wno-if-not-aligned} to disable it.
 
 @item -Wignored-qualifiers @r{(C and C++ only)}
@@ -5522,33 +5541,39 @@ when called with a zero size differs among implementations (and in the case
 of @code{realloc} has been deprecated) relying on it may result in subtle
 portability bugs and should be avoided.
 
-@item -Walloc-size-larger-than=@var{n}
-@opindex Walloc-size-larger-than=@var{n}
+@item -Walloc-size-larger-than=@var{byte-size}
+@opindex Walloc-size-larger-than=
 @opindex Wno-alloc-size-larger-than
 Warn about calls to functions decorated with attribute @code{alloc_size}
 that attempt to allocate objects larger than the specified number of bytes,
 or where the result of the size computation in an integer type with infinite
-precision would exceed @code{SIZE_MAX / 2}.  The option argument @var{n} is
-treated as an integer with infinite precision and may end in one of
-the standard suffixes designating a multiple of bytes such as @code{kB} and
-@code{KiB} for kilobyte and kibibyte, respectively, @code{MB} and @code{MiB}
-for megabyte and mebibyte, and so on.
-@option{-Walloc-size-larger-than=}@var{PTRDIFF_MAX} is enabled by default.
+precision would exceed the value of @samp{PTRDIFF_MAX} on the target.
+@option{-Walloc-size-larger-than=}@samp{PTRDIFF_MAX} is enabled by default.
 Warnings controlled by the option can be disabled either by specifying
-@var{n} of @var{SIZE_MAX} or more or by @option{-Wno-alloc-size-larger-than}.
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-alloc-size-larger-than}.
 @xref{Function Attributes}.
+
+@item -Wno-alloc-size-larger-than
+@opindex Wno-alloc-size-larger-than
+Disable @option{-Walloc-size-larger-than=} warnings.  The option is
+equivalent to @option{-Walloc-size-larger-than=}@samp{SIZE_MAX} or
+larger.
 
 @item -Walloca
 @opindex Wno-alloca
 @opindex Walloca
 This option warns on all uses of @code{alloca} in the source.
 
-@item -Walloca-larger-than=@var{n}
-This option warns on calls to @code{alloca} that are not bounded by a
-controlling predicate limiting its argument of integer type to at most
-@var{n} bytes, or calls to @code{alloca} where the bound is unknown.
-Arguments of non-integer types are considered unbounded even if they
-appear to be constrained to the expected range.
+@item -Walloca-larger-than=@var{byte-size}
+@opindex -Walloca-larger-than=
+@opindex -Wno-alloca-larger-than
+This option warns on calls to @code{alloca} with an integer argument whose
+value is either zero, or that is not bounded by a controlling predicate
+that limits its value to at most @var{byte-size}.  It also warns for calls
+to @code{alloca} where the bound value is unknown.  Arguments of non-integer
+types are considered unbounded even if they appear to be constrained to
+the expected range.
 
 For example, a bounded case of @code{alloca} could be:
 
@@ -5602,10 +5627,16 @@ expected argument to be implicitly cast into the @code{alloca} call.
 
 This option also warns when @code{alloca} is used in a loop.
 
-This warning is not enabled by @option{-Wall}, and is only active when
-@option{-ftree-vrp} is active (default for @option{-O2} and above).
+@option{-Walloca-larger-than=}@samp{PTRDIFF_MAX} is enabled by default
+but is usually only effective  when @option{-ftree-vrp} is active (default
+for @option{-O2} and above).
 
-See also @option{-Wvla-larger-than=@var{n}}.
+See also @option{-Wvla-larger-than=}@samp{byte-size}.
+
+@item -Wno-alloca-larger-than
+@opindex Wno-alloca-larger-than
+Disable @option{-Walloca-larger-than=} warnings.  The option is
+equivalent to @option{-Walloca-larger-than=}@samp{SIZE_MAX} or larger.
 
 @item -Warray-bounds
 @itemx -Warray-bounds=@var{n}
@@ -5953,22 +5984,40 @@ possibly reduce the number of warnings triggered by intentional shadowing.
 
 This warning is enabled by @option{-Wshadow=local}.
 
-@item -Wlarger-than=@var{len}
-@opindex Wlarger-than=@var{len}
-@opindex Wlarger-than-@var{len}
-Warn whenever an object of larger than @var{len} bytes is defined.
+@item -Wlarger-than=@var{byte-size}
+@opindex Wlarger-than=
+@opindex Wlarger-than-@var{byte-size}
+Warn whenever an object is defined whose size exceeds @var{byte-size}.
+@option{-Wlarger-than=}@samp{PTRDIFF_MAX} is enabled by default.
+Warnings controlled by the option can be disabled either by specifying
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-larger-than}.
 
-@item -Wframe-larger-than=@var{len}
-@opindex Wframe-larger-than=@var{len}
-@opindex Wframe-larger-than
-Warn if the size of a function frame is larger than @var{len} bytes.
+@item -Wno-larger-than
+@opindex Wno-larger-than
+Disable @option{-Wlarger-than=} warnings.  The option is equivalent
+to @option{-Wlarger-than=}@samp{SIZE_MAX} or larger.
+
+@item -Wframe-larger-than=@var{byte-size}
+@opindex Wframe-larger-than=
+@opindex Wno-frame-larger-than
+Warn if the size of a function frame exceeds @var{byte-size}.
 The computation done to determine the stack frame size is approximate
 and not conservative.
-The actual requirements may be somewhat greater than @var{len}
+The actual requirements may be somewhat greater than @var{byte-size}
 even if you do not get a warning.  In addition, any space allocated
 via @code{alloca}, variable-length arrays, or related constructs
 is not included by the compiler when determining
 whether or not to issue a warning.
+@option{-Wframe-larger-than=}@samp{PTRDIFF_MAX} is enabled by default.
+Warnings controlled by the option can be disabled either by specifying
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-frame-larger-than}.
+
+@item -Wno-frame-larger-than
+@opindex Wno-frame-larger-than
+Disable @option{-Wframe-larger-than=} warnings.  The option is equivalent
+to @option{-Wframe-larger-than=}@samp{SIZE_MAX} or larger.
 
 @item -Wno-free-nonheap-object
 @opindex Wno-free-nonheap-object
@@ -5976,10 +6025,10 @@ whether or not to issue a warning.
 Do not warn when attempting to free an object that was not allocated
 on the heap.
 
-@item -Wstack-usage=@var{len}
+@item -Wstack-usage=@var{byte-size}
 @opindex Wstack-usage
 @opindex Wno-stack-usage
-Warn if the stack usage of a function might be larger than @var{len} bytes.
+Warn if the stack usage of a function might exceed @var{byte-size}.
 The computation done to determine the stack usage is conservative.
 Any space allocated via @code{alloca}, variable-length arrays, or related
 constructs is included by the compiler when determining whether or not to
@@ -6007,6 +6056,24 @@ If the stack usage is (partly) dynamic and not bounded, it's:
   warning: stack usage might be unbounded
 @end smallexample
 @end itemize
+
+@option{-Wstack-usage=}@samp{PTRDIFF_MAX} is enabled by default.
+Warnings controlled by the option can be disabled either by specifying
+@var{byte-size} of @samp{SIZE_MAX} or more or by
+@option{-Wno-stack-usage}.
+
+@item -Wno-stack-usage
+@opindex Wno-stack-usage
+Disable @option{-Wstack-usage=} warnings.  The option is equivalent
+to @option{-Wstack-usage=}@samp{SIZE_MAX} or larger.
+
+@item -Wunsafe-loop-optimizations
+@opindex Wunsafe-loop-optimizations
+@opindex Wno-unsafe-loop-optimizations
+Warn if the loop cannot be optimized because the compiler cannot
+assume anything on the bounds of the loop indices.  With
+@option{-funsafe-loop-optimizations} warn if the compiler makes
+such assumptions.
 
 @item -Wno-pedantic-ms-format @r{(MinGW targets only)}
 @opindex Wno-pedantic-ms-format
@@ -7010,21 +7077,29 @@ Warn if a variable-length array is used in the code.
 @option{-Wno-vla} prevents the @option{-Wpedantic} warning of
 the variable-length array.
 
-@item -Wvla-larger-than=@var{n}
-If this option is used, the compiler will warn on uses of
-variable-length arrays where the size is either unbounded, or bounded
-by an argument that can be larger than @var{n} bytes.  This is similar
-to how @option{-Walloca-larger-than=@var{n}} works, but with
-variable-length arrays.
+@item -Wvla-larger-than=@var{byte-size}
+@opindex -Wvla-larger-than=
+@opindex -Wno-vla-larger-than
+If this option is used, the compiler will warn for declarations of
+variable-length arrays whose size is either unbounded, or bounded
+by an argument that allows the array size to exceed @var{byte-size}
+bytes.  This is similar to how @option{-Walloca-larger-than=}@var{byte-size}
+works, but with variable-length arrays.
 
 Note that GCC may optimize small variable-length arrays of a known
 value into plain arrays, so this warning may not get triggered for
 such arrays.
 
-This warning is not enabled by @option{-Wall}, and is only active when
-@option{-ftree-vrp} is active (default for @option{-O2} and above).
+@option{-Wvla-larger-than=}@samp{PTRDIFF_MAX} is enabled by default but
+is typically only effective when @option{-ftree-vrp} is active (default
+for @option{-O2} and above).
 
-See also @option{-Walloca-larger-than=@var{n}}.
+See also @option{-Walloca-larger-than=@var{byte-size}}.
+
+@item -Wno-vla-larger-than
+@opindex Wno-vla-larger-than
+Disable @option{-Wvla-larger-than=} warnings.  The option is equivalent
+to @option{-Wvla-larger-than=}@samp{SIZE_MAX} or larger.
 
 @item -Wvolatile-register-var
 @opindex Wvolatile-register-var
@@ -9538,7 +9613,7 @@ for LTO, use @command{gcc-ar} and @command{gcc-ranlib} instead of @command{ar}
 and @command{ranlib}; 
 to show the symbols of object files with GIMPLE bytecode, use
 @command{gcc-nm}.  Those commands require that @command{ar}, @command{ranlib}
-and @command{nm} have been compiled with plugin support.  At link time, use the the
+and @command{nm} have been compiled with plugin support.  At link time, use the
 flag @option{-fuse-linker-plugin} to ensure that the library participates in
 the LTO optimization process:
 
@@ -10593,6 +10668,11 @@ loop without bounds appears artificially cold relative to the other one.
 Control the probability of the expression having the specified value. This
 parameter takes a percentage (i.e. 0 ... 100) as input.
 The default probability of 90 is obtained empirically.
+
+@item builtin-string-cmp-inline-length
+The maximum length of a constant string for a builtin string cmp call 
+eligible for inlining.
+The default value is 3.
 
 @item align-threshold
 
@@ -12271,8 +12351,8 @@ link an Objective-C or Objective-C++ program.
 @item -nostartfiles
 @opindex nostartfiles
 Do not use the standard system startup files when linking.
-The standard system libraries are used normally, unless @option{-nostdlib}
-or @option{-nodefaultlibs} is used.
+The standard system libraries are used normally, unless @option{-nostdlib},
+@option{-nolibc}, or @option{-nodefaultlibs} is used.
 
 @item -nodefaultlibs
 @opindex nodefaultlibs
@@ -12288,6 +12368,18 @@ The compiler may generate calls to @code{memcmp},
 These entries are usually resolved by entries in
 libc.  These entry points should be supplied through some other
 mechanism when this option is specified.
+
+@item -nolibc
+@opindex nolibc
+Do not use the C library or system libraries tightly coupled with it when
+linking.  Still link with the startup files, @file{libgcc} or toolchain
+provided language support libraries such as @file{libgnat}, @file{libgfortran}
+or @file{libstdc++} unless options preventing their inclusion are used as
+well.  This typically removes @option{-lc} from the link command line, as well
+as system libraries that normally go with it and become meaningless when
+absence of a C library is assumed, for example @option{-lpthread} or
+@option{-lm} in some configurations.  This is intended for bare-board
+targets when there is indeed no C library available.
 
 @item -nostdlib
 @opindex nostdlib
@@ -13964,6 +14056,51 @@ the first option takes effect and the subsequent options are
 ignored. Thus only @file{vec.miss} is produced which contains
 dumps from the vectorizer about missed opportunities.
 
+@item -fsave-optimization-record
+@opindex fsave-optimization-record
+Write a SRCFILE.opt-record.json file detailing what optimizations
+were performed, for those optimizations that support @option{-fopt-info}.
+
+This option is experimental and the format of the data within the JSON
+file is subject to change.
+
+It is roughly equivalent to a machine-readable version of
+@option{-fopt-info-all}, as a collection of messages with source file,
+line number and column number, with the following additional data for
+each message:
+
+@itemize @bullet
+
+@item
+the execution count of the code being optimized, along with metadata about
+whether this was from actual profile data, or just an estimate, allowing
+consumers to prioritize messages by code hotness,
+
+@item
+the function name of the code being optimized, where applicable,
+
+@item
+the ``inlining chain'' for the code being optimized, so that when
+a function is inlined into several different places (which might
+themselves be inlined), the reader can distinguish between the copies,
+
+@item
+objects identifying those parts of the message that refer to expressions,
+statements or symbol-table nodes, which of these categories they are, and,
+when available, their source code location,
+
+@item
+the GCC pass that emitted the message, and
+
+@item
+the location in GCC's own code from which the message was emitted
+
+@end itemize
+
+Additionally, some messages are logically nested within other
+messages, reflecting implementation details of the optimization
+passes.
+
 @item -fsched-verbose=@var{n}
 @opindex fsched-verbose
 On targets that use instruction scheduling, this option controls the
@@ -14649,6 +14786,14 @@ This option only has an effect if @option{-ffast-math} or
 precision of division results to about 16 bits for
 single precision and to 32 bits for double precision.
 
+@item -mtrack-speculation
+@itemx -mno-track-speculation
+Enable or disable generation of additional code to track speculative
+execution through conditional branches.  The tracking state can then
+be used by the compiler when expanding calls to
+@code{__builtin_speculation_safe_copy} to permit a more efficient code
+sequence to be generated.
+
 @item -march=@var{name}
 @opindex march
 Specify the name of the target architecture and, optionally, one or
@@ -14840,6 +14985,9 @@ instructions. Use of this option with architectures prior to Armv8.2-A is not su
 @item sm4
 Enable the sm3 and sm4 crypto extension.  This also enables Advanced SIMD instructions.
 Use of this option with architectures prior to Armv8.2-A is not supported.
+@item profile
+Enable the Statistical Profiling extension.  This option is only to enable the
+extension at the assembler level and does not affect code generation.
 
 @end table
 
@@ -20011,7 +20159,7 @@ Use features of, and schedule code for, the given CPU.
 Supported values are in the format @samp{v@var{X}.@var{YY}.@var{Z}},
 where @var{X} is a major version, @var{YY} is the minor version, and
 @var{Z} is compatibility code.  Example values are @samp{v3.00.a},
-@samp{v4.00.b}, @samp{v5.00.a}, @samp{v5.00.b}, @samp{v5.00.b}, @samp{v6.00.a}.
+@samp{v4.00.b}, @samp{v5.00.a}, @samp{v5.00.b}, @samp{v6.00.a}.
 
 @item -mxl-soft-mul
 @opindex mxl-soft-mul
@@ -21691,7 +21839,7 @@ GP-relative addressing.  It is most useful in conjunction with
 The @var{regexp} is a POSIX Extended Regular Expression.
 
 This option does not affect the behavior of the @option{-G} option, and 
-and the specified sections are in addition to the standard @code{.sdata} 
+the specified sections are in addition to the standard @code{.sdata}
 and @code{.sbss} small-data sections that are recognized by @option{-mgpopt}.
 
 @item -mr0rel-sec=@var{regexp}
@@ -27465,11 +27613,11 @@ To use this option, both @option{-ftree-vectorize} and
 ABI-compatible library must be specified at link time.
 
 GCC currently emits calls to @code{vmldExp2},
-@code{vmldLn2}, @code{vmldLog102}, @code{vmldLog102}, @code{vmldPow2},
+@code{vmldLn2}, @code{vmldLog102}, @code{vmldPow2},
 @code{vmldTanh2}, @code{vmldTan2}, @code{vmldAtan2}, @code{vmldAtanh2},
 @code{vmldCbrt2}, @code{vmldSinh2}, @code{vmldSin2}, @code{vmldAsinh2},
 @code{vmldAsin2}, @code{vmldCosh2}, @code{vmldCos2}, @code{vmldAcosh2},
-@code{vmldAcos2}, @code{vmlsExp4}, @code{vmlsLn4}, @code{vmlsLog104},
+@code{vmldAcos2}, @code{vmlsExp4}, @code{vmlsLn4},
 @code{vmlsLog104}, @code{vmlsPow4}, @code{vmlsTanh4}, @code{vmlsTan4},
 @code{vmlsAtan4}, @code{vmlsAtanh4}, @code{vmlsCbrt4}, @code{vmlsSinh4},
 @code{vmlsSin4}, @code{vmlsAsinh4}, @code{vmlsAsin4}, @code{vmlsCosh4},

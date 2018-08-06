@@ -6,10 +6,10 @@
 // Subject:  Local type names bug in g++ 2.3.3
 // Message-ID: <1992Dec30.203807.17504@murdoch.acc.Virginia.EDU>
 
-typedef char* T; // { dg-error "" } previous declaration
+typedef char* T; // { dg-message "declared here" }
 
 struct Y {
     T a;
-    typedef long T; // error. See ARM p189-191 for details// { dg-error "" } 
+    typedef long T; // { dg-error "changes meaning" } 
     T b;
 };

@@ -42,24 +42,6 @@ extern bool final_insns_dump_p;
 
 /* Other basic status info about current function.  */
 
-/* Align flags tuple with alignment in log form and with a maximum skip.  */
-
-struct align_flags_tuple
-{
-  /* Values of the -falign-* flags: how much to align labels in code.
-     log is "align to 2^log" (so 0 means no alignment).
-     maxskip is the maximum allowed amount of padding to insert.  */
-  int log;
-  int maxskip;
-};
-
-/* Target-dependent global state.  */
-
-struct align_flags
-{
-  align_flags_tuple levels[2];
-};
-
 struct target_flag_state
 {
   /* Each falign-foo can generate up to two levels of alignment:
@@ -80,22 +62,10 @@ extern struct target_flag_state *this_target_flag_state;
 #define this_target_flag_state (&default_target_flag_state)
 #endif
 
-#define state_align_loops	 (this_target_flag_state->x_align_loops)
-#define state_align_jumps	 (this_target_flag_state->x_align_jumps)
-#define state_align_labels	 (this_target_flag_state->x_align_labels)
-#define state_align_functions	 (this_target_flag_state->x_align_functions)
-#define align_loops_log		 (state_align_loops.levels[0].log)
-#define align_jumps_log		 (state_align_jumps.levels[0].log)
-#define align_labels_log	 (state_align_labels.levels[0].log)
-#define align_functions_log      (state_align_functions.levels[0].log)
-#define align_loops_max_skip     (state_align_loops.levels[0].maxskip)
-#define align_jumps_max_skip     (state_align_jumps.levels[0].maxskip)
-#define align_labels_max_skip    (state_align_labels.levels[0].maxskip)
-#define align_functions_max_skip (state_align_functions.levels[0].maxskip)
-#define align_loops_value	 (align_loops_max_skip + 1)
-#define align_jumps_value	 (align_jumps_max_skip + 1)
-#define align_labels_value	 (align_labels_max_skip + 1)
-#define align_functions_value	 (align_functions_max_skip + 1)
+#define align_loops	 (this_target_flag_state->x_align_loops)
+#define align_jumps	 (this_target_flag_state->x_align_jumps)
+#define align_labels	 (this_target_flag_state->x_align_labels)
+#define align_functions	 (this_target_flag_state->x_align_functions)
 
 /* String representaions of the above options are available in
    const char *str_align_foo.  NULL if not set.  */
