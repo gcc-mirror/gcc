@@ -1,3 +1,8 @@
+2018-08-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* function-tests.c (selftest::test_expansion_to_rtl): Call
+	free_after_compilation.
+
 2018-08-06  Alan Hayward  <alan.hayward@arm.com>
 
 	* config/aarch64/aarch64.md: Add clobber highs to tls_desc.
