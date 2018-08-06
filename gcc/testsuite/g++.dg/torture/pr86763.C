@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-additional-options "-fschedule-insns2 -fstrict-aliasing" }
+// { dg-additional-options "-lrt" { target *-*-linux-gnu } }
 
 #include <cstdint>
 #include <cassert>
