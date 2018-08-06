@@ -1,3 +1,12 @@
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+	* doc/rtl.texi (clobber_high): Add.
+	(parallel): Add in clobber high
+	* rtl.c (rtl_check_failed_code3): Add function.
+	* rtl.def (CLOBBER_HIGH): Add expression.
+	* rtl.h (RTL_CHECKC3): Add macro.
+	(rtl_check_failed_code3): Add declaration.
+	(XC3EXP): Add macro.
+
 2018-08-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/86386

@@ -857,6 +857,17 @@ rtl_check_failed_code2 (const_rtx r, enum rtx_code code1, enum rtx_code code2,
 }
 
 void
+rtl_check_failed_code3 (const_rtx r, enum rtx_code code1, enum rtx_code code2,
+			enum rtx_code code3, const char *file, int line,
+			const char *func)
+{
+  internal_error
+    ("RTL check: expected code '%s', '%s' or '%s', have '%s' in %s, at %s:%d",
+     GET_RTX_NAME (code1), GET_RTX_NAME (code2), GET_RTX_NAME (code3),
+     GET_RTX_NAME (GET_CODE (r)), func, trim_filename (file), line);
+}
+
+void
 rtl_check_failed_code_mode (const_rtx r, enum rtx_code code, machine_mode mode,
 			    bool not_mode, const char *file, int line,
 			    const char *func)
