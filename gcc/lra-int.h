@@ -168,6 +168,8 @@ struct lra_insn_reg
   /* True if there is an early clobber alternative for this
      operand.  */
   unsigned int early_clobber : 1;
+  /* True if the reg is clobber highed by the operand.  */
+  unsigned int clobber_high : 1;
   /* The corresponding regno of the register.  */
   int regno;
   /* Next reg info of the same insn.  */
