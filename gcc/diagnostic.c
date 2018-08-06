@@ -587,22 +587,26 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
       set_last_module (context, map);
       if (! MAIN_FILE_P (map))
 	{
-	  map = INCLUDED_FROM (line_table, map);
-	  const char *line_col
-	    = maybe_line_and_column (LAST_SOURCE_LINE (map),
-				     context->show_column
-				     ? LAST_SOURCE_COLUMN (map) : 0);
-	  pp_verbatim (context->printer,
-		       "In file included from %r%s%s%R", "locus",
-		       LINEMAP_FILE (map), line_col);
-	  while (! MAIN_FILE_P (map))
+	  bool first = true;
+	  do
 	    {
 	      map = INCLUDED_FROM (line_table, map);
-	      line_col = maybe_line_and_column (LAST_SOURCE_LINE (map), 0);
-	      pp_verbatim (context->printer,
-			   ",\n                 from %r%s%s%R", "locus",
-			   LINEMAP_FILE (map), line_col);
+	      const char *line_col
+		= maybe_line_and_column (LAST_SOURCE_LINE (map),
+					 first && context->show_column
+					 ? SOURCE_COLUMN (map, where) : 0);
+	      static const char *const msgs[] =
+		{
+		 N_("In file included from"),
+		 N_("                 from"),
+		};
+	      unsigned index = !first;
+	      pp_verbatim (context->printer, "%s%s %r%s%s%R",
+			   first ? "" : ",\n", _(msgs[index]),
+			   "locus", LINEMAP_FILE (map), line_col);
+	      first = false;
 	    }
+	  while (! MAIN_FILE_P (map));
 	  pp_verbatim (context->printer, ":");
 	  pp_newline (context->printer);
 	}
