@@ -1,5 +1,28 @@
 2018-08-06  Nathan Sidwell  <nathan@acm.org>
 
+	Macro laziness now a property of cpp_macro.
+	libcpp/
+	* include/cpp-id-data.h (cpp_macro): Add lazy field.
+	* include/libcpp.h (struct cpp_callbacks): Rename and retype
+	user_builtin_macro to user_lazy_macro.
+	(cpp_define_lazily): Adjust,
+	(cpp_define_lazy): Delete.
+	(enum cpp_builtin_type): Remove BT_FIRST_USER, BT_LAST_USER.
+	* internal.h (_cpp_do_lazy_macro): Declare.
+	(_cpp_maybe_lazy_macro): Inline fn.
+	* macro.c (enter_macro_context, warn_of_redefinition): Use
+	_cpp_maybe_lazy_macro.
+	(_cpp_new_macro): Initialize lazy field.
+	(cpp_define_lazily): Adjust.
+	(_cpp_do_lazy_macro): Define.
+	(cpp_macro_definition): Simplify.
+	* pch.c (write_macrodef, save_macros): Likewise.
+	* directives.c (do_ifdef, do_ifndef): Use _cpp_maybe_lazy_macro.
+	* expr.c (parse_defined): Likewise.
+	gcc/c-family/
+	* c-cppbuiltin.c (lazy_hex_fp_value): Adjust for API changes.
+	(builtin_define_with_hex_fp_valye): Likewise.
+
 	Merge trunk r263332.
 
 2018-08-03  Nathan Sidwell  <nathan@acm.org>

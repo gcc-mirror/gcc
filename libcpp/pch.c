@@ -50,50 +50,45 @@ static int
 write_macdef (cpp_reader *pfile, cpp_hashnode *hn, void *file_p)
 {
   FILE *f = (FILE *) file_p;
+  bool is_void = false;
   switch (hn->type)
     {
     case NT_VOID:
       if (! (hn->flags & NODE_POISONED))
 	return 1;
-      /* XXX Really fallthru?  */
-      /* FALLTHRU */
+      is_void = true;
+      goto poisoned;
 
     case NT_MACRO:
-      if (hn->flags & NODE_BUILTIN)
+      if (!(hn->flags & NODE_BUILTIN)
+	  && hn->value.macro->kind != cmk_assert)
 	{
-	  if (!pfile->cb.user_builtin_macro
-	      || !pfile->cb.user_builtin_macro (pfile, hn, hn->value.builtin))
-	    return 1;
+	poisoned:
+	  struct macrodef_struct s;
+	  const unsigned char *defn;
+
+	  s.name_length = NODE_LEN (hn);
+	  s.flags = hn->flags & NODE_POISONED;
+
+	  if (is_void)
+	    {
+	      defn = NODE_NAME (hn);
+	      s.definition_length = s.name_length;
+	    }
+	  else
+	    {
+	      defn = cpp_macro_definition (pfile, hn);
+	      s.definition_length = ustrlen (defn);
+	    }
+
+	  if (fwrite (&s, sizeof (s), 1, f) != 1
+	      || fwrite (defn, 1, s.definition_length, f) != s.definition_length)
+	    {
+	      cpp_errno (pfile, CPP_DL_ERROR,
+			 "while writing precompiled header");
+	      return 0;
+	    }
 	}
-      else if (hn->value.macro->kind == cmk_assert)
-	return 1;
-
-      {
-	struct macrodef_struct s;
-	const unsigned char *defn;
-
-	s.name_length = NODE_LEN (hn);
-	s.flags = hn->flags & NODE_POISONED;
-
-	if (hn->type == NT_MACRO)
-	  {
-	    defn = cpp_macro_definition (pfile, hn);
-	    s.definition_length = ustrlen (defn);
-	  }
-	else
-	  {
-	    defn = NODE_NAME (hn);
-	    s.definition_length = s.name_length;
-	  }
-
-	if (fwrite (&s, sizeof (s), 1, f) != 1
-	    || fwrite (defn, 1, s.definition_length, f) != s.definition_length)
-	  {
-	    cpp_errno (pfile, CPP_DL_ERROR,
-		       "while writing precompiled header");
-	    return 0;
-	  }
-      }
       return 1;
 
     default:
@@ -756,17 +751,9 @@ save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
 {
   struct save_macro_data *data = (struct save_macro_data *)data_p;
 
-  if (h->type != NT_MACRO)
-    return 1;
-
-  if (h->flags & NODE_BUILTIN)
-    {
-      if (r->cb.user_builtin_macro)
-	r->cb.user_builtin_macro (r, h, h->value.builtin);
-    }
-  else if (h->value.macro->kind == cmk_assert)
-    return 1;
-  else
+  if (h->type == NT_MACRO
+      && !(h->flags & NODE_BUILTIN)
+      && h->value.macro->kind != cmk_assert)
     {
       if (data->count == data->array_size)
 	{

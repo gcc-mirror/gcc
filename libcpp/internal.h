@@ -622,6 +622,14 @@ cpp_in_primary_file (cpp_reader *pfile)
 }
 
 /* In macro.c */
+extern cpp_macro *_cpp_do_lazy_macro (cpp_reader *pfile, cpp_macro *macro);
+inline cpp_macro *_cpp_maybe_lazy_macro (cpp_reader *pfile, cpp_hashnode *node)
+{
+  cpp_macro *macro = (node->flags & NODE_BUILTIN) ? NULL : node->value.macro;
+  if (macro && macro->lazy)
+    macro = _cpp_do_lazy_macro (pfile, macro);
+  return macro;
+}
 extern cpp_macro *_cpp_new_macro (cpp_reader *, cpp_macro_kind, void *);
 extern void _cpp_free_definition (cpp_hashnode *);
 extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *);

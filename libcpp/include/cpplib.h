@@ -604,8 +604,8 @@ struct cpp_callbacks
   /* Callback to identify whether an attribute exists.  */
   int (*has_attribute) (cpp_reader *);
 
-  /* Callback that can change a user builtin into normal macro.  */
-  bool (*user_builtin_macro) (cpp_reader *, cpp_hashnode *, unsigned);
+  /* Callback that can change a user lazy into normal macro.  */
+  void (*user_lazy_macro) (cpp_reader *, cpp_macro *, unsigned);
 
   /* Callback to parse SOURCE_DATE_EPOCH from environment.  */
   time_t (*get_source_date_epoch) (cpp_reader *);
@@ -716,9 +716,7 @@ enum cpp_builtin_type
   BT_PRAGMA,			/* `_Pragma' operator */
   BT_TIMESTAMP,			/* `__TIMESTAMP__' */
   BT_COUNTER,			/* `__COUNTER__' */
-  BT_HAS_ATTRIBUTE,		/* `__has_attribute__(x)' */
-  BT_FIRST_USER,		/* User defined builtin macros.  */
-  BT_LAST_USER = BT_FIRST_USER + 63
+  BT_HAS_ATTRIBUTE		/* `__has_attribute__(x)' */
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
@@ -921,9 +919,7 @@ extern void cpp_undef (cpp_reader *, const char *);
 extern void cpp_unassert (cpp_reader *, const char *);
 
 /* Mark a node as a lazily defined macro.  */
-extern cpp_macro *cpp_define_lazily (cpp_reader *, cpp_hashnode *node, int);
-/* Supply the definition of a lazily-defined macro.  */
-extern void cpp_define_lazy (cpp_reader *, cpp_hashnode *node, cpp_macro *);
+extern void cpp_define_lazily (cpp_reader *, cpp_hashnode *node, unsigned N);
 
 /* Undefine all macros and assertions.  */
 extern void cpp_undef_all (cpp_reader *);

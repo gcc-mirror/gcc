@@ -1273,19 +1273,9 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
      function where set this flag to FALSE.  */
   pfile->about_to_expand_macro_p = true;
 
-  if ((node->flags & NODE_BUILTIN) && !(node->flags & NODE_USED))
+  if (!(node->flags & NODE_BUILTIN))
     {
-      node->flags |= NODE_USED;
-      if ((!pfile->cb.user_builtin_macro
-	   || !pfile->cb.user_builtin_macro (pfile, node, node->value.builtin))
-	  && pfile->cb.used_define)
-	pfile->cb.used_define (pfile, pfile->directive_line, node);
-    }
-
-  /* Handle standard macros.  */
-  if (! (node->flags & NODE_BUILTIN))
-    {
-      cpp_macro *macro = node->value.macro;
+      cpp_macro *macro = _cpp_maybe_lazy_macro (pfile, node);
       _cpp_buff *pragma_buff = NULL;
 
       if (macro->fun_like)
@@ -2996,7 +2986,6 @@ static bool
 warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
 		      const cpp_macro *macro2)
 {
-  const cpp_macro *macro1;
   unsigned int i;
 
   /* Some redefinitions need to be warned about regardless.  */
@@ -3005,9 +2994,7 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
 
   /* Suppress warnings for builtins that lack the NODE_WARN flag,
      unless Wbuiltin-macro-redefined.  */
-  if (node->flags & NODE_BUILTIN
-      && (!pfile->cb.user_builtin_macro
-	  || !pfile->cb.user_builtin_macro (pfile, node, node->value.builtin)))
+  if (node->flags & NODE_BUILTIN)
     return CPP_OPTION (pfile, warn_builtin_macro_redefined);
 
   /* Redefinitions of conditional (context-sensitive) macros, on
@@ -3015,9 +3002,10 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
   if (node->flags & NODE_CONDITIONAL)
     return false;
 
+  const cpp_macro *macro1 = _cpp_maybe_lazy_macro (pfile, node);
+
   /* Redefinition of a macro is allowed if and only if the old and new
      definitions are the same.  (6.10.3 paragraph 2).  */
-  macro1 = node->value.macro;
 
   /* Don't check count here as it can be different in valid
      traditional redefinitions with just whitespace differences.  */
@@ -3488,6 +3476,7 @@ _cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
 
   macro->line = pfile->directive_line;
   macro->parm.params = 0;
+  macro->lazy = 0;
   macro->paramc = 0;
   macro->variadic = 0;
   macro->used = !CPP_OPTION (pfile, warn_unused_macros);
@@ -3560,24 +3549,24 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   return true;
 }
 
-extern cpp_macro *
-cpp_define_lazily (cpp_reader *, cpp_hashnode *node, int num)
+extern void
+cpp_define_lazily (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
 {
   cpp_macro *macro = node->value.macro;
 
-  node->type = NT_MACRO;
-  node->flags |= NODE_BUILTIN;
+  gcc_checking_assert (pfile->cb.user_lazy_macro && macro && num < 255);
 
-  node->value.builtin = (enum cpp_builtin_type) (num);
-
-  return macro;
+  macro->lazy = num + 1;
 }
 
-extern void
-cpp_define_lazy (cpp_reader *, cpp_hashnode *node, cpp_macro *macro)
+extern cpp_macro *
+_cpp_do_lazy_macro (cpp_reader *pfile, cpp_macro *macro)
 {
-  node->flags &= ~(NODE_BUILTIN | NODE_USED);
-  node->value.macro = macro;
+  unsigned num = macro->lazy - 1;
+  macro->lazy = 0;
+  pfile->cb.user_lazy_macro (pfile, macro, num);
+
+  return macro;
 }
 
 /* Warn if a token in STRING matches one of a function-like MACRO's
@@ -3649,23 +3638,12 @@ const unsigned char *
 cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
 {
   unsigned int i, len;
-  const cpp_macro *macro;
   unsigned char *buffer;
 
-  if (node->type != NT_MACRO || (node->flags & NODE_BUILTIN))
-    {
-      if (node->type != NT_MACRO
-	  || !pfile->cb.user_builtin_macro
-          || !pfile->cb.user_builtin_macro (pfile, node, node->value.builtin))
-	{
-	  cpp_error (pfile, CPP_DL_ICE,
-		     "invalid hash type %d in cpp_macro_definition",
-		     node->type);
-	  return 0;
-	}
-    }
+  gcc_checking_assert (node->type == NT_MACRO);
 
-  macro = node->value.macro;
+  const cpp_macro *macro = node->value.macro;
+
   /* Calculate length.  */
   len = NODE_LEN (node) * 10 + 2;		/* ' ' and NUL.  */
   if (macro->fun_like)

@@ -58,6 +58,9 @@ struct GTY(()) cpp_macro {
   /* Number of parameters.  */
   unsigned short paramc;
 
+  /* Non-zero if this is a user-lazy macro, value provided by user.  */
+  unsigned char lazy;
+
   /* The kind of this macro (ISO, trad or assert) */
   unsigned kind : 2;
 
@@ -78,7 +81,7 @@ struct GTY(()) cpp_macro {
      tokens.  */
   unsigned int extra_tokens : 1;
 
-  /* 9 bits spare (32-bit). 41 on 64-bit target.  */
+  /* 1 bits spare (32-bit). 33 on 64-bit target.  */
 
   union cpp_exp_u
   {

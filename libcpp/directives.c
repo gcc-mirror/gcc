@@ -1967,10 +1967,7 @@ do_ifdef (cpp_reader *pfile)
 	      node->flags |= NODE_USED;
 	      if (node->type == NT_MACRO)
 		{
-		  if ((node->flags & NODE_BUILTIN)
-		      && pfile->cb.user_builtin_macro)
-		    pfile->cb.user_builtin_macro (pfile, node,
-						  node->value.builtin);
+		  _cpp_maybe_lazy_macro (pfile, node);
 		  if (pfile->cb.used_define)
 		    pfile->cb.used_define (pfile, pfile->directive_line, node);
 		}
@@ -2014,10 +2011,7 @@ do_ifndef (cpp_reader *pfile)
 	      node->flags |= NODE_USED;
 	      if (node->type == NT_MACRO)
 		{
-		  if ((node->flags & NODE_BUILTIN)
-		      && pfile->cb.user_builtin_macro)
-		    pfile->cb.user_builtin_macro (pfile, node,
-						  node->value.builtin);
+		  _cpp_maybe_lazy_macro (pfile, node);
 		  if (pfile->cb.used_define)
 		    pfile->cb.used_define (pfile, pfile->directive_line, node);
 		}

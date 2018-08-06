@@ -1571,7 +1571,6 @@ builtin_define_with_int_value (const char *macro, HOST_WIDE_INT value)
 struct GTY(()) lazy_hex_fp_value_struct
 {
   const char *hex_str;
-  cpp_macro *macro;
   machine_mode mode;
   int digits;
   const char *fp_suffix;
@@ -1584,18 +1583,16 @@ struct GTY(()) lazy_hex_fp_value_struct
 #define LAZY_HEX_FP_VALUES_CNT (4 * (3 + NUM_FLOATN_NX_TYPES))
 static GTY(()) struct lazy_hex_fp_value_struct
   lazy_hex_fp_values[LAZY_HEX_FP_VALUES_CNT];
-static GTY(()) int lazy_hex_fp_value_count;
+static GTY(()) unsigned lazy_hex_fp_value_count;
 
-static bool
-lazy_hex_fp_value (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
+static void
+lazy_hex_fp_value (cpp_reader *, cpp_macro *macro, unsigned num)
 {
   REAL_VALUE_TYPE real;
   char dec_str[64], buf1[256];
-  if (num < unsigned (BT_FIRST_USER)
-      || num >= unsigned (BT_FIRST_USER + lazy_hex_fp_value_count))
-    return false;
 
-  num -= BT_FIRST_USER;
+  gcc_checking_assert (num < lazy_hex_fp_value_count);
+
   real_from_string (&real, lazy_hex_fp_values[num].hex_str);
   real_to_decimal_for_mode (dec_str, &real, sizeof (dec_str),
 			    lazy_hex_fp_values[num].digits, 0,
@@ -1604,19 +1601,17 @@ lazy_hex_fp_value (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
   size_t len
     = sprintf (buf1, "%s%s", dec_str, lazy_hex_fp_values[num].fp_suffix);
   gcc_assert (len < sizeof (buf1));
-  cpp_macro *macro = lazy_hex_fp_values[num].macro;
   for (unsigned idx = 0; idx < macro->count; idx++)
     if (macro->exp.tokens[idx].type == CPP_NUMBER)
       {
 	macro->exp.tokens[idx].val.str.len = len;
 	macro->exp.tokens[idx].val.str.text
 	  = (const unsigned char *) ggc_strdup (buf1);
-	break;
+	return;
       }
 
-  cpp_define_lazy (pfile, node, macro);
-  
-  return true;
+  /* We must have replaced a token.  */
+  gcc_unreachable ();
 }
 
 /* Pass an object-like macro a hexadecimal floating-point value.  */
@@ -1635,22 +1630,18 @@ builtin_define_with_hex_fp_value (const char *macro,
       && flag_dump_macros == 0
       && !cpp_get_options (parse_in)->traditional)
     {
-      struct cpp_hashnode *node;
       if (lazy_hex_fp_value_count == 0)
-	cpp_get_callbacks (parse_in)->user_builtin_macro = lazy_hex_fp_value;
+	cpp_get_callbacks (parse_in)->user_lazy_macro = lazy_hex_fp_value;
       sprintf (buf2, fp_cast, "1.1");
       sprintf (buf1, "%s=%s", macro, buf2);
       cpp_define (parse_in, buf1);
-      node = C_CPP_HASHNODE (get_identifier (macro));
+      struct cpp_hashnode *node = C_CPP_HASHNODE (get_identifier (macro));
       lazy_hex_fp_values[lazy_hex_fp_value_count].hex_str
 	= ggc_strdup (hex_str);
       lazy_hex_fp_values[lazy_hex_fp_value_count].mode = TYPE_MODE (type);
       lazy_hex_fp_values[lazy_hex_fp_value_count].digits = digits;
       lazy_hex_fp_values[lazy_hex_fp_value_count].fp_suffix = fp_suffix;
-      lazy_hex_fp_values[lazy_hex_fp_value_count].macro
-	= cpp_define_lazily (parse_in, node,
-			     BT_FIRST_USER + lazy_hex_fp_value_count);
-      lazy_hex_fp_value_count++;
+      cpp_define_lazily (parse_in, node, lazy_hex_fp_value_count++);
       return;
     }
 
