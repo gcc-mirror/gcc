@@ -1,3 +1,8 @@
+2018-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/torture/pr86763.C (dg-additional-options): Add -lrt
+	for target *-*-linux-gnu.
+
 2018-08-06  Alan Hayward  <alan.hayward@arm.com>
 
 	* gcc.target/aarch64/sve/tls_preserve_1.c: New test.
