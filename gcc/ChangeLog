@@ -1,5 +1,10 @@
 2018-08-06  Alan Hayward  <alan.hayward@arm.com>
 
+	* rtl.h (reg_is_clobbered_by_clobber_high): Add declarations.
+	* rtlanal.c (reg_is_clobbered_by_clobber_high): Add function.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
 	* emit-rtl.c (verify_rtx_sharing): Check for CLOBBER_HIGH.
 	(copy_insn_1): Likewise.
 	(gen_hard_reg_clobber_high): New gen function.

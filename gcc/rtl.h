@@ -3467,6 +3467,16 @@ extern bool tablejump_p (const rtx_insn *, rtx_insn **, rtx_jump_table_data **);
 extern int computed_jump_p (const rtx_insn *);
 extern bool tls_referenced_p (const_rtx);
 extern bool contains_mem_rtx_p (rtx x);
+extern bool reg_is_clobbered_by_clobber_high (unsigned int, machine_mode,
+					      const_rtx);
+
+/* Convenient wrapper for reg_is_clobbered_by_clobber_high.  */
+inline bool
+reg_is_clobbered_by_clobber_high (const_rtx x, const_rtx clobber_high_op)
+{
+  return reg_is_clobbered_by_clobber_high (REGNO (x), GET_MODE (x),
+					   clobber_high_op);
+}
 
 /* Overload for refers_to_regno_p for checking a single register.  */
 inline bool
