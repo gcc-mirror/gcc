@@ -79,7 +79,7 @@ gen_rtx_scratch (rtx x, enum rtx_code subroutine_type)
    substituting any operand references appearing within.  */
 
 static void
-gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
+gen_exp (rtx x, enum rtx_code subroutine_type, char *used, md_rtx_info *info)
 {
   RTX_CODE code;
   int i;
@@ -123,7 +123,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
       for (i = 0; i < XVECLEN (x, 1); i++)
 	{
 	  printf (",\n\t\t");
-	  gen_exp (XVECEXP (x, 1, i), subroutine_type, used);
+	  gen_exp (XVECEXP (x, 1, i), subroutine_type, used, info);
 	}
       printf (")");
       return;
@@ -137,7 +137,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
       for (i = 0; i < XVECLEN (x, 2); i++)
 	{
 	  printf (",\n\t\t");
-	  gen_exp (XVECEXP (x, 2, i), subroutine_type, used);
+	  gen_exp (XVECEXP (x, 2, i), subroutine_type, used, info);
 	}
       printf (")");
       return;
@@ -163,12 +163,21 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
     case CLOBBER:
       if (REG_P (XEXP (x, 0)))
 	{
-	  printf ("gen_hard_reg_clobber (%smode, %i)", GET_MODE_NAME (GET_MODE (XEXP (x, 0))),
-			  			     REGNO (XEXP (x, 0)));
+	  printf ("gen_hard_reg_clobber (%smode, %i)",
+		  GET_MODE_NAME (GET_MODE (XEXP (x, 0))),
+		  REGNO (XEXP (x, 0)));
 	  return;
 	}
       break;
-
+    case CLOBBER_HIGH:
+      if (!REG_P (XEXP (x, 0)))
+	error ("CLOBBER_HIGH argument is not a register expr, at %s:%d",
+	       info->loc.filename, info->loc.lineno);
+      printf ("gen_hard_reg_clobber_high (%smode, %i)",
+	      GET_MODE_NAME (GET_MODE (XEXP (x, 0))),
+	      REGNO (XEXP (x, 0)));
+      return;
+      break;
     case CC0:
       printf ("cc0_rtx");
       return;
@@ -224,7 +233,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
       switch (fmt[i])
 	{
 	case 'e': case 'u':
-	  gen_exp (XEXP (x, i), subroutine_type, used);
+	  gen_exp (XEXP (x, i), subroutine_type, used, info);
 	  break;
 
 	case 'i':
@@ -252,7 +261,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
 	    for (j = 0; j < XVECLEN (x, i); j++)
 	      {
 		printf (",\n\t\t");
-		gen_exp (XVECEXP (x, i, j), subroutine_type, used);
+		gen_exp (XVECEXP (x, i, j), subroutine_type, used, info);
 	      }
 	    printf (")");
 	    break;
@@ -270,7 +279,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
    becoming a separate instruction.  USED is as for gen_exp.  */
 
 static void
-gen_emit_seq (rtvec vec, char *used)
+gen_emit_seq (rtvec vec, char *used, md_rtx_info *info)
 {
   for (int i = 0, len = GET_NUM_ELEM (vec); i < len; ++i)
     {
@@ -279,7 +288,7 @@ gen_emit_seq (rtvec vec, char *used)
       if (const char *name = get_emit_function (next))
 	{
 	  printf ("  %s (", name);
-	  gen_exp (next, DEFINE_EXPAND, used);
+	  gen_exp (next, DEFINE_EXPAND, used, info);
 	  printf (");\n");
 	  if (!last_p && needs_barrier_p (next))
 	    printf ("  emit_barrier ();");
@@ -287,7 +296,7 @@ gen_emit_seq (rtvec vec, char *used)
       else
 	{
 	  printf ("  emit (");
-	  gen_exp (next, DEFINE_EXPAND, used);
+	  gen_exp (next, DEFINE_EXPAND, used, info);
 	  printf (", %s);\n", last_p ? "false" : "true");
 	}
     }
@@ -334,7 +343,8 @@ gen_insn (md_rtx_info *info)
 
       for (i = XVECLEN (insn, 1) - 1; i > 0; i--)
 	{
-	  if (GET_CODE (XVECEXP (insn, 1, i)) != CLOBBER)
+	  if (GET_CODE (XVECEXP (insn, 1, i)) != CLOBBER
+	      && GET_CODE (XVECEXP (insn, 1, i)) != CLOBBER_HIGH)
 	    break;
 
 	  if (REG_P (XEXP (XVECEXP (insn, 1, i), 0)))
@@ -368,7 +378,8 @@ gen_insn (md_rtx_info *info)
 		  /* OLD and NEW_INSN are the same if both are to be a SCRATCH
 		     of the same mode,
 		     or if both are registers of the same mode and number.  */
-		  if (! (GET_MODE (old_rtx) == GET_MODE (new_rtx)
+		  if (! (GET_CODE (old_rtx) == GET_CODE (new_rtx)
+			 && GET_MODE (old_rtx) == GET_MODE (new_rtx)
 			 && ((GET_CODE (old_rtx) == MATCH_SCRATCH
 			      && GET_CODE (new_rtx) == MATCH_SCRATCH)
 			     || (REG_P (old_rtx) && REG_P (new_rtx)
@@ -431,7 +442,7 @@ gen_insn (md_rtx_info *info)
 		? NULL
 		: XCNEWVEC (char, stats.num_generator_args));
   printf ("  return ");
-  gen_exp (pattern, DEFINE_INSN, used);
+  gen_exp (pattern, DEFINE_INSN, used, info);
   printf (";\n}\n\n");
   XDELETEVEC (used);
 }
@@ -480,7 +491,7 @@ gen_expand (md_rtx_info *info)
       && XVECLEN (expand, 1) == 1)
     {
       printf ("  return ");
-      gen_exp (XVECEXP (expand, 1, 0), DEFINE_EXPAND, NULL);
+      gen_exp (XVECEXP (expand, 1, 0), DEFINE_EXPAND, NULL, info);
       printf (";\n}\n\n");
       return;
     }
@@ -534,7 +545,7 @@ gen_expand (md_rtx_info *info)
     }
 
   used = XCNEWVEC (char, stats.num_operand_vars);
-  gen_emit_seq (XVEC (expand, 1), used);
+  gen_emit_seq (XVEC (expand, 1), used, info);
   XDELETEVEC (used);
 
   /* Call `get_insns' to extract the list of all the
@@ -617,7 +628,7 @@ gen_split (md_rtx_info *info)
       printf ("  (void) operand%d;\n", i);
     }
 
-  gen_emit_seq (XVEC (split, 2), used);
+  gen_emit_seq (XVEC (split, 2), used, info);
 
   /* Call `get_insns' to make a list of all the
      insns emitted within this gen_... function.  */
@@ -634,7 +645,7 @@ gen_split (md_rtx_info *info)
    the end of the vector.  */
 
 static void
-output_add_clobbers (void)
+output_add_clobbers (md_rtx_info *info)
 {
   struct clobber_pat *clobber;
   struct clobber_ent *ent;
@@ -654,7 +665,7 @@ output_add_clobbers (void)
 	{
 	  printf ("      XVECEXP (pattern, 0, %d) = ", i);
 	  gen_exp (XVECEXP (clobber->pattern, 1, i),
-		   GET_CODE (clobber->pattern), NULL);
+		   GET_CODE (clobber->pattern), NULL, info);
 	  printf (";\n");
 	}
 
@@ -923,7 +934,7 @@ from the machine description file `md'.  */\n\n");
 
   /* Write out the routines to add CLOBBERs to a pattern and say whether they
      clobber a hard reg.  */
-  output_add_clobbers ();
+  output_add_clobbers (&info);
   output_added_clobbers_hard_reg_p ();
 
   for (overloaded_name *oname = rtx_reader_ptr->get_overloads ();

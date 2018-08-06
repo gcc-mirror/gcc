@@ -72,6 +72,7 @@ walk_insn_part (rtx part, int recog_p, int non_pc_set_src)
   switch (code)
     {
     case CLOBBER:
+    case CLOBBER_HIGH:
       clobbers_seen_this_insn++;
       break;
 
