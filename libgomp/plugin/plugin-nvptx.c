@@ -49,6 +49,8 @@
 #include <assert.h>
 #include <errno.h>
 
+#define DO_PRAGMA(x) _Pragma (#x)
+
 #if PLUGIN_NVPTX_DYNAMIC
 # include <dlfcn.h>
 
@@ -56,8 +58,11 @@ struct cuda_lib_s {
 
 # define CUDA_ONE_CALL(call)			\
   __typeof (call) *call;
+# define CUDA_ONE_CALL_MAYBE_NULL(call)		\
+  CUDA_ONE_CALL (call)
 #include "cuda-lib.def"
 # undef CUDA_ONE_CALL
+# undef CUDA_ONE_CALL_MAYBE_NULL
 
 } cuda_lib;
 
@@ -78,20 +83,29 @@ init_cuda_lib (void)
   if (h == NULL)
     return false;
 
-# define CUDA_ONE_CALL(call) CUDA_ONE_CALL_1 (call)
-# define CUDA_ONE_CALL_1(call) \
+# define CUDA_ONE_CALL(call) CUDA_ONE_CALL_1 (call, false)
+# define CUDA_ONE_CALL_MAYBE_NULL(call) CUDA_ONE_CALL_1 (call, true)
+# define CUDA_ONE_CALL_1(call, allow_null)		\
   cuda_lib.call = dlsym (h, #call);	\
-  if (cuda_lib.call == NULL)		\
+  if (!allow_null && cuda_lib.call == NULL)		\
     return false;
 #include "cuda-lib.def"
 # undef CUDA_ONE_CALL
 # undef CUDA_ONE_CALL_1
+# undef CUDA_ONE_CALL_MAYBE_NULL
 
   cuda_lib_inited = true;
   return true;
 }
 # define CUDA_CALL_PREFIX cuda_lib.
 #else
+
+# define CUDA_ONE_CALL(call)
+# define CUDA_ONE_CALL_MAYBE_NULL(call) DO_PRAGMA (weak call)
+#include "cuda-lib.def"
+#undef CUDA_ONE_CALL_MAYBE_NULL
+#undef CUDA_ONE_CALL
+
 # define CUDA_CALL_PREFIX
 # define init_cuda_lib() true
 #endif
@@ -135,6 +149,9 @@ init_cuda_lib (void)
 
 #define CUDA_CALL_NOCHECK(FN, ...)		\
   CUDA_CALL_PREFIX FN (__VA_ARGS__)
+
+#define CUDA_CALL_EXISTS(FN)			\
+  CUDA_CALL_PREFIX FN
 
 static const char *
 cuda_error (CUresult r)
