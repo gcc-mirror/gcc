@@ -1,3 +1,8 @@
+2018-08-06  Jeff Law  <law@redhat.com>
+
+	* reload1.c (forget_old_reloads_1): Adjust CLOBBER_HIGH
+	assert.
+
 2018-08-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	PR target/86662

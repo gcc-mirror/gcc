@@ -4931,7 +4931,7 @@ forget_old_reloads_1 (rtx x, const_rtx setter,
     return;
 
   /* CLOBBER_HIGH is only supported for LRA.  */
-  gcc_assert (GET_CODE (setter) != CLOBBER_HIGH);
+  gcc_assert (setter == NULL_RTX || GET_CODE (setter) != CLOBBER_HIGH);
 
   regno = REGNO (x);
 
