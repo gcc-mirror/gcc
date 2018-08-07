@@ -1,3 +1,17 @@
+2018-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* g++.dg/other/friend8.C: New.
+	* g++.dg/other/friend9.C: Likewise.
+	* g++.dg/other/friend10.C: Likewise.
+	* g++.dg/other/friend11.C: Likewise.
+	* g++.dg/other/friend12.C: Likewise.
+	* g++.dg/other/friend13.C: Likewise.
+	* g++.dg/other/friend14.C: Likewise.
+	* g++.dg/other/friend15.C: Likewise.
+	* g++.dg/parse/defarg4.C: Compile with -fpermissive -w.
+	* g++.dg/parse/defarg8.C: Likewise.
+
 2018-08-07  Martin Liska  <mliska@suse.cz>
 
         PR middle-end/83023
