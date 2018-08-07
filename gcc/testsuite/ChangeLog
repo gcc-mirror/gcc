@@ -1,3 +1,11 @@
+2018-08-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2018-08-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/86386
+	* gcc.target/i386/pr86386.c: New file.
+
 2018-08-07  Steve Ellcey  <sellcey@cavium.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

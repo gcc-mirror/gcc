@@ -1,3 +1,12 @@
+2018-08-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2018-08-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/86386
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Set
+	cfun->machine->max_used_stack_alignment if needed.
+
 2018-08-02  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	Backport from mainline
