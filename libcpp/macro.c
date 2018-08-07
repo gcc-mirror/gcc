@@ -3052,7 +3052,7 @@ _cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
 		     cpp_hashnode *spelling)
 {
   /* Constraint 6.10.3.6 - duplicate parameter names.  */
-  if (node->flags & NODE_MACRO_ARG)
+  if (node->type == NT_MACRO_ARG)
     {
       cpp_error (pfile, CPP_DL_ERROR, "duplicate macro parameter \"%s\"",
 		 NODE_NAME (node));
@@ -3076,7 +3076,7 @@ _cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
   ((cpp_hashnode **)base)[n++] = spelling;
 
   /* Morph into a macro arg.  */
-  node->flags |= NODE_MACRO_ARG;
+  node->type = NT_MACRO_ARG;
   /* Index is 1 based.  */
   node->value.arg_index = n;
 
@@ -3095,8 +3095,9 @@ _cpp_unsave_parameters (cpp_reader *pfile, unsigned n)
 	&((struct macro_arg_saved_data *) pfile->macro_buffer)[n];
 
       struct cpp_hashnode *node = save->canonical_node;
-      node->flags &= ~ NODE_MACRO_ARG;
       node->value = save->value;
+      node->type = (node->flags & NODE_BUILTIN || node->value.macro
+		    ? NT_MACRO : NT_VOID);
     }
 }
 
@@ -3235,8 +3236,7 @@ lex_expansion_token (cpp_reader *pfile, cpp_macro *macro)
   pfile->cur_token = saved_cur_token;
 
   /* Is this a parameter?  */
-  if (token->type == CPP_NAME
-      && (token->val.node.node->flags & NODE_MACRO_ARG) != 0)
+  if (token->type == CPP_NAME && token->val.node.node->type == NT_MACRO_ARG)
     {
       /* Morph into a parameter reference.  */
       cpp_hashnode *spelling = token->val.node.spelling;

@@ -1,3 +1,14 @@
+2018-08-07  Nathan Sidwell  <nathan@acm.org>
+
+	Move NODE_MACRO_ARG to NT_MACRO_ARG.
+	libcpp/
+	* include/libcpp.h (NODE_MACRO_ARG): Delete.
+	(enum node_type): Add NT_MACRO_ARG.
+	(CPP_HSHNODE_VALUE_IDX): Adjust.
+	* macro.c (_cpp_save_parameter, _cpp_unsave_parameter): Adjust.
+	(lex_expansion_token): Likewise.
+	* traditional.c (_cpp_scan_out_logical_line): Likewise.
+
 2018-08-06  Nathan Sidwell  <nathan@acm.org>
 
 	Macro laziness now a property of cpp_macro.

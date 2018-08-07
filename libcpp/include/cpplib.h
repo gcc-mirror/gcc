@@ -690,7 +690,7 @@ struct cpp_dir
 #define NODE_DIAGNOSTIC (1 << 3)	/* Possible diagnostic when lexed.  */
 #define NODE_WARN	(1 << 4)	/* Warn if redefined or undefined.  */
 #define NODE_DISABLED	(1 << 5)	/* A disabled macro.  */
-#define NODE_MACRO_ARG	(1 << 6)	/* Used during #define processing.  */
+//#define NODE_MACRO_ARG	(1 << 6)	/* Used during #define processing.  */
 #define NODE_USED	(1 << 7)	/* Dumped with -dU.  */
 #define NODE_CONDITIONAL (1 << 8)	/* Conditional macro */
 #define NODE_WARN_OPERATOR (1 << 9)	/* Warn about C++ named operator.  */
@@ -699,7 +699,9 @@ struct cpp_dir
 enum node_type
 {
   NT_VOID = 0,	   /* No definition yet.  */
-  NT_MACRO	   /* A macro or assert.  */
+  NT_MACRO_ARG,	   /* A macro arg.  */
+  NT_MACRO,	   /* A macro or assert.  */
+  NT_BUILTIN,	   /* A builtin macro.  */
 };
 
 /* Different flavors of builtin macro.  _Pragma is an operator, but we
@@ -733,7 +735,7 @@ enum {
 };
 
 #define CPP_HASHNODE_VALUE_IDX(HNODE)				\
-  ((HNODE).flags & NODE_MACRO_ARG ? NTV_ARGUMENT		\
+  ((HNODE).type == NT_MACRO_ARG ? NTV_ARGUMENT			\
    : (HNODE).flags & NODE_BUILTIN ? NTV_BUILTIN			\
    : NTV_MACRO)
 
