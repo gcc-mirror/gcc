@@ -13438,12 +13438,14 @@ ix86_finalize_stack_frame_flags (void)
 	  recompute_frame_layout_p = true;
 	}
     }
-  else if (crtl->max_used_stack_slot_alignment
-	   > crtl->preferred_stack_boundary)
+  else if (crtl->max_used_stack_slot_alignment >= 128)
     {
-      /* We don't need to realign stack.  But we still need to keep
-	 stack frame properly aligned to satisfy the largest alignment
-	 of stack slots.  */
+      /* We don't need to realign stack.  max_used_stack_alignment is
+	 used to decide how stack frame should be aligned.  This is
+	 independent of any psABIs nor 32-bit vs 64-bit.  It is always
+	 safe to compute max_used_stack_alignment.  We compute it only
+	 if 128-bit aligned load/store may be generated on misaligned
+	 stack slot which will lead to segfault.   */
       if (ix86_find_max_used_stack_alignment (stack_alignment, true))
 	cfun->machine->max_used_stack_alignment
 	  = stack_alignment / BITS_PER_UNIT;
