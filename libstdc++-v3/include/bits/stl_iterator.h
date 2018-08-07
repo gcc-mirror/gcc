@@ -122,6 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 235 No specification of default ctor for reverse_iterator
+      // 1012. reverse_iterator default ctor should value initialize
       _GLIBCXX17_CONSTEXPR
       reverse_iterator() : current() { }
 
@@ -176,9 +177,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This requires that @c --current is dereferenceable.
       */
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2188. Reverse iterator does not fully support targets that overload &
       _GLIBCXX17_CONSTEXPR pointer
       operator->() const
-      { return &(operator*()); }
+      { return std::__addressof(operator*()); }
 
       /**
        *  @return  @c *this
