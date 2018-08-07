@@ -1,3 +1,12 @@
+2018-08-07  Martin Liska  <mliska@suse.cz>
+
+        PR middle-end/83023
+	* predict.c (expr_expected_value_1): Handle DECL_IS_MALLOC,
+        BUILT_IN_REALLOC and DECL_IS_OPERATOR_NEW.
+	* predict.def (PRED_MALLOC_NONNULL): New predictor.
+	* doc/extend.texi: Document that malloc attribute adds
+        hit to compiler.
+
 2018-08-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/86807
