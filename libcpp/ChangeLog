@@ -1,3 +1,8 @@
+2018-08-07  Nathan Sidwell  <nathan@acm.org>
+
+	* line-map.c: (linemap_init): Set default allocator here.
+	(new_linemap): Rather than here.  Refactor allocation logic.
+
 2018-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (rich_location::set_range): Remove redundant
