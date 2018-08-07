@@ -3062,7 +3062,7 @@ dnl Note: also checks that the types aren't standard types.
 dnl
 dnl Defines:
 dnl  _GLIBCXX_USE_INT128
-dnl  _GLIBCXX_USE_FLOAT128
+dnl  ENABLE_FLOAT128
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_INT128_FLOAT128], [
 
@@ -3117,13 +3117,12 @@ EOF
 
     AC_MSG_CHECKING([for __float128])
     if AC_TRY_EVAL(ac_compile); then
-      AC_DEFINE(_GLIBCXX_USE_FLOAT128, 1,
-      [Define if __float128 is supported on this host.])
       enable_float128=yes
     else
       enable_float128=no
     fi
     AC_MSG_RESULT($enable_float128)
+    GLIBCXX_CONDITIONAL(ENABLE_FLOAT128, test $enable_float128 = yes)
     rm -f conftest*
 
   AC_LANG_RESTORE
