@@ -10,12 +10,12 @@
 2018-07-31  Alexandre Oliva  <oliva@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
-	* trans.c: Include debug.h.
+	* gcc-interface/trans.c: Include debug.h.
 	(file_map): New static variable.
 	(gigi): Set it.  Create decl_to_instance_map when needed.
 	(Subprogram_Body_to_gnu): Pass gnu_subprog_decl to...
 	(Sloc_to_locus): ... this.  Add decl parm, map it to instance.
-	* gigi.h (Sloc_to_locus): Adjust declaration.
+	* gcc-interface/gigi.h (Sloc_to_locus): Adjust declaration.
 
 2018-07-31  Arnaud Charlet  <charlet@adacore.com>
 
