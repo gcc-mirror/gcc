@@ -1,5 +1,15 @@
 2018-08-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86861
+	* libsupc++/new_opa.cc [_GLIBCXX_HAVE_MEMALIGN] (aligned_alloc):
+	Replace macro with inline function.
+	[__sun]: Increase alignment to meet memalign precondition.
+	[!HAVE__ALIGNED_MALLOC && !HAVE_POSIX_MEMALIGN && !HAVE_MEMALIGN]
+	(aligned_alloc): Move check for valid alignment to operator new.
+	Remove redundant check for non-zero size, it's enforced by the caller.
+	(operator new): Move check for valid alignment here. Use
+	__builtin_expect on check for zero size.
+
 	* config/abi/pre/gnu.ver: Export monotonic_buffer_resource members.
 	* include/std/memory_resource (monotonic_buffer_resource::release):
 	Call _M_release_buffers to free buffers.

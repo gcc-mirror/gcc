@@ -39,6 +39,7 @@ static inline void*
 aligned_alloc (std::size_t al, std::size_t sz)
 {
   void *ptr;
+  // posix_memalign has additional requirement, not present on aligned_alloc:
   // The value of alignment shall be a power of two multiple of sizeof(void *).
   if (al < sizeof(void*))
     al = sizeof(void*);
@@ -53,20 +54,24 @@ aligned_alloc (std::size_t al, std::size_t sz)
 #else
 extern "C" void *memalign(std::size_t boundary, std::size_t size);
 #endif
-#define aligned_alloc memalign
-#else
+static inline void*
+aligned_alloc (std::size_t al, std::size_t sz)
+{
+#ifdef __sun
+  // Solaris 10 memalign requires that alignment is greater than or equal to
+  // the size of a word.
+  if (al < sizeof(int))
+    al = sizeof(int);
+#endif
+  return memalign (al, sz);
+}
+#else // !HAVE__ALIGNED_MALLOC && !HAVE_POSIX_MEMALIGN && !HAVE_MEMALIGN
 #include <stdint.h>
 // The C library doesn't provide any aligned allocation functions, define one.
 // This is a modified version of code from gcc/config/i386/gmm_malloc.h
 static inline void*
 aligned_alloc (std::size_t al, std::size_t sz)
 {
-  // Alignment must be a power of two.
-  if (al & (al - 1))
-    return nullptr;
-  else if (!sz)
-    return nullptr;
-
   // We need extra bytes to store the original value returned by malloc.
   if (al < sizeof(void*))
     al = sizeof(void*);
@@ -90,8 +95,13 @@ operator new (std::size_t sz, std::align_val_t al)
   void *p;
   std::size_t align = (std::size_t)al;
 
+  /* Alignment must be a power of two.  */
+  /* XXX This should be checked by the compiler (PR 86878).  */
+  if (__builtin_expect (align & (align - 1), false))
+    _GLIBCXX_THROW_OR_ABORT(bad_alloc());
+
   /* malloc (0) is unpredictable; avoid it.  */
-  if (sz == 0)
+  if (__builtin_expect (sz == 0, false))
     sz = 1;
 
 #if _GLIBCXX_HAVE_ALIGNED_ALLOC
