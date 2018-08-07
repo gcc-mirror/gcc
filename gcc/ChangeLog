@@ -9,7 +9,7 @@
 
 2018-08-06  John David Anglin  <danglin@gcc.gnu.org>
 
-	PR target/86807
+	PR target/86785
 	* config/pa/pa.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
 	Define to speculation_safe_value_not_needed.
 
