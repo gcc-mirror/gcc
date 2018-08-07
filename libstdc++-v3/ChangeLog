@@ -1,5 +1,15 @@
 2018-08-07  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86874
+	* include/std/variant (_Copy_ctor_base::_M_destructive_move): Define
+	here instead of in _Move_assign_base.
+	(_Copy_ctor_base<true, _Types...>::_M_destructive_move): Define.
+	(_Copy_assign_base::operator=): Use _M_destructive_move when changing
+	the contained value to another alternative.
+	(_Move_assign_base::operator=): Likewise.
+	(_Move_assign_base::_M_destructive_move): Remove.
+	* testsuite/20_util/variant/86874.cc: New test.
+
 	PR libstdc++/86861
 	* libsupc++/new_opa.cc [_GLIBCXX_HAVE_MEMALIGN] (aligned_alloc):
 	Replace macro with inline function.
