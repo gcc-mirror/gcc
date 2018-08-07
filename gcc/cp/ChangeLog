@@ -1,3 +1,10 @@
+2018-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* decl.c (check_no_redeclaration_friend_default_args): New.
+	(duplicate_decls): Use the latter; also check that a friend
+	declaration specifying default arguments is a definition.
+
 2018-08-07  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/79133
