@@ -1,3 +1,9 @@
+2018-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/86838
+	* gcc.target/aarch64/frecpe_1.c: New test.
+	* gcc.target/aarch64/frecpe_2.c: Likewise.
+
 2018-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59480, DR 136

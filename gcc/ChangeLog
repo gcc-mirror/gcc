@@ -1,3 +1,14 @@
+2018-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/86838
+	* config/aarch64/iterators.md (FRECP, frecp_suffix): Delete.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_frecp<FRECP:frecp_suffix><mode>): Fold FRECPE into...
+	(@aarch64_frecpe<mode>): ...here and the move FRECPX to...
+	(aarch64_frecpx<mode>): ...this new pattern.
+	* config/aarch64/aarch64-simd-builtins.def: Remove comment
+	about aarch64_frecp<FRECP:frecp_suffix><mode>.
+
 2018-08-07  Martin Liska  <mliska@suse.cz>
 
         PR middle-end/83023
