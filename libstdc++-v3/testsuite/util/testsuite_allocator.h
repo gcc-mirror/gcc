@@ -570,6 +570,8 @@ namespace __gnu_test
 
       explicit PointerBase(T* p = nullptr) : value(p) { }
 
+      PointerBase(std::nullptr_t) : value(nullptr) { }
+
       template<typename D, typename U,
 	       typename = decltype(static_cast<T*>(std::declval<U*>()))>
 	PointerBase(const PointerBase<D, U>& p) : value(p.value) { }
@@ -603,7 +605,11 @@ namespace __gnu_test
       }
 
     private:
-      Derived& derived() { return static_cast<Derived&>(*this); }
+      Derived&
+      derived() { return static_cast<Derived&>(*this); }
+
+      const Derived&
+      derived() const { return static_cast<const Derived&>(*this); }
     };
 
     template<typename D, typename T>

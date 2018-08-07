@@ -1,6 +1,23 @@
 2018-08-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80893
+	* testsuite/23_containers/vector/bool/80893.cc: Add { target c++11 }.
+
+	Backport from mainline
+	2017-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80893
+	* include/bits/stl_bvector.h (vector<bool>::_M_initialize): Avoid
+	null pointer dereference when size is zero.
+	* testsuite/23_containers/vector/bool/80893.cc: New.
+	* testsuite/util/testsuite_allocator.h (PointerBase::PointerBase):
+	Add non-explicit constructor from nullptr.
+	(PointerBase::derived() const): Add const-qualified overload.
+
+	Backport from mainline
 	2017-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/68519
