@@ -1,6 +1,14 @@
 2018-08-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86734
+	* include/bits/stl_iterator.h (reverse_iterator::operator->): Use
+	addressof (LWG 2188).
+	* testsuite/24_iterators/reverse_iterator/dr2188.cc: New test.
+
+	Backport from mainline
 	2018-05-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/codecvt.cc (__codecvt_utf8_base<wchar_t>::do_in)
