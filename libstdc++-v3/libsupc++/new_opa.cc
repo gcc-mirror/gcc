@@ -95,6 +95,12 @@ operator new (std::size_t sz, std::align_val_t al)
     sz = 1;
 
 #if _GLIBCXX_HAVE_ALIGNED_ALLOC
+# ifdef _AIX
+  /* AIX 7.2.0.0 aligned_alloc incorrectly has posix_memalign's requirement
+   * that alignment is a multiple of sizeof(void*).  */
+  if (align < sizeof(void*))
+    align = sizeof(void*);
+# endif
   /* C11: the value of size shall be an integral multiple of alignment.  */
   if (std::size_t rem = sz & (align - 1))
     sz += align - rem;
