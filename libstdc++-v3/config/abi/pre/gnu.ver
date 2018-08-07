@@ -2043,6 +2043,8 @@ GLIBCXX_3.4.26 {
     _ZNSt3pmr20null_memory_resourceEv;
     _ZNSt3pmr20get_default_resourceEv;
     _ZNSt3pmr20set_default_resourceEPNS_15memory_resourceE;
+    _ZNSt3pmr25monotonic_buffer_resource13_M_new_bufferE[jmy][jmy];
+    _ZNSt3pmr25monotonic_buffer_resource18_M_release_buffersEv;
 
 } GLIBCXX_3.4.25;
 
