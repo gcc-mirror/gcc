@@ -1,6 +1,14 @@
 2018-08-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Improve documentation on writing tests for
+	newer standards.
+	* doc/xml/manual/using.xml: Document all headers for C++11 and later.
+	* doc/html/*: Regenerate.
+
+	Backport from mainline
 	2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/84535
