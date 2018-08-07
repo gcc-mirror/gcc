@@ -1,3 +1,10 @@
+2018-08-07  Steve Ellcey  <sellcey@cavium.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/80925
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Expect 3 loops
+	vectorized on !vect_hw_misalign targets.
+
 2018-08-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/86153
