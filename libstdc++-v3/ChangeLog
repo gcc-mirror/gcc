@@ -1,6 +1,17 @@
 2018-08-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84535
+	* include/std/thread (thread::__not_same): New SFINAE helper.
+	(thread::thread(_Callable&&, _Args&&...)): Add SFINAE constraint that
+	first argument is not a std::thread. Add static assertion to check
+	INVOKE expression is valid.
+	(thread::thread(thread&), thread::thread(const thread&&)): Remove.
+	* testsuite/30_threads/thread/cons/84535.cc: New.
+
+	Backport from mainline
 	2018-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/system_error.cc

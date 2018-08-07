@@ -102,21 +102,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   private:
     id				_M_id;
 
-  public:
-    thread() noexcept = default;
     // _GLIBCXX_RESOLVE_LIB_DEFECTS
     // 2097.  packaged_task constructors should be constrained
-    thread(thread&) = delete;
-    thread(const thread&) = delete;
-    thread(const thread&&) = delete;
+    template<typename _Tp>
+      using __not_same = __not_<is_same<
+	typename remove_cv<typename remove_reference<_Tp>::type>::type,
+	thread>>;
 
-    thread(thread&& __t) noexcept
-    { swap(__t); }
+  public:
+    thread() noexcept = default;
 
-    template<typename _Callable, typename... _Args>
+    template<typename _Callable, typename... _Args,
+	     typename = _Require<__not_same<_Callable>>>
       explicit
       thread(_Callable&& __f, _Args&&... __args)
       {
+	static_assert( __is_invocable<typename decay<_Callable>::type,
+				      typename decay<_Args>::type...>::value,
+	  "std::thread arguments must be invocable after conversion to rvalues"
+	  );
+
 #ifdef GTHR_ACTIVE_PROXY
 	// Create a reference to pthread_create, not just the gthr weak symbol.
 	auto __depend = reinterpret_cast<void(*)()>(&pthread_create);
@@ -134,6 +139,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (joinable())
 	std::terminate();
     }
+
+    thread(const thread&) = delete;
+
+    thread(thread&& __t) noexcept
+    { swap(__t); }
 
     thread& operator=(const thread&) = delete;
 
