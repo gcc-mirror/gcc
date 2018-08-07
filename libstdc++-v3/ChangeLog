@@ -1,6 +1,13 @@
 2018-08-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86138
+	* include/bits/basic_string.tcc: [_GLIBCXX_EXTERN_TEMPLATE < 0]
+	Declare explicit instantiations of COW empty reps and I/O functions.
+
+	Backport from mainline
 	2018-05-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85672
