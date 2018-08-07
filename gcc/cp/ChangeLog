@@ -1,3 +1,9 @@
+2018-08-07  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/79133
+	* name-lookup.c (check_local_shadow): Reject captures and parameters
+	with the same name.
+
 2018-08-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86767
