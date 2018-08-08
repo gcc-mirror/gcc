@@ -1,5 +1,9 @@
 2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/new_opa.cc (aligned_alloc): Declare inside namespace to
+	avoid clashing with an ::aligned_alloc function that was not detected
+	by configure.
+
 	* doc/xml/manual/using.xml: Fix markup for empty table entry.
 	* doc/html/*: Regenerate.
 
