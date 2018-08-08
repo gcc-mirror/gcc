@@ -1,6 +1,18 @@
 2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	LWG 3050 Fix cv-qualification of convertibility constraints
+	* include/std/chrono (duration, operator*, operator/, operator%): Use
+	const-qualified type as source type in is_convertible constraints.
+	* testsuite/20_util/duration/arithmetic/dr3050.cc: New.
+	* testsuite/20_util/duration/cons/dr3050.cc: New.
+	* testsuite/20_util/duration/literals/range.cc: Rename to...
+	* testsuite/20_util/duration/literals/range_neg.cc: Here. Adjust
+	dg-error lineno.
+
+	Backport from mainline
 	2017-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/future (shared_future): Add noexcept to copy constructor
