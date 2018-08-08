@@ -1,3 +1,8 @@
+2018-08-08  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostic.c (diagnostic_report_current_module): Use
+	linemap_included_from & linemap_included_from_linemap.
+
 2018-08-08  Hongbo Zhang  <hongbo.zhang@linaro.org>
 
 	* config/aarch64/aarch64-cores.def: Add phecda core.

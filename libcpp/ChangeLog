@@ -1,3 +1,21 @@
+2018-08-08  Nathan Sidwell  <nathan@acm.org>
+
+	Make linemap::included_from a location
+	libcpp/
+	* include/line-map.h (struct line_map_ordinary): Replace
+	included_from map index with included_at source_location.
+	(ORDINARY_MAP_INCLUDER_FILE_INDEX): Delete.
+	(LAST_SOURCE_LINE_LOCATION): Delete.
+	(LAST_SOURCE_LINE, LAST_SOURCE_COLUMN): Delete.
+	(linemap_included_from): New.
+	(linemap_included_from_linemap): Declare.
+	(MAIN_FILE_P): Adjust.
+	* line-map.c (linemap_included_from_linemap): New.
+	(lonemap_check_files_exited): Use linemap_included_at.
+	(linemap_add): Adjust inclusion setting.
+	(linemap_dump, linemap_dump_location): Adjust.
+	* directives.c (do_linemarker): Use linemap_included_at.
+
 2018-08-07  Nathan Sidwell  <nathan@acm.org>
 
 	* line-map.c: (linemap_init): Set default allocator here.
