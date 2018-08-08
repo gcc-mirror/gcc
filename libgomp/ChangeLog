@@ -1,5 +1,14 @@
 2018-08-08  Tom de Vries  <tdevries@suse.de>
 
+	* plugin/cuda-lib.def (cuLinkAddData_v2, cuLinkCreate_v2): Declare using
+	CUDA_ONE_CALL_MAYBE_NULL.
+	* plugin/plugin-nvptx.c (cuLinkAddData, cuLinkCreate): Undef and declare.
+	(cuLinkAddData_v2, cuLinkCreate_v2): Declare.
+	(link_ptx): Fall back to cuLinkAddData/cuLinkCreate if the _v2 versions
+	are not found.
+
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
 	* plugin/cuda-lib.def (cuGetErrorString): Use CUDA_ONE_CALL_MAYBE_NULL.
 	* plugin/plugin-nvptx.c (cuda_error): Handle if cuGetErrorString is not
 	present.
