@@ -1,5 +1,9 @@
 2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/new_opa.cc (aligned_alloc): Declare inside namespace to
+	avoid clashing with an ::aligned_alloc function that was not detected
+	by configure.
+
 	PR libstdc++/86597
 	* include/bits/fs_dir.h (directory_entry::_M_file_type(error_code&)):
 	Clear error_code when cached type is used.
