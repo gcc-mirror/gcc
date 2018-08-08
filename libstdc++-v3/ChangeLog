@@ -1,3 +1,10 @@
+2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86597
+	* include/bits/fs_dir.h (directory_entry::_M_file_type(error_code&)):
+	Clear error_code when cached type is used.
+	* testsuite/27_io/filesystem/directory_entry/86597.cc: New test.
+
 2018-08-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86874
