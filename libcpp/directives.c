@@ -1088,10 +1088,10 @@ do_linemarker (cpp_reader *pfile)
       /* Reread map since cpp_get_token can invalidate it with a
 	 reallocation.  */
       map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
-      const line_map_ordinary *from;      
+      const line_map_ordinary *from
+	= linemap_included_from_linemap (line_table, map);
       if (MAIN_FILE_P (map)
-	  || (new_file
-	      && (from = INCLUDED_FROM (pfile->line_table, map)) != NULL
+	  || (from
 	      && filename_cmp (ORDINARY_MAP_FILE_NAME (from), new_file) != 0))
 	{
 	  cpp_warning (pfile, CPP_W_NONE,

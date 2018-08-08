@@ -440,10 +440,10 @@ struct GTY((tag ("1"))) line_map_ordinary : public line_map {
   const char *to_file;
   linenum_type to_line;
 
-  /* An index into the set that gives the line mapping at whose end
-     the current one was included.  File(s) at the bottom of the
-     include stack have this set to -1.  */
-  int included_from;
+  /* Location from whence this line map was included.  For regular
+     #includes, this location will be the last location of a map.  For
+     outermost file, this is 0.  */
+  source_location included_from;
 
   /* Size is 20 or 24 bytes, no padding  */
 };
@@ -632,17 +632,6 @@ inline linenum_type
 ORDINARY_MAP_STARTING_LINE_NUMBER (const line_map_ordinary *ord_map)
 {
   return ord_map->to_line;
-}
-
-/* Get the index of the ordinary map at whose end
-   ordinary map MAP was included.
-
-   File(s) at the bottom of the include stack have this set.  */
-
-inline int
-ORDINARY_MAP_INCLUDER_FILE_INDEX (const line_map_ordinary *ord_map)
-{
-  return ord_map->included_from;
 }
 
 /* Return a positive value if map encodes locations from a system
@@ -1192,51 +1181,23 @@ SOURCE_COLUMN (const line_map_ordinary *ord_map, source_location loc)
 	  & ((1 << ord_map->m_column_and_range_bits) - 1)) >> ord_map->m_range_bits;
 }
 
-/* Return the location of the last source line within an ordinary
-   map.  */
+
 inline source_location
-LAST_SOURCE_LINE_LOCATION (const line_map_ordinary *map)
+linemap_included_from (const line_map_ordinary *ord_map)
 {
-  return (((map[1].start_location - 1
-	    - map->start_location)
-	   & ~((1 << map->m_column_and_range_bits) - 1))
-	  + map->start_location);
+  return ord_map->included_from;
 }
 
-/* Returns the last source line number within an ordinary map.  This
-   is the (last) line of the #include, or other directive, that caused
-   a map change.  */
-inline linenum_type
-LAST_SOURCE_LINE (const line_map_ordinary *map)
-{
-  return SOURCE_LINE (map, LAST_SOURCE_LINE_LOCATION (map));
-}
-
-/* Return the last column number within an ordinary map.  */
-
-inline linenum_type
-LAST_SOURCE_COLUMN (const line_map_ordinary *map)
-{
-  return SOURCE_COLUMN (map, LAST_SOURCE_LINE_LOCATION (map));
-}
-
-/* Returns the map a given map was included from, or NULL if the map
-   belongs to the main file, i.e, a file that wasn't included by
-   another one.  */
-inline line_map_ordinary *
-INCLUDED_FROM (struct line_maps *set, const line_map_ordinary *ord_map)
-{
-  return ((ord_map->included_from == -1)
-	  ? NULL
-	  : LINEMAPS_ORDINARY_MAP_AT (set, ord_map->included_from));
-}
+/* The linemap containing the included-from location of MAP.  */
+const line_map_ordinary *linemap_included_from_linemap
+  (line_maps *set, const line_map_ordinary *map);
 
 /* True if the map is at the bottom of the include stack.  */
 
 inline bool
 MAIN_FILE_P (const line_map_ordinary *ord_map)
 {
-  return ord_map->included_from < 0;
+  return ord_map->included_from == 0;
 }
 
 /* Encode and return a source_location from a column number. The

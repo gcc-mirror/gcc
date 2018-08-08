@@ -590,9 +590,10 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 	  bool first = true;
 	  do
 	    {
-	      map = INCLUDED_FROM (line_table, map);
+	      where = linemap_included_from (map);
+	      map = linemap_included_from_linemap (line_table, map);
 	      const char *line_col
-		= maybe_line_and_column (LAST_SOURCE_LINE (map),
+		= maybe_line_and_column (SOURCE_LINE (map, where),
 					 first && context->show_column
 					 ? SOURCE_COLUMN (map, where) : 0);
 	      static const char *const msgs[] =
