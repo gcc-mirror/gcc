@@ -1963,22 +1963,7 @@ do_ifdef (cpp_reader *pfile)
 	  skip = (node->type == NT_VOID
 		  || ((node->flags & NODE_CONDITIONAL) != 0));
 	  _cpp_mark_macro_used (node);
-	  if (!(node->flags & NODE_USED))
-	    {
-	      node->flags |= NODE_USED;
-	      if (node->type & NT_MACRO)
-		{
-		  if (node->type == NT_MACRO)
-		    _cpp_maybe_lazy_macro (pfile, node);
-		  if (pfile->cb.used_define)
-		    pfile->cb.used_define (pfile, pfile->directive_line, node);
-		}
-	      else
-		{
-		  if (pfile->cb.used_undef)
-		    pfile->cb.used_undef (pfile, pfile->directive_line, node);
-		}
-	    }
+	  _cpp_maybe_notify_macro_use (pfile, node);
 	  if (pfile->cb.used)
 	    pfile->cb.used (pfile, pfile->directive_line, node);
 	  check_eol (pfile, false);
@@ -2008,22 +1993,7 @@ do_ifndef (cpp_reader *pfile)
 	  skip = (node->type != NT_VOID
 		  && ((node->flags & NODE_CONDITIONAL) == 0));
 	  _cpp_mark_macro_used (node);
-	  if (!(node->flags & NODE_USED))
-	    {
-	      node->flags |= NODE_USED;
-	      if (node->type & NT_MACRO)
-		{
-		  if (node->type == NT_MACRO)
-		    _cpp_maybe_lazy_macro (pfile, node);
-		  if (pfile->cb.used_define)
-		    pfile->cb.used_define (pfile, pfile->directive_line, node);
-		}
-	      else
-		{
-		  if (pfile->cb.used_undef)
-		    pfile->cb.used_undef (pfile, pfile->directive_line, node);
-		}
-	    }
+	  _cpp_maybe_notify_macro_use (pfile, node);
 	  if (pfile->cb.used)
 	    pfile->cb.used (pfile, pfile->directive_line, node);
 	  check_eol (pfile, false);

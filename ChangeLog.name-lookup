@@ -1,5 +1,17 @@
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* internal.h (_cpp_notify_macro_use): Declare.
+	(_cpp_maybe_notify_macro_use): Define.
+	(_cpp_do_lazy_macro, _cpp_maybe_lazy_macro): Delete.
+	* directives.c (do_ifdef, do_ifndef): Call
+	_cpp_maybe_notify_macro_use.
+	* expr.c (parse_defined): Likewise.
+	* macro.c (enter_macro_context): Use _cpp_maybe_notify_macro_use.
+	(warn_of_redefinition): Do lazy definition explicitly.
+	(_cpp_notify_macro_use): Define.
+	(_cpp_do_lazy_macro): Delete.
+
 	Move NODE_BUILTIN to NT_BUILTIN.
 	gcc/c-family/
 	* c-ppoutput.c (cb_used_define): Use cpp_macro_p.

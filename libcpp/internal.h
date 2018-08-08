@@ -622,13 +622,11 @@ cpp_in_primary_file (cpp_reader *pfile)
 }
 
 /* In macro.c */
-extern cpp_macro *_cpp_do_lazy_macro (cpp_reader *pfile, cpp_macro *macro);
-inline cpp_macro *_cpp_maybe_lazy_macro (cpp_reader *pfile, cpp_hashnode *node)
+extern void _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node);
+inline void _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
 {
-  cpp_macro *macro = node->value.macro;
-  if (macro->lazy)
-    macro = _cpp_do_lazy_macro (pfile, macro);
-  return macro;
+  if (!(node->flags & NODE_USED))
+    _cpp_notify_macro_use (pfile, node);
 }
 extern cpp_macro *_cpp_new_macro (cpp_reader *, cpp_macro_kind, void *);
 extern void _cpp_free_definition (cpp_hashnode *);

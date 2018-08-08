@@ -1276,7 +1276,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
   if (node->type == NT_MACRO)
     {
-      cpp_macro *macro = _cpp_maybe_lazy_macro (pfile, node);
+      cpp_macro *macro = node->value.macro;
       _cpp_buff *pragma_buff = NULL;
 
       if (macro->fun_like)
@@ -1320,13 +1320,9 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
       /* Disable the macro within its expansion.  */
       node->flags |= NODE_DISABLED;
 
-      if (!(node->flags & NODE_USED))
-	{
-	  node->flags |= NODE_USED;
-	  if (pfile->cb.used_define)
-	    pfile->cb.used_define (pfile, pfile->directive_line, node);
-	}
-
+      /* Laziness can only affect the expansion tokens of the macro,
+	 not its fun-likeness or parameters.  */
+      _cpp_maybe_notify_macro_use (pfile, node);
       if (pfile->cb.used)
 	pfile->cb.used (pfile, location, node);
 
@@ -3003,7 +2999,14 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
   if (node->flags & NODE_CONDITIONAL)
     return false;
 
-  const cpp_macro *macro1 = _cpp_maybe_lazy_macro (pfile, node);
+  cpp_macro *macro1 = node->value.macro;
+  if (macro1->lazy)
+    {
+      /* We don't want to mark MACRO as used, but do need to finalize
+	 its laziness.  */
+      pfile->cb.user_lazy_macro (pfile, macro1, macro1->lazy - 1);
+      macro1->lazy = 0;
+    }
 
   /* Redefinition of a macro is allowed if and only if the old and new
      definitions are the same.  (6.10.3 paragraph 2).  */
@@ -3559,14 +3562,39 @@ cpp_define_lazily (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
   macro->lazy = num + 1;
 }
 
-extern cpp_macro *
-_cpp_do_lazy_macro (cpp_reader *pfile, cpp_macro *macro)
-{
-  unsigned num = macro->lazy - 1;
-  macro->lazy = 0;
-  pfile->cb.user_lazy_macro (pfile, macro, num);
+/* Notify the use of NODE in a macro-aware context (i.e. expanding it,
+   or testing its existance).  Also applies any lazy definition.  */
 
-  return macro;
+extern void
+_cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
+{
+  node->flags |= NODE_USED;
+  switch (node->type)
+    {
+    case NT_MACRO:
+      {
+	cpp_macro *macro = node->value.macro;
+	if (macro->lazy)
+	  {
+	    pfile->cb.user_lazy_macro (pfile, macro, macro->lazy - 1);
+	    macro->lazy = 0;
+	  }
+      }
+      /* FALLTHROUGH.  */
+
+    case NT_BUILTIN:
+      if (pfile->cb.used_define)
+	pfile->cb.used_define (pfile, pfile->directive_line, node);
+      break;
+
+    case NT_VOID:
+      if (pfile->cb.used_undef)
+	pfile->cb.used_undef (pfile, pfile->directive_line, node);
+      break;
+
+    default:
+      abort ();
+    }
 }
 
 /* Warn if a token in STRING matches one of a function-like MACRO's
