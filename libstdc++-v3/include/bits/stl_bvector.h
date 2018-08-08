@@ -1078,9 +1078,17 @@ template<typename _Alloc>
     void
     _M_initialize(size_type __n)
     {
-      _Bit_pointer __q = this->_M_allocate(__n);
-      this->_M_impl._M_end_of_storage = __q + _S_nword(__n);
-      this->_M_impl._M_start = iterator(std::__addressof(*__q), 0);
+      if (__n)
+	{
+	  _Bit_pointer __q = this->_M_allocate(__n);
+	  this->_M_impl._M_end_of_storage = __q + _S_nword(__n);
+	  this->_M_impl._M_start = iterator(std::__addressof(*__q), 0);
+	}
+      else
+	{
+	  this->_M_impl._M_end_of_storage = _Bit_pointer();
+	  this->_M_impl._M_start = iterator(0, 0);
+	}
       this->_M_impl._M_finish = this->_M_impl._M_start + difference_type(__n);
     }
 
