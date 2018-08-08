@@ -6051,9 +6051,6 @@ nvptx_can_change_mode_class (machine_mode, machine_mode, reg_class_t)
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
-#undef TARGET_ASM_BYTE_OP
-#define TARGET_ASM_BYTE_OP "// .byte "
-
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-nvptx.h"

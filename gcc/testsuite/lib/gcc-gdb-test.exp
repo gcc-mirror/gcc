@@ -54,18 +54,19 @@ proc gdb-test { useline args } {
 	set var $arg1
     }
 
-    set gdb_name $::env(GUALITY_GDB_NAME)
-    set testname "$testcase line [lindex $args 0] [lindex $args 1] == [lindex $args 2]"
-    set output_file "[file rootname [file tail $prog]].exe"
-    set cmd_file "[file rootname [file tail $prog]].gdb"
-
-    set fd [open $cmd_file "w"]
     set line [lindex $args 0]
     if { [string range $line 0 0] == "@" } {
 	set line [string range $line 1 end]
     } else {
 	set line [get-absolute-line $useline $line]
     }
+
+    set gdb_name $::env(GUALITY_GDB_NAME)
+    set testname "$testcase line $line [lindex $args 1] == [lindex $args 2]"
+    set output_file "[file rootname [file tail $prog]].exe"
+    set cmd_file "[file rootname [file tail $prog]].gdb"
+
+    set fd [open $cmd_file "w"]
     puts $fd "break $line"
     puts $fd "run"
     puts $fd "$command $var"

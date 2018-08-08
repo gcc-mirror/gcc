@@ -241,7 +241,8 @@ namespace
 #ifdef ENOTDIR
       case ENOTDIR:
 #endif
-#ifdef ENOTEMPTY
+#if defined ENOTEMPTY && (!defined EEXIST || ENOTEMPTY != EEXIST)
+      // AIX sometimes uses the same value for EEXIST and ENOTEMPTY
       case ENOTEMPTY:
 #endif
 #ifdef ENOTRECOVERABLE

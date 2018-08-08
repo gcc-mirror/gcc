@@ -16740,7 +16740,17 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		else
 		  {
 		    int const_init = false;
+		    unsigned int cnt = 0;
+		    tree first = NULL_TREE, ndecl = error_mark_node;
 		    maybe_push_decl (decl);
+
+		    if (VAR_P (decl)
+			&& DECL_DECOMPOSITION_P (decl)
+			&& TREE_TYPE (pattern_decl) != error_mark_node)
+		      ndecl = tsubst_decomp_names (decl, pattern_decl, args,
+						   complain, in_decl, &first,
+						   &cnt);
+
 		    if (VAR_P (decl)
 			&& DECL_PRETTY_FUNCTION_P (decl))
 		      {
@@ -16756,23 +16766,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		    if (VAR_P (decl))
 		      const_init = (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P
 				    (pattern_decl));
-		    if (VAR_P (decl)
-			&& DECL_DECOMPOSITION_P (decl)
-			&& TREE_TYPE (pattern_decl) != error_mark_node)
-		      {
-			unsigned int cnt;
-			tree first;
-			tree ndecl
-			  = tsubst_decomp_names (decl, pattern_decl, args,
-						 complain, in_decl, &first, &cnt);
-			if (ndecl != error_mark_node)
-			  cp_maybe_mangle_decomp (ndecl, first, cnt);
-			cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
-			if (ndecl != error_mark_node)
-			  cp_finish_decomp (ndecl, first, cnt);
-		      }
-		    else
-		      cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
+
+		    if (ndecl != error_mark_node)
+		      cp_maybe_mangle_decomp (ndecl, first, cnt);
+
+		    cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
+
+		    if (ndecl != error_mark_node)
+		      cp_finish_decomp (ndecl, first, cnt);
 		  }
 	      }
 	  }
@@ -27541,6 +27542,8 @@ declare_integer_pack (void)
 			       NULL_TREE, ECF_CONST);
   DECL_DECLARED_CONSTEXPR_P (ipfn) = true;
   DECL_BUILT_IN_CLASS (ipfn) = BUILT_IN_FRONTEND;
+  DECL_FUNCTION_CODE (ipfn)
+    = (enum built_in_function) (int) CP_BUILT_IN_INTEGER_PACK;
 }
 
 /* Set up the hash tables for template instantiations.  */

@@ -881,7 +881,7 @@ cb_file_change (cpp_reader * ARG_UNUSED (pfile), const line_map_ordinary *map)
 	{
 	  /* Bring current file to correct line when entering a new file.  */
 	  if (map->reason == LC_ENTER)
-	    maybe_print_line (INCLUDED_AT (map));
+	    maybe_print_line (linemap_included_from (map));
 	  if (map->reason == LC_ENTER)
 	    flags = " 1";
 	  else if (map->reason == LC_LEAVE)

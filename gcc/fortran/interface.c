@@ -1776,7 +1776,7 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	  }
 	else
 	  {
-	    /* Only check type and rank.  */
+	    /* Operators: Only check type and rank of arguments.  */
 	    if (!compare_type (f2->sym, f1->sym))
 	      {
 		if (errmsg != NULL)
@@ -1792,6 +1792,15 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 		  snprintf (errmsg, err_len, "Rank mismatch in argument '%s' "
 			    "(%i/%i)", f1->sym->name, symbol_rank (f1->sym),
 			    symbol_rank (f2->sym));
+		return false;
+	      }
+	    if ((gfc_option.allow_std & GFC_STD_F2008)
+		&& (compare_ptr_alloc(f1->sym, f2->sym)
+		    || compare_ptr_alloc(f2->sym, f1->sym)))
+	      {
+    		if (errmsg != NULL)
+		  snprintf (errmsg, err_len, "Mismatching POINTER/ALLOCATABLE "
+			    "attribute in argument '%s' ", f1->sym->name);
 		return false;
 	      }
 	  }

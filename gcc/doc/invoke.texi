@@ -3092,7 +3092,7 @@ void h() @{ f(g); @}
 @end smallexample
 
 @noindent
-In C++14, @code{f} calls calls @code{f<void(*)()>}, but in
+In C++14, @code{f} calls @code{f<void(*)()>}, but in
 C++17 it calls @code{f<void(*)()noexcept>}.
 
 @item -Wclass-memaccess @r{(C++ and Objective-C++ only)}
@@ -4623,7 +4623,7 @@ The @option{-Wimplicit-fallthrough=3} warning is enabled by @option{-Wextra}.
 @opindex Wif-not-aligned
 @opindex Wno-if-not-aligned
 Control if warning triggered by the @code{warn_if_not_aligned} attribute
-should be issued.  This is is enabled by default.
+should be issued.  This is enabled by default.
 Use @option{-Wno-if-not-aligned} to disable it.
 
 @item -Wignored-qualifiers @r{(C and C++ only)}
@@ -9656,7 +9656,7 @@ for LTO, use @command{gcc-ar} and @command{gcc-ranlib} instead of @command{ar}
 and @command{ranlib}; 
 to show the symbols of object files with GIMPLE bytecode, use
 @command{gcc-nm}.  Those commands require that @command{ar}, @command{ranlib}
-and @command{nm} have been compiled with plugin support.  At link time, use the the
+and @command{nm} have been compiled with plugin support.  At link time, use the
 flag @option{-fuse-linker-plugin} to ensure that the library participates in
 the LTO optimization process:
 
@@ -14891,7 +14891,7 @@ performance of the code.  Permissible values for this option are:
 @samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{exynos-m1}, @samp{falkor}, @samp{qdf24xx},
-@samp{saphira}, @samp{xgene1}, @samp{vulcan}, @samp{thunderx},
+@samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan}, @samp{thunderx},
 @samp{thunderxt88}, @samp{thunderxt88p1}, @samp{thunderxt81},
 @samp{thunderxt83}, @samp{thunderx2t99}, @samp{cortex-a57.cortex-a53},
 @samp{cortex-a72.cortex-a53}, @samp{cortex-a73.cortex-a35},
@@ -20210,7 +20210,7 @@ Use features of, and schedule code for, the given CPU.
 Supported values are in the format @samp{v@var{X}.@var{YY}.@var{Z}},
 where @var{X} is a major version, @var{YY} is the minor version, and
 @var{Z} is compatibility code.  Example values are @samp{v3.00.a},
-@samp{v4.00.b}, @samp{v5.00.a}, @samp{v5.00.b}, @samp{v5.00.b}, @samp{v6.00.a}.
+@samp{v4.00.b}, @samp{v5.00.a}, @samp{v5.00.b}, @samp{v6.00.a}.
 
 @item -mxl-soft-mul
 @opindex mxl-soft-mul
@@ -21890,7 +21890,7 @@ GP-relative addressing.  It is most useful in conjunction with
 The @var{regexp} is a POSIX Extended Regular Expression.
 
 This option does not affect the behavior of the @option{-G} option, and 
-and the specified sections are in addition to the standard @code{.sdata} 
+the specified sections are in addition to the standard @code{.sdata}
 and @code{.sbss} small-data sections that are recognized by @option{-mgpopt}.
 
 @item -mr0rel-sec=@var{regexp}
@@ -24908,8 +24908,7 @@ system representing a certain processor type.  Possible values for
 @samp{z196}/@samp{arch9}, @samp{zEC12}, @samp{z13}/@samp{arch11}, and
 @samp{native}.
 
-The default is @option{-march=z900}.  @samp{g5}/@samp{arch3} and
-@samp{g6} are deprecated and will be removed with future releases.
+The default is @option{-march=z900}.
 
 Specifying @samp{native} as cpu type can be used to select the best
 architecture option for the host processor.
@@ -27664,11 +27663,11 @@ To use this option, both @option{-ftree-vectorize} and
 ABI-compatible library must be specified at link time.
 
 GCC currently emits calls to @code{vmldExp2},
-@code{vmldLn2}, @code{vmldLog102}, @code{vmldLog102}, @code{vmldPow2},
+@code{vmldLn2}, @code{vmldLog102}, @code{vmldPow2},
 @code{vmldTanh2}, @code{vmldTan2}, @code{vmldAtan2}, @code{vmldAtanh2},
 @code{vmldCbrt2}, @code{vmldSinh2}, @code{vmldSin2}, @code{vmldAsinh2},
 @code{vmldAsin2}, @code{vmldCosh2}, @code{vmldCos2}, @code{vmldAcosh2},
-@code{vmldAcos2}, @code{vmlsExp4}, @code{vmlsLn4}, @code{vmlsLog104},
+@code{vmldAcos2}, @code{vmlsExp4}, @code{vmlsLn4},
 @code{vmlsLog104}, @code{vmlsPow4}, @code{vmlsTanh4}, @code{vmlsTan4},
 @code{vmlsAtan4}, @code{vmlsAtanh4}, @code{vmlsCbrt4}, @code{vmlsSinh4},
 @code{vmlsSin4}, @code{vmlsAsinh4}, @code{vmlsAsin4}, @code{vmlsCosh4},

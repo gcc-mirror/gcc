@@ -6073,6 +6073,13 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   static const unsigned short refcount_infinity = (unsigned short) ~0;
 };
 
+/* BUILT_IN_FRONTEND function codes.  */
+enum cp_built_in_function {
+  CP_BUILT_IN_IS_CONSTANT_EVALUATED,
+  CP_BUILT_IN_INTEGER_PACK,
+  CP_BUILT_IN_LAST
+};
+
 bool decl_spec_seq_has_spec_p (const cp_decl_specifier_seq *, cp_decl_spec);
 
 /* Return the type of the `this' parameter of FNTYPE.  */
@@ -7733,7 +7740,7 @@ extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE);
-extern tree maybe_constant_init			(tree, tree = NULL_TREE);
+extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree, tsubst_flags_t = tf_warning_or_error);
 extern tree fold_simple				(tree);
 extern bool is_sub_constant_expr                (tree);

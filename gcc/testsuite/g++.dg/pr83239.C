@@ -1,7 +1,7 @@
 // PR tree-optimization/83239 - False positive from -Wstringop-overflow
 // on simple std::vector code
 // { dg-do compile }
-// { dg-options "-O3 -Wall -fdump-tree-optimized"  }
+// { dg-options "-O3 -finline-limit=500 -Wall -fdump-tree-optimized"  }
 
 #include <vector>
 

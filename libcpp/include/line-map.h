@@ -435,10 +435,10 @@ struct GTY((tag ("1"))) line_map_ordinary : public line_map {
   const char *to_file;
   linenum_type to_line;
 
-  /* Location at which this line map was included from.  For regular
+  /* Location from whence this line map was included.  For regular
      #includes, this location will be the last location of a map.  For
      outermost file, this is 0.  */
-  source_location included_at;
+  source_location included_from;
 
   /* Size is 20 or 24 bytes, no padding  */
 };
@@ -1212,21 +1212,21 @@ SOURCE_COLUMN (const line_map_ordinary *ord_map, source_location loc)
 
 
 inline source_location
-INCLUDED_AT (const line_map_ordinary *ord_map)
+linemap_included_from (const line_map_ordinary *ord_map)
 {
-  return ord_map->included_at;
+  return ord_map->included_from;
 }
 
-/* The linemap containing the included-from location.  */
-const line_map_ordinary *linemap_included_at (line_maps *set,
-					      const line_map_ordinary *);
+/* The linemap containing the included-from location of MAP.  */
+const line_map_ordinary *linemap_included_from_linemap
+  (line_maps *set, const line_map_ordinary *map);
 
 /* True if the map is at the bottom of the include stack.  */
 
 inline bool
 MAIN_FILE_P (const line_map_ordinary *ord_map)
 {
-  return ord_map->included_at == 0;
+  return ord_map->included_from == 0;
 }
 
 /* Encode and return a source_location from a column number. The

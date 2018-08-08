@@ -1444,6 +1444,13 @@ scan_one_insn (rtx_insn *insn)
       return insn;
     }
 
+  if (pat_code == CLOBBER_HIGH)
+    {
+      gcc_assert (REG_P (XEXP (PATTERN (insn), 0))
+		  && HARD_REGISTER_P (XEXP (PATTERN (insn), 0)));
+      return insn;
+    }
+
   counted_mem = false;
   set = single_set (insn);
   extract_insn (insn);

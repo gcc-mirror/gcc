@@ -415,10 +415,18 @@ cp_stabilize_reference (tree ref)
 bool
 builtin_valid_in_constant_expr_p (const_tree decl)
 {
-  if (!(TREE_CODE (decl) == FUNCTION_DECL
-	&& DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL))
-    /* Not a built-in.  */
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    /* Not a function.  */
     return false;
+  if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL)
+    {
+      if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_FRONTEND
+	  && ((int) DECL_FUNCTION_CODE (decl)
+	      == CP_BUILT_IN_IS_CONSTANT_EVALUATED))
+	return true;
+      /* Not a built-in.  */
+      return false;
+    }
   switch (DECL_FUNCTION_CODE (decl))
     {
       /* These always have constant results like the corresponding

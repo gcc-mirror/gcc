@@ -1,3 +1,411 @@
+2018-08-08  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostic.c (diagnostic_report_current_module): Use
+	linemap_included_from & linemap_included_from_linemap.
+
+2018-08-08  Hongbo Zhang  <hongbo.zhang@linaro.org>
+
+	* config/aarch64/aarch64-cores.def: Add phecda core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Add phecda core.
+
+2018-08-08  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/85295
+	* config/s390/constraints.md ("NxHD0", "NxSD0"): New constraint
+	definitions.
+	* config/s390/s390.md ("movti"): Add more alternatives for
+	constant to GPR copies.
+
+2018-08-08  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c: Fix whitespace damage throughout the file.
+	* config/s390/s390.h: Likewise.
+	* config/s390/tpf.h: Likewise.
+
+2018-08-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_loadrelative_operand_p):
+        Remove TARGET_CPU_ZARCH usages.
+	(s390_rtx_costs): Likewise.
+	(s390_legitimate_constant_p): Likewise.
+	(s390_cannot_force_const_mem): Likewise.
+	(legitimate_reload_constant_p): Likewise.
+	(s390_preferred_reload_class): Likewise.
+	(legitimize_pic_address): Likewise.
+	(legitimize_tls_address): Likewise.
+	(s390_split_branches): Removed.
+	(s390_add_execute): Removed.
+	(s390_dump_pool): Remove TARGET_CPU_ZARCH usages.
+	(s390_mainpool_start): Likewise.
+	(s390_mainpool_finish): Likewise.
+	(s390_mainpool_cancel): Removed.
+	(s390_chunkify_start): Remove TARGET_CPU_ZARCH usages.
+	(s390_chunkify_cancel): Likewise.
+	(s390_return_addr_rtx): Likewise.
+	(s390_register_info): Remove split_branches_pending_p uages.
+	(s390_optimize_register_info): Likewise.
+	(s390_init_frame_layout): Remove TARGET_CPU_ZARCH and
+        split_branches_pending_p usages.
+	(s390_can_eliminate): Remove TARGET_CPU_ZARCH usages.
+	(s390_load_got): Likewise.
+	(s390_expand_split_stack_prologue): Likewise.
+	(output_asm_nops): Likewise.
+	(s390_function_profiler): Likewise.
+	(s390_emit_call): Likewise.
+	(s390_conditional_register_usage): Likewise.
+	(s390_optimize_prologue): Likewise.
+	(s390_reorg): Remove TARGET_CPU_ZARCH and
+        split_branches_pending_p usages.
+	(s390_option_override_internal): Remove TARGET_CPU_ZARCH
+        usages.
+	(s390_output_indirect_thunk_function): Likewise.
+	* config/s390/s390.h (TARGET_CPU_ZARCH): Removed.
+	(TARGET_CPU_ZARCH_P): Removed.
+	(struct machine_function): Remove split_branches_pending_p.
+	* config/s390/s390.md: Remove TARGET_CPU_ZARCH usages.
+
+2018-08-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* common/config/s390/s390-common.c (processor_flags_table):
+        Remove flags.
+	* config.gcc: Remove with_arch/with_tune support.
+	* config/s390/2064.md: Remove cpu attribute comparisons.
+	* config/s390/driver-native.c (s390_host_detect_local_cpu):
+        Remove MTN.
+	* config/s390/linux.h (ASM_SPEC):
+        Remove -march support.
+	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal):
+        Use a table to get an arch level.
+	* config/s390/s390-opts.h (enum processor_type):
+        Remove enum values.
+	* config/s390/s390.c
+        (processor_table): Remove entries, add arch_level values.
+        (s390_issue_rate): Remove cases.
+        (s390_option_override): Adjust
+        s390_option_override_internal() call.
+	(s390_option_override_internal): Remove deprecation warning.
+        (s390_valid_target_attribute_tree): Adjust
+        s390_option_override_internal() call.
+	* config/s390/s390.h (struct s390_processor):
+        Share with s390-c.c, add arch_level field.
+	* config/s390/s390.md:
+        Remove occurrences in cpu attribute.
+	* config/s390/s390.opt: Remove -march/-mtune support.
+	* config/s390/tpf.h (ASM_SPEC): Remove -march support.
+	* doc/invoke.texi: Remove deprecation warning.
+
+2018-08-08  Luis Machado  <luis.machado@linaro.org>
+
+	* config/aarch64/aarch64.c (qdf24xx_vector_cost): New static
+	global.
+	(qdf24xx_tunings): Set vector cost structure to
+	qdf24xx_vector_cost.
+
+	* config/aarch64/aarch64.c (qdf24xx_addrcost_table)
+	<register_sextend>: Set to 3.
+
+2018-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/86838
+	* config/aarch64/iterators.md (FRECP, frecp_suffix): Delete.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_frecp<FRECP:frecp_suffix><mode>): Fold FRECPE into...
+	(@aarch64_frecpe<mode>): ...here and the move FRECPX to...
+	(aarch64_frecpx<mode>): ...this new pattern.
+	* config/aarch64/aarch64-simd-builtins.def: Remove comment
+	about aarch64_frecp<FRECP:frecp_suffix><mode>.
+
+2018-08-07  Martin Liska  <mliska@suse.cz>
+
+        PR middle-end/83023
+	* predict.c (expr_expected_value_1): Handle DECL_IS_MALLOC,
+        BUILT_IN_REALLOC and DECL_IS_OPERATOR_NEW.
+	* predict.def (PRED_MALLOC_NONNULL): New predictor.
+	* doc/extend.texi: Document that malloc attribute adds
+        hit to compiler.
+
+2018-08-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/86785
+	* config/pa/pa.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
+2018-08-06  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (dom_opt_dom_walker::optimize_stmt): Pass down
+	the vr_values instance to cprop_into_stmt.
+	(cprop_into_stmt): Pass vr_values instance down to cprop_operand.
+	(cprop_operand): Also query EVRP to determine if OP is a constant.
+	
+2018-08-06  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostic.c (diagnostic_report_current_module): Reroll
+	included-at loop.  Translate text.
+
+2018-08-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* function-tests.c (selftest::test_expansion_to_rtl): Call
+	free_after_compilation.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* config/aarch64/aarch64.md: Add clobber highs to tls_desc.
+
+2018-08-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_loop_unroll_adjust): Prevent small
+	loops with memory block operations from getting unrolled.
+
+2018-08-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/86807
+	* config/spu/spu.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
+2018-08-06  Jeff Law  <law@redhat.com>
+
+	* reload1.c (forget_old_reloads_1): Adjust CLOBBER_HIGH
+	assert.
+
+2018-08-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR target/86662
+	* gcc/tree.c (build_common_tree_nodes): Initialize integer_types array
+	with all enabled __intN types.
+
+	* gcc/testsuite/gcc.target/msp430/pr86662.c: New test.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* alias.c (record_set): Check for clobber high.
+	* cfgexpand.c (expand_gimple_stmt): Likewise.
+	* combine-stack-adj.c (single_set_for_csa): Likewise.
+	* combine.c (find_single_use_1): Likewise.
+	(set_nonzero_bits_and_sign_copies): Likewise.
+	(get_combine_src_dest): Likewise.
+	(is_parallel_of_n_reg_sets): Likewise.
+	(try_combine): Likewise.
+	(record_dead_and_set_regs_1): Likewise.
+	(reg_dead_at_p_1): Likewise.
+	(reg_dead_at_p): Likewise.
+	* dce.c (deletable_insn_p): Likewise.
+	(mark_nonreg_stores_1): Likewise.
+	(mark_nonreg_stores_2): Likewise.
+	* df-scan.c (df_find_hard_reg_defs): Likewise.
+	(df_uses_record): Likewise.
+	(df_get_call_refs): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	* haifa-sched.c (haifa_classify_rtx): Likewise.
+	* ira-build.c (create_insn_allocnos): Likewise.
+	* ira-costs.c (scan_one_insn): Likewise.
+	* ira.c (equiv_init_movable_p): Likewise.
+	(rtx_moveable_p): Likewise.
+	(interesting_dest_for_shprep): Likewise.
+	* jump.c (mark_jump_label_1): Likewise.
+	* postreload-gcse.c (record_opr_changes): Likewise.
+	* postreload.c (reload_cse_simplify): Likewise.
+	(struct reg_use): Add source expr.
+	(reload_combine): Check for clobber high.
+	(reload_combine_note_use): Likewise.
+	(reload_cse_move2add): Likewise.
+	(move2add_note_store): Likewise.
+	* print-rtl.c (print_pattern): Likewise.
+	* recog.c (decode_asm_operands): Likewise.
+	(store_data_bypass_p): Likewise.
+	(if_test_bypass_p): Likewise.
+	* regcprop.c (kill_clobbered_value): Likewise.
+	(kill_set_value): Likewise.
+	* reginfo.c (reg_scan_mark_refs): Likewise.
+	* reload1.c (maybe_fix_stack_asms): Likewise.
+	(eliminate_regs_1): Likewise.
+	(elimination_effects): Likewise.
+	(mark_not_eliminable): Likewise.
+	(scan_paradoxical_subregs): Likewise.
+	(forget_old_reloads_1): Likewise.
+	* reorg.c (find_end_label): Likewise.
+	(try_merge_delay_insns): Likewise.
+	(redundant_insn): Likewise.
+	(own_thread_p): Likewise.
+	(fill_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	(dbr_schedule): Likewise.
+	* resource.c (update_live_status): Likewise.
+	(mark_referenced_resources): Likewise.
+	(mark_set_resources): Likewise.
+	* rtl.c (copy_rtx): Likewise.
+	* rtlanal.c (reg_referenced_p): Likewise.
+	(single_set_2): Likewise.
+	(noop_move_p): Likewise.
+	(note_stores): Likewise.
+	* sched-deps.c (sched_analyze_reg): Likewise.
+	(sched_analyze_insn): Likewise.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* cse.c (invalidate_reg): New function extracted from...
+	(invalidate): ...here.
+	(canonicalize_insn): Check for clobber high.
+	(invalidate_from_clobbers): invalidate clobber highs.
+	(invalidate_from_sets_and_clobbers): Likewise.
+	(count_reg_usage): Check for clobber high.
+	(insn_live_p): Likewise.
+	* cselib.c (cselib_expand_value_rtx_1):Likewise.
+	(cselib_invalidate_regno): Check for clobber in setter.
+	(cselib_invalidate_rtx): Pass through setter.
+	(cselib_invalidate_rtx_note_stores):
+	(cselib_process_insn): Check for clobber high.
+	* cselib.h (cselib_invalidate_rtx): Add operand.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* lra-eliminations.c (lra_eliminate_regs_1): Check for clobber high.
+	(mark_not_eliminable): Likewise.
+	* lra-int.h (struct lra_insn_reg): Add clobber high marker.
+	* lra-lives.c (process_bb_lives): Check for clobber high.
+	* lra.c (new_insn_reg): Remember clobber highs.
+	(collect_non_operand_hard_regs): Check for clobber high.
+	(lra_set_insn_recog_data): Likewise.
+	(add_regs_to_insn_regno_info): Likewise.
+	(lra_update_insn_regno_info): Likewise.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* rtl.h (reg_is_clobbered_by_clobber_high): Add declarations.
+	* rtlanal.c (reg_is_clobbered_by_clobber_high): Add function.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* emit-rtl.c (verify_rtx_sharing): Check for CLOBBER_HIGH.
+	(copy_insn_1): Likewise.
+	(gen_hard_reg_clobber_high): New gen function.
+	* genconfig.c (walk_insn_part): Check for CLOBBER_HIGH.
+	* genemit.c (gen_exp): Likewise.
+	(gen_emit_seq): Pass through info.
+	(gen_insn): Check for CLOBBER_HIGH.
+	(gen_expand): Pass through info.
+	(gen_split): Likewise.
+	(output_add_clobbers): Likewise.
+	* genrecog.c (validate_pattern): Check for CLOBBER_HIGH.
+	(remove_clobbers): Likewise.
+	* rtl.h (gen_hard_reg_clobber_high): New declaration.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* doc/rtl.texi (clobber_high): Add.
+	(parallel): Add in clobber high
+	* rtl.c (rtl_check_failed_code3): Add function.
+	* rtl.def (CLOBBER_HIGH): Add expression.
+	* rtl.h (RTL_CHECKC3): Add macro.
+	(rtl_check_failed_code3): Add declaration.
+	(XC3EXP): Add macro.
+
+2018-08-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/86386
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Set
+	cfun->machine->max_used_stack_alignment if needed.
+
+2018-08-04  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86571
+	* gimple-ssa-sprintf.c (format_floating): Extend upper bound of
+	NaN output to 4.
+
+2018-08-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define.
+
+2018-08-03  Jeff Law  <law@redhat.com>
+
+	PR target/86795
+	* config/mn10300/mn10300.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
+2018-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/gcov.texi (-x): Remove duplicate "to".
+	* doc/invoke.texi (-Wnoexcept-type): Remove duplicate "calls".
+	(-Wif-not-aligned): Remove duplicate "is".
+	(-flto): Remove duplicate "the".
+	(MicroBlaze Options): In examples of "-mcpu=cpu-type", remove
+	duplicate "v5.00.b".
+	(MSP430 Options): Remove duplicate "and" from the description
+	of "-mgprel-sec=regexp".
+	(x86 Options): Remove duplicate copies of "vmldLog102" and
+	vmlsLog104 from description of "-mveclibabi=type".
+
+2018-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* internal-fn.h (first_commutative_argument): Declare.
+	* internal-fn.c (first_commutative_argument): New function.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Remove extra
+	restrictions for pattern statements.  Use first_commutative_argument
+	to look for commutative operands in calls to internal functions.
+
+2018-08-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (wide-int-range.o): New.
+	* tree-vrp.c: Move all the wide_int_* functions to...
+	* wide-int-range.cc: ...here.
+	* tree-vrp.h: Move all the wide_int_* prototypes to...
+	* wide-int-range.h: ...here.
+
+2018-08-03  Tom de Vries  <tdevries@suse.de>
+
+	* common/config/nvptx/nvptx-common.c (nvptx_except_unwind_info): Return
+	UI_NONE.
+	* config/nvptx/nvptx.c (TARGET_ASM_BYTE_OP): Remove define.
+	* except.c (output_function_exception_table): Do early exit if
+	targetm_common.except_unwind_info (&global_options) == UI_NONE.
+
+2018-08-03  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (dump_prediction): Change to 2 digits
+        in fraction part.
+
+2018-08-03  Siddhesh Poyarekar  <siddhesh@sourceware.org>
+
+	* config/aarch64/falkor.md (falkor_am_1_vxvy_vxvy): Move
+	neon_dup_q to...
+	(falkor_am_1_gtov_gtov): ... a new insn reservation.
+
+2018-07-19  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/nds32/nds32.c (nds32_hard_regno_mode_ok): Replace > with >=.
+	* df-problems.c (df_remove_dead_eq_notes): Replace > with >=.
+	* dwarf2out.c (mem_loc_descriptor): Replace > with >=.
+	* lra-constraints.c (spill_hard_reg_in_range): Replace <= with <.
+	* lra-remat.c (call_used_input_regno_present_p): Replace <= with <.
+
+2018-08-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (diagnostic_show_locus): Use
+	pp_take_prefix when saving the existing prefix.
+	* diagnostic.c (diagnostic_append_note): Likewise.
+	* langhooks.c (lhd_print_error_function): Likewise.
+	* pretty-print.c (pp_set_prefix): Drop the "const" from "prefix"
+	param's type.  Free the existing prefix.
+	(pp_take_prefix): New function.
+	(pretty_printer::pretty_printer): Drop the prefix parameter.
+	Rename the length parameter to match the comment.
+	(pretty_printer::~pretty_printer): Free the prefix.
+	* pretty-print.h (pretty_printer::pretty_printer): Drop the prefix
+	parameter.
+	(struct pretty_printer): Drop the "const" from "prefix" field's
+	type and clarify memory management.
+	(pp_set_prefix): Drop the "const" from the 2nd param.
+	(pp_take_prefix): New decl.
+
+2018-08-02  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.c (select_block_compare_mode): Move test
+	for word_mode_ok here instead of passing as argument.
+	(expand_block_compare): Change select_block_compare_mode() call.
+	(expand_strncmp_gpr_sequence): New function.
+	(expand_strn_compare): Make use of expand_strncmp_gpr_sequence.
+
 2018-08-02  Jeff Law  <law@redhat.com>
 
 	PR target/86790
@@ -19,12 +427,6 @@
 2018-08-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* genemit.c (print_overload_test): Fix typo.
-
-2018-08-02  Richard Biener  <rguenther@suse.de>
-
-	PR c++/86763
-	* class.c (layout_class_type): Copy TYPE_TYPELESS_STORAGE
-	to the CLASSTYPE_AS_BASE.
 
 2018-08-02  Richard Biener  <rguenther@suse.de>
 

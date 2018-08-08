@@ -199,7 +199,7 @@ fe_file_change (const line_map_ordinary *new_map)
 	 we already did in compile_file.  */
       if (!MAIN_FILE_P (new_map))
 	{
-	  location_t included_at = INCLUDED_AT (new_map);
+	  location_t included_at = linemap_included_from (new_map);
 	  int line = 0;
 	  if (included_at > BUILTINS_LOCATION)
 	    line = SOURCE_LINE (new_map - 1, included_at);

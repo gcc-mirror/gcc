@@ -71,6 +71,9 @@ AARCH64_CORE("qdf24xx",     qdf24xx,   falkor,    8A,  AARCH64_FL_FOR_ARCH8 | AA
 /* Samsung ('S') cores. */
 AARCH64_CORE("exynos-m1",   exynosm1,  exynosm1,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, exynosm1,  0x53, 0x001, -1)
 
+/* HXT ('h') cores. */
+AARCH64_CORE("phecda",      phecda,    falkor,    8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   0x68, 0x000, -1)
+
 /* ARMv8.1-A Architecture Processors.  */
 
 /* Broadcom ('B') cores. */

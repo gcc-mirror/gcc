@@ -4342,7 +4342,7 @@ nds32_hard_regno_nregs (unsigned regno ATTRIBUTE_UNUSED,
 static bool
 nds32_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
-  if (regno > FIRST_PSEUDO_REGISTER)
+  if (regno >= FIRST_PSEUDO_REGISTER)
     return true;
 
   if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE) && NDS32_IS_FPR_REGNUM (regno))

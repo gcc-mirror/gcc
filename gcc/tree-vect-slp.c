@@ -309,7 +309,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
   bool pattern = false;
   slp_oprnd_info oprnd_info;
   int first_op_idx = 1;
-  bool commutative = false;
+  unsigned int commutative_op = -1U;
   bool first_op_cond = false;
   bool first = stmt_num == 0;
   bool second = stmt_num == 1;
@@ -318,6 +318,11 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
     {
       number_of_oprnds = gimple_call_num_args (stmt);
       first_op_idx = 3;
+      if (gimple_call_internal_p (stmt))
+	{
+	  internal_fn ifn = gimple_call_internal_fn (stmt);
+	  commutative_op = first_commutative_argument (ifn);
+	}
     }
   else if (gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt))
     {
@@ -332,7 +337,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
 	  number_of_oprnds++;
 	}
       else
-	commutative = commutative_tree_code (code);
+	commutative_op = commutative_tree_code (code) ? 0U : -1U;
     }
   else
     return -1;
@@ -373,62 +378,6 @@ again:
 	  return -1;
 	}
 
-      /* Check if DEF_STMT_INFO is a part of a pattern in LOOP and get
-	 the def stmt from the pattern.  Check that all the stmts of the
-	 node are in the pattern.  */
-      if (def_stmt_info && is_pattern_stmt_p (def_stmt_info))
-        {
-          pattern = true;
-          if (!first && !oprnd_info->first_pattern
-	      /* Allow different pattern state for the defs of the
-		 first stmt in reduction chains.  */
-	      && (oprnd_info->first_dt != vect_reduction_def
-		  || (!second && !oprnd_info->second_pattern)))
-	    {
-	      if (i == 0
-		  && !swapped
-		  && commutative)
-		{
-		  swapped = true;
-		  goto again;
-		}
-
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "Build SLP failed: some of the stmts"
-				   " are in a pattern, and others are not ");
-		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, oprnd);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-		}
-
-	      return 1;
-            }
-
-	  dt = STMT_VINFO_DEF_TYPE (def_stmt_info);
-
-          if (dt == vect_unknown_def_type)
-            {
-              if (dump_enabled_p ())
-                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Unsupported pattern.\n");
-              return -1;
-            }
-
-	  switch (gimple_code (def_stmt_info->stmt))
-            {
-            case GIMPLE_PHI:
-            case GIMPLE_ASSIGN:
-	      break;
-
-	    default:
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "unsupported defining stmt:\n");
-	      return -1;
-            }
-        }
-
       if (second)
 	oprnd_info->second_pattern = pattern;
 
@@ -456,9 +405,7 @@ again:
 	      || !types_compatible_p (oprnd_info->first_op_type, type))
 	    {
 	      /* Try swapping operands if we got a mismatch.  */
-	      if (i == 0
-		  && !swapped
-		  && commutative)
+	      if (i == commutative_op && !swapped)
 		{
 		  swapped = true;
 		  goto again;
@@ -534,9 +481,9 @@ again:
 	  return -1;
 	}
 
-      gassign *stmt = as_a <gassign *> (stmt_info->stmt);
       if (first_op_cond)
 	{
+	  gassign *stmt = as_a <gassign *> (stmt_info->stmt);
 	  tree cond = gimple_assign_rhs1 (stmt);
 	  enum tree_code code = TREE_CODE (cond);
 
@@ -559,13 +506,17 @@ again:
 	    }
 	}
       else
-	swap_ssa_operands (stmt, gimple_assign_rhs1_ptr (stmt),
-			   gimple_assign_rhs2_ptr (stmt));
+	{
+	  unsigned int op = commutative_op + first_op_idx;
+	  swap_ssa_operands (stmt_info->stmt,
+			     gimple_op_ptr (stmt_info->stmt, op),
+			     gimple_op_ptr (stmt_info->stmt, op + 1));
+	}
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "swapped operands to match def types in ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt_info->stmt, 0);
 	}
     }
 

@@ -51,6 +51,10 @@ DEF_PREDICTOR (PRED_NO_PREDICTION, "no prediction", PROB_ALWAYS, 0)
 DEF_PREDICTOR (PRED_UNCONDITIONAL, "unconditional jump", PROB_ALWAYS,
 	       PRED_FLAG_FIRST_MATCH)
 
+/* Return value of malloc function is almost always non-null.  */
+DEF_PREDICTOR (PRED_MALLOC_NONNULL, "malloc returned non-NULL", \
+	       PROB_VERY_LIKELY, PRED_FLAG_FIRST_MATCH)
+
 /* Use number of loop iterations determined by # of iterations
    analysis to set probability.  We don't want to use Dempster-Shaffer
    theory here, as the predictions is exact.  */
@@ -168,7 +172,6 @@ DEF_PREDICTOR (PRED_HOT_LABEL, "hot label", HITRATE (85), 0)
 /* Branches to cold labels are extremely unlikely.  */
 DEF_PREDICTOR (PRED_COLD_LABEL, "cold label", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
-
 
 /* The following predictors are used in Fortran. */
 

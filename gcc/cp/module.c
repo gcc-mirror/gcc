@@ -9687,7 +9687,7 @@ module_state::write_locations (elf_out *to, line_maps *lmaps,
 	    break;
 	  }
       sec.u (ORDINARY_MAP_STARTING_LINE_NUMBER (map));
-      write_location (sec, INCLUDED_AT (map));
+      write_location (sec, linemap_included_from (map));
     }
 
   const char *name = early_p ? MOD_SNAME_PFX ".elo" : MOD_SNAME_PFX ".llo";
@@ -9770,9 +9770,9 @@ module_state::read_locations (line_maps *lmaps, bool early_p)
       map->to_file = (fnum < slurp->filenames->length ()
 		      ? (*slurp->filenames)[fnum] : "");
       map->to_line = sec.u ();
-      map->included_at = read_location (sec);
-      if (map->included_at == UNKNOWN_LOCATION)
-	map->included_at = loc;
+      map->included_from = read_location (sec);
+      if (map->included_from == UNKNOWN_LOCATION)
+	map->included_from = loc;
     }
 
   dump.outdent ();

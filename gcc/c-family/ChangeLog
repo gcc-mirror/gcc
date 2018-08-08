@@ -1,3 +1,10 @@
+2018-08-08  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (try_to_locate_new_include_inertion_point): Use
+	linemap_included_from_linemap.
+	* c-lex.c (fe_file_change): Use linemap_included_from.
+	* c-ppoutput.c (pp_file_change): Likewise.
+
 2018-08-01  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86650

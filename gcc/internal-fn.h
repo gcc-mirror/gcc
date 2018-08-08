@@ -201,6 +201,8 @@ direct_internal_fn_supported_p (internal_fn fn, tree type0, tree type1,
 					 opt_type);
 }
 
+extern int first_commutative_argument (internal_fn);
+
 extern bool set_edom_supported_p (void);
 
 extern internal_fn get_conditional_internal_fn (tree_code);
