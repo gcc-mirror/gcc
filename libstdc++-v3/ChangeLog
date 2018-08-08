@@ -1,6 +1,12 @@
 2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml: Document all headers for C++11 and later.
+	* doc/html/*: Regenerate.
+
+	Backport from mainline
 	2018-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/system_error.cc
