@@ -1,5 +1,12 @@
 2018-08-08  Tom de Vries  <tdevries@suse.de>
 
+	* plugin/plugin-nvptx.c
+	(CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR): Define.
+	(nvptx_open_device): Use
+	CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR.
+
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
 	* plugin/plugin-nvptx.c (cuda_error): Move declaration of cuGetErrorString ...
 	(cuGetErrorString): ... here.  Guard with CUDA_VERSION < 6000.
 

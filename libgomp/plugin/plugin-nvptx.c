@@ -51,6 +51,7 @@
 
 #if CUDA_VERSION < 6000
 extern CUresult cuGetErrorString (CUresult, const char **);
+#define CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR 82
 #endif
 
 #define DO_PRAGMA(x) _Pragma (#x)
@@ -741,9 +742,11 @@ nvptx_open_device (int n)
 		  &pi, CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_BLOCK, dev);
   ptx_dev->regs_per_block = pi;
 
-  /* CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR = 82 is defined only
+  /* CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR is defined only
      in CUDA 6.0 and newer.  */
-  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi, 82, dev);
+  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+			 CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR,
+			 dev);
   /* Fallback: use limit of registers per block, which is usually equal.  */
   if (r == CUDA_ERROR_INVALID_VALUE)
     pi = ptx_dev->regs_per_block;
