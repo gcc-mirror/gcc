@@ -49,6 +49,10 @@
 #include <assert.h>
 #include <errno.h>
 
+#if CUDA_VERSION < 6000
+extern CUresult cuGetErrorString (CUresult, const char **);
+#endif
+
 #define DO_PRAGMA(x) _Pragma (#x)
 
 #if PLUGIN_NVPTX_DYNAMIC
@@ -156,11 +160,6 @@ init_cuda_lib (void)
 static const char *
 cuda_error (CUresult r)
 {
-#if CUDA_VERSION < 7000
-  /* Specified in documentation and present in library from at least
-     5.5.  Not declared in header file prior to 7.0.  */
-  extern CUresult cuGetErrorString (CUresult, const char **);
-#endif
   const char *desc;
 
   r = CUDA_CALL_NOCHECK (cuGetErrorString, r, &desc);
