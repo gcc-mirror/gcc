@@ -3147,7 +3147,7 @@ s390_loadrelative_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
   if ((GET_CODE (addr) == SYMBOL_REF && !CONSTANT_POOL_ADDRESS_P (addr))
       || (GET_CODE (addr) == UNSPEC
 	  && (XINT (addr, 1) == UNSPEC_GOTENT
-	      || (TARGET_CPU_ZARCH && XINT (addr, 1) == UNSPEC_PLT))))
+	      || XINT (addr, 1) == UNSPEC_PLT)))
     {
       if (symref)
 	*symref = addr;
@@ -3591,8 +3591,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		  /* mulsidi case: mr, m */
 		  *total = s390_cost->m;
 		else if (GET_CODE (left) == ZERO_EXTEND
-			 && GET_CODE (right) == ZERO_EXTEND
-			 && TARGET_CPU_ZARCH)
+			 && GET_CODE (right) == ZERO_EXTEND)
 		  /* umulsidi case: ml, mlr */
 		  *total = s390_cost->ml;
 		else
@@ -3900,7 +3899,7 @@ s390_legitimate_constant_p (machine_mode mode, rtx op)
     return 1;
 
   /* Accept immediate LARL operands.  */
-  if (TARGET_CPU_ZARCH && larl_operand (op, mode))
+  if (larl_operand (op, mode))
     return 1;
 
   /* Thread-local symbols are never legal constants.  This is
@@ -3974,8 +3973,6 @@ s390_cannot_force_const_mem (machine_mode mode, rtx x)
 	/* If the literal pool shares the code section, be put
 	   execute template placeholders into the pool as well.  */
 	case UNSPEC_INSN:
-	  return TARGET_CPU_ZARCH;
-
 	default:
 	  return true;
 	}
@@ -4021,8 +4018,7 @@ legitimate_reload_constant_p (rtx op)
     return true;
 
   /* Accept larl operands.  */
-  if (TARGET_CPU_ZARCH
-      && larl_operand (op, VOIDmode))
+  if (larl_operand (op, VOIDmode))
     return true;
 
   /* Accept floating-point zero operands that fit into a single GPR.  */
@@ -4129,8 +4125,7 @@ s390_preferred_reload_class (rtx op, reg_class_t rclass)
 	   handled via secondary reload but this does not happen if
 	   they are used as literal pool slot replacement in reload
 	   inheritance (see emit_input_reload_insns).  */
-	if (TARGET_CPU_ZARCH
-	    && GET_CODE (XEXP (op, 0)) == PLUS
+	if (GET_CODE (XEXP (op, 0)) == PLUS
 	    && GET_CODE (XEXP (XEXP(op, 0), 0)) == SYMBOL_REF
 	    && GET_CODE (XEXP (XEXP(op, 0), 1)) == CONST_INT)
 	  {
@@ -4710,7 +4705,7 @@ legitimize_pic_address (rtx orig, rtx reg)
        || (SYMBOL_REF_P (addr) && s390_rel_address_ok_p (addr))
        || (GET_CODE (addr) == UNSPEC &&
 	   (XINT (addr, 1) == UNSPEC_GOTENT
-	    || (TARGET_CPU_ZARCH && XINT (addr, 1) == UNSPEC_PLT))))
+	    || XINT (addr, 1) == UNSPEC_PLT)))
       && GET_CODE (addend) == CONST_INT)
     {
       /* This can be locally addressed.  */
@@ -4719,8 +4714,7 @@ legitimize_pic_address (rtx orig, rtx reg)
       rtx const_addr = (GET_CODE (addr) == UNSPEC ?
 			gen_rtx_CONST (Pmode, addr) : addr);
 
-      if (TARGET_CPU_ZARCH
-	  && larl_operand (const_addr, VOIDmode)
+      if (larl_operand (const_addr, VOIDmode)
 	  && INTVAL (addend) < HOST_WIDE_INT_1 << 31
 	  && INTVAL (addend) >= -(HOST_WIDE_INT_1 << 31))
 	{
@@ -4819,13 +4813,13 @@ legitimize_pic_address (rtx orig, rtx reg)
           new_rtx = gen_rtx_CONST (Pmode, new_rtx);
           new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
           new_rtx = gen_const_mem (Pmode, new_rtx);
-          emit_move_insn (reg, new_rtx);
-          new_rtx = reg;
-        }
-      else if (TARGET_CPU_ZARCH)
-        {
-          /* If the GOT offset might be >= 4k, we determine the position
-             of the GOT entry via a PC-relative LARL (@GOTENT).
+	  emit_move_insn (reg, new_rtx);
+	  new_rtx = reg;
+	}
+      else
+	{
+	  /* If the GOT offset might be >= 4k, we determine the position
+	     of the GOT entry via a PC-relative LARL (@GOTENT).
 	     larl temp, sym@GOTENT
              lg   <target>, 0(temp) */
 
@@ -4837,39 +4831,11 @@ legitimize_pic_address (rtx orig, rtx reg)
           new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTENT);
           new_rtx = gen_rtx_CONST (Pmode, new_rtx);
 	  emit_move_insn (temp, new_rtx);
-
 	  new_rtx = gen_const_mem (Pmode, temp);
-          emit_move_insn (reg, new_rtx);
+	  emit_move_insn (reg, new_rtx);
 
-          new_rtx = reg;
-        }
-      else
-        {
-          /* If the GOT offset might be >= 4k, we have to load it
-             from the literal pool (@GOT).
-
-	     lg temp, lit-litbase(r13)
-             lg <target>, 0(temp)
-	     lit:  .long sym@GOT  */
-
-          rtx temp = reg ? reg : gen_reg_rtx (Pmode);
-
-	  gcc_assert (REGNO (temp) >= FIRST_PSEUDO_REGISTER
-		      || REGNO_REG_CLASS (REGNO (temp)) == ADDR_REGS);
-
-	  if (reload_in_progress || reload_completed)
-	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
-
-          addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOT);
-          addr = gen_rtx_CONST (Pmode, addr);
-          addr = force_const_mem (Pmode, addr);
-          emit_move_insn (temp, addr);
-
-          new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
-          new_rtx = gen_const_mem (Pmode, new_rtx);
-          emit_move_insn (reg, new_rtx);
-          new_rtx = reg;
-        }
+	  new_rtx = reg;
+	}
     }
   else if (GET_CODE (addr) == UNSPEC && GET_CODE (addend) == CONST_INT)
     {
@@ -4898,36 +4864,10 @@ legitimize_pic_address (rtx orig, rtx reg)
 	  gcc_unreachable ();
 	  break;
 
-	  /* @PLT is OK as is on 64-bit, must be converted to
-	     GOT-relative @PLTOFF on 31-bit.  */
+	  /* For @PLT larl is used.  This is handled like local
+	     symbol refs.  */
 	case UNSPEC_PLT:
-	  if (!TARGET_CPU_ZARCH)
-	    {
-	      rtx temp = reg? reg : gen_reg_rtx (Pmode);
-
-	      if (reload_in_progress || reload_completed)
-		df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
-
-	      addr = XVECEXP (addr, 0, 0);
-	      addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
-				     UNSPEC_PLTOFF);
-	      if (addend != const0_rtx)
-		addr = gen_rtx_PLUS (Pmode, addr, addend);
-	      addr = gen_rtx_CONST (Pmode, addr);
-	      addr = force_const_mem (Pmode, addr);
-	      emit_move_insn (temp, addr);
-
-	      new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
-	      if (reg != 0)
-		{
-		  s390_load_address (reg, new_rtx);
-		  new_rtx = reg;
-		}
-	    }
-	  else
-	    /* On 64 bit larl can be used.  This case is handled like
-	       local symbol refs.  */
-	    gcc_unreachable ();
+	  gcc_unreachable ();
 	  break;
 
 	  /* Everything else cannot happen.  */
@@ -5084,7 +5024,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	    temp = gen_reg_rtx (Pmode);
 	    emit_move_insn (temp, new_rtx);
 	  }
-	else if (TARGET_CPU_ZARCH)
+	else
 	  {
 	    /* If the GOT offset might be >= 4k, we determine the position
 	       of the GOT entry via a PC-relative LARL.  */
@@ -5097,44 +5037,6 @@ legitimize_tls_address (rtx addr, rtx reg)
 	    new_rtx = gen_const_mem (Pmode, temp);
 	    temp = gen_reg_rtx (Pmode);
 	    emit_move_insn (temp, new_rtx);
-	  }
-	else if (flag_pic)
-	  {
-	    /* If the GOT offset might be >= 4k, we have to load it
-	       from the literal pool.  */
-
-	    if (reload_in_progress || reload_completed)
-	      df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
-
-	    new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTNTPOFF);
-	    new_rtx = gen_rtx_CONST (Pmode, new_rtx);
-	    new_rtx = force_const_mem (Pmode, new_rtx);
-	    temp = gen_reg_rtx (Pmode);
-	    emit_move_insn (temp, new_rtx);
-
-            new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
-	    new_rtx = gen_const_mem (Pmode, new_rtx);
-
-	    new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, new_rtx, addr), UNSPEC_TLS_LOAD);
-	    temp = gen_reg_rtx (Pmode);
-	    emit_insn (gen_rtx_SET (temp, new_rtx));
-	  }
-	else
-	  {
-	    /* In position-dependent code, load the absolute address of
-	       the GOT entry from the literal pool.  */
-
-	    new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_INDNTPOFF);
-	    new_rtx = gen_rtx_CONST (Pmode, new_rtx);
-	    new_rtx = force_const_mem (Pmode, new_rtx);
-	    temp = gen_reg_rtx (Pmode);
-	    emit_move_insn (temp, new_rtx);
-
-	    new_rtx = temp;
-	    new_rtx = gen_const_mem (Pmode, new_rtx);
-	    new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, new_rtx, addr), UNSPEC_TLS_LOAD);
-	    temp = gen_reg_rtx (Pmode);
-	    emit_insn (gen_rtx_SET (temp, new_rtx));
 	  }
 
 	new_rtx = gen_rtx_PLUS (Pmode, s390_get_thread_pointer (), temp);
@@ -5169,7 +5071,6 @@ legitimize_tls_address (rtx addr, rtx reg)
       switch (XINT (XEXP (addr, 0), 1))
 	{
 	case UNSPEC_INDNTPOFF:
-	  gcc_assert (TARGET_CPU_ZARCH);
 	  new_rtx = addr;
 	  break;
 
@@ -8301,95 +8202,6 @@ annotate_constant_pool_refs (rtx *x)
     }
 }
 
-/* Split all branches that exceed the maximum distance.
-   Returns true if this created a new literal pool entry.  */
-
-static int
-s390_split_branches (void)
-{
-  rtx temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
-  int new_literal = 0, ret;
-  rtx_insn *insn;
-  rtx pat, target;
-  rtx *label;
-
-  /* We need correct insn addresses.  */
-
-  shorten_branches (get_insns ());
-
-  /* Find all branches that exceed 64KB, and split them.  */
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      if (! JUMP_P (insn) || tablejump_p (insn, NULL, NULL))
-	continue;
-
-      pat = PATTERN (insn);
-      if (GET_CODE (pat) == PARALLEL)
-	pat = XVECEXP (pat, 0, 0);
-      if (GET_CODE (pat) != SET || SET_DEST (pat) != pc_rtx)
-	continue;
-
-      if (GET_CODE (SET_SRC (pat)) == LABEL_REF)
-	{
-	  label = &SET_SRC (pat);
-	}
-      else if (GET_CODE (SET_SRC (pat)) == IF_THEN_ELSE)
-	{
-	  if (GET_CODE (XEXP (SET_SRC (pat), 1)) == LABEL_REF)
-	    label = &XEXP (SET_SRC (pat), 1);
-          else if (GET_CODE (XEXP (SET_SRC (pat), 2)) == LABEL_REF)
-            label = &XEXP (SET_SRC (pat), 2);
-	  else
-	    continue;
-        }
-      else
-	continue;
-
-      if (get_attr_length (insn) <= 4)
-	continue;
-
-      /* We are going to use the return register as scratch register,
-	 make sure it will be saved/restored by the prologue/epilogue.  */
-      cfun_frame_layout.save_return_addr_p = 1;
-
-      if (!flag_pic)
-	{
-	  new_literal = 1;
-	  rtx mem = force_const_mem (Pmode, *label);
-	  rtx_insn *set_insn = emit_insn_before (gen_rtx_SET (temp_reg, mem),
-						 insn);
-	  INSN_ADDRESSES_NEW (set_insn, -1);
-	  annotate_constant_pool_refs (&PATTERN (set_insn));
-
-	  target = temp_reg;
-	}
-      else
-	{
-	  new_literal = 1;
-	  target = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, *label),
-				   UNSPEC_LTREL_OFFSET);
-	  target = gen_rtx_CONST (Pmode, target);
-	  target = force_const_mem (Pmode, target);
-	  rtx_insn *set_insn = emit_insn_before (gen_rtx_SET (temp_reg, target),
-						 insn);
-	  INSN_ADDRESSES_NEW (set_insn, -1);
-	  annotate_constant_pool_refs (&PATTERN (set_insn));
-
-          target = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, XEXP (target, 0),
-							cfun->machine->base_reg),
-				   UNSPEC_LTREL_BASE);
-	  target = gen_rtx_PLUS (Pmode, temp_reg, target);
-	}
-
-      ret = validate_change (insn, label, target, 0);
-      gcc_assert (ret);
-    }
-
-  return new_literal;
-}
-
-
 /* Find an annotated literal pool symbol referenced in RTX X,
    and store it at REF.  Will abort if X contains references to
    more than one such pool symbol; multiple references to the same
@@ -8772,28 +8584,6 @@ s390_execute_label (rtx insn)
   return NULL_RTX;
 }
 
-/* Add execute target for INSN to the constant pool POOL.  */
-
-static void
-s390_add_execute (struct constant_pool *pool, rtx insn)
-{
-  struct constant *c;
-
-  for (c = pool->execute; c != NULL; c = c->next)
-    if (INSN_UID (insn) == INSN_UID (c->value))
-      break;
-
-  if (c == NULL)
-    {
-      c = (struct constant *) xmalloc (sizeof *c);
-      c->value = insn;
-      c->label = gen_label_rtx ();
-      c->next = pool->execute;
-      pool->execute = c;
-      pool->size += 6;
-    }
-}
-
 /* Find execute target for INSN in the constant pool POOL.
    Return an RTX describing the distance from the start of
    the pool to the location of the execute target.  */
@@ -8859,17 +8649,11 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
   int i;
 
   /* Switch to rodata section.  */
-  if (TARGET_CPU_ZARCH)
-    {
-      insn = emit_insn_after (gen_pool_section_start (), insn);
-      INSN_ADDRESSES_NEW (insn, -1);
-    }
+  insn = emit_insn_after (gen_pool_section_start (), insn);
+  INSN_ADDRESSES_NEW (insn, -1);
 
   /* Ensure minimum pool alignment.  */
-  if (TARGET_CPU_ZARCH)
-    insn = emit_insn_after (gen_pool_align (GEN_INT (8)), insn);
-  else
-    insn = emit_insn_after (gen_pool_align (GEN_INT (4)), insn);
+  insn = emit_insn_after (gen_pool_align (GEN_INT (8)), insn);
   INSN_ADDRESSES_NEW (insn, -1);
 
   /* Emit pool base label.  */
@@ -8917,11 +8701,8 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
     }
 
   /* Switch back to previous section.  */
-  if (TARGET_CPU_ZARCH)
-    {
-      insn = emit_insn_after (gen_pool_section_end (), insn);
-      INSN_ADDRESSES_NEW (insn, -1);
-    }
+  insn = emit_insn_after (gen_pool_section_end (), insn);
+  INSN_ADDRESSES_NEW (insn, -1);
 
   insn = emit_barrier_after (insn);
   INSN_ADDRESSES_NEW (insn, -1);
@@ -8985,11 +8766,7 @@ s390_mainpool_start (void)
 	  pool->pool_insn = insn;
 	}
 
-      if (!TARGET_CPU_ZARCH && s390_execute_label (insn))
-	{
-	  s390_add_execute (pool, insn);
-	}
-      else if (NONJUMP_INSN_P (insn) || CALL_P (insn))
+      if (NONJUMP_INSN_P (insn) || CALL_P (insn))
 	{
 	  rtx pool_ref = NULL_RTX;
 	  find_constant_pool_ref (PATTERN (insn), &pool_ref);
@@ -9041,6 +8818,8 @@ static void
 s390_mainpool_finish (struct constant_pool *pool)
 {
   rtx base_reg = cfun->machine->base_reg;
+  rtx set;
+  rtx_insn *insn;
 
   /* If the pool is empty, we're done.  */
   if (pool->size == 0)
@@ -9057,71 +8836,18 @@ s390_mainpool_finish (struct constant_pool *pool)
   /* We need correct insn addresses.  */
   shorten_branches (get_insns ());
 
-  /* On zSeries, we use a LARL to load the pool register.  The pool is
+  /* Use a LARL to load the pool register.  The pool is
      located in the .rodata section, so we emit it after the function.  */
-  if (TARGET_CPU_ZARCH)
-    {
-      rtx set = gen_main_base_64 (base_reg, pool->label);
-      rtx_insn *insn = emit_insn_after (set, pool->pool_insn);
-      INSN_ADDRESSES_NEW (insn, -1);
-      remove_insn (pool->pool_insn);
+  set = gen_main_base_64 (base_reg, pool->label);
+  insn = emit_insn_after (set, pool->pool_insn);
+  INSN_ADDRESSES_NEW (insn, -1);
+  remove_insn (pool->pool_insn);
 
-      insn = get_last_insn ();
-      pool->pool_insn = emit_insn_after (gen_pool (const0_rtx), insn);
-      INSN_ADDRESSES_NEW (pool->pool_insn, -1);
+  insn = get_last_insn ();
+  pool->pool_insn = emit_insn_after (gen_pool (const0_rtx), insn);
+  INSN_ADDRESSES_NEW (pool->pool_insn, -1);
 
-      s390_dump_pool (pool, 0);
-    }
-
-  /* On S/390, if the total size of the function's code plus literal pool
-     does not exceed 4096 bytes, we use BASR to set up a function base
-     pointer, and emit the literal pool at the end of the function.  */
-  else if (INSN_ADDRESSES (INSN_UID (pool->emit_pool_after))
-	   + pool->size + 8 /* alignment slop */ < 4096)
-    {
-      rtx set = gen_main_base_31_small (base_reg, pool->label);
-      rtx_insn *insn = emit_insn_after (set, pool->pool_insn);
-      INSN_ADDRESSES_NEW (insn, -1);
-      remove_insn (pool->pool_insn);
-
-      insn = emit_label_after (pool->label, insn);
-      INSN_ADDRESSES_NEW (insn, -1);
-
-      /* emit_pool_after will be set by s390_mainpool_start to the
-	 last insn of the section where the literal pool should be
-	 emitted.  */
-      insn = pool->emit_pool_after;
-
-      pool->pool_insn = emit_insn_after (gen_pool (const0_rtx), insn);
-      INSN_ADDRESSES_NEW (pool->pool_insn, -1);
-
-      s390_dump_pool (pool, 1);
-    }
-
-  /* Otherwise, we emit an inline literal pool and use BASR to branch
-     over it, setting up the pool register at the same time.  */
-  else
-    {
-      rtx_code_label *pool_end = gen_label_rtx ();
-
-      rtx pat = gen_main_base_31_large (base_reg, pool->label, pool_end);
-      rtx_insn *insn = emit_jump_insn_after (pat, pool->pool_insn);
-      JUMP_LABEL (insn) = pool_end;
-      INSN_ADDRESSES_NEW (insn, -1);
-      remove_insn (pool->pool_insn);
-
-      insn = emit_label_after (pool->label, insn);
-      INSN_ADDRESSES_NEW (insn, -1);
-
-      pool->pool_insn = emit_insn_after (gen_pool (const0_rtx), insn);
-      INSN_ADDRESSES_NEW (pool->pool_insn, -1);
-
-      insn = emit_label_after (pool_end, pool->pool_insn);
-      INSN_ADDRESSES_NEW (insn, -1);
-
-      s390_dump_pool (pool, 1);
-    }
-
+  s390_dump_pool (pool, 0);
 
   /* Replace all literal pool references.  */
 
@@ -9153,18 +8879,6 @@ s390_mainpool_finish (struct constant_pool *pool)
   s390_free_pool (pool);
 }
 
-/* POOL holds the main literal pool as collected by s390_mainpool_start.
-   We have decided we cannot use this pool, so revert all changes
-   to the current function that were done by s390_mainpool_start.  */
-static void
-s390_mainpool_cancel (struct constant_pool *pool)
-{
-  /* We didn't actually change the instruction stream, so simply
-     free the pool memory.  */
-  s390_free_pool (pool);
-}
-
-
 /* Chunkify the literal pool.  */
 
 #define S390_POOL_CHUNK_MIN	0xc00
@@ -9174,14 +8888,9 @@ static struct constant_pool *
 s390_chunkify_start (void)
 {
   struct constant_pool *curr_pool = NULL, *pool_list = NULL;
-  int extra_size = 0;
   bitmap far_labels;
   rtx pending_ltrel = NULL_RTX;
   rtx_insn *insn;
-
-  rtx (*gen_reload_base) (rtx, rtx) =
-    TARGET_CPU_ZARCH? gen_reload_base_64 : gen_reload_base_31;
-
 
   /* We need correct insn addresses.  */
 
@@ -9191,8 +8900,6 @@ s390_chunkify_start (void)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      bool section_switch_p = false;
-
       /* Check for pending LTREL_BASE.  */
       if (INSN_P (insn))
 	{
@@ -9204,15 +8911,7 @@ s390_chunkify_start (void)
 	    }
 	}
 
-      if (!TARGET_CPU_ZARCH && s390_execute_label (insn))
-	{
-	  if (!curr_pool)
-	    curr_pool = s390_start_pool (&pool_list, insn);
-
-	  s390_add_execute (curr_pool, insn);
-	  s390_add_pool_insn (curr_pool, insn);
-	}
-      else if (NONJUMP_INSN_P (insn) || CALL_P (insn))
+      if (NONJUMP_INSN_P (insn) || CALL_P (insn))
 	{
 	  rtx pool_ref = NULL_RTX;
 	  find_constant_pool_ref (PATTERN (insn), &pool_ref);
@@ -9247,118 +8946,19 @@ s390_chunkify_start (void)
 	  gcc_assert (!pending_ltrel);
 	}
 
-      if (NOTE_P (insn))
-	switch (NOTE_KIND (insn))
-	  {
-	  case NOTE_INSN_SWITCH_TEXT_SECTIONS:
-	    section_switch_p = true;
-	    break;
-	  case NOTE_INSN_VAR_LOCATION:
-	    continue;
-	  default:
-	    break;
-	  }
+      if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION)
+	continue;
 
       if (!curr_pool
 	  || INSN_ADDRESSES_SIZE () <= (size_t) INSN_UID (insn)
-          || INSN_ADDRESSES (INSN_UID (insn)) == -1)
+	  || INSN_ADDRESSES (INSN_UID (insn)) == -1)
 	continue;
 
-      if (TARGET_CPU_ZARCH)
-	{
-	  if (curr_pool->size < S390_POOL_CHUNK_MAX)
-	    continue;
+      if (curr_pool->size < S390_POOL_CHUNK_MAX)
+	continue;
 
-	  s390_end_pool (curr_pool, NULL);
-	  curr_pool = NULL;
-	}
-      else
-	{
-          int chunk_size = INSN_ADDRESSES (INSN_UID (insn))
-			   - INSN_ADDRESSES (INSN_UID (curr_pool->first_insn))
-			 + extra_size;
-
-	  /* We will later have to insert base register reload insns.
-	     Those will have an effect on code size, which we need to
-	     consider here.  This calculation makes rather pessimistic
-	     worst-case assumptions.  */
-	  if (LABEL_P (insn))
-	    extra_size += 6;
-
-	  if (chunk_size < S390_POOL_CHUNK_MIN
-	      && curr_pool->size < S390_POOL_CHUNK_MIN
-	      && !section_switch_p)
-	    continue;
-
-	  /* Pool chunks can only be inserted after BARRIERs ...  */
-	  if (BARRIER_P (insn))
-	    {
-	      s390_end_pool (curr_pool, insn);
-	      curr_pool = NULL;
-	      extra_size = 0;
-	    }
-
-	  /* ... so if we don't find one in time, create one.  */
-          else if (chunk_size > S390_POOL_CHUNK_MAX
-	           || curr_pool->size > S390_POOL_CHUNK_MAX
-		   || section_switch_p)
-	    {
-	      rtx_insn *label, *jump, *barrier, *next, *prev;
-
-	      if (!section_switch_p)
-		{
-		  /* We can insert the barrier only after a 'real' insn.  */
-		  if (! NONJUMP_INSN_P (insn) && ! CALL_P (insn))
-		    continue;
-		  if (get_attr_length (insn) == 0)
-		    continue;
-		  /* Don't separate LTREL_BASE from the corresponding
-		     LTREL_OFFSET load.  */
-		  if (pending_ltrel)
-		    continue;
-		  next = insn;
-		  do
-		    {
-		      insn = next;
-		      next = NEXT_INSN (insn);
-		    }
-		  while (next
-			 && NOTE_P (next)
-			 && NOTE_KIND (next) == NOTE_INSN_VAR_LOCATION);
-		}
-	      else
-		{
-		  gcc_assert (!pending_ltrel);
-
-		  /* The old pool has to end before the section switch
-		     note in order to make it part of the current
-		     section.  */
-		  insn = PREV_INSN (insn);
-		}
-
-	      label = gen_label_rtx ();
-	      prev = insn;
-	      if (prev && NOTE_P (prev))
-		prev = prev_nonnote_insn (prev);
-	      if (prev)
-		jump = emit_jump_insn_after_setloc (gen_jump (label), insn,
-						    INSN_LOCATION (prev));
-	      else
-		jump = emit_jump_insn_after_noloc (gen_jump (label), insn);
-	      barrier = emit_barrier_after (jump);
-	      insn = emit_label_after (label, barrier);
-	      JUMP_LABEL (jump) = label;
-	      LABEL_NUSES (label) = 1;
-
-	      INSN_ADDRESSES_NEW (jump, -1);
-	      INSN_ADDRESSES_NEW (barrier, -1);
-	      INSN_ADDRESSES_NEW (insn, -1);
-
-	      s390_end_pool (curr_pool, barrier);
-	      curr_pool = NULL;
-	      extra_size = 0;
-	    }
-	}
+      s390_end_pool (curr_pool, NULL);
+      curr_pool = NULL;
     }
 
   if (curr_pool)
@@ -9429,8 +9029,8 @@ s390_chunkify_start (void)
 
   for (curr_pool = pool_list; curr_pool; curr_pool = curr_pool->next)
     {
-      rtx new_insn = gen_reload_base (cfun->machine->base_reg,
-				      curr_pool->label);
+      rtx new_insn = gen_reload_base_64 (cfun->machine->base_reg,
+					 curr_pool->label);
       rtx_insn *insn = curr_pool->first_insn;
       INSN_ADDRESSES_NEW (emit_insn_before (new_insn, insn), -1);
     }
@@ -9444,8 +9044,8 @@ s390_chunkify_start (void)
 	struct constant_pool *pool = s390_find_pool (pool_list, insn);
 	if (pool)
 	  {
-	    rtx new_insn = gen_reload_base (cfun->machine->base_reg,
-					    pool->label);
+	    rtx new_insn = gen_reload_base_64 (cfun->machine->base_reg,
+					       pool->label);
 	    INSN_ADDRESSES_NEW (emit_insn_after (new_insn, insn), -1);
 	  }
       }
@@ -9507,66 +9107,6 @@ s390_chunkify_finish (struct constant_pool *pool_list)
 
   for (curr_pool = pool_list; curr_pool; curr_pool = curr_pool->next)
     s390_dump_pool (curr_pool, 0);
-
-  /* Free pool list.  */
-
-  while (pool_list)
-    {
-      struct constant_pool *next = pool_list->next;
-      s390_free_pool (pool_list);
-      pool_list = next;
-    }
-}
-
-/* POOL_LIST is a chunk list as prepared by s390_chunkify_start.
-   We have decided we cannot use this list, so revert all changes
-   to the current function that were done by s390_chunkify_start.  */
-
-static void
-s390_chunkify_cancel (struct constant_pool *pool_list)
-{
-  struct constant_pool *curr_pool = NULL;
-  rtx_insn *insn;
-
-  /* Remove all pool placeholder insns.  */
-
-  for (curr_pool = pool_list; curr_pool; curr_pool = curr_pool->next)
-    {
-      /* Did we insert an extra barrier?  Remove it.  */
-      rtx_insn *barrier = PREV_INSN (curr_pool->pool_insn);
-      rtx_insn *jump = barrier? PREV_INSN (barrier) : NULL;
-      rtx_insn *label = NEXT_INSN (curr_pool->pool_insn);
-
-      if (jump && JUMP_P (jump)
-	  && barrier && BARRIER_P (barrier)
-	  && label && LABEL_P (label)
-	  && GET_CODE (PATTERN (jump)) == SET
-	  && SET_DEST (PATTERN (jump)) == pc_rtx
-	  && GET_CODE (SET_SRC (PATTERN (jump))) == LABEL_REF
-	  && XEXP (SET_SRC (PATTERN (jump)), 0) == label)
-	{
-	  remove_insn (jump);
-	  remove_insn (barrier);
-	  remove_insn (label);
-	}
-
-      remove_insn (curr_pool->pool_insn);
-    }
-
-  /* Remove all base register reload insns.  */
-
-  for (insn = get_insns (); insn; )
-    {
-      rtx_insn *next_insn = NEXT_INSN (insn);
-
-      if (NONJUMP_INSN_P (insn)
-	  && GET_CODE (PATTERN (insn)) == SET
-	  && GET_CODE (SET_SRC (PATTERN (insn))) == UNSPEC
-	  && XINT (SET_SRC (PATTERN (insn)), 1) == UNSPEC_RELOAD_BASE)
-	remove_insn (insn);
-
-      insn = next_insn;
-    }
 
   /* Free pool list.  */
 
@@ -9640,16 +9180,7 @@ s390_return_addr_rtx (int count, rtx frame ATTRIBUTE_UNUSED)
      value of RETURN_REGNUM is actually saved.  */
 
   if (count == 0)
-    {
-      /* On non-z architectures branch splitting could overwrite r14.  */
-      if (TARGET_CPU_ZARCH)
-	return get_hard_reg_initial_val (Pmode, RETURN_REGNUM);
-      else
-	{
-	  cfun_frame_layout.save_return_addr_p = true;
-	  return gen_rtx_MEM (Pmode, return_address_pointer_rtx);
-	}
-    }
+    return get_hard_reg_initial_val (Pmode, RETURN_REGNUM);
 
   if (TARGET_PACKED_STACK)
     offset = -2 * UNITS_PER_LONG;
@@ -10068,7 +9599,6 @@ s390_register_info ()
   clobbered_regs[RETURN_REGNUM]
     |= (!crtl->is_leaf
 	|| TARGET_TPF_PROFILING
-	|| cfun->machine->split_branches_pending_p
 	|| cfun_frame_layout.save_return_addr_p
 	|| crtl->calls_eh_return);
 
@@ -10107,7 +9637,6 @@ s390_optimize_register_info ()
   int i;
 
   gcc_assert (epilogue_completed);
-  gcc_assert (!cfun->machine->split_branches_pending_p);
 
   s390_regs_ever_clobbered (clobbered_regs);
 
@@ -10275,20 +9804,12 @@ s390_init_frame_layout (void)
   if (reload_completed)
     return;
 
-  /* On S/390 machines, we may need to perform branch splitting, which
-     will require both base and return address register.  We have no
-     choice but to assume we're going to need them until right at the
-     end of the machine dependent reorg phase.  */
-  if (!TARGET_CPU_ZARCH)
-    cfun->machine->split_branches_pending_p = true;
-
   do
     {
       frame_size = cfun_frame_layout.frame_size;
 
       /* Try to predict whether we'll need the base register.  */
-      base_used = cfun->machine->split_branches_pending_p
-		  || crtl->uses_const_pool
+      base_used = crtl->uses_const_pool
 		  || (!DISP_IN_RANGE (frame_size)
 		      && !CONST_OK_FOR_K (frame_size));
 
@@ -10740,7 +10261,7 @@ s390_lra_p (void)
 static bool
 s390_can_eliminate (const int from, const int to)
 {
-  /* On zSeries machines, we have not marked the base register as fixed.
+  /* We have not marked the base register as fixed.
      Instead, we have an elimination rule BASE_REGNUM -> BASE_REGNUM.
      If a function requires the base register, we say here that this
      elimination cannot be performed.  This will cause reload to free
@@ -10750,13 +10271,8 @@ s390_can_eliminate (const int from, const int to)
      to allocate the base register for any other purpose.  */
   if (from == BASE_REGNUM && to == BASE_REGNUM)
     {
-      if (TARGET_CPU_ZARCH)
-	{
-	  s390_init_frame_layout ();
-	  return cfun->machine->base_reg == NULL_RTX;
-	}
-
-      return false;
+      s390_init_frame_layout ();
+      return cfun->machine->base_reg == NULL_RTX;
     }
 
   /* Everything else must point into the stack frame.  */
@@ -11043,27 +10559,7 @@ s390_load_got (void)
 
   start_sequence ();
 
-  if (TARGET_CPU_ZARCH)
-    {
-      emit_move_insn (got_rtx, s390_got_symbol ());
-    }
-  else
-    {
-      rtx offset;
-
-      offset = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, s390_got_symbol ()),
-			       UNSPEC_LTREL_OFFSET);
-      offset = gen_rtx_CONST (Pmode, offset);
-      offset = force_const_mem (Pmode, offset);
-
-      emit_move_insn (got_rtx, offset);
-
-      offset = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (offset, 0)),
-			       UNSPEC_LTREL_BASE);
-      offset = gen_rtx_PLUS (Pmode, got_rtx, offset);
-
-      emit_move_insn (got_rtx, offset);
-    }
+  emit_move_insn (got_rtx, s390_got_symbol ());
 
   insns = get_insns ();
   end_sequence ();
@@ -11955,11 +11451,6 @@ s390_expand_split_stack_prologue (void)
   rtx tmp;
 
   gcc_assert (flag_split_stack && reload_completed);
-  if (!TARGET_CPU_ZARCH)
-    {
-      sorry ("CPUs older than z900 are not supported for -fsplit-stack");
-      return;
-    }
 
   r1 = gen_rtx_REG (Pmode, 1);
 
@@ -13124,10 +12615,10 @@ output_asm_nops (const char *user, int hw)
   asm_fprintf (asm_out_file, "\t# NOPs for %s (%d halfwords)\n", user, hw);
   while (hw > 0)
     {
-      if (TARGET_CPU_ZARCH && hw >= 3)
-        {
-          output_asm_insn ("brcl\t0,0", NULL);
-          hw -= 3;
+      if (hw >= 3)
+	{
+	  output_asm_insn ("brcl\t0,0", NULL);
+	  hw -= 3;
         }
       else if (hw >= 2)
         {
@@ -13201,7 +12692,7 @@ s390_function_profiler (FILE *file, int labelno)
             output_asm_insn (".cfi_restore\t%0", op);
         }
     }
-  else if (TARGET_CPU_ZARCH)
+  else
     {
       if (flag_nop_mcount)
         output_asm_nops ("-mnop-mcount", /* st */ 2 + /* larl */ 3 +
@@ -13215,64 +12706,8 @@ s390_function_profiler (FILE *file, int labelno)
           output_asm_insn ("brasl\t%0,%4", op);
           output_asm_insn ("l\t%0,%1", op);
           if (flag_dwarf2_cfi_asm)
-            output_asm_insn (".cfi_restore\t%0", op);
-        }
-    }
-  else if (!flag_pic)
-    {
-      op[6] = gen_label_rtx ();
-
-      if (flag_nop_mcount)
-        output_asm_nops ("-mnop-mcount", /* st */ 2 + /* bras */ 2 +
-                         /* .long */ 2 + /* .long */ 2 + /* l */ 2 +
-                         /* l */ 2 + /* basr */ 1 + /* l */ 2);
-      else
-        {
-          output_asm_insn ("st\t%0,%1", op);
-          if (flag_dwarf2_cfi_asm)
-            output_asm_insn (".cfi_rel_offset\t%0,%7", op);
-          output_asm_insn ("bras\t%2,%l6", op);
-          output_asm_insn (".long\t%4", op);
-          output_asm_insn (".long\t%3", op);
-          targetm.asm_out.internal_label (file, "L",
-                                          CODE_LABEL_NUMBER (op[6]));
-          output_asm_insn ("l\t%0,0(%2)", op);
-          output_asm_insn ("l\t%2,4(%2)", op);
-          output_asm_insn ("basr\t%0,%0", op);
-          output_asm_insn ("l\t%0,%1", op);
-          if (flag_dwarf2_cfi_asm)
-            output_asm_insn (".cfi_restore\t%0", op);
-        }
-    }
-  else
-    {
-      op[5] = gen_label_rtx ();
-      op[6] = gen_label_rtx ();
-
-      if (flag_nop_mcount)
-        output_asm_nops ("-mnop-mcount", /* st */ 2 + /* bras */ 2 +
-                         /* .long */ 2 + /* .long */ 2 + /* lr */ 1 +
-                         /* a */ 2 + /* a */ 2 + /* basr */ 1 + /* l */ 2);
-      else
-        {
-          output_asm_insn ("st\t%0,%1", op);
-          if (flag_dwarf2_cfi_asm)
-            output_asm_insn (".cfi_rel_offset\t%0,%7", op);
-          output_asm_insn ("bras\t%2,%l6", op);
-          targetm.asm_out.internal_label (file, "L",
-                                          CODE_LABEL_NUMBER (op[5]));
-          output_asm_insn (".long\t%4-%l5", op);
-          output_asm_insn (".long\t%3-%l5", op);
-          targetm.asm_out.internal_label (file, "L",
-                                          CODE_LABEL_NUMBER (op[6]));
-          output_asm_insn ("lr\t%0,%2", op);
-          output_asm_insn ("a\t%0,0(%2)", op);
-          output_asm_insn ("a\t%2,4(%2)", op);
-          output_asm_insn ("basr\t%0,%0", op);
-          output_asm_insn ("l\t%0,%1", op);
-          if (flag_dwarf2_cfi_asm)
-            output_asm_insn (".cfi_restore\t%0", op);
-        }
+	    output_asm_insn (".cfi_restore\t%0", op);
+	}
     }
 
   if (flag_record_mcount)
@@ -13871,16 +13306,6 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
 	       optimization is illegal for S/390 so we turn the direct
 	       call into a indirect call again.  */
 	    addr_location = force_reg (Pmode, addr_location);
-        }
-
-      /* Unless we can use the bras(l) insn, force the
-         routine address into a register.  */
-      if (!TARGET_SMALL_EXEC && !TARGET_CPU_ZARCH)
-        {
-	  if (flag_pic)
-	    addr_location = legitimize_pic_address (addr_location, 0);
-	  else
-	    addr_location = force_reg (Pmode, addr_location);
 	}
     }
 
@@ -13971,13 +13396,10 @@ s390_conditional_register_usage (void)
       fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
       call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
     }
-  if (TARGET_CPU_ZARCH)
-    {
-      fixed_regs[BASE_REGNUM] = 0;
-      call_used_regs[BASE_REGNUM] = 0;
-      fixed_regs[RETURN_REGNUM] = 0;
-      call_used_regs[RETURN_REGNUM] = 0;
-    }
+  fixed_regs[BASE_REGNUM] = 0;
+  call_used_regs[BASE_REGNUM] = 0;
+  fixed_regs[RETURN_REGNUM] = 0;
+  call_used_regs[RETURN_REGNUM] = 0;
   if (TARGET_64BIT)
     {
       for (i = FPR8_REGNUM; i <= FPR15_REGNUM; i++)
@@ -14043,14 +13465,10 @@ s390_optimize_prologue (void)
      can do, so no point in walking the insn list.  */
 
   if (cfun_frame_layout.first_save_gpr <= BASE_REGNUM
-      && cfun_frame_layout.last_save_gpr >= BASE_REGNUM
-      && (TARGET_CPU_ZARCH
-          || (cfun_frame_layout.first_save_gpr <= RETURN_REGNUM
-              && cfun_frame_layout.last_save_gpr >= RETURN_REGNUM)))
+      && cfun_frame_layout.last_save_gpr >= BASE_REGNUM)
     return;
 
   /* Search for prologue/epilogue insns and replace them.  */
-
   for (insn = get_insns (); insn; insn = next_insn)
     {
       int first, last, off;
@@ -14627,6 +14045,7 @@ static void
 s390_reorg (void)
 {
   bool pool_overflow = false;
+  rtx_insn *insn;
   int hw_before, hw_after;
 
   if (s390_tune == PROCESSOR_2964_Z13)
@@ -14683,21 +14102,7 @@ s390_reorg (void)
 
       /* If literal pool overflowed, start to chunkify it.  */
       if (pool_overflow)
-        pool = s390_chunkify_start ();
-
-      /* Split out-of-range branches.  If this has created new
-	 literal pool entries, cancel current chunk list and
-	 recompute it.  zSeries machines have large branch
-	 instructions, so we never need to split a branch.  */
-      if (!TARGET_CPU_ZARCH && s390_split_branches ())
-        {
-          if (pool_overflow)
-            s390_chunkify_cancel (pool);
-	  else
-            s390_mainpool_cancel (pool);
-
-          continue;
-        }
+	pool = s390_chunkify_start ();
 
       /* If we made it up to here, both conditions are satisfied.
 	 Finish up literal pool related changes.  */
@@ -14706,40 +14111,35 @@ s390_reorg (void)
       else
 	s390_mainpool_finish (pool);
 
-      /* We're done splitting branches.  */
-      cfun->machine->split_branches_pending_p = false;
       break;
     }
 
   /* Generate out-of-pool execute target insns.  */
-  if (TARGET_CPU_ZARCH)
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      rtx_insn *insn, *target;
       rtx label;
+      rtx_insn *target;
 
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+      label = s390_execute_label (insn);
+      if (!label)
+	continue;
+
+      gcc_assert (label != const0_rtx);
+
+      target = emit_label (XEXP (label, 0));
+      INSN_ADDRESSES_NEW (target, -1);
+
+      if (JUMP_P (insn))
 	{
-	  label = s390_execute_label (insn);
-	  if (!label)
-	    continue;
-
-	  gcc_assert (label != const0_rtx);
-
-	  target = emit_label (XEXP (label, 0));
-	  INSN_ADDRESSES_NEW (target, -1);
-
-	  if (JUMP_P (insn))
-	    {
-	      target = emit_jump_insn (s390_execute_target (insn));
-	      /* This is important in order to keep a table jump
-		 pointing at the jump table label.  Only this makes it
-		 being recognized as table jump.  */
-	      JUMP_LABEL (target) = JUMP_LABEL (insn);
-	    }
-	  else
-	    target = emit_insn (s390_execute_target (insn));
-	  INSN_ADDRESSES_NEW (target, -1);
+	  target = emit_jump_insn (s390_execute_target (insn));
+	  /* This is important in order to keep a table jump
+	     pointing at the jump table label.  Only this makes it
+	     being recognized as table jump.  */
+	  JUMP_LABEL (target) = JUMP_LABEL (insn);
 	}
+      else
+	target = emit_insn (s390_execute_target (insn));
+      INSN_ADDRESSES_NEW (target, -1);
     }
 
   /* Try to optimize prologue and epilogue further.  */
@@ -14796,7 +14196,7 @@ s390_reorg (void)
       /* Output a series of NOPs before the first active insn.  */
       while (insn && hw_after > 0)
 	{
-	  if (hw_after >= 3 && TARGET_CPU_ZARCH)
+	  if (hw_after >= 3)
 	    {
 	      emit_insn_before (gen_nop_6_byte (), insn);
 	      hw_after -= 3;
@@ -15472,9 +14872,6 @@ s390_option_override_internal (struct gcc_options *opts,
   if (opts->x_s390_arch == PROCESSOR_NATIVE
       || opts->x_s390_tune == PROCESSOR_NATIVE)
     gcc_unreachable ();
-  if (TARGET_ZARCH_P (opts->x_target_flags) && !TARGET_CPU_ZARCH_P (opts))
-    error ("z/Architecture mode not supported on %s",
-	   processor_table[(int)opts->x_s390_arch].name);
   if (TARGET_64BIT && !TARGET_ZARCH_P (opts->x_target_flags))
     error ("64-bit ABI not supported in ESA/390 mode");
 
@@ -15502,17 +14899,6 @@ s390_option_override_internal (struct gcc_options *opts,
       if (!opts_set->x_s390_function_return_mem)
 	opts->x_s390_function_return_mem = opts->x_s390_function_return;
     }
-
-  if (!TARGET_CPU_ZARCH)
-    {
-      if (opts->x_s390_indirect_branch_call != indirect_branch_keep
-	  || opts->x_s390_indirect_branch_jump != indirect_branch_keep)
-	error ("-mindirect-branch* options require -march=z900 or higher");
-      if (opts->x_s390_function_return_reg != indirect_branch_keep
-	  || opts->x_s390_function_return_mem != indirect_branch_keep)
-	error ("-mfunction-return* options require -march=z900 or higher");
-    }
-
 
   /* Enable hardware transactions if available and not explicitly
      disabled by user.  E.g. with -m31 -march=zEC12 -mzarch */
@@ -16656,7 +16042,7 @@ s390_output_indirect_thunk_function (unsigned int regno, bool z10_p)
       if (!TARGET_CPU_Z10)
 	fputs ("\t.machine pop\n", asm_out_file);
     }
-  else if (TARGET_CPU_ZARCH)
+  else
     {
       /* larl %r1,1f  */
       fprintf (asm_out_file, "\tlarl\t%%r%d,1f\n",
@@ -16666,8 +16052,6 @@ s390_output_indirect_thunk_function (unsigned int regno, bool z10_p)
       fprintf (asm_out_file, "\tex\t0,0(%%r%d)\n",
 	       INDIRECT_BRANCH_THUNK_REGNUM);
     }
-  else
-    gcc_unreachable ();
 
   /* 0:    j 0b  */
   fputs ("0:\tj\t0b\n", asm_out_file);

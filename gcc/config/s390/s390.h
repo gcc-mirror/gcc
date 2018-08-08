@@ -54,10 +54,6 @@ enum processor_flags
 	(s390_arch_flags & PF_IEEE_FLOAT)
 #define TARGET_CPU_IEEE_FLOAT_P(opts) \
 	(opts->x_s390_arch_flags & PF_IEEE_FLOAT)
-#define TARGET_CPU_ZARCH \
-	(s390_arch_flags & PF_ZARCH)
-#define TARGET_CPU_ZARCH_P(opts) \
-	(opts->x_s390_arch_flags & PF_ZARCH)
 #define TARGET_CPU_LONG_DISPLACEMENT \
 	(s390_arch_flags & PF_LONG_DISPLACEMENT)
 #define TARGET_CPU_LONG_DISPLACEMENT_P(opts) \
@@ -1118,9 +1114,6 @@ struct GTY(()) machine_function
 
   /* Literal pool base register.  */
   rtx base_reg;
-
-  /* True if we may need to perform branch splitting.  */
-  bool split_branches_pending_p;
 
   bool has_landing_pad_p;
 
