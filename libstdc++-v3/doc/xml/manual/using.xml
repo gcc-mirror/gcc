@@ -425,68 +425,6 @@ Unless specified otherwise below, they are also available in later modes
 </tgroup>
 </table>
 
-<para>
-<xref linkend="table.cxx20_headers"/>
-shows the C++2a include files.
-These are available in C++2a compilation
-mode, i.e. <literal>-std=c++2a</literal> or <literal>-std=gnu++2a</literal>.
-Including these headers in earlier modes will not result in
-compilation errors, but will not define anything.
-<!--
-Unless specified otherwise below, they are also available in later modes
-(C++23 etc).
--->
-</para>
-
-<para/>
-<table frame="all" xml:id="table.cxx20_headers">
-<title>C++ 2020 Library Headers</title>
-
-<tgroup cols="2" align="left" colsep="1" rowsep="1">
-<colspec colname="c1"/>
-<colspec colname="c2"/>
-<!--
-<colspec colname="c3"/>
-<colspec colname="c4"/>
-<colspec colname="c5"/>
--->
-<tbody>
-<row>
-<entry><filename class="headerfile">bit</filename></entry>
-<entry><filename class="headerfile">version</filename></entry>
-</row>
-<!-- TODO compare, concepts, contract, span, syncstream -->
-</tbody>
-</tgroup>
-</table>
-
-<para>
-  The following headers have been removed in the C++2a working draft.
-  They are still available when using this implementation, but in future
-  they might start to produce warnings or errors when included in C++2a mode.
-  Programs that intend to be portable should not include them.
-</para>
-
-<table frame="all" xml:id="table.cxx20_deprheaders">
-<title>C++ 2020 Obsolete Headers</title>
-
-<tgroup cols="5" align="left" colsep="1" rowsep="1">
-<colspec colname="c1"/>
-<colspec colname="c2"/>
-<colspec colname="c3"/>
-<colspec colname="c4"/>
-<colspec colname="c5"/>
-<tbody>
-<row>
-<entry><filename class="headerfile">ccomplex</filename></entry>
-<entry><filename class="headerfile">ciso646</filename></entry>
-<entry><filename class="headerfile">cstdalign</filename></entry>
-<entry><filename class="headerfile">cstdbool</filename></entry>
-<entry><filename class="headerfile">ctgmath</filename></entry>
-</row>
-</tbody>
-</tgroup>
-</table>
 
 <para>
 <xref linkend="table.filesystemts_headers"/>,
