@@ -318,7 +318,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     _M_file_type(error_code& __ec) const noexcept
     {
       if (_M_type != file_type::none && _M_type != file_type::symlink)
-	return _M_type;
+	{
+	  __ec.clear();
+	  return _M_type;
+	}
       return status(__ec).type();
     }
 

@@ -1,5 +1,7 @@
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r263434.
+
 	Fold cpp-id-data.h into cpplib.h
 	libcpp/
 	* internal.h: Include cpplib.h, not cpp-id-data.h.

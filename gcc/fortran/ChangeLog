@@ -1,3 +1,11 @@
+2018-08-08  Nathan Sidwell  <nathan@acm.org>
+
+	* cpp.c (cb_file_change): Use linemap_included_from.
+
+2018-08-07  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* trans-stmt.h: Remove stale reference to trans-openacc.c.
+
 2018-08-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45521

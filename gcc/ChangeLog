@@ -1,3 +1,185 @@
+2018-08-08  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/46179
+	* config/m68k/m68k.h (FINAL_PRESCAN_INSN): Don't define.
+	* config/m68k/m68k.c (handle_move_double): Don't call
+	m68k_final_prescan_insn.
+	(m68k_adjust_decorated_operand): Renamed from
+	m68k_final_prescan_insn, remove first and third operand and
+	simplify.
+	(print_operand): Call it.
+	(print_operand_address): Call it.
+
+2018-08-08  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostic.c (diagnostic_report_current_module): Use
+	linemap_included_from & linemap_included_from_linemap.
+
+2018-08-08  Hongbo Zhang  <hongbo.zhang@linaro.org>
+
+	* config/aarch64/aarch64-cores.def: Add phecda core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Add phecda core.
+
+2018-08-08  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/85295
+	* config/s390/constraints.md ("NxHD0", "NxSD0"): New constraint
+	definitions.
+	* config/s390/s390.md ("movti"): Add more alternatives for
+	constant to GPR copies.
+
+2018-08-08  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c: Fix whitespace damage throughout the file.
+	* config/s390/s390.h: Likewise.
+	* config/s390/tpf.h: Likewise.
+
+2018-08-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_loadrelative_operand_p):
+        Remove TARGET_CPU_ZARCH usages.
+	(s390_rtx_costs): Likewise.
+	(s390_legitimate_constant_p): Likewise.
+	(s390_cannot_force_const_mem): Likewise.
+	(legitimate_reload_constant_p): Likewise.
+	(s390_preferred_reload_class): Likewise.
+	(legitimize_pic_address): Likewise.
+	(legitimize_tls_address): Likewise.
+	(s390_split_branches): Removed.
+	(s390_add_execute): Removed.
+	(s390_dump_pool): Remove TARGET_CPU_ZARCH usages.
+	(s390_mainpool_start): Likewise.
+	(s390_mainpool_finish): Likewise.
+	(s390_mainpool_cancel): Removed.
+	(s390_chunkify_start): Remove TARGET_CPU_ZARCH usages.
+	(s390_chunkify_cancel): Likewise.
+	(s390_return_addr_rtx): Likewise.
+	(s390_register_info): Remove split_branches_pending_p uages.
+	(s390_optimize_register_info): Likewise.
+	(s390_init_frame_layout): Remove TARGET_CPU_ZARCH and
+        split_branches_pending_p usages.
+	(s390_can_eliminate): Remove TARGET_CPU_ZARCH usages.
+	(s390_load_got): Likewise.
+	(s390_expand_split_stack_prologue): Likewise.
+	(output_asm_nops): Likewise.
+	(s390_function_profiler): Likewise.
+	(s390_emit_call): Likewise.
+	(s390_conditional_register_usage): Likewise.
+	(s390_optimize_prologue): Likewise.
+	(s390_reorg): Remove TARGET_CPU_ZARCH and
+        split_branches_pending_p usages.
+	(s390_option_override_internal): Remove TARGET_CPU_ZARCH
+        usages.
+	(s390_output_indirect_thunk_function): Likewise.
+	* config/s390/s390.h (TARGET_CPU_ZARCH): Removed.
+	(TARGET_CPU_ZARCH_P): Removed.
+	(struct machine_function): Remove split_branches_pending_p.
+	* config/s390/s390.md: Remove TARGET_CPU_ZARCH usages.
+
+2018-08-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* common/config/s390/s390-common.c (processor_flags_table):
+        Remove flags.
+	* config.gcc: Remove with_arch/with_tune support.
+	* config/s390/2064.md: Remove cpu attribute comparisons.
+	* config/s390/driver-native.c (s390_host_detect_local_cpu):
+        Remove MTN.
+	* config/s390/linux.h (ASM_SPEC):
+        Remove -march support.
+	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal):
+        Use a table to get an arch level.
+	* config/s390/s390-opts.h (enum processor_type):
+        Remove enum values.
+	* config/s390/s390.c
+        (processor_table): Remove entries, add arch_level values.
+        (s390_issue_rate): Remove cases.
+        (s390_option_override): Adjust
+        s390_option_override_internal() call.
+	(s390_option_override_internal): Remove deprecation warning.
+        (s390_valid_target_attribute_tree): Adjust
+        s390_option_override_internal() call.
+	* config/s390/s390.h (struct s390_processor):
+        Share with s390-c.c, add arch_level field.
+	* config/s390/s390.md:
+        Remove occurrences in cpu attribute.
+	* config/s390/s390.opt: Remove -march/-mtune support.
+	* config/s390/tpf.h (ASM_SPEC): Remove -march support.
+	* doc/invoke.texi: Remove deprecation warning.
+
+2018-08-08  Luis Machado  <luis.machado@linaro.org>
+
+	* config/aarch64/aarch64.c (qdf24xx_vector_cost): New static
+	global.
+	(qdf24xx_tunings): Set vector cost structure to
+	qdf24xx_vector_cost.
+
+	* config/aarch64/aarch64.c (qdf24xx_addrcost_table)
+	<register_sextend>: Set to 3.
+
+2018-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/86838
+	* config/aarch64/iterators.md (FRECP, frecp_suffix): Delete.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_frecp<FRECP:frecp_suffix><mode>): Fold FRECPE into...
+	(@aarch64_frecpe<mode>): ...here and the move FRECPX to...
+	(aarch64_frecpx<mode>): ...this new pattern.
+	* config/aarch64/aarch64-simd-builtins.def: Remove comment
+	about aarch64_frecp<FRECP:frecp_suffix><mode>.
+
+2018-08-07  Martin Liska  <mliska@suse.cz>
+
+        PR middle-end/83023
+	* predict.c (expr_expected_value_1): Handle DECL_IS_MALLOC,
+        BUILT_IN_REALLOC and DECL_IS_OPERATOR_NEW.
+	* predict.def (PRED_MALLOC_NONNULL): New predictor.
+	* doc/extend.texi: Document that malloc attribute adds
+        hit to compiler.
+
+2018-08-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/86785
+	* config/pa/pa.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
+2018-08-06  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (dom_opt_dom_walker::optimize_stmt): Pass down
+	the vr_values instance to cprop_into_stmt.
+	(cprop_into_stmt): Pass vr_values instance down to cprop_operand.
+	(cprop_operand): Also query EVRP to determine if OP is a constant.
+	
+2018-08-06  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostic.c (diagnostic_report_current_module): Reroll
+	included-at loop.  Translate text.
+
+2018-08-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* function-tests.c (selftest::test_expansion_to_rtl): Call
+	free_after_compilation.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* config/aarch64/aarch64.md: Add clobber highs to tls_desc.
+
+2018-08-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_loop_unroll_adjust): Prevent small
+	loops with memory block operations from getting unrolled.
+
+2018-08-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/86807
+	* config/spu/spu.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_safe_value_not_needed.
+
+2018-08-06  Jeff Law  <law@redhat.com>
+
+	* reload1.c (forget_old_reloads_1): Adjust CLOBBER_HIGH
+	assert.
+
 2018-08-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	PR target/86662

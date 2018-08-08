@@ -49,13 +49,38 @@
 #include <assert.h>
 #include <errno.h>
 
+#if CUDA_VERSION < 6000
+extern CUresult cuGetErrorString (CUresult, const char **);
+#define CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR 82
+#endif
+
+#if CUDA_VERSION >= 6050
+#undef cuLinkCreate
+#undef cuLinkAddData
+CUresult cuLinkAddData (CUlinkState, CUjitInputType, void *, size_t,
+			const char *, unsigned, CUjit_option *, void **);
+CUresult cuLinkCreate (unsigned, CUjit_option *, void **, CUlinkState *);
+#else
+CUresult cuLinkAddData_v2 (CUlinkState, CUjitInputType, void *, size_t,
+			   const char *, unsigned, CUjit_option *, void **);
+CUresult cuLinkCreate_v2 (unsigned, CUjit_option *, void **, CUlinkState *);
+#endif
+
+#define DO_PRAGMA(x) _Pragma (#x)
+
 #if PLUGIN_NVPTX_DYNAMIC
 # include <dlfcn.h>
 
-# define CUDA_ONE_CALL(call) \
-  __typeof (call) *call;
 struct cuda_lib_s {
+
+# define CUDA_ONE_CALL(call)			\
+  __typeof (call) *call;
+# define CUDA_ONE_CALL_MAYBE_NULL(call)		\
+  CUDA_ONE_CALL (call)
 #include "cuda-lib.def"
+# undef CUDA_ONE_CALL
+# undef CUDA_ONE_CALL_MAYBE_NULL
+
 } cuda_lib;
 
 /* -1 if init_cuda_lib has not been called yet, false
@@ -74,20 +99,30 @@ init_cuda_lib (void)
   cuda_lib_inited = false;
   if (h == NULL)
     return false;
-# undef CUDA_ONE_CALL
-# define CUDA_ONE_CALL(call) CUDA_ONE_CALL_1 (call)
-# define CUDA_ONE_CALL_1(call) \
+
+# define CUDA_ONE_CALL(call) CUDA_ONE_CALL_1 (call, false)
+# define CUDA_ONE_CALL_MAYBE_NULL(call) CUDA_ONE_CALL_1 (call, true)
+# define CUDA_ONE_CALL_1(call, allow_null)		\
   cuda_lib.call = dlsym (h, #call);	\
-  if (cuda_lib.call == NULL)		\
+  if (!allow_null && cuda_lib.call == NULL)		\
     return false;
 #include "cuda-lib.def"
+# undef CUDA_ONE_CALL
+# undef CUDA_ONE_CALL_1
+# undef CUDA_ONE_CALL_MAYBE_NULL
+
   cuda_lib_inited = true;
   return true;
 }
-# undef CUDA_ONE_CALL
-# undef CUDA_ONE_CALL_1
 # define CUDA_CALL_PREFIX cuda_lib.
 #else
+
+# define CUDA_ONE_CALL(call)
+# define CUDA_ONE_CALL_MAYBE_NULL(call) DO_PRAGMA (weak call)
+#include "cuda-lib.def"
+#undef CUDA_ONE_CALL_MAYBE_NULL
+#undef CUDA_ONE_CALL
+
 # define CUDA_CALL_PREFIX
 # define init_cuda_lib() true
 #endif
@@ -132,21 +167,23 @@ init_cuda_lib (void)
 #define CUDA_CALL_NOCHECK(FN, ...)		\
   CUDA_CALL_PREFIX FN (__VA_ARGS__)
 
+#define CUDA_CALL_EXISTS(FN)			\
+  CUDA_CALL_PREFIX FN
+
 static const char *
 cuda_error (CUresult r)
 {
-#if CUDA_VERSION < 7000
-  /* Specified in documentation and present in library from at least
-     5.5.  Not declared in header file prior to 7.0.  */
-  extern CUresult cuGetErrorString (CUresult, const char **);
-#endif
+  const char *fallback = "unknown cuda error";
   const char *desc;
 
-  r = CUDA_CALL_NOCHECK (cuGetErrorString, r, &desc);
-  if (r != CUDA_SUCCESS)
-    desc = "unknown cuda error";
+  if (!CUDA_CALL_EXISTS (cuGetErrorString))
+    return fallback;
 
-  return desc;
+  r = CUDA_CALL_NOCHECK (cuGetErrorString, r, &desc);
+  if (r == CUDA_SUCCESS)
+    return desc;
+
+  return fallback;
 }
 
 static unsigned int instantiated_devices = 0;
@@ -721,9 +758,11 @@ nvptx_open_device (int n)
 		  &pi, CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_BLOCK, dev);
   ptx_dev->regs_per_block = pi;
 
-  /* CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR = 82 is defined only
+  /* CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR is defined only
      in CUDA 6.0 and newer.  */
-  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi, 82, dev);
+  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+			 CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR,
+			 dev);
   /* Fallback: use limit of registers per block, which is usually equal.  */
   if (r == CUDA_ERROR_INVALID_VALUE)
     pi = ptx_dev->regs_per_block;
@@ -911,16 +950,24 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
       nopts++;
     }
 
-  CUDA_CALL (cuLinkCreate, nopts, opts, optvals, &linkstate);
+  if (CUDA_CALL_EXISTS (cuLinkCreate_v2))
+    CUDA_CALL (cuLinkCreate_v2, nopts, opts, optvals, &linkstate);
+  else
+    CUDA_CALL (cuLinkCreate, nopts, opts, optvals, &linkstate);
 
   for (; num_objs--; ptx_objs++)
     {
       /* cuLinkAddData's 'data' argument erroneously omits the const
 	 qualifier.  */
       GOMP_PLUGIN_debug (0, "Loading:\n---\n%s\n---\n", ptx_objs->code);
-      r = CUDA_CALL_NOCHECK (cuLinkAddData, linkstate, CU_JIT_INPUT_PTX,
-			     (char *) ptx_objs->code, ptx_objs->size,
-			     0, 0, 0, 0);
+      if (CUDA_CALL_EXISTS (cuLinkAddData_v2))
+	r = CUDA_CALL_NOCHECK (cuLinkAddData_v2, linkstate, CU_JIT_INPUT_PTX,
+			       (char *) ptx_objs->code, ptx_objs->size,
+			       0, 0, 0, 0);
+      else
+	r = CUDA_CALL_NOCHECK (cuLinkAddData, linkstate, CU_JIT_INPUT_PTX,
+			       (char *) ptx_objs->code, ptx_objs->size,
+			       0, 0, 0, 0);
       if (r != CUDA_SUCCESS)
 	{
 	  GOMP_PLUGIN_error ("Link error log %s\n", &elog[0]);

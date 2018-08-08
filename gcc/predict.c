@@ -2380,6 +2380,14 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		}
 	      return NULL;
 	    }
+
+	  if (DECL_IS_MALLOC (decl) || DECL_IS_OPERATOR_NEW (decl))
+	    {
+	      if (predictor)
+		*predictor = PRED_MALLOC_NONNULL;
+	      return boolean_true_node;
+	    }
+
 	  if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
 	    switch (DECL_FUNCTION_CODE (decl))
 	      {
@@ -2413,6 +2421,10 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		   and thus the compare-and-swap operation succeeds.  */
 		if (predictor)
 		  *predictor = PRED_COMPARE_AND_SWAP;
+		return boolean_true_node;
+	      case BUILT_IN_REALLOC:
+		if (predictor)
+		  *predictor = PRED_MALLOC_NONNULL;
 		return boolean_true_node;
 	      default:
 		break;

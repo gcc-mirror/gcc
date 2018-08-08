@@ -2627,13 +2627,29 @@ check_local_shadow (tree decl)
 		  || TREE_CODE (decl) == TYPE_DECL)))
       && DECL_FUNCTION_SCOPE_P (old)
       && (!DECL_ARTIFICIAL (decl)
+	  || is_capture_proxy (decl)
 	  || DECL_IMPLICIT_TYPEDEF_P (decl)
 	  || (VAR_P (decl) && DECL_ANON_UNION_VAR_P (decl))))
     {
       /* DECL shadows a local thing possibly of interest.  */
 
+      /* DR 2211: check that captures and parameters
+	 do not have the same name. */
+      if (is_capture_proxy (decl))
+	{
+	  if (current_lambda_expr ()
+	      && DECL_CONTEXT (old) == lambda_function (current_lambda_expr ())
+	      && TREE_CODE (old) == PARM_DECL
+	      && DECL_NAME (decl) != this_identifier)
+	    {
+	      error_at (DECL_SOURCE_LOCATION (old),
+			"lambda parameter %qD "
+			"previously declared as a capture", old);
+	    }
+	  return;
+	}
       /* Don't complain if it's from an enclosing function.  */
-      if (DECL_CONTEXT (old) == current_function_decl
+      else if (DECL_CONTEXT (old) == current_function_decl
 	  && TREE_CODE (decl) != PARM_DECL
 	  && TREE_CODE (old) == PARM_DECL)
 	{

@@ -506,6 +506,20 @@ namespace __variant
 	  }
       }
 
+      void _M_destructive_move(_Move_ctor_base&& __rhs)
+      {
+	this->~_Move_ctor_base();
+	__try
+	  {
+	    ::new (this) _Move_ctor_base(std::move(__rhs));
+	  }
+	__catch (...)
+	  {
+	    this->_M_index = variant_npos;
+	    __throw_exception_again;
+	  }
+      }
+
       _Move_ctor_base(const _Move_ctor_base&) = default;
       _Move_ctor_base& operator=(const _Move_ctor_base&) = default;
       _Move_ctor_base& operator=(_Move_ctor_base&&) = default;
@@ -516,6 +530,12 @@ namespace __variant
     {
       using _Base = _Copy_ctor_alias<_Types...>;
       using _Base::_Base;
+
+      void _M_destructive_move(_Move_ctor_base&& __rhs)
+      {
+	this->~_Move_ctor_base();
+	::new (this) _Move_ctor_base(std::move(__rhs));
+      }
     };
 
   template<typename... _Types>
@@ -538,22 +558,14 @@ namespace __variant
 	      {
 		static constexpr void (*_S_vtable[])(void*, void*) =
 		  { &__erased_assign<_Types&, const _Types&>... };
-		_S_vtable[__rhs._M_index](this->_M_storage(), __rhs._M_storage());
+		_S_vtable[__rhs._M_index](this->_M_storage(),
+					  __rhs._M_storage());
 	      }
 	  }
 	else
 	  {
 	    _Copy_assign_base __tmp(__rhs);
-	    this->~_Copy_assign_base();
-	    __try
-	      {
-		::new (this) _Copy_assign_base(std::move(__tmp));
-	      }
-	    __catch (...)
-	      {
-		this->_M_index = variant_npos;
-		__throw_exception_again;
-	      }
+	    this->_M_destructive_move(std::move(__tmp));
 	  }
 	__glibcxx_assert(this->_M_index == __rhs._M_index);
 	return *this;
@@ -582,20 +594,6 @@ namespace __variant
       using _Base = _Copy_assign_alias<_Types...>;
       using _Base::_Base;
 
-      void _M_destructive_move(_Move_assign_base&& __rhs)
-      {
-	this->~_Move_assign_base();
-	__try
-	  {
-	    ::new (this) _Move_assign_base(std::move(__rhs));
-	  }
-	__catch (...)
-	  {
-	    this->_M_index = variant_npos;
-	    __throw_exception_again;
-	  }
-      }
-
       _Move_assign_base&
       operator=(_Move_assign_base&& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_move_assign)
@@ -613,16 +611,7 @@ namespace __variant
 	else
 	  {
 	    _Move_assign_base __tmp(std::move(__rhs));
-	    this->~_Move_assign_base();
-	    __try
-	      {
-		::new (this) _Move_assign_base(std::move(__tmp));
-	      }
-	    __catch (...)
-	      {
-		this->_M_index = variant_npos;
-		__throw_exception_again;
-	      }
+	    this->_M_destructive_move(std::move(__tmp));
 	  }
 	__glibcxx_assert(this->_M_index == __rhs._M_index);
 	return *this;

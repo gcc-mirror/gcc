@@ -1,3 +1,72 @@
+2018-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	P0595R1 - is_constant_evaluated
+	* cp-tree.h (enum cp_built_in_function): New.
+	(maybe_constant_init): Add pretend_const_required argument.
+	* typeck2.c (store_init_value): Pass true as new argument to
+	maybe_constant_init.
+	* constexpr.c (constexpr_fn_retval): Check also DECL_BUILT_IN_CLASS
+	for BUILT_IN_UNREACHABLE.
+	(struct constexpr_ctx): Add pretend_const_required field.
+	(cxx_eval_builtin_function_call): Use DECL_IS_BUILTIN_CONSTANT_P
+	macro.  Handle CP_BUILT_IN_IS_CONSTANT_EVALUATED.  Check also
+	DECL_BUILT_IN_CLASS for BUILT_IN_UNREACHABLE.
+	(cxx_eval_outermost_constant_expr): Add pretend_const_required
+	argument, initialize pretend_const_required field in ctx.  If the
+	result is TREE_CONSTANT and non_constant_p, retry with
+	pretend_const_required false if it was true.
+	(is_sub_constant_expr): Initialize pretend_const_required_field in
+	ctx.
+	(cxx_constant_value): Pass true as pretend_const_required to
+	cxx_eval_outermost_constant_expr.
+	(maybe_constant_value): Pass false as pretend_const_required to
+	cxx_eval_outermost_constant_expr.
+	(fold_non_dependent_expr): Likewise.
+	(maybe_constant_init_1): Add pretend_const_required argument, pass it
+	down to cxx_eval_outermost_constant_expr.  Pass !allow_non_constant
+	instead of false as strict to cxx_eval_outermost_constant_expr.
+	(maybe_constant_init): Add pretend_const_required argument, pass it
+	down to maybe_constant_init_1.
+	(cxx_constant_init): Pass true as pretend_const_required to
+	maybe_constant_init_1.
+	* cp-gimplify.c (cp_gimplify_expr): Handle CALL_EXPRs to
+	CP_BUILT_IN_IS_CONSTANT_EVALUATED.
+	(cp_fold): Don't fold CP_BUILT_IN_IS_CONSTANT_EVALUATED calls.
+	* decl.c: Include langhooks.h.
+	(cxx_init_decl_processing): Register __builtin_is_constant_evaluated
+	built-in.
+	* tree.c (builtin_valid_in_constant_expr_p): Return true for
+	CP_BUILT_IN_IS_CONSTANT_EVALUATED.
+	* pt.c (declare_integer_pack): Initialize DECL_FUNCTION_CODE.
+
+	PR c++/86836
+	* pt.c (tsubst_expr): For structured bindings, call tsubst_decomp_names
+	before tsubst_init, not after it.
+
+	PR c++/86738
+	* constexpr.c (cxx_eval_binary_expression): For arithmetics involving
+	NULL pointer set *non_constant_p to true.
+	(cxx_eval_component_reference): For dereferencing of a NULL pointer,
+	set *non_constant_p to true and return t.
+
+2018-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* decl.c (check_no_redeclaration_friend_default_args): New.
+	(duplicate_decls): Use the latter; also check that a friend
+	declaration specifying default arguments is a definition.
+
+2018-08-07  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/79133
+	* name-lookup.c (check_local_shadow): Reject captures and parameters
+	with the same name.
+
+2018-08-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86767
+	* constexpr.c (cxx_eval_statement_list): Handle continue.
+
 2018-08-03  David Malcolm  <dmalcolm@redhat.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

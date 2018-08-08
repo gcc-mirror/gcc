@@ -1,3 +1,70 @@
+2018-08-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h
+	(__rotate(_Ite, _Ite, _Ite, forward_iterator_tag))
+	(__rotate(_Ite, _Ite, _Ite, bidirectional_iterator_tag))
+	(__rotate(_Ite, _Ite, _Ite, random_access_iterator_tag)): Move code duplication...
+	(rotate(_Ite, _Ite, _Ite)): ...here.
+	(__stable_partition_adaptive(_FIt, _FIt, _Pred, _Dist, _Pointer, _Dist)):
+	Simplify rotate call.
+	(__rotate_adaptive(_BIt1, _BIt1, _BIt1, _Dist, _Dist, _Bit2, _Dist)):
+	Likewise.
+	(__merge_without_buffer(_BIt, _BIt, _BIt, _Dist, _Dist, _Comp)):
+	Likewise.
+
+2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new_opa.cc (aligned_alloc): Declare inside namespace to
+	avoid clashing with an ::aligned_alloc function that was not detected
+	by configure.
+
+	* doc/xml/manual/using.xml: Fix markup for empty table entry.
+	* doc/html/*: Regenerate.
+
+	* doc/xml/manual/using.xml: Add missing header to table and fix typo.
+	* doc/html/*: Regenerate.
+
+	PR libstdc++/86597
+	* include/bits/fs_dir.h (directory_entry::_M_file_type(error_code&)):
+	Clear error_code when cached type is used.
+	* testsuite/27_io/filesystem/directory_entry/86597.cc: New test.
+
+2018-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86874
+	* include/std/variant (_Copy_ctor_base::_M_destructive_move): Define
+	here instead of in _Move_assign_base.
+	(_Copy_ctor_base<true, _Types...>::_M_destructive_move): Define.
+	(_Copy_assign_base::operator=): Use _M_destructive_move when changing
+	the contained value to another alternative.
+	(_Move_assign_base::operator=): Likewise.
+	(_Move_assign_base::_M_destructive_move): Remove.
+	* testsuite/20_util/variant/86874.cc: New test.
+
+	PR libstdc++/86861
+	* libsupc++/new_opa.cc [_GLIBCXX_HAVE_MEMALIGN] (aligned_alloc):
+	Replace macro with inline function.
+	[__sun]: Increase alignment to meet memalign precondition.
+	[!HAVE__ALIGNED_MALLOC && !HAVE_POSIX_MEMALIGN && !HAVE_MEMALIGN]
+	(aligned_alloc): Move check for valid alignment to operator new.
+	Remove redundant check for non-zero size, it's enforced by the caller.
+	(operator new): Move check for valid alignment here. Use
+	__builtin_expect on check for zero size.
+
+	* config/abi/pre/gnu.ver: Export monotonic_buffer_resource members.
+	* include/std/memory_resource (monotonic_buffer_resource::release):
+	Call _M_release_buffers to free buffers.
+	(monotonic_buffer_resource::do_allocate): Call _M_new_buffer to
+	allocate a new buffer from upstream.
+	(monotonic_buffer_resource::_M_new_buffer): Declare.
+	(monotonic_buffer_resource::_M_release_buffers): Declare.
+	(monotonic_buffer_resource::_Chunk): Replace definition with
+	declaration as opaque type.
+	* src/c++17/memory_resource.cc (monotonic_buffer_resource::_Chunk):
+	Define.
+	(monotonic_buffer_resource::_M_new_buffer): Define.
+	(monotonic_buffer_resource::_M_release_buffers): Define.
+
 2018-08-05  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_iterator.h: Fix comment.

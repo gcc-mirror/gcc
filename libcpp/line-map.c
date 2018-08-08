@@ -346,8 +346,8 @@ linemap_init (struct line_maps *set,
 #else
   new (set) line_maps();
 #endif
-  /* Set default allocator.  */
-  set->reallocator = (line_map_realloc) xrealloc;
+  /* Set default reallocator (used for initial alloc too).  */
+  set->reallocator = xrealloc;
   set->highest_location = RESERVED_LOCATION_COUNT - 1;
   set->highest_line = RESERVED_LOCATION_COUNT - 1;
   set->location_adhoc_data_map.htab =
@@ -356,12 +356,12 @@ linemap_init (struct line_maps *set,
 }
 
 /* Return the ordinary line map from whence MAP was included.  Returns
-   NULL if MAP was not an included.  */
+   NULL if MAP was not an include.  */
 
 const line_map_ordinary *
-linemap_included_at (line_maps *set, const line_map_ordinary *map)
+linemap_included_from_linemap (line_maps *set, const line_map_ordinary *map)
 {
-  return linemap_ordinary_map_lookup (set, INCLUDED_AT (map));
+  return linemap_ordinary_map_lookup (set, linemap_included_from (map));
 }
 
 /* Check for and warn about line_maps entered but not exited.  */
@@ -373,7 +373,7 @@ linemap_check_files_exited (struct line_maps *set)
      not, this can be a user error or an ICE.  */
   for (const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (set);
        ! MAIN_FILE_P (map);
-       map = linemap_included_at (set, map))
+       map = linemap_included_from_linemap (set, map))
     fprintf (stderr, "line-map.c: file \"%s\" entered but not left\n",
 	     ORDINARY_MAP_FILE_NAME (map));
 }
@@ -387,26 +387,26 @@ static struct line_map *
 new_linemap (struct line_maps *set,  source_location start_location)
 {
   bool macro_p = start_location >= LINE_MAP_MAX_LOCATION;
-  unsigned alloc = LINEMAPS_ALLOCATED (set, macro_p);
-  unsigned used = LINEMAPS_USED (set, macro_p);
+  unsigned num_maps_allocated = LINEMAPS_ALLOCATED (set, macro_p);
+  unsigned num_maps_used = LINEMAPS_USED (set, macro_p);
 
-  if (used == alloc)
+  if (num_maps_used == num_maps_allocated)
     {
       /* We need more space!  */
-      if (!alloc)
-	alloc = 128;
-      alloc *= 2;
+      if (!num_maps_allocated)
+	num_maps_allocated = 128;
+      num_maps_allocated *= 2;
 
-      size_t map_size;
+      size_t size_of_a_map;
       void *buffer;
       if (macro_p)
 	{
-	  map_size = sizeof (line_map_macro);
+	  size_of_a_map = sizeof (line_map_macro);
 	  buffer = set->info_macro.maps;
 	}
       else
 	{
-	  map_size = sizeof (line_map_ordinary);
+	  size_of_a_map = sizeof (line_map_ordinary);
 	  buffer = set->info_ordinary.maps;
 	}
 
@@ -417,15 +417,16 @@ new_linemap (struct line_maps *set,  source_location start_location)
 	 The actual size of memory we are going to get back from the
 	 allocator may well be larger than what we ask for.  Use this
 	 hook to find what that size is.  */
-      size_t alloc_size = set->round_alloc_size (alloc * map_size);
+      size_t alloc_size
+	= set->round_alloc_size (num_maps_allocated * size_of_a_map);
 
       /* Now alloc_size contains the exact memory size we would get if
 	 we have asked for the initial alloc_size amount of memory.
-	 Let's get back to the number of macro map that amounts
-	 to.  */
-      unsigned num_maps = alloc_size / map_size;
-      buffer = set->reallocator (buffer, num_maps * map_size);
-      memset ((char *)buffer + used * map_size, 0, (num_maps - used) * map_size);
+	 Let's get back to the number of map that amounts to.  */
+      unsigned num_maps = alloc_size / size_of_a_map;
+      buffer = set->reallocator (buffer, num_maps * size_of_a_map);
+      memset ((char *)buffer + num_maps_used * size_of_a_map, 0,
+	      (num_maps - num_maps_used) * size_of_a_map);
       if (macro_p)
 	set->info_macro.maps = (line_map_macro *)buffer;
       else
@@ -433,8 +434,8 @@ new_linemap (struct line_maps *set,  source_location start_location)
       LINEMAPS_ALLOCATED (set, macro_p) = num_maps;
     }
 
-  line_map *result = (macro_p ? (line_map *)&set->info_macro.maps[used]
-		      : (line_map *)&set->info_ordinary.maps[used]);
+  line_map *result = (macro_p ? (line_map *)&set->info_macro.maps[num_maps_used]
+		      : (line_map *)&set->info_ordinary.maps[num_maps_used]);
   LINEMAPS_USED (set, macro_p)++;
 
   result->start_location = start_location;
@@ -524,7 +525,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
       /* (MAP - 1) points to the map we are leaving. The
 	 map from which (MAP - 1) got included should be the map
 	 that comes right before MAP in the same file.  */
-      from = linemap_included_at (set, map - 1);
+      from = linemap_included_from_linemap (set, map - 1);
 
       /* A TO_FILE of NULL is special - we use the natural values.  */
       if (to_file == NULL)
@@ -557,19 +558,23 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   if (reason == LC_ENTER)
     {
       if (set->depth == 0)
-	map->included_at = 0;
+	map->included_from = 0;
       else
-	map->included_at = LAST_SOURCE_LINE_LOCATION (map - 1);
+	/* The location of the end of the just-closed map.  */
+	map->included_from
+	  = (((map[0].start_location - 1 - map[-1].start_location)
+	      & ~((1 << map[-1].m_column_and_range_bits) - 1))
+	     + map[-1].start_location);
       set->depth++;
       if (set->trace_includes)
 	trace_include (set, map);
     }
   else if (reason == LC_RENAME)
-    map->included_at = INCLUDED_AT (&map[-1]);
+    map->included_from = linemap_included_from (&map[-1]);
   else if (reason == LC_LEAVE)
     {
       set->depth--;
-      map->included_at = INCLUDED_AT (from);
+      map->included_from = linemap_included_from (from);
     }
 
   return map;
@@ -1780,7 +1785,8 @@ linemap_dump (FILE *stream, struct line_maps *set, unsigned ix, bool is_macro)
   if (!is_macro)
     {
       const line_map_ordinary *ord_map = linemap_check_ordinary (map);
-      const line_map_ordinary *includer_map = linemap_included_at (set, ord_map);
+      const line_map_ordinary *includer_map
+	= linemap_included_from_linemap (set, ord_map);
 
       fprintf (stream, "File: %s:%d\n", ORDINARY_MAP_FILE_NAME (ord_map),
 	       ORDINARY_MAP_STARTING_LINE_NUMBER (ord_map));
@@ -1836,7 +1842,8 @@ linemap_dump_location (struct line_maps *set,
 	from = "N/A";
       else
 	{
-	  const line_map_ordinary *from_map = linemap_included_at (set, map);
+	  const line_map_ordinary *from_map
+	    = linemap_included_from_linemap (set, map);
 	  from = from_map ? LINEMAP_FILE (from_map) : "<NULL>";
 	}
     }

@@ -5879,21 +5879,22 @@
 
 
 (define_insn "@aarch64_frecpe<mode>"
-  [(set (match_operand:VHSDF 0 "register_operand" "=w")
-	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")]
+  [(set (match_operand:VHSDF_HSDF 0 "register_operand" "=w")
+	(unspec:VHSDF_HSDF
+	 [(match_operand:VHSDF_HSDF 1 "register_operand" "w")]
 	 UNSPEC_FRECPE))]
   "TARGET_SIMD"
-  "frecpe\\t%0.<Vtype>, %1.<Vtype>"
+  "frecpe\t%<v>0<Vmtype>, %<v>1<Vmtype>"
   [(set_attr "type" "neon_fp_recpe_<stype><q>")]
 )
 
-(define_insn "aarch64_frecp<FRECP:frecp_suffix><mode>"
+(define_insn "aarch64_frecpx<mode>"
   [(set (match_operand:GPF_F16 0 "register_operand" "=w")
 	(unspec:GPF_F16 [(match_operand:GPF_F16 1 "register_operand" "w")]
-	 FRECP))]
+	 UNSPEC_FRECPX))]
   "TARGET_SIMD"
-  "frecp<FRECP:frecp_suffix>\\t%<s>0, %<s>1"
-  [(set_attr "type" "neon_fp_recp<FRECP:frecp_suffix>_<GPF_F16:stype>")]
+  "frecpx\t%<s>0, %<s>1"
+  [(set_attr "type" "neon_fp_recpx_<GPF_F16:stype>")]
 )
 
 (define_insn "@aarch64_frecps<mode>"

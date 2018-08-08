@@ -8414,7 +8414,7 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
 	= LINEMAPS_ORDINARY_MAP_AT (line_table, i);
 
       if (const line_map_ordinary *from
-	  = linemap_included_at (line_table, ord_map))
+	  = linemap_included_from_linemap (line_table, ord_map))
 	if (from->to_file == file)
 	  {
 	    last_include_ord_map = from;

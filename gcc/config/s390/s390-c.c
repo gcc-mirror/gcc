@@ -335,15 +335,8 @@ s390_cpu_cpp_builtins_internal (cpp_reader *pfile,
 			   "__bool");
   {
     char macro_def[64];
-    int arch_level;
     gcc_assert (s390_arch != PROCESSOR_NATIVE);
-    arch_level = (int)s390_arch + 3;
-    if (s390_arch >= PROCESSOR_2094_Z9_EC)
-      /* Z9_EC has the same level as Z9_109.  */
-      arch_level--;
-    /* Review when a new arch is added and increase the value.  */
-    char dummy[(PROCESSOR_max > 12) ? -1 : 1] __attribute__((unused));
-    sprintf (macro_def, "__ARCH__=%d", arch_level);
+    sprintf (macro_def, "__ARCH__=%d", processor_table[s390_arch].arch_level);
     cpp_undef (pfile, "__ARCH__");
     cpp_define (pfile, macro_def);
   }

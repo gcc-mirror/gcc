@@ -14840,7 +14840,7 @@ performance of the code.  Permissible values for this option are:
 @samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{exynos-m1}, @samp{falkor}, @samp{qdf24xx},
-@samp{saphira}, @samp{xgene1}, @samp{vulcan}, @samp{thunderx},
+@samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan}, @samp{thunderx},
 @samp{thunderxt88}, @samp{thunderxt88p1}, @samp{thunderxt81},
 @samp{thunderxt83}, @samp{thunderx2t99}, @samp{cortex-a57.cortex-a53},
 @samp{cortex-a72.cortex-a53}, @samp{cortex-a73.cortex-a35},
@@ -24857,8 +24857,7 @@ system representing a certain processor type.  Possible values for
 @samp{z196}/@samp{arch9}, @samp{zEC12}, @samp{z13}/@samp{arch11}, and
 @samp{native}.
 
-The default is @option{-march=z900}.  @samp{g5}/@samp{arch3} and
-@samp{g6} are deprecated and will be removed with future releases.
+The default is @option{-march=z900}.
 
 Specifying @samp{native} as cpu type can be used to select the best
 architecture option for the host processor.

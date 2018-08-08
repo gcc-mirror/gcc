@@ -20,16 +20,14 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef S390_OPTS_H
 #define S390_OPTS_H
 
-/* Which processor to generate code or schedule for. The cpu attribute
+/* Which processor to generate code or schedule for. The `cpu' attribute
    defines a list that mirrors this list, so changes to s390.md must be
-   made at the same time.  The enumeration must also be kept in snyc with
-   processor_table in s390.c (the enumeration values are used as indices into
-   the table).  */
+   made at the same time.  The enumeration must also be kept in sync with
+   `processor_table' and `processor_flags_table' in s390.c (the enumeration
+   values are used as indices into these tables).  */
 
 enum processor_type
 {
-  PROCESSOR_9672_G5,
-  PROCESSOR_9672_G6,
   PROCESSOR_2064_Z900,
   PROCESSOR_2084_Z990,
   PROCESSOR_2094_Z9_109,
