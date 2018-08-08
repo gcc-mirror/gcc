@@ -1,3 +1,8 @@
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (cuda_error): Move declaration of cuGetErrorString ...
+	(cuGetErrorString): ... here.  Guard with CUDA_VERSION < 6000.
+
 2018-08-07  Tom de Vries  <tdevries@suse.de>
 
 	* plugin/plugin-nvptx.c (DO_PRAGMA): Define.
