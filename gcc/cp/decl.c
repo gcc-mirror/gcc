@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "asan.h"
 #include "gcc-rich-location.h"
+#include "langhooks.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -4171,6 +4172,13 @@ cxx_init_decl_processing (void)
   flag_noexcept_type = (cxx_dialect >= cxx17);
 
   c_common_nodes_and_builtins ();
+
+  tree bool_ftype = build_function_type_list (boolean_type_node, NULL_TREE);
+  tree decl
+    = add_builtin_function ("__builtin_is_constant_evaluated",
+			    bool_ftype, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
+			    BUILT_IN_FRONTEND, NULL, NULL_TREE);
+  set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
   integer_two_node = build_int_cst (NULL_TREE, 2);
 
