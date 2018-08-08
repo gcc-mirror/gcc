@@ -401,19 +401,17 @@ Unless specified otherwise below, they are also available in later modes
 <table frame="all" xml:id="table.cxx17_headers">
 <title>C++ 2017 Library Headers</title>
 
-<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<tgroup cols="4" align="left" colsep="1" rowsep="1">
 <colspec colname="c1"/>
 <colspec colname="c2"/>
 <colspec colname="c3"/>
 <colspec colname="c4"/>
-<colspec colname="c5"/>
 <tbody>
 <row>
 <entry><filename class="headerfile">any</filename></entry>
 <entry><filename class="headerfile">optional</filename></entry>
 <entry><filename class="headerfile">string_view</filename></entry>
 <entry><filename class="headerfile">variant</filename></entry>
-<entry />
 </row>
 </tbody>
 </tgroup>

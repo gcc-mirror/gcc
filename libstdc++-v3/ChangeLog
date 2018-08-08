@@ -1,5 +1,8 @@
 2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/using.xml: Remove empty table cell.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/using.xml: Add missing header to table and fix typo.
 	Remove C++17 and C++2a headers not present on gcc-7-branch.
 	* doc/html/*: Regenerate.
