@@ -161,13 +161,17 @@ init_cuda_lib (void)
 static const char *
 cuda_error (CUresult r)
 {
+  const char *fallback = "unknown cuda error";
   const char *desc;
 
-  r = CUDA_CALL_NOCHECK (cuGetErrorString, r, &desc);
-  if (r != CUDA_SUCCESS)
-    desc = "unknown cuda error";
+  if (!CUDA_CALL_EXISTS (cuGetErrorString))
+    return fallback;
 
-  return desc;
+  r = CUDA_CALL_NOCHECK (cuGetErrorString, r, &desc);
+  if (r == CUDA_SUCCESS)
+    return desc;
+
+  return fallback;
 }
 
 static unsigned int instantiated_devices = 0;
