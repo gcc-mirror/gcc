@@ -1,6 +1,7 @@
 2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/using.xml: Add missing header to table and fix typo.
+	Remove C++17 headers not present on gcc-8-branch.
 	* doc/html/*: Regenerate.
 
 2018-08-07  Jonathan Wakely  <jwakely@redhat.com>

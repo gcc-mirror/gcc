@@ -413,15 +413,13 @@ Unless specified otherwise below, they are also available in later modes
 <row>
 <entry><filename class="headerfile">any</filename></entry>
 <entry><filename class="headerfile">charconv</filename></entry>
-<entry><filename class="headerfile">execution</filename></entry>
 <entry><filename class="headerfile">filesystem</filename></entry>
-<entry><filename class="headerfile">memory_resource</filename></entry>
-</row>
-<row>
 <entry><filename class="headerfile">optional</filename></entry>
 <entry><filename class="headerfile">string_view</filename></entry>
+</row>
+<row>
 <entry><filename class="headerfile">variant</filename></entry>
-<entry namest="c4" nameend="c5"/>
+<entry namest="c2" nameend="c5"/>
 </row>
 </tbody>
 </tgroup>
@@ -574,7 +572,7 @@ compilation errors, but will not define anything.
 <entry><filename class="headerfile">experimental/unordered_set</filename></entry>
 <entry><filename class="headerfile">experimental/utility</filename></entry>
 <entry><filename class="headerfile">experimental/vector</filename></entry>
-<entry namest="c4" nameend="c5"/>
+<entry />
 </row>
 </tbody>
 </tgroup>
