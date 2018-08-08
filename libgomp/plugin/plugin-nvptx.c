@@ -54,6 +54,18 @@ extern CUresult cuGetErrorString (CUresult, const char **);
 #define CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR 82
 #endif
 
+#if CUDA_VERSION >= 6050
+#undef cuLinkCreate
+#undef cuLinkAddData
+CUresult cuLinkAddData (CUlinkState, CUjitInputType, void *, size_t,
+			const char *, unsigned, CUjit_option *, void **);
+CUresult cuLinkCreate (unsigned, CUjit_option *, void **, CUlinkState *);
+#else
+CUresult cuLinkAddData_v2 (CUlinkState, CUjitInputType, void *, size_t,
+			   const char *, unsigned, CUjit_option *, void **);
+CUresult cuLinkCreate_v2 (unsigned, CUjit_option *, void **, CUlinkState *);
+#endif
+
 #define DO_PRAGMA(x) _Pragma (#x)
 
 #if PLUGIN_NVPTX_DYNAMIC
@@ -938,16 +950,24 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
       nopts++;
     }
 
-  CUDA_CALL (cuLinkCreate, nopts, opts, optvals, &linkstate);
+  if (CUDA_CALL_EXISTS (cuLinkCreate_v2))
+    CUDA_CALL (cuLinkCreate_v2, nopts, opts, optvals, &linkstate);
+  else
+    CUDA_CALL (cuLinkCreate, nopts, opts, optvals, &linkstate);
 
   for (; num_objs--; ptx_objs++)
     {
       /* cuLinkAddData's 'data' argument erroneously omits the const
 	 qualifier.  */
       GOMP_PLUGIN_debug (0, "Loading:\n---\n%s\n---\n", ptx_objs->code);
-      r = CUDA_CALL_NOCHECK (cuLinkAddData, linkstate, CU_JIT_INPUT_PTX,
-			     (char *) ptx_objs->code, ptx_objs->size,
-			     0, 0, 0, 0);
+      if (CUDA_CALL_EXISTS (cuLinkAddData_v2))
+	r = CUDA_CALL_NOCHECK (cuLinkAddData_v2, linkstate, CU_JIT_INPUT_PTX,
+			       (char *) ptx_objs->code, ptx_objs->size,
+			       0, 0, 0, 0);
+      else
+	r = CUDA_CALL_NOCHECK (cuLinkAddData, linkstate, CU_JIT_INPUT_PTX,
+			       (char *) ptx_objs->code, ptx_objs->size,
+			       0, 0, 0, 0);
       if (r != CUDA_SUCCESS)
 	{
 	  GOMP_PLUGIN_error ("Link error log %s\n", &elog[0]);
