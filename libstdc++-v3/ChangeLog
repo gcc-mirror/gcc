@@ -1,5 +1,8 @@
 2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/using.xml: Fix markup for empty table entry.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/using.xml: Add missing header to table and fix typo.
 	* doc/html/*: Regenerate.
 
