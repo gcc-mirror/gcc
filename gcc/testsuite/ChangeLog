@@ -1,3 +1,8 @@
+2018-08-08  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/46179
+	* gcc.target/m68k/tls-dimode.c: New file.
+
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
 	* c-c++-common/inc-from-1a.h, c-c++-common/inc-from-1b.h,

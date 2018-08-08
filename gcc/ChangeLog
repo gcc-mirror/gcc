@@ -1,3 +1,15 @@
+2018-08-08  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/46179
+	* config/m68k/m68k.h (FINAL_PRESCAN_INSN): Don't define.
+	* config/m68k/m68k.c (handle_move_double): Don't call
+	m68k_final_prescan_insn.
+	(m68k_adjust_decorated_operand): Renamed from
+	m68k_final_prescan_insn, remove first and third operand and
+	simplify.
+	(print_operand): Call it.
+	(print_operand_address): Call it.
+
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
 	* diagnostic.c (diagnostic_report_current_module): Use
