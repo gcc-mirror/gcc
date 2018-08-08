@@ -574,7 +574,7 @@ compilation errors, but will not define anything.
 <entry><filename class="headerfile">experimental/unordered_set</filename></entry>
 <entry><filename class="headerfile">experimental/utility</filename></entry>
 <entry><filename class="headerfile">experimental/vector</filename></entry>
-<entry namest="c4" nameend="c5"/>
+<entry />
 </row>
 </tbody>
 </tgroup>
