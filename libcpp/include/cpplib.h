@@ -671,6 +671,78 @@ struct cpp_dir
   dev_t dev;
 };
 
+/* The kind of the cpp_macro.  */
+enum cpp_macro_kind {
+  cmk_macro,	/* An ISO macro (token expansion).  */
+  cmk_assert,   /* An assertion.  */
+  cmk_traditional,	/* A traditional macro (text expansion).  */
+};
+
+/* Each macro definition is recorded in a cpp_macro structure.
+   Variadic macros cannot occur with traditional cpp.  */
+struct GTY(()) cpp_macro {
+  union cpp_parm_u 
+  {
+    /* Parameters, if any.  If parameter names use extended identifiers,
+       the original spelling of those identifiers, not the canonical
+       UTF-8 spelling, goes here.  */
+    cpp_hashnode ** GTY ((tag ("false"),
+			  nested_ptr (union tree_node,
+	"%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
+	"%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL"),
+			  length ("%1.paramc"))) params;
+
+    /* If this is an assertion, the next one in the chain.  */
+    cpp_macro *GTY ((tag ("true"))) next;
+  } GTY ((desc ("%1.kind == cmk_assert"))) parm;
+
+  /* Definition line number.  */
+  source_location line;
+
+  /* Number of tokens in body, or bytes for traditional macros.  */
+  /* Do we really need 2^32-1 range here?  */
+  unsigned int count;
+
+  /* Number of parameters.  */
+  unsigned short paramc;
+
+  /* Non-zero if this is a user-lazy macro, value provided by user.  */
+  unsigned char lazy;
+
+  /* The kind of this macro (ISO, trad or assert) */
+  unsigned kind : 2;
+
+  /* If a function-like macro.  */
+  unsigned int fun_like : 1;
+
+  /* If a variadic macro.  */
+  unsigned int variadic : 1;
+
+  /* If macro defined in system header.  */
+  unsigned int syshdr   : 1;
+
+  /* Nonzero if it has been expanded or had its existence tested.  */
+  unsigned int used     : 1;
+
+  /* Indicate whether the tokens include extra CPP_PASTE tokens at the
+     end to track invalid redefinitions with consecutive CPP_PASTE
+     tokens.  */
+  unsigned int extra_tokens : 1;
+
+  /* 1 bits spare (32-bit). 33 on 64-bit target.  */
+
+  union cpp_exp_u
+  {
+    /* Trailing array of replacement tokens (ISO), or assertion body value.  */
+    cpp_token GTY ((tag ("false"), length ("%1.count"))) tokens[1];
+
+    /* Pointer to replacement text (traditional).  See comment at top
+       of cpptrad.c for how traditional function-like macros are
+       encoded.  */
+    const unsigned char *GTY ((tag ("true"))) text;
+  } GTY ((desc ("%1.kind == cmk_traditional"))) exp;
+};
+
 /* The structure of a node in the hash table.  The hash table has
    entries for all identifiers: either macros defined by #define
    commands (type NT_MACRO), assertions created with #assert

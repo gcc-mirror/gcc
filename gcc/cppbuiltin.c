@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "version.h"
 #include "flags.h"
-#include "cpp-id-data.h"
+#include "cpplib.h"
 #include "cppbuiltin.h"
 
 

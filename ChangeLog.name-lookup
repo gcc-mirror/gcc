@@ -1,5 +1,21 @@
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
+	Fold cpp-id-data.h into cpplib.h
+	libcpp/
+	* internal.h: Include cpplib.h, not cpp-id-data.h.
+	(uchar, UC): From cpp-id-data.h.
+	* include/cpplib.h (cpp_macro_kind, cpp_macro): From cpp-id-data.h.
+	* include.cpp-id-data.h: Delete.
+	* Makefile.in (TAGS_SOURCES): Drop cpp-id-data.h.
+	gcc/
+	* Makefile.in (CPP_ID_DATA_H): Delete.
+	(CPP_INTERNAL_H): Drop CPP_ID_DATA_H.
+	(GT_FILES): Replace CPP_ID_DATA_H with CPPLIB_H.
+	* cppbuiltin.c: Include cpplib.h instead of cpp-id-data.h.
+	gcc/c-family
+	* c-ada-spec.c: Don't include cpp-id-data.h.
+	* c-cppbuiltin.h: Likewise.
+
 	libcpp/
 	* include/cpplib.h (enum node_type): Rename to NT_USER_MACR,
 	NT_BUILTIN_MACRO.

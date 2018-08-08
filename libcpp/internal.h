@@ -23,7 +23,7 @@ along with this program; see the file COPYING3.  If not see
 #define LIBCPP_INTERNAL_H
 
 #include "symtab.h"
-#include "cpp-id-data.h"
+#include "cpplib.h"
 
 #if HAVE_ICONV
 #include <iconv.h>
@@ -601,6 +601,12 @@ extern const unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #else
 extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #endif
+
+#if !defined (HAVE_UCHAR) && !defined (IN_GCC)
+typedef unsigned char uchar;
+#endif
+
+#define UC (const uchar *)  /* Intended use: UC"string" */
 
 /* Macros.  */
 
