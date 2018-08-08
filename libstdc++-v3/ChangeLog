@@ -1,3 +1,17 @@
+2018-08-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h
+	(__rotate(_Ite, _Ite, _Ite, forward_iterator_tag))
+	(__rotate(_Ite, _Ite, _Ite, bidirectional_iterator_tag))
+	(__rotate(_Ite, _Ite, _Ite, random_access_iterator_tag)): Move code duplication...
+	(rotate(_Ite, _Ite, _Ite)): ...here.
+	(__stable_partition_adaptive(_FIt, _FIt, _Pred, _Dist, _Pointer, _Dist)):
+	Simplify rotate call.
+	(__rotate_adaptive(_BIt1, _BIt1, _BIt1, _Dist, _Dist, _Bit2, _Dist)):
+	Likewise.
+	(__merge_without_buffer(_BIt, _BIt, _BIt, _Dist, _Dist, _Comp)):
+	Likewise.
+
 2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/new_opa.cc (aligned_alloc): Declare inside namespace to
