@@ -1263,24 +1263,29 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Called by the second initialize_dispatch above
       template<typename _InputIterator>
-        void
-        _M_range_initialize(_InputIterator __first,
-			    _InputIterator __last, std::input_iterator_tag)
-        {
-	  for (; __first != __last; ++__first)
+	void
+	_M_range_initialize(_InputIterator __first, _InputIterator __last,
+			    std::input_iterator_tag)
+	{
+	  __try {
+	    for (; __first != __last; ++__first)
 #if __cplusplus >= 201103L
-	    emplace_back(*__first);
+	      emplace_back(*__first);
 #else
-	    push_back(*__first);
+	      push_back(*__first);
 #endif
+	  } __catch(...) {
+	    clear();
+	    __throw_exception_again;
+	  }
 	}
 
       // Called by the second initialize_dispatch above
       template<typename _ForwardIterator>
-        void
-        _M_range_initialize(_ForwardIterator __first,
-			    _ForwardIterator __last, std::forward_iterator_tag)
-        {
+	void
+	_M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
+			    std::forward_iterator_tag)
+	{
 	  const size_type __n = std::distance(__first, __last);
 	  this->_M_impl._M_start = this->_M_allocate(__n);
 	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
