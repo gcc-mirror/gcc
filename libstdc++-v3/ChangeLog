@@ -1,5 +1,8 @@
 2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/using.xml: Add missing header to table and fix typo.
+	* doc/html/*: Regenerate.
+
 	PR libstdc++/86597
 	* include/bits/fs_dir.h (directory_entry::_M_file_type(error_code&)):
 	Clear error_code when cached type is used.
