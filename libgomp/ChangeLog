@@ -1,5 +1,11 @@
 2018-08-08  Tom de Vries  <tdevries@suse.de>
 
+	* plugin/cuda-lib.def (cuGetErrorString): Use CUDA_ONE_CALL_MAYBE_NULL.
+	* plugin/plugin-nvptx.c (cuda_error): Handle if cuGetErrorString is not
+	present.
+
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
 	* plugin/plugin-nvptx.c
 	(CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR): Define.
 	(nvptx_open_device): Use
