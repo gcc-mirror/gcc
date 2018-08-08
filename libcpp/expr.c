@@ -1068,9 +1068,10 @@ parse_defined (cpp_reader *pfile)
       if (!(node->flags & NODE_USED))
 	{
 	  node->flags |= NODE_USED;
-	  if (node->type == NT_MACRO)
+	  if (node->type & NT_MACRO)
 	    {
-	      _cpp_maybe_lazy_macro (pfile, node);
+	      if (node->type == NT_MACRO)
+		_cpp_maybe_lazy_macro (pfile, node);
 	      if (pfile->cb.used_define)
 		pfile->cb.used_define (pfile, pfile->directive_line, node);
 	    }
@@ -1095,7 +1096,7 @@ parse_defined (cpp_reader *pfile)
   result.unsignedp = false;
   result.high = 0;
   result.overflow = false;
-  result.low = (node && node->type == NT_MACRO
+  result.low = (node && node->type & NT_MACRO
 		&& (node->flags & NODE_CONDITIONAL) == 0);
   return result;
 }

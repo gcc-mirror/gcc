@@ -85,8 +85,9 @@ struct macro_arg_token_iter
 struct macro_arg_saved_data {
   /* The canonical (UTF-8) spelling of this identifier.  */
   cpp_hashnode *canonical_node;
-  /* The previous value of this identifier.  */
+  /* The previous value & type of this identifier.  */
   union _cpp_hashnode_value value;
+  node_type type;
 };
 
 static const char *vaopt_paste_error =
@@ -341,7 +342,7 @@ int
 _cpp_warn_if_unused_macro (cpp_reader *pfile, cpp_hashnode *node,
 			   void *v ATTRIBUTE_UNUSED)
 {
-  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
+  if (node->type == NT_MACRO)
     {
       cpp_macro *macro = node->value.macro;
 
@@ -1273,7 +1274,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
      function where set this flag to FALSE.  */
   pfile->about_to_expand_macro_p = true;
 
-  if (!(node->flags & NODE_BUILTIN))
+  if (node->type == NT_MACRO)
     {
       cpp_macro *macro = _cpp_maybe_lazy_macro (pfile, node);
       _cpp_buff *pragma_buff = NULL;
@@ -1404,7 +1405,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
     if (/* The top-level macro invocation that triggered the expansion
 	   we are looking at is with a standard macro ...  */
-	!(pfile->top_most_macro_node->flags & NODE_BUILTIN)
+	pfile->top_most_macro_node->type == NT_MACRO
 	/* ... and it's a function-like macro invocation,  */
 	&& pfile->top_most_macro_node->value.macro->fun_like
 	/* ... and we are tracking the macro expansion.  */
@@ -2736,7 +2737,7 @@ cpp_get_token_1 (cpp_reader *pfile, source_location *location)
 
       node = result->val.node.node;
 
-      if (node->type != NT_MACRO || (result->flags & NO_EXPAND))
+      if (node->type == NT_VOID || (result->flags & NO_EXPAND))
 	break;
 
       if (!(node->flags & NODE_DISABLED))
@@ -2994,7 +2995,7 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
 
   /* Suppress warnings for builtins that lack the NODE_WARN flag,
      unless Wbuiltin-macro-redefined.  */
-  if (node->flags & NODE_BUILTIN)
+  if (node->type == NT_BUILTIN)
     return CPP_OPTION (pfile, warn_builtin_macro_redefined);
 
   /* Redefinitions of conditional (context-sensitive) macros, on
@@ -3039,8 +3040,7 @@ _cpp_free_definition (cpp_hashnode *h)
 {
   /* Macros and assertions no longer have anything to free.  */
   h->type = NT_VOID;
-  /* Clear builtin flag in case of redefinition.  */
-  h->flags &= ~(NODE_BUILTIN | NODE_DISABLED | NODE_USED);
+  h->flags &= ~(NODE_DISABLED | NODE_USED);
   h->value.macro = NULL;
 }
 
@@ -3068,8 +3068,9 @@ _cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
     }
   
   macro_arg_saved_data *saved = (macro_arg_saved_data *)pfile->macro_buffer;
-  saved[n].value = node->value;
   saved[n].canonical_node = node;
+  saved[n].value = node->value;
+  saved[n].type = node->type;
 
   void *base = _cpp_reserve_room (pfile, n * sizeof (cpp_hashnode *),
 				  sizeof (cpp_hashnode *));
@@ -3095,9 +3096,8 @@ _cpp_unsave_parameters (cpp_reader *pfile, unsigned n)
 	&((struct macro_arg_saved_data *) pfile->macro_buffer)[n];
 
       struct cpp_hashnode *node = save->canonical_node;
+      node->type = save->type;
       node->value = save->value;
-      node->type = (node->flags & NODE_BUILTIN || node->value.macro
-		    ? NT_MACRO : NT_VOID);
     }
 }
 
@@ -3505,14 +3505,14 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   if (!macro)
     return false;
 
-  if (node->type == NT_MACRO)
+  if (node->type & NT_MACRO)
     {
       if (CPP_OPTION (pfile, warn_unused_macros))
 	_cpp_warn_if_unused_macro (pfile, node, NULL);
 
       if (warn_of_redefinition (pfile, node, macro))
 	{
-          const int reason = ((node->flags & NODE_BUILTIN)
+          const int reason = ((node->type == NT_BUILTIN)
 			      && !(node->flags & NODE_WARN))
                              ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE;
 
@@ -3521,7 +3521,7 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 				      pfile->directive_line, 0,
 				      "\"%s\" redefined", NODE_NAME (node));
 
-	  if (warned && node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
+	  if (warned && node->type == NT_MACRO)
 	    cpp_error_with_line (pfile, CPP_DL_NOTE,
 				 node->value.macro->line, 0,
 			 "this is the location of the previous definition");
@@ -3615,11 +3615,13 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
 bool
 cpp_macro_p (cpp_hashnode *node, bool builtin_ok)
 {
-  if (node->type != NT_MACRO)
-    return false;
-  if (node->flags & NODE_BUILTIN)
+  if (node->type == NT_BUILTIN)
     return builtin_ok;
-  return node->value.macro->kind != cmk_assert;
+
+  if (node->type == NT_MACRO)
+    return node->value.macro->kind != cmk_assert;
+
+  return false;
 }
 
 /* Returns true if NODE is a function-like macro.  */

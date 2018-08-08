@@ -5926,7 +5926,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
 	 macro was used with the wrong argument count, or the macro
 	 has been used before it was defined.  */
       cpp_hashnode *macro = bmm.blithely_get_best_candidate ();
-      if (macro && (macro->flags & NODE_BUILTIN) == 0)
+      if (macro && cpp_macro_p (macro))
 	return name_hint (NULL,
 			  macro_use_before_def::maybe_make (loc, macro));
     }

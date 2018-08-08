@@ -94,7 +94,7 @@ struct dummy
 #define CPP_ALIGN(size) CPP_ALIGN2 (size, DEFAULT_ALIGNMENT)
 
 #define _cpp_mark_macro_used(NODE) do {					\
-  if ((NODE)->type == NT_MACRO && !((NODE)->flags & NODE_BUILTIN))	\
+  if ((NODE)->type == NT_MACRO)		\
     (NODE)->value.macro->used = 1; } while (0)
 
 /* A generic memory buffer, and operations on it.  */
@@ -625,8 +625,8 @@ cpp_in_primary_file (cpp_reader *pfile)
 extern cpp_macro *_cpp_do_lazy_macro (cpp_reader *pfile, cpp_macro *macro);
 inline cpp_macro *_cpp_maybe_lazy_macro (cpp_reader *pfile, cpp_hashnode *node)
 {
-  cpp_macro *macro = (node->flags & NODE_BUILTIN) ? NULL : node->value.macro;
-  if (macro && macro->lazy)
+  cpp_macro *macro = node->value.macro;
+  if (macro->lazy)
     macro = _cpp_do_lazy_macro (pfile, macro);
   return macro;
 }

@@ -665,12 +665,12 @@ do_undef (cpp_reader *pfile)
 
       /* 6.10.3.5 paragraph 2: [#undef] is ignored if the specified
 	 identifier is not currently defined as a macro name.  */
-      if (node->type == NT_MACRO)
+      if (node->type & NT_MACRO)
 	{
 	  if (node->flags & NODE_WARN)
 	    cpp_error (pfile, CPP_DL_WARNING,
 		       "undefining \"%s\"", NODE_NAME (node));
-	  else if ((node->flags & NODE_BUILTIN)
+	  else if ((node->type == NT_BUILTIN)
 		   && CPP_OPTION (pfile, warn_builtin_macro_redefined))
 	    cpp_warning_with_line (pfile, CPP_W_BUILTIN_MACRO_REDEFINED,
 				   pfile->directive_line, 0,
@@ -695,7 +695,8 @@ undefine_macros (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *h,
   /* Body of _cpp_free_definition inlined here for speed.
      Macros and assertions no longer have anything to free.  */
   h->type = NT_VOID;
-  h->flags &= ~(NODE_POISONED|NODE_BUILTIN|NODE_DISABLED|NODE_USED);
+  h->flags &= ~(NODE_POISONED|NODE_DISABLED|NODE_USED);
+  h->value.macro = NULL;
   return 1;
 }
 
@@ -1665,7 +1666,7 @@ do_pragma_poison (cpp_reader *pfile)
       if (hp->flags & NODE_POISONED)
 	continue;
 
-      if (hp->type == NT_MACRO)
+      if (hp->type & NT_MACRO)
 	cpp_error (pfile, CPP_DL_WARNING, "poisoning existing macro \"%s\"",
 		   NODE_NAME (hp));
       _cpp_free_definition (hp);
@@ -1959,15 +1960,16 @@ do_ifdef (cpp_reader *pfile)
 	     the powerpc and spu ports using conditional macros for 'vector',
 	     'bool', and 'pixel' to act as conditional keywords.  This messes
 	     up tests like #ifndef bool.  */
-	  skip = (node->type != NT_MACRO
+	  skip = (node->type == NT_VOID
 		  || ((node->flags & NODE_CONDITIONAL) != 0));
 	  _cpp_mark_macro_used (node);
 	  if (!(node->flags & NODE_USED))
 	    {
 	      node->flags |= NODE_USED;
-	      if (node->type == NT_MACRO)
+	      if (node->type & NT_MACRO)
 		{
-		  _cpp_maybe_lazy_macro (pfile, node);
+		  if (node->type == NT_MACRO)
+		    _cpp_maybe_lazy_macro (pfile, node);
 		  if (pfile->cb.used_define)
 		    pfile->cb.used_define (pfile, pfile->directive_line, node);
 		}
@@ -2003,15 +2005,16 @@ do_ifndef (cpp_reader *pfile)
 	     the powerpc and spu ports using conditional macros for 'vector',
 	     'bool', and 'pixel' to act as conditional keywords.  This messes
 	     up tests like #ifndef bool.  */
-	  skip = (node->type == NT_MACRO
+	  skip = (node->type != NT_VOID
 		  && ((node->flags & NODE_CONDITIONAL) == 0));
 	  _cpp_mark_macro_used (node);
 	  if (!(node->flags & NODE_USED))
 	    {
 	      node->flags |= NODE_USED;
-	      if (node->type == NT_MACRO)
+	      if (node->type & NT_MACRO)
 		{
-		  _cpp_maybe_lazy_macro (pfile, node);
+		  if (node->type == NT_MACRO)
+		    _cpp_maybe_lazy_macro (pfile, node);
 		  if (pfile->cb.used_define)
 		    pfile->cb.used_define (pfile, pfile->directive_line, node);
 		}
@@ -2484,18 +2487,20 @@ cpp_pop_definition (cpp_reader *pfile, struct def_pragma_macro *c)
   if (pfile->cb.before_define)
     pfile->cb.before_define (pfile);
 
-  if (node->type == NT_MACRO)
+  if (node->type & NT_MACRO)
     {
       if (pfile->cb.undef)
 	pfile->cb.undef (pfile, pfile->directive_line, node);
       if (CPP_OPTION (pfile, warn_unused_macros))
 	_cpp_warn_if_unused_macro (pfile, node, NULL);
     }
+
   if (node->type != NT_VOID)
     _cpp_free_definition (node);
 
   if (c->is_undef)
     return;
+
   {
     size_t namelen;
     const uchar *dn;
@@ -2506,8 +2511,6 @@ cpp_pop_definition (cpp_reader *pfile, struct def_pragma_macro *c)
     h = cpp_lookup (pfile, c->definition, namelen);
     dn = c->definition + namelen;
 
-    h->type = NT_VOID;
-    h->flags &= ~(NODE_POISONED|NODE_BUILTIN|NODE_DISABLED|NODE_USED);
     nbuf = cpp_push_buffer (pfile, dn, ustrchr (dn, '\n') - dn, true);
     if (nbuf != NULL)
       {

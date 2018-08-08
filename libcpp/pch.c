@@ -59,9 +59,11 @@ write_macdef (cpp_reader *pfile, cpp_hashnode *hn, void *file_p)
       is_void = true;
       goto poisoned;
 
+    case NT_BUILTIN:
+      return 1;
+
     case NT_MACRO:
-      if (!(hn->flags & NODE_BUILTIN)
-	  && hn->value.macro->kind != cmk_assert)
+      if (hn->value.macro->kind != cmk_assert)
 	{
 	poisoned:
 	  struct macrodef_struct s;
@@ -223,9 +225,10 @@ count_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 
   switch (hn->type)
     {
+    case NT_BUILTIN:
+      return 1;
+
     case NT_MACRO:
-      if (hn->flags & NODE_BUILTIN)
-	return 1;
       if (hn->value.macro->kind == cmk_assert)
 	return 1;
 
@@ -260,9 +263,10 @@ write_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 
   switch (hn->type)
     {
+    case NT_BUILTIN:
+      return 1;
+
     case NT_MACRO:
-      if (hn->flags & NODE_BUILTIN)
-	return 1;
       if (hn->value.macro->kind == cmk_assert)
 	return 1;
 
@@ -614,7 +618,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	  goto fail;
 	}
 
-      if (h->type != NT_MACRO)
+      if (h->type == NT_VOID)
 	{
 	  /* It's ok if __GCC_HAVE_DWARF2_CFI_ASM becomes undefined,
 	     as in, when the PCH file is created with -g and we're
@@ -752,7 +756,6 @@ save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
   struct save_macro_data *data = (struct save_macro_data *)data_p;
 
   if (h->type == NT_MACRO
-      && !(h->flags & NODE_BUILTIN)
       && h->value.macro->kind != cmk_assert)
     {
       if (data->count == data->array_size)

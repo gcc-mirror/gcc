@@ -1,3 +1,35 @@
+2018-08-08  Nathan Sidwell  <nathan@acm.org>
+
+	Move NODE_BUILTIN to NT_BUILTIN.
+	gcc/c-family/
+	* c-ppoutput.c (cb_used_define): Use cpp_macro_p.
+	gcc/cp/
+	* name-lookup.c (lookup_name_fuzzy): Use cpp_macro_p.
+	libcpp/
+	* directives.c (do_undef): Adjust macro detection.
+	(undefine_macros): Adjust.
+	(do_pragma_poison, do_ifndef, do_ifdef, cpp_pop_definition):
+	Adjust.
+	* expr.c (parse_defined): Adjust.
+	* files.c (should_stack_file): Adjust.
+	* identifiers.c (cpp_defined): Adjust.
+	* include/cpplib.h (NODE_BUILTIN): Delete.
+	(enum node_type): Add NT_BUILTIN.
+	(CPP_HASHNODE_VALUE_IDX): Adjust.
+	* init.c (cpp_init_special_builtins): Adjust.
+	* internal.h (_cpp_mark_macro, _cpp_maybe_lazy_macro): Adjust.
+	* lex.c (is_macro): Adjust.
+	* macro.c (struct macro_arg_saved_data): Add type field.
+	(_cpp_warn_if_unused_macro): Adjust.
+	(enter_macro_context, cpp_get_token_1, warn_of_redefinition)
+	(_cpp_free_defintion, _cpp_safe_parameter)
+	(_cpp_unsave_parameters, _cpp_create_definition): Adjust.
+	(cpp_macro_p): Adjust.
+	* pch.c (write_macdef, count_defs, write_defs, cpp_validate_state)
+	(save_macros): Adjust.
+	* traditional.c (fun_like_macro, maybe_start_funlike)
+	(_cpp_scan_out_logical_line, push_replacement_text): Adjust.
+
 2018-08-07  Nathan Sidwell  <nathan@acm.org>
 
 	Move NODE_MACRO_ARG to NT_MACRO_ARG.
