@@ -1081,8 +1081,8 @@ parse_defined (cpp_reader *pfile)
   result.unsignedp = false;
   result.high = 0;
   result.overflow = false;
-  result.low = (node && node->type & NT_MACRO
-		&& (node->flags & NODE_CONDITIONAL) == 0);
+  result.low = (node && cpp_macro_p (node)
+		&& !(node->flags & NODE_CONDITIONAL));
   return result;
 }
 

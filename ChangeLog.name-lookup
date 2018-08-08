@@ -1,6 +1,45 @@
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
+	* include/cpplib.h (enum node_type): Rename to NT_USER_MACR,
+	NT_BUILTIN_MACRO.
+	(CPP_HASNODE_VALUE_IDX): Delete.
+	(union _cpp_hashnode_value): Adjust.
+	(struct cpp_hashnode): Likewise.
+	(cpp_macro_p, cpp_user_macro_p, cpp_builtin_macro_p): New.
+	* internal.h (_cpp_mark_macro_used): Use cpp_user_macro_p.
+	* directives.c (do_undef, do_pragma_poison, do_ifdef, do_ifndef)
+	(cpp_pop_definition): Use cpp_macro_p and friends.
+	(doassert): Adjust.
+	* expr.c (parse_defined): Use cpp_macro_p.
+	* files.c (should_stack_file): Likewise.
+	* identifiers.c (cpp_defined): Likewise.
+	* init.c (cpp_init_special_builtins): Adjust.
+	* lex.c (is_macro): Use cpp_macro_p.
+	* macro.c (cpp_warn_if_unused_macro, enter_macro_context)
+	(warn_of_redefinition, _cpp_create_definition): Use cpp_macro_p
+	and friends.
+	(_cpp_notify_macro_use): Adjust.
+	(cpp_macro_p): Delete old definition.
+	(cp_fun_like_macro_p): Use cpp_user_macro_p.
+	(cpp_macro_definition): Likewise.
+	* pch.c (write_macdef, count_defs, write_defs, save_macros): Adjust.
+	* traditional.c (fun_loke_macro, maybe_start_funlike)
+	(_cpp_scan_out_logical_line, push_replacement_text): Use
+	cpp_macro_p and friends.
+	gcc/c-family/
+	* c-ada-spec.c (count_ada_macro, store_ada_macro): Use cpp_user_macro_p.
+	* c-ppoutput.c (cb_used_define, dump_macro): Likewise.
+	* c-spellcheck.cc (should_suggest_as_macro_p): Likewise.
+	gcc/
+	* config/powerpcspe/powerpcspe-c.c (rs6000_macro_to_expand): Adjust.
+	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): Adjust.
+	gcc/cp/
+	* name-lookup.c (lookup_name_fuzzy): Use cpp_user_macro_p.
+	gcc/fortran/
+	* cpp.c (dump_macro): Use cpp_user_macro_p.
+
+	libcpp/
 	* internal.h (_cpp_notify_macro_use): Declare.
 	(_cpp_maybe_notify_macro_use): Define.
 	(_cpp_do_lazy_macro, _cpp_maybe_lazy_macro): Delete.

@@ -325,7 +325,7 @@ _cpp_read_logical_line_trad (cpp_reader *pfile)
 static inline bool
 fun_like_macro (cpp_hashnode *node)
 {
-  if (node->type == NT_BUILTIN)
+  if (cpp_builtin_macro_p (node))
     return node->value.builtin == BT_HAS_ATTRIBUTE;
   else
     return node->value.macro->fun_like;
@@ -338,7 +338,7 @@ maybe_start_funlike (cpp_reader *pfile, cpp_hashnode *node, const uchar *start,
 		     struct fun_macro *macro)
 {
   unsigned int n;
-  if (node->type == NT_BUILTIN)
+  if (cpp_builtin_macro_p (node))
     n = 1;
   else
     n = node->value.macro->paramc;
@@ -521,7 +521,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro,
 	      out = pfile->out.cur;
 	      cur = CUR (context);
 
-	      if (node->type & NT_MACRO
+	      if (cpp_macro_p (node)
 		  /* Should we expand for ls_answer?  */
 		  && (lex_state == ls_none || lex_state == ls_fun_open)
 		  && !pfile->state.prevent_expansion)
@@ -610,7 +610,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro,
 	      paren_depth--;
 	      if (lex_state == ls_fun_close && paren_depth == 0)
 		{
-		  if (fmacro.node->type == NT_BUILTIN)
+		  if (cpp_builtin_macro_p (fmacro.node))
 		    {
 		      /* Handle builtin function-like macros like
 			 __has_attribute.  The already parsed arguments
@@ -839,7 +839,7 @@ push_replacement_text (cpp_reader *pfile, cpp_hashnode *node)
   const uchar *text;
   uchar *buf;
 
-  if (node->type == NT_BUILTIN)
+  if (cpp_builtin_macro_p (node))
     {
       text = _cpp_builtin_macro_text (pfile, node);
       len = ustrlen (text);

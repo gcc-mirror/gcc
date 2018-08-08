@@ -665,12 +665,12 @@ do_undef (cpp_reader *pfile)
 
       /* 6.10.3.5 paragraph 2: [#undef] is ignored if the specified
 	 identifier is not currently defined as a macro name.  */
-      if (node->type & NT_MACRO)
+      if (cpp_macro_p (node))
 	{
 	  if (node->flags & NODE_WARN)
 	    cpp_error (pfile, CPP_DL_WARNING,
 		       "undefining \"%s\"", NODE_NAME (node));
-	  else if ((node->type == NT_BUILTIN)
+	  else if (cpp_builtin_macro_p (node)
 		   && CPP_OPTION (pfile, warn_builtin_macro_redefined))
 	    cpp_warning_with_line (pfile, CPP_W_BUILTIN_MACRO_REDEFINED,
 				   pfile->directive_line, 0,
@@ -1666,7 +1666,7 @@ do_pragma_poison (cpp_reader *pfile)
       if (hp->flags & NODE_POISONED)
 	continue;
 
-      if (hp->type & NT_MACRO)
+      if (cpp_macro_p (hp))
 	cpp_error (pfile, CPP_DL_WARNING, "poisoning existing macro \"%s\"",
 		   NODE_NAME (hp));
       _cpp_free_definition (hp);
@@ -1960,8 +1960,7 @@ do_ifdef (cpp_reader *pfile)
 	     the powerpc and spu ports using conditional macros for 'vector',
 	     'bool', and 'pixel' to act as conditional keywords.  This messes
 	     up tests like #ifndef bool.  */
-	  skip = (node->type == NT_VOID
-		  || ((node->flags & NODE_CONDITIONAL) != 0));
+	  skip = !cpp_macro_p (node) || (node->flags & NODE_CONDITIONAL);
 	  _cpp_mark_macro_used (node);
 	  _cpp_maybe_notify_macro_use (pfile, node);
 	  if (pfile->cb.used)
@@ -1990,8 +1989,8 @@ do_ifndef (cpp_reader *pfile)
 	     the powerpc and spu ports using conditional macros for 'vector',
 	     'bool', and 'pixel' to act as conditional keywords.  This messes
 	     up tests like #ifndef bool.  */
-	  skip = (node->type != NT_VOID
-		  && ((node->flags & NODE_CONDITIONAL) == 0));
+	  skip = (cpp_macro_p (node)
+		  && !(node->flags & NODE_CONDITIONAL));
 	  _cpp_mark_macro_used (node);
 	  _cpp_maybe_notify_macro_use (pfile, node);
 	  if (pfile->cb.used)
@@ -2330,7 +2329,7 @@ do_assert (cpp_reader *pfile)
 
       answer->parm.next = node->value.macro;
 
-      node->type = NT_MACRO;
+      node->type = NT_USER_MACRO;
       node->value.macro = answer;
 
       check_eol (pfile, false);
@@ -2457,16 +2456,14 @@ cpp_pop_definition (cpp_reader *pfile, struct def_pragma_macro *c)
   if (pfile->cb.before_define)
     pfile->cb.before_define (pfile);
 
-  if (node->type & NT_MACRO)
+  if (cpp_macro_p (node))
     {
       if (pfile->cb.undef)
 	pfile->cb.undef (pfile, pfile->directive_line, node);
       if (CPP_OPTION (pfile, warn_unused_macros))
 	_cpp_warn_if_unused_macro (pfile, node, NULL);
+      _cpp_free_definition (node);
     }
-
-  if (node->type != NT_VOID)
-    _cpp_free_definition (node);
 
   if (c->is_undef)
     return;

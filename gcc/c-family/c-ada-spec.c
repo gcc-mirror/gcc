@@ -171,7 +171,7 @@ static int
 count_ada_macro (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *node,
 		 void *v ATTRIBUTE_UNUSED)
 {
-  if (cpp_macro_p (node) && *NODE_NAME (node) != '_')
+  if (cpp_user_macro_p (node) && *NODE_NAME (node) != '_')
     {
       const cpp_macro *macro = node->value.macro;
       if (macro->count && LOCATION_FILE (macro->line) == macro_source_file)
@@ -189,7 +189,7 @@ static int
 store_ada_macro (cpp_reader *pfile ATTRIBUTE_UNUSED,
 		 cpp_hashnode *node, void *macros)
 {
-  if (cpp_macro_p (node) && *NODE_NAME (node) != '_')
+  if (cpp_user_macro_p (node) && *NODE_NAME (node) != '_')
     {
       const cpp_macro *macro = node->value.macro;
       if (macro->count

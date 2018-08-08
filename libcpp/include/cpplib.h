@@ -700,8 +700,8 @@ enum node_type
 {
   NT_VOID = 0,	   /* No definition yet.  */
   NT_MACRO_ARG,	   /* A macro arg.  */
-  NT_MACRO,	   /* A user macro or assert.  */
-  NT_BUILTIN	   /* A builtin macro.  */
+  NT_USER_MACRO,   /* A user macro or assert (#node).  */
+  NT_BUILTIN_MACRO /* A builtin macro.  */
 };
 
 /* Different flavors of builtin macro.  _Pragma is an operator, but we
@@ -726,30 +726,17 @@ enum cpp_builtin_type
 #define NODE_LEN(NODE)		HT_LEN (&(NODE)->ident)
 #define NODE_NAME(NODE)		HT_STR (&(NODE)->ident)
 
-/* Specify which field, if any, of the union is used.  */
-
-enum {
-  NTV_MACRO,
-  NTV_BUILTIN,
-  NTV_ARGUMENT
-};
-
-#define CPP_HASHNODE_VALUE_IDX(HNODE)				\
-  ((HNODE).type == NT_MACRO_ARG ? NTV_ARGUMENT			\
-   : (HNODE).type == NT_BUILTIN ? NTV_BUILTIN			\
-   : NTV_MACRO)
-
 /* The common part of an identifier node shared amongst all 3 C front
    ends.  Also used to store CPP identifiers, which are a superset of
    identifiers in the grammatical sense.  */
 
 union GTY(()) _cpp_hashnode_value {
   /* Macro or assert  */
-  cpp_macro * GTY((tag ("NTV_MACRO"))) macro;
+  cpp_macro * GTY((tag ("NT_USER_MACRO"))) macro;
   /* Code for a builtin macro.  */
-  enum cpp_builtin_type GTY ((tag ("NTV_BUILTIN"))) builtin;
+  enum cpp_builtin_type GTY ((tag ("NT_BUILTIN_MACRO"))) builtin;
   /* Macro argument index.  */
-  unsigned short GTY ((tag ("NTV_ARGUMENT"))) arg_index;
+  unsigned short GTY ((tag ("NT_MACRO_ARG"))) arg_index;
 };
 
 struct GTY(()) cpp_hashnode {
@@ -762,7 +749,7 @@ struct GTY(()) cpp_hashnode {
   ENUM_BITFIELD(node_type) type : 6;	/* CPP node type.  */
   unsigned int flags : 10;		/* CPP flags.  */
 
-  union _cpp_hashnode_value GTY ((desc ("CPP_HASHNODE_VALUE_IDX (%1)"))) value;
+  union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };
 
 /* A class for iterating through the source locations within a
@@ -883,7 +870,23 @@ extern int cpp_avoid_paste (cpp_reader *, const cpp_token *,
 extern const cpp_token *cpp_get_token (cpp_reader *);
 extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 						     source_location *);
-extern bool cpp_macro_p (cpp_hashnode *node, bool builtin_ok = false);
+/* Although a macro may actually turn out to be an assert, they are
+   separated by namespace, in that the latter have special
+   '#'-starting names, that macros cannot have.  We don't have to
+   check that.  */
+inline bool cpp_user_macro_p (const cpp_hashnode *node)
+{
+  return node->type == NT_USER_MACRO;
+}
+inline bool cpp_builtin_macro_p (const cpp_hashnode *node)
+{
+  return node->type == NT_BUILTIN_MACRO;
+}
+inline bool cpp_macro_p (const cpp_hashnode *node)
+{
+  return node->type & NT_USER_MACRO;
+}
+
 extern bool cpp_fun_like_macro_p (cpp_hashnode *);
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  cpp_hashnode *);

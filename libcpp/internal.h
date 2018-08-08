@@ -93,9 +93,8 @@ struct dummy
 #define CPP_ALIGN2(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
 #define CPP_ALIGN(size) CPP_ALIGN2 (size, DEFAULT_ALIGNMENT)
 
-#define _cpp_mark_macro_used(NODE) do {					\
-  if ((NODE)->type == NT_MACRO)		\
-    (NODE)->value.macro->used = 1; } while (0)
+#define _cpp_mark_macro_used(NODE) 					\
+  (cpp_user_macro_p (NODE) ? (NODE)->value.macro->used = 1 : 0)
 
 /* A generic memory buffer, and operations on it.  */
 typedef struct _cpp_buff _cpp_buff;

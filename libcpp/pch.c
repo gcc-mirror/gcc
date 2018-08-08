@@ -59,10 +59,10 @@ write_macdef (cpp_reader *pfile, cpp_hashnode *hn, void *file_p)
       is_void = true;
       goto poisoned;
 
-    case NT_BUILTIN:
+    case NT_BUILTIN_MACRO:
       return 1;
 
-    case NT_MACRO:
+    case NT_USER_MACRO:
       if (hn->value.macro->kind != cmk_assert)
 	{
 	poisoned:
@@ -225,10 +225,10 @@ count_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 
   switch (hn->type)
     {
-    case NT_BUILTIN:
+    case NT_BUILTIN_MACRO:
       return 1;
 
-    case NT_MACRO:
+    case NT_USER_MACRO:
       if (hn->value.macro->kind == cmk_assert)
 	return 1;
 
@@ -263,10 +263,10 @@ write_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 
   switch (hn->type)
     {
-    case NT_BUILTIN:
+    case NT_BUILTIN_MACRO:
       return 1;
 
-    case NT_MACRO:
+    case NT_USER_MACRO:
       if (hn->value.macro->kind == cmk_assert)
 	return 1;
 
@@ -755,8 +755,7 @@ save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
 {
   struct save_macro_data *data = (struct save_macro_data *)data_p;
 
-  if (h->type == NT_MACRO
-      && h->value.macro->kind != cmk_assert)
+  if (cpp_user_macro_p (h) && h->value.macro->kind != cmk_assert)
     {
       if (data->count == data->array_size)
 	{

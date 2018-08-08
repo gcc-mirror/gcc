@@ -342,7 +342,7 @@ int
 _cpp_warn_if_unused_macro (cpp_reader *pfile, cpp_hashnode *node,
 			   void *v ATTRIBUTE_UNUSED)
 {
-  if (node->type == NT_MACRO)
+  if (cpp_user_macro_p (node))
     {
       cpp_macro *macro = node->value.macro;
 
@@ -1274,7 +1274,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
      function where set this flag to FALSE.  */
   pfile->about_to_expand_macro_p = true;
 
-  if (node->type == NT_MACRO)
+  if (cpp_user_macro_p (node))
     {
       cpp_macro *macro = node->value.macro;
       _cpp_buff *pragma_buff = NULL;
@@ -1401,7 +1401,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
     if (/* The top-level macro invocation that triggered the expansion
 	   we are looking at is with a standard macro ...  */
-	pfile->top_most_macro_node->type == NT_MACRO
+	cpp_user_macro_p (pfile->top_most_macro_node)
 	/* ... and it's a function-like macro invocation,  */
 	&& pfile->top_most_macro_node->value.macro->fun_like
 	/* ... and we are tracking the macro expansion.  */
@@ -2991,7 +2991,7 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
 
   /* Suppress warnings for builtins that lack the NODE_WARN flag,
      unless Wbuiltin-macro-redefined.  */
-  if (node->type == NT_BUILTIN)
+  if (cpp_builtin_macro_p (node))
     return CPP_OPTION (pfile, warn_builtin_macro_redefined);
 
   /* Redefinitions of conditional (context-sensitive) macros, on
@@ -3508,23 +3508,23 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   if (!macro)
     return false;
 
-  if (node->type & NT_MACRO)
+  if (cpp_macro_p (node))
     {
       if (CPP_OPTION (pfile, warn_unused_macros))
 	_cpp_warn_if_unused_macro (pfile, node, NULL);
 
       if (warn_of_redefinition (pfile, node, macro))
 	{
-          const int reason = ((node->type == NT_BUILTIN)
-			      && !(node->flags & NODE_WARN))
-                             ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE;
+          const int reason
+	    = (cpp_builtin_macro_p (node) && !(node->flags & NODE_WARN))
+	    ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE;
 
 	  bool warned = 
 	    cpp_pedwarning_with_line (pfile, reason,
 				      pfile->directive_line, 0,
 				      "\"%s\" redefined", NODE_NAME (node));
 
-	  if (warned && node->type == NT_MACRO)
+	  if (warned && cpp_user_macro_p (node))
 	    cpp_error_with_line (pfile, CPP_DL_NOTE,
 				 node->value.macro->line, 0,
 			 "this is the location of the previous definition");
@@ -3533,7 +3533,7 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
     }
 
   /* Enter definition in hash table.  */
-  node->type = NT_MACRO;
+  node->type = NT_USER_MACRO;
   node->value.macro = macro;
   if (! ustrncmp (NODE_NAME (node), DSC ("__STDC_"))
       && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_FORMAT_MACROS")
@@ -3571,7 +3571,7 @@ _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
   node->flags |= NODE_USED;
   switch (node->type)
     {
-    case NT_MACRO:
+    case NT_USER_MACRO:
       {
 	cpp_macro *macro = node->value.macro;
 	if (macro->lazy)
@@ -3582,7 +3582,7 @@ _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
       }
       /* FALLTHROUGH.  */
 
-    case NT_BUILTIN:
+    case NT_BUILTIN_MACRO:
       if (pfile->cb.used_define)
 	pfile->cb.used_define (pfile, pfile->directive_line, node);
       break;
@@ -3639,24 +3639,11 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
     }
 }
 
-/* Returns true if NODE is a macro.  */
-bool
-cpp_macro_p (cpp_hashnode *node, bool builtin_ok)
-{
-  if (node->type == NT_BUILTIN)
-    return builtin_ok;
-
-  if (node->type == NT_MACRO)
-    return node->value.macro->kind != cmk_assert;
-
-  return false;
-}
-
 /* Returns true if NODE is a function-like macro.  */
 bool
 cpp_fun_like_macro_p (cpp_hashnode *node)
 {
-  return cpp_macro_p (node) && node->value.macro->fun_like;
+  return cpp_user_macro_p (node) && node->value.macro->fun_like;
 }
 
 /* Returns the name, arguments and expansion of a macro, in a format
@@ -3670,7 +3657,7 @@ cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
   unsigned int i, len;
   unsigned char *buffer;
 
-  gcc_checking_assert (node->type == NT_MACRO);
+  gcc_checking_assert (cpp_user_macro_p (node));
 
   const cpp_macro *macro = node->value.macro;
 
