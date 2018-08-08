@@ -1029,6 +1029,19 @@ do {									\
 
 extern const int processor_flags_table[];
 
+struct s390_processor
+{
+  /* The preferred name to be used in user visible output.  */
+  const char *const name;
+  /* CPU name as it should be passed to Binutils via .machine  */
+  const char *const binutils_name;
+  const enum processor_type processor;
+  const struct processor_costs *cost;
+  int arch_level;
+};
+
+extern const struct s390_processor processor_table[];
+
 /* The truth element value for vector comparisons.  Our instructions
    always generate -1 in that case.  */
 #define VECTOR_STORE_FLAG_VALUE(MODE) CONSTM1_RTX (GET_MODE_INNER (MODE))
