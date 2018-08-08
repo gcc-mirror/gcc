@@ -25,15 +25,30 @@
 
 #include <bits/c++config.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <bits/exception_defines.h>
 #include "new"
+
+#if !_GLIBCXX_HAVE_ALIGNED_ALLOC && !_GLIBCXX_HAVE__ALIGNED_MALLOC \
+  && !_GLIBCXX_HAVE_POSIX_MEMALIGN && _GLIBCXX_HAVE_MEMALIGN
+# if _GLIBCXX_HOSTED && __has_include(<malloc.h>)
+// Some C libraries declare memalign in <malloc.h>
+#  include <malloc.h>
+# else
+extern "C" void *memalign(std::size_t boundary, std::size_t size);
+# endif
+#endif
 
 using std::new_handler;
 using std::bad_alloc;
 
-#if !_GLIBCXX_HAVE_ALIGNED_ALLOC
-#if _GLIBCXX_HAVE__ALIGNED_MALLOC
-#define aligned_alloc(al,sz) _aligned_malloc(sz,al)
+namespace __gnu_cxx {
+#if _GLIBCXX_HAVE_ALIGNED_ALLOC
+using ::aligned_alloc;
+#elif _GLIBCXX_HAVE__ALIGNED_MALLOC
+static inline void*
+aligned_alloc (std::size_t al, std::size_t sz)
+{ return _aligned_malloc(sz, al); }
 #elif _GLIBCXX_HAVE_POSIX_MEMALIGN
 static inline void*
 aligned_alloc (std::size_t al, std::size_t sz)
@@ -49,11 +64,6 @@ aligned_alloc (std::size_t al, std::size_t sz)
   return nullptr;
 }
 #elif _GLIBCXX_HAVE_MEMALIGN
-#if _GLIBCXX_HOSTED
-#include <malloc.h>
-#else
-extern "C" void *memalign(std::size_t boundary, std::size_t size);
-#endif
 static inline void*
 aligned_alloc (std::size_t al, std::size_t sz)
 {
@@ -66,7 +76,6 @@ aligned_alloc (std::size_t al, std::size_t sz)
   return memalign (al, sz);
 }
 #else // !HAVE__ALIGNED_MALLOC && !HAVE_POSIX_MEMALIGN && !HAVE_MEMALIGN
-#include <stdint.h>
 // The C library doesn't provide any aligned allocation functions, define one.
 // This is a modified version of code from gcc/config/i386/gmm_malloc.h
 static inline void*
@@ -87,7 +96,7 @@ aligned_alloc (std::size_t al, std::size_t sz)
   return aligned_ptr;
 }
 #endif
-#endif
+} // namespace __gnu_cxx
 
 _GLIBCXX_WEAK_DEFINITION void *
 operator new (std::size_t sz, std::align_val_t al)
@@ -116,6 +125,7 @@ operator new (std::size_t sz, std::align_val_t al)
     sz += align - rem;
 #endif
 
+  using __gnu_cxx::aligned_alloc;
   while (__builtin_expect ((p = aligned_alloc (align, sz)) == 0, false))
     {
       new_handler handler = std::get_new_handler ();
