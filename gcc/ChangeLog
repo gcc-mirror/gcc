@@ -1,3 +1,33 @@
+2018-08-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* common/config/s390/s390-common.c (processor_flags_table):
+        Remove flags.
+	* config.gcc: Remove with_arch/with_tune support.
+	* config/s390/2064.md: Remove cpu attribute comparisons.
+	* config/s390/driver-native.c (s390_host_detect_local_cpu):
+        Remove MTN.
+	* config/s390/linux.h (ASM_SPEC):
+        Remove -march support.
+	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal):
+        Use a table to get an arch level.
+	* config/s390/s390-opts.h (enum processor_type):
+        Remove enum values.
+	* config/s390/s390.c
+        (processor_table): Remove entries, add arch_level values.
+        (s390_issue_rate): Remove cases.
+        (s390_option_override): Adjust
+        s390_option_override_internal() call.
+	(s390_option_override_internal): Remove deprecation warning.
+        (s390_valid_target_attribute_tree): Adjust
+        s390_option_override_internal() call.
+	* config/s390/s390.h (struct s390_processor):
+        Share with s390-c.c, add arch_level field.
+	* config/s390/s390.md:
+        Remove occurrences in cpu attribute.
+	* config/s390/s390.opt: Remove -march/-mtune support.
+	* config/s390/tpf.h (ASM_SPEC): Remove -march support.
+	* doc/invoke.texi: Remove deprecation warning.
+
 2018-08-08  Luis Machado  <luis.machado@linaro.org>
 
 	* config/aarch64/aarch64.c (qdf24xx_vector_cost): New static

@@ -326,29 +326,18 @@ struct processor_costs zEC12_cost =
   COSTS_N_INSNS (160),   /* DSGR cracked */
 };
 
-static struct
+const struct s390_processor processor_table[] =
 {
-  /* The preferred name to be used in user visible output.  */
-  const char *const name;
-  /* CPU name as it should be passed to Binutils via .machine  */
-  const char *const binutils_name;
-  const enum processor_type processor;
-  const struct processor_costs *cost;
-}
-const processor_table[] =
-{
-  { "g5",     "g5",     PROCESSOR_9672_G5,     &z900_cost },
-  { "g6",     "g6",     PROCESSOR_9672_G6,     &z900_cost },
-  { "z900",   "z900",   PROCESSOR_2064_Z900,   &z900_cost },
-  { "z990",   "z990",   PROCESSOR_2084_Z990,   &z990_cost },
-  { "z9-109", "z9-109", PROCESSOR_2094_Z9_109, &z9_109_cost },
-  { "z9-ec",  "z9-ec",  PROCESSOR_2094_Z9_EC,  &z9_109_cost },
-  { "z10",    "z10",    PROCESSOR_2097_Z10,    &z10_cost },
-  { "z196",   "z196",   PROCESSOR_2817_Z196,   &z196_cost },
-  { "zEC12",  "zEC12",  PROCESSOR_2827_ZEC12,  &zEC12_cost },
-  { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost },
-  { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost },
-  { "native", "",       PROCESSOR_NATIVE,      NULL }
+  { "z900",   "z900",   PROCESSOR_2064_Z900,   &z900_cost,   5  },
+  { "z990",   "z990",   PROCESSOR_2084_Z990,   &z990_cost,   6  },
+  { "z9-109", "z9-109", PROCESSOR_2094_Z9_109, &z9_109_cost, 7  },
+  { "z9-ec",  "z9-ec",  PROCESSOR_2094_Z9_EC,  &z9_109_cost, 7  },
+  { "z10",    "z10",    PROCESSOR_2097_Z10,    &z10_cost,    8  },
+  { "z196",   "z196",   PROCESSOR_2817_Z196,   &z196_cost,   9  },
+  { "zEC12",  "zEC12",  PROCESSOR_2827_ZEC12,  &zEC12_cost,  10 },
+  { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost,  11 },
+  { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
+  { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
 extern int reload_completed;
@@ -8190,8 +8179,6 @@ s390_issue_rate (void)
       return 3;
     case PROCESSOR_2097_Z10:
       return 2;
-    case PROCESSOR_9672_G5:
-    case PROCESSOR_9672_G6:
     case PROCESSOR_2064_Z900:
       /* Starting with EC12 we use the sched_reorder hook to take care
 	 of instruction dispatch constraints.  The algorithm only
@@ -15457,27 +15444,9 @@ s390_override_options_after_change (void)
 }
 
 static void
-s390_option_override_internal (bool main_args_p,
-			       struct gcc_options *opts,
+s390_option_override_internal (struct gcc_options *opts,
 			       const struct gcc_options *opts_set)
 {
-  const char *prefix;
-  const char *suffix;
-
-  /* Set up prefix/suffix so the error messages refer to either the command
-     line argument, or the attribute(target).  */
-  if (main_args_p)
-    {
-      prefix = "-m";
-      suffix = "";
-    }
-  else
-    {
-      prefix = "option(\"";
-      suffix = "\")";
-    }
-
-
   /* Architecture mode defaults according to ABI.  */
   if (!(opts_set->x_target_flags & MASK_ZARCH))
     {
@@ -15490,24 +15459,12 @@ s390_option_override_internal (bool main_args_p,
   /* Set the march default in case it hasn't been specified on cmdline.  */
   if (!opts_set->x_s390_arch)
     opts->x_s390_arch = PROCESSOR_2064_Z900;
-  else if (opts->x_s390_arch == PROCESSOR_9672_G5
-	   || opts->x_s390_arch == PROCESSOR_9672_G6)
-    warning (OPT_Wdeprecated, "%sarch=%s%s is deprecated and will be removed "
-	     "in future releases; use at least %sarch=z900%s",
-	     prefix, opts->x_s390_arch == PROCESSOR_9672_G5 ? "g5" : "g6",
-	     suffix, prefix, suffix);
 
   opts->x_s390_arch_flags = processor_flags_table[(int) opts->x_s390_arch];
 
   /* Determine processor to tune for.  */
   if (!opts_set->x_s390_tune)
     opts->x_s390_tune = opts->x_s390_arch;
-  else if (opts->x_s390_tune == PROCESSOR_9672_G5
-	   || opts->x_s390_tune == PROCESSOR_9672_G6)
-    warning (OPT_Wdeprecated, "%stune=%s%s is deprecated and will be removed "
-	     "in future releases; use at least %stune=z900%s",
-	     prefix, opts->x_s390_tune == PROCESSOR_9672_G5 ? "g5" : "g6",
-	     suffix, prefix, suffix);
 
   opts->x_s390_tune_flags = processor_flags_table[opts->x_s390_tune];
 
@@ -15763,7 +15720,7 @@ s390_option_override (void)
   /* Set up function hooks.  */
   init_machine_status = s390_init_machine_status;
 
-  s390_option_override_internal (true, &global_options, &global_options_set);
+  s390_option_override_internal (&global_options, &global_options_set);
 
   /* Save the initial options in case the user does function specific
      options.  */
@@ -16068,7 +16025,7 @@ s390_valid_target_attribute_tree (tree args,
 	dest[i] |= src[i];
 
       /* Do any overrides, such as arch=xxx, or tune=xxx support.  */
-      s390_option_override_internal (false, opts, &new_opts_set);
+      s390_option_override_internal (opts, &new_opts_set);
       /* Save the current options unless we are validating options for
 	 #pragma.  */
       t = build_target_option_node (opts);

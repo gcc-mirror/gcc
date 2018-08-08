@@ -24857,8 +24857,7 @@ system representing a certain processor type.  Possible values for
 @samp{z196}/@samp{arch9}, @samp{zEC12}, @samp{z13}/@samp{arch11}, and
 @samp{native}.
 
-The default is @option{-march=z900}.  @samp{g5}/@samp{arch3} and
-@samp{g6} are deprecated and will be removed with future releases.
+The default is @option{-march=z900}.
 
 Specifying @samp{native} as cpu type can be used to select the best
 architecture option for the host processor.
