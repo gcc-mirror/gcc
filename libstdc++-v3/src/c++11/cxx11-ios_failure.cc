@@ -28,6 +28,8 @@
 
 #define _GLIBCXX_USE_CXX11_ABI 1
 #include <ios>
+#include <typeinfo>
+#include <cxxabi.h>
 
 #if ! _GLIBCXX_USE_DUAL_ABI
 # error This file should not be compiled for this configuration.
@@ -90,6 +92,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const char*
   ios_base::failure::what() const throw()
   { return runtime_error::what(); }
+
+  // __throw_ios_failure() is defined in src/c++98/ios_failure.cc
+
+#if __cpp_rtti
+  // If RTTI is enabled the exception type thrown will use these functions to
+  // construct/destroy a ios::failure[abi:cxx11] object in a buffer,
+  // and to catch that object via a handler of the [abi:cxx11] type.
+  void
+  __construct_ios_failure(void* buf, const char* msg)
+  { ::new(buf) ios_base::failure(msg); }
+
+  void
+  __destroy_ios_failure(void* buf)
+  { static_cast<ios_base::failure*>(buf)->~failure(); }
+
+  bool
+  __is_ios_failure_handler(const __cxxabiv1::__class_type_info* type)
+  { return *type == typeid(ios::failure); }
+
+  // static assertions to ensure ios::failure fits in a buffer
+  // with the same size and alignment as system_error:
+  static_assert(sizeof(ios::failure) <= sizeof(system_error), "");
+  static_assert(__alignof(ios::failure) <= __alignof(system_error), "");
+#endif // __cpp_rtti
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

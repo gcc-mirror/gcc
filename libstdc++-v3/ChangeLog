@@ -1,3 +1,40 @@
+2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66145
+	Backport from mainline
+	2018-04-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85222
+	* src/c++11/cxx11-ios_failure.cc (__construct_ios_failure)
+	(__destroy_ios_failure, is_ios_failure_handler): New functions.
+	* src/c++11/ios.cc (__throw_ios_failure): Remove definition.
+	(_GLIBCXX_USE_CXX11_ABI): Don't define here.
+	* src/c++98/Makefile.am [ENABLE_DUAL_ABI]: Add special rules for
+	ios_failure.cc to rewrite type info for __ios_failure.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/ios_failure.cc [_GLIBCXX_USE_DUAL_ABI]
+	(__iosfailure, __iosfailure_type_info): New types.
+	(__throw_ios_failure): Define here.
+	* testsuite/27_io/ios_base/failure/dual_abi.cc: New.
+	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Revert changes to
+	add -D_GLIBCXX_USE_CXX11_ABI=0 to dg-options.
+	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/12297.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/wchar_t/12297.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
+
 2018-07-05  François Dumont  <fdumont@gcc.gnu.org>
 
 	Backport from mainline

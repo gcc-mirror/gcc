@@ -28,9 +28,6 @@
 // Radar 6467884: 10.X systems are not robust when paging space is exceeded
 // { dg-skip-if "" { *-*-darwin* && lp64 } { "*" } { "" } } 
 
-// The library still throws the original definition of std::ios::failure
-// { dg-options "-D_GLIBCXX_USE_CXX11_ABI=0" }
-
 #include <sstream>
 #include <iostream>
 #include <limits>
@@ -52,8 +49,8 @@ void test02()
   // pword
   ios.pword(1) = v;
   VERIFY( ios.pword(1) == v );
-  
-  try 
+
+  try
     {
       v = ios.pword(max);
     }

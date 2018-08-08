@@ -215,6 +215,26 @@ parallel_settings.lo: parallel_settings.cc
 parallel_settings.o: parallel_settings.cc
 	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 
+if ENABLE_DUAL_ABI
+# Rewrite the type info for __iosfailure.
+rewrite_ios_failure_typeinfo = sed -e '/^_*_ZTISt12__iosfailure:/,/_ZTVN10__cxxabiv120__si_class_type_infoE/s/_ZTVN10__cxxabiv120__si_class_type_infoE/_ZTVSt22__iosfailure_type_info/'
+
+ios_failure-lt.s: ios_failure.cc
+	$(LTCXXCOMPILE) -S $< -o tmp-ios_failure-lt.s
+	-test -f tmp-ios_failure-lt.o && mv -f tmp-ios_failure-lt.o tmp-ios_failure-lt.s
+	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+	-rm -f tmp-$@
+ios_failure.s: ios_failure.cc
+	$(CXXCOMPILE) -S $< -o tmp-$@
+	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+	-rm -f tmp-$@
+
+ios_failure.lo: ios_failure-lt.s
+	$(LTCXXCOMPILE) -g0 -c $< -o $@
+ios_failure.o: ios_failure.s
+	$(CXXCOMPILE) -g0 -c $<
+endif
+
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
