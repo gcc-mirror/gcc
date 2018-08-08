@@ -1,3 +1,8 @@
+2018-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86738
+	* g++.dg/opt/pr86738.C: New test.
+
 2018-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/86838
