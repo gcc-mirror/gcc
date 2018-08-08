@@ -1,3 +1,8 @@
+2018-08-08  Luis Machado  <luis.machado@linaro.org>
+
+	* config/aarch64/aarch64.c (qdf24xx_addrcost_table)
+	<register_sextend>: Set to 3.
+
 2018-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/86838
