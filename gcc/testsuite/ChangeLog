@@ -1,3 +1,9 @@
+2018-08-08  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/85295
+	* gcc.target/s390/TI-constants-lra.c: New testcase.
+	* gcc.target/s390/TI-constants-nolra.c: New testcase.
+
 2018-08-08  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/hotpatch-8.c: Remove.

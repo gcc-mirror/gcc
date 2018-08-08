@@ -1,5 +1,13 @@
 2018-08-08  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	PR target/85295
+	* config/s390/constraints.md ("NxHD0", "NxSD0"): New constraint
+	definitions.
+	* config/s390/s390.md ("movti"): Add more alternatives for
+	constant to GPR copies.
+
+2018-08-08  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* config/s390/s390.c: Fix whitespace damage throughout the file.
 	* config/s390/s390.h: Likewise.
 	* config/s390/tpf.h: Likewise.
