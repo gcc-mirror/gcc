@@ -1,3 +1,9 @@
+2018-08-08  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c: Fix whitespace damage throughout the file.
+	* config/s390/s390.h: Likewise.
+	* config/s390/tpf.h: Likewise.
+
 2018-08-08  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/s390/s390.c (s390_loadrelative_operand_p):
