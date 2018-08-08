@@ -713,6 +713,7 @@ constexpr_fn_retval (tree body)
 	{
 	  tree fun = get_function_named_in_call (body);
 	  if (fun != NULL_TREE
+	      && DECL_BUILT_IN_CLASS (fun) == BUILT_IN_NORMAL
 	      && DECL_FUNCTION_CODE (fun) == BUILT_IN_UNREACHABLE)
 	    return NULL_TREE;
 	}
@@ -1007,6 +1008,8 @@ struct constexpr_ctx {
   /* Whether we are strictly conforming to constant expression rules or
      trying harder to get a constant value.  */
   bool strict;
+  /* Whether __builtin_is_constant_evaluated () should be true.  */
+  bool pretend_const_required;
 };
 
 /* A table of all constexpr calls that have been evaluated by the
@@ -1171,7 +1174,7 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
   int i;
 
   /* Don't fold __builtin_constant_p within a constexpr function.  */
-  bool bi_const_p = (DECL_FUNCTION_CODE (fun) == BUILT_IN_CONSTANT_P);
+  bool bi_const_p = DECL_IS_BUILTIN_CONSTANT_P (fun);
 
   /* If we aren't requiring a constant expression, defer __builtin_constant_p
      in a constexpr function until we have values for the parameters.  */
@@ -1182,6 +1185,19 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
     {
       *non_constant_p = true;
       return t;
+    }
+
+  /* For __builtin_is_constant_evaluated, defer it if not
+     ctx->pretend_const_required, otherwise fold it to true.  */
+  if (DECL_BUILT_IN_CLASS (fun) == BUILT_IN_FRONTEND
+      && (int) DECL_FUNCTION_CODE (fun) == CP_BUILT_IN_IS_CONSTANT_EVALUATED)
+    {
+      if (!ctx->pretend_const_required)
+	{
+	  *non_constant_p = true;
+	  return t;
+	}
+      return boolean_true_node;
     }
 
   /* Be permissive for arguments to built-ins; __builtin_constant_p should
@@ -1217,7 +1233,8 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 	  /* Do not allow__builtin_unreachable in constexpr function.
 	     The __builtin_unreachable call with BUILTINS_LOCATION
 	     comes from cp_maybe_instrument_return.  */
-	  if (DECL_FUNCTION_CODE (fun) == BUILT_IN_UNREACHABLE
+	  if (DECL_BUILT_IN_CLASS (fun) == BUILT_IN_NORMAL
+	      && DECL_FUNCTION_CODE (fun) == BUILT_IN_UNREACHABLE
 	      && EXPR_LOCATION (t) == BUILTINS_LOCATION)
 	    error ("%<constexpr%> call flows off the end of the function");
 	  else
@@ -4897,9 +4914,15 @@ instantiate_constexpr_fns (tree t)
   input_location = loc;
 }
 
+/* ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
+   PRETEND_CONST_REQUIRED is true if T is required to be const-evaluated as
+   per P0595 even when ALLOW_NON_CONSTANT is true.  */
+
 static tree
 cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
-				  bool strict = true, tree object = NULL_TREE)
+				  bool strict = true,
+				  bool pretend_const_required = false,
+				  tree object = NULL_TREE)
 {
   auto_timevar time (TV_CONSTEXPR);
 
@@ -4908,7 +4931,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   hash_map<tree,tree> map;
 
   constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL, NULL,
-			allow_non_constant, strict };
+			allow_non_constant, strict,
+			pretend_const_required || !allow_non_constant };
 
   tree type = initialized_type (t);
   tree r = t;
@@ -4997,6 +5021,12 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     return error_mark_node;
   else if (non_constant_p && TREE_CONSTANT (r))
     {
+      /* If __builtin_is_constant_evaluated () was evaluated to true
+	 and the result is not a valid constant expression, we need to
+	 punt.  */
+      if (pretend_const_required)
+	return cxx_eval_outermost_constant_expr (t, true, strict,
+						 false, object);
       /* This isn't actually constant, so unset TREE_CONSTANT.
 	 Don't clear TREE_CONSTANT on ADDR_EXPR, as the middle-end requires
 	 it to be set if it is invariant address, even when it is not
@@ -5042,7 +5072,8 @@ is_sub_constant_expr (tree t)
   bool overflow_p = false;
   hash_map <tree, tree> map;
 
-  constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL, NULL, true, true };
+  constexpr_ctx ctx
+    = { NULL, &map, NULL, NULL, NULL, NULL, true, true, false };
 
   instantiate_constexpr_fns (t);
   cxx_eval_constant_expression (&ctx, t, false, &non_constant_p,
@@ -5057,7 +5088,7 @@ is_sub_constant_expr (tree t)
 tree
 cxx_constant_value (tree t, tree decl)
 {
-  return cxx_eval_outermost_constant_expr (t, false, true, decl);
+  return cxx_eval_outermost_constant_expr (t, false, true, true, decl);
 }
 
 /* Helper routine for fold_simple function.  Either return simplified
@@ -5163,7 +5194,7 @@ maybe_constant_value (tree t, tree decl)
   if (tree *cached = cv_cache->get (t))
     return *cached;
 
-  r = cxx_eval_outermost_constant_expr (t, true, true, decl);
+  r = cxx_eval_outermost_constant_expr (t, true, true, false, decl);
   gcc_checking_assert (r == t
 		       || CONVERT_EXPR_P (t)
 		       || TREE_CODE (t) == VIEW_CONVERT_EXPR
@@ -5237,7 +5268,8 @@ fold_non_dependent_expr (tree t,
 	      return t;
 	    }
 
-	  tree r = cxx_eval_outermost_constant_expr (t, true, true, NULL_TREE);
+	  tree r = cxx_eval_outermost_constant_expr (t, true, true, false,
+						     NULL_TREE);
 	  /* cp_tree_equal looks through NOPs, so allow them.  */
 	  gcc_checking_assert (r == t
 			       || CONVERT_EXPR_P (t)
@@ -5258,10 +5290,14 @@ fold_non_dependent_expr (tree t,
 }
 
 /* Like maybe_constant_value, but returns a CONSTRUCTOR directly, rather
-   than wrapped in a TARGET_EXPR.  */
+   than wrapped in a TARGET_EXPR.
+   ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
+   PRETEND_CONST_REQUIRED is true if T is required to be const-evaluated as
+   per P0595 even when ALLOW_NON_CONSTANT is true.  */
 
 static tree
-maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant)
+maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
+		       bool pretend_const_required)
 {
   if (!t)
     return t;
@@ -5279,7 +5315,9 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant)
   else if (CONSTANT_CLASS_P (t) && allow_non_constant)
     /* No evaluation needed.  */;
   else
-    t = cxx_eval_outermost_constant_expr (t, allow_non_constant, false, decl);
+    t = cxx_eval_outermost_constant_expr (t, allow_non_constant,
+					  !allow_non_constant,
+					  pretend_const_required, decl);
   if (TREE_CODE (t) == TARGET_EXPR)
     {
       tree init = TARGET_EXPR_INITIAL (t);
@@ -5292,9 +5330,9 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant)
 /* Wrapper for maybe_constant_init_1 which permits non constants.  */
 
 tree
-maybe_constant_init (tree t, tree decl)
+maybe_constant_init (tree t, tree decl, bool pretend_const_required)
 {
-  return maybe_constant_init_1 (t, decl, true);
+  return maybe_constant_init_1 (t, decl, true, pretend_const_required);
 }
 
 /* Wrapper for maybe_constant_init_1 which does not permit non constants.  */
@@ -5302,7 +5340,7 @@ maybe_constant_init (tree t, tree decl)
 tree
 cxx_constant_init (tree t, tree decl)
 {
-  return maybe_constant_init_1 (t, decl, false);
+  return maybe_constant_init_1 (t, decl, false, true);
 }
 
 #if 0
