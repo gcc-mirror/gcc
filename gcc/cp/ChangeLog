@@ -1,3 +1,11 @@
+2018-08-08  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2018-08-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86767
+	* constexpr.c (cxx_eval_statement_list): Handle continue.
+
 2018-08-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86190 - bogus -Wsign-conversion warning

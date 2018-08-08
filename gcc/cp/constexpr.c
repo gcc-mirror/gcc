@@ -3926,6 +3926,16 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
   for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
     {
       tree stmt = tsi_stmt (i);
+      /* We've found a continue, so skip everything until we reach
+	 the label its jumping to.  */
+      if (continues (jump_target))
+	{
+	  if (label_matches (ctx, jump_target, stmt))
+	    /* Found it.  */
+	    *jump_target = NULL_TREE;
+	  else
+	    continue;
+	}
       if (TREE_CODE (stmt) == DEBUG_BEGIN_STMT)
 	continue;
       r = cxx_eval_constant_expression (ctx, stmt, false,
