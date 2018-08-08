@@ -1,6 +1,12 @@
 2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (shared_future): Add noexcept to copy constructor
+	and copy-assignment operator (LWG 2799).
+
+	Backport from mainline
 	2017-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80893
