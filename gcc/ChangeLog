@@ -1,3 +1,9 @@
+2018-08-08  Hongbo Zhang  <hongbo.zhang@linaro.org>
+
+	* config/aarch64/aarch64-cores.def: Add phecda core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Add phecda core.
+
 2018-08-08  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR target/85295
