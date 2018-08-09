@@ -1,3 +1,7 @@
+2018-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.old-deja/g++.mike/p784.C: Add -fpermissive.
+
 2018-08-09  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/target-attribute/tattr-arch-tune-1.c: Decrement
