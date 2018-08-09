@@ -1,3 +1,13 @@
+2018-08-09  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available on
+	ISA 2.07): Correct spelling of bcdsub to be __builtin_bcdsub.  Add
+	third argument of type "const signed char" to descriptions of
+	__builtin_bcdadd, __builtin_bcdadd_lt, __builtin_bcdadd_eq,
+	__builtin_bcdadd_gt, __builtin_bcdadd_ov, __builtin_bcdsub,
+	__builtin_bcdsub_lt, __builtin_bcdsub_eq, __builtin_bcdsub_gt,
+	__builtin_bcdsub_ov functions.
+
 2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/86858
