@@ -18476,16 +18476,16 @@ vector __uint128 vec_vsubcuq (vector __uint128, vector __uint128);
 __int128 vec_vsubuqm (__int128, __int128);
 __uint128 vec_vsubuqm (__uint128, __uint128);
 
-vector __int128 __builtin_bcdadd (vector __int128, vector __int128);
-int __builtin_bcdadd_lt (vector __int128, vector __int128);
-int __builtin_bcdadd_eq (vector __int128, vector __int128);
-int __builtin_bcdadd_gt (vector __int128, vector __int128);
-int __builtin_bcdadd_ov (vector __int128, vector __int128);
-vector __int128 bcdsub (vector __int128, vector __int128);
-int __builtin_bcdsub_lt (vector __int128, vector __int128);
-int __builtin_bcdsub_eq (vector __int128, vector __int128);
-int __builtin_bcdsub_gt (vector __int128, vector __int128);
-int __builtin_bcdsub_ov (vector __int128, vector __int128);
+vector __int128 __builtin_bcdadd (vector __int128, vector __int128, const int);
+int __builtin_bcdadd_lt (vector __int128, vector __int128, const int);
+int __builtin_bcdadd_eq (vector __int128, vector __int128, const int);
+int __builtin_bcdadd_gt (vector __int128, vector __int128, const int);
+int __builtin_bcdadd_ov (vector __int128, vector __int128, const int);
+vector __int128 __builtin_bcdsub (vector __int128, vector __int128, const int);
+int __builtin_bcdsub_lt (vector __int128, vector __int128, const int);
+int __builtin_bcdsub_eq (vector __int128, vector __int128, const int);
+int __builtin_bcdsub_gt (vector __int128, vector __int128, const int);
+int __builtin_bcdsub_ov (vector __int128, vector __int128, const int);
 @end smallexample
 
 @node PowerPC AltiVec Built-in Functions Available on ISA 3.0
