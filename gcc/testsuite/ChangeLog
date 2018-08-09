@@ -1,3 +1,8 @@
+2018-08-09  Jeff Law  <law@redhat.com>
+
+	PR middle-end/86897
+	* gcc.dg/uninit-suppress_2.c: Disable DOM.
+
 2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/reduc_8.c: New test.
