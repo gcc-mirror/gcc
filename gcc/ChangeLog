@@ -1,3 +1,27 @@
+2018-08-09  Martin Liska  <mliska@suse.cz>
+
+	* params.def (PARAM_ALIGN_LOOP_ITERATIONS): Remove double dots
+        at the end of a line, make first letter capital and end up
+        a sentence with a dot.
+	(PARAM_LOOP_INTERCHANGE_STRIDE_RATIO): Likewise.
+	(PARAM_LOOP_BLOCK_TILE_SIZE): Likewise.
+	(PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Likewise.
+	(PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP): Likewise.
+	(PARAM_MAX_ISL_OPERATIONS): Likewise.
+	(PARAM_GRAPHITE_ALLOW_CODEGEN_ERRORS): Likewise.
+	(PARAM_PROFILE_FUNC_INTERNAL_ID): Likewise.
+	(PARAM_INDIR_CALL_TOPN_PROFILE): Likewise.
+	(PARAM_SLP_MAX_INSNS_IN_BB): Likewise.
+	(PARAM_IPA_CP_EVAL_THRESHOLD): Likewise.
+	(PARAM_IPA_CP_RECURSION_PENALTY): Likewise.
+	(PARAM_IPA_CP_SINGLE_CALL_PENALTY): Likewise.
+	(PARAM_IPA_CP_LOOP_HINT_BONUS): Likewise.
+	(PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS): Likewise.
+	(PARAM_TREE_REASSOC_WIDTH): Likewise.
+	(PARAM_HSA_GEN_DEBUG_STORES): Likewise.
+	(PARAM_MAX_SPECULATIVE_DEVIRT_MAYDEFS): Likewise.
+	(PARAM_MAX_VRP_SWITCH_ASSERTIONS): Likewise.
+
 2018-08-09  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR target/84332
