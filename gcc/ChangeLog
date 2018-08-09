@@ -1,5 +1,10 @@
 2018-08-09  Martin Liska  <mliska@suse.cz>
 
+        PR c/86895
+	* common.opt: Remove extra line.
+
+2018-08-09  Martin Liska  <mliska@suse.cz>
+
 	* params.def (PARAM_ALIGN_LOOP_ITERATIONS): Remove double dots
         at the end of a line, make first letter capital and end up
         a sentence with a dot.
