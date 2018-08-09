@@ -14983,6 +14983,17 @@ s390_option_override_internal (struct gcc_options *opts,
   else if (opts->x_s390_stack_guard)
     error ("-mstack-guard implies use of -mstack-size");
 
+  /* Our implementation of the stack probe requires the probe interval
+     to be used as displacement in an address operand.  The maximum
+     probe interval currently is 64k.  This would exceed short
+     displacements.  Trim that value down to 4k if that happens.  This
+     might result in too many probes being generated only on the
+     oldest supported machine level z900.  */
+  if (!DISP_IN_RANGE ((1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL))))
+    set_param_value ("stack-clash-protection-probe-interval", 12,
+		     opts->x_param_values,
+		     opts_set->x_param_values);
+
 #ifdef TARGET_DEFAULT_LONG_DOUBLE_128
   if (!TARGET_LONG_DOUBLE_128_P (opts_set->x_target_flags))
     opts->x_target_flags |= MASK_LONG_DOUBLE_128;

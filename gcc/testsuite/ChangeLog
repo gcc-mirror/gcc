@@ -1,3 +1,8 @@
+2018-08-09  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/84332
+	* gcc.target/s390/pr84332.c: New testcase.
+
 2018-08-08  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/46179
