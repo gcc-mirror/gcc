@@ -1,3 +1,37 @@
+2018-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/deque (std::pmr::deque): Declare alias.
+	* include/std/forward_list (std::pmr::forward_list): Likewise.
+	* include/std/list (std::pmr::list): Likewise.
+	* include/std/map (std::pmr::map, std::pmr::multimap): Likewise.
+	* include/std/regex (std::pmr::match_results, std::pmr::cmatch)
+	(std::pmr::smatch, std::pmr::wcmatch, std::pmr::wsmatch): Likewise.
+	* include/std/set (std::pmr::set, std::pmr::multiset): Likewise.
+	* include/std/string (std::pmr::basic_string, std::pmr::string)
+	(std::pmr::u16string, std::pmr::u32string, std::pmr::wstring):
+	Likewise.
+	* include/std/unordered_map (std::pmr::unordered_map)
+	(std::pmr::unordered_multimap): Likewise.
+	* include/std/unordered_set (std::pmr::unordered_set)
+	(std::pmr::unordered_multiset): Likewise.
+	* include/std/vector (std::pmr::vector): Likewise.
+	* testsuite/21_strings/basic_string/types/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/deque/types/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/forward_list/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/list/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/map/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/multimap/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/multiset/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/set/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/unordered_map/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/unordered_multimap/pmr_typedefs.cc: New
+	test.
+	* testsuite/23_containers/unordered_multiset/pmr_typedefs.cc: New
+	test.
+	* testsuite/23_containers/unordered_set/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/vector/pmr_typedefs.cc: New test.
+	* testsuite/28_regex/match_results/pmr_typedefs.cc: New test.
+
 2018-08-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_algo.h
