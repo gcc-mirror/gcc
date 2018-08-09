@@ -1,3 +1,8 @@
+2018-08-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k-protos.h (m68k_final_prescan_insn): Remove
+	prototype.
+
 2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-loop.c (vectorizable_reduction): Allow inner-loop
