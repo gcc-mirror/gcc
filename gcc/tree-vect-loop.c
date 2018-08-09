@@ -2922,7 +2922,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
     }
 
   stmt_vec_info def_stmt_info = loop_info->lookup_def (loop_arg);
-  if (!def_stmt_info)
+  if (!def_stmt_info
+      || !flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt)))
     return NULL;
 
   if (gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt))
@@ -3161,6 +3162,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       && def2_info->stmt == phi
       && (code == COND_EXPR
 	  || !def1_info
+	  || !flow_bb_inside_loop_p (loop, gimple_bb (def1_info->stmt))
 	  || vect_valid_reduction_input_p (def1_info)))
     {
       if (dump_enabled_p ())
@@ -3172,6 +3174,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       && def1_info->stmt == phi
       && (code == COND_EXPR
 	  || !def2_info
+	  || !flow_bb_inside_loop_p (loop, gimple_bb (def2_info->stmt))
 	  || vect_valid_reduction_input_p (def2_info)))
     {
       if (! nested_in_vect_loop && orig_code != MINUS_EXPR)
