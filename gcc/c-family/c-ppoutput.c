@@ -20,7 +20,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "c-common.h"		/* For flags.  */
-#include "../libcpp/internal.h"
+#include "../libcpp/internal.h" /* EW! */
 #include "c-pragma.h"		/* For parse_in.  */
 #include "file-prefix-map.h"    /* remap_macro_filename()  */
 
@@ -690,7 +690,7 @@ static int
 dump_macro (cpp_reader *pfile, cpp_hashnode *node, void *v ATTRIBUTE_UNUSED)
 {
   /* asserts are distinguished by beginning with '#'.  */
-  if (cpp_user_macro_p (node) && NODE_NAME(node)[0] != '#')
+  if (cpp_user_macro_p (node))
     {
       fputs ("#define ", print.outf);
       fputs ((const char *) cpp_macro_definition (pfile, node),

@@ -1,5 +1,14 @@
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family/
+	c-ppoutput.c (dump_macro): No need to check for assert here.
+	libcpp/
+	* include/cpplib.h (cpp_user_macro_p): Check non-assertness here.
+	(cpp_fun_like_macro_p): Make inline.
+	* macro.c (enter_macro_context): Use it directly.
+	(cpp_fun_like_macro_p): Remove definition here.
+	* pch.c (save_macros): Not need to check assertness here.
+
 	Merge trunk r263434.
 
 	Fold cpp-id-data.h into cpplib.h

@@ -1400,10 +1400,8 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
     source_location expand_loc;
 
     if (/* The top-level macro invocation that triggered the expansion
-	   we are looking at is with a standard macro ...  */
-	cpp_user_macro_p (pfile->top_most_macro_node)
-	/* ... and it's a function-like macro invocation,  */
-	&& pfile->top_most_macro_node->value.macro->fun_like
+	   we are looking at is with a function-like user macro ...  */
+	cpp_fun_like_macro_p (pfile->top_most_macro_node)
 	/* ... and we are tracking the macro expansion.  */
 	&& CPP_OPTION (pfile, track_macro_expansion))
       /* Then the location of the end of the macro invocation is the
@@ -3637,13 +3635,6 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
 	    }
 	}
     }
-}
-
-/* Returns true if NODE is a function-like macro.  */
-bool
-cpp_fun_like_macro_p (cpp_hashnode *node)
-{
-  return cpp_user_macro_p (node) && node->value.macro->fun_like;
 }
 
 /* Returns the name, arguments and expansion of a macro, in a format

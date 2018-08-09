@@ -755,7 +755,7 @@ save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
 {
   struct save_macro_data *data = (struct save_macro_data *)data_p;
 
-  if (cpp_user_macro_p (h) && h->value.macro->kind != cmk_assert)
+  if (cpp_user_macro_p (h))
     {
       if (data->count == data->array_size)
 	{

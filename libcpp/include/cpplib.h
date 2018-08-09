@@ -942,24 +942,29 @@ extern int cpp_avoid_paste (cpp_reader *, const cpp_token *,
 extern const cpp_token *cpp_get_token (cpp_reader *);
 extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 						     source_location *);
-/* Although a macro may actually turn out to be an assert, they are
-   separated by namespace, in that the latter have special
-   '#'-starting names, that macros cannot have.  We don't have to
-   check that.  */
 inline bool cpp_user_macro_p (const cpp_hashnode *node)
 {
-  return node->type == NT_USER_MACRO;
+  return node->type == NT_USER_MACRO && node->value.macro->kind != cmk_assert;
 }
 inline bool cpp_builtin_macro_p (const cpp_hashnode *node)
 {
   return node->type == NT_BUILTIN_MACRO;
 }
+/* Although a macro may actually turn out to be an assert, they are
+   separated by namespace, in that the latter have special
+   '#'-starting names, that macros cannot have.  We don't have to
+   check that here.  */
 inline bool cpp_macro_p (const cpp_hashnode *node)
 {
   return node->type & NT_USER_MACRO;
 }
 
-extern bool cpp_fun_like_macro_p (cpp_hashnode *);
+/* Returns true if NODE is a function-like user macro.  */
+inline bool cpp_fun_like_macro_p (cpp_hashnode *node)
+{
+  return cpp_user_macro_p (node) && node->value.macro->fun_like;
+}
+
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  cpp_hashnode *);
 extern source_location cpp_macro_definition_location (cpp_hashnode *);
