@@ -204,6 +204,10 @@ struct diagnostic_context
      a token, which would look strange).  */
   bool colorize_source_p;
 
+  /* When printing source code, should there be a left-hand margin
+     showing line numbers?  */
+  bool show_line_numbers_p;
+
   /* Usable by plugins; if true, print a debugging ruler above the
      source output.  */
   bool show_ruler_p;

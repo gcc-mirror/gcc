@@ -1,3 +1,14 @@
+2018-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c: New
+	test.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color-line-numbers.c:
+	New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the new tests.
+	* lib/prune.exp: Add -fno-diagnostics-show-line-numbers to
+	TEST_ALWAYS_FLAGS.
+
 2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/86858
