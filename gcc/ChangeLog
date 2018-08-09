@@ -1,3 +1,40 @@
+2018-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* common.opt (fdiagnostics-show-line-numbers): New option.
+	* diagnostic-show-locus.c (class layout): Add fields
+	"m_show_line_numbers_p" and "m_linenum_width";
+	(num_digits): New function.
+	(test_num_digits): New function.
+	(layout::layout): Initialize new fields.  Update m_x_offset
+	logic to handle any left margin.
+	(layout::print_source_line): Print line number when requested.
+	(layout::start_annotation_line): New member function.
+	(layout::print_annotation_line): Call it.
+	(layout::print_leading_fixits): Likewise.
+	(layout::print_trailing_fixits): Likewise.  Update calls to
+	move_to_column for new parameter.
+	(layout::get_x_bound_for_row): Add "add_left_margin" param and use
+	it to potentially call start_annotation_line.
+	(layout::show_ruler): Call start_annotation_line.
+	(selftest::test_line_numbers_multiline_range): New selftest.
+	(selftest::diagnostic_show_locus_c_tests): Call test_num_digits
+	and selftest::test_line_numbers_multiline_range.
+	* diagnostic.c (diagnostic_initialize): Initialize
+	show_line_numbers_p.
+	* diagnostic.h (struct diagnostic_context): Add field
+	"show_line_numbers_p".
+	* doc/invoke.texi (Diagnostic Message Formatting Options): Add
+	-fno-diagnostics-show-line-numbers.
+	* dwarf2out.c (gen_producer_string): Add
+	OPT_fdiagnostics_show_line_numbers to the ignored options.
+	* lto-wrapper.c (merge_and_complain): Likewise to the "pick
+	one setting" options.
+	(append_compiler_options): Likewise to the dropped options.
+	(append_diag_options): Likewise to the passed-on options.
+	* opts.c (common_handle_option): Handle the new option.
+	* toplev.c (general_init): Set up global_dc->show_line_numbers_p.
+
 2018-08-09  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available on
