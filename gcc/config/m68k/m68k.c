@@ -2334,8 +2334,6 @@ m68k_unwrap_symbol (rtx orig, bool unwrap_reloc32_p)
 static void
 m68k_adjust_decorated_operand (rtx op)
 {
-  int i;
-
   /* Combine and, possibly, other optimizations may do good job
      converting
        (const (unspec [(symbol)]))
