@@ -1,3 +1,10 @@
+2018-08-09  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/84332
+	* config/s390/s390.c (s390_option_override_internal): Reduce the
+	stack-clash-protection-probe-interval param if it would be too big
+	for z900.
+
 2018-08-08  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/46179
