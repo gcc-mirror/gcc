@@ -1,3 +1,7 @@
+2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/reduc_8.c: New test.
+
 2018-08-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/84889
