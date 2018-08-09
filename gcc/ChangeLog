@@ -1,3 +1,11 @@
+2018-08-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/86887
+	* config/aarch64/aarch64.md (add<mode>3_carryinC_zero): Add missing
+	register constraint to operand 0.
+	(add<mode>3_carryinC): Likewise.
+	(add<mode>3_carryinV_zero, add<mode>3_carryinV): Likewise.
+
 2018-08-09  Martin Liska  <mliska@suse.cz>
 
         PR c/86895

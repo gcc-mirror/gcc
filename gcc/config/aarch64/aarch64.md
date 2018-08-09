@@ -2451,7 +2451,7 @@
 	    (plus:GPI
 	      (match_operand:GPI 3 "aarch64_carry_operation" "")
 	      (match_dup 1)))))
-   (set (match_operand:GPI 0 "register_operand")
+   (set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI (match_dup 3) (match_dup 1)))]
    ""
    "adcs\\t%<w>0, %<w>1, <w>zr"
@@ -2472,7 +2472,7 @@
 		(match_operand:GPI 4 "aarch64_carry_operation" "")
 		(match_dup 1))
 	      (match_dup 2)))))
-   (set (match_operand:GPI 0 "register_operand")
+   (set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI
 	  (plus:GPI (match_dup 4) (match_dup 1))
 	  (match_dup 2)))]
@@ -2517,7 +2517,7 @@
 	    (plus:GPI
 	      (match_operand:GPI 3 "aarch64_carry_operation" "")
 	      (match_dup 1)))))
-   (set (match_operand:GPI 0 "register_operand")
+   (set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI (match_dup 3) (match_dup 1)))]
    ""
    "adcs\\t%<w>0, %<w>1, <w>zr"
@@ -2538,7 +2538,7 @@
 		(match_operand:GPI 4 "aarch64_carry_operation" "")
 		(match_dup 1))
 	      (match_dup 2)))))
-   (set (match_operand:GPI 0 "register_operand")
+   (set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI
 	  (plus:GPI (match_dup 4) (match_dup 1))
 	  (match_dup 2)))]
