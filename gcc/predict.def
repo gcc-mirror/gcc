@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
      DEF_PREDICTOR (ENUM, NAME, HITRATE)
 
    This macro will be called once for each predictor.  The ENUM will
-   be of type `enum predictor', and will enumerate all supported
+   be of type `enum br_predictor', and will enumerate all supported
    predictors.  The order of DEF_PREDICTOR calls is important, as
    in the first match combining heuristics, the predictor appearing
    first in this file will win.

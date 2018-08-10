@@ -1,3 +1,8 @@
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+        PR tree-optimization/85799
+	* gcc.dg/pr85799.c: New test.
+
 2018-08-09  Jeff Law  <law@redhat.com>
 
 	PR middle-end/86897
