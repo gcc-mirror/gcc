@@ -126,7 +126,7 @@ operator new (std::size_t sz, std::align_val_t al)
 #endif
 
   using __gnu_cxx::aligned_alloc;
-  while (__builtin_expect ((p = aligned_alloc (align, sz)) == 0, false))
+  while ((p = aligned_alloc (align, sz)) == 0)
     {
       new_handler handler = std::get_new_handler ();
       if (! handler)

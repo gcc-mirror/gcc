@@ -1,3 +1,10 @@
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+	* libsupc++/new_op.cc (new): Remove __builtin_expect as malloc
+        predictor can handle that.
+	* libsupc++/new_opa.cc: Likewise.
+	* libsupc++/new_opnt.cc (new): Likewise.
+
 2018-08-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	PR target/85904
