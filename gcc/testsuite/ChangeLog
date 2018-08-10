@@ -1,3 +1,8 @@
+2018-08-10  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/82418
+	* gcc.target/i386/pr82418.c: New test.
+
 2018-08-10  Martin Liska  <mliska@suse.cz>
 
         PR target/83610
