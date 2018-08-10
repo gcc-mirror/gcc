@@ -3348,12 +3348,12 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
       return;
 
     case INTRINSIC_AND:
-      code = TRUTH_ANDIF_EXPR;
+      code = flag_frontend_optimize ? TRUTH_ANDIF_EXPR : TRUTH_AND_EXPR;
       lop = 1;
       break;
 
     case INTRINSIC_OR:
-      code = TRUTH_ORIF_EXPR;
+      code = flag_frontend_optimize ? TRUTH_ORIF_EXPR : TRUTH_OR_EXPR;
       lop = 1;
       break;
 

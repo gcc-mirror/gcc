@@ -1,3 +1,14 @@
+2018-08-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57160
+	* invoke.texi (frontend-optimize): Mention short-circuiting.
+	* options.c (gfc_post_options): Disable -ffrontend-optimize with -Og.
+	* resolve.c (resolve_operator): Warn about short-circuiting only with
+	-ffrontend-optimize.
+	* trans-expr.c (gfc_conv_expr_op): Use short-circuiting operators only
+	with -ffrontend-optimize. Without that flag, make sure that both
+	operands are evaluated.
+
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
 	* cpp.c (cb_file_change): Use linemap_included_from.

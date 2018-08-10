@@ -3982,7 +3982,8 @@ resolve_operator (gfc_expr *e)
 	  else if (op2->ts.kind < e->ts.kind)
 	    gfc_convert_type (op2, &e->ts, 2);
 
-	  if (e->value.op.op == INTRINSIC_AND || e->value.op.op == INTRINSIC_OR)
+	  if (flag_frontend_optimize &&
+	    (e->value.op.op == INTRINSIC_AND || e->value.op.op == INTRINSIC_OR))
 	    {
 	      /* Warn about short-circuiting
 	         with impure function as second operand.  */
