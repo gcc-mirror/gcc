@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "range.h"
 #include "range-op.h"
-#include "tree-vrp.h"
+#include "wide-int-range.h"
 
 inline wide_int
 max_limit (const_tree type)
@@ -1381,7 +1381,7 @@ operator_bitwise_and::apply_mask_to_pair (irange& r, const wide_int& lb,
 					  const wide_int& mask) const
 {
   wide_int new_lb, new_ub;
-  if (range_easy_mask_min_max (BIT_AND_EXPR, lb, ub, mask))
+  if (wide_int_range_can_optimize_bit_op (BIT_AND_EXPR, lb, ub, mask))
     {
       new_lb = lb & mask;
       new_ub = ub & mask;
@@ -1391,8 +1391,8 @@ operator_bitwise_and::apply_mask_to_pair (irange& r, const wide_int& lb,
       wide_int may_be_nonzero;
       wide_int must_be_nonzero;
 
-      zero_nonzero_bits_from_bounds (UNSIGNED, lb, ub, &may_be_nonzero,
-				     &must_be_nonzero);
+      wide_int_range_set_zero_nonzero_bits (UNSIGNED, lb, ub, may_be_nonzero,
+					    must_be_nonzero);
 
       new_lb = must_be_nonzero & mask;
       new_ub = may_be_nonzero & mask;

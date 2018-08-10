@@ -114,7 +114,7 @@ irange::set_range (tree typ, const wide_int &lbound,
       bounds[0] = lbound;
       bounds[1] = ubound;
     }
-  gcc_assert (!CHECKING_P || (valid_p () && !empty_p ()));
+  gcc_assert (!CHECKING_P || valid_p ());
 }
 
 /* Set range from type T and integer bounds X, Y.
