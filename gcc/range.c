@@ -246,6 +246,9 @@ irange::range_for_type_p () const
 {
   irange tmp;
   tmp.set_range_for_type (type);
+  /* Clear the overflow bit so two [MIN,MAX] ranges will compare
+     correctly with and without overflow.  */
+  tmp.overflow = overflow;
   return (*this == tmp);
 }
 
@@ -1038,6 +1041,7 @@ irange_to_value_range (value_range &vr, const irange &r)
   if (r.range_for_type_p ())
     {
       vr.type = VR_VARYING;
+      vr.min = vr.max = NULL_TREE;
       return;
     }
   tree type = r.get_type ();
@@ -1566,7 +1570,7 @@ irange_tests ()
   ASSERT_TRUE (vr.type == VR_ANTI_RANGE);
   ASSERT_TRUE (wi::eq_p (10, wi::to_wide (vr.min))
 	       && wi::eq_p (20, wi::to_wide (vr.max)));
-  value_range_to_irange (r1, vr);
+  value_range_to_irange (r1, integer_type_node, vr);
   ASSERT_TRUE (r0 == r1);
 }
 

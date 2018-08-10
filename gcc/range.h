@@ -227,11 +227,14 @@ value_range_to_irange (irange &r,
 /* Same as above, but takes an entire value_range instead of piecemeal.  */
 
 static inline void
-value_range_to_irange (irange &r, const value_range &vr)
+value_range_to_irange (irange &r, tree type, const value_range &vr)
 {
-  return value_range_to_irange (r, TREE_TYPE (vr.min), vr.type,
-				wi::to_wide (vr.min),
-				wi::to_wide (vr.max));
+  if (vr.type == VR_VARYING || vr.type == VR_UNDEFINED)
+    r.set_range_for_type (type);
+  else
+    value_range_to_irange (r, TREE_TYPE (vr.min), vr.type,
+			   wi::to_wide (vr.min),
+			   wi::to_wide (vr.max));
 }
 
 void irange_to_value_range (value_range &vr, const irange &);

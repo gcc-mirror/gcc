@@ -1,6 +1,7 @@
 /* Code for range operators.
    Copyright (C) 2017 Free Software Foundation, Inc.
-   Contributed by Andrew MacLeod <amacleod@redhat.com>.
+   Contributed by Andrew MacLeod <amacleod@redhat.com>
+   and Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
 
@@ -71,43 +72,106 @@ empty_range_check (irange& r, const irange& op1, const irange & op2, tree type)
     return false;
 }
 
-/* Given newly calcuclated lbound and ubound, examine the overflow bits to 
-   determine where the various ranges belong.  */
+/* Given newly calculated lbound and ubound, examine their respective
+   overflow bits to determine how to add [lbound,ubound] into range R.
+
+   This is the irange implementation of set_value_range_with_overflow,
+   which we can't share because the VRP implementation deals with
+   yucky anti ranges.
+
+   FIXME: Add a note to set_value_range_with_overflow to keep
+   these two functions in sync.  */
+
 static void
-add_to_range (irange& r,
-	      wide_int& lb, wi::overflow_type ov_lb,
-	      wide_int& ub, wi::overflow_type ov_ub)
+accumulate_range (irange& r,
+		  const wide_int &lb, wi::overflow_type ov_lb,
+		  const wide_int &ub, wi::overflow_type ov_ub,
+		  bool overflow_wraps)
 {
-  if (ov_lb)
+  tree type = r.get_type ();
+  if (overflow_wraps)
     {
-      if (ov_ub)
-        {
-	  /* Both overflow, so result is all overflow.  */
-	  if (TYPE_OVERFLOW_WRAPS (r.get_type ()))
-	    r.union_ (lb, ub);
+      // No overflow or both overflow or underflow.  The range can be
+      // used as is.
+      if (ov_lb == ov_ub)
+	r.union_ (lb, ub);
+      // Underflow on the lower bound.
+      else if (ov_lb == wi::OVF_UNDERFLOW && ov_ub == wi::OVF_NONE)
+	{
+	  r.union_ (min_limit (type), ub);
+	  r.union_ (lb, max_limit (type));
+	}
+      // Overflow on the upper bound.
+      else if (ov_lb == wi::OVF_NONE && ov_ub == wi::OVF_OVERFLOW)
+	{
+	  r.union_ (lb, max_limit (type));
+	  r.union_ (min_limit (type), ub);
 	}
       else
-	{
-	  /* lbound overflow, ubound doesn't, must be underflow.  */
-	  r.union_ (min_limit (r.get_type ()), ub);
-	  if (TYPE_OVERFLOW_WRAPS (r.get_type ()))
-	    r.union_ (lb, max_limit (r.get_type ()));
-	}
-      if (!TYPE_OVERFLOW_WRAPS (r.get_type ()))
-	r.set_overflow ();
+	r.set_range_for_type (type);
     }
   else
-    if (ov_ub)
-      {
-	/* Ubound overflow, lboudn doesnt, must be an overflow.  */
-	r.union_ (lb, max_limit (r.get_type ()));
-	if (TYPE_OVERFLOW_WRAPS (r.get_type ()))
-	  r.union_ (min_limit (r.get_type ()), ub);
-	if (!TYPE_OVERFLOW_WRAPS (r.get_type ()))
-	  r.set_overflow ();
-      }
-    else
-      r.union_ (lb, ub);
+    {
+      // If overflow does not wrap, saturate to the types min/max value.
+      wide_int new_lb, new_ub;
+      if (ov_lb == wi::OVF_UNDERFLOW)
+	new_lb = min_limit (type);
+      else if (ov_lb == wi::OVF_OVERFLOW)
+	new_lb = max_limit (type);
+      else
+	new_lb = lb;
+
+      if (ov_ub == wi::OVF_UNDERFLOW)
+	new_ub = min_limit (type);
+      else if (ov_ub == wi::OVF_OVERFLOW)
+	new_ub = max_limit (type);
+      else
+	new_ub = ub;
+
+      if (wi::gt_p (new_lb, new_ub, TYPE_SIGN (type)))
+	{
+	  // FIXME: We should not be wrapping here, especially on
+	  // !TYPE_OVERFLOW_WRAPS.
+	  gcc_unreachable ();
+	  r.set_range_for_type (type);
+	}
+      else
+	r.union_ (new_lb, new_ub);
+    }
+  if (ov_lb || ov_ub)
+    r.set_overflow ();
+}
+
+/* Like accumulate_range, but canonicalize the case where the bounds
+   are swapped and overflow may wrap.  In which case we transform
+   [10,5] into [MIN,5][10,MAX].
+
+   I am not happy with this.  This is basically a workaround for the
+   fact that VRP has cripple ranges and wide_int_range_mult_wrapping
+   may return swapped ranges, so they must be canonicalized into some
+   anti range crap.  I'm hoping this will go away when everything is
+   an irange.  */
+
+static inline void
+accumulate_range_with_possible_swap (signop s,
+				     irange &r,
+				     const wide_int &new_lb,
+				     const wide_int &new_ub)
+{
+  /* If the bounds are swapped, set the overflow bit to force
+     add_to_range to create the range correctly.  This is essentially
+     what set_and_canonicalize_value_range was doing.  */
+  wi::overflow_type overflow;
+  bool overflow_wraps = TYPE_OVERFLOW_WRAPS (r.get_type ());
+  if (wi::gt_p (new_lb, new_ub, s))
+    {
+      overflow = wi::OVF_OVERFLOW;
+      overflow_wraps = true;
+    }
+  else
+    overflow = wi::OVF_NONE;
+
+  accumulate_range (r, new_lb, wi::OVF_NONE, new_ub, overflow, overflow_wraps);
 }
 
 /*  ------------------------------------------------------------------------  */
@@ -726,11 +790,18 @@ do_cross_product_irange (enum tree_code code, signop s, irange& r,
 {
   wide_int new_lb, new_ub;
   bool overflow_undefined = TYPE_OVERFLOW_UNDEFINED (r.get_type ());
-  if (wide_int_range_cross_product (new_lb, new_ub, code, s,
-				    lh_lb, lh_ub, rh_lb, rh_ub,
-				    overflow_undefined))
+  bool overflow_wraps = TYPE_OVERFLOW_WRAPS (r.get_type ());
+  unsigned prec = TYPE_PRECISION (r.get_type ());
+  if (wide_int_range_multiplicative_op (new_lb, new_ub,
+					code, s, prec,
+					lh_lb, lh_ub, rh_lb, rh_ub,
+					overflow_undefined, overflow_wraps))
     {
-      r.union_ (new_lb, new_ub);
+      /* ?? Should we only call this when overflow wraps and
+	 MULT_EXPR, otherwise call r.union_()?  Because that's the
+	 only case where the ranges can be swapped.  Is it worth
+	 it?  */
+      accumulate_range_with_possible_swap (s, r, new_lb, new_ub);
       return true;
     }
   return false;
@@ -748,101 +819,74 @@ op_wi (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
     case PLUS_EXPR:
       wide_int_binop (new_lb, code, lh_lb, rh_lb, s, &ov_lb);
       wide_int_binop (new_ub, code, lh_ub, rh_ub, s, &ov_ub);
-      // Double Integral overflow calculations work fine, If one of the two
-      // operands is a constant.  ie   [0, 100] + ([MAXINT-1),(MAXINT-1)] 
-      // Otherwise we don't know if the overflows "overflow" into each other.
-      if (!ov_lb || !ov_ub || wi::eq_p (lh_lb, lh_ub)
-	  || wi::eq_p (rh_lb, rh_ub))
-	{
-	  add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
-	  return true;
-	}
-      return false;
+      accumulate_range (r, new_lb, ov_lb, new_ub, ov_ub,
+			TYPE_OVERFLOW_WRAPS (r.get_type ()));
+      return true;
 
     case MINUS_EXPR:
       wide_int_binop (new_lb, code, lh_lb, rh_ub, s, &ov_lb);
       wide_int_binop (new_ub, code, lh_ub, rh_lb, s, &ov_ub);
-      if (!ov_lb || !ov_ub || wi::eq_p (lh_lb, lh_ub)
-	  || wi::eq_p (rh_lb, rh_ub))
-	{
-	  add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
-	  return true;
-	}
-      return false;
+      accumulate_range (r, new_lb, ov_lb, new_ub, ov_ub,
+			TYPE_OVERFLOW_WRAPS (r.get_type ()));
+      return true;
 
     case RSHIFT_EXPR:
+    case MULT_EXPR:
       return do_cross_product_irange (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
 
     case LSHIFT_EXPR:
       {
-        int prec = TYPE_PRECISION (r.get_type ());
-	int shift = wi::extract_uhwi (rh_ub, 0, rh_ub.get_precision ());
-        // If rh is a constant, just do a multiply
-        if (wi::eq_p (rh_lb, rh_ub))
+	tree type = r.get_type ();
+        int prec = TYPE_PRECISION (type);
+	if (!wide_int_range_shift_undefined_p (s, prec, rh_lb, rh_ub)
+	    && wide_int_range_lshift (new_lb, new_ub,
+				      s, prec, lh_lb, lh_ub, rh_lb, rh_ub,
+				      TYPE_OVERFLOW_UNDEFINED (type),
+				      TYPE_OVERFLOW_WRAPS (type)))
 	  {
-	    bool save_flag = flag_wrapv;
-	    bool res;
-	    flag_wrapv = 1;
-	    tmp = wi::set_bit_in_zero (shift, prec);
-	    res = op_wi (MULT_EXPR, s, r, lh_lb, lh_ub, tmp, tmp);
-	    flag_wrapv = save_flag;
-	    return res;
+	    accumulate_range_with_possible_swap (s, r, new_lb, new_ub);
+	    return true;
 	  }
-	// Check to see if the shift might overflow.
-	int overflow_pos = prec;
-	int bound_shift;
-	bool in_bounds = false;
-
-	if (s == SIGNED)
-	  overflow_pos--;
-
-        /* If bound_shift == HOST_BITS_PER_WIDE_INT, the llshift can
-           overflow.  However, for that to happen, rh_ub needs to be
-           zero, which means RH is a singleton range of zero, which
-           means it should be handled by the previous if-clause.  */
-	bound_shift = overflow_pos - shift;
-	tmp = wi::set_bit_in_zero (bound_shift, prec);
-	wide_int complement = ~(tmp - 1);
-
-	if (s == UNSIGNED)
-	  {
-	    new_lb = tmp;
-	    new_ub = complement;
-	    if (wi::ltu_p (lh_ub, new_lb))
-	      {
-	      /* [5, 6] << [1, 2] == [10, 24].  */
-	      /* We're shifting out only zeroes, the value increases
-		 monotonically.  */
-	      in_bounds = true;
-	      }
-	    else if (wi::ltu_p (new_ub, lh_lb))
-	      {
-		/* [0xffffff00, 0xffffffff] << [1, 2]
-		   == [0xfffffc00, 0xfffffffe].  */
-		/* We're shifting out only ones, the value decreases
-		   monotonically.  */
-		in_bounds = true;
-	      }
-	  }
-	else
-	  {
-	    new_lb = complement;
-	    new_ub = tmp;
-	    if (wi::lts_p (lh_ub, new_ub) && wi::lts_p (new_lb, lh_lb))
-	      {
-		/* For non-negative numbers, we're shifting out only
-		   zeroes, the value increases monotonically.
-		   For negative numbers, we're shifting out only ones, the
-		   value decreases monotomically.  */
-		in_bounds = true;
-	      }
-	  }
-
-	if (in_bounds)
-	  return do_cross_product_irange (code, s, r, lh_lb, lh_ub, rh_lb,
-					  rh_ub);
 	return false;
       }
+
+    case BIT_XOR_EXPR:
+      {
+	wide_int may_be_nonzero_lh, must_be_nonzero_lh;
+	wide_int may_be_nonzero_rh, must_be_nonzero_rh;
+	wide_int_range_set_zero_nonzero_bits (s, lh_lb, lh_ub,
+					      may_be_nonzero_lh,
+					      must_be_nonzero_lh);
+	wide_int_range_set_zero_nonzero_bits (s, rh_lb, rh_ub,
+					      may_be_nonzero_rh,
+					      must_be_nonzero_rh);
+	if (wide_int_range_bit_xor (new_lb, new_ub, s,
+				    TYPE_PRECISION (r.get_type ()),
+				    must_be_nonzero_lh,
+				    may_be_nonzero_lh,
+				    must_be_nonzero_rh,
+				    may_be_nonzero_rh))
+	  {
+	    accumulate_range (r, new_lb, wi::OVF_NONE, new_ub, wi::OVF_NONE,
+			      false);
+	    return true;
+	  }
+	return false;
+      }
+
+    case TRUNC_MOD_EXPR:
+      // Make sure we're not dividing by zero.
+      if (wi::lt_p (0, rh_lb, s) || wi::lt_p (rh_ub, 0, s))
+	{
+	  wide_int_range_trunc_mod (new_lb, new_ub, s,
+				    TYPE_PRECISION (r.get_type ()),
+				    lh_lb, lh_ub, rh_lb, rh_ub);
+	  accumulate_range (r, new_lb, wi::OVF_NONE, new_ub, wi::OVF_NONE,
+			    false);
+	  return true;
+	}
+      // Division by zero is undefined.
+      return false;
 
     case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
@@ -876,28 +920,6 @@ op_wi (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
       // this allows division by ranges which have multiple sub-ranges to 
       // continue if one of the subranges is [0,0]
       return true;
-      
-    case MULT_EXPR:
-      {
-	tree type = r.get_type ();
-	if (TYPE_OVERFLOW_WRAPS (type))
-	  {
-	    wide_int new_lb, new_ub;
-	    wide_int_range_mult_wrapping (new_lb, new_ub,
-					  s, TYPE_PRECISION (type),
-					  lh_lb, lh_ub, rh_lb, rh_ub);
-	    /* If the bounds are swapped, set the overflow bit so
-	       add_to_range can create the range correctly.  */
-	    wi::overflow_type overflow;
-	    if (wi::gt_p (new_lb, new_ub, s))
-	      overflow = wi::OVF_OVERFLOW;
-	    else
-	      overflow = wi::OVF_NONE;
-	    add_to_range (r, new_lb, wi::OVF_NONE, new_ub, overflow);
-	    return true;
-	  }
-	return do_cross_product_irange (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
-      }
 
     default:
       break;
@@ -962,8 +984,15 @@ op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
   if (!res)
     {
       signop s = TYPE_SIGN (type);
-      res = op_wi (code, s, r, lh.lower_bound (), lh.upper_bound (),
-		   rh.lower_bound (), rh.upper_bound ());
+      for (unsigned x = 0; x < lh.num_pairs (); ++x)
+	for (unsigned y = 0; y < rh.num_pairs (); ++y)
+	  {
+	    res = op_wi (code, s, r,
+			 lh.lower_bound (x), lh.upper_bound (x),
+			 rh.lower_bound (y), rh.upper_bound (y));
+	    if (!res)
+	      return false;
+	  }
     }
 
   return res && !r.range_for_type_p ();
@@ -1208,7 +1237,10 @@ operator_cast::dump (FILE *f) const
   fprintf (f, "(cast)");
 }
 
-/* Return the range of lh converted to the type of rh.  */
+/* Return the range of lh converted to the type of rh:
+
+   r = (type_of(rh)) lh.  */
+
 bool
 operator_cast::fold_range (irange& r, const irange& lh, const irange& rh) const
 {
@@ -1649,7 +1681,7 @@ operator_bitwise_or::fold_range (irange& r, const irange& lh,
   if (types_compatible_p (lh.get_type (), boolean_type_node))
     return op_logical_or.fold_range (r, lh, rh);
 
-  /* For now do nothing with bitwise AND of iranges, just return the type. */
+  /* For now do nothing with bitwise OR of iranges, just return the type. */
   r.set_range_for_type (lh.get_type ());
   return true;
 }
@@ -1662,7 +1694,7 @@ operator_bitwise_or::op1_irange (irange& r, const irange& lhs,
   if (types_compatible_p (lhs.get_type (), boolean_type_node))
     return op_logical_or.op1_irange (r, lhs, op2);
 
-  /* For now do nothing with bitwise AND of iranges, just return the type. */
+  /* For now do nothing with bitwise OR of iranges, just return the type. */
   r.set_range_for_type (lhs.get_type ());
   return true;
 }
@@ -1674,7 +1706,21 @@ operator_bitwise_or::op2_irange (irange& r, const irange& lhs,
   return operator_bitwise_or::op1_irange (r, lhs, op1);
 }
 
+class operator_bitwise_xor : public basic_operator
+{
+public:
+  operator_bitwise_xor (): basic_operator (BIT_XOR_EXPR) { }
+  /* FIXME: Andrew can implement the op1_irange and op2_irange variants
+     when he returns from leave :-P.  */
+} op_bitwise_xor;
 
+class operator_trunc_mod : public basic_operator
+{
+public:
+  operator_trunc_mod (): basic_operator (TRUNC_MOD_EXPR) { }
+  /* FIXME: Andrew can implement the op1_irange and op2_irange variants
+     when he returns from leave :-P.  */
+} op_trunc_mod;
 
 class operator_logical_not : public irange_operator
 {
@@ -1749,29 +1795,31 @@ bool
 operator_bitwise_not::fold_range (irange& r, const irange& lh,
 				  const irange& rh) const
 {
-  if (empty_range_check (r, lh, rh, lh.get_type ()))
+  tree type = lh.get_type ();
+  if (empty_range_check (r, lh, rh, type))
     return true;
 
   /* If this is a boolean not, call the logical version.  */
-  if (types_compatible_p (lh.get_type (), boolean_type_node))
+  if (types_compatible_p (type, boolean_type_node))
     return op_logical_not.fold_range (r, lh, rh);
 
-  /* Not sure how to logical not a range, add bitpattern support.  */
-  r.set_range_for_type (lh.get_type ());
-  return true;
+  // ~X is simply -1 - X.
+  irange minusone (type, -1, -1);
+  return op_rr (MINUS_EXPR, r, minusone, lh);
 }
 
 bool
 operator_bitwise_not::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2 ATTRIBUTE_UNUSED) const
 {
+  tree type = lhs.get_type ();
   /* If this is a boolean not, call the logical version.  */
-  if (types_compatible_p (lhs.get_type (), boolean_type_node))
+  if (types_compatible_p (type, boolean_type_node))
     return op_logical_not.op1_irange (r, lhs, op2);
 
-  /* Not sure how to logical not a range, add bitpattern support.  */
-  r.set_range_for_type (lhs.get_type ());
-  return true;
+  // ~X is -1 - X and since bitwise NOT is involutary...do it again.
+  irange minusone (type, -1, -1);
+  return op_rr (MINUS_EXPR, r, minusone, lhs);
 }
 
 
@@ -1872,6 +1920,31 @@ operator_pointer_plus::fold_range (irange& r, const irange& lh,
 	r.set_range_for_type (lh.get_type ());
     }
   return true;
+}
+
+// Unary identity function.
+class operator_identity : public irange_operator
+{
+  tree_code code;
+ public:
+  virtual void dump (FILE *f) const;
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange &op2 ATTRIBUTE_UNUSED) const
+  { r = op1; return false; }
+  virtual bool op1_irange (irange& r, const irange& lhs,
+			   const irange &op2 ATTRIBUTE_UNUSED) const
+  { r = lhs; return false; }
+} op_identity;
+
+void
+operator_identity::dump (FILE *f) const
+{
+  if (code == PAREN_EXPR)
+    fprintf (f, " PAREN ");
+  else if (code == OBJ_TYPE_REF)
+    fprintf (f, " OBJ_TYPE ");
+  else
+    gcc_unreachable ();
 }
 
 class operator_abs : public irange_operator
@@ -1975,6 +2048,39 @@ operator_abs::op1_irange (irange& r, const irange& lhs, const irange& op2) const
   for (unsigned i = 0; i < positives.num_pairs (); ++i)
     r.union_ (-positives.upper_bound (i), -positives.lower_bound (i));
   return true;
+}
+
+class operator_negate : public irange_operator
+{
+  tree_code code;
+ public:
+  virtual void dump (FILE *f) const;
+
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+  virtual bool op1_irange (irange& r, const irange& lhs,
+			   const irange& op2) const
+    { return fold_range (r, lhs, op2); } // NEGATE is involutory :-P.
+} op_negate;
+
+void
+operator_negate::dump (FILE *f) const
+{
+  fprintf (f, " - ");
+}
+
+/* Return the negated range of lh with the type of rh.  */
+
+bool
+operator_negate::fold_range (irange &r,
+			     const irange &lh, const irange& rh) const
+{
+  tree type = rh.get_type ();
+  if (empty_range_check (r, lh, rh, type))
+    return true;
+  // -X is simply 0 - X.
+  irange zero (type, 0, 0);
+  return op_rr (MINUS_EXPR, r, zero, lh);
 }
 
 class operator_min_max : public irange_operator
@@ -2167,6 +2273,7 @@ irange_op_table::irange_op_table ()
 
   irange_tree[BIT_AND_EXPR] = &op_bitwise_and;
   irange_tree[BIT_IOR_EXPR] = &op_bitwise_or;
+  irange_tree[BIT_XOR_EXPR] = &op_bitwise_xor;
   irange_tree[BIT_NOT_EXPR] = &op_bitwise_not;
 
   irange_tree[INTEGER_CST] = &op_integer_cst;
@@ -2175,7 +2282,11 @@ irange_op_table::irange_op_table ()
   irange_tree[ABS_EXPR] = &op_abs;
   irange_tree[MIN_EXPR] = &op_min;
   irange_tree[MAX_EXPR] = &op_max;
+  irange_tree[NEGATE_EXPR] = &op_negate;
+  irange_tree[PAREN_EXPR] = &op_identity;
+  irange_tree[OBJ_TYPE_REF] = &op_identity;
   irange_tree[POINTER_PLUS_EXPR] = &op_pointer_plus;
+  irange_tree[TRUNC_MOD_EXPR] = &op_trunc_mod;
 
   irange_tree[LSHIFT_EXPR] = &op_lshift;
   irange_tree[RSHIFT_EXPR] = &op_rshift;
