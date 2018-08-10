@@ -40,7 +40,7 @@ operator new (std::size_t sz, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   if (sz == 0)
     sz = 1;
 
-  while (__builtin_expect ((p = malloc (sz)) == 0, false))
+  while ((p = malloc (sz)) == 0)
     {
       new_handler handler = std::get_new_handler ();
       if (! handler)
