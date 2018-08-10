@@ -188,7 +188,6 @@ c++ runtime libs	Paolo Carlini		<paolo.carlini@oracle.com>
 c++ runtime libs	Ulrich Drepper		<drepper@gmail.com>
 c++ runtime libs	Benjamin De Kosnik	<bkoz@gnu.org>
 c++ runtime libs	Jonathan Wakely		<jwakely@redhat.com>
-c++ runtime libs
 special modes		François Dumont		<fdumont@gcc.gnu.org>
 fixincludes		Bruce Korb		<bkorb@gnu.org>
 *gimpl*			Jakub Jelinek		<jakub@redhat.com>
