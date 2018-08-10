@@ -3008,6 +3008,12 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define DECL_BUILT_IN_CLASS(NODE) \
    (FUNCTION_DECL_CHECK (NODE)->function_decl.built_in_class)
 
+/* For a function declaration, return true if NODE is non-null and it is
+   a builtin of a CLASS with requested NAME.  */
+#define DECL_BUILT_IN_P(NODE, CLASS, NAME) \
+  (NODE != NULL_TREE && DECL_BUILT_IN_CLASS (NODE) == CLASS \
+   && DECL_FUNCTION_CODE (NODE) == NAME)
+
 /* In FUNCTION_DECL, a chain of ..._DECL nodes.  */
 #define DECL_ARGUMENTS(NODE) \
    (FUNCTION_DECL_CHECK (NODE)->function_decl.arguments)
