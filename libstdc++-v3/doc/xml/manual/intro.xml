@@ -440,6 +440,17 @@ requirements of the license of GCC.
     <listitem><para>Yes, it can, specifically if EOF is reached while skipping whitespace.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr206"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#206">206</link>:
+	<emphasis><code>operator new(size_t, nothrow)</code> may become
+          unlinked to ordinary <code>operator new</code> if ordinary
+          version replaced
+        </emphasis>
+    </term>
+    <listitem><para>The <code>nothrow</code> forms of new and delete were
+      changed to call the throwing forms, handling any exception by
+      catching it and returning a null pointer.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr211"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#211">211</link>:
 	<emphasis>operator&gt;&gt;(istream&amp;, string&amp;) doesn't set failbit</emphasis>
     </term>
