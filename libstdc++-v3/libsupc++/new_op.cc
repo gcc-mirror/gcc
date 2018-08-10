@@ -44,7 +44,7 @@ operator new (std::size_t sz) _GLIBCXX_THROW (std::bad_alloc)
   void *p;
 
   /* malloc (0) is unpredictable; avoid it.  */
-  if (sz == 0)
+  if (__builtin_expect (sz == 0, false))
     sz = 1;
 
   while ((p = malloc (sz)) == 0)

@@ -101,7 +101,6 @@ aligned_alloc (std::size_t al, std::size_t sz)
 _GLIBCXX_WEAK_DEFINITION void *
 operator new (std::size_t sz, std::align_val_t al)
 {
-  void *p;
   std::size_t align = (std::size_t)al;
 
   /* Alignment must be a power of two.  */
@@ -125,8 +124,9 @@ operator new (std::size_t sz, std::align_val_t al)
     sz += align - rem;
 #endif
 
-  using __gnu_cxx::aligned_alloc;
-  while ((p = aligned_alloc (align, sz)) == 0)
+  void *p;
+
+  while ((p = __gnu_cxx::aligned_alloc (align, sz)) == nullptr)
     {
       new_handler handler = std::get_new_handler ();
       if (! handler)

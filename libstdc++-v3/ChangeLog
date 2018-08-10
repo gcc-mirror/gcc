@@ -1,3 +1,31 @@
+2018-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/68210
+	* doc/xml/manual/intro.xml: Document LWG 206 change.
+	* libsupc++/del_op.cc: Replace _GLIBCXX_USE_NOEXCEPT with noexcept.
+	* libsupc++/del_opa.cc: Likewise.
+	* libsupc++/del_opant.cc: Likewise.
+	* libsupc++/del_opnt.cc: Likewise. Call operator delete(ptr) instead
+	of free(ptr).
+	* libsupc++/del_ops.cc: Replace _GLIBCXX_USE_NOEXCEPT with noexcept.
+	* libsupc++/del_opsa.cc: Likewise.
+	* libsupc++/del_opva.cc: Likewise.
+	* libsupc++/del_opvant.cc: Likewise.
+	* libsupc++/del_opvnt.cc: Likewise. Call operator delete[](ptr)
+	instead of operator delete(ptr).
+	* libsupc++/del_opvs.cc: Replace _GLIBCXX_USE_NOEXCEPT with noexcept.
+	* libsupc++/del_opvsa.cc: Likewise.
+	* libsupc++/new_op.cc: Use __builtin_expect in check for zero size.
+	* libsupc++/new_opa.cc: Use nullptr instead of literal 0.
+	* libsupc++/new_opant.cc: Likewise. Replace _GLIBCXX_USE_NOEXCEPT
+	with noexcept.
+	* libsupc++/new_opnt.cc: Likewise. Call operator new(sz) instead of
+	malloc(sz).
+	* libsupc++/new_opvant.cc: Use nullptr and noexcept.
+	* libsupc++/new_opvnt.cc: Likewise. Call operator new[](sz) instead of
+	operator new(sz, nothrow).
+	* testsuite/18_support/new_nothrow.cc: New test.
+
 2018-08-10  Martin Liska  <mliska@suse.cz>
 
 	* libsupc++/new_op.cc (new): Remove __builtin_expect as malloc
