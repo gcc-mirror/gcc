@@ -1,3 +1,8 @@
+2018-08-10  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* Makefile.in: Clarify which tm.texi to copy over to assert the
+	right to grant a GFDL license for all.
+
 2018-08-09  Jeff Law  <law@redhat.com>
 
 	* config/m68k/m68k.c (m68k_adjust_decorated_operand): Remove
