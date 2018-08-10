@@ -98,7 +98,7 @@ along with GCC; see the file COPYING3.  If not see
 	     early optimizations again.  It is thus good idea to do this
 	      late.  */
 	  NEXT_PASS (pass_split_functions);
-	  NEXT_PASS (pass_strip_predict_hints);
+	  NEXT_PASS (pass_strip_predict_hints, true /* early_p */);
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_release_ssa_names);
       NEXT_PASS (pass_rebuild_cgraph_edges);
@@ -183,7 +183,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_remove_cgraph_callee_edges);
       /* Initial scalar cleanups before alias computation.
 	 They ensure memory accesses are not indirect wherever possible.  */
-      NEXT_PASS (pass_strip_predict_hints);
+      NEXT_PASS (pass_strip_predict_hints, false /* early_p */);
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
       NEXT_PASS (pass_post_ipa_warn);
       /* After CCP we rewrite no longer addressed locals into SSA
@@ -348,7 +348,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_all_optimizations_g);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations_g)
       NEXT_PASS (pass_remove_cgraph_callee_edges);
-      NEXT_PASS (pass_strip_predict_hints);
+      NEXT_PASS (pass_strip_predict_hints, false /* early_p */);
       /* Lower remaining pieces of GIMPLE.  */
       NEXT_PASS (pass_lower_complex);
       NEXT_PASS (pass_lower_vector_ssa);

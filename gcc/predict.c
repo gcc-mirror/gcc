@@ -3884,38 +3884,28 @@ make_pass_profile (gcc::context *ctxt)
   return new pass_profile (ctxt);
 }
 
-namespace {
+/* Return true when PRED predictor should be removed after early
+   tree passes.  Most of the predictors are beneficial to survive
+   as early inlining can also distribute then into caller's bodies.  */
 
-const pass_data pass_data_strip_predict_hints =
+static bool
+strip_predictor_early (enum br_predictor pred)
 {
-  GIMPLE_PASS, /* type */
-  "*strip_predict_hints", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_BRANCH_PROB, /* tv_id */
-  PROP_cfg, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_strip_predict_hints : public gimple_opt_pass
-{
-public:
-  pass_strip_predict_hints (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_strip_predict_hints, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_strip_predict_hints (m_ctxt); }
-  virtual unsigned int execute (function *);
-
-}; // class pass_strip_predict_hints
+  switch (pred)
+    {
+    case PRED_TREE_EARLY_RETURN:
+      return true;
+    default:
+      return false;
+    }
+}
 
 /* Get rid of all builtin_expect calls and GIMPLE_PREDICT statements
-   we no longer need.  */
+   we no longer need.  EARLY is set to true when called from early
+   optimizations.  */
+
 unsigned int
-pass_strip_predict_hints::execute (function *fun)
+strip_predict_hints (function *fun, bool early)
 {
   basic_block bb;
   gimple *ass_stmt;
@@ -3931,15 +3921,20 @@ pass_strip_predict_hints::execute (function *fun)
 
 	  if (gimple_code (stmt) == GIMPLE_PREDICT)
 	    {
-	      gsi_remove (&bi, true);
-	      changed = true;
-	      continue;
+	      if (!early
+		  || strip_predictor_early (gimple_predict_predictor (stmt)))
+		{
+		  gsi_remove (&bi, true);
+		  changed = true;
+		  continue;
+		}
 	    }
 	  else if (is_gimple_call (stmt))
 	    {
 	      tree fndecl = gimple_call_fndecl (stmt);
 
-	      if ((fndecl
+	      if ((!early
+		   && fndecl
 		   && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
 		   && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT
 		   && gimple_call_num_args (stmt) == 2)
@@ -3965,6 +3960,49 @@ pass_strip_predict_hints::execute (function *fun)
 	}
     }
   return changed ? TODO_cleanup_cfg : 0;
+}
+
+namespace {
+
+const pass_data pass_data_strip_predict_hints =
+{
+  GIMPLE_PASS, /* type */
+  "*strip_predict_hints", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_BRANCH_PROB, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_strip_predict_hints : public gimple_opt_pass
+{
+public:
+  pass_strip_predict_hints (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_strip_predict_hints, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_strip_predict_hints (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      early_p = param;
+    }
+
+  virtual unsigned int execute (function *);
+
+private:
+  bool early_p;
+
+}; // class pass_strip_predict_hints
+
+unsigned int
+pass_strip_predict_hints::execute (function *fun)
+{
+  return strip_predict_hints (fun, early_p);
 }
 
 } // anon namespace

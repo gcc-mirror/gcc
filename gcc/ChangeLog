@@ -1,3 +1,15 @@
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+        PR tree-optimization/85799
+	* passes.def: Add argument for pass_strip_predict_hints.
+	* predict.c (class pass_strip_predict_hints): Add new argument
+        early_p.
+	(strip_predictor_early): New function.
+	(pass_strip_predict_hints::execute): Call the function to
+        strip predictors.
+	(strip_predict_hints): New function.
+	* predict.def: Fix comment.
+
 2018-08-10  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
 
 	* Makefile.in: Clarify which tm.texi to copy over to assert the
