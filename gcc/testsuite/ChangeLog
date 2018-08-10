@@ -1,5 +1,12 @@
 2018-08-10  Martin Liska  <mliska@suse.cz>
 
+        PR target/83610
+	* gcc.dg/predict-17.c: New test.
+	* gcc.dg/predict-18.c: New test.
+	* gcc.dg/predict-19.c: New test.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
         PR tree-optimization/85799
 	* gcc.dg/pr85799.c: New test.
 

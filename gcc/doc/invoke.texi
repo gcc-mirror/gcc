@@ -9218,6 +9218,9 @@ between the heuristics and @code{__builtin_expect} can be complex, and in
 some cases, it may be useful to disable the heuristics so that the effects
 of @code{__builtin_expect} are easier to understand.
 
+It is also possible to specify expected probability of the expression
+with @code{__builtin_expect_with_probability} built-in function.
+
 The default is @option{-fguess-branch-probability} at levels
 @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 

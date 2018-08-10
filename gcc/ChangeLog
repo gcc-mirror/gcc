@@ -1,5 +1,39 @@
 2018-08-10  Martin Liska  <mliska@suse.cz>
 
+        PR target/83610
+	* builtin-types.def (BT_FN_LONG_LONG_LONG_DOUBLE): Add new
+        function type.
+	* builtins.c (expand_builtin_expect_with_probability):
+        New function.
+	(expand_builtin_expect_with_probability): New function.
+	(build_builtin_expect_predicate): Add new argumnet probability
+        for BUILT_IN_EXPECT_WITH_PROBABILITY.
+	(fold_builtin_expect):
+	(fold_builtin_2):
+	(fold_builtin_3):
+	* builtins.def (BUILT_IN_EXPECT_WITH_PROBABILITY):
+	* builtins.h (fold_builtin_expect): Set new argument.
+	* doc/extend.texi: Document __builtin_expect_with_probability.
+	* doc/invoke.texi: Likewise.
+	* gimple-fold.c (gimple_fold_call): Pass new argument.
+	* ipa-fnsummary.c (find_foldable_builtin_expect): Handle
+        also BUILT_IN_EXPECT_WITH_PROBABILITY.
+	* predict.c (get_predictor_value): New function.
+	(expr_expected_value): Add new argument probability. Assume
+        that predictor and probability are always non-null.
+	(expr_expected_value_1): Likewise.  For __builtin_expect and
+        __builtin_expect_with_probability set probability.  Handle
+        combination in binary expressions.
+	(tree_predict_by_opcode): Simplify code by simply calling
+        get_predictor_value.
+	(pass_strip_predict_hints::execute): Add handling of
+        BUILT_IN_EXPECT_WITH_PROBABILITY.
+	* predict.def (PRED_BUILTIN_EXPECT_WITH_PROBABILITY): Add
+        new predictor.
+	* tree.h (DECL_BUILT_IN_P): New function.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
         PR tree-optimization/85799
 	* passes.def: Add argument for pass_strip_predict_hints.
 	* predict.c (class pass_strip_predict_hints): Add new argument
