@@ -526,4 +526,18 @@
          <code class="code">weak_ptr::owner_before</code>
        </em></span>
     </span></dt><dd><p>Add noexcept.
+    </p></dd><dt><a id="manual.bugs.dr2993"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2993" target="_top">2993</a>:
+       <span class="emphasis"><em><code class="code">reference_wrapper&lt;T&gt;</code> conversion from <code class="code">T&amp;&amp;</code>
+       </em></span>
+    </span></dt><dd><p>Replaced the constructors with a constrained template,
+      to prevent participation in overload resolution when not valid.
+    </p></dd><dt><a id="manual.bugs.dr3074"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#3074" target="_top">3074</a>:
+       <span class="emphasis"><em>Non-member functions for <code class="code">valarray</code> should only deduce from the <code class="code">valarray</code>
+       </em></span>
+    </span></dt><dd><p>Change scalar operands to be non-deduced context, so that
+      they will allow conversions from other types to the value_type.
+    </p></dd><dt><a id="manual.bugs.dr3076"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#3076" target="_top">3076</a>:
+       <span class="emphasis"><em><code class="code">basic_string</code> CTAD ambiguity
+       </em></span>
+    </span></dt><dd><p>Change constructors to constrained templates.
     </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="license.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="status.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="setup.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">License </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Setup</td></tr></table></div></body></html>

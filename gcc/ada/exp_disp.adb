@@ -7202,18 +7202,19 @@ package body Exp_Disp is
                   Make_Subtype_Indication (Loc,
                     Subtype_Mark =>
                       New_Occurrence_Of (RTE (RE_Address_Array), Loc),
-                    Constraint =>
+                    Constraint   =>
                       Make_Index_Or_Discriminant_Constraint (Loc, New_List (
                         Make_Range (Loc,
                           Low_Bound  => Make_Integer_Literal (Loc, 1),
-                          High_Bound => Make_Integer_Literal (Loc,
-                                         DT_Entry_Count
-                                           (First_Tag_Component (Typ)))))))));
+                          High_Bound =>
+                            Make_Integer_Literal (Loc,
+                              DT_Entry_Count
+                                (First_Tag_Component (Typ)))))))));
 
             Append_To (Result,
               Make_Full_Type_Declaration (Loc,
                 Defining_Identifier => DT_Prims_Acc,
-                Type_Definition =>
+                Type_Definition     =>
                    Make_Access_To_Object_Definition (Loc,
                      Subtype_Indication =>
                        New_Occurrence_Of (DT_Prims, Loc))));

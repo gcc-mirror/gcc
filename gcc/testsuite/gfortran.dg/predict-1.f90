@@ -14,4 +14,4 @@ end do
 
 end subroutine test
 
-! { dg-final { scan-tree-dump-times "Fortran loop preheader heuristics of edge\[^:\]*: 1.0%" 2 "profile_estimate" } }
+! { dg-final { scan-tree-dump-times "Fortran loop preheader heuristics of edge\[^:\]*: 1.00%" 2 "profile_estimate" } }

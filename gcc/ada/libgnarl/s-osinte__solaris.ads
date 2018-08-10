@@ -536,17 +536,18 @@ private
    end record;
    pragma Convention (C, record_type_3);
 
+   type upad64_t is new Interfaces.Unsigned_64;
+
    type mutex_t is record
       flags : record_type_3;
-      lock  : String (1 .. 8);
-      data  : String (1 .. 8);
+      lock  : upad64_t;
+      data  : upad64_t;
    end record;
    pragma Convention (C, mutex_t);
 
    type cond_t is record
-      flag  : array_type_9;
-      Xtype : unsigned_long;
-      data  : String (1 .. 8);
+      flags : record_type_3;
+      data  : upad64_t;
    end record;
    pragma Convention (C, cond_t);
 

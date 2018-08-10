@@ -1060,7 +1060,35 @@ finish_for_stmt (tree for_stmt)
 		     : &FOR_SCOPE (for_stmt));
   tree scope = *scope_ptr;
   *scope_ptr = NULL;
+
+  /* During parsing of the body, range for uses "__for_{range,begin,end} "
+     decl names to make those unaccessible by code in the body.
+     Change it to ones with underscore instead of space, so that it can
+     be inspected in the debugger.  */
+  tree range_for_decl[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
+  gcc_assert (CPTI_FOR_BEGIN__IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 1
+	      && CPTI_FOR_END__IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 2
+	      && CPTI_FOR_RANGE_IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 3
+	      && CPTI_FOR_BEGIN_IDENTIFIER == CPTI_FOR_BEGIN__IDENTIFIER + 3
+	      && CPTI_FOR_END_IDENTIFIER == CPTI_FOR_END__IDENTIFIER + 3);
+  for (int i = 0; i < 3; i++)
+    {
+      tree id = cp_global_trees[CPTI_FOR_RANGE__IDENTIFIER + i];
+      if (IDENTIFIER_BINDING (id)
+	  && IDENTIFIER_BINDING (id)->scope == current_binding_level)
+	{
+	  range_for_decl[i] = IDENTIFIER_BINDING (id)->value;
+	  gcc_assert (VAR_P (range_for_decl[i])
+		      && DECL_ARTIFICIAL (range_for_decl[i]));
+	}
+    }
+
   add_stmt (do_poplevel (scope));
+
+  for (int i = 0; i < 3; i++)
+    if (range_for_decl[i])
+      DECL_NAME (range_for_decl[i])
+	= cp_global_trees[CPTI_FOR_RANGE_IDENTIFIER + i];
 }
 
 /* Begin a range-for-statement.  Returns a new RANGE_FOR_STMT.

@@ -1,3 +1,58 @@
+2018-07-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Revert 'AsyncI/O patch committed'
+	2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
+		Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* gfortran.texi: Add description of asynchronous I/O.
+	* trans-decl.c (gfc_finish_var_decl): Treat asynchronous variables
+	as volatile.
+	* trans-io.c (gfc_build_io_library_fndecls): Rename st_wait to
+	st_wait_async and change argument spec from ".X" to ".w".
+	(gfc_trans_wait): Pass ID argument via reference.
+
+2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* gfortran.texi: Add description of asynchronous I/O.
+	* trans-decl.c (gfc_finish_var_decl): Treat asynchronous variables
+	as volatile.
+	* trans-io.c (gfc_build_io_library_fndecls): Rename st_wait to
+	st_wait_async and change argument spec from ".X" to ".w".
+	(gfc_trans_wait): Pass ID argument via reference.
+
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82063
+	* gfortran.h (gfc_handle_option): Change function argument
+	to HOST_WIDE_INT.
+	* options.c (gfc_handle_option): Same.
+
+2018-07-20  Andrew Benson  <abenson@carnegiescience.edu>
+
+	* gfortran.h (gfc_symbol): Add pointer to next derived type.
+	(gfc_dt_list, gfc_get_dt_list): Remove.
+	(gfc_namespace): Replace gfc_dt_list with gfc_symbol.
+	* parse.c (resolve_all_program_units): Replace gfc_free_dt_list() with
+	simple nullification of gfc_derived_types.
+	* resolve.c (resolve_global_procedure): Replace gfc_dt_list with
+	gfc_symbol.
+	(add_dt_to_dt_list): Change derived type linked list insertion to
+	utilize dt_next pointers in gfc_symbol.
+	* symbol.c (gfc_new_symbol, gfc_free_dt_list, gfc_symbol_done2)
+	(get_iso_c_binding_dt, generate_isocbinding_symbol): Remove
+	gfc_free_dt_list as gfc_dt_list is obsoleted. Change derived type
+	linked list search/insertion to utilize dt_next pointers in gfc_symbol.
+	* trans-types.c (gfc_get_derived_type): Change derived type linked
+	list search to utilize dt_next pointers in gfc_symbol.
+
+2018-07-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* trans-intrinsic.c: (gfc_conv_intrinsic_minmax): Emit MIN_MAX_EXPR
+	or IFN_FMIN/FMAX sequence to calculate the min/max when possible.
+
 2018-07-18  Janus Weil  <janus@gcc.gnu.org>
 	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 

@@ -44,5 +44,5 @@ test01()
 {
   alloc_type a;
   std::tuple<X> t(std::allocator_arg, a); // this is required to be ill-formed
-  // { dg-error "static assertion failed" "" { target *-*-* } 90 }
+  // { dg-error "static assertion failed" "" { target *-*-* } 94 }
 }

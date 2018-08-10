@@ -1034,7 +1034,7 @@ package body Lib.Xref is
          --  parameters may end up being marked as not coming from source
          --  although they are. Take these into account specially.
 
-         elsif GNATprove_Mode and then Ekind (E) in Formal_Kind then
+         elsif GNATprove_Mode and then Is_Formal (E) then
             Ent := E;
 
          --  Entity does not come from source, but is a derived subprogram and

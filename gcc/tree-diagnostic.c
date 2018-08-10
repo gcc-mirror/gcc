@@ -282,7 +282,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 
     case 'K':
       t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, t);
+      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
       return true;
 
     default:

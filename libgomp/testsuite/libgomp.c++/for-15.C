@@ -88,11 +88,9 @@ private:
 
 template <typename T> const I<T> &J<T>::begin () { return b; }
 template <typename T> const I<T> &J<T>::end () { return e; }
-#pragma omp end declare target
 
 int results[2000];
 
-#pragma omp declare target
 template <typename T>
 void
 baz (I<T> &i)
@@ -186,37 +184,37 @@ main ()
     a[i] = i;
   #pragma omp target data map (to: a)
   {
-    #pragma omp target teams map (tofrom: results)
+    #pragma omp target teams map (always, tofrom: results)
     {
       J<int> j (&a[75], &a[1945]);
       f1 (j);
     }
     check (i >= 75 && i < 1945 && (i - 75) % 3 == 0);
-    #pragma omp target teams map (tofrom: results)
+    #pragma omp target teams map (always, tofrom: results)
     {
       J<int> j (&a[63], &a[1949]);
       f2 (j);
     }
     check (i >= 63 && i < 1949);
-    #pragma omp target teams map (tofrom: results)
+    #pragma omp target teams map (always, tofrom: results)
     {
       J<int> j (&a[58], &a[1979]);
       f3 <2> (j);
     }
     check (i >= 58 && i < 1979 && (i - 58) % 6 == 0);
-    #pragma omp target teams map (tofrom: results)
+    #pragma omp target teams map (always, tofrom: results)
     {
       J<int> j (&a[59], &a[1981]);
       f4 <9> (j);
     }
     check (i >= 59 && i < 1981 && (i - 59) % 9 == 0);
-    #pragma omp target teams map (tofrom: results)
+    #pragma omp target teams map (always, tofrom: results)
     {
       J<int> j (&a[52], &a[1972]);
       f5 (j);
     }
     check (i >= 52 && i < 1972 && (i - 52) % 4 == 0);
-    #pragma omp target teams map (tofrom: results)
+    #pragma omp target teams map (always, tofrom: results)
     {
       J<int> j (&a[31], &a[1827]);
       f6 (j);

@@ -2635,16 +2635,23 @@ rest_of_insert_endbranch (void)
 		{
 		  rtx call = get_call_rtx_from (insn);
 		  rtx fnaddr = XEXP (call, 0);
+		  tree fndecl = NULL_TREE;
 
 		  /* Also generate ENDBRANCH for non-tail call which
 		     may return via indirect branch.  */
-		  if (MEM_P (fnaddr)
-		      && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
+		  if (GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
+		    fndecl = SYMBOL_REF_DECL (XEXP (fnaddr, 0));
+		  if (fndecl == NULL_TREE)
+		    fndecl = MEM_EXPR (fnaddr);
+		  if (fndecl
+		      && TREE_CODE (TREE_TYPE (fndecl)) != FUNCTION_TYPE
+		      && TREE_CODE (TREE_TYPE (fndecl)) != METHOD_TYPE)
+		    fndecl = NULL_TREE;
+		  if (fndecl && TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
 		    {
-		      tree fndecl = SYMBOL_REF_DECL (XEXP (fnaddr, 0));
-		      if (fndecl
-			  && lookup_attribute ("indirect_return",
-					       DECL_ATTRIBUTES (fndecl)))
+		      tree fntype = TREE_TYPE (fndecl);
+		      if (lookup_attribute ("indirect_return",
+					    TYPE_ATTRIBUTES (fntype)))
 			need_endbr = true;
 		    }
 		}
@@ -45920,8 +45927,8 @@ static const struct attribute_spec ix86_attribute_table[] =
     ix86_handle_fndecl_attribute, NULL },
   { "function_return", 1, 1, true, false, false, false,
     ix86_handle_fndecl_attribute, NULL },
-  { "indirect_return", 0, 0, true, false, false, false,
-    ix86_handle_fndecl_attribute, NULL },
+  { "indirect_return", 0, 0, false, true, true, false,
+    NULL, NULL },
 
   /* End element.  */
   { NULL, 0, 0, false, false, false, false, NULL, NULL }

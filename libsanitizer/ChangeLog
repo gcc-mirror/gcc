@@ -1,3 +1,24 @@
+2018-08-02  Martin Liska  <mliska@suse.cz>
+
+        PR sanitizer/86022
+	* sanitizer_common/sanitizer_linux_libcdep.cc (ThreadDescriptorSize):
+        Cherry-pick compiler-rt revision 338606.
+
+2018-08-01  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/86759
+	* tsan/tsan_platform.h: Cherry-pick compiler-rt revision 318044.
+	* tsan/tsan_platform_linux.cc: Cherry-pick compiler-rt revision
+	319180.
+
+2018-07-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/86560
+	* asan/asan_interceptors.cc (swapcontext) Cherry-pick
+	compiler-rt revision 337603.
+	* sanitizer_common/sanitizer_internal_defs.h (__has_attribute):
+	Likewise.
+
 2018-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Revert

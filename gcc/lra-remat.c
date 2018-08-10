@@ -708,7 +708,7 @@ call_used_input_regno_present_p (rtx_insn *insn)
     for (reg = (iter == 0 ? id->regs : static_id->hard_regs);
 	 reg != NULL;
 	 reg = reg->next)
-      if (reg->type == OP_IN && reg->regno <= FIRST_PSEUDO_REGISTER
+      if (reg->type == OP_IN && reg->regno < FIRST_PSEUDO_REGISTER
 	  && TEST_HARD_REG_BIT (call_used_reg_set, reg->regno))
 	return true;
   return false;

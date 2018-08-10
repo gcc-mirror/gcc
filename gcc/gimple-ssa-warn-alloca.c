@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "params.h"
 #include "tree-cfg.h"
+#include "builtins.h"
 #include "calls.h"
 #include "cfgloop.h"
 #include "intl.h"
@@ -77,16 +78,10 @@ pass_walloca::gate (function *fun ATTRIBUTE_UNUSED)
   if (first_time_p)
     return warn_alloca != 0;
 
-  // The second time we run we have run enough optimizations to have
-  // an IL that is sufficiently optimized to notice things like this:
-  //
-  // use_alloca = (((rear_ptr - w) * sizeof (char)) < 4096U);
-  // if (use_alloca)
-  //   src = __builtin_alloca ((rear_ptr - w) * sizeof (char));
-  // else
-  //   src = (char *) __builtin_malloc ((rear_ptr - w) * sizeof (char));
-  return ((unsigned HOST_WIDE_INT) warn_alloca_limit > 0
-	  || (unsigned HOST_WIDE_INT) warn_vla_limit > 0);
+  // Warning is disabled when its size limit is greater than PTRDIFF_MAX
+  // for the target maximum, which makes the limit negative since when
+  // represented in signed HOST_WIDE_INT.
+  return warn_alloca_limit >= 0 || warn_vla_limit >= 0;
 }
 
 // Possible problematic uses of alloca.
@@ -112,55 +107,70 @@ enum alloca_type {
 };
 
 // Type of an alloca call with its corresponding argument, if applicable.
-struct alloca_type_and_arg {
+struct alloca_type_and_limit {
   enum alloca_type type;
-  // For ALLOCA_BOUND_DEFINITELY_LARGE types, this field indicates the
-  // known argument to alloca.  It is undefined otherwise.
-  wide_int arg;
-  alloca_type_and_arg (enum alloca_type type,
-			 wide_int i) : type(type), arg(i) { }
-  alloca_type_and_arg (enum alloca_type type) : type(type) { }
+  // For ALLOCA_BOUND_MAYBE_LARGE and ALLOCA_BOUND_DEFINITELY_LARGE
+  // types, this field indicates the assumed limit if known or
+  // integer_zero_node if unknown.  For any other alloca types, this
+  // field is undefined.
+  wide_int limit;
+  alloca_type_and_limit ();
+  alloca_type_and_limit (enum alloca_type type,
+			 wide_int i) : type(type), limit(i) { }
+  alloca_type_and_limit (enum alloca_type type) : type(type) { }
 };
 
 // Analyze the alloca call in STMT and return the alloca type with its
 // corresponding argument (if applicable).  IS_VLA is set if the alloca
 // call was created by the gimplifier for a VLA.
 
-static struct alloca_type_and_arg
+static struct alloca_type_and_limit
 alloca_call_type (path_ranger &ranger, gimple *stmt, bool is_vla)
 {
   gcc_assert (gimple_alloca_call_p (stmt));
   tree len = gimple_call_arg (stmt, 0);
 
-  gcc_assert (!is_vla || (unsigned HOST_WIDE_INT) warn_vla_limit > 0);
-  gcc_assert (is_vla || (unsigned HOST_WIDE_INT) warn_alloca_limit > 0);
+  gcc_assert (!is_vla || warn_vla_limit >= 0);
+  gcc_assert (is_vla || warn_alloca_limit >= 0);
 
   unsigned HOST_WIDE_INT max_size;
   if (is_vla)
-    max_size = (unsigned HOST_WIDE_INT) warn_vla_limit;
+    max_size = warn_vla_limit;
   else
-    max_size = (unsigned HOST_WIDE_INT) warn_alloca_limit;
+    max_size = warn_alloca_limit;
 
   // Check for the obviously bounded case.
   if (TREE_CODE (len) == INTEGER_CST)
     {
       if (tree_to_uhwi (len) > max_size)
-	return alloca_type_and_arg (ALLOCA_BOUND_DEFINITELY_LARGE,
-				    wi::to_wide (len));
+	return alloca_type_and_limit (ALLOCA_BOUND_DEFINITELY_LARGE,
+				      wi::to_wide (len));
       if (integer_zerop (len))
-	return alloca_type_and_arg (ALLOCA_ARG_IS_ZERO);
+	{
+	  const offset_int maxobjsize
+	    = wi::to_offset (max_object_size ());
+	  alloca_type result = (max_size < maxobjsize
+				? ALLOCA_ARG_IS_ZERO : ALLOCA_OK);
+	  return alloca_type_and_limit (result);
+	}
 
-      return alloca_type_and_arg (ALLOCA_OK);
+      return alloca_type_and_limit (ALLOCA_OK);
     }
 
   // If we have a declared maximum size, use that.
   if (gimple_call_builtin_p (stmt, BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX))
     {
       tree arg = gimple_call_arg (stmt, 2);
-      if (tree_to_uhwi (arg) > max_size)
-	return alloca_type_and_arg (ALLOCA_BOUND_MAYBE_LARGE);
+      if (compare_tree_int (arg, max_size) <= 0)
+	return alloca_type_and_limit (ALLOCA_OK);
       else
-	return alloca_type_and_arg (ALLOCA_OK);
+	{
+	  const offset_int maxobjsize
+	    = wi::to_offset (max_object_size ());
+	  alloca_type result = (max_size < maxobjsize
+				? ALLOCA_BOUND_MAYBE_LARGE : ALLOCA_OK);
+	  return alloca_type_and_limit (result, wi::to_wide (arg));
+	}
     }
 
   irange r;
@@ -168,12 +178,21 @@ alloca_call_type (path_ranger &ranger, gimple *stmt, bool is_vla)
       && ranger.path_range_on_stmt (r, len, stmt)
       && !r.range_for_type_p ())
     {
+      // The invalid bits are anything outside of [0..MAX_SIZE].
+      // If our range is outside of this, the bound may be large.
       irange invalid_range (size_type_node, 0, max_size, irange::INVERSE);
       if (r.intersect (invalid_range).empty_p ())
-	return alloca_type_and_arg (ALLOCA_OK);
-      return alloca_type_and_arg (ALLOCA_BOUND_MAYBE_LARGE);
+	return alloca_type_and_limit (ALLOCA_OK);
+      return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE);
     }
-  return alloca_type_and_arg (ALLOCA_UNBOUNDED);
+
+  /* When MAX_SIZE is greater than or equal to PTRDIFF_MAX treat
+     allocations that aren't visibly constrained as OK, otherwise
+     report them as (potentially) unbounded.  */
+  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+  alloca_type unbounded_result = (max_size < maxobjsize.to_uhwi ()
+				  ? ALLOCA_UNBOUNDED : ALLOCA_OK);
+  return alloca_type_and_limit (unbounded_result);
 }
 
 // Return TRUE if STMT is in a loop, otherwise return FALSE.
@@ -212,25 +231,35 @@ pass_walloca::execute (function *fun)
 	  // Strict mode whining for VLAs is handled by the front-end,
 	  // so we can safely ignore this case.  Also, ignore VLAs if
 	  // the user doesn't care about them.
-	  if (is_vla
-	      && (warn_vla > 0 || !warn_vla_limit))
-	    continue;
-
-	  if (!is_vla && (warn_alloca || !warn_alloca_limit))
+	  if (is_vla)
 	    {
-	      if (warn_alloca)
-		warning_at (loc, OPT_Walloca, G_("use of %<alloca%>"));
+	      if (warn_vla > 0 || warn_vla_limit < 0)
+		continue;
+	    }
+	  else if (warn_alloca)
+	    {
+	      warning_at (loc, OPT_Walloca, G_("use of %<alloca%>"));
 	      continue;
 	    }
+	  else if (warn_alloca_limit < 0)
+	    continue;
 
-	  struct alloca_type_and_arg t
+	  struct alloca_type_and_limit t
 	    = alloca_call_type (ranger, stmt, is_vla);
 
 	  // Even if we think the alloca call is OK, make sure it's not in a
 	  // loop, except for a VLA, since VLAs are guaranteed to be cleaned
 	  // up when they go out of scope, including in a loop.
 	  if (t.type == ALLOCA_OK && !is_vla && in_loop_p (stmt))
-	    t = alloca_type_and_arg (ALLOCA_IN_LOOP);
+	    {
+	      /* As in other instances, only diagnose this when the limit
+		 is less than the maximum valid object size.  */
+	      const offset_int maxobjsize
+		= wi::to_offset (max_object_size ());
+	      if ((unsigned HOST_WIDE_INT) warn_alloca_limit
+		  < maxobjsize.to_uhwi ())
+		t = alloca_type_and_limit (ALLOCA_IN_LOOP);
+	    }
 
 	  enum opt_code wcode
 	    = is_vla ? OPT_Wvla_larger_than_ : OPT_Walloca_larger_than_;
@@ -240,19 +269,29 @@ pass_walloca::execute (function *fun)
 	    case ALLOCA_OK:
 	      break;
 	    case ALLOCA_BOUND_MAYBE_LARGE:
-	      warning_at (loc, wcode,
-			  is_vla ? G_("argument to variable-length array "
-				      "may be too large")
-			  : G_("argument to %<alloca%> may be too large"));
+	      if (warning_at (loc, wcode,
+			      is_vla ? G_("argument to variable-length array "
+					  "may be too large")
+			      : G_("argument to %<alloca%> may be too large"))
+		  && t.limit != 0)
+		{
+		  print_decu (t.limit, buff);
+		  inform (loc, G_("limit is %wu bytes, but argument "
+				  "may be as large as %s"),
+			  is_vla ? warn_vla_limit : warn_alloca_limit, buff);
+		}
 	      break;
 	    case ALLOCA_BOUND_DEFINITELY_LARGE:
-	      warning_at (loc, wcode,
-			  is_vla ? G_("argument to variable-length array "
-				      "is too large")
-			  : G_("argument to %<alloca%> is too large"));
-	      print_decu (t.arg, buff);
-	      inform (loc, G_("limit is %u bytes, but argument is %s"),
-		      is_vla ? warn_vla_limit : warn_alloca_limit, buff);
+	      if (warning_at (loc, wcode,
+			      is_vla ? G_("argument to variable-length array "
+					  "is too large")
+			      : G_("argument to %<alloca%> is too large"))
+		  && t.limit != 0)
+		{
+		  print_decu (t.limit, buff);
+		  inform (loc, G_("limit is %wu bytes, but argument is %s"),
+			  is_vla ? warn_vla_limit : warn_alloca_limit, buff);
+		}
 	      break;
 	    case ALLOCA_UNBOUNDED:
 	      warning_at (loc, wcode,

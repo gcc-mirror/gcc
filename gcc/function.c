@@ -242,8 +242,15 @@ frame_offset_overflow (poly_int64 offset, tree func)
 
   if (!coeffs_in_range_p (size, 0U, limit))
     {
-      error_at (DECL_SOURCE_LOCATION (func),
-		"total size of local objects too large");
+      unsigned HOST_WIDE_INT hwisize;
+      if (size.is_constant (&hwisize))
+	error_at (DECL_SOURCE_LOCATION (func),
+		  "total size of local objects %wu exceeds maximum %wu",
+		  hwisize, limit);
+      else
+	error_at (DECL_SOURCE_LOCATION (func),
+		  "total size of local objects exceeds maximum %wu",
+		  limit);
       return true;
     }
 

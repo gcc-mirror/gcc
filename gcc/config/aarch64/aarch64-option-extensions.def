@@ -105,4 +105,7 @@ AARCH64_OPT_EXTENSION("fp16fml", AARCH64_FL_F16FML, AARCH64_FL_FP | AARCH64_FL_F
    Disabling "sve" just disables "sve".  */
 AARCH64_OPT_EXTENSION("sve", AARCH64_FL_SVE, AARCH64_FL_FP | AARCH64_FL_SIMD | AARCH64_FL_F16, 0, "sve")
 
+/* Enabling/Disabling "profile" does not enable/disable any other feature.  */
+AARCH64_OPT_EXTENSION("profile", AARCH64_FL_PROFILE, 0, 0, "")
+
 #undef AARCH64_OPT_EXTENSION

@@ -1,3 +1,111 @@
+2018-08-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (cxx_print_error_function): Duplicate "file" before
+	passing it to pp_set_prefix.
+	(cp_print_error_function): Use pp_take_prefix when saving the
+	existing prefix.
+
+2018-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* error.c (cp_printer): Move usage of EXPR_LOCATION (t) and
+	TREE_BLOCK (t) from within percent_K_format to this callsite.
+
+2018-08-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/86661
+	* class.c (note_name_declared_in_class): Use location_of in permerror
+	instead of DECL_SOURCE_LOCATION (for OVERLOADs).
+
+2018-07-31  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86687
+	* optimize.c (update_cloned_parm): Copy DECL_BY_REFERENCE.
+
+2018-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	P1008R1 - prohibit aggregates with user-declared constructors
+	* class.c (check_bases_and_members): For C++2a set
+	CLASSTYPE_NON_AGGREGATE based on TYPE_HAS_USER_CONSTRUCTOR rather than
+	type_has_user_provided_or_explicit_constructor.
+
+2018-07-31  Martin Liska  <mliska@suse.cz>
+
+        PR c++/86653
+	* parser.c (cp_parser_condition): Initialize non_constant_p
+        to false.
+
+2018-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (cp_printer): In the leading comment, move "%H" and "%I"
+	into alphabetical order, and add missing "%G" and "%K".  Within
+	the switch statement, move cases 'G', 'H', 'I' and 'K' so that the
+	cases are in alphabetical order.
+
+2018-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (enum cp_tree_index): Add
+	CPTI_{ABI_TAG,ALIGNED,BEGIN,END,GET,TUPLE_{ELEMENT,SIZE}}_IDENTIFIER
+	and CPTI_{GNU,TYPE,VALUE,FUN,CLOSURE}_IDENTIFIER.
+	(abi_tag_identifier, aligned_identifier, begin_identifier,
+	end_identifier, get__identifier, gnu_identifier,
+	tuple_element_identifier, tuple_size_identifier, type_identifier,
+	value_identifier, fun_identifier, closure_identifier): Define.
+	* decl.c (initialize_predefined_identifiers): Initialize the above
+	identifiers.
+	(get_tuple_size): Use tuple_size_identifier instead of
+	get_identifier ("tuple_size") and value_identifier instead of
+	get_identifier ("value").
+	(get_tuple_element_type): Use tuple_element_identifier instead of
+	get_identifier ("tuple_element") and type_identifier instead of
+	get_identifier ("type").
+	(get_tuple_decomp_init): Use get__identifier instead of
+	get_identifier ("get").
+	* lambda.c (maybe_add_lambda_conv_op): Use fun_identifier instead of
+	get_identifier ("_FUN").
+	* parser.c (cp_parser_lambda_declarator_opt): Use closure_identifier
+	instead of get_identifier ("__closure").
+	(cp_parser_std_attribute): Use gnu_identifier instead of
+	get_identifier ("gnu").
+	(cp_parser_std_attribute_spec): Likewise.  Use aligned_identifier
+	instead of get_identifier ("aligned").
+	* class.c (check_abi_tags, inherit_targ_abi_tags): Use
+	abi_tag_identifier instead of get_identifier ("abi_tag").
+
+	PR c++/85515
+	* cp-tree.h (enum cp_tree_index): Add
+	CPTI_FOR_{RANGE,BEGIN,END}{,_}_IDENTIFIER.
+	(for_range__identifier, for_begin__identifier, for_end__identifier,
+	for_range_identifier, for_begin_identifier, for_end_identifier):
+	Define.
+	* decl.c (initialize_predefined_identifiers): Initialize
+	for_{range,begin,end}{,_}_identifier.
+	* parser.c (build_range_temp): Use for_range__identifier instead of
+	get_identifier ("__for_range").
+	(cp_convert_range_for): Use for_begin__identifier and
+	for_end__identifier instead of get_identifier ("__for_begin") and
+	get_identifier ("__for_end").
+	* semantics.c (finish_for_stmt): Rename "__for_{range,begin,end} "
+	local symbols to "__for_{range,begin,end}".
+
+2018-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86569
+	* cp-gimplify.c (cp_fold): Don't fold comparisons into other kind
+	of expressions other than INTEGER_CST regardless of TREE_NO_WARNING
+	or warn_nonnull_compare.
+
+2018-07-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert fix for c++/59480 (and testsuite followup)
+
+	2019-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* decl.c (check_no_redeclaration_friend_default_args): New.
+	(duplicate_decls): Use the latter; also check that a friend
+	declaration specifying default arguments is a definition.
+
 2018-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86550

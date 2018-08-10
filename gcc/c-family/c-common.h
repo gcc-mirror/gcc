@@ -808,7 +808,8 @@ extern void check_function_format (tree, int, tree *, vec<location_t> *);
 extern bool attribute_fallthrough_p (tree);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
-extern bool c_common_handle_option (size_t, const char *, int, int, location_t,
+extern bool c_common_handle_option (size_t, const char *, HOST_WIDE_INT, int,
+				    location_t,
 				    const struct cl_option_handlers *);
 extern bool default_handle_c_option (size_t, const char *, int);
 extern tree c_common_type_for_mode (machine_mode, int);

@@ -105,7 +105,7 @@ along with GCC; see the file COPYING3.  If not see
    %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
 #define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static|static-pie:--start-group} %G %L \
+  "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
    %{static|static-pie:--end-group}%{!static:%{!static-pie:%G}}"
 
 /* Use --as-needed -lgcc_s for eh support.  */

@@ -2604,6 +2604,17 @@ can_split_parallel_of_n_reg_sets (rtx_insn *insn, int n)
   return true;
 }
 
+/* Return whether X is just a single set, with the source
+   a general_operand.  */
+static bool
+is_just_move (rtx x)
+{
+  if (INSN_P (x))
+    x = PATTERN (x);
+
+  return (GET_CODE (x) == SET && general_operand (SET_SRC (x), VOIDmode));
+}
+
 /* Try to combine the insns I0, I1 and I2 into I3.
    Here I0, I1 and I2 appear earlier than I3.
    I0 and I1 can be zero; then we combine just I2 into I3, or I1 and I2 into
@@ -2668,6 +2679,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   int swap_i2i3 = 0;
   int split_i2i3 = 0;
   int changed_i3_dest = 0;
+  bool i2_was_move = false, i3_was_move = false;
 
   int maxreg;
   rtx_insn *temp_insn;
@@ -3058,6 +3070,10 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       undo_all ();
       return 0;
     }
+
+  /* Record whether i2 and i3 are trivial moves.  */
+  i2_was_move = is_just_move (i2);
+  i3_was_move = is_just_move (i3);
 
   /* Record whether I2DEST is used in I2SRC and similarly for the other
      cases.  Knowing this will help in register status updating below.  */
@@ -4014,8 +4030,10 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	   && XVECLEN (newpat, 0) == 2
 	   && GET_CODE (XVECEXP (newpat, 0, 0)) == SET
 	   && GET_CODE (XVECEXP (newpat, 0, 1)) == SET
-	   && (i1 || set_noop_p (XVECEXP (newpat, 0, 0))
-		  || set_noop_p (XVECEXP (newpat, 0, 1)))
+	   && (i1
+	       || set_noop_p (XVECEXP (newpat, 0, 0))
+	       || set_noop_p (XVECEXP (newpat, 0, 1))
+	       || (!i2_was_move && !i3_was_move))
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 0))) != ZERO_EXTRACT
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 0))) != STRICT_LOW_PART
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != ZERO_EXTRACT
@@ -10169,7 +10187,8 @@ reg_nonzero_bits_for_combine (const_rtx x, scalar_int_mode xmode,
   rsp = &reg_stat[REGNO (x)];
   if (rsp->last_set_value != 0
       && (rsp->last_set_mode == mode
-	  || (GET_MODE_CLASS (rsp->last_set_mode) == MODE_INT
+	  || (REGNO (x) >= FIRST_PSEUDO_REGISTER
+	      && GET_MODE_CLASS (rsp->last_set_mode) == MODE_INT
 	      && GET_MODE_CLASS (mode) == MODE_INT))
       && ((rsp->last_set_label >= label_tick_ebb_start
 	   && rsp->last_set_label < label_tick)

@@ -257,17 +257,42 @@ For an option marked @code{Separate}, indicate that it takes @var{n}
 arguments.  The default is 1.
 
 @item UInteger
-The option's argument is a non-negative integer.  The option parser
-will check and convert the argument before passing it to the relevant
-option handler.  @code{UInteger} should also be used on options like
-@code{-falign-loops} where both @code{-falign-loops} and
-@code{-falign-loops}=@var{n} are supported to make sure the saved
-options are given a full integer.
+The option's argument is a non-negative integer consisting of either
+decimal or hexadecimal digits interpreted as @code{int}.  Hexadecimal
+integers may optionally start with the @code{0x} or @code{0X} prefix.
+The option parser validates and converts the argument before passing
+it to the relevant option handler.  @code{UInteger} should also be used
+with options like @code{-falign-loops} where both @code{-falign-loops}
+and @code{-falign-loops}=@var{n} are supported to make sure the saved
+options are given a full integer.  Positive values of the argument in
+excess of @code{INT_MAX} wrap around zero.
+
+@item Host_Wide_Int
+The option's argument is a non-negative integer consisting of either
+decimal or hexadecimal digits interpreted as the widest integer type
+on the host.  As with an @code{UInteger} argument, hexadecimal integers
+may optionally start with the @code{0x} or @code{0X} prefix.  The option
+parser validates and converts the argument before passing it to
+the relevant option handler.  @code{Host_Wide_Int} should be used with
+options that need to accept very large values.  Positive values of
+the argument in excess of @code{HOST_WIDE_INT_M1U} are assigned
+@code{HOST_WIDE_INT_M1U}.
 
 @item IntegerRange(@var{n}, @var{m})
-The options's arguments are integer numbers.  The option's parser
-will check that value of an option is inclusively within the
-range [@var{n}, @var{m}].
+The options's arguments are integers of type @code{int}.  The option's
+parser validates that the value of an option integer argument is within
+the closed range [@var{n}, @var{m}].
+
+@item ByteSize
+A property applicable only to @code{UInteger} or @code{Host_Wide_Int}
+arguments.  The option's integer argument is interpreted as if in infinite
+precision using saturation arithmetic in the corresponding type.  The argument
+may be followed by a @samp{byte-size} suffix designating a multiple of bytes
+such as @code{kB} and @code{KiB} for kilobyte and kibibyte, respectively,
+@code{MB} and @code{MiB} for megabyte and mebibyte, @code{GB} and @code{GiB}
+for gigabyte and gigibyte, and so on.  @code{ByteSize} should be used for
+with options that take a very large argument representing a size in bytes,
+such as @option{-Wlarger-than=}.
 
 @item ToLower
 The option's argument should be converted to lowercase as part of

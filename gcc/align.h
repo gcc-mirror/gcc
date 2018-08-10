@@ -50,8 +50,10 @@ struct align_flags
   /* Default constructor.  */
   align_flags (int log0 = 0, int maxskip0 = 0, int log1 = 0, int maxskip1 = 0)
   {
-    levels[0] = {log0, maxskip0};
-    levels[1] = {log1, maxskip1};
+    levels[0].log = log0;
+    levels[0].maxskip = maxskip0;
+    levels[1].log = log1;
+    levels[1].maxskip = maxskip1;
     normalize ();
   }
 

@@ -17,6 +17,7 @@
 
 // { dg-options "-faligned-new" }
 // { dg-do run { target c++11 } }
+// { dg-require-cstdint "" }
 
 #include <ext/malloc_allocator.h>
 #include <cstddef>

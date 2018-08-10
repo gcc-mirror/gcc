@@ -120,6 +120,10 @@ enum aarch64_symbol_type
    ADDR_QUERY_LDP_STP
       Query what is valid for a load/store pair.
 
+   ADDR_QUERY_LDP_STP_N
+      Query what is valid for a load/store pair, but narrow the incoming mode
+      for address checking.  This is used for the store_pair_lanes patterns.
+
    ADDR_QUERY_ANY
       Query what is valid for at least one memory constraint, which may
       allow things that "m" doesn't.  For example, the SVE LDR and STR
@@ -128,6 +132,7 @@ enum aarch64_symbol_type
 enum aarch64_addr_query_type {
   ADDR_QUERY_M,
   ADDR_QUERY_LDP_STP,
+  ADDR_QUERY_LDP_STP_N,
   ADDR_QUERY_ANY
 };
 
@@ -467,6 +472,16 @@ void aarch64_relayout_simd_types (void);
 void aarch64_reset_previous_fndecl (void);
 bool aarch64_return_address_signing_enabled (void);
 void aarch64_save_restore_target_globals (tree);
+void aarch64_addti_scratch_regs (rtx, rtx, rtx *,
+				 rtx *, rtx *,
+				 rtx *, rtx *,
+				 rtx *);
+void aarch64_subvti_scratch_regs (rtx, rtx, rtx *,
+				  rtx *, rtx *,
+				  rtx *, rtx *, rtx *);
+void aarch64_expand_subvti (rtx, rtx, rtx,
+			    rtx, rtx, rtx, rtx);
+
 
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);
@@ -493,7 +508,8 @@ void aarch64_split_simd_move (rtx, rtx);
 bool aarch64_float_const_representable_p (rtx);
 
 #if defined (RTX_CODE)
-
+void aarch64_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,
+				   rtx label_ref);
 bool aarch64_legitimate_address_p (machine_mode, rtx, bool,
 				   aarch64_addr_query_type = ADDR_QUERY_M);
 machine_mode aarch64_select_cc_mode (RTX_CODE, rtx, rtx);
@@ -554,7 +570,8 @@ enum aarch64_parse_opt_result aarch64_parse_extension (const char *,
 std::string aarch64_get_extension_string_for_isa_flags (unsigned long,
 							unsigned long);
 
-rtl_opt_pass *make_pass_fma_steering (gcc::context *ctxt);
+rtl_opt_pass *make_pass_fma_steering (gcc::context *);
+rtl_opt_pass *make_pass_track_speculation (gcc::context *);
 
 poly_uint64 aarch64_regmode_natural_size (machine_mode);
 

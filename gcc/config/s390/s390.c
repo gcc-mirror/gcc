@@ -5499,12 +5499,15 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 
   /* Expand setmem/clrmem for a constant length operand without a
      loop if it will be shorter that way.
-     With a constant length and without pfd argument a
-     clrmem loop is 32 bytes -> 5.3 * xc
-     setmem loop is 36 bytes -> 3.6 * (mvi/stc + mvc) */
+     clrmem loop (with PFD)    is 30 bytes -> 5 * xc
+     clrmem loop (without PFD) is 24 bytes -> 4 * xc
+     setmem loop (with PFD)    is 38 bytes -> ~4 * (mvi/stc + mvc)
+     setmem loop (without PFD) is 32 bytes -> ~4 * (mvi/stc + mvc) */
   if (GET_CODE (len) == CONST_INT
-      && ((INTVAL (len) <= 256 * 5 && val == const0_rtx)
-	  || INTVAL (len) <= 257 * 3)
+      && ((val == const0_rtx
+	   && (INTVAL (len) <= 256 * 4
+	       || (INTVAL (len) <= 256 * 5 && TARGET_SETMEM_PFD(val,len))))
+	  || (val != const0_rtx && INTVAL (len) <= 257 * 4))
       && (!TARGET_MVCLE || INTVAL (len) <= 256))
     {
       HOST_WIDE_INT o, l;
@@ -5618,12 +5621,11 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 
       emit_label (loop_start_label);
 
-      if (TARGET_Z10
-	  && (GET_CODE (len) != CONST_INT || INTVAL (len) > 1024))
+      if (TARGET_SETMEM_PFD (val, len))
 	{
-	  /* Issue a write prefetch for the +4 cache line.  */
-	  rtx prefetch = gen_prefetch (gen_rtx_PLUS (Pmode, dst_addr,
-						     GEN_INT (1024)),
+	  /* Issue a write prefetch.  */
+	  rtx distance = GEN_INT (TARGET_SETMEM_PREFETCH_DISTANCE);
+	  rtx prefetch = gen_prefetch (gen_rtx_PLUS (Pmode, dst_addr, distance),
 				       const1_rtx, const0_rtx);
 	  emit_insn (prefetch);
 	  PREFETCH_SCHEDULE_BARRIER_P (prefetch) = true;

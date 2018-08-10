@@ -5280,6 +5280,12 @@ package body Freeze is
          Result := No_List;
          goto Leave;
 
+      --  Do not freeze if we are preanalyzing without freezing
+
+      elsif Inside_Preanalysis_Without_Freezing > 0 then
+         Result := No_List;
+         goto Leave;
+
       elsif Ekind (E) = E_Generic_Package then
          Result := Freeze_Generic_Entities (E);
          goto Leave;

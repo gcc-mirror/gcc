@@ -1,3 +1,9 @@
+2018-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location::set_range): Remove redundant
+	line_maps * parameter.
+	* line-map.c (rich_location::set_range): Likewise.
+
 2018-07-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR 69558

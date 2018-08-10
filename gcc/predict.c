@@ -734,7 +734,7 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
   else
     edge_info_str[0] = '\0';
 
-  fprintf (file, "  %s heuristics%s%s: %.1f%%",
+  fprintf (file, "  %s heuristics%s%s: %.2f%%",
 	   predictor_info[predictor].name,
 	   edge_info_str, reason_messages[reason],
 	   probability * 100.0 / REG_BR_PROB_BASE);

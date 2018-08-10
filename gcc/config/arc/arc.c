@@ -10420,6 +10420,10 @@ compact_memory_operand_p (rtx op, machine_mode mode,
   if (MEM_VOLATILE_P (op) && !TARGET_VOLATILE_CACHE_SET)
     return false;
 
+  /* likewise for uncached types.  */
+  if (arc_is_uncached_mem_p (op))
+    return false;
+
   if (mode == VOIDmode)
     mode = GET_MODE (op);
 
@@ -10703,28 +10707,36 @@ arc_handle_uncached_attribute (tree *node,
 bool
 arc_is_uncached_mem_p (rtx pat)
 {
-  tree attrs;
-  tree ttype;
-  struct mem_attrs *refattrs;
+  tree attrs = NULL_TREE;
+  tree addr;
 
   if (!MEM_P (pat))
     return false;
 
   /* Get the memory attributes.  */
-  refattrs = MEM_ATTRS (pat);
-  if (!refattrs
-      || !refattrs->expr)
+  addr = MEM_EXPR (pat);
+  if (!addr)
     return false;
 
-  /* Get the type declaration.  */
-  ttype = TREE_TYPE (refattrs->expr);
-  if (!ttype)
-    return false;
+  /* Get the attributes.  */
+  if (TREE_CODE (addr) == MEM_REF)
+    {
+      attrs = TYPE_ATTRIBUTES (TREE_TYPE (addr));
+      if (lookup_attribute ("uncached", attrs))
+	return true;
 
-  /* Get the type attributes.  */
-  attrs = TYPE_ATTRIBUTES (ttype);
-  if (lookup_attribute ("uncached", attrs))
-    return true;
+      attrs = TYPE_ATTRIBUTES (TREE_TYPE (TREE_OPERAND (addr, 0)));
+      if (lookup_attribute ("uncached", attrs))
+	return true;
+    }
+
+  /* For COMPONENT_REF, use the FIELD_DECL from tree operand 1.  */
+  if (TREE_CODE (addr) == COMPONENT_REF)
+    {
+      attrs = TYPE_ATTRIBUTES (TREE_TYPE (TREE_OPERAND (addr, 1)));
+      if (lookup_attribute ("uncached", attrs))
+	return true;
+    }
   return false;
 }
 

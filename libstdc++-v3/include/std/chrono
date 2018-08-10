@@ -41,8 +41,6 @@
 #include <ctime>
 #include <bits/parse_numbers.h> // for literals support.
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -593,23 +591,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 const duration<_Rep2, _Period2>& __rhs)
       { return !(__lhs < __rhs); }
 
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+# define _GLIBCXX_CHRONO_INT64_T int64_t
+#elif defined __INT64_TYPE__
+# define _GLIBCXX_CHRONO_INT64_T __INT64_TYPE__
+#else
+    static_assert(std::numeric_limits<unsigned long long>::digits >= 64,
+	"Representation type for nanoseconds must have at least 64 bits");
+# define _GLIBCXX_CHRONO_INT64_T long long
+#endif
+
     /// nanoseconds
-    typedef duration<int64_t, nano> 	    nanoseconds;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T, nano> 	    nanoseconds;
 
     /// microseconds
-    typedef duration<int64_t, micro> 	    microseconds;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T, micro> 	    microseconds;
 
     /// milliseconds
-    typedef duration<int64_t, milli> 	    milliseconds;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T, milli> 	    milliseconds;
 
     /// seconds
-    typedef duration<int64_t> 		    seconds;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T> 		    seconds;
 
     /// minutes
-    typedef duration<int64_t, ratio< 60>>   minutes;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T, ratio< 60>>   minutes;
 
     /// hours
-    typedef duration<int64_t, ratio<3600>>  hours;
+    typedef duration<_GLIBCXX_CHRONO_INT64_T, ratio<3600>>  hours;
+
+#undef _GLIBCXX_CHRONO_INT64_T
 
     /// time_point
     template<typename _Clock, typename _Dur>
@@ -979,8 +989,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
 
 #endif // C++11
 

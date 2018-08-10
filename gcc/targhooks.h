@@ -281,4 +281,8 @@ extern bool default_stack_clash_protection_final_dynamic_probe (rtx);
 extern void default_select_early_remat_modes (sbitmap);
 extern tree default_preferred_else_value (unsigned, tree, unsigned, tree *);
 
+extern bool default_have_speculation_safe_value (bool);
+extern bool speculation_safe_value_not_needed (bool);
+extern rtx default_speculation_safe_value (machine_mode, rtx, rtx, rtx);
+
 #endif /* GCC_TARGHOOKS_H */

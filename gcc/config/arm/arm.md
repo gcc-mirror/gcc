@@ -12012,6 +12012,27 @@
   [(set_attr "length" "4")
    (set_attr "type" "coproc")])
 
+(define_expand "speculation_barrier"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_SPECULATION_BARRIER)]
+  "TARGET_EITHER"
+  "
+    /* Don't emit anything for Thumb1 and suppress the warning from the
+       generic expansion.  */
+    if (!TARGET_32BIT)
+       DONE;
+  "
+)
+
+;; Generate a hard speculation barrier when we have not enabled speculation
+;; tracking.
+(define_insn "*speculation_barrier_insn"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_SPECULATION_BARRIER)]
+  "TARGET_32BIT"
+  "isb\;dsb\\tsy"
+  [(set_attr "type" "block")
+   (set_attr "length" "8")]
+)
+
 ;; Vector bits common to IWMMXT and Neon
 (include "vec-common.md")
 ;; Load the Intel Wireless Multimedia Extension patterns

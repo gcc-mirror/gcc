@@ -184,11 +184,13 @@ package Make_Util is
    procedure Fail_Program
      (S              : String;
       Flush_Messages : Boolean := True);
+   pragma No_Return (Fail_Program);
    --  Terminate program with a message and a fatal status code
 
    procedure Finish_Program
      (Exit_Code    : Osint.Exit_Code_Type := Osint.E_Success;
       S            : String := "");
+   pragma No_Return (Finish_Program);
    --  Terminate program, with or without a message, setting the status code
    --  according to Fatal. This properly removes all temporary files.
 

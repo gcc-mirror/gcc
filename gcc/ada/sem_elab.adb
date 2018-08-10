@@ -4763,7 +4763,6 @@ package body Sem_Elab is
            and then not Comes_From_Source (N)
            and then Present (Context)
            and then Nkind (Context) = N_Handled_Sequence_Of_Statements
-           and then not Comes_From_Source (N)
          then
             return False;
          end if;

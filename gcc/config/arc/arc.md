@@ -1294,19 +1294,24 @@ archs4x, archs4xd, archs4xd_slow"
   "if (prepare_move_operands (operands, SFmode)) DONE;")
 
 (define_insn "*movsf_insn"
-  [(set (match_operand:SF 0 "move_dest_operand"    "=h,w,w,r,m")
-	(match_operand:SF 1 "move_src_operand"   "hCm1,c,E,m,c"))]
+  [(set (match_operand:SF 0 "move_dest_operand"   "=h,h,   r,r,  q,S,Usc,r,m")
+	(match_operand:SF 1 "move_src_operand"  "hCfZ,E,rCfZ,E,Uts,q,  E,m,r"))]
   "register_operand (operands[0], SFmode)
    || register_operand (operands[1], SFmode)"
   "@
-   mov%? %0,%1
-   mov%? %0,%1
-   mov%? %0,%1 ; %A1
-   ld%U1%V1 %0,%1
-   st%U0%V0 %1,%0"
-  [(set_attr "type" "move,move,move,load,store")
-   (set_attr "predicable" "no,yes,yes,no,no")
-   (set_attr "iscompact" "true,false,false,false,false")])
+   mov%?\\t%0,%1
+   mov%?\\t%0,%1 ; %A1
+   mov%?\\t%0,%1
+   mov%?\\t%0,%1 ; %A1
+   ld%?%U1\\t%0,%1
+   st%?\\t%1,%0
+   st%U0%V0\\t%1,%0
+   ld%U1%V1\\t%0,%1
+   st%U0%V0\\t%1,%0"
+  [(set_attr "type" "move,move,move,move,load,store,store,load,store")
+   (set_attr "predicable" "no,no,yes,yes,no,no,no,no,no")
+   (set_attr "length" "*,*,4,*,*,*,*,*,*")
+   (set_attr "iscompact" "true,true_limm,false,false,true,true,false,false,false")])
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "move_dest_operand" "")

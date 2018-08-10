@@ -763,12 +763,15 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
 
   <para>
     Similarly, tests which depend on a newer standard than the default
-    should use <literal>dg-options</literal> instead of an effective target,
-    so that they are not skipped by default.
+    must use <literal>dg-options</literal> instead of (or in addition to)
+    an effective target, so that they are not skipped by default.
     For example, tests for C++17 features should use
 <programlisting>    // { dg-options "-std=gnu++17" }</programlisting>
-    and not
-<programlisting>    // { dg-do run "c++1z" }</programlisting>
+    before any <literal>dg-do</literal> such as:
+<programlisting>    // { dg-do run "c++17" }</programlisting>
+    The <literal>dg-options</literal> directive must come first, so that
+    the <literal>-std</literal> flag has already been added to the options
+    before checking the <literal>c++17</literal> target.
   </para>
 
 <section xml:id="tests.dg.examples"><info><title>Examples of Test Directives</title></info>

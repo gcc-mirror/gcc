@@ -1,3 +1,110 @@
+2018-08-02  Tom de Vries  <tdevries@suse.de>
+
+	PR target/86660
+	* testsuite/libgomp.oacc-c++/routine-1-auto.C: Remove -fno-exceptions.
+	* testsuite/libgomp.oacc-c++/routine-1-template-auto.C: Same.
+	* testsuite/libgomp.oacc-c++/routine-1-template-trailing-return-type.C:
+	Same.
+	* testsuite/libgomp.oacc-c++/routine-1-template.C: Same.
+	* testsuite/libgomp.oacc-c++/routine-1-trailing-return-type.C: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-1.c: Same.
+
+2018-08-01  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+
+	* config/nvptx/oacc-parallel.c: Truncate.
+
+2018-08-01  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris <jnorris@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (struct map): Removed.
+	(map_init, map_pop): Remove use of struct map.
+	(map_push): Likewise and change argument list.
+	* testsuite/libgomp.oacc-c-c++-common/mapping-1.c: New
+
+2018-08-01  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/cuda-lib.def: New file.  Factor out of ...
+	* plugin/plugin-nvptx.c (CUDA_CALLS): ... here.
+	(struct cuda_lib_s, init_cuda_lib): Include cuda-lib.def instead of
+	using CUDA_CALLS.
+
+2018-07-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Revert 'AsyncI/O patch committed'.
+	2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
+		Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* testsuite/libgomp.fortran/async_io_1.f90: New test.
+	* testsuite/libgomp.fortran/async_io_2.f90: New test.
+	* testsuite/libgomp.fortran/async_io_3.f90: New test.
+	* testsuite/libgomp.fortran/async_io_4.f90: New test.
+	* testsuite/libgomp.fortran/async_io_5.f90: New test.
+	* testsuite/libgomp.fortran/async_io_6.f90: New test.
+	* testsuite/libgomp.fortran/async_io_7.f90: New test.
+
+2018-07-30  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (MIN, MAX): Redefine.
+	(nvptx_exec): Ensure worker and vector default dims don't exceed
+	targ_fn->max_threads_per_block.
+
+2018-07-30  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (struct ptx_device): Add default_dims field.
+	(nvptx_open_device): Init default_dims for device.
+	(nvptx_exec): Use default_dims from device.
+
+2018-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/86660
+	* testsuite/libgomp.c++/for-15.C (results): Include it in
+	omp declare target region.
+	(main): Use map (always, tofrom: results) instead of
+	map (tofrom: results).
+
+	PR middle-end/86660
+	* testsuite/libgomp.c/pr86660.c: New test.
+
+2018-07-26  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Error if the hardware doesn't have
+	sufficient resources to launch a kernel, and give a hint on how to fix
+	it.
+
+2018-07-26  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (struct ptx_device): Add warp_size,
+	max_threads_per_block and max_threads_per_multiprocessor fields.
+	(nvptx_open_device): Initialize new fields.
+	(nvptx_exec): Use num_sms, and new fields.
+
+2018-07-26  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-fortran/lib-12.f90: Move acc_async_test calls
+	to correct locations.  Remove xfail.
+
+2018-07-26  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-fortran/lib-13.f90: Replace acc_wait_all with
+	acc_wait.  Move acc_async_test calls to correct locations.  Remove
+	xfail.
+
+2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* testsuite/libgomp.fortran/async_io_1.f90: New test.
+	* testsuite/libgomp.fortran/async_io_2.f90: New test.
+	* testsuite/libgomp.fortran/async_io_3.f90: New test.
+	* testsuite/libgomp.fortran/async_io_4.f90: New test.
+	* testsuite/libgomp.fortran/async_io_5.f90: New test.
+	* testsuite/libgomp.fortran/async_io_6.f90: New test.
+	* testsuite/libgomp.fortran/async_io_7.f90: New test.
+
 2018-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/86542
@@ -618,6 +725,17 @@
 	PR testsuite/85346
 	* testsuite/libgomp.fortran/do_concurrent_5.f90: Move modified
 	test from gfortran.dg to here.
+
+2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: Revert 259346.
+	* testsuite/libgomp.oacc-fortran/pr84955.f90: Likewise.
+
+2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/84955
+	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: New test.
+	* testsuite/libgomp.oacc-fortran/pr84955.f90: New test.
 
 2018-04-05  Tom de Vries  <tom@codesourcery.com>
 

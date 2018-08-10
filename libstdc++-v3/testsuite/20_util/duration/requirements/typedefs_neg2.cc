@@ -1,5 +1,4 @@
 // { dg-do compile { target c++11 } }
-// { dg-require-cstdint "" }
 // 2008-07-31 Chris Fairles <chris.fairles@gmail.com>
 
 // Copyright (C) 2008-2018 Free Software Foundation, Inc.
@@ -31,5 +30,5 @@ void test01()
   test_type d;			// { dg-error "required from here" }
 }
 
-// { dg-error "must be a specialization of ratio" "" { target *-*-* } 319 }
+// { dg-error "must be a specialization of ratio" "" { target *-*-* } 317 }
 // { dg-prune-output "not a member" }

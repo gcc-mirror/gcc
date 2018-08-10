@@ -11294,12 +11294,15 @@ string_constant (tree arg, tree *ptr_offset)
 	  tree idx = TREE_OPERAND (arg, 1);
 	  if (TREE_CODE (idx) != INTEGER_CST)
 	    {
-	      /* Extract the variable index to prevent
-		 get_addr_base_and_unit_offset() from failing due to
-		 it.  Use it later to compute the non-constant offset
+	      /* From a pointer (but not array) argument extract the variable
+		 index to prevent get_addr_base_and_unit_offset() from failing
+		 due to it.  Use it later to compute the non-constant offset
 		 into the string and return it to the caller.  */
 	      varidx = idx;
 	      ref = TREE_OPERAND (arg, 0);
+
+	      if (TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE)
+		return NULL_TREE;
 	    }
 	}
       array = get_addr_base_and_unit_offset (ref, &base_off);
@@ -11327,6 +11330,12 @@ string_constant (tree arg, tree *ptr_offset)
       tree offset;
       if (tree str = string_constant (arg0, &offset))
 	{
+	  /* Avoid pointers to arrays (see bug 86622).  */
+	  if (POINTER_TYPE_P (TREE_TYPE (arg))
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE
+	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == ARRAY_REF)
+	    return NULL_TREE;
+
 	  tree type = TREE_TYPE (arg1);
 	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, arg1);
 	  return str;
@@ -11343,16 +11352,17 @@ string_constant (tree arg, tree *ptr_offset)
     {
       if (TREE_CODE (TREE_TYPE (array)) != ARRAY_TYPE)
 	return NULL_TREE;
-      if (tree eltsize = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (array))))
-	{
-	  /* Add the scaled variable index to the constant offset.  */
-	  tree eltoff = fold_build2 (MULT_EXPR, TREE_TYPE (offset),
-				     fold_convert (sizetype, varidx),
-				     eltsize);
-	  offset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset), offset, eltoff);
-	}
-      else
-	return NULL_TREE;
+
+      gcc_assert (TREE_CODE (arg) == ARRAY_REF);
+      tree chartype = TREE_TYPE (TREE_TYPE (TREE_OPERAND (arg, 0)));
+      if (TREE_CODE (chartype) != INTEGER_TYPE)
+	return NULL;
+
+      tree charsize = array_ref_element_size (arg);
+      /* Set the non-constant offset to the non-constant index scaled
+	 by the size of the character type.  */
+      offset = fold_build2 (MULT_EXPR, TREE_TYPE (offset),
+			    fold_convert (sizetype, varidx), charsize);
     }
 
   if (TREE_CODE (array) == STRING_CST)
@@ -11371,11 +11381,6 @@ string_constant (tree arg, tree *ptr_offset)
     return NULL_TREE;
   if (TREE_CODE (init) == CONSTRUCTOR)
     {
-      if (TREE_CODE (arg) != ARRAY_REF
-	  && TREE_CODE (arg) == COMPONENT_REF
-	  && TREE_CODE (arg) == MEM_REF)
-	return NULL_TREE;
-
       /* Convert the 64-bit constant offset to a wider type to avoid
 	 overflow.  */
       offset_int wioff;
@@ -11391,11 +11396,15 @@ string_constant (tree arg, tree *ptr_offset)
       init = fold_ctor_reference (NULL_TREE, init, base_off, 0, array,
 				  &fieldoff);
       HOST_WIDE_INT cstoff;
-      if (init && base_off.is_constant (&cstoff))
-	{
-	  cstoff = (cstoff - fieldoff) / BITS_PER_UNIT;
-	  offset = build_int_cst (sizetype, cstoff);
-	}
+      if (!base_off.is_constant (&cstoff))
+	return NULL_TREE;
+
+      cstoff = (cstoff - fieldoff) / BITS_PER_UNIT;
+      tree off = build_int_cst (sizetype, cstoff);
+      if (varidx)
+	offset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset), offset, off);
+      else
+	offset = off;
     }
 
   if (!init || TREE_CODE (init) != STRING_CST)
@@ -11413,8 +11422,11 @@ string_constant (tree arg, tree *ptr_offset)
      const char a[4] = "abc\000\000";
      The excess elements contribute to TREE_STRING_LENGTH()
      but not to strlen().  */
-  unsigned HOST_WIDE_INT length
-    = strnlen (TREE_STRING_POINTER (init), TREE_STRING_LENGTH (init));
+  unsigned HOST_WIDE_INT charsize
+    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (init))));
+  unsigned HOST_WIDE_INT length = TREE_STRING_LENGTH (init);
+  length = string_length (TREE_STRING_POINTER (init), charsize,
+			  length / charsize);
   if (compare_tree_int (array_size, length + 1) < 0)
     return NULL_TREE;
 

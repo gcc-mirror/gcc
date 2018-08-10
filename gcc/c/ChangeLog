@@ -1,3 +1,16 @@
+2018-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* c-objc-common.c (c_tree_printer): Move usage of EXPR_LOCATION (t)
+	and TREE_BLOCK (t) from within percent_K_format	to this callsite.
+
+2018-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85704
+	* c-typeck.c (init_field_decl_cmp): New function.
+	(output_pending_init_elements): Use it for field comparisons
+	instead of pure bit_position comparisons.
+
 2018-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (c_decl_attributes): Don't diagnose vars without mappable

@@ -5889,8 +5889,9 @@ foo (void)
 @item indirect_return
 @cindex @code{indirect_return} function attribute, x86
 
-The @code{indirect_return} attribute on a function is used to inform
-the compiler that the function may return via indirect branch.
+The @code{indirect_return} attribute can be applied to a function,
+as well as variable or type of function pointer to inform the
+compiler that the function may return via indirect branch.
 
 @end table
 
@@ -9590,6 +9591,11 @@ a global variable the declaration appears outside a function. The
 @code{static}. The register name must be a valid register name for the
 target platform.
 
+Do not use type qualifiers such as @code{const} and @code{volatile}, as
+the outcome may be contrary to expectations.  In  particular, using the
+@code{volatile} qualifier does not fully prevent the compiler from
+optimizing accesses to the register.
+
 Registers are a scarce resource on most systems and allowing the 
 compiler to manage their usage usually results in the best code. However, 
 under special circumstances it can make sense to reserve some globally.
@@ -9696,6 +9702,12 @@ but for a local variable the declaration appears within a function.  The
 @code{register} keyword is required, and cannot be combined with 
 @code{static}.  The register name must be a valid register name for the
 target platform.
+
+Do not use type qualifiers such as @code{const} and @code{volatile}, as
+the outcome may be contrary to expectations. In particular, when the
+@code{const} qualifier is used, the compiler may substitute the
+variable with its initializer in @code{asm} statements, which may cause
+the corresponding operand to appear in a different register.
 
 As with global register variables, it is recommended that you choose 
 a register that is normally saved and restored by function calls on your 
@@ -10948,6 +10960,7 @@ is called and the @var{flag} argument passed to it.
 @findex __builtin_powi
 @findex __builtin_powif
 @findex __builtin_powil
+@findex __builtin_speculation_safe_value
 @findex _Exit
 @findex _exit
 @findex abort
@@ -11589,6 +11602,96 @@ at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
 and @option{-Walloca-larger-than}.  @var{max_size} must be a constant integer
 expression, it has no effect on code generation and no attempt is made to
 check its compatibility with @var{size}.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} @var{type} __builtin_speculation_safe_value (@var{type} val, @var{type} failval)
+
+This built-in function can be used to help mitigate against unsafe
+speculative execution.  @var{type} may be any integral type or any
+pointer type.
+
+@enumerate
+@item
+If the CPU is not speculatively executing the code, then @var{val}
+is returned.
+@item
+If the CPU is executing speculatively then either:
+@itemize
+@item
+The function may cause execution to pause until it is known that the
+code is no-longer being executed speculatively (in which case
+@var{val} can be returned, as above); or
+@item
+The function may use target-dependent speculation tracking state to cause
+@var{failval} to be returned when it is known that speculative
+execution has incorrectly predicted a conditional branch operation.
+@end itemize
+@end enumerate
+
+The second argument, @var{failval}, is optional and defaults to zero
+if omitted.
+
+GCC defines the preprocessor macro
+@code{__HAVE_BUILTIN_SPECULATION_SAFE_VALUE} for targets that have been
+updated to support this builtin.
+
+The built-in function can be used where a variable appears to be used in a
+safe way, but the CPU, due to speculative execution may temporarily ignore
+the bounds checks.  Consider, for example, the following function:
+
+@smallexample
+int array[500];
+int f (unsigned untrusted_index)
+@{
+  if (untrusted_index < 500)
+    return array[untrusted_index];
+  return 0;
+@}
+@end smallexample
+
+If the function is called repeatedly with @code{untrusted_index} less
+than the limit of 500, then a branch predictor will learn that the
+block of code that returns a value stored in @code{array} will be
+executed.  If the function is subsequently called with an
+out-of-range value it will still try to execute that block of code
+first until the CPU determines that the prediction was incorrect
+(the CPU will unwind any incorrect operations at that point).
+However, depending on how the result of the function is used, it might be
+possible to leave traces in the cache that can reveal what was stored
+at the out-of-bounds location.  The built-in function can be used to
+provide some protection against leaking data in this way by changing
+the code to:
+
+@smallexample
+int array[500];
+int f (unsigned untrusted_index)
+@{
+  if (untrusted_index < 500)
+    return array[__builtin_speculation_safe_value (untrusted_index)];
+  return 0;
+@}
+@end smallexample
+
+The built-in function will either cause execution to stall until the
+conditional branch has been fully resolved, or it may permit
+speculative execution to continue, but using 0 instead of
+@code{untrusted_value} if that exceeds the limit.
+
+If accessing any memory location is potentially unsafe when speculative
+execution is incorrect, then the code can be rewritten as
+
+@smallexample
+int array[500];
+int f (unsigned untrusted_index)
+@{
+  if (untrusted_index < 500)
+    return *__builtin_speculation_safe_value (&array[untrusted_index], NULL);
+  return 0;
+@}
+@end smallexample
+
+which will cause a @code{NULL} pointer to be used for the unsafe case.
 
 @end deftypefn
 
@@ -15761,9 +15864,9 @@ long long __builtin_divde (long long, long long);
 unsigned long long __builtin_divdeu (unsigned long long, unsigned long long);
 int __builtin_divwe (int, int);
 unsigned int __builtin_divweu (unsigned int, unsigned int);
-vector __int128_t __builtin_pack_vector_int128 (long long, long long);
+vector __int128 __builtin_pack_vector_int128 (long long, long long);
 void __builtin_rs6000_speculation_barrier (void);
-long long __builtin_unpack_vector_int128 (vector __int128_t, signed char);
+long long __builtin_unpack_vector_int128 (vector __int128, signed char);
 @end smallexample
 
 Of these, the @code{__builtin_divde} and @code{__builtin_divdeu} functions
@@ -18330,57 +18433,57 @@ vector unsigned long long vec_vupklsw (vector int);
 If the ISA 2.07 additions to the vector/scalar (power8-vector)
 instruction set are available, the following additional functions are
 available for 64-bit targets.  New vector types
-(@var{vector __int128_t} and @var{vector __uint128_t}) are available
-to hold the @var{__int128_t} and @var{__uint128_t} types to use these
+(@var{vector __int128} and @var{vector __uint128}) are available
+to hold the @var{__int128} and @var{__uint128} types to use these
 builtins.
 
 The normal vector extract, and set operations work on
-@var{vector __int128_t} and @var{vector __uint128_t} types,
+@var{vector __int128} and @var{vector __uint128} types,
 but the index value must be 0.
 
 @smallexample
-vector __int128_t vec_vaddcuq (vector __int128_t, vector __int128_t);
-vector __uint128_t vec_vaddcuq (vector __uint128_t, vector __uint128_t);
+vector __int128 vec_vaddcuq (vector __int128, vector __int128);
+vector __uint128 vec_vaddcuq (vector __uint128, vector __uint128);
 
-vector __int128_t vec_vadduqm (vector __int128_t, vector __int128_t);
-vector __uint128_t vec_vadduqm (vector __uint128_t, vector __uint128_t);
+vector __int128 vec_vadduqm (vector __int128, vector __int128);
+vector __uint128 vec_vadduqm (vector __uint128, vector __uint128);
 
-vector __int128_t vec_vaddecuq (vector __int128_t, vector __int128_t,
-                                vector __int128_t);
-vector __uint128_t vec_vaddecuq (vector __uint128_t, vector __uint128_t,
-                                 vector __uint128_t);
+vector __int128 vec_vaddecuq (vector __int128, vector __int128,
+                                vector __int128);
+vector __uint128 vec_vaddecuq (vector __uint128, vector __uint128,
+                                 vector __uint128);
 
-vector __int128_t vec_vaddeuqm (vector __int128_t, vector __int128_t,
-                                vector __int128_t);
-vector __uint128_t vec_vaddeuqm (vector __uint128_t, vector __uint128_t,
-                                 vector __uint128_t);
+vector __int128 vec_vaddeuqm (vector __int128, vector __int128,
+                                vector __int128);
+vector __uint128 vec_vaddeuqm (vector __uint128, vector __uint128,
+                                 vector __uint128);
 
-vector __int128_t vec_vsubecuq (vector __int128_t, vector __int128_t,
-                                vector __int128_t);
-vector __uint128_t vec_vsubecuq (vector __uint128_t, vector __uint128_t,
-                                 vector __uint128_t);
+vector __int128 vec_vsubecuq (vector __int128, vector __int128,
+                                vector __int128);
+vector __uint128 vec_vsubecuq (vector __uint128, vector __uint128,
+                                 vector __uint128);
 
-vector __int128_t vec_vsubeuqm (vector __int128_t, vector __int128_t,
-                                vector __int128_t);
-vector __uint128_t vec_vsubeuqm (vector __uint128_t, vector __uint128_t,
-                                 vector __uint128_t);
+vector __int128 vec_vsubeuqm (vector __int128, vector __int128,
+                                vector __int128);
+vector __uint128 vec_vsubeuqm (vector __uint128, vector __uint128,
+                                 vector __uint128);
 
-vector __int128_t vec_vsubcuq (vector __int128_t, vector __int128_t);
-vector __uint128_t vec_vsubcuq (vector __uint128_t, vector __uint128_t);
+vector __int128 vec_vsubcuq (vector __int128, vector __int128);
+vector __uint128 vec_vsubcuq (vector __uint128, vector __uint128);
 
-__int128_t vec_vsubuqm (__int128_t, __int128_t);
-__uint128_t vec_vsubuqm (__uint128_t, __uint128_t);
+__int128 vec_vsubuqm (__int128, __int128);
+__uint128 vec_vsubuqm (__uint128, __uint128);
 
-vector __int128_t __builtin_bcdadd (vector __int128_t, vector __int128_t);
-int __builtin_bcdadd_lt (vector __int128_t, vector __int128_t);
-int __builtin_bcdadd_eq (vector __int128_t, vector __int128_t);
-int __builtin_bcdadd_gt (vector __int128_t, vector __int128_t);
-int __builtin_bcdadd_ov (vector __int128_t, vector __int128_t);
-vector __int128_t bcdsub (vector __int128_t, vector __int128_t);
-int __builtin_bcdsub_lt (vector __int128_t, vector __int128_t);
-int __builtin_bcdsub_eq (vector __int128_t, vector __int128_t);
-int __builtin_bcdsub_gt (vector __int128_t, vector __int128_t);
-int __builtin_bcdsub_ov (vector __int128_t, vector __int128_t);
+vector __int128 __builtin_bcdadd (vector __int128, vector __int128);
+int __builtin_bcdadd_lt (vector __int128, vector __int128);
+int __builtin_bcdadd_eq (vector __int128, vector __int128);
+int __builtin_bcdadd_gt (vector __int128, vector __int128);
+int __builtin_bcdadd_ov (vector __int128, vector __int128);
+vector __int128 bcdsub (vector __int128, vector __int128);
+int __builtin_bcdsub_lt (vector __int128, vector __int128);
+int __builtin_bcdsub_eq (vector __int128, vector __int128);
+int __builtin_bcdsub_gt (vector __int128, vector __int128);
+int __builtin_bcdsub_ov (vector __int128, vector __int128);
 @end smallexample
 
 @node PowerPC AltiVec Built-in Functions Available on ISA 3.0
@@ -18750,14 +18853,14 @@ are available:
 @smallexample
 vector long vec_vprtyb (vector long);
 vector unsigned long vec_vprtyb (vector unsigned long);
-vector __int128_t vec_vprtyb (vector __int128_t);
-vector __uint128_t vec_vprtyb (vector __uint128_t);
+vector __int128 vec_vprtyb (vector __int128);
+vector __uint128 vec_vprtyb (vector __uint128);
 
 vector long vec_vprtybd (vector long);
 vector unsigned long vec_vprtybd (vector unsigned long);
 
-vector __int128_t vec_vprtybq (vector __int128_t);
-vector __uint128_t vec_vprtybd (vector __uint128_t);
+vector __int128 vec_vprtybq (vector __int128);
+vector __uint128 vec_vprtybd (vector __uint128);
 @end smallexample
 
 The following built-in vector functions are available for the PowerPC family
@@ -18959,8 +19062,8 @@ are available:
 @smallexample
 vector long vec_revb (vector long);
 vector unsigned long vec_revb (vector unsigned long);
-vector __int128_t vec_revb (vector __int128_t);
-vector __uint128_t vec_revb (vector __uint128_t);
+vector __int128 vec_revb (vector __int128);
+vector __uint128 vec_revb (vector __uint128);
 @end smallexample
 
 The @code{vec_revb} built-in function reverses the bytes on an element

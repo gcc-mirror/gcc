@@ -1,3 +1,164 @@
+2018-07-31  Alexandre Oliva  <oliva@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* trans.c: Include debug.h.
+	(file_map): New static variable.
+	(gigi): Set it.  Create decl_to_instance_map when needed.
+	(Subprogram_Body_to_gnu): Pass gnu_subprog_decl to...
+	(Sloc_to_locus): ... this.  Add decl parm, map it to instance.
+	* gigi.h (Sloc_to_locus): Adjust declaration.
+
+2018-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* clean.adb, gnatchop.adb, gnatfind.adb, gnatls.adb,
+	gnatmake.ads, gnatxref.adb, make.adb, make.ads, make_util.ads,
+	sfn_scan.adb, vxaddr2line.adb, xeinfo.adb, xoscons.adb,
+	xr_tabls.adb, xref_lib.adb: Address CodePeer messages.
+
+2018-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatlink.adb: Fix potential Constraint_Error if
+	Library_Version is too long.
+
+2018-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_elab.adb: Remove duplicate condition detected by CodePeer.
+
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Subp_Index): In the case of a protected
+	operation, the relevant entry is the generated
+	protected_subprogram_body into which the original body is
+	rewritten. Assorted cleanup and optimizations.
+
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_Attribute, case Fixed_Value): Set the
+	base type of the result to ensure that proper overflow and range
+	checks are generated.  If the target is a fixed-point tyoe,
+	generate the required overflow and range checks explicitly,
+	rather than relying on Apply_Type_Conversion_Checks, which might
+	simply set the Do_Range_Check flag and rely on the backend to
+	add the check.
+
+2018-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Establish a transient scope to
+	manage the secondary stack when the designated type of an
+	access-to-subprogram requires it.
+
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): To find local
+	subprograms in the elaboration code for a package body, recurse
+	through nested statement sequences because a compiler-generated
+	procedure may appear within a condition statement.
+
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Protected_Subprogram_Call): Handle
+	properly a protected call that includes a default parameter that
+	is a call to a protected function of the same type.
+
+2018-07-31  Justin Squirek  <squirek@adacore.com>
+
+	* lib-writ.adb (Write_With_Lines): Modfiy the generation of
+	dependencies within ali files so that source unit bodies are
+	properly listed even if said bodies are missing.  Perform legacy
+	behavior in GNATprove mode.
+	* lib-writ.ads: Modify documentation to reflect current behavior.
+
+2018-07-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	*  libgnarl/s-osinte__solaris.ads (upad64_t): New private type.
+	(mutex_t): Use it for 'lock' and 'data' components.
+	(cond_t): Likewise for 'data' and use single 'flags' component.
+
+2018-07-31  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch5.adb (Make_Field_Assign): Force temporarily generated
+	objects for assignment of overlaid user objects to be renamings
+	instead of constant declarations.
+
+2018-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb (Analyze_Pragmas): New routine.
+	(Build_Private_Protected_Declaration): Code clean up. Relocate
+	relevant aspects and pragmas from the stand-alone body to the
+	newly created spec.  Explicitly analyze any pragmas that have
+	been either relocated or produced by the analysis of the
+	aspects.
+	(Move_Pragmas): New routine.
+	* sem_prag.adb (Find_Related_Declaration_Or_Body): Recognize the
+	case where a pragma applies to the internally created spec for a
+	stand-along subprogram body declared in a protected body.
+
+2018-07-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Replace
+	calls to Current_Scope in three assertions with calls to
+	Current_Subprogram.
+
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb (Check_Non_Static_Context): Do not warn on an
+	integer literal greater than the upper bound of
+	Universal_Integer'Last when expansion is disabled, to avoid a
+	spurious warning over ranges involving 64-bit modular types.
+
+2018-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.adb (Write_Entity_Flags): Also print
+	Is_Activation_Record flag.
+
+2018-07-31  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb, exp_ch4.adb, exp_ch6.adb, lib-xref.adb,
+	repinfo.adb, sem_ch9.adb: Minor replace Ekind membership tests
+	with a wrapper routine.
+
+2018-07-31  Piotr Trojanek  <trojanek@adacore.com>
+
+	* ali.adb (Known_ALI_Lines): Remove 'F' as a prefix for lines
+	related to the FORMAL analysis done by GNATprove.
+
+2018-07-31  Javier Miranda  <miranda@adacore.com>
+
+	* sem.ads (Inside_Preanalysis_Without_Freezing): New global
+	counter.
+	* sem.adb (Semantics): This subprogram has now the
+	responsibility of resetting the counter before analyzing a unit,
+	and restoring its previous value before returning.
+	* freeze.adb (Freeze_Entity): Do not freeze if we are
+	preanalyzing without freezing.
+	* sem_res.adb (Preanalyze_And_Resolve): Set & restore
+	In_Preanalysis_Without_Freezing.
+
+2018-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Traverse_Homonyms): Consider generic actuals that
+	may rename a matching class-wide operation only if the renaming
+	declaration for that actual is in an enclosing scope (i.e.
+	within the corrresponding instance).
+
+2018-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb, contracts.adb, exp_aggr.adb, exp_ch5.adb,
+	exp_disp.adb, make.adb, sem_ch4.adb, sem_eval.adb, sem_res.adb,
+	usage.adb: Minor reformatting.
+
+2018-07-31  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Do not complain about the
+	implicit allocator that occurs in the expansion of a return
+	statement for a build-in-place function.
+
+2018-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/82063
+	* gcc-interface/misc.c (gnat_handle_option): Change function argument
+	to HOST_WIDE_INT.
+
 2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (choices_to_gnu): Rename parameters.  Deal with

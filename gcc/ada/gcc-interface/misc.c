@@ -138,8 +138,9 @@ gnat_option_lang_mask (void)
    are marked as Ada-specific.  Return true on success or false on failure.  */
 
 static bool
-gnat_handle_option (size_t scode, const char *arg, int value, int kind,
-		    location_t loc, const struct cl_option_handlers *handlers)
+gnat_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
+		    int kind, location_t loc,
+		    const struct cl_option_handlers *handlers)
 {
   enum opt_code code = (enum opt_code) scode;
 

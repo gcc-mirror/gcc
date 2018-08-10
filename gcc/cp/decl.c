@@ -1280,39 +1280,6 @@ check_redeclaration_no_default_args (tree decl)
       }
 }
 
-/* NEWDECL is a redeclaration of a function or function template OLDDECL.
-   If either the declaration or the redeclaration is a friend declaration
-   and specifies default arguments issue a diagnostic.   Note: this is to
-   enforce C++17 11.3.6/4: "If a friend declaration specifies a default
-   argument expression, that declaration... shall be the only declaration
-   of the function or function template in the translation unit."  */
-
-static void
-check_no_redeclaration_friend_default_args (tree olddecl, tree newdecl)
-{
-  bool olddecl_friend_p = DECL_FRIEND_P (STRIP_TEMPLATE (olddecl));
-  bool newdecl_friend_p = DECL_FRIEND_P (STRIP_TEMPLATE (newdecl));
-
-  if (!olddecl_friend_p && !newdecl_friend_p)
-    return;
-
-  tree t1 = FUNCTION_FIRST_USER_PARMTYPE (olddecl);
-  tree t2 = FUNCTION_FIRST_USER_PARMTYPE (newdecl);
-
-  for (; t1 && t1 != void_list_node;
-       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
-    if ((olddecl_friend_p && TREE_PURPOSE (t1))
-	|| (newdecl_friend_p && TREE_PURPOSE (t2)))
-      {
-	if (permerror (DECL_SOURCE_LOCATION (newdecl),
-		       "friend declaration of %q#D specifies default "
-		       "arguments and isn't the only declaration", newdecl))
-	  inform (DECL_SOURCE_LOCATION (olddecl),
-		  "previous declaration of %q#D", olddecl);
-	return;
-      }
-}
-
 /* Merge tree bits that correspond to attributes noreturn, nothrow,
    const,  malloc, and pure from NEWDECL with those of OLDDECL.  */
 
@@ -1909,12 +1876,6 @@ next_arg:;
 				olddecl);
 		      }
 		  }
-
-	      /* C++17 11.3.6/4: "If a friend declaration specifies a default
-		 argument expression, that declaration... shall be the only
-		 declaration of the function or function template in the
-		 translation unit."  */
-	      check_no_redeclaration_friend_default_args (olddecl, newdecl);
 	    }
 	}
     }
@@ -2047,18 +2008,11 @@ next_arg:;
 
       if (DECL_FUNCTION_TEMPLATE_P (newdecl))
 	{
+	  /* Per C++11 8.3.6/4, default arguments cannot be added in later
+	     declarations of a function template.  */
 	  if (DECL_SOURCE_LOCATION (newdecl)
 	      != DECL_SOURCE_LOCATION (olddecl))
-	    {
-	      /* Per C++11 8.3.6/4, default arguments cannot be added in
-		 later declarations of a function template.  */
-	      check_redeclaration_no_default_args (newdecl);
-	      /* C++17 11.3.6/4: "If a friend declaration specifies a default
-		 argument expression, that declaration... shall be the only
-		 declaration of the function or function template in the
-		 translation unit."  */
-	      check_no_redeclaration_friend_default_args (olddecl, newdecl);
-	    }
+	    check_redeclaration_no_default_args (newdecl);
 
 	  check_default_args (newdecl);
 
@@ -4090,6 +4044,24 @@ initialize_predefined_identifiers (void)
     {"auto", &auto_identifier, cik_normal},
     {"decltype(auto)", &decltype_auto_identifier, cik_normal},
     {"initializer_list", &init_list_identifier, cik_normal},
+    {"__for_range ", &for_range__identifier, cik_normal},
+    {"__for_begin ", &for_begin__identifier, cik_normal},
+    {"__for_end ", &for_end__identifier, cik_normal},
+    {"__for_range", &for_range_identifier, cik_normal},
+    {"__for_begin", &for_begin_identifier, cik_normal},
+    {"__for_end", &for_end_identifier, cik_normal},
+    {"abi_tag", &abi_tag_identifier, cik_normal},
+    {"aligned", &aligned_identifier, cik_normal},
+    {"begin", &begin_identifier, cik_normal},
+    {"end", &end_identifier, cik_normal},
+    {"get", &get__identifier, cik_normal},
+    {"gnu", &gnu_identifier, cik_normal},
+    {"tuple_element", &tuple_element_identifier, cik_normal},
+    {"tuple_size", &tuple_size_identifier, cik_normal},
+    {"type", &type_identifier, cik_normal},
+    {"value", &value_identifier, cik_normal},
+    {"_FUN", &fun_identifier, cik_normal},
+    {"__closure", &closure_identifier, cik_normal},
     {NULL, NULL, cik_normal}
   };
 
@@ -7374,14 +7346,14 @@ get_tuple_size (tree type)
 {
   tree args = make_tree_vec (1);
   TREE_VEC_ELT (args, 0) = type;
-  tree inst = lookup_template_class (get_identifier ("tuple_size"), args,
+  tree inst = lookup_template_class (tuple_size_identifier, args,
 				     /*in_decl*/NULL_TREE,
 				     /*context*/std_node,
 				     /*entering_scope*/false, tf_none);
   inst = complete_type (inst);
   if (inst == error_mark_node || !COMPLETE_TYPE_P (inst))
     return NULL_TREE;
-  tree val = lookup_qualified_name (inst, get_identifier ("value"),
+  tree val = lookup_qualified_name (inst, value_identifier,
 				    /*type*/false, /*complain*/false);
   if (TREE_CODE (val) == VAR_DECL || TREE_CODE (val) == CONST_DECL)
     val = maybe_constant_value (val);
@@ -7399,12 +7371,12 @@ get_tuple_element_type (tree type, unsigned i)
   tree args = make_tree_vec (2);
   TREE_VEC_ELT (args, 0) = build_int_cst (integer_type_node, i);
   TREE_VEC_ELT (args, 1) = type;
-  tree inst = lookup_template_class (get_identifier ("tuple_element"), args,
+  tree inst = lookup_template_class (tuple_element_identifier, args,
 				     /*in_decl*/NULL_TREE,
 				     /*context*/std_node,
 				     /*entering_scope*/false,
 				     tf_warning_or_error);
-  return make_typename_type (inst, get_identifier ("type"),
+  return make_typename_type (inst, type_identifier,
 			     none_type, tf_warning_or_error);
 }
 
@@ -7413,7 +7385,6 @@ get_tuple_element_type (tree type, unsigned i)
 static tree
 get_tuple_decomp_init (tree decl, unsigned i)
 {
-  tree get_id = get_identifier ("get");
   tree targs = make_tree_vec (1);
   TREE_VEC_ELT (targs, 0) = build_int_cst (integer_type_node, i);
 
@@ -7426,7 +7397,7 @@ get_tuple_decomp_init (tree decl, unsigned i)
       || TYPE_REF_IS_RVALUE (etype))
     e = move (e);
 
-  tree fns = lookup_qualified_name (TREE_TYPE (e), get_id,
+  tree fns = lookup_qualified_name (TREE_TYPE (e), get__identifier,
 				    /*type*/false, /*complain*/false);
   bool use_member_get = false;
 
@@ -7458,7 +7429,7 @@ get_tuple_decomp_init (tree decl, unsigned i)
   else
     {
       vec<tree,va_gc> *args = make_tree_vector_single (e);
-      fns = lookup_template_function (get_id, targs);
+      fns = lookup_template_function (get__identifier, targs);
       fns = perform_koenig_lookup (fns, args, tf_warning_or_error);
       return finish_call_expr (fns, &args, /*novirt*/false,
 			       /*koenig*/true, tf_warning_or_error);
@@ -8807,21 +8778,6 @@ grokfndecl (tree ctype,
 	      return NULL_TREE;
 	    }
 	}
-    }
-
-  /* C++17 11.3.6/4: "If a friend declaration specifies a default argument
-     expression, that declaration shall be a definition..."  */
-  if (friendp && !funcdef_flag)
-    {
-      for (tree t = FUNCTION_FIRST_USER_PARMTYPE (decl);
-	   t && t != void_list_node; t = TREE_CHAIN (t))
-	if (TREE_PURPOSE (t))
-	  {
-	    permerror (DECL_SOURCE_LOCATION (decl),
-		       "friend declaration of %qD specifies default "
-		       "arguments and isn't a definition", decl);
-	    break;
-	  }
     }
 
   /* If this decl has namespace scope, set that up.  */

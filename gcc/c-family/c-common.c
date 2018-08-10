@@ -6133,7 +6133,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
       gcc_unreachable ();
     }
   if (done_lexing)
-    richloc->set_range (line_table, 0, input_location, true);
+    richloc->set_range (0, input_location, true);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
   diagnostic_override_option_index (&diagnostic,
@@ -6455,6 +6455,122 @@ builtin_type_for_size (int size, bool unsignedp)
 {
   tree type = c_common_type_for_size (size, unsignedp);
   return type ? type : error_mark_node;
+}
+
+/* Work out the size of the first argument of a call to
+   __builtin_speculation_safe_value.  Only pointers and integral types
+   are permitted.  Return -1 if the argument type is not supported or
+   the size is too large; 0 if the argument type is a pointer or the
+   size if it is integral.  */
+static enum built_in_function
+speculation_safe_value_resolve_call (tree function, vec<tree, va_gc> *params)
+{
+  /* Type of the argument.  */
+  tree type;
+  int size;
+
+  if (vec_safe_is_empty (params))
+    {
+      error ("too few arguments to function %qE", function);
+      return BUILT_IN_NONE;
+    }
+
+  type = TREE_TYPE ((*params)[0]);
+  if (TREE_CODE (type) == ARRAY_TYPE && c_dialect_cxx ())
+    {
+      /* Force array-to-pointer decay for C++.   */
+      (*params)[0] = default_conversion ((*params)[0]);
+      type = TREE_TYPE ((*params)[0]);
+    }
+
+  if (POINTER_TYPE_P (type))
+    return BUILT_IN_SPECULATION_SAFE_VALUE_PTR;
+
+  if (!INTEGRAL_TYPE_P (type))
+    goto incompatible;
+
+  if (!COMPLETE_TYPE_P (type))
+    goto incompatible;
+
+  size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+  if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
+    return ((enum built_in_function)
+	    ((int) BUILT_IN_SPECULATION_SAFE_VALUE_1 + exact_log2 (size)));
+
+ incompatible:
+  /* Issue the diagnostic only if the argument is valid, otherwise
+     it would be redundant at best and could be misleading.  */
+  if (type != error_mark_node)
+    error ("operand type %qT is incompatible with argument %d of %qE",
+	   type, 1, function);
+
+  return BUILT_IN_NONE;
+}
+
+/* Validate and coerce PARAMS, the arguments to ORIG_FUNCTION to fit
+   the prototype for FUNCTION.  The first argument is mandatory, a second
+   argument, if present, must be type compatible with the first.  */
+static bool
+speculation_safe_value_resolve_params (location_t loc, tree orig_function,
+				       vec<tree, va_gc> *params)
+{
+  tree val;
+
+  if (params->length () == 0)
+    {
+      error_at (loc, "too few arguments to function %qE", orig_function);
+      return false;
+    }
+
+  else if (params->length () > 2)
+    {
+      error_at (loc, "too many arguments to function %qE", orig_function);
+      return false;
+    }
+
+  val = (*params)[0];
+  if (TREE_CODE (TREE_TYPE (val)) == ARRAY_TYPE)
+    val = default_conversion (val);
+  if (!(TREE_CODE (TREE_TYPE (val)) == POINTER_TYPE
+	|| TREE_CODE (TREE_TYPE (val)) == INTEGER_TYPE))
+    {
+      error_at (loc,
+		"expecting argument of type pointer or of type integer "
+		"for argument 1");
+      return false;
+    }
+  (*params)[0] = val;
+
+  if (params->length () == 2)
+    {
+      tree val2 = (*params)[1];
+      if (TREE_CODE (TREE_TYPE (val2)) == ARRAY_TYPE)
+	val2 = default_conversion (val2);
+      if (!(TREE_TYPE (val) == TREE_TYPE (val2)
+	    || useless_type_conversion_p (TREE_TYPE (val), TREE_TYPE (val2))))
+	{
+	  error_at (loc, "both arguments must be compatible");
+	  return false;
+	}
+      (*params)[1] = val2;
+    }
+
+  return true;
+}
+
+/* Cast the result of the builtin back to the type of the first argument,
+   preserving any qualifiers that it might have.  */
+static tree
+speculation_safe_value_resolve_return (tree first_param, tree result)
+{
+  tree ptype = TREE_TYPE (first_param);
+  tree rtype = TREE_TYPE (result);
+  ptype = TYPE_MAIN_VARIANT (ptype);
+
+  if (tree_int_cst_equal (TYPE_SIZE (ptype), TYPE_SIZE (rtype)))
+    return convert (ptype, result);
+
+  return result;
 }
 
 /* A helper function for resolve_overloaded_builtin in resolving the
@@ -7111,6 +7227,54 @@ resolve_overloaded_builtin (location_t loc, tree function,
   /* Handle BUILT_IN_NORMAL here.  */
   switch (orig_code)
     {
+    case BUILT_IN_SPECULATION_SAFE_VALUE_N:
+      {
+	tree new_function, first_param, result;
+	enum built_in_function fncode
+	  = speculation_safe_value_resolve_call (function, params);;
+
+	first_param = (*params)[0];
+	if (fncode == BUILT_IN_NONE
+	    || !speculation_safe_value_resolve_params (loc, function, params))
+	  return error_mark_node;
+
+	if (targetm.have_speculation_safe_value (true))
+	  {
+	    new_function = builtin_decl_explicit (fncode);
+	    result = build_function_call_vec (loc, vNULL, new_function, params,
+					      NULL);
+
+	    if (result == error_mark_node)
+	      return result;
+
+	    return speculation_safe_value_resolve_return (first_param, result);
+	  }
+	else
+	  {
+	    /* This target doesn't have, or doesn't need, active mitigation
+	       against incorrect speculative execution.  Simply return the
+	       first parameter to the builtin.  */
+	    if (!targetm.have_speculation_safe_value (false))
+	      /* The user has invoked __builtin_speculation_safe_value
+		 even though __HAVE_SPECULATION_SAFE_VALUE is not
+		 defined: emit a warning.  */
+	      warning_at (input_location, 0,
+			  "this target does not define a speculation barrier; "
+			  "your program will still execute correctly, "
+			  "but incorrect speculation may not be be "
+			  "restricted");
+
+	    /* If the optional second argument is present, handle any side
+	       effects now.  */
+	    if (params->length () == 2
+		&& TREE_SIDE_EFFECTS ((*params)[1]))
+	      return build2 (COMPOUND_EXPR, TREE_TYPE (first_param),
+			     (*params)[1], first_param);
+
+	    return first_param;
+	  }
+      }
+
     case BUILT_IN_ATOMIC_EXCHANGE:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE:
     case BUILT_IN_ATOMIC_LOAD:
@@ -8174,7 +8338,7 @@ maybe_suggest_missing_token_insertion (rich_location *richloc,
       location_t hint_loc = hint->get_start_loc ();
       location_t old_loc = richloc->get_loc ();
 
-      richloc->set_range (line_table, 0, hint_loc, true);
+      richloc->set_range (0, hint_loc, true);
       richloc->add_range (old_loc, false);
     }
 }

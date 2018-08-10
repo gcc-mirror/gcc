@@ -166,7 +166,7 @@ procedure XOSCons is
       A2 : Long_Unsigned renames V2.Abs_Value;
    begin
       return (P1 and then not P2)
-        or else (P1 and then P2 and then A1 > A2)
+        or else (P1 and then A1 > A2)
         or else (not P1 and then not P2 and then A1 < A2);
    end ">";
 
