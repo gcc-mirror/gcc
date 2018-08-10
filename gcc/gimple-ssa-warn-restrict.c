@@ -79,7 +79,7 @@ pass_wrestrict::gate (function *fun ATTRIBUTE_UNUSED)
   return warn_array_bounds != 0 || warn_restrict != 0;
 }
 
-static void check_call (gimple *);
+static void check_call (gcall *);
 
 static void
 wrestrict_walk (basic_block bb)
@@ -92,7 +92,7 @@ wrestrict_walk (basic_block bb)
       if (!is_gimple_call (stmt))
 	continue;
 
-      check_call (stmt);
+      check_call (as_a <gcall *> (stmt));
     }
 }
 
@@ -739,7 +739,7 @@ builtin_access::builtin_access (gimple *call, builtin_memref &dst,
     {
       tree size = gimple_call_arg (call, sizeargno);
       tree range[2];
-      if (get_size_range (size, range, true, call))
+      if (get_size_range (size, range, true, as_a <gcall *> (call)))
 	{
 	  bounds[0] = wi::to_offset (range[0]);
 	  bounds[1] = wi::to_offset (range[1]);
@@ -1767,7 +1767,7 @@ maybe_diag_offset_bounds (location_t loc, gimple *call, tree func, int strict,
    if/when appropriate.  */
 
 static void
-check_call (gimple *call)
+check_call (gcall *call)
 {
   /* Avoid checking the call if it has already been diagnosed for
      some reason.  */
@@ -1875,8 +1875,8 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
 
   tree func = gimple_call_fndecl (call);
 
-  builtin_memref dstref (call, dst, dstsize);
-  builtin_memref srcref (call, src, srcsize);
+  builtin_memref dstref (as_a <gcall *> (call), dst, dstsize);
+  builtin_memref srcref (as_a <gcall *> (call), src, srcsize);
 
   builtin_access acs (call, dstref, srcref);
 
