@@ -1,3 +1,13 @@
+2018-08-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from mainline
+	2018-06-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/86197
+	* config/rs6000/rs6000.md (rs6000_discover_homogeneous_aggregate): An
+	ieee128 argument takes up only one (vector) register, not two (floating
+	point) registers.
+
 2018-08-02  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	Backport from mainline
