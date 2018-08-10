@@ -1,7 +1,7 @@
 2018-08-10  Martin Liska  <mliska@suse.cz>
 
 	* libsupc++/new_op.cc (new): Remove __builtin_expect as malloc
-        predictor can handle that.
+	predictor can handle that.
 	* libsupc++/new_opa.cc: Likewise.
 	* libsupc++/new_opnt.cc (new): Likewise.
 
@@ -51,7 +51,8 @@
 	* include/bits/stl_algo.h
 	(__rotate(_Ite, _Ite, _Ite, forward_iterator_tag))
 	(__rotate(_Ite, _Ite, _Ite, bidirectional_iterator_tag))
-	(__rotate(_Ite, _Ite, _Ite, random_access_iterator_tag)): Move code duplication...
+	(__rotate(_Ite, _Ite, _Ite, random_access_iterator_tag)): Move code
+	duplication...
 	(rotate(_Ite, _Ite, _Ite)): ...here.
 	(__stable_partition_adaptive(_FIt, _FIt, _Pred, _Dist, _Pointer, _Dist)):
 	Simplify rotate call.
