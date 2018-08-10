@@ -28967,6 +28967,8 @@ else
     $as_echo "#define HAVE_TANHF 1" >>confdefs.h
 
 
+    $as_echo "#define HAVE_ALIGNED_ALLOC 1" >>confdefs.h
+
     $as_echo "#define HAVE_ICONV 1" >>confdefs.h
 
     $as_echo "#define HAVE_MEMALIGN 1" >>confdefs.h

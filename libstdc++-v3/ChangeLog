@@ -1,3 +1,10 @@
+2018-08-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/85904
+	* configure.ac: Define HAVE_ALIGNED_ALLOC if building for
+	Newlib.
+	* configure: Regenerate.
+
 2018-08-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/deque (std::pmr::deque): Declare alias.
