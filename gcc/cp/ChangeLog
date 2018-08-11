@@ -1,3 +1,9 @@
+2018-08-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86728 - C variadic generic lambda.
+	* parser.c (cp_parser_parameter_declaration): Don't turn 'auto' into
+	a pack if it's followed by a declarator-id.
+
 2018-08-08  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
