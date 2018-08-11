@@ -28,14 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define EBUSY   16
 #define ENOSYS 251 
 
-/* All PA-RISC implementations supported by linux have strongly
-   ordered loads and stores.  Only cache flushes and purges can be
-   delayed.  The data cache implementations are all globally
-   coherent.  Thus, there is no need to synchonize memory accesses.
-
-   GCC automatically issues a asm memory barrier when it encounters
-   a __sync_synchronize builtin.  Thus, we do not need to define this
-   builtin.
+/* PA-RISC 2.0 supports out-of-order execution for loads and stores.
+   Thus, we need to synchonize memory accesses.  For more info, see:
+   "Advanced Performance Features of the 64-bit PA-8000" by Doug Hunt.
 
    We implement byte, short and int versions of each atomic operation
    using the kernel helper defined below.  There is no support for
@@ -119,7 +114,7 @@ __kernel_cmpxchg2 (void *mem, const void *oldval, const void *newval,
     long failure;							\
 									\
     do {								\
-      tmp = __atomic_load_n (ptr, __ATOMIC_SEQ_CST);			\
+      tmp = __atomic_load_n (ptr, __ATOMIC_RELAXED);			\
       newval = PFX_OP (tmp INF_OP val);					\
       failure = __kernel_cmpxchg2 (ptr, &tmp, &newval, INDEX);		\
     } while (failure != 0);						\
@@ -156,7 +151,7 @@ FETCH_AND_OP_2 (nand, ~, &, signed char, 1, 0)
     long failure;							\
 									\
     do {								\
-      tmp = __atomic_load_n (ptr, __ATOMIC_SEQ_CST);			\
+      tmp = __atomic_load_n (ptr, __ATOMIC_RELAXED);			\
       newval = PFX_OP (tmp INF_OP val);					\
       failure = __kernel_cmpxchg2 (ptr, &tmp, &newval, INDEX);		\
     } while (failure != 0);						\
@@ -193,7 +188,7 @@ OP_AND_FETCH_2 (nand, ~, &, signed char, 1, 0)
     long failure;							\
 									\
     do {								\
-      tmp = __atomic_load_n (ptr, __ATOMIC_SEQ_CST);			\
+      tmp = __atomic_load_n (ptr, __ATOMIC_RELAXED);			\
       failure = __kernel_cmpxchg (ptr, tmp, PFX_OP (tmp INF_OP val));	\
     } while (failure != 0);						\
 									\
@@ -215,7 +210,7 @@ FETCH_AND_OP_WORD (nand, ~, &)
     long failure;							\
 									\
     do {								\
-      tmp = __atomic_load_n (ptr, __ATOMIC_SEQ_CST);			\
+      tmp = __atomic_load_n (ptr, __ATOMIC_RELAXED);			\
       failure = __kernel_cmpxchg (ptr, tmp, PFX_OP (tmp INF_OP val));	\
     } while (failure != 0);						\
 									\
@@ -241,7 +236,7 @@ typedef unsigned char bool;
 									\
     while (1)								\
       {									\
-	actual_oldval = __atomic_load_n (ptr, __ATOMIC_SEQ_CST);	\
+	actual_oldval = __atomic_load_n (ptr, __ATOMIC_RELAXED);	\
 									\
 	if (__builtin_expect (oldval != actual_oldval, 0))		\
 	  return actual_oldval;						\
@@ -273,7 +268,7 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
     
   while (1)
     {
-      actual_oldval = __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
+      actual_oldval = __atomic_load_n (ptr, __ATOMIC_RELAXED);
 
       if (__builtin_expect (oldval != actual_oldval, 0))
 	return actual_oldval;
@@ -300,7 +295,7 @@ TYPE HIDDEN								\
     long failure;							\
 									\
     do {								\
-      oldval = __atomic_load_n (ptr, __ATOMIC_SEQ_CST);			\
+      oldval = __atomic_load_n (ptr, __ATOMIC_RELAXED);			\
       failure = __kernel_cmpxchg2 (ptr, &oldval, &val, INDEX);		\
     } while (failure != 0);						\
 									\
@@ -318,38 +313,31 @@ __sync_lock_test_and_set_4 (int *ptr, int val)
   int oldval;
 
   do {
-    oldval = __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
+    oldval = __atomic_load_n (ptr, __ATOMIC_RELAXED);
     failure = __kernel_cmpxchg (ptr, oldval, val);
   } while (failure != 0);
 
   return oldval;
 }
 
-#define SYNC_LOCK_RELEASE_2(TYPE, WIDTH, INDEX)			\
+void HIDDEN
+__sync_lock_release_8 (long long *ptr)
+{
+  /* All accesses must be complete before we release the lock.  */
+  __sync_synchronize ();
+  *(double *)ptr = 0;
+}
+
+#define SYNC_LOCK_RELEASE_1(TYPE, WIDTH)			\
   void HIDDEN							\
   __sync_lock_release_##WIDTH (TYPE *ptr)			\
   {								\
-    TYPE oldval, zero = 0;					\
-    long failure;						\
-								\
-    do {							\
-      oldval = __atomic_load_n (ptr, __ATOMIC_SEQ_CST);		\
-      failure = __kernel_cmpxchg2 (ptr, &oldval, &zero, INDEX);	\
-    } while (failure != 0);					\
+    /* All accesses must be complete before we release		\
+       the lock.  */						\
+    __sync_synchronize ();					\
+    *ptr = 0;							\
   }
 
-SYNC_LOCK_RELEASE_2 (long long, 8, 3)
-SYNC_LOCK_RELEASE_2 (short, 2, 1)
-SYNC_LOCK_RELEASE_2 (signed char, 1, 0)
-
-void HIDDEN
-__sync_lock_release_4 (int *ptr)
-{
-  long failure;
-  int oldval;
-
-  do {
-    oldval = __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
-    failure = __kernel_cmpxchg (ptr, oldval, 0);
-  } while (failure != 0);
-}
+SYNC_LOCK_RELEASE_1 (int, 4)
+SYNC_LOCK_RELEASE_1 (short, 2)
+SYNC_LOCK_RELEASE_1 (signed char, 1)
