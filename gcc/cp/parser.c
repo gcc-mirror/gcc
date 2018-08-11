@@ -21343,7 +21343,8 @@ cp_parser_parameter_declaration (cp_parser *parser,
      parameter was introduced during cp_parser_parameter_declaration,
      change any implicit parameters introduced into packs.  */
   if (parser->implicit_template_parms
-      && (token->type == CPP_ELLIPSIS
+      && ((token->type == CPP_ELLIPSIS
+	   && declarator_can_be_parameter_pack (declarator))
 	  || (declarator && declarator->parameter_pack_p)))
     {
       int latest_template_parm_idx = TREE_VEC_LENGTH
