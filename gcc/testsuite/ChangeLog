@@ -1,3 +1,8 @@
+2018-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86835
+	* gcc.dg/pr86835.c: New test.
+
 2018-08-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/57160
