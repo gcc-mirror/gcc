@@ -1,3 +1,10 @@
+2018-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86835
+	* tree-ssa-math-opts.c (insert_reciprocals): Even when inserting
+	new_stmt after def_gsi, make sure to insert new_square_stmt after
+	that stmt, not 2 stmts before it.
+
 2018-08-10  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR target/82418
