@@ -1,5 +1,10 @@
 2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* common/config/nds32/nds32-common.c
+	(nds32_option_optimization_table): Enalbe -malways-align.
+
+2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config.gcc (nds32*): Add nds32_isr.h and nds32_init.inc in
 	extra_headers.
 	* common/config/nds32/nds32-common.c (nds32_handle_option): Handle
