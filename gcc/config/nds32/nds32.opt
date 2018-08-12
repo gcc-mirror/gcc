@@ -444,6 +444,10 @@ mforce-no-ext-dsp
 Target Undocumented Report Mask(FORCE_NO_EXT_DSP)
 Force disable hardware loop, even use -mext-dsp.
 
+msched-prolog-epilog
+Target Var(flag_sched_prolog_epilog) Init(0)
+Permit scheduling of a function's prologue and epilogue sequence.
+
 mret-in-naked-func
 Target Var(flag_ret_in_naked_func) Init(1)
 Generate return instruction in naked function.
