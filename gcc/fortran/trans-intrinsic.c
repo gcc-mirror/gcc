@@ -3664,8 +3664,8 @@ conv_intrinsic_random_init (gfc_code *code)
   gfc_add_block_to_block (&block, &se.post);
 
   /* Create the hidden argument.  For non-coarray codes and -fcoarray=single,
-     simply set this to 0.  For -fcoarray=lib, generate a call to 
-     THIS_IMAGE() without arguments.  */ 
+     simply set this to 0.  For -fcoarray=lib, generate a call to
+     THIS_IMAGE() without arguments.  */
   arg3 = build_int_cst (gfc_get_int_type (4), 0);
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
@@ -3677,7 +3677,7 @@ conv_intrinsic_random_init (gfc_code *code)
   tmp = build_call_expr_loc (input_location, gfor_fndecl_random_init, 3,
 			     arg1, arg2, arg3);
   gfc_add_expr_to_block (&block, tmp);
- 
+
   return gfc_finish_block (&block);
 }
 
@@ -7369,13 +7369,14 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   tree upper;
   tree lower;
   tree stmt;
+  tree class_ref = NULL_TREE;
   gfc_actual_arglist *arg;
   gfc_se argse;
   gfc_array_info *info;
   stmtblock_t block;
   int n;
   bool scalar_mold;
-  gfc_expr *source_expr, *mold_expr;
+  gfc_expr *source_expr, *mold_expr, *class_expr;
 
   info = NULL;
   if (se->loop)
@@ -7406,7 +7407,24 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
     {
       gfc_conv_expr_reference (&argse, arg->expr);
       if (arg->expr->ts.type == BT_CLASS)
-	source = gfc_class_data_get (argse.expr);
+	{
+	  tmp = build_fold_indirect_ref_loc (input_location, argse.expr);
+	  if (GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
+	    source = gfc_class_data_get (tmp);
+	  else
+	    {
+	      /* Array elements are evaluated as a reference to the data.
+		 To obtain the vptr for the element size, the argument
+		 expression must be stripped to the class reference and
+		 re-evaluated. The pre and post blocks are not needed.  */
+	      gcc_assert (arg->expr->expr_type == EXPR_VARIABLE);
+	      source = argse.expr;
+	      class_expr = gfc_find_and_cut_at_last_class_ref (arg->expr);
+	      gfc_init_se (&argse, NULL);
+	      gfc_conv_expr (&argse, class_expr);
+	      class_ref = argse.expr;
+	    }
+	}
       else
 	source = argse.expr;
 
@@ -7418,7 +7436,10 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 					 argse.string_length);
 	  break;
 	case BT_CLASS:
-	  tmp = gfc_class_vtab_size_get (argse.expr);
+	  if (class_ref != NULL_TREE)
+	    tmp = gfc_class_vtab_size_get (class_ref);
+	  else
+	    tmp = gfc_class_vtab_size_get (argse.expr);
 	  break;
 	default:
 	  source_type = TREE_TYPE (build_fold_indirect_ref_loc (input_location,

@@ -1,5 +1,13 @@
 2018-08-12  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/66679
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Class array
+	elements are returned as references to the data element. Get
+	the class expression by stripping back the references. Use this
+	for the element size.
+
+2018-08-12  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/86906
 	* resolve.c (resolve_fl_variable_derived): Check if the derived
 	type is use associated before checking for the host association
