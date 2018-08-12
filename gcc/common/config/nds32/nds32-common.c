@@ -95,6 +95,8 @@ static const struct default_options nds32_option_optimization_table[] =
   { OPT_LEVELS_ALL,               OPT_fomit_frame_pointer, NULL, 1 },
   /* Enable -mrelax-hint by default at all optimization levels.  */
   { OPT_LEVELS_ALL,               OPT_mrelax_hint,         NULL, 1 },
+  /* Enalbe -malways-align by default at -O1 and above, but not -Os or -Og.  */
+  { OPT_LEVELS_1_PLUS_SPEED_ONLY, OPT_malways_align,       NULL, 1 },
   /* Enable -mv3push by default at -Os, but it is useless under V2 ISA.  */
   { OPT_LEVELS_SIZE,              OPT_mv3push,             NULL, 1 },
 
