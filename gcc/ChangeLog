@@ -1,5 +1,11 @@
 2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_expand_prologue, nds32_expand_epilogue):
+	Support -msched-prolog-epilog option.
+	* config/nds32/nds32.opt (msched-prolog-epilog): New option.
+
+2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* common/config/nds32/nds32-common.c
 	(nds32_option_optimization_table): Enalbe -malways-align.
 

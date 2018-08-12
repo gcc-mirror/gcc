@@ -4763,9 +4763,11 @@ nds32_expand_prologue (void)
   if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
     nds32_emit_load_gp ();
 
-  /* Prevent the instruction scheduler from
-     moving instructions across the boundary.  */
-  emit_insn (gen_blockage ());
+  /* If user applies -mno-sched-prolog-epilog option,
+     we need to prevent instructions of function body from being
+     scheduled with stack adjustment in prologue.  */
+  if (!flag_sched_prolog_epilog)
+    emit_insn (gen_blockage ());
 }
 
 /* Function for normal multiple pop epilogue.  */
@@ -4779,9 +4781,11 @@ nds32_expand_epilogue (bool sibcall_p)
      The result will be in cfun->machine.  */
   nds32_compute_stack_frame ();
 
-  /* Prevent the instruction scheduler from
-     moving instructions across the boundary.  */
-  emit_insn (gen_blockage ());
+  /* If user applies -mno-sched-prolog-epilog option,
+     we need to prevent instructions of function body from being
+     scheduled with stack adjustment in epilogue.  */
+  if (!flag_sched_prolog_epilog)
+    emit_insn (gen_blockage ());
 
   /* If the function is 'naked', we do not have to generate
      epilogue code fragment BUT 'ret' instruction.
