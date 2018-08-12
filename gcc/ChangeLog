@@ -1,5 +1,18 @@
 2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-predicates.c
+	(nds32_can_use_bclr_p): Change return type as bool.
+	(nds32_can_use_bset_p): Ditto.
+	(nds32_can_use_btgl_p): Ditto.
+	(nds32_can_use_bitci_p): Ditto.
+	* config/nds32/nds32-protos.h
+	(nds32_can_use_bclr_p): Change declaration.
+	(nds32_can_use_bset_p): Ditto.
+	(nds32_can_use_btgl_p): Ditto.
+	(nds32_can_use_bitci_p): Ditto.
+
+2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_expand_prologue, nds32_expand_epilogue):
 	Support -msched-prolog-epilog option.
 	* config/nds32/nds32.opt (msched-prolog-epilog): New option.
