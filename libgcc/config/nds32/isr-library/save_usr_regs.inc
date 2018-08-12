@@ -23,19 +23,22 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-	.section	.nds32_vector.71, "ax"
-#if __NDS32_ISR_VECTOR_SIZE_4__
-	/* The vector size is default 4-byte for v3 architecture.  */
-	.vec_size	4
-	.align	2
-#else
-	/* The vector size is default 16-byte for other architectures.  */
-	.vec_size	16
-	.align	4
+.macro SAVE_USR_REGS
+/* Store User Special Registers according to supported ISA extension
+   !!! WATCH OUT !!! Take care of 8-byte alignment issue.  */
+#if __NDS32_EXT_IFC__ && (__NDS32_EXT_ZOL__ || __NDS32_EXT_DSP__)
+  mfusr   $r1, $IFC_LP
+  mfusr   $r2, $LB
+  mfusr   $r3, $LE
+  mfusr   $r4, $LC
+  smw.adm $r1, [$sp], $r4, #0x0 /* Save even. Ok!  */
+#elif __NDS32_EXT_IFC__
+  mfusr   $r1, $IFC_LP
+  smw.adm $r1, [$sp], $r2, #0x0	/* Save extra $r2 to keep stack 8-byte aligned.  */
+#elif (__NDS32_EXT_ZOL__ || __NDS32_EXT_DSP__)
+  mfusr   $r1, $LB
+  mfusr   $r2, $LE
+  mfusr   $r3, $LC
+  smw.adm $r1, [$sp], $r4, #0x0	/* Save extra $r4 to keep stack 8-byte aligned.  */
 #endif
-	.weak	_nds32_vector_71
-	.type	_nds32_vector_71, @function
-_nds32_vector_71:
-1:
-	j	1b
-	.size	_nds32_vector_71, .-_nds32_vector_71
+.endm

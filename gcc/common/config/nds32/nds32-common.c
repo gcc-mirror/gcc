@@ -53,6 +53,16 @@ nds32_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 
       return true;
 
+    case OPT_misr_secure_:
+      /* Check the valid security level: 0 1 2 3.  */
+      if (value < 0 || value > 3)
+	{
+	  error_at (loc, "for the option -misr-secure=X, the valid X "
+			 "must be: 0, 1, 2, or 3");
+	  return false;
+	}
+      return true;
+
     case OPT_mcache_block_size_:
       /* Check valid value: 4 8 16 32 64 128 256 512.  */
       if (exact_log2 (value) < 2 || exact_log2 (value) > 9)

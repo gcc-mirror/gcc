@@ -31,15 +31,11 @@
 	mtsr	$r2, $IPSW
 	RESTORE_FPU_REGS
 	RESTORE_MAC_REGS
-#ifdef NDS32_EXT_IFC
-	lmw.bim	$r1, [$sp], $r2, #0x0	/* Restore extra $r2 to keep
-					   stack 8-byte alignment.  */
-	mtusr   $r1, $IFC_LP
-#endif
-#ifdef __NDS32_REDUCED_REGS__
+  RESTORE_USR_REGS
+#if __NDS32_REDUCED_REGS__ || __NDS32_REDUCE_REGS
 	lmw.bim $r0, [$sp], $r10, #0x0	/* Restore all regs.  */
 	lmw.bim $r15, [$sp], $r15, #0xf
-#else /* not __NDS32_REDUCED_REGS__ */
+#else
 	lmw.bim $r0, [$sp], $r27, #0xf	/* Restore all regs.  */
 #endif
 .endm

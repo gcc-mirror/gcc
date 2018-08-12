@@ -307,6 +307,7 @@ extern void nds32_construct_isr_vectors_information (tree, const char *);
 extern void nds32_asm_file_start_for_isr (void);
 extern void nds32_asm_file_end_for_isr (void);
 extern bool nds32_isr_function_p (tree);
+extern bool nds32_isr_function_critical_p (tree);
 
 /* Auxiliary functions for cost calculation.  */
 

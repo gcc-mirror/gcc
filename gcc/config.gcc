@@ -447,7 +447,7 @@ mips*-*-*)
 	;;
 nds32*)
 	cpu_type=nds32
-	extra_headers="nds32_intrinsic.h"
+	extra_headers="nds32_intrinsic.h nds32_isr.h nds32_init.inc"
 	case ${target} in
 	  nds32*-*-linux*)
 	    extra_options="${extra_options} nds32/nds32-linux.opt"

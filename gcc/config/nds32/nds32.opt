@@ -158,6 +158,10 @@ misr-vector-size=
 Target RejectNegative Joined UInteger Var(nds32_isr_vector_size) Init(NDS32_DEFAULT_ISR_VECTOR_SIZE)
 Specify the size of each interrupt vector, which must be 4 or 16.
 
+misr-secure=
+Target RejectNegative Joined UInteger Var(nds32_isr_secure_level) Init(0)
+Specify the security level of c-isr for the whole file.
+
 mcache-block-size=
 Target RejectNegative Joined UInteger Var(nds32_cache_block_size) Init(NDS32_DEFAULT_CACHE_BLOCK_SIZE)
 Specify the size of each cache block, which must be a power of 2 between 4 and 512.
