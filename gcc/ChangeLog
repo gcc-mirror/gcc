@@ -1,3 +1,21 @@
+2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config.gcc (nds32*): Add nds32_isr.h and nds32_init.inc in
+	extra_headers.
+	* common/config/nds32/nds32-common.c (nds32_handle_option): Handle
+	OPT_misr_secure_ case.
+	* config/nds32/nds32-isr.c: Implementation of backward compatibility.
+	* config/nds32/nds32-protos.h (nds32_isr_function_critical_p): New.
+	* config/nds32/nds32.c (nds32_attribute_table): Add critical and
+	secure attribute.
+	* config/nds32/nds32.h (nds32_isr_nested_type): Add NDS32_CRITICAL.
+	(nds32_isr_info): New field security_level.
+	(TARGET_ISR_VECTOR_SIZE_4_BYTE): New macro.
+	* config/nds32/nds32.md (return_internal): Consider critical attribute.
+	* config/nds32/nds32.opt (misr-secure): New option.
+	* config/nds32/nds32_init.inc: New file.
+	* config/nds32/nds32_isr.h: New file.
+
 2018-08-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (UNSPEC_MEMORY_BARRIER): New unspec enum.

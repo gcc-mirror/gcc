@@ -23,19 +23,20 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-	.section	.nds32_vector.71, "ax"
-#if __NDS32_ISR_VECTOR_SIZE_4__
-	/* The vector size is default 4-byte for v3 architecture.  */
-	.vec_size	4
-	.align	2
-#else
-	/* The vector size is default 16-byte for other architectures.  */
-	.vec_size	16
-	.align	4
+.macro RESTORE_USR_REGS
+#if __NDS32_EXT_IFC__ && (__NDS32_EXT_ZOL__ || __NDS32_EXT_DSP__)
+  lmw.bim $r1, [$sp], $r4, #0x0
+  mtusr   $r1, $IFC_LP
+  mtusr   $r2, $LB
+  mtusr   $r3, $LE
+  mtusr   $r4, $LC
+#elif __NDS32_EXT_IFC__
+  lmw.bim	$r1, [$sp], $r2, #0x0
+  mtusr   $r1, $IFC_LP
+#elif __NDS32_EXT_ZOL__ || __NDS32_EXT_DSP__
+  lmw.bim $r1, [$sp], $r4, #0x0
+  mtusr   $r1, $LB
+  mtusr   $r2, $LE
+  mtusr   $r3, $LC
 #endif
-	.weak	_nds32_vector_71
-	.type	_nds32_vector_71, @function
-_nds32_vector_71:
-1:
-	j	1b
-	.size	_nds32_vector_71, .-_nds32_vector_71
+.endm

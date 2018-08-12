@@ -1993,6 +1993,9 @@
   [(simple_return)]
   ""
 {
+  if (nds32_isr_function_critical_p (current_function_decl))
+    return "iret";
+
   if (TARGET_16_BIT)
     return "ret5";
   else
@@ -2001,9 +2004,11 @@
   [(set_attr "type" "branch")
    (set_attr "enabled" "yes")
    (set (attr "length")
-	(if_then_else (match_test "TARGET_16_BIT")
-		      (const_int 2)
-		      (const_int 4)))])
+	(if_then_else (match_test "nds32_isr_function_critical_p (current_function_decl)")
+		      (const_int 4)
+		      (if_then_else (match_test "TARGET_16_BIT")
+				    (const_int 2)
+				    (const_int 4))))])
 
 
 ;; ----------------------------------------------------------------------------

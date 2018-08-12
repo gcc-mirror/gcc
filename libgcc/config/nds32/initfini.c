@@ -25,6 +25,10 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#include <stddef.h>
+/* Need header file for `struct object' type.  */
+#include "../libgcc/unwind-dw2-fde.h"
+
 /*  Declare a pointer to void function type.  */
 typedef void (*func_ptr) (void);
 
@@ -42,11 +46,59 @@ typedef void (*func_ptr) (void);
    refer to only the __CTOR_END__ symbol in crtfini.o and the __DTOR_LIST__
    symbol in crtinit.o, where they are defined.  */
 
-static func_ptr __CTOR_LIST__[1] __attribute__ ((section (".ctors")))
-     = { (func_ptr) (-1) };
+static func_ptr __CTOR_LIST__[1] __attribute__ ((section (".ctors"), used))
+     = { (func_ptr) 0 };
 
-static func_ptr __DTOR_LIST__[1] __attribute__ ((section (".dtors")))
-     = { (func_ptr) (-1) };
+static func_ptr __DTOR_LIST__[1] __attribute__ ((section (".dtors"), used))
+     = { (func_ptr) 0 };
+
+
+#ifdef SUPPORT_UNWINDING_DWARF2
+/* Preparation of exception handling with dwar2 mechanism registration.  */
+
+asm ("\n\
+	.section .eh_frame,\"aw\",@progbits\n\
+	.global __EH_FRAME_BEGIN__\n\
+	.type	__EH_FRAME_BEGIN__, @object\n\
+	.align 2\n\
+__EH_FRAME_BEGIN__:\n\
+	! Beginning location of eh_frame section\n\
+	.previous\n\
+");
+
+extern func_ptr __EH_FRAME_BEGIN__[];
+
+
+/* Note that the following two functions are going to be chained into
+   constructor and destructor list, repectively.  So these two declarations
+   must be placed after __CTOR_LIST__ and __DTOR_LIST.  */
+extern void __nds32_register_eh(void) __attribute__((constructor, used));
+extern void __nds32_deregister_eh(void) __attribute__((destructor, used));
+
+/* Register the exception handling table as the first constructor.  */
+void
+__nds32_register_eh (void)
+{
+  static struct object object;
+  if (__register_frame_info)
+    __register_frame_info (__EH_FRAME_BEGIN__, &object);
+}
+
+/* Unregister the exception handling table as a deconstructor.  */
+void
+__nds32_deregister_eh (void)
+{
+  static int completed = 0;
+
+  if (completed)
+    return;
+
+  if (__deregister_frame_info)
+    __deregister_frame_info (__EH_FRAME_BEGIN__);
+
+  completed = 1;
+}
+#endif
 
 /* Run all the global destructors on exit from the program.  */
 
@@ -63,7 +115,7 @@ static func_ptr __DTOR_LIST__[1] __attribute__ ((section (".dtors")))
    same particular root executable or shared library file.  */
 
 static void __do_global_dtors (void)
-asm ("__do_global_dtors") __attribute__ ((section (".text")));
+asm ("__do_global_dtors") __attribute__ ((section (".text"), used));
 
 static void
 __do_global_dtors (void)
@@ -116,23 +168,37 @@ void *__dso_handle = 0;
    last, these words naturally end up at the very ends of the two lists
    contained in these two sections.  */
 
-static func_ptr __CTOR_END__[1] __attribute__ ((section (".ctors")))
+static func_ptr __CTOR_END__[1] __attribute__ ((section (".ctors"), used))
      = { (func_ptr) 0 };
 
-static func_ptr __DTOR_END__[1] __attribute__ ((section (".dtors")))
+static func_ptr __DTOR_END__[1] __attribute__ ((section (".dtors"), used))
      = { (func_ptr) 0 };
+
+#ifdef SUPPORT_UNWINDING_DWARF2
+/* ZERO terminator in .eh_frame section.  */
+asm ("\n\
+	.section .eh_frame,\"aw\",@progbits\n\
+	.global __EH_FRAME_END__\n\
+	.type	__EH_FRAME_END__, @object\n\
+	.align 2\n\
+__EH_FRAME_END__:\n\
+	! End location of eh_frame section with ZERO terminator\n\
+	.word 0\n\
+	.previous\n\
+");
+#endif
 
 /* Run all global constructors for the program.
    Note that they are run in reverse order.  */
 
 static void __do_global_ctors (void)
-asm ("__do_global_ctors") __attribute__ ((section (".text")));
+asm ("__do_global_ctors") __attribute__ ((section (".text"), used));
 
 static void
 __do_global_ctors (void)
 {
   func_ptr *p;
-  for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
+  for (p = __CTOR_END__ - 1; *p; p--)
     (*p) ();
 }
 

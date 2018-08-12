@@ -24,8 +24,15 @@
    <http://www.gnu.org/licenses/>.  */
 
 	.section	.nds32_vector.53, "ax"
+#if __NDS32_ISR_VECTOR_SIZE_4__
+	/* The vector size is default 4-byte for v3 architecture.  */
+	.vec_size	4
+	.align	2
+#else
+	/* The vector size is default 16-byte for other architectures.  */
 	.vec_size	16
 	.align	4
+#endif
 	.weak	_nds32_vector_53
 	.type	_nds32_vector_53, @function
 _nds32_vector_53:
