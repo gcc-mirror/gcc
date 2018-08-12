@@ -1,3 +1,10 @@
+2018-08-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86906
+	* resolve.c (resolve_fl_variable_derived): Check if the derived
+	type is use associated before checking for the host association
+	error.
+
 2018-08-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/57160
