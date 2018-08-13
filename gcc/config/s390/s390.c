@@ -2748,6 +2748,67 @@ s390_short_displacement (rtx disp)
   return false;
 }
 
+/* Attempts to split `ref', which should be either UNSPEC_LTREF or
+   UNSPEC_LTREL_BASE, into (base + `disp').  In case pool base is not known,
+   caller-provided `pool_base' is used.  If successful, also determines the
+   following characteristics of `ref': `is_ptr' - whether it can be an
+   LA argument, `is_base_ptr' - whether the resulting base is a well-known
+   base register (stack/frame pointer, etc), `is_pool_ptr` - whether it is
+   considered a literal pool pointer for purposes of avoiding two different
+   literal pool pointers per insn during or after reload (`B' constraint).  */
+static bool
+s390_decompose_constant_pool_ref (rtx *ref, rtx *disp, bool *is_ptr,
+				  bool *is_base_ptr, bool *is_pool_ptr,
+				  rtx pool_base)
+{
+  if (!*ref)
+    return true;
+
+  if (GET_CODE (*ref) == UNSPEC)
+    switch (XINT (*ref, 1))
+      {
+      case UNSPEC_LTREF:
+	if (!*disp)
+	  *disp = gen_rtx_UNSPEC (Pmode,
+				  gen_rtvec (1, XVECEXP (*ref, 0, 0)),
+				  UNSPEC_LTREL_OFFSET);
+	else
+	  return false;
+
+	*ref = XVECEXP (*ref, 0, 1);
+	break;
+
+      case UNSPEC_LTREL_BASE:
+	if (XVECLEN (*ref, 0) == 1)
+	  *ref = pool_base, *is_pool_ptr = true;
+	else
+	  *ref = XVECEXP (*ref, 0, 1);
+	break;
+
+      default:
+	return false;
+      }
+
+  if (!REG_P (*ref) || GET_MODE (*ref) != Pmode)
+    return false;
+
+  if (REGNO (*ref) == STACK_POINTER_REGNUM
+      || REGNO (*ref) == FRAME_POINTER_REGNUM
+      || ((reload_completed || reload_in_progress)
+	  && frame_pointer_needed
+	  && REGNO (*ref) == HARD_FRAME_POINTER_REGNUM)
+      || REGNO (*ref) == ARG_POINTER_REGNUM
+      || (flag_pic
+	  && REGNO (*ref) == PIC_OFFSET_TABLE_REGNUM))
+    *is_ptr = *is_base_ptr = true;
+
+  if ((reload_completed || reload_in_progress)
+      && *ref == cfun->machine->base_reg)
+    *is_ptr = *is_base_ptr = *is_pool_ptr = true;
+
+  return true;
+}
+
 /* Decompose a RTL expression ADDR for a memory address into
    its components, returned in OUT.
 
@@ -2859,96 +2920,14 @@ s390_decompose_address (rtx addr, struct s390_address *out)
     }
 
   /* Validate base register.  */
-  if (base)
-    {
-      if (GET_CODE (base) == UNSPEC)
-	switch (XINT (base, 1))
-	  {
-	  case UNSPEC_LTREF:
-	    if (!disp)
-	      disp = gen_rtx_UNSPEC (Pmode,
-				     gen_rtvec (1, XVECEXP (base, 0, 0)),
-				     UNSPEC_LTREL_OFFSET);
-	    else
-	      return false;
-
-	    base = XVECEXP (base, 0, 1);
-	    break;
-
-	  case UNSPEC_LTREL_BASE:
-	    if (XVECLEN (base, 0) == 1)
-	      base = fake_pool_base, literal_pool = true;
-	    else
-	      base = XVECEXP (base, 0, 1);
-	    break;
-
-	  default:
-	    return false;
-	  }
-
-      if (!REG_P (base) || GET_MODE (base) != Pmode)
-	return false;
-
-      if (REGNO (base) == STACK_POINTER_REGNUM
-	  || REGNO (base) == FRAME_POINTER_REGNUM
-	  || ((reload_completed || reload_in_progress)
-	      && frame_pointer_needed
-	      && REGNO (base) == HARD_FRAME_POINTER_REGNUM)
-	  || REGNO (base) == ARG_POINTER_REGNUM
-	  || (flag_pic
-	      && REGNO (base) == PIC_OFFSET_TABLE_REGNUM))
-	pointer = base_ptr = true;
-
-      if ((reload_completed || reload_in_progress)
-	  && base == cfun->machine->base_reg)
-	pointer = base_ptr = literal_pool = true;
-    }
+  if (!s390_decompose_constant_pool_ref (&base, &disp, &pointer, &base_ptr,
+					 &literal_pool, fake_pool_base))
+    return false;
 
   /* Validate index register.  */
-  if (indx)
-    {
-      if (GET_CODE (indx) == UNSPEC)
-	switch (XINT (indx, 1))
-	  {
-	  case UNSPEC_LTREF:
-	    if (!disp)
-	      disp = gen_rtx_UNSPEC (Pmode,
-				     gen_rtvec (1, XVECEXP (indx, 0, 0)),
-				     UNSPEC_LTREL_OFFSET);
-	    else
-	      return false;
-
-	    indx = XVECEXP (indx, 0, 1);
-	    break;
-
-	  case UNSPEC_LTREL_BASE:
-	    if (XVECLEN (indx, 0) == 1)
-	      indx = fake_pool_base, literal_pool = true;
-	    else
-	      indx = XVECEXP (indx, 0, 1);
-	    break;
-
-	  default:
-	    return false;
-	  }
-
-      if (!REG_P (indx) || GET_MODE (indx) != Pmode)
-	return false;
-
-      if (REGNO (indx) == STACK_POINTER_REGNUM
-	  || REGNO (indx) == FRAME_POINTER_REGNUM
-	  || ((reload_completed || reload_in_progress)
-	      && frame_pointer_needed
-	      && REGNO (indx) == HARD_FRAME_POINTER_REGNUM)
-	  || REGNO (indx) == ARG_POINTER_REGNUM
-	  || (flag_pic
-	      && REGNO (indx) == PIC_OFFSET_TABLE_REGNUM))
-	pointer = indx_ptr = true;
-
-      if ((reload_completed || reload_in_progress)
-	  && indx == cfun->machine->base_reg)
-	pointer = indx_ptr = literal_pool = true;
-    }
+  if (!s390_decompose_constant_pool_ref (&indx, &disp, &pointer, &indx_ptr,
+					 &literal_pool, fake_pool_base))
+    return false;
 
   /* Prefer to use pointer as base, not index.  */
   if (base && indx && !base_ptr
