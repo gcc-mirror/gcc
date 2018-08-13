@@ -310,11 +310,10 @@ getosrandom (void *buf, size_t buflen)
     rand_s (&b[i]);
   return buflen;
 #else
-  /*
-     TODO: When glibc adds a wrapper for the getrandom() system call
-     on Linux, one could use that.
-
-     TODO: One could use getentropy() on OpenBSD.  */
+#ifdef HAVE_GETENTROPY
+  if (getentropy (buf, buflen) == 0)
+    return 0;
+#endif
   int flags = O_RDONLY;
 #ifdef O_CLOEXEC
   flags |= O_CLOEXEC;

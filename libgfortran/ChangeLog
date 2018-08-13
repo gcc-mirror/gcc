@@ -1,3 +1,10 @@
+2018-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Check for getentropy.
+	* intrinsics/random.c (getosrandom): Use getentropy if available.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
 2018-07-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Revert 'AsyncI/O patch committed'
