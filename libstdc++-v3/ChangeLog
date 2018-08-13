@@ -1,5 +1,9 @@
 2018-08-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/45093
+	* include/bits/stl_tree.h (_Rb_tree::_M_destroy_node(_Link_type)):
+	Combine definitions to avoid --detect-odr-violations warning.
+
 	* libsupc++/new_opa.cc (operator new(size_t, align_val_t)): Use
 	__is_pow2 to check for valid alignment. Avoid branching when rounding
 	size to multiple of alignment.
