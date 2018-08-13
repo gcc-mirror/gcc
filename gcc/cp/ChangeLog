@@ -1,5 +1,9 @@
 2018-08-13  Marek Polacek  <polacek@redhat.com>
 
+	P0806R2 - Deprecate implicit capture of this via [=]
+	* lambda.c (add_default_capture): Formatting fixes.  Warn about
+	deprecated implicit capture of this via [=].
+
 	PR c++/86915
 	* decl.c (create_array_type_for_decl): Handle null name.
 
