@@ -15823,6 +15823,37 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_VUPKLPX:
       return false;
 
+    /* vec_perm.  */
+    case ALTIVEC_BUILTIN_VPERM_16QI:
+    case ALTIVEC_BUILTIN_VPERM_8HI:
+    case ALTIVEC_BUILTIN_VPERM_4SI:
+    case ALTIVEC_BUILTIN_VPERM_2DI:
+    case ALTIVEC_BUILTIN_VPERM_4SF:
+    case ALTIVEC_BUILTIN_VPERM_2DF:
+      {
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	tree permute = gimple_call_arg (stmt, 2);
+	lhs = gimple_call_lhs (stmt);
+	location_t loc = gimple_location (stmt);
+	gimple_seq stmts = NULL;
+	// convert arg0 and arg1 to match the type of the permute
+	// for the VEC_PERM_EXPR operation.
+	tree permute_type = (TREE_TYPE (permute));
+	tree arg0_ptype = gimple_convert (&stmts, loc, permute_type, arg0);
+	tree arg1_ptype = gimple_convert (&stmts, loc, permute_type, arg1);
+	tree lhs_ptype = gimple_build (&stmts, loc, VEC_PERM_EXPR,
+				      permute_type, arg0_ptype, arg1_ptype,
+				      permute);
+	// Convert the result back to the desired lhs type upon completion.
+	tree temp = gimple_convert (&stmts, loc, TREE_TYPE (lhs), lhs_ptype);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	g = gimple_build_assign (lhs, temp);
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
+      }
+
     default:
       if (TARGET_DEBUG_BUILTIN)
 	fprintf (stderr, "gimple builtin intrinsic not matched:%d %s %s\n",
