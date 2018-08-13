@@ -1359,10 +1359,10 @@ install-data-local: install-freestanding-headers
 endif
 
 # This is a subset of the full install-headers rule.  We only need <ciso646>,
-# <cstddef>, <cfloat>, <limits>, <climits>, <cstdint>, <cstdlib>, <new>,
-# <typeinfo>, <exception>, <initializer_list>, <cstdalign>, <cstdarg>,
-# <cstdbool>, <type_traits>, <atomic>, and any files which they include (and
-# which we provide).
+# <cstddef>, <cfloat>, <limits>, <climits>, <version>, <cstdint>, <cstdlib>,
+# <new>, <typeinfo>, <exception>, <initializer_list>, <cstdalign>, <cstdarg>,
+# <cstdbool>, <type_traits>, <bit>, <atomic>, and any files which they include
+# (and which we provide).
 # <new>, <typeinfo>, <exception>, and <initializer_list> are installed by
 # libsupc++, so only the others and the sub-includes are copied here.
 install-freestanding-headers:
@@ -1375,7 +1375,7 @@ install-freestanding-headers:
 	  ${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
-	for file in limits type_traits atomic; do \
+	for file in limits type_traits atomic bit version; do \
 	  $(INSTALL_DATA) ${std_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${std_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${c_base_builddir}
 	for file in ciso646 cstddef cfloat climits cstdint cstdlib \
