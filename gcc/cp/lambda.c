@@ -695,14 +695,10 @@ tree
 add_default_capture (tree lambda_stack, tree id, tree initializer)
 {
   bool this_capture_p = (id == this_identifier);
-
   tree var = NULL_TREE;
-
   tree saved_class_type = current_class_type;
 
-  tree node;
-
-  for (node = lambda_stack;
+  for (tree node = lambda_stack;
        node;
        node = TREE_CHAIN (node))
     {
@@ -720,6 +716,19 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
 				 == CPLD_REFERENCE)),
 			    /*explicit_init_p=*/false);
       initializer = convert_from_reference (var);
+
+      /* Warn about deprecated implicit capture of this via [=].  */
+      if (cxx_dialect >= cxx2a
+	  && this_capture_p
+	  && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) == CPLD_COPY
+	  && !in_system_header_at (LAMBDA_EXPR_LOCATION (lambda)))
+	{
+	  if (warning_at (LAMBDA_EXPR_LOCATION (lambda), OPT_Wdeprecated,
+			  "implicit capture of %qE via %<[=]%> is deprecated "
+			  "in C++20", this_identifier))
+	    inform (LAMBDA_EXPR_LOCATION (lambda), "add explicit %<this%> or "
+		    "%<*this%> capture");
+	}
     }
 
   current_class_type = saved_class_type;

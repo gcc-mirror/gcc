@@ -1,5 +1,12 @@
 2018-08-13  Marek Polacek  <polacek@redhat.com>
 
+	P0806R2 - Deprecate implicit capture of this via [=]
+	* g++.dg/cpp2a/lambda-this1.C: New test.
+	* g++.dg/cpp2a/lambda-this2.C: New test.
+	* g++.dg/cpp2a/lambda-this3.C: New test.
+
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/86915
 	* g++.dg/diagnostic/auto1.C: New test.
 
