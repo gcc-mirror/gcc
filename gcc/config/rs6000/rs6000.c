@@ -15770,6 +15770,59 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_VEC_MERGEH_V2DI:
 	fold_mergehl_helper (gsi, stmt, 0);
 	return true;
+
+    /* d = vec_pack (a, b) */
+    case P8V_BUILTIN_VPKUDUM:
+    case ALTIVEC_BUILTIN_VPKUHUM:
+    case ALTIVEC_BUILTIN_VPKUWUM:
+      {
+       arg0 = gimple_call_arg (stmt, 0);
+       arg1 = gimple_call_arg (stmt, 1);
+       lhs = gimple_call_lhs (stmt);
+       gimple *g = gimple_build_assign (lhs, VEC_PACK_TRUNC_EXPR, arg0, arg1);
+       gimple_set_location (g, gimple_location (stmt));
+       gsi_replace (gsi, g, true);
+       return true;
+      }
+
+   /* d = vec_unpackh (a) */
+   /* Note that the UNPACK_{HI,LO}_EXPR used in the gimple_build_assign call
+      in this code is sensitive to endian-ness, and needs to be inverted to
+      handle both LE and BE targets.  */
+    case ALTIVEC_BUILTIN_VUPKHSB:
+    case ALTIVEC_BUILTIN_VUPKHSH:
+    case P8V_BUILTIN_VUPKHSW:
+      {
+       arg0 = gimple_call_arg (stmt, 0);
+       lhs = gimple_call_lhs (stmt);
+       if (BYTES_BIG_ENDIAN)
+	 g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
+       else
+	 g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
+       gimple_set_location (g, gimple_location (stmt));
+       gsi_replace (gsi, g, true);
+       return true;
+      }
+   /* d = vec_unpackl (a) */
+    case ALTIVEC_BUILTIN_VUPKLSB:
+    case ALTIVEC_BUILTIN_VUPKLSH:
+    case P8V_BUILTIN_VUPKLSW:
+      {
+       arg0 = gimple_call_arg (stmt, 0);
+       lhs = gimple_call_lhs (stmt);
+       if (BYTES_BIG_ENDIAN)
+	 g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
+       else
+	 g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
+       gimple_set_location (g, gimple_location (stmt));
+       gsi_replace (gsi, g, true);
+       return true;
+      }
+    /* There is no gimple type corresponding with pixel, so just return.  */
+    case ALTIVEC_BUILTIN_VUPKHPX:
+    case ALTIVEC_BUILTIN_VUPKLPX:
+      return false;
+
     default:
       if (TARGET_DEBUG_BUILTIN)
 	fprintf (stderr, "gimple builtin intrinsic not matched:%d %s %s\n",
