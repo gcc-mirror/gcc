@@ -1,3 +1,9 @@
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* c-parser.c (c_parser_declaration_or_fndef): Call
+	braced_list_to_string.
+
 2018-08-03  Bogdan Harjoc  <harjoc@gmail.com>
 
 	PR c/86690
