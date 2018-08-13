@@ -9838,7 +9838,10 @@ create_array_type_for_decl (tree name, tree type, tree size)
      type-specifier, the program is ill-formed.  */
   if (type_uses_auto (type))
     {
-      error ("%qD declared as array of %qT", name, type);
+      if (name)
+   error ("%qD declared as array of %qT", name, type);
+      else
+   error ("creating array of %qT", type);
       return error_mark_node;
     }
 

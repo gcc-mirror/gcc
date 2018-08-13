@@ -1,3 +1,8 @@
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86915
+	* decl.c (create_array_type_for_decl): Handle null name.
+
 2018-08-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86728 - C variadic generic lambda.
