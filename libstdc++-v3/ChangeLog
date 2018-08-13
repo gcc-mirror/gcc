@@ -1,5 +1,9 @@
 2018-08-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/Makefile.am: Install <bit> and <version> for freestanding.
+	* include/Makefile.in: Regenerate.
+	* testsuite/17_intro/freestanding.cc: Check for <bit> and <version>.
+
 	Revert
 	2018-08-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
