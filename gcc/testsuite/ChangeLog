@@ -1,3 +1,26 @@
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/57891
+	* g++.dg/cpp0x/Wnarrowing6.C: New test.
+	* g++.dg/cpp0x/Wnarrowing7.C: New test.
+	* g++.dg/cpp0x/Wnarrowing8.C: New test.
+	* g++.dg/cpp0x/Wnarrowing9.C: New test.
+	* g++.dg/cpp0x/Wnarrowing10.C: New test.
+	* g++.dg/cpp0x/constexpr-47969.C: Adjust dg-error.
+	* g++.dg/cpp0x/constexpr-ex2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-targ.C: Likewise.
+	* g++.dg/cpp0x/scoped_enum2.C: Likewise.
+	* g++.dg/ext/stmtexpr15.C: Likewise.
+	* g++.dg/gomp/pr47963.C: Likewise.
+	* g++.dg/init/new37.C: Likewise.
+	* g++.dg/init/new43.C: Likewise.
+	* g++.dg/other/fold1.C: Likewise.
+	* g++.dg/parse/array-size2.C: Likewise.
+	* g++.dg/template/dependent-name3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-data2.C: Add dg-error.
+	* g++.dg/other/vrp1.C: Likewise.
+	* g++.dg/template/char1.C: Likewise.
+
 2018-08-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/pr56605.c: The generated code can have an AND

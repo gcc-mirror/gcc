@@ -107,6 +107,9 @@ struct conversion {
      binding a reference directly or decaying to a pointer.  */
   BOOL_BITFIELD rvaluedness_matches_p: 1;
   BOOL_BITFIELD check_narrowing: 1;
+  /* Whether check_narrowing should only check TREE_CONSTANTs; used
+     in build_converted_constant_expr.  */
+  BOOL_BITFIELD check_narrowing_const_only: 1;
   /* The type of the expression resulting from the conversion.  */
   tree type;
   union {
@@ -4152,9 +4155,18 @@ build_converted_constant_expr (tree type, tree expr, tsubst_flags_t complain)
     }
 
   if (conv)
-    expr = convert_like (conv, expr, complain);
+    {
+      conv->check_narrowing = true;
+      conv->check_narrowing_const_only = true;
+      expr = convert_like (conv, expr, complain);
+    }
   else
-    expr = error_mark_node;
+    {
+      if (complain & tf_error)
+	error_at (loc, "could not convert %qE from %qH to %qI", expr,
+		  TREE_TYPE (expr), type);
+      expr = error_mark_node;
+    }
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
@@ -7142,7 +7154,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     }
 
   if (convs->check_narrowing
-      && !check_narrowing (totype, expr, complain))
+      && !check_narrowing (totype, expr, complain,
+			   convs->check_narrowing_const_only))
     return error_mark_node;
 
   warning_sentinel w (warn_zero_as_null_pointer_constant);
