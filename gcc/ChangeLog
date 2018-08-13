@@ -1,3 +1,9 @@
+2018-08-13 Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin):
+	Add support for gimple-folding of vec_pack() and vec_unpack()
+	intrinsics.
+
 2018-08-13 Will Schmidt <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_builtin_valid_without_lhs): Add
