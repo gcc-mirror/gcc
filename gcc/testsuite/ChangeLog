@@ -1,3 +1,14 @@
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* c-c++-common/attr-nonstring-3.c: Temporarily xfail a test case.
+	* g++.dg/init/string2.C: New test.
+	* g++.dg/init/string3.C: New test.
+	* g++.dg/init/string4.C: New test.
+	* gcc.dg/init-string-3.c: New test.
+	* gcc.dg/strlenopt-55.c: New test.
+	* gcc.dg/strlenopt-56.c: New test.
+
 2018-08-13  Marek Polacek  <polacek@redhat.com>
 
 	P0806R2 - Deprecate implicit capture of this via [=]

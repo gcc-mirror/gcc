@@ -1,3 +1,11 @@
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* decl.c (check_initializer):  Call braced_list_to_string.
+	(eval_check_narrowing): New function.
+	* gcc/cp/typeck2.c (digest_init_r): Accept strings literals
+	as initilizers for all narrow character types.
+
 2018-08-13  Marek Polacek  <polacek@redhat.com>
 
 	P0806R2 - Deprecate implicit capture of this via [=]

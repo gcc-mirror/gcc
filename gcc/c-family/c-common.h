@@ -1331,6 +1331,7 @@ extern void maybe_add_include_fixit (rich_location *, const char *);
 extern void maybe_suggest_missing_token_insertion (rich_location *richloc,
 						   enum cpp_ttype token_type,
 						   location_t prev_token_loc);
+extern tree braced_list_to_string (tree, tree, tree (*)(tree, tree) = NULL);
 
 #if CHECKING_P
 namespace selftest {

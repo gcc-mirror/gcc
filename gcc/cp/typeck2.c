@@ -1056,7 +1056,9 @@ digest_init_r (tree type, tree init, int nested, int flags,
 
 	  if (TYPE_PRECISION (typ1) == BITS_PER_UNIT)
 	    {
-	      if (char_type != char_type_node)
+	      if (char_type != char_type_node
+		  && char_type != signed_char_type_node
+		  && char_type != unsigned_char_type_node)
 		{
 		  if (complain & tf_error)
 		    error_at (loc, "char-array initialized from wide string");
