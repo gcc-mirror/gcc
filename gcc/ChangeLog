@@ -1,3 +1,10 @@
+2018-08-13  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_decompose_constant_pool_ref):
+        New function.
+	(s390_decompose_address): Factor out constant pool ref
+        decomposition.
+
 2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32-predicates.c
