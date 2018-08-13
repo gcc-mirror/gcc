@@ -1,3 +1,10 @@
+2018-08-13 Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_valid_without_lhs): Add
+	vec_xst variants to the list.
+	(rs6000_gimple_fold_builtin): Add support for folding unaligned
+	vector loads and stores.
+
 2018-08-13  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config.gcc (rs6000-ibm-aix4.x): Delete.

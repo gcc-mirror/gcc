@@ -15069,6 +15069,12 @@ rs6000_builtin_valid_without_lhs (enum rs6000_builtins fn_code)
     case ALTIVEC_BUILTIN_STVX_V4SF:
     case ALTIVEC_BUILTIN_STVX_V2DI:
     case ALTIVEC_BUILTIN_STVX_V2DF:
+    case VSX_BUILTIN_STXVW4X_V16QI:
+    case VSX_BUILTIN_STXVW4X_V8HI:
+    case VSX_BUILTIN_STXVW4X_V4SF:
+    case VSX_BUILTIN_STXVW4X_V4SI:
+    case VSX_BUILTIN_STXVD2X_V2DF:
+    case VSX_BUILTIN_STXVD2X_V2DI:
       return true;
     default:
       return false;
@@ -15576,6 +15582,77 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	gimple_set_location (g, loc);
 	gsi_replace (gsi, g, true);
 	return true;
+      }
+
+    /* unaligned Vector loads.  */
+    case VSX_BUILTIN_LXVW4X_V16QI:
+    case VSX_BUILTIN_LXVW4X_V8HI:
+    case VSX_BUILTIN_LXVW4X_V4SF:
+    case VSX_BUILTIN_LXVW4X_V4SI:
+    case VSX_BUILTIN_LXVD2X_V2DF:
+    case VSX_BUILTIN_LXVD2X_V2DI:
+      {
+	 arg0 = gimple_call_arg (stmt, 0);  // offset
+	 arg1 = gimple_call_arg (stmt, 1);  // address
+	 lhs = gimple_call_lhs (stmt);
+	 location_t loc = gimple_location (stmt);
+	 /* Since arg1 may be cast to a different type, just use ptr_type_node
+	    here instead of trying to enforce TBAA on pointer types.  */
+	 tree arg1_type = ptr_type_node;
+	 tree lhs_type = TREE_TYPE (lhs);
+	 /* In GIMPLE the type of the MEM_REF specifies the alignment.  The
+	   required alignment (power) is 4 bytes regardless of data type.  */
+	 tree align_ltype = build_aligned_type (lhs_type, 4);
+	 /* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	    the tree using the value from arg0.  The resulting type will match
+	    the type of arg1.  */
+	 gimple_seq stmts = NULL;
+	 tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg0);
+	 tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+				       arg1_type, arg1, temp_offset);
+	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	 /* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
+	    take an offset, but since we've already incorporated the offset
+	    above, here we just pass in a zero.  */
+	 gimple *g;
+	 g = gimple_build_assign (lhs, build2 (MEM_REF, align_ltype, temp_addr,
+						build_int_cst (arg1_type, 0)));
+	 gimple_set_location (g, loc);
+	 gsi_replace (gsi, g, true);
+	 return true;
+      }
+
+    /* unaligned Vector stores.  */
+    case VSX_BUILTIN_STXVW4X_V16QI:
+    case VSX_BUILTIN_STXVW4X_V8HI:
+    case VSX_BUILTIN_STXVW4X_V4SF:
+    case VSX_BUILTIN_STXVW4X_V4SI:
+    case VSX_BUILTIN_STXVD2X_V2DF:
+    case VSX_BUILTIN_STXVD2X_V2DI:
+      {
+	 arg0 = gimple_call_arg (stmt, 0); /* Value to be stored.  */
+	 arg1 = gimple_call_arg (stmt, 1); /* Offset.  */
+	 tree arg2 = gimple_call_arg (stmt, 2); /* Store-to address.  */
+	 location_t loc = gimple_location (stmt);
+	 tree arg0_type = TREE_TYPE (arg0);
+	 /* Use ptr_type_node (no TBAA) for the arg2_type.  */
+	 tree arg2_type = ptr_type_node;
+	 /* In GIMPLE the type of the MEM_REF specifies the alignment.  The
+	    required alignment (power) is 4 bytes regardless of data type.  */
+	 tree align_stype = build_aligned_type (arg0_type, 4);
+	 /* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	    the tree using the value from arg1.  */
+	 gimple_seq stmts = NULL;
+	 tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg1);
+	 tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+				       arg2_type, arg2, temp_offset);
+	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	 gimple *g;
+	 g = gimple_build_assign (build2 (MEM_REF, align_stype, temp_addr,
+					   build_int_cst (arg2_type, 0)), arg0);
+	 gimple_set_location (g, loc);
+	 gsi_replace (gsi, g, true);
+	 return true;
       }
 
     /* Vector Fused multiply-add (fma).  */
