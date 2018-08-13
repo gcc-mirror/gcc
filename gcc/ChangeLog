@@ -1,3 +1,14 @@
+2018-08-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.gcc (rs6000-ibm-aix4.x): Delete.
+	(rs6000-ibm-aix5.1): Delete.
+	(rs6000-ibm-aix5.2): Delete.
+	(rs6000-ibm-aix5.3): Delete.
+	* config/rs6000/aix43.h: Delete.
+	* config/rs6000/aix51.h: Delete.
+	* config/rs6000/aix52.h: Delete.
+	* config/rs6000/t-aix43: Delete.
+
 2018-08-13  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/s390/s390.c (s390_decompose_constant_pool_ref):
