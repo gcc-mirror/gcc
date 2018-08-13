@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <bits/exception_defines.h>
+#include <bit>
 #include "new"
 
 #if !_GLIBCXX_HAVE_ALIGNED_ALLOC && !_GLIBCXX_HAVE__ALIGNED_MALLOC \
@@ -105,7 +106,7 @@ operator new (std::size_t sz, std::align_val_t al)
 
   /* Alignment must be a power of two.  */
   /* XXX This should be checked by the compiler (PR 86878).  */
-  if (__builtin_expect (align & (align - 1), false))
+  if (__builtin_expect (!std::__ispow2(align), false))
     _GLIBCXX_THROW_OR_ABORT(bad_alloc());
 
   /* malloc (0) is unpredictable; avoid it.  */
@@ -120,8 +121,7 @@ operator new (std::size_t sz, std::align_val_t al)
     align = sizeof(void*);
 # endif
   /* C11: the value of size shall be an integral multiple of alignment.  */
-  if (std::size_t rem = sz & (align - 1))
-    sz += align - rem;
+  sz = (sz + align - 1) & ~(align - 1);
 #endif
 
   void *p;

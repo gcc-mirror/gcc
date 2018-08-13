@@ -1,5 +1,9 @@
 2018-08-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/new_opa.cc (operator new(size_t, align_val_t)): Use
+	__is_pow2 to check for valid alignment. Avoid branching when rounding
+	size to multiple of alignment.
+
 	* include/Makefile.am: Install <bit> and <version> for freestanding.
 	* include/Makefile.in: Regenerate.
 	* testsuite/17_intro/freestanding.cc: Check for <bit> and <version>.
