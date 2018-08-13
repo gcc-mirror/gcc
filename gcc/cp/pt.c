@@ -6682,7 +6682,9 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	     template-parameter.  */
 	  expr = build_converted_constant_expr (type, expr, complain);
 	  if (expr == error_mark_node)
-	    return error_mark_node;
+	    /* Make sure we return NULL_TREE only if we have really issued
+	       an error, as described above.  */
+	    return (complain & tf_error) ? NULL_TREE : error_mark_node;
 	  expr = maybe_constant_value (expr);
 	  expr = convert_from_reference (expr);
 	}

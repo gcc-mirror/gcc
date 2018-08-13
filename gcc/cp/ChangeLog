@@ -1,3 +1,19 @@
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/57891
+	* call.c (struct conversion): Add check_narrowing_const_only.
+	(build_converted_constant_expr): Set check_narrowing and
+	check_narrowing_const_only.  Give error if expr is error node.
+	(convert_like_real): Pass it to check_narrowing.
+	* cp-tree.h (check_narrowing): Add a default parameter.
+	* decl.c (compute_array_index_type): Use input_location instead of
+	location_of.
+	* pt.c (convert_nontype_argument): Return NULL_TREE if tf_error.
+	* typeck2.c (check_narrowing): Don't warn for instantiation-dependent
+	expressions.  Call maybe_constant_value instead of
+	fold_non_dependent_expr.  Don't mention { } in diagnostic.  Only check
+	narrowing for constants if CONST_ONLY.
+
 2018-08-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/71625

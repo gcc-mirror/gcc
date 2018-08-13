@@ -9702,7 +9702,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
     {
       tree folded = cp_fully_fold (size);
       if (TREE_CODE (folded) == INTEGER_CST)
-	pedwarn (location_of (size), OPT_Wpedantic,
+	pedwarn (input_location, OPT_Wpedantic,
 		 "size of array is not an integral constant-expression");
       /* Use the folded result for VLAs, too; it will have resolved
 	 SIZEOF_EXPR.  */
