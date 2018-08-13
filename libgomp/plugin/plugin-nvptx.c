@@ -61,9 +61,12 @@ CUresult cuLinkAddData (CUlinkState, CUjitInputType, void *, size_t,
 			const char *, unsigned, CUjit_option *, void **);
 CUresult cuLinkCreate (unsigned, CUjit_option *, void **, CUlinkState *);
 #else
+typedef size_t (*CUoccupancyB2DSize)(int);
 CUresult cuLinkAddData_v2 (CUlinkState, CUjitInputType, void *, size_t,
 			   const char *, unsigned, CUjit_option *, void **);
 CUresult cuLinkCreate_v2 (unsigned, CUjit_option *, void **, CUlinkState *);
+CUresult cuOccupancyMaxPotentialBlockSize(int *, int *, CUfunction,
+					  CUoccupancyB2DSize, size_t, int);
 #endif
 
 #define DO_PRAGMA(x) _Pragma (#x)
@@ -1200,21 +1203,77 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
       {
 	bool default_dim_p[GOMP_DIM_MAX];
 	for (i = 0; i != GOMP_DIM_MAX; i++)
+	  default_dim_p[i] = !dims[i];
+
+	if (!CUDA_CALL_EXISTS (cuOccupancyMaxPotentialBlockSize))
 	  {
-	    default_dim_p[i] = !dims[i];
-	    if (default_dim_p[i])
-	      dims[i] = nvthd->ptx_dev->default_dims[i];
+	    for (i = 0; i != GOMP_DIM_MAX; i++)
+	      if (default_dim_p[i])
+		dims[i] = nvthd->ptx_dev->default_dims[i];
+
+	    if (default_dim_p[GOMP_DIM_VECTOR])
+	      dims[GOMP_DIM_VECTOR]
+		= MIN (dims[GOMP_DIM_VECTOR],
+		       (targ_fn->max_threads_per_block / warp_size
+			* warp_size));
+
+	    if (default_dim_p[GOMP_DIM_WORKER])
+	      dims[GOMP_DIM_WORKER]
+		= MIN (dims[GOMP_DIM_WORKER],
+		       targ_fn->max_threads_per_block / dims[GOMP_DIM_VECTOR]);
 	  }
+	else
+	  {
+	    /* Handle the case that the compiler allows the runtime to choose
+	       the vector-length conservatively, by ignoring
+	       gomp_openacc_dims[GOMP_DIM_VECTOR].  TODO: actually handle
+	       it.  */
+	    int vectors = 0;
+	    /* TODO: limit gomp_openacc_dims[GOMP_DIM_WORKER] such that that
+	       gomp_openacc_dims[GOMP_DIM_WORKER] * actual_vectors does not
+	       exceed targ_fn->max_threads_per_block. */
+	    int workers = gomp_openacc_dims[GOMP_DIM_WORKER];
+	    int gangs = gomp_openacc_dims[GOMP_DIM_GANG];
+	    int grids, blocks;
 
-	if (default_dim_p[GOMP_DIM_VECTOR])
-	  dims[GOMP_DIM_VECTOR]
-	    = MIN (dims[GOMP_DIM_VECTOR],
-		   (targ_fn->max_threads_per_block / warp_size * warp_size));
+	    CUDA_CALL_ASSERT (cuOccupancyMaxPotentialBlockSize, &grids,
+			      &blocks, function, NULL, 0,
+			      dims[GOMP_DIM_WORKER] * dims[GOMP_DIM_VECTOR]);
+	    GOMP_PLUGIN_debug (0, "cuOccupancyMaxPotentialBlockSize: "
+			       "grid = %d, block = %d\n", grids, blocks);
 
-	if (default_dim_p[GOMP_DIM_WORKER])
-	  dims[GOMP_DIM_WORKER]
-	    = MIN (dims[GOMP_DIM_WORKER],
-		   targ_fn->max_threads_per_block / dims[GOMP_DIM_VECTOR]);
+	    /* Keep the num_gangs proportional to the block size.  In
+	       the case were a block size is limited by shared-memory
+	       or the register file capacity, the runtime will not
+	       excessively over assign gangs to the multiprocessor
+	       units if their state is going to be swapped out even
+	       more than necessary. The constant factor 2 is there to
+	       prevent threads from idling when there is insufficient
+	       work for them.  */
+	    if (gangs == 0)
+	      gangs = 2 * grids * (blocks / warp_size);
+
+	    if (vectors == 0)
+	      vectors = warp_size;
+
+	    if (workers == 0)
+	      {
+		int actual_vectors = (default_dim_p[GOMP_DIM_VECTOR]
+				      ? vectors
+				      : dims[GOMP_DIM_VECTOR]);
+		workers = blocks / actual_vectors;
+	      }
+
+	    for (i = 0; i != GOMP_DIM_MAX; i++)
+	      if (default_dim_p[i])
+		switch (i)
+		  {
+		  case GOMP_DIM_GANG: dims[i] = gangs; break;
+		  case GOMP_DIM_WORKER: dims[i] = workers; break;
+		  case GOMP_DIM_VECTOR: dims[i] = vectors; break;
+		  default: GOMP_PLUGIN_fatal ("invalid dim");
+		  }
+	  }
       }
     }
 
