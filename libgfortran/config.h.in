@@ -453,6 +453,9 @@
 /* Define to 1 if you have the `getegid' function. */
 #undef HAVE_GETEGID
 
+/* Define to 1 if you have the `getentropy' function. */
+#undef HAVE_GETENTROPY
+
 /* Define to 1 if you have the `geteuid' function. */
 #undef HAVE_GETEUID
 
