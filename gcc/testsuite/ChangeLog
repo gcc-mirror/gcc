@@ -1,3 +1,8 @@
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86915
+	* g++.dg/diagnostic/auto1.C: New test.
+
 2018-08-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/66679
