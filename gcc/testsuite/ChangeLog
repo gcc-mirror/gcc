@@ -1,3 +1,8 @@
+2018-08-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pr56605.c: The generated code can have an AND
+	instead of a ZERO_EXTEND.
+
 2018-08-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/71625
