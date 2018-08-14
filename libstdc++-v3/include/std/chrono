@@ -900,24 +900,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wliteral-suffix"
-    template<typename _Rep, unsigned long long _Val>
-      struct _Checked_integral_constant
-      : integral_constant<_Rep, static_cast<_Rep>(_Val)>
-      {
-	static_assert(_Checked_integral_constant::value >= 0
-		      && _Checked_integral_constant::value == _Val,
-		      "literal value cannot be represented by duration type");
-      };
-
     template<typename _Dur, char... _Digits>
       constexpr _Dur __check_overflow()
       {
 	using _Val = __parse_int::_Parse_int<_Digits...>;
-	using _Rep = typename _Dur::rep;
-	// TODO: should be simply integral_constant<_Rep, _Val::value>
-	// but GCC doesn't reject narrowing conversions to _Rep.
-	using _CheckedVal = _Checked_integral_constant<_Rep, _Val::value>;
-	return _Dur{_CheckedVal::value};
+	constexpr typename _Dur::rep __repval = _Val::value;
+	static_assert(__repval >= 0 && __repval == _Val::value,
+		      "literal value cannot be represented by duration type");
+	return _Dur(__repval);
       }
 
     constexpr chrono::duration<long double, ratio<3600,1>>
