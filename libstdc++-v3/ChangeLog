@@ -1,3 +1,18 @@
+2018-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85343
+	* config/abi/pre/gnu.ver: Export new symbol.
+	* doc/xml/manual/abi.xml: Document new versions.
+	* include/bits/fstream.tcc (basic_filebuf<C, T>::underflow)
+	(basic_filebuf<C, T>::xsgetn): Pass errno to __throw_ios_failure.
+	* include/bits/functexcept.h (__throw_ios_failure(const char*, int)):
+	Declare new overload.
+	* src/c++11/cxx11-ios_failure.cc (__ios_failure): Add new constructor
+	and static member function.
+	(__throw_ios_failure(const char*, int)): Define.
+	* src/c++98/ios_failure.cc [!_GLIBCXX_USE_DUAL_ABI]
+	(__throw_ios_failure(const char*, int)): Define.
+
 2018-08-14  Jeremy Sawicki  <jeremy-gcc@sawicki.us>
 
 	* include/ext/rope (_Rope_iterator_base(const _Rope_iterator_base&))

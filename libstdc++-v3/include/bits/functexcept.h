@@ -95,8 +95,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __throw_ios_failure(const char*) __attribute__((__noreturn__));
 
   void
+  __throw_ios_failure(const char*, int) __attribute__((__noreturn__));
+
+  // Helpers for exception objects in <system_error>
+  void
   __throw_system_error(int) __attribute__((__noreturn__));
 
+  // Helpers for exception objects in <future>
   void
   __throw_future_error(int) __attribute__((__noreturn__));
 
