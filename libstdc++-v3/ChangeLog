@@ -1,5 +1,9 @@
 2018-08-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86954
+	* include/bits/stl_tempbuf.h (return_temporary_buffer): Use
+	non-placement delete.
+
 	* include/std/chrono (__check_overflow): Simplify definition.
 	(_Checked_integral_constant): Remove.
 
