@@ -1119,7 +1119,7 @@ protected:
     
       _Rope_iterator_base(const _Rope_iterator_base& __x)
       {
-        if (0 != __x._M_buf_ptr)
+        if (0 != __x._M_buf_ptr && __x._M_buf_start != __x._M_tmp_buf)
 	  *this = __x;
 	else
 	  {
@@ -1166,7 +1166,7 @@ protected:
       _Rope_const_iterator&
       operator=(const _Rope_const_iterator& __x)
       {
-        if (0 != __x._M_buf_ptr)
+        if (0 != __x._M_buf_ptr && __x._M_buf_start != __x._M_tmp_buf)
 	  *(static_cast<_Rope_iterator_base<_CharT, _Alloc>*>(this)) = __x;
 	else
 	  {
@@ -1345,7 +1345,7 @@ protected:
         _RopeRep* __old = this->_M_root;
 	
         _RopeRep::_S_ref(__x._M_root);
-        if (0 != __x._M_buf_ptr)
+        if (0 != __x._M_buf_ptr && __x._M_buf_start != __x._M_tmp_buf)
 	  {
             _M_root_rope = __x._M_root_rope;
             *(static_cast<_Rope_iterator_base<_CharT, _Alloc>*>(this)) = __x;

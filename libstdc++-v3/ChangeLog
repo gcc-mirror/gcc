@@ -1,3 +1,12 @@
+2018-08-14  Jeremy Sawicki  <jeremy-gcc@sawicki.us>
+
+	* include/ext/rope (_Rope_iterator_base(const _Rope_iterator_base&))
+	(_Rope_const_iterator::operator=(const _Rope_const_iterator&))
+	(_Rope_iterator::operator=(const _Rope_iterator&)): Ensure
+	copied/assigned rope iterators don't retain pointers to the iterator
+	they were copied/assigned from.
+	* testsuite/ext/rope/7.cc: New.
+
 2018-08-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/45093
