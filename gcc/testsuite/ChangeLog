@@ -1,3 +1,8 @@
+2018-08-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86116
+	* gfortran.dg/generic_34.f90: New test case.
+
 2018-08-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/57891
