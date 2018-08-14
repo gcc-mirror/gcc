@@ -37,6 +37,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "time_1.h"
+#ifdef HAVE_SYS_RANDOM_H
+#include <sys/random.h>
+#endif
 
 #ifdef __MINGW32__
 #define HAVE_GETPID 1
