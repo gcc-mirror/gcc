@@ -1,3 +1,8 @@
+2018-08-13  Liu Hao <lh_mouse@126.com>
+
+	* pretty-print.c (mingw_ansi_fputs): Do not call _close() on the
+	handle returned by _get_osf_handle().
+
 2018-08-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc/config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add support
