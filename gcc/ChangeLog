@@ -1,3 +1,11 @@
+2018-08-13  Liu Hao  <lh_mouse@126.com>
+
+	Backport from mainline
+	2018-08-13  Liu	Hao  <lh_mouse@126.com>
+
+	* pretty-print.c (mingw_ansi_fputs): Do not call _close() on the
+	handle returned by _get_osf_handle().
+
 2018-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backport from mainline

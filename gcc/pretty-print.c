@@ -684,7 +684,6 @@ mingw_ansi_fputs (const char *str, FILE *fp)
     /* If it is not a console, write everything as-is.  */
     write_all (h, read, strlen (read));
 
-  _close ((intptr_t) h);
   return 1;
 }
 
