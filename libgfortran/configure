@@ -2547,6 +2547,7 @@ $as_echo "$as_me: creating cache $cache_file" >&6;}
 fi
 
 as_fn_append ac_header_list " unistd.h"
+as_fn_append ac_header_list " sys/random.h"
 as_fn_append ac_header_list " sys/time.h"
 as_fn_append ac_header_list " sys/times.h"
 as_fn_append ac_header_list " sys/resource.h"
@@ -12513,7 +12514,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12516 "configure"
+#line 12517 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12619,7 +12620,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12622 "configure"
+#line 12623 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16149,6 +16150,8 @@ _ACEOF
 fi
 
 done
+
+
 
 
 

@@ -275,8 +275,9 @@ AC_TYPE_UINTPTR_T
 AC_CHECK_TYPES([ptrdiff_t])
 
 # check header files (we assume C89 is available, so don't check for that)
-AC_CHECK_HEADERS_ONCE(unistd.h sys/time.h sys/times.h sys/resource.h \
-sys/types.h sys/stat.h sys/wait.h floatingpoint.h ieeefp.h fenv.h fptrap.h \
+AC_CHECK_HEADERS_ONCE(unistd.h sys/random.h sys/time.h sys/times.h \
+sys/resource.h sys/types.h sys/stat.h sys/wait.h \
+floatingpoint.h ieeefp.h fenv.h fptrap.h \
 fpxcp.h pwd.h complex.h xlocale.h)
 
 GCC_HEADER_STDINT(gstdint.h)
