@@ -640,6 +640,16 @@ sgr_set_it:
 	{
 	  attrib_add |= sb.wAttributes & ~attrib_rm;
 	}
+      if (attrib_add & COMMON_LVB_REVERSE_VIDEO)
+	{
+	  /* COMMON_LVB_REVERSE_VIDEO is only effective for DBCS.
+	   * Swap foreground and background colors by hand.
+	   */
+	  attrib_add = (attrib_add & 0xFF00)
+			| ((attrib_add & 0x00F0) >> 4)
+			| ((attrib_add & 0x000F) << 4);
+	  attrib_add &= ~COMMON_LVB_REVERSE_VIDEO;
+	}
       SetConsoleTextAttribute (h, attrib_add);
       break;
     }

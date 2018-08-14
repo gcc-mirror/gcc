@@ -1,6 +1,15 @@
 2018-08-13  Liu Hao  <lh_mouse@126.com>
 
 	Backport from mainline
+	2018-08-13  Liu Hao  <lh_mouse@126.com>
+
+	* pretty-print.c (eat_esc_sequence): Swap the foreground and
+	background colors if the COMMON_LVB_REVERSE_VIDEO flag is set,
+	and clear it thereafter, as it only works for DBCS.
+
+2018-08-13  Liu Hao  <lh_mouse@126.com>
+
+	Backport from mainline
 	2018-08-13  Liu	Hao  <lh_mouse@126.com>
 
 	* pretty-print.c (mingw_ansi_fputs): Do not call _close() on the
