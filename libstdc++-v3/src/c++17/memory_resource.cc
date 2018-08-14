@@ -25,6 +25,10 @@
 #include <memory_resource>
 #include <atomic>
 #include <new>
+#if ATOMIC_POINTER_LOCK_FREE != 2
+# include <bits/std_mutex.h>	// std::mutex, std::lock_guard
+# include <bits/move.h>		// std::exchange
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -81,7 +85,42 @@ namespace pmr
 
     constant_init<newdel_res_t> newdel_res{};
     constant_init<null_res_t> null_res{};
-    constant_init<atomic<memory_resource*>> default_res{&newdel_res.obj};
+#if ATOMIC_POINTER_LOCK_FREE == 2
+    using atomic_mem_res = atomic<memory_resource*>;
+# define _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
+#else
+    // Can't use pointer-width atomics, define a type using a mutex instead:
+    struct atomic_mem_res
+    {
+# ifdef __GTHREAD_MUTEX_INIT
+#  define _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
+      // std::mutex has constexpr constructor
+      constexpr
+# endif
+      atomic_mem_res(memory_resource* r) : val(r) { }
+
+      mutex mx;
+      memory_resource* val;
+
+      memory_resource* load()
+      {
+	lock_guard<mutex> lock(mx);
+	return val;
+      }
+
+      memory_resource* exchange(memory_resource* r)
+      {
+	lock_guard<mutex> lock(mx);
+	return std::exchange(val, r);
+      }
+    };
+#endif // ATOMIC_POINTER_LOCK_FREE == 2
+
+#ifdef _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
+    constant_init<atomic_mem_res> default_res{&newdel_res.obj};
+#else
+# include "default_resource.h"
+#endif
   } // namespace
 
   memory_resource*
