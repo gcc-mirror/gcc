@@ -1,3 +1,12 @@
+2018-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
+	2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86871
+	* tree-vect-stmts.c (vect_transform_stmt): Use gimple_get_lhs
+	instead of gimple_assign_lhs.
+
 2018-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

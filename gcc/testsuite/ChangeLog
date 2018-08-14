@@ -1,3 +1,11 @@
+2018-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
+	2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86871
+	* gcc.dg/vect/pr86871.c: New test.
+
 2018-08-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from trunk
