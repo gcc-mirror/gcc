@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
 /* isl 0.15 or later.  */
 #include <isl/schedule_node.h>
+#include <isl/id.h>
+#include <isl/space.h>
 
 #else
 /* isl 0.14 or 0.13.  */

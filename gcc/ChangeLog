@@ -1,3 +1,12 @@
+2018-08-14  Matthias Klose  <doko@ubuntu.com>
+
+	Backport from mainline
+	2018-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/86724
+	* graphite.h: Include isl/id.h and isl/space.h to allow build
+	with ISL 0.20.
+
 2018-08-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from mainline
