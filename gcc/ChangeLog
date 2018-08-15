@@ -1,5 +1,12 @@
 2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/darwin.c
+	 (darwin_function_switched_text_sections): Delete.
+	* gcc/config/darwin.h
+	 (TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS): Likewise.
+
+2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
 	PR target/81685
 	* config/darwin.h: (DEBUG_STR_OFFSETS_SECTION, DEBUG_LOCLISTS_SECTION,
 	DEBUG_RNGLISTS_SECTION) new macros.  (DEBUG_PUBNAMES_SECTION,
