@@ -1,3 +1,9 @@
+2018-08-15  Martin Liska  <mliska@suse.cz>
+
+        PR tree-optimization/86925
+	* gcc.dg/predict-20.c: New test.
+	* gcc.dg/predict-21.c: New test.
+
 2018-08-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/init/goto3.C: Adjust for error instead of permerror.
