@@ -1,3 +1,9 @@
+2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c/19315
+	* c-decl.c (finish_decl): Don't add the 'extern' storage class to
+	objects of unknown size.
+
 2018-08-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/71625
