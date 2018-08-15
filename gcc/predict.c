@@ -2332,13 +2332,17 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 	      if (arg == PHI_RESULT (def))
 		continue;
 
+	      HOST_WIDE_INT probability2;
 	      new_val = expr_expected_value (arg, visited, &predictor2,
-					     probability);
+					     &probability2);
 
 	      /* It is difficult to combine value predictors.  Simply assume
 		 that later predictor is weaker and take its prediction.  */
 	      if (*predictor < predictor2)
-		*predictor = predictor2;
+		{
+		  *predictor = predictor2;
+		  *probability = probability2;
+		}
 	      if (!new_val)
 		return NULL;
 	      if (!val)
@@ -2423,7 +2427,8 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		  tree base = build_int_cst (integer_type_node,
 					     REG_BR_PROB_BASE);
 		  base = build_real_from_int_cst (t, base);
-		  tree r = fold_build2 (MULT_EXPR, t, prob, base);
+		  tree r = fold_build2_initializer_loc (UNKNOWN_LOCATION,
+							MULT_EXPR, t, prob, base);
 		  HOST_WIDE_INT probi
 		    = real_to_integer (TREE_REAL_CST_PTR (r));
 		  if (probi >= 0 && probi <= REG_BR_PROB_BASE)

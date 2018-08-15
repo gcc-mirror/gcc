@@ -1,3 +1,11 @@
+2018-08-15  Martin Liska  <mliska@suse.cz>
+
+        PR tree-optimization/86925
+	* predict.c (expr_expected_value_1): When taking
+        later predictor, assign also probability.
+        Use fold_build2_initializer_loc in order to fold
+        the expression in -frounding-math.
+
 2018-08-14 Allan Sandfeld Jensen <allan.jensen@qt.io>
 
 	* config/i386/i386.c (expand_vec_perm_movs): New method matching movs
