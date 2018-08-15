@@ -1,3 +1,7 @@
+2018-08-15  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_reorg): Remove loop.
+
 2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c
