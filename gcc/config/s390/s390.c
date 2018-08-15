@@ -14023,7 +14023,7 @@ s390_adjust_loops ()
 static void
 s390_reorg (void)
 {
-  bool pool_overflow = false;
+  struct constant_pool *pool;
   rtx_insn *insn;
   int hw_before, hw_after;
 
@@ -14035,62 +14035,26 @@ s390_reorg (void)
   split_all_insns_noflow ();
 
   /* Install the main literal pool and the associated base
-     register load insns.
+     register load insns.  The literal pool might be > 4096 bytes in
+     size, so that some of its elements cannot be directly accessed.
 
-     In addition, there are two problematic situations we need
-     to correct:
-
-     - the literal pool might be > 4096 bytes in size, so that
-       some of its elements cannot be directly accessed
-
-     - a branch target might be > 64K away from the branch, so that
-       it is not possible to use a PC-relative instruction.
-
-     To fix those, we split the single literal pool into multiple
+     To fix this, we split the single literal pool into multiple
      pool chunks, reloading the pool base register at various
      points throughout the function to ensure it always points to
-     the pool chunk the following code expects, and / or replace
-     PC-relative branches by absolute branches.
+     the pool chunk the following code expects.  */
 
-     However, the two problems are interdependent: splitting the
-     literal pool can move a branch further away from its target,
-     causing the 64K limit to overflow, and on the other hand,
-     replacing a PC-relative branch by an absolute branch means
-     we need to put the branch target address into the literal
-     pool, possibly causing it to overflow.
-
-     So, we loop trying to fix up both problems until we manage
-     to satisfy both conditions at the same time.  Note that the
-     loop is guaranteed to terminate as every pass of the loop
-     strictly decreases the total number of PC-relative branches
-     in the function.  (This is not completely true as there
-     might be branch-over-pool insns introduced by chunkify_start.
-     Those never need to be split however.)  */
-
-  for (;;)
+  /* Collect the literal pool.  */
+  pool = s390_mainpool_start ();
+  if (pool)
     {
-      struct constant_pool *pool = NULL;
-
-      /* Collect the literal pool.  */
-      if (!pool_overflow)
-	{
-	  pool = s390_mainpool_start ();
-	  if (!pool)
-	    pool_overflow = true;
-	}
-
-      /* If literal pool overflowed, start to chunkify it.  */
-      if (pool_overflow)
-	pool = s390_chunkify_start ();
-
-      /* If we made it up to here, both conditions are satisfied.
-	 Finish up literal pool related changes.  */
-      if (pool_overflow)
-	s390_chunkify_finish (pool);
-      else
-	s390_mainpool_finish (pool);
-
-      break;
+      /* Finish up literal pool related changes.  */
+      s390_mainpool_finish (pool);
+    }
+  else
+    {
+      /* If literal pool overflowed, chunkify it.  */
+      pool = s390_chunkify_start ();
+      s390_chunkify_finish (pool);
     }
 
   /* Generate out-of-pool execute target insns.  */
