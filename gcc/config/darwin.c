@@ -3711,19 +3711,4 @@ default_function_sections:
 		    : text_section;
 }
 
-/* When a function is partitioned between sections, we need to insert a label
-   at the start of each new chunk - so that it may become a valid 'atom' for
-   eh and debug purposes.  Without this the linker will emit warnings if one 
-   tries to add line location information (since the switched fragment will 
-   be anonymous).  */
-
-void
-darwin_function_switched_text_sections (FILE *fp, tree decl, bool new_is_cold)
-{
-  /* Make sure we pick up all the relevant quotes etc.  */
-  assemble_name_raw (fp, new_is_cold ? "__cold_sect_of_" : "__hot_sect_of_");
-  assemble_name_raw (fp, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
-  fputs (":\n", fp);
-}
-
 #include "gt-darwin.h"
