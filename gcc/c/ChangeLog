@@ -1,3 +1,8 @@
+2018-08-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	
+	* c-decl.c (start_decl): Do not warn if variables is named as main
+	and is a local variable.
+
 2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c/19315
