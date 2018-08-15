@@ -1,3 +1,17 @@
+2018-08-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.opt (mmitigate-rop): Mark as deprecated.
+	* doc/invoke.texi (mmitigate-rop): Remove.
+	* config/i386/i386.c: Do not include "regrename.h".
+	(ix86_rop_should_change_byte_p, reg_encoded_number)
+	(ix86_get_modrm_for_rop, set_rop_modrm_reg_bits, ix86_mitigate_rop):
+	Remove.
+	(ix86_reorg): Remove call to ix86_mitigate_rop.
+	* config/i386/i386.md (attr "modrm_class"): Remove.
+	(cmp<mode>_ccno_1, mov<mode>_xor, movstrict<mode>_xor)
+	(x86_mov<mode>cc_0_m1. x86_mov<mode>cc_0_m1_se)
+	(x86_mov<mode>cc_0_m1_neg): Remove modrm_class attribute override.
+
 2018-08-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs600.c (rs6000_gimple_fold_builtin): Add entries to
