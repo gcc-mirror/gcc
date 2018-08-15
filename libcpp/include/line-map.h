@@ -1281,8 +1281,11 @@ typedef struct
   bool sysp;
 } expanded_location;
 
+class range_label;
+
 /* A location within a rich_location: a caret&range, with
-   the caret potentially flagged for display.  */
+   the caret potentially flagged for display, and an optional
+   label.  */
 
 struct location_range
 {
@@ -1298,6 +1301,9 @@ struct location_range
 
      where "1" and "2" are notionally carets.  */
   bool m_show_caret_p;
+
+  /* If non-NULL, the label for this range.  */
+  const range_label *m_label;
 };
 
 /* A partially-embedded vec for use within rich_location for storing
@@ -1439,6 +1445,8 @@ class fixit_hint;
    Additional ranges may be added to help the user identify other
    pertinent clauses in a diagnostic.
 
+   Ranges can (optionally) be given labels via class range_label.
+
    rich_location instances are intended to be allocated on the stack
    when generating diagnostics, and to be short-lived.
 
@@ -1484,18 +1492,22 @@ class fixit_hint;
    equal to their caret point.  The frontend overrides the diagnostic
    context's default caret character for these ranges.
 
-   Example E
-   *********
+   Example E (range labels)
+   ************************
       printf ("arg0: %i  arg1: %s arg2: %i",
                                ^~
+                               |
+                               const char *
               100, 101, 102);
                    ~~~
+                   |
+                   int
    This rich location has two ranges:
    - range 0 is at the "%s" with start = caret = "%" and finish at
-     the "s".
+     the "s".  It has a range_label ("const char *").
    - range 1 has start/finish covering the "101" and is not flagged for
-     caret printing; it is perhaps at the start of "101".
-
+     caret printing.  The caret is at the start of "101", where its
+     range_label is printed ("int").
 
    Fix-it hints
    ------------
@@ -1587,7 +1599,8 @@ class rich_location
   /* Constructors.  */
 
   /* Constructing from a location.  */
-  rich_location (line_maps *set, source_location loc);
+  rich_location (line_maps *set, source_location loc,
+		 const range_label *label = NULL);
 
   /* Destructor.  */
   ~rich_location ();
@@ -1597,7 +1610,8 @@ class rich_location
   source_location get_loc (unsigned int idx) const;
 
   void
-  add_range (source_location loc,  bool show_caret_p);
+  add_range (source_location loc,  bool show_caret_p,
+	     const range_label *label = NULL);
 
   void
   set_range (unsigned int idx, source_location loc, bool show_caret_p);
@@ -1719,6 +1733,54 @@ protected:
 
   bool m_seen_impossible_fixit;
   bool m_fixits_cannot_be_auto_applied;
+};
+
+/* A struct for the result of range_label::get_text: a NUL-terminated buffer
+   of localized text, and a flag to determine if the caller should "free" the
+   buffer.  */
+
+struct label_text
+{
+  label_text ()
+  : m_buffer (NULL), m_caller_owned (false)
+  {}
+
+  label_text (char *buffer, bool caller_owned)
+  : m_buffer (buffer), m_caller_owned (caller_owned)
+  {}
+
+  void maybe_free ()
+  {
+    if (m_caller_owned)
+      free (m_buffer);
+  }
+
+  char *m_buffer;
+  bool m_caller_owned;
+};
+
+/* Abstract base class for labelling a range within a rich_location
+   (e.g. for labelling expressions with their type).
+
+   Generating the text could require non-trivial work, so this work
+   is delayed (via the "get_text" virtual function) until the diagnostic
+   printing code "knows" it needs it, thus avoiding doing it e.g. for
+   warnings that are filtered by command-line flags.  This virtual
+   function also isolates libcpp and the diagnostics subsystem from
+   the front-end and middle-end-specific code for generating the text
+   for the labels.
+
+   Like the rich_location instances they annotate, range_label instances
+   are intended to be allocated on the stack when generating diagnostics,
+   and to be short-lived.  */
+
+class range_label
+{
+ public:
+  virtual ~range_label () {}
+
+  /* Get localized text for the label.  */
+  virtual label_text get_text () const = 0;
 };
 
 /* A fix-it hint: a suggested insertion, replacement, or deletion of text.

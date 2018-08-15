@@ -204,6 +204,9 @@ struct diagnostic_context
      a token, which would look strange).  */
   bool colorize_source_p;
 
+  /* When printing source code, should labelled ranges be printed?  */
+  bool show_labels_p;
+
   /* When printing source code, should there be a left-hand margin
      showing line numbers?  */
   bool show_line_numbers_p;
