@@ -1,3 +1,12 @@
+2018-08-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splat-char.c: New.
+	* gcc.target/powerpc/fold-vec-splat-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-splat-int.c: New.
+	* gcc.target/powerpc/fold-vec-splat-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-splat-pixel.c: New.
+	* gcc.target/powerpc/fold-vec-splat-short.c: New.
+
 2018-08-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/diagnostic/aka3.C: New test.
