@@ -1,6 +1,6 @@
 /* PR target/83554 */
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-Os -mmitigate-rop" } */
+/* { dg-options "-Os" } */
 
 unsigned a;
 unsigned __int128

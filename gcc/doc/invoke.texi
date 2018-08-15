@@ -1292,7 +1292,7 @@ See RS/6000 and PowerPC Options.
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
 -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset} @gol
--mstack-protector-guard-symbol=@var{symbol} -mmitigate-rop @gol
+-mstack-protector-guard-symbol=@var{symbol} @gol
 -mgeneral-regs-only -mcall-ms2sysv-xlogues @gol
 -mindirect-branch=@var{choice} -mfunction-return=@var{choice} @gol
 -mindirect-branch-register}
@@ -28002,13 +28002,6 @@ With the latter choice the options
 which segment register (@code{%fs} or @code{%gs}) to use as base register
 for reading the canary, and from what offset from that base register.
 The default for those is as specified in the relevant ABI.
-
-@item -mmitigate-rop
-@opindex mmitigate-rop
-Try to avoid generating code sequences that contain unintended return
-opcodes, to mitigate against certain forms of attack. At the moment,
-this option is limited in what it can do and should not be relied
-on to provide serious protection.
 
 @item -mgeneral-regs-only
 @opindex mgeneral-regs-only
