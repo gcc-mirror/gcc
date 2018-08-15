@@ -1,3 +1,9 @@
+2018-08-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR testsuite/86519
+	* builtins.c (expand_builtin_memcmp): Do not expand the call
+	when overflow is detected.
+
 2018-08-15  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/71625
