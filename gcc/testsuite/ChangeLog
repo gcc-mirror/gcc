@@ -1,3 +1,7 @@
+2018-08-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/init/goto3.C: Adjust for error instead of permerror.
+
 2018-08-14 Allan Sandfeld Jensen <allan.jensen@qt.io>
 
 	* gcc.target/i386/sse2-movs.c: New test.
