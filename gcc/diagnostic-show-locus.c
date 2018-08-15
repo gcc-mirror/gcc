@@ -251,6 +251,7 @@ class layout
   void print_source_line (linenum_type row, const char *line, int line_width,
 			  line_bounds *lbounds_out);
   bool should_print_annotation_line_p (linenum_type row) const;
+  void start_annotation_line () const;
   void print_annotation_line (linenum_type row, const line_bounds lbounds);
   void print_trailing_fixits (linenum_type row);
 
@@ -276,7 +277,7 @@ class layout
 		       int last_non_ws);
 
   void
-  move_to_column (int *column, int dest_column);
+  move_to_column (int *column, int dest_column, bool add_left_margin);
 
  private:
   diagnostic_context *m_context;
@@ -286,9 +287,11 @@ class layout
   expanded_location m_exploc;
   colorizer m_colorizer;
   bool m_colorize_source_p;
+  bool m_show_line_numbers_p;
   auto_vec <layout_range> m_layout_ranges;
   auto_vec <const fixit_hint *> m_fixit_hints;
   auto_vec <line_span> m_line_spans;
+  int m_linenum_width;
   int m_x_offset;
 };
 
@@ -805,6 +808,56 @@ fixit_cmp (const void *p_a, const void *p_b)
   return hint_a->get_start_loc () - hint_b->get_start_loc ();
 }
 
+/* Get the number of digits in the decimal representation
+   of VALUE.  */
+
+static int
+num_digits (int value)
+{
+  /* Perhaps simpler to use log10 for this, but doing it this way avoids
+     using floating point.  */
+  gcc_assert (value >= 0);
+
+  if (value == 0)
+    return 1;
+
+  int digits = 0;
+  while (value > 0)
+    {
+      digits++;
+      value /= 10;
+    }
+  return digits;
+}
+
+
+#if CHECKING_P
+
+/* Selftest for num_digits.  */
+
+static void
+test_num_digits ()
+{
+  ASSERT_EQ (1, num_digits (0));
+  ASSERT_EQ (1, num_digits (9));
+  ASSERT_EQ (2, num_digits (10));
+  ASSERT_EQ (2, num_digits (99));
+  ASSERT_EQ (3, num_digits (100));
+  ASSERT_EQ (3, num_digits (999));
+  ASSERT_EQ (4, num_digits (1000));
+  ASSERT_EQ (4, num_digits (9999));
+  ASSERT_EQ (5, num_digits (10000));
+  ASSERT_EQ (5, num_digits (99999));
+  ASSERT_EQ (6, num_digits (100000));
+  ASSERT_EQ (6, num_digits (999999));
+  ASSERT_EQ (7, num_digits (1000000));
+  ASSERT_EQ (7, num_digits (9999999));
+  ASSERT_EQ (8, num_digits (10000000));
+  ASSERT_EQ (8, num_digits (99999999));
+}
+
+#endif /* #if CHECKING_P */
+
 /* Implementation of class layout.  */
 
 /* Constructor for class layout.
@@ -826,9 +879,11 @@ layout::layout (diagnostic_context * context,
   m_exploc (richloc->get_expanded_location (0)),
   m_colorizer (context, diagnostic_kind),
   m_colorize_source_p (context->colorize_source_p),
+  m_show_line_numbers_p (context->show_line_numbers_p),
   m_layout_ranges (richloc->get_num_locations ()),
   m_fixit_hints (richloc->get_num_fixit_hints ()),
   m_line_spans (1 + richloc->get_num_locations ()),
+  m_linenum_width (0),
   m_x_offset (0)
 {
   for (unsigned int idx = 0; idx < richloc->get_num_locations (); idx++)
@@ -854,6 +909,14 @@ layout::layout (diagnostic_context * context,
   /* Populate m_line_spans.  */
   calculate_line_spans ();
 
+  /* Determine m_linenum_width.  */
+  gcc_assert (m_line_spans.length () > 0);
+  const line_span *last_span = &m_line_spans[m_line_spans.length () - 1];
+  int highest_line = last_span->m_last_line;
+  if (highest_line < 0)
+    highest_line = 0;
+  m_linenum_width = num_digits (highest_line);
+
   /* Adjust m_x_offset.
      Center the primary caret to fit in max_width; all columns
      will be adjusted accordingly.  */
@@ -863,6 +926,8 @@ layout::layout (diagnostic_context * context,
     {
       size_t right_margin = CARET_LINE_MARGIN;
       size_t column = m_exploc.column;
+      if (m_show_line_numbers_p)
+	column += m_linenum_width + 2;
       right_margin = MIN (line.length () - column, right_margin);
       right_margin = max_width - right_margin;
       if (line.length () >= max_width && column > right_margin)
@@ -1183,7 +1248,15 @@ layout::print_source_line (linenum_type row, const char *line, int line_width,
 							   line_width);
   line += m_x_offset;
 
-  pp_space (m_pp);
+  if (m_show_line_numbers_p)
+    {
+      int width = num_digits (row);
+      for (int i = 0; i < m_linenum_width - width; i++)
+	pp_space (m_pp);
+      pp_printf (m_pp, "%i | ", row);
+    }
+  else
+    pp_space (m_pp);
   int first_non_ws = INT_MAX;
   int last_non_ws = 0;
   int column;
@@ -1245,6 +1318,20 @@ layout::should_print_annotation_line_p (linenum_type row) const
   return false;
 }
 
+/* Begin an annotation line.  If m_show_line_numbers_p, print the left
+   margin, which is empty for annotation lines.  Otherwise, do nothing.  */
+
+void
+layout::start_annotation_line () const
+{
+  if (m_show_line_numbers_p)
+    {
+      for (int i = 0; i < m_linenum_width; i++)
+	pp_space (m_pp);
+      pp_string (m_pp, " |");
+    }
+}
+
 /* Print a line consisting of the caret/underlines for the given
    source line.  */
 
@@ -1254,7 +1341,9 @@ layout::print_annotation_line (linenum_type row, const line_bounds lbounds)
   int x_bound = get_x_bound_for_row (row, m_exploc.column,
 				     lbounds.m_last_non_ws);
 
+  start_annotation_line ();
   pp_space (m_pp);
+
   for (int column = 1 + m_x_offset; column < x_bound; column++)
     {
       bool in_range_p;
@@ -1316,6 +1405,7 @@ layout::print_leading_fixits (linenum_type row)
 	     helps them stand out from each other, and from
 	     the surrounding text.  */
 	  m_colorizer.set_normal_text ();
+	  start_annotation_line ();
 	  pp_character (m_pp, '+');
 	  m_colorizer.set_fixit_insert ();
 	  /* Print all but the trailing newline of the fix-it hint.
@@ -1712,6 +1802,9 @@ layout::print_trailing_fixits (linenum_type row)
   correction *c;
   int column = m_x_offset;
 
+  if (!corrections.m_corrections.is_empty ())
+    start_annotation_line ();
+
   FOR_EACH_VEC_ELT (corrections.m_corrections, i, c)
     {
       /* For now we assume each fixit hint can only touch one line.  */
@@ -1719,7 +1812,7 @@ layout::print_trailing_fixits (linenum_type row)
 	{
 	  /* This assumes the insertion just affects one line.  */
 	  int start_column = c->m_printed_columns.start;
-	  move_to_column (&column, start_column);
+	  move_to_column (&column, start_column, true);
 	  m_colorizer.set_fixit_insert ();
 	  pp_string (m_pp, c->m_text);
 	  m_colorizer.set_normal_text ();
@@ -1737,7 +1830,7 @@ layout::print_trailing_fixits (linenum_type row)
 					       finish_column)
 	      || c->m_len == 0)
 	    {
-	      move_to_column (&column, start_column);
+	      move_to_column (&column, start_column, true);
 	      m_colorizer.set_fixit_delete ();
 	      for (; column <= finish_column; column++)
 		pp_character (m_pp, '-');
@@ -1748,7 +1841,7 @@ layout::print_trailing_fixits (linenum_type row)
 	     a new line) if we have actual replacement text.  */
 	  if (c->m_len > 0)
 	    {
-	      move_to_column (&column, start_column);
+	      move_to_column (&column, start_column, true);
 	      m_colorizer.set_fixit_insert ();
 	      pp_string (m_pp, c->m_text);
 	      m_colorizer.set_normal_text ();
@@ -1758,7 +1851,7 @@ layout::print_trailing_fixits (linenum_type row)
     }
 
   /* Add a trailing newline, if necessary.  */
-  move_to_column (&column, 0);
+  move_to_column (&column, 0, false);
 }
 
 /* Disable any colorization and emit a newline.  */
@@ -1855,15 +1948,18 @@ layout::get_x_bound_for_row (linenum_type row, int caret_column,
 
 /* Given *COLUMN as an x-coordinate, print spaces to position
    successive output at DEST_COLUMN, printing a newline if necessary,
-   and updating *COLUMN.  */
+   and updating *COLUMN.  If ADD_LEFT_MARGIN, then print the (empty)
+   left margin after any newline.  */
 
 void
-layout::move_to_column (int *column, int dest_column)
+layout::move_to_column (int *column, int dest_column, bool add_left_margin)
 {
   /* Start a new line if we need to.  */
   if (*column > dest_column)
     {
       print_newline ();
+      if (add_left_margin)
+	start_annotation_line ();
       *column = m_x_offset;
     }
 
@@ -1883,6 +1979,7 @@ layout::show_ruler (int max_column) const
   /* Hundreds.  */
   if (max_column > 99)
     {
+      start_annotation_line ();
       pp_space (m_pp);
       for (int column = 1 + m_x_offset; column <= max_column; column++)
 	if (column % 10 == 0)
@@ -1893,6 +1990,7 @@ layout::show_ruler (int max_column) const
     }
 
   /* Tens.  */
+  start_annotation_line ();
   pp_space (m_pp);
   for (int column = 1 + m_x_offset; column <= max_column; column++)
     if (column % 10 == 0)
@@ -1902,6 +2000,7 @@ layout::show_ruler (int max_column) const
   pp_newline (m_pp);
 
   /* Units.  */
+  start_annotation_line ();
   pp_space (m_pp);
   for (int column = 1 + m_x_offset; column <= max_column; column++)
     pp_character (m_pp, '0' + (column % 10));
@@ -3139,12 +3238,58 @@ test_fixit_deletion_affecting_newline (const line_table_case &case_)
 		pp_formatted_text (dc.printer));
 }
 
+/* Verify that line numbers are correctly printed for the case of
+   a multiline range in which the width of the line numbers changes
+   (e.g. from "9" to "10").  */
+
+static void
+test_line_numbers_multiline_range ()
+{
+  /* Create a tempfile and write some text to it.  */
+  pretty_printer pp;
+  for (int i = 0; i < 20; i++)
+    /* .........0000000001111111.
+   .............1234567890123456.  */
+    pp_printf (&pp, "this is line %i\n", i + 1);
+  temp_source_file tmp (SELFTEST_LOCATION, ".txt", pp_formatted_text (&pp));
+  line_table_test ltt;
+
+  const line_map_ordinary *ord_map = linemap_check_ordinary
+    (linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 0));
+  linemap_line_start (line_table, 1, 100);
+
+  /* Create a multi-line location, starting at the "line" of line 9, with
+     a caret on the "is" of line 10, finishing on the "this" line 11.  */
+
+  location_t start
+    = linemap_position_for_line_and_column (line_table, ord_map, 9, 9);
+  location_t caret
+    = linemap_position_for_line_and_column (line_table, ord_map, 10, 6);
+  location_t finish
+    = linemap_position_for_line_and_column (line_table, ord_map, 11, 4);
+  location_t loc = make_location (caret, start, finish);
+
+  test_diagnostic_context dc;
+  dc.show_line_numbers_p = true;
+  gcc_rich_location richloc (loc);
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" 9 | this is line 9\n"
+		"   |         ~~~~~~\n"
+		"10 | this is line 10\n"
+		"   | ~~~~~^~~~~~~~~~\n"
+		"11 | this is line 11\n"
+		"   | ~~~~  \n",
+		pp_formatted_text (dc.printer));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
 diagnostic_show_locus_c_tests ()
 {
   test_line_span ();
+  test_num_digits ();
 
   test_layout_range_for_single_point ();
   test_layout_range_for_single_line ();
@@ -3164,6 +3309,8 @@ diagnostic_show_locus_c_tests ()
   for_each_line_table_case (test_fixit_insert_containing_newline_2);
   for_each_line_table_case (test_fixit_replace_containing_newline);
   for_each_line_table_case (test_fixit_deletion_affecting_newline);
+
+  test_line_numbers_multiline_range ();
 }
 
 } // namespace selftest

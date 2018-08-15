@@ -46146,6 +46146,43 @@ expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
 }
 
 /* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to implement D
+   using movss or movsd.  */
+static bool
+expand_vec_perm_movs (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  unsigned i, nelt = d->nelt;
+  rtx x;
+
+  if (d->one_operand_p)
+    return false;
+
+  if (TARGET_SSE2 && (vmode == V2DFmode || vmode == V4SFmode))
+    ;
+  else
+    return false;
+
+  /* Only the first element is changed.  */
+  if (d->perm[0] != nelt && d->perm[0] != 0)
+    return false;
+  for (i = 1; i < nelt; ++i)
+    if (d->perm[i] != i + nelt - d->perm[0])
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  if (d->perm[0] == nelt)
+    x = gen_rtx_VEC_MERGE (vmode, d->op1, d->op0, GEN_INT (1));
+  else
+    x = gen_rtx_VEC_MERGE (vmode, d->op0, d->op1, GEN_INT (1));
+
+  emit_insn (gen_rtx_SET (d->target, x));
+
+  return true;
+}
+
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to implement D
    in terms of blendp[sd] / pblendw / pblendvb / vpblendd.  */
 
 static bool
@@ -46886,6 +46923,10 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	    return true;
 	}
     }
+
+  /* Try movss/movsd instructions.  */
+  if (expand_vec_perm_movs (d))
+    return true;
 
   /* Finally, try the fully general two operand permute.  */
   if (expand_vselect_vconcat (d->target, d->op0, d->op1, d->perm, nelt,

@@ -1,3 +1,235 @@
+2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c/19315
+	* gcc.dg/graphite/pr82451.c: Make array 'a' an extern.
+	* gcc.dg/redecl-10.c: Expect warnings for the static vars with
+	unknown size.
+
+2018-08-15  Martin Liska  <mliska@suse.cz>
+
+        PR tree-optimization/86925
+	* gcc.dg/predict-20.c: New test.
+	* gcc.dg/predict-21.c: New test.
+
+2018-08-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/init/goto3.C: Adjust for error instead of permerror.
+
+2018-08-14 Allan Sandfeld Jensen <allan.jensen@qt.io>
+
+	* gcc.target/i386/sse2-movs.c: New test.
+
+2018-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* gcc.dg/Warray-bounds-34.c: New test.
+
+2018-08-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86116
+	* gfortran.dg/generic_34.f90: New test case.
+
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/57891
+	* g++.dg/cpp0x/Wnarrowing6.C: New test.
+	* g++.dg/cpp0x/Wnarrowing7.C: New test.
+	* g++.dg/cpp0x/Wnarrowing8.C: New test.
+	* g++.dg/cpp0x/Wnarrowing9.C: New test.
+	* g++.dg/cpp0x/Wnarrowing10.C: New test.
+	* g++.dg/cpp0x/constexpr-47969.C: Adjust dg-error.
+	* g++.dg/cpp0x/constexpr-ex2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-targ.C: Likewise.
+	* g++.dg/cpp0x/scoped_enum2.C: Likewise.
+	* g++.dg/ext/stmtexpr15.C: Likewise.
+	* g++.dg/gomp/pr47963.C: Likewise.
+	* g++.dg/init/new37.C: Likewise.
+	* g++.dg/init/new43.C: Likewise.
+	* g++.dg/other/fold1.C: Likewise.
+	* g++.dg/parse/array-size2.C: Likewise.
+	* g++.dg/template/dependent-name3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-data2.C: Add dg-error.
+	* g++.dg/other/vrp1.C: Likewise.
+	* g++.dg/template/char1.C: Likewise.
+
+2018-08-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pr56605.c: The generated code can have an AND
+	instead of a ZERO_EXTEND.
+
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* c-c++-common/attr-nonstring-3.c: Temporarily xfail a test case.
+	* g++.dg/init/string2.C: New test.
+	* g++.dg/init/string3.C: New test.
+	* g++.dg/init/string4.C: New test.
+	* gcc.dg/init-string-3.c: New test.
+	* gcc.dg/strlenopt-55.c: New test.
+	* gcc.dg/strlenopt-56.c: New test.
+
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	P0806R2 - Deprecate implicit capture of this via [=]
+	* g++.dg/cpp2a/lambda-this1.C: New test.
+	* g++.dg/cpp2a/lambda-this2.C: New test.
+	* g++.dg/cpp2a/lambda-this3.C: New test.
+
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86915
+	* g++.dg/diagnostic/auto1.C: New test.
+
+2018-08-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/66679
+	* gfortran.dg/transfer_class_3.f90: New test.
+
+2018-08-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86906
+	* gfortran.dg/use_rename_9.f90: New test.
+
+2018-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86835
+	* gcc.dg/pr86835.c: New test.
+
+2018-08-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57160
+	* gfortran.dg/actual_pointer_function_1.f90: Fix invalid test case.
+	* gfortran.dg/inline_matmul_23.f90: Add option "-ffrontend-optimize".
+	* gfortran.dg/short_circuiting_2.f90: New test case.
+	* gfortran.dg/short_circuiting_3.f90: New test case.
+
+2018-08-10  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/82418
+	* gcc.target/i386/pr82418.c: New test.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+        PR target/83610
+	* gcc.dg/predict-17.c: New test.
+	* gcc.dg/predict-18.c: New test.
+	* gcc.dg/predict-19.c: New test.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+        PR tree-optimization/85799
+	* gcc.dg/pr85799.c: New test.
+
+2018-08-09  Jeff Law  <law@redhat.com>
+
+	PR middle-end/86897
+	* gcc.dg/uninit-suppress_2.c: Disable DOM.
+
+2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/reduc_8.c: New test.
+
+2018-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c: New
+	test.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color-line-numbers.c:
+	New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the new tests.
+	* lib/prune.exp: Add -fno-diagnostics-show-line-numbers to
+	TEST_ALWAYS_FLAGS.
+
+2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86858
+	* gcc.dg/vect/pr86858.c: New test.
+
+2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86871
+	* gcc.dg/vect/pr86871.c: New test.
+
+2018-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.old-deja/g++.mike/p784.C: Add -fpermissive.
+
+2018-08-09  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/target-attribute/tattr-arch-tune-1.c: Decrement
+	arch and tune numbers by 2.
+	* gcc.target/s390/target-attribute/tattr-arch-tune-2.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-1.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-10.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-11.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-12.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-13.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-14.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-15.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-16.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-17.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-18.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-19.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-2.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-20.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-21.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-22.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-23.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-24.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-25.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-26.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-27.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-28.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-29.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-3.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-30.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-31.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-32.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-4.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-5.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-6.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-7.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-8.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-9.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-1.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-10.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-11.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-12.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-13.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-14.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-15.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-16.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-17.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-18.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-19.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-2.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-20.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-21.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-22.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-23.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-24.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-25.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-26.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-27.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-28.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-29.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-3.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-30.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-31.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-32.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-33.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-4.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-5.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-6.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-7.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-8.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-9.c: Likewise.
+
+2018-08-09  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/84332
+	* gcc.target/s390/pr84332.c: New testcase.
+
 2018-08-08  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/46179

@@ -1,3 +1,15 @@
+2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c/19315
+	* c-decl.c (finish_decl): Don't add the 'extern' storage class to
+	objects of unknown size.
+
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* c-parser.c (c_parser_declaration_or_fndef): Call
+	braced_list_to_string.
+
 2018-08-03  Bogdan Harjoc  <harjoc@gmail.com>
 
 	PR c/86690

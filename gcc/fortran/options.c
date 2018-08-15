@@ -417,7 +417,7 @@ gfc_post_options (const char **pfilename)
      specified it directly.  */
 
   if (flag_frontend_optimize == -1)
-    flag_frontend_optimize = optimize;
+    flag_frontend_optimize = optimize && !optimize_debug;
 
   /* Same for front end loop interchange.  */
 

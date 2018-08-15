@@ -73,4 +73,18 @@
 # include <profile/deque>
 #endif
 
+#if __cplusplus >= 201703L
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  namespace pmr
+  {
+    template<typename _Tp> class polymorphic_allocator;
+    template<typename _Tp>
+      using deque = std::deque<_Tp, polymorphic_allocator<_Tp>>;
+  } // namespace pmr
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // C++17
+
 #endif /* _GLIBCXX_DEQUE */

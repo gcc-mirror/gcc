@@ -267,6 +267,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
+-fno-diagnostics-show-line-numbers @gol
 -fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch @gol
 -fdiagnostics-show-template-tree -fno-elide-type @gol
 -fno-show-column}
@@ -3709,6 +3710,13 @@ information.  The source line is truncated to @var{n} characters, if
 the @option{-fmessage-length=n} option is given.  When the output is done
 to the terminal, the width is limited to the width given by the
 @env{COLUMNS} environment variable or, if not set, to the terminal width.
+
+@item -fno-diagnostics-show-line-numbers
+@opindex fno-diagnostics-show-line-numbers
+@opindex fdiagnostics-show-line-numbers
+By default, when printing source code (via @option{-fdiagnostics-show-caret}),
+a left margin is printed, showing line numbers.  This option suppresses this
+left margin.
 
 @item -fdiagnostics-parseable-fixits
 @opindex fdiagnostics-parseable-fixits
@@ -9209,6 +9217,9 @@ taking the @code{__builtin_expect} info into account.  The interactions
 between the heuristics and @code{__builtin_expect} can be complex, and in
 some cases, it may be useful to disable the heuristics so that the effects
 of @code{__builtin_expect} are easier to understand.
+
+It is also possible to specify expected probability of the expression
+with @code{__builtin_expect_with_probability} built-in function.
 
 The default is @option{-fguess-branch-probability} at levels
 @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.

@@ -453,6 +453,9 @@
 /* Define to 1 if you have the `getegid' function. */
 #undef HAVE_GETEGID
 
+/* Define to 1 if you have the `getentropy' function. */
+#undef HAVE_GETENTROPY
+
 /* Define to 1 if you have the `geteuid' function. */
 #undef HAVE_GETEUID
 
@@ -740,6 +743,9 @@
 
 /* Define to 1 if the target supports __sync_fetch_and_add */
 #undef HAVE_SYNC_FETCH_AND_ADD
+
+/* Define to 1 if you have the <sys/random.h> header file. */
+#undef HAVE_SYS_RANDOM_H
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
 #undef HAVE_SYS_RESOURCE_H

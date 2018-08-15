@@ -1153,7 +1153,8 @@ remove_some_program_points_and_update_live_ranges (void)
   n++;
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file, "Compressing live ranges: from %d to %d - %d%%\n",
-	     lra_live_max_point, n, 100 * n / lra_live_max_point);
+	     lra_live_max_point, n,
+	     lra_live_max_point ? 100 * n / lra_live_max_point : 100);
   if (n < lra_live_max_point)
     {
       lra_live_max_point = n;

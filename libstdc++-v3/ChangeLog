@@ -1,9 +1,150 @@
+2018-08-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/memory_resource.cc [!_GLIBCXX_HAS_GTHREADS]
+	(atomic_mem_res): Add unsynchronized definition for single-threaded.
+
+2018-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86954
+	* include/bits/stl_tempbuf.h (return_temporary_buffer): Use
+	non-placement delete.
+
+	* include/std/chrono (__check_overflow): Simplify definition.
+	(_Checked_integral_constant): Remove.
+
+	PR libstdc++/86846
+	* src/c++17/default_resource.h: New file, defining default_res.
+	* src/c++17/memory_resource.cc [ATOMIC_POINTER_LOCK_FREE != 2]
+	(atomic_mem_res): Define alternative for atomic<memory_resource*>
+	using a mutex instead of atomics.
+
+	PR libstdc++/85343
+	* config/abi/pre/gnu.ver: Export new symbol.
+	* doc/xml/manual/abi.xml: Document new versions.
+	* include/bits/fstream.tcc (basic_filebuf<C, T>::underflow)
+	(basic_filebuf<C, T>::xsgetn): Pass errno to __throw_ios_failure.
+	* include/bits/functexcept.h (__throw_ios_failure(const char*, int)):
+	Declare new overload.
+	* src/c++11/cxx11-ios_failure.cc (__ios_failure): Add new constructor
+	and static member function.
+	(__throw_ios_failure(const char*, int)): Define.
+	* src/c++98/ios_failure.cc [!_GLIBCXX_USE_DUAL_ABI]
+	(__throw_ios_failure(const char*, int)): Define.
+
+2018-08-14  Jeremy Sawicki  <jeremy-gcc@sawicki.us>
+
+	* include/ext/rope (_Rope_iterator_base(const _Rope_iterator_base&))
+	(_Rope_const_iterator::operator=(const _Rope_const_iterator&))
+	(_Rope_iterator::operator=(const _Rope_iterator&)): Ensure
+	copied/assigned rope iterators don't retain pointers to the iterator
+	they were copied/assigned from.
+	* testsuite/ext/rope/7.cc: New.
+
+2018-08-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/45093
+	* include/bits/stl_tree.h (_Rb_tree::_M_destroy_node(_Link_type)):
+	Combine definitions to avoid --detect-odr-violations warning.
+
+	* libsupc++/new_opa.cc (operator new(size_t, align_val_t)): Use
+	__is_pow2 to check for valid alignment. Avoid branching when rounding
+	size to multiple of alignment.
+
+	* include/Makefile.am: Install <bit> and <version> for freestanding.
+	* include/Makefile.in: Regenerate.
+	* testsuite/17_intro/freestanding.cc: Check for <bit> and <version>.
+
+	Revert
+	2018-08-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/85904
+	* configure.ac: Define HAVE_ALIGNED_ALLOC if building for
+	Newlib.
+	* configure: Regenerate.
+
+2018-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/68210
+	* doc/xml/manual/intro.xml: Document LWG 206 change.
+	* libsupc++/del_op.cc: Replace _GLIBCXX_USE_NOEXCEPT with noexcept.
+	* libsupc++/del_opa.cc: Likewise.
+	* libsupc++/del_opant.cc: Likewise.
+	* libsupc++/del_opnt.cc: Likewise. Call operator delete(ptr) instead
+	of free(ptr).
+	* libsupc++/del_ops.cc: Replace _GLIBCXX_USE_NOEXCEPT with noexcept.
+	* libsupc++/del_opsa.cc: Likewise.
+	* libsupc++/del_opva.cc: Likewise.
+	* libsupc++/del_opvant.cc: Likewise.
+	* libsupc++/del_opvnt.cc: Likewise. Call operator delete[](ptr)
+	instead of operator delete(ptr).
+	* libsupc++/del_opvs.cc: Replace _GLIBCXX_USE_NOEXCEPT with noexcept.
+	* libsupc++/del_opvsa.cc: Likewise.
+	* libsupc++/new_op.cc: Use __builtin_expect in check for zero size.
+	* libsupc++/new_opa.cc: Use nullptr instead of literal 0.
+	* libsupc++/new_opant.cc: Likewise. Replace _GLIBCXX_USE_NOEXCEPT
+	with noexcept.
+	* libsupc++/new_opnt.cc: Likewise. Call operator new(sz) instead of
+	malloc(sz).
+	* libsupc++/new_opvant.cc: Use nullptr and noexcept.
+	* libsupc++/new_opvnt.cc: Likewise. Call operator new[](sz) instead of
+	operator new(sz, nothrow).
+	* testsuite/18_support/new_nothrow.cc: New test.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+	* libsupc++/new_op.cc (new): Remove __builtin_expect as malloc
+	predictor can handle that.
+	* libsupc++/new_opa.cc: Likewise.
+	* libsupc++/new_opnt.cc (new): Likewise.
+
+2018-08-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/85904
+	* configure.ac: Define HAVE_ALIGNED_ALLOC if building for
+	Newlib.
+	* configure: Regenerate.
+
+2018-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/deque (std::pmr::deque): Declare alias.
+	* include/std/forward_list (std::pmr::forward_list): Likewise.
+	* include/std/list (std::pmr::list): Likewise.
+	* include/std/map (std::pmr::map, std::pmr::multimap): Likewise.
+	* include/std/regex (std::pmr::match_results, std::pmr::cmatch)
+	(std::pmr::smatch, std::pmr::wcmatch, std::pmr::wsmatch): Likewise.
+	* include/std/set (std::pmr::set, std::pmr::multiset): Likewise.
+	* include/std/string (std::pmr::basic_string, std::pmr::string)
+	(std::pmr::u16string, std::pmr::u32string, std::pmr::wstring):
+	Likewise.
+	* include/std/unordered_map (std::pmr::unordered_map)
+	(std::pmr::unordered_multimap): Likewise.
+	* include/std/unordered_set (std::pmr::unordered_set)
+	(std::pmr::unordered_multiset): Likewise.
+	* include/std/vector (std::pmr::vector): Likewise.
+	* testsuite/21_strings/basic_string/types/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/deque/types/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/forward_list/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/list/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/map/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/multimap/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/multiset/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/set/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/unordered_map/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/unordered_multimap/pmr_typedefs.cc: New
+	test.
+	* testsuite/23_containers/unordered_multiset/pmr_typedefs.cc: New
+	test.
+	* testsuite/23_containers/unordered_set/pmr_typedefs.cc: New test.
+	* testsuite/23_containers/vector/pmr_typedefs.cc: New test.
+	* testsuite/28_regex/match_results/pmr_typedefs.cc: New test.
+
 2018-08-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_algo.h
 	(__rotate(_Ite, _Ite, _Ite, forward_iterator_tag))
 	(__rotate(_Ite, _Ite, _Ite, bidirectional_iterator_tag))
-	(__rotate(_Ite, _Ite, _Ite, random_access_iterator_tag)): Move code duplication...
+	(__rotate(_Ite, _Ite, _Ite, random_access_iterator_tag)): Move code
+	duplication...
 	(rotate(_Ite, _Ite, _Ite)): ...here.
 	(__stable_partition_adaptive(_FIt, _FIt, _Pred, _Dist, _Pointer, _Dist)):
 	Simplify rotate call.

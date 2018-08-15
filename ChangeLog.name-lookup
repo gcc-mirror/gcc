@@ -1,5 +1,7 @@
 2018-08-15  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r263558.
+
 	libcpp/
 	* incude/cpplib.h (NODE_...): Reenumerate.
 	(enum node_type): NT_VOID may be assert.

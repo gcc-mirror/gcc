@@ -1,3 +1,38 @@
+2018-08-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86116
+	* interface.c (compare_type): Remove a CLASS/TYPE check.
+	(compare_type_characteristics): New function that behaves like the old
+	'compare_type'.
+	(gfc_check_dummy_characteristics, gfc_check_result_characteristics):
+	Call 'compare_type_characteristics' instead of 'compare_type'.
+
+2018-08-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/66679
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Class array
+	elements are returned as references to the data element. Get
+	the class expression by stripping back the references. Use this
+	for the element size.
+
+2018-08-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86906
+	* resolve.c (resolve_fl_variable_derived): Check if the derived
+	type is use associated before checking for the host association
+	error.
+
+2018-08-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57160
+	* invoke.texi (frontend-optimize): Mention short-circuiting.
+	* options.c (gfc_post_options): Disable -ffrontend-optimize with -Og.
+	* resolve.c (resolve_operator): Warn about short-circuiting only with
+	-ffrontend-optimize.
+	* trans-expr.c (gfc_conv_expr_op): Use short-circuiting operators only
+	with -ffrontend-optimize. Without that flag, make sure that both
+	operands are evaluated.
+
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
 	* cpp.c (cb_file_change): Use linemap_included_from.

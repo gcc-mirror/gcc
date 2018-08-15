@@ -2175,6 +2175,10 @@ common_handle_option (struct gcc_options *opts,
       dc->show_caret = value;
       break;
 
+    case OPT_fdiagnostics_show_line_numbers:
+      dc->show_line_numbers_p = value;
+      break;
+
     case OPT_fdiagnostics_color_:
       diagnostic_color_init (dc, value);
       break;

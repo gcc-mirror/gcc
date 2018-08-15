@@ -2503,7 +2503,7 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 	else \
 	  echo >&2 ; \
 	  echo Verify that you have permission to grant a GFDL license for all >&2 ; \
-	  echo new text in tm.texi, then copy it to $(srcdir)/doc/tm.texi. >&2 ; \
+	  echo new text in $(objdir)/tm.texi, then copy it to $(srcdir)/doc/tm.texi. >&2 ; \
 	  false; \
 	fi
 

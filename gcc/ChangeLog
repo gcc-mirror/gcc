@@ -1,3 +1,333 @@
+2018-08-15  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_reorg): Remove loop.
+
+2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c
+	 (darwin_function_switched_text_sections): Delete.
+	* gcc/config/darwin.h
+	 (TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS): Likewise.
+
+2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/81685
+	* config/darwin.h: (DEBUG_STR_OFFSETS_SECTION, DEBUG_LOCLISTS_SECTION,
+	DEBUG_RNGLISTS_SECTION) new macros.  (DEBUG_PUBNAMES_SECTION,
+	DEBUG_PUBTYPES_SECTION) update to include GNU variant.
+
+2018-08-15  Martin Liska  <mliska@suse.cz>
+
+        PR tree-optimization/86925
+	* predict.c (expr_expected_value_1): When taking
+        later predictor, assign also probability.
+        Use fold_build2_initializer_loc in order to fold
+        the expression in -frounding-math.
+
+2018-08-14 Allan Sandfeld Jensen <allan.jensen@qt.io>
+
+	* config/i386/i386.c (expand_vec_perm_movs): New method matching movs
+	patterns.
+	(expand_vec_perm_1): Try the new method.
+
+2018-08-14  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+        PR target/86547
+	* lra-lives.c (remove_some_program_points_and_update_live_ranges):
+        Check whether lra_live_max_point is 0 before dividing.
+
+2018-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* tree-vrp.c (vrp_prop::check_array_ref): Print an inform message.
+	(vrp_prop::check_mem_ref): Same.
+
+2018-08-13  Liu Hao <lh_mouse@126.com>
+
+	* pretty-print.c (eat_esc_sequence): Swap the foreground and
+	background colors if the COMMON_LVB_REVERSE_VIDEO flag is set,
+	and clear it thereafter, as it only works for DBCS.
+
+2018-08-13  Liu Hao <lh_mouse@126.com>
+
+	* pretty-print.c (mingw_ansi_fputs): Do not call _close() on the
+	handle returned by _get_osf_handle().
+
+2018-08-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc/config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add support
+	for folding vec_perm.
+
+2018-08-13 Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin):
+	Add support for gimple-folding of vec_pack() and vec_unpack()
+	intrinsics.
+
+2018-08-13 Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_valid_without_lhs): Add
+	vec_xst variants to the list.
+	(rs6000_gimple_fold_builtin): Add support for folding unaligned
+	vector loads and stores.
+
+2018-08-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.gcc (rs6000-ibm-aix4.x): Delete.
+	(rs6000-ibm-aix5.1): Delete.
+	(rs6000-ibm-aix5.2): Delete.
+	(rs6000-ibm-aix5.3): Delete.
+	* config/rs6000/aix43.h: Delete.
+	* config/rs6000/aix51.h: Delete.
+	* config/rs6000/aix52.h: Delete.
+	* config/rs6000/t-aix43: Delete.
+
+2018-08-13  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_decompose_constant_pool_ref):
+        New function.
+	(s390_decompose_address): Factor out constant pool ref
+        decomposition.
+
+2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-predicates.c
+	(nds32_can_use_bclr_p): Change return type as bool.
+	(nds32_can_use_bset_p): Ditto.
+	(nds32_can_use_btgl_p): Ditto.
+	(nds32_can_use_bitci_p): Ditto.
+	* config/nds32/nds32-protos.h
+	(nds32_can_use_bclr_p): Change declaration.
+	(nds32_can_use_bset_p): Ditto.
+	(nds32_can_use_btgl_p): Ditto.
+	(nds32_can_use_bitci_p): Ditto.
+
+2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_expand_prologue, nds32_expand_epilogue):
+	Support -msched-prolog-epilog option.
+	* config/nds32/nds32.opt (msched-prolog-epilog): New option.
+
+2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* common/config/nds32/nds32-common.c
+	(nds32_option_optimization_table): Enalbe -malways-align.
+
+2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config.gcc (nds32*): Add nds32_isr.h and nds32_init.inc in
+	extra_headers.
+	* common/config/nds32/nds32-common.c (nds32_handle_option): Handle
+	OPT_misr_secure_ case.
+	* config/nds32/nds32-isr.c: Implementation of backward compatibility.
+	* config/nds32/nds32-protos.h (nds32_isr_function_critical_p): New.
+	* config/nds32/nds32.c (nds32_attribute_table): Add critical and
+	secure attribute.
+	* config/nds32/nds32.h (nds32_isr_nested_type): Add NDS32_CRITICAL.
+	(nds32_isr_info): New field security_level.
+	(TARGET_ISR_VECTOR_SIZE_4_BYTE): New macro.
+	* config/nds32/nds32.md (return_internal): Consider critical attribute.
+	* config/nds32/nds32.opt (misr-secure): New option.
+	* config/nds32/nds32_init.inc: New file.
+	* config/nds32/nds32_isr.h: New file.
+
+2018-08-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (UNSPEC_MEMORY_BARRIER): New unspec enum.
+	Update comment for atomic instructions.
+	(atomic_storeqi, atomic_storehi, atomic_storesi, atomic_storesf,
+	atomic_loaddf, atomic_loaddf_1, atomic_storedf, atomic_storedf_1):
+	Remove.
+	(atomic_loaddi): Revise fence expansion to only emit fence prior to
+	load for __ATOMIC_SEQ_CST model.
+	(atomic_loaddi_1): Remove float register target.
+	(atomic_storedi): Handle CONST_INT values.
+	(atomic_storedi_1): Remove float register source.  Add special case
+	for zero value.
+	(memory_barrier): New expander and insn.
+
+2018-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86835
+	* tree-ssa-math-opts.c (insert_reciprocals): Even when inserting
+	new_stmt after def_gsi, make sure to insert new_square_stmt after
+	that stmt, not 2 stmts before it.
+
+2018-08-10  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/82418
+	* config/i386/i386.md (<s>mul<mode>3_highpart): Use DWIH mode iterator
+	instead of SWI48.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+        PR target/83610
+	* builtin-types.def (BT_FN_LONG_LONG_LONG_DOUBLE): Add new
+        function type.
+	* builtins.c (expand_builtin_expect_with_probability):
+        New function.
+	(expand_builtin_expect_with_probability): New function.
+	(build_builtin_expect_predicate): Add new argumnet probability
+        for BUILT_IN_EXPECT_WITH_PROBABILITY.
+	(fold_builtin_expect):
+	(fold_builtin_2):
+	(fold_builtin_3):
+	* builtins.def (BUILT_IN_EXPECT_WITH_PROBABILITY):
+	* builtins.h (fold_builtin_expect): Set new argument.
+	* doc/extend.texi: Document __builtin_expect_with_probability.
+	* doc/invoke.texi: Likewise.
+	* gimple-fold.c (gimple_fold_call): Pass new argument.
+	* ipa-fnsummary.c (find_foldable_builtin_expect): Handle
+        also BUILT_IN_EXPECT_WITH_PROBABILITY.
+	* predict.c (get_predictor_value): New function.
+	(expr_expected_value): Add new argument probability. Assume
+        that predictor and probability are always non-null.
+	(expr_expected_value_1): Likewise.  For __builtin_expect and
+        __builtin_expect_with_probability set probability.  Handle
+        combination in binary expressions.
+	(tree_predict_by_opcode): Simplify code by simply calling
+        get_predictor_value.
+	(pass_strip_predict_hints::execute): Add handling of
+        BUILT_IN_EXPECT_WITH_PROBABILITY.
+	* predict.def (PRED_BUILTIN_EXPECT_WITH_PROBABILITY): Add
+        new predictor.
+	* tree.h (DECL_BUILT_IN_P): New function.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+        PR tree-optimization/85799
+	* passes.def: Add argument for pass_strip_predict_hints.
+	* predict.c (class pass_strip_predict_hints): Add new argument
+        early_p.
+	(strip_predictor_early): New function.
+	(pass_strip_predict_hints::execute): Call the function to
+        strip predictors.
+	(strip_predict_hints): New function.
+	* predict.def: Fix comment.
+
+2018-08-10  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* Makefile.in: Clarify which tm.texi to copy over to assert the
+	right to grant a GFDL license for all.
+
+2018-08-09  Jeff Law  <law@redhat.com>
+
+	* config/m68k/m68k.c (m68k_adjust_decorated_operand): Remove
+	unused variable.
+
+2018-08-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k-protos.h (m68k_final_prescan_insn): Remove
+	prototype.
+
+2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vectorizable_reduction): Allow inner-loop
+	reductions for variable-length vectors.
+
+2018-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* common.opt (fdiagnostics-show-line-numbers): New option.
+	* diagnostic-show-locus.c (class layout): Add fields
+	"m_show_line_numbers_p" and "m_linenum_width";
+	(num_digits): New function.
+	(test_num_digits): New function.
+	(layout::layout): Initialize new fields.  Update m_x_offset
+	logic to handle any left margin.
+	(layout::print_source_line): Print line number when requested.
+	(layout::start_annotation_line): New member function.
+	(layout::print_annotation_line): Call it.
+	(layout::print_leading_fixits): Likewise.
+	(layout::print_trailing_fixits): Likewise.  Update calls to
+	move_to_column for new parameter.
+	(layout::get_x_bound_for_row): Add "add_left_margin" param and use
+	it to potentially call start_annotation_line.
+	(layout::show_ruler): Call start_annotation_line.
+	(selftest::test_line_numbers_multiline_range): New selftest.
+	(selftest::diagnostic_show_locus_c_tests): Call test_num_digits
+	and selftest::test_line_numbers_multiline_range.
+	* diagnostic.c (diagnostic_initialize): Initialize
+	show_line_numbers_p.
+	* diagnostic.h (struct diagnostic_context): Add field
+	"show_line_numbers_p".
+	* doc/invoke.texi (Diagnostic Message Formatting Options): Add
+	-fno-diagnostics-show-line-numbers.
+	* dwarf2out.c (gen_producer_string): Add
+	OPT_fdiagnostics_show_line_numbers to the ignored options.
+	* lto-wrapper.c (merge_and_complain): Likewise to the "pick
+	one setting" options.
+	(append_compiler_options): Likewise to the dropped options.
+	(append_diag_options): Likewise to the passed-on options.
+	* opts.c (common_handle_option): Handle the new option.
+	* toplev.c (general_init): Set up global_dc->show_line_numbers_p.
+
+2018-08-09  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions Available on
+	ISA 2.07): Correct spelling of bcdsub to be __builtin_bcdsub.  Add
+	third argument of type "const signed char" to descriptions of
+	__builtin_bcdadd, __builtin_bcdadd_lt, __builtin_bcdadd_eq,
+	__builtin_bcdadd_gt, __builtin_bcdadd_ov, __builtin_bcdsub,
+	__builtin_bcdsub_lt, __builtin_bcdsub_eq, __builtin_bcdsub_gt,
+	__builtin_bcdsub_ov functions.
+
+2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86858
+	* tree-vect-loop.c (vect_is_simple_reduction): Restore
+	flow_bb_inside_loop_p calls.
+
+2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86871
+	* tree-vect-stmts.c (vect_transform_stmt): Use gimple_get_lhs
+	instead of gimple_assign_lhs.
+
+2018-08-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/86887
+	* config/aarch64/aarch64.md (add<mode>3_carryinC_zero): Add missing
+	register constraint to operand 0.
+	(add<mode>3_carryinC): Likewise.
+	(add<mode>3_carryinV_zero, add<mode>3_carryinV): Likewise.
+
+2018-08-09  Martin Liska  <mliska@suse.cz>
+
+        PR c/86895
+	* common.opt: Remove extra line.
+
+2018-08-09  Martin Liska  <mliska@suse.cz>
+
+	* params.def (PARAM_ALIGN_LOOP_ITERATIONS): Remove double dots
+        at the end of a line, make first letter capital and end up
+        a sentence with a dot.
+	(PARAM_LOOP_INTERCHANGE_STRIDE_RATIO): Likewise.
+	(PARAM_LOOP_BLOCK_TILE_SIZE): Likewise.
+	(PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Likewise.
+	(PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP): Likewise.
+	(PARAM_MAX_ISL_OPERATIONS): Likewise.
+	(PARAM_GRAPHITE_ALLOW_CODEGEN_ERRORS): Likewise.
+	(PARAM_PROFILE_FUNC_INTERNAL_ID): Likewise.
+	(PARAM_INDIR_CALL_TOPN_PROFILE): Likewise.
+	(PARAM_SLP_MAX_INSNS_IN_BB): Likewise.
+	(PARAM_IPA_CP_EVAL_THRESHOLD): Likewise.
+	(PARAM_IPA_CP_RECURSION_PENALTY): Likewise.
+	(PARAM_IPA_CP_SINGLE_CALL_PENALTY): Likewise.
+	(PARAM_IPA_CP_LOOP_HINT_BONUS): Likewise.
+	(PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS): Likewise.
+	(PARAM_TREE_REASSOC_WIDTH): Likewise.
+	(PARAM_HSA_GEN_DEBUG_STORES): Likewise.
+	(PARAM_MAX_SPECULATIVE_DEVIRT_MAYDEFS): Likewise.
+	(PARAM_MAX_VRP_SWITCH_ASSERTIONS): Likewise.
+
+2018-08-09  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/84332
+	* config/s390/s390.c (s390_option_override_internal): Reduce the
+	stack-clash-protection-probe-interval param if it would be too big
+	for z900.
+
 2018-08-08  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/46179
@@ -326,6 +656,7 @@
 
 2018-08-03  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR target/86799
 	* config/nios2/nios2.c (TARGET_HAVE_SPECULATION_SAFE_VALUE):
 	Define.
 

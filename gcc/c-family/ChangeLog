@@ -1,3 +1,9 @@
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* c-common.c (braced_list_to_string): New function.
+	* c-common.h (braced_list_to_string): Declare it.
+
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
 	* c-common.c (try_to_locate_new_include_inertion_point): Use

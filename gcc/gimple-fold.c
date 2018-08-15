@@ -4155,7 +4155,8 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  result = fold_builtin_expect (gimple_location (stmt),
 					gimple_call_arg (stmt, 0),
 					gimple_call_arg (stmt, 1),
-					gimple_call_arg (stmt, 2));
+					gimple_call_arg (stmt, 2),
+					NULL_TREE);
 	  break;
 	case IFN_UBSAN_OBJECT_SIZE:
 	  {

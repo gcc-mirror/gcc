@@ -447,7 +447,7 @@ mips*-*-*)
 	;;
 nds32*)
 	cpu_type=nds32
-	extra_headers="nds32_intrinsic.h"
+	extra_headers="nds32_intrinsic.h nds32_isr.h nds32_init.inc"
 	case ${target} in
 	  nds32*-*-linux*)
 	    extra_options="${extra_options} nds32/nds32-linux.opt"
@@ -2634,42 +2634,6 @@ powerpcle-*-eabi*)
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	use_gcc_stdint=wrap
-	;;
-rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
-	tm_file="rs6000/biarch64.h ${tm_file} rs6000/aix.h rs6000/aix43.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	tmake_file="rs6000/t-aix43 t-slibgcc"
-	extra_options="${extra_options} rs6000/aix64.opt"
-	use_collect2=yes
-	thread_file='aix'
-	use_gcc_stdint=provide
-	extra_headers=
-	;;
-rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
-	tm_file="rs6000/biarch64.h ${tm_file} rs6000/aix.h rs6000/aix51.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	extra_options="${extra_options} rs6000/aix64.opt"
-	tmake_file="rs6000/t-aix43 t-slibgcc"
-	use_collect2=yes
-	thread_file='aix'
-	use_gcc_stdint=wrap
-	extra_headers=
-	;;
-rs6000-ibm-aix5.2.* | powerpc-ibm-aix5.2.*)
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix52.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	tmake_file="rs6000/t-aix52 t-slibgcc"
-	extra_options="${extra_options} rs6000/aix64.opt"
-	use_collect2=yes
-	thread_file='aix'
-	use_gcc_stdint=wrap
-	extra_headers=
-	;;
-rs6000-ibm-aix5.3.* | powerpc-ibm-aix5.3.*)
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix53.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	tmake_file="rs6000/t-aix52 t-slibgcc"
-	extra_options="${extra_options} rs6000/aix64.opt"
-	use_collect2=yes
-	thread_file='aix'
-	use_gcc_stdint=wrap
-	extra_headers=altivec.h
 	;;
 rs6000-ibm-aix6.* | powerpc-ibm-aix6.*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix61.h rs6000/xcoff.h rs6000/aix-stdint.h"

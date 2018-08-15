@@ -148,6 +148,7 @@ static rtx expand_builtin_unop (machine_mode, tree, rtx, rtx, optab);
 static rtx expand_builtin_frame_address (tree, tree);
 static tree stabilize_va_list_loc (location_t, tree, int);
 static rtx expand_builtin_expect (tree, rtx);
+static rtx expand_builtin_expect_with_probability (tree, rtx);
 static tree fold_builtin_constant_p (tree);
 static tree fold_builtin_classify_type (tree);
 static tree fold_builtin_strlen (location_t, tree, tree);
@@ -5251,6 +5252,27 @@ expand_builtin_expect (tree exp, rtx target)
   return target;
 }
 
+/* Expand a call to __builtin_expect_with_probability.  We just return our
+   argument as the builtin_expect semantic should've been already executed by
+   tree branch prediction pass.  */
+
+static rtx
+expand_builtin_expect_with_probability (tree exp, rtx target)
+{
+  tree arg;
+
+  if (call_expr_nargs (exp) < 3)
+    return const0_rtx;
+  arg = CALL_EXPR_ARG (exp, 0);
+
+  target = expand_expr (arg, target, VOIDmode, EXPAND_NORMAL);
+  /* When guessing was done, the hints should be already stripped away.  */
+  gcc_assert (!flag_guess_branch_prob
+	      || optimize == 0 || seen_error ());
+  return target;
+}
+
+
 /* Expand a call to __builtin_assume_aligned.  We just return our first
    argument as the builtin_assume_aligned semantic should've been already
    executed by CCP.  */
@@ -7562,6 +7584,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       return expand_builtin_va_copy (exp);
     case BUILT_IN_EXPECT:
       return expand_builtin_expect (exp, target);
+    case BUILT_IN_EXPECT_WITH_PROBABILITY:
+      return expand_builtin_expect_with_probability (exp, target);
     case BUILT_IN_ASSUME_ALIGNED:
       return expand_builtin_assume_aligned (exp, target);
     case BUILT_IN_PREFETCH:
@@ -8213,16 +8237,20 @@ fold_builtin_constant_p (tree arg)
   return NULL_TREE;
 }
 
-/* Create builtin_expect with PRED and EXPECTED as its arguments and
-   return it as a truthvalue.  */
+/* Create builtin_expect or builtin_expect_with_probability
+   with PRED and EXPECTED as its arguments and return it as a truthvalue.
+   Fortran FE can also produce builtin_expect with PREDICTOR as third argument.
+   builtin_expect_with_probability instead uses third argument as PROBABILITY
+   value.  */
 
 static tree
 build_builtin_expect_predicate (location_t loc, tree pred, tree expected,
-				tree predictor)
+				tree predictor, tree probability)
 {
   tree fn, arg_types, pred_type, expected_type, call_expr, ret_type;
 
-  fn = builtin_decl_explicit (BUILT_IN_EXPECT);
+  fn = builtin_decl_explicit (probability == NULL_TREE ? BUILT_IN_EXPECT
+			      : BUILT_IN_EXPECT_WITH_PROBABILITY);
   arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
   ret_type = TREE_TYPE (TREE_TYPE (fn));
   pred_type = TREE_VALUE (arg_types);
@@ -8230,18 +8258,23 @@ build_builtin_expect_predicate (location_t loc, tree pred, tree expected,
 
   pred = fold_convert_loc (loc, pred_type, pred);
   expected = fold_convert_loc (loc, expected_type, expected);
-  call_expr = build_call_expr_loc (loc, fn, predictor ? 3 : 2, pred, expected,
-				   predictor);
+
+  if (probability)
+    call_expr = build_call_expr_loc (loc, fn, 3, pred, expected, probability);
+  else
+    call_expr = build_call_expr_loc (loc, fn, predictor ? 3 : 2, pred, expected,
+				     predictor);
 
   return build2 (NE_EXPR, TREE_TYPE (pred), call_expr,
 		 build_int_cst (ret_type, 0));
 }
 
-/* Fold a call to builtin_expect with arguments ARG0 and ARG1.  Return
+/* Fold a call to builtin_expect with arguments ARG0, ARG1, ARG2, ARG3.  Return
    NULL_TREE if no simplification is possible.  */
 
 tree
-fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
+fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2,
+		     tree arg3)
 {
   tree inner, fndecl, inner_arg0;
   enum tree_code code;
@@ -8265,8 +8298,9 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
 
   if (TREE_CODE (inner) == CALL_EXPR
       && (fndecl = get_callee_fndecl (inner))
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT)
+      && (DECL_BUILT_IN_P (fndecl, BUILT_IN_NORMAL, BUILT_IN_EXPECT)
+	  || DECL_BUILT_IN_P (fndecl, BUILT_IN_NORMAL,
+			      BUILT_IN_EXPECT_WITH_PROBABILITY)))
     return arg0;
 
   inner = inner_arg0;
@@ -8277,8 +8311,8 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
       tree op1 = TREE_OPERAND (inner, 1);
       arg1 = save_expr (arg1);
 
-      op0 = build_builtin_expect_predicate (loc, op0, arg1, arg2);
-      op1 = build_builtin_expect_predicate (loc, op1, arg1, arg2);
+      op0 = build_builtin_expect_predicate (loc, op0, arg1, arg2, arg3);
+      op1 = build_builtin_expect_predicate (loc, op1, arg1, arg2, arg3);
       inner = build2 (code, TREE_TYPE (inner), op0, op1);
 
       return fold_convert_loc (loc, TREE_TYPE (arg0), inner);
@@ -9374,7 +9408,7 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
       return fold_builtin_strpbrk (loc, arg0, arg1, type);
 
     case BUILT_IN_EXPECT:
-      return fold_builtin_expect (loc, arg0, arg1, NULL_TREE);
+      return fold_builtin_expect (loc, arg0, arg1, NULL_TREE, NULL_TREE);
 
     case BUILT_IN_ISGREATER:
       return fold_builtin_unordered_cmp (loc, fndecl,
@@ -9452,7 +9486,10 @@ fold_builtin_3 (location_t loc, tree fndecl,
       return fold_builtin_memcmp (loc, arg0, arg1, arg2);
 
     case BUILT_IN_EXPECT:
-      return fold_builtin_expect (loc, arg0, arg1, arg2);
+      return fold_builtin_expect (loc, arg0, arg1, arg2, NULL_TREE);
+
+    case BUILT_IN_EXPECT_WITH_PROBABILITY:
+      return fold_builtin_expect (loc, arg0, arg1, NULL_TREE, arg2);
 
     case BUILT_IN_ADD_OVERFLOW:
     case BUILT_IN_SUB_OVERFLOW:

@@ -26,22 +26,18 @@
 	.section .nds32_isr, "ax"	/* Put it in the section of 1st level handler.  */
 	.align	1
 	.weak	_SDA_BASE_	/* For reset handler only.  */
-	.weak	_FP_BASE_	/* For reset handler only.  */
 	.weak	_nds32_init_mem	/* User defined memory initialization function.  */
 	.globl	_start
 	.globl	_nds32_reset
 	.type	_nds32_reset, @function
 _nds32_reset:
 _start:
-#ifdef  NDS32_EXT_EX9
-	.no_ex9_begin
-#endif
 	/* Handle NMI and warm boot if any of them exists.  */
 	beqz	$sp, 1f		/* Reset, NMI or warm boot?  */
 	/* Either NMI or warm boot; save all regs.  */
 
 	/* Preserve registers for context-switching.  */
-#ifdef __NDS32_REDUCED_REGS__
+#if __NDS32_REDUCED_REGS__ || __NDS32_REDUCE_REGS
 	/* For 16-reg mode.  */
 	smw.adm $r0, [$sp], $r10, #0x0
 	smw.adm $r15, [$sp], $r15, #0xf
@@ -49,10 +45,9 @@ _start:
 	/* For 32-reg mode.  */
 	smw.adm $r0, [$sp], $r27, #0xf
 #endif
-#ifdef NDS32_EXT_IFC
+#if __NDS32_EXT_IFC__
 	mfusr   $r1, $IFC_LP
-	smw.adm $r1, [$sp], $r2, #0x0	/* Save extra $r2 to keep
-					   stack 8-byte alignment.  */
+	smw.adm $r1, [$sp], $r2, #0x0	/* Save extra $r2 to keep stack 8-byte alignment.  */
 #endif
 
 	la	$gp, _SDA_BASE_	/* Init GP for small data access.  */
@@ -71,12 +66,11 @@ _start:
 	bnez    $r0, 1f		/* If fail to resume, do cold boot.  */
 
 	/* Restore registers for context-switching.  */
-#ifdef NDS32_EXT_IFC
-	lmw.bim	$r1, [$sp], $r2, #0x0	/* Restore extra $r2 to keep
-					   stack 8-byte alignment.  */
+#if __NDS32_EXT_IFC__
+	lmw.bim	$r1, [$sp], $r2, #0x0	/* Restore extra $r2 to keep stack 8-byte alignment.  */
 	mtusr   $r1, $IFC_LP
 #endif
-#ifdef __NDS32_REDUCED_REGS__
+#if __NDS32_REDUCED_REGS__ || __NDS32_REDUCE_REGS
 	/* For 16-reg mode.  */
 	lmw.bim	$r15, [$sp], $r15, #0xf
 	lmw.bim	$r0, [$sp], $r10, #0x0
@@ -88,6 +82,17 @@ _start:
 
 
 1:	/* Cold boot.  */
+#if __NDS32_ISR_VECTOR_SIZE_4__
+	/* With vector ID feature for v3 architecture, default vector size is 4-byte.  */
+	/* Set IVB.ESZ = 0 (vector table entry size = 4 bytes)  */
+	mfsr    $r0, $IVB
+	li      $r1, #0xc000
+	or      $r0, $r0, $r1
+	xor     $r0, $r0, $r1
+	mtsr    $r0, $IVB
+	dsb
+#else
+	/* There is no vector ID feature, so the vector size must be 16-byte.  */
 	/* Set IVB.ESZ = 1 (vector table entry size = 16 bytes)  */
 	mfsr    $r0, $IVB
 	li	$r1, #0xffff3fff
@@ -95,36 +100,54 @@ _start:
 	ori	$r0, $r0, #0x4000
 	mtsr    $r0, $IVB
 	dsb
+#endif
 
 	la	$gp, _SDA_BASE_		/* Init $gp.  */
-	la	$fp, _FP_BASE_		/* Init $fp.  */
 	la	$sp, _stack		/* Init $sp.  */
-#ifdef  NDS32_EXT_EX9
-/*
- *	Initialize the table base of EX9 instruction
- *	ex9 generation needs to disable before the ITB is set
- */
-	mfsr    $r0, $MSC_CFG	/* Check if HW support of EX9.  */
+
+#if __NDS32_EXT_EX9__
+.L_init_itb:
+	/* Initialization for Instruction Table Base (ITB).
+	   The symbol _ITB_BASE_ is determined by Linker.
+	   Set $ITB only if MSC_CFG.EIT (cr4.b'24) is set.  */
+	mfsr    $r0, $MSC_CFG
 	srli	$r0, $r0, 24
 	andi	$r0, $r0, 0x1
-	beqz	$r0, 4f		/* Zero means HW does not support EX9.  */
-	la      $r0, _ITB_BASE_	/* Init $ITB.  */
+	beqz	$r0, 4f		/* Fall through ?  */
+	la      $r0, _ITB_BASE_
 	mtusr   $r0, $ITB
-	.no_ex9_end
 4:
 #endif
-	la	$r15, _nds32_init_mem	/* Call DRAM init. _nds32_init_mem
-					  may written by C language.  */
+
+#if __NDS32_EXT_FPU_SP__ || __NDS32_EXT_FPU_DP__
+.L_init_fpu:
+	/* Initialize FPU
+	   Set FUCOP_CTL.CP0EN (fucpr.b'0).  */
+	mfsr    $r0, $FUCOP_CTL
+	ori     $r0, $r0, 0x1
+	mtsr    $r0, $FUCOP_CTL
+	dsb
+	/* According to [bugzilla #9425], set flush-to-zero mode.
+	   That is, set $FPCSR.DNZ(b'12) = 1.  */
+	FMFCSR	$r0
+	ori	$r0, $r0, 0x1000
+	FMTCSR	$r0
+	dsb
+#endif
+
+	/* Call DRAM init. _nds32_init_mem may written by C language.  */
+	la	$r15, _nds32_init_mem
 	beqz	$r15, 6f
 	jral	$r15
 6:
 	l.w	$r15, _nds32_jmptbl_00	/* Load reset handler.  */
 	jral	$r15
-/* Reset handler() should never return in a RTOS or non-OS system.
-   In case it does return, an exception will be generated.
-   This exception will be caught either by default break handler or by EDM.
-   Default break handle may just do an infinite loop.
-   EDM will notify GDB and GDB will regain control when the ID is 0x7fff. */
+
+	/* Reset handler() should never return in a RTOS or non-OS system.
+	   In case it does return, an exception will be generated.
+	   This exception will be caught either by default break handler or by EDM.
+	   Default break handle may just do an infinite loop.
+	   EDM will notify GDB and GDB will regain control when the ID is 0x7fff.  */
 5:
 	break    #0x7fff
 	.size	_nds32_reset, .-_nds32_reset

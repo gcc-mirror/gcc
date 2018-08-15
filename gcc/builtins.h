@@ -77,7 +77,7 @@ extern void expand_ifn_atomic_compare_exchange (gcall *);
 extern rtx expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern rtx expand_builtin_with_bounds (tree, rtx, rtx, machine_mode, int);
 extern enum built_in_function builtin_mathfn_code (const_tree);
-extern tree fold_builtin_expect (location_t, tree, tree, tree);
+extern tree fold_builtin_expect (location_t, tree, tree, tree, tree);
 extern bool avoid_folding_inline_builtin (tree);
 extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);

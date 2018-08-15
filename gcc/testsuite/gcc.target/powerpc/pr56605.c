@@ -12,5 +12,5 @@ void foo (short* __restrict sb, int* __restrict ia)
     ia[i] = (int) sb[i];
 }
 
-/* { dg-final { scan-rtl-dump-times "\\\(compare:CC \\\(zero_extend:DI \\\(reg:SI" 1 "combine" } } */
+/* { dg-final { scan-rtl-dump-times "\\\(compare:CC \\\((?:and|zero_extend):DI \\\(reg:\[SD\]I" 1 "combine" } } */
 
