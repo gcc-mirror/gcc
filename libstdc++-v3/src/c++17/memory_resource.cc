@@ -88,7 +88,7 @@ namespace pmr
 #if ATOMIC_POINTER_LOCK_FREE == 2
     using atomic_mem_res = atomic<memory_resource*>;
 # define _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
-#else
+#elif defined(_GLIBCXX_HAS_GTHREADS)
     // Can't use pointer-width atomics, define a type using a mutex instead:
     struct atomic_mem_res
     {
@@ -111,6 +111,26 @@ namespace pmr
       memory_resource* exchange(memory_resource* r)
       {
 	lock_guard<mutex> lock(mx);
+	return std::exchange(val, r);
+      }
+    };
+#else
+# define _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
+    // Single-threaded, no need for synchronization
+    struct atomic_mem_res
+    {
+      constexpr
+      atomic_mem_res(memory_resource* r) : val(r) { }
+
+      memory_resource* val;
+
+      memory_resource* load() const
+      {
+	return val;
+      }
+
+      memory_resource* exchange(memory_resource* r)
+      {
 	return std::exchange(val, r);
       }
     };
