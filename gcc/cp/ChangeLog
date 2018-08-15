@@ -1,3 +1,8 @@
+2018-08-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (check_previous_goto_1): When decl_jump_unsafe returns 2
+	emit an error instead of a permerror.
+
 2018-08-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/57891

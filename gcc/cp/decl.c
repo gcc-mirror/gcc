@@ -3191,7 +3191,8 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	  if (!identified)
 	    {
 	      complained = identify_goto (decl, input_location, locus,
-					  DK_PERMERROR);
+					  problem > 1
+					  ? DK_ERROR : DK_PERMERROR);
 	      identified = 1;
 	    }
 	  if (complained)
