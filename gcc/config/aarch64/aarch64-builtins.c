@@ -643,6 +643,10 @@ aarch64_init_simd_builtin_types (void)
   /* Poly types are a world of their own.  */
   aarch64_simd_types[Poly8_t].eltype = aarch64_simd_types[Poly8_t].itype =
     build_distinct_type_copy (unsigned_intQI_type_node);
+  /* Prevent front-ends from transforming Poly8_t arrays into string
+     literals.  */
+  TYPE_STRING_FLAG (aarch64_simd_types[Poly8_t].eltype) = false;
+
   aarch64_simd_types[Poly16_t].eltype = aarch64_simd_types[Poly16_t].itype =
     build_distinct_type_copy (unsigned_intHI_type_node);
   aarch64_simd_types[Poly64_t].eltype = aarch64_simd_types[Poly64_t].itype =
