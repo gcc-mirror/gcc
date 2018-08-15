@@ -1,3 +1,8 @@
+2018-08-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/memory_resource.cc [!_GLIBCXX_HAS_GTHREADS]
+	(atomic_mem_res): Add unsynchronized definition for single-threaded.
+
 2018-08-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86954
