@@ -1,5 +1,36 @@
 2018-08-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/regex: Remove begin/end macros for namespace.
+	* include/experimental/string: Likewise.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_deque.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_forward_list.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_list.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_map.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_match.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_multimap.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_multiset.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_set.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_string.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_unordered_map.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_unordered_multimap.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_unordered_multiset.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_unordered_set.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_vector.cc:
+	New test.
+
 	* include/bits/uses_allocator.h (__uses_allocator_construct): Qualify
 	calls to __uses_allocator_construct_impl and __use_alloc.
 	* include/experimental/memory_resource
