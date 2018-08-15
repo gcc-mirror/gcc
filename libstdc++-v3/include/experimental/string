@@ -62,9 +62,8 @@ inline namespace fundamentals_v2
 		   __cont.end());
     }
 
-  namespace pmr {
-  _GLIBCXX_BEGIN_NAMESPACE_CXX11
-
+  namespace pmr
+  {
     // basic_string using polymorphic allocator in namespace pmr
     template<typename _CharT, typename _Traits = char_traits<_CharT>>
       using basic_string =
@@ -77,7 +76,6 @@ inline namespace fundamentals_v2
     typedef basic_string<char32_t> u32string;
     typedef basic_string<wchar_t> wstring;
 
-    _GLIBCXX_END_NAMESPACE_CXX11
   } // namespace pmr
 } // namespace fundamentals_v2
 } // namespace experimental
