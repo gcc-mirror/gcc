@@ -1,5 +1,27 @@
 2018-08-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/uses_allocator.h (__uses_allocator_construct): Qualify
+	calls to __uses_allocator_construct_impl and __use_alloc.
+	* include/experimental/memory_resource
+	(polymorphic_allocator::_M_construct): Remove.
+	(polymorphic_allocator::construct): Call __uses_allocator_construct.
+	Qualify calls to __use_alloc.
+	* include/std/memory_resource (polymorphic_allocator::construct): Fix
+	type in SFINAE constraint. Use constexpr if instead of tag dispatching
+	to _S_construct overloads.
+	(polymorphic_allocator::construct(pair<T1, T2>*, ...)): Fix order of
+	arguments to _S_construct_p.
+	(polymorphic_allocator::_S_construct): Remove.
+	(polymorphic_allocator::_S_construct_p): Return allocators by value
+	not by reference.
+	* include/std/scoped_allocator (scoped_allocator_adaptor::construct):
+	Qualify calls to __use_alloc.
+	* testsuite/20_util/polymorphic_allocator/construct_pair.cc: New test,
+	copied from testsuite/20_util/scoped_allocator/construct_pair.cc.
+	* testsuite/experimental/polymorphic_allocator/1.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/construct_pair.cc:
+	New test.
+
 	* src/c++17/memory_resource.cc [!_GLIBCXX_HAS_GTHREADS]
 	(atomic_mem_res): Add unsynchronized definition for single-threaded.
 
