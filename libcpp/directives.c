@@ -126,7 +126,7 @@ static void destringize_and_run (cpp_reader *, const cpp_string *,
 				 source_location);
 static bool parse_answer (cpp_reader *, int, source_location, cpp_macro **);
 static cpp_hashnode *parse_assertion (cpp_reader *, int, cpp_macro **);
-static cpp_macro **find_answer (cpp_hashnode *, const cpp_macro *);
+static cpp_macro **find_assert (cpp_hashnode *, const cpp_macro *);
 static void handle_assertion (cpp_reader *, const char *, int);
 static void do_pragma_push_macro (cpp_reader *);
 static void do_pragma_pop_macro (cpp_reader *);
@@ -696,7 +696,7 @@ undefine_macros (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *h,
      Macros and assertions no longer have anything to free.  */
   h->type = NT_VOID;
   h->flags &= ~(NODE_POISONED|NODE_DISABLED|NODE_USED);
-  h->value.macro = NULL;
+  h->value.assert = NULL;
   return 1;
 }
 
@@ -2256,12 +2256,12 @@ parse_assertion (cpp_reader *pfile, int type, cpp_macro **answer_ptr)
 /* Returns a pointer to the pointer to CANDIDATE in the answer chain,
    or a pointer to NULL if the answer is not in the chain.  */
 static cpp_macro **
-find_answer (cpp_hashnode *node, const cpp_macro *candidate)
+find_assert (cpp_hashnode *node, const cpp_macro *candidate)
 {
   unsigned int i;
   cpp_macro **result = NULL;
 
-  for (result = &node->value.macro; *result; result = &(*result)->parm.next)
+  for (result = &node->value.assert; *result; result = &(*result)->parm.next)
     {
       cpp_macro *answer = *result;
 
@@ -2295,8 +2295,8 @@ _cpp_test_assertion (cpp_reader *pfile, unsigned int *value)
 
   if (node)
     {
-      if (node->value.macro)
-	*value = !answer || *find_answer (node, answer);
+      if (node->value.assert)
+	*value = !answer || *find_assert (node, answer);
     }
   else if (pfile->cur_token[-1].type == CPP_EOF)
     _cpp_backup_tokens (pfile, 1);
@@ -2316,7 +2316,7 @@ do_assert (cpp_reader *pfile)
     {
       /* Place the new answer in the answer list.  First check there
          is not a duplicate.  */
-      if (*find_answer (node, answer))
+      if (*find_assert (node, answer))
 	{
 	  cpp_error (pfile, CPP_DL_WARNING, "\"%s\" re-asserted",
 		     NODE_NAME (node) + 1);
@@ -2328,10 +2328,9 @@ do_assert (cpp_reader *pfile)
 	(pfile, sizeof (cpp_macro) - sizeof (cpp_token)
 	 + sizeof (cpp_token) * answer->count);
 
-      answer->parm.next = node->value.macro;
+      answer->parm.next = node->value.assert;
 
-      node->type = NT_USER_MACRO;
-      node->value.macro = answer;
+      node->value.assert = answer;
 
       check_eol (pfile, false);
     }
@@ -2349,16 +2348,11 @@ do_unassert (cpp_reader *pfile)
     {
       if (answer)
 	{
-	  cpp_macro **p = find_answer (node, answer), *temp;
+	  cpp_macro **p = find_assert (node, answer);
 
-	  /* Remove the answer from the list.  */
-	  temp = *p;
-	  if (temp)
+	  /* Remove the assert from the list.  */
+	  if (cpp_macro *temp = *p)
 	    *p = temp->parm.next;
-
-	  /* Did we free the last answer?  */
-	  if (node->value.macro == 0)
-	    node->type = NT_VOID;
 
 	  check_eol (pfile, false);
 	}

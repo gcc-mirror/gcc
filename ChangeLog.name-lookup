@@ -1,3 +1,15 @@
+2018-08-15  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* incude/cpplib.h (NODE_...): Reenumerate.
+	(enum node_type): NT_VOID may be assert.
+	(struct _cpp_hashnode_value): Add assert field.
+	(cpp_user_macro_p): Don't check for assert here.
+	* directives.c (find_answer): Rename to ...
+	(find_assert): ... here. Adjust.
+	(undefine_macros): Zap value.assert.
+	(_cpp_test_assertion, do_assert, do_unassert): Adjust.
+
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/c-family/
