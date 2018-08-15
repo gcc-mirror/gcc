@@ -1,3 +1,9 @@
+2018-08-14 Allan Sandfeld Jensen <allan.jensen@qt.io>
+
+	* config/i386/i386.c (expand_vec_perm_movs): New method matching movs
+	patterns.
+	(expand_vec_perm_1): Try the new method.
+
 2018-08-14  Ilya Leoshkevich  <iii@linux.ibm.com>
 
         PR target/86547
