@@ -1,3 +1,46 @@
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/aka3.C: New test.
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Update expected
+	output to show range labels.
+	* g++.dg/diagnostic/param-type-mismatch.C: Likewise.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add...
+	* g++.dg/plugin/show-template-tree-color-labels.C: New test.
+	* gcc.dg/bad-binary-ops.c: Update expected output to show range
+	labels.  Add an "aka" example.
+	* gcc.dg/cpp/pr66415-1.c: Update expected output to show range
+	labels.
+	* gcc.dg/format/diagnostic-ranges.c: Likewise.
+	* gcc.dg/format/pr72858.c: Likewise.
+	* gcc.dg/format/pr78498.c: Likewise.
+	* gcc.dg/param-type-mismatch.c: Add "-Wpointer-sign" to options.
+	Update expected output to show range labels.  Add examples of
+	-Wincompatible-pointer-types and -Wpointer-sign for parameters.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c:
+	Update expected output to show range labels.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c: Likewise.
+	(test_very_wide_line): Adjust so that label is at left-clipping
+	boundary.
+	(test_very_wide_line_2): New test.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color-line-numbers.c:
+	Update expected output to show range labels.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-show-locus-no-labels.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (show_tree): Update
+	for new param to gcc_rich_location::add_expr.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c (add_range):
+	Add "label" param.
+	(test_show_locus): Add examples of labels to various tests.  Tweak
+	the "very wide_line" test case and duplicate it, to cover the
+	boundary values for clipping of labels against the left-margin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	diagnostic-test-show-locus-no-labels.c.
+	* gcc.dg/pr69554-1.c: Update expected output to show range labels.
+	Update line numbers of dg-locus directives.
+	* gcc.dg/pr69627.c:  Update expected output to show range labels.
+	* lib/multiline.exp (proc _build_multiline_regex): Remove
+	special-case handling of lines with trailing '|'.
+
 2018-08-15  Qing Zhao <qing.zhao@oracle.com>
 
 	PR testsuite/86519

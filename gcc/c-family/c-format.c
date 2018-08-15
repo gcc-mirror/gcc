@@ -32,8 +32,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "substring-locations.h"
 #include "selftest.h"
+#include "selftest-diagnostic.h"
 #include "builtins.h"
 #include "attribs.h"
+#include "gcc-rich-location.h"
 
 /* Handle attributes associated with format checking.  */
 
@@ -97,8 +99,8 @@ format_warning_at_char (location_t fmt_string_loc, tree format_string_cst,
 
   substring_loc fmt_loc (fmt_string_loc, string_type, char_idx, char_idx,
 			 char_idx);
-  bool warned = format_warning_va (fmt_loc, UNKNOWN_LOCATION, NULL, opt,
-				   gmsgid, &ap);
+  bool warned = format_warning_va (fmt_loc, NULL, UNKNOWN_LOCATION, NULL,
+				   NULL, opt, gmsgid, &ap);
   va_end (ap);
 
   return warned;
@@ -3510,6 +3512,82 @@ get_corrected_substring (const substring_loc &fmt_loc,
   return result;
 }
 
+/* Helper class for adding zero or more trailing '*' to types.
+
+   The format type and name exclude any '*' for pointers, so those
+   must be formatted manually.  For all the types we currently have,
+   this is adequate, but formats taking pointers to functions or
+   arrays would require the full type to be built up in order to
+   print it with %T.  */
+
+class indirection_suffix
+{
+ public:
+  indirection_suffix (int pointer_count) : m_pointer_count (pointer_count) {}
+
+  /* Determine the size of the buffer (including NUL-terminator).  */
+
+  size_t get_buffer_size () const
+  {
+    return m_pointer_count + 2;
+  }
+
+  /* Write the '*' to DST and add a NUL-terminator.  */
+
+  void fill_buffer (char *dst) const
+  {
+    if (m_pointer_count == 0)
+      dst[0] = 0;
+    else if (c_dialect_cxx ())
+      {
+	memset (dst, '*', m_pointer_count);
+	dst[m_pointer_count] = 0;
+      }
+    else
+      {
+	dst[0] = ' ';
+	memset (dst + 1, '*', m_pointer_count);
+	dst[m_pointer_count + 1] = 0;
+      }
+  }
+
+ private:
+  int m_pointer_count;
+};
+
+/* Subclass of range_label for labelling the range in the format string
+   with the type in question, adding trailing '*' for pointer_count.  */
+
+class range_label_for_format_type_mismatch
+  : public range_label_for_type_mismatch
+{
+ public:
+  range_label_for_format_type_mismatch (tree labelled_type, tree other_type,
+					int pointer_count)
+  : range_label_for_type_mismatch (labelled_type, other_type),
+    m_pointer_count (pointer_count)
+  {
+  }
+
+  label_text get_text () const FINAL OVERRIDE
+  {
+    label_text text = range_label_for_type_mismatch::get_text ();
+    if (text.m_buffer == NULL)
+      return text;
+
+    indirection_suffix suffix (m_pointer_count);
+    char *p = (char *) alloca (suffix.get_buffer_size ());
+    suffix.fill_buffer (p);
+
+    char *result = concat (text.m_buffer, p, NULL);
+    text.maybe_free ();
+    return label_text (result, true);
+  }
+
+ private:
+  int m_pointer_count;
+};
+
 /* Give a warning about a format argument of different type from that expected.
    The range of the diagnostic is taken from WHOLE_FMT_LOC; the caret location
    is based on the location of the char at TYPE->offset_loc.
@@ -3558,7 +3636,6 @@ format_type_warning (const substring_loc &whole_fmt_loc,
   int pointer_count = type->pointer_count;
   int arg_num = type->arg_num;
 
-  char *p;
   /* If ARG_TYPE is a typedef with a misleading name (for example,
      size_t but not the standard size_t expected by printf %zu), avoid
      printing the typedef name.  */
@@ -3570,31 +3647,20 @@ format_type_warning (const substring_loc &whole_fmt_loc,
       && !strcmp (wanted_type_name,
 		  lang_hooks.decl_printable_name (TYPE_NAME (arg_type), 2)))
     arg_type = TYPE_MAIN_VARIANT (arg_type);
-  /* The format type and name exclude any '*' for pointers, so those
-     must be formatted manually.  For all the types we currently have,
-     this is adequate, but formats taking pointers to functions or
-     arrays would require the full type to be built up in order to
-     print it with %T.  */
-  p = (char *) alloca (pointer_count + 2);
-  if (pointer_count == 0)
-    p[0] = 0;
-  else if (c_dialect_cxx ())
-    {
-      memset (p, '*', pointer_count);
-      p[pointer_count] = 0;
-    }
-  else
-    {
-      p[0] = ' ';
-      memset (p + 1, '*', pointer_count);
-      p[pointer_count + 1] = 0;
-    }
+
+  indirection_suffix suffix (pointer_count);
+  char *p = (char *) alloca (suffix.get_buffer_size ());
+  suffix.fill_buffer (p);
 
   /* WHOLE_FMT_LOC has the caret at the end of the range.
      Set the caret to be at the offset from TYPE.  Subtract one
      from the offset for the same reason as in format_warning_at_char.  */
   substring_loc fmt_loc (whole_fmt_loc);
   fmt_loc.set_caret_index (type->offset_loc - 1);
+
+  range_label_for_format_type_mismatch fmt_label (wanted_type, arg_type,
+						  pointer_count);
+  range_label_for_type_mismatch param_label (arg_type, wanted_type);
 
   /* Get a string for use as a replacement fix-it hint for the range in
      fmt_loc, or NULL.  */
@@ -3606,7 +3672,7 @@ format_type_warning (const substring_loc &whole_fmt_loc,
     {
       if (arg_type)
 	format_warning_at_substring
-	  (fmt_loc, param_loc,
+	  (fmt_loc, &fmt_label, param_loc, &param_label,
 	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects argument of type %<%s%s%>, "
 	   "but argument %d has type %qT",
@@ -3616,7 +3682,7 @@ format_type_warning (const substring_loc &whole_fmt_loc,
 	   wanted_type_name, p, arg_num, arg_type);
       else
 	format_warning_at_substring
-	  (fmt_loc, param_loc,
+	  (fmt_loc, &fmt_label, param_loc, &param_label,
 	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects a matching %<%s%s%> argument",
 	   gettext (kind_descriptions[kind]),
@@ -3627,7 +3693,7 @@ format_type_warning (const substring_loc &whole_fmt_loc,
     {
       if (arg_type)
 	format_warning_at_substring
-	  (fmt_loc, param_loc,
+	  (fmt_loc, &fmt_label, param_loc, &param_label,
 	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects argument of type %<%T%s%>, "
 	   "but argument %d has type %qT",
@@ -3637,7 +3703,7 @@ format_type_warning (const substring_loc &whole_fmt_loc,
 	   wanted_type, p, arg_num, arg_type);
       else
 	format_warning_at_substring
-	  (fmt_loc, param_loc,
+	  (fmt_loc, &fmt_label, param_loc, &param_label,
 	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects a matching %<%T%s%> argument",
 	   gettext (kind_descriptions[kind]),
@@ -4217,6 +4283,66 @@ test_get_format_for_type_scanf ()
 
 #undef ASSERT_FORMAT_FOR_TYPE_STREQ
 
+/* Exercise the type-printing label code, to give some coverage
+   under "make selftest-valgrind" (in particular, to ensure that
+   the label-printing machinery doesn't leak).  */
+
+static void
+test_type_mismatch_range_labels ()
+{
+  /* Create a tempfile and write some text to it.
+     ....................0000000001 11111111 12 22222222
+     ....................1234567890 12345678 90 12345678.  */
+  const char *content = "  printf (\"msg: %i\\n\", msg);\n";
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  line_table_test ltt;
+
+  linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 1);
+
+  location_t c17 = linemap_position_for_column (line_table, 17);
+  ASSERT_EQ (LOCATION_COLUMN (c17), 17);
+  location_t c18 = linemap_position_for_column (line_table, 18);
+  location_t c24 = linemap_position_for_column (line_table, 24);
+  location_t c26 = linemap_position_for_column (line_table, 26);
+
+  /* Don't attempt to run the tests if column data might be unavailable.  */
+  if (c26 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  location_t fmt = make_location (c18, c17, c18);
+  ASSERT_EQ (LOCATION_COLUMN (fmt), 18);
+
+  location_t param = make_location (c24, c24, c26);
+  ASSERT_EQ (LOCATION_COLUMN (param), 24);
+
+  range_label_for_format_type_mismatch fmt_label (char_type_node,
+						  integer_type_node, 1);
+  range_label_for_type_mismatch param_label (integer_type_node,
+					     char_type_node);
+  gcc_rich_location richloc (fmt, &fmt_label);
+  richloc.add_range (param, false, &param_label);
+
+  test_diagnostic_context dc;
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  if (c_dialect_cxx ())
+    /* "char*", without a space.  */
+    ASSERT_STREQ ("\n"
+		  "   printf (\"msg: %i\\n\", msg);\n"
+		  "                 ~^     ~~~\n"
+		  "                  |     |\n"
+		  "                  char* int\n",
+		  pp_formatted_text (dc.printer));
+  else
+    /* "char *", with a space.  */
+    ASSERT_STREQ ("\n"
+		  "   printf (\"msg: %i\\n\", msg);\n"
+		  "                 ~^     ~~~\n"
+		  "                  |     |\n"
+		  "                  |     int\n"
+		  "                  char *\n",
+		  pp_formatted_text (dc.printer));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -4225,6 +4351,7 @@ c_format_c_tests ()
   test_get_modifier_for_format_len ();
   test_get_format_for_type_printf ();
   test_get_format_for_type_scanf ();
+  test_type_mismatch_range_labels ();
 }
 
 } // namespace selftest

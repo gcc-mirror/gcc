@@ -31,6 +31,8 @@ void test_multiline (void)
    |        ~~~~~~~~~~~~~~~~~
 27 |        + second_function ());
    |        ^ ~~~~~~~~~~~~~~~~~~
+   |        |
+   |        label
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -43,8 +45,10 @@ void test_very_wide_line (void)
    | 0         0         0         0         0         0         1         
    | 4         5         6         7         8         9         0         
    | 0123456789012345678901234567890123456789012345678901234567890123456789
-41 |                                          float f = foo * bar;
+43 |                                          float f = foo * bar;
    |                                                    ~~~~^~~~~
+   |                                                        |
+   |                                                        label
    |                                                    bar * foo
    { dg-end-multiline-output "" } */
 #endif
@@ -58,7 +62,7 @@ void test_fixit_insert (void)
 #if 0
    int a[2][2] = { 0, 1 , 2, 3 }; /* { dg-warning "insertion hints" } */
 /* { dg-begin-multiline-output "" }
-59 |    int a[2][2] = { 0, 1 , 2, 3 };
+63 |    int a[2][2] = { 0, 1 , 2, 3 };
    |                    ^~~~
    |                    {   }
    { dg-end-multiline-output "" } */
@@ -72,7 +76,7 @@ void test_fixit_remove (void)
 #if 0
   int a;; /* { dg-warning "example of a removal hint" } */
 /* { dg-begin-multiline-output "" }
-73 |   int a;;
+77 |   int a;;
    |         ^
    |         -
    { dg-end-multiline-output "" } */
@@ -86,7 +90,7 @@ void test_fixit_replace (void)
 #if 0
   gtk_widget_showall (dlg); /* { dg-warning "example of a replacement hint" } */
 /* { dg-begin-multiline-output "" }
-87 |   gtk_widget_showall (dlg);
+91 |   gtk_widget_showall (dlg);
    |   ^~~~~~~~~~~~~~~~~~
    |   gtk_widget_show_all
    { dg-end-multiline-output "" } */
@@ -108,7 +112,7 @@ void test_fixit_insert_newline (void)
     }
 /* { dg-begin-multiline-output "" }
     |+      break;
-106 |     case 'b':
+110 |     case 'b':
     |     ^~~~~~~~
    { dg-end-multiline-output "" } */
 #endif

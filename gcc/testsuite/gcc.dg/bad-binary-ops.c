@@ -13,6 +13,8 @@ void test_1 ()
 { dg-begin-multiline-output "" }
    myvec[1]/ptr;
    ~~~~~~~~^
+        |
+        __m128
 { dg-end-multiline-output "" } */
 
 
@@ -31,8 +33,12 @@ int test_2 (void)
 /* { dg-begin-multiline-output "" }
    return (some_function ()
            ~~~~~~~~~~~~~~~~
+           |
+           struct s
     + some_other_function ());
     ^ ~~~~~~~~~~~~~~~~~~~~~~
+      |
+      struct t
    { dg-end-multiline-output "" } */
 }
 
@@ -46,3 +52,23 @@ int test_3 (struct s param_s, struct t param_t)
    { dg-end-multiline-output "" } */
 /* TODO: ideally we'd underline both params here.  */
 }
+
+typedef struct s S;
+typedef struct t T;
+
+extern S callee_4a (void);
+extern T callee_4b (void);
+
+int test_4 (void)
+{
+  return callee_4a () + callee_4b (); /* { dg-error "invalid operands to binary \+" } */
+
+/* { dg-begin-multiline-output "" }
+   return callee_4a () + callee_4b ();
+          ~~~~~~~~~~~~ ^ ~~~~~~~~~~~~
+          |              |
+          |              T {aka struct t}
+          S {aka struct s}
+   { dg-end-multiline-output "" } */
+}
+

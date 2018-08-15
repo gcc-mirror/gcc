@@ -1,3 +1,63 @@
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-show-labels): New option.
+	* diagnostic-show-locus.c (class layout_range): Add field
+	"m_label".
+	(class layout): Add field "m_show_labels_p".
+	(layout_range::layout_range): Add param "label" and use it to
+	initialize m_label.
+	(make_range): Pass in NULL for new "label" param of layout_range's
+	ctor.
+	(layout::layout): Initialize m_show_labels_p.
+	(layout::maybe_add_location_range): Pass in loc_range->m_label
+	when constructing layout_range instances.
+	(struct line_label): New struct.
+	(layout::print_any_labels): New member function.
+	(layout::print_line): Call it if label-printing is enabled.
+	(selftest::test_one_liner_labels): New test.
+	(selftest::test_diagnostic_show_locus_one_liner): Call it.
+	* diagnostic.c (diagnostic_initialize): Initialize
+	context->show_labels_p.
+	* diagnostic.h (struct diagnostic_context): Add field
+	"show_labels_p".
+	* doc/invoke.texi (Diagnostic Message Formatting Options): Add
+	-fno-diagnostics-show-labels.
+	* dwarf2out.c (gen_producer_string): Add
+	OPT_fdiagnostics_show_labels to the ignored options.
+	* gcc-rich-location.c (gcc_rich_location::add_expr): Add "label"
+	param.
+	(gcc_rich_location::maybe_add_expr): Likewise.
+	* gcc-rich-location.h (gcc_rich_location::gcc_rich_location): Add
+	label" param, defaulting to NULL.
+	(gcc_rich_location::add_expr): Add "label" param.
+	(gcc_rich_location::maybe_add_expr): Likewise.
+	(class text_range_label): New class.
+	(class range_label_for_type_mismatch): New class.
+	* gimple-ssa-sprintf.c (fmtwarn): Pass NULL for new label params
+	of format_warning_va.
+	(fmtwarn_n): Likewise for new params of format_warning_n_va.
+	* lto-wrapper.c (merge_and_complain): Add
+	OPT_fdiagnostics_show_labels to the "pick one setting" options.
+	(append_compiler_options): Likewise to the dropped options.
+	(append_diag_options): Likewise to the passed-on options.
+	* opts.c (common_handle_option): Handle the new option.
+	* selftest-diagnostic.c
+	(test_diagnostic_context::test_diagnostic_context): Enable
+	show_labels_p.
+	* substring-locations.c: Include "gcc-rich-location.h".
+	(format_warning_n_va): Add "fmt_label" and "param_label" params
+	and use them as appropriate.
+	(format_warning_va): Add "fmt_label" and "param_label" params,
+	passing them on to format_warning_n_va.
+	(format_warning_at_substring): Likewise.
+	(format_warning_at_substring_n): Likewise.
+	* substring-locations.h (format_warning_va): Add "fmt_label" and
+	"param_label" params.
+	(format_warning_n_va): Likewise.
+	(format_warning_at_substring): Likewise.
+	(format_warning_at_substring_n): Likewise.
+	* toplev.c (general_init): Initialize global_dc->show_labels_p.
+
 2018-08-15  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR testsuite/86519

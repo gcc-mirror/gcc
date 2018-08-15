@@ -1,3 +1,17 @@
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (struct location_range): Add "m_label" field.
+	(class rich_location): Add description of labels to leading
+	comment.
+	(rich_location::rich_location): Add "label" param, defaulting to
+	NULL.
+	(rich_location::add_range): Likewise.
+	(struct label_text): New struct.
+	(class range_label): New abstract base class.
+	* line-map.c (rich_location::rich_location): Add "label" param;
+	use it.
+	(rich_location::add_range): Likewise.
+
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
 	Make linemap::included_from a location

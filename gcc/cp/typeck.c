@@ -8805,7 +8805,16 @@ convert_for_assignment (tree type, tree rhs,
 		}
 	      else if (fndecl)
 		{
-		  error_at (cp_expr_loc_or_loc (rhs, input_location),
+		  location_t loc = cp_expr_location (rhs);
+		  range_label_for_type_mismatch rhs_label (rhstype, type);
+		  range_label *label = &rhs_label;
+		  if (loc == UNKNOWN_LOCATION)
+		    {
+		      loc = input_location;
+		      label = NULL;
+		    }
+		  gcc_rich_location richloc (loc, label);
+		  error_at (&richloc,
 			    "cannot convert %qH to %qI",
 			    rhstype, type);
 		  inform (get_fndecl_argument_location (fndecl, parmnum),

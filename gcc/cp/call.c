@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gcc-rich-location.h"
 
 /* The various kinds of conversion.  */
 
@@ -6748,8 +6749,13 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    break;
 	}
       if (!complained)
-	complained = permerror (loc, "invalid conversion from %qH to %qI",
-				TREE_TYPE (expr), totype);
+	{
+	  range_label_for_type_mismatch label (TREE_TYPE (expr), totype);
+	  gcc_rich_location richloc (loc, &label);
+	  complained = permerror (&richloc,
+				  "invalid conversion from %qH to %qI",
+				  TREE_TYPE (expr), totype);
+	}
       if (complained && fn)
 	inform (get_fndecl_argument_location (fn, argnum),
 		"  initializing argument %P of %qD", argnum, fn);
@@ -10755,8 +10761,12 @@ perform_implicit_conversion_flags (tree type, tree expr,
 	  else if (invalid_nonstatic_memfn_p (loc, expr, complain))
 	    /* We gave an error.  */;
 	  else
-	    error_at (loc, "could not convert %qE from %qH to %qI", expr,
-		      TREE_TYPE (expr), type);
+	    {
+	      range_label_for_type_mismatch label (TREE_TYPE (expr), type);
+	      gcc_rich_location rich_loc (loc, &label);
+	      error_at (&rich_loc, "could not convert %qE from %qH to %qI",
+			expr, TREE_TYPE (expr), type);
+	    }
 	}
       expr = error_mark_node;
     }
