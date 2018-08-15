@@ -69,7 +69,7 @@
 
 2018-08-15  Martin Liska  <mliska@suse.cz>
 
-        PR tree-optimization/86925
+	PR tree-optimization/86925
 	* gcc.dg/predict-20.c: New test.
 	* gcc.dg/predict-21.c: New test.
 
@@ -77,7 +77,7 @@
 
 	* g++.dg/init/goto3.C: Adjust for error instead of permerror.
 
-2018-08-14 Allan Sandfeld Jensen <allan.jensen@qt.io>
+2018-08-14  Allan Sandfeld Jensen <allan.jensen@qt.io>
 
 	* gcc.target/i386/sse2-movs.c: New test.
 
@@ -172,14 +172,14 @@
 
 2018-08-10  Martin Liska  <mliska@suse.cz>
 
-        PR target/83610
+	PR target/83610
 	* gcc.dg/predict-17.c: New test.
 	* gcc.dg/predict-18.c: New test.
 	* gcc.dg/predict-19.c: New test.
 
 2018-08-10  Martin Liska  <mliska@suse.cz>
 
-        PR tree-optimization/85799
+	PR tree-optimization/85799
 	* gcc.dg/pr85799.c: New test.
 
 2018-08-09  Jeff Law  <law@redhat.com>
@@ -348,7 +348,7 @@
 
 2018-08-07  Martin Liska  <mliska@suse.cz>
 
-        PR middle-end/83023
+	PR middle-end/83023
 	* gcc.dg/predict-16.c: New test.
 	* g++.dg/predict-1.C: New test.
 
@@ -1969,7 +1969,7 @@
 
 	* gcc.target/vsx-vector-abss.c: New file to test vec_abss.
 
-2018-06-27 Tamar Christina  <tamar.christina@arm.com>
+2018-06-27  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/85769
 	* gcc.target/aarch64/f16_mov_immediate_3.c: New.
