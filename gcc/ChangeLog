@@ -1,3 +1,8 @@
+2018-08-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (expand_vec_perm_movs): Enable V4SFmode
+	for TARGET_SSE.
+
 2018-08-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* common.opt (fdiagnostics-show-labels): New option.
