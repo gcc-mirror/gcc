@@ -15122,7 +15122,6 @@ fold_mergehl_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_high)
   tree arg1 = gimple_call_arg (stmt, 1);
   tree lhs = gimple_call_lhs (stmt);
   tree lhs_type = TREE_TYPE (lhs);
-  tree lhs_type_type = TREE_TYPE (lhs_type);
   int n_elts = TYPE_VECTOR_SUBPARTS (lhs_type);
   int midpoint = n_elts / 2;
   int offset = 0;
@@ -15130,12 +15129,29 @@ fold_mergehl_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_high)
   if (use_high == 1)
     offset = midpoint;
 
-  tree_vector_builder elts (lhs_type, VECTOR_CST_NELTS (arg0), 1);
+  /* The permute_type will match the lhs for integral types.  For double and
+     float types, the permute type needs to map to the V2 or V4 type that
+     matches size.  */
+  tree permute_type;
+  if (INTEGRAL_TYPE_P (TREE_TYPE (lhs_type)))
+    permute_type = lhs_type;
+  else
+    {
+      if (TREE_TYPE (lhs_type) == TREE_TYPE (V2DF_type_node))
+	permute_type = V2DI_type_node;
+      else if (TREE_TYPE (lhs_type) == TREE_TYPE (V4SF_type_node))
+	permute_type = V4SI_type_node;
+      else
+	gcc_unreachable ();
+    }
+  tree_vector_builder elts (permute_type, VECTOR_CST_NELTS (arg0), 1);
 
   for (int i = 0; i < midpoint; i++)
     {
-      elts.safe_push (build_int_cst (lhs_type_type, offset + i));
-      elts.safe_push (build_int_cst (lhs_type_type, offset + n_elts + i));
+      elts.safe_push (build_int_cst (TREE_TYPE (permute_type),
+				     offset + i));
+      elts.safe_push (build_int_cst (TREE_TYPE (permute_type),
+				     offset + n_elts + i));
     }
 
   tree permute = elts.build ();
@@ -15760,6 +15776,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_XXMRGLW_4SI:
     case ALTIVEC_BUILTIN_VMRGLB:
     case VSX_BUILTIN_VEC_MERGEL_V2DI:
+    case VSX_BUILTIN_XXMRGLW_4SF:
+    case VSX_BUILTIN_VEC_MERGEL_V2DF:
 	fold_mergehl_helper (gsi, stmt, 1);
 	return true;
     /* vec_mergeh (integrals).  */
@@ -15768,6 +15786,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_XXMRGHW_4SI:
     case ALTIVEC_BUILTIN_VMRGHB:
     case VSX_BUILTIN_VEC_MERGEH_V2DI:
+    case VSX_BUILTIN_XXMRGHW_4SF:
+    case VSX_BUILTIN_VEC_MERGEH_V2DF:
 	fold_mergehl_helper (gsi, stmt, 0);
 	return true;
 

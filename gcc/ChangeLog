@@ -1,3 +1,10 @@
+2018-08-15 Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs600.c (rs6000_gimple_fold_builtin): Add entries to
+	allow folding of mergeh() and mergel() for the float and double types.
+	(fold_mergehl_helper): Rework to handle building a permute tree
+	for float vectors.
+
 2018-08-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (expand_vec_perm_movs): Enable V4SFmode
