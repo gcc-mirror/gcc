@@ -1,3 +1,8 @@
+2018-08-16  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* doc/rtl.texi: Replace old RTX class names with new names.
+
+
 2018-08-16  Vlad Lazar  <vlad.lazar@arm.com>
 
 	* expmed.h (canonicalize_comparison): New declaration.
