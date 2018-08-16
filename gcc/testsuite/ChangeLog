@@ -1,3 +1,8 @@
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/70693
+	* c-c++-common/Wmisleading-indentation-pr70693.c: New test.
+
 2018-08-16  Vlad Lazar  <vlad.lazar@arm.com>
 
 	* gcc.target/aarch64/imm_choice_comparison.c: New test.

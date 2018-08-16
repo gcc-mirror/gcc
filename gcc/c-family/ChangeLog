@@ -1,3 +1,26 @@
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/70693
+	* c-common.c (selftest::c_family_tests): Call
+	selftest::c_indentation_c_tests.
+	* c-common.h (selftest::c_indentation_c_tests): New decl.
+	* c-indentation.c: Include "selftest.h".
+	(next_tab_stop): Add "tab_width" param, rather than accessing
+	cpp_opts.
+	(get_visual_column): Likewise.  Clarify comment.  Bulletproof
+	against reading past the end of the line.
+	(get_first_nws_vis_column): Add "tab_width" param.
+	(detect_intervening_unindent): Likewise.
+	(should_warn_for_misleading_indentation): Read tab width from
+	cpp_opts and pass around.
+	(selftest::test_next_tab_stop): New test.
+	(selftest::assert_get_visual_column_succeeds): New function.
+	(ASSERT_GET_VISUAL_COLUMN_SUCCEEDS): New macro.
+	(selftest::assert_get_visual_column_fails): New function.
+	(ASSERT_GET_VISUAL_COLUMN_FAILS): New macro.
+	(selftest::test_get_visual_column): New test.
+	(selftest::c_indentation_c_tests): New function.
+
 2018-08-16  Nathan Sidwell  <nathan@acm.org>
 
 	* c-ada-spec.c (count_ada_macro): Use cpp_user_macro_p.
