@@ -2767,6 +2767,7 @@ copy_blkmode_to_reg (machine_mode mode_in, tree src)
   /* No current ABI uses variable-sized modes to pass a BLKmnode type.  */
   fixed_size_mode mode = as_a <fixed_size_mode> (mode_in);
   fixed_size_mode dst_mode;
+  scalar_int_mode min_mode;
 
   gcc_assert (TYPE_MODE (TREE_TYPE (src)) == BLKmode);
 
@@ -2796,6 +2797,7 @@ copy_blkmode_to_reg (machine_mode mode_in, tree src)
   n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   dst_words = XALLOCAVEC (rtx, n_regs);
   bitsize = MIN (TYPE_ALIGN (TREE_TYPE (src)), BITS_PER_WORD);
+  min_mode = smallest_int_mode_for_size (bitsize);
 
   /* Copy the structure BITSIZE bits at a time.  */
   for (bitpos = 0, xbitpos = padding_correction;
@@ -2814,6 +2816,25 @@ copy_blkmode_to_reg (machine_mode mode_in, tree src)
 
 	  /* Clear the destination before we move anything into it.  */
 	  emit_move_insn (dst_word, CONST0_RTX (word_mode));
+	}
+
+      /* Find the largest integer mode that can be used to copy all or as
+	 many bits as possible of the structure if the target supports larger
+	 copies.  There are too many corner cases here w.r.t to alignments on
+	 the read/writes.  So if there is any padding just use single byte
+	 operations.  */
+      opt_scalar_int_mode mode_iter;
+      if (padding_correction == 0 && !STRICT_ALIGNMENT)
+	{
+	  FOR_EACH_MODE_FROM (mode_iter, min_mode)
+	    {
+	      unsigned int msize = GET_MODE_BITSIZE (mode_iter.require ());
+	      if (msize <= ((bytes * BITS_PER_UNIT) - bitpos)
+		  && msize <= BITS_PER_WORD)
+		bitsize = msize;
+	      else
+		break;
+	    }
 	}
 
       /* We need a new source operand each time bitpos is on a word
