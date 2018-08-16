@@ -1,5 +1,8 @@
 2018-08-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/ostream (basic_ostream::sentry::~sentry): Suppress
+	deprecation warnings for using uncaught_exception().
+
 	PR libstdc++/86447
 	* src/c++11/cow-stdexcept.cc [_GLIBCXX_FULLY_DYNAMIC_STRING]
 	(logic_error::logic_error(logic_error&&))
