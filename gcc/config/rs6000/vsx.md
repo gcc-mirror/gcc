@@ -3267,8 +3267,7 @@
    stfd%U0%X0 %1,%0
    stxsd%U0x %x1,%y0
    stxsd %1,%0"
-  [(set_attr "type" "fpstore")
-   (set_attr "length" "4")])
+  [(set_attr "type" "fpstore")])
 
 ;; Variable V2DI/V2DF extract shift
 (define_insn "vsx_vslo_<mode>"

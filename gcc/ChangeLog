@@ -1,6 +1,17 @@
 2018-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/altivec.md: Don't set length attribute to the default
+	value.
+	* config/rs6000/darwin.md: Ditto.
+	* config/rs6000/dfp.md: Ditto.
+	* config/rs6000/htm.md: Ditto.
+	* config/rs6000/rs6000.md: Ditto.
+	* config/rs6000/sync.md: Ditto.
+	* config/rs6000/vsx.md: Ditto.
+
+2018-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md: Don't set length attribute to the default
 	value, for branch instructions.
 	* config/rs6000/darwin.md: Ditto.
 	* config/rs6000/rs6000.md: Ditto.
