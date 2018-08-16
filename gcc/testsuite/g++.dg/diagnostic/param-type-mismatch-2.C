@@ -12,6 +12,8 @@ int test_1 (int first, const char *second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_1 (first, second, third);
                            ^~~~~~
+                           |
+                           const char*
      { dg-end-multiline-output "" } */
   // { dg-message "initializing argument 2 of 'int callee_1\\(int, const char\\*\\*, float\\)'" "" { target *-*-* } callee_1 }
   /* { dg-begin-multiline-output "" }
@@ -30,6 +32,8 @@ int test_2 (int first, const char *second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_2 (first, second, third);
                            ^~~~~~
+                           |
+                           const char*
      { dg-end-multiline-output "" } */
   // { dg-message "initializing argument 2 of 'int callee_2\\(int, const char\\*\\*, float\\)'" "" { target *-*-* } callee_2 }
   /* { dg-begin-multiline-output "" }
@@ -51,6 +55,8 @@ int test_3 (int first, const char *second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_3 (first, second, third);
                            ^~~~~~
+                           |
+                           const char*
      { dg-end-multiline-output "" } */
   // { dg-message "initializing argument 2 of 'int callee_3\\(int, const char\\*\\*, float\\)'" "" { target *-*-* } callee_3 }
   /* { dg-begin-multiline-output "" }

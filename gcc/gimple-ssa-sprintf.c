@@ -601,8 +601,8 @@ fmtwarn (const substring_loc &fmt_loc, location_t param_loc,
 {
   va_list ap;
   va_start (ap, gmsgid);
-  bool warned = format_warning_va (fmt_loc, param_loc, corrected_substring,
-				   opt, gmsgid, &ap);
+  bool warned = format_warning_va (fmt_loc, NULL, param_loc, NULL,
+				   corrected_substring, opt, gmsgid, &ap);
   va_end (ap);
 
   return warned;
@@ -616,7 +616,8 @@ fmtwarn_n (const substring_loc &fmt_loc, location_t param_loc,
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
-  bool warned = format_warning_n_va (fmt_loc, param_loc, corrected_substring,
+  bool warned = format_warning_n_va (fmt_loc, NULL, param_loc, NULL,
+				     corrected_substring,
 				     opt, n, singular_gmsgid, plural_gmsgid,
 				     &ap);
   va_end (ap);

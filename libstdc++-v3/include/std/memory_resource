@@ -163,14 +163,20 @@ namespace pmr
 
       template<typename _Tp1, typename... _Args>
 	__attribute__((__nonnull__))
-	typename __not_pair<_Tp>::type
+	typename __not_pair<_Tp1>::type
 	construct(_Tp1* __p, _Args&&... __args)
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 2969. polymorphic_allocator::construct() shouldn't pass resource()
-	  auto __use_tag
-	    = __use_alloc<_Tp1, polymorphic_allocator, _Args...>(*this);
-	  _S_construct(__use_tag, __p, std::forward<_Args>(__args)...);
+	  using __use_tag
+	    = std::__uses_alloc_t<_Tp1, polymorphic_allocator, _Args...>;
+	  if constexpr (is_base_of_v<__uses_alloc0, __use_tag>)
+	    ::new(__p) _Tp1(std::forward<_Args>(__args)...);
+	  else if constexpr (is_base_of_v<__uses_alloc1_, __use_tag>)
+	    ::new(__p) _Tp1(allocator_arg, *this,
+			    std::forward<_Args>(__args)...);
+	  else
+	    ::new(__p) _Tp1(std::forward<_Args>(__args)..., *this);
 	}
 
       template<typename _Tp1, typename _Tp2,
@@ -188,8 +194,8 @@ namespace pmr
 	  index_sequence_for<_Args2...> __y_i;
 
 	  ::new(__p) pair<_Tp1, _Tp2>(piecewise_construct,
-				      _S_construct_p(__x_tag, __x, __x_i),
-				      _S_construct_p(__y_tag, __y, __y_i));
+				      _S_construct_p(__x_tag, __x_i, __x),
+				      _S_construct_p(__y_tag, __y_i, __y));
 	}
 
       template<typename _Tp1, typename _Tp2>
@@ -247,31 +253,13 @@ namespace pmr
       using __uses_alloc1_ = __uses_alloc1<polymorphic_allocator>;
       using __uses_alloc2_ = __uses_alloc2<polymorphic_allocator>;
 
-      template<typename _Tp1, typename... _Args>
-	static void
-	_S_construct(__uses_alloc0, _Tp1* __p, _Args&&... __args)
-	{ ::new(__p) _Tp1(std::forward<_Args>(__args)...); }
-
-      template<typename _Tp1, typename... _Args>
-	static void
-	_S_construct(__uses_alloc1_ __ua, _Tp1* __p, _Args&&... __args)
-	{
-	  ::new(__p) _Tp1(allocator_arg, *__ua._M_a,
-			  std::forward<_Args>(__args)...);
-	}
-
-      template<typename _Tp1, typename... _Args>
-	static void
-	_S_construct(__uses_alloc2_ __ua, _Tp1* __p, _Args&&... __args)
-	{ ::new(__p) _Tp1(std::forward<_Args>(__args)..., *__ua._M_a); }
-
       template<typename _Ind, typename... _Args>
 	static tuple<_Args&&...>
 	_S_construct_p(__uses_alloc0, _Ind, tuple<_Args...>& __t)
 	{ return std::move(__t); }
 
       template<size_t... _Ind, typename... _Args>
-	static tuple<allocator_arg_t, polymorphic_allocator&, _Args&&...>
+	static tuple<allocator_arg_t, polymorphic_allocator, _Args&&...>
 	_S_construct_p(__uses_alloc1_ __ua, index_sequence<_Ind...>,
 		       tuple<_Args...>& __t)
 	{
@@ -281,7 +269,7 @@ namespace pmr
 	}
 
       template<size_t... _Ind, typename... _Args>
-	static tuple<_Args&&..., polymorphic_allocator&>
+	static tuple<_Args&&..., polymorphic_allocator>
 	_S_construct_p(__uses_alloc2_ __ua, index_sequence<_Ind...>,
 		       tuple<_Args...>& __t)
 	{ return { std::get<_Ind>(std::move(__t))..., *__ua._M_a }; }

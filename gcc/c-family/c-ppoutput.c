@@ -689,7 +689,6 @@ cb_def_pragma (cpp_reader *pfile, source_location line)
 static int
 dump_macro (cpp_reader *pfile, cpp_hashnode *node, void *v ATTRIBUTE_UNUSED)
 {
-  /* asserts are distinguished by beginning with '#'.  */
   if (cpp_user_macro_p (node))
     {
       fputs ("#define ", print.outf);

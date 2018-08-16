@@ -179,8 +179,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void __uses_allocator_construct(const _Alloc& __a, _Tp* __ptr,
 				    _Args&&... __args)
     {
-      __uses_allocator_construct_impl(__use_alloc<_Tp, _Alloc, _Args...>(__a),
-				      __ptr, std::forward<_Args>(__args)...);
+      std::__uses_allocator_construct_impl(
+	  std::__use_alloc<_Tp, _Alloc, _Args...>(__a), __ptr,
+	  std::forward<_Args>(__args)...);
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -255,6 +255,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 
 	  /* Fallthru.  */
 	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_labels:
 	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
@@ -537,6 +538,7 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
       switch (option->opt_index)
 	{
 	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_labels:
 	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
@@ -584,6 +586,7 @@ append_diag_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	{
 	case OPT_fdiagnostics_color_:
 	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_labels:
 	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:

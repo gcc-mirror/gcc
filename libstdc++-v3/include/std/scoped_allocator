@@ -361,7 +361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  auto& __inner = inner_allocator();
 	  auto __use_tag
-	    = __use_alloc<_Tp, inner_allocator_type, _Args...>(__inner);
+	    = std::__use_alloc<_Tp, inner_allocator_type, _Args...>(__inner);
 	  _M_construct(__use_tag, __p, std::forward<_Args>(__args)...);
 	}
 
@@ -375,9 +375,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // 2203.  wrong argument types for piecewise construction
 	  auto& __inner = inner_allocator();
 	  auto __x_use_tag
-	    = __use_alloc<_T1, inner_allocator_type, _Args1...>(__inner);
+	    = std::__use_alloc<_T1, inner_allocator_type, _Args1...>(__inner);
 	  auto __y_use_tag
-	    = __use_alloc<_T2, inner_allocator_type, _Args2...>(__inner);
+	    = std::__use_alloc<_T2, inner_allocator_type, _Args2...>(__inner);
 	  typename _Build_index_tuple<sizeof...(_Args1)>::__type __x_indices;
 	  typename _Build_index_tuple<sizeof...(_Args2)>::__type __y_indices;
 	  typedef __outermost_alloc_traits<scoped_allocator_adaptor> _O_traits;

@@ -1,3 +1,15 @@
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c: Include "gcc-rich-location.h".
+	(convert_like_real): Add range label for "invalid conversion"
+	diagnostic.
+	(perform_implicit_conversion_flags): Add type label to the
+	"could not convert" error.
+	* error.c: Include "gcc-rich-location.h".
+	(range_label_for_type_mismatch::get_text): New function.
+	* typeck.c (convert_for_assignment): Add type label to
+	the "cannot convert" error if a location is available.
+
 2018-08-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (check_previous_goto_1): When decl_jump_unsafe returns 2

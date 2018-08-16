@@ -1,3 +1,93 @@
+2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+
+	* gcc.dg/memcmp-1.c (lib_memcmp): Apply __USER_LABEL_PREFIX__.
+	(lib_strncmp): Likewise.
+
+2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+
+	* c-c++-common/asan/pointer-subtract-3.c: Skip for Darwin.
+	* c-c++-common/asan/pointer-subtract-4.c: Likewise.
+	* g++.dg/torture/pr44295.C : Likewise.
+
+2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+
+	PR testsuite/78544
+	* gcc.dg/tree-prof/section-attr-1.c: Add Darwin-specific section
+	attributes and matching.
+	* gcc.dg/tree-prof/section-attr-2.c: Likewise.
+	* gcc.dg/tree-prof/section-attr-3.c: Likewise.
+
+2018-08-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/asan/pr81923.c: Stringify __USER_LABEL_PREFIX__.
+
+2018-08-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/rop1.c: Remove.
+	* gcc.target/i386/pr83554 (dg-options): Remove -mmitigate-rop.
+
+2018-08-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splat-char.c: New.
+	* gcc.target/powerpc/fold-vec-splat-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-splat-int.c: New.
+	* gcc.target/powerpc/fold-vec-splat-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-splat-pixel.c: New.
+	* gcc.target/powerpc/fold-vec-splat-short.c: New.
+
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/aka3.C: New test.
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Update expected
+	output to show range labels.
+	* g++.dg/diagnostic/param-type-mismatch.C: Likewise.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add...
+	* g++.dg/plugin/show-template-tree-color-labels.C: New test.
+	* gcc.dg/bad-binary-ops.c: Update expected output to show range
+	labels.  Add an "aka" example.
+	* gcc.dg/cpp/pr66415-1.c: Update expected output to show range
+	labels.
+	* gcc.dg/format/diagnostic-ranges.c: Likewise.
+	* gcc.dg/format/pr72858.c: Likewise.
+	* gcc.dg/format/pr78498.c: Likewise.
+	* gcc.dg/param-type-mismatch.c: Add "-Wpointer-sign" to options.
+	Update expected output to show range labels.  Add examples of
+	-Wincompatible-pointer-types and -Wpointer-sign for parameters.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c:
+	Update expected output to show range labels.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c: Likewise.
+	(test_very_wide_line): Adjust so that label is at left-clipping
+	boundary.
+	(test_very_wide_line_2): New test.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color-line-numbers.c:
+	Update expected output to show range labels.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-show-locus-no-labels.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (show_tree): Update
+	for new param to gcc_rich_location::add_expr.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c (add_range):
+	Add "label" param.
+	(test_show_locus): Add examples of labels to various tests.  Tweak
+	the "very wide_line" test case and duplicate it, to cover the
+	boundary values for clipping of labels against the left-margin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	diagnostic-test-show-locus-no-labels.c.
+	* gcc.dg/pr69554-1.c: Update expected output to show range labels.
+	Update line numbers of dg-locus directives.
+	* gcc.dg/pr69627.c:  Update expected output to show range labels.
+	* lib/multiline.exp (proc _build_multiline_regex): Remove
+	special-case handling of lines with trailing '|'.
+
+2018-08-15  Qing Zhao <qing.zhao@oracle.com>
+
+	PR testsuite/86519
+	* gcc.dg/strcmpopt_6.c: Scan the assembly file instead of
+	the .expand file.
+
+2018-08-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/wmain.c: New test.
+
 2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c/19315
@@ -7,7 +97,7 @@
 
 2018-08-15  Martin Liska  <mliska@suse.cz>
 
-        PR tree-optimization/86925
+	PR tree-optimization/86925
 	* gcc.dg/predict-20.c: New test.
 	* gcc.dg/predict-21.c: New test.
 
@@ -15,7 +105,7 @@
 
 	* g++.dg/init/goto3.C: Adjust for error instead of permerror.
 
-2018-08-14 Allan Sandfeld Jensen <allan.jensen@qt.io>
+2018-08-14  Allan Sandfeld Jensen <allan.jensen@qt.io>
 
 	* gcc.target/i386/sse2-movs.c: New test.
 
@@ -110,14 +200,14 @@
 
 2018-08-10  Martin Liska  <mliska@suse.cz>
 
-        PR target/83610
+	PR target/83610
 	* gcc.dg/predict-17.c: New test.
 	* gcc.dg/predict-18.c: New test.
 	* gcc.dg/predict-19.c: New test.
 
 2018-08-10  Martin Liska  <mliska@suse.cz>
 
-        PR tree-optimization/85799
+	PR tree-optimization/85799
 	* gcc.dg/pr85799.c: New test.
 
 2018-08-09  Jeff Law  <law@redhat.com>
@@ -286,7 +376,7 @@
 
 2018-08-07  Martin Liska  <mliska@suse.cz>
 
-        PR middle-end/83023
+	PR middle-end/83023
 	* gcc.dg/predict-16.c: New test.
 	* g++.dg/predict-1.C: New test.
 
@@ -1907,7 +1997,7 @@
 
 	* gcc.target/vsx-vector-abss.c: New file to test vec_abss.
 
-2018-06-27 Tamar Christina  <tamar.christina@arm.com>
+2018-06-27  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/85769
 	* gcc.target/aarch64/f16_mov_immediate_3.c: New.

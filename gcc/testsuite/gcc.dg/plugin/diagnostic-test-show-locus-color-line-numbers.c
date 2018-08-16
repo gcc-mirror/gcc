@@ -19,6 +19,8 @@ void test_multiline (void)
    |        [32m[K~~~~~~~~~~~~~~~~~[m[K
 15 |        [01;35m[K+[m[K [34m[Ksecond_function ()[m[K);
    |        [01;35m[K^[m[K [34m[K~~~~~~~~~~~~~~~~~~[m[K
+   |        [01;35m[K|[m[K
+   |        [01;35m[Klabel[m[K
    { dg-end-multiline-output "" } */
 #endif
 }

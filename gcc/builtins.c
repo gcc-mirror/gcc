@@ -4481,11 +4481,16 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
 				  /*objsize=*/NULL_TREE);
     }
 
+  /* If the specified length exceeds the size of either object, 
+     call the function.  */
+  if (!no_overflow)
+    return NULL_RTX;
+
   /* Due to the performance benefit, always inline the calls first
      when result_eq is false.  */
   rtx result = NULL_RTX;
 
-  if (!result_eq && fcode != BUILT_IN_BCMP && no_overflow)
+  if (!result_eq && fcode != BUILT_IN_BCMP)
     {
       result = inline_expand_builtin_string_cmp (exp, target);
       if (result)

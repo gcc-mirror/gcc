@@ -267,7 +267,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
--fno-diagnostics-show-line-numbers @gol
+-fno-diagnostics-show-labels -fno-diagnostics-show-line-numbers @gol
 -fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch @gol
 -fdiagnostics-show-template-tree -fno-elide-type @gol
 -fno-show-column}
@@ -1292,7 +1292,7 @@ See RS/6000 and PowerPC Options.
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
 -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset} @gol
--mstack-protector-guard-symbol=@var{symbol} -mmitigate-rop @gol
+-mstack-protector-guard-symbol=@var{symbol} @gol
 -mgeneral-regs-only -mcall-ms2sysv-xlogues @gol
 -mindirect-branch=@var{choice} -mfunction-return=@var{choice} @gol
 -mindirect-branch-register}
@@ -3710,6 +3710,23 @@ information.  The source line is truncated to @var{n} characters, if
 the @option{-fmessage-length=n} option is given.  When the output is done
 to the terminal, the width is limited to the width given by the
 @env{COLUMNS} environment variable or, if not set, to the terminal width.
+
+@item -fno-diagnostics-show-labels
+@opindex fno-diagnostics-show-labels
+@opindex fdiagnostics-show-labels
+By default, when printing source code (via @option{-fdiagnostics-show-caret}),
+diagnostics can label ranges of source code with pertinent information, such
+as the types of expressions:
+
+@smallexample
+    printf ("foo %s bar", long_i + long_j);
+                 ~^       ~~~~~~~~~~~~~~~
+                  |              |
+                  char *         long int
+@end smallexample
+
+This option suppresses the printing of these labels (in the example above,
+the vertical bars and the ``char *'' and ``long int'' text).
 
 @item -fno-diagnostics-show-line-numbers
 @opindex fno-diagnostics-show-line-numbers
@@ -27985,13 +28002,6 @@ With the latter choice the options
 which segment register (@code{%fs} or @code{%gs}) to use as base register
 for reading the canary, and from what offset from that base register.
 The default for those is as specified in the relevant ABI.
-
-@item -mmitigate-rop
-@opindex mmitigate-rop
-Try to avoid generating code sequences that contain unintended return
-opcodes, to mitigate against certain forms of attack. At the moment,
-this option is limited in what it can do and should not be relied
-on to provide serious protection.
 
 @item -mgeneral-regs-only
 @opindex mgeneral-regs-only
