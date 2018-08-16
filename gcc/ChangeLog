@@ -1,3 +1,7 @@
+2018-08-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* expr.c (copy_blkmode_to_reg): Perform larger copies when safe.
+
 2018-08-16  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* doc/rtl.texi: Replace old RTX class names with new names.
