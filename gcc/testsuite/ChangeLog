@@ -1,5 +1,11 @@
 2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
 
+	* c-c++-common/asan/pointer-subtract-3.c: Skip for Darwin.
+	* c-c++-common/asan/pointer-subtract-4.c: Likewise.
+	* g++.dg/torture/pr44295.C : Likewise.
+
+2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+
 	PR testsuite/78544
 	* gcc.dg/tree-prof/section-attr-1.c: Add Darwin-specific section
 	attributes and matching.
