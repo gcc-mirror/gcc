@@ -253,7 +253,7 @@ class layout
   void print_source_line (linenum_type row, const char *line, int line_width,
 			  line_bounds *lbounds_out);
   bool should_print_annotation_line_p (linenum_type row) const;
-  void start_annotation_line () const;
+  void start_annotation_line (char margin_char = ' ') const;
   void print_annotation_line (linenum_type row, const line_bounds lbounds);
   void print_any_labels (linenum_type row);
   void print_trailing_fixits (linenum_type row);
@@ -1330,12 +1330,12 @@ layout::should_print_annotation_line_p (linenum_type row) const
    margin, which is empty for annotation lines.  Otherwise, do nothing.  */
 
 void
-layout::start_annotation_line () const
+layout::start_annotation_line (char margin_char) const
 {
   if (m_show_line_numbers_p)
     {
       for (int i = 0; i < m_linenum_width; i++)
-	pp_space (m_pp);
+	pp_character (m_pp, margin_char);
       pp_string (m_pp, " |");
     }
 }
@@ -1587,7 +1587,7 @@ layout::print_leading_fixits (linenum_type row)
 	     helps them stand out from each other, and from
 	     the surrounding text.  */
 	  m_colorizer.set_normal_text ();
-	  start_annotation_line ();
+	  start_annotation_line ('+');
 	  pp_character (m_pp, '+');
 	  m_colorizer.set_fixit_insert ();
 	  /* Print all but the trailing newline of the fix-it hint.

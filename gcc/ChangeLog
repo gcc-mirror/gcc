@@ -1,3 +1,11 @@
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (layout::start_annotation_line): Add
+	"margin_char" parameter, defaulting to space.  Use it in place
+	of pp_space for the initial part of the margin.
+	(layout::print_leading_fixits): Use '+' when filling the margin
+	of line-insertion fix-it hints.
+
 2018-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (two unnamed define_insn and define_split):

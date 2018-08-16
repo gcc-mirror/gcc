@@ -1,3 +1,9 @@
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c
+	(test_fixit_insert_newline): Update expected output to show '+'
+	characters in margin of line-insertion fix-it hint.
+
 2018-08-16  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/cpp/macsyntx.c: Adjust expected errors.
