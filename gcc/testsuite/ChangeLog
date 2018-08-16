@@ -1,3 +1,7 @@
+2018-08-16  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* gcc.target/aarch64/imm_choice_comparison.c: New test.
+
 2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
 
 	* gcc.dg/memcmp-1.c (lib_memcmp): Apply __USER_LABEL_PREFIX__.

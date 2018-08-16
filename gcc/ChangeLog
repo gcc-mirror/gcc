@@ -1,3 +1,12 @@
+2018-08-16  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* expmed.h (canonicalize_comparison): New declaration.
+	* expmed.c (canonicalize_comparison, equivalent_cmp_code): New function.
+	* expmed.c (emit_store_flag_1): Add call to canonicalize_comparison.
+	* optabs.c (prepare_cmp_insn): Likewise.
+	* rtl.h (unsigned_condition_p): New function which checks if a
+	comparison operator is unsigned.
+
 2018-08-16  Nathan Sidwell  <nathan@acm.org>
 
 	* config/rs6000/rs6000-c.c (rs6000_macro_to_expend): Use cpp_macro_p.
