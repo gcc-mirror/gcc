@@ -25,9 +25,9 @@
 
 (define_insn "*neon_mov<mode>"
   [(set (match_operand:VDX 0 "nonimmediate_operand"
-	  "=w,Un,w, w,  ?r,?w,?r,?r, ?Us")
+	  "=w,Un,w, w,  ?r,?w,?r, ?Us")
 	(match_operand:VDX 1 "general_operand"
-	  " w,w, Dn,Uni, w, r, r, Usi,r"))]
+	  " w,w, Dn,Uni, w, r, Usi,r"))]
   "TARGET_NEON
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -61,12 +61,12 @@
     }
 }
  [(set_attr "type" "neon_move<q>,neon_store1_1reg,neon_move<q>,\
-                    neon_load1_1reg, neon_to_gp<q>,neon_from_gp<q>,mov_reg,\
+                    neon_load1_1reg, neon_to_gp<q>,neon_from_gp<q>,\
                     neon_load1_2reg, neon_store1_2reg")
-  (set_attr "length" "4,4,4,4,4,4,8,8,8")
-  (set_attr "arm_pool_range"     "*,*,*,1020,*,*,*,1020,*")
-  (set_attr "thumb2_pool_range"     "*,*,*,1018,*,*,*,1018,*")
-  (set_attr "neg_pool_range" "*,*,*,1004,*,*,*,1004,*")])
+  (set_attr "length" "4,4,4,4,4,4,8,8")
+  (set_attr "arm_pool_range"     "*,*,*,1020,*,*,1020,*")
+  (set_attr "thumb2_pool_range"     "*,*,*,1018,*,*,1018,*")
+  (set_attr "neg_pool_range" "*,*,*,1004,*,*,1004,*")])
 
 (define_insn "*neon_mov<mode>"
   [(set (match_operand:VQXMOV 0 "nonimmediate_operand"
