@@ -1,3 +1,12 @@
+2018-08-16  Tamar Christina <tamar.christina@arm.com>
+
+	Backport from mainline
+	2018-07-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/86640
+	* config/arm/arm.c (arm_block_set_aligned_vect): Use gen_int_mode
+	instead of GEN_INT.
+
 2018-08-16  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
