@@ -1,3 +1,10 @@
+2018-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ada-spec.c (count_ada_macro): Use cpp_user_macro_p.
+	(store_ada_macro): Likewise.
+	* c-ppoutput.c (cb_used_define, dump_macro): Likewise.
+	* c-spellcheck.cc (should-suggest_as_macro_p): Likewise,
+
 2018-08-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-format.c: Include "selftest-diagnostic.h" and

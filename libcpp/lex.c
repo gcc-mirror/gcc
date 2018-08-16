@@ -1627,7 +1627,7 @@ is_macro(cpp_reader *pfile, const uchar *base)
   cpp_hashnode *result = CPP_HASHNODE (ht_lookup_with_hash (pfile->hash_table,
 					base, cur - base, hash, HT_NO_INSERT));
 
-  return !result ? false : (result->type == NT_MACRO);
+  return result && cpp_macro_p (result);
 }
 
 /* Returns true if a literal suffix does not have the expected form
