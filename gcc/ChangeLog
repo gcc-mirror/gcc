@@ -1,3 +1,14 @@
+2018-08-16  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-08-02  Martin Liska  <mliska@suse.cz>
+
+        PR gcov-profile/86817
+	* gcov.c (process_all_functions): New function.
+	(main): Call it.
+	(process_file): Move functions processing to
+        process_all_functions.
+
 2018-08-14  Siddhesh Poyarekar  <siddhesh@sourceware.org>
 
 	Backport from mainline
