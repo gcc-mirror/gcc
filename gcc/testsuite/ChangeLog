@@ -1,3 +1,9 @@
+2018-08-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/86745
+	* gcc.target/i386/avx-cvt-2.c: Loosen scan-assembler strings.
+	* gcc.target/i386/avx-cvt-2.c: Ditto.
+
 2018-08-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/70693
