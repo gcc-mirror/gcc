@@ -629,9 +629,9 @@ void
 default_diagnostic_start_span_fn (diagnostic_context *context,
 				  expanded_location exploc)
 {
-  pp_set_prefix (context->printer,
-		 diagnostic_get_location_text (context, exploc));
-  pp_string (context->printer, "");
+  char *text = diagnostic_get_location_text (context, exploc);
+  pp_string (context->printer, text);
+  free (text);
   pp_newline (context->printer);
 }
 

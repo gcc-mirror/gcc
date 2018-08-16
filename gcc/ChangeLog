@@ -1,5 +1,10 @@
 2018-08-16  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic.c (default_diagnostic_start_span_fn): Call pp_string
+	to emit the span, rather than setting it as the prefix.
+
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
 	* diagnostic-show-locus.c (layout::start_annotation_line): Add
 	"margin_char" parameter, defaulting to space.  Use it in place
 	of pp_space for the initial part of the margin.
