@@ -1,5 +1,10 @@
 2018-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (two unnamed define_insn and define_split):
+	Delete.
+
+2018-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/altivec.md: Don't set length attribute to the default
 	value.
 	* config/rs6000/darwin.md: Ditto.
