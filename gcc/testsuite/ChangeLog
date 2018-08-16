@@ -1,5 +1,9 @@
 2018-08-16  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/missing-header-fixit-3.c: New test.
+
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c
 	(test_fixit_insert_newline): Update expected output to show '+'
 	characters in margin of line-insertion fix-it hint.
