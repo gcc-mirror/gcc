@@ -93,9 +93,8 @@ struct dummy
 #define CPP_ALIGN2(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
 #define CPP_ALIGN(size) CPP_ALIGN2 (size, DEFAULT_ALIGNMENT)
 
-#define _cpp_mark_macro_used(NODE) do {					\
-  if ((NODE)->type == NT_MACRO && !((NODE)->flags & NODE_BUILTIN))	\
-    (NODE)->value.macro->used = 1; } while (0)
+#define _cpp_mark_macro_used(NODE) 					\
+  (cpp_user_macro_p (NODE) ? (NODE)->value.macro->used = 1 : 0)
 
 /* A generic memory buffer, and operations on it.  */
 typedef struct _cpp_buff _cpp_buff;
@@ -622,6 +621,12 @@ cpp_in_primary_file (cpp_reader *pfile)
 }
 
 /* In macro.c */
+extern void _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node);
+inline void _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
+{
+  if (!(node->flags & NODE_USED))
+    _cpp_notify_macro_use (pfile, node);
+}
 extern void _cpp_free_definition (cpp_hashnode *);
 extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *);
 extern void _cpp_pop_context (cpp_reader *);

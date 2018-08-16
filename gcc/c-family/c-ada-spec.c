@@ -171,13 +171,12 @@ static int
 count_ada_macro (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *node,
 		 void *v ATTRIBUTE_UNUSED)
 {
-  const cpp_macro *macro = node->value.macro;
-
-  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN)
-      && macro->count
-      && *NODE_NAME (node) != '_'
-      && LOCATION_FILE (macro->line) == macro_source_file)
-    max_ada_macros++;
+  if (cpp_user_macro_p (node) && *NODE_NAME (node) != '_')
+    {
+      const cpp_macro *macro = node->value.macro;
+      if (macro->count && LOCATION_FILE (macro->line) == macro_source_file)
+	max_ada_macros++;
+    }
 
   return 1;
 }
@@ -190,15 +189,13 @@ static int
 store_ada_macro (cpp_reader *pfile ATTRIBUTE_UNUSED,
 		 cpp_hashnode *node, void *macros)
 {
-  const cpp_macro *macro = node->value.macro;
-
-  if (node->type == NT_MACRO
-      && !(node->flags & NODE_BUILTIN)
-      && macro->count
-      && *NODE_NAME (node) != '_'
-      && LOCATION_FILE (macro->line) == macro_source_file)
-    ((cpp_hashnode **) macros)[store_ada_macro_index++] = node;
-
+  if (cpp_user_macro_p (node) && *NODE_NAME (node) != '_')
+    {
+      const cpp_macro *macro = node->value.macro;
+      if (macro->count
+	  && LOCATION_FILE (macro->line) == macro_source_file)
+	((cpp_hashnode **) macros)[store_ada_macro_index++] = node;
+    }
   return 1;
 }
 

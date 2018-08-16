@@ -1,3 +1,8 @@
+2018-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	* config/rs6000/rs6000-c.c (rs6000_macro_to_expend): Use cpp_macro_p.
+	* config/powerpcspc/powerpcspe-c.c (rs6000_macro_to_expend): Likewise.
+
 2018-08-16  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/84711

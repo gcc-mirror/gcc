@@ -342,7 +342,7 @@ int
 _cpp_warn_if_unused_macro (cpp_reader *pfile, cpp_hashnode *node,
 			   void *v ATTRIBUTE_UNUSED)
 {
-  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
+  if (cpp_user_macro_p (node))
     {
       cpp_macro *macro = node->value.macro;
 
@@ -1282,8 +1282,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 	pfile->cb.used_define (pfile, pfile->directive_line, node);
     }
 
-  /* Handle standard macros.  */
-  if (! (node->flags & NODE_BUILTIN))
+  if (cpp_user_macro_p (node))
     {
       cpp_macro *macro = node->value.macro;
       _cpp_buff *pragma_buff = NULL;
@@ -1413,10 +1412,8 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
     source_location expand_loc;
 
     if (/* The top-level macro invocation that triggered the expansion
-	   we are looking at is with a standard macro ...  */
-	!(pfile->top_most_macro_node->flags & NODE_BUILTIN)
-	/* ... and it's a function-like macro invocation,  */
-	&& pfile->top_most_macro_node->value.macro->fun_like
+	   we are looking at is with a function-like user macro ...  */
+	cpp_fun_like_macro_p (pfile->top_most_macro_node)
 	/* ... and we are tracking the macro expansion.  */
 	&& CPP_OPTION (pfile, track_macro_expansion))
       /* Then the location of the end of the macro invocation is the
@@ -3505,24 +3502,22 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 
       if (warn_of_redefinition (pfile, node, macro))
 	{
-          const int reason = ((node->flags & NODE_BUILTIN)
-			      && !(node->flags & NODE_WARN))
-                             ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE;
+          const int reason
+	    = (cpp_builtin_macro_p (node) && !(node->flags & NODE_WARN))
+	    ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE;
 
 	  bool warned = 
 	    cpp_pedwarning_with_line (pfile, reason,
 				      pfile->directive_line, 0,
 				      "\"%s\" redefined", NODE_NAME (node));
 
-	  if (warned && node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
+	  if (warned && cpp_user_macro_p (node))
 	    cpp_error_with_line (pfile, CPP_DL_NOTE,
 				 node->value.macro->line, 0,
 			 "this is the location of the previous definition");
 	}
+      _cpp_free_definition (node);
     }
-
-  if (node->type != NT_VOID)
-    _cpp_free_definition (node);
 
   /* Enter definition in hash table.  */
   node->type = NT_MACRO;
@@ -3542,6 +3537,34 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   node->flags &= ~NODE_CONDITIONAL;
 
   return ok;
+}
+
+/* Notify the use of NODE in a macro-aware context (i.e. expanding it,
+   or testing its existance).  Also applies any lazy definition.  */
+
+extern void
+_cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
+{
+  node->flags |= NODE_USED;
+  switch (node->type)
+    {
+    case NT_MACRO:
+      if ((node->flags & NODE_BUILTIN)
+	  && pfile->cb.user_builtin_macro)
+	pfile->cb.user_builtin_macro (pfile, node);
+
+      if (pfile->cb.used_define)
+	pfile->cb.used_define (pfile, pfile->directive_line, node);
+      break;
+
+    case NT_VOID:
+      if (pfile->cb.used_undef)
+	pfile->cb.used_undef (pfile, pfile->directive_line, node);
+      break;
+
+    default:
+      abort ();
+    }
 }
 
 /* Warn if a token in STRING matches one of a function-like MACRO's

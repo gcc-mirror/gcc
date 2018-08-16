@@ -5954,10 +5954,10 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
       /* If we have an exact match for a macro name, then either the
 	 macro was used with the wrong argument count, or the macro
 	 has been used before it was defined.  */
-      cpp_hashnode *macro = bmm.blithely_get_best_candidate ();
-      if (macro && (macro->flags & NODE_BUILTIN) == 0)
-	return name_hint (NULL,
-			  macro_use_before_def::maybe_make (loc, macro));
+      if (cpp_hashnode *macro = bmm.blithely_get_best_candidate ())
+	if (cpp_user_macro_p (macro))
+	  return name_hint (NULL,
+			    macro_use_before_def::maybe_make (loc, macro));
     }
 
   /* Try the "starts_decl_specifier_p" keywords to detect

@@ -1,3 +1,29 @@
+2018-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* include/cpplib.h (cpp_user_macro_p, cpp_builtin_macro_p)
+	(cpp_macro_p): New inlines.
+	* directives.c (do_pragma_poison): Use cpp_macro_p.
+	(do_ifdef, do_ifndef): Likewise.  Use _cpp_maybe_notify_macro_use.
+	(cpp_pop_definition): Use cpp_macro_p.  Move _cpp_free_definition
+	earlier.  Don't zap node directly.
+	* expr.c (parse_defined): Use _cpp_maybe_notify_macro_use &
+	cpp_macro_p.
+	* files.c (should_stack_file): Use cpp_macro_p.
+	* identifiers.c (cpp_defined): Likewise.
+	* internal.h (_cpp_mark_macro): Use cpp_user_macro_p.
+	(_cpp_notify_macro_use): Declare.
+	(_cpp_maybe_notify_macro_use): New inline.
+	* lex.c (is_macro): Use cpp_macro_p.
+	* macro.c (_cpp_warn_if_unused_macro): Use cpp_user_macro_p.
+	(enter_macro_context): Likewise.
+	(_cpp_create_definition): Use cpp_builtin_macro_p,
+	cpp_user_macro_p.  Move _cpp_free_definition earlier.
+	(_cpp_notify_macro_use): New, broken out of multiple call sites.
+	* traditional.c (fun_like_macro_p): Use cpp_builtin_macro_p.
+	(maybe_start_funlike, _cpp_scan_out_logical_line)
+	(push_replacement_text): Likewise.
+
 2018-08-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (struct location_range): Add "m_label" field.
