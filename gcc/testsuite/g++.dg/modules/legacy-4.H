@@ -8,4 +8,4 @@ int stop ();
 // { dg-prune-output "compilation terminated" }
 // { dg-prune-output "fatal error:" }
 
-// { dg-module-pre-prune "In module imported at \[^\n]*legacy-4.H:4:10:" }
+// { dg-module-pre-prune "In module imported at \[^\n]*legacy-4.H:4:1:" }

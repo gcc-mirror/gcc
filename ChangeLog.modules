@@ -1,3 +1,28 @@
+2018-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (class module_state): Forward declare.
+	(get_module, pp_module_name): Declare.
+	(push_module_export, declare_module, import_module): Take
+	module_state.
+	* error.c (cp_printer): Accept %M.
+	* module.c (module_state::find_module): Take module_state.
+	(module_state::get_module): Drop default & insert args.
+	(module_state::insert_mapping): Delete.
+	(module_mapper::{module_mapper,bewait_response): Adjust.
+	(module_mapper::divert_include): Drop indentation.
+	(module_state::read_imports): Adjust.
+	(proclaimer): Is a module_state pointer.
+	(push_module_state, declare_module, import_module): Adjust.
+	(pp_module_name): New.
+	(get_module): New.
+	(maybe_atom_legacy_module): Adjust.
+	* parser.c (cp_parser_module_name): Return module_state, adjust.
+	(cp_parser_module_declaration, cp_parser_import_declaration):
+	Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/legacy-4.H: Adjust regexp.
+
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r263429.
