@@ -2125,12 +2125,12 @@ format_floating (const directive &dir, tree arg, vr_values *)
    Used by the format_string function below.  */
 
 static fmtresult
-get_string_length (tree str)
+get_string_length (tree str, unsigned eltsize)
 {
   if (!str)
     return fmtresult ();
 
-  if (tree slen = c_strlen (str, 1))
+  if (tree slen = c_strlen (str, 1, eltsize))
     {
       /* Simply return the length of the string.  */
       fmtresult res (tree_to_shwi (slen));
@@ -2143,7 +2143,7 @@ get_string_length (tree str)
      aren't known to point any such arrays result in LENRANGE[1] set
      to SIZE_MAX.  */
   tree lenrange[2];
-  bool flexarray = get_range_strlen (str, lenrange);
+  bool flexarray = get_range_strlen (str, lenrange, eltsize);
 
   if (lenrange [0] || lenrange [1])
     {
@@ -2195,7 +2195,7 @@ get_string_length (tree str)
       return res;
     }
 
-  return get_string_length (NULL_TREE);
+  return fmtresult ();
 }
 
 /* Return the minimum and maximum number of characters formatted
@@ -2274,7 +2274,8 @@ format_string (const directive &dir, tree arg, vr_values *)
   fmtresult res;
 
   /* Compute the range the argument's length can be in.  */
-  fmtresult slen = get_string_length (arg);
+  int count_by = dir.specifier == 'S' || dir.modifier == FMT_LEN_l ? 4 : 1;
+  fmtresult slen = get_string_length (arg, count_by);
   if (slen.range.min == slen.range.max
       && slen.range.min < HOST_WIDE_INT_MAX)
     {

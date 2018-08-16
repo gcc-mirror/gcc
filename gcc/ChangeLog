@@ -1,3 +1,16 @@
+2018-08-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* builtins.c (c_strlen): Add new parameter eltsize.  Use it
+	for determining how to count the elements.
+	* builtins.h (c_strlen): Adjust prototype.
+	* expr.c (string_constant): Add new parameter mem_size.
+	Set *mem_size appropriately.
+	* expr.h (string_constant): Adjust protoype.
+	* gimple-fold.c (get_range_strlen): Add new parameter eltsize.
+	* gimple-fold.h (get_range_strlen): Adjust prototype.
+	* gimple-ssa-sprintf.c (get_string_length): Add new parameter eltsize.
+	(format_string): Call get_string_length with eltsize.
+
 2018-08-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic.c (default_diagnostic_start_span_fn): Call pp_string

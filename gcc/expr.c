@@ -11292,10 +11292,12 @@ is_aligning_offset (const_tree offset, const_tree exp)
 /* Return the tree node if an ARG corresponds to a string constant or zero
    if it doesn't.  If we return nonzero, set *PTR_OFFSET to the (possibly
    non-constant) offset in bytes within the string that ARG is accessing.
-   The type of the offset is sizetype.  */
+   The type of the offset is sizetype.  If MEM_SIZE is non-zero the storage
+   size of the memory is returned.  If MEM_SIZE is zero, the string is
+   only returned when it is properly zero terminated.  */
 
 tree
-string_constant (tree arg, tree *ptr_offset)
+string_constant (tree arg, tree *ptr_offset, tree *mem_size)
 {
   tree array;
   STRIP_NOPS (arg);
@@ -11349,7 +11351,7 @@ string_constant (tree arg, tree *ptr_offset)
 	return NULL_TREE;
 
       tree offset;
-      if (tree str = string_constant (arg0, &offset))
+      if (tree str = string_constant (arg0, &offset, mem_size))
 	{
 	  /* Avoid pointers to arrays (see bug 86622).  */
 	  if (POINTER_TYPE_P (TREE_TYPE (arg))
@@ -11389,6 +11391,8 @@ string_constant (tree arg, tree *ptr_offset)
   if (TREE_CODE (array) == STRING_CST)
     {
       *ptr_offset = fold_convert (sizetype, offset);
+      if (mem_size)
+	*mem_size = TYPE_SIZE_UNIT (TREE_TYPE (array));
       return array;
     }
 
@@ -11448,7 +11452,9 @@ string_constant (tree arg, tree *ptr_offset)
   unsigned HOST_WIDE_INT length = TREE_STRING_LENGTH (init);
   length = string_length (TREE_STRING_POINTER (init), charsize,
 			  length / charsize);
-  if (compare_tree_int (array_size, length + 1) < 0)
+  if (mem_size)
+    *mem_size = TYPE_SIZE_UNIT (TREE_TYPE (init));
+  else if (compare_tree_int (array_size, length + 1) < 0)
     return NULL_TREE;
 
   *ptr_offset = offset;
