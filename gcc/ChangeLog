@@ -1,3 +1,11 @@
+2018-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (length): Always define as const_int 4.
+	(unnamed conditional branch define_insn): Set length to 4 or 8
+	depending on offset.
+	(<bd>_<mode>): Similar, for alternative 0.
+	(<bd>tf_<mode>): Ditto.
+
 2018-08-16  Tamar Christina  <tamar.christina@arm.com>
 
 	* expr.c (copy_blkmode_to_reg): Perform larger copies when safe.
