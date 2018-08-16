@@ -568,41 +568,43 @@ string_length (const void *ptr, unsigned eltsize, unsigned maxelts)
    accesses.  Note that this implies the result is not going to be emitted
    into the instruction stream.
 
-   The value returned is of type `ssizetype'.
+   ELTSIZE is 1 for normal single byte character strings, and 2 or
+   4 for wide characer strings.  ELTSIZE is by default 1.
 
-   Unfortunately, string_constant can't access the values of const char
-   arrays with initializers, so neither can we do so here.  */
+   The value returned is of type `ssizetype'.  */
 
 tree
-c_strlen (tree src, int only_value)
+c_strlen (tree src, int only_value, unsigned eltsize)
 {
+  gcc_assert (eltsize == 1 || eltsize == 2 || eltsize == 4);
   STRIP_NOPS (src);
   if (TREE_CODE (src) == COND_EXPR
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
     {
       tree len1, len2;
 
-      len1 = c_strlen (TREE_OPERAND (src, 1), only_value);
-      len2 = c_strlen (TREE_OPERAND (src, 2), only_value);
+      len1 = c_strlen (TREE_OPERAND (src, 1), only_value, eltsize);
+      len2 = c_strlen (TREE_OPERAND (src, 2), only_value, eltsize);
       if (tree_int_cst_equal (len1, len2))
 	return len1;
     }
 
   if (TREE_CODE (src) == COMPOUND_EXPR
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
-    return c_strlen (TREE_OPERAND (src, 1), only_value);
+    return c_strlen (TREE_OPERAND (src, 1), only_value, eltsize);
 
   location_t loc = EXPR_LOC_OR_LOC (src, input_location);
 
   /* Offset from the beginning of the string in bytes.  */
   tree byteoff;
-  src = string_constant (src, &byteoff);
+  tree memsize;
+  src = string_constant (src, &byteoff, &memsize);
   if (src == 0)
     return NULL_TREE;
 
   /* Determine the size of the string element.  */
-  unsigned eltsize
-    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (src))));
+  if (eltsize != tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (src)))))
+    return NULL_TREE;
 
   /* Set MAXELTS to sizeof (SRC) / sizeof (*SRC) - 1, the maximum possible
      length of SRC.  Prefer TYPE_SIZE() to TREE_STRING_LENGTH() if possible
@@ -613,14 +615,10 @@ c_strlen (tree src, int only_value)
   HOST_WIDE_INT strelts = TREE_STRING_LENGTH (src);
   strelts = strelts / eltsize - 1;
 
-  HOST_WIDE_INT maxelts = strelts;
-  tree type = TREE_TYPE (src);
-  if (tree size = TYPE_SIZE_UNIT (type))
-    if (tree_fits_shwi_p (size))
-      {
-	maxelts = tree_to_uhwi (size);
-	maxelts = maxelts / eltsize - 1;
-      }
+  if (!tree_fits_uhwi_p (memsize))
+    return NULL_TREE;
+
+  HOST_WIDE_INT maxelts = tree_to_uhwi (memsize) / eltsize - 1;
 
   /* PTR can point to the byte representation of any string type, including
      char* and wchar_t*.  */
@@ -628,19 +626,23 @@ c_strlen (tree src, int only_value)
 
   if (byteoff && TREE_CODE (byteoff) != INTEGER_CST)
     {
+      /* For empty strings the result should be zero.  */
+      if (maxelts == 0)
+	return ssize_int (0);
+
+      /* The code below works only for single byte character types.  */
+      if (eltsize != 1)
+	return NULL_TREE;
+
       /* If the string has an internal NUL character followed by any
 	 non-NUL characters (e.g., "foo\0bar"), we can't compute
 	 the offset to the following NUL if we don't know where to
 	 start searching for it.  */
       unsigned len = string_length (ptr, eltsize, strelts);
-      if (len < strelts)
-	{
-	  /* Return when an embedded null character is found.  */
-	  return NULL_TREE;
-	}
 
-      if (!maxelts)
-	return ssize_int (0);
+      /* Return when an embedded null character is found or none at all.  */
+      if (len < strelts || len > maxelts)
+	return NULL_TREE;
 
       /* We don't know the starting offset, but we do know that the string
 	 has no internal zero bytes.  If the offset falls within the bounds
@@ -650,8 +652,8 @@ c_strlen (tree src, int only_value)
       tree offsave = TREE_SIDE_EFFECTS (byteoff) ? save_expr (byteoff) : byteoff;
       offsave = fold_convert (ssizetype, offsave);
       tree condexp = fold_build2_loc (loc, LE_EXPR, boolean_type_node, offsave,
-				      build_int_cst (ssizetype, len * eltsize));
-      tree lenexp = size_diffop_loc (loc, ssize_int (strelts * eltsize), offsave);
+				      build_int_cst (ssizetype, len));
+      tree lenexp = size_diffop_loc (loc, ssize_int (strelts), offsave);
       return fold_build3_loc (loc, COND_EXPR, ssizetype, condexp, lenexp,
 			      build_zero_cst (ssizetype));
     }
@@ -684,6 +686,11 @@ c_strlen (tree src, int only_value)
       return NULL_TREE;
     }
 
+  /* If eltoff is larger than strelts but less than maxelts the
+     string length is zero, since the excess memory will be zero.  */
+  if (eltoff > strelts)
+    return ssize_int (0);
+
   /* Use strlen to search for the first zero byte.  Since any strings
      constructed with build_string will have nulls appended, we win even
      if we get handed something like (char[4])"abcd".
@@ -691,7 +698,7 @@ c_strlen (tree src, int only_value)
      Since ELTOFF is our starting index into the string, no further
      calculation is needed.  */
   unsigned len = string_length (ptr + eltoff * eltsize, eltsize,
-				maxelts - eltoff);
+				strelts - eltoff);
 
   return ssize_int (len);
 }
