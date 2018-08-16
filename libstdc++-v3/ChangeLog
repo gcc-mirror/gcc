@@ -1,3 +1,13 @@
+2018-08-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86447
+	* src/c++11/cow-stdexcept.cc [_GLIBCXX_FULLY_DYNAMIC_STRING]
+	(logic_error::logic_error(logic_error&&))
+	(logic_error::operator=(logic_error&&))
+	(runtime_error::runtime_error(runtime_error&&))
+	(runtime_error::operator=(runtime_error&&)): Copy strings instead of
+	moving, to avoid allocating empty reps for moved-from strings.
+
 2018-08-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/regex: Remove begin/end macros for namespace.
