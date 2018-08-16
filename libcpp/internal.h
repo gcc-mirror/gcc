@@ -632,8 +632,9 @@ extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *);
 extern void _cpp_pop_context (cpp_reader *);
 extern void _cpp_push_text_context (cpp_reader *, cpp_hashnode *,
 				    const unsigned char *, size_t);
-extern bool _cpp_save_parameter (cpp_reader *, cpp_macro *, cpp_hashnode *,
+extern bool _cpp_save_parameter (cpp_reader *, unsigned, cpp_hashnode *,
 				 cpp_hashnode *);
+extern void _cpp_unsave_parameters (cpp_reader *, unsigned);
 extern bool _cpp_arguments_ok (cpp_reader *, cpp_macro *, const cpp_hashnode *,
 			       unsigned int);
 extern const unsigned char *_cpp_builtin_macro_text (cpp_reader *,
