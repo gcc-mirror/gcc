@@ -89,7 +89,7 @@ static cpp_hashnode *lex_identifier (cpp_reader *, const uchar *);
 static const uchar *copy_comment (cpp_reader *, const uchar *, int);
 static void check_output_buffer (cpp_reader *, size_t);
 static void push_replacement_text (cpp_reader *, cpp_hashnode *);
-static bool scan_parameters (cpp_reader *, cpp_macro *);
+static bool scan_parameters (cpp_reader *, unsigned *);
 static bool recursive_macro (cpp_reader *, cpp_hashnode *);
 static void save_replacement_text (cpp_reader *, cpp_macro *, unsigned int);
 static void maybe_start_funlike (cpp_reader *, cpp_hashnode *, const uchar *,
@@ -1082,11 +1082,12 @@ replace_args_and_push (cpp_reader *pfile, struct fun_macro *fmacro)
    duplicate parameter).  On success, CUR (pfile->context) is just
    past the closing parenthesis.  */
 static bool
-scan_parameters (cpp_reader *pfile, cpp_macro *macro)
+scan_parameters (cpp_reader *pfile, unsigned *n_ptr)
 {
   const uchar *cur = CUR (pfile->context) + 1;
   bool ok;
 
+  unsigned nparms = 0;
   for (;;)
     {
       cur = skip_whitespace (pfile, cur, true /* skip_comments */);
@@ -1095,8 +1096,9 @@ scan_parameters (cpp_reader *pfile, cpp_macro *macro)
 	{
 	  struct cpp_hashnode *id = lex_identifier (pfile, cur);
 	  ok = false;
-	  if (_cpp_save_parameter (pfile, macro, id, id))
+	  if (!_cpp_save_parameter (pfile, nparms, id, id))
 	    break;
+	  nparms++;
 	  cur = skip_whitespace (pfile, CUR (pfile->context),
 				 true /* skip_comments */);
 	  if (*cur == ',')
@@ -1108,9 +1110,11 @@ scan_parameters (cpp_reader *pfile, cpp_macro *macro)
 	  break;
 	}
 
-      ok = (*cur == ')' && macro->paramc == 0);
+      ok = (*cur == ')' && !nparms);
       break;
     }
+
+  *n_ptr = nparms;
 
   if (!ok)
     cpp_error (pfile, CPP_DL_ERROR, "syntax error in macro parameter list");
@@ -1181,6 +1185,7 @@ _cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
   const uchar *cur;
   uchar *limit;
   cpp_context *context = pfile->context;
+  unsigned nparms = 0;
 
   /* The context has not been set up for command line defines, and CUR
      has not been updated for the macro name for in-file defines.  */
@@ -1192,7 +1197,8 @@ _cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
   /* Is this a function-like macro?  */
   if (* CUR (context) == '(')
     {
-      bool ok = scan_parameters (pfile, macro);
+      bool ok = scan_parameters (pfile, &nparms);
+      macro->paramc = nparms;
 
       /* Remember the params so we can clear NODE_MACRO_ARG flags.  */
       macro->params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
@@ -1216,6 +1222,8 @@ _cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
   pfile->state.prevent_expansion++;
   _cpp_scan_out_logical_line (pfile, macro, false);
   pfile->state.prevent_expansion--;
+
+  _cpp_unsave_parameters (pfile, nparms);
 
   if (!macro)
     return false;
