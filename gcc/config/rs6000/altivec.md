@@ -413,8 +413,7 @@
                    (use (match_operand:SI 1 "call_operand" "s"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"         
  "bl %z1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*restore_world"
  [(match_parallel 0 "restore_world_operation"
@@ -441,8 +440,7 @@
 	   (match_operand:V4SI 4 "altivec_register_operand" "v"))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*save_vregs_<mode>_r12"
   [(match_parallel 0 "any_parallel_operand"
@@ -455,8 +453,7 @@
 	   (match_operand:V4SI 4 "altivec_register_operand" "v"))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*restore_vregs_<mode>_r11"
   [(match_parallel 0 "any_parallel_operand"
@@ -469,8 +466,7 @@
 			     (match_operand:P 4 "short_cint_operand" "I"))))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*restore_vregs_<mode>_r12"
   [(match_parallel 0 "any_parallel_operand"
@@ -483,8 +479,7 @@
 			     (match_operand:P 4 "short_cint_operand" "I"))))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 ;; Simple binary operations.
 
