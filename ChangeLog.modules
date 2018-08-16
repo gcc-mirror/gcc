@@ -1,5 +1,11 @@
 2018-08-16  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp (dg-module-pre-prune): Delete
+	(g++-dg-prune): Don't override.
+	* g++.dg/modules/legacy-4.H: Use dg-regexp.
+	* g++.dg/modules/loc-2_[def].C: Likewise.
+
 	gcc/cp/
 	* cp-tree.h (class module_state): Forward declare.
 	(get_module, pp_module_name): Declare.

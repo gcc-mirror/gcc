@@ -26,7 +26,6 @@
 
 # { dg-module-bmi "[!]module-name" } # an interface file is (not) expected
 # { dg-module-do [link|run] [xfail] [options] } # link [and run]
-# { dg-module-pre-prune "regexp" }
 
 load_lib g++-dg.exp
 
@@ -42,7 +41,6 @@ dg-init
 
 global module_do
 global module_bmis
-global module_pre_prunes
 
 proc decode_mod_spec { spec } {
     set not 0
@@ -200,33 +198,6 @@ proc module_do_it { do_what testcase asm_list } {
     return $ok
 }
 
-proc dg-module-pre-prune { args } {
-    if { [llength $args] > 2 } {
-	error "[lindex $args 0]: too many arguments"
-	return
-    }
-
-    set lit [lindex $args 1]
-    global module_pre_prunes
-    lappend module_pre_prunes $lit
-}
-
-# Move normal pruner out of the way
-rename g++-dg-prune saved-g++-dg-prune 
-
-# Overrude pruner to run the pre-prune tests first
-proc g++-dg-prune { system text } {
-    global module_pre_prunes
-    foreach literal $module_pre_prunes {
-	if [regexp $literal $text] {
-	    pass "$literal"
-	} else {
-	    fail "$literal"
-	}
-    }
-    return [saved-g++-dg-prune $system $text]
-}
-
 # delete the specified set of module files
 proc cleanup_module_files { files } {
     foreach file $files {
@@ -301,8 +272,4 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
     }
 }
 
-# Move normal pruner back again
-rename g++-dg-prune {}
-rename saved-g++-dg-prune g++-dg-prune 
-	     
 dg-finish
