@@ -1,5 +1,8 @@
 2018-08-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/tr1/legendre_function.tcc (__sph_legendre): Avoid warning
+	about signed/unsigned comparison.
+
 	* include/std/ostream (basic_ostream::sentry::~sentry): Suppress
 	deprecation warnings for using uncaught_exception().
 
