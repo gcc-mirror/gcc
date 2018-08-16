@@ -1,3 +1,11 @@
+2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+
+	PR testsuite/78544
+	* gcc.dg/tree-prof/section-attr-1.c: Add Darwin-specific section
+	attributes and matching.
+	* gcc.dg/tree-prof/section-attr-2.c: Likewise.
+	* gcc.dg/tree-prof/section-attr-3.c: Likewise.
+
 2018-08-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/asan/pr81923.c: Stringify __USER_LABEL_PREFIX__.
