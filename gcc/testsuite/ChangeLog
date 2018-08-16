@@ -1,3 +1,11 @@
+2018-08-16  Tamar Christina  <tamar.christina@arm.com>
+
+	Backport from mainline
+	2018-07-31  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/86640
+	* gcc.target/arm/pr86640.c: New testcase.
+
 2018-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backport from mainline
