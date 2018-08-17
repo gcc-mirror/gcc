@@ -59,9 +59,7 @@ write_macdef (cpp_reader *pfile, cpp_hashnode *hn, void *file_p)
       /* FALLTHRU */
 
     case NT_MACRO:
-      if ((hn->flags & NODE_BUILTIN)
-	  && (!pfile->cb.user_builtin_macro
-	      || !pfile->cb.user_builtin_macro (pfile, hn)))
+      if (hn->flags & NODE_BUILTIN)
 	return 1;
 
       {
@@ -759,11 +757,6 @@ static int
 save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
 {
   struct save_macro_data *data = (struct save_macro_data *)data_p;
-
-  if ((h->flags & NODE_BUILTIN)
-      && h->type == NT_MACRO
-      && r->cb.user_builtin_macro)
-    r->cb.user_builtin_macro (r, h);
 
   if (h->type != NT_VOID
       && (h->flags & NODE_BUILTIN) == 0)
