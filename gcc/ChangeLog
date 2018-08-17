@@ -1,3 +1,8 @@
+2018-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (*cbranch, *creturn): Name these patterns
+	(they were unnamed before).  Fix comments.
+
 2018-08-17  Nathan Sidwell  <nathan@acm.org>
 
 	* cppbuiltin.c: Include "cpplib.h", not "cpp-id-data.h".
