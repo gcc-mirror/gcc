@@ -3725,6 +3725,25 @@ _cpp_aligned_alloc (cpp_reader *pfile, size_t len)
   return result;
 }
 
+/* Commit or allocate storage from a buffer.  */
+
+void *
+_cpp_commit_buff (cpp_reader *pfile, size_t size)
+{
+  void *ptr = BUFF_FRONT (pfile->a_buff);
+
+  if (pfile->hash_table->alloc_subobject)
+    {
+      void *copy = pfile->hash_table->alloc_subobject (size);
+      memcpy (copy, ptr, size);
+      ptr = copy;
+    }
+  else
+    BUFF_FRONT (pfile->a_buff) += size;
+
+  return ptr;
+}
+
 /* Say which field of TOK is in use.  */
 
 enum cpp_token_fld_kind

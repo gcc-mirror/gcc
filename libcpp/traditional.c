@@ -853,7 +853,6 @@ push_replacement_text (cpp_reader *pfile, cpp_hashnode *node)
       cpp_macro *macro = node->value.macro;
       macro->used = 1;
       text = macro->exp.text;
-      macro->traditional = 1;
       len = macro->count;
     }
 
@@ -1143,7 +1142,6 @@ save_replacement_text (cpp_reader *pfile, cpp_macro *macro,
       memcpy (exp, pfile->out.base, len);
       exp[len] = '\n';
       macro->exp.text = exp;
-      macro->traditional = 1;
       macro->count = len;
     }
   else
@@ -1159,7 +1157,6 @@ save_replacement_text (cpp_reader *pfile, cpp_macro *macro,
       exp = BUFF_FRONT (pfile->a_buff);
       block = (struct block *) (exp + macro->count);
       macro->exp.text = exp;
-      macro->traditional = 1;
 
       /* Write out the block information.  */
       block->text_len = len;
@@ -1179,13 +1176,15 @@ save_replacement_text (cpp_reader *pfile, cpp_macro *macro,
 
 /* Analyze and save the replacement text of a macro.  Returns true on
    success.  */
-bool
-_cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
+cpp_macro *
+_cpp_create_trad_definition (cpp_reader *pfile)
 {
   const uchar *cur;
   uchar *limit;
   cpp_context *context = pfile->context;
   unsigned nparms = 0;
+  int fun_like = 0;
+  cpp_hashnode **params = NULL;
 
   /* The context has not been set up for command line defines, and CUR
      has not been updated for the macro name for in-file defines.  */
@@ -1197,21 +1196,23 @@ _cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
   /* Is this a function-like macro?  */
   if (* CUR (context) == '(')
     {
-      bool ok = scan_parameters (pfile, &nparms);
-      macro->paramc = nparms;
-
-      /* Remember the params so we can clear NODE_MACRO_ARG flags.  */
-      macro->params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
-
-      /* Setting macro to NULL indicates an error occurred, and
-	 prevents unnecessary work in _cpp_scan_out_logical_line.  */
-      if (!ok)
-	macro = NULL;
+      fun_like = +1;
+      if (scan_parameters (pfile, &nparms))
+	params = (cpp_hashnode **)_cpp_commit_buff
+	  (pfile, sizeof (cpp_hashnode *) * nparms);
       else
-	{
-	  BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->params[macro->paramc];
-	  macro->fun_like = 1;
-	}
+	fun_like = -1;
+    }
+
+  cpp_macro *macro = NULL;
+
+  if (fun_like >= 0)
+    {
+      macro = _cpp_new_macro (pfile, cmk_traditional,
+			      _cpp_aligned_alloc (pfile, sizeof (cpp_macro)));
+      macro->params = params;
+      macro->paramc = nparms;
+      macro->fun_like = fun_like != 0;
     }
 
   /* Skip leading whitespace in the replacement text.  */
@@ -1225,18 +1226,18 @@ _cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
 
   _cpp_unsave_parameters (pfile, nparms);
 
-  if (!macro)
-    return false;
+  if (macro)
+    {
+      /* Skip trailing white space.  */
+      cur = pfile->out.base;
+      limit = pfile->out.cur;
+      while (limit > cur && is_space (limit[-1]))
+	limit--;
+      pfile->out.cur = limit;
+      save_replacement_text (pfile, macro, 0);
+    }
 
-  /* Skip trailing white space.  */
-  cur = pfile->out.base;
-  limit = pfile->out.cur;
-  while (limit > cur && is_space (limit[-1]))
-    limit--;
-  pfile->out.cur = limit;
-  save_replacement_text (pfile, macro, 0);
-
-  return true;
+  return macro;
 }
 
 /* Copy SRC of length LEN to DEST, but convert all contiguous
