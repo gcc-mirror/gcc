@@ -1,3 +1,7 @@
+2018-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/conversion/Wwrite-strings.C: New test.
+
 2018-08-17  Sandra Loosemore  <sandra@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 	    Xianmiao Qu  <xianmiao_qu@c-sky.com>
