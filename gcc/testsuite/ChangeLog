@@ -1,3 +1,32 @@
+2018-08-17  Sandra Loosemore  <sandra@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	C-SKY port: Testsuite
+
+	* g++.dg/Wno-frame-address.C: Adjust for C-SKY.
+	* g++.dg/torture/type-generic-1.C: Likewise.
+	* gcc.c-torture/compile/20000804-1.c: Likewise.
+	* gcc.c-torture/execute/20101011-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/mul-subnormal-single-1.x: Likewise.
+	* gcc.dg/20020312-2.c: Likewise.
+	* gcc.dg/Wno-frame-address.c: Likewise.
+	* gcc.dg/c11-true_min-1.c: Likewise.
+	* gcc.dg/sibcall-10.c: Likewise.
+	* gcc.dg/sibcall-9.c: Likewise.
+	* gcc.dg/stack-usage-1.c: Likewise.
+	* gcc.dg/torture/float32-tg-3.c: Likewise.
+	* gcc.dg/torture/float32x-tg-3.c: Likewise.
+	* gcc.dg/torture/float64-tg-3.c: Likewise.
+	* gcc.dg/torture/float64x-tg-3.c: Likewise.
+	* gcc.dg/torture/type-generic-1.c: Likewise.
+	* gcc.target/csky/*: New.
+	* lib/target-supports.exp (check_profiling_available): Add
+	csky-*-elf.
+	(check_effective_target_hard_float): Handle C-SKY targets with
+	single-precision hard float only.
+	(check_effective_target_logical_op_short_circuit): Handle C-SKY.
+
 2018-08-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/format/gcc_diag-1.c: Fix typo.  Add test coverage for
