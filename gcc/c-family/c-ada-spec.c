@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-ada-spec.h"
 #include "fold-const.h"
 #include "c-pragma.h"
-#include "cpp-id-data.h"
 #include "stringpool.h"
 #include "attribs.h"
 

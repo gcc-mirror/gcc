@@ -1,3 +1,7 @@
+2018-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	* cppbuiltin.c: Include "cpplib.h", not "cpp-id-data.h".
+
 2018-08-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86841
