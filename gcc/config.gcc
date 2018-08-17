@@ -1278,6 +1278,70 @@ crisv32-*-linux* | cris-*-linux*)
 		;;
 	esac
 	;;
+csky-*-*)
+	if test x${with_endian} != x; then
+	    case ${with_endian} in
+		big|little)		;;
+		*)
+		    echo "with_endian=${with_endian} not supported."
+		    exit 1
+		    ;;
+	    esac
+	fi
+	if test x${with_float} != x; then
+	    case ${with_float} in
+		soft | hard) ;;
+		*) echo
+		    "Unknown floating point type used in --with-float=$with_float"
+		    exit 1
+		    ;;
+	    esac
+	fi
+	tm_file="csky/csky.h"
+	md_file="csky/csky.md"
+	out_file="csky/csky.c"
+	tm_p_file="${tm_p_file} csky/csky-protos.h"
+	extra_options="${extra_options} csky/csky_tables.opt"
+
+	if test x${enable_tpf_debug} = xyes; then
+	    tm_defines="${tm_defines} ENABLE_TPF_DEBUG"
+	fi
+
+	case ${target} in
+	    csky-*-elf*)
+		tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} csky/csky-elf.h"
+		tmake_file="csky/t-csky csky/t-csky-elf"
+		default_use_cxa_atexit=no
+		;;
+	    csky-*-linux*)
+		tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} csky/csky-linux-elf.h"
+		tmake_file="${tmake_file} csky/t-csky csky/t-csky-linux"
+
+		if test "x${enable_multilib}" = xyes ; then
+		    tm_file="$tm_file ./sysroot-suffix.h"
+		    tmake_file="${tmake_file} csky/t-sysroot-suffix"
+		fi
+
+		case ${target} in
+		    csky-*-linux-gnu*)
+			tm_defines="$tm_defines DEFAULT_LIBC=LIBC_GLIBC"
+			;;
+		    csky-*-linux-uclibc*)
+			tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC"
+			default_use_cxa_atexit=no
+			;;
+		    *)
+			echo "Unknown target $target"
+			exit 1
+			;;
+		esac
+		;;
+	    *)
+		echo "Unknown target $target"
+		exit 1
+		;;
+	esac
+	;;
 epiphany-*-elf | epiphany-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h"
 	tmake_file="${tmake_file} epiphany/t-epiphany"
@@ -3794,6 +3858,10 @@ case "${target}" in
 		 exit 1
 		fi
 		;;
+
+    csky-*-*)
+	supported_defaults="cpu endian float"
+	;;
 
 	arm*-*-*)
 		supported_defaults="arch cpu float tune fpu abi mode tls"
