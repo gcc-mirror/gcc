@@ -323,7 +323,7 @@ wide_int_range_lshift (wide_int &res_lb, wide_int &res_ub,
   /* Transform left shifts by constants into multiplies.  */
   if (wi::eq_p (vr1_lb, vr1_ub))
     {
-      int shift = wi::extract_uhwi (vr1_ub, 0, vr1_ub.get_precision ());
+      unsigned shift = vr1_ub.to_uhwi ();
       wide_int tmp = wi::set_bit_in_zero (shift, prec);
       return wide_int_range_multiplicative_op (res_lb, res_ub,
 					       MULT_EXPR, sign, prec,
