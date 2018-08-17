@@ -669,6 +669,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget bfin-*-*]
 	     || [istarget cris-*-*]
 	     || [istarget crisv32-*-*]
+	     || [istarget csky-*-elf]
 	     || [istarget fido-*-elf]
 	     || [istarget h8300-*-*]
 	     || [istarget lm32-*-*]
@@ -1226,6 +1227,16 @@ proc check_effective_target_hard_float { } {
 		#error __RX_64_BIT_DOUBLES__
 		#endif
 	# }]
+    }
+
+    # The generic test doesn't work for C-SKY because some cores have
+    # hard float for single precision only.
+    if { [istarget csky*-*-*] } {
+       return [check_no_compiler_messages hard_float assembly {
+               #if defined __csky_soft_float__
+               #error __csky_soft_float__
+               #endif
+       }]
     }
 
     # The generic test equates hard_float with "no call for adding doubles".
@@ -8843,6 +8854,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget arc*-*-*]
 	 || [istarget avr*-*-*]
 	 || [istarget crisv32-*-*] || [istarget cris-*-*]
+	 || [istarget csky*-*-*]
 	 || [istarget mmix-*-*]
 	 || [istarget s390*-*-*]
 	 || [istarget powerpc*-*-*]
@@ -8861,6 +8873,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 proc check_effective_target_branch_cost {} {
     if { [   istarget arm*-*-*]
 	 || [istarget avr*-*-*]
+	 || [istarget csky*-*-*]
 	 || [istarget epiphany*-*-*]
 	 || [istarget frv*-*-*]
 	 || [istarget i?86-*-*] || [istarget x86_64-*-*]

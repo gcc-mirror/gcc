@@ -1,3 +1,8 @@
+if {[istarget "csky-*-*"] && [check_effective_target_hard_float]} {
+    # The C-SKY hardware FPU only supports flush-to-zero mode.
+    set torture_execute_xfail "csky-*-*"
+    return 1
+}
 if [istarget "epiphany-*-*"] {
     # The Epiphany single-precision floating point format does not
     # support subnormals.
