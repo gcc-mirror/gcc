@@ -1273,15 +1273,6 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
      function where set this flag to FALSE.  */
   pfile->about_to_expand_macro_p = true;
 
-  if ((node->flags & NODE_BUILTIN) && !(node->flags & NODE_USED))
-    {
-      node->flags |= NODE_USED;
-      if ((!pfile->cb.user_builtin_macro
-	   || !pfile->cb.user_builtin_macro (pfile, node))
-	  && pfile->cb.used_define)
-	pfile->cb.used_define (pfile, pfile->directive_line, node);
-    }
-
   if (cpp_user_macro_p (node))
     {
       cpp_macro *macro = node->value.macro;
@@ -1328,13 +1319,9 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
       /* Disable the macro within its expansion.  */
       node->flags |= NODE_DISABLED;
 
-      if (!(node->flags & NODE_USED))
-	{
-	  node->flags |= NODE_USED;
-	  if (pfile->cb.used_define)
-	    pfile->cb.used_define (pfile, pfile->directive_line, node);
-	}
-
+      /* Laziness can only affect the expansion tokens of the macro,
+	 not its fun-likeness or parameters.  */
+      _cpp_maybe_notify_macro_use (pfile, node);
       if (pfile->cb.used)
 	pfile->cb.used (pfile, location, node);
 
@@ -2993,7 +2980,6 @@ static bool
 warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
 		      const cpp_macro *macro2)
 {
-  const cpp_macro *macro1;
   unsigned int i;
 
   /* Some redefinitions need to be warned about regardless.  */
@@ -3002,9 +2988,7 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
 
   /* Suppress warnings for builtins that lack the NODE_WARN flag,
      unless Wbuiltin-macro-redefined.  */
-  if (node->flags & NODE_BUILTIN
-      && (!pfile->cb.user_builtin_macro
-	  || !pfile->cb.user_builtin_macro (pfile, node)))
+  if (cpp_builtin_macro_p (node))
     return CPP_OPTION (pfile, warn_builtin_macro_redefined);
 
   /* Redefinitions of conditional (context-sensitive) macros, on
@@ -3012,9 +2996,17 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
   if (node->flags & NODE_CONDITIONAL)
     return false;
 
+  cpp_macro *macro1 = node->value.macro;
+  if (macro1->lazy)
+    {
+      /* We don't want to mark MACRO as used, but do need to finalize
+	 its laziness.  */
+      pfile->cb.user_lazy_macro (pfile, macro1, macro1->lazy - 1);
+      macro1->lazy = 0;
+    }
+
   /* Redefinition of a macro is allowed if and only if the old and new
      definitions are the same.  (6.10.3 paragraph 2).  */
-  macro1 = node->value.macro;
 
   /* Don't check count here as it can be different in valid
      traditional redefinitions with just whitespace differences.  */
@@ -3481,6 +3473,7 @@ _cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
 
   macro->line = pfile->directive_line;
   macro->params = 0;
+  macro->lazy = 0;
   macro->paramc = 0;
   macro->variadic = 0;
   macro->used = !CPP_OPTION (pfile, warn_unused_macros);
@@ -3553,6 +3546,16 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   return true;
 }
 
+extern void
+cpp_define_lazily (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
+{
+  cpp_macro *macro = node->value.macro;
+
+  gcc_checking_assert (pfile->cb.user_lazy_macro && macro && num < 255);
+
+  macro->lazy = num + 1;
+}
+
 /* Notify the use of NODE in a macro-aware context (i.e. expanding it,
    or testing its existance).  Also applies any lazy definition.  */
 
@@ -3563,9 +3566,15 @@ _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
   switch (node->type)
     {
     case NT_MACRO:
-      if ((node->flags & NODE_BUILTIN)
-	  && pfile->cb.user_builtin_macro)
-	pfile->cb.user_builtin_macro (pfile, node);
+      if (!(node->flags & NODE_BUILTIN))
+	{
+	  cpp_macro *macro = node->value.macro;
+	  if (macro->lazy)
+	    {
+	      pfile->cb.user_lazy_macro (pfile, macro, macro->lazy - 1);
+	      macro->lazy = 0;
+	    }
+	}
 
       if (pfile->cb.used_define)
 	pfile->cb.used_define (pfile, pfile->directive_line, node);
@@ -3641,23 +3650,12 @@ const unsigned char *
 cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
 {
   unsigned int i, len;
-  const cpp_macro *macro;
   unsigned char *buffer;
 
-  if (node->type != NT_MACRO || (node->flags & NODE_BUILTIN))
-    {
-      if (node->type != NT_MACRO
-	  || !pfile->cb.user_builtin_macro
-          || !pfile->cb.user_builtin_macro (pfile, node))
-	{
-	  cpp_error (pfile, CPP_DL_ICE,
-		     "invalid hash type %d in cpp_macro_definition",
-		     node->type);
-	  return 0;
-	}
-    }
+  gcc_checking_assert (cpp_user_macro_p (node));
 
-  macro = node->value.macro;
+  const cpp_macro *macro = node->value.macro;
+
   /* Calculate length.  */
   len = NODE_LEN (node) * 10 + 2;		/* ' ' and NUL.  */
   if (macro->fun_like)
