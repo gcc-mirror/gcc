@@ -3074,12 +3074,12 @@ _cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
 
   void *base = _cpp_reserve_room (pfile, n * sizeof (cpp_hashnode *),
 				  sizeof (cpp_hashnode *));
-  ((cpp_hashnode **)base)[n++] = spelling;
+  ((cpp_hashnode **)base)[n] = spelling;
 
   /* Morph into a macro arg.  */
   node->type = NT_MACRO_ARG;
   /* Index is 1 based.  */
-  node->value.arg_index = n;
+  node->value.arg_index = n + 1;
 
   return true;
 }

@@ -69,8 +69,8 @@ enum lc_reason
   LC_RENAME,		/* Other reason for name change.  */
   LC_RENAME_VERBATIM,	/* Likewise, but "" != stdin.  */
   LC_ENTER_MACRO,	/* Begin macro expansion.  */
-  LC_HWM
   /* FIXME: add support for stringize and paste.  */
+  LC_HWM
 };
 
 /* The typedef "source_location" is a key within the location database,

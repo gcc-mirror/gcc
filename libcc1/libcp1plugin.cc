@@ -1405,6 +1405,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	  DECL_DECLARED_INLINE_P (decl) = 1;
 	  DECL_INITIAL (decl) = error_mark_node;
 	}
+
       if (ctor)
 	DECL_CXX_CONSTRUCTOR_P (decl) = 1;
       else if (dtor)

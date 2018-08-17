@@ -443,17 +443,6 @@ new_linemap (struct line_maps *set,  source_location start_location)
   return result;
 }
 
-/* Return the location of the last source line within an ordinary
-   map.  */
-inline source_location
-LAST_SOURCE_LINE_LOCATION (const line_map_ordinary *map)
-{
-  return (((map[1].start_location - 1
-	    - map->start_location)
-	   & ~((1 << map->m_column_and_range_bits) - 1))
-	  + map->start_location);
-}
-
 /* Add a mapping of logical source line to physical source file and
    line number.
 

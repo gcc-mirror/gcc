@@ -2223,7 +2223,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 
     case INIT_EXPR:
     case MODIFY_EXPR:
-      dump_binary_op (pp, ovl_op_info[1][OVL_OP_NOP_EXPR].name, t, flags);
+      dump_binary_op (pp, OVL_OP_INFO (true, NOP_EXPR)->name, t, flags);
       break;
 
     case PLUS_EXPR:
