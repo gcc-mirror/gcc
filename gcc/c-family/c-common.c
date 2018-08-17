@@ -8370,6 +8370,7 @@ c_family_tests (void)
 {
   c_common_c_tests ();
   c_format_c_tests ();
+  c_indentation_c_tests ();
   c_pretty_print_c_tests ();
   c_spellcheck_cc_tests ();
 }

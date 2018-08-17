@@ -702,6 +702,8 @@ extern rtx emit_store_flag (rtx, enum rtx_code, rtx, rtx, machine_mode,
 extern rtx emit_store_flag_force (rtx, enum rtx_code, rtx, rtx,
 				  machine_mode, int, int);
 
+extern void canonicalize_comparison (machine_mode, enum rtx_code *, rtx *);
+
 /* Choose a minimal N + 1 bit approximation to 1/D that can be used to
    replace division by D, and put the least significant N bits of the result
    in *MULTIPLIER_PTR and return the most significant bit.  */

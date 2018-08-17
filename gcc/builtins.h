@@ -58,7 +58,7 @@ extern bool get_pointer_alignment_1 (tree, unsigned int *,
 				     unsigned HOST_WIDE_INT *);
 extern unsigned int get_pointer_alignment (tree);
 extern unsigned string_length (const void*, unsigned, unsigned);
-extern tree c_strlen (tree, int);
+extern tree c_strlen (tree, int, unsigned = 1);
 extern void expand_builtin_setjmp_setup (rtx, rtx);
 extern void expand_builtin_setjmp_receiver (rtx);
 extern void expand_builtin_update_setjmp_buf (rtx);

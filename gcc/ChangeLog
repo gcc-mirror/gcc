@@ -1,3 +1,128 @@
+2018-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	* cppbuiltin.c: Include "cpplib.h", not "cpp-id-data.h".
+
+2018-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86841
+	* wide-int-range.cc (wide_int_range_lshift): Use to_uhwi.
+
+2018-08-17  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Remove Warn, Init and Report for options with
+        Ignore/Deprecated flag. Warning is done automatically for
+        Deprecated flags.
+	* config/i386/i386.opt: Likewise.
+	* config/ia64/ia64.opt: Likewise.
+	* config/rs6000/rs6000.opt: Likewise.
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags):
+        Remove usage of flag_check_pointer_bounds.
+	* lto-wrapper.c (merge_and_complain): Do not handle
+        OPT_fcheck_pointer_bounds.
+	(append_compiler_options): Likewise.
+	* opt-functions.awk: Do not handle Deprecated.
+	* optc-gen.awk: Check that Var, Report and Init are not
+        used for an option with Ignore/Deprecated flag.
+	* opts-common.c (decode_cmdline_option): Do not report
+        CL_ERR_DEPRECATED.
+	(read_cmdline_option): Report warning for OPT_SPECIAL_deprecated
+        options.
+	* opts.h (struct cl_option): Remove cl_deprecated flag.
+	(CL_ERR_DEPRECATED): Remove error enum value.
+
+2018-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86505
+	* tree-inline.c (copy_bb): When inlining __builtin_va_arg_pack_len ()
+	across a va-arg-pack using call adjust its return value accordingly.
+
+2018-08-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86853
+	* gimple-ssa-sprintf.c (struct format_result): Rename member.
+	(struct fmtresult): Add member and initialize it in ctors.
+	(format_character): Handle %C.  Extend range to NUL.  Set MAYFAIL.
+	(format_string): Handle %S the same as %ls.  Set MAYFAIL.
+	(format_directive): Set POSUNDER4K when MAYFAIL is set.
+	(parse_directive): Handle %C same as %c.
+	(sprintf_dom_walker::compute_format_length): Adjust.
+	(is_call_safe): Adjust.
+
+2018-08-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* builtins.c (c_strlen): Add new parameter eltsize.  Use it
+	for determining how to count the elements.
+	* builtins.h (c_strlen): Adjust prototype.
+	* expr.c (string_constant): Add new parameter mem_size.
+	Set *mem_size appropriately.
+	* expr.h (string_constant): Adjust protoype.
+	* gimple-fold.c (get_range_strlen): Add new parameter eltsize.
+	* gimple-fold.h (get_range_strlen): Adjust prototype.
+	* gimple-ssa-sprintf.c (get_string_length): Add new parameter eltsize.
+	(format_string): Call get_string_length with eltsize.
+
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.c (default_diagnostic_start_span_fn): Call pp_string
+	to emit the span, rather than setting it as the prefix.
+
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (layout::start_annotation_line): Add
+	"margin_char" parameter, defaulting to space.  Use it in place
+	of pp_space for the initial part of the margin.
+	(layout::print_leading_fixits): Use '+' when filling the margin
+	of line-insertion fix-it hints.
+
+2018-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (two unnamed define_insn and define_split):
+	Delete.
+
+2018-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md: Don't set length attribute to the default
+	value.
+	* config/rs6000/darwin.md: Ditto.
+	* config/rs6000/dfp.md: Ditto.
+	* config/rs6000/htm.md: Ditto.
+	* config/rs6000/rs6000.md: Ditto.
+	* config/rs6000/sync.md: Ditto.
+	* config/rs6000/vsx.md: Ditto.
+
+2018-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md: Don't set length attribute to the default
+	value, for branch instructions.
+	* config/rs6000/darwin.md: Ditto.
+	* config/rs6000/rs6000.md: Ditto.
+
+2018-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (length): Always define as const_int 4.
+	(unnamed conditional branch define_insn): Set length to 4 or 8
+	depending on offset.
+	(<bd>_<mode>): Similar, for alternative 0.
+	(<bd>tf_<mode>): Ditto.
+
+2018-08-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* expr.c (copy_blkmode_to_reg): Perform larger copies when safe.
+
+2018-08-16  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* doc/rtl.texi: Replace old RTX class names with new names.
+
+
+2018-08-16  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* expmed.h (canonicalize_comparison): New declaration.
+	* expmed.c (canonicalize_comparison, equivalent_cmp_code): New function.
+	* expmed.c (emit_store_flag_1): Add call to canonicalize_comparison.
+	* optabs.c (prepare_cmp_insn): Likewise.
+	* rtl.h (unsigned_condition_p): New function which checks if a
+	comparison operator is unsigned.
+
 2018-08-16  Nathan Sidwell  <nathan@acm.org>
 
 	* config/rs6000/rs6000-c.c (rs6000_macro_to_expend): Use cpp_macro_p.

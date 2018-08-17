@@ -3812,6 +3812,9 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
   gcc_assert (methods == OPTAB_DIRECT || methods == OPTAB_WIDEN
 	      || methods == OPTAB_LIB_WIDEN);
 
+  if (CONST_SCALAR_INT_P (y))
+    canonicalize_comparison (mode, &comparison, &y);
+
   /* If we are optimizing, force expensive constants into a register.  */
   if (CONSTANT_P (x) && optimize
       && (rtx_cost (x, mode, COMPARE, 0, optimize_insn_for_speed_p ())

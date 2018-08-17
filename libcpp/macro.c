@@ -3047,7 +3047,6 @@ _cpp_free_definition (cpp_hashnode *h)
 
 /* Save parameter NODE (spelling SPELLING) to the parameter list of
    macro MACRO.  Returns true on success, false on failure.   */
-
 bool
 _cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
 		     cpp_hashnode *spelling)
@@ -3086,7 +3085,6 @@ _cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
 }
 
 /* Restore the parameters to their previous state.  */
-
 void
 _cpp_unsave_parameters (cpp_reader *pfile, unsigned n)
 {
@@ -3427,6 +3425,7 @@ create_iso_definition (cpp_reader *pfile)
 	goto out;
     }
 
+  /* We're committed to winning now.  */
   ok = true;
 
   /* Don't count the CPP_EOF.  */

@@ -3310,6 +3310,15 @@ extern enum rtx_code unsigned_condition (enum rtx_code);
 extern enum rtx_code signed_condition (enum rtx_code);
 extern void mark_jump_label (rtx, rtx_insn *, int);
 
+/* Return true if integer comparison operator CODE interprets its operands
+   as unsigned.  */
+
+inline bool
+unsigned_condition_p (enum rtx_code code)
+{
+  return unsigned_condition (code) == code;
+}
+
 /* In jump.c */
 extern rtx_insn *delete_related_insns (rtx);
 

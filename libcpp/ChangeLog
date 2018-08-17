@@ -1,6 +1,26 @@
+2018-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	* cpp-id-data.h (uchar, UC): Move to internal.h
+	(struct cpp_macro): Move to cpplib.h.
+	* internal.h (uchar, UC): From cpp-id-data.h.
+	* include/cpplib.h (struct cpp_macro): From cpp-id-data.h.
+
 2018-08-16  Nathan Sidwell  <nathan@acm.org>
 
-	libcpp/
+	* internal.h (_cpp_save_parameter): Take parmno, not macro.
+	(_cpp_unsave_parameters): Declare.
+	* macro.c (_cpp_save_parameter): Take parm number, not macro.
+	Return true on success.
+	(_cpp_unsave_parameters): New.
+	(parse_params): Take parm_no and variadic pointers, not macro.
+	Reimplement parsing logic.
+	(create_iso_definition): Adjust parse_params changes.  Call
+	_cpp_unsave_parameters here.
+	(_cpp_create_definition): Don't unsave params here.
+	* traditional.c (scan_parameters): Take n_param pointer, adjust.
+	(_cpp_create_trad_definition): Ajust scan_parameters change.  Call
+	_cpp_unsave_parameters.
+
 	* include/cpplib.h (cpp_user_macro_p, cpp_builtin_macro_p)
 	(cpp_macro_p): New inlines.
 	* directives.c (do_pragma_poison): Use cpp_macro_p.

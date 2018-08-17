@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 extern tree create_tmp_reg_or_ssa_name (tree, gimple *stmt = NULL);
 extern tree canonicalize_constructor_val (tree, tree);
 extern tree get_symbol_constant_value (tree);
-extern bool get_range_strlen (tree, tree[2], bool = false);
+extern bool get_range_strlen (tree, tree[2], unsigned = 1, bool = false);
 extern tree get_maxval_strlen (tree, int);
 extern void gimplify_and_update_call_from_tree (gimple_stmt_iterator *, tree);
 extern bool fold_stmt (gimple_stmt_iterator *);
