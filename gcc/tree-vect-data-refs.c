@@ -74,8 +74,7 @@ vect_lanes_optab_supported_p (const char *name, convert_optab optab,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "no array mode for %s["
-			     HOST_WIDE_INT_PRINT_DEC "]\n",
+			     "no array mode for %s[%wu]\n",
 			     GET_MODE_NAME (mode), count);
 	  return false;
 	}
@@ -1249,9 +1248,8 @@ vector_alignment_reachable_p (dr_vec_info *dr_info)
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
-	                   "data size =" HOST_WIDE_INT_PRINT_DEC, elmsize);
-	  dump_printf (MSG_NOTE,
-	               ". misalignment = %d.\n", DR_MISALIGNMENT (dr_info));
+	                   "data size = %wd. misalignment = %d.\n", elmsize,
+			   DR_MISALIGNMENT (dr_info));
 	}
       if (DR_MISALIGNMENT (dr_info) % elmsize)
 	{

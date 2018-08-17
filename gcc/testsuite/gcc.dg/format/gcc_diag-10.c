@@ -19,12 +19,16 @@ typedef union tree_node *tree;
    the C test to find the symbol.  */
 typedef struct gimple gimple;
 
+/* Likewise for gimple.  */
+typedef struct gimple gimple;
+
 #define FORMAT(kind) __attribute__ ((format (__gcc_## kind ##__, 1, 2)))
 
 void diag (const char*, ...) FORMAT (diag);
 void cdiag (const char*, ...) FORMAT (cdiag);
 void tdiag (const char*, ...) FORMAT (tdiag);
 void cxxdiag (const char*, ...) FORMAT (cxxdiag);
+void dump (const char*, ...) FORMAT (dump_printf);
 
 void test_diag (tree t, gimple *gc)
 {
@@ -156,4 +160,26 @@ void test_cxxdiag (tree t, gimple *gc)
   cxxdiag ("%<%T%>", t);
   cxxdiag ("%<%V%>", t);
   cxxdiag ("%<%X%>", t);
+}
+
+void test_dump (tree t, gimple *stmt)
+{
+  dump ("%<");   /* { dg-warning "unterminated quoting directive" } */
+  dump ("%>");   /* { dg-warning "unmatched quoting directive " } */
+  dump ("%<foo%<bar%>%>");   /* { dg-warning "nested quoting directive" } */
+
+  dump ("%R");       /* { dg-warning "unmatched color reset directive" } */
+  dump ("%r", "");   /* { dg-warning "unterminated color directive" } */
+  dump ("%r%r", "", "");   /* { dg-warning "unterminated color directive" } */
+  dump ("%r%R", "");
+  dump ("%r%r%R", "", "");
+  dump ("%r%R%r%R", "", "");
+
+  dump ("%<%R%>");      /* { dg-warning "unmatched color reset directive" } */
+  dump ("%<%r%>", "");  /* { dg-warning "unterminated color directive" } */
+  dump ("%<%r%R%>", "");
+
+  dump ("%E", stmt);
+  dump ("%T", t);
+  dump ("%G", stmt);
 }

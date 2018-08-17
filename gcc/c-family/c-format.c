@@ -46,6 +46,7 @@ enum format_type { printf_format_type, asm_fprintf_format_type,
 		   gcc_diag_format_type, gcc_tdiag_format_type,
 		   gcc_cdiag_format_type,
 		   gcc_cxxdiag_format_type, gcc_gfc_format_type,
+		   gcc_dump_printf_format_type,
 		   gcc_objc_string_format_type,
 		   format_type_error = -1};
 
@@ -463,6 +464,7 @@ static const format_length_info gcc_diag_length_specs[] =
 #define gcc_tdiag_length_specs gcc_diag_length_specs
 #define gcc_cdiag_length_specs gcc_diag_length_specs
 #define gcc_cxxdiag_length_specs gcc_diag_length_specs
+#define gcc_dump_printf_length_specs gcc_diag_length_specs
 
 /* This differs from printf_length_specs only in that "Z" is not accepted.  */
 static const format_length_info scanf_length_specs[] =
@@ -552,6 +554,7 @@ static const format_flag_pair gcc_diag_flag_pairs[] =
 #define gcc_cdiag_flag_pairs gcc_diag_flag_pairs
 #define gcc_cxxdiag_flag_pairs gcc_diag_flag_pairs
 #define gcc_gfc_flag_pairs gcc_diag_flag_pairs
+#define gcc_dump_printf_flag_pairs gcc_diag_flag_pairs
 
 static const format_flag_spec gcc_diag_flag_specs[] =
 {
@@ -567,6 +570,7 @@ static const format_flag_spec gcc_diag_flag_specs[] =
 #define gcc_cdiag_flag_specs gcc_diag_flag_specs
 #define gcc_cxxdiag_flag_specs gcc_diag_flag_specs
 #define gcc_gfc_flag_specs gcc_diag_flag_specs
+#define gcc_dump_printf_flag_specs gcc_diag_flag_specs
 
 static const format_flag_spec scanf_flag_specs[] =
 {
@@ -788,6 +792,22 @@ static const format_char_info gcc_gfc_char_table[] =
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
+static const format_char_info gcc_dump_printf_char_table[] =
+{
+  /* The conversion specifiers implemented within pp_format.  */
+  PP_FORMAT_CHAR_TABLE,
+
+  /* Custom conversion specifiers implemented by dump_pretty_printer.  */
+
+  /* E and G require a "gimple *" argument at runtime.  */
+  { "EG",   1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
+
+  /* T requires a "tree" at runtime.  */
+  { "T",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
+
+  { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
+};
+
 static const format_char_info scan_char_table[] =
 {
   /* C89 conversion specifiers.  */
@@ -886,6 +906,13 @@ static const format_kind_info format_types_orig[] =
     FMT_FLAG_ARG_CONVERT,
     0, 0, 0, 0, 0, 0,
     NULL, NULL
+  },
+  { "gcc_dump_printf",   gcc_dump_printf_length_specs,
+    gcc_dump_printf_char_table, "q+#", NULL,
+    gcc_dump_printf_flag_specs, gcc_dump_printf_flag_pairs,
+    FMT_FLAG_ARG_CONVERT,
+    0, 0, 'p', 0, 'L', 0,
+    NULL, &integer_type_node
   },
   { "NSString",   NULL,  NULL, NULL, NULL,
     NULL, NULL,
@@ -3971,6 +3998,7 @@ init_dynamic_diag_info (void)
 	  dynamic_format_types[gcc_tdiag_format_type].length_char_specs =
 	  dynamic_format_types[gcc_cdiag_format_type].length_char_specs =
 	  dynamic_format_types[gcc_cxxdiag_format_type].length_char_specs =
+	  dynamic_format_types[gcc_dump_printf_format_type].length_char_specs =
 	  diag_ls = (format_length_info *)
 		    xmemdup (gcc_diag_length_specs,
 			     sizeof (gcc_diag_length_specs),
@@ -3997,6 +4025,8 @@ init_dynamic_diag_info (void)
     gcc_cdiag_char_table;
   dynamic_format_types[gcc_cxxdiag_format_type].conversion_specs =
     gcc_cxxdiag_char_table;
+  dynamic_format_types[gcc_dump_printf_format_type].conversion_specs =
+    gcc_dump_printf_char_table;
 }
 
 #ifdef TARGET_FORMAT_TYPES
@@ -4151,7 +4181,8 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       || info.format_type == gcc_diag_format_type
       || info.format_type == gcc_tdiag_format_type
       || info.format_type == gcc_cdiag_format_type
-      || info.format_type == gcc_cxxdiag_format_type)
+      || info.format_type == gcc_cxxdiag_format_type
+      || info.format_type == gcc_dump_printf_format_type)
     {
       /* Our first time through, we have to make sure that our
 	 format_type data is allocated dynamically and is modifiable.  */
@@ -4173,7 +4204,8 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       else if (info.format_type == gcc_diag_format_type
 	       || info.format_type == gcc_tdiag_format_type
 	       || info.format_type == gcc_cdiag_format_type
-	       || info.format_type == gcc_cxxdiag_format_type)
+	       || info.format_type == gcc_cxxdiag_format_type
+	       || info.format_type == gcc_dump_printf_format_type)
 	init_dynamic_diag_info ();
       else
 	gcc_unreachable ();
