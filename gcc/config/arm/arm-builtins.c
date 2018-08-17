@@ -927,6 +927,11 @@ arm_init_simd_builtin_types (void)
   (*lang_hooks.types.register_builtin_type) (arm_simd_polyTI_type_node,
 					     "__builtin_neon_poly128");
 
+  /* Prevent front-ends from transforming poly vectors into string
+     literals.  */
+  TYPE_STRING_FLAG (arm_simd_polyQI_type_node) = false;
+  TYPE_STRING_FLAG (arm_simd_polyHI_type_node) = false;
+
   /* Init all the element types built by the front-end.  */
   arm_simd_types[Int8x8_t].eltype = intQI_type_node;
   arm_simd_types[Int8x16_t].eltype = intQI_type_node;
