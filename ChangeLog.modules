@@ -1,3 +1,11 @@
+2018-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (module_state::is_detached): New.
+	(module_state::attach): New, broken out of ...
+	(module_state::find_module): ... here.  Call it.
+	(declare_modules): Do module-specific attaching here.
+
 2018-08-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/testsuite/
