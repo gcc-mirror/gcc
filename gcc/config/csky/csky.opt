@@ -1,0 +1,173 @@
+;; Command-line options for the C-SKY back end.
+;; Copyright (C) 2018 Free Software Foundation, Inc.
+;; Contributed by C-SKY Microsystems and Mentor Graphics.
+;;
+;; This file is part of GCC.
+;;
+;; GCC is free software; you can redistribute it and/or modify it under
+;; the terms of the GNU General Public License as published by the Free
+;; Software Foundation; either version 3, or (at your option) any later
+;; version.
+;;
+;; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+;; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+;; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+;; for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with GCC; see the file COPYING3.  If not see
+;; <http://www.gnu.org/licenses/>.
+
+
+HeaderInclude
+config/csky/csky_opts.h
+
+;; Architecture/CPU options.
+;; Normal CPU and arch enums are loaded from csky_tables.opt.
+
+; For backward compatibility only.
+march=ck803s
+Target Report Var(flag_arch_ck803s) Undocumented
+
+march=
+Target RejectNegative ToLower Joined Enum(csky_arch) Var(csky_arch_option) Save
+Specify the target architecture.
+
+mcpu=
+Target RejectNegative ToLower Joined Enum(csky_processor_type) Var(csky_cpu_option) Init(TARGET_CPU_csky_none) Save
+Specify the target processor.
+
+;; Endianness options.
+
+mbig-endian
+Target RejectNegative Report Mask(BIG_ENDIAN)
+Generate big-endian code.
+
+EB
+Target RejectNegative Report Alias(mbig-endian) Undocumented
+
+mlittle-endian
+Target RejectNegative Report InverseMask(BIG_ENDIAN)
+Generate little-endian code.
+
+EL
+Target RejectNegative Report Alias(mlittle-endian) Undocumented
+
+;; Floating point options.  These affect code generation but not
+;; assembly.
+
+mhard-float
+Target Report RejectNegative Mask(HARD_FLOAT)
+Enable hardware floating-point instructions.
+
+msoft-float
+Target Report RejectNegative InverseMask(HARD_FLOAT)
+Use library calls to perform floating-point operations (default).
+
+mfpu=
+Target RejectNegative Joined Enum(csky_fpu) Var(csky_fpu_index) Init(TARGET_FPU_auto) Save
+Specify the target floating-point hardware/format.
+
+mdouble-float
+Target Report Var(TARGET_DOUBLE_FLOAT) Init(-1)
+Generate C-SKY FPU double float instructions (default for hard float).
+
+mfdivdu
+Target Report Var(TARGET_FDIVDU) Init(-1)
+Generate frecipd/fsqrtd/fdivd instructions (default for hard float).
+
+;; Instruction set extensions.  Most of these don't affect code
+;; generation, and are passed through to the assembler.
+;; There are builtin preprocessor defines for each of these.
+
+melrw
+Target Report Var(TARGET_ELRW) Init(-1)
+Enable the extended LRW instruction (default for CK801).
+
+mistack
+Target Report Mask(ISTACK)
+Enable interrupt stack instructions.
+
+mmp
+Target Report RejectNegative Mask(MP)
+Enable multiprocessor instructions.
+
+mcp
+Target Report RejectNegative Mask(CP)
+Enable coprocessor instructions.
+
+mcache
+Target Report RejectNegative Mask(CACHE)
+Enable cache prefetch instructions.
+
+msecurity
+Target Report RejectNegative Mask(SECURITY)
+Enable C-SKY SECURE instructions.
+
+mmac
+Target Report RejectNegative Alias(msecurity) Undocumented
+
+mtrust
+Target Report RejectNegative Mask(TRUST)
+Enable C-SKY TRUST instructions.
+
+mdsp
+Target Report RejectNegative Var(TARGET_DSP)
+Enable C-SKY DSP instructions.
+
+medsp
+Target Report RejectNegative Mask(EDSP)
+Enable C-SKY Enhanced DSP instructions.
+
+mvdsp
+Target Report RejectNegative Mask(VDSP)
+Enable C-SKY Vector DSP instructions.
+
+;; Code generation options not passed to the assembler.
+
+mdiv
+Target Report Var(TARGET_DIV) Init(-1)
+Generate divide instructions.
+
+msmart
+Target Report Var(TARGET_MINI_REGISTERS) Init(-1)
+Generate code for Smart Mode.
+
+mhigh-registers
+Target Report Var(TARGET_HIGH_REGISTERS) Init(-1)
+Enable use of R16-R31 (default).
+
+manchor
+Target Report Var(TARGET_ANCHOR)
+Generate code using global anchor symbol addresses.
+
+mpushpop
+Target Report Var(TARGET_PUSHPOP) Init(1)
+Generate push/pop instructions (default).
+
+mmultiple-stld
+Target Report Var(TARGET_MULTIPLE_STLD) Init(-1)
+Generate stm/ldm instructions (default).
+
+mstm
+Target Report Alias(mmultiple-stld) Undocumented
+
+mconstpool
+Target Report Var(TARGET_CONSTANT_POOL) Init(-1)
+Generate constant pools in the compiler instead of assembler.
+
+mstack-size
+Target Report Var(TARGET_STACK_SIZE) Init(0)
+Emit .stack_size directives.
+
+mccrt
+Target Report Var(TARGET_LIBCCRT) Init(0)
+Generate code for C-SKY compiler runtime instead of libgcc.
+
+mbranch-cost=
+Target Report Joined RejectNegative UInteger Var(csky_branch_cost) Init(1)
+Set the branch costs to roughly the specified number of instructions.
+
+msched-prolog
+Target Report Var(flag_sched_prolog) Init(0)
+Permit scheduling of function prologue and epilogue sequences.

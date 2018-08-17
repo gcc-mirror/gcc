@@ -2,6 +2,16 @@
 	    Huibin Wang  <huibin_wang@c-sky.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	C-SKY port: Backend implementation
+
+	* config/csky/*: New.
+	* common/config/csky/*: New.
+
+2018-08-17  Jojo  <jijie_rong@c-sky.com>
+	    Huibin Wang  <huibin_wang@c-sky.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
 	    Andrew Jenner  <andrew@codesourcery.com>
 
 	C-SKY port: Configury
