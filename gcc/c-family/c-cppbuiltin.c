@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"		/* For user_label_prefix.  */
 #include "debug.h"		/* For dwarf2out_do_cfi_asm.  */
 #include "common/common-target.h"
-#include "cpp-id-data.h"
 #include "cppbuiltin.h"
 
 #ifndef TARGET_OS_CPP_BUILTINS

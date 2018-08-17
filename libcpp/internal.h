@@ -602,6 +602,12 @@ extern const unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #endif
 
+#if !defined (HAVE_UCHAR) && !defined (IN_GCC)
+typedef unsigned char uchar;
+#endif
+
+#define UC (const uchar *)  /* Intended use: UC"string" */
+
 /* Macros.  */
 
 static inline int cpp_in_system_header (cpp_reader *);

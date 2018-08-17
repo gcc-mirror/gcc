@@ -671,6 +671,57 @@ struct cpp_dir
   dev_t dev;
 };
 
+/* Each macro definition is recorded in a cpp_macro structure.
+   Variadic macros cannot occur with traditional cpp.  */
+struct GTY(()) cpp_macro {
+  /* Parameters, if any.  If parameter names use extended identifiers,
+     the original spelling of those identifiers, not the canonical
+     UTF-8 spelling, goes here.  */
+  cpp_hashnode ** GTY ((nested_ptr (union tree_node,
+		"%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
+			"%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL"),
+			length ("%h.paramc")))
+    params;
+
+  /* Replacement tokens (ISO) or replacement text (traditional).  See
+     comment at top of cpptrad.c for how traditional function-like
+     macros are encoded.  */
+  union cpp_macro_u
+  {
+    cpp_token * GTY ((tag ("0"), length ("%0.count"))) tokens;
+    const unsigned char * GTY ((tag ("1"))) text;
+  } GTY ((desc ("%1.traditional"))) exp;
+
+  /* Definition line number.  */
+  source_location line;
+
+  /* Number of tokens in expansion, or bytes for traditional macros.  */
+  unsigned int count;
+
+  /* Number of parameters.  */
+  unsigned short paramc;
+
+  /* If a function-like macro.  */
+  unsigned int fun_like : 1;
+
+  /* If a variadic macro.  */
+  unsigned int variadic : 1;
+
+  /* If macro defined in system header.  */
+  unsigned int syshdr   : 1;
+
+  /* Nonzero if it has been expanded or had its existence tested.  */
+  unsigned int used     : 1;
+
+  /* Indicate which field of 'exp' is in use.  */
+  unsigned int traditional : 1;
+
+  /* Indicate whether the tokens include extra CPP_PASTE tokens at the
+     end to track invalid redefinitions with consecutive CPP_PASTE
+     tokens.  */
+  unsigned int extra_tokens : 1;
+};
+
 /* The structure of a node in the hash table.  The hash table has
    entries for all identifiers: either macros defined by #define
    commands (type NT_MACRO), assertions created with #assert
