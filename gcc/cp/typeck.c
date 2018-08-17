@@ -2208,6 +2208,8 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
       && !same_type_p (t, wchar_type_node))
     return 0;
 
+  location_t loc = EXPR_LOC_OR_LOC (exp, input_location);
+
   STRIP_ANY_LOCATION_WRAPPER (exp);
 
   if (TREE_CODE (exp) == STRING_CST)
@@ -2230,13 +2232,13 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
   if (warn)
     {
       if (cxx_dialect >= cxx11)
-	pedwarn (input_location, OPT_Wwrite_strings,
+	pedwarn (loc, OPT_Wwrite_strings,
 		 "ISO C++ forbids converting a string constant to %qT",
 		 totype);
       else
-	warning (OPT_Wwrite_strings,
-		 "deprecated conversion from string constant to %qT",
-		 totype);
+	warning_at (loc, OPT_Wwrite_strings,
+		    "deprecated conversion from string constant to %qT",
+		    totype);
     }
 
   return 1;
