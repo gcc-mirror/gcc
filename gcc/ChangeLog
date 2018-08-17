@@ -1,3 +1,12 @@
+2018-08-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	C-SKY port: Documentation
+
+	* doc/extend.texi (C-SKY Function Attributes): New section.
+	* doc/invoke.texi (Option Summary): Add C-SKY options.
+	(C-SKY Options): New section.
+	* doc/md.texi (Machine Constraints): Document C-SKY constraints.
+
 2018-08-17  Jojo  <jijie_rong@c-sky.com>
 	    Huibin Wang  <huibin_wang@c-sky.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
