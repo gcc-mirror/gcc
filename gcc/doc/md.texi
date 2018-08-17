@@ -2132,6 +2132,42 @@ Check for 64 bits wide constants for add/sub instructions
 Floating point constant that is legal for store immediate
 @end table
 
+@item C-SKY---@file{config/csky/constraints.md}
+@table @code
+
+@item a
+The mini registers r0 - r7.
+
+@item b
+The low registers r0 - r15.
+
+@item c
+C register.
+
+@item y
+HI and LO registers.
+
+@item l
+LO register.
+
+@item h
+HI register.
+
+@item v
+Vector registers.
+
+@item z
+Stack pointer register (SP).
+@end table
+
+@ifset INTERNALS
+The C-SKY back end supports a large set of additional constraints
+that are only useful for instruction selection or splitting rather
+than inline asm, such as constraints representing constant integer
+ranges accepted by particular instruction encodings.
+Refer to the source code for details.
+@end ifset
+
 @item Epiphany---@file{config/epiphany/constraints.md}
 @table @code
 @item U16
