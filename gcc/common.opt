@@ -1087,7 +1087,7 @@ Common Report Var(flag_caller_saves) Optimization
 Save registers around function calls.
 
 fcheck-data-deps
-Common Report Var(flag_check_data_deps)
+Common Ignore
 This switch is deprecated; do not use.
 
 fcheck-new
@@ -2897,19 +2897,19 @@ Common Driver Var(dwarf2out_as_locview_support) Init(2)
 Assume assembler support for view in (DWARF2+) .loc directives
 
 gcoff
-Common Driver Ignore Warn(switch %qs no longer supported)
+Common Driver Deprecated
 Does nothing.  Preserved for backward compatibility.
 
 gcoff1
-Common Driver Ignore Warn(switch %qs no longer supported)
+Common Driver Deprecated
 Does nothing.  Preserved for backward compatibility.
 
 gcoff2
-Common Driver Ignore Warn(switch %qs no longer supported)
+Common Driver Deprecated
 Does nothing.  Preserved for backward compatibility.
 
 gcoff3
-Common Driver Ignore Warn(switch %qs no longer supported)
+Common Driver Deprecated
 Does nothing.  Preserved for backward compatibility.
 
 gcolumn-info

@@ -24240,6 +24240,7 @@ gen_producer_string (void)
       case OPT_U:
       case OPT_SPECIAL_unknown:
       case OPT_SPECIAL_ignore:
+      case OPT_SPECIAL_deprecated:
       case OPT_SPECIAL_program_name:
       case OPT_SPECIAL_input_file:
       case OPT_grecord_gcc_switches:

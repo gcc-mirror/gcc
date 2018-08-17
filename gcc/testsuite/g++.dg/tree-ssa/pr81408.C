@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -std=gnu++11 -fopt-info-loop-missed -Wunsafe-loop-optimizations" } */
+/* { dg-options "-O2 -std=gnu++11 -fopt-info-loop-missed" } */
 struct p
 {
   char *ay;

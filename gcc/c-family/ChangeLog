@@ -1,3 +1,9 @@
+2018-08-17  Martin Liska  <mliska@suse.cz>
+
+	* c.opt: Remove Warn, Init and Report for options with
+        Ignore/Deprecated flag. Warning is done automatically for
+        Deprecated flags.
+
 2018-08-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/70693

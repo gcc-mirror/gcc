@@ -1,3 +1,3 @@
 /* { dg-do compile } */
 // { dg-options "-mmpx" }
-// { dg-warning "deprecated command line option .-mmpx." "" { target *-*-* } 0 }
+// { dg-warning "switch .-mmpx. is no longer supported" "" { target *-*-* } 0 }
