@@ -1,3 +1,8 @@
+2018-08-17  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/86996
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust.
+
 2018-08-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/conversion/Wwrite-strings.C: New test.
