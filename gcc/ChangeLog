@@ -1,3 +1,21 @@
+2018-08-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	2018-08-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (UNSPEC_MEMORY_BARRIER): New unspec enum.
+	Update comment for atomic instructions.
+	(atomic_storeqi, atomic_storehi, atomic_storesi, atomic_storesf,
+	atomic_loaddf, atomic_loaddf_1, atomic_storedf, atomic_storedf_1):
+	Remove.
+	(atomic_loaddi): Revise fence expansion to only emit fence prior to
+	load for __ATOMIC_SEQ_CST model.
+	(atomic_loaddi_1): Remove float register target.
+	(atomic_storedi): Handle CONST_INT values.
+	(atomic_storedi_1): Remove float register source.  Add special case
+	for zero value.
+	(memory_barrier): New expander and insn.
+
 2018-08-16  Tamar Christina <tamar.christina@arm.com>
 
 	Backport from mainline
