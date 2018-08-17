@@ -1,3 +1,8 @@
+2018-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86841
+	* wide-int-range.cc (wide_int_range_lshift): Use to_uhwi.
+
 2018-08-17  Martin Liska  <mliska@suse.cz>
 
 	* common.opt: Remove Warn, Init and Report for options with
