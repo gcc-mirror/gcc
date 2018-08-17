@@ -1,3 +1,36 @@
+2018-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86963
+	* include/std/tuple (__tuple_base): New class template with deleted
+	copy assignment operator.
+	(tuple, tuple<_T1, _T2>): Derive from __tuple_base<tuple> so that
+	implicit copy/move assignment operator will be deleted/suppressed.
+	(tuple::__assignable, tuple<_T1, _T2>::__assignable): New helper
+	functions for SFINAE constraints on assignment operators.
+	(tuple::__nothrow_assignable, tuple<_T1, _T2>::__nothrow_assignable):
+	New helper functions for exception specifications.
+	(tuple::operator=(const tuple&), tuple::operator=(tuple&&))
+	(tuple<_T1, _T2>::operator=(const tuple&))
+	(tuple<_T1, _T2>::operator=(tuple&&)): Change parameter types to
+	__nonesuch_no_braces when the operator should be defined implicitly.
+	Use __nothrow_assignable for exception specifications.
+	(tuple::operator=(const tuple<_UElements...>&))
+	(tuple::operator=(tuple<_UElements...>&&))
+	(tuple<_T1, _T2>::operator=(const tuple<_U1, _U2>&))
+	(tuple<_T1, _T2>::operator=(tuple<_U1, _U2>&&))
+	(tuple<_T1, _T2>::operator=(const pair<_U1, _U2>&))
+	(tuple<_T1, _T2>::operator=(pair<_U1, _U2>&&)): Constrain using
+	__assignable and use __nothrow_assignable for exception
+	specifications.
+	* python/libstdcxx/v6/printers.py (is_specialization_of): Accept
+	gdb.Type as first argument, instead of a string.
+	(StdTuplePrinter._iterator._is_nonempty_tuple): New method to check
+	tuple for expected structure.
+	(StdTuplePrinter._iterator.__init__): Use _is_nonempty_tuple.
+	* testsuite/20_util/tuple/dr2729.cc: New test.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Change dg-error
+	to dg-prune-output.
+
 2018-08-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/tr1/legendre_function.tcc (__sph_legendre): Avoid warning
