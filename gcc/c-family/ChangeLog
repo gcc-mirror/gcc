@@ -1,3 +1,8 @@
+2018-08-17  Martin Liska  <mliska@suse.cz>
+
+        PR other/86992
+	* c.opt: Fix declaration of cilkplus.
+
 2018-07-26  Release Manager
 
 	* GCC 8.2.0 released.
