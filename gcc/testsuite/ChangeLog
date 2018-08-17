@@ -1,3 +1,11 @@
+2018-08-17  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR c++/86763
+	* g++.dg/torture/pr86763.C: New testcase.
+
 2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr55.adb: New test.

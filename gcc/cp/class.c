@@ -6662,6 +6662,7 @@ layout_class_type (tree t, tree *virtuals_p)
 				  bitsize_int (BITS_PER_UNIT)));
       SET_TYPE_ALIGN (base_t, rli->record_align);
       TYPE_USER_ALIGN (base_t) = TYPE_USER_ALIGN (t);
+      TYPE_TYPELESS_STORAGE (base_t) = TYPE_TYPELESS_STORAGE (t);
 
       /* Copy the fields from T.  */
       next_field = &TYPE_FIELDS (base_t);
