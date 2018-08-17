@@ -1,3 +1,12 @@
+2018-08-17  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR c++/86763
+	* class.c (layout_class_type): Copy TYPE_TYPELESS_STORAGE
+	to the CLASSTYPE_AS_BASE.
+
 2018-08-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86728 - C variadic generic lambda.
