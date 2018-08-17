@@ -1,3 +1,13 @@
+2018-08-17  Jojo  <jijie_rong@c-sky.com>
+	    Huibin Wang  <huibin_wang@c-sky.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Andrew Jenner  <andrew@codesourcery.com>
+
+	C-SKY port: Configury
+
+	* config-list.mk (LIST): Add csky-elf and csky-linux-gnu.
+
 2018-07-13  Tom de Vries  <tdevries@suse.de>
 
 	* maintainers-verify.sh: New file.
