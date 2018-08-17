@@ -1,3 +1,9 @@
+2018-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86505
+	* tree-inline.c (copy_bb): When inlining __builtin_va_arg_pack_len ()
+	across a va-arg-pack using call adjust its return value accordingly.
+
 2018-08-16  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86853
