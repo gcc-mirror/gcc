@@ -1,3 +1,15 @@
+2018-08-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86853
+	* gimple-ssa-sprintf.c (struct format_result): Rename member.
+	(struct fmtresult): Add member and initialize it in ctors.
+	(format_character): Handle %C.  Extend range to NUL.  Set MAYFAIL.
+	(format_string): Handle %S the same as %ls.  Set MAYFAIL.
+	(format_directive): Set POSUNDER4K when MAYFAIL is set.
+	(parse_directive): Handle %C same as %c.
+	(sprintf_dom_walker::compute_format_length): Adjust.
+	(is_call_safe): Adjust.
+
 2018-08-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* builtins.c (c_strlen): Add new parameter eltsize.  Use it
