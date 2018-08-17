@@ -1,5 +1,28 @@
 2018-08-17  Nathan Sidwell  <nathan@acm.org>
 
+	* include/cpplib.h (enum cpp_macro_kind): New.
+	(struct cpp_macro): Make body trailing array.  Add kind field,
+	delete traditional flag.
+	* internal.h (_cpp_new_macro): Declare.
+	(_cpp_reserve_room): New inline.
+	(_cpp_commit_buf): Declare.
+	(_cpp_create_trad_definition): Return new macro.
+	* lex.c (_cpp_commit_buff): New.
+	* macro.c (macro_real_token_count): Count backwards.
+	(replace_args): Pointer equality not orderedness.
+	(_cpp_save_parameter): Use _cpp_reserve_room.
+	(alloc_expansion_token): Delete.
+	(lex_expansion_token): Return macro pointer.  Use _cpp_reserve_room.
+	(create_iso_definition): Allocate macro itself.  Adjust for
+	different allocation ordering.
+	(_cpp_new_macro): New.
+	(_cpp_create_definition): Adjust for API changes.
+	* traditional.c (push_replacement_text): Don't set traditional
+	flag.
+	(save_replacement_text): Likewise.
+	(_cpp_create_trad_definition): Allocate macro itself, Adjust for
+	different allocation ordering.
+
 	* cpp-id-data.h (uchar, UC): Move to internal.h
 	(struct cpp_macro): Move to cpplib.h.
 	* internal.h (uchar, UC): From cpp-id-data.h.

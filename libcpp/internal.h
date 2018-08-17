@@ -633,6 +633,7 @@ inline void _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
   if (!(node->flags & NODE_USED))
     _cpp_notify_macro_use (pfile, node);
 }
+extern cpp_macro *_cpp_new_macro (cpp_reader *, cpp_macro_kind, void *);
 extern void _cpp_free_definition (cpp_hashnode *);
 extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *);
 extern void _cpp_pop_context (cpp_reader *);
@@ -697,6 +698,14 @@ extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
 extern cpp_hashnode *_cpp_lex_identifier (cpp_reader *, const char *);
 extern int _cpp_remaining_tokens_num_in_context (cpp_context *);
 extern void _cpp_init_lexer (void);
+static inline void *_cpp_reserve_room (cpp_reader *pfile, size_t have,
+				       size_t extra)
+{
+  if (BUFF_ROOM (pfile->a_buff) < (have + extra))
+    _cpp_extend_buff (pfile, &pfile->a_buff, extra);
+  return BUFF_FRONT (pfile->a_buff);
+}
+extern void *_cpp_commit_buff (cpp_reader *pfile, size_t size);
 
 /* In init.c.  */
 extern void _cpp_maybe_push_include_file (cpp_reader *);
@@ -733,7 +742,7 @@ extern bool _cpp_read_logical_line_trad (cpp_reader *);
 extern void _cpp_overlay_buffer (cpp_reader *pfile, const unsigned char *,
 				 size_t);
 extern void _cpp_remove_overlay (cpp_reader *);
-extern bool _cpp_create_trad_definition (cpp_reader *, cpp_macro *);
+extern cpp_macro *_cpp_create_trad_definition (cpp_reader *);
 extern bool _cpp_expansions_different_trad (const cpp_macro *,
 					    const cpp_macro *);
 extern unsigned char *_cpp_copy_replacement_text (const cpp_macro *,

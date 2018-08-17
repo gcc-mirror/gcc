@@ -1,5 +1,7 @@
 2018-08-17  Nathan Sidwell  <nathan@acm.org>
 
+	* c-ada-spec.c (macro_length, dump_ada_macros): Constify.
+
 	* c-ada-spec.c: Don't #include "cpp-id-data.h"
 	* c-cppbuiltin.c: Likewise.
 
