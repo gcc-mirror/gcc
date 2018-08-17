@@ -23,6 +23,19 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "profile-count.h"
 
+/* An attribute for annotating formatting printing functions that use
+   the dumpfile/optinfo formatting codes.  These are the pretty_printer
+   format codes (see pretty-print.c), with additional codes for middle-end
+   specific entities (see dumpfile.c).  */
+
+#if GCC_VERSION >= 3005
+#define ATTRIBUTE_GCC_DUMP_PRINTF(m, n) \
+  __attribute__ ((__format__ (__gcc_dump_printf__, m ,n))) \
+  ATTRIBUTE_NONNULL(m)
+#else
+#define ATTRIBUTE_GCC_DUMP_PRINTF(m, n) ATTRIBUTE_NONNULL(m)
+#endif
+
 /* Different tree dump places.  When you add new tree dump places,
    extend the DUMP_FILES array in dumpfile.c.  */
 enum tree_dump_index
@@ -476,9 +489,12 @@ dump_enabled_p (void)
    to minimize the work done for the common case where dumps
    are disabled.  */
 
-extern void dump_printf (dump_flags_t, const char *, ...) ATTRIBUTE_PRINTF_2;
+extern void dump_printf (dump_flags_t, const char *, ...)
+  ATTRIBUTE_GCC_DUMP_PRINTF (2, 3);
+
 extern void dump_printf_loc (dump_flags_t, const dump_location_t &,
-			     const char *, ...) ATTRIBUTE_PRINTF_3;
+			     const char *, ...)
+  ATTRIBUTE_GCC_DUMP_PRINTF (3, 0);
 extern void dump_function (int phase, tree fn);
 extern void dump_basic_block (dump_flags_t, basic_block, int);
 extern void dump_generic_expr_loc (dump_flags_t, const dump_location_t &,

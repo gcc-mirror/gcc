@@ -935,9 +935,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
   unsigned HOST_WIDE_INT bytes;
   if (current_vector_size.is_constant (&bytes))
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-		     "loop vectorized vectorized using "
-		     HOST_WIDE_INT_PRINT_UNSIGNED " byte "
-		     "vectors\n", bytes);
+		     "loop vectorized using %wu byte vectors\n", bytes);
   else
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 		     "loop vectorized using variable length vectors\n");

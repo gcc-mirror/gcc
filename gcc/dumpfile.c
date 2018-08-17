@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-pass.h" /* for "current_pass".  */
 #include "optinfo-emit-json.h"
+#include "stringpool.h" /* for get_identifier.  */
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
@@ -681,56 +682,262 @@ dump_context::dump_generic_expr_loc (dump_flags_t dump_kind,
   dump_generic_expr (dump_kind, extra_dump_flags, t);
 }
 
-/* Make an item for the given dump call.  */
+/* A subclass of pretty_printer for implementing dump_context::dump_printf_va.
+   In particular, the formatted chunks are captured as optinfo_item instances,
+   thus retaining metadata about the entities being dumped (e.g. source
+   locations), rather than just as plain text.  */
 
-static optinfo_item *
-make_item_for_dump_printf_va (const char *format, va_list ap)
-  ATTRIBUTE_PRINTF (1, 0);
-
-static optinfo_item *
-make_item_for_dump_printf_va (const char *format, va_list ap)
+class dump_pretty_printer : public pretty_printer
 {
-  char *formatted_text = xvasprintf (format, ap);
+public:
+  dump_pretty_printer (dump_context *context, dump_flags_t dump_kind);
+
+  void emit_items (optinfo *dest);
+
+private:
+  /* Information on an optinfo_item that was generated during phase 2 of
+     formatting.  */
+  struct stashed_item
+  {
+    stashed_item (const char **buffer_ptr_, optinfo_item *item_)
+      : buffer_ptr (buffer_ptr_), item (item_) {}
+    const char **buffer_ptr;
+    optinfo_item *item;
+  };
+
+  static bool format_decoder_cb (pretty_printer *pp, text_info *text,
+				 const char *spec, int /*precision*/,
+				 bool /*wide*/, bool /*set_locus*/,
+				 bool /*verbose*/, bool */*quoted*/,
+				 const char **buffer_ptr);
+
+  bool decode_format (text_info *text, const char *spec,
+		      const char **buffer_ptr);
+
+  void stash_item (const char **buffer_ptr, optinfo_item *item);
+
+  void emit_any_pending_textual_chunks (optinfo *dest);
+
+  void emit_item (optinfo_item *item, optinfo *dest);
+
+  dump_context *m_context;
+  dump_flags_t m_dump_kind;
+  auto_vec<stashed_item> m_stashed_items;
+};
+
+/* dump_pretty_printer's ctor.  */
+
+dump_pretty_printer::dump_pretty_printer (dump_context *context,
+					  dump_flags_t dump_kind)
+: pretty_printer (), m_context (context), m_dump_kind (dump_kind),
+  m_stashed_items ()
+{
+  pp_format_decoder (this) = format_decoder_cb;
+}
+
+/* Phase 3 of formatting; compare with pp_output_formatted_text.
+
+   Emit optinfo_item instances for the various formatted chunks from phases
+   1 and 2 (i.e. pp_format).
+
+   Some chunks may already have had their items built (during decode_format).
+   These chunks have been stashed into m_stashed_items; we emit them here.
+
+   For all other purely textual chunks, they are printed into
+   buffer->formatted_obstack, and then emitted as a textual optinfo_item.
+   This consolidates multiple adjacent text chunks into a single text
+   optinfo_item.  */
+
+void
+dump_pretty_printer::emit_items (optinfo *dest)
+{
+  output_buffer *buffer = pp_buffer (this);
+  struct chunk_info *chunk_array = buffer->cur_chunk_array;
+  const char **args = chunk_array->args;
+
+  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
+  gcc_assert (buffer->line_length == 0);
+
+  unsigned stashed_item_idx = 0;
+  for (unsigned chunk = 0; args[chunk]; chunk++)
+    {
+      if (stashed_item_idx < m_stashed_items.length ()
+	  && args[chunk] == *m_stashed_items[stashed_item_idx].buffer_ptr)
+	{
+	  emit_any_pending_textual_chunks (dest);
+	  /* This chunk has a stashed item: use it.  */
+	  emit_item (m_stashed_items[stashed_item_idx++].item, dest);
+	}
+      else
+	/* This chunk is purely textual.  Print it (to
+	   buffer->formatted_obstack), so that we can consolidate adjacent
+	   chunks into one textual optinfo_item.  */
+	pp_string (this, args[chunk]);
+    }
+
+  emit_any_pending_textual_chunks (dest);
+
+  /* Ensure that we consumed all of stashed_items.  */
+  gcc_assert (stashed_item_idx == m_stashed_items.length ());
+
+  /* Deallocate the chunk structure and everything after it (i.e. the
+     associated series of formatted strings).  */
+  buffer->cur_chunk_array = chunk_array->prev;
+  obstack_free (&buffer->chunk_obstack, chunk_array);
+}
+
+/* Subroutine of dump_pretty_printer::emit_items
+   for consolidating multiple adjacent pure-text chunks into single
+   optinfo_items (in phase 3).  */
+
+void
+dump_pretty_printer::emit_any_pending_textual_chunks (optinfo *dest)
+{
+  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
+
+  /* Don't emit an item if the pending text is empty.  */
+  if (output_buffer_last_position_in_text (buffer) == NULL)
+    return;
+
+  char *formatted_text = xstrdup (pp_formatted_text (this));
   optinfo_item *item
     = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
 			formatted_text);
-  return item;
+  emit_item (item, dest);
+
+  /* Clear the pending text by unwinding formatted_text back to the start
+     of the buffer (without deallocating).  */
+  obstack_free (&buffer->formatted_obstack,
+		buffer->formatted_obstack.object_base);
 }
 
-/* Make an item for the given dump call.  */
+/* Emit ITEM and take ownership of it.  If DEST is non-NULL, add ITEM
+   to DEST; otherwise delete ITEM.  */
 
-static optinfo_item *
-make_item_for_dump_printf (const char *format, ...)
-  ATTRIBUTE_PRINTF (1, 2);
-
-static optinfo_item *
-make_item_for_dump_printf (const char *format, ...)
+void
+dump_pretty_printer::emit_item (optinfo_item *item, optinfo *dest)
 {
-  va_list ap;
-  va_start (ap, format);
-  optinfo_item *item
-    = make_item_for_dump_printf_va (format, ap);
-  va_end (ap);
-  return item;
+  m_context->emit_item (item, m_dump_kind);
+  if (dest)
+    dest->add_item (item);
+  else
+    delete item;
+}
+
+/* Record that ITEM (generated in phase 2 of formatting) is to be used for
+   the chunk at BUFFER_PTR in phase 3 (by emit_items).  */
+
+void
+dump_pretty_printer::stash_item (const char **buffer_ptr, optinfo_item *item)
+{
+  gcc_assert (buffer_ptr);
+  gcc_assert (item);
+
+  m_stashed_items.safe_push (stashed_item (buffer_ptr, item));
+}
+
+/* pp_format_decoder callback for dump_pretty_printer, and thus for
+   dump_printf and dump_printf_loc.
+
+   A wrapper around decode_format, for type-safety.  */
+
+bool
+dump_pretty_printer::format_decoder_cb (pretty_printer *pp, text_info *text,
+					const char *spec, int /*precision*/,
+					bool /*wide*/, bool /*set_locus*/,
+					bool /*verbose*/, bool */*quoted*/,
+					const char **buffer_ptr)
+{
+  dump_pretty_printer *opp = static_cast <dump_pretty_printer *> (pp);
+  return opp->decode_format (text, spec, buffer_ptr);
+}
+
+/* Format decoder for dump_pretty_printer, and thus for dump_printf and
+   dump_printf_loc.
+
+   Supported format codes (in addition to the standard pretty_printer ones)
+   are:
+
+   %E: gimple *:
+       Equivalent to: dump_gimple_expr (MSG_*, TDF_SLIM, stmt, 0)
+   %G: gimple *:
+       Equivalent to: dump_gimple_stmt (MSG_*, TDF_SLIM, stmt, 0)
+   %T: tree:
+       Equivalent to: dump_generic_expr (MSG_*, arg, TDF_SLIM).
+
+   FIXME: add symtab_node?
+
+   These format codes build optinfo_item instances, thus capturing metadata
+   about the arguments being dumped, as well as the textual output.  */
+
+bool
+dump_pretty_printer::decode_format (text_info *text, const char *spec,
+				       const char **buffer_ptr)
+{
+  /* Various format codes that imply making an optinfo_item and stashed it
+     for later use (to capture metadata, rather than plain text).  */
+  switch (*spec)
+    {
+    case 'E':
+      {
+	gimple *stmt = va_arg (*text->args_ptr, gimple *);
+
+	/* Make an item for the stmt, and stash it.  */
+	optinfo_item *item = make_item_for_dump_gimple_expr (stmt, 0, TDF_SLIM);
+	stash_item (buffer_ptr, item);
+	return true;
+      }
+
+    case 'G':
+      {
+	gimple *stmt = va_arg (*text->args_ptr, gimple *);
+
+	/* Make an item for the stmt, and stash it.  */
+	optinfo_item *item = make_item_for_dump_gimple_stmt (stmt, 0, TDF_SLIM);
+	stash_item (buffer_ptr, item);
+	return true;
+      }
+
+    case 'T':
+      {
+	tree t = va_arg (*text->args_ptr, tree);
+
+	/* Make an item for the tree, and stash it.  */
+	optinfo_item *item = make_item_for_dump_generic_expr (t, TDF_SLIM);
+	stash_item (buffer_ptr, item);
+	return true;
+      }
+
+    default:
+      return false;
+    }
 }
 
 /* Output a formatted message using FORMAT on appropriate dump streams.  */
 
 void
 dump_context::dump_printf_va (dump_flags_t dump_kind, const char *format,
-			      va_list ap)
+			      va_list *ap)
 {
-  optinfo_item *item = make_item_for_dump_printf_va (format, ap);
-  emit_item (item, dump_kind);
+  dump_pretty_printer pp (this, dump_kind);
 
+  text_info text;
+  text.err_no = errno;
+  text.args_ptr = ap;
+  text.format_spec = format;
+
+  /* Phases 1 and 2, using pp_format.  */
+  pp_format (&pp, &text);
+
+  /* Phase 3.  */
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo ();
       info.handle_dump_file_kind (dump_kind);
-      info.add_item (item);
+      pp.emit_items (&info);
     }
   else
-    delete item;
+    pp.emit_items (NULL);
 }
 
 /* Similar to dump_printf, except source location is also printed, and
@@ -739,7 +946,7 @@ dump_context::dump_printf_va (dump_flags_t dump_kind, const char *format,
 void
 dump_context::dump_printf_loc_va (dump_flags_t dump_kind,
 				  const dump_location_t &loc,
-				  const char *format, va_list ap)
+				  const char *format, va_list *ap)
 {
   dump_loc (dump_kind, loc);
   dump_printf_va (dump_kind, format, ap);
@@ -851,7 +1058,11 @@ dump_context::begin_scope (const char *name, const dump_location_t &loc)
   if (m_test_pp)
     ::dump_loc (MSG_NOTE, m_test_pp, loc.get_location_t ());
 
-  optinfo_item *item = make_item_for_dump_printf ("=== %s ===\n", name);
+  pretty_printer pp;
+  pp_printf (&pp, "=== %s ===\n", name);
+  optinfo_item *item
+    = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+			xstrdup (pp_formatted_text (&pp)));
   emit_item (item, MSG_NOTE);
 
   if (optinfo_enabled_p ())
@@ -859,7 +1070,6 @@ dump_context::begin_scope (const char *name, const dump_location_t &loc)
       optinfo &info = begin_next_optinfo (loc);
       info.m_kind = OPTINFO_KIND_SCOPE;
       info.add_item (item);
-      end_any_optinfo ();
     }
   else
     delete item;
@@ -1006,7 +1216,7 @@ dump_printf (dump_flags_t dump_kind, const char *format, ...)
 {
   va_list ap;
   va_start (ap, format);
-  dump_context::get ().dump_printf_va (dump_kind, format, ap);
+  dump_context::get ().dump_printf_va (dump_kind, format, &ap);
   va_end (ap);
 }
 
@@ -1019,7 +1229,7 @@ dump_printf_loc (dump_flags_t dump_kind, const dump_location_t &loc,
 {
   va_list ap;
   va_start (ap, format);
-  dump_context::get ().dump_printf_loc_va (dump_kind, loc, format, ap);
+  dump_context::get ().dump_printf_loc_va (dump_kind, loc, format, &ap);
   va_end (ap);
 }
 
@@ -1808,9 +2018,12 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
   dump_location_t loc = dump_location_t::from_location_t (where);
 
-  greturn *stmt = gimple_build_return (NULL);
+  gimple *stmt = gimple_build_return (NULL);
   gimple_set_location (stmt, where);
 
+  tree test_decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			       get_identifier ("test_decl"),
+			       integer_type_node);
   /* Run all tests twice, with and then without optinfo enabled, to ensure
      that immediate destinations vs optinfo-based destinations both
      work, independently of each other, with no leaks.  */
@@ -1831,6 +2044,89 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_TEXT (info->get_item (0), "int: 42 str: foo");
+	  }
+      }
+
+      /* Test of dump_printf with %T.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_printf (MSG_NOTE, "tree: %T", integer_zero_node);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "tree: 0");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 2);
+	    ASSERT_IS_TEXT (info->get_item (0), "tree: ");
+	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
+	  }
+      }
+
+      /* Test of dump_printf with %E.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_printf (MSG_NOTE, "gimple: %E", stmt);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "gimple: return;");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 2);
+	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
+	    ASSERT_IS_GIMPLE (info->get_item (1), where, "return;");
+	  }
+      }
+
+      /* Test of dump_printf with %G.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_printf (MSG_NOTE, "gimple: %G", stmt);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "gimple: return;\n");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 2);
+	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
+	    ASSERT_IS_GIMPLE (info->get_item (1), where, "return;\n");
+	  }
+      }
+
+      /* dump_print_loc with multiple format codes.  This tests various
+	 things:
+	 - intermingling of text, format codes handled by the base
+	 pretty_printer, and dump-specific format codes
+	 - multiple dump-specific format codes: some consecutive, others
+	 separated by text, trailing text after the final one.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_printf_loc (MSG_NOTE, loc, "before %T and %T"
+			 " %i consecutive %E%E after\n",
+			 integer_zero_node, test_decl, 42, stmt, stmt);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp,
+			       "test.txt:5:10: note: before 0 and test_decl"
+			       " 42 consecutive return;return; after\n");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 8);
+	    ASSERT_IS_TEXT (info->get_item (0), "before ");
+	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
+	    ASSERT_IS_TEXT (info->get_item (2), " and ");
+	    ASSERT_IS_TREE (info->get_item (3), UNKNOWN_LOCATION, "test_decl");
+	    ASSERT_IS_TEXT (info->get_item (4), " 42 consecutive ");
+	    ASSERT_IS_GIMPLE (info->get_item (5), where, "return;");
+	    ASSERT_IS_GIMPLE (info->get_item (6), where, "return;");
+	    ASSERT_IS_TEXT (info->get_item (7), " after\n");
 	  }
       }
 

@@ -1958,7 +1958,7 @@ start_over:
       dump_printf_loc (MSG_NOTE, vect_location,
 		       "vectorization_factor = ");
       dump_dec (MSG_NOTE, vectorization_factor);
-      dump_printf (MSG_NOTE, ", niters = " HOST_WIDE_INT_PRINT_DEC "\n",
+      dump_printf (MSG_NOTE, ", niters = %wd\n",
 		   LOOP_VINFO_INT_NITERS (loop_vinfo));
     }
 

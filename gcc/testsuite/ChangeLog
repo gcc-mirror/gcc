@@ -1,3 +1,10 @@
+2018-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/format/gcc_diag-1.c: Fix typo.  Add test coverage for
+	gcc_dump_printf.
+	* gcc.dg/format/gcc_diag-10.c: Add gimple typedef.  Add test
+	coverage for gcc_dump_printf.
+
 2018-08-17  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/opt/mpx.C: Fix scanned pattern.

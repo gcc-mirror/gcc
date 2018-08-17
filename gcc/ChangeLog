@@ -1,3 +1,51 @@
+2018-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* dump-context.h: Include "dumpfile.h".
+	(dump_context::dump_printf_va): Convert final param from va_list
+	to va_list *.  Convert from ATTRIBUTE_PRINTF to
+	ATTRIBUTE_GCC_DUMP_PRINTF.
+	(dump_context::dump_printf_loc_va): Likewise.
+	* dumpfile.c: Include "stringpool.h".
+	(make_item_for_dump_printf_va): Delete.
+	(make_item_for_dump_printf): Delete.
+	(class dump_pretty_printer): New class.
+	(dump_pretty_printer::dump_pretty_printer): New ctor.
+	(dump_pretty_printer::emit_items): New member function.
+	(dump_pretty_printer::emit_any_pending_textual_chunks): New member
+	function.
+	(dump_pretty_printer::emit_item): New member function.
+	(dump_pretty_printer::stash_item): New member function.
+	(dump_pretty_printer::format_decoder_cb): New member function.
+	(dump_pretty_printer::decode_format): New member function.
+	(dump_context::dump_printf_va): Reimplement in terms of
+	dump_pretty_printer.
+	(dump_context::dump_printf_loc_va): Convert final param from va_list
+	to va_list *.
+	(dump_context::begin_scope): Reimplement call to
+	make_item_for_dump_printf.
+	(dump_printf): Update for change to dump_printf_va.
+	(dump_printf_loc): Likewise.
+	(selftest::test_capture_of_dump_calls): Convert "stmt" from
+	greturn * to gimple *.  Add a test_decl.  Add tests of dump_printf
+	with %T, %E, and %G.
+	* dumpfile.h (ATTRIBUTE_GCC_DUMP_PRINTF): New macro.
+	(dump_printf): Replace ATTRIBUTE_PRINTF_2 with
+	ATTRIBUTE_GCC_DUMP_PRINTF (2, 3).
+	(dump_printf_loc): Replace ATTRIBUTE_PRINTF_3 with
+	ATTRIBUTE_GCC_DUMP_PRINTF (3, 0).
+	* tree-vect-data-refs.c (vect_lanes_optab_supported_p): Convert
+	use of HOST_WIDE_INT_PRINT_DEC on unsigned HOST_WIDE_INT "count"
+	within a dump_printf_loc call to "%wu".
+	(vector_alignment_reachable_p): Merge two dump_printf[_loc] calls,
+	converting a use of HOST_WIDE_INT_PRINT_DEC to "%wd".  Add a
+	missing space after "=".
+	* tree-vect-loop.c (vect_analyze_loop_2) Within a dump_printf
+	call, convert use of HOST_WIDE_INT_PRINT_DEC to "%wd".
+	* tree-vect-slp.c (vect_slp_bb): Within a dump_printf_loc call,
+	convert use of HOST_WIDE_INT_PRINT_UNSIGNED to "%wu".
+	* tree-vectorizer.c (try_vectorize_loop_1): Likewise.  Remove
+	duplicate "vectorized" from message.
+
 2018-08-17  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/arm/arm-builtins.c (arm_init_simd_builtin_types): Clear
