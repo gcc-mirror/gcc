@@ -1,3 +1,26 @@
+2018-08-17  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Remove Warn, Init and Report for options with
+        Ignore/Deprecated flag. Warning is done automatically for
+        Deprecated flags.
+	* config/i386/i386.opt: Likewise.
+	* config/ia64/ia64.opt: Likewise.
+	* config/rs6000/rs6000.opt: Likewise.
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags):
+        Remove usage of flag_check_pointer_bounds.
+	* lto-wrapper.c (merge_and_complain): Do not handle
+        OPT_fcheck_pointer_bounds.
+	(append_compiler_options): Likewise.
+	* opt-functions.awk: Do not handle Deprecated.
+	* optc-gen.awk: Check that Var, Report and Init are not
+        used for an option with Ignore/Deprecated flag.
+	* opts-common.c (decode_cmdline_option): Do not report
+        CL_ERR_DEPRECATED.
+	(read_cmdline_option): Report warning for OPT_SPECIAL_deprecated
+        options.
+	* opts.h (struct cl_option): Remove cl_deprecated flag.
+	(CL_ERR_DEPRECATED): Remove error enum value.
+
 2018-08-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/86505

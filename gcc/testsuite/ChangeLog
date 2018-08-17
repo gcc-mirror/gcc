@@ -1,3 +1,62 @@
+2018-08-17  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/opt/mpx.C: Fix scanned pattern.
+	* gcc.target/i386/mpx.c: Likewise.
+	* g++.dg/warn/Wunreachable-code-1.C: Remove.
+	* g++.dg/warn/Wunreachable-code-2.C: Likewise.
+	* gcc.dg/torture/pr52969.c: Likewise.
+	* g++.dg/warn/pr31246-2.C: Likewise.
+	* g++.dg/warn/pr31246.C: Likewise.
+	* gcc.dg/pr33092.c: Likewise.
+	* g++.dg/opt/eh1.C: Remove a deprecated option.
+	* g++.dg/template/inline1.C: Likewise.
+	* g++.dg/tree-ssa/pr81408.C: Likewise.
+	* gcc.dg/pr41837.c: Likewise.
+	* gcc.dg/pr41841.c: Likewise.
+	* gcc.dg/pr42250.c: Likewise.
+	* gcc.dg/pr43084.c: Likewise.
+	* gcc.dg/pr43317.c: Likewise.
+	* gcc.dg/pr51879-18.c: Likewise.
+	* gcc.dg/torture/pr36066.c: Likewise.
+	* gcc.dg/tree-ssa/ifc-8.c: Likewise.
+	* gcc.dg/tree-ssa/ifc-cd.c: Likewise.
+	* gcc.dg/tree-ssa/pr19210-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr45122.c: Likewise.
+	* gcc.target/i386/pr45352-2.c: Likewise.
+	* gcc.target/i386/zee.c: Likewise.
+	* gfortran.dg/auto_char_len_2.f90: Likewise.
+	* gfortran.dg/auto_char_len_4.f90: Likewise.
+	* gfortran.dg/c_ptr_tests_15.f90: Likewise.
+	* gfortran.dg/char_array_structure_constructor.f90: Likewise.
+	* gfortran.dg/gomp/pr47331.f90: Likewise.
+	* gfortran.dg/pr40999.f: Likewise.
+	* gfortran.dg/pr41011.f: Likewise.
+	* gfortran.dg/pr42051.f03: Likewise.
+	* gfortran.dg/pr46804.f90: Likewise.
+	* gfortran.dg/pr83149_1.f90: Likewise.
+	* gfortran.dg/pr83149_b.f90: Likewise.
+	* gfortran.dg/whole_file_1.f90: Likewise.
+	* gfortran.dg/whole_file_10.f90: Likewise.
+	* gfortran.dg/whole_file_11.f90: Likewise.
+	* gfortran.dg/whole_file_12.f90: Likewise.
+	* gfortran.dg/whole_file_13.f90: Likewise.
+	* gfortran.dg/whole_file_14.f90: Likewise.
+	* gfortran.dg/whole_file_15.f90: Likewise.
+	* gfortran.dg/whole_file_16.f90: Likewise.
+	* gfortran.dg/whole_file_17.f90: Likewise.
+	* gfortran.dg/whole_file_18.f90: Likewise.
+	* gfortran.dg/whole_file_19.f90: Likewise.
+	* gfortran.dg/whole_file_2.f90: Likewise.
+	* gfortran.dg/whole_file_20.f03: Likewise.
+	* gfortran.dg/whole_file_3.f90: Likewise.
+	* gfortran.dg/whole_file_4.f90: Likewise.
+	* gfortran.dg/whole_file_5.f90: Likewise.
+	* gfortran.dg/whole_file_6.f90: Likewise.
+	* gfortran.dg/whole_file_7.f90: Likewise.
+	* gfortran.dg/whole_file_8.f90: Likewise.
+	* gfortran.dg/whole_file_9.f90: Likewise.
+	* gcc.dg/vect/vect.exp: Likewise.
+
 2018-08-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/86505
