@@ -1,5 +1,10 @@
 2018-08-18  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.dg/debug/dwarf2/pr80263.c: Suppress pubtypes output
+	for Darwin.
+
+2018-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* g++.dg/debug/dwarf2/pr85302.C: Skip unsupported split DWARF
 	test on Darwin.
 	* g++.dg/debug/dwarf2/pr85302.C: Likewise.
