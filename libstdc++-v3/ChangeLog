@@ -1,3 +1,8 @@
+2018-08-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/25_algorithms/copy/86658.cc: Use dg-options to define
+	_GLIBCXX_DEBUG.
+
 2018-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86963
