@@ -1,3 +1,10 @@
+2018-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/debug/dwarf2/pr85302.C: Skip unsupported split DWARF
+	test on Darwin.
+	* g++.dg/debug/dwarf2/pr85302.C: Likewise.
+	* gcc.dg/lto/pr83719_0.c: Likewise.
+
 2018-08-17  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/86996

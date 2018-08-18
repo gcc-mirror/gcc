@@ -1,3 +1,10 @@
+2018-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_override_options): If -gsplit-dwarf is set,
+	emit a diagnostic that it is not supported and reset the option.
+	* config/darwin.h (DRIVER_SELF_SPECS): Note that gsplit-dwarf is not
+	supported and consume the option.  (ASM_FINAL_SPEC): New.
+
 2018-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/md.texi (Patterns): Use @ref instead of @xref in the middle of
