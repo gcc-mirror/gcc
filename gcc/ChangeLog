@@ -1,3 +1,12 @@
+2018-08-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/86994
+	* config/i386/i386.c (ix86_rtx_costs) [case SET]: Check source for
+	register_operand when calling ix86_set_reg_reg_cost.
+	[case CONST_INT, case CONST, case LABEL_REF, case SYMBOL_REF]:
+	Set *total to 0 for operands that satisfy x86_64_immediate_operand
+	predicate and to 1 otherwise.
+
 2018-08-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (darwin_override_options): If -gsplit-dwarf is set,
