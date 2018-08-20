@@ -1,5 +1,19 @@
 2018-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86963
+	* include/std/tuple (_Tuple_impl::operator=): Define as deleted.
+	(_Tuple_impl::_M_assign): New functions to perform assignment instead
+	of assignment operators.
+	(_Tuple_impl::_M_swap): Remove exception specification.
+	(_Tuple_impl<_Idx, _Head>): Likewise.
+	(_TC::_NonNestedTuple, _TC::_NotSameTuple): Use __remove_cvref_t.
+	(__tuple_base): Remove.
+	(tuple, tuple<_T1, _T2>): Remove inheritance from __tuple_base.
+	(tuple::operator=, tuple<_T1, _T2>::operator=): Call _M_assign.
+	(tuple::swap, tuple<_T1, _T2>::swap): Define exception specification
+	using __is_nothrow_swappable.
+	(tuple<_T1, _T2>::tuple(_U1&&, _U2&&)): Use __remove_cvref_t.
+
 	* include/std/optional (_Optional_payload): Use variable templates
 	for conditions in default template arguments and exception
 	specifications.
