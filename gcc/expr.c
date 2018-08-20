@@ -7047,7 +7047,7 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
 	}
 
       /* Store the value in the bitfield.  */
-      gcc_assert (known_ge (bitpos, 0));
+      gcc_checking_assert (known_ge (bitpos, 0));
       store_bit_field (target, bitsize, bitpos,
 		       bitregion_start, bitregion_end,
 		       mode, temp, reverse);

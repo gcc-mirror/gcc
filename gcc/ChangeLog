@@ -1,5 +1,9 @@
 2018-08-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* expr.c (store_field): Change gcc_assert to gcc_checking_assert.
+
+2018-08-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	PR target/86984
 	* expr.c (expand_assignment): Assert that bitpos is positive.
 	(store_field): Likewise
