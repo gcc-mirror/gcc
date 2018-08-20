@@ -430,7 +430,7 @@ diag_attr_exclusions (tree last_decl, tree node, tree attrname,
 
 	  /* Print a note?  */
 	  bool note = last_decl != NULL_TREE;
-
+	  auto_diagnostic_group d;
 	  if (TREE_CODE (node) == FUNCTION_DECL
 	      && DECL_BUILT_IN (node))
 	    note &= warning (OPT_Wattributes,
@@ -587,6 +587,7 @@ decl_attributes (tree *node, tree attributes, int flags,
 	  /* This is a c++11 attribute that appertains to a
 	     type-specifier, outside of the definition of, a class
 	     type.  Ignore it.  */
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Wattributes, "attribute ignored"))
 	    inform (input_location,
 		    "an attribute that appertains to a type-specifier "

@@ -36,6 +36,15 @@ typedef enum
   DK_POP
 } diagnostic_t;
 
+/* RAII-style class for grouping related diagnostics.  */
+
+class auto_diagnostic_group
+{
+ public:
+  auto_diagnostic_group ();
+  ~auto_diagnostic_group ();
+};
+
 extern const char *progname;
 
 extern const char *trim_filename (const char *);

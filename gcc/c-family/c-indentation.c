@@ -609,6 +609,7 @@ warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 					      body_tinfo,
 					      next_tinfo))
     {
+      auto_diagnostic_group d;
       if (warning_at (guard_tinfo.location, OPT_Wmisleading_indentation,
 		      "this %qs clause does not guard...",
 		      guard_tinfo_to_string (guard_tinfo.keyword)))

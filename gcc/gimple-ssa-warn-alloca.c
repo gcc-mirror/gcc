@@ -532,29 +532,37 @@ pass_walloca::execute (function *fun)
 	    case ALLOCA_OK:
 	      break;
 	    case ALLOCA_BOUND_MAYBE_LARGE:
-	      if (warning_at (loc, wcode,
-			      is_vla ? G_("argument to variable-length array "
-					  "may be too large")
-			      : G_("argument to %<alloca%> may be too large"))
-		  && t.limit != 0)
-		{
-		  print_decu (t.limit, buff);
-		  inform (loc, G_("limit is %wu bytes, but argument "
-				  "may be as large as %s"),
-			  is_vla ? warn_vla_limit : warn_alloca_limit, buff);
-		}
+	      {
+		auto_diagnostic_group d;
+		if (warning_at (loc, wcode,
+				is_vla ? G_("argument to variable-length "
+					    "array may be too large")
+				: G_("argument to %<alloca%> may be too "
+				     "large"))
+		    && t.limit != 0)
+		  {
+		    print_decu (t.limit, buff);
+		    inform (loc, G_("limit is %wu bytes, but argument "
+				    "may be as large as %s"),
+			    is_vla ? warn_vla_limit : warn_alloca_limit, buff);
+		  }
+	      }
 	      break;
 	    case ALLOCA_BOUND_DEFINITELY_LARGE:
-	      if (warning_at (loc, wcode,
-			      is_vla ? G_("argument to variable-length array "
-					  "is too large")
-			      : G_("argument to %<alloca%> is too large"))
-		  && t.limit != 0)
-		{
-		  print_decu (t.limit, buff);
-		  inform (loc, G_("limit is %wu bytes, but argument is %s"),
-			  is_vla ? warn_vla_limit : warn_alloca_limit, buff);
-		}
+	      {
+		auto_diagnostic_group d;
+		if (warning_at (loc, wcode,
+				is_vla ? G_("argument to variable-length"
+					    " array is too large")
+				: G_("argument to %<alloca%> is too large"))
+		    && t.limit != 0)
+		  {
+		    print_decu (t.limit, buff);
+		    inform (loc, G_("limit is %wu bytes, but argument is %s"),
+			      is_vla ? warn_vla_limit : warn_alloca_limit,
+			      buff);
+		  }
+	      }
 	      break;
 	    case ALLOCA_BOUND_UNKNOWN:
 	      warning_at (loc, wcode,

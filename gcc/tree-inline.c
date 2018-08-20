@@ -4427,6 +4427,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	       /* Avoid warnings during early inline pass. */
 	       && symtab->global_info_ready)
 	{
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Winline, "inlining failed in call to %q+F: %s",
 		       fn, _(cgraph_inline_failed_string (reason))))
 	    {

@@ -1,3 +1,73 @@
+2018-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* call.c (build_user_type_conversion_1): Add auto_diagnostic_group
+	instance(s).
+	(print_error_for_call_failure): Likewise.
+	(build_op_call_1): Likewise.
+	(build_conditional_expr_1): Likewise.
+	(build_new_op_1): Likewise.
+	(build_op_delete_call): Likewise.
+	(convert_like_real): Likewise.
+	(build_over_call): Likewise.
+	(build_new_method_call_1): Likewise.
+	(joust): Likewise.
+	* class.c (check_tag): Likewise.
+	(finish_struct_anon_r): Likewise.
+	(one_inherited_ctor): Likewise.
+	(finalize_literal_type_property): Likewise.
+	(explain_non_literal_class): Likewise.
+	(find_flexarrays): Likewise.
+	(resolve_address_of_overloaded_function): Likewise.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Likewise.
+	(is_valid_constexpr_fn): Likewise.
+	(cx_check_missing_mem_inits): Likewise.
+	* cp-gimplify.c (cp_genericize_r): Likewise.
+	* cvt.c (maybe_warn_nodiscard): Likewise.
+	* decl.c (warn_extern_redeclared_static): Likewise.
+	(check_redeclaration_exception_specification): Likewise.
+	(check_no_redeclaration_friend_default_args): Likewise.
+	(duplicate_decls): Likewise.
+	(redeclaration_error_message): Likewise.
+	(warn_misplaced_attr_for_class_type): Likewise.
+	* decl2.c (finish_static_data_member_decl): Likewise.
+	(no_linkage_error): Likewise.
+	(cp_warn_deprecated_use): Likewise.
+	* error.c (qualified_name_lookup_error): Likewise.
+	* friend.c (make_friend_class): Likewise.
+	(do_friend): Likewise.
+	* init.c (perform_member_init): Likewise.
+	(build_new_1): Likewise.
+	(build_vec_delete_1): Likewise.
+	(build_delete): Likewise.
+	* lex.c (unqualified_name_lookup_error): Likewise.
+	* name-lookup.c (check_extern_c_conflict): Likewise.
+	(inform_shadowed): New function.
+	(check_local_shadow): Add auto_diagnostic_group instances,
+	replacing goto "inform_shadowed" label with call to subroutine.
+	(set_local_extern_decl_linkage): Add auto_diagnostic_group
+	instance(s).
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise.
+	(cp_parser_namespace_name): Likewise.
+	* pt.c (check_specialization_namespace): Likewise.
+	(check_template_variable): Likewise.
+	(warn_spec_missing_attributes): Likewise.
+	(check_explicit_specialization): Likewise.
+	(process_partial_specialization): Likewise.
+	(lookup_template_class_1): Likewise.
+	(finish_template_variable): Likewise.
+	(do_auto_deduction): Likewise.
+	* search.c (check_final_overrider): Likewise.
+	(look_for_overrides_r): Likewise.
+	* tree.c (maybe_warn_parm_abi): Likewise.
+	* typeck.c (cxx_sizeof_expr): Likewise.
+	(cp_build_function_call_vec): Likewise.
+	(cp_build_binary_op): Likewise.
+	(convert_for_assignment): Likewise.
+	(maybe_warn_about_returning_address_of_local): Likewise.
+	* typeck2.c (abstract_virtuals_error_sfinae): Likewise.
+	(check_narrowing): Likewise.
+
 2018-08-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* typeck.c (string_conv_p): Extract location from EXP and use it

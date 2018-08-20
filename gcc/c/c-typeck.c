@@ -2906,6 +2906,7 @@ c_expr_sizeof_expr (location_t loc, struct c_expr expr)
       if (TREE_CODE (expr.value) == PARM_DECL
 	  && C_ARRAY_PARAMETER (expr.value))
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wsizeof_array_argument,
 			  "%<sizeof%> on array function parameter %qE will "
 			  "return size of %qT", expr.value,
@@ -3735,19 +3736,27 @@ parser_build_binary_op (location_t location, enum tree_code code,
 		    "comparison with string literal results in unspecified behavior");
       /* Warn for ptr == '\0', it's likely that it should've been ptr[0].  */
       if (POINTER_TYPE_P (type1)
-	   && null_pointer_constant_p (arg2.value)
-	   && char_type_p (type2)
-	   && warning_at (location, OPT_Wpointer_compare,
-			  "comparison between pointer and zero character "
-			  "constant"))
-	inform (arg1.get_start (), "did you mean to dereference the pointer?");
+	  && null_pointer_constant_p (arg2.value)
+	  && char_type_p (type2))
+	{
+	  auto_diagnostic_group d;
+	  if (warning_at (location, OPT_Wpointer_compare,
+			    "comparison between pointer and zero character "
+			    "constant"))
+	    inform (arg1.get_start (),
+		      "did you mean to dereference the pointer?");
+	}
       else if (POINTER_TYPE_P (type2)
 	       && null_pointer_constant_p (arg1.value)
-	       && char_type_p (type1)
-	       && warning_at (location, OPT_Wpointer_compare,
-			      "comparison between pointer and zero character "
-			      "constant"))
-	inform (arg2.get_start (), "did you mean to dereference the pointer?");
+	       && char_type_p (type1))
+	{
+	  auto_diagnostic_group d;
+	  if (warning_at (location, OPT_Wpointer_compare,
+			    "comparison between pointer and zero character "
+			    "constant"))
+	    inform (arg2.get_start (),
+		      "did you mean to dereference the pointer?");
+	}
     }
   else if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && (code1 == STRING_CST || code2 == STRING_CST))
@@ -4288,13 +4297,16 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	    e = TREE_OPERAND (e, 1);
 
 	  if ((TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
-	       || truth_value_p (TREE_CODE (e)))
-	      && warning_at (location, OPT_Wbool_operation,
-			     "%<~%> on a boolean expression"))
+	       || truth_value_p (TREE_CODE (e))))
 	    {
-	      gcc_rich_location richloc (location);
-	      richloc.add_fixit_insert_before (location, "!");
-	      inform (&richloc, "did you mean to use logical not?");
+	      auto_diagnostic_group d;
+	      if (warning_at (location, OPT_Wbool_operation,
+				"%<~%> on a boolean expression"))
+		{
+		  gcc_rich_location richloc (location);
+		  richloc.add_fixit_insert_before (location, "!");
+		  inform (&richloc, "did you mean to use logical not?");
+		}
 	    }
 	  if (!noconvert)
 	    arg = default_conversion (arg);
@@ -6197,6 +6209,8 @@ error_init (location_t loc, const char *gmsgid)
 {
   char *ofwhat;
 
+  auto_diagnostic_group d;
+
   /* The gmsgid may be a format string with %< and %>. */
   error_at (loc, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
@@ -6216,7 +6230,7 @@ pedwarn_init (location_t loc, int opt, const char *gmsgid, ...)
      it was defined to make sure macros defined in system headers
      but used incorrectly elsewhere are diagnosed.  */
   source_location exploc = expansion_point_location_if_in_system_header (loc);
-
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   bool warned = emit_diagnostic_valist (DK_PEDWARN, exploc, opt, gmsgid, &ap);
@@ -6237,6 +6251,8 @@ warning_init (location_t loc, int opt, const char *gmsgid)
 {
   char *ofwhat;
   bool warned;
+
+  auto_diagnostic_group d;
 
   /* Use the location where a macro was expanded rather than where
      it was defined to make sure macros defined in system headers
@@ -6379,8 +6395,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     switch (errtype)                                                     \
       {                                                                  \
       case ic_argpass:                                                   \
-        if (pedwarn (PLOC, OPT, AR, parmnum, rname))			 \
-          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);	\
+	{								\
+	  auto_diagnostic_group d;						\
+	  if (pedwarn (PLOC, OPT, AR, parmnum, rname))		\
+	    inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype); \
+	}								\
         break;                                                           \
       case ic_assign:                                                    \
         pedwarn (LOCATION, OPT, AS);                                     \
@@ -6405,8 +6424,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     switch (errtype)                                                     \
       {                                                                  \
       case ic_argpass:                                                   \
-        if (pedwarn (PLOC, OPT, AR, parmnum, rname, QUALS))		 \
-          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);	\
+	{								\
+	auto_diagnostic_group d;						\
+	if (pedwarn (PLOC, OPT, AR, parmnum, rname, QUALS))		\
+	  inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);	\
+	}								\
         break;                                                           \
       case ic_assign:                                                    \
         pedwarn (LOCATION, OPT, AS, QUALS);				 \
@@ -6431,8 +6453,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     switch (errtype)                                                     \
       {                                                                  \
       case ic_argpass:                                                   \
-        if (warning_at (PLOC, OPT, AR, parmnum, rname, QUALS))           \
-          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);      \
+	{								\
+	  auto_diagnostic_group d;						\
+	  if (warning_at (PLOC, OPT, AR, parmnum, rname, QUALS))	\
+	    inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype); \
+	}								\
         break;                                                           \
       case ic_assign:                                                    \
         warning_at (LOCATION, OPT, AS, QUALS);                           \
@@ -6925,6 +6950,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		  {
 		  case ic_argpass:
 		    {
+		      auto_diagnostic_group d;
 		      range_label_for_type_mismatch rhs_label (rhstype, type);
 		      gcc_rich_location richloc (expr_loc, &rhs_label);
 		      if (pedwarn (&richloc, OPT_Wpointer_sign,
@@ -6984,6 +7010,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	    {
 	    case ic_argpass:
 	      {
+		auto_diagnostic_group d;
 		range_label_for_type_mismatch rhs_label (rhstype, type);
 		gcc_rich_location richloc (expr_loc, &rhs_label);
 		if (pedwarn (&richloc, OPT_Wincompatible_pointer_types,
@@ -7031,6 +7058,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  {
 	  case ic_argpass:
 	    {
+	      auto_diagnostic_group d;
 	      range_label_for_type_mismatch rhs_label (rhstype, type);
 	      gcc_rich_location richloc (expr_loc, &rhs_label);
 	      if (pedwarn (&richloc, OPT_Wint_conversion,
@@ -7066,6 +7094,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	{
 	case ic_argpass:
 	  {
+	    auto_diagnostic_group d;
 	    range_label_for_type_mismatch rhs_label (rhstype, type);
 	    gcc_rich_location richloc (expr_loc, &rhs_label);
 	    if (pedwarn (&richloc, OPT_Wint_conversion,
@@ -7109,6 +7138,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     {
     case ic_argpass:
       {
+	auto_diagnostic_group d;
 	range_label_for_type_mismatch rhs_label (rhstype, type);
 	gcc_rich_location richloc (expr_loc, &rhs_label);
 	error_at (&richloc, "incompatible type for argument %d of %qE", parmnum,
