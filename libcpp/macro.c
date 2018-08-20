@@ -85,8 +85,9 @@ struct macro_arg_token_iter
 struct macro_arg_saved_data {
   /* The canonical (UTF-8) spelling of this identifier.  */
   cpp_hashnode *canonical_node;
-  /* The previous value of this identifier.  */
+  /* The previous value & type of this identifier.  */
   union _cpp_hashnode_value value;
+  node_type type;
 };
 
 static const char *vaopt_paste_error =
@@ -2730,7 +2731,7 @@ cpp_get_token_1 (cpp_reader *pfile, source_location *location)
 
       node = result->val.node.node;
 
-      if (node->type != NT_MACRO || (result->flags & NO_EXPAND))
+      if (node->type == NT_VOID || (result->flags & NO_EXPAND))
 	break;
 
       if (!(node->flags & NODE_DISABLED))
@@ -3040,8 +3041,8 @@ _cpp_free_definition (cpp_hashnode *h)
 {
   /* Macros and assertions no longer have anything to free.  */
   h->type = NT_VOID;
-  /* Clear builtin flag in case of redefinition.  */
-  h->flags &= ~(NODE_BUILTIN | NODE_DISABLED | NODE_USED);
+  h->value.answers = NULL;
+  h->flags &= ~(NODE_DISABLED | NODE_USED);
 }
 
 /* Save parameter NODE (spelling SPELLING) to the parameter list of
@@ -3051,7 +3052,7 @@ _cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
 		     cpp_hashnode *spelling)
 {
   /* Constraint 6.10.3.6 - duplicate parameter names.  */
-  if (node->flags & NODE_MACRO_ARG)
+  if (node->type == NT_MACRO_ARG)
     {
       cpp_error (pfile, CPP_DL_ERROR, "duplicate macro parameter \"%s\"",
 		 NODE_NAME (node));
@@ -3069,13 +3070,14 @@ _cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
   macro_arg_saved_data *saved = (macro_arg_saved_data *)pfile->macro_buffer;
   saved[n].canonical_node = node;
   saved[n].value = node->value;
+  saved[n].type = node->type;
 
   void *base = _cpp_reserve_room (pfile, n * sizeof (cpp_hashnode *),
 				  sizeof (cpp_hashnode *));
   ((cpp_hashnode **)base)[n] = spelling;
 
   /* Morph into a macro arg.  */
-  node->flags |= NODE_MACRO_ARG;
+  node->type = NT_MACRO_ARG;
   /* Index is 1 based.  */
   node->value.arg_index = n + 1;
 
@@ -3093,8 +3095,8 @@ _cpp_unsave_parameters (cpp_reader *pfile, unsigned n)
 	&((struct macro_arg_saved_data *) pfile->macro_buffer)[n];
 
       struct cpp_hashnode *node = save->canonical_node;
+      node->type = save->type;
       node->value = save->value;
-      node->flags &= ~NODE_MACRO_ARG;
     }
 }
 
@@ -3109,6 +3111,7 @@ _cpp_unsave_parameters (cpp_reader *pfile, unsigned n)
    	    | name '...'
             | '...'
 */
+
 static bool
 parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
 {
@@ -3232,9 +3235,9 @@ lex_expansion_token (cpp_reader *pfile, cpp_macro *macro)
   pfile->cur_token = saved_cur_token;
 
   /* Is this a parameter?  */
-  if (token->type == CPP_NAME
-      && (token->val.node.node->flags & NODE_MACRO_ARG) != 0)
+  if (token->type == CPP_NAME && token->val.node.node->type == NT_MACRO_ARG)
     {
+      /* Morph into a parameter reference.  */
       cpp_hashnode *spelling = token->val.node.spelling;
       token->type = CPP_MACRO_ARG;
       token->val.macro_arg.arg_no = token->val.node.node->value.arg_index;
@@ -3527,7 +3530,7 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
     }
 
   /* Enter definition in hash table.  */
-  node->type = NT_MACRO;
+  node->type = NT_USER_MACRO;
   node->value.macro = macro;
   if (! ustrncmp (NODE_NAME (node), DSC ("__STDC_"))
       && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_FORMAT_MACROS")
@@ -3565,17 +3568,18 @@ _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
   node->flags |= NODE_USED;
   switch (node->type)
     {
-    case NT_MACRO:
-      if (!(node->flags & NODE_BUILTIN))
-	{
-	  cpp_macro *macro = node->value.macro;
-	  if (macro->lazy)
-	    {
-	      pfile->cb.user_lazy_macro (pfile, macro, macro->lazy - 1);
-	      macro->lazy = 0;
-	    }
-	}
+    case NT_USER_MACRO:
+      {
+	cpp_macro *macro = node->value.macro;
+	if (macro->lazy)
+	  {
+	    pfile->cb.user_lazy_macro (pfile, macro, macro->lazy - 1);
+	    macro->lazy = 0;
+	  }
+      }
+      /* FALLTHROUGH.  */
 
+    case NT_BUILTIN_MACRO:
       if (pfile->cb.used_define)
 	pfile->cb.used_define (pfile, pfile->directive_line, node);
       break;

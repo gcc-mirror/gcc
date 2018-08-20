@@ -695,7 +695,8 @@ undefine_macros (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *h,
   /* Body of _cpp_free_definition inlined here for speed.
      Macros and assertions no longer have anything to free.  */
   h->type = NT_VOID;
-  h->flags &= ~(NODE_POISONED|NODE_BUILTIN|NODE_DISABLED|NODE_USED);
+  h->value.answers = NULL;
+  h->flags &= ~(NODE_POISONED|NODE_DISABLED|NODE_USED);
   return 1;
 }
 
@@ -2217,9 +2218,10 @@ parse_answer (cpp_reader *pfile, int type, source_location pred_loc,
 }
 
 /* Parses an assertion directive of type TYPE, returning a pointer to
-   the hash node of the predicate, or 0 on error.  If an answer was
-   supplied, it is placed in EXP_PTR & EXP_COUNT, which is otherwise
-   set to 0.  */
+   the hash node of the predicate, or 0 on error.  The node is
+   guaranteed to be disjoint from the macro namespace, so can only
+   have type 'NT_VOID'.  If an answer was supplied, it is placed in
+   *ANSWER_PTR, which is otherwise set to 0.  */
 static cpp_hashnode *
 parse_assertion (cpp_reader *pfile, int type, cpp_macro **answer_ptr)
 {
@@ -2294,7 +2296,7 @@ _cpp_test_assertion (cpp_reader *pfile, unsigned int *value)
 
   if (node)
     {
-      if (node->type == NT_ASSERTION)
+      if (node->value.answers)
 	*value = !answer || *find_answer (node, answer);
     }
   else if (pfile->cur_token[-1].type == CPP_EOF)
@@ -2315,7 +2317,7 @@ do_assert (cpp_reader *pfile)
     {
       /* Place the new answer in the answer list.  First check there
          is not a duplicate.  */
-      if (node->type == NT_ASSERTION && *find_answer (node, answer))
+      if (*find_answer (node, answer))
 	{
 	  cpp_error (pfile, CPP_DL_WARNING, "\"%s\" re-asserted",
 		     NODE_NAME (node) + 1);
@@ -2327,10 +2329,8 @@ do_assert (cpp_reader *pfile)
 	(pfile, sizeof (cpp_macro) - sizeof (cpp_token)
 	 + sizeof (cpp_token) * answer->count);
 
-      if (node->type == NT_ASSERTION)
-	answer->parm.next = node->value.answers;
-
-      node->type = NT_ASSERTION;
+      /* Chain into the list.  */
+      answer->parm.next = node->value.answers;
       node->value.answers = answer;
 
       check_eol (pfile, false);
@@ -2345,7 +2345,7 @@ do_unassert (cpp_reader *pfile)
   cpp_hashnode *node = parse_assertion (pfile, T_UNASSERT, &answer);
 
   /* It isn't an error to #unassert something that isn't asserted.  */
-  if (node && node->type == NT_ASSERTION)
+  if (node)
     {
       if (answer)
 	{
@@ -2353,12 +2353,7 @@ do_unassert (cpp_reader *pfile)
 
 	  /* Remove the assert from the list.  */
 	  if (cpp_macro *temp = *p)
-	    {
-	      *p = temp->parm.next;
-	      /* Did we free the last answer?  */
-	      if (!*p)
-		node->type = NT_VOID;
-	    }
+	    *p = temp->parm.next;
 
 	  check_eol (pfile, false);
 	}
