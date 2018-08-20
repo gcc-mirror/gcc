@@ -40554,7 +40554,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     {
     case SET:
       if (register_operand (SET_DEST (x), VOIDmode)
-	  && reg_or_0_operand (SET_SRC (x), VOIDmode))
+	  && register_operand (SET_SRC (x), VOIDmode))
 	{
 	  *total = ix86_set_reg_reg_cost (GET_MODE (SET_DEST (x)));
 	  return true;
@@ -40581,20 +40581,10 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-      if (TARGET_64BIT && !x86_64_immediate_operand (x, VOIDmode))
-	*total = 3;
-      else if (TARGET_64BIT && !x86_64_zext_immediate_operand (x, VOIDmode))
-	*total = 2;
-      else if (flag_pic && SYMBOLIC_CONST (x)
-	       && !(TARGET_64BIT
-		    && (GET_CODE (x) == LABEL_REF
-			|| (GET_CODE (x) == SYMBOL_REF
-			    && SYMBOL_REF_LOCAL_P (x))))
-	       /* Use 0 cost for CONST to improve its propagation.  */
-	       && (TARGET_64BIT || GET_CODE (x) != CONST))
-	*total = 1;
-      else
+      if (x86_64_immediate_operand (x, VOIDmode))
 	*total = 0;
+     else
+	*total = 1;
       return true;
 
     case CONST_DOUBLE:

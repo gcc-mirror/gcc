@@ -1,3 +1,113 @@
+2018-08-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/86994
+	* config/i386/i386.c (ix86_rtx_costs) [case SET]: Check source for
+	register_operand when calling ix86_set_reg_reg_cost.
+	[case CONST_INT, case CONST, case LABEL_REF, case SYMBOL_REF]:
+	Set *total to 0 for operands that satisfy x86_64_immediate_operand
+	predicate and to 1 otherwise.
+
+2018-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_override_options): If -gsplit-dwarf is set,
+	emit a diagnostic that it is not supported and reset the option.
+	* config/darwin.h (DRIVER_SELF_SPECS): Note that gsplit-dwarf is not
+	supported and consume the option.  (ASM_FINAL_SPEC): New.
+
+2018-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/md.texi (Patterns): Use @ref instead of @xref in the middle of
+	a sentence.
+
+2018-08-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	C-SKY port: Documentation
+
+	* doc/extend.texi (C-SKY Function Attributes): New section.
+	* doc/invoke.texi (Option Summary): Add C-SKY options.
+	(C-SKY Options): New section.
+	* doc/md.texi (Machine Constraints): Document C-SKY constraints.
+
+2018-08-17  Jojo  <jijie_rong@c-sky.com>
+	    Huibin Wang  <huibin_wang@c-sky.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	C-SKY port: Backend implementation
+
+	* config/csky/*: New.
+	* common/config/csky/*: New.
+
+2018-08-17  Jojo  <jijie_rong@c-sky.com>
+	    Huibin Wang  <huibin_wang@c-sky.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Andrew Jenner  <andrew@codesourcery.com>
+
+	C-SKY port: Configury
+
+	* config.gcc (csky-*-*): New.
+	* configure.ac: Add csky to targets for dwarf2 debug_line support.
+	* configure: Regenerated.
+
+2018-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* dump-context.h: Include "dumpfile.h".
+	(dump_context::dump_printf_va): Convert final param from va_list
+	to va_list *.  Convert from ATTRIBUTE_PRINTF to
+	ATTRIBUTE_GCC_DUMP_PRINTF.
+	(dump_context::dump_printf_loc_va): Likewise.
+	* dumpfile.c: Include "stringpool.h".
+	(make_item_for_dump_printf_va): Delete.
+	(make_item_for_dump_printf): Delete.
+	(class dump_pretty_printer): New class.
+	(dump_pretty_printer::dump_pretty_printer): New ctor.
+	(dump_pretty_printer::emit_items): New member function.
+	(dump_pretty_printer::emit_any_pending_textual_chunks): New member
+	function.
+	(dump_pretty_printer::emit_item): New member function.
+	(dump_pretty_printer::stash_item): New member function.
+	(dump_pretty_printer::format_decoder_cb): New member function.
+	(dump_pretty_printer::decode_format): New member function.
+	(dump_context::dump_printf_va): Reimplement in terms of
+	dump_pretty_printer.
+	(dump_context::dump_printf_loc_va): Convert final param from va_list
+	to va_list *.
+	(dump_context::begin_scope): Reimplement call to
+	make_item_for_dump_printf.
+	(dump_printf): Update for change to dump_printf_va.
+	(dump_printf_loc): Likewise.
+	(selftest::test_capture_of_dump_calls): Convert "stmt" from
+	greturn * to gimple *.  Add a test_decl.  Add tests of dump_printf
+	with %T, %E, and %G.
+	* dumpfile.h (ATTRIBUTE_GCC_DUMP_PRINTF): New macro.
+	(dump_printf): Replace ATTRIBUTE_PRINTF_2 with
+	ATTRIBUTE_GCC_DUMP_PRINTF (2, 3).
+	(dump_printf_loc): Replace ATTRIBUTE_PRINTF_3 with
+	ATTRIBUTE_GCC_DUMP_PRINTF (3, 0).
+	* tree-vect-data-refs.c (vect_lanes_optab_supported_p): Convert
+	use of HOST_WIDE_INT_PRINT_DEC on unsigned HOST_WIDE_INT "count"
+	within a dump_printf_loc call to "%wu".
+	(vector_alignment_reachable_p): Merge two dump_printf[_loc] calls,
+	converting a use of HOST_WIDE_INT_PRINT_DEC to "%wd".  Add a
+	missing space after "=".
+	* tree-vect-loop.c (vect_analyze_loop_2) Within a dump_printf
+	call, convert use of HOST_WIDE_INT_PRINT_DEC to "%wd".
+	* tree-vect-slp.c (vect_slp_bb): Within a dump_printf_loc call,
+	convert use of HOST_WIDE_INT_PRINT_UNSIGNED to "%wu".
+	* tree-vectorizer.c (try_vectorize_loop_1): Likewise.  Remove
+	duplicate "vectorized" from message.
+
+2018-08-17  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/arm/arm-builtins.c (arm_init_simd_builtin_types): Clear
+	polyNxK_t element's TYPE_STRING_FLAG.
+
+2018-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (*cbranch, *creturn): Name these patterns
+	(they were unnamed before).  Fix comments.
+
 2018-08-17  Nathan Sidwell  <nathan@acm.org>
 
 	* cppbuiltin.c: Include "cpplib.h", not "cpp-id-data.h".

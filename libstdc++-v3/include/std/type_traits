@@ -144,6 +144,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
 
+  template<typename... _Bn>
+    inline constexpr bool __or_v = __or_<_Bn...>::value;
+  template<typename... _Bn>
+    inline constexpr bool __and_v = __and_<_Bn...>::value;
+
 #define __cpp_lib_logical_traits 201510
 
   template<typename... _Bn>

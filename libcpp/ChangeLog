@@ -1,4 +1,35 @@
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpp-id-data.h (struct answer): Delete.
+	* include/cpplib.h (struct answer): Don't forward-declare.
+	(enum cpp_macro_kind): Add cmk_assert.
+	(struct cpp_macro): Union parms and next assert chain.
+	(union _cpp_hashnode_value): 'answer' field is cpp_macro.
+	* directives.c (parse_answer): Convert to use cpp_macro. Return
+	true on success. 
+	(parse_assertion, find_answer, _cpp_test_assertion, cpp_do_assert)
+	(cpp_do_unassert): Convert to use cpp_macro.
+	* macro.c (warn_of_redefinition, _cpp_new_macro)
+	(check_trad_stringification, cpp_macro_definition): Adjust macro
+	parm access.
+	* traditional.c (_cpp_replacement_text_len)
+	(_cpp_copy_replacement_text, _cpp_create_trad_definition): Likewise.
+
 2018-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_callbacks): Replace
+	user_builtin_macro with user_lazy_macro.
+	(struct cpp_macro): add lazy field.
+	(enum cpp_builtin_type): Remove BT_FIRST_USER, BT_LAST_USER.
+	(cpp_define_lazily): Declare.
+	* macro.c (enter_macro_context) Use _cpp_maybe_notify_macro_use.
+	(warn_of_redefinition): Use cpp_builtin_macro_p, directly call
+	user_lazy_macro hook.
+	(_cpp_new_macro): Clear lazy field.
+	(cpp_define_lazily): Define.
+	(_cpp_notify_macro_use): Adjust lazy definition code.
+	(cpp_macro_definition): No need to do lazy definition here.
+	* pch.c (write_macdef, save_macros): Likewise.
 
 	* include/cpplib.h (enum cpp_macro_kind): New.
 	(struct cpp_macro): Make body trailing array.  Add kind field,

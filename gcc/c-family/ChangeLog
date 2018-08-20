@@ -1,3 +1,30 @@
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ada-spec.c (macro_length, dump_ada_macros): Adjust macro parm
+	access.
+
+2018-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	* c-cppbuiltin.c (struct lazy_hex_fp_value_struct): Remove macro
+	field.
+	(laxy_hex_fp_value_count): Make unsigned.
+	(lazy_hex_fp_value): Provided with macro & lazy number.  Directly
+	manipulate the macro.
+	(builtin_defin_with_hex_fp_value): Adjust callback name, use
+	cpp_define_lazily.
+
+2018-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (enum format_type): Add gcc_dump_printf_format_type.
+	(gcc_dump_printf_length_specs): New.
+	(gcc_dump_printf_flag_pairs): New.
+	(gcc_dump_printf_flag_specs): New.
+	(gcc_dump_printf_char_table): New.
+	(format_types_orig): Add entry for "gcc_dump_printf".
+	(init_dynamic_diag_info): Set up length_char_specs and
+	conversion_specs for gcc_dump_printf_format_type.
+	(handle_format_attribute): Handle gcc_dump_printf_format_type.
+
 2018-08-17  Nathan Sidwell  <nathan@acm.org>
 
 	* c-ada-spec.c (macro_length, dump_ada_macros): Constify.

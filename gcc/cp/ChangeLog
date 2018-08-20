@@ -1,3 +1,8 @@
+2018-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* typeck.c (string_conv_p): Extract location from EXP and use it
+	in preference to input_location when issuing warnings.
+
 2018-08-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* call.c: Include "gcc-rich-location.h".

@@ -4,6 +4,7 @@
 /* { dg-do run } */
 /* { dg-add-options ieee } */
 /* { dg-skip-if "No Inf/NaN support" { spu-*-* } } */
+/* { dg-skip-if "No subnormal support" { csky-*-* } { "-mhard-float" } } */
 
 #include "../../gcc.dg/tg-tests.h"
 

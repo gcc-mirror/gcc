@@ -790,7 +790,7 @@ enum cpp_builtin_type
 
 union GTY(()) _cpp_hashnode_value {
   /* Assert (maybe NULL) */
-  cpp_macro * GTY((tag ("NT_VOID"))) assert;
+  cpp_macro * GTY((tag ("NT_VOID"))) answers;
   /* Macro (never NULL) */
   cpp_macro * GTY((tag ("NT_USER_MACRO"))) macro;
   /* Code for a builtin macro.  */
