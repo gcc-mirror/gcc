@@ -813,8 +813,10 @@ struct GTY(()) cpp_hashnode {
 					   then index into directive table.
 					   Otherwise, a NODE_OPERATOR.  */
   unsigned char rid_code;		/* Rid code - for front ends.  */
-  ENUM_BITFIELD(node_type) type : 6;	/* CPP node type.  */
-  unsigned int flags : 10;		/* CPP flags.  */
+  ENUM_BITFIELD(node_type) type : 2;	/* CPP node type.  */
+  unsigned int flags : 8;		/* CPP flags.  */
+
+  /* 6 bits spare (plus another 32 on 64-bit hosts).  */
 
   union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };
@@ -940,7 +942,6 @@ extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 inline bool cpp_user_macro_p (const cpp_hashnode *node)
 {
   return node->type == NT_USER_MACRO;
-
 }
 inline bool cpp_builtin_macro_p (const cpp_hashnode *node)
 {
@@ -950,6 +951,7 @@ inline bool cpp_macro_p (const cpp_hashnode *node)
 {
   return node->type & NT_MACRO_MASK;
 }
+
 /* Returns true if NODE is a function-like user macro.  */
 inline bool cpp_fun_like_macro_p (cpp_hashnode *node)
 {
