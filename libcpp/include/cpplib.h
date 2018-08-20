@@ -36,7 +36,6 @@ typedef struct cpp_macro cpp_macro;
 typedef struct cpp_callbacks cpp_callbacks;
 typedef struct cpp_dir cpp_dir;
 
-struct answer;
 struct _cpp_file;
 
 /* The first three groups, apart from '=', can appear in preprocessor
@@ -674,25 +673,33 @@ struct cpp_dir
 /* The kind of the cpp_macro.  */
 enum cpp_macro_kind {
   cmk_macro,	/* An ISO macro (token expansion).  */
+  cmk_assert,   /* An assertion.  */
   cmk_traditional,	/* A traditional macro (text expansion).  */
 };
 
 /* Each macro definition is recorded in a cpp_macro structure.
    Variadic macros cannot occur with traditional cpp.  */
 struct GTY(()) cpp_macro {
-  /* Parameters, if any.  If parameter names use extended identifiers,
-     the original spelling of those identifiers, not the canonical
-     UTF-8 spelling, goes here.  */
-  cpp_hashnode ** GTY ((nested_ptr (union tree_node,
-		"%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
-			"%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL"),
-			length ("%h.paramc")))
-    params;
+  union cpp_parm_u 
+  {
+    /* Parameters, if any.  If parameter names use extended identifiers,
+       the original spelling of those identifiers, not the canonical
+       UTF-8 spelling, goes here.  */
+    cpp_hashnode ** GTY ((tag ("false"),
+			  nested_ptr (union tree_node,
+	"%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
+	"%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL"),
+			  length ("%1.paramc"))) params;
+
+    /* If this is an assertion, the next one in the chain.  */
+    cpp_macro *GTY ((tag ("true"))) next;
+  } GTY ((desc ("%1.kind == cmk_assert"))) parm;
 
   /* Definition line number.  */
   source_location line;
 
-  /* Number of tokens in expansion, or bytes for traditional macros.  */
+  /* Number of tokens in body, or bytes for traditional macros.  */
+  /* Do we really need 2^32-1 range here?  */
   unsigned int count;
 
   /* Number of parameters.  */
@@ -814,7 +821,7 @@ union GTY(()) _cpp_hashnode_value {
   /* If a macro.  */
   cpp_macro * GTY((tag ("NTV_MACRO"))) macro;
   /* Answers to an assertion.  */
-  struct answer * GTY ((tag ("NTV_ANSWER"))) answers;
+  cpp_macro * GTY ((tag ("NTV_ANSWER"))) answers;
   /* Code for a builtin macro.  */
   enum cpp_builtin_type GTY ((tag ("NTV_BUILTIN"))) builtin;
   /* Macro argument index.  */

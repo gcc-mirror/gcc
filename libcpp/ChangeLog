@@ -1,3 +1,20 @@
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpp-id-data.h (struct answer): Delete.
+	* include/cpplib.h (struct answer): Don't forward-declare.
+	(enum cpp_macro_kind): Add cmk_assert.
+	(struct cpp_macro): Union parms and next assert chain.
+	(union _cpp_hashnode_value): 'answer' field is cpp_macro.
+	* directives.c (parse_answer): Convert to use cpp_macro. Return
+	true on success. 
+	(parse_assertion, find_answer, _cpp_test_assertion, cpp_do_assert)
+	(cpp_do_unassert): Convert to use cpp_macro.
+	* macro.c (warn_of_redefinition, _cpp_new_macro)
+	(check_trad_stringification, cpp_macro_definition): Adjust macro
+	parm access.
+	* traditional.c (_cpp_replacement_text_len)
+	(_cpp_copy_replacement_text, _cpp_create_trad_definition): Likewise.
+
 2018-08-17  Nathan Sidwell  <nathan@acm.org>
 
 	* include/cpplib.h (struct cpp_callbacks): Replace

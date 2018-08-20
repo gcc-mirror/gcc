@@ -918,7 +918,7 @@ _cpp_replacement_text_len (const cpp_macro *macro)
 	  len += b->text_len;
 	  if (b->arg_index == 0)
 	    break;
-	  len += NODE_LEN (macro->params[b->arg_index - 1]);
+	  len += NODE_LEN (macro->parm.params[b->arg_index - 1]);
 	  exp += BLOCK_LEN (b->text_len);
 	}
     }
@@ -947,7 +947,7 @@ _cpp_copy_replacement_text (const cpp_macro *macro, uchar *dest)
 	  dest += b->text_len;
 	  if (b->arg_index == 0)
 	    break;
-	  param = macro->params[b->arg_index - 1];
+	  param = macro->parm.params[b->arg_index - 1];
 	  memcpy (dest, NODE_NAME (param), NODE_LEN (param));
 	  dest += NODE_LEN (param);
 	  exp += BLOCK_LEN (b->text_len);
@@ -1210,7 +1210,7 @@ _cpp_create_trad_definition (cpp_reader *pfile)
     {
       macro = _cpp_new_macro (pfile, cmk_traditional,
 			      _cpp_aligned_alloc (pfile, sizeof (cpp_macro)));
-      macro->params = params;
+      macro->parm.params = params;
       macro->paramc = nparms;
       macro->fun_like = fun_like != 0;
     }

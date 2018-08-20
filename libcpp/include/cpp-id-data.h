@@ -17,10 +17,3 @@ along with this program; see the file COPYING3.  If not see
 
 #include "cpplib.h"
 
-/* Chained list of answers to an assertion.  */
-struct GTY(()) answer {
-  struct answer *next;
-  unsigned int count;
-  cpp_token GTY ((length ("%h.count"))) first[1];
-};
-

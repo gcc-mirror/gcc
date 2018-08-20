@@ -1,3 +1,8 @@
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ada-spec.c (macro_length, dump_ada_macros): Adjust macro parm
+	access.
+
 2018-08-17  Nathan Sidwell  <nathan@acm.org>
 
 	* c-cppbuiltin.c (struct lazy_hex_fp_value_struct): Remove macro
