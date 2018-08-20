@@ -695,8 +695,8 @@ undefine_macros (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *h,
   /* Body of _cpp_free_definition inlined here for speed.
      Macros and assertions no longer have anything to free.  */
   h->type = NT_VOID;
-  h->flags &= ~(NODE_POISONED|NODE_DISABLED|NODE_USED);
   h->value.answers = NULL;
+  h->flags &= ~(NODE_POISONED|NODE_DISABLED|NODE_USED);
   return 1;
 }
 
@@ -2218,9 +2218,10 @@ parse_answer (cpp_reader *pfile, int type, source_location pred_loc,
 }
 
 /* Parses an assertion directive of type TYPE, returning a pointer to
-   the hash node of the predicate, or 0 on error.  If an answer was
-   supplied, it is placed in EXP_PTR & EXP_COUNT, which is otherwise
-   set to 0.  */
+   the hash node of the predicate, or 0 on error.  The node is
+   guaranteed to be disjoint from the macro namespace, so can only
+   have type 'NT_VOID'.  If an answer was supplied, it is placed in
+   *ANSWER_PTR, which is otherwise set to 0.  */
 static cpp_hashnode *
 parse_assertion (cpp_reader *pfile, int type, cpp_macro **answer_ptr)
 {

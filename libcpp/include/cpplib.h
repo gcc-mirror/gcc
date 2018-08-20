@@ -675,7 +675,7 @@ struct cpp_dir
 enum cpp_macro_kind {
   cmk_macro,	/* An ISO macro (token expansion).  */
   cmk_assert,   /* An assertion.  */
-  cmk_traditional,	/* A traditional macro (text expansion).  */
+  cmk_traditional	/* A traditional macro (text expansion).  */
 };
 
 /* Each macro definition is recorded in a cpp_macro structure.
@@ -743,6 +743,13 @@ struct GTY(()) cpp_macro {
   } GTY ((desc ("%1.kind == cmk_traditional"))) exp;
 };
 
+/* Poisoned identifiers are flagged NODE_POISONED.  NODE_OPERATOR (C++
+   only) indicates an identifier that behaves like an operator such as
+   "xor".  NODE_DIAGNOSTIC is for speed in lex_token: it indicates a
+   diagnostic may be required for this node.  Currently this only
+   applies to __VA_ARGS__, poisoned identifiers, and -Wc++-compat
+   warnings about NODE_OPERATOR.  */
+
 /* Hash node flags.  */
 #define NODE_OPERATOR	(1 << 0)	/* C++ named operator.  */
 #define NODE_POISONED	(1 << 1)	/* Poisoned identifier.  */
@@ -759,7 +766,8 @@ enum node_type
   NT_VOID = 0,	   /* Maybe an assert?  */
   NT_MACRO_ARG,	   /* A macro arg.  */
   NT_USER_MACRO,   /* A user macro.  */
-  NT_BUILTIN_MACRO /* A builtin macro.  */
+  NT_BUILTIN_MACRO, /* A builtin macro.  */
+  NT_MACRO_MASK = NT_USER_MACRO  /* Mask for either macro kind.  */
 };
 
 /* Different flavors of builtin macro.  _Pragma is an operator, but we
@@ -945,7 +953,7 @@ inline bool cpp_builtin_macro_p (const cpp_hashnode *node)
 }
 inline bool cpp_macro_p (const cpp_hashnode *node)
 {
-  return node->type & NT_USER_MACRO;
+  return node->type & NT_MACRO_MASK;
 }
 
 /* Returns true if NODE is a function-like user macro.  */

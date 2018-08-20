@@ -1,3 +1,36 @@
+2018-08-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* expr.c (store_field): Change gcc_assert to gcc_checking_assert.
+
+2018-08-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/86984
+	* expr.c (expand_assignment): Assert that bitpos is positive.
+	(store_field): Likewise
+	(expand_expr_real_1): Make sure that bitpos is positive.
+	* config/alpha/alpha.h (CONSTANT_ADDRESS_P): Avoid signed
+	integer overflow.
+
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (CPP_ID_DATA_H): Delete.
+	(CPP_INTERNAL_H): Don't add it.
+	(GTFILES): Replace CPP_ID_DATA_H with CPPLIB_H.
+	* gengtype.c (open_base_files): Replace cpp-id-data.h with cpplib.h
+
+2018-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78655
+	* tree-vrp.c (extract_range_from_binary_expr_1): Make
+	pointer + offset nonnull if either operand is nonnull work.
+
+2018-08-20  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf2out.c (add_scalar_info): Don't add reference to existing die
+	unless the referenced die describes the added property using
+	DW_AT_location or DW_AT_const_value.  Fall back to exprloc case.
+	Otherwise, add a DW_AT_location to the referenced die.
+
 2018-08-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/86994

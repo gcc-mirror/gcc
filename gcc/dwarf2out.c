@@ -20598,7 +20598,7 @@ static void
 add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 		 int forms, struct loc_descr_context *context)
 {
-  dw_die_ref context_die, decl_die;
+  dw_die_ref context_die, decl_die = NULL;
   dw_loc_list_ref list;
   bool strip_conversions = true;
   bool placeholder_seen = false;
@@ -20675,7 +20675,7 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 
       if (decl != NULL_TREE)
 	{
-	  dw_die_ref decl_die = lookup_decl_die (decl);
+	  decl_die = lookup_decl_die (decl);
 
 	  /* ??? Can this happen, or should the variable have been bound
 	     first?  Probably it can, since I imagine that we try to create
@@ -20684,8 +20684,12 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 	     later parameter.  */
 	  if (decl_die != NULL)
 	    {
-	      add_AT_die_ref (die, attr, decl_die);
-	      return;
+	      if (get_AT (decl_die, DW_AT_location)
+		  || get_AT (decl_die, DW_AT_const_value))
+		{
+		  add_AT_die_ref (die, attr, decl_die);
+		  return;
+		}
 	    }
 	}
     }
@@ -20729,15 +20733,19 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
       || placeholder_seen)
     return;
 
-  if (current_function_decl == 0)
-    context_die = comp_unit_die ();
-  else
-    context_die = lookup_decl_die (current_function_decl);
+  if (!decl_die)
+    {
+      if (current_function_decl == 0)
+	context_die = comp_unit_die ();
+      else
+	context_die = lookup_decl_die (current_function_decl);
 
-  decl_die = new_die (DW_TAG_variable, context_die, value);
-  add_AT_flag (decl_die, DW_AT_artificial, 1);
-  add_type_attribute (decl_die, TREE_TYPE (value), TYPE_QUAL_CONST, false,
-		      context_die);
+      decl_die = new_die (DW_TAG_variable, context_die, value);
+      add_AT_flag (decl_die, DW_AT_artificial, 1);
+      add_type_attribute (decl_die, TREE_TYPE (value), TYPE_QUAL_CONST, false,
+			  context_die);
+    }
+
   add_AT_location_description (decl_die, DW_AT_location, list);
   add_AT_die_ref (die, attr, decl_die);
 }

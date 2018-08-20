@@ -3041,8 +3041,8 @@ _cpp_free_definition (cpp_hashnode *h)
 {
   /* Macros and assertions no longer have anything to free.  */
   h->type = NT_VOID;
+  h->value.answers = NULL;
   h->flags &= ~(NODE_DISABLED | NODE_USED);
-  h->value.macro = NULL;
 }
 
 /* Save parameter NODE (spelling SPELLING) to the parameter list of
@@ -3554,7 +3554,7 @@ cpp_define_lazily (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
 {
   cpp_macro *macro = node->value.macro;
 
-  gcc_checking_assert (pfile->cb.user_lazy_macro && macro && num < 255);
+  gcc_checking_assert (pfile->cb.user_lazy_macro && macro && num < UCHAR_MAX);
 
   macro->lazy = num + 1;
 }
