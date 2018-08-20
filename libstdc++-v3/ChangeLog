@@ -1,3 +1,16 @@
+2018-08-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (_Optional_payload): Use variable templates
+	for conditions in default template arguments and exception
+	specifications.
+	(optional): Likewise. Adjust indentation.
+	(optional::__not_self, optional::__not_tag, optional::_Requires): New
+	SFINAE helpers.
+	(optional::optional): Use new helpers in constructor constraints.
+	* include/std/type_traits (__or_v, __and_v): New variable templates.
+	* testsuite/20_util/optional/cons/value_neg.cc: Change dg-error to
+	dg-prune-output. Remove unused header.
+
 2018-08-18  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/25_algorithms/copy/86658.cc: Use dg-options to define
