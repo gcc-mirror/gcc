@@ -1331,6 +1331,7 @@ check_tag (tree tag, tree id, tree *tp, abi_tag_data *p)
       /* Otherwise we're diagnosing missing tags.  */
       if (TREE_CODE (p->t) == FUNCTION_DECL)
 	{
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Wabi_tag, "%qD inherits the %E ABI tag "
 		       "that %qT (used in its return type) has",
 		       p->t, tag, *tp))
@@ -1338,12 +1339,14 @@ check_tag (tree tag, tree id, tree *tp, abi_tag_data *p)
 	}
       else if (VAR_P (p->t))
 	{
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Wabi_tag, "%qD inherits the %E ABI tag "
 		       "that %qT (used in its type) has", p->t, tag, *tp))
 	    inform (location_of (*tp), "%qT declared here", *tp);
 	}
       else if (TYPE_P (p->subob))
 	{
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Wabi_tag, "%qT does not have the %E ABI tag "
 		       "that base %qT has", p->t, tag, p->subob))
 	    inform (location_of (p->subob), "%qT declared here",
@@ -1351,6 +1354,7 @@ check_tag (tree tag, tree id, tree *tp, abi_tag_data *p)
 	}
       else
 	{
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Wabi_tag, "%qT does not have the %E ABI tag "
 		       "that %qT (used in the type of %qD) has",
 		       p->t, tag, *tp, p->subob))
@@ -2904,20 +2908,24 @@ finish_struct_anon_r (tree field, bool complain)
 	{
 	  /* We already complained about static data members in
 	     finish_static_data_member_decl.  */
-	  if (!VAR_P (elt)
-	      && permerror (DECL_SOURCE_LOCATION (elt),
-			    TREE_CODE (TREE_TYPE (field)) == UNION_TYPE
-			    ? "%q#D invalid; an anonymous union may "
-			    "only have public non-static data members"
-			    : "%q#D invalid; an anonymous struct may "
-			    "only have public non-static data members", elt))
+	  if (!VAR_P (elt))
 	    {
-	      static bool hint;
-	      if (flag_permissive && !hint)
+	      auto_diagnostic_group d;
+	      if (permerror (DECL_SOURCE_LOCATION (elt),
+			     TREE_CODE (TREE_TYPE (field)) == UNION_TYPE
+			     ? "%q#D invalid; an anonymous union may "
+			     "only have public non-static data members"
+			     : "%q#D invalid; an anonymous struct may "
+			     "only have public non-static data members", elt))
 		{
-		  hint = true;
-		  inform (DECL_SOURCE_LOCATION (elt),
-			  "this flexibility is deprecated and will be removed");
+		  static bool hint;
+		  if (flag_permissive && !hint)
+		    {
+		      hint = true;
+		      inform (DECL_SOURCE_LOCATION (elt),
+			      "this flexibility is deprecated and will be "
+			      "removed");
+		    }
 		}
 	    }
 	}
@@ -3107,6 +3115,7 @@ one_inherited_ctor (tree ctor, tree t, tree using_decl)
   one_inheriting_sig (t, ctor, new_parms, i);
   if (parms == NULL_TREE)
     {
+      auto_diagnostic_group d;
       if (warning (OPT_Winherited_variadic_ctor,
 		   "the ellipsis in %qD is not inherited", ctor))
 	inform (DECL_SOURCE_LOCATION (ctor), "%qD declared here", ctor);
@@ -5399,11 +5408,14 @@ finalize_literal_type_property (tree t)
 	  && !DECL_CONSTRUCTOR_P (fn))
 	{
 	  DECL_DECLARED_CONSTEXPR_P (fn) = false;
-	  if (!DECL_GENERATED_P (fn)
-	      && pedwarn (DECL_SOURCE_LOCATION (fn), OPT_Wpedantic,
-			  "enclosing class of %<constexpr%> non-static member "
-			  "function %q+#D is not a literal type", fn))
-	    explain_non_literal_class (t);
+	  if (!DECL_GENERATED_P (fn))
+	    {
+	      auto_diagnostic_group d;
+	      if (pedwarn (DECL_SOURCE_LOCATION (fn), OPT_Wpedantic,
+			     "enclosing class of %<constexpr%> non-static "
+			     "member function %q+#D is not a literal type", fn))
+		explain_non_literal_class (t);
+	    }
 	}
 }
 
@@ -5425,6 +5437,7 @@ explain_non_literal_class (tree t)
     /* Already explained.  */
     return;
 
+  auto_diagnostic_group d;
   inform (UNKNOWN_LOCATION, "%q+T is not literal because:", t);
   if (cxx_dialect < cxx17 && LAMBDA_TYPE_P (t))
     inform (UNKNOWN_LOCATION,
@@ -6626,17 +6639,20 @@ find_flexarrays (tree t, flexmems_t *fmem, bool base_p,
 static void
 diagnose_invalid_flexarray (const flexmems_t *fmem)
 {
-  if (fmem->array && fmem->enclosing
-      && pedwarn (location_of (fmem->enclosing), OPT_Wpedantic,
-		  TYPE_DOMAIN (TREE_TYPE (fmem->array))
-		  ? G_("invalid use of %q#T with a zero-size array "
-		       "in %q#D")
-		  : G_("invalid use of %q#T with a flexible array member "
-		       "in %q#T"),
-		  DECL_CONTEXT (fmem->array),
-		  DECL_CONTEXT (fmem->enclosing)))
-    inform (DECL_SOURCE_LOCATION (fmem->array),
-	    "array member %q#D declared here", fmem->array);
+  if (fmem->array && fmem->enclosing)
+    {
+      auto_diagnostic_group d;
+      if (pedwarn (location_of (fmem->enclosing), OPT_Wpedantic,
+		     TYPE_DOMAIN (TREE_TYPE (fmem->array))
+		     ? G_("invalid use of %q#T with a zero-size array "
+			  "in %q#D")
+		     : G_("invalid use of %q#T with a flexible array member "
+			  "in %q#T"),
+		     DECL_CONTEXT (fmem->array),
+		     DECL_CONTEXT (fmem->enclosing)))
+	inform (DECL_SOURCE_LOCATION (fmem->array),
+		  "array member %q#D declared here", fmem->array);
+    }
 }
 
 /* Issue diagnostics for invalid flexible array members or zero-length
@@ -6671,6 +6687,7 @@ diagnose_flexarrays (tree t, const flexmems_t *fmem)
 	{
 	  location_t loc = DECL_SOURCE_LOCATION (fmem->array);
 
+	  auto_diagnostic_group d;
 	  if (pedwarn (loc, OPT_Wpedantic, msg, fmem->array, t))
 	    {
 	      inform (location_of (t), "in the definition of %q#T", t);
@@ -6690,6 +6707,7 @@ diagnose_flexarrays (tree t, const flexmems_t *fmem)
 	  location_t loc = DECL_SOURCE_LOCATION (fmem->array);
 	  diagd = true;
 
+	  auto_diagnostic_group d;
 	  error_at (loc, msg, fmem->array, t);
 
 	  /* In the unlikely event that the member following the flexible
@@ -7923,6 +7941,7 @@ resolve_address_of_overloaded_function (tree target_type,
       if (!(complain & tf_error))
 	return error_mark_node;
 
+      auto_diagnostic_group d;
       if (permerror (input_location, "assuming pointer to member %qD", fn)
 	  && !explained)
 	{

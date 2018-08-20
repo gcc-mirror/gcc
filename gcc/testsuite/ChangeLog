@@ -1,3 +1,10 @@
+2018-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* gcc.dg/plugin/diagnostic-group-test-1.c: New test.
+	* gcc.dg/plugin/diagnostic_group_plugin.c: New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the new tests.
+
 2018-08-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/87014

@@ -782,6 +782,7 @@ globalize_reg (tree decl, int i)
 
   if (global_regs[i])
     {
+      auto_diagnostic_group d;
       warning_at (loc, 0, 
 		  "register of %qD used for multiple global register variables",
 		  decl);

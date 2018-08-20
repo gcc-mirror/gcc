@@ -3231,6 +3231,7 @@ do_warn_aggressive_loop_optimizations (struct loop *loop,
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
   print_dec (i_bound, buf, TYPE_UNSIGNED (TREE_TYPE (loop->nb_iterations))
 	     ? UNSIGNED : SIGNED);
+  auto_diagnostic_group d;
   if (warning_at (gimple_location (stmt), OPT_Waggressive_loop_optimizations,
 		  "iteration %s invokes undefined behavior", buf))
     inform (gimple_location (estmt), "within this loop");

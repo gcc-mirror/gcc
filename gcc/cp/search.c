@@ -1911,6 +1911,7 @@ check_final_overrider (tree overrider, tree basefn)
 	/* GNU extension, allow trivial pointer conversions such as
 	   converting to void *, or qualification conversion.  */
 	{
+	  auto_diagnostic_group d;
 	  if (pedwarn (DECL_SOURCE_LOCATION (overrider), 0,
 		       "invalid covariant return type for %q#D", overrider))
 	    inform (DECL_SOURCE_LOCATION (basefn),
@@ -1927,12 +1928,14 @@ check_final_overrider (tree overrider, tree basefn)
     {
       if (fail == 1)
 	{
+	  auto_diagnostic_group d;
 	  error ("invalid covariant return type for %q+#D", overrider);
 	  inform (DECL_SOURCE_LOCATION (basefn),
 		  "overridden function is %q#D", basefn);
 	}
       else
 	{
+	  auto_diagnostic_group d;
 	  error ("conflicting return type specified for %q+#D", overrider);
 	  inform (DECL_SOURCE_LOCATION (basefn),
 		  "overridden function is %q#D", basefn);
@@ -1949,6 +1952,7 @@ check_final_overrider (tree overrider, tree basefn)
 
   if (!comp_except_specs (base_throw, over_throw, ce_derived))
     {
+      auto_diagnostic_group d;
       error ("looser throw specifier for %q+#F", overrider);
       inform (DECL_SOURCE_LOCATION (basefn),
 	      "overridden function is %q#F", basefn);
@@ -1962,6 +1966,7 @@ check_final_overrider (tree overrider, tree basefn)
       && !tx_safe_fn_type_p (base_type)
       && !tx_safe_fn_type_p (over_type))
     {
+      auto_diagnostic_group d;
       error ("conflicting type attributes specified for %q+#D", overrider);
       inform (DECL_SOURCE_LOCATION (basefn),
 	      "overridden function is %q#D", basefn);
@@ -1978,6 +1983,7 @@ check_final_overrider (tree overrider, tree basefn)
       && !lookup_attribute ("transaction_safe_dynamic",
 			    DECL_ATTRIBUTES (basefn)))
     {
+      auto_diagnostic_group d;
       error_at (DECL_SOURCE_LOCATION (overrider),
 		"%qD declared %<transaction_safe_dynamic%>", overrider);
       inform (DECL_SOURCE_LOCATION (basefn),
@@ -1988,6 +1994,7 @@ check_final_overrider (tree overrider, tree basefn)
     {
       if (DECL_DELETED_FN (overrider))
 	{
+	  auto_diagnostic_group d;
 	  error ("deleted function %q+D overriding non-deleted function",
 		 overrider);
 	  inform (DECL_SOURCE_LOCATION (basefn),
@@ -1996,6 +2003,7 @@ check_final_overrider (tree overrider, tree basefn)
 	}
       else
 	{
+	  auto_diagnostic_group d;
 	  error ("non-deleted function %q+D overriding deleted function",
 		 overrider);
 	  inform (DECL_SOURCE_LOCATION (basefn),
@@ -2005,6 +2013,7 @@ check_final_overrider (tree overrider, tree basefn)
     }
   if (DECL_FINAL_P (basefn))
     {
+      auto_diagnostic_group d;
       error ("virtual function %q+D overriding final function", overrider);
       inform (DECL_SOURCE_LOCATION (basefn),
 	      "overridden function is %qD", basefn);
@@ -2089,6 +2098,7 @@ look_for_overrides_r (tree type, tree fndecl)
 	{
 	  /* A static member function cannot match an inherited
 	     virtual member function.  */
+	  auto_diagnostic_group d;
 	  error ("%q+#D cannot be declared", fndecl);
 	  error ("  since %q+#D declared in base class", fn);
 	}

@@ -2173,6 +2173,7 @@ warn_implicit_fallthrough_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	  {
 	    struct label_entry *l;
 	    bool warned_p = false;
+	    auto_diagnostic_group d;
 	    if (!should_warn_for_implicit_fallthrough (gsi_p, label))
 	      /* Quiet.  */;
 	    else if (gimple_code (prev) == GIMPLE_LABEL
@@ -13079,6 +13080,7 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
       /* Unfortunately, this is merely undefined, rather than a constraint
 	 violation, so we cannot make this an error.  If this call is never
 	 executed, the program is still strictly conforming.  */
+      auto_diagnostic_group d;
       warned = warning_at (xloc, 0,
 			   "%qT is promoted to %qT when passed through %<...%>",
 			   type, promoted_type);

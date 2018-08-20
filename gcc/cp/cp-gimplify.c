@@ -1420,12 +1420,15 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  /* Never mind.  */;
 	else if (wtd->try_block)
 	  {
-	    if (TREE_CODE (wtd->try_block) == MUST_NOT_THROW_EXPR
-		&& warning_at (loc, OPT_Wterminate,
-			       "throw will always call terminate()")
-		&& cxx_dialect >= cxx11
-		&& DECL_DESTRUCTOR_P (current_function_decl))
-	      inform (loc, "in C++11 destructors default to noexcept");
+	    if (TREE_CODE (wtd->try_block) == MUST_NOT_THROW_EXPR)
+	      {
+		auto_diagnostic_group d;
+		if (warning_at (loc, OPT_Wterminate,
+				"throw will always call terminate()")
+		    && cxx_dialect >= cxx11
+		    && DECL_DESTRUCTOR_P (current_function_decl))
+		  inform (loc, "in C++11 destructors default to noexcept");
+	      }
 	  }
 	else
 	  {

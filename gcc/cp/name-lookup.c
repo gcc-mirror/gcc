@@ -2556,6 +2556,7 @@ check_extern_c_conflict (tree decl)
 
       if (mismatch)
 	{
+	  auto_diagnostic_group d;
 	  pedwarn (input_location, 0,
 		   "conflicting C language linkage declaration %q#D", decl);
 	  inform (DECL_SOURCE_LOCATION (old),
@@ -2604,6 +2605,15 @@ c_linkage_bindings (tree name)
   return NULL_TREE;
 }
 
+/* Subroutine of check_local_shadow.  */
+
+static void
+inform_shadowed (tree shadowed)
+{
+  inform (DECL_SOURCE_LOCATION (shadowed),
+	  "shadowed declaration is here");
+}
+
 /* DECL is being declared at a local scope.  Emit suitable shadow
    warnings.  */
 
@@ -2631,7 +2641,6 @@ check_local_shadow (tree decl)
       old_scope = binding->scope;
     }
 
-  tree shadowed = NULL_TREE;
   if (old
       && (TREE_CODE (old) == PARM_DECL
 	  || VAR_P (old)
@@ -2702,6 +2711,7 @@ check_local_shadow (tree decl)
 	       && old_scope == current_binding_level->level_chain
 	       && (old_scope->kind == sk_cond || old_scope->kind == sk_for))
 	{
+	  auto_diagnostic_group d;
 	  error ("redeclaration of %q#D", decl);
 	  inform (DECL_SOURCE_LOCATION (old),
 		  "%q#D previously declared here", old);
@@ -2724,6 +2734,7 @@ check_local_shadow (tree decl)
 		       || current_binding_level->level_chain->kind == sk_catch)
 		   && in_function_try_handler))
 	{
+	  auto_diagnostic_group d;
 	  if (permerror (input_location, "redeclaration of %q#D", decl))
 	    inform (DECL_SOURCE_LOCATION (old),
 		    "%q#D previously declared here", old);
@@ -2764,11 +2775,9 @@ check_local_shadow (tree decl)
       else
 	msg = "declaration of %qD shadows a previous local";
 
+      auto_diagnostic_group d;
       if (warning_at (input_location, warning_code, msg, decl))
-	{
-	  shadowed = old;
-	  goto inform_shadowed;
-	}
+	inform_shadowed (old);
       return;
     }
 
@@ -2793,14 +2802,12 @@ check_local_shadow (tree decl)
 	    || TYPE_PTRFN_P (TREE_TYPE (decl))
 	    || TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))
 	  {
+	    auto_diagnostic_group d;
 	    if (warning_at (input_location, OPT_Wshadow,
 			    "declaration of %qD shadows a member of %qT",
 			    decl, current_nonlambda_class_type ())
 		&& DECL_P (member))
-	      {
-		shadowed = member;
-		goto inform_shadowed;
-	      }
+	      inform_shadowed (member);
 	  }
 	return;
       }
@@ -2815,20 +2822,15 @@ check_local_shadow (tree decl)
       && !instantiating_current_function_p ())
     /* XXX shadow warnings in outer-more namespaces */
     {
+      auto_diagnostic_group d;
       if (warning_at (input_location, OPT_Wshadow,
 		      "declaration of %qD shadows a global declaration",
 		      decl))
-	{
-	  shadowed = old;
-	  goto inform_shadowed;
-	}
+	inform_shadowed (old);
       return;
     }
 
   return;
-
- inform_shadowed:
-  inform (DECL_SOURCE_LOCATION (shadowed), "shadowed declaration is here");
 }
 
 /* DECL is being pushed inside function CTX.  Set its context, if
@@ -2954,6 +2956,7 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
 		       && !comptypes (TREE_TYPE (decl), TREE_TYPE (other),
 				      COMPARE_REDECLARATION)))
 	    {
+	      auto_diagnostic_group d;
 	      if (permerror (DECL_SOURCE_LOCATION (decl),
 			     "local external declaration %q#D", decl))
 		inform (DECL_SOURCE_LOCATION (other),

@@ -1773,6 +1773,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 
       bool warned = false;
 
+      auto_diagnostic_group d;
       if (wi::ltu_p (asize, wibnd))
 	{
 	  if (bndrng[0] == bndrng[1])

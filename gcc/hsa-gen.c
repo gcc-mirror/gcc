@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
   do \
   { \
     hsa_fail_cfun (); \
+    auto_diagnostic_group d; \
     if (warning_at (EXPR_LOCATION (hsa_cfun->m_decl), OPT_Whsa, \
 		    HSA_SORRY_MSG)) \
       inform (location, message, __VA_ARGS__); \
@@ -81,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
   do \
   { \
     hsa_fail_cfun (); \
+    auto_diagnostic_group d; \
     if (warning_at (EXPR_LOCATION (hsa_cfun->m_decl), OPT_Whsa, \
 		    HSA_SORRY_MSG)) \
       inform (location, message); \
