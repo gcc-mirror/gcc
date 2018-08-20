@@ -1,5 +1,8 @@
 2018-08-20  Nathan Sidwell  <nathan@acm.org>
 
+	* include/cpplib.h: Fixup some whitespace.
+	(cpp_hashnode): Reduce type to 2 bit & flags to 8.
+
 	* include/cpplib.h (NODE_BUILTIN, NODE_MACRO_ARG): Delete.
 	Renumber others.
 	(enum node_type): Replace NT_MACRO with NT_USER_MACRO,
