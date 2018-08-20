@@ -5270,6 +5270,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		MEM_VOLATILE_P (to_rtx) = 1;
 	    }
 
+	  gcc_checking_assert (known_ge (bitpos, 0));
 	  if (optimize_bitfield_assignment_op (bitsize, bitpos,
 					       bitregion_start, bitregion_end,
 					       mode1, to_rtx, to, from,
@@ -7046,6 +7047,7 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
 	}
 
       /* Store the value in the bitfield.  */
+      gcc_assert (known_ge (bitpos, 0));
       store_bit_field (target, bitsize, bitpos,
 		       bitregion_start, bitregion_end,
 		       mode, temp, reverse);
@@ -10545,6 +10547,14 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	mode2
 	  = CONSTANT_P (op0) ? TYPE_MODE (TREE_TYPE (tem)) : GET_MODE (op0);
 
+	/* Make sure bitpos is not negative, it can wreak havoc later.  */
+	if (maybe_lt (bitpos, 0))
+	  {
+	    gcc_checking_assert (offset == NULL_TREE);
+	    offset = size_int (bits_to_bytes_round_down (bitpos));
+	    bitpos = num_trailing_bits (bitpos);
+	  }
+
 	/* If we have either an offset, a BLKmode result, or a reference
 	   outside the underlying object, we must force it to memory.
 	   Such a case can occur in Ada if we have unchecked conversion
@@ -10795,6 +10805,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		&& GET_MODE_CLASS (ext_mode) == MODE_INT)
 	      reversep = TYPE_REVERSE_STORAGE_ORDER (type);
 
+	    gcc_checking_assert (known_ge (bitpos, 0));
 	    op0 = extract_bit_field (op0, bitsize, bitpos, unsignedp,
 				     (modifier == EXPAND_STACK_PARM
 				      ? NULL_RTX : target),
