@@ -1,5 +1,9 @@
 2018-08-20  Nathan Sidwell  <nathan@acm.org>
 
+	* Makefile.in (TAGS_SOURCES): Remove cpp-id-data.h.
+	* include/cpp-id-data.h: Delete.
+	* internal.h: Include cpplib.h not cpp-id-data.h.
+
 	* include/cpp-id-data.h (struct answer): Delete.
 	* include/cpplib.h (struct answer): Don't forward-declare.
 	(enum cpp_macro_kind): Add cmk_assert.
