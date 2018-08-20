@@ -23,7 +23,7 @@ along with this program; see the file COPYING3.  If not see
 #define LIBCPP_INTERNAL_H
 
 #include "symtab.h"
-#include "cpp-id-data.h"
+#include "cpplib.h"
 
 #if HAVE_ICONV
 #include <iconv.h>

@@ -1,3 +1,10 @@
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (CPP_ID_DATA_H): Delete.
+	(CPP_INTERNAL_H): Don't add it.
+	(GTFILES): Replace CPP_ID_DATA_H with CPPLIB_H.
+	* gengtype.c (open_base_files): Replace cpp-id-data.h with cpplib.h
+
 2018-08-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78655
