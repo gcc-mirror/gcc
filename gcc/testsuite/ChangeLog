@@ -1,3 +1,8 @@
+2018-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78655
+	* gcc.dg/tree-ssa/evrp11.c: New testcase.
+
 2018-08-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/debug/dwarf2/pr80263.c: Suppress pubtypes output

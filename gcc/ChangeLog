@@ -1,3 +1,9 @@
+2018-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78655
+	* tree-vrp.c (extract_range_from_binary_expr_1): Make
+	pointer + offset nonnull if either operand is nonnull work.
+
 2018-08-20  Tom de Vries  <tdevries@suse.de>
 
 	* dwarf2out.c (add_scalar_info): Don't add reference to existing die
