@@ -1437,6 +1437,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
       && code != PLUS_EXPR
       && code != MINUS_EXPR
       && code != RSHIFT_EXPR
+      && code != POINTER_PLUS_EXPR
       && (vr0.type == VR_VARYING
 	  || vr1.type == VR_VARYING
 	  || vr0.type != vr1.type
@@ -1467,7 +1468,11 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	{
 	  /* For pointer types, we are really only interested in asserting
 	     whether the expression evaluates to non-NULL.  */
-	  if (range_is_nonnull (&vr0) || range_is_nonnull (&vr1))
+	  if (range_is_nonnull (&vr0)
+	      || range_is_nonnull (&vr1)
+	      || (vr1.type == VR_RANGE
+		  && !symbolic_range_p (&vr1)
+		  && !range_includes_zero_p (vr1.min, vr1.max)))
 	    set_value_range_to_nonnull (vr, expr_type);
 	  else if (range_is_null (&vr0) && range_is_null (&vr1))
 	    set_value_range_to_null (vr, expr_type);
