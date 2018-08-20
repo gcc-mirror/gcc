@@ -1,3 +1,9 @@
+2018-08-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87014
+	* config/i386/i386.md (eh_return): Always update EH return
+	address in word_mode.
+
 2018-08-20  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* targhooks.c (std_gimplify_va_arg_expr): Properly handle case of when
