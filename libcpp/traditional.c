@@ -545,7 +545,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro,
 		      goto new_context;
 		    }
 		}
-	      else if (macro && (node->flags & NODE_MACRO_ARG) != 0)
+	      else if (macro && node->type == NT_MACRO_ARG)
 		{
 		  /* Found a parameter in the replacement text of a
 		     #define.  Remove its name from the output.  */

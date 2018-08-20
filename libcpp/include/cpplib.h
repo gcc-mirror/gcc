@@ -742,14 +742,9 @@ struct GTY(()) cpp_macro {
   } GTY ((desc ("%1.kind == cmk_traditional"))) exp;
 };
 
-/* The structure of a node in the hash table.  The hash table has
-   entries for all identifiers: either macros defined by #define
-   commands (type NT_MACRO), assertions created with #assert
-   (NT_ASSERTION), or neither of the above (NT_VOID).  Builtin macros
-   like __LINE__ are flagged NODE_BUILTIN.  Poisoned identifiers are
-   flagged NODE_POISONED.  NODE_OPERATOR (C++ only) indicates an
-   identifier that behaves like an operator such as "xor".
-   NODE_DIAGNOSTIC is for speed in lex_token: it indicates a
+/* Poisoned identifiers are flagged NODE_POISONED.  NODE_OPERATOR (C++
+   only) indicates an identifier that behaves like an operator such as
+   "xor".  NODE_DIAGNOSTIC is for speed in lex_token: it indicates a
    diagnostic may be required for this node.  Currently this only
    applies to __VA_ARGS__, poisoned identifiers, and -Wc++-compat
    warnings about NODE_OPERATOR.  */
@@ -757,21 +752,21 @@ struct GTY(()) cpp_macro {
 /* Hash node flags.  */
 #define NODE_OPERATOR	(1 << 0)	/* C++ named operator.  */
 #define NODE_POISONED	(1 << 1)	/* Poisoned identifier.  */
-#define NODE_BUILTIN	(1 << 2)	/* Builtin macro.  */
-#define NODE_DIAGNOSTIC (1 << 3)	/* Possible diagnostic when lexed.  */
-#define NODE_WARN	(1 << 4)	/* Warn if redefined or undefined.  */
-#define NODE_DISABLED	(1 << 5)	/* A disabled macro.  */
-#define NODE_MACRO_ARG	(1 << 6)	/* Used during #define processing.  */
-#define NODE_USED	(1 << 7)	/* Dumped with -dU.  */
-#define NODE_CONDITIONAL (1 << 8)	/* Conditional macro */
-#define NODE_WARN_OPERATOR (1 << 9)	/* Warn about C++ named operator.  */
+#define NODE_DIAGNOSTIC (1 << 2)	/* Possible diagnostic when lexed.  */
+#define NODE_WARN	(1 << 3)	/* Warn if redefined or undefined.  */
+#define NODE_DISABLED	(1 << 4)	/* A disabled macro.  */
+#define NODE_USED	(1 << 5)	/* Dumped with -dU.  */
+#define NODE_CONDITIONAL (1 << 6)	/* Conditional macro */
+#define NODE_WARN_OPERATOR (1 << 7)	/* Warn about C++ named operator.  */
 
 /* Different flavors of hash node.  */
 enum node_type
 {
-  NT_VOID = 0,	   /* No definition yet.  */
-  NT_MACRO,	   /* A macro of some form.  */
-  NT_ASSERTION	   /* Predicate for #assert.  */
+  NT_VOID = 0,	   /* Maybe an assert?  */
+  NT_MACRO_ARG,	   /* A macro arg.  */
+  NT_USER_MACRO,   /* A user macro.  */
+  NT_BUILTIN_MACRO, /* A builtin macro.  */
+  NT_MACRO_MASK = NT_USER_MACRO  /* Mask for either macro kind.  */
 };
 
 /* Different flavors of builtin macro.  _Pragma is an operator, but we
@@ -796,36 +791,19 @@ enum cpp_builtin_type
 #define NODE_LEN(NODE)		HT_LEN (&(NODE)->ident)
 #define NODE_NAME(NODE)		HT_STR (&(NODE)->ident)
 
-/* Specify which field, if any, of the union is used.  */
-
-enum {
-  NTV_MACRO,
-  NTV_ANSWER,
-  NTV_BUILTIN,
-  NTV_ARGUMENT,
-  NTV_NONE
-};
-
-#define CPP_HASHNODE_VALUE_IDX(HNODE)				\
-  ((HNODE.flags & NODE_MACRO_ARG) ? NTV_ARGUMENT		\
-   : HNODE.type == NT_MACRO ? ((HNODE.flags & NODE_BUILTIN) 	\
-			       ? NTV_BUILTIN : NTV_MACRO)	\
-   : HNODE.type == NT_ASSERTION ? NTV_ANSWER			\
-   : NTV_NONE)
-
 /* The common part of an identifier node shared amongst all 3 C front
    ends.  Also used to store CPP identifiers, which are a superset of
    identifiers in the grammatical sense.  */
 
 union GTY(()) _cpp_hashnode_value {
-  /* If a macro.  */
-  cpp_macro * GTY((tag ("NTV_MACRO"))) macro;
-  /* Answers to an assertion.  */
-  cpp_macro * GTY ((tag ("NTV_ANSWER"))) answers;
+  /* Assert (maybe NULL) */
+  cpp_macro * GTY((tag ("NT_VOID"))) answers;
+  /* Macro (never NULL) */
+  cpp_macro * GTY((tag ("NT_USER_MACRO"))) macro;
   /* Code for a builtin macro.  */
-  enum cpp_builtin_type GTY ((tag ("NTV_BUILTIN"))) builtin;
+  enum cpp_builtin_type GTY ((tag ("NT_BUILTIN_MACRO"))) builtin;
   /* Macro argument index.  */
-  unsigned short GTY ((tag ("NTV_ARGUMENT"))) arg_index;
+  unsigned short GTY ((tag ("NT_MACRO_ARG"))) arg_index;
 };
 
 struct GTY(()) cpp_hashnode {
@@ -838,7 +816,7 @@ struct GTY(()) cpp_hashnode {
   ENUM_BITFIELD(node_type) type : 6;	/* CPP node type.  */
   unsigned int flags : 10;		/* CPP flags.  */
 
-  union _cpp_hashnode_value GTY ((desc ("CPP_HASHNODE_VALUE_IDX (%1)"))) value;
+  union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };
 
 /* A class for iterating through the source locations within a
@@ -961,15 +939,16 @@ extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 						     source_location *);
 inline bool cpp_user_macro_p (const cpp_hashnode *node)
 {
-  return node->type == NT_MACRO && !(node->flags & NODE_BUILTIN);
+  return node->type == NT_USER_MACRO;
+
 }
 inline bool cpp_builtin_macro_p (const cpp_hashnode *node)
 {
-  return node->flags & NODE_BUILTIN;
+  return node->type == NT_BUILTIN_MACRO;
 }
 inline bool cpp_macro_p (const cpp_hashnode *node)
 {
-  return node->type == NT_MACRO;
+  return node->type & NT_MACRO_MASK;
 }
 /* Returns true if NODE is a function-like user macro.  */
 inline bool cpp_fun_like_macro_p (cpp_hashnode *node)

@@ -1,5 +1,33 @@
 2018-08-20  Nathan Sidwell  <nathan@acm.org>
 
+	* include/cpplib.h (NODE_BUILTIN, NODE_MACRO_ARG): Delete.
+	Renumber others.
+	(enum node_type): Replace NT_MACRO with NT_USER_MACRO,
+	NT_BUILTIN_MACRO, NT_MACRO_ARG.  Delete NT_ASSERTION.
+	(NTV_MACRO, NTV_ANSWER, NTV_BUILTIN, NTV_ARGUMENT, NTV_NONE):
+	Delete.
+	(CPP_HASHNODE_VALUE_IDX): Delete.
+	(union _cpp_hashnode_value): GTY tag from enum node_type directly.
+	(struct cpp_hashnode): Adjust GTY desc for value field.
+	(cpp_user_macro_p, cpp_builtin_macro_p, cpp_macro_p): Adjust.
+	* directives.c (undefine_macros): Clear value.anwers, adjust flag
+	clearing.
+	(_cpp_test_assertion): No need to check NT_ASSERTION.
+	(do_assert, do_unassert): Likewise.
+	* init.c (cpp_init_special_builtins): Set type not flags.
+	* macro.c (struct macro_arg_saved_data): Add type field.
+	(cpp_get_token_1): Check type not NT_VOID.
+	(_cpp_free_definition): Adjust flag clearing.  Nullify
+	value.answers.
+	(_cpp_save_parameter, _cpp_unsave_parameters): Save and restore
+	type.
+	(lex_expansion_token): Check type not flags.
+	(_cpp_create_definition): Set type to NT_USER_MACRO.
+	(_cpp_notify_macro_use): Adjust type checking.
+	* pch.c (write_macdef, count_defs, write_defs, cpp_valid_state)
+	(save_macros): Adjust node type/flag handling.
+	* traditional.c (_cpp_scan_out_logical_line): Check type not flags.
+
 	* directives.c (do_undef): Use cpp_macro_p & cpp_builtin_macro_p.
 	* include/cpplib.h (enum cpp_macro_kind): Remove trailing comma.
 	(cpp_fun_like_macro_p): Make inline, define.
