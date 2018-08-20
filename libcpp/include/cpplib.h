@@ -815,12 +815,12 @@ struct GTY(()) cpp_hashnode {
 					   Otherwise, a NODE_OPERATOR.  */
   unsigned char rid_code;		/* Rid code - for front ends.  */
   ENUM_BITFIELD(node_type) type : 2;	/* CPP node type.  */
-  unsigned int flags : 14;		/* CPP flags.  */
+  unsigned int flags : 8;		/* CPP flags.  */
 
-  /* 32-bits of padding on 64-bit arch.  We could shrink this by
-     making ht_identifier hold an offset to a trailing string value.
-     That would require FE's expose their IDENTIFIER_NODE size to
-     us.  */
+  /* 6 bits spare (plus another 32 on 64-bit hosts).  We could shrink
+     this by making ht_identifier hold an offset to a trailing string
+     value.  That would require FE's expose their IDENTIFIER_NODE size
+     to us.  */
 
   union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };
