@@ -233,7 +233,7 @@ s390_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 
   rid_code = (enum rid)(ident->rid_code);
 
-  if (ident->type == NT_MACRO)
+  if (cpp_macro_p (ident))
     {
       /* Now actually fetch the tokens we "peeked" before and do a
 	 lookahead for the next.  */

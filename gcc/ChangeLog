@@ -1,3 +1,9 @@
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+	    Jeff Law <law@redhat.com>
+
+	* config/s390/s390-c (s390_macro_to_expand): Use cpp_macro_p.
+	* config/spu/spu-c.c (spu_macro_to_expand): Likewise.
+
 2018-08-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/84889
