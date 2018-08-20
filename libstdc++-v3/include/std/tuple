@@ -219,6 +219,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr _Tuple_impl(const _Tuple_impl&) = default;
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2729. Missing SFINAE on std::pair::operator=
+      _Tuple_impl& operator=(const _Tuple_impl&) = delete;
+
       constexpr
       _Tuple_impl(_Tuple_impl&& __in)
       noexcept(__and_<is_nothrow_move_constructible<_Head>,
@@ -288,49 +292,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                 std::forward<_UHead>
 		(_Tuple_impl<_Idx, _UHead, _UTails...>::_M_head(__in))) { }
 
-      _Tuple_impl&
-      operator=(const _Tuple_impl& __in)
-      {
-	_M_head(*this) = _M_head(__in);
-	_M_tail(*this) = _M_tail(__in);
-	return *this;
-      }
-
-      _Tuple_impl&
-      operator=(_Tuple_impl&& __in)
-      noexcept(__and_<is_nothrow_move_assignable<_Head>,
-	              is_nothrow_move_assignable<_Inherited>>::value)
-      {
-	_M_head(*this) = std::forward<_Head>(_M_head(__in));
-	_M_tail(*this) = std::move(_M_tail(__in));
-	return *this;
-      }
-
       template<typename... _UElements>
-        _Tuple_impl&
-        operator=(const _Tuple_impl<_Idx, _UElements...>& __in)
+        void
+        _M_assign(const _Tuple_impl<_Idx, _UElements...>& __in)
         {
 	  _M_head(*this) = _Tuple_impl<_Idx, _UElements...>::_M_head(__in);
-	  _M_tail(*this) = _Tuple_impl<_Idx, _UElements...>::_M_tail(__in);
-	  return *this;
+	  _M_tail(*this)._M_assign(
+	      _Tuple_impl<_Idx, _UElements...>::_M_tail(__in));
 	}
 
       template<typename _UHead, typename... _UTails>
-        _Tuple_impl&
-        operator=(_Tuple_impl<_Idx, _UHead, _UTails...>&& __in)
+        void
+        _M_assign(_Tuple_impl<_Idx, _UHead, _UTails...>&& __in)
         {
 	  _M_head(*this) = std::forward<_UHead>
 	    (_Tuple_impl<_Idx, _UHead, _UTails...>::_M_head(__in));
-	  _M_tail(*this) = std::move
-	    (_Tuple_impl<_Idx, _UHead, _UTails...>::_M_tail(__in));
-	  return *this;
+	  _M_tail(*this)._M_assign(
+	      std::move(_Tuple_impl<_Idx, _UHead, _UTails...>::_M_tail(__in)));
 	}
 
     protected:
       void
       _M_swap(_Tuple_impl& __in)
-      noexcept(__is_nothrow_swappable<_Head>::value
-               && noexcept(_M_tail(__in)._M_swap(_M_tail(__in))))
       {
 	using std::swap;
 	swap(_M_head(*this), _M_head(__in));
@@ -366,6 +349,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Base(std::forward<_UHead>(__head)) { }
 
       constexpr _Tuple_impl(const _Tuple_impl&) = default;
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2729. Missing SFINAE on std::pair::operator=
+      _Tuple_impl& operator=(const _Tuple_impl&) = delete;
 
       constexpr
       _Tuple_impl(_Tuple_impl&& __in)
@@ -420,42 +407,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                 std::forward<_UHead>(_Tuple_impl<_Idx, _UHead>::_M_head(__in)))
 	{ }
 
-      _Tuple_impl&
-      operator=(const _Tuple_impl& __in)
-      {
-	_M_head(*this) = _M_head(__in);
-	return *this;
-      }
-
-      _Tuple_impl&
-      operator=(_Tuple_impl&& __in)
-      noexcept(is_nothrow_move_assignable<_Head>::value)
-      {
-	_M_head(*this) = std::forward<_Head>(_M_head(__in));
-	return *this;
-      }
-
       template<typename _UHead>
-        _Tuple_impl&
-        operator=(const _Tuple_impl<_Idx, _UHead>& __in)
+        void
+        _M_assign(const _Tuple_impl<_Idx, _UHead>& __in)
         {
 	  _M_head(*this) = _Tuple_impl<_Idx, _UHead>::_M_head(__in);
-	  return *this;
 	}
 
       template<typename _UHead>
-        _Tuple_impl&
-        operator=(_Tuple_impl<_Idx, _UHead>&& __in)
+        void
+        _M_assign(_Tuple_impl<_Idx, _UHead>&& __in)
         {
 	  _M_head(*this)
 	    = std::forward<_UHead>(_Tuple_impl<_Idx, _UHead>::_M_head(__in));
-	  return *this;
 	}
 
     protected:
       void
       _M_swap(_Tuple_impl& __in)
-      noexcept(__is_nothrow_swappable<_Head>::value)
       {
 	using std::swap;
 	swap(_M_head(*this), _M_head(__in));
@@ -495,20 +464,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static constexpr bool _NonNestedTuple()
     {
       return  __and_<__not_<is_same<tuple<_Elements...>,
-                                   typename remove_cv<
-                                     typename remove_reference<_SrcTuple>::type
-                                   >::type>>,
+				    __remove_cvref_t<_SrcTuple>>>,
                      __not_<is_convertible<_SrcTuple, _Elements...>>,
                      __not_<is_constructible<_Elements..., _SrcTuple>>
               >::value;
     }
+
     template<typename... _UElements>
     static constexpr bool _NotSameTuple()
     {
       return  __not_<is_same<tuple<_Elements...>,
-			     typename remove_const<
-			       typename remove_reference<_UElements...>::type
-			       >::type>>::value;
+			     __remove_cvref_t<_UElements>...>>::value;
     }
   };
 
@@ -544,30 +510,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return true;
     }
+
     template<typename... _UElements>
     static constexpr bool _NotSameTuple()
     {
-      return  true;
+      return true;
     }
   };
 
-  // The tag parameter ensures that in nested tuples each __tuple_base
-  // is a different type and can use the empty base-class optimisation.
-  template<typename _Tag>
-    class __tuple_base
-    {
-      template<typename...> friend struct tuple;
-      __tuple_base() = default;
-      ~__tuple_base() = default;
-      __tuple_base(const __tuple_base&) = default;
-      __tuple_base& operator=(const __tuple_base&) = delete;
-    };
-
   /// Primary class template, tuple
   template<typename... _Elements>
-    class tuple
-    : public _Tuple_impl<0, _Elements...>,
-      private __tuple_base<tuple<_Elements...>>
+    class tuple : public _Tuple_impl<0, _Elements...>
     {
       typedef _Tuple_impl<0, _Elements...> _Inherited;
 
@@ -858,13 +811,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	             static_cast<_Tuple_impl<0, _UElements...>&&>(__in))
 	{ }
 
+      // tuple assignment
+
       tuple&
       operator=(typename conditional<__assignable<const _Elements&...>(),
 				     const tuple&,
 				     const __nonesuch_no_braces&>::type __in)
       noexcept(__nothrow_assignable<const _Elements&...>())
       {
-	static_cast<_Inherited&>(*this) = __in;
+	this->_M_assign(__in);
 	return *this;
       }
 
@@ -874,7 +829,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				     __nonesuch_no_braces&&>::type __in)
       noexcept(__nothrow_assignable<_Elements...>())
       {
-	static_cast<_Inherited&>(*this) = std::move(__in);
+	this->_M_assign(std::move(__in));
 	return *this;
       }
 
@@ -883,7 +838,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator=(const tuple<_UElements...>& __in)
 	noexcept(__nothrow_assignable<const _UElements&...>())
 	{
-	  static_cast<_Inherited&>(*this) = __in;
+	  this->_M_assign(__in);
 	  return *this;
 	}
 
@@ -892,13 +847,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator=(tuple<_UElements...>&& __in)
 	noexcept(__nothrow_assignable<_UElements...>())
 	{
-	  static_cast<_Inherited&>(*this) = std::move(__in);
+	  this->_M_assign(std::move(__in));
 	  return *this;
 	}
 
+      // tuple swap
       void
       swap(tuple& __in)
-      noexcept(noexcept(__in._M_swap(__in)))
+      noexcept(__and_<__is_nothrow_swappable<_Elements>...>::value)
       { _Inherited::_M_swap(__in); }
     };
 
@@ -934,9 +890,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Partial specialization, 2-element tuple.
   /// Includes construction and assignment from a pair.
   template<typename _T1, typename _T2>
-    class tuple<_T1, _T2>
-    : public _Tuple_impl<0, _T1, _T2>,
-      private __tuple_base<tuple<_T1, _T2>>
+    class tuple<_T1, _T2> : public _Tuple_impl<0, _T1, _T2>
     {
       typedef _Tuple_impl<0, _T1, _T2> _Inherited;
 
@@ -1009,8 +963,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _MoveConstructibleTuple<_U1, _U2>()
                   && _TMC::template
                     _ImplicitlyMoveConvertibleTuple<_U1, _U2>()
-	          && !is_same<typename decay<_U1>::type,
-			      allocator_arg_t>::value,
+	          && !is_same<__remove_cvref_t<_U1>, allocator_arg_t>::value,
 	bool>::type = true>
         constexpr tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
@@ -1020,8 +973,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     _MoveConstructibleTuple<_U1, _U2>()
                   && !_TMC::template
                     _ImplicitlyMoveConvertibleTuple<_U1, _U2>()
-	          && !is_same<typename decay<_U1>::type,
-			      allocator_arg_t>::value,
+	          && !is_same<__remove_cvref_t<_U1>, allocator_arg_t>::value,
 	bool>::type = false>
         explicit constexpr tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
@@ -1255,7 +1207,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				     const __nonesuch_no_braces&>::type __in)
       noexcept(__nothrow_assignable<const _T1&, const _T2&>())
       {
-	static_cast<_Inherited&>(*this) = __in;
+	this->_M_assign(__in);
 	return *this;
       }
 
@@ -1265,7 +1217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				     __nonesuch_no_braces&&>::type __in)
       noexcept(__nothrow_assignable<_T1, _T2>())
       {
-	static_cast<_Inherited&>(*this) = std::move(__in);
+	this->_M_assign(std::move(__in));
 	return *this;
       }
 
@@ -1274,7 +1226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator=(const tuple<_U1, _U2>& __in)
 	noexcept(__nothrow_assignable<const _U1&, const _U2&>())
 	{
-	  static_cast<_Inherited&>(*this) = __in;
+	  this->_M_assign(__in);
 	  return *this;
 	}
 
@@ -1283,7 +1235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator=(tuple<_U1, _U2>&& __in)
 	noexcept(__nothrow_assignable<_U1, _U2>())
 	{
-	  static_cast<_Inherited&>(*this) = std::move(__in);
+	  this->_M_assign(std::move(__in));
 	  return *this;
 	}
 
@@ -1309,7 +1261,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       swap(tuple& __in)
-      noexcept(noexcept(__in._M_swap(__in)))
+      noexcept(__and_<__is_nothrow_swappable<_T1>,
+		      __is_nothrow_swappable<_T2>>::value)
       { _Inherited::_M_swap(__in); }
     };
 
