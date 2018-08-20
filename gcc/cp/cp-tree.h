@@ -6712,22 +6712,17 @@ extern bool module_interface_p ();
 extern int module_exporting_level ();
 extern tree get_module_owner (tree);
 extern void set_module_owner (tree);
-class module_state;
-extern module_state *get_module (tree name);
-extern void pp_module_name (pretty_printer *, module_state *);
 extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       mc_slot *mslot, bool outermost);
 extern void fixup_unscoped_enum_owner (tree);
 extern void set_implicit_module_owner (tree, tree);
-extern int push_module_export (bool, module_state * = NULL);
+extern int push_module_export (bool, tree = NULL);
 extern void pop_module_export (int);
-extern void declare_module (location_t loc, module_state *mod, bool exporting,
-			    tree attribs, line_maps *);
+extern void declare_module (const cp_expr &, bool, tree, line_maps *);
 extern unsigned atom_module_preamble (location_t, line_maps *);
 extern void init_module_processing ();
 extern void finish_module (line_maps *);
-extern void import_module (location_t loc, module_state *mod, bool exporting,
-			   tree attribs, line_maps *);
+extern void import_module (const cp_expr &, bool, tree, line_maps *);
 extern tree module_name (unsigned);
 extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);

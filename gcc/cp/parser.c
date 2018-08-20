@@ -12688,7 +12688,7 @@ extern location_t module_preamble_end_loc;
 
    Returns an identifer or TREE_VEC of identifiers, or NULL.   */
 
-static module_state *
+static cp_expr
 cp_parser_module_name (cp_parser *parser)
 {
   tree name = NULL_TREE;
@@ -12722,8 +12722,8 @@ cp_parser_module_name (cp_parser *parser)
     }
   else
     cp_parser_error (parser, "expected module-name");
-
-  return name ? get_module (name) : NULL;
+  
+  return cp_expr (name, first_tok->location);
 }
 
 /* Emit an error if we're not at the outermost level.  */
@@ -12767,7 +12767,7 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
     }
 
   /* module declaration proper.  */
-  module_state *mod = cp_parser_module_name (parser);
+  cp_expr name = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 
   if (!first_decl && (atom_p || !module_preamble_end_loc))
@@ -12777,18 +12777,18 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
 		: "module declaration does not follow global module");
       if (atom_p)
 	inform (module_preamble_end_loc, "module preamble ended here");
-      mod = NULL;
+      name = NULL;
     }
 
   if (!cp_parser_consume_semicolon_at_end_of_statement (parser))
     return UNKNOWN_LOCATION;
-  if (!mod)
+  if (!*name)
     return UNKNOWN_LOCATION;
   if (!check_module_outermost (token, "module declaration"))
     return UNKNOWN_LOCATION;
 
-  declare_module (token->location, mod, exporting, attrs, line_table);
-  return token->location;
+  declare_module (name, exporting, attrs, line_table);
+  return name.get_location ();
 }
 
 /* Import-declaration
@@ -12800,12 +12800,12 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT));
 
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  module_state *mod = cp_parser_module_name (parser);
+  cp_expr name = cp_parser_module_name (parser);
 
   tree attrs = cp_parser_attributes_opt (parser);
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 
-  if (!mod)
+  if (!name)
     ;
   else if (modules_atom_p () && module_preamble_end_loc)
     {
@@ -12817,8 +12817,8 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
     gcc_assert (!modules_atom_p ());
   else
     {
-      import_module (token->location, mod, exporting, attrs, line_table);
-      return token->location;
+      import_module (name, exporting, attrs, line_table);
+      return name.get_location ();
     }
   return UNKNOWN_LOCATION;
 }
@@ -12879,13 +12879,13 @@ cp_parser_module_proclamation (cp_parser *parser)
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   cp_lexer_consume_token (parser->lexer);
 
-  module_state *mod = cp_parser_module_name (parser);
+  cp_expr name = cp_parser_module_name (parser);
   
   if (!cp_parser_require (parser, CPP_COLON, RT_COLON)
       || !check_module_outermost (token, "proclaimed-ownership"))
-    mod = NULL;
+    *name = NULL;
 
-  int prev = push_module_export (true, mod);
+  int prev = push_module_export (true, *name);
   cp_parser_declaration (parser);
   pop_module_export (prev);
 }
