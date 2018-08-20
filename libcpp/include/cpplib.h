@@ -674,7 +674,7 @@ struct cpp_dir
 enum cpp_macro_kind {
   cmk_macro,	/* An ISO macro (token expansion).  */
   cmk_assert,   /* An assertion.  */
-  cmk_traditional,	/* A traditional macro (text expansion).  */
+  cmk_traditional	/* A traditional macro (text expansion).  */
 };
 
 /* Each macro definition is recorded in a cpp_macro structure.
@@ -972,7 +972,10 @@ inline bool cpp_macro_p (const cpp_hashnode *node)
   return node->type == NT_MACRO;
 }
 /* Returns true if NODE is a function-like user macro.  */
-extern bool cpp_fun_like_macro_p (cpp_hashnode *node);
+inline bool cpp_fun_like_macro_p (cpp_hashnode *node)
+{
+  return cpp_user_macro_p (node) && node->value.macro->fun_like;
+}
 
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  cpp_hashnode *);

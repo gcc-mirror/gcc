@@ -3551,7 +3551,7 @@ cpp_define_lazily (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
 {
   cpp_macro *macro = node->value.macro;
 
-  gcc_checking_assert (pfile->cb.user_lazy_macro && macro && num < 255);
+  gcc_checking_assert (pfile->cb.user_lazy_macro && macro && num < UCHAR_MAX);
 
   macro->lazy = num + 1;
 }
@@ -3630,15 +3630,6 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
 	    }
 	}
     }
-}
-
-/* Returns true of NODE is a function-like macro.  */
-bool
-cpp_fun_like_macro_p (cpp_hashnode *node)
-{
-  return (node->type == NT_MACRO
-	  && (node->flags & (NODE_BUILTIN | NODE_MACRO_ARG)) == 0
-	  && node->value.macro->fun_like);
 }
 
 /* Returns the name, arguments and expansion of a macro, in a format

@@ -665,12 +665,12 @@ do_undef (cpp_reader *pfile)
 
       /* 6.10.3.5 paragraph 2: [#undef] is ignored if the specified
 	 identifier is not currently defined as a macro name.  */
-      if (node->type == NT_MACRO)
+      if (cpp_macro_p (node))
 	{
 	  if (node->flags & NODE_WARN)
 	    cpp_error (pfile, CPP_DL_WARNING,
 		       "undefining \"%s\"", NODE_NAME (node));
-	  else if ((node->flags & NODE_BUILTIN)
+	  else if (cpp_builtin_macro_p (node)
 		   && CPP_OPTION (pfile, warn_builtin_macro_redefined))
 	    cpp_warning_with_line (pfile, CPP_W_BUILTIN_MACRO_REDEFINED,
 				   pfile->directive_line, 0,
