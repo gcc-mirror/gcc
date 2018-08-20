@@ -1,3 +1,10 @@
+2018-08-20  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf2out.c (add_scalar_info): Don't add reference to existing die
+	unless the referenced die describes the added property using
+	DW_AT_location or DW_AT_const_value.  Fall back to exprloc case.
+	Otherwise, add a DW_AT_location to the referenced die.
+
 2018-08-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/86994
