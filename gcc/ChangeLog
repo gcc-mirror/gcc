@@ -1,3 +1,8 @@
+2018-08-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* targhooks.c (std_gimplify_va_arg_expr): Properly handle case of when
+	TARGET_SPLIT_COMPLEX_ARG is defined.
+
 2018-08-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* expr.c (store_field): Change gcc_assert to gcc_checking_assert.
