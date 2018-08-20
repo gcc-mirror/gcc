@@ -53,6 +53,16 @@ nds32_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 
       return true;
 
+    case OPT_misr_secure_:
+      /* Check the valid security level: 0 1 2 3.  */
+      if (value < 0 || value > 3)
+	{
+	  error_at (loc, "for the option -misr-secure=X, the valid X "
+			 "must be: 0, 1, 2, or 3");
+	  return false;
+	}
+      return true;
+
     case OPT_mcache_block_size_:
       /* Check valid value: 4 8 16 32 64 128 256 512.  */
       if (exact_log2 (value) < 2 || exact_log2 (value) > 9)
@@ -85,6 +95,8 @@ static const struct default_options nds32_option_optimization_table[] =
   { OPT_LEVELS_ALL,               OPT_fomit_frame_pointer, NULL, 1 },
   /* Enable -mrelax-hint by default at all optimization levels.  */
   { OPT_LEVELS_ALL,               OPT_mrelax_hint,         NULL, 1 },
+  /* Enalbe -malways-align by default at -O1 and above, but not -Os or -Og.  */
+  { OPT_LEVELS_1_PLUS_SPEED_ONLY, OPT_malways_align,       NULL, 1 },
   /* Enable -mv3push by default at -Os, but it is useless under V2 ISA.  */
   { OPT_LEVELS_SIZE,              OPT_mv3push,             NULL, 1 },
 

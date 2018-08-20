@@ -1,3 +1,31 @@
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.c: Include "gcc-rich-location.h".
+	(c_tree_printer): Move implemenation of '%T' to...
+	(print_type): ...this new function.
+	(range_label_for_type_mismatch::get_text): New function.
+	* c-typeck.c (convert_for_assignment): Add type labels to the rhs
+	range for the various ic_argpass cases.
+	(class maybe_range_label_for_tree_type_mismatch): New class.
+	(build_binary_op): Use it when calling binary_op_error.
+
+2018-08-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	
+	* c-decl.c (start_decl): Do not warn if variables is named as main
+	and is a local variable.
+
+2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c/19315
+	* c-decl.c (finish_decl): Don't add the 'extern' storage class to
+	objects of unknown size.
+
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* c-parser.c (c_parser_declaration_or_fndef): Call
+	braced_list_to_string.
+
 2018-08-03  Bogdan Harjoc  <harjoc@gmail.com>
 
 	PR c/86690

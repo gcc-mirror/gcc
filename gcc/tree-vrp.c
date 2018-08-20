@@ -1437,6 +1437,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
       && code != PLUS_EXPR
       && code != MINUS_EXPR
       && code != RSHIFT_EXPR
+      && code != POINTER_PLUS_EXPR
       && (vr0.type == VR_VARYING
 	  || vr1.type == VR_VARYING
 	  || vr0.type != vr1.type
@@ -1467,7 +1468,11 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	{
 	  /* For pointer types, we are really only interested in asserting
 	     whether the expression evaluates to non-NULL.  */
-	  if (range_is_nonnull (&vr0) || range_is_nonnull (&vr1))
+	  if (range_is_nonnull (&vr0)
+	      || range_is_nonnull (&vr1)
+	      || (vr1.type == VR_RANGE
+		  && !symbolic_range_p (&vr1)
+		  && !range_includes_zero_p (vr1.min, vr1.max)))
 	    set_value_range_to_nonnull (vr, expr_type);
 	  else if (range_is_null (&vr0) && range_is_null (&vr1))
 	    set_value_range_to_null (vr, expr_type);
@@ -4445,14 +4450,13 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 
   tree artype = TREE_TYPE (TREE_OPERAND (ref, 0));
 
+  bool warned = false;
+
   /* Empty array.  */
   if (up_bound && tree_int_cst_equal (low_bound, up_bound_p1))
-    {
-      warning_at (location, OPT_Warray_bounds,
-		  "array subscript %E is above array bounds of %qT",
-		  low_bound, artype);
-      TREE_NO_WARNING (ref) = 1;
-    }
+    warned = warning_at (location, OPT_Warray_bounds,
+			 "array subscript %E is above array bounds of %qT",
+			 low_bound, artype);
 
   if (TREE_CODE (low_sub) == SSA_NAME)
     {
@@ -4473,12 +4477,10 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	      : tree_int_cst_le (up_bound, up_sub))
           && TREE_CODE (low_sub) == INTEGER_CST
           && tree_int_cst_le (low_sub, low_bound))
-        {
-          warning_at (location, OPT_Warray_bounds,
-		      "array subscript [%E, %E] is outside array bounds of %qT",
-		      low_sub, up_sub, artype);
-          TREE_NO_WARNING (ref) = 1;
-        }
+	warned = warning_at (location, OPT_Warray_bounds,
+			     "array subscript [%E, %E] is outside "
+			     "array bounds of %qT",
+			     low_sub, up_sub, artype);
     }
   else if (up_bound
 	   && TREE_CODE (up_sub) == INTEGER_CST
@@ -4492,10 +4494,9 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
 	  fprintf (dump_file, "\n");
 	}
-      warning_at (location, OPT_Warray_bounds,
-		  "array subscript %E is above array bounds of %qT",
-		  up_sub, artype);
-      TREE_NO_WARNING (ref) = 1;
+      warned = warning_at (location, OPT_Warray_bounds,
+			   "array subscript %E is above array bounds of %qT",
+			   up_sub, artype);
     }
   else if (TREE_CODE (low_sub) == INTEGER_CST
            && tree_int_cst_lt (low_sub, low_bound))
@@ -4506,9 +4507,18 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
 	  fprintf (dump_file, "\n");
 	}
-      warning_at (location, OPT_Warray_bounds,
-		  "array subscript %E is below array bounds of %qT",
-		  low_sub, artype);
+      warned = warning_at (location, OPT_Warray_bounds,
+			   "array subscript %E is below array bounds of %qT",
+			   low_sub, artype);
+    }
+
+  if (warned)
+    {
+      ref = TREE_OPERAND (ref, 0);
+
+      if (DECL_P (ref))
+	inform (DECL_SOURCE_LOCATION (ref), "while referencing %qD", ref);
+
       TREE_NO_WARNING (ref) = 1;
     }
 }
@@ -4523,7 +4533,8 @@ vrp_prop::check_array_ref (location_t location, tree ref,
    the address of the just-past-the-end element of an array).  */
 
 void
-vrp_prop::check_mem_ref (location_t location, tree ref, bool ignore_off_by_one)
+vrp_prop::check_mem_ref (location_t location, tree ref,
+			 bool ignore_off_by_one)
 {
   if (TREE_NO_WARNING (ref))
     return;
@@ -4744,16 +4755,21 @@ vrp_prop::check_mem_ref (location_t location, tree ref, bool ignore_off_by_one)
 	  offrange[1] = offrange[1] / eltsize;
 	}
 
+      bool warned;
       if (offrange[0] == offrange[1])
-	warning_at (location, OPT_Warray_bounds,
-		    "array subscript %wi is outside array bounds "
-		    "of %qT",
-		    offrange[0].to_shwi (), reftype);
+	warned = warning_at (location, OPT_Warray_bounds,
+			     "array subscript %wi is outside array bounds "
+			     "of %qT",
+			     offrange[0].to_shwi (), reftype);
       else
-	warning_at (location, OPT_Warray_bounds,
-		    "array subscript [%wi, %wi] is outside array bounds "
-		    "of %qT",
-		    offrange[0].to_shwi (), offrange[1].to_shwi (), reftype);
+	warned = warning_at (location, OPT_Warray_bounds,
+			     "array subscript [%wi, %wi] is outside "
+			     "array bounds of %qT",
+			     offrange[0].to_shwi (),
+			     offrange[1].to_shwi (), reftype);
+      if (warned && DECL_P (arg))
+	inform (DECL_SOURCE_LOCATION (arg), "while referencing %qD", arg);
+
       TREE_NO_WARNING (ref) = 1;
       return;
     }
@@ -4793,60 +4809,69 @@ vrp_prop::search_for_addr_array (tree t, location_t location)
     }
   while (handled_component_p (t) || TREE_CODE (t) == MEM_REF);
 
-  if (TREE_CODE (t) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
-      && !TREE_NO_WARNING (t))
+  if (TREE_CODE (t) != MEM_REF
+      || TREE_CODE (TREE_OPERAND (t, 0)) != ADDR_EXPR
+      || TREE_NO_WARNING (t))
+    return;
+
+  tree tem = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+  tree low_bound, up_bound, el_sz;
+  if (TREE_CODE (TREE_TYPE (tem)) != ARRAY_TYPE
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (tem))) == ARRAY_TYPE
+      || !TYPE_DOMAIN (TREE_TYPE (tem)))
+    return;
+
+  low_bound = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (tem)));
+  up_bound = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tem)));
+  el_sz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (tem)));
+  if (!low_bound
+      || TREE_CODE (low_bound) != INTEGER_CST
+      || !up_bound
+      || TREE_CODE (up_bound) != INTEGER_CST
+      || !el_sz
+      || TREE_CODE (el_sz) != INTEGER_CST)
+    return;
+
+  offset_int idx;
+  if (!mem_ref_offset (t).is_constant (&idx))
+    return;
+
+  bool warned = false;
+  idx = wi::sdiv_trunc (idx, wi::to_offset (el_sz));
+  if (idx < 0)
     {
-      tree tem = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-      tree low_bound, up_bound, el_sz;
-      offset_int idx;
-      if (TREE_CODE (TREE_TYPE (tem)) != ARRAY_TYPE
-	  || TREE_CODE (TREE_TYPE (TREE_TYPE (tem))) == ARRAY_TYPE
-	  || !TYPE_DOMAIN (TREE_TYPE (tem)))
-	return;
-
-      low_bound = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (tem)));
-      up_bound = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tem)));
-      el_sz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (tem)));
-      if (!low_bound
-	  || TREE_CODE (low_bound) != INTEGER_CST
-	  || !up_bound
-	  || TREE_CODE (up_bound) != INTEGER_CST
-	  || !el_sz
-	  || TREE_CODE (el_sz) != INTEGER_CST)
-	return;
-
-      if (!mem_ref_offset (t).is_constant (&idx))
-	return;
-
-      idx = wi::sdiv_trunc (idx, wi::to_offset (el_sz));
-      if (idx < 0)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Array bound warning for ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
-	      fprintf (dump_file, "\n");
-	    }
-	  warning_at (location, OPT_Warray_bounds,
-		      "array subscript %wi is below array bounds of %qT",
-		      idx.to_shwi (), TREE_TYPE (tem));
-	  TREE_NO_WARNING (t) = 1;
+	  fprintf (dump_file, "Array bound warning for ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
+	  fprintf (dump_file, "\n");
 	}
-      else if (idx > (wi::to_offset (up_bound)
-		      - wi::to_offset (low_bound) + 1))
+      warned = warning_at (location, OPT_Warray_bounds,
+			   "array subscript %wi is below "
+			   "array bounds of %qT",
+			   idx.to_shwi (), TREE_TYPE (tem));
+    }
+  else if (idx > (wi::to_offset (up_bound)
+		  - wi::to_offset (low_bound) + 1))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Array bound warning for ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
-	      fprintf (dump_file, "\n");
-	    }
-	  warning_at (location, OPT_Warray_bounds,
-		      "array subscript %wu is above array bounds of %qT",
-		      idx.to_uhwi (), TREE_TYPE (tem));
-	  TREE_NO_WARNING (t) = 1;
+	  fprintf (dump_file, "Array bound warning for ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
+	  fprintf (dump_file, "\n");
 	}
+      warned = warning_at (location, OPT_Warray_bounds,
+			   "array subscript %wu is above "
+			   "array bounds of %qT",
+			   idx.to_uhwi (), TREE_TYPE (tem));
+    }
+
+  if (warned)
+    {
+      if (DECL_P (t))
+	inform (DECL_SOURCE_LOCATION (t), "while referencing %qD", t);
+
+      TREE_NO_WARNING (t) = 1;
     }
 }
 

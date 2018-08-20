@@ -1721,7 +1721,7 @@ open_base_files (void)
       "tree-vrp.h", "tree-phinodes.h", "ssa-iterators.h", "stringpool.h",
       "tree-ssanames.h", "tree-ssa-loop.h", "tree-ssa-loop-ivopts.h",
       "tree-ssa-loop-manip.h", "tree-ssa-loop-niter.h", "tree-into-ssa.h",
-      "tree-dfa.h", "tree-ssa.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
+      "tree-dfa.h", "tree-ssa.h", "reload.h", "cpplib.h", "tree-chrec.h",
       "except.h", "output.h",  "cfgloop.h", "target.h", "lto-streamer.h",
       "target-globals.h", "ipa-ref.h", "cgraph.h", "symbol-summary.h",
       "ipa-prop.h", "ipa-fnsummary.h", "dwarf2out.h", "omp-offload.h", NULL

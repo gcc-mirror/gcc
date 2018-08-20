@@ -6924,13 +6924,15 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		switch (errtype)
 		  {
 		  case ic_argpass:
-		    if (pedwarn (expr_loc, OPT_Wpointer_sign,
-				 "pointer targets in passing argument %d of "
-				 "%qE differ in signedness", parmnum, rname))
-		      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-			      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
-			      "expected %qT but argument is of type %qT",
-			      type, rhstype);
+		    {
+		      range_label_for_type_mismatch rhs_label (rhstype, type);
+		      gcc_rich_location richloc (expr_loc, &rhs_label);
+		      if (pedwarn (&richloc, OPT_Wpointer_sign,
+				   "pointer targets in passing argument %d of "
+				   "%qE differ in signedness", parmnum, rname))
+			inform_for_arg (fundecl, expr_loc, parmnum, type,
+					rhstype);
+		    }
 		    break;
 		  case ic_assign:
 		    pedwarn (location, OPT_Wpointer_sign,
@@ -6981,10 +6983,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  switch (errtype)
 	    {
 	    case ic_argpass:
-	      if (pedwarn (expr_loc, OPT_Wincompatible_pointer_types,
-			   "passing argument %d of %qE from incompatible "
-			   "pointer type", parmnum, rname))
-		inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	      {
+		range_label_for_type_mismatch rhs_label (rhstype, type);
+		gcc_rich_location richloc (expr_loc, &rhs_label);
+		if (pedwarn (&richloc, OPT_Wincompatible_pointer_types,
+			     "passing argument %d of %qE from incompatible "
+			     "pointer type", parmnum, rname))
+		  inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	      }
 	      break;
 	    case ic_assign:
 	      pedwarn (location, OPT_Wincompatible_pointer_types,
@@ -7024,10 +7030,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	switch (errtype)
 	  {
 	  case ic_argpass:
-	    if (pedwarn (expr_loc, OPT_Wint_conversion,
-			 "passing argument %d of %qE makes pointer from "
-			 "integer without a cast", parmnum, rname))
-	      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	    {
+	      range_label_for_type_mismatch rhs_label (rhstype, type);
+	      gcc_rich_location richloc (expr_loc, &rhs_label);
+	      if (pedwarn (&richloc, OPT_Wint_conversion,
+			   "passing argument %d of %qE makes pointer from "
+			   "integer without a cast", parmnum, rname))
+		inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	    }
 	    break;
 	  case ic_assign:
 	    pedwarn (location, OPT_Wint_conversion,
@@ -7055,10 +7065,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       switch (errtype)
 	{
 	case ic_argpass:
-	  if (pedwarn (expr_loc, OPT_Wint_conversion,
-		       "passing argument %d of %qE makes integer from "
-		       "pointer without a cast", parmnum, rname))
-	    inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	  {
+	    range_label_for_type_mismatch rhs_label (rhstype, type);
+	    gcc_rich_location richloc (expr_loc, &rhs_label);
+	    if (pedwarn (&richloc, OPT_Wint_conversion,
+			 "passing argument %d of %qE makes integer from "
+			 "pointer without a cast", parmnum, rname))
+	      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	  }
 	  break;
 	case ic_assign:
 	  pedwarn (location, OPT_Wint_conversion,
@@ -7094,9 +7108,13 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   switch (errtype)
     {
     case ic_argpass:
-      error_at (expr_loc, "incompatible type for argument %d of %qE", parmnum,
-		rname);
-      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+      {
+	range_label_for_type_mismatch rhs_label (rhstype, type);
+	gcc_rich_location richloc (expr_loc, &rhs_label);
+	error_at (&richloc, "incompatible type for argument %d of %qE", parmnum,
+		  rname);
+	inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+      }
       break;
     case ic_assign:
       error_at (location, "incompatible types when assigning to type %qT from "
@@ -10992,6 +11010,38 @@ build_vec_cmp (tree_code code, tree type,
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }
 
+/* Subclass of range_label for labelling the type of EXPR when reporting
+   a type mismatch between EXPR and OTHER_EXPR.
+   Either or both of EXPR and OTHER_EXPR could be NULL.  */
+
+class maybe_range_label_for_tree_type_mismatch : public range_label
+{
+ public:
+  maybe_range_label_for_tree_type_mismatch (tree expr, tree other_expr)
+  : m_expr (expr), m_other_expr (other_expr)
+  {
+  }
+
+  label_text get_text () const FINAL OVERRIDE
+  {
+    if (m_expr == NULL_TREE
+	|| !EXPR_P (m_expr))
+      return label_text (NULL, false);
+    tree expr_type = TREE_TYPE (m_expr);
+
+    tree other_type = NULL_TREE;
+    if (m_other_expr && EXPR_P (m_other_expr))
+      other_type = TREE_TYPE (m_other_expr);
+
+   range_label_for_type_mismatch inner (expr_type, other_type);
+   return inner.get_text ();
+  }
+
+ private:
+  tree m_expr;
+  tree m_other_expr;
+};
+
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
    LOCATION is the operator's location.
@@ -11864,8 +11914,11 @@ build_binary_op (location_t location, enum tree_code code,
 	  || !vector_types_compatible_elements_p (type0, type1)))
     {
       gcc_rich_location richloc (location);
-      richloc.maybe_add_expr (orig_op0);
-      richloc.maybe_add_expr (orig_op1);
+      maybe_range_label_for_tree_type_mismatch
+	label_for_op0 (orig_op0, orig_op1),
+	label_for_op1 (orig_op1, orig_op0);
+      richloc.maybe_add_expr (orig_op0, &label_for_op0);
+      richloc.maybe_add_expr (orig_op1, &label_for_op1);
       binary_op_error (&richloc, code, type0, type1);
       return error_mark_node;
     }
@@ -12106,8 +12159,11 @@ build_binary_op (location_t location, enum tree_code code,
   if (!result_type)
     {
       gcc_rich_location richloc (location);
-      richloc.maybe_add_expr (orig_op0);
-      richloc.maybe_add_expr (orig_op1);
+      maybe_range_label_for_tree_type_mismatch
+	label_for_op0 (orig_op0, orig_op1),
+	label_for_op1 (orig_op1, orig_op0);
+      richloc.maybe_add_expr (orig_op0, &label_for_op0);
+      richloc.maybe_add_expr (orig_op1, &label_for_op1);
       binary_op_error (&richloc, code, TREE_TYPE (op0), TREE_TYPE (op1));
       return error_mark_node;
     }

@@ -1627,7 +1627,7 @@ is_macro(cpp_reader *pfile, const uchar *base)
   cpp_hashnode *result = CPP_HASHNODE (ht_lookup_with_hash (pfile->hash_table,
 					base, cur - base, hash, HT_NO_INSERT));
 
-  return !result ? false : (result->type == NT_MACRO);
+  return result && cpp_macro_p (result);
 }
 
 /* Returns true if a literal suffix does not have the expected form
@@ -3770,6 +3770,25 @@ _cpp_aligned_alloc (cpp_reader *pfile, size_t len)
 
   buff->cur = result + len;
   return result;
+}
+
+/* Commit or allocate storage from a buffer.  */
+
+void *
+_cpp_commit_buff (cpp_reader *pfile, size_t size)
+{
+  void *ptr = BUFF_FRONT (pfile->a_buff);
+
+  if (pfile->hash_table->alloc_subobject)
+    {
+      void *copy = pfile->hash_table->alloc_subobject (size);
+      memcpy (copy, ptr, size);
+      ptr = copy;
+    }
+  else
+    BUFF_FRONT (pfile->a_buff) += size;
+
+  return ptr;
 }
 
 /* Say which field of TOK is in use.  */

@@ -1,3 +1,94 @@
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ada-spec.c (macro_length, dump_ada_macros): Adjust macro parm
+	access.
+
+2018-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	* c-cppbuiltin.c (struct lazy_hex_fp_value_struct): Remove macro
+	field.
+	(laxy_hex_fp_value_count): Make unsigned.
+	(lazy_hex_fp_value): Provided with macro & lazy number.  Directly
+	manipulate the macro.
+	(builtin_defin_with_hex_fp_value): Adjust callback name, use
+	cpp_define_lazily.
+
+2018-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (enum format_type): Add gcc_dump_printf_format_type.
+	(gcc_dump_printf_length_specs): New.
+	(gcc_dump_printf_flag_pairs): New.
+	(gcc_dump_printf_flag_specs): New.
+	(gcc_dump_printf_char_table): New.
+	(format_types_orig): Add entry for "gcc_dump_printf".
+	(init_dynamic_diag_info): Set up length_char_specs and
+	conversion_specs for gcc_dump_printf_format_type.
+	(handle_format_attribute): Handle gcc_dump_printf_format_type.
+
+2018-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ada-spec.c (macro_length, dump_ada_macros): Constify.
+
+	* c-ada-spec.c: Don't #include "cpp-id-data.h"
+	* c-cppbuiltin.c: Likewise.
+
+2018-08-17  Martin Liska  <mliska@suse.cz>
+
+	* c.opt: Remove Warn, Init and Report for options with
+        Ignore/Deprecated flag. Warning is done automatically for
+        Deprecated flags.
+
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/70693
+	* c-common.c (selftest::c_family_tests): Call
+	selftest::c_indentation_c_tests.
+	* c-common.h (selftest::c_indentation_c_tests): New decl.
+	* c-indentation.c: Include "selftest.h".
+	(next_tab_stop): Add "tab_width" param, rather than accessing
+	cpp_opts.
+	(get_visual_column): Likewise.  Clarify comment.  Bulletproof
+	against reading past the end of the line.
+	(get_first_nws_vis_column): Add "tab_width" param.
+	(detect_intervening_unindent): Likewise.
+	(should_warn_for_misleading_indentation): Read tab width from
+	cpp_opts and pass around.
+	(selftest::test_next_tab_stop): New test.
+	(selftest::assert_get_visual_column_succeeds): New function.
+	(ASSERT_GET_VISUAL_COLUMN_SUCCEEDS): New macro.
+	(selftest::assert_get_visual_column_fails): New function.
+	(ASSERT_GET_VISUAL_COLUMN_FAILS): New macro.
+	(selftest::test_get_visual_column): New test.
+	(selftest::c_indentation_c_tests): New function.
+
+2018-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ada-spec.c (count_ada_macro): Use cpp_user_macro_p.
+	(store_ada_macro): Likewise.
+	* c-ppoutput.c (cb_used_define, dump_macro): Likewise.
+	* c-spellcheck.cc (should-suggest_as_macro_p): Likewise,
+
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c: Include "selftest-diagnostic.h" and
+	"gcc-rich-location.h".
+	(format_warning_at_char): Pass NULL for new label params of
+	format_warning_va.
+	(class indirection_suffix): New class.
+	(class range_label_for_format_type_mismatch): New class.
+	(format_type_warning): Move logic for generating "*" suffix to
+	class indirection_suffix.  Create "fmt_label" and "param_label"
+	to show their types, and pass them to the
+	format_warning_at_substring calls.
+	(selftest::test_type_mismatch_range_labels): New test.
+	(selftest::c_format_c_tests): Call it.
+
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* c-common.c (braced_list_to_string): New function.
+	* c-common.h (braced_list_to_string): Declare it.
+
 2018-08-08  Nathan Sidwell  <nathan@acm.org>
 
 	* c-common.c (try_to_locate_new_include_inertion_point): Use

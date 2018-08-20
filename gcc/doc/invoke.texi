@@ -268,6 +268,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
+-fno-diagnostics-show-labels -fno-diagnostics-show-line-numbers @gol
 -fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch @gol
 -fdiagnostics-show-template-tree -fno-elide-type @gol
 -fno-show-column}
@@ -724,6 +725,16 @@ Objective-C and Objective-C++ Dialects}.
 -mcr16cplus  -mcr16c @gol
 -msim  -mint32  -mbit-ops
 -mdata-model=@var{model}}
+
+@emph{C-SKY Options}
+@gccoptlist{-march=@var{arch}  -mcpu=@var{cpu} @gol
+-mbig-endian  -EB  -mlittle-endian  -EL @gol
+-mhard-float  -msoft-float  -mfpu=@var{fpu}  -mdouble-float  -mfdivdu @gol
+-melrw  -mistack  -mmp  -mcp  -mcache  -msecurity  -mtrust @gol
+-mdsp  -medsp  -mvdsp @gol
+-mdiv  -msmart  -mhigh-registers  -manchor @gol
+-mpushpop  -mmultiple-stld  -mconstpool  -mstack-size  -mccrt @gol
+-mbranch-cost=@var{n}  -mcse-cc  -msched-prolog}
 
 @emph{Darwin Options}
 @gccoptlist{-all_load  -allowable_client  -arch  -arch_errors_fatal @gol
@@ -1294,7 +1305,7 @@ See RS/6000 and PowerPC Options.
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
 -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset} @gol
--mstack-protector-guard-symbol=@var{symbol} -mmitigate-rop @gol
+-mstack-protector-guard-symbol=@var{symbol} @gol
 -mgeneral-regs-only -mcall-ms2sysv-xlogues @gol
 -mindirect-branch=@var{choice} -mfunction-return=@var{choice} @gol
 -mindirect-branch-register}
@@ -3745,6 +3756,30 @@ information.  The source line is truncated to @var{n} characters, if
 the @option{-fmessage-length=n} option is given.  When the output is done
 to the terminal, the width is limited to the width given by the
 @env{COLUMNS} environment variable or, if not set, to the terminal width.
+
+@item -fno-diagnostics-show-labels
+@opindex fno-diagnostics-show-labels
+@opindex fdiagnostics-show-labels
+By default, when printing source code (via @option{-fdiagnostics-show-caret}),
+diagnostics can label ranges of source code with pertinent information, such
+as the types of expressions:
+
+@smallexample
+    printf ("foo %s bar", long_i + long_j);
+                 ~^       ~~~~~~~~~~~~~~~
+                  |              |
+                  char *         long int
+@end smallexample
+
+This option suppresses the printing of these labels (in the example above,
+the vertical bars and the ``char *'' and ``long int'' text).
+
+@item -fno-diagnostics-show-line-numbers
+@opindex fno-diagnostics-show-line-numbers
+@opindex fdiagnostics-show-line-numbers
+By default, when printing source code (via @option{-fdiagnostics-show-caret}),
+a left margin is printed, showing line numbers.  This option suppresses this
+left margin.
 
 @item -fdiagnostics-parseable-fixits
 @opindex fdiagnostics-parseable-fixits
@@ -9253,6 +9288,9 @@ between the heuristics and @code{__builtin_expect} can be complex, and in
 some cases, it may be useful to disable the heuristics so that the effects
 of @code{__builtin_expect} are easier to understand.
 
+It is also possible to specify expected probability of the expression
+with @code{__builtin_expect_with_probability} built-in function.
+
 The default is @option{-fguess-branch-probability} at levels
 @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
@@ -14656,6 +14694,7 @@ platform.
 * C6X Options::
 * CRIS Options::
 * CR16 Options::
+* C-SKY Options::
 * Darwin Options::
 * DEC Alpha Options::
 * FR30 Options::
@@ -17778,6 +17817,198 @@ Choose a data model. The choices for @var{model} are @samp{near},
 @samp{far} or @samp{medium}. @samp{medium} is default.
 However, @samp{far} is not valid with @option{-mcr16c}, as the
 CR16C architecture does not support the far data model.
+@end table
+
+@node C-SKY Options
+@subsection C-SKY Options
+@cindex C-SKY Options
+
+GCC supports these options when compiling for C-SKY V2 processors.
+
+@table @gcctabopt
+
+@item -march=@var{arch}
+@opindex march=
+Specify the C-SKY target architecture.  Valid values for @var{arch} are:
+@samp{ck801}, @samp{ck802}, @samp{ck803}, @samp{ck807}, and @samp{ck810}.
+The default is @samp{ck810}.
+
+@item -mcpu=@var{cpu}
+@opindex mcpu=
+Specify the C-SKY target processor.  Valid values for @var{cpu} are:
+@samp{ck801}, @samp{ck801t},
+@samp{ck802}, @samp{ck802t}, @samp{ck802j},
+@samp{ck803}, @samp{ck803h}, @samp{ck803t}, @samp{ck803ht},
+@samp{ck803f}, @samp{ck803fh}, @samp{ck803e}, @samp{ck803eh},
+@samp{ck803et}, @samp{ck803eht}, @samp{ck803ef}, @samp{ck803efh},
+@samp{ck803ft}, @samp{ck803eft}, @samp{ck803efht}, @samp{ck803r1},
+@samp{ck803hr1}, @samp{ck803tr1}, @samp{ck803htr1}, @samp{ck803fr1},
+@samp{ck803fhr1}, @samp{ck803er1}, @samp{ck803ehr1}, @samp{ck803etr1},
+@samp{ck803ehtr1}, @samp{ck803efr1}, @samp{ck803efhr1}, @samp{ck803ftr1},
+@samp{ck803eftr1}, @samp{ck803efhtr1},
+@samp{ck803s}, @samp{ck803st}, @samp{ck803se}, @samp{ck803sf},
+@samp{ck803sef}, @samp{ck803seft},
+@samp{ck807e}, @samp{ck807ef}, @samp{ck807}, @samp{ck807f},
+@samp{ck810e}, @samp{ck810et}, @samp{ck810ef}, @samp{ck810eft},
+@samp{ck810}, @samp{ck810v}, @samp{ck810f}, @samp{ck810t}, @samp{ck810fv},
+@samp{ck810tv}, @samp{ck810ft}, and @samp{ck810ftv}.
+
+@item -mbig-endian
+@opindex mbig-endian
+@itemx -EB
+@opindex -EB
+@itemx -mlittle-endian
+@opindex mlittle-endian
+@itemx -EL
+@opindex -EL
+
+Select big- or little-endian code.  The default is little-endian.
+
+@item -mhard-float
+@opindex mhard-float
+@itemx -msoft-float
+@opindex msoft-float
+
+Select hardware or software floating-point implementations.
+The default is soft float.
+
+@item -mdouble-float
+@itemx -mno-double-float
+@opindex mdouble-float
+When @option{-mhard-float} is in effect, enable generation of
+double-precision float instructions.  This is the default except
+when compiling for CK803.
+
+@item -mfdivdu
+@itemx -mno-fdivdu
+@opindex mfdivdu
+When @option{-mhard-float} is in effect, enable generation of
+@code{frecipd}, @code{fsqrtd}, and @code{fdivd} instructions.
+This is the default except when compiling for CK803.
+
+@item -mfpu=@var{fpu}
+@opindex mfpu=
+Select the floating-point processor.  This option can only be used with
+@option{-mhard-float}.
+Values for @var{fpu} are
+@samp{fpv2_sf} (equivalent to @samp{-mno-double-float -mno-fdivdu}),
+@samp{fpv2} (@samp{-mdouble-float -mno-divdu}), and
+@samp{fpv2_divd} (@samp{-mdouble-float -mdivdu}).
+
+@item -melrw
+@itemx -mno-elrw
+@opindex melrw
+Enable the extended @code{lrw} instruction.  This option defaults to on
+for CK801 and off otherwise.
+
+@item -mistack
+@itemx -mno-istack
+@opindex mistack
+Enable interrupt stack instructions; the default is off.
+
+The @option{-mistack} option is required to handle the
+@code{interrupt} and @code{isr} function attributes
+(@pxref{C-SKY Function Attributes}).
+
+@item -mmp
+@opindex mmp
+Enable multiprocessor instructions; the default is off.
+
+@item -mcp
+@opindex mcp
+Enable coprocessor instructions; the default is off.
+
+@item -mcache
+@opindex mcache
+Enable coprocessor instructions; the default is off.
+
+@item -msecurity
+@opindex msecurity
+Enable C-SKY security instructions; the default is off.
+
+@item -mtrust
+@opindex mtrust
+Enable C-SKY trust instructions; the default is off.
+
+@item -mdsp
+@opindex mdsp
+@itemx -medsp
+@opindex medsp
+@itemx -mvdsp
+@opindex mvdsp
+Enable C-SKY DSP, Enhanced DSP, or Vector DSP instructions, respectively.
+All of these options default to off.
+
+@item -mdiv
+@itemx -mno-div
+@opindex mdiv
+Generate divide instructions.  Default is off.
+
+@item -msmart
+@itemx -mno-smart
+@opindex msmart
+Generate code for Smart Mode, using only registers numbered 0-7 to allow
+use of 16-bit instructions.  This option is ignored for CK801 where this
+is the required behavior, and it defaults to on for CK802.
+For other targets, the default is off.
+
+@item -mhigh-registers
+@itemx -mno-high-registers
+@opindex mhigh-registers
+Generate code using the high registers numbered 16-31.  This option
+is not supported on CK801, CK802, or CK803, and is enabled by default
+for other processors.
+
+@item -manchor
+@itemx -mno-anchor
+@opindex manchor
+Generate code using global anchor symbol addresses.
+
+@item -mpushpop
+@itemx -mno-pushpop
+@opindex mpushpop
+Generate code using @code{push} and @code{pop} instructions.  This option
+defaults to on.
+
+@item -mmultiple-stld
+@itemx -mstm
+@itemx -mno-multiple-stld
+@itemx -mno-stm
+@opindex mmultiple-stld
+Generate code using @code{stm} and @code{ldm} instructions.  This option
+isn't supported on CK801 but is enabled by default on other processors.
+
+@item -mconstpool
+@itemx -mno-constpool
+@opindex mconstpool
+Create constant pools in the compiler instead of deferring it to the
+assembler.  This option is the default and required for correct code
+generation on CK801 and CK802, and is optional on other processors.
+
+@item -mstack-size
+@item -mno-stack-size
+@opindex mstack-size
+Emit @code{.stack_size} directives for each function in the assembly
+output.  This option defaults to off.
+
+@item -mccrt
+@itemx -mno-ccrt
+@opindex mccrt
+Generate code for the C-SKY compiler runtime instead of libgcc.  This
+option defaults to off.
+
+@item -mbranch-cost=@var{n}
+@opindex mbranch-cost=
+Set the branch costs to roughly @code{n} instructions.  The default is 1.
+
+@item -msched-prolog
+@itemx -mno-sched-prolog
+@opindex msched-prolog
+Permit scheduling of function prologue and epilogue sequences.  Using
+this option can result in code that is not compliant with the C-SKY V2 ABI
+prologue requirements and that cannot be debugged or backtraced.
+It is disabled by default.
+
 @end table
 
 @node Darwin Options
@@ -28025,13 +28256,6 @@ With the latter choice the options
 which segment register (@code{%fs} or @code{%gs}) to use as base register
 for reading the canary, and from what offset from that base register.
 The default for those is as specified in the relevant ABI.
-
-@item -mmitigate-rop
-@opindex mmitigate-rop
-Try to avoid generating code sequences that contain unintended return
-opcodes, to mitigate against certain forms of attack. At the moment,
-this option is limited in what it can do and should not be relied
-on to provide serious protection.
 
 @item -mgeneral-regs-only
 @opindex mgeneral-regs-only

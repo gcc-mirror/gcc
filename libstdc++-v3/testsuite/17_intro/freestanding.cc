@@ -30,6 +30,10 @@
 #include <initializer_list>
 #include <type_traits>
 
+// C++2a headers:
+#include <bit>
+#include <version>
+
 int main()
 {
   std::exception e;
@@ -46,6 +50,11 @@ int main()
   bool b __attribute__((unused)) = std::is_integral<int>::value;
 
   std::initializer_list<int> ilisti __attribute__((unused));
+
+#if __cplusplus > 201703L
+  static_assert( std::ispow2(256u) );
+  static_assert( __cpp_lib_void_t >= 201411L );
+#endif
 
   return 0;
 }

@@ -2208,6 +2208,8 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
       && !same_type_p (t, wchar_type_node))
     return 0;
 
+  location_t loc = EXPR_LOC_OR_LOC (exp, input_location);
+
   STRIP_ANY_LOCATION_WRAPPER (exp);
 
   if (TREE_CODE (exp) == STRING_CST)
@@ -2230,13 +2232,13 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
   if (warn)
     {
       if (cxx_dialect >= cxx11)
-	pedwarn (input_location, OPT_Wwrite_strings,
+	pedwarn (loc, OPT_Wwrite_strings,
 		 "ISO C++ forbids converting a string constant to %qT",
 		 totype);
       else
-	warning (OPT_Wwrite_strings,
-		 "deprecated conversion from string constant to %qT",
-		 totype);
+	warning_at (loc, OPT_Wwrite_strings,
+		    "deprecated conversion from string constant to %qT",
+		    totype);
     }
 
   return 1;
@@ -8805,7 +8807,16 @@ convert_for_assignment (tree type, tree rhs,
 		}
 	      else if (fndecl)
 		{
-		  error_at (cp_expr_loc_or_loc (rhs, input_location),
+		  location_t loc = cp_expr_location (rhs);
+		  range_label_for_type_mismatch rhs_label (rhstype, type);
+		  range_label *label = &rhs_label;
+		  if (loc == UNKNOWN_LOCATION)
+		    {
+		      loc = input_location;
+		      label = NULL;
+		    }
+		  gcc_rich_location richloc (loc, label);
+		  error_at (&richloc,
 			    "cannot convert %qH to %qI",
 			    rhstype, type);
 		  inform (get_fndecl_argument_location (fndecl, parmnum),

@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gcc-rich-location.h"
 
 /* The various kinds of conversion.  */
 
@@ -107,6 +108,9 @@ struct conversion {
      binding a reference directly or decaying to a pointer.  */
   BOOL_BITFIELD rvaluedness_matches_p: 1;
   BOOL_BITFIELD check_narrowing: 1;
+  /* Whether check_narrowing should only check TREE_CONSTANTs; used
+     in build_converted_constant_expr.  */
+  BOOL_BITFIELD check_narrowing_const_only: 1;
   /* The type of the expression resulting from the conversion.  */
   tree type;
   union {
@@ -4152,9 +4156,18 @@ build_converted_constant_expr (tree type, tree expr, tsubst_flags_t complain)
     }
 
   if (conv)
-    expr = convert_like (conv, expr, complain);
+    {
+      conv->check_narrowing = true;
+      conv->check_narrowing_const_only = true;
+      expr = convert_like (conv, expr, complain);
+    }
   else
-    expr = error_mark_node;
+    {
+      if (complain & tf_error)
+	error_at (loc, "could not convert %qE from %qH to %qI", expr,
+		  TREE_TYPE (expr), type);
+      expr = error_mark_node;
+    }
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
@@ -6736,8 +6749,13 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    break;
 	}
       if (!complained)
-	complained = permerror (loc, "invalid conversion from %qH to %qI",
-				TREE_TYPE (expr), totype);
+	{
+	  range_label_for_type_mismatch label (TREE_TYPE (expr), totype);
+	  gcc_rich_location richloc (loc, &label);
+	  complained = permerror (&richloc,
+				  "invalid conversion from %qH to %qI",
+				  TREE_TYPE (expr), totype);
+	}
       if (complained && fn)
 	inform (get_fndecl_argument_location (fn, argnum),
 		"  initializing argument %P of %qD", argnum, fn);
@@ -7142,7 +7160,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     }
 
   if (convs->check_narrowing
-      && !check_narrowing (totype, expr, complain))
+      && !check_narrowing (totype, expr, complain,
+			   convs->check_narrowing_const_only))
     return error_mark_node;
 
   warning_sentinel w (warn_zero_as_null_pointer_constant);
@@ -10742,8 +10761,12 @@ perform_implicit_conversion_flags (tree type, tree expr,
 	  else if (invalid_nonstatic_memfn_p (loc, expr, complain))
 	    /* We gave an error.  */;
 	  else
-	    error_at (loc, "could not convert %qE from %qH to %qI", expr,
-		      TREE_TYPE (expr), type);
+	    {
+	      range_label_for_type_mismatch label (TREE_TYPE (expr), type);
+	      gcc_rich_location rich_loc (loc, &label);
+	      error_at (&rich_loc, "could not convert %qE from %qH to %qI",
+			expr, TREE_TYPE (expr), type);
+	    }
 	}
       expr = error_mark_node;
     }

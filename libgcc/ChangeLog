@@ -1,3 +1,44 @@
+2018-08-17  Jojo  <jijie_rong@c-sky.com>
+	    Huibin Wang  <huibin_wang@c-sky.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	C-SKY port: libgcc
+
+	* config.host: Add C-SKY support.
+	* config/csky/*: New.
+
+2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/t-nds32-isr: Rearrange object dependency.
+	* config/nds32/initfini.c: Add dwarf2 unwinding support.
+	* config/nds32/isr-library/adj_intr_lvl.inc: Consider new extensions
+	and registers usage.
+	* config/nds32/isr-library/excp_isr.S: Ditto.
+	* config/nds32/isr-library/intr_isr.S: Ditto.
+	* config/nds32/isr-library/reset.S: Ditto.
+	* config/nds32/isr-library/restore_all.inc: Ditto.
+	* config/nds32/isr-library/restore_mac_regs.inc: Ditto.
+	* config/nds32/isr-library/restore_partial.inc: Ditto.
+	* config/nds32/isr-library/restore_usr_regs.inc: Ditto.
+	* config/nds32/isr-library/save_all.inc: Ditto.
+	* config/nds32/isr-library/save_mac_regs.inc: Ditto.
+	* config/nds32/isr-library/save_partial.inc: Ditto.
+	* config/nds32/isr-library/save_usr_regs.inc: Ditto.
+	* config/nds32/isr-library/vec_vid*.S: Consider 4-byte vector size.
+
+2018-08-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c: Update comment.
+	(FETCH_AND_OP_2, OP_AND_FETCH_2, FETCH_AND_OP_WORD, OP_AND_FETCH_WORD,
+	COMPARE_AND_SWAP_2, __sync_val_compare_and_swap_4,
+	SYNC_LOCK_TEST_AND_SET_2, __sync_lock_test_and_set_4): Use
+	__ATOMIC_RELAXED for atomic loads.
+	(SYNC_LOCK_RELEASE_1): New define.  Use __sync_synchronize() and
+	unordered store to release lock.
+	(__sync_lock_release_8): Likewise.
+	(SYNC_LOCK_RELEASE_2): Remove define.
+	 
 2018-08-02  Nicolas Pitre <nico@fluxnic.net>
 
 	PR libgcc/86512

@@ -990,7 +990,7 @@ cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 static int
 dump_macro (cpp_reader *pfile, cpp_hashnode *node, void *v ATTRIBUTE_UNUSED)
 {
-  if (cpp_macro_p (node))
+  if (cpp_user_macro_p (node))
     {
       fputs ("#define ", print.outf);
       fputs ((const char *) cpp_macro_definition (pfile, node),

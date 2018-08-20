@@ -1,3 +1,64 @@
+2018-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* typeck.c (string_conv_p): Extract location from EXP and use it
+	in preference to input_location when issuing warnings.
+
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c: Include "gcc-rich-location.h".
+	(convert_like_real): Add range label for "invalid conversion"
+	diagnostic.
+	(perform_implicit_conversion_flags): Add type label to the
+	"could not convert" error.
+	* error.c: Include "gcc-rich-location.h".
+	(range_label_for_type_mismatch::get_text): New function.
+	* typeck.c (convert_for_assignment): Add type label to
+	the "cannot convert" error if a location is available.
+
+2018-08-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (check_previous_goto_1): When decl_jump_unsafe returns 2
+	emit an error instead of a permerror.
+
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/57891
+	* call.c (struct conversion): Add check_narrowing_const_only.
+	(build_converted_constant_expr): Set check_narrowing and
+	check_narrowing_const_only.  Give error if expr is error node.
+	(convert_like_real): Pass it to check_narrowing.
+	* cp-tree.h (check_narrowing): Add a default parameter.
+	* decl.c (compute_array_index_type): Use input_location instead of
+	location_of.
+	* pt.c (convert_nontype_argument): Return NULL_TREE if tf_error.
+	* typeck2.c (check_narrowing): Don't warn for instantiation-dependent
+	expressions.  Call maybe_constant_value instead of
+	fold_non_dependent_expr.  Don't mention { } in diagnostic.  Only check
+	narrowing for constants if CONST_ONLY.
+
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* decl.c (check_initializer):  Call braced_list_to_string.
+	(eval_check_narrowing): New function.
+	* gcc/cp/typeck2.c (digest_init_r): Accept strings literals
+	as initilizers for all narrow character types.
+
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	P0806R2 - Deprecate implicit capture of this via [=]
+	* lambda.c (add_default_capture): Formatting fixes.  Warn about
+	deprecated implicit capture of this via [=].
+
+	PR c++/86915
+	* decl.c (create_array_type_for_decl): Handle null name.
+
+2018-08-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86728 - C variadic generic lambda.
+	* parser.c (cp_parser_parameter_declaration): Don't turn 'auto' into
+	a pack if it's followed by a declarator-id.
+
 2018-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	P0595R1 - is_constant_evaluated

@@ -18,5 +18,5 @@ constexpr A a = 42;
 
 X<a> x;	    // OK: unique conversion to int
 int ar[X<a>::i]; // also OK
-int ary[a]; // { dg-error "ambiguous|conversion|array" } ambiguous conversion
+int ary[a]; // { dg-error "could not convert|ambiguous|conversion|array" } ambiguous conversion
 

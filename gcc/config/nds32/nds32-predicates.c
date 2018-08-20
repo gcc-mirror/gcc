@@ -356,8 +356,8 @@ nds32_valid_stack_push_pop_p (rtx op, bool push_p)
 }
 
 /* Function to check if 'bclr' instruction can be used with IVAL.  */
-int
-nds32_can_use_bclr_p (int ival)
+bool
+nds32_can_use_bclr_p (HOST_WIDE_INT ival)
 {
   int one_bit_count;
   unsigned HOST_WIDE_INT mask = GET_MODE_MASK (SImode);
@@ -373,8 +373,8 @@ nds32_can_use_bclr_p (int ival)
 }
 
 /* Function to check if 'bset' instruction can be used with IVAL.  */
-int
-nds32_can_use_bset_p (int ival)
+bool
+nds32_can_use_bset_p (HOST_WIDE_INT ival)
 {
   int one_bit_count;
   unsigned HOST_WIDE_INT mask = GET_MODE_MASK (SImode);
@@ -389,8 +389,8 @@ nds32_can_use_bset_p (int ival)
 }
 
 /* Function to check if 'btgl' instruction can be used with IVAL.  */
-int
-nds32_can_use_btgl_p (int ival)
+bool
+nds32_can_use_btgl_p (HOST_WIDE_INT ival)
 {
   int one_bit_count;
   unsigned HOST_WIDE_INT mask = GET_MODE_MASK (SImode);
@@ -405,8 +405,8 @@ nds32_can_use_btgl_p (int ival)
 }
 
 /* Function to check if 'bitci' instruction can be used with IVAL.  */
-int
-nds32_can_use_bitci_p (int ival)
+bool
+nds32_can_use_bitci_p (HOST_WIDE_INT ival)
 {
   /* If we are using V3 ISA, we have 'bitci' instruction.
      Try to see if we can present 'andi' semantic with

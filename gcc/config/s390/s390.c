@@ -2748,6 +2748,67 @@ s390_short_displacement (rtx disp)
   return false;
 }
 
+/* Attempts to split `ref', which should be either UNSPEC_LTREF or
+   UNSPEC_LTREL_BASE, into (base + `disp').  In case pool base is not known,
+   caller-provided `pool_base' is used.  If successful, also determines the
+   following characteristics of `ref': `is_ptr' - whether it can be an
+   LA argument, `is_base_ptr' - whether the resulting base is a well-known
+   base register (stack/frame pointer, etc), `is_pool_ptr` - whether it is
+   considered a literal pool pointer for purposes of avoiding two different
+   literal pool pointers per insn during or after reload (`B' constraint).  */
+static bool
+s390_decompose_constant_pool_ref (rtx *ref, rtx *disp, bool *is_ptr,
+				  bool *is_base_ptr, bool *is_pool_ptr,
+				  rtx pool_base)
+{
+  if (!*ref)
+    return true;
+
+  if (GET_CODE (*ref) == UNSPEC)
+    switch (XINT (*ref, 1))
+      {
+      case UNSPEC_LTREF:
+	if (!*disp)
+	  *disp = gen_rtx_UNSPEC (Pmode,
+				  gen_rtvec (1, XVECEXP (*ref, 0, 0)),
+				  UNSPEC_LTREL_OFFSET);
+	else
+	  return false;
+
+	*ref = XVECEXP (*ref, 0, 1);
+	break;
+
+      case UNSPEC_LTREL_BASE:
+	if (XVECLEN (*ref, 0) == 1)
+	  *ref = pool_base, *is_pool_ptr = true;
+	else
+	  *ref = XVECEXP (*ref, 0, 1);
+	break;
+
+      default:
+	return false;
+      }
+
+  if (!REG_P (*ref) || GET_MODE (*ref) != Pmode)
+    return false;
+
+  if (REGNO (*ref) == STACK_POINTER_REGNUM
+      || REGNO (*ref) == FRAME_POINTER_REGNUM
+      || ((reload_completed || reload_in_progress)
+	  && frame_pointer_needed
+	  && REGNO (*ref) == HARD_FRAME_POINTER_REGNUM)
+      || REGNO (*ref) == ARG_POINTER_REGNUM
+      || (flag_pic
+	  && REGNO (*ref) == PIC_OFFSET_TABLE_REGNUM))
+    *is_ptr = *is_base_ptr = true;
+
+  if ((reload_completed || reload_in_progress)
+      && *ref == cfun->machine->base_reg)
+    *is_ptr = *is_base_ptr = *is_pool_ptr = true;
+
+  return true;
+}
+
 /* Decompose a RTL expression ADDR for a memory address into
    its components, returned in OUT.
 
@@ -2859,96 +2920,14 @@ s390_decompose_address (rtx addr, struct s390_address *out)
     }
 
   /* Validate base register.  */
-  if (base)
-    {
-      if (GET_CODE (base) == UNSPEC)
-	switch (XINT (base, 1))
-	  {
-	  case UNSPEC_LTREF:
-	    if (!disp)
-	      disp = gen_rtx_UNSPEC (Pmode,
-				     gen_rtvec (1, XVECEXP (base, 0, 0)),
-				     UNSPEC_LTREL_OFFSET);
-	    else
-	      return false;
-
-	    base = XVECEXP (base, 0, 1);
-	    break;
-
-	  case UNSPEC_LTREL_BASE:
-	    if (XVECLEN (base, 0) == 1)
-	      base = fake_pool_base, literal_pool = true;
-	    else
-	      base = XVECEXP (base, 0, 1);
-	    break;
-
-	  default:
-	    return false;
-	  }
-
-      if (!REG_P (base) || GET_MODE (base) != Pmode)
-	return false;
-
-      if (REGNO (base) == STACK_POINTER_REGNUM
-	  || REGNO (base) == FRAME_POINTER_REGNUM
-	  || ((reload_completed || reload_in_progress)
-	      && frame_pointer_needed
-	      && REGNO (base) == HARD_FRAME_POINTER_REGNUM)
-	  || REGNO (base) == ARG_POINTER_REGNUM
-	  || (flag_pic
-	      && REGNO (base) == PIC_OFFSET_TABLE_REGNUM))
-	pointer = base_ptr = true;
-
-      if ((reload_completed || reload_in_progress)
-	  && base == cfun->machine->base_reg)
-	pointer = base_ptr = literal_pool = true;
-    }
+  if (!s390_decompose_constant_pool_ref (&base, &disp, &pointer, &base_ptr,
+					 &literal_pool, fake_pool_base))
+    return false;
 
   /* Validate index register.  */
-  if (indx)
-    {
-      if (GET_CODE (indx) == UNSPEC)
-	switch (XINT (indx, 1))
-	  {
-	  case UNSPEC_LTREF:
-	    if (!disp)
-	      disp = gen_rtx_UNSPEC (Pmode,
-				     gen_rtvec (1, XVECEXP (indx, 0, 0)),
-				     UNSPEC_LTREL_OFFSET);
-	    else
-	      return false;
-
-	    indx = XVECEXP (indx, 0, 1);
-	    break;
-
-	  case UNSPEC_LTREL_BASE:
-	    if (XVECLEN (indx, 0) == 1)
-	      indx = fake_pool_base, literal_pool = true;
-	    else
-	      indx = XVECEXP (indx, 0, 1);
-	    break;
-
-	  default:
-	    return false;
-	  }
-
-      if (!REG_P (indx) || GET_MODE (indx) != Pmode)
-	return false;
-
-      if (REGNO (indx) == STACK_POINTER_REGNUM
-	  || REGNO (indx) == FRAME_POINTER_REGNUM
-	  || ((reload_completed || reload_in_progress)
-	      && frame_pointer_needed
-	      && REGNO (indx) == HARD_FRAME_POINTER_REGNUM)
-	  || REGNO (indx) == ARG_POINTER_REGNUM
-	  || (flag_pic
-	      && REGNO (indx) == PIC_OFFSET_TABLE_REGNUM))
-	pointer = indx_ptr = true;
-
-      if ((reload_completed || reload_in_progress)
-	  && indx == cfun->machine->base_reg)
-	pointer = indx_ptr = literal_pool = true;
-    }
+  if (!s390_decompose_constant_pool_ref (&indx, &disp, &pointer, &indx_ptr,
+					 &literal_pool, fake_pool_base))
+    return false;
 
   /* Prefer to use pointer as base, not index.  */
   if (base && indx && !base_ptr
@@ -14044,7 +14023,7 @@ s390_adjust_loops ()
 static void
 s390_reorg (void)
 {
-  bool pool_overflow = false;
+  struct constant_pool *pool;
   rtx_insn *insn;
   int hw_before, hw_after;
 
@@ -14056,62 +14035,26 @@ s390_reorg (void)
   split_all_insns_noflow ();
 
   /* Install the main literal pool and the associated base
-     register load insns.
+     register load insns.  The literal pool might be > 4096 bytes in
+     size, so that some of its elements cannot be directly accessed.
 
-     In addition, there are two problematic situations we need
-     to correct:
-
-     - the literal pool might be > 4096 bytes in size, so that
-       some of its elements cannot be directly accessed
-
-     - a branch target might be > 64K away from the branch, so that
-       it is not possible to use a PC-relative instruction.
-
-     To fix those, we split the single literal pool into multiple
+     To fix this, we split the single literal pool into multiple
      pool chunks, reloading the pool base register at various
      points throughout the function to ensure it always points to
-     the pool chunk the following code expects, and / or replace
-     PC-relative branches by absolute branches.
+     the pool chunk the following code expects.  */
 
-     However, the two problems are interdependent: splitting the
-     literal pool can move a branch further away from its target,
-     causing the 64K limit to overflow, and on the other hand,
-     replacing a PC-relative branch by an absolute branch means
-     we need to put the branch target address into the literal
-     pool, possibly causing it to overflow.
-
-     So, we loop trying to fix up both problems until we manage
-     to satisfy both conditions at the same time.  Note that the
-     loop is guaranteed to terminate as every pass of the loop
-     strictly decreases the total number of PC-relative branches
-     in the function.  (This is not completely true as there
-     might be branch-over-pool insns introduced by chunkify_start.
-     Those never need to be split however.)  */
-
-  for (;;)
+  /* Collect the literal pool.  */
+  pool = s390_mainpool_start ();
+  if (pool)
     {
-      struct constant_pool *pool = NULL;
-
-      /* Collect the literal pool.  */
-      if (!pool_overflow)
-	{
-	  pool = s390_mainpool_start ();
-	  if (!pool)
-	    pool_overflow = true;
-	}
-
-      /* If literal pool overflowed, start to chunkify it.  */
-      if (pool_overflow)
-	pool = s390_chunkify_start ();
-
-      /* If we made it up to here, both conditions are satisfied.
-	 Finish up literal pool related changes.  */
-      if (pool_overflow)
-	s390_chunkify_finish (pool);
-      else
-	s390_mainpool_finish (pool);
-
-      break;
+      /* Finish up literal pool related changes.  */
+      s390_mainpool_finish (pool);
+    }
+  else
+    {
+      /* If literal pool overflowed, chunkify it.  */
+      pool = s390_chunkify_start ();
+      s390_chunkify_finish (pool);
     }
 
   /* Generate out-of-pool execute target insns.  */
@@ -14982,6 +14925,17 @@ s390_option_override_internal (struct gcc_options *opts,
     }
   else if (opts->x_s390_stack_guard)
     error ("-mstack-guard implies use of -mstack-size");
+
+  /* Our implementation of the stack probe requires the probe interval
+     to be used as displacement in an address operand.  The maximum
+     probe interval currently is 64k.  This would exceed short
+     displacements.  Trim that value down to 4k if that happens.  This
+     might result in too many probes being generated only on the
+     oldest supported machine level z900.  */
+  if (!DISP_IN_RANGE ((1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL))))
+    set_param_value ("stack-clash-protection-probe-interval", 12,
+		     opts->x_param_values,
+		     opts_set->x_param_values);
 
 #ifdef TARGET_DEFAULT_LONG_DOUBLE_128
   if (!TARGET_LONG_DOUBLE_128_P (opts_set->x_target_flags))

@@ -1,5 +1,7 @@
 2018-08-20  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r263673.
+
 	Revert r263619  2018-08-17  Nathan Sidwell  <nathan@acm.org>
 	Revert r263597  2018-08-16  Nathan Sidwell  <nathan@acm.org>
 	They break GTY strangely.

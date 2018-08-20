@@ -5,7 +5,7 @@
 void
 foo (float n)
 {
-  int A[n][n];	// { dg-error "has non-integral type|converted constant expression" }
+  int A[n][n];	// { dg-error "could not convert|has non-integral type|converted constant expression" }
 #pragma omp parallel private(A)
   ;
 }

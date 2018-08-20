@@ -220,7 +220,7 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
       else if (ident && (ident != C_CPP_HASHNODE (__vector_keyword)))
 	{
 	  enum rid rid_code = (enum rid)(ident->rid_code);
-	  bool is_macro = cpp_macro_p (ident, true);
+	  bool is_macro = cpp_macro_p (ident);
 
 	  /* If there is a function-like macro, check if it is going to be
 	     invoked with or without arguments.  Without following ( treat

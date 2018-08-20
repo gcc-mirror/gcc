@@ -626,10 +626,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_construct_node(__tmp, __x);
 	return __tmp;
       }
-
-      void
-      _M_destroy_node(_Link_type __p)
-      { get_allocator().destroy(__p->_M_valptr()); }
 #else
       template<typename... _Args>
 	void
@@ -658,14 +654,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_construct_node(__tmp, std::forward<_Args>(__args)...);
 	  return __tmp;
 	}
+#endif
 
       void
-      _M_destroy_node(_Link_type __p) noexcept
+      _M_destroy_node(_Link_type __p) _GLIBCXX_NOEXCEPT
       {
+#if __cplusplus < 201103L
+	get_allocator().destroy(__p->_M_valptr());
+#else
 	_Alloc_traits::destroy(_M_get_Node_allocator(), __p->_M_valptr());
 	__p->~_Rb_tree_node<_Val>();
-      }
 #endif
+      }
 
       void
       _M_drop_node(_Link_type __p) _GLIBCXX_NOEXCEPT

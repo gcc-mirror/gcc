@@ -4,6 +4,7 @@
 /* { dg-add-options float32 } */
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target float32_runtime } */
+/* { dg-skip-if "No subnormal support" { csky-*-* } { "-mhard-float" } } */
 
 #define WIDTH 32
 #define EXT 0

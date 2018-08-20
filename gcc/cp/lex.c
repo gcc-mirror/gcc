@@ -438,7 +438,7 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
       return APS_NONE;
     }  
 
-  if (cpp_macro_p (cpp_tok->val.node.node, true))
+  if (cpp_macro_p (cpp_tok->val.node.node))
     goto not_preamble;
 
   tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (cpp_tok->val.node.node));

@@ -1,3 +1,17 @@
+2018-08-13  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	PR target/85590
+	* plugin/cuda/cuda.h (CUoccupancyB2DSize): New typedef.
+	(cuOccupancyMaxPotentialBlockSize): Declare.
+	* plugin/cuda-lib.def (cuOccupancyMaxPotentialBlockSize): New
+	CUDA_ONE_CALL_MAYBE_NULL.
+	* plugin/plugin-nvptx.c (CUDA_VERSION < 6050): Define
+	CUoccupancyB2DSize and declare
+	cuOccupancyMaxPotentialBlockSize.
+	(nvptx_exec): Use cuOccupancyMaxPotentialBlockSize to set the
+	default num_gangs and num_workers when the driver supports it.
+
 2018-08-08  Tom de Vries  <tdevries@suse.de>
 
 	* plugin/cuda-lib.def (cuLinkAddData_v2, cuLinkCreate_v2): Declare using

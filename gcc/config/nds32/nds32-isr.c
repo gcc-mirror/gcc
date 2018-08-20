@@ -43,7 +43,260 @@
    We use an array to record essential information for each vector.  */
 static struct nds32_isr_info nds32_isr_vectors[NDS32_N_ISR_VECTORS];
 
-/* ------------------------------------------------------------------------ */
+/* ------------------------------------------------------------- */
+/* FIXME:
+   FOR BACKWARD COMPATIBILITY, we need to support following patterns:
+
+       __attribute__((interrupt("XXX;YYY;id=ZZZ")))
+       __attribute__((exception("XXX;YYY;id=ZZZ")))
+       __attribute__((reset("vectors=XXX;nmi_func=YYY;warm_func=ZZZ")))
+
+   We provide several functions to parse the strings.  */
+
+static void
+nds32_interrupt_attribute_parse_string (const char *original_str,
+					const char *func_name,
+					unsigned int s_level)
+{
+  char target_str[100];
+  enum nds32_isr_save_reg save_reg;
+  enum nds32_isr_nested_type nested_type;
+
+  char *save_all_regs_str, *save_caller_regs_str;
+  char *nested_str, *not_nested_str, *ready_nested_str, *critical_str;
+  char *id_str, *value_str;
+
+  /* Copy original string into a character array so that
+     the string APIs can handle it.  */
+  strcpy (target_str, original_str);
+
+  /* 1. Detect 'save_all_regs'    : NDS32_SAVE_ALL
+	       'save_caller_regs' : NDS32_PARTIAL_SAVE */
+  save_all_regs_str    = strstr (target_str, "save_all_regs");
+  save_caller_regs_str = strstr (target_str, "save_caller_regs");
+
+  /* Note that if no argument is found,
+     use NDS32_PARTIAL_SAVE by default.  */
+  if (save_all_regs_str)
+    save_reg = NDS32_SAVE_ALL;
+  else if (save_caller_regs_str)
+    save_reg = NDS32_PARTIAL_SAVE;
+  else
+    save_reg = NDS32_PARTIAL_SAVE;
+
+  /* 2. Detect 'nested'       : NDS32_NESTED
+	       'not_nested'   : NDS32_NOT_NESTED
+	       'ready_nested' : NDS32_NESTED_READY
+	       'critical'     : NDS32_CRITICAL */
+  nested_str       = strstr (target_str, "nested");
+  not_nested_str   = strstr (target_str, "not_nested");
+  ready_nested_str = strstr (target_str, "ready_nested");
+  critical_str     = strstr (target_str, "critical");
+
+  /* Note that if no argument is found,
+     use NDS32_NOT_NESTED by default.
+     Also, since 'not_nested' and 'ready_nested' both contains
+     'nested' string, we check 'nested' with lowest priority.  */
+  if (not_nested_str)
+    nested_type = NDS32_NOT_NESTED;
+  else if (ready_nested_str)
+    nested_type = NDS32_NESTED_READY;
+  else if (nested_str)
+    nested_type = NDS32_NESTED;
+  else if (critical_str)
+    nested_type = NDS32_CRITICAL;
+  else
+    nested_type = NDS32_NOT_NESTED;
+
+  /* 3. Traverse each id value and set corresponding information.  */
+  id_str = strstr (target_str, "id=");
+
+  /* If user forgets to assign 'id', issue an error message.  */
+  if (id_str == NULL)
+    error ("require id argument in the string");
+  /* Extract the value_str first.  */
+  id_str    = strtok (id_str, "=");
+  value_str = strtok (NULL, ";");
+
+  /* Pick up the first id value token.  */
+  value_str = strtok (value_str, ",");
+  while (value_str != NULL)
+    {
+      int i;
+      i = atoi (value_str);
+
+      /* For interrupt(0..63), the actual vector number is (9..72).  */
+      i = i + 9;
+      if (i < 9 || i > 72)
+	error ("invalid id value for interrupt attribute");
+
+      /* Setup nds32_isr_vectors[] array.  */
+      nds32_isr_vectors[i].category = NDS32_ISR_INTERRUPT;
+      strcpy (nds32_isr_vectors[i].func_name, func_name);
+      nds32_isr_vectors[i].save_reg = save_reg;
+      nds32_isr_vectors[i].nested_type = nested_type;
+      nds32_isr_vectors[i].security_level = s_level;
+
+      /* Fetch next token.  */
+      value_str = strtok (NULL, ",");
+    }
+
+  return;
+}
+
+static void
+nds32_exception_attribute_parse_string (const char *original_str,
+					const char *func_name,
+					unsigned int s_level)
+{
+  char target_str[100];
+  enum nds32_isr_save_reg save_reg;
+  enum nds32_isr_nested_type nested_type;
+
+  char *save_all_regs_str, *save_caller_regs_str;
+  char *nested_str, *not_nested_str, *ready_nested_str, *critical_str;
+  char *id_str, *value_str;
+
+  /* Copy original string into a character array so that
+     the string APIs can handle it.  */
+  strcpy (target_str, original_str);
+
+  /* 1. Detect 'save_all_regs'    : NDS32_SAVE_ALL
+	       'save_caller_regs' : NDS32_PARTIAL_SAVE */
+  save_all_regs_str    = strstr (target_str, "save_all_regs");
+  save_caller_regs_str = strstr (target_str, "save_caller_regs");
+
+  /* Note that if no argument is found,
+     use NDS32_PARTIAL_SAVE by default.  */
+  if (save_all_regs_str)
+    save_reg = NDS32_SAVE_ALL;
+  else if (save_caller_regs_str)
+    save_reg = NDS32_PARTIAL_SAVE;
+  else
+    save_reg = NDS32_PARTIAL_SAVE;
+
+  /* 2. Detect 'nested'       : NDS32_NESTED
+	       'not_nested'   : NDS32_NOT_NESTED
+	       'ready_nested' : NDS32_NESTED_READY
+	       'critical'     : NDS32_CRITICAL */
+  nested_str       = strstr (target_str, "nested");
+  not_nested_str   = strstr (target_str, "not_nested");
+  ready_nested_str = strstr (target_str, "ready_nested");
+  critical_str     = strstr (target_str, "critical");
+
+  /* Note that if no argument is found,
+     use NDS32_NOT_NESTED by default.
+     Also, since 'not_nested' and 'ready_nested' both contains
+     'nested' string, we check 'nested' with lowest priority.  */
+  if (not_nested_str)
+    nested_type = NDS32_NOT_NESTED;
+  else if (ready_nested_str)
+    nested_type = NDS32_NESTED_READY;
+  else if (nested_str)
+    nested_type = NDS32_NESTED;
+  else if (critical_str)
+    nested_type = NDS32_CRITICAL;
+  else
+    nested_type = NDS32_NOT_NESTED;
+
+  /* 3. Traverse each id value and set corresponding information.  */
+  id_str = strstr (target_str, "id=");
+
+  /* If user forgets to assign 'id', issue an error message.  */
+  if (id_str == NULL)
+    error ("require id argument in the string");
+  /* Extract the value_str first.  */
+  id_str    = strtok (id_str, "=");
+  value_str = strtok (NULL, ";");
+
+  /* Pick up the first id value token.  */
+  value_str = strtok (value_str, ",");
+  while (value_str != NULL)
+    {
+      int i;
+      i = atoi (value_str);
+
+      /* For exception(1..8), the actual vector number is (1..8).  */
+      if (i < 1 || i > 8)
+	error ("invalid id value for exception attribute");
+
+      /* Setup nds32_isr_vectors[] array.  */
+      nds32_isr_vectors[i].category = NDS32_ISR_EXCEPTION;
+      strcpy (nds32_isr_vectors[i].func_name, func_name);
+      nds32_isr_vectors[i].save_reg = save_reg;
+      nds32_isr_vectors[i].nested_type = nested_type;
+      nds32_isr_vectors[i].security_level = s_level;
+
+      /* Fetch next token.  */
+      value_str = strtok (NULL, ",");
+    }
+
+  return;
+}
+
+static void
+nds32_reset_attribute_parse_string (const char *original_str,
+				    const char *func_name)
+{
+  char target_str[100];
+  char *vectors_str, *nmi_str, *warm_str, *value_str;
+
+  /* Deal with reset attribute.  Its vector number is always 0.  */
+  nds32_isr_vectors[0].category = NDS32_ISR_RESET;
+
+
+  /* 1. Parse 'vectors=XXXX'.  */
+
+  /* Copy original string into a character array so that
+     the string APIs can handle it.  */
+  strcpy (target_str, original_str);
+  vectors_str = strstr (target_str, "vectors=");
+  /* The total vectors = interrupt + exception numbers + reset.
+     There are 8 exception and 1 reset in nds32 architecture.
+     If user forgets to assign 'vectors', user default 16 interrupts.  */
+  if (vectors_str != NULL)
+    {
+      /* Extract the value_str.  */
+      vectors_str = strtok (vectors_str, "=");
+      value_str  = strtok (NULL, ";");
+      nds32_isr_vectors[0].total_n_vectors = atoi (value_str) + 8 + 1;
+    }
+  else
+    nds32_isr_vectors[0].total_n_vectors = 16 + 8 + 1;
+  strcpy (nds32_isr_vectors[0].func_name, func_name);
+
+
+  /* 2. Parse 'nmi_func=YYYY'.  */
+
+  /* Copy original string into a character array so that
+     the string APIs can handle it.  */
+  strcpy (target_str, original_str);
+  nmi_str = strstr (target_str, "nmi_func=");
+  if (nmi_str != NULL)
+    {
+      /* Extract the value_str.  */
+      nmi_str = strtok (nmi_str, "=");
+      value_str  = strtok (NULL, ";");
+      strcpy (nds32_isr_vectors[0].nmi_name, value_str);
+    }
+
+  /* 3. Parse 'warm_func=ZZZZ'.  */
+
+  /* Copy original string into a character array so that
+     the string APIs can handle it.  */
+  strcpy (target_str, original_str);
+  warm_str = strstr (target_str, "warm_func=");
+  if (warm_str != NULL)
+    {
+      /* Extract the value_str.  */
+      warm_str = strtok (warm_str, "=");
+      value_str  = strtok (NULL, ";");
+      strcpy (nds32_isr_vectors[0].warm_name, value_str);
+    }
+
+  return;
+}
+/* ------------------------------------------------------------- */
 
 /* A helper function to emit section head template.  */
 static void
@@ -79,6 +332,15 @@ nds32_emit_isr_jmptbl_section (int vector_id)
   char section_name[100];
   char symbol_name[100];
 
+  /* A critical isr does not need jump table section because
+     its behavior is not performed by two-level handler.  */
+  if (nds32_isr_vectors[vector_id].nested_type == NDS32_CRITICAL)
+    {
+      fprintf (asm_out_file, "\t! The vector %02d is a critical isr !\n",
+			     vector_id);
+      return;
+    }
+
   /* Prepare jmptbl section and symbol name.  */
   snprintf (section_name, sizeof (section_name),
 	    ".nds32_jmptbl.%02d", vector_id);
@@ -99,7 +361,6 @@ nds32_emit_isr_vector_section (int vector_id)
   const char *c_str = "CATEGORY";
   const char *sr_str = "SR";
   const char *nt_str = "NT";
-  const char *vs_str = "VS";
   char first_level_handler_name[100];
   char section_name[100];
   char symbol_name[100];
@@ -147,30 +408,47 @@ nds32_emit_isr_vector_section (int vector_id)
     case NDS32_NESTED_READY:
       nt_str = "nr";
       break;
+    case NDS32_CRITICAL:
+      /* The critical isr is not performed by two-level handler.  */
+      nt_str = "";
+      break;
     }
 
-  /* Currently we have 4-byte or 16-byte size for each vector.
-     If it is 4-byte, the first level handler name has suffix string "_4b".  */
-  vs_str = (nds32_isr_vector_size == 4) ? "_4b" : "";
-
   /* Now we can create first level handler name.  */
-  snprintf (first_level_handler_name, sizeof (first_level_handler_name),
-	    "_nds32_%s_%s_%s%s", c_str, sr_str, nt_str, vs_str);
+  if (nds32_isr_vectors[vector_id].security_level == 0)
+    {
+      /* For security level 0, use normal first level handler name.  */
+      snprintf (first_level_handler_name, sizeof (first_level_handler_name),
+		"_nds32_%s_%s_%s", c_str, sr_str, nt_str);
+    }
+  else
+    {
+      /* For security level 1-3, use corresponding spl_1, spl_2, or spl_3.  */
+      snprintf (first_level_handler_name, sizeof (first_level_handler_name),
+		"_nds32_spl_%d", nds32_isr_vectors[vector_id].security_level);
+    }
 
   /* Prepare vector section and symbol name.  */
   snprintf (section_name, sizeof (section_name),
 	    ".nds32_vector.%02d", vector_id);
   snprintf (symbol_name, sizeof (symbol_name),
-	    "_nds32_vector_%02d%s", vector_id, vs_str);
+	    "_nds32_vector_%02d", vector_id);
 
 
   /* Everything is ready.  We can start emit vector section content.  */
   nds32_emit_section_head_template (section_name, symbol_name,
 				    floor_log2 (nds32_isr_vector_size), false);
 
-  /* According to the vector size, the instructions in the
-     vector section may be different.  */
-  if (nds32_isr_vector_size == 4)
+  /* First we check if it is a critical isr.
+     If so, jump to user handler directly; otherwise, the instructions
+     in the vector section may be different according to the vector size.  */
+  if (nds32_isr_vectors[vector_id].nested_type == NDS32_CRITICAL)
+    {
+      /* This block is for critical isr.  Jump to user handler directly.  */
+      fprintf (asm_out_file, "\tj\t%s ! jump to user handler directly\n",
+			     nds32_isr_vectors[vector_id].func_name);
+    }
+  else if (nds32_isr_vector_size == 4)
     {
       /* This block is for 4-byte vector size.
 	 Hardware $VID support is necessary and only one instruction
@@ -239,13 +517,11 @@ nds32_emit_isr_reset_content (void)
 {
   unsigned int i;
   unsigned int total_n_vectors;
-  const char *vs_str;
   char reset_handler_name[100];
   char section_name[100];
   char symbol_name[100];
 
   total_n_vectors = nds32_isr_vectors[0].total_n_vectors;
-  vs_str = (nds32_isr_vector_size == 4) ? "_4b" : "";
 
   fprintf (asm_out_file, "\t! RESET HANDLER CONTENT - BEGIN !\n");
 
@@ -261,7 +537,7 @@ nds32_emit_isr_reset_content (void)
   /* Emit vector references.  */
   fprintf (asm_out_file, "\t ! references to vector section entries\n");
   for (i = 0; i < total_n_vectors; i++)
-    fprintf (asm_out_file, "\t.word\t_nds32_vector_%02d%s\n", i, vs_str);
+    fprintf (asm_out_file, "\t.word\t_nds32_vector_%02d\n", i);
 
   /* Emit jmptbl_00 section.  */
   snprintf (section_name, sizeof (section_name), ".nds32_jmptbl.00");
@@ -275,9 +551,9 @@ nds32_emit_isr_reset_content (void)
 
   /* Emit vector_00 section.  */
   snprintf (section_name, sizeof (section_name), ".nds32_vector.00");
-  snprintf (symbol_name, sizeof (symbol_name), "_nds32_vector_00%s", vs_str);
+  snprintf (symbol_name, sizeof (symbol_name), "_nds32_vector_00");
   snprintf (reset_handler_name, sizeof (reset_handler_name),
-	    "_nds32_reset%s", vs_str);
+	    "_nds32_reset");
 
   fprintf (asm_out_file, "\t! ....................................\n");
   nds32_emit_section_head_template (section_name, symbol_name,
@@ -323,12 +599,12 @@ void
 nds32_check_isr_attrs_conflict (tree func_decl, tree func_attrs)
 {
   int save_all_p, partial_save_p;
-  int nested_p, not_nested_p, nested_ready_p;
+  int nested_p, not_nested_p, nested_ready_p, critical_p;
   int intr_p, excp_p, reset_p;
 
   /* Initialize variables.  */
   save_all_p = partial_save_p = 0;
-  nested_p = not_nested_p = nested_ready_p = 0;
+  nested_p = not_nested_p = nested_ready_p = critical_p = 0;
   intr_p = excp_p = reset_p = 0;
 
   /* We must check at MOST one attribute to set save-reg.  */
@@ -347,8 +623,10 @@ nds32_check_isr_attrs_conflict (tree func_decl, tree func_attrs)
     not_nested_p = 1;
   if (lookup_attribute ("nested_ready", func_attrs))
     nested_ready_p = 1;
+  if (lookup_attribute ("critical", func_attrs))
+    critical_p = 1;
 
-  if ((nested_p + not_nested_p + nested_ready_p) > 1)
+  if ((nested_p + not_nested_p + nested_ready_p + critical_p) > 1)
     error ("multiple nested types attributes to function %qD", func_decl);
 
   /* We must check at MOST one attribute to
@@ -362,6 +640,17 @@ nds32_check_isr_attrs_conflict (tree func_decl, tree func_attrs)
 
   if ((intr_p + excp_p + reset_p) > 1)
     error ("multiple interrupt attributes to function %qD", func_decl);
+
+  /* Do not allow isr attributes under linux toolchain.  */
+  if (TARGET_LINUX_ABI && intr_p)
+      error ("cannot use interrupt attributes to function %qD "
+	     "under linux toolchain", func_decl);
+  if (TARGET_LINUX_ABI && excp_p)
+      error ("cannot use exception attributes to function %qD "
+	     "under linux toolchain", func_decl);
+  if (TARGET_LINUX_ABI && reset_p)
+      error ("cannot use reset attributes to function %qD "
+	     "under linux toolchain", func_decl);
 }
 
 /* Function to construct isr vectors information array.
@@ -373,8 +662,13 @@ nds32_construct_isr_vectors_information (tree func_attrs,
 					 const char *func_name)
 {
   tree save_all, partial_save;
-  tree nested, not_nested, nested_ready;
+  tree nested, not_nested, nested_ready, critical;
   tree intr, excp, reset;
+
+  tree secure;
+  tree security_level_list;
+  tree security_level;
+  unsigned int s_level;
 
   save_all     = lookup_attribute ("save_all", func_attrs);
   partial_save = lookup_attribute ("partial_save", func_attrs);
@@ -382,6 +676,7 @@ nds32_construct_isr_vectors_information (tree func_attrs,
   nested       = lookup_attribute ("nested", func_attrs);
   not_nested   = lookup_attribute ("not_nested", func_attrs);
   nested_ready = lookup_attribute ("nested_ready", func_attrs);
+  critical     = lookup_attribute ("critical", func_attrs);
 
   intr  = lookup_attribute ("interrupt", func_attrs);
   excp  = lookup_attribute ("exception", func_attrs);
@@ -390,6 +685,63 @@ nds32_construct_isr_vectors_information (tree func_attrs,
   /* If there is no interrupt/exception/reset, we can return immediately.  */
   if (!intr && !excp && !reset)
     return;
+
+  /* At first, we need to retrieve security level.  */
+  secure = lookup_attribute ("secure", func_attrs);
+  if (secure != NULL)
+    {
+      security_level_list = TREE_VALUE (secure);
+      security_level = TREE_VALUE (security_level_list);
+      s_level = TREE_INT_CST_LOW (security_level);
+    }
+  else
+    {
+      /* If there is no secure attribute, the security level is set by
+	 nds32_isr_secure_level, which is controlled by -misr-secure=X option.
+	 By default nds32_isr_secure_level should be 0.  */
+      s_level = nds32_isr_secure_level;
+    }
+
+  /* ------------------------------------------------------------- */
+  /* FIXME:
+     FOR BACKWARD COMPATIBILITY, we need to support following patterns:
+
+	 __attribute__((interrupt("XXX;YYY;id=ZZZ")))
+	 __attribute__((exception("XXX;YYY;id=ZZZ")))
+	 __attribute__((reset("vectors=XXX;nmi_func=YYY;warm_func=ZZZ")))
+
+     If interrupt/exception/reset appears and its argument is a
+     STRING_CST, we will parse string with some auxiliary functions
+     which set necessary isr information in the nds32_isr_vectors[] array.
+     After that, we can return immediately to avoid new-syntax isr
+     information construction.  */
+  if (intr != NULL_TREE
+      && TREE_CODE (TREE_VALUE (TREE_VALUE (intr))) == STRING_CST)
+    {
+      tree string_arg = TREE_VALUE (TREE_VALUE (intr));
+      nds32_interrupt_attribute_parse_string (TREE_STRING_POINTER (string_arg),
+					      func_name,
+					      s_level);
+      return;
+    }
+  if (excp != NULL_TREE
+      && TREE_CODE (TREE_VALUE (TREE_VALUE (excp))) == STRING_CST)
+    {
+      tree string_arg = TREE_VALUE (TREE_VALUE (excp));
+      nds32_exception_attribute_parse_string (TREE_STRING_POINTER (string_arg),
+					      func_name,
+					      s_level);
+      return;
+    }
+  if (reset != NULL_TREE
+      && TREE_CODE (TREE_VALUE (TREE_VALUE (reset))) == STRING_CST)
+    {
+      tree string_arg = TREE_VALUE (TREE_VALUE (reset));
+      nds32_reset_attribute_parse_string (TREE_STRING_POINTER (string_arg),
+					  func_name);
+      return;
+    }
+  /* ------------------------------------------------------------- */
 
   /* If we are here, either we have interrupt/exception,
      or reset attribute.  */
@@ -417,6 +769,9 @@ nds32_construct_isr_vectors_information (tree func_attrs,
 	  /* Add vector_number_offset to get actual vector number.  */
 	  vector_id = TREE_INT_CST_LOW (id) + vector_number_offset;
 
+	  /* Set security level.  */
+	  nds32_isr_vectors[vector_id].security_level = s_level;
+
 	  /* Enable corresponding vector and set function name.  */
 	  nds32_isr_vectors[vector_id].category = (intr)
 						  ? (NDS32_ISR_INTERRUPT)
@@ -436,6 +791,8 @@ nds32_construct_isr_vectors_information (tree func_attrs,
 	    nds32_isr_vectors[vector_id].nested_type = NDS32_NOT_NESTED;
 	  else if (nested_ready)
 	    nds32_isr_vectors[vector_id].nested_type = NDS32_NESTED_READY;
+	  else if (critical)
+	    nds32_isr_vectors[vector_id].nested_type = NDS32_CRITICAL;
 
 	  /* Advance to next id.  */
 	  id_list = TREE_CHAIN (id_list);
@@ -492,7 +849,6 @@ nds32_construct_isr_vectors_information (tree func_attrs,
     }
 }
 
-/* A helper function to handle isr stuff at the beginning of asm file.  */
 void
 nds32_asm_file_start_for_isr (void)
 {
@@ -505,15 +861,14 @@ nds32_asm_file_start_for_isr (void)
       strcpy (nds32_isr_vectors[i].func_name, "");
       nds32_isr_vectors[i].save_reg = NDS32_PARTIAL_SAVE;
       nds32_isr_vectors[i].nested_type = NDS32_NOT_NESTED;
+      nds32_isr_vectors[i].security_level = 0;
       nds32_isr_vectors[i].total_n_vectors = 0;
       strcpy (nds32_isr_vectors[i].nmi_name, "");
       strcpy (nds32_isr_vectors[i].warm_name, "");
     }
 }
 
-/* A helper function to handle isr stuff at the end of asm file.  */
-void
-nds32_asm_file_end_for_isr (void)
+void nds32_asm_file_end_for_isr (void)
 {
   int i;
 
@@ -547,6 +902,8 @@ nds32_asm_file_end_for_isr (void)
 	  /* Found one vector which is interupt or exception.
 	     Output its jmptbl and vector section content.  */
 	  fprintf (asm_out_file, "\t! interrupt/exception vector %02d\n", i);
+	  fprintf (asm_out_file, "\t! security level: %d\n",
+		   nds32_isr_vectors[i].security_level);
 	  fprintf (asm_out_file, "\t! ------------------------------------\n");
 	  nds32_emit_isr_jmptbl_section (i);
 	  fprintf (asm_out_file, "\t! ....................................\n");
@@ -580,4 +937,65 @@ nds32_isr_function_p (tree func)
 	  || (t_reset != NULL_TREE));
 }
 
-/* ------------------------------------------------------------------------ */
+/* Return true if FUNC is a isr function with critical attribute.  */
+bool
+nds32_isr_function_critical_p (tree func)
+{
+  tree t_intr;
+  tree t_excp;
+  tree t_critical;
+
+  tree attrs;
+
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    abort ();
+
+  attrs = DECL_ATTRIBUTES (func);
+
+  t_intr  = lookup_attribute ("interrupt", attrs);
+  t_excp  = lookup_attribute ("exception", attrs);
+
+  t_critical = lookup_attribute ("critical", attrs);
+
+  /* If both interrupt and exception attribute does not appear,
+     we can return false immediately.  */
+  if ((t_intr == NULL_TREE) && (t_excp == NULL_TREE))
+    return false;
+
+  /* Here we can guarantee either interrupt or ecxception attribute
+     does exist, so further check critical attribute.
+     If it also appears, we can return true.  */
+  if (t_critical != NULL_TREE)
+    return true;
+
+  /* ------------------------------------------------------------- */
+  /* FIXME:
+     FOR BACKWARD COMPATIBILITY, we need to handle string type.
+     If the string 'critical' appears in the interrupt/exception
+     string argument, we can return true.  */
+  if (t_intr != NULL_TREE || t_excp != NULL_TREE)
+    {
+      char target_str[100];
+      char *critical_str;
+      tree t_check;
+      tree string_arg;
+
+      t_check = t_intr ? t_intr : t_excp;
+      if (TREE_CODE (TREE_VALUE (TREE_VALUE (t_check))) == STRING_CST)
+	{
+	  string_arg = TREE_VALUE (TREE_VALUE (t_check));
+	  strcpy (target_str, TREE_STRING_POINTER (string_arg));
+	  critical_str = strstr (target_str, "critical");
+
+	  /* Found 'critical' string, so return true.  */
+	  if (critical_str)
+	    return true;
+	}
+    }
+  /* ------------------------------------------------------------- */
+
+  /* Other cases, this isr function is not critical type.  */
+  return false;
+}
+
+/* ------------------------------------------------------------- */

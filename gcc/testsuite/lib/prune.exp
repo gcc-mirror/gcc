@@ -21,7 +21,7 @@ load_lib multiline.exp
 if ![info exists TEST_ALWAYS_FLAGS] {
     set TEST_ALWAYS_FLAGS ""
 }
-set TEST_ALWAYS_FLAGS "-fno-diagnostics-show-caret -fdiagnostics-color=never $TEST_ALWAYS_FLAGS"
+set TEST_ALWAYS_FLAGS "-fno-diagnostics-show-caret -fno-diagnostics-show-line-numbers -fdiagnostics-color=never $TEST_ALWAYS_FLAGS"
 
 proc prune_gcc_output { text } {
     global srcdir

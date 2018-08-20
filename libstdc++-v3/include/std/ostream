@@ -444,6 +444,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit
       sentry(basic_ostream<_CharT, _Traits>& __os);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       /**
        *  @brief  Possibly flushes the stream.
        *
@@ -461,6 +463,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _M_os.setstate(ios_base::badbit);
 	  }
       }
+#pragma GCC diagnostic pop
 
       /**
        *  @brief  Quick status checking.

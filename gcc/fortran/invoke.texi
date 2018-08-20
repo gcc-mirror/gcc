@@ -1793,13 +1793,17 @@ if @option{-ffrontend-optimize} is in effect.
 @opindex @code{frontend-optimize}
 @cindex Front-end optimization
 This option performs front-end optimization, based on manipulating
-parts the Fortran parse tree.  Enabled by default by any @option{-O}
-option.  Optimizations enabled by this option include inlining calls
-to @code{MATMUL}, elimination of identical function calls within
-expressions, removing unnecessary calls to @code{TRIM} in comparisons
-and assignments and replacing @code{TRIM(a)} with
-@code{a(1:LEN_TRIM(a))}.  It can be deselected by specifying
-@option{-fno-frontend-optimize}.
+parts the Fortran parse tree.  Enabled by default by any @option{-O} option
+except @option{-O0} and @option{-Og}.  Optimizations enabled by this option
+include:
+@itemize @bullet
+@item inlining calls to @code{MATMUL},
+@item elimination of identical function calls within expressions,
+@item removing unnecessary calls to @code{TRIM} in comparisons and assignments,
+@item replacing @code{TRIM(a)} with @code{a(1:LEN_TRIM(a))} and
+@item short-circuiting of logical operators (@code{.AND.} and @code{.OR.}).
+@end itemize
+It can be deselected by specifying @option{-fno-frontend-optimize}.
 
 @item -ffrontend-loop-interchange
 @opindex @code{frontend-loop-interchange}

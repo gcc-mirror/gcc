@@ -1,7 +1,7 @@
 /* When the specified length exceeds one of the arguments of the call to memcmp, 
    the call to memcmp should NOT be inlined.  */
-/* { dg-do run } */
-/* { dg-options "-O2 -fdump-rtl-expand -Wno-stringop-overflow" } */
+/* { dg-do compile } */
+/* { dg-options "-O2 -Wno-stringop-overflow" } */
 
 typedef struct { char s[8]; int x; } S;
 
@@ -33,4 +33,4 @@ int main (void)
 
 }
 
-/* { dg-final { scan-rtl-dump-times "__builtin_memcmp" 6 "expand" } } */
+/* { dg-final { scan-assembler-times "memcmp" 2 } } */
