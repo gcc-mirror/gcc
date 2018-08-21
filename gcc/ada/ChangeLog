@@ -1,3 +1,12 @@
+2018-08-21  Javier Miranda  <miranda@adacore.com>
+
+	* checks.ads (Determine_Range): Adding documentation.
+	* checks.adb (Determine_Range): Don't deal with enumerated types
+	with non-standard representation.
+	(Convert_And_Check_Range): For conversion of enumeration types
+	with non standard representation to an integer type perform a
+	direct conversion to the target integer type.
+
 2018-08-21  Piotr Trojanek  <trojanek@adacore.com>
 
 	* lib-xref.ads, lib-xref-spark_specific.adb
