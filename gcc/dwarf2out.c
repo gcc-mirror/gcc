@@ -102,6 +102,7 @@ static void dwarf2out_source_line (unsigned int, unsigned int, const char *,
 static rtx_insn *last_var_location_insn;
 static rtx_insn *cached_next_real_insn;
 static void dwarf2out_decl (tree);
+static bool is_redundant_typedef (const_tree);
 
 #ifndef XCOFF_DEBUGGING_INFO
 #define XCOFF_DEBUGGING_INFO 0
@@ -25831,7 +25832,7 @@ decls_for_scope (tree stmt, dw_die_ref context_die)
 
 /* Is this a typedef we can avoid emitting?  */
 
-bool
+static bool
 is_redundant_typedef (const_tree decl)
 {
   if (TYPE_DECL_IS_STUB (decl))

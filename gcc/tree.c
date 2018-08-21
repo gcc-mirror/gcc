@@ -5565,11 +5565,7 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  tem = TYPE_FIELDS (t);
 	  while (tem)
 	    {
-	      if (TREE_CODE (tem) == FIELD_DECL
-		  || (TREE_CODE (tem) == TYPE_DECL
-		      && !DECL_IGNORED_P (tem)
-		      && debug_info_level > DINFO_LEVEL_TERSE
-		      && !is_redundant_typedef (tem)))
+	      if (TREE_CODE (tem) == FIELD_DECL)
 		fld_worklist_push (tem, fld);
 	      tem = TREE_CHAIN (tem);
 	    }
