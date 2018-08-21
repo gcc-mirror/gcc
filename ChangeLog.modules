@@ -1,5 +1,14 @@
 2018-08-21  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (module_state::is_mapping): Rename to ...
+	(module_state::is_detached): ... here.  Use from_loc.
+	(module_state::attach): New broken out of ...
+	(module_state::find_module): ... here.  Delete, fold into ...
+	(module_state::read_imports, import_module, declare_module):
+	... these callers.
+	(module_state::read): Adjust module index setting.
+
 	libiberty/
 	* pex-unix.c (IS_FAKE_VFORK): Rename to VFORK_IS_FORK.
 	(pex_unix_exec_child): Avoid spuros clobber warning, use stdio

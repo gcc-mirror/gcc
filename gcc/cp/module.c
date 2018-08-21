@@ -2627,7 +2627,9 @@ class GTY(()) module_state {
   slurping *slurp;	/* Data for loading.  */
   
   char *filename;	/* BMI Filename */
+  /* The LOC is unset until we import the module.  */
   location_t loc; 	/* Location referring to module itself.  */
+  /* The FROM_LOC is unset until we process a declaration.  */
   location_t from_loc;  /* Location module was imported at.  */
 
   unsigned mod;		/* Module owner number.  */
@@ -2649,10 +2651,10 @@ class GTY(()) module_state {
   void release (bool at_eof = true);
 
  public:
-  /* Is this a placeholder mapping state?  */
-  bool is_mapping () const
+  /* Is this not a real module?  */
+  bool is_detached () const
   {
-    return loc == UNKNOWN_LOCATION;
+    return from_loc == UNKNOWN_LOCATION;
   }
   bool is_imported () const
   {
@@ -2792,7 +2794,7 @@ class GTY(()) module_state {
  public:
   void set_loc (line_maps *lmaps, const module_state *container = NULL,
 		location_t floc = UNKNOWN_LOCATION);
-  static module_state *find_module (location_t, tree, bool module_p);
+  void attach (location_t, tree maybe_vec_name);
   bool do_import (const char *filename, line_maps *, bool check_crc);
   static module_state *get_module (tree name, module_state * = NULL,
 				   bool insert = false);
@@ -6728,7 +6730,7 @@ module_state::get_module (tree name, module_state *dflt, bool insert)
       if (state)
 	{
 	  /* Don't copy an occupied module.  */
-	  if (state->vec_name)
+	  if (!state->is_detached ())
 	    return state;
 
 	  gcc_assert (state->filename);
@@ -8043,8 +8045,19 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	  exported = sec.u ();
 	  if (sec.get_overrun ())
 	    break;
-	  imp = find_module (floc, name, false);
-	  if (imp)
+	  imp = get_module (name, NULL, true);
+	  if (imp->is_detached ())
+	    imp->attach (from_loc, name);
+	  module_state *purview = (*module_state::modules)[MODULE_PURVIEW];
+	  if (purview == imp)
+	    {
+	      /* Cannot import the current module.  */
+	      error_at (loc, "cannot import module %qE in its own purview",
+			imp->name);
+	      inform (imp->from_loc, "module %qE declared here", imp->name);
+	      imp = NULL;
+	    }
+	  else
 	    {
 	      imp->set_loc (lmaps, this, floc);
 	      if (!imp->is_imported ())
@@ -10073,7 +10086,10 @@ module_state::read (int fd, int e, line_maps *lmaps, bool check_crc)
     return;
 
   /* Determine the module's number.  */
-  if (mod == MODULE_UNKNOWN)
+  gcc_checking_assert (mod == MODULE_UNKNOWN);
+  if (this == (*modules)[MODULE_PURVIEW])
+    mod = MODULE_PURVIEW;
+  else
     {
       unsigned ix = modules->length ();
       if (ix == MODULE_LIMIT)
@@ -10090,8 +10106,6 @@ module_state::read (int fd, int e, line_maps *lmaps, bool check_crc)
 	}
       mod = ix;
     }
-  else
-    gcc_assert (mod == MODULE_PURVIEW);
 
   (*slurp->remap)[MODULE_PURVIEW] = mod;
   dump () && dump ("Assigning %N module number %u", name, mod);
@@ -10509,85 +10523,32 @@ module_state::set_loc (line_maps *lmaps,
     }
 }
 
-/* Module NAME is being imported or defined in the current TU.
-   MODULE_P indicates whether this is the module unit, or an import.  */
-
-module_state *
-module_state::find_module (location_t from_loc, tree name, bool module_p)
+void
+module_state::attach (location_t from, tree maybe_vec_name)
 {
-  gcc_assert (global_namespace == current_scope ());
-
-  tree maybe_vec_name = name;
-  if (TREE_CODE (name) == TREE_VEC)
-    name = make_flat_name (name);
-
-  module_state *dflt = module_p ? (*modules)[MODULE_NONE] : NULL;
-  module_state *state = get_module (name, dflt, true);
-
-  if (!state)
+  from_loc = from;
+  if (identifier_p (maybe_vec_name))
     {
-      /* Already declared the module.  */
-      error_at (from_loc, "cannot declare module in purview of module %qE",
-		dflt->name);
-      return NULL;
-    }
+      /* Create a TREE_VEC of components.  */
+      auto_vec<tree,5> ids;
+      size_t len = IDENTIFIER_LENGTH (maybe_vec_name);
+      const char *ptr = IDENTIFIER_POINTER (maybe_vec_name);
 
-  if (!state->vec_name)
-    {
-      if (module_p)
+      while (const char *dot = (const char *)memchr (ptr, '.', len))
 	{
-	  (*modules)[MODULE_PURVIEW] = state;
-	  current_module = MODULE_PURVIEW;
-	  state->mod = MODULE_PURVIEW;
-	}
-
-      state->from_loc = from_loc;
-      if (identifier_p (maybe_vec_name))
-	{
-	  /* Create a TREE_VEC of components.  */
-	  auto_vec<tree,5> ids;
-	  size_t len = IDENTIFIER_LENGTH (maybe_vec_name);
-	  const char *ptr = IDENTIFIER_POINTER (maybe_vec_name);
-
-	  while (const char *dot = (const char *)memchr (ptr, '.', len))
-	    {
-	      tree id = get_identifier_with_length (ptr, dot - ptr);
-	      len -= dot - ptr + 1;
-	      ptr = dot + 1;
-	      ids.safe_push (id);
-	    }
-	  tree id = (ids.length () ? get_identifier_with_length (ptr, len)
-		     : maybe_vec_name);
+	  tree id = get_identifier_with_length (ptr, dot - ptr);
+	  len -= dot - ptr + 1;
+	  ptr = dot + 1;
 	  ids.safe_push (id);
-	  maybe_vec_name = make_tree_vec (ids.length ());
-	  for (unsigned ix = ids.length (); ix--;)
-	    TREE_VEC_ELT (maybe_vec_name, ix) = ids.pop ();
 	}
-      state->vec_name = maybe_vec_name;
+      tree id = (ids.length () ? get_identifier_with_length (ptr, len)
+		 : maybe_vec_name);
+      ids.safe_push (id);
+      maybe_vec_name = make_tree_vec (ids.length ());
+      for (unsigned ix = ids.length (); ix--;)
+	TREE_VEC_ELT (maybe_vec_name, ix) = ids.pop ();
     }
-  else if (state->mod == MODULE_PURVIEW)
-    {
-      /* Cannot import the current module.  */
-      error_at (from_loc, "cannot import module %qE in its own purview",
-		state->name);
-      inform (state->from_loc, "module %qE declared here", state->name);
-      return NULL;
-    }
-  else
-    {
-      /* A circular dependency cannot exist solely in the imported
-         unit graph, it must go via the current TU, and we discover
-         that differently.  */
-      if (module_p)
-	{
-	  /* Cannot be module unit of an imported module.  */
-	  error_at (from_loc, "cannot declare module after import");
-	  inform (state->from_loc, "module %qE imported here", state->name);
-	  return NULL;
-	}
-    }
-
-  return state;
+  vec_name = maybe_vec_name;
 }
 
 /* Read the BMI file for a module.  FNAME, if not NULL, is the name we
@@ -10691,7 +10652,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
 void
-import_module (const cp_expr &name, bool exporting, tree attrs, line_maps *lmaps)
+import_module (const cp_expr &e_name, bool exporting, tree attrs, line_maps *lmaps)
 {
   if (export_depth)
     exporting = true;
@@ -10700,25 +10661,41 @@ import_module (const cp_expr &name, bool exporting, tree attrs, line_maps *lmaps
     exporting = true;
 
   gcc_assert (global_namespace == current_scope ());
-  location_t from_loc = ordinary_loc_of (lmaps, name.get_location ());
-  
-  if (module_state *imp = module_state::find_module (from_loc, *name, false))
+  location_t from_loc = ordinary_loc_of (lmaps, e_name.get_location ());
+
+  tree name = *e_name;
+  if (TREE_CODE (name) == TREE_VEC)
+    name = make_flat_name (name);
+
+  module_state *imp = module_state::get_module (name, NULL, true);
+  module_state *purview = (*module_state::modules)[MODULE_PURVIEW];
+  if (purview == imp)
     {
-      imp->direct = true;
-      if (exporting)
-	imp->exported = true;
-      if (!modules_atom_p ())
+      /* Cannot import the current module.  */
+      error_at (from_loc, "cannot import module %qE in its own purview",
+		imp->name);
+      inform (imp->from_loc, "module %qE declared here", imp->name);
+      return;
+    }
+
+  if (imp->is_detached ())
+    imp->attach (from_loc, *e_name);
+
+  imp->direct = true;
+  if (exporting)
+    imp->exported = true;
+
+  if (!modules_atom_p ())
+    {
+      if (!imp->is_imported ())
 	{
-	  if (!imp->is_imported ())
-	    {
-	      unsigned n = dump.push (imp);
-	      char *fname = module_mapper::import_export (imp, false);
-	      imp->set_loc (lmaps);
-	      imp->do_import (fname, lmaps, false);
-	      dump.pop (n);
-	    }
-	  (*module_state::modules)[MODULE_NONE]->set_import (imp, imp->exported);
+	  unsigned n = dump.push (imp);
+	  char *fname = module_mapper::import_export (imp, false);
+	  imp->set_loc (lmaps);
+	  imp->do_import (fname, lmaps, false);
+	  dump.pop (n);
 	}
+      (*module_state::modules)[MODULE_NONE]->set_import (imp, imp->exported);
     }
 
   gcc_assert (global_namespace == current_scope ());
@@ -10728,49 +10705,80 @@ import_module (const cp_expr &name, bool exporting, tree attrs, line_maps *lmaps
    true if this TU is the exporting module unit.  */
 
 void
-declare_module (const cp_expr &name, bool exporting_p, tree, line_maps *lmaps)
+declare_module (const cp_expr &e_name, bool exporting_p, tree, line_maps *lmaps)
 {
   gcc_assert (global_namespace == current_scope ());
 
-  location_t from_loc = ordinary_loc_of (lmaps, name.get_location ());
-  if (module_state *state = module_state::find_module (from_loc, *name, true))
+  location_t from_loc = ordinary_loc_of (lmaps, e_name.get_location ());
+  if (module_state *purview = (*module_state::modules)[MODULE_PURVIEW])
     {
-      if (state->is_legacy () != modules_legacy_p ())
-	error_at (from_loc,
-		  state->is_legacy ()
-		  ? G_("legacy module only permitted with %<-fmodules-header%>")
-		  : G_("legacy module expected with %<-fmodules-header%>"));
-      if (state->is_legacy ())
-	{
-	  module_legacy_name = IDENTIFIER_POINTER (state->name);
+      /* Already declared the module.  */
+      error_at (from_loc, "cannot declare module in purview of module %qE",
+		purview->name);
+      return;
+    }
 
-	  /* The user may have named the module before the main file.  */
-	  const line_map_ordinary *map
-	    = linemap_check_ordinary (linemap_lookup (lmaps, from_loc));
-	  atom_main_file (lmaps, map,
-			  map - LINEMAPS_ORDINARY_MAPS (line_table));
-	}
+  tree name = *e_name;
+  tree maybe_vec_name = name;
+  if (TREE_CODE (name) == TREE_VEC)
+    name = make_flat_name (name);
 
-      if (exporting_p)
-	{
-	  state->mod = MODULE_PURVIEW;
-	  state->exported = true;
-	  state->slurp = new spewing ();
-	}
-      else
-	state->direct = true;
+  module_state *state = module_state::get_module
+    (name, (*module_state::modules)[MODULE_NONE], true);
 
-      if (!modules_atom_p ())
-	{
-	  unsigned n = dump.push (state);
-	  char *fname = module_mapper::import_export (state, exporting_p);
-	  state->set_loc (lmaps);
-	  if (!exporting_p)
-	    state->do_import (fname, lmaps, false);
-	  else if (fname)
-	    state->filename = xstrdup (fname);
-	  dump.pop (n);
-	}
+  gcc_assert (state);
+
+  if (!state->is_detached ())
+    {
+      /* Cannot be module unit of an imported module.  */
+      error_at (from_loc, "cannot declare module after import");
+      inform (state->from_loc, "module %qE imported here", state->name);
+      return;
+    }
+
+  if (state->is_legacy () != modules_legacy_p ())
+    error_at (from_loc,
+	      state->is_legacy ()
+	      ? G_("legacy module only permitted with %<-fmodules-header%>")
+	      : G_("legacy module expected with %<-fmodules-header%>"));
+
+
+  if (state->is_legacy ())
+    {
+      module_legacy_name = IDENTIFIER_POINTER (state->name);
+
+      /* The user may have named the module before the main file.  */
+      const line_map_ordinary *map
+	= linemap_check_ordinary (linemap_lookup (lmaps, from_loc));
+      atom_main_file (lmaps, map,
+		      map - LINEMAPS_ORDINARY_MAPS (line_table));
+    }
+
+  (*module_state::modules)[MODULE_PURVIEW] = state;
+  current_module = MODULE_PURVIEW;
+  if (exporting_p)
+    {
+      state->slurp = new spewing ();
+      state->exported = true;
+      state->mod = MODULE_PURVIEW;
+    }
+  else
+    {
+      state->direct = true;
+      state->mod = MODULE_UNKNOWN;
+    }
+  state->attach (from_loc, maybe_vec_name);
+
+  if (!modules_atom_p ())
+    {
+      unsigned n = dump.push (state);
+      char *fname = module_mapper::import_export (state, exporting_p);
+      state->set_loc (lmaps);
+      if (!exporting_p)
+	state->do_import (fname, lmaps, false);
+      else if (fname)
+	state->filename = xstrdup (fname);
+      dump.pop (n);
     }
 }
 
@@ -10827,7 +10835,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
       if (imp->direct)
 	directs.quick_push (imp);
       else
-	gcc_checking_assert (imp == interface || imp->is_mapping ());
+	gcc_checking_assert (imp == interface || imp->is_detached ());
     }
 
   if (!mapper->is_file ())
