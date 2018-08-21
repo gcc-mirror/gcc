@@ -1,3 +1,7 @@
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/expr_func5.adb: New testcase.
+
 2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/dynhash.adb: New testcase.

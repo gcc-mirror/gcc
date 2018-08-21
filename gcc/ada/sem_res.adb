@@ -6067,7 +6067,10 @@ package body Sem_Res is
       --  (including the body of another expression function) which would
       --  place the freeze node in the wrong scope. An expression function
       --  is frozen in the usual fashion, by the appearance of a real body,
-      --  or at the end of a declarative part.
+      --  or at the end of a declarative part. However an implcit call to
+      --  an expression function may appear when it is part of a default
+      --  expression in a call to an initialiation procedure, and must be
+      --  frozen now, even if the body is inserted at a later point.
 
       if Is_Entity_Name (Subp)
         and then not In_Spec_Expression
@@ -6076,6 +6079,14 @@ package body Sem_Res is
           (not Is_Expression_Function_Or_Completion (Entity (Subp))
             or else Scope (Entity (Subp)) = Current_Scope)
       then
+         if Is_Expression_Function (Entity (Subp)) then
+
+            --  Force freeze of expression function in call.
+
+            Set_Comes_From_Source (Subp, True);
+            Set_Must_Not_Freeze (Subp, False);
+         end if;
+
          Freeze_Expression (Subp);
       end if;
 
