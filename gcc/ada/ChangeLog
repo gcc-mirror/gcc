@@ -1,3 +1,10 @@
+2018-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Is_Possibly_Unaligned_Object): For the case of a
+	selected component inherited in a record extension and subject
+	to a representation clause, retrieve the position and size from
+	the original record component.
+
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.ads, sem_util.adb (New_External_Entity): Type of
