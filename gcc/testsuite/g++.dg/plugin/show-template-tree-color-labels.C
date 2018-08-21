@@ -1,0 +1,38 @@
+/* Verify colorization of the labels in diagnostic-show-locus.c
+   for template comparisons.
+   Doing so requires a plugin; see the comments in the plugin for the
+   rationale.  */
+
+// { dg-options "-fdiagnostics-color=always -fdiagnostics-show-caret" }
+
+template<typename> struct vector {};
+template<typename, typename> struct map {};
+
+void fn_1(vector<int>);
+void fn_2(map<int, int>);
+
+void test_1 (vector<double> vec)
+{
+  fn_1 (vec);
+  /* { dg-begin-multiline-output "" }
+could not convert '[01m[Kvec[m[K' from '[01m[Kvector<[01;32m[Kdouble[m[K>[m[K' to '[01m[Kvector<[01;32m[Kint[m[K>[m[K'
+   fn_1 ([01;31m[Kvec[m[K);
+         [01;31m[K^~~[m[K
+         [01;31m[K|[m[K
+         [01;31m[Kvector<double>[m[K
+     { dg-end-multiline-output "" } */
+  // TODO: we don't yet highlight the mismatching part with color
+}
+
+void test_2 (const map<int, double> &m)
+{
+  fn_2 (m);
+  /* { dg-begin-multiline-output "" }
+could not convert '[01m[Km[m[K' from '[01m[Kmap<[...],[01;32m[Kdouble[m[K>[m[K' to '[01m[Kmap<[...],[01;32m[Kint[m[K>[m[K'
+   fn_2 ([01;31m[Km[m[K);
+         [01;31m[K^[m[K
+         [01;31m[K|[m[K
+         [01;31m[Kmap<[...],double>[m[K
+     { dg-end-multiline-output "" } */
+  // TODO: we don't yet highlight the mismatching part with color
+}

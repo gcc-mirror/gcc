@@ -440,10 +440,10 @@ struct GTY((tag ("1"))) line_map_ordinary : public line_map {
   const char *to_file;
   linenum_type to_line;
 
-  /* An index into the set that gives the line mapping at whose end
-     the current one was included.  File(s) at the bottom of the
-     include stack have this set to -1.  */
-  int included_from;
+  /* Location from whence this line map was included.  For regular
+     #includes, this location will be the last location of a map.  For
+     outermost file, this is 0.  */
+  source_location included_from;
 
   /* Size is 20 or 24 bytes, no padding  */
 };
@@ -632,17 +632,6 @@ inline linenum_type
 ORDINARY_MAP_STARTING_LINE_NUMBER (const line_map_ordinary *ord_map)
 {
   return ord_map->to_line;
-}
-
-/* Get the index of the ordinary map at whose end
-   ordinary map MAP was included.
-
-   File(s) at the bottom of the include stack have this set.  */
-
-inline int
-ORDINARY_MAP_INCLUDER_FILE_INDEX (const line_map_ordinary *ord_map)
-{
-  return ord_map->included_from;
 }
 
 /* Return a positive value if map encodes locations from a system
@@ -1192,51 +1181,23 @@ SOURCE_COLUMN (const line_map_ordinary *ord_map, source_location loc)
 	  & ((1 << ord_map->m_column_and_range_bits) - 1)) >> ord_map->m_range_bits;
 }
 
-/* Return the location of the last source line within an ordinary
-   map.  */
+
 inline source_location
-LAST_SOURCE_LINE_LOCATION (const line_map_ordinary *map)
+linemap_included_from (const line_map_ordinary *ord_map)
 {
-  return (((map[1].start_location - 1
-	    - map->start_location)
-	   & ~((1 << map->m_column_and_range_bits) - 1))
-	  + map->start_location);
+  return ord_map->included_from;
 }
 
-/* Returns the last source line number within an ordinary map.  This
-   is the (last) line of the #include, or other directive, that caused
-   a map change.  */
-inline linenum_type
-LAST_SOURCE_LINE (const line_map_ordinary *map)
-{
-  return SOURCE_LINE (map, LAST_SOURCE_LINE_LOCATION (map));
-}
-
-/* Return the last column number within an ordinary map.  */
-
-inline linenum_type
-LAST_SOURCE_COLUMN (const line_map_ordinary *map)
-{
-  return SOURCE_COLUMN (map, LAST_SOURCE_LINE_LOCATION (map));
-}
-
-/* Returns the map a given map was included from, or NULL if the map
-   belongs to the main file, i.e, a file that wasn't included by
-   another one.  */
-inline line_map_ordinary *
-INCLUDED_FROM (struct line_maps *set, const line_map_ordinary *ord_map)
-{
-  return ((ord_map->included_from == -1)
-	  ? NULL
-	  : LINEMAPS_ORDINARY_MAP_AT (set, ord_map->included_from));
-}
+/* The linemap containing the included-from location of MAP.  */
+const line_map_ordinary *linemap_included_from_linemap
+  (line_maps *set, const line_map_ordinary *map);
 
 /* True if the map is at the bottom of the include stack.  */
 
 inline bool
 MAIN_FILE_P (const line_map_ordinary *ord_map)
 {
-  return ord_map->included_from < 0;
+  return ord_map->included_from == 0;
 }
 
 /* Encode and return a source_location from a column number. The
@@ -1320,8 +1281,11 @@ typedef struct
   bool sysp;
 } expanded_location;
 
+class range_label;
+
 /* A location within a rich_location: a caret&range, with
-   the caret potentially flagged for display.  */
+   the caret potentially flagged for display, and an optional
+   label.  */
 
 struct location_range
 {
@@ -1337,6 +1301,9 @@ struct location_range
 
      where "1" and "2" are notionally carets.  */
   bool m_show_caret_p;
+
+  /* If non-NULL, the label for this range.  */
+  const range_label *m_label;
 };
 
 /* A partially-embedded vec for use within rich_location for storing
@@ -1478,6 +1445,8 @@ class fixit_hint;
    Additional ranges may be added to help the user identify other
    pertinent clauses in a diagnostic.
 
+   Ranges can (optionally) be given labels via class range_label.
+
    rich_location instances are intended to be allocated on the stack
    when generating diagnostics, and to be short-lived.
 
@@ -1523,18 +1492,22 @@ class fixit_hint;
    equal to their caret point.  The frontend overrides the diagnostic
    context's default caret character for these ranges.
 
-   Example E
-   *********
+   Example E (range labels)
+   ************************
       printf ("arg0: %i  arg1: %s arg2: %i",
                                ^~
+                               |
+                               const char *
               100, 101, 102);
                    ~~~
+                   |
+                   int
    This rich location has two ranges:
    - range 0 is at the "%s" with start = caret = "%" and finish at
-     the "s".
+     the "s".  It has a range_label ("const char *").
    - range 1 has start/finish covering the "101" and is not flagged for
-     caret printing; it is perhaps at the start of "101".
-
+     caret printing.  The caret is at the start of "101", where its
+     range_label is printed ("int").
 
    Fix-it hints
    ------------
@@ -1626,7 +1599,8 @@ class rich_location
   /* Constructors.  */
 
   /* Constructing from a location.  */
-  rich_location (line_maps *set, source_location loc);
+  rich_location (line_maps *set, source_location loc,
+		 const range_label *label = NULL);
 
   /* Destructor.  */
   ~rich_location ();
@@ -1636,7 +1610,8 @@ class rich_location
   source_location get_loc (unsigned int idx) const;
 
   void
-  add_range (source_location loc,  bool show_caret_p);
+  add_range (source_location loc,  bool show_caret_p,
+	     const range_label *label = NULL);
 
   void
   set_range (unsigned int idx, source_location loc, bool show_caret_p);
@@ -1758,6 +1733,54 @@ protected:
 
   bool m_seen_impossible_fixit;
   bool m_fixits_cannot_be_auto_applied;
+};
+
+/* A struct for the result of range_label::get_text: a NUL-terminated buffer
+   of localized text, and a flag to determine if the caller should "free" the
+   buffer.  */
+
+struct label_text
+{
+  label_text ()
+  : m_buffer (NULL), m_caller_owned (false)
+  {}
+
+  label_text (char *buffer, bool caller_owned)
+  : m_buffer (buffer), m_caller_owned (caller_owned)
+  {}
+
+  void maybe_free ()
+  {
+    if (m_caller_owned)
+      free (m_buffer);
+  }
+
+  char *m_buffer;
+  bool m_caller_owned;
+};
+
+/* Abstract base class for labelling a range within a rich_location
+   (e.g. for labelling expressions with their type).
+
+   Generating the text could require non-trivial work, so this work
+   is delayed (via the "get_text" virtual function) until the diagnostic
+   printing code "knows" it needs it, thus avoiding doing it e.g. for
+   warnings that are filtered by command-line flags.  This virtual
+   function also isolates libcpp and the diagnostics subsystem from
+   the front-end and middle-end-specific code for generating the text
+   for the labels.
+
+   Like the rich_location instances they annotate, range_label instances
+   are intended to be allocated on the stack when generating diagnostics,
+   and to be short-lived.  */
+
+class range_label
+{
+ public:
+  virtual ~range_label () {}
+
+  /* Get localized text for the label.  */
+  virtual label_text get_text () const = 0;
 };
 
 /* A fix-it hint: a suggested insertion, replacement, or deletion of text.

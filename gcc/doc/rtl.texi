@@ -144,7 +144,8 @@ Currently, @file{rtl.def} defines these classes:
 An RTX code that represents an actual object, such as a register
 (@code{REG}) or a memory location (@code{MEM}, @code{SYMBOL_REF}).
 @code{LO_SUM}) is also included; instead, @code{SUBREG} and
-@code{STRICT_LOW_PART} are not in this class, but in class @code{x}.
+@code{STRICT_LOW_PART} are not in this class, but in class
+@code{RTX_EXTRA}.
 
 @item RTX_CONST_OBJ
 An RTX code that represents a constant object.  @code{HIGH} is also
@@ -166,7 +167,7 @@ An RTX code for a unary arithmetic operation, such as @code{NEG},
 @item RTX_COMM_ARITH
 An RTX code for a commutative binary operation, such as @code{PLUS} or
 @code{AND}.  @code{NE} and @code{EQ} are comparisons, so they have class
-@code{<}.
+@code{RTX_COMM_COMPARE}.
 
 @item RTX_BIN_ARITH
 An RTX code for a non-commutative binary operation, such as @code{MINUS},
@@ -284,26 +285,28 @@ Some classes of RTX codes always have the same format.  For example, it
 is safe to assume that all comparison operations have format @code{ee}.
 
 @table @code
-@item 1
+@item RTX_UNARY
 All codes of this class have format @code{e}.
 
-@item <
-@itemx c
-@itemx 2
+@item RTX_BIN_ARITH
+@itemx RTX_COMM_ARITH
+@itemx RTX_COMM_COMPARE
+@itemx RTX_COMPARE
 All codes of these classes have format @code{ee}.
 
-@item b
-@itemx 3
+@item RTX_BITFIELD_OPS
+@itemx RTX_TERNARY
 All codes of these classes have format @code{eee}.
 
-@item i
+@item RTX_INSN
 All codes of this class have formats that begin with @code{iuueiee}.
 @xref{Insns}.  Note that not all RTL objects linked onto an insn chain
-are of class @code{i}.
+are of class @code{RTX_INSN}.
 
-@item o
-@itemx m
-@itemx x
+@item RTX_CONST_OBJ
+@itemx RTX_OBJ
+@itemx RTX_MATCH
+@itemx RTX_EXTRA
 You can make no assumptions about the format of these codes.
 @end table
 
@@ -3296,6 +3299,18 @@ There is one other known use for clobbering a pseudo register in a
 clobbered by the insn.  In this case, using the same pseudo register in
 the clobber and elsewhere in the insn produces the expected results.
 
+@findex clobber_high
+@item (clobber_high @var{x})
+Represents the storing or possible storing of an unpredictable,
+undescribed value into the upper parts of @var{x}. The mode of the expression
+represents the lower parts of the register which will not be overwritten.
+@code{reg} must be a reg expression.
+
+One place this is used is when calling into functions where the registers are
+preserved, but only up to a given number of bits.  For example when using
+Aarch64 SVE, calling a TLS descriptor will cause only the lower 128 bits of
+each of the vector registers to be preserved.
+
 @findex use
 @item (use @var{x})
 Represents the use of the value of @var{x}.  It indicates that the
@@ -3349,7 +3364,8 @@ Represents several side effects performed in parallel.  The square
 brackets stand for a vector; the operand of @code{parallel} is a
 vector of expressions.  @var{x0}, @var{x1} and so on are individual
 side effect expressions---expressions of code @code{set}, @code{call},
-@code{return}, @code{simple_return}, @code{clobber} or @code{use}.
+@code{return}, @code{simple_return}, @code{clobber} @code{use} or
+@code{clobber_high}.
 
 ``In parallel'' means that first all the values used in the individual
 side-effects are computed, and second all the actual side-effects are

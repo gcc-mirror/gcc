@@ -29,8 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 
 EXPORTED_CONST int processor_flags_table[] =
   {
-    /* g5 */     PF_IEEE_FLOAT,
-    /* g6 */     PF_IEEE_FLOAT,
     /* z900 */   PF_IEEE_FLOAT | PF_ZARCH,
     /* z990 */   PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT,
     /* z9-109 */ PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT

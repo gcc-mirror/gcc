@@ -43,4 +43,4 @@ extern template struct A3<int, 510>;
 
 // Use.
 A3<int, 1111> a31;
-A3<char, 9999> a32;		// { dg-warning "overflow" }
+A3<char, 9999> a32;		// { dg-error "narrowing conversion" }

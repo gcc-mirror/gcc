@@ -1558,9 +1558,10 @@ void test_snprintf_c_const (char *d)
 
   T (3, "%lc%c",   (wint_t)'1', '2');
   /* Here %lc may result in anywhere between 0 and MB_CUR_MAX characters
-     so the minimum number of bytes on output is 2 (plus the terminating
-     nul), but the likely number is 3 (plus the nul).  */
-  T (3, "%lc%c%c", (wint_t)'\x80', '2', '3');  /* { dg-warning ".%c. directive output may be truncated writing 1 byte into a region of size between 0 and 2" } */
+     so the output range is [0, 2, 6, 6] with the middle being used for
+     the diagnostic (and the extremes for optimization).  The cast is
+     to prevent sign extension.  */
+  T (3, "%lc%c%c", (wint_t)(unsigned char)'\x80', '2', '3');  /* { dg-warning ".%c. directive output may be truncated writing 1 byte into a region of size between 0 and 2" } */
   /* It's reasonably safe that L'1' converts into the single byte '1'.  */
   T (3, "%lc%c%c", (wint_t)'1', '2', '3');   /* { dg-warning "output may be truncated" } */
   T (3, "%lc%lc%c", (wint_t)'1', (wint_t)'2', '3'); /* { dg-warning "output may be truncated" } */

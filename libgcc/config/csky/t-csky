@@ -1,0 +1,28 @@
+# Makefile fragment for all C-SKY targets.
+# Copyright (C) 2018 Free Software Foundation, Inc.
+# Contributed by C-SKY Microsystems and Mentor Graphics.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+LIB1ASMSRC 	= csky/lib1funcs.S
+LIB1ASMFUNCS   = _divsi3 _udivsi3 _modsi3 _umodsi3 _unorddf2 _unordsf2 \
+    _csky_case_sqi _csky_case_uqi  _csky_case_shi _csky_case_uhi _csky_case_si
+
+LIB2FUNCS_EXCLUDE  += _unord_df
+LIB2FUNCS_EXCLUDE  += _unord_sf
+
+TARGET_LIBGCC2_CFLAGS=-O3 -DNO_FLOATLIB_FIXUNSDFSI

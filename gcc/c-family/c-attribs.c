@@ -1881,6 +1881,7 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
       bitalign /= BITS_PER_UNIT;
 
       bool diagd = true;
+      auto_diagnostic_group d;
       if (DECL_USER_ALIGN (decl) || DECL_USER_ALIGN (last_decl))
 	diagd = warning (OPT_Wattributes,
 			  "ignoring attribute %<%E (%u)%> because it conflicts "

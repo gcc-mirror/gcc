@@ -5380,6 +5380,29 @@ free_lang_data_in_decl (tree decl)
 	    nextp = &TREE_CHAIN (var);
         }
     }
+  /* We need to keep field decls associated with their trees. Otherwise tree
+     merging may merge some fileds and keep others disjoint wich in turn will
+     not do well with TREE_CHAIN pointers linking them.
+
+     Also do not drop containing types for virtual methods and tables because
+     these are needed by devirtualization.  */
+  if (TREE_CODE (decl) != FIELD_DECL
+      && ((TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
+          || !DECL_VIRTUAL_P (decl)))
+    {
+      tree ctx = DECL_CONTEXT (decl);
+      /* Variably modified types are needed for tree_is_indexable to decide
+	 whether the type needs to go to local or global section.
+	 This code is semi-broken but for now it is easiest to keep contexts
+	 as expected.  */
+      if (ctx && TYPE_P (ctx)
+	  && !variably_modified_type_p (ctx, NULL_TREE))
+	 {
+	   while (ctx && TYPE_P (ctx))
+	     ctx = TYPE_CONTEXT (ctx);
+	   DECL_CONTEXT (decl) = ctx;
+	 }
+    }
 }
 
 
@@ -5542,11 +5565,7 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  tem = TYPE_FIELDS (t);
 	  while (tem)
 	    {
-	      if (TREE_CODE (tem) == FIELD_DECL
-		  || (TREE_CODE (tem) == TYPE_DECL
-		      && !DECL_IGNORED_P (tem)
-		      && debug_info_level > DINFO_LEVEL_TERSE
-		      && !is_redundant_typedef (tem)))
+	      if (TREE_CODE (tem) == FIELD_DECL)
 		fld_worklist_push (tem, fld);
 	      tem = TREE_CHAIN (tem);
 	    }
@@ -9802,8 +9821,7 @@ build_common_tree_nodes (bool signed_char)
       int_n_trees[i].signed_type = make_signed_type (int_n_data[i].bitsize);
       int_n_trees[i].unsigned_type = make_unsigned_type (int_n_data[i].bitsize);
 
-      if (int_n_data[i].bitsize > LONG_LONG_TYPE_SIZE
-	  && int_n_enabled_p[i])
+      if (int_n_enabled_p[i])
 	{
 	  integer_types[itk_intN_0 + i * 2] = int_n_trees[i].signed_type;
 	  integer_types[itk_unsigned_intN_0 + i * 2] = int_n_trees[i].unsigned_type;
@@ -12614,6 +12632,7 @@ warn_deprecated_use (tree node, tree attr)
   bool w = false;
   if (DECL_P (node))
     {
+      auto_diagnostic_group d;
       if (msg)
 	w = warning (OPT_Wdeprecated_declarations,
 		     "%qD is deprecated: %s", node, (const char *) msg);
@@ -12637,6 +12656,7 @@ warn_deprecated_use (tree node, tree attr)
 	    what = DECL_NAME (TYPE_NAME (node));
 	}
 
+      auto_diagnostic_group d;
       if (what)
 	{
 	  if (msg)

@@ -25,20 +25,37 @@
 
 #include <bits/c++config.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <bits/exception_defines.h>
+#include <bit>
 #include "new"
+
+#if !_GLIBCXX_HAVE_ALIGNED_ALLOC && !_GLIBCXX_HAVE__ALIGNED_MALLOC \
+  && !_GLIBCXX_HAVE_POSIX_MEMALIGN && _GLIBCXX_HAVE_MEMALIGN
+# if _GLIBCXX_HOSTED && __has_include(<malloc.h>)
+// Some C libraries declare memalign in <malloc.h>
+#  include <malloc.h>
+# else
+extern "C" void *memalign(std::size_t boundary, std::size_t size);
+# endif
+#endif
 
 using std::new_handler;
 using std::bad_alloc;
 
-#if !_GLIBCXX_HAVE_ALIGNED_ALLOC
-#if _GLIBCXX_HAVE__ALIGNED_MALLOC
-#define aligned_alloc(al,sz) _aligned_malloc(sz,al)
+namespace __gnu_cxx {
+#if _GLIBCXX_HAVE_ALIGNED_ALLOC
+using ::aligned_alloc;
+#elif _GLIBCXX_HAVE__ALIGNED_MALLOC
+static inline void*
+aligned_alloc (std::size_t al, std::size_t sz)
+{ return _aligned_malloc(sz, al); }
 #elif _GLIBCXX_HAVE_POSIX_MEMALIGN
 static inline void*
 aligned_alloc (std::size_t al, std::size_t sz)
 {
   void *ptr;
+  // posix_memalign has additional requirement, not present on aligned_alloc:
   // The value of alignment shall be a power of two multiple of sizeof(void *).
   if (al < sizeof(void*))
     al = sizeof(void*);
@@ -48,25 +65,23 @@ aligned_alloc (std::size_t al, std::size_t sz)
   return nullptr;
 }
 #elif _GLIBCXX_HAVE_MEMALIGN
-#if _GLIBCXX_HOSTED
-#include <malloc.h>
-#else
-extern "C" void *memalign(std::size_t boundary, std::size_t size);
+static inline void*
+aligned_alloc (std::size_t al, std::size_t sz)
+{
+#ifdef __sun
+  // Solaris 10 memalign requires that alignment is greater than or equal to
+  // the size of a word.
+  if (al < sizeof(int))
+    al = sizeof(int);
 #endif
-#define aligned_alloc memalign
-#else
-#include <stdint.h>
+  return memalign (al, sz);
+}
+#else // !HAVE__ALIGNED_MALLOC && !HAVE_POSIX_MEMALIGN && !HAVE_MEMALIGN
 // The C library doesn't provide any aligned allocation functions, define one.
 // This is a modified version of code from gcc/config/i386/gmm_malloc.h
 static inline void*
 aligned_alloc (std::size_t al, std::size_t sz)
 {
-  // Alignment must be a power of two.
-  if (al & (al - 1))
-    return nullptr;
-  else if (!sz)
-    return nullptr;
-
   // We need extra bytes to store the original value returned by malloc.
   if (al < sizeof(void*))
     al = sizeof(void*);
@@ -82,16 +97,20 @@ aligned_alloc (std::size_t al, std::size_t sz)
   return aligned_ptr;
 }
 #endif
-#endif
+} // namespace __gnu_cxx
 
 _GLIBCXX_WEAK_DEFINITION void *
 operator new (std::size_t sz, std::align_val_t al)
 {
-  void *p;
   std::size_t align = (std::size_t)al;
 
+  /* Alignment must be a power of two.  */
+  /* XXX This should be checked by the compiler (PR 86878).  */
+  if (__builtin_expect (!std::__ispow2(align), false))
+    _GLIBCXX_THROW_OR_ABORT(bad_alloc());
+
   /* malloc (0) is unpredictable; avoid it.  */
-  if (sz == 0)
+  if (__builtin_expect (sz == 0, false))
     sz = 1;
 
 #if _GLIBCXX_HAVE_ALIGNED_ALLOC
@@ -102,11 +121,12 @@ operator new (std::size_t sz, std::align_val_t al)
     align = sizeof(void*);
 # endif
   /* C11: the value of size shall be an integral multiple of alignment.  */
-  if (std::size_t rem = sz & (align - 1))
-    sz += align - rem;
+  sz = (sz + align - 1) & ~(align - 1);
 #endif
 
-  while (__builtin_expect ((p = aligned_alloc (align, sz)) == 0, false))
+  void *p;
+
+  while ((p = __gnu_cxx::aligned_alloc (align, sz)) == nullptr)
     {
       new_handler handler = std::get_new_handler ();
       if (! handler)

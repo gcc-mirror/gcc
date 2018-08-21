@@ -415,10 +415,18 @@ cp_stabilize_reference (tree ref)
 bool
 builtin_valid_in_constant_expr_p (const_tree decl)
 {
-  if (!(TREE_CODE (decl) == FUNCTION_DECL
-	&& DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL))
-    /* Not a built-in.  */
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    /* Not a function.  */
     return false;
+  if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL)
+    {
+      if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_FRONTEND
+	  && ((int) DECL_FUNCTION_CODE (decl)
+	      == CP_BUILT_IN_IS_CONSTANT_EVALUATED))
+	return true;
+      /* Not a built-in.  */
+      return false;
+    }
   switch (DECL_FUNCTION_CODE (decl))
     {
       /* These always have constant results like the corresponding
@@ -4023,6 +4031,7 @@ maybe_warn_parm_abi (tree t, location_t loc)
       && classtype_has_non_deleted_move_ctor (t))
     {
       bool w;
+      auto_diagnostic_group d;
       if (flag_abi_version > 12)
 	w = warning_at (loc, OPT_Wabi, "-fabi-version=13 (GCC 8.2) fixes the "
 			"calling convention for %qT, which was accidentally "
@@ -4035,6 +4044,7 @@ maybe_warn_parm_abi (tree t, location_t loc)
       return;
     }
 
+  auto_diagnostic_group d;
   if (warning_at (loc, OPT_Wabi, "the calling convention for %qT changes in "
 		  "-fabi-version=13 (GCC 8.2)", t))
     inform (location_of (t), " because all of its copy and move "

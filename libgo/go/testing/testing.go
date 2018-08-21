@@ -1159,7 +1159,7 @@ func (m *M) writeProfiles() {
 		m.deps.StopCPUProfile() // flushes profile to disk
 	}
 	if *traceFile != "" {
-		// trace.Stop() // flushes trace to disk
+		trace.Stop() // flushes trace to disk
 	}
 	if *memProfile != "" {
 		f, err := os.Create(toOutputDir(*memProfile))

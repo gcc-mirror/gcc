@@ -406,7 +406,7 @@ void test_strlen (struct MemArrays *p, char *s NONSTRING, size_t n)
   {
     char a[] __attribute__ ((nonstring)) = { 1, 2, 3 };
 
-    T (strlen (a));             /* { dg-warning "argument 1 declared attribute .nonstring." } */
+    T (strlen (a));             /* { dg-warning "argument 1 declared attribute .nonstring." "pr86688" { xfail *-*-* } } */
   }
 
   {

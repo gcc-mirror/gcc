@@ -3454,6 +3454,7 @@ pass_post_ipa_warn::execute (function *fun)
 			continue;
 
 		      location_t loc = gimple_location (stmt);
+		      auto_diagnostic_group d;
 		      if (warning_at (loc, OPT_Wnonnull,
 				      "%Gargument %u null where non-null "
 				      "expected", stmt, i + 1))

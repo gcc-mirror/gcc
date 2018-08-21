@@ -3656,7 +3656,7 @@ struct GTY(()) lang_decl {
   (LANG_DECL_FN_CHECK (FUNCTION_DECL_CHECK (NODE))	\
    ->u.saved_language_function)
 
-/* True if NODE is an implicit INDIRECT_EXPR from convert_from_reference.  */
+/* True if NODE is an implicit INDIRECT_REF from convert_from_reference.  */
 #define REFERENCE_REF_P(NODE)				\
   (INDIRECT_REF_P (NODE)				\
    && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
@@ -5966,6 +5966,13 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   static const unsigned short refcount_infinity = (unsigned short) ~0;
 };
 
+/* BUILT_IN_FRONTEND function codes.  */
+enum cp_built_in_function {
+  CP_BUILT_IN_IS_CONSTANT_EVALUATED,
+  CP_BUILT_IN_INTEGER_PACK,
+  CP_BUILT_IN_LAST
+};
+
 bool decl_spec_seq_has_spec_p (const cp_decl_specifier_seq *, cp_decl_spec);
 
 /* Return the type of the `this' parameter of FNTYPE.  */
@@ -7390,7 +7397,8 @@ extern int abstract_virtuals_error_sfinae	(abstract_class_use, tree, tsubst_flag
 
 extern tree store_init_value			(tree, tree, vec<tree, va_gc>**, int);
 extern tree split_nonconstant_init		(tree, tree);
-extern bool check_narrowing			(tree, tree, tsubst_flags_t);
+extern bool check_narrowing			(tree, tree, tsubst_flags_t,
+						 bool = false);
 extern tree digest_init				(tree, tree, tsubst_flags_t);
 extern tree digest_init_flags			(tree, tree, int, tsubst_flags_t);
 extern tree digest_nsdmi_init		        (tree, tree, tsubst_flags_t);
@@ -7572,7 +7580,7 @@ extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE);
-extern tree maybe_constant_init			(tree, tree = NULL_TREE);
+extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree, tsubst_flags_t = tf_warning_or_error);
 extern tree fold_simple				(tree);
 extern bool is_sub_constant_expr                (tree);

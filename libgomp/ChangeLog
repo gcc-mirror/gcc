@@ -1,3 +1,71 @@
+2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* testsuite/libgomp.fortran/async_io_1.f90: New test.
+	* testsuite/libgomp.fortran/async_io_2.f90: New test.
+	* testsuite/libgomp.fortran/async_io_3.f90: New test.
+	* testsuite/libgomp.fortran/async_io_4.f90: New test.
+	* testsuite/libgomp.fortran/async_io_5.f90: New test.
+	* testsuite/libgomp.fortran/async_io_6.f90: New test.
+	* testsuite/libgomp.fortran/async_io_7.f90: New test.
+
+2018-08-13  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	PR target/85590
+	* plugin/cuda/cuda.h (CUoccupancyB2DSize): New typedef.
+	(cuOccupancyMaxPotentialBlockSize): Declare.
+	* plugin/cuda-lib.def (cuOccupancyMaxPotentialBlockSize): New
+	CUDA_ONE_CALL_MAYBE_NULL.
+	* plugin/plugin-nvptx.c (CUDA_VERSION < 6050): Define
+	CUoccupancyB2DSize and declare
+	cuOccupancyMaxPotentialBlockSize.
+	(nvptx_exec): Use cuOccupancyMaxPotentialBlockSize to set the
+	default num_gangs and num_workers when the driver supports it.
+
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/cuda-lib.def (cuLinkAddData_v2, cuLinkCreate_v2): Declare using
+	CUDA_ONE_CALL_MAYBE_NULL.
+	* plugin/plugin-nvptx.c (cuLinkAddData, cuLinkCreate): Undef and declare.
+	(cuLinkAddData_v2, cuLinkCreate_v2): Declare.
+	(link_ptx): Fall back to cuLinkAddData/cuLinkCreate if the _v2 versions
+	are not found.
+
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/cuda-lib.def (cuGetErrorString): Use CUDA_ONE_CALL_MAYBE_NULL.
+	* plugin/plugin-nvptx.c (cuda_error): Handle if cuGetErrorString is not
+	present.
+
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c
+	(CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR): Define.
+	(nvptx_open_device): Use
+	CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR.
+
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (cuda_error): Move declaration of cuGetErrorString ...
+	(cuGetErrorString): ... here.  Guard with CUDA_VERSION < 6000.
+
+2018-08-07  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (DO_PRAGMA): Define.
+	(struct cuda_lib_s): Add def/undef of CUDA_ONE_CALL_MAYBE_NULL.
+	(init_cuda_lib): Add new param to CUDA_ONE_CALL_1.  Add arg to
+	corresponding call in CUDA_ONE_CALL.  Add def/undef of
+	CUDA_ONE_CALL_MAYBE_NULL.
+	(CUDA_CALL_EXISTS): Define.
+
+2018-08-07  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (struct cuda_lib_s, init_cuda_lib): Put
+	CUDA_ONE_CALL defines right before the cuda-lib.def include, and the
+	corresponding undefs right after.
+
 2018-08-04  Tom de Vries  <tdevries@suse.de>
 
 	* plugin/configfrag.ac: For --without-cuda-driver, set

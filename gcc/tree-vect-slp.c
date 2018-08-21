@@ -2984,8 +2984,7 @@ vect_slp_bb (basic_block bb)
 	  unsigned HOST_WIDE_INT bytes;
 	  if (current_vector_size.is_constant (&bytes))
 	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-			     "basic block part vectorized using "
-			     HOST_WIDE_INT_PRINT_UNSIGNED " byte "
+			     "basic block part vectorized using %wu byte "
 			     "vectors\n", bytes);
 	  else
 	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,

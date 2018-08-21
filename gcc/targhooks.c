@@ -2154,6 +2154,23 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   if (indirect)
     type = build_pointer_type (type);
 
+  if (targetm.calls.split_complex_arg
+      && TREE_CODE (type) == COMPLEX_TYPE
+      && targetm.calls.split_complex_arg (type))
+    {
+      tree real_part, imag_part;
+
+      real_part = std_gimplify_va_arg_expr (valist,
+					    TREE_TYPE (type), pre_p, NULL);
+      real_part = get_initialized_tmp_var (real_part, pre_p, NULL);
+
+      imag_part = std_gimplify_va_arg_expr (unshare_expr (valist),
+					    TREE_TYPE (type), pre_p, NULL);
+      imag_part = get_initialized_tmp_var (imag_part, pre_p, NULL);
+
+      return build2 (COMPLEX_EXPR, type, real_part, imag_part);
+   }
+
   align = PARM_BOUNDARY / BITS_PER_UNIT;
   boundary = targetm.calls.function_arg_boundary (TYPE_MODE (type), type);
 

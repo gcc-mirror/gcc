@@ -1700,7 +1700,7 @@ record_equivalences_from_stmt (gimple *stmt, int may_optimize_p,
    CONST_AND_COPIES.  */
 
 static void
-cprop_operand (gimple *stmt, use_operand_p op_p)
+cprop_operand (gimple *stmt, use_operand_p op_p, vr_values *vr_values)
 {
   tree val;
   tree op = USE_FROM_PTR (op_p);
@@ -1709,6 +1709,9 @@ cprop_operand (gimple *stmt, use_operand_p op_p)
      copy of some other variable, use the value or copy stored in
      CONST_AND_COPIES.  */
   val = SSA_NAME_VALUE (op);
+  if (!val)
+    val = vr_values->op_with_constant_singleton_value_range (op);
+
   if (val && val != op)
     {
       /* Do not replace hard register operands in asm statements.  */
@@ -1765,7 +1768,7 @@ cprop_operand (gimple *stmt, use_operand_p op_p)
    vdef_ops of STMT.  */
 
 static void
-cprop_into_stmt (gimple *stmt)
+cprop_into_stmt (gimple *stmt, vr_values *vr_values)
 {
   use_operand_p op_p;
   ssa_op_iter iter;
@@ -1782,7 +1785,7 @@ cprop_into_stmt (gimple *stmt)
 	 operands.  */
       if (old_op != last_copy_propagated_op)
 	{
-	  cprop_operand (stmt, op_p);
+	  cprop_operand (stmt, op_p, vr_values);
 
 	  tree new_op = USE_FROM_PTR (op_p);
 	  if (new_op != old_op && TREE_CODE (new_op) == SSA_NAME)
@@ -1925,7 +1928,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
   opt_stats.num_stmts++;
 
   /* Const/copy propagate into USES, VUSES and the RHS of VDEFs.  */
-  cprop_into_stmt (stmt);
+  cprop_into_stmt (stmt, evrp_range_analyzer.get_vr_values ());
 
   /* If the statement has been modified with constant replacements,
      fold its RHS before checking for redundant computations.  */

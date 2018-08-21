@@ -1,8 +1,8 @@
 /* Definitions for target OS TPF for GNU compiler, for IBM S/390 hardware
    Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by P.J. Darcy (darcypj@us.ibm.com),
-                  Hartmut Penner (hpenner@de.ibm.com), and
-                  Ulrich Weigand (uweigand@de.ibm.com).
+		  Hartmut Penner (hpenner@de.ibm.com), and
+		  Ulrich Weigand (uweigand@de.ibm.com).
 
 This file is part of GCC.
 
@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* TPF OS specific stack-pointer offset.  */
 #undef STACK_POINTER_OFFSET
-#define STACK_POINTER_OFFSET 		448
+#define STACK_POINTER_OFFSET		448
 
 /* When building for TPF, set a generic default target that is 64 bits. Also
    enable TPF profiling support and the standard backchain by default.  */
@@ -94,7 +94,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef  ASM_SPEC
 #define ASM_SPEC					\
   "%{m31&m64}%{mesa&mzarch}%{march=z*}"			\
-  "%{march=arch3:-march=g5}"				\
   "%{march=arch5:-march=z900}"				\
   "%{march=arch6:-march=z990}"				\
   "%{march=arch7:-march=z9-ec}"				\
@@ -106,10 +105,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef LIB_SPEC
 #define LIB_SPEC "-lCTIS -lCISO -lCLBM -lCTAL -lCFVS -lCTBX -lCTXO \
-                  -lCJ00 -lCTDF -lCOMX -lCOMS -lCTHD -lCTAD -lTPFSTUB"
+		  -lCJ00 -lCTDF -lCOMX -lCOMS -lCTHD -lCTAD -lTPFSTUB"
 
 #define ENTRY_SPEC "%{mmain:-entry=_start} \
-                    %{!mmain:-entry=0}"
+		    %{!mmain:-entry=0}"
 
 /* All linking is done shared on TPF-OS.  */
 /* FIXME: When binutils patch for new emulation is committed

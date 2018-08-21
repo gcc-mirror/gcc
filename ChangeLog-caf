@@ -1,0 +1,4 @@
+2018-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Changelog-caf: New file.
+	* Merged branch from r263319 to r263750.

@@ -23,7 +23,7 @@ along with this program; see the file COPYING3.  If not see
 #define LIBCPP_INTERNAL_H
 
 #include "symtab.h"
-#include "cpp-id-data.h"
+#include "cpplib.h"
 
 #if HAVE_ICONV
 #include <iconv.h>
@@ -93,9 +93,8 @@ struct dummy
 #define CPP_ALIGN2(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
 #define CPP_ALIGN(size) CPP_ALIGN2 (size, DEFAULT_ALIGNMENT)
 
-#define _cpp_mark_macro_used(NODE) do {					\
-  if ((NODE)->type == NT_MACRO && !((NODE)->flags & NODE_BUILTIN))	\
-    (NODE)->value.macro->used = 1; } while (0)
+#define _cpp_mark_macro_used(NODE) 					\
+  (cpp_user_macro_p (NODE) ? (NODE)->value.macro->used = 1 : 0)
 
 /* A generic memory buffer, and operations on it.  */
 typedef struct _cpp_buff _cpp_buff;
@@ -603,6 +602,12 @@ extern const unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #endif
 
+#if !defined (HAVE_UCHAR) && !defined (IN_GCC)
+typedef unsigned char uchar;
+#endif
+
+#define UC (const uchar *)  /* Intended use: UC"string" */
+
 /* Macros.  */
 
 static inline int cpp_in_system_header (cpp_reader *);
@@ -622,13 +627,21 @@ cpp_in_primary_file (cpp_reader *pfile)
 }
 
 /* In macro.c */
+extern void _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node);
+inline void _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
+{
+  if (!(node->flags & NODE_USED))
+    _cpp_notify_macro_use (pfile, node);
+}
+extern cpp_macro *_cpp_new_macro (cpp_reader *, cpp_macro_kind, void *);
 extern void _cpp_free_definition (cpp_hashnode *);
 extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *);
 extern void _cpp_pop_context (cpp_reader *);
 extern void _cpp_push_text_context (cpp_reader *, cpp_hashnode *,
 				    const unsigned char *, size_t);
-extern bool _cpp_save_parameter (cpp_reader *, cpp_macro *, cpp_hashnode *,
+extern bool _cpp_save_parameter (cpp_reader *, unsigned, cpp_hashnode *,
 				 cpp_hashnode *);
+extern void _cpp_unsave_parameters (cpp_reader *, unsigned);
 extern bool _cpp_arguments_ok (cpp_reader *, cpp_macro *, const cpp_hashnode *,
 			       unsigned int);
 extern const unsigned char *_cpp_builtin_macro_text (cpp_reader *,
@@ -685,6 +698,14 @@ extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
 extern cpp_hashnode *_cpp_lex_identifier (cpp_reader *, const char *);
 extern int _cpp_remaining_tokens_num_in_context (cpp_context *);
 extern void _cpp_init_lexer (void);
+static inline void *_cpp_reserve_room (cpp_reader *pfile, size_t have,
+				       size_t extra)
+{
+  if (BUFF_ROOM (pfile->a_buff) < (have + extra))
+    _cpp_extend_buff (pfile, &pfile->a_buff, extra);
+  return BUFF_FRONT (pfile->a_buff);
+}
+extern void *_cpp_commit_buff (cpp_reader *pfile, size_t size);
 
 /* In init.c.  */
 extern void _cpp_maybe_push_include_file (cpp_reader *);
@@ -721,7 +742,7 @@ extern bool _cpp_read_logical_line_trad (cpp_reader *);
 extern void _cpp_overlay_buffer (cpp_reader *pfile, const unsigned char *,
 				 size_t);
 extern void _cpp_remove_overlay (cpp_reader *);
-extern bool _cpp_create_trad_definition (cpp_reader *, cpp_macro *);
+extern cpp_macro *_cpp_create_trad_definition (cpp_reader *);
 extern bool _cpp_expansions_different_trad (const cpp_macro *,
 					    const cpp_macro *);
 extern unsigned char *_cpp_copy_replacement_text (const cpp_macro *,

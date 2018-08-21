@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fwhole-file" }
+! { dg-options "" }
 ! Tests the fix for PR22571 in which the derived types in a, b
 ! c and d were not detected to be different.  In e and f, they
 ! are the same because they are sequence types.

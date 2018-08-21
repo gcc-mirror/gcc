@@ -2319,6 +2319,13 @@ sched_analyze_reg (struct deps_desc *deps, int regno, machine_mode mode,
 	  while (--i >= 0)
 	    note_reg_use (regno + i);
 	}
+      else if (ref == CLOBBER_HIGH)
+	{
+	  gcc_assert (i == 1);
+	  /* We don't know the current state of the register, so have to treat
+	     the clobber high as a full clobber.  */
+	  note_reg_clobber (regno);
+	}
       else
 	{
 	  while (--i >= 0)
@@ -2342,6 +2349,8 @@ sched_analyze_reg (struct deps_desc *deps, int regno, machine_mode mode,
       else if (ref == USE)
 	note_reg_use (regno);
       else
+	/* For CLOBBER_HIGH, we don't know the current state of the register,
+	   so have to treat it as a full clobber.  */
 	note_reg_clobber (regno);
 
       /* Pseudos that are REG_EQUIV to something may be replaced
@@ -2962,7 +2971,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	      sub = COND_EXEC_CODE (sub);
 	      code = GET_CODE (sub);
 	    }
-	  if (code == SET || code == CLOBBER)
+	  else if (code == SET || code == CLOBBER || code == CLOBBER_HIGH)
 	    sched_analyze_1 (deps, sub, insn);
 	  else
 	    sched_analyze_2 (deps, sub, insn);
@@ -2978,6 +2987,10 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	{
 	  if (GET_CODE (XEXP (link, 0)) == CLOBBER)
 	    sched_analyze_1 (deps, XEXP (link, 0), insn);
+	  else if (GET_CODE (XEXP (link, 0)) == CLOBBER_HIGH)
+	    /* We could support CLOBBER_HIGH and treat it in the same way as
+	      HARD_REGNO_CALL_PART_CLOBBERED, but no port needs that yet.  */
+	    gcc_unreachable ();
 	  else if (GET_CODE (XEXP (link, 0)) != SET)
 	    sched_analyze_2 (deps, XEXP (link, 0), insn);
 	}

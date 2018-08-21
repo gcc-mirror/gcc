@@ -88,7 +88,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __throw_ios_failure(const char* __s __attribute__((unused)))
   { _GLIBCXX_THROW_OR_ABORT(ios::failure(_(__s))); }
 
-#endif
+  void
+  __throw_ios_failure(const char* str, int)
+  { __throw_ios_failure(str); }
+
+#endif // _GLIBCXX_USE_DUAL_ABI
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

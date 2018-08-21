@@ -31,6 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "fbuf.h"
 #include "format.h"
 #include "unix.h"
+#include "async.h"
 #include <string.h>
 #include <errno.h>
 
@@ -181,6 +182,12 @@ static const st_option delim_opt[] = {
 static const st_option pad_opt[] = {
   {"yes", PAD_YES},
   {"no", PAD_NO},
+  {NULL, 0}
+};
+
+static const st_option async_opt[] = {
+  {"yes", ASYNC_YES},
+  {"no", ASYNC_NO},
   {NULL, 0}
 };
 
@@ -1594,7 +1601,8 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 		read_f (dtp, f, p, kind);
 		break;
 	      default:
-		internal_error (&dtp->common, "formatted_transfer(): Bad type");
+		internal_error (&dtp->common,
+				"formatted_transfer (): Bad type");
 	    }
 	  break;
 
@@ -2066,7 +2074,7 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 		break;
 	      default:
 		internal_error (&dtp->common,
-				"formatted_transfer(): Bad type");
+				"formatted_transfer (): Bad type");
 	    }
 	  break;
 
@@ -2281,6 +2289,38 @@ formatted_transfer (st_parameter_dt *dtp, bt type, void *p, int kind,
     }
 }
 
+/* Wrapper function for I/O of scalar types.  If this should be an async I/O
+   request, queue it.  For a synchronous write on an async unit, perform the
+   wait operation and return an error.  For all synchronous writes, call the
+   right transfer function.  */
+
+static void
+wrap_scalar_transfer (st_parameter_dt *dtp, bt type, void *p, int kind,
+		      size_t size, size_t n_elem)
+{
+  if (dtp->u.p.current_unit && dtp->u.p.current_unit->au)
+    {
+      if (dtp->u.p.async)
+	{
+	  transfer_args args;
+	  args.scalar.transfer = dtp->u.p.transfer;
+	  args.scalar.arg_bt = type;
+	  args.scalar.data = p;
+	  args.scalar.i = kind;
+	  args.scalar.s1 = size;
+	  args.scalar.s2 = n_elem;
+	  enqueue_transfer (dtp->u.p.current_unit->au, &args,
+			    AIO_TRANSFER_SCALAR);
+	  return;
+	}
+    }
+  /* Come here if there was no asynchronous I/O to be scheduled.  */
+  if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
+    return;
+
+  dtp->u.p.transfer (dtp, type, p, kind, size, 1);
+}
+
 
 /* Data transfer entry points.  The type of the data entity is
    implicit in the subroutine call.  This prevents us from having to
@@ -2289,9 +2329,7 @@ formatted_transfer (st_parameter_dt *dtp, bt type, void *p, int kind,
 void
 transfer_integer (st_parameter_dt *dtp, void *p, int kind)
 {
-  if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
-    return;
-  dtp->u.p.transfer (dtp, BT_INTEGER, p, kind, kind, 1);
+    wrap_scalar_transfer (dtp, BT_INTEGER, p, kind, kind, 1);
 }
 
 void
@@ -2307,7 +2345,7 @@ transfer_real (st_parameter_dt *dtp, void *p, int kind)
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
     return;
   size = size_from_real_kind (kind);
-  dtp->u.p.transfer (dtp, BT_REAL, p, kind, size, 1);
+  wrap_scalar_transfer (dtp, BT_REAL, p, kind, size, 1);
 }
 
 void
@@ -2319,9 +2357,7 @@ transfer_real_write (st_parameter_dt *dtp, void *p, int kind)
 void
 transfer_logical (st_parameter_dt *dtp, void *p, int kind)
 {
-  if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
-    return;
-  dtp->u.p.transfer (dtp, BT_LOGICAL, p, kind, kind, 1);
+  wrap_scalar_transfer (dtp, BT_LOGICAL, p, kind, kind, 1);
 }
 
 void
@@ -2345,7 +2381,7 @@ transfer_character (st_parameter_dt *dtp, void *p, gfc_charlen_type len)
     p = empty_string;
 
   /* Set kind here to 1.  */
-  dtp->u.p.transfer (dtp, BT_CHARACTER, p, 1, len, 1);
+  wrap_scalar_transfer (dtp, BT_CHARACTER, p, 1, len, 1);
 }
 
 void
@@ -2369,7 +2405,7 @@ transfer_character_wide (st_parameter_dt *dtp, void *p, gfc_charlen_type len, in
     p = empty_string;
 
   /* Here we pass the actual kind value.  */
-  dtp->u.p.transfer (dtp, BT_CHARACTER, p, kind, len, 1);
+  wrap_scalar_transfer (dtp, BT_CHARACTER, p, kind, len, 1);
 }
 
 void
@@ -2385,7 +2421,7 @@ transfer_complex (st_parameter_dt *dtp, void *p, int kind)
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
     return;
   size = size_from_complex_kind (kind);
-  dtp->u.p.transfer (dtp, BT_COMPLEX, p, kind, size, 1);
+  wrap_scalar_transfer (dtp, BT_COMPLEX, p, kind, size, 1);
 }
 
 void
@@ -2395,8 +2431,8 @@ transfer_complex_write (st_parameter_dt *dtp, void *p, int kind)
 }
 
 void
-transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
-		gfc_charlen_type charlen)
+transfer_array_inner (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
+		      gfc_charlen_type charlen)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -2407,7 +2443,7 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
   bt iotype;
 
   /* Adjust item_count before emitting error message.  */
- 
+
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
     return;
 
@@ -2471,6 +2507,36 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
 }
 
 void
+transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
+	        gfc_charlen_type charlen)
+{
+  if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
+    return;
+
+  if (dtp->u.p.current_unit && dtp->u.p.current_unit->au)
+    {
+      if (dtp->u.p.async)
+	{
+	  transfer_args args;
+	  size_t sz = sizeof (gfc_array_char)
+			+ sizeof (descriptor_dimension)
+       			* GFC_DESCRIPTOR_RANK (desc);
+	  args.array.desc = xmalloc (sz);
+	  NOTE ("desc = %p", (void *) args.array.desc);
+	  memcpy (args.array.desc, desc, sz);
+	  args.array.kind = kind;
+	  args.array.charlen = charlen;
+	  enqueue_transfer (dtp->u.p.current_unit->au, &args,
+			    AIO_TRANSFER_ARRAY);
+	  return;
+	}
+    }
+  /* Come here if there was no asynchronous I/O to be scheduled.  */
+  transfer_array_inner (dtp, desc, kind, charlen);
+}
+
+
+void
 transfer_array_write (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
 		      gfc_charlen_type charlen)
 {
@@ -2492,7 +2558,7 @@ transfer_derived (st_parameter_dt *parent, void *dtio_source, void *dtio_proc)
       else
 	parent->u.p.fdtio_ptr = (formatted_dtio) dtio_proc;
     }
-  parent->u.p.transfer (parent, BT_CLASS, dtio_source, 0, 0, 1);
+  wrap_scalar_transfer (parent, BT_CLASS, dtio_source, 0, 0, 1);
 }
 
 
@@ -2667,6 +2733,9 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   unit_flags u_flags;  /* Used for creating a unit if needed.  */
   GFC_INTEGER_4 cf = dtp->common.flags;
   namelist_info *ionml;
+  async_unit *au;
+
+  NOTE ("data_transfer_init");
 
   ionml = ((cf & IOPARM_DT_IONML_SET) != 0) ? dtp->u.p.ionml : NULL;
 
@@ -2693,9 +2762,9 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
     }
   else if (dtp->u.p.current_unit->s == NULL)
     {  /* Open the unit with some default flags.  */
-       st_parameter_open opp;
-       unit_convert conv;
-
+      st_parameter_open opp;
+      unit_convert conv;
+      NOTE ("Open the unit with some default flags.");
       memset (&u_flags, '\0', sizeof (u_flags));
       u_flags.access = ACCESS_SEQUENTIAL;
       u_flags.action = ACTION_READWRITE;
@@ -2769,6 +2838,42 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
     }
   else if (dtp->u.p.current_unit->internal_unit_kind > 0)
     dtp->u.p.unit_is_internal = 1;
+
+  if ((cf & IOPARM_DT_HAS_ASYNCHRONOUS) != 0)
+    {
+      int f;
+      f = find_option (&dtp->common, dtp->asynchronous, dtp->asynchronous_len,
+		       async_opt, "Bad ASYNCHRONOUS in data transfer "
+		       "statement");
+      if (f == ASYNC_YES && dtp->u.p.current_unit->flags.async != ASYNC_YES)
+	{
+	  generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
+			  "ASYNCHRONOUS transfer without "
+			  "ASYHCRONOUS='YES' in OPEN");
+	  return;
+	}
+      dtp->u.p.async = f == ASYNC_YES;
+    }
+
+  au = dtp->u.p.current_unit->au;
+  if (au)
+    {
+      if (dtp->u.p.async)
+	{
+	  /* If this is an asynchronous I/O statement, collect errors and
+	     return if there are any.  */
+	  if (collect_async_errors (&dtp->common, au))
+	    return;
+	}
+      else
+	{
+	  /* Synchronous statement: Perform a wait operation for any pending
+	     asynchronous I/O.  This needs to be done before all other error
+	     checks.  See F2008, 9.6.4.1.  */
+	  if (async_wait (&(dtp->common), au))
+	    return;
+	}
+    }
 
   /* Check the action.  */
 
@@ -3009,6 +3114,57 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   if (dtp->u.p.current_unit->pad_status == PAD_UNSPECIFIED)
 	dtp->u.p.current_unit->pad_status = dtp->u.p.current_unit->flags.pad;
 
+  /* Set up the subroutine that will handle the transfers.  */
+
+  if (read_flag)
+    {
+      if (dtp->u.p.current_unit->flags.form == FORM_UNFORMATTED)
+	dtp->u.p.transfer = unformatted_read;
+      else
+	{
+	  if ((cf & IOPARM_DT_LIST_FORMAT) != 0)
+	    dtp->u.p.transfer = list_formatted_read;
+	  else
+	    dtp->u.p.transfer = formatted_transfer;
+	}
+    }
+  else
+    {
+      if (dtp->u.p.current_unit->flags.form == FORM_UNFORMATTED)
+	dtp->u.p.transfer = unformatted_write;
+      else
+	{
+	  if ((cf & IOPARM_DT_LIST_FORMAT) != 0)
+	    dtp->u.p.transfer = list_formatted_write;
+	  else
+	    dtp->u.p.transfer = formatted_transfer;
+	}
+    }
+
+  if (au)
+    {
+      NOTE ("enqueue_data_transfer");
+      enqueue_data_transfer_init (au, dtp, read_flag);
+    }
+  else
+    {
+      NOTE ("invoking data_transfer_init_worker");
+      data_transfer_init_worker (dtp, read_flag);
+    }
+}
+
+void
+data_transfer_init_worker (st_parameter_dt *dtp, int read_flag)
+{
+  GFC_INTEGER_4 cf = dtp->common.flags;
+
+  NOTE ("starting worker...");
+
+  if (read_flag && dtp->u.p.current_unit->flags.form != FORM_UNFORMATTED
+      && ((cf & IOPARM_DT_LIST_FORMAT) != 0)
+      && dtp->u.p.current_unit->child_dtio  == 0)
+    dtp->u.p.current_unit->last_char = EOF - 1;
+
   /* Check to see if we might be reading what we wrote before  */
 
   if (dtp->u.p.mode != dtp->u.p.current_unit->mode
@@ -3134,38 +3290,6 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   dtp->u.p.max_pos = dtp->u.p.current_unit->saved_pos;
 
   pre_position (dtp);
-
-
-  /* Set up the subroutine that will handle the transfers.  */
-
-  if (read_flag)
-    {
-      if (dtp->u.p.current_unit->flags.form == FORM_UNFORMATTED)
-	dtp->u.p.transfer = unformatted_read;
-      else
-	{
-	  if ((cf & IOPARM_DT_LIST_FORMAT) != 0)
-	    {
-	      if (dtp->u.p.current_unit->child_dtio  == 0)
-	        dtp->u.p.current_unit->last_char = EOF - 1;
-	      dtp->u.p.transfer = list_formatted_read;
-	    }
-	  else
-	    dtp->u.p.transfer = formatted_transfer;
-	}
-    }
-  else
-    {
-      if (dtp->u.p.current_unit->flags.form == FORM_UNFORMATTED)
-	dtp->u.p.transfer = unformatted_write;
-      else
-	{
-	  if ((cf & IOPARM_DT_LIST_FORMAT) != 0)
-	    dtp->u.p.transfer = list_formatted_write;
-	  else
-	    dtp->u.p.transfer = formatted_transfer;
-	}
-    }
 
   /* Make sure that we don't do a read after a nonadvancing write.  */
 
@@ -4099,7 +4223,7 @@ extern void st_read_done (st_parameter_dt *);
 export_proto(st_read_done);
 
 void
-st_read_done (st_parameter_dt *dtp)
+st_read_done_worker (st_parameter_dt *dtp)
 {
   finalize_transfer (dtp);
 
@@ -4127,6 +4251,30 @@ st_read_done (st_parameter_dt *dtp)
 	  free_format_data (dtp->u.p.fmt);
 	  free_format (dtp);
 	}
+    }
+}
+
+void
+st_read_done (st_parameter_dt *dtp)
+{
+  if (dtp->u.p.current_unit)
+    {
+      if (dtp->u.p.current_unit->au)
+	{
+	  if (dtp->common.flags & IOPARM_DT_HAS_ID)
+	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au, AIO_READ_DONE);  
+	  else
+	    {
+	      enqueue_done (dtp->u.p.current_unit->au, AIO_READ_DONE);
+	      /* An asynchronous unit without ASYNCHRONOUS="YES" - make this
+		 synchronous by performing a wait operation.  */
+	      if (!dtp->u.p.async)
+		async_wait (&dtp->common, dtp->u.p.current_unit->au);
+	    }
+	}
+      else
+	st_read_done_worker (dtp);
+
       unlock_unit (dtp->u.p.current_unit);
     }
 
@@ -4134,7 +4282,7 @@ st_read_done (st_parameter_dt *dtp)
 }
 
 extern void st_write (st_parameter_dt *);
-export_proto(st_write);
+export_proto (st_write);
 
 void
 st_write (st_parameter_dt *dtp)
@@ -4143,11 +4291,9 @@ st_write (st_parameter_dt *dtp)
   data_transfer_init (dtp, 0);
 }
 
-extern void st_write_done (st_parameter_dt *);
-export_proto(st_write_done);
 
 void
-st_write_done (st_parameter_dt *dtp)
+st_write_done_worker (st_parameter_dt *dtp)
 {
   finalize_transfer (dtp);
 
@@ -4196,16 +4342,65 @@ st_write_done (st_parameter_dt *dtp)
 	  free_format_data (dtp->u.p.fmt);
 	  free_format (dtp);
 	}
+    }
+}
+
+extern void st_write_done (st_parameter_dt *);
+export_proto(st_write_done);
+
+void
+st_write_done (st_parameter_dt *dtp)
+{
+  if (dtp->u.p.current_unit)
+    {
+      if (dtp->u.p.current_unit->au)
+	{
+	  if (dtp->common.flags & IOPARM_DT_HAS_ID)
+	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au,
+					AIO_WRITE_DONE);
+	  else
+	    {
+	      enqueue_done (dtp->u.p.current_unit->au, AIO_WRITE_DONE);
+	      /* An asynchronous unit without ASYNCHRONOUS="YES" - make this
+		 synchronous by performing a wait operation.  */
+	      if (!dtp->u.p.async)
+		async_wait (&dtp->common, dtp->u.p.current_unit->au);
+	    }
+	}
+      else
+	st_write_done_worker (dtp);
+
       unlock_unit (dtp->u.p.current_unit);
     }
+
   library_end ();
 }
 
+/* Wait operation.  We need to keep around the do-nothing version
+ of st_wait for compatibility with previous versions, which had marked
+ the argument as unused (and thus liable to be removed).
 
-/* F2003: This is a stub for the runtime portion of the WAIT statement.  */
+ TODO: remove at next bump in version number.  */
+
 void
 st_wait (st_parameter_wait *wtp __attribute__((unused)))
 {
+  return;
+}
+
+void
+st_wait_async (st_parameter_wait *wtp)
+{
+  gfc_unit *u = find_unit (wtp->common.unit);
+  if (ASYNC_IO && u->au)
+    {
+      if (wtp->common.flags & IOPARM_WAIT_HAS_ID)
+	async_wait_id (&(wtp->common), u->au, *wtp->id);
+      else
+	async_wait (&(wtp->common), u->au);
+    }
+
+  unlock_unit (u);
 }
 
 

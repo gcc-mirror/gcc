@@ -32,28 +32,17 @@ using std::bad_alloc;
 extern "C" void *malloc (std::size_t);
 
 _GLIBCXX_WEAK_DEFINITION void *
-operator new (std::size_t sz, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+operator new (std::size_t sz, const std::nothrow_t&) noexcept
 {
-  void *p;
-
-  /* malloc (0) is unpredictable; avoid it.  */
-  if (sz == 0)
-    sz = 1;
-
-  while (__builtin_expect ((p = malloc (sz)) == 0, false))
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 206. operator new(size_t, nothrow) may become unlinked to ordinary
+  // operator new if ordinary version replaced
+  __try
     {
-      new_handler handler = std::get_new_handler ();
-      if (! handler)
-	return 0;
-      __try
-	{
-	  handler ();
-	}
-      __catch(const bad_alloc&)
-	{
-	  return 0;
-	}
+      return ::operator new(sz);
     }
-
-  return p;
+  __catch (...)
+    {
+      return nullptr;
+    }
 }

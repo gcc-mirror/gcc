@@ -148,6 +148,7 @@ static rtx expand_builtin_unop (machine_mode, tree, rtx, rtx, optab);
 static rtx expand_builtin_frame_address (tree, tree);
 static tree stabilize_va_list_loc (location_t, tree, int);
 static rtx expand_builtin_expect (tree, rtx);
+static rtx expand_builtin_expect_with_probability (tree, rtx);
 static tree fold_builtin_constant_p (tree);
 static tree fold_builtin_classify_type (tree);
 static tree fold_builtin_strlen (location_t, tree, tree);
@@ -567,41 +568,43 @@ string_length (const void *ptr, unsigned eltsize, unsigned maxelts)
    accesses.  Note that this implies the result is not going to be emitted
    into the instruction stream.
 
-   The value returned is of type `ssizetype'.
+   ELTSIZE is 1 for normal single byte character strings, and 2 or
+   4 for wide characer strings.  ELTSIZE is by default 1.
 
-   Unfortunately, string_constant can't access the values of const char
-   arrays with initializers, so neither can we do so here.  */
+   The value returned is of type `ssizetype'.  */
 
 tree
-c_strlen (tree src, int only_value)
+c_strlen (tree src, int only_value, unsigned eltsize)
 {
+  gcc_assert (eltsize == 1 || eltsize == 2 || eltsize == 4);
   STRIP_NOPS (src);
   if (TREE_CODE (src) == COND_EXPR
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
     {
       tree len1, len2;
 
-      len1 = c_strlen (TREE_OPERAND (src, 1), only_value);
-      len2 = c_strlen (TREE_OPERAND (src, 2), only_value);
+      len1 = c_strlen (TREE_OPERAND (src, 1), only_value, eltsize);
+      len2 = c_strlen (TREE_OPERAND (src, 2), only_value, eltsize);
       if (tree_int_cst_equal (len1, len2))
 	return len1;
     }
 
   if (TREE_CODE (src) == COMPOUND_EXPR
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
-    return c_strlen (TREE_OPERAND (src, 1), only_value);
+    return c_strlen (TREE_OPERAND (src, 1), only_value, eltsize);
 
   location_t loc = EXPR_LOC_OR_LOC (src, input_location);
 
   /* Offset from the beginning of the string in bytes.  */
   tree byteoff;
-  src = string_constant (src, &byteoff);
+  tree memsize;
+  src = string_constant (src, &byteoff, &memsize);
   if (src == 0)
     return NULL_TREE;
 
   /* Determine the size of the string element.  */
-  unsigned eltsize
-    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (src))));
+  if (eltsize != tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (src)))))
+    return NULL_TREE;
 
   /* Set MAXELTS to sizeof (SRC) / sizeof (*SRC) - 1, the maximum possible
      length of SRC.  Prefer TYPE_SIZE() to TREE_STRING_LENGTH() if possible
@@ -612,14 +615,10 @@ c_strlen (tree src, int only_value)
   HOST_WIDE_INT strelts = TREE_STRING_LENGTH (src);
   strelts = strelts / eltsize - 1;
 
-  HOST_WIDE_INT maxelts = strelts;
-  tree type = TREE_TYPE (src);
-  if (tree size = TYPE_SIZE_UNIT (type))
-    if (tree_fits_shwi_p (size))
-      {
-	maxelts = tree_to_uhwi (size);
-	maxelts = maxelts / eltsize - 1;
-      }
+  if (!tree_fits_uhwi_p (memsize))
+    return NULL_TREE;
+
+  HOST_WIDE_INT maxelts = tree_to_uhwi (memsize) / eltsize - 1;
 
   /* PTR can point to the byte representation of any string type, including
      char* and wchar_t*.  */
@@ -627,19 +626,23 @@ c_strlen (tree src, int only_value)
 
   if (byteoff && TREE_CODE (byteoff) != INTEGER_CST)
     {
+      /* For empty strings the result should be zero.  */
+      if (maxelts == 0)
+	return ssize_int (0);
+
+      /* The code below works only for single byte character types.  */
+      if (eltsize != 1)
+	return NULL_TREE;
+
       /* If the string has an internal NUL character followed by any
 	 non-NUL characters (e.g., "foo\0bar"), we can't compute
 	 the offset to the following NUL if we don't know where to
 	 start searching for it.  */
       unsigned len = string_length (ptr, eltsize, strelts);
-      if (len < strelts)
-	{
-	  /* Return when an embedded null character is found.  */
-	  return NULL_TREE;
-	}
 
-      if (!maxelts)
-	return ssize_int (0);
+      /* Return when an embedded null character is found or none at all.  */
+      if (len < strelts || len > maxelts)
+	return NULL_TREE;
 
       /* We don't know the starting offset, but we do know that the string
 	 has no internal zero bytes.  If the offset falls within the bounds
@@ -649,8 +652,8 @@ c_strlen (tree src, int only_value)
       tree offsave = TREE_SIDE_EFFECTS (byteoff) ? save_expr (byteoff) : byteoff;
       offsave = fold_convert (ssizetype, offsave);
       tree condexp = fold_build2_loc (loc, LE_EXPR, boolean_type_node, offsave,
-				      build_int_cst (ssizetype, len * eltsize));
-      tree lenexp = size_diffop_loc (loc, ssize_int (strelts * eltsize), offsave);
+				      build_int_cst (ssizetype, len));
+      tree lenexp = size_diffop_loc (loc, ssize_int (strelts), offsave);
       return fold_build3_loc (loc, COND_EXPR, ssizetype, condexp, lenexp,
 			      build_zero_cst (ssizetype));
     }
@@ -683,6 +686,11 @@ c_strlen (tree src, int only_value)
       return NULL_TREE;
     }
 
+  /* If eltoff is larger than strelts but less than maxelts the
+     string length is zero, since the excess memory will be zero.  */
+  if (eltoff > strelts)
+    return ssize_int (0);
+
   /* Use strlen to search for the first zero byte.  Since any strings
      constructed with build_string will have nulls appended, we win even
      if we get handed something like (char[4])"abcd".
@@ -690,7 +698,7 @@ c_strlen (tree src, int only_value)
      Since ELTOFF is our starting index into the string, no further
      calculation is needed.  */
   unsigned len = string_length (ptr + eltoff * eltsize, eltsize,
-				maxelts - eltoff);
+				strelts - eltoff);
 
   return ssize_int (len);
 }
@@ -4480,11 +4488,16 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
 				  /*objsize=*/NULL_TREE);
     }
 
+  /* If the specified length exceeds the size of either object, 
+     call the function.  */
+  if (!no_overflow)
+    return NULL_RTX;
+
   /* Due to the performance benefit, always inline the calls first
      when result_eq is false.  */
   rtx result = NULL_RTX;
 
-  if (!result_eq && fcode != BUILT_IN_BCMP && no_overflow)
+  if (!result_eq && fcode != BUILT_IN_BCMP)
     {
       result = inline_expand_builtin_string_cmp (exp, target);
       if (result)
@@ -5250,6 +5263,27 @@ expand_builtin_expect (tree exp, rtx target)
 	      || optimize == 0 || seen_error ());
   return target;
 }
+
+/* Expand a call to __builtin_expect_with_probability.  We just return our
+   argument as the builtin_expect semantic should've been already executed by
+   tree branch prediction pass.  */
+
+static rtx
+expand_builtin_expect_with_probability (tree exp, rtx target)
+{
+  tree arg;
+
+  if (call_expr_nargs (exp) < 3)
+    return const0_rtx;
+  arg = CALL_EXPR_ARG (exp, 0);
+
+  target = expand_expr (arg, target, VOIDmode, EXPAND_NORMAL);
+  /* When guessing was done, the hints should be already stripped away.  */
+  gcc_assert (!flag_guess_branch_prob
+	      || optimize == 0 || seen_error ());
+  return target;
+}
+
 
 /* Expand a call to __builtin_assume_aligned.  We just return our first
    argument as the builtin_assume_aligned semantic should've been already
@@ -7562,6 +7596,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       return expand_builtin_va_copy (exp);
     case BUILT_IN_EXPECT:
       return expand_builtin_expect (exp, target);
+    case BUILT_IN_EXPECT_WITH_PROBABILITY:
+      return expand_builtin_expect_with_probability (exp, target);
     case BUILT_IN_ASSUME_ALIGNED:
       return expand_builtin_assume_aligned (exp, target);
     case BUILT_IN_PREFETCH:
@@ -8213,16 +8249,20 @@ fold_builtin_constant_p (tree arg)
   return NULL_TREE;
 }
 
-/* Create builtin_expect with PRED and EXPECTED as its arguments and
-   return it as a truthvalue.  */
+/* Create builtin_expect or builtin_expect_with_probability
+   with PRED and EXPECTED as its arguments and return it as a truthvalue.
+   Fortran FE can also produce builtin_expect with PREDICTOR as third argument.
+   builtin_expect_with_probability instead uses third argument as PROBABILITY
+   value.  */
 
 static tree
 build_builtin_expect_predicate (location_t loc, tree pred, tree expected,
-				tree predictor)
+				tree predictor, tree probability)
 {
   tree fn, arg_types, pred_type, expected_type, call_expr, ret_type;
 
-  fn = builtin_decl_explicit (BUILT_IN_EXPECT);
+  fn = builtin_decl_explicit (probability == NULL_TREE ? BUILT_IN_EXPECT
+			      : BUILT_IN_EXPECT_WITH_PROBABILITY);
   arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
   ret_type = TREE_TYPE (TREE_TYPE (fn));
   pred_type = TREE_VALUE (arg_types);
@@ -8230,18 +8270,23 @@ build_builtin_expect_predicate (location_t loc, tree pred, tree expected,
 
   pred = fold_convert_loc (loc, pred_type, pred);
   expected = fold_convert_loc (loc, expected_type, expected);
-  call_expr = build_call_expr_loc (loc, fn, predictor ? 3 : 2, pred, expected,
-				   predictor);
+
+  if (probability)
+    call_expr = build_call_expr_loc (loc, fn, 3, pred, expected, probability);
+  else
+    call_expr = build_call_expr_loc (loc, fn, predictor ? 3 : 2, pred, expected,
+				     predictor);
 
   return build2 (NE_EXPR, TREE_TYPE (pred), call_expr,
 		 build_int_cst (ret_type, 0));
 }
 
-/* Fold a call to builtin_expect with arguments ARG0 and ARG1.  Return
+/* Fold a call to builtin_expect with arguments ARG0, ARG1, ARG2, ARG3.  Return
    NULL_TREE if no simplification is possible.  */
 
 tree
-fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
+fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2,
+		     tree arg3)
 {
   tree inner, fndecl, inner_arg0;
   enum tree_code code;
@@ -8265,8 +8310,9 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
 
   if (TREE_CODE (inner) == CALL_EXPR
       && (fndecl = get_callee_fndecl (inner))
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT)
+      && (DECL_BUILT_IN_P (fndecl, BUILT_IN_NORMAL, BUILT_IN_EXPECT)
+	  || DECL_BUILT_IN_P (fndecl, BUILT_IN_NORMAL,
+			      BUILT_IN_EXPECT_WITH_PROBABILITY)))
     return arg0;
 
   inner = inner_arg0;
@@ -8277,8 +8323,8 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
       tree op1 = TREE_OPERAND (inner, 1);
       arg1 = save_expr (arg1);
 
-      op0 = build_builtin_expect_predicate (loc, op0, arg1, arg2);
-      op1 = build_builtin_expect_predicate (loc, op1, arg1, arg2);
+      op0 = build_builtin_expect_predicate (loc, op0, arg1, arg2, arg3);
+      op1 = build_builtin_expect_predicate (loc, op1, arg1, arg2, arg3);
       inner = build2 (code, TREE_TYPE (inner), op0, op1);
 
       return fold_convert_loc (loc, TREE_TYPE (arg0), inner);
@@ -9374,7 +9420,7 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
       return fold_builtin_strpbrk (loc, arg0, arg1, type);
 
     case BUILT_IN_EXPECT:
-      return fold_builtin_expect (loc, arg0, arg1, NULL_TREE);
+      return fold_builtin_expect (loc, arg0, arg1, NULL_TREE, NULL_TREE);
 
     case BUILT_IN_ISGREATER:
       return fold_builtin_unordered_cmp (loc, fndecl,
@@ -9452,7 +9498,10 @@ fold_builtin_3 (location_t loc, tree fndecl,
       return fold_builtin_memcmp (loc, arg0, arg1, arg2);
 
     case BUILT_IN_EXPECT:
-      return fold_builtin_expect (loc, arg0, arg1, arg2);
+      return fold_builtin_expect (loc, arg0, arg1, arg2, NULL_TREE);
+
+    case BUILT_IN_EXPECT_WITH_PROBABILITY:
+      return fold_builtin_expect (loc, arg0, arg1, NULL_TREE, arg2);
 
     case BUILT_IN_ADD_OVERFLOW:
     case BUILT_IN_SUB_OVERFLOW:

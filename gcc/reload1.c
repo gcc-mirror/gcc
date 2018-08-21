@@ -1339,6 +1339,8 @@ maybe_fix_stack_asms (void)
 	  rtx t = XVECEXP (pat, 0, i);
 	  if (GET_CODE (t) == CLOBBER && STACK_REG_P (XEXP (t, 0)))
 	    SET_HARD_REG_BIT (clobbered, REGNO (XEXP (t, 0)));
+	  /* CLOBBER_HIGH is only supported for LRA.  */
+	  gcc_assert (GET_CODE (t) != CLOBBER_HIGH);
 	}
 
       /* Get the operand values and constraints out of the insn.  */
@@ -2879,6 +2881,7 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
       return x;
 
     case CLOBBER:
+    case CLOBBER_HIGH:
     case ASM_OPERANDS:
       gcc_assert (insn && DEBUG_INSN_P (insn));
       break;
@@ -3087,6 +3090,10 @@ elimination_effects (rtx x, machine_mode mem_mode)
 	  ep->can_eliminate = 0;
 
       elimination_effects (XEXP (x, 0), mem_mode);
+      return;
+
+    case CLOBBER_HIGH:
+      /* CLOBBER_HIGH is only supported for LRA.  */
       return;
 
     case SET:
@@ -3810,6 +3817,9 @@ mark_not_eliminable (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
   if (dest == hard_frame_pointer_rtx)
     return;
 
+  /* CLOBBER_HIGH is only supported for LRA.  */
+  gcc_assert (GET_CODE (x) != CLOBBER_HIGH);
+
   for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
     if (reg_eliminate[i].can_eliminate && dest == reg_eliminate[i].to_rtx
 	&& (GET_CODE (x) != SET
@@ -4445,6 +4455,7 @@ scan_paradoxical_subregs (rtx x)
     case PC:
     case USE:
     case CLOBBER:
+    case CLOBBER_HIGH:
       return;
 
     case SUBREG:
@@ -4899,7 +4910,7 @@ reload_as_needed (int live_known)
    to be forgotten later.  */
 
 static void
-forget_old_reloads_1 (rtx x, const_rtx ignored ATTRIBUTE_UNUSED,
+forget_old_reloads_1 (rtx x, const_rtx setter,
 		      void *data)
 {
   unsigned int regno;
@@ -4918,6 +4929,9 @@ forget_old_reloads_1 (rtx x, const_rtx ignored ATTRIBUTE_UNUSED,
 
   if (!REG_P (x))
     return;
+
+  /* CLOBBER_HIGH is only supported for LRA.  */
+  gcc_assert (setter == NULL_RTX || GET_CODE (setter) != CLOBBER_HIGH);
 
   regno = REGNO (x);
 

@@ -718,6 +718,7 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
       }
 
     case CLOBBER:
+    case CLOBBER_HIGH:
       validate_pattern (SET_DEST (pattern), info, pattern, '=');
       return;
 
@@ -5294,7 +5295,7 @@ remove_clobbers (acceptance_type *acceptance_ptr, rtx *pattern_ptr)
   for (i = XVECLEN (pattern, 0); i > 0; i--)
     {
       rtx x = XVECEXP (pattern, 0, i - 1);
-      if (GET_CODE (x) != CLOBBER
+      if ((GET_CODE (x) != CLOBBER && GET_CODE (x) != CLOBBER_HIGH)
 	  || (!REG_P (XEXP (x, 0))
 	      && GET_CODE (XEXP (x, 0)) != MATCH_SCRATCH))
 	break;

@@ -37,6 +37,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "time_1.h"
+#ifdef HAVE_SYS_RANDOM_H
+#include <sys/random.h>
+#endif
 
 #ifdef __MINGW32__
 #define HAVE_GETPID 1
@@ -310,11 +313,10 @@ getosrandom (void *buf, size_t buflen)
     rand_s (&b[i]);
   return buflen;
 #else
-  /*
-     TODO: When glibc adds a wrapper for the getrandom() system call
-     on Linux, one could use that.
-
-     TODO: One could use getentropy() on OpenBSD.  */
+#ifdef HAVE_GETENTROPY
+  if (getentropy (buf, buflen) == 0)
+    return 0;
+#endif
   int flags = O_RDONLY;
 #ifdef O_CLOEXEC
   flags |= O_CLOEXEC;

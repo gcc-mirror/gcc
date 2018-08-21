@@ -1,6 +1,6 @@
 // PR middle-end/14477
 // { dg-do compile }
-// { dg-options "-O2 -fno-default-inline" }
+// { dg-options "-O2" }
 
 struct A
 {

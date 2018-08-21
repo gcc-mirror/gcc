@@ -20997,7 +20997,7 @@ package body Sem_Util is
       Sloc_Value   : Source_Ptr;
       Related_Id   : Entity_Id;
       Suffix       : Character;
-      Suffix_Index : Nat := 0;
+      Suffix_Index : Int := 0;
       Prefix       : Character := ' ') return Entity_Id
    is
       N : constant Entity_Id :=
@@ -24039,6 +24039,14 @@ package body Sem_Util is
            and then Outer = Protected_Body_Subprogram (Curr)
          then
             return True;
+
+         --  Outside of its scope, a synchronized type may just be private
+
+         elsif Is_Private_Type (Curr)
+           and then Present (Full_View (Curr))
+           and then Is_Concurrent_Type (Full_View (Curr))
+         then
+            return Scope_Within (Full_View (Curr), Outer);
          end if;
       end loop;
 

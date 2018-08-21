@@ -1,3 +1,10 @@
+2018-08-05 Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure.ac: Move define of HAVE_ZLIB into check for -lz.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
 2018-08-01  Tony Reix  <tony.reix@atos.net>
 
 	* xcoff.c (struct xcoff_line, struct xcoff_line_vector): Remove.

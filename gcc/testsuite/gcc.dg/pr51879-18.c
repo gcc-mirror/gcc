@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-tail-merge -fdump-tree-pre -fno-tree-copy-prop -fno-tree-dominator-opts -fno-tree-copyrename" } */
+/* { dg-options "-O2 -ftree-tail-merge -fdump-tree-pre -fno-tree-copy-prop -fno-tree-dominator-opts" } */
 
 extern int foo (void);
 

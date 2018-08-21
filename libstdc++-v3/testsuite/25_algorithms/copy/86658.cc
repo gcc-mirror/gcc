@@ -15,9 +15,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-D_GLIBCXX_DEBUG" }
 // { dg-do run }
 
-#define _GLIBCXX_DEBUG
 #include <algorithm>
 #include <vector>
 

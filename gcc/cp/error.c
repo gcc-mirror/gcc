@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "ubsan.h"
 #include "internal-fn.h"
+#include "gcc-rich-location.h"
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 #define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
@@ -4269,13 +4270,42 @@ qualified_name_lookup_error (tree scope, tree name,
     }
   else if (scope != global_namespace)
     {
+      auto_diagnostic_group d;
       error_at (location, "%qD is not a member of %qD", name, scope);
       if (!suggest_alternative_in_explicit_scope (location, name, scope))
 	suggest_alternatives_for (location, name, false);
     }
   else
     {
+      auto_diagnostic_group d;
       error_at (location, "%<::%D%> has not been declared", name);
       suggest_alternatives_for (location, name, true);
     }
+}
+
+/* C++-specific implementation of range_label::get_text () vfunc for
+   range_label_for_type_mismatch.
+
+   Compare with print_template_differences above.  */
+
+label_text
+range_label_for_type_mismatch::get_text () const
+{
+  if (m_labelled_type == NULL_TREE)
+    return label_text (NULL, false);
+
+  const bool verbose = false;
+  const bool show_color = false;
+
+  const char *result;
+  if (m_other_type
+      && comparable_template_types_p (m_labelled_type, m_other_type))
+    result = type_to_string_with_compare (m_labelled_type, m_other_type,
+					  verbose, show_color);
+  else
+    result = type_to_string (m_labelled_type, verbose, true, NULL, show_color);
+
+  /* Both of the above return GC-allocated buffers, so the caller mustn't
+     free them.  */
+  return label_text (const_cast <char *> (result), false);
 }

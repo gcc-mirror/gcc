@@ -31,13 +31,11 @@
 
 --  Hash table searching routines
 
---  This package contains three separate packages. The Simple_HTable package
+--  This package contains two separate packages. The Simple_HTable package
 --  provides a very simple abstraction that associates one element to one key
 --  value and takes care of all allocations automatically using the heap. The
 --  Static_HTable package provides a more complex interface that allows full
---  control over allocation. The Load_Factor_HTable package provides a more
---  complex abstraction where collisions are resolved by chaining, and the
---  table grows by a percentage after the load factor has been exceeded.
+--  control over allocation.
 
 --  This package provides a facility similar to that of GNAT.HTable, except
 --  that this package declares types that can be used to define dynamic
@@ -47,6 +45,8 @@
 --  Note that this interface should remain synchronized with those in
 --  GNAT.HTable to keep as much coherency as possible between these two
 --  related units.
+
+pragma Compiler_Unit_Warning;
 
 package GNAT.Dynamic_HTables is
 
@@ -85,40 +85,38 @@ package GNAT.Dynamic_HTables is
       Null_Ptr : Elmt_Ptr;
       --  The null value of the Elmt_Ptr type
 
+      with function Next (E : Elmt_Ptr) return Elmt_Ptr;
       with procedure Set_Next (E : Elmt_Ptr; Next : Elmt_Ptr);
-      with function  Next     (E : Elmt_Ptr) return Elmt_Ptr;
       --  The type must provide an internal link for the sake of the
       --  staticness of the HTable.
 
       type Key is limited private;
       with function Get_Key (E : Elmt_Ptr) return Key;
-      with function Hash    (F : Key)      return Header_Num;
-      with function Equal   (F1, F2 : Key) return Boolean;
+      with function Hash (F : Key) return Header_Num;
+      with function Equal (F1 : Key; F2 : Key) return Boolean;
 
    package Static_HTable is
-
       type Instance is private;
       Nil : constant Instance;
 
       procedure Reset (T : in out Instance);
-      --  Resets the hash table by releasing all memory associated with
-      --  it. The hash table can safely be reused after this call. For the
-      --  most common case where Elmt_Ptr is an access type, and Null_Ptr is
-      --  null, this is only needed if the same table is reused in a new
-      --  context. If Elmt_Ptr is other than an access type, or Null_Ptr is
-      --  other than null, then Reset must be called before the first use of
-      --  the hash table.
+      --  Resets the hash table by releasing all memory associated with it. The
+      --  hash table can safely be reused after this call. For the most common
+      --  case where Elmt_Ptr is an access type, and Null_Ptr is null, this is
+      --  only needed if the same table is reused in a new context. If Elmt_Ptr
+      --  is other than an access type, or Null_Ptr is other than null, then
+      --  Reset must be called before the first use of the hash table.
 
       procedure Set (T : in out Instance; E : Elmt_Ptr);
       --  Insert the element pointer in the HTable
 
       function Get (T : Instance; K : Key) return Elmt_Ptr;
-      --  Returns the latest inserted element pointer with the given Key
-      --  or null if none.
+      --  Returns the latest inserted element pointer with the given Key or
+      --  null if none.
 
       procedure Remove (T : Instance; K : Key);
-      --  Removes the latest inserted element pointer associated with the
-      --  given key if any, does nothing if none.
+      --  Removes the latest inserted element pointer associated with the given
+      --  key if any, does nothing if none.
 
       function Get_First (T : Instance) return Elmt_Ptr;
       --  Returns Null_Ptr if the Htable is empty, otherwise returns one
@@ -126,11 +124,11 @@ package GNAT.Dynamic_HTables is
       --  function will return the same element.
 
       function Get_Next (T : Instance) return Elmt_Ptr;
-      --  Returns an unspecified element that has not been returned by the
-      --  same function since the last call to Get_First or Null_Ptr if
-      --  there is no such element or Get_First has never been called. If
-      --  there is no call to 'Set' in between Get_Next calls, all the
-      --  elements of the Htable will be traversed.
+      --  Returns an unspecified element that has not been returned by the same
+      --  function since the last call to Get_First or Null_Ptr if there is no
+      --  such element or Get_First has never been called. If there is no call
+      --  to 'Set' in between Get_Next calls, all the elements of the Htable
+      --  will be traversed.
 
    private
       type Table_Type is array (Header_Num) of Elmt_Ptr;
@@ -169,11 +167,10 @@ package GNAT.Dynamic_HTables is
       --  a given key
 
       type Key is private;
-      with function Hash  (F : Key)      return Header_Num;
-      with function Equal (F1, F2 : Key) return Boolean;
+      with function Hash (F : Key) return Header_Num;
+      with function Equal (F1 : Key; F2 : Key) return Boolean;
 
    package Simple_HTable is
-
       type Instance is private;
       Nil : constant Instance;
 
@@ -233,7 +230,6 @@ package GNAT.Dynamic_HTables is
       --  same restrictions apply as Get_Next.
 
    private
-
       type Element_Wrapper;
       type Elmt_Ptr is access all Element_Wrapper;
       type Element_Wrapper is record
@@ -260,7 +256,263 @@ package GNAT.Dynamic_HTables is
 
       type Instance is new Tab.Instance;
       Nil : constant Instance := Instance (Tab.Nil);
-
    end Simple_HTable;
+
+   --------------------
+   -- Dynamic_HTable --
+   --------------------
+
+   --  The following package offers a hash table abstraction with the following
+   --  characteristics:
+   --
+   --    * Dynamic resizing based on load factor.
+   --    * Creation of multiple instances, of different sizes.
+   --    * Iterable keys.
+   --
+   --  This type of hash table is best used in scenarios where the size of the
+   --  key set is not known. The dynamic resizing aspect allows for performance
+   --  to remain within reasonable bounds as the size of the key set grows.
+   --
+   --  The following use pattern must be employed when operating this table:
+   --
+   --    Table : Instance := Create (<some size>);
+   --
+   --    <various operations>
+   --
+   --    Destroy (Table);
+   --
+   --  The destruction of the table reclaims all storage occupied by it.
+
+   --  The following type denotes the underlying range of the hash table
+   --  buckets.
+
+   type Bucket_Range_Type is mod 2 ** 32;
+
+   --  The following type denotes the multiplicative factor used in expansion
+   --  and compression of the hash table.
+
+   subtype Factor_Type is Bucket_Range_Type range 2 .. 100;
+
+   --  The following type denotes the number of key-value pairs stored in the
+   --  hash table.
+
+   type Pair_Count_Type is range 0 .. 2 ** 31 - 1;
+
+   --  The following type denotes the threshold range used in expansion and
+   --  compression of the hash table.
+
+   subtype Threshold_Type is Long_Float range 0.0 .. Long_Float'Last;
+
+   generic
+      type Key_Type is private;
+      type Value_Type is private;
+      --  The types of the key-value pairs stored in the hash table
+
+      No_Value : Value_Type;
+      --  An indicator for a non-existent value
+
+      Expansion_Threshold : Threshold_Type;
+      Expansion_Factor    : Factor_Type;
+      --  Once the load factor goes over Expansion_Threshold, the size of the
+      --  buckets is increased using the formula
+      --
+      --    New_Size = Old_Size * Expansion_Factor
+      --
+      --  An Expansion_Threshold of 1.5 and Expansion_Factor of 2 indicate that
+      --  the size of the buckets will be doubled once the load factor exceeds
+      --  1.5.
+
+      Compression_Threshold : Threshold_Type;
+      Compression_Factor    : Factor_Type;
+      --  Once the load factor drops below Compression_Threshold, the size of
+      --  the buckets is decreased using the formula
+      --
+      --    New_Size = Old_Size / Compression_Factor
+      --
+      --  A Compression_Threshold of 0.5 and Compression_Factor of 2 indicate
+      --  that the size of the buckets will be halved once the load factor
+      --  drops below 0.5.
+
+      with function Equivalent_Keys
+             (Left  : Key_Type;
+              Right : Key_Type) return Boolean;
+      --  Determine whether two keys are equivalent
+
+      with function Hash (Key : Key_Type) return Bucket_Range_Type;
+      --  Map an arbitrary key into the range of buckets
+
+   package Dynamic_HTable is
+
+      ----------------------
+      -- Table operations --
+      ----------------------
+
+      --  The following type denotes a hash table handle. Each instance must be
+      --  created using routine Create.
+
+      type Instance is private;
+      Nil : constant Instance;
+
+      Not_Created : exception;
+      --  This exception is raised when the hash table has not been created by
+      --  routine Create, and an attempt is made to read or mutate its state.
+
+      Table_Locked : exception;
+      --  This exception is raised when the hash table is being iterated on,
+      --  and an attempt is made to mutate its state.
+
+      function Create (Initial_Size : Bucket_Range_Type) return Instance;
+      --  Create a new table with bucket capacity Initial_Size. This routine
+      --  must be called at the start of a hash table's lifetime.
+
+      procedure Delete (T : Instance; Key : Key_Type);
+      --  Delete the value which corresponds to key Key from hash table T. The
+      --  routine has no effect if the value is not present in the hash table.
+      --  This action will raise Table_Locked if the hash table has outstanding
+      --  iterators. If the load factor drops below Compression_Threshold, the
+      --  size of the buckets is decreased by Copression_Factor.
+
+      procedure Destroy (T : in out Instance);
+      --  Destroy the contents of hash table T, rendering it unusable. This
+      --  routine must be called at the end of a hash table's lifetime. This
+      --  action will raise Table_Locked if the hash table has outstanding
+      --  iterators.
+
+      function Get (T : Instance; Key : Key_Type) return Value_Type;
+      --  Obtain the value which corresponds to key Key from hash table T. If
+      --  the value does not exist, return No_Value.
+
+      procedure Put
+        (T     : Instance;
+         Key   : Key_Type;
+         Value : Value_Type);
+      --  Associate value Value with key Key in hash table T. If the table
+      --  already contains a mapping of the same key to a previous value, the
+      --  previous value is overwritten. This action will raise Table_Locked
+      --  if the hash table has outstanding iterators. If the load factor goes
+      --  over Expansion_Threshold, the size of the buckets is increased by
+      --  Expansion_Factor.
+
+      procedure Reset (T : Instance);
+      --  Destroy the contents of hash table T, and reset it to its initial
+      --  created state. This action will raise Table_Locked if the hash table
+      --  has outstanding iterators.
+
+      function Size (T : Instance) return Pair_Count_Type;
+      --  Obtain the number of key-value pairs in hash table T
+
+      -------------------------
+      -- Iterator operations --
+      -------------------------
+
+      --  The following type represents a key iterator. An iterator locks
+      --  all mutation operations, and unlocks them once it is exhausted.
+      --  The iterator must be used with the following pattern:
+      --
+      --    Iter := Iterate (My_Table);
+      --    while Has_Next (Iter) loop
+      --       Key := Next (Iter);
+      --       . . .
+      --    end loop;
+      --
+      --  It is possible to advance the iterator by using Next only, however
+      --  this risks raising Iterator_Exhausted.
+
+      type Iterator is private;
+
+      Iterator_Exhausted : exception;
+      --  This exception is raised when an iterator is exhausted and further
+      --  attempts to advance it are made by calling routine Next.
+
+      function Iterate (T : Instance) return Iterator;
+      --  Obtain an iterator over the keys of hash table T. This action locks
+      --  all mutation functionality of the associated hash table.
+
+      function Has_Next (Iter : Iterator) return Boolean;
+      --  Determine whether iterator Iter has more keys to examine. If the
+      --  iterator has been exhausted, restore all mutation functionality of
+      --  the associated hash table.
+
+      procedure Next
+        (Iter : in out Iterator;
+         Key  : out Key_Type);
+      --  Return the current key referenced by iterator Iter and advance to
+      --  the next available key. If the iterator has been exhausted and
+      --  further attempts are made to advance it, this routine restores
+      --  mutation functionality of the associated hash table, and then
+      --  raises Iterator_Exhausted.
+
+   private
+      --  The following type represents a doubly linked list node used to
+      --  store a key-value pair. There are several reasons to use a doubly
+      --  linked list:
+      --
+      --    * Most read and write operations utilize the same primitve
+      --      routines to locate, create, and delete a node, allowing for
+      --      greater degree of code sharing.
+      --
+      --    * Special cases are eliminated by maintaining a circular node
+      --      list with a dummy head (see type Bucket_Table).
+      --
+      --  A node is said to be "valid" if it is non-null, and does not refer to
+      --  the dummy head of some bucket.
+
+      type Node;
+      type Node_Ptr is access all Node;
+      type Node is record
+         Key   : Key_Type;
+         Value : Value_Type := No_Value;
+         --  Key-value pair stored in a bucket
+
+         Prev : Node_Ptr := null;
+         Next : Node_Ptr := null;
+      end record;
+
+      --  The following type represents a bucket table. Each bucket contains a
+      --  circular doubly linked list of nodes with a dummy head. Initially,
+      --  the head does not refer to itself. This is intentional because it
+      --  improves the performance of creation, compression, and expansion by
+      --  avoiding a separate pass to link a head to itself. Several routines
+      --  ensure that the head is properly formed.
+
+      type Bucket_Table is array (Bucket_Range_Type range <>) of aliased Node;
+      type Bucket_Table_Ptr is access Bucket_Table;
+
+      --  The following type represents a hash table
+
+      type Hash_Table is record
+         Buckets : Bucket_Table_Ptr := null;
+         --  Reference to the compressing / expanding buckets
+
+         Initial_Size : Bucket_Range_Type := 0;
+         --  The initial size of the buckets as specified at creation time
+
+         Locked : Natural := 0;
+         --  Number of outstanding iterators
+
+         Pairs : Pair_Count_Type := 0;
+         --  Number of key-value pairs in the buckets
+      end record;
+
+      type Instance is access Hash_Table;
+      Nil : constant Instance := null;
+
+      --  The following type represents a key iterator
+
+      type Iterator is record
+         Idx : Bucket_Range_Type := 0;
+         --  Index of the current bucket being examined. This index is always
+         --  kept within the range of the buckets.
+
+         Nod : Node_Ptr := null;
+         --  Reference to the current node being examined within the current
+         --  bucket. The invariant of the iterator requires that this field
+         --  always point to a valid node. A value of null indicates that the
+         --  iterator is exhausted.
+
+         Table : Instance := null;
+         --  Reference to the associated hash table
+      end record;
+   end Dynamic_HTable;
 
 end GNAT.Dynamic_HTables;

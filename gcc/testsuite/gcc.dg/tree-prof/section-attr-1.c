@@ -13,7 +13,11 @@ const char *buf_cold;
 
 void foo (int path);
 
+#ifdef __APPLE__
+__attribute__ ((section ("__TEXT,__text")))
+#else
 __attribute__((section(".text")))
+#endif
 int
 main (int argc, char *argv[])
 {
@@ -43,3 +47,4 @@ foo (int path)
 }
 
 /* { dg-final-use { scan-assembler "\.section\[\t \]*\.text\.unlikely\[\\n\\r\]+\[\t \]*\.size\[\t \]*foo\.cold\.0" { target *-*-linux* *-*-gnu* } } } */
+/* { dg-final-use { scan-assembler "\.section\[\t \]*__TEXT,__text_cold\.\*\[\\n\\r\]+_foo\.cold\.0" { target *-*-darwin* } } } */

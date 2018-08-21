@@ -1087,7 +1087,7 @@ Common Report Var(flag_caller_saves) Optimization
 Save registers around function calls.
 
 fcheck-data-deps
-Common Report Var(flag_check_data_deps)
+Common Ignore
 This switch is deprecated; do not use.
 
 fcheck-new
@@ -1232,6 +1232,14 @@ Enum(diagnostic_prefixing_rule) String(every-line) Value(DIAGNOSTICS_SHOW_PREFIX
 fdiagnostics-show-caret
 Common Var(flag_diagnostics_show_caret) Init(1)
 Show the source line with a caret indicating the column.
+
+fdiagnostics-show-labels
+Common Var(flag_diagnostics_show_labels) Init(1)
+Show labels annotating ranges of source code when showing source
+
+fdiagnostics-show-line-numbers
+Common Var(flag_diagnostics_show_line_numbers) Init(1)
+Show line numbers in the left margin when showing source
 
 fdiagnostics-color
 Common Alias(fdiagnostics-color=,always,never)
@@ -2765,7 +2773,6 @@ Enable basic block vectorization (SLP) on trees.
 
 fvect-cost-model=
 Common Joined RejectNegative Enum(vect_cost_model) Var(flag_vect_cost_model) Init(VECT_COST_MODEL_DEFAULT) Optimization
-Specifies the cost model for vectorization.
 -fvect-cost-model=[unlimited|dynamic|cheap]	Specifies the cost model for vectorization.
 
 fsimd-cost-model=
@@ -2890,19 +2897,19 @@ Common Driver Var(dwarf2out_as_locview_support) Init(2)
 Assume assembler support for view in (DWARF2+) .loc directives
 
 gcoff
-Common Driver Ignore Warn(switch %qs no longer supported)
+Common Driver Deprecated
 Does nothing.  Preserved for backward compatibility.
 
 gcoff1
-Common Driver Ignore Warn(switch %qs no longer supported)
+Common Driver Deprecated
 Does nothing.  Preserved for backward compatibility.
 
 gcoff2
-Common Driver Ignore Warn(switch %qs no longer supported)
+Common Driver Deprecated
 Does nothing.  Preserved for backward compatibility.
 
 gcoff3
-Common Driver Ignore Warn(switch %qs no longer supported)
+Common Driver Deprecated
 Does nothing.  Preserved for backward compatibility.
 
 gcolumn-info

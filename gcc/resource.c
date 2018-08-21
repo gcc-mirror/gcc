@@ -108,6 +108,11 @@ update_live_status (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
   if (GET_CODE (x) == CLOBBER)
     for (i = first_regno; i < last_regno; i++)
       CLEAR_HARD_REG_BIT (current_live_regs, i);
+  else if (GET_CODE (x) == CLOBBER_HIGH)
+    /* No current target supports both branch delay slots and CLOBBER_HIGH.
+       We'd need more elaborate liveness tracking to handle that
+       combination.  */
+    gcc_unreachable ();
   else
     for (i = first_regno; i < last_regno; i++)
       {
@@ -293,6 +298,7 @@ mark_referenced_resources (rtx x, struct resources *res,
       return;
 
     case CLOBBER:
+    case CLOBBER_HIGH:
       return;
 
     case CALL_INSN:
@@ -668,9 +674,15 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 
 	  for (link = CALL_INSN_FUNCTION_USAGE (call_insn);
 	       link; link = XEXP (link, 1))
-	    if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-	      mark_set_resources (SET_DEST (XEXP (link, 0)), res, 1,
-				  MARK_SRC_DEST);
+	    {
+	      /* We could support CLOBBER_HIGH and treat it in the same way as
+		 HARD_REGNO_CALL_PART_CLOBBERED, but no port needs that
+		 yet.  */
+	      gcc_assert (GET_CODE (XEXP (link, 0)) != CLOBBER_HIGH);
+	      if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+		mark_set_resources (SET_DEST (XEXP (link, 0)), res, 1,
+				    MARK_SRC_DEST);
+	    }
 
 	  /* Check for a REG_SETJMP.  If it exists, then we must
 	     assume that this call can clobber any register.  */
@@ -712,6 +724,12 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
     case CLOBBER:
       mark_set_resources (XEXP (x, 0), res, 1, MARK_SRC_DEST);
       return;
+
+    case CLOBBER_HIGH:
+      /* No current target supports both branch delay slots and CLOBBER_HIGH.
+	 We'd need more elaborate liveness tracking to handle that
+	 combination.  */
+      gcc_unreachable ();
 
     case SEQUENCE:
       {

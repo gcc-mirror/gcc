@@ -1103,9 +1103,9 @@ procedure Gnatlink is
                   --  as it is in the same directory as the shared version.
 
                   if Nlast >= Library_Version'Length
-                    and then Next_Line
-                      (Nlast - Library_Version'Length + 1 .. Nlast)
-                        = Library_Version
+                    and then
+                      Next_Line (Nlast - Library_Version'Length + 1 .. Nlast) =
+                        Library_Version
                   then
                      --  Set Last to point to last character before the
                      --  library version.

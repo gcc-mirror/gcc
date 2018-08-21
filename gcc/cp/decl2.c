@@ -764,6 +764,7 @@ finish_static_data_member_decl (tree decl,
 	 t = CP_TYPE_CONTEXT (t))
       if (TYPE_UNNAMED_P (t))
 	{
+	  auto_diagnostic_group d;
 	  if (permerror (DECL_SOURCE_LOCATION (decl),
 			 "static data member %qD in unnamed class", decl))
 	    inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)),
@@ -4287,6 +4288,7 @@ no_linkage_error (tree decl)
   else if (TYPE_UNNAMED_P (t))
     {
       bool d = false;
+      auto_diagnostic_group grp;
       if (cxx_dialect >= cxx11)
 	d = permerror (DECL_SOURCE_LOCATION (decl), "%q#D, declared using "
 		       "unnamed type, is used but never defined", decl);
@@ -5208,6 +5210,7 @@ cp_warn_deprecated_use (tree decl, tsubst_flags_t complain)
       && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
       && copy_fn_p (decl))
     {
+      auto_diagnostic_group d;
       /* Don't warn about system library classes (c++/86342).  */
       if (!DECL_IN_SYSTEM_HEADER (decl))
 	warned = warning (OPT_Wdeprecated_copy,
