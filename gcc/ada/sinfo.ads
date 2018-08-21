@@ -4674,7 +4674,7 @@ package Sinfo is
 
       --------------------------
       -- 4.5.7  If Expression --
-      ----------------------------
+      --------------------------
 
       --  IF_EXPRESSION ::=
       --    if CONDITION then DEPENDENT_EXPRESSION

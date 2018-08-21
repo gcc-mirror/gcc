@@ -3672,29 +3672,35 @@ package body Exp_Attr is
          if Is_Fixed_Point_Type (Etype (N)) then
             declare
                Loc     : constant Source_Ptr := Sloc (N);
-               Equiv_T : constant Entity_Id := Make_Temporary (Loc, 'T', N);
-               Expr    : constant Node_Id := Expression (N);
-               Fst     : constant Entity_Id := Root_Type (Etype (N));
+               Equiv_T : constant Entity_Id  := Make_Temporary (Loc, 'T', N);
+               Expr    : constant Node_Id    := Expression (N);
+               Fst     : constant Entity_Id  := Root_Type (Etype (N));
                Decl    : Node_Id;
 
             begin
-               Decl := Make_Full_Type_Declaration (Sloc (N),
-                 Equiv_T,
-                 Type_Definition =>
-                    Make_Signed_Integer_Type_Definition (Loc,
-                      Low_Bound => Make_Integer_Literal (Loc,
-                        Intval => Corresponding_Integer_Value
-                                    (Type_Low_Bound (Fst))),
-                      High_Bound => Make_Integer_Literal (Loc,
-                        Intval => Corresponding_Integer_Value
-                                    (Type_High_Bound (Fst)))));
+               Decl :=
+                 Make_Full_Type_Declaration (Sloc (N),
+                 Defining_Identifier => Equiv_T,
+                 Type_Definition     =>
+                   Make_Signed_Integer_Type_Definition (Loc,
+                     Low_Bound  =>
+                       Make_Integer_Literal (Loc,
+                         Intval =>
+                           Corresponding_Integer_Value
+                             (Type_Low_Bound (Fst))),
+                     High_Bound =>
+                       Make_Integer_Literal (Loc,
+                         Intval =>
+                           Corresponding_Integer_Value
+                             (Type_High_Bound (Fst)))));
                Insert_Action (N, Decl);
 
-               --  Verify that the conversion is possible.
-               Generate_Range_Check
-                 (Expr, Equiv_T, CE_Overflow_Check_Failed);
+               --  Verify that the conversion is possible
 
-               --  and verify that the result is in range.
+               Generate_Range_Check (Expr, Equiv_T, CE_Overflow_Check_Failed);
+
+               --  and verify that the result is in range
+
                Generate_Range_Check (N, Etype (N), CE_Range_Check_Failed);
             end;
          end if;

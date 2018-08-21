@@ -398,7 +398,11 @@ package body Sem_Ch6 is
          --  As elsewhere, we do not emit freeze nodes within a generic unit.
 
          if not Inside_A_Generic then
-            Freeze_Expr_Types (Def_Id, Etype (Def_Id), Expr, N);
+            Freeze_Expr_Types
+              (Def_Id => Def_Id,
+               Typ    => Etype (Def_Id),
+               Expr   => Expr,
+               N      => N);
          end if;
 
          --  For navigation purposes, indicate that the function is a body
@@ -7241,16 +7245,16 @@ package body Sem_Ch6 is
                   end if;
                end;
 
-            --  Functions can override abstract interface functions
-            --  Return types must be subtype conformant.
+            --  Functions can override abstract interface functions. Return
+            --  types must be subtype conformant.
 
             elsif Ekind (Def_Id) = E_Function
               and then Ekind (Subp) = E_Function
               and then Matches_Prefixed_View_Profile
                          (Parameter_Specifications (Parent (Def_Id)),
                           Parameter_Specifications (Parent (Subp)))
-              and then Conforming_Types (Etype (Def_Id), Etype (Subp),
-                Subtype_Conformant)
+              and then Conforming_Types
+                         (Etype (Def_Id), Etype (Subp), Subtype_Conformant)
             then
                Candidate := Subp;
 

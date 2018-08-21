@@ -6081,10 +6081,10 @@ package body Sem_Res is
       then
          if Is_Expression_Function (Entity (Subp)) then
 
-            --  Force freeze of expression function in call.
+            --  Force freeze of expression function in call
 
             Set_Comes_From_Source (Subp, True);
-            Set_Must_Not_Freeze (Subp, False);
+            Set_Must_Not_Freeze   (Subp, False);
          end if;
 
          Freeze_Expression (Subp);
@@ -6092,7 +6092,7 @@ package body Sem_Res is
 
       --  For a predefined operator, the type of the result is the type imposed
       --  by context, except for a predefined operation on universal fixed.
-      --  Otherwise The type of the call is the type returned by the subprogram
+      --  Otherwise the type of the call is the type returned by the subprogram
       --  being called.
 
       if Is_Predefined_Op (Nam) then
@@ -6128,14 +6128,21 @@ package body Sem_Res is
             Ret_Type   : constant Entity_Id := Etype (Nam);
 
          begin
-            --  If this is a parameterless call there is no ambiguity
-            --  and the call has the type of the function.
+            --  If this is a parameterless call there is no ambiguity and the
+            --  call has the type of the function.
 
             if No (First_Actual (N)) then
                Set_Etype (N, Etype (Nam));
+
                if Present (First_Formal (Nam)) then
                   Resolve_Actuals (N, Nam);
                end if;
+
+               --  Annotate the tree by creating a call marker in case the
+               --  original call is transformed by expansion. The call marker
+               --  is automatically saved for later examination by the ABE
+               --  Processing phase.
+
                Build_Call_Marker (N);
 
             elsif Is_Access_Type (Ret_Type)
