@@ -1,5 +1,9 @@
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
+	* layout.adb: Do not set size of access subprogram if unnesting.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
 	* freeze.adb: Remove warnings for access to subprograms when
 	unnesting is active.
 
