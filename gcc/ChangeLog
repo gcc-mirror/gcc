@@ -1,3 +1,14 @@
+2018-08-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int-range.cc (wide_int_range_abs): New.
+	(wide_int_range_order_set): Rename from wide_int_range_min_max.
+	* wide-int-range.h (wide_int_range_abs): New.
+	(wide_int_range_min_max): New.
+	* tree-vrp.c (extract_range_from_unary_expr): Rewrite ABS_EXPR
+	case to call wide_int_range_abs.
+	Rewrite MIN/MAX_EXPR to call wide_int_range_min_max.
+	(extract_range_from_abs_expr): Delete.
+
 2018-08-20  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/87033
