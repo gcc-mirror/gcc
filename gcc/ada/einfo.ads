@@ -1090,10 +1090,10 @@ package Einfo is
 --       to the spec as possible.
 
 --    Elaboration_Entity (Node13)
---       Defined in generic and non-generic package and subprogram entities.
---       This is a counter associated with the unit that is initially set to
---       zero, is incremented when an elaboration request for the unit is
---       made, and is decremented when a finalization request for the unit
+--       Defined in entry, entry family, [generic] package, and subprogram
+--       entities. This is a counter associated with the unit that is initially
+--       set to zero, is incremented when an elaboration request for the unit
+--       is made, and is decremented when a finalization request for the unit
 --       is made. This is used for three purposes. First, it is used to
 --       implement access before elaboration checks (the counter must be
 --       non-zero to call a subprogram at elaboration time). Second, it is
@@ -1110,9 +1110,9 @@ package Einfo is
 --       is elaboration code), but is simply not used for any purpose.
 
 --    Elaboration_Entity_Required (Flag174)
---       Defined in generic and non-generic package and subprogram entities.
---       Set only if Elaboration_Entity is non-Empty to indicate that the
---       counter is required to be non-zero even if there is no other
+--       Defined in entry, entry family, [generic] package, and subprogram
+--       entities. Set only if Elaboration_Entity is non-Empty to indicate that
+--       the counter is required to be non-zero even if there is no other
 --       elaboration code. This occurs when the Elaboration_Entity counter
 --       is used for access before elaboration checks. If the counter is
 --       only used to prevent multiple execution of the elaboration code,
@@ -6058,6 +6058,7 @@ package Einfo is
    --  E_Entry_Family
    --    Protected_Body_Subprogram           (Node11)
    --    Barrier_Function                    (Node12)
+   --    Elaboration_Entity                  (Node13)
    --    Postconditions_Proc                 (Node14)
    --    Entry_Parameters_Type               (Node15)
    --    First_Entity                        (Node17)
