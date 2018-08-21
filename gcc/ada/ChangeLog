@@ -1,3 +1,9 @@
+2018-08-21  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Document entries of the target parametrization file.
+	* gnat_ugn.texi: Regenerate.
+
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb: Set scope of elaboration flag for 'Access.
