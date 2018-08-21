@@ -1177,6 +1177,7 @@ might in some way or another become visible to the programmer.
 * KIND Type Parameters::
 * Internal representation of LOGICAL variables::
 * Evaluation of logical expressions::
+* MAX and MIN intrinsics with REAL NaN arguments::
 * Thread-safety of the runtime library::
 * Data consistency and durability::
 * Files opened without an explicit ACTION= specifier::
@@ -1263,6 +1264,21 @@ result of the expression can be established without them.  However, since not
 all compilers do that, and such an optimization can potentially modify the
 program flow and subsequent results, GNU Fortran throws warnings for such
 situations with the @option{-Wfunction-elimination} flag.
+
+
+@node MAX and MIN intrinsics with REAL NaN arguments
+@section MAX and MIN intrinsics with REAL NaN arguments
+@cindex MAX, MIN, NaN
+
+The Fortran standard does not specify what the result of the
+@code{MAX} and @code{MIN} intrinsics are if one of the arguments is a
+@code{NaN}.  Accordingly, the GNU Fortran compiler does not specify
+that either, as this allows for faster and more compact code to be
+generated.  If the programmer wishes to take some specific action in
+case one of the arguments is a @code{NaN}, it is necessary to
+explicitly test the arguments before calling @code{MAX} or @code{MIN},
+e.g. with the @code{IEEE_IS_NAN} function from the intrinsic module
+@code{IEEE_ARITHMETIC}.
 
 
 @node Thread-safety of the runtime library

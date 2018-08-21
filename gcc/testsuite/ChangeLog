@@ -1,3 +1,7 @@
+2018-08-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.dg/nan_1.f90: Remove tests that test MAX/MIN with NaNs.
+
 2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
 	Thomas Koenig <tkoenig@gcc.gnu.org>
 

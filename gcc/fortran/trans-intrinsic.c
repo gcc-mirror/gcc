@@ -3914,8 +3914,6 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
   mvar = gfc_create_var (type, "M");
   gfc_add_modify (&se->pre, mvar, args[0]);
 
-  internal_fn ifn = op == GT_EXPR ? IFN_FMAX : IFN_FMIN;
-
   for (i = 1, argexpr = argexpr->next; i < nargs; i++, argexpr = argexpr->next)
     {
       tree cond = NULL_TREE;
@@ -3936,49 +3934,16 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
 	val = gfc_evaluate_now (val, &se->pre);
 
       tree calc;
-      /* If we dealing with integral types or we don't care about NaNs
-	 just do a MIN/MAX_EXPR.  */
-      if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
-	{
-
-	  tree_code code = op == GT_EXPR ? MAX_EXPR : MIN_EXPR;
-	  calc = fold_build2_loc (input_location, code, type,
-				  convert (type, val), mvar);
-	  tmp = build2_v (MODIFY_EXPR, mvar, calc);
-
-	}
-      /* If we care about NaNs and we have internal functions available for
-	 fmin/fmax to perform the comparison, use those.  */
-      else if (SCALAR_FLOAT_TYPE_P (type)
-	      && direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED))
-	{
-	  calc = build_call_expr_internal_loc (input_location, ifn, type,
-						2, mvar, convert (type, val));
-	  tmp = build2_v (MODIFY_EXPR, mvar, calc);
-
-	}
-      /* Otherwise expand to:
-	mvar = a1;
-	if (a2 .op. mvar || isnan (mvar))
-	  mvar = a2;
-	if (a3 .op. mvar || isnan (mvar))
-	  mvar = a3;
-	...  */
-      else
-	{
-	  tree isnan = build_call_expr_loc (input_location,
-					builtin_decl_explicit (BUILT_IN_ISNAN),
-					1, mvar);
-	  tmp = fold_build2_loc (input_location, op, logical_type_node,
-				 convert (type, val), mvar);
-
-	  tmp = fold_build2_loc (input_location, TRUTH_OR_EXPR,
-				  logical_type_node, tmp,
-				  fold_convert (logical_type_node, isnan));
-	  tmp = build3_v (COND_EXPR, tmp,
-			  build2_v (MODIFY_EXPR, mvar, convert (type, val)),
-			  build_empty_stmt (input_location));
-	}
+      /* For floating point types, the question is what MAX(a, NaN) or
+	 MIN(a, NaN) should return (where "a" is a normal number).
+	 There are valid usecase for returning either one, but the
+	 Fortran standard doesn't specify which one should be chosen.
+	 Also, there is no consensus among other tested compilers.  In
+	 short, it's a mess.  So lets just do whatever is fastest.  */
+      tree_code code = op == GT_EXPR ? MAX_EXPR : MIN_EXPR;
+      calc = fold_build2_loc (input_location, code, type,
+			      convert (type, val), mvar);
+      tmp = build2_v (MODIFY_EXPR, mvar, calc);
 
       if (cond != NULL_TREE)
 	tmp = build3_v (COND_EXPR, cond, tmp,
