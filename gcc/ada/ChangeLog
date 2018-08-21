@@ -1,3 +1,11 @@
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Reset_Scopes): Do not recurse into type
+	declarations when resetting the scope of entities declared the
+	procedures generated for entry bodies and accept alternatives.
+	Use the entity of the procedure declaration, not its body, as
+	the new scope.
+
 2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Elaboration_Entity): Include entries and entry
