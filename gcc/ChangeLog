@@ -1,5 +1,11 @@
 2018-08-21  Jan Hubicka  <jh@suse.cz>
 
+	* tree.c (find_decls_types_r): Do not check for redundant typedefs.
+	* tree.h (is_redundant_typedef): Remove.
+	* dwarf2out.c (is_redundant_typedef): Turn into static function.
+
+2018-08-21  Jan Hubicka  <jh@suse.cz>
+
 	* tree.c (free_lang_data_in_decl): Remove types from DECL_CONTEXT
 	when possible.
 
