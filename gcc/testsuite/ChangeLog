@@ -1,3 +1,11 @@
+2018-08-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2018-08-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87014
+	* g++.dg/torture/pr87014.C: New file.
+
 2018-08-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline
