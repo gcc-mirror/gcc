@@ -150,6 +150,7 @@ extern void vxworks_override_options (void);
 #define SUPPORTS_INIT_PRIORITY \
   (TARGET_VXWORKS_RTP || HAVE_INITFINI_ARRAY_SUPPORT)
 
+#if !HAVE_INITFINI_ARRAY_SUPPORT
 /* VxWorks requires special handling of constructors and destructors.
    All VxWorks configurations must use these functions.  */
 #undef TARGET_ASM_CONSTRUCTOR
@@ -158,6 +159,7 @@ extern void vxworks_override_options (void);
 #define TARGET_ASM_DESTRUCTOR vxworks_asm_out_destructor
 extern void vxworks_asm_out_constructor (rtx symbol, int priority);
 extern void vxworks_asm_out_destructor (rtx symbol, int priority);
+#endif
 
 /* Override the vxworks-dummy.h definitions.  TARGET_VXWORKS_RTP
    is defined by vxworks.opt.  */

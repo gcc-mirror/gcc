@@ -1,5 +1,11 @@
 2018-08-21  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
+	* config/vxworks.h: Guard vxworks_asm_out_constructor and
+	vxworks_asm_out_destructor by !HAVE_INITFINI_ARRAY_SUPPORT
+	* config/vxworks.c: Likewise.
+
+2018-08-21  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
 	* config/vxworks.c: Set targetm.have_ctors_dtors
 	if HAVE_INITFINI_ARRAY_SUPPORT.
 	* config/vxworks.h: Set SUPPORTS_INIT_PRIORITY
