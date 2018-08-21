@@ -1,3 +1,12 @@
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* impunit.adb: Add g-lists to the set of non-implementation
+	units.
+	* libgnat/g-lists.adb, libgnat/g-lists.ads: New unit.
+	* Makefile.rtl: Add g-lists to the set of non-tasking units.
+	* gcc-interface/Make-lang.in: Add g-lists to the set of files
+	used by gnat1.
+
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch9.adb (Reset_Scopes): Do not recurse into type

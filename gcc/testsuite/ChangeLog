@@ -1,5 +1,9 @@
 2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* gnat.dg/linkedlist.adb: New testcase.
+
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* gnat.dg/elab6.adb, gnat.dg/elab6.ads, gnat.dg/elab6_pkg.adb,
 	gnat.dg/elab6_pkg.ads: New testcase.
 
