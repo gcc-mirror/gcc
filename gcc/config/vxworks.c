@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "fold-const.h"
 
+#if !HAVE_INITFINI_ARRAY_SUPPORT
 /* Like default_named_section_asm_out_constructor, except that even
    constructors with DEFAULT_INIT_PRIORITY must go in a numbered
    section on VxWorks.  The VxWorks runtime uses a clever trick to get
@@ -56,6 +57,7 @@ vxworks_asm_out_destructor (rtx symbol, int priority)
 				    /*constructor_p=*/false);
   assemble_addr_to_section (symbol, sec);
 }
+#endif
 
 /* Return the list of FIELD_DECLs that make up an emulated TLS
    variable's control object.  TYPE is the structure these are fields
