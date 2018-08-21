@@ -1,3 +1,7 @@
+2018-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/rep_clause7.adb: New testcase.
+
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/task1.adb, gnat.dg/task1.ads, gnat.dg/task1_pkg.adb,
