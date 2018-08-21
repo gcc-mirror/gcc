@@ -34,7 +34,6 @@ with Elists;    use Elists;
 with Fname;     use Fname;
 with Fname.UF;  use Fname.UF;
 with Freeze;    use Freeze;
-with Ghost;     use Ghost;
 with Impunit;   use Impunit;
 with Inline;    use Inline;
 with Lib;       use Lib;
@@ -2912,8 +2911,6 @@ package body Sem_Ch10 is
                Set_Fatal_Error (Current_Sem_Unit, Error_Ignored);
             end if;
       end case;
-
-      Mark_Ghost_Clause (N);
    end Analyze_With_Clause;
 
    ------------------------------
