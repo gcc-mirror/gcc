@@ -1107,6 +1107,13 @@ adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
 	 to store the extra '\0' in that case.  */
       if ((tree_to_uhwi (len) & 3) == 0)
 	return;
+
+      /* Don't fold away an out of bounds access, as this defeats proper
+	 warnings.  */
+      tree dst = gimple_call_arg (last.stmt, 0);
+      tree size = compute_objsize (dst, 0);
+      if (size && tree_int_cst_lt (size, len))
+	return;
     }
   else if (TREE_CODE (len) == SSA_NAME)
     {

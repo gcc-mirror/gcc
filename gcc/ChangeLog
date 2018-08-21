@@ -1,3 +1,9 @@
+2018-08-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/86121
+	* tree-ssa-strlen.c (adjust_last_stmt): Avoid folding away undefined
+	behaviour.
+
 2018-08-21  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* config/vxworks.h: Guard vxworks_asm_out_constructor and
