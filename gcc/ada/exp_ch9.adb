@@ -479,7 +479,9 @@ package body Exp_Ch9 is
    procedure Reset_Scopes_To (Proc_Body : Node_Id; E : Entity_Id);
    --  Reset the scope of declarations and blocks at the top level of Proc_Body
    --  to be E. Used after expanding entry bodies into their corresponding
-   --  procedures.
+   --  procedures. This is needed during unnesting to determine whether a
+   --  body geenrated for an entry or an accept alternative includes uplevel
+   --  references.
 
    function Trivial_Accept_OK return Boolean;
    --  If there is no DO-END block for an accept, or if the DO-END block has
@@ -3807,7 +3809,7 @@ package body Exp_Ch9 is
                                New_Occurrence_Of
                                  (RTE (RE_Get_GNAT_Exception), Loc)))))))));
 
-         Reset_Scopes_To (Proc_Body, Bod_Id);
+         Reset_Scopes_To (Proc_Body, Protected_Body_Subprogram (Ent));
          return Proc_Body;
       end if;
    end Build_Protected_Entry;
@@ -10703,7 +10705,7 @@ package body Exp_Ch9 is
               Make_Defining_Identifier (Eloc,
                 New_External_Name (Chars (Ename), 'A', Num_Accept));
 
-            --  Link the acceptor to the original receiving entry
+            --  Link the acceptor to the original receiving entry.
 
             Set_Ekind           (PB_Ent, E_Procedure);
             Set_Receiving_Entry (PB_Ent, Eent);
@@ -14831,10 +14833,12 @@ package body Exp_Ch9 is
    ---------------------
 
    procedure Reset_Scopes_To (Proc_Body : Node_Id; E : Entity_Id) is
+
       function Reset_Scope (N : Node_Id) return Traverse_Result;
       --  Temporaries may have been declared during expansion of the procedure
-      --  alternative. Indicate that their scope is the new body, to prevent
-      --  generation of spurious uplevel references for these entities.
+      --  created for an entry body or an accept alternative. Indicate that
+      --  their scope is the new body, to unsure proper generation of uplevel
+      --  references where needed during unnesting.
 
       procedure Reset_Scopes is new Traverse_Proc (Reset_Scope);
 
@@ -14855,13 +14859,19 @@ package body Exp_Ch9 is
             Set_Scope (Entity (Identifier (N)), E);
             return Skip;
 
-         elsif Nkind (N) = N_Package_Declaration then
+         --  Ditto for a package declaration or a full type declaration, etc.
+
+         elsif Nkind (N) = N_Package_Declaration
+             or else Nkind (N) in N_Declaration
+             or else Nkind (N) in N_Renaming_Declaration
+         then
             Set_Scope (Defining_Entity (N), E);
             return Skip;
 
          elsif N = Proc_Body then
 
-            --  Scan declarations
+            --  Scan declarations in new body. Declarations in the statement
+            --  part will be handled during later traversal.
 
             Decl := First (Declarations (N));
             while Present (Decl) loop
@@ -14871,8 +14881,6 @@ package body Exp_Ch9 is
 
          elsif N /= Proc_Body and then Nkind (N) in N_Proper_Body then
             return Skip;
-         elsif Nkind (N) = N_Defining_Identifier then
-            Set_Scope (N, E);
          end if;
 
          return OK;
