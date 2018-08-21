@@ -1,5 +1,24 @@
 2018-08-21  Tom de Vries  <tdevries@suse.de>
 
+	* cgraph.h (debuginfo_early_init, debuginfo_init, debuginfo_fini)
+	(debuginfo_start, debuginfo_stop, debuginfo_early_start)
+	(debuginfo_early_stop): Declare.
+	* cgraphunit.c (debuginfo_early_init, debuginfo_init, debuginfo_fini)
+	(debuginfo_start, debuginfo_stop, debuginfo_early_start)
+	(debuginfo_early_stop): New function.
+	(symbol_table::finalize_compilation_unit): Call debuginfo_early_start
+	and debuginfo_early_stop.
+	* dwarf2out.c (dwarf2out_finish, dwarf2out_early_finish): Dump dwarf.
+	* toplev.c (compile_file): Call debuginfo_start and debuginfo_stop.
+	(general_init): Call debuginfo_early_init.
+	(finalize): Call debuginfo_fini.
+	(do_compile): Call debuginfo_init.
+	* doc/invoke.texi (@gccoptlist): Add -fdump-debug and
+	-fdump-early-debug.
+	(@item -fdump-debug, @item -fdump-earlydebug): Add.
+
+2018-08-21  Tom de Vries  <tdevries@suse.de>
+
 	* dwarf2out.c (print_dw_val, print_loc_descr, print_die): Handle
 	flag_dump_noaddr and flag_dump_unnumbered.
 
