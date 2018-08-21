@@ -1,3 +1,7 @@
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/access5.adb, gnat.dg/access5.ads: New testcase.
+
 2018-08-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/rep_clause7.adb: New testcase.
