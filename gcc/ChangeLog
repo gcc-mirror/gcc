@@ -1,3 +1,7 @@
+2018-08-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* expmed.c (extract_low_bits): Reject invalid subregs early.
+
 2018-08-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/86121

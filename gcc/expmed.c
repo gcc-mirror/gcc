@@ -2392,6 +2392,10 @@ extract_low_bits (machine_mode mode, machine_mode src_mode, rtx src)
     return NULL_RTX;
 
   src = gen_lowpart (src_int_mode, src);
+  if (!validate_subreg (int_mode, src_int_mode, src,
+			subreg_lowpart_offset (int_mode, src_int_mode)))
+    return NULL_RTX;
+
   src = convert_modes (int_mode, src_int_mode, src, true);
   src = gen_lowpart (mode, src);
   return src;
