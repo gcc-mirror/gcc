@@ -2794,7 +2794,7 @@ class GTY(()) module_state {
  public:
   void set_loc (line_maps *lmaps, const module_state *container = NULL,
 		location_t floc = UNKNOWN_LOCATION);
-  void attach (location_t, tree maybe_vec_name);
+  void attach (location_t);
   bool do_import (const char *filename, line_maps *, bool check_crc);
   static module_state *get_module (tree name);
   static module_state *insert_mapping (tree name, char *filename);
@@ -6706,11 +6706,35 @@ depset::tarjan::connect (depset *v)
     }
 }
 
+/* NAME is a vector, turn it into a single identifier.  */
+
+static tree
+make_flat_name (tree name)
+{
+  auto_vec<char> buffer;
+  for (int ix = 0; ix < TREE_VEC_LENGTH (name); ix++)
+    {
+      tree elt = TREE_VEC_ELT (name, ix);
+      size_t l = IDENTIFIER_LENGTH (elt);
+      buffer.reserve (l + 2);
+      if (ix)
+	buffer.quick_push ('.');
+      size_t len = buffer.length ();
+      buffer.quick_grow (len + l);
+      memcpy (&buffer[len], IDENTIFIER_POINTER (elt), l);
+    }
+
+  return get_identifier_with_length (&buffer[0], buffer.length ());
+}
+
 /* Find or create module NAME in the hash table.  */
 
 module_state *
 module_state::get_module (tree name)
 {
+  if (TREE_CODE (name) == TREE_VEC)
+    name = make_flat_name (name);
+
   hashval_t hv = module_state_hash::hash (name);
   module_state **slot = hash->find_slot_with_hash (name, hv, INSERT);
   module_state *state = *slot;
@@ -8012,7 +8036,7 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	    break;
 	  imp = get_module (name);
 	  if (imp->is_detached ())
-	    imp->attach (from_loc, name);
+	    imp->attach (from_loc);
 	  module_state *purview = (*module_state::modules)[MODULE_PURVIEW];
 	  if (purview == imp)
 	    {
@@ -10442,27 +10466,6 @@ module_interface_p ()
 	  && (*module_state::modules)[MODULE_PURVIEW]->exported);
 }
 
-/* NAME is a vector, turn it into a single identifier.  */
-
-static tree
-make_flat_name (tree name)
-{
-  auto_vec<char> buffer;
-  for (int ix = 0; ix < TREE_VEC_LENGTH (name); ix++)
-    {
-      tree elt = TREE_VEC_ELT (name, ix);
-      size_t l = IDENTIFIER_LENGTH (elt);
-      buffer.reserve (l + 2);
-      if (ix)
-	buffer.quick_push ('.');
-      size_t len = buffer.length ();
-      buffer.quick_grow (len + l);
-      memcpy (&buffer[len], IDENTIFIER_POINTER (elt), l);
-    }
-
-  return get_identifier_with_length (&buffer[0], buffer.length ());
-}
-
 /* Create a location for module.  FROM is the importing module, which
    is NULL for direct importation.  If FROM is shallower than
    whatever may have previously set the location, we're reseated to
@@ -10489,13 +10492,14 @@ module_state::set_loc (line_maps *lmaps,
 }
 
 void
-module_state::attach (location_t from, tree maybe_vec_name)
+module_state::attach (location_t from)
 {
   from_loc = from;
-  if (identifier_p (maybe_vec_name))
+  if (kind == mk_new)
     {
       /* Create a TREE_VEC of components.  */
       auto_vec<tree,5> ids;
+      tree maybe_vec_name = name;
       size_t len = IDENTIFIER_LENGTH (maybe_vec_name);
       const char *ptr = IDENTIFIER_POINTER (maybe_vec_name);
 
@@ -10512,8 +10516,8 @@ module_state::attach (location_t from, tree maybe_vec_name)
       maybe_vec_name = make_tree_vec (ids.length ());
       for (unsigned ix = ids.length (); ix--;)
 	TREE_VEC_ELT (maybe_vec_name, ix) = ids.pop ();
+      vec_name = maybe_vec_name;
     }
-  vec_name = maybe_vec_name;
 }
 
 /* Read the BMI file for a module.  FNAME, if not NULL, is the name we
@@ -10617,17 +10621,14 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
 void
-import_module (const cp_expr &e_name, bool exporting, tree, line_maps *lmaps)
+import_module (tree name, location_t from_loc, bool exporting,
+	       tree, line_maps *lmaps)
 {
   if (export_depth)
     exporting = true;
 
   gcc_assert (global_namespace == current_scope ());
-  location_t from_loc = ordinary_loc_of (lmaps, e_name.get_location ());
-
-  tree name = *e_name;
-  if (TREE_CODE (name) == TREE_VEC)
-    name = make_flat_name (name);
+  from_loc = ordinary_loc_of (lmaps, from_loc);
 
   module_state *imp = module_state::get_module (name);
   module_state *purview = (*module_state::modules)[MODULE_PURVIEW];
@@ -10641,7 +10642,7 @@ import_module (const cp_expr &e_name, bool exporting, tree, line_maps *lmaps)
     }
 
   if (imp->is_detached ())
-    imp->attach (from_loc, *e_name);
+    imp->attach (from_loc);
 
   imp->direct = true;
   if (exporting)
@@ -10667,11 +10668,12 @@ import_module (const cp_expr &e_name, bool exporting, tree, line_maps *lmaps)
    true if this TU is the exporting module unit.  */
 
 void
-declare_module (const cp_expr &e_name, bool exporting_p, tree, line_maps *lmaps)
+declare_module (tree name, location_t from_loc, bool exporting_p,
+		tree, line_maps *lmaps)
 {
   gcc_assert (global_namespace == current_scope ());
 
-  location_t from_loc = ordinary_loc_of (lmaps, e_name.get_location ());
+  from_loc = ordinary_loc_of (lmaps, from_loc);
   if (module_state *purview = (*module_state::modules)[MODULE_PURVIEW])
     {
       /* Already declared the module.  */
@@ -10679,11 +10681,6 @@ declare_module (const cp_expr &e_name, bool exporting_p, tree, line_maps *lmaps)
 		purview->name);
       return;
     }
-
-  tree name = *e_name;
-  tree maybe_vec_name = name;
-  if (TREE_CODE (name) == TREE_VEC)
-    name = make_flat_name (name);
 
   module_state *state = module_state::get_module (name);
   if (!state->is_detached ())
@@ -10735,7 +10732,7 @@ declare_module (const cp_expr &e_name, bool exporting_p, tree, line_maps *lmaps)
       state->direct = true;
       state->mod = MODULE_UNKNOWN;
     }
-  state->attach (from_loc, maybe_vec_name);
+  state->attach (from_loc);
 
   if (!modules_atom_p ())
     {
@@ -11012,10 +11009,10 @@ maybe_atom_legacy_module (line_maps *lmaps)
     =  MAP_START_LOCATION (LINEMAPS_MAP_AT (lmaps, false,
 					    prefix_line_maps_hwm - 1));
   tree mod_name = get_identifier (module_legacy_name);
-  cp_expr name (tree_cons (mod_name, module_legacy_system_p
-			   ? integer_zero_node : NULL_TREE, NULL_TREE), loc);
+  tree name = tree_cons (mod_name, module_legacy_system_p
+			 ? integer_zero_node : NULL_TREE, NULL_TREE);
 
-  declare_module (name, true, NULL, lmaps);
+  declare_module (name, loc, true, NULL, lmaps);
   /* Everything is exported.  */
   push_module_export (false, NULL);
   return true;

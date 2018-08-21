@@ -1,6 +1,17 @@
 2018-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (declare_module, import_module): Separate name from location.
+	* module.c (module_state::attach): Drop maybe_vec_name arg.
+	(module_state::get_module): Flatten here.
+	(declare_module, import_module): Separate name and from loc.
+	(maybe_atom_legacy_module): Adjust.
+	* parser.c (cp_parser_module_name): Return tree only.
+	(cp_parser_module_declaration, cp_parser_import_declaration): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/legacy-4.H: Adjust error.
+
+	gcc/cp/
 	* module.c (module_mapper::divert_include): Don't append export attrib.
 	(import_module): Don't scan attribs.
 	(maybe_atom_legacy_module): Push exporting.
