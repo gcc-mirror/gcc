@@ -1,3 +1,9 @@
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Force the freezing of an
+	expression function that is called to provide a default value
+	for a defaulted discriminant in an object initialization.
+
 2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* libgnat/g-dynhta.adb, libgnat/g-dynhta.ads: New package
