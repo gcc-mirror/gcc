@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---         S Y S T E M . D I M . M K S . O T H E R _ P R E F I X E S        --
+--                  S Y S T E M . D I M . F L O A T _ M K S                 --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---           Copyright (C) 2011-2018, Free Software Foundation, Inc.        --
+--             Copyright (C) 2018, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Dim.Generic_Mks.Generic_Other_Prefixes;
+with System.Dim.Generic_Mks;
 
-package System.Dim.Mks.Other_Prefixes is
-   new System.Dim.Mks.Generic_Other_Prefixes;
+package System.Dim.Float_Mks is new System.Dim.Generic_Mks (Float);

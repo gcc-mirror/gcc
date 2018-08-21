@@ -373,10 +373,18 @@ package body Impunit is
     ("s-addima", F),  -- System.Address_Image
     ("s-atocou", F),  -- System.Atomic_Counters
     ("s-assert", F),  -- System.Assertions
+    ("s-dfmkio", F),  -- System.Dim.Float_Mks_IO
+    ("s-dfmopr", F),  -- System.Dim.Float_Mks.Other_Prefixes
+    ("s-dgmgop", F),  -- System.Dim.Generic_Mks.Generic_Other_Prefixes
+    ("s-dlmopr", F),  -- System.Dim.Long_Mks.Other_Prefixes
     ("s-diflio", F),  -- System.Dim.Float_IO
+    ("s-diflmk", F),  -- System.Dim.Float_Mks
+    ("s-digemk", F),  -- System.Dim.Generic_Mks
     ("s-diinio", F),  -- System.Dim.Integer_IO
+    ("s-dilomk", F),  -- System.Dim.Long_Mks
     ("s-dimkio", F),  -- System.Dim.Mks_IO
     ("s-dimmks", F),  -- System.Dim.Mks
+    ("s-dlmkio", F),  -- System.Dim.Long_Mks_IO
     ("s-dmotpr", F),  -- System.Dim.Mks.Other_Prefixes
     ("s-memory", F),  -- System.Memory
     ("s-parint", F),  -- System.Partition_Interface
