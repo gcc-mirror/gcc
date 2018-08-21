@@ -119,9 +119,10 @@ wide_int_range_set_zero_nonzero_bits (signop sign,
    accordingly.  */
 
 static void
-wide_int_range_min_max (wide_int &min, wide_int &max,
-			wide_int &w0, wide_int &w1, wide_int &w2, wide_int &w3,
-			signop sign)
+wide_int_range_order_set (wide_int &min, wide_int &max,
+			  wide_int &w0, wide_int &w1,
+			  wide_int &w2, wide_int &w3,
+			  signop sign)
 {
   /* Order pairs w0,w1 and w2,w3.  */
   if (wi::gt_p (w0, w1, sign))
@@ -177,7 +178,7 @@ wide_int_range_cross_product (wide_int &res_lb, wide_int &res_ub,
 				     overflow_undefined))
     return false;
 
-  wide_int_range_min_max (res_lb, res_ub, cp1, cp2, cp3, cp4, sign);
+  wide_int_range_order_set (res_lb, res_ub, cp1, cp2, cp3, cp4, sign);
   return true;
 }
 
@@ -604,4 +605,61 @@ wide_int_range_trunc_mod (wide_int &wmin, wide_int &wmax,
   if (sign == SIGNED && wi::neg_p (tmp))
     tmp = wi::zero (prec);
   wmax = wi::min (wmax, tmp, sign);
+}
+
+/* Calculate ABS_EXPR on a range and store the result in [MIN, MAX].  */
+
+bool
+wide_int_range_abs (wide_int &min, wide_int &max,
+		    signop sign, unsigned prec,
+		    const wide_int &vr0_min, const wide_int &vr0_max,
+		    bool overflow_undefined)
+{
+  /* Pass through VR0 the easy cases.  */
+  if (sign == UNSIGNED || wi::ge_p (vr0_min, 0, sign))
+    {
+      min = vr0_min;
+      max = vr0_max;
+      return true;
+    }
+
+  /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
+     useful range.  */
+  wide_int min_value = wi::min_value (prec, sign);
+  wide_int max_value = wi::max_value (prec, sign);
+  if (!overflow_undefined && wi::eq_p (vr0_min, min_value))
+    return false;
+
+  /* ABS_EXPR may flip the range around, if the original range
+     included negative values.  */
+  if (wi::eq_p (vr0_min, min_value))
+    min = max_value;
+  else
+    min = wi::abs (vr0_min);
+  if (wi::eq_p (vr0_max, min_value))
+    max = max_value;
+  else
+    max = wi::abs (vr0_max);
+
+  /* If the range contains zero then we know that the minimum value in the
+     range will be zero.  */
+  if (wi::le_p (vr0_min, 0, sign) && wi::ge_p (vr0_max, 0, sign))
+    {
+      if (wi::gt_p (min, max, sign))
+	max = min;
+      min = wi::zero (prec);
+    }
+  else
+    {
+      /* If the range was reversed, swap MIN and MAX.  */
+      if (wi::gt_p (min, max, sign))
+	std::swap (min, max);
+    }
+
+  /* If the new range has its limits swapped around (MIN > MAX), then
+     the operation caused one of them to wrap around, mark the new
+     range VARYING.  */
+  if (wi::gt_p (min, max, sign))
+      return false;
+  return true;
 }
