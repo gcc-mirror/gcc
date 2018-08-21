@@ -1,3 +1,7 @@
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/dynhash.adb: New testcase.
+
 2018-08-21  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/enum4.adb: New testcase.
