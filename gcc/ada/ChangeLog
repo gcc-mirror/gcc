@@ -1,3 +1,8 @@
+2018-08-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_cg.adb (Generate_CG_Output): Handle calls removed by the
+	expander.
+
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* layout.adb: Do not set size of access subprogram if unnesting.
