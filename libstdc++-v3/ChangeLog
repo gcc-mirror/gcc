@@ -1,3 +1,7 @@
+2018-08-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/18_support/new_nothrow.cc: XFAIL on AIX.
+
 2018-08-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/26_numerics/bit/bitops.count/countl_one.cc: Remove
