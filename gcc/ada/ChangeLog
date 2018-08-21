@@ -1,3 +1,19 @@
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Elaboration_Entity): Include entries and entry
+	families in the set of legal entities.
+	(Elaboration_Entity_Required): Include entries and entry
+	families in the set of legal entities.
+	(Set_Elaboration_Entity): Include entries and entry families in
+	the set of legal entities.
+	(Set_Elaboration_Entity_Required): Include entries and entry
+	families in the set of legal entities.
+	(Write_Field13_Name): Update the output of attribute
+	Elaboration_Entity.
+	* einfo.ads: Attributes Elaboration_Entity and
+	Elaboration_Entity_Required now apply to entries and entry
+	families.
+
 2018-08-21  Arnaud Charlet  <charlet@adacore.com>
 
 	* set_targ.adb: Mark some CodePeer message as Intentional.

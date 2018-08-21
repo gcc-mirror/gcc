@@ -1182,7 +1182,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind (Id) = E_Package
+         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
            or else
          Is_Generic_Unit (Id));
       return Node13 (Id);
@@ -1193,7 +1193,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind (Id) = E_Package
+         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
            or else
          Is_Generic_Unit (Id));
       return Flag174 (Id);
@@ -4412,7 +4412,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind (Id) = E_Package
+         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
            or else
          Is_Generic_Unit (Id));
       Set_Node13 (Id, V);
@@ -4423,7 +4423,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind (Id) = E_Package
+         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
            or else
          Is_Generic_Unit (Id));
       Set_Flag174 (Id, V);
@@ -10355,7 +10355,9 @@ package body Einfo is
          =>
             Write_Str ("Component_Clause");
 
-         when E_Function
+         when E_Entry
+            | E_Entry_Family
+            | E_Function
             | E_Procedure
             | E_Package
             | Generic_Unit_Kind
