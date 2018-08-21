@@ -43,12 +43,16 @@ libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 	$(version_arg) -Wc,-shared-libgcc
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
 
-cafexeclib_LTLIBRARIES = libcaf_single.la
+cafexeclib_LTLIBRARIES = libcaf_single.la libcaf_multi.la
 cafexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libcaf_single_la_SOURCES = caf/single.c
 libcaf_single_la_LDFLAGS = -static
 libcaf_single_la_DEPENDENCIES = caf/libcaf.h
 libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
+libcaf_multi_la_SOURCES = caf/multi.c
+libcaf_multi_la_LDFLAGS = -static
+libcaf_multi_la_DEPENDENCIES = caf/libcaf.h
+libcaf_multi_la_LINK = $(LINK) $(libcaf_multi_la_LDFLAGS)
 
 if IEEE_SUPPORT
 fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude

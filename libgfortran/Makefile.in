@@ -182,6 +182,9 @@ am__installdirs = "$(DESTDIR)$(cafexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(fincludedir)"
 LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
+libcaf_multi_la_LIBADD =
+am_libcaf_multi_la_OBJECTS = multi.lo
+libcaf_multi_la_OBJECTS = $(am_libcaf_multi_la_OBJECTS)
 libcaf_single_la_LIBADD =
 am_libcaf_single_la_OBJECTS = single.lo
 libcaf_single_la_OBJECTS = $(am_libcaf_single_la_OBJECTS)
@@ -441,7 +444,8 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 FCCOMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 LTFCCOMPILE = $(LIBTOOL) --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS)
-SOURCES = $(libcaf_single_la_SOURCES) $(libgfortran_la_SOURCES)
+SOURCES = $(libcaf_multi_la_SOURCES) $(libcaf_single_la_SOURCES) \
+	$(libgfortran_la_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -629,12 +633,16 @@ libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 	$(version_arg) -Wc,-shared-libgcc
 
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
-cafexeclib_LTLIBRARIES = libcaf_single.la
+cafexeclib_LTLIBRARIES = libcaf_single.la libcaf_multi.la
 cafexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libcaf_single_la_SOURCES = caf/single.c
 libcaf_single_la_LDFLAGS = -static
 libcaf_single_la_DEPENDENCIES = caf/libcaf.h
 libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
+libcaf_multi_la_SOURCES = caf/multi.c
+libcaf_multi_la_LDFLAGS = -static
+libcaf_multi_la_DEPENDENCIES = caf/libcaf.h
+libcaf_multi_la_LINK = $(LINK) $(libcaf_multi_la_LDFLAGS)
 @IEEE_SUPPORT_TRUE@fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude
 @IEEE_SUPPORT_TRUE@nodist_finclude_HEADERS = ieee_arithmetic.mod ieee_exceptions.mod ieee_features.mod
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
@@ -1528,6 +1536,8 @@ clean-toolexeclibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+libcaf_multi.la: $(libcaf_multi_la_OBJECTS) $(libcaf_multi_la_DEPENDENCIES) $(EXTRA_libcaf_multi_la_DEPENDENCIES) 
+	$(libcaf_multi_la_LINK) -rpath $(cafexeclibdir) $(libcaf_multi_la_OBJECTS) $(libcaf_multi_la_LIBADD) $(LIBS)
 libcaf_single.la: $(libcaf_single_la_OBJECTS) $(libcaf_single_la_DEPENDENCIES) $(EXTRA_libcaf_single_la_DEPENDENCIES) 
 	$(libcaf_single_la_LINK) -rpath $(cafexeclibdir) $(libcaf_single_la_OBJECTS) $(libcaf_single_la_LIBADD) $(LIBS)
 libgfortran.la: $(libgfortran_la_OBJECTS) $(libgfortran_la_DEPENDENCIES) $(EXTRA_libgfortran_la_DEPENDENCIES) 
@@ -1914,6 +1924,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minval_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minval_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/move_alloc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/multi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mvbits.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/norm2_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/norm2_r16.Plo@am__quote@
@@ -2519,6 +2530,13 @@ f2c_specifics.lo: intrinsics/f2c_specifics.F90
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+multi.lo: caf/multi.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT multi.lo -MD -MP -MF $(DEPDIR)/multi.Tpo -c -o multi.lo `test -f 'caf/multi.c' || echo '$(srcdir)/'`caf/multi.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/multi.Tpo $(DEPDIR)/multi.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='caf/multi.c' object='multi.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o multi.lo `test -f 'caf/multi.c' || echo '$(srcdir)/'`caf/multi.c
 
 single.lo: caf/single.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT single.lo -MD -MP -MF $(DEPDIR)/single.Tpo -c -o single.lo `test -f 'caf/single.c' || echo '$(srcdir)/'`caf/single.c
