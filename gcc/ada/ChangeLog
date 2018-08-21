@@ -1,5 +1,11 @@
 2018-08-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Call_to_gnu): Always suppress an
+	unchecked conversion around the actual for an In parameter
+	passed by copy.
+
+2018-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_util.adb (Is_Possibly_Unaligned_Object): For the case of a
 	selected component inherited in a record extension and subject
 	to a representation clause, retrieve the position and size from
