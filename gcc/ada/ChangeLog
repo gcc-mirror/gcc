@@ -1,3 +1,17 @@
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (New_External_Entity): Type of
+	Suffix_Index must be Int, not Nat, so that a negative value can
+	be used to generate a unique name for an external object, as
+	specified in Tbuild.New_External_Name.
+	(Scope_Within): Handle private type whose completion is a
+	synchronized type (For unnesting).
+	* itypes.ads, itypes.adb (Create_Itype): Ditto
+	* sem_ch3.adb (Constrain_Corresponding_Record): Generate a
+	unique name for the created subtype, because there may be
+	several discriminated tasks present in the same scope, and each
+	needs its distinct corresponding record subtype.
+
 2018-08-21  Yannick Moy  <moy@adacore.com>
 
 	* doc/gnat_ugn/gnat_and_program_execution.rst: Update
