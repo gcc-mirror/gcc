@@ -3540,8 +3540,10 @@ package body Sprint is
       --  where the aspects are printed inside the package specification.
 
       if Has_Aspects (Node)
-         and then not Nkind_In (Node, N_Package_Declaration,
-                                      N_Generic_Package_Declaration)
+        and then not Nkind_In (Node, N_Package_Declaration,
+                               N_Generic_Package_Declaration)
+        and then not Is_Empty_List (Aspect_Specifications (Node))
+        and then not Is_Empty_List (Aspect_Specifications (Node))
       then
          Sprint_Aspect_Specifications (Node, Semicolon => True);
       end if;
