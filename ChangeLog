@@ -1,3 +1,7 @@
+2018-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* MAINTAINERS: Add self to global reviewers list.
+
 2018-08-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	MAINTAINERS: Add c-sky port maintainers.
