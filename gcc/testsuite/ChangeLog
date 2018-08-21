@@ -1,3 +1,7 @@
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/expr_func6.adb, gnat.dg/expr_func6.ads: New testcase.
+
 2018-08-21  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/spark2.adb, gnat.dg/spark2.ads: New testcase.
