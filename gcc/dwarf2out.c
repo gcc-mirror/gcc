@@ -6455,7 +6455,12 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
 	  print_indent -= 4;
 	}
       else
-	fprintf (outfile, " (%p)\n", (void *) val->v.val_loc);
+	{
+	  if (flag_dump_noaddr || flag_dump_unnumbered)
+	    fprintf (outfile, " #\n");
+	  else
+	    fprintf (outfile, " (%p)\n", (void *) val->v.val_loc);
+	}
       break;
     case dw_val_class_loc_list:
       fprintf (outfile, "location list -> label:%s",
@@ -6524,7 +6529,10 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
 	    }
 	  else
 	    fprintf (outfile, "die -> %ld", die->die_offset);
-	  fprintf (outfile, " (%p)", (void *) die);
+	  if (flag_dump_noaddr || flag_dump_unnumbered)
+	    fprintf (outfile, " #");
+	  else
+	    fprintf (outfile, " (%p)", (void *) die);
 	}
       else
 	fprintf (outfile, "die -> <null>");
@@ -6614,8 +6622,11 @@ print_loc_descr (dw_loc_descr_ref loc, FILE *outfile)
   for (l = loc; l != NULL; l = l->dw_loc_next)
     {
       print_spaces (outfile);
-      fprintf (outfile, "(%p) %s",
-	       (void *) l,
+      if (flag_dump_noaddr || flag_dump_unnumbered)
+	fprintf (outfile, "#");
+      else
+	fprintf (outfile, "(%p)", (void *) l);
+      fprintf (outfile, " %s",
 	       dwarf_stack_op_name (l->dw_loc_opc));
       if (l->dw_loc_oprnd1.val_class != dw_val_class_none)
 	{
@@ -6642,9 +6653,12 @@ print_die (dw_die_ref die, FILE *outfile)
   unsigned ix;
 
   print_spaces (outfile);
-  fprintf (outfile, "DIE %4ld: %s (%p)\n",
-	   die->die_offset, dwarf_tag_name (die->die_tag),
-	   (void*) die);
+  fprintf (outfile, "DIE %4ld: %s ",
+	   die->die_offset, dwarf_tag_name (die->die_tag));
+  if (flag_dump_noaddr || flag_dump_unnumbered)
+    fprintf (outfile, "#\n");
+  else
+    fprintf (outfile, "(%p)\n", (void*) die);
   print_spaces (outfile);
   fprintf (outfile, "  abbrev id: %lu", die->die_abbrev);
   fprintf (outfile, " offset: %ld", die->die_offset);

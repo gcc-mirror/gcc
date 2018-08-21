@@ -1,3 +1,8 @@
+2018-08-21  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf2out.c (print_dw_val, print_loc_descr, print_die): Handle
+	flag_dump_noaddr and flag_dump_unnumbered.
+
 2018-08-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	* wide-int-range.cc (wide_int_range_abs): New.
