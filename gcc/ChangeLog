@@ -1,3 +1,12 @@
+2018-08-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2018-08-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87014
+	* config/i386/i386.md (eh_return): Always update EH return
+	address in word_mode.
+
 2018-08-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	Backport from mainline
