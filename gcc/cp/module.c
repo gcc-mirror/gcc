@@ -2796,8 +2796,7 @@ class GTY(()) module_state {
 		location_t floc = UNKNOWN_LOCATION);
   void attach (location_t, tree maybe_vec_name);
   bool do_import (const char *filename, line_maps *, bool check_crc);
-  static module_state *get_module (tree name, module_state * = NULL,
-				   bool insert = false);
+  static module_state *get_module (tree name);
   static module_state *insert_mapping (tree name, char *filename);
 
  private:
@@ -6710,55 +6709,16 @@ depset::tarjan::connect (depset *v)
 /* Find or create module NAME in the hash table.  */
 
 module_state *
-module_state::get_module (tree name, module_state *dflt, bool insert)
+module_state::get_module (tree name)
 {
   hashval_t hv = module_state_hash::hash (name);
-  module_state **slot
-    = hash->find_slot_with_hash (name, hv, insert ? INSERT : NO_INSERT);
-
-  if (!slot)
-    return NULL;
-
+  module_state **slot = hash->find_slot_with_hash (name, hv, INSERT);
   module_state *state = *slot;
-  if (dflt)
+  if (!state)
     {
-      /* Don't overwrite occupied default.  */
-      if (dflt->vec_name)
-	return NULL;
-
-      gcc_assert (!dflt->filename);
-      if (state)
-	{
-	  /* Don't copy an occupied module.  */
-	  if (!state->is_detached ())
-	    return state;
-
-	  gcc_assert (state->filename);
-	  dflt->filename = state->filename;
-	  state->filename = NULL;
-	  delete state;
-	}
-      dflt->set_name (name);
-      state = dflt;
+      state = new (ggc_alloc<module_state> ()) module_state (name);
+      *slot = state;
     }
-  else if (!state)
-    state = new (ggc_alloc<module_state> ()) module_state (name);
-  *slot = state;
-  return state;
-}
-
-/* Insert a mapping for module NAME to BMI FILENAME.  If there is
-   already a mapping, ignore the new one.  Takes ownership of
-   FILENAME.  */
-
-module_state *
-module_state::insert_mapping (tree name, char *filename)
-{
-  module_state *state = get_module (name, NULL, true);
-
-  if (!state->filename)
-    state->filename = filename;
-
   return state;
 }
 
@@ -7254,17 +7214,14 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	      }
 	    
 	    starting = false;
-	    file = xstrdup (maybe_strip_bmi_prefix (file));
+	    file = maybe_strip_bmi_prefix (file);
 	    module_state *state
-	      = module_state::insert_mapping (get_identifier (mod), file);
-	    if (state->filename != file)
-	      {
-		if (strcmp (state->filename, file))
-		  warning_at (loc, 0,
-			      "ignoring conflicting mapping of %qE to %qs",
-			      state->name, file);
-		free (file);
-	      }
+	      = module_state::get_module (get_identifier (mod));
+	    if (!state->filename)
+	      state->filename = xstrdup (file);
+	    else if (strcmp (state->filename, file))
+	      warning_at (loc, 0, "ignoring conflicting mapping of %qE to %qs",
+			  state->name, file);
 	  }
       fclose (from);
       from = NULL;
@@ -7743,11 +7700,11 @@ module_mapper::bewait_response (location_t loc)
 	  if (0 != response_word (loc, "ERROR", NULL))
 	    error_at (loc, "mapper bewait failure: %s", response_error ());
 	}
-      else if (module_state *state = module_state::get_module (mod_name))
+      else
 	{
+	  module_state *state = module_state::get_module (mod_name);
 	  char *fname = bmi_response (state);
-	  
-	  if (!state || !state->direct || state->filename)
+	  if (!state->direct || state->filename)
 	    error_at (loc, "unexpected bewait reponse from mapper %qs", name);
 	  else if (fname)
 	    state->filename = xstrdup (fname);
@@ -8045,7 +8002,7 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	  exported = sec.u ();
 	  if (sec.get_overrun ())
 	    break;
-	  imp = get_module (name, NULL, true);
+	  imp = get_module (name);
 	  if (imp->is_detached ())
 	    imp->attach (from_loc, name);
 	  module_state *purview = (*module_state::modules)[MODULE_PURVIEW];
@@ -8081,7 +8038,7 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	{
 	  /* An indirect import, find it, it should be there.  */
 	  imp = get_module (name);
-	  if (!imp)
+	  if (imp->is_detached ())
 	    error_at (loc, "indirect import %qE is not already loaded", name);
 	}
       if (imp)
@@ -10667,7 +10624,7 @@ import_module (const cp_expr &e_name, bool exporting, tree attrs, line_maps *lma
   if (TREE_CODE (name) == TREE_VEC)
     name = make_flat_name (name);
 
-  module_state *imp = module_state::get_module (name, NULL, true);
+  module_state *imp = module_state::get_module (name);
   module_state *purview = (*module_state::modules)[MODULE_PURVIEW];
   if (purview == imp)
     {
@@ -10723,11 +10680,7 @@ declare_module (const cp_expr &e_name, bool exporting_p, tree, line_maps *lmaps)
   if (TREE_CODE (name) == TREE_VEC)
     name = make_flat_name (name);
 
-  module_state *state = module_state::get_module
-    (name, (*module_state::modules)[MODULE_NONE], true);
-
-  gcc_assert (state);
-
+  module_state *state = module_state::get_module (name);
   if (!state->is_detached ())
     {
       /* Cannot be module unit of an imported module.  */
@@ -10754,6 +10707,16 @@ declare_module (const cp_expr &e_name, bool exporting_p, tree, line_maps *lmaps)
 		      map - LINEMAPS_ORDINARY_MAPS (line_table));
     }
 
+  /* Copy any importing information we may have already done.  */
+  if (!modules_atom_p ())
+    {
+      module_state *global = (*module_state::modules)[MODULE_NONE];
+      state->imports = global->imports;
+    }
+  else
+    gcc_checking_assert (module_state::modules->length () == MODULE_IMPORT_BASE);
+
+  (*module_state::modules)[MODULE_NONE] = state;
   (*module_state::modules)[MODULE_PURVIEW] = state;
   current_module = MODULE_PURVIEW;
   if (exporting_p)

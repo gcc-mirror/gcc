@@ -1,6 +1,13 @@
 2018-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state::get_module): Lose dflt & insert args.
+	(module_state::insert_mapping): Move directly into ...
+	(module_mapper::module_mapper): ... here.
+	(module_mapper::bewait_response, module_state::read_imports): Adjust.
+	(import_module, declare_module): Adjust.
+
+	gcc/cp/
 	* module.c (module_state::is_mapping): Rename to ...
 	(module_state::is_detached): ... here.  Use from_loc.
 	(module_state::attach): New broken out of ...
