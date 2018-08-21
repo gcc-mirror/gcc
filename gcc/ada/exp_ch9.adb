@@ -476,10 +476,11 @@ package body Exp_Ch9 is
    --    ...
    --    <actualN> := P.<formalN>;
 
-   procedure Reset_Scopes_To (Proc_Body : Node_Id; E : Entity_Id);
-   --  Reset the scope of declarations and blocks at the top level of Proc_Body
-   --  to be E. Used after expanding entry bodies into their corresponding
-   --  procedures. This is needed during unnesting to determine whether a
+   procedure Reset_Scopes_To (Bod : Node_Id; E : Entity_Id);
+   --  Reset the scope of declarations and blocks at the top level of Bod
+   --  to be E. Bod is either a block or a subprogram body.  Used after
+   --  expanding various kinds of entry bodies into their corresponding
+   --  constructs. This is needed during unnesting to determine whether a
    --  body geenrated for an entry or an accept alternative includes uplevel
    --  references.
 
@@ -8240,6 +8241,7 @@ package body Exp_Ch9 is
       end if;
 
       Analyze (N);
+      Reset_Scopes_To (N, Entity (Identifier (N)));
    end Expand_N_Conditional_Entry_Call;
 
    ---------------------------------------
@@ -12653,7 +12655,7 @@ package body Exp_Ch9 is
           Expression          => D_Disc));
 
       --  Do the assignment at this stage only because the evaluation of the
-      --  expression must not occur before (see ACVC C97302A).
+      --  expression must not occur earlier (see ACVC C97302A).
 
       Append_To (Stmts,
         Make_Assignment_Statement (Loc,
@@ -12850,7 +12852,7 @@ package body Exp_Ch9 is
          end loop;
 
          --  Do the assignment at this stage only because the evaluation
-         --  of the expression must not occur before (see ACVC C97302A).
+         --  of the expression must not occur earlier (see ACVC C97302A).
 
          Insert_Before (Stmt,
            Make_Assignment_Statement (Loc,
@@ -12935,6 +12937,21 @@ package body Exp_Ch9 is
             Make_Handled_Sequence_Of_Statements (Loc, Stmts)));
 
       Analyze (N);
+
+      --  Some items in Decls used to be in the N_Block in  E_Call that
+      --  is constructed in Expand_Entry_Call, and are now in the new
+      --  Block into which N has been rewritten.  Adjust their scopes
+      --  to reflect that.
+
+      if Nkind (E_Call) = N_Block_Statement then
+         Obj := First_Entity (Entity (Identifier (E_Call)));
+         while Present (Obj) loop
+            Set_Scope (Obj, Entity (Identifier (N)));
+            Next_Entity (Obj);
+         end loop;
+      end if;
+
+      Reset_Scopes_To (N, Entity (Identifier (N)));
    end Expand_N_Timed_Entry_Call;
 
    ----------------------------------------
@@ -14832,7 +14849,7 @@ package body Exp_Ch9 is
    -- Reset_Scopes_To --
    ---------------------
 
-   procedure Reset_Scopes_To (Proc_Body : Node_Id; E : Entity_Id) is
+   procedure Reset_Scopes_To (Bod : Node_Id; E : Entity_Id) is
 
       function Reset_Scope (N : Node_Id) return Traverse_Result;
       --  Temporaries may have been declared during expansion of the procedure
@@ -14853,7 +14870,8 @@ package body Exp_Ch9 is
          --  If this is a block statement with an Identifier, it forms a scope,
          --  so we want to reset its scope but not look inside.
 
-         if Nkind (N) = N_Block_Statement
+         if N /= Bod
+           and then Nkind (N) = N_Block_Statement
            and then Present (Identifier (N))
          then
             Set_Scope (Entity (Identifier (N)), E);
@@ -14868,7 +14886,7 @@ package body Exp_Ch9 is
             Set_Scope (Defining_Entity (N), E);
             return Skip;
 
-         elsif N = Proc_Body then
+         elsif N = Bod then
 
             --  Scan declarations in new body. Declarations in the statement
             --  part will be handled during later traversal.
@@ -14879,7 +14897,7 @@ package body Exp_Ch9 is
                Next (Decl);
             end loop;
 
-         elsif N /= Proc_Body and then Nkind (N) in N_Proper_Body then
+         elsif N /= Bod and then Nkind (N) in N_Proper_Body then
             return Skip;
          end if;
 
@@ -14889,7 +14907,7 @@ package body Exp_Ch9 is
    --  Start of processing for Reset_Scopes_To
 
    begin
-      Reset_Scopes (Proc_Body);
+      Reset_Scopes (Bod);
    end Reset_Scopes_To;
 
    ----------------------
