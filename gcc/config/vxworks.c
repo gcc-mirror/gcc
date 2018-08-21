@@ -143,8 +143,11 @@ vxworks_override_options (void)
       targetm.emutls.debug_form_tls_address = true;
     }
 
-  /* We can use .ctors/.dtors sections only in RTP mode.  */
-  targetm.have_ctors_dtors = TARGET_VXWORKS_RTP;
+  /* We can use .ctors/.dtors sections only in RTP mode.  But, if the
+     compiler was built with --enable-initfini-array, assume the
+     toolchain implements the proper glue to make .init_array and
+     .fini_array work.  */
+  targetm.have_ctors_dtors = TARGET_VXWORKS_RTP || HAVE_INITFINI_ARRAY_SUPPORT;
 
   /* PIC is only supported for RTPs.  */
   if (flag_pic && !TARGET_VXWORKS_RTP)

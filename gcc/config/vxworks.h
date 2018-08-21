@@ -142,9 +142,13 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_OVERRIDE_OPTIONS vxworks_override_options ()
 extern void vxworks_override_options (void);
 
-/* Only RTPs support prioritized constructors and destructors:
-   the implementation relies on numbered .ctors* sections.  */
-#define SUPPORTS_INIT_PRIORITY TARGET_VXWORKS_RTP
+/* RTPs support prioritized constructors and destructors: the
+   implementation relies on numbered .ctors* sections. If the compiler
+   was built with --enable-initfini-array, we assume the user uses a
+   linker script that sorts and merges the .init_array.* sections
+   appropriately.  */
+#define SUPPORTS_INIT_PRIORITY \
+  (TARGET_VXWORKS_RTP || HAVE_INITFINI_ARRAY_SUPPORT)
 
 /* VxWorks requires special handling of constructors and destructors.
    All VxWorks configurations must use these functions.  */
