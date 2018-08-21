@@ -1,3 +1,10 @@
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): If the component type
+	is limited, the array must be constructed in place, so set flag
+	In_Place_Assign_OK_For_Declaration accordingly. This prevents
+	improper copying of an array of tasks during initialization.
+
 2018-08-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Call_to_gnu): Always suppress an
