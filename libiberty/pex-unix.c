@@ -60,9 +60,9 @@ extern int errno;
 #endif
 
 #ifdef vfork /* Autoconf may define this to fork for us. */
-# define IS_FAKE_VFORK 1
+# define VFORK_IS_FORK 1
 #else
-# define IS_FAKE_VFORK 0
+# define VFORK_IS_FORK 0
 #endif
 #ifdef HAVE_VFORK_H
 #include <vfork.h>
@@ -566,7 +566,7 @@ static pid_t
 pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 		     char * const * argv, char * const * env,
                      int in, int out, int errdes,
-		     int toclose, const char **errmsg_ptr, int *err_ptr)
+		     int toclose, const char **errmsg, int *err)
 {
   pid_t pid = -1;
 
@@ -591,8 +591,6 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
   volatile int child_errno = 0;
   const char *volatile child_bad_fn = NULL;
 
-  const char *bad_fn = NULL;
-
   for (retries = 0; retries < 4; ++retries)
     {
       pid = vfork ();
@@ -606,132 +604,125 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
     {
     case 0:
       /* Child process.  */
-      if (!bad_fn && in != STDIN_FILE_NO)
-	{
-	  if (dup2 (in, STDIN_FILE_NO) < 0)
-	    bad_fn = "dup2";
-	  else if (close (in) < 0)
-	    bad_fn = "close";
-	}
-      if (!bad_fn && out != STDOUT_FILE_NO)
-	{
-	  if (dup2 (out, STDOUT_FILE_NO) < 0)
-	    bad_fn = "dup2";
-	  else if (close (out) < 0)
-	    bad_fn = "close";
-	}
-      if (!bad_fn && errdes != STDERR_FILE_NO)
-	{
-	  if (dup2 (errdes, STDERR_FILE_NO) < 0)
-	    bad_fn = "dup2";
-	  else if (close (errdes) < 0)
-	    bad_fn = "close";
-	}
-      if (!bad_fn && toclose >= 0)
-	{
-	  if (close (toclose) < 0)
-	    bad_fn = "close";
-	}
-      if (!bad_fn && (flags & PEX_STDERR_TO_STDOUT) != 0)
-	{
-	  if (dup2 (STDOUT_FILE_NO, STDERR_FILE_NO) < 0)
-	    bad_fn = "dup2";
-	}
-      if (!bad_fn)
-	{
-	  if (env)
-	    /* NOTE: In a standard vfork implementation this clobbers
-	       the parent's copy of environ "too" (in reality there's
-	       only one copy).  This is ok as we restore it below.  */
-	    environ = (char**) env;
-	  if ((flags & PEX_SEARCH) != 0)
-	    {
-	      execvp (executable, to_ptr32 (argv));
-	      bad_fn = "execvp";
-	    }
-	  else
-	    {
-	      execv (executable, to_ptr32 (argv));
-	      bad_fn = "execv";
-	    }
-	}
-
-      /* Something failed, report an error.  We don't use stdio
-	 routines, because we might be here due to a vfork call.  */
       {
-	ssize_t retval = 0;
-	int err = errno;
-
-	if (IS_FAKE_VFORK)
+	const char *bad_fn = NULL;
+	if (!bad_fn && in != STDIN_FILE_NO)
 	  {
-	    /* The parent will not see our scream above, so write to
-	       stdout.  */
-#define writeerr(s) (retval |= write (STDERR_FILE_NO, s, strlen (s)))
-	    writeerr (obj->pname);
-	    writeerr (": error trying to exec '");
-	    writeerr (executable);
-	    writeerr ("': ");
-	    writeerr (bad_fn);
-	    writeerr (": ");
-	    writeerr (xstrerror (err));
-	    writeerr ("\n");
-#undef writeerr
+	    if (dup2 (in, STDIN_FILE_NO) < 0)
+	      bad_fn = "dup2";
+	    else if (close (in) < 0)
+	      bad_fn = "close";
+	  }
+	if (!bad_fn && out != STDOUT_FILE_NO)
+	  {
+	    if (dup2 (out, STDOUT_FILE_NO) < 0)
+	      bad_fn = "dup2";
+	    else if (close (out) < 0)
+	      bad_fn = "close";
+	  }
+	if (!bad_fn && errdes != STDERR_FILE_NO)
+	  {
+	    if (dup2 (errdes, STDERR_FILE_NO) < 0)
+	      bad_fn = "dup2";
+	    else if (close (errdes) < 0)
+	      bad_fn = "close";
+	  }
+	if (!bad_fn && toclose >= 0)
+	  {
+	    if (close (toclose) < 0)
+	      bad_fn = "close";
+	  }
+	if (!bad_fn && (flags & PEX_STDERR_TO_STDOUT) != 0)
+	  {
+	    if (dup2 (STDOUT_FILE_NO, STDERR_FILE_NO) < 0)
+	      bad_fn = "dup2";
+	  }
+	if (!bad_fn)
+	  {
+	    if (env)
+	      /* NOTE: In a standard vfork implementation this clobbers
+		 the parent's copy of environ "too" (in reality there's
+		 only one copy).  This is ok as we restore it below.  */
+	      environ = (char**) env;
+	    if ((flags & PEX_SEARCH) != 0)
+	      {
+		execvp (executable, to_ptr32 (argv));
+		bad_fn = "execvp";
+	      }
+	    else
+	      {
+		execv (executable, to_ptr32 (argv));
+		bad_fn = "execv";
+	      }
+	  }
+
+	/* Something failed.  */
+	int retval = -1;
+	if (VFORK_IS_FORK)
+	  {
+	    /* We really forked.  We cannot tell the parent the error,
+	       but we can use stdio.  */
+	    if (fprintf (stderr, "%s: error trying to exec '%s': %s: %s\n",
+			 obj->pname, executable, bad_fn, xstrerror (errno)) < 0
+		|| fflush (stderr) != 0)
+	      retval = -2;
 	  }
 	else
 	  {
+	    /* We used vfork, therefore running in the same address
+	       space as the parent.  Tell it we failed.  */
 	    child_bad_fn = bad_fn;
-	    child_errno = err;
+	    child_errno = errno;
 	  }
 
-	/* Exit with -2 if the error output failed, too.  */
-	_exit (retval < 0 ? -2 : -1);
+	_exit (retval);
       }
       /* NOTREACHED */
       return (pid_t) -1;
 
     case -1:
-      child_bad_fn = IS_FAKE_VFORK ? "fork" : "vfork";
+      /* Failed to (v)fork.  */
+      child_bad_fn = VFORK_IS_FORK ? "fork" : "vfork";
+      /* Don't need to save errno.  */
       /* FALLTHROUGH */
 
     default:
       /* Parent process.  */
+      {
+	/* Restore environ.
+	   Note that the parent either doesn't run until the child execs/exits
+	   (standard vfork behaviour), or if it does run then vfork is behaving
+	   more like fork.  In either case we needn't worry about clobbering
+	   the child's copy of environ.  */
+	environ = save_environ;
 
-      /* Restore environ.
-	 Note that the parent either doesn't run until the child execs/exits
-	 (standard vfork behaviour), or if it does run then vfork is behaving
-	 more like fork.  In either case we needn't worry about clobbering
-	 the child's copy of environ.  */
-      environ = save_environ;
+	const char *bad_fn = child_bad_fn;
+	if (!VFORK_IS_FORK)
+	  {
+	    int e = child_errno;
+	    if (e)
+	      /* The child managed to give us an error, before failing to
+		 start.  Use that.  */
+	      errno = e;
+	  }
 
-      /* bad_fn may have been clobbered by the child, because it
-	 becomes dead there.  */
-      bad_fn = child_bad_fn;
-      if (!IS_FAKE_VFORK)
-	{
-	  int err = child_errno;
-	  if (err != 0)
-	    /* The child managed to give us an error, before failing to
-	       start.  Use that.  */
-	    errno = err;
-	}
+	if (!bad_fn && in != STDIN_FILE_NO)
+	  if (close (in) < 0)
+	    bad_fn = "close";
+	if (!bad_fn && out != STDOUT_FILE_NO)
+	  if (close (out) < 0)
+	    bad_fn = "close";
+	if (!bad_fn && errdes != STDERR_FILE_NO)
+	  if (close (errdes) < 0)
+	    bad_fn = "close";
 
-      if (!bad_fn && in != STDIN_FILE_NO)
-	if (close (in) < 0)
-	  bad_fn = "close";
-      if (!bad_fn && out != STDOUT_FILE_NO)
-	if (close (out) < 0)
-	  bad_fn = "close";
-      if (!bad_fn && errdes != STDERR_FILE_NO)
-	if (close (errdes) < 0)
-	  bad_fn = "close";
-
-      if (bad_fn)
-	{
-	  *err_ptr = errno;
-	  *errmsg_ptr = bad_fn;
-	  return (pid_t) -1;
-	}
-
+	if (bad_fn)
+	  {
+	    *err = errno;
+	    *errmsg = bad_fn;
+	    return (pid_t) -1;
+	  }
+      }
       return pid;
     }
 }
