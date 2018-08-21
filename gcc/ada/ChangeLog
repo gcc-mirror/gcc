@@ -1,3 +1,16 @@
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Remove Freeze_Expr_Types.
+	* freeze.ads, freeze.adb (Freeze_Expr_Types): Moved from
+	sem_ch6.adb, and extended to handle other expressions that may
+	contain unfrozen types that must be frozen in their proper
+	scopes.
+	* contracts.adb (Analyze_Entry_Or_Subprogram_Contract): If the
+	contract is for the generated body of an expression function
+	that is a completion, traverse the expressions for pre- and
+	postconditions to freeze all types before adding the contract
+	code within the subprogram body.
+
 2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch10.adb: Remove the with and use clause for unit Ghost.
