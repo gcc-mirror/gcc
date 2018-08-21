@@ -1,3 +1,7 @@
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sprint.adb: Add guard on printing aspects.
+
 2018-08-21  Javier Miranda  <miranda@adacore.com>
 
 	* exp_cg.adb (Generate_CG_Output): Handle calls removed by the
