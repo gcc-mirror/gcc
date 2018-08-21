@@ -1,5 +1,12 @@
 2018-08-21  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
+	* config/vxworks.c: Set targetm.have_ctors_dtors
+	if HAVE_INITFINI_ARRAY_SUPPORT.
+	* config/vxworks.h: Set SUPPORTS_INIT_PRIORITY
+	if HAVE_INITFINI_ARRAY_SUPPORT.
+
+2018-08-21  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
 	* config/vxworks.h: Add $(WIND_BASE)/target/h/wrn/coreip to
 	default search path for VxWorks < 7.
 
