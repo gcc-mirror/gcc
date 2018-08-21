@@ -1,3 +1,8 @@
+2018-08-21  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads, einfo.adb (Private_View, Shadow_Entities): Remove
+	obsolete code.
+
 2018-08-21  Maroua Maalej  <maalej@adacore.com>
 
 	* sem_spark.adb (Check_Call_Statement): Check global and formal
