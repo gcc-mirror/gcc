@@ -1,3 +1,10 @@
+2018-08-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmax): Use
+	MAX_EXPR/MIN_EXPR unconditionally for real arguments.
+	* gfortran.texi (Compiler Characteristics): Document MAX/MIN
+	behavior wrt NaN.
+
 2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
 	Thomas Koenig <tkoenig@gcc.gnu.org>
 
