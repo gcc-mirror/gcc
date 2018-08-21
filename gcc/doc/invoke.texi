@@ -566,6 +566,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdisable-rtl-@var{pass-name}=@var{range-list} @gol
 -fdisable-tree-@var{pass_name} @gol
 -fdisable-tree-@var{pass-name}=@var{range-list} @gol
+-fdump-debug -fdump-earlydebug @gol
 -fdump-noaddr  -fdump-unnumbered  -fdump-unnumbered-links @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-final-insns@r{[}=@var{file}@r{]} @gol
@@ -13776,6 +13777,16 @@ Also turns on @option{-dp} annotation.
 Just generate RTL for a function instead of compiling it.  Usually used
 with @option{-fdump-rtl-expand}.
 @end table
+
+@item -fdump-debug
+@opindex fdump-debug
+Dump debugging information generated during the debug
+generation phase.
+
+@item -fdump-earlydebug
+@opindex fdump-earlydebug
+Dump debugging information generated during the early debug
+generation phase.
 
 @item -fdump-noaddr
 @opindex fdump-noaddr

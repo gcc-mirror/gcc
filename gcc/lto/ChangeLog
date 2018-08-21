@@ -1,3 +1,8 @@
+2018-08-21  Tom de Vries  <tdevries@suse.de>
+
+	* lto.c (lto_main):  Call debuginfo_early_start and
+	debuginfo_early_stop.
+
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82063
