@@ -1,3 +1,50 @@
+2018-08-21  Maroua Maalej  <maalej@adacore.com>
+
+	* sem_spark.adb (Check_Call_Statement): Check global and formal
+	parameter permissions at call sites.
+	(Check_Callable_Body): Assume permissions on globals and
+	parameters depending on their modes then analyse the body
+	operations.
+	(Check_Declaration): Consider both deep (including elementary
+	access) object declarations and normal variables. First check
+	whether the deep object is of Ownership Aspec True or not, then,
+	depending on its initialization, assign the appropriate state.
+	Check related to non access type variables deal with
+	initialization value permissions.
+	(Check_Expression): Check nodes used in the expression being
+	analyzed.
+	(Check_Globals): Call by Check_Call_Statement to perform the
+	check on globals.
+	(Check_List): Call Check_Node on each element of the list.
+	(Check_Loop_Statement): Check the Iteration_Scheme and loop
+	statements.
+	(Check_Node): Main traversal procedure to check safe pointer usage.
+	(Check_Package_Body): Check subprogram's body.
+	(Check_Param_In): Take a formal and an actual parameter and
+	Check the permission of every in-mode parameter.
+	(Check_Param_Out): Take a formal and an actual parameter and
+	check the state of out-mode and in out-mode parameters.
+	(Check_Statement): Check statements other than procedure call.
+	(Get_Perm, Get_Perm_Or_Tree, Get_Perm_Tree): Find out the state
+	related to the given name.
+	(Is_Deep): Return True if an object is of access type or has
+	subfields of access type.
+	(Perm_Error, Perm_Error_Subprogram_End): Add an error message
+	whenever the found state on the given name is different from the
+	one expected (in the statement being analyzed).
+	(Process_Path): Given an operation and a current state, call
+	Perm_Error if there is any mismatch.
+	(Return_Declarations, Return_Globals, Return_The_Global): Check
+	the state of a given name at the end of the subprogram. These
+	procedures may change depending on how we shall finally deal
+	with globals and the rhs state in a move operation.
+	(Set_Perm_Extensions, Set_Perm_Prefixes_Borrow,
+	Set_Perm_Prefixes, Setup_Globals, Setup_Parameter_Or_Global,
+	Setup_Parameters): Set up the new states to the given node and
+	up and down the tree after an operation.
+	(Has_Ownership_Aspect_True): This function may disappear later
+	when the Ownership Aspect will be implemented in the FE.
+
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Call): Resolve correctly a parameterless
