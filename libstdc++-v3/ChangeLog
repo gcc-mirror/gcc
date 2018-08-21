@@ -1,3 +1,12 @@
+2018-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/bit/bitops.count/countl_one.cc: Remove
+	redundant dg-do directive.
+	* testsuite/26_numerics/bit/bitops.count/countl_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countr_one.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countr_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/popcount.cc: Likewise.
+
 2018-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86963
