@@ -1,5 +1,12 @@
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch9.adb (Expand_N_Timed_Entry_Call,
+	Expand_Conditional_Entry_Call): Use Reset_Scopes_Of to set
+	properly the scope of all entities created in blocks generated
+	by the expansion of these constructs.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch13.adb (Build_Predicate_Functioss): Apply
 	Reset_Quantified_Variables_Scope after predicate function has
 	been analyzed, so that the scope can be reset on the generated
