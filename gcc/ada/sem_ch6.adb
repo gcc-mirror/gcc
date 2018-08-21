@@ -3145,8 +3145,12 @@ package body Sem_Ch6 is
                end if;
 
                if not Is_Frozen (Typ) then
-                  Set_Is_Frozen (Typ);
-                  Append_New_Elmt (Typ, Result);
+                  if Scope (Typ) /= Current_Scope then
+                     Set_Is_Frozen (Typ);
+                     Append_New_Elmt (Typ, Result);
+                  else
+                     Freeze_Before (N, Typ);
+                  end if;
                end if;
             end Mask_Type;
 
@@ -3636,28 +3640,28 @@ package body Sem_Ch6 is
          --  They are necessary in any case to insure order of elaboration
          --  in gigi.
 
-         if not Is_Frozen (Spec_Id)
+         if Nkind (N) = N_Subprogram_Body
+           and then Was_Expression_Function (N)
+           and then not Has_Completion (Spec_Id)
+           and then Serious_Errors_Detected = 0
            and then (Expander_Active
                       or else ASIS_Mode
-                      or else (Operating_Mode = Check_Semantics
-                                and then Serious_Errors_Detected = 0))
+                      or else Operating_Mode = Check_Semantics)
          then
             --  The body generated for an expression function that is not a
             --  completion is a freeze point neither for the profile nor for
             --  anything else. That's why, in order to prevent any freezing
             --  during analysis, we need to mask types declared outside the
-            --  expression that are not yet frozen.
+            --  expression (and in an outer scope) that are not yet frozen.
 
-            if Nkind (N) = N_Subprogram_Body
-              and then Was_Expression_Function (N)
-              and then not Has_Completion (Spec_Id)
-            then
-               Set_Is_Frozen (Spec_Id);
-               Mask_Types := Mask_Unfrozen_Types (Spec_Id);
-            else
-               Set_Has_Delayed_Freeze (Spec_Id);
-               Freeze_Before (N, Spec_Id);
-            end if;
+            Set_Is_Frozen (Spec_Id);
+            Mask_Types := Mask_Unfrozen_Types (Spec_Id);
+
+         elsif not Is_Frozen (Spec_Id)
+           and then Serious_Errors_Detected = 0
+         then
+            Set_Has_Delayed_Freeze (Spec_Id);
+            Freeze_Before (N, Spec_Id);
          end if;
       end if;
 

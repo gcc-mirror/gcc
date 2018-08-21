@@ -1,5 +1,14 @@
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper, Mask_Type):
+	Refine the handling of freezing types for expression functions
+	that are not completions, when analyzing the generated body for
+	the function: the body is inserted at the end of the enclosing
+	declarative part, and its analysis may freeze types declared in
+	the same scope that have not been frozen yet.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch6.adb: Remove Freeze_Expr_Types.
 	* freeze.ads, freeze.adb (Freeze_Expr_Types): Moved from
 	sem_ch6.adb, and extended to handle other expressions that may
