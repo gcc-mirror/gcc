@@ -3611,10 +3611,14 @@ package body Freeze is
 
                Error_Msg_Qual_Level := 1;
 
-               --  Check suspicious use of fat C pointer
+               --  Check suspicious use of fat C pointer, but do not emit
+               --  a warning on an access to subprogram when unnesting is
+               --  active.
 
                if Is_Access_Type (F_Type)
                  and then Esize (F_Type) > Ttypes.System_Address_Size
+                 and then (not Unnest_Subprogram_Mode
+                             or else not Is_Access_Subprogram_Type (F_Type))
                then
                   Error_Msg_N
                     ("?x?type of & does not correspond to C pointer!", Formal);

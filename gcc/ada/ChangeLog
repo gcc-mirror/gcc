@@ -1,5 +1,10 @@
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
+	* freeze.adb: Remove warnings for access to subprograms when
+	unnesting is active.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_aggr.adb (Expand_Array_Aggregate): If the component type
 	is limited, the array must be constructed in place, so set flag
 	In_Place_Assign_OK_For_Declaration accordingly. This prevents
