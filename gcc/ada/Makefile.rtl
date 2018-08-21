@@ -427,6 +427,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-htable$(objext) \
   g-io$(objext) \
   g-io_aux$(objext) \
+  g-lists$(objext) \
   g-locfil$(objext) \
   g-mbdira$(objext) \
   g-mbflra$(objext) \

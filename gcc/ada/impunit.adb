@@ -281,6 +281,7 @@ package body Impunit is
     ("g-htable", F),  -- GNAT.Htable
     ("g-io    ", F),  -- GNAT.IO
     ("g-io_aux", F),  -- GNAT.IO_Aux
+    ("g-lists ", F),  -- GNAT.Lists
     ("g-locfil", F),  -- GNAT.Lock_Files
     ("g-mbdira", F),  -- GNAT.MBBS_Discrete_Random
     ("g-mbflra", F),  -- GNAT.MBBS_Float_Random
