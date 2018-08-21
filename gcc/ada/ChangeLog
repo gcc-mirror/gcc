@@ -1,3 +1,10 @@
+2018-08-21  Jerome Lambourg  <lambourg@adacore.com>
+
+	* vxlink-bind.adb, vxlink-bind.ads, vxlink-link.adb,
+	vxlink-link.ads, vxlink-main.adb, vxlink.adb, vxlink.ads: Add a
+	new tool vxlink to handle VxWorks constructors in DKMs.
+	* gcc-interface/Makefile.in: add rules to build vxlink
+
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper, Mask_Type):
