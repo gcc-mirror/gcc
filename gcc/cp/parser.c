@@ -10285,6 +10285,9 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
     {
       cp_lexer_consume_token (parser->lexer);
       first = false;
+
+      if (!(at_function_scope_p () || parsing_nsdmi ()))
+	error ("non-local lambda expression cannot have a capture-default");
     }
 
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_SQUARE))

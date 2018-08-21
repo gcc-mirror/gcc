@@ -1,3 +1,9 @@
+2018-08-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86499
+	* parser.c (cp_parser_lambda_introducer): Give error if a non-local
+	lambda has a capture-default.
+
 2018-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (check_static_variable_definition): Change to return void.
