@@ -1,3 +1,8 @@
+2018-08-21  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config.host: Add crtbegin.o and crtend.o for
+	powerpc-wrs-vxworks target.
+
 2018-08-17  Jojo  <jijie_rong@c-sky.com>
 	    Huibin Wang  <huibin_wang@c-sky.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
