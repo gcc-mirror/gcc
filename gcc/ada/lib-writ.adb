@@ -744,7 +744,14 @@ package body Lib.Writ is
                   Note_Unit := U;
                end if;
 
-               if Note_Unit = Unit_Num then
+               --  No action needed for pragmas removed by the expander (for
+               --  example, pragmas of ignored ghost entities).
+
+               if Nkind (N) = N_Null_Statement then
+                  pragma Assert (Nkind (Original_Node (N)) = N_Pragma);
+                  null;
+
+               elsif Note_Unit = Unit_Num then
                   Write_Info_Initiate ('N');
                   Write_Info_Char (' ');
 
