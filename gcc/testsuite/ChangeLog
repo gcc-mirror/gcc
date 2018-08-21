@@ -13,6 +13,10 @@
 	* g++.dg/cpp0x/Wnarrowing12.C: New test.
 	* g++.dg/cpp0x/rv-cast5.C: Add static_cast.
 
+	PR c++/86499
+	* g++.dg/cpp0x/lambda/lambda-non-local.C: New test.
+	* g++.dg/cpp0x/lambda/lambda-this10.C: Adjust dg-error.
+
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/expr_func7.adb, gnat.dg/expr_func7.ads: New testcase.
