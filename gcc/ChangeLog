@@ -1,3 +1,8 @@
+2018-08-21  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/vxworks.h: Add $(WIND_BASE)/target/h/wrn/coreip to
+	default search path for VxWorks < 7.
+
 2018-08-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gimple-ssa-sprintf.c (decl_constant_value): Remove.

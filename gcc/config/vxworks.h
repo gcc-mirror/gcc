@@ -61,9 +61,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef VXWORKS_ADDITIONAL_CPP_SPEC
 #define VXWORKS_ADDITIONAL_CPP_SPEC		\
  "%{!nostdinc:					\
-    %{isystem*} -idirafter			\
-    %{mrtp: %:getenv(WIND_USR /h)		\
-      ;:    %:getenv(WIND_BASE /target/h)}}"
+    %{isystem*}					\
+    %{mrtp: -idirafter %:getenv(WIND_USR /h)	\
+	    -idirafter %:getenv(WIND_USR /h/wrn/coreip) \
+      ;:    -idirafter %:getenv(WIND_BASE /target/h) \
+	    -idirafter %:getenv(WIND_BASE /target/h/wrn/coreip) \
+}}"
 
 #endif
 
