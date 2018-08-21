@@ -1,5 +1,13 @@
 2018-08-21  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/86981, Implement -Wpessimizing-move.
+	* typeck.c (decl_in_std_namespace_p): New.
+	(is_std_move_p): New.
+	(maybe_warn_pessimizing_move): New.
+	(can_do_nrvo_p): New, factored out of ...
+	(check_return_expr): ... here.  Warn about potentially harmful
+	std::move in a return statement.
+
 	PR c++/65043
 	* call.c (standard_conversion): Set check_narrowing.
 	* typeck2.c (check_narrowing): Use CP_INTEGRAL_TYPE_P rather

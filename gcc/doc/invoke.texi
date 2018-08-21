@@ -231,6 +231,7 @@ in the following sections.
 -Wdelete-non-virtual-dtor -Wdeprecated-copy  -Wliteral-suffix @gol
 -Wmultiple-inheritance @gol
 -Wnamespaces  -Wnarrowing @gol
+-Wpessimizing-move @gol
 -Wnoexcept  -Wnoexcept-type  -Wclass-memaccess @gol
 -Wnon-virtual-dtor  -Wreorder  -Wregister @gol
 -Weffc++  -Wstrict-null-sentinel  -Wtemplates @gol
@@ -3132,6 +3133,31 @@ The compiler rearranges the member initializers for @code{i}
 and @code{j} to match the declaration order of the members, emitting
 a warning to that effect.  This warning is enabled by @option{-Wall}.
 
+@item -Wno-pessimizing-move @r{(C++ and Objective-C++ only)}
+@opindex Wpessimizing-move
+@opindex Wno-pessimizing-move
+This warning warns when a call to @code{std::move} prevents copy
+elision.  A typical scenario when copy elision can occur is when returning in
+a function with a class return type, when the expression being returned is the
+name of a non-volatile automatic object, and is not a function parameter, and
+has the same type as the function return type.
+
+@smallexample
+struct T @{
+@dots{}
+@};
+T fn()
+@{
+  T t;
+  @dots{}
+  return std::move (t);
+@}
+@end smallexample
+
+But in this example, the @code{std::move} call prevents copy elision.
+
+This warning is enabled by @option{-Wall}.
+
 @item -fext-numeric-literals @r{(C++ and Objective-C++ only)}
 @opindex fext-numeric-literals
 @opindex fno-ext-numeric-literals
@@ -4037,6 +4063,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wnonnull-compare  @gol
 -Wopenmp-simd @gol
 -Wparentheses  @gol
+-Wpessimizing-move @r{(only for C++)}  @gol
 -Wpointer-sign  @gol
 -Wreorder   @gol
 -Wrestrict   @gol

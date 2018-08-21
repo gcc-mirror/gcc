@@ -1,5 +1,12 @@
 2018-08-21  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/86981, Implement -Wpessimizing-move.
+	* g++.dg/cpp0x/Wpessimizing-move1.C: New test.
+	* g++.dg/cpp0x/Wpessimizing-move2.C: New test.
+	* g++.dg/cpp0x/Wpessimizing-move3.C: New test.
+	* g++.dg/cpp0x/Wpessimizing-move4.C: New test.
+	* g++.dg/cpp1z/Wpessimizing-move1.C: New test.
+
 	PR c++/65043
 	* g++.dg/concepts/pr67595.C: Add dg-warning.
 	* g++.dg/cpp0x/Wnarrowing11.C: New test.
