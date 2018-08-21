@@ -1,3 +1,9 @@
+2018-08-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref.ads, lib-xref-spark_specific.adb
+	(Enclosing_Subprogram_Or_Library_Package): Now roughtly works
+	for pragmas that come from aspect specifications.
+
 2018-08-21  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* sa_messages.ads, sa_messages.adb: New source files.
