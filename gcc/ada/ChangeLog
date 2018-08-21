@@ -1,3 +1,10 @@
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Resolve correctly a parameterless
+	call that returns an access type whose designated type is the
+	component type of an array, when the function has no defaulted
+	parameters.
+
 2018-08-21  Yannick Moy  <moy@adacore.com>
 
 	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:

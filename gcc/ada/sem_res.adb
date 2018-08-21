@@ -6128,7 +6128,18 @@ package body Sem_Res is
             Ret_Type   : constant Entity_Id := Etype (Nam);
 
          begin
-            if Is_Access_Type (Ret_Type)
+            --  If this is a parameterless call there is no ambiguity
+            --  and the call has the type of the function.
+
+            if No (First_Actual (N)) then
+               Set_Etype (N, Etype (Nam));
+               if Present (First_Formal (Nam)) then
+                  Resolve_Actuals (N, Nam);
+               end if;
+               Build_Call_Marker (N);
+
+            elsif Is_Access_Type (Ret_Type)
+
               and then Ret_Type = Component_Type (Designated_Type (Ret_Type))
             then
                Error_Msg_N
