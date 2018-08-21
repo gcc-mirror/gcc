@@ -1,3 +1,14 @@
+2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* gfortran.texi: Add description of asynchronous I/O.
+	* trans-decl.c (gfc_finish_var_decl): Treat asynchronous variables
+	as volatile.
+	* trans-io.c (gfc_build_io_library_fndecls): Rename st_wait to
+	st_wait_async and change argument spec from ".X" to ".w".
+	(gfc_trans_wait): Pass ID argument via reference.
+
 2018-08-16  Nathan Sidwell  <nathan@acm.org>
 
 	* cpp.c (dump_macro): Use cpp_user_macro_p.

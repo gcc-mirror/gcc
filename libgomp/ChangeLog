@@ -1,3 +1,15 @@
+2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* testsuite/libgomp.fortran/async_io_1.f90: New test.
+	* testsuite/libgomp.fortran/async_io_2.f90: New test.
+	* testsuite/libgomp.fortran/async_io_3.f90: New test.
+	* testsuite/libgomp.fortran/async_io_4.f90: New test.
+	* testsuite/libgomp.fortran/async_io_5.f90: New test.
+	* testsuite/libgomp.fortran/async_io_6.f90: New test.
+	* testsuite/libgomp.fortran/async_io_7.f90: New test.
+
 2018-08-13  Cesar Philippidis  <cesar@codesourcery.com>
 	    Tom de Vries  <tdevries@suse.de>
 
