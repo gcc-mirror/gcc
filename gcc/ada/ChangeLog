@@ -1,3 +1,19 @@
+2018-08-21  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Update
+	documentation of dimensionality analysis.
+	* gnat_ugn.texi: Regenerate.
+	* Makefile.rtl, impunit.adb: Consider the new units.
+	* libgnat/s-dfmkio.ads, libgnat/s-dfmopr.ads,
+	libgnat/s-diflmk.ads: New units based on Float.
+	* libgnat/s-dilomk.ads, libgnat/s-dlmkio.ads,
+	libgnat/s-dlmopr.ads: New units based on Long_Float.
+	* libgnat/s-dmotpr.ads: Rename to libgnat/s-dgmgop.ads and turn
+	into an instance of
+	System.Dim.Generic_Mks.Generic_Other_Prefixes.
+	* libgnat/s-dimmks.ads: Rename to libgnat/s-digemk.ads and turn
+	into an instance of System.Dim.Generic_Mks.
+
 2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* impunit.adb: Add g-lists to the set of non-implementation

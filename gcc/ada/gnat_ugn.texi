@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jul 13, 2018
+GNAT User's Guide for Native Platforms , Aug 17, 2018
 
 AdaCore
 
@@ -22606,20 +22606,19 @@ to use the proper subtypes in object declarations.
 @geindex MKS_Type type
 
 The simplest way to impose dimensionality checking on a computation is to make
-use of the package @code{System.Dim.Mks},
-which is part of the GNAT library. This
-package defines a floating-point type @code{MKS_Type},
-for which a sequence of
-dimension names are specified, together with their conventional abbreviations.
-The following should be read together with the full specification of the
-package, in file @code{s-dimmks.ads}.
+use of one of the instantiations of the package @code{System.Dim.Generic_Mks}, which
+are part of the GNAT library. This generic package defines a floating-point
+type @code{MKS_Type}, for which a sequence of dimension names are specified,
+together with their conventional abbreviations.  The following should be read
+together with the full specification of the package, in file
+@code{s-digemk.ads}.
 
 @quotation
 
-@geindex s-dimmks.ads file
+@geindex s-digemk.ads file
 
 @example
-type Mks_Type is new Long_Long_Float
+type Mks_Type is new Float_Type
   with
    Dimension_System => (
      (Unit_Name => Meter,    Unit_Symbol => 'm',   Dim_Symbol => 'L'),
@@ -22674,10 +22673,25 @@ as well as useful multiples of these units:
 @end example
 @end quotation
 
-Using this package, you can then define a derived unit by
-providing the aspect that
-specifies its dimensions within the MKS system, as well as the string to
-be used for output of a value of that unit:
+There are three instantiations of @code{System.Dim.Generic_Mks} defined in the
+GNAT library:
+
+
+@itemize *
+
+@item 
+@code{System.Dim.Float_Mks} based on @code{Float} defined in @code{s-diflmk.ads}.
+
+@item 
+@code{System.Dim.Long_Mks} based on @code{Long_Float} defined in @code{s-dilomk.ads}.
+
+@item 
+@code{System.Dim.Mks} based on @code{Long_Long_Float} defined in @code{s-dimmks.ads}.
+@end itemize
+
+Using one of these packages, you can then define a derived unit by providing
+the aspect that specifies its dimensions within the MKS system, as well as the
+string to be used for output of a value of that unit:
 
 @quotation
 
