@@ -8754,7 +8754,6 @@ package body Sem_Ch13 is
       --  Case where predicates are present
 
       if Present (Expr) then
-
          --  Test for raise expression present
 
          Test_REs (Expr);
@@ -8855,6 +8854,42 @@ package body Sem_Ch13 is
             --  after type declaration. Insert body itself after freeze node.
 
             Insert_After_And_Analyze (N, FBody);
+
+            --  The defining identifier of a quantified expression carries the
+            --  scope in which the type appears, but when unnesting we need
+            --  to indicate that its proper scope is the constructed predicate
+            --  function. The quantified expressions have been converted into
+            --  loops during analysis and expansion.
+
+            declare
+               function Reset_Quantified_Variable_Scope (N : Node_Id)
+                 return Traverse_Result;
+
+               procedure Reset_Quantified_Variables_Scope is
+                 new Traverse_Proc (Reset_Quantified_Variable_Scope);
+
+               -------------------------------------
+               -- Reset_Quantified_Variable_Scope --
+               -------------------------------------
+
+               function Reset_Quantified_Variable_Scope (N : Node_Id)
+                 return Traverse_Result
+               is
+               begin
+                  if Nkind_In (N, N_Iterator_Specification,
+                                  N_Loop_Parameter_Specification)
+                  then
+                     Set_Scope (Defining_Identifier (N),
+                       Predicate_Function (Typ));
+                  end if;
+                  return OK;
+               end Reset_Quantified_Variable_Scope;
+
+            begin
+               if Unnest_Subprogram_Mode then
+                  Reset_Quantified_Variables_Scope (Expr);
+               end if;
+            end;
 
             --  within a generic unit, prevent a double analysis of the body
             --  which will not be marked analyzed yet. This will happen when
@@ -8972,6 +9007,8 @@ package body Sem_Ch13 is
 
                Insert_Before_And_Analyze (N, FDecl);
                Insert_After_And_Analyze  (N, FBody);
+
+               --  Should quantified expressions be handled here as well ???
             end;
          end if;
 
