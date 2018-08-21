@@ -1,3 +1,7 @@
+2018-08-21  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/enum4.adb: New testcase.
+
 2018-08-21  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/aarch64/large_struct_copy.c: New test.
