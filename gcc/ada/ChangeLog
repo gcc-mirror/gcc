@@ -1,5 +1,9 @@
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_attr.adb: Set scope of elaboration flag for 'Access.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
 	* sprint.adb: Add guard on printing aspects.
 
 2018-08-21  Javier Miranda  <miranda@adacore.com>
