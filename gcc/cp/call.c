@@ -1388,6 +1388,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	    conv->rank = cr_pbool;
 	  if (NULLPTR_TYPE_P (from) && (flags & LOOKUP_ONLYCONVERTING))
 	    conv->bad_p = true;
+	  if (flags & LOOKUP_NO_NARROWING)
+	    conv->check_narrowing = true;
 	  return conv;
 	}
 
