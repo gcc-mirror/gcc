@@ -592,18 +592,20 @@ package body Contracts is
             null;
 
          --  Otherwise analyze the pre/postconditions. Their expressions
-         --  might include references to types that are not frozen yet,
-         --  in the case where the body is a rewritten expression function
-         --  that is a completion, so freeze all types within before
-         --  constructing the contract code.
+         --  might include references to types that are not frozen yet, in the
+         --  case where the body is a rewritten expression function that is a
+         --  completion, so freeze all types within before constructing the
+         --  contract code.
 
          else
             declare
-               Bod : Node_Id;
+               Bod          : Node_Id;
                Freeze_Types : Boolean := False;
+
             begin
                if Present (Freeze_Id) then
                   Bod := Unit_Declaration_Node (Freeze_Id);
+
                   if Nkind (Bod) = N_Subprogram_Body
                     and then Was_Expression_Function (Bod)
                     and then Ekind (Subp_Id) = E_Function
@@ -617,8 +619,11 @@ package body Contracts is
                Prag := Pre_Post_Conditions (Items);
                while Present (Prag) loop
                   if Freeze_Types then
-                     Freeze_Expr_Types (Subp_Id, Standard_Boolean,
-                       Expression (Corresponding_Aspect (Prag)), Bod);
+                     Freeze_Expr_Types
+                       (Def_Id => Subp_Id,
+                        Typ    => Standard_Boolean,
+                        Expr   => Expression (Corresponding_Aspect (Prag)),
+                        N      => Bod);
                   end if;
 
                   Analyze_Pre_Post_Condition_In_Decl_Part (Prag, Freeze_Id);

@@ -963,10 +963,11 @@ package body Lib.Writ is
                   --  allow partial analysis on incomplete sources.
 
                   if GNATprove_Mode then
-
                      Body_Fname :=
-                       Get_File_Name (Get_Body_Name (Uname),
-                                       Subunit => False, May_Fail => True);
+                       Get_File_Name
+                         (Uname    => Get_Body_Name (Uname),
+                          Subunit  => False,
+                          May_Fail => True);
 
                      Body_Index := Get_Unit_Index (Get_Body_Name (Uname));
 
@@ -981,8 +982,10 @@ package body Lib.Writ is
 
                   else
                      Body_Fname :=
-                       Get_File_Name (Get_Body_Name (Uname),
-                                       Subunit => False, May_Fail => False);
+                       Get_File_Name
+                         (Uname    => Get_Body_Name (Uname),
+                          Subunit  => False,
+                          May_Fail => False);
 
                      Body_Index := Get_Unit_Index (Get_Body_Name (Uname));
                   end if;

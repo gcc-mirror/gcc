@@ -326,14 +326,13 @@ package body Layout is
             Init_Size (E, 2 * System_Address_Size);
 
          --  If unnesting subprograms, subprogram access types contain the
-         --  address of both the subprogram and an activation record.  But
-         --  if we set that, we'll get a warning on different unchecked
-         --  conversion sizes in the RTS.  So leave unset ub that case.
+         --  address of both the subprogram and an activation record. But if we
+         --  set that, we'll get a warning on different unchecked conversion
+         --  sizes in the RTS. So leave unset ub that case.
 
          elsif Unnest_Subprogram_Mode
            and then Is_Access_Subprogram_Type (E)
          then
-            --  Init_Size (E, 2 * System_Address_Size);
             null;
 
          --  Normal case of thin pointer

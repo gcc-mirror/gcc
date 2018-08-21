@@ -6780,9 +6780,9 @@ package body Checks is
            and then Is_Integer_Type (Target_Base_Type)
          then
             Conv_Node :=
-              OK_Convert_To (
-                Typ  => Target_Base_Type,
-                Expr => Duplicate_Subexpr (N));
+              OK_Convert_To
+                (Typ  => Target_Base_Type,
+                 Expr => Duplicate_Subexpr (N));
 
          --  Common case
 

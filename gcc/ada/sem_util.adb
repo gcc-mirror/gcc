@@ -24040,12 +24040,11 @@ package body Sem_Util is
          then
             return True;
 
-         --  OUtside of its scope, a synchronized type may just be
-         --  private.
+         --  Outside of its scope, a synchronized type may just be private
 
          elsif Is_Private_Type (Curr)
            and then Present (Full_View (Curr))
-            and then Is_Concurrent_Type (Full_View (Curr))
+           and then Is_Concurrent_Type (Full_View (Curr))
          then
             return Scope_Within (Full_View (Curr), Outer);
          end if;

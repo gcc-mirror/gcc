@@ -13693,8 +13693,12 @@ package body Sem_Ch3 is
       Related_Nod : Node_Id) return Entity_Id
    is
       T_Sub : constant Entity_Id :=
-                Create_Itype (E_Record_Subtype,
-                  Related_Nod, Corr_Rec, 'C', Suffix_Index => -1);
+                Create_Itype
+                  (Ekind        => E_Record_Subtype,
+                   Related_Nod  => Related_Nod,
+                   Related_Id   => Corr_Rec,
+                   Suffix       => 'C',
+                   Suffix_Index => -1);
 
    begin
       Set_Etype             (T_Sub, Corr_Rec);

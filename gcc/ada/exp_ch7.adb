@@ -4030,8 +4030,8 @@ package body Exp_Ch7 is
       -----------------------
 
       function First_Local_Scope (L : List_Id) return Entity_Id is
-         Stat : Node_Id;
          Scop : Entity_Id;
+         Stat : Node_Id;
 
       begin
          Stat := First (L);
@@ -4099,6 +4099,7 @@ package body Exp_Ch7 is
                when others =>
                   null;
             end case;
+
             Next (Stat);
          end loop;
 
@@ -4119,8 +4120,8 @@ package body Exp_Ch7 is
         and then Present (Handled_Statement_Sequence (N))
         and then Is_Compilation_Unit (Current_Scope)
       then
-         Ent := First_Local_Scope
-                  (Statements (Handled_Statement_Sequence (N)));
+         Ent :=
+           First_Local_Scope (Statements (Handled_Statement_Sequence (N)));
 
          if Present (Ent) then
             Elab_Proc :=

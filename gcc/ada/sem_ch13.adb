@@ -8754,6 +8754,7 @@ package body Sem_Ch13 is
       --  Case where predicates are present
 
       if Present (Expr) then
+
          --  Test for raise expression present
 
          Test_REs (Expr);
@@ -8764,8 +8765,37 @@ package body Sem_Ch13 is
 
          if Raise_Expression_Present then
             declare
-               Map   : constant Elist_Id := New_Elmt_List;
-               New_V : Entity_Id := Empty;
+               function Reset_Loop_Variable
+                 (N : Node_Id) return Traverse_Result;
+
+               procedure Reset_Loop_Variables is
+                 new Traverse_Proc (Reset_Loop_Variable);
+
+               ------------------------
+               -- Reset_Loop_Variable --
+               ------------------------
+
+               function Reset_Loop_Variable
+                 (N : Node_Id) return Traverse_Result
+               is
+               begin
+                  if Nkind (N) = N_Iterator_Specification then
+                     Set_Defining_Identifier (N,
+                       Make_Defining_Identifier
+                         (Sloc (N), Chars (Defining_Identifier (N))));
+                  end if;
+
+                  return OK;
+               end Reset_Loop_Variable;
+
+               --  Local variables
+
+               Map : constant Elist_Id := New_Elmt_List;
+
+            begin
+               Append_Elmt (Object_Entity, Map);
+               Append_Elmt (Object_Entity_M, Map);
+               Expr_M := New_Copy_Tree (Expr, Map => Map);
 
                --  The unanalyzed expression will be copied and appear in
                --  both functions. Normally expressions do not declare new
@@ -8773,35 +8803,7 @@ package body Sem_Ch13 is
                --  create new entities for their bound variables, to prevent
                --  multiple definitions in gigi.
 
-               function Reset_Loop_Variable (N : Node_Id)
-                 return Traverse_Result;
-
-               procedure Collect_Loop_Variables is
-                 new Traverse_Proc (Reset_Loop_Variable);
-
-               ------------------------
-               -- Reset_Loop_Variable --
-               ------------------------
-
-               function Reset_Loop_Variable (N : Node_Id)
-                 return Traverse_Result
-               is
-               begin
-                  if Nkind (N) = N_Iterator_Specification then
-                     New_V := Make_Defining_Identifier
-                       (Sloc (N), Chars (Defining_Identifier (N)));
-
-                     Set_Defining_Identifier (N, New_V);
-                  end if;
-
-                  return OK;
-               end Reset_Loop_Variable;
-
-            begin
-               Append_Elmt (Object_Entity, Map);
-               Append_Elmt (Object_Entity_M, Map);
-               Expr_M := New_Copy_Tree (Expr, Map => Map);
-               Collect_Loop_Variables (Expr_M);
+               Reset_Loop_Variables (Expr_M);
             end;
          end if;
 
@@ -8862,8 +8864,8 @@ package body Sem_Ch13 is
             --  loops during analysis and expansion.
 
             declare
-               function Reset_Quantified_Variable_Scope (N : Node_Id)
-                 return Traverse_Result;
+               function Reset_Quantified_Variable_Scope
+                 (N : Node_Id) return Traverse_Result;
 
                procedure Reset_Quantified_Variables_Scope is
                  new Traverse_Proc (Reset_Quantified_Variable_Scope);
@@ -8872,8 +8874,8 @@ package body Sem_Ch13 is
                -- Reset_Quantified_Variable_Scope --
                -------------------------------------
 
-               function Reset_Quantified_Variable_Scope (N : Node_Id)
-                 return Traverse_Result
+               function Reset_Quantified_Variable_Scope
+                 (N : Node_Id) return Traverse_Result
                is
                begin
                   if Nkind_In (N, N_Iterator_Specification,
@@ -8882,6 +8884,7 @@ package body Sem_Ch13 is
                      Set_Scope (Defining_Identifier (N),
                        Predicate_Function (Typ));
                   end if;
+
                   return OK;
                end Reset_Quantified_Variable_Scope;
 

@@ -1,3 +1,12 @@
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb, contracts.adb, exp_aggr.adb, exp_attr.adb,
+	exp_ch6.adb, exp_ch7.adb, exp_ch9.adb, exp_unst.adb,
+	exp_util.adb, freeze.adb, gnatlink.adb, layout.adb,
+	lib-writ.adb, lib-xref-spark_specific.adb, sem_ch13.adb,
+	sem_ch3.adb, sem_ch6.adb, sem_res.adb, sem_util.adb, sinfo.ads,
+	sprint.adb: Minor reformatting.
+
 2018-08-21  Jerome Lambourg  <lambourg@adacore.com>
 
 	* vxlink-bind.adb, vxlink-bind.ads, vxlink-link.adb,

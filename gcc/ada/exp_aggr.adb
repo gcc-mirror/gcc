@@ -6212,7 +6212,7 @@ package body Exp_Aggr is
          Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
-      --  An array of limited components is built in place.
+      --  An array of limited components is built in place
 
       if Is_Limited_Type (Typ) then
          Maybe_In_Place_OK := True;
@@ -6258,7 +6258,7 @@ package body Exp_Aggr is
       --  oversight: the rules in 7.6 (17) are clear.
 
       if (not Has_Default_Init_Comps (N)
-            or else Is_Limited_Type (Etype (N)))
+           or else Is_Limited_Type (Etype (N)))
         and then Comes_From_Source (Parent_Node)
         and then Parent_Kind = N_Object_Declaration
         and then Present (Expression (Parent_Node))
@@ -6385,7 +6385,6 @@ package body Exp_Aggr is
             if Has_Default_Init_Comps (N)
               and then not Maybe_In_Place_OK
             then
-
                --  Ada 2005 (AI-287): This case has not been analyzed???
 
                raise Program_Error;

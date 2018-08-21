@@ -228,6 +228,7 @@ package body SPARK_Specific is
                end loop;
 
                if Nkind (Context) = N_Pragma then
+
                   --  When used for cross-references then aspects might not be
                   --  yet linked to pragmas; when used for AST navigation in
                   --  GNATprove this routine is expected to follow those links.

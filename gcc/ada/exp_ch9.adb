@@ -8241,6 +8241,7 @@ package body Exp_Ch9 is
       end if;
 
       Analyze (N);
+
       Reset_Scopes_To (N, Entity (Identifier (N)));
    end Expand_N_Conditional_Entry_Call;
 
@@ -10707,7 +10708,7 @@ package body Exp_Ch9 is
               Make_Defining_Identifier (Eloc,
                 New_External_Name (Chars (Ename), 'A', Num_Accept));
 
-            --  Link the acceptor to the original receiving entry.
+            --  Link the acceptor to the original receiving entry
 
             Set_Ekind           (PB_Ent, E_Procedure);
             Set_Receiving_Entry (PB_Ent, Eent);
@@ -14850,7 +14851,6 @@ package body Exp_Ch9 is
    ---------------------
 
    procedure Reset_Scopes_To (Bod : Node_Id; E : Entity_Id) is
-
       function Reset_Scope (N : Node_Id) return Traverse_Result;
       --  Temporaries may have been declared during expansion of the procedure
       --  created for an entry body or an accept alternative. Indicate that
@@ -14880,8 +14880,8 @@ package body Exp_Ch9 is
          --  Ditto for a package declaration or a full type declaration, etc.
 
          elsif Nkind (N) = N_Package_Declaration
-             or else Nkind (N) in N_Declaration
-             or else Nkind (N) in N_Renaming_Declaration
+           or else Nkind (N) in N_Declaration
+           or else Nkind (N) in N_Renaming_Declaration
          then
             Set_Scope (Defining_Entity (N), E);
             return Skip;

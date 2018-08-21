@@ -3619,7 +3619,7 @@ package body Freeze is
                if Is_Access_Type (F_Type)
                  and then Esize (F_Type) > Ttypes.System_Address_Size
                  and then (not Unnest_Subprogram_Mode
-                             or else not Is_Access_Subprogram_Type (F_Type))
+                            or else not Is_Access_Subprogram_Type (F_Type))
                then
                   Error_Msg_N
                     ("?x?type of & does not correspond to C pointer!", Formal);
@@ -7654,10 +7654,9 @@ package body Freeze is
       Expr   : Node_Id;
       N      : Node_Id)
    is
-
       function Cloned_Expression return Node_Id;
-      --  Build a duplicate of the expression of the return statement that
-      --  has no defining entities shared with the original expression.
+      --  Build a duplicate of the expression of the return statement that has
+      --  no defining entities shared with the original expression.
 
       function Freeze_Type_Refs (Node : Node_Id) return Traverse_Result;
       --  Freeze all types referenced in the subtree rooted at Node
@@ -7680,8 +7679,8 @@ package body Freeze is
             if Nkind_In (Node, N_Iterator_Specification,
                                N_Loop_Parameter_Specification)
             then
-               Set_Defining_Identifier (Node,
-                 New_Copy (Defining_Identifier (Node)));
+               Set_Defining_Identifier
+                 (Node, New_Copy (Defining_Identifier (Node)));
             end if;
 
             return OK;
@@ -7741,9 +7740,9 @@ package body Freeze is
                return;
             end if;
 
-            --  This provides a better error message than generating
-            --  primitives whose compilation fails much later. Refine
-            --  the error message if possible.
+            --  This provides a better error message than generating primitives
+            --  whose compilation fails much later. Refine the error message if
+            --  possible.
 
             Check_Fully_Declared (Typ, Node);
 
@@ -7773,10 +7772,10 @@ package body Freeze is
                Check_And_Freeze_Type (Scope (Entity (Node)));
             end if;
 
-         --  Freezing an access type does not freeze the designated type,
-         --  but freezing conversions between access to interfaces requires
-         --  that the interface types themselves be frozen, so that dispatch
-         --  table entities are properly created.
+         --  Freezing an access type does not freeze the designated type, but
+         --  freezing conversions between access to interfaces requires that
+         --  the interface types themselves be frozen, so that dispatch table
+         --  entities are properly created.
 
          --  Unclear whether a more general rule is needed ???
 
@@ -7787,10 +7786,10 @@ package body Freeze is
             Check_And_Freeze_Type (Designated_Type (Etype (Node)));
          end if;
 
-         --  An implicit dereference freezes the designated type. In the
-         --  case of a dispatching call whose controlling argument is an
-         --  access type, the dereference is not made explicit, so we must
-         --  check for such a call and freeze the designated type.
+         --  An implicit dereference freezes the designated type. In the case
+         --  of a dispatching call whose controlling argument is an access
+         --  type, the dereference is not made explicit, so we must check for
+         --  such a call and freeze the designated type.
 
          if Nkind (Node) in N_Has_Etype
            and then Present (Etype (Node))
