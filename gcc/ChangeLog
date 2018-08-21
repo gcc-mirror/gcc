@@ -1,3 +1,8 @@
+2018-08-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gimple-ssa-sprintf.c (decl_constant_value): Remove.
+	(get_format_string): Refer to c_getstr.
+
 2018-08-21  Tom de Vries  <tdevries@suse.de>
 
 	* cgraph.h (debuginfo_early_init, debuginfo_init, debuginfo_fini)
