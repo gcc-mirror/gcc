@@ -1,3 +1,8 @@
+2018-08-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86981, Implement -Wpessimizing-move.
+	* doc/invoke.texi: Document -Wpessimizing-move.
+
 2018-08-21  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (find_decls_types_r): Do not check for redundant typedefs.
