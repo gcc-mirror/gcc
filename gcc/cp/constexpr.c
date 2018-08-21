@@ -97,6 +97,7 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	{
 	  if (DECL_DECLARED_CONSTEXPR_P (decl))
 	    {
+	      auto_diagnostic_group d;
 	      error ("the type %qT of %<constexpr%> variable %qD "
 		     "is not literal", type, decl);
 	      explain_non_literal_class (type);
@@ -106,6 +107,7 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	    {
 	      if (!is_instantiation_of_constexpr (current_function_decl))
 		{
+		  auto_diagnostic_group d;
 		  error ("variable %qD of non-literal type %qT in %<constexpr%> "
 			 "function", decl, type);
 		  explain_non_literal_class (type);
@@ -208,6 +210,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	    ret = false;
 	    if (complain)
 	      {
+		auto_diagnostic_group d;
 		error ("invalid type for parameter %d of %<constexpr%> "
 		       "function %q+#D", DECL_PARM_INDEX (parm), fun);
 		explain_non_literal_class (TREE_TYPE (parm));
@@ -230,6 +233,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	  ret = false;
 	  if (complain)
 	    {
+	      auto_diagnostic_group d;
 	      error ("invalid return type %qT of %<constexpr%> function %q+D",
 		     rettype, fun);
 	      explain_non_literal_class (rettype);
@@ -242,11 +246,15 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	  && !CLASSTYPE_LITERAL_P (DECL_CONTEXT (fun)))
 	{
 	  ret = false;
-	  if (complain
-	      && pedwarn (DECL_SOURCE_LOCATION (fun), OPT_Wpedantic,
-			  "enclosing class of %<constexpr%> non-static member "
-			  "function %q+#D is not a literal type", fun))
-	    explain_non_literal_class (DECL_CONTEXT (fun));
+	  if (complain)
+	    {
+	      auto_diagnostic_group d;
+	      if (pedwarn (DECL_SOURCE_LOCATION (fun), OPT_Wpedantic,
+			     "enclosing class of %<constexpr%> non-static"
+			     " member function %q+#D is not a literal type",
+			     fun))
+		explain_non_literal_class (DECL_CONTEXT (fun));
+	    }
 	}
     }
   else if (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fun)))
@@ -826,6 +834,7 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 	    }
 	  if (!complain)
 	    return true;
+	  auto_diagnostic_group d;
 	  error ("member %qD must be initialized by mem-initializer "
 		 "in %<constexpr%> constructor", field);
 	  inform (DECL_SOURCE_LOCATION (field), "declared here");
@@ -4319,6 +4328,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	{
 	  if (!ctx->quiet)
 	    {
+	      auto_diagnostic_group d;
 	      error ("temporary of non-literal type %qT in a "
 		     "constant expression", TREE_TYPE (t));
 	      explain_non_literal_class (TREE_TYPE (t));
@@ -6011,6 +6021,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	{
 	  if (flags & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      error_at (loc, "temporary of non-literal type %qT in a "
 			"constant expression", TREE_TYPE (t));
 	      explain_non_literal_class (TREE_TYPE (t));

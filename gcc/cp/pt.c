@@ -800,6 +800,7 @@ check_specialization_namespace (tree tmpl)
     return true;
   else
     {
+      auto_diagnostic_group d;
       if (permerror (input_location,
 		     "specialization of %qD in different namespace", tmpl))
 	inform (DECL_SOURCE_LOCATION (tmpl),
@@ -2592,6 +2593,7 @@ check_template_variable (tree decl)
     }
   if (template_header_count > wanted)
     {
+      auto_diagnostic_group d;
       bool warned = pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 			     "too many template headers for %qD "
 	                     "(should be %d)",
@@ -2724,6 +2726,7 @@ warn_spec_missing_attributes (tree tmpl, tree spec, tree attrlist)
   if (!nattrs)
     return;
 
+  auto_diagnostic_group d;
   if (warning_at (DECL_SOURCE_LOCATION (spec), OPT_Wmissing_attributes,
 		  "explicit specialization %q#D may be missing attributes",
 		  spec))
@@ -3070,6 +3073,7 @@ check_explicit_specialization (tree declarator,
 	  if (TREE_CODE (decl) == FUNCTION_DECL
 	      && DECL_HIDDEN_FRIEND_P (tmpl))
 	    {
+	      auto_diagnostic_group d;
 	      if (pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 			   "friend declaration %qD is not visible to "
 			   "explicit specialization", tmpl))
@@ -4890,6 +4894,7 @@ process_partial_specialization (tree decl)
 	   && TMPL_ARGS_DEPTH (specargs) == 1
 	   && !get_partial_spec_bindings (maintmpl, maintmpl, specargs))
     {
+      auto_diagnostic_group d;
       if (permerror (input_location, "partial specialization %qD is not "
 		     "more specialized than", decl))
 	inform (DECL_SOURCE_LOCATION (maintmpl), "primary template %qD",
@@ -9353,6 +9358,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
         {
           if (complain & tf_error)
             {
+	      auto_diagnostic_group d;
               error ("template constraint failure");
               diagnose_constraints (input_location, gen_tmpl, arglist);
             }
@@ -9712,6 +9718,7 @@ finish_template_variable (tree var, tsubst_flags_t complain)
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error ("use of invalid variable template %qE", var);
 	  diagnose_constraints (location_of (var), templ, arglist);
 	}
@@ -26892,6 +26899,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
           {
             if (complain & tf_warning_or_error)
               {
+		auto_diagnostic_group d;
                 switch (context)
                   {
                   case adc_unspecified:

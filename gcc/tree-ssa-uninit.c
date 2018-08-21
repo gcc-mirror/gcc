@@ -178,6 +178,7 @@ warn_uninit (enum opt_code wc, tree t, tree expr, tree var,
   cfun_loc = DECL_SOURCE_LOCATION (cfun->decl);
   xloc = expand_location (location);
   floc = expand_location (cfun_loc);
+  auto_diagnostic_group d;
   if (warning_at (location, wc, gmsgid, expr))
     {
       TREE_NO_WARNING (expr) = 1;

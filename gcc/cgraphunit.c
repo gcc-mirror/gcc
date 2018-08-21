@@ -1358,6 +1358,7 @@ maybe_diag_incompatible_alias (tree alias, tree target)
 	{
 	  funcptr = build_pointer_type (funcptr);
 
+	  auto_diagnostic_group d;
 	  if (warning_at (DECL_SOURCE_LOCATION (target),
 			  OPT_Wattribute_alias,
 			  "%<ifunc%> resolver for %qD should return %qT",
@@ -1365,12 +1366,16 @@ maybe_diag_incompatible_alias (tree alias, tree target)
 	    inform (DECL_SOURCE_LOCATION (alias),
 		    "resolver indirect function declared here");
 	}
-      else if (warning_at (DECL_SOURCE_LOCATION (alias),
-			   OPT_Wattribute_alias,
-			   "%qD alias between functions of incompatible "
-			   "types %qT and %qT", alias, altype, targtype))
-	inform (DECL_SOURCE_LOCATION (target),
-		"aliased declaration here");
+      else
+	{
+	  auto_diagnostic_group d;
+	  if (warning_at (DECL_SOURCE_LOCATION (alias),
+			    OPT_Wattribute_alias,
+			    "%qD alias between functions of incompatible "
+			    "types %qT and %qT", alias, altype, targtype))
+	    inform (DECL_SOURCE_LOCATION (target),
+		      "aliased declaration here");
+	}
     }
 }
 

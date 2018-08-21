@@ -1691,6 +1691,7 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
       && DECL_ARRAY_PARAMETER_P (e)
       && (complain & tf_warning))
     {
+      auto_diagnostic_group d;
       if (warning (OPT_Wsizeof_array_argument, "%<sizeof%> on array function "
 		   "parameter %qE will return size of %qT", e, TREE_TYPE (e)))
 	inform (DECL_SOURCE_LOCATION (e), "declared here");
@@ -3699,6 +3700,7 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
           && (complain & tf_error)
           && !constraints_satisfied_p (function))
         {
+          auto_diagnostic_group d;
           error ("cannot call function %qD", function);
           location_t loc = DECL_SOURCE_LOCATION (function);
           diagnose_constraints (loc, function, NULL_TREE);
@@ -4467,13 +4469,16 @@ cp_build_binary_op (location_t location,
 		   && DECL_ARRAY_PARAMETER_P (first_arg)
 		   && warn_sizeof_array_argument)
 	      && (complain & tf_warning))
-	    if (warning_at (location, OPT_Wsizeof_pointer_div,
-			    "division %<sizeof (%T) / sizeof (%T)%> does "
-			    "not compute the number of array elements",
+	    {
+	      auto_diagnostic_group d;
+	      if (warning_at (location, OPT_Wsizeof_pointer_div,
+				"division %<sizeof (%T) / sizeof (%T)%> does "
+				"not compute the number of array elements",
 			    type0, type1))
-	      if (DECL_P (first_arg))
-		inform (DECL_SOURCE_LOCATION (first_arg),
-			"first %<sizeof%> operand was declared here");
+		if (DECL_P (first_arg))
+		  inform (DECL_SOURCE_LOCATION (first_arg),
+			    "first %<sizeof%> operand was declared here");
+	    }
 	}
 
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
@@ -4766,12 +4771,15 @@ cp_build_binary_op (location_t location,
 	  else
 	    result_type = type0;
 
-	  if (char_type_p (TREE_TYPE (orig_op1))
-	      && warning (OPT_Wpointer_compare,
-			  "comparison between pointer and zero character "
-			  "constant"))
-	    inform (input_location,
-		    "did you mean to dereference the pointer?");
+	  if (char_type_p (TREE_TYPE (orig_op1)))
+	    {
+	      auto_diagnostic_group d;
+	      if (warning (OPT_Wpointer_compare,
+			     "comparison between pointer and zero character "
+			     "constant"))
+		inform (input_location,
+			  "did you mean to dereference the pointer?");
+	    }
 	  warn_for_null_address (location, op0, complain);
 	}
       else if (((code1 == POINTER_TYPE || TYPE_PTRDATAMEM_P (type1))
@@ -4786,12 +4794,15 @@ cp_build_binary_op (location_t location,
 	  else
 	    result_type = type1;
 
-	  if (char_type_p (TREE_TYPE (orig_op0))
-	      && warning (OPT_Wpointer_compare,
-			  "comparison between pointer and zero character "
-			  "constant"))
-	    inform (input_location,
-		    "did you mean to dereference the pointer?");
+	  if (char_type_p (TREE_TYPE (orig_op0)))
+	    {
+	      auto_diagnostic_group d;
+	      if (warning (OPT_Wpointer_compare,
+			     "comparison between pointer and zero character "
+			     "constant"))
+		inform (input_location,
+			"did you mean to dereference the pointer?");
+	    }
 	  warn_for_null_address (location, op1, complain);
 	}
       else if ((code0 == POINTER_TYPE && code1 == POINTER_TYPE)
@@ -8807,6 +8818,7 @@ convert_for_assignment (tree type, tree rhs,
 		}
 	      else if (fndecl)
 		{
+		  auto_diagnostic_group d;
 		  location_t loc = cp_expr_location (rhs);
 		  range_label_for_type_mismatch rhs_label (rhstype, type);
 		  range_label *label = &rhs_label;
@@ -9087,6 +9099,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	   || TREE_PUBLIC (whats_returned)))
     {
       bool w = false;
+      auto_diagnostic_group d;
       if (TYPE_REF_P (valtype))
 	w = warning_at (loc, OPT_Wreturn_local_addr,
 			"reference to local variable %qD returned",

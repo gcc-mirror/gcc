@@ -570,6 +570,11 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 {
   pid_t pid = -1;
 
+  /* We declare these to be volatile to avoid warnings from gcc about
+     them being clobbered by vfork.  */
+  volatile int sleep_interval = 1;
+  volatile int retries;
+
   /* We vfork and then set environ in the child before calling execvp.
      This clobbers the parent's environ so we need to restore it.
      It would be nice to use one of the exec* functions that takes an
@@ -588,10 +593,6 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 
   const char *bad_fn = NULL;
 
-  /* We declare these to be volatile to avoid warnings from gcc about
-     them being clobbered by vfork.  */
-  volatile int sleep_interval = 1;
-  volatile int retries;
   for (retries = 0; retries < 4; ++retries)
     {
       pid = vfork ();
@@ -703,7 +704,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
       environ = save_environ;
 
       /* bad_fn may have been clobbered by the child, because it
-	 becoes dead there.  */
+	 becomes dead there.  */
       bad_fn = child_bad_fn;
       if (!IS_FAKE_VFORK)
 	{
@@ -714,12 +715,15 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	    errno = err;
 	}
 
-      if (!bad_fn && in != STDIN_FILE_NO && close (in) < 0)
-	bad_fn = "close";
-      if (!bad_fn && out != STDOUT_FILE_NO && close (out) < 0)
-	bad_fn = "close";
-      if (!bad_fn && errdes != STDERR_FILE_NO && close (errdes) < 0)
-	bad_fn = "close";
+      if (!bad_fn && in != STDIN_FILE_NO)
+	if (close (in) < 0)
+	  bad_fn = "close";
+      if (!bad_fn && out != STDOUT_FILE_NO)
+	if (close (out) < 0)
+	  bad_fn = "close";
+      if (!bad_fn && errdes != STDERR_FILE_NO)
+	if (close (errdes) < 0)
+	  bad_fn = "close";
 
       if (bad_fn)
 	{

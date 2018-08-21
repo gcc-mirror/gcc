@@ -1,3 +1,71 @@
+2018-08-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/87033
+	* config/rs6000/rs6000.md (extendsi<mode>2): Change constraints
+	from 'Y' to 'YZ' to enable the LWAX instruction to be generated
+	for indexed loads.
+
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+	    Jeff Law <law@redhat.com>
+
+	* config/s390/s390-c (s390_macro_to_expand): Use cpp_macro_p.
+	* config/spu/spu-c.c (spu_macro_to_expand): Likewise.
+
+2018-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* attribs.c (diag_attr_exclusions): Add auto_diagnostic_group instance.
+	(decl_attributes): Likewise.
+	* calls.c (maybe_warn_nonstring_arg): Add auto_diagnostic_group
+	instance.
+	* cgraphunit.c (maybe_diag_incompatible_alias): Likewise.
+	* diagnostic-core.h (class auto_diagnostic_group): New class.
+	* diagnostic.c (diagnostic_initialize): Initialize the new fields.
+	(diagnostic_report_diagnostic): Handle the first diagnostics within
+	a group.
+	(emit_diagnostic): Add auto_diagnostic_group instance.
+	(inform): Likewise.
+	(inform_n): Likewise.
+	(warning): Likewise.
+	(warning_at): Likewise.
+	(warning_n): Likewise.
+	(pedwarn): Likewise.
+	(permerror): Likewise.
+	(error): Likewise.
+	(error_n): Likewise.
+	(error_at): Likewise.
+	(sorry): Likewise.
+	(fatal_error): Likewise.
+	(internal_error): Likewise.
+	(internal_error_no_backtrace): Likewise.
+	(auto_diagnostic_group::auto_diagnostic_group): New ctor.
+	(auto_diagnostic_group::~auto_diagnostic_group): New dtor.
+	* diagnostic.h (struct diagnostic_context): Add fields
+	"diagnostic_group_nesting_depth",
+	"diagnostic_group_emission_count", "begin_group_cb",
+	"end_group_cb".
+	* gimple-ssa-isolate-paths.c (find_implicit_erroneous_behavior):
+	Add auto_diagnostic_group instance(s).
+	(find_explicit_erroneous_behavior): Likewise.
+	* gimple-ssa-warn-alloca.c (pass_walloca::execute): Likewise.
+	* gimple-ssa-warn-restrict.c (maybe_diag_offset_bounds): Likewise.
+	* gimplify.c (warn_implicit_fallthrough_r): Likewise.
+	(gimplify_va_arg_expr): Likewise.
+	* hsa-gen.c (HSA_SORRY_ATV): Likewise.
+	(HSA_SORRY_AT): Likewise.
+	* ipa-devirt.c (compare_virtual_tables): Likewise.
+	(warn_odr): Likewise.
+	* multiple_target.c (expand_target_clones): Likewise.
+	* opts-common.c (cmdline_handle_error): Likewise.
+	* reginfo.c (globalize_reg): Likewise.
+	* substring-locations.c (format_warning_n_va): Likewise.
+	* tree-inline.c (expand_call_inline): Likewise.
+	* tree-ssa-ccp.c (pass_post_ipa_warn::execute): Likewise.
+	* tree-ssa-loop-niter.c
+	(do_warn_aggressive_loop_optimizations): Likewise.
+	* tree-ssa-uninit.c (warn_uninit): Likewise.
+	* tree.c (warn_deprecated_use): Likewise.
+
 2018-08-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/87014

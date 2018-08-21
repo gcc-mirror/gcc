@@ -749,6 +749,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	  prevailing = vtable;
 	  vtable = tmp;
 	}
+      auto_diagnostic_group d;
       if (warning_at (DECL_SOURCE_LOCATION
 			(TYPE_NAME (DECL_CONTEXT (vtable->decl))),
 		      OPT_Wodr,
@@ -790,22 +791,25 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	             && TREE_CODE (ref1->referred->decl) == FUNCTION_DECL))
 	     && TREE_CODE (ref2->referred->decl) != FUNCTION_DECL)
 	{
-	  if (!class_type->rtti_broken
-	      && warning_at (DECL_SOURCE_LOCATION
-			      (TYPE_NAME (DECL_CONTEXT (vtable->decl))),
-			     OPT_Wodr,
-			     "virtual table of type %qD contains RTTI "
-			     "information",
-			     DECL_CONTEXT (vtable->decl)))
+	  if (!class_type->rtti_broken)
 	    {
-	      inform (DECL_SOURCE_LOCATION
-			(TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
-		      "but is prevailed by one without from other translation "
-		      "unit");
-	      inform (DECL_SOURCE_LOCATION
-			(TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
-		      "RTTI will not work on this type");
-	      class_type->rtti_broken = true;
+	      auto_diagnostic_group d;
+	      if (warning_at (DECL_SOURCE_LOCATION
+				  (TYPE_NAME (DECL_CONTEXT (vtable->decl))),
+				OPT_Wodr,
+				"virtual table of type %qD contains RTTI "
+				"information",
+				DECL_CONTEXT (vtable->decl)))
+		{
+		  inform (DECL_SOURCE_LOCATION
+			      (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
+			    "but is prevailed by one without from other"
+			    " translation unit");
+		  inform (DECL_SOURCE_LOCATION
+			      (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
+			    "RTTI will not work on this type");
+		  class_type->rtti_broken = true;
+		}
 	    }
 	  n2++;
           end2 = !vtable->iterate_reference (n2, ref2);
@@ -831,6 +835,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	  if (DECL_SIZE (prevailing->decl) != DECL_SIZE (vtable->decl))
 	    {
 	      class_type->odr_violated = true;
+	      auto_diagnostic_group d;
 	      if (warning_at (DECL_SOURCE_LOCATION
 				(TYPE_NAME (DECL_CONTEXT (vtable->decl))),
 			      OPT_Wodr,
@@ -859,6 +864,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	  if (TREE_CODE (ref1->referred->decl) != FUNCTION_DECL
 	      && TREE_CODE (ref2->referred->decl) != FUNCTION_DECL)
 	    {
+	      auto_diagnostic_group d;
 	      if (warning_at (DECL_SOURCE_LOCATION
 				(TYPE_NAME (DECL_CONTEXT (vtable->decl))),
 			      OPT_Wodr,
@@ -900,6 +906,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	      vtable = tmp;
 	      ref1 = ref2;
 	    }
+	  auto_diagnostic_group d;
 	  if (warning_at (DECL_SOURCE_LOCATION
 			    (TYPE_NAME (DECL_CONTEXT (vtable->decl))),
 			  OPT_Wodr,
@@ -931,6 +938,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 
       /* And in the last case we have either mistmatch in between two virtual
 	 methods or two virtual table pointers.  */
+      auto_diagnostic_group d;
       if (warning_at (DECL_SOURCE_LOCATION
 			(TYPE_NAME (DECL_CONTEXT (vtable->decl))), OPT_Wodr,
 		      "virtual table of type %qD violates "
@@ -986,6 +994,7 @@ warn_odr (tree t1, tree t2, tree st1, tree st2,
   if (lto_location_cache::current_cache)
     lto_location_cache::current_cache->apply_location_cache ();
 
+  auto_diagnostic_group d;
   if (!warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (t1)), OPT_Wodr,
 		   "type %qT violates the C++ One Definition Rule",
 		   t1))

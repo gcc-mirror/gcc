@@ -1266,6 +1266,7 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
       unsigned int i;
       char *s;
 
+      auto_diagnostic_group d;
       if (e->unknown_error)
 	error_at (loc, e->unknown_error, arg);
       else

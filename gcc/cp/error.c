@@ -4291,12 +4291,14 @@ qualified_name_lookup_error (tree scope, tree name,
     }
   else if (scope != global_namespace)
     {
+      auto_diagnostic_group d;
       error_at (location, "%qD is not a member of %qD", name, scope);
       if (!suggest_alternative_in_explicit_scope (location, name, scope))
 	suggest_alternatives_for (location, name, false);
     }
   else
     {
+      auto_diagnostic_group d;
       error_at (location, "%<::%D%> has not been declared", name);
       suggest_alternatives_for (location, name, true);
     }

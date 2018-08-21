@@ -1146,6 +1146,7 @@ warn_extern_redeclared_static (tree newdecl, tree olddecl)
       && DECL_ARTIFICIAL (olddecl))
     return;
 
+  auto_diagnostic_group d;
   if (permerror (DECL_SOURCE_LOCATION (newdecl),
 		 "%qD was declared %<extern%> and later %<static%>", newdecl))
     inform (DECL_SOURCE_LOCATION (olddecl),
@@ -1189,6 +1190,7 @@ check_redeclaration_exception_specification (tree new_decl,
 	= G_("declaration of %qF has a different exception specifier");
       bool complained = true;
       location_t new_loc = DECL_SOURCE_LOCATION (new_decl);
+      auto_diagnostic_group d;
       if (DECL_IN_SYSTEM_HEADER (old_decl))
 	complained = pedwarn (new_loc, OPT_Wsystem_headers, msg, new_decl);
       else if (!flag_exceptions)
@@ -1317,6 +1319,7 @@ check_no_redeclaration_friend_default_args (tree olddecl, tree newdecl,
     if ((olddecl_hidden_friend_p && TREE_PURPOSE (t1))
 	|| (DECL_FRIEND_P (newdecl) && TREE_PURPOSE (t2)))
       {
+	auto_diagnostic_group d;
 	if (permerror (DECL_SOURCE_LOCATION (newdecl),
 		       "friend declaration of %q#D specifies default "
 		       "arguments and isn't the only declaration", newdecl))
@@ -1568,6 +1571,7 @@ next_arg:;
 				    "declaration %q#D", newdecl, olddecl);
 			  return error_mark_node;
 			}
+		      auto_diagnostic_group d;
 		      if (permerror (newdecl_loc,
 				     "new declaration %q#D ambiguates built-in"
 				     " declaration %q#D", newdecl, olddecl)
@@ -1814,6 +1818,7 @@ next_arg:;
       const char *errmsg = redeclaration_error_message (newdecl, olddecl);
       if (errmsg)
 	{
+	  auto_diagnostic_group d;
 	  error_at (newdecl_loc, errmsg, newdecl);
 	  if (DECL_NAME (olddecl) != NULL_TREE)
 	    inform (olddecl_loc,
@@ -1828,6 +1833,7 @@ next_arg:;
 	       && prototype_p (TREE_TYPE (newdecl)))
 	{
 	  /* Prototype decl follows defn w/o prototype.  */
+	  auto_diagnostic_group d;
 	  if (warning_at (newdecl_loc, 0,
 			  "prototype specified for %q#D", newdecl))
 	    inform (olddecl_loc,
@@ -1869,6 +1875,7 @@ next_arg:;
 	    }
 	  else
 	    {
+	      auto_diagnostic_group d;
 	      error_at (newdecl_loc,
 			"conflicting declaration of %q#D with %qL linkage",
 			newdecl, DECL_LANGUAGE (newdecl));
@@ -1915,6 +1922,7 @@ next_arg:;
 		    if (simple_cst_equal (TREE_PURPOSE (t1),
 					  TREE_PURPOSE (t2)) == 1)
 		      {
+			auto_diagnostic_group d;
 			if (permerror (newdecl_loc,
 				       "default argument given for parameter "
 				       "%d of %q#D", i, newdecl))
@@ -1924,6 +1932,7 @@ next_arg:;
 		      }
 		    else
 		      {
+			auto_diagnostic_group d;
 			error_at (newdecl_loc,
 				  "default argument given for parameter %d "
 				  "of %q#D", i, newdecl);
@@ -1999,6 +2008,7 @@ next_arg:;
 	  && (! DECL_TEMPLATE_SPECIALIZATION (newdecl)
 	      || DECL_TEMPLATE_SPECIALIZATION (olddecl)))
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (newdecl_loc,
 			  OPT_Wredundant_decls,
 			  "redundant redeclaration of %qD in same scope",
@@ -2012,6 +2022,7 @@ next_arg:;
 	{
 	  if (DECL_DELETED_FN (newdecl))
 	    {
+	      auto_diagnostic_group d;
 	      error_at (newdecl_loc, "deleted definition of %qD", newdecl);
 	      inform (olddecl_loc,
 		      "previous declaration of %qD", olddecl);
@@ -2588,6 +2599,7 @@ next_arg:;
       && DECL_VISIBILITY_SPECIFIED (newdecl)
       && DECL_VISIBILITY (newdecl) != DECL_VISIBILITY (olddecl))
     {
+      auto_diagnostic_group d;
       if (warning_at (newdecl_loc, OPT_Wattributes,
 		      "%qD: visibility attribute ignored because it "
 		      "conflicts with previous declaration", newdecl))
@@ -3007,12 +3019,15 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	{
 	  DECL_EXTERNAL (newdecl) = 1;
 	  /* For now, only warn with explicit -Wdeprecated.  */
-	  if (global_options_set.x_warn_deprecated
-	      && warning_at (DECL_SOURCE_LOCATION (newdecl), OPT_Wdeprecated,
-			     "redundant redeclaration of %<constexpr%> static "
-			     "data member %qD", newdecl))
-	    inform (DECL_SOURCE_LOCATION (olddecl),
-		    "previous declaration of %qD", olddecl);
+	  if (global_options_set.x_warn_deprecated)
+	    {
+	      auto_diagnostic_group d;
+	      if (warning_at (DECL_SOURCE_LOCATION (newdecl), OPT_Wdeprecated,
+				"redundant redeclaration of %<constexpr%> "
+				"static data member %qD", newdecl))
+		inform (DECL_SOURCE_LOCATION (olddecl),
+			  "previous declaration of %qD", olddecl);
+	    }
 	  return NULL;
 	}
 
@@ -4779,6 +4794,7 @@ warn_misplaced_attr_for_class_type (source_location location,
 {
   gcc_assert (OVERLOAD_TYPE_P (class_type));
 
+  auto_diagnostic_group d;
   if (warning_at (location, OPT_Wattributes,
 		  "attribute ignored in declaration "
 		  "of %q#T", class_type))

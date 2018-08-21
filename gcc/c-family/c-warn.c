@@ -491,6 +491,7 @@ warn_logical_not_parentheses (location_t location, enum tree_code code,
       && integer_zerop (rhs))
     return;
 
+  auto_diagnostic_group d;
   if (warning_at (location, OPT_Wlogical_not_parentheses,
 		  "logical not is only applied to the left hand side of "
 		  "comparison")
@@ -2232,6 +2233,7 @@ warn_duplicated_cond_add_or_warn (location_t loc, tree cond, vec<tree> **chain)
   FOR_EACH_VEC_ELT (**chain, ix, t)
     if (operand_equal_p (cond, t, 0))
       {
+	auto_diagnostic_group d;
 	if (warning_at (loc, OPT_Wduplicated_cond,
 			"duplicated %<if%> condition"))
 	  inform (EXPR_LOCATION (t), "previously used here");
@@ -2601,6 +2603,7 @@ warn_for_multistatement_macros (location_t body_loc, location_t next_loc,
 	return;
     }
 
+  auto_diagnostic_group d;
   if (warning_at (body_loc, OPT_Wmultistatement_macros,
 		  "macro expands to multiple statements"))
     inform (guard_loc, "some parts of macro expansion are not guarded by "

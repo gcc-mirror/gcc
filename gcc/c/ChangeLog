@@ -1,3 +1,26 @@
+2018-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* c-decl.c (pushtag): Add auto_diagnostic_group instance.
+	(diagnose_mismatched_decls): Likewise, in various places.
+	(warn_if_shadowing): Likewise.
+	(implicit_decl_warning): Likewise.
+	(implicitly_declare): Likewise.
+	(undeclared_variable): Likewise.
+	(declare_label): Likewise.
+	(grokdeclarator): Likewise.
+	(start_function): Likewise.
+	* c-parser.c (c_parser_declaration_or_fndef): Likewise.
+	(c_parser_parameter_declaration): Likewise.
+	(c_parser_binary_expression): Likewise.
+	* c-typeck.c (c_expr_sizeof_expr): Likewise.
+	(parser_build_binary_op): Likewise.
+	(build_unary_op): Likewise.
+	(error_init): Likewise.
+	(pedwarn_init): Likewise.
+	(warning_init): Likewise.
+	(convert_for_assignment): Likewise.
+
 2018-08-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-objc-common.c: Include "gcc-rich-location.h".

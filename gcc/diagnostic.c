@@ -180,6 +180,10 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->show_ruler_p = false;
   context->parseable_fixits_p = false;
   context->edit_context_ptr = NULL;
+  context->diagnostic_group_nesting_depth = 0;
+  context->diagnostic_group_emission_count = 0;
+  context->begin_group_cb = NULL;
+  context->end_group_cb = NULL;
 }
 
 /* Maybe initialize the color support. We require clients to do this
@@ -1002,6 +1006,14 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   else
     ++diagnostic_kind_count (context, diagnostic->kind);
 
+  /* Is this the initial diagnostic within the stack of groups?  */
+  if (context->diagnostic_group_emission_count == 0)
+    {
+      if (context->begin_group_cb)
+	context->begin_group_cb (context);
+    }
+  context->diagnostic_group_emission_count++;
+
   diagnostic->message.x_data = &diagnostic->x_data;
   diagnostic->x_data = NULL;
   pp_format (context->printer, &diagnostic->message);
@@ -1162,6 +1174,7 @@ bool
 emit_diagnostic (diagnostic_t kind, location_t location, int opt,
 		 const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
@@ -1185,6 +1198,7 @@ emit_diagnostic_valist (diagnostic_t kind, location_t location, int opt,
 void
 inform (location_t location, const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
@@ -1198,6 +1212,7 @@ inform (rich_location *richloc, const char *gmsgid, ...)
 {
   gcc_assert (richloc);
 
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   diagnostic_impl (richloc, -1, gmsgid, &ap, DK_NOTE);
@@ -1212,6 +1227,7 @@ inform_n (location_t location, unsigned HOST_WIDE_INT n,
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
+  auto_diagnostic_group d;
   rich_location richloc (line_table, location);
   diagnostic_n_impl (&richloc, -1, n, singular_gmsgid, plural_gmsgid,
 		     &ap, DK_NOTE);
@@ -1224,6 +1240,7 @@ inform_n (location_t location, unsigned HOST_WIDE_INT n,
 bool
 warning (int opt, const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, input_location);
@@ -1239,6 +1256,7 @@ warning (int opt, const char *gmsgid, ...)
 bool
 warning_at (location_t location, int opt, const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
@@ -1254,6 +1272,7 @@ warning_at (rich_location *richloc, int opt, const char *gmsgid, ...)
 {
   gcc_assert (richloc);
 
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = diagnostic_impl (richloc, opt, gmsgid, &ap, DK_WARNING);
@@ -1269,6 +1288,7 @@ warning_n (rich_location *richloc, int opt, unsigned HOST_WIDE_INT n,
 {
   gcc_assert (richloc);
 
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, plural_gmsgid);
   bool ret = diagnostic_n_impl (richloc, opt, n,
@@ -1286,6 +1306,7 @@ bool
 warning_n (location_t location, int opt, unsigned HOST_WIDE_INT n,
 	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, plural_gmsgid);
   rich_location richloc (line_table, location);
@@ -1312,6 +1333,7 @@ warning_n (location_t location, int opt, unsigned HOST_WIDE_INT n,
 bool
 pedwarn (location_t location, int opt, const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
@@ -1327,6 +1349,7 @@ pedwarn (rich_location *richloc, int opt, const char *gmsgid, ...)
 {
   gcc_assert (richloc);
 
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = diagnostic_impl (richloc, opt, gmsgid, &ap, DK_PEDWARN);
@@ -1344,6 +1367,7 @@ pedwarn (rich_location *richloc, int opt, const char *gmsgid, ...)
 bool
 permerror (location_t location, const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, location);
@@ -1359,6 +1383,7 @@ permerror (rich_location *richloc, const char *gmsgid, ...)
 {
   gcc_assert (richloc);
 
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = diagnostic_impl (richloc, -1, gmsgid, &ap, DK_PERMERROR);
@@ -1371,6 +1396,7 @@ permerror (rich_location *richloc, const char *gmsgid, ...)
 void
 error (const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, input_location);
@@ -1384,6 +1410,7 @@ void
 error_n (location_t location, unsigned HOST_WIDE_INT n,
 	 const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, plural_gmsgid);
   rich_location richloc (line_table, location);
@@ -1396,6 +1423,7 @@ error_n (location_t location, unsigned HOST_WIDE_INT n,
 void
 error_at (location_t loc, const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, loc);
@@ -1410,6 +1438,7 @@ error_at (rich_location *richloc, const char *gmsgid, ...)
 {
   gcc_assert (richloc);
 
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   diagnostic_impl (richloc, -1, gmsgid, &ap, DK_ERROR);
@@ -1422,6 +1451,7 @@ error_at (rich_location *richloc, const char *gmsgid, ...)
 void
 sorry (const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, input_location);
@@ -1443,6 +1473,7 @@ seen_error (void)
 void
 fatal_error (location_t loc, const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, loc);
@@ -1459,6 +1490,7 @@ fatal_error (location_t loc, const char *gmsgid, ...)
 void
 internal_error (const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, input_location);
@@ -1474,6 +1506,7 @@ internal_error (const char *gmsgid, ...)
 void
 internal_error_no_backtrace (const char *gmsgid, ...)
 {
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   rich_location richloc (line_table, input_location);
@@ -1529,6 +1562,33 @@ void
 fancy_abort (const char *file, int line, const char *function)
 {
   internal_error ("in %s, at %s:%d", function, trim_filename (file), line);
+}
+
+/* class auto_diagnostic_group.  */
+
+/* Constructor: "push" this group into global_dc.  */
+
+auto_diagnostic_group::auto_diagnostic_group ()
+{
+  global_dc->diagnostic_group_nesting_depth++;
+}
+
+/* Destructor: "pop" this group from global_dc.  */
+
+auto_diagnostic_group::~auto_diagnostic_group ()
+{
+  if (--global_dc->diagnostic_group_nesting_depth == 0)
+    {
+      /* Handle the case where we've popped the final diagnostic group.
+	 If any diagnostics were emitted, give the context a chance
+	 to do something.  */
+      if (global_dc->diagnostic_group_emission_count > 0)
+	{
+	  if (global_dc->end_group_cb)
+	    global_dc->end_group_cb (global_dc);
+	}
+      global_dc->diagnostic_group_emission_count = 0;
+    }
 }
 
 /* Really call the system 'abort'.  This has to go right at the end of

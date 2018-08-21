@@ -12613,6 +12613,7 @@ warn_deprecated_use (tree node, tree attr)
   bool w = false;
   if (DECL_P (node))
     {
+      auto_diagnostic_group d;
       if (msg)
 	w = warning (OPT_Wdeprecated_declarations,
 		     "%qD is deprecated: %s", node, (const char *) msg);
@@ -12636,6 +12637,7 @@ warn_deprecated_use (tree node, tree attr)
 	    what = DECL_NAME (TYPE_NAME (node));
 	}
 
+      auto_diagnostic_group d;
       if (what)
 	{
 	  if (msg)

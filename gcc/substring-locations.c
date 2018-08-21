@@ -167,6 +167,7 @@ format_warning_n_va (const substring_loc &fmt_loc,
   if (substring_within_range)
     primary_label = fmt_label;
 
+  auto_diagnostic_group d;
   gcc_rich_location richloc (primary_loc, primary_label);
 
   if (param_loc != UNKNOWN_LOCATION)

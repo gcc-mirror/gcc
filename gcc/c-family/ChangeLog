@@ -1,3 +1,14 @@
+2018-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* c-attribs.c (common_handle_aligned_attribute): Add
+	auto_diagnostic_group instance.
+	* c-indentation.c (warn_for_misleading_indentation): Likewise.
+	* c-opts.c (c_common_post_options): Likewise.
+	* c-warn.c (warn_logical_not_parentheses): Likewise.
+	(warn_duplicated_cond_add_or_warn): Likewise.
+	(warn_for_multistatement_macros): Likewise.
+
 2018-08-20  Nathan Sidwell  <nathan@acm.org>
 
 	* c-ada-spec.c (macro_length, dump_ada_macros): Adjust macro parm
