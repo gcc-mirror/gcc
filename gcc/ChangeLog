@@ -1,3 +1,8 @@
+2018-08-21  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (free_lang_data_in_decl): Remove types from DECL_CONTEXT
+	when possible.
+
 2018-08-21  Tamar Christina  <tamar.christina@arm.com>
 
 	* expmed.c (extract_low_bits): Reject invalid subregs early.
