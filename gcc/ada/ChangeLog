@@ -1,3 +1,7 @@
+2018-08-21  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* sa_messages.ads, sa_messages.adb: New source files.
+
 2018-08-03  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	Reverts
