@@ -5380,6 +5380,29 @@ free_lang_data_in_decl (tree decl)
 	    nextp = &TREE_CHAIN (var);
         }
     }
+  /* We need to keep field decls associated with their trees. Otherwise tree
+     merging may merge some fileds and keep others disjoint wich in turn will
+     not do well with TREE_CHAIN pointers linking them.
+
+     Also do not drop containing types for virtual methods and tables because
+     these are needed by devirtualization.  */
+  if (TREE_CODE (decl) != FIELD_DECL
+      && ((TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
+          || !DECL_VIRTUAL_P (decl)))
+    {
+      tree ctx = DECL_CONTEXT (decl);
+      /* Variably modified types are needed for tree_is_indexable to decide
+	 whether the type needs to go to local or global section.
+	 This code is semi-broken but for now it is easiest to keep contexts
+	 as expected.  */
+      if (ctx && TYPE_P (ctx)
+	  && !variably_modified_type_p (ctx, NULL_TREE))
+	 {
+	   while (ctx && TYPE_P (ctx))
+	     ctx = TYPE_CONTEXT (ctx);
+	   DECL_CONTEXT (decl) = ctx;
+	 }
+    }
 }
 
 
