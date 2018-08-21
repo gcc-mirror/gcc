@@ -1,6 +1,15 @@
 2018-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_mapper::divert_include): Don't append export attrib.
+	(import_module): Don't scan attribs.
+	(maybe_atom_legacy_module): Push exporting.
+	gcc/testsuite/
+	* g++.dg/modules/legacy-3_[bc].H: Adjust.
+	* g++.dg/modules/legacy-5_b.C: Adjust.
+	* g++.dg/modules/legacy-6_[cd].C: Adjust.
+
+	gcc/cp/
 	* module.c (module_state::get_module): Lose dflt & insert args.
 	(module_state::insert_mapping): Move directly into ...
 	(module_mapper::module_mapper): ... here.

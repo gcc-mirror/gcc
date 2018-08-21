@@ -5,4 +5,4 @@
 #include "header.h"
 #include <header.h>
 
-// { dg-final { scan-file legacy-5_b.i {import <header.h> \[\[gnu::export\]\];\n *import <header.h> \[\[gnu::export\]\];} } }
+// { dg-final { scan-file legacy-5_b.i {import <header.h>;\n *import <header.h>;\n} } }

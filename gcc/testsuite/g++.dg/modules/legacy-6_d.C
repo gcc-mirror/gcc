@@ -5,6 +5,6 @@
 int i;
 #include "legacy-6_b.H"
 
-// { dg-final { scan-file legacy-6_d.i " *import \"legacy-6_a.H\" ..gnu::export..;\nint i;" } }
+// { dg-final { scan-file legacy-6_d.i " *import \"legacy-6_a.H\";\nint i;" } }
 
 // { dg-final { scan-file legacy-6_d.i "int i;\n# 1 \"\[^\n\]*legacy-6_b.H\" 1\n" } }

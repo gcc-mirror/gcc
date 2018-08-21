@@ -7789,8 +7789,7 @@ int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
       const line_map_ordinary *map
 	= linemap_check_ordinary (linemap_lookup (lmaps, loc));
       unsigned col = SOURCE_COLUMN (map, loc);
-      col = col > sizeof ("import") + 1 ? col - (sizeof ("import") + 1) : 0; 
-
+      col -= (col != 0); /* Columns are 1-based.  */
       module_kind mk;
       if (diversion)
 	mk = module_name_kind (loc, diversion);
@@ -7800,17 +7799,26 @@ int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
 	mk = angle ? mk_legacy_system : mk_legacy_user;
 
       /* Divert.   */
-      size_t len = strlen (file) + 60 + col;
-      char *res = XNEWVEC (char, len);
+      size_t len = strlen (file);
+      char *res = XNEWVEC (char, len + 60 + col);
 
       /* Indent so the filename falls at the same column as the original
-	 source.  Hence the need for a trailing gnu::export attribute.  */
-      const char *const ps[][2] = {{"", ""}, {"\"", "\""}, {"<", ">"}};
-      memset (res, ' ', col);
-      size_t actual = col + snprintf (res + col, len - col,
-				      "import %s%s%s [[gnu::export]];\n\n",
-				      ps[mk][0], file, ps[mk][1]);
-      gcc_assert (actual < len);
+	 source.  */
+      strcpy (res, " import ");
+      size_t actual = 8;
+      if (col > actual)
+	{
+	  memset (res + actual, ' ', col - actual);
+	  actual = col;
+	}
+      if (mk)
+	res[actual++] = mk == mk_legacy_system ? '<' : '"';
+      memcpy (res + actual, file, len);
+      actual += len;
+      if (mk)
+	res[actual++] = mk == mk_legacy_system ? '>' : '"';
+      strcpy (res + actual, ";\n\n");
+      actual += 3;
       cpp_push_buffer (reader, reinterpret_cast <unsigned char *> (res),
 		       actual, false);
     }
@@ -10609,12 +10617,9 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
 void
-import_module (const cp_expr &e_name, bool exporting, tree attrs, line_maps *lmaps)
+import_module (const cp_expr &e_name, bool exporting, tree, line_maps *lmaps)
 {
   if (export_depth)
-    exporting = true;
-
-  if (lookup_attribute ("export", attrs))
     exporting = true;
 
   gcc_assert (global_namespace == current_scope ());
@@ -11011,6 +11016,8 @@ maybe_atom_legacy_module (line_maps *lmaps)
 			   ? integer_zero_node : NULL_TREE, NULL_TREE), loc);
 
   declare_module (name, true, NULL, lmaps);
+  /* Everything is exported.  */
+  push_module_export (false, NULL);
   return true;
 }
 
