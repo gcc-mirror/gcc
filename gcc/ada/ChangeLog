@@ -1,5 +1,14 @@
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch6.adb (Check_Synchronized_Overriding): The conformance
+	between an overriding protected operation and the overridden
+	abstract progenitor operation requires subtype conformance;
+	requiring equality of return types in the case of a function is
+	too restrictive and leads to spurious errors when the return
+	type is a generic actual.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch9.adb (Expand_N_Timed_Entry_Call,
 	Expand_Conditional_Entry_Call): Use Reset_Scopes_Of to set
 	properly the scope of all entities created in blocks generated

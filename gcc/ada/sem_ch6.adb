@@ -7440,13 +7440,15 @@ package body Sem_Ch6 is
                end;
 
             --  Functions can override abstract interface functions
+            --  Return types must be subtype conformant.
 
             elsif Ekind (Def_Id) = E_Function
               and then Ekind (Subp) = E_Function
               and then Matches_Prefixed_View_Profile
                          (Parameter_Specifications (Parent (Def_Id)),
                           Parameter_Specifications (Parent (Subp)))
-              and then Etype (Def_Id) = Etype (Subp)
+              and then Conforming_Types (Etype (Def_Id), Etype (Subp),
+                Subtype_Conformant)
             then
                Candidate := Subp;
 
