@@ -1,5 +1,10 @@
 2018-08-21  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/65043
+	* call.c (standard_conversion): Set check_narrowing.
+	* typeck2.c (check_narrowing): Use CP_INTEGRAL_TYPE_P rather
+	than comparing with INTEGER_TYPE.
+
 	* cp-tree.h: Fix typo.
 
 2018-08-20  David Malcolm  <dmalcolm@redhat.com>

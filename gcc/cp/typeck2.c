@@ -913,7 +913,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
   if (const_only && !TREE_CONSTANT (init))
     return ok;
 
-  if (TREE_CODE (type) == INTEGER_TYPE
+  if (CP_INTEGRAL_TYPE_P (type)
       && TREE_CODE (ftype) == REAL_TYPE)
     ok = false;
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (ftype)

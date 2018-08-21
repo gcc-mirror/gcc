@@ -1,3 +1,11 @@
+2018-08-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65043
+	* g++.dg/concepts/pr67595.C: Add dg-warning.
+	* g++.dg/cpp0x/Wnarrowing11.C: New test.
+	* g++.dg/cpp0x/Wnarrowing12.C: New test.
+	* g++.dg/cpp0x/rv-cast5.C: Add static_cast.
+
 2018-08-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/expr_func7.adb, gnat.dg/expr_func7.ads: New testcase.
