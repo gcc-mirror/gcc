@@ -1,3 +1,10 @@
+2018-08-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline
+	2018-08-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* g++.dg/torture/pr86763.C: Restrict to *-*-linux*.
+
 2018-08-17  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
