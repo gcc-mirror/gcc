@@ -1,3 +1,10 @@
+2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* gfortran.dg/f2003_inquire_1.f03: Add write statement.
+	* gfortran.dg/f2003_io_1.f03: Add wait statement.
+
 2018-08-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86981, Implement -Wpessimizing-move.
