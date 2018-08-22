@@ -1,3 +1,11 @@
+2018-08-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86888
+	* decl.c (gfc_match_data_decl): Allow allocatable components of
+	indirectly recursive type.
+	* resolve.c (resolve_component): Remove two errors messages ...
+	(resolve_fl_derived): ... and replace them by a new one.
+
 2018-08-21  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_minmax): Use
