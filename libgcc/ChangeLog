@@ -1,3 +1,11 @@
+2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/unwind-dw2-fde-darwin.c 
+	(_darwin10_Unwind_FindEnclosingFunction): move from here ...
+	* config/darwin10-unwind-find-enc-func.c: … to here.
+	* config/t-darwin: Build Darwin10 unwinder shim crt.
+	* libgcc/config.host: Add the Darwin10 unwinder shim.
+
 2018-08-21  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* config.host: Add crtbegin.o and crtend.o for
