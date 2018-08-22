@@ -1,3 +1,8 @@
+2018-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86945
+	* tree-cfg.c (generate_range_test): Use unsigned arithmetic.
+
 2018-08-21  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* gfortran.dg/nan_1.f90: Remove tests that test MAX/MIN with NaNs.
