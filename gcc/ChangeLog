@@ -1,5 +1,10 @@
 2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/i386/i386.c (ix86_output_addr_diff_elt): Move the MACH-O
+	specific test before the one for HAVE_AS_GOTOFF_IN_DATA.
+
+2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
 	PR bootstrap/81033
 	PR target/81733
 	PR target/52795
