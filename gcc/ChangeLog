@@ -1,3 +1,14 @@
+2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/81033
+	PR target/81733
+	PR target/52795
+	* gcc/dwarf2out.c (FUNC_SECOND_SECT_LABEL): New.
+	(dwarf2out_switch_text_section): Generate a local label for the second
+	function sub-section and apply it as the second FDE start label.
+	* gcc/final.c (final_scan_insn_1): Emit second FDE label after the second
+	sub-section start.
+
 2018-08-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86988
