@@ -1,3 +1,7 @@
+2018-08-22  Alexandre Oliva <aoliva@redhat.com>
+
+	* tree-ssa-reassoc.c (is_reassociable_op): Fix cut&pasto.
+
 2018-08-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86981, Implement -Wpessimizing-move.
