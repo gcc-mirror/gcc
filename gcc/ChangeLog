@@ -1,5 +1,11 @@
 2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
+	PR other/704
+	* gcc-ar.c (main): Don’t try to invoke the plug-in if we’re not
+	building it.
+
+2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC): Adjust to use the
 	Darwin10-specific unwinder-shim.
 	* config/darwin12.h (LINK_GCC_C_SEQUENCE_SPEC): Remove.
