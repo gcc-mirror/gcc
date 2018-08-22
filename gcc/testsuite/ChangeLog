@@ -1,3 +1,11 @@
+2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-avg-16.c: New test.
+	* gcc.dg/vect/slp-37.c: Expect the loop to be vectorized.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4.c,
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-big-array.c: Likewise for
+	the second loop in main1.
+
 2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/lto/pr85248_0.c (test_alias):

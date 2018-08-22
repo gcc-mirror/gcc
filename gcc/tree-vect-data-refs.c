@@ -2633,10 +2633,8 @@ vect_analyze_group_access_1 (dr_vec_info *dr_info)
       if (groupsize != count
 	  && !DR_IS_READ (dr))
         {
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "interleaved store with gaps\n");
-	  return false;
+	  groupsize = count;
+	  STMT_VINFO_STRIDED_P (stmt_info) = true;
 	}
 
       /* If there is a gap after the last load in the group it is the
@@ -2652,6 +2650,8 @@ vect_analyze_group_access_1 (dr_vec_info *dr_info)
 			   "Detected interleaving ");
 	  if (DR_IS_READ (dr))
 	    dump_printf (MSG_NOTE, "load ");
+	  else if (STMT_VINFO_STRIDED_P (stmt_info))
+	    dump_printf (MSG_NOTE, "strided store ");
 	  else
 	    dump_printf (MSG_NOTE, "store ");
 	  dump_printf (MSG_NOTE, "of size %u starting with ",
