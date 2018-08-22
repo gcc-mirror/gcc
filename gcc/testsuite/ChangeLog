@@ -1,3 +1,9 @@
+2018-08-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87052
+	* gcc.dg/pr87052.c: New test.
+	* gcc.dg/tree-ssa/dump-3.c: Adjust.
+
 2018-08-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* gfortran.dg/max_fmax_aarch64.f90: Rename to...

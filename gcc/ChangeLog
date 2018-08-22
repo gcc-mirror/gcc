@@ -1,3 +1,9 @@
+2018-08-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87052
+	* tree-pretty-print.c (pretty_print_string): Add argument.
+	(dump_generic_node): Call to pretty_print_string with string size.
+
 2018-08-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/86771
