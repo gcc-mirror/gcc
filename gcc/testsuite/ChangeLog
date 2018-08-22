@@ -1,5 +1,11 @@
 2018-08-22  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/86935
+	* gfortran.dg/associate_3.f90: Update error message.
+	* gfortran.dg/associate_39.f90: New test case.
+
+2018-08-22  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/86888
 	* gfortran.dg/alloc_comp_basics_6.f90: Update an error message and add
 	an additional case.
