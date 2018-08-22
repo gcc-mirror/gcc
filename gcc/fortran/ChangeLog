@@ -1,3 +1,9 @@
+2018-08-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86935
+	* match.c (gfc_match_associate): Improve diagnostics for the ASSOCIATE
+	statement.
+
 2018-08-22  Andrew Benson  <abensonca@gmail.com>
 
 	* module.c (load_generic_interfaces): Move call to find_symbol()
