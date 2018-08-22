@@ -14001,28 +14001,6 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
     CLASS_DATA (c)->ts.u.derived
                     = gfc_find_dt_in_generic (CLASS_DATA (c)->ts.u.derived);
 
-  if (!sym->attr.is_class && c->ts.type == BT_DERIVED && !sym->attr.vtype
-      && c->attr.pointer && c->ts.u.derived->components == NULL
-      && !c->ts.u.derived->attr.zero_comp)
-    {
-      gfc_error ("The pointer component %qs of %qs at %L is a type "
-                 "that has not been declared", c->name, sym->name,
-                 &c->loc);
-      return false;
-    }
-
-  if (c->ts.type == BT_CLASS && c->attr.class_ok
-      && CLASS_DATA (c)->attr.class_pointer
-      && CLASS_DATA (c)->ts.u.derived->components == NULL
-      && !CLASS_DATA (c)->ts.u.derived->attr.zero_comp
-      && !UNLIMITED_POLY (c))
-    {
-      gfc_error ("The pointer component %qs of %qs at %L is a type "
-                 "that has not been declared", c->name, sym->name,
-                 &c->loc);
-      return false;
-    }
-
   /* If an allocatable component derived type is of the same type as
      the enclosing derived type, we need a vtable generating so that
      the __deallocate procedure is created.  */
@@ -14257,6 +14235,13 @@ resolve_fl_derived (gfc_symbol *sym)
 			  : &gen_dt->generic->sym->declared_at,
 			  &sym->declared_at))
     return false;
+
+  if (sym->components == NULL && !sym->attr.zero_comp)
+    {
+      gfc_error ("Derived type %qs at %L has not been declared",
+		  sym->name, &sym->declared_at);
+      return false;
+    }
 
   /* Resolve the finalizer procedures.  */
   if (!gfc_resolve_finalizers (sym, NULL))

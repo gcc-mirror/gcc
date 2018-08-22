@@ -1,3 +1,15 @@
+2018-08-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86888
+	* gfortran.dg/alloc_comp_basics_6.f90: Update an error message and add
+	an additional case.
+	* gfortran.dg/alloc_comp_basics_7.f90: New test case.
+	* gfortran.dg/class_17.f03: Update error message.
+	* gfortran.dg/class_55.f90: Ditto.
+	* gfortran.dg/dtio_11.f90: Update error messages.
+	* gfortran.dg/implicit_actual.f90: Add an error message.
+	* gfortran.dg/typebound_proc_12.f90: Update error message.
+
 2018-08-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/87052
