@@ -22,7 +22,7 @@
 #include <limits>
 #include <testsuite_hooks.h>
 
-using test_type = std::vector<char>;
+typedef std::vector<char> test_type;
 
 typedef test_type::size_type size_type;
 typedef test_type::difference_type difference_type;
