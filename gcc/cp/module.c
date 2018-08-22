@@ -2085,8 +2085,6 @@ elf_out::end ()
   return parent::end ();
 }
 
-class module_state;
-
 /* A dependency set.  These are not quite the decl-sets of the TS.  We
    only record namespace-scope decls here.   A depset can be one of:
 
@@ -10232,20 +10230,20 @@ module_state::set_import (module_state const *other, bool is_export)
     bitmap_ior_into (exports, other->exports);
 }
 
-static GTY(()) tree proclaimer;
+static GTY(()) module_state *proclaimer;
 static int export_depth; /* -1 for singleton export.  */
 
 /* Nest a module export level.  Return true if we were already in a
    level.  */
 
 int
-push_module_export (bool singleton, tree proclaiming)
+push_module_export (bool singleton, module_state *proclaiming)
 {
   int previous = export_depth;
 
   if (proclaiming)
     {
-      proclaimer = proclaimer;
+      proclaimer = proclaiming;
       export_depth = -2;
     }
   else if (singleton)
@@ -10585,10 +10583,26 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
   (*modules)[mod]->lazy_load (ns, id, mslot, outer);
 }
 
+void
+pp_module_name (pretty_printer *pp, module_state *state)
+{
+  if (state->kind != mk_new)
+    pp_character (pp, state->kind == mk_legacy_system ? '<' : '"');
+  pp_string (pp, IDENTIFIER_POINTER (state->name));
+  if (state->kind != mk_new)
+    pp_character (pp, state->kind == mk_legacy_system ? '>' : '"');
+}
+
+module_state *
+get_module (tree name)
+{
+  return module_state::get_module (name);
+}
+
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
 void
-import_module (tree name, location_t from_loc, bool exporting,
+import_module (module_state *imp, location_t from_loc, bool exporting,
 	       tree, line_maps *lmaps)
 {
   if (export_depth)
@@ -10597,7 +10611,6 @@ import_module (tree name, location_t from_loc, bool exporting,
   gcc_assert (global_namespace == current_scope ());
   from_loc = ordinary_loc_of (lmaps, from_loc);
 
-  module_state *imp = module_state::get_module (name);
   module_state *purview = (*modules)[MODULE_PURVIEW];
   if (purview == imp)
     {
@@ -10635,7 +10648,7 @@ import_module (tree name, location_t from_loc, bool exporting,
    true if this TU is the exporting module unit.  */
 
 void
-declare_module (tree name, location_t from_loc, bool exporting_p,
+declare_module (module_state *state, location_t from_loc, bool exporting_p,
 		tree, line_maps *lmaps)
 {
   gcc_assert (global_namespace == current_scope ());
@@ -10649,7 +10662,6 @@ declare_module (tree name, location_t from_loc, bool exporting_p,
       return;
     }
 
-  module_state *state = module_state::get_module (name);
   if (!state->is_detached ())
     {
       /* Cannot be module unit of an imported module.  */
@@ -10979,7 +10991,7 @@ maybe_atom_legacy_module (line_maps *lmaps)
   tree name = tree_cons (mod_name, module_legacy_system_p
 			 ? integer_zero_node : NULL_TREE, NULL_TREE);
 
-  declare_module (name, loc, true, NULL, lmaps);
+  declare_module (get_module (name), loc, true, NULL, lmaps);
   /* Everything is exported.  */
   push_module_export (false, NULL);
   return true;

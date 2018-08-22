@@ -1,5 +1,18 @@
 2018-08-22  Nathan Sidwell  <nathan@acm.org>
 
+	Use modules as handles themselves.
+	gcc/cp/
+	* cp-tree.h (class module_state): Forward declare.
+	(get_module, pp_module_name): Declare.
+	(import_module, declare_module, push_module_export): Take
+	module_state.
+	* module.c (proclaimer): A module.
+	(get_module, pp_module_name): Define.
+	(push_module_export, import_module, declare_module): Adjust.
+	* parser.c (cp_parser_module_name): Return module_state.
+	(cp_parser_module_declaration, cp_parser_import_declaration)
+	(cp_parser_module_proclamation): Adjust.
+
 	Fix GTY
 	gcc/cp/
 	* cp-tree.h (struct mc_index): Don't mark.
