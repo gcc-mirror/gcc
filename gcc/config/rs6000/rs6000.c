@@ -20349,6 +20349,9 @@ rs6000_output_function_entry (FILE *file, const char *fname)
 /* Print an operand.  Recognize special options, documented below.  */
 
 #if TARGET_ELF
+/* Access to .sdata2 through r2 (see -msdata=eabi in invoke.texi) is
+   only introduced by the linker, when applying the sda21
+   relocation.  */
 #define SMALL_DATA_RELOC ((rs6000_sdata == SDATA_EABI) ? "sda21" : "sdarel")
 #define SMALL_DATA_REG ((rs6000_sdata == SDATA_EABI) ? 0 : 13)
 #else
