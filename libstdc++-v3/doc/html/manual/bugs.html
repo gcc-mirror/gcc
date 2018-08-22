@@ -136,6 +136,14 @@
     </p></dd><dt><a id="manual.bugs.dr195"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#195" target="_top">195</a>:
 	<span class="emphasis"><em>Should basic_istream::sentry's constructor ever set eofbit?</em></span>
     </span></dt><dd><p>Yes, it can, specifically if EOF is reached while skipping whitespace.
+    </p></dd><dt><a id="manual.bugs.dr206"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#206" target="_top">206</a>:
+	<span class="emphasis"><em><code class="code">operator new(size_t, nothrow)</code> may become
+          unlinked to ordinary <code class="code">operator new</code> if ordinary
+          version replaced
+        </em></span>
+    </span></dt><dd><p>The <code class="code">nothrow</code> forms of new and delete were
+      changed to call the throwing forms, handling any exception by
+      catching it and returning a null pointer.
     </p></dd><dt><a id="manual.bugs.dr211"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#211" target="_top">211</a>:
 	<span class="emphasis"><em>operator&gt;&gt;(istream&amp;, string&amp;) doesn't set failbit</em></span>
     </span></dt><dd><p>If nothing is extracted into the string, <code class="code">op&gt;&gt;</code> now
