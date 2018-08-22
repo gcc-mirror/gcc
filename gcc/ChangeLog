@@ -1,5 +1,6 @@
 2018-08-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR rtl-optimization/86771
 	* combine.c (try_combine): Do not allow splitting a resulting PARALLEL
 	of two SETs into those two SETs, one to be placed at i2, if that SETs
 	destination is modified between i2 and i3.
