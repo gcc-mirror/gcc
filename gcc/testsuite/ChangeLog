@@ -1,5 +1,10 @@
 2018-08-22  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/86988
+	* g++.dg/pr86988.C: New testcase.
+
+2018-08-22  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/86945
 	* tree-cfg.c (generate_range_test): Use unsigned arithmetic.
 
