@@ -1,3 +1,9 @@
+2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/lto/pr85248_0.c (test_alias):
+	Stringify __USER_LABEL_PREFIX__.
+	(test_noreturn): Likewise.
+
 2018-08-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86988
