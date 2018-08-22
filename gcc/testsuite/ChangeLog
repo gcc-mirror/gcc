@@ -1,3 +1,10 @@
+2018-08-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gfortran.dg/max_fmax_aarch64.f90: Rename to...
+	* gfortran.dg/max_expr.f90: ...this.
+	* gfortran.dg/min_fmin_aarch64.f90: Rename to...
+	* gfortran.dg/min_expr.f90: ...this.
+
 2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/86725

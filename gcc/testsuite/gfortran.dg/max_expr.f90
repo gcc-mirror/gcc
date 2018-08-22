@@ -1,4 +1,4 @@
-! { dg-do compile { target aarch64*-*-* } }
+! { dg-do compile }
 ! { dg-options "-O2 -fdump-tree-optimized" }
 
 subroutine foo (a, b, c, d, e, f, g, h)
@@ -12,4 +12,4 @@ subroutine foof (a, b, c, d, e, f, g, h)
 end subroutine
 
 
-! { dg-final { scan-tree-dump-times "\.FMAX " 14 "optimized" } }
+! { dg-final { scan-tree-dump-times "MAX_EXPR " 14 "optimized" } }
