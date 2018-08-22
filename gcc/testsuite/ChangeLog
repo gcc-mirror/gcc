@@ -1,5 +1,10 @@
 2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/86725
+	* gcc.dg/vect/no-scevccp-pr86725-1.c: New test.
+
+2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-avg-16.c: New test.
 	* gcc.dg/vect/slp-37.c: Expect the loop to be vectorized.
 	* gcc.dg/vect/vect-strided-u8-i8-gap4.c,

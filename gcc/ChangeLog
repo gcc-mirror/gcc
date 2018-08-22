@@ -1,5 +1,12 @@
 2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/86725
+	* tree-vect-loop.c (vect_is_simple_reduction): When treating
+	an outer loop phi as a double reduction, make sure that the
+	single user of the phi result is an inner loop phi.
+
+2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-data-refs.c (vect_analyze_group_access_1): Convert
 	grouped stores with gaps to a strided group.
 
