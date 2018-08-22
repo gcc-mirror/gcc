@@ -1,5 +1,13 @@
 2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC): Adjust to use the
+	Darwin10-specific unwinder-shim.
+	* config/darwin12.h (LINK_GCC_C_SEQUENCE_SPEC): Remove.
+	* config/rs6000/darwin.h (DARWIN_CRT1_SPEC, DARWIN_DYLIB1_SPEC): 
+	New to cater for Darwin10 Rosetta.
+
+2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/i386/i386.c (ix86_output_addr_diff_elt): Move the MACH-O
 	specific test before the one for HAVE_AS_GOTOFF_IN_DATA.
 
@@ -9,10 +17,11 @@
 	PR target/81733
 	PR target/52795
 	* gcc/dwarf2out.c (FUNC_SECOND_SECT_LABEL): New.
-	(dwarf2out_switch_text_section): Generate a local label for the second
-	function sub-section and apply it as the second FDE start label.
-	* gcc/final.c (final_scan_insn_1): Emit second FDE label after the second
-	sub-section start.
+	(dwarf2out_switch_text_section): Generate a local label for the
+	second function sub-section and apply it as the second FDE start
+	label.
+	* gcc/final.c (final_scan_insn_1): Emit second FDE label after the
+	second sub-section start.
 
 2018-08-22  Richard Biener  <rguenther@suse.de>
 
