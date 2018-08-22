@@ -1,5 +1,10 @@
 2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Sync LTO options with
+	the sequence used in gcc/gcc.c.
+
+2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
 	PR other/704
 	* gcc-ar.c (main): Don’t try to invoke the plug-in if we’re not
 	building it.
