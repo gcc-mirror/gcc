@@ -1,6 +1,14 @@
 2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/86725
+	* gcc.dg/vect/no-scevccp-pr86725-2.c: New test.
+	* gcc.dg/vect/no-scevccp-pr86725-3.c: Likewise.
+	* gcc.dg/vect/no-scevccp-pr86725-4.c: Likewise.
+	* gcc.dg/vect/no-scevccp-pr86725-5.c: Likewise.
+
+2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86725
 	* gcc.dg/vect/no-scevccp-pr86725-1.c: New test.
 
 2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
