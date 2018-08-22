@@ -1,3 +1,10 @@
+2018-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77854
+	* doc/xml/manual/status_cxx1998.xml: Document size_type and
+	difference_type for containers.
+	* doc/html/*: Regenerate.
+
 2018-08-21  François Dumont  <fdumont@gcc.gnu.org>
 
 	P0646R1 Improving the Return Value of Erase-Like Algorithms I
