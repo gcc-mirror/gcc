@@ -60,6 +60,7 @@ struct function_format_info
 /* Initialized in init_dynamic_diag_info.  */
 static GTY(()) tree local_tree_type_node;
 static GTY(()) tree local_gimple_ptr_node;
+static GTY(()) tree local_module_ptr_node;
 static GTY(()) tree locus;
 
 static bool decode_format_attr (tree, function_format_info *, int);
@@ -768,6 +769,9 @@ static const format_char_info gcc_cxxdiag_char_table[] =
 
   /* These accept either an 'int' or an 'enum tree_code' (which is handled as an 'int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
+
+  /* This accepts a module_state pointer.  */
+  { "M", 1,STD_C89, { T89_M,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "'",   NULL },
 
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
@@ -2589,8 +2593,13 @@ argument_parser::handle_conversions (const format_char_info *fci,
   if (!(fki->flags & (int) FMT_FLAG_ARG_CONVERT))
     return true;
 
-  wanted_type = (fci->types[len_modifier.val].type
-		 ? *fci->types[len_modifier.val].type : 0);
+  wanted_type = NULL;
+  if (fci->types[len_modifier.val].type)
+    {
+      wanted_type = *fci->types[len_modifier.val].type;
+      if (!wanted_type)
+	wanted_type = void_type_node;
+    }
   wanted_type_name = fci->types[len_modifier.val].name;
   wanted_type_std = fci->types[len_modifier.val].std;
   if (wanted_type == 0)
@@ -3901,58 +3910,60 @@ init_dynamic_diag_info (void)
     }
 
   /* Initialize the global tree node type local to this file.  */
-  if (!local_tree_type_node
-      || local_tree_type_node == void_type_node)
-    {
-      /* We need to grab the underlying 'union tree_node' so peek into
-	 an extra type level.  */
-      if ((local_tree_type_node = maybe_get_identifier ("tree")))
+  if (!local_tree_type_node)
+    if (tree id = maybe_get_identifier ("tree"))
+      if (tree t = identifier_global_value (id))
 	{
-	  local_tree_type_node = identifier_global_value (local_tree_type_node);
-	  if (local_tree_type_node)
+	  if (TREE_CODE (t) != TYPE_DECL)
 	    {
-	      if (TREE_CODE (local_tree_type_node) != TYPE_DECL)
+	      error ("%<tree%> is not defined as a type");
+	      local_tree_type_node = void_type_node;
+	    }
+	  else
+	    {
+	      t = TREE_TYPE (t);
+	      /* We need to grab the underlying 'union tree_node' so peek into
+		 an extra type level.  */
+	      if (TREE_CODE (t) != POINTER_TYPE)
 		{
-		  error ("%<tree%> is not defined as a type");
-		  local_tree_type_node = 0;
-		}
-	      else if (TREE_CODE (TREE_TYPE (local_tree_type_node))
-		       != POINTER_TYPE)
-		{
-		  error ("%<tree%> is not defined as a pointer type");
-		  local_tree_type_node = 0;
+		  error ("%qE is not defined as a pointer type", id);
+		  t = void_type_node;
 		}
 	      else
-		local_tree_type_node =
-		  TREE_TYPE (TREE_TYPE (local_tree_type_node));
+		t = TREE_TYPE (t);
 	    }
+	  local_tree_type_node = t;
 	}
-      else
-	local_tree_type_node = void_type_node;
-    }
 
-  /* Similar to the above but for gimple*.  */
-  if (!local_gimple_ptr_node
-      || local_gimple_ptr_node == void_type_node)
-    {
-      if ((local_gimple_ptr_node = maybe_get_identifier ("gimple")))
+  /* Similar to the above but for gimple.  */
+  if (!local_gimple_ptr_node)
+    if (tree id = maybe_get_identifier ("gimple"))
+      if (tree t = identifier_global_value (id))
 	{
-	  local_gimple_ptr_node
-	    = identifier_global_value (local_gimple_ptr_node);
-	  if (local_gimple_ptr_node)
+	  if (TREE_CODE (t) != TYPE_DECL)
 	    {
-	      if (TREE_CODE (local_gimple_ptr_node) != TYPE_DECL)
-		{
-		  error ("%<gimple%> is not defined as a type");
-		  local_gimple_ptr_node = 0;
-		}
-	      else
-		local_gimple_ptr_node = TREE_TYPE (local_gimple_ptr_node);
+	      error ("%qE is not defined as a type", id);
+	      t = void_type_node;
 	    }
+	  else
+	    t = TREE_TYPE (t);
+	  local_gimple_ptr_node = t;
 	}
-      else
-	local_gimple_ptr_node = void_type_node;
-    }
+
+  /* Similar to the above but for module_state.  */
+  if (!local_module_ptr_node)
+    if (tree id = maybe_get_identifier ("module_state"))
+      if (tree t = identifier_global_value (id))
+	{
+	  if (TREE_CODE (t) != TYPE_DECL)
+	    {
+	      error ("%qE is not defined as a type", id);
+	      t = void_type_node;
+	    }
+	  else
+	    t = TREE_TYPE (t);
+	  local_module_ptr_node = t;
+	}
 
   static tree hwi;
 

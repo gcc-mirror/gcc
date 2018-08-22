@@ -1,5 +1,18 @@
 2018-08-22  Nathan Sidwell  <nathan@acm.org>
 
+	%M formatter
+	gcc/c-family/
+	* c-format.c (local_module_ptr_node): New.
+	(gcc_cxxdiag_char_table): Add 'M'.
+	(argument_parser::handle_conversions): Allow wanted type to be
+	NULL.
+	(init_dynamic_diag_info): Simplify lookup, add module_state.
+	* c-format.h (T89_M): New.
+	gcc/cp/
+	* cp-tree.h (class module_state): Declare before diagnostics.
+	* error.c (cp_printer): Add %M.
+	* module.c: Use %M error printing.
+
 	Use modules as handles themselves.
 	gcc/cp/
 	* cp-tree.h (class module_state): Forward declare.
