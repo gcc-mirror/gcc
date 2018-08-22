@@ -76,7 +76,7 @@ namespace __gnu_debug
 
   class _Safe_sequence_base;
 
-  template<typename _Iterator, typename _Sequence>
+  template<typename _Iterator, typename _Sequence, typename _Category>
     class _Safe_iterator;
 
   template<typename _Iterator, typename _Sequence>
@@ -263,8 +263,8 @@ namespace __gnu_debug
 	_M_variant._M_string._M_value = __value;
       }
 
-      template<typename _Iterator, typename _Sequence>
-	_Parameter(_Safe_iterator<_Iterator, _Sequence> const& __it,
+      template<typename _Iterator, typename _Sequence, typename _Category>
+	_Parameter(_Safe_iterator<_Iterator, _Sequence, _Category> const& __it,
 		   const char* __name, _Is_iterator)
 	: _M_kind(__iterator),  _M_variant()
 	{
@@ -378,10 +378,10 @@ namespace __gnu_debug
 	    = _S_reverse_state(_M_variant._M_iterator._M_state);
 	}
 
-      template<typename _Iterator, typename _Sequence>
-	_Parameter(std::reverse_iterator<_Safe_iterator<_Iterator,
-							_Sequence>> const& __it,
-		   const char* __name, _Is_iterator)
+      template<typename _Iterator, typename _Sequence, typename _Category>
+	_Parameter(std::reverse_iterator<_Safe_iterator<_Iterator, _Sequence,
+							_Category>> const& __it,
+	  const char* __name, _Is_iterator)
 	: _Parameter(__it.base(), __name, _Is_iterator{})
 	{
 	  _M_variant._M_iterator._M_type
@@ -396,10 +396,10 @@ namespace __gnu_debug
 	: _Parameter(__it.base(), __name, _Is_iterator{})
 	{ _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(__it); }
 
-      template<typename _Iterator, typename _Sequence>
-	_Parameter(std::move_iterator<_Safe_iterator<_Iterator,
-						     _Sequence>> const& __it,
-		   const char* __name, _Is_iterator)
+      template<typename _Iterator, typename _Sequence, typename _Category>
+	_Parameter(std::move_iterator<_Safe_iterator<_Iterator, _Sequence,
+						     _Category>> const& __it,
+	  const char* __name, _Is_iterator)
 	: _Parameter(__it.base(), __name, _Is_iterator{})
       {
 	_M_variant._M_iterator._M_type

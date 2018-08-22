@@ -1,3 +1,148 @@
+2018-08-22  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/68222
+	* include/debug/safe_iterator.h
+	(_Safe_iterator<_It, _Sq, _Cat>): Add category template parameter.
+	(_Safe_iterator<>::_Const_iterator): Remove.
+	(_Safe_iterator<>::_IsConstant): New.
+	(_Safe_iterator<>::_OtherIterator): New.
+	(_Safe_iterator<_It, _Sq, _Cat>::_Safe_iterator<_MutIte>(
+	const _Safe_iterator<_MutIte, _Sq, _Cat>&)): Add _IsConstant::__value in
+	__gnu_cxx::__enable_if condition.
+	(_Safe_iterator<_It, _Sq, _Cat>::_M_get_distance_to): New.
+	(_Safe_iterator<_It, _Sq, _Cat>::_M_get_distance_from_begin): New.
+	(_Safe_iterator<_It, _Sq, _Cat>::_M_get_distance_to_end): New.
+	(_Safe_iterator<_It, _Sq, std::bidirectional_iterator_tag>): New.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator--()): Move...
+	(_Safe_iterator<_It, _Sq, std::bidirectional_iterator_tag>
+	::operator--()): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator--(int)): Move...
+	(_Safe_iterator<_It, _Sq, std::bidirectional_iterator_tag>
+	::operator--(int)): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::_M_decrementable()): Move...
+	(_Safe_iterator<_It, _Sq, std::bidirectional_iterator_tag>
+	::_M_decrementable()): ...here.
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>): New.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator[](const difference_type&)):
+	Move...
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>
+	::operator[](const difference_type&)): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator+=(const difference_type&)):
+	Move...
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>
+	::operator+=(const difference_type&)): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator+(const difference_type&)):
+	Move...
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>
+	::operator+(const difference_type&)): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator-=(const difference_type&)):
+	Move...
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>
+	::operator-=(const difference_type&)): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator-(const difference_type&)):
+	Move...
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>
+	::operator-(const difference_type&)): ...here.
+	(operator<(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Constraint to random access iterators.
+	(operator<=(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator>(const _Safe_iterator<>&, const _Safe_iterator<>&)): Likewise.
+	(operator>=(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator-(const _Safe_iterator<>&, const _Safe_iterator<>&)): Likewise.
+	(operator+(const difference_type&, const _Safe_iterator<>&)): Likewise.
+	(__check_dereferenceable(const _Safe_iterator<>&)): Remove.
+	(__get_distance): Remove.
+	(__get_distance_from_begin): Remove.
+	(__get_distance_to_end): Remove.
+	(struct __is_safe_random_iterator<_Safe_iterator<>>): Remove partial
+	specialization.
+	(__base(const _Safe_iterator<>&, std::input_iterator_tag)): Remove.
+	(__base(const _Safe_iterator<>&, std::random_access_iterator_tag)): Remove.
+	(__base(const _Safe_iterator<>&)): Constraint to random access iterator.
+	* include/debug/safe_iterator.tcc
+	(_Safe_iterator<>::_M_get_distance_from_begin()): New.
+	(_Safe_iterator<>::_M_get_distance_to_end()): New.
+	(_Safe_iterator<>::_M_get_distance_to(const _Safe_iterator<>&)): New.
+	(_Safe_iterator<_It, _Seq, std::random_access_iterator_tag>
+	::_M_valid_range): New.
+	* include/debug/safe_local_iterator.h
+	(_Safe_local_iterator<>::_Const_local_iterator): Remove.
+	(_Safe_local_iterator<>::_IsConstant): New.
+	(_Safe_local_iterator<>::_OtherIterator): New.
+	(_Safe_local_iterator<_It, _Cont>::_Safe_local_iterator<_MutIte, _Cont>(
+	const _Safe_local_iterator<_MutIte, _Seq>&)): Add _IsConstant::__value
+	in __gnu_cxx::__enable_if condition. If singular compare base iterator
+	with _MutIte rather than _It.
+	(_Safe_local_iterator<>::_S_constant): Make constexpr.
+	(_Safe_local_iterator<>::_M_get_distance_to): New.
+	(__check_dereferenceable(const _Safe_local_iterator<>&)): Remove.
+	(__get_distance(const _Safe_local_iterator<>&,
+	const _Safe_local_iterator<>&, std::input_iterator_tag)): Remove.
+	(__valid_range(const _Safe_local_iterator<>&,
+	const _Safe_local_iterator<>&)): New.
+	* include/debug/safe_local_iterator.tcc
+	(_Safe_local_iterator<>::_M_get_distance_to): New.
+	* include/debug/deque (std::__debug::deque<>): Add
+	::__gnu_debug::_Safe_iterator<> friend declaration.
+	* include/debug/forward_list (std::__debug::forward_list<>): Likewise.
+	* include/debug/list (std::__debug::list<>): Likewise.
+	* include/debug/map.h (std::__debug::map<>): Likewise.
+	* include/debug/multimap.h (std::__debug::multimap<>): Likewise.
+	* include/debug/set.h (std::__debug::set<>): Likewise.
+	* include/debug/multiset.h (std::__debug::multiset<>): Likewise.
+	* include/debug/string (std::__debug::basic_string<>): Likewise.
+	* include/debug/unordered_map (std::__debug::unordered_map<>): Likewise
+	and add ::__gnu_debug::_Safe_local_iterator<> friend declaration.
+	(std::__debug::unordered_multimap<>): Likewise.
+	* include/debug/unordered_set (std::__debug::unordered_set<>): Likewise.
+	(std::__debug::unordered_multiset<>): Likewise.
+	* include/debug/formatter.h: Adapt.
+	* include/debug/helper_functions.h
+	(__gnu_debug::_Safe_local_iterator<>): Add declaration.
+	(__get_distance<_Ite>(_Ite, _Ite, std::random_access_iterator_tag):
+	Pass parameter by copy.
+	(__get_distance<_Ite>(_Ite, _Ite, std::input_iterator_tag): Likewise.
+	(__get_distance<_Ite>(_Ite, _Ite): Likewise.
+	(__valid_range_aux<_Integral>): Pass _Integral by copy.
+	(__valid_range<_InputIterator>): Pass _InputIterator by copy.
+	(__valid_range<>(const _Safe_iterator<>&,
+	const _Safe_iterator<>&, typename _Distance_traits<>::__type&)):
+	Declare.
+	(__valid_range(const _Safe_local_iterator<>&,
+	const _Safe_local_iterator<>&, typename _Distance_traits<>::__type&)):
+	Declare.
+	(__valid_range<>(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Declare.
+	(__valid_range(const _Safe_local_iterator<>&, const _Safe_local_iterator<>&)):
+	Declare.
+	(__can_advance): Adapt.
+	(struct __is_safe_random_iterator<>): Remove.
+	(struct _SIter_base<>): Remove.
+	* include/debug/functions.h: Include <bits/stl_iterator.h>.
+	(__check_dereferenceable): Remove.
+	(__foreign_iterator_aux4, __foreign_iterator_aux3): Adapt.
+	(__foreign_iterator_aux2, __foreign_iterator_aux): Adapt.
+	(__foreign_iterator): Adapt.
+	* include/debug/stl_iterator.h
+	(__is_safe_random_iterator<std::reverse_iterator<>>): Remove.
+	(__base(const std::reverse_iterator<_Safe_iterator<_It, _Sq>)):
+	Constraint for random access iterators.
+	(__niter_base): Adapt.
+	* testsuite/util/testsuite_containers.h:
+	Include <bits/boost_concept_check.h>.
+	(iterator_concept_checks<_It, _Mutable, _Category>): New.
+	(citerator<_Cont>::forward_members::forward_members()): Instantiate
+	latter for container iterator and const_iterator.
+	* testsuite/23_containers/list/68222_neg.cc: New.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc: Adapt
+	line number.
+	* testsuite/23_containers/unordered_set/debug/debug_functions.cc:
+	(test01): Remove.
+	* testsuite/23_containers/vector/debug/debug_functions.cc (test01):
+	Remove.
+
 2018-08-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/77854

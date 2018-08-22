@@ -127,6 +127,9 @@ namespace __debug
       typedef typename _Base::const_iterator	_Base_const_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
 
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
+
     public:
       typedef typename _Base::reference			reference;
       typedef typename _Base::const_reference		const_reference;
@@ -789,7 +792,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Iterator
     __niter_base(const __gnu_debug::_Safe_iterator<
 		 __gnu_cxx::__normal_iterator<_Iterator, _Container>,
-		 _Sequence>& __it)
+		 _Sequence, std::random_access_iterator_tag>& __it)
     { return std::__niter_base(__it.base()); }
 
 _GLIBCXX_END_NAMESPACE_VERSION

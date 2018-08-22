@@ -31,7 +31,9 @@
 
 #include <bits/move.h>		// for __addressof
 #include <bits/stl_function.h>	// for less
+
 #if __cplusplus >= 201103L
+# include <bits/stl_iterator.h>	// for __miter_base
 # include <type_traits>		// for is_lvalue_reference and conditional.
 #endif
 
@@ -64,19 +66,6 @@ namespace __gnu_debug
     __check_singular(const _Tp* __ptr)
     { return __ptr == 0; }
 
-  /** Assume that some arbitrary iterator is dereferenceable, because we
-      can't prove that it isn't. */
-  template<typename _Iterator>
-    inline bool
-    __check_dereferenceable(const _Iterator&)
-    { return true; }
-
-  /** Non-NULL pointers are dereferenceable. */
-  template<typename _Tp>
-    inline bool
-    __check_dereferenceable(const _Tp* __ptr)
-    { return __ptr; }
-
   /* Checks that [first, last) is a valid range, and then returns
    * __first. This routine is useful when we can't use a separate
    * assertion statement because, e.g., we are in a constructor.
@@ -95,10 +84,11 @@ namespace __gnu_debug
     }
 
   /* Handle the case where __other is a pointer to _Sequence::value_type. */
-  template<typename _Iterator, typename _Sequence>
+  template<typename _Iterator, typename _Sequence, typename _Category>
     inline bool
-    __foreign_iterator_aux4(const _Safe_iterator<_Iterator, _Sequence>& __it,
-			    const typename _Sequence::value_type* __other)
+    __foreign_iterator_aux4(
+	const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
+	const typename _Sequence::value_type* __other)
     {
       typedef const typename _Sequence::value_type* _PointerType;
       typedef std::less<_PointerType> _Less;
@@ -116,18 +106,20 @@ namespace __gnu_debug
     }
 
   /* Fallback overload for when we can't tell, assume it is valid. */
-  template<typename _Iterator, typename _Sequence>
+  template<typename _Iterator, typename _Sequence, typename _Category>
     inline bool
-    __foreign_iterator_aux4(const _Safe_iterator<_Iterator, _Sequence>&, ...)
+    __foreign_iterator_aux4(
+	const _Safe_iterator<_Iterator, _Sequence, _Category>&, ...)
     { return true; }
 
   /* Handle sequences with contiguous storage */
-  template<typename _Iterator, typename _Sequence, typename _InputIterator>
+  template<typename _Iterator, typename _Sequence, typename _Category,
+	   typename _InputIterator>
     inline bool
-    __foreign_iterator_aux3(const _Safe_iterator<_Iterator, _Sequence>& __it,
-			    const _InputIterator& __other,
-			    const _InputIterator& __other_end,
-			    std::__true_type)
+    __foreign_iterator_aux3(
+	const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
+	const _InputIterator& __other, const _InputIterator& __other_end,
+	std::__true_type)
     {
       if (__other == __other_end)
 	return true;  // inserting nothing is safe even if not foreign iters
@@ -137,36 +129,46 @@ namespace __gnu_debug
     }
 
   /* Handle non-contiguous containers, assume it is valid. */
-  template<typename _Iterator, typename _Sequence, typename _InputIterator>
+  template<typename _Iterator, typename _Sequence, typename _Category,
+	   typename _InputIterator>
     inline bool
-    __foreign_iterator_aux3(const _Safe_iterator<_Iterator, _Sequence>&,
-			    const _InputIterator&, const _InputIterator&,
-			    std::__false_type)
+    __foreign_iterator_aux3(
+	const _Safe_iterator<_Iterator, _Sequence, _Category>&,
+	const _InputIterator&, const _InputIterator&,
+	std::__false_type)
     { return true; }
 
   /** Handle debug iterators from the same type of container. */
-  template<typename _Iterator, typename _Sequence, typename _OtherIterator>
+  template<typename _Iterator, typename _Sequence, typename _Category,
+	   typename _OtherIterator>
     inline bool
-    __foreign_iterator_aux2(const _Safe_iterator<_Iterator, _Sequence>& __it,
-		const _Safe_iterator<_OtherIterator, _Sequence>& __other,
-		const _Safe_iterator<_OtherIterator, _Sequence>&)
+    __foreign_iterator_aux2(
+	const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
+	const _Safe_iterator<_OtherIterator, _Sequence, _Category>& __other,
+	const _Safe_iterator<_OtherIterator, _Sequence, _Category>&)
     { return __it._M_get_sequence() != __other._M_get_sequence(); }
 
   /** Handle debug iterators from different types of container. */
-  template<typename _Iterator, typename _Sequence, typename _OtherIterator,
-	   typename _OtherSequence>
+  template<typename _Iterator, typename _Sequence, typename _Category,
+	   typename _OtherIterator, typename _OtherSequence,
+	   typename _OtherCategory>
     inline bool
-    __foreign_iterator_aux2(const _Safe_iterator<_Iterator, _Sequence>& __it,
-		const _Safe_iterator<_OtherIterator, _OtherSequence>&,
-		const _Safe_iterator<_OtherIterator, _OtherSequence>&)
+    __foreign_iterator_aux2(
+	const _Safe_iterator<_Iterator, _Sequence, _Category>&,
+	const _Safe_iterator<_OtherIterator, _OtherSequence,
+			     _OtherCategory>&,
+	const _Safe_iterator<_OtherIterator, _OtherSequence,
+			     _OtherCategory>&)
     { return true; }
 
   /* Handle non-debug iterators. */
-  template<typename _Iterator, typename _Sequence, typename _InputIterator>
+  template<typename _Iterator, typename _Sequence, typename _Category,
+	   typename _InputIterator>
     inline bool
-    __foreign_iterator_aux2(const _Safe_iterator<_Iterator, _Sequence>& __it,
-			    const _InputIterator& __other,
-			    const _InputIterator& __other_end)
+    __foreign_iterator_aux2(
+	const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
+	const _InputIterator& __other,
+	const _InputIterator& __other_end)
     {
 #if __cplusplus < 201103L
       typedef _Is_contiguous_sequence<_Sequence> __tag;
@@ -181,31 +183,34 @@ namespace __gnu_debug
     }
 
   /* Handle the case where we aren't really inserting a range after all */
-  template<typename _Iterator, typename _Sequence, typename _Integral>
+  template<typename _Iterator, typename _Sequence, typename _Category,
+	   typename _Integral>
     inline bool
-    __foreign_iterator_aux(const _Safe_iterator<_Iterator, _Sequence>&,
-			   _Integral, _Integral,
-			   std::__true_type)
+    __foreign_iterator_aux(
+	const _Safe_iterator<_Iterator, _Sequence, _Category>&,
+	_Integral, _Integral, std::__true_type)
     { return true; }
 
   /* Handle all iterators. */
-  template<typename _Iterator, typename _Sequence,
+  template<typename _Iterator, typename _Sequence, typename _Category,
 	   typename _InputIterator>
     inline bool
-    __foreign_iterator_aux(const _Safe_iterator<_Iterator, _Sequence>& __it,
-			   _InputIterator __other, _InputIterator __other_end,
-			   std::__false_type)
+    __foreign_iterator_aux(
+	const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
+	_InputIterator __other, _InputIterator __other_end,
+	std::__false_type)
     {
       return _Insert_range_from_self_is_safe<_Sequence>::__value
 	|| __foreign_iterator_aux2(__it, std::__miter_base(__other),
 				   std::__miter_base(__other_end));
     }
 
-  template<typename _Iterator, typename _Sequence,
+  template<typename _Iterator, typename _Sequence, typename _Category,
 	   typename _InputIterator>
     inline bool
-    __foreign_iterator(const _Safe_iterator<_Iterator, _Sequence>& __it,
-		       _InputIterator __other, _InputIterator __other_end)
+    __foreign_iterator(
+	const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
+	_InputIterator __other, _InputIterator __other_end)
     {
       typedef typename std::__is_integer<_InputIterator>::__type _Integral;
       return __foreign_iterator_aux(__it, __other, __other_end, _Integral());
