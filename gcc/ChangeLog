@@ -1,3 +1,9 @@
+2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (get_group_load_store_type)
+	(get_load_store_type): Only test STMT_VINFO_STRIDED_P for the
+	first statement in a group.
+
 2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Sync LTO options with
