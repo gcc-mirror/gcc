@@ -2191,14 +2191,14 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 
   /* There can only be a gap at the end of the group if the stride is
      known at compile time.  */
-  gcc_assert (!STMT_VINFO_STRIDED_P (stmt_info) || gap == 0);
+  gcc_assert (!STMT_VINFO_STRIDED_P (first_stmt_info) || gap == 0);
 
   /* Stores can't yet have gaps.  */
   gcc_assert (slp || vls_type == VLS_LOAD || gap == 0);
 
   if (slp)
     {
-      if (STMT_VINFO_STRIDED_P (stmt_info))
+      if (STMT_VINFO_STRIDED_P (first_stmt_info))
 	{
 	  /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
 	     separated by the stride, until we have a complete vector.
@@ -2255,7 +2255,7 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 		    / vect_get_scalar_dr_size (first_dr_info)))
 	would_overrun_p = false;
 
-      if (!STMT_VINFO_STRIDED_P (stmt_info)
+      if (!STMT_VINFO_STRIDED_P (first_stmt_info)
 	  && (can_overrun_p || !would_overrun_p)
 	  && compare_step_with_zero (stmt_info) > 0)
 	{
@@ -2466,8 +2466,11 @@ get_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
   /* FIXME: At the moment the cost model seems to underestimate the
      cost of using elementwise accesses.  This check preserves the
      traditional behavior until that can be fixed.  */
+  stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+  if (!first_stmt_info)
+    first_stmt_info = stmt_info;
   if (*memory_access_type == VMAT_ELEMENTWISE
-      && !STMT_VINFO_STRIDED_P (stmt_info)
+      && !STMT_VINFO_STRIDED_P (first_stmt_info)
       && !(stmt_info == DR_GROUP_FIRST_ELEMENT (stmt_info)
 	   && !DR_GROUP_NEXT_ELEMENT (stmt_info)
 	   && !pow2p_hwi (DR_GROUP_SIZE (stmt_info))))
