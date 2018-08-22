@@ -1,3 +1,8 @@
+2018-08-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* tree-ssa-dse.c (compute_trims): Avoid folding away undefined
+	behaviour.
+
 2018-08-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/87052
