@@ -1,3 +1,31 @@
+2018-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78448
+	* include/bits/deque.tcc (deque::_M_range_initialize): Use
+	_S_check_init_len to check size.
+	(deque::_M_push_back_aux, deque::_M_push_front_aux): Throw length
+	error if size would exceed max_size().
+	* include/bits/stl_deque.h (_Deque_base::size_type): Remove typedef.
+	(_Deque_base(_Deque_base&&, const allocator_type&, size_t)): Use
+	size_t instead of size_type.
+	(deq(size_type, const allocator_type&)
+	(deq(size_type, const value_type&, const allocator_type&)
+	(deque::_M_initialize_dispatch): Use _S_check_init_len to check size.
+	(deque::max_size): Call _S_max_size.
+	(deque::_S_check_init_len, deque::_S_max_size): New functions.
+	* include/bits/stl_vector.h (vector(size_type, const allocator_type&))
+	(vector(size_type, const value_type&, const allocator_type&))
+	(vector::_M_initialize_dispatch, vector::_M_range_initialize): Use
+	_S_check_init_len to check size.
+	(vector::max_size): Call _S_max_size.
+	(vector::_M_check_len): Prevent max from being expanded as a
+	function-like macro.
+	(vector::_S_check_init_len, vector::_S_max_size): New functions.
+	* include/bits/vector.tcc (vector::_M_assign_aux): Use
+	_S_check_init_len to check size.
+	* testsuite/23_containers/deque/capacity/max_size.cc: New test.
+	* testsuite/23_containers/vector/capacity/max_size.cc: New test.
+
 2018-08-22  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/68222
