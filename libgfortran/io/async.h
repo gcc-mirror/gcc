@@ -29,7 +29,7 @@
    __gthread_cond_t and __gthread_equal / __gthread_self.  Check
    this.  */
 
-#if defined(__GTHREAD_HAS_COND) && defined(__GTHREADS_CXX0X)
+#if defined(__GTHREAD_HAS_COND) && defined(__GTHREADS_CXX0X) && !defined(_AIX)
 #define ASYNC_IO 1
 #else
 #define ASYNC_IO 0
@@ -328,21 +328,18 @@ typedef union transfer_args
 
 struct adv_cond
 {
+#if ASYNC_IO
   int pending;
   __gthread_mutex_t lock;
   __gthread_cond_t signal;
+#endif
 };
 
 typedef struct async_unit
 {
-  pthread_mutex_t lock;      /* Lock for manipulating the queue structure.  */
   pthread_mutex_t io_lock;   /* Lock for doing actual I/O. */
-  struct adv_cond work;
-  struct adv_cond emptysignal;
-  struct st_parameter_dt *pdt;
-  pthread_t thread;
-  struct transfer_queue *head;
-  struct transfer_queue *tail;
+  pthread_mutex_t lock;      /* Lock for manipulating the queue structure.  */
+  bool empty;
   struct
   {
     int waiting;
@@ -351,7 +348,13 @@ typedef struct async_unit
     struct adv_cond done;
   } id;
 
-  bool empty;
+#if ASYNC_IO
+  struct adv_cond work;
+  struct adv_cond emptysignal;
+  struct st_parameter_dt *pdt;
+  pthread_t thread;
+  struct transfer_queue *head;
+  struct transfer_queue *tail;
 
   struct {
     const char *message;
@@ -361,7 +364,7 @@ typedef struct async_unit
     int family;
     bool fatal_error;
   } error;
-
+#endif
 } async_unit;
 
 void init_async_unit (gfc_unit *);

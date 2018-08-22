@@ -1509,7 +1509,8 @@ end program main
 
 Asynchronous I/O is supported if the program is linked against the
 POSIX thread library. If that is not the case, all I/O is performed
-as synchronous.
+as synchronous. On systems which do not support pthread condition
+variables, such as AIX, I/O is also performed as synchronous.
 
 On some systems, such as Darwin or Solaris, the POSIX thread library
 is always linked in, so asynchronous I/O is always performed. On other
