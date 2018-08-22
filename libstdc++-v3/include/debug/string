@@ -94,6 +94,9 @@ namespace __gnu_debug
 	basic_string, _Allocator, _Safe_sequence, bool(_GLIBCXX_USE_CXX11_ABI)>
       _Safe;
 
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
+
     public:
       // types:
       typedef _Traits					traits_type;

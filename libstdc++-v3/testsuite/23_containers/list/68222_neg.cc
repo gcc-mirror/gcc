@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,34 +15,23 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-D_GLIBCXX_DEBUG" }
 // { dg-do compile { target c++11 } }
 
-#include <vector>
-
-// PR libstdc++/80553
-
-struct DeletedDtor {
-  ~DeletedDtor() = delete;
-};
-
-class PrivateDtor {
-  ~PrivateDtor() { }
-};
+#include <list>
 
 void
 test01()
 {
-  std::vector<DeletedDtor> v;
+  // A list of int.
+  const std::list<int> nums = { 1, 2, 3, 4 };
+
+  // Grab the iterator type.
+  using list_itr_type = decltype( std::cbegin( nums ) );
+
+  // Confirm cend returns the same type.
+  static_assert( std::is_same< decltype( std::cend( nums ) ), list_itr_type >::value, "" );
+
+  // The list's iterator type provides a well-formed non-member operator-() with valid return type (long int)
+  using substraction_type
+    = decltype( std::declval<list_itr_type>() - std::declval<list_itr_type>() ); // { dg-error "no match for 'operator-'" }
 }
-
-void
-test02()
-{
-  std::vector<PrivateDtor> v;
-}
-
-// { dg-error "value type is destructible" "" { target *-*-* } 0 }
-
-// In Debug Mode the "required from here" errors come from <debug/vector>
-// { dg-error "required from here" "" { target *-*-* } 158 }

@@ -44,14 +44,14 @@ namespace __gnu_debug
   template<typename _Sequence>
     struct _BeforeBeginHelper
     {
-      template<typename _Iterator>
+      template<typename _Iterator, typename _Category>
 	static bool
-	_S_Is(const _Safe_iterator<_Iterator, _Sequence>&)
+	_S_Is(const _Safe_iterator<_Iterator, _Sequence, _Category>&)
 	{ return false; }
 
-      template<typename _Iterator>
+      template<typename _Iterator, typename _Category>
 	static bool
-	_S_Is_Beginnest(const _Safe_iterator<_Iterator, _Sequence>& __it)
+	_S_Is_Beginnest(const _Safe_iterator<_Iterator, _Sequence, _Category>& __it)
 	{ return __it.base() == __it._M_get_sequence()->_M_base().begin(); }
     };
 
@@ -82,22 +82,30 @@ namespace __gnu_debug
    *  of iterators and it is being detached before _Iterator get
    *  destroyed. Otherwise it would result in a data race.
    */
-  template<typename _Iterator, typename _Sequence>
+  template<typename _Iterator, typename _Sequence, typename _Category
+	   = typename std::iterator_traits<_Iterator>::iterator_category>
     class _Safe_iterator
     : private _Iterator,
       public _Safe_iterator_base
     {
       typedef _Iterator _Iter_base;
       typedef _Safe_iterator_base _Safe_base;
-      typedef typename _Sequence::const_iterator _Const_iterator;
 
       typedef std::iterator_traits<_Iterator> _Traits;
+
+    protected:
+      typedef std::__are_same<typename _Sequence::_Base::const_iterator,
+			      _Iterator> _IsConstant;
+
+      typedef typename __gnu_cxx::__conditional_type<
+	_IsConstant::__value,
+	typename _Sequence::_Base::iterator,
+	typename _Sequence::_Base::const_iterator>::__type _OtherIterator;
 
       struct _Attach_single
       { };
 
-      _Safe_iterator(const _Iterator& __i, _Safe_sequence_base* __seq,
-		     _Attach_single)
+      _Safe_iterator(_Iterator __i, _Safe_sequence_base* __seq, _Attach_single)
       _GLIBCXX_NOEXCEPT
       : _Iter_base(__i)
       { _M_attach_single(__seq); }
@@ -120,7 +128,7 @@ namespace __gnu_debug
        * @pre @p seq is not NULL
        * @post this is not singular
        */
-      _Safe_iterator(const _Iterator& __i, const _Safe_sequence_base* __seq)
+      _Safe_iterator(_Iterator __i, const _Safe_sequence_base* __seq)
       _GLIBCXX_NOEXCEPT
       : _Iter_base(__i), _Safe_base(__seq, _S_constant())
       {
@@ -171,10 +179,11 @@ namespace __gnu_debug
       */
       template<typename _MutableIterator>
 	_Safe_iterator(
-	  const _Safe_iterator<_MutableIterator,
-	  typename __gnu_cxx::__enable_if<(std::__are_same<_MutableIterator,
-		      typename _Sequence::iterator::iterator_type>::__value),
-		   _Sequence>::__type>& __x) _GLIBCXX_NOEXCEPT
+	  const _Safe_iterator<_MutableIterator, _Sequence,
+	  typename __gnu_cxx::__enable_if<_IsConstant::__value &&
+	    std::__are_same<_MutableIterator, _OtherIterator>::__value,
+					  _Category>::__type>& __x)
+	_GLIBCXX_NOEXCEPT
 	: _Iter_base(__x.base())
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -309,93 +318,12 @@ namespace __gnu_debug
 	return _Safe_iterator(base()++, this->_M_sequence, _Attach_single());
       }
 
-      // ------ Bidirectional iterator requirements ------
-      /**
-       *  @brief Iterator predecrement
-       *  @pre iterator is decrementable
-       */
-      _Safe_iterator&
-      operator--() _GLIBCXX_NOEXCEPT
-      {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
-			      _M_message(__msg_bad_dec)
-			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	--base();
-	return *this;
-      }
-
-      /**
-       *  @brief Iterator postdecrement
-       *  @pre iterator is decrementable
-       */
-      _Safe_iterator
-      operator--(int) _GLIBCXX_NOEXCEPT
-      {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
-			      _M_message(__msg_bad_dec)
-			      ._M_iterator(*this, "this"));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	return _Safe_iterator(base()--, this->_M_sequence, _Attach_single());
-      }
-
-      // ------ Random access iterator requirements ------
-      reference
-      operator[](const difference_type& __n) const _GLIBCXX_NOEXCEPT
-      {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n)
-			      && this->_M_can_advance(__n+1),
-			      _M_message(__msg_iter_subscript_oob)
-			      ._M_iterator(*this)._M_integer(__n));
-	return base()[__n];
-      }
-
-      _Safe_iterator&
-      operator+=(const difference_type& __n) _GLIBCXX_NOEXCEPT
-      {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n),
-			      _M_message(__msg_advance_oob)
-			      ._M_iterator(*this)._M_integer(__n));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	base() += __n;
-	return *this;
-      }
-
-      _Safe_iterator
-      operator+(const difference_type& __n) const _GLIBCXX_NOEXCEPT
-      {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n),
-			      _M_message(__msg_advance_oob)
-			      ._M_iterator(*this)._M_integer(__n));
-	return _Safe_iterator(base() + __n, this->_M_sequence);
-      }
-
-      _Safe_iterator&
-      operator-=(const difference_type& __n) _GLIBCXX_NOEXCEPT
-      {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(-__n),
-			      _M_message(__msg_retreat_oob)
-			      ._M_iterator(*this)._M_integer(__n));
-	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
-	base() -= __n;
-	return *this;
-      }
-
-      _Safe_iterator
-      operator-(const difference_type& __n) const _GLIBCXX_NOEXCEPT
-      {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(-__n),
-			      _M_message(__msg_retreat_oob)
-			      ._M_iterator(*this)._M_integer(__n));
-	return _Safe_iterator(base() - __n, this->_M_sequence);
-      }
-
       // ------ Utilities ------
 
       /// Determine if this is a constant iterator.
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       _S_constant()
-      { return std::__are_same<_Const_iterator, _Safe_iterator>::__value; }
+      { return _IsConstant::__value; }
 
       /**
        * @brief Return the underlying iterator
@@ -444,10 +372,6 @@ namespace __gnu_debug
       _M_incrementable() const
       { return !this->_M_singular() && !_M_is_end(); }
 
-      // Is the iterator decrementable?
-      bool
-      _M_decrementable() const { return !_M_singular() && !_M_is_begin(); }
-
       // Can we advance the iterator @p __n steps (@p __n may be negative)
       bool
       _M_can_advance(const difference_type& __n) const;
@@ -459,13 +383,22 @@ namespace __gnu_debug
 		     bool __check_dereferenceable = true) const;
 
       // The sequence this iterator references.
-      typename
-      __gnu_cxx::__conditional_type<std::__are_same<_Const_iterator,
-						    _Safe_iterator>::__value,
-				    const _Sequence*,
-				    _Sequence*>::__type
+      typename __gnu_cxx::__conditional_type<
+	_IsConstant::__value, const _Sequence*, _Sequence*>::__type
       _M_get_sequence() const
       { return static_cast<_Sequence*>(_M_sequence); }
+
+      // Get distance to __rhs.
+      typename _Distance_traits<_Iterator>::__type
+      _M_get_distance_to(const _Safe_iterator& __rhs) const;
+
+      // Get distance from sequence begin up to *this.
+      typename _Distance_traits<_Iterator>::__type
+      _M_get_distance_from_begin() const;
+
+      // Get distance from *this to sequence end.
+      typename _Distance_traits<_Iterator>::__type
+      _M_get_distance_to_end() const;
 
       /// Is this iterator equal to the sequence's begin() iterator?
       bool
@@ -490,13 +423,346 @@ namespace __gnu_debug
       { return _BeforeBeginHelper<_Sequence>::_S_Is_Beginnest(*this); }
     };
 
+  template<typename _Iterator, typename _Sequence>
+    class _Safe_iterator<_Iterator, _Sequence, std::bidirectional_iterator_tag>
+    : public _Safe_iterator<_Iterator, _Sequence, std::forward_iterator_tag>
+    {
+      typedef _Safe_iterator<_Iterator, _Sequence,
+			     std::forward_iterator_tag> _Safe_base;
+
+    protected:
+      typedef typename _Safe_base::_OtherIterator _OtherIterator;
+      typedef typename _Safe_base::_Attach_single _Attach_single;
+
+      _Safe_iterator(_Iterator __i, _Safe_sequence_base* __seq, _Attach_single)
+      _GLIBCXX_NOEXCEPT
+      : _Safe_base(__i, __seq, _Attach_single())
+      { }
+
+    public:
+      /// @post the iterator is singular and unattached
+      _Safe_iterator() _GLIBCXX_NOEXCEPT { }
+
+      /**
+       * @brief Safe iterator construction from an unsafe iterator and
+       * its sequence.
+       *
+       * @pre @p seq is not NULL
+       * @post this is not singular
+       */
+      _Safe_iterator(_Iterator __i, const _Safe_sequence_base* __seq)
+      _GLIBCXX_NOEXCEPT
+      : _Safe_base(__i, __seq)
+      { }
+
+      /**
+       * @brief Copy construction.
+       */
+      _Safe_iterator(const _Safe_iterator& __x) _GLIBCXX_NOEXCEPT
+      : _Safe_base(__x)
+      { }
+
+#if __cplusplus >= 201103L
+      /** @brief Move construction. */
+      _Safe_iterator(_Safe_iterator&&) = default;
+#endif
+
+      /**
+       *  @brief Converting constructor from a mutable iterator to a
+       *  constant iterator.
+      */
+      template<typename _MutableIterator>
+	_Safe_iterator(
+	  const _Safe_iterator<_MutableIterator, _Sequence,
+	  typename __gnu_cxx::__enable_if<_Safe_base::_IsConstant::__value &&
+	    std::__are_same<_MutableIterator, _OtherIterator>::__value,
+			       std::bidirectional_iterator_tag>::__type>& __x)
+	_GLIBCXX_NOEXCEPT
+	: _Safe_base(__x)
+        { }
+
+#if __cplusplus >= 201103L
+      /** @brief Copy assignment. */
+      _Safe_iterator&
+      operator=(const _Safe_iterator&) = default;
+
+      /** @brief Move assignment. */
+      _Safe_iterator&
+      operator=(_Safe_iterator&&) = default;
+#else
+      /** @brief Copy assignment. */
+      _Safe_iterator&
+      operator=(const _Safe_iterator& __x)
+      {
+	_Safe_base::operator=(__x);
+	return *this;
+      }
+#endif
+
+      // ------ Input iterator requirements ------
+      /**
+       *  @brief Iterator preincrement
+       *  @pre iterator is incrementable
+       */
+      _Safe_iterator&
+      operator++() _GLIBCXX_NOEXCEPT
+      {
+	_Safe_base::operator++();
+	return *this;
+      }
+
+      /**
+       *  @brief Iterator postincrement
+       *  @pre iterator is incrementable
+       */
+      _Safe_iterator
+      operator++(int) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
+			      _M_message(__msg_bad_inc)
+			      ._M_iterator(*this, "this"));
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	return _Safe_iterator(this->base()++, this->_M_sequence,
+			      _Attach_single());
+      }
+
+      // ------ Bidirectional iterator requirements ------
+      /**
+       *  @brief Iterator predecrement
+       *  @pre iterator is decrementable
+       */
+      _Safe_iterator&
+      operator--() _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
+			      _M_message(__msg_bad_dec)
+			      ._M_iterator(*this, "this"));
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	--this->base();
+	return *this;
+      }
+
+      /**
+       *  @brief Iterator postdecrement
+       *  @pre iterator is decrementable
+       */
+      _Safe_iterator
+      operator--(int) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
+			      _M_message(__msg_bad_dec)
+			      ._M_iterator(*this, "this"));
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	return _Safe_iterator(this->base()--, this->_M_sequence,
+			      _Attach_single());
+      }
+
+      // ------ Utilities ------
+
+      // Is the iterator decrementable?
+      bool
+      _M_decrementable() const
+      { return !this->_M_singular() && !this->_M_is_begin(); }
+    };
+
+  template<typename _Iterator, typename _Sequence>
+    class _Safe_iterator<_Iterator, _Sequence, std::random_access_iterator_tag>
+    : public _Safe_iterator<_Iterator, _Sequence,
+			    std::bidirectional_iterator_tag>
+    {
+      typedef _Safe_iterator<_Iterator, _Sequence,
+			     std::bidirectional_iterator_tag> _Safe_base;
+      typedef typename _Safe_base::_OtherIterator _OtherIterator;
+
+      typedef typename _Safe_base::_Attach_single _Attach_single;
+
+      _Safe_iterator(_Iterator __i, _Safe_sequence_base* __seq, _Attach_single)
+      _GLIBCXX_NOEXCEPT
+      : _Safe_base(__i, __seq, _Attach_single())
+      { }
+
+    public:
+      typedef typename _Safe_base::difference_type	difference_type;
+      typedef typename _Safe_base::reference		reference;
+
+      /// @post the iterator is singular and unattached
+      _Safe_iterator() _GLIBCXX_NOEXCEPT { }
+
+      /**
+       * @brief Safe iterator construction from an unsafe iterator and
+       * its sequence.
+       *
+       * @pre @p seq is not NULL
+       * @post this is not singular
+       */
+      _Safe_iterator(_Iterator __i, const _Safe_sequence_base* __seq)
+      _GLIBCXX_NOEXCEPT
+      : _Safe_base(__i, __seq)
+      { }
+
+      /**
+       * @brief Copy construction.
+       */
+      _Safe_iterator(const _Safe_iterator& __x) _GLIBCXX_NOEXCEPT
+      : _Safe_base(__x)
+      { }
+
+#if __cplusplus >= 201103L
+      /** @brief Move construction. */
+      _Safe_iterator(_Safe_iterator&&) = default;
+#endif
+
+      /**
+       *  @brief Converting constructor from a mutable iterator to a
+       *  constant iterator.
+      */
+      template<typename _MutableIterator>
+	_Safe_iterator(
+	  const _Safe_iterator<_MutableIterator, _Sequence,
+	    typename __gnu_cxx::__enable_if<_Safe_base::_IsConstant::__value &&
+	      std::__are_same<_MutableIterator, _OtherIterator>::__value,
+			       std::random_access_iterator_tag>::__type>& __x)
+	_GLIBCXX_NOEXCEPT
+	: _Safe_base(__x)
+        { }
+
+#if __cplusplus >= 201103L
+      /** @brief Copy assignment. */
+      _Safe_iterator&
+      operator=(const _Safe_iterator&) = default;
+
+      /** @brief Move assignment. */
+      _Safe_iterator&
+      operator=(_Safe_iterator&&) = default;
+#else
+      /** @brief Copy assignment. */
+      _Safe_iterator&
+      operator=(const _Safe_iterator& __x)
+      {
+	_Safe_base::operator=(__x);
+	return *this;
+      }
+#endif
+
+      // Is the iterator range [*this, __rhs) valid?
+      bool
+      _M_valid_range(const _Safe_iterator& __rhs,
+		     std::pair<difference_type,
+			       _Distance_precision>& __dist) const;
+
+      // ------ Input iterator requirements ------
+      /**
+       *  @brief Iterator preincrement
+       *  @pre iterator is incrementable
+       */
+      _Safe_iterator&
+      operator++() _GLIBCXX_NOEXCEPT
+      {
+	_Safe_base::operator++();
+	return *this;
+      }
+
+      /**
+       *  @brief Iterator postincrement
+       *  @pre iterator is incrementable
+       */
+      _Safe_iterator
+      operator++(int) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_incrementable(),
+			      _M_message(__msg_bad_inc)
+			      ._M_iterator(*this, "this"));
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	return _Safe_iterator(this->base()++, this->_M_sequence,
+			      _Attach_single());
+      }
+
+      // ------ Bidirectional iterator requirements ------
+      /**
+       *  @brief Iterator predecrement
+       *  @pre iterator is decrementable
+       */
+      _Safe_iterator&
+      operator--() _GLIBCXX_NOEXCEPT
+      {
+	_Safe_base::operator--();
+	return *this;
+      }
+
+      /**
+       *  @brief Iterator postdecrement
+       *  @pre iterator is decrementable
+       */
+      _Safe_iterator
+      operator--(int) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_decrementable(),
+			      _M_message(__msg_bad_dec)
+			      ._M_iterator(*this, "this"));
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	return _Safe_iterator(this->base()--, this->_M_sequence,
+			      _Attach_single());
+      }
+
+      // ------ Random access iterator requirements ------
+      reference
+      operator[](const difference_type& __n) const _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n)
+			      && this->_M_can_advance(__n + 1),
+			      _M_message(__msg_iter_subscript_oob)
+			      ._M_iterator(*this)._M_integer(__n));
+	return this->base()[__n];
+      }
+
+      _Safe_iterator&
+      operator+=(const difference_type& __n) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n),
+			      _M_message(__msg_advance_oob)
+			      ._M_iterator(*this)._M_integer(__n));
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	this->base() += __n;
+	return *this;
+      }
+
+      _Safe_iterator
+      operator+(const difference_type& __n) const _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n),
+			      _M_message(__msg_advance_oob)
+			      ._M_iterator(*this)._M_integer(__n));
+	return _Safe_iterator(this->base() + __n, this->_M_sequence);
+      }
+
+      _Safe_iterator&
+      operator-=(const difference_type& __n) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(-__n),
+			      _M_message(__msg_retreat_oob)
+			      ._M_iterator(*this)._M_integer(__n));
+	__gnu_cxx::__scoped_lock __l(this->_M_get_mutex());
+	this->base() -= __n;
+	return *this;
+      }
+
+      _Safe_iterator
+      operator-(const difference_type& __n) const _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(-__n),
+			      _M_message(__msg_retreat_oob)
+			      ._M_iterator(*this)._M_integer(__n));
+	return _Safe_iterator(this->base() - __n, this->_M_sequence);
+      }
+    };
+
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
     inline bool
     operator==(const _Safe_iterator<_IteratorL, _Sequence>& __lhs,
 	       const _Safe_iterator<_IteratorR, _Sequence>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_compare_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -513,7 +779,7 @@ namespace __gnu_debug
 	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_compare_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -530,7 +796,7 @@ namespace __gnu_debug
 	       const _Safe_iterator<_IteratorR, _Sequence>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_compare_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -547,7 +813,7 @@ namespace __gnu_debug
 	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_compare_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -560,11 +826,13 @@ namespace __gnu_debug
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
     inline bool
-    operator<(const _Safe_iterator<_IteratorL, _Sequence>& __lhs,
-	      const _Safe_iterator<_IteratorR, _Sequence>& __rhs)
+    operator<(const _Safe_iterator<_IteratorL, _Sequence,
+				   std::random_access_iterator_tag>& __lhs,
+	      const _Safe_iterator<_IteratorR, _Sequence,
+				   std::random_access_iterator_tag>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_order_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -577,11 +845,13 @@ namespace __gnu_debug
 
   template<typename _Iterator, typename _Sequence>
     inline bool
-    operator<(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
-	      const _Safe_iterator<_Iterator, _Sequence>& __rhs)
+    operator<(const _Safe_iterator<_Iterator, _Sequence,
+				   std::random_access_iterator_tag>& __lhs,
+	      const _Safe_iterator<_Iterator, _Sequence,
+				   std::random_access_iterator_tag>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_order_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -594,11 +864,13 @@ namespace __gnu_debug
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
     inline bool
-    operator<=(const _Safe_iterator<_IteratorL, _Sequence>& __lhs,
-	       const _Safe_iterator<_IteratorR, _Sequence>& __rhs)
+    operator<=(const _Safe_iterator<_IteratorL, _Sequence,
+				    std::random_access_iterator_tag>& __lhs,
+	       const _Safe_iterator<_IteratorR, _Sequence,
+				    std::random_access_iterator_tag>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_order_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -611,11 +883,13 @@ namespace __gnu_debug
 
   template<typename _Iterator, typename _Sequence>
     inline bool
-    operator<=(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
-	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
+    operator<=(const _Safe_iterator<_Iterator, _Sequence,
+				    std::random_access_iterator_tag>& __lhs,
+	       const _Safe_iterator<_Iterator, _Sequence,
+				    std::random_access_iterator_tag>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_order_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -628,11 +902,13 @@ namespace __gnu_debug
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
     inline bool
-    operator>(const _Safe_iterator<_IteratorL, _Sequence>& __lhs,
-	      const _Safe_iterator<_IteratorR, _Sequence>& __rhs)
+    operator>(const _Safe_iterator<_IteratorL, _Sequence,
+				   std::random_access_iterator_tag>& __lhs,
+	      const _Safe_iterator<_IteratorR, _Sequence,
+				   std::random_access_iterator_tag>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_order_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -645,11 +921,13 @@ namespace __gnu_debug
 
   template<typename _Iterator, typename _Sequence>
     inline bool
-    operator>(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
-	      const _Safe_iterator<_Iterator, _Sequence>& __rhs)
+    operator>(const _Safe_iterator<_Iterator, _Sequence,
+				   std::random_access_iterator_tag>& __lhs,
+	      const _Safe_iterator<_Iterator, _Sequence,
+				   std::random_access_iterator_tag>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_order_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -662,11 +940,13 @@ namespace __gnu_debug
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
     inline bool
-    operator>=(const _Safe_iterator<_IteratorL, _Sequence>& __lhs,
-	       const _Safe_iterator<_IteratorR, _Sequence>& __rhs)
+    operator>=(const _Safe_iterator<_IteratorL, _Sequence,
+				    std::random_access_iterator_tag>& __lhs,
+	       const _Safe_iterator<_IteratorR, _Sequence,
+				    std::random_access_iterator_tag>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_order_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -679,11 +959,13 @@ namespace __gnu_debug
 
   template<typename _Iterator, typename _Sequence>
     inline bool
-    operator>=(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
-	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
+    operator>=(const _Safe_iterator<_Iterator, _Sequence,
+				    std::random_access_iterator_tag>& __lhs,
+	       const _Safe_iterator<_Iterator, _Sequence,
+				    std::random_access_iterator_tag>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_iter_order_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -699,12 +981,15 @@ namespace __gnu_debug
   // operators but also operator- must accept mixed iterator/const_iterator
   // parameters.
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>
-    inline typename _Safe_iterator<_IteratorL, _Sequence>::difference_type
-    operator-(const _Safe_iterator<_IteratorL, _Sequence>& __lhs,
-	      const _Safe_iterator<_IteratorR, _Sequence>& __rhs)
+    inline typename _Safe_iterator<_IteratorL, _Sequence,
+			std::random_access_iterator_tag>::difference_type
+    operator-(const _Safe_iterator<_IteratorL, _Sequence,
+				   std::random_access_iterator_tag>& __lhs,
+	      const _Safe_iterator<_IteratorR, _Sequence,
+				   std::random_access_iterator_tag>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
 			    _M_message(__msg_distance_bad)
 			    ._M_iterator(__lhs, "lhs")
 			    ._M_iterator(__rhs, "rhs"));
@@ -715,184 +1000,68 @@ namespace __gnu_debug
       return __lhs.base() - __rhs.base();
     }
 
-   template<typename _Iterator, typename _Sequence>
-     inline typename _Safe_iterator<_Iterator, _Sequence>::difference_type
-     operator-(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
-	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
+  template<typename _Iterator, typename _Sequence>
+    inline typename _Safe_iterator<_Iterator, _Sequence,
+			std::random_access_iterator_tag>::difference_type
+    operator-(const _Safe_iterator<_Iterator, _Sequence,
+				   std::random_access_iterator_tag>& __lhs,
+	      const _Safe_iterator<_Iterator, _Sequence,
+				   std::random_access_iterator_tag>& __rhs)
     _GLIBCXX_NOEXCEPT
-     {
-       _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
-			     _M_message(__msg_distance_bad)
-			     ._M_iterator(__lhs, "lhs")
-			     ._M_iterator(__rhs, "rhs"));
-       _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			     _M_message(__msg_distance_different)
-			     ._M_iterator(__lhs, "lhs")
-			     ._M_iterator(__rhs, "rhs"));
-       return __lhs.base() - __rhs.base();
-     }
+    {
+      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
+			    _M_message(__msg_distance_bad)
+			    ._M_iterator(__lhs, "lhs")
+			    ._M_iterator(__rhs, "rhs"));
+      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
+			    _M_message(__msg_distance_different)
+			    ._M_iterator(__lhs, "lhs")
+			    ._M_iterator(__rhs, "rhs"));
+      return __lhs.base() - __rhs.base();
+    }
 
   template<typename _Iterator, typename _Sequence>
-    inline _Safe_iterator<_Iterator, _Sequence>
-    operator+(typename _Safe_iterator<_Iterator,_Sequence>::difference_type __n,
-	      const _Safe_iterator<_Iterator, _Sequence>& __i) _GLIBCXX_NOEXCEPT
+    inline _Safe_iterator<_Iterator, _Sequence, std::random_access_iterator_tag>
+    operator+(typename _Safe_iterator<_Iterator,_Sequence,
+		std::random_access_iterator_tag>::difference_type __n,
+	      const _Safe_iterator<_Iterator, _Sequence,
+		std::random_access_iterator_tag>& __i)
+    _GLIBCXX_NOEXCEPT
     { return __i + __n; }
 
-  /** Safe iterators know if they are dereferenceable. */
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    __check_dereferenceable(const _Safe_iterator<_Iterator, _Sequence>& __x)
-    { return __x._M_dereferenceable(); }
-
   /** Safe iterators know how to check if they form a valid range. */
-  template<typename _Iterator, typename _Sequence>
+  template<typename _Iterator, typename _Sequence, typename _Category>
     inline bool
-    __valid_range(const _Safe_iterator<_Iterator, _Sequence>& __first,
-		  const _Safe_iterator<_Iterator, _Sequence>& __last,
+    __valid_range(const _Safe_iterator<_Iterator, _Sequence,
+				       _Category>& __first,
+		  const _Safe_iterator<_Iterator, _Sequence,
+				       _Category>& __last,
 		  typename _Distance_traits<_Iterator>::__type& __dist)
     { return __first._M_valid_range(__last, __dist); }
 
-  /** Safe iterators can help to get better distance knowledge. */
-  template<typename _Iterator, typename _Sequence>
-    inline typename _Distance_traits<_Iterator>::__type
-    __get_distance(const _Safe_iterator<_Iterator, _Sequence>& __first,
-		   const _Safe_iterator<_Iterator, _Sequence>& __last,
-		   std::random_access_iterator_tag)
-    { return std::make_pair(__last.base() - __first.base(), __dp_exact); }
-
-  template<typename _Iterator, typename _Sequence>
-    inline typename _Distance_traits<_Iterator>::__type
-    __get_distance(const _Safe_iterator<_Iterator, _Sequence>& __first,
-		   const _Safe_iterator<_Iterator, _Sequence>& __last,
-		   std::input_iterator_tag)
-    {
-      typedef typename _Distance_traits<_Iterator>::__type _Diff;
-      typedef _Sequence_traits<_Sequence> _SeqTraits;
-
-      if (__first.base() == __last.base())
-	return std::make_pair(0, __dp_exact);
-
-      if (__first._M_is_before_begin())
-	{
-	  if (__last._M_is_begin())
-	    return std::make_pair(1, __dp_exact);
-
-	  return std::make_pair(1, __dp_sign);
-	}
-
-      if (__first._M_is_begin())
-	{
-	  if (__last._M_is_before_begin())
-	    return std::make_pair(-1, __dp_exact);
-
-	  if (__last._M_is_end())
-	    return _SeqTraits::_S_size(*__first._M_get_sequence());
-
-	  return std::make_pair(1, __dp_sign);
-	}
-
-      if (__first._M_is_end())
-	{
-	  if (__last._M_is_before_begin())
-	    return std::make_pair(-1, __dp_exact);
-
-	  if (__last._M_is_begin())
-	    {
-	      _Diff __diff = _SeqTraits::_S_size(*__first._M_get_sequence());
-	      return std::make_pair(-__diff.first, __diff.second);
-	    }
-
-	  return std::make_pair(-1, __dp_sign);
-	}
-
-      if (__last._M_is_before_begin() || __last._M_is_begin())
-	return std::make_pair(-1, __dp_sign);
-
-      if (__last._M_is_end())
-	return std::make_pair(1, __dp_sign);
-
-      return std::make_pair(1, __dp_equality);
-    }
-
-  // Get distance from sequence begin to specified iterator.
-  template<typename _Iterator, typename _Sequence>
-    inline typename _Distance_traits<_Iterator>::__type
-    __get_distance_from_begin(const _Safe_iterator<_Iterator, _Sequence>& __it)
-    {
-      typedef _Sequence_traits<_Sequence> _SeqTraits;
-
-      // No need to consider before_begin as this function is only used in
-      // _M_can_advance which won't be used for forward_list iterators.
-      if (__it._M_is_begin())
-	return std::make_pair(0, __dp_exact);
-
-      if (__it._M_is_end())
-	return _SeqTraits::_S_size(*__it._M_get_sequence());
-
-      typename _Distance_traits<_Iterator>::__type __res
-	= __get_distance(__it._M_get_sequence()->_M_base().begin(), __it.base());
-
-      if (__res.second == __dp_equality)
-	return std::make_pair(1, __dp_sign);
-
-      return __res;
-    }
-
-  // Get distance from specified iterator to sequence end.
-  template<typename _Iterator, typename _Sequence>
-    inline typename _Distance_traits<_Iterator>::__type
-    __get_distance_to_end(const _Safe_iterator<_Iterator, _Sequence>& __it)
-    {
-      typedef _Sequence_traits<_Sequence> _SeqTraits;
-
-      // No need to consider before_begin as this function is only used in
-      // _M_can_advance which won't be used for forward_list iterators.
-      if (__it._M_is_begin())
-	return _SeqTraits::_S_size(*__it._M_get_sequence());
-
-      if (__it._M_is_end())
-	return std::make_pair(0, __dp_exact);
-
-      typename _Distance_traits<_Iterator>::__type __res
-	= __get_distance(__it.base(), __it._M_get_sequence()->_M_base().end());
-
-      if (__res.second == __dp_equality)
-	return std::make_pair(1, __dp_sign);
-
-      return __res;
-    }
-
-  template<typename _Iterator, typename _Sequence, typename _Size>
+  template<typename _Iterator, typename _Sequence, typename _Category>
     inline bool
-    __can_advance(const _Safe_iterator<_Iterator, _Sequence>& __it, _Size __n)
+    __valid_range(const _Safe_iterator<_Iterator, _Sequence,
+				       _Category>& __first,
+		  const _Safe_iterator<_Iterator, _Sequence,
+				       _Category>& __last)
+    {
+      typename _Distance_traits<_Iterator>::__type __dist;
+      return __first._M_valid_range(__last, __dist);
+    }
+
+  template<typename _Iterator, typename _Sequence, typename _Category,
+	   typename _Size>
+    inline bool
+    __can_advance(const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
+		  _Size __n)
     { return __it._M_can_advance(__n); }
 
-#if __cplusplus < 201103L
-  template<typename _Iterator, typename _Sequence>
-    struct __is_safe_random_iterator<_Safe_iterator<_Iterator, _Sequence> >
-    : std::__are_same<std::random_access_iterator_tag,
-                      typename std::iterator_traits<_Iterator>::
-		      iterator_category>
-    { };
-#else
   template<typename _Iterator, typename _Sequence>
     _Iterator
-    __base(const _Safe_iterator<_Iterator, _Sequence>& __it,
-	   std::random_access_iterator_tag)
+    __base(const _Safe_iterator<_Iterator, _Sequence,
+				std::random_access_iterator_tag>& __it)
     { return __it.base(); }
-
-  template<typename _Iterator, typename _Sequence>
-    const _Safe_iterator<_Iterator, _Sequence>&
-    __base(const _Safe_iterator<_Iterator, _Sequence>& __it,
-	   std::input_iterator_tag)
-    { return __it; }
-
-  template<typename _Iterator, typename _Sequence>
-    auto
-    __base(const _Safe_iterator<_Iterator, _Sequence>& __it)
-    -> decltype(__base(__it, std::__iterator_category(__it)))
-    { return __base(__it, std::__iterator_category(__it)); }
-#endif
 
 #if __cplusplus < 201103L
   template<typename _Iterator, typename _Sequence>
