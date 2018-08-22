@@ -1,7 +1,23 @@
+2018-08-22  Nathan Sidwell  <nathan@acm.org>
+
+	Fix GTY
+	gcc/cp/
+	* cp-tree.h (struct mc_index): Don't mark.
+	(struct mc_slot): Converted from union.  Adjust.
+	(struct module_cluster): Skip mc_index.
+	* module.c (struct slurping,spewing): Skip range_t members.
+	(class module_state): Remove static data members.
+	(global_tree_arys, fixed_trees, global_crc, our_opts, lazy_lru)
+	(lazy_open, modules, modules_hash): New static vars.  Adjust uses.
+	(finish_module): Add gc point.
+	gcc/testsuite/
+	* g++.dg/modules/gc-1_[abcd].C: New.
+
 2018-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
-	* cp-tree.h (declare_module, import_module): Separate name from location.
+	* cp-tree.h (declare_module, import_module): Separate name from
+	location.
 	* module.c (module_state::attach): Drop maybe_vec_name arg.
 	(module_state::get_module): Flatten here.
 	(declare_module, import_module): Separate name and from loc.
@@ -32,8 +48,8 @@
 	(module_state::is_detached): ... here.  Use from_loc.
 	(module_state::attach): New broken out of ...
 	(module_state::find_module): ... here.  Delete, fold into ...
-	(module_state::read_imports, import_module, declare_module):
-	... these callers.
+	(module_state::read_imports, import_module, declare_module): ...
+	these callers.
 	(module_state::read): Adjust module index setting.
 
 	libiberty/

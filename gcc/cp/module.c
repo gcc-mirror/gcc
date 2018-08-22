@@ -273,8 +273,7 @@ version2string (int version, verstr_t &out)
    not deletable, and removal is a noop (removal needed upon
    destruction).  */
 template <typename T>
-struct nodel_ptr_hash : pointer_hash<T>, typed_noop_remove <T *>
-{
+struct nodel_ptr_hash : pointer_hash<T>, typed_noop_remove <T *> {
   /* Nothing is deletable.  Everything is insertable.  */
   static bool is_deleted (T *) { return false; }
   static void mark_deleted (T *) { gcc_unreachable (); }
@@ -1069,8 +1068,7 @@ public:
 
 protected:
   /* File identification.  On-disk representation.  */
-  struct ident
-  {
+  struct ident {
     uint8_t magic[4];
     uint8_t klass; /* 4:CLASS32 */
     uint8_t data; /* 5:DATA2[LM]SB */
@@ -1080,8 +1078,7 @@ protected:
     uint8_t pad[7]; /* 9-15 */
   };
   /* File header.  On-disk representation.  */
-  struct header
-  {
+  struct header {
     struct ident ident;
     uint16_t type; /* ET_NONE */
     uint16_t machine; /* EM_NONE */
@@ -1098,8 +1095,7 @@ protected:
     uint16_t shstrndx; /* Section Header STRing iNDeX */
   };
   /* File section.  On-disk representation.  */
-  struct section
-  {
+  struct section {
     uint32_t name; /* String table offset.  */
     uint32_t type; /* SHT_* */
     uint32_t flags; /* SHF_* */
@@ -2089,7 +2085,7 @@ elf_out::end ()
   return parent::end ();
 }
 
-struct module_state;
+class module_state;
 
 /* A dependency set.  These are not quite the decl-sets of the TS.  We
    only record namespace-scope decls here.   A depset can be one of:
@@ -2109,8 +2105,7 @@ struct module_state;
    #2 to the dependencies.  If its dependent on the body of such a decl,
    we add depset #3 to the dependencies.  */
 
-class depset
-{
+class depset {
 public:
   typedef std::pair<tree,tree> key_type;
 
@@ -2191,8 +2186,7 @@ public:
 
 public:
   /* Traits for a hash table of pointers to bindings.  */
-  struct traits
-  {
+  struct traits {
     /* Each entry is a pointer to a binding. */
     typedef depset *value_type;
     /* We lookup by container:maybe-identifier pair.  */
@@ -2238,8 +2232,7 @@ public:
   };
 
 public:
-  class hash : public hash_table<traits>
-  {
+  class hash : public hash_table<traits> {
     typedef traits::compare_type key_t;
     typedef hash_table<traits> parent;
 
@@ -2282,8 +2275,7 @@ public:
   };
 
 public:
-  struct tarjan
-  {
+  struct tarjan {
     auto_vec<depset *> *result;
     vec<depset *> stack;
     unsigned index;
@@ -2507,16 +2499,15 @@ struct module_state_hash : nodel_ptr_hash<module_state> {
 typedef std::pair<unsigned,unsigned> range_t;
 
 /* Data needed by a module during the process of loading.  */
-struct GTY((tag("true"), desc ("%h.from != NULL"))) slurping
-{
+struct GTY((tag("true"), desc ("%h.from != NULL"))) slurping {
   vec<mc_slot, va_gc> *unnamed;		/* Unnamed decls.  */
   vec<unsigned, va_gc_atomic> *remap;	/* Module owner remapping.  */
   elf_in *GTY((skip)) from;     	/* The elf loader.  */
 
   vec<const char *, va_gc_atomic> *filenames;
-  range_t early_locs;	/* Early locs.  */
-  range_t late_locs;	/* Late locs.  */
-  range_t loc_offsets;	/* Early and late offsets.  */
+  range_t GTY((skip)) early_locs;	/* Early locs.  */
+  range_t GTY((skip)) late_locs;	/* Late locs.  */
+  range_t GTY((skip)) loc_offsets;	/* Early and late offsets.  */
 
   unsigned current;	/* Section currently being loaded.  */
   unsigned remaining;	/* Number of lazy sections yet to read.  */
@@ -2588,11 +2579,10 @@ slurping::~slurping ()
 /* Additional data needed when writing.  There's only ever one
    writer, so we don't mind wasting some space of the base class.   */
 
-struct GTY ((tag ("false"))) spewing : public slurping 
-{
+struct GTY ((tag ("false"))) spewing : public slurping {
  public:
-  range_t early_loc_map;	/* Early location line maps.  */
-  range_t late_loc_map;		/* Late location line maps.  */
+  range_t GTY((skip)) early_loc_map;	/* Early location line maps.  */
+  range_t GTY((skip)) late_loc_map;		/* Late location line maps.  */
   
  public:
   spewing ()
@@ -2608,9 +2598,9 @@ struct GTY ((tag ("false"))) spewing : public slurping
 /* What kind a module is.  */
 enum module_kind 
 {
- mk_new, 	 	/* A new identifier-style module.  */
- mk_legacy_user, 	/* A legacy quoted-string module.  */
- mk_legacy_system	/* A legacy angle-string module.  */
+  mk_new, 	 	/* A new identifier-style module.  */
+  mk_legacy_user, 	/* A legacy quoted-string module.  */
+  mk_legacy_system	/* A legacy angle-string module.  */
 };
 
 /* State of a particular module. */
@@ -2637,7 +2627,7 @@ class GTY(()) module_state {
 
   unsigned depth : 16;  /* Depth, direct imports are 0 */
 
-  module_kind kind : 2;
+  enum module_kind kind : 2;
 
   bool direct : 1;	/* A direct import.  */
   bool exported : 1;	/* We are exported.  */
@@ -2718,7 +2708,6 @@ class GTY(()) module_state {
  private:
   /* The README, for human consumption.  */
   void write_readme (elf_out *to, const char *opts);
-  static char *get_option_string ();
 
   /* Import tables. */
   void write_imports (bytes_out &cfg, bool direct_p);
@@ -2806,28 +2795,6 @@ class GTY(()) module_state {
   static void init ();
   static void fini ();
   static int atom_preamble (location_t loc, line_maps *);
-
- public:
-  /* Vector indexed by OWNER.  */
-  static vec<module_state *, va_gc> *modules;
-  static char *our_opts;     /* Significant options for this
-				compilation.   */
-
- private:
-  /* Hash, findable by NAME.  */
-  static hash_table<module_state_hash> *hash;
-
- private:
-  /* Global tree context.  */
-  static const std::pair<tree *, unsigned> global_trees[];
-  static unsigned global_crc;
-
- public:
-  static vec<tree, va_gc> *fixed;
-
- private:
-  static unsigned lazy_lru;  /* LRU counter.  */
-  static int lazy_open;      /* Remaining limit for unfrozen loaders.   */
 };
 
 module_state::module_state (tree n)
@@ -2910,28 +2877,28 @@ static char *bmi_path;
 static size_t bmi_path_alloc;
 
 /* Global trees.  */
-const std::pair<tree *, unsigned> module_state::global_trees[] =
+static const std::pair<tree *, unsigned> global_tree_arys[] =
   {
     std::pair<tree *, unsigned> (sizetype_tab, stk_type_kind_last),
     std::pair<tree *, unsigned> (integer_types, itk_none),
-    std::pair<tree *, unsigned> (::global_trees, TI_MAX),
+    std::pair<tree *, unsigned> (global_trees, TI_MAX),
     std::pair<tree *, unsigned> (cp_global_trees, CPTI_MAX),
     std::pair<tree *, unsigned> (NULL, 0)
   };
-GTY(()) vec<tree, va_gc> *module_state::fixed;
-unsigned module_state::global_crc;
+static GTY(()) vec<tree, va_gc> *fixed_trees;
+static unsigned global_crc;
 
-char *module_state::our_opts;
+/* Significant options for this compilation.   */
+static char *our_opts;
 
-/* Nesting of lazy loaders.  */
-unsigned module_state::lazy_lru;
-int module_state::lazy_open;
+static unsigned lazy_lru;  /* LRU counter.  */
+static int lazy_open;	 /* Remaining limit for unfrozen loaders.   */
 
 /* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
-GTY(()) vec<module_state *, va_gc> *module_state::modules;
+static GTY(()) vec<module_state *, va_gc> *modules;
 
 /* Hash of module state, findable by NAME. */
-hash_table<module_state_hash> *module_state::hash;
+static hash_table<module_state_hash> *modules_hash;
 
 /* Mapper to query and inform of modular compilations.  This is a
    singleton.  It contains both FILE and fd entities.  The PEX
@@ -3596,10 +3563,10 @@ trees_out::mark_trees ()
     }
 
   /* Install the fixed trees, with +ve references.  */
-  unsigned limit = state->fixed->length ();
+  unsigned limit = fixed_trees->length ();
   for (unsigned ix = 0; ix != limit; ix++)
     {
-      tree val = (*state->fixed)[ix];
+      tree val = (*fixed_trees)[ix];
       bool existed = tree_map.put (val, ix + 1);
       gcc_checking_assert (!TREE_VISITED (val) && !existed);
       TREE_VISITED (val) = true;
@@ -6152,9 +6119,9 @@ trees_in::tree_node ()
       {
 	/* A fixed ref, find it in the fixed_ref array.   */
 	unsigned fix = u ();
-	if (fix < (*state->fixed).length ())
+	if (fix < (*fixed_trees).length ())
 	  {
-	    res = (*state->fixed)[fix];
+	    res = (*fixed_trees)[fix];
 	    dump () && dump ("Read fixed:%u %C:%N%S", fix,
 			     TREE_CODE (res), res, res);
 	  }
@@ -6736,7 +6703,7 @@ module_state::get_module (tree name)
     name = make_flat_name (name);
 
   hashval_t hv = module_state_hash::hash (name);
-  module_state **slot = hash->find_slot_with_hash (name, hv, INSERT);
+  module_state **slot = modules_hash->find_slot_with_hash (name, hv, INSERT);
   module_state *state = *slot;
   if (!state)
     {
@@ -6758,8 +6725,8 @@ module_state::maybe_add_global (tree val, unsigned &crc)
   if (val && !(identifier_p (val) || TREE_VISITED (val)))
     {
       TREE_VISITED (val) = true;
-      crc = crc32_unsigned (crc, fixed->length ());
-      vec_safe_push (fixed, val);
+      crc = crc32_unsigned (crc, fixed_trees->length ());
+      vec_safe_push (fixed_trees, val);
       v++;
 
       if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
@@ -6777,7 +6744,7 @@ module_state::maybe_add_global (tree val, unsigned &crc)
 void
 module_state::init ()
 {
-  hash = new hash_table<module_state_hash> (30);
+  modules_hash = new hash_table<module_state_hash> (30);
 
   vec_safe_reserve (modules, 20);
   for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
@@ -6789,7 +6756,7 @@ module_state::init ()
   bitmap_set_bit (current->imports, MODULE_NONE);
   (*modules)[MODULE_NONE] = current;
 
-  gcc_checking_assert (!fixed);
+  gcc_checking_assert (!fixed_trees);
 
   dump.push (NULL);
 
@@ -6818,16 +6785,16 @@ module_state::init ()
      some global trees are lazily created and we don't want that to
      mess with our syndrome of fixed trees.  */
   unsigned crc = 0;
-  vec_alloc (fixed, 200);
+  vec_alloc (fixed_trees, 200);
 
   dump () && dump ("+Creating globals");
   /* Insert the TRANSLATION_UNIT_DECL.  */
   TREE_VISITED (DECL_CONTEXT (global_namespace)) = true;
-  fixed->quick_push (DECL_CONTEXT (global_namespace));
-  for (unsigned jx = 0; global_trees[jx].first; jx++)
+  fixed_trees->quick_push (DECL_CONTEXT (global_namespace));
+  for (unsigned jx = 0; global_tree_arys[jx].first; jx++)
     {
-      const tree *ptr = global_trees[jx].first;
-      unsigned limit = global_trees[jx].second;
+      const tree *ptr = global_tree_arys[jx].first;
+      unsigned limit = global_tree_arys[jx].second;
 
       for (unsigned ix = 0; ix != limit; ix++, ptr++)
 	{
@@ -6836,11 +6803,11 @@ module_state::init ()
 	  dump () && dump ("+%u", v);
 	}
     }
-  global_crc = crc32_unsigned (crc, fixed->length ());
+  global_crc = crc32_unsigned (crc, fixed_trees->length ());
   dump ("") && dump ("Created %u unique globals, crc=%x",
-		     fixed->length (), global_crc);
-  for (unsigned ix = fixed->length (); ix--;)
-    TREE_VISITED ((*fixed)[ix]) = false;
+		     fixed_trees->length (), global_crc);
+  for (unsigned ix = fixed_trees->length (); ix--;)
+    TREE_VISITED ((*fixed_trees)[ix]) = false;
 
   dump.pop (0);
 }
@@ -6853,8 +6820,8 @@ module_state::fini ()
   for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
     (*modules)[ix]->release ();
 
-  delete hash;
-  hash = NULL;
+  delete modules_hash;
+  modules_hash = NULL;
 }
 
 /* Free up state.  If ALL is true, we're completely done.  If ALL is
@@ -7851,8 +7818,8 @@ int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
 
 /* Generate a string of the compilation options.  */
 
-char *
-module_state::get_option_string  ()
+static char *
+get_option_string  ()
 {
   /* Concatenate important options.  */
   size_t opt_alloc = MODULE_STAMP ? 2 : 200;
@@ -8037,7 +8004,7 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	  imp = get_module (name);
 	  if (imp->is_detached ())
 	    imp->attach (from_loc);
-	  module_state *purview = (*module_state::modules)[MODULE_PURVIEW];
+	  module_state *purview = (*modules)[MODULE_PURVIEW];
 	  if (purview == imp)
 	    {
 	      /* Cannot import the current module.  */
@@ -8167,7 +8134,7 @@ module_state::read_imports (line_maps *lmaps)
    u:<host-triplet>
    s:options
 
-   u:fixed->length()
+   u:fixed_trees->length()
    u32:global_crc
 
    u:modules->length ()
@@ -8214,8 +8181,8 @@ module_state::write_config (elf_out *to, const char *opt_str,
      to ensure data match between instances of the compiler, not
      integrity of the file.  */
   dump () && dump ("Writing globals=%u, crc=%x",
-		   fixed->length (), global_crc);
-  cfg.u (fixed->length ());
+		   fixed_trees->length (), global_crc);
+  cfg.u (fixed_trees->length ());
   cfg.u32 (global_crc);
 
   cfg.u (modules->length ());
@@ -8334,7 +8301,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed, bool check_crc
   unsigned their_fixed_crc = cfg.u32 ();
   dump () && dump ("Read globals=%u, crc=%x",
 		   their_fixed_length, their_fixed_crc);
-  if (their_fixed_length != fixed->length ()
+  if (their_fixed_length != fixed_trees->length ()
       || their_fixed_crc != global_crc)
     {
       error_at (loc, "fixed tree mismatch");
@@ -10232,7 +10199,7 @@ module_state::check_read (bool outermost, tree ns, tree id)
 tree
 module_name (unsigned ix)
 {
-  return (*module_state::modules)[ix]->name;
+  return (*modules)[ix]->name;
 }
 
 /* Return the vector of IDENTIFIER_NODES naming module IX.  These are
@@ -10241,7 +10208,7 @@ module_name (unsigned ix)
 tree
 module_vec_name (unsigned ix)
 {
-  return (*module_state::modules)[ix]->vec_name;
+  return (*modules)[ix]->vec_name;
 }
 
 /* Return the bitmap describing what modules are imported into
@@ -10250,7 +10217,7 @@ module_vec_name (unsigned ix)
 bitmap
 module_import_bitmap (unsigned ix)
 {
-  return (*module_state::modules)[ix]->imports;
+  return (*modules)[ix]->imports;
 }
 
 /* We've just directly imported OTHER.  Update our import/export
@@ -10387,13 +10354,13 @@ set_module_owner (tree decl)
      owners.  */
   gcc_checking_assert (decl == get_module_owner (decl));
   
-  if (!module_state::modules)
+  if (!modules)
     /* We can be called when modules are not enabled.  */
     return;
 
   // FIXME: check ill-formed linkage
 
-  if ((*module_state::modules)[MODULE_PURVIEW])
+  if ((*modules)[MODULE_PURVIEW])
     {
       if (export_depth)
 	{
@@ -10413,7 +10380,7 @@ set_implicit_module_owner (tree decl, tree from)
 {
   gcc_checking_assert (decl == get_module_owner (decl));
 
-  if (!module_state::modules)
+  if (!modules)
     return;
 
   if (unsigned owner = MAYBE_DECL_MODULE_OWNER (from))
@@ -10453,7 +10420,7 @@ bool
 module_purview_p ()
 {
   /* We get called very early on, so need to check there's a vector.  */
-  return module_state::modules && (*module_state::modules)[MODULE_PURVIEW];
+  return modules && (*modules)[MODULE_PURVIEW];
 }
 
 /* Return true iff we're the interface TU (this also means we're in a
@@ -10462,8 +10429,8 @@ module_purview_p ()
 bool
 module_interface_p ()
 {
-  return ((*module_state::modules)[MODULE_PURVIEW]
-	  && (*module_state::modules)[MODULE_PURVIEW]->exported);
+  return ((*modules)[MODULE_PURVIEW]
+	  && (*modules)[MODULE_PURVIEW]->exported);
 }
 
 /* Create a location for module.  FROM is the importing module, which
@@ -10615,7 +10582,7 @@ void
 lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 {
   gcc_checking_assert (mod >= MODULE_IMPORT_BASE);
-  (*module_state::modules)[mod]->lazy_load (ns, id, mslot, outer);
+  (*modules)[mod]->lazy_load (ns, id, mslot, outer);
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.  */
@@ -10631,7 +10598,7 @@ import_module (tree name, location_t from_loc, bool exporting,
   from_loc = ordinary_loc_of (lmaps, from_loc);
 
   module_state *imp = module_state::get_module (name);
-  module_state *purview = (*module_state::modules)[MODULE_PURVIEW];
+  module_state *purview = (*modules)[MODULE_PURVIEW];
   if (purview == imp)
     {
       /* Cannot import the current module.  */
@@ -10658,7 +10625,7 @@ import_module (tree name, location_t from_loc, bool exporting,
 	  imp->do_import (fname, lmaps, false);
 	  dump.pop (n);
 	}
-      (*module_state::modules)[MODULE_NONE]->set_import (imp, imp->exported);
+      (*modules)[MODULE_NONE]->set_import (imp, imp->exported);
     }
 
   gcc_assert (global_namespace == current_scope ());
@@ -10674,7 +10641,7 @@ declare_module (tree name, location_t from_loc, bool exporting_p,
   gcc_assert (global_namespace == current_scope ());
 
   from_loc = ordinary_loc_of (lmaps, from_loc);
-  if (module_state *purview = (*module_state::modules)[MODULE_PURVIEW])
+  if (module_state *purview = (*modules)[MODULE_PURVIEW])
     {
       /* Already declared the module.  */
       error_at (from_loc, "cannot declare module in purview of module %qE",
@@ -10712,14 +10679,14 @@ declare_module (tree name, location_t from_loc, bool exporting_p,
   /* Copy any importing information we may have already done.  */
   if (!modules_atom_p ())
     {
-      module_state *global = (*module_state::modules)[MODULE_NONE];
+      module_state *global = (*modules)[MODULE_NONE];
       state->imports = global->imports;
     }
   else
-    gcc_checking_assert (module_state::modules->length () == MODULE_IMPORT_BASE);
+    gcc_checking_assert (modules->length () == MODULE_IMPORT_BASE);
 
-  (*module_state::modules)[MODULE_NONE] = state;
-  (*module_state::modules)[MODULE_PURVIEW] = state;
+  (*modules)[MODULE_NONE] = state;
+  (*modules)[MODULE_PURVIEW] = state;
   current_module = MODULE_PURVIEW;
   if (exporting_p)
     {
@@ -10767,7 +10734,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
 {
   /* Iterate over the module hash, informing the mapper of every not
      loaded (direct) import.  */
-  unsigned limit = hash->elements ();
+  unsigned limit = modules_hash->elements ();
   if (!limit)
     /* The hash table could be empty due to parse errors.  */
     return 0;
@@ -10778,7 +10745,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
   /* Preserve the state of the line-map.  */
   unsigned pre_hwm = LINEMAPS_ORDINARY_USED (lmaps);
 
-  /* For a consistent order, and avoiding hash table iteration durig
+  /* For a consistent order, and avoiding hash table iteration during
      actual import, we create a vector of imports.  */
   auto_vec<module_state *> directs (limit);
 
@@ -10791,8 +10758,8 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
   if (!mapper->is_live ())
     return false;
 
-  hash_table<module_state_hash>::iterator end (hash->end ());
-  for (hash_table<module_state_hash>::iterator iter (hash->begin ());
+  hash_table<module_state_hash>::iterator end (modules_hash->end ());
+  for (hash_table<module_state_hash>::iterator iter (modules_hash->begin ());
        iter != end; ++iter)
     {
       module_state *imp = *iter;
@@ -11071,7 +11038,7 @@ finish_module (line_maps *lmaps)
 
   module_state::fini ();
 
-  module_state *state = (*module_state::modules)[MODULE_PURVIEW];
+  module_state *state = (*modules)[MODULE_PURVIEW];
   if (!state || !state->exported)
     ;/* Not a module interface.  */
   else if (errorcount)
@@ -11100,6 +11067,7 @@ finish_module (line_maps *lmaps)
       dump.pop (n);
       if (!errorcount)
 	module_mapper::export_done (state);
+      ggc_collect ();
     }
 
   if (state)
@@ -11109,8 +11077,8 @@ finish_module (line_maps *lmaps)
       state->release ();
     }
 
-  XDELETEVEC (module_state::our_opts);
-  module_state::our_opts = NULL;
+  XDELETEVEC (our_opts);
+  our_opts = NULL;
 
   set_bmi_repo (NULL);
   module_mapper::fini (input_location);
@@ -11220,6 +11188,11 @@ handle_module_option (unsigned code, const char *str, int num)
 
 #include "gt-cp-module.h"
 
+#if 1
 /* Use of vec<unsigned, va_gc_atomic> caused these fns to be needed.  */
 void gt_pch_nx (unsigned int &) {}
 void gt_pch_nx (unsigned int *, void (*)(void *, void *), void *) {}
+/* Use of vec<char *, va_gc_atomic> caused this fn to be needed.  */
+void gt_pch_nx (char *&)  {}
+/* I know not why.  */
+#endif

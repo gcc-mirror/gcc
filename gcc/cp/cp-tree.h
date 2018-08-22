@@ -743,8 +743,7 @@ struct GTY(()) tree_overload {
 /* Iterator for a 1 dimensional overload.  Permits iterating over the
    outer level of a 2-d overload when explicitly enabled.  */
 
-class ovl_iterator 
-{
+class ovl_iterator  {
   tree ovl;
   const bool allow_inner; /* Only used when checking.  */
 
@@ -833,8 +832,7 @@ class ovl_iterator
 /* Iterator over a (potentially) 2 dimensional overload, which is
    produced by name lookup.  */
 
-class lkp_iterator : public ovl_iterator
-{
+class lkp_iterator : public ovl_iterator {
   typedef ovl_iterator parent;
 
   tree outer;
@@ -866,8 +864,7 @@ class lkp_iterator : public ovl_iterator
 /* hash traits for declarations.  Hashes potential overload sets via
    DECL_NAME.  */
 
-struct named_decl_hash : ggc_remove <tree>
-{
+struct named_decl_hash : ggc_remove <tree> {
   typedef tree value_type; /* A DECL or OVERLOAD  */
   typedef tree compare_type; /* An identifier.  */
 
@@ -892,50 +889,51 @@ struct named_decl_hash : ggc_remove <tree>
    The cluster representation packs well on a 64-bit system.  */
 
 #define MODULE_VECTOR_SLOTS_PER_CLUSTER 2
-struct GTY(()) mc_index
-{
+struct mc_index {
   unsigned short base;
   unsigned short span;
 };
 
 /* To support lazy module loading, we squirrel away a section number
    for unloaded bindings.  We rely on pointers being aligned and
-   setting the bottom bit to mark a lazy value.  */
+   setting the bottom bit to mark a lazy value.
+   GTY doesn't like an array of union, so hve a containing struct.  */
 
-union GTY((desc ("%h.is_lazy ()"))) mc_slot
-{
-  tree GTY((tag ("false"))) binding;
+struct GTY(()) mc_slot {
+  union GTY((desc ("%1.is_lazy ()"))) mc_slot_lazy {
+    tree GTY((tag ("false"))) binding;
+  } u;
 
   operator tree & ()
   {
     gcc_checking_assert (!is_lazy ());
-    return binding;
+    return u.binding;
   }
   mc_slot &operator= (tree t)
   {
-    binding = t;
+    u.binding = t;
     return *this;
   }
   bool is_lazy () const
   {
-    return bool (intptr_t (binding) & 1);
+    return bool (intptr_t (u.binding) & 1);
   }
   void set_lazy (unsigned snum)
   {
-    gcc_checking_assert (!binding);
-    binding = tree (intptr_t ((snum << 1) | 1));
+    gcc_checking_assert (!u.binding);
+    u.binding = tree (intptr_t ((snum << 1) | 1));
   }
   unsigned get_lazy () const
   {
     gcc_checking_assert (is_lazy ());
-    return unsigned (intptr_t (binding) >> 1);
+    return unsigned (intptr_t (u.binding) >> 1);
   }
 };
 
 struct GTY(()) module_cluster
 {
-  mc_index indices[MODULE_VECTOR_SLOTS_PER_CLUSTER];
-  union mc_slot slots[MODULE_VECTOR_SLOTS_PER_CLUSTER];
+  mc_index GTY((skip)) indices[MODULE_VECTOR_SLOTS_PER_CLUSTER];
+  mc_slot slots[MODULE_VECTOR_SLOTS_PER_CLUSTER];
 };
 
 #define MODULE_VECTOR_NUM_CLUSTERS(NODE) \
