@@ -1,5 +1,10 @@
 2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Convert
+	grouped stores with gaps to a strided group.
+
+2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (get_group_load_store_type)
 	(get_load_store_type): Only test STMT_VINFO_STRIDED_P for the
 	first statement in a group.
