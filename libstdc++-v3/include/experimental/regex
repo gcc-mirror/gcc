@@ -44,6 +44,7 @@ namespace experimental
 {
 inline namespace fundamentals_v2
 {
+#if _GLIBCXX_USE_CXX11_ABI
 namespace pmr
 {
   template<typename _BidirectionalIterator>
@@ -57,7 +58,7 @@ namespace pmr
   typedef match_results<wstring::const_iterator> wsmatch;
 
 } // namespace pmr
-
+#endif
 } // namespace fundamentals_v2
 } // namespace experimental
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -62,6 +62,7 @@ inline namespace fundamentals_v2
 		   __cont.end());
     }
 
+#if _GLIBCXX_USE_CXX11_ABI
   namespace pmr
   {
     // basic_string using polymorphic allocator in namespace pmr
@@ -77,6 +78,7 @@ inline namespace fundamentals_v2
     typedef basic_string<wchar_t> wstring;
 
   } // namespace pmr
+#endif
 } // namespace fundamentals_v2
 } // namespace experimental
 
