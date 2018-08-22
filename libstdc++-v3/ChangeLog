@@ -1,3 +1,13 @@
+2018-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/deque/capacity/max_size.cc: Fix test for
+	C++98 mode.
+	* testsuite/23_containers/deque/modifiers/assign/1.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/assign/1.cc: Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/assign/1.cc: Likewise.
+	* testsuite/23_containers/vector/capacity/max_size.cc: Likewise.
+	* testsuite/23_containers/vector/modifiers/assign/1.cc: Likewise.
+
 2018-08-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87061

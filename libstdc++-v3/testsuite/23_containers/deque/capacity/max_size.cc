@@ -22,7 +22,7 @@
 #include <limits>
 #include <testsuite_hooks.h>
 
-using test_type = std::deque<char>;
+typedef std::deque<char> test_type;
 
 typedef test_type::size_type size_type;
 typedef test_type::difference_type difference_type;
