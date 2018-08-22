@@ -62,7 +62,7 @@
 #include <bits/regex.h>
 #include <bits/regex_executor.h>
 
-#if __cplusplus >= 201703L
+#if __cplusplus >= 201703L && _GLIBCXX_USE_CXX11_ABI
 #include <memory_resource>
 namespace std _GLIBCXX_VISIBILITY(default)
 {
