@@ -259,41 +259,51 @@
 ;; FP or SIMD registers then the pattern predicate should include TARGET_FLOAT
 ;; or TARGET_SIMD.
 
+;; Attributes of the architecture required to support the instruction (or
+;; alternative). This attribute is used to compute attribute "enabled", use type
+;; "any" to enable an alternative in all cases.
+
+(define_enum "arches" [ any fp simd sve fp16])
+
+(define_enum_attr "arch" "arches" (const_string "any"))
+
+;; [For compatibility with Arm in pipeline models]
 ;; Attribute that specifies whether or not the instruction touches fp
-;; registers.  When this is set to yes for an alternative, that alternative
-;; will be disabled when !TARGET_FLOAT.
-(define_attr "fp" "no,yes" (const_string "no"))
+;; registers.
+;; Note that this attribute is not used anywhere in either the arm or aarch64
+;; backends except in the scheduling description for xgene1.  In that
+;; scheduling description this attribute is used to subclass the load_4 and
+;; load_8 types.
+(define_attr "fp" "no,yes"
+  (if_then_else
+    (eq_attr "arch" "fp")
+    (const_string "yes")
+    (const_string "no")))
 
-;; Attribute that specifies whether or not the instruction touches half
-;; precision fp registers.  When this is set to yes for an alternative,
-;; that alternative will be disabled when !TARGET_FP_F16INST.
-(define_attr "fp16" "no,yes" (const_string "no"))
+(define_attr "arch_enabled" "no,yes"
+  (if_then_else
+    (ior
+	(eq_attr "arch" "any")
 
-;; Attribute that specifies whether or not the instruction touches simd
-;; registers.  When this is set to yes for an alternative, that alternative
-;; will be disabled when !TARGET_SIMD.
-(define_attr "simd" "no,yes" (const_string "no"))
+	(and (eq_attr "arch" "fp")
+	     (match_test "TARGET_FLOAT"))
 
-;; Attribute that specifies whether or not the instruction uses SVE.
-;; When this is set to yes for an alternative, that alternative
-;; will be disabled when !TARGET_SVE.
-(define_attr "sve" "no,yes" (const_string "no"))
+	(and (eq_attr "arch" "simd")
+	     (match_test "TARGET_SIMD"))
+
+	(and (eq_attr "arch" "fp16")
+	     (match_test "TARGET_FP_F16INST"))
+
+	(and (eq_attr "arch" "sve")
+	     (match_test "TARGET_SVE")))
+    (const_string "yes")
+    (const_string "no")))
 
 ;; Attribute that controls whether an alternative is enabled or not.
 ;; Currently it is only used to disable alternatives which touch fp or simd
-;; registers when -mgeneral-regs-only is specified.
-(define_attr "enabled" "no,yes"
-  (cond [(ior
-	    (and (eq_attr "fp" "yes")
-		 (eq (symbol_ref "TARGET_FLOAT") (const_int 0)))
-	    (and (eq_attr "simd" "yes")
-		 (eq (symbol_ref "TARGET_SIMD") (const_int 0)))
-	    (and (eq_attr "fp16" "yes")
-		 (eq (symbol_ref "TARGET_FP_F16INST") (const_int 0)))
-	    (and (eq_attr "sve" "yes")
-		 (eq (symbol_ref "TARGET_SVE") (const_int 0))))
-	    (const_string "no")
-	] (const_string "yes")))
+;; registers when -mgeneral-regs-only is specified or to require a special
+;; architecture support.
+(define_attr "enabled" "no,yes" (attr "arch_enabled"))
 
 ;; Attribute that specifies whether we are dealing with a branch to a
 ;; label that is far away, i.e. further away than the maximum/minimum
@@ -1009,8 +1019,7 @@
   ;; The "mov_imm" type for CNT is just a placeholder.
   [(set_attr "type" "mov_reg,mov_imm,neon_move,mov_imm,load_4,load_4,store_4,
 		     store_4,neon_to_gp<q>,neon_from_gp<q>,neon_dup")
-   (set_attr "simd" "*,*,yes,*,*,*,*,*,yes,yes,yes")
-   (set_attr "sve" "*,*,*,yes,*,*,*,*,*,*,*")]
+   (set_attr "arch" "*,*,simd,sve,*,*,*,*,simd,simd,simd")]
 )
 
 (define_expand "mov<mode>"
@@ -1069,9 +1078,7 @@
   ;; The "mov_imm" type for CNT is just a placeholder.
   [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm,load_4,
 		    load_4,store_4,store_4,adr,adr,f_mcr,f_mrc,fmov,neon_move")
-   (set_attr "fp" "*,*,*,*,*,*,*,yes,*,yes,*,*,yes,yes,yes,*")
-   (set_attr "simd" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes")
-   (set_attr "sve" "*,*,*,*,*,yes,*,*,*,*,*,*,*,*,*,*")]
+   (set_attr "arch" "*,*,*,*,*,sve,*,fp,*,fp,*,*,fp,fp,fp,simd")]
 )
 
 (define_insn_and_split "*movdi_aarch64"
@@ -1108,9 +1115,7 @@
   [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm,mov_imm,
 		     load_8,load_8,store_8,store_8,adr,adr,f_mcr,f_mrc,fmov,
 		     neon_move")
-   (set_attr "fp" "*,*,*,*,*,*,*,*,yes,*,yes,*,*,yes,yes,yes,*")
-   (set_attr "simd" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes")
-   (set_attr "sve" "*,*,*,*,*,*,yes,*,*,*,*,*,*,*,*,*,*")]
+   (set_attr "arch" "*,*,*,*,*,*,sve,*,fp,*,fp,*,*,fp,fp,fp,simd")]
 )
 
 (define_insn "insv_imm<mode>"
@@ -1163,8 +1168,7 @@
 		             load_16,store_16,store_16,\
                              load_16,store_16")
    (set_attr "length" "8,8,8,4,4,4,4,4,4")
-   (set_attr "simd" "*,*,*,yes,*,*,*,*,*")
-   (set_attr "fp" "*,*,*,*,*,*,*,yes,yes")]
+   (set_attr "arch" "*,*,*,simd,*,*,*,fp,fp")]
 )
 
 ;; Split a TImode register-register or register-immediate move into
@@ -1218,8 +1222,7 @@
    mov\\t%w0, %w1"
   [(set_attr "type" "neon_move,f_mcr,neon_move,neon_to_gp, neon_move,fconsts, \
 		     neon_move,f_loads,f_stores,load_4,store_4,mov_reg")
-   (set_attr "simd" "yes,*,yes,yes,yes,*,yes,*,*,*,*,*")
-   (set_attr "fp16"   "*,yes,*,*,*,yes,*,*,*,*,*,*")]
+   (set_attr "arch" "simd,fp16,simd,simd,simd,fp16,simd,*,*,*,*,*")]
 )
 
 (define_insn "*movsf_aarch64"
@@ -1243,7 +1246,7 @@
   [(set_attr "type" "neon_move,f_mcr,f_mrc,fmov,fconsts,neon_move,\
 		     f_loads,f_stores,load_4,store_4,mov_reg,\
 		     fconsts")
-   (set_attr "simd" "yes,*,*,*,*,yes,*,*,*,*,*,*")]
+   (set_attr "arch" "simd,*,*,*,*,simd,*,*,*,*,*,*")]
 )
 
 (define_insn "*movdf_aarch64"
@@ -1267,7 +1270,7 @@
   [(set_attr "type" "neon_move,f_mcr,f_mrc,fmov,fconstd,neon_move,\
 		     f_loadd,f_stored,load_8,store_8,mov_reg,\
 		     fconstd")
-   (set_attr "simd" "yes,*,*,*,*,yes,*,*,*,*,*,*")]
+   (set_attr "arch" "simd,*,*,*,*,simd,*,*,*,*,*,*")]
 )
 
 (define_split
@@ -1312,7 +1315,7 @@
   [(set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,neon_move_q,f_mcr,\
                      f_loadd,f_stored,load_16,store_16,store_16")
    (set_attr "length" "4,8,8,8,4,4,4,4,4,4,4")
-   (set_attr "simd" "yes,*,*,*,yes,*,*,*,*,*,*")]
+   (set_attr "arch" "simd,*,*,*,simd,*,*,*,*,*,*")]
 )
 
 (define_split
@@ -1359,7 +1362,7 @@
    ldp\\t%w0, %w2, %1
    ldp\\t%s0, %s2, %1"
   [(set_attr "type" "load_8,neon_load1_2reg")
-   (set_attr "fp" "*,yes")]
+   (set_attr "arch" "*,fp")]
 )
 
 ;; Storing different modes that can still be merged
@@ -1376,7 +1379,7 @@
    ldp\\t%x0, %x2, %1
    ldp\\t%d0, %d2, %1"
   [(set_attr "type" "load_16,neon_load1_2reg")
-   (set_attr "fp" "*,yes")]
+   (set_attr "arch" "*,fp")]
 )
 
 ;; Operands 0 and 2 are tied together by the final condition; so we allow
@@ -1394,7 +1397,7 @@
    stp\\t%w1, %w3, %0
    stp\\t%s1, %s3, %0"
   [(set_attr "type" "store_8,neon_store1_2reg")
-   (set_attr "fp" "*,yes")]
+   (set_attr "arch" "*,fp")]
 )
 
 ;; Storing different modes that can still be merged
@@ -1411,7 +1414,7 @@
    stp\\t%x1, %x3, %0
    stp\\t%d1, %d3, %0"
   [(set_attr "type" "store_16,neon_store1_2reg")
-   (set_attr "fp" "*,yes")]
+   (set_attr "arch" "*,fp")]
 )
 
 ;; Load pair with post-index writeback.  This is primarily used in function
@@ -1637,7 +1640,7 @@
   * return aarch64_output_sve_addvl_addpl (operands[0], operands[1], operands[2]);"
   ;; The "alu_imm" type for ADDVL/ADDPL is just a placeholder.
   [(set_attr "type" "alu_imm,alu_sreg,neon_add,alu_imm,multiple,alu_imm")
-   (set_attr "simd" "*,*,yes,*,*,*")]
+   (set_attr "arch" "*,*,simd,*,*,*")]
 )
 
 ;; zero_extend version of above
@@ -2640,7 +2643,7 @@
    sub\\t%x0, %x1, %x2
    sub\\t%d0, %d1, %d2"
   [(set_attr "type" "alu_sreg, neon_sub")
-   (set_attr "simd" "*,yes")]
+   (set_attr "arch" "*,simd")]
 )
 
 (define_expand "subv<mode>4"
@@ -3247,7 +3250,7 @@
    neg\\t%<w>0, %<w>1
    neg\\t%<rtn>0<vas>, %<rtn>1<vas>"
   [(set_attr "type" "alu_sreg, neon_neg<q>")
-   (set_attr "simd" "*,yes")]
+   (set_attr "arch" "*,simd")]
 )
 
 ;; zero_extend version of above
@@ -4092,7 +4095,7 @@
   <logical>\\t%<w>0, %<w>1, %2
   <logical>\\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
   [(set_attr "type" "logic_reg,logic_imm,neon_logic")
-   (set_attr "simd" "*,*,yes")]
+   (set_attr "arch" "*,*,simd")]
 )
 
 ;; zero_extend version of above
@@ -4226,7 +4229,7 @@
   mvn\\t%<w>0, %<w>1
   mvn\\t%0.8b, %1.8b"
   [(set_attr "type" "logic_reg,neon_logic")
-   (set_attr "simd" "*,yes")]
+   (set_attr "arch" "*,simd")]
 )
 
 (define_insn "*one_cmpl_<optab><mode>2"
@@ -4249,7 +4252,7 @@
   <NLOGICAL:nlogical>\\t%<w>0, %<w>2, %<w>1
   <NLOGICAL:nlogical>\\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>"
   [(set_attr "type" "logic_reg,neon_logic")
-   (set_attr "simd" "*,yes")]
+   (set_attr "arch" "*,simd")]
 )
 
 (define_insn "*<NLOGICAL:optab>_one_cmplsidi3_ze"
@@ -4289,7 +4292,7 @@
    (set (match_dup 0) (not:GPI (match_dup 0)))]
   ""
   [(set_attr "type" "logic_reg,multiple")
-   (set_attr "simd" "*,yes")]
+   (set_attr "arch" "*,simd")]
 )
 
 (define_insn "*and_one_cmpl<mode>3_compare0"
@@ -4833,8 +4836,8 @@
    lsl\t%<w>0, %<w>1, %<w>2
    shl\t%<rtn>0<vas>, %<rtn>1<vas>, %2
    ushl\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>"
-  [(set_attr "simd" "no,no,yes,yes")
-   (set_attr "type" "bfx,shift_reg,neon_shift_imm<q>, neon_shift_reg<q>")]
+  [(set_attr "type" "bfx,shift_reg,neon_shift_imm<q>, neon_shift_reg<q>")
+   (set_attr "arch" "*,*,simd,simd")]
 )
 
 ;; Logical right shift using SISD or Integer instruction
@@ -4851,8 +4854,8 @@
    ushr\t%<rtn>0<vas>, %<rtn>1<vas>, %2
    #
    #"
-  [(set_attr "simd" "no,no,yes,yes,yes")
-   (set_attr "type" "bfx,shift_reg,neon_shift_imm<q>,neon_shift_reg<q>,neon_shift_reg<q>")]
+  [(set_attr "type" "bfx,shift_reg,neon_shift_imm<q>,neon_shift_reg<q>,neon_shift_reg<q>")
+   (set_attr "arch" "*,*,simd,simd,simd")]
 )
 
 (define_split
@@ -4899,8 +4902,8 @@
    sshr\t%<rtn>0<vas>, %<rtn>1<vas>, %2
    #
    #"
-  [(set_attr "simd" "no,no,yes,yes,yes")
-   (set_attr "type" "bfx,shift_reg,neon_shift_imm<q>,neon_shift_reg<q>,neon_shift_reg<q>")]
+  [(set_attr "type" "bfx,shift_reg,neon_shift_imm<q>,neon_shift_reg<q>,neon_shift_reg<q>")
+   (set_attr "arch" "*,*,simd,simd,simd")]
 )
 
 (define_split
@@ -4940,8 +4943,7 @@
                    UNSPEC_SISD_USHL))]
   "TARGET_SIMD"
   "ushl\t%d0, %d1, %d2"
-  [(set_attr "simd" "yes")
-   (set_attr "type" "neon_shift_reg")]
+  [(set_attr "type" "neon_shift_reg")]
 )
 
 (define_insn "*aarch64_ushl_2s"
@@ -4951,8 +4953,7 @@
                    UNSPEC_USHL_2S))]
   "TARGET_SIMD"
   "ushl\t%0.2s, %1.2s, %2.2s"
-  [(set_attr "simd" "yes")
-   (set_attr "type" "neon_shift_reg")]
+  [(set_attr "type" "neon_shift_reg")]
 )
 
 (define_insn "*aarch64_sisd_sshl"
@@ -4962,8 +4963,7 @@
                    UNSPEC_SISD_SSHL))]
   "TARGET_SIMD"
   "sshl\t%d0, %d1, %d2"
-  [(set_attr "simd" "yes")
-   (set_attr "type" "neon_shift_reg")]
+  [(set_attr "type" "neon_shift_reg")]
 )
 
 (define_insn "*aarch64_sshl_2s"
@@ -4973,8 +4973,7 @@
                    UNSPEC_SSHL_2S))]
   "TARGET_SIMD"
   "sshl\t%0.2s, %1.2s, %2.2s"
-  [(set_attr "simd" "yes")
-   (set_attr "type" "neon_shift_reg")]
+  [(set_attr "type" "neon_shift_reg")]
 )
 
 (define_insn "*aarch64_sisd_neg_qi"
@@ -4983,8 +4982,7 @@
                    UNSPEC_SISD_NEG))]
   "TARGET_SIMD"
   "neg\t%d0, %d1"
-  [(set_attr "simd" "yes")
-   (set_attr "type" "neon_neg")]
+  [(set_attr "type" "neon_neg")]
 )
 
 ;; Rotate right
@@ -5620,9 +5618,8 @@
   "@
    <su_optab>cvtf\t%<GPF:s>0, %<s>1
    <su_optab>cvtf\t%<GPF:s>0, %<w1>1"
-  [(set_attr "simd" "yes,no")
-   (set_attr "fp" "no,yes")
-   (set_attr "type" "neon_int_to_fp_<Vetype>,f_cvti2f")]
+  [(set_attr "type" "neon_int_to_fp_<Vetype>,f_cvti2f")
+   (set_attr "arch" "simd,fp")]
 )
 
 (define_insn "<optab><fcvt_iesize><GPF:mode>2"
@@ -5707,8 +5704,7 @@
    <FCVT_F2FIXED:fcvt_fixed_insn>\t%<GPF:w1>0, %<GPF:s>1, #%2
    <FCVT_F2FIXED:fcvt_fixed_insn>\t%<GPF:s>0, %<GPF:s>1, #%2"
   [(set_attr "type" "f_cvtf2i, neon_fp_to_int_<GPF:Vetype>")
-   (set_attr "fp" "yes, *")
-   (set_attr "simd" "*, yes")]
+   (set_attr "arch" "fp,simd")]
 )
 
 (define_insn "<FCVT_FIXED2F:fcvt_fixed_insn><GPI:mode>3"
@@ -5721,8 +5717,7 @@
    <FCVT_FIXED2F:fcvt_fixed_insn>\t%<GPI:v>0, %<GPI:w>1, #%2
    <FCVT_FIXED2F:fcvt_fixed_insn>\t%<GPI:v>0, %<GPI:v>1, #%2"
   [(set_attr "type" "f_cvti2f, neon_int_to_fp_<GPI:Vetype>")
-   (set_attr "fp" "yes, *")
-   (set_attr "simd" "*, yes")]
+   (set_attr "arch" "fp,simd")]
 )
 
 (define_insn "<FCVT_F2FIXED:fcvt_fixed_insn>hf<mode>3"
