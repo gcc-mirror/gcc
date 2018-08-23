@@ -697,7 +697,8 @@ namespace __gnu_test
     };
 #endif // C++11
 
-#if __cplusplus >= 201703L && __cpp_aligned_new
+#if __cplusplus >= 201703L
+#if __cpp_aligned_new && __cpp_rtti
     // A concrete memory_resource, with error checking.
     class memory_resource : public std::pmr::memory_resource
     {
@@ -835,6 +836,7 @@ namespace __gnu_test
 
       allocation_lists* lists;
     };
+#endif // aligned-new && rtti
 
     // Set the default resource, and restore the previous one on destruction.
     struct default_resource_mgr
@@ -849,7 +851,7 @@ namespace __gnu_test
       std::pmr::memory_resource* prev;
     };
 
-#endif // C++17 && aligned-new
+#endif // C++17
 
 } // namespace __gnu_test
 
