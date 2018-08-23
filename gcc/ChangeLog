@@ -1,3 +1,17 @@
+2018-08-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/86951
+	* config/arm/arm-protos.h (arm_emit_speculation_barrier): New
+	prototype.
+	* config/arm/arm.c (speculation_barrier_libfunc): New static
+	variable.
+	(arm_init_libfuncs): Initialize it.
+	(arm_emit_speculation_barrier): New function.
+	* config/arm/arm.md (speculation_barrier): Call
+	arm_emit_speculation_barrier for architectures that do not have
+	DSB or ISB.
+	(speculation_barrier_insn): Only match on Armv7 or later.
+
 2018-08-23  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/87024

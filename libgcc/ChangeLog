@@ -1,3 +1,10 @@
+2018-08-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/86951
+	* config/arm/lib1funcs.asm (speculation_barrier): New function.
+	* config/arm/t-arm (LIB1ASMFUNCS): Add it to list of functions
+	to build.
+
 2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/unwind-dw2-fde-darwin.c 
