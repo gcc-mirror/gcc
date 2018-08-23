@@ -5154,7 +5154,7 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 
   if (dump_enabled_p ())
     dump_printf (MSG_MISSED_OPTIMIZATION,
-		 "permutaion op not supported by target.\n");
+		 "permutation op not supported by target.\n");
   return false;
 }
 

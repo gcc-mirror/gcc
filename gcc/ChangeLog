@@ -1,3 +1,8 @@
+2018-08-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-vect-data-refs.c (vect_grouped_store_supported): Fix typo
+	"permutaion".
+
 2018-08-23  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* genmatch.c (parser::parse_operation): Fix typo 'exapnded'
