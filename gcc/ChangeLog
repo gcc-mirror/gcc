@@ -1,3 +1,15 @@
+2018-08-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (abs_extent_range): Remove.
+	(extract_range_into_wide_ints): Pass wide ints by reference.
+	(extract_range_from_binary_expr_1): Rewrite the *DIV_EXPR code.
+	Pass wide ints by reference in all calls to
+	extract_range_into_wide_ints.
+	* wide-int-range.cc (wide_int_range_div): New.
+	* wide-int-range.h (wide_int_range_div): New.
+	(wide_int_range_includes_zero_p): New.
+	(wide_int_range_zero_p): New.
+
 2018-08-23  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* config/aarch64/aarch64.md (arches): New enum.

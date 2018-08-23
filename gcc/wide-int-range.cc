@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "function.h"
 #include "fold-const.h"
 #include "wide-int-range.h"
 
@@ -661,5 +662,77 @@ wide_int_range_abs (wide_int &min, wide_int &max,
      range VARYING.  */
   if (wi::gt_p (min, max, sign))
       return false;
+  return true;
+}
+
+/* Calculate a division operation on two ranges and store the result in
+   [WMIN, WMAX] U [EXTRA_MIN, EXTRA_MAX].
+
+   If EXTRA_RANGE_P is set upon return, EXTRA_MIN/EXTRA_MAX hold
+   meaningful information, otherwise they should be ignored.
+
+   Return TRUE if we were able to successfully calculate the new range.  */
+
+bool
+wide_int_range_div (wide_int &wmin, wide_int &wmax,
+		    tree_code code, signop sign, unsigned prec,
+		    const wide_int &dividend_min, const wide_int &dividend_max,
+		    const wide_int &divisor_min, const wide_int &divisor_max,
+		    bool overflow_undefined,
+		    bool overflow_wraps,
+		    bool &extra_range_p,
+		    wide_int &extra_min, wide_int &extra_max)
+{
+  extra_range_p = false;
+
+  /* If we know we won't divide by zero, just do the division.  */
+  if (!wide_int_range_includes_zero_p (divisor_min, divisor_max, sign))
+    {
+      wide_int_range_multiplicative_op (wmin, wmax, code, sign, prec,
+					dividend_min, dividend_max,
+					divisor_min, divisor_max,
+					overflow_undefined,
+					overflow_wraps);
+      return true;
+    }
+
+  /* If flag_non_call_exceptions, we must not eliminate a division
+     by zero.  */
+  if (cfun->can_throw_non_call_exceptions)
+    return false;
+
+  /* If we're definitely dividing by zero, there's nothing to do.  */
+  if (wide_int_range_zero_p (divisor_min, divisor_max, prec))
+    return false;
+
+  /* Perform the division in 2 parts, [LB, -1] and [1, UB],
+     which will skip any division by zero.
+
+     First divide by the negative numbers, if any.  */
+  if (wi::neg_p (divisor_min, sign))
+    {
+      if (!wide_int_range_multiplicative_op (wmin, wmax,
+					     code, sign, prec,
+					     dividend_min, dividend_max,
+					     divisor_min, wi::minus_one (prec),
+					     overflow_undefined,
+					     overflow_wraps))
+	return false;
+      extra_range_p = true;
+    }
+  /* Then divide by the non-zero positive numbers, if any.  */
+  if (wi::gt_p (divisor_max, wi::zero (prec), sign))
+    {
+      if (!wide_int_range_multiplicative_op (extra_range_p ? extra_min : wmin,
+					     extra_range_p ? extra_max : wmax,
+					     code, sign, prec,
+					     dividend_min, dividend_max,
+					     wi::one (prec), divisor_max,
+					     overflow_undefined,
+					     overflow_wraps))
+	return false;
+    }
+  else
+    extra_range_p = false;
   return true;
 }
