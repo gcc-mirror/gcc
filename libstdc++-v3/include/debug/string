@@ -642,7 +642,7 @@ namespace __gnu_debug
 	  else
 	    __res = _Base::insert(__p.base(), __first, __last);
 #else
-	  const size_type __offset = __p.base() - _Base::cbegin();
+	  const size_type __offset = __p.base() - _Base::begin();
 	  _Base::insert(__p.base(), __first, __last);
 	  __res = _Base::begin() + __offset;
 #endif
