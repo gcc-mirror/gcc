@@ -5511,22 +5511,10 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
     {
       /* MIN_EXPR/MAX_EXPR has unspecified behavior with NaNs or
 	 signed zeros.  */
-      if (HONOR_SIGNED_ZEROS (DECL_MODE (limit)))
-	{
-	  tmp = fold_build2_loc (input_location, op, logical_type_node,
-				 arrayse.expr, limit);
-	  ifbody = build2_v (MODIFY_EXPR, limit, arrayse.expr);
-	  tmp = build3_v (COND_EXPR, tmp, ifbody,
-			  build_empty_stmt (input_location));
-	  gfc_add_expr_to_block (&block2, tmp);
-	}
-      else
-	{
-	  tmp = fold_build2_loc (input_location,
-				 op == GT_EXPR ? MAX_EXPR : MIN_EXPR,
-				 type, arrayse.expr, limit);
-	  gfc_add_modify (&block2, limit, tmp);
-	}
+      tmp = fold_build2_loc (input_location,
+			     op == GT_EXPR ? MAX_EXPR : MIN_EXPR,
+			     type, arrayse.expr, limit);
+      gfc_add_modify (&block2, limit, tmp);
     }
 
   if (fast)
@@ -5535,8 +5523,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
       /* MIN_EXPR/MAX_EXPR has unspecified behavior with NaNs or
 	 signed zeros.  */
-      if (HONOR_NANS (DECL_MODE (limit))
-	  || HONOR_SIGNED_ZEROS (DECL_MODE (limit)))
+      if (HONOR_NANS (DECL_MODE (limit)))
 	{
 	  tmp = fold_build2_loc (input_location, op, logical_type_node,
 				 arrayse.expr, limit);
@@ -5598,8 +5585,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
       /* MIN_EXPR/MAX_EXPR has unspecified behavior with NaNs or
 	 signed zeros.  */
-      if (HONOR_NANS (DECL_MODE (limit))
-	  || HONOR_SIGNED_ZEROS (DECL_MODE (limit)))
+      if (HONOR_NANS (DECL_MODE (limit)))
 	{
 	  tmp = fold_build2_loc (input_location, op, logical_type_node,
 				 arrayse.expr, limit);

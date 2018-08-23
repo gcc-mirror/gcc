@@ -1,4 +1,9 @@
-2017-08-23  Paul Thomas  <pault@gcc.gnu.org>
+2018-08-23  Janne Blomqvist  <blomqvist.janne@gmail.com>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxval): Delete
+	HONOR_SIGNED_ZEROS checks.
+
+2018-08-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/86863
 	* resolve.c (resolve_typebound_call): If the TBP is not marked
