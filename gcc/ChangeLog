@@ -1,3 +1,33 @@
+2018-08-23  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64.md (arches): New enum.
+	(arch): New enum attr.
+	(arch_enabled): New attr.
+	(enabled): Now uses arch_enabled only.
+	(simd, sve, fp16): Removed attribute.
+	(fp): Attr now defined in terms of 'arch'.
+	(*mov<mode>_aarch64, *movsi_aarch64, *movdi_aarch64, *movti_aarch64,
+	*movhf_aarch64, <optab><fcvt_target><GPF:mode>2,
+	<FCVT_F2FIXED:fcvt_fixed_insn><GPF:mode>3,
+	<FCVT_FIXED2F:fcvt_fixed_insn><GPI:mode>3): Merge 'fp' and 'simd'
+	attributes into 'arch'.
+	(*movsf_aarch64, *movdf_aarch64, *movtf_aarch64, *add<mode>3_aarch64,
+	subdi3, neg<mode>2, <optab><mode>3, one_cmpl<mode>2,
+	*<NLOGICAL:optab>_one_cmpl<mode>3, *xor_one_cmpl<mode>3,
+	*aarch64_ashl_sisd_or_int_<mode>3, *aarch64_lshr_sisd_or_int_<mode>3,
+	*aarch64_ashr_sisd_or_int_<mode>3, *aarch64_sisd_ushl): Convert use of
+	'simd' attribute into 'arch'.
+	(load_pair_sw_<SX:mode><SX2:mode>, load_pair_dw_<DX:mode><DX2:mode>,
+	store_pair_sw_<SX:mode><SX2:mode>, store_pair_dw_<DX:mode><DX2:mode>):
+	Convert use of 'fp' attribute to 'arch'.
+	* config/aarch64/aarch64-simd.md (move_lo_quad_internal_<mode>,
+	move_lo_quad_internal_<mode>): (different modes) Merge 'fp' and 'simd'
+	into 'arch'.
+	(move_lo_quad_internal_be_<mode>, move_lo_quad_internal_be_<mode>):
+	(different modes) Merge 'fp' and 'simd' into 'arch'.
+	(*aarch64_combinez<mode>, *aarch64_combinez_be<mode>): Merge 'fp' and
+	'simd' into 'arch'.
+
 2018-08-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/87026
