@@ -22,6 +22,7 @@ void Bink ()
 }
 
 module a.; // { dg-error "expected" }
+// { dg-error "cannot declare" "" { target *-*-* } .-1 }
 
 import frist; // { dg-error {cannot import module.* in its own purview} }
 

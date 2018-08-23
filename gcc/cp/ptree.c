@@ -60,7 +60,7 @@ cxx_print_decl (FILE *file, tree node, int indent)
   if (unsigned mod = MAYBE_DECL_MODULE_OWNER (node))
     {
       indent_to (file, indent + 3);
-      fprintf (file, " module %s", IDENTIFIER_POINTER (module_name (mod)));
+      fprintf (file, " module %s", module_name (mod));
     }
 
   indent_to (file, indent + 3);

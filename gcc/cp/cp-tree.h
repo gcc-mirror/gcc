@@ -6709,7 +6709,7 @@ inline bool modules_legacy_p () { return flag_modules < -1; }
 extern bool module_purview_p ();
 extern bool module_interface_p ();
 extern int module_exporting_level ();
-extern module_state *get_module (tree);
+extern module_state *get_module (tree name, module_state *parent);
 extern void pp_module_name (pretty_printer *pp, module_state *);
 extern tree get_module_owner (tree);
 extern void set_module_owner (tree);
@@ -6724,7 +6724,7 @@ extern void declare_module (module_state *, location_t, bool, tree, line_maps *)
 extern unsigned atom_module_preamble (location_t, line_maps *);
 extern void init_module_processing ();
 extern void finish_module (line_maps *);
-extern tree module_name (unsigned);
+extern char const *module_name (unsigned);
 extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
 extern void atom_main_file (line_maps *, const line_map_ordinary *, unsigned);

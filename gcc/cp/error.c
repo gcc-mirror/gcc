@@ -1009,11 +1009,11 @@ dump_module_suffix (cxx_pretty_printer *pp, tree decl)
   if (DECL_MODULE_EXPORT_P (owner))
     return;
 
-  if (unsigned module = MAYBE_DECL_MODULE_OWNER (owner))
+  if (unsigned mod = MAYBE_DECL_MODULE_OWNER (owner))
     {
       pp_character (pp, '@');
       pp->padding = pp_none;
-      dump_expr (pp, module_name (module), 0);
+      pp_string (pp, module_name (mod));
     }
 }
 

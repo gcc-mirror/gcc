@@ -1,5 +1,25 @@
 2018-08-23  Nathan Sidwell  <nathan@acm.org>
 
+	Module state gains parent.
+	gcc/cp/
+	* cp-tree.h (get_module): Add parent argument.
+	(module_name): Return string.
+	* error.c (dump_module_suffix): Adjust module_name use.
+	* module.c (module_state_hash): Adjust for having a parent.
+	(module_state: Add parent & fullname fields.
+	(module_state::set_name): Delete.
+	(get_module): Add parent.
+	(get_module): Split string.
+	(module_mapper::{export_done,imex_query}): Adjust module name access.
+	(module_state::write_readme): Adjust.
+	(module_state::{read,write}_{imports,config}): Adjust.
+	(module_state::set_loc): Use fullename.
+	(module_state::attach): Create fullname.
+	* parser.c (cp_parser_module_name): Generate parental name.
+	* ptree.c (cxx_print_decl): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/mod-decl-1.C: Adjust diags.
+
 	Kill N: prefix notation
 	gcc/cp/
 	* module.c (enum module_kind): Delete.

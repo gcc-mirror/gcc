@@ -12696,39 +12696,26 @@ extern location_t module_preamble_end_loc;
 static module_state *
 cp_parser_module_name (cp_parser *parser)
 {
-  tree name = NULL_TREE;
-  bool atom_p = modules_atom_p ();
-  cp_token *first_tok = cp_lexer_peek_token (parser->lexer);
-
-  if (atom_p && first_tok->type == CPP_HEADER_NAME)
-    name = cp_lexer_consume_token (parser->lexer)->u.value;
-  else if (first_tok->type == CPP_NAME)
+  if (modules_atom_p ()
+      && cp_lexer_peek_token (parser->lexer)->type == CPP_HEADER_NAME)
     {
-      name = cp_lexer_consume_token (parser->lexer)->u.value;
-
-      if (cp_lexer_peek_token (parser->lexer)->type == CPP_DOT)
-	{
-	  /* Concatenate dotted identifiers.  */
-	  auto_vec<tree,5> ids;
-
-	  for (;;)
-	    {
-	      ids.safe_push (name);
-	      if (!(cp_lexer_peek_token (parser->lexer)->type == CPP_DOT
-		    && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)))
-		break;
-	      cp_lexer_consume_token (parser->lexer);
-	      name = cp_lexer_consume_token (parser->lexer)->u.value;
-	    }
-	  name = make_tree_vec (ids.length ());
-	  for (unsigned ix = ids.length (); ix--;)
-	    TREE_VEC_ELT (name, ix) = ids.pop ();
-	}
+      tree name = cp_lexer_consume_token (parser->lexer)->u.value;
+      return get_module (name, NULL);
     }
-  else
-    cp_parser_error (parser, "expected module-name");
-  
-  return name ? get_module (name) : NULL;
+
+  for (module_state *parent = NULL;; cp_lexer_consume_token (parser->lexer))
+    {
+      if (cp_lexer_peek_token (parser->lexer)->type != CPP_NAME)
+	{
+	  cp_parser_error (parser, "expected module-name");
+	  return parent;
+	}
+
+      tree name = cp_lexer_consume_token (parser->lexer)->u.value;
+      parent = get_module (name, parent);
+      if (cp_lexer_peek_token (parser->lexer)->type != CPP_DOT)
+	return parent;
+    }
 }
 
 /* Emit an error if we're not at the outermost level.  */
