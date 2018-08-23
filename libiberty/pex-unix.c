@@ -582,8 +582,6 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
      issues.   */
   char **save_environ = environ;
 
-  const char *bad_fn = NULL;
-
   for (retries = 0; retries < 4; ++retries)
     {
       pid = vfork ();
@@ -602,62 +600,64 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 
     case 0:
       /* Child process.  */
-      if (!bad_fn && in != STDIN_FILE_NO)
-	{
-	  if (dup2 (in, STDIN_FILE_NO) < 0)
-	    bad_fn = "dup2";
-	  else if (close (in) < 0)
-	    bad_fn = "close";
-	}
-      if (!bad_fn && out != STDOUT_FILE_NO)
-	{
-	  if (dup2 (out, STDOUT_FILE_NO) < 0)
-	    bad_fn = "dup2";
-	  else if (close (out) < 0)
-	    bad_fn = "close";
-	}
-      if (!bad_fn && errdes != STDERR_FILE_NO)
-	{
-	  if (dup2 (errdes, STDERR_FILE_NO) < 0)
-	    bad_fn = "dup2";
-	  else if (close (errdes) < 0)
-	    bad_fn = "close";
-	}
-      if (!bad_fn && toclose >= 0)
-	{
-	  if (close (toclose) < 0)
-	    bad_fn = "close";
-	}
-      if (!bad_fn && (flags & PEX_STDERR_TO_STDOUT) != 0)
-	{
-	  if (dup2 (STDOUT_FILE_NO, STDERR_FILE_NO) < 0)
-	    bad_fn = "dup2";
-	}
-      if (!bad_fn)
-	{
-	  if (env)
-	    /* NOTE: In a standard vfork implementation this clobbers
-	       the parent's copy of environ "too" (in reality there's
-	       only one copy).  This is ok as we restore it below.  */
-	    environ = (char**) env;
-	  if ((flags & PEX_SEARCH) != 0)
-	    {
-	      execvp (executable, to_ptr32 (argv));
-	      bad_fn = "execvp";
-	    }
-	  else
-	    {
-	      execv (executable, to_ptr32 (argv));
-	      bad_fn = "execv";
-	    }
-	}
-
-      /* Something failed, report an error.  We don't use stdio
-	 routines, because we might be here due to a vfork call.  */
       {
-	ssize_t retval = 0;
-	int err = errno;
+	const char *bad_fn = NULL;
 
+	if (!bad_fn && in != STDIN_FILE_NO)
+	  {
+	    if (dup2 (in, STDIN_FILE_NO) < 0)
+	      bad_fn = "dup2";
+	    else if (close (in) < 0)
+	      bad_fn = "close";
+	  }
+	if (!bad_fn && out != STDOUT_FILE_NO)
+	  {
+	    if (dup2 (out, STDOUT_FILE_NO) < 0)
+	      bad_fn = "dup2";
+	    else if (close (out) < 0)
+	      bad_fn = "close";
+	  }
+	if (!bad_fn && errdes != STDERR_FILE_NO)
+	  {
+	    if (dup2 (errdes, STDERR_FILE_NO) < 0)
+	      bad_fn = "dup2";
+	    else if (close (errdes) < 0)
+	      bad_fn = "close";
+	  }
+	if (!bad_fn && toclose >= 0)
+	  {
+	    if (close (toclose) < 0)
+	      bad_fn = "close";
+	  }
+	if (!bad_fn && (flags & PEX_STDERR_TO_STDOUT) != 0)
+	  {
+	    if (dup2 (STDOUT_FILE_NO, STDERR_FILE_NO) < 0)
+	      bad_fn = "dup2";
+	  }
+	if (!bad_fn)
+	  {
+	    if (env)
+	      /* NOTE: In a standard vfork implementation this clobbers
+		 the parent's copy of environ "too" (in reality there's
+		 only one copy).  This is ok as we restore it below.  */
+	      environ = (char**) env;
+	    if ((flags & PEX_SEARCH) != 0)
+	      {
+		execvp (executable, to_ptr32 (argv));
+		bad_fn = "execvp";
+	      }
+	    else
+	      {
+		execv (executable, to_ptr32 (argv));
+		bad_fn = "execv";
+	      }
+	  }
+
+	/* Something failed, report an error.  We don't use stdio
+	   routines, because we might be here due to a vfork call.  */
+	ssize_t retval = 0;
+	int eno = errno;
+	
 #define writeerr(s) (retval |= write (STDERR_FILE_NO, s, strlen (s)))
 	writeerr (obj->pname);
 	writeerr (": error trying to exec '");
@@ -665,7 +665,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	writeerr ("': ");
 	writeerr (bad_fn);
 	writeerr (": ");
-	writeerr (xstrerror (err));
+	writeerr (xstrerror (eno));
 	writeerr ("\n");
 #undef writeerr
 
@@ -677,30 +677,33 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 
     default:
       /* Parent process.  */
+      {
+	const char *bad_fn = NULL;
+	
+	/* Restore environ.  Note that the parent either doesn't run
+	   until the child execs/exits (standard vfork behaviour), or
+	   if it does run then vfork is behaving more like fork.  In
+	   either case we needn't worry about clobbering the child's
+	   copy of environ.  */
+	environ = save_environ;
 
-      /* Restore environ.
-	 Note that the parent either doesn't run until the child execs/exits
-	 (standard vfork behaviour), or if it does run then vfork is behaving
-	 more like fork.  In either case we needn't worry about clobbering
-	 the child's copy of environ.  */
-      environ = save_environ;
+	if (!bad_fn && in != STDIN_FILE_NO)
+	  if (close (in) < 0)
+	    bad_fn = "close";
+	if (!bad_fn && out != STDOUT_FILE_NO)
+	  if (close (out) < 0)
+	    bad_fn = "close";
+	if (!bad_fn && errdes != STDERR_FILE_NO)
+	  if (close (errdes) < 0)
+	    bad_fn = "close";
 
-      if (!bad_fn && in != STDIN_FILE_NO)
-	if (close (in) < 0)
-	  bad_fn = "close";
-      if (!bad_fn && out != STDOUT_FILE_NO)
-	if (close (out) < 0)
-	  bad_fn = "close";
-      if (!bad_fn && errdes != STDERR_FILE_NO)
-	if (close (errdes) < 0)
-	  bad_fn = "close";
-
-      if (bad_fn)
-	{
-	  *err = errno;
-	  *errmsg = bad_fn;
-	  return (pid_t) -1;
-	}
+	if (bad_fn)
+	  {
+	    *err = errno;
+	    *errmsg = bad_fn;
+	    return (pid_t) -1;
+	  }
+      }
 
       return pid;
     }
