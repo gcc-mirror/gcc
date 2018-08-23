@@ -1,5 +1,9 @@
 2018-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/reference_wrapper/lwg2993.cc: Fix C++11 test to
+	not use C++14 feature.
+	* testsuite/23_containers/list/68222_neg.cc: Likewise.
+
 	* testsuite/21_strings/basic_string/init-list.cc:
 	Require cxx11-abi.
 	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_match.cc:

@@ -26,10 +26,10 @@ test01()
   const std::list<int> nums = { 1, 2, 3, 4 };
 
   // Grab the iterator type.
-  using list_itr_type = decltype( std::cbegin( nums ) );
+  using list_itr_type = decltype( std::begin( nums ) );
 
   // Confirm cend returns the same type.
-  static_assert( std::is_same< decltype( std::cend( nums ) ), list_itr_type >::value, "" );
+  static_assert( std::is_same< decltype( std::end( nums ) ), list_itr_type >::value, "" );
 
   // The list's iterator type provides a well-formed non-member operator-() with valid return type (long int)
   using substraction_type
