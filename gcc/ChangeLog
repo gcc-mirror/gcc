@@ -1,3 +1,8 @@
+2018-08-23  Alexander Monakov  <amonakov@ispras.ru>
+
+	* tree-scalar-evolution.c (final_value_replacement_loop): Dump
+	full GENERIC expression used for replacement.
+
 2018-08-23  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (abs_extent_range): Remove.

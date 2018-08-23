@@ -3617,7 +3617,8 @@ final_value_replacement_loop (struct loop *loop)
 	{
 	  fprintf (dump_file, "\nfinal value replacement:\n  ");
 	  print_gimple_stmt (dump_file, phi, 0);
-	  fprintf (dump_file, "  with\n  ");
+	  fprintf (dump_file, " with expr: ");
+	  print_generic_expr (dump_file, def);
 	}
       def = unshare_expr (def);
       remove_phi_node (&psi, false);
@@ -3656,6 +3657,7 @@ final_value_replacement_loop (struct loop *loop)
       gsi_insert_before (&gsi, ass, GSI_SAME_STMT);
       if (dump_file)
 	{
+	  fprintf (dump_file, "\n final stmt:\n  ");
 	  print_gimple_stmt (dump_file, ass, 0);
 	  fprintf (dump_file, "\n");
 	}
