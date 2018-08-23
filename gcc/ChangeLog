@@ -1,5 +1,12 @@
 2018-08-23  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_evpc_sve_tbl): Fix handling
+	of single-vector TBLs.
+	(aarch64_vectorize_vec_perm_const): Set one_vector_p when only
+	one input is given.
+
+2018-08-23  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR target/85910
 	* config/aarch64/aarch64.c (aarch64_expand_vec_perm_const_1): Fix
 	aarch64_evpc_tbl guard.
