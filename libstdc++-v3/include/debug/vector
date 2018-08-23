@@ -774,9 +774,9 @@ namespace __debug
 
 } // namespace __debug
 
-#if __cplusplus >= 201103L
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __cplusplus >= 201103L
   // DR 1182.
   /// std::hash specialization for vector<bool>.
   template<typename _Alloc>
@@ -787,6 +787,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const __debug::vector<bool, _Alloc>& __b) const noexcept
       { return std::hash<_GLIBCXX_STD_C::vector<bool, _Alloc>>()(__b); }
     };
+#endif
 
  template<typename _Iterator, typename _Container, typename _Sequence>
     _Iterator
@@ -796,8 +797,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return std::__niter_base(__it.base()); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
-#endif
-
 } // namespace std
 
 namespace __gnu_debug
