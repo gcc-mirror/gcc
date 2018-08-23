@@ -1,5 +1,7 @@
 2018-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* scripts/check_compile: Fix comments.
+
 	* include/debug/string (insert(__const_iterator, _InIter, _InIter)):
 	[!_GLIBCXX_USE_CXX11_ABI]: Replace use of C++11-only cbegin() with
 	begin(), for C++98 compatibility.
