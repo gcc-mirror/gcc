@@ -1,5 +1,7 @@
 2018-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/debug/vector (__niter_base): Define for C++98.
+
 	* testsuite/25_algorithms/partial_sort_copy/debug/irreflexive_neg.cc:
 	Fix C++98 test to not use C++11 features.
 	* testsuite/25_algorithms/fill_n/2.cc: Likewise.
