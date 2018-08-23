@@ -1,3 +1,9 @@
+2017-08-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86863
+	* resolve.c (resolve_typebound_call): If the TBP is not marked
+	as a subroutine, check the specific symbol.
+
 2018-08-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.texi: Mention that asynchronous I/O does

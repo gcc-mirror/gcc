@@ -6266,9 +6266,17 @@ resolve_typebound_call (gfc_code* c, const char **name, bool *overridable)
   /* Check that's really a SUBROUTINE.  */
   if (!c->expr1->value.compcall.tbp->subroutine)
     {
-      gfc_error ("%qs at %L should be a SUBROUTINE",
-		 c->expr1->value.compcall.name, &c->loc);
-      return false;
+      if (!c->expr1->value.compcall.tbp->is_generic
+	  && c->expr1->value.compcall.tbp->u.specific
+	  && c->expr1->value.compcall.tbp->u.specific->n.sym
+	  && c->expr1->value.compcall.tbp->u.specific->n.sym->attr.subroutine)
+	c->expr1->value.compcall.tbp->subroutine = 1;
+      else
+	{
+	  gfc_error ("%qs at %L should be a SUBROUTINE",
+		     c->expr1->value.compcall.name, &c->loc);
+	  return false;
+	}
     }
 
   if (!check_typebound_baseobject (c->expr1))
