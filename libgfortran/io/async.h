@@ -29,7 +29,7 @@
    __gthread_cond_t and __gthread_equal / __gthread_self.  Check
    this.  */
 
-#if defined(__GTHREAD_HAS_COND) && defined(__GTHREADS_CXX0X) && !defined(_AIX)
+#if defined(__GTHREAD_HAS_COND) && defined(__GTHREADS_CXX0X)
 #define ASYNC_IO 1
 #else
 #define ASYNC_IO 0

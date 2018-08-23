@@ -1,3 +1,7 @@
+2018-08-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* async.h (ASYNC_IO): Revert _AIX test.
+
 2018-08-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* async.h: Set ASYNC_IO to zero if _AIX is defined.
