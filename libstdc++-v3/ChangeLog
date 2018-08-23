@@ -1,5 +1,8 @@
 2018-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_allocator.h (__gnu_test::memory_resource):
+	Only define when RTTI is enabled.
+
 	* include/debug/vector (__niter_base): Define for C++98.
 
 	* testsuite/25_algorithms/partial_sort_copy/debug/irreflexive_neg.cc:
