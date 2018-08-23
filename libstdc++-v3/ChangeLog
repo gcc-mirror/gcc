@@ -1,5 +1,9 @@
 2018-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/debug/string (insert(__const_iterator, _InIter, _InIter)):
+	[!_GLIBCXX_USE_CXX11_ABI]: Replace use of C++11-only cbegin() with
+	begin(), for C++98 compatibility.
+
 	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
 	(basic_string::__const_iterator): Change access to protected.
 	[!_GLIBCXX_USE_CXX11_ABI] (basic_string::__const_iterator): Define
