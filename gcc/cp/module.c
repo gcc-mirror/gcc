@@ -2488,8 +2488,9 @@ struct module_state_hash : nodel_ptr_hash<module_state> {
   typedef tree compare_type; /* An identifier.  */
 
   static inline hashval_t hash (const value_type m);
-  static inline bool equal (const value_type existing, compare_type candidate);
-  static inline hashval_t hash (const_tree n);
+  static inline hashval_t hash (const compare_type n);
+  static inline bool equal (const value_type existing,
+			    const compare_type candidate);
 };
 
 /* Likewise, this cannot be a member of module_state.  */
@@ -2593,14 +2594,6 @@ struct GTY ((tag ("false"))) spewing : public slurping {
   unsigned prepare_linemaps (line_maps *, bool early_p);
 };
 
-/* What kind a module is.  */
-enum module_kind 
-{
-  mk_new, 	 	/* A new identifier-style module.  */
-  mk_legacy_user, 	/* A legacy quoted-string module.  */
-  mk_legacy_system	/* A legacy angle-string module.  */
-};
-
 /* State of a particular module. */
 
 class GTY(()) module_state {
@@ -2625,7 +2618,7 @@ class GTY(()) module_state {
 
   unsigned depth : 16;  /* Depth, direct imports are 0 */
 
-  enum module_kind kind : 2;
+  bool legacy : 1;
 
   bool direct : 1;	/* A direct import.  */
   bool exported : 1;	/* We are exported.  */
@@ -2650,21 +2643,17 @@ class GTY(()) module_state {
   }
   bool is_legacy () const
   {
-    return kind != mk_new;
+    return legacy;
   }
 
  private:
   void set_name (tree n)
   {
     gcc_checking_assert (!name);
-    if (TREE_CODE (n) == TREE_LIST)
-      {
-	kind = TREE_VALUE (n) ? mk_legacy_system : mk_legacy_user;
-	n = TREE_PURPOSE (n);
-	gcc_checking_assert (identifier_p (n));
-      }
-
     name = n;
+    if (IDENTIFIER_POINTER (n)[0] == '"'
+	|| IDENTIFIER_POINTER (n)[0] == '<')
+      legacy = true;
   }
 
  public:
@@ -2783,8 +2772,6 @@ class GTY(()) module_state {
 		location_t floc = UNKNOWN_LOCATION);
   void attach (location_t);
   bool do_import (const char *filename, line_maps *, bool check_crc);
-  static module_state *get_module (tree name);
-  static module_state *insert_mapping (tree name, char *filename);
 
  private:
   static int maybe_add_global (tree, unsigned &);
@@ -2801,8 +2788,7 @@ module_state::module_state (tree n)
     filename (NULL), loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     mod (MODULE_UNKNOWN), crc (0), depth (65535)
 {
-  kind = mk_new;
-  direct = exported = imported = false;
+  legacy = direct = exported = imported = false;
   if (n)
     set_name (n);
 }
@@ -2817,41 +2803,23 @@ module_state::~module_state ()
 hashval_t
 module_state_hash::hash (const value_type m)
 {
-  hashval_t h = IDENTIFIER_HASH_VALUE (m->name);
-
-  return iterative_hash_hashval_t (h, hashval_t (m->kind));
+  return IDENTIFIER_HASH_VALUE (m->name);
 }
 
 /* Hash a name.  */
 hashval_t
-module_state_hash::hash (const_tree n)
+module_state_hash::hash (const compare_type n)
 {
-  module_kind kind = mk_new;
-  if (TREE_CODE (n) == TREE_LIST)
-    {
-      kind = TREE_VALUE (n) ? mk_legacy_system : mk_legacy_user;
-      n = TREE_PURPOSE (n);
-    }
-    
-  hashval_t h = IDENTIFIER_HASH_VALUE (n);
-
-  return iterative_hash_hashval_t (h, hashval_t (kind));
+  return IDENTIFIER_HASH_VALUE (n);
 }
 
 /* Lookup by IDENTIFIER_NODE or TREE_LIST.  */
 
 bool
 module_state_hash::equal (const value_type existing,
-			  compare_type candidate)
+			  const compare_type candidate)
 {
-  tree n = candidate;
-  module_kind k = mk_new;
-  if (TREE_CODE (candidate) == TREE_LIST)
-    {
-      k = TREE_VALUE (n) ? mk_legacy_system : mk_legacy_user;
-      n = TREE_PURPOSE (n);
-    }
-  return existing->name == n && existing->kind == k;
+  return existing->name == candidate;
 }
 
 /* Some flag values: */
@@ -2861,7 +2829,6 @@ static const char *module_mapper_name;
 
 /* Legacy header mode.  */
 static const char *module_legacy_name;
-static bool module_legacy_system_p;
 
 /* End of the prefix line maps.  */
 static unsigned prefix_line_maps_hwm;
@@ -3013,8 +2980,6 @@ private:
   void send_command (location_t, const char * = NULL, ...) ATTRIBUTE_PRINTF_3;
   int get_response (location_t);
   char *response_token (location_t, bool all = false);
-  module_kind module_name_kind (location_t, const char *&);
-  tree response_name (location_t);
   int response_word (location_t, const char *, ...);
   const char *response_error ()
   {
@@ -3278,12 +3243,7 @@ dumper::operator () (const char *format, ...)
 	case 'M': /* Module. */
 	  {
 	    if (module_state *m = va_arg (args, module_state *))
-	      {
-		if (m->kind != mk_new)
-		  fputs (m->kind == mk_legacy_system ? "system:" : "user:",
-			 dumps->stream);
-		dumps->nested_name (m->name);
-	      }
+	      dumps->nested_name (m->name);
 	    else
 	      fputs ("(none)", dumps->stream);
 	  }
@@ -6670,37 +6630,32 @@ depset::tarjan::connect (depset *v)
     }
 }
 
-/* NAME is a vector, turn it into a single identifier.  */
-
-static tree
-make_flat_name (tree name)
-{
-  auto_vec<char> buffer;
-  for (int ix = 0; ix < TREE_VEC_LENGTH (name); ix++)
-    {
-      tree elt = TREE_VEC_ELT (name, ix);
-      size_t l = IDENTIFIER_LENGTH (elt);
-      buffer.reserve (l + 2);
-      if (ix)
-	buffer.quick_push ('.');
-      size_t len = buffer.length ();
-      buffer.quick_grow (len + l);
-      memcpy (&buffer[len], IDENTIFIER_POINTER (elt), l);
-    }
-
-  return get_identifier_with_length (&buffer[0], buffer.length ());
-}
 
 /* Find or create module NAME in the hash table.  */
-
 module_state *
-module_state::get_module (tree name)
+get_module (tree name)
 {
   if (TREE_CODE (name) == TREE_VEC)
-    name = make_flat_name (name);
+    {
+      auto_vec<char> buffer;
+      for (int ix = 0; ix < TREE_VEC_LENGTH (name); ix++)
+	{
+	  tree elt = TREE_VEC_ELT (name, ix);
+	  size_t l = IDENTIFIER_LENGTH (elt);
+	  buffer.reserve (l + 2);
+	  if (ix)
+	    buffer.quick_push ('.');
+	  size_t len = buffer.length ();
+	  buffer.quick_grow (len + l);
+	  memcpy (&buffer[len], IDENTIFIER_POINTER (elt), l);
+	}
 
-  hashval_t hv = module_state_hash::hash (name);
-  module_state **slot = modules_hash->find_slot_with_hash (name, hv, INSERT);
+      name = get_identifier_with_length (&buffer[0], buffer.length ());
+    }
+
+  module_state_hash::compare_type ct (name);
+  hashval_t hv = module_state_hash::hash (ct);
+  module_state **slot = modules_hash->find_slot_with_hash (ct, hv, INSERT);
   module_state *state = *slot;
   if (!state)
     {
@@ -6708,6 +6663,15 @@ module_state::get_module (tree name)
       *slot = state;
     }
   return state;
+}
+
+/* Process string name PTR into a module_state.  */
+
+static module_state *
+get_module (const char *ptr)
+{
+  size_t len = strlen (ptr);
+  return get_module (get_identifier_with_length (ptr, len));
 }
 
 /* VAL is a global tree, add it to the global vec if it is
@@ -7203,9 +7167,10 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	    
 	    starting = false;
 	    file = maybe_strip_bmi_prefix (file);
-	    module_state *state
-	      = module_state::get_module (get_identifier (mod));
-	    if (!state->filename)
+	    module_state *state = get_module (mod);
+	    if (!state)
+	      response_unexpected (loc);
+	    else if (!state->filename)
 	      state->filename = xstrdup (file);
 	    else if (strcmp (state->filename, file))
 	      warning_at (loc, 0, "ignoring conflicting mapping of %qM to %qs",
@@ -7509,48 +7474,6 @@ module_mapper::response_token (location_t loc, bool all)
   return ptr;
 }
 
-module_kind
-module_mapper::module_name_kind (location_t loc, const char *&name_str)
-{
-  module_kind mk = mk_new;
-  if (ISDIGIT (name_str[0]))
-    {
-      char *end;
-      long v = strtol (name_str, &end, 10);
-      if (*end != ':' || v > 2)
-	{
-	  response_unexpected (loc);
-	  name_str = NULL;
-	}
-      else
-	{
-	  mk = module_kind (v);
-	  name_str = end + 1;
-	}
-    }
-  return mk;
-}
-
-/* Parse a module name of form [NUM:]NAME.  */
-
-tree
-module_mapper::response_name (location_t loc)
-{
-  const char *name_str = response_token (loc);
-  if (!name_str)
-    return NULL_TREE;
-
-  module_kind mk = module_name_kind (loc, name_str);
-  if (!name_str)
-    return NULL;
-
-  tree mod_name = get_identifier (name_str);
-  if (mk != mk_new)
-    mod_name = tree_cons (mod_name, mk == mk_legacy_system ? integer_zero_node
-			  : NULL_TREE, NULL_TREE);
-  return mod_name;
-}
-
 int
 module_mapper::response_word (location_t loc, const char *option, ...)
 {
@@ -7638,11 +7561,9 @@ module_mapper::handshake (location_t loc, const char *cookie)
 void
 module_mapper::imex_query (const module_state *state, int importing)
 {
-  const char *kind = (state->kind == mk_legacy_system ? "2:"
-		      : state->kind == mk_legacy_user ? "1:" : "");
-  send_command (state->from_loc, "%sPORT %s%s",
+  send_command (state->from_loc, "%sPORT %s",
 		!importing ? "EX" : "BYIM" + importing + 1,
-		kind, IDENTIFIER_POINTER (state->name));
+		IDENTIFIER_POINTER (state->name));
 }
 
 /* Response to import/export query.  */
@@ -7680,25 +7601,26 @@ module_mapper::bewait_response (location_t loc)
   if (get_response (loc) <= 0)
     return NULL;
 
-  if (tree mod_name = response_name (loc))
+  const char *name = response_token (loc);
+  if (!name)
+    return NULL;
+  if (0 == strcmp (name, "-"))
     {
-      if (identifier_p (mod_name)
-	  && 0 == strcmp (IDENTIFIER_POINTER (mod_name), "-"))
-	{
-	  if (0 != response_word (loc, "ERROR", NULL))
-	    error_at (loc, "mapper bewait failure: %s", response_error ());
-	}
-      else
-	{
-	  module_state *state = module_state::get_module (mod_name);
-	  char *fname = bmi_response (state);
-	  if (!state->direct || state->filename)
-	    error_at (loc, "unexpected bewait reponse from mapper %qs", name);
-	  else if (fname)
-	    state->filename = xstrdup (fname);
-	  return state;
-	}
+      if (0 != response_word (loc, "ERROR", NULL))
+	error_at (loc, "mapper bewait failure: %s", response_error ());
+      return NULL;
     }
+  else if (module_state *state = get_module (name))
+    {
+      char *fname = bmi_response (state);
+      if (!state->direct || state->filename)
+	error_at (loc, "unexpected bewait reponse from mapper %qs", name);
+      else if (fname)
+	state->filename = xstrdup (fname);
+      return state;
+    }
+  else
+    response_unexpected (loc);
 
   return NULL;
 }
@@ -7748,7 +7670,8 @@ module_mapper::export_done (const module_state *state)
 int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
 				   location_t loc, const char *file, bool angle)
 {
-  send_command (loc, "INCLUDE %d:%s", angle + 1, file);
+  send_command (loc, "INCLUDE %c%s%c",
+		angle ? '<' : '"', file, angle ? '>' : '"');
   if (get_response (loc) <= 0)
     return 0;
 
@@ -7778,13 +7701,9 @@ int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
 	= linemap_check_ordinary (linemap_lookup (lmaps, loc));
       unsigned col = SOURCE_COLUMN (map, loc);
       col -= (col != 0); /* Columns are 1-based.  */
-      module_kind mk;
-      if (diversion)
-	mk = module_name_kind (loc, diversion);
+
       if (diversion)
 	file = diversion;
-      else
-	mk = angle ? mk_legacy_system : mk_legacy_user;
 
       /* Divert.   */
       size_t len = strlen (file);
@@ -7799,12 +7718,12 @@ int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
 	  memset (res + actual, ' ', col - actual);
 	  actual = col;
 	}
-      if (mk)
-	res[actual++] = mk == mk_legacy_system ? '<' : '"';
+      if (!diversion)
+	res[actual++] = angle ? '<' : '"';
       memcpy (res + actual, file, len);
       actual += len;
-      if (mk)
-	res[actual++] = mk == mk_legacy_system ? '>' : '"';
+      if (!diversion)
+	res[actual++] = angle ? '>' : '"';
       strcpy (res + actual, ";\n\n");
       actual += 3;
       cpp_push_buffer (reader, reinterpret_cast <unsigned char *> (res),
@@ -7891,8 +7810,7 @@ module_state::write_readme (elf_out *to, const char *options)
 
   readme.begin (false);
 
-  readme.printf ("GNU C++ Module (%s%s)", kind == mk_legacy_user ? "Legacy User "
-		 : kind == mk_legacy_system ? "Legacy System "  : "",
+  readme.printf ("GNU C++ Module (%s%s)", is_legacy () ? "Legacy "  : "",
 		 modules_atom_p () ? "ATOM" : "TS");
   /* Compiler's version.  */
   readme.printf ("compiler:%s", version_string);
@@ -7982,10 +7900,9 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	break;
 
       size_t len;
-      const char *name_str = sec.str (&len);
-      tree name = get_identifier_with_length (name_str, len);
+      const char *name = sec.str (&len);
+      module_state *imp = get_module (name);
       unsigned crc = sec.u32 ();
-      module_state *imp;
       bool exported = false;
 
       if (lmaps)
@@ -7998,7 +7915,6 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	  exported = sec.u ();
 	  if (sec.get_overrun ())
 	    break;
-	  imp = get_module (name);
 	  if (imp->is_detached ())
 	    imp->attach (from_loc);
 	  module_state *purview = (*modules)[MODULE_PURVIEW];
@@ -8030,13 +7946,10 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 		}
 	    }
 	}
-      else
-	{
-	  /* An indirect import, find it, it should be there.  */
-	  imp = get_module (name);
-	  if (imp->is_detached ())
-	    error_at (loc, "indirect import %qM is not already loaded", imp);
-	}
+      else if (imp->is_detached ())
+	/* An indirect import, find it, it should be there.  */
+	error_at (loc, "indirect import %qM is not already loaded", imp);
+
       if (imp)
 	imports.quick_push (tuple (imp, ix_bool_t (ix, exported)));
     }
@@ -10459,7 +10372,7 @@ void
 module_state::attach (location_t from)
 {
   from_loc = from;
-  if (kind == mk_new)
+  if (!is_legacy ())
     {
       /* Create a TREE_VEC of components.  */
       auto_vec<tree,5> ids;
@@ -10585,17 +10498,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 void
 pp_module_name (pretty_printer *pp, module_state *state)
 {
-  if (state->kind != mk_new)
-    pp_character (pp, state->kind == mk_legacy_system ? '<' : '"');
   pp_string (pp, IDENTIFIER_POINTER (state->name));
-  if (state->kind != mk_new)
-    pp_character (pp, state->kind == mk_legacy_system ? '>' : '"');
-}
-
-module_state *
-get_module (tree name)
-{
-  return module_state::get_module (name);
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.  */
@@ -10967,29 +10870,46 @@ maybe_atom_legacy_module (line_maps *lmaps)
   if (!modules_legacy_p ())
     return false;
 
-  if (!module_legacy_name)
+  if (!module_legacy_name
+      || (module_legacy_name[0] != '"'
+	  && module_legacy_name[0] != '<'))
     {
       /* Set the module header name from the main_input_filename.  */
-      const char *main = main_input_filename;
-      for (size_t len = strlen (main); len-- > 0;)
-	if (main[len] == '.'
-	    && IS_DIR_SEPARATOR (main[len-1])
-	    && IS_DIR_SEPARATOR (main[len+1]))
-	  {
-	    main += len + 2;
-	    break;
-	  }
-      module_legacy_name = main;
+      const char *main = module_legacy_name;
+      size_t len, pos;
+      if (!main)
+	{
+	  main = main_input_filename;
+	  len = strlen (main), pos = len;
+	  for (; pos-- > 0; pos--)
+	    if (main[pos] == '.'
+		&& IS_DIR_SEPARATOR (main[pos-1])
+		&& IS_DIR_SEPARATOR (main[pos+1]))
+	      {
+		pos += 2;
+		break;
+	      }
+	  len -= pos;
+	}
+      else
+	len = strlen (module_legacy_name), pos = 0;
+
+      /* Create a user legacy module.  */
+      char *name = XNEWVEC (char, len + 3);
+      module_legacy_name = name;
+      name[0] = '"';
+      name[len + 1] = '"';
+      name[len + 2] = 0;
+      memcpy (name + 1, main + pos, len);
     }
 
   location_t loc
     =  MAP_START_LOCATION (LINEMAPS_MAP_AT (lmaps, false,
 					    prefix_line_maps_hwm - 1));
-  tree mod_name = get_identifier (module_legacy_name);
-  tree name = tree_cons (mod_name, module_legacy_system_p
-			 ? integer_zero_node : NULL_TREE, NULL_TREE);
+  tree name = get_identifier (module_legacy_name);
 
-  declare_module (get_module (name), loc, true, NULL, lmaps);
+  declare_module (get_module (name),
+		  loc, true, NULL, lmaps);
   /* Everything is exported.  */
   push_module_export (false, NULL);
   return true;
@@ -11031,9 +10951,6 @@ init_module_processing ()
       error ("%s not suppported with %<-fmodules-ts%>",
 	     module_legacy_name ? "legacy headers" : "preamble parsing");
     }
-
-  if (module_legacy_name && !module_legacy_name[0])
-    module_legacy_name = NULL;
 
   module_state::init ();
 }
@@ -11172,22 +11089,19 @@ handle_module_option (unsigned code, const char *str, int num)
 
     case OPT_fmodules_legacy_:
       {
-	int l = 0;
-	if (0 == strncmp (str, "system", 6))
-	  module_legacy_system_p = true, l = 6;
-	else if (0 == strncmp (str, "user", 4))
-	  module_legacy_system_p = false, l = 4;
-	if (l)
-	  {
-	    if (str[l] == ':')
-	      str += l + 1;
-	    else if (!str[l])
-	      str += l;
-	  }
 	/* Default ATOM legacy.  */
+	size_t len = strlen (str);
+	if (str[0] == '<' ? str[len-1] != '>'
+	    : str[0] == '"' ? str[len-1] != '"'
+	    : false)
+	  error ("legacy name %qs is ill-formed", str);
+	else if (str[0] == '"' && (str[1] == '"' || str[1] == '<'))
+	  error ("legacy name %qs appears to be double quoted", str);
+	else
+	  module_legacy_name = str;
+
 	if (flag_modules <= 0)
 	  flag_modules = -2;
-	module_legacy_name = str;
       }
       return true;
 

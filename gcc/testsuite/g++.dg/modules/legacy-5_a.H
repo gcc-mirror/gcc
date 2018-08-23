@@ -1,5 +1,5 @@
-// { dg-additional-options "-fmodules-legacy=system:header.h" }
-// { dg-module-bmi 2:header.h }
+// { dg-additional-options "-fmodules-legacy=<header.h>" }
+// { dg-module-bmi "<header.h>" }
 
 // this is a legacy system header
 

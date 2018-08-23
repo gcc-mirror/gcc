@@ -29650,9 +29650,8 @@ Pathname of a BMI file.
 The source path of the file containing the import or include.
 
 @item @var{module}
-A module name.  Legacy header module names are prefixed by @samp{1:}
-or @samp{2:} to indicate user or system headers respectively.  A
-@samp{0:} may be prefixed to redundantly indicate a regular module name.
+A module name.  Legacy header module names are quoted with
+@samp{'...'} or @samp{<...>}
 
 @item @var{msg}
 A human readable message.  This may contain whitespace.

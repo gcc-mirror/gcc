@@ -52,13 +52,13 @@ proc decode_mod_spec { spec } {
 	set file [string range $spec 1 end]
     } else {
 	set pfx {}
-	if { [ string index $spec 1 ] == ":" } {
-	    switch [string index $spec 0] {
-		"1" { set pfx ".u" }
-		"2" { set pfx ".s" }
-	    }
-	    set spec [string range $spec 2 end]
-	} 
+	if { [ string index $spec 0 ] == "\"" } {
+	    set pfx ".u"
+	    set spec [string range $spec 1 end-1]
+	} elseif { [ string index $spec 0 ] == "<" } {
+	    set pfx ".s"
+	    set spec [string range $spec 1 end-1]
+	}
 	set file "[string map {. - : + / =} $spec]$pfx.nms"
     }
     return [list $not $file]

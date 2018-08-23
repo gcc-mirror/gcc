@@ -1,3 +1,33 @@
+2018-08-23  Nathan Sidwell  <nathan@acm.org>
+
+	Kill N: prefix notation
+	gcc/cp/
+	* module.c (enum module_kind): Delete.
+	(module_state): Replace kind with legacy, adjust is_legacy.
+	(module_state::set_name): Adjust.
+	(module_state_hash): Adjust hasher & comparator.
+	(module_legacy_system_p): Delete.
+	(make_flat_name): Move into ...
+	(get_module): ... here.  Adjust.
+	(get_module): Add string variant.
+	(module_mapper::module_mapper): Adjust.
+	(module_mapper::{module_name_kind,response_name}): Delete.
+	(module_mapper::{imex_query,bewait_response,divert_include}): Adjust.
+	(module_state::{read_imports,attach}): Adjust.
+	(pp_module_name): Adjust.
+	(maybe_atom_legacy_module, init_module_processing)
+	(handle_module_option): Adjust.
+	* cxx-mapper.cc (module2bmi): Remove encoding.
+	(encode_module_name): Remove encoding.
+	gcc/c-family/
+	* c-lex.c (c_lex_with_flags): CPP_HEADER include quoting.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Adjust protocol doc.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp: Adjust BMI mapping.
+	* g++.dg/modules/legacy-0[ab].H: New.
+	* g++.dg/modules/legacy-*: Adjust.
+
 2018-08-22  Nathan Sidwell  <nathan@acm.org>
 
 	%M formatter

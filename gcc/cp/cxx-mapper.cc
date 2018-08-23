@@ -283,10 +283,11 @@ module2bmi (const char *module)
 	  workspace = XRESIZEVEC (char, workspace, alloc);
 	}
 
-      int kind = ISDIGIT (module[0]) ? module[0] - '0' : 0;
+      int kind = module[0] == '<' ? 's' : module[0] == '"' ? 'u' : 0;
       if (kind)
-	module += 2, l -= 2;
-      memcpy (workspace, module, l + 1);
+	module += 1, l -= 2;
+      memcpy (workspace, module, l);
+      workspace[l] = 0;
       for (char *ptr = workspace; *ptr; ptr++)
 	{
 	  char c = *ptr;
@@ -298,14 +299,14 @@ module2bmi (const char *module)
 	    c = '=';
 	  *ptr = c;
 	}
-      const char *const sfx[] = 
-	{
-	 ".nms",   /* New Module System.  */
-	 ".u.nms",   /* User .  */
-	 ".s.nms",   /* System .  */
-	};
 
-      strcpy (workspace + l, sfx[kind]);
+      if (kind)
+	{
+	  workspace[l++] = '.';
+	  workspace[l++] = kind;
+	}
+      
+      strcpy (workspace + l, ".nms");
       res = workspace;
     }
   return res;
@@ -730,17 +731,7 @@ encode_module_name (const char *mod, const char *pfx = NULL)
       ptr += plen;
     }
 
-  if (char c = mod[0] == '"' ? '1' : mod[0] == '<' ? '2' : 0)
-    {
-      if (mod[mlen-1] != (c == '1' ? '"' : '>'))
-	noisy ("ill-formed legacy name '%s'", mod);
-      mlen -= 2;
-      mod += 1;
-      *ptr++ = c;
-      *ptr++ = ':';
-    }
-  memcpy (ptr, mod, mlen);
-  ptr[mlen] = 0;
+  memcpy (ptr, mod, mlen + 1);
 
   return key;
 }

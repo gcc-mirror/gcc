@@ -578,12 +578,8 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 
     case CPP_STRING:
       if (lex_flags & C_LEX_STRING_IS_HEADER)
-	{
-	  gcc_checking_assert (tok->val.str.text[0] == '"'
-			       && (tok->val.str.text[tok->val.str.len - 1]
-				   == '"'));
-	  goto header_name;
-	}
+	goto header_name;
+
       /* FALLTHROUGH  */
     case CPP_WSTRING:
     case CPP_STRING16:
@@ -605,19 +601,11 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
     case CPP_HEADER_NAME:
       /* An angle header name.  The value will be surrounded by BRA &
 	 KET.  */
-      gcc_checking_assert (tok->val.str.text[0] == '<'
-			   && tok->val.str.text[tok->val.str.len - 1] == '>');
     header_name:
-      {
-	/* Encode the header kind into a TREE_LIST.  non-nullness of
-	   its TREE_VALUE indicates the <>.  */
-	tree v = type == CPP_HEADER_NAME ? integer_zero_node : NULL_TREE;
-	tree n = get_identifier_with_length
-	  ((const char *) tok->val.str.text + 1, tok->val.str.len - 2);
-	*value = tree_cons (n, v, NULL_TREE);
-	/* Mutate into a header name.  */
-	type = CPP_HEADER_NAME;
-      }
+      *value = get_identifier_with_length
+	((const char *) tok->val.str.text, tok->val.str.len);
+      /* Mutate into a header name.  */
+      type = CPP_HEADER_NAME;
       break;
 
       /* These tokens should not be visible outside cpplib.  */
