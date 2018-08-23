@@ -1,3 +1,8 @@
+2018-08-23  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* genmatch.c (parser::parse_operation): Fix typo 'exapnded'
+	to 'expanded'.
+
 2018-08-23  Alexander Monakov  <amonakov@ispras.ru>
 
 	* tree-scalar-evolution.c (final_value_replacement_loop): Dump

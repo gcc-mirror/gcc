@@ -1,3 +1,7 @@
+2018-08-23  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* exp_unst.ads: Fix typo 'exapnded' to 'expanded'.
+
 2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb, contracts.adb, exp_aggr.adb, exp_attr.adb,
