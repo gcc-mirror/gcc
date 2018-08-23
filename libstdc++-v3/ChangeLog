@@ -1,5 +1,30 @@
 2018-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::__const_iterator): Change access to protected.
+	[!_GLIBCXX_USE_CXX11_ABI] (basic_string::__const_iterator): Define
+	as typedef for iterator.
+	* include/debug/string (__const_iterator): Use typedef from base.
+	(insert(const_iterator, _CharT))
+	(replace(const_iterator, const_iterator, const basic_string&))
+	(replace(const_iterator, const_iterator, const _CharT*, size_type))
+	(replace(const_iterator, const_iterator, const CharT*))
+	(replace(const_iterator, const_iterator, size_type, _CharT))
+	(replace(const_iterator, const_iterator, _InputIter, _InputIter))
+	(replace(const_iterator, const_iterator, initializer_list<_CharT>)):
+	Change const_iterator parameters to __const_iterator.
+	(insert(iterator, size_type, _CharT)): Add C++98 overload.
+	(insert(const_iterator, _InputIterator, _InputIterator)): Change
+	const_iterator parameter to __const_iterator.
+	[!_GLIBCXX_USE_CXX11_ABI]: Add workaround for incorrect return type
+	of base's member function.
+	(insert(const_iterator, size_type, _CharT)) [!_GLIBCXX_USE_CXX11_ABI]:
+	Likewise.
+	(insert(const_iterator, initializer_list<_CharT>))
+	[!_GLIBCXX_USE_CXX11_ABI]: Likewise.
+	* testsuite/21_strings/basic_string/init-list.cc: Remove effective
+	target directive.
+
 	* testsuite/20_util/reference_wrapper/lwg2993.cc: Fix C++11 test to
 	not use C++14 feature.
 	* testsuite/23_containers/list/68222_neg.cc: Likewise.

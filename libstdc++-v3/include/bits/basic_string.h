@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       ///  Value returned by various member functions when they fail.
       static const size_type	npos = static_cast<size_type>(-1);
 
-    private:
+    protected:
       // type used for positions in insert, erase etc.
 #if __cplusplus < 201103L
       typedef iterator __const_iterator;
@@ -108,6 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       typedef const_iterator __const_iterator;
 #endif
 
+    private:
 #if __cplusplus > 201402L
       // A helper type for avoiding boiler-plate.
       typedef basic_string_view<_CharT, _Traits> __sv_type;
@@ -3118,6 +3119,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
                                                             const_iterator;
       typedef std::reverse_iterator<const_iterator>	const_reverse_iterator;
       typedef std::reverse_iterator<iterator>		    reverse_iterator;
+
+    protected:
+      // type used for positions in insert, erase etc.
+      typedef iterator __const_iterator;
 
     private:
       // _Rep: string representation
