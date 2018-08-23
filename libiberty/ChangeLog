@@ -1,3 +1,10 @@
+2018-08-23  Nathan Sidwell  <nathan@acm.org>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR driver/87056
+	* pex-unix.c (pex_unix_exec_child): Duplicate bad_fn into local
+	scopes to avoid potential clobber.
+
 2018-08-20  Nathan Sidwell  <nathan@acm.org>
 
 	* pex-unix.c (pex_child_error): Delete.
