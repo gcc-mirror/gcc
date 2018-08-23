@@ -15461,7 +15461,7 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	return true;
       if (d->vec_flags == VEC_SVE_DATA)
 	return aarch64_evpc_sve_tbl (d);
-      else if (d->vec_flags == VEC_SVE_DATA)
+      else if (d->vec_flags == VEC_ADVSIMD)
 	return aarch64_evpc_tbl (d);
     }
   return false;

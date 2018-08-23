@@ -1,3 +1,9 @@
+2018-08-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/85910
+	* config/aarch64/aarch64.c (aarch64_expand_vec_perm_const_1): Fix
+	aarch64_evpc_tbl guard.
+
 2018-08-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* tree-ssa-dse.c (compute_trims): Avoid folding away undefined
