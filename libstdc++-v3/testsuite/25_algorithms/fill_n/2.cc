@@ -31,7 +31,7 @@ test01()
   ref.push_back(1);
   ref.push_back(2);
 
-  std::vector<std::vector<int>> vvect;
+  std::vector<std::vector<int> > vvect;
   vvect.push_back(std::vector<int>());
   vvect.push_back(std::vector<int>());
 
