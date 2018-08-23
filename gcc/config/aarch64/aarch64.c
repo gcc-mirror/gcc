@@ -15423,7 +15423,10 @@ aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
 
   machine_mode sel_mode = mode_for_int_vector (d->vmode).require ();
   rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
-  aarch64_expand_sve_vec_perm (d->target, d->op0, d->op1, sel);
+  if (d->one_vector_p)
+    emit_unspec2 (d->target, UNSPEC_TBL, d->op0, force_reg (sel_mode, sel));
+  else
+    aarch64_expand_sve_vec_perm (d->target, d->op0, d->op1, sel);
   return true;
 }
 
@@ -15476,7 +15479,8 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   struct expand_vec_perm_d d;
 
   /* Check whether the mask can be applied to a single vector.  */
-  if (op0 && rtx_equal_p (op0, op1))
+  if (sel.ninputs () == 1
+      || (op0 && rtx_equal_p (op0, op1)))
     d.one_vector_p = true;
   else if (sel.all_from_input_p (0))
     {

@@ -1,3 +1,10 @@
+2018-08-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/no-vfa-vect-depend-2.c: Remove XFAIL.
+	* gcc.dg/vect/no-vfa-vect-depend-3.c: Likewise.
+	* gcc.dg/vect/pr65947-13.c: Update for vect_fold_extract_last.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+
 2017-08-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/86863
