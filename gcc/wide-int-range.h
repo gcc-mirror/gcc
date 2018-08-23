@@ -99,6 +99,17 @@ extern bool wide_int_range_abs (wide_int &min, wide_int &max,
 				const wide_int &vr0_min,
 				const wide_int &vr0_max,
 				bool overflow_undefined);
+extern bool wide_int_range_div (wide_int &wmin, wide_int &wmax,
+				enum tree_code code,
+				signop sign, unsigned prec,
+				const wide_int &dividend_min,
+				const wide_int &dividend_max,
+				const wide_int &divisor_min,
+				const wide_int &divisor_max,
+				bool overflow_undefined,
+				bool overflow_wraps,
+				bool &extra_range_p,
+				wide_int &extra_min, wide_int &extra_max);
 
 /* Return TRUE if shifting by range [MIN, MAX] is undefined behavior.  */
 
@@ -135,6 +146,24 @@ wide_int_range_min_max (wide_int &min, wide_int &max,
       && max == wi::max_value (prec, sign))
     return false;
   return true;
+}
+
+/* Return TRUE if 0 is within [WMIN, WMAX].  */
+
+inline bool
+wide_int_range_includes_zero_p (const wide_int &wmin, const wide_int &wmax,
+				signop sign)
+{
+  return wi::le_p (wmin, 0, sign) && wi::ge_p (wmax, 0, sign);
+}
+
+/* Return TRUE if [WMIN, WMAX] is the singleton 0.  */
+
+inline bool
+wide_int_range_zero_p (const wide_int &wmin, const wide_int &wmax,
+		       unsigned prec)
+{
+  return wmin == wmax && wi::eq_p (wmin, wi::zero (prec));
 }
 
 #endif /* GCC_WIDE_INT_RANGE_H */
