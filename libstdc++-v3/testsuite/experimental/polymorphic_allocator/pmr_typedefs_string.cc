@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++14 } }
+// { dg-require-effective-target cxx11-abi }
 
 #include <experimental/string>
 

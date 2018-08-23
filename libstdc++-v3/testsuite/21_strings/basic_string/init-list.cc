@@ -17,6 +17,7 @@
 //
 
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target cxx11-abi }
 
 #include <testsuite_hooks.h>
 

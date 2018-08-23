@@ -1,5 +1,12 @@
 2018-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/21_strings/basic_string/init-list.cc:
+	Require cxx11-abi.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_match.cc:
+	Likewise.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_string.cc:
+	Likewise.
+
 	* testsuite/23_containers/deque/capacity/max_size.cc: Fix test for
 	C++98 mode.
 	* testsuite/23_containers/deque/modifiers/assign/1.cc: Likewise.
