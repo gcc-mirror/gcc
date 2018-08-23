@@ -6243,6 +6243,10 @@ canonicalize_comparison (machine_mode mode, enum rtx_code *code, rtx *imm)
   if (overflow)
     return;
 
+  /* The following creates a pseudo; if we cannot do that, bail out.  */
+  if (!can_create_pseudo_p ())
+    return;
+
   rtx reg = gen_rtx_REG (mode, LAST_VIRTUAL_REGISTER + 1);
   rtx new_imm = immed_wide_int_const (imm_modif, mode);
 
