@@ -1951,7 +1951,13 @@ copy_bb (copy_body_data *id, basic_block bb,
 	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
 		nargs--;
 
-	      if (!gimple_call_va_arg_pack_p (id->call_stmt))
+	      if (!gimple_call_lhs (stmt))
+		{
+		  /* Drop unused calls.  */
+		  gsi_remove (&copy_gsi, false);
+		  continue;
+		}
+	      else if (!gimple_call_va_arg_pack_p (id->call_stmt))
 		{
 		  count = build_int_cst (integer_type_node, nargs);
 		  new_stmt = gimple_build_assign (gimple_call_lhs (stmt), count);

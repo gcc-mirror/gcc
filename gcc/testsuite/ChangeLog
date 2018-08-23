@@ -1,3 +1,8 @@
+2018-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87024
+	* gcc.dg/pr87024.c: New testcase.
+
 2018-08-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/vect/no-vfa-vect-depend-2.c: Remove XFAIL.
