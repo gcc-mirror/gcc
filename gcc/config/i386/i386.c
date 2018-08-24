@@ -262,7 +262,7 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
   /* Mask registers.  */
   MASK_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
-  MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
+  MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -278,8 +278,7 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
-  93, 94, 95, 96, 97, 98, 99, 100,      /* Mask registers */
-  101, 102, 103, 104,			/* bound registers */
+  93, 94, 95, 96, 97, 98, 99, 100       /* Mask registers */
 };
 
 /* The "default" register map used in 64bit mode.  */
@@ -295,8 +294,7 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
   25, 26, 27, 28, 29, 30, 31, 32,	/* extended SSE registers */
   67, 68, 69, 70, 71, 72, 73, 74,       /* AVX-512 registers 16-23 */
   75, 76, 77, 78, 79, 80, 81, 82,       /* AVX-512 registers 24-31 */
-  118, 119, 120, 121, 122, 123, 124, 125, /* Mask registers */
-  126, 127, 128, 129,			/* bound registers */
+  118, 119, 120, 121, 122, 123, 124, 125 /* Mask registers */
 };
 
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -364,8 +362,7 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
-  93, 94, 95, 96, 97, 98, 99, 100,      /* Mask registers */
-  101, 102, 103, 104,			/* bound registers */
+  93, 94, 95, 96, 97, 98, 99, 100       /* Mask registers */
 };
 
 /* Define parameter passing and return registers.  */
@@ -10646,26 +10643,16 @@ static int indirectlabelno;
 
 /* True if call thunk function is needed.  */
 static bool indirect_thunk_needed = false;
-/* True if call thunk function with the BND prefix is needed.  */
-static bool indirect_thunk_bnd_needed = false;
 
 /* Bit masks of integer registers, which contain branch target, used
    by call thunk functions.  */
 static int indirect_thunks_used;
-/* Bit masks of integer registers, which contain branch target, used
-   by call thunk functions with the BND prefix.  */
-static int indirect_thunks_bnd_used;
 
 /* True if return thunk function is needed.  */
 static bool indirect_return_needed = false;
-/* True if return thunk function with the BND prefix is needed.  */
-static bool indirect_return_bnd_needed = false;
 
 /* True if return thunk function via CX is needed.  */
 static bool indirect_return_via_cx;
-/* True if return thunk function via CX with the BND prefix is
-   needed.  */
-static bool indirect_return_via_cx_bnd;
 
 #ifndef INDIRECT_LABEL
 # define INDIRECT_LABEL "LIND"
@@ -10675,7 +10662,6 @@ static bool indirect_return_via_cx_bnd;
 enum indirect_thunk_prefix
 {
   indirect_thunk_prefix_none,
-  indirect_thunk_prefix_bnd,
   indirect_thunk_prefix_nt
 };
 
@@ -10712,10 +10698,8 @@ indirect_thunk_name (char name[32], unsigned int regno,
     {
       const char *prefix;
 
-      if (need_prefix == indirect_thunk_prefix_bnd)
-	prefix = "_bnd";
-      else if (need_prefix == indirect_thunk_prefix_nt
-	       && regno != INVALID_REGNUM)
+      if (need_prefix == indirect_thunk_prefix_nt
+	  && regno != INVALID_REGNUM)
 	{
 	  /* NOTRACK prefix is only used with external thunk via
 	     register so that NOTRACK prefix can be added to indirect
@@ -10743,35 +10727,19 @@ indirect_thunk_name (char name[32], unsigned int regno,
   else
     {
       if (regno != INVALID_REGNUM)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    ASM_GENERATE_INTERNAL_LABEL (name, "LITBR", regno);
-	  else
-	    ASM_GENERATE_INTERNAL_LABEL (name, "LITR", regno);
-	}
+	ASM_GENERATE_INTERNAL_LABEL (name, "LITR", regno);
       else
 	{
 	  if (ret_p)
-	    {
-	      if (need_prefix == indirect_thunk_prefix_bnd)
-		ASM_GENERATE_INTERNAL_LABEL (name, "LRTB", 0);
-	      else
-		ASM_GENERATE_INTERNAL_LABEL (name, "LRT", 0);
-	    }
+	    ASM_GENERATE_INTERNAL_LABEL (name, "LRT", 0);
 	  else
-	    {
-	      if (need_prefix == indirect_thunk_prefix_bnd)
-		ASM_GENERATE_INTERNAL_LABEL (name, "LITB", 0);
-	      else
-		ASM_GENERATE_INTERNAL_LABEL (name, "LIT", 0);
-	    }
+	    ASM_GENERATE_INTERNAL_LABEL (name, "LIT", 0);
 	}
     }
 }
 
-/* Output a call and return thunk for indirect branch.  If BND_P is
-   true, the BND prefix is needed.   If REGNO != -1,  the function
-   address is in REGNO and the call and return thunk looks like:
+/* Output a call and return thunk for indirect branch.  If REGNO != -1,
+   the function address is in REGNO and the call and return thunk looks like:
 
 	call	L2
    L1:
@@ -10796,8 +10764,7 @@ indirect_thunk_name (char name[32], unsigned int regno,
  */
 
 static void
-output_indirect_thunk (enum indirect_thunk_prefix need_prefix,
-		       unsigned int regno)
+output_indirect_thunk (unsigned int regno)
 {
   char indirectlabel1[32];
   char indirectlabel2[32];
@@ -10808,10 +10775,7 @@ output_indirect_thunk (enum indirect_thunk_prefix need_prefix,
 			       indirectlabelno++);
 
   /* Call */
-  if (need_prefix == indirect_thunk_prefix_bnd)
-    fputs ("\tbnd call\t", asm_out_file);
-  else
-    fputs ("\tcall\t", asm_out_file);
+  fputs ("\tcall\t", asm_out_file);
   assemble_name_raw (asm_out_file, indirectlabel2);
   fputc ('\n', asm_out_file);
 
@@ -10845,17 +10809,13 @@ output_indirect_thunk (enum indirect_thunk_prefix need_prefix,
       output_asm_insn ("lea\t{%E1, %0|%0, %E1}", xops);
     }
 
-  if (need_prefix == indirect_thunk_prefix_bnd)
-    fputs ("\tbnd ret\n", asm_out_file);
-  else
-    fputs ("\tret\n", asm_out_file);
+  fputs ("\tret\n", asm_out_file);
 }
 
 /* Output a funtion with a call and return thunk for indirect branch.
-   If BND_P is true, the BND prefix is needed.  If REGNO != UNVALID_REGNUM,
-   the function address is in REGNO.  Otherwise, the function address is
-   on the top of stack.  Thunk is used for function return if RET_P is
-   true.  */
+   If REGNO != INVALID_REGNUM, the function address is in REGNO.
+   Otherwise, the function address is on the top of stack.  Thunk is
+   used for function return if RET_P is true.  */
 
 static void
 output_indirect_thunk_function (enum indirect_thunk_prefix need_prefix,
@@ -10864,7 +10824,7 @@ output_indirect_thunk_function (enum indirect_thunk_prefix need_prefix,
   char name[32];
   tree decl;
 
-  /* Create __x86_indirect_thunk/__x86_indirect_thunk_bnd.  */
+  /* Create __x86_indirect_thunk.  */
   indirect_thunk_name (name, regno, need_prefix, ret_p);
   decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
 		     get_identifier (name),
@@ -10919,7 +10879,7 @@ output_indirect_thunk_function (enum indirect_thunk_prefix need_prefix,
   /* Make sure unwind info is emitted for the thunk if needed.  */
   final_start_function (emit_barrier (), asm_out_file, 1);
 
-  output_indirect_thunk (need_prefix, regno);
+  output_indirect_thunk (regno);
 
   final_end_function ();
   init_insn_lengths ();
@@ -10957,22 +10917,11 @@ ix86_code_end (void)
   if (indirect_return_needed)
     output_indirect_thunk_function (indirect_thunk_prefix_none,
 				    INVALID_REGNUM, true);
-  if (indirect_return_bnd_needed)
-    output_indirect_thunk_function (indirect_thunk_prefix_bnd,
-				    INVALID_REGNUM, true);
-
   if (indirect_return_via_cx)
     output_indirect_thunk_function (indirect_thunk_prefix_none,
 				    CX_REG, true);
-  if (indirect_return_via_cx_bnd)
-    output_indirect_thunk_function (indirect_thunk_prefix_bnd,
-				    CX_REG, true);
-
   if (indirect_thunk_needed)
     output_indirect_thunk_function (indirect_thunk_prefix_none,
-				    INVALID_REGNUM, false);
-  if (indirect_thunk_bnd_needed)
-    output_indirect_thunk_function (indirect_thunk_prefix_bnd,
 				    INVALID_REGNUM, false);
 
   for (regno = FIRST_REX_INT_REG; regno <= LAST_REX_INT_REG; regno++)
@@ -10980,10 +10929,6 @@ ix86_code_end (void)
       unsigned int i = regno - FIRST_REX_INT_REG + LAST_INT_REG + 1;
       if ((indirect_thunks_used & (1 << i)))
 	output_indirect_thunk_function (indirect_thunk_prefix_none,
-					regno, false);
-
-      if ((indirect_thunks_bnd_used & (1 << i)))
-	output_indirect_thunk_function (indirect_thunk_prefix_bnd,
 					regno, false);
     }
 
@@ -10994,10 +10939,6 @@ ix86_code_end (void)
 
       if ((indirect_thunks_used & (1 << regno)))
 	output_indirect_thunk_function (indirect_thunk_prefix_none,
-					regno, false);
-
-      if ((indirect_thunks_bnd_used & (1 << regno)))
-	output_indirect_thunk_function (indirect_thunk_prefix_bnd,
 					regno, false);
 
       if (!(pic_labels_used & (1 << regno)))
@@ -11274,16 +11215,6 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 	  while (nregs-- > 0)
 	    if ((i + nregs) == regno)
 	      return false;
-
-	  reg = crtl->return_bnd;
-	  if (reg)
-	    {
-	      i = REGNO (reg);
-	      nregs = REG_NREGS (reg);
-	      while (nregs-- > 0)
-		if ((i + nregs) == regno)
-		  return false;
-	    }
 	}
 
       return (df_regs_ever_live_p (regno)
@@ -15494,10 +15425,6 @@ ix86_force_load_from_GOT_p (rtx x)
 static bool
 ix86_legitimate_constant_p (machine_mode mode, rtx x)
 {
-  /* Pointer bounds constants are not valid.  */
-  if (POINTER_BOUNDS_MODE_P (GET_MODE (x)))
-    return false;
-
   switch (GET_CODE (x))
     {
     case CONST:
@@ -18635,25 +18562,6 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
       gcc_assert (TARGET_64BIT);
       ok = ix86_decompose_address (XVECEXP (addr, 0, 0), &parts);
       code = 'q';
-    }
-  else if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_BNDMK_ADDR)
-    {
-      ok = ix86_decompose_address (XVECEXP (addr, 0, 1), &parts);
-      gcc_assert (parts.base == NULL_RTX || parts.index == NULL_RTX);
-      if (parts.base != NULL_RTX)
-	{
-	  parts.index = parts.base;
-	  parts.scale = 1;
-	}
-      parts.base = XVECEXP (addr, 0, 0);
-      addr = XVECEXP (addr, 0, 0);
-    }
-  else if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_BNDLDX_ADDR)
-    {
-      ok = ix86_decompose_address (XVECEXP (addr, 0, 0), &parts);
-      gcc_assert (parts.index == NULL_RTX);
-      parts.index = XVECEXP (addr, 0, 1);
-      addr = XVECEXP (addr, 0, 0);
     }
   else
     ok = ix86_decompose_address (addr, &parts);
@@ -28540,10 +28448,7 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
 	  int i = regno;
 	  if (i >= FIRST_REX_INT_REG)
 	    i -= (FIRST_REX_INT_REG - LAST_INT_REG - 1);
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    indirect_thunks_bnd_used |= 1 << i;
-	  else
-	    indirect_thunks_used |= 1 << i;
+	  indirect_thunks_used |= 1 << i;
 	}
       indirect_thunk_name (thunk_name_buf, regno, need_prefix, false);
       thunk_name = thunk_name_buf;
@@ -28554,23 +28459,15 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
   if (sibcall_p)
     {
       if (thunk_name != NULL)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
-	  else
-	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	}
+	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
       else
-	output_indirect_thunk (need_prefix, regno);
+	output_indirect_thunk (regno);
     }
   else
     {
       if (thunk_name != NULL)
 	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    fprintf (asm_out_file, "\tbnd call\t%s\n", thunk_name);
-	  else
-	    fprintf (asm_out_file, "\tcall\t%s\n", thunk_name);
+	  fprintf (asm_out_file, "\tcall\t%s\n", thunk_name);
 	  return;
 	}
 
@@ -28585,32 +28482,21 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
 				   indirectlabelno++);
 
       /* Jump.  */
-      if (need_prefix == indirect_thunk_prefix_bnd)
-	fputs ("\tbnd jmp\t", asm_out_file);
-      else
-	fputs ("\tjmp\t", asm_out_file);
+      fputs ("\tjmp\t", asm_out_file);
       assemble_name_raw (asm_out_file, indirectlabel2);
       fputc ('\n', asm_out_file);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel1);
 
       if (thunk_name != NULL)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
-	  else
-	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	}
+	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
       else
-	output_indirect_thunk (need_prefix, regno);
+	output_indirect_thunk (regno);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
       /* Call.  */
-      if (need_prefix == indirect_thunk_prefix_bnd)
-	fputs ("\tbnd call\t", asm_out_file);
-      else
-	fputs ("\tcall\t", asm_out_file);
+      fputs ("\tcall\t", asm_out_file);
       assemble_name_raw (asm_out_file, indirectlabel1);
       fputc ('\n', asm_out_file);
     }
@@ -28649,12 +28535,7 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
       != indirect_branch_thunk_inline)
     {
       if (cfun->machine->indirect_branch_type == indirect_branch_thunk)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    indirect_thunk_bnd_needed = true;
-	  else
-	    indirect_thunk_needed = true;
-	}
+	indirect_thunk_needed = true;
       indirect_thunk_name (thunk_name_buf, regno, need_prefix, false);
       thunk_name = thunk_name_buf;
     }
@@ -28668,14 +28549,9 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
     {
       output_asm_insn (push_buf, &call_op);
       if (thunk_name != NULL)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
-	  else
-	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	}
+	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
       else
-	output_indirect_thunk (need_prefix, regno);
+	output_indirect_thunk (regno);
     }
   else
     {
@@ -28690,10 +28566,7 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
 				   indirectlabelno++);
 
       /* Jump.  */
-      if (need_prefix == indirect_thunk_prefix_bnd)
-	fputs ("\tbnd jmp\t", asm_out_file);
-      else
-	fputs ("\tjmp\t", asm_out_file);
+      fputs ("\tjmp\t", asm_out_file);
       assemble_name_raw (asm_out_file, indirectlabel2);
       fputc ('\n', asm_out_file);
 
@@ -28735,22 +28608,14 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
       output_asm_insn (push_buf, &call_op);
 
       if (thunk_name != NULL)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
-	  else
-	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	}
+	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
       else
-	output_indirect_thunk (need_prefix, regno);
+	output_indirect_thunk (regno);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
       /* Call.  */
-      if (need_prefix == indirect_thunk_prefix_bnd)
-	fputs ("\tbnd call\t", asm_out_file);
-      else
-	fputs ("\tcall\t", asm_out_file);
+      fputs ("\tcall\t", asm_out_file);
       assemble_name_raw (asm_out_file, indirectlabel1);
       fputc ('\n', asm_out_file);
     }
@@ -28808,19 +28673,11 @@ ix86_output_function_return (bool long_p)
 			     == indirect_branch_thunk);
 	  indirect_thunk_name (thunk_name, INVALID_REGNUM, need_prefix,
 			       true);
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    {
-	      indirect_return_bnd_needed |= need_thunk;
-	      fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
-	    }
-	  else
-	    {
-	      indirect_return_needed |= need_thunk;
-	      fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	    }
+	  indirect_return_needed |= need_thunk;
+	  fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
 	}
       else
-	output_indirect_thunk (need_prefix, INVALID_REGNUM);
+	output_indirect_thunk (INVALID_REGNUM);
 
       return "";
     }
@@ -28851,27 +28708,16 @@ ix86_output_indirect_function_return (rtx ret_op)
 	  bool need_thunk = (cfun->machine->function_return_type
 			     == indirect_branch_thunk);
 	  indirect_thunk_name (thunk_name, regno, need_prefix, true);
-	  if (need_prefix == indirect_thunk_prefix_bnd)
+
+	  if (need_thunk)
 	    {
-	      if (need_thunk)
-		{
-		  indirect_return_via_cx_bnd = true;
-		  indirect_thunks_bnd_used |= 1 << CX_REG;
-		}
-	      fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
+	      indirect_return_via_cx = true;
+	      indirect_thunks_used |= 1 << CX_REG;
 	    }
-	  else
-	    {
-	      if (need_thunk)
-		{
-		  indirect_return_via_cx = true;
-		  indirect_thunks_used |= 1 << CX_REG;
-		}
-	      fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	    }
+	  fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
 	}
       else
-	output_indirect_thunk (need_prefix, regno);
+	output_indirect_thunk (regno);
 
       return "";
     }
@@ -29485,16 +29331,6 @@ avoid_func_arg_motion (rtx_insn *first_arg, rtx_insn *insn)
 {
   rtx set;
   rtx tmp;
-
-  /* Add anti dependencies for bounds stores.  */
-  if (INSN_P (insn)
-      && GET_CODE (PATTERN (insn)) == PARALLEL
-      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == UNSPEC
-      && XINT (XVECEXP (PATTERN (insn), 0, 0), 1) == UNSPEC_BNDSTX)
-    {
-      add_dependence (first_arg, insn, REG_DEP_ANTI);
-      return;
-    }
 
   set = single_set (insn);
   if (!set)

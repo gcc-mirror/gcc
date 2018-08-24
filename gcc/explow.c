@@ -56,8 +56,7 @@ trunc_int_for_mode (HOST_WIDE_INT c, machine_mode mode)
   int width = GET_MODE_PRECISION (smode);
 
   /* You want to truncate to a _what_?  */
-  gcc_assert (SCALAR_INT_MODE_P (mode)
-	      || POINTER_BOUNDS_MODE_P (mode));
+  gcc_assert (SCALAR_INT_MODE_P (mode));
 
   /* Canonicalize BImode to 0 and STORE_FLAG_VALUE.  */
   if (smode == BImode)
