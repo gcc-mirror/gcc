@@ -1,3 +1,8 @@
+2018-08-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/87092
+	* gcc.dg/pr87092.c: New test.
+
 2018-08-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/67012
