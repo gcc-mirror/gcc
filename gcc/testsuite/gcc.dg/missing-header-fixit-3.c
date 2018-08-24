@@ -13,15 +13,12 @@ void test (int i, int j)
 9 |   printf ("%i of %i\n", i, j);
   |   ^~~~~~
    { dg-end-multiline-output "" } */
-/* { dg-regexp ".*missing-header-fixit-3.c:1:1:" } */
 /* { dg-begin-multiline-output "" }
-+ |+#include <stdio.h>
-1 | /* Example of a fix-it hint that adds a #include directive,
-   { dg-end-multiline-output "" } */
-/* { dg-regexp ".*missing-header-fixit-3.c:9:3:" } */
-/* { dg-begin-multiline-output "" }
-9 |   printf ("%i of %i\n", i, j);
-  |   ^~~~~~
++++ |+#include <stdio.h>
+  1 | /* Example of a fix-it hint that adds a #include directive,
+....
+  9 |   printf ("%i of %i\n", i, j);
+    |   ^~~~~~
    { dg-end-multiline-output "" } */
 #endif
 }

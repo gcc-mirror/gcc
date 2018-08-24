@@ -241,6 +241,7 @@ class layout
   int get_num_line_spans () const { return m_line_spans.length (); }
   const line_span *get_line_span (int idx) const { return &m_line_spans[idx]; }
 
+  void print_gap_in_line_numbering ();
   bool print_heading_for_line_span_index_p (int line_span_idx) const;
 
   expanded_location get_expanded_location (const line_span *) const;
@@ -923,6 +924,9 @@ layout::layout (diagnostic_context * context,
   if (highest_line < 0)
     highest_line = 0;
   m_linenum_width = num_digits (highest_line);
+  /* If we're showing jumps in the line-numbering, allow at least 3 chars.  */
+  if (m_line_spans.length () > 1)
+    m_linenum_width = MAX (m_linenum_width, 3);
 
   /* Adjust m_x_offset.
      Center the primary caret to fit in max_width; all columns
@@ -1059,6 +1063,20 @@ layout::will_show_line_p (linenum_type row) const
   return false;
 }
 
+/* Print a line showing a gap in the line numbers, for showing the boundary
+   between two line spans.  */
+
+void
+layout::print_gap_in_line_numbering ()
+{
+  gcc_assert (m_show_line_numbers_p);
+
+  for (int i = 0; i < m_linenum_width + 1; i++)
+    pp_character (m_pp, '.');
+
+  pp_newline (m_pp);
+}
+
 /* Return true iff we should print a heading when starting the
    line span with the given index.  */
 
@@ -1156,21 +1174,34 @@ get_line_span_for_fixit_hint (const fixit_hint *hint)
    This function populates m_line_spans with an ordered, disjoint list of
    the line spans of interest.
 
-   For example, if the primary caret location is on line 7, with ranges
-   covering lines 5-6 and lines 9-12:
+   Printing a gap between line spans takes one line, so, when printing
+   line numbers, we allow a gap of up to one line between spans when
+   merging, since it makes more sense to print the source line rather than a
+   "gap-in-line-numbering" line.  When not printing line numbers, it's
+   better to be more explicit about what's going on, so keeping them as
+   separate spans is preferred.
+
+   For example, if the primary range is on lines 8-10, with secondary ranges
+   covering lines 5-6 and lines 13-15:
 
      004
-     005                   |RANGE 0
-     006                   |RANGE 0
-     007  |PRIMARY CARET
-     008
-     009                                |RANGE 1
-     010                                |RANGE 1
-     011                                |RANGE 1
-     012                                |RANGE 1
-     013
+     005                   |RANGE 1
+     006                   |RANGE 1
+     007
+     008  |PRIMARY RANGE
+     009  |PRIMARY CARET
+     010  |PRIMARY RANGE
+     011
+     012
+     013                                |RANGE 2
+     014                                |RANGE 2
+     015                                |RANGE 2
+     016
 
-   then we want two spans: lines 5-7 and lines 9-12.  */
+   With line numbering on, we want two spans: lines 5-10 and lines 13-15.
+
+   With line numbering off (with span headers), we want three spans: lines 5-6,
+   lines 8-10, and lines 13-15.  */
 
 void
 layout::calculate_line_spans ()
@@ -1210,7 +1241,8 @@ layout::calculate_line_spans ()
       line_span *current = &m_line_spans[m_line_spans.length () - 1];
       const line_span *next = &tmp_spans[i];
       gcc_assert (next->m_first_line >= current->m_first_line);
-      if (next->m_first_line <= current->m_last_line + 1)
+      const int merger_distance = m_show_line_numbers_p ? 1 : 0;
+      if (next->m_first_line <= current->m_last_line + 1 + merger_distance)
 	{
 	  /* We can merge them. */
 	  if (next->m_last_line > current->m_last_line)
@@ -2269,10 +2301,22 @@ diagnostic_show_locus (diagnostic_context * context,
        line_span_idx++)
     {
       const line_span *line_span = layout.get_line_span (line_span_idx);
-      if (layout.print_heading_for_line_span_index_p (line_span_idx))
+      if (context->show_line_numbers_p)
 	{
-	  expanded_location exploc = layout.get_expanded_location (line_span);
-	  context->start_span (context, exploc);
+	  /* With line numbers, we should show whenever the line-numbering
+	     "jumps".  */
+	  if (line_span_idx > 0)
+	    layout.print_gap_in_line_numbering ();
+	}
+      else
+	{
+	  /* Without line numbers, we print headings for some line spans.  */
+	  if (layout.print_heading_for_line_span_index_p (line_span_idx))
+	    {
+	      expanded_location exploc
+		= layout.get_expanded_location (line_span);
+	      context->start_span (context, exploc);
+	    }
 	}
       linenum_type last_line = line_span->get_last_line ();
       for (linenum_type row = line_span->get_first_line ();
@@ -2943,6 +2987,29 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
 		  "                         =\n",
 		  pp_formatted_text (dc.printer));
   }
+
+  /* As above, but verify the behavior of multiple line spans
+     with line-numbering enabled.  */
+  {
+    const location_t y
+      = linemap_position_for_line_and_column (line_table, ord_map, 3, 24);
+    const location_t colon
+      = linemap_position_for_line_and_column (line_table, ord_map, 6, 25);
+    rich_location richloc (line_table, colon);
+    richloc.add_fixit_insert_before (y, ".");
+    richloc.add_fixit_replace (colon, "=");
+    test_diagnostic_context dc;
+    dc.show_line_numbers_p = true;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "  3 |                        y\n"
+		  "    |                        .\n"
+		  "....\n"
+		  "  6 |                         : 0.0};\n"
+		  "    |                         ^\n"
+		  "    |                         =\n",
+		  pp_formatted_text (dc.printer));
+  }
 }
 
 
@@ -3475,16 +3542,33 @@ test_fixit_insert_containing_newline_2 (const line_table_case &case_)
   if (putchar_finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
-  test_diagnostic_context dc;
-  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		"FILENAME:1:1:\n"
-		"+#include <stdio.h>\n"
-		" test (int ch)\n"
-		"FILENAME:3:2:\n"
-		"  putchar (ch);\n"
-		"  ^~~~~~~\n",
-		pp_formatted_text (dc.printer));
+  {
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "FILENAME:1:1:\n"
+		  "+#include <stdio.h>\n"
+		  " test (int ch)\n"
+		  "FILENAME:3:2:\n"
+		  "  putchar (ch);\n"
+		  "  ^~~~~~~\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* With line-numbering, the line spans are close enough to be
+     consolidated, since it makes little sense to skip line 2.  */
+  {
+    test_diagnostic_context dc;
+    dc.show_line_numbers_p = true;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "+ |+#include <stdio.h>\n"
+		  "1 | test (int ch)\n"
+		  "2 | {\n"
+		  "3 |  putchar (ch);\n"
+		  "  |  ^~~~~~~\n",
+		  pp_formatted_text (dc.printer));
+  }
 }
 
 /* Replacement fix-it hint containing a newline.
