@@ -34,6 +34,16 @@
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
+# include <bits/c++config.h>
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Key, typename _Tp, typename _Hash, typename _Pred,
+	   typename _Allocator>
+    class unordered_map;
+  template<typename _Key, typename _Tp, typename _Hash, typename _Pred,
+	   typename _Allocator>
+    class unordered_multimap;
+} } // namespace std::__debug
+
 # include <unordered_map>
 
 #include <debug/safe_unordered_container.h>

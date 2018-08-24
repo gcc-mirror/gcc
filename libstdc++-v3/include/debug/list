@@ -31,6 +31,11 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Tp, typename _Allocator> class list;
+} } // namespace std::__debug
+
 #include <list>
 #include <debug/safe_sequence.h>
 #include <debug/safe_container.h>
