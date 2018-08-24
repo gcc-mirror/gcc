@@ -28287,6 +28287,12 @@ save_macinfo_strings (void)
                 && (debug_str_section->common.flags & SECTION_MERGE) != 0)
               set_indirect_string (find_AT_string (ref->info));
             break;
+	  case DW_MACINFO_start_file:
+	    /* -gsplit-dwarf -g3 will also output filename as indirect
+	       string.  */
+	    if (!dwarf_split_debug_info)
+	      break;
+	    /* Fall through. */
 	  case DW_MACRO_define_strp:
 	  case DW_MACRO_undef_strp:
             set_indirect_string (find_AT_string (ref->info));

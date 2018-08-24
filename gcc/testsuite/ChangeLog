@@ -1,3 +1,8 @@
+2018-08-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR debug/79342
+	* gcc.dg/pr79342.: New test.
+
 2018-08-23  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/87072
