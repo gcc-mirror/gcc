@@ -1,3 +1,12 @@
+2018-08-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/67012
+	PR c++/86942
+	* g++.dg/cpp0x/auto52.C: New test.
+	* g++.dg/cpp1y/auto-fn52.C: New test.
+	* g++.dg/cpp1y/auto-fn53.C: New test.
+	* g++.dg/cpp1y/auto-fn54.C: New test.
+
 2018-08-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* lib/target-supports.exp (vect_perm_supported): Only return
