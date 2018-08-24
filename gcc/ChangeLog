@@ -1,3 +1,18 @@
+2018-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* diagnostic-show-locus.c (layout::layout): Ensure the margin is
+	wide enough for jumps in the line-numbering to be visible.
+	(layout::print_gap_in_line_numbering): New member function.
+	(layout::calculate_line_spans): When using line numbering, merge
+	line spans that are only 1 line apart.
+	(diagnostic_show_locus): When printing line numbers, show gaps in
+	line numbering directly, rather than printing headers.
+	(selftest::test_diagnostic_show_locus_fixit_lines): Add test of
+	line-numbering with multiple line spans.
+	(selftest::test_fixit_insert_containing_newline_2): Add test of
+	line-numbering, in which the spans are close enough to be merged.
+
 2018-08-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-ssa-evrp-analyze.c (set_ssa_range_info): Pass value_range
