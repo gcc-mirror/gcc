@@ -621,7 +621,7 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 	// callback.
 	incallback := false
 	if gomcache() == nil && getg().m.ncgo > 0 {
-		exitsyscall(0)
+		exitsyscall()
 		incallback = true
 	}
 
@@ -709,7 +709,7 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 				mp.mallocing = 0
 				releasem(mp)
 				if incallback {
-					entersyscall(0)
+					entersyscall()
 				}
 				return x
 			}
@@ -835,7 +835,7 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 	}
 
 	if incallback {
-		entersyscall(0)
+		entersyscall()
 	}
 
 	return x
