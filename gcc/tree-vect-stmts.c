@@ -8003,13 +8003,18 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (slp)
 	{
 	  grouped_load = false;
-	  /* For SLP permutation support we need to load the whole group,
-	     not only the number of vector stmts the permutation result
-	     fits in.  */
-	  if (slp_perm)
+	  /* If an SLP permutation is from N elements to N elements,
+	     and if one vector holds a whole number of N, we can load
+	     the inputs to the permutation in the same way as an
+	     unpermuted sequence.  In other cases we need to load the
+	     whole group, not only the number of vector stmts the
+	     permutation result fits in.  */
+	  if (slp_perm
+	      && (group_size != SLP_INSTANCE_GROUP_SIZE (slp_node_instance)
+		  || !multiple_p (nunits, group_size)))
 	    {
-	      /* We don't yet generate SLP_TREE_LOAD_PERMUTATIONs for
-		 variable VF.  */
+	      /* We don't yet generate such SLP_TREE_LOAD_PERMUTATIONs for
+		 variable VF; see vect_transform_slp_perm_load.  */
 	      unsigned int const_vf = vf.to_constant ();
 	      unsigned int const_nunits = nunits.to_constant ();
 	      vec_num = CEIL (group_size * const_vf, const_nunits);

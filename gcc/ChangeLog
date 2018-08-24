@@ -1,3 +1,11 @@
+2018-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vect_transform_slp_perm_load): Separate out
+	the case in which the permute needs only a single element and
+	repeats for every vector of the result.  Extend that case to
+	handle variable-length vectors.
+	* tree-vect-stmts.c (vectorizable_load): Update accordingly.
+
 2018-08-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR debug/79342
