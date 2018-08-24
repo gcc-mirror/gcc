@@ -2961,13 +2961,10 @@ vectorizable_bswap (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   vec_info *vinfo = stmt_info->vinfo;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   unsigned ncopies;
-  unsigned HOST_WIDE_INT nunits, num_bytes;
 
   op = gimple_call_arg (stmt, 0);
   vectype = STMT_VINFO_VECTYPE (stmt_info);
-
-  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits))
-    return false;
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
@@ -2983,10 +2980,10 @@ vectorizable_bswap (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (! char_vectype)
     return false;
 
-  if (!TYPE_VECTOR_SUBPARTS (char_vectype).is_constant (&num_bytes))
+  poly_uint64 num_bytes = TYPE_VECTOR_SUBPARTS (char_vectype);
+  unsigned word_bytes;
+  if (!constant_multiple_p (num_bytes, nunits, &word_bytes))
     return false;
-
-  unsigned word_bytes = num_bytes / nunits;
 
   /* The encoding uses one stepped pattern for each byte in the word.  */
   vec_perm_builder elts (num_bytes, word_bytes, 3);

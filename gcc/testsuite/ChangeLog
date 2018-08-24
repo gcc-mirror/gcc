@@ -1,5 +1,11 @@
 2018-08-24  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/bswap_1.c: New test.
+	* gcc.target/aarch64/sve/bswap_2.c: Likewise.
+	* gcc.target/aarch64/sve/bswap_3.c: Likewise.
+
+2018-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/slp_perm_1.c: New test.
 	* gcc.target/aarch64/sve/slp_perm_2.c: Likewise.
 	* gcc.target/aarch64/sve/slp_perm_3.c: Likewise.
