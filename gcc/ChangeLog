@@ -1,3 +1,9 @@
+2018-08-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR 87073/bootstrap
+	* wide-int-range.cc (wide_int_range_div): Do not ignore result
+	from wide_int_range_multiplicative_op.
+
 2018-08-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* tree-vect-data-refs.c (vect_grouped_store_supported): Fix typo

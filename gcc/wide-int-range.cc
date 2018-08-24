@@ -687,14 +687,11 @@ wide_int_range_div (wide_int &wmin, wide_int &wmax,
 
   /* If we know we won't divide by zero, just do the division.  */
   if (!wide_int_range_includes_zero_p (divisor_min, divisor_max, sign))
-    {
-      wide_int_range_multiplicative_op (wmin, wmax, code, sign, prec,
-					dividend_min, dividend_max,
-					divisor_min, divisor_max,
-					overflow_undefined,
-					overflow_wraps);
-      return true;
-    }
+    return wide_int_range_multiplicative_op (wmin, wmax, code, sign, prec,
+					     dividend_min, dividend_max,
+					     divisor_min, divisor_max,
+					     overflow_undefined,
+					     overflow_wraps);
 
   /* If flag_non_call_exceptions, we must not eliminate a division
      by zero.  */
