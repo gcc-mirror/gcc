@@ -1,3 +1,9 @@
+2018-08-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/86989
+	* config/rs6000/rs6000.c (toc_relative_expr_p): Check that the base is
+	the TOC register.
+
 2018-08-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR 87073/bootstrap
