@@ -343,7 +343,7 @@ vr_values::vrp_stmt_computes_nonzero (gimple *stmt)
 	  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
 	{
 	  value_range *vr = get_value_range (TREE_OPERAND (base, 0));
-	  if (range_is_nonnull (vr))
+	  if (!range_includes_zero_p (vr))
 	    return true;
 	}
     }
@@ -1107,12 +1107,8 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 	  if (TREE_CODE (arg) == SSA_NAME)
 	    {
 	      value_range *vr0 = get_value_range (arg);
-	      /* If arg is non-zero, then ffs or popcount
-		 are non-zero.  */
-	      if ((vr0->type == VR_RANGE
-		   && range_includes_zero_p (vr0->min, vr0->max) == 0)
-		  || (vr0->type == VR_ANTI_RANGE
-		      && range_includes_zero_p (vr0->min, vr0->max) == 1))
+	      /* If arg is non-zero, then ffs or popcount are non-zero.  */
+	      if (range_includes_zero_p (vr0) == 0)
 		mini = 1;
 	      /* If some high bits are known to be zero,
 		 we can decrease the maximum.  */
