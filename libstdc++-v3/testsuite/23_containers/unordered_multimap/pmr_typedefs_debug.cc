@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2018 Free Software Foundation, Inc.
+// Copyright (C) 2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,34 +15,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-D_GLIBCXX_DEBUG" }
-// { dg-do compile { target c++11 } }
+// { dg-options "-std=gnu++17 -D_GLIBCXX_DEBUG" }
+// { dg-do compile { target c++17 } }
 
-#include <vector>
-
-// PR libstdc++/80553
-
-struct DeletedDtor {
-  ~DeletedDtor() = delete;
-};
-
-class PrivateDtor {
-  ~PrivateDtor() { }
-};
-
-void
-test01()
-{
-  std::vector<DeletedDtor> v;
-}
-
-void
-test02()
-{
-  std::vector<PrivateDtor> v;
-}
-
-// { dg-error "value type is destructible" "" { target *-*-* } 0 }
-
-// In Debug Mode the "required from here" errors come from <debug/vector>
-// { dg-error "required from here" "" { target *-*-* } 163 }
+#include <debug/unordered_map>
+static_assert(std::is_same_v<
+    std::pmr::unordered_multimap<int, int>,
+    __gnu_debug::unordered_multimap<int, int, std::hash<int>,
+      std::equal_to<int>,
+      std::pmr::polymorphic_allocator<std::pair<const int, int>>>
+    >);

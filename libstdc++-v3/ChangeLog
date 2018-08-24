@@ -1,3 +1,34 @@
+2018-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/deque (std::__debug::deque): Declare.
+	* include/debug/forward_list (std::__debug::forward_list): Declare.
+	* include/debug/list (std::__debug::list): Declare.
+	* include/debug/map (std::__debug::map): Declare.
+	* include/debug/set (std::__debug::set): Declare.
+	* include/debug/unordered_map (std::__debug::unordered_map): Declare.
+	* include/debug/unordered_set (std::__debug::unordered_set): Declare.
+	* include/debug/vector (std::__debug::vector): Declare.
+	* testsuite/23_containers/deque/types/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/forward_list/pmr_typedefs_debug.cc: New
+	test.
+	* testsuite/23_containers/list/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/map/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/multimap/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/multiset/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/set/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/unordered_map/pmr_typedefs_debug.cc: New
+	test.
+	* testsuite/23_containers/unordered_multimap/pmr_typedefs_debug.cc:
+	New test.
+	* testsuite/23_containers/unordered_multiset/pmr_typedefs_debug.cc:
+	New test.
+	* testsuite/23_containers/unordered_set/pmr_typedefs_debug.cc: New
+	test.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Adjust dg-error lineno.
+	* testsuite/23_containers/vector/types/pmr_typedefs_debug.cc: New
+	test.
+
 2018-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_allocator.h (__gnu_test::memory_resource):
