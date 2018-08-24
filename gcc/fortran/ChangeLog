@@ -1,3 +1,12 @@
+2018-08-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86837
+	* frontend-passes.c (var_in_expr_callback): New function.
+	(var_in_expr): New function.
+	(traverse_io_block): Use var_in_expr instead of
+	gfc_check_dependency for checking if the variable depends on the
+	previous interators.
+
 2018-08-23  Janne Blomqvist  <blomqvist.janne@gmail.com>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxval): Delete
