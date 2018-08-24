@@ -86,7 +86,7 @@ extern void register_edge_assert_for (tree, edge, enum tree_code,
 				      tree, tree, vec<assert_info> &);
 extern bool stmt_interesting_for_vrp (gimple *);
 extern void set_value_range_to_varying (value_range *);
-extern int range_includes_zero_p (tree, tree);
+extern bool range_includes_zero_p (const value_range *);
 extern bool infer_value_range (gimple *, tree, tree_code *, tree *);
 
 extern void set_value_range_to_nonnull (value_range *, tree);
@@ -96,7 +96,6 @@ extern void set_and_canonicalize_value_range (value_range *,
 					      enum value_range_type,
 					      tree, tree, bitmap);
 extern bool vrp_bitmap_equal_p (const_bitmap, const_bitmap);
-extern bool range_is_nonnull (value_range *);
 extern tree value_range_constant_singleton (value_range *);
 extern bool symbolic_range_p (value_range *);
 extern int compare_values (tree, tree);

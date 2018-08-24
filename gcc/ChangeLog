@@ -1,3 +1,25 @@
+2018-08-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-evrp-analyze.c (set_ssa_range_info): Pass value_range
+	to range_includes_zero_p.  Do not special case VR_ANTI_RANGE.
+	* tree-vrp.c (range_is_nonnull): Remove.
+	(range_includes_zero_p): Accept value_range instead of min/max.
+	(extract_range_from_binary_expr_1): Do not early bail on
+	POINTER_PLUS_EXPR.
+	Use range_includes_zero_p instead of range_is_nonnull.
+	(extract_range_from_unary_expr): Use range_includes_zero_p instead
+	of range_is_nonnull.
+	(vrp_meet_1): Pass value_range to range_includes_zero_p.  Do not
+	special case VR_ANTI_RANGE.
+	(vrp_finalize): Same.
+	* tree-vrp.h (range_includes_zero_p): Pass value_range as argument
+	instead of min/max.
+	(range_is_nonnull): Remove.
+	* vr-values.c (vrp_stmt_computes_nonzero): Use
+	range_includes_zero_p instead of range_is_nonnull.
+	(extract_range_basic): Pass value_range to range_includes_zero_p
+	instead of range_is_nonnull.
+
 2018-08-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* emit-rtl.c (init_emit_once): Do not emit MODE_POINTER_BOUNDS RTXes.

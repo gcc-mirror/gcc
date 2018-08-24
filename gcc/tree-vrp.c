@@ -502,17 +502,6 @@ vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
 	      && bitmap_equal_p (b1, b2)));
 }
 
-/* Return true if VR is ~[0, 0].  */
-
-bool
-range_is_nonnull (value_range *vr)
-{
-  return vr->type == VR_ANTI_RANGE
-	 && integer_zerop (vr->min)
-	 && integer_zerop (vr->max);
-}
-
-
 /* Return true if VR is [0, 0].  */
 
 static inline bool
@@ -880,14 +869,25 @@ value_ranges_intersect_p (value_range *vr0, value_range *vr1)
 }
 
 
-/* Return 1 if [MIN, MAX] includes the value zero, 0 if it does not
-   include the value zero, -2 if we cannot tell.  */
+/* Return TRUE if *VR includes the value zero.  */
 
-int
-range_includes_zero_p (tree min, tree max)
+bool
+range_includes_zero_p (const value_range *vr)
 {
-  tree zero = build_int_cst (TREE_TYPE (min), 0);
-  return value_inside_range (zero, min, max);
+  if (vr->type == VR_VARYING)
+    return true;
+
+  /* Ughh, we don't know.  We choose not to optimize.  */
+  if (vr->type == VR_UNDEFINED)
+    return true;
+
+  tree zero = build_int_cst (TREE_TYPE (vr->min), 0);
+  if (vr->type == VR_ANTI_RANGE)
+    {
+      int res = value_inside_range (zero, vr->min, vr->max);
+      return res == 0 || res == -2;
+    }
+  return value_inside_range (zero, vr->min, vr->max) != 0;
 }
 
 /* Return true if *VR is know to only contain nonnegative values.  */
@@ -1424,7 +1424,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	     nullness, if both are non null, then the result is nonnull.
 	     If both are null, then the result is null. Otherwise they
 	     are varying.  */
-	  if (range_is_nonnull (&vr0) && range_is_nonnull (&vr1))
+	  if (!range_includes_zero_p (&vr0) && !range_includes_zero_p (&vr1))
 	    set_value_range_to_nonnull (vr, expr_type);
 	  else if (range_is_null (&vr0) && range_is_null (&vr1))
 	    set_value_range_to_null (vr, expr_type);
@@ -1435,11 +1435,8 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	{
 	  /* For pointer types, we are really only interested in asserting
 	     whether the expression evaluates to non-NULL.  */
-	  if (range_is_nonnull (&vr0)
-	      || range_is_nonnull (&vr1)
-	      || (vr1.type == VR_RANGE
-		  && !symbolic_range_p (&vr1)
-		  && !range_includes_zero_p (vr1.min, vr1.max)))
+	  if (!range_includes_zero_p (&vr0)
+	      || !range_includes_zero_p (&vr1))
 	    set_value_range_to_nonnull (vr, expr_type);
 	  else if (range_is_null (&vr0) && range_is_null (&vr1))
 	    set_value_range_to_null (vr, expr_type);
@@ -1450,7 +1447,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	{
 	  /* For pointer types, we are really only interested in asserting
 	     whether the expression evaluates to non-NULL.  */
-	  if (range_is_nonnull (&vr0) && range_is_nonnull (&vr1))
+	  if (!range_includes_zero_p (&vr0) && !range_includes_zero_p (&vr1))
 	    set_value_range_to_nonnull (vr, expr_type);
 	  else if (range_is_null (&vr0) || range_is_null (&vr1))
 	    set_value_range_to_null (vr, expr_type);
@@ -1888,7 +1885,7 @@ extract_range_from_unary_expr (value_range *vr,
 	 determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).  */
       if (POINTER_TYPE_P (type))
 	{
-	  if (range_is_nonnull (&vr0))
+	  if (!range_includes_zero_p (&vr0))
 	    set_value_range_to_nonnull (vr, type);
 	  else if (range_is_null (&vr0))
 	    set_value_range_to_null (vr, type);
@@ -6020,17 +6017,9 @@ vrp_meet_1 (value_range *vr0, const value_range *vr1)
     {
       /* Failed to find an efficient meet.  Before giving up and setting
 	 the result to VARYING, see if we can at least derive a useful
-	 anti-range.  FIXME, all this nonsense about distinguishing
-	 anti-ranges from ranges is necessary because of the odd
-	 semantics of range_includes_zero_p and friends.  */
-      if (((saved.type == VR_RANGE
-	    && range_includes_zero_p (saved.min, saved.max) == 0)
-	   || (saved.type == VR_ANTI_RANGE
-	       && range_includes_zero_p (saved.min, saved.max) == 1))
-	  && ((vr1->type == VR_RANGE
-	       && range_includes_zero_p (vr1->min, vr1->max) == 0)
-	      || (vr1->type == VR_ANTI_RANGE
-		  && range_includes_zero_p (vr1->min, vr1->max) == 1)))
+	 anti-range.  */
+      if (range_includes_zero_p (&saved) == 0
+	  && range_includes_zero_p (vr1) == 0)
 	{
 	  set_value_range_to_nonnull (vr0, TREE_TYPE (saved.min));
 
@@ -6540,10 +6529,7 @@ vrp_prop::vrp_finalize (bool warn_array_bounds_p)
 	continue;
 
       if (POINTER_TYPE_P (TREE_TYPE (name))
-	  && ((vr->type == VR_RANGE
-	       && range_includes_zero_p (vr->min, vr->max) == 0)
-	      || (vr->type == VR_ANTI_RANGE
-		  && range_includes_zero_p (vr->min, vr->max) == 1)))
+	  && range_includes_zero_p (vr) == 0)
 	set_ptr_nonnull (name);
       else if (!POINTER_TYPE_P (TREE_TYPE (name)))
 	set_range_info (name, vr->type,
