@@ -1,3 +1,9 @@
+2018-08-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR debug/79342
+	* dwarf2out.c (save_macinfo_strings): Call set_indirect_string
+	on DW_MACINFO_start_file for -gsplit-dwarf -g3.
+
 2018-08-24  Richard Biener  <rguenther@suse.de>
 
 	* cfg.h (struct control_flow_graph): Add edge_flags_allocated and
