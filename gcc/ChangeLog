@@ -1,3 +1,20 @@
+2018-08-24  Richard Biener  <rguenther@suse.de>
+
+	* cfg.h (struct control_flow_graph): Add edge_flags_allocated and
+	bb_flags_allocated members.
+	(auto_flag): New RAII class for allocating flags.
+	(auto_edge_flag): New RAII class for allocating edge flags.
+	(auto_bb_flag): New RAII class for allocating bb flags.
+	* cfgloop.c (verify_loop_structure): Allocate temporary edge
+	flag dynamically.
+	* cfganal.c (dfs_enumerate_from): Remove use of visited sbitmap
+	in favor of temporarily allocated BB flag.
+	* hsa-brig.c: Re-order includes.
+	* hsa-dump.c: Likewise.
+	* hsa-regalloc.c: Likewise.
+	* print-rtl.c: Likewise.
+	* profile-count.c: Likewise.
+
 2018-08-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/86989

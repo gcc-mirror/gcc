@@ -1145,41 +1145,12 @@ dfs_enumerate_from (basic_block bb, int reverse,
 {
   basic_block *st, lbb;
   int sp = 0, tv = 0;
-  unsigned size;
 
-  /* A bitmap to keep track of visited blocks.  Allocating it each time
-     this function is called is not possible, since dfs_enumerate_from
-     is often used on small (almost) disjoint parts of cfg (bodies of
-     loops), and allocating a large sbitmap would lead to quadratic
-     behavior.  */
-  static sbitmap visited;
-  static unsigned v_size;
+  auto_bb_flag visited (cfun);
 
-#define MARK_VISITED(BB) (bitmap_set_bit (visited, (BB)->index))
-#define UNMARK_VISITED(BB) (bitmap_clear_bit (visited, (BB)->index))
-#define VISITED_P(BB) (bitmap_bit_p (visited, (BB)->index))
-
-  /* Resize the VISITED sbitmap if necessary.  */
-  size = last_basic_block_for_fn (cfun);
-  if (size < 10)
-    size = 10;
-
-  if (!visited)
-    {
-
-      visited = sbitmap_alloc (size);
-      bitmap_clear (visited);
-      v_size = size;
-    }
-  else if (v_size < size)
-    {
-      /* Ensure that we increase the size of the sbitmap exponentially.  */
-      if (2 * v_size > size)
-	size = 2 * v_size;
-
-      visited = sbitmap_resize (visited, size, 0);
-      v_size = size;
-    }
+#define MARK_VISITED(BB) ((BB)->flags |= visited)
+#define UNMARK_VISITED(BB) ((BB)->flags &= ~visited)
+#define VISITED_P(BB) (((BB)->flags & visited) != 0)
 
   st = XNEWVEC (basic_block, rslt_max);
   rslt[tv++] = st[sp++] = bb;

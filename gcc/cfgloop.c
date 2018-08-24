@@ -1539,6 +1539,7 @@ verify_loop_structure (void)
   /* Check irreducible loops.  */
   if (loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
     {
+      auto_edge_flag saved_irr_mask (cfun);
       /* Record old info.  */
       auto_sbitmap irreds (last_basic_block_for_fn (cfun));
       FOR_EACH_BB_FN (bb, cfun)
@@ -1550,7 +1551,7 @@ verify_loop_structure (void)
 	    bitmap_clear_bit (irreds, bb->index);
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (e->flags & EDGE_IRREDUCIBLE_LOOP)
-	      e->flags |= EDGE_ALL_FLAGS + 1;
+	      e->flags |= saved_irr_mask;
 	}
 
       /* Recount it.  */
@@ -1576,20 +1577,20 @@ verify_loop_structure (void)
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
 	      if ((e->flags & EDGE_IRREDUCIBLE_LOOP)
-		  && !(e->flags & (EDGE_ALL_FLAGS + 1)))
+		  && !(e->flags & saved_irr_mask))
 		{
 		  error ("edge from %d to %d should be marked irreducible",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
 	      else if (!(e->flags & EDGE_IRREDUCIBLE_LOOP)
-		       && (e->flags & (EDGE_ALL_FLAGS + 1)))
+		       && (e->flags & saved_irr_mask))
 		{
 		  error ("edge from %d to %d should not be marked irreducible",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
-	      e->flags &= ~(EDGE_ALL_FLAGS + 1);
+	      e->flags &= ~saved_irr_mask;
 	    }
 	}
     }
