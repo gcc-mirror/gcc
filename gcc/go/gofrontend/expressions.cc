@@ -9635,13 +9635,9 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 					    "__builtin_return_address",
 					    0);
 	    }
-	  else if (this->args_ != NULL
-		   && this->args_->size() == 1
+	  else if ((this->args_ == NULL || this->args_->size() == 0)
 		   && n == "getcallersp")
 	    {
-	      // The actual argument to getcallersp is always the
-	      // address of a parameter; we don't need that for the
-	      // GCC builtin function, so we just ignore it.
 	      static Named_object* builtin_frame_address;
 	      return this->lower_to_builtin(&builtin_frame_address,
 					    "__builtin_frame_address",

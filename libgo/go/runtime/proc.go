@@ -1168,7 +1168,7 @@ func kickoff() {
 	goexit1()
 }
 
-func mstart1(dummy int32) {
+func mstart1() {
 	_g_ := getg()
 
 	if _g_ != _g_.m.g0 {
@@ -2774,7 +2774,7 @@ func entersyscallblock_handoff() {
 //
 //go:nosplit
 //go:nowritebarrierrec
-func exitsyscall(dummy int32) {
+func exitsyscall() {
 	_g_ := getg()
 
 	_g_.m.locks++ // see comment in entersyscall
@@ -2984,13 +2984,13 @@ func exitsyscallclear(gp *g) {
 //go:linkname syscall_entersyscall syscall.Entersyscall
 //go:nosplit
 func syscall_entersyscall() {
-	entersyscall(0)
+	entersyscall()
 }
 
 //go:linkname syscall_exitsyscall syscall.Exitsyscall
 //go:nosplit
 func syscall_exitsyscall() {
-	exitsyscall(0)
+	exitsyscall()
 }
 
 func beforefork() {
