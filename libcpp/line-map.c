@@ -304,6 +304,8 @@ pure_location_p (line_maps *set, source_location loc)
     return false;
 
   const line_map *map = linemap_lookup (set, loc);
+  if (map == NULL)
+    return true;
   const line_map_ordinary *ordmap = linemap_check_ordinary (map);
 
   if (loc & ((1U << ordmap->m_range_bits) - 1))
@@ -492,6 +494,11 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
     }
 
   linemap_assert (reason != LC_ENTER_MACRO);
+
+  if (start_location >= LINE_MAP_MAX_LOCATION)
+    /* We ran out of line map space.   */
+    start_location = 0;
+
   line_map_ordinary *map
     = linemap_check_ordinary (new_linemap (set, start_location));
   map->reason = reason;
