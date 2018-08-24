@@ -1,3 +1,10 @@
+2018-08-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/86822
+	* libsupc++/new (operator new(size_t, nothrow_t), operator
+	new[](size_t, nothrow_t), operator new(size_t, align_val_t, nothrow_t),
+	operator new[](size_t, align_val_t, nothrow_t)): Add malloc attribute.
+
 2018-08-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/debug/deque (std::__debug::deque): Declare.
