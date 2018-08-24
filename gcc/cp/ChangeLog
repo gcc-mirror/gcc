@@ -1,3 +1,11 @@
+2018-08-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/67012
+	PR c++/86942
+	* decl.c (grokdeclarator): Disallow functions with trailing return
+	type with decltype(auto) as its type.  Also check the function if
+	it's inner declarator doesn't exist
+
 2018-08-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86499
