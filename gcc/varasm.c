@@ -3923,7 +3923,6 @@ output_constant_pool_2 (fixed_size_mode mode, rtx x, unsigned int align)
     case MODE_UFRACT:
     case MODE_ACCUM:
     case MODE_UACCUM:
-    case MODE_POINTER_BOUNDS:
       assemble_integer (x, GET_MODE_SIZE (mode), align, 1);
       break;
 

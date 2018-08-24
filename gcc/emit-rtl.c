@@ -6410,13 +6410,6 @@ init_emit_once (void)
     if (GET_MODE_CLASS ((machine_mode) i) == MODE_CC)
       const_tiny_rtx[0][i] = const0_rtx;
 
-  FOR_EACH_MODE_IN_CLASS (smode_iter, MODE_POINTER_BOUNDS)
-    {
-      scalar_mode smode = smode_iter.require ();
-      wide_int wi_zero = wi::zero (GET_MODE_PRECISION (smode));
-      const_tiny_rtx[0][smode] = immed_wide_int_const (wi_zero, smode);
-    }
-
   pc_rtx = gen_rtx_fmt_ (PC, VOIDmode);
   ret_rtx = gen_rtx_fmt_ (RETURN, VOIDmode);
   simple_return_rtx = gen_rtx_fmt_ (SIMPLE_RETURN, VOIDmode);

@@ -1,3 +1,56 @@
+2018-08-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* emit-rtl.c (init_emit_once): Do not emit MODE_POINTER_BOUNDS RTXes.
+	* emit-rtl.h (rtl_data): Remove return_bnd.
+	* explow.c (trunc_int_for_mode): Do not handle POINTER_BOUNDS_MODE_P.
+	* function.c (diddle_return_value): Do not handle crtl->return_bnd.
+	* genmodes.c (complete_mode): Do not handle MODE_POINTER_BOUNDS.
+	(POINTER_BOUNDS_MODE): Remove definition.
+	(make_pointer_bounds_mode): Remove.
+	(get_mode_class): Do not handle MODE_POINTER_BOUNDS.
+	* machmode.h (POINTER_BOUNDS_MODE_P): Remove definition.
+	(scalare_mode::includes_p): Do not handle MODE_POINTER_BOUNDS.
+	* mode-classes.def: Do not define MODE_POINTER_BOUNDS.
+	* stor-layout.c (int_mode_for_mode): Do not handle MODE_POINTER_BOUNDS.
+	* tree-core.h (enum tree_index): Remove TI_POINTER_BOUNDS_TYPE.
+	* varasm.c (output_constant_pool_2): Do not handle MODE_POINTER_BOUNDS.
+
+	* config/i386/i386-modes.def (BND32, BND64): Remove.
+	* config/i386/i386.c (dbx_register_map): Remove bound registers.
+	(dbx64_register_map): Ditto.
+	(svr4_dbx_register_map): Ditto.
+	(indirect_thunk_bnd_needed): Remove.
+	(indirect_thunks_bnd_used): Ditto.
+	(indirect_return_bnd_needed): Ditto.
+	(indirect_return_via_cx_bnd): Ditto.
+	(enum indirect_thunk_prefix): Remove indirect_thunk_prefix_bnd.
+	(indirect_thunk_name): Remove handling of indirect_thunk_prefix_bnd.
+	(output_indirect_thunk): Ditto.  Remove need_prefix argument.
+	(output_indirect_thunk_function): Remove handling of
+	indirect_return_bnd_needed, indirect_return_via_cx_bnd,
+	indirect_thunk_bnd_needed and indirect_thunks_bnd_used variables.
+	(ix86_save_reg): Remove handling of crtl->return_bnd.
+	(ix86_legitimate_constant_p): Remove handling of POINTER_BOUNDS_MODE_P.
+	(ix86_print_operand_address_as): Remove handling of UNSPEC_BNDMK_ADDR
+	and UNSPEC_BNDLX_ADDR.
+	(ix86_output_indirect_branch_via_reg): Remove handling of
+	indirect_thunk_prefix_bnd.
+	(ix86_output_indirect_branch_via_push): Ditto.
+	(ix86_output_function_return): Ditto.
+	(ix86_output_indirect_function_return): Ditto.
+	(avoid_func_arg_motion): Do not handle UNSPEC_BNDSTX.
+	* config/i386/i386.h (FIXED_REGISTERS): Remove bound registers.
+	(CALL_USED_REGISTERS): Ditto.
+	(REG_ALLOC_ORDER): Update for removal of bound registers.
+	(HI_REGISTER_NAMES): Ditto.
+	* config/i386/i386.md (UNSPEC_BNDMK, UNSPEC_BNDMK_ADDR, UNSPEC_BNDSTX)
+	(UNSPEC_BNDLDX, UNSPEC_BNDLDX_ADDR, UNSPEC_BNDCL, UNSPEC_BNDCU)
+	(UNSPEC_BNDCN, UNSPEC_MPX_FENCE): Remove.
+	(BND0_REG, BND1_REG, BND2_REG, BND3_REG): Remove
+	(FIRST_PSEUDO_REG): Update.
+	(BND): Remove mode iterator.
+	* config/i386/predicates.md (bnd_mem_operator): Remove.
+
 2018-08-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-stmts.c (vectorizable_bswap): Handle variable-length
