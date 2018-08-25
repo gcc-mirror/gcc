@@ -3072,34 +3072,38 @@ AC_MSG_RESULT($gcc_cv_ld_ro_rw_mix)
 gcc_AC_INITFINI_ARRAY
 
 # Check if we have .[us]leb128, and support symbol arithmetic with it.
+# Older versions of GAS and some non-GNU assemblers, have a bugs handling
+# these directives, even when they appear to accept them.
 gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,
-  [elf,2,11,0],,
+ [elf,2,11,0],,
 [	.data
 	.uleb128 L2 - L1
 L1:
 	.uleb128 1280
 	.sleb128 -1010
-L2:],
-[[# GAS versions before 2.11 do not support uleb128,
-  # despite appearing to.
-  # ??? There exists an elf-specific test that will crash
-  # the assembler.  Perhaps it's better to figure out whether
-  # arbitrary sections are supported and try the test.
-  as_ver=`$gcc_cv_as --version 2>/dev/null | sed 1q`
-  if echo "$as_ver" | grep GNU > /dev/null; then
-    as_vers=`echo $as_ver | sed -n \
-	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*.*\)$,\1,p'`
-    as_major=`expr "$as_vers" : '\([0-9]*\)'`
-    as_minor=`expr "$as_vers" : '[0-9]*\.\([0-9]*\)'`
-    if test $as_major -eq 2 && test $as_minor -lt 11
-    then :
-    else gcc_cv_as_leb128=yes
-    fi
-  fi]],
-  [AC_DEFINE(HAVE_AS_LEB128, 1,
-    [Define if your assembler supports .sleb128 and .uleb128.])],
-  [AC_DEFINE(HAVE_AS_LEB128, 0,
-    [Define if your assembler supports .sleb128 and .uleb128.])])
+L2:
+	.uleb128 0x8000000000000000
+],
+[[
+if test "x$gcc_cv_objdump" != x; then
+  if $gcc_cv_objdump -s conftest.o 2>/dev/null \
+     | grep '04800a8e 78808080 80808080 808001' >/dev/null; then
+    gcc_cv_as_leb128=yes
+  fi
+elif test "x$gcc_cv_otool" != x; then
+  if $gcc_cv_otool -d conftest.o 2>/dev/null \
+     | grep '04 80 0a 8e 78 80 80 80 80 80 80 80 80 80 01' >/dev/null; then
+    gcc_cv_as_leb128=yes
+  fi
+else
+  # play safe, assume the assembler is broken.
+  :
+fi
+]],
+ [AC_DEFINE(HAVE_AS_LEB128, 1,
+   [Define if your assembler supports .sleb128 and .uleb128.])],
+ [AC_DEFINE(HAVE_AS_LEB128, 0,
+   [Define if your assembler supports .sleb128 and .uleb128.])])
 
 # Determine if an .eh_frame section is read-only.
 gcc_fn_eh_frame_ro () {
