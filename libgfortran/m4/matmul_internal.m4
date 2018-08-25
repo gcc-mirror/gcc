@@ -233,8 +233,13 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 	return;
 
       /* Adjust size of t1 to what is needed.  */
-      index_type t1_dim;
-      t1_dim = (a_dim1 - (ycount > 1)) * 256 + b_dim1;
+      index_type t1_dim, a_sz;
+      if (aystride == 1)
+        a_sz = rystride;
+      else
+        a_sz = a_dim1;
+
+      t1_dim = a_sz * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
