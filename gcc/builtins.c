@@ -4759,7 +4759,10 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
   /* If we are not using the given length, we must incorporate it here.
      The actual new length parameter will be MIN(len,arg3) in this case.  */
   if (len != len3)
-    len = fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (len), len, len3);
+    {
+      len = fold_convert_loc (loc, sizetype, len);
+      len = fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (len), len, len3);
+    }
   rtx arg1_rtx = get_memory_rtx (arg1, len);
   rtx arg2_rtx = get_memory_rtx (arg2, len);
   rtx arg3_rtx = expand_normal (len);
