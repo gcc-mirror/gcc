@@ -1,3 +1,9 @@
+2018-08-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libstdc++/70694
+	* configure.host (OPT_LDFLAGS): Don't append
+	-fvisibility-inlines-hidden for newer Darwin.
+
 2018-08-24  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/86822
