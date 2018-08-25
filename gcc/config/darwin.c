@@ -824,8 +824,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 
   /* First handle a simple SYMBOL_REF or LABEL_REF */
   if (GET_CODE (orig) == LABEL_REF
-      || (GET_CODE (orig) == SYMBOL_REF
-	  ))
+      || GET_CODE (orig) == SYMBOL_REF)
     {
       /* addr(foo) = &func+(foo-func) */
       orig = machopic_indirect_data_reference (orig, reg);
@@ -1024,10 +1023,6 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
           return pic_ref;
         }
     }
-
-  else if (GET_CODE (orig) == SYMBOL_REF)
-    return orig;
-
   else if (GET_CODE (orig) == PLUS
 	   && (GET_CODE (XEXP (orig, 0)) == MEM
 	       || GET_CODE (XEXP (orig, 0)) == SYMBOL_REF
@@ -1057,12 +1052,10 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	}
       /* Likewise, should we set special REG_NOTEs here?  */
     }
-
   else if (GET_CODE (orig) == CONST)
     {
       return machopic_legitimize_pic_address (XEXP (orig, 0), Pmode, reg);
     }
-
   else if (GET_CODE (orig) == MEM
 	   && GET_CODE (XEXP (orig, 0)) == SYMBOL_REF)
     {

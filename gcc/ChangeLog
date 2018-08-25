@@ -1,3 +1,8 @@
+2018-08-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_legitimize_pic_address): Clean up
+	extraneous parentheses, dead code section and formatting.
+
 2018-08-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87091
