@@ -1,3 +1,9 @@
+2018-08-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86545
+	* resolve.c (resolve_transfer): Correctly determine typespec for
+	generic function calls, in order to throw a proper error.
+
 2018-08-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/86837

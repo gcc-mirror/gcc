@@ -9280,7 +9280,6 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 static void
 resolve_transfer (gfc_code *code)
 {
-  gfc_typespec *ts;
   gfc_symbol *sym, *derived;
   gfc_ref *ref;
   gfc_expr *exp;
@@ -9316,7 +9315,9 @@ resolve_transfer (gfc_code *code)
 				    _("item in READ")))
     return;
 
-  ts = exp->expr_type == EXPR_STRUCTURE ? &exp->ts : &exp->symtree->n.sym->ts;
+  const gfc_typespec *ts = exp->expr_type == EXPR_STRUCTURE
+			|| exp->expr_type == EXPR_FUNCTION
+			 ? &exp->ts : &exp->symtree->n.sym->ts;
 
   /* Go to actual component transferred.  */
   for (ref = exp->ref; ref; ref = ref->next)
