@@ -1,3 +1,10 @@
+2018-08-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87059
+	* builtins.c (expand_builtin_strncmp): Convert MIN_EXPR operand
+	to the same type as the other.
+	* fold-const.c (fold_binary_loc): Assert expectation.
+
 2018-08-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (machopic_legitimize_pic_address): Clean up
