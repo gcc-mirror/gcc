@@ -1,3 +1,8 @@
+2018-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87080
+	* g++.dg/cpp0x/Wpessimizing-move5.C: New test.
+
 2018-08-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/86704
