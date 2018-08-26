@@ -985,6 +985,10 @@ Wredundant-decls
 C ObjC C++ ObjC++ Var(warn_redundant_decls) Warning
 Warn about multiple declarations of the same object.
 
+Wredundant-move
+C++ ObjC++ Var(warn_redundant_move) Warning LangEnabledBy(C++ ObjC++,Wextra)
+Warn about redundant calls to std::move.
+
 Wregister
 C++ ObjC++ Var(warn_register) Warning
 Warn about uses of register storage specifier.

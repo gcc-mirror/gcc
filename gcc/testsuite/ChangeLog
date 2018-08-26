@@ -3,6 +3,12 @@
 	PR c++/87080
 	* g++.dg/cpp0x/Wpessimizing-move5.C: New test.
 
+	PR c++/87029, Implement -Wredundant-move.
+	* g++.dg/cpp0x/Wredundant-move1.C: New test.
+	* g++.dg/cpp0x/Wredundant-move2.C: New test.
+	* g++.dg/cpp0x/Wredundant-move3.C: New test.
+	* g++.dg/cpp0x/Wredundant-move4.C: New test.
+
 2018-08-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/86704

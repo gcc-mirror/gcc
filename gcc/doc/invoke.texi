@@ -231,7 +231,7 @@ in the following sections.
 -Wdelete-non-virtual-dtor -Wdeprecated-copy  -Wliteral-suffix @gol
 -Wmultiple-inheritance @gol
 -Wnamespaces  -Wnarrowing @gol
--Wpessimizing-move @gol
+-Wpessimizing-move  -Wredundant-move @gol
 -Wnoexcept  -Wnoexcept-type  -Wclass-memaccess @gol
 -Wnon-virtual-dtor  -Wreorder  -Wregister @gol
 -Weffc++  -Wstrict-null-sentinel  -Wtemplates @gol
@@ -3158,6 +3158,49 @@ But in this example, the @code{std::move} call prevents copy elision.
 
 This warning is enabled by @option{-Wall}.
 
+@item -Wno-redundant-move @r{(C++ and Objective-C++ only)}
+@opindex Wredundant-move
+@opindex Wno-redundant-move
+This warning warns about redundant calls to @code{std::move}; that is, when
+a move operation would have been performed even without the @code{std::move}
+call.  This happens because the compiler is forced to treat the object as if
+it were an rvalue in certain situations such as returning a local variable,
+where copy elision isn't applicable.  Consider:
+
+@smallexample
+struct T @{
+@dots{}
+@};
+T fn(T t)
+@{
+  @dots{}
+  return std::move (t);
+@}
+@end smallexample
+
+Here, the @code{std::move} call is redundant.  Because G++ implements Core
+Issue 1579, another example is:
+
+@smallexample
+struct T @{ // convertible to U
+@dots{}
+@};
+struct U @{
+@dots{}
+@};
+U fn()
+@{
+  T t;
+  @dots{}
+  return std::move (t);
+@}
+@end smallexample
+In this example, copy elision isn't applicable because the type of the
+expression being returned and the function return type differ, yet G++
+treats the return value as if it were designated by an rvalue.
+
+This warning is enabled by @option{-Wextra}.
+
 @item -fext-numeric-literals @r{(C++ and Objective-C++ only)}
 @opindex fext-numeric-literals
 @opindex fno-ext-numeric-literals
@@ -4112,6 +4155,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wold-style-declaration @r{(C only)}  @gol
 -Woverride-init  @gol
 -Wsign-compare @r{(C only)} @gol
+-Wredundant-move @r{(only for C++)}  @gol
 -Wtype-limits  @gol
 -Wuninitialized  @gol
 -Wshift-negative-value @r{(in C++03 and in C99 and newer)}  @gol
