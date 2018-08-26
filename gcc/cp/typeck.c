@@ -9192,6 +9192,11 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
   if (cxx_dialect < cxx11)
     return;
 
+  /* Wait until instantiation time, since we can't gauge if we should do
+     the NRVO until then.  */
+  if (processing_template_decl)
+    return;
+
   /* This is only interesting for class types.  */
   if (!CLASS_TYPE_P (functype))
     return;
