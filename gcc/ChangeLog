@@ -1,3 +1,8 @@
+2018-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87029, Implement -Wredundant-move.
+	* doc/invoke.texi: Document -Wredundant-move.
+
 2018-08-25  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/87059

@@ -3,6 +3,11 @@
 	PR c++/87080
 	* typeck.c (maybe_warn_pessimizing_move): Do nothing in a template.
 
+	PR c++/87029, Implement -Wredundant-move.
+	* typeck.c (treat_lvalue_as_rvalue_p): New function.
+	(maybe_warn_pessimizing_move): Call convert_from_reference.
+	Warn about redundant moves.
+
 2018-08-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/67012

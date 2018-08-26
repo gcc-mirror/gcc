@@ -9178,6 +9178,19 @@ can_do_nrvo_p (tree retval, tree functype)
 	  && !TYPE_VOLATILE (TREE_TYPE (retval)));
 }
 
+/* Returns true if we should treat RETVAL, an expression being returned,
+   as if it were designated by an rvalue.  See [class.copy.elision].  */
+
+static bool
+treat_lvalue_as_rvalue_p (tree retval)
+{
+  return ((cxx_dialect != cxx98)
+	  && ((VAR_P (retval) && !DECL_HAS_VALUE_EXPR_P (retval))
+	      || TREE_CODE (retval) == PARM_DECL)
+	  && DECL_CONTEXT (retval) == current_function_decl
+	  && !TREE_STATIC (retval));
+}
+
 /* Warn about wrong usage of std::move in a return statement.  RETVAL
    is the expression we are returning; FUNCTYPE is the type the function
    is declared to return.  */
@@ -9185,8 +9198,10 @@ can_do_nrvo_p (tree retval, tree functype)
 static void
 maybe_warn_pessimizing_move (tree retval, tree functype)
 {
-  if (!warn_pessimizing_move)
+  if (!(warn_pessimizing_move || warn_redundant_move))
     return;
+
+  location_t loc = cp_expr_loc_or_loc (retval, input_location);
 
   /* C++98 doesn't know move.  */
   if (cxx_dialect < cxx11)
@@ -9212,14 +9227,24 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	  STRIP_NOPS (arg);
 	  if (TREE_CODE (arg) == ADDR_EXPR)
 	    arg = TREE_OPERAND (arg, 0);
+	  arg = convert_from_reference (arg);
 	  /* Warn if we could do copy elision were it not for the move.  */
 	  if (can_do_nrvo_p (arg, functype))
 	    {
 	      auto_diagnostic_group d;
-	      if (warning_at (location_of (retval), OPT_Wpessimizing_move,
+	      if (warning_at (loc, OPT_Wpessimizing_move,
 			      "moving a local object in a return statement "
 			      "prevents copy elision"))
-		inform (location_of (retval), "remove %<std::move%> call");
+		inform (loc, "remove %<std::move%> call");
+	    }
+	  /* Warn if the move is redundant.  It is redundant when we would
+	     do maybe-rvalue overload resolution even without std::move.  */
+	  else if (treat_lvalue_as_rvalue_p (arg))
+	    {
+	      auto_diagnostic_group d;
+	      if (warning_at (loc, OPT_Wredundant_move,
+			      "redundant move in return statement"))
+		inform (loc, "remove %<std::move%> call");
 	    }
 	}
     }
@@ -9499,11 +9524,7 @@ check_return_expr (tree retval, bool *no_warning)
          Note that these conditions are similar to, but not as strict as,
 	 the conditions for the named return value optimization.  */
       bool converted = false;
-      if ((cxx_dialect != cxx98)
-          && ((VAR_P (retval) && !DECL_HAS_VALUE_EXPR_P (retval))
-	      || TREE_CODE (retval) == PARM_DECL)
-	  && DECL_CONTEXT (retval) == current_function_decl
-	  && !TREE_STATIC (retval)
+      if (treat_lvalue_as_rvalue_p (retval)
 	  /* This is only interesting for class type.  */
 	  && CLASS_TYPE_P (functype))
 	{

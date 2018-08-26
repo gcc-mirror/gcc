@@ -1,3 +1,8 @@
+2018-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87029, Implement -Wredundant-move.
+	* c.opt (Wredundant-move): New option.
+
 2018-08-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86981, Implement -Wpessimizing-move.
