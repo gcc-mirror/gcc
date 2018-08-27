@@ -1,3 +1,7 @@
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/switch-2.c: New test.
+
 2018-08-27  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/torture/20180705-1.C: New testcase.

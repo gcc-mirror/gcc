@@ -1,5 +1,16 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
+	* tree-switch-conversion.c (bit_test_cluster::find_bit_tests):
+        Add new argument to bit_test_cluster constructor.
+	(bit_test_cluster::emit): Set bits really number of values
+        handlel by a test.
+	(bit_test_cluster::hoist_edge_and_branch_if_true): Add
+        probability argument.
+	* tree-switch-conversion.h (struct bit_test_cluster):
+        Add m_handles_entire_switch.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
         PR tree-optimization/86702
 	* tree-switch-conversion.c (jump_table_cluster::emit):
         Make probabilities even for values in jump table
