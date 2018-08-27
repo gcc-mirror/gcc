@@ -2645,6 +2645,7 @@ class GTY(()) module_state {
   {
     return legacy;
   }
+  bool check_not_purview (location_t loc);
 
  public:
   slurping *slurper () const
@@ -6643,6 +6644,21 @@ depset::tarjan::connect (depset *v)
     }
 }
 
+/* If THIS is the current purview, issue an import error and return false.  */
+
+bool
+module_state::check_not_purview (location_t loc)
+{
+  if ((*modules)[MODULE_PURVIEW] == this)
+    {
+      /* Cannot import the current module.  */
+      error_at (loc, "cannot import module %qs in its own purview", fullname);
+      inform (from_loc, "module %qs declared here", fullname);
+      return false;
+    }
+  return true;
+}
+
 /* Module name substitutions.  */
 static vec<module_state *,va_heap> substs;
 
@@ -7825,19 +7841,12 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	  exported = sec.u ();
 	  if (sec.get_overrun ())
 	    break;
-	  if (imp->is_detached ())
-	    imp->attach (from_loc);
-	  module_state *purview = (*modules)[MODULE_PURVIEW];
-	  if (purview == imp)
-	    {
-	      /* Cannot import the current module.  */
-	      error_at (loc, "cannot import module %qs in its own purview",
-			imp->fullname);
-	      inform (imp->from_loc, "module %qs declared here", imp->fullname);
-	      imp = NULL;
-	    }
+	  if (!imp->check_not_purview (loc))
+	    imp = NULL;
 	  else
 	    {
+	      if (imp->is_detached ())
+		imp->attach (from_loc);
 	      imp->set_loc (lmaps, this, floc);
 	      if (!imp->is_imported ())
 		{
@@ -10410,15 +10419,8 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
   gcc_assert (global_namespace == current_scope ());
   from_loc = ordinary_loc_of (lmaps, from_loc);
 
-  module_state *purview = (*modules)[MODULE_PURVIEW];
-  if (purview == imp)
-    {
-      /* Cannot import the current module.  */
-      error_at (from_loc, "cannot import module %qs in its own purview",
-		imp->fullname);
-      inform (imp->from_loc, "module %qs declared here", imp->fullname);
-      return;
-    }
+  if (!imp->check_not_purview (from_loc))
+    return;
 
   if (imp->is_detached ())
     imp->attach (from_loc);

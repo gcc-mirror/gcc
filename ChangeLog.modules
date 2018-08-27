@@ -1,5 +1,9 @@
 2018-08-27  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (module_state::check_not_purview): New.
+	(module_state::read_imports,import_module): Use it.
+
 	Remove %M formatter, it is not worth complexity.
 	gcc/c-family/
 	* c-format.c (local_module_ptr_node): Remove
