@@ -43,15 +43,15 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* config/i386/i386.c (ix86_expand_set_or_movmem): Dump
-        selected expansion strategy.
+	selected expansion strategy.
 
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* builtins.h (is_builtin_fn): Remove and fndecl_built_in_p.
 	* builtins.c (is_builtin_fn): Likewise.
 	* attribs.c (diag_attr_exclusions): Use new function
-        fndecl_built_in_p and remove check for FUNCTION_DECL if
-        possible.
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
 	(builtin_mathfn_code): Likewise.
 	(fold_builtin_expect): Likewise.
 	(fold_call_expr): Likewise.
@@ -139,21 +139,21 @@
 	* ubsan.c (is_ubsan_builtin_p): Likewise.
 	* varasm.c (incorporeal_function_p): Likewise.
 	* tree.h (DECL_BUILT_IN): Remove and replace with
-        fndecl_built_in_p.
+	fndecl_built_in_p.
 	(DECL_BUILT_IN_P): Transfort to fndecl_built_in_p.
 	(fndecl_built_in_p): New.
 
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
-        PR tree-optimization/86847
+	PR tree-optimization/86847
 	* tree-switch-conversion.c (switch_decision_tree::dump_case_nodes):
-        Dump also subtree probability.
+	Dump also subtree probability.
 	(switch_decision_tree::do_jump_if_equal): New function.
 	(switch_decision_tree::emit_case_nodes): Handle special
-        situations in balanced tree that can be emitted much simpler.
-        Fix calculation of probabilities that happen in tree expansion.
+	situations in balanced tree that can be emitted much simpler.
+	Fix calculation of probabilities that happen in tree expansion.
 	* tree-switch-conversion.h (struct cluster): Add
-        is_single_value_p.
+	is_single_value_p.
 	(struct simple_cluster): Likewise.
 	(struct case_tree_node): Add new function has_child.
 	(do_jump_if_equal): New.
@@ -161,41 +161,41 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* tree-switch-conversion.c (bit_test_cluster::find_bit_tests):
-        Add new argument to bit_test_cluster constructor.
+	Add new argument to bit_test_cluster constructor.
 	(bit_test_cluster::emit): Set bits really number of values
-        handlel by a test.
+	handlel by a test.
 	(bit_test_cluster::hoist_edge_and_branch_if_true): Add
-        probability argument.
+	probability argument.
 	* tree-switch-conversion.h (struct bit_test_cluster):
-        Add m_handles_entire_switch.
+	Add m_handles_entire_switch.
 
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
-        PR tree-optimization/86702
+	PR tree-optimization/86702
 	* tree-switch-conversion.c (jump_table_cluster::emit):
-        Make probabilities even for values in jump table
-        according to number of cases handled.
+	Make probabilities even for values in jump table
+	according to number of cases handled.
 	(switch_decision_tree::compute_cases_per_edge): Pass
-        argument to reset_out_edges_aux function.
+	argument to reset_out_edges_aux function.
 	(switch_decision_tree::analyze_switch_statement): Likewise.
 	* tree-switch-conversion.h (switch_decision_tree::reset_out_edges_aux):
-        Make it static.
+	Make it static.
 
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* cfgexpand.c (expand_asm_stmt): Use label_to_block and pass
-        cfun argument explicitly.
+	cfun argument explicitly.
 	* gimple-pretty-print.c (dump_gimple_switch): Likewise.
 	* hsa-gen.c (gen_hsa_insns_for_switch_stmt): Use new
-        function gimple_switch_default_bb.
+	function gimple_switch_default_bb.
 	(convert_switch_statements):
 	(expand_builtins):
 	* ipa-fnsummary.c (set_switch_stmt_execution_predicate):
 	* stmt.c (label_to_block_fn): Use label_to_block and pass
-        cfun argument explicitly and use gimple_switch_label_bb.
+	cfun argument explicitly and use gimple_switch_label_bb.
 	(expand_case): Likewise.
 	* tree-cfg.c (lower_phi_internal_fn): Use label_to_block and pass
-        cfun argument explicitly. Likewise.
+	cfun argument explicitly. Likewise.
 	(make_edges_bb): Likewise.
 	(make_cond_expr_edges): Likewise.
 	(get_cases_for_edge): Likewise.
@@ -221,10 +221,10 @@
 	(gimple_switch_edge): Likewise.
 	(gimple_switch_default_edge): Likewise.
 	* tree-cfgcleanup.c (convert_single_case_switch): Use
-        new gimple functions and pass new argument to label_to_block.
+	new gimple functions and pass new argument to label_to_block.
 	(cleanup_control_flow_bb):
 	* tree-eh.c (make_eh_dispatch_edges): Use label_to_block and pass
-        cfun argument explicitly.
+	cfun argument explicitly.
 	(make_eh_edges): Likewise.
 	(redirect_eh_dispatch_edge): Likewise.
 	(lower_resx): Likewise.
@@ -241,19 +241,19 @@
 	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Likewise.
 	* tree-ssa-uninit.c (convert_control_dep_chain_into_preds):
 	* tree-switch-conversion.c (switch_conversion::collect): Use new
-        gimple functions.
+	gimple functions.
 	(switch_conversion::check_final_bb): Likewise.
 	(switch_conversion::gather_default_values): Pass new argument
-        to label_to_block.
+	to label_to_block.
 	(switch_conversion::build_constructors): Likewise.
 	(switch_decision_tree::compute_cases_per_edge): Use new
-        gimple_switch_edge function.
+	gimple_switch_edge function.
 	(switch_decision_tree::analyze_switch_statement): Pass new argument
-        to label_to_block.
+	to label_to_block.
 	(switch_decision_tree::try_switch_expansion): Use
-        gimple_switch_default_edge.
+	gimple_switch_default_edge.
 	* tree-vrp.c (find_switch_asserts): Pass new argument
-        to label_to_block.
+	to label_to_block.
 	* vr-values.c (vr_values::vrp_visit_switch_stmt): Likewise.
 	(vr_values::simplify_switch_using_ranges): Likewise.
 
@@ -315,19 +315,19 @@
 
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
-        PR gcov-profile/87069
+	PR gcov-profile/87069
 	* gcov.c (process_file): Record files already processed
-        and warn about a file being processed multiple times.
+	and warn about a file being processed multiple times.
 
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
-        PR driver/83193
+	PR driver/83193
 	* config/aarch64/aarch64.c (aarch64_override_options_internal):
-        Set default values for x_aarch64_*_string strings.
+	Set default values for x_aarch64_*_string strings.
 	* config/aarch64/aarch64.opt: Remove --{march,mcpu,mtune}==
-        prefix.  For -mabi do not print '=ABI' in help and use
-        <option_value> format for -msve-vector-bits and -moverride
-        options.
+	prefix.  For -mabi do not print '=ABI' in help and use
+	<option_value> format for -msve-vector-bits and -moverride
+	options.
 
 2018-08-26  Jeff Law  <law@redhat.com>
 
@@ -1001,23 +1001,23 @@
 2018-08-17  Martin Liska  <mliska@suse.cz>
 
 	* common.opt: Remove Warn, Init and Report for options with
-        Ignore/Deprecated flag. Warning is done automatically for
-        Deprecated flags.
+	Ignore/Deprecated flag. Warning is done automatically for
+	Deprecated flags.
 	* config/i386/i386.opt: Likewise.
 	* config/ia64/ia64.opt: Likewise.
 	* config/rs6000/rs6000.opt: Likewise.
 	* cppbuiltin.c (define_builtin_macros_for_compilation_flags):
-        Remove usage of flag_check_pointer_bounds.
+	Remove usage of flag_check_pointer_bounds.
 	* lto-wrapper.c (merge_and_complain): Do not handle
-        OPT_fcheck_pointer_bounds.
+	OPT_fcheck_pointer_bounds.
 	(append_compiler_options): Likewise.
 	* opt-functions.awk: Do not handle Deprecated.
 	* optc-gen.awk: Check that Var, Report and Init are not
-        used for an option with Ignore/Deprecated flag.
+	used for an option with Ignore/Deprecated flag.
 	* opts-common.c (decode_cmdline_option): Do not report
-        CL_ERR_DEPRECATED.
+	CL_ERR_DEPRECATED.
 	(read_cmdline_option): Report warning for OPT_SPECIAL_deprecated
-        options.
+	options.
 	* opts.h (struct cl_option): Remove cl_deprecated flag.
 	(CL_ERR_DEPRECATED): Remove error enum value.
 

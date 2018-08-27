@@ -1,8 +1,8 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* gcc-interface/decl.c (update_profile): Use new function
-        fndecl_built_in_p and remove check for FUNCTION_DECL if
-        possible.
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
 	* gcc-interface/gigi.h (call_is_atomic_load): Likewise.
 	* gcc-interface/utils.c (gnat_pushdecl): Likewise.
 
@@ -296,7 +296,7 @@
 	* gcc-interface/Makefile.in (xoscons): Likewise.
 
 2018-07-31  Alexandre Oliva  <oliva@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/trans.c: Include debug.h.
 	(file_map): New static variable.

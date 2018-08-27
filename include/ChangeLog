@@ -1,6 +1,6 @@
 2018-07-26  Martin Liska  <mliska@suse.cz>
 
-        PR lto/86548
+	PR lto/86548
 	* libiberty.h (make_temp_file_with_prefix): New function.
 
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
@@ -440,8 +440,8 @@
 	* libiberty.h (xasprintf): Declare.
 
 2014-12-11  Uros Bizjak  <ubizjak@gmail.com>
-            Ben Elliston  <bje@au.ibm.com>
-            Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Ben Elliston  <bje@au.ibm.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* libiberty.h (xvasprintf): Declare.
 
@@ -631,7 +631,7 @@
 	DEMANGLE_COMPONENT_TAGGED_NAME.
 
 2012-10-29  Sterling Augustine  <saugustine@google.com>
-            Cary Coutant  <ccoutant@google.com>
+	    Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2.h (dwarf_location_list_entry_type): New enum with fields
 	DW_LLE_GNU_end_of_list_entry, DW_LLE_GNU_base_address_selection_entry,
@@ -1268,7 +1268,7 @@
 
 	* splay-tree.h (libi_uhostptr_t, libi_shostptr_t): New types,
 	needed for WIN64 when a long is not wide enough for a pointer.
-        (splay_tree_key, splay_tree_value): Use the new types.
+	(splay_tree_key, splay_tree_value): Use the new types.
 
 2007-05-07  Nathan Froyd  <froydnj@codesourcery.com>
 
@@ -1308,7 +1308,7 @@
 	* ansidecl.h (ATTRIBUTE_PACKED): Define.
 
 2006-11-30  Andrew Stubbs  <andrew.stubbs@st.com>
-            J"orn Rennecke <joern.rennecke@st.com>
+	    J"orn Rennecke <joern.rennecke@st.com>
 
 	PR driver/29931
 	* libiberty.h (make_relative_prefix_ignore_links): Declare.

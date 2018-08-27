@@ -656,7 +656,7 @@
 	(onload): Don't create the temporary directory.
 
 2009-11-04  Richard Guenther  <rguenther@suse.de>
-            Rafael Avila de Espindola  <espindola@google.com>
+	    Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-plugin.c (plugin_file_info): Remove temp field.
 	(cleanup_handler): Don't delete temporary objects.
@@ -692,9 +692,9 @@
 
 2009-10-19  Rafael Avila de Espindola  <espindola@google.com>
     
-        PR40790
-        * configure: Regenerate.
-        * configure.ac: Add AC_TYPE_UINT64_T.
+	PR40790
+	* configure: Regenerate.
+	* configure.ac: Add AC_TYPE_UINT64_T.
 
 2009-10-16  Rafael Avila de Espindola  <espindola@google.com>
 
@@ -935,7 +935,7 @@
 
 2008-09-23  Rafael Espindola  <espindola@google.com>
 
-        * plugin-api.h: Moved to include.
+	* plugin-api.h: Moved to include.
 
 2008-09-23 Rafael Espindola  <espindola@google.com>
 

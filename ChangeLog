@@ -9,7 +9,7 @@
 2018-08-10  Martin Liska  <mliska@suse.cz>
 
 	* MAINTAINERS: Revert change in previous commit and
-        join lines.
+	join lines.
 
 2018-08-10  Martin Liska  <mliska@suse.cz>
 
@@ -51,7 +51,7 @@
 
 2018-06-19  Bernhard M. Wiedemann  <bwiedemann@suse.de>
 
-        * libtool.m4: Sort output of 'find' to enable deterministic builds.
+	* libtool.m4: Sort output of 'find' to enable deterministic builds.
 	* ltmain.sh: Likewise.
 
 2018-07-03  Segher Boessenkool  <segher@kernel.crashing.org>

@@ -947,7 +947,7 @@
 	* trans-intrinsic.c (conv_intrinsic_kill, conv_intrinsic_kill_sub): new
 	functions.
 	(gfc_conv_intrinsic_function): Use conv_intrinsic_kill.
-        (gfc_conv_intrinsic_subroutine): Use conv_intrinsic_kill_sub.
+	(gfc_conv_intrinsic_subroutine): Use conv_intrinsic_kill_sub.
 	* trans.h: Declare gfor_fndecl_kill and gfor_fndecl_kill_sub.
 
 2018-03-11  Paul Thomas  <pault@gcc.gnu.org>
@@ -1182,7 +1182,7 @@
 	* trans-stmt.c (gfc_trans_lock_unlock): Likewise.
 	(gfc_trans_event_post_wait): Likewise.
 	(gfc_trans_sync): Likewise.
-        (gfc_trans_stop): Use size_t for character lengths, int for exit
+	(gfc_trans_stop): Use size_t for character lengths, int for exit
 	codes.
 
 2018-02-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
@@ -1803,7 +1803,7 @@
 	(gfc_interpret_character): Use gfc_charlen_t.
 	* target-memory.h (gfc_encode_character): Modify prototype.
 	* trans-array.c (gfc_trans_array_ctor_element): Use existing type.
-        (get_array_ctor_var_strlen): Use gfc_conv_mpz_to_tree_type.
+	(get_array_ctor_var_strlen): Use gfc_conv_mpz_to_tree_type.
 	(trans_array_constructor): Use existing type.
 	(get_array_charlen): Likewise.
 	* trans-const.c (gfc_conv_mpz_to_tree_type): New function.

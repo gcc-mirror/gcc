@@ -132,8 +132,8 @@
 
 2004-04-25  Paolo Bonzini  <bonzini@gnu.org>
 
-        * configure.ac: Point config.intl to the parent directory of
-        ${top_builddir}.
+	* configure.ac: Point config.intl to the parent directory of
+	${top_builddir}.
 	* configure: Regenerate.
 
 2004-03-10  Kelley Cook  <kcook@gcc.gnu.org>

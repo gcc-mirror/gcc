@@ -32,7 +32,7 @@
 
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
-        PR tree-optimization/86847
+	PR tree-optimization/86847
 	* gcc.dg/tree-ssa/switch-3.c: New test.
 	* gcc.dg/tree-ssa/vrp105.c: Remove.
 

@@ -251,7 +251,7 @@
 	* configure: Regenerate.
 
 2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
-            Steve Ellcey  <sje@cup.hp.com>
+	    Steve Ellcey  <sje@cup.hp.com>
 
 	* configure: Regenerate for new libtool.
 	* Makefile.in: Ditto.

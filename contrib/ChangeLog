@@ -73,7 +73,7 @@
 	* update-copyright.py: Skip pdt-5.f03 in gfortran.dg subdir.
 
 2017-11-28  Julia Koval  <julia.koval@intel.com>
-            Sebastian Peryt  <sebastian.peryt@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* contrib/gcc_update: Ditto.
 
@@ -183,8 +183,8 @@
 
 2017-04-11  Damian Rouson  <damian@sourceryinstitute.org>
 
-        * download_prerequisites (md5_check): New function emulates Linux
-        'md5 --check' on macOS.  Modified script for macOS compatibility.
+	* download_prerequisites (md5_check): New function emulates Linux
+	'md5 --check' on macOS.  Modified script for macOS compatibility.
 
 2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
 
@@ -283,7 +283,7 @@
 2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* compare_tests: Take ERROR messages into account when
-          comparing.
+	  comparing.
 
 2016-08-17  Martin Liska  <mliska@suse.cz>
 

@@ -296,10 +296,10 @@
 
 2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
 
-        PR other/70268
-        * include/cpplib.h (cpp_callbacks::remap_filename): New callback.
-        * macro.c (_cpp_builtin_macro_text): Call remap_filename for
-        __FILE__ and __BASE_FILE__.
+	PR other/70268
+	* include/cpplib.h (cpp_callbacks::remap_filename): New callback.
+	* macro.c (_cpp_builtin_macro_text): Call remap_filename for
+	__FILE__ and __BASE_FILE__.
 
 2018-01-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
