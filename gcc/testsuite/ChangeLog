@@ -1,3 +1,8 @@
+2018-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/87065
+	* gcc.target/i386/pr87065.c: New test.
+
 2018-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
