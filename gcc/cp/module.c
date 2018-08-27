@@ -2607,8 +2607,6 @@ class GTY(()) module_state {
   unsigned short subst;		/* subst number if !0.  */
   unsigned crc;		/* CRC we saw reading it in. */
 
-  unsigned depth : 16;  /* Depth, direct imports are 0 */
-
   bool legacy : 1;
 
   bool direct : 1;	/* A direct import.  */
@@ -2762,8 +2760,14 @@ class GTY(()) module_state {
   location_t read_location (bytes_in &);
 
  public:
-  void set_loc (line_maps *lmaps, const module_state *container = NULL,
-		location_t floc = UNKNOWN_LOCATION);
+  /* Create a location for module.   */
+  void maybe_create_loc (line_maps *lmaps)
+  {
+    gcc_checking_assert (from_loc != UNKNOWN_LOCATION);
+    if (loc == UNKNOWN_LOCATION)
+      /* Error paths can cause this to be set and then repeated.  */
+      loc = linemap_module_loc (lmaps, from_loc, fullname);
+  }
   void attach (location_t);
   bool do_import (const char *filename, line_maps *, bool check_crc);
 
@@ -2788,7 +2792,7 @@ module_state::module_state (tree name, module_state *parent)
     parent (parent), name (name), slurp (NULL),
     fullname (NULL), filename (NULL),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
-    mod (MODULE_UNKNOWN), subst (0), crc (0), depth (65535)
+    mod (MODULE_UNKNOWN), subst (0), crc (0)
 {
   legacy = direct = exported = imported = false;
   if (name && (IDENTIFIER_POINTER (name)[0] == '"'
@@ -7846,8 +7850,7 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	  else
 	    {
 	      if (imp->is_detached ())
-		imp->attach (from_loc);
-	      imp->set_loc (lmaps, this, floc);
+		imp->attach (floc);
 	      if (!imp->is_imported ())
 		{
 		  imp->crc = crc;
@@ -7858,17 +7861,18 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 		      imp->filename = rel;
 		    }
 		}
-	      else if (imp->crc != crc)
-		{
-		  error_at (loc, "import %qs has CRC mismatch", imp->fullname);
-		  imp = NULL;
-		}
 	    }
 	}
       else if (imp->is_detached ())
 	/* An indirect import, find it, it should be there.  */
 	error_at (loc, "indirect import %qs is not already loaded",
 		  imp->fullname);
+
+      if (imp && imp->crc != crc)
+	{
+	  error_at (loc, "import %qs has CRC mismatch", imp->fullname);
+	  imp = NULL;
+	}
 
       if (imp)
 	imports.quick_push (tuple (imp, ix_bool_t (ix, exported)));
@@ -7878,10 +7882,11 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
   for (unsigned ix = 0; ix != imports.length (); ix++)
     {
       tuple &tup = imports[ix];
-      if (!tup.first->is_imported ())
+      if (lmaps && !tup.first->is_imported ())
 	{
 	  char *fname = NULL;
 	  unsigned n = dump.push (tup.first);
+	  tup.first->maybe_create_loc (lmaps);
 	  if (!tup.first->filename)
 	    fname = module_mapper::import_export (tup.first, false);
 	  if (!tup.first->do_import (fname, lmaps, true))
@@ -10253,48 +10258,29 @@ module_interface_p ()
 	  && (*modules)[MODULE_PURVIEW]->exported);
 }
 
-/* Create a location for module.  FROM is the importing module, which
-   is NULL for direct importation.  If FROM is shallower than
-   whatever may have previously set the location, we're reseated to
-   be FROM from.  */
-
-void
-module_state::set_loc (line_maps *lmaps,
-		       const module_state *from, location_t floc)
-{
-  unsigned lwm = (from ? from->depth : 0) + 1;
-  gcc_checking_assert (lwm != 65536);
-  if (depth > lwm)
-    {
-      depth = lwm;
-      if (!from)
-	floc = from_loc;
-      const char *name_str = NULL;
-      if (loc == UNKNOWN_LOCATION)
-	name_str = fullname;
-      else
-	dump () && dump ("Reseating %M to import of %M", this, from);
-      loc = linemap_module_loc (lmaps, floc, loc, name_str);
-    }
-}
+/* THIS module is being imported (or defined) at FROM.  Create its
+   name now.  */
 
 void
 module_state::attach (location_t from)
 {
   from_loc = from;
-  /* Create a TREE_VEC of components.  */
-  auto_vec<tree,5> ids;
-  size_t len = 0;
-  for (module_state *probe = this; probe; probe = probe->parent)
-    {
-      ids.safe_push (probe->name);
-      len += IDENTIFIER_LENGTH (probe->name);
-    }
-  unsigned elts = ids.length ();
-  if (elts == 1)
+
+  /* Create the fullname.  */
+  if (!parent)
     fullname = IDENTIFIER_POINTER (name);
   else
     {
+      /* It is simpler to create a flat string name now, rather than
+	 spew it on demand when needed.  */
+      auto_vec<tree,5> ids;
+      size_t len = 0;
+      for (module_state *probe = this; probe; probe = probe->parent)
+	{
+	  ids.safe_push (probe->name);
+	  len += IDENTIFIER_LENGTH (probe->name);
+	}
+      unsigned elts = ids.length ();
       fullname = XNEWVEC (char, ids.length () + len);
       len = 0;
       for (unsigned ix = 0; ix != elts; ix++)
@@ -10435,7 +10421,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 	{
 	  unsigned n = dump.push (imp);
 	  char *fname = module_mapper::import_export (imp, false);
-	  imp->set_loc (lmaps);
+	  imp->maybe_create_loc (lmaps);
 	  imp->do_import (fname, lmaps, false);
 	  dump.pop (n);
 	}
@@ -10519,11 +10505,11 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
     {
       unsigned n = dump.push (state);
       char *fname = module_mapper::import_export (state, exporting_p);
-      state->set_loc (lmaps);
+      state->maybe_create_loc (lmaps);
       if (!exporting_p)
 	state->do_import (fname, lmaps, false);
       else if (fname)
-	state->filename = xstrdup (fname);
+	state->filename = xstrdup (fname); 
       dump.pop (n);
     }
 }
@@ -10636,8 +10622,11 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
 	  ok = false;
 	  error_at (imp->from_loc, "module %qs is unknown", imp->fullname);
 	}
-      imp->set_loc (lmaps);
+      imp->maybe_create_loc (lmaps);
     }
+
+  if (interface)
+    interface->maybe_create_loc (lmaps);
 
   if (ok)
     {
@@ -10661,8 +10650,6 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
 
   if (interface)
     {
-      interface->set_loc (lmaps);
-
       /* Record the size of the hole the preamble created in the line
 	 table.  */
       spewing *spew = interface->spewer ();
@@ -10968,6 +10955,7 @@ finish_module_parse (line_maps *lmaps)
     {
       int fd = -1;
       int e = ENOENT;
+      
       if (state->filename)
 	{
 	  fd = open (maybe_add_bmi_prefix (state->filename),

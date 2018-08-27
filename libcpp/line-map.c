@@ -594,29 +594,16 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   return map;
 }
 
-/* Create or reseat a location for a module NAME imported at FROM.  */
+/* Create a location for a module NAME imported at FROM.  */
 
 source_location
-linemap_module_loc (line_maps *set, source_location from,
-		    source_location loc, const char *name)
+linemap_module_loc (line_maps *set, source_location from, const char *name)
 {
-  /* Exactly one of LOC and NAME must be provided.  */
-  gcc_assert (!loc != !name && IS_ORDINARY_LOC (from));
-
-  const line_map_ordinary *map;
-
-  if (!loc)
-    {
-      /* Make a new loc.  */
-      map = linemap_check_ordinary (linemap_add
-				    (set, LC_MODULE, false, name, 0));
-      loc = linemap_line_start (set, 0, 0);
-    }
-  else
-    /* Reseat an existing loc.  */
-    map = linemap_ordinary_map_lookup (set, loc);
-
+  const line_map_ordinary *map
+    = linemap_check_ordinary (linemap_add (set, LC_MODULE, false, name, 0));
   const_cast <line_map_ordinary *> (map)->included_from = from;
+
+  source_location loc = linemap_line_start (set, 0, 0);
 
   return loc;
 }

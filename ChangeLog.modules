@@ -1,6 +1,16 @@
 2018-08-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (module_state): Remove depth.
+	(module_state::maybe_create_loc): Replace ...
+	(module_state::set_loc): ... this.
+	(module_state::read_imports): Check CRC of indirect imports too.
+	(module_state::attach): Simplify logic.
+	libcpp/
+	* include/linemaph (linemap_module_loc): Drop CURRENT parm.
+	* line-map.c (linemap_module_loc): Drop reseating capability.
+
+	gcc/cp/
 	* module.c (module_state::check_not_purview): New.
 	(module_state::read_imports,import_module): Use it.
 
