@@ -1,3 +1,11 @@
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* diagnostic-show-locus.c (get_line_span_for_fixit_hint): Show the
+	line above for line-insertion fix-it hints.
+	(selftest::test_fixit_insert_containing_newline): Update the
+	expected results, and add a test with line-numbering enabled.
+
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/86962
