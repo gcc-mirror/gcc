@@ -6713,6 +6713,8 @@ extern module_state *get_module (tree name, module_state *parent);
 extern void pp_module_name (pretty_printer *pp, module_state *);
 extern tree get_module_owner (tree);
 extern void set_module_owner (tree);
+extern void mangle_module (int m);
+extern void mangle_module_fini ();
 extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       mc_slot *mslot, bool outermost);
 extern void fixup_unscoped_enum_owner (tree);
@@ -7588,6 +7590,8 @@ extern tree mangle_ref_init_variable		(tree);
 extern char * get_mangled_vtable_map_var_name   (tree);
 extern bool mangle_return_type_p		(tree);
 extern tree mangle_decomp			(tree, vec<tree> &);
+extern void mangle_substitution			(char, int);
+extern void mangle_identifier			(tree);
 
 /* in dump.c */
 extern bool cp_dump_tree			(void *, tree);

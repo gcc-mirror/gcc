@@ -6636,6 +6636,29 @@ depset::tarjan::connect (depset *v)
     }
 }
 
+/* Module name substitutions.  */
+static vec<module_state *,va_heap> substs;
+
+void
+mangle_module (int mod)
+{
+  module_state *state = (*modules)[mod];
+
+  substs.safe_push (state);
+  tree vec_name = state->vec_name;
+  for (int ix = 0; ix < TREE_VEC_LENGTH (vec_name); ix++)
+    mangle_identifier (TREE_VEC_ELT (vec_name, ix));
+}
+
+/* Clean up substitutions.  */
+void
+mangle_module_fini ()
+{
+  while (substs.length ())
+    {
+      module_state *m = substs.pop ();
+    }
+}
 
 /* Find or create module NAME & PARENT in the hash table.  */
 

@@ -117,6 +117,9 @@ struct GTY(()) globals {
 
   /* True if the mangling will be different in C++17 mode.  */
   bool need_cxx17_warning;
+
+  /* True if we mangled a module name.  */
+  bool mod;
 };
 
 static GTY (()) globals G;
@@ -849,6 +852,22 @@ write_encoding (const tree decl)
     }
 }
 
+/* Interface to substitution and identifer mangling, used by the
+   module name mangler.  */
+
+void
+mangle_substition (char c, int v)
+{
+  write_char (c);
+  write_compact_number (v);
+}
+
+void
+mangle_identifier (tree id)
+{
+  write_source_name (id);
+}
+
 /* If the outermost non-namespace context (including DECL itself) is a
    non-exported module decl, mangle the module information.
 
@@ -872,16 +891,11 @@ maybe_write_module (tree decl)
   if (!MAYBE_DECL_MODULE_PURVIEW_P (owner))
     return;
 
-  /* Mangle the module.  */
-  tree vec_name = module_vec_name (DECL_MODULE_OWNER (owner));
+  G.mod = true;
 
   write_char ('W');
 
-  // FIXME: back-references?
-  for (int ix = 0; ix < TREE_VEC_LENGTH (vec_name); ix++)
-    write_source_name (TREE_VEC_ELT (vec_name, ix));
-
-  // FIXME: promoted linkage?
+  mangle_module (DECL_MODULE_OWNER (owner));
 
   write_char ('E');
 }
@@ -3711,20 +3725,22 @@ start_mangling (const tree entity)
   G.entity = entity;
   G.need_abi_warning = false;
   G.need_cxx17_warning = false;
+  G.mod = false;
   obstack_free (&name_obstack, name_base);
   mangle_obstack = &name_obstack;
   name_base = obstack_alloc (&name_obstack, 0);
 }
 
-/* Done with mangling. If WARN is true, and the name of G.entity will
-   be mangled differently in a future version of the ABI, issue a
-   warning.  */
+/* Done with mangling.  Release the data.  */
 
 static void
 finish_mangling_internal (void)
 {
   /* Clear all the substitutions.  */
   vec_safe_truncate (G.substitutions, 0);
+
+  if (G.mod)
+    mangle_module_fini ();
 
   /* Null-terminate the string.  */
   write_char ('\0');

@@ -1,3 +1,15 @@
+2018-08-27  Nathan Sidwell  <nathan@acm.org>
+
+	Refactor mangling interface.
+	gcc/cp/
+	* cp-tree.h (mangle_module, mangle_module_fini): Declare.
+	(mangle_substitution, mangle_identifer): Declare.
+	* mangle.c (mangle_substitution, mangle_identifer): Define.
+	(struct globals): Add mod field.
+	(maybe_write_module): Call mangle_module.
+	(finish_mangling_internal): Call mangle_module_fini.
+	* module.c (mangle_module, mangle_module_fini): Define.
+
 2018-08-23  Nathan Sidwell  <nathan@acm.org>
 
 	Module state gains parent.
