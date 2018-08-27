@@ -117,23 +117,23 @@ Enum(aarch64_tls_size) String(48) Value(48)
 
 march=
 Target RejectNegative ToLower Joined Var(aarch64_arch_string)
--march=ARCH	Use features of architecture ARCH.
+Use features of architecture ARCH.
 
 mcpu=
 Target RejectNegative ToLower Joined Var(aarch64_cpu_string)
--mcpu=CPU	Use features of and optimize for CPU.
+Use features of and optimize for CPU.
 
 mtune=
 Target RejectNegative ToLower Joined Var(aarch64_tune_string)
--mtune=CPU	Optimize for CPU.
+Optimize for CPU.
 
 mabi=
 Target RejectNegative Joined Enum(aarch64_abi) Var(aarch64_abi) Init(AARCH64_ABI_DEFAULT)
--mabi=ABI	Generate code that conforms to the specified ABI.
+Generate code that conforms to the specified ABI.
 
 moverride=
 Target RejectNegative ToLower Joined Var(aarch64_override_tune_string)
--moverride=STRING	Power users only! Override CPU optimization parameters.
+-moverride=<string>	Power users only! Override CPU optimization parameters.
 
 Enum
 Name(aarch64_abi) Type(int)
@@ -209,7 +209,7 @@ Enum(sve_vector_bits) String(2048) Value(SVE_2048)
 
 msve-vector-bits=
 Target RejectNegative Joined Enum(sve_vector_bits) Var(aarch64_sve_vector_bits) Init(SVE_SCALABLE)
--msve-vector-bits=N	Set the number of bits in an SVE vector register to N.
+-msve-vector-bits=<number>	Set the number of bits in an SVE vector register to N.
 
 mverbose-cost-dump
 Target Undocumented Var(flag_aarch64_verbose_cost)
