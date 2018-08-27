@@ -3474,7 +3474,7 @@ find_switch_asserts (basic_block bb, gswitch *last)
   for (idx = 0; idx < n; ++idx)
     {
       ci[idx].expr = gimple_switch_label (last, idx);
-      ci[idx].bb = label_to_block (CASE_LABEL (ci[idx].expr));
+      ci[idx].bb = label_to_block (cfun, CASE_LABEL (ci[idx].expr));
     }
   edge default_edge = find_edge (bb, ci[0].bb);
   qsort (ci, n, sizeof (struct case_info), compare_case_labels);

@@ -1,3 +1,79 @@
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* cfgexpand.c (expand_asm_stmt): Use label_to_block and pass
+        cfun argument explicitly.
+	* gimple-pretty-print.c (dump_gimple_switch): Likewise.
+	* hsa-gen.c (gen_hsa_insns_for_switch_stmt): Use new
+        function gimple_switch_default_bb.
+	(convert_switch_statements):
+	(expand_builtins):
+	* ipa-fnsummary.c (set_switch_stmt_execution_predicate):
+	* stmt.c (label_to_block_fn): Use label_to_block and pass
+        cfun argument explicitly and use gimple_switch_label_bb.
+	(expand_case): Likewise.
+	* tree-cfg.c (lower_phi_internal_fn): Use label_to_block and pass
+        cfun argument explicitly. Likewise.
+	(make_edges_bb): Likewise.
+	(make_cond_expr_edges): Likewise.
+	(get_cases_for_edge): Likewise.
+	(make_gimple_switch_edges): Likewise.
+	(label_to_block_fn): Likewise.
+	(label_to_block): Likewise.
+	(make_goto_expr_edges): Likewise.
+	(make_gimple_asm_edges): Likewise.
+	(main_block_label): Likewise.
+	(group_case_labels_stmt): Likewise.
+	(find_taken_edge_computed_goto): Likewise.
+	(find_taken_edge_switch_expr): Likewise.
+	(gimple_verify_flow_info): Likewise.
+	(gimple_redirect_edge_and_branch): Likewise.
+	(gimple_switch_label_bb): New function.
+	(gimple_switch_default_bb): Likewise.
+	(gimple_switch_edge): Likewise.
+	(gimple_switch_default_edge): Likewise.
+	* tree-cfg.h (label_to_block_fn): Remove and replace ...
+	(label_to_block): ... with this.
+	(gimple_switch_label_bb): New.
+	(gimple_switch_default_bb): Likewise.
+	(gimple_switch_edge): Likewise.
+	(gimple_switch_default_edge): Likewise.
+	* tree-cfgcleanup.c (convert_single_case_switch): Use
+        new gimple functions and pass new argument to label_to_block.
+	(cleanup_control_flow_bb):
+	* tree-eh.c (make_eh_dispatch_edges): Use label_to_block and pass
+        cfun argument explicitly.
+	(make_eh_edges): Likewise.
+	(redirect_eh_dispatch_edge): Likewise.
+	(lower_resx): Likewise.
+	(lower_eh_dispatch): Likewise.
+	(maybe_remove_unreachable_handlers): Likewise.
+	(unsplit_eh): Likewise.
+	(cleanup_empty_eh): Likewise.
+	(verify_eh_edges): Likewise.
+	(verify_eh_dispatch_edge): Likewise.
+	* tree-ssa-dom.c (record_edge_info): Likewise.
+	* tree-ssa-forwprop.c (simplify_gimple_switch_label_vec): Likewise.
+	* tree-ssa-threadedge.c (thread_around_empty_blocks): Likewise.
+	(thread_through_normal_block): Likewise.
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Likewise.
+	* tree-ssa-uninit.c (convert_control_dep_chain_into_preds):
+	* tree-switch-conversion.c (switch_conversion::collect): Use new
+        gimple functions.
+	(switch_conversion::check_final_bb): Likewise.
+	(switch_conversion::gather_default_values): Pass new argument
+        to label_to_block.
+	(switch_conversion::build_constructors): Likewise.
+	(switch_decision_tree::compute_cases_per_edge): Use new
+        gimple_switch_edge function.
+	(switch_decision_tree::analyze_switch_statement): Pass new argument
+        to label_to_block.
+	(switch_decision_tree::try_switch_expansion): Use
+        gimple_switch_default_edge.
+	* tree-vrp.c (find_switch_asserts): Pass new argument
+        to label_to_block.
+	* vr-values.c (vr_values::vrp_visit_switch_stmt): Likewise.
+	(vr_values::simplify_switch_using_ranges): Likewise.
+
 2018-08-27  Richard Biener  <rguenther@suse.de>
 
 	* cfganal.h (rev_post_order_and_mark_dfs_back_seme): Declare.

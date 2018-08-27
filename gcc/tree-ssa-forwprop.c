@@ -1071,7 +1071,7 @@ simplify_gimple_switch_label_vec (gswitch *stmt, tree index_type)
       for (i = 0; i < gimple_switch_num_labels (stmt); i++)
 	{
 	  tree elt = gimple_switch_label (stmt, i);
-	  basic_block target = label_to_block (CASE_LABEL (elt));
+	  basic_block target = label_to_block (cfun, CASE_LABEL (elt));
 	  bitmap_set_bit (target_blocks, target->index);
 	}
       for (ei = ei_start (gimple_bb (stmt)->succs); (e = ei_safe_edge (ei)); )

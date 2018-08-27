@@ -1291,7 +1291,7 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       tree min, max;
       predicate p;
 
-      e = find_edge (bb, label_to_block (CASE_LABEL (cl)));
+      e = gimple_switch_edge (cfun, last, case_idx);
       min = CASE_LOW (cl);
       max = CASE_HIGH (cl);
 

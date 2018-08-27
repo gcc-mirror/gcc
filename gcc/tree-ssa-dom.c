@@ -436,7 +436,8 @@ record_edge_info (basic_block bb)
 	      for (i = 0; i < n_labels; i++)
 		{
 		  tree label = gimple_switch_label (switch_stmt, i);
-		  basic_block target_bb = label_to_block (CASE_LABEL (label));
+		  basic_block target_bb
+		    = label_to_block (cfun, CASE_LABEL (label));
 		  if (CASE_HIGH (label)
 		      || !CASE_LOW (label)
 		      || info[target_bb->index])

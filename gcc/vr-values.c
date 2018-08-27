@@ -2707,7 +2707,7 @@ vr_values::vrp_visit_switch_stmt (gswitch *stmt, edge *taken_edge_p)
     }
 
   *taken_edge_p = find_edge (gimple_bb (stmt),
-			     label_to_block (CASE_LABEL (val)));
+			     label_to_block (cfun, CASE_LABEL (val)));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -3760,7 +3760,8 @@ vr_values::simplify_switch_using_ranges (gswitch *stmt)
   for (i = 0; i < n2; ++i)
     {
       e = find_edge (gimple_bb (stmt),
-		     label_to_block (CASE_LABEL (TREE_VEC_ELT (vec2, i))));
+		     label_to_block (cfun,
+				     CASE_LABEL (TREE_VEC_ELT (vec2, i))));
       e->aux = (void *)-1;
     }
 

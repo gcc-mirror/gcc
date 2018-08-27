@@ -3239,7 +3239,7 @@ expand_asm_stmt (gasm *stmt)
 	     may insert further instructions into the same basic block after
 	     asm goto and if we don't do this, insertion of instructions on
 	     the fallthru edge might misbehave.  See PR58670.  */
-	  if (fallthru_bb && label_to_block_fn (cfun, label) == fallthru_bb)
+	  if (fallthru_bb && label_to_block (cfun, label) == fallthru_bb)
 	    {
 	      if (fallthru_label == NULL_RTX)
 	        fallthru_label = gen_label_rtx ();
