@@ -1279,12 +1279,16 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
     return clusters.copy ();
 
   /* Find and build the clusters.  */
-  for (int end = l;;)
+  for (unsigned end = l;;)
     {
       int start = min[end].m_start;
 
       if (is_beneficial (clusters, start, end - 1))
-	output.safe_push (new bit_test_cluster (clusters, start, end - 1));
+	{
+	  bool entire = start == 0 && end == clusters.length ();
+	  output.safe_push (new bit_test_cluster (clusters, start, end - 1,
+						  entire));
+	}
       else
 	for (int i = end - 1; i >=  start; i--)
 	  output.safe_push (clusters[i]);
@@ -1434,6 +1438,7 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   tree minval = get_low ();
   tree maxval = get_high ();
   tree range = int_const_binop (MINUS_EXPR, maxval, minval);
+  unsigned HOST_WIDE_INT bt_range = get_range (minval, maxval);
 
   /* Go through all case labels, and collect the case labels, profile
      counts, and other information we need to build the branch tests.  */
@@ -1452,11 +1457,11 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 	  test[k].mask = wi::zero (prec);
 	  test[k].target_bb = n->m_case_bb;
 	  test[k].label = n->m_case_label_expr;
-	  test[k].bits = 1;
+	  test[k].bits = 0;
 	  count++;
 	}
-      else
-	test[k].bits++;
+
+      test[k].bits += n->get_range (n->get_low (), n->get_high ());
 
       lo = tree_to_uhwi (int_const_binop (MINUS_EXPR, n->get_low (), minval));
       if (n->get_high () == NULL_TREE)
@@ -1513,14 +1518,20 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 				  /*simple=*/true, NULL_TREE,
 				  /*before=*/true, GSI_SAME_STMT);
 
-  /* if (idx > range) goto default */
-  range = force_gimple_operand_gsi (&gsi,
+  if (m_handles_entire_switch)
+    {
+      /* if (idx > range) goto default */
+      range
+	= force_gimple_operand_gsi (&gsi,
 				    fold_convert (unsigned_index_type, range),
 				    /*simple=*/true, NULL_TREE,
 				    /*before=*/true, GSI_SAME_STMT);
-  tmp = fold_build2 (GT_EXPR, boolean_type_node, idx, range);
-  basic_block new_bb = hoist_edge_and_branch_if_true (&gsi, tmp, default_bb);
-  gsi = gsi_last_bb (new_bb);
+      tmp = fold_build2 (GT_EXPR, boolean_type_node, idx, range);
+      basic_block new_bb
+	= hoist_edge_and_branch_if_true (&gsi, tmp, default_bb,
+					 profile_probability::unlikely ());
+      gsi = gsi_last_bb (new_bb);
+    }
 
   /* csui = (1 << (word_mode) idx) */
   csui = make_ssa_name (word_type_node);
@@ -1533,17 +1544,23 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   gsi_insert_before (&gsi, shift_stmt, GSI_SAME_STMT);
   update_stmt (shift_stmt);
 
+  profile_probability prob = profile_probability::always ();
+
   /* for each unique set of cases:
        if (const & csui) goto target  */
   for (k = 0; k < count; k++)
     {
+      prob = profile_probability::always ().apply_scale (test[k].bits,
+							 bt_range);
+      bt_range -= test[k].bits;
       tmp = wide_int_to_tree (word_type_node, test[k].mask);
       tmp = fold_build2 (BIT_AND_EXPR, word_type_node, csui, tmp);
       tmp = force_gimple_operand_gsi (&gsi, tmp,
 				      /*simple=*/true, NULL_TREE,
 				      /*before=*/true, GSI_SAME_STMT);
       tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp, word_mode_zero);
-      new_bb = hoist_edge_and_branch_if_true (&gsi, tmp, test[k].target_bb);
+      basic_block new_bb
+	= hoist_edge_and_branch_if_true (&gsi, tmp, test[k].target_bb, prob);
       gsi = gsi_last_bb (new_bb);
     }
 
@@ -1551,7 +1568,8 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   gcc_assert (EDGE_COUNT (gsi_bb (gsi)->succs) == 0);
 
   /* If nothing matched, go to the default label.  */
-  make_edge (gsi_bb (gsi), default_bb, EDGE_FALLTHRU);
+  edge e = make_edge (gsi_bb (gsi), default_bb, EDGE_FALLTHRU);
+  e->probability = profile_probability::always ();
 }
 
 /* Split the basic block at the statement pointed to by GSIP, and insert
@@ -1571,7 +1589,8 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 
 basic_block
 bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
-						 tree cond, basic_block case_bb)
+						 tree cond, basic_block case_bb,
+						 profile_probability prob)
 {
   tree tmp;
   gcond *cond_stmt;
@@ -1579,6 +1598,7 @@ bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
   basic_block new_bb, split_bb = gsi_bb (*gsip);
 
   edge e_true = make_edge (split_bb, case_bb, EDGE_TRUE_VALUE);
+  e_true->probability = prob;
   gcc_assert (e_true->src == split_bb);
 
   tmp = force_gimple_operand_gsi (gsip, cond, /*simple=*/true, NULL,

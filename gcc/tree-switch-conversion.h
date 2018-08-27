@@ -329,8 +329,10 @@ This transformation was contributed by Roger Sayle, see this e-mail:
 struct bit_test_cluster: public group_cluster
 {
   /* Constructor.  */
-  bit_test_cluster (vec<cluster *> &clusters, unsigned start, unsigned end)
-  :group_cluster (clusters, start, end)
+  bit_test_cluster (vec<cluster *> &clusters, unsigned start, unsigned end,
+		    bool handles_entire_switch)
+  :group_cluster (clusters, start, end),
+  m_handles_entire_switch (handles_entire_switch)
   {}
 
   cluster_type
@@ -396,7 +398,11 @@ struct bit_test_cluster: public group_cluster
    Returns the newly created basic block.  */
   static basic_block hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 						    tree cond,
-						    basic_block case_bb);
+						    basic_block case_bb,
+						    profile_probability prob);
+
+  /* True when the jump table handles an entire switch statement.  */
+  bool m_handles_entire_switch;
 
   /* Maximum number of different basic blocks that can be handled by
      a bit test.  */
