@@ -1,3 +1,8 @@
+2018-08-27  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR tree-optimization/85758
+	* match.pd ((X & Y) ^ Y): Add :s qualifier to inner expression.
+
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87091
