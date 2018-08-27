@@ -16,7 +16,7 @@
 
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
-	PR 87091
+	PR c++/87091
 	* diagnostic-show-locus.c (class layout_range): Update for
 	conversion of show_caret_p to a tri-state.
 	(layout_range::layout_range): Likewise.
@@ -44,7 +44,7 @@
 
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
-	PR 87091
+	PR c++/87091
 	* diagnostic-show-locus.c (get_line_span_for_fixit_hint): Show the
 	line above for line-insertion fix-it hints.
 	(selftest::test_fixit_insert_containing_newline): Update the
@@ -369,7 +369,7 @@
 
 2018-08-24  David Malcolm  <dmalcolm@redhat.com>
 
-	PR 87091
+	PR c++/87091
 	* diagnostic-show-locus.c (layout::layout): Ensure the margin is
 	wide enough for jumps in the line-numbering to be visible.
 	(layout::print_gap_in_line_numbering): New member function.

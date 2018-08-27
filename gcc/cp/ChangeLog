@@ -1,6 +1,19 @@
+2018-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86993
+	* cp-tree.h (cxx_readonly_error): Add location_t argument.
+	* typeck2.c (cxx_readonly_error): Add LOC argument, pass it to
+	ERROR_FOR_ASSIGNMENT macro and readonly_error.  Add LOC argument
+	to ERROR_FOR_ASSIGNMENT macro, use error_at instead of error and
+	pass LOC to it.  Formatting fixes.
+	* typeck.c (cp_build_unary_op): Pass location to cxx_readonly_error.
+	(cp_build_modify_expr): Pass loc to cxx_readonly_error.
+	* semantics.c (finish_asm_stmt): Pass input_location to
+	cxx_readonly_error.
+
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
-	PR 87091
+	PR c++/87091
 	* decl.c (grokdeclarator): Update for conversion of show_caret_p
 	to a tri-state.
 	* error.c (cp_printer): Likewise.

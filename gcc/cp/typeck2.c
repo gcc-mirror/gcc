@@ -67,28 +67,28 @@ binfo_or_else (tree base, tree type)
    value may not be changed thereafter.  */
 
 void
-cxx_readonly_error (tree arg, enum lvalue_use errstring)
+cxx_readonly_error (location_t loc, tree arg, enum lvalue_use errstring)
 {
  
 /* This macro is used to emit diagnostics to ensure that all format
    strings are complete sentences, visible to gettext and checked at
    compile time.  */
  
-#define ERROR_FOR_ASSIGNMENT(AS, ASM, IN, DE, ARG)                      \
+#define ERROR_FOR_ASSIGNMENT(LOC, AS, ASM, IN, DE, ARG)			\
   do {                                                                  \
     switch (errstring)                                                  \
       {                                                                 \
       case lv_assign:							\
-        error(AS, ARG);                                                 \
+	error_at (LOC, AS, ARG);					\
         break;                                                          \
       case lv_asm:							\
-        error(ASM, ARG);                                                \
+	error_at (LOC, ASM, ARG);					\
         break;                                                          \
       case lv_increment:						\
-        error (IN, ARG);                                                \
+	error_at (LOC, IN, ARG);					\
         break;                                                          \
-      case lv_decrement:                                               \
-        error (DE, ARG);                                                \
+      case lv_decrement:                                                \
+	error_at (LOC, DE, ARG);					\
         break;                                                          \
       default:                                                          \
         gcc_unreachable ();                                             \
@@ -101,32 +101,25 @@ cxx_readonly_error (tree arg, enum lvalue_use errstring)
       && DECL_LANG_SPECIFIC (arg)
       && DECL_IN_AGGR_P (arg)
       && !TREE_STATIC (arg))
-    ERROR_FOR_ASSIGNMENT (G_("assignment of "
-			     "constant field %qD"),
-			  G_("constant field %qD "
-			     "used as %<asm%> output"),
-			  G_("increment of "
-			     "constant field %qD"),
-			  G_("decrement of "
-			     "constant field %qD"),
+    ERROR_FOR_ASSIGNMENT (loc,
+			  G_("assignment of constant field %qD"),
+			  G_("constant field %qD used as %<asm%> output"),
+			  G_("increment of constant field %qD"),
+			  G_("decrement of constant field %qD"),
 			  arg);
   else if (INDIRECT_REF_P (arg)
 	   && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (arg, 0)))
 	   && (VAR_P (TREE_OPERAND (arg, 0))
 	       || TREE_CODE (TREE_OPERAND (arg, 0)) == PARM_DECL))
-    ERROR_FOR_ASSIGNMENT (G_("assignment of "
-                             "read-only reference %qD"),
-                          G_("read-only reference %qD "
-			     "used as %<asm%> output"), 
-                          G_("increment of "
-                             "read-only reference %qD"),
-                          G_("decrement of "
-                             "read-only reference %qD"),
-                          TREE_OPERAND (arg, 0));
+    ERROR_FOR_ASSIGNMENT (loc,
+			  G_("assignment of read-only reference %qD"),
+			  G_("read-only reference %qD used as %<asm%> output"),
+			  G_("increment of read-only reference %qD"),
+			  G_("decrement of read-only reference %qD"),
+			  TREE_OPERAND (arg, 0));
   else
-    readonly_error (input_location, arg, errstring);
+    readonly_error (loc, arg, errstring);
 }
-
 
 /* Structure that holds information about declarations whose type was
    incomplete and we could not check whether it was abstract or not.  */
