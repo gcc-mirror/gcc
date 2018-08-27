@@ -513,10 +513,6 @@ struct switch_decision_tree
   /* Attempt to expand CLUSTERS as a decision tree.  Return true when
      expanded.  */
   bool try_switch_expansion (vec<cluster *> &clusters);
-
-  /* Reset the aux field of all outgoing edges of switch basic block.  */
-  inline void reset_out_edges_aux ();
-
   /* Compute the number of case labels that correspond to each outgoing edge of
      switch statement.  Record this information in the aux field of the edge.
      */
@@ -575,6 +571,9 @@ struct switch_decision_tree
 					      tree op1, tree_code comparison,
 					      basic_block label_bb,
 					      profile_probability prob);
+
+  /* Reset the aux field of all outgoing edges of switch basic block.  */
+  static inline void reset_out_edges_aux (gswitch *swtch);
 
   /* Switch statement.  */
   gswitch *m_switch;
@@ -838,9 +837,9 @@ struct switch_conversion
 };
 
 void
-switch_decision_tree::reset_out_edges_aux ()
+switch_decision_tree::reset_out_edges_aux (gswitch *swtch)
 {
-  basic_block bb = gimple_bb (m_switch);
+  basic_block bb = gimple_bb (swtch);
   edge e;
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, bb->succs)

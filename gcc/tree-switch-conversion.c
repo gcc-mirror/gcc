@@ -1061,6 +1061,9 @@ void
 jump_table_cluster::emit (tree index_expr, tree,
 			  tree default_label_expr, basic_block default_bb)
 {
+  unsigned HOST_WIDE_INT range = get_range (get_low (), get_high ());
+  unsigned HOST_WIDE_INT nondefault_range = 0;
+
   /* For jump table we just emit a new gswitch statement that will
      be latter lowered to jump table.  */
   auto_vec <tree> labels;
@@ -1077,6 +1080,39 @@ jump_table_cluster::emit (tree index_expr, tree,
 				    unshare_expr (default_label_expr), labels);
   gimple_stmt_iterator gsi = gsi_start_bb (m_case_bb);
   gsi_insert_after (&gsi, s, GSI_NEW_STMT);
+
+  /* Set up even probabilities for all cases.  */
+  for (unsigned i = 0; i < m_cases.length (); i++)
+    {
+      simple_cluster *sc = static_cast<simple_cluster *> (m_cases[i]);
+      edge case_edge = find_edge (m_case_bb, sc->m_case_bb);
+      unsigned HOST_WIDE_INT case_range
+	= sc->get_range (sc->get_low (), sc->get_high ());
+      nondefault_range += case_range;
+
+      /* case_edge->aux is number of values in a jump-table that are covered
+	 by the case_edge.  */
+      case_edge->aux = (void *) ((intptr_t) (case_edge->aux) + case_range);
+    }
+
+  edge default_edge = gimple_switch_default_edge (cfun, s);
+  default_edge->probability = profile_probability::never ();
+
+  for (unsigned i = 0; i < m_cases.length (); i++)
+    {
+      simple_cluster *sc = static_cast<simple_cluster *> (m_cases[i]);
+      edge case_edge = find_edge (m_case_bb, sc->m_case_bb);
+      case_edge->probability
+	= profile_probability::always ().apply_scale ((intptr_t)case_edge->aux,
+						      range);
+    }
+
+  /* Number of non-default values is probability of default edge.  */
+  default_edge->probability
+    += profile_probability::always ().apply_scale (nondefault_range,
+						   range).invert ();
+
+  switch_decision_tree::reset_out_edges_aux (s);
 }
 
 /* Find jump tables of given CLUSTERS, where all members of the vector
@@ -1568,7 +1604,7 @@ bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 void
 switch_decision_tree::compute_cases_per_edge ()
 {
-  reset_out_edges_aux ();
+  reset_out_edges_aux (m_switch);
   int ncases = gimple_switch_num_labels (m_switch);
   for (int i = ncases - 1; i >= 1; --i)
     {
@@ -1610,7 +1646,7 @@ switch_decision_tree::analyze_switch_statement ()
       m_case_bbs.quick_push (case_edge->dest);
     }
 
-  reset_out_edges_aux ();
+  reset_out_edges_aux (m_switch);
 
   /* Find jump table clusters.  */
   vec<cluster *> output = jump_table_cluster::find_jump_tables (clusters);
