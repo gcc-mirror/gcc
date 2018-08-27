@@ -3996,10 +3996,12 @@ strip_predict_hints (function *fun, bool early)
 	      tree fndecl = gimple_call_fndecl (stmt);
 
 	      if (!early
-		  && ((DECL_BUILT_IN_P (fndecl, BUILT_IN_NORMAL, BUILT_IN_EXPECT)
+		  && ((fndecl != NULL_TREE
+		       && fndecl_built_in_p (fndecl, BUILT_IN_EXPECT)
 		       && gimple_call_num_args (stmt) == 2)
-		      || (DECL_BUILT_IN_P (fndecl, BUILT_IN_NORMAL,
-					   BUILT_IN_EXPECT_WITH_PROBABILITY)
+		      || (fndecl != NULL_TREE
+			  && fndecl_built_in_p (fndecl,
+						BUILT_IN_EXPECT_WITH_PROBABILITY)
 			  && gimple_call_num_args (stmt) == 3)
 		      || (gimple_call_internal_p (stmt)
 			  && gimple_call_internal_fn (stmt) == IFN_BUILTIN_EXPECT)))

@@ -1,5 +1,103 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
+	* builtins.h (is_builtin_fn): Remove and fndecl_built_in_p.
+	* builtins.c (is_builtin_fn): Likewise.
+	* attribs.c (diag_attr_exclusions): Use new function
+        fndecl_built_in_p and remove check for FUNCTION_DECL if
+        possible.
+	(builtin_mathfn_code): Likewise.
+	(fold_builtin_expect): Likewise.
+	(fold_call_expr): Likewise.
+	(fold_builtin_call_array): Likewise.
+	(fold_call_stmt): Likewise.
+	(set_builtin_user_assembler_name): Likewise.
+	(is_simple_builtin): Likewise.
+	* calls.c (gimple_alloca_call_p): Likewise.
+	(maybe_warn_nonstring_arg): Likewise.
+	* cfgexpand.c (expand_call_stmt): Likewise.
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Likewise.
+	(cgraph_edge::verify_corresponds_to_fndecl): Likewise.
+	(cgraph_node::verify_node): Likewise.
+	* cgraphclones.c (build_function_decl_skip_args): Likewise.
+	(cgraph_node::create_clone): Likewise.
+	* config/arm/arm.c (arm_insert_attributes): Likewise.
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Likewise.
+	* dse.c (scan_insn): Likewise.
+	* expr.c (expand_expr_real_1): Likewise.
+	* fold-const.c (operand_equal_p): Likewise.
+	(fold_binary_loc): Likewise.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Likewise.
+	* gimple-low.c (lower_stmt): Likewise.
+	* gimple-pretty-print.c (dump_gimple_call): Likewise.
+	* gimple-ssa-warn-restrict.c (wrestrict_dom_walker::check_call): Likewise.
+	* gimple.c (gimple_build_call_from_tree): Likewise.
+	(gimple_call_builtin_p): Likewise.
+	(gimple_call_combined_fn): Likewise.
+	* gimplify.c (gimplify_call_expr): Likewise.
+	(gimple_boolify): Likewise.
+	(gimplify_modify_expr): Likewise.
+	(gimplify_addr_expr): Likewise.
+	* hsa-gen.c (gen_hsa_insns_for_call): Likewise.
+	* ipa-cp.c (determine_versionability): Likewise.
+	* ipa-fnsummary.c (compute_fn_summary): Likewise.
+	* ipa-param-manipulation.c (ipa_modify_formal_parameters): Likewise.
+	* ipa-split.c (visit_bb): Likewise.
+	(split_function): Likewise.
+	* ipa-visibility.c (cgraph_externally_visible_p): Likewise.
+	* lto-cgraph.c (input_node): Likewise.
+	* lto-streamer-out.c (write_symbol): Likewise.
+	* omp-low.c (setjmp_or_longjmp_p): Likewise.
+	(lower_omp_1): Likewise.
+	* predict.c (strip_predict_hints): Likewise.
+	* print-tree.c (print_node): Likewise.
+	* symtab.c (symtab_node::output_to_lto_symbol_table_p): Likewise.
+	* trans-mem.c (is_tm_irrevocable): Likewise.
+	(is_tm_load): Likewise.
+	(is_tm_simple_load): Likewise.
+	(is_tm_store): Likewise.
+	(is_tm_simple_store): Likewise.
+	(is_tm_abort): Likewise.
+	(tm_region_init_1): Likewise.
+	* tree-call-cdce.c (gen_shrink_wrap_conditions): Likewise.
+	* tree-cfg.c (verify_gimple_call): Likewise.
+	(move_stmt_r): Likewise.
+	(stmt_can_terminate_bb_p): Likewise.
+	* tree-eh.c (lower_eh_constructs_2): Likewise.
+	* tree-if-conv.c (if_convertible_stmt_p): Likewise.
+	* tree-inline.c (remap_gimple_stmt): Likewise.
+	(copy_bb): Likewise.
+	(estimate_num_insns): Likewise.
+	(fold_marked_statements): Likewise.
+	* tree-sra.c (scan_function): Likewise.
+	* tree-ssa-ccp.c (surely_varying_stmt_p): Likewise.
+	(optimize_stack_restore): Likewise.
+	(pass_fold_builtins::execute): Likewise.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Likewise.
+	(mark_all_reaching_defs_necessary_1): Likewise.
+	* tree-ssa-dom.c (dom_opt_dom_walker::optimize_stmt): Likewise.
+	* tree-ssa-forwprop.c (simplify_builtin_call): Likewise.
+	(pass_forwprop::execute): Likewise.
+	* tree-ssa-loop-im.c (stmt_cost): Likewise.
+	* tree-ssa-math-opts.c (pass_cse_reciprocals::execute): Likewise.
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Likewise.
+	* tree-ssa-strlen.c (get_string_length): Likewise.
+	* tree-ssa-structalias.c (handle_lhs_call): Likewise.
+	(find_func_aliases_for_call): Likewise.
+	* tree-ssa-ter.c (find_replaceable_in_bb): Likewise.
+	* tree-stdarg.c (optimize_va_list_gpr_fpr_size): Likewise.
+	* tree-tailcall.c (find_tail_calls): Likewise.
+	* tree.c (need_assembler_name_p): Likewise.
+	(free_lang_data_in_decl): Likewise.
+	(get_call_combined_fn): Likewise.
+	* ubsan.c (is_ubsan_builtin_p): Likewise.
+	* varasm.c (incorporeal_function_p): Likewise.
+	* tree.h (DECL_BUILT_IN): Remove and replace with
+        fndecl_built_in_p.
+	(DECL_BUILT_IN_P): Transfort to fndecl_built_in_p.
+	(fndecl_built_in_p): New.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
         PR tree-optimization/86847
 	* tree-switch-conversion.c (switch_decision_tree::dump_case_nodes):
         Dump also subtree probability.

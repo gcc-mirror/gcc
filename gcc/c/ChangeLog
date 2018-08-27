@@ -1,3 +1,18 @@
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.c (locate_old_decl): Use new function
+        fndecl_built_in_p and remove check for FUNCTION_DECL if
+        possible.
+	(diagnose_mismatched_decls): Likewise.
+	(merge_decls): Likewise.
+	(warn_if_shadowing): Likewise.
+	(pushdecl): Likewise.
+	(implicitly_declare): Likewise.
+	* c-parser.c (c_parser_postfix_expression_after_primary): Likewise.
+	* c-tree.h (C_DECL_ISNT_PROTOTYPE): Likewise.
+	* c-typeck.c (build_function_call_vec): Likewise.
+	(convert_arguments): Likewise.
+
 2018-08-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/84889

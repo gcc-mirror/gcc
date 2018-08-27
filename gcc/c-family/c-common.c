@@ -5326,8 +5326,7 @@ check_function_restrict (const_tree fndecl, const_tree fntype,
     {
       /* Avoid diagnosing calls built-ins with a zero size/bound
 	 here.  They are checked in more detail elsewhere.  */
-      if (DECL_BUILT_IN (fndecl)
-	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
 	  && nargs == 3
 	  && TREE_CODE (argarray[2]) == INTEGER_CST
 	  && integer_zerop (argarray[2]))
@@ -5755,8 +5754,7 @@ bool
 check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 				  tree fndecl, int nargs, tree *args)
 {
-  if (!DECL_BUILT_IN (fndecl)
-      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+  if (!fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     return true;
 
   switch (DECL_FUNCTION_CODE (fndecl))
@@ -8011,7 +8009,7 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
 	 strlen, and for C++ operators new and delete.
 	 The c_decl_implicit() test avoids false positives for implicitly
 	 declared built-ins with library fallbacks (such as abs).  */
-      && DECL_BUILT_IN (expr)
+      && fndecl_built_in_p (expr)
       && DECL_IS_BUILTIN (expr)
       && !c_decl_implicit (expr)
       && !DECL_ASSEMBLER_NAME_SET_P (expr))

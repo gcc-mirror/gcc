@@ -1,3 +1,12 @@
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (check_function_restrict): Use new function
+        fndecl_built_in_p and remove check for FUNCTION_DECL if
+        possible.
+	(check_builtin_function_arguments): Likewise.
+	(reject_gcc_builtin): Likewise.
+	* c-warn.c (sizeof_pointer_memaccess_warning): Likewise.
+
 2018-08-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87029, Implement -Wredundant-move.

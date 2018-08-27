@@ -773,7 +773,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	 debugger at the proper time.  */
       if (DECL_EXTERNAL (decl)
 	  && TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_BUILT_IN (decl))
+	  && fndecl_built_in_p (decl))
 	vec_safe_push (builtin_decls, decl);
       else if (global_bindings_p ())
 	vec_safe_push (global_decls, decl);

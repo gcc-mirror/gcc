@@ -5421,7 +5421,7 @@ update_profile (Entity_Id gnat_subprog)
   if (DECL_P (gnu_type))
     {
       /* Builtins cannot have their address taken so we can reset them.  */
-      gcc_assert (DECL_BUILT_IN (gnu_type));
+      gcc_assert (fndecl_built_in_p (gnu_type));
       save_gnu_tree (gnat_subprog, NULL_TREE, false);
       save_gnu_tree (gnat_subprog, gnu_type, false);
       return;

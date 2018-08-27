@@ -432,7 +432,7 @@ diag_attr_exclusions (tree last_decl, tree node, tree attrname,
 	  bool note = last_decl != NULL_TREE;
 	  auto_diagnostic_group d;
 	  if (TREE_CODE (node) == FUNCTION_DECL
-	      && DECL_BUILT_IN (node))
+	      && fndecl_built_in_p (node))
 	    note &= warning (OPT_Wattributes,
 			     "ignoring attribute %qE in declaration of "
 			     "a built-in function %qD because it conflicts "

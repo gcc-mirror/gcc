@@ -793,7 +793,7 @@ pass_cse_reciprocals::execute (function *fun)
 		    {
 		      fndecl = gimple_call_fndecl (call);
 		      if (!fndecl
-			  || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_MD)
+			  || !fndecl_built_in_p (fndecl, BUILT_IN_MD))
 			continue;
 		      fndecl = targetm.builtin_reciprocal (fndecl);
 		      if (!fndecl)

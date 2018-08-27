@@ -1278,7 +1278,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 		 constant length.  */
 	      callee1 = gimple_call_fndecl (stmt1);
 	      if (callee1 == NULL_TREE
-		  || DECL_BUILT_IN_CLASS (callee1) != BUILT_IN_NORMAL
+		  || !fndecl_built_in_p (callee1, BUILT_IN_NORMAL)
 		  || gimple_call_num_args (stmt1) != 3)
 		break;
 	      if (DECL_FUNCTION_CODE (callee1) != BUILT_IN_MEMCPY
@@ -2538,7 +2538,7 @@ pass_forwprop::execute (function *fun)
 	      {
 		tree callee = gimple_call_fndecl (stmt);
 		if (callee != NULL_TREE
-		    && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+		    && fndecl_built_in_p (callee, BUILT_IN_NORMAL))
 		  changed = simplify_builtin_call (&gsi, callee);
 		break;
 	      }

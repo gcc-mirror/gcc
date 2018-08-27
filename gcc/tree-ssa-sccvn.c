@@ -1373,7 +1373,7 @@ fully_constant_vn_reference_p (vn_reference_t ref)
   if (op->opcode == CALL_EXPR
       && TREE_CODE (op->op0) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (op->op0, 0)) == FUNCTION_DECL
-      && DECL_BUILT_IN (TREE_OPERAND (op->op0, 0))
+      && fndecl_built_in_p (TREE_OPERAND (op->op0, 0))
       && operands.length () >= 2
       && operands.length () <= 3)
     {

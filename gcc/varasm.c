@@ -2401,7 +2401,7 @@ static hash_set<tree> *pending_assemble_externals_set;
 static bool
 incorporeal_function_p (tree decl)
 {
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
+  if (TREE_CODE (decl) == FUNCTION_DECL && fndecl_built_in_p (decl))
     {
       const char *name;
 

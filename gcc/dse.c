@@ -2419,8 +2419,7 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
 	  && GET_CODE (sym) == SYMBOL_REF
 	  && SYMBOL_REF_DECL (sym)
 	  && TREE_CODE (SYMBOL_REF_DECL (sym)) == FUNCTION_DECL
-	  && DECL_BUILT_IN_CLASS (SYMBOL_REF_DECL (sym)) == BUILT_IN_NORMAL
-	  && DECL_FUNCTION_CODE (SYMBOL_REF_DECL (sym)) == BUILT_IN_MEMSET)
+	  && fndecl_built_in_p (SYMBOL_REF_DECL (sym), BUILT_IN_MEMSET))
 	memset_call = SYMBOL_REF_DECL (sym);
 
       if (const_call || memset_call)

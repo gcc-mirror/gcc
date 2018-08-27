@@ -5791,7 +5791,7 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 
       /* Skip anticipated decls of builtin functions.  */
       if (TREE_CODE (d) == FUNCTION_DECL
-	  && DECL_BUILT_IN (d)
+	  && fndecl_built_in_p (d)
 	  && DECL_ANTICIPATED (d))
 	continue;
 
@@ -7274,7 +7274,7 @@ cp_emit_debug_info_for_using (tree t, tree context)
      of a builtin function.  */
   if (TREE_CODE (t) == FUNCTION_DECL
       && DECL_EXTERNAL (t)
-      && DECL_BUILT_IN (t))
+      && fndecl_built_in_p (t))
     return;
 
   /* Do not supply context to imported_module_or_decl, if
