@@ -1,3 +1,13 @@
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+        PR driver/83193
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+        Set default values for x_aarch64_*_string strings.
+	* config/aarch64/aarch64.opt: Remove --{march,mcpu,mtune}==
+        prefix.  For -mabi do not print '=ABI' in help and use
+        <option_value> format for -msve-vector-bits and -moverride
+        options.
+
 2018-08-26  Jeff Law  <law@redhat.com>
 
 	* config/mips/frame-header-opt.c: Include "backend.h" rather than
