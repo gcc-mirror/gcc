@@ -937,6 +937,10 @@ Wpedantic
 C ObjC C++ ObjC++ CPP(cpp_pedantic) CppReason(CPP_W_PEDANTIC) Warning
 ; Documented in common.opt
 
+Wpessimizing-move
+C++ ObjC++ Var(warn_pessimizing_move) Warning LangEnabledBy(C++ ObjC++, Wall)
+Warn about calling std::move on a local object in a return statement preventing copy elision.
+
 Wpmf-conversions
 C++ ObjC++ Var(warn_pmf2ptr) Init(1) Warning
 Warn when converting the type of pointers to member functions.
@@ -980,6 +984,10 @@ Warn for placement new expressions with undefined behavior.
 Wredundant-decls
 C ObjC C++ ObjC++ Var(warn_redundant_decls) Warning
 Warn about multiple declarations of the same object.
+
+Wredundant-move
+C++ ObjC++ Var(warn_redundant_move) Warning LangEnabledBy(C++ ObjC++,Wextra)
+Warn about redundant calls to std::move.
 
 Wregister
 C++ ObjC++ Var(warn_register) Warning

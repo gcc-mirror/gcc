@@ -462,6 +462,40 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
   return true;
 }
 
+/* Return true if PHI, described by STMT_INFO, is the inner PHI in
+   what we are assuming is a double reduction.  For example, given
+   a structure like this:
+
+      outer1:
+	x_1 = PHI <x_4(outer2), ...>;
+	...
+
+      inner:
+	x_2 = PHI <x_1(outer1), ...>;
+	...
+	x_3 = ...;
+	...
+
+      outer2:
+	x_4 = PHI <x_3(inner)>;
+	...
+
+   outer loop analysis would treat x_1 as a double reduction phi and
+   this function would then return true for x_2.  */
+
+static bool
+vect_inner_phi_in_double_reduction_p (stmt_vec_info stmt_info, gphi *phi)
+{
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  use_operand_p use_p;
+  ssa_op_iter op_iter;
+  FOR_EACH_PHI_ARG (use_p, phi, op_iter, SSA_OP_USE)
+    if (stmt_vec_info def_info = loop_vinfo->lookup_def (USE_FROM_PTR (use_p)))
+      if (STMT_VINFO_DEF_TYPE (def_info) == vect_double_reduction_def)
+	return true;
+  return false;
+}
+
 /* Function vect_analyze_scalar_cycles_1.
 
    Examine the cross iteration def-use cycles of scalar variables
@@ -522,6 +556,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 	}
 
       if (!access_fn
+	  || vect_inner_phi_in_double_reduction_p (stmt_vinfo, phi)
 	  || !vect_is_simple_iv_evolution (loop->num, access_fn, &init, &step)
 	  || (LOOP_VINFO_LOOP (loop_vinfo) != loop
 	      && TREE_CODE (step) != INTEGER_CST))
@@ -2992,6 +3027,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
           && loop->inner
           && flow_bb_inside_loop_p (loop->inner, gimple_bb (def1))
           && is_gimple_assign (def1)
+	  && is_a <gphi *> (phi_use_stmt)
 	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (phi_use_stmt)))
         {
           if (dump_enabled_p ())
@@ -5161,6 +5197,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 	  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
 	      == INTEGER_INDUC_COND_REDUCTION)
 	    code = induc_code;
+	  else if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+		   == CONST_COND_REDUCTION)
+	    code = STMT_VINFO_VEC_CONST_COND_REDUC_CODE (stmt_info);
 	  else
 	    code = MAX_EXPR;
 	}

@@ -606,6 +606,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
       /* Child process.  */
       {
 	const char *bad_fn = NULL;
+
 	if (!bad_fn && in != STDIN_FILE_NO)
 	  {
 	    if (dup2 (in, STDIN_FILE_NO) < 0)
@@ -656,6 +657,8 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	      }
 	  }
 
+	int eno = errno;
+	
 	/* Something failed.  */
 	int retval = -1;
 	if (VFORK_IS_FORK)
@@ -689,14 +692,15 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
     default:
       /* Parent process.  */
       {
-	/* Restore environ.
-	   Note that the parent either doesn't run until the child execs/exits
-	   (standard vfork behaviour), or if it does run then vfork is behaving
-	   more like fork.  In either case we needn't worry about clobbering
-	   the child's copy of environ.  */
+	const char *bad_fn = child_bad_fn;
+
+	/* Restore environ.  Note that the parent either doesn't run
+	   until the child execs/exits (standard vfork behaviour), or
+	   if it does run then vfork is behaving more like fork.  In
+	   either case we needn't worry about clobbering the child's
+	   copy of environ.  */
 	environ = save_environ;
 
-	const char *bad_fn = child_bad_fn;
 	if (!VFORK_IS_FORK)
 	  {
 	    int e = child_errno;
@@ -705,7 +709,6 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 		 start.  Use that.  */
 	      errno = e;
 	  }
-
 	if (!bad_fn && in != STDIN_FILE_NO)
 	  if (close (in) < 0)
 	    bad_fn = "close";

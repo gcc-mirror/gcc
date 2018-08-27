@@ -118,7 +118,6 @@ package body Einfo is
    --    Alignment                       Uint14
    --    Normalized_Position             Uint14
    --    Postconditions_Proc             Node14
-   --    Shadow_Entities                 List14
 
    --    Discriminant_Number             Uint15
    --    DT_Position                     Uint15
@@ -199,7 +198,6 @@ package body Einfo is
    --    Corresponding_Remote_Type       Node22
    --    Enumeration_Rep_Expr            Node22
    --    Original_Record_Component       Node22
-   --    Private_View                    Node22
    --    Protected_Formal                Node22
    --    Scope_Depth_Value               Uint22
    --    Shared_Var_Procs_Instance       Node22
@@ -1182,7 +1180,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind (Id) = E_Package
+         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
            or else
          Is_Generic_Unit (Id));
       return Node13 (Id);
@@ -1193,7 +1191,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind (Id) = E_Package
+         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
            or else
          Is_Generic_Unit (Id));
       return Flag174 (Id);
@@ -3126,12 +3124,6 @@ package body Einfo is
       return Elist18 (Id);
    end Private_Dependents;
 
-   function Private_View (Id : E) return N is
-   begin
-      pragma Assert (Is_Private_Type (Id));
-      return Node22 (Id);
-   end Private_View;
-
    function Protected_Body_Subprogram (Id : E) return E is
    begin
       pragma Assert (Is_Subprogram (Id) or else Is_Entry (Id));
@@ -3313,12 +3305,6 @@ package body Einfo is
    begin
       return Flag167 (Id);
    end Sec_Stack_Needed_For_Return;
-
-   function Shadow_Entities (Id : E) return S is
-   begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
-      return List14 (Id);
-   end Shadow_Entities;
 
    function Shared_Var_Procs_Instance (Id : E) return E is
    begin
@@ -4412,7 +4398,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind (Id) = E_Package
+         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
            or else
          Is_Generic_Unit (Id));
       Set_Node13 (Id, V);
@@ -4423,7 +4409,7 @@ package body Einfo is
       pragma Assert
         (Is_Subprogram (Id)
            or else
-         Ekind (Id) = E_Package
+         Ekind_In (Id, E_Entry, E_Entry_Family, E_Package)
            or else
          Is_Generic_Unit (Id));
       Set_Flag174 (Id, V);
@@ -6376,12 +6362,6 @@ package body Einfo is
       Set_Elist18 (Id, V);
    end Set_Private_Dependents;
 
-   procedure Set_Private_View (Id : E; V : N) is
-   begin
-      pragma Assert (Is_Private_Type (Id));
-      Set_Node22 (Id, V);
-   end Set_Private_View;
-
    procedure Set_Prev_Entity (Id : E; V : E) is
    begin
       Set_Node36 (Id, V);
@@ -6572,12 +6552,6 @@ package body Einfo is
    begin
       Set_Flag167 (Id, V);
    end Set_Sec_Stack_Needed_For_Return;
-
-   procedure Set_Shadow_Entities (Id : E; V : S) is
-   begin
-      pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
-      Set_List14 (Id, V);
-   end Set_Shadow_Entities;
 
    procedure Set_Shared_Var_Procs_Instance (Id : E; V : E) is
    begin
@@ -10355,7 +10329,9 @@ package body Einfo is
          =>
             Write_Str ("Component_Clause");
 
-         when E_Function
+         when E_Entry
+            | E_Entry_Family
+            | E_Function
             | E_Procedure
             | E_Package
             | Generic_Unit_Kind
@@ -10402,11 +10378,6 @@ package body Einfo is
             | E_Procedure
          =>
             Write_Str ("Postconditions_Proc");
-
-         when E_Generic_Package
-            | E_Package
-         =>
-            Write_Str ("Shadow_Entities");
 
          when others =>
             Write_Str ("Field14??");
@@ -10842,15 +10813,6 @@ package body Einfo is
 
          when E_Enumeration_Literal =>
             Write_Str ("Enumeration_Rep_Expr");
-
-         when E_Limited_Private_Subtype
-            | E_Limited_Private_Type
-            | E_Private_Subtype
-            | E_Private_Type
-            | E_Record_Subtype_With_Private
-            | E_Record_Type_With_Private
-         =>
-            Write_Str ("Private_View");
 
          when Formal_Kind =>
             Write_Str ("Protected_Formal");

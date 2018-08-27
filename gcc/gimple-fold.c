@@ -6347,8 +6347,7 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 
 	fn = (*valueize) (gimple_call_fn (stmt));
 	if (TREE_CODE (fn) == ADDR_EXPR
-	    && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
-	    && DECL_BUILT_IN (TREE_OPERAND (fn, 0))
+	    && fndecl_built_in_p (TREE_OPERAND (fn, 0))
 	    && gimple_builtin_call_types_compatible_p (stmt,
 						       TREE_OPERAND (fn, 0)))
 	  {

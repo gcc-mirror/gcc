@@ -24,6 +24,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 #include "libgfortran.h"
+#include "io.h"
+#include "async.h"
+
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
@@ -526,24 +529,41 @@ translate_error (int code)
 }
 
 
-/* generate_error()-- Come here when an error happens.  This
- * subroutine is called if it is possible to continue on after the error.
- * If an IOSTAT or IOMSG variable exists, we set it.  If IOSTAT or
- * ERR labels are present, we return, otherwise we terminate the program
- * after printing a message.  The error code is always required but the
- * message parameter can be NULL, in which case a string describing
- * the most recent operating system error is used. */
+/* Worker function for generate_error and generate_error_async.  Return true
+   if a straight return is to be done, zero if the program should abort. */
 
-void
-generate_error (st_parameter_common *cmp, int family, const char *message)
+bool
+generate_error_common (st_parameter_common *cmp, int family, const char *message)
 {
   char errmsg[STRERR_MAXSZ];
+
+#if ASYNC_IO
+  gfc_unit *u;
+
+  NOTE ("Entering generate_error_common");
+
+  u = thread_unit;
+  if (u && u->au)
+    {
+      if (u->au->error.has_error)
+	return true;
+
+      if (__gthread_equal (u->au->thread, __gthread_self ()))
+	{
+	  u->au->error.has_error = 1;
+	  u->au->error.cmp = cmp;
+	  u->au->error.family = family;
+	  u->au->error.message = message;
+	  return true;
+	}
+    }
+#endif
 
   /* If there was a previous error, don't mask it with another
      error message, EOF or EOR condition.  */
 
   if ((cmp->flags & IOPARM_LIBRETURN_MASK) == IOPARM_LIBRETURN_ERROR)
-    return;
+    return true;
 
   /* Set the error status.  */
   if ((cmp->flags & IOPARM_HAS_IOSTAT))
@@ -562,36 +582,56 @@ generate_error (st_parameter_common *cmp, int family, const char *message)
   switch (family)
     {
     case LIBERROR_EOR:
-      cmp->flags |= IOPARM_LIBRETURN_EOR;
+      cmp->flags |= IOPARM_LIBRETURN_EOR;  NOTE("EOR");
       if ((cmp->flags & IOPARM_EOR))
-	return;
+	return true;
       break;
 
     case LIBERROR_END:
-      cmp->flags |= IOPARM_LIBRETURN_END;
+      cmp->flags |= IOPARM_LIBRETURN_END; NOTE("END");
       if ((cmp->flags & IOPARM_END))
-	return;
+	return true;
       break;
 
     default:
-      cmp->flags |= IOPARM_LIBRETURN_ERROR;
+      cmp->flags |= IOPARM_LIBRETURN_ERROR; NOTE("ERROR");
       if ((cmp->flags & IOPARM_ERR))
-	return;
+	return true;
       break;
     }
 
   /* Return if the user supplied an iostat variable.  */
   if ((cmp->flags & IOPARM_HAS_IOSTAT))
-    return;
+    return true;
 
-  /* Terminate the program */
+  /* Return code, caller is responsible for terminating
+   the program if necessary.  */
 
   recursion_check ();
   show_locus (cmp);
   estr_write ("Fortran runtime error: ");
   estr_write (message);
   estr_write ("\n");
-  exit_error (2);
+  return false;
+}
+
+/* generate_error()-- Come here when an error happens.  This
+ * subroutine is called if it is possible to continue on after the error.
+ * If an IOSTAT or IOMSG variable exists, we set it.  If IOSTAT or
+ * ERR labels are present, we return, otherwise we terminate the program
+ * after printing a message.  The error code is always required but the
+ * message parameter can be NULL, in which case a string describing
+ * the most recent operating system error is used.
+ * If the error is for an asynchronous unit and if the program is currently
+ * executing the asynchronous thread, just mark the error and return.  */
+
+void
+generate_error (st_parameter_common *cmp, int family, const char *message)
+{
+  if (generate_error_common (cmp, family, message))
+    return;
+
+  exit_error(2);
 }
 iexport(generate_error);
 

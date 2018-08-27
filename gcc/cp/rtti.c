@@ -317,7 +317,7 @@ typeid_ok_p (void)
   if (!COMPLETE_TYPE_P (const_type_info_type_node))
     {
       gcc_rich_location richloc (input_location);
-      maybe_add_include_fixit (&richloc, "<typeinfo>");
+      maybe_add_include_fixit (&richloc, "<typeinfo>", false);
       error_at (&richloc,
 		"must %<#include <typeinfo>%> before using"
 		" %<typeid%>");

@@ -32,6 +32,7 @@ with Errout;   use Errout;
 with Exp_Prag; use Exp_Prag;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Freeze;   use Freeze;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -47,6 +48,7 @@ with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
+with Stand;    use Stand;
 with Stringt;  use Stringt;
 with SCIL_LL;  use SCIL_LL;
 with Tbuild;   use Tbuild;
@@ -589,14 +591,45 @@ package body Contracts is
          if Skip_Assert_Exprs then
             null;
 
-         --  Otherwise analyze the pre/postconditions
+         --  Otherwise analyze the pre/postconditions. Their expressions
+         --  might include references to types that are not frozen yet, in the
+         --  case where the body is a rewritten expression function that is a
+         --  completion, so freeze all types within before constructing the
+         --  contract code.
 
          else
-            Prag := Pre_Post_Conditions (Items);
-            while Present (Prag) loop
-               Analyze_Pre_Post_Condition_In_Decl_Part (Prag, Freeze_Id);
-               Prag := Next_Pragma (Prag);
-            end loop;
+            declare
+               Bod          : Node_Id;
+               Freeze_Types : Boolean := False;
+
+            begin
+               if Present (Freeze_Id) then
+                  Bod := Unit_Declaration_Node (Freeze_Id);
+
+                  if Nkind (Bod) = N_Subprogram_Body
+                    and then Was_Expression_Function (Bod)
+                    and then Ekind (Subp_Id) = E_Function
+                    and then Chars (Subp_Id) = Chars (Freeze_Id)
+                    and then Subp_Id /= Freeze_Id
+                  then
+                     Freeze_Types := True;
+                  end if;
+               end if;
+
+               Prag := Pre_Post_Conditions (Items);
+               while Present (Prag) loop
+                  if Freeze_Types then
+                     Freeze_Expr_Types
+                       (Def_Id => Subp_Id,
+                        Typ    => Standard_Boolean,
+                        Expr   => Expression (Corresponding_Aspect (Prag)),
+                        N      => Bod);
+                  end if;
+
+                  Analyze_Pre_Post_Condition_In_Decl_Part (Prag, Freeze_Id);
+                  Prag := Next_Pragma (Prag);
+               end loop;
+            end;
          end if;
 
          --  Analyze contract-cases and test-cases

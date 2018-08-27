@@ -126,7 +126,9 @@ int
 main (int ac, char **av)
 {
   const char *exe_name;
+#if HAVE_LTO_PLUGIN > 0
   char *plugin;
+#endif
   int k, status, err;
   const char *err_msg;
   const char **nargv;
@@ -177,7 +179,7 @@ main (int ac, char **av)
 	  break;
 	}
 
-
+#if HAVE_LTO_PLUGIN > 0
   /* Find the GCC LTO plugin */
   plugin = find_a_file (&target_path, LTOPLUGINSONAME, R_OK);
   if (!plugin)
@@ -185,6 +187,7 @@ main (int ac, char **av)
       fprintf (stderr, "%s: Cannot find plugin '%s'\n", av[0], LTOPLUGINSONAME);
       exit (1);
     }
+#endif
 
   /* Find the wrapped binutils program.  */
   exe_name = find_a_file (&target_path, PERSONALITY, X_OK);
@@ -203,9 +206,11 @@ main (int ac, char **av)
 	}
     }
 
-  /* Create new command line with plugin */
+  /* Create new command line with plugin - if we have one, otherwise just
+     copy the command through.  */
   nargv = XCNEWVEC (const char *, ac + 4);
   nargv[0] = exe_name;
+#if HAVE_LTO_PLUGIN > 0
   nargv[1] = "--plugin";
   nargv[2] = plugin;
   if (is_ar && av[1] && av[1][0] != '-')
@@ -213,6 +218,13 @@ main (int ac, char **av)
   for (k = 1; k < ac; k++)
     nargv[2 + k] = av[k];
   nargv[2 + k] = NULL;
+#else
+  if (is_ar && av[1] && av[1][0] != '-')
+    av[1] = concat ("-", av[1], NULL);
+  for (k = 1; k < ac; k++)
+    nargv[k] = av[k];
+  nargv[k] = NULL;
+#endif
 
   /* Run utility */
   /* ??? the const is misplaced in pex_one's argv? */

@@ -715,7 +715,7 @@ gimple_alloca_call_p (const gimple *stmt)
     return false;
 
   fndecl = gimple_call_fndecl (stmt);
-  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     switch (DECL_FUNCTION_CODE (fndecl))
       {
       CASE_BUILT_IN_ALLOCA:
@@ -1542,7 +1542,7 @@ get_attr_nonstring_decl (tree expr, tree *ref)
 void
 maybe_warn_nonstring_arg (tree fndecl, tree exp)
 {
-  if (!fndecl || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+  if (!fndecl || !fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     return;
 
   if (TREE_NO_WARNING (exp))

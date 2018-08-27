@@ -427,6 +427,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-htable$(objext) \
   g-io$(objext) \
   g-io_aux$(objext) \
+  g-lists$(objext) \
   g-locfil$(objext) \
   g-mbdira$(objext) \
   g-mbflra$(objext) \
@@ -522,12 +523,20 @@ GNATRTL_NONTASKING_OBJS= \
   s-conca9$(objext) \
   s-crc32$(objext)  \
   s-crtl$(objext)   \
+  s-dfmkio$(objext) \
+  s-dfmopr$(objext) \
+  s-dgmgop$(objext) \
+  s-dlmopr$(objext) \
   s-diflio$(objext) \
+  s-diflmk$(objext) \
+  s-digemk$(objext) \
   s-diinio$(objext) \
+  s-dilomk$(objext) \
   s-dim$(objext)    \
   s-dimkio$(objext) \
   s-dimmks$(objext) \
   s-direio$(objext) \
+  s-dlmkio$(objext) \
   s-dmotpr$(objext) \
   s-dsaser$(objext) \
   s-elaall$(objext) \
@@ -2761,4 +2770,3 @@ a-tags.o  : a-tags.adb a-tags.ads
 s-memory.o  : s-memory.adb s-memory.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
-

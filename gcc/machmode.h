@@ -237,9 +237,6 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
    || CLASS == MODE_ACCUM                      \
    || CLASS == MODE_UACCUM)
 
-#define POINTER_BOUNDS_MODE_P(MODE)      \
-  (GET_MODE_CLASS (MODE) == MODE_POINTER_BOUNDS)
-
 /* An optional T (i.e. a T or nothing), where T is some form of mode class.  */
 template<typename T>
 class opt_mode
@@ -482,7 +479,6 @@ scalar_mode::includes_p (machine_mode m)
     case MODE_UACCUM:
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
-    case MODE_POINTER_BOUNDS:
       return true;
     default:
       return false;

@@ -332,6 +332,7 @@ void test_fixit_insert_newline (void)
       x = b;
     }
 /* { dg-begin-multiline-output "" }
+       x = a;
 +      break;
      case 'b':
      ^~~~~~~~

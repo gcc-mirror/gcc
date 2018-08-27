@@ -47,7 +47,7 @@ gcc_rich_location::add_expr (tree expr, range_label *label)
   gcc_assert (expr);
 
   if (CAN_HAVE_RANGE_P (expr))
-    add_range (EXPR_LOCATION (expr), false, label);
+    add_range (EXPR_LOCATION (expr), SHOW_RANGE_WITHOUT_CARET, label);
 }
 
 /* If T is an expression, add a range for it to the rich_location,

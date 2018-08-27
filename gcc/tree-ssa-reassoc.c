@@ -618,7 +618,7 @@ is_reassociable_op (gimple *stmt, enum tree_code code, struct loop *loop)
       && has_single_use (gimple_assign_lhs (stmt)))
     {
       tree rhs1 = gimple_assign_rhs1 (stmt);
-      tree rhs2 = gimple_assign_rhs1 (stmt);
+      tree rhs2 = gimple_assign_rhs2 (stmt);
       if (TREE_CODE (rhs1) == SSA_NAME
 	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1))
 	return false;

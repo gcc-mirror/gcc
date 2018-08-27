@@ -69,7 +69,7 @@ static void require_complete_types_for_parms (tree);
 static tree grok_reference_init (tree, tree, tree, int);
 static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
 			 int, int, int, bool, int, tree);
-static int check_static_variable_definition (tree, tree);
+static void check_static_variable_definition (tree, tree);
 static void record_unknown_type (tree, const char *);
 static tree builtin_function_1 (tree, tree, bool);
 static int member_function_or_else (tree, tree, enum overload_flags);
@@ -981,7 +981,7 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
       if (same_type_p (TREE_TYPE (f1), r2))
 	{
 	  if (!prototype_p (f2) && DECL_EXTERN_C_P (olddecl)
-	      && (DECL_BUILT_IN (olddecl)
+	      && (fndecl_built_in_p (olddecl)
 #ifdef SYSTEM_IMPLICIT_EXTERN_C
 		  || (DECL_IN_SYSTEM_HEADER (newdecl) && !DECL_CLASS_SCOPE_P (newdecl))
 		  || (DECL_IN_SYSTEM_HEADER (olddecl) && !DECL_CLASS_SCOPE_P (olddecl))
@@ -1221,7 +1221,7 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
     return true;
   if (TREE_CODE (old_decl) == FUNCTION_DECL)
     {
-      if (DECL_BUILT_IN (old_decl))
+      if (fndecl_built_in_p (old_decl))
 	{
 	  /* Hide a built-in declaration.  */
 	  DECL_DECLARED_CONSTEXPR_P (old_decl)
@@ -1455,7 +1455,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    {
 	      warning_at (newdecl_loc,
 			  OPT_Wshadow, 
-			  DECL_BUILT_IN (olddecl)
+			  fndecl_built_in_p (olddecl)
 			  ? G_("shadowing built-in function %q#D")
 			  : G_("shadowing library function %q#D"), olddecl);
 	      /* Discard the old built-in function.  */
@@ -1463,7 +1463,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    }
 	  /* If the built-in is not ansi, then programs can override
 	     it even globally without an error.  */
-	  else if (! DECL_BUILT_IN (olddecl))
+	  else if (! fndecl_built_in_p (olddecl))
 	    warning_at (newdecl_loc, 0,
 			"library function %q#D redeclared as non-function %q#D",
 			olddecl, newdecl);
@@ -1550,7 +1550,7 @@ next_arg:;
 	      /* Don't really override olddecl for __* prefixed builtins
 		 except for __[^b]*_chk, the compiler might be using those
 		 explicitly.  */
-	      if (DECL_BUILT_IN (olddecl))
+	      if (fndecl_built_in_p (olddecl))
 		{
 		  tree id = DECL_NAME (olddecl);
 		  const char *name = IDENTIFIER_POINTER (id);
@@ -1591,9 +1591,9 @@ next_arg:;
 			    "declaration %q#D", newdecl, olddecl);
 	      else
 		warning (OPT_Wshadow, 
-                         DECL_BUILT_IN (olddecl)
-                         ? G_("shadowing built-in function %q#D")
-                         : G_("shadowing library function %q#D"), olddecl);
+			 fndecl_built_in_p (olddecl)
+			 ? G_("shadowing built-in function %q#D")
+			 : G_("shadowing library function %q#D"), olddecl);
 	    }
 	  else
 	    /* Discard the old built-in function.  */
@@ -2543,7 +2543,7 @@ next_arg:;
       /* If redeclaring a builtin function, it stays built in
 	 if newdecl is a gnu_inline definition, or if newdecl is just
 	 a declaration.  */
-      if (DECL_BUILT_IN (olddecl)
+      if (fndecl_built_in_p (olddecl)
 	  && (new_defines_function ? GNU_INLINE_P (newdecl) : types_match))
 	{
 	  DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
@@ -6638,7 +6638,7 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
       else
 	{
 	  if (TREE_CODE (decl) == FUNCTION_DECL
-	      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+	      && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
 	    set_builtin_user_assembler_name (decl, asmspec);
 	  set_user_assembler_name (decl, asmspec);
 	}
@@ -9566,25 +9566,24 @@ build_ptrmem_type (tree class_type, tree member_type)
 
 /* DECL is a VAR_DECL defined in-class, whose TYPE is also given.
    Check to see that the definition is valid.  Issue appropriate error
-   messages.  Return 1 if the definition is particularly bad, or 0
-   otherwise.  */
+   messages.  */
 
-static int
+static void
 check_static_variable_definition (tree decl, tree type)
 {
   /* Avoid redundant diagnostics on out-of-class definitions.  */
   if (!current_class_type || !TYPE_BEING_DEFINED (current_class_type))
-    return 0;
+    ;
   /* Can't check yet if we don't know the type.  */
-  if (dependent_type_p (type))
-    return 0;
+  else if (dependent_type_p (type))
+    ;
   /* If DECL is declared constexpr, we'll do the appropriate checks
      in check_initializer.  Similarly for inline static data members.  */
-  if (DECL_P (decl)
+  else if (DECL_P (decl)
       && (DECL_DECLARED_CONSTEXPR_P (decl)
 	  || undeduced_auto_decl (decl)
 	  || DECL_VAR_DECLARED_INLINE_P (decl)))
-    return 0;
+    ;
   else if (cxx_dialect >= cxx11 && !INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     {
       if (!COMPLETE_TYPE_P (type))
@@ -9599,23 +9598,18 @@ check_static_variable_definition (tree decl, tree type)
 	error_at (DECL_SOURCE_LOCATION (decl),
 		  "in-class initialization of static data member %q#D of "
 		  "non-literal type", decl);
-      return 1;
     }
-
   /* Motion 10 at San Diego: If a static const integral data member is
      initialized with an integral constant expression, the initializer
      may appear either in the declaration (within the class), or in
      the definition, but not both.  If it appears in the class, the
      member is a member constant.  The file-scope definition is always
      required.  */
-  if (!ARITHMETIC_TYPE_P (type) && TREE_CODE (type) != ENUMERAL_TYPE)
-    {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"invalid in-class initialization of static data member "
-		"of non-integral type %qT",
-		type);
-      return 1;
-    }
+  else if (!ARITHMETIC_TYPE_P (type) && TREE_CODE (type) != ENUMERAL_TYPE)
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "invalid in-class initialization of static data member "
+	      "of non-integral type %qT",
+	      type);
   else if (!CP_TYPE_CONST_P (type))
     error_at (DECL_SOURCE_LOCATION (decl),
 	      "ISO C++ forbids in-class initialization of non-const "
@@ -9625,8 +9619,6 @@ check_static_variable_definition (tree decl, tree type)
     pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
 	     "ISO C++ forbids initialization of member constant "
 	     "%qD of non-integral type %qT", decl, type);
-
-  return 0;
 }
 
 /* *expr_p is part of the TYPE_SIZE of a variably-sized array.  If any
@@ -10780,14 +10772,14 @@ grokdeclarator (const cp_declarator *declarator,
       if (signed_p && unsigned_p)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_signed]);
-	  richloc.add_range (declspecs->locations[ds_unsigned], false);
+	  richloc.add_range (declspecs->locations[ds_unsigned]);
 	  error_at (&richloc,
 		    "%<signed%> and %<unsigned%> specified together");
 	}
       else if (long_p && short_p)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_long]);
-	  richloc.add_range (declspecs->locations[ds_short], false);
+	  richloc.add_range (declspecs->locations[ds_short]);
 	  error_at (&richloc, "%<long%> and %<short%> specified together");
 	}
       else if (TREE_CODE (type) != INTEGER_TYPE
@@ -10931,7 +10923,7 @@ grokdeclarator (const cp_declarator *declarator,
       if (staticp == 2)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
-	  richloc.add_range (declspecs->locations[ds_storage_class], false);
+	  richloc.add_range (declspecs->locations[ds_storage_class]);
 	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
 		    "and %<static%>", dname);
 	  storage_class = sc_none;
@@ -10940,7 +10932,7 @@ grokdeclarator (const cp_declarator *declarator,
       if (constexpr_p)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
-	  richloc.add_range (declspecs->locations[ds_constexpr], false);
+	  richloc.add_range (declspecs->locations[ds_constexpr]);
 	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
 		    "and %<constexpr%>", dname);
 	}
@@ -11289,7 +11281,10 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    /* Handle a late-specified return type.  */
 	    tree late_return_type = declarator->u.function.late_return_type;
-	    if (funcdecl_p)
+	    if (funcdecl_p
+		/* This is the case e.g. for
+		   using T = auto () -> int.  */
+		|| inner_declarator == NULL)
 	      {
 		if (tree auto_node = type_uses_auto (type))
 		  {
@@ -11319,6 +11314,16 @@ grokdeclarator (const cp_declarator *declarator,
 			error ("%qs function with trailing return type has"
 			       " %qT as its type rather than plain %<auto%>",
 			       name, type);
+			return error_mark_node;
+		      }
+		    else if (is_auto (type) && AUTO_IS_DECLTYPE (type))
+		      {
+			if (funcdecl_p)
+			  error ("%qs function with trailing return type has "
+				 "%<decltype(auto)%> as its type rather than "
+				 "plain %<auto%>", name);
+			else
+			  error ("invalid use of %<decltype(auto)%>");
 			return error_mark_node;
 		      }
 		    tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node);
@@ -11478,7 +11483,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    /* Cannot be both friend and virtual.  */
 		    gcc_rich_location richloc (declspecs->locations[ds_virtual]);
-		    richloc.add_range (declspecs->locations[ds_friend], false);
+		    richloc.add_range (declspecs->locations[ds_friend]);
 		    error_at (&richloc, "virtual functions cannot be friends");
 		    friendp = 0;
 		  }

@@ -2049,7 +2049,7 @@
 	Merge from 'apple/trunk' branch on FSF servers.
 
 	2005-08-23  Stuart Hastings  <stuart@apple.com>
-	            Ziemowit Laski  <zlaski@apple.com>
+		    Ziemowit Laski  <zlaski@apple.com>
 
 	Radar 4209854
 	* objc-act.c (objc_decay_parm_type): New function.

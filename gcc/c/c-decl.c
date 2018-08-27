@@ -1800,7 +1800,7 @@ validate_proto_after_old_defn (tree newdecl, tree newtype, tree oldtype)
 static void
 locate_old_decl (tree decl)
 {
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl)
+  if (TREE_CODE (decl) == FUNCTION_DECL && fndecl_built_in_p (decl)
       && !C_DECL_DECLARED_BUILTIN (decl))
     ;
   else if (DECL_INITIAL (decl))
@@ -1843,7 +1843,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
     {
       if (!(TREE_CODE (olddecl) == FUNCTION_DECL
-	    && DECL_BUILT_IN (olddecl)
+	    && fndecl_built_in_p (olddecl)
 	    && !C_DECL_DECLARED_BUILTIN (olddecl)))
 	{
 	  auto_diagnostic_group d;
@@ -1877,7 +1877,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   if (!comptypes (oldtype, newtype))
     {
       if (TREE_CODE (olddecl) == FUNCTION_DECL
-	  && DECL_BUILT_IN (olddecl) && !C_DECL_DECLARED_BUILTIN (olddecl))
+	  && fndecl_built_in_p (olddecl) && !C_DECL_DECLARED_BUILTIN (olddecl))
 	{
 	  /* Accept harmless mismatch in function types.
 	     This is for the ffs and fprintf builtins.  */
@@ -2025,7 +2025,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	 define the built-in with an old-style definition (so we
 	 can't validate the argument list) the built-in definition is
 	 overridden, but optionally warn this was a bad choice of name.  */
-      if (DECL_BUILT_IN (olddecl)
+      if (fndecl_built_in_p (olddecl)
 	  && !C_DECL_DECLARED_BUILTIN (olddecl)
 	  && (!TREE_PUBLIC (newdecl)
 	      || (DECL_INITIAL (newdecl)
@@ -2297,8 +2297,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	   && DECL_INITIAL (newdecl) && !DECL_INITIAL (olddecl))
       /* Don't warn about redundant redeclarations of builtins.  */
       && !(TREE_CODE (newdecl) == FUNCTION_DECL
-	   && !DECL_BUILT_IN (newdecl)
-	   && DECL_BUILT_IN (olddecl)
+	   && !fndecl_built_in_p (newdecl)
+	   && fndecl_built_in_p (olddecl)
 	   && !C_DECL_DECLARED_BUILTIN (olddecl))
       /* Don't warn about an extern followed by a definition.  */
       && !(DECL_EXTERNAL (olddecl) && !DECL_EXTERNAL (newdecl))
@@ -2576,7 +2576,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	       || DECL_DISREGARD_INLINE_LIMITS (olddecl));
 	}
 
-      if (DECL_BUILT_IN (olddecl))
+      if (fndecl_built_in_p (olddecl))
 	{
 	  /* If redeclaring a builtin function, it stays built in.
 	     But it gets tagged as having been declared.  */
@@ -2840,7 +2840,7 @@ warn_if_shadowing (tree new_decl)
 				 new_decl);
 	  }
 	else if (TREE_CODE (old_decl) == FUNCTION_DECL
-		 && DECL_BUILT_IN (old_decl))
+		 && fndecl_built_in_p (old_decl))
 	  {
 	    warning (OPT_Wshadow, "declaration of %q+D shadows "
 		     "a built-in function", new_decl);
@@ -2953,7 +2953,7 @@ pushdecl (tree x)
 		thistype = TREE_TYPE (b_use->decl);
 	      b_use->u.type = TREE_TYPE (b_use->decl);
 	      if (TREE_CODE (b_use->decl) == FUNCTION_DECL
-		  && DECL_BUILT_IN (b_use->decl))
+		  && fndecl_built_in_p (b_use->decl))
 		thistype
 		  = build_type_attribute_variant (thistype,
 						  TYPE_ATTRIBUTES
@@ -3057,7 +3057,8 @@ pushdecl (tree x)
 	  else
 	    thistype = type;
 	  b->u.type = TREE_TYPE (b->decl);
-	  if (TREE_CODE (b->decl) == FUNCTION_DECL && DECL_BUILT_IN (b->decl))
+	  if (TREE_CODE (b->decl) == FUNCTION_DECL
+	      && fndecl_built_in_p (b->decl))
 	    thistype
 	      = build_type_attribute_variant (thistype,
 					      TYPE_ATTRIBUTES (b->u.type));
@@ -3408,7 +3409,7 @@ implicitly_declare (location_t loc, tree functionid)
 	 in the external scope because they're pushed before the file
 	 scope gets created.  Catch this here and rebind them into the
 	 file scope.  */
-      if (!DECL_BUILT_IN (decl) && DECL_IS_BUILTIN (decl))
+      if (!fndecl_built_in_p (decl) && DECL_IS_BUILTIN (decl))
 	{
 	  bind (functionid, decl, file_scope,
 		/*invisible=*/false, /*nested=*/true,
@@ -3429,7 +3430,7 @@ implicitly_declare (location_t loc, tree functionid)
 	      implicit_decl_warning (loc, functionid, decl);
 	      C_DECL_IMPLICIT (decl) = 1;
 	    }
-	  if (DECL_BUILT_IN (decl))
+	  if (fndecl_built_in_p (decl))
 	    {
 	      newtype = build_type_attribute_variant (newtype,
 						      TYPE_ATTRIBUTES
@@ -3445,7 +3446,7 @@ implicitly_declare (location_t loc, tree functionid)
 		  if (header != NULL && warned)
 		    {
 		      rich_location richloc (line_table, loc);
-		      maybe_add_include_fixit (&richloc, header);
+		      maybe_add_include_fixit (&richloc, header, true);
 		      inform (&richloc,
 			      "include %qs or provide a declaration of %qD",
 			      header, decl);

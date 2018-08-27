@@ -2191,14 +2191,14 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 
   /* There can only be a gap at the end of the group if the stride is
      known at compile time.  */
-  gcc_assert (!STMT_VINFO_STRIDED_P (stmt_info) || gap == 0);
+  gcc_assert (!STMT_VINFO_STRIDED_P (first_stmt_info) || gap == 0);
 
   /* Stores can't yet have gaps.  */
   gcc_assert (slp || vls_type == VLS_LOAD || gap == 0);
 
   if (slp)
     {
-      if (STMT_VINFO_STRIDED_P (stmt_info))
+      if (STMT_VINFO_STRIDED_P (first_stmt_info))
 	{
 	  /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
 	     separated by the stride, until we have a complete vector.
@@ -2255,7 +2255,7 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 		    / vect_get_scalar_dr_size (first_dr_info)))
 	would_overrun_p = false;
 
-      if (!STMT_VINFO_STRIDED_P (stmt_info)
+      if (!STMT_VINFO_STRIDED_P (first_stmt_info)
 	  && (can_overrun_p || !would_overrun_p)
 	  && compare_step_with_zero (stmt_info) > 0)
 	{
@@ -2466,8 +2466,11 @@ get_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
   /* FIXME: At the moment the cost model seems to underestimate the
      cost of using elementwise accesses.  This check preserves the
      traditional behavior until that can be fixed.  */
+  stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+  if (!first_stmt_info)
+    first_stmt_info = stmt_info;
   if (*memory_access_type == VMAT_ELEMENTWISE
-      && !STMT_VINFO_STRIDED_P (stmt_info)
+      && !STMT_VINFO_STRIDED_P (first_stmt_info)
       && !(stmt_info == DR_GROUP_FIRST_ELEMENT (stmt_info)
 	   && !DR_GROUP_NEXT_ELEMENT (stmt_info)
 	   && !pow2p_hwi (DR_GROUP_SIZE (stmt_info))))
@@ -2958,13 +2961,10 @@ vectorizable_bswap (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   vec_info *vinfo = stmt_info->vinfo;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   unsigned ncopies;
-  unsigned HOST_WIDE_INT nunits, num_bytes;
 
   op = gimple_call_arg (stmt, 0);
   vectype = STMT_VINFO_VECTYPE (stmt_info);
-
-  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits))
-    return false;
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
@@ -2980,10 +2980,10 @@ vectorizable_bswap (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (! char_vectype)
     return false;
 
-  if (!TYPE_VECTOR_SUBPARTS (char_vectype).is_constant (&num_bytes))
+  poly_uint64 num_bytes = TYPE_VECTOR_SUBPARTS (char_vectype);
+  unsigned word_bytes;
+  if (!constant_multiple_p (num_bytes, nunits, &word_bytes))
     return false;
-
-  unsigned word_bytes = num_bytes / nunits;
 
   /* The encoding uses one stepped pattern for each byte in the word.  */
   vec_perm_builder elts (num_bytes, word_bytes, 3);
@@ -8000,13 +8000,18 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (slp)
 	{
 	  grouped_load = false;
-	  /* For SLP permutation support we need to load the whole group,
-	     not only the number of vector stmts the permutation result
-	     fits in.  */
-	  if (slp_perm)
+	  /* If an SLP permutation is from N elements to N elements,
+	     and if one vector holds a whole number of N, we can load
+	     the inputs to the permutation in the same way as an
+	     unpermuted sequence.  In other cases we need to load the
+	     whole group, not only the number of vector stmts the
+	     permutation result fits in.  */
+	  if (slp_perm
+	      && (group_size != SLP_INSTANCE_GROUP_SIZE (slp_node_instance)
+		  || !multiple_p (nunits, group_size)))
 	    {
-	      /* We don't yet generate SLP_TREE_LOAD_PERMUTATIONs for
-		 variable VF.  */
+	      /* We don't yet generate such SLP_TREE_LOAD_PERMUTATIONs for
+		 variable VF; see vect_transform_slp_perm_load.  */
 	      unsigned int const_vf = vf.to_constant ();
 	      unsigned int const_nunits = nunits.to_constant ();
 	      vec_num = CEIL (group_size * const_vf, const_nunits);

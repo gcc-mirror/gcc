@@ -3767,7 +3767,7 @@ struct GTY(()) lang_decl {
   (LANG_DECL_FN_CHECK (FUNCTION_DECL_CHECK (NODE))	\
    ->u.saved_language_function)
 
-/* True if NODE is an implicit INDIRECT_EXPR from convert_from_reference.  */
+/* True if NODE is an implicit INDIRECT_REF from convert_from_reference.  */
 #define REFERENCE_REF_P(NODE)				\
   (INDIRECT_REF_P (NODE)				\
    && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
@@ -7549,7 +7549,8 @@ cxx_incomplete_type_error (const_tree value, const_tree type)
 extern void cxx_incomplete_type_inform 	        (const_tree);
 extern tree error_not_base_type			(tree, tree);
 extern tree binfo_or_else			(tree, tree);
-extern void cxx_readonly_error			(tree, enum lvalue_use);
+extern void cxx_readonly_error			(location_t, tree,
+						 enum lvalue_use);
 extern void complete_type_check_abstract	(tree);
 extern int abstract_virtuals_error		(tree, tree);
 extern int abstract_virtuals_error		(abstract_class_use, tree);

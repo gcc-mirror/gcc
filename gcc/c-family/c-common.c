@@ -5330,8 +5330,7 @@ check_function_restrict (const_tree fndecl, const_tree fntype,
     {
       /* Avoid diagnosing calls built-ins with a zero size/bound
 	 here.  They are checked in more detail elsewhere.  */
-      if (DECL_BUILT_IN (fndecl)
-	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
 	  && nargs == 3
 	  && TREE_CODE (argarray[2]) == INTEGER_CST
 	  && integer_zerop (argarray[2]))
@@ -5759,8 +5758,7 @@ bool
 check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 				  tree fndecl, int nargs, tree *args)
 {
-  if (!DECL_BUILT_IN (fndecl)
-      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+  if (!fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     return true;
 
   switch (DECL_FUNCTION_CODE (fndecl))
@@ -6137,7 +6135,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
       gcc_unreachable ();
     }
   if (done_lexing)
-    richloc->set_range (0, input_location, true);
+    richloc->set_range (0, input_location, SHOW_RANGE_WITH_CARET);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
   diagnostic_override_option_index (&diagnostic,
@@ -8015,7 +8013,7 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
 	 strlen, and for C++ operators new and delete.
 	 The c_decl_implicit() test avoids false positives for implicitly
 	 declared built-ins with library fallbacks (such as abs).  */
-      && DECL_BUILT_IN (expr)
+      && fndecl_built_in_p (expr)
       && DECL_IS_BUILTIN (expr)
       && !c_decl_implicit (expr)
       && !DECL_ASSEMBLER_NAME_SET_P (expr))
@@ -8342,8 +8340,8 @@ maybe_suggest_missing_token_insertion (rich_location *richloc,
       location_t hint_loc = hint->get_start_loc ();
       location_t old_loc = richloc->get_loc ();
 
-      richloc->set_range (0, hint_loc, true);
-      richloc->add_range (old_loc, false);
+      richloc->set_range (0, hint_loc, SHOW_RANGE_WITH_CARET);
+      richloc->add_range (old_loc);
     }
 }
 
@@ -8481,10 +8479,16 @@ static added_includes_t *added_includes;
    location.
 
    This function is idempotent: a header will be added at most once to
-   any given file.  */
+   any given file.
+
+   If OVERRIDE_LOCATION is true, then if a fix-it is added and will be
+   printed, then RICHLOC's primary location will be replaced by that of
+   the fix-it hint (for use by "inform" notes where the location of the
+   issue has already been reported).  */
 
 void
-maybe_add_include_fixit (rich_location *richloc, const char *header)
+maybe_add_include_fixit (rich_location *richloc, const char *header,
+			 bool override_location)
 {
   location_t loc = richloc->get_loc ();
   const char *file = LOCATION_FILE (loc);
@@ -8512,6 +8516,33 @@ maybe_add_include_fixit (rich_location *richloc, const char *header)
   char *text = xasprintf ("#include %s\n", header);
   richloc->add_fixit_insert_before (include_insert_loc, text);
   free (text);
+
+  if (override_location && global_dc->show_caret)
+    {
+      /* Replace the primary location with that of the insertion point for the
+	 fix-it hint.
+
+	 We use SHOW_LINES_WITHOUT_RANGE so that we don't meaningless print a
+	 caret for the insertion point (or colorize it).
+
+	 Hence we print e.g.:
+
+	 ../x86_64-pc-linux-gnu/libstdc++-v3/include/vector:74:1: note: msg 2
+	  73 | # include <debug/vector>
+	 +++ |+#include <vector>
+	  74 | #endif
+
+	 rather than:
+
+	 ../x86_64-pc-linux-gnu/libstdc++-v3/include/vector:74:1: note: msg 2
+	  73 | # include <debug/vector>
+	 +++ |+#include <vector>
+	  74 | #endif
+	     | ^
+
+	 avoiding the caret on the first column of line 74.  */
+      richloc->set_range (0, include_insert_loc, SHOW_LINES_WITHOUT_RANGE);
+    }
 }
 
 /* Attempt to convert a braced array initializer list CTOR for array

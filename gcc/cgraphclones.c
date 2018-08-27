@@ -222,7 +222,7 @@ build_function_decl_skip_args (tree orig_decl, bitmap args_to_skip,
     DECL_VINDEX (new_decl) = NULL_TREE;
 
   /* When signature changes, we need to clear builtin info.  */
-  if (DECL_BUILT_IN (new_decl)
+  if (fndecl_built_in_p (new_decl)
       && args_to_skip
       && !bitmap_empty_p (args_to_skip))
     {
@@ -482,8 +482,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
 	 version.  The only exception is when the edge was proved to
 	 be unreachable during the clonning procedure.  */
       if (!e->callee
-	  || DECL_BUILT_IN_CLASS (e->callee->decl) != BUILT_IN_NORMAL
-	  || DECL_FUNCTION_CODE (e->callee->decl) != BUILT_IN_UNREACHABLE)
+	  || !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
         e->redirect_callee_duplicating_thunks (new_node);
     }
   new_node->expand_all_artificial_thunks ();

@@ -31,6 +31,11 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Tp, typename _Allocator> class vector;
+} } // namespace std::__debug
+
 #include <vector>
 #include <utility>
 #include <debug/safe_sequence.h>
@@ -126,6 +131,9 @@ namespace __debug
       typedef typename _Base::iterator		_Base_iterator;
       typedef typename _Base::const_iterator	_Base_const_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
+
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
 
     public:
       typedef typename _Base::reference			reference;
@@ -771,9 +779,9 @@ namespace __debug
 
 } // namespace __debug
 
-#if __cplusplus >= 201103L
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __cplusplus >= 201103L
   // DR 1182.
   /// std::hash specialization for vector<bool>.
   template<typename _Alloc>
@@ -784,17 +792,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const __debug::vector<bool, _Alloc>& __b) const noexcept
       { return std::hash<_GLIBCXX_STD_C::vector<bool, _Alloc>>()(__b); }
     };
+#endif
 
  template<typename _Iterator, typename _Container, typename _Sequence>
     _Iterator
     __niter_base(const __gnu_debug::_Safe_iterator<
 		 __gnu_cxx::__normal_iterator<_Iterator, _Container>,
-		 _Sequence>& __it)
+		 _Sequence, std::random_access_iterator_tag>& __it)
     { return std::__niter_base(__it.base()); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
-#endif
-
 } // namespace std
 
 namespace __gnu_debug

@@ -1352,9 +1352,8 @@
    fmov\\t%d0, %1
    dup\\t%d0, %1"
   [(set_attr "type" "neon_dup<q>,f_mcr,neon_dup<q>")
-   (set_attr "simd" "yes,*,yes")
-   (set_attr "fp" "*,yes,*")
-   (set_attr "length" "4")]
+   (set_attr "length" "4")
+   (set_attr "arch" "simd,fp,simd")]
 )
 
 (define_insn "move_lo_quad_internal_<mode>"
@@ -1368,9 +1367,8 @@
    fmov\\t%d0, %1
    dup\\t%d0, %1"
   [(set_attr "type" "neon_dup<q>,f_mcr,neon_dup<q>")
-   (set_attr "simd" "yes,*,yes")
-   (set_attr "fp" "*,yes,*")
-   (set_attr "length" "4")]
+   (set_attr "length" "4")
+   (set_attr "arch" "simd,fp,simd")]
 )
 
 (define_insn "move_lo_quad_internal_be_<mode>"
@@ -1384,9 +1382,8 @@
    fmov\\t%d0, %1
    dup\\t%d0, %1"
   [(set_attr "type" "neon_dup<q>,f_mcr,neon_dup<q>")
-   (set_attr "simd" "yes,*,yes")
-   (set_attr "fp" "*,yes,*")
-   (set_attr "length" "4")]
+   (set_attr "length" "4")
+   (set_attr "arch" "simd,fp,simd")]
 )
 
 (define_insn "move_lo_quad_internal_be_<mode>"
@@ -1400,9 +1397,8 @@
    fmov\\t%d0, %1
    dup\\t%d0, %1"
   [(set_attr "type" "neon_dup<q>,f_mcr,neon_dup<q>")
-   (set_attr "simd" "yes,*,yes")
-   (set_attr "fp" "*,yes,*")
-   (set_attr "length" "4")]
+   (set_attr "length" "4")
+   (set_attr "arch" "simd,fp,simd")]
 )
 
 (define_expand "move_lo_quad_<mode>"
@@ -3114,8 +3110,7 @@
    fmov\t%d0, %1
    ldr\\t%d0, %1"
   [(set_attr "type" "neon_move<q>, neon_from_gp, neon_load1_1reg")
-   (set_attr "simd" "yes,*,yes")
-   (set_attr "fp" "*,yes,*")]
+   (set_attr "arch" "simd,fp,simd")]
 )
 
 (define_insn "*aarch64_combinez_be<mode>"
@@ -3129,8 +3124,7 @@
    fmov\t%d0, %1
    ldr\\t%d0, %1"
   [(set_attr "type" "neon_move<q>, neon_from_gp, neon_load1_1reg")
-   (set_attr "simd" "yes,*,yes")
-   (set_attr "fp" "*,yes,*")]
+   (set_attr "arch" "simd,fp,simd")]
 )
 
 (define_expand "aarch64_combine<mode>"

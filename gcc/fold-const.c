@@ -3451,7 +3451,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
     case tcc_declaration:
       /* Consider __builtin_sqrt equal to sqrt.  */
       return (TREE_CODE (arg0) == FUNCTION_DECL
-	      && DECL_BUILT_IN (arg0) && DECL_BUILT_IN (arg1)
+	      && fndecl_built_in_p (arg0) && fndecl_built_in_p (arg1)
 	      && DECL_BUILT_IN_CLASS (arg0) == DECL_BUILT_IN_CLASS (arg1)
 	      && DECL_FUNCTION_CODE (arg0) == DECL_FUNCTION_CODE (arg1));
 
@@ -9326,6 +9326,14 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
   if (kind == tcc_comparison || code == MIN_EXPR || code == MAX_EXPR)
     {
+      if (code == MIN_EXPR || code == MAX_EXPR)
+	{
+	  tree typ0 = TREE_TYPE (arg0);
+	  tree typ1 = TREE_TYPE (arg1);
+	  gcc_assert (TYPE_SIGN (typ0) == TYPE_SIGN (typ1)
+		      && TYPE_MODE (typ0) == TYPE_MODE (typ1));
+	}
+
       STRIP_SIGN_NOPS (arg0);
       STRIP_SIGN_NOPS (arg1);
     }
@@ -10753,8 +10761,7 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	  tree fndecl = get_callee_fndecl (arg0);
 
 	  if (fndecl
-	      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STRLEN
+	      && fndecl_built_in_p (fndecl, BUILT_IN_STRLEN)
 	      && call_expr_nargs (arg0) == 1
 	      && TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (arg0, 0))) == POINTER_TYPE)
 	    {

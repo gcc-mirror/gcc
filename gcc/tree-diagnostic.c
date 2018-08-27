@@ -290,7 +290,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
     }
 
   if (set_locus)
-    text->set_location (0, DECL_SOURCE_LOCATION (t), true);
+    text->set_location (0, DECL_SOURCE_LOCATION (t), SHOW_RANGE_WITH_CARET);
 
   if (DECL_P (t))
     {

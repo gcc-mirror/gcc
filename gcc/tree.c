@@ -5240,7 +5240,7 @@ need_assembler_name_p (tree decl)
     {
       /* Do not set assembler name on builtins.  Allow RTL expansion to
 	 decide whether to expand inline or via a regular call.  */
-      if (DECL_BUILT_IN (decl)
+      if (fndecl_built_in_p (decl)
 	  && DECL_BUILT_IN_CLASS (decl) != BUILT_IN_FRONTEND)
 	return false;
 
@@ -5371,14 +5371,36 @@ free_lang_data_in_decl (tree decl)
 	 nodes and thus we can't use TREE_CHAIN in multiple lists.  */
       tree *nextp = &BLOCK_VARS (DECL_INITIAL (decl));
       while (*nextp)
-        {
-          tree var = *nextp;
-          if (TREE_CODE (var) == FUNCTION_DECL
-              && DECL_BUILT_IN (var))
+	{
+	  tree var = *nextp;
+	  if (fndecl_built_in_p (var))
 	    *nextp = TREE_CHAIN (var);
 	  else
 	    nextp = &TREE_CHAIN (var);
         }
+    }
+  /* We need to keep field decls associated with their trees. Otherwise tree
+     merging may merge some fileds and keep others disjoint wich in turn will
+     not do well with TREE_CHAIN pointers linking them.
+
+     Also do not drop containing types for virtual methods and tables because
+     these are needed by devirtualization.  */
+  if (TREE_CODE (decl) != FIELD_DECL
+      && ((TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
+          || !DECL_VIRTUAL_P (decl)))
+    {
+      tree ctx = DECL_CONTEXT (decl);
+      /* Variably modified types are needed for tree_is_indexable to decide
+	 whether the type needs to go to local or global section.
+	 This code is semi-broken but for now it is easiest to keep contexts
+	 as expected.  */
+      if (ctx && TYPE_P (ctx)
+	  && !variably_modified_type_p (ctx, NULL_TREE))
+	 {
+	   while (ctx && TYPE_P (ctx))
+	     ctx = TYPE_CONTEXT (ctx);
+	   DECL_CONTEXT (decl) = ctx;
+	 }
     }
 }
 
@@ -5542,11 +5564,7 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  tem = TYPE_FIELDS (t);
 	  while (tem)
 	    {
-	      if (TREE_CODE (tem) == FIELD_DECL
-		  || (TREE_CODE (tem) == TYPE_DECL
-		      && !DECL_IGNORED_P (tem)
-		      && debug_info_level > DINFO_LEVEL_TERSE
-		      && !is_redundant_typedef (tem)))
+	      if (TREE_CODE (tem) == FIELD_DECL)
 		fld_worklist_push (tem, fld);
 	      tem = TREE_CHAIN (tem);
 	    }
@@ -9081,7 +9099,7 @@ get_call_combined_fn (const_tree call)
     return as_combined_fn (CALL_EXPR_IFN (call));
 
   tree fndecl = get_callee_fndecl (call);
-  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     return as_combined_fn (DECL_FUNCTION_CODE (fndecl));
 
   return CFN_LAST;

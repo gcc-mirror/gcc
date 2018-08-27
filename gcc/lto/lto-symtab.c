@@ -546,14 +546,14 @@ lto_symtab_merge_p (tree prevailing, tree decl)
   
   if (TREE_CODE (prevailing) == FUNCTION_DECL)
     {
-      if (DECL_BUILT_IN (prevailing) != DECL_BUILT_IN (decl))
+      if (fndecl_built_in_p (prevailing) != fndecl_built_in_p (decl))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not merging decls; "
 		     "DECL_BUILT_IN mismatch\n");
 	  return false;
 	}
-      if (DECL_BUILT_IN (prevailing)
+      if (fndecl_built_in_p (prevailing)
 	  && (DECL_BUILT_IN_CLASS (prevailing) != DECL_BUILT_IN_CLASS (decl)
 	      || DECL_FUNCTION_CODE (prevailing) != DECL_FUNCTION_CODE (decl)))
 	{
@@ -797,7 +797,7 @@ lto_symtab_merge_decls_1 (symtab_node *first)
 	{
 	  for (e = first; e; e = e->next_sharing_asm_name)
 	    if (TREE_CODE (e->decl) == FUNCTION_DECL
-		&& !DECL_BUILT_IN (e->decl)
+		&& !fndecl_built_in_p (e->decl)
 		&& lto_symtab_symbol_p (e))
 	      {
 		prevailing = e;
@@ -1030,7 +1030,7 @@ lto_symtab_merge_symbols (void)
 	      /* Builtins are not merged via decl merging.  It is however
 		 possible that tree merging unified the declaration.  We
 		 do not want duplicate entries in symbol table.  */
-	      if (cnode && DECL_BUILT_IN (node->decl)
+	      if (cnode && fndecl_built_in_p (node->decl)
 		  && (cnode2 = cgraph_node::get (node->decl))
 		  && cnode2 != cnode)
 		lto_cgraph_replace_node (cnode2, cnode);

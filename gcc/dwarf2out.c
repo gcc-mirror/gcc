@@ -102,6 +102,7 @@ static void dwarf2out_source_line (unsigned int, unsigned int, const char *,
 static rtx_insn *last_var_location_insn;
 static rtx_insn *cached_next_real_insn;
 static void dwarf2out_decl (tree);
+static bool is_redundant_typedef (const_tree);
 
 #ifndef XCOFF_DEBUGGING_INFO
 #define XCOFF_DEBUGGING_INFO 0
@@ -295,6 +296,10 @@ static unsigned int rnglist_idx;
 
 #ifndef FUNC_BEGIN_LABEL
 #define FUNC_BEGIN_LABEL	"LFB"
+#endif
+
+#ifndef FUNC_SECOND_SECT_LABEL
+#define FUNC_SECOND_SECT_LABEL	"LFSB"
 #endif
 
 #ifndef FUNC_END_LABEL
@@ -1212,21 +1217,24 @@ static void set_cur_line_info_table (section *);
 void
 dwarf2out_switch_text_section (void)
 {
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
   section *sect;
   dw_fde_ref fde = cfun->fde;
 
   gcc_assert (cfun && fde && fde->dw_fde_second_begin == NULL);
 
+  ASM_GENERATE_INTERNAL_LABEL (label, FUNC_SECOND_SECT_LABEL,
+			       current_function_funcdef_no);
+
+  fde->dw_fde_second_begin = ggc_strdup (label);
   if (!in_cold_section_p)
     {
       fde->dw_fde_end = crtl->subsections.cold_section_end_label;
-      fde->dw_fde_second_begin = crtl->subsections.hot_section_label;
       fde->dw_fde_second_end = crtl->subsections.hot_section_end_label;
     }
   else
     {
       fde->dw_fde_end = crtl->subsections.hot_section_end_label;
-      fde->dw_fde_second_begin = crtl->subsections.cold_section_label;
       fde->dw_fde_second_end = crtl->subsections.cold_section_end_label;
     }
   have_multiple_function_sections = true;
@@ -6455,7 +6463,12 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
 	  print_indent -= 4;
 	}
       else
-	fprintf (outfile, " (%p)\n", (void *) val->v.val_loc);
+	{
+	  if (flag_dump_noaddr || flag_dump_unnumbered)
+	    fprintf (outfile, " #\n");
+	  else
+	    fprintf (outfile, " (%p)\n", (void *) val->v.val_loc);
+	}
       break;
     case dw_val_class_loc_list:
       fprintf (outfile, "location list -> label:%s",
@@ -6524,7 +6537,10 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
 	    }
 	  else
 	    fprintf (outfile, "die -> %ld", die->die_offset);
-	  fprintf (outfile, " (%p)", (void *) die);
+	  if (flag_dump_noaddr || flag_dump_unnumbered)
+	    fprintf (outfile, " #");
+	  else
+	    fprintf (outfile, " (%p)", (void *) die);
 	}
       else
 	fprintf (outfile, "die -> <null>");
@@ -6614,8 +6630,11 @@ print_loc_descr (dw_loc_descr_ref loc, FILE *outfile)
   for (l = loc; l != NULL; l = l->dw_loc_next)
     {
       print_spaces (outfile);
-      fprintf (outfile, "(%p) %s",
-	       (void *) l,
+      if (flag_dump_noaddr || flag_dump_unnumbered)
+	fprintf (outfile, "#");
+      else
+	fprintf (outfile, "(%p)", (void *) l);
+      fprintf (outfile, " %s",
 	       dwarf_stack_op_name (l->dw_loc_opc));
       if (l->dw_loc_oprnd1.val_class != dw_val_class_none)
 	{
@@ -6642,9 +6661,12 @@ print_die (dw_die_ref die, FILE *outfile)
   unsigned ix;
 
   print_spaces (outfile);
-  fprintf (outfile, "DIE %4ld: %s (%p)\n",
-	   die->die_offset, dwarf_tag_name (die->die_tag),
-	   (void*) die);
+  fprintf (outfile, "DIE %4ld: %s ",
+	   die->die_offset, dwarf_tag_name (die->die_tag));
+  if (flag_dump_noaddr || flag_dump_unnumbered)
+    fprintf (outfile, "#\n");
+  else
+    fprintf (outfile, "(%p)\n", (void*) die);
   print_spaces (outfile);
   fprintf (outfile, "  abbrev id: %lu", die->die_abbrev);
   fprintf (outfile, " offset: %ld", die->die_offset);
@@ -25817,7 +25839,7 @@ decls_for_scope (tree stmt, dw_die_ref context_die)
 
 /* Is this a typedef we can avoid emitting?  */
 
-bool
+static bool
 is_redundant_typedef (const_tree decl)
 {
   if (TYPE_DECL_IS_STUB (decl))
@@ -28265,6 +28287,12 @@ save_macinfo_strings (void)
                 && (debug_str_section->common.flags & SECTION_MERGE) != 0)
               set_indirect_string (find_AT_string (ref->info));
             break;
+	  case DW_MACINFO_start_file:
+	    /* -gsplit-dwarf -g3 will also output filename as indirect
+	       string.  */
+	    if (!dwarf_split_debug_info)
+	      break;
+	    /* Fall through. */
 	  case DW_MACRO_define_strp:
 	  case DW_MACRO_undef_strp:
             set_indirect_string (find_AT_string (ref->info));
@@ -31098,7 +31126,7 @@ reset_dies (dw_die_ref die)
    and generate the DWARF-2 debugging info.  */
 
 static void
-dwarf2out_finish (const char *)
+dwarf2out_finish (const char *filename)
 {
   comdat_type_node *ctnode;
   dw_die_ref main_comp_unit_die;
@@ -31178,6 +31206,12 @@ dwarf2out_finish (const char *)
 #endif
   resolve_addr (comp_unit_die ());
   move_marked_base_types ();
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "DWARF for %s\n", filename);
+      print_die (comp_unit_die (), dump_file);
+    }
 
   /* Initialize sections and labels used for actual assembler output.  */
   unsigned generation = init_sections_and_labels (false);
@@ -31874,6 +31908,11 @@ dwarf2out_early_finish (const char *filename)
   if (in_lto_p)
     {
       early_dwarf_finished = true;
+      if (dump_file)
+	{
+	  fprintf (dump_file, "LTO EARLY DWARF for %s\n", filename);
+	  print_die (comp_unit_die (), dump_file);
+	}
       return;
     }
 
@@ -31951,6 +31990,11 @@ dwarf2out_early_finish (const char *filename)
 
   /* The early debug phase is now finished.  */
   early_dwarf_finished = true;
+  if (dump_file)
+    {
+      fprintf (dump_file, "EARLY DWARF for %s\n", filename);
+      print_die (comp_unit_die (), dump_file);
+    }
 
   /* Do not generate DWARF assembler now when not producing LTO bytecode.  */
   if ((!flag_generate_lto && !flag_generate_offload)

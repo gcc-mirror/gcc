@@ -355,7 +355,7 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 	  }
 
 	if (decl
-	    && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+	    && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
 	  {
 	    if (DECL_FUNCTION_CODE (decl) == BUILT_IN_SETJMP)
 	      {

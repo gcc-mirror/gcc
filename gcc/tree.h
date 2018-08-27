@@ -3001,24 +3001,10 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define DECL_STRUCT_FUNCTION(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.f)
 
-/* In a FUNCTION_DECL, nonzero means a built in function of a
-   standard library or more generally a built in function that is
-   recognized by optimizers and expanders.
-
-   Note that it is different from the DECL_IS_BUILTIN accessor.  For
-   instance, user declared prototypes of C library functions are not
-   DECL_IS_BUILTIN but may be DECL_BUILT_IN.  */
-#define DECL_BUILT_IN(NODE) (DECL_BUILT_IN_CLASS (NODE) != NOT_BUILT_IN)
 
 /* For a builtin function, identify which part of the compiler defined it.  */
 #define DECL_BUILT_IN_CLASS(NODE) \
    (FUNCTION_DECL_CHECK (NODE)->function_decl.built_in_class)
-
-/* For a function declaration, return true if NODE is non-null and it is
-   a builtin of a CLASS with requested NAME.  */
-#define DECL_BUILT_IN_P(NODE, CLASS, NAME) \
-  (NODE != NULL_TREE && DECL_BUILT_IN_CLASS (NODE) == CLASS \
-   && DECL_FUNCTION_CODE (NODE) == NAME)
 
 /* In FUNCTION_DECL, a chain of ..._DECL nodes.  */
 #define DECL_ARGUMENTS(NODE) \
@@ -5811,7 +5797,6 @@ extern void gt_pch_nx (tree &);
 extern void gt_pch_nx (tree &, gt_pointer_operator, void *);
 
 extern bool nonnull_arg_p (const_tree);
-extern bool is_redundant_typedef (const_tree);
 extern bool default_is_empty_record (const_tree);
 extern HOST_WIDE_INT arg_int_size_in_bytes (const_tree);
 extern tree arg_size_in_bytes (const_tree);
@@ -5853,6 +5838,51 @@ inline bool
 type_has_mode_precision_p (const_tree t)
 {
   return known_eq (TYPE_PRECISION (t), GET_MODE_PRECISION (TYPE_MODE (t)));
+}
+
+/* For a FUNCTION_DECL NODE, nonzero means a built in function of a
+   standard library or more generally a built in function that is
+   recognized by optimizers and expanders.
+
+   Note that it is different from the DECL_IS_BUILTIN accessor.  For
+   instance, user declared prototypes of C library functions are not
+   DECL_IS_BUILTIN but may be DECL_BUILT_IN.
+
+   When a NULL argument is pass or tree code of the NODE is not FUNCTION_DECL
+   false is returned.  */
+
+inline bool
+fndecl_built_in_p (const_tree node)
+{
+  return (DECL_BUILT_IN_CLASS (node) != NOT_BUILT_IN);
+}
+
+/* For a FUNCTION_DECL NODE, return true when a function is
+   a built-in of class KLASS.  */
+
+inline bool
+fndecl_built_in_p (const_tree node, built_in_class klass)
+{
+  return (fndecl_built_in_p (node) && DECL_BUILT_IN_CLASS (node) == klass);
+}
+
+/* For a FUNCTION_DECL NODE, return true when a function is
+   a built-in of class KLASS with name equal to NAME.  */
+
+inline bool
+fndecl_built_in_p (const_tree node, int name, built_in_class klass)
+{
+  return (fndecl_built_in_p (node, klass) && DECL_FUNCTION_CODE (node) == name);
+}
+
+/* For a FUNCTION_DECL NODE, return true when a function is
+   a built-in of class BUILT_IN_NORMAL class with name equal to NAME.  */
+
+inline bool
+fndecl_built_in_p (const_tree node, built_in_function name)
+{
+  return (fndecl_built_in_p (node, BUILT_IN_NORMAL)
+	  && DECL_FUNCTION_CODE (node) == name);
 }
 
 #endif  /* GCC_TREE_H  */

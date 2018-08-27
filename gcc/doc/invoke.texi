@@ -232,6 +232,7 @@ in the following sections.
 -Wdelete-non-virtual-dtor -Wdeprecated-copy  -Wliteral-suffix @gol
 -Wmultiple-inheritance @gol
 -Wnamespaces  -Wnarrowing @gol
+-Wpessimizing-move  -Wredundant-move @gol
 -Wnoexcept  -Wnoexcept-type  -Wclass-memaccess @gol
 -Wnon-virtual-dtor  -Wreorder  -Wregister @gol
 -Weffc++  -Wstrict-null-sentinel  -Wtemplates @gol
@@ -569,6 +570,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdisable-rtl-@var{pass-name}=@var{range-list} @gol
 -fdisable-tree-@var{pass_name} @gol
 -fdisable-tree-@var{pass-name}=@var{range-list} @gol
+-fdump-debug -fdump-earlydebug @gol
 -fdump-noaddr  -fdump-unnumbered  -fdump-unnumbered-links @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-final-insns@r{[}=@var{file}@r{]} @gol
@@ -3167,6 +3169,74 @@ The compiler rearranges the member initializers for @code{i}
 and @code{j} to match the declaration order of the members, emitting
 a warning to that effect.  This warning is enabled by @option{-Wall}.
 
+@item -Wno-pessimizing-move @r{(C++ and Objective-C++ only)}
+@opindex Wpessimizing-move
+@opindex Wno-pessimizing-move
+This warning warns when a call to @code{std::move} prevents copy
+elision.  A typical scenario when copy elision can occur is when returning in
+a function with a class return type, when the expression being returned is the
+name of a non-volatile automatic object, and is not a function parameter, and
+has the same type as the function return type.
+
+@smallexample
+struct T @{
+@dots{}
+@};
+T fn()
+@{
+  T t;
+  @dots{}
+  return std::move (t);
+@}
+@end smallexample
+
+But in this example, the @code{std::move} call prevents copy elision.
+
+This warning is enabled by @option{-Wall}.
+
+@item -Wno-redundant-move @r{(C++ and Objective-C++ only)}
+@opindex Wredundant-move
+@opindex Wno-redundant-move
+This warning warns about redundant calls to @code{std::move}; that is, when
+a move operation would have been performed even without the @code{std::move}
+call.  This happens because the compiler is forced to treat the object as if
+it were an rvalue in certain situations such as returning a local variable,
+where copy elision isn't applicable.  Consider:
+
+@smallexample
+struct T @{
+@dots{}
+@};
+T fn(T t)
+@{
+  @dots{}
+  return std::move (t);
+@}
+@end smallexample
+
+Here, the @code{std::move} call is redundant.  Because G++ implements Core
+Issue 1579, another example is:
+
+@smallexample
+struct T @{ // convertible to U
+@dots{}
+@};
+struct U @{
+@dots{}
+@};
+U fn()
+@{
+  T t;
+  @dots{}
+  return std::move (t);
+@}
+@end smallexample
+In this example, copy elision isn't applicable because the type of the
+expression being returned and the function return type differ, yet G++
+treats the return value as if it were designated by an rvalue.
+
+This warning is enabled by @option{-Wextra}.
+
 @item -fext-numeric-literals @r{(C++ and Objective-C++ only)}
 @opindex fext-numeric-literals
 @opindex fno-ext-numeric-literals
@@ -4072,6 +4142,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wnonnull-compare  @gol
 -Wopenmp-simd @gol
 -Wparentheses  @gol
+-Wpessimizing-move @r{(only for C++)}  @gol
 -Wpointer-sign  @gol
 -Wreorder   @gol
 -Wrestrict   @gol
@@ -4120,6 +4191,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wold-style-declaration @r{(C only)}  @gol
 -Woverride-init  @gol
 -Wsign-compare @r{(C only)} @gol
+-Wredundant-move @r{(only for C++)}  @gol
 -Wtype-limits  @gol
 -Wuninitialized  @gol
 -Wshift-negative-value @r{(in C++03 and in C99 and newer)}  @gol
@@ -11047,11 +11119,12 @@ parameter sets a limit on the length of the sets that are computed,
 which prevents the runaway behavior.  Setting a value of 0 for
 this parameter allows an unlimited set length.
 
-@item sccvn-max-scc-size
-Maximum size of a strongly connected component (SCC) during SCCVN
-processing.  If this limit is hit, SCCVN processing for the whole
-function is not done and optimizations depending on it are
-disabled.  The default maximum SCC size is 10000.
+@item rpo-vn-max-loop-depth
+Maximum loop depth that is value-numbered optimistically.  The default
+maximum loop depth is three.  When the limit hits the innermost
+@var{rpo-vn-max-loop-depth} loops and the outermost loop in the
+loop nest are value-numbered optimistically and the remaining ones not.
+The default maximum loop depth is seven.
 
 @item sccvn-max-alias-queries-per-access
 Maximum number of alias-oracle queries we perform when looking for
@@ -13819,6 +13892,16 @@ Also turns on @option{-dp} annotation.
 Just generate RTL for a function instead of compiling it.  Usually used
 with @option{-fdump-rtl-expand}.
 @end table
+
+@item -fdump-debug
+@opindex fdump-debug
+Dump debugging information generated during the debug
+generation phase.
+
+@item -fdump-earlydebug
+@opindex fdump-earlydebug
+Dump debugging information generated during the early debug
+generation phase.
 
 @item -fdump-noaddr
 @opindex fdump-noaddr

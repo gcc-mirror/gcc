@@ -10937,7 +10937,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  }
 
 	/* Check for a built-in function.  */
-	if (fndecl && DECL_BUILT_IN (fndecl))
+	if (fndecl && fndecl_built_in_p (fndecl))
 	  {
 	    gcc_assert (DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_FRONTEND);
 	    return expand_builtin (exp, target, subtarget, tmode, ignore);

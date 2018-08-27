@@ -31,6 +31,11 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Tp, typename _Allocator> class forward_list;
+} } // namespace std::__debug
+
 #include <forward_list>
 #include <debug/safe_sequence.h>
 #include <debug/safe_container.h>
@@ -192,6 +197,9 @@ namespace __debug
 
       typedef typename _Base::iterator		_Base_iterator;
       typedef typename _Base::const_iterator	_Base_const_iterator;
+
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
 
     public:
       typedef typename _Base::reference		reference;
@@ -653,69 +661,112 @@ namespace __debug
 		   const_iterator __before, const_iterator __last)
       { splice_after(__pos, std::move(__list), __before, __last); }
 
-      void
+    private:
+#if __cplusplus > 201703L
+      using __remove_return_type = size_type;
+# define _GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG \
+      __attribute__((__abi_tag__("__cxx20")))
+# define _GLIBCXX20_ONLY(__expr) __expr
+#else
+      using __remove_return_type = void;
+# define _GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG
+# define _GLIBCXX20_ONLY(__expr)
+#endif
+
+    public:
+      _GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG
+      __remove_return_type
       remove(const _Tp& __val)
       {
+	if (!this->_M_iterators && !this->_M_const_iterators)
+	  return _Base::remove(__val);
+
+	size_type __removed __attribute__((__unused__)) = 0;
 	_Base_iterator __x = _Base::before_begin();
 	_Base_iterator __old = __x++;
+	_Base_iterator __extra = _Base::end();
 	while (__x != _Base::end())
 	  {
 	    if (*__x == __val)
-	      __x = _M_erase_after(__old);
-	    else
-	      __old = __x++;
+	      {
+		if (std::__addressof(*__x) != std::__addressof(__val))
+		  {
+		    __x = _M_erase_after(__old);
+		    _GLIBCXX20_ONLY( __removed++ );
+		    continue;
+		  }
+		else
+		  __extra = __old;
+	      }
+	    __old = __x++;
 	  }
+
+	if (__extra != _Base::end())
+	  {
+	    this->_M_erase_after(__extra);
+	    _GLIBCXX20_ONLY( __removed++ );
+	  }
+
+	return _GLIBCXX20_ONLY( __removed );
       }
 
       template<typename _Pred>
-	void
+	__remove_return_type
 	remove_if(_Pred __pred)
 	{
+	  if (!this->_M_iterators && !this->_M_const_iterators)
+	    return _Base::remove_if(__pred);
+
+	  size_type __removed __attribute__((__unused__)) = 0;
 	  _Base_iterator __x = _Base::before_begin();
 	  _Base_iterator __old = __x++;
 	  while (__x != _Base::end())
-	    {
-	      if (__pred(*__x))
+	    if (__pred(*__x))
+	      {
 		__x = _M_erase_after(__old);
-	      else
-		__old = __x++;
-	    }
+		_GLIBCXX20_ONLY( __removed++ );
+	      }
+	    else
+	      __old = __x++;
+
+	  return _GLIBCXX20_ONLY( __removed );
 	}
 
-      void
+      _GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG
+      __remove_return_type
       unique()
-      {
-	_Base_iterator __first = _Base::begin();
-	_Base_iterator __last = _Base::end();
-	if (__first == __last)
-	  return;
-	_Base_iterator __next = std::next(__first);
-	while (__next != __last)
-	  {
-	    if (*__first == *__next)
-	      __next = _M_erase_after(__first);
-	    else
-	      __first = __next++;
-	  }
-      }
+      { return unique(std::equal_to<_Tp>()); }
 
       template<typename _BinPred>
-	void
+	__remove_return_type
 	unique(_BinPred __binary_pred)
 	{
+	  if (!this->_M_iterators && !this->_M_const_iterators)
+	    return _Base::unique(__binary_pred);
+
 	  _Base_iterator __first = _Base::begin();
 	  _Base_iterator __last = _Base::end();
 	  if (__first == __last)
-	    return;
+	    return _GLIBCXX20_ONLY(0);
+
+	  size_type __removed __attribute__((__unused__)) = 0;
 	  _Base_iterator __next = std::next(__first);
 	  while (__next != __last)
 	    {
 	      if (__binary_pred(*__first, *__next))
-		__next = _M_erase_after(__first);
+		{
+		  __next = _M_erase_after(__first);
+		  _GLIBCXX20_ONLY( __removed++ );
+		}
 	      else
 		__first = __next++;
 	    }
+
+	  return _GLIBCXX20_ONLY( __removed );
 	}
+
+#undef _GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG
+#undef _GLIBCXX20_ONLY
 
       void
       merge(forward_list&& __list)

@@ -2783,7 +2783,14 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 	break;
 
       if (valueize)
-	vuse = valueize (vuse);
+	{
+	  vuse = valueize (vuse);
+	  if (!vuse)
+	    {
+	      res = NULL;
+	      break;
+	    }
+	}
       def_stmt = SSA_NAME_DEF_STMT (vuse);
       if (gimple_nop_p (def_stmt))
 	break;

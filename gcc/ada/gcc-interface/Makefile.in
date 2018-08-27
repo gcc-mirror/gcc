@@ -441,6 +441,11 @@ ifeq ($(ENABLE_VXADDR2LINE),true)
 	  TOOLSCASE=cross top_buildir=../../.. \
 	  ../../vxaddr2line$(exeext)
 endif
+ifeq ($(ENABLE_VXLINK),true)
+	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
+	  TOOLSCASE=cross top_build=../../.. \
+	  ../../vxlink$(exeext)
+endif
 
 common-tools: ../stamp-tools
 	$(GNATMAKE) -j0 -c -b $(ADA_INCLUDES) \
@@ -477,6 +482,12 @@ common-tools: ../stamp-tools
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vxaddr2line
 	$(GNATLINK) -v vxaddr2line -o $@ \
 	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" ../targext.o $(CLIB)
+
+../../vxlink$(exeext): ../stamp-tools
+	$(GNATMAKE) -c  $(ADA_INCLUDES) vxlink-main --GCC="$(CC) $(ALL_ADAFLAGS)"
+	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vxlink-main
+	$(GNATLINK) -v vxlink-main -o $@ \
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)"
 
 gnatmake-re: ../stamp-tools
 	$(GNATMAKE) -j0 $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(MOST_ADA_FLAGS)"

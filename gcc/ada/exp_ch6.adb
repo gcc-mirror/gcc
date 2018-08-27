@@ -6402,12 +6402,13 @@ package body Exp_Ch6 is
            and then Is_Protected_Type (Etype (Prefix (Name (Parent (N)))))
            and then Is_Entity_Name (Name (N))
            and then Scope (Entity (Name (N))) =
-                     Etype (Prefix (Name (Parent (N))))
+                      Etype (Prefix (Name (Parent (N))))
          then
             Rewrite (Name (N),
               Make_Selected_Component (Sloc (N),
-                Prefix => New_Copy_Tree (Prefix (Name (Parent (N)))),
+                Prefix        => New_Copy_Tree (Prefix (Name (Parent (N)))),
                 Selector_Name => Relocate_Node (Name (N))));
+
             Analyze_And_Resolve (N);
             return;
 

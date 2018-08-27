@@ -2401,7 +2401,7 @@ static hash_set<tree> *pending_assemble_externals_set;
 static bool
 incorporeal_function_p (tree decl)
 {
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
+  if (TREE_CODE (decl) == FUNCTION_DECL && fndecl_built_in_p (decl))
     {
       const char *name;
 
@@ -3923,7 +3923,6 @@ output_constant_pool_2 (fixed_size_mode mode, rtx x, unsigned int align)
     case MODE_UFRACT:
     case MODE_ACCUM:
     case MODE_UACCUM:
-    case MODE_POINTER_BOUNDS:
       assemble_integer (x, GET_MODE_SIZE (mode), align, 1);
       break;
 

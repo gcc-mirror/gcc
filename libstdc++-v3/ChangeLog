@@ -1,3 +1,345 @@
+2018-08-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libstdc++/70694
+	* configure.host (OPT_LDFLAGS): Don't append
+	-fvisibility-inlines-hidden for newer Darwin.
+
+2018-08-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/86822
+	* libsupc++/new (operator new(size_t, nothrow_t), operator
+	new[](size_t, nothrow_t), operator new(size_t, align_val_t, nothrow_t),
+	operator new[](size_t, align_val_t, nothrow_t)): Add malloc attribute.
+
+2018-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/deque (std::__debug::deque): Declare.
+	* include/debug/forward_list (std::__debug::forward_list): Declare.
+	* include/debug/list (std::__debug::list): Declare.
+	* include/debug/map (std::__debug::map): Declare.
+	* include/debug/set (std::__debug::set): Declare.
+	* include/debug/unordered_map (std::__debug::unordered_map): Declare.
+	* include/debug/unordered_set (std::__debug::unordered_set): Declare.
+	* include/debug/vector (std::__debug::vector): Declare.
+	* testsuite/23_containers/deque/types/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/forward_list/pmr_typedefs_debug.cc: New
+	test.
+	* testsuite/23_containers/list/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/map/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/multimap/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/multiset/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/set/pmr_typedefs_debug.cc: New test.
+	* testsuite/23_containers/unordered_map/pmr_typedefs_debug.cc: New
+	test.
+	* testsuite/23_containers/unordered_multimap/pmr_typedefs_debug.cc:
+	New test.
+	* testsuite/23_containers/unordered_multiset/pmr_typedefs_debug.cc:
+	New test.
+	* testsuite/23_containers/unordered_set/pmr_typedefs_debug.cc: New
+	test.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Adjust dg-error lineno.
+	* testsuite/23_containers/vector/types/pmr_typedefs_debug.cc: New
+	test.
+
+2018-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (__gnu_test::memory_resource):
+	Only define when RTTI is enabled.
+
+	* include/debug/vector (__niter_base): Define for C++98.
+
+	* testsuite/25_algorithms/partial_sort_copy/debug/irreflexive_neg.cc:
+	Fix C++98 test to not use C++11 features.
+	* testsuite/25_algorithms/fill_n/2.cc: Likewise.
+
+	* scripts/check_compile: Fix comments.
+
+	* include/debug/string (insert(__const_iterator, _InIter, _InIter)):
+	[!_GLIBCXX_USE_CXX11_ABI]: Replace use of C++11-only cbegin() with
+	begin(), for C++98 compatibility.
+
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::__const_iterator): Change access to protected.
+	[!_GLIBCXX_USE_CXX11_ABI] (basic_string::__const_iterator): Define
+	as typedef for iterator.
+	* include/debug/string (__const_iterator): Use typedef from base.
+	(insert(const_iterator, _CharT))
+	(replace(const_iterator, const_iterator, const basic_string&))
+	(replace(const_iterator, const_iterator, const _CharT*, size_type))
+	(replace(const_iterator, const_iterator, const CharT*))
+	(replace(const_iterator, const_iterator, size_type, _CharT))
+	(replace(const_iterator, const_iterator, _InputIter, _InputIter))
+	(replace(const_iterator, const_iterator, initializer_list<_CharT>)):
+	Change const_iterator parameters to __const_iterator.
+	(insert(iterator, size_type, _CharT)): Add C++98 overload.
+	(insert(const_iterator, _InputIterator, _InputIterator)): Change
+	const_iterator parameter to __const_iterator.
+	[!_GLIBCXX_USE_CXX11_ABI]: Add workaround for incorrect return type
+	of base's member function.
+	(insert(const_iterator, size_type, _CharT)) [!_GLIBCXX_USE_CXX11_ABI]:
+	Likewise.
+	(insert(const_iterator, initializer_list<_CharT>))
+	[!_GLIBCXX_USE_CXX11_ABI]: Likewise.
+	* testsuite/21_strings/basic_string/init-list.cc: Remove effective
+	target directive.
+
+	* testsuite/20_util/reference_wrapper/lwg2993.cc: Fix C++11 test to
+	not use C++14 feature.
+	* testsuite/23_containers/list/68222_neg.cc: Likewise.
+
+	* testsuite/21_strings/basic_string/init-list.cc:
+	Require cxx11-abi.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_match.cc:
+	Likewise.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_string.cc:
+	Likewise.
+
+	* testsuite/23_containers/deque/capacity/max_size.cc: Fix test for
+	C++98 mode.
+	* testsuite/23_containers/deque/modifiers/assign/1.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/assign/1.cc: Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/assign/1.cc: Likewise.
+	* testsuite/23_containers/vector/capacity/max_size.cc: Likewise.
+	* testsuite/23_containers/vector/modifiers/assign/1.cc: Likewise.
+
+2018-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87061
+	* include/experimental/regex [!_GLIBCXX_USE_CXX11_ABI]
+	(experimental::pmr::match_results, experimental::pmr::cmatch)
+	(experimental::pmr::smatch, experimental::pmr::wcmatch)
+	(experimental::pmr::wsmatch): Do not declare for gcc4-compatible ABI,
+	because COW strings don't support C++11 allocator model.
+	* include/experimental/string [!_GLIBCXX_USE_CXX11_ABI]
+	(experimental::pmr::basic_string, experimental::pmr::string)
+	(experimental::pmr::u16string, experimental::pmr::u32string)
+	(experimental::pmr::wstring): Likewise.
+	* include/std/regex [!_GLIBCXX_USE_CXX11_ABI] (pmr::match_results)
+	(pmr::cmatch, pmr::smatch, pmr::wcmatch, pmr::wsmatch): Likewise.
+	* include/std/string [!_GLIBCXX_USE_CXX11_ABI] (pmr::basic_string)
+	(pmr::string, pmr::u16string, pmr::u32string, pmr::wstring): Likewise.
+	* testsuite/21_strings/basic_string/types/pmr_typedefs.cc: Require
+	cxx11-abi.
+	* testsuite/28_regex/match_results/pmr_typedefs.cc: Likewise.
+
+	PR libstdc++/78448
+	* include/bits/deque.tcc (deque::_M_range_initialize): Use
+	_S_check_init_len to check size.
+	(deque::_M_push_back_aux, deque::_M_push_front_aux): Throw length
+	error if size would exceed max_size().
+	* include/bits/stl_deque.h (_Deque_base::size_type): Remove typedef.
+	(_Deque_base(_Deque_base&&, const allocator_type&, size_t)): Use
+	size_t instead of size_type.
+	(deq(size_type, const allocator_type&)
+	(deq(size_type, const value_type&, const allocator_type&)
+	(deque::_M_initialize_dispatch): Use _S_check_init_len to check size.
+	(deque::max_size): Call _S_max_size.
+	(deque::_S_check_init_len, deque::_S_max_size): New functions.
+	* include/bits/stl_vector.h (vector(size_type, const allocator_type&))
+	(vector(size_type, const value_type&, const allocator_type&))
+	(vector::_M_initialize_dispatch, vector::_M_range_initialize): Use
+	_S_check_init_len to check size.
+	(vector::max_size): Call _S_max_size.
+	(vector::_M_check_len): Prevent max from being expanded as a
+	function-like macro.
+	(vector::_S_check_init_len, vector::_S_max_size): New functions.
+	* include/bits/vector.tcc (vector::_M_assign_aux): Use
+	_S_check_init_len to check size.
+	* testsuite/23_containers/deque/capacity/max_size.cc: New test.
+	* testsuite/23_containers/vector/capacity/max_size.cc: New test.
+
+2018-08-22  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/68222
+	* include/debug/safe_iterator.h
+	(_Safe_iterator<_It, _Sq, _Cat>): Add category template parameter.
+	(_Safe_iterator<>::_Const_iterator): Remove.
+	(_Safe_iterator<>::_IsConstant): New.
+	(_Safe_iterator<>::_OtherIterator): New.
+	(_Safe_iterator<_It, _Sq, _Cat>::_Safe_iterator<_MutIte>(
+	const _Safe_iterator<_MutIte, _Sq, _Cat>&)): Add _IsConstant::__value in
+	__gnu_cxx::__enable_if condition.
+	(_Safe_iterator<_It, _Sq, _Cat>::_M_get_distance_to): New.
+	(_Safe_iterator<_It, _Sq, _Cat>::_M_get_distance_from_begin): New.
+	(_Safe_iterator<_It, _Sq, _Cat>::_M_get_distance_to_end): New.
+	(_Safe_iterator<_It, _Sq, std::bidirectional_iterator_tag>): New.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator--()): Move...
+	(_Safe_iterator<_It, _Sq, std::bidirectional_iterator_tag>
+	::operator--()): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator--(int)): Move...
+	(_Safe_iterator<_It, _Sq, std::bidirectional_iterator_tag>
+	::operator--(int)): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::_M_decrementable()): Move...
+	(_Safe_iterator<_It, _Sq, std::bidirectional_iterator_tag>
+	::_M_decrementable()): ...here.
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>): New.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator[](const difference_type&)):
+	Move...
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>
+	::operator[](const difference_type&)): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator+=(const difference_type&)):
+	Move...
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>
+	::operator+=(const difference_type&)): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator+(const difference_type&)):
+	Move...
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>
+	::operator+(const difference_type&)): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator-=(const difference_type&)):
+	Move...
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>
+	::operator-=(const difference_type&)): ...here.
+	(_Safe_iterator<_It, _Sq, _Cat>::operator-(const difference_type&)):
+	Move...
+	(_Safe_iterator<_It, _Sq, std::random_access_iterator_tag>
+	::operator-(const difference_type&)): ...here.
+	(operator<(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Constraint to random access iterators.
+	(operator<=(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator>(const _Safe_iterator<>&, const _Safe_iterator<>&)): Likewise.
+	(operator>=(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator-(const _Safe_iterator<>&, const _Safe_iterator<>&)): Likewise.
+	(operator+(const difference_type&, const _Safe_iterator<>&)): Likewise.
+	(__check_dereferenceable(const _Safe_iterator<>&)): Remove.
+	(__get_distance): Remove.
+	(__get_distance_from_begin): Remove.
+	(__get_distance_to_end): Remove.
+	(struct __is_safe_random_iterator<_Safe_iterator<>>): Remove partial
+	specialization.
+	(__base(const _Safe_iterator<>&, std::input_iterator_tag)): Remove.
+	(__base(const _Safe_iterator<>&, std::random_access_iterator_tag)): Remove.
+	(__base(const _Safe_iterator<>&)): Constraint to random access iterator.
+	* include/debug/safe_iterator.tcc
+	(_Safe_iterator<>::_M_get_distance_from_begin()): New.
+	(_Safe_iterator<>::_M_get_distance_to_end()): New.
+	(_Safe_iterator<>::_M_get_distance_to(const _Safe_iterator<>&)): New.
+	(_Safe_iterator<_It, _Seq, std::random_access_iterator_tag>
+	::_M_valid_range): New.
+	* include/debug/safe_local_iterator.h
+	(_Safe_local_iterator<>::_Const_local_iterator): Remove.
+	(_Safe_local_iterator<>::_IsConstant): New.
+	(_Safe_local_iterator<>::_OtherIterator): New.
+	(_Safe_local_iterator<_It, _Cont>::_Safe_local_iterator<_MutIte, _Cont>(
+	const _Safe_local_iterator<_MutIte, _Seq>&)): Add _IsConstant::__value
+	in __gnu_cxx::__enable_if condition. If singular compare base iterator
+	with _MutIte rather than _It.
+	(_Safe_local_iterator<>::_S_constant): Make constexpr.
+	(_Safe_local_iterator<>::_M_get_distance_to): New.
+	(__check_dereferenceable(const _Safe_local_iterator<>&)): Remove.
+	(__get_distance(const _Safe_local_iterator<>&,
+	const _Safe_local_iterator<>&, std::input_iterator_tag)): Remove.
+	(__valid_range(const _Safe_local_iterator<>&,
+	const _Safe_local_iterator<>&)): New.
+	* include/debug/safe_local_iterator.tcc
+	(_Safe_local_iterator<>::_M_get_distance_to): New.
+	* include/debug/deque (std::__debug::deque<>): Add
+	::__gnu_debug::_Safe_iterator<> friend declaration.
+	* include/debug/forward_list (std::__debug::forward_list<>): Likewise.
+	* include/debug/list (std::__debug::list<>): Likewise.
+	* include/debug/map.h (std::__debug::map<>): Likewise.
+	* include/debug/multimap.h (std::__debug::multimap<>): Likewise.
+	* include/debug/set.h (std::__debug::set<>): Likewise.
+	* include/debug/multiset.h (std::__debug::multiset<>): Likewise.
+	* include/debug/string (std::__debug::basic_string<>): Likewise.
+	* include/debug/unordered_map (std::__debug::unordered_map<>): Likewise
+	and add ::__gnu_debug::_Safe_local_iterator<> friend declaration.
+	(std::__debug::unordered_multimap<>): Likewise.
+	* include/debug/unordered_set (std::__debug::unordered_set<>): Likewise.
+	(std::__debug::unordered_multiset<>): Likewise.
+	* include/debug/formatter.h: Adapt.
+	* include/debug/helper_functions.h
+	(__gnu_debug::_Safe_local_iterator<>): Add declaration.
+	(__get_distance<_Ite>(_Ite, _Ite, std::random_access_iterator_tag):
+	Pass parameter by copy.
+	(__get_distance<_Ite>(_Ite, _Ite, std::input_iterator_tag): Likewise.
+	(__get_distance<_Ite>(_Ite, _Ite): Likewise.
+	(__valid_range_aux<_Integral>): Pass _Integral by copy.
+	(__valid_range<_InputIterator>): Pass _InputIterator by copy.
+	(__valid_range<>(const _Safe_iterator<>&,
+	const _Safe_iterator<>&, typename _Distance_traits<>::__type&)):
+	Declare.
+	(__valid_range(const _Safe_local_iterator<>&,
+	const _Safe_local_iterator<>&, typename _Distance_traits<>::__type&)):
+	Declare.
+	(__valid_range<>(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Declare.
+	(__valid_range(const _Safe_local_iterator<>&, const _Safe_local_iterator<>&)):
+	Declare.
+	(__can_advance): Adapt.
+	(struct __is_safe_random_iterator<>): Remove.
+	(struct _SIter_base<>): Remove.
+	* include/debug/functions.h: Include <bits/stl_iterator.h>.
+	(__check_dereferenceable): Remove.
+	(__foreign_iterator_aux4, __foreign_iterator_aux3): Adapt.
+	(__foreign_iterator_aux2, __foreign_iterator_aux): Adapt.
+	(__foreign_iterator): Adapt.
+	* include/debug/stl_iterator.h
+	(__is_safe_random_iterator<std::reverse_iterator<>>): Remove.
+	(__base(const std::reverse_iterator<_Safe_iterator<_It, _Sq>)):
+	Constraint for random access iterators.
+	(__niter_base): Adapt.
+	* testsuite/util/testsuite_containers.h:
+	Include <bits/boost_concept_check.h>.
+	(iterator_concept_checks<_It, _Mutable, _Category>): New.
+	(citerator<_Cont>::forward_members::forward_members()): Instantiate
+	latter for container iterator and const_iterator.
+	* testsuite/23_containers/list/68222_neg.cc: New.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc: Adapt
+	line number.
+	* testsuite/23_containers/unordered_set/debug/debug_functions.cc:
+	(test01): Remove.
+	* testsuite/23_containers/vector/debug/debug_functions.cc (test01):
+	Remove.
+
+2018-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77854
+	* doc/xml/manual/status_cxx1998.xml: Document size_type and
+	difference_type for containers.
+	* doc/html/*: Regenerate.
+
+2018-08-21  François Dumont  <fdumont@gcc.gnu.org>
+
+	P0646R1 Improving the Return Value of Erase-Like Algorithms I
+	* include/debug/forward_list (forward_list::__remove_return_type):
+	Define typedef as size_type or void, according to __cplusplus value.
+	(_GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG): Define macro as abi-tag or
+	empty, according to __cplusplus value.
+	(_GLIBCXX20_ONLY): Define macro.
+	(forward_list::remove, forward_list::unique): Use typedef and macro
+	to change return type and add abi-tag for C++2a. Return number of
+	removed elements for C++2a.
+	(forward_list::remove_if<Pred>, forward_list::unique<BinPred>): Use
+	typedef to change return type for C++2a. Return number of removed
+	elements for C++2a.
+	* include/debug/list (list::__remove_return_type): Define typedef as
+	size_type or void, according to __cplusplus value.
+	(_GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG): Define macro as abi-tag or
+	empty, according to __cplusplus value.
+	(_GLIBCXX20_ONLY): Define macro.
+	(list::remove, list::unique): Use typedef and macro to change return
+	type and add abi-tag for C++2a. Return number of removed elements for
+	C++2a.
+	(list::remove_if<Predicate>, list::unique<BinaryPredicate>): Use typedef
+	to change return type for C++2a. Return number of removed elements for
+	C++2a.
+
+2018-08-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/18_support/new_nothrow.cc: XFAIL on AIX.
+
+2018-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/bit/bitops.count/countl_one.cc: Remove
+	redundant dg-do directive.
+	* testsuite/26_numerics/bit/bitops.count/countl_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countr_one.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countr_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/popcount.cc: Likewise.
+
 2018-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86963

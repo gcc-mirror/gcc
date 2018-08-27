@@ -52,7 +52,7 @@
 #include <bits/basic_string.h>
 #include <bits/basic_string.tcc>
 
-#if __cplusplus >= 201703L
+#if __cplusplus >= 201703L && _GLIBCXX_USE_CXX11_ABI
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

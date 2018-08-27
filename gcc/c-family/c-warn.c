@@ -702,7 +702,7 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
   location_t loc;
 
   if (TREE_CODE (callee) != FUNCTION_DECL
-      || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
+      || !fndecl_built_in_p (callee, BUILT_IN_NORMAL)
       || vec_safe_length (params) <= 1)
     return;
 
@@ -2429,7 +2429,7 @@ warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
     {
       arg = argarray[pos - 1];
       if (EXPR_HAS_LOCATION (arg))
-	richloc.add_range (EXPR_LOCATION (arg), false);
+	richloc.add_range (EXPR_LOCATION (arg));
     }
 
   return warning_n (&richloc, OPT_Wrestrict, arg_positions.length (),

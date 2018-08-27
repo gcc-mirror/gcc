@@ -208,7 +208,7 @@ case ${host} in
 *-*-darwin*)
   asm_hidden_op=.private_extern
   tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-libgcc-pic t-slibgcc-darwin"
-  extra_parts="crt3.o crttms.o crttme.o"
+  extra_parts="crt3.o d10-uwfef.o crttms.o crttme.o"
   ;;
 *-*-dragonfly*)
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
@@ -1141,6 +1141,7 @@ powerpc*-*-linux*)
 	;;
 powerpc-wrs-vxworks*)
 	tmake_file="$tmake_file rs6000/t-ppccomm rs6000/t-savresfgpr t-fdpbit"
+	extra_parts="$extra_parts crtbegin.o crtend.o"
 	;;
 powerpc-*-lynxos*)
 	tmake_file="$tmake_file rs6000/t-lynx t-fdpbit"

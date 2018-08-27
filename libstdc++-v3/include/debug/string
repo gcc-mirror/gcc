@@ -94,6 +94,13 @@ namespace __gnu_debug
 	basic_string, _Allocator, _Safe_sequence, bool(_GLIBCXX_USE_CXX11_ABI)>
       _Safe;
 
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
+
+      // type used for positions in insert, erase etc.
+      typedef __gnu_debug::_Safe_iterator<
+	typename _Base::__const_iterator, basic_string> __const_iterator;
+
     public:
       // types:
       typedef _Traits					traits_type;
@@ -586,7 +593,7 @@ namespace __gnu_debug
       }
 
       iterator
-      insert(const_iterator __p, _CharT __c)
+      insert(__const_iterator __p, _CharT __c)
       {
 	__glibcxx_check_insert(__p);
 	typename _Base::iterator __res = _Base::insert(__p.base(), __c);
@@ -594,29 +601,51 @@ namespace __gnu_debug
 	return iterator(__res, this);
       }
 
+#if __cplusplus >= 201103L
       iterator
       insert(const_iterator __p, size_type __n, _CharT __c)
       {
 	__glibcxx_check_insert(__p);
+#if _GLIBCXX_USE_CXX11_ABI
 	typename _Base::iterator __res = _Base::insert(__p.base(), __n, __c);
+#else
+	const size_type __offset = __p.base() - _Base::cbegin();
+	_Base::insert(_Base::begin() + __offset, __n, __c);
+	typename _Base::iterator __res = _Base::begin() + __offset;
+#endif
 	this->_M_invalidate_all();
 	return iterator(__res, this);
       }
+#else
+      void
+      insert(iterator __p, size_type __n, _CharT __c)
+      {
+	__glibcxx_check_insert(__p);
+	_Base::insert(__p.base(), __n, __c);
+	this->_M_invalidate_all();
+      }
+#endif
 
       template<typename _InputIterator>
 	iterator
-	insert(const_iterator __p,
+	insert(__const_iterator __p,
 	       _InputIterator __first, _InputIterator __last)
 	{
 	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
 	  __glibcxx_check_insert_range(__p, __first, __last, __dist);
 
 	  typename _Base::iterator __res;
+#if _GLIBCXX_USE_CXX11_ABI
 	  if (__dist.second >= __dp_sign)
 	    __res = _Base::insert(__p.base(), __gnu_debug::__unsafe(__first),
 				  __gnu_debug::__unsafe(__last));
 	  else
 	    __res = _Base::insert(__p.base(), __first, __last);
+#else
+	  const size_type __offset = __p.base() - _Base::begin();
+	  _Base::insert(__p.base(), __first, __last);
+	  __res = _Base::begin() + __offset;
+#endif
 	  this->_M_invalidate_all();
 	  return iterator(__res, this);
 	}
@@ -626,7 +655,13 @@ namespace __gnu_debug
       insert(const_iterator __p, std::initializer_list<_CharT> __l)
       {
 	__glibcxx_check_insert(__p);
+#if _GLIBCXX_USE_CXX11_ABI
 	const auto __res = _Base::insert(__p.base(), __l);
+#else
+	const size_type __offset = __p.base() - _Base::cbegin();
+	_Base::insert(_Base::begin() + __offset, __l);
+	auto __res = _Base::begin() + __offset;
+#endif
 	this->_M_invalidate_all();
 	return iterator(__res, this);
       }
@@ -716,7 +751,8 @@ namespace __gnu_debug
       }
 
       basic_string&
-      replace(iterator __i1, iterator __i2, const basic_string& __str)
+      replace(__const_iterator __i1, __const_iterator __i2,
+	      const basic_string& __str)
       {
 	__glibcxx_check_erase_range(__i1, __i2);
 	_Base::replace(__i1.base(), __i2.base(), __str);
@@ -725,7 +761,8 @@ namespace __gnu_debug
       }
 
       basic_string&
-      replace(iterator __i1, iterator __i2, const _CharT* __s, size_type __n)
+      replace(__const_iterator __i1, __const_iterator __i2,
+	      const _CharT* __s, size_type __n)
       {
 	__glibcxx_check_erase_range(__i1, __i2);
 	__glibcxx_check_string_len(__s, __n);
@@ -735,7 +772,8 @@ namespace __gnu_debug
       }
 
       basic_string&
-      replace(iterator __i1, iterator __i2, const _CharT* __s)
+      replace(__const_iterator __i1, __const_iterator __i2,
+	      const _CharT* __s)
       {
 	__glibcxx_check_erase_range(__i1, __i2);
 	__glibcxx_check_string(__s);
@@ -745,7 +783,8 @@ namespace __gnu_debug
       }
 
       basic_string&
-      replace(iterator __i1, iterator __i2, size_type __n, _CharT __c)
+      replace(__const_iterator __i1, __const_iterator __i2,
+	      size_type __n, _CharT __c)
       {
 	__glibcxx_check_erase_range(__i1, __i2);
 	_Base::replace(__i1.base(), __i2.base(), __n, __c);
@@ -755,7 +794,7 @@ namespace __gnu_debug
 
       template<typename _InputIterator>
 	basic_string&
-	replace(iterator __i1, iterator __i2,
+	replace(__const_iterator __i1, __const_iterator __i2,
 		_InputIterator __j1, _InputIterator __j2)
 	{
 	  __glibcxx_check_erase_range(__i1, __i2);
@@ -775,8 +814,9 @@ namespace __gnu_debug
 	}
 
 #if __cplusplus >= 201103L
-      basic_string& replace(iterator __i1, iterator __i2,
-			    std::initializer_list<_CharT> __l)
+      basic_string&
+      replace(__const_iterator __i1, __const_iterator __i2,
+	      std::initializer_list<_CharT> __l)
       {
 	__glibcxx_check_erase_range(__i1, __i2);
 	_Base::replace(__i1.base(), __i2.base(), __l);

@@ -1291,7 +1291,7 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       tree min, max;
       predicate p;
 
-      e = find_edge (bb, label_to_block (CASE_LABEL (cl)));
+      e = gimple_switch_edge (cfun, last, case_idx);
       min = CASE_LOW (cl);
       max = CASE_HIGH (cl);
 
@@ -2455,10 +2455,8 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 	       for (e = node->callees; e; e = e->next_callee)
 		 {
 		   tree cdecl = e->callee->decl;
-		   if (DECL_BUILT_IN (cdecl)
-		       && DECL_BUILT_IN_CLASS (cdecl) == BUILT_IN_NORMAL
-		       && (DECL_FUNCTION_CODE (cdecl) == BUILT_IN_APPLY_ARGS
-			   || DECL_FUNCTION_CODE (cdecl) == BUILT_IN_VA_START))
+		   if (fndecl_built_in_p (cdecl, BUILT_IN_APPLY_ARGS)
+		       || fndecl_built_in_p (cdecl, BUILT_IN_VA_START))
 		     break;
 		 }
 	       node->local.can_change_signature = !e;

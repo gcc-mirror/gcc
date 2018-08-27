@@ -390,7 +390,6 @@ int_mode_for_mode (machine_mode mode)
     case MODE_VECTOR_ACCUM:
     case MODE_VECTOR_UFRACT:
     case MODE_VECTOR_UACCUM:
-    case MODE_POINTER_BOUNDS:
       return int_mode_for_size (GET_MODE_BITSIZE (mode), 0);
 
     case MODE_RANDOM:

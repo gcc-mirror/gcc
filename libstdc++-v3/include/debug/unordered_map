@@ -34,6 +34,16 @@
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
+# include <bits/c++config.h>
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Key, typename _Tp, typename _Hash, typename _Pred,
+	   typename _Allocator>
+    class unordered_map;
+  template<typename _Key, typename _Tp, typename _Hash, typename _Pred,
+	   typename _Allocator>
+    class unordered_multimap;
+} } // namespace std::__debug
+
 # include <unordered_map>
 
 #include <debug/safe_unordered_container.h>
@@ -65,6 +75,11 @@ namespace __debug
       typedef typename _Base::const_local_iterator
 						_Base_const_local_iterator;
       typedef typename _Base::local_iterator	_Base_local_iterator;
+
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
+      template<typename _ItT, typename _SeqT>
+	friend class ::__gnu_debug::_Safe_local_iterator;
 
     public:
       typedef typename _Base::size_type			size_type;
@@ -752,6 +767,11 @@ namespace __debug
       typedef typename _Base::const_local_iterator _Base_const_local_iterator;
       typedef typename _Base::local_iterator	   _Base_local_iterator;
 
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
+      template<typename _ItT, typename _SeqT>
+	friend class ::__gnu_debug::_Safe_local_iterator;
+
     public:
       typedef typename _Base::size_type			size_type;
       typedef typename _Base::hasher			hasher;
@@ -768,7 +788,7 @@ namespace __debug
       typedef __gnu_debug::_Safe_local_iterator<
 	_Base_local_iterator, unordered_multimap>	local_iterator;
       typedef __gnu_debug::_Safe_local_iterator<
-	_Base_const_local_iterator, unordered_multimap> const_local_iterator;
+	_Base_const_local_iterator, unordered_multimap>	const_local_iterator;
 
       unordered_multimap() = default;
 

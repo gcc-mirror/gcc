@@ -304,6 +304,8 @@ pure_location_p (line_maps *set, source_location loc)
     return false;
 
   const line_map *map = linemap_lookup (set, loc);
+  if (map == NULL)
+    return true;
   const line_map_ordinary *ordmap = linemap_check_ordinary (map);
 
   if (loc & ((1U << ordmap->m_range_bits) - 1))
@@ -517,6 +519,11 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
     }
 
   linemap_assert (reason != LC_ENTER_MACRO);
+
+  if (start_location >= LINE_MAP_MAX_LOCATION)
+    /* We ran out of line map space.   */
+    start_location = 0;
+
   line_map_ordinary *map
     = linemap_check_ordinary (new_linemap (set, start_location));
   map->reason = reason;
@@ -2071,7 +2078,7 @@ rich_location::rich_location (line_maps *set, source_location loc,
   m_seen_impossible_fixit (false),
   m_fixits_cannot_be_auto_applied (false)
 {
-  add_range (loc, true, label);
+  add_range (loc, SHOW_RANGE_WITH_CARET, label);
 }
 
 /* The destructor for class rich_location.  */
@@ -2147,18 +2154,19 @@ rich_location::override_column (int column)
 /* Add the given range.  */
 
 void
-rich_location::add_range (source_location loc, bool show_caret_p,
+rich_location::add_range (source_location loc,
+			  enum range_display_kind range_display_kind,
 			  const range_label *label)
 {
   location_range range;
   range.m_loc = loc;
-  range.m_show_caret_p = show_caret_p;
+  range.m_range_display_kind = range_display_kind;
   range.m_label = label;
   m_ranges.push (range);
 }
 
 /* Add or overwrite the location given by IDX, setting its location to LOC,
-   and setting its "should my caret be printed" flag to SHOW_CARET_P.
+   and setting its m_range_display_kind to RANGE_DISPLAY_KIND.
 
    It must either overwrite an existing location, or add one *exactly* on
    the end of the array.
@@ -2172,19 +2180,19 @@ rich_location::add_range (source_location loc, bool show_caret_p,
 
 void
 rich_location::set_range (unsigned int idx, source_location loc,
-			  bool show_caret_p)
+			  enum range_display_kind range_display_kind)
 {
   /* We can either overwrite an existing range, or add one exactly
      on the end of the array.  */
   linemap_assert (idx <= m_ranges.count ());
 
   if (idx == m_ranges.count ())
-    add_range (loc,  show_caret_p);
+    add_range (loc, range_display_kind);
   else
     {
       location_range *locrange = get_range (idx);
       locrange->m_loc = loc;
-      locrange->m_show_caret_p = show_caret_p;
+      locrange->m_range_display_kind = range_display_kind;
     }
 
   if (idx == 0)

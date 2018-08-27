@@ -420,9 +420,8 @@ builtin_valid_in_constant_expr_p (const_tree decl)
     return false;
   if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL)
     {
-      if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_FRONTEND
-	  && ((int) DECL_FUNCTION_CODE (decl)
-	      == CP_BUILT_IN_IS_CONSTANT_EVALUATED))
+      if (fndecl_built_in_p (decl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
+			   BUILT_IN_FRONTEND))
 	return true;
       /* Not a built-in.  */
       return false;

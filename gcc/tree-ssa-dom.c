@@ -436,7 +436,8 @@ record_edge_info (basic_block bb)
 	      for (i = 0; i < n_labels; i++)
 		{
 		  tree label = gimple_switch_label (switch_stmt, i);
-		  basic_block target_bb = label_to_block (CASE_LABEL (label));
+		  basic_block target_bb
+		    = label_to_block (cfun, CASE_LABEL (label));
 		  if (CASE_HIGH (label)
 		      || !CASE_LOW (label)
 		      || info[target_bb->index])
@@ -1986,8 +1987,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 	     certain that the value simply isn't constant.  */
 	  tree callee = gimple_call_fndecl (stmt);
 	  if (callee
-	      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (callee) == BUILT_IN_CONSTANT_P)
+	      && fndecl_built_in_p (callee, BUILT_IN_CONSTANT_P))
 	    {
 	      propagate_tree_value_into_stmt (&si, integer_zero_node);
 	      stmt = gsi_stmt (si);

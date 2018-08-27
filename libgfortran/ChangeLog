@@ -1,3 +1,107 @@
+2018-08-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/86704
+	* m4/matmul_internal.m4: Correct calculation of needed buffer size
+	for arrays of shape (1,n).
+	* generated/matmul_c10.c: Regenerated
+	* generated/matmul_c16.c: Regenerated
+	* generated/matmul_c4.c: Regenerated
+	* generated/matmul_c8.c: Regenerated
+	* generated/matmul_i1.c: Regenerated
+	* generated/matmul_i16.c: Regenerated
+	* generated/matmul_i2.c: Regenerated
+	* generated/matmul_i4.c: Regenerated
+	* generated/matmul_i8.c: Regenerated
+	* generated/matmul_r10.c: Regenerated
+	* generated/matmul_r16.c: Regenerated
+	* generated/matmul_r4.c: Regenerated
+	* generated/matmul_r8.c: Regenerated
+	* generated/matmulavx128_c10.c: Regenerated
+	* generated/matmulavx128_c16.c: Regenerated
+	* generated/matmulavx128_c4.c: Regenerated
+	* generated/matmulavx128_c8.c: Regenerated
+	* generated/matmulavx128_i1.c: Regenerated
+	* generated/matmulavx128_i16.c: Regenerated
+	* generated/matmulavx128_i2.c: Regenerated
+	* generated/matmulavx128_i4.c: Regenerated
+	* generated/matmulavx128_i8.c: Regenerated
+	* generated/matmulavx128_r10.c: Regenerated
+	* generated/matmulavx128_r16.c: Regenerated
+	* generated/matmulavx128_r4.c: Regenerated
+	* generated/matmulavx128_r8.c: Regenerated
+
+2018-08-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* async.h (ASYNC_IO): Revert _AIX test.
+
+2018-08-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* async.h: Set ASYNC_IO to zero if _AIX is defined.
+	(struct adv_cond): If ASYNC_IO is zero, the struct has no members.
+	(async_unit): If ASYNC_IO is zero, remove unneeded members.
+
+2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* Makefile.am: Add async.c to gfor_io_src.
+	Add async.h to gfor_io_headers.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add _gfortran_st_wait_async.
+	* io/async.c: New file.
+	* io/async.h: New file.
+	* io/close.c: Include async.h.
+	(st_close): Call async_wait for an asynchronous unit.
+	* io/file_pos.c (st_backspace): Likewise.
+	(st_endfile): Likewise.
+	(st_rewind): Likewise.
+	(st_flush): Likewise.
+	* io/inquire.c: Add handling for asynchronous PENDING
+	and ID arguments.
+	* io/io.h (st_parameter_dt): Add async bit.
+	(st_parameter_wait): Correct.
+	(gfc_unit): Add au pointer.
+	(st_wait_async): Add prototype.
+	(transfer_array_inner): Likewise.
+	(st_write_done_worker): Likewise.
+	* io/open.c: Include async.h.
+	(new_unit): Initialize asynchronous unit.
+	* io/transfer.c (async_opt): New struct.
+	(wrap_scalar_transfer): New function.
+	(transfer_integer): Call wrap_scalar_transfer to do the work.
+	(transfer_real): Likewise.
+	(transfer_real_write): Likewise.
+	(transfer_character): Likewise.
+	(transfer_character_wide): Likewise.
+	(transfer_complex): Likewise.
+	(transfer_array_inner): New function.
+	(transfer_array): Call transfer_array_inner.
+	(transfer_derived): Call wrap_scalar_transfer.
+	(data_transfer_init): Check for asynchronous I/O.
+	Perform a wait operation on any pending asynchronous I/O
+	if the data transfer is synchronous. Copy PDT and enqueue
+	thread for data transfer.
+	(st_read_done_worker): New function.
+	(st_read_done): Enqueue transfer or call st_read_done_worker.
+	(st_write_done_worker): New function.
+	(st_write_done): Enqueue transfer or call st_read_done_worker.
+	(st_wait): Document as no-op for compatibility reasons.
+	(st_wait_async): New function.
+	* io/unit.c (insert_unit): Use macros LOCK, UNLOCK and TRYLOCK;
+	add NOTE where necessary.
+	(get_gfc_unit): Likewise.
+	(init_units): Likewise.
+	(close_unit_1): Likewise. Call async_close if asynchronous.
+	(close_unit): Use macros LOCK and UNLOCK.
+	(finish_last_advance_record): Likewise.
+	(newunit_alloc): Likewise.
+	* io/unix.c (find_file): Likewise.
+	(flush_all_units_1): Likewise.
+	(flush_all_units): Likewise.
+	* libgfortran.h (generate_error_common): Add prototype.
+	* runtime/error.c: Include io.h and async.h.
+	(generate_error_common): New function.
+
 2018-08-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Check for <sys/random.h>.

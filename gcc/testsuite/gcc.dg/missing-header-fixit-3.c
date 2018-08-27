@@ -7,21 +7,15 @@
 void test (int i, int j)
 {
   printf ("%i of %i\n", i, j); /* { dg-warning "implicit declaration" } */
-  /* { dg-message "include '<stdio.h>' or provide a declaration of 'printf'" "" { target *-*-* } .-1 } */
+  /* { dg-message "include '<stdio.h>' or provide a declaration of 'printf'" "" { target *-*-* } 1 } */
 #if 0
 /* { dg-begin-multiline-output "" }
 9 |   printf ("%i of %i\n", i, j);
   |   ^~~~~~
    { dg-end-multiline-output "" } */
-/* { dg-regexp ".*missing-header-fixit-3.c:1:1:" } */
 /* { dg-begin-multiline-output "" }
 + |+#include <stdio.h>
 1 | /* Example of a fix-it hint that adds a #include directive,
-   { dg-end-multiline-output "" } */
-/* { dg-regexp ".*missing-header-fixit-3.c:9:3:" } */
-/* { dg-begin-multiline-output "" }
-9 |   printf ("%i of %i\n", i, j);
-  |   ^~~~~~
    { dg-end-multiline-output "" } */
 #endif
 }

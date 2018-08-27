@@ -20,6 +20,7 @@
 #ifndef _GLIBCXX_TESTSUITE_CONTAINERS_H
 #define _GLIBCXX_TESTSUITE_CONTAINERS_H
 
+#include <bits/boost_concept_check.h>
 #include <cassert>
 #include <testsuite_container_traits.h>
 
@@ -189,6 +190,77 @@ namespace __gnu_test
     struct forward_members_unordered<_Tp, false>
     {
       forward_members_unordered(_Tp& container) { }
+    };
+
+  template<typename _Iterator,
+	   bool _Mutable,
+	   typename = typename std::iterator_traits<_Iterator>::iterator_category>
+    struct iterator_concept_checks;
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, false,
+				   std::forward_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_ForwardIteratorConcept<_Iterator>>();
+      }
+    };
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, true,
+				   std::forward_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_Mutable_ForwardIteratorConcept<_Iterator>>();
+      }
+    };
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, false,
+				   std::bidirectional_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_BidirectionalIteratorConcept<_Iterator>>();
+      }
+    };
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, true,
+				   std::bidirectional_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_Mutable_BidirectionalIteratorConcept<_Iterator>>();
+      }
+    };
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, false,
+				   std::random_access_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_RandomAccessIteratorConcept<_Iterator>>();
+      }
+    };
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, true,
+				   std::random_access_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_Mutable_RandomAccessIteratorConcept<_Iterator>>();
+      }
     };
 
   template<typename _Tp>

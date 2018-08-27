@@ -184,7 +184,7 @@ associate_equivalences_with_edges (void)
 	      for (i = 0; i < n_labels; i++)
 		{
 		  tree label = gimple_switch_label (switch_stmt, i);
-		  basic_block bb = label_to_block (CASE_LABEL (label));
+		  basic_block bb = label_to_block (cfun, CASE_LABEL (label));
 
 		  if (CASE_HIGH (label)
 		      || !CASE_LOW (label)

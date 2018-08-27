@@ -47,11 +47,11 @@
 
 2017-01-18  Matthias Klose  <doko@ubuntu.com>
 
-        PR libobjc/78697
+	PR libobjc/78697
 	* configure.ac: Allow default for --with-target-bdw-gc-include.
 	* configure: Regenerate.
 
-        PR libobjc/78698
+	PR libobjc/78698
 	* configure.ac: Use the libgc.la file when available.
 	* configure: Regenerate.
 
@@ -294,7 +294,7 @@
 	clang which seems to emit calls to it.
 
 2011-10-08  Richard Frith-Macdonald <rfm@gnu.org>
-            Nicola Pero  <nicola.pero@meta-innovation.com>
+	    Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/50428
 	* sendmsg.c (__objc_send_initialize): If a class does not have an
@@ -2098,7 +2098,7 @@
 	for noreturn.
 
 2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
-            Steve Ellcey  <sje@cup.hp.com>
+	    Steve Ellcey  <sje@cup.hp.com>
 
 	* configure: Regenerate for new libtool.
 	* config.h.in: Regenerate for new libtool.
@@ -2346,7 +2346,7 @@
 	global scope.
 
 2005-09-04  Andrew Pinski  <pinskia@physics.uc.edu>
-            Rasmus Hahn  <rassahah@neofonie.de>
+	    Rasmus Hahn  <rassahah@neofonie.de>
 
 	PR libobjc/23108
 	* archive.c (objc_write_type): Correct the element offset.
@@ -2357,7 +2357,7 @@
 	* All files: Update FSF address.
 
 2005-08-13  Marcin Koziej  <creep@desk.pl>
-            Andrew Pinski  <pinskia@physics.uc.edu>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR libobjc/22492
 	* exception.c (PERSONALITY_FUNCTION): Fix the PC with finally.

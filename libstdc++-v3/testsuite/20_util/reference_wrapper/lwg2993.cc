@@ -51,5 +51,5 @@ test02()
 
   // error: no member 'type' because the conditional
   // expression is ill-formed
-  using t = std::common_type_t<std::reference_wrapper<int>, int>;
+  using t = typename std::common_type<std::reference_wrapper<int>, int>::type;
 }

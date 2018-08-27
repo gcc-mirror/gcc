@@ -1,3 +1,99 @@
+2018-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86993
+	* cp-tree.h (cxx_readonly_error): Add location_t argument.
+	* typeck2.c (cxx_readonly_error): Add LOC argument, pass it to
+	ERROR_FOR_ASSIGNMENT macro and readonly_error.  Add LOC argument
+	to ERROR_FOR_ASSIGNMENT macro, use error_at instead of error and
+	pass LOC to it.  Formatting fixes.
+	* typeck.c (cp_build_unary_op): Pass location to cxx_readonly_error.
+	(cp_build_modify_expr): Pass loc to cxx_readonly_error.
+	* semantics.c (finish_asm_stmt): Pass input_location to
+	cxx_readonly_error.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87091
+	* decl.c (grokdeclarator): Update for conversion of show_caret_p
+	to a tri-state.
+	* error.c (cp_printer): Likewise.
+	* name-lookup.c (maybe_suggest_missing_std_header): Update call to
+	maybe_add_include_fixit to suggest overriding the location, as it
+	is for a note.
+	* parser.c (cp_parser_string_literal): Update for conversion of
+	show_caret_p to a tri-state.
+	(cp_parser_elaborated_type_specifier): Likewise.
+	(set_and_check_decl_spec_loc): Likewise.
+	* pt.c (listify): Update call to maybe_add_include_fixit to not
+	override the location, as it is for an error.
+	* rtti.c (typeid_ok_p): Likewise.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* call.c (build_call_a): Use new function
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
+	(build_cxx_call): Likewise.
+	* constexpr.c (constexpr_fn_retval): Likewise.
+	(cxx_eval_builtin_function_call): Likewise.
+	(cxx_eval_call_expression): Likewise.
+	(potential_constant_expression_1): Likewise.
+	* cp-gimplify.c (cp_gimplify_expr): Likewise.
+	(cp_fold): Likewise.
+	* decl.c (decls_match): Likewise.
+	(validate_constexpr_redeclaration): Likewise.
+	(duplicate_decls): Likewise.
+	(make_rtl_for_nonlocal_decl): Likewise.
+	* name-lookup.c (consider_binding_level): Likewise.
+	(cp_emit_debug_info_for_using): Likewise.
+	* semantics.c (finish_call_expr): Likewise.
+	* tree.c (builtin_valid_in_constant_expr_p): Likewise.
+
+2018-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87080
+	* typeck.c (maybe_warn_pessimizing_move): Do nothing in a template.
+
+	PR c++/87029, Implement -Wredundant-move.
+	* typeck.c (treat_lvalue_as_rvalue_p): New function.
+	(maybe_warn_pessimizing_move): Call convert_from_reference.
+	Warn about redundant moves.
+
+2018-08-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/67012
+	PR c++/86942
+	* decl.c (grokdeclarator): Disallow functions with trailing return
+	type with decltype(auto) as its type.  Also check the function if
+	it's inner declarator doesn't exist
+
+2018-08-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86499
+	* parser.c (cp_parser_lambda_introducer): Give error if a non-local
+	lambda has a capture-default.
+
+2018-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (check_static_variable_definition): Change to return void.
+
+2018-08-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86981, Implement -Wpessimizing-move.
+	* typeck.c (decl_in_std_namespace_p): New.
+	(is_std_move_p): New.
+	(maybe_warn_pessimizing_move): New.
+	(can_do_nrvo_p): New, factored out of ...
+	(check_return_expr): ... here.  Warn about potentially harmful
+	std::move in a return statement.
+
+	PR c++/65043
+	* call.c (standard_conversion): Set check_narrowing.
+	* typeck2.c (check_narrowing): Use CP_INTEGRAL_TYPE_P rather
+	than comparing with INTEGER_TYPE.
+
+	* cp-tree.h: Fix typo.
+
 2018-08-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/84889
@@ -251,9 +347,9 @@
 
 2018-07-31  Martin Liska  <mliska@suse.cz>
 
-        PR c++/86653
+	PR c++/86653
 	* parser.c (cp_parser_condition): Initialize non_constant_p
-        to false.
+	to false.
 
 2018-07-28  David Malcolm  <dmalcolm@redhat.com>
 
@@ -3500,7 +3596,7 @@
 2018-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_parser_std_attribute_spec): When
-        token_pair::require_open / require_close return false simply
+	token_pair::require_open / require_close return false simply
 	return error_mark_node, avoid duplicate cp_parser_error about
 	expected '(' / ')', respectively.
 

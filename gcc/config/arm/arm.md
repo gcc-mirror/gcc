@@ -12016,10 +12016,16 @@
   [(unspec_volatile [(const_int 0)] VUNSPEC_SPECULATION_BARRIER)]
   "TARGET_EITHER"
   "
-    /* Don't emit anything for Thumb1 and suppress the warning from the
-       generic expansion.  */
-    if (!TARGET_32BIT)
-       DONE;
+  /* For thumb1 (except Armv8 derivatives), and for pre-Armv7 we don't
+     have a usable barrier (and probably don't need one in practice).
+     But to be safe if such code is run on later architectures, call a
+     helper function in libgcc that will do the thing for the active
+     system.  */
+  if (!(arm_arch7 || arm_arch8))
+    {
+      arm_emit_speculation_barrier_function ();
+      DONE;
+    }
   "
 )
 
@@ -12027,7 +12033,7 @@
 ;; tracking.
 (define_insn "*speculation_barrier_insn"
   [(unspec_volatile [(const_int 0)] VUNSPEC_SPECULATION_BARRIER)]
-  "TARGET_32BIT"
+  "arm_arch7 || arm_arch8"
   "isb\;dsb\\tsy"
   [(set_attr "type" "block")
    (set_attr "length" "8")]

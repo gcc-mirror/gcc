@@ -581,7 +581,7 @@ get_string_length (strinfo *si)
 
       gcc_assert (is_gimple_call (stmt));
       callee = gimple_call_fndecl (stmt);
-      gcc_assert (callee && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL);
+      gcc_assert (callee && fndecl_built_in_p (callee, BUILT_IN_NORMAL));
       lhs = gimple_call_lhs (stmt);
       /* unshare_strinfo is intentionally not called here.  The (delayed)
 	 transformation of strcpy or strcat into stpcpy is done at the place
@@ -1106,6 +1106,13 @@ adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
       /* Don't adjust the length if it is divisible by 4, it is more efficient
 	 to store the extra '\0' in that case.  */
       if ((tree_to_uhwi (len) & 3) == 0)
+	return;
+
+      /* Don't fold away an out of bounds access, as this defeats proper
+	 warnings.  */
+      tree dst = gimple_call_arg (last.stmt, 0);
+      tree size = compute_objsize (dst, 0);
+      if (size && tree_int_cst_lt (size, len))
 	return;
     }
   else if (TREE_CODE (len) == SSA_NAME)

@@ -2392,6 +2392,10 @@ extract_low_bits (machine_mode mode, machine_mode src_mode, rtx src)
     return NULL_RTX;
 
   src = gen_lowpart (src_int_mode, src);
+  if (!validate_subreg (int_mode, src_int_mode, src,
+			subreg_lowpart_offset (int_mode, src_int_mode)))
+    return NULL_RTX;
+
   src = convert_modes (int_mode, src_int_mode, src, true);
   src = gen_lowpart (mode, src);
   return src;
@@ -6237,6 +6241,10 @@ canonicalize_comparison (machine_mode mode, enum rtx_code *code, rtx *imm)
   wi::overflow_type overflow = wi::OVF_NONE;
   wide_int imm_modif = wi::add (imm_val, to_add, sgn, &overflow);
   if (overflow)
+    return;
+
+  /* The following creates a pseudo; if we cannot do that, bail out.  */
+  if (!can_create_pseudo_p ())
     return;
 
   rtx reg = gen_rtx_REG (mode, LAST_VIRTUAL_REGISTER + 1);

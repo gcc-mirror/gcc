@@ -1,5 +1,7 @@
 2018-08-27  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r263897.
+
 	gcc/cp/
 	* module.c (module_state): Remove depth.
 	(module_state::maybe_create_loc): Replace ...

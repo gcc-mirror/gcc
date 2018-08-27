@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
+// { dg-require-effective-target cxx11-abi }
 
 #include <string>
 #include <memory_resource>

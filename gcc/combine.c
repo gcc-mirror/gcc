@@ -4036,7 +4036,10 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      other insns to combine, but the destination of that SET is still live.
 
      Also do this if we started with two insns and (at least) one of the
-     resulting sets is a noop; this noop will be deleted later.  */
+     resulting sets is a noop; this noop will be deleted later.
+
+     Also do this if we started with two insns neither of which was a simple
+     move.  */
 
   else if (insn_code_number < 0 && asm_noperands (newpat) < 0
 	   && GET_CODE (newpat) == PARALLEL
@@ -4066,13 +4069,15 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	 one which uses any regs/memory set in between i2 and i3 can't
 	 be first.  The PARALLEL might also have been pre-existing in i3,
 	 so we need to make sure that we won't wrongly hoist a SET to i2
-	 that would conflict with a death note present in there.  */
+	 that would conflict with a death note present in there, or would
+	 have its dest modified between i2 and i3.  */
       if (!modified_between_p (SET_SRC (set1), i2, i3)
 	  && !(REG_P (SET_DEST (set1))
 	       && find_reg_note (i2, REG_DEAD, SET_DEST (set1)))
 	  && !(GET_CODE (SET_DEST (set1)) == SUBREG
 	       && find_reg_note (i2, REG_DEAD,
 				 SUBREG_REG (SET_DEST (set1))))
+	  && !modified_between_p (SET_DEST (set1), i2, i3)
 	  && (!HAVE_cc0 || !reg_referenced_p (cc0_rtx, set0))
 	  /* If I3 is a jump, ensure that set0 is a jump so that
 	     we do not create invalid RTL.  */
@@ -4088,6 +4093,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	       && !(GET_CODE (SET_DEST (set0)) == SUBREG
 		    && find_reg_note (i2, REG_DEAD,
 				      SUBREG_REG (SET_DEST (set0))))
+	       && !modified_between_p (SET_DEST (set0), i2, i3)
 	       && (!HAVE_cc0 || !reg_referenced_p (cc0_rtx, set1))
 	       /* If I3 is a jump, ensure that set1 is a jump so that
 		  we do not create invalid RTL.  */
@@ -6489,7 +6495,7 @@ simplify_if_then_else (rtx x)
 			  pc_rtx, pc_rtx, 0, 0, 0);
       if (reg_mentioned_p (from, false_rtx))
 	false_rtx = subst (known_cond (copy_rtx (false_rtx), false_code,
-				   from, false_val),
+				       from, false_val),
 			   pc_rtx, pc_rtx, 0, 0, 0);
 
       SUBST (XEXP (x, 1), swapped ? false_rtx : true_rtx);
@@ -9329,6 +9335,7 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
 
 	  if (COMPARISON_P (cond0)
 	      && COMPARISON_P (cond1)
+	      && SCALAR_INT_MODE_P (mode)
 	      && ((GET_CODE (cond0) == reversed_comparison_code (cond1, NULL)
 		   && rtx_equal_p (XEXP (cond0, 0), XEXP (cond1, 0))
 		   && rtx_equal_p (XEXP (cond0, 1), XEXP (cond1, 1)))
@@ -9509,12 +9516,12 @@ known_cond (rtx x, enum rtx_code cond, rtx reg, rtx val)
 	  if (COMPARISON_P (x))
 	    {
 	      if (comparison_dominates_p (cond, code))
-		return const_true_rtx;
+		return VECTOR_MODE_P (GET_MODE (x)) ? x : const_true_rtx;
 
 	      code = reversed_comparison_code (x, NULL);
 	      if (code != UNKNOWN
 		  && comparison_dominates_p (cond, code))
-		return const0_rtx;
+		return CONST0_RTX (GET_MODE (x));
 	      else
 		return x;
 	    }
@@ -9557,7 +9564,7 @@ known_cond (rtx x, enum rtx_code cond, rtx reg, rtx val)
 	  /* We must simplify subreg here, before we lose track of the
 	     original inner_mode.  */
 	  new_rtx = simplify_subreg (GET_MODE (x), r,
-				 inner_mode, SUBREG_BYTE (x));
+				     inner_mode, SUBREG_BYTE (x));
 	  if (new_rtx)
 	    return new_rtx;
 	  else
@@ -9582,7 +9589,7 @@ known_cond (rtx x, enum rtx_code cond, rtx reg, rtx val)
 	  /* We must simplify the zero_extend here, before we lose
 	     track of the original inner_mode.  */
 	  new_rtx = simplify_unary_operation (ZERO_EXTEND, GET_MODE (x),
-					  r, inner_mode);
+					      r, inner_mode);
 	  if (new_rtx)
 	    return new_rtx;
 	  else

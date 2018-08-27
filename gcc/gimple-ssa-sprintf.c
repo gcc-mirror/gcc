@@ -443,152 +443,15 @@ target_strtol10 (const char **ps, const char **erange)
   return val;
 }
 
-/* Return the constant initial value of DECL if available or DECL
-   otherwise.  Same as the synonymous function in c/c-typeck.c.  */
-
-static tree
-decl_constant_value (tree decl)
-{
-  if (/* Don't change a variable array bound or initial value to a constant
-	 in a place where a variable is invalid.  Note that DECL_INITIAL
-	 isn't valid for a PARM_DECL.  */
-      current_function_decl != 0
-      && TREE_CODE (decl) != PARM_DECL
-      && !TREE_THIS_VOLATILE (decl)
-      && TREE_READONLY (decl)
-      && DECL_INITIAL (decl) != 0
-      && TREE_CODE (DECL_INITIAL (decl)) != ERROR_MARK
-      /* This is invalid if initial value is not constant.
-	 If it has either a function call, a memory reference,
-	 or a variable, then re-evaluating it could give different results.  */
-      && TREE_CONSTANT (DECL_INITIAL (decl))
-      /* Check for cases where this is sub-optimal, even though valid.  */
-      && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR)
-    return DECL_INITIAL (decl);
-  return decl;
-}
-
 /* Given FORMAT, set *PLOC to the source location of the format string
    and return the format string if it is known or null otherwise.  */
 
 static const char*
 get_format_string (tree format, location_t *ploc)
 {
-  if (VAR_P (format))
-    {
-      /* Pull out a constant value if the front end didn't.  */
-      format = decl_constant_value (format);
-      STRIP_NOPS (format);
-    }
-
-  if (integer_zerop (format))
-    {
-      /* FIXME: Diagnose null format string if it hasn't been diagnosed
-	 by -Wformat (the latter diagnoses only nul pointer constants,
-	 this pass can do better).  */
-      return NULL;
-    }
-
-  HOST_WIDE_INT offset = 0;
-
-  if (TREE_CODE (format) == POINTER_PLUS_EXPR)
-    {
-      tree arg0 = TREE_OPERAND (format, 0);
-      tree arg1 = TREE_OPERAND (format, 1);
-      STRIP_NOPS (arg0);
-      STRIP_NOPS (arg1);
-
-      if (TREE_CODE (arg1) != INTEGER_CST)
-	return NULL;
-
-      format = arg0;
-
-      /* POINTER_PLUS_EXPR offsets are to be interpreted signed.  */
-      if (!cst_and_fits_in_hwi (arg1))
-	return NULL;
-
-      offset = int_cst_value (arg1);
-    }
-
-  if (TREE_CODE (format) != ADDR_EXPR)
-    return NULL;
-
   *ploc = EXPR_LOC_OR_LOC (format, input_location);
 
-  format = TREE_OPERAND (format, 0);
-
-  if (TREE_CODE (format) == ARRAY_REF
-      && tree_fits_shwi_p (TREE_OPERAND (format, 1))
-      && (offset += tree_to_shwi (TREE_OPERAND (format, 1))) >= 0)
-    format = TREE_OPERAND (format, 0);
-
-  if (offset < 0)
-    return NULL;
-
-  tree array_init;
-  tree array_size = NULL_TREE;
-
-  if (VAR_P (format)
-      && TREE_CODE (TREE_TYPE (format)) == ARRAY_TYPE
-      && (array_init = decl_constant_value (format)) != format
-      && TREE_CODE (array_init) == STRING_CST)
-    {
-      /* Extract the string constant initializer.  Note that this may
-	 include a trailing NUL character that is not in the array (e.g.
-	 const char a[3] = "foo";).  */
-      array_size = DECL_SIZE_UNIT (format);
-      format = array_init;
-    }
-
-  if (TREE_CODE (format) != STRING_CST)
-    return NULL;
-
-  tree type = TREE_TYPE (format);
-
-  scalar_int_mode char_mode;
-  if (!is_int_mode (TYPE_MODE (TREE_TYPE (type)), &char_mode)
-      || GET_MODE_SIZE (char_mode) != 1)
-    {
-      /* Wide format string.  */
-      return NULL;
-    }
-
-  const char *fmtstr = TREE_STRING_POINTER (format);
-  unsigned fmtlen = TREE_STRING_LENGTH (format);
-
-  if (array_size)
-    {
-      /* Variable length arrays can't be initialized.  */
-      gcc_assert (TREE_CODE (array_size) == INTEGER_CST);
-
-      if (tree_fits_shwi_p (array_size))
-	{
-	  HOST_WIDE_INT array_size_value = tree_to_shwi (array_size);
-	  if (array_size_value > 0
-	      && array_size_value == (int) array_size_value
-	      && fmtlen > array_size_value)
-	    fmtlen = array_size_value;
-	}
-    }
-  if (offset)
-    {
-      if (offset >= fmtlen)
-	return NULL;
-
-      fmtstr += offset;
-      fmtlen -= offset;
-    }
-
-  if (fmtlen < 1 || fmtstr[--fmtlen] != 0)
-    {
-      /* FIXME: Diagnose an unterminated format string if it hasn't been
-	 diagnosed by -Wformat.  Similarly to a null format pointer,
-	 -Wformay diagnoses only nul pointer constants, this pass can
-	 do better).  */
-      return NULL;
-    }
-
-  return fmtstr;
+  return c_getstr (format);
 }
 
 /* For convenience and brevity, shorter named entrypoints of

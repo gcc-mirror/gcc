@@ -42,7 +42,7 @@ package body Itypes is
       Related_Nod  : Node_Id;
       Related_Id   : Entity_Id := Empty;
       Suffix       : Character := ' ';
-      Suffix_Index : Nat       := 0;
+      Suffix_Index : Int       := 0;
       Scope_Id     : Entity_Id := Current_Scope) return Entity_Id
    is
       Typ : Entity_Id;

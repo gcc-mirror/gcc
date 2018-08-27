@@ -199,16 +199,14 @@ func publicationBarrier()
 // getcallerpc returns the program counter (PC) of its caller's caller.
 // getcallersp returns the stack pointer (SP) of its caller's caller.
 // argp must be a pointer to the caller's first function argument.
-// The implementation may or may not use argp, depending on
-// the architecture. The implementation may be a compiler
-// intrinsic; there is not necessarily code implementing this
-// on every platform.
+// The implementation may be a compiler intrinsic; there is not
+// necessarily code implementing this on every platform.
 //
 // For example:
 //
 //	func f(arg1, arg2, arg3 int) {
 //		pc := getcallerpc()
-//		sp := getcallersp(unsafe.Pointer(&arg1))
+//		sp := getcallersp()
 //	}
 //
 // These two lines find the PC and SP immediately following
@@ -230,7 +228,7 @@ func publicationBarrier()
 func getcallerpc() uintptr
 
 //go:noescape
-func getcallersp(argp unsafe.Pointer) uintptr
+func getcallersp() uintptr
 
 func asmcgocall(fn, arg unsafe.Pointer) int32 {
 	throw("asmcgocall")
@@ -309,9 +307,9 @@ func setSupportAES(v bool) {
 // Here for gccgo.
 func errno() int
 
-// Temporary for gccgo until we port proc.go.
-func entersyscall(int32)
-func entersyscallblock(int32)
+// For gccgo these are written in C.
+func entersyscall()
+func entersyscallblock()
 
 // For gccgo to call from C code, so that the C code and the Go code
 // can share the memstats variable for now.
