@@ -1,3 +1,8 @@
+2018-08-27  Steve Ellcey  <sellcey@cavium.com>
+
+	* config/aarch64/aarch64-speculation.cc: Replace include of cfg.h
+	with include of backend.h.
+
 2018-08-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86927

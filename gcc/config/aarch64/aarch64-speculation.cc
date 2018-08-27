@@ -25,7 +25,7 @@
 #include "rtl.h"
 #include "tree-pass.h"
 #include "profile-count.h"
-#include "cfg.h"
+#include "backend.h"
 #include "cfgbuild.h"
 #include "print-rtl.h"
 #include "cfgrtl.h"
