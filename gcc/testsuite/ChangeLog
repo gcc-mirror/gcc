@@ -1,3 +1,13 @@
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* g++.dg/pr85523.C: Extend expected output to show line
+	before line-insertion fix-it hint.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c
+	(test_fixit_insert_newline): Add previous line to expected output.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color.c: Likewise.
+
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/86962

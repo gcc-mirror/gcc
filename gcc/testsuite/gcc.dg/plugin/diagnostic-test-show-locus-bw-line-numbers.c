@@ -111,6 +111,7 @@ void test_fixit_insert_newline (void)
       x = b;
     }
 /* { dg-begin-multiline-output "" }
+109 |       x = a;
 +++ |+      break;
 110 |     case 'b':
     |     ^~~~~~~~

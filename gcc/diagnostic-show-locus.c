@@ -1159,7 +1159,16 @@ static line_span
 get_line_span_for_fixit_hint (const fixit_hint *hint)
 {
   gcc_assert (hint);
-  return line_span (LOCATION_LINE (hint->get_start_loc ()),
+
+  int start_line = LOCATION_LINE (hint->get_start_loc ());
+
+  /* For line-insertion fix-it hints, add the previous line to the
+     span, to give the user more context on the proposed change.  */
+  if (hint->ends_with_newline_p ())
+    if (start_line > 1)
+      start_line--;
+
+  return line_span (start_line,
 		    LOCATION_LINE (hint->get_next_loc ()));
 }
 
@@ -3479,13 +3488,31 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
   {
     rich_location richloc (line_table, case_loc);
     richloc.add_fixit_insert_before (line_start, "      break;\n");
-    test_diagnostic_context dc;
-    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ ("\n"
-		  "+      break;\n"
-		  "     case 'b':\n"
-		  "     ^~~~~~~~~\n",
-		  pp_formatted_text (dc.printer));
+
+    /* Without line numbers.  */
+    {
+      test_diagnostic_context dc;
+      diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+      ASSERT_STREQ ("\n"
+		    "       x = a;\n"
+		    "+      break;\n"
+		    "     case 'b':\n"
+		    "     ^~~~~~~~~\n",
+		    pp_formatted_text (dc.printer));
+    }
+
+    /* With line numbers.  */
+    {
+      test_diagnostic_context dc;
+      dc.show_line_numbers_p = true;
+      diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+      ASSERT_STREQ ("\n"
+		    "2 |       x = a;\n"
+		    "+ |+      break;\n"
+		    "3 |     case 'b':\n"
+		    "  |     ^~~~~~~~~\n",
+		    pp_formatted_text (dc.printer));
+    }
   }
 
   /* Verify that attempts to add text with a newline fail when the
