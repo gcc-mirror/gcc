@@ -11076,11 +11076,12 @@ parameter sets a limit on the length of the sets that are computed,
 which prevents the runaway behavior.  Setting a value of 0 for
 this parameter allows an unlimited set length.
 
-@item sccvn-max-scc-size
-Maximum size of a strongly connected component (SCC) during SCCVN
-processing.  If this limit is hit, SCCVN processing for the whole
-function is not done and optimizations depending on it are
-disabled.  The default maximum SCC size is 10000.
+@item rpo-vn-max-loop-depth
+Maximum loop depth that is value-numbered optimistically.  The default
+maximum loop depth is three.  When the limit hits the innermost
+@var{rpo-vn-max-loop-depth} loops and the outermost loop in the
+loop nest are value-numbered optimistically and the remaining ones not.
+The default maximum loop depth is seven.
 
 @item sccvn-max-alias-queries-per-access
 Maximum number of alias-oracle queries we perform when looking for
