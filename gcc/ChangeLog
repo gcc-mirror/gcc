@@ -1,3 +1,8 @@
+2018-08-26  Jeff Law  <law@redhat.com>
+
+	* config/mips/frame-header-opt.c: Include "backend.h" rather than
+	"cfg.h"
+
 2018-08-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87029, Implement -Wredundant-move.
