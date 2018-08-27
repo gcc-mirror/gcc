@@ -1,3 +1,8 @@
+2018-08-27  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dse.c (compute_trims): Handle case where the reference's
+	type does not have a TYPE_SIZE_UNIT.
+
 2018-08-27  Steve Ellcey  <sellcey@cavium.com>
 
 	* config/aarch64/aarch64-speculation.cc: Replace include of cfg.h
