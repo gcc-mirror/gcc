@@ -27530,6 +27530,11 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 		    issetmem,
 		    issetmem && val_exp == const0_rtx, have_as,
 		    &dynamic_check, &noalign, false);
+
+  if (dump_file)
+    fprintf (dump_file, "Selected stringop expansion strategy: %s\n",
+	     stringop_alg_names[alg]);
+
   if (alg == libcall)
     return false;
   gcc_assert (alg != no_stringop);

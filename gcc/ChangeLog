@@ -1,5 +1,10 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Dump
+        selected expansion strategy.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
 	* builtins.h (is_builtin_fn): Remove and fndecl_built_in_p.
 	* builtins.c (is_builtin_fn): Likewise.
 	* attribs.c (diag_attr_exclusions): Use new function
