@@ -1,5 +1,17 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
+        PR tree-optimization/86702
+	* tree-switch-conversion.c (jump_table_cluster::emit):
+        Make probabilities even for values in jump table
+        according to number of cases handled.
+	(switch_decision_tree::compute_cases_per_edge): Pass
+        argument to reset_out_edges_aux function.
+	(switch_decision_tree::analyze_switch_statement): Likewise.
+	* tree-switch-conversion.h (switch_decision_tree::reset_out_edges_aux):
+        Make it static.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
 	* cfgexpand.c (expand_asm_stmt): Use label_to_block and pass
         cfun argument explicitly.
 	* gimple-pretty-print.c (dump_gimple_switch): Likewise.
