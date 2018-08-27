@@ -81,8 +81,6 @@ struct simple_case_node
   /* Label to jump to when node matches.  */
   tree m_code_label;
 };
-
-extern basic_block label_to_block_fn (struct function *, tree);
 
 static bool check_unique_operand_names (tree, tree, tree);
 static char *resolve_operand_name_1 (char *, tree, tree, tree);
@@ -907,7 +905,7 @@ expand_case (gswitch *stmt)
   /* Find the default case target label.  */
   tree default_lab = CASE_LABEL (gimple_switch_default_label (stmt));
   default_label = jump_target_rtx (default_lab);
-  basic_block default_bb = label_to_block_fn (cfun, default_lab);
+  basic_block default_bb = label_to_block (cfun, default_lab);
   edge default_edge = find_edge (bb, default_bb);
 
   /* Get upper and lower bounds of case values.  */

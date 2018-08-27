@@ -725,7 +725,7 @@ convert_control_dep_chain_into_preds (vec<edge> *dep_chains,
 	      for (idx = 0; idx < gimple_switch_num_labels (gs); ++idx)
 		{
 		  tree tl = gimple_switch_label (gs, idx);
-		  if (e->dest == label_to_block (CASE_LABEL (tl)))
+		  if (e->dest == label_to_block (cfun, CASE_LABEL (tl)))
 		    {
 		      if (!l)
 			l = tl;

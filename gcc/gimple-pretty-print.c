@@ -992,7 +992,7 @@ dump_gimple_switch (pretty_printer *buffer, gswitch *gs, int spc,
 
       if (cfun && cfun->cfg)
 	{
-	  basic_block dest = label_to_block (label);
+	  basic_block dest = label_to_block (cfun, label);
 	  if (dest)
 	    {
 	      edge label_edge = find_edge (gimple_bb (gs), dest);

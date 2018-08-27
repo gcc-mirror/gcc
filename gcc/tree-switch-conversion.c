@@ -78,7 +78,6 @@ switch_conversion::collect (gswitch *swtch)
   unsigned int i;
   edge e, e_default, e_first;
   edge_iterator ei;
-  basic_block first;
 
   m_switch = swtch;
 
@@ -87,9 +86,8 @@ switch_conversion::collect (gswitch *swtch)
      Collect the bits we can deduce from the CFG.  */
   m_index_expr = gimple_switch_index (swtch);
   m_switch_bb = gimple_bb (swtch);
-  m_default_bb
-    = label_to_block (CASE_LABEL (gimple_switch_default_label (swtch)));
-  e_default = find_edge (m_switch_bb, m_default_bb);
+  e_default = gimple_switch_default_edge (cfun, swtch);
+  m_default_bb = e_default->dest;
   m_default_prob = e_default->probability;
   m_default_count = e_default->count ();
   FOR_EACH_EDGE (e, ei, m_switch_bb->succs)
@@ -120,15 +118,9 @@ switch_conversion::collect (gswitch *swtch)
     }
 
   if (m_contiguous_range)
-    {
-      first = label_to_block (CASE_LABEL (gimple_switch_label (swtch, 1)));
-      e_first = find_edge (m_switch_bb, first);
-    }
+    e_first = gimple_switch_edge (cfun, swtch, 1);
   else
-    {
-      first = m_default_bb;
-      e_first = e_default;
-    }
+    e_first = e_default;
 
   /* See if there is one common successor block for all branch
      targets.  If it exists, record it in FINAL_BB.
@@ -306,8 +298,7 @@ switch_conversion::check_final_bb ()
 		  unsigned int branch_num = gimple_switch_num_labels (m_switch);
 		  for (unsigned int i = 1; i < branch_num; i++)
 		    {
-		      tree lab = CASE_LABEL (gimple_switch_label (m_switch, i));
-		      if (label_to_block (lab) == bb)
+		      if (gimple_switch_label_bb (cfun, m_switch, i) == bb)
 			{
 			  m_reason = reason;
 			  return false;
@@ -351,7 +342,7 @@ void
 switch_conversion::gather_default_values (tree default_case)
 {
   gphi_iterator gsi;
-  basic_block bb = label_to_block (CASE_LABEL (default_case));
+  basic_block bb = label_to_block (cfun, CASE_LABEL (default_case));
   edge e;
   int i = 0;
 
@@ -388,7 +379,7 @@ switch_conversion::build_constructors ()
   for (i = 1; i < branch_num; i++)
     {
       tree cs = gimple_switch_label (m_switch, i);
-      basic_block bb = label_to_block (CASE_LABEL (cs));
+      basic_block bb = label_to_block (cfun, CASE_LABEL (cs));
       edge e;
       tree high;
       gphi_iterator gsi;
@@ -1577,15 +1568,11 @@ bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 void
 switch_decision_tree::compute_cases_per_edge ()
 {
-  basic_block bb = gimple_bb (m_switch);
   reset_out_edges_aux ();
   int ncases = gimple_switch_num_labels (m_switch);
   for (int i = ncases - 1; i >= 1; --i)
     {
-      tree elt = gimple_switch_label (m_switch, i);
-      tree lab = CASE_LABEL (elt);
-      basic_block case_bb = label_to_block_fn (cfun, lab);
-      edge case_edge = find_edge (bb, case_bb);
+      edge case_edge = gimple_switch_edge (cfun, m_switch, i);
       case_edge->aux = (void *) ((intptr_t) (case_edge->aux) + 1);
     }
 }
@@ -1601,8 +1588,7 @@ switch_decision_tree::analyze_switch_statement ()
   auto_vec<cluster *> clusters;
   clusters.create (l - 1);
 
-  tree default_label = CASE_LABEL (gimple_switch_default_label (m_switch));
-  basic_block default_bb = label_to_block_fn (cfun, default_label);
+  basic_block default_bb = gimple_switch_default_bb (cfun, m_switch);
   m_case_bbs.reserve (l);
   m_case_bbs.quick_push (default_bb);
 
@@ -1612,15 +1598,16 @@ switch_decision_tree::analyze_switch_statement ()
     {
       tree elt = gimple_switch_label (m_switch, i);
       tree lab = CASE_LABEL (elt);
-      basic_block case_bb = label_to_block_fn (cfun, lab);
+      basic_block case_bb = label_to_block (cfun, lab);
       edge case_edge = find_edge (bb, case_bb);
       tree low = CASE_LOW (elt);
       tree high = CASE_HIGH (elt);
 
       profile_probability p
 	= case_edge->probability.apply_scale (1, (intptr_t) (case_edge->aux));
-      clusters.quick_push (new simple_cluster (low, high, elt, case_bb, p));
-      m_case_bbs.quick_push (case_bb);
+      clusters.quick_push (new simple_cluster (low, high, elt, case_edge->dest,
+					       p));
+      m_case_bbs.quick_push (case_edge->dest);
     }
 
   reset_out_edges_aux ();
@@ -1694,9 +1681,8 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
     return false;
 
   /* Find the default case target label.  */
-  tree default_label_expr = CASE_LABEL (gimple_switch_default_label (m_switch));
-  m_default_bb = label_to_block_fn (cfun, default_label_expr);
-  edge default_edge = find_edge (bb, m_default_bb);
+  edge default_edge = gimple_switch_default_edge (cfun, m_switch);
+  m_default_bb = default_edge->dest;
 
   /* Do the insertion of a case label into m_case_list.  The labels are
      fed to us in descending order from the sorted vector of case labels used

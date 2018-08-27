@@ -84,13 +84,12 @@ convert_single_case_switch (gswitch *swtch, gimple_stmt_iterator &gsi)
     return false;
 
   tree index = gimple_switch_index (swtch);
-  tree default_label = CASE_LABEL (gimple_switch_default_label (swtch));
   tree label = gimple_switch_label (swtch, 1);
   tree low = CASE_LOW (label);
   tree high = CASE_HIGH (label);
 
-  basic_block default_bb = label_to_block_fn (cfun, default_label);
-  basic_block case_bb = label_to_block_fn (cfun, CASE_LABEL (label));
+  basic_block default_bb = gimple_switch_default_bb (cfun, swtch);
+  basic_block case_bb = label_to_block (cfun, CASE_LABEL (label));
 
   basic_block bb = gimple_bb (swtch);
   gcond *cond;
@@ -266,7 +265,7 @@ cleanup_control_flow_bb (basic_block bb)
       label = TREE_OPERAND (gimple_goto_dest (stmt), 0);
       if (DECL_CONTEXT (label) != cfun->decl)
 	return retval;
-      target_block = label_to_block (label);
+      target_block = label_to_block (cfun, label);
       for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
 	{
 	  if (e->dest != target_block)
