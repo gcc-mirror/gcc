@@ -18,8 +18,8 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* call.c (build_call_a): Use new function
-        fndecl_built_in_p and remove check for FUNCTION_DECL if
-        possible.
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
 	(build_cxx_call): Likewise.
 	* constexpr.c (constexpr_fn_retval): Likewise.
 	(cxx_eval_builtin_function_call): Likewise.
@@ -334,9 +334,9 @@
 
 2018-07-31  Martin Liska  <mliska@suse.cz>
 
-        PR c++/86653
+	PR c++/86653
 	* parser.c (cp_parser_condition): Initialize non_constant_p
-        to false.
+	to false.
 
 2018-07-28  David Malcolm  <dmalcolm@redhat.com>
 
@@ -3583,7 +3583,7 @@
 2018-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_parser_std_attribute_spec): When
-        token_pair::require_open / require_close return false simply
+	token_pair::require_open / require_close return false simply
 	return error_mark_node, avoid duplicate cp_parser_error about
 	expected '(' / ')', respectively.
 

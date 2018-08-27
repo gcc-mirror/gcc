@@ -881,11 +881,11 @@
 2012-09-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Ian Lance Taylor  <iant@google.com>
 
-        * configure.ac (GCC_HEADER_STDINT): Invoke.
-        * backtrace.h: If we can't find <stdint.h>, use "gstdint.h".
-        * btest.c: Don't include <stdint.h>.
-        * dwarf.c: Likewise.
-        * configure, aclocal.m4, Makefile.in, config.h.in: Rebuild.
+	* configure.ac (GCC_HEADER_STDINT): Invoke.
+	* backtrace.h: If we can't find <stdint.h>, use "gstdint.h".
+	* btest.c: Don't include <stdint.h>.
+	* dwarf.c: Likewise.
+	* configure, aclocal.m4, Makefile.in, config.h.in: Rebuild.
 
 2012-09-18  Ian Lance Taylor  <iant@google.com>
 

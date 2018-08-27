@@ -10,8 +10,8 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* c-decl.c (locate_old_decl): Use new function
-        fndecl_built_in_p and remove check for FUNCTION_DECL if
-        possible.
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
 	(diagnose_mismatched_decls): Likewise.
 	(merge_decls): Likewise.
 	(warn_if_shadowing): Likewise.
@@ -305,7 +305,7 @@
 	DEBUG_BEGIN_STMTs.
 
 2017-12-22  Mike Stump  <mikestump@comcast.net>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-parser.c (c_parser_while_statement): Add unroll parameter and
 	build ANNOTATE_EXPR if present.  Add 3rd operand to ANNOTATE_EXPR.
@@ -422,7 +422,7 @@
 	c_switch_covers_all_cases_p returns true.
 
 2017-11-28  Julia Koval  <julia.koval@intel.com>
-            Sebastian Peryt  <sebastian.peryt@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* Make-lang.in (c/c-array-notation.o): Remove.
 	* c-array-notation.c: Delete.
@@ -1139,7 +1139,7 @@
 
 2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
-        PR c++/80038
+	PR c++/80038
 	* c-gimplify.c (c_gimplify_expr): Remove calls to
 	cilk_gimplifY_call_params_in_spawned_fn.
 

@@ -462,7 +462,7 @@
 	* configure: Rebuild.
 
 2012-10-30  James Greenhalgh  <james.greenhalgh at arm.com>
-            Marcus Shawcroft  <marcus.shawcroft at arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft at arm.com>
 
 	* README: Add details of aarch64 port.
 	* src/aarch64/ffi.c: New.
@@ -473,7 +473,7 @@
 	* Makefile.in, configure: Rebuilt.
 
 2012-10-30  James Greenhalgh  <james.greenhalgh at arm.com>
-            Marcus Shawcroft  <marcus.shawcroft at arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft at arm.com>
 
 	* testsuite/lib/libffi.exp: Add support for aarch64.
 	* testsuite/libffi.call/cls_struct_va1.c: New.
