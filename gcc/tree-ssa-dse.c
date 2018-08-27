@@ -252,6 +252,7 @@ compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail,
       /* But don't trim away out of bounds accesses, as this defeats
 	 proper warnings.  */
       if (*trim_tail
+	  && TYPE_SIZE_UNIT (TREE_TYPE (ref->base))
 	  && compare_tree_int (TYPE_SIZE_UNIT (TREE_TYPE (ref->base)),
 			       last_orig) <= 0)
 	*trim_tail = 0;
