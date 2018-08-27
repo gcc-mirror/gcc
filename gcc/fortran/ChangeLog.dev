@@ -1,3 +1,7 @@
 2018-08-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* Development log for native coarray fortran.
+
+2018-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Merged branch from r263319 to r263752.

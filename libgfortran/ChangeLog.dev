@@ -1,3 +1,15 @@
 2018-08-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* Development log for native coarray fortran.
+
+2018-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Merged branch from r263319 to r263752.
+
+2018-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* libgfortran/Makefile.am: Added handling of multi.c library.
+	* libgfortran/Makefile.in: Regenerated.
+	* libgfortran/caf/multi.c: New file (for now, just
+	copied over from single.c).
+
