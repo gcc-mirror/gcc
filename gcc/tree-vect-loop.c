@@ -5197,6 +5197,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 	  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
 	      == INTEGER_INDUC_COND_REDUCTION)
 	    code = induc_code;
+	  else if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+		   == CONST_COND_REDUCTION)
+	    code = STMT_VINFO_VEC_CONST_COND_REDUC_CODE (stmt_info);
 	  else
 	    code = MAX_EXPR;
 	}

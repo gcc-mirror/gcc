@@ -1,3 +1,9 @@
+2018-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86927
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Properly
+	use const cond reduction code.
+
 2018-08-27  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR tree-optimization/85758
