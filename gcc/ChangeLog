@@ -1,5 +1,11 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
+	PR sanitizer/86962
+	* sanopt.c (sanitize_rewrite_addressable_params): Ignore
+	params with DECL_HAS_VALUE_EXPR_P.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
 	* config/i386/i386.c (ix86_expand_set_or_movmem): Dump
         selected expansion strategy.
 
