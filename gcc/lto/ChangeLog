@@ -1,3 +1,14 @@
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-lang.c (handle_const_attribute): Use new function
+        fndecl_built_in_p and remove check for FUNCTION_DECL if
+        possible.
+	* lto-symtab.c (lto_symtab_merge_p): Likewise.
+	(lto_symtab_merge_decls_1): Likewise.
+	(lto_symtab_merge_symbols): Likewise.
+	* lto.c (lto_maybe_register_decl): Likewise.
+	(read_cgraph_and_symbols): Likewise.
+
 2018-08-21  Tom de Vries  <tdevries@suse.de>
 
 	* lto.c (lto_main):  Call debuginfo_early_start and

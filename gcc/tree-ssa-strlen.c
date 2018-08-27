@@ -581,7 +581,7 @@ get_string_length (strinfo *si)
 
       gcc_assert (is_gimple_call (stmt));
       callee = gimple_call_fndecl (stmt);
-      gcc_assert (callee && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL);
+      gcc_assert (callee && fndecl_built_in_p (callee, BUILT_IN_NORMAL));
       lhs = gimple_call_lhs (stmt);
       /* unshare_strinfo is intentionally not called here.  The (delayed)
 	 transformation of strcpy or strcat into stpcpy is done at the place

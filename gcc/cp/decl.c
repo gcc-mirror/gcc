@@ -968,7 +968,7 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
       if (same_type_p (TREE_TYPE (f1), r2))
 	{
 	  if (!prototype_p (f2) && DECL_EXTERN_C_P (olddecl)
-	      && (DECL_BUILT_IN (olddecl)
+	      && (fndecl_built_in_p (olddecl)
 #ifdef SYSTEM_IMPLICIT_EXTERN_C
 		  || (DECL_IN_SYSTEM_HEADER (newdecl) && !DECL_CLASS_SCOPE_P (newdecl))
 		  || (DECL_IN_SYSTEM_HEADER (olddecl) && !DECL_CLASS_SCOPE_P (olddecl))
@@ -1208,7 +1208,7 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
     return true;
   if (TREE_CODE (old_decl) == FUNCTION_DECL)
     {
-      if (DECL_BUILT_IN (old_decl))
+      if (fndecl_built_in_p (old_decl))
 	{
 	  /* Hide a built-in declaration.  */
 	  DECL_DECLARED_CONSTEXPR_P (old_decl)
@@ -1442,7 +1442,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    {
 	      warning_at (newdecl_loc,
 			  OPT_Wshadow, 
-			  DECL_BUILT_IN (olddecl)
+			  fndecl_built_in_p (olddecl)
 			  ? G_("shadowing built-in function %q#D")
 			  : G_("shadowing library function %q#D"), olddecl);
 	      /* Discard the old built-in function.  */
@@ -1450,7 +1450,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    }
 	  /* If the built-in is not ansi, then programs can override
 	     it even globally without an error.  */
-	  else if (! DECL_BUILT_IN (olddecl))
+	  else if (! fndecl_built_in_p (olddecl))
 	    warning_at (newdecl_loc, 0,
 			"library function %q#D redeclared as non-function %q#D",
 			olddecl, newdecl);
@@ -1537,7 +1537,7 @@ next_arg:;
 	      /* Don't really override olddecl for __* prefixed builtins
 		 except for __[^b]*_chk, the compiler might be using those
 		 explicitly.  */
-	      if (DECL_BUILT_IN (olddecl))
+	      if (fndecl_built_in_p (olddecl))
 		{
 		  tree id = DECL_NAME (olddecl);
 		  const char *name = IDENTIFIER_POINTER (id);
@@ -1578,9 +1578,9 @@ next_arg:;
 			    "declaration %q#D", newdecl, olddecl);
 	      else
 		warning (OPT_Wshadow, 
-                         DECL_BUILT_IN (olddecl)
-                         ? G_("shadowing built-in function %q#D")
-                         : G_("shadowing library function %q#D"), olddecl);
+			 fndecl_built_in_p (olddecl)
+			 ? G_("shadowing built-in function %q#D")
+			 : G_("shadowing library function %q#D"), olddecl);
 	    }
 	  else
 	    /* Discard the old built-in function.  */
@@ -2522,7 +2522,7 @@ next_arg:;
       /* If redeclaring a builtin function, it stays built in
 	 if newdecl is a gnu_inline definition, or if newdecl is just
 	 a declaration.  */
-      if (DECL_BUILT_IN (olddecl)
+      if (fndecl_built_in_p (olddecl)
 	  && (new_defines_function ? GNU_INLINE_P (newdecl) : types_match))
 	{
 	  DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
@@ -6611,7 +6611,7 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
       else
 	{
 	  if (TREE_CODE (decl) == FUNCTION_DECL
-	      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+	      && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
 	    set_builtin_user_assembler_name (decl, asmspec);
 	  set_user_assembler_name (decl, asmspec);
 	}

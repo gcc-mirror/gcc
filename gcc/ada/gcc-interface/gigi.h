@@ -1081,7 +1081,7 @@ call_is_atomic_load (tree exp)
 {
   tree fndecl = get_callee_fndecl (exp);
 
-  if (!(fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL))
+  if (!(fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)))
     return false;
 
   enum built_in_function code = DECL_FUNCTION_CODE (fndecl);

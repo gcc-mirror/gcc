@@ -3108,9 +3108,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   argarray = vec_safe_address (params);
 
   /* Check that arguments to builtin functions match the expectations.  */
-  if (fundecl
-      && DECL_BUILT_IN (fundecl)
-      && DECL_BUILT_IN_CLASS (fundecl) == BUILT_IN_NORMAL
+  if (fundecl && fndecl_built_in_p (fundecl, BUILT_IN_NORMAL)
       && !check_builtin_function_arguments (loc, arg_loc, fundecl, nargs,
 					    argarray))
     return error_mark_node;
@@ -3233,8 +3231,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
      precision should be removed (classification) or not
      (comparison).  */
   if (type_generic
-      && DECL_BUILT_IN (fundecl)
-      && DECL_BUILT_IN_CLASS (fundecl) == BUILT_IN_NORMAL)
+      && fndecl_built_in_p (fundecl, BUILT_IN_NORMAL))
     {
       switch (DECL_FUNCTION_CODE (fundecl))
 	{

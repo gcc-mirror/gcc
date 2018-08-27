@@ -5240,7 +5240,7 @@ need_assembler_name_p (tree decl)
     {
       /* Do not set assembler name on builtins.  Allow RTL expansion to
 	 decide whether to expand inline or via a regular call.  */
-      if (DECL_BUILT_IN (decl)
+      if (fndecl_built_in_p (decl)
 	  && DECL_BUILT_IN_CLASS (decl) != BUILT_IN_FRONTEND)
 	return false;
 
@@ -5371,10 +5371,9 @@ free_lang_data_in_decl (tree decl)
 	 nodes and thus we can't use TREE_CHAIN in multiple lists.  */
       tree *nextp = &BLOCK_VARS (DECL_INITIAL (decl));
       while (*nextp)
-        {
-          tree var = *nextp;
-          if (TREE_CODE (var) == FUNCTION_DECL
-              && DECL_BUILT_IN (var))
+	{
+	  tree var = *nextp;
+	  if (fndecl_built_in_p (var))
 	    *nextp = TREE_CHAIN (var);
 	  else
 	    nextp = &TREE_CHAIN (var);
@@ -9100,7 +9099,7 @@ get_call_combined_fn (const_tree call)
     return as_combined_fn (CALL_EXPR_IFN (call));
 
   tree fndecl = get_callee_fndecl (call);
-  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     return as_combined_fn (DECL_FUNCTION_CODE (fndecl));
 
   return CFN_LAST;

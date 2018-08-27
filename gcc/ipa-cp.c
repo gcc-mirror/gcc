@@ -638,8 +638,7 @@ determine_versionability (struct cgraph_node *node,
   if (DECL_EXTERNAL (node->decl))
     for (cgraph_edge *edge = node->callees; !reason && edge;
 	 edge = edge->next_callee)
-      if (DECL_BUILT_IN (edge->callee->decl)
-	  && DECL_BUILT_IN_CLASS (edge->callee->decl) == BUILT_IN_NORMAL)
+      if (fndecl_built_in_p (edge->callee->decl, BUILT_IN_NORMAL))
         {
 	  if (DECL_FUNCTION_CODE (edge->callee->decl) == BUILT_IN_VA_ARG_PACK)
 	    reason = "external function which calls va_arg_pack";
