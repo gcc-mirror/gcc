@@ -4352,7 +4352,7 @@ test_type_mismatch_range_labels ()
   range_label_for_type_mismatch param_label (integer_type_node,
 					     char_type_node);
   gcc_rich_location richloc (fmt, &fmt_label);
-  richloc.add_range (param, false, &param_label);
+  richloc.add_range (param, SHOW_RANGE_WITHOUT_CARET, &param_label);
 
   test_diagnostic_context dc;
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);

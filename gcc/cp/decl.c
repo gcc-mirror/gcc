@@ -10737,14 +10737,14 @@ grokdeclarator (const cp_declarator *declarator,
       if (signed_p && unsigned_p)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_signed]);
-	  richloc.add_range (declspecs->locations[ds_unsigned], false);
+	  richloc.add_range (declspecs->locations[ds_unsigned]);
 	  error_at (&richloc,
 		    "%<signed%> and %<unsigned%> specified together");
 	}
       else if (long_p && short_p)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_long]);
-	  richloc.add_range (declspecs->locations[ds_short], false);
+	  richloc.add_range (declspecs->locations[ds_short]);
 	  error_at (&richloc, "%<long%> and %<short%> specified together");
 	}
       else if (TREE_CODE (type) != INTEGER_TYPE
@@ -10888,7 +10888,7 @@ grokdeclarator (const cp_declarator *declarator,
       if (staticp == 2)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
-	  richloc.add_range (declspecs->locations[ds_storage_class], false);
+	  richloc.add_range (declspecs->locations[ds_storage_class]);
 	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
 		    "and %<static%>", dname);
 	  storage_class = sc_none;
@@ -10897,7 +10897,7 @@ grokdeclarator (const cp_declarator *declarator,
       if (constexpr_p)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
-	  richloc.add_range (declspecs->locations[ds_constexpr], false);
+	  richloc.add_range (declspecs->locations[ds_constexpr]);
 	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
 		    "and %<constexpr%>", dname);
 	}
@@ -11448,7 +11448,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    /* Cannot be both friend and virtual.  */
 		    gcc_rich_location richloc (declspecs->locations[ds_virtual]);
-		    richloc.add_range (declspecs->locations[ds_friend], false);
+		    richloc.add_range (declspecs->locations[ds_friend]);
 		    error_at (&richloc, "virtual functions cannot be friends");
 		    friendp = 0;
 		  }

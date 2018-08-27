@@ -1,3 +1,19 @@
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* include/line-map.h (enum range_display_kind): New enum.
+	(struct location_range): Replace field "m_show_caret_p" with
+	"m_range_display_kind", converting from bool to the new enum.
+	(class rich_location): Add example of line insertion fix-it hint.
+	(rich_location::add_range): Convert param "show_caret_p" from bool
+	to enum range_display_kind and rename to "range_display_kind",
+	giving it a default of SHOW_RANGE_WITHOUT_CARET.
+	(rich_location::set_range): Likewise, albeit without a default.
+	* line-map.c (rich_location::rich_location): Update for conversion
+	of show_caret_p to tri-state enum.
+	(rich_location::add_range): Likewise.
+	(rich_location::set_range): Likewise.
+
 2018-08-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/86872

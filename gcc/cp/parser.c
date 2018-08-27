@@ -4133,7 +4133,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 	      else if (curr_type != CPP_STRING)
 		{
 		  rich_location rich_loc (line_table, tok->location);
-		  rich_loc.add_range (last_tok_loc, false);
+		  rich_loc.add_range (last_tok_loc);
 		  error_at (&rich_loc,
 			    "unsupported non-standard concatenation "
 			    "of string literals");
@@ -17755,7 +17755,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	  || cp_parser_is_keyword (token, RID_STRUCT))
 	{
 	  gcc_rich_location richloc (token->location);
-	  richloc.add_range (input_location, false);
+	  richloc.add_range (input_location);
 	  richloc.add_fixit_remove ();
 	  pedwarn (&richloc, 0, "elaborated-type-specifier for "
 		   "a scoped enum must not use the %qD keyword",
@@ -28390,7 +28390,7 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	  gcc_rich_location richloc (location);
 	  if (gnu != decl_specs->gnu_thread_keyword_p)
 	    {
-	      richloc.add_range (decl_specs->locations[ds_thread], false);
+	      richloc.add_range (decl_specs->locations[ds_thread]);
 	      error_at (&richloc,
 			"both %<__thread%> and %<thread_local%> specified");
 	    }

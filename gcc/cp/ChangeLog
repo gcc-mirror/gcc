@@ -1,3 +1,20 @@
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* decl.c (grokdeclarator): Update for conversion of show_caret_p
+	to a tri-state.
+	* error.c (cp_printer): Likewise.
+	* name-lookup.c (maybe_suggest_missing_std_header): Update call to
+	maybe_add_include_fixit to suggest overriding the location, as it
+	is for a note.
+	* parser.c (cp_parser_string_literal): Update for conversion of
+	show_caret_p to a tri-state.
+	(cp_parser_elaborated_type_specifier): Likewise.
+	(set_and_check_decl_spec_loc): Likewise.
+	* pt.c (listify): Update call to maybe_add_include_fixit to not
+	override the location, as it is for an error.
+	* rtti.c (typeid_ok_p): Likewise.
+
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* call.c (build_call_a): Use new function

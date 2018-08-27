@@ -3962,7 +3962,7 @@ newline_and_indent (pretty_printer *pp, int spc)
 void
 percent_K_format (text_info *text, location_t loc, tree block)
 {
-  text->set_location (0, loc, true);
+  text->set_location (0, loc, SHOW_RANGE_WITH_CARET);
   gcc_assert (pp_ti_abstract_origin (text) != NULL);
   *pp_ti_abstract_origin (text) = NULL;
 

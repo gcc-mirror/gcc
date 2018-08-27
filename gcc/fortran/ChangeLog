@@ -1,3 +1,9 @@
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* error.c (gfc_format_decoder): Update for conversion of
+	show_caret_p to a tri-state.
+
 2018-08-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/86545

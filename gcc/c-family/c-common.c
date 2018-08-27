@@ -6131,7 +6131,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
       gcc_unreachable ();
     }
   if (done_lexing)
-    richloc->set_range (0, input_location, true);
+    richloc->set_range (0, input_location, SHOW_RANGE_WITH_CARET);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
   diagnostic_override_option_index (&diagnostic,
@@ -8336,8 +8336,8 @@ maybe_suggest_missing_token_insertion (rich_location *richloc,
       location_t hint_loc = hint->get_start_loc ();
       location_t old_loc = richloc->get_loc ();
 
-      richloc->set_range (0, hint_loc, true);
-      richloc->add_range (old_loc, false);
+      richloc->set_range (0, hint_loc, SHOW_RANGE_WITH_CARET);
+      richloc->add_range (old_loc);
     }
 }
 
@@ -8475,10 +8475,16 @@ static added_includes_t *added_includes;
    location.
 
    This function is idempotent: a header will be added at most once to
-   any given file.  */
+   any given file.
+
+   If OVERRIDE_LOCATION is true, then if a fix-it is added and will be
+   printed, then RICHLOC's primary location will be replaced by that of
+   the fix-it hint (for use by "inform" notes where the location of the
+   issue has already been reported).  */
 
 void
-maybe_add_include_fixit (rich_location *richloc, const char *header)
+maybe_add_include_fixit (rich_location *richloc, const char *header,
+			 bool override_location)
 {
   location_t loc = richloc->get_loc ();
   const char *file = LOCATION_FILE (loc);
@@ -8506,6 +8512,33 @@ maybe_add_include_fixit (rich_location *richloc, const char *header)
   char *text = xasprintf ("#include %s\n", header);
   richloc->add_fixit_insert_before (include_insert_loc, text);
   free (text);
+
+  if (override_location && global_dc->show_caret)
+    {
+      /* Replace the primary location with that of the insertion point for the
+	 fix-it hint.
+
+	 We use SHOW_LINES_WITHOUT_RANGE so that we don't meaningless print a
+	 caret for the insertion point (or colorize it).
+
+	 Hence we print e.g.:
+
+	 ../x86_64-pc-linux-gnu/libstdc++-v3/include/vector:74:1: note: msg 2
+	  73 | # include <debug/vector>
+	 +++ |+#include <vector>
+	  74 | #endif
+
+	 rather than:
+
+	 ../x86_64-pc-linux-gnu/libstdc++-v3/include/vector:74:1: note: msg 2
+	  73 | # include <debug/vector>
+	 +++ |+#include <vector>
+	  74 | #endif
+	     | ^
+
+	 avoiding the caret on the first column of line 74.  */
+      richloc->set_range (0, include_insert_loc, SHOW_LINES_WITHOUT_RANGE);
+    }
 }
 
 /* Attempt to convert a braced array initializer list CTOR for array

@@ -5630,7 +5630,7 @@ maybe_suggest_missing_std_header (location_t location, tree name)
   if (cxx_dialect >= header_hint->min_dialect)
     {
       const char *header = header_hint->header;
-      maybe_add_include_fixit (&richloc, header);
+      maybe_add_include_fixit (&richloc, header, true);
       inform (&richloc,
 	      "%<std::%s%> is defined in header %qs;"
 	      " did you forget to %<#include %s%>?",
