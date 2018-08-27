@@ -2004,7 +2004,9 @@ switch_decision_tree::dump_case_nodes (FILE *f, case_tree_node *root,
   fprintf (f, "%*s", indent_step * indent_level, "");
   root->m_c->dump (f);
   root->m_c->m_prob.dump (f);
-  fputs ("\n", f);
+  fputs (" subtree: ", f);
+  root->m_c->m_subtree_prob.dump (f);
+  fputs (")\n", f);
 
   dump_case_nodes (f, root->m_right, indent_step, indent_level);
 }
@@ -2050,6 +2052,34 @@ switch_decision_tree::emit_cmp_and_jump_insns (basic_block bb, tree op0,
   return false_edge->dest;
 }
 
+/* Generate code to jump to LABEL if OP0 and OP1 are equal.
+   PROB is the probability of jumping to LABEL_BB.
+   BB is a basic block where the new condition will be placed.  */
+
+basic_block
+switch_decision_tree::do_jump_if_equal (basic_block bb, tree op0, tree op1,
+					basic_block label_bb,
+					profile_probability prob)
+{
+  op1 = fold_convert (TREE_TYPE (op0), op1);
+
+  gcond *cond = gimple_build_cond (EQ_EXPR, op0, op1, NULL_TREE, NULL_TREE);
+  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  gsi_insert_before (&gsi, cond, GSI_SAME_STMT);
+
+  gcc_assert (single_succ_p (bb));
+
+  /* Make a new basic block where false branch will take place.  */
+  edge false_edge = split_block (bb, cond);
+  false_edge->flags = EDGE_FALSE_VALUE;
+  false_edge->probability = prob.invert ();
+
+  edge true_edge = make_edge (bb, label_bb, EDGE_TRUE_VALUE);
+  true_edge->probability = prob;
+
+  return false_edge->dest;
+}
+
 /* Emit step-by-step code to select a case for the value of INDEX.
    The thus generated decision tree follows the form of the
    case-node binary tree NODE, whose nodes represent test conditions.
@@ -2062,41 +2092,193 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 				       profile_probability default_prob,
 				       tree index_type)
 {
+  profile_probability p;
+
   /* If node is null, we are done.  */
   if (node == NULL)
     return bb;
 
-  /* Branch to a label where we will handle it later.  */
-  basic_block test_bb = split_edge (single_succ_edge (bb));
-  redirect_edge_succ (single_pred_edge (test_bb),
-		      single_succ_edge (bb)->dest);
+  /* Single value case.  */
+  if (node->m_c->is_single_value_p ())
+    {
+      /* Node is single valued.  First see if the index expression matches
+	 this node and then check our children, if any.  */
+      p = node->m_c->m_prob / (node->m_c->m_subtree_prob + default_prob);
+      bb = do_jump_if_equal (bb, index, node->m_c->get_low (),
+			     node->m_c->m_case_bb, p);
+      /* Since this case is taken at this point, reduce its weight from
+	 subtree_weight.  */
+      node->m_c->m_subtree_prob -= p;
 
-  profile_probability probability
-    = (node->m_right
-       ? node->m_right->m_c->m_subtree_prob : profile_probability::never ());
-  probability = ((probability + default_prob.apply_scale (1, 2))
-		 / (node->m_c->m_subtree_prob + default_prob));
-  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (), GT_EXPR,
-				test_bb, probability);
-  default_prob = default_prob.apply_scale (1, 2);
+      if (node->m_left != NULL && node->m_right != NULL)
+	{
+	  /* 1) the node has both children
 
-  /* Value belongs to this node or to the left-hand subtree.  */
-  probability = node->m_c->m_prob /
-    (node->m_c->m_subtree_prob + default_prob);
-  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (), GE_EXPR,
-				node->m_c->m_case_bb, probability);
+	     If both children are single-valued cases with no
+	     children, finish up all the work.  This way, we can save
+	     one ordered comparison.  */
 
-  /* Handle the left-hand subtree.  */
-  bb = emit_case_nodes (bb, index, node->m_left,
-			default_prob, index_type);
+	  if (!node->m_left->has_child ()
+	      && node->m_left->m_c->is_single_value_p ()
+	      && !node->m_right->has_child ()
+	      && node->m_right->m_c->is_single_value_p ())
+	    {
+	      p = (node->m_right->m_c->m_prob
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = do_jump_if_equal (bb, index, node->m_right->m_c->get_low (),
+				     node->m_right->m_c->m_case_bb, p);
 
-  /* If the left-hand subtree fell through,
-     don't let it fall into the right-hand subtree.  */
-  if (m_default_bb)
-    emit_jump (bb, m_default_bb);
+	      p = (node->m_left->m_c->m_prob
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = do_jump_if_equal (bb, index, node->m_left->m_c->get_low (),
+				     node->m_left->m_c->m_case_bb, p);
+	    }
+	  else
+	    {
+	      /* Branch to a label where we will handle it later.  */
+	      basic_block test_bb = split_edge (single_succ_edge (bb));
+	      redirect_edge_succ (single_pred_edge (test_bb),
+				  single_succ_edge (bb)->dest);
 
-  bb = emit_case_nodes (test_bb, index, node->m_right,
-			default_prob, index_type);
+	      p = ((node->m_right->m_c->m_subtree_prob
+		    + default_prob.apply_scale (1, 2))
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
+					    GT_EXPR, test_bb, p);
+	      default_prob = default_prob.apply_scale (1, 2);
+
+	      /* Handle the left-hand subtree.  */
+	      bb = emit_case_nodes (bb, index, node->m_left,
+				    default_prob, index_type);
+
+	      /* If the left-hand subtree fell through,
+		 don't let it fall into the right-hand subtree.  */
+	      if (bb && m_default_bb)
+		emit_jump (bb, m_default_bb);
+
+	      bb = emit_case_nodes (test_bb, index, node->m_right,
+				    default_prob, index_type);
+	    }
+	}
+      else if (node->m_left == NULL && node->m_right != NULL)
+	{
+	  /* 2) the node has only right child.  */
+
+	  /* Here we have a right child but no left so we issue a conditional
+	     branch to default and process the right child.
+
+	     Omit the conditional branch to default if the right child
+	     does not have any children and is single valued; it would
+	     cost too much space to save so little time.  */
+
+	  if (node->m_right->has_child ()
+	      || !node->m_right->m_c->is_single_value_p ())
+	    {
+	      p = (default_prob.apply_scale (1, 2)
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (),
+					    LT_EXPR, m_default_bb, p);
+	      default_prob = default_prob.apply_scale (1, 2);
+
+	      bb = emit_case_nodes (bb, index, node->m_right, default_prob,
+				    index_type);
+	    }
+	  else
+	    {
+	      /* We cannot process node->right normally
+		 since we haven't ruled out the numbers less than
+		 this node's value.  So handle node->right explicitly.  */
+	      p = (node->m_right->m_c->m_subtree_prob
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = do_jump_if_equal (bb, index, node->m_right->m_c->get_low (),
+				     node->m_right->m_c->m_case_bb, p);
+	    }
+	}
+      else if (node->m_left != NULL && node->m_right == NULL)
+	{
+	  /* 3) just one subtree, on the left.  Similar case as previous.  */
+
+	  if (node->m_left->has_child ()
+	      || !node->m_left->m_c->is_single_value_p ())
+	    {
+	      p = (default_prob.apply_scale (1, 2)
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
+					    GT_EXPR, m_default_bb, p);
+		  default_prob = default_prob.apply_scale (1, 2);
+
+	      bb = emit_case_nodes (bb, index, node->m_left, default_prob,
+				    index_type);
+	    }
+	  else
+	    {
+	      /* We cannot process node->left normally
+		 since we haven't ruled out the numbers less than
+		 this node's value.  So handle node->left explicitly.  */
+	      p = (node->m_left->m_c->m_subtree_prob
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = do_jump_if_equal (bb, index, node->m_left->m_c->get_low (),
+				     node->m_left->m_c->m_case_bb, p);
+	    }
+	}
+    }
+  else
+    {
+      /* Node is a range.  These cases are very similar to those for a single
+	 value, except that we do not start by testing whether this node
+	 is the one to branch to.  */
+      if (node->has_child () || node->m_c->get_type () != SIMPLE_CASE)
+	{
+	  /* Branch to a label where we will handle it later.  */
+	  basic_block test_bb = split_edge (single_succ_edge (bb));
+	  redirect_edge_succ (single_pred_edge (test_bb),
+			      single_succ_edge (bb)->dest);
+
+
+	   profile_probability right_prob = profile_probability::never ();
+	   if (node->m_right)
+	     right_prob = node->m_right->m_c->m_subtree_prob;
+	  p = ((right_prob + default_prob.apply_scale (1, 2))
+	       / (node->m_c->m_subtree_prob + default_prob));
+
+	  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
+					GT_EXPR, test_bb, p);
+	  default_prob = default_prob.apply_scale (1, 2);
+
+	  /* Value belongs to this node or to the left-hand subtree.  */
+	  p = node->m_c->m_prob / (node->m_c->m_subtree_prob + default_prob);
+	  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (),
+					GE_EXPR, node->m_c->m_case_bb, p);
+
+	  /* Handle the left-hand subtree.  */
+	  bb = emit_case_nodes (bb, index, node->m_left,
+				default_prob, index_type);
+
+	  /* If the left-hand subtree fell through,
+	     don't let it fall into the right-hand subtree.  */
+	  if (bb && m_default_bb)
+	    emit_jump (bb, m_default_bb);
+
+	  bb = emit_case_nodes (test_bb, index, node->m_right,
+				default_prob, index_type);
+	}
+      else
+	{
+	  /* Node has no children so we check low and high bounds to remove
+	     redundant tests.  Only one of the bounds can exist,
+	     since otherwise this node is bounded--a case tested already.  */
+	  tree lhs, rhs;
+	  generate_range_test (bb, index, node->m_c->get_low (),
+			       node->m_c->get_high (), &lhs, &rhs);
+	  p = default_prob / (node->m_c->m_subtree_prob + default_prob);
+
+	  bb = emit_cmp_and_jump_insns (bb, lhs, rhs, GT_EXPR,
+					m_default_bb, p);
+
+	  emit_jump (bb, node->m_c->m_case_bb);
+	  return NULL;
+	}
+    }
 
   return bb;
 }

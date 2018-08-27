@@ -72,6 +72,13 @@ struct cluster
   /* Emit GIMPLE code to handle the cluster.  */
   virtual void emit (tree, tree, tree, basic_block) = 0;
 
+  /* Return true if a cluster handles only a single case value and the
+     value is not a range.  */
+  virtual bool is_single_value_p ()
+  {
+    return false;
+  }
+
   /* Return range of a cluster.  If value would overflow in type of LOW,
      then return 0.  */
   static unsigned HOST_WIDE_INT get_range (tree low, tree high)
@@ -159,6 +166,11 @@ struct simple_cluster: public cluster
   void emit (tree, tree, tree, basic_block)
   {
     gcc_unreachable ();
+  }
+
+  bool is_single_value_p ()
+  {
+    return tree_int_cst_equal (get_low (), get_high ());
   }
 
   /* Low value of the case.  */
@@ -435,6 +447,12 @@ struct case_tree_node
   /* Empty Constructor.  */
   case_tree_node ();
 
+  /* Return true when it has a child.  */
+  bool has_child ()
+  {
+    return m_left != NULL || m_right != NULL;
+  }
+
   /* Left son in binary tree.  */
   case_tree_node *m_left;
 
@@ -577,6 +595,12 @@ struct switch_decision_tree
 					      tree op1, tree_code comparison,
 					      basic_block label_bb,
 					      profile_probability prob);
+
+  /* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE.
+     PROB is the probability of jumping to LABEL_BB.  */
+  static basic_block do_jump_if_equal (basic_block bb, tree op0, tree op1,
+				       basic_block label_bb,
+				       profile_probability prob);
 
   /* Reset the aux field of all outgoing edges of switch basic block.  */
   static inline void reset_out_edges_aux (gswitch *swtch);

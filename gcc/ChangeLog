@@ -1,5 +1,20 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
+        PR tree-optimization/86847
+	* tree-switch-conversion.c (switch_decision_tree::dump_case_nodes):
+        Dump also subtree probability.
+	(switch_decision_tree::do_jump_if_equal): New function.
+	(switch_decision_tree::emit_case_nodes): Handle special
+        situations in balanced tree that can be emitted much simpler.
+        Fix calculation of probabilities that happen in tree expansion.
+	* tree-switch-conversion.h (struct cluster): Add
+        is_single_value_p.
+	(struct simple_cluster): Likewise.
+	(struct case_tree_node): Add new function has_child.
+	(do_jump_if_equal): New.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
 	* tree-switch-conversion.c (bit_test_cluster::find_bit_tests):
         Add new argument to bit_test_cluster constructor.
 	(bit_test_cluster::emit): Set bits really number of values
