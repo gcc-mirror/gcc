@@ -1,3 +1,8 @@
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/63392
+	* g++.dg/diagnostic/missing-typename.C: New test.
+
 2018-08-27  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/dse.c: New test.

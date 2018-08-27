@@ -1,3 +1,9 @@
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/63392
+	* parser.c (cp_parser_diagnose_invalid_type_name): Add fix-it
+	hint.
+
 2018-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86993

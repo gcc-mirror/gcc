@@ -3405,8 +3405,10 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       else if (TYPE_P (parser->scope)
 	       && dependent_scope_p (parser->scope))
 	{
+	  gcc_rich_location richloc (location);
+	  richloc.add_fixit_insert_before ("typename ");
 	  if (TREE_CODE (parser->scope) == TYPENAME_TYPE)
-	    error_at (location,
+	    error_at (&richloc,
 		      "need %<typename%> before %<%T::%D::%E%> because "
 		      "%<%T::%D%> is a dependent scope",
 		      TYPE_CONTEXT (parser->scope),
@@ -3415,7 +3417,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 		      TYPE_CONTEXT (parser->scope),
 		      TYPENAME_TYPE_FULLNAME (parser->scope));
 	  else
-	    error_at (location, "need %<typename%> before %<%T::%E%> because "
+	    error_at (&richloc, "need %<typename%> before %<%T::%E%> because "
 		      "%qT is a dependent scope",
 		      parser->scope, id, parser->scope);
 	}
