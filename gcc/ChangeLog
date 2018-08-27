@@ -1,3 +1,8 @@
+2018-08-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (compute_antic): Re-use inverted postorder
+	for partial antic compute.
+
 2018-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/87065
