@@ -6728,7 +6728,6 @@ extern void init_module_processing ();
 extern void finish_module_processing ();
 extern void finish_module_parse (line_maps *);
 extern char const *module_name (unsigned);
-extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
 extern void atom_main_file (line_maps *, const line_map_ordinary *, unsigned);
 extern cpp_divert_include_t *atom_divert_include ();

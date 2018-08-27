@@ -201,7 +201,7 @@ Classes used:
 int module_dump_id;
 
 /* We have a few more special module owners.  */
-#define MODULE_UNKNOWN (~0U)    /* Not yet known.  */
+#define MODULE_UNKNOWN (unsigned short)(~0U)    /* Not yet known.  */
 
 /* Prefix for section names.  (Not system-defined, so no leading dot.)  */
 #define MOD_SNAME_PFX "gnu.c++"
@@ -2593,7 +2593,6 @@ class GTY(()) module_state {
   module_state *parent;
 
   tree name;		/* Name of the module.  */
-  tree vec_name;  	/* Name as a vector.  */
 
   slurping *slurp;	/* Data for loading.  */
 
@@ -2604,7 +2603,8 @@ class GTY(()) module_state {
   /* The FROM_LOC is unset until we process a declaration.  */
   location_t from_loc;  /* Location module was imported at.  */
 
-  unsigned mod;		/* Module owner number.  */
+  unsigned short mod;		/* Module owner number.  */
+  unsigned short subst;		/* subst number if !0.  */
   unsigned crc;		/* CRC we saw reading it in. */
 
   unsigned depth : 16;  /* Depth, direct imports are 0 */
@@ -2657,6 +2657,9 @@ class GTY(()) module_state {
     gcc_checking_assert (slurp && !slurp->from);
     return static_cast <spewing *> (slurp);
   }
+
+ public:
+  void mangle ();
 
  public:
   void set_import (module_state const *, bool is_export);
@@ -2781,10 +2784,10 @@ struct module_state_hash : nodel_ptr_hash<module_state> {
 
 module_state::module_state (tree name, module_state *parent)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    parent (parent), name (name), vec_name (NULL_TREE), slurp (NULL),
+    parent (parent), name (name), slurp (NULL),
     fullname (NULL), filename (NULL),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
-    mod (MODULE_UNKNOWN), crc (0), depth (65535)
+    mod (MODULE_UNKNOWN), subst (0), crc (0), depth (65535)
 {
   legacy = direct = exported = imported = false;
   if (name && (IDENTIFIER_POINTER (name)[0] == '"'
@@ -6644,14 +6647,24 @@ depset::tarjan::connect (depset *v)
 static vec<module_state *,va_heap> substs;
 
 void
+module_state::mangle ()
+{
+  if (subst)
+    mangle_substitution ('W', subst - 1);
+  else
+    {
+      if (parent)
+	parent->mangle ();
+      substs.safe_push (this);
+      subst = substs.length ();
+      mangle_identifier (name);
+    }
+}
+
+void
 mangle_module (int mod)
 {
-  module_state *state = (*modules)[mod];
-
-  substs.safe_push (state);
-  tree vec_name = state->vec_name;
-  for (int ix = 0; ix < TREE_VEC_LENGTH (vec_name); ix++)
-    mangle_identifier (TREE_VEC_ELT (vec_name, ix));
+  (*modules)[mod]->mangle ();
 }
 
 /* Clean up substitutions.  */
@@ -6659,9 +6672,7 @@ void
 mangle_module_fini ()
 {
   while (substs.length ())
-    {
-      module_state *m = substs.pop ();
-    }
+    substs.pop ()->subst = 0;
 }
 
 /* Find or create module NAME & PARENT in the hash table.  */
@@ -10010,15 +10021,6 @@ module_name (unsigned ix)
   return (*modules)[ix]->fullname;
 }
 
-/* Return the vector of IDENTIFIER_NODES naming module IX.  These are
-   individual identifers per sub-module component.  */
-
-tree
-module_vec_name (unsigned ix)
-{
-  return (*modules)[ix]->vec_name;
-}
-
 /* Return the bitmap describing what modules are imported into
    MODULE.  Remember, we always import ourselves.  */
 
@@ -10285,15 +10287,9 @@ module_state::attach (location_t from)
     {
       fullname = XNEWVEC (char, ids.length () + len);
       len = 0;
-    }
-
-  vec_name = make_tree_vec (elts);
-  for (unsigned ix = 0; ix != elts; ix++)
-    {
-      tree elt = ids.pop ();
-      TREE_VEC_ELT (vec_name, ix) = elt;
-      if (elts > 1)
+      for (unsigned ix = 0; ix != elts; ix++)
 	{
+	  tree elt = ids.pop ();
 	  if (len)
 	    const_cast <char *> (fullname)[len++] = '.';
 	  memcpy (const_cast <char *> (fullname) + len,

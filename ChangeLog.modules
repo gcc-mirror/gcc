@@ -1,5 +1,20 @@
 2018-08-27  Nathan Sidwell  <nathan@acm.org>
 
+	Mangling substitutions!
+	gcc/cp/
+	* cp-tree.h (module_vec_name): Delete.
+	* mangle.c (mangle_substitution): Fix name typo.
+	* module.c (class module_state): Drop vec_name field.  Make mod
+	short.  Add subst field.
+	(module_state::mangle): New.
+	(mangle_module): Deal with substitutions.
+	(mangle_module_fini): Undeal with substitutions.
+	(module_vec_name): Delete.
+	(module_state::attach): Don't set vec_name.
+	gcc/testsuite/
+	* g++.dg/modules/sym-subst-1.C: New.
+	* g++.dg/modules/sym-subst-2_[ab].C: New.
+
 	Fix module-state lifetime issue.
 	gcc/cp/
 	* cp-tree.h (finish_module): Break into ...

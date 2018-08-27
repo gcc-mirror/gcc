@@ -856,7 +856,7 @@ write_encoding (const tree decl)
    module name mangler.  */
 
 void
-mangle_substition (char c, int v)
+mangle_substitution (char c, int v)
 {
   write_char (c);
   write_compact_number (v);
