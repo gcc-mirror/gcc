@@ -1,3 +1,23 @@
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* c-common.c (c_cpp_error): Update for conversion of show_caret_p
+	to a tri-state.
+	(maybe_suggest_missing_token_insertion): Likewise.
+	(maybe_add_include_fixit): Add param "override_location".  If set,
+	and source-printing is enabled, then override the rich_location's
+	primary location with that of the insertion point for the fix-it
+	hint, marking it with SHOW_LINES_WITHOUT_RANGE.
+	* c-common.h (extern void maybe_add_include_fixit): Add bool
+	param.
+	* c-format.c (selftest::test_type_mismatch_range_labels): Update
+	for conversion of show_caret_p to a tri-state.
+	* c-warn.c (warn_for_restrict): Likewise.
+	* known-headers.cc
+	(suggest_missing_header::~suggest_missing_header): Update call to
+	maybe_add_include_fixit to suggest overriding the location, as it
+	is for a note.
+
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* c-common.c (check_function_restrict): Use new function

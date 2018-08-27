@@ -2429,7 +2429,7 @@ warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
     {
       arg = argarray[pos - 1];
       if (EXPR_HAS_LOCATION (arg))
-	richloc.add_range (EXPR_LOCATION (arg), false);
+	richloc.add_range (EXPR_LOCATION (arg));
     }
 
   return warning_n (&richloc, OPT_Wrestrict, arg_positions.length (),

@@ -1,6 +1,34 @@
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87091
+	* diagnostic-show-locus.c (class layout_range): Update for
+	conversion of show_caret_p to a tri-state.
+	(layout_range::layout_range): Likewise.
+	(make_range): Likewise.
+	(layout::maybe_add_location_range): Likewise.
+	(layout::should_print_annotation_line_p): Don't show annotation
+	lines for ranges that are SHOW_LINES_WITHOUT_RANGE.
+	(layout::get_state_at_point): Update for conversion of
+	show_caret_p to a tri-state.  Bail out early for
+	SHOW_LINES_WITHOUT_RANGE, so that such ranges don't affect
+	underlining or source colorization.
+	(gcc_rich_location::add_location_if_nearby): Update for conversion
+	of show_caret_p to a tri-state.
+	(selftest::test_one_liner_multiple_carets_and_ranges): Likewise.
+	(selftest::test_one_liner_fixit_replace_equal_secondary_range):
+	Likewise.
+	(selftest::test_one_liner_labels): Likewise.
+	* gcc-rich-location.c (gcc_rich_location::add_expr): Update for
+	conversion of show_caret_p to a tri-state.
+	* pretty-print.c (text_info::set_location): Likewise.
+	* pretty-print.h (text_info::set_location): Likewise.
+	* substring-locations.c (format_warning_n_va): Likewise.
+	* tree-diagnostic.c (default_tree_printer): Likewise.
+	* tree-pretty-print.c (newline_and_indent): Likewise.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
 	* diagnostic-show-locus.c (get_line_span_for_fixit_hint): Show the
 	line above for line-insertion fix-it hints.
 	(selftest::test_fixit_insert_containing_newline): Update the

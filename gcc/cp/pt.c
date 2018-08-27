@@ -26077,7 +26077,7 @@ listify (tree arg)
   if (!std_init_list || !DECL_CLASS_TEMPLATE_P (std_init_list))
     {    
       gcc_rich_location richloc (input_location);
-      maybe_add_include_fixit (&richloc, "<initializer_list>");
+      maybe_add_include_fixit (&richloc, "<initializer_list>", false);
       error_at (&richloc,
 		"deducing from brace-enclosed initializer list"
 		" requires %<#include <initializer_list>%>");

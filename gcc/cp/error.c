@@ -4119,7 +4119,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 
   pp_string (pp, result);
   if (set_locus && t != NULL)
-    text->set_location (0, location_of (t), true);
+    text->set_location (0, location_of (t), SHOW_RANGE_WITH_CARET);
   return true;
 #undef next_tree
 #undef next_tcode

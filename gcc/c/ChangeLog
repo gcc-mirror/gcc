@@ -1,3 +1,12 @@
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* c-decl.c (implicitly_declare): Update call to
+	maybe_add_include_fixit to suggest overriding the location, as it
+	is for a note.
+	* c-objc-common.c (c_tree_printer): Update for conversion of
+	show_caret_p to a tri-state.
+
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* c-decl.c (locate_old_decl): Use new function

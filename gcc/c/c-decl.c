@@ -3446,7 +3446,7 @@ implicitly_declare (location_t loc, tree functionid)
 		  if (header != NULL && warned)
 		    {
 		      rich_location richloc (line_table, loc);
-		      maybe_add_include_fixit (&richloc, header);
+		      maybe_add_include_fixit (&richloc, header, true);
 		      inform (&richloc,
 			      "include %qs or provide a declaration of %qD",
 			      header, decl);

@@ -1,6 +1,19 @@
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87091
+	* gcc.dg/empty.h: New file.
+	* gcc.dg/fixits-pr84852-1.c: Update for move of fix-it hint to
+	top of file and removal of redundant second printing of warning
+	location.
+	* gcc.dg/fixits-pr84852-2.c: Likewise.
+	* gcc.dg/missing-header-fixit-3.c: Likewise.
+	* gcc.dg/missing-header-fixit-4.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c: Update for
+	conversion of show_caret_p to a tri-state.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
 	* g++.dg/pr85523.C: Extend expected output to show line
 	before line-insertion fix-it hint.
 	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c
