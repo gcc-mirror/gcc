@@ -2414,9 +2414,7 @@ compute_antic (void)
     {
       /* For partial antic we ignore backedges and thus we do not need
          to perform any iteration when we process blocks in postorder.  */
-      int postorder_num
-	= pre_and_rev_post_order_compute (NULL, postorder.address (), false);
-      for (i = postorder_num - 1 ; i >= 0; i--)
+      for (i = postorder.length () - 1; i >= 0; i--)
 	{
 	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
 	  compute_partial_antic_aux (block,
