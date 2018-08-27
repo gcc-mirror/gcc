@@ -1,5 +1,11 @@
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
+        PR gcov-profile/87069
+	* gcov.c (process_file): Record files already processed
+        and warn about a file being processed multiple times.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
         PR driver/83193
 	* config/aarch64/aarch64.c (aarch64_override_options_internal):
         Set default values for x_aarch64_*_string strings.
