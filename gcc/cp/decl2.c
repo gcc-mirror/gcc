@@ -4638,7 +4638,6 @@ c_parse_final_cleanups (void)
   int retries = 0;
   tree decl;
 
-  current_module = MODULE_NONE;
   locus_at_end_of_parsing = input_location;
   at_eof = 1;
 
@@ -4666,7 +4665,7 @@ c_parse_final_cleanups (void)
 
   timevar_stop (TV_PHASE_PARSING);
   if (modules_p ())
-    finish_module (line_table);
+    finish_module_parse (line_table);
   timevar_start (TV_PHASE_DEFERRED);
 
   symtab->process_same_body_aliases ();
@@ -4920,6 +4919,9 @@ c_parse_final_cleanups (void)
       retries++;
     }
   while (reconsider);
+
+  if (modules_p ())
+    finish_module_processing ();
 
   lower_var_init ();
 

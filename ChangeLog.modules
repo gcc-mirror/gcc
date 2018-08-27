@@ -1,5 +1,16 @@
 2018-08-27  Nathan Sidwell  <nathan@acm.org>
 
+	Fix module-state lifetime issue.
+	gcc/cp/
+	* cp-tree.h (finish_module): Break into ...
+	(finish_modle_{parse,procesing}): ... these two.
+	* decl2.c (c_parse_final_cleanups): Adjust modules finalization.
+	* modules.c (finish_modules): Break into ...
+	(finish_module_{parse,procesing}): ... these two.
+	(module_state::release): Break out ...
+	(module_state::slurped): ... this.
+	(module_state::{init,fini}): Fold into callers.
+
 	Refactor mangling interface.
 	gcc/cp/
 	* cp-tree.h (mangle_module, mangle_module_fini): Declare.

@@ -2620,7 +2620,16 @@ class GTY(()) module_state {
   ~module_state ();
 
  public:
-  void release (bool at_eof = true);
+  void release ()
+  {
+    imports = exports = NULL;
+    slurped ();
+  }
+  void slurped ()
+  {
+    delete slurp;
+    slurp = NULL;
+  }
 
  public:
   /* Is this not a real module?  */
@@ -2754,12 +2763,7 @@ class GTY(()) module_state {
   void attach (location_t);
   bool do_import (const char *filename, line_maps *, bool check_crc);
 
- private:
-  static int maybe_add_global (tree, unsigned &);
-
  public:
-  static void init ();
-  static void fini ();
   static int atom_preamble (location_t loc, line_maps *);
 };
 
@@ -2860,7 +2864,7 @@ static char *our_opts;
 static unsigned lazy_lru;  /* LRU counter.  */
 static int lazy_open;	 /* Remaining limit for unfrozen loaders.   */
 
-/* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
+/* Vector of module state.  Indexed by OWNER.  Has at least 2 slots.  */
 static GTY(()) vec<module_state *, va_gc> *modules;
 
 /* Hash of module state, findable by NAME. */
@@ -6706,144 +6710,6 @@ get_module (const char *ptr)
   return parent;
 }
 
-/* VAL is a global tree, add it to the global vec if it is
-   interesting.  Add some of its targets, if they too are
-   interesting.  */
-
-int
-module_state::maybe_add_global (tree val, unsigned &crc)
-{
-  int v = 0;
-
-  if (val && !(identifier_p (val) || TREE_VISITED (val)))
-    {
-      TREE_VISITED (val) = true;
-      crc = crc32_unsigned (crc, fixed_trees->length ());
-      vec_safe_push (fixed_trees, val);
-      v++;
-
-      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
-	v += maybe_add_global (TREE_TYPE (val), crc);
-      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPE_COMMON))
-	v += maybe_add_global (TYPE_NAME (val), crc);
-    }
-
-  return v;
-}
-
-/* Initialize module state.  Create the hash table, determine the
-   global trees.  Create the module for current TU.  */
-
-void
-module_state::init ()
-{
-  modules_hash = new hash_table<module_state_hash> (30);
-
-  vec_safe_reserve (modules, 20);
-  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
-    modules->quick_push (NULL);
-
-  /* Create module for current TU.  */
-  module_state *current
-    = new (ggc_alloc <module_state> ()) module_state (NULL, NULL);
-  current->mod = MODULE_NONE;
-  bitmap_set_bit (current->imports, MODULE_NONE);
-  (*modules)[MODULE_NONE] = current;
-
-  gcc_checking_assert (!fixed_trees);
-
-  dump.push (NULL);
-
-  /* Determine lazy handle bound.  */
-  lazy_open = PARAM_VALUE (PARAM_LAZY_MODULES);
-  if (!lazy_open)
-    {
-      lazy_open = 100;
-#if HAVE_GETRLIMIT
-      struct rlimit rlimit;
-      if (!getrlimit (RLIMIT_NOFILE, &rlimit))
-	lazy_open = (rlimit.rlim_cur > 1000000
-		     ? 1000000 : unsigned (rlimit.rlim_cur));
-#endif
-      /* Use 3/4's of the available handles.  */
-      lazy_open = lazy_open * 3 / 4;
-    }
-  dump () && dump ("Lazy limit is %u", lazy_open);
-
-  if (modules_atom_p () && flag_module_preamble >= 0
-      && flag_module_preamble < 65536)
-    dump () && dump ("Preamble ends after %d", flag_module_preamble);
-
-  /* Construct the global tree array.  This is an array of unique
-     global trees (& types).  Do this now, rather than lazily, as
-     some global trees are lazily created and we don't want that to
-     mess with our syndrome of fixed trees.  */
-  unsigned crc = 0;
-  vec_alloc (fixed_trees, 200);
-
-  dump () && dump ("+Creating globals");
-  /* Insert the TRANSLATION_UNIT_DECL.  */
-  TREE_VISITED (DECL_CONTEXT (global_namespace)) = true;
-  fixed_trees->quick_push (DECL_CONTEXT (global_namespace));
-  for (unsigned jx = 0; global_tree_arys[jx].first; jx++)
-    {
-      const tree *ptr = global_tree_arys[jx].first;
-      unsigned limit = global_tree_arys[jx].second;
-
-      for (unsigned ix = 0; ix != limit; ix++, ptr++)
-	{
-	  !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx, ix);
-	  unsigned v = maybe_add_global (*ptr, crc);
-	  dump () && dump ("+%u", v);
-	}
-    }
-  global_crc = crc32_unsigned (crc, fixed_trees->length ());
-  dump ("") && dump ("Created %u unique globals, crc=%x",
-		     fixed_trees->length (), global_crc);
-  for (unsigned ix = fixed_trees->length (); ix--;)
-    TREE_VISITED ((*fixed_trees)[ix]) = false;
-
-  dump.pop (0);
-}
-
-/* Delete post-parsing state.  */
-
-void
-module_state::fini ()
-{
-  for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
-    (*modules)[ix]->release ();
-
-  delete modules_hash;
-  modules_hash = NULL;
-}
-
-/* Free up state.  If ALL is true, we're completely done.  If ALL is
-   false, we've completed reading in the module (but have not
-   completed parsing).  */
-
-void
-module_state::release (bool at_eof)
-{
-  if (at_eof)
-    {
-      imports = NULL;
-      exports = NULL;
-      if (fullname && fullname != IDENTIFIER_POINTER (name))
-	XDELETEVEC (const_cast <char *> (fullname));
-      fullname = NULL;
-    }
-
-  if (slurp)
-    {
-      if (slurp->from)
-	delete slurp;
-      else
-	delete spewer ();
-      slurp = NULL;
-    }
-}
-
 /* Announce WHAT about the module.  */
 
 void
@@ -10127,7 +9993,7 @@ module_state::check_read (bool outermost, tree ns, tree id)
     }
 
   if (done)
-    release (false);
+    slurped ();
 
   if (e && outermost)
     fatal_error (loc, "jumping off the crazy train to crashville");
@@ -10972,12 +10838,38 @@ atom_module_preamble (location_t loc, line_maps *lmaps)
   return unsigned (adj);
 }
 
-/* Convert the module search path.  */
+/* VAL is a global tree, add it to the global vec if it is
+   interesting.  Add some of its targets, if they too are
+   interesting.  */
+
+static int
+maybe_add_global (tree val, unsigned &crc)
+{
+  int v = 0;
+
+  if (val && !(identifier_p (val) || TREE_VISITED (val)))
+    {
+      TREE_VISITED (val) = true;
+      crc = crc32_unsigned (crc, fixed_trees->length ());
+      vec_safe_push (fixed_trees, val);
+      v++;
+
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
+	v += maybe_add_global (TREE_TYPE (val), crc);
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPE_COMMON))
+	v += maybe_add_global (TYPE_NAME (val), crc);
+    }
+
+  return v;
+}
+
+/* Initialize module state.  Create the hash table, determine the
+   global trees.  Create the module for current TU.  */
 
 void
 init_module_processing ()
 {
-  /* PCH should not be reachable because of lang-specsm but the
+  /* PCH should not be reachable because of lang-specs, but the
      user could have overriden that.  */
   if (pch_file)
     fatal_error (input_location,
@@ -10992,16 +10884,86 @@ init_module_processing ()
 	     module_legacy_name ? "legacy headers" : "preamble parsing");
     }
 
-  module_state::init ();
+  modules_hash = new hash_table<module_state_hash> (30);
+
+  vec_safe_reserve (modules, 20);
+  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
+    modules->quick_push (NULL);
+
+  /* Create module for current TU.  */
+  module_state *current
+    = new (ggc_alloc <module_state> ()) module_state (NULL, NULL);
+  current->mod = MODULE_NONE;
+  bitmap_set_bit (current->imports, MODULE_NONE);
+  (*modules)[MODULE_NONE] = current;
+
+  gcc_checking_assert (!fixed_trees);
+
+  dump.push (NULL);
+
+  /* Determine lazy handle bound.  */
+  lazy_open = PARAM_VALUE (PARAM_LAZY_MODULES);
+  if (!lazy_open)
+    {
+      lazy_open = 100;
+#if HAVE_GETRLIMIT
+      struct rlimit rlimit;
+      if (!getrlimit (RLIMIT_NOFILE, &rlimit))
+	lazy_open = (rlimit.rlim_cur > 1000000
+		     ? 1000000 : unsigned (rlimit.rlim_cur));
+#endif
+      /* Use 3/4's of the available handles.  */
+      lazy_open = lazy_open * 3 / 4;
+    }
+  dump () && dump ("Lazy limit is %u", lazy_open);
+
+  if (modules_atom_p () && flag_module_preamble >= 0
+      && flag_module_preamble < 65536)
+    dump () && dump ("Preamble ends after %d", flag_module_preamble);
+
+  /* Construct the global tree array.  This is an array of unique
+     global trees (& types).  Do this now, rather than lazily, as
+     some global trees are lazily created and we don't want that to
+     mess with our syndrome of fixed trees.  */
+  unsigned crc = 0;
+  vec_alloc (fixed_trees, 200);
+
+  dump () && dump ("+Creating globals");
+  /* Insert the TRANSLATION_UNIT_DECL.  */
+  TREE_VISITED (DECL_CONTEXT (global_namespace)) = true;
+  fixed_trees->quick_push (DECL_CONTEXT (global_namespace));
+  for (unsigned jx = 0; global_tree_arys[jx].first; jx++)
+    {
+      const tree *ptr = global_tree_arys[jx].first;
+      unsigned limit = global_tree_arys[jx].second;
+
+      for (unsigned ix = 0; ix != limit; ix++, ptr++)
+	{
+	  !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx, ix);
+	  unsigned v = maybe_add_global (*ptr, crc);
+	  dump () && dump ("+%u", v);
+	}
+    }
+  global_crc = crc32_unsigned (crc, fixed_trees->length ());
+  dump ("") && dump ("Created %u unique globals, crc=%x",
+		     fixed_trees->length (), global_crc);
+  for (unsigned ix = fixed_trees->length (); ix--;)
+    TREE_VISITED ((*fixed_trees)[ix]) = false;
+
+  dump.pop (0);
 }
 
-/* Finalize the module at end of parsing.  */
+/* Finished parsing, write the BMI, if we're a module interface.  */
 
 void
-finish_module (line_maps *lmaps)
+finish_module_parse (line_maps *lmaps)
 {
   if (modules_legacy_p ())
     pop_module_export (0);
+
+  /* No need to lookup modules anymore.  */
+  delete modules_hash;
+  modules_hash = NULL;
 
   module_state *state = (*modules)[MODULE_PURVIEW];
   if (!state || !state->exported)
@@ -11028,6 +10990,8 @@ finish_module (line_maps *lmaps)
       if (to.end ())
 	error_at (state->loc, "failed to export module: %s",
 		  to.get_error (state->filename));
+      delete state->spewer ();
+      state->slurp = NULL;
 
       dump.pop (n);
       if (!errorcount)
@@ -11039,15 +11003,22 @@ finish_module (line_maps *lmaps)
     {
       if (state->exported && state->filename && errorcount)
 	unlink (state->filename);
-      state->release ();
     }
+}
 
+/* We're now done with everything but the module names.  */
+
+void
+finish_module_processing ()
+{
   XDELETEVEC (our_opts);
   our_opts = NULL;
 
   set_bmi_repo (NULL);
   module_mapper::fini (input_location);
-  module_state::fini ();
+
+  for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
+    (*modules)[ix]->release ();
 }
 
 /* Try and exec ourselves to repeat the preamble scan with
@@ -11070,8 +11041,7 @@ maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
   /* Exec ourselves.  */
   dump.push (NULL);
   dump () && dump ("About to reexec with prefix length %u", count);
-  module_state::fini ();
-  module_mapper::fini (loc);
+  finish_module_processing ();
 
   /* The preprocessor does not leave files open, so we can ignore the
      pfile arg.  */
