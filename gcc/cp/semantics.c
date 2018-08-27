@@ -1532,7 +1532,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		     effectively const.  */
 		  || (CLASS_TYPE_P (TREE_TYPE (operand))
 		      && C_TYPE_FIELDS_READONLY (TREE_TYPE (operand)))))
-	    cxx_readonly_error (operand, lv_asm);
+	    cxx_readonly_error (input_location, operand, lv_asm);
 
 	  tree *op = &operand;
 	  while (TREE_CODE (*op) == COMPOUND_EXPR)

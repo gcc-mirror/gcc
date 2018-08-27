@@ -1,3 +1,8 @@
+2018-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86993
+	* g++.dg/diagnostic/pr86993.C: New test.
+
 2018-08-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86927
@@ -5,7 +10,7 @@
 
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
-	PR 87091
+	PR c++/87091
 	* gcc.dg/empty.h: New file.
 	* gcc.dg/fixits-pr84852-1.c: Update for move of fix-it hint to
 	top of file and removal of redundant second printing of warning
@@ -18,7 +23,7 @@
 
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
-	PR 87091
+	PR c++/87091
 	* g++.dg/pr85523.C: Extend expected output to show line
 	before line-insertion fix-it hint.
 	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c
@@ -88,7 +93,7 @@
 
 2018-08-24  David Malcolm  <dmalcolm@redhat.com>
 
-	PR 87091
+	PR c++/87091
 	* gcc.dg/missing-header-fixit-3.c: Update for changes to how
 	line spans are printed with -fdiagnostics-show-line-numbers.
 
