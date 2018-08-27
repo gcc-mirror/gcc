@@ -6205,9 +6205,9 @@ trees_in::tree_node ()
 
 	if (!res)
 	  {
-	    error_at (state->loc, "failed to find %<%E%s%E@%M%>",
+	    error_at (state->loc, "failed to find %<%E%s%E@%s%>",
 		      ctx, &"::"[2 * (ctx == global_namespace)],
-		      name, (*modules)[owner]);
+		      name, module_name (owner));
 	    set_overrun ();
 	  }
 	else if (TREE_CODE (res) != TYPE_DECL
@@ -7086,8 +7086,8 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	    else if (!state->filename)
 	      state->filename = xstrdup (file);
 	    else if (strcmp (state->filename, file))
-	      warning_at (loc, 0, "ignoring conflicting mapping of %qM to %qs",
-			  state, file);
+	      warning_at (loc, 0, "ignoring conflicting mapping of %qs to %qs",
+			  state->fullname, file);
 	  }
       fclose (from);
       from = NULL;
@@ -7498,8 +7498,8 @@ module_mapper::bmi_response (const module_state *state)
       break;
 
     case 1: /* ERROR $msg */
-      error_at (state->from_loc, "mapper cannot provide module %qM: %s",
-		state, response_error ());
+      error_at (state->from_loc, "mapper cannot provide module %qs: %s",
+		state->fullname, response_error ());
       break;
     }
 
@@ -7831,9 +7831,9 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	  if (purview == imp)
 	    {
 	      /* Cannot import the current module.  */
-	      error_at (loc, "cannot import module %qM in its own purview",
-			imp);
-	      inform (imp->from_loc, "module %qM declared here", imp);
+	      error_at (loc, "cannot import module %qs in its own purview",
+			imp->fullname);
+	      inform (imp->from_loc, "module %qs declared here", imp->fullname);
 	      imp = NULL;
 	    }
 	  else
@@ -7851,14 +7851,15 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 		}
 	      else if (imp->crc != crc)
 		{
-		  error_at (loc, "import %qM has CRC mismatch", imp);
+		  error_at (loc, "import %qs has CRC mismatch", imp->fullname);
 		  imp = NULL;
 		}
 	    }
 	}
       else if (imp->is_detached ())
 	/* An indirect import, find it, it should be there.  */
-	error_at (loc, "indirect import %qM is not already loaded", imp);
+	error_at (loc, "indirect import %qs is not already loaded",
+		  imp->fullname);
 
       if (imp)
 	imports.quick_push (tuple (imp, ix_bool_t (ix, exported)));
@@ -8078,7 +8079,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed, bool check_crc
   dump () && dump ("Reading CRC=%x", crc);
   if (check_crc && crc != e_crc)
     {
-      error_at (loc, "module %qM CRC mismatch", this);
+      error_at (loc, "module %qs CRC mismatch", fullname);
       goto fail;
     }
 
@@ -9985,8 +9986,8 @@ module_state::check_read (bool outermost, tree ns, tree id)
 	 Otherwise return NULL to let our importer know (and
 	 fail).  */
       if (slurp->remaining && id)
-	error_at (loc, "failed to load binding %<%E%s%E@%M%>: %s",
-		  ns, &"::"[ns == global_namespace ? 2 : 0], id, this, err);
+	error_at (loc, "failed to load binding %<%E%s%E@%s%>: %s",
+		  ns, &"::"[ns == global_namespace ? 2 : 0], id, fullname, err);
       else if (filename)
 	error_at  (loc, "failed to read module %qs: %s", filename, err);
       else
@@ -10397,12 +10398,6 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
   (*modules)[mod]->lazy_load (ns, id, mslot, outer);
 }
 
-void
-pp_module_name (pretty_printer *pp, module_state *state)
-{
-  pp_string (pp, state->fullname);
-}
-
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
 void
@@ -10419,8 +10414,9 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
   if (purview == imp)
     {
       /* Cannot import the current module.  */
-      error_at (from_loc, "cannot import module %qM in its own purview", imp);
-      inform (imp->from_loc, "module %qM declared here", imp);
+      error_at (from_loc, "cannot import module %qs in its own purview",
+		imp->fullname);
+      inform (imp->from_loc, "module %qs declared here", imp->fullname);
       return;
     }
 
@@ -10460,8 +10456,8 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
   if (module_state *purview = (*modules)[MODULE_PURVIEW])
     {
       /* Already declared the module.  */
-      error_at (from_loc, "cannot declare module in purview of module %qM",
-		purview);
+      error_at (from_loc, "cannot declare module in purview of module %qs",
+		purview->fullname);
       return;
     }
 
@@ -10469,7 +10465,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
     {
       /* Cannot be module unit of an imported module.  */
       error_at (from_loc, "cannot declare module after import");
-      inform (state->from_loc, "module %qM imported here", state);
+      inform (state->from_loc, "module %qs imported here", state->fullname);
       return;
     }
 
@@ -10636,7 +10632,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
       if (!imp->filename)
 	{
 	  ok = false;
-	  error_at (imp->from_loc, "module %qM is unknown", imp);
+	  error_at (imp->from_loc, "module %qs is unknown", imp->fullname);
 	}
       imp->set_loc (lmaps);
     }

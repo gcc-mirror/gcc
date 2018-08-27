@@ -60,7 +60,6 @@ struct function_format_info
 /* Initialized in init_dynamic_diag_info.  */
 static GTY(()) tree local_tree_type_node;
 static GTY(()) tree local_gimple_ptr_node;
-static GTY(()) tree local_module_ptr_node;
 static GTY(()) tree locus;
 
 static bool decode_format_attr (tree, function_format_info *, int);
@@ -769,9 +768,6 @@ static const format_char_info gcc_cxxdiag_char_table[] =
 
   /* These accept either an 'int' or an 'enum tree_code' (which is handled as an 'int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
-
-  /* This accepts a module_state pointer.  */
-  { "M", 1,STD_C89, { T89_M,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "'",   NULL },
 
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
@@ -3948,21 +3944,6 @@ init_dynamic_diag_info (void)
 	  else
 	    t = TREE_TYPE (t);
 	  local_gimple_ptr_node = t;
-	}
-
-  /* Similar to the above but for module_state.  */
-  if (!local_module_ptr_node)
-    if (tree id = maybe_get_identifier ("module_state"))
-      if (tree t = identifier_global_value (id))
-	{
-	  if (TREE_CODE (t) != TYPE_DECL)
-	    {
-	      error ("%qE is not defined as a type", id);
-	      t = void_type_node;
-	    }
-	  else
-	    t = TREE_TYPE (t);
-	  local_module_ptr_node = t;
 	}
 
   static tree hwi;

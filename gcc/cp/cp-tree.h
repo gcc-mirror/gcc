@@ -37,7 +37,6 @@ In order for the format checking to accept the C++ front end diagnostic \
 framework extensions, you must include this file before diagnostic-core.h and \
 c-common.h, not after.
 #endif
-class module_state; /* Forward declare.  */
 #include "c-family/c-common.h"
 #include "diagnostic.h"
 
@@ -6703,6 +6702,7 @@ extern tree locate_ctor				(tree);
 extern tree implicitly_declare_fn               (special_function_kind, tree,
 						 bool, tree, tree);
 /* In module.c  */
+class module_state; /* Forward declare.  */
 inline bool modules_p () { return flag_modules != 0; }
 inline bool modules_atom_p () { return flag_modules < 0; }
 inline bool modules_legacy_p () { return flag_modules < -1; }
@@ -6710,7 +6710,6 @@ extern bool module_purview_p ();
 extern bool module_interface_p ();
 extern int module_exporting_level ();
 extern module_state *get_module (tree name, module_state *parent);
-extern void pp_module_name (pretty_printer *pp, module_state *);
 extern tree get_module_owner (tree);
 extern void set_module_owner (tree);
 extern void mangle_module (int m);

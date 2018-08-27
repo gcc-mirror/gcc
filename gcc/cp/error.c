@@ -4057,7 +4057,6 @@ defer_phase_2_of_type_diff (deferred_printed_type *deferred,
    %I   type difference (to).
    %K   tree
    %L	language as used in extern "lang".
-   %M   module name
    %O	binary operator.
    %P   function parameter whose position is indicated by an integer.
    %Q	assignment operator.
@@ -4122,9 +4121,6 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
       percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
       return true;
     case 'L': result = language_to_string (next_lang);		break;
-    case 'M':
-      pp_module_name (pp, va_arg (*text->args_ptr, module_state *));
-      return true;
     case 'O': result = op_to_string (false, next_tcode);	break;
     case 'P': result = parm_to_string (next_int);		break;
     case 'Q': result = op_to_string (true, next_tcode);		break;

@@ -1,5 +1,21 @@
 2018-08-27  Nathan Sidwell  <nathan@acm.org>
 
+	Remove %M formatter, it is not worth complexity.
+	gcc/c-family/
+	* c-format.c (local_module_ptr_node): Remove
+	(gcc_cxxdiag_char_table): Remove 'M'
+	(init_dynamic_diag_info): Remove module_state lookup
+	* c-format.h (T89_M): Remove
+	gcc/cp/
+	* cp-tree.h (class module_state): Move to module.c section.
+	(pp_module_name): Delete.
+	* error.c (cp_printer): Remove %M.
+	* module.c: Remove %M error printing.
+	(pp_module_name): Delete.
+	* ptree.c (cxx_print_decl): Print module number too.
+
+2018-08-27  Nathan Sidwell  <nathan@acm.org>
+
 	Mangling substitutions!
 	gcc/cp/
 	* cp-tree.h (module_vec_name): Delete.

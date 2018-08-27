@@ -300,7 +300,6 @@ struct format_kind_info
 #define T_V	&void_type_node
 #define T89_G   { STD_C89, NULL, &local_gimple_ptr_node }
 #define T89_T   { STD_C89, NULL, &local_tree_type_node }
-#define T89_M   { STD_C89, NULL, &local_module_ptr_node }
 #define T89_V	{ STD_C89, NULL, T_V }
 #define T_W	&wchar_type_node
 #define T94_W	{ STD_C94, "wchar_t", T_W }
