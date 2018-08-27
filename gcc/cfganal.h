@@ -67,6 +67,8 @@ extern void inverted_post_order_compute (vec<int> *postorder, sbitmap *start_poi
 extern int pre_and_rev_post_order_compute_fn (struct function *,
 					      int *, int *, bool);
 extern int pre_and_rev_post_order_compute (int *, int *, bool);
+extern int rev_post_order_and_mark_dfs_back_seme (struct function *, edge,
+						  bitmap, bool, int *);
 extern int dfs_enumerate_from (basic_block, int,
 			       bool (*)(const_basic_block, const void *),
 			       basic_block *, int, const void *);

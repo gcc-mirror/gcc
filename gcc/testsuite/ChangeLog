@@ -1,3 +1,18 @@
+2018-08-27  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/torture/20180705-1.C: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-67.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-14.c: Scan FRE dump.
+	* gcc.dg/tree-ssa/ssa-fre-46.c: Use -O2.
+	* gcc.dg/tree-ssa/vrp92.c: Disable FRE.
+	* gcc.dg/pr83666.c: Drop --param=sccvn-max-scc-size option.
+	* gcc.dg/pr85195.c: Likewise.
+	* gcc.dg/pr85467.c: Likewise.
+	* gcc.dg/torture/pr81790.c: Likewise.
+
+	* gfortran.dg/reassoc_4.f: Change max-completely-peeled-insns
+	param to current default.
+
 2018-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/87065

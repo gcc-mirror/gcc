@@ -1057,8 +1057,121 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
   return pre_order_num;
 }
 
+/* Unlike pre_and_rev_post_order_compute we fill rev_post_order backwards
+   so iterating in RPO order needs to start with rev_post_order[n - 1]
+   going to rev_post_order[0].  If FOR_ITERATION is true then try to
+   make CFG cycles fit into small contiguous regions of the RPO order.
+   When FOR_ITERATION is true this requires up-to-date loop structures.  */
+
+int
+rev_post_order_and_mark_dfs_back_seme (struct function *fn, edge entry,
+				       bitmap exit_bbs, bool for_iteration,
+				       int *rev_post_order)
+{
+  int pre_order_num = 0;
+  int rev_post_order_num = 0;
+
+  /* Allocate stack for back-tracking up CFG.  Worst case we need
+     O(n^2) edges but the following should suffice in practice without
+     a need to re-allocate.  */
+  auto_vec<edge, 20> stack (2 * n_basic_blocks_for_fn (fn));
+
+  int *pre = XNEWVEC (int, 2 * last_basic_block_for_fn (fn));
+  int *post = pre + last_basic_block_for_fn (fn);
+
+  /* BB flag to track nodes that have been visited.  */
+  auto_bb_flag visited (fn);
+  /* BB flag to track which nodes have post[] assigned to avoid
+     zeroing post.  */
+  auto_bb_flag post_assigned (fn);
+
+  /* Push the first edge on to the stack.  */
+  stack.quick_push (entry);
+
+  while (!stack.is_empty ())
+    {
+      basic_block src;
+      basic_block dest;
+
+      /* Look at the edge on the top of the stack.  */
+      int idx = stack.length () - 1;
+      edge e = stack[idx];
+      src = e->src;
+      dest = e->dest;
+      e->flags &= ~EDGE_DFS_BACK;
+
+      /* Check if the edge destination has been visited yet.  */
+      if (! bitmap_bit_p (exit_bbs, dest->index)
+	  && ! (dest->flags & visited))
+	{
+	  /* Mark that we have visited the destination.  */
+	  dest->flags |= visited;
+
+	  pre[dest->index] = pre_order_num++;
+
+	  if (EDGE_COUNT (dest->succs) > 0)
+	    {
+	      /* Since the DEST node has been visited for the first
+		 time, check its successors.  */
+	      /* Push the edge vector in reverse to match previous behavior.  */
+	      stack.reserve (EDGE_COUNT (dest->succs));
+	      for (int i = EDGE_COUNT (dest->succs) - 1; i >= 0; --i)
+		stack.quick_push (EDGE_SUCC (dest, i));
+	      /* Generalize to handle more successors?  */
+	      if (for_iteration
+		  && EDGE_COUNT (dest->succs) == 2)
+		{
+		  edge &e1 = stack[stack.length () - 2];
+		  if (loop_exit_edge_p (e1->src->loop_father, e1))
+		    std::swap (e1, stack.last ());
+		}
+	    }
+	  else
+	    {
+	      /* There are no successors for the DEST node so assign
+		 its reverse completion number.  */
+	      post[dest->index] = rev_post_order_num;
+	      dest->flags |= post_assigned;
+	      rev_post_order[rev_post_order_num] = dest->index;
+	      rev_post_order_num++;
+	    }
+	}
+      else
+	{
+	  if (dest->flags & visited
+	      && src != entry->src
+	      && pre[src->index] >= pre[dest->index]
+	      && !(dest->flags & post_assigned))
+	    e->flags |= EDGE_DFS_BACK;
+
+	  if (idx != 0 && stack[idx - 1]->src != src)
+	    {
+	      /* There are no more successors for the SRC node
+		 so assign its reverse completion number.  */
+	      post[src->index] = rev_post_order_num;
+	      src->flags |= post_assigned;
+	      rev_post_order[rev_post_order_num] = src->index;
+	      rev_post_order_num++;
+	    }
+
+	  stack.pop ();
+	}
+    }
+
+  XDELETEVEC (pre);
+
+  /* Clear the temporarily allocated flags.  */
+  for (int i = 0; i < rev_post_order_num; ++i)
+    BASIC_BLOCK_FOR_FN (fn, rev_post_order[i])->flags
+      &= ~(post_assigned|visited);
+
+  return rev_post_order_num;
+}
+
+
+
 /* Compute the depth first search order on the _reverse_ graph and
-   store in the array DFS_ORDER, marking the nodes visited in VISITED.
+   store it in the array DFS_ORDER, marking the nodes visited in VISITED.
    Returns the number of nodes visited.
 
    The computation is split into three pieces:

@@ -1,6 +1,6 @@
 /* PR tree-optimization/85467 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-ccp --param=sccvn-max-scc-size=10" } */
+/* { dg-options "-O2 -fno-tree-ccp" } */
 
 #define TEST(N, T) \
 typedef T V##N __attribute__ ((__vector_size__ (sizeof (T))));	\

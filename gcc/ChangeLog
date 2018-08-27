@@ -1,5 +1,47 @@
 2018-08-27  Richard Biener  <rguenther@suse.de>
 
+	* cfganal.h (rev_post_order_and_mark_dfs_back_seme): Declare.
+	* cfganal.c (rev_post_order_and_mark_dfs_back_seme): New function.
+
+	* tree-ssa-sccvn.h (struct vn_pval): New structure.
+	(struct vn_nary_op_s): Add unwind_to member.  Add
+	predicated_values flag and put result into a union together
+	with a linked list of vn_pval.
+	(struct vn_ssa_aux): Add name member to make maintaining
+	a map of SSA name to vn_ssa_aux possible.  Remove no longer
+	needed info, dfsnum, low, visited, on_sccstack, use_processed
+	and range_info_anti_range_p members.
+	(run_scc_vn, vn_eliminate, free_scc_vn, vn_valueize): Remove.
+	(do_rpo_vn, run_rpo_vn, eliminate_with_rpo_vn, free_rpo_vn):
+	New functions.
+	(vn_valueize): New global.
+	(vn_context_bb): Likewise.
+	(VN_INFO_RANGE_INFO, VN_INFO_ANTI_RANGE_P, VN_INFO_RANGE_TYPE,
+	VN_INFO_PTR_INFO): Remove.
+	* tree-ssa-sccvn.c: ... (rewrite)
+	(pass_fre::execute): For -O2+ initialize loops and run
+	RPO VN in optimistic mode (iterating).  For -O1 and -Og
+	run RPO VN in non-optimistic mode.
+	* params.def (PARAM_SCCVN_MAX_SCC_SIZE): Remove.
+	(PARAM_RPO_VN_MAX_LOOP_DEPTH): Add.
+	* doc/invoke.texi (sccvn-max-scc-size): Remove.
+	(rpo-vn-max-loop-depth): Document.
+	* tree-ssa-alias.c (walk_non_aliased_vuses): Stop walking
+	when valuezing the VUSE signals we walked out of the region.
+	* tree-ssa-pre.c (phi_translate_1): Ignore predicated values.
+	(phi_translate): Set VN context block to use for availability
+	lookup.
+	(compute_avail): Likewise.
+	(pre_valueize): New function.
+	(pass_pre::execute): Adjust to the RPO VN API.
+
+	* tree-ssa-loop-ivcanon.c: Include tree-ssa-sccvn.h.
+	(propagate_constants_for_unrolling): Remove.
+	(tree_unroll_loops_completely): Perform value-numbering
+	on the unrolled bodies loop parent.
+
+2018-08-27  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-pre.c (compute_antic): Re-use inverted postorder
 	for partial antic compute.
 
