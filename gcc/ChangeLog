@@ -1,3 +1,9 @@
+2018-08-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Fix unguarded
+	use of tree_to_shwi.  Remove duplicated test for the size being
+	a whole number of bytes.
+
 2018-08-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87117
