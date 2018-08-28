@@ -1,3 +1,9 @@
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87124
+	* tree-ssa-sccvn.c (vn_lookup_simplify_result): Guard against
+	constants before looking up avail.
+
 2018-08-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/87099
