@@ -1,5 +1,10 @@
 2018-08-27  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/86914
+	* gcc.dg/strlenopt-57.c: New test.
+
+2018-08-27  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/87112
 	* gcc.dg/pr87112.c: New test.
 

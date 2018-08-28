@@ -1160,7 +1160,9 @@ maybe_set_strlen_range (tree lhs, tree src, tree bound)
 	 suggests if it's treated as a poor-man's flexible array member.  */
       src = TREE_OPERAND (src, 0);
       bool src_is_array = TREE_CODE (TREE_TYPE (src)) == ARRAY_TYPE;
-      if (src_is_array && !array_at_struct_end_p (src))
+      if (src_is_array
+	  && TREE_CODE (src) != MEM_REF
+	  && !array_at_struct_end_p (src))
 	{
 	  tree type = TREE_TYPE (src);
 	  if (tree size = TYPE_SIZE_UNIT (type))
