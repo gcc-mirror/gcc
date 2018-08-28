@@ -1,3 +1,16 @@
+2018-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87116
+	* src/filesystem/std-path.cc (path::lexically_normal): When handling
+	a dot-dot filename, preserve an empty final component in the iteration
+	sequence.
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Use preferred-separator for
+	root-directory.
+	* testsuite/27_io/filesystem/path/generation/normal.cc: Add new tests
+	for more than two adjacent dot-dot filenames.
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Replace slashes with
+	preferred-separator in expected normalized strings.
+
 2018-08-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR libstdc++/70694
