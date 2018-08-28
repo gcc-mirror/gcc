@@ -1,3 +1,9 @@
+2018-08-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.h (ATTRIBUTE_GCC_DUMP_PRINTF): Change version check on
+	GCC_VERSION for usage of "__gcc_dump_printf__" format from
+	>= 3005 to >= 9000.
+
 2018-08-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87124
