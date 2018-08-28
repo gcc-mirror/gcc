@@ -5667,7 +5667,7 @@ vn_lookup_simplify_result (gimple_match_op *res_op)
 				       res_op->type, ops, &vnresult);
   /* If this is used from expression simplification make sure to
      return an available expression.  */
-  if (res && mprts_hook && rpo_avail)
+  if (res && TREE_CODE (res) == SSA_NAME && mprts_hook && rpo_avail)
     res = rpo_avail->eliminate_avail (vn_context_bb, res);
   return res;
 }
