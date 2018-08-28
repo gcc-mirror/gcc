@@ -1,3 +1,8 @@
+2018-08-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/87078
+	* gcc.dg/vect/slp-37.c: Restrict scan tests to vect_hw_misalign.
+
 2018-08-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87117

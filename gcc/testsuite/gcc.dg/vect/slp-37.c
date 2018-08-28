@@ -58,5 +58,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect"  } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_hw_misalign } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_hw_misalign } } } */
