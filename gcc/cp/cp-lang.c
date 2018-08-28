@@ -82,6 +82,8 @@ static int atom_preamble_fsm (int, cpp_reader *, unsigned, source_location);
 #define LANG_HOOKS_PREPROCESS_MAIN_FILE atom_main_file
 #undef LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE
 #define LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE atom_divert_include
+#undef LANG_HOOKS_PREPROCESS_UNDEF
+#define LANG_HOOKS_PREPROCESS_UNDEF atom_cpp_undef
 #undef LANG_HOOKS_PREPROCESS_PREAMBLE
 #define LANG_HOOKS_PREPROCESS_PREAMBLE atom_preamble_fsm
 

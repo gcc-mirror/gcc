@@ -168,6 +168,7 @@ Classes used:
 #include "opts.h"
 #include "attribs.h"
 #include "intl.h"
+#include "langhooks.h"
 
 #if defined (HAVE_AF_UNIX) || defined (HAVE_AF_INET6)
 /* socket, connect, shutdown  */
@@ -2890,6 +2891,9 @@ static char *bmi_repo;
 static size_t bmi_repo_length;
 static char *bmi_path;
 static size_t bmi_path_alloc;
+
+/* Undefined imported macros.  */
+static GTY(()) vec<tree, va_gc> *cpp_undefs;
 
 /* Global trees.  */
 static const std::pair<tree *, unsigned> global_tree_arys[] =
@@ -9867,6 +9871,15 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   bytes_out sec (to);
   sec.begin ();
 
+  if (cpp_undefs)
+    for (unsigned ix = 0; ix != cpp_undefs->length (); ix++)
+      {
+	tree id = (*cpp_undefs)[ix];
+	dump () && dump ("Writing #undef %I", id);
+	sec.cpp_node (CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (id)));
+      }
+  sec.str (NULL, 0);
+
   for (unsigned ix = macros.length (); ix--;)
     write_define (sec, macros[ix]);
 
@@ -9877,7 +9890,7 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
      from the end.  */
   sec.u (0);
 
-  sec.end (to, to->name (MOD_SNAME_PFX ".def"), crc_p);
+  sec.end (to, to->name (MOD_SNAME_PFX ".mac"), crc_p);
   dump.outdent ();
 }
 
@@ -9886,11 +9899,27 @@ module_state::read_defines (cpp_reader *reader)
 {
   bytes_in sec;
 
-  if (!sec.begin (loc, slurp->from, MOD_SNAME_PFX ".def"))
+  if (!sec.begin (loc, slurp->from, MOD_SNAME_PFX ".mac"))
     return false;
   dump () && dump ("Reading #defines");
   dump.indent ();
 
+  /* Process the undefs.  */
+  while (cpp_hashnode *node = sec.cpp_node ())
+    {
+      dump () && dump ("Reading #undef %I", HT_IDENT_TO_GCC_IDENT (node));
+      if (!cpp_user_macro_p (node)
+	  || !node->value.macro->imported)
+	warning_at (loc, 0, "imported definition of %qE not found by undef",
+		    HT_IDENT_TO_GCC_IDENT (node));
+      else
+	{
+	  node->type = NT_VOID;
+	  node->value.answers = NULL;
+	}
+    }
+
+  /* Process the defines.  */
   while (cpp_hashnode *node = sec.cpp_node ())
     {
       if (cpp_macro *macro = read_define (sec, reader, node))
@@ -11013,6 +11042,23 @@ module_state::atom_preamble (location_t loc,
   return ok ? int (adj) : -1;
 }
 
+/* Track if NODE undefs an imported macro.  */
+
+void
+atom_cpp_undef (cpp_reader *reader, location_t loc, cpp_hashnode *node)
+{
+  if (!modules_legacy_p ())
+    {
+      /* Turn us off.  */
+      if (lang_hooks.preprocess_undef)
+	lang_hooks.preprocess_undef = NULL;
+      else
+	cpp_get_callbacks (reader)->undef = NULL;
+    }
+  else if (cpp_user_macro_p (node) && node->value.macro->imported)
+    vec_safe_push (cpp_undefs, HT_IDENT_TO_GCC_IDENT (node));
+}
+
 /* Figure out whether to treat HEADER as an include or an import.  */
 
 static int
@@ -11335,6 +11381,9 @@ finish_module_parse (cpp_reader *reader, line_maps *lmaps)
       if (state->exported && state->filename && errorcount)
 	unlink (state->filename);
     }
+
+  /* We're done with the undefs now.  */
+  cpp_undefs = NULL;
 }
 
 /* We're now done with everything but the module names.  */

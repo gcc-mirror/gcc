@@ -1,5 +1,24 @@
 2018-08-28  Nathan Sidwell  <nathan@acm.org>
 
+	Undefs
+	gcc/cp/
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_UNDEF): Override.
+	* cp-tree.h (atom_cpp_undef): Declare.
+	* module.c: Include langhooks.h.
+	(cpp_undefs): New global.
+	(module_state::{read,write}_defines): Stream undefs.
+	(atom_cpp_undef): Define.
+	gcc/
+	* langhooks-def.h (LANG_HOOKS_PREPROCESS_UNDEF): Default.
+	(LANG_HOOKS_INITIALIZER): Add it.
+	* langhooks.h (struct lang_hooks): Add preprocess_undef hook.
+	gcc/c-family/
+	* c-lex.c: Include langhooks.h
+	(init_c_lex, cb_undef): Look at lang hook.
+	gcc/testsuite/
+	* g++.dg/modules/macro-3_[ab].H: New.
+	* g++.dg/modules/macro-3_c.C: New.
+
 	Sorted macros
 	gcc/cp/
 	* module.c (module_state::{read,write}_define): New, single-macro

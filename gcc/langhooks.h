@@ -339,6 +339,9 @@ struct lang_hooks
 					  source_location,
 					  const char *fname, bool);
 
+  /* Undefining a macro.  */
+  void (*preprocess_undef) (cpp_reader *, source_location, cpp_hashnode *);
+
   /* State machine for determining the early end of a preprocess.  */
   int (*preprocess_preamble) (int, cpp_reader *, unsigned, source_location);
 

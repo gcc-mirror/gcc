@@ -6724,6 +6724,7 @@ extern void import_module (module_state *, location_t, bool, tree,
 			   cpp_reader *, line_maps *);
 extern void declare_module (module_state *, location_t, bool, tree,
 			    cpp_reader *, line_maps *);
+extern void atom_cpp_undef (cpp_reader *, location_t, cpp_hashnode *);
 extern unsigned atom_module_preamble (location_t, cpp_reader *, line_maps *);
 extern void init_module_processing ();
 extern void finish_module_processing ();

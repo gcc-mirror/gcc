@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "debug.h"
 #include "file-prefix-map.h" /* remap_macro_filename()  */
-
+#include "langhooks.h"
 #include "attribs.h"
 
 /* We may keep statistics about how long which files took to compile.  */
@@ -93,6 +93,11 @@ init_c_lex (void)
     {
       cb->define = cb_define;
       cb->undef = cb_undef;
+    }
+  else
+    {
+      cb->undef = lang_hooks.preprocess_undef;
+      lang_hooks.preprocess_undef = NULL;
     }
 }
 
@@ -274,9 +279,11 @@ cb_define (cpp_reader *pfile, source_location loc, cpp_hashnode *node)
 
 /* #undef callback for DWARF and DWARF2 debug info.  */
 static void
-cb_undef (cpp_reader * ARG_UNUSED (pfile), source_location loc,
-	  cpp_hashnode *node)
+cb_undef (cpp_reader *pfile, source_location loc, cpp_hashnode *node)
 {
+  if (lang_hooks.preprocess_undef)
+    lang_hooks.preprocess_undef (pfile, loc, node);
+
   const struct line_map *map = linemap_lookup (line_table, loc);
   (*debug_hooks->undef) (SOURCE_LINE (linemap_check_ordinary (map), loc),
 			 (const char *) NODE_NAME (node));
