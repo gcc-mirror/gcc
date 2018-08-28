@@ -1,3 +1,8 @@
+2018-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87099
+	* gcc.dg/pr87099.c: New test.
+
 2018-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/87065

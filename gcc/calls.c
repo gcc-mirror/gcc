@@ -1627,6 +1627,9 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
   if (!fndecl || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
     return;
 
+  if (!warn_stringop_overflow)
+    return;
+
   bool with_bounds = CALL_WITH_BOUNDS_P (exp);
 
   unsigned nargs = call_expr_nargs (exp);
@@ -1655,7 +1658,10 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	   conservatively as the bound for the unbounded function,
 	   and to adjust the range of the bound of the bounded ones.  */
 	unsigned stride = with_bounds ? 2 : 1;
-	for (unsigned argno = 0; argno < nargs && !*lenrng; argno += stride)
+	for (unsigned argno = 0;
+	     argno < MIN (nargs, 2 * stride)
+	     && !(lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST);
+	     argno += stride)
 	  {
 	    tree arg = CALL_EXPR_ARG (exp, argno);
 	    if (!get_attr_nonstring_decl (arg))
@@ -1693,11 +1699,9 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
   if (bound)
     get_size_range (bound, bndrng);
 
-  if (*lenrng)
+  if (lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST)
     {
       /* Add one for the nul.  */
-      lenrng[0] = const_binop (PLUS_EXPR, TREE_TYPE (lenrng[0]),
-			       lenrng[0], size_one_node);
       lenrng[1] = const_binop (PLUS_EXPR, TREE_TYPE (lenrng[1]),
 			       lenrng[1], size_one_node);
 
