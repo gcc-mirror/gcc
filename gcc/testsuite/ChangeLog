@@ -1,3 +1,8 @@
+2018-08-28 MCC CS <deswurstes@users.noreply.github.com>
+
+	PR tree-optimization/87009
+	* gcc.dg/pr87009.c: New test.
+
 2018-08-28  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/86631
