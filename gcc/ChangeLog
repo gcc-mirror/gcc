@@ -1,3 +1,8 @@
+2018-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86914
+	* tree-ssa-strlen.c (maybe_set_strlen_range): Avoid MEM_REF.
+
 2018-08-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/87099
