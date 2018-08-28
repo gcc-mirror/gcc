@@ -5425,31 +5425,28 @@ eliminate_dom_walker::eliminate_cleanup (bool region_p)
 		  do_release_defs = false;
 		}
 	    }
-	  else
-	    {
-	      tree lhs = gimple_get_lhs (stmt);
-	      if (TREE_CODE (lhs) == SSA_NAME
-		  && !has_zero_uses (lhs))
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file, "Keeping eliminated stmt live "
-			     "as copy because of out-of-region uses\n");
-		  tree sprime = eliminate_avail (gimple_bb (stmt), lhs);
-		  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-		  if (is_gimple_assign (stmt))
-		    {
-		      gimple_assign_set_rhs_from_tree (&gsi, sprime);
-		      update_stmt (gsi_stmt (gsi));
-		      continue;
-		    }
-		  else
-		    {
-		      gimple *copy = gimple_build_assign (lhs, sprime);
-		      gsi_insert_before (&gsi, copy, GSI_SAME_STMT);
-		      do_release_defs = false;
-		    }
-		}
-	    }
+	  else if (tree lhs = gimple_get_lhs (stmt))
+	    if (TREE_CODE (lhs) == SSA_NAME
+		&& !has_zero_uses (lhs))
+	      {
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  fprintf (dump_file, "Keeping eliminated stmt live "
+			   "as copy because of out-of-region uses\n");
+		tree sprime = eliminate_avail (gimple_bb (stmt), lhs);
+		gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+		if (is_gimple_assign (stmt))
+		  {
+		    gimple_assign_set_rhs_from_tree (&gsi, sprime);
+		    update_stmt (gsi_stmt (gsi));
+		    continue;
+		  }
+		else
+		  {
+		    gimple *copy = gimple_build_assign (lhs, sprime);
+		    gsi_insert_before (&gsi, copy, GSI_SAME_STMT);
+		    do_release_defs = false;
+		  }
+	      }
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
