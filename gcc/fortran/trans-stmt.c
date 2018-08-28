@@ -5783,6 +5783,7 @@ gfc_trans_allocate (gfc_code * code)
   enum { E3_UNSET = 0, E3_SOURCE, E3_MOLD, E3_DESC } e3_is;
   stmtblock_t block;
   stmtblock_t post;
+  stmtblock_t final_block;
   tree nelems;
   bool upoly_expr, tmp_expr3_len_flag = false, al_len_needs_set, is_coarray;
   bool needs_caf_sync, caf_refs_comp;
@@ -5801,6 +5802,7 @@ gfc_trans_allocate (gfc_code * code)
 
   gfc_init_block (&block);
   gfc_init_block (&post);
+  gfc_init_block (&final_block);
 
   /* STAT= (and maybe ERRMSG=) is present.  */
   if (code->expr1)
@@ -5841,6 +5843,11 @@ gfc_trans_allocate (gfc_code * code)
 	  temp_obj_created = false;
 
       is_coarray = gfc_is_coarray (code->expr3);
+
+      if (code->expr3->expr_type == EXPR_FUNCTION && !code->expr3->mold
+	  && (gfc_is_class_array_function (code->expr3)
+	      || gfc_is_alloc_class_scalar_function (code->expr3)))
+	code->expr3->must_finalize = 1;
 
       /* Figure whether we need the vtab from expr3.  */
       for (al = code->ext.alloc.list; !vtab_needed && al != NULL;
@@ -5914,7 +5921,10 @@ gfc_trans_allocate (gfc_code * code)
 	  temp_obj_created = temp_var_needed = !VAR_P (se.expr);
 	}
       gfc_add_block_to_block (&block, &se.pre);
-      gfc_add_block_to_block (&post, &se.post);
+      if (code->expr3->must_finalize)
+	gfc_add_block_to_block (&final_block, &se.post);
+      else
+	gfc_add_block_to_block (&post, &se.post);
 
       /* Special case when string in expr3 is zero.  */
       if (code->expr3->ts.type == BT_CHARACTER
@@ -6743,6 +6753,8 @@ gfc_trans_allocate (gfc_code * code)
 
   gfc_add_block_to_block (&block, &se.post);
   gfc_add_block_to_block (&block, &post);
+  if (code->expr3 && code->expr3->must_finalize)
+    gfc_add_block_to_block (&block, &final_block);
 
   return gfc_finish_block (&block);
 }
