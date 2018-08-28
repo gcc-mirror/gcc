@@ -663,6 +663,7 @@ get_expr_value_id (pre_expr expr)
       id = VN_INFO (PRE_EXPR_NAME (expr))->value_id;
       break;
     case NARY:
+      gcc_assert (!PRE_EXPR_NARY (expr)->predicated_values);
       id = PRE_EXPR_NARY (expr)->value_id;
       break;
     case REFERENCE:
@@ -3902,7 +3903,7 @@ compute_avail (void)
 			continue;
 
 		      vn_nary_op_lookup_stmt (stmt, &nary);
-		      if (!nary)
+		      if (!nary || nary->predicated_values)
 			continue;
 
 		      /* If the NARY traps and there was a preceding
