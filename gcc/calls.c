@@ -1545,7 +1545,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
   if (!fndecl || !fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     return;
 
-  if (TREE_NO_WARNING (exp))
+  if (TREE_NO_WARNING (exp) || !warn_stringop_overflow)
     return;
 
   unsigned nargs = call_expr_nargs (exp);
@@ -1573,7 +1573,9 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	   the range of their known or possible lengths and use it
 	   conservatively as the bound for the unbounded function,
 	   and to adjust the range of the bound of the bounded ones.  */
-	for (unsigned argno = 0; argno < nargs && !*lenrng; argno ++)
+	for (unsigned argno = 0;
+	     argno < MIN (nargs, 2)
+	     && !(lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST); argno++)
 	  {
 	    tree arg = CALL_EXPR_ARG (exp, argno);
 	    if (!get_attr_nonstring_decl (arg))
@@ -1585,12 +1587,12 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
     case BUILT_IN_STRNCAT:
     case BUILT_IN_STPNCPY:
     case BUILT_IN_STRNCPY:
-      if (2 < nargs)
+      if (nargs > 2)
 	bound = CALL_EXPR_ARG (exp, 2);
       break;
 
     case BUILT_IN_STRNDUP:
-      if (1 < nargs)
+      if (nargs > 1)
 	bound = CALL_EXPR_ARG (exp, 1);
       break;
 
@@ -1600,7 +1602,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	if (!get_attr_nonstring_decl (arg))
 	  get_range_strlen (arg, lenrng);
 
-	if (1 < nargs)
+	if (nargs > 1)
 	  bound = CALL_EXPR_ARG (exp, 1);
 	break;
       }
@@ -1640,11 +1642,9 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	}
     }
 
-  if (*lenrng)
+  if (lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST)
     {
       /* Add one for the nul.  */
-      lenrng[0] = const_binop (PLUS_EXPR, TREE_TYPE (lenrng[0]),
-			       lenrng[0], size_one_node);
       lenrng[1] = const_binop (PLUS_EXPR, TREE_TYPE (lenrng[1]),
 			       lenrng[1], size_one_node);
 
