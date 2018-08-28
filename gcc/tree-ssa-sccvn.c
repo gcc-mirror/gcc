@@ -1409,16 +1409,16 @@ fully_constant_vn_reference_p (vn_reference_t ref)
   /* Simplify reads from constants or constant initializers.  */
   else if (BITS_PER_UNIT == 8
 	   && COMPLETE_TYPE_P (ref->type)
-	   && is_gimple_reg_type (ref->type)
-	   && (!INTEGRAL_TYPE_P (ref->type)
-	       || TYPE_PRECISION (ref->type) % BITS_PER_UNIT == 0))
+	   && is_gimple_reg_type (ref->type))
     {
       poly_int64 off = 0;
       HOST_WIDE_INT size;
       if (INTEGRAL_TYPE_P (ref->type))
 	size = TYPE_PRECISION (ref->type);
-      else
+      else if (tree_fits_shwi_p (TYPE_SIZE (ref->type)))
 	size = tree_to_shwi (TYPE_SIZE (ref->type));
+      else
+	return NULL_TREE;
       if (size % BITS_PER_UNIT != 0
 	  || size > MAX_BITSIZE_MODE_ANY_MODE)
 	return NULL_TREE;
