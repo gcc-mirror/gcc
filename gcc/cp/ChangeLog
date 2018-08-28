@@ -1,3 +1,9 @@
+2018-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/86546
+	* decl.c (finish_case_label): If the type is erroneous early
+	return error_mark_node.
+
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/63392
