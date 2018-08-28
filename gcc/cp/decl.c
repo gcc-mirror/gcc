@@ -3662,6 +3662,8 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
     return error_mark_node;
 
   type = SWITCH_STMT_TYPE (switch_stack->switch_stmt);
+  if (type == error_mark_node)
+    return error_mark_node;
 
   low_value = case_conversion (type, low_value);
   high_value = case_conversion (type, high_value);

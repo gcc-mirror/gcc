@@ -1,3 +1,8 @@
+2018-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/86546
+	* g++.dg/other/switch4.C: New.
+
 2018-08-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87124
