@@ -9326,14 +9326,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
   if (kind == tcc_comparison || code == MIN_EXPR || code == MAX_EXPR)
     {
-      if (code == MIN_EXPR || code == MAX_EXPR)
-	{
-	  tree typ0 = TREE_TYPE (arg0);
-	  tree typ1 = TREE_TYPE (arg1);
-	  gcc_assert (TYPE_SIGN (typ0) == TYPE_SIGN (typ1)
-		      && TYPE_MODE (typ0) == TYPE_MODE (typ1));
-	}
-
       STRIP_SIGN_NOPS (arg0);
       STRIP_SIGN_NOPS (arg1);
     }
