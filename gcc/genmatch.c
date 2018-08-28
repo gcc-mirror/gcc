@@ -4150,7 +4150,7 @@ parser::parse_operation ()
       if (active_fors.length() == 0)
 	record_operlist (id_tok->src_loc, p);
       else
-	fatal_at (id_tok, "operator-list %s cannot be exapnded inside 'for'", id);
+	fatal_at (id_tok, "operator-list %s cannot be expanded inside 'for'", id);
     }
   return op;
 }

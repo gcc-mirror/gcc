@@ -69,11 +69,16 @@ set plugin_test_list [list \
     { poly-int-05_plugin.c poly-int-test-1.c } \
     { poly-int-06_plugin.c poly-int-test-1.c } \
     { poly-int-07_plugin.c poly-int-test-1.c } \
+    { diagnostic_group_plugin.c \
+	  diagnostic-group-test-1.c } \
     { diagnostic_plugin_test_show_locus.c \
 	  diagnostic-test-show-locus-bw.c \
 	  diagnostic-test-show-locus-color.c \
+	  diagnostic-test-show-locus-no-labels.c \
+	  diagnostic-test-show-locus-bw-line-numbers.c \
+	  diagnostic-test-show-locus-color-line-numbers.c \
 	  diagnostic-test-show-locus-parseable-fixits.c \
-	  diagnostic-test-show-locus-generate-patch.c } \
+	  diagnostic-test-show-locus-generate-patch.c }\
     { diagnostic_plugin_test_tree_expression_range.c \
 	  diagnostic-test-expressions-1.c } \
     { diagnostic_plugin_show_trees.c \

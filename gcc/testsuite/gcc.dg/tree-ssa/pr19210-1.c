@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fopt-info-loop-missed -Wunsafe-loop-optimizations" } */
+/* { dg-options "-O2 -fopt-info-loop-missed" } */
 extern void g(void);
 
 void

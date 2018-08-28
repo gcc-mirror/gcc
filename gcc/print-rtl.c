@@ -36,11 +36,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "tree.h"
 #include "basic-block.h"
-#include "cfg.h"
 #include "print-tree.h"
 #include "flags.h"
 #include "predict.h"
 #include "function.h"
+#include "cfg.h"
 #include "basic-block.h"
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
@@ -1742,6 +1742,7 @@ print_pattern (pretty_printer *pp, const_rtx x, int verbose)
       print_exp (pp, x, verbose);
       break;
     case CLOBBER:
+    case CLOBBER_HIGH:
     case USE:
       pp_printf (pp, "%s ", GET_RTX_NAME (GET_CODE (x)));
       print_value (pp, XEXP (x, 0), verbose);

@@ -1664,6 +1664,7 @@ maybe_diag_offset_bounds (location_t loc, gimple *call, tree func, int strict,
       if (DECL_P (ref.base)
 	  && TREE_CODE (type = TREE_TYPE (ref.base)) == ARRAY_TYPE)
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Warray_bounds,
 			  "%G%qD pointer overflow between offset %s "
 			  "and size %s accessing array %qD with type %qT",
@@ -1696,6 +1697,7 @@ maybe_diag_offset_bounds (location_t loc, gimple *call, tree func, int strict,
 
       if (DECL_P (ref.base))
 	{
+	  auto_diagnostic_group d;
 	  if ((ref.basesize < maxobjsize
 	       && warning_at (loc, OPT_Warray_bounds,
 			      form

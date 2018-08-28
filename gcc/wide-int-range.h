@@ -94,6 +94,22 @@ extern void wide_int_range_trunc_mod (wide_int &wmin, wide_int &wmax,
 				      const wide_int &vr0_max,
 				      const wide_int &vr1_min,
 				      const wide_int &vr1_max);
+extern bool wide_int_range_abs (wide_int &min, wide_int &max,
+				signop sign, unsigned prec,
+				const wide_int &vr0_min,
+				const wide_int &vr0_max,
+				bool overflow_undefined);
+extern bool wide_int_range_div (wide_int &wmin, wide_int &wmax,
+				enum tree_code code,
+				signop sign, unsigned prec,
+				const wide_int &dividend_min,
+				const wide_int &dividend_max,
+				const wide_int &divisor_min,
+				const wide_int &divisor_max,
+				bool overflow_undefined,
+				bool overflow_wraps,
+				bool &extra_range_p,
+				wide_int &extra_min, wide_int &extra_max);
 
 /* Return TRUE if shifting by range [MIN, MAX] is undefined behavior.  */
 
@@ -110,6 +126,44 @@ wide_int_range_shift_undefined_p (signop sign, unsigned prec,
      SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
      shifts, and the operation at the tree level may be widened.  */
   return wi::lt_p (min, 0, sign) || wi::ge_p (max, prec, sign);
+}
+
+/* Calculate MIN/MAX_EXPR of two ranges and store the result in [MIN, MAX].  */
+
+inline bool
+wide_int_range_min_max (wide_int &min, wide_int &max,
+			tree_code code,
+			signop sign, unsigned prec,
+			const wide_int &vr0_min, const wide_int &vr0_max,
+			const wide_int &vr1_min, const wide_int &vr1_max)
+{
+  wi::overflow_type overflow;
+  wide_int_binop (min, code, vr0_min, vr1_min, sign, &overflow);
+  wide_int_binop (max, code, vr0_max, vr1_max, sign, &overflow);
+  /* If the new range covers the entire domain, that's really no range
+     at all.  */
+  if (min == wi::min_value (prec, sign)
+      && max == wi::max_value (prec, sign))
+    return false;
+  return true;
+}
+
+/* Return TRUE if 0 is within [WMIN, WMAX].  */
+
+inline bool
+wide_int_range_includes_zero_p (const wide_int &wmin, const wide_int &wmax,
+				signop sign)
+{
+  return wi::le_p (wmin, 0, sign) && wi::ge_p (wmax, 0, sign);
+}
+
+/* Return TRUE if [WMIN, WMAX] is the singleton 0.  */
+
+inline bool
+wide_int_range_zero_p (const wide_int &wmin, const wide_int &wmax,
+		       unsigned prec)
+{
+  return wmin == wmax && wi::eq_p (wmin, wi::zero (prec));
 }
 
 #endif /* GCC_WIDE_INT_RANGE_H */

@@ -260,12 +260,10 @@ package body Exp_Unst is
          E := Ultimate_Alias (E);
 
          --  The body of a protected operation has a different name and
-         --  has been scanned at this point, and thus has an entry in
-         --  the subprogram table.
+         --  has been scanned at this point, and thus has an entry in the
+         --  subprogram table.
 
-         if E = Sub
-           and then Convention (E) = Convention_Protected
-         then
+         if E = Sub and then Convention (E) = Convention_Protected then
             E := Protected_Body_Subprogram (E);
          end if;
 
@@ -551,9 +549,8 @@ package body Exp_Unst is
 
                   --  Explicit dereference and selected component case
 
-                  elsif Nkind_In (N,
-                    N_Explicit_Dereference,
-                    N_Selected_Component)
+                  elsif Nkind_In (N, N_Explicit_Dereference,
+                                     N_Selected_Component)
                   then
                      Note_Uplevel_Bound (Prefix (N), Ref);
 

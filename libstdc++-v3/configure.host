@@ -230,22 +230,25 @@ case "${host_os}" in
     os_include_dir="os/newlib"
     OPT_LDFLAGS="${OPT_LDFLAGS} \$(lt_host_flags)"
     ;;
-  darwin | darwin[1-7] | darwin[1-7].*)
-    # On Darwin, performance is improved if libstdc++ is single-module.
-    # Up to at least 10.3.7, -flat_namespace is required for proper
-    # treatment of coalesced symbols.
+  darwin[4-7] | darwin[4-7].*)
+    # For earlier Darwin, performance is improved if libstdc++ is
+    # single-module. Up to at least 10.3.7, -flat_namespace is required
+    # for proper treatment of coalesced symbols.
     OPT_LDFLAGS="${OPT_LDFLAGS} -Wl,-single_module -Wl,-flat_namespace"
     os_include_dir="os/bsd/darwin"
     ;;
-  darwin[89] | darwin[89].* | darwin[1-9][0-9]* )
-    # On Darwin, performance is improved if libstdc++ is single-module,
-    # and on 8+ compatibility is better if not -flat_namespace.
+  darwin8 | darwin8.* )
+    # For 8+ compatibility is better if not -flat_namespace.
     OPT_LDFLAGS="${OPT_LDFLAGS} -Wl,-single_module"
     case "${host_cpu}" in
       i[34567]86 | x86_64)
         OPTIMIZE_CXXFLAGS="${OPTIMIZE_CXXFLAGS} -fvisibility-inlines-hidden"
         ;;
     esac
+    os_include_dir="os/bsd/darwin"
+    ;;
+  darwin*)
+    # Post Darwin8, defaults should be sufficient.
     os_include_dir="os/bsd/darwin"
     ;;
   *djgpp*)      # leading * picks up "msdosdjgpp"

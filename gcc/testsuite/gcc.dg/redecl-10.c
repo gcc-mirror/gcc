@@ -5,7 +5,7 @@
 /* { dg-do compile } */
 /* { dg-options "-g" } */
 
-static int w[];
+static int w[]; /* { dg-warning "array 'w' assumed to have one element" } */
 void
 f (void)
 {
@@ -19,7 +19,7 @@ g (void)
   extern int x[] = { 3, 4, 5 }; /* { dg-error "has both" } */
 }
 
-static int y[];
+static int y[]; /* { dg-warning "array 'y' assumed to have one element" } */
 void
 h (void)
 {

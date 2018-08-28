@@ -329,7 +329,7 @@ static const struct cpu_addrcost_table qdf24xx_addrcost_table =
   1, /* pre_modify  */
   1, /* post_modify  */
   3, /* register_offset  */
-  4, /* register_sextend  */
+  3, /* register_sextend  */
   3, /* register_zextend  */
   2, /* imm_offset  */
 };
@@ -419,6 +419,26 @@ static const struct cpu_vector_cost generic_vector_cost =
   1, /* scalar_store_cost  */
   1, /* vec_int_stmt_cost  */
   1, /* vec_fp_stmt_cost  */
+  2, /* vec_permute_cost  */
+  1, /* vec_to_scalar_cost  */
+  1, /* scalar_to_vec_cost  */
+  1, /* vec_align_load_cost  */
+  1, /* vec_unalign_load_cost  */
+  1, /* vec_unalign_store_cost  */
+  1, /* vec_store_cost  */
+  3, /* cond_taken_branch_cost  */
+  1 /* cond_not_taken_branch_cost  */
+};
+
+/* QDF24XX costs for vector insn classes.  */
+static const struct cpu_vector_cost qdf24xx_vector_cost =
+{
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
+  1, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  1, /* vec_int_stmt_cost  */
+  3, /* vec_fp_stmt_cost  */
   2, /* vec_permute_cost  */
   1, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
@@ -890,7 +910,7 @@ static const struct tune_params qdf24xx_tunings =
   &qdf24xx_extra_costs,
   &qdf24xx_addrcost_table,
   &qdf24xx_regmove_cost,
-  &generic_vector_cost,
+  &qdf24xx_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
   4, /* memmov_cost  */
@@ -10537,6 +10557,13 @@ aarch64_override_options_internal (struct gcc_options *opts)
       && opts->x_optimize >= aarch64_tune_params.prefetch->default_opt_level)
     opts->x_flag_prefetch_loop_arrays = 1;
 
+  if (opts->x_aarch64_arch_string == NULL)
+    opts->x_aarch64_arch_string = selected_arch->name;
+  if (opts->x_aarch64_cpu_string == NULL)
+    opts->x_aarch64_cpu_string = selected_cpu->name;
+  if (opts->x_aarch64_tune_string == NULL)
+    opts->x_aarch64_tune_string = selected_tune->name;
+
   aarch64_override_options_after_change_1 (opts);
 }
 
@@ -15403,7 +15430,10 @@ aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
 
   machine_mode sel_mode = mode_for_int_vector (d->vmode).require ();
   rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
-  aarch64_expand_sve_vec_perm (d->target, d->op0, d->op1, sel);
+  if (d->one_vector_p)
+    emit_unspec2 (d->target, UNSPEC_TBL, d->op0, force_reg (sel_mode, sel));
+  else
+    aarch64_expand_sve_vec_perm (d->target, d->op0, d->op1, sel);
   return true;
 }
 
@@ -15441,7 +15471,7 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	return true;
       if (d->vec_flags == VEC_SVE_DATA)
 	return aarch64_evpc_sve_tbl (d);
-      else if (d->vec_flags == VEC_SVE_DATA)
+      else if (d->vec_flags == VEC_ADVSIMD)
 	return aarch64_evpc_tbl (d);
     }
   return false;
@@ -15456,7 +15486,8 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   struct expand_vec_perm_d d;
 
   /* Check whether the mask can be applied to a single vector.  */
-  if (op0 && rtx_equal_p (op0, op1))
+  if (sel.ninputs () == 1
+      || (op0 && rtx_equal_p (op0, op1)))
     d.one_vector_p = true;
   else if (sel.all_from_input_p (0))
     {

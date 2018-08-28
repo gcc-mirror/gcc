@@ -529,6 +529,9 @@ haifa_classify_rtx (const_rtx x)
 	  /* Test if it is a 'store'.  */
 	  tmp_class = may_trap_exp (XEXP (x, 0), 1);
 	  break;
+	case CLOBBER_HIGH:
+	  gcc_assert (REG_P (XEXP (x, 0)));
+	  break;
 	case SET:
 	  /* Test if it is a store.  */
 	  tmp_class = may_trap_exp (SET_DEST (x), 1);

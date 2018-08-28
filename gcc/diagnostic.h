@@ -204,6 +204,13 @@ struct diagnostic_context
      a token, which would look strange).  */
   bool colorize_source_p;
 
+  /* When printing source code, should labelled ranges be printed?  */
+  bool show_labels_p;
+
+  /* When printing source code, should there be a left-hand margin
+     showing line numbers?  */
+  bool show_line_numbers_p;
+
   /* Usable by plugins; if true, print a debugging ruler above the
      source output.  */
   bool show_ruler_p;
@@ -215,6 +222,23 @@ struct diagnostic_context
   /* If non-NULL, an edit_context to which fix-it hints should be
      applied, for generating patches.  */
   edit_context *edit_context_ptr;
+
+  /* How many diagnostic_group instances are currently alive.  */
+  int diagnostic_group_nesting_depth;
+
+  /* How many diagnostics have been emitted since the bottommost
+     diagnostic_group was pushed.  */
+  int diagnostic_group_emission_count;
+
+  /* Optional callbacks for handling diagnostic groups.  */
+
+  /* If non-NULL, this will be called immediately before the first
+     time a diagnostic is emitted within a stack of groups.  */
+  void (*begin_group_cb) (diagnostic_context * context);
+
+  /* If non-NULL, this will be called when a stack of groups is
+     popped if any diagnostics were emitted within that group.  */
+  void (*end_group_cb) (diagnostic_context * context);
 };
 
 static inline void

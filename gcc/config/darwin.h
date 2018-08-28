@@ -122,7 +122,9 @@ extern GTY(()) int darwin_ms_struct;
   "%{gfull:-g -fno-eliminate-unused-debug-symbols} %<gfull",	\
   "%{gused:-g -feliminate-unused-debug-symbols} %<gused",	\
   "%{fapple-kext|mkernel:-static}",				\
-  "%{shared:-Zdynamiclib} %<shared"
+  "%{shared:-Zdynamiclib} %<shared",                            \
+  "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform } \
+     %<gsplit-dwarf"
 
 #define DARWIN_CC1_SPEC							\
   "%{findirect-virtual-calls: -fapple-kext} %<findirect-virtual-calls " \
@@ -173,7 +175,7 @@ extern GTY(()) int darwin_ms_struct;
     %(linker)" \
     LINK_PLUGIN_SPEC \
     "%{flto*:%<fcompare-debug*} \
-    %{flto*} \
+     %{flto} %{fno-lto} %{flto=*} \
     %l " LINK_COMPRESS_DEBUG_SPEC \
    "%X %{s} %{t} %{Z} %{u*} \
     %{e*} %{r} \
@@ -421,6 +423,8 @@ extern GTY(()) int darwin_ms_struct;
    debugging data.  */
 
 #define ASM_DEBUG_SPEC  "%{g*:%{%:debug-level-gt(0):%{!gdwarf*:--gstabs}}}"
+#define ASM_FINAL_SPEC \
+  "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform } %<gsplit-dwarf"
 
 /* We still allow output of STABS if the assembler supports it.  */
 #ifdef HAVE_AS_STABS_DIRECTIVE
@@ -430,18 +434,20 @@ extern GTY(()) int darwin_ms_struct;
 
 #define DWARF2_DEBUGGING_INFO 1
 
-#define DEBUG_FRAME_SECTION	"__DWARF,__debug_frame,regular,debug"
-#define DEBUG_INFO_SECTION	"__DWARF,__debug_info,regular,debug"
-#define DEBUG_ABBREV_SECTION	"__DWARF,__debug_abbrev,regular,debug"
-#define DEBUG_ARANGES_SECTION	"__DWARF,__debug_aranges,regular,debug"
-#define DEBUG_MACINFO_SECTION	"__DWARF,__debug_macinfo,regular,debug"
-#define DEBUG_LINE_SECTION	"__DWARF,__debug_line,regular,debug"
-#define DEBUG_LOC_SECTION	"__DWARF,__debug_loc,regular,debug"
-#define DEBUG_PUBNAMES_SECTION	"__DWARF,__debug_pubnames,regular,debug"
-#define DEBUG_PUBTYPES_SECTION	"__DWARF,__debug_pubtypes,regular,debug"
-#define DEBUG_STR_SECTION	"__DWARF,__debug_str,regular,debug"
-#define DEBUG_RANGES_SECTION	"__DWARF,__debug_ranges,regular,debug"
-#define DEBUG_MACRO_SECTION     "__DWARF,__debug_macro,regular,debug"
+#define DEBUG_FRAME_SECTION	  "__DWARF,__debug_frame,regular,debug"
+#define DEBUG_INFO_SECTION	  "__DWARF,__debug_info,regular,debug"
+#define DEBUG_ABBREV_SECTION	  "__DWARF,__debug_abbrev,regular,debug"
+#define DEBUG_ARANGES_SECTION	  "__DWARF,__debug_aranges,regular,debug"
+#define DEBUG_MACINFO_SECTION	  "__DWARF,__debug_macinfo,regular,debug"
+#define DEBUG_LINE_SECTION	  "__DWARF,__debug_line,regular,debug"
+#define DEBUG_LOC_SECTION	  "__DWARF,__debug_loc,regular,debug"
+#define DEBUG_LOCLISTS_SECTION    "__DWARF,__debug_loclists,regular,debug"
+
+#define DEBUG_STR_SECTION	  "__DWARF,__debug_str,regular,debug"
+#define DEBUG_STR_OFFSETS_SECTION "__DWARF,__debug_str_offs,regular,debug"
+#define DEBUG_RANGES_SECTION	  "__DWARF,__debug_ranges,regular,debug"
+#define DEBUG_RNGLISTS_SECTION    "__DWARF,__debug_rnglists,regular,debug"
+#define DEBUG_MACRO_SECTION       "__DWARF,__debug_macro,regular,debug"
 
 #define DEBUG_LTO_INFO_SECTION	  "__GNU_DWARF_LTO,__debug_info,regular,debug"
 #define DEBUG_LTO_ABBREV_SECTION  "__GNU_DWARF_LTO,__debug_abbrev,regular,debug"
@@ -451,6 +457,13 @@ extern GTY(()) int darwin_ms_struct;
 #define DEBUG_LTO_MACRO_SECTION   "__GNU_DWARF_LTO,__debug_macro,regular,debug"
 
 #define TARGET_WANT_DEBUG_PUB_SECTIONS true
+#define DEBUG_PUBNAMES_SECTION   ((debug_generate_pub_sections == 2) \
+                               ? "__DWARF,__debug_gnu_pubn,regular,debug" \
+                               : "__DWARF,__debug_pubnames,regular,debug")
+
+#define DEBUG_PUBTYPES_SECTION   ((debug_generate_pub_sections == 2) \
+                               ? "__DWARF,__debug_gnu_pubt,regular,debug" \
+                               : "__DWARF,__debug_pubtypes,regular,debug")
 
 /* When generating stabs debugging, use N_BINCL entries.  */
 
@@ -707,10 +720,6 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 
 #undef	TARGET_ASM_FUNCTION_SECTION
 #define TARGET_ASM_FUNCTION_SECTION darwin_function_section
-
-#undef	TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS
-#define TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS \
-	darwin_function_switched_text_sections
 
 #undef	TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION machopic_select_rtx_section

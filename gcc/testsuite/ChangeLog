@@ -1,13 +1,933 @@
+2018-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/87065
+	* gcc.target/i386/pr87065.c: New test.
+
+2018-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87080
+	* g++.dg/cpp0x/Wpessimizing-move5.C: New test.
+
+	PR c++/87029, Implement -Wredundant-move.
+	* g++.dg/cpp0x/Wredundant-move1.C: New test.
+	* g++.dg/cpp0x/Wredundant-move2.C: New test.
+	* g++.dg/cpp0x/Wredundant-move3.C: New test.
+	* g++.dg/cpp0x/Wredundant-move4.C: New test.
+
+2018-08-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/86704
+	* gfortran.dg/matmul_19.f90: New test.
+
+2018-08-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86545
+	* gfortran.dg/generic_35.f90: New test case.
+
+2018-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* gcc.dg/missing-header-fixit-3.c: Update for changes to how
+	line spans are printed with -fdiagnostics-show-line-numbers.
+
+2018-08-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86837
+	* gfortran.dg/implied_do_io_6.f90: New test.
+
+2018-08-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/87092
+	* gcc.dg/pr87092.c: New test.
+
+2018-08-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/67012
+	PR c++/86942
+	* g++.dg/cpp0x/auto52.C: New test.
+	* g++.dg/cpp1y/auto-fn52.C: New test.
+	* g++.dg/cpp1y/auto-fn53.C: New test.
+	* g++.dg/cpp1y/auto-fn54.C: New test.
+
+2018-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp (vect_perm_supported): Only return
+	false for variable-length vectors if the permute size is not
+	a power of 2.
+	(check_effective_target_vect_perm)
+	(check_effective_target_vect_perm_byte)
+	(check_effective_target_vect_perm_short): Remove check for
+	variable-length vectors.
+	* gcc.dg/vect/slp-23.c: Add an XFAIL for variable-length SVE.
+	* gcc.dg/vect/slp-perm-10.c: Likewise.
+	* gcc.dg/vect/slp-perm-9.c: Add an XFAIL for variable-length vectors.
+
+2018-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/bswap_1.c: New test.
+	* gcc.target/aarch64/sve/bswap_2.c: Likewise.
+	* gcc.target/aarch64/sve/bswap_3.c: Likewise.
+
+2018-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/slp_perm_1.c: New test.
+	* gcc.target/aarch64/sve/slp_perm_2.c: Likewise.
+	* gcc.target/aarch64/sve/slp_perm_3.c: Likewise.
+	* gcc.target/aarch64/sve/slp_perm_4.c: Likewise.
+	* gcc.target/aarch64/sve/slp_perm_5.c: Likewise.
+	* gcc.target/aarch64/sve/slp_perm_6.c: Likewise.
+	* gcc.target/aarch64/sve/slp_perm_7.c: Likewise.
+
+2018-08-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR debug/79342
+	* gcc.dg/pr79342.: New test.
+
+2018-08-23  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87072
+	* gcc.dg/Warray-bounds-35.c: New test.
+
+2018-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87024
+	* gcc.dg/pr87024.c: New testcase.
+
+2018-08-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/no-vfa-vect-depend-2.c: Remove XFAIL.
+	* gcc.dg/vect/no-vfa-vect-depend-3.c: Likewise.
+	* gcc.dg/vect/pr65947-13.c: Update for vect_fold_extract_last.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+
+2017-08-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86863
+	* gfortran.dg/submodule_32.f08: New test.
+
+2018-08-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86935
+	* gfortran.dg/associate_3.f90: Update error message.
+	* gfortran.dg/associate_39.f90: New test case.
+
+2018-08-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86888
+	* gfortran.dg/alloc_comp_basics_6.f90: Update an error message and add
+	an additional case.
+	* gfortran.dg/alloc_comp_basics_7.f90: New test case.
+	* gfortran.dg/class_17.f03: Update error message.
+	* gfortran.dg/class_55.f90: Ditto.
+	* gfortran.dg/dtio_11.f90: Update error messages.
+	* gfortran.dg/implicit_actual.f90: Add an error message.
+	* gfortran.dg/typebound_proc_12.f90: Update error message.
+
+2018-08-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87052
+	* gcc.dg/pr87052.c: New test.
+	* gcc.dg/tree-ssa/dump-3.c: Adjust.
+
+2018-08-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gfortran.dg/max_fmax_aarch64.f90: Rename to...
+	* gfortran.dg/max_expr.f90: ...this.
+	* gfortran.dg/min_fmin_aarch64.f90: Rename to...
+	* gfortran.dg/min_expr.f90: ...this.
+
+2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86725
+	* gcc.dg/vect/no-scevccp-pr86725-2.c: New test.
+	* gcc.dg/vect/no-scevccp-pr86725-3.c: Likewise.
+	* gcc.dg/vect/no-scevccp-pr86725-4.c: Likewise.
+	* gcc.dg/vect/no-scevccp-pr86725-5.c: Likewise.
+
+2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86725
+	* gcc.dg/vect/no-scevccp-pr86725-1.c: New test.
+
+2018-08-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-avg-16.c: New test.
+	* gcc.dg/vect/slp-37.c: Expect the loop to be vectorized.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4.c,
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-big-array.c: Likewise for
+	the second loop in main1.
+
+2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/lto/pr85248_0.c (test_alias):
+	Stringify __USER_LABEL_PREFIX__.
+	(test_noreturn): Likewise.
+
+2018-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86988
+	* g++.dg/pr86988.C: New testcase.
+
+2018-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86945
+	* tree-cfg.c (generate_range_test): Use unsigned arithmetic.
+
+2018-08-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.dg/nan_1.f90: Remove tests that test MAX/MIN with NaNs.
+
+2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* gfortran.dg/f2003_inquire_1.f03: Add write statement.
+	* gfortran.dg/f2003_io_1.f03: Add wait statement.
+
+2018-08-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86981, Implement -Wpessimizing-move.
+	* g++.dg/cpp0x/Wpessimizing-move1.C: New test.
+	* g++.dg/cpp0x/Wpessimizing-move2.C: New test.
+	* g++.dg/cpp0x/Wpessimizing-move3.C: New test.
+	* g++.dg/cpp0x/Wpessimizing-move4.C: New test.
+	* g++.dg/cpp1z/Wpessimizing-move1.C: New test.
+
+	PR c++/65043
+	* g++.dg/concepts/pr67595.C: Add dg-warning.
+	* g++.dg/cpp0x/Wnarrowing11.C: New test.
+	* g++.dg/cpp0x/Wnarrowing12.C: New test.
+	* g++.dg/cpp0x/rv-cast5.C: Add static_cast.
+
+	PR c++/86499
+	* g++.dg/cpp0x/lambda/lambda-non-local.C: New test.
+	* g++.dg/cpp0x/lambda/lambda-this10.C: Adjust dg-error.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/expr_func7.adb, gnat.dg/expr_func7.ads: New testcase.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/expr_func6.adb, gnat.dg/expr_func6.ads: New testcase.
+
+2018-08-21  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/spark2.adb, gnat.dg/spark2.ads: New testcase.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/prot6.adb, gnat.dg/prot6.ads: New testcase.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/access5.adb, gnat.dg/access5.ads: New testcase.
+
+2018-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/rep_clause7.adb: New testcase.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/task1.adb, gnat.dg/task1.ads, gnat.dg/task1_pkg.adb,
+	gnat.dg/task1_pkg.ads: New testcase.
+
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/linkedlist.adb: New testcase.
+
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/elab6.adb, gnat.dg/elab6.ads, gnat.dg/elab6_pkg.adb,
+	gnat.dg/elab6_pkg.ads: New testcase.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/expr_func5.adb: New testcase.
+
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/dynhash.adb: New testcase.
+
+2018-08-21  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/enum4.adb: New testcase.
+
+2018-08-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/large_struct_copy.c: New test.
+
+2018-08-21  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* g++.dg/torture/pr86763.C: Restrict to *-*-linux*.
+
+2018-08-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/86121
+	* gcc.dg/Wstringop-overflow-6.c: Remove xfail.
+
+2018-08-21  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.c-torture/unsorted/dump-noaddr.x: Use -gno-record-gcc-switches
+	to avoid mismatch in .debug and .earlydebug dump files.
+
+2018-08-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/87033
+	* gcc.target/powerpc/pr87033.c: New test.
+
+2018-08-20  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87034
+	* gcc.dg/builtin-sprintf-warn-20.c: New test.
+
+2018-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* gcc.dg/plugin/diagnostic-group-test-1.c: New test.
+	* gcc.dg/plugin/diagnostic_group_plugin.c: New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the new tests.
+
+2018-08-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87014
+	* g++.dg/torture/pr87014.C: New file.
+
+2018-08-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/86984
+	* gcc.target/alpha/pr86984.c: New test.
+
+2018-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78655
+	* gcc.dg/tree-ssa/evrp11.c: New testcase.
+
+2018-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/debug/dwarf2/pr80263.c: Suppress pubtypes output
+	for Darwin.
+
+2018-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/debug/dwarf2/pr85302.C: Skip unsupported split DWARF
+	test on Darwin.
+	* g++.dg/debug/dwarf2/pr85302.C: Likewise.
+	* gcc.dg/lto/pr83719_0.c: Likewise.
+
+2018-08-17  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/86996
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust.
+
+2018-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/conversion/Wwrite-strings.C: New test.
+
+2018-08-17  Sandra Loosemore  <sandra@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	C-SKY port: Testsuite
+
+	* g++.dg/Wno-frame-address.C: Adjust for C-SKY.
+	* g++.dg/torture/type-generic-1.C: Likewise.
+	* gcc.c-torture/compile/20000804-1.c: Likewise.
+	* gcc.c-torture/execute/20101011-1.c: Likewise.
+	* gcc.c-torture/execute/ieee/mul-subnormal-single-1.x: Likewise.
+	* gcc.dg/20020312-2.c: Likewise.
+	* gcc.dg/Wno-frame-address.c: Likewise.
+	* gcc.dg/c11-true_min-1.c: Likewise.
+	* gcc.dg/sibcall-10.c: Likewise.
+	* gcc.dg/sibcall-9.c: Likewise.
+	* gcc.dg/stack-usage-1.c: Likewise.
+	* gcc.dg/torture/float32-tg-3.c: Likewise.
+	* gcc.dg/torture/float32x-tg-3.c: Likewise.
+	* gcc.dg/torture/float64-tg-3.c: Likewise.
+	* gcc.dg/torture/float64x-tg-3.c: Likewise.
+	* gcc.dg/torture/type-generic-1.c: Likewise.
+	* gcc.target/csky/*: New.
+	* lib/target-supports.exp (check_profiling_available): Add
+	csky-*-elf.
+	(check_effective_target_hard_float): Handle C-SKY targets with
+	single-precision hard float only.
+	(check_effective_target_logical_op_short_circuit): Handle C-SKY.
+
+2018-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/format/gcc_diag-1.c: Fix typo.  Add test coverage for
+	gcc_dump_printf.
+	* gcc.dg/format/gcc_diag-10.c: Add gimple typedef.  Add test
+	coverage for gcc_dump_printf.
+
+2018-08-17  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/opt/mpx.C: Fix scanned pattern.
+	* gcc.target/i386/mpx.c: Likewise.
+	* g++.dg/warn/Wunreachable-code-1.C: Remove.
+	* g++.dg/warn/Wunreachable-code-2.C: Likewise.
+	* gcc.dg/torture/pr52969.c: Likewise.
+	* g++.dg/warn/pr31246-2.C: Likewise.
+	* g++.dg/warn/pr31246.C: Likewise.
+	* gcc.dg/pr33092.c: Likewise.
+	* g++.dg/opt/eh1.C: Remove a deprecated option.
+	* g++.dg/template/inline1.C: Likewise.
+	* g++.dg/tree-ssa/pr81408.C: Likewise.
+	* gcc.dg/pr41837.c: Likewise.
+	* gcc.dg/pr41841.c: Likewise.
+	* gcc.dg/pr42250.c: Likewise.
+	* gcc.dg/pr43084.c: Likewise.
+	* gcc.dg/pr43317.c: Likewise.
+	* gcc.dg/pr51879-18.c: Likewise.
+	* gcc.dg/torture/pr36066.c: Likewise.
+	* gcc.dg/tree-ssa/ifc-8.c: Likewise.
+	* gcc.dg/tree-ssa/ifc-cd.c: Likewise.
+	* gcc.dg/tree-ssa/pr19210-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr45122.c: Likewise.
+	* gcc.target/i386/pr45352-2.c: Likewise.
+	* gcc.target/i386/zee.c: Likewise.
+	* gfortran.dg/auto_char_len_2.f90: Likewise.
+	* gfortran.dg/auto_char_len_4.f90: Likewise.
+	* gfortran.dg/c_ptr_tests_15.f90: Likewise.
+	* gfortran.dg/char_array_structure_constructor.f90: Likewise.
+	* gfortran.dg/gomp/pr47331.f90: Likewise.
+	* gfortran.dg/pr40999.f: Likewise.
+	* gfortran.dg/pr41011.f: Likewise.
+	* gfortran.dg/pr42051.f03: Likewise.
+	* gfortran.dg/pr46804.f90: Likewise.
+	* gfortran.dg/pr83149_1.f90: Likewise.
+	* gfortran.dg/pr83149_b.f90: Likewise.
+	* gfortran.dg/whole_file_1.f90: Likewise.
+	* gfortran.dg/whole_file_10.f90: Likewise.
+	* gfortran.dg/whole_file_11.f90: Likewise.
+	* gfortran.dg/whole_file_12.f90: Likewise.
+	* gfortran.dg/whole_file_13.f90: Likewise.
+	* gfortran.dg/whole_file_14.f90: Likewise.
+	* gfortran.dg/whole_file_15.f90: Likewise.
+	* gfortran.dg/whole_file_16.f90: Likewise.
+	* gfortran.dg/whole_file_17.f90: Likewise.
+	* gfortran.dg/whole_file_18.f90: Likewise.
+	* gfortran.dg/whole_file_19.f90: Likewise.
+	* gfortran.dg/whole_file_2.f90: Likewise.
+	* gfortran.dg/whole_file_20.f03: Likewise.
+	* gfortran.dg/whole_file_3.f90: Likewise.
+	* gfortran.dg/whole_file_4.f90: Likewise.
+	* gfortran.dg/whole_file_5.f90: Likewise.
+	* gfortran.dg/whole_file_6.f90: Likewise.
+	* gfortran.dg/whole_file_7.f90: Likewise.
+	* gfortran.dg/whole_file_8.f90: Likewise.
+	* gfortran.dg/whole_file_9.f90: Likewise.
+	* gcc.dg/vect/vect.exp: Likewise.
+
+2018-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86505
+	* gcc.dg/torture/pr86505.c: New testcase.
+
+2018-08-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86853
+	* gcc.dg/tree-ssa/builtin-sprintf-10.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-11.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-18.c: Adjust.
+
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/missing-header-fixit-3.c: New test.
+
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c
+	(test_fixit_insert_newline): Update expected output to show '+'
+	characters in margin of line-insertion fix-it hint.
+
+2018-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/cpp/macsyntx.c: Adjust expected errors.
+	* gcc.dg/cpp/macsyntx2.c: likewise.
+
+2018-08-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/86745
+	* gcc.target/i386/avx-cvt-2.c: Loosen scan-assembler strings.
+	* gcc.target/i386/avx-cvt-2.c: Ditto.
+
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/70693
+	* c-c++-common/Wmisleading-indentation-pr70693.c: New test.
+
+2018-08-16  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* gcc.target/aarch64/imm_choice_comparison.c: New test.
+
+2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+
+	* gcc.dg/memcmp-1.c (lib_memcmp): Apply __USER_LABEL_PREFIX__.
+	(lib_strncmp): Likewise.
+
+2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+
+	* c-c++-common/asan/pointer-subtract-3.c: Skip for Darwin.
+	* c-c++-common/asan/pointer-subtract-4.c: Likewise.
+	* g++.dg/torture/pr44295.C : Likewise.
+
+2018-08-16  Iain Sandoe <iain@sandoe.co.uk>
+
+	PR testsuite/78544
+	* gcc.dg/tree-prof/section-attr-1.c: Add Darwin-specific section
+	attributes and matching.
+	* gcc.dg/tree-prof/section-attr-2.c: Likewise.
+	* gcc.dg/tree-prof/section-attr-3.c: Likewise.
+
+2018-08-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/asan/pr81923.c: Stringify __USER_LABEL_PREFIX__.
+
+2018-08-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/rop1.c: Remove.
+	* gcc.target/i386/pr83554 (dg-options): Remove -mmitigate-rop.
+
+2018-08-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splat-char.c: New.
+	* gcc.target/powerpc/fold-vec-splat-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-splat-int.c: New.
+	* gcc.target/powerpc/fold-vec-splat-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-splat-pixel.c: New.
+	* gcc.target/powerpc/fold-vec-splat-short.c: New.
+
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/aka3.C: New test.
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Update expected
+	output to show range labels.
+	* g++.dg/diagnostic/param-type-mismatch.C: Likewise.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add...
+	* g++.dg/plugin/show-template-tree-color-labels.C: New test.
+	* gcc.dg/bad-binary-ops.c: Update expected output to show range
+	labels.  Add an "aka" example.
+	* gcc.dg/cpp/pr66415-1.c: Update expected output to show range
+	labels.
+	* gcc.dg/format/diagnostic-ranges.c: Likewise.
+	* gcc.dg/format/pr72858.c: Likewise.
+	* gcc.dg/format/pr78498.c: Likewise.
+	* gcc.dg/param-type-mismatch.c: Add "-Wpointer-sign" to options.
+	Update expected output to show range labels.  Add examples of
+	-Wincompatible-pointer-types and -Wpointer-sign for parameters.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c:
+	Update expected output to show range labels.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c: Likewise.
+	(test_very_wide_line): Adjust so that label is at left-clipping
+	boundary.
+	(test_very_wide_line_2): New test.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color-line-numbers.c:
+	Update expected output to show range labels.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-show-locus-no-labels.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (show_tree): Update
+	for new param to gcc_rich_location::add_expr.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c (add_range):
+	Add "label" param.
+	(test_show_locus): Add examples of labels to various tests.  Tweak
+	the "very wide_line" test case and duplicate it, to cover the
+	boundary values for clipping of labels against the left-margin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	diagnostic-test-show-locus-no-labels.c.
+	* gcc.dg/pr69554-1.c: Update expected output to show range labels.
+	Update line numbers of dg-locus directives.
+	* gcc.dg/pr69627.c:  Update expected output to show range labels.
+	* lib/multiline.exp (proc _build_multiline_regex): Remove
+	special-case handling of lines with trailing '|'.
+
+2018-08-15  Qing Zhao <qing.zhao@oracle.com>
+
+	PR testsuite/86519
+	* gcc.dg/strcmpopt_6.c: Scan the assembly file instead of
+	the .expand file.
+
+2018-08-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/wmain.c: New test.
+
+2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c/19315
+	* gcc.dg/graphite/pr82451.c: Make array 'a' an extern.
+	* gcc.dg/redecl-10.c: Expect warnings for the static vars with
+	unknown size.
+
+2018-08-15  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/86925
+	* gcc.dg/predict-20.c: New test.
+	* gcc.dg/predict-21.c: New test.
+
+2018-08-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/init/goto3.C: Adjust for error instead of permerror.
+
+2018-08-14  Allan Sandfeld Jensen <allan.jensen@qt.io>
+
+	* gcc.target/i386/sse2-movs.c: New test.
+
+2018-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* gcc.dg/Warray-bounds-34.c: New test.
+
+2018-08-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86116
+	* gfortran.dg/generic_34.f90: New test case.
+
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/57891
+	* g++.dg/cpp0x/Wnarrowing6.C: New test.
+	* g++.dg/cpp0x/Wnarrowing7.C: New test.
+	* g++.dg/cpp0x/Wnarrowing8.C: New test.
+	* g++.dg/cpp0x/Wnarrowing9.C: New test.
+	* g++.dg/cpp0x/Wnarrowing10.C: New test.
+	* g++.dg/cpp0x/constexpr-47969.C: Adjust dg-error.
+	* g++.dg/cpp0x/constexpr-ex2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-targ.C: Likewise.
+	* g++.dg/cpp0x/scoped_enum2.C: Likewise.
+	* g++.dg/ext/stmtexpr15.C: Likewise.
+	* g++.dg/gomp/pr47963.C: Likewise.
+	* g++.dg/init/new37.C: Likewise.
+	* g++.dg/init/new43.C: Likewise.
+	* g++.dg/other/fold1.C: Likewise.
+	* g++.dg/parse/array-size2.C: Likewise.
+	* g++.dg/template/dependent-name3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-data2.C: Add dg-error.
+	* g++.dg/other/vrp1.C: Likewise.
+	* g++.dg/template/char1.C: Likewise.
+
+2018-08-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pr56605.c: The generated code can have an AND
+	instead of a ZERO_EXTEND.
+
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* c-c++-common/attr-nonstring-3.c: Temporarily xfail a test case.
+	* g++.dg/init/string2.C: New test.
+	* g++.dg/init/string3.C: New test.
+	* g++.dg/init/string4.C: New test.
+	* gcc.dg/init-string-3.c: New test.
+	* gcc.dg/strlenopt-55.c: New test.
+	* gcc.dg/strlenopt-56.c: New test.
+
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	P0806R2 - Deprecate implicit capture of this via [=]
+	* g++.dg/cpp2a/lambda-this1.C: New test.
+	* g++.dg/cpp2a/lambda-this2.C: New test.
+	* g++.dg/cpp2a/lambda-this3.C: New test.
+
+2018-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86915
+	* g++.dg/diagnostic/auto1.C: New test.
+
+2018-08-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/66679
+	* gfortran.dg/transfer_class_3.f90: New test.
+
+2018-08-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86906
+	* gfortran.dg/use_rename_9.f90: New test.
+
+2018-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86835
+	* gcc.dg/pr86835.c: New test.
+
+2018-08-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57160
+	* gfortran.dg/actual_pointer_function_1.f90: Fix invalid test case.
+	* gfortran.dg/inline_matmul_23.f90: Add option "-ffrontend-optimize".
+	* gfortran.dg/short_circuiting_2.f90: New test case.
+	* gfortran.dg/short_circuiting_3.f90: New test case.
+
+2018-08-10  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/82418
+	* gcc.target/i386/pr82418.c: New test.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+	PR target/83610
+	* gcc.dg/predict-17.c: New test.
+	* gcc.dg/predict-18.c: New test.
+	* gcc.dg/predict-19.c: New test.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/85799
+	* gcc.dg/pr85799.c: New test.
+
+2018-08-09  Jeff Law  <law@redhat.com>
+
+	PR middle-end/86897
+	* gcc.dg/uninit-suppress_2.c: Disable DOM.
+
+2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/reduc_8.c: New test.
+
+2018-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c: New
+	test.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color-line-numbers.c:
+	New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the new tests.
+	* lib/prune.exp: Add -fno-diagnostics-show-line-numbers to
+	TEST_ALWAYS_FLAGS.
+
+2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86858
+	* gcc.dg/vect/pr86858.c: New test.
+
+2018-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86871
+	* gcc.dg/vect/pr86871.c: New test.
+
+2018-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.old-deja/g++.mike/p784.C: Add -fpermissive.
+
+2018-08-09  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/target-attribute/tattr-arch-tune-1.c: Decrement
+	arch and tune numbers by 2.
+	* gcc.target/s390/target-attribute/tattr-arch-tune-2.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-1.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-10.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-11.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-12.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-13.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-14.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-15.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-16.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-17.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-18.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-19.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-2.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-20.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-21.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-22.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-23.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-24.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-25.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-26.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-27.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-28.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-29.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-3.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-30.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-31.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-32.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-4.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-5.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-6.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-7.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-8.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m31-9.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-1.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-10.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-11.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-12.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-13.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-14.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-15.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-16.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-17.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-18.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-19.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-2.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-20.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-21.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-22.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-23.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-24.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-25.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-26.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-27.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-28.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-29.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-3.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-30.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-31.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-32.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-33.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-4.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-5.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-6.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-7.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-8.c: Likewise.
+	* gcc.target/s390/target-attribute/tattr-m64-9.c: Likewise.
+
+2018-08-09  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/84332
+	* gcc.target/s390/pr84332.c: New testcase.
+
+2018-08-08  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/46179
+	* gcc.target/m68k/tls-dimode.c: New file.
+
+2018-08-08  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/inc-from-1a.h, c-c++-common/inc-from-1b.h,
+	c-c++-common/inc-from-1.c: New
+
+2018-08-08  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/85295
+	* gcc.target/s390/TI-constants-lra.c: New testcase.
+	* gcc.target/s390/TI-constants-nolra.c: New testcase.
+
+2018-08-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/hotpatch-8.c: Remove.
+	* gcc.target/s390/hotpatch-9.c: Remove.
+	* gcc.target/s390/mnop-mcount-m31-fpic.c: Remove.
+	* gcc.target/s390/mnop-mcount-m31.c: Remove.
+
+2018-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	P0595R1 - is_constant_evaluated
+	* g++.dg/cpp2a/is-constant-evaluated1.C: New test.
+
+	PR c++/86836
+	* g++.dg/cpp1z/decomp46.C: New test.
+
+	PR c++/86738
+	* g++.dg/opt/pr86738.C: New test.
+
+2018-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/86838
+	* gcc.target/aarch64/frecpe_1.c: New test.
+	* gcc.target/aarch64/frecpe_2.c: Likewise.
+
+2018-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59480, DR 136
+	* g++.dg/other/friend8.C: New.
+	* g++.dg/other/friend9.C: Likewise.
+	* g++.dg/other/friend10.C: Likewise.
+	* g++.dg/other/friend11.C: Likewise.
+	* g++.dg/other/friend12.C: Likewise.
+	* g++.dg/other/friend13.C: Likewise.
+	* g++.dg/other/friend14.C: Likewise.
+	* g++.dg/other/friend15.C: Likewise.
+	* g++.dg/parse/defarg4.C: Compile with -fpermissive -w.
+	* g++.dg/parse/defarg8.C: Likewise.
+
+2018-08-07  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/83023
+	* gcc.dg/predict-16.c: New test.
+	* g++.dg/predict-1.C: New test.
+
+2018-08-07  Steve Ellcey  <sellcey@cavium.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/80925
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Expect 3 loops
+	vectorized on !vect_hw_misalign targets.
+
+2018-08-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86767
+	* g++.dg/cpp1y/constexpr-86767.C: New test.
+
+2018-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/torture/pr86763.C (dg-additional-options): Add -lrt
+	for target *-*-linux-gnu.
+
+2018-08-06  Alan Hayward  <alan.hayward@arm.com>
+
+	* gcc.target/aarch64/sve/tls_preserve_1.c: New test.
+	* gcc.target/aarch64/sve/tls_preserve_2.c: New test.
+	* gcc.target/aarch64/sve/tls_preserve_3.c: New test.
+
+2018-08-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/nomemloopunroll-1.c: New test.
+
+2018-08-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/86386
+	* gcc.target/i386/pr86386.c: New file.
+
+2018-08-04  Tom de Vries  <tdevries@suse.de>
+
+	* lib/gcc-gdb-test.exp: Use absolute line number in pass/fail line.
+
+2018-08-04  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.dg/guality/const-volatile.c: Remove duplicate test
+	"type:cvip".
+
+2018-08-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45521
+	* gfortran.dg/interface_assignment_6.f90: New test case.
+
+2018-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/86153
+	* g++.dg/pr83239.C (dg-options): Add -finline-limit=500.
+
+2018-08-03  David Malcolm  <dmalcolm@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/85523
+	* g++.dg/pr85523.C: New test.
+
+2018-08-03  Bogdan Harjoc  <harjoc@gmail.com>
+
+	PR c/86690
+	* gcc.dg/union-duplicate-field.c: New test.
+
+2018-08-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86706
+	* g++.dg/template/pr86706.C: New test.
+
+2018-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-over-widen-1.c: Expect AVG_FLOOR to be used
+	on vect_avg_qi targets.
+	* gcc.dg/vect/bb-slp-over-widen-2.c: Likewise.
+	* gcc.dg/vect/bb-slp-pow-1.c: New test.
+	* gcc.dg/vect/vect-avg-15.c: Likewise.
+
 2018-08-03  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/predict-1.c: Adjust scanned pattern to cover 2 digits.
-	* gcc.dg/predict-13.c:Likewise.
-	* gcc.dg/predict-3.c:Likewise.
-	* gcc.dg/predict-4.c:Likewise.
-	* gcc.dg/predict-5.c:Likewise.
-	* gcc.dg/predict-6.c:Likewise.
-	* gcc.dg/predict-9.c:Likewise.
-	* gfortran.dg/predict-1.f90:Likewise.
+	* gcc.dg/predict-13.c: Likewise.
+	* gcc.dg/predict-3.c: Likewise.
+	* gcc.dg/predict-4.c: Likewise.
+	* gcc.dg/predict-5.c: Likewise.
+	* gcc.dg/predict-6.c: Likewise.
+	* gcc.dg/predict-9.c: Likewise.
+	* gfortran.dg/predict-1.f90: Likewise.
 
 2018-08-02  Richard Biener  <rguenther@suse.de>
 
@@ -93,7 +1013,7 @@
 
 2018-08-01  Martin Liska  <mliska@suse.cz>
 
-        PR value-prof/35543
+	PR value-prof/35543
 	* gcc.dg/tree-prof/val-prof-7.c: Add __builtin_memmove.
 
 2018-08-01  Sam Tebbs  <sam.tebbs@arm.com>
@@ -106,7 +1026,7 @@
 	* gcc.c-torture/compile/pr85704.c: New test.
 
 2018-07-31  Alexandre Oliva  <oliva@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/dinst.adb: New.
 	* gnat.dg/dinst_pkg.ads, gnat.dg/dinst_pkg.adb: New.
@@ -239,7 +1159,7 @@
 
 2018-07-26  Martin Liska  <mliska@suse.cz>
 
-        PR gcov-profile/86536
+	PR gcov-profile/86536
 	* gcc.misc-tests/gcov-pr86536.c: New test.
 
 2018-07-25  Martin Sebor  <msebor@redhat.com>
@@ -560,7 +1480,8 @@
 
 2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
-	* gnat.dg/config_pragma1.adb, gnat.dg/config_pragma1_pkg.ads: New testcase.
+	* gnat.dg/config_pragma1.adb, gnat.dg/config_pragma1_pkg.ads:
+	New testcase.
 
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
@@ -576,7 +1497,8 @@
 
 2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
-	* gnat.dg/bip_case_expr.adb, gnat.dg/bip_case_expr_pkg.ads: New testcase.
+	* gnat.dg/bip_case_expr.adb, gnat.dg/bip_case_expr_pkg.ads:
+	New testcase.
 
 2018-07-16  Carl Love  <cel@us.ibm.com>
 
@@ -589,7 +1511,7 @@
 	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
 	longdouble128.
 	* gcc.target/powerpc/divkc3-3.c: Ditto.
- 	* gcc.target/powerpc/mulkc3-2.c: Ditto.
+	* gcc.target/powerpc/mulkc3-2.c: Ditto.
 	* gcc.target/powerpc/mulkc3-3.c: Ditto.
 	* gcc.target/powerpc/fold-vec-mergehl-double.c: Update counts.
 	* gcc.target/powerpc/pr85456.c: Make check Linux and AIX specific.
@@ -618,10 +1540,10 @@
 
 2018-07-16  Carl Love  <cel@us.ibm.com>
 
- 	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
+	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
 	longdouble128.
 	* gcc.target/powerpc/divkc3-3.c: Ditto.
- 	* gcc.target/powerpc/mulkc3-2.c: Ditto.
+	* gcc.target/powerpc/mulkc3-2.c: Ditto.
 	* gcc.target/powerpc/mulkc3-3.c: Ditto.
 	* gcc.target/powerpc/fold-vec-mergehl-double.c: Update counts.
 	* gcc.target/powerpc/pr85456.c: Make check Linux and AIX specific.
@@ -691,7 +1613,7 @@
 
 2018-07-16  Martin Liska  <mliska@suse.cz>
 
-        PR ipa/86529
+	PR ipa/86529
 	* g++.dg/ipa/pr86529.C: New test.
 
 2018-07-16  Tom de Vries  <tdevries@suse.de>
@@ -785,7 +1707,7 @@
 
 2018-07-12  Kito Cheng  <kito.cheng@gmail.com>
 
-        * gcc.target/riscv/interrupt-conflict-mode.c: New.
+	* gcc.target/riscv/interrupt-conflict-mode.c: New.
 
 2018-07-12  Jakub Jelinek  <jakub@redhat.com>
 
@@ -918,7 +1840,7 @@
 
 2018-07-10  Martin Liska  <mliska@suse.cz>
 
-        PR testsuite/86445
+	PR testsuite/86445
 	* gcc.dg/pr84100.c: Change it back to dg-bogus.
 
 2018-07-10  Jakub Jelinek  <jakub@redhat.com>
@@ -1330,7 +2252,7 @@
 
 2018-07-02  Martin Liska  <mliska@suse.cz>
 
-        PR testsuite/86366
+	PR testsuite/86366
 	* gcc.dg/profile-dir-1.c: Fix scanned pattern.
 	* gcc.dg/profile-dir-2.c: Likewise.
 	* gcc.dg/profile-dir-3.c: Likewise.
@@ -1364,12 +2286,12 @@
 
 2018-07-02  Martin Liska  <mliska@suse.cz>
 
-        PR ipa/86279
+	PR ipa/86279
 	* gcc.dg/ipa/pr86279.c: New test.
 
 2018-07-02  Martin Liska  <mliska@suse.cz>
 
-        PR ipa/86323
+	PR ipa/86323
 	* g++.dg/ipa/pr86323.C: New test.
 
 2018-07-01  Tom de Vries  <tdevries@suse.de>
@@ -1492,7 +2414,7 @@
 
 2018-06-29  Martin Liska  <mliska@suse.cz>
 
-        PR tree-optimization/86263
+	PR tree-optimization/86263
 	* gcc.dg/tree-ssa/pr86263.c: New test.
 
 2018-06-28  Carl Love  <cel@us.ibm.com>
@@ -1538,7 +2460,7 @@
 
 	* gcc.target/vsx-vector-abss.c: New file to test vec_abss.
 
-2018-06-27 Tamar Christina  <tamar.christina@arm.com>
+2018-06-27  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/85769
 	* gcc.target/aarch64/f16_mov_immediate_3.c: New.
@@ -1605,7 +2527,7 @@
 2018-06-25  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/p9-extract-1.c: Make second argument of
- 	vec_extract a signed int. Add vec_extract tests for bool char
+	vec_extract a signed int. Add vec_extract tests for bool char
 	and bool int.
 	* gcc.target/powerpc/p9-extract-4.c:  New test file for long long
 	vec_extract tests.
@@ -1683,14 +2605,14 @@
 
 2018-06-22  Carl Love  <cel@us.ibm.com>
 
- 	* gcc.target/powerpc/altivec-7.c: Add qualifiers for counts on AIX
+	* gcc.target/powerpc/altivec-7.c: Add qualifiers for counts on AIX
 	versus Linux.  Change checks for xxlnor, xxland and xxlxor to also look
 	for the vnor, vand and vxor instructions.
 	* gcc.target/powerpc/builtins-1.c: Move vec_or tests to a new file.
 	Remove counts for xxlor. Fix match on bl __divdi3 and bl __udivdi3.
 	* gcc.target/powerpc/builtins-4.c: Fix matching for vsl instructions.
 	* gcc.target/powerpc/builtins-5.c: New test file for vec_or test cases.
- 	* gcc.target/powerpc/vsx-vector-6.p7.c: Fix xxlnor BE expected count.
+	* gcc.target/powerpc/vsx-vector-6.p7.c: Fix xxlnor BE expected count.
 	Add -dp to dg-options, update expected counts.
 
 2018-06-22  Paul Koning  <ni1d@arrl.net>
@@ -2220,7 +3142,7 @@
 
 2018-06-11  Martin Liska  <mliska@suse.cz>
 
-        PR tree-optimization/86089
+	PR tree-optimization/86089
 	* gcc.dg/tree-ssa/pr86089.c: New test.
 
 2018-06-11  Julia Koval  <julia.koval@intel.com>
@@ -2338,18 +3260,18 @@
 
 2018-06-08  Carl Love  <cel@us.ibm.com>
 
- 	* gcc.target/powerpc/p8vector-builtin-3.c: Add vec_pack test. Update
+	* gcc.target/powerpc/p8vector-builtin-3.c: Add vec_pack test. Update
 	vpkudum counts.
- 	* gcc.target/powerpc/p9-extract-3.c: Make second argument of
+	* gcc.target/powerpc/p9-extract-3.c: Make second argument of
 	vec_extract a signed int.
- 	* gcc.target/powerpc/vec-cmp.c: Add vec_cmple, vec_cmpge tests. Update,
+	* gcc.target/powerpc/vec-cmp.c: Add vec_cmple, vec_cmpge tests. Update,
 	vcmpgtsb, vcmpgtub, vcmpgtsh, vcmpgtuh, vcmpgtsw, vcmpgtsw, vcmpgtuw,
 	vcmpgtsd, vcmpgtud.
 	* gcc.target/powerpc/vsx-extract-4.c: Make second argument of
 	vec_extract a signed int.
 	* gcc.target/powerpc/vsx-extract-5.c: Make second argument of
 	vec_extract a signed int.
- 	* gcc.target/powerpc/vsx-vector-7.c (foo): Add tests for vec_sel and
+	* gcc.target/powerpc/vsx-vector-7.c (foo): Add tests for vec_sel and
 	vec_xor builtins.  Update xxsel, xxlxor counts.
 
 2018-06-08  Steven G. Kargl  <kargl@gcc.gnu.org>
@@ -2784,8 +3706,8 @@
 
 2018-06-07  Carl Love  <cel@us.ibm.com>
 
-        * gcc.target/powerpc/vsu/vec-cntlz-lsbb-2.c (dg-error): Update expected
-        error message.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-2.c (dg-error): Update expected
+	error message.
 
 2018-06-07  Marek Polacek  <polacek@redhat.com>
 
@@ -4096,7 +5018,7 @@
 	* g++.dg/cpp0x/initlist-throw1.C: New test.
 	* g++.dg/cpp0x/initlist-throw2.C: New test.
 
-2018-05-16 Carl Love  <cel@us.ibm.com>
+2018-05-16  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/vsx-vector-6-be.c: Remove file.
 	* gcc.target/powerpc/vsx-vector-6-le.c (dg-final): Update counts for
@@ -4646,7 +5568,7 @@
 	* gcc.target/arc/store-merge-1.c: New test.
 	* gcc.target/arc/add_n-combine.c: Update test.
 
-2018-04-30 Andrew Sadek  <andrew.sadek.se@gmail.com>
+2018-04-30  Andrew Sadek  <andrew.sadek.se@gmail.com>
 
 	Microblaze Target: PIC data text relative
 
@@ -11389,7 +12311,7 @@
 2018-02-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84125
-	* g++.dg/cpp1y/lambda-generic-84125.C:New test.
+	* g++.dg/cpp1y/lambda-generic-84125.C: New test.
 
 2018-01-30  Jeff Law  <law@redhat.com>
 

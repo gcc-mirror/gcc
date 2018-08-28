@@ -74,8 +74,7 @@ vect_lanes_optab_supported_p (const char *name, convert_optab optab,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "no array mode for %s["
-			     HOST_WIDE_INT_PRINT_DEC "]\n",
+			     "no array mode for %s[%wu]\n",
 			     GET_MODE_NAME (mode), count);
 	  return false;
 	}
@@ -1249,9 +1248,8 @@ vector_alignment_reachable_p (dr_vec_info *dr_info)
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
-	                   "data size =" HOST_WIDE_INT_PRINT_DEC, elmsize);
-	  dump_printf (MSG_NOTE,
-	               ". misalignment = %d.\n", DR_MISALIGNMENT (dr_info));
+	                   "data size = %wd. misalignment = %d.\n", elmsize,
+			   DR_MISALIGNMENT (dr_info));
 	}
       if (DR_MISALIGNMENT (dr_info) % elmsize)
 	{
@@ -2635,10 +2633,8 @@ vect_analyze_group_access_1 (dr_vec_info *dr_info)
       if (groupsize != count
 	  && !DR_IS_READ (dr))
         {
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "interleaved store with gaps\n");
-	  return false;
+	  groupsize = count;
+	  STMT_VINFO_STRIDED_P (stmt_info) = true;
 	}
 
       /* If there is a gap after the last load in the group it is the
@@ -2654,6 +2650,8 @@ vect_analyze_group_access_1 (dr_vec_info *dr_info)
 			   "Detected interleaving ");
 	  if (DR_IS_READ (dr))
 	    dump_printf (MSG_NOTE, "load ");
+	  else if (STMT_VINFO_STRIDED_P (stmt_info))
+	    dump_printf (MSG_NOTE, "strided store ");
 	  else
 	    dump_printf (MSG_NOTE, "store ");
 	  dump_printf (MSG_NOTE, "of size %u starting with ",
@@ -5156,7 +5154,7 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 
   if (dump_enabled_p ())
     dump_printf (MSG_MISSED_OPTIMIZATION,
-		 "permutaion op not supported by target.\n");
+		 "permutation op not supported by target.\n");
   return false;
 }
 

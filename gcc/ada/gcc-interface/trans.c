@@ -4450,6 +4450,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       const bool suppress_type_conversion
 	= ((Nkind (gnat_actual) == N_Unchecked_Type_Conversion
 	    && (!in_param
+		|| !is_by_ref_formal_parm
 		|| (Is_Composite_Type (Underlying_Type (gnat_formal_type))
 		    && !Is_Constrained (Underlying_Type (gnat_formal_type)))))
 	   || (Nkind (gnat_actual) == N_Type_Conversion

@@ -113,7 +113,7 @@ _mm_setzero_pd (void)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_move_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d) __builtin_ia32_movsd ((__v2df)__A, (__v2df)__B);
+  return __extension__ (__m128d) __builtin_shuffle ((__v2df)__A, (__v2df)__B, (__v2di){2, 1});
 }
 
 /* Load two DPFP values from P.  The address must be 16-byte aligned.  */

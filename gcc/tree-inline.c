@@ -1940,8 +1940,7 @@ copy_bb (copy_body_data *id, basic_block bb,
 		   && id->call_stmt
 		   && (decl = gimple_call_fndecl (stmt))
 		   && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-		   && DECL_FUNCTION_CODE (decl) == BUILT_IN_VA_ARG_PACK_LEN
-		   && ! gimple_call_va_arg_pack_p (id->call_stmt))
+		   && DECL_FUNCTION_CODE (decl) == BUILT_IN_VA_ARG_PACK_LEN)
 	    {
 	      /* __builtin_va_arg_pack_len () should be replaced by
 		 the number of anonymous arguments.  */
@@ -1952,10 +1951,28 @@ copy_bb (copy_body_data *id, basic_block bb,
 	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
 		nargs--;
 
-	      count = build_int_cst (integer_type_node, nargs);
-	      new_stmt = gimple_build_assign (gimple_call_lhs (stmt), count);
-	      gsi_replace (&copy_gsi, new_stmt, false);
-	      stmt = new_stmt;
+	      if (!gimple_call_lhs (stmt))
+		{
+		  /* Drop unused calls.  */
+		  gsi_remove (&copy_gsi, false);
+		  continue;
+		}
+	      else if (!gimple_call_va_arg_pack_p (id->call_stmt))
+		{
+		  count = build_int_cst (integer_type_node, nargs);
+		  new_stmt = gimple_build_assign (gimple_call_lhs (stmt), count);
+		  gsi_replace (&copy_gsi, new_stmt, false);
+		  stmt = new_stmt;
+		}
+	      else if (nargs != 0)
+		{
+		  tree newlhs = create_tmp_reg_or_ssa_name (integer_type_node);
+		  count = build_int_cst (integer_type_node, nargs);
+		  new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						  PLUS_EXPR, newlhs, count);
+		  gimple_call_set_lhs (stmt, newlhs);
+		  gsi_insert_after (&copy_gsi, new_stmt, GSI_NEW_STMT);
+		}
 	    }
 	  else if (call_stmt
 		   && id->call_stmt
@@ -4416,6 +4433,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	       /* Avoid warnings during early inline pass. */
 	       && symtab->global_info_ready)
 	{
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Winline, "inlining failed in call to %q+F: %s",
 		       fn, _(cgraph_inline_failed_string (reason))))
 	    {

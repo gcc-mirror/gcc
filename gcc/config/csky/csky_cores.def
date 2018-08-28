@@ -1,0 +1,199 @@
+/* Architecture and core descriptions for the C-SKY back end.
+   Copyright (C) 2018 Free Software Foundation, Inc.
+   Contributed by C-SKY Microsystems and Mentor Graphics.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* Before using #include to read this file, define a macro:
+
+      CSKY_ARCH(NAME, CORE, ARCH, ISA)
+
+   The NAME is the name of the architecture, represented as a string
+   constant.  The CORE is the identifier for a core representative of
+   this architecture.  ARCH is the architecture revision.  ISA is the
+   detailed architectural capabilities of the core.  */
+
+#ifdef CSKY_ARCH
+CSKY_ARCH ("ck801",  ck801,  CK801,
+	   CSKY_ISA_FEAT (CSKY_ISA_CK801))
+CSKY_ARCH ("ck802",  ck802,  CK802,
+	   CSKY_ISA_FEAT (CSKY_ISA_CK802))
+CSKY_ARCH ("ck803",  ck803,  CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_CK803))
+CSKY_ARCH ("ck807",  ck807,  CK807,
+	   CSKY_ISA_FEAT (CSKY_ISA_CK807) CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_ARCH ("ck810",  ck810,  CK810,
+	   CSKY_ISA_FEAT (CSKY_ISA_CK810) CSKY_ISA_FEAT (CSKY_ISA_DSP))
+#endif
+
+
+/* Before using #include to read this file, define a macro:
+
+      CSKY_CORE(CORE_NAME, INTERNAL_IDENT, TUNE_IDENT, ARCH, ISA)
+
+      The isa features of core will inherit the ARCH.
+
+   The CORE_NAME is the name of the core, represented as a string constant.
+   The INTERNAL_IDENT is the name of the core represented as an identifier.
+   This must be unique for each entry in this table.
+   The TUNE_IDENT is the name of the core for which scheduling decisions
+   should be made, represented as an identifier.
+   The ARCH is the architecture revision implemented by the chip.
+   The ISA is the detailed architectural capabilities of the core.  */
+
+#ifdef CSKY_CORE
+/* ck801 Architecture Processors */
+CSKY_CORE ("ck801",    ck801,	 ck801,	   CK801,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck801t",   ck801t,	 ck801t,   CK801,
+	   CSKY_ISA_FEAT_NONE)
+
+/* ck802 Architecture Processors */
+CSKY_CORE ("ck802",    ck802,	 ck802,	   CK802,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck802t",   ck802t,	 ck802t,   CK802,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck802j",   ck802j,	 ck802j,   CK802,
+	   CSKY_ISA_FEAT (isa_bit_java))
+
+/* ck803 Architecture Processors */
+CSKY_CORE ("ck803",    ck803,	 ck803,	   CK803,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck803h",   ck803h,	 ck803h,   CK803,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck803t",   ck803t,	 ck803t,   CK803,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck803ht",  ck803ht,	 ck803ht,  CK803,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck803f",   ck803f,	 ck803f,   CK803,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck803fh",  ck803fh,	 ck803fh,  CK803,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck803e",   ck803e,	 ck803e,   CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_CORE ("ck803eh",  ck803eh,	 ck803eh,  CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_CORE ("ck803et",  ck803et,	 ck803et,  CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_CORE ("ck803eht", ck803eht, ck803eht, CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_CORE ("ck803ef",  ck803ef,	 ck803ef,  CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_CORE ("ck803efh", ck803efh, ck803efh, CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_CORE ("ck803ft",  ck803ft,	 ck803ft,  CK803,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck803eft", ck803eft, ck803eft, CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_CORE ("ck803efht", ck803efht, ck803efht, CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_CORE ("ck803r1",	 ck803r1,    ck803r1,	 CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803hr1",	 ck803hr1,   ck803hr1,	 CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803tr1",	 ck803tr1,   ck803tr1,	 CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803htr1",	 ck803htr1,  ck803htr1,	 CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803fr1",	 ck803fr1,   ck803fr1,	 CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803fhr1",	 ck803fhr1,  ck803fhr1,	 CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803er1",	 ck803er1,   ck803er1,	 CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803ehr1",	 ck803ehr1,  ck803ehr1,	 CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803etr1",	 ck803etr1,  ck803etr1,	 CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803ehtr1", ck803ehtr1, ck803ehtr1, CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803efr1",	 ck803efr1,  ck803efr1,	 CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803efhr1", ck803efhr1, ck803efhr1, CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803ftr1",	 ck803ftr1,  ck803ftr1,	 CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803eftr1", ck803eftr1, ck803eftr1, CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+CSKY_CORE ("ck803efhtr1", ck803efhtr1, ck803efhtr1, CK803,
+	   CSKY_ISA_FEAT (isa_bit_3E3r1))
+
+/* ck803s Architecture Processors */
+CSKY_CORE ("ck803s",   ck803s,	 ck803s,   CK803,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck803st",  ck803st,	 ck803st,  CK803,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck803se",  ck803se,	 ck803se,  CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_CORE ("ck803sf",  ck803sf,	 ck803sf,  CK803,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck803sef", ck803sef, ck803sef, CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_DSP))
+CSKY_CORE ("ck803seft", ck803seft, ck803seft, CK803,
+	   CSKY_ISA_FEAT (CSKY_ISA_DSP))
+
+/* ck807 Architecture Processors */
+CSKY_CORE ("ck807e",   ck807e,	 ck807e,   CK807,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck807ef",  ck807ef,	 ck807ef,  CK807,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck807",    ck807,	 ck807,	   CK807,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck807f",   ck807f,	 ck807f,   CK807,
+	   CSKY_ISA_FEAT_NONE)
+
+/* ck810 Architecture Processors */
+CSKY_CORE ("ck810e",   ck810e,	 ck810e,   CK810,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck810et",  ck810et,	 ck810et,  CK810,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck810ef",  ck810ef,	 ck810ef,  CK810,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck810eft", ck810eft, ck810eft, CK810,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck810",    ck810,	 ck810,	   CK810,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck810v",   ck810v,	 ck810v,   CK810,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck810f",   ck810f,	 ck810f,   CK810,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck810t",   ck810t,	 ck810t,   CK810,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck810fv",  ck810fv,	 ck810fv,  CK810,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck810tv",  ck810tv,	 ck810tv,  CK810,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck810ft",  ck810ff,	 ck810ft,  CK810,
+	   CSKY_ISA_FEAT_NONE)
+CSKY_CORE ("ck810ftv", ck810ftv, ck810ftv, CK810,
+	   CSKY_ISA_FEAT_NONE)
+#endif
+
+
+/* Before using #include to read this file, define a macro:
+
+      CSKY_FPU(NAME, CNAME, ISA)
+
+   NAME is the publicly visible option name.
+   CNAME is a C-compatible variable name substring.
+   ISA is the list of feature bits that this FPU provides.  */
+
+#ifdef CSKY_FPU
+CSKY_FPU ("fpv2_sf",   fpv2_sf,	  CSKY_ISA_FEAT (CSKY_ISA_FPv2_SF))
+CSKY_FPU ("fpv2",      fpv2,	  CSKY_ISA_FEAT (CSKY_ISA_FPv2))
+CSKY_FPU ("fpv2_divd", fpv2_divd, CSKY_ISA_FEAT (CSKY_ISA_FPv2_DIVD))
+#endif

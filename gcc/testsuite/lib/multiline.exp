@@ -202,26 +202,6 @@ proc _build_multiline_regex { multiline index } {
 	if {[string match "*^" $line] || [string match "*~" $line]} {
 	    # Assume a line containing a caret/range.  This must be
 	    # an exact match.
-	} elseif {[string match "*\\|" $line]} {
-	    # Assume a source line with a right-margin.  Support
-	    # arbitrary text in place of any whitespace before the
-	    # right-margin, to deal with comments containing containing
-	    # DejaGnu directives.
-
-	    # Remove final "\|":
-	    set rexp [string range $rexp 0 [expr [string length $rexp] - 3]]
-
-	    # Trim off trailing whitespace:
-	    set old_length [string length $rexp]
-	    set rexp [string trimright $rexp]
-	    set new_length [string length $rexp]
-
-	    # Replace the trimmed whitespace with "." chars to match anything:
-	    set ws [string repeat "." [expr $old_length - $new_length]]
-	    set rexp "${rexp}${ws}"
-
-	    # Add back the trailing '\|':
-	    set rexp "${rexp}\\|"
 	} else {
 	    # Assume that we have a quoted source line.
 	    if {![string equal "" $line] }  {

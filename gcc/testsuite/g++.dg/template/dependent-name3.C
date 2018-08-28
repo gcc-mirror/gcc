@@ -11,7 +11,7 @@ template<int I> struct A
 template<int N> struct B
 {
   int x[A<N>::zero];       // { dg-error "zero" }
-  int y[A<N>::minus_one];  // { dg-error "negative" }
+  int y[A<N>::minus_one];  // { dg-error "size of array|narrowing conversion" }
 };
 
 B<0> b;

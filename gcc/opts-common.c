@@ -663,13 +663,13 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     {
       size_t new_opt_index = option->alias_target;
 
-      if (new_opt_index == OPT_SPECIAL_ignore)
+      if (new_opt_index == OPT_SPECIAL_ignore
+	  || new_opt_index == OPT_SPECIAL_deprecated)
 	{
 	  gcc_assert (option->alias_arg == NULL);
 	  gcc_assert (option->neg_alias_arg == NULL);
 	  opt_index = new_opt_index;
 	  arg = NULL;
-	  value = 1;
 	}
       else
 	{
@@ -743,10 +743,6 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   /* Check if this is a switch for a different front end.  */
   if (!option_ok_for_language (option, lang_mask))
     errors |= CL_ERR_WRONG_LANG;
-
-  /* Mark all deprecated options.  */
-  if (option->cl_deprecated)
-    errors |= CL_ERR_DEPRECATED;
 
   /* Convert the argument to lowercase if appropriate.  */
   if (arg && option->cl_tolower)
@@ -823,7 +819,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       else
 	decoded->canonical_option[i] = NULL;
     }
-  if (opt_index != OPT_SPECIAL_unknown && opt_index != OPT_SPECIAL_ignore)
+  if (opt_index != OPT_SPECIAL_unknown && opt_index != OPT_SPECIAL_ignore
+      && opt_index != OPT_SPECIAL_deprecated)
     {
       generate_canonical_option (opt_index, arg, value, decoded);
       if (separate_args > 1)
@@ -1001,6 +998,7 @@ prune_options (struct cl_decoded_option **decoded_options,
 	{
 	case OPT_SPECIAL_unknown:
 	case OPT_SPECIAL_ignore:
+	case OPT_SPECIAL_deprecated:
 	case OPT_SPECIAL_program_name:
 	case OPT_SPECIAL_input_file:
 	  goto keep;
@@ -1268,6 +1266,7 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
       unsigned int i;
       char *s;
 
+      auto_diagnostic_group d;
       if (e->unknown_error)
 	error_at (loc, e->unknown_error, arg);
       else
@@ -1324,6 +1323,14 @@ read_cmdline_option (struct gcc_options *opts,
   if (decoded->opt_index == OPT_SPECIAL_ignore)
     return;
 
+  if (decoded->opt_index == OPT_SPECIAL_deprecated)
+    {
+      /* Warn only about positive ignored options.  */
+      if (decoded->value)
+	warning_at (loc, 0, "switch %qs is no longer supported", opt);
+      return;
+    }
+
   option = &cl_options[decoded->opt_index];
 
   if (decoded->errors
@@ -1334,12 +1341,6 @@ read_cmdline_option (struct gcc_options *opts,
   if (decoded->errors & CL_ERR_WRONG_LANG)
     {
       handlers->wrong_lang_callback (decoded, lang_mask);
-      return;
-    }
-
-  if (decoded->errors & CL_ERR_DEPRECATED)
-    {
-      warning_at (loc, 0, "deprecated command line option %qs", opt);
       return;
     }
 
@@ -1619,7 +1620,7 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
 	arg = cl_options[opt_index].alias_arg;
       opt_index = cl_options[opt_index].alias_target;
     }
-  if (opt_index == OPT_SPECIAL_ignore)
+  if (opt_index == OPT_SPECIAL_ignore || opt_index == OPT_SPECIAL_deprecated)
     return;
   if (dc)
     diagnostic_classify_diagnostic (dc, opt_index, (diagnostic_t) kind, loc);

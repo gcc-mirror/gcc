@@ -11,8 +11,8 @@
  **/
 
 void fn_default_start (void) { }
-/* { dg-final { scan-assembler "fn:fn_default_start ar9" } } */
-/* { dg-final { scan-assembler "fn:fn_default_start tu6" } } */
+/* { dg-final { scan-assembler "fn:fn_default_start ar7" } } */
+/* { dg-final { scan-assembler "fn:fn_default_start tu4" } } */
 /* { dg-final { scan-assembler "fn:fn_default_start ss4096" } } */
 /* { dg-final { scan-assembler "fn:fn_default_start sg0" } } */
 /* { dg-final { scan-assembler "fn:fn_default_start bc2" } } */
@@ -37,8 +37,8 @@ void fn_default_start (void) { }
 #pragma GCC target ("zvector")
 void fn_pragma_1 (void) { }
 /* { dg-final { scan-assembler "fn:fn_pragma_1 zv1" } } */
-/* { dg-final { scan-assembler "fn:fn_pragma_1 ar9" } } */
-/* { dg-final { scan-assembler "fn:fn_pragma_1 tu6" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_1 ar7" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_1 tu4" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_1 ss4096" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_1 sg0" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_1 bc2" } } */
@@ -55,8 +55,8 @@ void fn_pragma_1 (void) { }
 #pragma GCC reset_options
 
 void fn_pragma_1_default (void) { }
-/* { dg-final { scan-assembler "fn:fn_pragma_1_default ar9" } } */
-/* { dg-final { scan-assembler "fn:fn_pragma_1_default tu6" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_1_default ar7" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_1_default tu4" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_1_default ss4096" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_1_default sg0" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_1_default bc2" } } */
@@ -75,8 +75,8 @@ void fn_pragma_1_default (void) { }
 #pragma GCC target ("no-zvector")
 void fn_pragma_0 (void) { }
 /* { dg-final { scan-assembler "fn:fn_pragma_0 zv0" } } */
-/* { dg-final { scan-assembler "fn:fn_pragma_0 ar9" } } */
-/* { dg-final { scan-assembler "fn:fn_pragma_0 tu6" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_0 ar7" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_0 tu4" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_0 ss4096" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_0 sg0" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_0 bc2" } } */
@@ -93,8 +93,8 @@ void fn_pragma_0 (void) { }
 #pragma GCC reset_options
 
 void fn_pragma_0_default (void) { }
-/* { dg-final { scan-assembler "fn:fn_pragma_0_default ar9" } } */
-/* { dg-final { scan-assembler "fn:fn_pragma_0_default tu6" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_0_default ar7" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_0_default tu4" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_0_default ss4096" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_0_default sg0" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_0_default bc2" } } */
@@ -114,8 +114,8 @@ void fn_pragma_0_default (void) { }
 #pragma GCC target ("zvector")
 void fn_pragma_0_1 (void) { }
 /* { dg-final { scan-assembler "fn:fn_pragma_0_1 zv1" } } */
-/* { dg-final { scan-assembler "fn:fn_pragma_0_1 ar9" } } */
-/* { dg-final { scan-assembler "fn:fn_pragma_0_1 tu6" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_0_1 ar7" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_0_1 tu4" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_0_1 ss4096" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_0_1 sg0" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_0_1 bc2" } } */
@@ -135,8 +135,8 @@ void fn_pragma_0_1 (void) { }
 #pragma GCC target ("no-zvector")
 void fn_pragma_1_0 (void) { }
 /* { dg-final { scan-assembler "fn:fn_pragma_1_0 zv0" } } */
-/* { dg-final { scan-assembler "fn:fn_pragma_1_0 ar9" } } */
-/* { dg-final { scan-assembler "fn:fn_pragma_1_0 tu6" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_1_0 ar7" } } */
+/* { dg-final { scan-assembler "fn:fn_pragma_1_0 tu4" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_1_0 ss4096" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_1_0 sg0" } } */
 /* { dg-final { scan-assembler "fn:fn_pragma_1_0 bc2" } } */
@@ -159,8 +159,8 @@ void fn_pragma_1_0 (void) { }
  **/
 
 void fn_default_end (void) { }
-/* { dg-final { scan-assembler "fn:fn_default_end ar9" } } */
-/* { dg-final { scan-assembler "fn:fn_default_end tu6" } } */
+/* { dg-final { scan-assembler "fn:fn_default_end ar7" } } */
+/* { dg-final { scan-assembler "fn:fn_default_end tu4" } } */
 /* { dg-final { scan-assembler "fn:fn_default_end ss4096" } } */
 /* { dg-final { scan-assembler "fn:fn_default_end sg0" } } */
 /* { dg-final { scan-assembler "fn:fn_default_end bc2" } } */

@@ -744,7 +744,14 @@ package body Lib.Writ is
                   Note_Unit := U;
                end if;
 
-               if Note_Unit = Unit_Num then
+               --  No action needed for pragmas removed by the expander (for
+               --  example, pragmas of ignored ghost entities).
+
+               if Nkind (N) = N_Null_Statement then
+                  pragma Assert (Nkind (Original_Node (N)) = N_Pragma);
+                  null;
+
+               elsif Note_Unit = Unit_Num then
                   Write_Info_Initiate ('N');
                   Write_Info_Char (' ');
 
@@ -956,10 +963,11 @@ package body Lib.Writ is
                   --  allow partial analysis on incomplete sources.
 
                   if GNATprove_Mode then
-
                      Body_Fname :=
-                       Get_File_Name (Get_Body_Name (Uname),
-                                       Subunit => False, May_Fail => True);
+                       Get_File_Name
+                         (Uname    => Get_Body_Name (Uname),
+                          Subunit  => False,
+                          May_Fail => True);
 
                      Body_Index := Get_Unit_Index (Get_Body_Name (Uname));
 
@@ -974,8 +982,10 @@ package body Lib.Writ is
 
                   else
                      Body_Fname :=
-                       Get_File_Name (Get_Body_Name (Uname),
-                                       Subunit => False, May_Fail => False);
+                       Get_File_Name
+                         (Uname    => Get_Body_Name (Uname),
+                          Subunit  => False,
+                          May_Fail => False);
 
                      Body_Index := Get_Unit_Index (Get_Body_Name (Uname));
                   end if;

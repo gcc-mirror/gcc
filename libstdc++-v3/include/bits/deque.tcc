@@ -443,7 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
                           std::forward_iterator_tag)
       {
         const size_type __n = std::distance(__first, __last);
-        this->_M_initialize_map(__n);
+        this->_M_initialize_map(_S_check_init_len(__n, _M_get_Tp_allocator()));
 
         _Map_pointer __cur_node;
         __try
@@ -484,6 +484,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_push_back_aux(const value_type& __t)
 #endif
       {
+	if (size() == max_size())
+	  __throw_length_error(
+	      __N("cannot create std::deque larger than max_size()"));
+
 	_M_reserve_map_at_back();
 	*(this->_M_impl._M_finish._M_node + 1) = this->_M_allocate_node();
 	__try
@@ -519,6 +523,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_push_front_aux(const value_type& __t)
 #endif
       {
+	if (size() == max_size())
+	  __throw_length_error(
+	      __N("cannot create std::deque larger than max_size()"));
+
 	_M_reserve_map_at_front();
 	*(this->_M_impl._M_start._M_node - 1) = this->_M_allocate_node();
 	__try

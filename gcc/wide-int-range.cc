@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "function.h"
 #include "fold-const.h"
 #include "wide-int-range.h"
 
@@ -119,9 +120,10 @@ wide_int_range_set_zero_nonzero_bits (signop sign,
    accordingly.  */
 
 static void
-wide_int_range_min_max (wide_int &min, wide_int &max,
-			wide_int &w0, wide_int &w1, wide_int &w2, wide_int &w3,
-			signop sign)
+wide_int_range_order_set (wide_int &min, wide_int &max,
+			  wide_int &w0, wide_int &w1,
+			  wide_int &w2, wide_int &w3,
+			  signop sign)
 {
   /* Order pairs w0,w1 and w2,w3.  */
   if (wi::gt_p (w0, w1, sign))
@@ -177,7 +179,7 @@ wide_int_range_cross_product (wide_int &res_lb, wide_int &res_ub,
 				     overflow_undefined))
     return false;
 
-  wide_int_range_min_max (res_lb, res_ub, cp1, cp2, cp3, cp4, sign);
+  wide_int_range_order_set (res_lb, res_ub, cp1, cp2, cp3, cp4, sign);
   return true;
 }
 
@@ -323,7 +325,7 @@ wide_int_range_lshift (wide_int &res_lb, wide_int &res_ub,
   /* Transform left shifts by constants into multiplies.  */
   if (wi::eq_p (vr1_lb, vr1_ub))
     {
-      int shift = wi::extract_uhwi (vr1_ub, 0, vr1_ub.get_precision ());
+      unsigned shift = vr1_ub.to_uhwi ();
       wide_int tmp = wi::set_bit_in_zero (shift, prec);
       return wide_int_range_multiplicative_op (res_lb, res_ub,
 					       MULT_EXPR, sign, prec,
@@ -604,4 +606,130 @@ wide_int_range_trunc_mod (wide_int &wmin, wide_int &wmax,
   if (sign == SIGNED && wi::neg_p (tmp))
     tmp = wi::zero (prec);
   wmax = wi::min (wmax, tmp, sign);
+}
+
+/* Calculate ABS_EXPR on a range and store the result in [MIN, MAX].  */
+
+bool
+wide_int_range_abs (wide_int &min, wide_int &max,
+		    signop sign, unsigned prec,
+		    const wide_int &vr0_min, const wide_int &vr0_max,
+		    bool overflow_undefined)
+{
+  /* Pass through VR0 the easy cases.  */
+  if (sign == UNSIGNED || wi::ge_p (vr0_min, 0, sign))
+    {
+      min = vr0_min;
+      max = vr0_max;
+      return true;
+    }
+
+  /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
+     useful range.  */
+  wide_int min_value = wi::min_value (prec, sign);
+  wide_int max_value = wi::max_value (prec, sign);
+  if (!overflow_undefined && wi::eq_p (vr0_min, min_value))
+    return false;
+
+  /* ABS_EXPR may flip the range around, if the original range
+     included negative values.  */
+  if (wi::eq_p (vr0_min, min_value))
+    min = max_value;
+  else
+    min = wi::abs (vr0_min);
+  if (wi::eq_p (vr0_max, min_value))
+    max = max_value;
+  else
+    max = wi::abs (vr0_max);
+
+  /* If the range contains zero then we know that the minimum value in the
+     range will be zero.  */
+  if (wi::le_p (vr0_min, 0, sign) && wi::ge_p (vr0_max, 0, sign))
+    {
+      if (wi::gt_p (min, max, sign))
+	max = min;
+      min = wi::zero (prec);
+    }
+  else
+    {
+      /* If the range was reversed, swap MIN and MAX.  */
+      if (wi::gt_p (min, max, sign))
+	std::swap (min, max);
+    }
+
+  /* If the new range has its limits swapped around (MIN > MAX), then
+     the operation caused one of them to wrap around, mark the new
+     range VARYING.  */
+  if (wi::gt_p (min, max, sign))
+      return false;
+  return true;
+}
+
+/* Calculate a division operation on two ranges and store the result in
+   [WMIN, WMAX] U [EXTRA_MIN, EXTRA_MAX].
+
+   If EXTRA_RANGE_P is set upon return, EXTRA_MIN/EXTRA_MAX hold
+   meaningful information, otherwise they should be ignored.
+
+   Return TRUE if we were able to successfully calculate the new range.  */
+
+bool
+wide_int_range_div (wide_int &wmin, wide_int &wmax,
+		    tree_code code, signop sign, unsigned prec,
+		    const wide_int &dividend_min, const wide_int &dividend_max,
+		    const wide_int &divisor_min, const wide_int &divisor_max,
+		    bool overflow_undefined,
+		    bool overflow_wraps,
+		    bool &extra_range_p,
+		    wide_int &extra_min, wide_int &extra_max)
+{
+  extra_range_p = false;
+
+  /* If we know we won't divide by zero, just do the division.  */
+  if (!wide_int_range_includes_zero_p (divisor_min, divisor_max, sign))
+    return wide_int_range_multiplicative_op (wmin, wmax, code, sign, prec,
+					     dividend_min, dividend_max,
+					     divisor_min, divisor_max,
+					     overflow_undefined,
+					     overflow_wraps);
+
+  /* If flag_non_call_exceptions, we must not eliminate a division
+     by zero.  */
+  if (cfun->can_throw_non_call_exceptions)
+    return false;
+
+  /* If we're definitely dividing by zero, there's nothing to do.  */
+  if (wide_int_range_zero_p (divisor_min, divisor_max, prec))
+    return false;
+
+  /* Perform the division in 2 parts, [LB, -1] and [1, UB],
+     which will skip any division by zero.
+
+     First divide by the negative numbers, if any.  */
+  if (wi::neg_p (divisor_min, sign))
+    {
+      if (!wide_int_range_multiplicative_op (wmin, wmax,
+					     code, sign, prec,
+					     dividend_min, dividend_max,
+					     divisor_min, wi::minus_one (prec),
+					     overflow_undefined,
+					     overflow_wraps))
+	return false;
+      extra_range_p = true;
+    }
+  /* Then divide by the non-zero positive numbers, if any.  */
+  if (wi::gt_p (divisor_max, wi::zero (prec), sign))
+    {
+      if (!wide_int_range_multiplicative_op (extra_range_p ? extra_min : wmin,
+					     extra_range_p ? extra_max : wmax,
+					     code, sign, prec,
+					     dividend_min, dividend_max,
+					     wi::one (prec), divisor_max,
+					     overflow_undefined,
+					     overflow_wraps))
+	return false;
+    }
+  else
+    extra_range_p = false;
+  return true;
 }

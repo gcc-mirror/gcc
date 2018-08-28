@@ -499,6 +499,7 @@ unqualified_name_lookup_error (tree name, location_t loc)
     {
       if (!objc_diagnose_private_ivar (name))
 	{
+	  auto_diagnostic_group d;
 	  error_at (loc, "%qD was not declared in this scope", name);
 	  suggest_alternatives_for (loc, name, true);
 	}

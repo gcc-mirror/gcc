@@ -5180,7 +5180,6 @@ diddle_return_value_1 (void (*doit) (rtx, void *), void *arg, rtx outgoing)
 void
 diddle_return_value (void (*doit) (rtx, void *), void *arg)
 {
-  diddle_return_value_1 (doit, arg, crtl->return_bnd);
   diddle_return_value_1 (doit, arg, crtl->return_rtx);
 }
 

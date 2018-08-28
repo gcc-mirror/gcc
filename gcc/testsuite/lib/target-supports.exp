@@ -669,6 +669,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget bfin-*-*]
 	     || [istarget cris-*-*]
 	     || [istarget crisv32-*-*]
+	     || [istarget csky-*-elf]
 	     || [istarget fido-*-elf]
 	     || [istarget h8300-*-*]
 	     || [istarget lm32-*-*]
@@ -1226,6 +1227,16 @@ proc check_effective_target_hard_float { } {
 		#error __RX_64_BIT_DOUBLES__
 		#endif
 	# }]
+    }
+
+    # The generic test doesn't work for C-SKY because some cores have
+    # hard float for single precision only.
+    if { [istarget csky*-*-*] } {
+       return [check_no_compiler_messages hard_float assembly {
+               #if defined __csky_soft_float__
+               #error __csky_soft_float__
+               #endif
+       }]
     }
 
     # The generic test equates hard_float with "no call for adding doubles".
@@ -5747,8 +5758,7 @@ proc check_effective_target_vect_perm { } {
     } else {
 	set et_vect_perm_saved($et_index) 0
         if { [is-effective-target arm_neon]
-	     || ([istarget aarch64*-*-*]
-		 && ![check_effective_target_vect_variable_length])
+	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
@@ -5813,7 +5823,9 @@ proc check_effective_target_vect_perm { } {
 
 proc vect_perm_supported { count element_bits } {
     set vector_bits [lindex [available_vector_sizes] 0]
-    if { $vector_bits <= 0 } {
+    # The number of vectors has to be a power of 2 when permuting
+    # variable-length vectors.
+    if { $vector_bits <= 0 && ($count & -$count) != $count } {
 	return 0
     }
     set vf [expr { $vector_bits / $element_bits }]
@@ -5853,8 +5865,7 @@ proc check_effective_target_vect_perm_byte { } {
         if { ([is-effective-target arm_neon]
 	      && [is-effective-target arm_little_endian])
 	     || ([istarget aarch64*-*-*]
-		 && [is-effective-target aarch64_little_endian]
-		 && ![check_effective_target_vect_variable_length])
+		 && [is-effective-target aarch64_little_endian])
 	     || [istarget powerpc*-*-*]
 	     || [istarget spu-*-*]
 	     || ([istarget mips-*.*]
@@ -5893,8 +5904,7 @@ proc check_effective_target_vect_perm_short { } {
         if { ([is-effective-target arm_neon]
 	      && [is-effective-target arm_little_endian])
 	     || ([istarget aarch64*-*-*]
-		 && [is-effective-target aarch64_little_endian]
-		 && ![check_effective_target_vect_variable_length])
+		 && [is-effective-target aarch64_little_endian])
 	     || [istarget powerpc*-*-*]
 	     || [istarget spu-*-*]
 	     || (([istarget i?86-*-*] || [istarget x86_64-*-*])
@@ -8843,6 +8853,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget arc*-*-*]
 	 || [istarget avr*-*-*]
 	 || [istarget crisv32-*-*] || [istarget cris-*-*]
+	 || [istarget csky*-*-*]
 	 || [istarget mmix-*-*]
 	 || [istarget s390*-*-*]
 	 || [istarget powerpc*-*-*]
@@ -8861,6 +8872,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 proc check_effective_target_branch_cost {} {
     if { [   istarget arm*-*-*]
 	 || [istarget avr*-*-*]
+	 || [istarget csky*-*-*]
 	 || [istarget epiphany*-*-*]
 	 || [istarget frv*-*-*]
 	 || [istarget i?86-*-*] || [istarget x86_64-*-*]

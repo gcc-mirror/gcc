@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fwhole-file -fcoarray=single" }
+! { dg-options "-fcoarray=single" }
 !
 ! Procedures with dummy arguments that are coarrays or polymorphic
 ! must have an explicit interface in the calling routine.

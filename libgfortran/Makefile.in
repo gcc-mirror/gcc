@@ -70,7 +70,8 @@ target_triplet = @target@
 @LIBGFOR_MINIMAL_FALSE@io/unit.c \
 @LIBGFOR_MINIMAL_FALSE@io/unix.c \
 @LIBGFOR_MINIMAL_FALSE@io/write.c \
-@LIBGFOR_MINIMAL_FALSE@io/fbuf.c
+@LIBGFOR_MINIMAL_FALSE@io/fbuf.c \
+@LIBGFOR_MINIMAL_FALSE@io/async.c
 
 @LIBGFOR_MINIMAL_FALSE@am__append_3 = \
 @LIBGFOR_MINIMAL_FALSE@intrinsics/access.c \
@@ -352,7 +353,7 @@ am__objects_47 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 @LIBGFOR_MINIMAL_FALSE@	inquire.lo intrinsics.lo list_read.lo \
 @LIBGFOR_MINIMAL_FALSE@	lock.lo open.lo read.lo transfer.lo \
 @LIBGFOR_MINIMAL_FALSE@	transfer128.lo unit.lo unix.lo write.lo \
-@LIBGFOR_MINIMAL_FALSE@	fbuf.lo
+@LIBGFOR_MINIMAL_FALSE@	fbuf.lo async.lo
 am__objects_49 = size_from_kind.lo $(am__objects_48)
 @LIBGFOR_MINIMAL_FALSE@am__objects_50 = access.lo c99_functions.lo \
 @LIBGFOR_MINIMAL_FALSE@	chdir.lo chmod.lo clock.lo cpu_time.lo \
@@ -650,7 +651,8 @@ gfor_io_headers = \
 io/io.h \
 io/fbuf.h \
 io/format.h \
-io/unix.h
+io/unix.h \
+io/async.h
 
 gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 	intrinsics/args.c intrinsics/cshift0.c intrinsics/eoshift0.c \
@@ -1551,6 +1553,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/any_l8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/args.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/associated.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/async.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backtrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bessel_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bessel_r16.Plo@am__quote@
@@ -5813,6 +5816,13 @@ fbuf.lo: io/fbuf.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='io/fbuf.c' object='fbuf.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fbuf.lo `test -f 'io/fbuf.c' || echo '$(srcdir)/'`io/fbuf.c
+
+async.lo: io/async.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT async.lo -MD -MP -MF $(DEPDIR)/async.Tpo -c -o async.lo `test -f 'io/async.c' || echo '$(srcdir)/'`io/async.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/async.Tpo $(DEPDIR)/async.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='io/async.c' object='async.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o async.lo `test -f 'io/async.c' || echo '$(srcdir)/'`io/async.c
 
 associated.lo: intrinsics/associated.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT associated.lo -MD -MP -MF $(DEPDIR)/associated.Tpo -c -o associated.lo `test -f 'intrinsics/associated.c' || echo '$(srcdir)/'`intrinsics/associated.c

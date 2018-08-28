@@ -20,3 +20,7 @@ HOST_LIBGCC2_CFLAGS += -pipe
 # Use unwind-dw2-fde-darwin
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/config/unwind-dw2-fde-darwin.c \
   $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
+
+# Patch to __Unwind_Find_Enclosing_Function for Darwin10.
+d10-uwfef.o: $(srcdir)/config/darwin10-unwind-find-enc-func.c
+	$(crt_compile) $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -mmacosx-version-min=10.6 -c $<

@@ -245,6 +245,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	{
 	case OPT_SPECIAL_unknown:
 	case OPT_SPECIAL_ignore:
+	case OPT_SPECIAL_deprecated:
 	case OPT_SPECIAL_program_name:
 	case OPT_SPECIAL_input_file:
 	  break;
@@ -255,6 +256,8 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 
 	  /* Fallthru.  */
 	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_labels:
+	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
 	case OPT_fshow_column:
@@ -283,7 +286,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 
 	case OPT_fopenmp:
 	case OPT_fopenacc:
-	case OPT_fcheck_pointer_bounds:
 	  /* For selected options we can merge conservatively.  */
 	  for (j = 0; j < *decoded_options_count; ++j)
 	    if ((*decoded_options)[j].opt_index == foption->opt_index)
@@ -291,8 +293,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	  if (j == *decoded_options_count)
 	    append_option (decoded_options, decoded_options_count, foption);
 	  /* -fopenmp > -fno-openmp,
-	     -fopenacc > -fno-openacc,
-	     -fcheck_pointer_bounds > -fcheck_pointer_bounds  */
+	     -fopenacc > -fno-openacc  */
 	  else if (foption->value > (*decoded_options)[j].value)
 	    (*decoded_options)[j] = *foption;
 	  break;
@@ -536,6 +537,8 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
       switch (option->opt_index)
 	{
 	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_labels:
+	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
 	case OPT_fshow_column:
@@ -553,7 +556,6 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_Ofast:
 	case OPT_Og:
 	case OPT_Os:
-	case OPT_fcheck_pointer_bounds:
 	  break;
 
 	default:
@@ -582,6 +584,8 @@ append_diag_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	{
 	case OPT_fdiagnostics_color_:
 	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_labels:
+	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
 	case OPT_fdiagnostics_show_location_:
 	case OPT_fshow_column:

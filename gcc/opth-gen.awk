@@ -493,6 +493,7 @@ for (i = 0; i < n_opts; i++) {
 print "  N_OPTS,"
 print "  OPT_SPECIAL_unknown,"
 print "  OPT_SPECIAL_ignore,"
+print "  OPT_SPECIAL_deprecated,"
 print "  OPT_SPECIAL_program_name,"
 print "  OPT_SPECIAL_input_file"
 print "};"

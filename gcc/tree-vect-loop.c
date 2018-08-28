@@ -462,6 +462,40 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
   return true;
 }
 
+/* Return true if PHI, described by STMT_INFO, is the inner PHI in
+   what we are assuming is a double reduction.  For example, given
+   a structure like this:
+
+      outer1:
+	x_1 = PHI <x_4(outer2), ...>;
+	...
+
+      inner:
+	x_2 = PHI <x_1(outer1), ...>;
+	...
+	x_3 = ...;
+	...
+
+      outer2:
+	x_4 = PHI <x_3(inner)>;
+	...
+
+   outer loop analysis would treat x_1 as a double reduction phi and
+   this function would then return true for x_2.  */
+
+static bool
+vect_inner_phi_in_double_reduction_p (stmt_vec_info stmt_info, gphi *phi)
+{
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  use_operand_p use_p;
+  ssa_op_iter op_iter;
+  FOR_EACH_PHI_ARG (use_p, phi, op_iter, SSA_OP_USE)
+    if (stmt_vec_info def_info = loop_vinfo->lookup_def (USE_FROM_PTR (use_p)))
+      if (STMT_VINFO_DEF_TYPE (def_info) == vect_double_reduction_def)
+	return true;
+  return false;
+}
+
 /* Function vect_analyze_scalar_cycles_1.
 
    Examine the cross iteration def-use cycles of scalar variables
@@ -522,6 +556,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 	}
 
       if (!access_fn
+	  || vect_inner_phi_in_double_reduction_p (stmt_vinfo, phi)
 	  || !vect_is_simple_iv_evolution (loop->num, access_fn, &init, &step)
 	  || (LOOP_VINFO_LOOP (loop_vinfo) != loop
 	      && TREE_CODE (step) != INTEGER_CST))
@@ -1958,7 +1993,7 @@ start_over:
       dump_printf_loc (MSG_NOTE, vect_location,
 		       "vectorization_factor = ");
       dump_dec (MSG_NOTE, vectorization_factor);
-      dump_printf (MSG_NOTE, ", niters = " HOST_WIDE_INT_PRINT_DEC "\n",
+      dump_printf (MSG_NOTE, ", niters = %wd\n",
 		   LOOP_VINFO_INT_NITERS (loop_vinfo));
     }
 
@@ -2922,7 +2957,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
     }
 
   stmt_vec_info def_stmt_info = loop_info->lookup_def (loop_arg);
-  if (!def_stmt_info)
+  if (!def_stmt_info
+      || !flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt)))
     return NULL;
 
   if (gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt))
@@ -2991,6 +3027,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
           && loop->inner
           && flow_bb_inside_loop_p (loop->inner, gimple_bb (def1))
           && is_gimple_assign (def1)
+	  && is_a <gphi *> (phi_use_stmt)
 	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (phi_use_stmt)))
         {
           if (dump_enabled_p ())
@@ -3161,6 +3198,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       && def2_info->stmt == phi
       && (code == COND_EXPR
 	  || !def1_info
+	  || !flow_bb_inside_loop_p (loop, gimple_bb (def1_info->stmt))
 	  || vect_valid_reduction_input_p (def1_info)))
     {
       if (dump_enabled_p ())
@@ -3172,6 +3210,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       && def1_info->stmt == phi
       && (code == COND_EXPR
 	  || !def2_info
+	  || !flow_bb_inside_loop_p (loop, gimple_bb (def2_info->stmt))
 	  || vect_valid_reduction_input_p (def2_info)))
     {
       if (! nested_in_vect_loop && orig_code != MINUS_EXPR)
@@ -6711,6 +6750,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     }
 
   if (reduction_type != EXTRACT_LAST_REDUCTION
+      && (!nested_cycle || double_reduc)
       && reduc_fn == IFN_LAST
       && !nunits_out.is_constant ())
     {

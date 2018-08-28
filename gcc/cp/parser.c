@@ -3280,6 +3280,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
   to specify an argument list. Emit a useful error message.  */
   if (DECL_TYPE_TEMPLATE_P (decl))
     {
+      auto_diagnostic_group d;
       error_at (location,
 		"invalid use of template-name %qE without an argument list",
 		decl);
@@ -3296,6 +3297,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
   else if (!parser->scope)
     {
       /* Issue an error message.  */
+      auto_diagnostic_group d;
       name_hint hint;
       if (TREE_CODE (id) == IDENTIFIER_NODE)
 	hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_TYPENAME, location);
@@ -3370,6 +3372,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
     {
       if (TREE_CODE (parser->scope) == NAMESPACE_DECL)
 	{
+	  auto_diagnostic_group d;
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
 	    error_at (location_of (id),
 		      "%qE in namespace %qE does not name a template type",
@@ -3392,6 +3395,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	       && constructor_name_p (id, parser->scope))
 	{
 	  /* A<T>::A<T>() */
+	  auto_diagnostic_group d;
 	  error_at (location, "%<%T::%E%> names the constructor, not"
 		    " the type", parser->scope, id);
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
@@ -3417,6 +3421,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	}
       else if (TYPE_P (parser->scope))
 	{
+	  auto_diagnostic_group d;
 	  if (!COMPLETE_TYPE_P (parser->scope))
 	    cxx_incomplete_type_error (location_of (id), NULL_TREE,
 				       parser->scope);
@@ -10280,6 +10285,9 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
     {
       cp_lexer_consume_token (parser->lexer);
       first = false;
+
+      if (!(at_function_scope_p () || parsing_nsdmi ()))
+	error ("non-local lambda expression cannot have a capture-default");
     }
 
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_SQUARE))
@@ -18615,6 +18623,7 @@ cp_parser_namespace_name (cp_parser* parser)
     {
       if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
 	{
+	  auto_diagnostic_group d;
 	  error_at (token->location, "%qD is not a namespace-name", identifier);
 	  if (namespace_decl == error_mark_node
 	      && parser->scope && TREE_CODE (parser->scope) == NAMESPACE_DECL)
@@ -21722,7 +21731,8 @@ cp_parser_parameter_declaration (cp_parser *parser,
      parameter was introduced during cp_parser_parameter_declaration,
      change any implicit parameters introduced into packs.  */
   if (parser->implicit_template_parms
-      && (token->type == CPP_ELLIPSIS
+      && ((token->type == CPP_ELLIPSIS
+	   && declarator_can_be_parameter_pack (declarator))
 	  || (declarator && declarator->parameter_pack_p)))
     {
       int latest_template_parm_idx = TREE_VEC_LENGTH

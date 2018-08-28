@@ -1094,6 +1094,7 @@ mark_jump_label_1 (rtx x, rtx_insn *insn, bool in_mem, bool is_target)
     case CC0:
     case REG:
     case CLOBBER:
+    case CLOBBER_HIGH:
     case CALL:
       return;
 

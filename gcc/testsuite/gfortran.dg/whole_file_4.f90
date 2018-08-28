@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fwhole-file -std=legacy" }
+! { dg-options "-std=legacy" }
 ! Tests the fix for PR24886 in which the mismatch between the
 ! character lengths of the actual and formal arguments of
 ! 'foo' was not detected.

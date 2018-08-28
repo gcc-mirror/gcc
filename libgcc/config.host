@@ -108,6 +108,9 @@ cr16-*-*)
 crisv32-*-*)
 	cpu_type=cris
 	;;
+csky*-*-*)
+	cpu_type=csky
+	;;
 fido-*-*)
 	cpu_type=m68k
 	;;
@@ -205,7 +208,7 @@ case ${host} in
 *-*-darwin*)
   asm_hidden_op=.private_extern
   tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-libgcc-pic t-slibgcc-darwin"
-  extra_parts="crt3.o crttms.o crttme.o"
+  extra_parts="crt3.o d10-uwfef.o crttms.o crttme.o"
   ;;
 *-*-dragonfly*)
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
@@ -506,6 +509,15 @@ cris-*-elf)
 	;;
 cris-*-linux* | crisv32-*-linux*)
 	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-linux"
+	;;
+csky-*-elf*)
+	tmake_file="csky/t-csky t-fdpbit"
+	extra_parts="$extra_parts crti.o crtn.o"
+	;;
+csky-*-linux*)
+	tmake_file="$tmake_file csky/t-csky t-slibgcc-libgcc t-fdpbit csky/t-linux-csky"
+	extra_parts="$extra_parts crti.o crtn.o"
+	md_unwind_header=csky/linux-unwind.h
 	;;
 epiphany-*-elf* | epiphany-*-rtems*)
 	tmake_file="$tmake_file epiphany/t-epiphany t-fdpbit epiphany/t-custom-eqsf"
@@ -1129,6 +1141,7 @@ powerpc*-*-linux*)
 	;;
 powerpc-wrs-vxworks*)
 	tmake_file="$tmake_file rs6000/t-ppccomm rs6000/t-savresfgpr t-fdpbit"
+	extra_parts="$extra_parts crtbegin.o crtend.o"
 	;;
 powerpc-*-lynxos*)
 	tmake_file="$tmake_file rs6000/t-lynx t-fdpbit"

@@ -791,15 +791,18 @@ record_opr_changes (rtx_insn *insn)
 	record_last_reg_set_info_regno (insn, regno);
 
       for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
-	if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-	  {
-	    x = XEXP (XEXP (link, 0), 0);
-	    if (REG_P (x))
-	      {
-		gcc_assert (HARD_REGISTER_P (x));
-		record_last_reg_set_info (insn, x);
-	      }
-	  }
+	{
+	  gcc_assert (GET_CODE (XEXP (link, 0)) != CLOBBER_HIGH);
+	  if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+	    {
+	      x = XEXP (XEXP (link, 0), 0);
+	      if (REG_P (x))
+		{
+		  gcc_assert (HARD_REGISTER_P (x));
+		  record_last_reg_set_info (insn, x);
+		}
+	    }
+	}
 
       if (! RTL_CONST_OR_PURE_CALL_P (insn))
 	record_last_mem_set_info (insn);

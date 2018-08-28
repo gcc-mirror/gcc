@@ -15302,7 +15302,11 @@ if test "${with_cuda_driver_lib+set}" = set; then :
 fi
 
 case "x$with_cuda_driver" in
-  x | xno) ;;
+  x) ;;
+  xno)
+    CUDA_DRIVER_INCLUDE=no
+    CUDA_DRIVER_LIB=no
+    ;;
   *) CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
      CUDA_DRIVER_LIB=$with_cuda_driver/lib
      ;;
@@ -15313,10 +15317,12 @@ fi
 if test "x$with_cuda_driver_lib" != x; then
   CUDA_DRIVER_LIB=$with_cuda_driver_lib
 fi
-if test "x$CUDA_DRIVER_INCLUDE" != x; then
+if test "x$CUDA_DRIVER_INCLUDE" != x \
+   && test "x$CUDA_DRIVER_INCLUDE" != xno; then
   CUDA_DRIVER_CPPFLAGS=-I$CUDA_DRIVER_INCLUDE
 fi
-if test "x$CUDA_DRIVER_LIB" != x; then
+if test "x$CUDA_DRIVER_LIB" != x \
+   && test "x$CUDA_DRIVER_LIB" != xno; then
   CUDA_DRIVER_LDFLAGS=-L$CUDA_DRIVER_LIB
 fi
 
@@ -15400,17 +15406,19 @@ if test x"$enable_offload_targets" != x; then
       nvptx*)
         tgt_name=nvptx
 	PLUGIN_NVPTX=$tgt
-	PLUGIN_NVPTX_CPPFLAGS=$CUDA_DRIVER_CPPFLAGS
-	PLUGIN_NVPTX_LDFLAGS=$CUDA_DRIVER_LDFLAGS
-	PLUGIN_NVPTX_LIBS='-lcuda'
+	if test "x$CUDA_DRIVER_LIB" != xno \
+	   && test "x$CUDA_DRIVER_LIB" != xno; then
+	  PLUGIN_NVPTX_CPPFLAGS=$CUDA_DRIVER_CPPFLAGS
+	  PLUGIN_NVPTX_LDFLAGS=$CUDA_DRIVER_LDFLAGS
+	  PLUGIN_NVPTX_LIBS='-lcuda'
 
-	PLUGIN_NVPTX_save_CPPFLAGS=$CPPFLAGS
-	CPPFLAGS="$PLUGIN_NVPTX_CPPFLAGS $CPPFLAGS"
-	PLUGIN_NVPTX_save_LDFLAGS=$LDFLAGS
-	LDFLAGS="$PLUGIN_NVPTX_LDFLAGS $LDFLAGS"
-	PLUGIN_NVPTX_save_LIBS=$LIBS
-	LIBS="$PLUGIN_NVPTX_LIBS $LIBS"
-	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+	  PLUGIN_NVPTX_save_CPPFLAGS=$CPPFLAGS
+	  CPPFLAGS="$PLUGIN_NVPTX_CPPFLAGS $CPPFLAGS"
+	  PLUGIN_NVPTX_save_LDFLAGS=$LDFLAGS
+	  LDFLAGS="$PLUGIN_NVPTX_LDFLAGS $LDFLAGS"
+	  PLUGIN_NVPTX_save_LIBS=$LIBS
+	  LIBS="$PLUGIN_NVPTX_LIBS $LIBS"
+	  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "cuda.h"
 int
@@ -15426,13 +15434,16 @@ if ac_fn_c_try_link "$LINENO"; then :
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-	CPPFLAGS=$PLUGIN_NVPTX_save_CPPFLAGS
-	LDFLAGS=$PLUGIN_NVPTX_save_LDFLAGS
-	LIBS=$PLUGIN_NVPTX_save_LIBS
+	  CPPFLAGS=$PLUGIN_NVPTX_save_CPPFLAGS
+	  LDFLAGS=$PLUGIN_NVPTX_save_LDFLAGS
+	  LIBS=$PLUGIN_NVPTX_save_LIBS
+	fi
 	case $PLUGIN_NVPTX in
 	  nvptx*)
-	    if test "x$CUDA_DRIVER_INCLUDE" = x \
-	       && test "x$CUDA_DRIVER_LIB" = x; then
+	    if (test "x$CUDA_DRIVER_INCLUDE" = x \
+		|| test "x$CUDA_DRIVER_INCLUDE" = xno) \
+	       && (test "x$CUDA_DRIVER_LIB" = x \
+		   || test "x$CUDA_DRIVER_LIB" = xno); then
 	      PLUGIN_NVPTX=1
 	      PLUGIN_NVPTX_CPPFLAGS='-I$(srcdir)/plugin/cuda'
 	      PLUGIN_NVPTX_LIBS='-ldl'

@@ -75,7 +75,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "dbgcnt.h"
 #include "case-cfn-macros.h"
-#include "regrename.h"
 #include "dojump.h"
 #include "fold-const-call.h"
 #include "tree-vrp.h"
@@ -263,7 +262,7 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
   /* Mask registers.  */
   MASK_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
-  MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
+  MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -279,8 +278,7 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
-  93, 94, 95, 96, 97, 98, 99, 100,      /* Mask registers */
-  101, 102, 103, 104,			/* bound registers */
+  93, 94, 95, 96, 97, 98, 99, 100       /* Mask registers */
 };
 
 /* The "default" register map used in 64bit mode.  */
@@ -296,8 +294,7 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
   25, 26, 27, 28, 29, 30, 31, 32,	/* extended SSE registers */
   67, 68, 69, 70, 71, 72, 73, 74,       /* AVX-512 registers 16-23 */
   75, 76, 77, 78, 79, 80, 81, 82,       /* AVX-512 registers 24-31 */
-  118, 119, 120, 121, 122, 123, 124, 125, /* Mask registers */
-  126, 127, 128, 129,			/* bound registers */
+  118, 119, 120, 121, 122, 123, 124, 125 /* Mask registers */
 };
 
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -365,8 +362,7 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
-  93, 94, 95, 96, 97, 98, 99, 100,      /* Mask registers */
-  101, 102, 103, 104,			/* bound registers */
+  93, 94, 95, 96, 97, 98, 99, 100       /* Mask registers */
 };
 
 /* Define parameter passing and return registers.  */
@@ -3133,15 +3129,6 @@ ix86_debug_options (void)
     fputs ("<no options>\n\n", stderr);
 
   return;
-}
-
-/* Return true if T is one of the bytes we should avoid with
-   -mmitigate-rop.  */
-
-static bool
-ix86_rop_should_change_byte_p (int t)
-{
-  return t == 0xc2 || t == 0xc3 || t == 0xca || t == 0xcb;
 }
 
 static const char *stringop_alg_names[] = {
@@ -10656,26 +10643,16 @@ static int indirectlabelno;
 
 /* True if call thunk function is needed.  */
 static bool indirect_thunk_needed = false;
-/* True if call thunk function with the BND prefix is needed.  */
-static bool indirect_thunk_bnd_needed = false;
 
 /* Bit masks of integer registers, which contain branch target, used
    by call thunk functions.  */
 static int indirect_thunks_used;
-/* Bit masks of integer registers, which contain branch target, used
-   by call thunk functions with the BND prefix.  */
-static int indirect_thunks_bnd_used;
 
 /* True if return thunk function is needed.  */
 static bool indirect_return_needed = false;
-/* True if return thunk function with the BND prefix is needed.  */
-static bool indirect_return_bnd_needed = false;
 
 /* True if return thunk function via CX is needed.  */
 static bool indirect_return_via_cx;
-/* True if return thunk function via CX with the BND prefix is
-   needed.  */
-static bool indirect_return_via_cx_bnd;
 
 #ifndef INDIRECT_LABEL
 # define INDIRECT_LABEL "LIND"
@@ -10685,7 +10662,6 @@ static bool indirect_return_via_cx_bnd;
 enum indirect_thunk_prefix
 {
   indirect_thunk_prefix_none,
-  indirect_thunk_prefix_bnd,
   indirect_thunk_prefix_nt
 };
 
@@ -10722,10 +10698,8 @@ indirect_thunk_name (char name[32], unsigned int regno,
     {
       const char *prefix;
 
-      if (need_prefix == indirect_thunk_prefix_bnd)
-	prefix = "_bnd";
-      else if (need_prefix == indirect_thunk_prefix_nt
-	       && regno != INVALID_REGNUM)
+      if (need_prefix == indirect_thunk_prefix_nt
+	  && regno != INVALID_REGNUM)
 	{
 	  /* NOTRACK prefix is only used with external thunk via
 	     register so that NOTRACK prefix can be added to indirect
@@ -10753,35 +10727,19 @@ indirect_thunk_name (char name[32], unsigned int regno,
   else
     {
       if (regno != INVALID_REGNUM)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    ASM_GENERATE_INTERNAL_LABEL (name, "LITBR", regno);
-	  else
-	    ASM_GENERATE_INTERNAL_LABEL (name, "LITR", regno);
-	}
+	ASM_GENERATE_INTERNAL_LABEL (name, "LITR", regno);
       else
 	{
 	  if (ret_p)
-	    {
-	      if (need_prefix == indirect_thunk_prefix_bnd)
-		ASM_GENERATE_INTERNAL_LABEL (name, "LRTB", 0);
-	      else
-		ASM_GENERATE_INTERNAL_LABEL (name, "LRT", 0);
-	    }
+	    ASM_GENERATE_INTERNAL_LABEL (name, "LRT", 0);
 	  else
-	    {
-	      if (need_prefix == indirect_thunk_prefix_bnd)
-		ASM_GENERATE_INTERNAL_LABEL (name, "LITB", 0);
-	      else
-		ASM_GENERATE_INTERNAL_LABEL (name, "LIT", 0);
-	    }
+	    ASM_GENERATE_INTERNAL_LABEL (name, "LIT", 0);
 	}
     }
 }
 
-/* Output a call and return thunk for indirect branch.  If BND_P is
-   true, the BND prefix is needed.   If REGNO != -1,  the function
-   address is in REGNO and the call and return thunk looks like:
+/* Output a call and return thunk for indirect branch.  If REGNO != -1,
+   the function address is in REGNO and the call and return thunk looks like:
 
 	call	L2
    L1:
@@ -10806,8 +10764,7 @@ indirect_thunk_name (char name[32], unsigned int regno,
  */
 
 static void
-output_indirect_thunk (enum indirect_thunk_prefix need_prefix,
-		       unsigned int regno)
+output_indirect_thunk (unsigned int regno)
 {
   char indirectlabel1[32];
   char indirectlabel2[32];
@@ -10818,10 +10775,7 @@ output_indirect_thunk (enum indirect_thunk_prefix need_prefix,
 			       indirectlabelno++);
 
   /* Call */
-  if (need_prefix == indirect_thunk_prefix_bnd)
-    fputs ("\tbnd call\t", asm_out_file);
-  else
-    fputs ("\tcall\t", asm_out_file);
+  fputs ("\tcall\t", asm_out_file);
   assemble_name_raw (asm_out_file, indirectlabel2);
   fputc ('\n', asm_out_file);
 
@@ -10855,17 +10809,13 @@ output_indirect_thunk (enum indirect_thunk_prefix need_prefix,
       output_asm_insn ("lea\t{%E1, %0|%0, %E1}", xops);
     }
 
-  if (need_prefix == indirect_thunk_prefix_bnd)
-    fputs ("\tbnd ret\n", asm_out_file);
-  else
-    fputs ("\tret\n", asm_out_file);
+  fputs ("\tret\n", asm_out_file);
 }
 
 /* Output a funtion with a call and return thunk for indirect branch.
-   If BND_P is true, the BND prefix is needed.  If REGNO != UNVALID_REGNUM,
-   the function address is in REGNO.  Otherwise, the function address is
-   on the top of stack.  Thunk is used for function return if RET_P is
-   true.  */
+   If REGNO != INVALID_REGNUM, the function address is in REGNO.
+   Otherwise, the function address is on the top of stack.  Thunk is
+   used for function return if RET_P is true.  */
 
 static void
 output_indirect_thunk_function (enum indirect_thunk_prefix need_prefix,
@@ -10874,7 +10824,7 @@ output_indirect_thunk_function (enum indirect_thunk_prefix need_prefix,
   char name[32];
   tree decl;
 
-  /* Create __x86_indirect_thunk/__x86_indirect_thunk_bnd.  */
+  /* Create __x86_indirect_thunk.  */
   indirect_thunk_name (name, regno, need_prefix, ret_p);
   decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
 		     get_identifier (name),
@@ -10929,7 +10879,7 @@ output_indirect_thunk_function (enum indirect_thunk_prefix need_prefix,
   /* Make sure unwind info is emitted for the thunk if needed.  */
   final_start_function (emit_barrier (), asm_out_file, 1);
 
-  output_indirect_thunk (need_prefix, regno);
+  output_indirect_thunk (regno);
 
   final_end_function ();
   init_insn_lengths ();
@@ -10967,22 +10917,11 @@ ix86_code_end (void)
   if (indirect_return_needed)
     output_indirect_thunk_function (indirect_thunk_prefix_none,
 				    INVALID_REGNUM, true);
-  if (indirect_return_bnd_needed)
-    output_indirect_thunk_function (indirect_thunk_prefix_bnd,
-				    INVALID_REGNUM, true);
-
   if (indirect_return_via_cx)
     output_indirect_thunk_function (indirect_thunk_prefix_none,
 				    CX_REG, true);
-  if (indirect_return_via_cx_bnd)
-    output_indirect_thunk_function (indirect_thunk_prefix_bnd,
-				    CX_REG, true);
-
   if (indirect_thunk_needed)
     output_indirect_thunk_function (indirect_thunk_prefix_none,
-				    INVALID_REGNUM, false);
-  if (indirect_thunk_bnd_needed)
-    output_indirect_thunk_function (indirect_thunk_prefix_bnd,
 				    INVALID_REGNUM, false);
 
   for (regno = FIRST_REX_INT_REG; regno <= LAST_REX_INT_REG; regno++)
@@ -10990,10 +10929,6 @@ ix86_code_end (void)
       unsigned int i = regno - FIRST_REX_INT_REG + LAST_INT_REG + 1;
       if ((indirect_thunks_used & (1 << i)))
 	output_indirect_thunk_function (indirect_thunk_prefix_none,
-					regno, false);
-
-      if ((indirect_thunks_bnd_used & (1 << i)))
-	output_indirect_thunk_function (indirect_thunk_prefix_bnd,
 					regno, false);
     }
 
@@ -11004,10 +10939,6 @@ ix86_code_end (void)
 
       if ((indirect_thunks_used & (1 << regno)))
 	output_indirect_thunk_function (indirect_thunk_prefix_none,
-					regno, false);
-
-      if ((indirect_thunks_bnd_used & (1 << regno)))
-	output_indirect_thunk_function (indirect_thunk_prefix_bnd,
 					regno, false);
 
       if (!(pic_labels_used & (1 << regno)))
@@ -11284,16 +11215,6 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 	  while (nregs-- > 0)
 	    if ((i + nregs) == regno)
 	      return false;
-
-	  reg = crtl->return_bnd;
-	  if (reg)
-	    {
-	      i = REGNO (reg);
-	      nregs = REG_NREGS (reg);
-	      while (nregs-- > 0)
-		if ((i + nregs) == regno)
-		  return false;
-	    }
 	}
 
       return (df_regs_ever_live_p (regno)
@@ -13281,12 +13202,14 @@ ix86_finalize_stack_frame_flags (void)
 	  recompute_frame_layout_p = true;
 	}
     }
-  else if (crtl->max_used_stack_slot_alignment
-	   > crtl->preferred_stack_boundary)
+  else if (crtl->max_used_stack_slot_alignment >= 128)
     {
-      /* We don't need to realign stack.  But we still need to keep
-	 stack frame properly aligned to satisfy the largest alignment
-	 of stack slots.  */
+      /* We don't need to realign stack.  max_used_stack_alignment is
+	 used to decide how stack frame should be aligned.  This is
+	 independent of any psABIs nor 32-bit vs 64-bit.  It is always
+	 safe to compute max_used_stack_alignment.  We compute it only
+	 if 128-bit aligned load/store may be generated on misaligned
+	 stack slot which will lead to segfault.   */
       if (ix86_find_max_used_stack_alignment (stack_alignment, true))
 	cfun->machine->max_used_stack_alignment
 	  = stack_alignment / BITS_PER_UNIT;
@@ -15502,10 +15425,6 @@ ix86_force_load_from_GOT_p (rtx x)
 static bool
 ix86_legitimate_constant_p (machine_mode mode, rtx x)
 {
-  /* Pointer bounds constants are not valid.  */
-  if (POINTER_BOUNDS_MODE_P (GET_MODE (x)))
-    return false;
-
   switch (GET_CODE (x))
     {
     case CONST:
@@ -18644,25 +18563,6 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
       ok = ix86_decompose_address (XVECEXP (addr, 0, 0), &parts);
       code = 'q';
     }
-  else if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_BNDMK_ADDR)
-    {
-      ok = ix86_decompose_address (XVECEXP (addr, 0, 1), &parts);
-      gcc_assert (parts.base == NULL_RTX || parts.index == NULL_RTX);
-      if (parts.base != NULL_RTX)
-	{
-	  parts.index = parts.base;
-	  parts.scale = 1;
-	}
-      parts.base = XVECEXP (addr, 0, 0);
-      addr = XVECEXP (addr, 0, 0);
-    }
-  else if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_BNDLDX_ADDR)
-    {
-      ok = ix86_decompose_address (XVECEXP (addr, 0, 0), &parts);
-      gcc_assert (parts.index == NULL_RTX);
-      parts.index = XVECEXP (addr, 0, 1);
-      addr = XVECEXP (addr, 0, 0);
-    }
   else
     ok = ix86_decompose_address (addr, &parts);
 
@@ -19776,8 +19676,6 @@ ix86_output_addr_diff_elt (FILE *file, int value, int rel)
   if (TARGET_64BIT || TARGET_VXWORKS_RTP)
     fprintf (file, "%s%s%d-%s%d\n",
 	     directive, LPREFIX, value, LPREFIX, rel);
-  else if (HAVE_AS_GOTOFF_IN_DATA)
-    fprintf (file, ASM_LONG "%s%d@GOTOFF\n", LPREFIX, value);
 #if TARGET_MACHO
   else if (TARGET_MACHO)
     {
@@ -19786,6 +19684,8 @@ ix86_output_addr_diff_elt (FILE *file, int value, int rel)
       putc ('\n', file);
     }
 #endif
+  else if (HAVE_AS_GOTOFF_IN_DATA)
+    fprintf (file, ASM_LONG "%s%d@GOTOFF\n", LPREFIX, value);
   else
     asm_fprintf (file, ASM_LONG "%U%s+[.-%s%d]\n",
 		 GOT_SYMBOL_NAME, LPREFIX, value);
@@ -28548,10 +28448,7 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
 	  int i = regno;
 	  if (i >= FIRST_REX_INT_REG)
 	    i -= (FIRST_REX_INT_REG - LAST_INT_REG - 1);
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    indirect_thunks_bnd_used |= 1 << i;
-	  else
-	    indirect_thunks_used |= 1 << i;
+	  indirect_thunks_used |= 1 << i;
 	}
       indirect_thunk_name (thunk_name_buf, regno, need_prefix, false);
       thunk_name = thunk_name_buf;
@@ -28562,23 +28459,15 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
   if (sibcall_p)
     {
       if (thunk_name != NULL)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
-	  else
-	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	}
+	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
       else
-	output_indirect_thunk (need_prefix, regno);
+	output_indirect_thunk (regno);
     }
   else
     {
       if (thunk_name != NULL)
 	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    fprintf (asm_out_file, "\tbnd call\t%s\n", thunk_name);
-	  else
-	    fprintf (asm_out_file, "\tcall\t%s\n", thunk_name);
+	  fprintf (asm_out_file, "\tcall\t%s\n", thunk_name);
 	  return;
 	}
 
@@ -28593,32 +28482,21 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
 				   indirectlabelno++);
 
       /* Jump.  */
-      if (need_prefix == indirect_thunk_prefix_bnd)
-	fputs ("\tbnd jmp\t", asm_out_file);
-      else
-	fputs ("\tjmp\t", asm_out_file);
+      fputs ("\tjmp\t", asm_out_file);
       assemble_name_raw (asm_out_file, indirectlabel2);
       fputc ('\n', asm_out_file);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel1);
 
       if (thunk_name != NULL)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
-	  else
-	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	}
+	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
       else
-	output_indirect_thunk (need_prefix, regno);
+	output_indirect_thunk (regno);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
       /* Call.  */
-      if (need_prefix == indirect_thunk_prefix_bnd)
-	fputs ("\tbnd call\t", asm_out_file);
-      else
-	fputs ("\tcall\t", asm_out_file);
+      fputs ("\tcall\t", asm_out_file);
       assemble_name_raw (asm_out_file, indirectlabel1);
       fputc ('\n', asm_out_file);
     }
@@ -28657,12 +28535,7 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
       != indirect_branch_thunk_inline)
     {
       if (cfun->machine->indirect_branch_type == indirect_branch_thunk)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    indirect_thunk_bnd_needed = true;
-	  else
-	    indirect_thunk_needed = true;
-	}
+	indirect_thunk_needed = true;
       indirect_thunk_name (thunk_name_buf, regno, need_prefix, false);
       thunk_name = thunk_name_buf;
     }
@@ -28676,14 +28549,9 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
     {
       output_asm_insn (push_buf, &call_op);
       if (thunk_name != NULL)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
-	  else
-	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	}
+	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
       else
-	output_indirect_thunk (need_prefix, regno);
+	output_indirect_thunk (regno);
     }
   else
     {
@@ -28698,10 +28566,7 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
 				   indirectlabelno++);
 
       /* Jump.  */
-      if (need_prefix == indirect_thunk_prefix_bnd)
-	fputs ("\tbnd jmp\t", asm_out_file);
-      else
-	fputs ("\tjmp\t", asm_out_file);
+      fputs ("\tjmp\t", asm_out_file);
       assemble_name_raw (asm_out_file, indirectlabel2);
       fputc ('\n', asm_out_file);
 
@@ -28743,22 +28608,14 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
       output_asm_insn (push_buf, &call_op);
 
       if (thunk_name != NULL)
-	{
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
-	  else
-	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	}
+	fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
       else
-	output_indirect_thunk (need_prefix, regno);
+	output_indirect_thunk (regno);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
       /* Call.  */
-      if (need_prefix == indirect_thunk_prefix_bnd)
-	fputs ("\tbnd call\t", asm_out_file);
-      else
-	fputs ("\tcall\t", asm_out_file);
+      fputs ("\tcall\t", asm_out_file);
       assemble_name_raw (asm_out_file, indirectlabel1);
       fputc ('\n', asm_out_file);
     }
@@ -28816,19 +28673,11 @@ ix86_output_function_return (bool long_p)
 			     == indirect_branch_thunk);
 	  indirect_thunk_name (thunk_name, INVALID_REGNUM, need_prefix,
 			       true);
-	  if (need_prefix == indirect_thunk_prefix_bnd)
-	    {
-	      indirect_return_bnd_needed |= need_thunk;
-	      fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
-	    }
-	  else
-	    {
-	      indirect_return_needed |= need_thunk;
-	      fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	    }
+	  indirect_return_needed |= need_thunk;
+	  fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
 	}
       else
-	output_indirect_thunk (need_prefix, INVALID_REGNUM);
+	output_indirect_thunk (INVALID_REGNUM);
 
       return "";
     }
@@ -28859,27 +28708,16 @@ ix86_output_indirect_function_return (rtx ret_op)
 	  bool need_thunk = (cfun->machine->function_return_type
 			     == indirect_branch_thunk);
 	  indirect_thunk_name (thunk_name, regno, need_prefix, true);
-	  if (need_prefix == indirect_thunk_prefix_bnd)
+
+	  if (need_thunk)
 	    {
-	      if (need_thunk)
-		{
-		  indirect_return_via_cx_bnd = true;
-		  indirect_thunks_bnd_used |= 1 << CX_REG;
-		}
-	      fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
+	      indirect_return_via_cx = true;
+	      indirect_thunks_used |= 1 << CX_REG;
 	    }
-	  else
-	    {
-	      if (need_thunk)
-		{
-		  indirect_return_via_cx = true;
-		  indirect_thunks_used |= 1 << CX_REG;
-		}
-	      fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
-	    }
+	  fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
 	}
       else
-	output_indirect_thunk (need_prefix, regno);
+	output_indirect_thunk (regno);
 
       return "";
     }
@@ -29108,98 +28946,6 @@ ix86_instantiate_decls (void)
       instantiate_decl_rtl (s->rtl);
 }
 
-/* Return the number used for encoding REG, in the range 0..7.  */
-
-static int
-reg_encoded_number (rtx reg)
-{
-  unsigned regno = REGNO (reg);
-  switch (regno)
-    {
-    case AX_REG:
-      return 0;
-    case CX_REG:
-      return 1;
-    case DX_REG:
-      return 2;
-    case BX_REG:
-      return 3;
-    case SP_REG:
-      return 4;
-    case BP_REG:
-      return 5;
-    case SI_REG:
-      return 6;
-    case DI_REG:
-      return 7;
-    default:
-      break;
-    }
-  if (IN_RANGE (regno, FIRST_STACK_REG, LAST_STACK_REG))
-    return regno - FIRST_STACK_REG;
-  if (IN_RANGE (regno, FIRST_SSE_REG, LAST_SSE_REG))
-    return regno - FIRST_SSE_REG;
-  if (IN_RANGE (regno, FIRST_MMX_REG, LAST_MMX_REG))
-    return regno - FIRST_MMX_REG;
-  if (IN_RANGE (regno, FIRST_REX_SSE_REG, LAST_REX_SSE_REG))
-    return regno - FIRST_REX_SSE_REG;
-  if (IN_RANGE (regno, FIRST_REX_INT_REG, LAST_REX_INT_REG))
-    return regno - FIRST_REX_INT_REG;
-  if (IN_RANGE (regno, FIRST_MASK_REG, LAST_MASK_REG))
-    return regno - FIRST_MASK_REG;
-  return -1;
-}
-
-/* Given an insn INSN with NOPERANDS OPERANDS, return the modr/m byte used
-   in its encoding if it could be relevant for ROP mitigation, otherwise
-   return -1.  If POPNO0 and POPNO1 are nonnull, store the operand numbers
-   used for calculating it into them.  */
-
-static int
-ix86_get_modrm_for_rop (rtx_insn *insn, rtx *operands, int noperands,
-			int *popno0 = 0, int *popno1 = 0)
-{
-  if (asm_noperands (PATTERN (insn)) >= 0)
-    return -1;
-  int has_modrm = get_attr_modrm (insn);
-  if (!has_modrm)
-    return -1;
-  enum attr_modrm_class cls = get_attr_modrm_class (insn);
-  rtx op0, op1;
-  switch (cls)
-    {
-    case MODRM_CLASS_OP02:
-      gcc_assert (noperands >= 3);
-      if (popno0)
-	{
-	  *popno0 = 0;
-	  *popno1 = 2;
-	}
-      op0 = operands[0];
-      op1 = operands[2];
-      break;
-    case MODRM_CLASS_OP01:
-      gcc_assert (noperands >= 2);
-      if (popno0)
-	{
-	  *popno0 = 0;
-	  *popno1 = 1;
-	}
-      op0 = operands[0];
-      op1 = operands[1];
-      break;
-    default:
-      return -1;
-    }
-  if (REG_P (op0) && REG_P (op1))
-    {
-      int enc0 = reg_encoded_number (op0);
-      int enc1 = reg_encoded_number (op1);
-      return 0xc0 + (enc1 << 3) + enc0;
-    }
-  return -1;
-}
-
 /* Check whether x86 address PARTS is a pc-relative address.  */
 
 bool
@@ -29585,16 +29331,6 @@ avoid_func_arg_motion (rtx_insn *first_arg, rtx_insn *insn)
 {
   rtx set;
   rtx tmp;
-
-  /* Add anti dependencies for bounds stores.  */
-  if (INSN_P (insn)
-      && GET_CODE (PATTERN (insn)) == PARALLEL
-      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == UNSPEC
-      && XINT (XVECEXP (PATTERN (insn), 0, 0), 1) == UNSPEC_BNDSTX)
-    {
-      add_dependence (first_arg, insn, REG_DEP_ANTI);
-      return;
-    }
 
   set = single_set (insn);
   if (!set)
@@ -40654,7 +40390,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     {
     case SET:
       if (register_operand (SET_DEST (x), VOIDmode)
-	  && reg_or_0_operand (SET_SRC (x), VOIDmode))
+	  && register_operand (SET_SRC (x), VOIDmode))
 	{
 	  *total = ix86_set_reg_reg_cost (GET_MODE (SET_DEST (x)));
 	  return true;
@@ -40681,20 +40417,10 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-      if (TARGET_64BIT && !x86_64_immediate_operand (x, VOIDmode))
-	*total = 3;
-      else if (TARGET_64BIT && !x86_64_zext_immediate_operand (x, VOIDmode))
-	*total = 2;
-      else if (flag_pic && SYMBOLIC_CONST (x)
-	       && !(TARGET_64BIT
-		    && (GET_CODE (x) == LABEL_REF
-			|| (GET_CODE (x) == SYMBOL_REF
-			    && SYMBOL_REF_LOCAL_P (x))))
-	       /* Use 0 cost for CONST to improve its propagation.  */
-	       && (TARGET_64BIT || GET_CODE (x) != CONST))
-	*total = 1;
-      else
+      if (x86_64_immediate_operand (x, VOIDmode))
 	*total = 0;
+     else
+	*total = 1;
       return true;
 
     case CONST_DOUBLE:
@@ -42213,215 +41939,6 @@ ix86_seh_fixup_eh_fallthru (void)
     }
 }
 
-/* Given a register number BASE, the lowest of a group of registers, update
-   regsets IN and OUT with the registers that should be avoided in input
-   and output operands respectively when trying to avoid generating a modr/m
-   byte for -mmitigate-rop.  */
-
-static void
-set_rop_modrm_reg_bits (int base, HARD_REG_SET &in, HARD_REG_SET &out)
-{
-  SET_HARD_REG_BIT (out, base);
-  SET_HARD_REG_BIT (out, base + 1);
-  SET_HARD_REG_BIT (in, base + 2);
-  SET_HARD_REG_BIT (in, base + 3);
-}
-
-/* Called if -mmitigate-rop is in effect.  Try to rewrite instructions so
-   that certain encodings of modr/m bytes do not occur.  */
-static void
-ix86_mitigate_rop (void)
-{
-  HARD_REG_SET input_risky;
-  HARD_REG_SET output_risky;
-  HARD_REG_SET inout_risky;
-
-  CLEAR_HARD_REG_SET (output_risky);
-  CLEAR_HARD_REG_SET (input_risky);
-  SET_HARD_REG_BIT (output_risky, AX_REG);
-  SET_HARD_REG_BIT (output_risky, CX_REG);
-  SET_HARD_REG_BIT (input_risky, BX_REG);
-  SET_HARD_REG_BIT (input_risky, DX_REG);
-  set_rop_modrm_reg_bits (FIRST_SSE_REG, input_risky, output_risky);
-  set_rop_modrm_reg_bits (FIRST_REX_INT_REG, input_risky, output_risky);
-  set_rop_modrm_reg_bits (FIRST_REX_SSE_REG, input_risky, output_risky);
-  set_rop_modrm_reg_bits (FIRST_EXT_REX_SSE_REG, input_risky, output_risky);
-  set_rop_modrm_reg_bits (FIRST_MASK_REG, input_risky, output_risky);
-  COPY_HARD_REG_SET (inout_risky, input_risky);
-  IOR_HARD_REG_SET (inout_risky, output_risky);
-
-  df_note_add_problem ();
-  /* Fix up what stack-regs did.  */
-  df_insn_rescan_all ();
-  df_analyze ();
-
-  regrename_init (true);
-  regrename_analyze (NULL);
-
-  auto_vec<du_head_p> cands;
-  
-  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      if (!NONDEBUG_INSN_P (insn))
-	continue;
-
-      if (GET_CODE (PATTERN (insn)) == USE
-	  || GET_CODE (PATTERN (insn)) == CLOBBER)
-	continue;
-
-      extract_insn (insn);
-
-      int opno0, opno1;
-      int modrm = ix86_get_modrm_for_rop (insn, recog_data.operand,
-					  recog_data.n_operands, &opno0,
-					  &opno1);
-
-      if (!ix86_rop_should_change_byte_p (modrm))
-	continue;
-
-      insn_rr_info *info = &insn_rr[INSN_UID (insn)];
-
-      /* This happens when regrename has to fail a block.  */
-      if (!info->op_info)
-	continue;
-
-      if (info->op_info[opno0].n_chains != 0)
-	{
-	  gcc_assert (info->op_info[opno0].n_chains == 1);
-	  du_head_p op0c;
-	  op0c = regrename_chain_from_id (info->op_info[opno0].heads[0]->id);
-	  if (op0c->target_data_1 + op0c->target_data_2 == 0
-	      && !op0c->cannot_rename)
-	    cands.safe_push (op0c);
-
-	  op0c->target_data_1++;
-	}
-      if (info->op_info[opno1].n_chains != 0)
-	{
-	  gcc_assert (info->op_info[opno1].n_chains == 1);
-	  du_head_p op1c;
-	  op1c = regrename_chain_from_id (info->op_info[opno1].heads[0]->id);
-	  if (op1c->target_data_1 + op1c->target_data_2 == 0
-	      && !op1c->cannot_rename)
-	    cands.safe_push (op1c);
-
-	  op1c->target_data_2++;
-	}
-    }
-
-  int i;
-  du_head_p head;
-  FOR_EACH_VEC_ELT (cands, i, head)
-    {
-      int old_reg, best_reg;
-      HARD_REG_SET unavailable;
-
-      CLEAR_HARD_REG_SET (unavailable);
-      if (head->target_data_1)
-	IOR_HARD_REG_SET (unavailable, output_risky);
-      if (head->target_data_2)
-	IOR_HARD_REG_SET (unavailable, input_risky);
-
-      int n_uses;
-      reg_class superclass = regrename_find_superclass (head, &n_uses,
-							&unavailable);
-      old_reg = head->regno;
-      best_reg = find_rename_reg (head, superclass, &unavailable,
-				  old_reg, false);
-      bool ok = regrename_do_replace (head, best_reg);
-      gcc_assert (ok);
-      if (dump_file)
-	fprintf (dump_file, "Chain %d renamed as %s in %s\n", head->id,
-		 reg_names[best_reg], reg_class_names[superclass]);
-
-    }
-  
-  regrename_finish ();
-
-  df_analyze ();
-
-  basic_block bb;
-  regset_head live;
-
-  INIT_REG_SET (&live);
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      rtx_insn *insn;
-
-      COPY_REG_SET (&live, DF_LR_OUT (bb));
-      df_simulate_initialize_backwards (bb, &live);
-
-      FOR_BB_INSNS_REVERSE (bb, insn)
-	{
-	  if (!NONDEBUG_INSN_P (insn))
-	    continue;
-
-	  df_simulate_one_insn_backwards (bb, insn, &live);
-
-	  if (GET_CODE (PATTERN (insn)) == USE
-	      || GET_CODE (PATTERN (insn)) == CLOBBER)
-	    continue;
-
-	  extract_insn (insn);
-	  constrain_operands_cached (insn, reload_completed);
-	  int opno0, opno1;
-	  int modrm = ix86_get_modrm_for_rop (insn, recog_data.operand,
-					      recog_data.n_operands, &opno0,
-					      &opno1);
-	  if (modrm < 0
-	      || !ix86_rop_should_change_byte_p (modrm)
-	      || opno0 == opno1)
-	    continue;
-
-	  rtx oldreg = recog_data.operand[opno1];
-	  preprocess_constraints (insn);
-	  const operand_alternative *alt = which_op_alt ();
-
-	  int i;
-	  for (i = 0; i < recog_data.n_operands; i++)
-	    if (i != opno1
-		&& alt[i].earlyclobber
-		&& reg_overlap_mentioned_p (recog_data.operand[i],
-					    oldreg))
-	      break;
-
-	  if (i < recog_data.n_operands)
-	    continue;
-
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "attempting to fix modrm byte in insn %d:"
-		     " reg %d class %s", INSN_UID (insn), REGNO (oldreg),
-		     reg_class_names[alt[opno1].cl]);
-
-	  HARD_REG_SET unavailable;
-	  REG_SET_TO_HARD_REG_SET (unavailable, &live);
-	  SET_HARD_REG_BIT (unavailable, REGNO (oldreg));
-	  IOR_COMPL_HARD_REG_SET (unavailable, call_used_reg_set);
-	  IOR_HARD_REG_SET (unavailable, fixed_reg_set);
-	  IOR_HARD_REG_SET (unavailable, output_risky);
-	  IOR_COMPL_HARD_REG_SET (unavailable,
-				  reg_class_contents[alt[opno1].cl]);
-
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	      if (!TEST_HARD_REG_BIT (unavailable, i))
-		break;
-	  if (i == FIRST_PSEUDO_REGISTER)
-	    {
-	      if (dump_file)
-		fprintf (dump_file, ", none available\n");
-	      continue;
-	    }
-	  if (dump_file)
-	    fprintf (dump_file, " -> %d\n", i);
-	  rtx newreg = gen_rtx_REG (recog_data.operand_mode[opno1], i);
-	  validate_change (insn, recog_data.operand_loc[opno1], newreg, false);
-	  insn = emit_insn_before (gen_move_insn (newreg, oldreg), insn);
-	}
-    }
-}
-
 /* Implement machine specific optimizations.  We implement padding of returns
    for K8 CPUs and pass to avoid 4 jumps in the single 16 byte window.  */
 static void
@@ -42431,9 +41948,6 @@ ix86_reorg (void)
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
   compute_bb_for_insn ();
 
-  if (flag_mitigate_rop)
-    ix86_mitigate_rop ();
-  
   if (TARGET_SEH && current_function_has_exception_handlers ())
     ix86_seh_fixup_eh_fallthru ();
 
@@ -46144,6 +45658,42 @@ expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
 }
 
 /* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to implement D
+   using movss or movsd.  */
+static bool
+expand_vec_perm_movs (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  unsigned i, nelt = d->nelt;
+  rtx x;
+
+  if (d->one_operand_p)
+    return false;
+
+  if (!(TARGET_SSE && vmode == V4SFmode)
+      && !(TARGET_SSE2 && vmode == V2DFmode))
+    return false;
+
+  /* Only the first element is changed.  */
+  if (d->perm[0] != nelt && d->perm[0] != 0)
+    return false;
+  for (i = 1; i < nelt; ++i)
+    if (d->perm[i] != i + nelt - d->perm[0])
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  if (d->perm[0] == nelt)
+    x = gen_rtx_VEC_MERGE (vmode, d->op1, d->op0, GEN_INT (1));
+  else
+    x = gen_rtx_VEC_MERGE (vmode, d->op0, d->op1, GEN_INT (1));
+
+  emit_insn (gen_rtx_SET (d->target, x));
+
+  return true;
+}
+
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to implement D
    in terms of blendp[sd] / pblendw / pblendvb / vpblendd.  */
 
 static bool
@@ -46884,6 +46434,10 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	    return true;
 	}
     }
+
+  /* Try movss/movsd instructions.  */
+  if (expand_vec_perm_movs (d))
+    return true;
 
   /* Finally, try the fully general two operand permute.  */
   if (expand_vselect_vconcat (d->target, d->op0, d->op1, d->perm, nelt,

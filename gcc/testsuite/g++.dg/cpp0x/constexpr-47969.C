@@ -8,4 +8,4 @@ struct A
 
 constexpr A a = A();
 
-int ar[a]; // { dg-error "has non-integral type" }
+int ar[a]; // { dg-error "could not convert|has non-integral type" }

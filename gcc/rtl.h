@@ -1100,6 +1100,14 @@ is_a_helper <rtx_note *>::test (rtx_insn *insn)
 			       __FUNCTION__); \
      &_rtx->u.fld[_n]; }))
 
+#define RTL_CHECKC3(RTX, N, C1, C2, C3) __extension__			\
+(*({ __typeof (RTX) const _rtx = (RTX); const int _n = (N);		\
+     const enum rtx_code _code = GET_CODE (_rtx);			\
+     if (_code != (C1) && _code != (C2) && _code != (C3))		\
+       rtl_check_failed_code3 (_rtx, (C1), (C2), (C3), __FILE__,	\
+			       __LINE__, __FUNCTION__);			\
+     &_rtx->u.fld[_n]; }))
+
 #define RTVEC_ELT(RTVEC, I) __extension__				\
 (*({ __typeof (RTVEC) const _rtvec = (RTVEC); const int _i = (I);	\
      if (_i < 0 || _i >= GET_NUM_ELEM (_rtvec))				\
@@ -1190,6 +1198,10 @@ extern void rtl_check_failed_code1 (const_rtx, enum rtx_code, const char *,
 extern void rtl_check_failed_code2 (const_rtx, enum rtx_code, enum rtx_code,
 				    const char *, int, const char *)
     ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
+extern void rtl_check_failed_code3 (const_rtx, enum rtx_code, enum rtx_code,
+				    enum rtx_code, const char *, int,
+				    const char *)
+    ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 extern void rtl_check_failed_code_mode (const_rtx, enum rtx_code, machine_mode,
 					bool, const char *, int, const char *)
     ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
@@ -1208,6 +1220,7 @@ extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 #define RTL_CHECK2(RTX, N, C1, C2)  ((RTX)->u.fld[N])
 #define RTL_CHECKC1(RTX, N, C)	    ((RTX)->u.fld[N])
 #define RTL_CHECKC2(RTX, N, C1, C2) ((RTX)->u.fld[N])
+#define RTL_CHECKC3(RTX, N, C1, C2, C3) ((RTX)->u.fld[N])
 #define RTVEC_ELT(RTVEC, I)	    ((RTVEC)->elem[I])
 #define XWINT(RTX, N)		    ((RTX)->u.hwint[N])
 #define CWI_ELT(RTX, I)		    ((RTX)->u.hwiv.elem[I])
@@ -1362,6 +1375,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define XCVECLEN(RTX, N, C)	GET_NUM_ELEM (XCVEC (RTX, N, C))
 
 #define XC2EXP(RTX, N, C1, C2)      (RTL_CHECKC2 (RTX, N, C1, C2).rt_rtx)
+#define XC3EXP(RTX, N, C1, C2, C3)  (RTL_CHECKC3 (RTX, N, C1, C2, C3).rt_rtx)
 
 
 /* Methods of rtx_expr_list.  */
@@ -2632,7 +2646,7 @@ do {								        \
 
 /* For a SET rtx, SET_DEST is the place that is set
    and SET_SRC is the value it is set to.  */
-#define SET_DEST(RTX) XC2EXP (RTX, 0, SET, CLOBBER)
+#define SET_DEST(RTX) XC3EXP (RTX, 0, SET, CLOBBER, CLOBBER_HIGH)
 #define SET_SRC(RTX) XCEXP (RTX, 1, SET)
 #define SET_IS_RETURN_P(RTX)						\
   (RTL_FLAG_CHECK1 ("SET_IS_RETURN_P", (RTX), SET)->jump)
@@ -3296,6 +3310,15 @@ extern enum rtx_code unsigned_condition (enum rtx_code);
 extern enum rtx_code signed_condition (enum rtx_code);
 extern void mark_jump_label (rtx, rtx_insn *, int);
 
+/* Return true if integer comparison operator CODE interprets its operands
+   as unsigned.  */
+
+inline bool
+unsigned_condition_p (enum rtx_code code)
+{
+  return unsigned_condition (code) == code;
+}
+
 /* In jump.c */
 extern rtx_insn *delete_related_insns (rtx);
 
@@ -3453,6 +3476,16 @@ extern bool tablejump_p (const rtx_insn *, rtx_insn **, rtx_jump_table_data **);
 extern int computed_jump_p (const rtx_insn *);
 extern bool tls_referenced_p (const_rtx);
 extern bool contains_mem_rtx_p (rtx x);
+extern bool reg_is_clobbered_by_clobber_high (unsigned int, machine_mode,
+					      const_rtx);
+
+/* Convenient wrapper for reg_is_clobbered_by_clobber_high.  */
+inline bool
+reg_is_clobbered_by_clobber_high (const_rtx x, const_rtx clobber_high_op)
+{
+  return reg_is_clobbered_by_clobber_high (REGNO (x), GET_MODE (x),
+					   clobber_high_op);
+}
 
 /* Overload for refers_to_regno_p for checking a single register.  */
 inline bool
@@ -4228,6 +4261,7 @@ extern void vt_equate_reg_base_value (const_rtx, const_rtx);
 extern bool memory_modified_in_insn_p (const_rtx, const_rtx);
 extern bool may_be_sp_based_p (rtx);
 extern rtx gen_hard_reg_clobber (machine_mode, unsigned int);
+extern rtx gen_hard_reg_clobber_high (machine_mode, unsigned int);
 extern rtx get_reg_known_value (unsigned int);
 extern bool get_reg_known_equiv_p (unsigned int);
 extern rtx get_reg_base_value (unsigned int);

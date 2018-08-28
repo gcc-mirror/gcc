@@ -793,6 +793,15 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 		ret = GS_ERROR;
 	    }
 	}
+      if (ret != GS_ERROR)
+	{
+	  tree decl = cp_get_callee_fndecl_nofold (*expr_p);
+	  if (decl
+	      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_FRONTEND
+	      && ((int) DECL_FUNCTION_CODE (decl)
+		  == CP_BUILT_IN_IS_CONSTANT_EVALUATED))
+	    *expr_p = boolean_false_node;
+	}
       break;
 
     case RETURN_EXPR:
@@ -1411,12 +1420,15 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  /* Never mind.  */;
 	else if (wtd->try_block)
 	  {
-	    if (TREE_CODE (wtd->try_block) == MUST_NOT_THROW_EXPR
-		&& warning_at (loc, OPT_Wterminate,
-			       "throw will always call terminate()")
-		&& cxx_dialect >= cxx11
-		&& DECL_DESTRUCTOR_P (current_function_decl))
-	      inform (loc, "in C++11 destructors default to noexcept");
+	    if (TREE_CODE (wtd->try_block) == MUST_NOT_THROW_EXPR)
+	      {
+		auto_diagnostic_group d;
+		if (warning_at (loc, OPT_Wterminate,
+				"throw will always call terminate()")
+		    && cxx_dialect >= cxx11
+		    && DECL_DESTRUCTOR_P (current_function_decl))
+		  inform (loc, "in C++11 destructors default to noexcept");
+	      }
 	  }
 	else
 	  {
@@ -2482,6 +2494,13 @@ cp_fold (tree x)
 	    && current_function_decl
 	    && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
 	  nw = 1;
+
+	/* Defer folding __builtin_is_constant_evaluated.  */
+	if (callee
+	    && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_FRONTEND
+	    && ((int) DECL_FUNCTION_CODE (callee)
+		== CP_BUILT_IN_IS_CONSTANT_EVALUATED))
+	  break;
 
 	x = copy_node (x);
 

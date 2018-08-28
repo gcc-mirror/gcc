@@ -31,6 +31,11 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Tp, typename _Allocator> class list;
+} } // namespace std::__debug
+
 #include <list>
 #include <debug/safe_sequence.h>
 #include <debug/safe_container.h>
@@ -56,6 +61,9 @@ namespace __debug
       typedef typename _Base::const_iterator	_Base_const_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator>	_Equal;
       typedef __gnu_debug::_Not_equal_to<_Base_const_iterator>  _Not_equal;
+
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
 
     public:
       typedef typename _Base::reference			reference;
@@ -641,65 +649,134 @@ namespace __debug
       { splice(__position, std::move(__x), __first, __last); }
 #endif
 
-      void
+    private:
+#if __cplusplus > 201703L
+      typedef size_type __remove_return_type;
+# define _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG \
+      __attribute__((__abi_tag__("__cxx20")))
+# define _GLIBCXX20_ONLY(__expr) __expr
+#else
+      typedef void __remove_return_type;
+# define _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG
+# define _GLIBCXX20_ONLY(__expr)
+#endif
+
+    public:
+      _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG
+      __remove_return_type
       remove(const _Tp& __value)
       {
-	for (_Base_iterator __x = _Base::begin(); __x != _Base::end(); )
+	if (!this->_M_iterators && !this->_M_const_iterators)
+	  return _Base::remove(__value);
+
+	size_type __removed __attribute__((__unused__)) = 0;
+	_Base_iterator __first = _Base::begin();
+	_Base_iterator __last = _Base::end();
+	_Base_iterator __extra = __last;
+	while (__first != __last)
 	  {
-	    if (*__x == __value)
-	      __x = _M_erase(__x);
+	    if (*__first == __value)
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 526. Is it undefined if a function in the standard changes
+	      // in parameters?
+	      if (std::__addressof(*__first) != std::__addressof(__value))
+		{
+		  __first = _M_erase(__first);
+		  _GLIBCXX20_ONLY( __removed++ );
+		}
+	      else
+		{
+		  __extra = __first;
+		  ++__first;
+		}
 	    else
-	      ++__x;
+	      ++__first;
 	  }
+
+	if (__extra != __last)
+	  {
+	    _M_erase(__extra);
+	    _GLIBCXX20_ONLY( __removed++ );
+	  }
+	return _GLIBCXX20_ONLY( __removed );
       }
 
       template<class _Predicate>
-	void
+	__remove_return_type
 	remove_if(_Predicate __pred)
 	{
+	  if (!this->_M_iterators && !this->_M_const_iterators)
+	    return _Base::remove_if(__pred);
+
+	  size_type __removed __attribute__((__unused__)) = 0;
 	  for (_Base_iterator __x = _Base::begin(); __x != _Base::end(); )
-	    {
-	      if (__pred(*__x))
+	    if (__pred(*__x))
+	      {
 		__x = _M_erase(__x);
-	      else
-		++__x;
-	    }
+		_GLIBCXX20_ONLY( __removed++ );
+	      }
+	    else
+	      ++__x;
+
+	  return _GLIBCXX20_ONLY( __removed );
 	}
 
-      void
+      _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG
+      __remove_return_type
       unique()
       {
+	if (!this->_M_iterators && !this->_M_const_iterators)
+	  return _Base::unique();
+
+	if (empty())
+	  return _GLIBCXX20_ONLY(0);
+
+        size_type __removed __attribute__((__unused__)) = 0;
 	_Base_iterator __first = _Base::begin();
 	_Base_iterator __last = _Base::end();
-	if (__first == __last)
-	  return;
-	_Base_iterator __next = __first; ++__next;
-	while (__next != __last)
-	  {
-	    if (*__first == *__next)
-	      __next = _M_erase(__next);
-	    else
-	      __first = __next++;
-	  }
+	_Base_iterator __next = __first;
+	while (++__next != __last)
+	  if (*__first == *__next)
+	    {
+	      _M_erase(__next);
+	      __next = __first;
+	      _GLIBCXX20_ONLY( __removed++ );
+	    }
+	  else
+	    __first = __next;
+
+	return _GLIBCXX20_ONLY( __removed );
       }
 
       template<class _BinaryPredicate>
-	void
+	__remove_return_type
 	unique(_BinaryPredicate __binary_pred)
 	{
+	  if (!this->_M_iterators && !this->_M_const_iterators)
+	    return _Base::unique(__binary_pred);
+
+	  if (empty())
+	    return _GLIBCXX20_ONLY(0);
+
+	  size_type __removed __attribute__((__unused__)) = 0;
 	  _Base_iterator __first = _Base::begin();
 	  _Base_iterator __last = _Base::end();
-	  if (__first == __last)
-	    return;
-	  _Base_iterator __next = __first; ++__next;
-	  while (__next != __last)
-	    {
-	      if (__binary_pred(*__first, *__next))
-		__next = _M_erase(__next);
-	      else
-		__first = __next++;
-	    }
+	  _Base_iterator __next = __first;;
+	  while (++__next != __last)
+	    if (__binary_pred(*__first, *__next))
+	      {
+		_M_erase(__next);
+		__next = __first;
+		_GLIBCXX20_ONLY( __removed++ );
+	      }
+	    else
+	      __first = __next;
+
+	  return _GLIBCXX20_ONLY( __removed );
 	}
+
+#undef _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG
+#undef _GLIBCXX20_ONLY
 
       void
 #if __cplusplus >= 201103L

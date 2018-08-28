@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DUMP_CONTEXT_H
 #define GCC_DUMP_CONTEXT_H 1
 
+#include "dumpfile.h"
 #include "pretty-print.h"
 
 /* A class for handling the various dump_* calls.
@@ -73,11 +74,11 @@ class dump_context
 			      tree t);
 
   void dump_printf_va (dump_flags_t dump_kind, const char *format,
-		       va_list ap) ATTRIBUTE_PRINTF (3, 0);
+		       va_list *ap) ATTRIBUTE_GCC_DUMP_PRINTF (3, 0);
 
   void dump_printf_loc_va (dump_flags_t dump_kind, const dump_location_t &loc,
-			   const char *format, va_list ap)
-    ATTRIBUTE_PRINTF (4, 0);
+			   const char *format, va_list *ap)
+    ATTRIBUTE_GCC_DUMP_PRINTF (4, 0);
 
   template<unsigned int N, typename C>
   void dump_dec (dump_flags_t dump_kind, const poly_int<N, C> &value);
