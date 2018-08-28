@@ -1,5 +1,14 @@
 2018-08-28  Nathan Sidwell  <nathan@acm.org>
 
+	Sorted macros
+	gcc/cp/
+	* module.c (module_state::{read,write}_define): New, single-macro
+	streamers.
+	(module_state::write_define_cb): Delete.
+	(maybe_add_macro, macro_loc_cmp): New.
+	(module_state::write_defines): Write in source order.
+	(module_state::read_defines): Adjust.
+
 	Macro define locations
 	libcpp/
 	* include/cpplib.h (cpp_macro): Add imported field.
