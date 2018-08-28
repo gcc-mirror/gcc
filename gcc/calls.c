@@ -1222,8 +1222,11 @@ alloc_max_size (void)
   if (alloc_object_size_limit)
     return alloc_object_size_limit;
 
-  alloc_object_size_limit
-    = build_int_cst (size_type_node, warn_alloc_size_limit);
+  HOST_WIDE_INT limit = warn_alloc_size_limit;
+  if (limit == HOST_WIDE_INT_MAX)
+    limit = tree_to_shwi (TYPE_MAX_VALUE (ptrdiff_type_node));
+
+  alloc_object_size_limit = build_int_cst (size_type_node, limit);
 
   return alloc_object_size_limit;
 }

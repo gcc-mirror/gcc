@@ -1,3 +1,13 @@
+2018-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/86631
+	* calls.c (alloc_max_size): Treat HOST_WIDE_INT special.
+	* gimple-ssa-warn-alloca.c (adjusted_warn_limit): New function.
+	(pass_walloca::gate): Use it.
+	(alloca_call_type): Same.
+	(pass_walloca::execute): Same.
+	* stor-layout.c (layout_decl): Treat HOST_WIDE_INT special.
+
 2018-08-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* dumpfile.h (ATTRIBUTE_GCC_DUMP_PRINTF): Change version check on
