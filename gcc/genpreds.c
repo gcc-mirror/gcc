@@ -152,7 +152,7 @@ write_predicate_subfunction (struct pred_data *p)
   p->exp = and_exp;
 
   printf ("static inline int\n"
-	  "%s_1 (rtx op, machine_mode mode ATTRIBUTE_UNUSED)\n",
+	  "%s_1 (rtx op ATTRIBUTE_UNUSED, machine_mode mode ATTRIBUTE_UNUSED)\n",
 	  p->name);
   rtx_reader_ptr->print_md_ptr_loc (p->c_block);
   if (p->c_block[0] == '{')
