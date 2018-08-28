@@ -1199,6 +1199,8 @@ extern int cpp_ideq (const cpp_token *, const char *);
 extern void cpp_output_line (cpp_reader *, FILE *);
 extern unsigned char *cpp_output_line_to_string (cpp_reader *,
 						 const unsigned char *);
+extern const unsigned char *cpp_alloc_token_string
+  (cpp_reader *, const unsigned char *, unsigned);
 extern void cpp_output_token (const cpp_token *, FILE *);
 extern const char *cpp_type2name (enum cpp_ttype, unsigned char flags);
 /* Returns the value of an escape sequence, truncated to the correct
@@ -1254,6 +1256,8 @@ extern void cpp_scan_nooutput (cpp_reader *);
 extern int  cpp_sys_macro_p (cpp_reader *);
 extern unsigned char *cpp_quote_string (unsigned char *, const unsigned char *,
 					unsigned int);
+extern bool cpp_compare_macros (cpp_reader *pfile, cpp_hashnode *node,
+				const cpp_macro *macro2);
 
 /* In files.c */
 extern bool cpp_included (cpp_reader *, const char *);

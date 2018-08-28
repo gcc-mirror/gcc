@@ -517,6 +517,7 @@ public:
   unsigned HOST_WIDE_INT wu (); /* Read an unsigned HOST_WIDE_INT.  */
   const char *str (size_t * = NULL); /* Read a string.  */
   const char *buf (size_t); /* Read a fixed-length buffer.  */
+  cpp_hashnode *cpp_node (); /* Read a cpp node.  */
 };
 
 /* Verify the buffer's CRC is correct.  */
@@ -601,12 +602,13 @@ public:
   {
     str (ptr, strlen (ptr));
   }
-  void str (const cpp_hashnode *node)
+  void cpp_node (const cpp_hashnode *node)
   {
     str ((const char *)NODE_NAME (node), NODE_LEN (node));
   }
   void str (const char *, size_t);  /* Write string of known length.  */
   void buf (const char *, size_t);  /* Write fixed length buffer.  */
+  char *buf (size_t); /* Create a writable buffer */
 
 public:
   /* Format a NUL-terminated raw string.  */
@@ -942,13 +944,18 @@ bytes_in::z ()
 }
 
 /* Buffer simply memcpied.  */
-
-void
-bytes_out::buf (const char *buf, size_t len)
+char *
+bytes_out::buf (size_t len)
 {
   align (sizeof (void *) * 2);
-  if (char *ptr = write (len))
-    memcpy (ptr, buf, len);
+  return write (len);
+}
+
+void
+bytes_out::buf (const char *src, size_t len)
+{
+  if (char *ptr = buf (len))
+    memcpy (ptr, src, len);
 }
 
 const char *
@@ -967,7 +974,11 @@ void
 bytes_out::str (const char *string, size_t len)
 {
   z (len);
-  buf (string, len + 1);
+  if (len)
+    {
+      gcc_checking_assert (!string[len]);
+      buf (string, len + 1);
+    }
 }
 
 const char *
@@ -980,13 +991,28 @@ bytes_in::str (size_t *len_p)
     len = 0;
   if (len_p)
     *len_p = len;
-  const char *str = buf (len + 1);
-  if (!str || str[len])
+  const char *str = NULL;
+  if (len)
     {
-      set_overrun ();
-      str = "";
+      str = buf (len + 1);
+      if (!str || str[len])
+	{
+	  set_overrun ();
+	  str = NULL;
+	}
     }
-  return str;
+  return str ? str : "";
+}
+
+cpp_hashnode *
+bytes_in::cpp_node ()
+{
+  size_t len;
+  const char *s = str (&len);
+  if (!len)
+    return NULL;
+  return CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT
+		       (get_identifier_with_length (s, len)));
 }
 
 /* Format a string directly to the buffer, including a terminating
@@ -2762,6 +2788,7 @@ class GTY(()) module_state {
  private:
   static int write_define_cb (cpp_reader *, cpp_hashnode *, void *);
   void write_defines (elf_out *to, cpp_reader *, unsigned *crc_ptr);
+  bool read_defines (cpp_reader *);
 
  public:
   void write_location (bytes_out &, location_t);
@@ -9633,7 +9660,7 @@ module_state::write_define_cb (cpp_reader *, cpp_hashnode *node,
   // but first we need to be able to read them back.
 
   dump () && dump ("Writing #define %I", HT_IDENT_TO_GCC_IDENT (node));
-  data->sec->str (node);
+  data->sec->cpp_node (node);
   // FIXME: macro->line
   data->sec->b (macro->fun_like);
   data->sec->b (macro->syshdr);
@@ -9645,8 +9672,9 @@ module_state::write_define_cb (cpp_reader *, cpp_hashnode *node,
       data->sec->u (macro->paramc);
       const cpp_hashnode *const *parms = macro->parm.params;
       for (unsigned ix = 0; ix != macro->paramc; ix++)
-	data->sec->str (parms[ix]);
+	data->sec->cpp_node (parms[ix]);
     }
+  unsigned len = 0;
   for (unsigned ix = 0; ix != macro->count; ix++)
     {
       const cpp_token *token = &macro->exp.tokens[ix];
@@ -9657,24 +9685,25 @@ module_state::write_define_cb (cpp_reader *, cpp_hashnode *node,
 	{
 	case CPP_TOKEN_FLD_NODE:
 	  /* An identifier.  */
-	  data->sec->str (token->val.node.node);
+	  data->sec->cpp_node (token->val.node.node);
 	  if (token->val.node.spelling == token->val.node.node)
 	    /* The spelling will usually be the same.  so optimize
 	       that.  */
-	    data->sec->str ("", 0);
+	    data->sec->str (NULL, 0);
 	  else
-	    data->sec->str (token->val.node.spelling);
+	    data->sec->cpp_node (token->val.node.spelling);
 	  break;
 
 	case CPP_TOKEN_FLD_STR:
-	  /* A string, number or comment.  */
-	  data->sec->str ((const char *)token->val.str.text, token->val.str.len);
+	  /* A string, number or comment.  NOT NUL terminated!  */
+	  len += token->val.str.len;
+	  data->sec->u (token->val.str.len);
 	  break;
 
 	case CPP_TOKEN_FLD_ARG_NO:
 	  /* An argument reference.  */
 	  data->sec->u (token->val.macro_arg.arg_no);
-	  data->sec->str (token->val.macro_arg.spelling);
+	  data->sec->cpp_node (token->val.macro_arg.spelling);
 	  break;
 
 	case CPP_TOKEN_FLD_NONE:
@@ -9688,7 +9717,22 @@ module_state::write_define_cb (cpp_reader *, cpp_hashnode *node,
 	  gcc_unreachable ();
 	}
     }
-  
+  if (len)
+    {
+      char *ptr = data->sec->buf (len);
+      len = 0;
+      for (unsigned ix = 0; ix != macro->count; ix++)
+	{
+	  const cpp_token *token = &macro->exp.tokens[ix];
+	  if (cpp_token_val_index (token) == CPP_TOKEN_FLD_STR)
+	    {
+	      memcpy (ptr + len, token->val.str.text,
+		      token->val.str.len);
+	      len += token->val.str.len;
+	    }
+	}
+    }
+
   return 1; /* Don't stop.  */
 }
 
@@ -9711,10 +9755,155 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   cpp_forall_identifiers (reader, write_define_cb, &data);
 
   /* End marker.  */
-  sec.str ("", 0);
+  sec.str (NULL, 0);
+  /* Ensure there were at least 3 bytes after any final bool pack.  */
+  sec.u (0);
 
   sec.end (to, to->name (MOD_SNAME_PFX ".def"), crc_p);
   dump.outdent ();
+}
+
+bool
+module_state::read_defines (cpp_reader *reader)
+{
+  bytes_in sec;
+
+  if (!sec.begin (loc, slurp->from, MOD_SNAME_PFX ".def"))
+    return false;
+  dump () && dump ("Reading #defines");
+  dump.indent ();
+
+  while (cpp_hashnode *node = sec.cpp_node ())
+    {
+      bool funlike = sec.b ();
+      bool syshdr = sec.b ();
+      bool variadic = sec.b ();
+      sec.bflush ();
+      unsigned count = sec.u ();
+      unsigned paramc = 0;
+      cpp_hashnode **params = NULL;
+      /* We rely on knowing cpp_reader's hash table is ident_hash, and
+         it's subobject allocator is stringpool_ggc_alloc and that is
+         just a wrapper for ggc_alloc_atomic.  */
+      if (funlike)
+	{
+	  paramc = sec.u ();
+	  params
+	    = (cpp_hashnode **)ggc_alloc_atomic (sizeof (cpp_hashnode *)
+						 * paramc);
+	  for (unsigned ix = 0; ix != paramc; ix++)
+	    params[ix] = sec.cpp_node ();
+	}
+      cpp_macro *macro
+	= (cpp_macro *)ggc_alloc_atomic (sizeof (cpp_macro) - sizeof (cpp_token)
+					 + sizeof (cpp_token) * count);
+      macro->parm.params = params;
+      macro->line = UNKNOWN_LOCATION;
+      macro->count = count;
+      macro->paramc = paramc;
+      macro->lazy = 0;
+      macro->kind = cmk_macro;
+      macro->fun_like = funlike;
+      macro->variadic = variadic;
+      macro->syshdr = syshdr;
+      macro->used = false;
+      macro->extra_tokens = false;
+
+      unsigned len = 0;
+      for (unsigned ix = 0; ix != count && !sec.get_overrun (); ix++)
+	{
+	  cpp_token *token = &macro->exp.tokens[ix];
+	  token->type = cpp_ttype (sec.u ());
+	  token->flags = sec.u ();
+	  switch (cpp_token_val_index (token))
+	    {
+	    case CPP_TOKEN_FLD_NODE:
+	      /* An identifier.  */
+	      {
+		token->val.node.node = sec.cpp_node ();
+		token->val.node.spelling = sec.cpp_node ();
+		if (!token->val.node.spelling)
+		  token->val.node.spelling = token->val.node.node;
+	      break;
+
+	    case CPP_TOKEN_FLD_STR:
+	      /* A string, number or comment.  NOT NUL terminated!*/
+	      {
+		token->val.str.len = sec.z ();
+		len += token->val.str.len;
+	      }
+	      break;
+
+	    case CPP_TOKEN_FLD_ARG_NO:
+	      /* An argument reference.  */
+	      {
+		unsigned arg_no = sec.u ();
+		if (arg_no - 1 >= paramc)
+		  sec.set_overrun ();
+		token->val.macro_arg.arg_no = arg_no;
+		token->val.macro_arg.spelling = sec.cpp_node ();
+	      }
+	      break;
+
+	      case CPP_TOKEN_FLD_NONE:
+		break;
+
+		default:
+		  sec.set_overrun ();
+		  break;
+	      }
+	    }
+	}
+      if (len)
+	if (const char *ptr = sec.buf (len))
+	  {
+	    const unsigned char *buf
+	      = cpp_alloc_token_string (reader, (const unsigned char *)ptr, len);
+	    len = 0;
+	    for (unsigned ix = 0; ix != count && !sec.get_overrun (); ix++)
+	      {
+		cpp_token *token = &macro->exp.tokens[ix];
+		if (cpp_token_val_index (token) == CPP_TOKEN_FLD_STR)
+		  {
+		    token->val.str.text = buf + len;
+		    len += token->val.str.len;
+		  }
+	      }
+	  }
+
+      if (sec.get_overrun ())
+	break;
+
+      if (cpp_macro_p (node))
+	{
+	  /* we already have a macro.  Check it is the same.  */
+	  if (!cpp_compare_macros (reader, node, macro))
+	    macro = NULL;
+	  else
+	    {
+	      error_at (loc, "incompatible redefinition of macro %qs",
+			NODE_NAME (node));
+	      if (cpp_user_macro_p (node))
+		inform (node->value.macro->line, "current definition");
+	    }
+	}
+      if (macro)
+	{
+	  /* Install the macro.  */
+	  node->value.macro = macro;
+	  node->type = NT_USER_MACRO;
+	  node->flags &= NODE_USED;
+	}
+    }
+
+  /* Read the padding zero.  */
+  if (sec.u ())
+    sec.set_overrun ();
+
+  dump.outdent ();
+  if (!sec.end (slurp->from))
+    return false;
+  return true;
 }
 
 /* Recursively find all the namespace bindings of NS.
@@ -10042,6 +10231,10 @@ module_state::read (int fd, int e, cpp_reader *reader, line_maps *lmaps,
 	 error, so who cares?  */
       slurper ()->free_filenames ();
     }
+
+  if (is_legacy ())
+    if (!read_defines (reader))
+      return;
 
   /* Read the namespace hierarchy. */
   auto_vec<tree> spaces;

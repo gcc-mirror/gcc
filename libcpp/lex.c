@@ -1566,13 +1566,20 @@ static void
 create_literal (cpp_reader *pfile, cpp_token *token, const uchar *base,
 		unsigned int len, enum cpp_ttype type)
 {
-  uchar *dest = _cpp_unaligned_alloc (pfile, len + 1);
-
-  memcpy (dest, base, len);
-  dest[len] = '\0';
   token->type = type;
   token->val.str.len = len;
-  token->val.str.text = dest;
+  token->val.str.text = cpp_alloc_token_string (pfile, base, len);
+}
+
+const uchar *
+cpp_alloc_token_string (cpp_reader *pfile,
+			const unsigned char *ptr, unsigned len)
+{
+  uchar *dest = _cpp_unaligned_alloc (pfile, len + 1);
+
+  dest[len] = 0;
+  memcpy (dest, ptr, len + 1);
+  return dest;
 }
 
 /* Subroutine of lex_raw_string: Append LEN chars from BASE to the buffer

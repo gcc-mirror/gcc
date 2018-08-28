@@ -314,8 +314,6 @@ static cpp_macro *create_iso_definition (cpp_reader *);
 /* #define directive parsing and handling.  */
 
 static cpp_macro *lex_expansion_token (cpp_reader *, cpp_macro *);
-static bool warn_of_redefinition (cpp_reader *, cpp_hashnode *,
-				  const cpp_macro *);
 static bool parse_params (cpp_reader *, unsigned *, bool *);
 static void check_trad_stringification (cpp_reader *, const cpp_macro *,
 					const cpp_string *);
@@ -2981,9 +2979,9 @@ _cpp_backup_tokens (cpp_reader *pfile, unsigned int count)
 /* #define directive parsing and handling.  */
 
 /* Returns nonzero if a macro redefinition warning is required.  */
-static bool
-warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
-		      const cpp_macro *macro2)
+bool
+cpp_compare_macros (cpp_reader *pfile, cpp_hashnode *node,
+		    const cpp_macro *macro2)
 {
   unsigned int i;
 
@@ -3439,7 +3437,7 @@ create_iso_definition (cpp_reader *pfile)
     (pfile, sizeof (cpp_macro) - sizeof (cpp_token)
      + sizeof (cpp_token) * macro->count);
 
-  /* Clear whitespace on first token for warn_of_redefinition().  */
+  /* Clear whitespace on first token.  */
   if (macro->count)
     macro->exp.tokens[0].flags &= ~PREV_WHITE;
 
@@ -3514,7 +3512,7 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
       if (CPP_OPTION (pfile, warn_unused_macros))
 	_cpp_warn_if_unused_macro (pfile, node, NULL);
 
-      if (warn_of_redefinition (pfile, node, macro))
+      if (cpp_compare_macros (pfile, node, macro))
 	{
           const int reason
 	    = (cpp_builtin_macro_p (node) && !(node->flags & NODE_WARN))

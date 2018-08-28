@@ -1,5 +1,26 @@
 2018-08-28  Nathan Sidwell  <nathan@acm.org>
 
+	Reading macros.
+	gcc/cp/
+	* module.c (bytes_{in,out}::cpp_node): New.
+	(bytes_out::buf): New.
+	(bytes_{in,out}::str): Treat zero-length strings specially.
+	(module_state::write_define_cb): Concatenate strings.
+	(module_state::write_defines): Write padding byte.
+	(module_state::read_defines): New.
+	(module_state::read): Call it.
+	libcpp/
+	* include/cpplib.h (cpp_alloc_token_string): New.
+	(cpp_compare_macros): Declare.
+	* lex.c (cpp_alloc_token_string): New, broken out of ...
+	(create_literal): ... here.  Call it.
+	* macro.c (warn_of_redefinition): Rename to ...
+	(cpp_compare_macros): ... this, and make it extern.
+	(_cpp_create_definition): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/macro-1_a.H: Adjust.
+	* g++.dg/modules/macro-1_b.C: New.
+
 	Writing macros.
 	gcc/cp/
 	* cp-tree.h (import_module, declare_module, atom_module_preamble,
