@@ -1,3 +1,9 @@
+2018-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87112
+	* builtins.c (expand_builtin_strnlen): Convert c_strlen result to
+	the type of the bound argument.
+
 2018-08-27  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dse.c (compute_trims): Handle case where the reference's
