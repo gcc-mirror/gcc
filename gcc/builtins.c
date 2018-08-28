@@ -2970,6 +2970,10 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
   tree func = get_callee_fndecl (exp);
 
   tree len = c_strlen (src, 0);
+  /* FIXME: Change c_strlen() to return sizetype instead of ssizetype
+     so these conversions aren't necessary.  */
+  if (len)
+    len = fold_convert_loc (loc, TREE_TYPE (bound), len);
 
   if (TREE_CODE (bound) == INTEGER_CST)
     {
@@ -2984,7 +2988,6 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
       if (!len || TREE_CODE (len) != INTEGER_CST)
 	return NULL_RTX;
 
-      len = fold_convert_loc (loc, size_type_node, len);
       len = fold_build2_loc (loc, MIN_EXPR, size_type_node, len, bound);
       return expand_expr (len, target, target_mode, EXPAND_NORMAL);
     }
