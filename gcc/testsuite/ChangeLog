@@ -1,6 +1,11 @@
 2018-08-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87117
+	* gcc.dg/pr87117-1.c: New testcase.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
 	* gcc.dg/pr87117-2.c: New testcase.
 
 2018-08-28  Richard Biener  <rguenther@suse.de>
