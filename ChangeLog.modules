@@ -1,3 +1,24 @@
+2018-08-28  Nathan Sidwell  <nathan@acm.org>
+
+	Writing macros.
+	gcc/cp/
+	* cp-tree.h (import_module, declare_module, atom_module_preamble,
+	finish_module_parse, maybe_atom_legacy_module): Add cpp_reader
+	arg.
+	* decl2.c (c_parse_final_cleanups): Adjust finish_module_parse.
+	* module.c (bytes_out::str): Overload for cpp_hashnode.
+	(module_state::read_imports,write_imports,do_import): Add
+	cpp_reader arg.
+	(module_state::atom_preamble): Likwise.
+	(import_module, declare_module, atom_module_preamble)
+	(finish_module_parse, maybe_atom_legacy_module): Likewise.
+	(module_state::write_{define_cb,defines}): New.
+	(module_state::write): Write defines when in legacy mode.
+	* parser.c (cp_parser_module_declaration)
+	(cp_parser_import_declaration, c_parse_file): Pass parse_in.
+	gcc/testsuite/
+	* g++.dg/modules/macro-1_a.H: New.
+
 2018-08-27  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r263897.

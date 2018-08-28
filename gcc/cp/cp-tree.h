@@ -6720,17 +6720,19 @@ extern void fixup_unscoped_enum_owner (tree);
 extern void set_implicit_module_owner (tree, tree);
 extern int push_module_export (bool, module_state * = NULL);
 extern void pop_module_export (int);
-extern void import_module (module_state *, location_t, bool, tree, line_maps *);
-extern void declare_module (module_state *, location_t, bool, tree, line_maps *);
-extern unsigned atom_module_preamble (location_t, line_maps *);
+extern void import_module (module_state *, location_t, bool, tree,
+			   cpp_reader *, line_maps *);
+extern void declare_module (module_state *, location_t, bool, tree,
+			    cpp_reader *, line_maps *);
+extern unsigned atom_module_preamble (location_t, cpp_reader *, line_maps *);
 extern void init_module_processing ();
 extern void finish_module_processing ();
-extern void finish_module_parse (line_maps *);
+extern void finish_module_parse (cpp_reader *, line_maps *);
 extern char const *module_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
 extern void atom_main_file (line_maps *, const line_map_ordinary *, unsigned);
 extern cpp_divert_include_t *atom_divert_include ();
-extern bool maybe_atom_legacy_module (line_maps *);
+extern bool maybe_atom_legacy_module (cpp_reader *, line_maps *);
 extern void atom_preamble_end (cpp_reader *, location_t);
 extern void maybe_repeat_preamble (location_t, int count, cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);

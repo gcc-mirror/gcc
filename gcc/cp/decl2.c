@@ -4665,7 +4665,7 @@ c_parse_final_cleanups (void)
 
   timevar_stop (TV_PHASE_PARSING);
   if (modules_p ())
-    finish_module_parse (line_table);
+    finish_module_parse (parse_in, line_table);
   timevar_start (TV_PHASE_DEFERRED);
 
   symtab->process_same_body_aliases ();

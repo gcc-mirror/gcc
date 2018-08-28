@@ -601,6 +601,10 @@ public:
   {
     str (ptr, strlen (ptr));
   }
+  void str (const cpp_hashnode *node)
+  {
+    str ((const char *)NODE_NAME (node), NODE_LEN (node));
+  }
   void str (const char *, size_t);  /* Write string of known length.  */
   void buf (const char *, size_t);  /* Write fixed length buffer.  */
 
@@ -2666,8 +2670,8 @@ class GTY(()) module_state {
 
  public:
   /* Read and write module.  */
-  void write (elf_out *to, line_maps *);
-  void read (int fd, int e, line_maps *, bool);
+  void write (elf_out *to, cpp_reader *, line_maps *);
+  void read (int fd, int e, cpp_reader *, line_maps *, bool);
 
   /* Read a section.  */
   void load_section (unsigned snum);
@@ -2690,9 +2694,9 @@ class GTY(()) module_state {
 
   /* Import tables. */
   void write_imports (bytes_out &cfg, bool direct_p);
-  unsigned read_imports (bytes_in &cfg, line_maps *maps);
+  unsigned read_imports (bytes_in &cfg, cpp_reader *, line_maps *maps);
   void write_imports (elf_out *to, unsigned *crc_ptr);
-  bool read_imports (line_maps *);
+  bool read_imports (cpp_reader *, line_maps *);
 
   /* The configuration.  */
   void write_config (elf_out *to, const char *opts, const range_t &sec_range,
@@ -2755,6 +2759,10 @@ class GTY(()) module_state {
   void write_locations (elf_out *to, line_maps *, bool early, unsigned *crc_ptr);
   bool read_locations (line_maps *, bool early);
 
+ private:
+  static int write_define_cb (cpp_reader *, cpp_hashnode *, void *);
+  void write_defines (elf_out *to, cpp_reader *, unsigned *crc_ptr);
+
  public:
   void write_location (bytes_out &, location_t);
   location_t read_location (bytes_in &);
@@ -2769,10 +2777,11 @@ class GTY(()) module_state {
       loc = linemap_module_loc (lmaps, from_loc, fullname);
   }
   void attach (location_t);
-  bool do_import (const char *filename, line_maps *, bool check_crc);
+  bool do_import (const char *filename, cpp_reader *, line_maps *,
+		  bool check_crc);
 
  public:
-  static int atom_preamble (location_t loc, line_maps *);
+  static int atom_preamble (location_t loc, cpp_reader *, line_maps *);
 };
 
 /* Hash module state by name.  This cannot be a member of
@@ -7812,7 +7821,7 @@ module_state::write_imports (bytes_out &sec, bool direct)
 }
 
 unsigned
-module_state::read_imports (bytes_in &sec, line_maps *lmaps)
+module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 {
   unsigned count = sec.u ();
   typedef std::pair<unsigned, bool> ix_bool_t;
@@ -7889,7 +7898,7 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	  tup.first->maybe_create_loc (lmaps);
 	  if (!tup.first->filename)
 	    fname = module_mapper::import_export (tup.first, false);
-	  if (!tup.first->do_import (fname, lmaps, true))
+	  if (!tup.first->do_import (fname, reader, lmaps, true))
 	    tup.first = NULL;
 	  dump.pop (n);
 	}
@@ -7931,7 +7940,7 @@ module_state::write_imports (elf_out *to, unsigned *crc_ptr)
 }
 
 bool
-module_state::read_imports (line_maps *lmaps)
+module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
 {
   if (slurp->remap->length () == MODULE_IMPORT_BASE)
     return true;
@@ -7946,8 +7955,8 @@ module_state::read_imports (line_maps *lmaps)
   dump.indent ();
 
   /* Read the imports.  */
-  unsigned direct = read_imports (sec, lmaps);
-  unsigned indirect = read_imports (sec, NULL);
+  unsigned direct = read_imports (sec, reader, lmaps);
+  unsigned indirect = read_imports (sec, NULL, NULL);
   if (direct + indirect + MODULE_IMPORT_BASE != slurp->remap->length ())
     slurp->from->set_error (elf::E_BAD_IMPORT);
 
@@ -9429,6 +9438,10 @@ module_state::prepare_locations (line_maps *lmaps)
 
 /* Write the early or late location maps.  The early maps include the
    filename table.  */
+// FIXME: I think we'll eventually have to deal with a fragmented line
+// table, because (a) diverted legacy headers can require immediate
+// loading and (b) post-Rapperswill merged TS allows non-preamble
+// 'import' (but I would still like to restrict that somewhat).
 
 void
 module_state::write_locations (elf_out *to, line_maps *lmaps,
@@ -9590,6 +9603,119 @@ module_state::read_locations (line_maps *lmaps, bool early_p)
   return true;
 }
 
+struct wd_data {
+  module_state *state;
+  bytes_out *sec;
+};
+
+/* Write out the macro NODE.  */
+
+int
+module_state::write_define_cb (cpp_reader *, cpp_hashnode *node,
+			       void *data_)
+{
+  const wd_data *data = (wd_data *)data_;
+
+  if (!cpp_user_macro_p (node))
+    return 1;
+
+  cpp_macro *macro = node->value.macro;
+  if (macro->line < prefix_locations_hwm)
+    /* Ignore command line, builtins and forced header macros.  */
+    return 1;
+
+  gcc_checking_assert (macro->kind == cmk_macro && !macro->lazy);
+  /* I don't want to deal with this corner case, that I suspect is
+     a devil's advocate reading of the standard.  */
+  gcc_checking_assert (!macro->extra_tokens);
+
+  // FIXME: We'll want to distinguish imported from those we defined.
+  // but first we need to be able to read them back.
+
+  dump () && dump ("Writing #define %I", HT_IDENT_TO_GCC_IDENT (node));
+  data->sec->str (node);
+  // FIXME: macro->line
+  data->sec->b (macro->fun_like);
+  data->sec->b (macro->syshdr);
+  data->sec->b (macro->variadic);
+  data->sec->bflush ();
+  data->sec->u (macro->count);
+  if (macro->fun_like)
+    {
+      data->sec->u (macro->paramc);
+      const cpp_hashnode *const *parms = macro->parm.params;
+      for (unsigned ix = 0; ix != macro->paramc; ix++)
+	data->sec->str (parms[ix]);
+    }
+  for (unsigned ix = 0; ix != macro->count; ix++)
+    {
+      const cpp_token *token = &macro->exp.tokens[ix];
+      // FIXME token->src_loc
+      data->sec->u (token->type);
+      data->sec->u (token->flags);
+      switch (cpp_token_val_index (token))
+	{
+	case CPP_TOKEN_FLD_NODE:
+	  /* An identifier.  */
+	  data->sec->str (token->val.node.node);
+	  if (token->val.node.spelling == token->val.node.node)
+	    /* The spelling will usually be the same.  so optimize
+	       that.  */
+	    data->sec->str ("", 0);
+	  else
+	    data->sec->str (token->val.node.spelling);
+	  break;
+
+	case CPP_TOKEN_FLD_STR:
+	  /* A string, number or comment.  */
+	  data->sec->str ((const char *)token->val.str.text, token->val.str.len);
+	  break;
+
+	case CPP_TOKEN_FLD_ARG_NO:
+	  /* An argument reference.  */
+	  data->sec->u (token->val.macro_arg.arg_no);
+	  data->sec->str (token->val.macro_arg.spelling);
+	  break;
+
+	case CPP_TOKEN_FLD_NONE:
+	  break;
+
+	  /* I don't think the following occur inside a macro itself.  */
+	case CPP_TOKEN_FLD_SOURCE:
+	case CPP_TOKEN_FLD_TOKEN_NO:
+	case CPP_TOKEN_FLD_PRAGMA:
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  
+  return 1; /* Don't stop.  */
+}
+
+/* Write out the macro definitions.  We're compiling a legacy header,
+   so we expect at least one.  */
+
+void
+module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
+{
+  dump () && dump ("Writing #defines");
+  dump.indent ();
+
+  bytes_out sec (to);
+  sec.begin ();
+
+  wd_data data;
+  data.state = this;
+  data.sec = &sec;
+  
+  cpp_forall_identifiers (reader, write_define_cb, &data);
+
+  /* End marker.  */
+  sec.str ("", 0);
+
+  sec.end (to, to->name (MOD_SNAME_PFX ".def"), crc_p);
+  dump.outdent ();
+}
 
 /* Recursively find all the namespace bindings of NS.
    Add a depset for every binding that contains an export or
@@ -9700,7 +9826,7 @@ space_cmp (const void *a_, const void *b_)
 */
 
 void
-module_state::write (elf_out *to, line_maps *lmaps)
+module_state::write (elf_out *to, cpp_reader *reader, line_maps *lmaps)
 {
   unsigned crc = 0;
 
@@ -9843,6 +9969,9 @@ module_state::write (elf_out *to, line_maps *lmaps)
       spewer ()->free_filenames ();
     }
 
+  if (modules_legacy_p ())
+    write_defines (to, reader, &crc);
+
   /* And finish up.  */
   write_config (to, our_opts, range, unnamed, crc);
 
@@ -9854,7 +9983,8 @@ module_state::write (elf_out *to, line_maps *lmaps)
    be lazy, if this is an import and flag_module_lazy is in effect.  */
 
 void
-module_state::read (int fd, int e, line_maps *lmaps, bool check_crc)
+module_state::read (int fd, int e, cpp_reader *reader, line_maps *lmaps,
+		    bool check_crc)
 {
   gcc_checking_assert (!slurp);
   slurp = new slurping (new elf_in (fd, e));
@@ -9872,7 +10002,7 @@ module_state::read (int fd, int e, line_maps *lmaps, bool check_crc)
     read_locations (lmaps, true);
 
   /* Read the import table.  */
-  if (!read_imports (lmaps))
+  if (!read_imports (reader, lmaps))
     return;
 
   /* Determine the module's number.  */
@@ -10299,7 +10429,8 @@ module_state::attach (location_t from)
    know it as.  CRC_PTR points to the CRC value we expect.  */
 
 bool
-module_state::do_import (char const *fname, line_maps *lmaps, bool check_crc)
+module_state::do_import (char const *fname, cpp_reader *reader, line_maps *lmaps,
+			 bool check_crc)
 {
   gcc_assert (global_namespace == current_scope ()
 	      && !is_imported () && loc != UNKNOWN_LOCATION);
@@ -10325,7 +10456,7 @@ module_state::do_import (char const *fname, line_maps *lmaps, bool check_crc)
   imported = true;
   lazy_open--;
   
-  read (fd, e, lmaps, check_crc);
+  read (fd, e, reader, lmaps, check_crc);
   bool failed = check_read (direct && !modules_atom_p ());
   announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
 
@@ -10397,7 +10528,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 
 void
 import_module (module_state *imp, location_t from_loc, bool exporting,
-	       tree, line_maps *lmaps)
+	       tree, cpp_reader *reader, line_maps *lmaps)
 {
   if (export_depth)
     exporting = true;
@@ -10422,7 +10553,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 	  unsigned n = dump.push (imp);
 	  char *fname = module_mapper::import_export (imp, false);
 	  imp->maybe_create_loc (lmaps);
-	  imp->do_import (fname, lmaps, false);
+	  imp->do_import (fname, reader, lmaps, false);
 	  dump.pop (n);
 	}
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported);
@@ -10436,7 +10567,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 
 void
 declare_module (module_state *state, location_t from_loc, bool exporting_p,
-		tree, line_maps *lmaps)
+		tree, cpp_reader *reader, line_maps *lmaps)
 {
   gcc_assert (global_namespace == current_scope ());
 
@@ -10507,7 +10638,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       char *fname = module_mapper::import_export (state, exporting_p);
       state->maybe_create_loc (lmaps);
       if (!exporting_p)
-	state->do_import (fname, lmaps, false);
+	state->do_import (fname, reader, lmaps, false);
       else if (fname)
 	state->filename = xstrdup (fname); 
       dump.pop (n);
@@ -10530,7 +10661,8 @@ module_from_cmp (const void *a_, const void *b_)
    this is a module).  */
 
 int
-module_state::atom_preamble (location_t loc, line_maps *lmaps)
+module_state::atom_preamble (location_t loc,
+			     cpp_reader *reader, line_maps *lmaps)
 {
   /* Iterate over the module hash, informing the mapper of every not
      loaded (direct) import.  */
@@ -10637,7 +10769,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
 	{
 	  module_state *imp = directs.pop ();
 	  unsigned n = dump.push (imp);
-	  if (imp->is_imported () || imp->do_import (NULL, lmaps, false))
+	  if (imp->is_imported () || imp->do_import (NULL, reader, lmaps, false))
 	    {
 	      if (imp->mod != MODULE_PURVIEW)
 		(*modules)[MODULE_NONE]->set_import (imp, imp->exported);
@@ -10753,7 +10885,7 @@ atom_main_file (line_maps *, const line_map_ordinary *map, unsigned ix)
 }
 
 bool
-maybe_atom_legacy_module (line_maps *lmaps)
+maybe_atom_legacy_module (cpp_reader *reader, line_maps *lmaps)
 {
   if (!modules_legacy_p ())
     return false;
@@ -10768,8 +10900,8 @@ maybe_atom_legacy_module (line_maps *lmaps)
       if (!main)
 	{
 	  main = main_input_filename;
-	  len = strlen (main), pos = len;
-	  for (; pos-- > 0; pos--)
+	  len = strlen (main);
+	  for (pos = len; --pos; )
 	    if (main[pos] == '.'
 		&& IS_DIR_SEPARATOR (main[pos-1])
 		&& IS_DIR_SEPARATOR (main[pos+1]))
@@ -10796,7 +10928,7 @@ maybe_atom_legacy_module (line_maps *lmaps)
 					    prefix_line_maps_hwm - 1));
   tree name = get_identifier (module_legacy_name);
 
-  declare_module (get_module (name, NULL), loc, true, NULL, lmaps);
+  declare_module (get_module (name, NULL), loc, true, NULL, reader, lmaps);
   /* Everything is exported.  */
   push_module_export (false, NULL);
   return true;
@@ -10806,9 +10938,9 @@ maybe_atom_legacy_module (line_maps *lmaps)
    final location of the preamble.  */
 
 unsigned
-atom_module_preamble (location_t loc, line_maps *lmaps)
+atom_module_preamble (location_t loc, cpp_reader *reader, line_maps *lmaps)
 {
-  int adj = module_state::atom_preamble (loc, lmaps);
+  int adj = module_state::atom_preamble (loc, reader, lmaps);
   if (adj < 0)
     fatal_error (loc, "returning to gate for a mechanical issue");
 
@@ -10937,7 +11069,7 @@ init_module_processing ()
 /* Finished parsing, write the BMI, if we're a module interface.  */
 
 void
-finish_module_parse (line_maps *lmaps)
+finish_module_parse (cpp_reader *reader, line_maps *lmaps)
 {
   if (modules_legacy_p ())
     pop_module_export (0);
@@ -10968,7 +11100,7 @@ finish_module_parse (line_maps *lmaps)
 
       elf_out to (fd, e);
       if (to.begin ())
-	state->write (&to, lmaps);
+	state->write (&to, reader, lmaps);
       if (to.end ())
 	error_at (state->loc, "failed to export module: %s",
 		  to.get_error (state->filename));
