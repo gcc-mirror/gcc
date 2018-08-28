@@ -1,3 +1,7 @@
+2018-08-28  Jeff Law  <law@redhat.com>
+
+	* fold-const.c (fold_binary_loc): Remove recently added assert.
+
 2018-08-28  Joern Rennecke  <joern.rennecke@riscy-ip.com>
 
 	* genpreds.c (write_predicate_subfunction): Also add ATTRIBUTE_UNUSED
@@ -78,8 +82,8 @@
 	* tree.h: Update documentation of fndecl_built_in_p
 	functions.
 
-2018-08-27  Jeff Law  <law@redhat.com>
 
+2018-08-27  Jeff Law  <law@redhat.com>
 	PR tree-optimization/87110
 	* tree-ssa-dse.c (compute_trims): Handle non-constant
 	TYPE_SIZE_UNIT.
