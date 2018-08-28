@@ -1,5 +1,16 @@
 2018-08-28  Nathan Sidwell  <nathan@acm.org>
 
+	Macro define locations
+	libcpp/
+	* include/cpplib.h (cpp_macro): Add imported field.
+	gcc/cp/
+	* module.c (module_state::write_define_cb): Ignore imported, write
+	location.
+	(module_state::read_defines): Read location.
+	gcc/testsuite/
+	* g++.dg/modules/macro-2_[abc].H: New.
+	* g++.dg/modules/macro-2_d.C New.
+
 	Reading macros.
 	gcc/cp/
 	* module.c (bytes_{in,out}::cpp_node): New.

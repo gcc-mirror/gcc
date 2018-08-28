@@ -736,7 +736,10 @@ struct GTY(()) cpp_macro {
      tokens.  */
   unsigned int extra_tokens : 1;
 
-  /* 1 bits spare (32-bit). 33 on 64-bit target.  */
+  /* Imported (from a legacy header module).  */
+  unsigned int imported : 1;
+
+  /* 0 bits spare (32-bit). 32 on 64-bit target.  */
 
   union cpp_exp_u
   {

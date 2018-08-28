@@ -1,0 +1,14 @@
+// { dg-additional-options "-fmodules-legacy=macro-2_a.H -fmodules-atom" }
+// { dg-module-bmi {"macro-2_a.H"} }
+
+#ifndef MACRO_2a_H
+#define MACRO_2a_H
+
+#define FOO_OK foo
+#define BAR_OK(BAZ) BINKY(2)
+
+#define FOO_BAD foo
+#define BAR_BAD(BAZ) BINKY(2)
+
+
+#endif

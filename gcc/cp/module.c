@@ -7236,7 +7236,6 @@ module_mapper::send_command (location_t loc, const char *format, ...)
 	va_list args;
 	va_start (args, format);
 	size_t available = (buffer + size) - end;
-	gcc_checking_assert (available);
 	actual = vsnprintf (end, available, format, args);
 	va_end (args);
 	if (actual < available)
@@ -9647,6 +9646,9 @@ module_state::write_define_cb (cpp_reader *, cpp_hashnode *node,
     return 1;
 
   cpp_macro *macro = node->value.macro;
+  if (macro->imported)
+    /* Ignore an imported macro.  */
+    return 1;
   if (macro->line < prefix_locations_hwm)
     /* Ignore command line, builtins and forced header macros.  */
     return 1;
@@ -9656,16 +9658,13 @@ module_state::write_define_cb (cpp_reader *, cpp_hashnode *node,
      a devil's advocate reading of the standard.  */
   gcc_checking_assert (!macro->extra_tokens);
 
-  // FIXME: We'll want to distinguish imported from those we defined.
-  // but first we need to be able to read them back.
-
   dump () && dump ("Writing #define %I", HT_IDENT_TO_GCC_IDENT (node));
   data->sec->cpp_node (node);
-  // FIXME: macro->line
   data->sec->b (macro->fun_like);
   data->sec->b (macro->syshdr);
   data->sec->b (macro->variadic);
   data->sec->bflush ();
+  data->state->write_location (*data->sec, macro->line);
   data->sec->u (macro->count);
   if (macro->fun_like)
     {
@@ -9756,8 +9755,6 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 
   /* End marker.  */
   sec.str (NULL, 0);
-  /* Ensure there were at least 3 bytes after any final bool pack.  */
-  sec.u (0);
 
   sec.end (to, to->name (MOD_SNAME_PFX ".def"), crc_p);
   dump.outdent ();
@@ -9775,10 +9772,13 @@ module_state::read_defines (cpp_reader *reader)
 
   while (cpp_hashnode *node = sec.cpp_node ())
     {
+      dump () && dump ("Reading #define %I", HT_IDENT_TO_GCC_IDENT (node));
+
       bool funlike = sec.b ();
       bool syshdr = sec.b ();
       bool variadic = sec.b ();
       sec.bflush ();
+      location_t loc = read_location (sec);
       unsigned count = sec.u ();
       unsigned paramc = 0;
       cpp_hashnode **params = NULL;
@@ -9798,7 +9798,7 @@ module_state::read_defines (cpp_reader *reader)
 	= (cpp_macro *)ggc_alloc_atomic (sizeof (cpp_macro) - sizeof (cpp_token)
 					 + sizeof (cpp_token) * count);
       macro->parm.params = params;
-      macro->line = UNKNOWN_LOCATION;
+      macro->line = loc;
       macro->count = count;
       macro->paramc = paramc;
       macro->lazy = 0;
@@ -9808,6 +9808,7 @@ module_state::read_defines (cpp_reader *reader)
       macro->syshdr = syshdr;
       macro->used = false;
       macro->extra_tokens = false;
+      macro->imported = true;
 
       unsigned len = 0;
       for (unsigned ix = 0; ix != count && !sec.get_overrun (); ix++)
@@ -9895,10 +9896,6 @@ module_state::read_defines (cpp_reader *reader)
 	  node->flags &= NODE_USED;
 	}
     }
-
-  /* Read the padding zero.  */
-  if (sec.u ())
-    sec.set_overrun ();
 
   dump.outdent ();
   if (!sec.end (slurp->from))
