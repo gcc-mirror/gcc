@@ -1,6 +1,12 @@
 2018-08-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87117
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Exclude
+	void which is is_gimple_reg_type by checking for COMPLETE_TYPE_P.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
 	* tree-ssa-pre.c (compute_avail): Do not make expressions
 	with predicated values available.
 	(get_expr_value_id): Assert we do not run into predicated value
