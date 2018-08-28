@@ -1,5 +1,10 @@
 2018-08-27  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/86914
+	* tree-ssa-strlen.c (maybe_set_strlen_range): Avoid MEM_REF.
+
+2018-08-27  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/87112
 	* builtins.c (expand_builtin_strnlen): Convert c_strlen result to
 	the type of the bound argument.
