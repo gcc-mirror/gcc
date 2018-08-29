@@ -1,3 +1,9 @@
+2018-08-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/31413
+	* testsuite/22_locale/time_get/get_date/wchar_t/4.cc: Check D_FMT
+	string for alternative format.
+
 2018-08-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87116
