@@ -4989,8 +4989,14 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	  propagate_tree_value_into_stmt (gsi, sprime);
 	  stmt = gsi_stmt (*gsi);
 	  update_stmt (stmt);
+	  /* In case the VDEF on the original stmt was released, value-number
+	     it to the VUSE.  This is to make vuse_ssa_val able to skip
+	     released virtual operands.  */
 	  if (vdef != gimple_vdef (stmt))
-	    VN_INFO (vdef)->valnum = vuse;
+	    {
+	      gcc_assert (SSA_NAME_IN_FREE_LIST (vdef));
+	      VN_INFO (vdef)->valnum = vuse;
+	    }
 
 	  /* If we removed EH side-effects from the statement, clean
 	     its EH information.  */
@@ -5268,7 +5274,10 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	    fprintf (dump_file, "  Removed AB side-effects.\n");
 	}
       update_stmt (stmt);
-      if (vdef != gimple_vdef (stmt))
+      /* In case the VDEF on the original stmt was released, value-number
+         it to the VUSE.  This is to make vuse_ssa_val able to skip
+	 released virtual operands.  */
+      if (vdef && SSA_NAME_IN_FREE_LIST (vdef))
 	VN_INFO (vdef)->valnum = vuse;
     }
 

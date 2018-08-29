@@ -1,5 +1,11 @@
 2018-08-29  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/87117
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt): Only
+	re-value-number released SSA VDEFs.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87126
 	* tree-ssa-sccvn.c (vn_reference_insert): Remove assert.
 
