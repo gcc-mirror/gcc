@@ -2740,7 +2740,14 @@ next:;
       if (arg1 == arg0)
 	;
       else if (! maybe_skip_until (phi, arg0, ref, arg1, cnt, visited,
-				   abort_on_visited, translate, data))
+				   abort_on_visited,
+				   /* Do not translate when walking over
+				      backedges.  */
+				   dominated_by_p
+				     (CDI_DOMINATORS,
+				      gimple_bb (SSA_NAME_DEF_STMT (arg1)),
+				      phi_bb)
+				   ? NULL : translate, data))
 	return NULL_TREE;
     }
 

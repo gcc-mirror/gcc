@@ -1,5 +1,11 @@
 2018-08-29  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/87132
+	* tree-ssa-alias.c (get_continuation_for_phi): Do not translate
+	when skipping defs reachable over backedges.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
 	* tree-core.h: Document use of deprecated_flag in SSA_NAME.
 	* tree.h (SSA_NAME_POINTS_TO_READONLY_MEMORY): Define.
 	* tree-into-ssa.c (pass_build_ssa::execute): Initialize
