@@ -1,3 +1,11 @@
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87095
+	* decl.c (begin_destructor_body): If current_class_type has
+	virtual bases and the primary base is nearly empty virtual base,
+	voidify clearing of vptr and make it conditional on in-charge
+	argument.
+
 2018-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/85265
