@@ -9684,8 +9684,10 @@ module_state::write_define (bytes_out &sec, cpp_hashnode *node)
 	  break;
 
 	case CPP_TOKEN_FLD_STR:
-	  /* A string, number or comment.  NOT NUL terminated!  */
-	  len += token->val.str.len;
+	  /* A string, number or comment.  Not always NUL terminated,
+	     we stream out in a single contatenation with embedded
+	     NULs as that's a safe default.  */
+	  len += token->val.str.len + 1;
 	  sec.u (token->val.str.len);
 	  break;
 
@@ -9718,6 +9720,7 @@ module_state::write_define (bytes_out &sec, cpp_hashnode *node)
 	      memcpy (ptr + len, token->val.str.text,
 		      token->val.str.len);
 	      len += token->val.str.len;
+	      ptr[len++] = 0;
 	    }
 	}
     }
@@ -9779,9 +9782,9 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, cpp_hashnode *node
 	  break;
 
 	case CPP_TOKEN_FLD_STR:
-	  /* A string, number or comment.  NOT NUL terminated! */
+	  /* A string, number or comment.  */
 	  token->val.str.len = sec.z ();
-	  len += token->val.str.len;
+	  len += token->val.str.len + 1;
 	  break;
 
 	case CPP_TOKEN_FLD_ARG_NO:
@@ -9807,8 +9810,11 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, cpp_hashnode *node
   if (len)
     if (const char *ptr = sec.buf (len))
       {
+	if (ptr[len-1])
+	  sec.set_overrun ();
+	/* cpp_alloc_token_string will add a final NUL.  */
 	const unsigned char *buf
-	  = cpp_alloc_token_string (reader, (const unsigned char *)ptr, len);
+	  = cpp_alloc_token_string (reader, (const unsigned char *)ptr, len - 1);
 	len = 0;
 	for (unsigned ix = 0; ix != count && !sec.get_overrun (); ix++)
 	  {
@@ -9817,6 +9823,8 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, cpp_hashnode *node
 	      {
 		token->val.str.text = buf + len;
 		len += token->val.str.len;
+		if (buf[len++])
+		  sec.set_overrun ();
 	      }
 	  }
       }
