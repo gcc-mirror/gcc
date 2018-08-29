@@ -1,3 +1,19 @@
+2018-08-29  Martin Sebor  <msebor@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/86714
+	PR tree-optimization/86711
+	* builtins.c (c_strlen): Add arguments to call to string_constant.
+	* expr.c (string_constant): Add argument.  Detect missing nul
+	terminator and outermost declaration it's missing in.
+	* expr.h (string_constant): Add argument.
+	* fold-const.c (read_from_constant_string): Add arguments to call to
+	string_constant.
+	(c_getstr): Likewise.
+	* tree-ssa-forwprop.c (simplify_builtin_call): Likewise.
+	to string_constant.
+	* tree-ssa-strlen.c (get_stridx): Likewise.
+
 2018-08-29  Jan Hubicka  <jh@suse.cz>
 
 	* tree-streamer-in.c (lto_input_ts_function_decl_tree_pointers):
