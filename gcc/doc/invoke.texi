@@ -464,7 +464,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-loop-ivcanon  -ftree-loop-linear  -ftree-loop-optimize @gol
 -ftree-loop-vectorize @gol
 -ftree-parallelize-loops=@var{n}  -ftree-pre  -ftree-partial-pre  -ftree-pta @gol
--ftree-reassoc  -ftree-sink  -ftree-slsr  -ftree-sra @gol
+-ftree-reassoc  -ftree-scev-cprop  -ftree-sink  -ftree-slsr  -ftree-sra @gol
 -ftree-switch-conversion  -ftree-tail-merge @gol
 -ftree-ter  -ftree-vectorize  -ftree-vrp  -funconstrained-commons @gol
 -funit-at-a-time  -funroll-all-loops  -funroll-loops @gol
@@ -7813,6 +7813,7 @@ compilation time.
 -ftree-forwprop @gol
 -ftree-fre @gol
 -ftree-phiprop @gol
+-ftree-scev-cprop @gol
 -ftree-sink @gol
 -ftree-slsr @gol
 -ftree-sra @gol
@@ -9119,6 +9120,15 @@ Create a canonical counter for number of iterations in loops for which
 determining number of iterations requires complicated analysis.  Later
 optimizations then may determine the number easily.  Useful especially
 in connection with unrolling.
+
+@item -ftree-scev-cprop
+@opindex ftree-scev-cprop
+Perform final value replacement.  If a variable is modified in a loop
+in such a way that its value when exiting the loop can be determined using
+only its initial value and the number of loop iterations, replace uses of
+the final value by such a computation, provided it is sufficiently cheap.
+This reduces data dependencies and may allow further simplifications.
+Enabled by default at @option{-O} and higher.
 
 @item -fivopts
 @opindex fivopts
