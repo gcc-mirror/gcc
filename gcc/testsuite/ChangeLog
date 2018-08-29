@@ -1,3 +1,8 @@
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87126
+	* gcc.dg/tree-ssa/pr87126.c: New testcase.
+
 2018-08-28 MCC CS <deswurstes@users.noreply.github.com>
 
 	PR tree-optimization/87009
