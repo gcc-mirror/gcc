@@ -1578,7 +1578,7 @@ cpp_alloc_token_string (cpp_reader *pfile,
   uchar *dest = _cpp_unaligned_alloc (pfile, len + 1);
 
   dest[len] = 0;
-  memcpy (dest, ptr, len + 1);
+  memcpy (dest, ptr, len);
   return dest;
 }
 

@@ -1,3 +1,8 @@
+2018-08-29  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* lex.c (cpp_alloc_token_string): Don't clobber ending NUL.
+
 2018-08-28  Nathan Sidwell  <nathan@acm.org>
 
 	Undefs
