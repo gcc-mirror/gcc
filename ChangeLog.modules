@@ -1,6 +1,9 @@
 2018-08-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (atom_cpp_undef): location_t arg is unused.
+
+	gcc/cp/
 	* module.c (module_state::{read,write}_define): Add NUL
 	terminators to CPP_TOKEN_FLD_STR elements.
 

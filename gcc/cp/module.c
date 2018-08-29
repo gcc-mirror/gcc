@@ -9810,6 +9810,7 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, cpp_hashnode *node
   if (len)
     if (const char *ptr = sec.buf (len))
       {
+	/* There should be a final NUL.  */
 	if (ptr[len-1])
 	  sec.set_overrun ();
 	/* cpp_alloc_token_string will add a final NUL.  */
@@ -11053,7 +11054,7 @@ module_state::atom_preamble (location_t loc,
 /* Track if NODE undefs an imported macro.  */
 
 void
-atom_cpp_undef (cpp_reader *reader, location_t loc, cpp_hashnode *node)
+atom_cpp_undef (cpp_reader *reader, location_t, cpp_hashnode *node)
 {
   if (!modules_legacy_p ())
     {
