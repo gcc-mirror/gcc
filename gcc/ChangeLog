@@ -1,5 +1,10 @@
 2018-08-29  Luis Machado  <luis.machado@linaro.org>
 
+	* config/aarch64/aarch64.c (qdf24xx_vector_cost): New static global.
+	(qdf24xx_tunings): Set vector cost structure to qdf24xx_vector_cost.
+
+2018-08-29  Luis Machado  <luis.machado@linaro.org>
+
 	* config/aarch64/aarch64.c (qdf24xx_addrcost_table)
 	<register_sextend>: Set to 3.
 
