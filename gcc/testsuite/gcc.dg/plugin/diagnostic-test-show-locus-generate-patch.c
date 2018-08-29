@@ -51,6 +51,34 @@ void test_fixit_insert_newline (void)
 #endif
 }
 
+/* Unit test for mutually-exclusive suggestions.  */
+
+void test_mutually_exclusive_suggestions (void)
+{
+#if 0
+  original; /* { dg-warning "warning 1" } */
+/* { dg-warning "warning 2" "" { target *-*-* } .-1 } */
+/* We should not print the mutually-incompatible fix-it hints within
+   the generated patch; they are not listed in the big expected
+   multiline output below.  */
+#endif
+}
+
+/* Unit tests for add_fixit_insert_formatted.  */
+
+void test_add_fixit_insert_formatted_single_line (void)
+{
+  {}
+}
+
+void test_add_fixit_insert_formatted_multiline (void)
+{
+  if (1)
+    {
+    }
+}
+
+
 /* Verify the output from -fdiagnostics-generate-patch.
    We expect a header, containing the filename.  This is the absolute path,
    so we can only capture it via regexps.  */
@@ -95,4 +123,21 @@ void test_fixit_insert_newline (void)
      case 'b':
        x = b;
      }
+@@ -68,7 +69,7 @@
+ 
+ void test_add_fixit_insert_formatted_single_line (void)
+ {
+-  {}
++  {INSERTED-CONTENT}
+ }
+ 
+ void test_add_fixit_insert_formatted_multiline (void)
+@@ -76,6 +77,7 @@
+   if (1)
+     {
+     }
++  INSERTED-CONTENT
+ }
+ 
+ 
    { dg-end-multiline-output "" } */

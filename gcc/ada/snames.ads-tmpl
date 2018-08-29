@@ -328,7 +328,7 @@ package Snames is
 
    --  Operator Symbol entries. The actual names have an upper case O at the
    --  start in place of the Op_ prefix (e.g. the actual name that corresponds
-   --  to Name_Op_Abs is "Oabs".
+   --  to Name_Op_Abs is "Oabs").
 
    First_Operator_Name                 : constant Name_Id := N + $;
    Name_Op_Abs                         : constant Name_Id := N + $; -- "abs"
@@ -388,6 +388,7 @@ package Snames is
    Name_Ada_2005                       : constant Name_Id := N + $; -- GNAT
    Name_Ada_12                         : constant Name_Id := N + $; -- GNAT
    Name_Ada_2012                       : constant Name_Id := N + $; -- GNAT
+   Name_Ada_2020                       : constant Name_Id := N + $; -- GNAT
    Name_Allow_Integer_Address          : constant Name_Id := N + $; -- GNAT
    Name_Annotate                       : constant Name_Id := N + $; -- GNAT
    Name_Assertion_Policy               : constant Name_Id := N + $; -- Ada 05
@@ -432,6 +433,7 @@ package Snames is
    Name_Interrupt_State                : constant Name_Id := N + $; -- GNAT
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
+   Name_No_Component_Reordering        : constant Name_Id := N + $; -- GNAT
    Name_No_Heap_Finalization           : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
@@ -586,6 +588,7 @@ package Snames is
    Name_Machine_Attribute              : constant Name_Id := N + $; -- GNAT
    Name_Main                           : constant Name_Id := N + $; -- GNAT
    Name_Main_Storage                   : constant Name_Id := N + $; -- GNAT
+   Name_Max_Entry_Queue_Depth          : constant Name_Id := N + $; -- Ada 12
    Name_Max_Queue_Length               : constant Name_Id := N + $; -- GNAT
    Name_Memory_Size                    : constant Name_Id := N + $; -- Ada 83
    Name_No_Body                        : constant Name_Id := N + $; -- GNAT
@@ -758,6 +761,7 @@ package Snames is
    Name_Gcc                            : constant Name_Id := N + $;
    Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
+   Name_Gnat_Annotate                  : constant Name_Id := N + $;
    Name_Gnat_Extended_Ravenscar        : constant Name_Id := N + $;
    Name_Gnat_Ravenscar_EDF             : constant Name_Id := N + $;
    Name_Gnatprove                      : constant Name_Id := N + $;
@@ -773,7 +777,6 @@ package Snames is
    Name_Link_Name                      : constant Name_Id := N + $;
    Name_Low_Order_First                : constant Name_Id := N + $;
    Name_Lowercase                      : constant Name_Id := N + $;
-   Name_Max_Entry_Queue_Depth          : constant Name_Id := N + $;
    Name_Max_Entry_Queue_Length         : constant Name_Id := N + $;
    Name_Max_Size                       : constant Name_Id := N + $;
    Name_Mechanism                      : constant Name_Id := N + $;
@@ -1133,6 +1136,30 @@ package Snames is
    Name_Concurrent                         : constant Name_Id := N + $;
    Name_Sequential                         : constant Name_Id := N + $;
    Last_Partition_Elaboration_Policy_Name  : constant Name_Id := N + $;
+
+   --  Names of recognized scalar families for pragma Initialize_Scalars
+
+   Name_Short_Float                    : constant Name_Id := N + $; -- GNAT
+   Name_Float                          : constant Name_Id := N + $; -- GNAT
+   Name_Long_Float                     : constant Name_Id := N + $; -- GNAT
+   Name_Long_Long_Float                : constant Name_Id := N + $; -- GNAT
+   Name_Signed_8                       : constant Name_Id := N + $; -- GNAT
+   Name_Signed_16                      : constant Name_Id := N + $; -- GNAT
+   Name_Signed_32                      : constant Name_Id := N + $; -- GNAT
+   Name_Signed_64                      : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_8                     : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_16                    : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_32                    : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_64                    : constant Name_Id := N + $; -- GNAT
+
+   subtype Scalar_Id is Name_Id range
+     Name_Short_Float .. Name_Unsigned_64;
+
+   subtype Float_Scalar_Id is Name_Id range
+     Name_Short_Float .. Name_Long_Long_Float;
+
+   subtype Integer_Scalar_Id is Name_Id range
+     Name_Signed_8 .. Name_Unsigned_64;
 
    --  Names of recognized checks for pragma Suppress
 
@@ -1703,11 +1730,10 @@ package Snames is
 
       Attribute_CPU,
       Attribute_Dispatching_Domain,
-      Attribute_Interrupt_Priority,
-      Attribute_Secondary_Stack_Size);
+      Attribute_Interrupt_Priority);
 
    subtype Internal_Attribute_Id is Attribute_Id range
-     Attribute_CPU .. Attribute_Secondary_Stack_Size;
+     Attribute_CPU .. Attribute_Interrupt_Priority;
 
    type Attribute_Class_Array is array (Attribute_Id) of Boolean;
    --  Type used to build attribute classification flag arrays
@@ -1778,6 +1804,9 @@ package Snames is
       Pragma_Ada_2005,
       Pragma_Ada_12,
       Pragma_Ada_2012,
+      Pragma_Ada_2020,
+      --  Note that there is no Pragma_Ada_20. Pragma_Ada_05/12 are for
+      --  compatibility reasons only; the full year names are preferred.
       Pragma_Allow_Integer_Address,
       Pragma_Annotate,
       Pragma_Assertion_Policy,
@@ -1810,6 +1839,7 @@ package Snames is
       Pragma_Interrupt_State,
       Pragma_License,
       Pragma_Locking_Policy,
+      Pragma_No_Component_Reordering,
       Pragma_No_Heap_Finalization,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
@@ -1932,6 +1962,7 @@ package Snames is
       Pragma_Machine_Attribute,
       Pragma_Main,
       Pragma_Main_Storage,
+      Pragma_Max_Entry_Queue_Depth,
       Pragma_Max_Queue_Length,
       Pragma_Memory_Size,
       Pragma_No_Body,

@@ -4,7 +4,7 @@
   integer :: i
   logical :: l
   l = .false.
-  if (allocated (a)) call abort
+  if (allocated (a)) STOP 1
 !$omp parallel private (a) reduction (.or.:l)
   allocate (a (-7:-5))
   l = l.or..not.allocated (a)

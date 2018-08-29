@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* Note PRE rotates the loop and blocks the sinking opportunity.  */
-/* { dg-options "-O2 -fno-tree-pre -fdump-tree-sink -fdump-tree-optimized" } */
+/* Note PRE and DOM jump threading rotate the loop and blocks the sinking opportunity.  */
+/* { dg-options "-O2 -fno-tree-pre -fno-tree-dominator-opts -fdump-tree-sink -fdump-tree-optimized" } */
 
 int f(int n)
 {

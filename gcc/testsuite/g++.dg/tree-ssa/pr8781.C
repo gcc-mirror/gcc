@@ -13,7 +13,7 @@ public:
 };
 
 template<typename predicate>
-inline noop_t<predicate> noop(const predicate pred) {
+inline noop_t<predicate> noop(const predicate &pred) {
     return noop_t<predicate>(pred);
 }
 

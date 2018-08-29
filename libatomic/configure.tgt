@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#  Copyright (C) 2012-2017 Free Software Foundation, Inc.
+#  Copyright (C) 2012-2018 Free Software Foundation, Inc.
 #  Contributed by Richard Henderson <rth@redhat.com>.
 #
 #  This file is part of the GNU Atomic Library (libatomic).
@@ -40,6 +40,16 @@ case "${target_cpu}" in
   riscv*)		ARCH=riscv ;;
   sh*)			ARCH=sh ;;
 
+  aarch64*)
+	ARCH=aarch64
+	case "${target}" in
+	    aarch64*-*-linux*)
+		if test -n "$enable_aarch64_lse"; then
+		    try_ifunc=yes
+		fi
+		;;
+	esac
+	;;
   arm*)
 	ARCH=arm
 	case "${target}" in
@@ -109,9 +119,19 @@ fi
 
 # Other system configury
 case "${target}" in
+  aarch64*-*-linux*)
+	# OS support for atomic primitives.
+	config_path="${config_path} linux/aarch64 posix"
+	;;
+
   arm*-*-linux*)
 	# OS support for atomic primitives.
 	config_path="${config_path} linux/arm posix"
+	;;
+
+  s390*-*-linux*)
+	# OS support for atomic primitives.
+	config_path="${config_path} s390 posix"
 	;;
 
   *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu \
@@ -151,5 +171,16 @@ case "${target}" in
   *)
 	# Who are you?
 	UNSUPPORTED=1
+	;;
+esac
+
+# glibc will pass hwcap to ifunc resolver functions as an argument.
+# The type may be different on different architectures.
+case "${target}" in
+  aarch64*-*-*)
+	IFUNC_RESOLVER_ARGS="uint64_t hwcap"
+	;;
+  *)
+	IFUNC_RESOLVER_ARGS="void"
 	;;
 esac

@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -180,6 +180,21 @@ proc dg-require-iconv { args } {
     }
 }
 
+# If this target does not have sufficient stack size, skip this test.
+
+proc dg-require-stack-size { args } {
+    if { ![is-effective-target stack_size] } {
+	return
+    }
+    
+    set stack_size [dg-effective-target-value stack_size]
+    set required [expr [lindex $args 1]]
+    if { $stack_size < $required } {
+	upvar dg-do-what dg-do-what
+        set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
 # If this target does not support named sections skip this test.
 
 proc dg-require-named-sections { args } {
@@ -260,6 +275,21 @@ proc dg-require-host-local { args } {
 proc dg-require-linker-plugin { args } {
     set linker_plugin_available [ check_linker_plugin_available ]
     if { $linker_plugin_available == 0 } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
+# If this target does not support the "stack-check" option, skip this
+# test.
+
+proc dg-require-stack-check { args } {
+    set stack_check_available [ check_stack_check_available [lindex $args 1 ] ]
+    if { $stack_check_available == -1 } {
+	upvar name name
+	unresolved "$name"
+    }
+    if { $stack_check_available != 1 } {
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
     }

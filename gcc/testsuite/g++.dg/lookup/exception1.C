@@ -13,12 +13,12 @@ namespace ns
     public:
       inline Test()
 #if __cplusplus <= 201402L
-      throw( Exception )			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+      throw( Exception )			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
       ;
       inline Test(int n )
 #if __cplusplus <= 201402L
-      throw( Exception )			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+      throw( Exception )			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
       ;
     private:
@@ -30,7 +30,7 @@ namespace ns
 // right scope.
 ns::Test::Test()
 #if __cplusplus <= 201402L
-throw( Exception )				// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw( Exception )				// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 : i( 1 )
 {
@@ -38,7 +38,7 @@ throw( Exception )				// { dg-warning "deprecated" "" { target { c++11 && { ! c+
 
 ns::Test::Test( int n )
 #if __cplusplus <= 201402L
-throw( Exception )				// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw( Exception )				// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 : i( n )
 {

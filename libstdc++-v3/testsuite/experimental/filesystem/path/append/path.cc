@@ -1,8 +1,8 @@
-// { dg-options "-lstdc++fs" }
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,16 +34,20 @@ test01()
 
   path pp = p;
   pp /= p;
-  VERIFY( pp.native() == "/foo/bar/foo/bar" );
+  VERIFY( pp.string() == "/foo/bar/foo/bar" );
 
   path q("baz");
 
   path qq = q;
   qq /= q;
-  VERIFY( qq.native() == "baz/baz" );
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  VERIFY( qq.string() == "baz\\baz" );
+#else
+  VERIFY( qq.string() == "baz/baz" );
+#endif
 
   q /= p;
-  VERIFY( q.native() == "baz/foo/bar" );
+  VERIFY( q.string() == "baz/foo/bar" );
 
   path r = "";
   r /= path();
@@ -54,7 +58,7 @@ test01()
 
   path s = "dir/";
   s /= path("/file");
-  VERIFY( s.native() == "dir//file" );
+  VERIFY( s.string() == "dir//file" );
 }
 
 int

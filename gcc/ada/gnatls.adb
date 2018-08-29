@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,10 @@ with ALI;         use ALI;
 with ALI.Util;    use ALI.Util;
 with Binderr;     use Binderr;
 with Butil;       use Butil;
-with Csets;       use Csets;
+with Csets;
 with Fname;       use Fname;
 with Gnatvsn;     use Gnatvsn;
-with Makeutl;     use Makeutl;
+with Make_Util;   use Make_Util;
 with Namet;       use Namet;
 with Opt;         use Opt;
 with Osint;       use Osint;
@@ -187,6 +187,7 @@ procedure Gnatls is
    --  Print usage message
 
    procedure Output_License_Information;
+   pragma No_Return (Output_License_Information);
    --  Output license statement, and if not found, output reference to COPYING
 
    function Image (Restriction : Restriction_Id) return String;
@@ -694,40 +695,38 @@ procedure Gnatls is
 
       procedure Output_Token (T : Token_Type) is
       begin
-         if T in T_No_ALI .. T_Flags then
-            for J in 1 .. N_Indents loop
-               Write_Str ("   ");
-            end loop;
+         case T is
+            when T_No_ALI .. T_Flags =>
+               for J in 1 .. N_Indents loop
+                  Write_Str ("   ");
+               end loop;
 
-            Write_Str (Image (T).all);
+               Write_Str (Image (T).all);
 
-            for J in Image (T)'Length .. 12 loop
-               Write_Char (' ');
-            end loop;
+               for J in Image (T)'Length .. 12 loop
+                  Write_Char (' ');
+               end loop;
 
-            Write_Str ("=>");
+               Write_Str ("=>");
 
-            if T in T_No_ALI .. T_With then
-               Write_Eol;
-            elsif T in T_Source .. T_Name then
-               Write_Char (' ');
-            end if;
-
-         elsif T in T_Preelaborated .. T_Body then
-            if T in T_Preelaborated .. T_Is_Generic then
-               if N_Flags = 0 then
-                  Output_Token (T_Flags);
+               if T in T_No_ALI .. T_With then
+                  Write_Eol;
+               elsif T in T_Source .. T_Name then
+                  Write_Char (' ');
                end if;
 
-               N_Flags := N_Flags + 1;
-            end if;
+            when T_Preelaborated .. T_Body =>
+               if T in T_Preelaborated .. T_Is_Generic then
+                  if N_Flags = 0 then
+                     Output_Token (T_Flags);
+                  end if;
 
-            Write_Char (' ');
-            Write_Str  (Image (T).all);
+                  N_Flags := N_Flags + 1;
+               end if;
 
-         else
-            Write_Str  (Image (T).all);
-         end if;
+               Write_Char (' ');
+               Write_Str  (Image (T).all);
+         end case;
       end Output_Token;
 
       -----------------
@@ -1232,7 +1231,7 @@ procedure Gnatls is
 
       Uninitialized_Prefix : constant String := '#' & Path_Separator;
       --  Prefix to indicate that the project path has not been initialized
-      --  yet. Must be two characters long
+      --  yet. Must be two characters long.
 
       ---------------------
       -- Add_Directories --
@@ -1244,6 +1243,7 @@ procedure Gnatls is
          Prepend : Boolean := False)
       is
          Tmp : String_Access;
+
       begin
          if Self = null then
             Self := new String'(Uninitialized_Prefix & Path);
@@ -1256,7 +1256,6 @@ procedure Gnatls is
             end if;
             Free (Tmp);
          end if;
-
       end Add_Directories;
 
       -------------------------------------
@@ -1306,6 +1305,7 @@ procedure Gnatls is
                 else
                   (1 => Directory_Separator));
             --  Note: Target_Name has a trailing / when it comes from Sdefault
+
          begin
             Add_Str_To_Name_Buffer
               (Path_Separator & Prefix.all & Target_Name & Extra_Sep & Suffix);
@@ -1315,15 +1315,15 @@ procedure Gnatls is
 
       begin
          if Self /= null
-            and then (Self'Length = 0
+           and then (Self'Length = 0
                       or else Self (Self'First) /= '#')
          then
             return;
          end if;
 
          --  The current directory is always first in the search path. Since
-         --  the Project_Path currently starts with '#:' as a sign that it
-         --  isn't initialized, we simply replace '#' with '.'
+         --  the Project_Path currently starts with '#:' as a sign that it is
+         --  not initialized, we simply replace '#' with '.'
 
          if Self = null then
             Self := new String'('.' & Path_Separator);
@@ -1342,12 +1342,12 @@ procedure Gnatls is
          Ada_Prj_Path      := Getenv (Ada_Project_Path);
 
          if Gpr_Prj_Path_File.all /= "" then
-
             FD := Open_Read (Gpr_Prj_Path_File.all, GNAT.OS_Lib.Text);
 
             if FD = Invalid_FD then
-               Osint.Fail ("warning: could not read project path file """ &
-                           Gpr_Prj_Path_File.all & """");
+               Osint.Fail
+                 ("warning: could not read project path file """
+                  & Gpr_Prj_Path_File.all & """");
             end if;
 
             Len := Integer (File_Length (FD));
@@ -1448,8 +1448,7 @@ procedure Gnatls is
                Add_Default_Dir := False;
 
                for J in Last + 1 .. Name_Len loop
-                  Name_Buffer (J - 2) :=
-                    Name_Buffer (J);
+                  Name_Buffer (J - 2) := Name_Buffer (J);
                end loop;
 
                Name_Len := Name_Len - 2;
@@ -1515,11 +1514,13 @@ procedure Gnatls is
                      if Base_Name (Runtime_Name) = Runtime_Name then
 
                         --  $prefix/$target/$runtime/lib/gnat
+
                         Add_Target
                           (Runtime_Name & Directory_Separator &
                            "lib" & Directory_Separator & "gnat");
 
                         --  $prefix/$target/$runtime/share/gpr
+
                         Add_Target
                           (Runtime_Name & Directory_Separator &
                              "share" & Directory_Separator & "gpr");
@@ -1529,11 +1530,13 @@ procedure Gnatls is
                           new String'(Normalize_Pathname (Runtime_Name));
 
                         --  $runtime_dir/lib/gnat
+
                         Add_Str_To_Name_Buffer
                           (Path_Separator & Runtime.all & Directory_Separator &
                            "lib" & Directory_Separator & "gnat");
 
                         --  $runtime_dir/share/gpr
+
                         Add_Str_To_Name_Buffer
                           (Path_Separator & Runtime.all & Directory_Separator &
                            "share" & Directory_Separator & "gpr");
@@ -1541,10 +1544,12 @@ procedure Gnatls is
                   end if;
 
                   --  $prefix/$target/lib/gnat
+
                   Add_Target
                     ("lib" & Directory_Separator & "gnat");
 
                   --  $prefix/$target/share/gpr
+
                   Add_Target
                     ("share" & Directory_Separator & "gpr");
                end if;
@@ -1589,8 +1594,8 @@ procedure Gnatls is
             end if;
 
          else
-            --  Because we don't want to resolve symbolic links, we cannot
-            --  use Locate_Regular_File. So, we try each possible path
+            --  Because we do not want to resolve symbolic links, we cannot
+            --  use Locate_Regular_File. Instead we try each possible path
             --  successively.
 
             First := Self'First;
@@ -2091,6 +2096,7 @@ begin
 
    if RTS_Specified = null then
       declare
+         FD   : File_Descriptor;
          Text : Source_Buffer_Ptr;
          Hi   : Source_Ptr;
 
@@ -2098,7 +2104,7 @@ begin
          Name_Buffer (1 .. 10) := "system.ads";
          Name_Len := 10;
 
-         Read_Source_File (Name_Find, Lo => 0, Hi => Hi, Src => Text);
+         Read_Source_File (Name_Find, 0, Hi, Text, FD);
 
          if Null_Source_Buffer_Ptr (Text) then
             No_Runtime := True;

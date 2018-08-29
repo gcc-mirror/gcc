@@ -1,5 +1,5 @@
 /* Perform doloop optimizations
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Based on code by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
 This file is part of GCC.
@@ -347,6 +347,8 @@ add_test (rtx cond, edge *e, basic_block dest)
   rtx op0 = XEXP (cond, 0), op1 = XEXP (cond, 1);
   enum rtx_code code = GET_CODE (cond);
   basic_block bb;
+  /* The jump is supposed to handle an unlikely special case.  */
+  profile_probability prob = profile_probability::guessed_never ();
 
   mode = GET_MODE (XEXP (cond, 0));
   if (mode == VOIDmode)
@@ -356,7 +358,8 @@ add_test (rtx cond, edge *e, basic_block dest)
   op0 = force_operand (op0, NULL_RTX);
   op1 = force_operand (op1, NULL_RTX);
   label = block_label (dest);
-  do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX, NULL, label, -1);
+  do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX, NULL, label,
+			   prob);
 
   jump = get_last_insn ();
   if (!jump || !JUMP_P (jump))
@@ -386,12 +389,12 @@ add_test (rtx cond, edge *e, basic_block dest)
 
   JUMP_LABEL (jump) = label;
 
-  /* The jump is supposed to handle an unlikely special case.  */
-  add_int_reg_note (jump, REG_BR_PROB, 0);
-
   LABEL_NUSES (label)++;
 
-  make_edge (bb, dest, (*e)->flags & ~EDGE_FALLTHRU);
+  edge e2 = make_edge (bb, dest, (*e)->flags & ~EDGE_FALLTHRU);
+  e2->probability = prob;
+  (*e)->probability = prob.invert ();
+  update_br_prob_note (e2->src);
   return true;
 }
 
@@ -413,8 +416,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   int nonneg = 0;
   bool increment_count;
   basic_block loop_end = desc->out_edge->src;
-  machine_mode mode;
-  rtx true_prob_val;
+  scalar_int_mode mode;
   widest_int iterations;
 
   jump_insn = BB_END (loop_end);
@@ -429,10 +431,6 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
       fputs (" iterations).\n", dump_file);
     }
 
-  /* Get the probability of the original branch. If it exists we would
-     need to update REG_BR_PROB of the new jump_insn.  */
-  true_prob_val = find_reg_note (jump_insn, REG_BR_PROB, NULL_RTX);
-
   /* Discard original jump to continue loop.  The original compare
      result may still be live, so it cannot be discarded explicitly.  */
   delete_insn (jump_insn);
@@ -440,7 +438,8 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   counter_reg = XEXP (condition, 0);
   if (GET_CODE (counter_reg) == PLUS)
     counter_reg = XEXP (counter_reg, 0);
-  mode = GET_MODE (counter_reg);
+  /* These patterns must operate on integer counters.  */
+  mode = as_a <scalar_int_mode> (GET_MODE (counter_reg));
 
   increment_count = false;
   switch (GET_CODE (condition))
@@ -506,8 +505,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
       redirect_edge_and_branch_force (single_succ_edge (preheader), new_preheader);
       set_immediate_dominator (CDI_DOMINATORS, new_preheader, preheader);
 
-      set_zero->count = 0;
-      set_zero->frequency = 0;
+      set_zero->count = profile_count::uninitialized ();
 
       te = single_succ_edge (preheader);
       for (; ass; ass = XEXP (ass, 1))
@@ -523,7 +521,6 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	     also be very hard to show that it is impossible, so we must
 	     handle this case.  */
 	  set_zero->count = preheader->count;
-	  set_zero->frequency = preheader->frequency;
 	}
 
       if (EDGE_COUNT (set_zero->preds) == 0)
@@ -575,11 +572,8 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
     add_reg_note (jump_insn, REG_NONNEG, NULL_RTX);
 
   /* Update the REG_BR_PROB note.  */
-  if (true_prob_val)
-    {
-      /* Seems safer to use the branch probability.  */
-      add_int_reg_note (jump_insn, REG_BR_PROB, desc->in_edge->probability);
-    }
+  if (desc->in_edge->probability.initialized_p ())
+    add_reg_br_prob_note (jump_insn, desc->in_edge->probability);
 }
 
 /* Called through note_stores.  */
@@ -611,7 +605,7 @@ record_reg_sets (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 static bool
 doloop_optimize (struct loop *loop)
 {
-  machine_mode mode;
+  scalar_int_mode mode;
   rtx doloop_reg;
   rtx count;
   widest_int iterations, iterations_max;

@@ -1,6 +1,7 @@
 /* PR target/78582. */
 /* { dg-options "-fprofile-generate" } */
 /* { dg-do compile } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 #include <setjmp.h>
 

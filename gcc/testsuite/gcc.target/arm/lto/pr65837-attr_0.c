@@ -1,6 +1,7 @@
 /* { dg-lto-do run } */
 /* { dg-require-effective-target arm_neon_hw } */
-/* { dg-lto-options {{-flto}} } */
+/* { dg-require-effective-target arm_neon_ok_no_float_abi } */
+/* { dg-lto-options {{-flto -mfpu=neon}} } */
 
 #include "arm_neon.h"
 

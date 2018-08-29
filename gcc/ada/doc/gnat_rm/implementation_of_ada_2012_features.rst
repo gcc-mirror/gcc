@@ -19,7 +19,7 @@ implemented.
 Generally, these features are only
 available if the *-gnat12* (Ada 2012 features enabled) option is set,
 which is the default behavior,
-or if the configuration pragma `Ada_2012` is used.
+or if the configuration pragma ``Ada_2012`` is used.
 
 However, new pragmas, attributes, and restrictions are
 unconditionally available, since the Ada 95 standard allows the addition of
@@ -88,7 +88,7 @@ http://www.ada-auth.org/ai05-summary.html.
 * *AI-0163 Pragmas in place of null (2010-07-01)*
 
   A statement sequence may be composed entirely of pragmas. It is no longer
-  necessary to add a dummy `null` statement to make the sequence legal.
+  necessary to add a dummy ``null`` statement to make the sequence legal.
 
   RM References:  2.08 (7)   2.08 (16)
 
@@ -109,58 +109,58 @@ http://www.ada-auth.org/ai05-summary.html.
   forms of declarations listed in the AI are supported. The following is a
   list of the aspects supported (with GNAT implementation aspects marked)
 
-================================== ===========
-Supported Aspect                    Source
-================================== ===========
-  `Ada_2005`                           -- GNAT
-  `Ada_2012`                           -- GNAT
-  `Address`
-  `Alignment`
-  `Atomic`
-  `Atomic_Components`
-  `Bit_Order`
-  `Component_Size`
-  `Contract_Cases`                     -- GNAT
-  `Discard_Names`
-  `External_Tag`
-  `Favor_Top_Level`                    -- GNAT
-  `Inline`
-  `Inline_Always`                      -- GNAT
-  `Invariant`                          -- GNAT
-  `Machine_Radix`
-  `No_Return`
-  `Object_Size`                        -- GNAT
-  `Pack`
-  `Persistent_BSS`                     -- GNAT
-  `Post`
-  `Pre`
-  `Predicate`
-  `Preelaborable_Initialization`
-  `Pure_Function`                      -- GNAT
-  `Remote_Access_Type`                 -- GNAT
-  `Shared`                             -- GNAT
-  `Size`
-  `Storage_Pool`
-  `Storage_Size`
-  `Stream_Size`
-  `Suppress`
-  `Suppress_Debug_Info`                -- GNAT
-  `Test_Case`                          -- GNAT
-  `Thread_Local_Storage`               -- GNAT
-  `Type_Invariant`
-  `Unchecked_Union`
-  `Universal_Aliasing`                 -- GNAT
-  `Unmodified`                         -- GNAT
-  `Unreferenced`                       -- GNAT
-  `Unreferenced_Objects`               -- GNAT
-  `Unsuppress`
-  `Value_Size`                         -- GNAT
-  `Volatile`
-  `Volatile_Components`
-  `Warnings`                           -- GNAT
-================================== ===========
+==================================== ===========
+Supported Aspect                     Source
+==================================== ===========
+  ``Ada_2005``                           -- GNAT
+  ``Ada_2012``                           -- GNAT
+  ``Address``
+  ``Alignment``
+  ``Atomic``
+  ``Atomic_Components``
+  ``Bit_Order``
+  ``Component_Size``
+  ``Contract_Cases``                     -- GNAT
+  ``Discard_Names``
+  ``External_Tag``
+  ``Favor_Top_Level``                    -- GNAT
+  ``Inline``
+  ``Inline_Always``                      -- GNAT
+  ``Invariant``                          -- GNAT
+  ``Machine_Radix``
+  ``No_Return``
+  ``Object_Size``                        -- GNAT
+  ``Pack``
+  ``Persistent_BSS``                     -- GNAT
+  ``Post``
+  ``Pre``
+  ``Predicate``
+  ``Preelaborable_Initialization``
+  ``Pure_Function``                      -- GNAT
+  ``Remote_Access_Type``                 -- GNAT
+  ``Shared``                             -- GNAT
+  ``Size``
+  ``Storage_Pool``
+  ``Storage_Size``
+  ``Stream_Size``
+  ``Suppress``
+  ``Suppress_Debug_Info``                -- GNAT
+  ``Test_Case``                          -- GNAT
+  ``Thread_Local_Storage``               -- GNAT
+  ``Type_Invariant``
+  ``Unchecked_Union``
+  ``Universal_Aliasing``                 -- GNAT
+  ``Unmodified``                         -- GNAT
+  ``Unreferenced``                       -- GNAT
+  ``Unreferenced_Objects``               -- GNAT
+  ``Unsuppress``
+  ``Value_Size``                         -- GNAT
+  ``Volatile``
+  ``Volatile_Components``
+  ``Warnings``                           -- GNAT
+==================================== ===========
 
-  Note that for aspects with an expression, e.g. `Size`, the expression is
+  Note that for aspects with an expression, e.g. ``Size``, the expression is
   treated like a default expression (visibility is analyzed at the point of
   occurrence of the aspect, but evaluation of the expression occurs at the
   freeze point of the entity involved).
@@ -188,7 +188,7 @@ Supported Aspect                    Source
 * *AI-0003 Qualified expressions as names (2010-07-11)*
 
   In Ada 2012, a qualified expression is considered to be syntactically a name,
-  meaning that constructs such as `A'(F(X)).B` are now legal. This is
+  meaning that constructs such as ``A'(F(X)).B`` are now legal. This is
   useful in disambiguating some cases of overloading.
 
   RM References:  3.03 (11)   3.03 (21)   4.01 (2)   4.04 (7)   4.07 (3)
@@ -211,7 +211,7 @@ Supported Aspect                    Source
 
   The wording in the RM implied that if you have a general access to a
   constrained object, it could be used to modify the discriminants. This was
-  obviously not intended. `Constraint_Error` should be raised, and GNAT
+  obviously not intended. ``Constraint_Error`` should be raised, and GNAT
   has always done so in this situation.
 
   RM References:  3.03 (23)   3.10.02 (26/2)   4.01 (9)   6.04.01 (17)   8.05.01 (5/2)
@@ -242,8 +242,8 @@ Supported Aspect                    Source
 * *AI-0181 Soft hyphen is a non-graphic character (2010-07-23)*
 
   From Ada 2005 on, soft hyphen is considered a non-graphic character, which
-  means that it has a special name (`SOFT_HYPHEN`) in conjunction with the
-  `Image` and `Value` attributes for the character types. Strictly
+  means that it has a special name (``SOFT_HYPHEN``) in conjunction with the
+  ``Image`` and ``Value`` attributes for the character types. Strictly
   speaking this is an inconsistency with Ada 95, but in practice the use of
   these attributes is so obscure that it will not cause problems.
 
@@ -251,13 +251,13 @@ Supported Aspect                    Source
 
 .. index:: AI-0182 (Ada 2012 feature)
 
-* *AI-0182 Additional forms for `Character'Value* (0000-00-00)`
+* *AI-0182 Additional forms for* ``Character'Value`` *(0000-00-00)*
 
-  This AI allows `Character'Value` to accept the string `'?'` where
-  `?` is any character including non-graphic control characters. GNAT has
+  This AI allows ``Character'Value`` to accept the string ``'?'`` where
+  ``?`` is any character including non-graphic control characters. GNAT has
   always accepted such strings. It also allows strings such as
-  `HEX_00000041` to be accepted, but GNAT does not take advantage of this
-  permission and raises `Constraint_Error`, as is certainly still
+  ``HEX_00000041`` to be accepted, but GNAT does not take advantage of this
+  permission and raises ``Constraint_Error``, as is certainly still
   permitted.
 
   RM References:  3.05 (56/2)
@@ -298,8 +298,8 @@ Supported Aspect                    Source
 
 * *AI-0173 Testing if tags represent abstract types (2010-07-03)*
 
-  The function `Ada.Tags.Type_Is_Abstract` returns `True` if invoked
-  with the tag of an abstract type, and `False` otherwise.
+  The function ``Ada.Tags.Type_Is_Abstract`` returns ``True`` if invoked
+  with the tag of an abstract type, and ``False`` otherwise.
 
   RM References:  3.09 (7.4/2)   3.09 (12.4/2)
 
@@ -450,8 +450,8 @@ Supported Aspect                    Source
 
 * *AI-0037 Out-of-range box associations in aggregate (0000-00-00)*
 
-  This AI confirms that an association of the form `Indx => <>` in an
-  array aggregate must raise `Constraint_Error` if `Indx`
+  This AI confirms that an association of the form ``Indx => <>`` in an
+  array aggregate must raise ``Constraint_Error`` if ``Indx``
   is out of range. The RM specified a range check on other associations, but
   not when the value of the association was defaulted. GNAT has always inserted
   a constraint check on the index value.
@@ -464,7 +464,7 @@ Supported Aspect                    Source
 
   Equality of untagged record composes, so that the predefined equality for a
   composite type that includes a component of some untagged record type
-  `R` uses the equality operation of `R` (which may be user-defined
+  ``R`` uses the equality operation of ``R`` (which may be user-defined
   or predefined). This makes the behavior of untagged records identical to that
   of tagged types in this respect.
 
@@ -541,7 +541,7 @@ Supported Aspect                    Source
 
   The new syntax for iterating over arrays and containers is now implemented.
   Iteration over containers is for now limited to read-only iterators. Only
-  default iterators are supported, with the syntax:  `for Elem of C`.
+  default iterators are supported, with the syntax:  ``for Elem of C``.
 
   RM References:  5.05
 
@@ -586,7 +586,7 @@ Supported Aspect                    Source
 
 * *AI-0196 Null exclusion tests for out parameters (0000-00-00)*
 
-  Null exclusion checks are not made for `**out**` parameters when
+  Null exclusion checks are not made for ``out`` parameters when
   evaluating the actual parameters. GNAT has never generated these checks.
 
   RM References:  6.04.01 (13)
@@ -638,7 +638,7 @@ Supported Aspect                    Source
 
 * *AI-0050 Raising Constraint_Error early for function call (0000-00-00)*
 
-  The implementation permissions for raising `Constraint_Error` early on a function call
+  The implementation permissions for raising ``Constraint_Error`` early on a function call
   when it was clear an exception would be raised were over-permissive and allowed
   mishandling of discriminants in some cases. GNAT did
   not take advantage of these incorrect permissions in any case.
@@ -745,7 +745,7 @@ Supported Aspect                    Source
   Requeue is permitted to a protected, synchronized or task interface primitive
   providing it is known that the overriding operation is an entry. Otherwise
   the requeue statement has the same effect as a procedure call. Use of pragma
-  `Implemented` provides a way to impose a static requirement on the
+  ``Implemented`` provides a way to impose a static requirement on the
   overriding operation by adhering to one of the implementation kinds: entry,
   protected procedure or any of the above.
 
@@ -756,7 +756,7 @@ Supported Aspect                    Source
 
 * *AI-0201 Independence of atomic object components (2010-07-22)*
 
-  If an Atomic object has a pragma `Pack` or a `Component_Size`
+  If an Atomic object has a pragma ``Pack`` or a ``Component_Size``
   attribute, then individual components may not be addressable by independent
   tasks. However, if the representation clause has no effect (is confirming),
   then independence is not compromised. Furthermore, in GNAT, specification of
@@ -770,8 +770,8 @@ Supported Aspect                    Source
 
 * *AI-0009 Pragma Independent[_Components] (2010-07-23)*
 
-  This AI introduces the new pragmas `Independent` and
-  `Independent_Components`,
+  This AI introduces the new pragmas ``Independent`` and
+  ``Independent_Components``,
   which control guaranteeing independence of access to objects and components.
   The AI also requires independence not unaffected by confirming rep clauses.
 
@@ -782,7 +782,7 @@ Supported Aspect                    Source
 
 * *AI-0072 Task signalling using 'Terminated (0000-00-00)*
 
-  This AI clarifies that task signalling for reading `'Terminated` only
+  This AI clarifies that task signalling for reading ``'Terminated`` only
   occurs if the result is True. GNAT semantics has always been consistent with
   this notion of task signalling.
 
@@ -904,9 +904,9 @@ Supported Aspect                    Source
 
   This AI concerns giving names to various representation aspects, but the
   practical effect is simply to make the use of duplicate
-  `Atomic[_Components]`,
-  `Volatile[_Components]`, and
-  `Independent[_Components]` pragmas illegal, and GNAT
+  ``Atomic[_Components]``,
+  ``Volatile[_Components]``, and
+  ``Independent[_Components]`` pragmas illegal, and GNAT
   now performs this required check.
 
   RM References:  13.01 (8)
@@ -925,7 +925,7 @@ Supported Aspect                    Source
 * *AI-0012 Pack/Component_Size for aliased/atomic (2010-07-15)*
 
   It is now illegal to give an inappropriate component size or a pragma
-  `Pack` that attempts to change the component size in the case of atomic
+  ``Pack`` that attempts to change the component size in the case of atomic
   or aliased components. Previously GNAT ignored such an attempt with a
   warning.
 
@@ -945,10 +945,10 @@ Supported Aspect                    Source
 
 * *AI-0095 Address of intrinsic subprograms (0000-00-00)*
 
-  The prefix of `'Address` cannot statically denote a subprogram with
-  convention `Intrinsic`. The use of the `Address` attribute raises
-  `Program_Error` if the prefix denotes a subprogram with convention
-  `Intrinsic`.
+  The prefix of ``'Address`` cannot statically denote a subprogram with
+  convention ``Intrinsic``. The use of the ``Address`` attribute raises
+  ``Program_Error`` if the prefix denotes a subprogram with convention
+  ``Intrinsic``.
 
   RM References:  13.03 (11/1)
 
@@ -967,8 +967,8 @@ Supported Aspect                    Source
 * *AI-0146 Type invariants (2009-09-21)*
 
   Type invariants may be specified for private types using the aspect notation.
-  Aspect `Type_Invariant` may be specified for any private type,
-  `Type_Invariant'Class` can
+  Aspect ``Type_Invariant`` may be specified for any private type,
+  ``Type_Invariant'Class`` can
   only be specified for tagged types, and is inherited by any descendent of the
   tagged types. The invariant is a boolean expression that is tested for being
   true in the following situations: conversions to the private type, object
@@ -976,8 +976,8 @@ Supported Aspect                    Source
   [**in**] **out**
   parameters and returned result on return from any primitive operation for
   the type that is visible to a client.
-  GNAT defines the synonyms `Invariant` for `Type_Invariant` and
-  `Invariant'Class` for `Type_Invariant'Class`.
+  GNAT defines the synonyms ``Invariant`` for ``Type_Invariant`` and
+  ``Invariant'Class`` for ``Type_Invariant'Class``.
 
   RM References:  13.03.03 (00)
 
@@ -1011,8 +1011,8 @@ Supported Aspect                    Source
 
 * *AI-0193 Alignment of allocators (2010-09-16)*
 
-  This AI introduces a new attribute `Max_Alignment_For_Allocation`,
-  analogous to `Max_Size_In_Storage_Elements`, but for alignment instead
+  This AI introduces a new attribute ``Max_Alignment_For_Allocation``,
+  analogous to ``Max_Size_In_Storage_Elements``, but for alignment instead
   of size.
 
   RM References:  13.11 (16)   13.11 (21)   13.11.01 (0)   13.11.01 (1)
@@ -1048,7 +1048,7 @@ Supported Aspect                    Source
 
 * *AI-0161 Restriction No_Default_Stream_Attributes (2010-09-11)*
 
-  A new restriction `No_Default_Stream_Attributes` prevents the use of any
+  A new restriction ``No_Default_Stream_Attributes`` prevents the use of any
   of the default stream attributes for elementary types. If this restriction is
   in force, then it is necessary to provide explicit subprograms for any
   stream attributes used.
@@ -1059,7 +1059,7 @@ Supported Aspect                    Source
 
 * *AI-0194 Value of Stream_Size attribute (0000-00-00)*
 
-  The `Stream_Size` attribute returns the default number of bits in the
+  The ``Stream_Size`` attribute returns the default number of bits in the
   stream representation of the given type.
   This value is not affected by the presence
   of stream subprogram attributes for the type. GNAT has always implemented
@@ -1131,12 +1131,12 @@ Supported Aspect                    Source
 
 * *AI-0114 Classification of letters (0000-00-00)*
 
-  The code points 170 (`FEMININE ORDINAL INDICATOR`),
-  181 (`MICRO SIGN`), and
-  186 (`MASCULINE ORDINAL INDICATOR`) are technically considered
+  The code points 170 (``FEMININE ORDINAL INDICATOR``),
+  181 (``MICRO SIGN``), and
+  186 (``MASCULINE ORDINAL INDICATOR``) are technically considered
   lower case letters by Unicode.
   However, they are not allowed in identifiers, and they
-  return `False` to `Ada.Characters.Handling.Is_Letter/Is_Lower`.
+  return ``False`` to ``Ada.Characters.Handling.Is_Letter/Is_Lower``.
   This behavior is consistent with that defined in Ada 95.
 
   RM References:  A.03.02 (59)   A.04.06 (7)
@@ -1145,11 +1145,11 @@ Supported Aspect                    Source
 
 * *AI-0185 Ada.Wide_[Wide_]Characters.Handling (2010-07-06)*
 
-  Two new packages `Ada.Wide_[Wide_]Characters.Handling` provide
-  classification functions for `Wide_Character` and
-  `Wide_Wide_Character`, as well as providing
-  case folding routines for `Wide_[Wide_]Character` and
-  `Wide_[Wide_]String`.
+  Two new packages ``Ada.Wide_[Wide_]Characters.Handling`` provide
+  classification functions for ``Wide_Character`` and
+  ``Wide_Wide_Character``, as well as providing
+  case folding routines for ``Wide_[Wide_]Character`` and
+  ``Wide_[Wide_]String``.
 
   RM References:  A.03.05 (0)   A.03.06 (0)
 
@@ -1157,10 +1157,10 @@ Supported Aspect                    Source
 
 * *AI-0031 Add From parameter to Find_Token (2010-07-25)*
 
-  A new version of `Find_Token` is added to all relevant string packages,
-  with an extra parameter `From`. Instead of starting at the first
+  A new version of ``Find_Token`` is added to all relevant string packages,
+  with an extra parameter ``From``. Instead of starting at the first
   character of the string, the search for a matching Token starts at the
-  character indexed by the value of `From`.
+  character indexed by the value of ``From``.
   These procedures are available in all versions of Ada
   but if used in versions earlier than Ada 2012 they will generate a warning
   that an Ada 2012 subprogram is being used.
@@ -1173,7 +1173,7 @@ Supported Aspect                    Source
 * *AI-0056 Index on null string returns zero (0000-00-00)*
 
   The wording in the Ada 2005 RM implied an incompatible handling of the
-  `Index` functions, resulting in raising an exception instead of
+  ``Index`` functions, resulting in raising an exception instead of
   returning zero in some situations.
   This was not intended and has been corrected.
   GNAT always returned zero, and is thus consistent with this AI.
@@ -1184,20 +1184,20 @@ Supported Aspect                    Source
 
 * *AI-0137 String encoding package (2010-03-25)*
 
-  The packages `Ada.Strings.UTF_Encoding`, together with its child
-  packages, `Conversions`, `Strings`, `Wide_Strings`,
-  and `Wide_Wide_Strings` have been
+  The packages ``Ada.Strings.UTF_Encoding``, together with its child
+  packages, ``Conversions``, ``Strings``, ``Wide_Strings``,
+  and ``Wide_Wide_Strings`` have been
   implemented. These packages (whose documentation can be found in the spec
   files :file:`a-stuten.ads`, :file:`a-suenco.ads`, :file:`a-suenst.ads`,
   :file:`a-suewst.ads`, :file:`a-suezst.ads`) allow encoding and decoding of
-  `String`, `Wide_String`, and `Wide_Wide_String`
+  ``String``, ``Wide_String``, and ``Wide_Wide_String``
   values using UTF coding schemes (including UTF-8, UTF-16LE, UTF-16BE, and
   UTF-16), as well as conversions between the different UTF encodings. With
-  the exception of `Wide_Wide_Strings`, these packages are available in
+  the exception of ``Wide_Wide_Strings``, these packages are available in
   Ada 95 and Ada 2005 mode as well as Ada 2012 mode.
-  The `Wide_Wide_Strings package`
+  The ``Wide_Wide_Strings`` package
   is available in Ada 2005 mode as well as Ada 2012 mode (but not in Ada 95
-  mode since it uses `Wide_Wide_Character`).
+  mode since it uses ``Wide_Wide_Character``).
 
   RM References:  A.04.11
 
@@ -1236,7 +1236,7 @@ Supported Aspect                    Source
 
   The compiler is not required to support exporting an Ada subprogram with
   convention C if there are parameters or a return type of an unconstrained
-  array type (such as `String`). GNAT allows such declarations but
+  array type (such as ``String``). GNAT allows such declarations but
   generates warnings. It is possible, but complicated, to write the
   corresponding C code and certainly such code would be specific to GNAT and
   non-portable.
@@ -1247,7 +1247,7 @@ Supported Aspect                    Source
 
 * *AI-0216 No_Task_Hierarchy forbids local tasks (0000-00-00)*
 
-  It is clearly the intention that `No_Task_Hierarchy` is intended to
+  It is clearly the intention that ``No_Task_Hierarchy`` is intended to
   forbid tasks declared locally within subprograms, or functions returning task
   objects, and that is the implementation that GNAT has always provided.
   However the language in the RM was not sufficiently clear on this point.
@@ -1259,8 +1259,8 @@ Supported Aspect                    Source
 
 * *AI-0211 No_Relative_Delays forbids Set_Handler use (2010-07-09)*
 
-  The restriction `No_Relative_Delays` forbids any calls to the subprogram
-  `Ada.Real_Time.Timing_Events.Set_Handler`.
+  The restriction ``No_Relative_Delays`` forbids any calls to the subprogram
+  ``Ada.Real_Time.Timing_Events.Set_Handler``.
 
   RM References:  D.07 (5)   D.07 (10/2)   D.07 (10.4/2)   D.07 (10.7/2)
 
@@ -1268,7 +1268,7 @@ Supported Aspect                    Source
 
 * *AI-0190 pragma Default_Storage_Pool (2010-09-15)*
 
-  This AI introduces a new pragma `Default_Storage_Pool`, which can be
+  This AI introduces a new pragma ``Default_Storage_Pool``, which can be
   used to control storage pools globally.
   In particular, you can force every access
   type that is used for allocation (**new**) to have an explicit storage pool,
@@ -1281,7 +1281,7 @@ Supported Aspect                    Source
 
 * *AI-0189 No_Allocators_After_Elaboration (2010-01-23)*
 
-  This AI introduces a new restriction `No_Allocators_After_Elaboration`,
+  This AI introduces a new restriction ``No_Allocators_After_Elaboration``,
   which says that no dynamic allocation will occur once elaboration is
   completed.
   In general this requires a run-time check, which is not required, and which
@@ -1295,9 +1295,9 @@ Supported Aspect                    Source
 
 * *AI-0171 Pragma CPU and Ravenscar Profile (2010-09-24)*
 
-  A new package `System.Multiprocessors` is added, together with the
-  definition of pragma `CPU` for controlling task affinity. A new no
-  dependence restriction, on `System.Multiprocessors.Dispatching_Domains`,
+  A new package ``System.Multiprocessors`` is added, together with the
+  definition of pragma ``CPU`` for controlling task affinity. A new no
+  dependence restriction, on ``System.Multiprocessors.Dispatching_Domains``,
   is added to the Ravenscar profile.
 
   RM References:  D.13.01 (4/2)   D.16
@@ -1324,7 +1324,7 @@ Supported Aspect                    Source
 
 * *AI-0152 Restriction No_Anonymous_Allocators (2010-09-08)*
 
-  Restriction `No_Anonymous_Allocators` prevents the use of allocators
+  Restriction ``No_Anonymous_Allocators`` prevents the use of allocators
   where the type of the returned value is an anonymous access type.
 
   RM References:  H.04 (8/1)

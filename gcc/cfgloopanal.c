@@ -1,5 +1,5 @@
 /* Natural loop analysis code for GNU compiler.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "graphds.h"
 #include "params.h"
+#include "sreal.h"
 
 struct target_cfgloop default_target_cfgloop;
 #if SWITCHABLE_TARGET
@@ -199,7 +200,8 @@ int
 average_num_loop_insns (const struct loop *loop)
 {
   basic_block *bbs, bb;
-  unsigned i, binsns, ninsns, ratio;
+  unsigned i, binsns;
+  sreal ninsns;
   rtx_insn *insn;
 
   ninsns = 0;
@@ -213,88 +215,94 @@ average_num_loop_insns (const struct loop *loop)
 	if (NONDEBUG_INSN_P (insn))
 	  binsns++;
 
-      ratio = loop->header->frequency == 0
-	      ? BB_FREQ_MAX
-	      : (bb->frequency * BB_FREQ_MAX) / loop->header->frequency;
-      ninsns += binsns * ratio;
+      ninsns += (sreal)binsns * bb->count.to_sreal_scale (loop->header->count);
+      /* Avoid overflows.   */
+      if (ninsns > 1000000)
+	return 100000;
     }
   free (bbs);
 
-  ninsns /= BB_FREQ_MAX;
-  if (!ninsns)
-    ninsns = 1; /* To avoid division by zero.  */
+  int64_t ret = ninsns.to_int ();
+  if (!ret)
+    ret = 1; /* To avoid division by zero.  */
 
-  return ninsns;
+  return ret;
 }
 
 /* Returns expected number of iterations of LOOP, according to
-   measured or guessed profile.  No bounding is done on the
-   value.  */
+   measured or guessed profile.
+
+   This functions attempts to return "sane" value even if profile
+   information is not good enough to derive osmething.
+   If BY_PROFILE_ONLY is set, this logic is bypassed and function
+   return -1 in those scenarios.  */
 
 gcov_type
 expected_loop_iterations_unbounded (const struct loop *loop,
-				    bool *read_profile_p)
+				    bool *read_profile_p,
+				    bool by_profile_only)
 {
   edge e;
   edge_iterator ei;
-  gcov_type expected;
+  gcov_type expected = -1;
   
   if (read_profile_p)
     *read_profile_p = false;
 
   /* If we have no profile at all, use AVG_LOOP_NITER.  */
   if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
-    expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
-  else if (loop->latch && (loop->latch->count || loop->header->count))
     {
-      gcov_type count_in, count_latch;
-
-      count_in = 0;
-      count_latch = 0;
+      if (by_profile_only)
+	return -1;
+      expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+    }
+  else if (loop->latch && (loop->latch->count.initialized_p ()
+			   || loop->header->count.initialized_p ()))
+    {
+      profile_count count_in = profile_count::zero (),
+		    count_latch = profile_count::zero ();
 
       FOR_EACH_EDGE (e, ei, loop->header->preds)
 	if (e->src == loop->latch)
-	  count_latch = e->count;
+	  count_latch = e->count ();
 	else
-	  count_in += e->count;
+	  count_in += e->count ();
 
-      if (count_in == 0)
-	expected = count_latch * 2;
+      if (!count_latch.initialized_p ())
+	{
+          if (by_profile_only)
+	    return -1;
+	  expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+	}
+      else if (!count_in.nonzero_p ())
+	{
+          if (by_profile_only)
+	    return -1;
+	  expected = count_latch.to_gcov_type () * 2;
+	}
       else
 	{
-	  expected = (count_latch + count_in - 1) / count_in;
-	  if (read_profile_p)
+	  expected = (count_latch.to_gcov_type () + count_in.to_gcov_type ()
+		      - 1) / count_in.to_gcov_type ();
+	  if (read_profile_p
+	      && count_latch.reliable_p () && count_in.reliable_p ())
 	    *read_profile_p = true;
 	}
     }
   else
     {
-      int freq_in, freq_latch;
-
-      freq_in = 0;
-      freq_latch = 0;
-
-      FOR_EACH_EDGE (e, ei, loop->header->preds)
-	if (flow_bb_inside_loop_p (loop, e->src))
-	  freq_latch += EDGE_FREQUENCY (e);
-	else
-	  freq_in += EDGE_FREQUENCY (e);
-
-      if (freq_in == 0)
-	{
-	  /* If we have no profile at all, use AVG_LOOP_NITER iterations.  */
-	  if (!freq_latch)
-	    expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
-	  else
-	    expected = freq_latch * 2;
-	}
-      else
-        expected = (freq_latch + freq_in - 1) / freq_in;
+      if (by_profile_only)
+	return -1;
+      expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
     }
 
-  HOST_WIDE_INT max = get_max_loop_iterations_int (loop);
-  if (max != -1 && max < expected)
-    return max;
+  if (!by_profile_only)
+    {
+      HOST_WIDE_INT max = get_max_loop_iterations_int (loop);
+      if (max != -1 && max < expected)
+        return max;
+    }
+ 
   return expected;
 }
 
@@ -467,14 +475,12 @@ single_likely_exit (struct loop *loop)
   exits = get_loop_exit_edges (loop);
   FOR_EACH_VEC_ELT (exits, i, ex)
     {
-      if (ex->flags & (EDGE_EH | EDGE_ABNORMAL_CALL))
-	continue;
-      /* The constant of 5 is set in a way so noreturn calls are
-	 ruled out by this test.  The static branch prediction algorithm
-         will not assign such a low probability to conditionals for usual
-         reasons.  */
-      if (profile_status_for_fn (cfun) != PROFILE_ABSENT
-	  && ex->probability < 5 && !ex->count)
+      if (probably_never_executed_edge_p (cfun, ex)
+	  /* We want to rule out paths to noreturns but not low probabilities
+	     resulting from adjustments or combining.
+	     FIXME: once we have better quality tracking, make this more
+	     robust.  */
+	  || ex->probability <= profile_probability::very_unlikely ())
 	continue;
       if (!found)
 	found = ex;

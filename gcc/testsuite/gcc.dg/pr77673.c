@@ -1,5 +1,5 @@
 /* { dg-do compile { target fpic } } */
-/* { dg-require-effective-target bswap32 } */
+/* { dg-require-effective-target bswap } */
 /* { dg-options "-O2 -fPIC -fdump-tree-bswap" } */
 /* { dg-additional-options "-march=z900" { target s390*-*-* } } */
 

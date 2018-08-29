@@ -1,6 +1,6 @@
 ;; Scheduling description for PowerPC 604, PowerPC 604e, PowerPC 620,
 ;; and PowerPC 630 processors.
-;;   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+;;   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 
@@ -233,12 +233,12 @@
   "iu1_6xx|iu2_6xx")
 
 (define_insn_reservation "ppc604-crlogical" 2
-  (and (eq_attr "type" "cr_logical,delayed_cr")
+  (and (eq_attr "type" "cr_logical")
        (eq_attr "cpu" "ppc604"))
   "bpu_6xx")
 
 (define_insn_reservation "ppc604e-crlogical" 2
-  (and (eq_attr "type" "cr_logical,delayed_cr")
+  (and (eq_attr "type" "cr_logical")
        (eq_attr "cpu" "ppc604e,ppc620,ppc630"))
   "cru_6xx")
 

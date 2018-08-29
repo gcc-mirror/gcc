@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // +build ignore
-// +build amd64 s390x ppc64le
+// +build s390x ppc64le
 
 package sha512
 

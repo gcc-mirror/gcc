@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-add-options ieee }
-! { dg-skip-if "Too big for local store" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "Too big for local store" { spu-*-* } }
 !
 !     Solve a diffusion problem using an object-oriented approach
 !
@@ -159,7 +159,7 @@ contains
       type is (cartesian_2d_object)
         process_cart2d%c = -sign (obj%c, 1.0)*obj%c** 4
       class default
-        call abort
+        STOP 1
     end select
   end function process_cart2d
   function process_cart2d_p (obj)
@@ -173,7 +173,7 @@ contains
             process_cart2d_p%c = -sign (obj%c, 1.0)*obj%c** 4
         end select
       class default
-        call abort
+        STOP 2
     end select
   end function process_cart2d_p
   function source_cart2d (obj, time)
@@ -191,7 +191,7 @@ contains
         source_cart2d%c = 0.0
         if (time .lt. 5.0) source_cart2d%c(m/2, n/2) = 0.1
       class default
-        call abort
+        STOP 3
     end select
   end function source_cart2d
 
@@ -205,7 +205,7 @@ contains
         m = size (obj%c, 1)
         n = size (obj%c, 2)
       class default
-       call abort
+       STOP 4
     end select
     allocate (source_cart2d_p,source = obj)
     select type (source_cart2d_p)
@@ -215,7 +215,7 @@ contains
         source_cart2d_p%c = 0.0
         if (time .lt. 5.0) source_cart2d_p%c(m/2, n/2) = 0.1
       class default
-        call abort
+        STOP 5
     end select
   end function source_cart2d_p
 
@@ -234,7 +234,7 @@ contains
         obj%dx = sizes(1)/dims(1)
         obj%dy = sizes(2)/dims(2)
       class default
-        call abort
+        STOP 6
     end select
   end subroutine grid_definition_cart2d
 ! print_cart2d --
@@ -287,7 +287,7 @@ contains
           -(2.0 * obj%c(2:m-1,2:n-1) - obj%c(1:m-2,2:n-1) - obj%c(3:m,2:n-1)) / dx**2 &
           -(2.0 * obj%c(2:m-1,2:n-1) - obj%c(2:m-1,1:n-2) - obj%c(2:m-1,3:n)) / dy**2
       class default
-        call abort
+        STOP 7
     end select
   end function nabla2_cart2d
   function real_times_cart2d (factor, obj) result(newobj)
@@ -303,7 +303,7 @@ contains
         allocate (newobj%c(m,n))
         newobj%c = factor * obj%c
       class default
-        call abort
+        STOP 8
     end select
   end function real_times_cart2d
   function obj_plus_cart2d (obj1, obj2) result( newobj )
@@ -321,10 +321,10 @@ contains
             type is (cartesian_2d_object)
               newobj%c = obj1%c + obj2%c
             class default
-              call abort
+              STOP 9
           end select
       class default
-        call abort
+        STOP 10
     end select
   end function obj_plus_cart2d
   subroutine obj_assign_cart2d (obj1, obj2)
@@ -334,7 +334,7 @@ contains
       type is (cartesian_2d_object)
         obj1%c = obj2%c
       class default
-        call abort
+        STOP 11
     end select
   end subroutine obj_assign_cart2d
 end module cartesian_2d_objects
@@ -402,8 +402,8 @@ program test_pde_solver
   deallocate (solution, deriv)
 
   call simulation2     ! Use typebound procedures for source and process
-  if (chksum(1) .ne. chksum(2)) call abort
-  if ((chksum(1) - 0.881868720)**2 > 1e-4) call abort
+  if (chksum(1) .ne. chksum(2)) STOP 12
+  if ((chksum(1) - 0.881868720)**2 > 1e-4) STOP 13
 contains
   subroutine simulation1
 !

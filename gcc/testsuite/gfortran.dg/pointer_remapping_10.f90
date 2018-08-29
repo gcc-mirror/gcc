@@ -25,11 +25,11 @@ logical :: negative
   do i = 1, ubound(ptr,dim=2)
     do j = 1, ubound(ptr,dim=1)
       if (negative) then
-        if (-cnt /= ptr(j, i)) call abort()
+        if (-cnt /= ptr(j, i)) STOP 1
         cnt = cnt + 1
         negative = .false.
       else
-        if (cnt /= ptr(j, i)) call abort()
+        if (cnt /= ptr(j, i)) STOP 2
         negative = .true.
       end if
     end do 

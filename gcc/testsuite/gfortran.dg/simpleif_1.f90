@@ -5,12 +5,12 @@ DIMENSION ia(4,4)
 logical,dimension(4,4) :: index
 
 if (.true.) forall (i = 1:4, j = 1:4) ia(i,j) = 1
-if (any (ia.ne.1)) CALL abort()
+if (any (ia.ne.1)) STOP 1
 
 index(:,:)=.false.
 index(2,3) = .true.
 
 if (.true.) where (index) ia = 2
-if (ia(2,3).ne.2) call abort()
+if (ia(2,3).ne.2) STOP 2
 
 end

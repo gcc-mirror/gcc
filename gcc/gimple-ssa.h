@@ -1,6 +1,6 @@
 /* Header file for routines that straddle the border between GIMPLE and
    SSA in gimple.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

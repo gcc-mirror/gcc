@@ -10,5 +10,5 @@
 int
 test_byte_in_set (unsigned char b, unsigned long long set_members)
 {
-  return __builtin_byte_in_set (b, set_members); /* { dg-error "Builtin function __builtin_scalar_byte_in_set requires" } */
+  return __builtin_byte_in_set (b, set_members); /* { dg-error "builtin function '__builtin_scalar_byte_in_set' requires" } */
 }

@@ -32,5 +32,3 @@ program p
  use m2
   call ns_dirdata(f)
 end
-
-! { dg-final { cleanup-modules "m1 m2" } }

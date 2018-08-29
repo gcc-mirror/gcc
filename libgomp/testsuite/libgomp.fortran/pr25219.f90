@@ -11,5 +11,5 @@
   end do
 !$omp end do
 !$omp end parallel
-  if (k .ne. 100) call abort
+  if (k .ne. 100) STOP 1
 end

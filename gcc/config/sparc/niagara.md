@@ -1,5 +1,5 @@
 ;; Scheduling description for Niagara.
-;;   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+;;   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -114,5 +114,5 @@
  */
 (define_insn_reservation "niag_vis" 8
   (and (eq_attr "cpu" "niagara")
-    (eq_attr "type" "fga,visl,vismv,fgm_pack,fgm_mul,pdist,edge,edgen,gsr,array"))
+    (eq_attr "type" "fga,visl,viscmp,vismv,fgm_pack,fgm_mul,pdist,edge,edgen,gsr,array,bmask"))
   "niag_pipe*8")

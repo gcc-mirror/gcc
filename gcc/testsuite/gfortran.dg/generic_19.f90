@@ -9,8 +9,8 @@ contains
   subroutine sub(x, chr)
     real x
     character(8) chr
-    if (trim (chr) .ne. "real") call abort
-    if (int (x) .ne. 1) call abort
+    if (trim (chr) .ne. "real") STOP 1
+    if (int (x) .ne. 1) STOP 2
   end subroutine sub
 end module mod1
 
@@ -23,8 +23,8 @@ contains
   subroutine sub_int(i, chr)
     character(8) chr
     integer i
-    if (trim (chr) .ne. "integer") call abort
-    if (i .ne. 1) call abort
+    if (trim (chr) .ne. "integer") STOP 3
+    if (i .ne. 1) STOP 4
   end subroutine sub_int
 end module mod2
 

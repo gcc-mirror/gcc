@@ -9,9 +9,9 @@
       character*8      rec(3)
       rec = ""
       write (rec,fmt=99999)
-      if (rec(1).ne.'12345678') call abort()
-      if (rec(2).ne.'record2') call abort()
-      if (rec(3).ne.'record3') call abort()
+      if (rec(1).ne.'12345678') STOP 1
+      if (rec(2).ne.'record2') STOP 2
+      if (rec(3).ne.'record3') STOP 3
 99999 format ('12345678',/'record2',/'record3')
       end
 

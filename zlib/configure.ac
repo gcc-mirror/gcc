@@ -4,7 +4,9 @@ AC_PREREQ(2.64)
 AC_INIT
 AC_CONFIG_SRCDIR([zlib.h])
 
-AM_ENABLE_MULTILIB(, ..)
+if test -n "${with_target_subdir}"; then
+  AM_ENABLE_MULTILIB(, ..)
+fi
 
 AC_CANONICAL_SYSTEM
 

@@ -19,11 +19,11 @@ program gfcbug51
             '200812231200'/)
 
   call date_to_year (cdate)
-  if (any (time%year .ne. (/2006, 2007, 2008/))) call abort ()
+  if (any (time%year .ne. (/2006, 2007, 2008/))) STOP 1
 
   call month_to_date ((/8, 9, 10/), cdate)
   if ( any (cdate .ne. (/'200608231200', '200709231200', &
-                         '200810231200'/))) call abort ()
+                         '200810231200'/))) STOP 2
 
 contains
 

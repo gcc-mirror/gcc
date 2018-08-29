@@ -1,5 +1,5 @@
 /* Loop manipulation code for GNU compiler.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -488,125 +488,132 @@ add_loop (struct loop *loop, struct loop *outer)
   free (bbs);
 }
 
-/* Multiply all frequencies in LOOP by NUM/DEN.  */
+/* Scale profile of loop by P.  */
 
 void
-scale_loop_frequencies (struct loop *loop, int num, int den)
+scale_loop_frequencies (struct loop *loop, profile_probability p)
 {
   basic_block *bbs;
 
   bbs = get_loop_body (loop);
-  scale_bbs_frequencies_int (bbs, loop->num_nodes, num, den);
+  scale_bbs_frequencies (bbs, loop->num_nodes, p);
   free (bbs);
 }
 
-/* Multiply all frequencies in LOOP by SCALE/REG_BR_PROB_BASE.
+/* Scale profile in LOOP by P.
    If ITERATION_BOUND is non-zero, scale even further if loop is predicted
-   to iterate too many times.  */
+   to iterate too many times.
+   Before caling this function, preheader block profile should be already
+   scaled to final count.  This is necessary because loop iterations are
+   determined by comparing header edge count to latch ege count and thus
+   they need to be scaled synchronously.  */
 
 void
-scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
+scale_loop_profile (struct loop *loop, profile_probability p,
+		    gcov_type iteration_bound)
 {
-  gcov_type iterations = expected_loop_iterations_unbounded (loop);
-  edge e;
+  edge e, preheader_e;
   edge_iterator ei;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, ";; Scaling loop %i with scale %f, "
-	     "bounding iterations to %i from guessed %i\n",
-	     loop->num, (double)scale / REG_BR_PROB_BASE,
-	     (int)iteration_bound, (int)iterations);
+    {
+      fprintf (dump_file, ";; Scaling loop %i with scale ",
+	       loop->num);
+      p.dump (dump_file);
+      fprintf (dump_file, " bounding iterations to %i\n",
+	       (int)iteration_bound);
+    }
+
+  /* Scale the probabilities.  */
+  scale_loop_frequencies (loop, p);
+
+  if (iteration_bound == 0)
+    return;
+
+  gcov_type iterations = expected_loop_iterations_unbounded (loop, NULL, true);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, ";; guessed iterations after scaling %i\n",
+	       (int)iterations);
+    }
 
   /* See if loop is predicted to iterate too many times.  */
-  if (iteration_bound && iterations > 0
-      && apply_probability (iterations, scale) > iteration_bound)
-    {
-      /* Fixing loop profile for different trip count is not trivial; the exit
-	 probabilities has to be updated to match and frequencies propagated down
-	 to the loop body.
+  if (iterations <= iteration_bound)
+    return;
 
-	 We fully update only the simple case of loop with single exit that is
-	 either from the latch or BB just before latch and leads from BB with
-	 simple conditional jump.   This is OK for use in vectorizer.  */
+  preheader_e = loop_preheader_edge (loop);
+
+  /* We could handle also loops without preheaders, but bounding is
+     currently used only by optimizers that have preheaders constructed.  */
+  gcc_checking_assert (preheader_e);
+  profile_count count_in = preheader_e->count ();
+
+  if (count_in > profile_count::zero ()
+      && loop->header->count.initialized_p ())
+    {
+      profile_count count_delta = profile_count::zero ();
+
       e = single_exit (loop);
       if (e)
 	{
 	  edge other_e;
-	  int freq_delta;
-	  gcov_type count_delta;
-
-          FOR_EACH_EDGE (other_e, ei, e->src->succs)
+	  FOR_EACH_EDGE (other_e, ei, e->src->succs)
 	    if (!(other_e->flags & (EDGE_ABNORMAL | EDGE_FAKE))
 		&& e != other_e)
 	      break;
 
 	  /* Probability of exit must be 1/iterations.  */
-	  freq_delta = EDGE_FREQUENCY (e);
-	  e->probability = REG_BR_PROB_BASE / iteration_bound;
-	  other_e->probability = inverse_probability (e->probability);
-	  freq_delta -= EDGE_FREQUENCY (e);
+	  count_delta = e->count ();
+	  e->probability = profile_probability::always ()
+				    .apply_scale (1, iteration_bound);
+	  other_e->probability = e->probability.invert ();
 
-	  /* Adjust counts accordingly.  */
-	  count_delta = e->count;
-	  e->count = apply_probability (e->src->count, e->probability);
-	  other_e->count = apply_probability (e->src->count, other_e->probability);
-	  count_delta -= e->count;
-
-	  /* If latch exists, change its frequency and count, since we changed
-	     probability of exit.  Theoretically we should update everything from
-	     source of exit edge to latch, but for vectorizer this is enough.  */
-	  if (loop->latch
-	      && loop->latch != e->src)
+	  /* In code below we only handle the following two updates.  */
+	  if (other_e->dest != loop->header
+	      && other_e->dest != loop->latch
+	      && (dump_file && (dump_flags & TDF_DETAILS)))
 	    {
-	      loop->latch->frequency += freq_delta;
-	      if (loop->latch->frequency < 0)
-		loop->latch->frequency = 0;
-	      loop->latch->count += count_delta;
-	      if (loop->latch->count < 0)
-		loop->latch->count = 0;
+	      fprintf (dump_file, ";; giving up on update of paths from "
+		       "exit condition to latch\n");
 	    }
 	}
+      else
+        if (dump_file && (dump_flags & TDF_DETAILS))
+	  fprintf (dump_file, ";; Loop has multiple exit edges; "
+	      		      "giving up on exit condition update\n");
 
       /* Roughly speaking we want to reduce the loop body profile by the
 	 difference of loop iterations.  We however can do better if
 	 we look at the actual profile, if it is available.  */
-      scale = RDIV (iteration_bound * scale, iterations);
-      if (loop->header->count)
-	{
-	  gcov_type count_in = 0;
+      p = profile_probability::always ();
 
-	  FOR_EACH_EDGE (e, ei, loop->header->preds)
-	    if (e->src != loop->latch)
-	      count_in += e->count;
+      count_in = count_in.apply_scale (iteration_bound, 1);
+      p = count_in.probability_in (loop->header->count);
+      if (!(p > profile_probability::never ()))
+	p = profile_probability::very_unlikely ();
 
-	  if (count_in != 0)
-	    scale = GCOV_COMPUTE_SCALE (count_in * iteration_bound,
-                                        loop->header->count);
-	}
-      else if (loop->header->frequency)
-	{
-	  int freq_in = 0;
+      if (p == profile_probability::always ()
+	  || !p.initialized_p ())
+	return;
 
-	  FOR_EACH_EDGE (e, ei, loop->header->preds)
-	    if (e->src != loop->latch)
-	      freq_in += EDGE_FREQUENCY (e);
+      /* If latch exists, change its count, since we changed
+	 probability of exit.  Theoretically we should update everything from
+	 source of exit edge to latch, but for vectorizer this is enough.  */
+      if (loop->latch && loop->latch != e->src)
+	loop->latch->count += count_delta;
 
-	  if (freq_in != 0)
-	    scale = GCOV_COMPUTE_SCALE (freq_in * iteration_bound,
-                                        loop->header->frequency);
-	}
-      if (!scale)
-	scale = 1;
+      /* Scale the probabilities.  */
+      scale_loop_frequencies (loop, p);
+
+      /* Change latch's count back.  */
+      if (loop->latch && loop->latch != e->src)
+	loop->latch->count -= count_delta;
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, ";; guessed iterations are now %i\n",
+		 (int)expected_loop_iterations_unbounded (loop, NULL, true));
     }
-
-  if (scale == REG_BR_PROB_BASE)
-    return;
-
-  /* Scale the actual probabilities.  */
-  scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, ";; guessed iterations are now %i\n",
-	     (int)expected_loop_iterations_unbounded (loop));
 }
 
 /* Recompute dominance information for basic blocks outside LOOP.  */
@@ -773,7 +780,6 @@ create_empty_loop_on_edge (edge entry_edge,
   gcond *cond_expr;
   tree exit_test;
   edge exit_e;
-  int prob;
 
   gcc_assert (entry_edge && initial_value && stride && upper_bound && iv);
 
@@ -796,10 +802,8 @@ create_empty_loop_on_edge (edge entry_edge,
   loop->latch = loop_latch;
   add_loop (loop, outer);
 
-  /* TODO: Fix frequencies and counts.  */
-  prob = REG_BR_PROB_BASE / 2;
-
-  scale_loop_frequencies (loop, REG_BR_PROB_BASE - prob, REG_BR_PROB_BASE);
+  /* TODO: Fix counts.  */
+  scale_loop_frequencies (loop, profile_probability::even ());
 
   /* Update dominators.  */
   update_dominators_in_loop (loop);
@@ -857,22 +861,19 @@ create_empty_loop_on_edge (edge entry_edge,
 struct loop *
 loopify (edge latch_edge, edge header_edge,
 	 basic_block switch_bb, edge true_edge, edge false_edge,
-	 bool redirect_all_edges, unsigned true_scale, unsigned false_scale)
+	 bool redirect_all_edges, profile_probability true_scale,
+	 profile_probability false_scale)
 {
   basic_block succ_bb = latch_edge->dest;
   basic_block pred_bb = header_edge->src;
   struct loop *loop = alloc_loop ();
   struct loop *outer = loop_outer (succ_bb->loop_father);
-  int freq;
-  gcov_type cnt;
-  edge e;
-  edge_iterator ei;
+  profile_count cnt;
 
   loop->header = header_edge->dest;
   loop->latch = latch_edge->src;
 
-  freq = EDGE_FREQUENCY (header_edge);
-  cnt = header_edge->count;
+  cnt = header_edge->count ();
 
   /* Redirect edges.  */
   loop_redirect_edge (latch_edge, loop->header);
@@ -900,18 +901,13 @@ loopify (edge latch_edge, edge header_edge,
     remove_bb_from_loops (switch_bb);
   add_bb_to_loop (switch_bb, outer);
 
-  /* Fix frequencies.  */
+  /* Fix counts.  */
   if (redirect_all_edges)
     {
-      switch_bb->frequency = freq;
       switch_bb->count = cnt;
-      FOR_EACH_EDGE (e, ei, switch_bb->succs)
-	{
-	  e->count = apply_probability (switch_bb->count, e->probability);
-	}
     }
-  scale_loop_frequencies (loop, false_scale, REG_BR_PROB_BASE);
-  scale_loop_frequencies (succ_bb->loop_father, true_scale, REG_BR_PROB_BASE);
+  scale_loop_frequencies (loop, false_scale);
+  scale_loop_frequencies (succ_bb->loop_father, true_scale);
   update_dominators_in_loop (loop);
 
   return loop;
@@ -1026,9 +1022,11 @@ copy_loop_info (struct loop *loop, struct loop *target)
 }
 
 /* Copies copy of LOOP as subloop of TARGET loop, placing newly
-   created loop into loops structure.  */
+   created loop into loops structure.  If AFTER is non-null
+   the new loop is added at AFTER->next, otherwise in front of TARGETs
+   sibling list.  */
 struct loop *
-duplicate_loop (struct loop *loop, struct loop *target)
+duplicate_loop (struct loop *loop, struct loop *target, struct loop *after)
 {
   struct loop *cloop;
   cloop = alloc_loop ();
@@ -1040,36 +1038,46 @@ duplicate_loop (struct loop *loop, struct loop *target)
   set_loop_copy (loop, cloop);
 
   /* Add it to target.  */
-  flow_loop_tree_node_add (target, cloop);
+  flow_loop_tree_node_add (target, cloop, after);
 
   return cloop;
 }
 
 /* Copies structure of subloops of LOOP into TARGET loop, placing
-   newly created loops into loop tree.  */
+   newly created loops into loop tree at the end of TARGETs sibling
+   list in the original order.  */
 void
 duplicate_subloops (struct loop *loop, struct loop *target)
 {
-  struct loop *aloop, *cloop;
+  struct loop *aloop, *cloop, *tail;
 
+  for (tail = target->inner; tail && tail->next; tail = tail->next)
+    ;
   for (aloop = loop->inner; aloop; aloop = aloop->next)
     {
-      cloop = duplicate_loop (aloop, target);
+      cloop = duplicate_loop (aloop, target, tail);
+      tail = cloop;
+      gcc_assert(!tail->next);
       duplicate_subloops (aloop, cloop);
     }
 }
 
 /* Copies structure of subloops of N loops, stored in array COPIED_LOOPS,
-   into TARGET loop, placing newly created loops into loop tree.  */
+   into TARGET loop, placing newly created loops into loop tree adding
+   them to TARGETs sibling list at the end in order.  */
 static void
 copy_loops_to (struct loop **copied_loops, int n, struct loop *target)
 {
-  struct loop *aloop;
+  struct loop *aloop, *tail;
   int i;
 
+  for (tail = target->inner; tail && tail->next; tail = tail->next)
+    ;
   for (i = 0; i < n; i++)
     {
-      aloop = duplicate_loop (copied_loops[i], target);
+      aloop = duplicate_loop (copied_loops[i], target, tail);
+      tail = aloop;
+      gcc_assert(!tail->next);
       duplicate_subloops (copied_loops[i], aloop);
     }
 }
@@ -1097,50 +1105,16 @@ can_duplicate_loop_p (const struct loop *loop)
   return ret;
 }
 
-/* Sets probability and count of edge E to zero.  The probability and count
-   is redistributed evenly to the remaining edges coming from E->src.  */
-
-static void
-set_zero_probability (edge e)
-{
-  basic_block bb = e->src;
-  edge_iterator ei;
-  edge ae, last = NULL;
-  unsigned n = EDGE_COUNT (bb->succs);
-  gcov_type cnt = e->count, cnt1;
-  unsigned prob = e->probability, prob1;
-
-  gcc_assert (n > 1);
-  cnt1 = cnt / (n - 1);
-  prob1 = prob / (n - 1);
-
-  FOR_EACH_EDGE (ae, ei, bb->succs)
-    {
-      if (ae == e)
-	continue;
-
-      ae->probability += prob1;
-      ae->count += cnt1;
-      last = ae;
-    }
-
-  /* Move the rest to one of the edges.  */
-  last->probability += prob % (n - 1);
-  last->count += cnt % (n - 1);
-
-  e->probability = 0;
-  e->count = 0;
-}
-
 /* Duplicates body of LOOP to given edge E NDUPL times.  Takes care of updating
-   loop structure and dominators.  E's destination must be LOOP header for
-   this to work, i.e. it must be entry or latch edge of this loop; these are
-   unique, as the loops must have preheaders for this function to work
-   correctly (in case E is latch, the function unrolls the loop, if E is entry
-   edge, it peels the loop).  Store edges created by copying ORIG edge from
-   copies corresponding to set bits in WONT_EXIT bitmap (bit 0 corresponds to
-   original LOOP body, the other copies are numbered in order given by control
-   flow through them) into TO_REMOVE array.  Returns false if duplication is
+   loop structure and dominators (order of inner subloops is retained).
+   E's destination must be LOOP header for this to work, i.e. it must be entry
+   or latch edge of this loop; these are unique, as the loops must have
+   preheaders for this function to work correctly (in case E is latch, the
+   function unrolls the loop, if E is entry edge, it peels the loop).  Store
+   edges created by copying ORIG edge from copies corresponding to set bits in
+   WONT_EXIT bitmap (bit 0 corresponds to original LOOP body, the other copies
+   are numbered in order given by control flow through them) into TO_REMOVE
+   array.  Returns false if duplication is
    impossible.  */
 
 bool
@@ -1157,14 +1131,16 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
   basic_block new_bb, bb, first_active_latch = NULL;
   edge ae, latch_edge;
   edge spec_edges[2], new_spec_edges[2];
-#define SE_LATCH 0
-#define SE_ORIG 1
+  const int SE_LATCH = 0;
+  const int SE_ORIG = 1;
   unsigned i, j, n;
   int is_latch = (latch == e->src);
-  int scale_act = 0, *scale_step = NULL, scale_main = 0;
-  int scale_after_exit = 0;
-  int p, freq_in, freq_le, freq_out_orig;
-  int prob_pass_thru, prob_pass_wont_exit, prob_pass_main;
+  profile_probability *scale_step = NULL;
+  profile_probability scale_main = profile_probability::always ();
+  profile_probability scale_act = profile_probability::always ();
+  profile_count after_exit_num = profile_count::zero (),
+	        after_exit_den = profile_count::zero ();
+  bool scale_after_exit = false;
   int add_irreducible_flag;
   basic_block place_after;
   bitmap bbs_to_scale = NULL;
@@ -1203,29 +1179,26 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 
   if (flags & DLTHE_FLAG_UPDATE_FREQ)
     {
-      /* Calculate coefficients by that we have to scale frequencies
+      /* Calculate coefficients by that we have to scale counts
 	 of duplicated loop bodies.  */
-      freq_in = header->frequency;
-      freq_le = EDGE_FREQUENCY (latch_edge);
-      if (freq_in == 0)
-	freq_in = 1;
-      if (freq_in < freq_le)
-	freq_in = freq_le;
-      freq_out_orig = orig ? EDGE_FREQUENCY (orig) : freq_in - freq_le;
-      if (freq_out_orig > freq_in - freq_le)
-	freq_out_orig = freq_in - freq_le;
-      prob_pass_thru = RDIV (REG_BR_PROB_BASE * freq_le, freq_in);
-      prob_pass_wont_exit =
-	      RDIV (REG_BR_PROB_BASE * (freq_le + freq_out_orig), freq_in);
+      profile_count count_in = header->count;
+      profile_count count_le = latch_edge->count ();
+      profile_count count_out_orig = orig ? orig->count () : count_in - count_le;
+      profile_probability prob_pass_thru = count_le.probability_in (count_in);
+      profile_probability prob_pass_wont_exit =
+	      (count_le + count_out_orig).probability_in (count_in);
 
-      if (orig
-	  && REG_BR_PROB_BASE - orig->probability != 0)
+      if (orig && orig->probability.initialized_p ()
+	  && !(orig->probability == profile_probability::always ()))
 	{
 	  /* The blocks that are dominated by a removed exit edge ORIG have
 	     frequencies scaled by this.  */
-	  scale_after_exit
-              = GCOV_COMPUTE_SCALE (REG_BR_PROB_BASE,
-                                    REG_BR_PROB_BASE - orig->probability);
+	  if (orig->count ().initialized_p ())
+	    {
+	      after_exit_num = orig->src->count;
+	      after_exit_den = after_exit_num - orig->count ();
+	      scale_after_exit = true;
+	    }
 	  bbs_to_scale = BITMAP_ALLOC (NULL);
 	  for (i = 0; i < n; i++)
 	    {
@@ -1235,7 +1208,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	    }
 	}
 
-      scale_step = XNEWVEC (int, ndupl);
+      scale_step = XNEWVEC (profile_probability, ndupl);
 
       for (i = 1; i <= ndupl; i++)
 	scale_step[i - 1] = bitmap_bit_p (wont_exit, i)
@@ -1246,52 +1219,48 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	 copy becomes 1.  */
       if (flags & DLTHE_FLAG_COMPLETTE_PEEL)
 	{
-	  int wanted_freq = EDGE_FREQUENCY (e);
-
-	  if (wanted_freq > freq_in)
-	    wanted_freq = freq_in;
+	  profile_count wanted_count = e->count ();
 
 	  gcc_assert (!is_latch);
-	  /* First copy has frequency of incoming edge.  Each subsequent
-	     frequency should be reduced by prob_pass_wont_exit.  Caller
+	  /* First copy has count of incoming edge.  Each subsequent
+	     count should be reduced by prob_pass_wont_exit.  Caller
 	     should've managed the flags so all except for original loop
 	     has won't exist set.  */
-	  scale_act = GCOV_COMPUTE_SCALE (wanted_freq, freq_in);
+	  scale_act = wanted_count.probability_in (count_in);
 	  /* Now simulate the duplication adjustments and compute header
 	     frequency of the last copy.  */
 	  for (i = 0; i < ndupl; i++)
-	    wanted_freq = combine_probabilities (wanted_freq, scale_step[i]);
-	  scale_main = GCOV_COMPUTE_SCALE (wanted_freq, freq_in);
+	    wanted_count = wanted_count.apply_probability (scale_step [i]);
+	  scale_main = wanted_count.probability_in (count_in);
 	}
+      /* Here we insert loop bodies inside the loop itself (for loop unrolling).
+	 First iteration will be original loop followed by duplicated bodies.
+	 It is necessary to scale down the original so we get right overall
+	 number of iterations.  */
       else if (is_latch)
 	{
-	  prob_pass_main = bitmap_bit_p (wont_exit, 0)
-				? prob_pass_wont_exit
-				: prob_pass_thru;
-	  p = prob_pass_main;
-	  scale_main = REG_BR_PROB_BASE;
+	  profile_probability prob_pass_main = bitmap_bit_p (wont_exit, 0)
+							? prob_pass_wont_exit
+							: prob_pass_thru;
+	  profile_probability p = prob_pass_main;
+	  profile_count scale_main_den = count_in;
 	  for (i = 0; i < ndupl; i++)
 	    {
-	      scale_main += p;
-	      p = combine_probabilities (p, scale_step[i]);
+	      scale_main_den += count_in.apply_probability (p);
+	      p = p * scale_step[i];
 	    }
-	  scale_main = GCOV_COMPUTE_SCALE (REG_BR_PROB_BASE, scale_main);
-	  scale_act = combine_probabilities (scale_main, prob_pass_main);
+	  /* If original loop is executed COUNT_IN times, the unrolled
+	     loop will account SCALE_MAIN_DEN times.  */
+	  scale_main = count_in.probability_in (scale_main_den);
+	  scale_act = scale_main * prob_pass_main;
 	}
       else
 	{
-	  int preheader_freq = EDGE_FREQUENCY (e);
-	  scale_main = REG_BR_PROB_BASE;
+	  profile_count preheader_count = e->count ();
 	  for (i = 0; i < ndupl; i++)
-	    scale_main = combine_probabilities (scale_main, scale_step[i]);
-	  if (preheader_freq > freq_in)
-	    preheader_freq = freq_in;
-	  scale_act = GCOV_COMPUTE_SCALE (preheader_freq, freq_in);
+	    scale_main = scale_main * scale_step[i];
+	  scale_act = preheader_count.probability_in (count_in);
 	}
-      for (i = 0; i < ndupl; i++)
-	gcc_assert (scale_step[i] >= 0 && scale_step[i] <= REG_BR_PROB_BASE);
-      gcc_assert (scale_main >= 0 && scale_main <= REG_BR_PROB_BASE
-		  && scale_act >= 0  && scale_act <= REG_BR_PROB_BASE);
     }
 
   /* Loop the new bbs will belong to.  */
@@ -1381,16 +1350,14 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	{
 	  if (to_remove)
 	    to_remove->safe_push (new_spec_edges[SE_ORIG]);
-	  set_zero_probability (new_spec_edges[SE_ORIG]);
+	  force_edge_cold (new_spec_edges[SE_ORIG], true);
 
 	  /* Scale the frequencies of the blocks dominated by the exit.  */
-	  if (bbs_to_scale)
+	  if (bbs_to_scale && scale_after_exit)
 	    {
 	      EXECUTE_IF_SET_IN_BITMAP (bbs_to_scale, 0, i, bi)
-		{
-		  scale_bbs_frequencies_int (new_bbs + i, 1, scale_after_exit,
-					     REG_BR_PROB_BASE);
-		}
+		scale_bbs_frequencies_profile_count (new_bbs + i, 1, after_exit_num,
+						     after_exit_den);
 	    }
 	}
 
@@ -1405,8 +1372,8 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
       /* Set counts and frequencies.  */
       if (flags & DLTHE_FLAG_UPDATE_FREQ)
 	{
-	  scale_bbs_frequencies_int (new_bbs, n, scale_act, REG_BR_PROB_BASE);
-	  scale_act = combine_probabilities (scale_act, scale_step[j]);
+	  scale_bbs_frequencies (new_bbs, n, scale_act);
+	  scale_act = scale_act * scale_step[j];
 	}
     }
   free (new_bbs);
@@ -1417,16 +1384,14 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
     {
       if (to_remove)
 	to_remove->safe_push (orig);
-      set_zero_probability (orig);
+      force_edge_cold (orig, true);
 
       /* Scale the frequencies of the blocks dominated by the exit.  */
-      if (bbs_to_scale)
+      if (bbs_to_scale && scale_after_exit)
 	{
 	  EXECUTE_IF_SET_IN_BITMAP (bbs_to_scale, 0, i, bi)
-	    {
-	      scale_bbs_frequencies_int (bbs + i, 1, scale_after_exit,
-					 REG_BR_PROB_BASE);
-	    }
+	    scale_bbs_frequencies_profile_count (bbs + i, 1, after_exit_num,
+						 after_exit_den);
 	}
     }
 
@@ -1435,7 +1400,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
     set_immediate_dominator (CDI_DOMINATORS, e->dest, e->src);
   if (flags & DLTHE_FLAG_UPDATE_FREQ)
     {
-      scale_bbs_frequencies_int (bbs, n, scale_main, REG_BR_PROB_BASE);
+      scale_bbs_frequencies (bbs, n, scale_main);
       free (scale_step);
     }
 
@@ -1551,7 +1516,9 @@ create_preheader (struct loop *loop, int flags)
 
   mfb_kj_edge = loop_latch_edge (loop);
   latch_edge_was_fallthru = (mfb_kj_edge->flags & EDGE_FALLTHRU) != 0;
-  if (nentry == 1)
+  if (nentry == 1
+      && ((flags & CP_FALLTHRU_PREHEADERS) == 0
+  	  || (single_entry->flags & EDGE_CROSSING) == 0))
     dummy = split_edge (single_entry);
   else
     {
@@ -1647,12 +1614,14 @@ force_single_succ_latches (void)
 
   THEN_PROB is the probability of then branch of the condition.
   ELSE_PROB is the probability of else branch. Note that they may be both
-  REG_BR_PROB_BASE when condition is IFN_LOOP_VECTORIZED.  */
+  REG_BR_PROB_BASE when condition is IFN_LOOP_VECTORIZED or
+  IFN_LOOP_DIST_ALIAS.  */
 
 static basic_block
 lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
-			   edge e, void *cond_expr, unsigned then_prob,
-			   unsigned else_prob)
+			   edge e, void *cond_expr,
+			   profile_probability then_prob,
+			   profile_probability else_prob)
 {
   basic_block new_head = NULL;
   edge e1;
@@ -1672,8 +1641,6 @@ lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
 		  current_ir_type () == IR_GIMPLE ? EDGE_TRUE_VALUE : 0);
   e1->probability = then_prob;
   e->probability = else_prob;
-  e1->count = apply_probability (e->count, e1->probability);
-  e->count = apply_probability (e->count, e->probability);
 
   set_immediate_dominator (CDI_DOMINATORS, first_head, new_head);
   set_immediate_dominator (CDI_DOMINATORS, second_head, new_head);
@@ -1707,8 +1674,8 @@ lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
 struct loop *
 loop_version (struct loop *loop,
 	      void *cond_expr, basic_block *condition_bb,
-	      unsigned then_prob, unsigned else_prob,
-	      unsigned then_scale, unsigned else_scale,
+	      profile_probability then_prob, profile_probability else_prob,
+	      profile_probability then_scale, profile_probability else_scale,
 	      bool place_after)
 {
   basic_block first_head, second_head;

@@ -1,5 +1,5 @@
 /* { dg-do run { target { *-*-* || no } } } */
-/* { dg-skip-if "comment" { *-*-* && yes } { "*" } { "" } } */
+/* { dg-skip-if "comment" { *-*-* && yes } } */
 
 int
 main ()

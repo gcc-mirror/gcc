@@ -30,12 +30,12 @@ program main
 ! scalar elemental function with structure constructor
      prt_in = string_t(["D"])
      tmpc = new_prt_spec2 (string_container_t(prt_in))
-     if (any(tmpc%comp%chars .ne. ["D"])) call abort
+     if (any(tmpc%comp%chars .ne. ["D"])) STOP 1
      deallocate (prt_in%chars)
      deallocate(tmpc%comp%chars)
 ! Check that function arguments are OK too
      tmpc = new_prt_spec2 (string_container_t(new_str_t(["h","e","l","l","o"])))
-     if (any(tmpc%comp%chars .ne. ["h","e","l","l","o"])) call abort
+     if (any(tmpc%comp%chars .ne. ["h","e","l","l","o"])) STOP 1
      deallocate(tmpc%comp%chars)
 
   end do

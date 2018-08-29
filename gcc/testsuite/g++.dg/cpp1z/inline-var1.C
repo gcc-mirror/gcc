@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=c++1z -Wno-deprecated" }
+// { dg-options "-std=c++17 -Wno-deprecated" }
 // { dg-require-weak "" }
 // { dg-additional-sources "inline-var1a.C" }
 

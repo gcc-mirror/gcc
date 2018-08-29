@@ -16,7 +16,9 @@ public:
 
   constexpr static Inner & getInner()
   /* I am surprised this is considered a constexpr */
-  { return *((Inner *)4); } // { dg-error "reinterpret_cast" }
+  {
+    return *((Inner *)4); // { dg-error "reinterpret_cast" }
+  }
 };
 
 B B::instance;

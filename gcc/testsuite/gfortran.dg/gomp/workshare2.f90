@@ -28,7 +28,7 @@ program foo
   do j=1,n
      if (abs(a(j)-c(j)) > eps) then
         print *,1,j,a(j), c(j)
-        call abort
+        STOP 1
      end if
   end do
 
@@ -44,7 +44,7 @@ program foo
   do j=1,n
      if (abs(a(j)-c(j)) > eps) then
         print *,2,j,a(j), c(j)
-        call abort
+        STOP 2
      end if
   end do
 

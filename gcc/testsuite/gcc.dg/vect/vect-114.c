@@ -34,6 +34,9 @@ int main (void)
   return main1 ();
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! { vect_perm  } } } } } */
+/* Requires reverse for SVE, which is implemented by a later patch.
+   Until then we fall back to Advanced SIMD and successfully vectorize
+   the loop.  */
+/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! vect_perm } xfail { aarch64_sve && vect_variable_length } } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_perm } } } */
 

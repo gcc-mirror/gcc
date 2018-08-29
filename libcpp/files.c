@@ -1,5 +1,5 @@
 /* Part of CPP library.  File handling.
-   Copyright (C) 1986-2017 Free Software Foundation, Inc.
+   Copyright (C) 1986-2018 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -805,7 +805,7 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
 
   /* Skip if the file had a header guard and the macro is defined.
      PCH relies on this appearing before the PCH handler below.  */
-  if (file->cmacro && file->cmacro->type == NT_MACRO)
+  if (file->cmacro && cpp_macro_p (file->cmacro))
     return false;
 
   /* Handle PCH files immediately; don't stack them.  */

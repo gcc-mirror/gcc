@@ -1,5 +1,5 @@
 /* Demangler for GNU C++
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    Modified by Satish Pai (pai@apollo.hp.com) for HP demangling
@@ -4471,7 +4471,8 @@ remember_Btype (struct work_stuff *work, const char *start,
   char *tem;
 
   tem = XNEWVEC (char, len + 1);
-  memcpy (tem, start, len);
+  if (len > 0)
+    memcpy (tem, start, len);
   tem[len] = '\0';
   work -> btypevec[index] = tem;
 }

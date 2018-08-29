@@ -41,5 +41,5 @@ program sechs_w
   if ((z /= 1)       .or. (dg /= 58.4_dr)  .or. (a /= 48.0_dr)   .or. &
     (delta /= 0.4_dr).or. (s /= 0.4_dr)    .or. (nk /= 6)        .or. &
     (rb(1) /= 60._dr).or. (rb(2) /= 0.0_dr).or. (rb(3) /=40.0_dr).or. &
-    (alpha0 /= 20.0_dr)) call abort ()
+    (alpha0 /= 20.0_dr)) STOP 1
 end program sechs_w

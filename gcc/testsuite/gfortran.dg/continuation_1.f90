@@ -11,5 +11,5 @@ program main
          world!" ! { dg-warning "Missing '&' in continued character constant" }
   if (c.ne.&
                                    "Hello, world!")&
-                               call abort();end program main
+                               STOP 1;end program main
 

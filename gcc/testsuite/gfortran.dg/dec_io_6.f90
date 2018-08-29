@@ -20,7 +20,7 @@ close(unit=fd,status='delete') ! { dg-output "file protected by READONLY" }
 inquire(file=f, EXIST=exists)
 if (.not. exists) then
   print *, 'file was not protected by READONLY!'
-  call abort()
+  STOP 1
 endif
 
 open(unit=fd,file=f,action='write')

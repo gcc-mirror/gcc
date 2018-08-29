@@ -53,10 +53,10 @@ static int sc = INT_MAX + 1; /* { dg-warning "integer overflow in expression" } 
    subexpression, so is a null pointer constant.  */
 void *p = 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
 /* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
-/* { dg-error "initialization makes pointer from integer without a cast" "null" { target *-*-* } .-2 } */
+/* { dg-error "initialization of 'void \\*' from 'int' makes pointer from integer without a cast" "null" { target *-*-* } .-2 } */
 void *q = 0 * (1 / 0); /* { dg-warning "division by zero" } */
-/* { dg-error "initializer element is not computable at load time" "constant" { target *-*-* } .-1 } */
-/* { dg-error "initialization makes pointer from integer without a cast" "null" { target *-*-* } .-2 } */
+/* { dg-error "initializer element is not constant" "constant" { target *-*-* } .-1 } */
+/* { dg-error "initialization of 'void \\*' from 'int' makes pointer from integer without a cast" "null" { target *-*-* } .-2 } */
 void *r = (1 ? 0 : INT_MAX+1);
 
 void

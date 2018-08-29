@@ -1,5 +1,5 @@
 /* Output routines for CR16 processor.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by KPIT Cummins Infosystems Limited.
   
    This file is part of GCC.
@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -25,6 +27,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
@@ -198,13 +202,16 @@ static void cr16_print_operand_address (FILE *, machine_mode, rtx);
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST 	cr16_memory_move_cost
 
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT	constant_alignment_word_strings
+
 /* Table of machine attributes.  */
 static const struct attribute_spec cr16_attribute_table[] = {
   /* ISRs have special prologue and epilogue requirements.  */
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity }.  */
-  {"interrupt", 0, 0, false, true, true, NULL, false},
-  {NULL, 0, 0, false, false, false, NULL, false}
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude }.  */
+  {"interrupt", 0, 0, false, true, true, false, NULL, NULL},
+  {NULL, 0, 0, false, false, false, false, NULL, NULL}
 };
 
 /* TARGET_ASM_UNALIGNED_xx_OP generates .?byte directive
@@ -217,6 +224,13 @@ static const struct attribute_spec cr16_attribute_table[] = {
 #define TARGET_ASM_UNALIGNED_SI_OP 	TARGET_ASM_ALIGNED_SI_OP
 #undef TARGET_ASM_UNALIGNED_DI_OP
 #define TARGET_ASM_UNALIGNED_DI_OP 	TARGET_ASM_ALIGNED_DI_OP
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS		cr16_hard_regno_nregs
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK	cr16_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P		cr16_modes_tieable_p
 
 /* Target hook implementations.  */
 
@@ -239,10 +253,8 @@ cr16_class_likely_spilled_p (reg_class_t rclass)
   return false;
 }
 
-static int
-cr16_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
-                       tree funtype ATTRIBUTE_UNUSED, 
-		       int size ATTRIBUTE_UNUSED)
+static poly_int64
+cr16_return_pops_args (tree, tree, poly_int64)
 {
   return 0;
 }
@@ -419,9 +431,10 @@ cr16_compute_frame (void)
     padding_locals = stack_alignment - padding_locals;
 
   current_frame_info.var_size += padding_locals;
-  current_frame_info.total_size = current_frame_info.var_size 
-			          + (ACCUMULATE_OUTGOING_ARGS
-			             ? crtl->outgoing_args_size : 0);
+  current_frame_info.total_size
+    = (current_frame_info.var_size
+       + (ACCUMULATE_OUTGOING_ARGS
+	  ? (HOST_WIDE_INT) crtl->outgoing_args_size : 0));
 }
 
 /* Implements the macro INITIAL_ELIMINATION_OFFSET, return the OFFSET.  */
@@ -435,12 +448,14 @@ cr16_initial_elimination_offset (int from, int to)
   cr16_compute_frame ();
 
   if (((from) == FRAME_POINTER_REGNUM) && ((to) == STACK_POINTER_REGNUM))
-    return (ACCUMULATE_OUTGOING_ARGS ? crtl->outgoing_args_size : 0);
+    return (ACCUMULATE_OUTGOING_ARGS
+	    ? (HOST_WIDE_INT) crtl->outgoing_args_size : 0);
   else if (((from) == ARG_POINTER_REGNUM) && ((to) == FRAME_POINTER_REGNUM))
     return (current_frame_info.reg_size + current_frame_info.var_size);
   else if (((from) == ARG_POINTER_REGNUM) && ((to) == STACK_POINTER_REGNUM))
     return (current_frame_info.reg_size + current_frame_info.var_size 
-	    + (ACCUMULATE_OUTGOING_ARGS ? crtl->outgoing_args_size : 0));
+	    + (ACCUMULATE_OUTGOING_ARGS
+	       ? (HOST_WIDE_INT) crtl->outgoing_args_size : 0));
   else
     gcc_unreachable ();
 }
@@ -461,28 +476,48 @@ cr16_regno_reg_class (int regno)
   return NO_REGS;
 }
 
-/* Return 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-int
-cr16_hard_regno_mode_ok (int regno, machine_mode mode)
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+cr16_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno >= CR16_FIRST_DWORD_REGISTER)
+    return CEIL (GET_MODE_SIZE (mode), CR16_UNITS_PER_DWORD);
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  On the CR16 architecture, all
+   registers can hold all modes, except that double precision floats
+   (and double ints) must fall on even-register boundaries.  */
+
+static bool
+cr16_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if ((GET_MODE_SIZE (mode) >= 4) && (regno == 11))
-    return 0;
+    return false;
  
   if (mode == DImode || mode == DFmode)
     {
       if ((regno > 8) || (regno & 1))
-	return 0;
-      return 1;
+	return false;
+      return true;
     }
 
   if ((TARGET_INT32)
        && ((regno >= 12) && (GET_MODE_SIZE (mode) < 4 )))
-     return 0;
+     return false;
 
   /* CC can only hold CCmode values.  */
   if (GET_MODE_CLASS (mode) == MODE_CC)
-    return 0;
-  return 1;
+    return false;
+  return true;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+static bool
+cr16_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2);
 }
 
 /* Returns register number for function return value.*/
@@ -1354,7 +1389,7 @@ cr16_memory_move_cost (machine_mode mode,
 {
   /* One LD or ST takes twice the time of a simple reg-reg move.  */
   if (reg_classes_intersect_p (rclass, GENERAL_REGS))
-    return (4 * HARD_REGNO_NREGS (0, mode));
+    return (4 * cr16_hard_regno_nregs (0, mode));
   else
     return (100);
 }
@@ -1825,10 +1860,10 @@ cr16_create_dwarf_for_multi_push (rtx insn)
 
   for (i = current_frame_info.last_reg_to_save; i >= 0;)
     {
-      if (!current_frame_info.save_regs[i] || 0 == i || split_here)
+      if (!current_frame_info.save_regs[i] || i == 0 || split_here)
 	{
 	  /* This block of regs is pushed in one instruction.  */
-	  if (0 == i && current_frame_info.save_regs[i])
+	  if (i == 0 && current_frame_info.save_regs[i])
 	    from = 0;
 
 	  for (j = to; j >= from; --j)
@@ -2090,7 +2125,7 @@ notice_update_cc (rtx exp)
   return;
 }
 
-static machine_mode
+static scalar_int_mode
 cr16_unwind_word_mode (void)
 {
   return SImode;
@@ -2178,6 +2213,14 @@ cr16_emit_logical_di (rtx *operands, enum rtx_code code)
   }
 
   return "";
+}
+
+/* Implement PUSH_ROUNDING.  */
+
+poly_int64
+cr16_push_rounding (poly_int64 bytes)
+{
+  return (bytes + 1) & ~1;
 }
 
 /* Initialize 'targetm' variable which contains pointers to functions 

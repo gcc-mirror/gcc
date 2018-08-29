@@ -386,6 +386,18 @@ OACC_2.0.1 {
 	acc_pcreate;
 } OACC_2.0;
 
+OACC_2.5 {
+  global:
+	acc_copyout_finalize;
+	acc_copyout_finalize_32_h_;
+	acc_copyout_finalize_64_h_;
+	acc_copyout_finalize_array_h_;
+	acc_delete_finalize;
+	acc_delete_finalize_32_h_;
+	acc_delete_finalize_64_h_;
+	acc_delete_finalize_array_h_;
+} OACC_2.0.1;
+
 GOACC_2.0 {
   global:
 	GOACC_data_end;
@@ -420,3 +432,8 @@ GOMP_PLUGIN_1.1 {
   global:
 	GOMP_PLUGIN_target_task_completion;
 } GOMP_PLUGIN_1.0;
+
+GOMP_PLUGIN_1.2 {
+  global:
+	GOMP_PLUGIN_acc_default_dim;
+} GOMP_PLUGIN_1.1;

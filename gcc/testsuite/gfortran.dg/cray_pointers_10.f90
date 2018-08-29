@@ -14,5 +14,5 @@ program test
   real :: z
   c_a = loc(z)
   a = 42
-  if (z /= 42) call abort
+  if (z /= 42) STOP 1
 end program test

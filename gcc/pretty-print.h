@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_PRETTY_PRINT_H
 
 #include "obstack.h"
-#include "wide-int-print.h"
 
 /* Maximum number of format string arguments.  */
 #define PP_NL_ARGMAX   30
@@ -37,7 +36,8 @@ struct text_info
   void **x_data;
   rich_location *m_richloc;
 
-  void set_location (unsigned int idx, location_t loc, bool caret_p);
+  void set_location (unsigned int idx, location_t loc,
+		     enum range_display_kind range_display_kind);
   location_t get_location (unsigned int index_of_location) const;
 };
 
@@ -180,7 +180,7 @@ struct pp_wrapping_mode_t
    A client-supplied formatter returns true if everything goes well,
    otherwise it returns false.  */
 typedef bool (*printer_fn) (pretty_printer *, text_info *, const char *,
-			    int, bool, bool, bool, bool, const char **);
+			    int, bool, bool, bool, bool *, const char **);
 
 /* Client supplied function used to decode formats.  */
 #define pp_format_decoder(PP) (PP)->format_decoder
@@ -216,17 +216,18 @@ class format_postprocessor
    and add additional fields they need.  */
 struct pretty_printer
 {
-  // Default construct a pretty printer with specified prefix
-  // and a maximum line length cut off limit.
-  explicit pretty_printer (const char* = NULL, int = 0);
+  /* Default construct a pretty printer with specified
+     maximum line length cut off limit.  */
+  explicit pretty_printer (int = 0);
 
   virtual ~pretty_printer ();
 
   /* Where we print external representation of ENTITY.  */
   output_buffer *buffer;
 
-  /* The prefix for each new line.  */
-  const char *prefix;
+  /* The prefix for each new line.  If non-NULL, this is "owned" by the
+     pretty_printer, and will eventually be free-ed.  */
+  char *prefix;
 
   /* Where to put whitespace around the entity being formatted.  */
   pp_padding padding;
@@ -329,8 +330,6 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
       pp_string (PP, pp_buffer (PP)->digit_buffer);		\
     }								\
   while (0)
-#define pp_wide_integer(PP, I) \
-   pp_scalar (PP, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) I)
 #define pp_pointer(PP, P)      pp_scalar (PP, "%p", P)
 
 #define pp_identifier(PP, ID)  pp_string (PP, (pp_translate_identifiers (PP) \
@@ -341,7 +340,8 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
 #define pp_buffer(PP) (PP)->buffer
 
 extern void pp_set_line_maximum_length (pretty_printer *, int);
-extern void pp_set_prefix (pretty_printer *, const char *);
+extern void pp_set_prefix (pretty_printer *, char *);
+extern char *pp_take_prefix (pretty_printer *);
 extern void pp_destroy_prefix (pretty_printer *);
 extern int pp_remaining_character_count_for_line (pretty_printer *);
 extern void pp_clear_output_area (pretty_printer *);
@@ -387,6 +387,9 @@ extern void pp_write_text_to_stream (pretty_printer *);
 extern void pp_write_text_as_dot_label_to_stream (pretty_printer *, bool);
 extern void pp_maybe_space (pretty_printer *);
 
+extern void pp_begin_quote (pretty_printer *, bool);
+extern void pp_end_quote (pretty_printer *, bool);
+
 /* Switch into verbatim mode and return the old mode.  */
 static inline pp_wrapping_mode_t
 pp_set_verbatim_wrapping_ (pretty_printer *pp)
@@ -401,5 +404,16 @@ pp_set_verbatim_wrapping_ (pretty_printer *pp)
 extern const char *identifier_to_locale (const char *);
 extern void *(*identifier_to_locale_alloc) (size_t);
 extern void (*identifier_to_locale_free) (void *);
+
+/* Print I to PP in decimal.  */
+
+inline void
+pp_wide_integer (pretty_printer *pp, HOST_WIDE_INT i)
+{
+  pp_scalar (pp, HOST_WIDE_INT_PRINT_DEC, i);
+}
+
+template<unsigned int N, typename T>
+void pp_wide_integer (pretty_printer *pp, const poly_int_pod<N, T> &);
 
 #endif /* GCC_PRETTY_PRINT_H */

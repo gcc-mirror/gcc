@@ -1,7 +1,7 @@
 // { dg-do assemble  }
 // { dg-options "-Wno-deprecated" }
 
-int f(int x) return y(x) { } // { dg-error "" } 
+int f(int x) return y(x) { return 0; } // { dg-error "" } 
 
 extern "C" void abort ();
 

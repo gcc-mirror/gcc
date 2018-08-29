@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -231,11 +231,9 @@ rank (rtx_insn *insn1, rtx_insn *insn2)
   basic_block bb1 = BLOCK_FOR_INSN (insn1);
   basic_block bb2 = BLOCK_FOR_INSN (insn2);
 
-  if (bb1->count > bb2->count
-      || bb1->frequency > bb2->frequency)
+  if (bb1->count > bb2->count)
     return -1;
-  if (bb1->count < bb2->count
-      || bb1->frequency < bb2->frequency)
+  if (bb1->count < bb2->count)
     return 1;
   return 0;
 }
@@ -622,7 +620,7 @@ schedule_ebbs (void)
   if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)
     return;
 
-  if (profile_info && flag_branch_probabilities)
+  if (profile_info && profile_status_for_fn (cfun) == PROFILE_READ)
     probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY_FEEDBACK);
   else
     probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY);
@@ -648,7 +646,8 @@ schedule_ebbs (void)
 	  e = find_fallthru_edge (bb->succs);
 	  if (! e)
 	    break;
-	  if (e->probability <= probability_cutoff)
+	  if (e->probability.initialized_p ()
+	      && e->probability.to_reg_br_prob_base () <= probability_cutoff)
 	    break;
 	  if (e->dest->flags & BB_DISABLE_SCHEDULE)
  	    break;

@@ -14,4 +14,4 @@ struct Item : Object, virtual A {
   }
   bool m_fn1();
 };
-bool Item::m_fn1() {}
+bool Item::m_fn1() { return true; }

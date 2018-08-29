@@ -7,8 +7,8 @@ struct A
   virtual void g() throw();
   virtual void h() noexcept;
   virtual void i() noexcept(false);
-  virtual void j() throw(int);	// { dg-error "dynamic exception specification" "" { target c++1z } }
-};				// { dg-warning "deprecated" "" { target { ! c++1z } } .-1 }
+  virtual void j() throw(int);	// { dg-error "dynamic exception specification" "" { target c++17 } }
+};				// { dg-warning "deprecated" "" { target { ! c++17 } } .-1 }
 
 struct B: A
 {
@@ -34,23 +34,23 @@ struct D: A
   void g() noexcept(false);	// { dg-error "looser" }
   void h() noexcept(false);	// { dg-error "looser" }
   void i() noexcept(false);
-  void j() noexcept(false);	// { dg-error "looser" "" { target { ! c++1z } } }
+  void j() noexcept(false);	// { dg-error "looser" "" { target { ! c++17 } } }
 };
 
 struct E: A
 {
-  void f() throw(int);		// { dg-error "dynamic exception specification" "" { target c++1z } }
-				// { dg-warning "deprecated" "" { target { ! c++1z } } .-1 }
+  void f() throw(int);		// { dg-error "dynamic exception specification" "" { target c++17 } }
+				// { dg-warning "deprecated" "" { target { ! c++17 } } .-1 }
   void g() throw(int);		// { dg-error "looser" }
-				// { dg-error "dynamic exception specification" "" { target c++1z } .-1 }
-				// { dg-warning "deprecated" "" { target { ! c++1z } } .-2 }
+				// { dg-error "dynamic exception specification" "" { target c++17 } .-1 }
+				// { dg-warning "deprecated" "" { target { ! c++17 } } .-2 }
   void h() throw(int);		// { dg-error "looser" }
-				// { dg-error "dynamic exception specification" "" { target c++1z } .-1 }
-				// { dg-warning "deprecated" "" { target { ! c++1z } } .-2 }
-  void i() throw(int);		// { dg-error "dynamic exception specification" "" { target c++1z } }
-				// { dg-warning "deprecated" "" { target { ! c++1z } } .-1 }
-  void j() throw(int);		// { dg-error "dynamic exception specification" "" { target c++1z } }
-				// { dg-warning "deprecated" "" { target { ! c++1z } } .-1 }
+				// { dg-error "dynamic exception specification" "" { target c++17 } .-1 }
+				// { dg-warning "deprecated" "" { target { ! c++17 } } .-2 }
+  void i() throw(int);		// { dg-error "dynamic exception specification" "" { target c++17 } }
+				// { dg-warning "deprecated" "" { target { ! c++17 } } .-1 }
+  void j() throw(int);		// { dg-error "dynamic exception specification" "" { target c++17 } }
+				// { dg-warning "deprecated" "" { target { ! c++17 } } .-1 }
 };
 
 struct F: A
@@ -59,5 +59,5 @@ struct F: A
   void g();			// { dg-error "looser" }
   void h();			// { dg-error "looser" }
   void i();
-  void j();			// { dg-error "looser" "" { target { ! c++1z } } }
+  void j();			// { dg-error "looser" "" { target { ! c++17 } } }
 };

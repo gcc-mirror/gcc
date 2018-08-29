@@ -1,5 +1,5 @@
 ;;- Machine description for the pdp11 for GNU C compiler
-;; Copyright (C) 1994-2017 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2018 Free Software Foundation, Inc.
 ;; Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 ;; This file is part of GCC.
@@ -44,28 +44,85 @@
    ;; arguments.
    (FRAME_POINTER_REGNUM  14)
    (ARG_POINTER_REGNUM    15)
-   (FIRST_PSEUDO_REGISTER 16)
-   ;; Branch offset limits, as byte offsets from instruction address
+   ;; Condition code registers
+   (CC_REGNUM             16)
+   (FCC_REGNUM            17)
+   ;; End of hard registers
+   (FIRST_PSEUDO_REGISTER 18)
+   
+   ;; Branch offset limits, as byte offsets from (pc).  That is NOT
+   ;; the same thing as "instruction address" -- it is for backward
+   ;; branches, but for forward branches it refers to the address
+   ;; following the instruction.  So the max forward distance
+   ;; matches what the processor handbook says, while the max
+   ;; backward branch is 2 less than the book.
    (MIN_BRANCH            -254)
-   (MAX_BRANCH            256)
-   (MIN_SOB               -126)
+   (MAX_BRANCH            254)
+   (MIN_SOB               -124)
    (MAX_SOB               0)])
 
+;; DF is 64 bit
+;; SF is 32 bit
+;; SI is 32 bit
 ;; HI is 16 bit
 ;; QI is 8 bit 
 
 ;; Integer modes supported on the PDP11, with a mapping from machine mode
-;; to mnemonic suffix.  SImode and DImode always are special cases.
+;; to mnemonic suffix.  SImode and DImode are usually special cases.
 (define_mode_iterator PDPint [QI HI])
 (define_mode_attr  isfx [(QI "b") (HI "")])
+(define_mode_attr  mname [(QI "QImode") (HI "HImode") (SI "SImode") (DI "DImode")])
+(define_mode_attr  e_mname [(QI "E_QImode") (HI "E_HImode") (SI "E_SImode") (DI "E_DImode")])
+(define_mode_attr  hmode [(QI "hi") (HI "hi") (SI "si") (DI "di")])
+
+;; These are analogous for use in splitters and expanders.
+(define_mode_iterator HSint [HI SI])
+(define_mode_iterator QHSint [QI HI SI])
+(define_mode_iterator QHSDint [QI HI SI DI])
+
+(define_code_iterator SHF [ashift ashiftrt lshiftrt])
+
+;; Substitution to turn a CC clobber into a CC setter.  We have four of
+;; these: for CCmode vs. CCNZmode, and for CC_REGNUM vs. FCC_REGNUM.
+(define_subst "cc_cc"
+  [(set (match_operand 0 "") (match_operand 1 ""))
+   (clobber (reg CC_REGNUM))]
+  ""
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (match_dup 1))])
+
+(define_subst "cc_ccnz"
+  [(set (match_operand 0 "") (match_operand 1 ""))
+   (clobber (reg CC_REGNUM))]
+  ""
+  [(set (reg:CCNZ CC_REGNUM)
+	(compare:CCNZ (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (match_dup 1))])
+
+(define_subst "fcc_cc"
+  [(set (match_operand 0 "") (match_operand 1 ""))
+   (clobber (reg FCC_REGNUM))]
+  ""
+  [(set (reg:CC FCC_REGNUM)
+	(compare:CC (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (match_dup 1))])
+
+(define_subst "fcc_ccnz"
+  [(set (match_operand 0 "") (match_operand 1 ""))
+   (clobber (reg FCC_REGNUM))]
+  ""
+  [(set (reg:CCNZ FCC_REGNUM)
+	(compare:CCNZ (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (match_dup 1))])
+
+(define_subst_attr "cc_cc" "cc_cc" "_nocc" "_cc")
+(define_subst_attr "fcc_cc" "fcc_cc" "_nocc" "_cc")
+(define_subst_attr "cc_ccnz" "cc_ccnz" "_nocc" "_cc")
+(define_subst_attr "fcc_ccnz" "fcc_ccnz" "_nocc" "_cc")
 
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
 
-;;- cpp macro #define NOTICE_UPDATE_CC in file tm.h handles condition code
-;;- updates for most instructions.
-
-;;- Operand classes for the register allocator:
-
 ;; Compare instructions.
 
 ;; currently we only support df floats, which saves us quite some
@@ -82,16 +139,6 @@
 ;; and ucmp_optab for mode SImode, because we don't have that!!!
 ;; - yet since no libfunc is there, we abort ()
 
-;; The only thing that remains to be done then is output 
-;; the floats in a way the assembler can handle it (and 
-;; if you're really into it, use a PDP11 float emulation
-;; library to do floating point constant folding - but 
-;; I guess you'll get reasonable results even when not
-;; doing this)
-;; the last thing to do is fix the UPDATE_CC macro to check
-;; for floating point condition codes, and set cc_status
-;; properly, also setting the CC_IN_FCCR flag. 
-
 ;; define attributes
 ;; currently type is only fpu or arith or unknown, maybe branch later ?
 ;; default is arith
@@ -99,6 +146,9 @@
 
 ;; length default is 2 bytes each
 (define_attr "length" "" (const_int 2))
+
+;; instruction base cost (not counting operands)
+(define_attr "base_cost" "" (const_int 2))
 
 ;; a user's asm statement
 (define_asm_attributes
@@ -136,7 +186,7 @@
 (define_insn "*rts"
   [(return)]
   ""
-  "rts pc")
+  "rts\tpc")
 
 (define_insn "blockage"
   [(unspec_volatile [(const_int 0)] UNSPECV_BLOCKAGE)]
@@ -163,121 +213,200 @@
 
 ;; compare
 (define_insn "*cmpdf"
-  [(set (cc0)
-	(compare (match_operand:DF 0 "general_operand" "fR,fR,Q,QF")
-		 (match_operand:DF 1 "register_or_const0_operand" "G,a,G,a")))]
-  "TARGET_FPU"
+  [(set (reg:CC FCC_REGNUM)
+	(compare:CC (match_operand:DF 0 "general_operand" "fR,fR,Q,QF")
+		    (match_operand:DF 1 "register_or_const0_operand" "G,a,G,a")))]
+  "TARGET_FPU && reload_completed"
   "*
 {
-  cc_status.flags = CC_IN_FPU;
   if (which_alternative == 0 || which_alternative == 2)
-    return \"{tstd|tstf} %0\;cfcc\";
+    return \"{tstd|tstf}\t%0\";
   else
-    return \"{cmpd|cmpf} %0, %1\;cfcc\";
+    return \"{cmpd|cmpf}\t%0,%1\";
 }"
-  [(set_attr "length" "4,4,6,6")]) 
+  [(set_attr "length" "2,2,4,4")
+   (set_attr "base_cost" "4")
+   (set_attr "type" "fp")]) 
 
-(define_insn "*cmp<mode>"
-  [(set (cc0)
-	(compare (match_operand:PDPint 0 "general_operand" "rR,rR,rR,Q,Qi,Qi")
-		 (match_operand:PDPint 1 "general_operand" "N,rR,Qi,N,rR,Qi")))]
+;; Copy floating point processor condition code register to main CPU
+;; condition code register.
+(define_insn "*cfcc"
+  [(set (reg CC_REGNUM) (reg FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "cfcc")
+
+(define_insn "cmp<mode>"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC (match_operand:PDPint 0 "general_operand" "rR,rR,rR,Q,Qi,Qi")
+		    (match_operand:PDPint 1 "general_operand" "N,rR,Qi,N,rR,Qi")))]
   ""
   "@
-   tst<PDPint:isfx> %0
-   cmp<PDPint:isfx> %0,%1
-   cmp<PDPint:isfx> %0,%1
-   tst<PDPint:isfx> %0
-   cmp<PDPint:isfx> %0,%1
-   cmp<PDPint:isfx> %0,%1"
+   tst<PDPint:isfx>\t%0
+   cmp<PDPint:isfx>\t%0,%1
+   cmp<PDPint:isfx>\t%0,%1
+   tst<PDPint:isfx>\t%0
+   cmp<PDPint:isfx>\t%0,%1
+   cmp<PDPint:isfx>\t%0,%1"
   [(set_attr "length" "2,2,4,4,4,6")])
 
-;; sob instruction - we need an assembler which can make this instruction
-;; valid under _all_ circumstances!
-
-(define_insn ""
+;; sob instruction
+;;
+;; Do a define_expand because some alternatives clobber CC.
+;; Some don't, but it isn't all that interesting to cover that case.
+(define_insn_and_split "doloop_end"
   [(set (pc)
 	(if_then_else
-	 (ne (plus:HI (match_operand:HI 0 "register_operand" "+r")
-		      (const_int -1))
-	     (const_int 0))
+	 (ne (match_operand:HI 0 "nonimmediate_operand" "+r,!m")
+	     (const_int 1))
 	 (label_ref (match_operand 1 "" ""))
 	 (pc)))
    (set (match_dup 0)
 	(plus:HI (match_dup 0)
 		 (const_int -1)))]
   "TARGET_40_PLUS"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (pc)
+		   (if_then_else
+		    (ne (match_dup 0) (const_int 1))
+		    (label_ref (match_dup 1))
+		    (pc)))
+	      (set (match_dup 0)
+		   (plus:HI (match_dup 0)
+			 (const_int -1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  "")
+
+;; Note that there is a memory alternative here.  This is as documented
+;; in gccint, which says that doloop_end, since it has both a jump and
+;; an output interrupt "must handle its own reloads".  That translates
+;; to: must accept memory operands as valid though they may be deprecated.
+(define_insn "doloop_end_nocc"
+  [(set (pc)
+	(if_then_else
+	 (ne (match_operand:HI 0 "nonimmediate_operand" "+r,!m")
+	     (const_int 1))
+	 (label_ref (match_operand 1 "" ""))
+	 (pc)))
+   (set (match_dup 0)
+	(plus:HI (match_dup 0)
+	      (const_int -1)))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_40_PLUS && reload_completed"
   "*
 {
- static int labelcount = 0;
- static char buf[1000];
+ rtx lb[1];
 
  if (get_attr_length (insn) == 2)
-    return \"sob %0, %l1\";
+    return \"sob\t%0,%l1\";
 
  /* emulate sob */
- output_asm_insn (\"dec %0\", operands);
+ lb[0] = gen_label_rtx ();
+ output_asm_insn (\"dec\t%0\", operands);
+ output_asm_insn (\"beq\t%l0\", lb);
+ output_asm_insn (\"jmp\t%l1\", operands);
  
- sprintf (buf, \"bge LONG_SOB%d\", labelcount);
- output_asm_insn (buf, NULL);
-
- output_asm_insn (\"jmp %l1\", operands);
- 
- sprintf (buf, \"LONG_SOB%d:\", labelcount++);
- output_asm_insn (buf, NULL);
+ output_asm_label (lb[0]);
+ fputs (\":\\n\", asm_out_file);
 
  return \"\";
 }"
-  [(set (attr "length") (if_then_else (ior (lt (minus (match_dup 0)
-						       (pc))
-						(const_int MIN_SOB))
-					   (gt (minus (match_dup 0)
-						       (pc))
-						(const_int MAX_SOB)))
-				      (const_int 8)
-				      (const_int 2)))])
+  [(set (attr "length")
+        (if_then_else (eq (symbol_ref ("which_alternative")) (const_int 1))
+                          (const_int 10)
+                          (if_then_else (ior (lt (minus (match_dup 1) (pc))
+					         (const_int MIN_SOB))
+					     (gt (minus (match_dup 1) (pc))
+					         (const_int MAX_SOB)))
+				        (const_int 8)
+				        (const_int 2))))])
 
 ;; These control RTL generation for conditional jump insns
 ;; and match them for register allocation.
-
-(define_expand "cbranchdf4"
-  [(set (cc0)
-        (compare (match_operand:DF 1 "general_operand")
-		 (match_operand:DF 2 "register_or_const0_operand")))
-   (set (pc)
+;; Post reload these get expanded into insns that actually
+;; manipulate the condition code registers.  We can't do that before
+;; because instructions generated by reload clobber condition codes (new
+;; CC design, type #2).
+(define_insn_and_split "cbranchdf4"
+  [(set (pc)
 	(if_then_else (match_operator 0 "ordered_comparison_operator"
-		       [(cc0) (const_int 0)])
+		       [(match_operand:DF 1 "general_operand" "fg")
+			(match_operand:DF 2 "general_operand" "a")])
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
   "TARGET_FPU"
+  "#"
+  "&& reload_completed"
+  [(set (reg:CC FCC_REGNUM)
+	(compare:CC (match_dup 1) (match_dup 2)))
+   (set (pc)
+	(if_then_else (match_op_dup 0
+                      [(reg:CC FCC_REGNUM) (const_int 0)])
+		      (label_ref (match_dup 3))
+		      (pc)))]
   "")
 
-(define_expand "cbranch<mode>4"
-  [(set (cc0)
-        (compare (match_operand:PDPint 1 "general_operand")
-		 (match_operand:PDPint 2 "general_operand")))
-   (set (pc)
+(define_insn_and_split "cbranch<mode>4"
+  [(set (pc)
 	(if_then_else (match_operator 0 "ordered_comparison_operator"
-		       [(cc0) (const_int 0)])
+		       [(match_operand:PDPint 1 "general_operand" "g")
+			(match_operand:PDPint 2 "general_operand" "g")])
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
   ""
+  "#"
+  "reload_completed"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC (match_dup 1) (match_dup 2)))
+   (set (pc)
+	(if_then_else (match_op_dup 0
+                      [(reg:CC CC_REGNUM) (const_int 0)])
+		      (label_ref (match_dup 3))
+		      (pc)))]
   "")
 
-;; problem with too short jump distance! we need an assembler which can 
-;; make this valid for all jump distances!
-;; e.g. gas!
+;; This splitter turns a branch on float condition into a branch on
+;; CPU condition, by adding a CFCC.
+(define_split
+  [(set (pc)
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
+                      [(reg:CC FCC_REGNUM) (const_int 0)])
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
+  "TARGET_FPU && reload_completed"
+  [(set (reg:CC CC_REGNUM) (reg:CC FCC_REGNUM))
+   (set (pc)
+	(if_then_else (match_op_dup 0
+                      [(reg:CC CC_REGNUM) (const_int 0)])
+		      (label_ref (match_dup 1))
+		      (pc)))]
+  "")
 
-;; these must be changed to check for CC_IN_FCCR if float is to be 
-;; enabled
+(define_insn "cond_branch"
+  [(set (pc)
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
+		       [(reg:CC CC_REGNUM) (const_int 0)])
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
+  "reload_completed"
+  "* return output_jump (operands, 0, get_attr_length (insn));"
+  [(set (attr "length") (if_then_else (ior (lt (minus (match_dup 1)
+						      (pc))
+					       (const_int MIN_BRANCH))
+					   (gt (minus (match_dup 1)
+						      (pc))
+					       (const_int MAX_BRANCH)))
+				      (const_int 6)
+				      (const_int 2)))])
 
 (define_insn "*branch"
   [(set (pc)
-	(if_then_else (match_operator 0 "ordered_comparison_operator"
-		       [(cc0) (const_int 0)])
+	(if_then_else (match_operator 0 "ccnz_operator"
+		       [(reg:CCNZ CC_REGNUM) (const_int 0)])
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
-  ""
-  "* return output_jump(GET_CODE (operands[0]), 0, get_attr_length(insn));"
+  "reload_completed"
+  "* return output_jump (operands, 1, get_attr_length (insn));"
   [(set (attr "length") (if_then_else (ior (lt (minus (match_dup 1)
 						      (pc))
 					       (const_int MIN_BRANCH))
@@ -287,83 +416,159 @@
 				      (const_int 6)
 				      (const_int 2)))])
 
-
-;; These match inverted jump insns for register allocation.
-
-(define_insn "*branch_inverted"
-  [(set (pc)
-	(if_then_else (match_operator 0 "ordered_comparison_operator"
-		       [(cc0) (const_int 0)])
-		      (pc)
-		      (label_ref (match_operand 1 "" ""))))]
-  ""
-  "* return output_jump(GET_CODE (operands[0]), 1, get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (lt (minus (match_dup 1)
-						      (pc))
-					       (const_int MIN_BRANCH))
-					   (gt (minus (match_dup 1)
-						      (pc))
-					       (const_int MAX_BRANCH)))
-				      (const_int 6)
-				      (const_int 2)))])
 
 ;; Move instructions
 
+;; "length" is defined even though this pattern won't appear at
+;; assembly language output time.  But the length is used by
+;; pdp11_insn_cost, before the post-reload splitter adds the
+;; CC clobber to the insn.
 (define_insn "movdi"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=&r,g")
 	(match_operand:DI 1 "general_operand" "rN,g"))]
   ""
+  ""
+  [(set_attr "length" "16,32")])
+
+
+(define_insn "*movdi_nocc"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=&r,g")
+	(match_operand:DI 1 "general_operand" "rN,g"))
+   (clobber (reg:CC CC_REGNUM))]
+  ""
   "* return output_move_multiple (operands);"
-;; what's the mose expensive code - say twice movsi = 16
   [(set_attr "length" "16,32")])
 
 (define_insn "movsi"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,g,g")
 	(match_operand:SI 1 "general_operand" "rN,IJ,IJ,g"))]
   ""
+  ""
+  [(set_attr "length" "4,6,8,16")])
+
+(define_insn "*movsi_nocc"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,g,g")
+	(match_operand:SI 1 "general_operand" "rN,IJ,IJ,g"))
+   (clobber (reg:CC CC_REGNUM))]
+  ""
   "* return output_move_multiple (operands);"
-;; what's the most expensive code ? - I think 8!
-;; we could split it up and make several sub-cases...
   [(set_attr "length" "4,6,8,16")])
 
 (define_insn "mov<mode>"
   [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,rR,Q,Q")
 	(match_operand:PDPint 1 "general_operand" "rRN,Qi,rRN,Qi"))]
   ""
+  ""
+  [(set_attr "length" "2,4,4,6")])
+
+;; This splits all the integer moves: DI and SI modes as well as
+;; the simple machine operations.
+(define_split 
+  [(set (match_operand:QHSDint 0 "nonimmediate_operand" "")
+	(match_operand:QHSDint 1 "general_operand" ""))]
+  "reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (match_dup 1))
+	      (clobber (reg:CC CC_REGNUM))])]
+  "")
+  
+;; MOV clears V
+(define_insn "*mov<mode>_<cc_cc>"
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,rR,Q,Q")
+	(match_operand:PDPint 1 "general_operand" "rRN,Qi,rRN,Qi"))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
   "*
 {
   if (operands[1] == const0_rtx)
-    return \"clr<PDPint:isfx> %0\";
+    return \"clr<PDPint:isfx>\t%0\";
 
-  return \"mov<PDPint:isfx> %1, %0\";
+  return \"mov<PDPint:isfx>\t%1,%0\";
 }"
   [(set_attr "length" "2,4,4,6")])
 
-(define_insn "movdf"
-  [(set (match_operand:DF 0 "float_nonimm_operand" "=a,fR,a,Q,g")
-        (match_operand:DF 1 "float_operand" "fR,a,FQ,a,g"))]
-  "TARGET_FPU"
-  "* if (which_alternative ==0 || which_alternative == 2)
-       return \"ldd %1, %0\";
-     else if (which_alternative == 1 || which_alternative == 3)
-       return \"std %1, %0\";
-     else 
-       return output_move_multiple (operands); "
-;; last one is worst-case
-  [(set_attr "length" "2,2,4,4,24")])
+;; movdf has unusually complicated condition code handling, because
+;; load (into float register) updates the FCC, while store (from
+;; float register) leaves it untouched.
+;;
+;; 1. Loads are:  ac4, ac5, or non-register into load-register
+;; 2. Stores are: load-register to non-register, ac4, or ac5
+;; 3. Moves from ac0-ac3 to another ac0-ac3 can be handled
+;;    either as loads or as stores.
 
-(define_insn "movsf"
-  [(set (match_operand:SF 0 "float_nonimm_operand" "=a,fR,a,Q,g")
-        (match_operand:SF 1 "float_operand" "fR,a,FQ,a,g"))]
+(define_expand "movdf"
+  [(set (match_operand:DF 0 "float_nonimm_operand" "")
+        (match_operand:DF 1 "float_operand" ""))]
   "TARGET_FPU"
-  "* if (which_alternative ==0 || which_alternative == 2)
-       return \"{ldcfd|movof} %1, %0\";
-     else if (which_alternative == 1 || which_alternative == 3)
-       return \"{stcdf|movfo} %1, %0\";
-     else 
-       return output_move_multiple (operands); "
-;; last one is worst-case
-  [(set_attr "length" "2,2,4,4,12")])
+  "")
+
+;; Splitter for all these cases.  Store is the first two
+;; alternatives, which are not split.  Note that case 3
+;; is treated as a store, i.e., not split.
+(define_insn_and_split "movdf_split"
+  [(set (match_operand:DF 0 "float_nonimm_operand" "=fR,FQ,a,a,a")
+        (match_operand:DF 1 "float_operand" "a,a,hR,FQ,G"))]
+  "TARGET_FPU"
+  "*
+  gcc_assert (which_alternative < 2);
+  return \"std\t%1,%0\";
+  "
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (match_dup 1))
+	      (clobber (reg:CC FCC_REGNUM))])]
+  "{
+  if (GET_CODE (operands[1]) == REG && 
+      REGNO_REG_CLASS (REGNO (operands[1])) == LOAD_FPU_REGS)
+    FAIL;
+  }"
+  [(set_attr "length" "2,4,0,0,0")])
+
+;; Loads (case 1).  
+(define_insn "*ldd<fcc_cc>"
+  [(set (match_operand:DF 0 "float_nonimm_operand" "=a,a,a")
+        (match_operand:DF 1 "float_operand" "hR,FQ,G"))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "@
+  ldd\t%1,%0
+  ldd\t%1,%0
+  clrd\t%0"
+  [(set_attr "length" "2,4,2")])
+
+;; SFmode is easier because that uses convert load/store, which
+;; always change condition codes.
+;; Note that these insns are cheating a bit.  We actually have
+;; DFmode operands in the FPU registers, which is why the
+;; ldcfd and stcdf instructions appear.  But GCC likes to think
+;; of these as SFmode loads and does the conversion once in the
+;; register, at least in many cases.  So we pretend to do this,
+;; but then extend and truncate register-to-register are NOP and
+;; generate no code.
+(define_insn_and_split "movsf"
+  [(set (match_operand:SF 0 "float_nonimm_operand" "=a,fR,a,Q,a")
+        (match_operand:SF 1 "float_operand" "fRG,a,FQ,a,G"))]
+  "TARGET_FPU"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (match_dup 1))
+	      (clobber (reg:CC FCC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,2,4,4,2")])
+  
+(define_insn "*movsf<fcc_ccnz>"
+  [(set (match_operand:SF 0 "float_nonimm_operand" "=a,fR,a,Q,a")
+        (match_operand:SF 1 "float_operand" "fR,a,FQ,a,G"))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "@
+  {ldcfd|movof}\t%1,%0
+  {stcdf|movfo}\t%1,%0
+  {ldcfd|movof}\t%1,%0
+  {stcdf|movfo}\t%1,%0
+  clrf\t%0"
+  [(set_attr "length" "2,2,4,4,2")])
 
 ;; maybe fiddle a bit with move_ratio, then 
 ;; let constraints only accept a register ...
@@ -377,7 +582,7 @@
 	      (clobber (match_dup 4))
 	      (clobber (match_dup 5))
 	      (clobber (match_dup 2))])]
-  "(TARGET_BCOPY_BUILTIN)"
+  ""
   "
 {
   operands[0]
@@ -392,7 +597,7 @@
 }")
 
 
-(define_insn "movmemhi1"
+(define_insn "*movmemhi1"
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "r,r"))
 	(mem:BLK (match_operand:HI 1 "register_operand" "r,r")))
    (use (match_operand:HI 2 "general_operand" "n,r"))
@@ -401,7 +606,7 @@
    (clobber (match_dup 0))
    (clobber (match_dup 1))
    (clobber (match_dup 2))]
-  "(TARGET_BCOPY_BUILTIN)"
+  ""
   "* return output_block_move (operands);"
 ;;; just a guess
   [(set_attr "length" "80")])
@@ -410,105 +615,150 @@
 
 ;;- truncation instructions
 
-(define_insn  "truncdfsf2"
+;; We sometimes end up doing a register to register truncate,
+;; which isn't right because we actually load registers always
+;; with a DFmode value.  But even with PROMOTE the compiler
+;; doesn't always get that (so we don't use it).  That means
+;; a register to register truncate is a NOP.
+(define_insn_and_split  "truncdfsf2"
   [(set (match_operand:SF 0 "float_nonimm_operand" "=f,R,Q")
-	(float_truncate:SF (match_operand:DF 1 "register_operand" "f,a,a")))]
+	(float_truncate:SF (match_operand:DF 1 "register_operand" "0,a,a")))]
   "TARGET_FPU"
-  "* if (which_alternative ==0)
-     {
-       return \"\";
-     }
-     else if (which_alternative == 1)
-       return \"{stcdf|movfo} %1, %0\";
-     else 
-       return \"{stcdf|movfo} %1, %0\";
-  "
-  [(set_attr "length" "0,2,4")])
+  {
+    gcc_assert (which_alternative == 0);
+    return "";
+  }	      
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (float_truncate:SF (match_dup 1)))
+	      (clobber (reg:CC FCC_REGNUM))])]
+  "{
+  if (GET_CODE (operands[0]) == REG && 
+      GET_CODE (operands[1]) == REG && 
+      REGNO (operands[0]) == REGNO (operands[1]))
+    FAIL;
+  }"
+  [(set_attr "length" "0,0,0")])
 
-
-(define_expand "truncsihi2"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=g")
-	(subreg:HI 
-	  (match_operand:SI 1 "general_operand" "or")
-          0))]
-  ""
-  "")
+(define_insn "*truncdfsf2_<fcc_cc>"
+  [(set (match_operand:SF 0 "float_nonimm_operand" "=R,Q")
+	(float_truncate:SF (match_operand:DF 1 "register_operand" "a,a")))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+   "{stcdf|movfo}\t%1,%0"
+  [(set_attr "length" "2,4")])
 
 
-;;- zero extension instructions
+;;- zero extension instruction
 
-(define_insn "zero_extendqihi2"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
-	(zero_extend:HI (match_operand:QI 1 "general_operand" "0,0")))]
+(define_insn_and_split "zero_extendqihi2"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rD,Q,&r,&r")
+	(zero_extend:HI (match_operand:QI 1 "general_operand" "0,0,rR,Q")))]
   ""
-  "bic $0177400, %0"
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (zero_extend:HI (match_dup 1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  "{
+    rtx r;
+
+    if (!REG_P (operands[0]))
+      {
+        r = gen_rtx_MEM (QImode, operands[0]);
+        adjust_address (r, QImode, 1);
+        emit_move_insn (r, const0_rtx);
+        DONE;
+      }
+    else if (!rtx_equal_p (operands[0], operands[1]))
+      {
+        /* Alternatives 2 and 3 */
+        emit_move_insn (operands[0], const0_rtx);
+        r = gen_rtx_REG (QImode, REGNO (operands[0]));
+        emit_insn (gen_iorqi3_nocc (r, r, operands[1]));
+        DONE;
+      }
+  }"
+  [(set_attr "length" "4,4,4,6")])
+
+(define_insn "*zero_extendqihi2<cc_cc>"
+  [(parallel [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
+		   (zero_extend:HI (match_operand:QI 1 "general_operand" "0,0")))
+	      (clobber (reg:CC CC_REGNUM))])]
+  "reload_completed"
+  "bic\t%#0177400,%0"
   [(set_attr "length" "4,6")])
 			 
-(define_expand "zero_extendhisi2"
-  [(set (subreg:HI 
-          (match_dup 0)
-          2)
-        (match_operand:HI 1 "register_operand" "r"))
-   (set (subreg:HI 
-          (match_operand:SI 0 "register_operand" "=r")
-          0)
-        (const_int 0))]
-  ""
-  "/* operands[1] = make_safe_from (operands[1], operands[0]); */")
-
-
 ;;- sign extension instructions
 
-(define_insn "extendsfdf2"
+;; We sometimes end up doing a register to register extend,
+;; which isn't right because we actually load registers always
+;; with a DFmode value.  But even with PROMOTE the compiler
+;; doesn't always get that (so we don't use it).  That means
+;; a register to register truncate is a NOP.
+(define_insn_and_split "extendsfdf2"
   [(set (match_operand:DF 0 "register_operand" "=f,a,a")
-	(float_extend:DF (match_operand:SF 1 "float_operand" "f,R,Q")))]
+	(float_extend:DF (match_operand:SF 1 "float_operand" "0,R,Q")))]
   "TARGET_FPU"
-  "@
-   /* nothing */
-   {ldcfd|movof} %1, %0
-   {ldcfd|movof} %1, %0"
-  [(set_attr "length" "0,2,4")])
+  {
+    gcc_assert (which_alternative == 0);
+    return "";
+  }	      
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (float_extend:DF (match_dup 1)))
+	      (clobber (reg:CC FCC_REGNUM))])]
+  "{
+  if (GET_CODE (operands[0]) == REG && 
+      GET_CODE (operands[1]) == REG && 
+      REGNO (operands[0]) == REGNO (operands[1]))
+    FAIL;
+  }"
+  [(set_attr "length" "0,0,0")])
 
-;; does movb sign extend in register-to-register move?
-(define_insn "extendqihi2"
+(define_insn "*extendsfdf2_<fcc_cc>"
+  [(set (match_operand:DF 0 "register_operand" "=a,a")
+	(float_extend:DF (match_operand:SF 1 "float_operand" "R,Q")))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "{ldcfd|movof}\t%1,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "6")])
+
+;; movb sign extends if destination is a register
+(define_insn_and_split "extendqihi2"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
 	(sign_extend:HI (match_operand:QI 1 "general_operand" "rR,Q")))]
   ""
-  "movb %1, %0"
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (sign_extend:HI (match_dup 1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
   [(set_attr "length" "2,4")])
 
-(define_insn "extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(sign_extend:SI (match_operand:QI 1 "general_operand" "rR,Q")))]
-  "TARGET_40_PLUS"
-  "*
-{
-  rtx latehalf[2];
+;; MOVB clears V
+(define_insn "*extendqihi2<cc_cc>"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(sign_extend:HI (match_operand:QI 1 "general_operand" "rR,Q")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  "movb\t%1,%0"
+  [(set_attr "length" "2,4")])
 
-  /* make register pair available */
-  latehalf[0] = operands[0];
-  operands[0] = gen_rtx_REG (HImode, REGNO (operands[0])+ 1);
-
-  output_asm_insn(\"movb %1, %0\", operands);
-  output_asm_insn(\"sxt %0\", latehalf);
-    
-  return \"\";
-}"
-  [(set_attr "length" "4,6")])
-
-;; maybe we have to use define_expand to say that we have the instruction,
-;; unconditionally, and then match dependent on CPU type:
-
-(define_expand "extendhisi2"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
-	(sign_extend:SI (match_operand:HI 1 "general_operand" "g")))]
-  ""
-  "")
-  
-(define_insn "" ; "extendhisi2"
+(define_insn_and_split "extendhisi2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=o,<,r")
 	(sign_extend:SI (match_operand:HI 1 "general_operand" "g,g,g")))]
   "TARGET_40_PLUS"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "10,6,6")])
+
+(define_insn "*extendhisi2_nocc"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=o,<,r")
+	(sign_extend:SI (match_operand:HI 1 "general_operand" "g,g,g")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_40_PLUS && reload_completed"
   "*
 {
   rtx latehalf[2];
@@ -522,16 +772,16 @@
       latehalf[0] = operands[0];
       operands[0] = adjust_address(operands[0], HImode, 2);
   
-      output_asm_insn(\"mov %1, %0\", operands);
-      output_asm_insn(\"sxt %0\", latehalf);
+      output_asm_insn(\"mov\t%1,%0\", operands);
+      output_asm_insn(\"sxt\t%0\", latehalf);
 
       return \"\";
 
     case 1:
 
       /* - auto-decrement - right direction ;-) */
-      output_asm_insn(\"mov %1, %0\", operands);
-      output_asm_insn(\"sxt %0\", operands);
+      output_asm_insn(\"mov\t%1,%0\", operands);
+      output_asm_insn(\"sxt\t%0\", operands);
 
       return \"\";
 
@@ -541,8 +791,8 @@
       latehalf[0] = operands[0];
       operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
 
-      output_asm_insn(\"mov %1, %0\", operands);
-      output_asm_insn(\"sxt %0\", latehalf);
+      output_asm_insn(\"mov\t%1,%0\", operands);
+      output_asm_insn(\"sxt\t%0\", latehalf);
 
       return \"\";
 
@@ -553,122 +803,180 @@
 }"
   [(set_attr "length" "10,6,6")])
 
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(sign_extend:SI (match_operand:HI 1 "general_operand" "0")))]
-  "(! TARGET_40_PLUS)"
-  "*
-{
-  static int count = 0;
-  char buf[100];
-  rtx lateoperands[2];
-
-  lateoperands[0] = operands[0];
-  operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
-
-  output_asm_insn(\"tst %0\", operands);
-  sprintf(buf, \"bge extendhisi%d\", count);
-  output_asm_insn(buf, NULL);
-  output_asm_insn(\"mov -1, %0\", lateoperands);
-  sprintf(buf, \"bne extendhisi%d\", count+1);
-  output_asm_insn(buf, NULL);
-  sprintf(buf, \"\\nextendhisi%d:\", count);
-  output_asm_insn(buf, NULL);
-  output_asm_insn(\"clr %0\", lateoperands);
-  sprintf(buf, \"\\nextendhisi%d:\", count+1);
-  output_asm_insn(buf, NULL);
-
-  count += 2;
-
-  return \"\";
-}"
-  [(set_attr "length" "12")])
-
 ;; make float to int and vice versa 
-;; using the cc_status.flag field we could probably cut down
-;; on seti and setl
 ;; assume that we are normally in double and integer mode -
 ;; what do pdp library routines do to fpu mode ?
 
-(define_insn "floatsidf2"
+;; Note: the hardware treats register source as
+;; a 16-bit (high order only) source, which isn't
+;; what we want.  But we do need to support register
+;; dest because gcc asks for it.
+(define_insn_and_split "floatsidf2"
   [(set (match_operand:DF 0 "register_operand" "=a,a,a")
 	(float:DF (match_operand:SI 1 "general_operand" "r,R,Q")))]
   "TARGET_FPU"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (float:DF (match_dup 1)))
+	      (clobber (reg:CC FCC_REGNUM))])]
+  ""
+  [(set_attr "length" "10,6,8")])
+
+(define_insn "*floatsidf2<fcc_cc>"
+  [(set (match_operand:DF 0 "register_operand" "=a,a,a")
+	(float:DF (match_operand:SI 1 "general_operand" "r,R,Q")))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
   "* if (which_alternative ==0)
      {
        rtx latehalf[2];
-
+ 
        latehalf[0] = NULL; 
        latehalf[1] = gen_rtx_REG (HImode, REGNO (operands[1]) + 1);
-       output_asm_insn(\"mov %1, -(sp)\", latehalf);
-       output_asm_insn(\"mov %1, -(sp)\", operands);
+       output_asm_insn(\"mov\t%1,-(sp)\", latehalf);
+       output_asm_insn(\"mov\t%1,-(sp)\", operands);
        
        output_asm_insn(\"setl\", operands);
-       output_asm_insn(\"{ldcld|movif} (sp)+, %0\", operands);
+       output_asm_insn(\"{ldcld|movif}\t(sp)+,%0\", operands);
        output_asm_insn(\"seti\", operands);
        return \"\";
      }
-     else if (which_alternative == 1)
-       return \"setl\;{ldcld|movif} %1, %0\;seti\";
      else 
-       return \"setl\;{ldcld|movif} %1, %0\;seti\";
+       return \"setl\;{ldcld|movif}\t%1,%0\;seti\";
   "
-  [(set_attr "length" "10,6,8")])
+  [(set_attr "length" "10,6,8")
+   (set_attr "base_cost" "12")])
 
-(define_insn "floathidf2"
+(define_insn_and_split "floathidf2"
   [(set (match_operand:DF 0 "register_operand" "=a,a")
 	(float:DF (match_operand:HI 1 "general_operand" "rR,Qi")))]
   "TARGET_FPU"
-  "{ldcid|movif} %1, %0"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (float:DF (match_dup 1)))
+	      (clobber (reg:CC FCC_REGNUM))])]
+  ""
   [(set_attr "length" "2,4")])
-	
+
+(define_insn "*floathidf2<fcc_cc>"
+  [(set (match_operand:DF 0 "register_operand" "=a,a")
+	(float:DF (match_operand:HI 1 "general_operand" "rR,Qi")))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "{ldcid|movif}\t%1,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "12")])
+
 ;; cut float to int
-(define_insn "fix_truncdfsi2"
+
+;; Note: the hardware treats register destination as
+;; a 16-bit (high order only) destination, which isn't
+;; what we want.  But we do need to support register
+;; dest because gcc asks for it.
+(define_insn_and_split "fix_truncdfsi2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,R,Q")
 	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "a,a,a"))))]
   "TARGET_FPU"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (fix:SI (fix:DF (match_dup 1))))
+	      (clobber (reg:CC CC_REGNUM))
+	      (clobber (reg:CC FCC_REGNUM))])]
+  ""
+  [(set_attr "length" "10,6,8")])
+
+;; Note: this clobbers both sets of condition codes!
+(define_insn "*fix_truncdfsi2_nocc"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,R,Q")
+	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "a,a,a"))))
+   (clobber (reg:CC CC_REGNUM))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
   "* if (which_alternative ==0)
      {
        output_asm_insn(\"setl\", operands);
-       output_asm_insn(\"{stcdl|movfi} %1, -(sp)\", operands);
+       output_asm_insn(\"{stcdl|movfi}\t%1,-(sp)\", operands);
        output_asm_insn(\"seti\", operands);
-       output_asm_insn(\"mov (sp)+, %0\", operands);
+       output_asm_insn(\"mov\t(sp)+,%0\", operands);
        operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
-       output_asm_insn(\"mov (sp)+, %0\", operands);
+       output_asm_insn(\"mov\t(sp)+,%0\", operands);
        return \"\";
      }
-     else if (which_alternative == 1)
-       return \"setl\;{stcdl|movfi} %1, %0\;seti\";
      else 
-       return \"setl\;{stcdl|movfi} %1, %0\;seti\";
+       return \"setl\;{stcdl|movfi}\t%1,%0\;seti\";
   "
-  [(set_attr "length" "10,6,8")])
+  [(set_attr "length" "10,6,8")
+   (set_attr "base_cost" "12")])
 
-(define_insn "fix_truncdfhi2"
+(define_insn_and_split "fix_truncdfhi2"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
 	(fix:HI (fix:DF (match_operand:DF 1 "register_operand" "a,a"))))]
   "TARGET_FPU"
-  "{stcdi|movfi} %1, %0"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (fix:HI (fix:DF (match_dup 1))))
+	      (clobber (reg:CC CC_REGNUM))
+	      (clobber (reg:CC FCC_REGNUM))])]
+  ""
   [(set_attr "length" "2,4")])
+
+;; Note: this clobbers both sets of condition codes!
+(define_insn "*fix_truncdfhi2_nocc"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
+	(fix:HI (fix:DF (match_operand:DF 1 "register_operand" "a,a"))))
+   (clobber (reg:CC CC_REGNUM))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "{stcdi|movfi}\t%1,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "12")])
 
 
 ;;- arithmetic instructions
 ;;- add instructions
 
-(define_insn "adddf3"
+(define_insn_and_split "adddf3"
   [(set (match_operand:DF 0 "register_operand" "=a,a")
 	(plus:DF (match_operand:DF 1 "register_operand" "%0,0")
 		 (match_operand:DF 2 "general_operand" "fR,QF")))]
   "TARGET_FPU"
-  "{addd|addf} %2, %0"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (plus:DF (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC FCC_REGNUM))])]
+  ""
   [(set_attr "length" "2,4")])
 
-(define_insn "adddi3"
+;; Float add sets V if overflow from add
+(define_insn "*adddf3<fcc_ccnz>"
+  [(set (match_operand:DF 0 "register_operand" "=a,a")
+	(plus:DF (match_operand:DF 1 "register_operand" "%0,0")
+	      (match_operand:DF 2 "general_operand" "fR,QF")))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "{addd|addf}\t%2,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "6")])
+
+(define_insn_and_split "adddi3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=&r,r,o,o")
 	(plus:DI (match_operand:DI 1 "general_operand" "%0,0,0,0")
 		 (match_operand:DI 2 "general_operand" "r,on,r,on")))]
   ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (plus:DI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "20,28,40,48")])
+
+(define_insn "*adddi3_nocc"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=&r,r,o,o")
+	(plus:DI (match_operand:DI 1 "general_operand" "%0,0,0,0")
+	      (match_operand:DI 2 "general_operand" "r,on,r,on")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"  
   "*
 {
   rtx inops[2];
@@ -679,29 +987,30 @@
   pdp11_expand_operands (inops, exops, 2, NULL, either);
   
   if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
-    output_asm_insn (\"add %1, %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[0]);
   if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
-    output_asm_insn (\"add %1, %0\", exops[1]);
-    output_asm_insn (\"adc %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[1]);
+    output_asm_insn (\"adc\t%0\", exops[0]);
   }
   if (!CONSTANT_P (exops[2][1]) || INTVAL (exops[2][1]) != 0)
   {
-    output_asm_insn (\"add %1, %0\", exops[2]);
-    output_asm_insn (\"adc %0\", exops[1]);
-    output_asm_insn (\"adc %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[2]);
+    output_asm_insn (\"adc\t%0\", exops[1]);
+    output_asm_insn (\"adc\t%0\", exops[0]);
   }
   if (!CONSTANT_P (exops[3][1]) || INTVAL (exops[3][1]) != 0)
   {
-    output_asm_insn (\"add %1, %0\", exops[3]);
-    output_asm_insn (\"adc %0\", exops[2]);
-    output_asm_insn (\"adc %0\", exops[1]);
-    output_asm_insn (\"adc %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[3]);
+    output_asm_insn (\"adc\t%0\", exops[2]);
+    output_asm_insn (\"adc\t%0\", exops[1]);
+    output_asm_insn (\"adc\t%0\", exops[0]);
   }
 
   return \"\";
 }"
-  [(set_attr "length" "20,28,40,48")])
+  [(set_attr "length" "20,28,40,48")
+   (set_attr "base_cost" "0")])
 
 ;; Note that the register operand is not marked earlyclobber.
 ;; The reason is that SI values go in register pairs, so they
@@ -712,11 +1021,24 @@
 ;; high word is added at the end, so the adding of the high parts
 ;; will always used the original high part and not a high part
 ;; modified by carry (which would amount to double carry).
-(define_insn "addsi3"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,o,o")
+(define_insn_and_split "addsi3"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=&r,r,o,o")
 	(plus:SI (match_operand:SI 1 "general_operand" "%0,0,0,0")
 		 (match_operand:SI 2 "general_operand" "r,on,r,on")))]
   ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "6,10,12,16")])
+
+(define_insn "*addsi3_nocc"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=&r,r,o,o")
+	(plus:SI (match_operand:SI 1 "general_operand" "%0,0,0,0")
+	      (match_operand:SI 2 "general_operand" "r,on,r,on")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
   "*
 {
   rtx inops[2];
@@ -727,33 +1049,49 @@
   pdp11_expand_operands (inops, exops, 2, NULL, either);
   
   if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
-    output_asm_insn (\"add %1, %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[0]);
   if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
-    output_asm_insn (\"add %1, %0\", exops[1]);
-    output_asm_insn (\"adc %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[1]);
+    output_asm_insn (\"adc\t%0\", exops[0]);
   }
 
   return \"\";
 }"
-  [(set_attr "length" "6,10,12,16")])
+  [(set_attr "length" "6,10,12,16")
+   (set_attr "base_cost" "0")])
 
-(define_insn "addhi3"
+(define_insn_and_split "addhi3"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,rR,Q,Q")
 	(plus:HI (match_operand:HI 1 "general_operand" "%0,0,0,0")
 		 (match_operand:HI 2 "general_operand" "rRLM,Qi,rRLM,Qi")))]
   ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (plus:HI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4,4,6")])
+
+;; Add sets V if overflow from the add
+(define_insn "*addhi3<cc_ccnz>"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,rR,Q,Q")
+	(plus:HI (match_operand:HI 1 "general_operand" "%0,0,0,0")
+	         (match_operand:HI 2 "general_operand" "rRLM,Qi,rRLM,Qi")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT)
     {
       if (INTVAL(operands[2]) == 1)
-	return \"inc %0\";
+	return \"inc\t%0\";
       else if (INTVAL(operands[2]) == -1)
-        return \"dec %0\";
+        return \"dec\t%0\";
     }
 
-  return \"add %2, %0\";
+  return \"add\t%2,%0\";
 }"
   [(set_attr "length" "2,4,4,6")])
 
@@ -763,19 +1101,47 @@
 ;; args, since they are canonical plus:xx now!
 ;; also for minus:DF ??
 
-(define_insn "subdf3"
+(define_insn_and_split "subdf3"
   [(set (match_operand:DF 0 "register_operand" "=a,a")
 	(minus:DF (match_operand:DF 1 "register_operand" "0,0")
 		  (match_operand:DF 2 "general_operand" "fR,Q")))]
   "TARGET_FPU"
-  "{subd|subf} %2, %0"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (minus:DF (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC FCC_REGNUM))])]
+  ""
   [(set_attr "length" "2,4")])
 
-(define_insn "subdi3"
+(define_insn "*subdf3<fcc_ccnz>"
+  [(set (match_operand:DF 0 "register_operand" "=a,a")
+	(minus:DF (match_operand:DF 1 "register_operand" "0,0")
+	          (match_operand:DF 2 "general_operand" "fR,QF")))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "{subd|subf}\t%2,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "6")])
+
+(define_insn_and_split "subdi3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=&r,r,o,o")
 	(minus:DI (match_operand:DI 1 "general_operand" "0,0,0,0")
 		 (match_operand:DI 2 "general_operand" "r,on,r,on")))]
   ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (minus:DI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "20,28,40,48")])
+
+(define_insn "*subdi3_nocc"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=&r,r,o,o")
+	(minus:DI (match_operand:DI 1 "general_operand" "0,0,0,0")
+	      (match_operand:DI 2 "general_operand" "r,on,r,on")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
   "*
 {
   rtx inops[2];
@@ -786,35 +1152,49 @@
   pdp11_expand_operands (inops, exops, 2, NULL, either);
   
   if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
-    output_asm_insn (\"sub %1, %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[0]);
   if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
-    output_asm_insn (\"sub %1, %0\", exops[1]);
-    output_asm_insn (\"sbc %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[1]);
+    output_asm_insn (\"sbc\t%0\", exops[0]);
   }
   if (!CONSTANT_P (exops[2][1]) || INTVAL (exops[2][1]) != 0)
   {
-    output_asm_insn (\"sub %1, %0\", exops[2]);
-    output_asm_insn (\"sbc %0\", exops[1]);
-    output_asm_insn (\"sbc %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[2]);
+    output_asm_insn (\"sbc\t%0\", exops[1]);
+    output_asm_insn (\"sbc\t%0\", exops[0]);
   }
   if (!CONSTANT_P (exops[3][1]) || INTVAL (exops[3][1]) != 0)
   {
-    output_asm_insn (\"sub %1, %0\", exops[3]);
-    output_asm_insn (\"sbc %0\", exops[2]);
-    output_asm_insn (\"sbc %0\", exops[1]);
-    output_asm_insn (\"sbc %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[3]);
+    output_asm_insn (\"sbc\t%0\", exops[2]);
+    output_asm_insn (\"sbc\t%0\", exops[1]);
+    output_asm_insn (\"sbc\t%0\", exops[0]);
   }
 
   return \"\";
 }"
-  [(set_attr "length" "20,28,40,48")])
+  [(set_attr "length" "20,28,40,48")
+   (set_attr "base_cost" "0")])
 
-(define_insn "subsi3"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,o,o")
+(define_insn_and_split "subsi3"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=&r,r,o,o")
 	(minus:SI (match_operand:SI 1 "general_operand" "0,0,0,0")
 		 (match_operand:SI 2 "general_operand" "r,on,r,on")))]
   ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "6,10,12,16")])
+
+(define_insn "*subsi3_nocc"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=&r,r,o,o")
+	(minus:SI (match_operand:SI 1 "general_operand" "0,0,0,0")
+	      (match_operand:SI 2 "general_operand" "r,on,r,on")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
   "*
 {
   rtx inops[2];
@@ -825,27 +1205,52 @@
   pdp11_expand_operands (inops, exops, 2, NULL, either);
   
   if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
-    output_asm_insn (\"sub %1, %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[0]);
   if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
-    output_asm_insn (\"sub %1, %0\", exops[1]);
-    output_asm_insn (\"sbc %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[1]);
+    output_asm_insn (\"sbc\t%0\", exops[0]);
   }
 
   return \"\";
 }"
-  [(set_attr "length" "6,10,12,16")])
+  [(set_attr "length" "6,10,12,16")
+   (set_attr "base_cost" "0")])
 
-(define_insn "subhi3"
+(define_insn_and_split "subhi3"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,rR,Q,Q")
 	(minus:HI (match_operand:HI 1 "general_operand" "0,0,0,0")
-		  (match_operand:HI 2 "general_operand" "rR,Qi,rR,Qi")))]
+		  (match_operand:HI 2 "general_operand" "rRLM,Qi,rRLM,Qi")))]
   ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (minus:HI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4,4,6")])
+
+;; Note: the manual says that (minus m (const_int n)) is converted
+;; to (plus m (const_int -n)) but that does not appear to be
+;; the case when it's wrapped in a PARALLEL.  So instead we handle
+;; that case here, which is easy enough.
+(define_insn "*subhi3<cc_ccnz>"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,rR,Q,Q")
+	(minus:HI (match_operand:HI 1 "general_operand" "0,0,0,0")
+	          (match_operand:HI 2 "general_operand" "rRLM,Qi,rRLM,Qi")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
   "*
 {
-  gcc_assert (GET_CODE (operands[2]) != CONST_INT);
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      if (INTVAL(operands[2]) == 1)
+	return \"dec\t%0\";
+      else if (INTVAL(operands[2]) == -1)
+        return \"inc\t%0\";
+    }
 
-  return \"sub %2, %0\";
+  return \"sub\t%2,%0\";
 }"
   [(set_attr "length" "2,4,4,6")])
 
@@ -876,360 +1281,445 @@
     operands[1] = GEN_INT (~INTVAL (op1));
   else
     operands[1] = expand_unop (<MODE>mode, one_cmpl_optab, op1, 0, 1);
-}")
+}"
+  [(set_attr "length" "2,4,4,6")])
 
-(define_insn "*bic<mode>"
+(define_insn_and_split "*bic<mode>"
   [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,rR,Q,Q")
 	(and:PDPint
 	     (not: PDPint (match_operand:PDPint 1 "general_operand" "rR,Qi,rR,Qi"))
 	     (match_operand:PDPint 2 "general_operand" "0,0,0,0")))]
   ""
-  "bic<PDPint:isfx> %1, %0"
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (and:PDPint (not:PDPint (match_dup 1)) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  "")
+
+(define_insn "*bic<mode><cc_cc>"
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,rR,Q,Q")
+	(and:PDPint
+	     (not: PDPint (match_operand:PDPint 1 "general_operand" "rR,Qi,rR,Qi"))
+			  (match_operand:PDPint 2 "general_operand" "0,0,0,0")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  "bic<PDPint:isfx>\t%1,%0"
   [(set_attr "length" "2,4,4,6")])
 
 ;;- Bit set (inclusive or) instructions
-(define_insn "ior<mode>3"
+(define_insn_and_split "ior<mode>3"
   [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,rR,Q,Q")
 	(ior:PDPint (match_operand:PDPint 1 "general_operand" "%0,0,0,0")
-		(match_operand:PDPint 2 "general_operand" "rR,Qi,rR,Qi")))]
+		    (match_operand:PDPint 2 "general_operand" "rR,Qi,rR,Qi")))]
   ""
-  "bis<PDPint:isfx> %2, %0"
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (ior:PDPint (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4,4,6")])
+
+(define_insn "ior<mode>3<cc_cc>"
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,rR,Q,Q")
+	(ior:PDPint (match_operand:PDPint 1 "general_operand" "%0,0,0,0")
+	     (match_operand:PDPint 2 "general_operand" "rR,Qi,rR,Qi")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  "bis<PDPint:isfx>\t%2,%0"
   [(set_attr "length" "2,4,4,6")])
 
 ;;- xor instructions
-(define_insn "xorhi3"
+(define_insn_and_split "xorhi3"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
 	(xor:HI (match_operand:HI 1 "general_operand" "%0,0")
 		(match_operand:HI 2 "register_operand" "r,r")))]
   "TARGET_40_PLUS"
-  "xor %2, %0"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (xor:HI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4")])
+
+(define_insn "*xorhi3<cc_cc>"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
+	(xor:HI (match_operand:HI 1 "general_operand" "%0,0")
+	     (match_operand:HI 2 "register_operand" "r,r")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_40_PLUS && reload_completed"
+  "xor\t%2,%0"
   [(set_attr "length" "2,4")])
 
 ;;- one complement instructions
 
-(define_insn "one_cmpl<mode>2"
+(define_insn_and_split "one_cmpl<mode>2"
   [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,Q")
         (not:PDPint (match_operand:PDPint 1 "general_operand" "0,0")))]
   ""
-  "com<PDPint:isfx> %0"
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (not:PDPint (match_dup 1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4")])
+
+(define_insn "*one_cmpl<mode>2<cc_cc>"
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,Q")
+	(not:PDPint (match_operand:PDPint 1 "general_operand" "0,0")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  "com<PDPint:isfx>\t%0"
   [(set_attr "length" "2,4")])
 
 ;;- arithmetic shift instructions
-(define_insn "ashlsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(ashift:SI (match_operand:SI 1 "register_operand" "0,0")
-		   (match_operand:HI 2 "general_operand" "rR,Qi")))]
+;;
+;; There is a fair amount of complexity here because with -m10
+;; (pdp-11/10, /20) we only have shift by one bit.  Iterators are
+;; used to reduce the amount of very similar code.
+;;
+;; First the insns used for small constant shifts.
+(define_insn_and_split "<code><mode>_sc"
+  [(set (match_operand:QHSint 0 "nonimmediate_operand" "=rD,Q")
+	(SHF:QHSint (match_operand:QHSint 1 "general_operand" "0,0")
+	            (match_operand:HI 2 "expand_shift_operand" "O,O")))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (SHF:QHSint (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set (attr "length")
+	(symbol_ref "pdp11_shift_length (operands, <QHSint:mname>, 
+                                         <CODE>, which_alternative == 0)"))
+   (set_attr "base_cost" "0")])
+
+(define_insn "<code><mode>_sc<cc_ccnz>"
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rD,Q")
+	(SHF:PDPint (match_operand:PDPint 1 "general_operand" "0,0")
+	     (match_operand:HI 2 "expand_shift_operand" "O,O")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  "* return pdp11_assemble_shift (operands, <PDPint:mname>, <CODE>);"
+  [(set (attr "length")
+	(symbol_ref "pdp11_shift_length (operands, <PDPint:mname>, 
+                                         <CODE>, which_alternative == 0)"))
+   (set_attr "base_cost" "0")])
+
+;; This one comes only in clobber flavor.
+(define_insn "<code>si_sc_nocc"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rD,Q")
+	(SHF:SI (match_operand:SI 1 "general_operand" "0,0")
+	     (match_operand:HI 2 "expand_shift_operand" "O,O")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  "* return pdp11_assemble_shift (operands, SImode, <CODE>);"
+  [(set (attr "length")
+	(symbol_ref "pdp11_shift_length (operands, SImode, 
+                                         <CODE>, which_alternative == 0)"))
+   (set_attr "base_cost" "0")])
+
+;; Next, shifts that are done as a loop on base (11/10 class) machines.
+;; This applies to shift counts too large to unroll, or variable shift
+;; counts.  The check for count <= 0 is done before we get here.
+(define_insn_and_split "<code><mode>_base"
+  [(set (match_operand:QHSint 0 "nonimmediate_operand" "=rD,Q")
+	(SHF:QHSint (match_operand:QHSint 1 "general_operand" "0,0")
+	     (match_operand:HI 2 "register_operand" "r,r")))
+   (clobber (match_dup 2))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (SHF:QHSint (match_dup 1) (match_dup 2)))
+	      (clobber (match_dup 2))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set (attr "length")
+	(symbol_ref "pdp11_shift_length (operands, <QHSint:mname>, 
+                                         <CODE>, which_alternative == 0)"))
+   (set_attr "base_cost" "0")])
+
+(define_insn "<code><mode>_base_nocc"
+  [(set (match_operand:QHSint 0 "nonimmediate_operand" "=rD,Q")
+	(SHF:QHSint (match_operand:QHSint 1 "general_operand" "0,0")
+	     (match_operand:HI 2 "register_operand" "r,r")))
+   (clobber (match_dup 2))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  "* return pdp11_assemble_shift (operands, <QHSint:mname>, <CODE>);"
+  [(set (attr "length")
+	(symbol_ref "pdp11_shift_length (operands, <QHSint:mname>, 
+                                         <CODE>, which_alternative == 0)"))
+   (set_attr "base_cost" "0")])
+
+;; Next the insns that use the extended instructions ash and ashc.
+;; Note that these are just left shifts, and HI/SI only.  (Right shifts
+;; are done by shifting by a negative amount.)
+(define_insn_and_split "aslhi_op"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r")
+	(ashift:HI (match_operand:HI 1 "general_operand" "0,0")
+	               (match_operand:HI 2 "general_operand" "rR,Qi")))]
   "TARGET_40_PLUS"
-  "ashc %2,%0"
-  [(set_attr "length" "2,4")])
-
-;; Arithmetic right shift on the pdp works by negating the shift count.
-(define_expand "ashrsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(ashift:SI (match_operand:SI 1 "register_operand" "0")
-		   (match_operand:HI 2 "general_operand" "g")))]
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (ashift:HI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
   ""
-  "
-{
-  operands[2] = negate_rtx (HImode, operands[2]);
-}")
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "8")])
 
-;; define asl aslb asr asrb - ashc missing!
-
-;; asl 
-(define_insn "" 
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
+(define_insn "aslhi_op<cc_ccnz>"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r")
 	(ashift:HI (match_operand:HI 1 "general_operand" "0,0")
-		   (const_int 1)))]
+		(match_operand:HI 2 "general_operand" "rR,Qi")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_40_PLUS && reload_completed"
+  "ash\t%2,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "8")])
+
+(define_insn_and_split "aslsi_op"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r")
+	(ashift:SI (match_operand:SI 1 "general_operand" "0,0")
+	           (match_operand:HI 2 "general_operand" "rR,Qi")))]
+  "TARGET_40_PLUS"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (ashift:SI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
   ""
-  "asl %0"
-  [(set_attr "length" "2,4")])
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "8")])
 
-;; and another possibility for asr is << -1
-;; might cause problems since -1 can also be encoded as 65535!
-;; not in gcc2 ??? 
+(define_insn "aslsi_op_<cc_ccnz>"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r")
+	(ashift:SI (match_operand:SI 1 "general_operand" "0,0")
+		(match_operand:HI 2 "general_operand" "rR,Qi")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_40_PLUS && reload_completed"
+  "ashc\t%2,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "8")])
 
-;; asr
-(define_insn "" 
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
-	(ashift:HI (match_operand:HI 1 "general_operand" "0,0")
-		   (const_int -1)))]
-  ""
-  "asr %0"
-  [(set_attr "length" "2,4")])
-
-;; lsr
-(define_insn "lsrhi1" 
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
-	(lshiftrt:HI (match_operand:HI 1 "general_operand" "0,0")
-		   (const_int 1)))]
-  ""
-  "clc\;ror %0"
-  [(set_attr "length" "2,4")])
-
-(define_insn "lsrsi1"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(lshiftrt:SI (match_operand:SI 1 "general_operand" "0")
-                   (const_int 1)))]
-  ""
-{
-
-  rtx lateoperands[2];
-
-  lateoperands[0] = operands[0];
-  operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
-
-  lateoperands[1] = operands[1];
-  operands[1] = gen_rtx_REG (HImode, REGNO (operands[1]) + 1);
-
-  output_asm_insn (\"clc\", operands);
-  output_asm_insn (\"ror %0\", lateoperands);
-  output_asm_insn (\"ror %0\", operands);
-
-  return \"\";
-}
-  [(set_attr "length" "10")])
-
-(define_expand "lshrsi3"
-  [(match_operand:SI 0 "register_operand" "")
-   (match_operand:SI 1 "register_operand" "0")
+;; Now the expanders that produce the insns defined above. 
+(define_expand "ashl<mode>3"
+  [(match_operand:QHSint 0 "nonimmediate_operand" "")
+   (match_operand:QHSint 1 "general_operand" "")
    (match_operand:HI 2 "general_operand" "")]
   ""
   "
 {
   rtx r;
 
-  if (!TARGET_40_PLUS &&
-      (GET_CODE (operands[2]) != CONST_INT ||
-       (unsigned) INTVAL (operands[2]) > 3))
-    FAIL;
-  emit_insn (gen_lsrsi1 (operands[0], operands[1]));
-  if (GET_CODE (operands[2]) != CONST_INT)
+  if (!pdp11_expand_shift (operands, gen_ashift<mode>_sc, gen_ashift<mode>_base))
     {
-      r = gen_reg_rtx (HImode);
-      emit_insn (gen_addhi3 (r, operands [2], GEN_INT (-1)));
-      emit_insn (gen_ashrsi3 (operands[0], operands[0], r));
-    }
-  else if ((unsigned) INTVAL (operands[2]) != 1)
-    {
-      emit_insn (gen_ashlsi3 (operands[0], operands[0],
-                              GEN_INT (1 - INTVAL (operands[2]))));
+      if (<QHSint:e_mname> == E_QImode)
+        {
+          r = copy_to_mode_reg (HImode, gen_rtx_ZERO_EXTEND (HImode, operands[1]));
+          emit_insn (gen_aslhi_op (r, r, operands[2]));
+          emit_insn (gen_movqi (operands[0], gen_rtx_SUBREG (QImode, r, 0)));
+        }
+      else
+        {
+          emit_insn (gen_asl<QHSint:hmode>_op (operands[0], operands[1], operands[2]));
+        }
     }
   DONE;
-}
-"
-)
-
-;; shift is by arbitrary count is expensive, 
-;; shift by one cheap - so let's do that, if
-;; space doesn't matter
-(define_insn "" 
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r")
-	(ashift:HI (match_operand:HI 1 "general_operand" "0")
-		   (match_operand:HI 2 "expand_shift_operand" "O")))]
-  "! optimize_size"
-  "*
-{
-  register int i;
-
-  for (i = 1; i <= abs(INTVAL(operands[2])); i++)
-    if (INTVAL(operands[2]) < 0)
-      output_asm_insn(\"asr %0\", operands);
-    else
-      output_asm_insn(\"asl %0\", operands);
-      
-  return \"\";
-}"
-;; longest is 4
-  [(set (attr "length") (const_int 8))])
-
-;; aslb
-(define_insn "" 
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,o")
-	(ashift:QI (match_operand:QI 1 "general_operand" "0,0")
-		   (match_operand:HI 2 "const_int_operand" "n,n")))]
-  ""
-  "*
-{ /* allowing predec or post_inc is possible, but hairy! */
-  int i, cnt;
-
-  cnt = INTVAL(operands[2]) & 0x0007;
-
-  for (i=0 ; i < cnt ; i++)
-       output_asm_insn(\"aslb %0\", operands);
-
-  return \"\";
-}"
-;; set attribute length ( match_dup 2 & 7 ) *(1 or 2) !!!
-  [(set_attr_alternative "length" 
-                         [(const_int 14)
-                          (const_int 28)])])
-
-;;; asr 
-;(define_insn "" 
-;  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
-;	(ashiftrt:HI (match_operand:HI 1 "general_operand" "0,0")
-;		     (const_int 1)))]
-;  ""
-;  "asr %0"
-;  [(set_attr "length" "2,4")])
-
-;; asrb
-(define_insn "" 
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,o")
-	(ashiftrt:QI (match_operand:QI 1 "general_operand" "0,0")
-		     (match_operand:HI 2 "const_int_operand" "n,n")))]
-  ""
-  "*
-{ /* allowing predec or post_inc is possible, but hairy! */
-  int i, cnt;
-
-  cnt = INTVAL(operands[2]) & 0x0007;
-
-  for (i=0 ; i < cnt ; i++)
-       output_asm_insn(\"asrb %0\", operands);
-
-  return \"\";
-}"
-  [(set_attr_alternative "length" 
-                         [(const_int 14)
-                          (const_int 28)])])
-
-;; the following is invalid - too complex!!! - just say 14 !!!
-;  [(set (attr "length") (plus (and (match_dup 2)
-;                                   (const_int 14))
-;                              (and (match_dup 2)
-;                                   (const_int 14))))])
-
-
-
-;; can we get +-1 in the next pattern? should 
-;; have been caught by previous patterns!
-
-(define_insn "ashlhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(ashift:HI (match_operand:HI 1 "register_operand" "0,0")
-		   (match_operand:HI 2 "general_operand" "rR,Qi")))]
-  "TARGET_40_PLUS"
-  "*
-{
-  if (GET_CODE(operands[2]) == CONST_INT)
-    {
-      if (INTVAL(operands[2]) == 1)
-	return \"asl %0\";
-      else if (INTVAL(operands[2]) == -1)
-	return \"asr %0\";
-    }
-
-  return \"ash %2,%0\";
-}"
-  [(set_attr "length" "2,4")])
-
-;; Arithmetic right shift on the pdp works by negating the shift count.
-(define_expand "ashrhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(ashift:HI (match_operand:HI 1 "register_operand" "0")
-		   (match_operand:HI 2 "general_operand" "g")))]
-  ""
-  "
-{
-  operands[2] = negate_rtx (HImode, operands[2]);
 }")
 
-(define_expand "lshrhi3"
-  [(match_operand:HI 0 "register_operand" "")
-   (match_operand:HI 1 "register_operand" "")
+(define_expand "ashr<mode>3"
+  [(match_operand:QHSint 0 "nonimmediate_operand" "")
+   (match_operand:QHSint 1 "general_operand" "")
    (match_operand:HI 2 "general_operand" "")]
   ""
   "
 {
   rtx r;
 
-  if (!TARGET_40_PLUS &&
-      (GET_CODE (operands[2]) != CONST_INT ||
-       (unsigned) INTVAL (operands[2]) > 3))
-    FAIL;
-  emit_insn (gen_lsrhi1 (operands[0], operands[1]));
-  if (GET_CODE (operands[2]) != CONST_INT)
+  if (!pdp11_expand_shift (operands, gen_ashiftrt<mode>_sc, gen_ashiftrt<mode>_base))
     {
-      r = gen_reg_rtx (HImode);
-      emit_insn (gen_addhi3 (r, operands [2], GEN_INT (-1)));
-      emit_insn (gen_ashrhi3 (operands[0], operands[0], r));
-    }
-  else if ((unsigned) INTVAL (operands[2]) != 1)
-    {
-      emit_insn (gen_ashlhi3 (operands[0], operands[0],
-                              GEN_INT (1 - INTVAL (operands[2]))));
+      operands[2] = negate_rtx (HImode, operands[2]);
+      if (<QHSint:e_mname> == E_QImode)
+        {
+          r = copy_to_mode_reg (HImode, gen_rtx_ZERO_EXTEND (HImode, operands[1]));
+          emit_insn (gen_aslhi_op (r, r, operands[2]));
+          emit_insn (gen_movqi (operands[0], gen_rtx_SUBREG (QImode, r, 0)));
+        }
+      else
+        {
+          emit_insn (gen_asl<QHSint:hmode>_op (operands[0], operands[1], operands[2]));
+        }
     }
   DONE;
-}
-"
-)
+}")
+
+(define_expand "lshr<mode>3"
+  [(match_operand:QHSint 0 "nonimmediate_operand" "")
+   (match_operand:QHSint 1 "general_operand" "")
+   (match_operand:HI 2 "general_operand" "")]
+  ""
+  "
+{
+  rtx r, n;
+
+  if (!pdp11_expand_shift (operands, gen_lshiftrt<mode>_sc, gen_lshiftrt<mode>_base))
+    {
+      if (<QHSint:e_mname> == E_QImode)
+        {
+          r = copy_to_mode_reg (HImode, gen_rtx_ZERO_EXTEND (HImode, operands[1]));
+          emit_insn (gen_aslhi_op (r, r, operands[2]));
+          emit_insn (gen_movqi (operands[0], gen_rtx_SUBREG (QImode, r, 0)));
+        }
+      else
+        {
+          r = gen_reg_rtx (<QHSint:mname>);
+          emit_insn (gen_lshiftrt<mode>_sc (r, operands[1], const1_rtx));
+          if (GET_CODE (operands[2]) != CONST_INT)
+            {
+              n = gen_reg_rtx (HImode);
+              emit_insn (gen_addhi3 (n, operands [2], GEN_INT (-1)));
+              emit_insn (gen_ashr<mode>3 (operands[0], r, n));
+            }
+          else
+            emit_insn (gen_asl<QHSint:hmode>_op (operands[0], r,
+				  GEN_INT (1 - INTVAL (operands[2]))));
+        }
+    }
+  DONE;
+}")
 
 ;; absolute 
 
-(define_insn "absdf2"
+(define_insn_and_split "absdf2"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=fR,Q")
 	(abs:DF (match_operand:DF 1 "general_operand" "0,0")))]
   "TARGET_FPU"
-  "{absd|absf} %0"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (abs:DF (match_dup 1)))
+	      (clobber (reg:CC FCC_REGNUM))])]
+   ""
   [(set_attr "length" "2,4")])
 
+(define_insn "absdf2<fcc_cc>"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=fR,Q")
+	(abs:DF (match_operand:DF 1 "general_operand" "0,0")))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "{absd|absf}\t%0"
+  [(set_attr "length" "2,4")])
 
 ;; negate insns
 
-(define_insn "negdf2"
-  [(set (match_operand:DF 0 "float_nonimm_operand" "=fR,Q")
-	(neg:DF (match_operand:DF 1 "register_operand" "0,0")))]
+(define_insn_and_split "negdf2"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=fR,Q")
+	(neg:DF (match_operand:DF 1 "general_operand" "0,0")))]
   "TARGET_FPU"
-  "{negd|negf} %0"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (neg:DF (match_dup 1)))
+	      (clobber (reg:CC FCC_REGNUM))])]
+   ""
   [(set_attr "length" "2,4")])
 
-(define_insn "negdi2"
+(define_insn "negdf2<fcc_cc>"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=fR,Q")
+	(neg:DF (match_operand:DF 1 "general_operand" "0,0")))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "{negd|negf}\t%0"
+  [(set_attr "length" "2,4")])
+
+(define_insn_and_split "negdi2"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,o")
 	(neg:DI (match_operand:DI 1 "general_operand" "0,0")))]
   ""
-{
-  rtx exops[4][2];
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (neg:DI (match_dup 1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "18,34")])
   
-  pdp11_expand_operands (operands, exops, 1, NULL, either);
+;; TODO: this can be neg/adc/neg/adc... I believe.  Check.  Saves one word.
+(define_insn "negdi2_nocc"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,o")
+	(neg:DI (match_operand:DI 1 "general_operand" "0,0")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  {
+    rtx exops[4][2];
+    
+    pdp11_expand_operands (operands, exops, 1, NULL, either);
+  
+    output_asm_insn (\"com\t%0\", exops[3]);
+    output_asm_insn (\"com\t%0\", exops[2]);
+    output_asm_insn (\"com\t%0\", exops[1]);
+    output_asm_insn (\"com\t%0\", exops[0]);
+    output_asm_insn (\"add\t%#1,%0\", exops[3]);
+    output_asm_insn (\"adc\t%0\", exops[2]);
+    output_asm_insn (\"adc\t%0\", exops[1]);
+    output_asm_insn (\"adc\t%0\", exops[0]);
+  
+    return \"\";
+  }
+  [(set_attr "length" "18,34")
+   (set_attr "base_cost" "0")])
 
-  output_asm_insn (\"com %0\", exops[3]);
-  output_asm_insn (\"com %0\", exops[2]);
-  output_asm_insn (\"com %0\", exops[1]);
-  output_asm_insn (\"com %0\", exops[0]);
-  output_asm_insn (\"add $1, %0\", exops[3]);
-  output_asm_insn (\"adc %0\", exops[2]);
-  output_asm_insn (\"adc %0\", exops[1]);
-  output_asm_insn (\"adc %0\", exops[0]);
-
-  return \"\";
-}
-[(set_attr "length" "18,34")])
-
-(define_insn "negsi2"
+(define_insn_and_split "negsi2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,o")
 	(neg:SI (match_operand:SI 1 "general_operand" "0,0")))]
   ""
-{
-  rtx exops[2][2];
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (neg:SI (match_dup 1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "10,18")])
   
-  pdp11_expand_operands (operands, exops, 1, NULL, either);
+;; TODO: this can be neg/adc/neg/adc... I believe.  Check.  Saves one word.
+(define_insn "negsi2_nocc"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,o")
+	(neg:SI (match_operand:SI 1 "general_operand" "0,0")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  {
+    rtx exops[2][2];
+    
+    pdp11_expand_operands (operands, exops, 1, NULL, either);
+  
+    output_asm_insn (\"com\t%0\", exops[1]);
+    output_asm_insn (\"com\t%0\", exops[0]);
+    output_asm_insn (\"add\t%#1,%0\", exops[1]);
+    output_asm_insn (\"adc\t%0\", exops[0]);
+  
+    return \"\";
+  }
+  [(set_attr "length" "10,18")
+   (set_attr "base_cost" "0")])
 
-  output_asm_insn (\"com %0\", exops[1]);
-  output_asm_insn (\"com %0\", exops[0]);
-  output_asm_insn (\"add $1, %0\", exops[1]);
-  output_asm_insn (\"adc %0\", exops[0]);
-
-  return \"\";
-}
-[(set_attr "length" "12,20")])
-
-(define_insn "neg<mode>2"
+(define_insn_and_split "neg<mode>2"
   [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,Q")
 	(neg:PDPint (match_operand:PDPint 1 "general_operand" "0,0")))]
   ""
-  "neg<isfx> %0"
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (neg:PDPint (match_dup 1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4")])
+  
+(define_insn "neg<mode>2<cc_ccnz>"
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,Q")
+	(neg:PDPint (match_operand:PDPint 1 "general_operand" "0,0")))
+   (clobber (reg:CC CC_REGNUM))]
+  ""
+  "neg<PDPint:isfx>\t%0"
   [(set_attr "length" "2,4")])
 
 
@@ -1240,9 +1730,9 @@
   ""
   "*
 {
- if (get_attr_length (insn) == 2)
-    return \"br %l0\";
- return \"jmp %l0\";
+  if (get_attr_length (insn) == 2)
+    return \"br\t%l0\";
+  return \"jmp\t%l0\";
 }"
   [(set (attr "length") (if_then_else (ior (lt (minus (match_dup 0)
 						      (pc))
@@ -1253,56 +1743,70 @@
 				      (const_int 4)
 				      (const_int 2)))])
 
-(define_insn ""
-  [(set (pc)
-    (label_ref (match_operand 0 "" "")))
-   (clobber (const_int 1))]
-  ""
-  "jmp %l0"
-  [(set_attr "length" "4")])
-
 (define_insn "tablejump"
   [(set (pc) (match_operand:HI 0 "general_operand" "r,R,Q"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
   "@
-  jmp (%0)
-  jmp %@%0
-  jmp %@%0"
+  jmp\t(%0)
+  jmp\t%@%0
+  jmp\t%@%0"
   [(set_attr "length" "2,2,4")])
 
-;; indirect jump - let's be conservative!
-;; allow only register_operand, even though we could also 
-;; allow labels etc.
-
+;; indirect jump.  TODO: this needs a constraint that allows memory
+;; references but not indirection, since we add a level of indirection
+;; in the generated code.
 (define_insn "indirect_jump"
-  [(set (pc) (match_operand:HI 0 "register_operand" "r"))]
+  [(set (pc) (match_operand:HI 0 "general_operand" "r"))]
   ""
-  "jmp (%0)")
+  "jmp\t@%0"
+  [(set_attr "length" "2")])
 
 ;;- jump to subroutine
 
 (define_insn "call"
   [(call (match_operand:HI 0 "general_operand" "rR,Q")
-	 (match_operand:HI 1 "general_operand" "g,g"))
-;;   (use (reg:HI 0)) what was that ???
-  ]
+	 (match_operand:HI 1 "general_operand" "g,g"))]
   ;;- Don't use operand 1 for most machines.
   ""
-  "jsr pc, %0"
+  "jsr\tpc,%0"
   [(set_attr "length" "2,4")])
 
 ;;- jump to subroutine
 (define_insn "call_value"
   [(set (match_operand 0 "" "")
 	(call (match_operand:HI 1 "general_operand" "rR,Q")
-	      (match_operand:HI 2 "general_operand" "g,g")))
-;;   (use (reg:HI 0)) - what was that ????
-  ]
+	      (match_operand:HI 2 "general_operand" "g,g")))]
   ;;- Don't use operand 2 for most machines.
   ""
-  "jsr pc, %1"
+  "jsr\tpc,%1"
   [(set_attr "length" "2,4")])
+
+(define_expand "untyped_call"
+  [(parallel [(call (match_operand 0 "" "")
+		    (const_int 0))
+	      (match_operand 1 "" "")
+	      (match_operand 2 "" "")])]
+  ""
+{
+  int i;
+
+  emit_call_insn (gen_call (operands[0], const0_rtx));
+
+  for (i = 0; i < XVECLEN (operands[2], 0); i++)
+    {
+      rtx set = XVECEXP (operands[2], 0, i);
+      emit_move_insn (SET_DEST (set), SET_SRC (set));
+    }
+
+  /* The optimizer does not know that the call sets the function value
+     registers we stored in the result block.  We avoid problems by
+     claiming that all hard registers are used and clobbered at this
+     point.  */
+  emit_insn (gen_blockage ());
+
+  DONE;
+})
 
 ;;- nop instruction
 (define_insn "nop"
@@ -1313,124 +1817,253 @@
 
 ;;- multiply 
 
-(define_insn "muldf3"
+(define_insn_and_split "muldf3"
   [(set (match_operand:DF 0 "register_operand" "=a,a")
 	(mult:DF (match_operand:DF 1 "register_operand" "%0,0")
 		 (match_operand:DF 2 "float_operand" "fR,QF")))]
   "TARGET_FPU"
-  "{muld|mulf} %2, %0"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (mult:DF (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC FCC_REGNUM))])]
+  ""
   [(set_attr "length" "2,4")])
 
-;; 16 bit result multiply:
-;; currently we multiply only into odd registers, so we don't use two 
-;; registers - but this is a bit inefficient at times. If we define 
-;; a register class for each register, then we can specify properly 
-;; which register need which scratch register ....
+(define_insn "muldf3<fcc_ccnz>"
+  [(set (match_operand:DF 0 "register_operand" "=a,a")
+	(mult:DF (match_operand:DF 1 "register_operand" "%0,0")
+	      (match_operand:DF 2 "float_operand" "fR,QF")))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "{muld|mulf}\t%2,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "20")])
 
-(define_insn "mulhi3"
+;; 16 bit result multiply.  This uses odd numbered registers.
+
+(define_insn_and_split "mulhi3"
   [(set (match_operand:HI 0 "register_operand" "=d,d") ; multiply regs
 	(mult:HI (match_operand:HI 1 "register_operand" "%0,0")
-		 (match_operand:HI 2 "float_operand" "rR,Qi")))]
-  "TARGET_40_PLUS"
-  "mul %2, %0"
-  [(set_attr "length" "2,4")])
-
-;; 32 bit result
-(define_expand "mulhisi3"
-  [(set (match_dup 3)
-	(match_operand:HI 1 "nonimmediate_operand" "g,g"))
-   (set (match_operand:SI 0 "register_operand" "=r,r") ; even numbered!
-	(mult:SI (truncate:HI 
-                  (match_dup 0))
 		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
   "TARGET_40_PLUS"
-  "operands[3] = gen_lowpart(HImode, operands[1]);")
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r,r") ; even numbered!
-	(mult:SI (truncate:HI 
-                  (match_operand:SI 1 "register_operand" "%0,0"))
-		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
-  "TARGET_40_PLUS"
-  "mul %2, %0"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (mult:HI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
   [(set_attr "length" "2,4")])
 
-;(define_insn "mulhisi3"
-;  [(set (match_operand:SI 0 "register_operand" "=r,r") ; even numbered!
-;	(mult:SI (truncate:HI 
-;                  (match_operand:SI 1 "register_operand" "%0,0"))
-;		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
-;  "TARGET_40_PLUS"
-;  "mul %2, %0"
-;  [(set_attr "length" "2,4")])
+(define_insn "mulhi3<cc_cc>"
+  [(set (match_operand:HI 0 "register_operand" "=d,d")
+	(mult:HI (match_operand:HI 1 "register_operand" "%0,0")
+	      (match_operand:HI 2 "general_operand" "rR,Qi")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_40_PLUS && reload_completed"
+  "mul\t%2,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "20")])
+
+;; 32 bit result from 16 bit operands
+(define_insn_and_split "mulhisi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand" "%0,0"))
+	         (sign_extend:SI (match_operand:HI 2 "general_operand" "rR,Qi"))))]
+  "TARGET_40_PLUS"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (mult:SI (sign_extend:SI (match_dup 1))
+			 (sign_extend:SI (match_dup 2))))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4")])
+
+(define_insn "mulhisi3<cc_cc>"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand" "%0,0"))
+	      (sign_extend:SI (match_operand:HI 2 "general_operand" "rR,Qi"))))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_40_PLUS && reload_completed"
+  "mul\t%2,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "20")])
 
 ;;- divide
-(define_insn "divdf3"
+(define_insn_and_split "divdf3"
   [(set (match_operand:DF 0 "register_operand" "=a,a")
 	(div:DF (match_operand:DF 1 "register_operand" "0,0")
 		(match_operand:DF 2 "general_operand" "fR,QF")))]
   "TARGET_FPU"
-  "{divd|divf} %2, %0"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (div:DF (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC FCC_REGNUM))])]
+   ""
   [(set_attr "length" "2,4")])
+  
+(define_insn "divdf3<fcc_ccnz>"
+  [(set (match_operand:DF 0 "register_operand" "=a,a")
+	(div:DF (match_operand:DF 1 "register_operand" "0,0")
+	     (match_operand:DF 2 "general_operand" "fR,QF")))
+   (clobber (reg:CC FCC_REGNUM))]
+  "TARGET_FPU && reload_completed"
+  "{divd|divf}\t%2,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "20")])
 
-	 
-(define_expand "divhi3"
-  [(set (subreg:HI (match_dup 1) 0)
+(define_expand "divmodhi4"
+  [(parallel
+    [(set (subreg:HI (match_dup 1) 0)
 	(div:HI (match_operand:SI 1 "register_operand" "0")
 		(match_operand:HI 2 "general_operand" "g")))
+     (set (subreg:HI (match_dup 1) 2)
+	(mod:HI (match_dup 1) (match_dup 2)))])
    (set (match_operand:HI 0 "register_operand" "=r")
-        (subreg:HI (match_dup 1) 0))]
-  "TARGET_40_PLUS"
-  "")
-
-(define_insn ""
-  [(set (subreg:HI (match_operand:SI 0 "register_operand" "=r") 0)
-	(div:HI (match_operand:SI 1 "general_operand" "0")
-		(match_operand:HI 2 "general_operand" "g")))]
-  "TARGET_40_PLUS"
-  "div %2,%0"
-  [(set_attr "length" "4")])
-
-(define_expand "modhi3"
-  [(set (subreg:HI (match_dup 1) 2)
-	(mod:HI (match_operand:SI 1 "register_operand" "0")
-		(match_operand:HI 2 "general_operand" "g")))
-   (set (match_operand:HI 0 "register_operand" "=r")
+        (subreg:HI (match_dup 1) 0))
+   (set (match_operand:HI 3 "register_operand" "=r")
         (subreg:HI (match_dup 1) 2))]
   "TARGET_40_PLUS"
   "")
 
-(define_insn ""
-  [(set (subreg:HI (match_operand:SI 0 "register_operand" "=r") 2)
-	(mod:HI (match_operand:SI 1 "general_operand" "0")
-		(match_operand:HI 2 "general_operand" "g")))]
+(define_insn_and_split "*divmodhi4"
+  [(set (subreg:HI (match_operand:SI 0 "register_operand" "=r,r") 0)
+	(div:HI (match_operand:SI 1 "register_operand" "0,0")
+	     (match_operand:HI 2 "general_operand" "rR,Qi")))
+   (set (subreg:HI (match_dup 1) 2)
+	(mod:HI (match_dup 1) (match_dup 2)))]
   "TARGET_40_PLUS"
-  "div %2,%0"
-  [(set_attr "length" "4")])
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (subreg:HI (match_dup 0) 0)
+		   (div:HI (match_dup 1) (match_dup 2)))
+	      (set (subreg:HI (match_dup 1) 2)
+		   (mod:HI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4")])
 
-;(define_expand "divmodhi4"
-;  [(parallel [(set (subreg:HI (match_dup 1) 0)
-;	           (div:HI (match_operand:SI 1 "register_operand" "0")
-;		           (match_operand:HI 2 "general_operand" "g")))
-;              (set (subreg:HI (match_dup 1) 2)
-;	           (mod:HI (match_dup 1)
-;		           (match_dup 2)))])
-;   (set (match_operand:HI 3 "register_operand" "=r")
-;        (subreg:HI (match_dup 1) 2))
-;   (set (match_operand:HI 0 "register_operand" "=r")
-;        (subreg:HI (match_dup 1) 0))]
-;  "TARGET_40_PLUS"
-;  "")
-;
-;(define_insn ""
-;  [(set (subreg:HI (match_operand:SI 0 "register_operand" "=r") 0)
-;	           (div:HI (match_operand:SI 1 "general_operand" "0")
-;		           (match_operand:HI 2 "general_operand" "g")))
-;   (set (subreg:HI (match_dup 0) 2)
-;	           (mod:HI (match_dup 1)
-;		           (match_dup 2)))]
-;  "TARGET_40_PLUS"
-;  "div %2, %0")
-;
-   
-;; is rotate doing the right thing to be included here ????
+;; Note that there is no corresponding CC setter pattern.
+;; The reason is that it won't be generated, because
+;; compare-elim.c only does the transformation on input
+;; insns that have a two-element PARALLEL, as opposed to
+;; the three-element one we have here.     
+(define_insn "divmodhi4_nocc"
+  [(set (subreg:HI (match_operand:SI 0 "register_operand" "=r,r") 0)
+	(div:HI (match_operand:SI 1 "register_operand" "0,0")
+	        (match_operand:HI 2 "general_operand" "rR,Qi")))
+   (set (subreg:HI (match_dup 1) 2)
+	(mod:HI (match_dup 1) (match_dup 2)))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_40_PLUS"
+   "div\t%2,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "40")])
+
+;; Byte swap
+(define_insn_and_split "bswaphi2"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
+	(bswap:HI (match_operand:HI 1 "general_operand" "0,0")))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (bswap:HI (match_dup 1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4")])
+
+(define_insn "bswaphi2<cc_ccnz>"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
+	(bswap:HI (match_operand:HI 1 "general_operand" "0,0")))
+   (clobber (reg:CC CC_REGNUM))]
+  ""
+  "swab\t%0"
+  [(set_attr "length" "2,4")])
+
+(define_insn_and_split "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(bswap:SI (match_operand:SI 1 "general_operand" "g")))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (bswap:SI (match_dup 1)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "10")])
+
+(define_insn "bswapsi2_nocc"
+  [(set (match_operand:SI 0 "register_operand" "=&r,&r,&r")
+	(bswap:SI (match_operand:SI 1 "general_operand" "r,D,Q")))
+   (clobber (reg:CC CC_REGNUM))]
+  ""
+  {
+    rtx exops[2][2];
+    rtx t;
+  
+    pdp11_expand_operands (operands, exops, 2, NULL, either);
+
+    t = exops[0][0];
+    exops[0][0] = exops[1][0];
+    exops[1][0] = t;
+
+    output_asm_insn ("mov\t%0,%1", exops[0]);
+    output_asm_insn ("mov\t%0,%1", exops[1]);
+    output_asm_insn ("swab\t%0", exops[0]);
+    output_asm_insn ("swab\t%0", exops[1]);
+    return "";
+  }
+  [(set_attr "length" "8,10,12")])
+
+(define_expand "rotrhi3"
+  [(match_operand:HI 0 "register_operand" "")
+   (match_operand:HI 1 "register_operand" "")
+   (match_operand:HI 2 "general_operand" "")]
+  "TARGET_40_PLUS"
+  "
+{
+  operands[2] = negate_rtx (HImode, operands[2]);
+  emit_insn (gen_rotlhi3 (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_insn_and_split "rotlhi3"
+  [(set (match_operand:HI 0 "register_operand" "=d,d")
+	(rotate:HI (match_operand:HI 1 "register_operand" "0,0")
+	           (match_operand:HI 2 "general_operand" "rR,Qi")))]
+  "TARGET_40_PLUS"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (rotate:HI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "8")])
+
+(define_insn "rotlhi3<cc_ccnz>"
+  [(set (match_operand:HI 0 "register_operand" "=d,d")
+	(rotate:HI (match_operand:HI 1 "register_operand" "0,0")
+		   (match_operand:HI 2 "general_operand" "rR,Qi")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_40_PLUS && reload_completed"
+  "ashc\t%2,%0"
+  [(set_attr "length" "2,4")
+   (set_attr "base_cost" "8")])
+
+
+  
+;; Some peephole optimizations
+
+;; Move then conditional branch on the result of the move is handled
+;; by compare elimination, but an earlier pass sometimes changes the
+;; compare operand to the move input, and then the compare is not
+;; eliminated.  Do so here.
+(define_peephole2
+  [(parallel [(set (match_operand:PDPint 0 "nonimmediate_operand" "")
+		   (match_operand:PDPint 1 "general_operand" ""))
+	      (clobber (reg:CC CC_REGNUM))])
+   (set (reg:CC CC_REGNUM) (compare:CC (match_dup 1) (const_int 0)))]
+  ""
+  [(parallel [(set (reg:CC CC_REGNUM) (compare:CC (match_dup 1) (const_int 0)))
+	      (set (match_dup 0) (match_dup 1))])]
+  "")

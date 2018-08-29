@@ -1,4 +1,5 @@
 -- { dg-do run }
+-- { dg-require-stack-check "" }
 -- { dg-options "-O -fstack-check" }
 
 procedure Opt49 is

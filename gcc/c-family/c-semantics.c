@@ -1,5 +1,5 @@
 /* This file contains subroutine used by the C front-end to construct GENERIC.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Written by Benjamin Chelf (chelf@codesourcery.com).
 
 This file is part of GCC.
@@ -33,6 +33,17 @@ push_stmt_list (void)
   t = alloc_stmt_list ();
   vec_safe_push (stmt_list_stack, t);
   return t;
+}
+
+/* Return TRUE if, after I, there are any nondebug stmts.  */
+
+static inline bool
+only_debug_stmts_after_p (tree_stmt_iterator i)
+{
+  for (tsi_next (&i); !tsi_end_p (i); tsi_next (&i))
+    if (TREE_CODE (tsi_stmt (i)) != DEBUG_BEGIN_STMT)
+      return false;
+  return true;
 }
 
 /* Finish the statement tree rooted at T.  */
@@ -75,6 +86,40 @@ pop_stmt_list (tree t)
 	  tsi_delink (&i);
 	  free_stmt_list (t);
 	  t = u;
+	}
+      /* If the statement list contained a debug begin stmt and a
+	 statement list, move the debug begin stmt into the statement
+	 list and return it.  */
+      else if (!tsi_end_p (i)
+	       && TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT)
+	{
+	  u = tsi_stmt (i);
+	  tsi_next (&i);
+	  if (tsi_one_before_end_p (i)
+	      && TREE_CODE (tsi_stmt (i)) == STATEMENT_LIST)
+	    {
+	      tree l = tsi_stmt (i);
+	      tsi_prev (&i);
+	      tsi_delink (&i);
+	      tsi_delink (&i);
+	      i = tsi_start (l);
+	      free_stmt_list (t);
+	      t = l;
+	      tsi_link_before (&i, u, TSI_SAME_STMT);
+	    }
+	  while (!tsi_end_p (i)
+		 && TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT)
+	    tsi_next (&i);
+	  /* If there are only debug stmts in the list, without them
+	     we'd have an empty stmt without side effects.  If there's
+	     only one nondebug stmt, we'd have extracted the stmt and
+	     dropped the list, and we'd take TREE_SIDE_EFFECTS from
+	     that statement.  In either case, keep the list's
+	     TREE_SIDE_EFFECTS in sync.  */
+	  if (tsi_end_p (i))
+	    TREE_SIDE_EFFECTS (t) = 0;
+	  else if (only_debug_stmts_after_p (i))
+	    TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (tsi_stmt (i));
 	}
     }
 

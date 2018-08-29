@@ -1,5 +1,5 @@
 /* Header for array handling functions
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -58,6 +58,10 @@ tree gfc_reassign_alloc_comp_caf (gfc_symbol *, tree, tree);
 tree gfc_copy_alloc_comp (gfc_symbol *, tree, tree, int, int);
 
 tree gfc_copy_only_alloc_comp (gfc_symbol *, tree, tree, int);
+
+tree gfc_allocate_pdt_comp (gfc_symbol *, tree, int, gfc_actual_arglist *);
+tree gfc_deallocate_pdt_comp (gfc_symbol *, tree, int);
+tree gfc_check_pdt_dummy (gfc_symbol *, tree, int, gfc_actual_arglist *);
 
 tree gfc_alloc_allocatable_for_assignment (gfc_loopinfo*, gfc_expr*, gfc_expr*);
 
@@ -132,6 +136,8 @@ void gfc_conv_tmp_array_ref (gfc_se * se);
 /* Translate a reference to an array temporary.  */
 void gfc_conv_tmp_ref (gfc_se *);
 
+/* Obtain the span of an array.  */
+tree gfc_get_array_span (tree, gfc_expr *);
 /* Evaluate an array expression.  */
 void gfc_conv_expr_descriptor (gfc_se *, gfc_expr *);
 /* Convert an array for passing as an actual function parameter.  */
@@ -152,9 +158,13 @@ tree gfc_conv_array_ubound (tree, int);
 void gfc_trans_array_cobounds (tree, stmtblock_t *, const gfc_symbol *);
 
 /* Build expressions for accessing components of an array descriptor.  */
+void gfc_get_descriptor_offsets_for_info (const_tree, tree *, tree *, tree *, tree *,
+					  tree *, tree *, tree *);
+
 tree gfc_conv_descriptor_data_get (tree);
 tree gfc_conv_descriptor_data_addr (tree);
 tree gfc_conv_descriptor_offset_get (tree);
+tree gfc_conv_descriptor_span_get (tree);
 tree gfc_conv_descriptor_dtype (tree);
 tree gfc_conv_descriptor_rank (tree);
 tree gfc_get_descriptor_dimension (tree);
@@ -165,6 +175,7 @@ tree gfc_conv_descriptor_token (tree);
 
 void gfc_conv_descriptor_data_set (stmtblock_t *, tree, tree);
 void gfc_conv_descriptor_offset_set (stmtblock_t *, tree, tree);
+void gfc_conv_descriptor_span_set (stmtblock_t *, tree, tree);
 void gfc_conv_descriptor_stride_set (stmtblock_t *, tree, tree, tree);
 void gfc_conv_descriptor_lbound_set (stmtblock_t *, tree, tree, tree);
 void gfc_conv_descriptor_ubound_set (stmtblock_t *, tree, tree, tree);

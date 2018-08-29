@@ -18,7 +18,7 @@ int toto()
         b[i+k] = b[i+k-5] + 2;
     }
 
-  return a[3][5] + b[1];
+  return a[3][5] + b[2];
 }
 
 /* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite"} } */

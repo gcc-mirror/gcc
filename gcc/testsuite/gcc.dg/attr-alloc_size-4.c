@@ -25,7 +25,7 @@ void* f_int_2 (int, int) ALLOC_SIZE (1, 2);
 void* f_size_1 (size_t) ALLOC_SIZE (1);
 void* f_size_2 (size_t, size_t) ALLOC_SIZE (1, 2);
 
-size_t
+static size_t
 unsigned_range (size_t min, size_t max)
 {
   extern size_t random_unsigned_value (void);
@@ -34,7 +34,7 @@ unsigned_range (size_t min, size_t max)
   return val;
 }
 
-int
+static int
 signed_range (int min, int max)
 {
   extern int random_signed_value (void);
@@ -43,7 +43,7 @@ signed_range (int min, int max)
   return val;
 }
 
-size_t
+static size_t
 unsigned_anti_range (size_t min, size_t max)
 {
   extern size_t random_unsigned_value (void);
@@ -53,7 +53,7 @@ unsigned_anti_range (size_t min, size_t max)
   return val;
 }
 
-int
+static int
 signed_anti_range (int min, int max)
 {
   extern int random_signed_value (void);
@@ -162,7 +162,7 @@ test_size_cst (void)
   sink (f_size_2 (   0, 1234));
   sink (f_size_2 (   1, 1234));
   sink (f_size_2 (   2, 1234));  /* { dg-warning "product .2 \\* 1234. of arguments 1 and 2 exceeds maximum object size \[0-9\]+" } */
-  sink (f_size_2 (1234, 1234));  /* { dg-warning "product .1234 \\* 1234. of arguments 1 and 2 exceeds maximum object size 1234" } */
+  sink (f_size_2 (1234, 1234));  /* { dg-warning "product .1234 \\* 1234. of arguments 1 and 2 exceeds (.SIZE_MAX.|maximum object size 1234)" } */
   sink (f_size_2 (1235, 1234));  /* { dg-warning "argument 1 value .1235. exceeds maximum object size 1234" } */
   sink (f_size_2 (1234, 1235));  /* { dg-warning "argument 2 value .1235. exceeds maximum object size 1234" } */
   sink (f_size_2 (1234, max));  /* { dg-warning "argument 2 value .\[0-9\]+. exceeds maximum object size 1234" } */

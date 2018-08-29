@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -26,6 +26,7 @@
 /* This file defines the OpenMP internal control variables and arranges
    for them to be initialized from environment variables at startup.  */
 
+#define _GNU_SOURCE
 #include "libgomp.h"
 #include "gomp-constants.h"
 #include <limits.h>
@@ -58,6 +59,8 @@
 #endif
 #endif /* LIBGOMP_OFFLOADED_ONLY */
 
+#include "secure_getenv.h"
+
 struct gomp_task_icv gomp_global_icv = {
   .nthreads_var = 1,
   .thread_limit_var = UINT_MAX,
@@ -87,6 +90,7 @@ int gomp_debug_var;
 unsigned int gomp_num_teams_var;
 char *goacc_device_type;
 int goacc_device_num;
+int goacc_default_dims[GOMP_DIM_MAX];
 
 #ifndef LIBGOMP_OFFLOADED_ONLY
 
@@ -171,15 +175,17 @@ parse_schedule (void)
 }
 
 /* Parse an unsigned long environment variable.  Return true if one was
-   present and it was successfully parsed.  */
+   present and it was successfully parsed.  If SECURE, use secure_getenv to the
+   environment variable.  */
 
 static bool
-parse_unsigned_long (const char *name, unsigned long *pvalue, bool allow_zero)
+parse_unsigned_long_1 (const char *name, unsigned long *pvalue, bool allow_zero,
+		       bool secure)
 {
   char *env, *end;
   unsigned long value;
 
-  env = getenv (name);
+  env = (secure ? secure_getenv (name) : getenv (name));
   if (env == NULL)
     return false;
 
@@ -206,14 +212,23 @@ parse_unsigned_long (const char *name, unsigned long *pvalue, bool allow_zero)
   return false;
 }
 
-/* Parse a positive int environment variable.  Return true if one was
-   present and it was successfully parsed.  */
+/* As parse_unsigned_long_1, but always use getenv.  */
 
 static bool
-parse_int (const char *name, int *pvalue, bool allow_zero)
+parse_unsigned_long (const char *name, unsigned long *pvalue, bool allow_zero)
+{
+  return parse_unsigned_long_1 (name, pvalue, allow_zero, false);
+}
+
+/* Parse a positive int environment variable.  Return true if one was
+   present and it was successfully parsed.  If SECURE, use secure_getenv to the
+   environment variable.  */
+
+static bool
+parse_int_1 (const char *name, int *pvalue, bool allow_zero, bool secure)
 {
   unsigned long value;
-  if (!parse_unsigned_long (name, &value, allow_zero))
+  if (!parse_unsigned_long_1 (name, &value, allow_zero, secure))
     return false;
   if (value > INT_MAX)
     {
@@ -222,6 +237,22 @@ parse_int (const char *name, int *pvalue, bool allow_zero)
     }
   *pvalue = (int) value;
   return true;
+}
+
+/* As parse_int_1, but use getenv.  */
+
+static bool
+parse_int (const char *name, int *pvalue, bool allow_zero)
+{
+  return parse_int_1 (name, pvalue, allow_zero, false);
+}
+
+/* As parse_int_1, but use getenv_secure.  */
+
+static bool
+parse_int_secure (const char *name, int *pvalue, bool allow_zero)
+{
+  return parse_int_1 (name, pvalue, allow_zero, true);
 }
 
 /* Parse an unsigned long list environment variable.  Return true if one was
@@ -1036,6 +1067,36 @@ parse_acc_device_type (void)
 }
 
 static void
+parse_gomp_openacc_dim (void)
+{
+  /* The syntax is the same as for the -fopenacc-dim compilation option.  */
+  const char *var_name = "GOMP_OPENACC_DIM";
+  const char *env_var = getenv (var_name);
+  if (!env_var)
+    return;
+
+  const char *pos = env_var;
+  int i;
+  for (i = 0; *pos && i != GOMP_DIM_MAX; i++)
+    {
+      if (i && *pos++ != ':')
+	break;
+
+      if (*pos == ':')
+	continue;
+
+      const char *eptr;
+      errno = 0;
+      long val = strtol (pos, (char **)&eptr, 10);
+      if (errno || val < 0 || (unsigned)val != val)
+	break;
+
+      goacc_default_dims[i] = (int)val;
+      pos = eptr;
+    }
+}
+
+static void
 handle_omp_display_env (unsigned long stacksize, int wait_policy)
 {
   const char *env;
@@ -1207,7 +1268,7 @@ initialize_env (void)
       gomp_global_icv.thread_limit_var
 	= thread_limit_var > INT_MAX ? UINT_MAX : thread_limit_var;
     }
-  parse_int ("GOMP_DEBUG", &gomp_debug_var, true);
+  parse_int_secure ("GOMP_DEBUG", &gomp_debug_var, true);
 #ifndef HAVE_SYNC_BUILTINS
   gomp_mutex_init (&gomp_managed_threads_lock);
 #endif
@@ -1306,6 +1367,7 @@ initialize_env (void)
     goacc_device_num = 0;
 
   parse_acc_device_type ();
+  parse_gomp_openacc_dim ();
 
   goacc_runtime_initialize ();
 }

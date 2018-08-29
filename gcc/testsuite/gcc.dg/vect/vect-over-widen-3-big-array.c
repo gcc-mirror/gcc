@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 128
+#define N VECTOR_BITS
 
 /* Modified rgb to rgb conversion from FFmpeg.  */
 __attribute__ ((noinline)) void
@@ -32,7 +32,9 @@ foo (unsigned char *src, unsigned char *dst)
       const int g = *s++;
       const int r = *s++;
       const int a = *s++;
-      if (*d != ((b>>3) | ((g&0xFFC)<<3) | ((r+0xF8)>>8) | (a<<9)))
+      unsigned short expected
+	= ((b>>3) | ((g&0xFFC)<<3) | ((r+0xF8)>>8) | (a<<9));
+      if (*d != expected)
         abort ();
       d++;
     }
@@ -57,7 +59,9 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vect_recog_over_widening_pattern: detected" 2 "vect" { target { ! vect_widen_shift } } } } */
-/* { dg-final { scan-tree-dump-times "vect_recog_over_widening_pattern: detected" 1 "vect" { target vect_widen_shift } } } */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* << 3} "vect" } } */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* >> 3} "vect" } } */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* >> 8} "vect" } } */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* << 9} "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 

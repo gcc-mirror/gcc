@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fcheck=all -std=f2003 -fall-intrinsics" }
+! { dg-options "-fcheck=all -std=f2003 " }
 ! { dg-shouldfail "Pointer actual argument 'ptr' is not associated" }
 !
 ! PR fortran/49255
@@ -11,6 +11,6 @@ call foo (ptr)
 contains
   subroutine foo (x)
     integer, optional :: x
-    if (present (x)) call abort ()
+    if (present (x)) STOP 1
   end subroutine foo
 end

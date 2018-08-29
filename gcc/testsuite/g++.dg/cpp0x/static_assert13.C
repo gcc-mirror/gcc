@@ -14,7 +14,7 @@ template<>
   };
 
 template<typename T>
-  T
+  void
   float_thing(T __x)
   {
     static_assert(is_float<T>::value, ""); // { dg-error "static assertion failed" }

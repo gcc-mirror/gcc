@@ -42,7 +42,7 @@ Program Strange
    Current = Perm(Current(1), Current(2))%Next
  End Do
 
- if (any(results .ne. reshape ((/2,2,1,2,2,1,1,1/), (/2, 4/)))) call abort
+ if (any(results .ne. reshape ((/2,2,1,2,2,1,1,1/), (/2, 4/)))) STOP 1
 
 ! 100 Format( 2I3, '--->', 2I3)
  DeAllocate (Perm)

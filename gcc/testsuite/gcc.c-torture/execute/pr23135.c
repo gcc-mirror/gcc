@@ -2,6 +2,7 @@
    trigger a reload bug.  Verified for gcc mainline from 20050722 13:00 UTC
    for sh-elf -m4 -O2.  */
 /* { dg-options "-Wno-psabi" } */
+/* { dg-add-options stack_size } */
 
 #ifndef STACK_SIZE
 #define STACK_SIZE (256*1024)

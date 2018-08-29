@@ -11,6 +11,8 @@ fn2 ()
 {
   if (a (c == 0))
     return 0;
+
+  return 0;
 }
 
 int main()

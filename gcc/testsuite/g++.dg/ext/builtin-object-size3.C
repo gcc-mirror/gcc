@@ -5,7 +5,7 @@ void baz (int *, int *);
 
 #define MEMCPY(d,s,l) __builtin___memcpy_chk (d, s, l, __builtin_object_size (d, 0)) // { dg-warning "writing" }
 
-int
+void
 foo ()
 {
   int *p = new int;
@@ -15,7 +15,7 @@ foo ()
   baz (p, q);
 }
 
-int
+void
 bar ()
 {
   int *p = new int;

@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z -w" }
+// { dg-options "-std=c++17 -w" }
 // { dg-do run }
 
 struct A { };

@@ -54,10 +54,6 @@ test_and_branch (int selector, int addend, int cond)
     {
 start0:
       return sum - 1;
-start1:
-      return sum + 1;
-start2:
-      return sum;
 start3:
       return sum - 2;
     }
@@ -65,6 +61,8 @@ start3:
     {
       switch (selector)
 	{
+start1:
+start2:
 	  CASE_ENTRY128 (1)
 	  CASE_ENTRY64 (129)
 	  CASE_ENTRY16 (193)

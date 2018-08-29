@@ -1,4 +1,4 @@
-#ifndef SOME_GUARD /* { dg-error "unterminated" } */
+#ifndef SOME_GUARD /* { dg-error "-:unterminated" } */
 
 #if 1
 /* Typo here: "endfi" should have been "endif".  */

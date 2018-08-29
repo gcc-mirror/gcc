@@ -1,8 +1,8 @@
 .global _start
 _start:
 # START Interrupt Vector Table [[
-        jmp     __PMSIZE-4
-        jmp     watchdog_init
+        jmp     __PMSIZE-4         # RESET Vector
+        jmp     interrupt_33       # Watchdog reset vector
         jmp     interrupt_0
         jmp     interrupt_1
         jmp     interrupt_2
@@ -35,24 +35,29 @@ _start:
         jmp     interrupt_29
         jmp     interrupt_30
         jmp     interrupt_31
-        jmp     __PMSIZE-8
+        jmp     __PMSIZE-8         # Interrupt vector 32 (NMI)
 # ]] END Interrupt Vector Table
 
 codestart:
         jmp    init
-        
+
 .global _exithook
 _exithook:               # Debugger uses '_exithook' at 0x90 to catch program exit
         return
-        
-watchdog_init:
-        ldk	$r0,1
+
 init:
         ldk     $sp,__RAMSIZE
         # Disable all interrupts
-        ldk     $r4,0x80
-        sta.b   0x100e3,$r4
-        
+        lda   $r1,0x10000
+        lshr  $r1,$r1,20
+        cmp   $r1,0x90
+        ldk   $r1,0x100e3   # FT900 IRQ Control Register
+        jmpc  z,1f
+        ldk   $r1,0x10123   # FT930 IRQ Control Register
+1:
+        ldk   $r4,0x80
+        sti.b $r1,0,$r4
+
         # Initialize DATA by copying from program memory
         ldk.l   $r4,__data_load_start
         ldk.l   $r1,__data_load_end
@@ -139,6 +144,7 @@ interrupt_\i:
         inth    30
         inth    31
         inth    32
+        inth    33
 
         # On entry: r0, already saved, holds the handler function
 interrupt_common:
@@ -182,7 +188,7 @@ nullvector:
 .section .data
 .global vector_table
 vector_table:
-        .rept 33
+        .rept 34
                 .long   nullvector
         .endr
 

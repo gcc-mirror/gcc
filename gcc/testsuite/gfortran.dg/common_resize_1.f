@@ -125,8 +125,8 @@ c
       do 60 i=lft,llt
    60 dett(i)=o64th/det(i)
 
-      if (det(lft) .ne. 1d0) call abort ()
-      if (det(llt) .ne. 1d0) call abort ()
+      if (det(lft) .ne. 1d0) STOP 1
+      if (det(llt) .ne. 1d0) STOP 2
 
       return
 c

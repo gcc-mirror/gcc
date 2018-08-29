@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -29,5 +29,6 @@
 
 extern void GOMP_PLUGIN_async_unmap_vars (void *, int);
 extern void *GOMP_PLUGIN_acc_thread (void);
+extern int GOMP_PLUGIN_acc_default_dim (unsigned int);
 
 #endif

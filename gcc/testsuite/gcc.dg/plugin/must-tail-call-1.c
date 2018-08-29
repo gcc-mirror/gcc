@@ -1,3 +1,5 @@
+/* { dg-options "-fdelayed-branch" { target sparc*-*-* } } */
+
 extern void abort (void);
 
 int __attribute__((noinline,noclone))

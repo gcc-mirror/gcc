@@ -1,5 +1,5 @@
 ;; Predicate definitions for HP PA-RISC.
-;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -272,10 +272,13 @@
      assumed in the instruction encoding.  */
   switch (mode)
     {
-    case BLKmode:
-    case QImode:
-    case HImode:
+    case E_BLKmode:
+    case E_QImode:
+    case E_HImode:
       return true;
+
+    case E_VOIDmode:
+      return false;
 
     default:
       return (INTVAL (op) % GET_MODE_SIZE (mode)) == 0;

@@ -1,5 +1,5 @@
 /* RTL hash functions.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -55,6 +55,10 @@ add_rtx (const_rtx x, hash &hstate)
       for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
 	hstate.add_object (CONST_WIDE_INT_ELT (x, i));
       return;
+    case CONST_POLY_INT:
+      for (i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	hstate.add_wide_int (CONST_POLY_INT_COEFFS (x)[i]);
+      break;
     case SYMBOL_REF:
       if (XSTR (x, 0))
 	hstate.add (XSTR (x, 0), strlen (XSTR (x, 0)) + 1);
@@ -77,11 +81,14 @@ add_rtx (const_rtx x, hash &hstate)
     switch (fmt[i])
       {
       case 'w':
-	hstate.add_object (XWINT (x, i));
+	hstate.add_hwi (XWINT (x, i));
 	break;
       case 'n':
       case 'i':
-	hstate.add_object (XINT (x, i));
+	hstate.add_int (XINT (x, i));
+	break;
+      case 'p':
+	hstate.add_poly_int (SUBREG_BYTE (x));
 	break;
       case 'V':
       case 'E':

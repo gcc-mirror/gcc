@@ -18,5 +18,5 @@ program main
   allocate(object%indices(me))
   object%indices = 42
 
-  if ( any( object[me]%indices(:) /= 42 ) ) call abort()
+  if ( any( object[me]%indices(:) /= 42 ) ) STOP 1
 end program

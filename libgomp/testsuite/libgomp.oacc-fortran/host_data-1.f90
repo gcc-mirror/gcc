@@ -19,11 +19,11 @@ program test
 
   ! Test how the pointers compare inside a host_data construct
 #if ACC_MEM_SHARED
-  if (.not. associated(ip, iph)) call abort
-  if (.not. associated(parr, parrh)) call abort
+  if (.not. associated(ip, iph)) STOP 1
+  if (.not. associated(parr, parrh)) STOP 2
 #else
-  if (associated(ip, iph)) call abort
-  if (associated(parr, parrh)) call abort
+  if (associated(ip, iph)) STOP 3
+  if (associated(parr, parrh)) STOP 4
 #endif
 
   !$acc end host_data

@@ -11,14 +11,14 @@ subroutine foo2 (x,y)
   use iso_fortran_env, foo => numeric_storage_size
   integer, intent(in) :: x, y
 
-  if (foo /= x .or. character_storage_size /= y) call abort
+  if (foo /= x .or. character_storage_size /= y) STOP 1
 end
 
 subroutine foo3 (x,y)
   use iso_fortran_env, only : numeric_storage_size, character_storage_size
   integer, intent(in) :: x, y
 
-  if (numeric_storage_size /= x .or. character_storage_size /= y) call abort
+  if (numeric_storage_size /= x .or. character_storage_size /= y) STOP 2
 end
 
 program test

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-forwprop-details" } */
+/* { dg-options "-O2 -fdump-tree-ccp1-details" } */
 
 #include <stdint.h>
 
@@ -18,4 +18,4 @@ foo (int *a)
     }
 }
 
-/* { dg-final { scan-tree-dump "gimple_simplified to if \\(a_\[0-9\]*\\(D\\) == 0B\\)" "forwprop1" } } */
+/* { dg-final { scan-tree-dump "gimple_simplified to if \\(a_\[0-9\]*\\(D\\) == 0B\\)" "ccp1" } } */

@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -289,6 +289,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 // XXX GLIBCXX_ABI Deprecated
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
+#pragma GCC diagnostic ignored "-Wattribute-alias"
 #define _GLIBCXX_LDBL_COMPAT(dbl, ldbl) \
   extern "C" void ldbl (void) __attribute__ ((alias (#dbl)))
 _GLIBCXX_LDBL_COMPAT(_ZSt14__convert_to_vIdEvPKcRT_RSt12_Ios_IostateRKP15__locale_struct, _ZSt14__convert_to_vIeEvPKcRT_RSt12_Ios_IostateRKP15__locale_struct);

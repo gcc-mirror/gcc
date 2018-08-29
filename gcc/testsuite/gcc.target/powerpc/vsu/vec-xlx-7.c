@@ -11,5 +11,5 @@ fetch_data (unsigned int offset, vector signed int *datap)
 {
   vector signed int data = *datap;
 
-  return __builtin_vec_vextulx (offset, data);	/* { dg-error "Builtin function __builtin_altivec_vextuwlx requires" } */
+  return __builtin_vec_vextulx (offset, data);	/* { dg-error "builtin function '__builtin_altivec_vextuwlx' requires" } */
 }

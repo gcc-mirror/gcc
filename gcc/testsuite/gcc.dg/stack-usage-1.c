@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fstack-usage" } */
 /* nvptx doesn't have a reg allocator, and hence no stack usage data.  */
-/* { dg-skip-if "" { nvptx-*-* } { "*" } { "" } } */
+/* { dg-skip-if "" { nvptx-*-* } } */
 
 /* This is aimed at testing basic support for -fstack-usage in the back-ends.
    See the SPARC back-end for example (grep flag_stack_usage_info in sparc.c).
@@ -64,7 +64,11 @@
 #    define SIZE 240
 #  endif
 #elif defined (__riscv)
-#  define SIZE 240
+#  if defined (__riscv_32e)
+#    define SIZE 252
+#  else
+#    define SIZE 240
+#  endif
 #elif defined (__AVR__)
 #if defined (__AVR_3_BYTE_PC__ )
 #  define SIZE 251 /* 256 - 2 bytes for Y - 3 bytes for return address */
@@ -97,6 +101,8 @@
 #define SIZE 252
 #elif defined (__M32R__)
 #define SIZE 252
+#elif defined (__csky__)
+#  define SIZE 252
 #else
 #  define SIZE 256
 #endif

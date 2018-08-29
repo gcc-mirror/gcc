@@ -1,6 +1,6 @@
 /* OpenACC Runtime Library Definitions.
 
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -34,7 +34,7 @@
 int
 acc_async_test (int async)
 {
-  if (async < acc_async_sync)
+  if (!async_valid_p (async))
     gomp_fatal ("invalid async argument: %d", async);
 
   struct goacc_thread *thr = goacc_thread ();
@@ -59,7 +59,7 @@ acc_async_test_all (void)
 void
 acc_wait (int async)
 {
-  if (async < acc_async_sync)
+  if (!async_valid_p (async))
     gomp_fatal ("invalid async argument: %d", async);
 
   struct goacc_thread *thr = goacc_thread ();
@@ -117,7 +117,7 @@ acc_async_wait_all (void)
 void
 acc_wait_all_async (int async)
 {
-  if (async < acc_async_sync)
+  if (!async_valid_p (async))
     gomp_fatal ("invalid async argument: %d", async);
 
   struct goacc_thread *thr = goacc_thread ();

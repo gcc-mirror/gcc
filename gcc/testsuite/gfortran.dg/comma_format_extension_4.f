@@ -4,7 +4,7 @@
 ! { dg-options "" }
       character*6 c
       write (c,1001) 1
-      if (c .ne. '    1 ') call abort
+      if (c .ne. '    1 ') STOP 1
 
  1001 format (' ',i4' ')
       end

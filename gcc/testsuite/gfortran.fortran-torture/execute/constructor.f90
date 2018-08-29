@@ -6,13 +6,13 @@ program constructors
 
    a = (/1, (i,i=2,4)/)
    do i = 1, 4
-      if (a(i) .ne. i) call abort
+      if (a(i) .ne. i) STOP 1
    end do
 
    b = reshape ((/0, 1, 2, 3, 4, 5/), (/3, 2/)) + 1
    do i=1,3
-      if (b(i, 1) .ne. i) call abort
-      if (b(i, 2) .ne. i + 3) call abort
+      if (b(i, 1) .ne. i) STOP 2
+      if (b(i, 2) .ne. i + 3) STOP 3
    end do
 
    k = 1
@@ -21,9 +21,9 @@ program constructors
    n = 4
    ! The remainder assumes constant constructors work ok.
    a = (/n, m, l, k/)
-   if (any (a .ne. (/4, 3, 2, 1/))) call abort
+   if (any (a .ne. (/4, 3, 2, 1/))) STOP 4
    a = (/((/i+10, 42/), i = k, l)/)
-   if (any (a .ne. (/11, 42, 12, 42/))) call abort
+   if (any (a .ne. (/11, 42, 12, 42/))) STOP 5
    a = (/(I, I=k,l) , (J, J=m,n)/)
-   if (any (a .ne. (/1, 2, 3, 4/))) call abort
+   if (any (a .ne. (/1, 2, 3, 4/))) STOP 6
 end program

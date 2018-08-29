@@ -1,6 +1,6 @@
 // Allocator traits -*- C++ -*-
 
-// Copyright (C) 2011-2017 Free Software Foundation, Inc.
+// Copyright (C) 2011-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -598,8 +598,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : is_copy_constructible<_Tp>
     { };
 
+  // Trait to detect Allocator-like types.
+  template<typename _Alloc, typename = void>
+    struct __is_allocator : false_type { };
+
+  template<typename _Alloc>
+    struct __is_allocator<_Alloc,
+      __void_t<typename _Alloc::value_type,
+	       decltype(std::declval<_Alloc&>().allocate(size_t{}))>>
+    : true_type { };
+
+  template<typename _Alloc>
+    using _RequireAllocator
+      = typename enable_if<__is_allocator<_Alloc>::value, _Alloc>::type;
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
-#endif
-#endif
+#endif // C++11
+#endif // _ALLOC_TRAITS_H

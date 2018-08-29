@@ -6,5 +6,5 @@
 // Subject: prototype bug ?
 // Date: Thu, 5 Nov 92 15:37:34 PST
 
-        extern unsigned char * (*trt_def(int))[][2];
-        extern unsigned char * (trt_rplst(unsigned char *(*)[][2])); // { dg-error "" }
+extern unsigned char * (*trt_def(int))[][2];
+extern unsigned char * (trt_rplst(unsigned char *(*)[][2])); // { dg-error "" "" { target c++14_down } }

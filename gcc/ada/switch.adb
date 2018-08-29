@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -179,7 +179,7 @@ package body Switch is
    end Is_Switch;
 
    -----------------
-   -- Switch_last --
+   -- Switch_Last --
    -----------------
 
    function Switch_Last (Switch_Chars : String) return Natural is

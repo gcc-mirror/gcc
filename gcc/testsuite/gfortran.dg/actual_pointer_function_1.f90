@@ -10,14 +10,18 @@
     INTEGER :: a
   END TYPE cp_logger_type
 
-  if (cp_logger_log(cp_get_default_logger (0))) call abort ()
-  if (.not. cp_logger_log(cp_get_default_logger (42))) call abort ()
+  if (cp_logger_log(cp_get_default_logger (0))) STOP 1
+  if (.not. cp_logger_log(cp_get_default_logger (42))) STOP 2
 
 CONTAINS
 
   logical function cp_logger_log(logger)
     TYPE(cp_logger_type), POINTER ::logger
-    cp_logger_log = associated (logger) .and. (logger%a .eq. 42)
+    if (associated (logger)) then
+      cp_logger_log = (logger%a .eq. 42)
+    else
+      cp_logger_log = .false.
+    end if
   END function
 
   FUNCTION cp_get_default_logger(v) RESULT(res)

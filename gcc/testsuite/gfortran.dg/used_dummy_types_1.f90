@@ -32,5 +32,5 @@ end module atest
   type(t1) :: res = t1 (0)
   call init ()
   call test (res)
-  if (res%a.ne.42) call abort
+  if (res%a.ne.42) STOP 1
 end  

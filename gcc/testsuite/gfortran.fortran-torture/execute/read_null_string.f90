@@ -11,5 +11,5 @@
       rewind(7)
       read(7, *) t 
       read(7, *) temp_name 
-      if (temp_name.ne.'') call abort
+      if (temp_name.ne.'') STOP 1
       end

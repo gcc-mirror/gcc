@@ -1,5 +1,5 @@
 // Test for decltype of direct decomposition.
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template <class,class> struct same_type;
 template <class T> struct same_type<T,T> {};

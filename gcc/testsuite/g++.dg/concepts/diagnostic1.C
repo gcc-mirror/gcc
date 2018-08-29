@@ -1,5 +1,5 @@
 // PR c++/67159
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 template <class T, class U>
 concept bool SameAs = __is_same_as(T, U);

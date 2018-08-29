@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1 -mxsavec -mxsaves -mclflushopt -mavx512dq -mavx512bw -mavx512vl -mavx512ifma -mavx512vbmi -mavx5124fmaps -mavx5124vnniw -mavx512vpopcntdq -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1 -mxsavec -mxsaves -mclflushopt -mavx512dq -mavx512bw -mavx512vl -mavx512ifma -mavx512vbmi -mavx5124fmaps -mavx5124vnniw -mavx512vpopcntdq -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid -mgfni -mpconfig -mwbnoinvd" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -7,8 +7,8 @@
 /* Test that the intrinsics compile without optimization.  All of them are
    defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h, mm3dnow.h,
    fma4intrin.h, xopintrin.h, abmintrin.h, bmiintrin.h, tbmintrin.h, 
-   lwpintrin.h, fmaintrin.h and mm_malloc.h that reference the proper 
-   builtin functions.
+   lwpintrin.h, fmaintrin.h gfniintrin.h and mm_malloc.h that reference
+   the proper builtin functions.
 
    Defining away "extern" and "__inline" results in all of them being compiled
    as proper functions.  */
@@ -244,7 +244,9 @@ test_2 (_mm512_maskz_extractf64x4_pd, __m256d, __mmask8, __m512d, 1)
 test_2 (_mm512_maskz_extracti32x4_epi32, __m128i, __mmask8, __m512i, 1)
 test_2 (_mm512_maskz_extracti64x4_epi64, __m256i, __mmask8, __m512i, 1)
 test_2 (_mm512_maskz_getexp_round_pd, __m512d, __mmask8, __m512d, 8)
+test_3 (_mm_maskz_getexp_round_sd, __m128d, __mmask8, __m128d, __m128d, 8)
 test_2 (_mm512_maskz_getexp_round_ps, __m512, __mmask16, __m512, 8)
+test_3 (_mm_maskz_getexp_round_ss, __m128, __mmask8, __m128, __m128, 8)
 test_2y (_mm512_maskz_getmant_round_pd, __m512d, __mmask8, __m512d, 1, 1, 8)
 test_2y (_mm512_maskz_getmant_round_ps, __m512, __mmask16, __m512, 1, 1, 8)
 test_2 (_mm512_maskz_permute_pd, __m512d, __mmask8, __m512d, 1)
@@ -300,7 +302,11 @@ test_2 (_mm_div_round_ss, __m128, __m128, __m128, 9)
 test_2 (_mm_getexp_round_sd, __m128d, __m128d, __m128d, 8)
 test_2 (_mm_getexp_round_ss, __m128, __m128, __m128, 8)
 test_2y (_mm_getmant_round_sd, __m128d, __m128d, __m128d, 1, 1, 8)
+test_4y (_mm_mask_getmant_round_sd, __m128d, __m128d, __mmask8, __m128d, __m128d, 1, 1, 8)
+test_3y (_mm_maskz_getmant_round_sd, __m128d, __mmask8, __m128d, __m128d, 1, 1, 8)
 test_2y (_mm_getmant_round_ss, __m128, __m128, __m128, 1, 1, 8)
+test_4y (_mm_mask_getmant_round_ss, __m128, __m128, __mmask8, __m128, __m128, 1, 1, 8)
+test_3y (_mm_maskz_getmant_round_ss, __m128, __mmask8, __m128, __m128, 1, 1, 8)
 test_2 (_mm_mul_round_sd, __m128d, __m128d, __m128d, 9)
 test_2 (_mm_mul_round_ss, __m128, __m128, __m128, 9)
 test_2 (_mm_scalef_round_sd, __m128d, __m128d, __m128d, 9)
@@ -356,7 +362,9 @@ test_3 (_mm512_mask_extractf64x4_pd, __m256d, __m256d, __mmask8, __m512d, 1)
 test_3 (_mm512_mask_extracti32x4_epi32, __m128i, __m128i, __mmask8, __m512i, 1)
 test_3 (_mm512_mask_extracti64x4_epi64, __m256i, __m256i, __mmask8, __m512i, 1)
 test_3 (_mm512_mask_getexp_round_pd, __m512d, __m512d, __mmask8, __m512d, 8)
+test_4 (_mm_mask_getexp_round_sd, __m128d, __m128d, __mmask8, __m128d, __m128d, 8)
 test_3 (_mm512_mask_getexp_round_ps, __m512, __m512, __mmask16, __m512, 8)
+test_4 (_mm_mask_getexp_round_ss, __m128, __m128, __mmask8, __m128, __m128, 8)
 test_3y (_mm512_mask_getmant_round_pd, __m512d, __m512d, __mmask8, __m512d, 1, 1, 8)
 test_3y (_mm512_mask_getmant_round_ps, __m512, __m512, __mmask16, __m512, 1, 1, 8)
 test_3 (_mm512_mask_permute_pd, __m512d, __m512d, __mmask8, __m512d, 1)
@@ -676,3 +684,11 @@ test_1 ( __bextri_u32, unsigned int, unsigned int, 1)
 #ifdef __x86_64__
 test_1 ( __bextri_u64, unsigned long long, unsigned long long, 1)
 #endif
+
+/* gfniintrin.h */
+test_2 (_mm_gf2p8affineinv_epi64_epi8, __m128i, __m128i, __m128i, 1)
+test_2 (_mm256_gf2p8affineinv_epi64_epi8, __m256i, __m256i, __m256i, 1)
+test_2 (_mm512_gf2p8affineinv_epi64_epi8, __m512i, __m512i, __m512i, 1)
+test_2 (_mm_gf2p8affine_epi64_epi8, __m128i, __m128i, __m128i, 1)
+test_2 (_mm256_gf2p8affine_epi64_epi8, __m256i, __m256i, __m256i, 1)
+test_2 (_mm512_gf2p8affine_epi64_epi8, __m512i, __m512i, __m512i, 1)

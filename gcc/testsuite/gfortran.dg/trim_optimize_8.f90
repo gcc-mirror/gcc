@@ -7,7 +7,7 @@ program main
   character(8) :: d
   a = 'a '
   b = 'b '
-  if (trim(a // trim(b)) /= 'a b ') call abort
-  if (trim (trim(a) // trim(b)) /= 'ab ') call abort
+  if (trim(a // trim(b)) /= 'a b ') STOP 1
+  if (trim (trim(a) // trim(b)) /= 'ab ') STOP 2
 end
 ! { dg-final { scan-tree-dump-times "string_len_trim" 1 "original" } }

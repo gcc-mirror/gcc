@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O0 -mno-accumulate-outgoing-args" } */
-/* { dg-options "-O0 -mno-accumulate-outgoing-args -mx32 -maddress-mode=short" { target x32 } } */
+/* { dg-additional-options "-mx32 -maddress-mode=short" { target x32 } } */
 
 void
 __attribute__ ((noinline))

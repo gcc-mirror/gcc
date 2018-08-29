@@ -18,6 +18,6 @@ program where_11
      b = 5
    endwhere
    if (any (b .ne. (/3, 1, 4, 1, 5/))) &
-     call abort
+     STOP 1
 end program
 

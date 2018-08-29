@@ -15,7 +15,7 @@ program alloc_comp_deep_copy_2
 
   c%g=a(1.) 
   d=c
-  if (d%g%f /= 1.0) call abort()
+  if (d%g%f /= 1.0) STOP 1
   d%g%f = 2.0
-  if (d%g%f /= 2.0) call abort()
+  if (d%g%f /= 2.0) STOP 2
 end program

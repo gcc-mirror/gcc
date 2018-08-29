@@ -1,6 +1,6 @@
 // functional_hash.h header -*- C++ -*-
 
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,8 +49,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Result, typename _Arg>
     struct __hash_base
     {
-      typedef _Result     result_type;
-      typedef _Arg      argument_type;
+      typedef _Result     result_type _GLIBCXX17_DEPRECATED;
+      typedef _Arg      argument_type _GLIBCXX17_DEPRECATED;
     };
 
   /// Primary class template hash.

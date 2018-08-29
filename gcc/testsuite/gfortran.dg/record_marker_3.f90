@@ -16,9 +16,9 @@ program main
   read (15,rec=2) i2
   read (15,rec=3) i3
   close (15, status="DELETE")
-  if (i1 /= 8) call abort
-  if (i2 /= 1) call abort
-  if (i3 /= 8) call abort
+  if (i1 /= 8) STOP 1
+  if (i2 /= 1) STOP 2
+  if (i3 /= 8) STOP 3
 
   open(15,form="UNFORMATTED",convert="SWAP")
   write (15) 1_8
@@ -31,8 +31,8 @@ program main
   read (15,rec=2) i2
   read (15,rec=3) i3
   close(15,status="DELETE")
-  if (i1 /= 8) call abort
-  if (i2 /= 1) call abort
-  if (i3 /= 8) call abort
+  if (i1 /= 8) STOP 4
+  if (i2 /= 1) STOP 5
+  if (i3 /= 8) STOP 6
 
 end program main

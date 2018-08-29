@@ -1,6 +1,6 @@
 /* Routines to implement minimum-cost maximal flow algorithm used to smooth
    basic block and edge frequency counts.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Paul Yuan (yingbo.com@gmail.com) and
                   Vinodha Ramasamy (vinodha@google.com).
 
@@ -508,7 +508,7 @@ create_fixup_graph (fixup_graph_type *fixup_graph)
   /* Compute constants b, k_pos, k_neg used in the cost function calculation.
      b = sqrt(avg_vertex_weight(cfg)); k_pos = b; k_neg = 50b.  */
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
-    total_vertex_weight += bb->count;
+    total_vertex_weight += bb_gcov_count (bb);
 
   sqrt_avg_vertex_weight = mcf_sqrt (total_vertex_weight /
 				     n_basic_blocks_for_fn (cfun));
@@ -526,8 +526,8 @@ create_fixup_graph (fixup_graph_type *fixup_graph)
   {
     /* v'->v'': index1->(index1+1).  */
     i = 2 * bb->index;
-    fcost = (gcov_type) COST (k_pos, bb->count);
-    add_fixup_edge (fixup_graph, i, i + 1, VERTEX_SPLIT_EDGE, bb->count,
+    fcost = (gcov_type) COST (k_pos, bb_gcov_count (bb));
+    add_fixup_edge (fixup_graph, i, i + 1, VERTEX_SPLIT_EDGE, bb_gcov_count (bb),
                     fcost, CAP_INFINITY);
     fixup_graph->num_vertices++;
 
@@ -538,9 +538,9 @@ create_fixup_graph (fixup_graph_type *fixup_graph)
       if (EDGE_INFO (e) && EDGE_INFO (e)->ignore)
         continue;
       j = 2 * e->dest->index;
-      fcost = (gcov_type) COST (k_pos, e->count);
-      add_fixup_edge (fixup_graph, i + 1, j, REDIRECT_EDGE, e->count, fcost,
-                      CAP_INFINITY);
+      fcost = (gcov_type) COST (k_pos, edge_gcov_count (e));
+      add_fixup_edge (fixup_graph, i + 1, j, REDIRECT_EDGE, edge_gcov_count (e),
+		      fcost, CAP_INFINITY);
     }
   }
 
@@ -1132,12 +1132,12 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
       /* Fixup BB.  */
       if (dump_file)
         fprintf (dump_file,
-                 "BB%d: %" PRId64 "", bb->index, bb->count);
+                 "BB%d: %" PRId64 "", bb->index, bb_gcov_count (bb));
 
       pfedge = find_fixup_edge (fixup_graph, i, i + 1);
       if (pfedge->flow)
         {
-          bb->count += pfedge->flow;
+          bb_gcov_count (bb) += pfedge->flow;
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, " + %" PRId64 "(",
@@ -1152,7 +1152,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
       /* Deduct flow from normalized reverse edge.  */
       if (pfedge->norm_vertex_index && pfedge_n->flow)
         {
-          bb->count -= pfedge_n->flow;
+          bb_gcov_count (bb) -= pfedge_n->flow;
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, " - %" PRId64 "(",
@@ -1163,7 +1163,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	    }
         }
       if (dump_file)
-        fprintf (dump_file, " = %" PRId64 "\n", bb->count);
+        fprintf (dump_file, " = %" PRId64 "\n", bb_gcov_count (bb));
 
       /* Fixup edge.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1175,7 +1175,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
           j = 2 * e->dest->index;
           if (dump_file)
 	    fprintf (dump_file, "%d->%d: %" PRId64 "",
-		     bb->index, e->dest->index, e->count);
+		     bb->index, e->dest->index, edge_gcov_count (e));
 
           pfedge = find_fixup_edge (fixup_graph, i + 1, j);
 
@@ -1184,7 +1184,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	      /* Non-self edge.  */
 	      if (pfedge->flow)
 	        {
-	          e->count += pfedge->flow;
+	          edge_gcov_count (e) += pfedge->flow;
 	          if (dump_file)
 		    {
 		      fprintf (dump_file, " + %" PRId64 "(",
@@ -1199,7 +1199,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	      /* Deduct flow from normalized reverse edge.  */
 	      if (pfedge->norm_vertex_index && pfedge_n->flow)
 	        {
-	          e->count -= pfedge_n->flow;
+	          edge_gcov_count (e) -= pfedge_n->flow;
 	          if (dump_file)
 		    {
 		      fprintf (dump_file, " - %" PRId64 "(",
@@ -1217,8 +1217,8 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	      pfedge = find_fixup_edge (fixup_graph, j, i + 1);
 	      pfedge_n =
 	        find_fixup_edge (fixup_graph, i + 1, pfedge->norm_vertex_index);
-	      e->count += pfedge_n->flow;
-	      bb->count += pfedge_n->flow;
+	      edge_gcov_count (e) += pfedge_n->flow;
+	      bb_gcov_count (bb) += pfedge_n->flow;
 	      if (dump_file)
 	        {
 	          fprintf (dump_file, "(self edge)");
@@ -1230,49 +1230,32 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	        }
 	    }
 
-          if (bb->count)
-	    e->probability = REG_BR_PROB_BASE * e->count / bb->count;
+          if (bb_gcov_count (bb))
+	    e->probability = profile_probability::probability_in_gcov_type
+			 (edge_gcov_count (e), bb_gcov_count (bb));
           if (dump_file)
-	    fprintf (dump_file, " = %" PRId64 "\t(%.1f%%)\n",
-		     e->count, e->probability * 100.0 / REG_BR_PROB_BASE);
+	    {
+	      fprintf (dump_file, " = %" PRId64 "\t",
+		       edge_gcov_count (e));
+	      e->probability.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
         }
     }
 
-  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count =
+  bb_gcov_count (ENTRY_BLOCK_PTR_FOR_FN (cfun)) =
 		     sum_edge_counts (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs);
-  EXIT_BLOCK_PTR_FOR_FN (cfun)->count =
+  bb_gcov_count (EXIT_BLOCK_PTR_FOR_FN (cfun)) =
 		     sum_edge_counts (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds);
 
   /* Compute edge probabilities.  */
   FOR_ALL_BB_FN (bb, cfun)
     {
-      if (bb->count)
+      if (bb_gcov_count (bb))
         {
           FOR_EACH_EDGE (e, ei, bb->succs)
-            e->probability = REG_BR_PROB_BASE * e->count / bb->count;
-        }
-      else
-        {
-          int total = 0;
-          FOR_EACH_EDGE (e, ei, bb->succs)
-            if (!(e->flags & (EDGE_COMPLEX | EDGE_FAKE)))
-              total++;
-          if (total)
-            {
-              FOR_EACH_EDGE (e, ei, bb->succs)
-                {
-                  if (!(e->flags & (EDGE_COMPLEX | EDGE_FAKE)))
-                    e->probability = REG_BR_PROB_BASE / total;
-                  else
-                    e->probability = 0;
-                }
-            }
-          else
-            {
-              total += EDGE_COUNT (bb->succs);
-              FOR_EACH_EDGE (e, ei, bb->succs)
-                  e->probability = REG_BR_PROB_BASE / total;
-            }
+            e->probability = profile_probability::probability_in_gcov_type
+				(edge_gcov_count (e), bb_gcov_count (bb));
         }
     }
 
@@ -1282,15 +1265,15 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	       current_function_name ());
       FOR_EACH_BB_FN (bb, cfun)
         {
-          if ((bb->count != sum_edge_counts (bb->preds))
-               || (bb->count != sum_edge_counts (bb->succs)))
+          if ((bb_gcov_count (bb) != sum_edge_counts (bb->preds))
+               || (bb_gcov_count (bb) != sum_edge_counts (bb->succs)))
             {
               fprintf (dump_file,
                        "BB%d(%" PRId64 ")  **INVALID**: ",
-                       bb->index, bb->count);
+                       bb->index, bb_gcov_count (bb));
               fprintf (stderr,
                        "******** BB%d(%" PRId64
-                       ")  **INVALID**: \n", bb->index, bb->count);
+                       ")  **INVALID**: \n", bb->index, bb_gcov_count (bb));
               fprintf (dump_file, "in_edges=%" PRId64 " ",
                        sum_edge_counts (bb->preds));
               fprintf (dump_file, "out_edges=%" PRId64 "\n",
@@ -1378,7 +1361,7 @@ sum_edge_counts (vec<edge, va_gc> *to_edges)
     {
       if (EDGE_INFO (e) && EDGE_INFO (e)->ignore)
         continue;
-      sum += e->count;
+      sum += edge_gcov_count (e);
     }
   return sum;
 }

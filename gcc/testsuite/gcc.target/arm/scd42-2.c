@@ -4,7 +4,7 @@
 /* { dg-skip-if "Test is specific to the Xscale" { arm*-*-* } { "-mcpu=*" } { "-mcpu=xscale" } } */
 /* { dg-skip-if "Test is specific to ARM mode" { arm*-*-* } { "-mthumb" } { "" } } */
 /* { dg-require-effective-target arm32 } */
-/* { dg-options "-mcpu=xscale -O" } */
+/* { dg-options "-mcpu=xscale -O -marm" } */
 
 unsigned load2(void) __attribute__ ((naked));
 unsigned load2(void)

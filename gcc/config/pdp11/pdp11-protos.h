@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -21,25 +21,28 @@ along with GCC; see the file COPYING3.  If not see
 /* declarations */
 #ifdef RTX_CODE
 extern int simple_memory_operand (rtx, machine_mode);
-
+extern int no_side_effect_operand (rtx, machine_mode);
 extern int legitimate_const_double_p (rtx);
 extern void notice_update_cc_on_set (rtx, rtx);
 extern void output_addr_const_pdp11 (FILE *, rtx);
 extern const char *output_move_multiple (rtx *);
 extern const char *output_block_move (rtx *);
-extern const char *output_jump (enum rtx_code, int, int);
+extern const char *output_jump (rtx *, int, int);
 extern void print_operand_address (FILE *, rtx);
-extern bool pdp11_cannot_change_mode_class (machine_mode,
-                                            machine_mode, enum reg_class);
-extern bool pdp11_secondary_memory_needed (reg_class_t, reg_class_t, 
-					   machine_mode);
 typedef enum { no_action, dec_before, inc_after } pdp11_action;
 typedef enum { little, either, big } pdp11_partorder;
-extern bool pdp11_expand_operands (rtx *, rtx [][2], int, 
+extern bool pdp11_expand_operands (rtx *, rtx [][2], int,
 				   pdp11_action *, pdp11_partorder);
 extern int pdp11_sp_frame_offset (void);
 extern int pdp11_initial_elimination_offset (int, int);
 extern enum reg_class pdp11_regno_reg_class (int);
+extern bool pdp11_fixed_cc_regs (unsigned int *, unsigned int *);
+extern machine_mode pdp11_cc_mode (enum rtx_code, rtx, rtx);
+extern bool pdp11_expand_shift (rtx *, rtx (*) (rtx, rtx, rtx),
+				rtx (*) (rtx, rtx, rtx));
+extern const char * pdp11_assemble_shift (rtx *, machine_mode, int);
+extern int pdp11_shift_length (rtx *, machine_mode, int, bool);
+extern bool pdp11_small_shift (int);
 
 #endif /* RTX_CODE */
 
@@ -47,4 +50,8 @@ extern void output_ascii (FILE *, const char *, int);
 extern void pdp11_asm_output_var (FILE *, const char *, int, int, bool);
 extern void pdp11_expand_prologue (void);
 extern void pdp11_expand_epilogue (void);
-extern int pdp11_branch_cost (void);
+extern poly_int64 pdp11_push_rounding (poly_int64);
+extern void pdp11_gen_int_label (char *, const char *, int);
+extern void pdp11_output_labelref (FILE *, const char *);
+extern void pdp11_output_def (FILE *, const char *, const char *);
+extern void pdp11_output_addr_vec_elt (FILE *, int);

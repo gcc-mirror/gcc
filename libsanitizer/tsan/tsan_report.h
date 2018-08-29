@@ -22,6 +22,7 @@ enum ReportType {
   ReportTypeVptrRace,
   ReportTypeUseAfterFree,
   ReportTypeVptrUseAfterFree,
+  ReportTypeExternalRace,
   ReportTypeThreadLeak,
   ReportTypeMutexDestroyLocked,
   ReportTypeMutexDoubleLock,
@@ -54,6 +55,7 @@ struct ReportMop {
   int size;
   bool write;
   bool atomic;
+  uptr external_tag;
   Vector<ReportMopMutex> mset;
   ReportStack *stack;
 
@@ -73,6 +75,7 @@ struct ReportLocation {
   DataInfo global;
   uptr heap_chunk_start;
   uptr heap_chunk_size;
+  uptr external_tag;
   int tid;
   int fd;
   bool suppressable;
@@ -85,10 +88,11 @@ struct ReportLocation {
 
 struct ReportThread {
   int id;
-  uptr os_id;
+  tid_t os_id;
   bool running;
+  bool workerthread;
   char *name;
-  int parent_tid;
+  u32 parent_tid;
   ReportStack *stack;
 };
 
@@ -102,6 +106,7 @@ struct ReportMutex {
 class ReportDesc {
  public:
   ReportType typ;
+  uptr tag;
   Vector<ReportStack*> stacks;
   Vector<ReportMop*> mops;
   Vector<ReportLocation*> locs;

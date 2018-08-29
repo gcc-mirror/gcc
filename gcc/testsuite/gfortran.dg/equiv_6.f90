@@ -21,7 +21,7 @@ program check_6
   call set_array_listpr (listpr)
   call set_array_lisbit (lisbit)
 
-  if (any (listpr.ne.lischk)) call abort ()
+  if (any (listpr.ne.lischk)) STOP 1
   call sub1
   call sub2
   call sub3
@@ -36,7 +36,7 @@ subroutine sub1
               (listpr(10),lispat(1))
   call set_array_listpr (listpr)
   call set_array_lisbit (lisbit)
-  if (any (listpr .ne. lischk)) call abort ()
+  if (any (listpr .ne. lischk)) STOP 2
 end
 !
 ! Equivalences not in COMMON
@@ -50,7 +50,7 @@ subroutine sub2
               (mwkx(10),lisbit(1),listpr(10))
   call set_array_listpr (listpr)
   call set_array_lisbit (lisbit)
-  if (any (listpr .ne. lischk)) call abort ()
+  if (any (listpr .ne. lischk)) STOP 3
 end
 ! This gave correct results because the order in which the
 ! equivalences are taken is different and was given in the PR.
@@ -62,7 +62,7 @@ subroutine sub3
               (lispat(1),listpr(10))
   call set_array_listpr (listpr)
   call set_array_lisbit (lisbit)
-  if (any (listpr .ne. lischk)) call abort ()
+  if (any (listpr .ne. lischk)) STOP 4
 end
 
 subroutine set_array_listpr (listpr)

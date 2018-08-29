@@ -10,21 +10,21 @@ program nutest
     integer id, ios
 
     open(newunit=id, file="foo_open_negative_unit_1.txt", iostat=ios)
-    if (ios /= 0) call abort
+    if (ios /= 0) STOP 1
 
     open(id, file="bar.txt", iostat=ios)
-    if (ios /= 0) call abort
+    if (ios /= 0) STOP 2
 
     close(id, status="delete")
 
     open(unit=10, file="foo_open_negative_unit_1.txt", status="old", iostat=ios)
-    if (ios /= 0) call abort
+    if (ios /= 0) STOP 3
 
     close(10, status="delete")
 
     open(-10, file="foo_open_negative_unit_1.txt", iostat=ios)
-    if (ios == 0) call abort
+    if (ios == 0) STOP 4
 
     inquire(file="foo_open_negative_unit_1.txt", exist=l)
-    if (l) call abort
+    if (l) STOP 5
 end program nutest

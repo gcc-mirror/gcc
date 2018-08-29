@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-require-effective-target vect_float }
+! { dg-additional-options "--param vect-max-peeling-for-alignment=0" }
 
 SUBROUTINE FOO(A, B, C)
 DIMENSION A(1000000), B(1000000), C(1000000)
@@ -15,7 +16,4 @@ END
 ! support unaligned loads).
 
 ! { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" } }
-! { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" { xfail { { vect_no_align && { ! vect_hw_misalign } } || { ! vector_alignment_reachable } } } } }
-! { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { target { { vect_no_align && { ! vect_hw_misalign } } && { ! vector_alignment_reachable } } } } }
-! { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail { vect_no_align && { ! vect_hw_misalign } } } } }
 ! { dg-final { scan-tree-dump-times "Alignment of access forced using versioning." 3 "vect" {target { { vect_no_align && { ! vect_hw_misalign } } || { { ! vector_alignment_reachable  } && { ! vect_hw_misalign } } } } } }

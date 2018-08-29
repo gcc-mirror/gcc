@@ -1,5 +1,5 @@
 /* Definitions for PA_RISC with ELF format
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -141,3 +141,9 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_sync_compare_and_swaphi 1
 #define HAVE_sync_compare_and_swapsi 1
 #define HAVE_sync_compare_and_swapdi 1
+
+/* It's not possible to enable GNU_stack notes since the kernel needs
+   an executable stack for signal returns and syscall restarts.  */
+
+#undef NEED_INDICATE_EXEC_STACK
+#define NEED_INDICATE_EXEC_STACK 0

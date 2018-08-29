@@ -5,7 +5,7 @@
 void foo () throw () {}		// { dg-bogus "mangled name" }
 
 template <class T>
-T bar (T x) { return x; }	// { dg-warning "mangled name" "" { target c++14_down } }
+T bar (T x) { return x; }
 
 void baz () {			// { dg-bogus "mangled name" }
   return (bar (foo)) ();

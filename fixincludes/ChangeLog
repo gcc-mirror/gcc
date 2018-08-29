@@ -1,3 +1,50 @@
+2018-07-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_unistd): New.
+	* fixincl.x: Regenerate.
+	* tests/base/unistd.h [AIX_UNISTD_CHECK]: New test.
+
+2018-06-27  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* tests/base/ioLib.h [VXWORKS_IOLIB_INCLUDE_UNISTD_CHECK]: Add
+	missing hunk.
+
+2018-06-12    Rasmus Villemoes <rasmus.villemoes@prevas.dk>
+
+	* genfixes: exit 1 when autogen not found.
+	* genfixes: Remove some redundant code.
+	* genfixes: Update URL to autogen source code.
+
+	* inclhack.def: Fix fixup for assert.h on vxworks.
+	* fixincl.x: Regenerate.
+
+2018-05-25  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* inclhack.def (vxworks_iolib_include_unistd): New fix.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-02-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_stdlib_vec_malloc): New.
+	(aix_stdlib_vec_calloc): New.
+	* fixincl.x: Regenerate.
+	* tests/base/stdlib.h [AIX_STDLIB_VEC_MALLOC]: New test.
+	[AIX_STDLIB_VEC_CALLOC]: New test.
+
+2017-10-13  Mike Frysinger  <vapier@chromium.org>
+
+	* fixinc.in (dirname): Change sed from 's|[^/]*/||' to
+	's|[^/]*//*||'.
+
+2017-06-12  Doug Rupp  <rupp@adacore.com>
+
+	* inclhack.def (AAB_vxworks_stdint): Remove hack.
+	* fixincl.x: Regenerate.
+
 2017-02-25  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/68739
@@ -1209,7 +1256,7 @@
 	* tests/base/math.h: Update.
 
 2007-01-05  Bruce Korb <bkorb@gnu.org>, 
-            Daniel Franke <franke.daniel@gmail.com>
+	    Daniel Franke <franke.daniel@gmail.com>
 
 	PR target/30008
 	* fixincl.tpl (List): separate file name patterns with a NUL byte instead
@@ -1425,7 +1472,7 @@
 	* fixincl.c: Don't include <sys/wait.h> if SEPARATE_FIX_PROC.
 
 2005-05-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Joseph S. Myers  <joseph@codesourcery.com>
+	    Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR target/19933
 	PR target/21315

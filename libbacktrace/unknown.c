@@ -1,5 +1,5 @@
 /* unknown.c -- used when backtrace configury does not know file format.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,7 @@ unknown_fileline (struct backtrace_state *state ATTRIBUTE_UNUSED,
 
 int
 backtrace_initialize (struct backtrace_state *state ATTRIBUTE_UNUSED,
+		      const char *filename ATTRIBUTE_UNUSED,
 		      int descriptor ATTRIBUTE_UNUSED,
 		      backtrace_error_callback error_callback ATTRIBUTE_UNUSED,
 		      void *data ATTRIBUTE_UNUSED, fileline *fileline_fn)

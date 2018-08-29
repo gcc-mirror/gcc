@@ -8,6 +8,6 @@ program main
   rewind(77)
   read(77,'(10A1)'), c1 ! { dg-warning "Comma before i/o item list" }
   read(77,'(10A1)'), c2 ! { dg-warning "Comma before i/o item list" }
-  if (c1(1) /= 'L' .or. c2(1) /= 'L') call abort
+  if (c1(1) /= 'L' .or. c2(1) /= 'L') STOP 1
   close(77)
 end program main

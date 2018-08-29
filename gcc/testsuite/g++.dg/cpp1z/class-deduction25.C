@@ -1,5 +1,5 @@
 // Testcase from P0512R0 for C++17 NB comment US 19
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template<typename> struct remove_ref;
 template<typename _Tp> struct remove_ref { typedef _Tp type; };

@@ -18,29 +18,29 @@ program eieio_stat
   
   buffer = 'abcdefg'
   read (unit,"(a)",advance="no",iostat=ios1, pad="yes") buffer
-  if (ios1 /= iostat_eor .and. buffer /= "Line-1") call abort
+  if (ios1 /= iostat_eor .and. buffer /= "Line-1") STOP 1
 
   buffer = '<'
   read (unit,"(a)",advance="no",iostat=ios2,pad="yes") buffer
-  if (ios2 /= iostat_eor .and. buffer /= "Line-2") call abort
+  if (ios2 /= iostat_eor .and. buffer /= "Line-2") STOP 2
   
   buffer = '5678'
   read (unit,"(a)",advance="no",iostat=ios3, iomsg=themessage) buffer
-  if (ios3 /= iostat_end .and. buffer /= "5678") call abort
+  if (ios3 /= iostat_end .and. buffer /= "5678") STOP 3
 
   rewind(10)
 
   buffer = "abcdefg"
   read (unit,"(a)",advance="no",iostat=ios1, pad="no") buffer
-  if (ios1 /= iostat_eor .and. buffer /= "abcdefg") call abort
+  if (ios1 /= iostat_eor .and. buffer /= "abcdefg") STOP 4
 
   buffer = '<'
   read (unit,"(a)",advance="no",iostat=ios2,pad="no") buffer
-  if (ios2 /= iostat_eor .and. buffer /= "<") call abort
+  if (ios2 /= iostat_eor .and. buffer /= "<") STOP 5
 
   buffer = '1234'
   read (unit,"(a)",advance="no",iostat=ios3, iomsg=themessage) buffer
-  if (ios3 <= 0 .and. buffer /= "1234") call abort
+  if (ios3 <= 0 .and. buffer /= "1234") STOP 6
   
   close(unit, status="delete")
 end program eieio_stat 

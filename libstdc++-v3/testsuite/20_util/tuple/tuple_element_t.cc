@@ -1,6 +1,6 @@
 // { dg-do compile { target c++14 } }
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,6 +18,12 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <tuple>
+
+#ifndef __cpp_lib_tuple_element_t
+# error "Feature-test macro for tuple_element_t missing"
+#elif __cpp_lib_tuple_element_t != 201402
+# error "Feature-test macro for tuple_element_t has wrong value"
+#endif
 
 using namespace std;
 

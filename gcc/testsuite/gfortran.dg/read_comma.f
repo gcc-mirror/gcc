@@ -14,13 +14,13 @@
       write(10,'(a)') "1, 235"
       rewind(10)
       read(10,'(3i2)') i1,i2,i3
-      if(i1.ne.1) call abort()
-      if(i2.ne.2) call abort()
-      if(i3.ne.35) call abort()
+      if(i1.ne.1) STOP 1
+      if(i2.ne.2) STOP 2
+      if(i3.ne.35) STOP 3
       rewind(10)
 !     Make sure commas are read in character strings.      
       write(10,'(a)') "1234,6789,"
       rewind(10)
       read(10,'(a10)') a1
-      if(a1.ne."1234,6789,") call abort()
+      if(a1.ne."1234,6789,") STOP 4
       end

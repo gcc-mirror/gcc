@@ -41,13 +41,13 @@ program main
 contains
   subroutine check (arg1, arg2)
     real :: arg1, arg2
-    if (arg1 .ne. arg2) call abort ()
+    if (arg1 .ne. arg2) STOP 1
   end subroutine
 
   subroutine check_chr (arg1, arg2)
     character(*) :: arg1, arg2
-    if (len (arg1) .ne. len (arg2)) call abort
-    if (arg1 .ne. arg2) call abort
+    if (len (arg1) .ne. len (arg2)) STOP 1
+    if (arg1 .ne. arg2) STOP 2
   end subroutine
 
   type(type1) function foo (arg)

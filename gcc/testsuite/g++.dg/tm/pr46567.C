@@ -1669,12 +1669,12 @@ namespace std
 }
 void* operator new(std::size_t)
 #if __cplusplus <= 201402L
-throw (std::bad_alloc)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw (std::bad_alloc)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 ;
 void* operator new[](std::size_t)
 #if __cplusplus <= 201402L
-throw (std::bad_alloc)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw (std::bad_alloc)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 ;
 void operator delete(void*) throw();

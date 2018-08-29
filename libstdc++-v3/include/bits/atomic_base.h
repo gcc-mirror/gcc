@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2008-2017 Free Software Foundation, Inc.
+// Copyright (C) 2008-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -237,6 +237,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ITp>
     struct __atomic_base
     {
+      using value_type = _ITp;
+      using difference_type = value_type;
+
     private:
       typedef _ITp 	__int_type;
 

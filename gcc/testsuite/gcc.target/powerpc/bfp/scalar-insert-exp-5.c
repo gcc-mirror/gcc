@@ -17,5 +17,5 @@ insert_exponent (double *significand_p,
   double significand = *significand_p;
   unsigned long long int exponent = *exponent_p;
 
-  return scalar_insert_exp (significand, exponent); /* { dg-error "Builtin function __builtin_vec_scalar_insert_exp not supported in this compiler configuration" } */
+  return scalar_insert_exp (significand, exponent); /* { dg-error "builtin function '__builtin_vec_scalar_insert_exp' not supported in this compiler configuration" } */
 }

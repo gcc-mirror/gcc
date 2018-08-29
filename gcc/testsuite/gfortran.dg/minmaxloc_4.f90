@@ -9,7 +9,7 @@ PROGRAM TST
 
   !WRITE(*,*) SUM(A(:,1:3),1)
   !WRITE(*,*) MINLOC(SUM(A(:,1:3),1),1)
-  if (minloc(sum(a(:,1:3),1),1) .ne. 1) call abort()
-  if (maxloc(sum(a(:,1:3),1),1) .ne. 3) call abort()
+  if (minloc(sum(a(:,1:3),1),1) .ne. 1) STOP 1
+  if (maxloc(sum(a(:,1:3),1),1) .ne. 3) STOP 2
 
 END PROGRAM TST

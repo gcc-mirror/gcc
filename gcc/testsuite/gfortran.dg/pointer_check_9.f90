@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fcheck=all -std=f2008 -fall-intrinsics" }
+! { dg-options "-fcheck=all -std=f2008 " }
 !
 ! PR fortran/49255
 !
@@ -10,6 +10,6 @@ call foo (ptr)
 contains
   subroutine foo (x)
     integer, optional :: x
-    if (present (x)) call abort ()
+    if (present (x)) STOP 1
   end subroutine foo
 end

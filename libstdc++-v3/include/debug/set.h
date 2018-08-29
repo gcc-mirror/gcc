@@ -1,6 +1,6 @@
 // Debugging set implementation -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,6 +55,9 @@ namespace __debug
       typedef typename _Base::iterator		_Base_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
 
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
+
     public:
       // types:
       typedef _Key					key_type;
@@ -104,6 +107,7 @@ namespace __debug
       : _Base(__x, __a) { }
 
       set(set&& __x, const allocator_type& __a)
+      noexcept( noexcept(_Base(std::move(__x._M_base()), __a)) )
       : _Safe(std::move(__x._M_safe()), __a),
 	_Base(std::move(__x._M_base()), __a) { }
 
@@ -113,8 +117,8 @@ namespace __debug
       template<typename _InputIterator>
 	set(_InputIterator __first, _InputIterator __last,
 	    const allocator_type& __a)
-	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
-								     __last)),
+	: _Base(__gnu_debug::__base(
+		  __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last), __a) { }
 
       ~set() = default;
@@ -128,8 +132,8 @@ namespace __debug
 	set(_InputIterator __first, _InputIterator __last,
 	    const _Compare& __comp = _Compare(),
 	    const _Allocator& __a = _Allocator())
-	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
-								     __last)),
+	: _Base(__gnu_debug::__base(
+		  __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last),
 		__comp, __a) { }
 
@@ -298,13 +302,7 @@ namespace __debug
 
 #if __cplusplus > 201402L
       using node_type = typename _Base::node_type;
-
-      struct insert_return_type
-      {
-	bool inserted;
-	iterator position;
-	node_type node;
-      };
+      using insert_return_type = _Node_insert_return<iterator, node_type>;
 
       node_type
       extract(const_iterator __position)
@@ -328,7 +326,7 @@ namespace __debug
       {
 	auto __ret = _Base::insert(std::move(__nh));
 	iterator __pos = iterator(__ret.position, this);
-	return { __ret.inserted, __pos, std::move(__ret.node) };
+	return { __pos, __ret.inserted, std::move(__ret.node) };
       }
 
       iterator
@@ -559,6 +557,42 @@ namespace __debug
       const _Base&
       _M_base() const _GLIBCXX_NOEXCEPT	{ return *this; }
     };
+
+#if __cpp_deduction_guides >= 201606
+
+  template<typename _InputIterator,
+	   typename _Compare =
+	     less<typename iterator_traits<_InputIterator>::value_type>,
+	   typename _Allocator =
+	     allocator<typename iterator_traits<_InputIterator>::value_type>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    set(_InputIterator, _InputIterator,
+       _Compare = _Compare(), _Allocator = _Allocator())
+   -> set<typename iterator_traits<_InputIterator>::value_type,
+	  _Compare, _Allocator>;
+
+ template<typename _Key, typename _Compare = less<_Key>,
+	  typename _Allocator = allocator<_Key>,
+	  typename = _RequireAllocator<_Allocator>>
+   set(initializer_list<_Key>,
+       _Compare = _Compare(), _Allocator = _Allocator())
+   -> set<_Key, _Compare, _Allocator>;
+
+ template<typename _InputIterator, typename _Allocator,
+	  typename = _RequireInputIter<_InputIterator>,
+	  typename = _RequireAllocator<_Allocator>>
+   set(_InputIterator, _InputIterator, _Allocator)
+   -> set<typename iterator_traits<_InputIterator>::value_type,
+	  less<typename iterator_traits<_InputIterator>::value_type>,
+	  _Allocator>;
+
+ template<typename _Key, typename _Allocator,
+	  typename = _RequireAllocator<_Allocator>>
+   set(initializer_list<_Key>, _Allocator)
+   -> set<_Key, less<_Key>, _Allocator>;
+
+#endif
 
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool

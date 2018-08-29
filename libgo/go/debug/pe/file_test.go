@@ -12,8 +12,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"runtime"
+	"strconv"
 	"testing"
+	"text/template"
 )
 
 type fileTest struct {
@@ -288,28 +291,70 @@ func TestOpenFailure(t *testing.T) {
 	}
 }
 
-func TestDWARF(t *testing.T) {
+const (
+	linkNoCgo = iota
+	linkCgoDefault
+	linkCgoInternal
+	linkCgoExternal
+)
+
+func testDWARF(t *testing.T, linktype int) {
 	if runtime.GOOS != "windows" {
 		t.Skip("skipping windows only test")
 	}
+	testenv.MustHaveGoRun(t)
 
 	tmpdir, err := ioutil.TempDir("", "TestDWARF")
 	if err != nil {
-		t.Fatal("TempDir failed: ", err)
+		t.Fatal(err)
 	}
 	defer os.RemoveAll(tmpdir)
 
-	prog := `
-package main
-func main() {
-}
-`
 	src := filepath.Join(tmpdir, "a.go")
-	exe := filepath.Join(tmpdir, "a.exe")
-	err = ioutil.WriteFile(src, []byte(prog), 0644)
-	output, err := exec.Command(testenv.GoToolPath(t), "build", "-o", exe, src).CombinedOutput()
+	file, err := os.Create(src)
 	if err != nil {
-		t.Fatalf("building test executable failed: %s %s", err, output)
+		t.Fatal(err)
+	}
+	err = template.Must(template.New("main").Parse(testprog)).Execute(file, linktype != linkNoCgo)
+	if err != nil {
+		if err := file.Close(); err != nil {
+			t.Error(err)
+		}
+		t.Fatal(err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	exe := filepath.Join(tmpdir, "a.exe")
+	args := []string{"build", "-o", exe}
+	switch linktype {
+	case linkNoCgo:
+	case linkCgoDefault:
+	case linkCgoInternal:
+		args = append(args, "-ldflags", "-linkmode=internal")
+	case linkCgoExternal:
+		args = append(args, "-ldflags", "-linkmode=external")
+	default:
+		t.Fatalf("invalid linktype parameter of %v", linktype)
+	}
+	args = append(args, src)
+	out, err := exec.Command(testenv.GoToolPath(t), args...).CombinedOutput()
+	if err != nil {
+		t.Fatalf("building test executable for linktype %d failed: %s %s", linktype, err, out)
+	}
+	out, err = exec.Command(exe).CombinedOutput()
+	if err != nil {
+		t.Fatalf("running test executable failed: %s %s", err, out)
+	}
+
+	matches := regexp.MustCompile("main=(.*)\n").FindStringSubmatch(string(out))
+	if len(matches) < 2 {
+		t.Fatalf("unexpected program output: %s", out)
+	}
+	wantaddr, err := strconv.ParseUint(matches[1], 0, 64)
+	if err != nil {
+		t.Fatalf("unexpected main address %q: %s", matches[1], err)
 	}
 
 	f, err := Open(exe)
@@ -317,6 +362,16 @@ func main() {
 		t.Fatal(err)
 	}
 	defer f.Close()
+
+	var foundDebugGDBScriptsSection bool
+	for _, sect := range f.Sections {
+		if sect.Name == ".debug_gdb_scripts" {
+			foundDebugGDBScriptsSection = true
+		}
+	}
+	if !foundDebugGDBScriptsSection {
+		t.Error(".debug_gdb_scripts section is not found")
+	}
 
 	d, err := f.DWARF()
 	if err != nil {
@@ -334,8 +389,8 @@ func main() {
 			break
 		}
 		if e.Tag == dwarf.TagSubprogram {
-			for _, f := range e.Field {
-				if f.Attr == dwarf.AttrName && e.Val(dwarf.AttrName) == "main.main" {
+			if name, ok := e.Val(dwarf.AttrName).(string); ok && name == "main.main" {
+				if addr, ok := e.Val(dwarf.AttrLowpc).(uint64); ok && addr == wantaddr {
 					return
 				}
 			}
@@ -413,5 +468,67 @@ main(void)
 		if b != 0 {
 			t.Fatalf(".bss section has non zero bytes: %v", data)
 		}
+	}
+}
+
+func TestDWARF(t *testing.T) {
+	testDWARF(t, linkNoCgo)
+}
+
+const testprog = `
+package main
+
+import "fmt"
+{{if .}}import "C"
+{{end}}
+
+func main() {
+	fmt.Printf("main=%p\n", main)
+}
+`
+
+func TestBuildingWindowsGUI(t *testing.T) {
+	testenv.MustHaveGoBuild(t)
+
+	if runtime.GOOS != "windows" {
+		t.Skip("skipping windows only test")
+	}
+	tmpdir, err := ioutil.TempDir("", "TestBuildingWindowsGUI")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	src := filepath.Join(tmpdir, "a.go")
+	err = ioutil.WriteFile(src, []byte(`package main; func main() {}`), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+	exe := filepath.Join(tmpdir, "a.exe")
+	cmd := exec.Command(testenv.GoToolPath(t), "build", "-ldflags", "-H=windowsgui", "-o", exe, src)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("building test executable failed: %s %s", err, out)
+	}
+
+	f, err := Open(exe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	const _IMAGE_SUBSYSTEM_WINDOWS_GUI = 2
+
+	switch oh := f.OptionalHeader.(type) {
+	case *OptionalHeader32:
+		if oh.Subsystem != _IMAGE_SUBSYSTEM_WINDOWS_GUI {
+			t.Errorf("unexpected Subsystem value: have %d, but want %d", oh.Subsystem, _IMAGE_SUBSYSTEM_WINDOWS_GUI)
+		}
+	case *OptionalHeader64:
+		if oh.Subsystem != _IMAGE_SUBSYSTEM_WINDOWS_GUI {
+			t.Errorf("unexpected Subsystem value: have %d, but want %d", oh.Subsystem, _IMAGE_SUBSYSTEM_WINDOWS_GUI)
+		}
+	default:
+		t.Fatalf("unexpected OptionalHeader type: have %T, but want *pe.OptionalHeader32 or *pe.OptionalHeader64", oh)
 	}
 }

@@ -1,5 +1,5 @@
 /* Expand builtin functions.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,14 +29,14 @@ struct target_builtins {
      the register is not used for calling a function.  If the machine
      has register windows, this gives only the outbound registers.
      INCOMING_REGNO gives the corresponding inbound register.  */
-  machine_mode x_apply_args_mode[FIRST_PSEUDO_REGISTER];
+  fixed_size_mode_pod x_apply_args_mode[FIRST_PSEUDO_REGISTER];
 
   /* For each register that may be used for returning values, this gives
      a mode used to copy the register's value.  VOIDmode indicates the
      register is not used for returning values.  If the machine has
      register windows, this gives only the outbound registers.
      INCOMING_REGNO gives the corresponding inbound register.  */
-  machine_mode x_apply_result_mode[FIRST_PSEUDO_REGISTER];
+  fixed_size_mode_pod x_apply_result_mode[FIRST_PSEUDO_REGISTER];
 };
 
 extern struct target_builtins default_target_builtins;
@@ -49,7 +49,6 @@ extern struct target_builtins *this_target_builtins;
 /* Non-zero if __builtin_constant_p should be folded right away.  */
 extern bool force_folding_builtin_constant_p;
 
-extern bool is_builtin_fn (tree);
 extern bool called_as_built_in (tree);
 extern bool get_object_alignment_1 (tree, unsigned int *,
 				    unsigned HOST_WIDE_INT *);
@@ -57,14 +56,15 @@ extern unsigned int get_object_alignment (tree);
 extern bool get_pointer_alignment_1 (tree, unsigned int *,
 				     unsigned HOST_WIDE_INT *);
 extern unsigned int get_pointer_alignment (tree);
-extern tree c_strlen (tree, int);
+extern unsigned string_length (const void*, unsigned, unsigned);
+extern tree c_strlen (tree, int, unsigned = 1);
 extern void expand_builtin_setjmp_setup (rtx, rtx);
 extern void expand_builtin_setjmp_receiver (rtx);
 extern void expand_builtin_update_setjmp_buf (rtx);
 extern tree mathfn_built_in (tree, enum built_in_function fn);
 extern tree mathfn_built_in (tree, combined_fn);
-extern rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, machine_mode);
-extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, machine_mode);
+extern rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
+extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
 extern rtx expand_builtin_saveregs (void);
 extern tree std_build_builtin_va_list (void);
 extern tree std_fn_abi_va_list (tree);
@@ -76,7 +76,7 @@ extern void expand_ifn_atomic_compare_exchange (gcall *);
 extern rtx expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern rtx expand_builtin_with_bounds (tree, rtx, rtx, machine_mode, int);
 extern enum built_in_function builtin_mathfn_code (const_tree);
-extern tree fold_builtin_expect (location_t, tree, tree, tree);
+extern tree fold_builtin_expect (location_t, tree, tree, tree, tree);
 extern bool avoid_folding_inline_builtin (tree);
 extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);
@@ -89,6 +89,7 @@ extern tree fold_call_stmt (gcall *, bool);
 extern void set_builtin_user_assembler_name (tree decl, const char *asmspec);
 extern bool is_simple_builtin (tree);
 extern bool is_inexpensive_builtin (tree);
+extern tree compute_objsize (tree, int);
 
 extern bool readonly_data_expr (tree exp);
 extern bool init_target_chars (void);
@@ -102,4 +103,6 @@ extern bool target_char_cst_p (tree t, char *p);
 extern internal_fn associated_internal_fn (tree);
 extern internal_fn replacement_internal_fn (gcall *);
 
-#endif
+extern tree max_object_size ();
+
+#endif /* GCC_BUILTINS_H */

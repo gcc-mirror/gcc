@@ -1,5 +1,5 @@
 # Makefile fragment for building LIBGCC for the Renesas RL78 target.
-# Copyright (C) 2011-2017 Free Software Foundation, Inc.
+# Copyright (C) 2011-2018 Free Software Foundation, Inc.
 # Contributed by Red Hat.
 #
 # This file is part of GCC.
@@ -30,7 +30,14 @@ LIB2ADD = \
 	$(srcdir)/config/rl78/bit-count.S \
 	$(srcdir)/config/rl78/fpbit-sf.S \
 	$(srcdir)/config/rl78/fpmath-sf.S \
-	$(srcdir)/config/rl78/cmpsi2.S
+	$(srcdir)/config/rl78/cmpsi2.S \
+	$(srcdir)/config/rl78/adddi3.S \
+	$(srcdir)/config/rl78/subdi3.S \
+	$(srcdir)/config/rl78/umindi3.S \
+	$(srcdir)/config/rl78/umaxdi3.S \
+	$(srcdir)/config/rl78/smindi3.S \
+	$(srcdir)/config/rl78/smaxdi3.S \
+	$(srcdir)/config/rl78/anddi3.S
 
 LIB2FUNCS_EXCLUDE = _clzhi2 _clzsi2 _ctzhi2 _ctzsi2 \
   _popcounthi2 _popcountsi2 \

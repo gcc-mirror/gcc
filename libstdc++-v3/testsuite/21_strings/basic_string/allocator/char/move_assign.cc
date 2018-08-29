@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,6 +33,9 @@ void test01()
 {
   typedef propagating_allocator<C, false> alloc_type;
   typedef std::basic_string<C, traits, alloc_type> test_type;
+
+  static_assert(std::is_move_assignable<test_type>::value, "");
+  static_assert(!std::is_nothrow_move_assignable<test_type>::value, "");
 
   test_type v1(alloc_type(1));
   v1.assign(1, c);

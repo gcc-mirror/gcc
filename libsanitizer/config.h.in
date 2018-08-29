@@ -43,6 +43,12 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* Define to 1 if you have the `lstat' function. */
+#undef HAVE_LSTAT
+
+/* Define to 1 if you have the `readlink' function. */
+#undef HAVE_READLINK
+
 /* Define to 1 if you have the <rpc/xdr.h> header file. */
 #undef HAVE_RPC_XDR_H
 

@@ -1,5 +1,5 @@
 /* IRA processing allocno lives to build allocno live ranges.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -364,7 +364,7 @@ mark_hard_reg_live (rtx reg)
 static void
 mark_pseudo_reg_live (rtx orig_reg, unsigned regno)
 {
-  if (df_read_modify_subreg_p (orig_reg))
+  if (read_modify_subreg_p (orig_reg))
     {
       mark_pseudo_regno_subword_live (regno,
 				      subreg_lowpart_p (orig_reg) ? 0 : 1);
@@ -489,7 +489,7 @@ mark_hard_reg_dead (rtx reg)
 static void
 mark_pseudo_reg_dead (rtx orig_reg, unsigned regno)
 {
-  if (df_read_modify_subreg_p (orig_reg))
+  if (read_modify_subreg_p (orig_reg))
     {
       mark_pseudo_regno_subword_dead (regno,
 				      subreg_lowpart_p (orig_reg) ? 0 : 1);
@@ -515,7 +515,7 @@ mark_ref_dead (df_ref def)
   if (DF_REF_FLAGS_IS_SET (def, DF_REF_PARTIAL)
       && (GET_CODE (orig_reg) != SUBREG
 	  || REGNO (reg) < FIRST_PSEUDO_REGISTER
-	  || !df_read_modify_subreg_p (orig_reg)))
+	  || !read_modify_subreg_p (orig_reg)))
     return;
 
   if (REGNO (reg) >= FIRST_PSEUDO_REGISTER)
@@ -919,7 +919,7 @@ process_single_reg_class_operands (bool in_p, int freq)
 		    (subreg:YMODE (reg:XMODE XREGNO) OFFSET).  */
 	      machine_mode ymode, xmode;
 	      int xregno, yregno;
-	      HOST_WIDE_INT offset;
+	      poly_int64 offset;
 
 	      xmode = recog_data.operand_mode[i];
 	      xregno = ira_class_singleton[cl][xmode];

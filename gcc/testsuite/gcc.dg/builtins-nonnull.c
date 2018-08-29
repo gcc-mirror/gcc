@@ -7,7 +7,7 @@
 
 typedef struct FILE FILE;
 
-char* null (void)
+static char* null (void)
 {
   return 0;
 }
@@ -24,8 +24,9 @@ void sink (int, ...);
 
 void test_memfuncs (void *s, unsigned n)
 {
-  /* Bzero is not declared attribute nonnull.  */
-  bzero (null (), n);
+  /* Bzero is not declared attribute nonnull (maybe it should be?)
+     but it's transformed into a call to memset() which is.  */
+  bzero (null (), n);             /* { dg-warning "argument 1 null where non-null expected" } */
 
   T (memcpy (null (), s, n));     /* { dg-warning "argument 1 null where non-null expected" } */
   T (memcpy (s, null (), n));     /* { dg-warning "argument 2 null where non-null expected" } */

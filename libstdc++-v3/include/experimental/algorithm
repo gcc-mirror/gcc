@@ -1,6 +1,6 @@
 // <experimental/algorithm> -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,21 +31,20 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <algorithm>
 #include <experimental/bits/lfts_config.h>
+#include <experimental/random>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace experimental
-{
-inline namespace fundamentals_v1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace experimental
+{
+inline namespace fundamentals_v2
+{
   template<typename _ForwardIterator, typename _Searcher>
     inline _ForwardIterator
     search(_ForwardIterator __first, _ForwardIterator __last,
@@ -82,9 +81,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			   std::forward<_UniformRandomNumberGenerator>(__g));
     }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace fundamentals_v1
+  template<typename _PopulationIterator, typename _SampleIterator,
+           typename _Distance>
+    inline _SampleIterator
+    sample(_PopulationIterator __first, _PopulationIterator __last,
+	   _SampleIterator __out, _Distance __n)
+    {
+      return experimental::sample(__first, __last, __out, __n,
+				  _S_randint_engine());
+    }
+
+  template<typename _RandomAccessIterator>
+    inline void
+    shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    { return std::shuffle(__first, __last, _S_randint_engine()); }
+
+} // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

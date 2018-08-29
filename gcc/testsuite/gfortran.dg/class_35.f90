@@ -19,6 +19,6 @@ use one_two
 class(two_three), allocatable :: a1
 class(three), allocatable :: a2
 
-if (same_type_as(a1,a2)) call abort()
+if (same_type_as(a1,a2)) STOP 1
 
 end 

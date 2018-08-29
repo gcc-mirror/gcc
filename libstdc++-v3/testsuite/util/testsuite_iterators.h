@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Iterator Wrappers for the C++ library testsuite.
 //
-// Copyright (C) 2004-2017 Free Software Foundation, Inc.
+// Copyright (C) 2004-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -180,6 +180,16 @@ namespace __gnu_test
 #endif
   };
 
+#if __cplusplus >= 201103L
+  template<typename T, typename U>
+    void operator,(const T&, const output_iterator_wrapper<U>&) = delete;
+#endif
+
+  template<typename T> struct remove_cv { typedef T type; };
+  template<typename T> struct remove_cv<const T> { typedef T type; };
+  template<typename T> struct remove_cv<volatile T> { typedef T type; };
+  template<typename T> struct remove_cv<const volatile T> { typedef T type; };
+
   /**
    * @brief input_iterator wrapper for pointer
    *
@@ -189,7 +199,8 @@ namespace __gnu_test
    */
   template<class T>
   class input_iterator_wrapper
-  : public std::iterator<std::input_iterator_tag, T, std::ptrdiff_t, T*, T&>
+  : public std::iterator<std::input_iterator_tag, typename remove_cv<T>::type,
+			 std::ptrdiff_t, T*, T&>
   {
   protected:
     input_iterator_wrapper()
@@ -270,6 +281,10 @@ namespace __gnu_test
 #endif
   };
 
+#if __cplusplus >= 201103L
+  template<typename T, typename U>
+    void operator,(const T&, const input_iterator_wrapper<U>&) = delete;
+#endif
 
   /**
    * @brief forward_iterator wrapper for pointer
@@ -539,14 +554,14 @@ namespace __gnu_test
   struct test_container
   {
     typename ItType<T>::ContainerType bounds;
-    test_container(T* _first, T* _last):bounds(_first, _last)
+    test_container(T* _first, T* _last) : bounds(_first, _last)
     { }
 
 #if __cplusplus >= 201103L
-      template<std::size_t N>
-	explicit
-	test_container(T (&arr)[N]) : test_container(arr, arr+N)
-	{ }
+    template<std::size_t N>
+      explicit
+      test_container(T (&arr)[N]) : test_container(arr, arr+N)
+      { }
 #endif
 
     ItType<T>
@@ -574,6 +589,6 @@ namespace __gnu_test
     ItType<T>
     end()
     { return it(bounds.last); }
-   };
+  };
 }
 #endif

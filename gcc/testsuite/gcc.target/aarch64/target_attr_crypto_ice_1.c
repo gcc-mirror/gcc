@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=thunderx+nofp" } */
+/* { dg-options "-O2 -mcpu=thunderx+nofp -march=armv8-a" } */
 
 #include "arm_neon.h"
 

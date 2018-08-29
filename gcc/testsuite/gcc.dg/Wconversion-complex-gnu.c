@@ -4,7 +4,7 @@
    These tests cover integer complex values (which are GNU extensions).  */
 
 /* { dg-do compile } */
-/* { dg-skip-if "doubles are floats,ints are 16bits" { "avr-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "doubles are floats,ints are 16bits" { "avr-*-*" } } */
 /* { dg-options " -std=gnu99 -Wconversion " } */
 /* { dg-require-effective-target int32plus } */
 /* { dg-require-effective-target double64plus } */

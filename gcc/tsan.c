@@ -1,5 +1,5 @@
 /* GCC instrumentation plugin for ThreadSanitizer.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Dmitry Vyukov <dvyukov@google.com>
 
 This file is part of GCC.
@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-eh.h"
 #include "tsan.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "builtins.h"
 #include "target.h"
@@ -108,12 +110,12 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
   if (size <= 0)
     return false;
 
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 unused_bitsize, unused_bitpos;
   tree offset;
   machine_mode mode;
   int unsignedp, reversep, volatilep = 0;
-  base = get_inner_reference (expr, &bitsize, &bitpos, &offset, &mode,
-			      &unsignedp, &reversep, &volatilep);
+  base = get_inner_reference (expr, &unused_bitsize, &unused_bitpos, &offset,
+			      &mode, &unsignedp, &reversep, &volatilep);
 
   /* No need to instrument accesses to decls that don't escape,
      they can't escape to other threads then.  */
@@ -140,6 +142,7 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
        && DECL_BIT_FIELD_TYPE (TREE_OPERAND (expr, 1)))
       || TREE_CODE (expr) == BIT_FIELD_REF)
     {
+      HOST_WIDE_INT bitpos, bitsize;
       base = TREE_OPERAND (expr, 0);
       if (TREE_CODE (expr) == COMPONENT_REF)
 	{
@@ -896,9 +899,7 @@ public:
   opt_pass * clone () { return new pass_tsan (m_ctxt); }
   virtual bool gate (function *)
 {
-  return ((flag_sanitize & SANITIZE_THREAD) != 0
-	  && !lookup_attribute ("no_sanitize_thread",
-                                DECL_ATTRIBUTES (current_function_decl)));
+  return sanitize_flags_p (SANITIZE_THREAD);
 }
 
   virtual unsigned int execute (function *) { return tsan_pass (); }
@@ -938,9 +939,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return ((flag_sanitize & SANITIZE_THREAD) != 0 && !optimize
-	      && !lookup_attribute ("no_sanitize_thread",
-				    DECL_ATTRIBUTES (current_function_decl)));
+      return (sanitize_flags_p (SANITIZE_THREAD) && !optimize);
     }
 
   virtual unsigned int execute (function *) { return tsan_pass (); }

@@ -19,5 +19,5 @@ program where_6
       endwhere
    end forall
    if (any (A .ne. reshape ((/1,2,6,2,1,0,1,2,1,2,0,1,2,5,0,0,1,6,2,0,0,0,2,&
-                             6,0/), (/5, 5/)))) call abort
+                             6,0/), (/5, 5/)))) STOP 1
 end

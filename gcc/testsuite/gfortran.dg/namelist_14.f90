@@ -60,7 +60,7 @@ contains
 
     open (10, status = "scratch", delim='apostrophe')
     write (10, nml = z, iostat = ier)
-    if (ier /= 0 ) call abort()
+    if (ier /= 0 ) STOP 1
     rewind (10)
 
     i = 0
@@ -76,7 +76,7 @@ contains
     chl = ""
 
     read (10, nml = z, iostat = ier)
-    if (ier /= 0 ) call abort()
+    if (ier /= 0 ) STOP 2
     close (10)
 
     if (.not.(dttest (dt(1),  mt ((/99,999,9999,99999/))) .and.  &
@@ -91,7 +91,7 @@ contains
           (chs == "singleton") .and.                         &
           (chl == "abcdefg") .and.                           &
           (cha(1)(1:10) == "first    ") .and.                &
-          (cha(2)(1:10) == "second    "))) call abort ()
+          (cha(2)(1:10) == "second    "))) STOP 3
 
     end subroutine foo
 end program namelist_14 

@@ -12,5 +12,6 @@ template <int = 3> class a
   a<>
   d ()
   {
+    return a<>();
   }
 };

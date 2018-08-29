@@ -1,4 +1,4 @@
-@c Copyright (C) 1999-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1999-2018 Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
 
@@ -125,6 +125,8 @@ preprocessed output.
 When used with the driver options @option{-MD} or @option{-MMD},
 @option{-MF} overrides the default dependency output file.
 
+If @var{file} is @file{-}, then the dependencies are written to @file{stdout}.
+
 @item -MG
 @opindex MG
 In conjunction with an option such as @option{-M} requesting
@@ -198,7 +200,7 @@ If @option{-MD} is used in conjunction with @option{-E}, any
 is understood to specify a target object file.
 
 Since @option{-E} is not implied, @option{-MD} can be used to generate
-a dependency output file as a side-effect of the compilation process.
+a dependency output file as a side effect of the compilation process.
 
 @item -MMD
 @opindex MMD
@@ -284,6 +286,17 @@ When this option is given no argument, the default parameter value is
 @samp{2}.
 
 Note that @code{-ftrack-macro-expansion=2} is activated by default.
+
+@item -fmacro-prefix-map=@var{old}=@var{new}
+@opindex fmacro-prefix-map
+When preprocessing files residing in directory @file{@var{old}},
+expand the @code{__FILE__} and @code{__BASE_FILE__} macros as if the
+files resided in directory @file{@var{new}} instead.  This can be used
+to change an absolute path to a relative path by using @file{.} for
+@var{new} which can result in more reproducible builds that are
+location independent.  This option also affects
+@code{__builtin_FILE()} during compilation.  See also
+@option{-ffile-prefix-map}.
 
 @item -fexec-charset=@var{charset}
 @opindex fexec-charset
@@ -390,7 +403,7 @@ Do not discard comments, including during macro expansion.  This is
 like @option{-C}, except that comments contained within macros are
 also passed through to the output file where the macro is expanded.
 
-In addition to the side-effects of the @option{-C} option, the
+In addition to the side effects of the @option{-C} option, the
 @option{-CC} option causes all C++-style comments inside a macro
 to be converted to C-style comments.  This is to prevent later use
 of that macro from inadvertently commenting out the remainder of
@@ -532,4 +545,3 @@ token in the output is preceded by the dump of the map its location
 belongs to.
 
 When used from GCC without @option{-E}, this option has no effect.
-

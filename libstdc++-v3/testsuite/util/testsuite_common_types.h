@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // typelist for the C++ library testsuite.
 //
-// Copyright (C) 2005-2017 Free Software Foundation, Inc.
+// Copyright (C) 2005-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -687,6 +687,26 @@ namespace __gnu_test
   };
 
 #if __cplusplus >= 201103L
+  // Generator to test non-explicit default constructor.
+  struct implicitly_default_constructible
+  {
+    template<typename _Tp>
+      void
+      operator()()
+      {
+	struct _Concept
+	{
+	  struct Aggregate { _Tp v; };
+
+	  void __constraint()
+	  { Aggregate __v __attribute__((unused)) = { }; }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
+      }
+  };
+
   // Generator to test default constructor.
   struct constexpr_default_constructible
   {

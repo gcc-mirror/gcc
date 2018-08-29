@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,12 +23,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Casing;   use Casing;
-with Fname;    use Fname;
-with Fname.UF; use Fname.UF;
-with SFN_Scan; use SFN_Scan;
-with Osint;    use Osint;
-with Types;    use Types;
+with Casing;        use Casing;
+with Fname;         use Fname;
+with Fname.UF;      use Fname.UF;
+with SFN_Scan;      use SFN_Scan;
+with Osint;         use Osint;
+with Types;         use Types;
+with System.OS_Lib; use System.OS_Lib;
 
 with Unchecked_Conversion;
 
@@ -61,11 +62,12 @@ package body Fname.SF is
    -----------------------------------
 
    procedure Read_Source_File_Name_Pragmas is
+      FD  : File_Descriptor;
       Src : Source_Buffer_Ptr;
       Hi  : Source_Ptr;
 
    begin
-      Read_Source_File (Name_Enter ("gnat.adc"), 1, Hi, Src);
+      Read_Source_File (Name_Enter ("gnat.adc"), 1, Hi, Src, FD);
 
       if not Null_Source_Buffer_Ptr (Src) then
          --  We need to strip off the trailing EOF that was added by

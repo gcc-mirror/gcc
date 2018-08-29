@@ -9,6 +9,6 @@
   enddo
   z => x
   do i = 0,12
-    if (x(i) /= i .or. z(i) /= i) call abort
+    if (x(i) /= i .or. z(i) /= i) STOP 1
   enddo
 end

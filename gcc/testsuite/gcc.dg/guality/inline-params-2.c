@@ -6,7 +6,6 @@
    don't do that, verifying that the result is visible after the call,
    and when passed to another inline function.  */
 /* { dg-options "-g" } */
-/* { dg-xfail-run-if "" { "*-*-*" } { "-fno-fat-lto-objects" } } */
 
 #define GUALITY_DONT_FORCE_LIVE_AFTER -1
 

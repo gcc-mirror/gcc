@@ -1,5 +1,5 @@
 /* Generic dominator tree walker
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -128,44 +128,139 @@ along with GCC; see the file COPYING3.  If not see
     which is currently an abstraction over walking tree statements.  Thus
     the dominator walker is currently only useful for trees.  */
 
+/* Reverse postorder index of each basic block.  */
 static int *bb_postorder;
 
 static int
 cmp_bb_postorder (const void *a, const void *b)
 {
-  basic_block bb1 = *(basic_block *)const_cast<void *>(a);
-  basic_block bb2 = *(basic_block *)const_cast<void *>(b);
-  if (bb1->index == bb2->index)
-    return 0;
+  basic_block bb1 = *(const basic_block *)(a);
+  basic_block bb2 = *(const basic_block *)(b);
   /* Place higher completion number first (pop off lower number first).  */
-  if (bb_postorder[bb1->index] > bb_postorder[bb2->index])
-    return -1;
-  return 1;
+  return bb_postorder[bb2->index] - bb_postorder[bb1->index];
 }
 
-/* Constructor for a dom walker.
+/* Permute array BBS of N basic blocks in postorder,
+   i.e. by descending number in BB_POSTORDER array.  */
 
-   If SKIP_UNREACHBLE_BLOCKS is true, then we need to set
-   EDGE_EXECUTABLE on every edge in the CFG. */
-dom_walker::dom_walker (cdi_direction direction,
-			bool skip_unreachable_blocks)
-  : m_dom_direction (direction),
-    m_skip_unreachable_blocks (skip_unreachable_blocks),
-    m_unreachable_dom (NULL)
+static void
+sort_bbs_postorder (basic_block *bbs, int n)
 {
-  /* If we are not skipping unreachable blocks, then there is nothing
-     to do.  */
-  if (!m_skip_unreachable_blocks)
-    return;
+  if (__builtin_expect (n == 2, true))
+    {
+      basic_block bb0 = bbs[0], bb1 = bbs[1];
+      if (bb_postorder[bb0->index] < bb_postorder[bb1->index])
+	bbs[0] = bb1, bbs[1] = bb0;
+    }
+  else if (__builtin_expect (n == 3, true))
+    {
+      basic_block bb0 = bbs[0], bb1 = bbs[1], bb2 = bbs[2];
+      if (bb_postorder[bb0->index] < bb_postorder[bb1->index])
+	std::swap (bb0, bb1);
+      if (bb_postorder[bb1->index] < bb_postorder[bb2->index])
+	{
+	  std::swap (bb1, bb2);
+	  if (bb_postorder[bb0->index] < bb_postorder[bb1->index])
+	    std::swap (bb0, bb1);
+	}
+      bbs[0] = bb0, bbs[1] = bb1, bbs[2] = bb2;
+    }
+  else
+    qsort (bbs, n, sizeof *bbs, cmp_bb_postorder);
+}
 
+/* Set EDGE_EXECUTABLE on every edge within FN's CFG.  */
+
+void
+set_all_edges_as_executable (function *fn)
+{
   basic_block bb;
-  FOR_ALL_BB_FN (bb, cfun)
+  FOR_ALL_BB_FN (bb, fn)
     {
       edge_iterator ei;
       edge e;
       FOR_EACH_EDGE (e, ei, bb->succs)
 	e->flags |= EDGE_EXECUTABLE;
     }
+}
+
+/* Constructor for a dom walker.  */
+
+dom_walker::dom_walker (cdi_direction direction,
+			enum reachability reachability,
+			int *bb_index_to_rpo)
+  : m_dom_direction (direction),
+    m_skip_unreachable_blocks (reachability != ALL_BLOCKS),
+    m_user_bb_to_rpo (true),
+    m_unreachable_dom (NULL),
+    m_bb_to_rpo (bb_index_to_rpo)
+{
+  /* Set up edge flags if need be.  */
+  switch (reachability)
+    {
+    default:
+      gcc_unreachable ();
+    case ALL_BLOCKS:
+      /* No need to touch edge flags.  */
+      break;
+
+    case REACHABLE_BLOCKS:
+      set_all_edges_as_executable (cfun);
+      break;
+
+    case REACHABLE_BLOCKS_PRESERVING_FLAGS:
+      /* Preserve the edge flags.  */
+      break;
+    }
+}
+
+/* Constructor for a dom walker.  */
+
+dom_walker::dom_walker (cdi_direction direction,
+			enum reachability reachability)
+  : m_dom_direction (direction),
+    m_skip_unreachable_blocks (reachability != ALL_BLOCKS),
+    m_user_bb_to_rpo (false),
+    m_unreachable_dom (NULL),
+    m_bb_to_rpo (NULL)
+{
+  /* Compute the basic-block index to RPO mapping.  */
+  if (direction == CDI_DOMINATORS)
+    {
+      int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+      int postorder_num = pre_and_rev_post_order_compute (NULL, postorder,
+							  true);
+      m_bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+      for (int i = 0; i < postorder_num; ++i)
+	m_bb_to_rpo[postorder[i]] = i;
+      free (postorder);
+    }
+
+  /* Set up edge flags if need be.  */
+  switch (reachability)
+    {
+    default:
+      gcc_unreachable ();
+    case ALL_BLOCKS:
+      /* No need to touch edge flags.  */
+      break;
+
+    case REACHABLE_BLOCKS:
+      set_all_edges_as_executable (cfun);
+      break;
+
+    case REACHABLE_BLOCKS_PRESERVING_FLAGS:
+      /* Preserve the edge flags.  */
+      break;
+    }
+}
+
+/* Destructor.  */
+
+dom_walker::~dom_walker ()
+{
+  if (! m_user_bb_to_rpo)
+    free (m_bb_to_rpo);
 }
 
 /* Return TRUE if BB is reachable, false otherwise.  */
@@ -228,6 +323,8 @@ dom_walker::propagate_unreachable_to_edges (basic_block bb,
     m_unreachable_dom = bb;
 }
 
+const edge dom_walker::STOP = (edge)-1;
+
 /* Recursively walk the dominator tree.
    BB is the basic block we are currently visiting.  */
 
@@ -238,17 +335,7 @@ dom_walker::walk (basic_block bb)
   basic_block *worklist = XNEWVEC (basic_block,
 				   n_basic_blocks_for_fn (cfun) * 2);
   int sp = 0;
-  int *postorder, postorder_num;
-
-  if (m_dom_direction == CDI_DOMINATORS)
-    {
-      postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
-      postorder_num = pre_and_rev_post_order_compute (NULL, postorder, true);
-      bb_postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
-      for (int i = 0; i < postorder_num; ++i)
-	bb_postorder[postorder[i]] = i;
-      free (postorder);
-    }
+  bb_postorder = m_bb_to_rpo;
 
   while (true)
     {
@@ -257,13 +344,14 @@ dom_walker::walk (basic_block bb)
 	  || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
+	  edge taken_edge = NULL;
 
 	  /* Callback for subclasses to do custom things before we have walked
 	     the dominator children, but before we walk statements.  */
 	  if (this->bb_reachable (cfun, bb))
 	    {
-	      edge taken_edge = before_dom_children (bb);
-	      if (taken_edge)
+	      taken_edge = before_dom_children (bb);
+	      if (taken_edge && taken_edge != STOP)
 		{
 		  edge_iterator ei;
 		  edge e;
@@ -280,20 +368,20 @@ dom_walker::walk (basic_block bb)
 	  worklist[sp++] = bb;
 	  worklist[sp++] = NULL;
 
-	  int saved_sp = sp;
-	  for (dest = first_dom_son (m_dom_direction, bb);
-	       dest; dest = next_dom_son (m_dom_direction, dest))
-	    worklist[sp++] = dest;
-	  if (m_dom_direction == CDI_DOMINATORS)
-	    switch (sp - saved_sp)
-	      {
-	      case 0:
-	      case 1:
-		break;
-	      default:
-		qsort (&worklist[saved_sp], sp - saved_sp,
-		       sizeof (basic_block), cmp_bb_postorder);
-	      }
+	  /* If the callback returned NONE then we are supposed to
+	     stop and not even propagate EDGE_EXECUTABLE further.  */
+	  if (taken_edge != STOP)
+	    {
+	      int saved_sp = sp;
+	      for (dest = first_dom_son (m_dom_direction, bb);
+		   dest; dest = next_dom_son (m_dom_direction, dest))
+		worklist[sp++] = dest;
+	      /* Sort worklist after RPO order if requested.  */
+	      if (sp - saved_sp > 1
+		  && m_dom_direction == CDI_DOMINATORS
+		  && m_bb_to_rpo)
+		sort_bbs_postorder (&worklist[saved_sp], sp - saved_sp);
+	    }
 	}
       /* NULL is used to mark pop operations in the recursion stack.  */
       while (sp > 0 && !worklist[sp - 1])
@@ -313,10 +401,6 @@ dom_walker::walk (basic_block bb)
       else
 	break;
     }
-  if (m_dom_direction == CDI_DOMINATORS)
-    {
-      free (bb_postorder);
-      bb_postorder = NULL;
-    }
+  bb_postorder = NULL;
   free (worklist);
 }

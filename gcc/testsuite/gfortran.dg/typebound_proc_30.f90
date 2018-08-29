@@ -34,5 +34,3 @@ contains
   end function
 
 end module
-
-! { dg-final { cleanup-modules "phs_single" } }

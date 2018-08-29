@@ -10,9 +10,9 @@ rewind(20)
 read(20, fmt=*) ieee_str1, ieee_str2
 if (trim(ieee_str1) /= &
     '1.0101010101010101010101010101010101010101010101010101*2^-2') &
-  call abort
+  STOP 1
 if (trim(ieee_str2) /= &
      '1.01010101010101010101011*2^-2') &
-  call abort
+  STOP 2
 close(20, status="delete")
 end

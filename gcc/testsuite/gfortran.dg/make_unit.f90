@@ -4,13 +4,13 @@ program makeunit
 integer  :: ic, istat, nc
 logical  :: exists, is_open
 
-if (get_unit_number("foo0.dat") .ne. 10) call abort
-if (get_unit_number("foo1.dat") .ne. 11) call abort
-if (get_unit_number("foo2.dat") .ne. 12) call abort
-if (get_unit_number("foo3.dat") .ne. 13) call abort
+if (get_unit_number("foo0.dat") .ne. 10) STOP 1
+if (get_unit_number("foo1.dat") .ne. 11) STOP 2
+if (get_unit_number("foo2.dat") .ne. 12) STOP 3
+if (get_unit_number("foo3.dat") .ne. 13) STOP 4
 
 close(unit=12, status="delete")
-if (get_unit_number("foo2.dat") .ne. 12) call abort()
+if (get_unit_number("foo2.dat") .ne. 12) STOP 1
 close(unit=10, status="delete")
 close(unit=11, status="delete")
 close(unit=12, status="delete")

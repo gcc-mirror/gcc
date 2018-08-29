@@ -191,5 +191,9 @@ test4bit (void) {
   m512  = _mm512_maskz_getmant_ps (mmask16, m512, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
 
   m128d = _mm_getmant_sd (m128d, m128d, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
+  m128d  = _mm_mask_getmant_sd (m128d, mmask8, m128d, m128d, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
+  m128d  = _mm_maskz_getmant_sd (mmask8, m128d, m128d, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
   m128  = _mm_getmant_ss (m128, m128, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
+  m128  = _mm_mask_getmant_ss (m128, mmask8, m128, m128, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
+  m128  = _mm_maskz_getmant_ss (mmask8, m128, m128, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
 }

@@ -1,5 +1,5 @@
 ;; Scheduling description for Niagara-4
-;;   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;;   Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -66,7 +66,7 @@
 
 (define_insn_reservation "n4_array" 12
   (and (eq_attr "cpu" "niagara4")
-    (eq_attr "type" "array,edge,edgen"))
+    (eq_attr "type" "array,bmask,edge,edgen"))
   "n4_slot1, nothing*11")
 
 (define_insn_reservation "n4_vis_move_1cycle" 1
@@ -90,8 +90,9 @@
 
 (define_insn_reservation "n4_vis_logical" 3
   (and (eq_attr "cpu" "niagara4")
-    (and (eq_attr "type" "visl,pdistn")
-      (eq_attr "fptype" "double")))
+       (ior (and (eq_attr "type" "visl,pdistn")
+                 (eq_attr "fptype" "double"))
+            (eq_attr "type" "viscmp")))
   "n4_slot1, nothing*2")
 
 (define_insn_reservation "n4_vis_logical_11cycle" 11

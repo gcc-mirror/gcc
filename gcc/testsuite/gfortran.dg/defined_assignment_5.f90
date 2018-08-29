@@ -64,13 +64,13 @@ program main
   i = 3
   j = 4
   orphan(i:j) = child1(component1(777), 1)
-  if (any (orphan%parent1%foo%i .ne. [0,0,30,30,0])) call abort
-  if (any (orphan%j .ne. [7,7,1,1,7])) call abort
+  if (any (orphan%parent1%foo%i .ne. [0,0,30,30,0])) STOP 1
+  if (any (orphan%j .ne. [7,7,1,1,7])) STOP 2
 
 ! Check that allocatable lhs's work OK.
   annie = [(child1(component1(k), 2*k), k = 1,3)]
-  if (any (annie%parent1%foo%i .ne. [30,30,30])) call abort
-  if (any (annie%j .ne. [2,4,6])) call abort
+  if (any (annie%parent1%foo%i .ne. [30,30,30])) STOP 3
+  if (any (annie%j .ne. [2,4,6])) STOP 4
 end
 
 

@@ -9,12 +9,12 @@ c A tab is between 8 and 9.
       write(fil,'(a)') c
 #ifdef LL_NONE
       if(fil.ne. "12345678	9")
-     &  call abort
+     &  STOP 1
 #else
       if(fil.ne.
      &"1234567                                                      8	9"
      &)
-     &  call abort
+     &  STOP 2
 #endif
       end
 

@@ -16,6 +16,6 @@ c { dg-do run }
          ENDDO
       ENDDO
       DO I = 1, 4
-         IF (DAT(1,I) .GT. DAT(1,I+1)) CALL ABORT
+         IF (DAT(1,I) .GT. DAT(1,I+1)) STOP 1
       ENDDO
       END

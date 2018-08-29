@@ -1,7 +1,7 @@
 // { dg-require-cxa-atexit "" }
 
 //
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,6 +19,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-time "" }
+// { dg-require-cstdint "" }
 
 #include <string>
 #include <stdexcept>

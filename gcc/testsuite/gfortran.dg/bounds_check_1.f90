@@ -3,7 +3,7 @@
 ! PR fortran/27524
     integer :: res(1)
     res = F()
-    if (res(1) /= 1) call abort
+    if (res(1) /= 1) STOP 1
     contains
       function F()
         integer :: F(1)

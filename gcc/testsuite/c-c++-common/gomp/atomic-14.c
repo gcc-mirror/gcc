@@ -1,7 +1,7 @@
 /* PR middle-end/45423 */
 /* { dg-do compile } */
 /* { dg-options "-fopenmp -Wno-deprecated" } */
-/* { dg-skip-if "invalid in C++1z" { c++1z } } */
+/* { dg-skip-if "invalid in C++17" { c++17 } } */
 
 #ifdef __cplusplus
 bool *baz ();

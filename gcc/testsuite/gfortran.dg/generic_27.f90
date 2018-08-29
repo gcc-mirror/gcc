@@ -26,9 +26,7 @@ program test
   implicit none
   intrinsic :: cos
 
-  if (testIF(2.0)/=2.0) call abort()
-  if (testIF(cos)/=1.0) call abort()
+  if (testIF(2.0)/=2.0) STOP 1
+  if (testIF(cos)/=1.0) STOP 2
 
 end program
-
-! { dg-final { cleanup-modules "m" } }

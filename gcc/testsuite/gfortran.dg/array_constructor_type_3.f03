@@ -11,6 +11,6 @@ PROGRAM test
   array = (/ 5, [INTEGER ::], 6 /)
 
   IF (array(1) /= 5 .OR. array(2) /= 6) THEN
-      CALL abort()
+      STOP 1
   END IF
 END PROGRAM test

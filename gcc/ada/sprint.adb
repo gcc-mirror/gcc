@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1224,6 +1224,15 @@ package body Sprint is
             end if;
 
             Write_Char (';');
+
+         when N_Call_Marker =>
+            null;
+
+            --  Enable the following code for debugging purposes only
+
+            --  Write_Indent_Str ("#");
+            --  Write_Id (Target (Node));
+            --  Write_Char ('#');
 
          when N_Case_Expression =>
             declare
@@ -3435,12 +3444,12 @@ package body Sprint is
 
          when N_Use_Package_Clause =>
             Write_Indent_Str_Sloc ("use ");
-            Sprint_Comma_List (Names (Node));
+            Sprint_Node_Sloc (Name (Node));
             Write_Char (';');
 
          when N_Use_Type_Clause =>
             Write_Indent_Str_Sloc ("use type ");
-            Sprint_Comma_List (Subtype_Marks (Node));
+            Sprint_Node_Sloc (Subtype_Mark (Node));
             Write_Char (';');
 
          when N_Validate_Unchecked_Conversion =>
@@ -3449,6 +3458,25 @@ package body Sprint is
             Write_Str (", ");
             Sprint_Node (Target_Type (Node));
             Write_Str (");");
+
+         when N_Variable_Reference_Marker =>
+            null;
+
+            --  Enable the following code for debugging purposes only
+
+            --  if Is_Read (Node) and then Is_Write (Node) then
+            --     Write_Indent_Str ("rw#");
+
+            --  elsif Is_Read (Node) then
+            --     Write_Indent_Str ("r#");
+
+            --  else
+            --     pragma Assert (Is_Write (Node));
+            --     Write_Indent_Str ("w#");
+            --  end if;
+
+            --  Write_Id (Target (Node));
+            --  Write_Char ('#');
 
          when N_Variant =>
             Write_Indent_Str_Sloc ("when ");
@@ -3512,15 +3540,14 @@ package body Sprint is
       --  where the aspects are printed inside the package specification.
 
       if Has_Aspects (Node)
-         and then not Nkind_In (Node, N_Package_Declaration,
-                                      N_Generic_Package_Declaration)
+        and then not Nkind_In (Node, N_Generic_Package_Declaration,
+                                     N_Package_Declaration)
+        and then not Is_Empty_List (Aspect_Specifications (Node))
       then
          Sprint_Aspect_Specifications (Node, Semicolon => True);
       end if;
 
-      if Nkind (Node) in N_Subexpr
-        and then Do_Range_Check (Node)
-      then
+      if Nkind (Node) in N_Subexpr and then Do_Range_Check (Node) then
          Write_Str ("}");
       end if;
 
@@ -3749,9 +3776,13 @@ package body Sprint is
       Src : Source_Buffer_Ptr;
 
    begin
-      --  Ignore if not in dump source text mode, or if in freeze actions
+      --  Ignore if there is no current source file, or we're not in dump
+      --  source text mode, or if in freeze actions.
 
-      if Dump_Source_Text and then Freeze_Indent = 0 then
+      if Current_Source_File > No_Source_File
+        and then Dump_Source_Text
+        and then Freeze_Indent = 0
+      then
 
          --  Ignore null string
 
@@ -4504,6 +4535,15 @@ package body Sprint is
       L : Natural;
 
    begin
+      --  Avoid crashing on invalid Name_Ids
+
+      if not Is_Valid_Name (N) then
+         Write_Str ("<invalid name ");
+         Write_Int (Int (N));
+         Write_Str (">");
+         return;
+      end if;
+
       Get_Name_String (N);
 
       --  Deal with -gnatdI which replaces any sequence Cnnnb where C is an
@@ -4552,6 +4592,15 @@ package body Sprint is
 
    procedure Write_Name_With_Col_Check_Sloc (N : Name_Id) is
    begin
+      --  Avoid crashing on invalid Name_Ids
+
+      if not Is_Valid_Name (N) then
+         Write_Str ("<invalid name ");
+         Write_Int (Int (N));
+         Write_Str (">");
+         return;
+      end if;
+
       Get_Name_String (N);
       Write_Str_With_Col_Check_Sloc (Name_Buffer (1 .. Name_Len));
    end Write_Name_With_Col_Check_Sloc;

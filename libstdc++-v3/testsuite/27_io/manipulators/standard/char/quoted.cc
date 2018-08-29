@@ -1,6 +1,6 @@
 // { dg-do run { target c++14 } }
 
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.7.6 - Quoted manipulators		[quoted.manip]
+// C++14 27.7.6 - Quoted manipulators		[quoted.manip]
 
 #include <string>
 #include <sstream>

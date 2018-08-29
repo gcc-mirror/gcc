@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=f2008 -fall-intrinsics" }
+! { dg-options "-std=f2008 " }
 
 ! PR fortran/34162
 ! Internal procedures as actual arguments (like restricted closures).
@@ -43,10 +43,10 @@ PROGRAM main
   INTEGER :: a
 
   a = 42
-  IF (callIt (myA) /= 42) CALL abort ()
+  IF (callIt (myA) /= 42) STOP 1
 
   CALL callSub (incA)
-  IF (a /= 43) CALL abort ()
+  IF (a /= 43) STOP 2
 
 CONTAINS
 

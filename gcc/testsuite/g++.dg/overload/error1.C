@@ -2,6 +2,6 @@
 
 struct S
 {
-  void f () {} // { dg-error "with" }
+  void f () {} // { dg-message "previous" }
   int f () { return 0; } // { dg-error "overloaded" }
 };

@@ -24,8 +24,8 @@ contains
   subroutine mysub(n, parray1)
     integer, intent(in) :: n
     real, dimension(a(n):b(n)) :: parray1
-    if ((n == 1) .and. size(parray1, 1) /= 10) call abort ()
-    if ((n == 2) .and. size(parray1, 1) /= 42) call abort ()
+    if ((n == 1) .and. size(parray1, 1) /= 10) STOP 1
+    if ((n == 2) .and. size(parray1, 1) /= 42) STOP 2
   end subroutine mysub
 end module bar
 

@@ -26,16 +26,16 @@ program main
   call acc_copyin (a_3d_c)
   call acc_copyin (a_3d_r)
 
-  if (acc_is_present (a_3d_i) .neqv. .TRUE.) call abort
-  if (acc_is_present (a_3d_c) .neqv. .TRUE.) call abort
-  if (acc_is_present (a_3d_r) .neqv. .TRUE.) call abort
+  if (acc_is_present (a_3d_i) .neqv. .TRUE.) STOP 1
+  if (acc_is_present (a_3d_c) .neqv. .TRUE.) STOP 2
+  if (acc_is_present (a_3d_r) .neqv. .TRUE.) STOP 3
 
   do i = 1, 10
     do j = 1, 10
       do k = 1, 10
-        if (acc_is_present (a_3d_i(i, j, k), i_size) .neqv. .TRUE.) call abort
-        if (acc_is_present (a_3d_c(i, j, k), i_size) .neqv. .TRUE.) call abort
-        if (acc_is_present (a_3d_r(i, j, k), i_size) .neqv. .TRUE.) call abort
+        if (acc_is_present (a_3d_i(i, j, k), i_size) .neqv. .TRUE.) STOP 4
+        if (acc_is_present (a_3d_c(i, j, k), i_size) .neqv. .TRUE.) STOP 5
+        if (acc_is_present (a_3d_r(i, j, k), i_size) .neqv. .TRUE.) STOP 6
       end do
     end do
   end do

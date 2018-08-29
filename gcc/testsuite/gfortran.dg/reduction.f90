@@ -55,7 +55,7 @@ program reduction_mask
   val(35) = sum((/ 1, 2, 3 /), dim=1, mask=equal)
   val(36) = sum((/ 1, 2, 3 /), mask=equal, dim=1)
   
-  if (any (val /= res)) call abort
+  if (any (val /= res)) STOP 1
 
   ! Tests for complex arguments. These were broken by the original fix.
 
@@ -81,5 +81,5 @@ program reduction_mask
   cval(17) = sum(cin, dim=1, mask=equal)
   cval(18) = sum(cin, mask=equal, dim=1)
 
-  if (any (cval /= cmplx(res(19:36)))) call abort
+  if (any (cval /= cmplx(res(19:36)))) STOP 2
 end program reduction_mask

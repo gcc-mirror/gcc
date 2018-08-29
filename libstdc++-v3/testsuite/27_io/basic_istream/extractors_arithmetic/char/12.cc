@@ -1,6 +1,6 @@
 // 1999-04-12 bkoz
 
-// Copyright (C) 1999-2017 Free Software Foundation, Inc.
+// Copyright (C) 1999-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,7 +50,7 @@ void test12_aux(bool integer_type)
   VERIFY(is.fail());
 }
 
-bool test12()
+void test12()
 {
   test12_aux<short>(true);
   test12_aux<int>(true);

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998-2017 Free Software Foundation, Inc.
+/* Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Contributed by Joern Rennecke
 
    This file is part of GCC.
@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 
@@ -53,7 +55,7 @@
 static bool
 str_prefix_p (const char *str, const char *prefix)
 {
-  return 0 == strncmp (str, prefix, strlen (prefix));
+  return strncmp (str, prefix, strlen (prefix)) == 0;
 }
 
 
@@ -113,6 +115,7 @@ static void
 print_mcu (const avr_mcu_t *mcu)
 {
   const char *sp8_spec;
+  const char *rcall_spec;
   const avr_mcu_t *arch_mcu;
   const avr_arch_t *arch;
   enum avr_arch_id arch_id = mcu->arch_id;
@@ -130,11 +133,12 @@ print_mcu (const avr_mcu_t *mcu)
 
   FILE *f = fopen (name ,"w");
 
-  bool absdata = 0 != (mcu->dev_attribute & AVR_ISA_LDS);
-  bool errata_skip = 0 != (mcu->dev_attribute & AVR_ERRATA_SKIP);
-  bool rmw = 0 != (mcu->dev_attribute & AVR_ISA_RMW);
-  bool sp8 = 0 != (mcu->dev_attribute & AVR_SHORT_SP);
-  bool is_arch = NULL == mcu->macro;
+  bool absdata = (mcu->dev_attribute & AVR_ISA_LDS) != 0;
+  bool errata_skip = (mcu->dev_attribute & AVR_ERRATA_SKIP) != 0;
+  bool rmw = (mcu->dev_attribute & AVR_ISA_RMW) != 0;
+  bool sp8 = (mcu->dev_attribute & AVR_SHORT_SP) != 0;
+  bool rcall = (mcu->dev_attribute & AVR_ISA_RCALL);
+  bool is_arch = mcu->macro == NULL;
   bool is_device = ! is_arch;
 
   if (is_arch
@@ -150,13 +154,25 @@ print_mcu (const avr_mcu_t *mcu)
       sp8_spec = sp8 ? "-msp8" :"%<msp8";
     }
 
+  if (is_arch
+      && ARCH_AVRXMEGA3 == arch_id)
+    {
+      // Leave "avrxmega3" alone.  This architectures is the only one
+      // that mixes devices with and without JMP / CALL.
+      rcall_spec = "";
+    }
+  else
+    {
+      rcall_spec = rcall ? "-mshort-calls" : "%<mshort-calls";
+    }
+
   fprintf (f, "#\n"
            "# Auto-generated specs for AVR ");
   if (is_arch)
     fprintf (f, "core architecture %s\n", arch->name);
   else
-    fprintf (f, "device %s (core %s, %d-bit SP)\n",
-             mcu->name, arch->name, sp8 ? 8 : 16);
+    fprintf (f, "device %s (core %s, %d-bit SP%s)\n", mcu->name,
+             arch->name, sp8 ? 8 : 16, rcall ? ", short-calls" : "");
   fprintf (f, "%s\n", header);
 
   if (is_device)
@@ -210,6 +226,11 @@ print_mcu (const avr_mcu_t *mcu)
            : "\t%{mrmw}");
 #endif // have avr-as -mrmw
 
+#ifdef HAVE_AS_AVR_MGCCISR_OPTION
+  fprintf (f, "*asm_gccisr:\n%s\n\n",
+           "\t%{!mno-gas-isr-prologues: -mgcc-isr}");
+#endif // have avr-as -mgcc-isr
+
   fprintf (f, "*asm_errata_skip:\n%s\n\n", errata_skip
            ? "\t%{mno-skip-bug}"
            : "\t%{!mskip-bug: -mno-skip-bug}");
@@ -255,6 +276,7 @@ print_mcu (const avr_mcu_t *mcu)
     {
       fprintf (f, "*self_spec:\n");
       fprintf (f, "\t%%{!mmcu=avr*: %%<mmcu=* -mmcu=%s} ", arch->name);
+      fprintf (f, "%s ", rcall_spec);
       fprintf (f, "%s\n\n", sp8_spec);
 
 #if defined (WITH_AVRLIBC)

@@ -16,7 +16,7 @@ A::barbar()
   return static_cast<B*>(this)->barbar();
 }
 
-main()
+int main()
 {
   struct B b;
   struct A *a = &b;

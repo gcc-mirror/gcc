@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2017 Free Software Foundation, Inc.
+// Copyright (C) 2006-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,6 +46,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
 # define _GLIBCXX_MATH_NS ::std
 #elif defined(_GLIBCXX_TR1_CMATH)
@@ -60,8 +62,6 @@ namespace tr1
   // Implementation-space details.
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     /**
      *   @brief  Compute the Riemann zeta function @f$ \zeta(s) @f$
      *           by summation for s > 1.
@@ -431,13 +431,13 @@ namespace tr1
     inline _Tp
     __hurwitz_zeta(_Tp __a, _Tp __s)
     { return __hurwitz_zeta_glob(__a, __s); }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 #undef _GLIBCXX_MATH_NS
 #if ! _GLIBCXX_USE_STD_SPEC_FUNCS && defined(_GLIBCXX_TR1_CMATH)
 } // namespace tr1
 #endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #endif // _GLIBCXX_TR1_RIEMANN_ZETA_TCC

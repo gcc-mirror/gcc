@@ -62,4 +62,4 @@ h (int x)
   return bar (s, x);
 }
 
-/* { dg-final { scan-ipa-dump-times "Discovered an indirect call to a known target" 3 "cp" } } */
+/* { dg-final { scan-ipa-dump-times "Discovered an indirect call to a known target" 3 "cp" { xfail { hppa*-*-* && { ! lp64 } } } } } */

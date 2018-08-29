@@ -1,3 +1,26 @@
+/* Copyright (C) 2017-2018 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   Under Section 7 of GPL version 3, you are granted additional
+   permissions described in the GCC Runtime Library Exception, version
+   3.1, as published by the Free Software Foundation.
+
+   You should have received a copy of the GNU General Public License and
+   a copy of the GCC Runtime Library Exception along with this program;
+   see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+   <http://www.gnu.org/licenses/>.  */
+
 #ifndef _SGXINTRIN_H_INCLUDED
 #define _SGXINTRIN_H_INCLUDED
 
@@ -66,10 +89,27 @@
 	   : "a" (leaf), "b" (b), "c" (c), "d" (d)	\
 	   : "cc")
 
+#define __enclv_bc(leaf, b, c, retval)			\
+  __asm__ __volatile__("enclv\n\t"			\
+	   : "=a" (retval)				\
+	   : "a" (leaf), "b" (b), "c" (c)		\
+	   : "cc")
 
-extern __inline int
+#define __enclv_cd(leaf, c, d, retval)			\
+  __asm__ __volatile__("enclv\n\t"			\
+	   : "=a" (retval)				\
+	   : "a" (leaf), "c" (c), "d" (d)		\
+	   : "cc")
+
+#define __enclv_generic(leaf, b, c, d, retval)		\
+  __asm__ __volatile__("enclv\n\t"			\
+	   : "=a" (retval), "=b" (b), "=c" (b), "=d" (d)\
+	   : "a" (leaf), "b" (b), "c" (c), "d" (d)	\
+	   : "cc")
+
+extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_encls_u32 (const int __L, size_t __D[])
+_encls_u32 (const unsigned int __L, size_t __D[])
 {
   enum __encls_type
   {
@@ -88,10 +128,14 @@ _encls_u32 (const int __L, size_t __D[])
     __SGX_ETRACK  = 0x0C,
     __SGX_EAUG    = 0x0D,
     __SGX_EMODPR  = 0x0E,
-    __SGX_EMODT   = 0x0F
+    __SGX_EMODT   = 0x0F,
+    __SGX_ERDINFO = 0x10,
+    __SGX_ETRACKC = 0x11,
+    __SGX_ELDBC   = 0x12,
+    __SGX_ELDUC   = 0x13
   };
   enum __encls_type __T = (enum __encls_type)__L;
-  int __R = 0;
+  unsigned int __R = 0;
   if (!__builtin_constant_p (__T))
     __encls_generic (__L, __D[0], __D[1], __D[2], __R);
   else switch (__T)
@@ -104,31 +148,35 @@ _encls_u32 (const int __L, size_t __D[])
     case __SGX_EMODPR:
     case __SGX_EMODT:
     case __SGX_EAUG:
+    case __SGX_ERDINFO:
       __encls_bc (__L, __D[0], __D[1], __R);
       break;
     case __SGX_EINIT:
     case __SGX_ELDB:
     case __SGX_ELDU:
     case __SGX_EWB:
+    case __SGX_ELDBC:
+    case __SGX_ELDUC:
       __encls_bcd (__L, __D[0], __D[1], __D[2], __R);
       break;
     case __SGX_EREMOVE:
     case __SGX_EBLOCK:
     case __SGX_ETRACK:
+    case __SGX_ETRACKC:
       __encls_c (__L, __D[1], __R);
       break;
     case __SGX_EDBGRD:
       __encls_edbgrd (__L, __D[0], __D[1], __R);
       break;
     default:
-      return -1;
+      __encls_generic (__L, __D[0], __D[1], __D[2], __R);
     }
   return __R;
 }
 
-extern __inline int
+extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_enclu_u32 (const int __L, size_t __D[])
+_enclu_u32 (const unsigned int __L, size_t __D[])
 {
   enum __enclu_type
   {
@@ -142,7 +190,7 @@ _enclu_u32 (const int __L, size_t __D[])
     __SGX_EACCEPTCOPY = 0x07
   };
   enum __enclu_type __T = (enum __enclu_type) __L;
-  int __R = 0;
+  unsigned int __R = 0;
   if (!__builtin_constant_p (__T))
     __enclu_generic (__L, __D[0], __D[1], __D[2], __R);
   else switch (__T)
@@ -164,7 +212,35 @@ _enclu_u32 (const int __L, size_t __D[])
       __enclu_eexit (__L, __D[0], __D[1], __R);
       break;
     default:
-      return -1;
+      __enclu_generic (__L, __D[0], __D[1], __D[2], __R);
+    }
+  return __R;
+}
+
+extern __inline unsigned int
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_enclv_u32 (const unsigned int __L, size_t __D[])
+{
+  enum __enclv_type
+  {
+    __SGX_EDECVIRTCHILD = 0x00,
+    __SGX_EINCVIRTCHILD = 0x01,
+    __SGX_ESETCONTEXT   = 0x02
+  };
+  unsigned int __R = 0;
+  if (!__builtin_constant_p (__L))
+    __enclv_generic (__L, __D[0], __D[1], __D[2], __R);
+  else switch (__L)
+    {
+    case __SGX_EDECVIRTCHILD:
+    case __SGX_EINCVIRTCHILD:
+      __enclv_bc (__L, __D[0], __D[1], __R);
+      break;
+    case __SGX_ESETCONTEXT:
+      __enclv_cd (__L, __D[1], __D[2], __R);
+      break;
+    default:
+      __enclv_generic (__L, __D[0], __D[1], __D[2], __R);
     }
   return __R;
 }

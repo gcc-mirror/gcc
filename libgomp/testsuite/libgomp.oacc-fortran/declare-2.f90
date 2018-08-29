@@ -1,4 +1,4 @@
-! { dg-do run  { target openacc_nvidia_accel_selected } }
+! { dg-do run }
 
 module globalvars
   implicit none
@@ -11,6 +11,6 @@ program test
   use openacc
   implicit none
 
-  if (acc_is_present (a) .neqv. .true.) call abort
+  if (acc_is_present (a) .neqv. .true.) STOP 1
 
 end program test

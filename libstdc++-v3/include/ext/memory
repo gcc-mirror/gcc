@@ -1,6 +1,6 @@
 // Memory extensions -*- C++ -*-
 
-// Copyright (C) 2002-2017 Free Software Foundation, Inc.
+// Copyright (C) 2002-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -184,7 +184,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       /// Requests storage large enough to hold a copy of [first,last).
       temporary_buffer(_ForwardIterator __first, _ForwardIterator __last)
-      : _Temporary_buffer<_ForwardIterator, _Tp>(__first, __last) { }
+      : _Temporary_buffer<_ForwardIterator, _Tp>(__first,
+						 std::distance(__first, __last))
+      { }
       
       /// Destroys objects and frees storage.
       ~temporary_buffer() { }

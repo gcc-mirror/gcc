@@ -27,11 +27,11 @@ PROCEDURE(mytype), POINTER :: ptype,ptype2
 
 CALL init()
 CALL C_F_PROCPOINTER(funpointer,ptype)
-if (ptype(3) /= 9) call abort()
+if (ptype(3_c_int) /= 9) STOP 1
 
 ! the stuff below was added with PR 42072
 call setpointer(ptype2)
-if (ptype2(4) /= 12) call abort()
+if (ptype2(4_c_int) /= 12) STOP 2
 
 contains
 

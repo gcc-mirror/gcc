@@ -10,4 +10,4 @@ struct B
 { };
 
 constexpr A a { };
-B<a> b;				// { dg-error "template argument|invalid type" }
+B<a> b;			 // { dg-error "template argument|converted constant|could not convert" }

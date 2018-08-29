@@ -11,7 +11,7 @@
   real, dimension(2) :: r
   x%p => fun
   r = evaluate (x%p)
-  if (r(1) /= 5 .and. r(2) /= 6) call abort()
+  if (r(1) /= 5 .and. r(2) /= 6) STOP 1
 contains
   function fun ()
     real, dimension(2) :: fun

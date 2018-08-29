@@ -22,7 +22,7 @@
     end if
   end do
 
-  if (sum ([(a(i)%i, i=1,size(a))]) .ne. chksum) call abort
+  if (sum ([(a(i)%i, i=1,size(a))]) .ne. chksum) STOP 1
 contains
   subroutine foo
     a = [a, e]

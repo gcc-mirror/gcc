@@ -26,8 +26,6 @@
 
 namespace __sanitizer {
 
-StaticSpinMutex CommonSanitizerReportMutex;
-
 static int AppendChar(char **buff, const char *buff_end, char c) {
   if (*buff < buff_end) {
     **buff = c;
@@ -41,7 +39,7 @@ static int AppendChar(char **buff, const char *buff_end, char c) {
 // on the value of |pad_with_zero|.
 static int AppendNumber(char **buff, const char *buff_end, u64 absolute_value,
                         u8 base, u8 minimal_num_length, bool pad_with_zero,
-                        bool negative) {
+                        bool negative, bool uppercase) {
   uptr const kMaxLen = 30;
   RAW_CHECK(base == 10 || base == 16);
   RAW_CHECK(base == 10 || !negative);
@@ -74,23 +72,25 @@ static int AppendNumber(char **buff, const char *buff_end, u64 absolute_value,
   if (negative && !pad_with_zero) result += AppendChar(buff, buff_end, '-');
   for (; pos >= 0; pos--) {
     char digit = static_cast<char>(num_buffer[pos]);
-    result += AppendChar(buff, buff_end, (digit < 10) ? '0' + digit
-                                                      : 'a' + digit - 10);
+    digit = (digit < 10) ? '0' + digit : (uppercase ? 'A' : 'a') + digit - 10;
+    result += AppendChar(buff, buff_end, digit);
   }
   return result;
 }
 
 static int AppendUnsigned(char **buff, const char *buff_end, u64 num, u8 base,
-                          u8 minimal_num_length, bool pad_with_zero) {
+                          u8 minimal_num_length, bool pad_with_zero,
+                          bool uppercase) {
   return AppendNumber(buff, buff_end, num, base, minimal_num_length,
-                      pad_with_zero, false /* negative */);
+                      pad_with_zero, false /* negative */, uppercase);
 }
 
 static int AppendSignedDecimal(char **buff, const char *buff_end, s64 num,
                                u8 minimal_num_length, bool pad_with_zero) {
   bool negative = (num < 0);
   return AppendNumber(buff, buff_end, (u64)(negative ? -num : num), 10,
-                      minimal_num_length, pad_with_zero, negative);
+                      minimal_num_length, pad_with_zero, negative,
+                      false /* uppercase */);
 }
 
 static int AppendString(char **buff, const char *buff_end, int precision,
@@ -110,14 +110,16 @@ static int AppendPointer(char **buff, const char *buff_end, u64 ptr_value) {
   int result = 0;
   result += AppendString(buff, buff_end, -1, "0x");
   result += AppendUnsigned(buff, buff_end, ptr_value, 16,
-                           SANITIZER_POINTER_FORMAT_LENGTH, true);
+                           SANITIZER_POINTER_FORMAT_LENGTH,
+                           true /* pad_with_zero */, false /* uppercase */);
   return result;
 }
 
 int VSNPrintf(char *buff, int buff_length,
               const char *format, va_list args) {
   static const char *kPrintfFormatsHelp =
-    "Supported Printf formats: %([0-9]*)?(z|ll)?{d,u,x}; %p; %(\\.\\*)?s; %c\n";
+      "Supported Printf formats: %([0-9]*)?(z|ll)?{d,u,x,X}; %p; %(\\.\\*)?s; "
+      "%c\n";
   RAW_CHECK(format);
   RAW_CHECK(buff_length > 0);
   const char *buff_end = &buff[buff_length - 1];
@@ -162,12 +164,14 @@ int VSNPrintf(char *buff, int buff_length,
         break;
       }
       case 'u':
-      case 'x': {
+      case 'x':
+      case 'X': {
         uval = have_ll ? va_arg(args, u64)
              : have_z ? va_arg(args, uptr)
              : va_arg(args, unsigned);
-        result += AppendUnsigned(&buff, buff_end, uval,
-                                 (*cur == 'u') ? 10 : 16, width, pad_with_zero);
+        bool uppercase = (*cur == 'X');
+        result += AppendUnsigned(&buff, buff_end, uval, (*cur == 'u') ? 10 : 16,
+                                 width, pad_with_zero, uppercase);
         break;
       }
       case 'p': {
@@ -206,15 +210,11 @@ void SetPrintfAndReportCallback(void (*callback)(const char *)) {
 }
 
 // Can be overriden in frontend.
-#if SANITIZER_SUPPORTS_WEAK_HOOKS
-SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE
-void OnPrint(const char *str) {
-  (void)str;
-}
-#elif SANITIZER_GO && defined(TSAN_EXTERNAL_HOOKS)
-void OnPrint(const char *str);
+#if SANITIZER_GO && defined(TSAN_EXTERNAL_HOOKS)
+// Implementation must be defined in frontend.
+extern "C" void OnPrint(const char *str);
 #else
-void OnPrint(const char *str) {
+SANITIZER_INTERFACE_WEAK_DEF(void, OnPrint, const char *str) {
   (void)str;
 }
 #endif
@@ -225,19 +225,16 @@ static void CallPrintfAndReportCallback(const char *str) {
     PrintfAndReportCallback(str);
 }
 
-static void SharedPrintfCode(bool append_pid, const char *format,
-                             va_list args) {
+static void NOINLINE SharedPrintfCodeNoBuffer(bool append_pid,
+                                              char *local_buffer,
+                                              int buffer_size,
+                                              const char *format,
+                                              va_list args) {
   va_list args2;
   va_copy(args2, args);
   const int kLen = 16 * 1024;
-  // |local_buffer| is small enough not to overflow the stack and/or violate
-  // the stack limit enforced by TSan (-Wframe-larger-than=512). On the other
-  // hand, the bigger the buffer is, the more the chance the error report will
-  // fit into it.
-  char local_buffer[400];
   int needed_length;
   char *buffer = local_buffer;
-  int buffer_size = ARRAY_SIZE(local_buffer);
   // First try to print a message using a local buffer, and then fall back to
   // mmaped buffer.
   for (int use_mmap = 0; use_mmap < 2; use_mmap++) {
@@ -255,7 +252,9 @@ static void SharedPrintfCode(bool append_pid, const char *format,
         RAW_CHECK_MSG(needed_length < kLen, \
                       "Buffer in Report is too short!\n"); \
       }
-    if (append_pid) {
+    // Fuchsia's logging infrastructure always keeps track of the logging
+    // process, thread, and timestamp, so never prepend such information.
+    if (!SANITIZER_FUCHSIA && append_pid) {
       int pid = internal_getpid();
       const char *exe_name = GetProcessName();
       if (common_flags()->log_exe_name && exe_name) {
@@ -263,9 +262,8 @@ static void SharedPrintfCode(bool append_pid, const char *format,
                                            "==%s", exe_name);
         CHECK_NEEDED_LENGTH
       }
-      needed_length += internal_snprintf(buffer + needed_length,
-                                         buffer_size - needed_length,
-                                         "==%d==", pid);
+      needed_length += internal_snprintf(
+          buffer + needed_length, buffer_size - needed_length, "==%d==", pid);
       CHECK_NEEDED_LENGTH
     }
     needed_length += VSNPrintf(buffer + needed_length,
@@ -286,6 +284,17 @@ static void SharedPrintfCode(bool append_pid, const char *format,
   if (buffer != local_buffer)
     UnmapOrDie((void *)buffer, buffer_size);
   va_end(args2);
+}
+
+static void NOINLINE SharedPrintfCode(bool append_pid, const char *format,
+                                      va_list args) {
+  // |local_buffer| is small enough not to overflow the stack and/or violate
+  // the stack limit enforced by TSan (-Wframe-larger-than=512). On the other
+  // hand, the bigger the buffer is, the more the chance the error report will
+  // fit into it.
+  char local_buffer[400];
+  SharedPrintfCodeNoBuffer(append_pid, local_buffer, ARRAY_SIZE(local_buffer),
+                           format, args);
 }
 
 FORMAT(1, 2)

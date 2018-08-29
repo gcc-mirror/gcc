@@ -10,7 +10,7 @@
    (set (reg:DF) (float_extend:DF (mem:SF (symbol_ref...)))).  */
 
 double
-sgn (double __x)
+foo (double __x)
 {
-  return __x >= 0.0 ? 1.0 : -1.0;
+  return __x >= 1.0 ? 0.0 : -1.0;
 }

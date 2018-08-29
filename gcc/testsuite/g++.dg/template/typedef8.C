@@ -1,4 +1,5 @@
 // PR c++/34206
+// { dg-additional-options "-Wno-return-type" }
 
 template<class _T1, class _T2> struct pair { };
 template <class T0, class T1> struct tuple {

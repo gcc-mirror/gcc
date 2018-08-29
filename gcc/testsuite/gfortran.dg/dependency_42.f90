@@ -12,5 +12,5 @@ program main
   q(4) = q(4) + p(1)
   q(3) = q(3) + p(2)
   q(1) = q(1) + p(3)
-  if (any (q - r /= 0)) call abort
+  if (any (q - r /= 0)) STOP 1
 end

@@ -23,7 +23,6 @@
 #endif
 #include <arpa/inet.h>
 #include <dirent.h>
-#include <errno.h>
 #include <grp.h>
 #include <limits.h>
 #include <net/if.h>
@@ -44,6 +43,9 @@
 #include <termios.h>
 #include <time.h>
 #include <wchar.h>
+#if !SANITIZER_MAC && !SANITIZER_FREEBSD
+#include <utmp.h>
+#endif
 
 #if !SANITIZER_IOS
 #include <net/route.h>
@@ -52,6 +54,7 @@
 #if !SANITIZER_ANDROID
 #include <sys/mount.h>
 #include <sys/timeb.h>
+#include <utmpx.h>
 #endif
 
 #if SANITIZER_LINUX
@@ -154,7 +157,6 @@ typedef struct user_fpregs elf_fpregset_t;
 # include <sys/procfs.h>
 #endif
 #include <sys/user.h>
-#include <sys/ustat.h>
 #include <linux/cyclades.h>
 #include <linux/if_eql.h>
 #include <linux/if_plip.h>
@@ -247,7 +249,19 @@ namespace __sanitizer {
 #endif // SANITIZER_LINUX || SANITIZER_FREEBSD
 
 #if SANITIZER_LINUX && !SANITIZER_ANDROID
-  unsigned struct_ustat_sz = sizeof(struct ustat);
+  // Use pre-computed size of struct ustat to avoid <sys/ustat.h> which
+  // has been removed from glibc 2.28.
+#if defined(__aarch64__) || defined(__s390x__) || defined (__mips64) \
+  || defined(__powerpc64__) || defined(__arch64__) || defined(__sparcv9) \
+  || defined(__x86_64__)
+#define SIZEOF_STRUCT_USTAT 32
+#elif defined(__arm__) || defined(__i386__) || defined(__mips__) \
+  || defined(__powerpc__) || defined(__s390__) || defined(__sparc__)
+#define SIZEOF_STRUCT_USTAT 20
+#else
+#error Unknown size of struct ustat
+#endif
+  unsigned struct_ustat_sz = SIZEOF_STRUCT_USTAT;
   unsigned struct_rlimit64_sz = sizeof(struct rlimit64);
   unsigned struct_statvfs64_sz = sizeof(struct statvfs64);
 #endif // SANITIZER_LINUX && !SANITIZER_ANDROID
@@ -275,6 +289,13 @@ namespace __sanitizer {
   int shmctl_ipc_info = (int)IPC_INFO;
   int shmctl_shm_info = (int)SHM_INFO;
   int shmctl_shm_stat = (int)SHM_STAT;
+#endif
+
+#if !SANITIZER_MAC && !SANITIZER_FREEBSD
+  unsigned struct_utmp_sz = sizeof(struct utmp);
+#endif
+#if !SANITIZER_ANDROID
+  unsigned struct_utmpx_sz = sizeof(struct utmpx);
 #endif
 
   int map_fixed = MAP_FIXED;
@@ -917,14 +938,6 @@ unsigned struct_ElfW_Phdr_sz = sizeof(Elf_Phdr);
   unsigned IOCTL_SNDCTL_DSP_GETISPACE = SNDCTL_DSP_GETISPACE;
   unsigned IOCTL_SNDCTL_DSP_GETOSPACE = SNDCTL_DSP_GETOSPACE;
 #endif // (SANITIZER_LINUX || SANITIZER_FREEBSD) && !SANITIZER_ANDROID
-
-  const int errno_EINVAL = EINVAL;
-// EOWNERDEAD is not present in some older platforms.
-#if defined(EOWNERDEAD)
-  const int errno_EOWNERDEAD = EOWNERDEAD;
-#else
-  const int errno_EOWNERDEAD = -1;
-#endif
 
   const int si_SEGV_MAPERR = SEGV_MAPERR;
   const int si_SEGV_ACCERR = SEGV_ACCERR;

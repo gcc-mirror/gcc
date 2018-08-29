@@ -1,6 +1,6 @@
 // The -*- C++ -*- dynamic memory management header.
 
-// Copyright (C) 1994-2017 Free Software Foundation, Inc.
+// Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 //
@@ -56,6 +56,11 @@ namespace std
   public:
     bad_alloc() throw() { }
 
+#if __cplusplus >= 201103L
+    bad_alloc(const bad_alloc&) = default;
+    bad_alloc& operator=(const bad_alloc&) = default;
+#endif
+
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_alloc() throw();
@@ -68,7 +73,7 @@ namespace std
   class bad_array_new_length : public bad_alloc
   {
   public:
-    bad_array_new_length() throw() { };
+    bad_array_new_length() throw() { }
 
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
@@ -132,9 +137,9 @@ void operator delete[](void*, std::size_t) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 #endif
 void* operator new(std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
-  __attribute__((__externally_visible__));
+  __attribute__((__externally_visible__, __malloc__));
 void* operator new[](std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
-  __attribute__((__externally_visible__));
+  __attribute__((__externally_visible__, __malloc__));
 void operator delete(void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 void operator delete[](void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
@@ -143,7 +148,7 @@ void operator delete[](void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
 void* operator new(std::size_t, std::align_val_t)
   __attribute__((__externally_visible__));
 void* operator new(std::size_t, std::align_val_t, const std::nothrow_t&)
-  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __malloc__));
 void operator delete(void*, std::align_val_t)
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 void operator delete(void*, std::align_val_t, const std::nothrow_t&)
@@ -151,7 +156,7 @@ void operator delete(void*, std::align_val_t, const std::nothrow_t&)
 void* operator new[](std::size_t, std::align_val_t)
   __attribute__((__externally_visible__));
 void* operator new[](std::size_t, std::align_val_t, const std::nothrow_t&)
-  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __malloc__));
 void operator delete[](void*, std::align_val_t)
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 void operator delete[](void*, std::align_val_t, const std::nothrow_t&)
@@ -176,23 +181,14 @@ inline void operator delete[](void*, void*) _GLIBCXX_USE_NOEXCEPT { }
 //@}
 } // extern "C++"
 
-#if __cplusplus > 201402L
-#if __GNUC__ >= 7
-#  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
-#elif defined __has_builtin
-// For non-GNU compilers:
-# if __has_builtin(__builtin_launder)
-#  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
-# endif
-#endif
-
+#if __cplusplus >= 201703L
 #ifdef _GLIBCXX_HAVE_BUILTIN_LAUNDER
 namespace std
 {
 #define __cpp_lib_launder 201606
   /// Pointer optimization barrier [ptr.launder]
   template<typename _Tp>
-    constexpr _Tp*
+    [[nodiscard]] constexpr _Tp*
     launder(_Tp* __p) noexcept
     { return __builtin_launder(__p); }
 
@@ -210,7 +206,6 @@ namespace std
   void launder(const volatile void*) = delete;
 }
 #endif // _GLIBCXX_HAVE_BUILTIN_LAUNDER
-#undef _GLIBCXX_HAVE_BUILTIN_LAUNDER
 #endif // C++17
 
 #pragma GCC visibility pop

@@ -61,41 +61,41 @@ end module
   integer :: foobar, z, i, ifill(4) = [2, 7, 19, 61], ifill2(2) = [1,2]
   type(mydt) :: dt
   foobar (z) = z**2 ! { dg-warning "Obsolescent feature: Statement function" }
-  if (any (a .ne. [1,2,3])) call abort
+  if (any (a .ne. [1,2,3])) STOP 1
 
 ! Assignment to pointer result is after procedure call.
   foo (a) = 77 ! { dg-error "Pointer procedure assignment" }
 
 ! Assignment within procedure applies.
   b => foo (a)
-  if (b .ne. 99) call abort
+  if (b .ne. 99) STOP 2
 
 ! Use of index for assignment.
   bar (a, 2) = 99 ! { dg-error "Pointer procedure assignment" }
-  if (any (a .ne. [99,99,3])) call abort
+  if (any (a .ne. [99,99,3])) STOP 3
 
 ! Make sure that statement function still works!
-  if (foobar (10) .ne. 100) call abort
+  if (foobar (10) .ne. 100) STOP 4
 
   bar (a, 3) = foobar (9)! { dg-error "Pointer procedure assignment" }
-  if (any (a .ne. [99,99,81])) call abort
+  if (any (a .ne. [99,99,81])) STOP 5
 
 ! Try typebound procedure
   call dt%create (6)
   dt%elem_fill (3) = 42 ! { dg-error "Pointer procedure assignment" }
-  if (dt%i(3) .ne. 42) call abort
+  if (dt%i(3) .ne. 42) STOP 6
   dt%elem_fill (3) = 42 + dt%elem_fill (3)! { dg-error "Pointer procedure assignment" }
-  if (dt%i(3) .ne. 84) call abort
+  if (dt%i(3) .ne. 84) STOP 7
   dt%elem_fill (3) = dt%elem_fill (3) - dt%elem_fill (3)! { dg-error "Pointer procedure assignment" }
-  if (dt%i(3) .ne. 0) call abort
+  if (dt%i(3) .ne. 0) STOP 8
 ! Array is now reset
   dt%fill (3) = ifill ! { dg-error "Pointer procedure assignment" }
   dt%fill (1) = [2,1] ! { dg-error "Pointer procedure assignment" }
-  if (any (dt%i .ne. [2,1,ifill])) call abort
+  if (any (dt%i .ne. [2,1,ifill])) STOP 9
   dt%fill (1) = footoo (size (dt%i, 1)) ! { dg-error "Pointer procedure assignment" }
-  if (any (dt%i .ne. [6,5,4,3,2,1])) call abort
+  if (any (dt%i .ne. [6,5,4,3,2,1])) STOP 10
   dt%fill (3) = ifill + dt%fill (3) ! { dg-error "Pointer procedure assignment" }
-  if (any (dt%i .ne. [6,5,6,10,21,62])) call abort
+  if (any (dt%i .ne. [6,5,6,10,21,62])) STOP 11
   call dt%delete
 
 contains

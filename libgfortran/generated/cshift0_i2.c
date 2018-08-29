@@ -1,5 +1,5 @@
 /* Helper function for cshift functions.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Thomas Koenig <tkoenig@gcc.gnu.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -51,6 +51,9 @@ cshift0_i2 (gfc_array_i2 *ret, const gfc_array_i2 *array, ptrdiff_t shift,
   index_type len;
   index_type n;
 
+  bool do_blocked;
+  index_type r_ex, a_ex;
+
   which = which - 1;
   sstride[0] = 0;
   rstride[0] = 0;
@@ -63,33 +66,99 @@ cshift0_i2 (gfc_array_i2 *ret, const gfc_array_i2 *array, ptrdiff_t shift,
   soffset = 1;
   len = 0;
 
-  for (dim = 0; dim < GFC_DESCRIPTOR_RANK (array); dim++)
-    {
-      if (dim == which)
-        {
-          roffset = GFC_DESCRIPTOR_STRIDE(ret,dim);
-          if (roffset == 0)
-            roffset = 1;
-          soffset = GFC_DESCRIPTOR_STRIDE(array,dim);
-          if (soffset == 0)
-            soffset = 1;
-          len = GFC_DESCRIPTOR_EXTENT(array,dim);
-        }
-      else
-        {
-          count[n] = 0;
-          extent[n] = GFC_DESCRIPTOR_EXTENT(array,dim);
-          rstride[n] = GFC_DESCRIPTOR_STRIDE(ret,dim);
-          sstride[n] = GFC_DESCRIPTOR_STRIDE(array,dim);
-          n++;
-        }
-    }
-  if (sstride[0] == 0)
-    sstride[0] = 1;
-  if (rstride[0] == 0)
-    rstride[0] = 1;
+  r_ex = 1;
+  a_ex = 1;
 
-  dim = GFC_DESCRIPTOR_RANK (array);
+  if (which > 0)
+    {
+      /* Test if both ret and array are contiguous.  */
+      do_blocked = true;
+      dim = GFC_DESCRIPTOR_RANK (array);
+      for (n = 0; n < dim; n ++)
+	{
+	  index_type rs, as;
+	  rs = GFC_DESCRIPTOR_STRIDE (ret, n);
+	  if (rs != r_ex)
+	    {
+	      do_blocked = false;
+	      break;
+	    }
+	  as = GFC_DESCRIPTOR_STRIDE (array, n);
+	  if (as != a_ex)
+	    {
+	      do_blocked = false;
+	      break;
+	    }
+	  r_ex *= GFC_DESCRIPTOR_EXTENT (ret, n);
+	  a_ex *= GFC_DESCRIPTOR_EXTENT (array, n);
+	}
+    }
+  else
+    do_blocked = false;
+
+  n = 0;
+
+  if (do_blocked)
+    {
+      /* For contiguous arrays, use the relationship that
+
+         dimension(n1,n2,n3) :: a, b
+	 b = cshift(a,sh,3)
+
+         can be dealt with as if
+
+	 dimension(n1*n2*n3) :: an, bn
+	 bn = cshift(a,sh*n1*n2,1)
+
+	 we can used a more blocked algorithm for dim>1.  */
+      sstride[0] = 1;
+      rstride[0] = 1;
+      roffset = 1;
+      soffset = 1;
+      len = GFC_DESCRIPTOR_STRIDE(array, which)
+	* GFC_DESCRIPTOR_EXTENT(array, which);      
+      shift *= GFC_DESCRIPTOR_STRIDE(array, which);
+      for (dim = which + 1; dim < GFC_DESCRIPTOR_RANK (array); dim++)
+	{
+	  count[n] = 0;
+	  extent[n] = GFC_DESCRIPTOR_EXTENT(array,dim);
+	  rstride[n] = GFC_DESCRIPTOR_STRIDE(ret,dim);
+	  sstride[n] = GFC_DESCRIPTOR_STRIDE(array,dim);
+	  n++;
+	}
+      dim = GFC_DESCRIPTOR_RANK (array) - which;
+    }
+  else
+    {
+      for (dim = 0; dim < GFC_DESCRIPTOR_RANK (array); dim++)
+	{
+	  if (dim == which)
+	    {
+	      roffset = GFC_DESCRIPTOR_STRIDE(ret,dim);
+	      if (roffset == 0)
+		roffset = 1;
+	      soffset = GFC_DESCRIPTOR_STRIDE(array,dim);
+	      if (soffset == 0)
+		soffset = 1;
+	      len = GFC_DESCRIPTOR_EXTENT(array,dim);
+	    }
+	  else
+	    {
+	      count[n] = 0;
+	      extent[n] = GFC_DESCRIPTOR_EXTENT(array,dim);
+	      rstride[n] = GFC_DESCRIPTOR_STRIDE(ret,dim);
+	      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,dim);
+	      n++;
+	    }
+	}
+      if (sstride[0] == 0)
+	sstride[0] = 1;
+      if (rstride[0] == 0)
+	rstride[0] = 1;
+
+      dim = GFC_DESCRIPTOR_RANK (array);
+    }
+
   rstride0 = rstride[0];
   sstride0 = sstride[0];
   rptr = ret->base_addr;

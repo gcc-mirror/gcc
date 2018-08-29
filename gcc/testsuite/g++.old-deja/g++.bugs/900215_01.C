@@ -24,7 +24,7 @@
 
 struct struct0 {
 
-  operator void ();		// { dg-warning "" } operator void
+  operator void ();  // { dg-warning "3:conversion to void will never use a type conversion operator" }
 };
 
 int exit_status = 1;

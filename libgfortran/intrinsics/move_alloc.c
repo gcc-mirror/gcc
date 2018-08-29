@@ -1,5 +1,5 @@
 /* Generic implementation of the MOVE_ALLOC intrinsic
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Paul Thomas
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -46,7 +46,7 @@ move_alloc (gfc_array_char * from, gfc_array_char * to)
     }
 
   to->offset = from->offset;
-  to->dtype = from->dtype;
+  GFC_DTYPE_COPY(to,from);
   to->base_addr = from->base_addr;
   from->base_addr = NULL;
 }

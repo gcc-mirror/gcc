@@ -5,5 +5,5 @@ program a
   integer, parameter :: i(4) = (/ 1, 1, 1, 1 /)
   integer :: z(4) = (/ 1, 1, -1, -1 /)
   where(z < 0) z(:) = 1
-  if (any(z /= i)) call abort
+  if (any(z /= i)) STOP 1
 end program a

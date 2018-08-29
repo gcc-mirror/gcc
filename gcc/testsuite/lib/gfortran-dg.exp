@@ -1,4 +1,4 @@
-#   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+#   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -124,10 +124,16 @@ proc gfortran-dg-prune { system text } {
 # as c-torture does.
 proc gfortran-dg-runtest { testcases flags default-extra-flags } {
     global runtests
-    global DG_TORTURE_OPTIONS torture_with_loops
+    global torture_with_loops
 
-    torture-init
-    set-torture-options $DG_TORTURE_OPTIONS
+    # Some callers set torture options themselves; don't override those.
+    set existing_torture_options [torture-options-exist]
+    if { $existing_torture_options == 0 } {
+	global DG_TORTURE_OPTIONS
+	torture-init
+	set-torture-options $DG_TORTURE_OPTIONS
+    }
+    dump-torture-options
 
     foreach test $testcases {
 	# If we're only testing specific files and this isn't one of
@@ -154,7 +160,9 @@ proc gfortran-dg-runtest { testcases flags default-extra-flags } {
 	}
     }
 
-    torture-finish
+    if { $existing_torture_options == 0 } {
+	torture-finish
+    }
 }
 
 proc gfortran-dg-debug-runtest { target_compile trivial opt_opts testcases } {
@@ -162,7 +170,7 @@ proc gfortran-dg-debug-runtest { target_compile trivial opt_opts testcases } {
 
     if ![info exists DEBUG_TORTURE_OPTIONS] {
        set DEBUG_TORTURE_OPTIONS ""
-       set type_list [list "-gstabs" "-gstabs+" "-gxcoff" "-gxcoff+" "-gcoff" "-gdwarf-2" ]
+       set type_list [list "-gstabs" "-gstabs+" "-gxcoff" "-gxcoff+" "-gdwarf-2" ]
        foreach type $type_list {
            set comp_output [$target_compile \
                    "$srcdir/$subdir/$trivial" "trivial.S" assembly \

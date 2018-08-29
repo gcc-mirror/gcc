@@ -9,7 +9,7 @@ module m
 contains
   subroutine one(a)
       integer a(1:3)
-      if (any(a /= [1,2,3])) call abort()
+      if (any(a /= [1,2,3])) STOP 1
   end subroutine one
 end module m
 

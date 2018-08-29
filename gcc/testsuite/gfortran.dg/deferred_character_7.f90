@@ -15,25 +15,25 @@ implicit none
 
   a1 = ["ABCDEFGH","abcdefgh"]
   a2 = "_"//a1//chr//"_"
-  if (any (a2 .ne. ["_ABCDEFGHIJKLMNOP_","_abcdefghIJKLMNOP_"])) call abort
+  if (any (a2 .ne. ["_ABCDEFGHIJKLMNOP_","_abcdefghIJKLMNOP_"])) STOP 1
 
 ! Check that the descriptor dtype is OK - the array write needs it.
   write (buffer, "(2a18)") a2
-  if (trim (buffer) .ne. "_ABCDEFGHIJKLMNOP__abcdefghIJKLMNOP_") call abort
+  if (trim (buffer) .ne. "_ABCDEFGHIJKLMNOP__abcdefghIJKLMNOP_") STOP 2
 
 ! Make sure scalars survived the fix!
   b1 = "ABCDEFGH"
   b2 = "_"//b1//chr//"_"
-  if (b2 .ne. "_ABCDEFGHIJKLMNOP_") call abort
+  if (b2 .ne. "_ABCDEFGHIJKLMNOP_") STOP 3
 
 ! Check the dependency is detected and dealt with by generation of a temporary.
   a1 = "?"//a1//"?"
-  if (any (a1 .ne. ["?ABCDEFGH?","?abcdefgh?"])) call abort
+  if (any (a1 .ne. ["?ABCDEFGH?","?abcdefgh?"])) STOP 4
 ! With an array reference...
   a1 = "?"//a1(1:2)//"?"
-  if (any (a1 .ne. ["??ABCDEFGH??","??abcdefgh??"])) call abort
+  if (any (a1 .ne. ["??ABCDEFGH??","??abcdefgh??"])) STOP 5
 !... together with a substring.
   a1 = "?"//a1(1:1)(2:4)//"?"
-  if (any (a1 .ne. ["??AB?"])) call abort
+  if (any (a1 .ne. ["??AB?"])) STOP 6
 contains
 end

@@ -1,5 +1,5 @@
 # Makefile for GNU Objective C runtime library.
-# Copyright (C) 1993-2017 Free Software Foundation, Inc.
+# Copyright (C) 1993-2018 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -72,8 +72,10 @@ RANLIB = @RANLIB@
 
 CC = @CC@
 CFLAGS = @CFLAGS@
+XCFLAGS = @XCFLAGS@
 WARN_CFLAGS = -W -Wall -Wwrite-strings -Wstrict-prototypes
-ALL_CFLAGS = -I. -I$(srcdir) $(CPPFLAGS) $(DEFS) $(CFLAGS) $(WARN_CFLAGS) \
+ALL_CFLAGS = -I. -I$(srcdir) $(CPPFLAGS) $(DEFS) \
+	$(XCFLAGS) $(CFLAGS) $(WARN_CFLAGS) \
 	-DIN_GCC -DIN_TARGET_LIBS -fno-strict-aliasing -fexceptions
 
 # Libtool
@@ -295,6 +297,7 @@ aclocal_deps = \
 	$(srcdir)/../ltsugar.m4 \
 	$(srcdir)/../ltversion.m4 \
 	$(srcdir)/../lt~obsolete.m4 \
+	$(srcdir)/../cet.m4 \
 	$(srcdir)/acinclude.m4
 
 $(srcdir)/configure: @MAINT@ configure.ac $(srcdir)/aclocal.m4

@@ -7,7 +7,9 @@ main (int argc, char * * argv)
   int a;
 
   bb_2:
-  switch (argc_2(D)) {default: L2; case 1: L0; case 2: L1; }
+  /* Because of PR82114 we need to handle also 0 as base metal can have
+     argc == 0.  */
+  switch (argc_2(D)) {default: L2; case 0: L0; case 1: L0; case 2: L1; }
 
 L0:
   a_4 = 0;

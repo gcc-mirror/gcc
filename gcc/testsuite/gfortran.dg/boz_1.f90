@@ -21,19 +21,19 @@ program boz
    integer(4), parameter :: z4 = z'dead'
    integer(8), parameter :: z8 = z'deadbeef'
 
-   if (z1 /= 10_1) call abort
-   if (z2 /= 171_2) call abort
-   if (z4 /= 57005_4) call abort
-   if (z8 /= 3735928559_8) call abort
+   if (z1 /= 10_1) STOP 1
+   if (z2 /= 171_2) STOP 2
+   if (z4 /= 57005_4) STOP 3
+   if (z8 /= 3735928559_8) STOP 4
 
-   if (b1 /= 1_1) call abort
-   if (b2 /= 21930_2) call abort
-   if (b4 /= 1894838512_4) call abort
-   if (b8 /= 8138269444283625712_8) call abort
+   if (b1 /= 1_1) STOP 5
+   if (b2 /= 21930_2) STOP 6
+   if (b4 /= 1894838512_4) STOP 7
+   if (b8 /= 8138269444283625712_8) STOP 8
 
-   if (o1 /= 10_1) call abort
-   if (o2 /= 2257_2) call abort
-   if (o4 /= 9245173_4) call abort
-   if (o8 /= 45954958542472_8) call abort
+   if (o1 /= 10_1) STOP 9
+   if (o2 /= 2257_2) STOP 10
+   if (o4 /= 9245173_4) STOP 11
+   if (o8 /= 45954958542472_8) STOP 12
 
 end program boz

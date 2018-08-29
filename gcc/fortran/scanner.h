@@ -1,5 +1,5 @@
 /* Character scanner header.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist
 
 This file is part of GCC.

@@ -13,4 +13,3 @@ module m
   type t
   end type t
 end module m
-! { dg-final { cleanup-modules "m m2" } }

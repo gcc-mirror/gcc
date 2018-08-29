@@ -11,6 +11,7 @@
 #define backtrace_qsort __asan_backtrace_qsort
 #define backtrace_release_view __asan_backtrace_release_view
 #define backtrace_syminfo __asan_backtrace_syminfo
+#define backtrace_uncompress_zdebug __asan_backtrace_uncompress_zdebug
 #define backtrace_vector_finish __asan_backtrace_vector_finish
 #define backtrace_vector_grow __asan_backtrace_vector_grow
 #define backtrace_vector_release __asan_backtrace_vector_release

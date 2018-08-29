@@ -635,6 +635,7 @@ INSTALL_PROGRAM
 RANLIB
 AR
 AS
+XCFLAGS
 extra_ldflags_libobjc
 lt_host_flags
 OBJEXT
@@ -714,6 +715,7 @@ with_target_subdir
 with_cross_host
 enable_version_specific_runtime_libs
 enable_multilib
+enable_cet
 enable_maintainer_mode
 enable_shared
 enable_static
@@ -1350,6 +1352,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory
   --enable-multilib       build many library versions (default)
+  --enable-cet            enable Intel CET in target libraries [default=no]
   --enable-maintainer-mode  enable make rules and dependencies not useful
 			  (and sometimes confusing) to the casual installer
   --enable-shared[=PKGS]  build shared libraries [default=yes]
@@ -3348,6 +3351,92 @@ case "${host}" in
     extra_ldflags_libobjc='$(lt_host_flags)'
     ;;
 esac
+
+
+# Add CET specific flags if CET is enabled
+
+ # Check whether --enable-cet was given.
+if test "${enable_cet+set}" = set; then :
+  enableval=$enable_cet;
+      case "$enableval" in
+       yes|no|auto) ;;
+       *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_cet=no
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
+$as_echo_n "checking for CET support... " >&6; }
+
+case "$host" in
+  i[34567]86-*-linux* | x86_64-*-linux*)
+    case "$enable_cet" in
+      auto)
+	# Check if target supports multi-byte NOPs
+	# and if assembler supports CET insn.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+#if !defined(__SSE2__)
+#error target does not support multi-byte NOPs
+#else
+asm ("setssbsy");
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  enable_cet=yes
+else
+  enable_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+      yes)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  as_fn_error "assembler with CET support is required for --enable-cet" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+    esac
+    ;;
+  *)
+    enable_cet=no
+    ;;
+esac
+if test x$enable_cet = xyes; then
+  CET_FLAGS="-fcf-protection -mshstk"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+XCFLAGS="$XCFLAGS $CET_FLAGS"
 
 
 
@@ -5960,7 +6049,6 @@ else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: ok" >&5
 $as_echo "ok" >&6; }
 fi
-
 
 
 
@@ -10594,7 +10682,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10597 "configure"
+#line 10685 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10700,7 +10788,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10703 "configure"
+#line 10791 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11708,7 +11796,7 @@ fi
 # Check whether --with-gcc-major-version-only was given.
 if test "${with_gcc_major_version_only+set}" = set; then :
   withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
-        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
       fi
 
 fi

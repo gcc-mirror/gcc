@@ -23,8 +23,8 @@ write(99,*) "/"
 rewind(99)
 
 read (99, nml=nml, iostat=ios, iomsg=errormsg)
-if (ios.ne.5010) call abort
-if (scan(errormsg, "5").ne.44) call abort
+if (ios.ne.5010) STOP 1
+if (scan(errormsg, "5").ne.44) STOP 2
 
 rewind(99)
 
@@ -39,8 +39,8 @@ write(99,*) "/"
 rewind(99)
 
 read (99, nml=nml, iostat=ios, iomsg=errormsg)
-if (ios.ne.5010) call abort
-if (scan(errormsg, "2").ne.25) call abort
+if (ios.ne.5010) STOP 3
+if (scan(errormsg, "2").ne.25) STOP 4
 
 close (99)
 

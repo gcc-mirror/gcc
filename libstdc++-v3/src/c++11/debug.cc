@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,6 +40,11 @@
 
 #include <cxxabi.h> // for __cxa_demangle
 
+// libstdc++/85768
+#if 0 // defined _GLIBCXX_HAVE_EXECINFO_H
+# include <execinfo.h> // for backtrace
+#endif
+
 #include "mutex_pool.h"
 
 using namespace std;
@@ -60,6 +65,10 @@ namespace
       & __gnu_internal::mask;
     return __gnu_internal::get_mutex(index);
   }
+
+#pragma GCC diagnostic push
+// Suppress -Wabi=2 warnings due to PR c++/51322 mangling change
+#pragma GCC diagnostic warning "-Wabi=6"
 
   void
   swap_its(__gnu_debug::_Safe_sequence_base& __lhs,
@@ -85,6 +94,7 @@ namespace
     swap_its(__lhs, __lhs._M_const_iterators,
 	     __rhs, __rhs._M_const_iterators);
   }
+#pragma GCC diagnostic pop
 
   template<typename _Action>
     void
@@ -372,9 +382,10 @@ namespace __gnu_debug
   _M_detach()
   {
     if (_M_sequence)
-      _M_sequence->_M_detach(this);
-
-    _M_reset();
+      {
+	_M_sequence->_M_detach(this);
+	_M_reset();
+      }
   }
 
   void
@@ -382,9 +393,10 @@ namespace __gnu_debug
   _M_detach_single() throw ()
   {
     if (_M_sequence)
-      _M_sequence->_M_detach_single(this);
-
-    _M_reset();
+      {
+	_M_sequence->_M_detach_single(this);
+	_M_reset();
+      }
   }
 
   void
@@ -455,9 +467,10 @@ namespace __gnu_debug
   _M_detach()
   {
     if (_M_sequence)
-      _M_get_container()->_M_detach_local(this);
-
-    _M_reset();
+      {
+	_M_get_container()->_M_detach_local(this);
+	_M_reset();
+      }
   }
 
   void
@@ -465,9 +478,10 @@ namespace __gnu_debug
   _M_detach_single() throw ()
   {
     if (_M_sequence)
-      _M_get_container()->_M_detach_local_single(this);
-
-    _M_reset();
+      {
+	_M_get_container()->_M_detach_local_single(this);
+	_M_reset();
+      }
   }
 
   void
@@ -716,7 +730,10 @@ namespace
 		"dereferenceable (start-of-sequence)",
 		"dereferenceable",
 		"past-the-end",
-		"before-begin"
+		"before-begin",
+		"dereferenceable (start-of-reverse-sequence)",
+		"dereferenceable (reverse)",
+		"past-the-reverse-end"
 	      };
 	    print_word(ctx, state_names[iterator._M_state]);
 	  }
@@ -923,9 +940,9 @@ namespace
 	    continue;
 	  }
 
-	if (*start != '%')
+	if (!num_parameters || *start != '%')
 	  {
-	    // Normal char.
+	    // Normal char or no parameter to look for.
 	    buf[bufindex++] = *start++;
 	    continue;
 	  }
@@ -1033,6 +1050,39 @@ namespace __gnu_debug
 
     if (ctx._M_max_length)
       ctx._M_wordwrap = true;
+
+    if (_M_function)
+      {
+	print_literal(ctx, "In function:\n");
+	print_string(ctx, _M_function, nullptr, 0);
+	print_literal(ctx, "\n");
+	ctx._M_first_line = true;
+	print_literal(ctx, "\n");
+      }
+
+// libstdc++/85768
+#if 0 //defined _GLIBCXX_HAVE_EXECINFO_H
+    {
+      void* stack[32];
+      int nb = backtrace(stack, 32);
+
+      // Note that we skip current method symbol.
+      if (nb > 1)
+	{
+	  print_literal(ctx, "Backtrace:\n");
+	  auto symbols = backtrace_symbols(stack, nb);
+	  for (int i = 1; i < nb; ++i)
+	    {
+	      print_word(ctx, symbols[i]);
+	      print_literal(ctx, "\n");
+	    }
+
+	  free(symbols);
+	  ctx._M_first_line = true;
+	  print_literal(ctx, "\n");
+	}
+    }
+#endif
 
     print_literal(ctx, "Error: ");
 

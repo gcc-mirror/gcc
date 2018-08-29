@@ -1,6 +1,6 @@
 /* Command line option handling.  Code involving global state that
    should not be shared with the driver.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -35,7 +35,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"
 #include "toplev.h"
 #include "context.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
+#include "file-prefix-map.h" /* add_*_prefix_map()  */
 
 typedef const char *const_char_p; /* For DEF_VEC_P.  */
 
@@ -167,7 +170,8 @@ lang_handle_option (struct gcc_options *opts,
 		    unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		    location_t loc,
 		    const struct cl_option_handlers *handlers,
-		    diagnostic_context *dc)
+		    diagnostic_context *dc,
+		    void (*) (void))
 {
   gcc_assert (opts == &global_options);
   gcc_assert (opts_set == &global_options_set);
@@ -267,10 +271,12 @@ decode_cmdline_options_to_array_default_mask (unsigned int argc,
 /* Set *HANDLERS to the default set of option handlers for use in the
    compilers proper (not the driver).  */
 void
-set_default_handlers (struct cl_option_handlers *handlers)
+set_default_handlers (struct cl_option_handlers *handlers,
+		      void (*target_option_override_hook) (void))
 {
   handlers->unknown_option_callback = unknown_option_callback;
   handlers->wrong_lang_callback = complain_wrong_lang;
+  handlers->target_option_override_hook = target_option_override_hook;
   handlers->num_handlers = 3;
   handlers->handlers[0].handler = lang_handle_option;
   handlers->handlers[0].mask = initial_lang_mask;
@@ -288,7 +294,8 @@ void
 decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		struct cl_decoded_option *decoded_options,
 		unsigned int decoded_options_count,
-		location_t loc, diagnostic_context *dc)
+		location_t loc, diagnostic_context *dc,
+		void (*target_option_override_hook) (void))
 {
   struct cl_option_handlers handlers;
 
@@ -296,7 +303,7 @@ decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   lang_mask = initial_lang_mask;
 
-  set_default_handlers (&handlers);
+  set_default_handlers (&handlers, target_option_override_hook);
 
   default_options_optimization (opts, opts_set,
 				decoded_options, decoded_options_count,
@@ -357,6 +364,10 @@ handle_common_deferred_options (void)
 
 	case OPT_fdebug_prefix_map_:
 	  add_debug_prefix_map (opt->arg);
+	  break;
+
+	case OPT_ffile_prefix_map_:
+	  add_file_prefix_map (opt->arg);
 	  break;
 
 	case OPT_fdump_:

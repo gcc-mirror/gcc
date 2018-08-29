@@ -8,8 +8,6 @@ extern void abort (void);
 short a[N];
 short d[N];
 
-volatile int y = 0;
-
 int foo ()
 {
   int i;
@@ -19,10 +17,7 @@ int foo ()
     {
       b[i] = i*3;
       c[i] = i;
-
-      /* Avoid vectorization.  */
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   /* Strided access pattern.  */

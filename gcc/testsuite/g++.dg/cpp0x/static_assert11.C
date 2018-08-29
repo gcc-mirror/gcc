@@ -6,5 +6,6 @@ struct A
   template<typename T> bool foo(T)
   {
     static_assert(foo(0), "Error"); // { dg-error "non-constant condition|constant expression" }
+    return true;
   }
 };

@@ -1,6 +1,6 @@
 // C++ includes used for precompiling -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,6 +47,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <cwchar>
+#include <cwctype>
 
 #if __cplusplus >= 201103L
 #include <ccomplex>
@@ -57,8 +59,6 @@
 #include <cstdint>
 #include <ctgmath>
 #include <cuchar>
-#include <cwchar>
-#include <cwctype>
 #endif
 
 // C++
@@ -120,4 +120,23 @@
 
 #if __cplusplus >= 201402L
 #include <shared_mutex>
+#endif
+
+#if __cplusplus >= 201703L
+#include <any>
+#include <charconv>
+// #include <execution>
+#include <filesystem>
+#include <optional>
+#include <memory_resource>
+#include <string_view>
+#include <variant>
+#endif
+
+#if __cplusplus > 201703L
+#include <bit>
+// #include <compare>
+// #include <span>
+// #include <syncstream>
+#include <version>
 #endif

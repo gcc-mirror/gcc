@@ -11,14 +11,14 @@ C PR fortran/30278
       rewind(10)
       read(10,'(A34)') str1
       str2 = 'Does ' // c1 // 'ackslash result in ' // c1 // 'ackslash'
-      if (str1 .ne. str2) call abort
+      if (str1 .ne. str2) STOP 1
 
       rewind(10)
       write (10, 200)
       rewind(10)
       read(10,'(A37)') str3
       str4 = 'Does ' //c2// 'backslash result in ' //c2// 'backslash'
-      if (str3 .ne. str4) call abort
+      if (str3 .ne. str4) STOP 2
 
       stop
  100  format ('Does \backslash result in \backslash')

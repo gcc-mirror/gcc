@@ -1,5 +1,5 @@
 /* PR target/pr78794 */
-/* { dg-do compile { target { ia32 } } } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -march=slm -mno-bmi -mno-stackrealign" } */
 /* { dg-final { scan-assembler "pandn" } } */
 

@@ -17,8 +17,8 @@ main ()
 }
 
 #if defined(__cplusplus) && __cplusplus >= 201103L
-static_assert (alignof (S) == 2 * alignof (double), "alignment of S");
-static_assert (alignof (T) == 2 * alignof (double), "alignment of T");
-static_assert (alignof (const S) == 2 * alignof (double), "alignment of const S");
-static_assert (alignof (const T) == 2 * alignof (double), "alignment of const T");
+static_assert (alignof (S) == 2 * __alignof__ (double), "alignment of S");
+static_assert (alignof (T) == 2 * __alignof__ (double), "alignment of T");
+static_assert (alignof (const S) == 2 * __alignof__ (double), "alignment of const S");
+static_assert (alignof (const T) == 2 * __alignof__ (double), "alignment of const T");
 #endif

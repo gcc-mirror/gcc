@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=f2003 -fall-intrinsics" }
+! { dg-options "-std=f2003" }
 ! { dg-shouldfail "Invalid code" }
 !
 ! Pointer intent test

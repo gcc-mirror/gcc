@@ -1,5 +1,5 @@
 /* Common hooks for SPARC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options sparc_option_optimization_table[] =
   {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     /* Enable redundant extension instructions removal at -O2 and higher.  */
     { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }

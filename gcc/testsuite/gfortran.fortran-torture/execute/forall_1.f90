@@ -15,8 +15,8 @@ contains
       forall (x = 1:3, j = 1:4)
          a (x,j) = j
       end forall
-      if (any (a.ne.reshape ((/1,1,1,2,2,2,3,3,3,4,4,4/), (/3,4/)))) call abort
-      if ((x.ne.-1).or.(j.ne.100)) call abort
+      if (any (a.ne.reshape ((/1,1,1,2,2,2,3,3,3,4,4,4/), (/3,4/)))) STOP 1
+      if ((x.ne.-1).or.(j.ne.100)) STOP 2
 
       call actual_variable_2 (x, j, a)
    end subroutine
@@ -31,9 +31,9 @@ contains
          b(x,j) = j
       end forall
 
-      if (any (a.ne.reshape ((/1,1,1,2,2,2,3,3,3,4,4,4/), (/3,4/)))) call abort
-      if (any (b.ne.reshape ((/1,1,1,2,2,2,3,3,3,4,4,4/), (/3,4/)))) call abort
-      if ((x.ne.-1).or.(j.ne.100)) call abort
+      if (any (a.ne.reshape ((/1,1,1,2,2,2,3,3,3,4,4,4/), (/3,4/)))) STOP 3
+      if (any (b.ne.reshape ((/1,1,1,2,2,2,3,3,3,4,4,4/), (/3,4/)))) STOP 4
+      if ((x.ne.-1).or.(j.ne.100)) STOP 5
    end subroutine
 
    subroutine negative_stride ()     
@@ -44,7 +44,7 @@ contains
       forall (x = 3:1:-1, j = 4:1:-1)
          a(x,j) = j + x
       end forall
-      if (any (a.ne.reshape ((/2,3,4,3,4,5,4,5,6,5,6,7/), (/3,4/)))) call abort
+      if (any (a.ne.reshape ((/2,3,4,3,4,5,4,5,6,5,6,7/), (/3,4/)))) STOP 6
    end subroutine
 
    subroutine forall_index
@@ -55,7 +55,7 @@ contains
               i10=1:2)
          a(i1+2*i3+4*i5+8*i7+16*i9-30,i2+2*i4+4*i6+8*i8+16*i10-30) = 1
       end forall
-      if ((a(5,5).ne.1).or. (a(32,32).ne.1)) call abort
+      if ((a(5,5).ne.1).or. (a(32,32).ne.1)) STOP 7
    end subroutine
 
 end

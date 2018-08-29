@@ -29,7 +29,7 @@ contains
     class(base_type), dimension(:), allocatable, intent(inout) :: a
     class(base_type), dimension(:), allocatable :: tmp
     allocate (tmp (2 * size (a))) ! how to alloc b with same type as a ?
-    if (trim (print_type ("tmp", tmp)) .ne. "tmp is base_type") call abort
+    if (trim (print_type ("tmp", tmp)) .ne. "tmp is base_type") STOP 1
     tmp(:size(a)) = a             ! polymorphic l.h.s.
     call move_alloc (from=tmp, to=a)
   end subroutine reallocate
@@ -51,8 +51,8 @@ program main
   class(base_type), dimension(:), allocatable :: a
 
   allocate (extended_type :: a(10))
-  if (trim (print_type ("a", a)) .ne. "a is extended_type") call abort
+  if (trim (print_type ("a", a)) .ne. "a is extended_type") STOP 2
   call reallocate (a)
-  if (trim (print_type ("a", a)) .ne. "a is base_type") call abort
+  if (trim (print_type ("a", a)) .ne. "a is base_type") STOP 3
   deallocate (a)
 end program main

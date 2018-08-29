@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "omp-offload.h"
 #include "context.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 const char * const tls_model_names[]={"none", "emulated",
 				      "global-dynamic", "local-dynamic",
@@ -305,6 +307,8 @@ varpool_node::get_constructor (void)
 		 file_data->file_name,
 		 name);
 
+  if (!quiet_flag)
+    fprintf (stderr, " in:%s", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
   lto_input_variable_constructor (file_data, this, data);
   gcc_assert (DECL_INITIAL (decl) != error_mark_node);
   lto_stats.num_function_bodies++;
@@ -396,12 +400,6 @@ ctor_for_folding (tree decl)
   tree real_decl;
 
   if (!VAR_P (decl) && TREE_CODE (decl) != CONST_DECL)
-    return error_mark_node;
-
-  /* Static constant bounds are created to be
-     used instead of constants and therefore
-     do not let folding it.  */
-  if (POINTER_BOUNDS_P (decl))
     return error_mark_node;
 
   if (TREE_CODE (decl) == CONST_DECL
@@ -786,10 +784,10 @@ varpool_node::create_extra_name_alias (tree alias, tree decl)
 {
   varpool_node *alias_node;
 
-#ifndef ASM_OUTPUT_DEF
   /* If aliases aren't supported by the assembler, fail.  */
-  return NULL;
-#endif
+  if (!TARGET_SUPPORTS_ALIASES)
+    return NULL;
+
   alias_node = varpool_node::create_alias (alias, decl);
   alias_node->cpp_implicit_alias = true;
 

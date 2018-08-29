@@ -22,7 +22,7 @@ program a
   deallocate(i)) ! { dg-error "Syntax error in DEALLOCATE" }
   deallocate(i, errmsg=err, errmsg=err) ! { dg-error "Redundant ERRMSG" }
   deallocate(i, errmsg=err) ! { dg-warning "useless without a STAT" }
-  deallocate(i, stat=j, errmsg=x) ! { dg-error "must be a scalar CHARACTER" }
+  deallocate(i, stat=j, errmsg=x) ! { dg-error "shall be a scalar default CHARACTER" }
 
   deallocate(err) ! { dg-error "nonprocedure pointer nor an allocatable" }
 

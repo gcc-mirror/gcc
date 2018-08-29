@@ -1,5 +1,5 @@
 /* Iterator routines for manipulating GENERIC and GIMPLE tree statements.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -41,7 +41,10 @@ alloc_stmt_list (void)
       TREE_SET_CODE (list, STATEMENT_LIST);
     }
   else
-    list = make_node (STATEMENT_LIST);
+    {
+      list = make_node (STATEMENT_LIST);
+      TREE_SIDE_EFFECTS (list) = 0;
+    }
   TREE_TYPE (list) = void_type_node;
   return list;
 }
@@ -89,7 +92,7 @@ append_to_statement_list_1 (tree t, tree *list_p)
 void
 append_to_statement_list (tree t, tree *list_p)
 {
-  if (t && TREE_SIDE_EFFECTS (t))
+  if (t && (TREE_SIDE_EFFECTS (t) || TREE_CODE (t) == DEBUG_BEGIN_STMT))
     append_to_statement_list_1 (t, list_p);
 }
 
@@ -137,7 +140,8 @@ tsi_link_before (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
       tail = head;
     }
 
-  TREE_SIDE_EFFECTS (i->container) = 1;
+  if (TREE_CODE (t) != DEBUG_BEGIN_STMT)
+    TREE_SIDE_EFFECTS (i->container) = 1;
 
   cur = i->ptr;
 
@@ -213,7 +217,8 @@ tsi_link_after (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
       tail = head;
     }
 
-  TREE_SIDE_EFFECTS (i->container) = 1;
+  if (TREE_CODE (t) != DEBUG_BEGIN_STMT)
+    TREE_SIDE_EFFECTS (i->container) = 1;
 
   cur = i->ptr;
 
@@ -279,8 +284,9 @@ tsi_delink (tree_stmt_iterator *i)
   i->ptr = next;
 }
 
-/* Return the first expression in a sequence of COMPOUND_EXPRs,
-   or in a STATEMENT_LIST.  */
+/* Return the first expression in a sequence of COMPOUND_EXPRs, or in
+   a STATEMENT_LIST, disregarding DEBUG_BEGIN_STMTs, recursing into a
+   STATEMENT_LIST if that's the first non-DEBUG_BEGIN_STMT.  */
 
 tree
 expr_first (tree expr)
@@ -291,7 +297,20 @@ expr_first (tree expr)
   if (TREE_CODE (expr) == STATEMENT_LIST)
     {
       struct tree_statement_list_node *n = STATEMENT_LIST_HEAD (expr);
-      return n ? n->stmt : NULL_TREE;
+      if (!n)
+	return NULL_TREE;
+      while (TREE_CODE (n->stmt) == DEBUG_BEGIN_STMT)
+	{
+	  n = n->next;
+	  if (!n)
+	    return NULL_TREE;
+	}
+      /* If the first non-debug stmt is not a statement list, we
+	 already know it's what we're looking for.  */
+      if (TREE_CODE (n->stmt) != STATEMENT_LIST)
+	return n->stmt;
+
+      return expr_first (n->stmt);
     }
 
   while (TREE_CODE (expr) == COMPOUND_EXPR)
@@ -300,8 +319,9 @@ expr_first (tree expr)
   return expr;
 }
 
-/* Return the last expression in a sequence of COMPOUND_EXPRs,
-   or in a STATEMENT_LIST.  */
+/* Return the last expression in a sequence of COMPOUND_EXPRs, or in a
+   STATEMENT_LIST, disregarding DEBUG_BEGIN_STMTs, recursing into a
+   STATEMENT_LIST if that's the last non-DEBUG_BEGIN_STMT.  */
 
 tree
 expr_last (tree expr)
@@ -312,7 +332,20 @@ expr_last (tree expr)
   if (TREE_CODE (expr) == STATEMENT_LIST)
     {
       struct tree_statement_list_node *n = STATEMENT_LIST_TAIL (expr);
-      return n ? n->stmt : NULL_TREE;
+      if (!n)
+	return NULL_TREE;
+      while (TREE_CODE (n->stmt) == DEBUG_BEGIN_STMT)
+	{
+	  n = n->prev;
+	  if (!n)
+	    return NULL_TREE;
+	}
+      /* If the last non-debug stmt is not a statement list, we
+	 already know it's what we're looking for.  */
+      if (TREE_CODE (n->stmt) != STATEMENT_LIST)
+	return n->stmt;
+
+      return expr_last (n->stmt);
     }
 
   while (TREE_CODE (expr) == COMPOUND_EXPR)

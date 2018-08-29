@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2015-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,7 @@ package Contracts is
    --  [generic] package, package body, protected unit, [generic] subprogram,
    --  subprogram body, variable or task unit denoted by Id. The following are
    --  valid pragmas:
+   --
    --    Abstract_State
    --    Async_Readers
    --    Async_Writers
@@ -66,6 +67,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of entry or
    --  subprogram body Body_Id as if they appeared at the end of a declarative
    --  region. Pragmas in question are:
+   --
    --    Contract_Cases   (stand alone subprogram body)
    --    Depends          (stand alone subprogram body)
    --    Global           (stand alone subprogram body)
@@ -82,6 +84,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of entry or
    --  subprogram Subp_Id as if they appeared at the end of a declarative
    --  region. The pragmas in question are:
+   --
    --    Contract_Cases
    --    Depends
    --    Global
@@ -98,6 +101,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of object Obj_Id as
    --  if they appeared at the end of the declarative region. The pragmas to be
    --  considered are:
+   --
    --    Async_Readers
    --    Async_Writers
    --    Depends           (single concurrent object)
@@ -115,6 +119,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of package body
    --  Body_Id as if they appeared at the end of a declarative region. The
    --  pragmas that are considered are:
+   --
    --    Refined_State
    --
    --  Freeze_Id is the entity of a [generic] package body or a [generic]
@@ -124,15 +129,9 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of package Pack_Id
    --  as if they appeared at the end of a declarative region. The pragmas
    --  that are considered are:
+   --
    --    Initial_Condition
    --    Initializes
-   --    Part_Of
-
-   procedure Analyze_Previous_Contracts (Body_Decl : Node_Id);
-   --  Analyze the contracts of all source constructs found in the declarative
-   --  list which contains entry, package, protected, subprogram, or task body
-   --  denoted by Body_Decl. The analysis stops once Body_Decl is reached. In
-   --  addition, analyze the contract of the nearest enclosing package body.
 
    procedure Analyze_Protected_Contract (Prot_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of protected unit
@@ -143,6 +142,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of subprogram body
    --  stub Stub_Id as if they appeared at the end of a declarative region. The
    --  pragmas in question are:
+   --
    --    Contract_Cases
    --    Depends
    --    Global
@@ -157,6 +157,7 @@ package Contracts is
    --  Analyze all delayed pragmas chained on the contract of task unit Task_Id
    --  as if they appeared at the end of a declarative region. The pragmas in
    --  question are:
+   --
    --    Depends
    --    Global
 
@@ -164,6 +165,12 @@ package Contracts is
    --  Create a contract node for a generic package, generic subprogram, or a
    --  generic body denoted by Unit by collecting all source contract-related
    --  pragmas in the contract of the unit.
+
+   procedure Freeze_Previous_Contracts (Body_Decl : Node_Id);
+   --  Freeze the contracts of all source constructs found in the declarative
+   --  list which contains entry, package, protected, subprogram, or task body
+   --  denoted by Body_Decl. In addition, freeze the contract of the nearest
+   --  enclosing package body.
 
    procedure Inherit_Subprogram_Contract
      (Subp      : Entity_Id;

@@ -1,5 +1,5 @@
 /* Declarations for interface to insn recognizer and insn-output.c.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -136,7 +136,7 @@ extern void extract_constrain_insn (rtx_insn *insn);
 extern void extract_constrain_insn_cached (rtx_insn *);
 extern void extract_insn_cached (rtx_insn *);
 extern void preprocess_constraints (int, int, const char **,
-				    operand_alternative *);
+				    operand_alternative *, rtx **);
 extern const operand_alternative *preprocess_insn_constraints (unsigned int);
 extern void preprocess_constraints (rtx_insn *);
 extern rtx_insn *peep2_next_insn (int);
@@ -294,7 +294,7 @@ struct insn_gen_fn
   typedef rtx_insn * (*f15) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
   typedef rtx_insn * (*f16) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
 
-  typedef f0 stored_funcptr;
+  typedef void (*stored_funcptr) (void);
 
   rtx_insn * operator () (void) const { return ((f0)func) (); }
   rtx_insn * operator () (rtx a0) const { return ((f1)func) (a0); }

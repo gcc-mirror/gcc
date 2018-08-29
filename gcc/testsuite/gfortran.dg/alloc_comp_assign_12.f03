@@ -18,7 +18,7 @@ contains
     class(foo_t) :: this
     real, intent(in) :: u(:)
     this%u = u(int (u))       ! The failure to allocate occurred here.
-    if (.not.allocated (this%u)) call abort
+    if (.not.allocated (this%u)) STOP 1
   end subroutine make
   function disp(this)
     implicit none
@@ -35,8 +35,8 @@ program main2
   real, allocatable :: u(:)
   u=real ([3,2,1,4])
   call o%make(u)
-  if (any (int (o%disp()) .ne. [1,2,3,4])) call abort
+  if (any (int (o%disp()) .ne. [1,2,3,4])) STOP 2
   u=real ([2,1])
   call o%make(u)
-  if (any (int (o%disp()) .ne. [1,2])) call abort
+  if (any (int (o%disp()) .ne. [1,2])) STOP 3
 end program main2

@@ -4,5 +4,5 @@
       program main
       character(len=10) line
       write (line,'(1X,A,T1,A)') 'A','B'
-      if (line.ne.'BA') call abort()
+      if (line.ne.'BA') STOP 1
       end

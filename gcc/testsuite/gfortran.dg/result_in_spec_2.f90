@@ -25,6 +25,6 @@ end function f
 program test
   use test1
   implicit none
-  if(len (test2()) /= 3) call abort ()
-  if(test2() /= '123') call abort ()
+  if(len (test2()) /= 3) STOP 1
+  if(test2() /= '123') STOP 2
 end program test

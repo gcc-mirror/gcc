@@ -7,5 +7,5 @@
        write (buffer ,'(6(1X,1PG9.0e2))') 0.0, 0.04, 0.06, 0.4, 0.6, 243.0
        write (buffer1,'(6(1X,1PE9.0e2))') 0.0, 0.04, 0.06, 0.4, 0.6, 243.0
 
-       if (buffer /= buffer1) call abort
+       if (buffer /= buffer1) STOP 1
        end

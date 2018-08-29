@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -13,6 +13,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -62,7 +64,7 @@ spu_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
       if (ident)
 	{
 	  enum rid rid_code = (enum rid)(ident->rid_code);
-	  if (ident->type == NT_MACRO)
+	  if (cpp_macro_p (ident))
 	    {
 	      (void) cpp_get_token (pfile);
 	      tok = cpp_peek_token (pfile, 0);

@@ -40,9 +40,9 @@ program main
 
   a2 = -b1
   call a1b2(a1,b1,c1)
-  if (any(abs(c1 - (/248., -749./)) > 1e-3)) call abort
+  if (any(abs(c1 - (/248., -749./)) > 1e-3)) STOP 1
   call a2b1(a2,b2,c2)
-  if (any(abs(c2 - (/39., -61., 75./)) > 1e-3)) call abort
+  if (any(abs(c2 - (/39., -61., 75./)) > 1e-3)) STOP 2
 end program main
 
 ! { dg-final { scan-tree-dump-times "_gfortran_matmul" 0 "original" } }

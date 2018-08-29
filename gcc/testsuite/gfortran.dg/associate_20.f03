@@ -23,8 +23,8 @@ program p
   i(:,2) = (/ 4 , 5 , 6 /)
 
   associate( ai => a(:,i(:,1))%i )
-    if (any(shape(ai) /= [2, 3])) call abort()
-    if (any(reshape(ai, [6]) /= [1 , -10, 3, -30, 5, -50])) call abort()
+    if (any(shape(ai) /= [2, 3])) STOP 1
+    if (any(reshape(ai, [6]) /= [1 , -10, 3, -30, 5, -50])) STOP 2
   end associate
 
   deallocate(a)

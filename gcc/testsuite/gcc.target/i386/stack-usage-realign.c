@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
-/* { dg-skip-if "no stack realignment" { *-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "no stack realignment" { *-*-darwin* } } */
 /* { dg-options "-fstack-usage -msse2 -mforce-drap" } */
 
 typedef int __attribute__((vector_size(16))) vec;

@@ -29,7 +29,7 @@ end subroutine foo
   common // chr
   character(8) :: chr
   call foo (foobar1)
-  if (chr .ne. "foobar1") call abort ()
+  if (chr .ne. "foobar1") STOP 1
   call foo (foobar2)
-  if (chr .ne. "foobar2") call abort ()
+  if (chr .ne. "foobar2") STOP 2
 end

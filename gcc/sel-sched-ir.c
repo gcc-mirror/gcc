@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1324,7 +1324,7 @@ sel_insn_rtx_cost (rtx_insn *insn)
 }
 
 /* Return the cost of the VI.
-   !!! FIXME: Unify with haifa-sched.c: insn_cost ().  */
+   !!! FIXME: Unify with haifa-sched.c: insn_sched_cost ().  */
 int
 sel_vinsn_cost (vinsn_t vi)
 {
@@ -1837,8 +1837,12 @@ merge_expr_data (expr_t to, expr_t from, insn_t split_point)
   if (EXPR_PRIORITY (to) < EXPR_PRIORITY (from))
     EXPR_PRIORITY (to) = EXPR_PRIORITY (from);
 
-  if (EXPR_SCHED_TIMES (to) > EXPR_SCHED_TIMES (from))
-    EXPR_SCHED_TIMES (to) = EXPR_SCHED_TIMES (from);
+  /* We merge sched-times half-way to the larger value to avoid the endless
+     pipelining of unneeded insns.  The average seems to be good compromise
+     between pipelining opportunities and avoiding extra work.  */
+  if (EXPR_SCHED_TIMES (to) != EXPR_SCHED_TIMES (from))
+    EXPR_SCHED_TIMES (to) = ((EXPR_SCHED_TIMES (from) + EXPR_SCHED_TIMES (to)
+                             + 1) / 2);
 
   if (EXPR_ORIG_BB_INDEX (to) != EXPR_ORIG_BB_INDEX (from))
     EXPR_ORIG_BB_INDEX (to) = 0;
@@ -3293,11 +3297,22 @@ has_dependence_note_mem_dep (rtx mem ATTRIBUTE_UNUSED,
 
 /* Note a dependence.  */
 static void
-has_dependence_note_dep (insn_t pro ATTRIBUTE_UNUSED,
-			 ds_t ds ATTRIBUTE_UNUSED)
+has_dependence_note_dep (insn_t pro, ds_t ds ATTRIBUTE_UNUSED)
 {
-  if (!sched_insns_conditions_mutex_p (has_dependence_data.pro,
-				       VINSN_INSN_RTX (has_dependence_data.con)))
+  insn_t real_pro = has_dependence_data.pro;
+  insn_t real_con = VINSN_INSN_RTX (has_dependence_data.con);
+
+  /* We do not allow for debug insns to move through others unless they
+     are at the start of bb.  This movement may create bookkeeping copies
+     that later would not be able to move up, violating the invariant
+     that a bookkeeping copy should be movable as the original insn.
+     Detect that here and allow that movement if we allowed it before
+     in the first place.  */
+  if (DEBUG_INSN_P (real_con) && !DEBUG_INSN_P (real_pro)
+      && INSN_UID (NEXT_INSN (pro)) == INSN_UID (real_con))
+    return;
+
+  if (!sched_insns_conditions_mutex_p (real_pro, real_con))
     {
       ds_t *dsp = &has_dependence_data.has_dep_p[has_dependence_data.where];
 
@@ -3839,9 +3854,13 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
       && INSN_SCHED_TIMES (BB_END (xbb)) == 0
       && !IN_CURRENT_FENCE_P (BB_END (xbb)))
     {
-      if (sel_remove_insn (BB_END (xbb), false, false))
-        return true;
+      /* We used to call sel_remove_insn here that can trigger tidy_control_flow
+         before we fix up the fallthru edge.  Correct that ordering by
+	 explicitly doing the latter before the former.  */
+      clear_expr (INSN_EXPR (BB_END (xbb)));
       tidy_fallthru_edge (EDGE_SUCC (xbb, 0));
+      if (tidy_control_flow (xbb, false))
+	return true;
     }
 
   first = sel_bb_head (xbb);
@@ -3889,6 +3908,19 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
         = sel_redirect_edge_and_branch (EDGE_SUCC (xbb->prev_bb, 0), xbb);
 
       gcc_assert (EDGE_SUCC (xbb->prev_bb, 0)->flags & EDGE_FALLTHRU);
+
+      /* We could have skipped some debug insns which did not get removed with the block,
+         and the seqnos could become incorrect.  Fix them up here.  */
+      if (MAY_HAVE_DEBUG_INSNS && (sel_bb_head (xbb) != first || sel_bb_end (xbb) != last))
+       {
+         if (!sel_bb_empty_p (xbb->prev_bb))
+           {
+             int prev_seqno = INSN_SEQNO (sel_bb_end (xbb->prev_bb));
+             if (prev_seqno > INSN_SEQNO (sel_bb_head (xbb)))
+               for (insn_t insn = sel_bb_head (xbb); insn != first; insn = NEXT_INSN (insn))
+                 INSN_SEQNO (insn) = prev_seqno + 1;
+           }
+       }
 
       /* It can turn out that after removing unused jump, basic block
          that contained that jump, becomes empty too.  In such case
@@ -4747,7 +4779,11 @@ compute_succs_info (insn_t insn, short flags)
           sinfo->probs_ok.safe_push (
 		    /* FIXME: Improve calculation when skipping
                        inner loop to exits.  */
-                    si.bb_end ? si.e1->probability : REG_BR_PROB_BASE);
+                    si.bb_end
+		    ? (si.e1->probability.initialized_p ()
+                       ? si.e1->probability.to_reg_br_prob_base ()
+                       : 0)
+		    : REG_BR_PROB_BASE);
           sinfo->succs_ok_n++;
         }
       else
@@ -4756,8 +4792,8 @@ compute_succs_info (insn_t insn, short flags)
       /* Compute all_prob.  */
       if (!si.bb_end)
         sinfo->all_prob = REG_BR_PROB_BASE;
-      else
-        sinfo->all_prob += si.e1->probability;
+      else if (si.e1->probability.initialized_p ())
+        sinfo->all_prob += si.e1->probability.to_reg_br_prob_base ();
 
       sinfo->all_succs_n++;
     }

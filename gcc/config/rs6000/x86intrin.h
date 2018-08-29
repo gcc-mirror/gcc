@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -29,15 +29,22 @@
    Note that much code that uses Intel intrinsics can be rewritten in
    standard C or GNU C extensions, which are more portable and better
    optimized across multiple targets.  */
-#warning "Please read comment above.  Use -DNO_WARN_X86_INTRINSICS to disable this warning."
+#error "Please read comment above.  Use -DNO_WARN_X86_INTRINSICS to disable this error."
 #endif
 
 #ifndef _X86INTRIN_H_INCLUDED
 #define _X86INTRIN_H_INCLUDED
 
+#ifdef __ALTIVEC__
+#include <mmintrin.h>
+
+#include <xmmintrin.h>
+
+#include <emmintrin.h>
+#endif /* __ALTIVEC__ */
+
 #include <bmiintrin.h>
 
 #include <bmi2intrin.h>
-
 
 #endif /* _X86INTRIN_H_INCLUDED */

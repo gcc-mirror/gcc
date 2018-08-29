@@ -6,7 +6,7 @@
 
 void athrow(const ANY & e)
 #if __cplusplus <= 201402L
-throw(ANY)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw(ANY)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
    throw e; // { dg-bogus "" } discarding const

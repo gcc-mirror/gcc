@@ -118,7 +118,7 @@ contains
         character(len=20) :: s
         
         write(s, fmt) x
-        if (s /= cmp) call abort
+        if (s /= cmp) STOP 1
         !if (s /= cmp) print "(a,1x,a,' expected: ',1x)", fmt, s, cmp
     end subroutine
 end program

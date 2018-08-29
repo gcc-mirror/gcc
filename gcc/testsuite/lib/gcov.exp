@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ proc verify-lines { testname testcase file } {
     while { [gets $fd line] >= 0 } {
         # We want to match both "-" and "#####" as count as well as numbers,
         # since we want to detect lines that shouldn't be marked as covered.
-	if [regexp "^ *(\[^:]*): *(\[0-9\\-#]+):.*count\\((\[0-9\\-#=]+)\\)(.*)" \
+	if [regexp "^ *(\[^:]*): *(\[0-9\\-#]+):.*count\\((\[0-9\\-#=\\.kMGTPEZY]+)\\)(.*)" \
 		"$line" all is n shouldbe rest] {
 	    if [regexp "^ *{(.*)}" $rest all xfailed] {
 		switch [dg-process-target $xfailed] {
@@ -108,7 +108,7 @@ proc verify-intermediate { testname testcase file } {
 	if [regexp "^function:(\[0-9\]+),(\[0-9\]+),.*" $line] {
 	    incr function
 	}
-	if [regexp "^lcount:(\[0-9\]+),(\[0-9\]+)" $line] {
+	if [regexp "^lcount:(\[0-9\]+),(\[0-9\]+),(\[01\])" $line] {
 	    incr lcount
 	}
 	if [regexp "^branch:(\[0-9\]+),(taken|nottaken|notexec)" $line] {

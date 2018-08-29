@@ -6,8 +6,8 @@ void transpose0(double* out, _Atomic double* in) { }
 void transpose1(double out[2][2], _Atomic double in[2][2]) { }
 void transpose2(double out[2][2][2], _Atomic double in[2][2][2]) { }
 // return
-int (*x2(_Atomic int x[3][3]))[3] { return x; } /* { dg-warning "return from incompatible pointer type" } */
-_Atomic int (*x3(int x[3][3]))[3] { return x; } /* { dg-warning "return from incompatible pointer type" } */
+int (*x2(_Atomic int x[3][3]))[3] { return x; } /* { dg-warning "returning '_Atomic int \\(\\*\\)\\\[3\\\]' from a function with incompatible return type" } */
+_Atomic int (*x3(int x[3][3]))[3] { return x; } /* { dg-warning "returning 'int \\(\\*\\)\\\[3\\\]' from a function with incompatible return type" } */
 void test(void)
 {
 	double x0[2];
@@ -31,13 +31,13 @@ void test(void)
 	transpose2(y2, o2); /* { dg-warning "passing argument 2 of 'transpose2' from incompatible pointer type" } */
 	transpose2(y2, x2); /* { dg-warning "passing argument 2 of 'transpose2' from incompatible pointer type" } */
 	// initialization
-	_Atomic double (*x0p) = x0; /* { dg-warning "initialization from incompatible pointer type" } */
-	_Atomic double (*x1p)[2] = x1; /* { dg-warning "initialization from incompatible pointer type" } */
-	_Atomic double (*x2p)[2][2] = x2; /* { dg-warning "initialization from incompatible pointer type" } */
+	_Atomic double (*x0p) = x0; /* { dg-warning "initialization of '_Atomic double \\*' from incompatible pointer type" } */
+	_Atomic double (*x1p)[2] = x1; /* { dg-warning "initialization of '_Atomic double \\(\\*\\)\\\[2\\\]' from incompatible pointer type" } */
+	_Atomic double (*x2p)[2][2] = x2; /* { dg-warning "initialization of '_Atomic double \\(\\*\\)\\\[2\\\]\\\[2\\\]' from incompatible pointer type" } */
 	// assignment
-	x0p = x0; /* { dg-warning "assignment from incompatible pointer type" } */
-	x1p = x1; /* { dg-warning "assignment from incompatible pointer type" } */
-	x2p = x2; /* { dg-warning "assignment from incompatible pointer type" } */
+	x0p = x0; /* { dg-warning "assignment to '_Atomic double \\*' from incompatible pointer type" } */
+	x1p = x1; /* { dg-warning "assignment to '_Atomic double \\(\\*\\)\\\[2\\\]' from incompatible pointer type" } */
+	x2p = x2; /* { dg-warning "assignment to '_Atomic double \\(\\*\\)\\\[2\\\]\\\[2\\\]' from incompatible pointer type" } */
 	// subtraction
 	&(x0[1]) - &(z0[0]); /* { dg-error "invalid operands to binary" } */
 	&(x1[1]) - &(z1[0]); /* { dg-error "invalid operands to binary" } */

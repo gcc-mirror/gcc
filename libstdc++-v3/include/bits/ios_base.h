@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -469,13 +469,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Request a seek relative to the current end of the sequence.
     static const seekdir end =		_S_end;
 
-    // Annex D.6
+#if __cplusplus <= 201402L
+    // Annex D.6 (removed in C++17)
     typedef int io_state;
     typedef int open_mode;
     typedef int seek_dir;
 
     typedef std::streampos streampos;
     typedef std::streamoff streamoff;
+#endif
 
     // Callbacks;
     /**
@@ -604,6 +606,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       Init();
       ~Init();
+
+#if __cplusplus >= 201103L
+      Init(const Init&) = default;
+      Init& operator=(const Init&) = default;
+#endif
 
     private:
       static _Atomic_word	_S_refcount;
@@ -808,7 +815,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     long&
     iword(int __ix)
     {
-      _Words& __word = (__ix < _M_word_size)
+      _Words& __word = ((unsigned)__ix < (unsigned)_M_word_size)
 			? _M_word[__ix] : _M_grow_words(__ix, true);
       return __word._M_iword;
     }
@@ -829,7 +836,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void*&
     pword(int __ix)
     {
-      _Words& __word = (__ix < _M_word_size)
+      _Words& __word = ((unsigned)__ix < (unsigned)_M_word_size)
 			? _M_word[__ix] : _M_grow_words(__ix, false);
       return __word._M_pword;
     }

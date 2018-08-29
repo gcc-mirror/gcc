@@ -1,5 +1,5 @@
 /* Extra machine modes of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -18,4 +18,6 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* So far, there is no need to define any modes for nds32 target.  */
+/* Vector modes.  */
+VECTOR_MODES (INT, 4);        /*            V4QI V2HI */
+VECTOR_MODES (INT, 8);        /*            V8QI V4HI V2SI */

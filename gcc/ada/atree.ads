@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -570,11 +570,23 @@ package Atree is
    --  are appropriately updated. This function is used only by Sinfo.CN to
    --  change nodes into their corresponding entities.
 
+   type Ignored_Ghost_Record_Proc is access procedure (N : Node_Or_Entity_Id);
+
+   procedure Set_Ignored_Ghost_Recording_Proc
+     (Proc : Ignored_Ghost_Record_Proc);
+   --  Register a procedure that is invoked when an ignored Ghost node or
+   --  entity is created.
+
    type Report_Proc is access procedure (Target : Node_Id; Source : Node_Id);
 
-   procedure Set_Reporting_Proc (P : Report_Proc);
+   procedure Set_Reporting_Proc (Proc : Report_Proc);
    --  Register a procedure that is invoked when a node is allocated, replaced
    --  or rewritten.
+
+   type Rewrite_Proc is access procedure (Target : Node_Id; Source : Node_Id);
+
+   procedure Set_Rewriting_Proc (Proc : Rewrite_Proc);
+   --  Register a procedure that is invoked when a node is rewritten
 
    type Traverse_Result is (Abandon, OK, OK_Orig, Skip);
    --  This is the type of the result returned by the Process function passed
@@ -740,6 +752,33 @@ package Atree is
       V7 : Node_Kind;
       V8 : Node_Kind;
       V9 : Node_Kind) return Boolean;
+
+   function Nkind_In
+     (N   : Node_Id;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind) return Boolean;
+
+   function Nkind_In
+     (N   : Node_Id;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind;
+      V11 : Node_Kind) return Boolean;
 
    pragma Inline (Nkind_In);
    --  Inline all above functions
@@ -1490,6 +1529,9 @@ package Atree is
 
       function Elist29 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist29);
+
+      function Elist30 (N : Node_Id) return Elist_Id;
+      pragma Inline (Elist30);
 
       function Elist36 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist36);
@@ -2856,6 +2898,9 @@ package Atree is
 
       procedure Set_Elist29 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist29);
+
+      procedure Set_Elist30 (N : Node_Id; Val : Elist_Id);
+      pragma Inline (Set_Elist30);
 
       procedure Set_Elist36 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist36);
@@ -4231,25 +4276,26 @@ package Atree is
       --  for extending components are completely unused.
 
       type Flags_Byte is record
-         Flag0  : Boolean;
+         Flag0 : Boolean;
          --  Note: we don't use Flag0 at the moment. To put Flag0 into use
          --  requires some awkward work in Treeprs (treeprs.adt), so for the
          --  moment we don't use it.
 
-         Flag1  : Boolean;
-         Flag2  : Boolean;
-         Flag3  : Boolean;
+         Flag1 : Boolean;
+         Flag2 : Boolean;
+         Flag3 : Boolean;
          --  These flags are used in the usual manner in Sinfo and Einfo
 
-         Is_Ignored_Ghost_Node : Boolean;
-         --  Flag denoting whether the node is subject to pragma Ghost with
-         --  policy Ignore. The name of the flag should be Flag4, however this
-         --  requires changing the names of all remaining 300+ flags.
+         --  The flags listed below use explicit names because following the
+         --  FlagXXX convention would mean reshuffling of over 300+ flags.
 
          Check_Actuals : Boolean;
          --  Flag set to indicate that the marked node is subject to the check
-         --  for writable actuals. See xxx for more details. Again it would be
-         --  more uniform to use some Flagx here, but that would be disruptive.
+         --  for writable actuals.
+
+         Is_Ignored_Ghost_Node : Boolean;
+         --  Flag denoting whether the node is subject to pragma Ghost with
+         --  policy Ignore.
 
          Spare2 : Boolean;
          Spare3 : Boolean;

@@ -7,6 +7,6 @@ program main
 
   type (xyz) :: a  !! ok
   type (xyz) b    !!! not initialized !!!
-  if (a%x.ne.123) call abort
-  if (b%x.ne.123) call abort
+  if (a%x.ne.123) STOP 1
+  if (b%x.ne.123) STOP 2
 end

@@ -274,11 +274,11 @@ subroutine test13
   use m
 !$omp declare reduction (foo : integer : omp_out = omp_out + omp_in) initializer (omp_priv = 0)
 !$omp declare reduction (bar : integer : omp_out = & ! { dg-error "Different shape for array assignment at \[^\n\r]* on dimension 1 .9 and 10" }
-!$omp & fn5 (omp_out, omp_in)) & ! { dg-warning "Actual argument contains too few elements for dummy argument \[^\n\r]* .9/10" }
-!$omp & initializer (sub5 (omp_priv, omp_orig)) ! { dg-warning "Actual argument contains too few elements for dummy argument \[^\n\r]* .9/10" }
-!$omp declare reduction (baz : integer : sub6 (omp_out, omp_in)) & ! { dg-warning "Actual argument contains too few elements for dummy argument \[^\n\r]* .9/10" }
+!$omp & fn5 (omp_out, omp_in)) & ! { dg-error "Actual argument contains too few elements for dummy argument \[^\n\r]* .9/10" }
+!$omp & initializer (sub5 (omp_priv, omp_orig)) ! { dg-error "Actual argument contains too few elements for dummy argument \[^\n\r]* .9/10" }
+!$omp declare reduction (baz : integer : sub6 (omp_out, omp_in)) & ! { dg-error "Actual argument contains too few elements for dummy argument \[^\n\r]* .9/10" }
 !$omp initializer (omp_priv = & ! { dg-error "Different shape for array assignment at \[^\n\r]* on dimension 1 .9 and 10" }
-!$omp & fn6 (omp_orig)) ! { dg-warning "Actual argument contains too few elements for dummy argument \[^\n\r]* .9/10" }
+!$omp & fn6 (omp_orig)) ! { dg-error "Actual argument contains too few elements for dummy argument \[^\n\r]* .9/10" }
   integer :: a(9)
 !$omp parallel reduction (foo : a)
 !$omp end parallel

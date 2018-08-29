@@ -1,5 +1,3 @@
-#ifndef NO_LABEL_VALUES
+/* { dg-require-effective-target label_values } */
+
 a(){int**b[]={&&c};c:;}
-#else
-int x;
-#endif

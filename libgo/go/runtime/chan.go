@@ -26,6 +26,7 @@ import (
 // themselves, so that the compiler will export them.
 //
 //go:linkname makechan runtime.makechan
+//go:linkname makechan64 runtime.makechan64
 //go:linkname chansend1 runtime.chansend1
 //go:linkname chanrecv1 runtime.chanrecv1
 //go:linkname chanrecv2 runtime.chanrecv2
@@ -64,11 +65,19 @@ type waitq struct {
 }
 
 //go:linkname reflect_makechan reflect.makechan
-func reflect_makechan(t *chantype, size int64) *hchan {
+func reflect_makechan(t *chantype, size int) *hchan {
 	return makechan(t, size)
 }
 
-func makechan(t *chantype, size int64) *hchan {
+func makechan64(t *chantype, size int64) *hchan {
+	if int64(int(size)) != size {
+		panic(plainError("makechan: size out of range"))
+	}
+
+	return makechan(t, int(size))
+}
+
+func makechan(t *chantype, size int) *hchan {
 	elem := t.elem
 
 	// compiler checks this but be safe.
@@ -78,29 +87,33 @@ func makechan(t *chantype, size int64) *hchan {
 	if hchanSize%maxAlign != 0 || elem.align > maxAlign {
 		throw("makechan: bad alignment")
 	}
-	if size < 0 || int64(uintptr(size)) != size || (elem.size > 0 && uintptr(size) > (_MaxMem-hchanSize)/elem.size) {
+
+	if size < 0 || uintptr(size) > maxSliceCap(elem.size) || uintptr(size)*elem.size > _MaxMem-hchanSize {
 		panic(plainError("makechan: size out of range"))
 	}
 
+	// Hchan does not contain pointers interesting for GC when elements stored in buf do not contain pointers.
+	// buf points into the same allocation, elemtype is persistent.
+	// SudoG's are referenced from their owning thread so they can't be collected.
+	// TODO(dvyukov,rlh): Rethink when collector can move allocated objects.
 	var c *hchan
-	if elem.kind&kindNoPointers != 0 || size == 0 {
-		// Allocate memory in one call.
-		// Hchan does not contain pointers interesting for GC in this case:
-		// buf points into the same allocation, elemtype is persistent.
-		// SudoG's are referenced from their owning thread so they can't be collected.
-		// TODO(dvyukov,rlh): Rethink when collector can move allocated objects.
+	switch {
+	case size == 0 || elem.size == 0:
+		// Queue or element size is zero.
+		c = (*hchan)(mallocgc(hchanSize, nil, true))
+		// Race detector uses this location for synchronization.
+		c.buf = unsafe.Pointer(c)
+	case elem.kind&kindNoPointers != 0:
+		// Elements do not contain pointers.
+		// Allocate hchan and buf in one call.
 		c = (*hchan)(mallocgc(hchanSize+uintptr(size)*elem.size, nil, true))
-		if size > 0 && elem.size != 0 {
-			c.buf = add(unsafe.Pointer(c), hchanSize)
-		} else {
-			// race detector uses this location for synchronization
-			// Also prevents us from pointing beyond the allocation (see issue 9401).
-			c.buf = unsafe.Pointer(c)
-		}
-	} else {
+		c.buf = add(unsafe.Pointer(c), hchanSize)
+	default:
+		// Elements contain pointers.
 		c = new(hchan)
-		c.buf = newarray(elem, int(size))
+		c.buf = mallocgc(uintptr(size)*elem.size, elem, true)
 	}
+
 	c.elemsize = uint16(elem.size)
 	c.elemtype = elem
 	c.dataqsiz = uint(size)
@@ -118,8 +131,8 @@ func chanbuf(c *hchan, i uint) unsafe.Pointer {
 
 // entry point for c <- x from compiled code
 //go:nosplit
-func chansend1(t *chantype, c *hchan, elem unsafe.Pointer) {
-	chansend(t, c, elem, true, getcallerpc(unsafe.Pointer(&t)))
+func chansend1(c *hchan, elem unsafe.Pointer) {
+	chansend(c, elem, true, getcallerpc())
 }
 
 /*
@@ -134,12 +147,10 @@ func chansend1(t *chantype, c *hchan, elem unsafe.Pointer) {
  * been closed.  it is easiest to loop and re-run
  * the operation; we'll see that it's now closed.
  */
-func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uintptr) bool {
-	if raceenabled {
-		raceReadObjectPC(t.elem, ep, callerpc, funcPC(chansend))
-	}
-	if msanenabled {
-		msanread(ep, t.elem.size)
+func chansend(c *hchan, ep unsafe.Pointer, block bool, callerpc uintptr) bool {
+	// Check preemption, since unlike gc we don't check on every call.
+	if getg().preempt {
+		checkPreempt()
 	}
 
 	if c == nil {
@@ -192,7 +203,7 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
 	if sg := c.recvq.dequeue(); sg != nil {
 		// Found a waiting receiver. We pass the value we want to send
 		// directly to the receiver, bypassing the channel buffer (if any).
-		send(c, sg, ep, func() { unlock(&c.lock) })
+		send(c, sg, ep, func() { unlock(&c.lock) }, 3)
 		return true
 	}
 
@@ -230,7 +241,7 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
 	mysg.elem = ep
 	mysg.waitlink = nil
 	mysg.g = gp
-	mysg.selectdone = nil
+	mysg.isSelect = false
 	mysg.c = c
 	gp.waiting = mysg
 	gp.param = nil
@@ -263,7 +274,7 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
 // Channel c must be empty and locked.  send unlocks c with unlockf.
 // sg must already be dequeued from c.
 // ep must be non-nil and point to the heap or the caller's stack.
-func send(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func()) {
+func send(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func(), skip int) {
 	if raceenabled {
 		if c.dataqsiz == 0 {
 			racesync(c, sg)
@@ -293,7 +304,7 @@ func send(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func()) {
 	if sg.releasetime != 0 {
 		sg.releasetime = cputicks()
 	}
-	goready(gp, 4)
+	goready(gp, skip+1)
 }
 
 // Sends and receives on unbuffered or empty-buffered channels are the
@@ -338,7 +349,7 @@ func closechan(c *hchan) {
 	}
 
 	if raceenabled {
-		callerpc := getcallerpc(unsafe.Pointer(&c))
+		callerpc := getcallerpc()
 		racewritepc(unsafe.Pointer(c), callerpc, funcPC(closechan))
 		racerelease(unsafe.Pointer(c))
 	}
@@ -400,13 +411,13 @@ func closechan(c *hchan) {
 
 // entry points for <- c from compiled code
 //go:nosplit
-func chanrecv1(t *chantype, c *hchan, elem unsafe.Pointer) {
-	chanrecv(t, c, elem, true)
+func chanrecv1(c *hchan, elem unsafe.Pointer) {
+	chanrecv(c, elem, true)
 }
 
 //go:nosplit
-func chanrecv2(t *chantype, c *hchan, elem unsafe.Pointer) (received bool) {
-	_, received = chanrecv(t, c, elem, true)
+func chanrecv2(c *hchan, elem unsafe.Pointer) (received bool) {
+	_, received = chanrecv(c, elem, true)
 	return
 }
 
@@ -416,12 +427,17 @@ func chanrecv2(t *chantype, c *hchan, elem unsafe.Pointer) (received bool) {
 // Otherwise, if c is closed, zeros *ep and returns (true, false).
 // Otherwise, fills in *ep with an element and returns (true, true).
 // A non-nil ep must point to the heap or the caller's stack.
-func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, received bool) {
+func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool) {
 	// raceenabled: don't need to check ep, as it is always on the stack
 	// or is new memory allocated by reflect.
 
 	if debugChan {
 		print("chanrecv: chan=", c, "\n")
+	}
+
+	// Check preemption, since unlike gc we don't check on every call.
+	if getg().preempt {
+		checkPreempt()
 	}
 
 	if c == nil {
@@ -473,7 +489,7 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
 		// directly from sender. Otherwise, receive from head of queue
 		// and add sender's value to the tail of the queue (both map to
 		// the same buffer slot because the queue is full).
-		recv(c, sg, ep, func() { unlock(&c.lock) })
+		recv(c, sg, ep, func() { unlock(&c.lock) }, 3)
 		return true, true
 	}
 
@@ -515,7 +531,7 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
 	mysg.waitlink = nil
 	gp.waiting = mysg
 	mysg.g = gp
-	mysg.selectdone = nil
+	mysg.isSelect = false
 	mysg.c = c
 	gp.param = nil
 	c.recvq.enqueue(mysg)
@@ -549,7 +565,7 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
 // Channel c must be full and locked. recv unlocks c with unlockf.
 // sg must already be dequeued from c.
 // A non-nil ep must point to the heap or the caller's stack.
-func recv(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func()) {
+func recv(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func(), skip int) {
 	if c.dataqsiz == 0 {
 		if raceenabled {
 			racesync(c, sg)
@@ -589,7 +605,7 @@ func recv(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func()) {
 	if sg.releasetime != 0 {
 		sg.releasetime = cputicks()
 	}
-	goready(gp, 4)
+	goready(gp, skip+1)
 }
 
 // compiler implements
@@ -609,8 +625,8 @@ func recv(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func()) {
 //		... bar
 //	}
 //
-func selectnbsend(t *chantype, c *hchan, elem unsafe.Pointer) (selected bool) {
-	return chansend(t, c, elem, false, getcallerpc(unsafe.Pointer(&t)))
+func selectnbsend(c *hchan, elem unsafe.Pointer) (selected bool) {
+	return chansend(c, elem, false, getcallerpc())
 }
 
 // compiler implements
@@ -630,8 +646,8 @@ func selectnbsend(t *chantype, c *hchan, elem unsafe.Pointer) (selected bool) {
 //		... bar
 //	}
 //
-func selectnbrecv(t *chantype, elem unsafe.Pointer, c *hchan) (selected bool) {
-	selected, _ = chanrecv(t, c, elem, false)
+func selectnbrecv(elem unsafe.Pointer, c *hchan) (selected bool) {
+	selected, _ = chanrecv(c, elem, false)
 	return
 }
 
@@ -652,20 +668,20 @@ func selectnbrecv(t *chantype, elem unsafe.Pointer, c *hchan) (selected bool) {
 //		... bar
 //	}
 //
-func selectnbrecv2(t *chantype, elem unsafe.Pointer, received *bool, c *hchan) (selected bool) {
+func selectnbrecv2(elem unsafe.Pointer, received *bool, c *hchan) (selected bool) {
 	// TODO(khr): just return 2 values from this function, now that it is in Go.
-	selected, *received = chanrecv(t, c, elem, false)
+	selected, *received = chanrecv(c, elem, false)
 	return
 }
 
 //go:linkname reflect_chansend reflect.chansend
-func reflect_chansend(t *chantype, c *hchan, elem unsafe.Pointer, nb bool) (selected bool) {
-	return chansend(t, c, elem, !nb, getcallerpc(unsafe.Pointer(&t)))
+func reflect_chansend(c *hchan, elem unsafe.Pointer, nb bool) (selected bool) {
+	return chansend(c, elem, !nb, getcallerpc())
 }
 
 //go:linkname reflect_chanrecv reflect.chanrecv
-func reflect_chanrecv(t *chantype, c *hchan, nb bool, elem unsafe.Pointer) (selected bool, received bool) {
-	return chanrecv(t, c, elem, !nb)
+func reflect_chanrecv(c *hchan, nb bool, elem unsafe.Pointer) (selected bool, received bool) {
+	return chanrecv(c, elem, !nb)
 }
 
 //go:linkname reflect_chanlen reflect.chanlen
@@ -719,10 +735,16 @@ func (q *waitq) dequeue() *sudog {
 			sgp.next = nil // mark as removed (see dequeueSudog)
 		}
 
-		// if sgp participates in a select and is already signaled, ignore it
-		if sgp.selectdone != nil {
-			// claim the right to signal
-			if *sgp.selectdone != 0 || !atomic.Cas(sgp.selectdone, 0, 1) {
+		// if a goroutine was put on this queue because of a
+		// select, there is a small window between the goroutine
+		// being woken up by a different case and it grabbing the
+		// channel locks. Once it has the lock
+		// it removes itself from the queue, so we won't see it after that.
+		// We use a flag in the G struct to tell us when someone
+		// else has won the race to signal this goroutine but the goroutine
+		// hasn't removed itself from the queue yet.
+		if sgp.isSelect {
+			if !atomic.Cas(&sgp.g.selectDone, 0, 1) {
 				continue
 			}
 		}

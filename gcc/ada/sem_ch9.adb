@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,6 +50,7 @@ with Sem_Ch5;   use Sem_Ch5;
 with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch8;   use Sem_Ch8;
 with Sem_Ch13;  use Sem_Ch13;
+with Sem_Elab;  use Sem_Elab;
 with Sem_Eval;  use Sem_Eval;
 with Sem_Prag;  use Sem_Prag;
 with Sem_Res;   use Sem_Res;
@@ -1209,13 +1210,13 @@ package body Sem_Ch9 is
       Entry_Name : Entity_Id;
 
    begin
-      --  An entry body "freezes" the contract of the nearest enclosing package
+      --  An entry body freezes the contract of the nearest enclosing package
       --  body and all other contracts encountered in the same declarative part
       --  up to and excluding the entry body. This ensures that any annotations
       --  referenced by the contract of an entry or subprogram body declared
       --  within the current protected body are available.
 
-      Analyze_Previous_Contracts (N);
+      Freeze_Previous_Contracts (N);
 
       Tasking_Used := True;
 
@@ -1245,7 +1246,7 @@ package body Sem_Ch9 is
       --  Analyze any aspect specifications that appear on the entry body
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
+         Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
       end if;
 
       E := First_Entity (P_Type);
@@ -1447,6 +1448,7 @@ package body Sem_Ch9 is
       --  Process the end label, and terminate the scope
 
       Process_End_Label (Handled_Statement_Sequence (N), 't', Entry_Name);
+      Update_Use_Clause_Chain;
       End_Scope;
 
       --  If this is an entry family, remove the loop created to provide
@@ -1655,6 +1657,15 @@ package body Sem_Ch9 is
          Set_SPARK_Pragma_Inherited (Def_Id);
       end if;
 
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id     => Def_Id,
+         Checks   => True,
+         Warnings => True);
+
       --  Process formals
 
       if Present (Formals) then
@@ -1784,14 +1795,14 @@ package body Sem_Ch9 is
    --  Start of processing for Analyze_Protected_Body
 
    begin
-      --  A protected body "freezes" the contract of the nearest enclosing
+      --  A protected body freezes the contract of the nearest enclosing
       --  package body and all other contracts encountered in the same
-      --  declarative part up to and excluding the protected body. This ensures
-      --  that any annotations referenced by the contract of an entry or
-      --  subprogram body declared within the current protected body are
-      --  available.
+      --  declarative part up to and excluding the protected body. This
+      --  ensures that any annotations referenced by the contract of an
+      --  entry or subprogram body declared within the current protected
+      --  body are available.
 
-      Analyze_Previous_Contracts (N);
+      Freeze_Previous_Contracts (N);
 
       Tasking_Used := True;
       Set_Ekind (Body_Id, E_Protected_Body);
@@ -1851,6 +1862,7 @@ package body Sem_Ch9 is
       Check_Completion (Body_Id);
       Check_References (Spec_Id);
       Process_End_Label (N, 't', Ref_Id);
+      Update_Use_Clause_Chain;
       End_Scope;
 
       --  When a Lock_Free aspect specification/pragma forces the lock-free
@@ -2276,9 +2288,19 @@ package body Sem_Ch9 is
       Target_Obj  : Node_Id := Empty;
       Req_Scope   : Entity_Id;
       Outer_Ent   : Entity_Id;
-      Synch_Type  : Entity_Id;
+      Synch_Type  : Entity_Id := Empty;
 
    begin
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id     => N,
+         Checks   => True,
+         Modes    => True,
+         Warnings => True);
+
       Tasking_Used := True;
       Check_SPARK_05_Restriction ("requeue statement is not allowed", N);
       Check_Restriction (No_Requeue_Statements, N);
@@ -2336,7 +2358,7 @@ package body Sem_Ch9 is
          if Object_Access_Level (Target_Obj) >= Scope_Depth (Outer_Ent)
            and then
              (not Is_Entity_Name (Target_Obj)
-               or else Ekind (Entity (Target_Obj)) not in Formal_Kind
+               or else not Is_Formal (Entity (Target_Obj))
                or else Enclosing /= Scope (Entity (Target_Obj)))
          then
             Error_Msg_N
@@ -2551,6 +2573,12 @@ package body Sem_Ch9 is
          Error_Msg_N
            ("target protected object of requeue must be a variable", N);
       end if;
+
+      --  A requeue statement is treated as a call for purposes of ABE checks
+      --  and diagnostics. Annotate the tree by creating a call marker in case
+      --  the requeue statement is transformed by expansion.
+
+      Build_Call_Marker (N);
    end Analyze_Requeue;
 
    ------------------------------
@@ -2773,7 +2801,7 @@ package body Sem_Ch9 is
       Generate_Definition (Obj_Id);
       Tasking_Used := True;
 
-      --  A single task declaration is transformed into a pait of an anonymous
+      --  A single task declaration is transformed into a pair of an anonymous
       --  task type and an object of that type. Generate:
 
       --    task type Typ is ...;
@@ -2834,6 +2862,15 @@ package body Sem_Ch9 is
       Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Obj_Id);
 
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id     => Obj_Id,
+         Checks   => True,
+         Warnings => True);
+
       --  Instead of calling Analyze on the new node, call the proper analysis
       --  procedure directly. Otherwise the node would be expanded twice, with
       --  disastrous result.
@@ -2866,13 +2903,13 @@ package body Sem_Ch9 is
       --  a single task, since Spec_Id is set to the task type).
 
    begin
-      --  A task body "freezes" the contract of the nearest enclosing package
+      --  A task body freezes the contract of the nearest enclosing package
       --  body and all other contracts encountered in the same declarative part
       --  up to and excluding the task body. This ensures that annotations
       --  referenced by the contract of an entry or subprogram body declared
       --  within the current protected body are available.
 
-      Analyze_Previous_Contracts (N);
+      Freeze_Previous_Contracts (N);
 
       Tasking_Used := True;
       Set_Scope (Body_Id, Current_Scope);
@@ -2991,6 +3028,7 @@ package body Sem_Ch9 is
       end;
 
       Process_End_Label (HSS, 't', Ref_Id);
+      Update_Use_Clause_Chain;
       End_Scope;
    end Analyze_Task_Body;
 
@@ -3095,6 +3133,15 @@ package body Sem_Ch9 is
       Set_SPARK_Aux_Pragma           (T, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited     (T);
       Set_SPARK_Aux_Pragma_Inherited (T);
+
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id     => T,
+         Checks   => True,
+         Warnings => True);
 
       Push_Scope (T);
 
@@ -3470,10 +3517,10 @@ package body Sem_Ch9 is
       --  declarations. Search for the private type declaration.
 
       declare
-         Full_T_Ifaces : Elist_Id;
+         Full_T_Ifaces : Elist_Id := No_Elist;
          Iface         : Node_Id;
          Priv_T        : Entity_Id;
-         Priv_T_Ifaces : Elist_Id;
+         Priv_T_Ifaces : Elist_Id := No_Elist;
 
       begin
          Priv_T := First_Entity (Scope (T));

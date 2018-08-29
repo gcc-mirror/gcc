@@ -156,8 +156,10 @@ extern "C" {
   // Prints stack traces for all live heap allocations ordered by total
   // allocation size until `top_percent` of total live heap is shown.
   // `top_percent` should be between 1 and 100.
+  // At most `max_number_of_contexts` contexts (stack traces) is printed.
   // Experimental feature currently available only with asan on Linux/x86_64.
-  void __sanitizer_print_memory_profile(size_t top_percent);
+  void __sanitizer_print_memory_profile(size_t top_percent,
+                                        size_t max_number_of_contexts);
 
   // Fiber annotation interface.
   // Before switching to a different stack, one must call
@@ -180,6 +182,13 @@ extern "C" {
   void __sanitizer_finish_switch_fiber(void *fake_stack_save,
                                        const void **bottom_old,
                                        size_t *size_old);
+
+  // Get full module name and calculate pc offset within it.
+  // Returns 1 if pc belongs to some module, 0 if module was not found.
+  int __sanitizer_get_module_and_offset_for_pc(void *pc, char *module_path,
+                                               size_t module_path_len,
+                                               void **pc_offset);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the C preprocessor.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "opt-suggestions.h"
 #include "gcc.h"
 #include "opts.h"
 

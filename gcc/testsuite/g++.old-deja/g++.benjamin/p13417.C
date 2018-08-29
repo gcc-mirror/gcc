@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-Wno-deprecated" }
+// { dg-options "-Wno-deprecated -Wno-return-type" }
 // prms-id: 13417
 
 class   Foo {

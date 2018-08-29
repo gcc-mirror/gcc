@@ -4,6 +4,6 @@
 int
 main ()
 {
-  auto l = [] <typename T> () {};	// { dg-error "does not support lambda templates" }
+  auto l = [] <typename T> () {};	// { dg-error "lambda templates are only available with" "" { target c++17_down } }
   l.operator () <void> ();
 }

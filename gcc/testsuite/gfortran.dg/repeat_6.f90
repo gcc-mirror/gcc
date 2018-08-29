@@ -9,5 +9,5 @@
                                      // repeat ("xxx", 0)    &
                                      // repeat ("string", 2)
 
-  if (string /= "astringstring") CALL abort()
+  if (string /= "astringstring") STOP 1
 end

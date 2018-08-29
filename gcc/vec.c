@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -31,6 +31,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "hash-table.h"
 #include "selftest.h"
+#ifdef GENERATOR_FILE
+#include "errors.h"
+#else
+#include "input.h"
+#include "diagnostic-core.h"
+#endif
 
 /* vNULL is an empty type with a template cast operation that returns
    a zero-initialized vec<T, A, L> instance.  Use this when you want
@@ -53,15 +59,6 @@ struct vec_usage: public mem_usage
 	     size_t items, size_t items_peak)
     : mem_usage (allocated, times, peak),
     m_items (items), m_items_peak (items_peak) {}
-
-  /* Comparison operator.  */
-  inline bool
-  operator< (const vec_usage &second) const
-  {
-    return (m_allocated == second.m_allocated ?
-	    (m_peak == second.m_peak ? m_times < second.m_times
-	     : m_peak < second.m_peak) : m_allocated < second.m_allocated);
-  }
 
   /* Sum the usage with SECOND usage.  */
   vec_usage
@@ -107,18 +104,6 @@ struct vec_usage: public mem_usage
     fprintf (stderr, "%-48s %11s%15s%10s%17s%11s\n", name, "Leak", "Peak",
 	     "Times", "Leak items", "Peak items");
     print_dash_line ();
-  }
-
-  /* Compare wrapper used by qsort method.  */
-  static int
-  compare (const void *first, const void *second)
-  {
-    typedef std::pair<mem_location *, vec_usage *> mem_pair_t;
-
-    const mem_pair_t f = *(const mem_pair_t *)first;
-    const mem_pair_t s = *(const mem_pair_t *)second;
-
-    return (*f.second) < (*s.second);
   }
 
   /* Current number of items allocated.  */
@@ -189,6 +174,93 @@ dump_vec_loc_statistics (void)
 {
   vec_mem_desc.dump (VEC_ORIGIN);
 }
+
+#if CHECKING_P
+/* Report qsort comparator CMP consistency check failure with P1, P2, P3 as
+   witness elements.  */
+ATTRIBUTE_NORETURN ATTRIBUTE_COLD
+static void
+qsort_chk_error (const void *p1, const void *p2, const void *p3,
+		 int (*cmp) (const void *, const void *))
+{
+  if (!p3)
+    {
+      int r1 = cmp (p1, p2), r2 = cmp (p2, p1);
+      error ("qsort comparator not anti-commutative: %d, %d", r1, r2);
+    }
+  else if (p1 == p2)
+    {
+      int r = cmp (p1, p3);
+      error ("qsort comparator non-negative on sorted output: %d", r);
+    }
+  else
+    {
+      int r1 = cmp (p1, p2), r2 = cmp (p2, p3), r3 = cmp (p1, p3);
+      error ("qsort comparator not transitive: %d, %d, %d", r1, r2, r3);
+    }
+  internal_error ("qsort checking failed");
+}
+
+/* Wrapper around qsort with checking that CMP is consistent on given input.
+
+   Strictly speaking, passing invalid (non-transitive, non-anti-commutative)
+   comparators to libc qsort can result in undefined behavior.  Therefore we
+   should ideally perform consistency checks prior to invoking qsort, but in
+   order to do that optimally we'd need to sort the array ourselves beforehand
+   with a sorting routine known to be "safe".  Instead, we expect that most
+   implementations in practice will still produce some permutation of input
+   array even for invalid comparators, which enables us to perform checks on
+   the output array.  */
+void
+qsort_chk (void *base, size_t n, size_t size,
+	   int (*cmp)(const void *, const void *))
+{
+  gcc_qsort (base, n, size, cmp);
+#if 0
+#define LIM(n) (n)
+#else
+  /* Limit overall time complexity to O(n log n).  */
+#define LIM(n) ((n) <= 16 ? (n) : 12 + floor_log2 (n))
+#endif
+#define ELT(i) ((const char *) base + (i) * size)
+#define CMP(i, j) cmp (ELT (i), ELT (j))
+#define ERR2(i, j) qsort_chk_error (ELT (i), ELT (j), NULL, cmp)
+#define ERR3(i, j, k) qsort_chk_error (ELT (i), ELT (j), ELT (k), cmp)
+  size_t i1, i2, i, j;
+  /* This outer loop iterates over maximum spans [i1, i2) such that
+     elements within each span compare equal to each other.  */
+  for (i1 = 0; i1 < n; i1 = i2)
+    {
+      /* Position i2 one past last element that compares equal to i1'th.  */
+      for (i2 = i1 + 1; i2 < n; i2++)
+	if (CMP (i1, i2))
+	  break;
+	else if (CMP (i2, i1))
+	  return ERR2 (i1, i2);
+      size_t lim1 = LIM (i2 - i1), lim2 = LIM (n - i2);
+      /* Verify that other pairs within current span compare equal.  */
+      for (i = i1 + 1; i + 1 < i2; i++)
+	for (j = i + 1; j < i1 + lim1; j++)
+	  if (CMP (i, j))
+	    return ERR3 (i, i1, j);
+	  else if (CMP (j, i))
+	    return ERR2 (i, j);
+      /* Verify that elements within this span compare less than
+         elements beyond the span.  */
+      for (i = i1; i < i2; i++)
+	for (j = i2; j < i2 + lim2; j++)
+	  if (CMP (i, j) >= 0)
+	    return ERR3 (i, i1, j);
+	  else if (CMP (j, i) <= 0)
+	    return ERR2 (i, j);
+    }
+#undef ERR3
+#undef ERR2
+#undef CMP
+#undef ELT
+#undef LIM
+}
+#endif /* #if CHECKING_P */
 
 #ifndef GENERATOR_FILE
 #if CHECKING_P
@@ -310,6 +382,51 @@ test_ordered_remove ()
   ASSERT_EQ (9, v.length ());
 }
 
+/* Verify that vec::ordered_remove_if works correctly.  */
+
+static void
+test_ordered_remove_if (void)
+{
+  auto_vec <int> v;
+  safe_push_range (v, 0, 10);
+  unsigned ix, ix2;
+  int *elem_ptr;
+  VEC_ORDERED_REMOVE_IF (v, ix, ix2, elem_ptr,
+			 *elem_ptr == 5 || *elem_ptr == 7);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (6, v[5]);
+  ASSERT_EQ (8, v[6]);
+  ASSERT_EQ (8, v.length ());
+
+  v.truncate (0);
+  safe_push_range (v, 0, 10);
+  VEC_ORDERED_REMOVE_IF_FROM_TO (v, ix, ix2, elem_ptr, 0, 6,
+				 *elem_ptr == 5 || *elem_ptr == 7);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (6, v[5]);
+  ASSERT_EQ (7, v[6]);
+  ASSERT_EQ (9, v.length ());
+
+  v.truncate (0);
+  safe_push_range (v, 0, 10);
+  VEC_ORDERED_REMOVE_IF_FROM_TO (v, ix, ix2, elem_ptr, 0, 5,
+				 *elem_ptr == 5 || *elem_ptr == 7);
+  VEC_ORDERED_REMOVE_IF_FROM_TO (v, ix, ix2, elem_ptr, 8, 10,
+				 *elem_ptr == 5 || *elem_ptr == 7);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (5, v[5]);
+  ASSERT_EQ (6, v[6]);
+  ASSERT_EQ (10, v.length ());
+
+  v.truncate (0);
+  safe_push_range (v, 0, 10);
+  VEC_ORDERED_REMOVE_IF (v, ix, ix2, elem_ptr, *elem_ptr == 5);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (6, v[5]);
+  ASSERT_EQ (7, v[6]);
+  ASSERT_EQ (9, v.length ());
+}
+
 /* Verify that vec::unordered_remove works correctly.  */
 
 static void
@@ -359,6 +476,43 @@ test_qsort ()
   ASSERT_EQ (10, v.length ());
 }
 
+/* Verify that vec::reverse works correctly.  */
+
+static void
+test_reverse ()
+{
+  /* Reversing an empty vec ought to be a no-op.  */
+  {
+    auto_vec <int> v;
+    ASSERT_EQ (0, v.length ());
+    v.reverse ();
+    ASSERT_EQ (0, v.length ());
+  }
+
+  /* Verify reversing a vec with even length.  */
+  {
+    auto_vec <int> v;
+    safe_push_range (v, 0, 4);
+    v.reverse ();
+    ASSERT_EQ (3, v[0]);
+    ASSERT_EQ (2, v[1]);
+    ASSERT_EQ (1, v[2]);
+    ASSERT_EQ (0, v[3]);
+    ASSERT_EQ (4, v.length ());
+  }
+
+  /* Verify reversing a vec with odd length.  */
+  {
+    auto_vec <int> v;
+    safe_push_range (v, 0, 3);
+    v.reverse ();
+    ASSERT_EQ (2, v[0]);
+    ASSERT_EQ (1, v[1]);
+    ASSERT_EQ (0, v[2]);
+    ASSERT_EQ (3, v.length ());
+  }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -371,9 +525,11 @@ vec_c_tests ()
   test_pop ();
   test_safe_insert ();
   test_ordered_remove ();
+  test_ordered_remove_if ();
   test_unordered_remove ();
   test_block_remove ();
   test_qsort ();
+  test_reverse ();
 }
 
 } // namespace selftest

@@ -6,7 +6,10 @@
 
 package runtime
 
-import "unsafe"
+import (
+	"runtime/internal/sys"
+	"unsafe"
+)
 
 // gcRoot is a single GC root: a variable plus a ptrmask.
 type gcRoot struct {
@@ -84,4 +87,22 @@ func checkPreempt() {
 	casgstatus(gp, _Gwaiting, _Grunning)
 	gp.scanningself = false
 	mcall(gopreempt_m)
+}
+
+// gcWriteBarrier implements a write barrier. This is implemented in
+// assembly in the gc library, but there is no special advantage to
+// doing so with gccgo.
+//go:nosplit
+//go:nowritebarrier
+func gcWriteBarrier(dst *uintptr, src uintptr) {
+	buf := &getg().m.p.ptr().wbBuf
+	next := buf.next
+	np := next + 2*sys.PtrSize
+	buf.next = np
+	*(*uintptr)(unsafe.Pointer(next)) = src
+	*(*uintptr)(unsafe.Pointer(next + sys.PtrSize)) = *dst
+	if np >= buf.end {
+		wbBufFlush(dst, src)
+	}
+	*dst = src
 }

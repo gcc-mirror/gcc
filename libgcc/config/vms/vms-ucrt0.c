@@ -1,5 +1,5 @@
 /* VMS crt0 returning Unix style condition codes.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
 
    This file is part of GCC.

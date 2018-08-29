@@ -22,6 +22,6 @@ write(10,*) " curve(1)%symbol%typee = 1234"
 write(10,*) "/"
 rewind(10)
 read (10, nml = params)
-if (curve(1)%symbol%typee /= 1234) call abort
+if (curve(1)%symbol%typee /= 1234) STOP 1
 close(10)
 end program

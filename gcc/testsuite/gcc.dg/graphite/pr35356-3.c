@@ -36,4 +36,5 @@ match (void)
    "Y[winner].y > 0".  This could be fixed when we will use predicates
    for such cases.  */
 
-/* { dg-final { scan-tree-dump-times "loop_1" 0 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "loop_1" 0 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "number of SCoPs: 0" "graphite" } } */

@@ -1,7 +1,7 @@
 /* Tests for unterminated conditionals: 2.  */
 /* { dg-do preprocess } */
 
-#ifdef __sparc__  /* { dg-error "unterminated" "unterminated if-elif-elif..." } */
+#ifdef __sparc__  /* { dg-error "-:unterminated" "unterminated if-elif-elif..." } */
 sparc
 #elif defined __powerpc__
 ppc

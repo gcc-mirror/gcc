@@ -12,5 +12,5 @@ PROGRAM Test
   A = ANINT ( A , DP)
   B = A
   A = ANINT ( A)
-  if (any (A .ne. B)) call abort ()
+  if (any (A .ne. B)) STOP 1
 END PROGRAM Test

@@ -1,4 +1,4 @@
-;; Copyright (C) 2013-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2018 Free Software Foundation, Inc.
 ;;
 ;; micromips.md   Machine Description for the microMIPS instruction set
 ;; This file is part of GCC.

@@ -1,7 +1,7 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler
    Collection that are only for use in the compilers proper and not
    the driver or other programs.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "tree-diagnostic.h"
 #include "langhooks.h"
 #include "intl.h"
@@ -245,7 +246,7 @@ virt_loc_aware_diagnostic_finalizer (diagnostic_context *context,
 bool
 default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 		      int precision, bool wide, bool set_locus, bool hash,
-		      bool, const char **)
+		      bool *, const char **)
 {
   tree t;
 
@@ -275,8 +276,13 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       t = va_arg (*text->args_ptr, tree);
       break;
 
+    case 'G':
+      percent_G_format (text);
+      return true;
+
     case 'K':
-      percent_K_format (text);
+      t = va_arg (*text->args_ptr, tree);
+      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
       return true;
 
     default:
@@ -284,7 +290,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
     }
 
   if (set_locus)
-    text->set_location (0, DECL_SOURCE_LOCATION (t), true);
+    text->set_location (0, DECL_SOURCE_LOCATION (t), SHOW_RANGE_WITH_CARET);
 
   if (DECL_P (t))
     {

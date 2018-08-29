@@ -15,7 +15,7 @@ contains
 
     write (ca,f) a
     write (cb,f) b
-    if (ca /= cb) call abort
+    if (ca /= cb) STOP 1
   end subroutine testoutput
 end module testmod
 

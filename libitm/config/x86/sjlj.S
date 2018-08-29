@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -25,6 +25,7 @@
 
 #include "asmcfi.h"
 #include "config.h"
+#include "cet.h"
 
 #define CONCAT1(a, b) CONCAT2(a, b)
 #define CONCAT2(a, b) a ## b
@@ -73,6 +74,7 @@
 
 SYM(_ITM_beginTransaction):
 	cfi_startproc
+	_CET_ENDBR
 #ifdef __x86_64__
 #ifdef HAVE_AS_RTM
 	/* Custom HTM fast path.  We start the HW transaction here and let
@@ -126,20 +128,26 @@ SYM(_ITM_beginTransaction):
 	/* Store edi for future HTM fast path retries.  We use a stack slot
 	   lower than the jmpbuf so that the jmpbuf's rip field will overlap
 	   with the proper return address on the stack.  */
-	movl	%edi, 8(%rsp)
+	movl	%edi, (%rsp)
 	/* Save the jmpbuf for any non-HTM-fastpath execution method.
 	   Because rsp-based addressing is 1 byte larger and we've got rax
 	   handy, use it.  */
-	movq	%rax, -64(%rax)
-	movq	%rbx, -56(%rax)
-	movq	%rbp, -48(%rax)
-	movq	%r12, -40(%rax)
-	movq	%r13, -32(%rax)
-	movq	%r14, -24(%rax)
-	movq	%r15, -16(%rax)
-	leaq	-64(%rax), %rsi
+	movq	%rax, -72(%rax)
+	movq	%rbx, -64(%rax)
+	movq	%rbp, -56(%rax)
+	movq	%r12, -48(%rax)
+	movq	%r13, -40(%rax)
+	movq	%r14, -32(%rax)
+	movq	%r15, -24(%rax)
+	xorq	%rdx, %rdx
+	/* Save zero or shadow stack pointer in the new field.  */
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
+	rdsspq	%rdx
+#endif
+	movq	%rdx, -16(%rax)
+	leaq	-72(%rax), %rsi
 	call	SYM(GTM_begin_transaction)
-	movl	8(%rsp), %edi
+	movl	(%rsp), %edi
 	addq	$72, %rsp
 	cfi_adjust_cfa_offset(-72)
 #ifdef HAVE_AS_RTM
@@ -162,12 +170,18 @@ SYM(_ITM_beginTransaction):
 	movl	4(%esp), %eax
 	subl	$28, %esp
 	cfi_def_cfa_offset(32)
-	movl	%ecx, 8(%esp)
-	movl	%ebx, 12(%esp)
-	movl	%esi, 16(%esp)
-	movl	%edi, 20(%esp)
-	movl	%ebp, 24(%esp)
-	leal	8(%esp), %edx
+	movl	%ecx, 4(%esp)
+	movl	%ebx, 8(%esp)
+	movl	%esi, 12(%esp)
+	movl	%edi, 16(%esp)
+	movl	%ebp, 20(%esp)
+	xorl	%edx, %edx
+	/* Save zero or shadow stack pointer in the new field.  */
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
+	rdsspd	%edx
+#endif
+	movl	%edx, 24(%esp)
+	leal	4(%esp), %edx
 #if defined HAVE_ATTRIBUTE_VISIBILITY || !defined __PIC__
 	call	SYM(GTM_begin_transaction)
 #elif defined __ELF__
@@ -175,7 +189,7 @@ SYM(_ITM_beginTransaction):
 1:	popl	%ebx
 	addl	$_GLOBAL_OFFSET_TABLE_+[.-1b], %ebx
 	call	SYM(GTM_begin_transaction)@PLT
-	movl	12(%esp), %ebx
+	movl	8(%esp), %ebx
 #else
 # error "Unsupported PIC sequence"
 #endif
@@ -193,6 +207,7 @@ SYM(_ITM_beginTransaction):
 
 SYM(GTM_longjmp):
 	cfi_startproc
+	_CET_ENDBR
 #ifdef __x86_64__
 	movq	(%rsi), %rcx
 	movq	8(%rsi), %rbx
@@ -203,10 +218,37 @@ SYM(GTM_longjmp):
 	movq	48(%rsi), %r15
 	movl	%edi, %eax
 	cfi_def_cfa(%rsi, 0)
-	cfi_offset(%rip, 56)
+	cfi_offset(%rip, 64)
 	cfi_register(%rsp, %rcx)
 	movq	%rcx, %rsp
-	jmp	*56(%rsi)
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
+	/* Check if Shadow Stack is enabled.  */
+	xorq	%rcx, %rcx
+	rdsspq	%rcx
+	testq	%rcx, %rcx
+	je	.L1
+	/* Calculate number of frames to skip.  */
+	subq	56(%rsi), %rcx
+	negq	%rcx
+	shrq	$3, %rcx
+	incq	%rcx
+	/* If # of frames is greater 255 then loop
+	   and adjust.  */
+	cmpq	$255, %rcx
+	jbe	.L3
+	movl	$255, %edi
+	.p2align 4,,10
+	.p2align 3
+.L4:
+	incsspq	%rdi
+	subq	$255, %rcx
+	cmpq	$255, %rcx
+	ja	.L4
+.L3:
+	incsspq	%rcx
+.L1:
+#endif
+	jmp	*64(%rsi)
 #else
 	movl	(%edx), %ecx
 	movl	4(%edx), %ebx
@@ -214,10 +256,39 @@ SYM(GTM_longjmp):
 	movl	12(%edx), %edi
 	movl	16(%edx), %ebp
 	cfi_def_cfa(%edx, 0)
-	cfi_offset(%eip, 20)
+	cfi_offset(%eip, 24)
 	cfi_register(%esp, %ecx)
 	movl	%ecx, %esp
-	jmp	*20(%edx)
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
+	/* Check if Shadow Stack is enabled.  */
+	xorl	%ecx, %ecx
+	rdsspd	%ecx
+	testl	%ecx, %ecx
+	je	.L1
+	/* Calculate # of frames to skip.  */
+	subl	20(%edx), %ecx
+	negl	%ecx
+	shrl	$2, %ecx
+	incl	%ecx
+	/* If # of frames is greater 255 then loop
+	   and adjust.  */
+	cmpl	$255, %ecx
+	jbe	.L3
+	pushl	%eax
+	movl	$255, %eax
+	.p2align 4,,10
+	.p2align 3
+.L4:
+	incsspd	%eax
+	subl	$255, %ecx
+	cmpl	$255, %ecx
+	ja	.L4
+	popl	%eax
+.L3:
+	incsspd	%ecx
+.L1:
+#endif
+	jmp	*24(%edx)
 #endif
 	cfi_endproc
 

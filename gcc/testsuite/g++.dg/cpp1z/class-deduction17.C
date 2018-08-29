@@ -1,4 +1,4 @@
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 #include <initializer_list>
 template <class T>

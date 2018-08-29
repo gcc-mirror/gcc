@@ -62,22 +62,22 @@ program test_int
    i2 = int(-3)
    i4 = int(-3)
    i8 = int(-3)
-   if (i1 /= -3_ik1 .or. i2 /= -3_ik2) call abort
-   if (i4 /= -3_ik4 .or. i8 /= -3_ik8) call abort
+   if (i1 /= -3_ik1 .or. i2 /= -3_ik2) STOP 1
+   if (i4 /= -3_ik4 .or. i8 /= -3_ik8) STOP 2
 
    i1 = int(5,  ik1)
    i2 = int(i1, ik2)
    i4 = int(i1, ik4)
    i8 = int(i1, ik8)
-   if (i1 /= 5_ik1 .or. i2 /= 5_ik2) call abort
-   if (i4 /= 5_ik4 .or. i8 /= 5_ik8) call abort
+   if (i1 /= 5_ik1 .or. i2 /= 5_ik2) STOP 3
+   if (i4 /= 5_ik4 .or. i8 /= 5_ik8) STOP 4
 
    i8 = int(10, ik8)
    i1 = int(i8, ik1)
    i2 = int(i8, ik2)
    i4 = int(i8, ik4)
-   if (i1 /= 10_ik1 .or. i2 /= 10_ik2) call abort
-   if (i4 /= 10_ik4 .or. i8 /= 10_ik8) call abort
+   if (i1 /= 10_ik1 .or. i2 /= 10_ik2) STOP 5
+   if (i4 /= 10_ik4 .or. i8 /= 10_ik8) STOP 6
    !
    ! case 2(b)
    !
@@ -86,16 +86,16 @@ program test_int
    i2 = int(r4, ik2)
    i4 = int(r4, ik4)
    i8 = int(r4, ik8)
-   if (i1 /= -3_ik1 .or. i2 /= -3_ik2) call abort
-   if (i4 /= -3_ik4 .or. i8 /= -3_ik8) call abort
+   if (i1 /= -3_ik1 .or. i2 /= -3_ik2) STOP 7
+   if (i4 /= -3_ik4 .or. i8 /= -3_ik8) STOP 8
 
    r8 = -3.7_dp
    i1 = int(r8,  ik1)
    i2 = int(r8, ik2)
    i4 = int(r8, ik4)
    i8 = int(r8, ik8)
-   if (i1 /= -3_ik1 .or. i2 /= -3_ik2) call abort
-   if (i4 /= -3_ik4 .or. i8 /= -3_ik8) call abort
+   if (i1 /= -3_ik1 .or. i2 /= -3_ik2) STOP 9
+   if (i4 /= -3_ik4 .or. i8 /= -3_ik8) STOP 10
    !
    ! Case 2(a)
    !
@@ -104,16 +104,16 @@ program test_int
    i2 = int(r4, ik2)
    i4 = int(r4, ik4)
    i8 = int(r4, ik8)
-   if (i1 /= 0_ik1 .or. i2 /= 0_ik2) call abort
-   if (i4 /= 0_ik4 .or. i8 /= 0_ik8) call abort
+   if (i1 /= 0_ik1 .or. i2 /= 0_ik2) STOP 11
+   if (i4 /= 0_ik4 .or. i8 /= 0_ik8) STOP 12
 
    r8 = -3.7E-1_dp
    i1 = int(r8, ik1)
    i2 = int(r8, ik2)
    i4 = int(r8, ik4)
    i8 = int(r8, ik8)
-   if (i1 /= 0_ik1 .or. i2 /= 0_ik2) call abort
-   if (i4 /= 0_ik4 .or. i8 /= 0_ik8) call abort
+   if (i1 /= 0_ik1 .or. i2 /= 0_ik2) STOP 13
+   if (i4 /= 0_ik4 .or. i8 /= 0_ik8) STOP 14
    !
    ! Case 3
    !
@@ -122,32 +122,32 @@ program test_int
    i2 = int(c4, ik2)
    i4 = int(c4, ik4)
    i8 = int(c4, ik8)
-   if (i1 /= 0_ik1 .or. i2 /= 0_ik2) call abort
-   if (i4 /= 0_ik4 .or. i8 /= 0_ik8) call abort
+   if (i1 /= 0_ik1 .or. i2 /= 0_ik2) STOP 15
+   if (i4 /= 0_ik4 .or. i8 /= 0_ik8) STOP 16
 
    c8 = (-3.7E-1_dp,3.7E-1_dp)
    i1 = int(c8, ik1)
    i2 = int(c8, ik2)
    i4 = int(c8, ik4)
    i8 = int(c8, ik8)
-   if (i1 /= 0_ik1 .or. i2 /= 0_ik2) call abort
-   if (i4 /= 0_ik4 .or. i8 /= 0_ik8) call abort
+   if (i1 /= 0_ik1 .or. i2 /= 0_ik2) STOP 17
+   if (i4 /= 0_ik4 .or. i8 /= 0_ik8) STOP 18
 
    c4 = (-3.7_sp,3.7_sp)
    i1 = int(c4, ik1)
    i2 = int(c4, ik2)
    i4 = int(c4, ik4)
    i8 = int(c4, ik8)
-   if (i1 /= -3_ik1 .or. i2 /= -3_ik2) call abort
-   if (i4 /= -3_ik4 .or. i8 /= -3_ik8) call abort
+   if (i1 /= -3_ik1 .or. i2 /= -3_ik2) STOP 19
+   if (i4 /= -3_ik4 .or. i8 /= -3_ik8) STOP 20
 
    c8 = (3.7_dp,3.7_dp)
    i1 = int(c8, ik1)
    i2 = int(c8, ik2)
    i4 = int(c8, ik4)
    i8 = int(c8, ik8)
-   if (i1 /= 3_ik1 .or. i2 /= 3_ik2) call abort
-   if (i4 /= 3_ik4 .or. i8 /= 3_ik8) call abort
+   if (i1 /= 3_ik1 .or. i2 /= 3_ik2) STOP 21
+   if (i4 /= 3_ik4 .or. i8 /= 3_ik8) STOP 22
    !
    ! Case 4
    !
@@ -155,19 +155,19 @@ program test_int
    i2 = int(b'0011', ik2)
    i4 = int(b'0011', ik4)
    i8 = int(b'0011', ik8)
-   if (i1 /= 3_ik1 .or. i2 /= 3_ik2) call abort
-   if (i4 /= 3_ik4 .or. i8 /= 3_ik8) call abort
+   if (i1 /= 3_ik1 .or. i2 /= 3_ik2) STOP 23
+   if (i4 /= 3_ik4 .or. i8 /= 3_ik8) STOP 24
    i1 = int(o'0011', ik1)
    i2 = int(o'0011', ik2)
    i4 = int(o'0011', ik4)
    i8 = int(o'0011', ik8)
-   if (i1 /= 9_ik1 .or. i2 /= 9_ik2) call abort
-   if (i4 /= 9_ik4 .or. i8 /= 9_ik8) call abort
+   if (i1 /= 9_ik1 .or. i2 /= 9_ik2) STOP 25
+   if (i4 /= 9_ik4 .or. i8 /= 9_ik8) STOP 26
    i1 = int(z'0011', ik1)
    i2 = int(z'0011', ik2)
    i4 = int(z'0011', ik4)
    i8 = int(z'0011', ik8)
-   if (i1 /= 17_ik1 .or. i2 /= 17_ik2) call abort
-   if (i4 /= 17_ik4 .or. i8 /= 17_ik8) call abort
+   if (i1 /= 17_ik1 .or. i2 /= 17_ik2) STOP 27
+   if (i4 /= 17_ik4 .or. i8 /= 17_ik8) STOP 28
    
 end program test_int

@@ -1,5 +1,4 @@
-/* { dg-do run } */
-/* { dg-additional-options "-O3" } */
+/* { dg-additional-options "-O3 -fno-fast-math" } */
 
 #include "tree-vect.h"
 
@@ -41,4 +40,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_double && { vect_perm && vect_hw_misalign } } } } } */
+/* { dg-final { scan-tree-dump-times {using an in-order \(fold-left\) reduction} 1 "vect" { target vect_double } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target { vect_double && { vect_perm && vect_hw_misalign } } } } } */

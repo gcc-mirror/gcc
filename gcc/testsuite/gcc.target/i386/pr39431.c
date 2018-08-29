@@ -1,7 +1,7 @@
 /* PR target/39431 */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -march=i686 -fpic" { target { ia32 && fpic } } } */
+/* { dg-additional-options "-march=i686 -fpic" { target { ia32 && fpic } } } */
 
 extern void bar (char *, int);
 

@@ -1,5 +1,5 @@
 ;; Scheduling description for IBM POWER9 processor.
-;; Copyright (C) 2016-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2018 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Pat Haugen (pthaugen@us.ibm.com).
 
@@ -19,7 +19,7 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_automaton "power9dsp,power9lsu,power9vsu,power9misc")
+(define_automaton "power9dsp,power9lsu,power9vsu,power9fpdiv,power9misc")
 
 (define_cpu_unit "lsu0_power9,lsu1_power9,lsu2_power9,lsu3_power9" "power9lsu")
 (define_cpu_unit "vsu0_power9,vsu1_power9,vsu2_power9,vsu3_power9" "power9vsu")
@@ -28,6 +28,10 @@
 ; Two fixed point divide units, not pipelined
 (define_cpu_unit "fx_div0_power9,fx_div1_power9" "power9misc")
 (define_cpu_unit "bru_power9,cryptu_power9,dfu_power9" "power9misc")
+; Create a false unit for use by non-pipelined FP div/sqrt
+(define_cpu_unit "fp_div0_power9,fp_div1_power9,fp_div2_power9,fp_div3_power9"
+		 "power9fpdiv")
+
 
 (define_cpu_unit "x0_power9,x1_power9,xa0_power9,xa1_power9,
 		  x2_power9,x3_power9,xb0_power9,xb1_power9,
@@ -79,8 +83,7 @@
 
 ; 2-way cracked plus 3rd slot
 (define_reservation "DU_C2_3_power9" "x0_power9+x1_power9+xa0_power9|
-				      x1_power9+x2_power9+xa0_power9|
-				      x1_power9+x2_power9+xb0_power9|
+				      x1_power9+x2_power9+xa1_power9|
 				      x2_power9+x3_power9+xb0_power9")
 
 ; 3-way cracked (consumes whole decode/dispatch cycle)
@@ -107,6 +110,18 @@
 		    "vsu0_power9+vsu1_power9|vsu2_power9+vsu3_power9")
 
 (define_reservation "VSU_PRM_power9" "prm0_power9|prm1_power9")
+
+; Define the reservation to be used by FP div/sqrt which allows other insns
+; to be issued to the VSU, but blocks other div/sqrt for a number of cycles.
+; Note that the number of cycles blocked varies depending on insn, but we
+; just use the same number for all in order to keep the number of DFA states
+; reasonable.
+(define_reservation "FP_DIV_power9"
+		    "fp_div0_power9*8|fp_div1_power9*8|fp_div2_power9*8|
+		     fp_div3_power9*8")
+(define_reservation "VEC_DIV_power9"
+		    "fp_div0_power9*8+fp_div1_power9*8|
+		     fp_div2_power9*8+fp_div3_power9*8")
 
 
 ; LS Unit
@@ -243,21 +258,26 @@
 
 ; Most ALU insns are simple 2 cycle, including record form
 (define_insn_reservation "power9-alu" 2
-  (and (ior (eq_attr "type" "add,exts,integer,logical,isel")
-	    (and (eq_attr "type" "insert,shift")
-		 (eq_attr "dot" "no")))
+  (and (eq_attr "type" "add,exts,integer,logical,isel")
        (eq_attr "cpu" "power9"))
   "DU_any_power9,VSU_power9")
 ; 5 cycle CR latency
 (define_bypass 5 "power9-alu"
 		 "power9-crlogical,power9-mfcr,power9-mfcrf")
 
+; Rotate/shift prevent use of third slot
+(define_insn_reservation "power9-rot" 2
+  (and (eq_attr "type" "insert,shift")
+       (eq_attr "dot" "no")
+       (eq_attr "cpu" "power9"))
+  "DU_slice_3_power9,VSU_power9")
+
 ; Record form rotate/shift are cracked
 (define_insn_reservation "power9-cracked-alu" 2
   (and (eq_attr "type" "insert,shift")
        (eq_attr "dot" "yes")
        (eq_attr "cpu" "power9"))
-  "DU_C2_power9,VSU_power9")
+  "DU_C2_3_power9,VSU_power9")
 ; 7 cycle CR latency
 (define_bypass 7 "power9-cracked-alu"
 		 "power9-crlogical,power9-mfcr,power9-mfcrf")
@@ -291,13 +311,13 @@
   (and (eq_attr "type" "mul")
        (eq_attr "dot" "no")
        (eq_attr "cpu" "power9"))
-  "DU_any_power9,VSU_power9")
+  "DU_slice_3_power9,VSU_power9")
 
 (define_insn_reservation "power9-mul-compare" 5
   (and (eq_attr "type" "mul")
        (eq_attr "dot" "yes")
        (eq_attr "cpu" "power9"))
-  "DU_C2_power9,VSU_power9")
+  "DU_C2_3_power9,VSU_power9")
 ; 10 cycle CR latency
 (define_bypass 10 "power9-mul-compare"
 		 "power9-crlogical,power9-mfcr,power9-mfcrf")
@@ -316,7 +336,7 @@
   "DU_even_power9,fx_div0_power9*8|fx_div1_power9*8")
 
 (define_insn_reservation "power9-crlogical" 2
-  (and (eq_attr "type" "cr_logical,delayed_cr")
+  (and (eq_attr "type" "cr_logical")
        (eq_attr "cpu" "power9"))
   "DU_any_power9,VSU_power9")
 
@@ -349,7 +369,7 @@
        (eq_attr "cpu" "power9"))
   "DU_slice_3_power9,VSU_power9")
 
-(define_insn_reservation "power9-fp" 7
+(define_insn_reservation "power9-fp" 5
   (and (eq_attr "type" "fp,dmul")
        (eq_attr "cpu" "power9"))
   "DU_slice_3_power9,VSU_power9")
@@ -360,26 +380,26 @@
   "DU_slice_3_power9,VSU_power9")
 
 ; FP div/sqrt are executed in the VSU slices.  They are not pipelined wrt other
-; divide insns, but for the most part do not block pipelined ops.
+; div/sqrt insns, but for the most part do not block pipelined ops.
 (define_insn_reservation "power9-sdiv" 22
   (and (eq_attr "type" "sdiv")
        (eq_attr "cpu" "power9"))
-  "DU_slice_3_power9,VSU_power9")
+  "DU_slice_3_power9,VSU_power9,FP_DIV_power9")
 
-(define_insn_reservation "power9-ddiv" 33
+(define_insn_reservation "power9-ddiv" 27
   (and (eq_attr "type" "ddiv")
        (eq_attr "cpu" "power9"))
-  "DU_slice_3_power9,VSU_power9")
+  "DU_slice_3_power9,VSU_power9,FP_DIV_power9")
 
 (define_insn_reservation "power9-sqrt" 26
   (and (eq_attr "type" "ssqrt")
        (eq_attr "cpu" "power9"))
-  "DU_slice_3_power9,VSU_power9")
+  "DU_slice_3_power9,VSU_power9,FP_DIV_power9")
 
 (define_insn_reservation "power9-dsqrt" 36
   (and (eq_attr "type" "dsqrt")
        (eq_attr "cpu" "power9"))
-  "DU_slice_3_power9,VSU_power9")
+  "DU_slice_3_power9,VSU_power9,FP_DIV_power9")
 
 (define_insn_reservation "power9-vec-2cyc" 2
   (and (eq_attr "type" "vecmove,veclogical,vecexts,veccmpfx")
@@ -419,22 +439,29 @@
        (eq_attr "cpu" "power9"))
   "DU_super_power9,VSU_super_power9")
 
-(define_insn_reservation "power9-vecfdiv" 28
+(define_insn_reservation "power9-vecfdiv" 24
   (and (eq_attr "type" "vecfdiv")
        (eq_attr "cpu" "power9"))
-  "DU_super_power9,VSU_super_power9")
+  "DU_super_power9,VSU_super_power9,VEC_DIV_power9")
 
-(define_insn_reservation "power9-vecdiv" 32
+(define_insn_reservation "power9-vecdiv" 27
   (and (eq_attr "type" "vecdiv")
        (eq_attr "size" "!128")
        (eq_attr "cpu" "power9"))
-  "DU_super_power9,VSU_super_power9")
+  "DU_super_power9,VSU_super_power9,VEC_DIV_power9")
 
+; Use 8 for DFU reservation on QP div/mul to limit DFA state size
 (define_insn_reservation "power9-qpdiv" 56
   (and (eq_attr "type" "vecdiv")
        (eq_attr "size" "128")
        (eq_attr "cpu" "power9"))
-  "DU_super_power9,dfu_power9")
+  "DU_super_power9,dfu_power9*8")
+
+(define_insn_reservation "power9-qpmul" 24
+  (and (eq_attr "type" "qmul")
+       (eq_attr "size" "128")
+       (eq_attr "cpu" "power9"))
+  "DU_super_power9,dfu_power9*8")
 
 (define_insn_reservation "power9-mffgpr" 2
   (and (eq_attr "type" "mffgpr")

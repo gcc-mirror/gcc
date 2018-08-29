@@ -95,5 +95,5 @@ program main
   u = u%multiply_real (2.0)*4.0
   u = i_multiply_real (u, 2.0) * 4.0
   
-  if (u%i .ne. 152064) call abort
+  if (u%i .ne. 152064) STOP 1
 end program

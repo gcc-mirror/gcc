@@ -1,5 +1,5 @@
 // Testcase from P0512R0 for C++17 NB comment US 20
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template <class,class> struct same;
 template <class T> struct same<T,T> {};

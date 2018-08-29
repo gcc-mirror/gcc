@@ -27,8 +27,8 @@
   end select
 
   print *,b%i,b%j
-  if (b%i /= -1) call abort()
-  if (b%j /= 2) call abort()
+  if (b%i /= -1) STOP 1
+  if (b%j /= 2) STOP 2
 
   select type (aa => b%c)
   type is (t1)
@@ -38,10 +38,10 @@
   end select
 
   print *,b%i,b%j
-  if (b%i /= 6) call abort()
-  if (b%j /= 2) call abort()
+  if (b%i /= 6) STOP 3
+  if (b%j /= 2) STOP 4
 
   print *,aa
-  if (aa/=5) call abort()
+  if (aa/=5) STOP 5
 
 end

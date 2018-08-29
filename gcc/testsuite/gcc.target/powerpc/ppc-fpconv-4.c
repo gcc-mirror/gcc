@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-skip-if "" { powerpc*-*-* } { "-mpowerpc64" } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=750" } } */

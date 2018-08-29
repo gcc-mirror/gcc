@@ -11,22 +11,22 @@
     ! >= grainsize && < 2 * grainsize,
     ! unless # of loop iterations is smaller than grainsize.
     call test (0, 79, 1, 17, fn, ntasks, min_iters, max_iters, cnt)
-    if (cnt .ne. 79) call abort
-    if (min_iters .lt. 17 .or. max_iters .ge. 17 * 2) call abort
+    if (cnt .ne. 79) STOP 1
+    if (min_iters .lt. 17 .or. max_iters .ge. 17 * 2) STOP 2
     call test (-49, 2541, 7, 28, fn, ntasks, min_iters, max_iters, cnt)
-    if (cnt .ne. 370) call abort
-    if (min_iters .lt. 28 .or. max_iters .ge. 28 * 2) call abort
+    if (cnt .ne. 370) STOP 3
+    if (min_iters .lt. 28 .or. max_iters .ge. 28 * 2) STOP 4
     call test (7, 21, 2, 15, fn, ntasks, min_iters, max_iters, cnt)
-    if (cnt .ne. 7) call abort
-    if (min_iters .ne. 7 .or. max_iters .ne. 7) call abort
-    if (ntasks .ne. 1) call abort
+    if (cnt .ne. 7) STOP 5
+    if (min_iters .ne. 7 .or. max_iters .ne. 7) STOP 6
+    if (ntasks .ne. 1) STOP 7
     fn => num_tasks
     ! If num_tasks is present, # of task loop iters is
     ! min (# of loop iters, num_tasks).
     call test (-51, 2500, 48, 9, fn, ntasks, min_iters, max_iters, cnt)
-    if (cnt .ne. 54 .or. ntasks .ne. 9) call abort
+    if (cnt .ne. 54 .or. ntasks .ne. 9) STOP 8
     call test (0, 25, 2, 17, fn, ntasks, min_iters, max_iters, cnt)
-    if (cnt .ne. 13 .or. ntasks .ne. 13) call abort
+    if (cnt .ne. 13 .or. ntasks .ne. 13) STOP 9
   !$omp end single
   !$omp end parallel
 contains
@@ -42,7 +42,7 @@ contains
           k = v
           v = v + 1
         !$omp end atomic
-        if (k .ge. 64) call abort
+        if (k .ge. 64) STOP 10
       end if
       j = j + 1
       u(k + 1) = j
@@ -60,7 +60,7 @@ contains
           k = v
           v = v + 1
         !$omp end atomic
-        if (k .ge. 64) call abort
+        if (k .ge. 64) STOP 11
       end if
       j = j + 1
       u(k + 1) = j

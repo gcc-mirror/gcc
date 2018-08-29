@@ -16,6 +16,7 @@ void bar() {
 
 void ee(int *) { }
 
+int
 main() {
   try {
     foo();

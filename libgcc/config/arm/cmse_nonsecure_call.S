@@ -1,7 +1,7 @@
 /* CMSE wrapper function used to save, clear and restore callee saved registers
    for cmse_nonsecure_call's.
 
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is free software; you can redistribute it and/or modify it
@@ -24,6 +24,14 @@
    <http://www.gnu.org/licenses/>.  */
 
 .syntax unified
+#ifdef __ARM_PCS_VFP
+# if __ARM_FP & 0x8
+	.fpu fpv5-d16
+# else
+	.fpu fpv4-sp-d16
+# endif
+#endif
+
 .thumb
 .global __gnu_cmse_nonsecure_call
 __gnu_cmse_nonsecure_call:

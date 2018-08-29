@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-rtl-loop2_invariant" } */
-/* { dg-skip-if "unexpected IV" { "hppa*-*-* mips*-*-* visium-*-* powerpc*-*-* riscv*-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "unexpected IV" { "hppa*-*-* mips*-*-* visium-*-* powerpc*-*-* riscv*-*-*" } } */
 
 void
 f (int *a, int *b)

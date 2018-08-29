@@ -20,13 +20,6 @@ struct OK3
 } // no complaints
   (s7);
 
-__SIZE_TYPE__
-test_offsetof (void)
-{
-  // no complaints about a missing semicolon
-  return __builtin_offsetof (struct OK4 { int a; int b; }, b);
-}
-
 struct OK5
 {
   int a;

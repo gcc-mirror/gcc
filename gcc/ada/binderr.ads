@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -107,7 +107,7 @@ package Binderr is
    procedure Error_Msg (Msg : String);
    --  Output specified error message to standard error or standard output
    --  as governed by the brief and verbose switches, and update error
-   --  counts appropriately
+   --  counts appropriately.
 
    procedure Error_Msg_Info (Msg : String);
    --  Output information line. Indentical in effect to Error_Msg, except

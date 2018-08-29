@@ -10,7 +10,7 @@ program t
   rewind(10)
   a = -1; b = -1; c = -1; d = -1;
   read(10,*) a,b,c,d
-  if (d.ne.-1) call abort()
+  if (d.ne.-1) STOP 1
   
   ! This worked as expected
   rewind(10)
@@ -18,7 +18,7 @@ program t
   rewind(10)
   a = -2; b = -2; c = -2; d = -2;
   read(10,*) a,b,c,d
-  if (d.ne.-2) call abort()
+  if (d.ne.-2) STOP 2
 
   ! This worked as expected.
   rewind(10)
@@ -27,7 +27,7 @@ program t
   rewind(10)
   a = -3; b = -3; c = -3; d = -3;
   read(10,*) a,b,c,d
-  if (d.ne.-3) call abort()
+  if (d.ne.-3) STOP 3
 
   ! This failed before the patch.
   rewind(10)
@@ -36,7 +36,7 @@ program t
   rewind(10)
   a = -4; b = -4; c = -4; d = -4;
   read(10,*) a,b,c,d
-  if (d.ne.-4) call abort()
+  if (d.ne.-4) STOP 4
 
   close(unit=10, status='delete')
 end program t

@@ -1,6 +1,6 @@
 ; libgcc1 routines for Synopsys DesignWare ARC cpu.
 
-/* Copyright (C) 1995-2017 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2018 Free Software Foundation, Inc.
    Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 		on behalf of Synopsys Inc.
 
@@ -370,7 +370,7 @@ SYM(__udivmodsi4):
 	mov_s	r0,1
 	j_s.d	[blink]
 	mov.c	r0,0
-#elif !defined (__OPTIMIZE_SIZE__)
+#elif !defined (__OPTIMIZE_SIZE__) && !defined (__ARC_RF16__)
 #if defined (__ARC_NORM__) && defined (__ARC_BARREL_SHIFTER__)
 	lsr_s r2,r0
 	brhs.d r1,r2,.Lret0_3
@@ -509,14 +509,14 @@ SYM(__udivsi3):
 #ifndef __ARC_EA__
 SYM(__divsi3):
 	/* A5 / ARC60? */
-	mov r7,blink
-	xor r6,r0,r1
+	mov r12,blink
+	xor r11,r0,r1
 	abs_s r0,r0
 	bl.d @SYM(__udivmodsi4)
-	 abs_s r1,r1
-	tst r6,r6
-	j.d [r7]
-	 neg.mi r0,r0
+	abs_s r1,r1
+	tst r11,r11
+	j.d [r12]
+	neg.mi r0,r0
 #else 	/* !ifndef __ARC_EA__ */
 	;; We can use the abs, norm, divaw and mpy instructions for ARC700
 #define MULDIV
@@ -913,14 +913,14 @@ SYM(__modsi3):
 #ifndef __ARC_EA__
 	/* A5 / ARC60? */
 	mov_s r12,blink
-	mov_s r6,r0
+	mov_s r11,r0
 	abs_s r0,r0
 	bl.d @SYM(__udivmodsi4)
-	 abs_s r1,r1
-	tst r6,r6
+	abs_s r1,r1
+	tst r11,r11
 	neg_s r0,r1
 	j_s.d [r12]
-	 mov.pl r0,r1
+	mov.pl r0,r1
 #else /* __ARC_EA__ */
 	abs_s	r2,r1
 	norm.f	r4,r0

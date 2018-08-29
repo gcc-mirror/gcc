@@ -27,7 +27,7 @@ program test_interface
    input1 = (/0,1/)
    input2 = (/3,3/)
    mysum = input1 .myadd. input2
-   if (mysum(1) /= 3 .and. mysum(2) /= 4) call abort 
+   if (mysum(1) /= 3 .and. mysum(2) /= 4) STOP 1
 
    call test_sub(input1, input2)
 
@@ -47,6 +47,6 @@ subroutine test_sub(input1, input2)
    integer mysum(2)
 
    mysum = input1 .myadd. input2
-   if (mysum(1) /= 3 .and. mysum(2) /= 4) call abort 
+   if (mysum(1) /= 3 .and. mysum(2) /= 4) STOP 2
 
 end subroutine test_sub 

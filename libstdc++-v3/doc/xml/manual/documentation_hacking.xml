@@ -1022,7 +1022,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
 
       <para>
 	Complete details on Docbook markup can be found in the
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://tdg.docbook.org/tdg/5.0/ref-elements.html">DocBook Element Reference</link>.
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://tdg.docbook.org/tdg/5.0/ref-elements.html">DocBook Element Reference</link>.
 	An incomplete reference for HTML to Docbook conversion is
 	detailed in the table below.
       </para>

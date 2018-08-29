@@ -1,5 +1,6 @@
 /* { dg-options "-fnon-call-exceptions" } */
 /* With -fnon-call-exceptions 0 / 0 should not be eliminated.  */
+/* { dg-additional-options "-DSIGNAL_SUPPRESS" { target { ! signal } } } */
 
 #ifdef SIGNAL_SUPPRESS
 # define DO_TEST 0
@@ -91,6 +92,10 @@ __aeabi_idiv0 (int return_value)
 # define DO_TEST 0
 #elif defined (__nvptx__)
 /* There isn't even a signal function.  */
+# define DO_TEST 0
+#elif defined (__csky__)
+  /* This presently doesn't raise SIGFPE even on csky-linux-gnu, much
+     less bare metal.  See the implementation of __divsi3 in libgcc.  */
 # define DO_TEST 0
 #else
 # define DO_TEST 1

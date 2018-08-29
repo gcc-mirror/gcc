@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,6 +17,8 @@
 
 // { dg-do run { target c++11 } }
 // { dg-require-cmath "" }
+// { dg-require-cstdint "" }
+// { dg-require-effective-target random_device }
 
 #include <cmath>
 #include <random>

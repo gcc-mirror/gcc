@@ -12,7 +12,7 @@ program testCode
   integer :: i
   real, dimension(2,2), parameter :: vy = reshape ((/1,2,3,4/),(/2,2/))
   i = 1
-  if (any (foo(vec(vy(i, :))) /= vy(i, :))) call abort ()
+  if (any (foo(vec(vy(i, :))) /= vy(i, :))) STOP 1
 
 contains
 

@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -96,6 +96,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 // XXX GLIBCXX_ABI Deprecated
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
+
+#pragma GCC diagnostic ignored "-Wattribute-alias"
 
 #define _GLIBCXX_LDBL_COMPAT(dbl, ldbl) \
   extern "C" void ldbl (void) __attribute__ ((alias (#dbl), weak))

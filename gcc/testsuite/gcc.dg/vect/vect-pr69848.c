@@ -34,4 +34,4 @@ int main (void)
 
   return 0;
 }
-/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail { ! vect_max_reduc } } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" } } */

@@ -1,7 +1,7 @@
 /* PowerPC VxWorks MILS target definitions for GNU compiler.  Overrides
    on top of the canonical VxWorks definitions.
 
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,7 +23,3 @@ along with GCC; see the file COPYING3.  If not see
    requires 4K of space for executing a possible last chance handler.  */
 #undef STACK_CHECK_PROTECT
 #define STACK_CHECK_PROTECT 4096
-
-/* VxWorksMILS for E500V2 expects a specific CPU value to designate 8548.  */
-#undef VXCPU_FOR_8548
-#define VXCPU_FOR_8548 "PPC85XX"

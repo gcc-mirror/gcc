@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 template<typename T>
 concept bool NameProvider()
@@ -12,7 +12,7 @@ template<NameProvider... ColSpec>
 void getTable(const ColSpec&...)
 {}
 
-int f()
+void f()
 {
   getTable(7, 'a'); // { dg-error "cannot call" }
 };

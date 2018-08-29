@@ -1,5 +1,5 @@
 /* The library used by gdb.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libiberty.h"
 #include "xregex.h"
 #include "findcomp.hh"
-#include "c-compiler-name.h"
+#include "compiler-name.hh"
 #include "intl.h"
 
 struct libcc1;

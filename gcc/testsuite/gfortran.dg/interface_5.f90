@@ -42,7 +42,7 @@ subroutine i_am_ok
   USE f77_blas_generic
   character(6) :: chr
   chr = ""
-  if (chr /= "recopy") call abort ()  
+  if (chr /= "recopy") STOP 1  
 end subroutine i_am_ok
 
 program main
@@ -51,5 +51,5 @@ program main
   character(6) :: chr
   chr = ""
   call bl_copy(1.0, chr)
-  if (chr /= "recopy") call abort ()  
+  if (chr /= "recopy") STOP 2  
 end program main

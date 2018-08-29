@@ -398,22 +398,33 @@ func (p *printer) fieldList(fields *ast.FieldList, isStruct, isIncomplete bool) 
 			// no blank between keyword and {} in this case
 			p.print(lbrace, token.LBRACE, rbrace, token.RBRACE)
 			return
-		} else if isStruct && p.isOneLineFieldList(list) { // for now ignore interfaces
+		} else if p.isOneLineFieldList(list) {
 			// small enough - print on one line
 			// (don't use identList and ignore source line breaks)
 			p.print(lbrace, token.LBRACE, blank)
 			f := list[0]
-			for i, x := range f.Names {
-				if i > 0 {
-					// no comments so no need for comma position
-					p.print(token.COMMA, blank)
+			if isStruct {
+				for i, x := range f.Names {
+					if i > 0 {
+						// no comments so no need for comma position
+						p.print(token.COMMA, blank)
+					}
+					p.expr(x)
 				}
-				p.expr(x)
+				if len(f.Names) > 0 {
+					p.print(blank)
+				}
+				p.expr(f.Type)
+			} else { // interface
+				if ftyp, isFtyp := f.Type.(*ast.FuncType); isFtyp {
+					// method
+					p.expr(f.Names[0])
+					p.signature(ftyp.Params, ftyp.Results)
+				} else {
+					// embedded interface
+					p.expr(f.Type)
+				}
 			}
-			if len(f.Names) > 0 {
-				p.print(blank)
-			}
-			p.expr(f.Type)
 			p.print(blank, rbrace, token.RBRACE)
 			return
 		}
@@ -774,20 +785,35 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		if x.Max != nil {
 			indices = append(indices, x.Max)
 		}
-		for i, y := range indices {
-			if i > 0 {
-				// blanks around ":" if both sides exist and either side is a binary expression
-				// TODO(gri) once we have committed a variant of a[i:j:k] we may want to fine-
-				//           tune the formatting here
-				x := indices[i-1]
-				if depth <= 1 && x != nil && y != nil && (isBinary(x) || isBinary(y)) {
-					p.print(blank, token.COLON, blank)
-				} else {
-					p.print(token.COLON)
+		// determine if we need extra blanks around ':'
+		var needsBlanks bool
+		if depth <= 1 {
+			var indexCount int
+			var hasBinaries bool
+			for _, x := range indices {
+				if x != nil {
+					indexCount++
+					if isBinary(x) {
+						hasBinaries = true
+					}
 				}
 			}
-			if y != nil {
-				p.expr0(y, depth+1)
+			if indexCount > 1 && hasBinaries {
+				needsBlanks = true
+			}
+		}
+		for i, x := range indices {
+			if i > 0 {
+				if indices[i-1] != nil && needsBlanks {
+					p.print(blank)
+				}
+				p.print(token.COLON)
+				if x != nil && needsBlanks {
+					p.print(blank)
+				}
+			}
+			if x != nil {
+				p.expr0(x, depth+1)
 			}
 		}
 		p.print(x.Rbrack, token.RBRACK)
@@ -837,7 +863,9 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		if len(x.Elts) > 0 {
 			mode |= noExtraBlank
 		}
-		p.print(mode, x.Rbrace, token.RBRACE, mode)
+		// need the initial indent to print lone comments with
+		// the proper level of indentation
+		p.print(indent, unindent, mode, x.Rbrace, token.RBRACE, mode)
 		p.level--
 
 	case *ast.Ellipsis:
@@ -887,8 +915,6 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 	default:
 		panic("unreachable")
 	}
-
-	return
 }
 
 func (p *printer) possibleSelectorExpr(expr ast.Expr, prec1, depth int) bool {
@@ -1268,8 +1294,6 @@ func (p *printer) stmt(stmt ast.Stmt, nextIsRBrace bool) {
 	default:
 		panic("unreachable")
 	}
-
-	return
 }
 
 // ----------------------------------------------------------------------------
@@ -1447,6 +1471,9 @@ func (p *printer) spec(spec ast.Spec, n int, doIndent bool) {
 		} else {
 			p.print(vtab)
 		}
+		if s.Assign.IsValid() {
+			p.print(token.ASSIGN, blank)
+		}
 		p.expr(s.Type)
 		p.setComment(s.Comment)
 
@@ -1531,6 +1558,16 @@ func (p *printer) nodeSize(n ast.Node, maxSize int) (size int) {
 		p.nodeSizes[n] = size
 	}
 	return
+}
+
+// numLines returns the number of lines spanned by node n in the original source.
+func (p *printer) numLines(n ast.Node) int {
+	if from := n.Pos(); from.IsValid() {
+		if to := n.End(); to.IsValid() {
+			return p.lineFor(to) - p.lineFor(from) + 1
+		}
+	}
+	return infinity
 }
 
 // bodySize is like nodeSize but it is specialized for *ast.BlockStmt's.
@@ -1669,7 +1706,9 @@ func (p *printer) declList(list []ast.Decl) {
 			if prev != tok || getDoc(d) != nil {
 				min = 2
 			}
-			p.linebreak(p.lineFor(d.Pos()), min, ignore, false)
+			// start a new section if the next declaration is a function
+			// that spans multiple lines (see also issue #19544)
+			p.linebreak(p.lineFor(d.Pos()), min, ignore, tok == token.FUNC && p.numLines(d) > 1)
 		}
 		p.decl(d)
 	}

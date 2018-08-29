@@ -1,10 +1,8 @@
 // PR c++/38647
-// { dg-do compile { target { ! c++1z } } }
-// { dg-prune-output "note" }
 
 template<const char *, int> struct A {};
 const char func[] = "abc";
-template<int N> struct A<func, N> {};	// { dg-error "cannot appear|is invalid|not a valid|constant expression" }
+template<int N> struct A<func, N> {};	// { dg-error "cannot appear|is invalid|not a valid|constant expression" "" { target c++98_only } }
 
 char a1[1];
 A<a1, 0> a;

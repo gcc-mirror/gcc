@@ -12,9 +12,9 @@
       write(line,10) x
  10                                                            format(g1
      *      1.4)
-      if (line.ne."  12.34") call abort()
+      if (line.ne."  12.34") STOP 1
       line = ""
       write(line,20) x
  20   format(t r 2 , g 1 1 . 4)
-      if (line.ne."    12.34") call abort()
+      if (line.ne."    12.34") STOP 2
       end

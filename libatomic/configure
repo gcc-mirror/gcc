@@ -608,6 +608,8 @@ ARCH_I386_FALSE
 ARCH_I386_TRUE
 ARCH_ARM_LINUX_FALSE
 ARCH_ARM_LINUX_TRUE
+ARCH_AARCH64_LINUX_FALSE
+ARCH_AARCH64_LINUX_TRUE
 HAVE_IFUNC_FALSE
 HAVE_IFUNC_TRUE
 SIZES
@@ -622,6 +624,7 @@ LIBAT_BUILD_VERSIONED_SHLIB_FALSE
 LIBAT_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
 SECTION_LDFLAGS
+enable_aarch64_lse
 libtool_VERSION
 MAINT
 MAINTAINER_MODE_FALSE
@@ -764,6 +767,7 @@ with_gnu_ld
 enable_libtool_lock
 enable_maintainer_mode
 enable_symvers
+enable_cet
 with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
@@ -1410,6 +1414,7 @@ Optional Features:
 			  (and sometimes confusing) to the casual installer
   --enable-symvers=STYLE  enables symbol versioning of the shared library
                           [default=yes]
+  --enable-cet            enable Intel CET in target libraries [default=no]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -11115,7 +11120,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11118 "configure"
+#line 11123 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11221,7 +11226,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11224 "configure"
+#line 11229 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11517,11 +11522,80 @@ target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
 $as_echo "$target_thread_file" >&6; }
 
+case "$target" in
+ *aarch64*)
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+enable_aarch64_lse=
+save_CFLAGS="$CFLAGS"
+for real_option in -march=armv8-a+lse; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
+  as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
+$as_echo_n "checking whether $CC supports $option... " >&6; }
+if { as_var=$as_acx_Woption; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS="$option"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$as_acx_Woption=yes"
+else
+  eval "$as_acx_Woption=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+eval ac_res=\$$as_acx_Woption
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
+  enable_aarch64_lse="$enable_aarch64_lse${enable_aarch64_lse:+ }$real_option"
+fi
+  done
+CFLAGS="$save_CFLAGS"
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    ;;
+esac
+
 # Get target configury.
 . ${srcdir}/configure.tgt
 if test -n "$UNSUPPORTED"; then
   as_fn_error "Configuration ${target} is unsupported." "$LINENO" 5
 fi
+
+# Write out the ifunc resolver arg type.
+
+cat >>confdefs.h <<_ACEOF
+#define IFUNC_RESOLVER_ARGS $IFUNC_RESOLVER_ARGS
+_ACEOF
+
 
 # Disable fallbacks to __sync routines from libgcc.  Otherwise we'll
 # make silly decisions about what the cpu can do.
@@ -12333,6 +12407,7 @@ _ACEOF
 
 
 
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __atomic_load/store for size 2" >&5
 $as_echo_n "checking for __atomic_load/store for size 2... " >&6; }
 if test "${libat_cv_have_at_ldst_2+set}" = set; then :
@@ -12394,6 +12469,7 @@ $as_echo "$libat_cv_have_at_ldst_2" >&6; }
 cat >>confdefs.h <<_ACEOF
 #define HAVE_ATOMIC_LDST_2 $yesno
 _ACEOF
+
 
 
 
@@ -12467,6 +12543,7 @@ _ACEOF
 
 
 
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __atomic_load/store for size 8" >&5
 $as_echo_n "checking for __atomic_load/store for size 8... " >&6; }
 if test "${libat_cv_have_at_ldst_8+set}" = set; then :
@@ -12534,6 +12611,7 @@ _ACEOF
 
 
 
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __atomic_load/store for size 16" >&5
 $as_echo_n "checking for __atomic_load/store for size 16... " >&6; }
 if test "${libat_cv_have_at_ldst_16+set}" = set; then :
@@ -12595,6 +12673,7 @@ $as_echo "$libat_cv_have_at_ldst_16" >&6; }
 cat >>confdefs.h <<_ACEOF
 #define HAVE_ATOMIC_LDST_16 $yesno
 _ACEOF
+
 
 
 
@@ -14693,7 +14772,8 @@ else
 /* end confdefs.h.  */
 
     int foo_alt(void) { return 0; }
-    void *foo_sel(void) { return foo_alt; }
+    typedef int F (void);
+    F *foo_sel(void) { return foo_alt; }
     int foo(void) __attribute__((ifunc("foo_sel")));
 int
 main ()
@@ -15219,6 +15299,90 @@ if test "x$GCC" = "xyes"; then
   XCFLAGS="$XCFLAGS -Wall -Werror"
 fi
 
+# Add CET specific flags if CET is enabled
+ # Check whether --enable-cet was given.
+if test "${enable_cet+set}" = set; then :
+  enableval=$enable_cet;
+      case "$enableval" in
+       yes|no|auto) ;;
+       *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_cet=no
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
+$as_echo_n "checking for CET support... " >&6; }
+
+case "$host" in
+  i[34567]86-*-linux* | x86_64-*-linux*)
+    case "$enable_cet" in
+      auto)
+	# Check if target supports multi-byte NOPs
+	# and if assembler supports CET insn.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+#if !defined(__SSE2__)
+#error target does not support multi-byte NOPs
+#else
+asm ("setssbsy");
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  enable_cet=yes
+else
+  enable_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+      yes)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  as_fn_error "assembler with CET support is required for --enable-cet" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+    esac
+    ;;
+  *)
+    enable_cet=no
+    ;;
+esac
+if test x$enable_cet = xyes; then
+  CET_FLAGS="-fcf-protection -mshstk"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+XCFLAGS="$XCFLAGS $CET_FLAGS"
+
 XCFLAGS="$XCFLAGS $XPCFLAGS"
 
 
@@ -15233,6 +15397,14 @@ XCFLAGS="$XCFLAGS $XPCFLAGS"
 else
   HAVE_IFUNC_TRUE='#'
   HAVE_IFUNC_FALSE=
+fi
+
+ if expr "$config_path" : ".* linux/aarch64 .*" > /dev/null; then
+  ARCH_AARCH64_LINUX_TRUE=
+  ARCH_AARCH64_LINUX_FALSE='#'
+else
+  ARCH_AARCH64_LINUX_TRUE='#'
+  ARCH_AARCH64_LINUX_FALSE=
 fi
 
  if expr "$config_path" : ".* linux/arm .*" > /dev/null; then
@@ -15267,7 +15439,7 @@ fi
 # Check whether --with-gcc-major-version-only was given.
 if test "${with_gcc_major_version_only+set}" = set; then :
   withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
-        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
       fi
 
 fi
@@ -15423,6 +15595,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_IFUNC_TRUE}" && test -z "${HAVE_IFUNC_FALSE}"; then
   as_fn_error "conditional \"HAVE_IFUNC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ARCH_AARCH64_LINUX_TRUE}" && test -z "${ARCH_AARCH64_LINUX_FALSE}"; then
+  as_fn_error "conditional \"ARCH_AARCH64_LINUX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARCH_ARM_LINUX_TRUE}" && test -z "${ARCH_ARM_LINUX_FALSE}"; then

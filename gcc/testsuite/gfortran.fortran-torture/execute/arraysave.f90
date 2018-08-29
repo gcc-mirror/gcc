@@ -16,9 +16,9 @@ subroutine fn (a)
    integer, dimension(2) :: b
    
    b = ubound (a)
-   if (any (b .ne. (/6, 5/))) call abort
-   if (a(1, 1) .ne. 42) call abort
-   if (a(6, 5) .ne. 43) call abort
+   if (any (b .ne. (/6, 5/))) STOP 1
+   if (a(1, 1) .ne. 42) STOP 2
+   if (a(6, 5) .ne. 43) STOP 3
 end subroutine
 end program
 

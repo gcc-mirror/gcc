@@ -1,6 +1,6 @@
 /* PR rtl-optimization/49095 */
 /* { dg-do compile } */
-/* { dg-options "-Os -fno-shrink-wrap" } */
+/* { dg-options "-Os -fno-shrink-wrap -masm=att" } */
 /* { dg-additional-options "-mregparm=2" { target ia32 } } */
 
 void foo (void *);
@@ -71,3 +71,6 @@ G (int)
 G (long)
 
 /* { dg-final { scan-assembler-not "test\[lq\]" } } */
+/* The {f,h}{char,short,int,long}xor functions aren't optimized into
+   a RMW instruction, so need load, modify and store.  FIXME eventually.  */
+/* { dg-final { scan-assembler-times "\\), %" 8 } } */

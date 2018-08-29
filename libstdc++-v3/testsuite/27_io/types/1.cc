@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2017 Free Software Foundation, Inc.
+// Copyright (C) 2002-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-do compile { target c++14_down } }
+
 // 27.4.2.1 - Types [lib.ios.types]
 
 #include <ios>
@@ -26,10 +28,4 @@ void test01()
 {
   typedef std::ios_base::streampos streampos_type;
   typedef std::ios_base::streamoff streamoff_type;
-}
-
-int main(void)
-{
-  test01();
-  return 0;
 }

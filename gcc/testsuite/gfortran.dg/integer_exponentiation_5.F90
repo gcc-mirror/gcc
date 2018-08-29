@@ -18,32 +18,32 @@ contains
 
   subroutine check_i8 (a, b)
     integer(kind=8), intent(in) :: a, b
-    if (a /= b) call abort()
+    if (a /= b) STOP 1
   end subroutine check_i8
 
   subroutine check_i4 (a, b)
     integer(kind=4), intent(in) :: a, b
-    if (a /= b) call abort()
+    if (a /= b) STOP 2
   end subroutine check_i4
 
   subroutine check_r8 (a, b)
     real(kind=8), intent(in) :: a, b
-    if (a /= b) call abort()
+    if (a /= b) STOP 3
   end subroutine check_r8
 
   subroutine check_r4 (a, b)
     real(kind=4), intent(in) :: a, b
-    if (a /= b) call abort()
+    if (a /= b) STOP 4
   end subroutine check_r4
 
   subroutine check_c8 (a, b)
     complex(kind=8), intent(in) :: a, b
-    if (a /= b) call abort()
+    if (a /= b) STOP 5
   end subroutine check_c8
 
   subroutine check_c4 (a, b)
     complex(kind=4), intent(in) :: a, b
-    if (a /= b) call abort()
+    if (a /= b) STOP 6
   end subroutine check_c4
 
 end module mod_check

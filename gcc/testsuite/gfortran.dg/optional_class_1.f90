@@ -35,11 +35,11 @@ end module m
   allocate (xca(1), source = t(42))
   select type (xca)
     type is (t)
-      if (any (xca%i .ne. [42])) call abort
+      if (any (xca%i .ne. [42])) STOP 1
   end select
   call opt (xca = xca)
   select type (xca)
     type is (t)
-      if (any (xca%i .ne. [9,99,999])) call abort
+      if (any (xca%i .ne. [9,99,999])) STOP 2
   end select
 end

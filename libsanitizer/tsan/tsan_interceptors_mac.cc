@@ -19,7 +19,10 @@
 #include "tsan_interface_ann.h"
 
 #include <libkern/OSAtomic.h>
+
+#if defined(__has_include) && __has_include(<xpc/xpc.h>)
 #include <xpc/xpc.h>
+#endif  // #if defined(__has_include) && __has_include(<xpc/xpc.h>)
 
 typedef long long_t;  // NOLINT
 
@@ -233,6 +236,8 @@ TSAN_INTERCEPTOR(void, os_lock_unlock, void *lock) {
   REAL(os_lock_unlock)(lock);
 }
 
+#if defined(__has_include) && __has_include(<xpc/xpc.h>)
+
 TSAN_INTERCEPTOR(void, xpc_connection_set_event_handler,
                  xpc_connection_t connection, xpc_handler_t handler) {
   SCOPED_TSAN_INTERCEPTOR(xpc_connection_set_event_handler, connection,
@@ -279,6 +284,14 @@ TSAN_INTERCEPTOR(void, xpc_connection_send_message_with_reply,
   (connection, message, replyq, new_handler);
 }
 
+TSAN_INTERCEPTOR(void, xpc_connection_cancel, xpc_connection_t connection) {
+  SCOPED_TSAN_INTERCEPTOR(xpc_connection_cancel, connection);
+  Release(thr, pc, (uptr)connection);
+  REAL(xpc_connection_cancel)(connection);
+}
+
+#endif  // #if defined(__has_include) && __has_include(<xpc/xpc.h>)
+
 // On macOS, libc++ is always linked dynamically, so intercepting works the
 // usual way.
 #define STDCXX_INTERCEPTOR TSAN_INTERCEPTOR
@@ -295,18 +308,20 @@ struct fake_shared_weak_count {
 };
 }  // namespace
 
-// This adds a libc++ interceptor for:
+// The following code adds libc++ interceptors for:
 //     void __shared_weak_count::__release_shared() _NOEXCEPT;
+//     bool __shared_count::__release_shared() _NOEXCEPT;
 // Shared and weak pointers in C++ maintain reference counts via atomics in
 // libc++.dylib, which are TSan-invisible, and this leads to false positives in
-// destructor code.  This interceptor re-implements the whole function so that
+// destructor code. These interceptors re-implements the whole functions so that
 // the mo_acq_rel semantics of the atomic decrement are visible.
 //
-// Unfortunately, this interceptor cannot simply Acquire/Release some sync
+// Unfortunately, the interceptors cannot simply Acquire/Release some sync
 // object and call the original function, because it would have a race between
 // the sync and the destruction of the object.  Calling both under a lock will
 // not work because the destructor can invoke this interceptor again (and even
 // in a different thread, so recursive locks don't help).
+
 STDCXX_INTERCEPTOR(void, _ZNSt3__119__shared_weak_count16__release_sharedEv,
                    fake_shared_weak_count *o) {
   if (!flags()->shared_ptr_interceptor)
@@ -323,6 +338,20 @@ STDCXX_INTERCEPTOR(void, _ZNSt3__119__shared_weak_count16__release_sharedEv,
       o->on_zero_shared_weak();
     }
   }
+}
+
+STDCXX_INTERCEPTOR(bool, _ZNSt3__114__shared_count16__release_sharedEv,
+                   fake_shared_weak_count *o) {
+  if (!flags()->shared_ptr_interceptor)
+    return REAL(_ZNSt3__114__shared_count16__release_sharedEv)(o);
+
+  SCOPED_TSAN_INTERCEPTOR(_ZNSt3__114__shared_count16__release_sharedEv, o);
+  if (__tsan_atomic64_fetch_add(&o->shared_owners, -1, mo_release) == 0) {
+    Acquire(thr, pc, (uptr)&o->shared_owners);
+    o->on_zero_shared();
+    return true;
+  }
+  return false;
 }
 
 namespace {

@@ -16,15 +16,15 @@ program test_init
   end type A
   type(A):: x, y(3)
   x=f()
-  if (associated(x%p) .or. x%i /= 3) call abort ()
+  if (associated(x%p) .or. x%i /= 3) STOP 1
   y(1)%p => tgt
   y%i = 99
   call sub1(3,y)
-  if (associated(y(1)%p) .or. any(y(:)%i /= 3)) call abort ()
+  if (associated(y(1)%p) .or. any(y(:)%i /= 3)) STOP 2
   y(1)%p => tgt
   y%i = 99
   call sub2(y)
-  if (associated(y(1)%p) .or. any(y(:)%i /= 3)) call abort ()
+  if (associated(y(1)%p) .or. any(y(:)%i /= 3)) STOP 3
 contains
  function f() result (fr)
     type(A):: fr

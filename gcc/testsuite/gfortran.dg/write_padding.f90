@@ -8,6 +8,6 @@ program write_padding
    real :: atime
    str = '123'
    write( str, '(a3,i1)' ) trim(str),4
-   if (str.ne."1234") call abort()
+   if (str.ne."1234") STOP 1
 end program write_padding
 

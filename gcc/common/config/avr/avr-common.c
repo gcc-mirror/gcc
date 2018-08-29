@@ -1,5 +1,5 @@
 /* Common hooks for ATMEL AVR.
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -27,10 +27,17 @@
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options avr_option_optimization_table[] =
   {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    // With -fdelete-null-pointer-checks option, the compiler assumes
+    // that dereferencing of a null pointer would halt the program.
+    // For AVR this assumption is not true and a program can safely
+    // dereference null pointers.  Changes made by this option may not
+    // work properly for AVR.  So disable this option.
+    { OPT_LEVELS_ALL, OPT_fdelete_null_pointer_checks, NULL, 0 },
     // The only effect of -fcaller-saves might be that it triggers
     // a frame without need when it tries to be smart around calls.
     { OPT_LEVELS_ALL, OPT_fcaller_saves, NULL, 0 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_mgas_isr_prologues, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_mmain_is_OS_task, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 

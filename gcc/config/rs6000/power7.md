@@ -1,5 +1,5 @@
 ;; Scheduling description for IBM POWER7 processor.
-;; Copyright (C) 2009-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2018 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Pat Haugen (pthaugen@us.ibm.com).
 
@@ -208,7 +208,7 @@
        (eq_attr "cpu" "power7"))
   "DU2F_power7,FXU_power7,FXU_power7")
 
-(define_bypass 3 "power7-cmp,power7-compare" "power7-crlogical,power7-delayedcr")
+(define_bypass 3 "power7-cmp,power7-compare" "power7-crlogical")
 
 (define_insn_reservation "power7-mul" 4
   (and (eq_attr "type" "mul")
@@ -253,11 +253,6 @@
 
 (define_insn_reservation "power7-crlogical" 3
   (and (eq_attr "type" "cr_logical")
-       (eq_attr "cpu" "power7"))
-  "du1_power7,cru_power7")
-
-(define_insn_reservation "power7-delayedcr" 3
-  (and (eq_attr "type" "delayed_cr")
        (eq_attr "cpu" "power7"))
   "du1_power7,cru_power7")
 

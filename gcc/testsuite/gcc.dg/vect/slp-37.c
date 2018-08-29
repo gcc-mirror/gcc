@@ -17,8 +17,8 @@ foo1 (s1 *arr)
   int i;
   s1 *ptr = arr;
 
-  /* Different constant types - not SLPable.  The group size is not power of 2,
-     interleaving is not supported either.  */
+  /* Vectorized as a strided SLP pair of accesses to <a, b> and a single
+     strided access to c.  */
   for (i = 0; i < N; i++)
     {
       ptr->a = 6;
@@ -49,9 +49,7 @@ int main (void)
       arr1[i].a = i;
       arr1[i].b = i * 2;
       arr1[i].c = (void *)arr1;
-
-      if (arr1[i].a == 178)
-         abort(); 
+      asm volatile ("" ::: "memory");
     } 
 
 
@@ -60,6 +58,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect"  } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect"  } } */
-  
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_hw_misalign } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_hw_misalign } } } */

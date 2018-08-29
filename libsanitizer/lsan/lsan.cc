@@ -54,6 +54,9 @@ static void InitializeFlags() {
   RegisterLsanFlags(&parser, f);
   RegisterCommonFlags(&parser);
 
+  // Override from user-specified string.
+  const char *lsan_default_options = MaybeCallLsanDefaultOptions();
+  parser.ParseString(lsan_default_options);
   parser.ParseString(GetEnv("LSAN_OPTIONS"));
 
   SetVerbosity(common_flags()->verbosity);
@@ -61,6 +64,18 @@ static void InitializeFlags() {
   if (Verbosity()) ReportUnrecognizedFlags();
 
   if (common_flags()->help) parser.PrintFlagDescriptions();
+}
+
+static void OnStackUnwind(const SignalContext &sig, const void *,
+                          BufferedStackTrace *stack) {
+  GetStackTraceWithPcBpAndContext(stack, kStackTraceMax, sig.pc, sig.bp,
+                                  sig.context,
+                                  common_flags()->fast_unwind_on_fatal);
+}
+
+void LsanOnDeadlySignal(int signo, void *siginfo, void *context) {
+  HandleDeadlySignal(siginfo, context, GetCurrentThread(), &OnStackUnwind,
+                     nullptr);
 }
 
 extern "C" void __lsan_init() {
@@ -74,9 +89,11 @@ extern "C" void __lsan_init() {
   InitializeFlags();
   InitCommonLsan();
   InitializeAllocator();
+  ReplaceSystemMalloc();
   InitTlsSize();
   InitializeInterceptors();
   InitializeThreadRegistry();
+  InstallDeadlySignalHandlers(LsanOnDeadlySignal);
   u32 tid = ThreadCreate(0, 0, true);
   CHECK_EQ(tid, 0);
   ThreadStart(tid, GetTid());

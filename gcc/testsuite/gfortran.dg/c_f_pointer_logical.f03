@@ -9,7 +9,7 @@ contains
     logical(c_bool), pointer :: f03_logical_ptr
     call c_f_pointer(c_logical_ptr, f03_logical_ptr)
     
-    if(f03_logical_ptr .neqv. .true.) call abort ()
+    if(f03_logical_ptr .neqv. .true.) STOP 1
   end subroutine test_scalar
 
   subroutine test_array(c_logical_array, num_elems) bind(c)
@@ -22,12 +22,12 @@ contains
 
     ! Odd numbered locations are true (even numbered offsets in C)
     do i = 1, num_elems, 2
-       if(f03_logical_array(i) .neqv. .true.) call abort ()
+       if(f03_logical_array(i) .neqv. .true.) STOP 2
     end do
     
     ! Even numbered locations are false.
     do i = 2, num_elems, 2
-       if(f03_logical_array(i) .neqv. .false.) call abort ()
+       if(f03_logical_array(i) .neqv. .false.) STOP 3
     end do
   end subroutine test_array
 end module c_f_pointer_logical

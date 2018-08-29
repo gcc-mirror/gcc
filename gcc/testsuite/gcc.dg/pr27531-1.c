@@ -4,7 +4,7 @@
    output to reference a label that had been eliminated.  */
 /* { dg-do link } */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "requires io" { freestanding } { "*" } { "" } }  */
+/* { dg-skip-if "requires io" { freestanding } }  */
 
 typedef struct _IO_FILE FILE;
 char const *RCSname;

@@ -1,5 +1,5 @@
 /* Default language-specific hooks.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -171,8 +171,15 @@ lhd_set_decl_assembler_name (tree decl)
       ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
       id = get_identifier (label);
     }
-  SET_DECL_ASSEMBLER_NAME (decl, id);
 
+  SET_DECL_ASSEMBLER_NAME (decl, id);
+}
+
+/* Forcibly overwrite the DECL_ASSEMBLER_NAME for DECL to NAME.  */
+void
+lhd_overwrite_decl_assembler_name (tree decl, tree name)
+{
+  DECL_ASSEMBLER_NAME_RAW (decl) = name;
 }
 
 /* Type promotion for variable arguments.  */
@@ -266,8 +273,8 @@ lhd_gimplify_expr (tree *expr_p ATTRIBUTE_UNUSED,
 }
 
 /* lang_hooks.tree_size: Determine the size of a tree with code C,
-   which is a language-specific tree code in category tcc_constant or
-   tcc_exceptional.  The default expects never to be called.  */
+   which is a language-specific tree code in category tcc_constant,
+   tcc_exceptional or tcc_type.  The default expects never to be called.  */
 size_t
 lhd_tree_size (enum tree_code c ATTRIBUTE_UNUSED)
 {
@@ -346,7 +353,8 @@ lhd_complain_wrong_lang_p (const struct cl_option *option ATTRIBUTE_UNUSED)
 bool
 lhd_handle_option (size_t code ATTRIBUTE_UNUSED,
 		   const char *arg ATTRIBUTE_UNUSED,
-		   int value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
+		   HOST_WIDE_INT value ATTRIBUTE_UNUSED,
+		   int kind ATTRIBUTE_UNUSED,
 		   location_t loc ATTRIBUTE_UNUSED,
 		   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
@@ -361,7 +369,7 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 {
   if (diagnostic_last_function_changed (context, diagnostic))
     {
-      const char *old_prefix = context->printer->prefix;
+      char *old_prefix = pp_take_prefix (context->printer);
       tree abstract_origin = diagnostic_abstract_origin (diagnostic);
       char *new_prefix = (file && abstract_origin == NULL)
 			 ? file_name_as_prefix (context, file) : NULL;

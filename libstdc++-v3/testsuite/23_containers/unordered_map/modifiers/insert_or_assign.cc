@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++17" }
 
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,10 +38,12 @@ struct Val
   {
     val = other.val;
     other.moved_from_assign = true;
+    return *this;
   }
   Val& operator=(const Val& other)
   {
     val = other.val;
+    return *this;
   }
 };
 

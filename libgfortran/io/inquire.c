@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -26,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Implement the non-IOLENGTH variant of the INQUIRY statement */
 
 #include "io.h"
+#include "async.h"
 #include "unix.h"
 #include <string.h>
 
@@ -47,7 +48,10 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit *u)
     generate_error (&iqp->common, LIBERROR_INQUIRE_INTERNAL_UNIT, NULL);
 
   if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)
-    *iqp->exist = (u != NULL) || (iqp->common.unit >= 0);
+    *iqp->exist = (u != NULL &&
+		   iqp->common.unit != GFC_INTERNAL_UNIT &&
+		   iqp->common.unit != GFC_INTERNAL_UNIT4)
+		|| (iqp->common.unit >= 0);
 
   if ((cf & IOPARM_INQUIRE_HAS_OPENED) != 0)
     *iqp->opened = (u != NULL);
@@ -218,7 +222,9 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit *u)
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_RECL_OUT) != 0)
-    *iqp->recl_out = (u != NULL) ? u->recl : 0;
+    /* F2018 (N2137) 12.10.2.26: If there is no connection, recl is
+       assigned the value -1.  */
+    *iqp->recl_out = (u != NULL) ? u->recl : -1;
 
   if ((cf & IOPARM_INQUIRE_HAS_STRM_POS_OUT) != 0)
     *iqp->strm_pos_out = (u != NULL) ? u->strm_pos : 0;
@@ -276,12 +282,6 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit *u)
     {
       GFC_INTEGER_4 cf2 = iqp->flags2;
 
-      if ((cf2 & IOPARM_INQUIRE_HAS_PENDING) != 0)
-	*iqp->pending = 0;
-  
-      if ((cf2 & IOPARM_INQUIRE_HAS_ID) != 0)
-        *iqp->id = 0;
-
       if ((cf2 & IOPARM_INQUIRE_HAS_ENCODING) != 0)
 	{
 	  if (u == NULL || u->flags.form != FORM_FORMATTED)
@@ -327,19 +327,41 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit *u)
 	  if (u == NULL)
 	    p = undefined;
 	  else
-	    switch (u->flags.async)
 	    {
-	      case ASYNC_YES:
-		p = yes;
-		break;
-	      case ASYNC_NO:
-		p = no;
-		break;
-	      default:
-		internal_error (&iqp->common, "inquire_via_unit(): Bad async");
+	      switch (u->flags.async)
+		{
+		case ASYNC_YES:
+		  p = yes;
+		  break;
+		case ASYNC_NO:
+		  p = no;
+		  break;
+		default:
+		  internal_error (&iqp->common, "inquire_via_unit(): Bad async");
+		}
 	    }
-
 	  cf_strcpy (iqp->asynchronous, iqp->asynchronous_len, p);
+	}
+
+      if ((cf2 & IOPARM_INQUIRE_HAS_PENDING) != 0)
+	{
+	  if (!ASYNC_IO || u->au == NULL)
+	    *(iqp->pending) = 0;
+	  else
+	    {
+	      LOCK (&(u->au->lock));
+	      if ((cf2 & IOPARM_INQUIRE_HAS_ID) != 0)
+		{
+		  int id;
+		  id = *(iqp->id);
+		  *(iqp->pending) = id > u->au->id.low;
+		}
+	      else
+		{
+		  *(iqp->pending) = ! u->au->empty;
+		}
+	      UNLOCK (&(u->au->lock));
+	    }
 	}
 
       if ((cf2 & IOPARM_INQUIRE_HAS_SIGN) != 0)
@@ -612,13 +634,12 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit *u)
       else
 	switch (u->flags.convert)
 	  {
-	    /*  big_endian is 0 for little-endian, 1 for big-endian.  */
 	  case GFC_CONVERT_NATIVE:
-	    p = big_endian ? "BIG_ENDIAN" : "LITTLE_ENDIAN";
+	    p = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? "BIG_ENDIAN" : "LITTLE_ENDIAN";
 	    break;
 
 	  case GFC_CONVERT_SWAP:
-	    p = big_endian ? "LITTLE_ENDIAN" : "BIG_ENDIAN";
+	    p = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? "LITTLE_ENDIAN" : "BIG_ENDIAN";
 	    break;
 
 	  default:

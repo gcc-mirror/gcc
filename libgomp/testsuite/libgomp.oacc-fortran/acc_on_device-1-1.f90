@@ -9,19 +9,19 @@ implicit none
 
 ! Host.
 
-if (.not. acc_on_device (acc_device_none)) call abort
-if (.not. acc_on_device (acc_device_host)) call abort
-if (acc_on_device (acc_device_not_host)) call abort
-if (acc_on_device (acc_device_nvidia)) call abort
+if (.not. acc_on_device (acc_device_none)) STOP 1
+if (.not. acc_on_device (acc_device_host)) STOP 2
+if (acc_on_device (acc_device_not_host)) STOP 3
+if (acc_on_device (acc_device_nvidia)) STOP 4
 
 
 ! Host via offloading fallback mode.
 
 !$acc parallel if(.false.)
-if (.not. acc_on_device (acc_device_none)) call abort
-if (.not. acc_on_device (acc_device_host)) call abort
-if (acc_on_device (acc_device_not_host)) call abort
-if (acc_on_device (acc_device_nvidia)) call abort
+if (.not. acc_on_device (acc_device_none)) STOP 5
+if (.not. acc_on_device (acc_device_host)) STOP 6
+if (acc_on_device (acc_device_not_host)) STOP 7
+if (acc_on_device (acc_device_nvidia)) STOP 8
 !$acc end parallel
 
 
@@ -30,13 +30,13 @@ if (acc_on_device (acc_device_nvidia)) call abort
 ! Offloaded.
 
 !$acc parallel
-if (acc_on_device (acc_device_none)) call abort
-if (acc_on_device (acc_device_host)) call abort
-if (.not. acc_on_device (acc_device_not_host)) call abort
+if (acc_on_device (acc_device_none)) STOP 9
+if (acc_on_device (acc_device_host)) STOP 10
+if (.not. acc_on_device (acc_device_not_host)) STOP 11
 #if ACC_DEVICE_TYPE_nvidia
-if (.not. acc_on_device (acc_device_nvidia)) call abort
+if (.not. acc_on_device (acc_device_nvidia)) STOP 12
 #else
-if (acc_on_device (acc_device_nvidia)) call abort
+if (acc_on_device (acc_device_nvidia)) STOP 13
 #endif
 !$acc end parallel
 

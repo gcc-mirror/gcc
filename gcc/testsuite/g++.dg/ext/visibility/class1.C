@@ -3,7 +3,7 @@
 
 // { dg-options "-fpic" }
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
-// { dg-skip-if "" { *-*-darwin* } { "*" } { "" } }
+// { dg-skip-if "" { *-*-darwin* } }
 // { dg-require-visibility "" }
 // { dg-require-effective-target fpic }
 // { dg-final { scan-assembler "InitEv@PLT" } }

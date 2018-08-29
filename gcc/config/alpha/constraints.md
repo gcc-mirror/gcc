@@ -1,5 +1,5 @@
 ;; Constraint definitions for DEC Alpha.
-;; Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -82,7 +82,7 @@
 (define_constraint "P"
   "The constant 1, 2 or 3"
   (and (match_code "const_int")
-       (match_test "ival == 1 || ival == 2 || ival == 3")))
+       (match_test "IN_RANGE (ival, 1, 3)")))
 
 ;; Floating-point constant constraints.
 (define_constraint "G"

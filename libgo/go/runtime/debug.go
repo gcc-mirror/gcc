@@ -15,9 +15,6 @@ import (
 // The number of logical CPUs on the local machine can be queried with NumCPU.
 // This call will go away when the scheduler improves.
 func GOMAXPROCS(n int) int {
-	if n > _MaxGomaxprocs {
-		n = _MaxGomaxprocs
-	}
 	lock(&sched.lock)
 	ret := int(gomaxprocs)
 	unlock(&sched.lock)
@@ -54,6 +51,7 @@ func NumCgoCall() int64 {
 
 // NumGoroutine returns the number of goroutines that currently exist.
 func NumGoroutine() int {
+	waitForSystemGoroutines()
 	return int(gcount())
 }
 

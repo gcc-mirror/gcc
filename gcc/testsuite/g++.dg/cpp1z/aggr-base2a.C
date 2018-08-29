@@ -8,5 +8,5 @@ private:
 };
 struct derived : base {};
 
-derived d1{};			// { dg-error "" "" { target c++1z } }
+derived d1{};			// { dg-error "" "" { target c++17 } }
 derived d2;			// still OK

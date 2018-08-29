@@ -1,5 +1,5 @@
 /* Implementation of the ASSOCIATED intrinsic
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by kejia Zhao (CCRG) <kejia_zh@yahoo.com.cn>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -37,7 +37,9 @@ associated (const gfc_array_void *pointer, const gfc_array_void *target)
     return 0;
   if (GFC_DESCRIPTOR_DATA (pointer) != GFC_DESCRIPTOR_DATA (target))
     return 0;
-  if (GFC_DESCRIPTOR_DTYPE (pointer) != GFC_DESCRIPTOR_DTYPE (target))
+  if (GFC_DESCRIPTOR_DTYPE (pointer).elem_len != GFC_DESCRIPTOR_DTYPE (target).elem_len)
+    return 0;
+  if (GFC_DESCRIPTOR_DTYPE (pointer).type != GFC_DESCRIPTOR_DTYPE (target).type)
     return 0;
 
   rank = GFC_DESCRIPTOR_RANK (pointer);

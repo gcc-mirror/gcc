@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
 
 namespace std {
     typedef __SIZE_TYPE__ size_t;

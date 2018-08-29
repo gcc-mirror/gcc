@@ -8,20 +8,20 @@ PROGRAM Test_INTEGER_select
 
   SELECT CASE (I)
      CASE (:-1)
-        CALL abort
+        STOP 1
      CASE (1:)
-        CALL abort
+        STOP 2
      CASE DEFAULT
         CONTINUE
   END SELECT
 
   SELECT CASE (I)
      CASE (3,2,1)
-        CALL abort
+        STOP 3
      CASE (0)
         CONTINUE
      CASE DEFAULT
-        call abort
+        STOP 4
   END SELECT
 
 ! Not aborted by here, so it worked
@@ -31,20 +31,20 @@ PROGRAM Test_INTEGER_select
 
   SELECT CASE (I)
      CASE (:-1)
-        CALL abort
+        STOP 5
      CASE (1:)
         CONTINUE
      CASE DEFAULT
-        CALL abort
+        STOP 6
   END SELECT
 
   SELECT CASE (I)
      CASE (3,2,1,:0)
-        CALL abort
+        STOP 7
      CASE (maxI)
         CONTINUE
      CASE DEFAULT
-        call abort
+        STOP 8
   END SELECT
 
   I = minI
@@ -53,18 +53,18 @@ PROGRAM Test_INTEGER_select
      CASE (:-1)
         CONTINUE
      CASE (1:)
-        CALL abort
+        STOP 9
      CASE DEFAULT
-        CALL abort
+        STOP 10
   END SELECT
 
   SELECT CASE (I)
      CASE (3:,2,1,0)
-        CALL abort
+        STOP 11
      CASE (minI)
         CONTINUE
      CASE DEFAULT
-        call abort
+        STOP 12
   END SELECT
 
 END

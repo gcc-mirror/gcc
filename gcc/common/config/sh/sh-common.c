@@ -1,5 +1,5 @@
 /* Common hooks for Renesas / SuperH SH.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Set default optimization options.  */
 static const struct default_options sh_option_optimization_table[] =
   {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     { OPT_LEVELS_SIZE, OPT_mdiv_, SH_DIV_STR_FOR_SIZE, 1 },
     { OPT_LEVELS_0_ONLY, OPT_mdiv_, "", 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }

@@ -3,5 +3,5 @@ module m
 end module m
 
 use m
-if (p .ne. -1.) CALL abort()
+if (p .ne. -1.) STOP 1
 end

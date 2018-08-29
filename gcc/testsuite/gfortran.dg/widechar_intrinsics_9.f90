@@ -53,18 +53,18 @@ contains
     character(kind=4,len=len(s1)) :: w1, w2, wmin, wmax
 
     w1 = s1 ; w2 = s2 ; wmin = smin ; wmax = smax
-    if (min (w1, w2) /= wmin) call abort
-    if (max (w1, w2) /= wmax) call abort
-    if (min (s1, s2) /= smin) call abort
-    if (max (s1, s2) /= smax) call abort
+    if (min (w1, w2) /= wmin) STOP 1
+    if (max (w1, w2) /= wmax) STOP 2
+    if (min (s1, s2) /= smin) STOP 3
+    if (max (s1, s2) /= smax) STOP 4
   end subroutine check_minmax_1
 
   subroutine check_minmax_2 (s1, s2, smin, smax)
     implicit none
     character(kind=4,len=*), intent(in) :: s1, s2, smin, smax
 
-    if (min (s1, s2) /= smin) call abort
-    if (max (s1, s2) /= smax) call abort
+    if (min (s1, s2) /= smin) STOP 5
+    if (max (s1, s2) /= smax) STOP 6
   end subroutine check_minmax_2
 
 end

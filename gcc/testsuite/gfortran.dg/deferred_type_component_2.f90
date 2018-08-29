@@ -53,8 +53,8 @@ contains
 
   subroutine check (chr1, chr2)
     character (len=*,kind=4) :: chr1, chr2
-    if (len(chr1) .ne. len (chr2)) call abort
-    if (chr1 .ne. chr2) call abort
+    if (len(chr1) .ne. len (chr2)) STOP 1
+    if (chr1 .ne. chr2) STOP 2
   end subroutine
 
 end

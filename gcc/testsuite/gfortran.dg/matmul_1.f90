@@ -28,25 +28,25 @@ Program matmul_1
 
   z = 0.0_T
   z = matmul (x, y)
-  if (sum (z) /= 750.0_T) call abort ()
+  if (sum (z) /= 750.0_T) STOP 1
 
 !                           array sections
 
   c = 0.0_T
   c(1:3,1:2) = matmul (a(7:9,3:N), b(3:N,3:4))
-  if (sum (c) /= 576.0_T) call abort ()
+  if (sum (c) /= 576.0_T) STOP 2
 
 !                           uses a temp
 
   c = 0.0_T
   c = matmul (a, b + x)
-  if (sum (c) /= 9625.0_T) call abort ()
+  if (sum (c) /= 9625.0_T) STOP 3
 
 !                           returns to a temp
 
   c = 0.0_T
   c = a + matmul (a, b)
-  if (sum (c) /= 5775.0_T) call abort ()
+  if (sum (c) /= 5775.0_T) STOP 4
 
   deallocate (a, b, c)
 

@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       ///  Value returned by various member functions when they fail.
       static const size_type	npos = static_cast<size_type>(-1);
 
-    private:
+    protected:
       // type used for positions in insert, erase etc.
 #if __cplusplus < 201103L
       typedef iterator __const_iterator;
@@ -108,6 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       typedef const_iterator __const_iterator;
 #endif
 
+    private:
 #if __cplusplus > 201402L
       // A helper type for avoiding boiler-plate.
       typedef basic_string_view<_CharT, _Traits> __sv_type;
@@ -115,8 +116,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _Tp, typename _Res>
 	using _If_sv = enable_if_t<
 	  __and_<is_convertible<const _Tp&, __sv_type>,
+		 __not_<is_convertible<const _Tp*, const basic_string*>>,
 		 __not_<is_convertible<const _Tp&, const _CharT*>>>::value,
 	  _Res>;
+
+      // Allows an implicit conversion to __sv_type.
+      static __sv_type
+      _S_to_string_view(__sv_type __svt) noexcept
+      { return __svt; }
+
+      // Wraps a string_view by explicit conversion and thus
+      // allows to add an internal constructor that does not
+      // participate in overload resolution when a string_view
+      // is provided.
+      struct __sv_wrapper
+      {
+	explicit __sv_wrapper(__sv_type __sv) noexcept : _M_sv(__sv) { }
+	__sv_type _M_sv;
+      };
 #endif
 
       // Use empty-base optimization: http://www.cantrip.org/emptyopt.html
@@ -490,6 +507,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param  __s  Source C string.
        *  @param  __a  Allocator to use (default is default allocator).
        */
+#if __cpp_deduction_guides && ! defined _GLIBCXX_DEFINING_STRING_INSTANTIATIONS
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3076. basic_string CTAD ambiguity
+      template<typename = _RequireAllocator<_Alloc>>
+#endif
       basic_string(const _CharT* __s, const _Alloc& __a = _Alloc())
       : _M_dataplus(_M_local_data(), __a)
       { _M_construct(__s, __s ? __s + traits_type::length(__s) : __s+npos); }
@@ -500,6 +522,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param  __c  Character to use.
        *  @param  __a  Allocator to use (default is default allocator).
        */
+#if __cpp_deduction_guides && ! defined _GLIBCXX_DEFINING_STRING_INSTANTIATIONS
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3076. basic_string CTAD ambiguity
+      template<typename = _RequireAllocator<_Alloc>>
+#endif
       basic_string(size_type __n, _CharT __c, const _Alloc& __a = _Alloc())
       : _M_dataplus(_M_local_data(), __a)
       { _M_construct(__n, __c); }
@@ -593,7 +620,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Construct string from a substring of a string_view.
-       *  @param  __t   Source string view.
+       *  @param  __t   Source object convertible to string view.
        *  @param  __pos The index of the first character to copy from __t.
        *  @param  __n   The number of characters to copy from __t.
        *  @param  __a   Allocator to use.
@@ -601,16 +628,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _Tp, typename = _If_sv<_Tp, void>>
 	basic_string(const _Tp& __t, size_type __pos, size_type __n,
 		     const _Alloc& __a = _Alloc())
-	: basic_string(__sv_type(__t).substr(__pos, __n), __a) { }
+	: basic_string(_S_to_string_view(__t).substr(__pos, __n), __a) { }
 
       /**
        *  @brief  Construct string from a string_view.
-       *  @param  __sv  Source string view.
+       *  @param  __t  Source object convertible to string view.
        *  @param  __a  Allocator to use (default is default allocator).
        */
+      template<typename _Tp, typename = _If_sv<_Tp, void>>
+	explicit
+	basic_string(const _Tp& __t, const _Alloc& __a = _Alloc())
+	: basic_string(__sv_wrapper(_S_to_string_view(__t)), __a) { }
+
+      /**
+       *  @brief  Only internally used: Construct string from a string view
+       *          wrapper.
+       *  @param  __svw  string view wrapper.
+       *  @param  __a  Allocator to use.
+       */
       explicit
-      basic_string(__sv_type __sv, const _Alloc& __a = _Alloc())
-      : basic_string(__sv.data(), __sv.size(), __a) { }
+      basic_string(__sv_wrapper __svw, const _Alloc& __a)
+      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif // C++17
 
       /**
@@ -688,7 +726,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  The contents of @a str are moved into this string (without copying).
        *  @a str is a valid, but unspecified string.
        **/
-      // PR 58265, this should be noexcept.
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2063. Contradictory requirements for string move assignment
       basic_string&
@@ -756,19 +793,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Set value to string constructed from a string_view.
-       *  @param  __sv  A string_view.
+       *  @param  __svt  An object convertible to string_view.
        */
-      template<typename _Tp>
-	_If_sv<_Tp, basic_string&>
-	operator=(_Tp __sv)
-	{ return this->assign(__sv); }
+     template<typename _Tp>
+       _If_sv<_Tp, basic_string&>
+       operator=(const _Tp& __svt)
+       { return this->assign(__svt); }
 
       /**
        *  @brief  Convert to a string_view.
        *  @return A string_view.
        */
       operator __sv_type() const noexcept
-      {	return __sv_type(data(), size()); }
+      { return __sv_type(data(), size()); }
 #endif // C++17
 
       // Iterators:
@@ -1157,12 +1194,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Append a string_view.
-       *  @param __sv  The string_view to be appended.
+       *  @param __svt  An object convertible to string_view to be appended.
        *  @return  Reference to this string.
        */
-      basic_string&
-      operator+=(__sv_type __sv)
-      {	return this->append(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	operator+=(const _Tp& __svt)
+	{ return this->append(__svt); }
 #endif // C++17
 
       /**
@@ -1188,7 +1226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  remainder of @a __str is appended.
        */
       basic_string&
-      append(const basic_string& __str, size_type __pos, size_type __n)
+      append(const basic_string& __str, size_type __pos, size_type __n = npos)
       { return _M_append(__str._M_data()
 			 + __str._M_check(__pos, "basic_string::append"),
 			 __str._M_limit(__pos, __n)); }
@@ -1265,22 +1303,26 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Append a string_view.
-       *  @param __sv  The string_view to be appended.
+       *  @param __svt  An object convertible to string_view to be appended.
        *  @return  Reference to this string.
        */
-      basic_string&
-      append(__sv_type __sv)
-      { return this->append(__sv.data(), __sv.size()); }
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
+        append(const _Tp& __svt)
+        {
+          __sv_type __sv = __svt;
+          return this->append(__sv.data(), __sv.size());
+        }
 
       /**
        *  @brief  Append a range of characters from a string_view.
-       *  @param __sv  The string_view to be appended from.
+       *  @param __svt  An object convertible to string_view to be appended from.
        *  @param __pos The position in the string_view to append from.
        *  @param __n   The number of characters to append from the string_view.
        *  @return  Reference to this string.
        */
-      template <typename _Tp>
-	_If_sv<_Tp, basic_string&>
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
 	append(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
@@ -1349,7 +1391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  __str, the remainder of @a __str is used.
        */
       basic_string&
-      assign(const basic_string& __str, size_type __pos, size_type __n)
+      assign(const basic_string& __str, size_type __pos, size_type __n = npos)
       { return _M_replace(size_type(0), this->size(), __str._M_data()
 			  + __str._M_check(__pos, "basic_string::assign"),
 			  __str._M_limit(__pos, __n)); }
@@ -1433,21 +1475,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Set value from a string_view.
-       *  @param __sv  The source string_view.
+       *  @param __svt  The source object convertible to string_view.
        *  @return  Reference to this string.
        */
-      basic_string&
-      assign(__sv_type __sv)
-      {	return this->assign(__sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	assign(const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->assign(__sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Set value from a range of characters in a string_view.
-       *  @param __sv  The source string_view.
+       *  @param __svt  The source object convertible to string_view.
        *  @param __pos  The position in the string_view to assign from.
        *  @param __n  The number of characters to assign.
        *  @return  Reference to this string.
        */
-      template <typename _Tp>
+      template<typename _Tp>
 	_If_sv<_Tp, basic_string&>
 	assign(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
@@ -1552,12 +1598,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param __l  The initializer_list of characters to insert.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        */
+      iterator
+      insert(const_iterator __p, initializer_list<_CharT> __l)
+      { return this->insert(__p, __l.begin(), __l.end()); }
+
+#ifdef _GLIBCXX_DEFINING_STRING_INSTANTIATIONS
+      // See PR libstdc++/83328
       void
       insert(iterator __p, initializer_list<_CharT> __l)
       {
 	_GLIBCXX_DEBUG_PEDASSERT(__p >= begin() && __p <= end());
 	this->insert(__p - begin(), __l.begin(), __l.size());
       }
+#endif
 #endif // C++11
 
       /**
@@ -1597,7 +1650,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       basic_string&
       insert(size_type __pos1, const basic_string& __str,
-	     size_type __pos2, size_type __n)
+	     size_type __pos2, size_type __n = npos)
       { return this->replace(__pos1, size_type(0), __str._M_data()
 			     + __str._M_check(__pos2, "basic_string::insert"),
 			     __str._M_limit(__pos2, __n)); }
@@ -1692,23 +1745,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Iterator referencing position in string to insert at.
-       *  @param __sv   The string_view to insert.
+       *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
-      basic_string&
-      insert(size_type __pos, __sv_type __sv)
-      {	return this->insert(__pos, __sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	insert(size_type __pos, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->insert(__pos, __sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Iterator referencing position in string to insert at.
-       *  @param __sv   The string_view to insert from.
+       *  @param __svt  The object convertible to string_view to insert from.
        *  @param __pos  Iterator referencing position in string_view to insert
        *  from.
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
       */
-      template <typename _Tp>
+      template<typename _Tp>
 	_If_sv<_Tp, basic_string&>
 	insert(size_type __pos1, const _Tp& __svt,
 	       size_type __pos2, size_type __n = npos)
@@ -1841,7 +1898,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       basic_string&
       replace(size_type __pos1, size_type __n1, const basic_string& __str,
-	      size_type __pos2, size_type __n2)
+	      size_type __pos2, size_type __n2 = npos)
       { return this->replace(__pos1, __n1, __str._M_data()
 			     + __str._M_check(__pos2, "basic_string::replace"),
 			     __str._M_limit(__pos2, __n2)); }
@@ -2120,23 +2177,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @brief  Replace range of characters with string_view.
        *  @param __pos  The position to replace at.
        *  @param __n    The number of characters to replace.
-       *  @param __sv  The string_view to insert.
+       *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
-      basic_string&
-      replace(size_type __pos, size_type __n, __sv_type __sv)
-      {	return this->replace(__pos, __n, __sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	replace(size_type __pos, size_type __n, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->replace(__pos, __n, __sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Replace range of characters with string_view.
        *  @param __pos1  The position to replace at.
        *  @param __n1    The number of characters to replace.
-       *  @param __sv    The string_view to insert from.
+       *  @param __svt   The object convertible to string_view to insert from.
        *  @param __pos2  The position in the string_view to insert from.
        *  @param __n2    The number of characters to insert.
        *  @return  Reference to this string.
       */
-      template <typename _Tp>
+      template<typename _Tp>
 	_If_sv<_Tp, basic_string&>
 	replace(size_type __pos1, size_type __n1, const _Tp& __svt,
 		size_type __pos2, size_type __n2 = npos)
@@ -2153,12 +2214,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
           to replace at.
        *  @param __i2    An iterator referencing the end position
           for the replace.
-       *  @param __sv    The string_view to insert from.
+       *  @param __svt   The object convertible to string_view to insert from.
        *  @return  Reference to this string.
       */
-      basic_string&
-      replace(const_iterator __i1, const_iterator __i2, __sv_type __sv)
-      {	return this->replace(__i1 - begin(), __i2 - __i1, __sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	replace(const_iterator __i1, const_iterator __i2, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->replace(__i1 - begin(), __i2 - __i1, __sv);
+	}
 #endif // C++17
 
     private:
@@ -2288,13 +2353,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a string_view.
-       *  @param __sv  The string_view to locate.
+       *  @param __svt  The object convertible to string_view to locate.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of start of first occurrence.
       */
-      size_type
-      find(__sv_type __sv, size_type __pos = 0) const noexcept
-      {	return this->find(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2345,13 +2415,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a string_view.
-       *  @param __sv   The string_view to locate.
+       *  @param __svt  The object convertible to string_view to locate.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of start of last occurrence.
       */
-      size_type
-      rfind(__sv_type __sv, size_type __pos = npos) const noexcept
-      {	return this->rfind(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	rfind(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->rfind(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2419,13 +2494,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a character of a string_view.
-       *  @param __sv   A string_view containing characters to locate.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to locate.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
       */
-      size_type
-      find_first_of(__sv_type __sv, size_type __pos = 0) const noexcept
-      {	return this->find_first_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_first_of(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_first_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2497,13 +2578,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a character of string.
-       *  @param __sv   A string_view containing characters to locate.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to locate.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
       */
-      size_type
-      find_last_of(__sv_type __sv, size_type __pos = npos) const noexcept
-      {	return this->find_last_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_last_of(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_last_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2574,13 +2661,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a character not in a string_view.
-       *  @param __sv   A string_view containing characters to avoid.
+       *  @param __svt  A object convertible to string_view containing
+       *                characters to avoid.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
        */
-      size_type
-      find_first_not_of(__sv_type __sv, size_type __pos = 0) const noexcept
-      {	return this->find_first_not_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_first_not_of(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_first_not_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2650,13 +2743,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a character not in a string_view.
-       *  @param __sv   A string_view containing characters to avoid.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to avoid.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        */
-      size_type
-      find_last_not_of(__sv_type __sv, size_type __pos = npos) const noexcept
-      {	return this->find_last_not_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_last_not_of(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_last_not_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2754,46 +2853,57 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Compare to a string_view.
-       *  @param __sv  A string_view to compare against.
+       *  @param __svt An object convertible to string_view to compare against.
        *  @return  Integer < 0, 0, or > 0.
        */
-      int
-      compare(__sv_type __sv) const
-      {
-	const size_type __size = this->size();
-	const size_type __osize = __sv.size();
-	const size_type __len = std::min(__size, __osize);
+      template<typename _Tp>
+	_If_sv<_Tp, int>
+	compare(const _Tp& __svt) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  const size_type __size = this->size();
+	  const size_type __osize = __sv.size();
+	  const size_type __len = std::min(__size, __osize);
 
-	int __r = traits_type::compare(_M_data(), __sv.data(), __len);
-	if (!__r)
-	  __r = _S_compare(__size, __osize);
-	return __r;
-      }
+	  int __r = traits_type::compare(_M_data(), __sv.data(), __len);
+	  if (!__r)
+	    __r = _S_compare(__size, __osize);
+	  return __r;
+	}
 
       /**
        *  @brief  Compare to a string_view.
        *  @param __pos  A position in the string to start comparing from.
        *  @param __n  The number of characters to compare.
-       *  @param __sv   A string_view to compare against.
+       *  @param __svt  An object convertible to string_view to compare
+       *                against.
        *  @return  Integer < 0, 0, or > 0.
        */
-      int
-      compare(size_type __pos, size_type __n, __sv_type __sv) const
-      { return __sv_type(*this).substr(__pos, __n).compare(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, int>
+	compare(size_type __pos, size_type __n, const _Tp& __svt) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return __sv_type(*this).substr(__pos, __n).compare(__sv);
+	}
 
       /**
        *  @brief  Compare to a string_view.
        *  @param __pos1  A position in the string to start comparing from.
        *  @param __n1  The number of characters to compare.
-       *  @param __sv   A string_view to compare against.
+       *  @param __svt  An object convertible to string_view to compare
+       *                against.
        *  @param __pos2  A position in the string_view to start comparing from.
        *  @param __n2  The number of characters to compare.
        *  @return  Integer < 0, 0, or > 0.
        */
-      template <typename _Tp>
+      template<typename _Tp>
 	_If_sv<_Tp, int>
 	compare(size_type __pos1, size_type __n1, const _Tp& __svt,
 		size_type __pos2, size_type __n2 = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
 	{
 	  __sv_type __sv = __svt;
 	  return __sv_type(*this)
@@ -2848,7 +2958,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       int
       compare(size_type __pos1, size_type __n1, const basic_string& __str,
-	      size_type __pos2, size_type __n2) const;
+	      size_type __pos2, size_type __n2 = npos) const;
 
       /**
        *  @brief  Compare to a C string.
@@ -2918,7 +3028,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const;
-  };
+
+      // Allow basic_stringbuf::__xfer_bufptrs to call _M_length:
+      template<typename, typename, typename> friend class basic_stringbuf;
+    };
 _GLIBCXX_END_NAMESPACE_CXX11
 #else  // !_GLIBCXX_USE_CXX11_ABI
   // Reference-counted COW string implentation
@@ -3006,6 +3119,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
                                                             const_iterator;
       typedef std::reverse_iterator<const_iterator>	const_reverse_iterator;
       typedef std::reverse_iterator<iterator>		    reverse_iterator;
+
+    protected:
+      // type used for positions in insert, erase etc.
+      typedef iterator __const_iterator;
 
     private:
       // _Rep: string representation
@@ -3343,8 +3460,24 @@ _GLIBCXX_END_NAMESPACE_CXX11
       template<typename _Tp, typename _Res>
 	using _If_sv = enable_if_t<
 	  __and_<is_convertible<const _Tp&, __sv_type>,
+		 __not_<is_convertible<const _Tp*, const basic_string*>>,
 		 __not_<is_convertible<const _Tp&, const _CharT*>>>::value,
 	  _Res>;
+
+      // Allows an implicit conversion to __sv_type.
+      static __sv_type
+      _S_to_string_view(__sv_type __svt) noexcept
+      { return __svt; }
+
+      // Wraps a string_view by explicit conversion and thus
+      // allows to add an internal constructor that does not
+      // participate in overload resolution when a string_view
+      // is provided.
+      struct __sv_wrapper
+      {
+	explicit __sv_wrapper(__sv_type __sv) noexcept : _M_sv(__sv) { }
+	__sv_type _M_sv;
+      };
 #endif
 
     public:
@@ -3357,6 +3490,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        */
       basic_string()
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
+      _GLIBCXX_NOEXCEPT
       : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
 #else
       : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc()){ }
@@ -3471,7 +3605,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Construct string from a substring of a string_view.
-       *  @param  __t   Source string view.
+       *  @param  __t   Source object convertible to string view.
        *  @param  __pos The index of the first character to copy from __t.
        *  @param  __n   The number of characters to copy from __t.
        *  @param  __a   Allocator to use.
@@ -3479,16 +3613,27 @@ _GLIBCXX_END_NAMESPACE_CXX11
       template<typename _Tp, typename = _If_sv<_Tp, void>>
 	basic_string(const _Tp& __t, size_type __pos, size_type __n,
 		     const _Alloc& __a = _Alloc())
-	: basic_string(__sv_type(__t).substr(__pos, __n), __a) { }
+	: basic_string(_S_to_string_view(__t).substr(__pos, __n), __a) { }
 
       /**
        *  @brief  Construct string from a string_view.
-       *  @param  __sv  Source string view.
+       *  @param  __t  Source object convertible to string view.
        *  @param  __a  Allocator to use (default is default allocator).
        */
+      template<typename _Tp, typename = _If_sv<_Tp, void>>
+	explicit
+	basic_string(const _Tp& __t, const _Alloc& __a = _Alloc())
+	: basic_string(__sv_wrapper(_S_to_string_view(__t)), __a) { }
+
+      /**
+       *  @brief  Only internally used: Construct string from a string view
+       *          wrapper.
+       *  @param  __svw  string view wrapper.
+       *  @param  __a  Allocator to use.
+       */
       explicit
-      basic_string(__sv_type __sv, const _Alloc& __a = _Alloc())
-      : basic_string(__sv.data(), __sv.size(), __a) { }
+      basic_string(__sv_wrapper __svw, const _Alloc& __a)
+      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif // C++17
 
       /**
@@ -3502,7 +3647,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @param  __str  Source string.
        */
       basic_string&
-      operator=(const basic_string& __str) 
+      operator=(const basic_string& __str)
       { return this->assign(__str); }
 
       /**
@@ -3535,9 +3680,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  The contents of @a str are moved into this string (without copying).
        *  @a str is a valid, but unspecified string.
        **/
-      // PR 58265, this should be noexcept.
       basic_string&
       operator=(basic_string&& __str)
+      _GLIBCXX_NOEXCEPT_IF(allocator_traits<_Alloc>::is_always_equal::value)
       {
 	// NB: DR 1204.
 	this->swap(__str);
@@ -3559,12 +3704,12 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Set value to string constructed from a string_view.
-       *  @param  __sv  A string_view.
+       *  @param  __svt An object convertible to  string_view.
        */
       template<typename _Tp>
 	_If_sv<_Tp, basic_string&>
-	operator=(_Tp __sv)
-	{ return this->assign(__sv); }
+	operator=(const _Tp& __svt)
+	{ return this->assign(__svt); }
 
       /**
        *  @brief  Convert to a string_view.
@@ -3981,12 +4126,13 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Append a string_view.
-       *  @param __sv  The string_view to be appended.
+       *  @param __svt The object convertible to string_view to be appended.
        *  @return  Reference to this string.
        */
-      basic_string&
-      operator+=(__sv_type __sv)
-      { return this->append(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	operator+=(const _Tp& __svt)
+	{ return this->append(__svt); }
 #endif // C++17
 
       /**
@@ -4011,7 +4157,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  remainder of @a __str is appended.
        */
       basic_string&
-      append(const basic_string& __str, size_type __pos, size_type __n);
+      append(const basic_string& __str, size_type __pos, size_type __n = npos);
 
       /**
        *  @brief  Append a C substring.
@@ -4072,22 +4218,27 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Append a string_view.
-       *  @param __sv  The string_view to be appended.
+       *  @param __svt The object convertible to string_view to be appended.
        *  @return  Reference to this string.
        */
-      basic_string&
-      append(__sv_type __sv)
-      { return this->append(__sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	append(const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->append(__sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Append a range of characters from a string_view.
-       *  @param __sv  The string_view to be appended from.
+       *  @param __svt The object convertible to string_view to be appended
+       *               from.
        *  @param __pos The position in the string_view to append from.
        *  @param __n   The number of characters to append from the string_view.
        *  @return  Reference to this string.
        */
-      template <typename _Tp>
-	_If_sv<_Tp, basic_string&>
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
 	append(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
@@ -4128,9 +4279,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  This function sets this string to the exact contents of @a __str.
        *  @a __str is a valid, but unspecified string.
        */
-      // PR 58265, this should be noexcept.
       basic_string&
       assign(basic_string&& __str)
+      noexcept(allocator_traits<_Alloc>::is_always_equal::value)
       {
 	this->swap(__str);
 	return *this;
@@ -4151,7 +4302,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  __str, the remainder of @a __str is used.
        */
       basic_string&
-      assign(const basic_string& __str, size_type __pos, size_type __n)
+      assign(const basic_string& __str, size_type __pos, size_type __n = npos)
       { return this->assign(__str._M_data()
 			    + __str._M_check(__pos, "basic_string::assign"),
 			    __str._M_limit(__pos, __n)); }
@@ -4225,23 +4376,27 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Set value from a string_view.
-       *  @param __sv  The source string_view.
+       *  @param __svt The source object convertible to string_view.
        *  @return  Reference to this string.
        */
-      basic_string&
-      assign(__sv_type __sv)
-      { return this->assign(__sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	assign(const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->assign(__sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Set value from a range of characters in a string_view.
-       *  @param __sv  The source string_view.
+       *  @param __svt  The source object convertible to string_view.
        *  @param __pos  The position in the string_view to assign from.
        *  @param __n  The number of characters to assign.
        *  @return  Reference to this string.
        */
-      template <typename _Tp>
-	_If_sv<_Tp, basic_string&>
-	assign(const _Tp& __svt, size_type __pos, size_type __n = npos)
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
+        assign(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
 	  return assign(__sv.data()
@@ -4335,7 +4490,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       basic_string&
       insert(size_type __pos1, const basic_string& __str,
-	     size_type __pos2, size_type __n)
+	     size_type __pos2, size_type __n = npos)
       { return this->insert(__pos1, __str._M_data()
 			    + __str._M_check(__pos2, "basic_string::insert"),
 			    __str._M_limit(__pos2, __n)); }
@@ -4429,25 +4584,29 @@ _GLIBCXX_END_NAMESPACE_CXX11
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Iterator referencing position in string to insert at.
-       *  @param __sv   The string_view to insert.
+       *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
-      basic_string&
-      insert(size_type __pos, __sv_type __sv)
-      { return this->insert(__pos, __sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	insert(size_type __pos, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->insert(__pos, __sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Iterator referencing position in string to insert at.
-       *  @param __sv   The string_view to insert from.
+       *  @param __svt  The object convertible to string_view to insert from.
        *  @param __pos  Iterator referencing position in string_view to insert
        *  from.
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
       */
-      template <typename _Tp>
-	_If_sv<_Tp, basic_string&>
-	insert(size_type __pos1, const _Tp& __svt,
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
+        insert(size_type __pos1, const _Tp& __svt,
 	       size_type __pos2, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
@@ -4566,7 +4725,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       basic_string&
       replace(size_type __pos1, size_type __n1, const basic_string& __str,
-	      size_type __pos2, size_type __n2)
+	      size_type __pos2, size_type __n2 = npos)
       { return this->replace(__pos1, __n1, __str._M_data()
 			     + __str._M_check(__pos2, "basic_string::replace"),
 			     __str._M_limit(__pos2, __n2)); }
@@ -4790,7 +4949,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	return this->replace(__i1 - _M_ibegin(), __i2 - __i1,
 			     __k1.base(), __k2 - __k1);
       }
-      
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Replace range of characters with initializer_list.
@@ -4816,31 +4975,35 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @brief  Replace range of characters with string_view.
        *  @param __pos  The position to replace at.
        *  @param __n    The number of characters to replace.
-       *  @param __sv  The string_view to insert.
+       *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
-      basic_string&
-      replace(size_type __pos, size_type __n, __sv_type __sv)
-      { return this->replace(__pos, __n, __sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	replace(size_type __pos, size_type __n, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->replace(__pos, __n, __sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Replace range of characters with string_view.
        *  @param __pos1  The position to replace at.
        *  @param __n1    The number of characters to replace.
-       *  @param __sv    The string_view to insert from.
+       *  @param __svt   The object convertible to string_view to insert from.
        *  @param __pos2  The position in the string_view to insert from.
        *  @param __n2    The number of characters to insert.
        *  @return  Reference to this string.
       */
-      template <typename _Tp>
-	_If_sv<_Tp, basic_string&>
-	replace(size_type __pos1, size_type __n1, const _Tp& __svt,
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
+        replace(size_type __pos1, size_type __n1, const _Tp& __svt,
 		size_type __pos2, size_type __n2 = npos)
 	{
 	  __sv_type __sv = __svt;
-	  return this->replace(__pos1, __n1, __sv.data()
-			       + __sv._M_check(__pos2, "basic_string::replace"),
-			       __sv._M_limit(__pos2, __n2));
+	  return this->replace(__pos1, __n1,
+	      __sv.data() + __sv._M_check(__pos2, "basic_string::replace"),
+	      __sv._M_limit(__pos2, __n2));
 	}
 
       /**
@@ -4849,12 +5012,16 @@ _GLIBCXX_END_NAMESPACE_CXX11
           to replace at.
        *  @param __i2    An iterator referencing the end position
           for the replace.
-       *  @param __sv    The string_view to insert from.
+       *  @param __svt   The object convertible to string_view to insert from.
        *  @return  Reference to this string.
       */
-      basic_string&
-      replace(const_iterator __i1, const_iterator __i2, __sv_type __sv)
-      { return this->replace(__i1 - begin(), __i2 - __i1, __sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	replace(const_iterator __i1, const_iterator __i2, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->replace(__i1 - begin(), __i2 - __i1, __sv);
+	}
 #endif // C++17
 
     private:
@@ -4949,9 +5116,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  Exchanges the contents of this string with that of @a __s in constant
        *  time.
       */
-      // PR 58265, this should be noexcept.
       void
-      swap(basic_string& __s);
+      swap(basic_string& __s)
+      _GLIBCXX_NOEXCEPT_IF(allocator_traits<_Alloc>::is_always_equal::value);
 
       // String operations:
       /**
@@ -4985,7 +5152,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       _CharT*
       data() noexcept
-      { return _M_data(); }
+      {
+	_M_leak();
+	return _M_data();
+      }
 #endif
 
       /**
@@ -5059,13 +5229,18 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a string_view.
-       *  @param __sv  The string_view to locate.
+       *  @param __svt  The object convertible to string_view to locate.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of start of first occurrence.
       */
-      size_type
-      find(__sv_type __sv, size_type __pos = 0) const noexcept
-      { return this->find(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5132,13 +5307,18 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a string_view.
-       *  @param __sv   The string_view to locate.
+       *  @param __svt  The object convertible to string_view to locate.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of start of last occurrence.
       */
-      size_type
-      rfind(__sv_type __sv, size_type __pos = npos) const noexcept
-      { return this->rfind(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	rfind(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->rfind(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5210,13 +5390,19 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a character of a string_view.
-       *  @param __sv   A string_view containing characters to locate.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to locate.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
       */
-      size_type
-      find_first_of(__sv_type __sv, size_type __pos = 0) const noexcept
-      { return this->find_first_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_first_of(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_first_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5288,13 +5474,19 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a character of string.
-       *  @param __sv   A string_view containing characters to locate.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to locate.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
       */
-      size_type
-      find_last_of(__sv_type __sv, size_type __pos = npos) const noexcept
-      { return this->find_last_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_last_of(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_last_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5363,13 +5555,19 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a character not in a string_view.
-       *  @param __sv   A string_view containing characters to avoid.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to avoid.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
        */
-      size_type
-      find_first_not_of(__sv_type __sv, size_type __pos = 0) const noexcept
-      { return this->find_first_not_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_first_not_of(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_first_not_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5439,13 +5637,19 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a character not in a string_view.
-       *  @param __sv   A string_view containing characters to avoid.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to avoid.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        */
-      size_type
-      find_last_not_of(__sv_type __sv, size_type __pos = npos) const noexcept
-      { return this->find_last_not_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_last_not_of(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_last_not_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5495,46 +5699,57 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Compare to a string_view.
-       *  @param __sv  A string_view to compare against.
+       *  @param __svt An object convertible to string_view to compare against.
        *  @return  Integer < 0, 0, or > 0.
        */
-      int
-      compare(__sv_type __sv) const
-      {
-	const size_type __size = this->size();
-	const size_type __osize = __sv.size();
-	const size_type __len = std::min(__size, __osize);
+      template<typename _Tp>
+	_If_sv<_Tp, int>
+	compare(const _Tp& __svt) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	   __sv_type __sv = __svt;
+	  const size_type __size = this->size();
+	  const size_type __osize = __sv.size();
+	  const size_type __len = std::min(__size, __osize);
 
-	int __r = traits_type::compare(_M_data(), __sv.data(), __len);
-	if (!__r)
-	  __r = _S_compare(__size, __osize);
-	return __r;
-      }
+	  int __r = traits_type::compare(_M_data(), __sv.data(), __len);
+	  if (!__r)
+	    __r = _S_compare(__size, __osize);
+	  return __r;
+	}
 
       /**
        *  @brief  Compare to a string_view.
        *  @param __pos  A position in the string to start comparing from.
        *  @param __n  The number of characters to compare.
-       *  @param __sv   A string_view to compare against.
+       *  @param __svt  An object convertible to string_view to compare
+       *                against.
        *  @return  Integer < 0, 0, or > 0.
        */
-      int
-      compare(size_type __pos, size_type __n, __sv_type __sv) const
-      { return __sv_type(*this).substr(__pos, __n).compare(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, int>
+	compare(size_type __pos, size_type __n, const _Tp& __svt) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return __sv_type(*this).substr(__pos, __n).compare(__sv);
+	}
 
       /**
        *  @brief  Compare to a string_view.
        *  @param __pos1  A position in the string to start comparing from.
        *  @param __n1  The number of characters to compare.
-       *  @param __sv   A string_view to compare against.
+       *  @param __svt   An object convertible to string_view to compare
+       *                 against.
        *  @param __pos2  A position in the string_view to start comparing from.
        *  @param __n2  The number of characters to compare.
        *  @return  Integer < 0, 0, or > 0.
        */
-      template <typename _Tp>
+      template<typename _Tp>
 	_If_sv<_Tp, int>
 	compare(size_type __pos1, size_type __n1, const _Tp& __svt,
 		size_type __pos2, size_type __n2 = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
 	{
 	  __sv_type __sv = __svt;
 	  return __sv_type(*this)
@@ -5589,7 +5804,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       int
       compare(size_type __pos1, size_type __n1, const basic_string& __str,
-	      size_type __pos2, size_type __n2) const;
+	      size_type __pos2, size_type __n2 = npos) const;
 
       /**
        *  @brief  Compare to a C string.
@@ -5673,6 +5888,35 @@ _GLIBCXX_END_NAMESPACE_CXX11
 # endif
   };
 #endif  // !_GLIBCXX_USE_CXX11_ABI
+
+#if __cpp_deduction_guides >= 201606
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
+  template<typename _InputIterator, typename _CharT
+	     = typename iterator_traits<_InputIterator>::value_type,
+	   typename _Allocator = allocator<_CharT>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    basic_string(_InputIterator, _InputIterator, _Allocator = _Allocator())
+      -> basic_string<_CharT, char_traits<_CharT>, _Allocator>;
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3075. basic_string needs deduction guides from basic_string_view
+  template<typename _CharT, typename _Traits,
+	   typename _Allocator = allocator<_CharT>,
+	   typename = _RequireAllocator<_Allocator>>
+    basic_string(basic_string_view<_CharT, _Traits>, const _Allocator& = _Allocator())
+      -> basic_string<_CharT, _Traits, _Allocator>;
+
+  template<typename _CharT, typename _Traits,
+	   typename _Allocator = allocator<_CharT>,
+	   typename = _RequireAllocator<_Allocator>>
+    basic_string(basic_string_view<_CharT, _Traits>,
+		 typename basic_string<_CharT, _Traits, _Allocator>::size_type,
+		 typename basic_string<_CharT, _Traits, _Allocator>::size_type,
+		 const _Allocator& = _Allocator())
+      -> basic_string<_CharT, _Traits, _Allocator>;
+_GLIBCXX_END_NAMESPACE_CXX11
+#endif
 
   // operator+
   /**
@@ -6423,7 +6667,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /// std::hash specialization for u16string.
   template<>
     struct hash<u16string>
@@ -6453,9 +6696,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_fast_hash<hash<u32string>> : std::false_type
     { };
-#endif
-
-_GLIBCXX_END_NAMESPACE_VERSION
 
 #if __cplusplus > 201103L
 
@@ -6465,8 +6705,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
   {
   inline namespace string_literals
   {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wliteral-suffix"
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<char>
     operator""s(const char* __str, size_t __len)
@@ -6479,7 +6719,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string<wchar_t>{__str, __len}; }
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<char16_t>
     operator""s(const char16_t* __str, size_t __len)
@@ -6489,14 +6728,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_string<char32_t>
     operator""s(const char32_t* __str, size_t __len)
     { return basic_string<char32_t>{__str, __len}; }
-#endif
 
-_GLIBCXX_END_NAMESPACE_VERSION
+#pragma GCC diagnostic pop
   } // inline namespace string_literals
   } // inline namespace literals
 
 #endif // __cplusplus > 201103L
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

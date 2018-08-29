@@ -46,7 +46,7 @@ type Range32 struct {
 
 // CaseRange represents a range of Unicode code points for simple (one
 // code point to one code point) case conversion.
-// The range runs from Lo to Hi inclusive, with a fixed stride of 1.  Deltas
+// The range runs from Lo to Hi inclusive, with a fixed stride of 1. Deltas
 // are the number to add to the code point to reach the code point for a
 // different case for that character. They may be negative. If zero, it
 // means the character is in the corresponding case. There is a special
@@ -97,7 +97,7 @@ func is16(ranges []Range16, r uint16) bool {
 				return false
 			}
 			if r <= range_.Hi {
-				return (r-range_.Lo)%range_.Stride == 0
+				return range_.Stride == 1 || (r-range_.Lo)%range_.Stride == 0
 			}
 		}
 		return false
@@ -110,7 +110,7 @@ func is16(ranges []Range16, r uint16) bool {
 		m := lo + (hi-lo)/2
 		range_ := &ranges[m]
 		if range_.Lo <= r && r <= range_.Hi {
-			return (r-range_.Lo)%range_.Stride == 0
+			return range_.Stride == 1 || (r-range_.Lo)%range_.Stride == 0
 		}
 		if r < range_.Lo {
 			hi = m
@@ -130,7 +130,7 @@ func is32(ranges []Range32, r uint32) bool {
 				return false
 			}
 			if r <= range_.Hi {
-				return (r-range_.Lo)%range_.Stride == 0
+				return range_.Stride == 1 || (r-range_.Lo)%range_.Stride == 0
 			}
 		}
 		return false
@@ -143,7 +143,7 @@ func is32(ranges []Range32, r uint32) bool {
 		m := lo + (hi-lo)/2
 		range_ := ranges[m]
 		if range_.Lo <= r && r <= range_.Hi {
-			return (r-range_.Lo)%range_.Stride == 0
+			return range_.Stride == 1 || (r-range_.Lo)%range_.Stride == 0
 		}
 		if r < range_.Lo {
 			hi = m
@@ -308,7 +308,7 @@ func (special SpecialCase) ToLower(r rune) rune {
 }
 
 // caseOrbit is defined in tables.go as []foldPair. Right now all the
-// entries fit in uint16, so use uint16.  If that changes, compilation
+// entries fit in uint16, so use uint16. If that changes, compilation
 // will fail (the constants in the composite literal will not fit in uint16)
 // and the types here can change to uint32.
 type foldPair struct {

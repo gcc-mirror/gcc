@@ -16,7 +16,7 @@ program past_eor
   READ (UNIT=buffer,FMT=10) a, b, c, d
 10 FORMAT (2(2(G7.5,1X),2X),2(G10.4E2,1X),1X,2(G11.7E4,1X))
 
-  if (any (a.ne.e).or.any (b.ne.e).or.any (c.ne.e).or.any (d.ne.e)) call abort ()
+  if (any (a.ne.e).or.any (b.ne.e).or.any (c.ne.e).or.any (d.ne.e)) STOP 1
 
 end program past_eor
 

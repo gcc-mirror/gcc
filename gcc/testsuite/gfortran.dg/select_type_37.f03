@@ -16,29 +16,29 @@ program pr69556
   real :: cst3(2) = [5.0, 6.0]
 
   write (buffer1, *) cst1
-  if (.not.associated(return_pointer1(cst1))) call abort
-  if (trim (buffer1) .ne. trim (buffer2)) call abort
+  if (.not.associated(return_pointer1(cst1))) STOP 1
+  if (trim (buffer1) .ne. trim (buffer2)) STOP 2
   select type (ptr)
     type is (real)
-      if (any (ptr .ne. cst2)) call abort
+      if (any (ptr .ne. cst2)) STOP 3
   end select
   deallocate (ptr)
 
   write (buffer1, *) cst2
-  if (.not.associated(return_pointer(cst2))) call abort
-  if (trim (buffer1) .ne. trim (buffer2)) call abort
+  if (.not.associated(return_pointer(cst2))) STOP 4
+  if (trim (buffer1) .ne. trim (buffer2)) STOP 5
   select type (ptr)
     type is (real)
-      if (any (ptr .ne. cst3)) call abort
+      if (any (ptr .ne. cst3)) STOP 6
   end select
   deallocate (ptr)
 
   write (buffer1, *) cst1
-  if (.not.associated(return_pointer2(cst1))) call abort
-  if (trim (buffer1) .ne. trim (buffer2)) call abort
+  if (.not.associated(return_pointer2(cst1))) STOP 7
+  if (trim (buffer1) .ne. trim (buffer2)) STOP 8
   select type (ptr)
     type is (real)
-      if (any (ptr .ne. cst2)) call abort
+      if (any (ptr .ne. cst2)) STOP 9
   end select
   deallocate (ptr)
 

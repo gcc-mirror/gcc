@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dse2-details" } */
+/* { dg-options "-O2 -fdump-tree-dse2-details -Wno-return-type" } */
 
 typedef __SIZE_TYPE__ size_t;
 extern "C"

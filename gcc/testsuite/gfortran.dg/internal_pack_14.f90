@@ -28,7 +28,7 @@ contains
   subroutine s2(k)
     type(particle) :: k(1:2)
     print *,k(:)%ID
-    if (any (k(1:2)%ID /= [1, 1])) call abort()
+    if (any (k(1:2)%ID /= [1, 1])) STOP 1
   end subroutine
 
 end

@@ -1,4 +1,4 @@
-/* Copyright (C) 1997-2017 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,13 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #define MASK_DEFAULT_ALLOC_CC	0
 #endif
 
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options frv_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS		\
   (MASK_DEFAULT_ALLOC_CC			\
@@ -48,7 +41,5 @@ static const struct default_options frv_option_optimization_table[] =
    | MASK_VLIW_BRANCH				\
    | MASK_MULTI_CE				\
    | MASK_NESTED_CE)
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE frv_option_optimization_table
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

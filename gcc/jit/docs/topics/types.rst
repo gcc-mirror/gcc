@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2017 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -35,7 +35,7 @@ Types can be created in several ways:
 
   .. code-block:: c
 
-      gcc_jit_type *int_type = gcc_jit_context_get_type (GCC_JIT_TYPE_INT);
+      gcc_jit_type *int_type = gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT);
 
   See :func:`gcc_jit_context_get_type` for the available types.
 
@@ -135,6 +135,50 @@ Pointers, `const`, and `volatile`
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_type_get_aligned
+
+Vector types
+------------
+
+.. function::  gcc_jit_type *\
+               gcc_jit_type_get_vector (gcc_jit_type *type, \
+                                        size_t num_units)
+
+   Given type "T", get type:
+
+   .. code-block:: c
+
+      T  __attribute__ ((vector_size (sizeof(T) * num_units))
+
+   T must be integral or floating point; num_units must be a power of two.
+
+   This can be used to construct a vector type in which operations
+   are applied element-wise.  The compiler will automatically
+   use SIMD instructions where possible.  See:
+   https://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html
+
+   For example, assuming 4-byte ``ints``, then:
+
+   .. code-block:: c
+
+      typedef int v4si __attribute__ ((vector_size (16)));
+
+   can be obtained using:
+
+   .. code-block:: c
+
+      gcc_jit_type *int_type = gcc_jit_context_get_type (ctxt,
+                                                         GCC_JIT_TYPE_INT);
+      gcc_jit_type *v4si_type = gcc_jit_type_get_vector (int_type, 4);
+
+   This API entrypoint was added in :ref:`LIBGCCJIT_ABI_8`; you can test
+   for its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_type_get_vector
+
+   Vector rvalues can be generated using
+   :func:`gcc_jit_context_new_rvalue_from_vector`.
 
 
 Structures and unions
@@ -268,3 +312,9 @@ You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
        :start-after: /* Quote from here in docs/topics/types.rst.  */
        :end-before: /* Quote up to here in docs/topics/types.rst.  */
        :language: c
+
+Function pointer types
+----------------------
+
+Function pointer types can be created using
+:c:func:`gcc_jit_context_new_function_ptr_type`.

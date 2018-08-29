@@ -48,6 +48,7 @@ Status Mpeg2FrameConstructor::ParsePictureHeader(Ipp8u *buf, Ipp32s iLen, Mpeg2T
 	    bs.SkipBits(10);
 	}
     }
+    return Status();
 }
 void BitstreamReader::SkipBits(Ipp32s iNum) {
     if (iNum <= m_iReadyBits)     {

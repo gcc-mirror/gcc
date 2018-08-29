@@ -1,5 +1,5 @@
 /* Gcc offline profile processing tool support. */
-/* Copyright (C) 2014-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Rong Xu <xur@google.com>.
 
 This file is part of GCC.
@@ -526,7 +526,7 @@ static void
 print_version (void)
 {
   fnotice (stdout, "%s %s%s\n", progname, pkgversion_string, version_string);
-  fnotice (stdout, "Copyright %s 2014-2017 Free Software Foundation, Inc.\n",
+  fnotice (stdout, "Copyright %s 2018 Free Software Foundation, Inc.\n",
            _("(C)"));
   fnotice (stdout,
            _("This is free software; see the source for copying conditions.\n"

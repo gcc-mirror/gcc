@@ -1,5 +1,5 @@
 ;; Samsung Exynos M1 pipeline description
-;; Copyright (C) 2014-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -78,7 +78,7 @@
 			   neon_sat_mul_s_scalar, neon_sat_mul_s_scalar_q,\
 			   neon_sat_mul_b_long, neon_sat_mul_h_long,\
 			   neon_sat_mul_s_long, neon_sat_mul_h_scalar_long,\
-			   neon_sat_mul_s_scalar_long")
+			   neon_sat_mul_s_scalar_long, crypto_pmull")
 	    (const_string "neon_multiply")
 
 	  (eq_attr "type" "neon_mla_b, neon_mla_h, neon_mla_s,\
@@ -432,25 +432,25 @@
 ;; Loads of up to 2 words.
 (define_insn_reservation "exynos_m1_load" 4
   (and (eq_attr "tune" "exynosm1")
-       (eq_attr "type" "load_byte, load1, load2"))
+       (eq_attr "type" "load_byte, load_4, load_8"))
   "em1_ld")
 
 ;; Loads of 3 or 4 words.
 (define_insn_reservation "exynos_m1_loadm" 6
   (and (eq_attr "tune" "exynosm1")
-       (eq_attr "type" "load3, load4"))
+       (eq_attr "type" "load_12, load_16"))
   "(em1_ld * 3)")
 
 ;; Stores of up to 2 words.
 (define_insn_reservation "exynos_m1_store" 1
   (and (eq_attr "tune" "exynosm1")
-       (eq_attr "type" "store1, store2"))
+       (eq_attr "type" "store_4, store_8"))
   "em1_st")
 
 ;; Stores of 3 or 4 words.
 (define_insn_reservation "exynos_m1_storem" 3
   (and (eq_attr "tune" "exynosm1")
-       (eq_attr "type" "store3, store4"))
+       (eq_attr "type" "store_12, store_16"))
   "(em1_st * 3)")
 
 ;; Advanced SIMD Unit

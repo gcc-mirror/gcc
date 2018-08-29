@@ -31,19 +31,19 @@ program test
   ! (1) ordinary function call
   zero = tx(1)
   this%x = find_x(this)
-  if (this%x%i /= 1) call abort()
+  if (this%x%i /= 1) STOP 1
   ! (2) procedure pointer
   zero = tx(2)
   pp => find_x
   this%x = pp(this)
-  if (this%x%i /= 2) call abort()
+  if (this%x%i /= 2) STOP 2
   ! (3) PPC
   zero = tx(3)
   this%ppc => find_x
   this%x = this%ppc()
-  if (this%x%i /= 3) call abort()
+  if (this%x%i /= 3) STOP 3
    ! (4) TBP
   zero = tx(4)
   this%x = this%find_x()
-  if (this%x%i /= 4) call abort()
+  if (this%x%i /= 4) STOP 4
 end

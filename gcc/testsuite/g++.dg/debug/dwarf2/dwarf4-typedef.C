@@ -11,7 +11,7 @@ struct A {
 
 struct B : public A {
   template <typename A>
-  bool foo(A x[2]) { }
+  bool foo(A x[2]) { return true; }
 };
 
 template <typename T>

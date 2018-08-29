@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -152,8 +152,8 @@ procedure XOSCons is
    --  True if S contains Tmpl_Name, possibly with different casing
 
    function Spaces (Count : Integer) return String;
-   --  If Count is positive, return a string of Count spaces, else return an
-   --  empty string.
+   --  If Count is positive, return a string of Count spaces, else return
+   --  an empty string.
 
    ---------
    -- ">" --
@@ -166,7 +166,7 @@ procedure XOSCons is
       A2 : Long_Unsigned renames V2.Abs_Value;
    begin
       return (P1 and then not P2)
-        or else (P1 and then P2 and then A1 > A2)
+        or else (P1 and then A1 > A2)
         or else (not P1 and then not P2 and then A1 < A2);
    end ">";
 

@@ -34,7 +34,7 @@
 typedef int u_array[];
 typedef u_array &u_array_ref;
 
-void take_u_array_ref (u_array_ref arg) { } // { dg-error "" } reference to array of unknown bound in parmtype
+void take_u_array_ref (u_array_ref arg) { } // { dg-error "" "" { target c++14_down } } reference to array of unknown bound in parmtype
 
 extern u_array u_array_gbl_obj;
 u_array_ref u_array_ref_gbl_obj0 = u_array_gbl_obj;	// OK

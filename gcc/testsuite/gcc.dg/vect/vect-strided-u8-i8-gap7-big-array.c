@@ -18,8 +18,6 @@ typedef struct {
 
 s check_res[N];
 
-volatile int y = 0;
-
 __attribute__ ((noinline)) int
 main1 (s *arr)
 {
@@ -93,8 +91,7 @@ int main (void)
       check_res[i].h = arr[i].d;
       check_res[i].g = u + t;
 
-      if (y) /* Avoid vectorization.  */
-        abort ();
+      asm volatile ("" ::: "memory");
     }
 
   main1 (arr);

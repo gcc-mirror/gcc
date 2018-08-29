@@ -3,7 +3,7 @@
 /* { dg-do compile { target { powerpc64*-*-* && lp64 } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mcpu=power9 -O2 -mupper-regs-di -mvsx-small-integer" } */
+/* { dg-options "-mcpu=power9 -O2" } */
 
 vector int
 insert_0_0 (vector int v)

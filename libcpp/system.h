@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,6 +36,10 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #include <stdio.h>
+
+#ifdef __cplusplus
+#include <new>
+#endif
 
 /* Define a generic NULL if one hasn't already been defined.  */
 #ifndef NULL

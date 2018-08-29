@@ -37,22 +37,23 @@ module m
 
  type :: t8
    procedure(foo8), pass, pointer :: f8  ! { dg-error "must be of the derived type" }
+   procedure(foo9), pass, pointer :: f9  ! { dg-error "Non-polymorphic passed-object dummy argument" }
  end type
 
 contains
 
  subroutine foo1 (x1,y1)
-  type(t1) :: x1(:)
+  class(t1) :: x1(:)
   type(t1) :: y1
  end subroutine
 
  subroutine foo2 (x2,y2)
-  type(t2),pointer :: x2
+  class(t2),pointer :: x2
   type(t2) :: y2
  end subroutine
 
  subroutine foo3 (x3,y3)
-  type(t3),allocatable :: x3
+  class(t3),allocatable :: x3
   type(t3) :: y3
  end subroutine
 
@@ -68,5 +69,9 @@ contains
  character function foo8 (i)
    integer :: i
  end function
+
+ subroutine foo9(x)
+   type(t8) :: x
+ end subroutine
 
 end module m

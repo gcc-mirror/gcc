@@ -6,4 +6,4 @@ struct Foo {
   static Foo *foo_;
 };
 Foo *Foo::foo_;
-main() { return 0; }
+int main() { return 0; }

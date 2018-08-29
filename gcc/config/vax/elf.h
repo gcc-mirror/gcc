@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for VAX using ELF
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Matt Thomas <matt@3am-software.com>
 
 This file is part of GCC.
@@ -65,10 +65,6 @@ along with GCC; see the file COPYING3.  If not see
 			      gen_rtx_REG (Pmode, FRAME_POINTER_REGNUM),\
 			      16))
 
-
-/* Reserve the top of the stack for exception handler stackadj value.  */
-#undef STARTING_FRAME_OFFSET
-#define STARTING_FRAME_OFFSET -4
 
 /* The VAX wants no space between the case instruction and the jump table.  */
 #undef  ASM_OUTPUT_BEFORE_CASE_LABEL

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,7 +106,16 @@ package body Sem_Disp is
       --  for the construction of function wrappers). The list of primitive
       --  operations must not contain duplicates.
 
-      Append_Unique_Elmt (New_Op, List);
+      --  The Default_Initial_Condition and invariant procedures are not added
+      --  to the list of primitives even when they are generated for a tagged
+      --  type. These routines must not be targets of dispatching calls and
+      --  therefore must not appear in the dispatch table because they already
+      --  utilize class-wide-precondition semantics to handle inheritance and
+      --  overriding.
+
+      if Is_Suitable_Primitive (New_Op) then
+         Append_Unique_Elmt (New_Op, List);
+      end if;
    end Add_Dispatching_Operation;
 
    --------------------------
@@ -404,7 +413,7 @@ package body Sem_Disp is
       Func                   : Entity_Id;
       Subp_Entity            : Entity_Id;
       Indeterm_Ancestor_Call : Boolean := False;
-      Indeterm_Ctrl_Type     : Entity_Id;
+      Indeterm_Ctrl_Type     : Entity_Id := Empty; -- init to avoid warning
 
       Static_Tag : Node_Id := Empty;
       --  If a controlling formal has a statically tagged actual, the tag of
@@ -427,29 +436,6 @@ package body Sem_Disp is
 
       procedure Check_Direct_Call is
          Typ : Entity_Id := Etype (Control);
-
-         function Is_User_Defined_Equality (Id : Entity_Id) return Boolean;
-         --  Determine whether an entity denotes a user-defined equality
-
-         ------------------------------
-         -- Is_User_Defined_Equality --
-         ------------------------------
-
-         function Is_User_Defined_Equality (Id : Entity_Id) return Boolean is
-         begin
-            return
-              Ekind (Id) = E_Function
-                and then Chars (Id) = Name_Op_Eq
-                and then Comes_From_Source (Id)
-
-               --  Internally generated equalities have a full type declaration
-               --  as their parent.
-
-                and then Nkind (Parent (Id)) = N_Function_Specification;
-         end Is_User_Defined_Equality;
-
-      --  Start of processing for Check_Direct_Call
-
       begin
          --  Predefined primitives do not receive wrappers since they are built
          --  from scratch for the corresponding record of synchronized types.
@@ -1495,7 +1481,7 @@ package body Sem_Disp is
          --  Attach operation to list of primitives of the synchronized type
          --  itself, for ASIS use.
 
-         Append_Elmt (Subp, Direct_Primitive_Operations (Tagged_Type));
+         Add_Dispatching_Operation (Tagged_Type, Subp);
 
       --  If no old subprogram, then we add this as a dispatching operation,
       --  but we avoid doing this if an error was posted, to prevent annoying
@@ -1806,7 +1792,7 @@ package body Sem_Disp is
          --  Add Old_Subp to primitive operations if not already present
 
          if Present (Tagged_Type) and then Is_Tagged_Type (Tagged_Type) then
-            Append_Unique_Elmt (Old_Subp, Primitive_Operations (Tagged_Type));
+            Add_Dispatching_Operation (Tagged_Type, Old_Subp);
 
             --  If Old_Subp isn't already marked as dispatching then this is
             --  the case of an operation of an untagged private type fulfilled
@@ -2215,6 +2201,169 @@ package body Sem_Disp is
    end Find_Primitive_Covering_Interface;
 
    ---------------------------
+   -- Inheritance_Utilities --
+   ---------------------------
+
+   package body Inheritance_Utilities is
+
+      ---------------------------
+      -- Inherited_Subprograms --
+      ---------------------------
+
+      function Inherited_Subprograms
+        (S               : Entity_Id;
+         No_Interfaces   : Boolean := False;
+         Interfaces_Only : Boolean := False;
+         One_Only        : Boolean := False) return Subprogram_List
+      is
+         Result : Subprogram_List (1 .. 6000);
+         --  6000 here is intended to be infinity. We could use an expandable
+         --  table, but it would be awfully heavy, and there is no way that we
+         --  could reasonably exceed this value.
+
+         N : Nat := 0;
+         --  Number of entries in Result
+
+         Parent_Op : Entity_Id;
+         --  Traverses the Overridden_Operation chain
+
+         procedure Store_IS (E : Entity_Id);
+         --  Stores E in Result if not already stored
+
+         --------------
+         -- Store_IS --
+         --------------
+
+         procedure Store_IS (E : Entity_Id) is
+         begin
+            for J in 1 .. N loop
+               if E = Result (J) then
+                  return;
+               end if;
+            end loop;
+
+            N := N + 1;
+            Result (N) := E;
+         end Store_IS;
+
+      --  Start of processing for Inherited_Subprograms
+
+      begin
+         pragma Assert (not (No_Interfaces and Interfaces_Only));
+
+         --  When used from backends, visibility can be handled differently
+         --  resulting in no dispatching type being found.
+
+         if Present (S)
+           and then Is_Dispatching_Operation (S)
+           and then Present (Find_DT (S))
+         then
+            --  Deal with direct inheritance
+
+            if not Interfaces_Only then
+               Parent_Op := S;
+               loop
+                  Parent_Op := Overridden_Operation (Parent_Op);
+                  exit when No (Parent_Op)
+                    or else (No_Interfaces
+                              and then Is_Interface (Find_DT (Parent_Op)));
+
+                  if Is_Subprogram_Or_Generic_Subprogram (Parent_Op) then
+                     Store_IS (Parent_Op);
+
+                     if One_Only then
+                        goto Done;
+                     end if;
+                  end if;
+               end loop;
+            end if;
+
+            --  Now deal with interfaces
+
+            if not No_Interfaces then
+               declare
+                  Tag_Typ : Entity_Id;
+                  Prim    : Entity_Id;
+                  Elmt    : Elmt_Id;
+
+               begin
+                  Tag_Typ := Find_DT (S);
+
+                  --  In the presence of limited views there may be no visible
+                  --  dispatching type. Primitives will be inherited when non-
+                  --  limited view is frozen.
+
+                  if No (Tag_Typ) then
+                     return Result (1 .. 0);
+                  end if;
+
+                  if Is_Concurrent_Type (Tag_Typ) then
+                     Tag_Typ := Corresponding_Record_Type (Tag_Typ);
+                  end if;
+
+                  --  Search primitive operations of dispatching type
+
+                  if Present (Tag_Typ)
+                    and then Present (Primitive_Operations (Tag_Typ))
+                  then
+                     Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
+                     while Present (Elmt) loop
+                        Prim := Node (Elmt);
+
+                        --  The following test eliminates some odd cases in
+                        --  which Ekind (Prim) is Void, to be investigated
+                        --  further ???
+
+                        if not Is_Subprogram_Or_Generic_Subprogram (Prim) then
+                           null;
+
+                           --  For [generic] subprogram, look at interface
+                           --  alias.
+
+                        elsif Present (Interface_Alias (Prim))
+                          and then Alias (Prim) = S
+                        then
+                           --  We have found a primitive covered by S
+
+                           Store_IS (Interface_Alias (Prim));
+
+                           if One_Only then
+                              goto Done;
+                           end if;
+                        end if;
+
+                        Next_Elmt (Elmt);
+                     end loop;
+                  end if;
+               end;
+            end if;
+         end if;
+
+         <<Done>>
+
+         return Result (1 .. N);
+      end Inherited_Subprograms;
+
+      ------------------------------
+      -- Is_Overriding_Subprogram --
+      ------------------------------
+
+      function Is_Overriding_Subprogram (E : Entity_Id) return Boolean is
+         Inherited : constant Subprogram_List :=
+           Inherited_Subprograms (E, One_Only => True);
+      begin
+         return Inherited'Length > 0;
+      end Is_Overriding_Subprogram;
+   end Inheritance_Utilities;
+
+   --------------------------------
+   -- Inheritance_Utilities_Inst --
+   --------------------------------
+
+   package Inheritance_Utilities_Inst is new
+     Inheritance_Utilities (Find_Dispatching_Type);
+
+   ---------------------------
    -- Inherited_Subprograms --
    ---------------------------
 
@@ -2222,130 +2371,8 @@ package body Sem_Disp is
      (S               : Entity_Id;
       No_Interfaces   : Boolean := False;
       Interfaces_Only : Boolean := False;
-      One_Only        : Boolean := False) return Subprogram_List
-   is
-      Result : Subprogram_List (1 .. 6000);
-      --  6000 here is intended to be infinity. We could use an expandable
-      --  table, but it would be awfully heavy, and there is no way that we
-      --  could reasonably exceed this value.
-
-      N : Nat := 0;
-      --  Number of entries in Result
-
-      Parent_Op : Entity_Id;
-      --  Traverses the Overridden_Operation chain
-
-      procedure Store_IS (E : Entity_Id);
-      --  Stores E in Result if not already stored
-
-      --------------
-      -- Store_IS --
-      --------------
-
-      procedure Store_IS (E : Entity_Id) is
-      begin
-         for J in 1 .. N loop
-            if E = Result (J) then
-               return;
-            end if;
-         end loop;
-
-         N := N + 1;
-         Result (N) := E;
-      end Store_IS;
-
-   --  Start of processing for Inherited_Subprograms
-
-   begin
-      pragma Assert (not (No_Interfaces and Interfaces_Only));
-
-      if Present (S) and then Is_Dispatching_Operation (S) then
-
-         --  Deal with direct inheritance
-
-         if not Interfaces_Only then
-            Parent_Op := S;
-            loop
-               Parent_Op := Overridden_Operation (Parent_Op);
-               exit when No (Parent_Op)
-                 or else
-                   (No_Interfaces
-                     and then
-                       Is_Interface (Find_Dispatching_Type (Parent_Op)));
-
-               if Is_Subprogram_Or_Generic_Subprogram (Parent_Op) then
-                  Store_IS (Parent_Op);
-
-                  if One_Only then
-                     goto Done;
-                  end if;
-               end if;
-            end loop;
-         end if;
-
-         --  Now deal with interfaces
-
-         if not No_Interfaces then
-            declare
-               Tag_Typ : Entity_Id;
-               Prim    : Entity_Id;
-               Elmt    : Elmt_Id;
-
-            begin
-               Tag_Typ := Find_Dispatching_Type (S);
-
-               --  In the presence of limited views there may be no visible
-               --  dispatching type. Primitives will be inherited when non-
-               --  limited view is frozen.
-
-               if No (Tag_Typ) then
-                  return Result (1 .. 0);
-               end if;
-
-               if Is_Concurrent_Type (Tag_Typ) then
-                  Tag_Typ := Corresponding_Record_Type (Tag_Typ);
-               end if;
-
-               --  Search primitive operations of dispatching type
-
-               if Present (Tag_Typ)
-                 and then Present (Primitive_Operations (Tag_Typ))
-               then
-                  Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
-                  while Present (Elmt) loop
-                     Prim := Node (Elmt);
-
-                     --  The following test eliminates some odd cases in which
-                     --  Ekind (Prim) is Void, to be investigated further ???
-
-                     if not Is_Subprogram_Or_Generic_Subprogram (Prim) then
-                        null;
-
-                     --  For [generic] subprogram, look at interface alias
-
-                     elsif Present (Interface_Alias (Prim))
-                       and then Alias (Prim) = S
-                     then
-                        --  We have found a primitive covered by S
-
-                        Store_IS (Interface_Alias (Prim));
-
-                        if One_Only then
-                           goto Done;
-                        end if;
-                     end if;
-
-                     Next_Elmt (Elmt);
-                  end loop;
-               end if;
-            end;
-         end if;
-      end if;
-
-      <<Done>>
-
-      return Result (1 .. N);
-   end Inherited_Subprograms;
+      One_Only        : Boolean := False) return Subprogram_List renames
+     Inheritance_Utilities_Inst.Inherited_Subprograms;
 
    ---------------------------
    -- Is_Dynamically_Tagged --
@@ -2394,16 +2421,26 @@ package body Sem_Disp is
    -----------------------------------
 
    function Is_Inherited_Public_Operation (Op : Entity_Id) return Boolean is
-      Prim      : constant Entity_Id := Alias (Op);
-      Scop      : constant Entity_Id := Scope (Prim);
       Pack_Decl : Node_Id;
+      Prim      : Entity_Id := Op;
+      Scop      : Entity_Id := Prim;
 
    begin
+      --  Locate the ultimate non-hidden alias entity
+
+      while Present (Alias (Prim)) and then not Is_Hidden (Alias (Prim)) loop
+         pragma Assert (Alias (Prim) /= Prim);
+         Prim := Alias (Prim);
+         Scop := Scope (Prim);
+      end loop;
+
       if Comes_From_Source (Prim) and then Ekind (Scop) = E_Package then
          Pack_Decl := Unit_Declaration_Node (Scop);
-         return Nkind (Pack_Decl) = N_Package_Declaration
-           and then List_Containing (Unit_Declaration_Node (Prim)) =
-                            Visible_Declarations (Specification (Pack_Decl));
+
+         return
+           Nkind (Pack_Decl) = N_Package_Declaration
+             and then List_Containing (Unit_Declaration_Node (Prim)) =
+                        Visible_Declarations (Specification (Pack_Decl));
 
       else
          return False;
@@ -2414,12 +2451,8 @@ package body Sem_Disp is
    -- Is_Overriding_Subprogram --
    ------------------------------
 
-   function Is_Overriding_Subprogram (E : Entity_Id) return Boolean is
-      Inherited : constant Subprogram_List :=
-                    Inherited_Subprograms (E, One_Only => True);
-   begin
-      return Inherited'Length > 0;
-   end Is_Overriding_Subprogram;
+   function Is_Overriding_Subprogram (E : Entity_Id) return Boolean renames
+     Inheritance_Utilities_Inst.Is_Overriding_Subprogram;
 
    --------------------------
    -- Is_Tag_Indeterminate --
@@ -2554,7 +2587,7 @@ package body Sem_Disp is
                         Find_Dispatching_Type (Alias (Prev_Op)))
       then
          Remove_Elmt (Primitive_Operations (Tagged_Type), Elmt);
-         Append_Elmt (New_Op, Primitive_Operations (Tagged_Type));
+         Add_Dispatching_Operation (Tagged_Type, New_Op);
 
       --  The new primitive replaces the overridden entity. Required to ensure
       --  that overriding primitive is assigned the same dispatch table slot.

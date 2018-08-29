@@ -11,5 +11,5 @@ program main
   s = 1000.
 
   res = SUM([3.0,(s**(REAL(k-1)/REAL(m-1)),k=1,m),17.])
-  if (abs(res - 1021.)>1e-4) call abort
+  if (abs(res - 1021.)>1e-4) STOP 1
 end

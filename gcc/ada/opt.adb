@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,11 +80,11 @@ package body Opt is
       return Exception_Mechanism = Back_End_ZCX;
    end ZCX_Exceptions;
 
-   ----------------------------------
-   -- Register_Opt_Config_Switches --
-   ----------------------------------
+   ------------------------------
+   -- Register_Config_Switches --
+   ------------------------------
 
-   procedure Register_Opt_Config_Switches is
+   procedure Register_Config_Switches is
    begin
       Ada_Version_Config                    := Ada_Version;
       Ada_Version_Pragma_Config             := Ada_Version_Pragma;
@@ -102,6 +102,7 @@ package body Opt is
       External_Name_Imp_Casing_Config       := External_Name_Imp_Casing;
       Fast_Math_Config                      := Fast_Math;
       Initialize_Scalars_Config             := Initialize_Scalars;
+      No_Component_Reordering_Config        := No_Component_Reordering;
       Optimize_Alignment_Config             := Optimize_Alignment;
       Persistent_BSS_Mode_Config            := Persistent_BSS_Mode;
       Polling_Required_Config               := Polling_Required;
@@ -117,13 +118,13 @@ package body Opt is
       --  but that's not a local setting.
 
       Optimize_Alignment_Local := False;
-   end Register_Opt_Config_Switches;
+   end Register_Config_Switches;
 
-   ---------------------------------
-   -- Restore_Opt_Config_Switches --
-   ---------------------------------
+   -----------------------------
+   -- Restore_Config_Switches --
+   -----------------------------
 
-   procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type) is
+   procedure Restore_Config_Switches (Save : Config_Switches_Type) is
    begin
       Ada_Version                    := Save.Ada_Version;
       Ada_Version_Pragma             := Save.Ada_Version_Pragma;
@@ -141,6 +142,7 @@ package body Opt is
       External_Name_Imp_Casing       := Save.External_Name_Imp_Casing;
       Fast_Math                      := Save.Fast_Math;
       Initialize_Scalars             := Save.Initialize_Scalars;
+      No_Component_Reordering        := Save.No_Component_Reordering;
       Optimize_Alignment             := Save.Optimize_Alignment;
       Optimize_Alignment_Local       := Save.Optimize_Alignment_Local;
       Persistent_BSS_Mode            := Save.Persistent_BSS_Mode;
@@ -158,47 +160,50 @@ package body Opt is
       --  Normalize_Scalars then it forces that value for all with'ed units.
 
       Init_Or_Norm_Scalars := Initialize_Scalars or Normalize_Scalars;
-   end Restore_Opt_Config_Switches;
+   end Restore_Config_Switches;
 
-   ------------------------------
-   -- Save_Opt_Config_Switches --
-   ------------------------------
+   --------------------------
+   -- Save_Config_Switches --
+   --------------------------
 
-   procedure Save_Opt_Config_Switches (Save : out Config_Switches_Type) is
+   function Save_Config_Switches return Config_Switches_Type is
    begin
-      Save.Ada_Version                    := Ada_Version;
-      Save.Ada_Version_Pragma             := Ada_Version_Pragma;
-      Save.Ada_Version_Explicit           := Ada_Version_Explicit;
-      Save.Assertions_Enabled             := Assertions_Enabled;
-      Save.Assume_No_Invalid_Values       := Assume_No_Invalid_Values;
-      Save.Check_Float_Overflow           := Check_Float_Overflow;
-      Save.Check_Policy_List              := Check_Policy_List;
-      Save.Default_Pool                   := Default_Pool;
-      Save.Default_SSO                    := Default_SSO;
-      Save.Dynamic_Elaboration_Checks     := Dynamic_Elaboration_Checks;
-      Save.Exception_Locations_Suppressed := Exception_Locations_Suppressed;
-      Save.Extensions_Allowed             := Extensions_Allowed;
-      Save.External_Name_Exp_Casing       := External_Name_Exp_Casing;
-      Save.External_Name_Imp_Casing       := External_Name_Imp_Casing;
-      Save.Fast_Math                      := Fast_Math;
-      Save.Initialize_Scalars             := Initialize_Scalars;
-      Save.Optimize_Alignment             := Optimize_Alignment;
-      Save.Optimize_Alignment_Local       := Optimize_Alignment_Local;
-      Save.Persistent_BSS_Mode            := Persistent_BSS_Mode;
-      Save.Polling_Required               := Polling_Required;
-      Save.Prefix_Exception_Messages      := Prefix_Exception_Messages;
-      Save.SPARK_Mode                     := SPARK_Mode;
-      Save.SPARK_Mode_Pragma              := SPARK_Mode_Pragma;
-      Save.Uneval_Old                     := Uneval_Old;
-      Save.Use_VADS_Size                  := Use_VADS_Size;
-      Save.Warnings_As_Errors_Count       := Warnings_As_Errors_Count;
-   end Save_Opt_Config_Switches;
+      return
+        (Ada_Version                    => Ada_Version,
+         Ada_Version_Pragma             => Ada_Version_Pragma,
+         Ada_Version_Explicit           => Ada_Version_Explicit,
+         Assertions_Enabled             => Assertions_Enabled,
+         Assume_No_Invalid_Values       => Assume_No_Invalid_Values,
+         Check_Float_Overflow           => Check_Float_Overflow,
+         Check_Policy_List              => Check_Policy_List,
+         Default_Pool                   => Default_Pool,
+         Default_SSO                    => Default_SSO,
+         Dynamic_Elaboration_Checks     => Dynamic_Elaboration_Checks,
+         Exception_Locations_Suppressed => Exception_Locations_Suppressed,
+         Extensions_Allowed             => Extensions_Allowed,
+         External_Name_Exp_Casing       => External_Name_Exp_Casing,
+         External_Name_Imp_Casing       => External_Name_Imp_Casing,
+         Fast_Math                      => Fast_Math,
+         Initialize_Scalars             => Initialize_Scalars,
+         No_Component_Reordering        => No_Component_Reordering,
+         Normalize_Scalars              => Normalize_Scalars,
+         Optimize_Alignment             => Optimize_Alignment,
+         Optimize_Alignment_Local       => Optimize_Alignment_Local,
+         Persistent_BSS_Mode            => Persistent_BSS_Mode,
+         Polling_Required               => Polling_Required,
+         Prefix_Exception_Messages      => Prefix_Exception_Messages,
+         SPARK_Mode                     => SPARK_Mode,
+         SPARK_Mode_Pragma              => SPARK_Mode_Pragma,
+         Uneval_Old                     => Uneval_Old,
+         Use_VADS_Size                  => Use_VADS_Size,
+         Warnings_As_Errors_Count       => Warnings_As_Errors_Count);
+   end Save_Config_Switches;
 
-   -----------------------------
-   -- Set_Opt_Config_Switches --
-   -----------------------------
+   -------------------------
+   -- Set_Config_Switches --
+   -------------------------
 
-   procedure Set_Opt_Config_Switches
+   procedure Set_Config_Switches
      (Internal_Unit : Boolean;
       Main_Unit     : Boolean)
    is
@@ -218,6 +223,7 @@ package body Opt is
          Extensions_Allowed          := True;
          External_Name_Exp_Casing    := As_Is;
          External_Name_Imp_Casing    := Lowercase;
+         No_Component_Reordering     := False;
          Optimize_Alignment          := 'O';
          Optimize_Alignment_Local    := True;
          Persistent_BSS_Mode         := False;
@@ -240,12 +246,14 @@ package body Opt is
             Check_Policy_List        := Check_Policy_List_Config;
             SPARK_Mode               := SPARK_Mode_Config;
             SPARK_Mode_Pragma        := SPARK_Mode_Pragma_Config;
+
          else
             if GNAT_Mode_Config then
                Assertions_Enabled    := Assertions_Enabled_Config;
             else
                Assertions_Enabled    := False;
             end if;
+
             Assume_No_Invalid_Values := False;
             Check_Policy_List        := Empty;
             SPARK_Mode               := None;
@@ -269,6 +277,7 @@ package body Opt is
          External_Name_Imp_Casing    := External_Name_Imp_Casing_Config;
          Fast_Math                   := Fast_Math_Config;
          Initialize_Scalars          := Initialize_Scalars_Config;
+         No_Component_Reordering     := No_Component_Reordering_Config;
          Optimize_Alignment          := Optimize_Alignment_Config;
          Optimize_Alignment_Local    := False;
          Persistent_BSS_Mode         := Persistent_BSS_Mode_Config;
@@ -294,7 +303,7 @@ package body Opt is
       Exception_Locations_Suppressed := Exception_Locations_Suppressed_Config;
       Fast_Math                      := Fast_Math_Config;
       Polling_Required               := Polling_Required_Config;
-   end Set_Opt_Config_Switches;
+   end Set_Config_Switches;
 
    ---------------
    -- Tree_Read --

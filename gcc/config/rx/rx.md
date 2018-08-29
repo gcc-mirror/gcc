@@ -1,5 +1,5 @@
 ;;  Machine Description for Renesas RX processors
-;;  Copyright (C) 2008-2017 Free Software Foundation, Inc.
+;;  Copyright (C) 2008-2018 Free Software Foundation, Inc.
 ;;  Contributed by Red Hat.
 
 ;; This file is part of GCC.
@@ -438,7 +438,7 @@
 )
 
 (define_insn "call_internal"
-  [(call (mem:QI (match_operand:SI 0 "rx_call_operand" "r,Symbol"))
+  [(call (mem:QI (match_operand:SI 0 "rx_call_operand" "r,CALL_OP_SYMBOL_REF"))
 	 (const_int 0))
    (clobber (reg:CC CC_REG))]
   ""
@@ -466,7 +466,7 @@
 
 (define_insn "call_value_internal"
   [(set (match_operand                  0 "register_operand" "=r,r")
-	(call (mem:QI (match_operand:SI 1 "rx_call_operand"   "r,Symbol"))
+	(call (mem:QI (match_operand:SI 1 "rx_call_operand"   "r,CALL_OP_SYMBOL_REF"))
 	      (const_int 0)))
    (clobber (reg:CC CC_REG))]
   ""
@@ -733,12 +733,17 @@
 (define_expand "movsicc"
   [(parallel
     [(set (match_operand:SI                  0 "register_operand")
-	  (if_then_else:SI (match_operand:SI 1 "comparison_operator")
+	  (if_then_else:SI (match_operand 1 "comparison_operator")
 			   (match_operand:SI 2 "nonmemory_operand")
 			   (match_operand:SI 3 "nonmemory_operand")))
      (clobber (reg:CC CC_REG))])]
   ""
 {
+  /* Make sure that we have an integer comparison...  */
+  if (GET_MODE (XEXP (operands[1], 0)) != CCmode
+      && GET_MODE (XEXP (operands[1], 0)) != SImode)
+    FAIL;
+
   /* One operand must be a constant or a register, the other must be a register.  */
   if (   ! CONSTANT_P (operands[2])
       && ! CONSTANT_P (operands[3])
@@ -1089,7 +1094,7 @@
   DONE;
 })
 
-(define_insn "andsi3"
+(define_insn_and_split "andsi3"
   [(set (match_operand:SI         0 "register_operand"  "=r,r,r,r,r,r,r,r,r")
 	(and:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,r,r,0")
 		(match_operand:SI 2 "rx_source_operand" "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q")))
@@ -1105,6 +1110,21 @@
   and\t%1, %0
   and\t%2, %1, %0
   and\t%Q2, %0"
+  "&& RX_REG_P (operands[1]) && CONST_INT_P (operands[2])
+   && pow2p_hwi (~UINTVAL (operands[2]))"
+ [(const_int 0)]
+{
+  /* For negated single bit constants use the bclr insn for smaller code.  */
+
+  if (!rx_reg_dead_or_unused_after_insn (curr_insn, CC_REG))
+    FAIL;
+
+  rx_copy_reg_dead_or_unused_notes (operands[1], curr_insn,
+    emit_insn (gen_bitclr (operands[0],
+			   GEN_INT (exact_log2 (~UINTVAL (operands[2]))),
+			   operands[1])));
+  DONE;
+}
   [(set_attr "timings" "11,11,11,11,11,11,11,11,33")
    (set_attr "length" "2,2,3,4,5,6,2,5,5")]
 )
@@ -1378,7 +1398,7 @@
   [(set_attr "length" "2,3")]
 )
 
-(define_insn "iorsi3"
+(define_insn_and_split "iorsi3"
   [(set (match_operand:SI         0 "register_operand" "=r,r,r,r,r,r,r,r,r")
 	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,r,r,0")
 	        (match_operand:SI 2 "rx_source_operand" "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q")))
@@ -1394,6 +1414,21 @@
   or\t%1, %0
   or\t%2, %1, %0
   or\t%Q2, %0"
+  "&& RX_REG_P (operands[1]) && CONST_INT_P (operands[2])
+   && pow2p_hwi (UINTVAL (operands[2]))"
+  [(const_int 0)]
+{
+  /* For single bit constants use the bset insn for smaller code.  */
+
+  if (!rx_reg_dead_or_unused_after_insn (curr_insn, CC_REG))
+    FAIL;
+
+  rx_copy_reg_dead_or_unused_notes (operands[1], curr_insn,
+    emit_insn (gen_bitset (operands[0],
+			   GEN_INT (exact_log2 (UINTVAL (operands[2]))),
+			   operands[1])));
+  DONE;
+}
   [(set_attr "timings" "11,11,11,11,11,11,11,11,33")
    (set_attr "length"  "2,2,3,4,5,6,2,3,5")]
 )
@@ -1699,7 +1734,7 @@
   DONE;
 })
 
-(define_insn "xorsi3"
+(define_insn_and_split "xorsi3"
   [(set (match_operand:SI         0 "register_operand" "=r,r,r,r,r,r")
 	(xor:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
 	        (match_operand:SI 2 "rx_source_operand"
@@ -1707,6 +1742,21 @@
    (clobber (reg:CC CC_REG))]
   ""
   "xor\t%Q2, %0"
+  "&& RX_REG_P (operands[1]) && CONST_INT_P (operands[2])
+   && pow2p_hwi (UINTVAL (operands[2]))"
+  [(const_int 0)]
+{
+  /* For single bit constants use the bnot insn for smaller code.  */
+
+  if (!rx_reg_dead_or_unused_after_insn (curr_insn, CC_REG))
+    FAIL;
+
+  rx_copy_reg_dead_or_unused_notes (operands[1], curr_insn,
+    emit_insn (gen_bitinvert (operands[0],
+			      GEN_INT (exact_log2 (UINTVAL (operands[2]))),
+			      operands[1])));
+  DONE;
+}
   [(set_attr "timings" "11,11,11,11,11,33")
    (set_attr "length" "3,4,5,6,7,6")]
 )
@@ -1955,50 +2005,63 @@
 
 ;; Bit manipulation instructions.
 
-;; ??? The *_in_memory patterns will not be matched without further help.
-;; At one time we had the insv expander generate them, but I suspect that
-;; in general we get better performance by exposing the register load to
-;; the optimizers.
-;;
-;; An alternate solution would be to re-organize these patterns such
-;; that allow both register and memory operands.  This would allow the
-;; register allocator to spill and not load the register operand.  This
-;; would be possible only for operations for which we have a constant
-;; bit offset, so that we can adjust the address by ofs/8 and replace
-;; the offset in the insn by ofs%8.
+;; The *_in_memory patterns will not be matched automatically, not even with
+;; combiner bridge patterns.  Especially when the memory operands have a
+;; displacement, the resulting patterns look too complex.
+;; Instead we manually look around the matched insn to see if there is a
+;; preceeding memory load and a following memory store of the modified register
+;; which can be fused into the single *_in_memory insn.
+;; Do that before register allocation, as it can eliminate one temporary
+;; register that needs to be allocated.
 
-(define_insn "*bitset"
+(define_insn_and_split "bitset"
   [(set (match_operand:SI                    0 "register_operand" "=r")
 	(ior:SI (ashift:SI (const_int 1)
 			   (match_operand:SI 1 "rx_shift_operand" "ri"))
 		(match_operand:SI            2 "register_operand" "0")))]
   ""
   "bset\t%1, %0"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  if (rx_fuse_in_memory_bitop (operands, curr_insn, &gen_bitset_in_memory))
+    DONE;
+  else
+    FAIL;
+}
   [(set_attr "length" "3")]
 )
 
-(define_insn "*bitset_in_memory"
+(define_insn "bitset_in_memory"
   [(set (match_operand:QI                    0 "rx_restricted_mem_operand" "+Q")
 	(ior:QI (ashift:QI (const_int 1)
 			   (match_operand:QI 1 "nonmemory_operand" "ri"))
 		(match_dup 0)))]
   ""
   "bset\t%1, %0.B"
-  [(set_attr "length" "3")
+  [(set_attr "length" "5")
    (set_attr "timings" "33")]
 )
 
-(define_insn "*bitinvert"
+(define_insn_and_split "bitinvert"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(xor:SI (ashift:SI (const_int 1)
 			   (match_operand:SI 1 "rx_shift_operand" "ri"))
 		(match_operand:SI 2 "register_operand" "0")))]
   ""
   "bnot\t%1, %0"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  if (rx_fuse_in_memory_bitop (operands, curr_insn, &gen_bitinvert_in_memory))
+    DONE;
+  else
+    FAIL;
+}
   [(set_attr "length" "3")]
 )
 
-(define_insn "*bitinvert_in_memory"
+(define_insn "bitinvert_in_memory"
   [(set (match_operand:QI 0 "rx_restricted_mem_operand" "+Q")
 	(xor:QI (ashift:QI (const_int 1)
 			   (match_operand:QI 1 "nonmemory_operand" "ri"))
@@ -2009,7 +2072,7 @@
    (set_attr "timings" "33")]
 )
 
-(define_insn "*bitclr"
+(define_insn_and_split "bitclr"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(and:SI (not:SI
 		  (ashift:SI
@@ -2018,10 +2081,18 @@
 		(match_operand:SI 2 "register_operand" "0")))]
   ""
   "bclr\t%1, %0"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  if (rx_fuse_in_memory_bitop (operands, curr_insn, &gen_bitclr_in_memory))
+    DONE;
+  else
+    FAIL;
+}
   [(set_attr "length" "3")]
 )
 
-(define_insn "*bitclr_in_memory"
+(define_insn "bitclr_in_memory"
   [(set (match_operand:QI 0 "rx_restricted_mem_operand" "+Q")
 	(and:QI (not:QI
 		  (ashift:QI
@@ -2030,7 +2101,7 @@
 		(match_dup 0)))]
   ""
   "bclr\t%1, %0.B"
-  [(set_attr "length" "3")
+  [(set_attr "length" "5")
    (set_attr "timings" "33")]
 )
 
@@ -2169,6 +2240,7 @@
   [(plus "add") (minus "sub") (ior "ior") (xor "xor") (and "and")])
 
 (define_mode_iterator QIHI [QI HI])
+(define_mode_attr BW [(QI "B") (HI "W")])
 
 (define_insn "sync_lock_test_and_setsi"
   [(set (match_operand:SI 0 "register_operand"   "=r,r")
@@ -2210,7 +2282,7 @@
    (set (match_dup 1)
 	(match_operand:QIHI 2 "register_operand"    "0"))]
   ""
-  "xchg\t%1, %0"
+  "xchg\t%1.<BW>, %0"
   [(set_attr "length" "6")
    (set_attr "timings" "22")]
 )

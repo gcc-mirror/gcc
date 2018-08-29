@@ -1,6 +1,6 @@
 /* Process target.def to create initialization macros definition in
    target-hooks-def.h and documentation in target-hooks.texi.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -323,7 +323,7 @@ emit_init_macros (const char *docname)
 		}
 	      continue;
 	    }
-	  if (0 == print_nest)
+	  if (print_nest == 0)
 	    {
 	      /* Output default definitions of target hooks.  */
 	      printf ("#ifndef %s\n#define %s %s\n#endif\n",

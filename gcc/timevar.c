@@ -1,5 +1,5 @@
 /* Timing variables for measuring compiler performance.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
 This file is part of GCC.
@@ -637,31 +637,31 @@ timer::print_row (FILE *fp,
 		  const char *name, const timevar_time_def &elapsed)
 {
   /* The timing variable name.  */
-  fprintf (fp, " %-24s:", name);
+  fprintf (fp, " %-35s:", name);
 
 #ifdef HAVE_USER_TIME
   /* Print user-mode time for this process.  */
-  fprintf (fp, "%7.2f (%2.0f%%) usr",
+  fprintf (fp, "%7.2f (%3.0f%%)",
 	   elapsed.user,
 	   (total->user == 0 ? 0 : elapsed.user / total->user) * 100);
 #endif /* HAVE_USER_TIME */
 
 #ifdef HAVE_SYS_TIME
   /* Print system-mode time for this process.  */
-  fprintf (fp, "%7.2f (%2.0f%%) sys",
+  fprintf (fp, "%7.2f (%3.0f%%)",
 	   elapsed.sys,
 	   (total->sys == 0 ? 0 : elapsed.sys / total->sys) * 100);
 #endif /* HAVE_SYS_TIME */
 
 #ifdef HAVE_WALL_TIME
   /* Print wall clock time elapsed.  */
-  fprintf (fp, "%7.2f (%2.0f%%) wall",
+  fprintf (fp, "%7.2f (%3.0f%%)",
 	   elapsed.wall,
 	   (total->wall == 0 ? 0 : elapsed.wall / total->wall) * 100);
 #endif /* HAVE_WALL_TIME */
 
   /* Print the amount of ggc memory allocated.  */
-  fprintf (fp, "%8u kB (%2.0f%%) ggc",
+  fprintf (fp, "%8u kB (%3.0f%%)",
 	   (unsigned) (elapsed.ggc_mem >> 10),
 	   (total->ggc_mem == 0
 	    ? 0
@@ -712,7 +712,8 @@ timer::print (FILE *fp)
      TIMEVAR.  */
   m_start_time = now;
 
-  fputs ("\nExecution times (seconds)\n", fp);
+  fprintf (fp, "\n%-35s%16s%14s%14s%18s\n", "Time variable", "usr", "sys",
+	   "wall", "GGC");
   if (m_jit_client_items)
     fputs ("GCC items:\n", fp);
   for (id = 0; id < (unsigned int) TIMEVAR_LAST; ++id)
@@ -765,17 +766,17 @@ timer::print (FILE *fp)
     m_jit_client_items->print (fp, total);
 
   /* Print total time.  */
-  fputs (" TOTAL                 :", fp);
+  fprintf (fp, " %-35s:", "TOTAL");
 #ifdef HAVE_USER_TIME
-  fprintf (fp, "%7.2f          ", total->user);
+  fprintf (fp, "%7.2f      ", total->user);
 #endif
 #ifdef HAVE_SYS_TIME
-  fprintf (fp, "%7.2f          ", total->sys);
+  fprintf (fp, "%8.2f      ", total->sys);
 #endif
 #ifdef HAVE_WALL_TIME
-  fprintf (fp, "%7.2f           ", total->wall);
+  fprintf (fp, "%8.2f      ", total->wall);
 #endif
-  fprintf (fp, "%8u kB\n", (unsigned) (total->ggc_mem >> 10));
+  fprintf (fp, "%9u kB\n", (unsigned) (total->ggc_mem >> 10));
 
   if (CHECKING_P || flag_checking)
     fprintf (fp, "Extra diagnostic checks enabled; compiler may run slowly.\n");

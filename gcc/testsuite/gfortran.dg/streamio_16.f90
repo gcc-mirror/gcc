@@ -9,11 +9,11 @@ write(50, *, pos=1) "Just something "
 do i=1,17
   read( 50, *,pos=i)
   inquire(50, access=sAccess, pos=mypos)
-  if (sAccess.ne."STREAM") call abort
-  if ((mypos.ne.18).and.(mypos.ne.19)) call abort
+  if (sAccess.ne."STREAM") STOP 1
+  if ((mypos.ne.18).and.(mypos.ne.19)) STOP 2
 end do
 read (50,*, end=10)
-call abort
+STOP 3
  10 continue
 close(50,status="delete")
 end

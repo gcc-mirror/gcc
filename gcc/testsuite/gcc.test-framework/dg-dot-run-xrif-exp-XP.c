@@ -1,5 +1,5 @@
 /* { dg-do run { xfail empty-*-* } } */
-/* { dg-xfail-run-if "" { *-*-* } { "*" } { "" } } */
+/* { dg-xfail-run-if "" { *-*-* } } */
 
 extern void abort (void);
 

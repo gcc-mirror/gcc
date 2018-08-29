@@ -11,5 +11,5 @@ program common_2
   b = 2
   c = 3
   d = 4
-  if (any (n .ne. (/1, 2, 3, 4/))) call abort
+  if (any (n .ne. (/1, 2, 3, 4/))) STOP 1
 end program

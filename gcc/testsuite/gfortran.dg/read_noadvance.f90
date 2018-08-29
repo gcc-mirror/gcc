@@ -13,7 +13,7 @@
       do
         i = i + 1
 10      read(unit = 11, fmt = '(a)', advance = 'no', end = 99, eor = 11) chr
-        if (chr.ne.correct(i:i)) call abort()
+        if (chr.ne.correct(i:i)) STOP 1
         cycle
 11      continue
       end do

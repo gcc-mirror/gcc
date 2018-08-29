@@ -14,7 +14,7 @@ program main
   ik = reshape((/1_k, -1_k, 2_k, -2_k, 3_k, -3_k, 4_k, -4_k, 5_k/), shape(ik))
   rik = pack(ik,ik>0,vik)
   if (any(rik /= (/1_k, 2_k, 3_k, 4_k, 5_k, 16_k, 17_k, 18_k, 19_k/))) &
-       & call abort
+       & STOP 1
 
 
 end program main

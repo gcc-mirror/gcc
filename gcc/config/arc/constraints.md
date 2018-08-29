@@ -1,5 +1,5 @@
 ;; Constraint definitions for Synopsys DesignWare ARC.
-;; Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -321,6 +321,12 @@
   (and (match_code "const_double")
        (match_test "1")))
 
+(define_constraint "CfZ"
+  "@internal
+   Match a floating-point zero"
+  (and (match_code "const_double")
+       (match_test "op == CONST0_RTX (SFmode)")))
+
 ;; Memory constraints
 (define_memory_constraint "T"
   "@internal
@@ -347,23 +353,19 @@
        (match_test "!cmem_address (XEXP (op, 0), SImode)")
        (not (match_operand 0 "long_immediate_loadstore_operand"))))
 
-; Don't use define_memory_constraint here as the relocation patching
-; for small data symbols only works within a ld/st instruction and
-; define_memory_constraint may result in the address being calculated
-; into a register first.
-(define_constraint "Usd"
+(define_memory_constraint "Usd"
    "@internal
     A valid _small-data_ memory operand for ARCompact instructions"
    (and (match_code "mem")
-	(match_test "compact_sda_memory_operand (op, VOIDmode)")))
+	(match_test "compact_sda_memory_operand (op, VOIDmode, true)")))
 
+; Usc constant is only used for storing long constants, hence we can
+; have only [b,s9], and [b] types of addresses.
 (define_memory_constraint "Usc"
   "@internal
    A valid memory operand for storing constants"
   (and (match_code "mem")
-       (match_test "!CONSTANT_P (XEXP (op,0))")
-;; ??? the assembler rejects stores of immediates to small data.
-       (match_test "!compact_sda_memory_operand (op, VOIDmode)")))
+       (match_test "!CONSTANT_P (XEXP (op,0))")))
 
 (define_constraint "Us<"
   "@internal
@@ -401,9 +403,22 @@
 	    (match_test "arc_is_shortcall_p (op)"))
        (match_code "label_ref")))
 
+(define_constraint "Cji"
+  "JLI call"
+  (and (match_code "symbol_ref")
+       (match_test "TARGET_CODE_DENSITY")
+       (match_test "arc_is_jli_call_p (op)")))
+
+(define_constraint "Csc"
+  "Secure call"
+  (and (match_code "symbol_ref")
+       (match_test "TARGET_CODE_DENSITY")
+       (match_test "TARGET_EM")
+       (match_test "arc_is_secure_call_p (op)")))
+
 (define_constraint "Cpc"
   "pc-relative constant"
-  (match_test "arc_legitimate_pc_offset_p (op)"))
+  (match_test "arc_legitimate_pic_addr_p (op)"))
 
 (define_constraint "Clb"
   "label"
@@ -412,12 +427,12 @@
 
 (define_constraint "Cal"
   "constant for arithmetic/logical operations"
-  (match_test "immediate_operand (op, VOIDmode) && !arc_legitimate_pc_offset_p (op)"))
+  (match_test "immediate_operand (op, VOIDmode) && !arc_legitimate_pic_addr_p (op)"))
 
 (define_constraint "C32"
   "32 bit constant for arithmetic/logical operations"
   (match_test "immediate_operand (op, VOIDmode)
-	       && !arc_legitimate_pc_offset_p (op)
+	       && !arc_legitimate_pic_addr_p (op)
 	       && !satisfies_constraint_I (op)"))
 
 ; Note that the 'cryptic' register constraints will not make reload use the

@@ -41,18 +41,18 @@ show_tree (tree node)
     return;
 
   gcc_rich_location richloc (EXPR_LOCATION (node));
-  richloc.add_expr (node);
+  richloc.add_expr (node, NULL);
 
   if (richloc.get_num_locations () < 2)
     {
-      error_at_rich_loc (&richloc, "range not found");
+      error_at (&richloc, "range not found");
       return;
     }
 
   enum tree_code code = TREE_CODE (node);
 
   location_range *range = richloc.get_range (1);
-  inform_at_rich_loc (&richloc, "%s", get_tree_code_name (code));
+  inform (&richloc, "%s", get_tree_code_name (code));
 
   /* Recurse.  */
   int min_idx = 0;

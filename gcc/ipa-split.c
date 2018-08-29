@@ -1,5 +1,5 @@
 /* Function splitting pass
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka  <jh@suse.cz>
 
 This file is part of GCC.
@@ -104,14 +104,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "ipa-fnsummary.h"
 #include "cfgloop.h"
-#include "tree-chkp.h"
 
 /* Per basic block info.  */
 
 struct split_bb_info
 {
   unsigned int size;
-  unsigned int time;
+  sreal time;
 };
 
 static vec<split_bb_info> bb_info_vec;
@@ -121,13 +120,18 @@ static vec<split_bb_info> bb_info_vec;
 struct split_point
 {
   /* Size of the partitions.  */
-  unsigned int header_time, header_size, split_time, split_size;
+  sreal header_time, split_time;
+  unsigned int header_size, split_size;
 
   /* SSA names that need to be passed into spit function.  */
   bitmap ssa_names_to_pass;
 
   /* Basic block where we split (that will become entry point of new function.  */
   basic_block entry_bb;
+
+  /* Count for entering the split part.
+     This is not count of the entry_bb because it may be in loop.  */
+  profile_count count;
 
   /* Basic blocks we are splitting away.  */
   bitmap split_bbs;
@@ -146,7 +150,6 @@ struct split_point best_split_point;
 static bitmap forbidden_dominators;
 
 static tree find_retval (basic_block return_bb);
-static tree find_retbnd (basic_block return_bb);
 
 /* Callback for walk_stmt_load_store_addr_ops.  If T is non-SSA automatic
    variable, check it if it is present in bitmap passed via DATA.  */
@@ -191,10 +194,11 @@ dump_split_point (FILE * file, struct split_point *current)
 {
   fprintf (file,
 	   "Split point at BB %i\n"
-	   "  header time: %i header size: %i\n"
-	   "  split time: %i split size: %i\n  bbs: ",
-	   current->entry_bb->index, current->header_time,
-	   current->header_size, current->split_time, current->split_size);
+	   "  header time: %f header size: %i\n"
+	   "  split time: %f split size: %i\n  bbs: ",
+	   current->entry_bb->index, current->header_time.to_double (),
+	   current->header_size, current->split_time.to_double (),
+	   current->split_size);
   dump_bitmap (file, current->split_bbs);
   fprintf (file, "  SSA names to pass: ");
   dump_bitmap (file, current->ssa_names_to_pass);
@@ -426,26 +430,27 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   edge_iterator ei;
   gphi_iterator bsi;
   unsigned int i;
-  int incoming_freq = 0;
   tree retval;
-  tree retbnd;
   bool back_edge = false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_split_point (dump_file, current);
 
+  current->count = profile_count::zero ();
   FOR_EACH_EDGE (e, ei, current->entry_bb->preds)
     {
       if (e->flags & EDGE_DFS_BACK)
 	back_edge = true;
       if (!bitmap_bit_p (current->split_bbs, e->src->index))
-        incoming_freq += EDGE_FREQUENCY (e);
+	current->count += e->count ();
     }
 
-  /* Do not split when we would end up calling function anyway.  */
-  if (incoming_freq
-      >= (ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency
-	  * PARAM_VALUE (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY) / 100))
+  /* Do not split when we would end up calling function anyway.
+     Compares are three state, use !(...<...) to also give up when outcome
+     is unknown.  */
+  if (!(current->count
+       < (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale
+	   (PARAM_VALUE (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY), 100))))
     {
       /* When profile is guessed, we can not expect it to give us
 	 realistic estimate on likelyness of function taking the
@@ -454,13 +459,17 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 	 is likely noticeable win.  */
       if (back_edge
 	  && profile_status_for_fn (cfun) != PROFILE_READ
-	  && incoming_freq < ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency)
+	  && current->count
+		 < ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "  Split before loop, accepting despite low frequencies %i %i.\n",
-		     incoming_freq,
-		     ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency);
+	    {
+	      fprintf (dump_file,
+		       "  Split before loop, accepting despite low counts");
+	      current->count.dump (dump_file);
+	      fprintf (dump_file, " ");
+	      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.dump (dump_file);
+	    }
 	}
       else
 	{
@@ -546,10 +555,13 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 		 "  Refused: split size is smaller than call overhead\n");
       return;
     }
+  /* FIXME: The logic here is not very precise, because inliner does use
+     inline predicates to reduce function body size.  We add 10 to anticipate
+     that.  Next stage1 we should try to be more meaningful here.  */
   if (current->header_size + call_overhead
       >= (unsigned int)(DECL_DECLARED_INLINE_P (current_function_decl)
 			? MAX_INLINE_INSNS_SINGLE
-			: MAX_INLINE_INSNS_AUTO))
+			: MAX_INLINE_INSNS_AUTO) + 10)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -562,7 +574,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
      Limit this duplication.  This is consistent with limit in tree-sra.c  
      FIXME: with LTO we ought to be able to do better!  */
   if (DECL_ONE_ONLY (current_function_decl)
-      && current->split_size >= (unsigned int) MAX_INLINE_INSNS_AUTO)
+      && current->split_size >= (unsigned int) MAX_INLINE_INSNS_AUTO + 10)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -663,29 +675,6 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   else
     current->split_part_set_retval = true;
 
-  /* See if retbnd used by return bb is computed by header or split part.  */
-  retbnd = find_retbnd (return_bb);
-  if (retbnd)
-    {
-      bool split_part_set_retbnd
-	= split_part_set_ssa_name_p (retbnd, current, return_bb);
-
-      /* If we have both return value and bounds then keep their definitions
-	 in a single function.  We use SSA names to link returned bounds and
-	 value and therefore do not handle cases when result is passed by
-	 reference (which should not be our case anyway since bounds are
-	 returned for pointers only).  */
-      if ((DECL_BY_REFERENCE (DECL_RESULT (current_function_decl))
-	   && current->split_part_set_retval)
-	  || split_part_set_retbnd != current->split_part_set_retval)
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "  Refused: split point splits return value and bounds\n");
-	  return;
-	}
-    }
-
   /* split_function fixes up at most one PHI non-virtual PHI node in return_bb,
      for the return value.  If there are other PHIs, give up.  */
   if (return_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
@@ -710,12 +699,13 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "  Accepted!\n");
 
-  /* At the moment chose split point with lowest frequency and that leaves
+  /* At the moment chose split point with lowest count and that leaves
      out smallest size of header.
      In future we might re-consider this heuristics.  */
   if (!best_split_point.split_bbs
-      || best_split_point.entry_bb->frequency > current->entry_bb->frequency
-      || (best_split_point.entry_bb->frequency == current->entry_bb->frequency
+      || best_split_point.count
+	 > current->count
+      || (best_split_point.count == current->count 
 	  && best_split_point.split_size < current->split_size))
 	
     {
@@ -814,18 +804,6 @@ find_retval (basic_block return_bb)
   return NULL;
 }
 
-/* Given return basic block RETURN_BB, see where return bounds are really
-   stored.  */
-static tree
-find_retbnd (basic_block return_bb)
-{
-  gimple_stmt_iterator bsi;
-  for (bsi = gsi_last_bb (return_bb); !gsi_end_p (bsi); gsi_prev (&bsi))
-    if (gimple_code (gsi_stmt (bsi)) == GIMPLE_RETURN)
-      return gimple_return_retbnd (gsi_stmt (bsi));
-  return NULL;
-}
-
 /* Callback for walk_stmt_load_store_addr_ops.  If T is non-SSA automatic
    variable, mark it as used in bitmap passed via DATA.
    Return true when access to T prevents splitting the function.  */
@@ -921,8 +899,7 @@ visit_bb (basic_block bb, basic_block return_bb,
       /* Check builtins that prevent splitting.  */
       if (gimple_code (stmt) == GIMPLE_CALL
 	  && (decl = gimple_call_fndecl (stmt)) != NULL_TREE
-	  && DECL_BUILT_IN (decl)
-	  && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+	  && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
 	switch (DECL_FUNCTION_CODE (decl))
 	  {
 	  /* FIXME: once we will allow passing non-parm values to split part,
@@ -1023,7 +1000,8 @@ struct stack_entry
   int earliest;
 
   /* Overall time and size of all BBs reached from this BB in DFS walk.  */
-  int overall_time, overall_size;
+  sreal overall_time;
+  int overall_size;
 
   /* When false we can not split on this BB.  */
   bool can_split;
@@ -1048,7 +1026,7 @@ struct stack_entry
    the component used by consider_split.  */
 
 static void
-find_split_points (basic_block return_bb, int overall_time, int overall_size)
+find_split_points (basic_block return_bb, sreal overall_time, int overall_size)
 {
   stack_entry first;
   vec<stack_entry> stack = vNULL;
@@ -1211,8 +1189,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
   gcall *call, *tsan_func_exit_call = NULL;
   edge e;
   edge_iterator ei;
-  tree retval = NULL, real_retval = NULL, retbnd = NULL;
-  bool with_bounds = chkp_function_instrumented_p (current_function_decl);
+  tree retval = NULL, real_retval = NULL;
   gimple *last_stmt = NULL;
   unsigned int i;
   tree arg, ddef;
@@ -1278,32 +1255,26 @@ split_function (basic_block return_bb, struct split_point *split_point,
       basic_block new_return_bb = create_basic_block (NULL, 0, return_bb);
       gimple_stmt_iterator gsi = gsi_start_bb (new_return_bb);
       gsi_insert_after (&gsi, gimple_build_return (NULL), GSI_NEW_STMT);
+      new_return_bb->count = profile_count::zero ();
       while (redirected)
 	{
 	  redirected = false;
 	  FOR_EACH_EDGE (e, ei, return_bb->preds)
 	    if (bitmap_bit_p (split_point->split_bbs, e->src->index))
 	      {
-		new_return_bb->count += e->count;
-		new_return_bb->frequency += EDGE_FREQUENCY (e);
+		new_return_bb->count += e->count ();
 		redirect_edge_and_branch (e, new_return_bb);
 		redirected = true;
 		break;
 	      }
 	}
-      e = make_edge (new_return_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-      e->probability = REG_BR_PROB_BASE;
-      e->count = new_return_bb->count;
+      e = make_single_succ_edge (new_return_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
       add_bb_to_loop (new_return_bb, current_loops->tree_root);
       bitmap_set_bit (split_point->split_bbs, new_return_bb->index);
-      retbnd = find_retbnd (return_bb);
     }
   /* When we pass around the value, use existing return block.  */
   else
-    {
-      bitmap_set_bit (split_point->split_bbs, return_bb->index);
-      retbnd = find_retbnd (return_bb);
-    }
+    bitmap_set_bit (split_point->split_bbs, return_bb->index);
 
   /* If RETURN_BB has virtual operand PHIs, they must be removed and the
      virtual operand marked for renaming as we change the CFG in a way that
@@ -1375,7 +1346,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
   /* For usual cloning it is enough to clear builtin only when signature
      changes.  For partial inlining we however can not expect the part
      of builtin implementation to have same semantic as the whole.  */
-  if (DECL_BUILT_IN (node->decl))
+  if (fndecl_built_in_p (node->decl))
     {
       DECL_BUILT_IN_CLASS (node->decl) = NOT_BUILT_IN;
       DECL_FUNCTION_CODE (node->decl) = (enum built_in_function) 0;
@@ -1419,11 +1390,6 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	}
     }
 
-  /* If the original function is instrumented then it's
-     part is also instrumented.  */
-  if (with_bounds)
-    chkp_function_mark_instrumented (node->decl);
-
   /* If the original function is declared inline, there is no point in issuing
      a warning for the non-inlinable part.  */
   DECL_NO_INLINE_WARNING_P (node->decl) = 1;
@@ -1445,6 +1411,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
       }
     else
       break;
+  call_bb->count = split_point->count;
   e = split_block (split_point->entry_bb, last_stmt);
   remove_edge (e);
 
@@ -1458,7 +1425,6 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	args_to_pass[i] = arg;
       }
   call = gimple_build_call_vec (node->decl, args_to_pass);
-  gimple_call_set_with_bounds (call, with_bounds);
   gimple_set_block (call, DECL_INITIAL (current_function_decl));
   args_to_pass.release ();
 
@@ -1472,7 +1438,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
     {
       vec<tree, va_gc> **debug_args = NULL;
       unsigned i = 0, len = 0;
-      if (MAY_HAVE_DEBUG_STMTS)
+      if (MAY_HAVE_DEBUG_BIND_STMTS)
 	{
 	  debug_args = decl_debug_args_lookup (node->decl);
 	  if (debug_args)
@@ -1485,11 +1451,12 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	    tree ddecl;
 	    gimple *def_temp;
 
-	    /* This needs to be done even without MAY_HAVE_DEBUG_STMTS,
-	       otherwise if it didn't exist before, we'd end up with
-	       different SSA_NAME_VERSIONs between -g and -g0.  */
+	    /* This needs to be done even without
+	       MAY_HAVE_DEBUG_BIND_STMTS, otherwise if it didn't exist
+	       before, we'd end up with different SSA_NAME_VERSIONs
+	       between -g and -g0.  */
 	    arg = get_or_create_ssa_default_def (cfun, parm);
-	    if (!MAY_HAVE_DEBUG_STMTS || debug_args == NULL)
+	    if (!MAY_HAVE_DEBUG_BIND_STMTS || debug_args == NULL)
 	      continue;
 
 	    while (i < len && (**debug_args)[i] != DECL_ORIGIN (parm))
@@ -1526,11 +1493,9 @@ split_function (basic_block return_bb, struct split_point *split_point,
     }
   else
     {
-      e = make_edge (call_bb, return_bb,
-		     return_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
-		     ? 0 : EDGE_FALLTHRU);
-      e->count = call_bb->count;
-      e->probability = REG_BR_PROB_BASE;
+      e = make_single_succ_edge (call_bb, return_bb,
+				 return_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
+				 ? 0 : EDGE_FALLTHRU);
 
       /* If there is return basic block, see what value we need to store
          return value into and put call just before it.  */
@@ -1603,21 +1568,6 @@ split_function (basic_block return_bb, struct split_point *split_point,
 			    }
 			}
 		    }
-
-		  /* Replace retbnd with new one.  */
-		  if (retbnd)
-		    {
-		      gimple_stmt_iterator bsi;
-		      for (bsi = gsi_last_bb (return_bb); !gsi_end_p (bsi);
-			   gsi_prev (&bsi))
-			if (gimple_code (gsi_stmt (bsi)) == GIMPLE_RETURN)
-			  {
-			    retbnd = copy_ssa_name (retbnd, call);
-			    gimple_return_set_retbnd (gsi_stmt (bsi), retbnd);
-			    update_stmt (gsi_stmt (bsi));
-			    break;
-			  }
-		    }
 		}
 	      if (DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
 		{
@@ -1638,9 +1588,6 @@ split_function (basic_block return_bb, struct split_point *split_point,
 		      gsi_insert_after (&gsi, cpy, GSI_NEW_STMT);
 		      retval = tem;
 		    }
-		  /* Build bndret call to obtain returned bounds.  */
-		  if (retbnd)
-		    chkp_insert_retbnd_call (retbnd, retval, &gsi);
 		  gimple_call_set_lhs (call, retval);
 		  update_stmt (call);
 		}
@@ -1660,10 +1607,6 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	      && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
 	    {
 	      retval = DECL_RESULT (current_function_decl);
-
-	      if (chkp_function_instrumented_p (current_function_decl)
-		  && BOUNDED_P (retval))
-		retbnd = create_tmp_reg (pointer_bounds_type_node);
 
 	      /* We use temporary register to hold value when aggregate_value_p
 		 is false.  Similarly for DECL_BY_REFERENCE we must avoid extra
@@ -1702,9 +1645,6 @@ split_function (basic_block return_bb, struct split_point *split_point,
 		  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
 		}
 	    }
-	  /* Build bndret call to obtain returned bounds.  */
-	  if (retbnd)
-	    chkp_insert_retbnd_call (retbnd, retval, &gsi);
 	  if (tsan_func_exit_call)
 	    gsi_insert_after (&gsi, tsan_func_exit_call, GSI_NEW_STMT);
 	  ret = gimple_build_return (retval);
@@ -1723,7 +1663,8 @@ execute_split_functions (void)
 {
   gimple_stmt_iterator bsi;
   basic_block bb;
-  int overall_time = 0, overall_size = 0;
+  sreal overall_time = 0;
+  int overall_size = 0;
   int todo = 0;
   struct cgraph_node *node = cgraph_node::get (current_function_decl);
 
@@ -1740,9 +1681,16 @@ execute_split_functions (void)
 	fprintf (dump_file, "Not splitting: main function.\n");
       return 0;
     }
+  if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not splitting: function is unlikely executed.\n");
+      return 0;
+    }
   /* This can be relaxed; function might become inlinable after splitting
      away the uninlinable part.  */
   if (ipa_fn_summaries
+      && ipa_fn_summaries->get (node)
       && !ipa_fn_summaries->get (node)->inlinable)
     {
       if (dump_file)
@@ -1814,33 +1762,36 @@ execute_split_functions (void)
 
   /* Compute local info about basic blocks and determine function size/time.  */
   bb_info_vec.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
-  memset (&best_split_point, 0, sizeof (best_split_point));
+  best_split_point.split_bbs = NULL;
   basic_block return_bb = find_return_bb ();
   int tsan_exit_found = -1;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      int time = 0;
+      sreal time = 0;
       int size = 0;
-      int freq = compute_call_stmt_bb_frequency (current_function_decl, bb);
+      sreal freq = bb->count.to_sreal_scale
+			 (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Basic block %i\n", bb->index);
 
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
-	  int this_time, this_size;
+	  sreal this_time;
+	  int this_size;
 	  gimple *stmt = gsi_stmt (bsi);
 
 	  this_size = estimate_num_insns (stmt, &eni_size_weights);
-	  this_time = estimate_num_insns (stmt, &eni_time_weights) * freq;
+	  this_time = (sreal)estimate_num_insns (stmt, &eni_time_weights)
+			 * freq;
 	  size += this_size;
 	  time += this_time;
 	  check_forbidden_calls (stmt);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      fprintf (dump_file, "  freq:%6i size:%3i time:%3i ",
-		       freq, this_size, this_time);
+	      fprintf (dump_file, "  freq:%4.2f size:%3i time:%4.2f ",
+		       freq.to_double (), this_size, this_time.to_double ());
 	      print_gimple_stmt (dump_file, stmt, 0);
 	    }
 

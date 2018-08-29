@@ -1,5 +1,5 @@
 // PR c++/66988
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 #include <type_traits>
 

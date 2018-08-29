@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++17" }
 
 // Check that empty expansions and required failures.
 

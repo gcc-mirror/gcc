@@ -1,4 +1,4 @@
-/* { dg-do run { target { x32 } } } */
+/* { dg-do run { target x32 } } */
 /* { dg-options "-O2 -mx32 -maddress-mode=long" } */
 
 extern void abort (void);

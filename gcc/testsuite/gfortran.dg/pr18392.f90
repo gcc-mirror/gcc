@@ -18,5 +18,5 @@ program pr18392
   rewind (10)
   read (10,nl)
   close (10)
-  IF (a%a /= 10.0) call abort ()
+  IF (a%a /= 10.0) STOP 1
 end program pr18392

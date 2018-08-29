@@ -16,20 +16,20 @@
       i = -1
 ! gfortran created a 'fort.-1' file and wrote "Hello" in it
       write (unit=i, fmt=*, iostat=i) "Hello"
-      if (i <= 0) call abort
+      if (i <= 0) STOP 1
       
       i = -11
       open (unit=i, file="xxx", iostat=i)
-      if (i <= 0) call abort
+      if (i <= 0) STOP 2
 
       i = -42
       inquire (unit=i, exist=l)
-      if (l) call abort
+      if (l) STOP 3
 
       i = 2_8*huge(0_4)+20_8
 ! This one is nasty
       inquire (unit=i, exist=l, iostat=i)
-      if (l) call abort
-      if (i.ne.0) call abort
+      if (l) STOP 4
+      if (i.ne.0) STOP 5
 
       end

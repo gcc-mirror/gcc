@@ -39,8 +39,8 @@ program p
   implicit none
   type(t), dimension(2) :: c
   c=tt(ts([99,199,1999]),ts([42,142]))
-  if (any (c(1)%r .ne. [99,199,1999])) call abort
-  if (any (c(2)%r .ne. [42,142])) call abort
+  if (any (c(1)%r .ne. [99,199,1999])) STOP 1
+  if (any (c(2)%r .ne. [42,142])) STOP 2
   deallocate(c(1)%r)
   deallocate(c(2)%r)
 end program p

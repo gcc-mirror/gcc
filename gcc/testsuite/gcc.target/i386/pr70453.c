@@ -1,5 +1,5 @@
 /* PR target/70453 */
-/* { dg-do assemble { target { lp64 } } } */
+/* { dg-do assemble { target lp64 } } */
 /* { dg-require-effective-target avx512vbmi } */
 /* { dg-options "-Og -fschedule-insns -mavx512vbmi" } */
 

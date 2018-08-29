@@ -11,11 +11,11 @@ program note7_35
    integer n
    n = 10
    allocate(name, SOURCE=repeat('x',n))
-   if (name .ne. 'xxxxxxxxxx') call abort
-   if (len (name) .ne. 10 ) call abort
+   if (name .ne. 'xxxxxxxxxx') STOP 1
+   if (len (name) .ne. 10 ) STOP 2
    deallocate(name)
    src = 'xyxy'
    allocate(name, SOURCE=repeat(src,n))
-   if (name(37:40) .ne. 'xyxy') call abort
-   if (len (name) .ne. 40 ) call abort
+   if (name(37:40) .ne. 'xyxy') STOP 3
+   if (len (name) .ne. 40 ) STOP 4
 end program note7_35

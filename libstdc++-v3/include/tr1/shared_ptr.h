@@ -1,6 +1,6 @@
 // <tr1/shared_ptr.h> -*- C++ -*-
 
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,10 +51,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
  /**
    *  @brief  Exception possibly thrown by @c shared_ptr.
    *  @ingroup exceptions
@@ -1162,9 +1162,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       mutable weak_ptr<_Tp>  _M_weak_this;
     };
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 #endif // _TR1_SHARED_PTR_H

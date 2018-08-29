@@ -6,7 +6,7 @@ c PR61049, reduced test case by  Dominique d'Humieres
       
       read(buff, *, err=10)  AVD, AVC, BVC, BVD, CVC, CVD
       goto 20
- 10   call abort
+ 10   STOP 1
  20   continue       
       end
     

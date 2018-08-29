@@ -1,6 +1,6 @@
 // Vector implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,6 +58,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
@@ -73,6 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  pointer __tmp = _M_allocate_and_copy(__n,
 	    _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(this->_M_impl._M_start),
 	    _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(this->_M_impl._M_finish));
+	  _GLIBCXX_ASAN_ANNOTATE_REINIT;
 	  std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
 			_M_get_Tp_allocator());
 	  _M_deallocate(this->_M_impl._M_start,
@@ -97,9 +99,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	  {
+	    _GLIBCXX_ASAN_ANNOTATE_GROW(1);
 	    _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
 				     std::forward<_Args>(__args)...);
 	    ++this->_M_impl._M_finish;
+	    _GLIBCXX_ASAN_ANNOTATE_GREW(1);
 	  }
 	else
 	  _M_realloc_insert(end(), std::forward<_Args>(__args)...);
@@ -122,9 +126,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	if (__position == end())
 	  {
+	    _GLIBCXX_ASAN_ANNOTATE_GROW(1);
 	    _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
 				     __x);
 	    ++this->_M_impl._M_finish;
+	    _GLIBCXX_ASAN_ANNOTATE_GREW(1);
 	  }
 	else
 	  {
@@ -157,6 +163,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_GLIBCXX_MOVE3(__position + 1, end(), __position);
       --this->_M_impl._M_finish;
       _Alloc_traits::destroy(this->_M_impl, this->_M_impl._M_finish);
+      _GLIBCXX_ASAN_ANNOTATE_SHRINK(1);
       return __position;
     }
 
@@ -181,6 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       if (&__x != this)
 	{
+	  _GLIBCXX_ASAN_ANNOTATE_REINIT;
 #if __cplusplus >= 201103L
 	  if (_Alloc_traits::_S_propagate_on_copy_assign())
 	    {
@@ -245,10 +253,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       else if (__n > size())
 	{
 	  std::fill(begin(), end(), __val);
+	  const size_type __add = __n - size();
+	  _GLIBCXX_ASAN_ANNOTATE_GROW(__add);
 	  this->_M_impl._M_finish =
 	    std::__uninitialized_fill_n_a(this->_M_impl._M_finish,
-					  __n - size(), __val,
-					  _M_get_Tp_allocator());
+					  __add, __val, _M_get_Tp_allocator());
+	  _GLIBCXX_ASAN_ANNOTATE_GREW(__add);
 	}
       else
         _M_erase_at_end(std::fill_n(this->_M_impl._M_start, __n, __val));
@@ -263,7 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	pointer __cur(this->_M_impl._M_start);
 	for (; __first != __last && __cur != this->_M_impl._M_finish;
-	     ++__cur, ++__first)
+	     ++__cur, (void)++__first)
 	  *__cur = *__first;
 	if (__first == __last)
 	  _M_erase_at_end(__cur);
@@ -283,7 +293,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	if (__len > capacity())
 	  {
+	    _S_check_init_len(__len, _M_get_Tp_allocator());
 	    pointer __tmp(_M_allocate_and_copy(__len, __first, __last));
+	    _GLIBCXX_ASAN_ANNOTATE_REINIT;
 	    std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
 			  _M_get_Tp_allocator());
 	    _M_deallocate(this->_M_impl._M_start,
@@ -300,10 +312,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    _ForwardIterator __mid = __first;
 	    std::advance(__mid, size());
 	    std::copy(__first, __mid, this->_M_impl._M_start);
+	    const size_type __attribute__((__unused__)) __n = __len - size();
+	    _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
 	    this->_M_impl._M_finish =
 	      std::__uninitialized_copy_a(__mid, __last,
 					  this->_M_impl._M_finish,
 					  _M_get_Tp_allocator());
+	    _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
 	  }
       }
 
@@ -317,9 +332,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	if (__position == cend())
 	  {
+	    _GLIBCXX_ASAN_ANNOTATE_GROW(1);
 	    _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
 				     std::move(__v));
 	    ++this->_M_impl._M_finish;
+	    _GLIBCXX_ASAN_ANNOTATE_GREW(1);
 	  }
 	else
 	  _M_insert_aux(begin() + __n, std::move(__v));
@@ -340,9 +357,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	  if (__position == cend())
 	    {
+	      _GLIBCXX_ASAN_ANNOTATE_GROW(1);
 	      _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
 				       std::forward<_Args>(__args)...);
 	      ++this->_M_impl._M_finish;
+	      _GLIBCXX_ASAN_ANNOTATE_GREW(1);
 	    }
 	  else
 	    {
@@ -370,10 +389,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _M_insert_aux(iterator __position, const _Tp& __x)
 #endif
     {
+      _GLIBCXX_ASAN_ANNOTATE_GROW(1);
       _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
-			       _GLIBCXX_MOVE(*(this->_M_impl._M_finish
-					       - 1)));
+			       _GLIBCXX_MOVE(*(this->_M_impl._M_finish - 1)));
       ++this->_M_impl._M_finish;
+      _GLIBCXX_ASAN_ANNOTATE_GREW(1);
 #if __cplusplus < 201103L
       _Tp __x_copy = __x;
 #endif
@@ -402,6 +422,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       const size_type __len =
 	_M_check_len(size_type(1), "vector::_M_realloc_insert");
+      pointer __old_start = this->_M_impl._M_start;
+      pointer __old_finish = this->_M_impl._M_finish;
       const size_type __elems_before = __position - begin();
       pointer __new_start(this->_M_allocate(__len));
       pointer __new_finish(__new_start);
@@ -423,14 +445,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	  __new_finish
 	    = std::__uninitialized_move_if_noexcept_a
-	    (this->_M_impl._M_start, __position.base(),
+	    (__old_start, __position.base(),
 	     __new_start, _M_get_Tp_allocator());
 
 	  ++__new_finish;
 
 	  __new_finish
 	    = std::__uninitialized_move_if_noexcept_a
-	    (__position.base(), this->_M_impl._M_finish,
+	    (__position.base(), __old_finish,
 	     __new_finish, _M_get_Tp_allocator());
 	}
       __catch(...)
@@ -443,11 +465,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _M_deallocate(__new_start, __len);
 	  __throw_exception_again;
 	}
-      std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
-		    _M_get_Tp_allocator());
-      _M_deallocate(this->_M_impl._M_start,
-		    this->_M_impl._M_end_of_storage
-		    - this->_M_impl._M_start);
+      _GLIBCXX_ASAN_ANNOTATE_REINIT;
+      std::_Destroy(__old_start, __old_finish, _M_get_Tp_allocator());
+      _M_deallocate(__old_start,
+		    this->_M_impl._M_end_of_storage - __old_start);
       this->_M_impl._M_start = __new_start;
       this->_M_impl._M_finish = __new_finish;
       this->_M_impl._M_end_of_storage = __new_start + __len;
@@ -473,11 +494,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      pointer __old_finish(this->_M_impl._M_finish);
 	      if (__elems_after > __n)
 		{
+		  _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
 		  std::__uninitialized_move_a(this->_M_impl._M_finish - __n,
 					      this->_M_impl._M_finish,
 					      this->_M_impl._M_finish,
 					      _M_get_Tp_allocator());
 		  this->_M_impl._M_finish += __n;
+		  _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
 		  _GLIBCXX_MOVE_BACKWARD3(__position.base(),
 					  __old_finish - __n, __old_finish);
 		  std::fill(__position.base(), __position.base() + __n,
@@ -485,15 +508,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		}
 	      else
 		{
+		  _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
 		  this->_M_impl._M_finish =
 		    std::__uninitialized_fill_n_a(this->_M_impl._M_finish,
 						  __n - __elems_after,
 						  __x_copy,
 						  _M_get_Tp_allocator());
+		  _GLIBCXX_ASAN_ANNOTATE_GREW(__n - __elems_after);
 		  std::__uninitialized_move_a(__position.base(), __old_finish,
 					      this->_M_impl._M_finish,
 					      _M_get_Tp_allocator());
 		  this->_M_impl._M_finish += __elems_after;
+		  _GLIBCXX_ASAN_ANNOTATE_GREW(__elems_after);
 		  std::fill(__position.base(), __old_finish, __x_copy);
 		}
 	    }
@@ -536,6 +562,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		  _M_deallocate(__new_start, __len);
 		  __throw_exception_again;
 		}
+	      _GLIBCXX_ASAN_ANNOTATE_REINIT;
 	      std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
 			    _M_get_Tp_allocator());
 	      _M_deallocate(this->_M_impl._M_start,
@@ -556,44 +583,52 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       if (__n != 0)
 	{
-	  if (size_type(this->_M_impl._M_end_of_storage
-			- this->_M_impl._M_finish) >= __n)
+	  const size_type __size = size();
+	  size_type __navail = size_type(this->_M_impl._M_end_of_storage
+					 - this->_M_impl._M_finish);
+
+	  if (__size > max_size() || __navail > max_size() - __size)
+	    __builtin_unreachable();
+
+	  if (__navail >= __n)
 	    {
+	      _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
 	      this->_M_impl._M_finish =
 		std::__uninitialized_default_n_a(this->_M_impl._M_finish,
 						 __n, _M_get_Tp_allocator());
+	      _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
 	    }
 	  else
 	    {
 	      const size_type __len =
 		_M_check_len(__n, "vector::_M_default_append");
-	      const size_type __old_size = this->size();
 	      pointer __new_start(this->_M_allocate(__len));
-	      pointer __new_finish(__new_start);
+	      pointer __destroy_from = pointer();
 	      __try
 		{
-		  __new_finish
-		    = std::__uninitialized_move_if_noexcept_a
-		    (this->_M_impl._M_start, this->_M_impl._M_finish,
-		     __new_start, _M_get_Tp_allocator());
-		  __new_finish =
-		    std::__uninitialized_default_n_a(__new_finish, __n,
-						     _M_get_Tp_allocator());
+		  std::__uninitialized_default_n_a(__new_start + __size,
+						   __n, _M_get_Tp_allocator());
+		  __destroy_from = __new_start + __size;
+		  std::__uninitialized_move_if_noexcept_a(
+		      this->_M_impl._M_start, this->_M_impl._M_finish,
+		      __new_start, _M_get_Tp_allocator());
 		}
 	      __catch(...)
 		{
-		  std::_Destroy(__new_start, __new_finish,
-				_M_get_Tp_allocator());
+		  if (__destroy_from)
+		    std::_Destroy(__destroy_from, __destroy_from + __n,
+				  _M_get_Tp_allocator());
 		  _M_deallocate(__new_start, __len);
 		  __throw_exception_again;
 		}
+	      _GLIBCXX_ASAN_ANNOTATE_REINIT;
 	      std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
 			    _M_get_Tp_allocator());
 	      _M_deallocate(this->_M_impl._M_start,
 			    this->_M_impl._M_end_of_storage
 			    - this->_M_impl._M_start);
 	      this->_M_impl._M_start = __new_start;
-	      this->_M_impl._M_finish = __new_finish;
+	      this->_M_impl._M_finish = __new_start + __size + __n;
 	      this->_M_impl._M_end_of_storage = __new_start + __len;
 	    }
 	}
@@ -606,6 +641,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       if (capacity() == size())
 	return false;
+      _GLIBCXX_ASAN_ANNOTATE_REINIT;
       return std::__shrink_to_fit_aux<vector>::_S_do_it(*this);
     }
 #endif
@@ -617,10 +653,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_range_insert(iterator __pos, _InputIterator __first,
 		      _InputIterator __last, std::input_iterator_tag)
       {
-	for (; __first != __last; ++__first)
+	if (__pos == end())
 	  {
-	    __pos = insert(__pos, *__first);
-	    ++__pos;
+	    for (; __first != __last; ++__first)
+	      insert(end(), *__first);
+	  }
+	else if (__first != __last)
+	  {
+	    vector __tmp(__first, __last, _M_get_Tp_allocator());
+	    insert(__pos,
+		   _GLIBCXX_MAKE_MOVE_ITERATOR(__tmp.begin()),
+		   _GLIBCXX_MAKE_MOVE_ITERATOR(__tmp.end()));
 	  }
       }
 
@@ -641,11 +684,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		pointer __old_finish(this->_M_impl._M_finish);
 		if (__elems_after > __n)
 		  {
+		    _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
 		    std::__uninitialized_move_a(this->_M_impl._M_finish - __n,
 						this->_M_impl._M_finish,
 						this->_M_impl._M_finish,
 						_M_get_Tp_allocator());
 		    this->_M_impl._M_finish += __n;
+		    _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
 		    _GLIBCXX_MOVE_BACKWARD3(__position.base(),
 					    __old_finish - __n, __old_finish);
 		    std::copy(__first, __last, __position);
@@ -654,15 +699,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		  {
 		    _ForwardIterator __mid = __first;
 		    std::advance(__mid, __elems_after);
+		    _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
 		    std::__uninitialized_copy_a(__mid, __last,
 						this->_M_impl._M_finish,
 						_M_get_Tp_allocator());
 		    this->_M_impl._M_finish += __n - __elems_after;
+		    _GLIBCXX_ASAN_ANNOTATE_GREW(__n - __elems_after);
 		    std::__uninitialized_move_a(__position.base(),
 						__old_finish,
 						this->_M_impl._M_finish,
 						_M_get_Tp_allocator());
 		    this->_M_impl._M_finish += __elems_after;
+		    _GLIBCXX_ASAN_ANNOTATE_GREW(__elems_after);
 		    std::copy(__first, __mid, __position);
 		  }
 	      }
@@ -694,6 +742,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		    _M_deallocate(__new_start, __len);
 		    __throw_exception_again;
 		  }
+		_GLIBCXX_ASAN_ANNOTATE_REINIT;
 		std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
 			      _M_get_Tp_allocator());
 		_M_deallocate(this->_M_impl._M_start,
@@ -856,6 +905,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #if __cplusplus >= 201103L
@@ -901,5 +951,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11
+
+#undef _GLIBCXX_ASAN_ANNOTATE_REINIT
+#undef _GLIBCXX_ASAN_ANNOTATE_GROW
+#undef _GLIBCXX_ASAN_ANNOTATE_GREW
+#undef _GLIBCXX_ASAN_ANNOTATE_SHRINK
 
 #endif /* _VECTOR_TCC */

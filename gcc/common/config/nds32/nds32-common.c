@@ -1,5 +1,5 @@
 /* Common hooks of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -53,6 +53,16 @@ nds32_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 
       return true;
 
+    case OPT_misr_secure_:
+      /* Check the valid security level: 0 1 2 3.  */
+      if (value < 0 || value > 3)
+	{
+	  error_at (loc, "for the option -misr-secure=X, the valid X "
+			 "must be: 0, 1, 2, or 3");
+	  return false;
+	}
+      return true;
+
     case OPT_mcache_block_size_:
       /* Check valid value: 4 8 16 32 64 128 256 512.  */
       if (exact_log2 (value) < 2 || exact_log2 (value) > 9)
@@ -74,15 +84,39 @@ nds32_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options nds32_option_optimization_table[] =
 {
-  /* Enable -fomit-frame-pointer by default at -O1 or higher.  */
-  { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+#if TARGET_LINUX_ABI == 0
+  /* Disable -fdelete-null-pointer-checks by default in ELF toolchain.  */
+  { OPT_LEVELS_ALL,               OPT_fdelete_null_pointer_checks,
+							   NULL, 0 },
+#endif
+  /* Enable -fsched-pressure by default at -O1 and above.  */
+  { OPT_LEVELS_1_PLUS,            OPT_fsched_pressure,     NULL, 1 },
+  /* Enable -fomit-frame-pointer by default at all optimization levels.  */
+  { OPT_LEVELS_ALL,               OPT_fomit_frame_pointer, NULL, 1 },
+  /* Enable -mrelax-hint by default at all optimization levels.  */
+  { OPT_LEVELS_ALL,               OPT_mrelax_hint,         NULL, 1 },
+  /* Enalbe -malways-align by default at -O1 and above, but not -Os or -Og.  */
+  { OPT_LEVELS_1_PLUS_SPEED_ONLY, OPT_malways_align,       NULL, 1 },
   /* Enable -mv3push by default at -Os, but it is useless under V2 ISA.  */
-  { OPT_LEVELS_SIZE,   OPT_mv3push,             NULL, 1 },
+  { OPT_LEVELS_SIZE,              OPT_mv3push,             NULL, 1 },
 
-  { OPT_LEVELS_NONE,   0,                       NULL, 0 }
+  { OPT_LEVELS_NONE,              0,                       NULL, 0 }
 };
 
 /* ------------------------------------------------------------------------ */
+
+/* Implement TARGET_EXCEPT_UNWIND_INFO.  */
+static enum unwind_info_type
+nds32_except_unwind_info (struct gcc_options *opts ATTRIBUTE_UNUSED)
+{
+  if (TARGET_LINUX_ABI)
+    return UI_DWARF2;
+
+  return UI_SJLJ;
+}
+
+/* ------------------------------------------------------------------------ */
+
 
 /* Run-time Target Specification.  */
 
@@ -95,14 +129,22 @@ static const struct default_options nds32_option_optimization_table[] =
 
    Other MASK_XXX flags are set individually.
    By default we enable
-     TARGET_16_BIT   : Generate 16/32 bit mixed length instruction.
-     TARGET_PERF_EXT : Generate performance extention instrcution.
-     TARGET_CMOV     : Generate conditional move instruction.  */
+     TARGET_16_BIT     : Generate 16/32 bit mixed length instruction.
+     TARGET_EXT_PERF   : Generate performance extention instrcution.
+     TARGET_EXT_PERF2  : Generate performance extention version 2 instrcution.
+     TARGET_EXT_STRING : Generate string extention instrcution.
+     TARGET_HW_ABS     : Generate hardware abs instruction.
+     TARGET_CMOV       : Generate conditional move instruction.  */
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS		\
   (TARGET_CPU_DEFAULT				\
+   | TARGET_DEFAULT_FPU_ISA			\
+   | TARGET_DEFAULT_FPU_FMA			\
    | MASK_16_BIT				\
-   | MASK_PERF_EXT				\
+   | MASK_EXT_PERF				\
+   | MASK_EXT_PERF2				\
+   | MASK_EXT_STRING				\
+   | MASK_HW_ABS				\
    | MASK_CMOV)
 
 #undef TARGET_HANDLE_OPTION
@@ -115,7 +157,7 @@ static const struct default_options nds32_option_optimization_table[] =
 /* Defining the Output Assembler Language.  */
 
 #undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
+#define TARGET_EXCEPT_UNWIND_INFO nds32_except_unwind_info
 
 /* ------------------------------------------------------------------------ */
 

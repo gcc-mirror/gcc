@@ -1,6 +1,6 @@
 // <unordered_set> -*- C++ -*-
 
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,13 +35,12 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <utility>
 #include <type_traits>
 #include <initializer_list>
-#include <tuple>
 #include <bits/allocator.h>
 #include <ext/alloc_traits.h>
 #include <ext/aligned_buffer.h>
+#include <bits/stl_pair.h>
 #include <bits/stl_function.h> // equal_to, _Identity, _Select1st
 #include <bits/functional_hash.h>
 #include <bits/hashtable.h>
@@ -55,6 +54,28 @@
 #ifdef _GLIBCXX_PROFILE
 # include <profile/unordered_set>
 #endif
+
+#if __cplusplus >= 201703L
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  namespace pmr
+  {
+    template<typename _Tp> class polymorphic_allocator;
+    template<typename _Key, typename _Hash = std::hash<_Key>,
+	     typename _Pred = std::equal_to<_Key>>
+      using unordered_set
+	= std::unordered_set<_Key, _Hash, _Pred,
+			     polymorphic_allocator<_Key>>;
+    template<typename _Key, typename _Hash = std::hash<_Key>,
+	     typename _Pred = std::equal_to<_Key>>
+      using unordered_multiset
+	= std::unordered_multiset<_Key, _Hash, _Pred,
+				  polymorphic_allocator<_Key>>;
+  } // namespace pmr
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // C++17
 #endif // C++11
 
 #endif // _GLIBCXX_UNORDERED_SET

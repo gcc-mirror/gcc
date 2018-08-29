@@ -42,7 +42,7 @@ subroutine check (a, b)
   else
     err = (a - b) / b
   end if
-  if (err > EPS .or. err < -EPS) call abort
+  if (err > EPS .or. err < -EPS) STOP 1
 end subroutine
 
 program e_54_3

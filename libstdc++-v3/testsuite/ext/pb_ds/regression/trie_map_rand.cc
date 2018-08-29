@@ -1,13 +1,14 @@
 // __gnu_pbds::test::basic_type has ambiguous string conversions in C++17
-// { dg-do run { target { ! c++1z } } }
+// { dg-do run { target { ! c++17 } } }
 // { dg-require-time "" }
+// { dg-require-cstdint "" }
 // This can take long on simulators, timing out the test.
 // { dg-options "-DITERATIONS=5" { target simulator } }
 // { dg-timeout-factor 2.0 }
 
 // -*- C++ -*-
 
-// Copyright (C) 2005-2017 Free Software Foundation, Inc.
+// Copyright (C) 2005-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms

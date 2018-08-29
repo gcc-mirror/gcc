@@ -21,8 +21,8 @@ program char_pointer_assign
   c3(1:1) = "o"
   c3(4:4) = "l"
   c1 => c3             ! pointer => pointer
-  if (t1 /= "lnmo") call abort ()
-  if (c1 /= "onml") call abort ()
+  if (t1 /= "lnmo") STOP 1
+  if (c1 /= "onml") STOP 2
 
 ! Now arrays.
   c4 = "lmno"          ! pointer = constant
@@ -37,8 +37,8 @@ program char_pointer_assign
   const(4:4) ="l"      ! c4(:)(4:4) = "l" is still broken
   c4 = const
   c2 => c4             ! pointer => pointer
-  if (any (t2 /= "lnmo")) call abort ()
-  if (any (c2 /= "onml")) call abort ()
+  if (any (t2 /= "lnmo")) STOP 3
+  if (any (c2 /= "onml")) STOP 4
   deallocate (c3, c4)
 end program char_pointer_assign
 

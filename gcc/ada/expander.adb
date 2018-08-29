@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,8 +82,9 @@ package body Expander is
    --  Ghost mode.
 
    procedure Expand (N : Node_Id) is
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
    begin
       --  If we were analyzing a default expression (or other spec expression)
@@ -124,12 +125,12 @@ package body Expander is
 
       --  The first is when are not generating code. In this mode the
       --  Full_Analysis flag indicates whether we are performing a complete
-      --  analysis, in which case Full_Analysis = True or a pre-analysis in
+      --  analysis, in which case Full_Analysis = True or a preanalysis in
       --  which case Full_Analysis = False. See the spec of Sem for more info
       --  on this.
 
       --  The second reason for the Expander_Active flag to be False is that
-      --  we are performing a pre-analysis. During pre-analysis all expansion
+      --  we are performing a preanalysis. During preanalysis all expansion
       --  activity is turned off to make sure nodes are semantically decorated
       --  but no extra nodes are generated. This is for instance needed for
       --  the first pass of aggregate semantic processing. Note that in this
@@ -530,7 +531,7 @@ package body Expander is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Expand;
 
    ---------------------------

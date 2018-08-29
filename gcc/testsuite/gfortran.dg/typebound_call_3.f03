@@ -19,7 +19,7 @@ CONTAINS
     CLASS(trueOrFalse), INTENT(INOUT) :: me1, me2
 
     IF (.NOT. me1%val .OR. me2%val) THEN
-      CALL abort ()
+      STOP 1
     END IF
     
     me1%val = .FALSE.
@@ -41,6 +41,6 @@ PROGRAM main
   CALL f%swap (t)
 
   IF (.NOT. t%val .OR. f%val) THEN
-    CALL abort ()
+    STOP 2
   END IF
 END PROGRAM main

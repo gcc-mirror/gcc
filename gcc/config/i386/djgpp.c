@@ -1,5 +1,5 @@
 /* Subroutines for DJGPP.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -16,6 +16,8 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -44,4 +46,21 @@ i386_djgpp_asm_named_section(const char *name, unsigned int flags,
   *f++ = '\0';
 
   fprintf (asm_out_file, "\t.section\t%s,\"%s\"\n", name, flagchars);
+}
+
+/* Kludge because of missing COFF support for early LTO debug.  */
+
+static enum debug_info_levels saved_debug_info_level;
+
+void
+i386_djgpp_asm_lto_start (void)
+{
+  saved_debug_info_level = debug_info_level;
+  debug_info_level = DINFO_LEVEL_NONE;
+}
+
+void
+i386_djgpp_asm_lto_end (void)
+{
+  debug_info_level = saved_debug_info_level;
 }

@@ -19,8 +19,8 @@ program pr57117
   end select
   allocate(y, source=transpose(x))
 
-  if (any( ubound(y) /= [6,2])) call abort()
-  if (any(reshape(y(:,:)%i, [12]) /= [ 1,3,5,7,9,11, 2,4,6,8,10,12])) call abort()
+  if (any( ubound(y) /= [6,2])) STOP 1
+  if (any(reshape(y(:,:)%i, [12]) /= [ 1,3,5,7,9,11, 2,4,6,8,10,12])) STOP 2
   deallocate (x,y)
 end
 

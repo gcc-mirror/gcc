@@ -7,11 +7,13 @@ package net
 import (
 	"context"
 	"fmt"
+	"internal/poll"
 	"io"
 	"io/ioutil"
 	"net/internal/socktest"
 	"os"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 )
@@ -87,7 +89,7 @@ second:
 		return nil
 	}
 	switch err := nestedErr.(type) {
-	case *AddrError, addrinfoErrno, *DNSError, InvalidAddrError, *ParseError, *timeoutError, UnknownNetworkError:
+	case *AddrError, addrinfoErrno, *DNSError, InvalidAddrError, *ParseError, *poll.TimeoutError, UnknownNetworkError:
 		return nil
 	case *os.SyscallError:
 		nestedErr = err.Err
@@ -97,7 +99,7 @@ second:
 		goto third
 	}
 	switch nestedErr {
-	case errCanceled, errClosing, errMissingAddress, errNoSuitableAddress,
+	case errCanceled, poll.ErrNetClosing, errMissingAddress, errNoSuitableAddress,
 		context.DeadlineExceeded, context.Canceled:
 		return nil
 	}
@@ -213,7 +215,7 @@ func TestDialAddrError(t *testing.T) {
 	case "nacl", "plan9":
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
-	if !supportsIPv4 || !supportsIPv6 {
+	if !supportsIPv4() || !supportsIPv6() {
 		t.Skip("both IPv4 and IPv6 are required")
 	}
 
@@ -432,7 +434,7 @@ second:
 		goto third
 	}
 	switch nestedErr {
-	case errClosing, errTimeout:
+	case poll.ErrNetClosing, poll.ErrTimeout:
 		return nil
 	}
 	return fmt.Errorf("unexpected type on 2nd nested level: %T", nestedErr)
@@ -467,14 +469,14 @@ second:
 		return nil
 	}
 	switch err := nestedErr.(type) {
-	case *AddrError, addrinfoErrno, *DNSError, InvalidAddrError, *ParseError, *timeoutError, UnknownNetworkError:
+	case *AddrError, addrinfoErrno, *DNSError, InvalidAddrError, *ParseError, *poll.TimeoutError, UnknownNetworkError:
 		return nil
 	case *os.SyscallError:
 		nestedErr = err.Err
 		goto third
 	}
 	switch nestedErr {
-	case errCanceled, errClosing, errMissingAddress, errTimeout, ErrWriteToConnected, io.ErrUnexpectedEOF:
+	case errCanceled, poll.ErrNetClosing, errMissingAddress, poll.ErrTimeout, ErrWriteToConnected, io.ErrUnexpectedEOF:
 		return nil
 	}
 	return fmt.Errorf("unexpected type on 2nd nested level: %T", nestedErr)
@@ -489,9 +491,19 @@ third:
 // parseCloseError parses nestedErr and reports whether it is a valid
 // error value from Close functions.
 // It returns nil when nestedErr is valid.
-func parseCloseError(nestedErr error) error {
+func parseCloseError(nestedErr error, isShutdown bool) error {
 	if nestedErr == nil {
 		return nil
+	}
+
+	// Because historically we have not exported the error that we
+	// return for an operation on a closed network connection,
+	// there are programs that test for the exact error string.
+	// Verify that string here so that we don't break those
+	// programs unexpectedly. See issues #4373 and #19252.
+	want := "use of closed network connection"
+	if !isShutdown && !strings.Contains(nestedErr.Error(), want) {
+		return fmt.Errorf("error string %q does not contain expected string %q", nestedErr, want)
 	}
 
 	switch err := nestedErr.(type) {
@@ -517,7 +529,7 @@ second:
 		goto third
 	}
 	switch nestedErr {
-	case errClosing:
+	case poll.ErrNetClosing:
 		return nil
 	}
 	return fmt.Errorf("unexpected type on 2nd nested level: %T", nestedErr)
@@ -547,23 +559,23 @@ func TestCloseError(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		err = c.(*TCPConn).CloseRead()
-		if perr := parseCloseError(err); perr != nil {
+		if perr := parseCloseError(err, true); perr != nil {
 			t.Errorf("#%d: %v", i, perr)
 		}
 	}
 	for i := 0; i < 3; i++ {
 		err = c.(*TCPConn).CloseWrite()
-		if perr := parseCloseError(err); perr != nil {
+		if perr := parseCloseError(err, true); perr != nil {
 			t.Errorf("#%d: %v", i, perr)
 		}
 	}
 	for i := 0; i < 3; i++ {
 		err = c.Close()
-		if perr := parseCloseError(err); perr != nil {
+		if perr := parseCloseError(err, false); perr != nil {
 			t.Errorf("#%d: %v", i, perr)
 		}
 		err = ln.Close()
-		if perr := parseCloseError(err); perr != nil {
+		if perr := parseCloseError(err, false); perr != nil {
 			t.Errorf("#%d: %v", i, perr)
 		}
 	}
@@ -576,7 +588,7 @@ func TestCloseError(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		err = pc.Close()
-		if perr := parseCloseError(err); perr != nil {
+		if perr := parseCloseError(err, false); perr != nil {
 			t.Errorf("#%d: %v", i, perr)
 		}
 	}
@@ -613,7 +625,7 @@ second:
 		goto third
 	}
 	switch nestedErr {
-	case errClosing, errTimeout:
+	case poll.ErrNetClosing, poll.ErrTimeout:
 		return nil
 	}
 	return fmt.Errorf("unexpected type on 2nd nested level: %T", nestedErr)
@@ -692,7 +704,7 @@ second:
 		goto third
 	}
 	switch nestedErr {
-	case errClosing:
+	case poll.ErrNetClosing:
 		return nil
 	}
 	return fmt.Errorf("unexpected type on 2nd nested level: %T", nestedErr)

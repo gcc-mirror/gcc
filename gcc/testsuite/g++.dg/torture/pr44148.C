@@ -2,6 +2,7 @@
 // { dg-do compile }
 // { dg-options "" }
 // { dg-options "-fpic" { target fpic } }
+// { dg-additional-options "-Wno-return-type" }
 
 template <typename T> struct S2
 {

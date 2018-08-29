@@ -1,4 +1,4 @@
-/* { dg-do run { target { bmi2 } } } */
+/* { dg-do run { target bmi2 } } */
 /* { dg-options "-mbmi2 -O2 -dp" } */
 
 #include "bmi2-check.h"

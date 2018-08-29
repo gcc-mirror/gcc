@@ -7,7 +7,7 @@ program main
   j = 1
   i = 10
   res = shape(a(1:1,i:j:1))
-  if (res(1) /=1 .or. res(2) /= 0) call abort
+  if (res(1) /=1 .or. res(2) /= 0) STOP 1
   res = shape(a(1:1,j:i:-1))
-  if (res(1) /=1 .or. res(2) /= 0) call abort
+  if (res(1) /=1 .or. res(2) /= 0) STOP 2
 end program main

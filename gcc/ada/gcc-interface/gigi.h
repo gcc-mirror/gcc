@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -77,9 +77,9 @@ extern tree end_stmt_group (void);
 /* Set the BLOCK node corresponding to the current code group to GNU_BLOCK.  */
 extern void set_block_for_group (tree);
 
-/* Add a declaration statement for GNU_DECL to the current BLOCK_STMT node.
-   Get SLOC from GNAT_ENTITY.  */
-extern void add_decl_expr (tree gnu_decl, Entity_Id gnat_entity);
+/* Add a declaration statement for GNU_DECL to the current statement group.
+   Get the SLOC to be put onto the statement from GNAT_NODE.  */
+extern void add_decl_expr (tree gnu_decl, Node_Id gnat_node);
 
 /* Mark nodes rooted at T with TREE_VISITED and types as having their
    sized gimplified.  We use this to indicate all variable sizes and
@@ -109,10 +109,6 @@ extern void elaborate_entity (Entity_Id gnat_entity);
 
 /* Get the unpadded version of a GNAT type.  */
 extern tree get_unpadded_type (Entity_Id gnat_entity);
-
-/* Return whether the E_Subprogram_Type/E_Function/E_Procedure GNAT_ENTITY is
-   a C++ imported method or equivalent.  */
-extern bool is_cplusplus_method (Entity_Id gnat_entity);
 
 /* Create a record type that contains a SIZE bytes long field of TYPE with a
     starting bit position so that it is aligned to ALIGN bits, and leaving at
@@ -150,6 +146,9 @@ extern tree maybe_pad_type (tree type, tree size, unsigned int align,
 			    Entity_Id gnat_entity, bool is_component_type,
 			    bool is_user_type, bool definition,
 			    bool set_rm_size);
+
+/* Return true if padded TYPE was built with an RM size.  */
+extern bool pad_type_has_rm_size (tree type);
 
 /* Return a copy of the padded TYPE but with reverse storage order.  */
 extern tree set_reverse_storage_order_on_pad_type (tree type);
@@ -286,7 +285,7 @@ extern void process_type (Entity_Id gnat_entity);
    location and false if it doesn't.  If CLEAR_COLUMN is true, set the column
    information to 0.  */
 extern bool Sloc_to_locus (Source_Ptr Sloc, location_t *locus,
-			   bool clear_column = false);
+			   bool clear_column = false, const_tree decl = 0);
 
 /* Post an error message.  MSG is the error message, properly annotated.
    NODE is the node at which to post the error and the node to use for the
@@ -312,9 +311,9 @@ extern void post_error_ne_tree (const char *msg, Node_Id node, Entity_Id ent,
 extern void post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent,
                                   tree t, int num);
 
-/* Return a label to branch to for the exception type in KIND or NULL_TREE
+/* Return a label to branch to for the exception type in KIND or Empty
    if none.  */
-extern tree get_exception_label (char kind);
+extern Entity_Id get_exception_label (char kind);
 
 /* If nonzero, pretend we are allocating at global level.  */
 extern int force_global;
@@ -423,7 +422,8 @@ enum standard_datatypes
   ADT_all_others_decl,
   ADT_unhandled_others_decl,
 
-  ADT_LAST};
+  ADT_LAST
+};
 
 /* Define kind of exception information associated with raise statements.  */
 enum exception_info_kind
@@ -544,7 +544,7 @@ extern int gnat_types_compatible_p (tree t1, tree t2);
 /* Return true if EXPR is a useless type conversion.  */
 extern bool gnat_useless_type_conversion (tree expr);
 
-/* Return true if T, a FUNCTION_TYPE, has the specified list of flags.  */
+/* Return true if T, a {FUNCTION,METHOD}_TYPE, has the specified flags.  */
 extern bool fntype_same_flags_p (const_tree, tree, bool, bool, bool);
 
 /* Create an expression whose value is that of EXPR,
@@ -720,6 +720,8 @@ extern tree create_label_decl (tree name, Node_Id gnat_node);
 
    DEBUG_INFO_P is true if we need to write debug information for it.
 
+   DEFINITION is true if the subprogram is to be considered as a definition.
+
    ATTR_LIST is the list of attributes to be attached to the subprogram.
 
    GNAT_NODE is used for the position of the decl.  */
@@ -728,7 +730,8 @@ extern tree create_subprog_decl (tree name, tree asm_name, tree type,
 				 enum inline_status_t inline_status,
 				 bool public_flag, bool extern_flag,
 				 bool artificial_p, bool debug_info_p,
-				 struct attrib *attr_list, Node_Id gnat_node);
+				 bool definition, struct attrib *attr_list,
+				 Node_Id gnat_node);
 
 /* Given a subprogram declaration DECL, its assembler name and its type,
    finish constructing the subprogram declaration from ASM_NAME and TYPE.  */
@@ -995,7 +998,7 @@ extern int fp_size_to_prec (int size);
    from the parameter association for the instantiation of a generic.  We do
    not want to emit source location for them: the code generated for their
    initialization is likely to disturb debugging.  */
-extern bool renaming_from_generic_instantiation_p (Node_Id gnat_node);
+extern bool renaming_from_instantiation_p (Node_Id gnat_node);
 
 /* Try to process all nodes in the deferred context queue.  Keep in the queue
    the ones that cannot be processed yet, remove the other ones.  If FORCE is
@@ -1068,7 +1071,7 @@ maybe_vector_array (tree exp)
 static inline unsigned HOST_WIDE_INT
 ceil_pow2 (unsigned HOST_WIDE_INT x)
 {
-  return (unsigned HOST_WIDE_INT) 1 << (floor_log2 (x - 1) + 1);
+  return (unsigned HOST_WIDE_INT) 1 << ceil_log2 (x);
 }
 
 /* Return true if EXP, a CALL_EXPR, is an atomic load.  */
@@ -1078,7 +1081,7 @@ call_is_atomic_load (tree exp)
 {
   tree fndecl = get_callee_fndecl (exp);
 
-  if (!(fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL))
+  if (!(fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)))
     return false;
 
   enum built_in_function code = DECL_FUNCTION_CODE (fndecl);
@@ -1164,4 +1167,17 @@ maybe_debug_type (tree type)
     type = TYPE_DEBUG_TYPE (type);
 
   return type;
+}
+
+/* Like build_qualified_type, but TYPE_QUALS is added to the existing
+   qualifiers on TYPE.  */
+
+static inline tree
+change_qualified_type (tree type, int type_quals)
+{
+  /* Qualifiers must be put on the associated array type.  */
+  if (TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
+    return type;
+
+  return build_qualified_type (type, TYPE_QUALS (type) | type_quals);
 }

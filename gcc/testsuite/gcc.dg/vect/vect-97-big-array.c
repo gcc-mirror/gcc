@@ -8,8 +8,6 @@
 char x[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 char cb[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
-volatile int y = 0;
-
 __attribute__ ((noinline))
 int main1 ()
 {
@@ -21,8 +19,7 @@ int main1 ()
   for (i = 0; i < N; i++)
     {
       cb[i] = i*3;
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   /* Check that datarefs analysis can determine that the access via pointer

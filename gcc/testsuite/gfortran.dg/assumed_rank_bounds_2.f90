@@ -14,64 +14,64 @@ program test
 
   b = foo(a)
   !print *,b(:,1)
-  if (any(b(:,1) /= [11, 101])) call abort
+  if (any(b(:,1) /= [11, 101])) STOP 1
   buffer = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
   write(buffer,*) b(:,1)
-  if (buffer /= '          11         101') call abort
+  if (buffer /= '          11         101') STOP 2
 
   !print *,b(:,2)
-  if (any(b(:,2) /= [3, 8])) call abort
+  if (any(b(:,2) /= [3, 8])) STOP 3
   buffer = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
   write(buffer,*) b(:,2)
-  if (buffer /= '           3           8') call abort
+  if (buffer /= '           3           8') STOP 4
 
   !print *,b(:,3)
-  if (any(b(:,3) /= [13, 108])) call abort
+  if (any(b(:,3) /= [13, 108])) STOP 5
   buffer = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
   write(buffer,*) b(:,3)
-  if (buffer /= '          13         108') call abort
+  if (buffer /= '          13         108') STOP 6
 
 
   allocate(c(1:2,-3:6))
   b = bar(c)
   !print *,b(:,1)
-  if (any(b(:,1) /= [11, 97])) call abort
+  if (any(b(:,1) /= [11, 97])) STOP 7
   buffer = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
   write(buffer,*) b(:,1)
-  if (buffer /= '          11          97') call abort
+  if (buffer /= '          11          97') STOP 8
 
   !print *,b(:,2)
-  if (any(b(:,2) /= [12, 106])) call abort
+  if (any(b(:,2) /= [12, 106])) STOP 9
   buffer = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
   write(buffer,*) b(:,2)
-  if (buffer /= '          12         106') call abort
+  if (buffer /= '          12         106') STOP 10
 
   !print *,b(:,3)
-  if (any(b(:,3) /= [2, 10])) call abort
+  if (any(b(:,3) /= [2, 10])) STOP 11
   buffer = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
   write(buffer,*) b(:,3)
-  if (buffer /= '           2          10') call abort
+  if (buffer /= '           2          10') STOP 12
 
 
   allocate(d(3:5,-1:10))
   b = baz(d)
   !print *,b(:,1)
-  if (any(b(:,1) /= [3, -1])) call abort
+  if (any(b(:,1) /= [3, -1])) STOP 13
   buffer = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
   write(buffer,*) b(:,1)
-  if (buffer /= '           3          -1') call abort
+  if (buffer /= '           3          -1') STOP 14
 
   !print *,b(:,2)
-  if (any(b(:,2) /= [15, 110])) call abort
+  if (any(b(:,2) /= [15, 110])) STOP 15
   buffer = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
   write(buffer,*) b(:,2)
-  if (buffer /= '          15         110') call abort
+  if (buffer /= '          15         110') STOP 16
 
   !print *,b(:,3)
-  if (any(b(:,3) /= [13, 112])) call abort
+  if (any(b(:,3) /= [13, 112])) STOP 17
   buffer = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
   write(buffer,*) b(:,3)
-  if (buffer /= '          13         112') call abort
+  if (buffer /= '          13         112') STOP 18
 
 
 contains

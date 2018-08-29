@@ -82,36 +82,12 @@ void fBx (BAx *pbx, BAx &rbx)
 
 void fBx1 ()
 {
-  BAx bax1 = { 1, /* Ax = */ { 2, /* a[] = */ { 3 } } };
+  BAx bax1 = { 1, /* Ax = */ { 2, /* a[] = */ {} } };
 
-  new (bax1.ax.a) char;
+  new (bax1.ax.a) char;	    // { dg-warning "placement" }
   new (bax1.ax.a) char[2];  // { dg-warning "placement" }
   new (bax1.ax.a) Int16;    // { dg-warning "placement" }
   new (bax1.ax.a) Int32;    // { dg-warning "placement" }
-}
-
-void fBx2 ()
-{
-  BAx bax2 = { 1, /* Ax = */ { 2, /* a[] = */ { 3, 4 } } };
-
-  new (bax2.ax.a) char;
-  new (bax2.ax.a) char[2];
-  new (bax2.ax.a) char[3];    // { dg-warning "placement" }
-  new (bax2.ax.a) Int16;
-  new (bax2.ax.a) char[4];    // { dg-warning "placement" }
-  new (bax2.ax.a) Int32;      // { dg-warning "placement" }
-}
-
-void fBx3 ()
-{
-  BAx bax2 = { 1, /* Ax = */ { 3, /* a[] = */ { 4, 5, 6 } } };
-
-  new (bax2.ax.a) char;
-  new (bax2.ax.a) char[2];
-  new (bax2.ax.a) Int16;
-  new (bax2.ax.a) char[3];
-  new (bax2.ax.a) char[4];    // { dg-warning "placement" }
-  new (bax2.ax.a) Int32;      // { dg-warning "placement" }
 }
 
 void fB0 (BA0 *pb0, BA0 &rb0)

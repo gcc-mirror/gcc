@@ -1,5 +1,5 @@
 /* go-backend.c -- Go frontend interface to gcc backend.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,6 +43,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GO_EXPORT_SECTION_NAME
 #define GO_EXPORT_SECTION_NAME ".go_export"
+#endif
+
+#ifndef TARGET_AIX
+#define TARGET_AIX 0
 #endif
 
 /* This file holds all the cases where the Go frontend needs
@@ -101,7 +105,9 @@ go_write_export_data (const char *bytes, unsigned int size)
   if (sec == NULL)
     {
       gcc_assert (targetm_common.have_named_sections);
-      sec = get_section (GO_EXPORT_SECTION_NAME, SECTION_DEBUG, NULL);
+      sec = get_section (GO_EXPORT_SECTION_NAME,
+			 TARGET_AIX ? SECTION_EXCLUDE : SECTION_DEBUG,
+			 NULL);
     }
 
   switch_to_section (sec);

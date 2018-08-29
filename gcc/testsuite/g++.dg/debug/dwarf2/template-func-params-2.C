@@ -3,8 +3,8 @@
 // { dg-options "-gdwarf-2 -dA" }
 // { dg-do compile }
 // { dg-final { scan-assembler "DW_TAG_template_value_param" } }
-// { dg-final { scan-assembler "i.*DW_AT_name" } }
-// { dg-final { scan-assembler "3.*DW_AT_const_value" } }
+// { dg-final { scan-assembler "i\[^\n\r]* DW_AT_name" } }
+// { dg-final { scan-assembler "3\[^\n\r]* DW_AT_const_value" } }
 
 
 template <int i>

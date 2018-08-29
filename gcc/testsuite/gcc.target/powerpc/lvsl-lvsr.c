@@ -6,7 +6,7 @@
 /* { dg-options "-O0 -Wno-deprecated" } */
 /* { dg-final { scan-assembler-times "lvsl" 2 } } */
 /* { dg-final { scan-assembler-times "lvsr" 2 } } */
-/* { dg-final { scan-assembler-times "lxvd2x" 2 } } */
+/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M} 2 } } */
 /* { dg-final { scan-assembler-times "vperm" 2 } } */
 
 

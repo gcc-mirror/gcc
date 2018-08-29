@@ -6,14 +6,14 @@ program intrinsic_present
    integer, dimension(10) :: c
    integer, pointer, dimension(:) :: d
    
-   if (testvar()) call abort ()
-   if (.not. testvar(a)) call abort ()
-   if (testptr()) call abort ()
-   if (.not. testptr(b)) call abort ()
-   if (testarray()) call abort ()
-   if (.not. testarray(c)) call abort ()
-   if (testparray()) call abort ()
-   if (.not. testparray(d)) call abort ()
+   if (testvar()) STOP 1
+   if (.not. testvar(a)) STOP 2
+   if (testptr()) STOP 3
+   if (.not. testptr(b)) STOP 4
+   if (testarray()) STOP 5
+   if (.not. testarray(c)) STOP 6
+   if (testparray()) STOP 7
+   if (.not. testparray(d)) STOP 8
    
 contains
 logical function testvar (p)

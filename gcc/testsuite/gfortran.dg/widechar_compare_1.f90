@@ -6,5 +6,5 @@ program main
   c2 = 4_' '
   c1(1:1) = transfer(257, mold=c1(1:1))
   c2(1:1) = transfer(64, mold=c2(1:1))
-  if (c1 < c2) call abort
+  if (c1 < c2) STOP 1
 end program main

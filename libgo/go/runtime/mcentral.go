@@ -19,14 +19,19 @@ import "runtime/internal/atomic"
 //go:notinheap
 type mcentral struct {
 	lock      mutex
-	sizeclass int32
+	spanclass spanClass
 	nonempty  mSpanList // list of spans with a free object, ie a nonempty free list
 	empty     mSpanList // list of spans with no free objects (or cached in an mcache)
+
+	// nmalloc is the cumulative count of objects allocated from
+	// this mcentral, assuming all spans in mcaches are
+	// fully-allocated. Written atomically, read under STW.
+	nmalloc uint64
 }
 
 // Initialize a single central free list.
-func (c *mcentral) init(sizeclass int32) {
-	c.sizeclass = sizeclass
+func (c *mcentral) init(spc spanClass) {
+	c.spanclass = spc
 	c.nonempty.init()
 	c.empty.init()
 }
@@ -34,10 +39,14 @@ func (c *mcentral) init(sizeclass int32) {
 // Allocate a span to use in an MCache.
 func (c *mcentral) cacheSpan() *mspan {
 	// Deduct credit for this span allocation and sweep if necessary.
-	spanBytes := uintptr(class_to_allocnpages[c.sizeclass]) * _PageSize
+	spanBytes := uintptr(class_to_allocnpages[c.spanclass.sizeclass()]) * _PageSize
 	deductSweepCredit(spanBytes, 0)
 
 	lock(&c.lock)
+	traceDone := false
+	if trace.enabled {
+		traceGCSweepStart()
+	}
 	sg := mheap_.sweepgen
 retry:
 	var s *mspan
@@ -87,6 +96,10 @@ retry:
 		// all subsequent ones must also be either swept or in process of sweeping
 		break
 	}
+	if trace.enabled {
+		traceGCSweepDone()
+		traceDone = true
+	}
 	unlock(&c.lock)
 
 	// Replenish central list if empty.
@@ -101,15 +114,18 @@ retry:
 	// At this point s is a non-empty span, queued at the end of the empty list,
 	// c is unlocked.
 havespan:
+	if trace.enabled && !traceDone {
+		traceGCSweepDone()
+	}
 	cap := int32((s.npages << _PageShift) / s.elemsize)
 	n := cap - int32(s.allocCount)
 	if n == 0 || s.freeindex == s.nelems || uintptr(s.allocCount) == s.nelems {
 		throw("span has no free objects")
 	}
+	// Assume all objects from this span will be allocated in the
+	// mcache. If it gets uncached, we'll adjust this.
+	atomic.Xadd64(&c.nmalloc, int64(n))
 	usedBytes := uintptr(s.allocCount) * s.elemsize
-	if usedBytes > 0 {
-		reimburseSweepCredit(usedBytes)
-	}
 	atomic.Xadd64(&memstats.heap_live, int64(spanBytes)-int64(usedBytes))
 	if trace.enabled {
 		// heap_live changed.
@@ -150,6 +166,10 @@ func (c *mcentral) uncacheSpan(s *mspan) {
 		// mCentral_CacheSpan conservatively counted
 		// unallocated slots in heap_live. Undo this.
 		atomic.Xadd64(&memstats.heap_live, -int64(n)*int64(s.elemsize))
+		// cacheSpan updated alloc assuming all objects on s
+		// were going to be allocated. Adjust for any that
+		// weren't.
+		atomic.Xadd64(&c.nmalloc, -int64(n))
 	}
 	unlock(&c.lock)
 }
@@ -205,11 +225,11 @@ func (c *mcentral) freeSpan(s *mspan, preserve bool, wasempty bool) bool {
 
 // grow allocates a new empty span from the heap and initializes it for c's size class.
 func (c *mcentral) grow() *mspan {
-	npages := uintptr(class_to_allocnpages[c.sizeclass])
-	size := uintptr(class_to_size[c.sizeclass])
+	npages := uintptr(class_to_allocnpages[c.spanclass.sizeclass()])
+	size := uintptr(class_to_size[c.spanclass.sizeclass()])
 	n := (npages << _PageShift) / size
 
-	s := mheap_.alloc(npages, c.sizeclass, false, true)
+	s := mheap_.alloc(npages, c.spanclass, false, true)
 	if s == nil {
 		return nil
 	}

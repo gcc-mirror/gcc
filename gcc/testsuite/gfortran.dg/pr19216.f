@@ -9,10 +9,10 @@
        write (20,'(A)') '5 6 7 8'
        rewind (20)
        read (20,*) (dat(i), i=1,3)
-       if (dat(1).ne.3 .or. dat(2).ne.2 .or. dat(3).ne.1) call abort
+       if (dat(1).ne.3 .or. dat(2).ne.2 .or. dat(3).ne.1) STOP 1
        read (20,*) I,J
-       if (i .ne. 1 .or. j .ne. 2) call abort
+       if (i .ne. 1 .or. j .ne. 2) STOP 2
        read (20,*) I,J
-       if (i .ne. 5 .or. j .ne. 6) call abort
+       if (i .ne. 5 .or. j .ne. 6) STOP 3
        close(20)
        end

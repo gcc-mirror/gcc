@@ -18,18 +18,18 @@ program p
   x = 0
   y = 0
   read(io, test)
-  if (x.ne.10 .or. y.ne.10) call abort
+  if (x.ne.10 .or. y.ne.10) STOP 1
   !
   read(io, *) line
-  if (line.ne.'done') call abort
+  if (line.ne.'done') STOP 2
   !
   read(io, *, iostat=ios) line
-  if (ios/=iostat_end) call abort
+  if (ios/=iostat_end) STOP 3
   rewind(io)
   x = 0
   y = 0
   read(io, test)
-  if (x.ne.10 .or. y.ne.10) call abort
+  if (x.ne.10 .or. y.ne.10) STOP 4
   read(io, *, iostat=ios) line
-  if (line.ne.'done') call abort
+  if (line.ne.'done') STOP 5
 end

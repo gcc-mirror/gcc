@@ -8,7 +8,7 @@ program pr72744
   z = [(i, i=1,n)]
   h = [(i, i=n,1,-1)]
   call sub (n, h)
-  if ( any(h/=z) ) call abort
+  if ( any(h/=z) ) STOP 1
 end
 subroutine sub (n, x)
   integer :: n, x(n)

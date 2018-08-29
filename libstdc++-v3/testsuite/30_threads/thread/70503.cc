@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,6 @@
 
 // { dg-do link { target c++11 } }
 // { dg-options "-static" { target *-*-*gnu* } }
-// { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-effective-target static }
 

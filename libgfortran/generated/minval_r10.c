@@ -1,5 +1,5 @@
 /* Implementation of the MINVAL intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -52,8 +52,15 @@ minval_r10 (gfc_array_r10 * const restrict retarray,
   int continue_loop;
 
   /* Make dim zero based to avoid confusion.  */
-  dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+  dim = (*pdim) - 1;
+
+  if (unlikely (dim < 0 || dim > rank))
+    {
+      runtime_error ("Dim argument incorrect in MINVAL intrinsic: "
+ 		     "is %ld, should be between 1 and %ld",
+		     (long int) dim + 1, (long int) rank + 1);
+    }
 
   len = GFC_DESCRIPTOR_EXTENT(array,dim);
   if (len < 0)
@@ -93,7 +100,7 @@ minval_r10 (gfc_array_r10 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      retarray->dtype.rank = rank;
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
@@ -147,8 +154,10 @@ minval_r10 (gfc_array_r10 * const restrict retarray,
 	  *dest = GFC_REAL_10_HUGE;
 	else
 	  {
+#if ! defined HAVE_BACK_ARG
 	    for (n = 0; n < len; n++, src += delta)
 	      {
+#endif
 
 #if defined (GFC_REAL_10_QUIET_NAN)
 		if (*src <= result)
@@ -217,8 +226,8 @@ mminval_r10 (gfc_array_r10 * const restrict retarray,
   GFC_REAL_10 * restrict dest;
   const GFC_REAL_10 * restrict base;
   const GFC_LOGICAL_1 * restrict mbase;
-  int rank;
-  int dim;
+  index_type rank;
+  index_type dim;
   index_type n;
   index_type len;
   index_type delta;
@@ -227,6 +236,14 @@ mminval_r10 (gfc_array_r10 * const restrict retarray,
 
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+
+
+  if (unlikely (dim < 0 || dim > rank))
+    {
+      runtime_error ("Dim argument incorrect in MINVAL intrinsic: "
+ 		     "is %ld, should be between 1 and %ld",
+		     (long int) dim + 1, (long int) rank + 1);
+    }
 
   len = GFC_DESCRIPTOR_EXTENT(array,dim);
   if (len <= 0)
@@ -286,7 +303,7 @@ mminval_r10 (gfc_array_r10 * const restrict retarray,
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      retarray->dtype.rank = rank;
 
       if (alloc_size == 0)
 	{
@@ -426,12 +443,23 @@ sminval_r10 (gfc_array_r10 * const restrict retarray,
 
   if (*mask)
     {
+#ifdef HAVE_BACK_ARG
+      minval_r10 (retarray, array, pdim, back);
+#else
       minval_r10 (retarray, array, pdim);
+#endif
       return;
     }
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+
+  if (unlikely (dim < 0 || dim > rank))
+    {
+      runtime_error ("Dim argument incorrect in MINVAL intrinsic: "
+ 		     "is %ld, should be between 1 and %ld",
+		     (long int) dim + 1, (long int) rank + 1);
+    }
 
   for (n = 0; n < dim; n++)
     {
@@ -466,7 +494,7 @@ sminval_r10 (gfc_array_r10 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      retarray->dtype.rank = rank;
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 

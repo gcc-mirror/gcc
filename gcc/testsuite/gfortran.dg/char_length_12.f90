@@ -7,6 +7,6 @@
   character(len=3), dimension(3,3) :: m1
 
   m1 = p
-  if (any (spread (p, 1, 2) /= spread (m1, 1, 2))) call abort
+  if (any (spread (p, 1, 2) /= spread (m1, 1, 2))) STOP 1
 
 end

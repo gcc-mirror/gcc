@@ -7,7 +7,7 @@ PROGRAM test_o_char
   implicit none
   integer :: n
   n = mylen('c') + mylen('c   ')
-  if (n /= 5) call abort
+  if (n /= 5) STOP 1
 CONTAINS
 
   FUNCTION mylen(c)

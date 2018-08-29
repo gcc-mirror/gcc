@@ -23,12 +23,12 @@ bar (T... a)
   const char *s[]{a...};
   P<sizeof...(a)> p{};
   for (auto i = 0; i < sizeof...(a); ++i)
-    p.foo (s[i], i);
+    p.foo (s[i], i); // { dg-message "in .constexpr. expansion of " }
   return p;
 }
 
 int
 main ()
 {
-  constexpr auto a = bar ("", "");	// { dg-error "outside the bounds of array type" }
+  constexpr auto a = bar ("", "");	// { dg-error "outside the bounds of array type|in .constexpr. expansion of " }
 }

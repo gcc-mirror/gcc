@@ -23,6 +23,6 @@ program note7_35
   integer n
   n = 10
   allocate(name, SOURCE=repeat('x',bar()))
-  if (name .ne. 'xxxxxxxxxx') call abort
-  if (len (name) .ne. 10 ) call abort
+  if (name .ne. 'xxxxxxxxxx') STOP 1
+  if (len (name) .ne. 10 ) STOP 2
 end program note7_35

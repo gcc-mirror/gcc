@@ -1,4 +1,4 @@
-! { dg-options "-O3 -ffast-math -floop-interchange -floop-block -fdump-tree-graphite-all" }
+! { dg-options "-O3 -ffast-math -floop-nest-optimize -floop-block -fdump-tree-graphite-all" }
 
   INTEGER, PARAMETER :: N=1024
   REAL*8 :: A(N,N), B(N,N), C(N,N)

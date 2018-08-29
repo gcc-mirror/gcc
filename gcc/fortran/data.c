@@ -1,5 +1,5 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
 This file is part of GCC.
@@ -104,11 +104,14 @@ static gfc_expr *
 create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 			      gfc_ref *ref, gfc_expr *rvalue)
 {
-  int len, start, end, tlen;
+  HOST_WIDE_INT len, start, end, tlen;
   gfc_char_t *dest;
   bool alloced_init = false;
-	    
-  gfc_extract_int (ts->u.cl->length, &len);
+
+  if (init && init->ts.type != BT_CHARACTER)
+    return NULL;
+
+  gfc_extract_hwi (ts->u.cl->length, &len);
 
   if (init == NULL)
     {
@@ -143,10 +146,10 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 	  return NULL;
 	}
 
-      gfc_extract_int (start_expr, &start);
+      gfc_extract_hwi (start_expr, &start);
       gfc_free_expr (start_expr);
       start--;
-      gfc_extract_int (end_expr, &end);
+      gfc_extract_hwi (end_expr, &end);
       gfc_free_expr (end_expr);
     }
   else
@@ -174,16 +177,15 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
       else
 	{
 	  gfc_warning_now (0, "Initialization string at %L was truncated to "
-			   "fit the variable (%d/%d)", &rvalue->where,
-			   tlen, len);
+			   "fit the variable (%ld/%ld)", &rvalue->where,
+			   (long) tlen, (long) len);
 	  len = tlen;
 	}
     }
 
   if (rvalue->ts.type == BT_HOLLERITH)
     {
-      int i;
-      for (i = 0; i < len; i++)
+      for (size_t i = 0; i < (size_t) len; i++)
 	dest[start+i] = rvalue->representation.string[i];
     }
   else
@@ -481,6 +483,21 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
   mpz_clear (offset);
   gcc_assert (repeat == NULL);
 
+  /* Overwriting an existing initializer is non-standard but usually only
+     provokes a warning from other compilers.  */
+  if (init != NULL && init->where.lb && rvalue->where.lb)
+    {
+      /* Order in which the expressions arrive here depends on whether
+	 they are from data statements or F95 style declarations.
+	 Therefore, check which is the most recent.  */
+      expr = (LOCATION_LINE (init->where.lb->location)
+	      > LOCATION_LINE (rvalue->where.lb->location))
+	   ? init : rvalue;
+      if (gfc_notify_std (GFC_STD_GNU, "re-initialization of %qs at %L",
+			  symbol->name, &expr->where) == false)
+	return false;
+    }
+
   if (ref || last_ts->type == BT_CHARACTER)
     {
       /* An initializer has to be constant.  */
@@ -492,20 +509,13 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
     }
   else
     {
-      /* Overwriting an existing initializer is non-standard but usually only
-	 provokes a warning from other compilers.  */
-      if (init != NULL)
+      if (lvalue->ts.type == BT_DERIVED
+	  && gfc_has_default_initializer (lvalue->ts.u.derived))
 	{
-	  /* Order in which the expressions arrive here depends on whether
-	     they are from data statements or F95 style declarations.
-	     Therefore, check which is the most recent.  */
-	  expr = (LOCATION_LINE (init->where.lb->location)
-		  > LOCATION_LINE (rvalue->where.lb->location))
-	       ? init : rvalue;
-	  if (gfc_notify_std (GFC_STD_GNU,
-			      "re-initialization of %qs at %L",
-			      symbol->name, &expr->where) == false)
-	    return false;
+	  gfc_error ("Nonpointer object %qs with default initialization "
+		     "shall not appear in a DATA statement at %L", 
+		     symbol->name, &lvalue->where);
+	  return false;
 	}
 
       expr = gfc_copy_expr (rvalue);

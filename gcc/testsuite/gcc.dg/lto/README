@@ -1,4 +1,20 @@
 This directory contains tests for link-time optimization (LTO).
+
+=== Directives ===
+
+The LTO harness recognizes the following special DejaGnu directives:
+ *  dg-lto-do - the equivalent of dg-do with a limited set of supported
+      arguments (see below),
+ *  dg-lto-options - the equivalent of dg-options with additional syntax
+      to support different sets of options for different files compiled
+      as part of the same test case,
+ *  dg-lto-warning - the equivalent of dg-warning for diagnostics expected
+      to be emitted at LTO link time,
+ *  dg-lto-message - the equivakent of dg-message for informational notes
+      expected to be emitted at LTO link time.
+
+=== Test Names ===
+
 Tests in this directory may span multiple files, so the naming of
 the files is significant.
 
@@ -9,8 +25,8 @@ executable.
 
 By default, each set of files will be compiled with list of
 options listed in LTO_OPTIONS (../../lib/lto.exp), which can be
-overwritten in the shell environment or using the 'dg-lto-options'
-command in the main file of the set (i.e., the file with _0
+overridden in the shell environment or using the 'dg-lto-options'
+directive in the main file of the set (i.e., the file with _0
 suffix).
 
 For example, given the files a_0.C a_1.C a_2.C, they will be
@@ -24,7 +40,9 @@ $ g++ -o <executable> a_0.o a_1.o a_2.o
 Tests that do not need more than one file are a special case
 where there is a single file named 'foo_0.C'.
 
-The only supported dg-lto-do option are 'assemble', 'run' and 'link'.
+=== The dg-lto-do Directive ==
+
+The only supported dg-lto-do options are 'assemble', 'run' and 'link'.
 Additionally, these can only be used in the main file.  If
 'assemble' is used, only the individual object files are
 generated.  If 'link' is used, the final executable is generated

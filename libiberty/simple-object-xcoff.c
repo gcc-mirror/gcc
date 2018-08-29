@@ -1,5 +1,5 @@
 /* simple-object-coff.c -- routines to manipulate XCOFF object files.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google and David Edelsohn, IBM.
 
 This program is free software; you can redistribute it and/or modify it
@@ -138,15 +138,15 @@ struct external_syment
   union {
     struct {
       union {
-        /* The name of the symbol.  There is an implicit null character
-           after the end of the array.  */
-        char n_name[N_SYMNMLEN];
-        struct {
-          /* If n_zeroes is zero, n_offset is the offset the name from
-             the start of the string table.  */
-          unsigned char n_zeroes[4];
-          unsigned char n_offset[4];
-        } n;
+/* The name of the symbol.  There is an implicit null character
+   after the end of the array.  */
+	char n_name[N_SYMNMLEN];
+	struct {
+	  /* If n_zeroes is zero, n_offset is the offset the name from
+	     the start of the string table.  */
+	  unsigned char n_zeroes[4];
+	  unsigned char n_offset[4];
+	} n;
       } n;
 
       /* The symbol's value.  */
@@ -255,8 +255,14 @@ union external_auxent
 #define IMAGE_SYM_TYPE \
   ((IMAGE_SYM_DTYPE_NULL << 4) | IMAGE_SYM_TYPE_NULL)
 
+#define C_EXT		(2)
 #define C_STAT		(3)
 #define C_FILE		(103)
+#define C_HIDEXT	(107)
+
+#define XTY_SD		(1)	/* section definition */
+
+#define XMC_XO		(7)	/* extended operation */
 
 /* Private data for an simple_object_read.  */
 
@@ -398,11 +404,13 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
   size_t scnhdr_size;
   unsigned char *scnbuf;
   const char *errmsg;
+  unsigned short (*fetch_16) (const unsigned char *);
   unsigned int (*fetch_32) (const unsigned char *);
   ulong_type (*fetch_64) (const unsigned char *);
   unsigned int nscns;
   char *strtab;
   size_t strtab_size;
+  struct external_syment *symtab = NULL;
   unsigned int i;
 
   scnhdr_size = u64 ? SCNHSZ64 : SCNHSZ32;
@@ -416,6 +424,7 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
       return errmsg;
     }
 
+  fetch_16 = simple_object_fetch_big_16;
   fetch_32 = simple_object_fetch_big_32;
   fetch_64 = simple_object_fetch_big_64;
 
@@ -429,7 +438,7 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
       char namebuf[SCNNMLEN + 1];
       char *name;
       off_t scnptr;
-      unsigned int size;
+      off_t size;
 
       scnhdr = scnbuf + i * scnhdr_size;
       scnname = scnhdr + offsetof (struct external_scnhdr, s_name);
@@ -489,6 +498,160 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
 	break;
     }
 
+  /* Special handling for .go_export csect.  */
+  if (ocr->nsyms > 0)
+    {
+      unsigned char *sym;
+      const char *n_name;
+      off_t size, n_value;
+      unsigned int n_numaux, n_offset, n_zeroes;
+      short n_scnum;
+
+      /* Read symbol table.  */
+      symtab = XNEWVEC (struct external_syment, ocr->nsyms * SYMESZ);
+      if (!simple_object_internal_read (sobj->descriptor,
+					sobj->offset + ocr->symptr,
+					(unsigned char *) symtab,
+					ocr->nsyms * SYMESZ,
+					&errmsg, err))
+	{
+	  XDELETEVEC (symtab);
+	  XDELETEVEC (scnbuf);
+	  return NULL;
+	}
+
+      /* Search in symbol table if we have a ".go_export" symbol.  */
+      for (i = 0; i < ocr->nsyms; i += n_numaux + 1)
+	{
+	  sym = (unsigned char *) &symtab[i];
+	  n_numaux = symtab[i].n_numaux[0];
+
+	  if (symtab[i].n_sclass[0] != C_EXT
+	      && symtab[i].n_sclass[0] != C_HIDEXT)
+	    continue;
+
+	  /* Must have at least one csect auxiliary entry.  */
+	  if (n_numaux < 1 || i + n_numaux >= ocr->nsyms)
+	    continue;
+
+	  n_scnum = fetch_16 (sym + offsetof (struct external_syment,
+					      n_scnum));
+	  if (n_scnum < 1 || (unsigned int) n_scnum > nscns)
+	    continue;
+
+	  if (u64)
+	    {
+	      n_value = fetch_64 (sym + offsetof (struct external_syment,
+						  u.xcoff64.n_value));
+	      n_offset = fetch_32 (sym + offsetof (struct external_syment,
+						   u.xcoff64.n_offset));
+	    }
+	  else
+	    {
+	      /* ".go_export" is longer than N_SYMNMLEN.  */
+	      n_zeroes = fetch_32 (sym + offsetof (struct external_syment,
+						   u.xcoff32.n.n.n_zeroes));
+	      if (n_zeroes != 0)
+		continue;
+
+	      n_value = fetch_32 (sym + offsetof (struct external_syment,
+						  u.xcoff32.n_value));
+	      n_offset = fetch_32 (sym + offsetof (struct external_syment,
+						   u.xcoff32.n.n.n_offset));
+	    }
+
+	  /* The real symbol name is found in the string table.  */
+	  if (strtab == NULL)
+	    {
+	      strtab = simple_object_xcoff_read_strtab (sobj,
+	  						&strtab_size,
+							&errmsg, err);
+	      if (strtab == NULL)
+		{
+		  XDELETEVEC (symtab);
+		  XDELETEVEC (scnbuf);
+		  return errmsg;
+		}
+	    }
+
+	  if (n_offset >= strtab_size)
+	    {
+	      XDELETEVEC (strtab);
+	      XDELETEVEC (symtab);
+	      XDELETEVEC (scnbuf);
+	      *err = 0;
+	      return "symbol string index out of range";
+	    }
+	  n_name = strtab + n_offset;
+
+	  if (!strcmp (n_name, ".go_export"))
+	    {
+	      union external_auxent *auxent;
+	      unsigned char *aux, *scnhdr;
+	      off_t scnptr, x_scnlen;
+
+	      /* Found .go_export symbol, read its csect auxiliary entry.
+		 By convention, it is the last auxiliary entry.  */
+	      auxent = (union external_auxent *) &symtab[i + n_numaux];
+	      aux = (unsigned char *) auxent;
+	      if (u64)
+		{
+		  /* Use an intermediate 64-bit type to avoid
+		     compilation warning about 32-bit shift below on
+		     hosts with 32-bit off_t which aren't supported by
+		     AC_SYS_LARGEFILE.  */
+		  ulong_type x_scnlen64;
+
+		  if ((auxent->u.xcoff64.x_csect.x_smtyp & 0x7) != XTY_SD
+		      || auxent->u.xcoff64.x_csect.x_smclas != XMC_XO)
+		    continue;
+
+		  x_scnlen64 = 
+		    fetch_32 (aux + offsetof (union external_auxent,
+					      u.xcoff64.x_csect.x_scnlen_hi));
+		  x_scnlen = 
+		    ((x_scnlen64 << 32)
+		     | fetch_32 (aux
+				 + offsetof (union external_auxent,
+					     u.xcoff64.x_csect.x_scnlen_lo)));
+		}
+	      else
+		{
+		  if ((auxent->u.xcoff32.x_csect.x_smtyp & 0x7) != XTY_SD
+		      || auxent->u.xcoff32.x_csect.x_smclas != XMC_XO)
+		    continue;
+
+		  x_scnlen = fetch_32 (aux + offsetof (union external_auxent,
+						       u.xcoff32.x_csect.x_scnlen));
+		}
+
+	      /* Get header of containing section.  */
+	      scnhdr = scnbuf + (n_scnum - 1) * scnhdr_size;
+	      if (u64)
+		{
+		  scnptr = fetch_64 (scnhdr + offsetof (struct external_scnhdr,
+							u.xcoff64.s_scnptr));
+		  size = fetch_64 (scnhdr + offsetof (struct external_scnhdr,
+						      u.xcoff64.s_size));
+		}
+	      else
+		{
+		  scnptr = fetch_32 (scnhdr + offsetof (struct external_scnhdr,
+							u.xcoff32.s_scnptr));
+		  size = fetch_32 (scnhdr + offsetof (struct external_scnhdr,
+						      u.xcoff32.s_size));
+		}
+	      if (n_value + x_scnlen > size)
+		break;
+
+	      (*pfn) (data, ".go_export", scnptr + n_value, x_scnlen);
+	      break;
+	    }
+	}
+    }
+
+  if (symtab != NULL)
+    XDELETEVEC (symtab);
   if (strtab != NULL)
     XDELETEVEC (strtab);
   XDELETEVEC (scnbuf);
@@ -894,5 +1057,6 @@ const struct simple_object_functions simple_object_xcoff_functions =
   simple_object_xcoff_release_attributes,
   simple_object_xcoff_start_write,
   simple_object_xcoff_write_to_file,
-  simple_object_xcoff_release_write
+  simple_object_xcoff_release_write,
+  NULL
 };

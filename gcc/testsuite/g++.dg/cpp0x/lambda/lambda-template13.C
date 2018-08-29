@@ -4,7 +4,7 @@
 struct function
 {
   template < typename _Functor>
-  function (_Functor);
+  function (_Functor) {}
 };
 
 template <class U>

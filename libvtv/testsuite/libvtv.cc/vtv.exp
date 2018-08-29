@@ -1,4 +1,5 @@
 load_lib libvtv-dg.exp
+load_gcc_lib scanlang.exp
 load_gcc_lib gcc-dg.exp
 
 global VTV_FLAGS

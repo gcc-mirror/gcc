@@ -1,5 +1,8 @@
-/* { dg-do run } */
 /* { dg-require-weak "" } */
+/* { dg-skip-if "No undefined weak" { hppa*-*-hpux* && { ! lp64 } } } */
+/* { dg-skip-if "No undefined weak" { nvptx-*-* } } */
+/* { dg-additional-options "-Wl,-undefined,dynamic_lookup" { target *-*-darwin* } } */
+/* { dg-additional-options "-Wl,-flat_namespace" { target *-*-darwin[89]* } } */
 /* { dg-additional-options "--param vect-epilogues-nomask=1 -mavx2" { target avx2_runtime } } */
 
 #define SIZE 1023

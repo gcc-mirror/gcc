@@ -14,7 +14,7 @@ program main
 
   call acc_set_device_num (n, acc_device_nvidia)
 
-  if (acc_get_device_num (acc_device_nvidia) .ne. 0) call abort
+  if (acc_get_device_num (acc_device_nvidia) .ne. 0) STOP 1
 
   if (acc_get_num_devices (acc_device_nvidia) .gt. 1) then
 
@@ -22,7 +22,7 @@ program main
 
     call acc_set_device_num (n, acc_device_nvidia)
 
-    if (acc_get_device_num (acc_device_nvidia) .ne. 1) call abort
+    if (acc_get_device_num (acc_device_nvidia) .ne. 1) STOP 2
 
   end if
 

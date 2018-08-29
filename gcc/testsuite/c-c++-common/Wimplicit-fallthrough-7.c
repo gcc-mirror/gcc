@@ -51,9 +51,9 @@ f (int i)
     {
     case 1:
       {
-	switch (i + 2)
+	switch (i + 2) /* { dg-warning "statement may fall through" } */
 	  case 4:
-	    bar (1); /* { dg-warning "statement may fall through" } */
+	    bar (1);
 	  case 5:
 	    bar (5);
 	    return;

@@ -1,4 +1,7 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-return-type" } */
+/* { dg-skip-if "no pthread_barrier" { *-*-darwin* } } */
+
 extern "C" {
   typedef __SIZE_TYPE__ size_t;
   typedef struct   {

@@ -16,7 +16,7 @@ contains
     end interface
     if(present(a)) then
       write(temp,'(f16.10)')a(4.0d0)
-      if (trim(temp) /= '   -0.6536436209') call abort
+      if (trim(temp) /= '   -0.6536436209') STOP 1
     endif
   end subroutine sub
 end module m

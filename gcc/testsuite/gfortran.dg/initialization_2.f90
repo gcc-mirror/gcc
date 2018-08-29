@@ -14,9 +14,9 @@ program test
     integer :: b3(4) = a(1, v, 3)
     integer :: b4(3,3) = a(v([2,4,3]), 2, [2,3,4])
 
-    if (any(b1 /= reshape([21,22,23, 37,38,39, 53,54,55], [3,3]))) call abort()
-    if (any(b2 /= reshape([14, 62, 46], [1,3]))) call abort()
-    if (any(b2b /= [53, 56, 55])) call abort()
-    if (any(b3 /= [45, 33, 41, 37])) call abort()
-    if (any(b4 /= reshape([21,22,23, 37,38,39, 53,54,55], [3,3]))) call abort()
+    if (any(b1 /= reshape([21,22,23, 37,38,39, 53,54,55], [3,3]))) STOP 1
+    if (any(b2 /= reshape([14, 62, 46], [1,3]))) STOP 2
+    if (any(b2b /= [53, 56, 55])) STOP 3
+    if (any(b3 /= [45, 33, 41, 37])) STOP 4
+    if (any(b4 /= reshape([21,22,23, 37,38,39, 53,54,55], [3,3]))) STOP 5
 end program test

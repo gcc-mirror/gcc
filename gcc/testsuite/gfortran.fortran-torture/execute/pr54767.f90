@@ -21,7 +21,7 @@ SUBROUTINE XXX (IL, IU)
   ENDDO
 
   IF (ivvv.NE.2) THEN
-    call abort
+    STOP 1
   ENDIF
 END subroutine
 

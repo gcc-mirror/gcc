@@ -38,9 +38,22 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	      /* Silvermont.  */
 	      assert (__builtin_cpu_is ("silvermont"));
 	      break;
+	    case 0x5c:
+	    case 0x5f:
+	      /* Goldmont.  */
+	      assert (__builtin_cpu_is ("goldmont"));
+	      break;
+	    case 0x7a:
+	      /* Goldmont Plus.  */
+	      assert (__builtin_cpu_is ("goldmont-plus"));
+	      break;
 	    case 0x57:
 	      /* Knights Landing.  */
 	      assert (__builtin_cpu_is ("knl"));
+	      break;
+	    case 0x85:
+	      /* Knights Mill */
+	      assert (__builtin_cpu_is ("knm"));
 	      break;
 	    case 0x1a:
 	    case 0x1e:
@@ -88,6 +101,9 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	    case 0x4e:
 	    case 0x5e:
 	      /* Skylake.  */
+	    case 0x8e:
+	    case 0x9e:
+	      /* Kaby Lake.  */
 	      assert (__builtin_cpu_is ("corei7"));
 	      assert (__builtin_cpu_is ("skylake"));
 	      break;
@@ -95,6 +111,10 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	      /* Skylake with AVX-512 support.  */
 	      assert (__builtin_cpu_is ("corei7"));
 	      assert (__builtin_cpu_is ("skylake-avx512"));
+	      break;
+	    case 0x66:
+	      /* Cannon Lake.  */
+	      assert (__builtin_cpu_is ("cannonlake"));
 	      break;
 	    case 0x17:
 	    case 0x1d:
@@ -221,6 +241,16 @@ check_features (unsigned int ecx, unsigned int edx,
 	assert (__builtin_cpu_supports ("avx512ifma"));
       if (ecx & bit_AVX512VBMI)
 	assert (__builtin_cpu_supports ("avx512vbmi"));
+      if (ecx & bit_AVX512VBMI2)
+	assert (__builtin_cpu_supports ("avx512vbmi2"));
+      if (ecx & bit_GFNI)
+	assert (__builtin_cpu_supports ("gfni"));
+      if (ecx & bit_VPCLMULQDQ)
+	assert (__builtin_cpu_supports ("vpclmulqdq"));
+      if (ecx & bit_AVX512VNNI)
+	assert (__builtin_cpu_supports ("avx512vnni"));
+      if (ecx & bit_AVX512BITALG)
+	assert (__builtin_cpu_supports ("avx512bitalg"));
       if (ecx & bit_AVX512VPOPCNTDQ)
 	assert (__builtin_cpu_supports ("avx512vpopcntdq"));
       if (edx & bit_AVX5124VNNIW)

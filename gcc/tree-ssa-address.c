@@ -1,5 +1,5 @@
 /* Memory address lowering and addressing mode selection.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -191,19 +191,20 @@ rtx
 addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
 		  bool really_expand)
 {
-  machine_mode address_mode = targetm.addr_space.address_mode (as);
-  machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
+  scalar_int_mode address_mode = targetm.addr_space.address_mode (as);
+  scalar_int_mode pointer_mode = targetm.addr_space.pointer_mode (as);
   rtx address, sym, bse, idx, st, off;
   struct mem_addr_template *templ;
 
   if (addr->step && !integer_onep (addr->step))
-    st = immed_wide_int_const (addr->step, pointer_mode);
+    st = immed_wide_int_const (wi::to_wide (addr->step), pointer_mode);
   else
     st = NULL_RTX;
 
   if (addr->offset && !integer_zerop (addr->offset))
     {
-      offset_int dc = offset_int::from (addr->offset, SIGNED);
+      poly_offset_int dc
+	= poly_offset_int::from (wi::to_poly_wide (addr->offset), SIGNED);
       off = immed_wide_int_const (dc, pointer_mode);
     }
   else
@@ -692,7 +693,7 @@ addr_to_parts (tree type, aff_tree *addr, tree iv_cand, tree base_hint,
   parts->index = NULL_TREE;
   parts->step = NULL_TREE;
 
-  if (addr->offset != 0)
+  if (maybe_ne (addr->offset, 0))
     parts->offset = wide_int_to_tree (sizetype, addr->offset);
   else
     parts->offset = NULL_TREE;
@@ -743,6 +744,35 @@ gimplify_mem_ref_parts (gimple_stmt_iterator *gsi, struct mem_address *parts)
     parts->index = force_gimple_operand_gsi (gsi, parts->index,
 					     true, NULL_TREE,
 					     true, GSI_SAME_STMT);
+}
+
+/* Return true if the OFFSET in PARTS is the only thing that is making
+   it an invalid address for type TYPE.  */
+
+static bool
+mem_ref_valid_without_offset_p (tree type, mem_address parts)
+{
+  if (!parts.base)
+    parts.base = parts.offset;
+  parts.offset = NULL_TREE;
+  return valid_mem_ref_p (TYPE_MODE (type), TYPE_ADDR_SPACE (type), &parts);
+}
+
+/* Fold PARTS->offset into PARTS->base, so that there is no longer
+   a separate offset.  Emit any new instructions before GSI.  */
+
+static void
+add_offset_to_base (gimple_stmt_iterator *gsi, mem_address *parts)
+{
+  tree tmp = parts->offset;
+  if (parts->base)
+    {
+      tmp = fold_build_pointer_plus (parts->base, tmp);
+      tmp = force_gimple_operand_gsi_1 (gsi, tmp, is_gimple_mem_ref_addr,
+					NULL_TREE, true, GSI_SAME_STMT);
+    }
+  parts->base = tmp;
+  parts->offset = NULL_TREE;
 }
 
 /* Creates and returns a TARGET_MEM_REF for address ADDR.  If necessary
@@ -811,6 +841,14 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
   if (parts.step && !integer_onep (parts.step))
     {
       gcc_assert (parts.index);
+      if (parts.offset && mem_ref_valid_without_offset_p (type, parts))
+	{
+	  add_offset_to_base (gsi, &parts);
+	  mem_ref = create_mem_ref_raw (type, alias_ptr_type, &parts, true);
+	  gcc_assert (mem_ref);
+	  return mem_ref;
+	}
+
       parts.index = force_gimple_operand_gsi (gsi,
 				fold_build2 (MULT_EXPR, sizetype,
 					     parts.index, parts.step),
@@ -905,18 +943,7 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
        [base'].  */
   if (parts.offset && !integer_zerop (parts.offset))
     {
-      tmp = parts.offset;
-      parts.offset = NULL_TREE;
-      /* Add offset to base.  */
-      if (parts.base)
-	{
-	  tmp = fold_build_pointer_plus (parts.base, tmp);
-	  tmp = force_gimple_operand_gsi_1 (gsi, tmp,
-					    is_gimple_mem_ref_addr,
-					    NULL_TREE, true, GSI_SAME_STMT);
-	}
-      parts.base = tmp;
-
+      add_offset_to_base (gsi, &parts);
       mem_ref = create_mem_ref_raw (type, alias_ptr_type, &parts, true);
       if (mem_ref)
 	return mem_ref;
@@ -1007,8 +1034,8 @@ copy_ref_info (tree new_ref, tree old_ref)
 			   && (TREE_INT_CST_LOW (TMR_STEP (new_ref))
 			       < align)))))
 	    {
-	      unsigned int inc = (mem_ref_offset (old_ref).to_short_addr ()
-				  - mem_ref_offset (new_ref).to_short_addr ());
+	      poly_uint64 inc = (mem_ref_offset (old_ref)
+				 - mem_ref_offset (new_ref)).force_uhwi ();
 	      adjust_ptr_info_misalignment (new_pi, inc);
 	    }
 	  else
@@ -1060,7 +1087,7 @@ maybe_fold_tmr (tree ref)
   else if (addr.symbol
 	   && handled_component_p (TREE_OPERAND (addr.symbol, 0)))
     {
-      HOST_WIDE_INT offset;
+      poly_int64 offset;
       addr.symbol = build_fold_addr_expr
 		      (get_addr_base_and_unit_offset
 		         (TREE_OPERAND (addr.symbol, 0), &offset));

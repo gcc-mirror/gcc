@@ -1,6 +1,6 @@
 // Allocator that wraps "C" malloc -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -75,11 +75,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef std::true_type propagate_on_container_move_assignment;
 #endif
 
+      _GLIBCXX20_CONSTEXPR
       malloc_allocator() _GLIBCXX_USE_NOEXCEPT { }
 
+      _GLIBCXX20_CONSTEXPR
       malloc_allocator(const malloc_allocator&) _GLIBCXX_USE_NOEXCEPT { }
 
       template<typename _Tp1>
+	_GLIBCXX20_CONSTEXPR
         malloc_allocator(const malloc_allocator<_Tp1>&)
 	_GLIBCXX_USE_NOEXCEPT { }
 

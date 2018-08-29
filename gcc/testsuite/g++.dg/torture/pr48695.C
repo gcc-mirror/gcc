@@ -1,4 +1,5 @@
 // { dg-do run }
+/* { dg-options "-fcheck-new" } */
 
 typedef __SIZE_TYPE__ size_t;
 

@@ -1,5 +1,5 @@
 /* Subroutines for the C front end on the PowerPC architecture.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
    Contributed by Zack Weinberg <zack@codesourcery.com>
    and Paolo Bonzini <bonzini@gnu.org>
@@ -19,6 +19,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -218,21 +220,22 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
       else if (ident && (ident != C_CPP_HASHNODE (__vector_keyword)))
 	{
 	  enum rid rid_code = (enum rid)(ident->rid_code);
-	  enum node_type itype = ident->type;
+	  bool is_macro = cpp_macro_p (ident);
+
 	  /* If there is a function-like macro, check if it is going to be
 	     invoked with or without arguments.  Without following ( treat
 	     it like non-macro, otherwise the following cpp_get_token eats
 	     what should be preserved.  */
-	  if (itype == NT_MACRO && cpp_fun_like_macro_p (ident))
+	  if (is_macro && cpp_fun_like_macro_p (ident))
 	    {
 	      int idx2 = idx;
 	      do
 		tok = cpp_peek_token (pfile, idx2++);
 	      while (tok->type == CPP_PADDING);
 	      if (tok->type != CPP_OPEN_PAREN)
-		itype = NT_VOID;
+		is_macro = false;
 	    }
-	  if (itype == NT_MACRO)
+	  if (is_macro)
 	    {
 	      do
 		(void) cpp_get_token (pfile);
@@ -5687,23 +5690,23 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 
       switch (TYPE_MODE (TREE_TYPE (arg0_type)))
 	{
-	  case QImode:
-	  case HImode:
-	  case SImode:
-	  case DImode:
-	  case TImode:
+	  case E_QImode:
+	  case E_HImode:
+	  case E_SImode:
+	  case E_DImode:
+	  case E_TImode:
 	    {
 	      /* For scalar types just use a multiply expression.  */
 	      return fold_build2_loc (loc, MULT_EXPR, TREE_TYPE (arg0), arg0,
 				      fold_convert (TREE_TYPE (arg0), arg1));
 	    }
-	  case SFmode:
+	  case E_SFmode:
 	    {
 	      /* For floats use the xvmulsp instruction directly.  */
 	      tree call = rs6000_builtin_decls[VSX_BUILTIN_XVMULSP];
 	      return build_call_expr (call, 2, arg0, arg1);
 	    }
-	  case DFmode:
+	  case E_DFmode:
 	    {
 	      /* For doubles use the xvmuldp instruction directly.  */
 	      tree call = rs6000_builtin_decls[VSX_BUILTIN_XVMULDP];
@@ -5751,13 +5754,13 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 		 vec_cmpeq (va, vb)).  */
 	      /* Note:  vec_nand also works but opt changes vec_nand's
 		 to vec_nor's anyway.  */
-	    case QImode:
-	    case HImode:
-	    case SImode:
-	    case DImode:
-	    case TImode:
-	    case SFmode:
-	    case DFmode:
+	    case E_QImode:
+	    case E_HImode:
+	    case E_SImode:
+	    case E_DImode:
+	    case E_TImode:
+	    case E_SFmode:
+	    case E_DFmode:
 	      {
 		/* call = vec_cmpeq (va, vb)
 		   result = vec_nor (call, call).  */
@@ -5815,7 +5818,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  /* For {un}signed ints,
 	     vec_adde (va, vb, carryv) == vec_add (vec_add (va, vb),
 						   vec_and (carryv, 0x1)).  */
-	  case SImode:
+	  case E_SImode:
 	    {
 	      vec<tree, va_gc> *params = make_tree_vector ();
 	      vec_safe_push (params, arg0);
@@ -5835,7 +5838,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    }
 	  /* For {un}signed __int128s use the vaddeuqm instruction
 		directly.  */
-	  case TImode:
+	  case E_TImode:
 	    {
 	      tree adde_bii = rs6000_builtin_decls[P8V_BUILTIN_VEC_VADDEUQM];
 	      return altivec_resolve_overloaded_builtin (loc, adde_bii,
@@ -5881,7 +5884,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 				vec_or (vec_addc (va, vb),
 					vec_addc (vec_add (va, vb),
 						  vec_and (carryv, 0x1))).  */
-	  case SImode:
+	  case E_SImode:
 	    {
 	    /* Use save_expr to ensure that operands used more than once
 		that may have side effects (like calls) are only evaluated
@@ -5917,7 +5920,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 						       params);
 	    }
 	  /* For {un}signed __int128s use the vaddecuq instruction.  */
-	  case TImode:
+	  case E_TImode:
 	    {
 	    tree VADDECUQ_bii = rs6000_builtin_decls[P8V_BUILTIN_VEC_VADDECUQ];
 	    return altivec_resolve_overloaded_builtin (loc, VADDECUQ_bii,
@@ -5969,28 +5972,28 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       unsigned_p = TYPE_UNSIGNED (type);
       switch (TYPE_MODE (type))
 	{
-	  case TImode:
+	  case E_TImode:
 	    type = (unsigned_p ? unsigned_V1TI_type_node : V1TI_type_node);
 	    size = 1;
 	    break;
-	  case DImode:
+	  case E_DImode:
 	    type = (unsigned_p ? unsigned_V2DI_type_node : V2DI_type_node);
 	    size = 2;
 	    break;
-	  case SImode:
+	  case E_SImode:
 	    type = (unsigned_p ? unsigned_V4SI_type_node : V4SI_type_node);
 	    size = 4;
 	    break;
-	  case HImode:
+	  case E_HImode:
 	    type = (unsigned_p ? unsigned_V8HI_type_node : V8HI_type_node);
 	    size = 8;
 	    break;
-	  case QImode:
+	  case E_QImode:
 	    type = (unsigned_p ? unsigned_V16QI_type_node : V16QI_type_node);
 	    size = 16;
 	    break;
-	  case SFmode: type = V4SF_type_node; size = 4; break;
-	  case DFmode: type = V2DF_type_node; size = 2; break;
+	  case E_SFmode: type = V4SF_type_node; size = 4; break;
+	  case E_DFmode: type = V2DF_type_node; size = 2; break;
 	  default:
 	    goto bad;
 	}
@@ -6055,40 +6058,41 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  /* If the second argument is an integer constant, if the value is in
 	     the expected range, generate the built-in code if we can.  We need
 	     64-bit and direct move to extract the small integer vectors.  */
-	  if (TREE_CODE (arg2) == INTEGER_CST && wi::ltu_p (arg2, nunits))
+	  if (TREE_CODE (arg2) == INTEGER_CST
+	      && wi::ltu_p (wi::to_wide (arg2), nunits))
 	    {
 	      switch (mode)
 		{
 		default:
 		  break;
 
-		case V1TImode:
+		case E_V1TImode:
 		  call = rs6000_builtin_decls[VSX_BUILTIN_VEC_EXT_V1TI];
 		  break;
 
-		case V2DFmode:
+		case E_V2DFmode:
 		  call = rs6000_builtin_decls[VSX_BUILTIN_VEC_EXT_V2DF];
 		  break;
 
-		case V2DImode:
+		case E_V2DImode:
 		  call = rs6000_builtin_decls[VSX_BUILTIN_VEC_EXT_V2DI];
 		  break;
 
-		case V4SFmode:
+		case E_V4SFmode:
 		  call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V4SF];
 		  break;
 
-		case V4SImode:
+		case E_V4SImode:
 		  if (TARGET_DIRECT_MOVE_64BIT)
 		    call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V4SI];
 		  break;
 
-		case V8HImode:
+		case E_V8HImode:
 		  if (TARGET_DIRECT_MOVE_64BIT)
 		    call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V8HI];
 		  break;
 
-		case V16QImode:
+		case E_V16QImode:
 		  if (TARGET_DIRECT_MOVE_64BIT)
 		    call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V16QI];
 		  break;
@@ -6104,27 +6108,27 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 		default:
 		  break;
 
-		case V2DFmode:
+		case E_V2DFmode:
 		  call = rs6000_builtin_decls[VSX_BUILTIN_VEC_EXT_V2DF];
 		  break;
 
-		case V2DImode:
+		case E_V2DImode:
 		  call = rs6000_builtin_decls[VSX_BUILTIN_VEC_EXT_V2DI];
 		  break;
 
-		case V4SFmode:
+		case E_V4SFmode:
 		  call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V4SF];
 		  break;
 
-		case V4SImode:
+		case E_V4SImode:
 		  call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V4SI];
 		  break;
 
-		case V8HImode:
+		case E_V8HImode:
 		  call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V8HI];
 		  break;
 
-		case V16QImode:
+		case E_V16QImode:
 		  call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V16QI];
 		  break;
 		}
@@ -6217,7 +6221,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       mode = TYPE_MODE (arg1_type);
       if ((mode == V2DFmode || mode == V2DImode) && VECTOR_UNIT_VSX_P (mode)
 	  && TREE_CODE (arg2) == INTEGER_CST
-	  && wi::ltu_p (arg2, 2))
+	  && wi::ltu_p (wi::to_wide (arg2), 2))
 	{
 	  tree call = NULL_TREE;
 
@@ -6233,7 +6237,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	}
       else if (mode == V1TImode && VECTOR_UNIT_VSX_P (mode)
 	       && TREE_CODE (arg2) == INTEGER_CST
-	       && wi::eq_p (arg2, 0))
+	       && wi::eq_p (wi::to_wide (arg2), 0))
 	{
 	  tree call = rs6000_builtin_decls[VSX_BUILTIN_VEC_SET_V1TI];
 
@@ -6504,8 +6508,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
     if (fcode == P6_OV_BUILTIN_CMPB)
       {
 	int overloaded_code;
-	int arg1_mode = TYPE_MODE (types[0]);
-	int arg2_mode = TYPE_MODE (types[1]);
+	machine_mode arg1_mode = TYPE_MODE (types[0]);
+	machine_mode arg2_mode = TYPE_MODE (types[1]);
 
 	if (nargs != 2)
 	  {

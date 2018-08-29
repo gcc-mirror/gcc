@@ -1,5 +1,5 @@
 ;; Machine Descriptions for R8C/M16C/M32C
-;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;; Contributed by Red Hat.
 ;;
 ;; This file is part of GCC.
@@ -210,11 +210,11 @@
 (define_predicate "shiftcount_operand"
   (ior (match_operand 0 "mra_operand" "")
        (and (match_operand 2 "const_int_operand" "")
-	    (match_test "-8 <= INTVAL (op) && INTVAL (op) && INTVAL (op) <= 8"))))
+	    (match_test "INTVAL (op) >= -8 && INTVAL (op) && INTVAL (op) <= 8"))))
 (define_predicate "longshiftcount_operand"
   (ior (match_operand 0 "mra_operand" "")
        (and (match_operand 2 "const_int_operand" "")
-	    (match_test "-32 <= INTVAL (op) && INTVAL (op) && INTVAL (op) <= 32"))))
+	    (match_test "INTVAL (op) >= -32 && INTVAL (op) && INTVAL (op) <= 32"))))
 
 ; TRUE for r0..r3, a0..a1, or sp.
 (define_predicate "mra_or_sp_operand"

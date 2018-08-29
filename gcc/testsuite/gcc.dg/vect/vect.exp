@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2017 Free Software Foundation, Inc.
+# Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -260,13 +260,6 @@ set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "--param" "ggc-min-expand=0" "--param" "ggc-min-heapsize=0"
 et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/ggc-*.\[cS\]]] \
-	"" $DEFAULT_VECTCFLAGS
-
-# -ftree-loop-if-convert-stores
-set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
-lappend DEFAULT_VECTCFLAGS "-ftree-loop-if-convert-stores"
-et-dg-runtest dg-runtest [lsort \
-	[glob -nocomplain $srcdir/$subdir/if-cvt-stores-vect-*.\[cS\]]] \
 	"" $DEFAULT_VECTCFLAGS
 
 # With -O3.

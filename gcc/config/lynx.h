@@ -1,5 +1,5 @@
 /* Target independent definitions for LynxOS.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -163,12 +163,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef PREFERRED_DEBUGGING_TYPE
 # define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-#endif
-
-/* We have C++ support in our system headers.  */
-
-#ifndef NO_IMPLICIT_EXTERN_C
-# define NO_IMPLICIT_EXTERN_C
 #endif
 
 #ifndef TARGET_POSIX_IO

@@ -39,13 +39,13 @@ program main
 
   allocate(kernel(5),source=executive_producer%create_show_array (5))
   select type(kernel)
-    type is (integrand);  if (any (kernel%variable .ne. [1,2,3,4,5])) call abort
+    type is (integrand);  if (any (kernel%variable .ne. [1,2,3,4,5])) STOP 1
   end select
 
   deallocate (kernel)
 
   allocate(kernel(3),source=executive_producer%create_show ())
   select type(kernel)
-    type is (integrand); if (any (kernel%variable .ne. -1)) call abort
+    type is (integrand); if (any (kernel%variable .ne. -1)) STOP 2
   end select
 end program

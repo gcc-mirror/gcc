@@ -1,3 +1,5 @@
+/* { dg-add-options stack_size } */
+
 #include <stdlib.h>
 
 int *a, *b;

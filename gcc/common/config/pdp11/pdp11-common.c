@@ -1,5 +1,5 @@
 /* Common hooks for pdp11.
-   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,14 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "flags.h"
 
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-
-static const struct default_options pdp11_option_optimization_table[] =
-  {
-    { OPT_LEVELS_3_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
@@ -47,7 +39,34 @@ pdp11_handle_option (struct gcc_options *opts,
   switch (code)
     {
     case OPT_m10:
-      opts->x_target_flags &= ~(MASK_40 | MASK_45);
+      opts->x_target_flags &= ~(MASK_40 | MASK_45 | MASK_FPU | MASK_AC0 | MASK_SPLIT);
+      return true;
+
+    case OPT_m40:
+      opts->x_target_flags &= ~(MASK_45 | MASK_FPU | MASK_AC0 | MASK_SPLIT);
+      return true;
+
+    case OPT_mfpu:
+      opts->x_target_flags &= ~MASK_40;
+      opts->x_target_flags |= MASK_45;
+      return true;
+      
+    case OPT_msoft_float:
+      opts->x_target_flags &= ~MASK_AC0;
+      return true;
+
+    case OPT_msplit:
+      opts->x_target_flags &= ~MASK_40;
+      opts->x_target_flags |= MASK_45;
+      return true;
+
+    case OPT_munix_asm:
+    case OPT_mgnu_asm:
+      targetm_common.have_named_sections = false;
+      return true;
+
+    case OPT_mdec_asm:
+      targetm_common.have_named_sections = true;
       return true;
 
     default:
@@ -70,8 +89,6 @@ pdp11_option_init_struct (struct gcc_options *opts)
   (MASK_FPU | MASK_45 | TARGET_UNIX_ASM_DEFAULT)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION pdp11_handle_option
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE pdp11_option_optimization_table
 #undef TARGET_OPTION_INIT_STRUCT
 #define TARGET_OPTION_INIT_STRUCT pdp11_option_init_struct
 

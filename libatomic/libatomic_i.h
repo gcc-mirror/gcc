@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Atomic Library (libatomic).
@@ -240,7 +240,7 @@ bool libat_is_lock_free (size_t, void *) MAN(is_lock_free);
 # if IFUNC_NCOND(N) == 1
 #  define GEN_SELECTOR(X)					\
 	extern typeof(C2(libat_,X)) C3(libat_,X,_i1) HIDDEN;	\
-	static void * C2(select_,X) (void)			\
+	static typeof(C2(libat_,X)) * C2(select_,X) (IFUNC_RESOLVER_ARGS) \
 	{							\
 	  if (IFUNC_COND_1)					\
 	    return C3(libat_,X,_i1);				\
@@ -250,7 +250,7 @@ bool libat_is_lock_free (size_t, void *) MAN(is_lock_free);
 #  define GEN_SELECTOR(X)					\
 	extern typeof(C2(libat_,X)) C3(libat_,X,_i1) HIDDEN;	\
 	extern typeof(C2(libat_,X)) C3(libat_,X,_i2) HIDDEN;	\
-	static void * C2(select_,X) (void)			\
+	static typeof(C2(libat_,X)) * C2(select_,X) (IFUNC_RESOLVER_ARGS) \
 	{							\
 	  if (IFUNC_COND_1)					\
 	    return C3(libat_,X,_i1);				\
@@ -263,7 +263,7 @@ bool libat_is_lock_free (size_t, void *) MAN(is_lock_free);
 	extern typeof(C2(libat_,X)) C3(libat_,X,_i1) HIDDEN;	\
 	extern typeof(C2(libat_,X)) C3(libat_,X,_i2) HIDDEN;	\
 	extern typeof(C2(libat_,X)) C3(libat_,X,_i3) HIDDEN;	\
-	static void * C2(select_,X) (void)			\
+	static typeof(C2(libat_,X)) * C2(select_,X) (IFUNC_RESOLVER_ARGS) \
 	{							\
 	  if (IFUNC_COND_1)					\
 	    return C3(libat_,X,_i1);				\

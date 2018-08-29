@@ -1,6 +1,7 @@
 -- { dg-do compile }
 -- { dg-options "-O2 -gnatp -fdump-tree-optimized" }
--- See PR tree-optimization/46801 for the expected failure
+
+pragma Optimize_Alignment (Space);
 
 package body Pack9 is
 

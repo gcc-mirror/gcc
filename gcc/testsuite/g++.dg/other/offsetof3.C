@@ -12,4 +12,4 @@ protected:
 typedef X* pX;
 typedef __SIZE_TYPE__ size_t;
 
-size_t yoff = __builtin_offsetof (X, y); /* { dg-error "35:non-standard-layout" } */
+size_t yoff = __builtin_offsetof (X, y); /* { dg-message "35:non-standard-layout" } */

@@ -21,9 +21,9 @@
 
   select type (y => testList%test)    ! Check vptr set
     type is (Test)
-      if (x%i .ne. y%i) call abort
+      if (x%i .ne. y%i) STOP 1
     class default
-      call abort
+      STOP 2
   end select
 end
 

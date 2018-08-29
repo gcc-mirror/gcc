@@ -1,5 +1,6 @@
 /* { dg-lto-do link } */
 /* { dg-lto-options {{-flto -r -nostdlib -O2}} } */
+/* { dg-extra-ld-options "-flinker-output=nolto-rel" } */
 /* { dg-skip-if "no alias" { *-*-darwin* } } */
 #include <stdio.h>
 struct in6_addr {int bah;};

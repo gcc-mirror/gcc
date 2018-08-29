@@ -22,20 +22,20 @@ enum mm2
 
 int f(enum mm1 x)
 {
-  return x == (tf?DI:SI); /* { dg-bogus "signed and unsigned" "case 1" } */
+  return x == (tf?DI:SI); /* { dg-bogus "changes signedness" "case 1" } */
 }
 
 int g(enum mm1 x)
 {
-  return x == (tf?DI:-1); /* { dg-bogus "signed and unsigned" "case 2" } */
+  return x == (tf?DI:-1); /* { dg-bogus "changes signedness" "case 2" } */
 }
 
 int h(enum mm2 x)
 {
-  return x == (tf?DI2:SI2); /* { dg-bogus "signed and unsigned" "case 3" } */
+  return x == (tf?DI2:SI2); /* { dg-bogus "changes signedness" "case 3" } */
 }
 
 int i(enum mm2 x)
 {
-  return x == (tf?DI2:-1); /* { dg-warning "signed and unsigned" "case 4" } */
+  return x == (tf?DI2:-1); /* { dg-warning "different signedness" "case 4" } */
 }

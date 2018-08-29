@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -273,8 +273,11 @@ package body Osint.C is
    begin
       Name_Buffer (1 .. Src'Length) := Src;
       Name_Len := Src'Length;
-      Discard := Create_Auxiliary_File (Name_Find, "rep");
-      return;
+      if List_Representation_Info_To_JSON then
+         Discard := Create_Auxiliary_File (Name_Find, "json");
+      else
+         Discard := Create_Auxiliary_File (Name_Find, "rep");
+      end if;
    end Create_Repinfo_File;
 
    ---------------------------

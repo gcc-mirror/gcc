@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,31 +20,6 @@
 
 #include <unordered_set>
 #include <testsuite_hooks.h>
-
-void test01()
-{
-  using namespace __gnu_debug;
-
-  std::unordered_set<int> u = { 0, 1, 2 };
-  VERIFY( __check_dereferenceable(u.begin()) );
-  auto it = u.begin();
-  VERIFY( __check_dereferenceable(it) );
-
-  VERIFY( __check_dereferenceable(u.cbegin()) );
-  auto cit = u.begin();
-  VERIFY( __check_dereferenceable(cit) );
-
-  VERIFY( !__check_dereferenceable(u.end()) );
-  it = u.end();
-  VERIFY( !__check_dereferenceable(it) );
-
-  auto bucket = u.bucket(0);
-  VERIFY( __check_dereferenceable(u.begin(bucket)) );
-  auto lit = u.begin(bucket);
-  VERIFY( __check_dereferenceable(lit) );
-
-  VERIFY( !__check_dereferenceable(u.end(bucket)) );
-}
 
 void test02()
 {
@@ -84,7 +59,6 @@ void test02()
 
 int main()
 {
-  test01();
   test02();
   return 0;
 }

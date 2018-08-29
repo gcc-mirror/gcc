@@ -12,5 +12,5 @@ end type container_t
 type(container_t), dimension(1) :: a1, a2
 a2(1)%entry = 1
 a1 = pack (a2, mask = [.true.])
-if (a1(1)%entry/=1) call abort()
+if (a1(1)%entry/=1) STOP 1
 end

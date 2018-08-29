@@ -11,16 +11,12 @@
 # Values that contain spaces should be placed between quotes (" ")
 
 
-#-----------------------------------------------------------------------------
-# NOTE: YOU MUST EDIT THE FOLLOWING HARDWIRED PATHS BEFORE USING THIS FILE.
-#-----------------------------------------------------------------------------
-
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
 # If a relative path is entered, it will be relative to the location 
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = @OUTPUT_DIRECTORY@
+OUTPUT_DIRECTORY       = gcc-doxygen
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should 
 # invoke to filter for each input file. Doxygen will invoke the filter program 
@@ -30,7 +26,7 @@ OUTPUT_DIRECTORY       = @OUTPUT_DIRECTORY@
 # to standard output.  If FILTER_PATTERNS is specified, this tag will be 
 # ignored.
 
-INPUT_FILTER           = @INPUT_FILTER@
+INPUT_FILTER           = contrib/filter_gcc_for_doxygen
 
 #-----------------------------------------------------------------------------
 

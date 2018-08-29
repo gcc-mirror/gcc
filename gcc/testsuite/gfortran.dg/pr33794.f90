@@ -30,7 +30,7 @@ contains
             tan(alpha)**2)
   expected = 3.66008420600434162E-002_dp
   if (abs(self_l - expected) / expected > 1e-3) &
-        call abort
+        STOP 1
   end subroutine self_ind_cir_coil
 end module scc_m
 

@@ -1,5 +1,5 @@
 /* Unit tests for function-handling.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "opts.h"
-#include "signop.h"
 #include "hash-set.h"
 #include "fixed-value.h"
 #include "alias.h"
@@ -38,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "hashtab.h"
 #include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -56,10 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "tree-cfg.h"
 #include "basic-block.h"
-#include "double-int.h"
 #include "alias.h"
 #include "symtab.h"
-#include "wide-int.h"
 #include "inchash.h"
 #include "tree.h"
 #include "fold-const.h"
@@ -665,6 +661,7 @@ test_expansion_to_rtl ()
   ASSERT_STR_CONTAINS (dump, ") ;; function \"test_fn\"\n");
 
   free (dump);
+  free_after_compilation (fun);
 }
 
 /* Run all of the selftests within this file.  */

@@ -87,8 +87,8 @@ use test_module
   ! pointer -> pointer
   ! { dg-final { scan-tree-dump-not "par_p\[^\n]*VIEW_CONVERT_EXPR\[^\n]*var_p" "original" } }
   call do_it4 (var_p)
-  if (var_a%x .ne. 2) call abort()
-  if (var_p%x .ne. 2) call abort()
+  if (var_a%x .ne. 2) STOP 1
+  if (var_p%x .ne. 2) STOP 2
   deallocate (var_a)
   deallocate (var_p)
 end

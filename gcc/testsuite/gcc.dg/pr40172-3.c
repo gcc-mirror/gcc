@@ -1,6 +1,6 @@
 /* PR middle-end/40172 */
 /* { dg-do compile */
-/* { dg-xfail-if "" { "*-*-*" } { "*" } { "" } } */
+/* { dg-xfail-if "" { "*-*-*" } } */
 /* { dg-options "-Wall -W -Werror -Wlogical-op" } */
 
 extern int xxx;

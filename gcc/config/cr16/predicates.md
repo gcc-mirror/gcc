@@ -1,5 +1,5 @@
 ;; Predicates of machine description for CR16.
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by KPIT Cummins Infosystems Limited.
 ;;
 ;; This file is part of GCC.

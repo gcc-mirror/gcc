@@ -9,6 +9,7 @@ template <class X> struct B<A<X> >
   {
     A<X> a;
     a.m_class->m_object;
+    return 0;
   }
 };
 template <class T> class A
@@ -23,6 +24,7 @@ bool
 A<T>::operator== (const X &) const
 {
   B<X>::check;
+  return true;
 }
 class C
 {

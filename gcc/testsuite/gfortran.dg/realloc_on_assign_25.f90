@@ -8,13 +8,13 @@ program main
   character(:), allocatable :: a
   integer :: m, n
   a = 'a'
-  if (a .ne. 'a') call abort
+  if (a .ne. 'a') STOP 1
   a = a // 'x'
-  if (a .ne. 'ax') call abort
-  if (len (a) .ne. 2) call abort
+  if (a .ne. 'ax') STOP 2
+  if (len (a) .ne. 2) STOP 3
   n = 2
   m = 2
   a = a(m:n)
-  if (a .ne. 'x') call abort
-  if (len (a) .ne. 1) call abort
+  if (a .ne. 'x') STOP 4
+  if (len (a) .ne. 1) STOP 5
 end program main

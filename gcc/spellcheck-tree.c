@@ -1,5 +1,5 @@
 /* Find near-matches for identifiers.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,18 +27,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "stringpool.h"
 
-/* Calculate Levenshtein distance between two identifiers.  */
+/* Calculate edit distance between two identifiers.  */
 
 edit_distance_t
-levenshtein_distance (tree ident_s, tree ident_t)
+get_edit_distance (tree ident_s, tree ident_t)
 {
   gcc_assert (TREE_CODE (ident_s) == IDENTIFIER_NODE);
   gcc_assert (TREE_CODE (ident_t) == IDENTIFIER_NODE);
 
-  return levenshtein_distance (IDENTIFIER_POINTER (ident_s),
-			       IDENTIFIER_LENGTH (ident_s),
-			       IDENTIFIER_POINTER (ident_t),
-			       IDENTIFIER_LENGTH (ident_t));
+  return get_edit_distance (IDENTIFIER_POINTER (ident_s),
+			    IDENTIFIER_LENGTH (ident_s),
+			    IDENTIFIER_POINTER (ident_t),
+			    IDENTIFIER_LENGTH (ident_t));
 }
 
 /* Given TARGET, an identifier, and CANDIDATES, a vec of identifiers,
@@ -64,36 +64,6 @@ find_closest_identifier (tree target, const auto_vec<tree> *candidates)
     }
 
   return bm.get_best_meaningful_candidate ();
-}
-
-/* A callback for cpp_forall_identifiers, for use by best_macro_match's ctor.
-   Process HASHNODE and update the best_macro_match instance pointed to be
-   USER_DATA.  */
-
-static int
-find_closest_macro_cpp_cb (cpp_reader *, cpp_hashnode *hashnode,
-			   void *user_data)
-{
-  if (hashnode->type != NT_MACRO)
-    return 1;
-
-  best_macro_match *bmm = (best_macro_match *)user_data;
-  bmm->consider (hashnode);
-
-  /* Keep iterating.  */
-  return 1;
-}
-
-/* Constructor for best_macro_match.
-   Use find_closest_macro_cpp_cb to find the closest matching macro to
-   NAME within distance < best_distance_so_far. */
-
-best_macro_match::best_macro_match (tree goal,
-				    edit_distance_t best_distance_so_far,
-				    cpp_reader *reader)
-: best_match <goal_t, candidate_t> (goal, best_distance_so_far)
-{
-  cpp_forall_identifiers (reader, find_closest_macro_cpp_cb, this);
 }
 
 #if CHECKING_P
@@ -123,7 +93,7 @@ test_find_closest_identifier ()
   ASSERT_EQ (apple, find_closest_identifier (get_identifier ("app"),
 					     &candidates));
   ASSERT_EQ (banana, find_closest_identifier (get_identifier ("banyan"),
-					      &candidates));;
+					      &candidates));
   ASSERT_EQ (cherry, find_closest_identifier (get_identifier ("berry"),
 					      &candidates));
   ASSERT_EQ (NULL,

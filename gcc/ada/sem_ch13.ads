@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ package Sem_Ch13 is
    --  is the corresponding entity declared by the declaration node N. Callers
    --  should check that Has_Aspects (N) is True before calling this routine.
 
-   procedure Analyze_Aspect_Specifications_On_Body_Or_Stub (N : Node_Id);
+   procedure Analyze_Aspects_On_Subprogram_Body_Or_Stub (N : Node_Id);
    --  Analyze the aspect specifications of [generic] subprogram body or stub
    --  N. Callers should check that Has_Aspects (N) is True before calling the
    --  routine. This routine diagnoses misplaced aspects that should appear on

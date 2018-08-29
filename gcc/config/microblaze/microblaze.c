@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Xilinx MicroBlaze.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -19,6 +19,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -26,6 +28,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
@@ -87,7 +91,8 @@ enum microblaze_address_type
   ADDRESS_SYMBOLIC,
   ADDRESS_GOTOFF,
   ADDRESS_PLT,
-  ADDRESS_TLS
+  ADDRESS_TLS,
+  ADDRESS_SYMBOLIC_TXT_REL
 };
 
 /* Classifies symbols
@@ -174,8 +179,8 @@ REAL_VALUE_TYPE dfhigh, dflow, sfhigh, sflow;
 
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
-char microblaze_hard_regno_mode_ok[(int)MAX_MACHINE_MODE]
-				  [FIRST_PSEUDO_REGISTER];
+static char microblaze_hard_regno_mode_ok_p[(int)MAX_MACHINE_MODE]
+					   [FIRST_PSEUDO_REGISTER];
 
 /* Current frame information calculated by compute_frame_size.  */
 struct microblaze_frame_info current_frame_info;
@@ -213,18 +218,13 @@ int fast_interrupt;
 int save_volatiles;
 
 const struct attribute_spec microblaze_attribute_table[] = {
-  /* name         min_len, max_len, decl_req, type_req, fn_type, req_handler,
-     affects_type_identity */
-  {"interrupt_handler", 0,       0,     true,    false,   false,        NULL,
-    false },
-  {"break_handler",     0,       0,     true,    false,   false,        NULL,
-    false },
-  {"fast_interrupt",    0,       0,     true,    false,   false,        NULL,
-    false },
-  {"save_volatiles"   , 0,       0,     true,    false,   false,        NULL,
-    false },
-  { NULL,        	0,       0,    false,    false,   false,        NULL,
-    false }
+  /* name         min_len, max_len, decl_req, type_req, fn_type_req,
+     affects_type_identity, handler, exclude */
+  {"interrupt_handler",	0,       0,    true, false, false, false, NULL, NULL },
+  {"break_handler",	0,       0,    true, false, false, false, NULL, NULL },
+  {"fast_interrupt",	0,       0,    true, false, false, false, NULL, NULL },
+  {"save_volatiles",	0,       0,    true, false, false, false, NULL, NULL },
+  { NULL,        	0,       0,   false, false, false, false, NULL, NULL }
 };
 
 static int microblaze_interrupt_function_p (tree);
@@ -374,7 +374,7 @@ double_memory_operand (rtx op, machine_mode mode)
     return 1;
 
   return memory_address_p ((GET_MODE_CLASS (mode) == MODE_INT
-			    ? SImode : SFmode),
+			    ? E_SImode : E_SFmode),
 			   plus_constant (Pmode, addr, 4));
 }
 
@@ -583,7 +583,7 @@ microblaze_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 
   *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX,
                                      LCT_PURE, /* LCT_CONST?  */
-                                     Pmode, 1, reg, Pmode);
+                                     Pmode, reg, Pmode);
 
   insns = get_insns ();
   end_sequence ();
@@ -651,6 +651,10 @@ microblaze_classify_unspec (struct microblaze_address_info *info, rtx x)
       info->type = ADDRESS_TLS;
       info->tls_type = tls_reloc (INTVAL (XVECEXP (x, 0, 1)));
     }
+  else if (XINT (x, 1) == UNSPEC_TEXT)
+    {
+      info->type = ADDRESS_SYMBOLIC_TXT_REL;
+    }
   else
     {
       return false;
@@ -702,8 +706,10 @@ get_base_reg (rtx x)
 }
 
 /* Return true if X is a valid address for machine mode MODE.  If it is,
-   fill in INFO appropriately.  STRICT is true if we should only accept
-   hard base registers.  
+   fill in INFO appropriately.
+   STRICT > 0 if we should only accept hard base registers.
+   STRICT = 2 if the operand address is being printed thus
+   function has been called by print_operand_address.
 
       type                     regA      regB    offset      symbol
 
@@ -729,6 +735,7 @@ microblaze_classify_address (struct microblaze_address_info *info, rtx x,
 {
   rtx xplus0;
   rtx xplus1;
+  rtx offset;
 
   info->type = ADDRESS_INVALID;
   info->regA = NULL;
@@ -736,6 +743,7 @@ microblaze_classify_address (struct microblaze_address_info *info, rtx x,
   info->offset = NULL;
   info->symbol = NULL;
   info->symbol_type = SYMBOL_TYPE_INVALID;
+  offset = NULL;
 
   switch (GET_CODE (x))
     {
@@ -796,8 +804,13 @@ microblaze_classify_address (struct microblaze_address_info *info, rtx x,
 		/* for (plus x const_int) just look at x.  */
 		if (GET_CODE (xconst0) == PLUS
 		    && GET_CODE (XEXP (xconst0, 1)) == CONST_INT
-		    && SMALL_INT (XEXP (xconst0, 1)))
+		    && (SMALL_INT (XEXP (xconst0, 1))
+		       || GET_CODE (XEXP (xconst0, 0)) == UNSPEC))
 		  {
+		    /* Hold CONST_INT Value in offset in case of
+		       UNSPEC + CONST_INT.  */
+		    offset = XEXP (xconst0, 1);
+
 		    /* This is ok as info->symbol is set to xplus1 the full
 		       const-expression below.  */
 		    xconst0 = XEXP (xconst0, 0);
@@ -813,6 +826,15 @@ microblaze_classify_address (struct microblaze_address_info *info, rtx x,
 		    info->symbol = xplus1;
 		    info->symbol_type = SYMBOL_TYPE_GENERAL;
 		    return true;
+		  }
+
+		if (GET_CODE (xconst0) == UNSPEC && TARGET_PIC_DATA_TEXT_REL)
+		  {
+		    if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+		      return false;
+
+		    info->offset = offset;
+		    return microblaze_classify_unspec (info, xconst0);
 		  }
 
 		/* Not base + symbol || base + UNSPEC.  */
@@ -859,6 +881,15 @@ microblaze_classify_address (struct microblaze_address_info *info, rtx x,
 	     return !(flag_pic && pic_address_needs_scratch (x));
 	  }
 
+	/* Avoid error in print_operand_address in case UNSPEC
+	 is removed from SYMBOL or LABEL REFS during optimization.  */
+	if ((GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
+	    && flag_pic && TARGET_PIC_DATA_TEXT_REL && strict == 2)
+	  {
+	    info->type = ADDRESS_SYMBOLIC_TXT_REL;
+	    return true;
+	  }
+
 	if (flag_pic == 2)
 	  return false;
 	else if (microblaze_tls_symbol_p(x))
@@ -894,6 +925,15 @@ microblaze_legitimate_address_p (machine_mode mode, rtx x, bool strict)
   return microblaze_classify_address (&addr, x, mode, strict);
 }
 
+bool
+microblaze_constant_address_p (rtx x)
+{
+  return ((GET_CODE (x) == LABEL_REF) || (GET_CODE (x) == SYMBOL_REF)
+	  || GET_CODE (x) == CONST_INT
+	  || (GET_CODE (x) == CONST
+	  && ! (flag_pic && pic_address_needs_scratch (x))));
+}
+
 int
 microblaze_valid_pic_const (rtx x)
 {
@@ -911,7 +951,8 @@ microblaze_valid_pic_const (rtx x)
 int
 microblaze_legitimate_pic_operand (rtx x)
 {
-  if (flag_pic == 2 && (symbol_mentioned_p(x) || label_mentioned_p(x)))
+  if (flag_pic == 2 && (symbol_mentioned_p (x) || label_mentioned_p (x))
+      && !(TARGET_PIC_DATA_TEXT_REL && call_insn_operand (x,VOIDmode)))
     return 0;
 
   if (microblaze_tls_referenced_p(x))
@@ -1025,17 +1066,35 @@ microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 		}
 	      else if (flag_pic == 2)
 		{
-		  rtx pic_ref, reg;
-		  reg = gen_reg_rtx (Pmode);
+		  if (!TARGET_PIC_DATA_TEXT_REL)
+		    {
+		      rtx pic_ref, reg;
+		      reg = gen_reg_rtx (Pmode);
 
-		  pic_ref = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, xplus1),
-					    UNSPEC_GOTOFF);
-		  pic_ref = gen_rtx_CONST (Pmode, pic_ref);
-		  pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, pic_ref);
-		  pic_ref = gen_const_mem (Pmode, pic_ref);
-		  emit_move_insn (reg, pic_ref);
-		  result = gen_rtx_PLUS (Pmode, xplus0, reg);
-		  return result;
+		      pic_ref = gen_rtx_UNSPEC (Pmode,
+						gen_rtvec (1, xplus1),
+						UNSPEC_GOTOFF);
+		      pic_ref = gen_rtx_CONST (Pmode, pic_ref);
+		      pic_ref = gen_rtx_PLUS (Pmode,
+					      pic_offset_table_rtx, pic_ref);
+		      pic_ref = gen_const_mem (Pmode, pic_ref);
+		      emit_move_insn (reg, pic_ref);
+		      result = gen_rtx_PLUS (Pmode, xplus0, reg);
+		      return result;
+		    }
+		  else
+		    {
+		      rtx pic_ref, reg;
+		      reg = gen_reg_rtx (Pmode);
+		      pic_ref = gen_rtx_UNSPEC (Pmode,
+						gen_rtvec (1, xplus1),
+						UNSPEC_TEXT);
+		      pic_ref = gen_rtx_CONST (Pmode, pic_ref);
+		      emit_insn (gen_addsi3 (reg,
+				 pic_offset_table_rtx, xplus0));
+		      result = gen_rtx_PLUS (Pmode, reg, pic_ref);
+		      return result;
+		    }
 		}
 	    }
 	}
@@ -1048,19 +1107,31 @@ microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
         {
           reg = microblaze_legitimize_tls_address (xinsn, NULL_RTX);
         }
-      else
+      else if (flag_pic == 2)
         {
-          rtx pic_ref;
+	  if (reload_in_progress)
+	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
-          if (reload_in_progress)
-            df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
+	  if (!TARGET_PIC_DATA_TEXT_REL)
+	    {
+	      rtx pic_ref;
 
-          pic_ref = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, xinsn), UNSPEC_GOTOFF);
-          pic_ref = gen_rtx_CONST (Pmode, pic_ref);
-          pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, pic_ref);
-          pic_ref = gen_const_mem (Pmode, pic_ref);
-          reg = pic_ref;
-        }
+	      pic_ref = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, xinsn), UNSPEC_GOTOFF);
+	      pic_ref = gen_rtx_CONST (Pmode, pic_ref);
+	      pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, pic_ref);
+	      pic_ref = gen_const_mem (Pmode, pic_ref);
+	      reg = pic_ref;
+	    }
+	  else
+	    {
+	      rtx pic_ref;
+
+	      pic_ref = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, xinsn), UNSPEC_TEXT);
+	      pic_ref = gen_rtx_CONST (Pmode, pic_ref);
+	      pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, pic_ref);
+	      reg = pic_ref;
+	    }
+	}
       return reg;
     }
 
@@ -1085,7 +1156,7 @@ microblaze_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
   rtx *regs;
 
   bits = BITS_PER_WORD;
-  mode = mode_for_size (bits, MODE_INT, 0);
+  mode = int_mode_for_size (bits, 0).require ();
   delta = bits / BITS_PER_UNIT;
 
   /* Allocate a buffer for the temporary registers.  */
@@ -1389,6 +1460,7 @@ microblaze_address_insns (rtx x, machine_mode mode)
 	case ADDRESS_REG_INDEX:
 	  return 1;
 	case ADDRESS_SYMBOLIC:
+	case ADDRESS_SYMBOLIC_TXT_REL:
 	case ADDRESS_GOTOFF:
 	  return 2;
 	case ADDRESS_TLS:
@@ -1479,7 +1551,7 @@ microblaze_function_arg_advance (cumulative_args_t cum_v,
   cum->arg_number++;
   switch (mode)
     {
-    case VOIDmode:
+    case E_VOIDmode:
       break;
 
     default:
@@ -1491,33 +1563,33 @@ microblaze_function_arg_advance (cumulative_args_t cum_v,
 			 / UNITS_PER_WORD);
       break;
 
-    case BLKmode:
+    case E_BLKmode:
       cum->gp_reg_found = 1;
       cum->arg_words += ((int_size_in_bytes (type) + UNITS_PER_WORD - 1)
 			 / UNITS_PER_WORD);
       break;
 
-    case SFmode:
+    case E_SFmode:
       cum->arg_words++;
       if (!cum->gp_reg_found && cum->arg_number <= 2)
 	cum->fp_code += 1 << ((cum->arg_number - 1) * 2);
       break;
 
-    case DFmode:
+    case E_DFmode:
       cum->arg_words += 2;
       if (!cum->gp_reg_found && cum->arg_number <= 2)
 	cum->fp_code += 2 << ((cum->arg_number - 1) * 2);
       break;
 
-    case DImode:
+    case E_DImode:
       cum->gp_reg_found = 1;
       cum->arg_words += 2;
       break;
 
-    case QImode:
-    case HImode:
-    case SImode:
-    case TImode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+    case E_TImode:
       cum->gp_reg_found = 1;
       cum->arg_words++;
       break;
@@ -1541,21 +1613,21 @@ microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode,
   cum->last_arg_fp = 0;
   switch (mode)
     {
-    case SFmode:
-    case DFmode:
-    case VOIDmode:
-    case QImode:
-    case HImode:
-    case SImode:
-    case DImode:
-    case TImode:
+    case E_SFmode:
+    case E_DFmode:
+    case E_VOIDmode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+    case E_DImode:
+    case E_TImode:
       regbase = GP_ARG_FIRST;
       break;
     default:
       gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
 	  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
       /* FALLTHRU */
-    case BLKmode:
+    case E_BLKmode:
       regbase = GP_ARG_FIRST;
       break;
     }
@@ -1839,9 +1911,34 @@ microblaze_option_override (void)
 	  else
 	    ok = 0;
 
-	  microblaze_hard_regno_mode_ok[(int) mode][regno] = ok;
+	  microblaze_hard_regno_mode_ok_p[(int) mode][regno] = ok;
 	}
     }
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  In 32 bit mode, require that
+   DImode and DFmode be in even registers.  For DImode, this makes some
+   of the insns easier to write, since you don't have to worry about a
+   DImode value in registers 3 & 4, producing a result in 4 & 5.
+
+   To make the code simpler, the hook now just references an
+   array built in override_options.  */
+
+static bool
+microblaze_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return microblaze_hard_regno_mode_ok_p[mode][regno];
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+microblaze_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
 }
 
 /* Return true if FUNC is an interrupt function as specified
@@ -2042,7 +2139,7 @@ compute_frame_size (HOST_WIDE_INT size)
 
   total_size = var_size + args_size;
 
-  if (flag_pic == 2)
+  if (flag_pic == 2 && !TARGET_PIC_DATA_TEXT_REL)
     /* force setting GOT.  */
     df_set_regs_ever_live (MB_ABI_PIC_ADDR_REGNUM, true);
 
@@ -2298,6 +2395,7 @@ print_operand (FILE * file, rtx op, int letter)
 	    case ADDRESS_REG:
 	    case ADDRESS_CONST_INT:
 	    case ADDRESS_SYMBOLIC:
+	    case ADDRESS_SYMBOLIC_TXT_REL:
 	    case ADDRESS_GOTOFF:
 	    case ADDRESS_TLS:
 	      fputs ("i", file);
@@ -2465,7 +2563,7 @@ print_operand_address (FILE * file, rtx addr)
 {
   struct microblaze_address_info info;
   enum microblaze_address_type type;
-  if (!microblaze_classify_address (&info, addr, GET_MODE (addr), 1))
+  if (!microblaze_classify_address (&info, addr, GET_MODE (addr), 2))
     fatal_insn ("insn contains an invalid address !", addr);
 
   type = info.type;
@@ -2491,6 +2589,7 @@ print_operand_address (FILE * file, rtx addr)
       output_addr_const (file, info.offset);
       break;
     case ADDRESS_SYMBOLIC:
+    case ADDRESS_SYMBOLIC_TXT_REL:
     case ADDRESS_GOTOFF:
     case ADDRESS_PLT:
     case ADDRESS_TLS:
@@ -2505,6 +2604,16 @@ print_operand_address (FILE * file, rtx addr)
 	{
 	  fputs ("@PLT", file);
 	}
+      else if (type == ADDRESS_SYMBOLIC_TXT_REL)
+    {
+      if (info.offset != NULL && CONST_INT_P (info.offset)
+	  && INTVAL (info.offset) > 0)
+	{
+	  fprintf (file, "+");
+	  output_addr_const (file, info.offset);
+	}
+      fputs ("@TXTREL", file);
+    }
       else if (type == ADDRESS_TLS)
 	{
 	  switch (info.tls_type)
@@ -2657,7 +2766,7 @@ save_restore_insns (int prologue)
 
 /* Set up the stack and frame (if desired) for the function.  */
 static void
-microblaze_function_prologue (FILE * file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+microblaze_function_prologue (FILE * file)
 {
   const char *fnname;
   long fsiz = current_frame_info.total_size;
@@ -2699,7 +2808,7 @@ microblaze_function_prologue (FILE * file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 			  STACK_POINTER_REGNUM]), fsiz,
 	       reg_names[MB_ABI_SUB_RETURN_ADDR_REGNUM + GP_REG_FIRST],
 	       current_frame_info.var_size, current_frame_info.num_gp,
-	       crtl->outgoing_args_size);
+	       (int) crtl->outgoing_args_size);
       fprintf (file, "\t.mask\t0x%08lx\n", current_frame_info.mask);
     }
 }
@@ -2864,7 +2973,6 @@ microblaze_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = fsiz;
 
-
   /* If this function is a varargs function, store any registers that
      would normally hold arguments ($5 - $10) on the stack.  */
   if (((TYPE_ARG_TYPES (fntype) != 0
@@ -2889,7 +2997,6 @@ microblaze_expand_prologue (void)
 
 	  offset += GET_MODE_SIZE (SImode);
 	}
-
     }
 
   if (fsiz > 0)
@@ -2936,8 +3043,18 @@ microblaze_expand_prologue (void)
   if ((flag_pic == 2 || TLS_NEEDS_GOT )
       && df_regs_ever_live_p (MB_ABI_PIC_ADDR_REGNUM))
     {
-      SET_REGNO (pic_offset_table_rtx, MB_ABI_PIC_ADDR_REGNUM);
-      emit_insn (gen_set_got (pic_offset_table_rtx));	/* setting GOT.  */
+      if ((flag_pic == 2 && !TARGET_PIC_DATA_TEXT_REL) || TLS_NEEDS_GOT)
+	{
+	  SET_REGNO (pic_offset_table_rtx, MB_ABI_PIC_ADDR_REGNUM);
+	  /* setting GOT.  */
+	  emit_insn (gen_set_got (pic_offset_table_rtx));
+	}
+      else
+	{
+	  SET_REGNO (pic_offset_table_rtx, MB_ABI_PIC_ADDR_REGNUM);
+	  /* setting start of text.  */
+	  emit_insn (gen_set_text (pic_offset_table_rtx));
+	}
     }
 
   /* If we are profiling, make sure no instructions are scheduled before
@@ -2953,8 +3070,7 @@ microblaze_expand_prologue (void)
 #define PIC_OFFSET_TABLE_MASK (1 << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 
 static void
-microblaze_function_epilogue (FILE * file ATTRIBUTE_UNUSED,
-			      HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+microblaze_function_epilogue (FILE *file)
 {
   const char *fnname;
 
@@ -3131,6 +3247,14 @@ microblaze_elf_in_small_data_p (const_tree decl)
   return (size > 0 && size <= microblaze_section_threshold);
 }
 
+/* We need to disable address diff vectors in
+case of pic data text relative mode.  */
+
+static bool
+microblaze_gen_pic_addr_dif_vec (void)
+{
+  return (flag_pic && !TARGET_PIC_DATA_TEXT_REL);
+}
 
 static section *
 microblaze_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
@@ -3164,10 +3288,19 @@ static rtx
 expand_pic_symbol_ref (machine_mode mode ATTRIBUTE_UNUSED, rtx op)
 {
   rtx result;
-  result = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op), UNSPEC_GOTOFF);
+  bool isFunc = (GET_CODE (op) == SYMBOL_REF
+		 && (SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_FUNCTION));
+  result = (!TARGET_PIC_DATA_TEXT_REL)
+	    ? gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op), UNSPEC_GOTOFF)
+	    : gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op), UNSPEC_TEXT);
   result = gen_rtx_CONST (Pmode, result);
-  result = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, result);
-  result = gen_const_mem (Pmode, result);
+  result = (TARGET_PIC_DATA_TEXT_REL && isFunc)
+	    ? gen_rtx_PLUS (Pmode, gen_raw_REG (Pmode,
+			    get_base_reg (op)), result)
+	    : gen_rtx_PLUS (Pmode, pic_offset_table_rtx, result);
+  result = (!TARGET_PIC_DATA_TEXT_REL)
+	    ? gen_const_mem (Pmode, result) : result;
+
   return result;
 }
 
@@ -3271,7 +3404,34 @@ microblaze_expand_move (machine_mode mode, rtx operands[])
 	  if (reload_in_progress)
 	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 	  result = expand_pic_symbol_ref (mode, op1);
+
+	  if (TARGET_PIC_DATA_TEXT_REL && GET_CODE (op0) == REG
+	      && REGNO (op0) >= FIRST_PSEUDO_REGISTER)
+	    result = force_reg (SImode, result);
+
 	  emit_move_insn (op0, result);
+	  return true;
+	}
+    }
+  if (GET_CODE (op1) == PLUS && GET_CODE (XEXP (op1,1)) == CONST)
+    {
+      rtx p0, p1, result, temp;
+
+      p0 = XEXP (XEXP (op1,1), 0);
+
+      if (GET_CODE (p0) == PLUS)
+	{
+	  p1 = XEXP (p0, 1);
+	  p0 = XEXP (p0, 0);
+	}
+
+      if (GET_CODE (p0) == UNSPEC && GET_CODE (p1) == CONST_INT
+	  && flag_pic && TARGET_PIC_DATA_TEXT_REL)
+	{
+	  result = gen_rtx_CONST (Pmode, p0);
+	  result = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, result);
+	  temp = force_reg (SImode, result);
+	  emit_move_insn (op0, gen_rtx_PLUS (SImode, temp, p1));
 	  return true;
 	}
     }
@@ -3371,7 +3531,9 @@ microblaze_asm_output_ident (const char *string)
   else
     section_asm_op = READONLY_DATA_SECTION_ASM_OP;
 
-  buf = ACONCAT ((section_asm_op, "\n\t.ascii \"", string, "\\0\"\n", NULL));
+  buf = ACONCAT (("\t.pushsection", section_asm_op,
+                  "\n\t.ascii \"", string, "\\0\"\n",
+                  "\t.popsection\n", NULL));
   symtab->finalize_toplevel_asm (build_string (strlen (buf), buf));
 }
 
@@ -3453,8 +3615,7 @@ microblaze_expand_conditional_branch (machine_mode mode, rtx operands[])
 }
 
 void
-microblaze_expand_conditional_branch_reg (enum machine_mode mode,
-                                          rtx operands[])
+microblaze_expand_conditional_branch_reg (machine_mode mode, rtx operands[])
 {
   enum rtx_code code = GET_CODE (operands[0]);
   rtx cmp_op0 = operands[1];
@@ -3560,10 +3721,10 @@ microblaze_expand_divide (rtx operands[])
 
   emit_label (div_label);
   ret = emit_library_call_value (gen_rtx_SYMBOL_REF (Pmode, "__divsi3"), 
-				       operands[0], LCT_NORMAL, 
-				       GET_MODE (operands[0]), 2, operands[1], 
-				       GET_MODE (operands[1]), operands[2], 
-				       GET_MODE (operands[2]));
+				 operands[0], LCT_NORMAL,
+				 GET_MODE (operands[0]),
+				 operands[1], GET_MODE (operands[1]),
+				 operands[2], GET_MODE (operands[2]));
   if (ret != operands[0])
                 emit_move_insn (operands[0], ret);    
 
@@ -3775,6 +3936,24 @@ microblaze_machine_dependent_reorg (void)
       return;
     }
 }
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+microblaze_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+
+static HOST_WIDE_INT
+microblaze_starting_frame_offset (void)
+{
+  return (crtl->outgoing_args_size + FIRST_PARM_OFFSET(FNDECL));
+}
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO      microblaze_encode_section_info
@@ -3870,8 +4049,23 @@ microblaze_machine_dependent_reorg (void)
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P microblaze_legitimate_constant_p
 
+#undef  TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC
+#define TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC	microblaze_gen_pic_addr_dif_vec
+
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG microblaze_machine_dependent_reorg
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK microblaze_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P microblaze_modes_tieable_p
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT microblaze_constant_alignment
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET microblaze_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

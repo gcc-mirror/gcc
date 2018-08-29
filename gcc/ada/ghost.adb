@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,13 +23,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alloc;    use Alloc;
+with Alloc;
 with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
-with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -46,30 +45,37 @@ with Table;
 
 package body Ghost is
 
-   --  The following table contains the N_Compilation_Unit node for a unit that
-   --  is either subject to pragma Ghost with policy Ignore or contains ignored
-   --  Ghost code. The table is used in the removal of ignored Ghost code from
-   --  units.
+   ---------------------
+   -- Data strictures --
+   ---------------------
 
-   package Ignored_Ghost_Units is new Table.Table (
+   --  The following table contains all ignored Ghost nodes that must be
+   --  eliminated from the tree by routine Remove_Ignored_Ghost_Code.
+
+   package Ignored_Ghost_Nodes is new Table.Table (
      Table_Component_Type => Node_Id,
      Table_Index_Type     => Int,
      Table_Low_Bound      => 0,
-     Table_Initial        => Alloc.Ignored_Ghost_Units_Initial,
-     Table_Increment      => Alloc.Ignored_Ghost_Units_Increment,
-     Table_Name           => "Ignored_Ghost_Units");
+     Table_Initial        => Alloc.Ignored_Ghost_Nodes_Initial,
+     Table_Increment      => Alloc.Ignored_Ghost_Nodes_Increment,
+     Table_Name           => "Ignored_Ghost_Nodes");
 
    -----------------------
-   -- Local Subprograms --
+   -- Local subprograms --
    -----------------------
 
    function Ghost_Entity (N : Node_Id) return Entity_Id;
    --  Find the entity of a reference to a Ghost entity. Return Empty if there
    --  is no such entity.
 
-   procedure Install_Ghost_Mode (Mode : Name_Id);
-   --  Install a specific Ghost mode denoted by Mode by setting global variable
-   --  Ghost_Mode.
+   procedure Install_Ghost_Mode (Mode : Ghost_Mode_Type);
+   pragma Inline (Install_Ghost_Mode);
+   --  Install Ghost mode Mode as the Ghost mode in effect
+
+   procedure Install_Ghost_Region (Mode : Name_Id; N : Node_Id);
+   pragma Inline (Install_Ghost_Region);
+   --  Install a Ghost region comprised of mode Mode and ignored region start
+   --  node N.
 
    function Is_Subject_To_Ghost (N : Node_Id) return Boolean;
    --  Determine whether declaration or body N is subject to aspect or pragma
@@ -84,37 +90,14 @@ package body Ghost is
    --  mode Mode. Mark all formals parameters when N denotes a subprogram or a
    --  body.
 
-   procedure Propagate_Ignored_Ghost_Code (N : Node_Id);
-   --  Signal all enclosing scopes that they now contain at least one ignored
-   --  Ghost node denoted by N. Add the compilation unit containing N to table
-   --  Ignored_Ghost_Units for post processing.
+   function Name_To_Ghost_Mode (Mode : Name_Id) return Ghost_Mode_Type;
+   pragma Inline (Name_To_Ghost_Mode);
+   --  Convert a Ghost mode denoted by name Mode into its respective enumerated
+   --  value.
 
-   ----------------------------
-   -- Add_Ignored_Ghost_Unit --
-   ----------------------------
-
-   procedure Add_Ignored_Ghost_Unit (Unit : Node_Id) is
-   begin
-      pragma Assert (Nkind (Unit) = N_Compilation_Unit);
-
-      --  Avoid duplicates in the table as pruning the same unit more than once
-      --  is wasteful. Since ignored Ghost code tends to be grouped up, check
-      --  the contents of the table in reverse.
-
-      for Index in reverse Ignored_Ghost_Units.First ..
-                           Ignored_Ghost_Units.Last
-      loop
-         --  If the unit is already present in the table, do not add it again
-
-         if Unit = Ignored_Ghost_Units.Table (Index) then
-            return;
-         end if;
-      end loop;
-
-      --  If we get here, then this is the first time the unit is being added
-
-      Ignored_Ghost_Units.Append (Unit);
-   end Add_Ignored_Ghost_Unit;
+   procedure Record_Ignored_Ghost_Node (N : Node_Or_Entity_Id);
+   --  Save ignored Ghost node or entity N in table Ignored_Ghost_Nodes for
+   --  later elimination.
 
    ----------------------------
    -- Check_Ghost_Completion --
@@ -281,6 +264,13 @@ package body Ghost is
                   if Chars (Subp_Id) = Name_uPostconditions then
                      return True;
 
+                  --  The context is the internally built predicate function,
+                  --  which is OK because the real check was done before the
+                  --  predicate function was generated.
+
+                  elsif Is_Predicate_Function (Subp_Id) then
+                     return True;
+
                   else
                      Subp_Decl :=
                        Original_Node (Unit_Declaration_Node (Subp_Id));
@@ -362,10 +352,12 @@ package body Ghost is
                   return True;
 
                --  An assertion expression pragma is Ghost when it contains a
-               --  reference to a Ghost entity (SPARK RM 6.9(10)).
+               --  reference to a Ghost entity (SPARK RM 6.9(10)), except for
+               --  predicate pragmas (SPARK RM 6.9(11)).
 
-               elsif Assertion_Expression_Pragma (Prag_Id) then
-
+               elsif Assertion_Expression_Pragma (Prag_Id)
+                 and then Prag_Id /= Pragma_Predicate
+               then
                   --  Ensure that the assertion policy and the Ghost policy are
                   --  compatible (SPARK RM 6.9(18)).
 
@@ -464,9 +456,16 @@ package body Ghost is
                   return True;
 
                --  A reference to a Ghost entity can appear within an aspect
-               --  specification (SPARK RM 6.9(10)).
+               --  specification (SPARK RM 6.9(10)). The precise checking will
+               --  occur when analyzing the corresponding pragma. We make an
+               --  exception for predicate aspects that only allow referencing
+               --  a Ghost entity when the corresponding type declaration is
+               --  Ghost (SPARK RM 6.9(11)).
 
-               elsif Nkind (Par) = N_Aspect_Specification then
+               elsif Nkind (Par) = N_Aspect_Specification
+                 and then not Same_Aspect
+                                (Get_Aspect_Id (Par), Aspect_Predicate)
+               then
                   return True;
 
                elsif Is_OK_Declaration (Par) then
@@ -790,6 +789,42 @@ package body Ghost is
       end if;
    end Check_Ghost_Refinement;
 
+   ----------------------
+   -- Check_Ghost_Type --
+   ----------------------
+
+   procedure Check_Ghost_Type (Typ : Entity_Id) is
+      Conc_Typ : Entity_Id;
+      Full_Typ : Entity_Id;
+
+   begin
+      if Is_Ghost_Entity (Typ) then
+         Conc_Typ := Empty;
+         Full_Typ := Typ;
+
+         if Is_Single_Concurrent_Type (Typ) then
+            Conc_Typ := Anonymous_Object (Typ);
+            Full_Typ := Conc_Typ;
+
+         elsif Is_Concurrent_Type (Typ) then
+            Conc_Typ := Typ;
+         end if;
+
+         --  A Ghost type cannot be concurrent (SPARK RM 6.9(19)). Verify this
+         --  legality rule first to give a finer-grained diagnostic.
+
+         if Present (Conc_Typ) then
+            Error_Msg_N ("ghost type & cannot be concurrent", Conc_Typ);
+         end if;
+
+         --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(7))
+
+         if Is_Effectively_Volatile (Full_Typ) then
+            Error_Msg_N ("ghost type & cannot be volatile", Full_Typ);
+         end if;
+      end if;
+   end Check_Ghost_Type;
+
    ------------------
    -- Ghost_Entity --
    ------------------
@@ -847,7 +882,12 @@ package body Ghost is
 
    procedure Initialize is
    begin
-      Ignored_Ghost_Units.Init;
+      Ignored_Ghost_Nodes.Init;
+
+      --  Set the soft link which enables Atree.Mark_New_Ghost_Node to record
+      --  an ignored Ghost node or entity.
+
+      Set_Ignored_Ghost_Recording_Proc (Record_Ignored_Ghost_Node'Access);
    end Initialize;
 
    ------------------------
@@ -856,21 +896,40 @@ package body Ghost is
 
    procedure Install_Ghost_Mode (Mode : Ghost_Mode_Type) is
    begin
-      Ghost_Mode := Mode;
+      Install_Ghost_Region (Mode, Empty);
    end Install_Ghost_Mode;
 
-   procedure Install_Ghost_Mode (Mode : Name_Id) is
+   --------------------------
+   -- Install_Ghost_Region --
+   --------------------------
+
+   procedure Install_Ghost_Region (Mode : Ghost_Mode_Type; N : Node_Id) is
    begin
-      if Mode = Name_Check then
-         Ghost_Mode := Check;
+      --  The context is already within an ignored Ghost region. Maintain the
+      --  start of the outermost ignored Ghost region.
 
-      elsif Mode = Name_Ignore then
-         Ghost_Mode := Ignore;
+      if Present (Ignored_Ghost_Region) then
+         null;
 
-      elsif Mode = Name_None then
-         Ghost_Mode := None;
+      --  The current region is the outermost ignored Ghost region. Save its
+      --  starting node.
+
+      elsif Present (N) and then Mode = Ignore then
+         Ignored_Ghost_Region := N;
+
+      --  Otherwise the current region is not ignored, nothing to save
+
+      else
+         Ignored_Ghost_Region := Empty;
       end if;
-   end Install_Ghost_Mode;
+
+      Ghost_Mode := Mode;
+   end Install_Ghost_Region;
+
+   procedure Install_Ghost_Region (Mode : Name_Id; N : Node_Id) is
+   begin
+      Install_Ghost_Region (Name_To_Ghost_Mode (Mode), N);
+   end Install_Ghost_Region;
 
    -------------------------
    -- Is_Ghost_Assignment --
@@ -945,6 +1004,28 @@ package body Ghost is
    ---------------------------
 
    function Is_Ignored_Ghost_Unit (N : Node_Id) return Boolean is
+      function Ultimate_Original_Node (Nod : Node_Id) return Node_Id;
+      --  Obtain the original node of arbitrary node Nod following a potential
+      --  chain of rewritings.
+
+      ----------------------------
+      -- Ultimate_Original_Node --
+      ----------------------------
+
+      function Ultimate_Original_Node (Nod : Node_Id) return Node_Id is
+         Res : Node_Id;
+
+      begin
+         Res := Nod;
+         while Original_Node (Res) /= Res loop
+            Res := Original_Node (Res);
+         end loop;
+
+         return Res;
+      end Ultimate_Original_Node;
+
+   --  Start of processing for Is_Ignored_Ghost_Unit
+
    begin
       --  Inspect the original node of the unit in case removal of ignored
       --  Ghost code has already taken place.
@@ -952,7 +1033,7 @@ package body Ghost is
       return
         Nkind (N) = N_Compilation_Unit
           and then Is_Ignored_Ghost_Entity
-                     (Defining_Entity (Original_Node (Unit (N))));
+                     (Defining_Entity (Ultimate_Original_Node (Unit (N))));
    end Is_Ignored_Ghost_Unit;
 
    -------------------------
@@ -1091,8 +1172,8 @@ package body Ghost is
 
    procedure Lock is
    begin
-      Ignored_Ghost_Units.Release;
-      Ignored_Ghost_Units.Locked := True;
+      Ignored_Ghost_Nodes.Release;
+      Ignored_Ghost_Nodes.Locked := True;
    end Lock;
 
    -----------------------------------
@@ -1110,13 +1191,13 @@ package body Ghost is
 
       if Present (Id) then
          if Is_Checked_Ghost_Entity (Id) then
-            Install_Ghost_Mode (Check);
+            Install_Ghost_Region (Check, N);
 
          elsif Is_Ignored_Ghost_Entity (Id) then
-            Install_Ghost_Mode (Ignore);
+            Install_Ghost_Region (Ignore, N);
 
             Set_Is_Ignored_Ghost_Node (N);
-            Propagate_Ignored_Ghost_Code (N);
+            Record_Ignored_Ghost_Node (N);
          end if;
       end if;
    end Mark_And_Set_Ghost_Assignment;
@@ -1170,9 +1251,9 @@ package body Ghost is
 
       Mark_Ghost_Declaration_Or_Body (N, Policy);
 
-      --  Install the appropriate Ghost mode
+      --  Install the appropriate Ghost region
 
-      Install_Ghost_Mode (Policy);
+      Install_Ghost_Region (Policy, N);
    end Mark_And_Set_Ghost_Body;
 
    -----------------------------------
@@ -1217,9 +1298,9 @@ package body Ghost is
 
       Mark_Ghost_Declaration_Or_Body (N, Policy);
 
-      --  Install the appropriate Ghost mode
+      --  Install the appropriate Ghost region
 
-      Install_Ghost_Mode (Policy);
+      Install_Ghost_Region (Policy, N);
    end Mark_And_Set_Ghost_Completion;
 
    ------------------------------------
@@ -1274,9 +1355,9 @@ package body Ghost is
 
       Mark_Ghost_Declaration_Or_Body (N, Policy);
 
-      --  Install the appropriate Ghost mode
+      --  Install the appropriate Ghost region
 
-      Install_Ghost_Mode (Policy);
+      Install_Ghost_Region (Policy, N);
    end Mark_And_Set_Ghost_Declaration;
 
    --------------------------------------
@@ -1287,6 +1368,43 @@ package body Ghost is
      (N      : Node_Id;
       Gen_Id : Entity_Id)
    is
+      procedure Check_Ghost_Actuals;
+      --  Check the context of ghost actuals
+
+      -------------------------
+      -- Check_Ghost_Actuals --
+      -------------------------
+
+      procedure Check_Ghost_Actuals is
+         Assoc : Node_Id := First (Generic_Associations (N));
+         Act   : Node_Id;
+
+      begin
+         while Present (Assoc) loop
+            if Nkind (Assoc) /= N_Others_Choice then
+               Act := Explicit_Generic_Actual_Parameter (Assoc);
+
+               --  Within a nested instantiation, a defaulted actual is an
+               --  empty association, so nothing to check.
+
+               if No (Act) then
+                  null;
+
+               elsif Comes_From_Source (Act)
+                  and then Nkind (Act) in N_Has_Etype
+                  and then Present (Etype (Act))
+                  and then Is_Ghost_Entity (Etype (Act))
+               then
+                  Check_Ghost_Context (Etype (Act), Act);
+               end if;
+            end if;
+
+            Next (Assoc);
+         end loop;
+      end Check_Ghost_Actuals;
+
+      --  Local variables
+
       Policy : Name_Id := No_Name;
 
    begin
@@ -1317,9 +1435,16 @@ package body Ghost is
 
       Mark_Ghost_Declaration_Or_Body (N, Policy);
 
-      --  Install the appropriate Ghost mode
+      --  Install the appropriate Ghost region
 
-      Install_Ghost_Mode (Policy);
+      Install_Ghost_Region (Policy, N);
+
+      --  Check Ghost actuals. Given that this routine is unconditionally
+      --  invoked with subprogram and package instantiations, this check
+      --  verifies the context of all the ghost entities passed in generic
+      --  instantiations.
+
+      Check_Ghost_Actuals;
    end Mark_And_Set_Ghost_Instantiation;
 
    ---------------------------------------
@@ -1337,16 +1462,44 @@ package body Ghost is
 
       if Present (Id) then
          if Is_Checked_Ghost_Entity (Id) then
-            Install_Ghost_Mode (Check);
+            Install_Ghost_Region (Check, N);
 
          elsif Is_Ignored_Ghost_Entity (Id) then
-            Install_Ghost_Mode (Ignore);
+            Install_Ghost_Region (Ignore, N);
 
             Set_Is_Ignored_Ghost_Node (N);
-            Propagate_Ignored_Ghost_Code (N);
+            Record_Ignored_Ghost_Node (N);
          end if;
       end if;
    end Mark_And_Set_Ghost_Procedure_Call;
+
+   -----------------------
+   -- Mark_Ghost_Clause --
+   -----------------------
+
+   procedure Mark_Ghost_Clause (N : Node_Id) is
+      Nam : Node_Id := Empty;
+
+   begin
+      if Nkind (N) = N_Use_Package_Clause then
+         Nam := Name (N);
+
+      elsif Nkind (N) = N_Use_Type_Clause then
+         Nam := Subtype_Mark (N);
+
+      elsif Nkind (N) = N_With_Clause then
+         Nam := Name (N);
+      end if;
+
+      if Present (Nam)
+        and then Is_Entity_Name (Nam)
+        and then Present (Entity (Nam))
+        and then Is_Ignored_Ghost_Entity (Entity (Nam))
+      then
+         Set_Is_Ignored_Ghost_Node (N);
+         Record_Ignored_Ghost_Node (N);
+      end if;
+   end Mark_Ghost_Clause;
 
    ------------------------------------
    -- Mark_Ghost_Declaration_Or_Body --
@@ -1373,7 +1526,7 @@ package body Ghost is
          Mark_Formals := True;
          Set_Is_Ignored_Ghost_Entity (Id);
          Set_Is_Ignored_Ghost_Node (N);
-         Propagate_Ignored_Ghost_Code (N);
+         Record_Ignored_Ghost_Node (N);
       end if;
 
       --  Mark all formal parameters when the related node denotes a subprogram
@@ -1409,34 +1562,6 @@ package body Ghost is
    end Mark_Ghost_Declaration_Or_Body;
 
    -----------------------
-   -- Mark_Ghost_Clause --
-   -----------------------
-
-   procedure Mark_Ghost_Clause (N : Node_Id) is
-      Nam : Node_Id := Empty;
-
-   begin
-      if Nkind (N) = N_Use_Package_Clause then
-         Nam := First (Names (N));
-
-      elsif Nkind (N) = N_Use_Type_Clause then
-         Nam := First (Subtype_Marks (N));
-
-      elsif Nkind (N) = N_With_Clause then
-         Nam := Name (N);
-      end if;
-
-      if Present (Nam)
-        and then Is_Entity_Name (Nam)
-        and then Present (Entity (Nam))
-        and then Is_Ignored_Ghost_Entity (Entity (Nam))
-      then
-         Set_Is_Ignored_Ghost_Node (N);
-         Propagate_Ignored_Ghost_Code (N);
-      end if;
-   end Mark_Ghost_Clause;
-
-   -----------------------
    -- Mark_Ghost_Pragma --
    -----------------------
 
@@ -1454,7 +1579,7 @@ package body Ghost is
       elsif Is_Ignored_Ghost_Entity (Id) then
          Set_Is_Ignored_Ghost_Pragma (N);
          Set_Is_Ignored_Ghost_Node (N);
-         Propagate_Ignored_Ghost_Code (N);
+         Record_Ignored_Ghost_Node (N);
       end if;
    end Mark_Ghost_Pragma;
 
@@ -1481,179 +1606,127 @@ package body Ghost is
       Mark_Ghost_Declaration_Or_Body (N, Policy);
    end Mark_Ghost_Renaming;
 
-   ----------------------------------
-   -- Propagate_Ignored_Ghost_Code --
-   ----------------------------------
+   ------------------------
+   -- Name_To_Ghost_Mode --
+   ------------------------
 
-   procedure Propagate_Ignored_Ghost_Code (N : Node_Id) is
-      Nod  : Node_Id;
-      Scop : Entity_Id;
-
+   function Name_To_Ghost_Mode (Mode : Name_Id) return Ghost_Mode_Type is
    begin
-      --  Traverse the parent chain looking for blocks, packages, and
-      --  subprograms or their respective bodies.
+      if Mode = Name_Check then
+         return Check;
 
-      Nod := Parent (N);
-      while Present (Nod) loop
-         Scop := Empty;
+      elsif Mode = Name_Ignore then
+         return Ignore;
 
-         if Nkind (Nod) = N_Block_Statement
-           and then Present (Identifier (Nod))
-         then
-            Scop := Entity (Identifier (Nod));
+      --  Otherwise the mode must denote one of the following:
+      --
+      --    * Disable indicates that the Ghost policy in effect is Disable
+      --
+      --    * None or No_Name indicates that the associated construct is not
+      --      subject to any Ghost annotation.
 
-         elsif Nkind_In (Nod, N_Package_Body,
-                              N_Package_Declaration,
-                              N_Subprogram_Body,
-                              N_Subprogram_Declaration)
-         then
-            Scop := Defining_Entity (Nod);
-         end if;
+      else
+         pragma Assert (Nam_In (Mode, Name_Disable, Name_None, No_Name));
+         return None;
+      end if;
+   end Name_To_Ghost_Mode;
 
-         --  The current node denotes a scoping construct
+   -------------------------------
+   -- Record_Ignored_Ghost_Node --
+   -------------------------------
 
-         if Present (Scop) then
+   procedure Record_Ignored_Ghost_Node (N : Node_Or_Entity_Id) is
+   begin
+      --  Save all "top level" ignored Ghost nodes which can be safely replaced
+      --  with a null statement. Note that there is need to save other kinds of
+      --  nodes because those will always be enclosed by some top level ignored
+      --  Ghost node.
 
-            --  Stop the traversal when the scope already contains ignored
-            --  Ghost code as all enclosing scopes have already been marked.
+      if Is_Body (N)
+        or else Is_Declaration (N)
+        or else Nkind (N) in N_Generic_Instantiation
+        or else Nkind (N) in N_Push_Pop_xxx_Label
+        or else Nkind (N) in N_Raise_xxx_Error
+        or else Nkind (N) in N_Representation_Clause
+        or else Nkind_In (N, N_Assignment_Statement,
+                             N_Call_Marker,
+                             N_Freeze_Entity,
+                             N_Freeze_Generic_Entity,
+                             N_Itype_Reference,
+                             N_Pragma,
+                             N_Procedure_Call_Statement,
+                             N_Use_Package_Clause,
+                             N_Use_Type_Clause,
+                             N_Variable_Reference_Marker,
+                             N_With_Clause)
+      then
+         --  Only ignored Ghost nodes must be recorded in the table
 
-            if Contains_Ignored_Ghost_Code (Scop) then
-               exit;
-
-            --  Otherwise mark this scope and keep climbing
-
-            else
-               Set_Contains_Ignored_Ghost_Code (Scop);
-            end if;
-         end if;
-
-         Nod := Parent (Nod);
-      end loop;
-
-      --  The unit containing the ignored Ghost code must be post processed
-      --  before invoking the back end.
-
-      Add_Ignored_Ghost_Unit (Cunit (Get_Code_Unit (N)));
-   end Propagate_Ignored_Ghost_Code;
+         pragma Assert (Is_Ignored_Ghost_Node (N));
+         Ignored_Ghost_Nodes.Append (N);
+      end if;
+   end Record_Ignored_Ghost_Node;
 
    -------------------------------
    -- Remove_Ignored_Ghost_Code --
    -------------------------------
 
    procedure Remove_Ignored_Ghost_Code is
-      procedure Prune_Tree (Root : Node_Id);
-      --  Remove all code marked as ignored Ghost from the tree of denoted by
-      --  Root.
+      procedure Remove_Ignored_Ghost_Node (N : Node_Id);
+      --  Eliminate ignored Ghost node N from the tree
 
-      ----------------
-      -- Prune_Tree --
-      ----------------
+      -------------------------------
+      -- Remove_Ignored_Ghost_Node --
+      -------------------------------
 
-      procedure Prune_Tree (Root : Node_Id) is
-         procedure Prune (N : Node_Id);
-         --  Remove a given node from the tree by rewriting it into null
+      procedure Remove_Ignored_Ghost_Node (N : Node_Id) is
+      begin
+         --  The generation and processing of ignored Ghost nodes may cause the
+         --  same node to be saved multiple times. Reducing the number of saves
+         --  to one involves costly solutions such as a hash table or the use
+         --  of a flag shared by all nodes. To solve this problem, the removal
+         --  machinery allows for multiple saves, but does not eliminate a node
+         --  which has already been eliminated.
 
-         function Prune_Node (N : Node_Id) return Traverse_Result;
-         --  Determine whether node N denotes an ignored Ghost construct. If
-         --  this is the case, rewrite N as a null statement. See the body for
-         --  special cases.
+         if Nkind (N) = N_Null_Statement then
+            null;
 
-         -----------
-         -- Prune --
-         -----------
+         --  Otherwise the ignored Ghost node must be eliminated
 
-         procedure Prune (N : Node_Id) is
-         begin
-            --  Destroy any aspects that may be associated with the node
+         else
+            --  Only ignored Ghost nodes must be eliminated from the tree
 
-            if Permits_Aspect_Specifications (N) and then Has_Aspects (N) then
-               Remove_Aspects (N);
-            end if;
+            pragma Assert (Is_Ignored_Ghost_Node (N));
+
+            --  Eliminate the node by rewriting it into null. Another option
+            --  is to remove it from the tree, however multiple corner cases
+            --  emerge which have be dealt individually.
 
             Rewrite (N, Make_Null_Statement (Sloc (N)));
-         end Prune;
 
-         ----------------
-         -- Prune_Node --
-         ----------------
+            --  Eliminate any aspects hanging off the ignored Ghost node
 
-         function Prune_Node (N : Node_Id) return Traverse_Result is
-            Id : Entity_Id;
-
-         begin
-            --  Do not prune compilation unit nodes because many mechanisms
-            --  depend on their presence. Note that context items are still
-            --  being processed.
-
-            if Nkind (N) = N_Compilation_Unit then
-               return OK;
-
-            --  The node is either declared as ignored Ghost or is a byproduct
-            --  of expansion. Destroy it and stop the traversal on this branch.
-
-            elsif Is_Ignored_Ghost_Node (N) then
-               Prune (N);
-               return Skip;
-
-            --  Scoping constructs such as blocks, packages, subprograms and
-            --  bodies offer some flexibility with respect to pruning.
-
-            elsif Nkind_In (N, N_Block_Statement,
-                               N_Package_Body,
-                               N_Package_Declaration,
-                               N_Subprogram_Body,
-                               N_Subprogram_Declaration)
-            then
-               if Nkind (N) = N_Block_Statement then
-                  Id := Entity (Identifier (N));
-               else
-                  Id := Defining_Entity (N);
-               end if;
-
-               --  The scoping construct contains both living and ignored Ghost
-               --  code, let the traversal prune all relevant nodes.
-
-               if Contains_Ignored_Ghost_Code (Id) then
-                  return OK;
-
-               --  Otherwise the construct contains only living code and should
-               --  not be pruned.
-
-               else
-                  return Skip;
-               end if;
-
-            --  Otherwise keep searching for ignored Ghost nodes
-
-            else
-               return OK;
-            end if;
-         end Prune_Node;
-
-         procedure Prune_Nodes is new Traverse_Proc (Prune_Node);
-
-      --  Start of processing for Prune_Tree
-
-      begin
-         Prune_Nodes (Root);
-      end Prune_Tree;
+            Remove_Aspects (N);
+         end if;
+      end Remove_Ignored_Ghost_Node;
 
    --  Start of processing for Remove_Ignored_Ghost_Code
 
    begin
-      for Index in Ignored_Ghost_Units.First .. Ignored_Ghost_Units.Last loop
-         Prune_Tree (Ignored_Ghost_Units.Table (Index));
+      for Index in Ignored_Ghost_Nodes.First .. Ignored_Ghost_Nodes.Last loop
+         Remove_Ignored_Ghost_Node (Ignored_Ghost_Nodes.Table (Index));
       end loop;
    end Remove_Ignored_Ghost_Code;
 
-   ------------------------
-   -- Restore_Ghost_Mode --
-   ------------------------
+   --------------------------
+   -- Restore_Ghost_Region --
+   --------------------------
 
-   procedure Restore_Ghost_Mode (Mode : Ghost_Mode_Type) is
+   procedure Restore_Ghost_Region (Mode : Ghost_Mode_Type; N : Node_Id) is
    begin
-      Ghost_Mode := Mode;
-   end Restore_Ghost_Mode;
+      Ghost_Mode           := Mode;
+      Ignored_Ghost_Region := N;
+   end Restore_Ghost_Region;
 
    --------------------
    -- Set_Ghost_Mode --

@@ -20,5 +20,3 @@ contains
   end subroutine
 
 end module
-
-! { dg-final { cleanup-modules "IO" } }

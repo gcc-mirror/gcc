@@ -117,7 +117,7 @@ program test
   if (any (c .ne. check)) call myabort (7)
   call aaa
   call tobias
-  if (abort_flag) call abort
+  if (abort_flag) STOP 1
 contains
   function f()
      integer :: f(ONE)

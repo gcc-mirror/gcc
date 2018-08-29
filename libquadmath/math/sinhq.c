@@ -85,8 +85,11 @@ sinhq (__float128 x)
   if (ix <= 0x40044000)
     {
       if (ix < 0x3fc60000) /* |x| < 2^-57 */
-	if (shuge + x > one)
-	  return x;		/* sinh(tiny) = tiny with inexact */
+	{
+	  math_check_force_underflow (x);
+	  if (shuge + x > one)
+	    return x;		/* sinh(tiny) = tiny with inexact */
+	}
       t = expm1q (u.value);
       if (ix < 0x3fff0000)
 	return h * (2.0Q * t - t * t / (t + one));

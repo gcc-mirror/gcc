@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package json implements encoding and decoding of JSON as defined in
-// RFC 4627. The mapping between JSON and Go values is described
+// RFC 7159. The mapping between JSON and Go values is described
 // in the documentation for the Marshal and Unmarshal functions.
 //
 // See "JSON and Go" for an introduction to this package:
@@ -166,6 +166,8 @@ func Marshal(v interface{}) ([]byte, error) {
 }
 
 // MarshalIndent is like Marshal but applies Indent to format the output.
+// Each JSON element in the output will begin on a new line beginning with prefix
+// followed by one or more copies of indent according to the indentation nesting.
 func MarshalIndent(v interface{}, prefix, indent string) ([]byte, error) {
 	b, err := Marshal(v)
 	if err != nil {
@@ -243,8 +245,8 @@ func (e *UnsupportedValueError) Error() string {
 // attempting to encode a string value with invalid UTF-8 sequences.
 // As of Go 1.2, Marshal instead coerces the string to valid UTF-8 by
 // replacing invalid bytes with the Unicode replacement rune U+FFFD.
-// This error is no longer generated but is kept for backwards compatibility
-// with programs that might mention it.
+//
+// Deprecated: No longer used; kept for compatibility.
 type InvalidUTF8Error struct {
 	S string // the whole string value that caused the error
 }
@@ -332,10 +334,7 @@ type encOpts struct {
 
 type encoderFunc func(e *encodeState, v reflect.Value, opts encOpts)
 
-var encoderCache struct {
-	sync.RWMutex
-	m map[reflect.Type]encoderFunc
-}
+var encoderCache sync.Map // map[reflect.Type]encoderFunc
 
 func valueEncoder(v reflect.Value) encoderFunc {
 	if !v.IsValid() {
@@ -345,36 +344,31 @@ func valueEncoder(v reflect.Value) encoderFunc {
 }
 
 func typeEncoder(t reflect.Type) encoderFunc {
-	encoderCache.RLock()
-	f := encoderCache.m[t]
-	encoderCache.RUnlock()
-	if f != nil {
-		return f
+	if fi, ok := encoderCache.Load(t); ok {
+		return fi.(encoderFunc)
 	}
 
 	// To deal with recursive types, populate the map with an
 	// indirect func before we build it. This type waits on the
 	// real func (f) to be ready and then calls it. This indirect
 	// func is only used for recursive types.
-	encoderCache.Lock()
-	if encoderCache.m == nil {
-		encoderCache.m = make(map[reflect.Type]encoderFunc)
-	}
-	var wg sync.WaitGroup
+	var (
+		wg sync.WaitGroup
+		f  encoderFunc
+	)
 	wg.Add(1)
-	encoderCache.m[t] = func(e *encodeState, v reflect.Value, opts encOpts) {
+	fi, loaded := encoderCache.LoadOrStore(t, encoderFunc(func(e *encodeState, v reflect.Value, opts encOpts) {
 		wg.Wait()
 		f(e, v, opts)
+	}))
+	if loaded {
+		return fi.(encoderFunc)
 	}
-	encoderCache.Unlock()
 
-	// Compute fields without lock.
-	// Might duplicate effort but won't hold other computations back.
+	// Compute the real encoder and replace the indirect func with it.
 	f = newTypeEncoder(t, true)
 	wg.Done()
-	encoderCache.Lock()
-	encoderCache.m[t] = f
-	encoderCache.Unlock()
+	encoderCache.Store(t, f)
 	return f
 }
 
@@ -879,8 +873,7 @@ func (w *reflectWithString) resolve() error {
 }
 
 // NOTE: keep in sync with stringBytes below.
-func (e *encodeState) string(s string, escapeHTML bool) int {
-	len0 := e.Len()
+func (e *encodeState) string(s string, escapeHTML bool) {
 	e.WriteByte('"')
 	start := 0
 	for i := 0; i < len(s); {
@@ -952,12 +945,10 @@ func (e *encodeState) string(s string, escapeHTML bool) int {
 		e.WriteString(s[start:])
 	}
 	e.WriteByte('"')
-	return e.Len() - len0
 }
 
 // NOTE: keep in sync with string above.
-func (e *encodeState) stringBytes(s []byte, escapeHTML bool) int {
-	len0 := e.Len()
+func (e *encodeState) stringBytes(s []byte, escapeHTML bool) {
 	e.WriteByte('"')
 	start := 0
 	for i := 0; i < len(s); {
@@ -1029,7 +1020,6 @@ func (e *encodeState) stringBytes(s []byte, escapeHTML bool) int {
 		e.Write(s[start:])
 	}
 	e.WriteByte('"')
-	return e.Len() - len0
 }
 
 // A field represents a single field found in a struct.
@@ -1101,7 +1091,20 @@ func typeFields(t reflect.Type) []field {
 			// Scan f.typ for fields to include.
 			for i := 0; i < f.typ.NumField(); i++ {
 				sf := f.typ.Field(i)
-				if sf.PkgPath != "" && !sf.Anonymous { // unexported
+				isUnexported := sf.PkgPath != ""
+				if sf.Anonymous {
+					t := sf.Type
+					if t.Kind() == reflect.Ptr {
+						t = t.Elem()
+					}
+					if isUnexported && t.Kind() != reflect.Struct {
+						// Ignore embedded fields of unexported non-struct types.
+						continue
+					}
+					// Do not ignore embedded fields of unexported struct types
+					// since they may have exported fields.
+				} else if isUnexported {
+					// Ignore unexported non-embedded fields.
 					continue
 				}
 				tag := sf.Tag.Get("json")
@@ -1128,7 +1131,7 @@ func typeFields(t reflect.Type) []field {
 					switch ft.Kind() {
 					case reflect.Bool,
 						reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-						reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+						reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
 						reflect.Float32, reflect.Float64,
 						reflect.String:
 						quoted = true

@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "optabs-query.h"
 #include "optabs-libfuncs.h"
+#include "vec-perm-indices.h"
 
 /* Generate code for a widening multiply.  */
 extern rtx expand_widening_mult (machine_mode, rtx, rtx, rtx, int, optab);
@@ -60,6 +61,9 @@ struct expand_operand {
 
   /* The value of the operand.  */
   rtx value;
+
+  /* The value of an EXPAND_INTEGER operand.  */
+  poly_int64 int_value;
 };
 
 /* Initialize OP with the given fields.  Initialise the other fields
@@ -69,13 +73,14 @@ static inline void
 create_expand_operand (struct expand_operand *op,
 		       enum expand_operand_type type,
 		       rtx value, machine_mode mode,
-		       bool unsigned_p)
+		       bool unsigned_p, poly_int64 int_value = 0)
 {
   op->type = type;
   op->unsigned_p = unsigned_p;
   op->unused = 0;
   op->mode = mode;
   op->value = value;
+  op->int_value = int_value;
 }
 
 /* Make OP describe an operand that must use rtx X, even if X is volatile.  */
@@ -142,18 +147,7 @@ create_address_operand (struct expand_operand *op, rtx value)
   create_expand_operand (op, EXPAND_ADDRESS, value, Pmode, false);
 }
 
-/* Make OP describe an input operand that has value INTVAL and that has
-   no inherent mode.  This function should only be used for operands that
-   are always expand-time constants.  The backend may request that INTVAL
-   be copied into a different kind of rtx, but it must specify the mode
-   of that rtx if so.  */
-
-static inline void
-create_integer_operand (struct expand_operand *op, HOST_WIDE_INT intval)
-{
-  create_expand_operand (op, EXPAND_INTEGER, GEN_INT (intval), VOIDmode, false);
-}
-
+extern void create_integer_operand (struct expand_operand *, poly_int64);
 
 /* Passed to expand_simple_binop and expand_binop to say which options
    to try to use if the requested operation can't be open-coded on the
@@ -181,6 +175,7 @@ extern rtx simplify_expand_binop (machine_mode mode, optab binoptab,
 				  enum optab_methods methods);
 extern bool force_expand_binop (machine_mode, optab, rtx, rtx, rtx, int,
 				enum optab_methods);
+extern rtx expand_vector_broadcast (machine_mode, rtx);
 
 /* Generate code for a simple binary or unary operation.  "Simple" in
    this case means "can be unambiguously described by a (mode, code)
@@ -247,7 +242,9 @@ extern rtx prepare_operand (enum insn_code, rtx, int, machine_mode,
 /* Emit a pair of rtl insns to compare two rtx's and to jump
    to a label if the comparison is true.  */
 extern void emit_cmp_and_jump_insns (rtx, rtx, enum rtx_code, rtx,
-				     machine_mode, int, rtx, int prob=-1);
+				     machine_mode, int, rtx,
+				     profile_probability prob
+					= profile_probability::uninitialized ());
 
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
 extern void emit_indirect_jump (rtx);
@@ -305,13 +302,18 @@ extern int have_insn_for (enum rtx_code, machine_mode);
 extern rtx_insn *gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
 
 /* Generate code for VEC_PERM_EXPR.  */
-extern rtx expand_vec_perm (machine_mode, rtx, rtx, rtx, rtx);
+extern rtx expand_vec_perm_var (machine_mode, rtx, rtx, rtx, rtx);
+extern rtx expand_vec_perm_const (machine_mode, rtx, rtx,
+				  const vec_perm_builder &, machine_mode, rtx);
 
 /* Generate code for vector comparison.  */
 extern rtx expand_vec_cmp_expr (tree, tree, rtx);
 
 /* Generate code for VEC_COND_EXPR.  */
 extern rtx expand_vec_cond_expr (tree, tree, tree, tree, rtx);
+
+/* Generate code for VEC_SERIES_EXPR.  */
+extern rtx expand_vec_series_expr (machine_mode, rtx, rtx, rtx);
 
 /* Generate code for MULT_HIGHPART_EXPR.  */
 extern rtx expand_mult_highpart (machine_mode, rtx, rtx, rtx, bool);

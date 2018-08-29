@@ -1,5 +1,5 @@
 /* SSA operands management for trees.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -515,7 +515,7 @@ add_stmt_operand (struct function *fn, tree *var_p, gimple *stmt, int flags)
 {
   tree var = *var_p;
 
-  gcc_assert (SSA_VAR_P (*var_p));
+  gcc_assert (SSA_VAR_P (*var_p) || TREE_CODE (*var_p) == STRING_CST);
 
   if (is_gimple_reg (var))
     {
@@ -740,6 +740,7 @@ get_expr_operands (struct function *fn, gimple *stmt, tree *expr_p, int flags)
     case VAR_DECL:
     case PARM_DECL:
     case RESULT_DECL:
+    case STRING_CST:
       if (!(flags & opf_address_taken))
 	add_stmt_operand (fn, expr_p, stmt, flags);
       return;
@@ -849,7 +850,6 @@ get_expr_operands (struct function *fn, gimple *stmt, tree *expr_p, int flags)
     case REALIGN_LOAD_EXPR:
     case WIDEN_MULT_PLUS_EXPR:
     case WIDEN_MULT_MINUS_EXPR:
-    case FMA_EXPR:
       {
 	get_expr_operands (fn, stmt, &TREE_OPERAND (expr, 0), flags);
 	get_expr_operands (fn, stmt, &TREE_OPERAND (expr, 1), flags);
@@ -1139,7 +1139,7 @@ DEBUG_FUNCTION bool
 verify_imm_links (FILE *f, tree var)
 {
   use_operand_p ptr, prev, list;
-  int count;
+  unsigned int count;
 
   gcc_assert (TREE_CODE (var) == SSA_NAME);
 
@@ -1157,20 +1157,31 @@ verify_imm_links (FILE *f, tree var)
   for (ptr = list->next; ptr != list; )
     {
       if (prev != ptr->prev)
-	goto error;
+	{
+	  fprintf (f, "prev != ptr->prev\n");
+	  goto error;
+	}
 
       if (ptr->use == NULL)
-	goto error; /* 2 roots, or SAFE guard node.  */
+	{
+	  fprintf (f, "ptr->use == NULL\n");
+	  goto error; /* 2 roots, or SAFE guard node.  */
+	}
       else if (*(ptr->use) != var)
-	goto error;
+	{
+	  fprintf (f, "*(ptr->use) != var\n");
+	  goto error;
+	}
 
       prev = ptr;
       ptr = ptr->next;
 
-      /* Avoid infinite loops.  50,000,000 uses probably indicates a
-	 problem.  */
-      if (count++ > 50000000)
-	goto error;
+      count++;
+      if (count == 0)
+	{
+	  fprintf (f, "number of immediate uses doesn't fit unsigned int\n");
+	  goto error;
+	}
     }
 
   /* Verify list in the other direction.  */
@@ -1178,15 +1189,25 @@ verify_imm_links (FILE *f, tree var)
   for (ptr = list->prev; ptr != list; )
     {
       if (prev != ptr->next)
-	goto error;
+	{
+	  fprintf (f, "prev != ptr->next\n");
+	  goto error;
+	}
       prev = ptr;
       ptr = ptr->prev;
-      if (count-- < 0)
-	goto error;
+      if (count == 0)
+	{
+	  fprintf (f, "count-- < 0\n");
+	  goto error;
+	}
+      count--;
     }
 
   if (count != 0)
-    goto error;
+    {
+      fprintf (f, "count != 0\n");
+      goto error;
+    }
 
   return false;
 

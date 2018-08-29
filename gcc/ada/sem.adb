@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,6 @@ with Nlists;    use Nlists;
 with Output;    use Output;
 with Restrict;  use Restrict;
 with Sem_Attr;  use Sem_Attr;
-with Sem_Aux;   use Sem_Aux;
 with Sem_Ch2;   use Sem_Ch2;
 with Sem_Ch3;   use Sem_Ch3;
 with Sem_Ch4;   use Sem_Ch4;
@@ -101,8 +100,9 @@ package body Sem is
    --  Ghost mode.
 
    procedure Analyze (N : Node_Id) is
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
    begin
       Debug_A_Entry ("analyzing  ", N);
@@ -612,6 +612,14 @@ package body Sem is
          when N_With_Clause =>
             Analyze_With_Clause (N);
 
+         --  A call to analyze a marker is ignored because the node does not
+         --  have any static and run-time semantics.
+
+         when N_Call_Marker
+            | N_Variable_Reference_Marker
+         =>
+            null;
+
          --  A call to analyze the Empty node is an error, but most likely it
          --  is an error caused by an attempt to analyze a malformed piece of
          --  tree caused by some other error, so if there have been any other
@@ -732,6 +740,33 @@ package body Sem is
 
       Debug_A_Exit ("analyzing  ", N, "  (done)");
 
+      --  Mark relevant use-type and use-package clauses as effective
+      --  preferring the original node over the analyzed one in the case that
+      --  constant folding has occurred and removed references that need to be
+      --  examined. Also, if the node in question is overloaded then this is
+      --  deferred until resolution.
+
+      declare
+         Operat : Node_Id := Empty;
+      begin
+         --  Attempt to obtain a checkable operator node
+
+         if Nkind (Original_Node (N)) in N_Op then
+            Operat := Original_Node (N);
+         elsif Nkind (N) in N_Op then
+            Operat := N;
+         end if;
+
+         --  Mark the operator
+
+         if Present (Operat)
+           and then Present (Entity (Operat))
+           and then not Is_Overloaded (Operat)
+         then
+            Mark_Use_Clauses (Operat);
+         end if;
+      end;
+
       --  Now that we have analyzed the node, we call the expander to perform
       --  possible expansion. We skip this for subexpressions, because we don't
       --  have the type yet, and the expander will need to know the type before
@@ -768,7 +803,7 @@ package body Sem is
          Expand_SPARK_Potential_Renaming (N);
       end if;
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze;
 
    --  Version with check(s) suppressed
@@ -1230,6 +1265,15 @@ package body Sem is
       Scope_Stack.Locked := True;
    end Lock;
 
+   ------------------------
+   -- Preanalysis_Active --
+   ------------------------
+
+   function Preanalysis_Active return Boolean is
+   begin
+      return not Full_Analysis and not Expander_Active;
+   end Preanalysis_Active;
+
    ----------------
    -- Preanalyze --
    ----------------
@@ -1307,14 +1351,16 @@ package body Sem is
       --  the Ghost mode.
 
       procedure Do_Analyze is
-         Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+         Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+         Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+         --  Save the Ghost-related attributes to restore on exit
 
          --  Generally style checks are preserved across compilations, with
          --  one exception: s-oscons.ads, which allows arbitrary long lines
          --  unconditionally, and has no restore mechanism, because it is
          --  intended as a lowest-level Pure package.
 
-         Save_Max_Line : constant Int := Style_Max_Line_Length;
+         Saved_ML : constant Int := Style_Max_Line_Length;
 
          List : Elist_Id;
 
@@ -1324,7 +1370,8 @@ package body Sem is
 
          --  Set up a clean environment before analyzing
 
-         Install_Ghost_Mode (None);
+         Install_Ghost_Region (None, Empty);
+
          Outer_Generic_Scope := Empty;
          Scope_Suppress      := Suppress_Options;
          Scope_Stack.Table
@@ -1345,9 +1392,9 @@ package body Sem is
          --  Then pop entry for Standard, and pop implicit types
 
          Pop_Scope;
-         Restore_Scope_Stack (List);
-         Restore_Ghost_Mode (Save_Ghost_Mode);
-         Style_Max_Line_Length := Save_Max_Line;
+         Restore_Scope_Stack  (List);
+         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Style_Max_Line_Length := Saved_ML;
       end Do_Analyze;
 
       --  Local variables
@@ -1391,7 +1438,7 @@ package body Sem is
                                In_Extended_Main_Source_Unit (Comp_Unit);
       --  Determine if unit is in extended main source unit
 
-      Save_Config_Switches : Config_Switches_Type;
+      Save_Config_Attrs : Config_Switches_Type;
       --  Variable used to save values of config switches while we analyze the
       --  new unit, to be restored on exit for proper recursive behavior.
 
@@ -1400,9 +1447,18 @@ package body Sem is
       --  unit. All with'ed units are analyzed with config restrictions reset
       --  and we need to restore these saved values at the end.
 
+      Save_Preanalysis_Counter : constant Nat :=
+                                   Inside_Preanalysis_Without_Freezing;
+      --  Saves the preanalysis nesting-level counter; required since we may
+      --  need to analyze a unit as a consequence of the preanalysis of an
+      --  expression without freezing (and the loaded unit must be fully
+      --  analyzed).
+
    --  Start of processing for Semantics
 
    begin
+      Inside_Preanalysis_Without_Freezing := 0;
+
       if Debug_Unit_Walk then
          if Already_Analyzed then
             Write_Str ("(done)");
@@ -1471,8 +1527,8 @@ package body Sem is
 
       --  Save current config switches and reset then appropriately
 
-      Save_Opt_Config_Switches (Save_Config_Switches);
-      Set_Opt_Config_Switches
+      Save_Config_Attrs := Save_Config_Switches;
+      Set_Config_Switches
         (Is_Internal_Unit (Current_Sem_Unit),
          Is_Main_Unit_Or_Main_Unit_Spec);
 
@@ -1555,7 +1611,7 @@ package body Sem is
       Outer_Generic_Scope  := S_Outer_Gen_Scope;
       Style_Check          := S_Style_Check;
 
-      Restore_Opt_Config_Switches (Save_Config_Switches);
+      Restore_Config_Switches (Save_Config_Attrs);
 
       --  Deal with restore of restrictions
 
@@ -1575,6 +1631,8 @@ package body Sem is
             Unit (Comp_Unit),
             Prefix => "<-- ");
       end if;
+
+      Inside_Preanalysis_Without_Freezing := Save_Preanalysis_Counter;
    end Semantics;
 
    --------
@@ -1657,7 +1715,7 @@ package body Sem is
       --  The main unit and its spec may depend on bodies that contain generics
       --  that are instantiated in them. Iterate through the corresponding
       --  contexts before processing main (spec/body) itself, to process bodies
-      --  that may be present, together with their  context. The spec of main
+      --  that may be present, together with their context. The spec of main
       --  is processed wherever it appears in the list of units, while the body
       --  is processed as the last unit in the list.
 
@@ -1731,8 +1789,7 @@ package body Sem is
 
                --  A subprogram body must be the main unit
 
-               pragma Assert (Acts_As_Spec (CU)
-                               or else CU = Cunit (Main_Unit));
+               pragma Assert (Acts_As_Spec (CU) or else CU = Main_CU);
                null;
 
             when N_Function_Instantiation
@@ -1893,9 +1950,7 @@ package body Sem is
             if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body)
               or else Acts_As_Spec (CU)
             then
-               if CU = Cunit (Main_Unit)
-                   and then not Do_Main
-               then
+               if CU = Main_CU and then not Do_Main then
                   Seen (Unit_Num) := False;
 
                else
@@ -1970,10 +2025,9 @@ package body Sem is
                --  parents that are instances have been loaded already.
 
                if Present (Body_CU)
-                 and then Body_CU /= Cunit (Main_Unit)
+                 and then Body_CU /= Main_CU
                  and then Nkind (Unit (Body_CU)) /= N_Subprogram_Body
-                 and then (Nkind (Unit (Comp)) /= N_Package_Declaration
-                             or else Present (Withed_Body (Clause)))
+                 and then Nkind (Unit (Comp)) /= N_Package_Declaration
                then
                   Body_U := Get_Cunit_Unit_Number (Body_CU);
 
@@ -2106,6 +2160,7 @@ package body Sem is
                   if Par /= Cunit_Entity (Main_Unit) then
                      Do_Unit_And_Dependents (CU, N);
                   end if;
+
             end case;
          end;
 
@@ -2136,15 +2191,13 @@ package body Sem is
 
             function Is_Subunit_Of_Main (U : Node_Id) return Boolean is
                Lib : Node_Id;
+
             begin
-               if No (U) then
-                  return False;
-               else
+               if Present (U) and then Nkind (Unit (U)) = N_Subunit then
                   Lib := Library_Unit (U);
-                  return Nkind (Unit (U)) = N_Subunit
-                    and then
-                      (Lib = Cunit (Main_Unit)
-                        or else Is_Subunit_Of_Main (Lib));
+                  return Lib = Main_CU or else Is_Subunit_Of_Main (Lib);
+               else
+                  return False;
                end if;
             end Is_Subunit_Of_Main;
 
@@ -2201,8 +2254,14 @@ package body Sem is
 
             for Unit_Num in Done'Range loop
                if not Done (Unit_Num) then
-                  Write_Unit_Info
-                    (Unit_Num, Unit (Cunit (Unit_Num)), Withs => True);
+
+                  --  Units with configuration pragmas (.ads files) have empty
+                  --  compilation-unit nodes; skip printing info about them.
+
+                  if Present (Cunit (Unit_Num)) then
+                     Write_Unit_Info
+                       (Unit_Num, Unit (Cunit (Unit_Num)), Withs => True);
+                  end if;
                end if;
             end loop;
 
@@ -2287,7 +2346,6 @@ package body Sem is
 
       Context_Item : Node_Id;
       Lib_Unit     : Node_Id;
-      Body_CU      : Node_Id;
 
    begin
       Context_Item := First (Context_Items (CU));
@@ -2298,30 +2356,6 @@ package body Sem is
          then
             Lib_Unit := Library_Unit (Context_Item);
             Action (Lib_Unit);
-
-            --  If the context item indicates that a package body is needed
-            --  because of an instantiation in CU, traverse the body now, even
-            --  if CU is not related to the main unit. If the generic itself
-            --  appears in a package body, the context item is this body, and
-            --  it already appears in the traversal order, so we only need to
-            --  examine the case of a context item being a package declaration.
-
-            if Present (Withed_Body (Context_Item))
-              and then Nkind (Unit (Lib_Unit)) = N_Package_Declaration
-              and then Present (Corresponding_Body (Unit (Lib_Unit)))
-            then
-               Body_CU :=
-                 Parent
-                   (Unit_Declaration_Node
-                     (Corresponding_Body (Unit (Lib_Unit))));
-
-               --  A body may have an implicit with on its own spec, in which
-               --  case we must ignore this context item to prevent looping.
-
-               if Unit (CU) /= Unit (Body_CU) then
-                  Action (Body_CU);
-               end if;
-            end if;
          end if;
 
          Context_Item := Next (Context_Item);

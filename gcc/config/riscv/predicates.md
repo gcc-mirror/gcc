@@ -1,5 +1,5 @@
 ;; Predicate description for RISC-V target.
-;; Copyright (C) 2011-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -69,6 +69,26 @@
   /* Otherwise check whether the constant can be loaded in a single
      instruction.  */
   return !LUI_OPERAND (INTVAL (op)) && !SMALL_OPERAND (INTVAL (op));
+})
+
+(define_predicate "p2m1_shift_operand"
+  (match_code "const_int")
+{
+  int val = exact_log2 (INTVAL (op) + 1);
+  if (val < 12)
+    return false;
+  return true;
+ })
+
+(define_predicate "high_mask_shift_operand"
+  (match_code "const_int")
+{
+  int val1 = clz_hwi (~ INTVAL (op));
+  int val0 = ctz_hwi (INTVAL (op));
+  if ((val0 + val1 == BITS_PER_WORD)
+      && val0 > 31 && val0 < 64)
+    return true;
+  return false;
 })
 
 (define_predicate "move_operand"

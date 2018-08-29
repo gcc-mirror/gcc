@@ -39,37 +39,29 @@
 #include "tm.h"
 #include "unwind-dw2-fde.h"
 
-/* Pick names that the VxWorks muncher will get if involved.
-   Note: ppc64-vx7 diab uses "_STI_15..." for C++ in kernel mode,
-   not "_GLOBAL__{I,D}...". ???  */
+/* Pick names that the VxWorks muncher will get if involved and leave the
+   symbols with public visibility.  Hiding by default is pointless and even
+   problematic in some configurations.  When the presence of these
+   constructors is an issue, best is not to include the crt object files at
+   all.  */
 
-#ifdef __RTP__
-/* 101 is the highest user level priority allowed by VxWorks.  */
-#define CTOR_NAME _STI__101____crtbe_register_frame
-#define DTOR_NAME _STI__101____crtbe_deregister_frame
-#define CTOR_ATTRIBUTE __attribute__((constructor(101)))
-#define DTOR_ATTRIBUTE __attribute__((destructor(101)))
-#else
-#define CTOR_NAME _GLOBAL__I___crtbe_register_frame
-#define DTOR_NAME _GLOBAL__D___crtbe_deregister_frame
-#define CTOR_ATTRIBUTE __attribute__((unused))
-#define DTOR_ATTRIBUTE __attribute__((unused))
-#endif
+#define CTOR_NAME _STI__101___crtbe_register_frame
+#define DTOR_NAME _STD__101___crtbe_deregister_frame
 
-CDTOR_VISIBILITY void CTOR_NAME (void) CTOR_ATTRIBUTE;
-CDTOR_VISIBILITY void DTOR_NAME (void) DTOR_ATTRIBUTE;
+void CTOR_NAME (void) CTOR_ATTRIBUTE;
+void DTOR_NAME (void) DTOR_ATTRIBUTE;
 
 static const char __EH_FRAME_BEGIN__[]
 __attribute__((section(EH_FRAME_SECTION_NAME), aligned(4)))
   = { };
 
-CDTOR_VISIBILITY void CTOR_NAME (void)
+void CTOR_NAME (void)
 {
   static struct object object;
   __register_frame_info (__EH_FRAME_BEGIN__, &object);
 }
 
-CDTOR_VISIBILITY void DTOR_NAME (void)
+void DTOR_NAME (void)
 {
   __deregister_frame_info (__EH_FRAME_BEGIN__);
 }

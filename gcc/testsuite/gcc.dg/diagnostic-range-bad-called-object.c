@@ -19,6 +19,6 @@ void call_of_non_function_ptr (char **argP, char **argQ)
    { dg-end-multiline-output "" }
    { dg-begin-multiline-output "" }
  void call_of_non_function_ptr (char **argP, char **argQ)
-                                       ^~~~
+                                ~~~~~~~^~~~
    { dg-end-multiline-output "" } */
 }

@@ -5,6 +5,8 @@
 // The C definitions for tracebackctxt.go. That file uses //export so
 // it can't put function definitions in the "C" import comment.
 
+// +build !gccgo
+
 #include <stdlib.h>
 #include <stdint.h>
 

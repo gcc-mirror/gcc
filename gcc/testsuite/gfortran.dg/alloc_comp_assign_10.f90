@@ -51,8 +51,8 @@ program tao_program
   u%design%bunch_params%n_live_particle = [(i, i = 0, n)]
   u%model = u%design
   u%model = u%design ! The double assignment was the cause of the ICE
-  if (.not. allocated (u%model%bunch_params)) call abort
-  if (any (u%model%bunch_params%n_live_particle .ne. [(i, i = 0, n)])) call abort
+  if (.not. allocated (u%model%bunch_params)) STOP 1
+  if (any (u%model%bunch_params%n_live_particle .ne. [(i, i = 0, n)])) STOP 2
   Deallocate (u%model%bunch_params, u%design%bunch_params)
   deallocate (u%design, u%model)
   deallocate (s%u)

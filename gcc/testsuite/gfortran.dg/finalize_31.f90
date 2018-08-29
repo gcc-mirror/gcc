@@ -17,7 +17,7 @@ contains
   subroutine Finalize ( C )
     type ( CommunicatorForm ) :: C
     ! should not be called
-    call abort()
+    STOP 1
   end subroutine
 end module
 

@@ -9,7 +9,7 @@ program ibits_test
      j = ishft(j,1) + 1
      k = ibits(j, 0, 32)
      m = iand(j,n)
-     if (k /= m) call abort
+     if (k /= m) STOP 1
   end do
 end program ibits_test
 

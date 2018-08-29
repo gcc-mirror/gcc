@@ -1,5 +1,5 @@
 /* Pretty formatting of GIMPLE statements and expressions.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Diego Novillo <dnovillo@google.com>
 
@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "trans-mem.h"
 #include "cfganal.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 #define INDENT(SPACE)							\
@@ -80,17 +82,47 @@ debug_gimple_stmt (gimple *gs)
    by xstrdup_for_dump.  */
 
 static const char *
-dump_probability (int value)
+dump_profile (profile_count &count)
+{
+  char *buf = NULL;
+  if (!count.initialized_p ())
+    return "";
+  if (count.ipa_p ())
+    buf = xasprintf ("[count: %" PRId64 "]",
+		     count.to_gcov_type ());
+  else if (count.initialized_p ())
+    buf = xasprintf ("[local count: %" PRId64 "]",
+		     count.to_gcov_type ());
+
+  const char *ret = xstrdup_for_dump (buf);
+  free (buf);
+
+  return ret;
+}
+
+/* Return formatted string of a VALUE probability
+   (biased by REG_BR_PROB_BASE).  Returned string is allocated
+   by xstrdup_for_dump.  */
+
+static const char *
+dump_probability (profile_probability probability)
 {
   float minimum = 0.01f;
+  float fvalue = -1;
 
-  gcc_assert (0 <= value && value <= REG_BR_PROB_BASE);
-  float fvalue = value * 100.0f / REG_BR_PROB_BASE;
-  if (fvalue < minimum && value > 0)
-    return "[0.01%]";
+  if (probability.initialized_p ())
+    {
+      fvalue = probability.to_reg_br_prob_base () * 100.0f / REG_BR_PROB_BASE;
+      if (fvalue < minimum && probability.to_reg_br_prob_base ())
+	fvalue = minimum;
+    }
 
   char *buf;
-  asprintf (&buf, "[%.2f%%]", fvalue);
+  if (probability.initialized_p ())
+    buf = xasprintf ("[%.2f%%]", fvalue);
+  else
+    buf = xasprintf ("[INV]");
+
   const char *ret = xstrdup_for_dump (buf);
   free (buf);
 
@@ -121,7 +153,7 @@ print_gimple_stmt (FILE *file, gimple *g, int spc, dump_flags_t flags)
 DEBUG_FUNCTION void
 debug (gimple &ref)
 {
-  print_gimple_stmt (stderr, &ref, 0, 0);
+  print_gimple_stmt (stderr, &ref, 0, TDF_NONE);
 }
 
 DEBUG_FUNCTION void
@@ -326,14 +358,17 @@ dump_unary_rhs (pretty_printer *buffer, gassign *gs, int spc,
       break;
 
     case ABS_EXPR:
+    case ABSU_EXPR:
       if (flags & TDF_GIMPLE)
 	{
-	  pp_string (buffer, "__ABS ");
+	  pp_string (buffer,
+		     rhs_code == ABS_EXPR ? "__ABS " : "__ABSU ");
 	  dump_generic_node (buffer, rhs, spc, flags, false);
 	}
       else
 	{
-	  pp_string (buffer, "ABS_EXPR <");
+	  pp_string (buffer,
+		     rhs_code == ABS_EXPR ? "ABS_EXPR <" : "ABSU_EXPR <");
 	  dump_generic_node (buffer, rhs, spc, flags, false);
 	  pp_greater (buffer);
 	}
@@ -397,8 +432,10 @@ dump_binary_rhs (pretty_printer *buffer, gassign *gs, int spc,
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_PACK_FLOAT_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
+    case VEC_SERIES_EXPR:
       for (p = get_tree_code_name (code); *p; p++)
 	pp_character (buffer, TOUPPER (*p));
       pp_string (buffer, " <");
@@ -455,27 +492,6 @@ dump_ternary_rhs (pretty_printer *buffer, gassign *gs, int spc,
       pp_string (buffer, ", ");
       dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
       pp_greater (buffer);
-      break;
-
-    case FMA_EXPR:
-      if (flags & TDF_GIMPLE)
-	{
-	  pp_string (buffer, "__FMA (");
-	  dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
-	  pp_comma (buffer);
-	  dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
-	  pp_comma (buffer);
-	  dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
-	  pp_right_paren (buffer);
-	}
-      else
-	{
-	  dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
-	  pp_string (buffer, " * ");
-	  dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
-	  pp_string (buffer, " + ");
-	  dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
-	}
       break;
 
     case DOT_PROD_EXPR:
@@ -629,12 +645,11 @@ static void
 dump_gimple_return (pretty_printer *buffer, greturn *gs, int spc,
 		    dump_flags_t flags)
 {
-  tree t, t2;
+  tree t;
 
   t = gimple_return_retval (gs);
-  t2 = gimple_return_retbnd (gs);
   if (flags & TDF_RAW)
-    dump_gimple_fmt (buffer, spc, flags, "%G <%T %T>", gs, t, t2);
+    dump_gimple_fmt (buffer, spc, flags, "%G <%T>", gs, t);
   else
     {
       pp_string (buffer, "return");
@@ -642,11 +657,6 @@ dump_gimple_return (pretty_printer *buffer, greturn *gs, int spc,
 	{
 	  pp_space (buffer);
 	  dump_generic_node (buffer, t, spc, flags, false);
-	}
-      if (t2)
-	{
-	  pp_string (buffer, ", ");
-	  dump_generic_node (buffer, t2, spc, flags, false);
 	}
       pp_semicolon (buffer);
     }
@@ -841,7 +851,7 @@ dump_gimple_call (pretty_printer *buffer, gcall *gs, int spc,
   if (flags & TDF_RAW)
     {
       if (gimple_call_internal_p (gs))
-	dump_gimple_fmt (buffer, spc, flags, "%G <%s, %T", gs,
+	dump_gimple_fmt (buffer, spc, flags, "%G <.%s, %T", gs,
 			 internal_fn_name (gimple_call_internal_fn (gs)), lhs);
       else
 	dump_gimple_fmt (buffer, spc, flags, "%G <%T, %T", gs, fn, lhs);
@@ -865,7 +875,10 @@ dump_gimple_call (pretty_printer *buffer, gcall *gs, int spc,
 	  pp_space (buffer);
         }
       if (gimple_call_internal_p (gs))
-	pp_string (buffer, internal_fn_name (gimple_call_internal_fn (gs)));
+	{
+	  pp_dot (buffer);
+	  pp_string (buffer, internal_fn_name (gimple_call_internal_fn (gs)));
+	}
       else
 	print_call_name (buffer, fn, flags);
       pp_string (buffer, " (");
@@ -898,8 +911,7 @@ dump_gimple_call (pretty_printer *buffer, gcall *gs, int spc,
   if (TREE_CODE (fn) == FUNCTION_DECL && decl_is_tm_clone (fn))
     pp_string (buffer, " [tm-clone]");
   if (TREE_CODE (fn) == FUNCTION_DECL
-      && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
-      && DECL_FUNCTION_CODE (fn) == BUILT_IN_TM_START
+      && fndecl_built_in_p (fn, BUILT_IN_TM_START)
       && gimple_call_num_args (gs) > 0)
     {
       tree t = gimple_call_arg (gs, 0);
@@ -979,7 +991,7 @@ dump_gimple_switch (pretty_printer *buffer, gswitch *gs, int spc,
 
       if (cfun && cfun->cfg)
 	{
-	  basic_block dest = label_to_block (label);
+	  basic_block dest = label_to_block (cfun, label);
 	  if (dest)
 	    {
 	      edge label_edge = find_edge (gimple_bb (gs), dest);
@@ -1083,9 +1095,6 @@ dump_gimple_label (pretty_printer *buffer, glabel *gs, int spc,
   else
     {
       dump_generic_node (buffer, label, spc, flags, false);
-      basic_block bb = gimple_bb (gs);
-      if (bb && !(flags & TDF_GIMPLE))
-	pp_scalar (buffer, " %s", dump_probability (bb->frequency));
       pp_colon (buffer);
     }
   if (flags & TDF_GIMPLE)
@@ -1334,6 +1343,26 @@ dump_gimple_debug (pretty_printer *buffer, gdebug *gs, int spc,
 			 gimple_debug_source_bind_get_value (gs));
       break;
 
+    case GIMPLE_DEBUG_BEGIN_STMT:
+      if (flags & TDF_RAW)
+	dump_gimple_fmt (buffer, spc, flags, "%G BEGIN_STMT", gs);
+      else
+	dump_gimple_fmt (buffer, spc, flags, "# DEBUG BEGIN_STMT");
+      break;
+
+    case GIMPLE_DEBUG_INLINE_ENTRY:
+      if (flags & TDF_RAW)
+	dump_gimple_fmt (buffer, spc, flags, "%G INLINE_ENTRY %T", gs,
+			 gimple_block (gs)
+			 ? block_ultimate_origin (gimple_block (gs))
+			 : NULL_TREE);
+      else
+	dump_gimple_fmt (buffer, spc, flags, "# DEBUG INLINE_ENTRY %T",
+			 gimple_block (gs)
+			 ? block_ultimate_origin (gimple_block (gs))
+			 : NULL_TREE);
+      break;
+
     default:
       gcc_unreachable ();
     }
@@ -1360,17 +1389,11 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 	case GF_OMP_FOR_KIND_TASKLOOP:
 	  kind = " taskloop";
 	  break;
-	case GF_OMP_FOR_KIND_CILKFOR:
-	  kind = " _Cilk_for";
-	  break;
 	case GF_OMP_FOR_KIND_OACC_LOOP:
 	  kind = " oacc_loop";
 	  break;
 	case GF_OMP_FOR_KIND_SIMD:
 	  kind = " simd";
-	  break;
-	case GF_OMP_FOR_KIND_CILKSIMD:
-	  kind = " cilksimd";
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -1403,16 +1426,11 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 	case GF_OMP_FOR_KIND_TASKLOOP:
 	  pp_string (buffer, "#pragma omp taskloop");
 	  break;
-	case GF_OMP_FOR_KIND_CILKFOR:
-	  break;
 	case GF_OMP_FOR_KIND_OACC_LOOP:
 	  pp_string (buffer, "#pragma acc loop");
 	  break;
 	case GF_OMP_FOR_KIND_SIMD:
 	  pp_string (buffer, "#pragma omp simd");
-	  break;
-	case GF_OMP_FOR_KIND_CILKSIMD:
-	  pp_string (buffer, "#pragma simd");
 	  break;
 	case GF_OMP_FOR_KIND_GRID_LOOP:
 	  pp_string (buffer, "#pragma omp for grid_loop");
@@ -1420,19 +1438,13 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 	default:
 	  gcc_unreachable ();
 	}
-      if (gimple_omp_for_kind (gs) != GF_OMP_FOR_KIND_CILKFOR)
-	dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
+      dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
       for (i = 0; i < gimple_omp_for_collapse (gs); i++)
 	{
 	  if (i)
 	    spc += 2;
-	  if (gimple_omp_for_kind (gs) == GF_OMP_FOR_KIND_CILKFOR)
-	    pp_string (buffer, "_Cilk_for (");
-	  else
-	    {
-	      newline_and_indent (buffer, spc);
-	      pp_string (buffer, "for (");
-	    }
+	  newline_and_indent (buffer, spc);
+	  pp_string (buffer, "for (");
 	  dump_generic_node (buffer, gimple_omp_for_index (gs, i), spc,
 			     flags, false);
 	  pp_string (buffer, " = ");
@@ -1478,8 +1490,6 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 
       if (!gimple_seq_empty_p (gimple_omp_body (gs)))
 	{
-	  if (gimple_omp_for_kind (gs) == GF_OMP_FOR_KIND_CILKFOR)
-	    dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
 	  newline_and_indent (buffer, spc + 2);
 	  pp_left_brace (buffer);
 	  pp_newline (buffer);
@@ -2658,15 +2668,11 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent,
     }
   else
     {
-      gimple *stmt = first_stmt (bb);
-      if (!stmt || gimple_code (stmt) != GIMPLE_LABEL)
-	{
-	  if (flags & TDF_GIMPLE)
-	    fprintf (outf, "%*sbb_%d:\n", indent, "", bb->index);
-	  else
-	    fprintf (outf, "%*s<bb %d> %s:\n",
-		     indent, "", bb->index, dump_probability (bb->frequency));
-	}
+      if (flags & TDF_GIMPLE)
+	fprintf (outf, "%*sbb_%d:\n", indent, "", bb->index);
+      else
+	fprintf (outf, "%*s<bb %d> %s:\n",
+		 indent, "", bb->index, dump_profile (bb->count));
     }
 }
 
@@ -2722,22 +2728,10 @@ pp_cfg_jump (pretty_printer *buffer, edge e, dump_flags_t flags)
     }
   else
     {
-      gimple *stmt = first_stmt (e->dest);
-
       pp_string (buffer, "goto <bb ");
       pp_decimal_int (buffer, e->dest->index);
       pp_greater (buffer);
-      if (stmt && gimple_code (stmt) == GIMPLE_LABEL)
-	{
-	  pp_string (buffer, " (");
-	  dump_generic_node (buffer,
-			     gimple_label_label (as_a <glabel *> (stmt)),
-			     0, 0, false);
-	  pp_right_paren (buffer);
-	  pp_semicolon (buffer);
-	}
-      else
-	pp_semicolon (buffer);
+      pp_semicolon (buffer);
 
       dump_edge_probability (buffer, e);
     }
@@ -2890,3 +2884,15 @@ gimple_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
 }
 
+
+/* Handle the %G format for TEXT.  Same as %K in handle_K_format in
+   tree-pretty-print.c but with a Gimple statement as an argument.  */
+
+void
+percent_G_format (text_info *text)
+{
+  gimple *stmt = va_arg (*text->args_ptr, gimple*);
+
+  tree block = gimple_block (stmt);
+  percent_K_format (text, gimple_location (stmt), block);
+}

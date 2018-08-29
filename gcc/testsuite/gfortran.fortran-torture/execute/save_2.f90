@@ -14,7 +14,7 @@
 	   i = 1
 	   h = 12345
 	end if
-	if (h .ne. 12345) call abort
+	if (h .ne. 12345) STOP 1
       end subroutine foo
 
       subroutine bar

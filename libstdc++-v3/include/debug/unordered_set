@@ -1,6 +1,6 @@
 // Debugging unordered_set/unordered_multiset implementation -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,6 +34,13 @@
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
+# include <bits/c++config.h>
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Key, typename _Hash, typename _Pred, typename _Allocator>
+    class unordered_set;
+  template<typename _Key, typename _Hash, typename _Pred, typename _Allocator>
+    class unordered_multiset;
+} } // namespace std::__debug
 # include <unordered_set>
 
 #include <debug/safe_unordered_container.h>
@@ -65,6 +72,11 @@ namespace __debug
       typedef typename _Base::iterator		   _Base_iterator;
       typedef typename _Base::const_local_iterator _Base_const_local_iterator;
       typedef typename _Base::local_iterator	   _Base_local_iterator;
+
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
+      template<typename _ItT, typename _SeqT>
+	friend class ::__gnu_debug::_Safe_local_iterator;
 
     public:
       typedef typename _Base::size_type			size_type;
@@ -99,8 +111,8 @@ namespace __debug
 		      const hasher& __hf = hasher(),
 		      const key_equal& __eql = key_equal(),
 		      const allocator_type& __a = allocator_type())
-	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
-								     __last)),
+	: _Base(__gnu_debug::__base(
+		  __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last), __n,
 		__hf, __eql, __a) { }
 
@@ -372,13 +384,7 @@ namespace __debug
 
 #if __cplusplus > 201402L
       using node_type = typename _Base::node_type;
-
-      struct insert_return_type
-      {
-	bool inserted;
-	iterator position;
-	node_type node;
-      };
+      using insert_return_type = _Node_insert_return<iterator, node_type>;
 
       node_type
       extract(const_iterator __position)
@@ -409,7 +415,7 @@ namespace __debug
       {
 	auto __ret = _Base::insert(std::move(__nh));
 	iterator __pos = iterator(__ret.position, this);
-	return { __ret.inserted, __pos, std::move(__ret.node) };
+	return { __pos, __ret.inserted, std::move(__ret.node) };
       }
 
       iterator
@@ -530,6 +536,70 @@ namespace __debug
       }
     };
 
+#if __cpp_deduction_guides >= 201606
+
+  template<typename _InputIterator,
+	   typename _Hash =
+	   hash<typename iterator_traits<_InputIterator>::value_type>,
+	   typename _Pred =
+	   equal_to<typename iterator_traits<_InputIterator>::value_type>,
+	   typename _Allocator =
+	   allocator<typename iterator_traits<_InputIterator>::value_type>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_set(_InputIterator, _InputIterator,
+		  unordered_set<int>::size_type = {},
+		  _Hash = _Hash(), _Pred = _Pred(), _Allocator = _Allocator())
+    -> unordered_set<typename iterator_traits<_InputIterator>::value_type,
+		     _Hash, _Pred, _Allocator>;
+
+  template<typename _Tp, typename _Hash = hash<_Tp>,
+	   typename _Pred = equal_to<_Tp>,
+	   typename _Allocator = allocator<_Tp>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_set(initializer_list<_Tp>,
+		  unordered_set<int>::size_type = {},
+		  _Hash = _Hash(), _Pred = _Pred(), _Allocator = _Allocator())
+    -> unordered_set<_Tp, _Hash, _Pred, _Allocator>;
+
+  template<typename _InputIterator, typename _Allocator,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_set(_InputIterator, _InputIterator,
+		  unordered_set<int>::size_type, _Allocator)
+    -> unordered_set<typename iterator_traits<_InputIterator>::value_type,
+		     hash<
+		       typename iterator_traits<_InputIterator>::value_type>,
+		     equal_to<
+		       typename iterator_traits<_InputIterator>::value_type>,
+		     _Allocator>;
+
+  template<typename _InputIterator, typename _Hash, typename _Allocator,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_set(_InputIterator, _InputIterator,
+		  unordered_set<int>::size_type,
+		  _Hash, _Allocator)
+    -> unordered_set<typename iterator_traits<_InputIterator>::value_type,
+		     _Hash,
+		     equal_to<
+		       typename iterator_traits<_InputIterator>::value_type>,
+		     _Allocator>;
+
+  template<typename _Tp, typename _Allocator,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_set(initializer_list<_Tp>,
+		  unordered_set<int>::size_type, _Allocator)
+    -> unordered_set<_Tp, hash<_Tp>, equal_to<_Tp>, _Allocator>;
+
+  template<typename _Tp, typename _Hash, typename _Allocator,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_set(initializer_list<_Tp>,
+		  unordered_set<int>::size_type, _Hash, _Allocator)
+    -> unordered_set<_Tp, _Hash, equal_to<_Tp>, _Allocator>;
+
+#endif
+
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
     inline void
     swap(unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
@@ -571,6 +641,11 @@ namespace __debug
 						_Base_const_local_iterator;
       typedef typename _Base::local_iterator	_Base_local_iterator;
 
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
+      template<typename _ItT, typename _SeqT>
+	friend class ::__gnu_debug::_Safe_local_iterator;
+
     public:
       typedef typename _Base::size_type			size_type;
       typedef typename _Base::hasher			hasher;
@@ -587,7 +662,7 @@ namespace __debug
       typedef __gnu_debug::_Safe_local_iterator<
 	_Base_local_iterator, unordered_multiset>	local_iterator;
       typedef __gnu_debug::_Safe_local_iterator<
-	_Base_const_local_iterator, unordered_multiset> const_local_iterator;
+	_Base_const_local_iterator, unordered_multiset>	const_local_iterator;
 
       unordered_multiset() = default;
 
@@ -604,8 +679,8 @@ namespace __debug
 			   const hasher& __hf = hasher(),
 			   const key_equal& __eql = key_equal(),
 			   const allocator_type& __a = allocator_type())
-	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
-								     __last)),
+	: _Base(__gnu_debug::__base(
+		  __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last), __n,
 		__hf, __eql, __a) { }
 
@@ -1011,6 +1086,74 @@ namespace __debug
 	  this->_M_invalidate_locals();
       }
     };
+
+#if __cpp_deduction_guides >= 201606
+
+  template<typename _InputIterator,
+	   typename _Hash =
+	   hash<typename iterator_traits<_InputIterator>::value_type>,
+	   typename _Pred =
+	   equal_to<typename iterator_traits<_InputIterator>::value_type>,
+	   typename _Allocator =
+	   allocator<typename iterator_traits<_InputIterator>::value_type>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multiset(_InputIterator, _InputIterator,
+		       unordered_multiset<int>::size_type = {},
+		       _Hash = _Hash(), _Pred = _Pred(),
+		       _Allocator = _Allocator())
+    -> unordered_multiset<typename iterator_traits<_InputIterator>::value_type,
+                          _Hash, _Pred, _Allocator>;
+
+  template<typename _Tp, typename _Hash = hash<_Tp>,
+	   typename _Pred = equal_to<_Tp>,
+	   typename _Allocator = allocator<_Tp>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multiset(initializer_list<_Tp>,
+		       unordered_multiset<int>::size_type = {},
+		       _Hash = _Hash(), _Pred = _Pred(),
+		       _Allocator = _Allocator())
+    -> unordered_multiset<_Tp, _Hash, _Pred, _Allocator>;
+
+  template<typename _InputIterator, typename _Allocator,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multiset(_InputIterator, _InputIterator,
+		       unordered_multiset<int>::size_type, _Allocator)
+    -> unordered_multiset<typename iterator_traits<_InputIterator>::value_type,
+			  hash<typename
+			       iterator_traits<_InputIterator>::value_type>,
+			  equal_to<typename
+				   iterator_traits<_InputIterator>::value_type>,
+			  _Allocator>;
+
+  template<typename _InputIterator, typename _Hash, typename _Allocator,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multiset(_InputIterator, _InputIterator,
+		       unordered_multiset<int>::size_type,
+		       _Hash, _Allocator)
+    -> unordered_multiset<typename
+			  iterator_traits<_InputIterator>::value_type,
+			  _Hash,
+			  equal_to<
+			    typename
+			    iterator_traits<_InputIterator>::value_type>,
+			  _Allocator>;
+
+  template<typename _Tp, typename _Allocator,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multiset(initializer_list<_Tp>,
+		       unordered_multiset<int>::size_type, _Allocator)
+    -> unordered_multiset<_Tp, hash<_Tp>, equal_to<_Tp>, _Allocator>;
+
+  template<typename _Tp, typename _Hash, typename _Allocator,
+	   typename = _RequireAllocator<_Allocator>>
+    unordered_multiset(initializer_list<_Tp>,
+		       unordered_multiset<int>::size_type, _Hash, _Allocator)
+    -> unordered_multiset<_Tp, _Hash, equal_to<_Tp>, _Allocator>;
+
+#endif
 
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
     inline void

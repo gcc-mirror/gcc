@@ -1,5 +1,5 @@
 /* Decimal number arithmetic module for the decNumber C Library.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by IBM Corporation.  Author Mike Cowlishaw.
 
    This file is part of GCC.
@@ -6029,11 +6029,11 @@ decNumber * decCompareOp(decNumber *res, const decNumber *lhs,
 
     /* If total ordering then handle differing signs 'up front' */
     if (op==COMPTOTAL) {		/* total ordering */
-      if (decNumberIsNegative(lhs) & !decNumberIsNegative(rhs)) {
+      if (decNumberIsNegative(lhs) && !decNumberIsNegative(rhs)) {
 	result=-1;
 	break;
 	}
-      if (!decNumberIsNegative(lhs) & decNumberIsNegative(rhs)) {
+      if (!decNumberIsNegative(lhs) && decNumberIsNegative(rhs)) {
 	result=+1;
 	break;
 	}

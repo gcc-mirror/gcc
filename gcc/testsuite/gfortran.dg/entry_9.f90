@@ -23,7 +23,7 @@ END  MODULE M1
 
 program main
   use m1
-  if (E1(5) /= -5) call abort()
-  if (F2(4) /= -4) call abort()
-  if (F1(1) /= -1) call abort()
+  if (E1(5) /= -5) STOP 1
+  if (F2(4) /= -4) STOP 2
+  if (F1(1) /= -1) STOP 3
 end program main

@@ -1,5 +1,5 @@
 ; Options for the LTO front end.
-; Copyright (C) 2008-2017 Free Software Foundation, Inc.
+; Copyright (C) 2008-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -32,6 +32,9 @@ Enum(lto_linker_output) String(unknown) Value(LTO_LINKER_OUTPUT_UNKNOWN)
 
 EnumValue
 Enum(lto_linker_output) String(rel) Value(LTO_LINKER_OUTPUT_REL)
+
+EnumValue
+Enum(lto_linker_output) String(nolto-rel) Value(LTO_LINKER_OUTPUT_NOLTOREL)
 
 EnumValue
 Enum(lto_linker_output) String(dyn) Value(LTO_LINKER_OUTPUT_DYN)

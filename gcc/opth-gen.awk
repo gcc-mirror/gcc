@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2017 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2018 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -308,6 +308,9 @@ print "";
 print "/* Hash optimization from a structure.  */";
 print "extern hashval_t cl_optimization_hash (const struct cl_optimization *);";
 print "";
+print "/* Compare two optimization options.  */";
+print "extern bool cl_optimization_option_eq (cl_optimization const *ptr1, cl_optimization const *ptr2);"
+print "";
 print "/* Generator files may not have access to location_t, and don't need these.  */"
 print "#if defined(UNKNOWN_LOCATION)"
 print "bool                                                                  "
@@ -320,14 +323,15 @@ print "                           const struct cl_option_handlers *handlers, "
 print "                           diagnostic_context *dc);                   "
 for (i = 0; i < n_langs; i++) {
     lang_name = lang_sanitized_name(langs[i]);
-    print "bool                                                                  "
-    print lang_name "_handle_option_auto (struct gcc_options *opts,              "
-    print "                           struct gcc_options *opts_set,              "
-    print "                           size_t scode, const char *arg, int value,  "
-    print "                           unsigned int lang_mask, int kind,          "
-    print "                           location_t loc,                            "
-    print "                           const struct cl_option_handlers *handlers, "
-    print "                           diagnostic_context *dc);                   "
+    print "bool"
+    print lang_name "_handle_option_auto (struct gcc_options *opts,"
+    print "                           struct gcc_options *opts_set,"
+    print "                           size_t scode, const char *arg,"
+    print "                           HOST_WIDE_INT value,"
+    print "                           unsigned int lang_mask, int kind,"
+    print "                           location_t loc,"
+    print "                           const struct cl_option_handlers *handlers,"
+    print "                           diagnostic_context *dc);"
 }
 print "void cpp_handle_option_auto (const struct gcc_options * opts, size_t scode,"
 print "                             struct cpp_options * cpp_opts);"
@@ -489,6 +493,7 @@ for (i = 0; i < n_opts; i++) {
 print "  N_OPTS,"
 print "  OPT_SPECIAL_unknown,"
 print "  OPT_SPECIAL_ignore,"
+print "  OPT_SPECIAL_deprecated,"
 print "  OPT_SPECIAL_program_name,"
 print "  OPT_SPECIAL_input_file"
 print "};"

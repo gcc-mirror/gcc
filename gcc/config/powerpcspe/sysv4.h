@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
-   Copyright (C) 1995-2017 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.
@@ -22,10 +22,6 @@
    a copy of the GCC Runtime Library Exception along with this program;
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
-
-/* Header files should be C++ aware in general.  */
-#undef  NO_IMPLICIT_EXTERN_C
-#define NO_IMPLICIT_EXTERN_C
 
 /* Yes!  We are ELF.  */
 #define	TARGET_OBJECT_FORMAT OBJECT_ELF
@@ -805,7 +801,7 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
   -dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}"
 
 #if defined(HAVE_LD_EH_FRAME_HDR)
-# define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
+# define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
 #endif
 
 #define CPP_OS_LINUX_SPEC "-D__unix__ -D__gnu_linux__ -D__linux__ \

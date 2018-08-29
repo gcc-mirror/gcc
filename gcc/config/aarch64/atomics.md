@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 processor synchronization primitives.
-;; Copyright (C) 2009-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2018 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -20,12 +20,12 @@
 
 ;; Instruction patterns.
 
-(define_expand "atomic_compare_and_swap<mode>"
+(define_expand "@atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")			;; bool out
    (match_operand:ALLI 1 "register_operand" "")			;; val out
    (match_operand:ALLI 2 "aarch64_sync_memory_operand" "")	;; memory
    (match_operand:ALLI 3 "general_operand" "")			;; expected
-   (match_operand:ALLI 4 "register_operand" "")			;; desired
+   (match_operand:ALLI 4 "aarch64_reg_or_zero" "")			;; desired
    (match_operand:SI 5 "const_int_operand")			;; is_weak
    (match_operand:SI 6 "const_int_operand")			;; mod_s
    (match_operand:SI 7 "const_int_operand")]			;; mod_f
@@ -36,7 +36,7 @@
   }
 )
 
-(define_insn_and_split "aarch64_compare_and_swap<mode>"
+(define_insn_and_split "@aarch64_compare_and_swap<mode>"
   [(set (reg:CC CC_REGNUM)					;; bool out
     (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
    (set (match_operand:SI 0 "register_operand" "=&r")	   ;; val out
@@ -45,7 +45,7 @@
    (set (match_dup 1)
     (unspec_volatile:SHORT
       [(match_operand:SI 2 "aarch64_plus_operand" "rI")	;; expected
-       (match_operand:SHORT 3 "register_operand" "r")	;; desired
+       (match_operand:SHORT 3 "aarch64_reg_or_zero" "rZ")	;; desired
        (match_operand:SI 4 "const_int_operand")		;; is_weak
        (match_operand:SI 5 "const_int_operand")		;; mod_s
        (match_operand:SI 6 "const_int_operand")]	;; mod_f
@@ -61,7 +61,7 @@
   }
 )
 
-(define_insn_and_split "aarch64_compare_and_swap<mode>"
+(define_insn_and_split "@aarch64_compare_and_swap<mode>"
   [(set (reg:CC CC_REGNUM)					;; bool out
     (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
    (set (match_operand:GPI 0 "register_operand" "=&r")		;; val out
@@ -69,7 +69,7 @@
    (set (match_dup 1)
     (unspec_volatile:GPI
       [(match_operand:GPI 2 "aarch64_plus_operand" "rI")	;; expect
-       (match_operand:GPI 3 "register_operand" "r")		;; desired
+       (match_operand:GPI 3 "aarch64_reg_or_zero" "rZ")		;; desired
        (match_operand:SI 4 "const_int_operand")			;; is_weak
        (match_operand:SI 5 "const_int_operand")			;; mod_s
        (match_operand:SI 6 "const_int_operand")]		;; mod_f
@@ -85,7 +85,7 @@
   }
 )
 
-(define_insn_and_split "aarch64_compare_and_swap<mode>_lse"
+(define_insn_and_split "@aarch64_compare_and_swap<mode>_lse"
   [(set (reg:CC CC_REGNUM)					;; bool out
     (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
    (set (match_operand:SI 0 "register_operand" "=&r")		;; val out
@@ -94,7 +94,7 @@
    (set (match_dup 1)
     (unspec_volatile:SHORT
       [(match_operand:SI 2 "aarch64_plus_operand" "rI")	;; expected
-       (match_operand:SHORT 3 "register_operand" "r")	;; desired
+       (match_operand:SHORT 3 "aarch64_reg_or_zero" "rZ")	;; desired
        (match_operand:SI 4 "const_int_operand")		;; is_weak
        (match_operand:SI 5 "const_int_operand")		;; mod_s
        (match_operand:SI 6 "const_int_operand")]	;; mod_f
@@ -111,7 +111,7 @@
   }
 )
 
-(define_insn_and_split "aarch64_compare_and_swap<mode>_lse"
+(define_insn_and_split "@aarch64_compare_and_swap<mode>_lse"
   [(set (reg:CC CC_REGNUM)					;; bool out
     (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
    (set (match_operand:GPI 0 "register_operand" "=&r")		;; val out
@@ -119,7 +119,7 @@
    (set (match_dup 1)
     (unspec_volatile:GPI
       [(match_operand:GPI 2 "aarch64_plus_operand" "rI")	;; expect
-       (match_operand:GPI 3 "register_operand" "r")		;; desired
+       (match_operand:GPI 3 "aarch64_reg_or_zero" "rZ")		;; desired
        (match_operand:SI 4 "const_int_operand")			;; is_weak
        (match_operand:SI 5 "const_int_operand")			;; mod_s
        (match_operand:SI 6 "const_int_operand")]		;; mod_f
@@ -496,7 +496,7 @@
   }
 )
 
-(define_insn "aarch64_load_exclusive<mode>"
+(define_insn "@aarch64_load_exclusive<mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
     (zero_extend:SI
       (unspec_volatile:SHORT
@@ -513,7 +513,7 @@
   }
 )
 
-(define_insn "aarch64_load_exclusive<mode>"
+(define_insn "@aarch64_load_exclusive<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
     (unspec_volatile:GPI
       [(match_operand:GPI 1 "aarch64_sync_memory_operand" "Q")
@@ -529,12 +529,12 @@
   }
 )
 
-(define_insn "aarch64_store_exclusive<mode>"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+(define_insn "@aarch64_store_exclusive<mode>"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
     (unspec_volatile:SI [(const_int 0)] UNSPECV_SX))
    (set (match_operand:ALLI 1 "aarch64_sync_memory_operand" "=Q")
     (unspec_volatile:ALLI
-      [(match_operand:ALLI 2 "register_operand" "r")
+      [(match_operand:ALLI 2 "aarch64_reg_or_zero" "rZ")
        (match_operand:SI 3 "const_int_operand")]
       UNSPECV_SX))]
   ""
@@ -586,7 +586,7 @@
 ;; ARMv8.1-A LSE instructions.
 
 ;; Atomic swap with memory.
-(define_insn "aarch64_atomic_swp<mode>"
+(define_insn "@aarch64_atomic_swp<mode>"
  [(set (match_operand:ALLI 0 "register_operand" "+&r")
    (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
   (set (match_dup 1)
@@ -609,14 +609,14 @@
 
 ;; Atomic compare-and-swap: HI and smaller modes.
 
-(define_insn "aarch64_atomic_cas<mode>"
+(define_insn "@aarch64_atomic_cas<mode>"
  [(set (match_operand:SI 0 "register_operand" "+&r")		  ;; out
    (zero_extend:SI
     (match_operand:SHORT 1 "aarch64_sync_memory_operand" "+Q")))  ;; memory.
   (set (match_dup 1)
    (unspec_volatile:SHORT
     [(match_dup 0)
-     (match_operand:SHORT 2 "register_operand" "r")	;; value.
+     (match_operand:SHORT 2 "aarch64_reg_or_zero" "rZ")	;; value.
      (match_operand:SI 3 "const_int_operand" "")]	;; model.
     UNSPECV_ATOMIC_CAS))]
  "TARGET_LSE && reload_completed"
@@ -634,13 +634,13 @@
 
 ;; Atomic compare-and-swap: SI and larger modes.
 
-(define_insn "aarch64_atomic_cas<mode>"
+(define_insn "@aarch64_atomic_cas<mode>"
  [(set (match_operand:GPI 0 "register_operand" "+&r")	      ;; out
    (match_operand:GPI 1 "aarch64_sync_memory_operand" "+Q"))  ;; memory.
   (set (match_dup 1)
    (unspec_volatile:GPI
     [(match_dup 0)
-     (match_operand:GPI 2 "register_operand" "r")	;; value.
+     (match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")	;; value.
      (match_operand:SI 3 "const_int_operand" "")]	;; model.
     UNSPECV_ATOMIC_CAS))]
   "TARGET_LSE && reload_completed"
@@ -658,7 +658,7 @@
 
 ;; Atomic load-op: Load data, operate, store result, keep data.
 
-(define_insn "aarch64_atomic_load<atomic_ldop><mode>"
+(define_insn "@aarch64_atomic_load<atomic_ldop><mode>"
  [(set (match_operand:ALLI 0 "register_operand" "=r")
    (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
   (set (match_dup 1)

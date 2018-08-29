@@ -17,6 +17,6 @@ call move_alloc (from=a, to=b)
 call move_alloc (from=a2, to=b2)
 !print *, same_type_as (a,c), same_type_as (a,b)
 !print *, same_type_as (a2,c2), same_type_as (a2,b2)
-if (.not. same_type_as (a,c) .or. same_type_as (a,b)) call abort ()
-if (.not. same_type_as (a2,c2) .or. same_type_as (a2,b2)) call abort ()
+if (.not. same_type_as (a,c) .or. same_type_as (a,b)) STOP 1
+if (.not. same_type_as (a2,c2) .or. same_type_as (a2,b2)) STOP 2
 end

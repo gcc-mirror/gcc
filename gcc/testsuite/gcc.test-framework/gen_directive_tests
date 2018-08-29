@@ -14,7 +14,7 @@
 # This script has evolved and could be rewritten to be more compact.
 #
 #
-# Copyright (C) 2004-2017 Free Software Foundation, Inc.
+# Copyright (C) 2004-2018 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -539,13 +539,13 @@ selector_deep() {
     dgdo_progs compile target "$GOOD_PROG" "dotn${NUM}-exp-U" "$BADXPR"
 
     deep_progs "$BADC_PROG" "xiff-100-exp-XF" \
-      '/* { dg-xfail-if "match" { ' "{ $GOODXPR }" ' } { "*" } { "" } } */'
+      '/* { dg-xfail-if "match" { ' "{ $GOODXPR }" ' } } */'
     deep_progs "$GOOD_PROG" "xifp-100-exp-P" \
-      '/* { dg-xfail-if "no match" { ' "{ $BADXPR }" ' } { "*" } { "" } } */'
+      '/* { dg-xfail-if "no match" { ' "{ $BADXPR }" ' } } */'
     deep_progs "$BADC_PROG" "xifn-100-exp-U" \
-      '/* { dg-skip-if "match" { ' "{ $GOODXPR }" ' } { "*" } { "" } } */'
+      '/* { dg-skip-if "match" { ' "{ $GOODXPR }" ' } } */'
     deep_progs "$GOOD_PROG" "xifs-100-exp-P" \
-      '/* { dg-skip-if "match" { ' "{ $BADXPR }" ' } { "*" } { "" } } */'
+      '/* { dg-skip-if "match" { ' "{ $BADXPR }" ' } } */'
     deep_progs "$GOOD_PROG" "satn-100-exp-P" \
       '/* { dg-final { scan-assembler-not "unexpected garbage" { target ' \
       "$GOODXPR" ' } } } */'

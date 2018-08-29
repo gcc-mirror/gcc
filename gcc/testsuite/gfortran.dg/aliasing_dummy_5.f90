@@ -20,7 +20,7 @@ PROGRAM main
   IMPLICIT NONE
   arr = (/ 1, 2, 3 /)
   CALL bar(arr)
-  if (any (arr /= (/ 1, 1, 2 /))) call abort()
+  if (any (arr /= (/ 1, 1, 2 /))) STOP 1
   CALL test()
 contains
   subroutine bar(x)
@@ -37,7 +37,7 @@ CONTAINS
     INTEGER, TARGET :: arg(:)
     arr(1) = 5
     arg(1) = 6
-    if (arr(1) == 5) call abort()
+    if (arr(1) == 5) STOP 2
   END SUBROUTINE foobar
 END MODULE m2
 subroutine test

@@ -1,4 +1,4 @@
-## Copyright (C) 2014-2017 Free Software Foundation, Inc.
+## Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 ## This file is part of GCC.
 
@@ -44,24 +44,6 @@ if ENABLE_PLUGIN
 plugin_LTLIBRARIES = libcc1plugin.la libcp1plugin.la
 cc1lib_LTLIBRARIES = libcc1.la
 endif
-
-BUILT_SOURCES = c-compiler-name.h cp-compiler-name.h
-MOSTLYCLEANFILES = c-compiler-name.h cp-compiler-name.h
-
-# Put this in a header so we don't run sed for each compilation.  This
-# is also simpler to debug as one can easily see the constant.
-# FIXME: compute it in configure.ac and output it in config.status, or
-# introduce timestamp files for some indirection to avoid rebuilding it
-# every time.
-c-compiler-name.h: Makefile
-	-rm -f $@T
-	echo "#define C_COMPILER_NAME \"`echo gcc | sed '$(transform)'`\"" > $@T
-	mv $@T $@ # $(SHELL) $(srcdir)/../move-if-change $@T $@
-
-cp-compiler-name.h: Makefile
-	-rm -f $@T
-	echo "#define CP_COMPILER_NAME \"`echo g++ | sed '$(transform)'`\"" > $@T
-	mv $@T $@ # $(SHELL) $(srcdir)/../move-if-change $@T $@
 
 shared_source = callbacks.cc callbacks.hh connection.cc connection.hh \
     marshall.cc marshall.hh rpc.hh status.hh

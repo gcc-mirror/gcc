@@ -13,13 +13,13 @@ include "default_format_1.inc"
 program main
   use test_default_format
 
-  if (test (tiny(0.0_4), -1) /= 0) call abort
-  if (test (-tiny(0.0_4), 1) /= 0) call abort
-  if (test (0.0_4, 0) /= 0) call abort
+  if (test (tiny(0.0_4), -1) /= 0) STOP 1
+  if (test (-tiny(0.0_4), 1) /= 0) STOP 2
+  if (test (0.0_4, 0) /= 0) STOP 3
 
-  if (test (tiny(0.0_8), -1) /= 0) call abort
-  if (test (-tiny(0.0_8), 1) /= 0) call abort
-  if (test (0.0_8, 0) /= 0) call abort
+  if (test (tiny(0.0_8), -1) /= 0) STOP 4
+  if (test (-tiny(0.0_8), 1) /= 0) STOP 5
+  if (test (0.0_8, 0) /= 0) STOP 6
 
 end program main
 !

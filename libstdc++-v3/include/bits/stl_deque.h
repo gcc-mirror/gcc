@@ -1,6 +1,6 @@
 // Deque implementation -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,6 +67,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
@@ -148,9 +149,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _Deque_iterator() _GLIBCXX_NOEXCEPT
       : _M_cur(), _M_first(), _M_last(), _M_node() { }
 
+#if __cplusplus < 201103L
+      // Conversion from iterator to const_iterator.
       _Deque_iterator(const iterator& __x) _GLIBCXX_NOEXCEPT
       : _M_cur(__x._M_cur), _M_first(__x._M_first),
 	_M_last(__x._M_last), _M_node(__x._M_node) { }
+#else
+      // Conversion from iterator to const_iterator.
+      template<typename _Iter,
+              typename = _Require<is_same<_Self, const_iterator>,
+                                  is_same<_Iter, iterator>>>
+       _Deque_iterator(const _Iter& __x) noexcept
+       : _M_cur(__x._M_cur), _M_first(__x._M_first),
+         _M_last(__x._M_last), _M_node(__x._M_node) { }
+
+      _Deque_iterator(const _Deque_iterator&) = default;
+      _Deque_iterator& operator=(const _Deque_iterator&) = default;
+#endif
 
       iterator
       _M_const_cast() const _GLIBCXX_NOEXCEPT
@@ -478,7 +493,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     public:
       typedef _Alloc		  allocator_type;
-      typedef typename _Alloc_traits::size_type size_type;
 
       allocator_type
       get_allocator() const _GLIBCXX_NOEXCEPT
@@ -520,7 +534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       : _Deque_base(std::move(__x), typename _Alloc_traits::is_always_equal{})
       { }
 
-      _Deque_base(_Deque_base&& __x, const allocator_type& __a, size_type __n)
+      _Deque_base(_Deque_base&& __x, const allocator_type& __a, size_t __n)
       : _M_impl(__a)
       {
 	if (__x.get_allocator() == __a)
@@ -839,6 +853,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       __glibcxx_class_requires2(_Tp, _Alloc_value_type, _SameTypeConcept)
 #endif
 
+#if __cplusplus >= 201103L
+      static_assert(is_same<typename remove_cv<_Tp>::type, _Tp>::value,
+	  "std::deque must have a non-const, non-volatile value_type");
+# ifdef __STRICT_ANSI__
+      static_assert(is_same<typename _Alloc::value_type, _Tp>::value,
+	  "std::deque must have the same value_type as its allocator");
+# endif
+#endif
+
       typedef _Deque_base<_Tp, _Alloc>			_Base;
       typedef typename _Base::_Tp_alloc_type		_Tp_alloc_type;
       typedef typename _Base::_Alloc_traits		_Alloc_traits;
@@ -906,7 +929,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       explicit
       deque(size_type __n, const allocator_type& __a = allocator_type())
-      : _Base(__a, __n)
+      : _Base(__a, _S_check_init_len(__n, __a))
       { _M_default_initialize(); }
 
       /**
@@ -919,7 +942,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       deque(size_type __n, const value_type& __value,
 	    const allocator_type& __a = allocator_type())
-      : _Base(__a, __n)
+      : _Base(__a, _S_check_init_len(__n, __a))
       { _M_fill_initialize(__value); }
 #else
       /**
@@ -933,7 +956,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       explicit
       deque(size_type __n, const value_type& __value = value_type(),
 	    const allocator_type& __a = allocator_type())
-      : _Base(__a, __n)
+      : _Base(__a, _S_check_init_len(__n, __a))
       { _M_fill_initialize(__value); }
 #endif
 
@@ -1274,7 +1297,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**  Returns the size() of the largest possible %deque.  */
       size_type
       max_size() const _GLIBCXX_NOEXCEPT
-      { return _Alloc_traits::max_size(_M_get_Tp_allocator()); }
+      { return _S_max_size(_M_get_Tp_allocator()); }
 
 #if __cplusplus >= 201103L
       /**
@@ -1851,9 +1874,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	void
 	_M_initialize_dispatch(_Integer __n, _Integer __x, __true_type)
 	{
-	  _M_initialize_map(static_cast<size_type>(__n));
+	  _M_initialize_map(_S_check_init_len(static_cast<size_type>(__n),
+					      _M_get_Tp_allocator()));
 	  _M_fill_initialize(__x);
 	}
+
+      static size_t
+      _S_check_init_len(size_t __n, const allocator_type& __a)
+      {
+	if (__n > _S_max_size(__a))
+	  __throw_length_error(
+	      __N("cannot create std::deque larger than max_size()"));
+	return __n;
+      }
+
+      static size_type
+      _S_max_size(const _Tp_alloc_type& __a) _GLIBCXX_NOEXCEPT
+      {
+	const size_t __diffmax = __gnu_cxx::__numeric_traits<ptrdiff_t>::__max;
+	const size_t __allocmax = _Alloc_traits::max_size(__a);
+	return (std::min)(__diffmax, __allocmax);
+      }
 
       // called by the range constructor to implement [23.1.1]/9
       template<typename _InputIterator>
@@ -2242,6 +2283,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
     };
 
+#if __cpp_deduction_guides >= 201606
+  template<typename _InputIterator, typename _ValT
+	     = typename iterator_traits<_InputIterator>::value_type,
+	   typename _Allocator = allocator<_ValT>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    deque(_InputIterator, _InputIterator, _Allocator = _Allocator())
+      -> deque<_ValT, _Allocator>;
+#endif
 
   /**
    *  @brief  Deque equality comparison.
@@ -2316,6 +2366,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #undef _GLIBCXX_DEQUE_BUF_SIZE
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif /* _STL_DEQUE_H */

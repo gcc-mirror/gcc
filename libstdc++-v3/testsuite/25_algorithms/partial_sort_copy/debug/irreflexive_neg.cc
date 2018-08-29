@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,8 +31,8 @@ bad_lower(int lhs, int rhs)
 
 void test01()
 {
-  int ins[] { 0, 1, 2, 3 };
-  int outs[] { 9, 9 };
+  int ins[] = { 0, 1, 2, 3 };
+  int outs[] = { 9, 9 };
   std::partial_sort_copy(ins, ins + 4, outs, outs + 2, bad_lower);
 }
 

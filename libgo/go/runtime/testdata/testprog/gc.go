@@ -25,6 +25,7 @@ func GCSys() {
 	runtime.GC()
 	runtime.ReadMemStats(memstats)
 	sys := memstats.Sys
+	fmt.Printf("original sys: %#x\n", sys)
 
 	runtime.MemProfileRate = 0 // disable profiler
 
@@ -36,6 +37,8 @@ func GCSys() {
 	// Should only be using a few MB.
 	// We allocated 100 MB or (if not short) 1 GB.
 	runtime.ReadMemStats(memstats)
+	fmt.Printf("final sys: %#x\n", memstats.Sys)
+	fmt.Printf("%#v\n", *memstats)
 	if sys > memstats.Sys {
 		sys = 0
 	} else {

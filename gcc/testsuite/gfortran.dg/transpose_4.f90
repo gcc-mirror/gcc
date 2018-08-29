@@ -45,8 +45,8 @@ program test
 ! print *,'Normal:    ',maxval(abs(B1-B2))
 ! print *,B1
 ! print *,B2
-  if (any(B1 /= R)) call abort
-  if (any(B2 /= R)) call abort
+  if (any(B1 /= R)) STOP 1
+  if (any(B2 /= R)) STOP 2
 
   ! Transposed argument
   B1 = 0
@@ -56,8 +56,8 @@ program test
 ! print *,'Transposed:',maxval(abs(B1-B2))
 ! print *,B1
 ! print *,B2
-  if (any(B1 /= RT)) call abort
-  if (any(B2 /= RT)) call abort
+  if (any(B1 /= RT)) STOP 3
+  if (any(B2 /= RT)) STOP 4
 
 contains
 

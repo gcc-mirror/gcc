@@ -20,7 +20,7 @@ contains
   subroutine check_err(a, s)
     real, dimension(:,:), intent(in) :: a
     real, intent(in) :: s
-    if (abs(sum(a) - s) > 1e-5) call abort
+    if (abs(sum(a) - s) > 1e-5) STOP 1
   end subroutine check_err
 
 end module test_mod

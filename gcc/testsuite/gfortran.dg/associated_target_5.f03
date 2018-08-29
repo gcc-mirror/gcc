@@ -15,22 +15,22 @@ program test_associate
   associate (a => t%a)
 ! Test 'a' is OK on lhs and/or rhs of assignments
     c = a - 1
-    if (any (c .ne. [-1,0,1,2])) call abort
+    if (any (c .ne. [-1,0,1,2])) STOP 1
     a = a + 1
-    if (any (a .ne. [1,2,3,4])) call abort
+    if (any (a .ne. [1,2,3,4])) STOP 2
     a = t%b
-    if (any (a .ne. t%b)) call abort
+    if (any (a .ne. t%b)) STOP 3
 ! Test 'a' is OK as an actual argument
     c = foo(a)
-    if (any (c .ne. t%b + 10)) call abort
+    if (any (c .ne. t%b + 10)) STOP 4
   end associate
 ! Make sure that the fix works for multi-dimensional arrays...
   associate (a => u%a)
-    if (any (a .ne. reshape ([1,1,1,1],[2,2]))) call abort
+    if (any (a .ne. reshape ([1,1,1,1],[2,2]))) STOP 5
   end associate
 ! ...and sections
   associate (a => t(2:3)%b)
-    if (any (a .ne. [5,6])) call abort
+    if (any (a .ne. [5,6])) STOP 6
   end associate
 contains
   function foo(arg) result(res)

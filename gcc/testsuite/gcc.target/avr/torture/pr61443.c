@@ -4,6 +4,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#ifndef __FLASH
+#define __flash /* empty */
+#define __memx  /* empty */
+#endif
+
 #define NC __attribute__((noinline,noclone))
 
 void NC vfun (char n, ...)

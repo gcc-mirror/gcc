@@ -14,7 +14,7 @@ enum DebuggerType {};
 C a;
 DebuggerType b;
 void operator==(A &, const A &);
-static A get_dbx_doc(A &p1) { p1 == 0; }
+static A get_dbx_doc(A &p1) { p1 == 0; return A(); }
 
 void add_button() {
   A c;

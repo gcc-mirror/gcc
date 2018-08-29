@@ -37,7 +37,7 @@ contains
       do i2 = 1, n2
         do i1 = 1, n1
           i2p = mod (shift1 (i1, i3) + i2 - 1, n2) + 1
-          if (b (i1, i2, i3) .ne. a (i1, i2p, i3)) call abort
+          if (b (i1, i2, i3) .ne. a (i1, i2p, i3)) STOP 1
         end do
       end do
     end do

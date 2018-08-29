@@ -23,12 +23,7 @@ int i(int x){
   x += __INT_MAX__;
   return x;
 }
-typedef int S __attribute__((vector_size(16)));
-void j(S*x){
-  *x += __INT_MAX__;
-  *x += __INT_MAX__;
-}
 
-/* { dg-final { scan-tree-dump-times " \\+ 24;" 2 "optimized" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "\\(unsigned int\\)" 2 "optimized" { xfail *-*-* }  } } */
-/* { dg-final { scan-tree-dump-not "2147483647" "optimized" { xfail *-*-* }  } } */
+/* { dg-final { scan-tree-dump-times " \\+ 24;" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\(unsigned int\\)" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-not "2147483647" "optimized" } } */

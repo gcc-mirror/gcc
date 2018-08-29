@@ -1,6 +1,6 @@
 # Multilibs for powerpc RTEMS targets.
 #
-# Copyright (C) 2004-2017 Free Software Foundation, Inc.
+# Copyright (C) 2004-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -27,14 +27,14 @@ MULTILIB_REQUIRED =
 MULTILIB_OPTIONS += mcpu=403/mcpu=505/mcpu=603e/mcpu=604/mcpu=860/mcpu=7400/mcpu=8540/mcpu=e6500
 MULTILIB_DIRNAMES += m403 m505 m603e m604 m860 m7400 m8540 me6500
 
-MULTILIB_OPTIONS += m32
-MULTILIB_DIRNAMES += m32
+MULTILIB_OPTIONS += m32/m64
+MULTILIB_DIRNAMES += m32 m64
 
-MULTILIB_OPTIONS += msoft-float/mfloat-gprs=double
-MULTILIB_DIRNAMES += nof gprsdouble
+MULTILIB_OPTIONS += msoft-float
+MULTILIB_DIRNAMES += nof
 
-MULTILIB_OPTIONS += mno-spe/mno-altivec
-MULTILIB_DIRNAMES += nospe noaltivec
+MULTILIB_OPTIONS += mno-altivec
+MULTILIB_DIRNAMES += noaltivec
 
 MULTILIB_MATCHES  	+= ${MULTILIB_MATCHES_ENDIAN}
 MULTILIB_MATCHES	+= ${MULTILIB_MATCHES_SYSV}
@@ -56,10 +56,6 @@ MULTILIB_MATCHES	+= mcpu?750=
 # Map 8548 to 8540
 MULTILIB_MATCHES	+= mcpu?8540=mcpu?8548
 
-# Map -mcpu=8540 -mfloat-gprs=single to -mcpu=8540
-# (mfloat-gprs=single is implicit default)
-MULTILIB_MATCHES	+= mcpu?8540=mcpu?8540/mfloat-gprs?single
-
 # Enumeration of multilibs
 
 MULTILIB_REQUIRED += msoft-float
@@ -72,8 +68,8 @@ MULTILIB_REQUIRED += mcpu=604/msoft-float
 MULTILIB_REQUIRED += mcpu=7400
 MULTILIB_REQUIRED += mcpu=7400/msoft-float
 MULTILIB_REQUIRED += mcpu=8540
-MULTILIB_REQUIRED += mcpu=8540/msoft-float/mno-spe
-MULTILIB_REQUIRED += mcpu=8540/mfloat-gprs=double
+MULTILIB_REQUIRED += mcpu=8540/msoft-float
 MULTILIB_REQUIRED += mcpu=860
 MULTILIB_REQUIRED += mcpu=e6500/m32
 MULTILIB_REQUIRED += mcpu=e6500/m32/msoft-float/mno-altivec
+MULTILIB_REQUIRED += mcpu=e6500/m64

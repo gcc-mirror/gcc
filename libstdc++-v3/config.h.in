@@ -264,11 +264,17 @@
 /* Only used in build directory testsuite_hooks.h. */
 #undef HAVE_LIMIT_VMEM
 
+/* Define if link is available in <unistd.h>. */
+#undef HAVE_LINK
+
 /* Define if futex syscall is available. */
 #undef HAVE_LINUX_FUTEX
 
 /* Define to 1 if you have the <linux/random.h> header file. */
 #undef HAVE_LINUX_RANDOM_H
+
+/* Define to 1 if you have the <linux/types.h> header file. */
+#undef HAVE_LINUX_TYPES_H
 
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
@@ -335,6 +341,9 @@
 
 /* Define to 1 if you have the `quick_exit' function. */
 #undef HAVE_QUICK_EXIT
+
+/* Define if readlink is available in <unistd.h>. */
+#undef HAVE_READLINK
 
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
@@ -404,6 +413,9 @@
 
 /* Define if strxfrm_l is available in <string.h>. */
 #undef HAVE_STRXFRM_L
+
+/* Define if symlink is available in <unistd.h>. */
+#undef HAVE_SYMLINK
 
 /* Define to 1 if the target runtime linker supports binding the same symbol
    to different versions. */
@@ -703,6 +715,9 @@
 /* Define to 1 if you have the `_tanl' function. */
 #undef HAVE__TANL
 
+/* Define to 1 if you have the `_wfopen' function. */
+#undef HAVE__WFOPEN
+
 /* Define to 1 if you have the `__cxa_thread_atexit' function. */
 #undef HAVE___CXA_THREAD_ATEXIT
 
@@ -914,9 +929,6 @@
 
 /* Define if fchmodat is available in <sys/stat.h>. */
 #undef _GLIBCXX_USE_FCHMODAT
-
-/* Define if __float128 is supported on this host. */
-#undef _GLIBCXX_USE_FLOAT128
 
 /* Defined if gettimeofday is available. */
 #undef _GLIBCXX_USE_GETTIMEOFDAY

@@ -19,6 +19,7 @@ public:
   }
 };
 
+int
 main() {
   try {
     D d;

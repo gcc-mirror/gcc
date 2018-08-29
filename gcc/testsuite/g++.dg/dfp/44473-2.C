@@ -14,12 +14,12 @@ namespace std {
   }
 }
 
-int bar (const std::decimal::decimal64 & x) { }
+int bar (const std::decimal::decimal64 & x) { return 0; }
 
 int foo ()
 {
   std::decimal::decimal64 x(0);
-  bar (x);
+  return bar (x);
 }
 
 // { dg-final { scan-assembler "_Z3barRKDd:" } }

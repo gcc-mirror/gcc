@@ -8,15 +8,15 @@ program arrayio_4
   character(12)  :: r(2,3,4) = '0123456789AB'
    
   write(r(::2,:,::1),'(i5)', iostat=ierr) 1,2,3,4,5
-  if (ierr.ne.0) call abort()
+  if (ierr.ne.0) STOP 1
 
   write(r(:,:,::2),'(i5)', iostat=ierr) 1,2,3,4,5
-  if (ierr.ne.0) call abort()
+  if (ierr.ne.0) STOP 2
 
   write(r(::1,::2,::1),'(i5)', iostat=ierr) 1,2,3,4,5
-  if (ierr.ne.0) call abort()
+  if (ierr.ne.0) STOP 3
 
   write(r(::1,::1,::1),'(i5)', iostat=ierr) 1,2,3,4,5
-  if (ierr.ne.0) call abort()
+  if (ierr.ne.0) STOP 4
 end program arrayio_4
 

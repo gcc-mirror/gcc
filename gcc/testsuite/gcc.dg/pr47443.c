@@ -1,5 +1,6 @@
 /* PR tree-optimization/47443 */
 /* { dg-do compile } */
+/* { dg-require-stack-check "generic" } */
 /* { dg-options "-O -fstack-check=generic" } */
 
 static inline int bar (char *c, int i)

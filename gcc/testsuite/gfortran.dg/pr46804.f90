@@ -1,6 +1,6 @@
 ! PR rtl-optimization/46804
 ! { dg-do run }
-! { dg-options "-O -fPIC -fexpensive-optimizations -fgcse -foptimize-register-move -fpeel-loops -fno-tree-loop-optimize" }
+! { dg-options "-O -fPIC -fexpensive-optimizations -fgcse -fpeel-loops -fno-tree-loop-optimize" }
 
 program main
   integer, parameter :: n1 = 2, n2 = 3, n3 = 4, slen = 3
@@ -28,7 +28,7 @@ contains
       do i2 = 1, n2
         do i1 = 1, n1
           i2p = mod (shift1 (i1, i3) + i2 - 1, n2) + 1
-          if (b (i1, i2, i3) .ne. a (i1, i2p, i3)) call abort
+          if (b (i1, i2, i3) .ne. a (i1, i2p, i3)) STOP 1
         end do
       end do
     end do

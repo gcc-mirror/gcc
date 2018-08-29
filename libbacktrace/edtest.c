@@ -1,5 +1,5 @@
 /* edtest.c -- Test for libbacktrace storage allocation stress handling
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -41,19 +41,7 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include "backtrace-supported.h"
 #include "internal.h"
 
-#if defined(__MSDOS__) || defined(_WIN32) || defined(__OS2__) || defined (__CYGWIN__)
-# define IS_DIR_SEPARATOR(c) ((c) == '/' || (c) == '\\')
-#else
-# define IS_DIR_SEPARATOR(c) ((c) == '/')
-#endif
-
-/* The backtrace state.  */
-
-static void *state;
-
-/* The number of failures.  */
-
-int failures = 0;
+#include "testlib.h"
 
 static int test1 (void) __attribute__ ((noinline, unused));
 static int test1 (void) __attribute__ ((noinline, unused));
@@ -66,128 +54,6 @@ test1 (void)
   /* Returning a value here and elsewhere avoids a tailcall which
      would mess up the backtrace.  */
   return f2 (__LINE__) + 1;
-}
-
-/* Used to collect backtrace info.  */
-
-struct info
-{
-  char *filename;
-  int lineno;
-  char *function;
-};
-
-/* Return the base name in a path.  */
-
-static const char *
-base (const char *p)
-{
-  const char *last;
-  const char *s;
-
-  last = NULL;
-  for (s = p; *s != '\0'; ++s)
-    {
-      if (IS_DIR_SEPARATOR (*s))
-        last = s + 1;
-    }
-  return last != NULL ? last : p;
-}
-
-/* Check an entry in a struct info array.  */
-
-static void
-check (const char *name, int index, const struct info *all, int want_lineno,
-       const char *want_function, const char *want_file, int *failed)
-{
-  if (*failed)
-    return;
-  if (all[index].filename == NULL || all[index].function == NULL)
-    {
-      fprintf (stderr, "%s: [%d]: missing file name or function name\n",
-               name, index);
-      *failed = 1;
-      return;
-    }
-  if (strcmp (base (all[index].filename), want_file) != 0)
-    {
-      fprintf (stderr, "%s: [%d]: got %s expected %s\n", name, index,
-               all[index].filename, want_file);
-      *failed = 1;
-    }
-  if (all[index].lineno != want_lineno)
-    {
-      fprintf (stderr, "%s: [%d]: got %d expected %d\n", name, index,
-               all[index].lineno, want_lineno);
-      *failed = 1;
-    }
-  if (strcmp (all[index].function, want_function) != 0)
-    {
-      fprintf (stderr, "%s: [%d]: got %s expected %s\n", name, index,
-               all[index].function, want_function);
-      *failed = 1;
-    }
-}
-
-/* Passed to backtrace callback function.  */
-
-struct bdata
-{
-  struct info *all;
-  size_t index;
-  size_t max;
-  int failed;
-};
-
-/* An error callback passed to backtrace.  */
-
-static void
-error_callback_one (void *vdata, const char *msg, int errnum)
-{
-  struct bdata *data = (struct bdata *) vdata;
-
-  fprintf (stderr, "%s", msg);
-  if (errnum > 0)
-    fprintf (stderr, ": %s", strerror (errnum));
-  fprintf (stderr, "\n");
-  data->failed = 1;
-}
-
-/* The backtrace callback function.  */
-
-static int
-callback_one (void *vdata, uintptr_t pc ATTRIBUTE_UNUSED,
-              const char *filename, int lineno, const char *function)
-{
-  struct bdata *data = (struct bdata *) vdata;
-  struct info *p;
-
-  if (data->index >= data->max)
-    {
-      fprintf (stderr, "callback_one: callback called too many times\n");
-      data->failed = 1;
-      return 1;
-    }
-
-  p = &data->all[data->index];
-  if (filename == NULL)
-    p->filename = NULL;
-  else
-    {
-      p->filename = strdup (filename);
-      assert (p->filename != NULL);
-    }
-  p->lineno = lineno;
-  if (function == NULL)
-    p->function = NULL;
-  else
-    {
-      p->function = strdup (function);
-      assert (p->function != NULL);
-    }
-  ++data->index;
-
-  return 0;
 }
 
 int
@@ -230,17 +96,6 @@ f3 (int f1line, int f2line)
     ++failures;
 
   return failures;
-}
-
-static void
-error_callback_create (void *data ATTRIBUTE_UNUSED, const char *msg,
-                       int errnum)
-{
-  fprintf (stderr, "%s", msg);
-  if (errnum > 0)
-    fprintf (stderr, ": %s", strerror (errnum));
-  fprintf (stderr, "\n");
-  exit (EXIT_FAILURE);
 }
 
 int

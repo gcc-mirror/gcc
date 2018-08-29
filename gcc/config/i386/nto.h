@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running QNX/Neutrino.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -97,8 +97,6 @@ crti.o%s \
 
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
-
-#define NO_IMPLICIT_EXTERN_C 1
 
 #define TARGET_POSIX_IO
 

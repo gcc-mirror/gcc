@@ -26,11 +26,11 @@ program main
   t%data=(/(i,i=1,10)/)
   d=>t%data(5:9)
   call s1(t,d)
-  if (any(d.ne.(/3,4,5,6,7/))) call abort()
+  if (any(d.ne.(/3,4,5,6,7/))) STOP 1
   t%data=(/(i,i=1,10)/)
   d=>t%data(1:5)
   call s2(d,t)
-  if (any(t%data.ne.(/1,2,1,2,3,4,5,8,9,10/))) call abort
+  if (any(t%data.ne.(/1,2,1,2,3,4,5,8,9,10/))) STOP 1
   deallocate(t%data)
   deallocate(t)
 end program main

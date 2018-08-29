@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  VAX version.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,8 +29,8 @@ extern void print_operand (FILE *, rtx, int);
 extern void vax_notice_update_cc (rtx, rtx);
 extern void vax_expand_addsub_di_operands (rtx *, enum rtx_code);
 extern const char * vax_output_int_move (rtx, rtx *, machine_mode);
-extern const char * vax_output_int_add (rtx, rtx *, machine_mode);
-extern const char * vax_output_int_subtract (rtx, rtx *, machine_mode);
+extern const char * vax_output_int_add (rtx_insn *, rtx *, machine_mode);
+extern const char * vax_output_int_subtract (rtx_insn *, rtx *, machine_mode);
 extern const char * vax_output_movmemsi (rtx, rtx *);
 #endif /* RTX_CODE */
 

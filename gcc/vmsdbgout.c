@@ -1,5 +1,5 @@
 /* Output VMS debug format symbol table information from GCC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
    Updated by Bernard W. Giroud (bgiroud@users.sourceforge.net).
 
@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "function.h"
 #include "target.h"
+#include "file-prefix-map.h" /* remap_debug_filename()  */
 
 /* Difference in seconds between the VMS Epoch and the Unix Epoch */
 static const long long vms_epoch_offset = 3506716800ll;
@@ -147,6 +148,7 @@ static int write_srccorrs (int);
 
 static void vmsdbgout_init (const char *);
 static void vmsdbgout_finish (const char *);
+static void vmsdbgout_early_finish (const char *);
 static void vmsdbgout_assembly_start (void);
 static void vmsdbgout_define (unsigned int, const char *);
 static void vmsdbgout_undef (unsigned int, const char *);
@@ -176,7 +178,7 @@ static void vmsdbgout_abstract_function (tree);
 const struct gcc_debug_hooks vmsdbg_debug_hooks
 = {vmsdbgout_init,
    vmsdbgout_finish,
-   debug_nothing_charstar,
+   vmsdbgout_early_finish,
    vmsdbgout_assembly_start,
    vmsdbgout_define,
    vmsdbgout_undef,
@@ -197,12 +199,15 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    vmsdbgout_early_global_decl,
    vmsdbgout_late_global_decl,
    vmsdbgout_type_decl,		  /* type_decl */
-   debug_nothing_tree_tree_tree_bool, /* imported_module_or_decl */
+   debug_nothing_tree_tree_tree_bool_bool, /* imported_module_or_decl */
+   debug_false_tree_charstarstar_uhwistar, /* die_ref_for_decl */
+   debug_nothing_tree_charstar_uhwi, /* register_external_die */
    debug_nothing_tree,		  /* deferred_inline_function */
    vmsdbgout_abstract_function,
    debug_nothing_rtx_code_label,  /* label */
    debug_nothing_int,		  /* handle_pch */
    debug_nothing_rtx_insn,	  /* var_location */
+   debug_nothing_tree,	          /* inline_entry */
    debug_nothing_tree,		  /* size_function */
    debug_nothing_void,            /* switch_text_section */
    debug_nothing_tree_tree,	  /* set_name */
@@ -1552,6 +1557,13 @@ vmsdbgout_abstract_function (tree decl)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.outlining_inline_function) (decl);
+}
+
+static void
+vmsdbgout_early_finish (const char *filename)
+{
+  if (write_symbols == VMS_AND_DWARF2_DEBUG)
+    (*dwarf2_debug_hooks.early_finish) (filename);
 }
 
 /* Output stuff that Debug requires at the end of every file and generate the

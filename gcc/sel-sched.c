@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "regs.h"
 #include "cfgbuild.h"
+#include "cfgcleanup.h"
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "params.h"
@@ -672,7 +673,7 @@ extract_new_fences_from (flist_t old_fences, flist_tail_t new_fences,
     {
       int seqno = INSN_SEQNO (succ);
 
-      if (0 < seqno && seqno <= orig_max_seqno
+      if (seqno > 0 && seqno <= orig_max_seqno
           && (pipelining_p || INSN_SCHED_TIMES (succ) <= 0))
         {
           bool b = (in_same_ebb_p (insn, succ)
@@ -1076,10 +1077,10 @@ init_regs_for_mode (machine_mode mode)
 
       /* See whether it accepts all modes that occur in
          original insns.  */
-      if (! HARD_REGNO_MODE_OK (cur_reg, mode))
+      if (!targetm.hard_regno_mode_ok (cur_reg, mode))
         continue;
 
-      nregs = hard_regno_nregs[cur_reg][mode];
+      nregs = hard_regno_nregs (cur_reg, mode);
 
       for (i = nregs - 1; i >= 0; --i)
         if (fixed_regs[cur_reg + i]
@@ -1102,7 +1103,7 @@ init_regs_for_mode (machine_mode mode)
       if (i >= 0)
         continue;
 
-      if (HARD_REGNO_CALL_PART_CLOBBERED (cur_reg, mode))
+      if (targetm.hard_regno_call_part_clobbered (cur_reg, mode))
         SET_HARD_REG_BIT (sel_hrd.regs_for_call_clobbered[mode],
                           cur_reg);
 
@@ -1251,7 +1252,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
 
   /* Exclude registers that are partially call clobbered.  */
   if (def->crosses_call
-      && ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
+      && !targetm.hard_regno_call_part_clobbered (regno, mode))
     AND_COMPL_HARD_REG_SET (reg_rename_p->available_for_renaming,
                             sel_hrd.regs_for_call_clobbered[mode]);
 
@@ -1262,7 +1263,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
       int nregs;
       int i;
 
-      nregs = hard_regno_nregs[cur_reg][mode];
+      nregs = hard_regno_nregs (cur_reg, mode);
       gcc_assert (nregs > 0);
 
       for (i = nregs - 1; i >= 0; --i)
@@ -1348,7 +1349,7 @@ choose_best_reg_1 (HARD_REG_SET hard_regs_used,
       gcc_assert (mode == GET_MODE (orig_dest));
 
       regno = REGNO (orig_dest);
-      for (i = 0, n = hard_regno_nregs[regno][mode]; i < n; i++)
+      for (i = 0, n = REG_NREGS (orig_dest); i < n; i++)
         if (TEST_HARD_REG_BIT (hard_regs_used, regno + i))
           break;
 
@@ -1372,7 +1373,7 @@ choose_best_reg_1 (HARD_REG_SET hard_regs_used,
     if (! TEST_HARD_REG_BIT (hard_regs_used, cur_reg))
       {
 	/* Check that all hard regs for mode are available.  */
-	for (i = 1, n = hard_regno_nregs[cur_reg][mode]; i < n; i++)
+	for (i = 1, n = hard_regno_nregs (cur_reg, mode); i < n; i++)
 	  if (TEST_HARD_REG_BIT (hard_regs_used, cur_reg + i)
 	      || !TEST_HARD_REG_BIT (reg_rename_p->available_for_renaming,
 				     cur_reg + i))
@@ -1463,7 +1464,7 @@ choose_best_pseudo_reg (regset used_regs,
       if (HARD_REGISTER_NUM_P (orig_regno))
 	{
 	  int j, n;
-	  for (j = 0, n = hard_regno_nregs[orig_regno][mode]; j < n; j++)
+	  for (j = 0, n = REG_NREGS (dest); j < n; j++)
 	    if (REGNO_REG_SET_P (used_regs, orig_regno + j))
 	      break;
 	  if (j < n)
@@ -1535,7 +1536,7 @@ verify_target_availability (expr_t expr, regset used_regs,
   regno = expr_dest_regno (expr);
   mode = GET_MODE (EXPR_LHS (expr));
   target_available = EXPR_TARGET_AVAILABLE (expr) == 1;
-  n = HARD_REGISTER_NUM_P (regno) ? hard_regno_nregs[regno][mode] : 1;
+  n = HARD_REGISTER_NUM_P (regno) ? hard_regno_nregs (regno, mode) : 1;
 
   live_available = hard_available = true;
   for (i = 0; i < n; i++)
@@ -3396,17 +3397,22 @@ sel_rank_for_schedule (const void *x, const void *y)
   else if (control_flow_insn_p (tmp2_insn) && !control_flow_insn_p (tmp_insn))
     return 1;
 
-  /* Prefer an expr with greater priority.  */
-  if (EXPR_USEFULNESS (tmp) != 0 && EXPR_USEFULNESS (tmp2) != 0)
-    {
-      int p2 = EXPR_PRIORITY (tmp2) + EXPR_PRIORITY_ADJ (tmp2),
-          p1 = EXPR_PRIORITY (tmp) + EXPR_PRIORITY_ADJ (tmp);
+  /* Prefer an expr with non-zero usefulness.  */
+  int u1 = EXPR_USEFULNESS (tmp), u2 = EXPR_USEFULNESS (tmp2);
 
-      val = p2 * EXPR_USEFULNESS (tmp2) - p1 * EXPR_USEFULNESS (tmp);
+  if (u1 == 0)
+    {
+      if (u2 == 0)
+        u1 = u2 = 1;
+      else
+        return 1;
     }
-  else
-    val = EXPR_PRIORITY (tmp2) - EXPR_PRIORITY (tmp)
-	  + EXPR_PRIORITY_ADJ (tmp2) - EXPR_PRIORITY_ADJ (tmp);
+  else if (u2 == 0)
+    return -1;
+
+  /* Prefer an expr with greater priority.  */
+  val = (u2 * (EXPR_PRIORITY (tmp2) + EXPR_PRIORITY_ADJ (tmp2))
+         - u1 * (EXPR_PRIORITY (tmp) + EXPR_PRIORITY_ADJ (tmp)));
   if (val)
     return val;
 
@@ -4999,12 +5005,16 @@ remove_temp_moveop_nops (bool full_tidying)
    distinguishing between bookkeeping copies and original insns.  */
 static int max_uid_before_move_op = 0;
 
+/* When true, we're always scheduling next insn on the already scheduled code
+   to get the right insn data for the following bundling or other passes.  */
+static int force_next_insn = 0;
+
 /* Remove from AV_VLIW_P all instructions but next when debug counter
    tells us so.  Next instruction is fetched from BNDS.  */
 static void
 remove_insns_for_debug (blist_t bnds, av_set_t *av_vliw_p)
 {
-  if (! dbg_cnt (sel_sched_insn_cnt))
+  if (! dbg_cnt (sel_sched_insn_cnt) || force_next_insn)
     /* Leave only the next insn in av_vliw.  */
     {
       av_set_iterator av_it;
@@ -7636,9 +7646,15 @@ sel_sched_region (int rgn)
   if (schedule_p)
     sel_sched_region_1 ();
   else
-    /* Force initialization of INSN_SCHED_CYCLEs for correct bundling.  */
-    reset_sched_cycles_p = true;
-
+    {
+      /* Schedule always selecting the next insn to make the correct data
+	 for bundling or other later passes.  */
+      pipelining_p = false;
+      force_next_insn = 1;
+      sel_sched_region_1 ();
+      force_next_insn = 0;
+    }
+  reset_sched_cycles_p = pipelining_p;
   sel_region_finish (reset_sched_cycles_p);
 }
 
@@ -7646,6 +7662,10 @@ sel_sched_region (int rgn)
 static void
 sel_global_init (void)
 {
+  /* Remove empty blocks: their presence can break assumptions elsewhere,
+     e.g. the logic to invoke update_liveness_on_insn in sel_region_init.  */
+  cleanup_cfg (0);
+
   calculate_dominance_info (CDI_DOMINATORS);
   alloc_sched_pools ();
 

@@ -1,6 +1,6 @@
 // The  -*- C++ -*- type traits classes for internal use in libstdc++
 
-// Copyright (C) 2000-2017 Free Software Foundation, Inc.
+// Copyright (C) 2000-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -390,6 +390,17 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       enum { __value = 1 };
       typedef __true_type __type;
     };
+
+#if __cplusplus >= 201703L
+  enum class byte : unsigned char;
+
+  template<>
+    struct __is_byte<byte>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif // C++17
 
   //
   // Move iterator type

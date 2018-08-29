@@ -27,7 +27,7 @@ contains
     real(4)               ::  r2
 
     r2 = transfer (i2, r2);
-    if (r1 .ne. r2) call abort ()
+    if (r1 .ne. r2) STOP 1
   end subroutine integer4_to_real4
 
   subroutine real4_to_integer8
@@ -37,7 +37,7 @@ contains
     integer(8)            ::  i2
 
     i2 = transfer (r2, 1_8);
-    if (i1 .ne. i2) call abort ()
+    if (i1 .ne. i2) STOP 2
   end subroutine real4_to_integer8
 
   subroutine integer4_to_integer8
@@ -47,7 +47,7 @@ contains
     integer(8)            ::  i4
 
     i4 = transfer (i2, 1_8);
-    if (i3 .ne. i4) call abort ()
+    if (i3 .ne. i4) STOP 3
   end subroutine integer4_to_integer8
 
   subroutine logical4_to_real8
@@ -57,7 +57,7 @@ contains
     real(8)               ::  r2
 
     r2 = transfer (l2, 1_8);
-    if (r1 .ne. r2) call abort ()
+    if (r1 .ne. r2) STOP 4
   end subroutine logical4_to_real8
 
   subroutine real8_to_integer4
@@ -67,7 +67,7 @@ contains
     integer(4)            ::  i2(2)
 
     i2 = transfer (r2, i2, 2);
-    if (any (i1 .ne. i2)) call abort ()
+    if (any (i1 .ne. i2)) STOP 5
   end subroutine real8_to_integer4
 
   subroutine integer8_to_real4
@@ -78,7 +78,7 @@ contains
     real(4)               ::  r2(4)
 
     r2 = transfer (i2, r2);
-    if (any (r1 .ne. r2)) call abort ()
+    if (any (r1 .ne. r2)) STOP 6
   end subroutine integer8_to_real4
 
   subroutine integer8_to_complex4
@@ -89,7 +89,7 @@ contains
     complex(4)            ::  z2(2)
 
     z2 = transfer (i2, z2);
-    if (any (z1 .ne. z2)) call abort ()
+    if (any (z1 .ne. z2)) STOP 7
   end subroutine integer8_to_complex4
 
   subroutine character16_to_complex8
@@ -99,7 +99,7 @@ contains
     complex(8)               ::  z2(2)
 
     z2 = transfer (c2, z2, 2);
-    if (any (z1 .ne. z2)) call abort ()
+    if (any (z1 .ne. z2)) STOP 8
   end subroutine character16_to_complex8
 
   subroutine character16_to_real8
@@ -109,7 +109,7 @@ contains
     real(8)               ::  r2(2)
 
     r2 = transfer (c2, r2, 2);
-    if (any (r1 .ne. r2)) call abort ()
+    if (any (r1 .ne. r2)) STOP 9
   end subroutine character16_to_real8
 
   subroutine real8_to_character2
@@ -119,7 +119,7 @@ contains
     character(2)            ::  c2(4)
 
     c2 = transfer (r2, "ab", 4);
-    if (any (c1 .ne. c2)) call abort ()
+    if (any (c1 .ne. c2)) STOP 10
   end subroutine real8_to_character2
 
   subroutine dt_to_integer1
@@ -135,7 +135,7 @@ contains
     integer(1)            :: i3(32)
 
     i3 = transfer (dt2, 1_1, 32);
-    if (any (i2 .ne. i3)) call abort ()
+    if (any (i2 .ne. i3)) STOP 11
   end subroutine dt_to_integer1
 
   subroutine character16_to_dt
@@ -149,8 +149,8 @@ contains
     type (mytype)            :: dt2(2)
 
     dt2 = transfer (c2, dt2);
-    if (any (dt1(1)%x .ne. dt2(1)%x)) call abort ()
-    if (any (dt1(2)%x .ne. dt2(2)%x)) call abort ()
+    if (any (dt1(1)%x .ne. dt2(1)%x)) STOP 12
+    if (any (dt1(2)%x .ne. dt2(2)%x)) STOP 13
   end subroutine character16_to_dt
 
 end

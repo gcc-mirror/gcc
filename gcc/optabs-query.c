@@ -1,5 +1,5 @@
 /* IR-agnostic target query functions relating to optabs
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "rtl.h"
 #include "recog.h"
+#include "vec-perm-indices.h"
 
 struct target_optabs default_target_optabs;
 struct target_optabs *this_fn_optabs = &default_target_optabs;
@@ -100,9 +101,14 @@ get_traditional_extraction_insn (extraction_insn *insn,
     pos_mode = word_mode;
 
   insn->icode = icode;
-  insn->field_mode = field_mode;
-  insn->struct_mode = (type == ET_unaligned_mem ? byte_mode : struct_mode);
-  insn->pos_mode = pos_mode;
+  insn->field_mode = as_a <scalar_int_mode> (field_mode);
+  if (type == ET_unaligned_mem)
+    insn->struct_mode = byte_mode;
+  else if (struct_mode == BLKmode)
+    insn->struct_mode = opt_scalar_int_mode ();
+  else
+    insn->struct_mode = as_a <scalar_int_mode> (struct_mode);
+  insn->pos_mode = as_a <scalar_int_mode> (pos_mode);
   return true;
 }
 
@@ -126,12 +132,17 @@ get_optab_extraction_insn (struct extraction_insn *insn,
 
   const struct insn_data_d *data = &insn_data[icode];
 
+  machine_mode pos_mode = data->operand[pos_op].mode;
+  if (pos_mode == VOIDmode)
+    pos_mode = word_mode;
+
   insn->icode = icode;
-  insn->field_mode = mode;
-  insn->struct_mode = (type == ET_unaligned_mem ? BLKmode : mode);
-  insn->pos_mode = data->operand[pos_op].mode;
-  if (insn->pos_mode == VOIDmode)
-    insn->pos_mode = word_mode;
+  insn->field_mode = as_a <scalar_int_mode> (mode);
+  if (type == ET_unaligned_mem)
+    insn->struct_mode = opt_scalar_int_mode ();
+  else
+    insn->struct_mode = insn->field_mode;
+  insn->pos_mode = as_a <scalar_int_mode> (pos_mode);
   return true;
 }
 
@@ -193,22 +204,23 @@ get_best_extraction_insn (extraction_insn *insn,
 			  unsigned HOST_WIDE_INT struct_bits,
 			  machine_mode field_mode)
 {
-  machine_mode mode = smallest_mode_for_size (struct_bits, MODE_INT);
-  while (mode != VOIDmode)
+  opt_scalar_int_mode mode_iter;
+  FOR_EACH_MODE_FROM (mode_iter, smallest_int_mode_for_size (struct_bits))
     {
+      scalar_int_mode mode = mode_iter.require ();
       if (get_extraction_insn (insn, pattern, type, mode))
 	{
-	  while (mode != VOIDmode
-		 && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (field_mode)
-		 && !TRULY_NOOP_TRUNCATION_MODES_P (insn->field_mode,
-						    field_mode))
+	  FOR_EACH_MODE_FROM (mode_iter, mode)
 	    {
+	      mode = mode_iter.require ();
+	      if (maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (field_mode))
+		  || TRULY_NOOP_TRUNCATION_MODES_P (insn->field_mode,
+						    field_mode))
+		break;
 	      get_extraction_insn (insn, pattern, type, mode);
-	      mode = GET_MODE_WIDER_MODE (mode);
 	    }
 	  return true;
 	}
-      mode = GET_MODE_WIDER_MODE (mode);
     }
   return false;
 }
@@ -334,102 +346,152 @@ can_conditionally_move_p (machine_mode mode)
   return direct_optab_handler (movcc_optab, mode) != CODE_FOR_nothing;
 }
 
-/* Return true if VEC_PERM_EXPR of arbitrary input vectors can be
-   expanded using SIMD extensions of the CPU.  SEL may be NULL, which
-   stands for an unknown constant.  Note that additional permutations
-   representing whole-vector shifts may also be handled via the vec_shr
-   optab, but only where the second input vector is entirely constant
-   zeroes; this case is not dealt with here.  */
+/* If a target doesn't implement a permute on a vector with multibyte
+   elements, we can try to do the same permute on byte elements.
+   If this makes sense for vector mode MODE then return the appropriate
+   byte vector mode.  */
 
-bool
-can_vec_perm_p (machine_mode mode, bool variable,
-		const unsigned char *sel)
+opt_machine_mode
+qimode_for_vec_perm (machine_mode mode)
 {
   machine_mode qimode;
+  if (GET_MODE_INNER (mode) != QImode
+      && mode_for_vector (QImode, GET_MODE_SIZE (mode)).exists (&qimode)
+      && VECTOR_MODE_P (qimode))
+    return qimode;
+  return opt_machine_mode ();
+}
 
+/* Return true if selector SEL can be represented in the integer
+   equivalent of vector mode MODE.  */
+
+bool
+selector_fits_mode_p (machine_mode mode, const vec_perm_indices &sel)
+{
+  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (GET_MODE_INNER (mode));
+  return (mask == HOST_WIDE_INT_M1U
+	  || sel.all_in_range_p (0, mask + 1));
+}
+
+/* Return true if VEC_PERM_EXPRs with variable selector operands can be
+   expanded using SIMD extensions of the CPU.  MODE is the mode of the
+   vectors being permuted.  */
+
+bool
+can_vec_perm_var_p (machine_mode mode)
+{
   /* If the target doesn't implement a vector mode for the vector type,
      then no operations are supported.  */
   if (!VECTOR_MODE_P (mode))
     return false;
 
-  if (!variable)
-    {
-      if (direct_optab_handler (vec_perm_const_optab, mode) != CODE_FOR_nothing
-	  && (sel == NULL
-	      || targetm.vectorize.vec_perm_const_ok == NULL
-	      || targetm.vectorize.vec_perm_const_ok (mode, sel)))
-	return true;
-    }
-
   if (direct_optab_handler (vec_perm_optab, mode) != CODE_FOR_nothing)
     return true;
 
   /* We allow fallback to a QI vector mode, and adjust the mask.  */
-  if (GET_MODE_INNER (mode) == QImode)
-    return false;
-  qimode = mode_for_vector (QImode, GET_MODE_SIZE (mode));
-  if (!VECTOR_MODE_P (qimode))
+  machine_mode qimode;
+  if (!qimode_for_vec_perm (mode).exists (&qimode)
+      || maybe_gt (GET_MODE_NUNITS (qimode), GET_MODE_MASK (QImode) + 1))
     return false;
 
-  /* ??? For completeness, we ought to check the QImode version of
-      vec_perm_const_optab.  But all users of this implicit lowering
-      feature implement the variable vec_perm_optab.  */
   if (direct_optab_handler (vec_perm_optab, qimode) == CODE_FOR_nothing)
     return false;
 
   /* In order to support the lowering of variable permutations,
      we need to support shifts and adds.  */
-  if (variable)
-    {
-      if (GET_MODE_UNIT_SIZE (mode) > 2
-	  && optab_handler (ashl_optab, mode) == CODE_FOR_nothing
-	  && optab_handler (vashl_optab, mode) == CODE_FOR_nothing)
-	return false;
-      if (optab_handler (add_optab, qimode) == CODE_FOR_nothing)
-	return false;
-    }
+  if (GET_MODE_UNIT_SIZE (mode) > 2
+      && optab_handler (ashl_optab, mode) == CODE_FOR_nothing
+      && optab_handler (vashl_optab, mode) == CODE_FOR_nothing)
+    return false;
+  if (optab_handler (add_optab, qimode) == CODE_FOR_nothing)
+    return false;
 
   return true;
 }
 
-/* Like optab_handler, but for widening_operations that have a
-   TO_MODE and a FROM_MODE.  */
+/* Return true if the target directly supports VEC_PERM_EXPRs on vectors
+   of mode MODE using the selector SEL.  ALLOW_VARIABLE_P is true if it
+   is acceptable to force the selector into a register and use a variable
+   permute (if the target supports that).
 
-enum insn_code
-widening_optab_handler (optab op, machine_mode to_mode,
-			machine_mode from_mode)
+   Note that additional permutations representing whole-vector shifts may
+   also be handled via the vec_shr optab, but only where the second input
+   vector is entirely constant zeroes; this case is not dealt with here.  */
+
+bool
+can_vec_perm_const_p (machine_mode mode, const vec_perm_indices &sel,
+		      bool allow_variable_p)
 {
-  unsigned scode = (op << 16) | to_mode;
-  if (to_mode != from_mode && from_mode != VOIDmode)
+  /* If the target doesn't implement a vector mode for the vector type,
+     then no operations are supported.  */
+  if (!VECTOR_MODE_P (mode))
+    return false;
+
+  /* It's probably cheaper to test for the variable case first.  */
+  if (allow_variable_p && selector_fits_mode_p (mode, sel))
     {
-      /* ??? Why does find_widening_optab_handler_and_mode attempt to
-	 widen things that can't be widened?  E.g. add_optab... */
-      if (op > LAST_CONV_OPTAB)
-	return CODE_FOR_nothing;
-      scode |= from_mode << 8;
+      if (direct_optab_handler (vec_perm_optab, mode) != CODE_FOR_nothing)
+	return true;
+
+      /* Unlike can_vec_perm_var_p, we don't need to test for optabs
+	 related computing the QImode selector, since that happens at
+	 compile time.  */
+      machine_mode qimode;
+      if (qimode_for_vec_perm (mode).exists (&qimode))
+	{
+	  vec_perm_indices qimode_indices;
+	  qimode_indices.new_expanded_vector (sel, GET_MODE_UNIT_SIZE (mode));
+	  if (selector_fits_mode_p (qimode, qimode_indices)
+	      && (direct_optab_handler (vec_perm_optab, qimode)
+		  != CODE_FOR_nothing))
+	    return true;
+	}
     }
-  return raw_optab_handler (scode);
+
+  if (targetm.vectorize.vec_perm_const != NULL)
+    {
+      if (targetm.vectorize.vec_perm_const (mode, NULL_RTX, NULL_RTX,
+					    NULL_RTX, sel))
+	return true;
+
+      /* ??? For completeness, we ought to check the QImode version of
+	 vec_perm_const_optab.  But all users of this implicit lowering
+	 feature implement the variable vec_perm_optab, and the ia64
+	 port specifically doesn't want us to lower V2SF operations
+	 into integer operations.  */
+    }
+
+  return false;
 }
 
 /* Find a widening optab even if it doesn't widen as much as we want.
    E.g. if from_mode is HImode, and to_mode is DImode, and there is no
-   direct HI->SI insn, then return SI->DI, if that exists.
-   If PERMIT_NON_WIDENING is non-zero then this can be used with
-   non-widening optabs also.  */
+   direct HI->SI insn, then return SI->DI, if that exists.  */
 
 enum insn_code
 find_widening_optab_handler_and_mode (optab op, machine_mode to_mode,
 				      machine_mode from_mode,
-				      int permit_non_widening,
 				      machine_mode *found_mode)
 {
-  for (; (permit_non_widening || from_mode != to_mode)
-	 && GET_MODE_SIZE (from_mode) <= GET_MODE_SIZE (to_mode)
-	 && from_mode != VOIDmode;
-       from_mode = GET_MODE_WIDER_MODE (from_mode))
+  machine_mode limit_mode = to_mode;
+  if (is_a <scalar_int_mode> (from_mode))
     {
-      enum insn_code handler = widening_optab_handler (op, to_mode,
-						       from_mode);
+      gcc_checking_assert (is_a <scalar_int_mode> (to_mode)
+			   && known_lt (GET_MODE_PRECISION (from_mode),
+					GET_MODE_PRECISION (to_mode)));
+      /* The modes after FROM_MODE are all MODE_INT, so the only
+	 MODE_PARTIAL_INT mode we consider is FROM_MODE itself.
+	 If LIMIT_MODE is MODE_PARTIAL_INT, stop at the containing
+	 MODE_INT.  */
+      if (GET_MODE_CLASS (limit_mode) == MODE_PARTIAL_INT)
+	limit_mode = GET_MODE_WIDER_MODE (limit_mode).require ();
+    }
+  else
+    gcc_checking_assert (GET_MODE_CLASS (from_mode) == GET_MODE_CLASS (to_mode)
+			 && from_mode < to_mode);
+  FOR_EACH_MODE (from_mode, from_mode, limit_mode)
+    {
+      enum insn_code handler = convert_optab_handler (op, to_mode, from_mode);
 
       if (handler != CODE_FOR_nothing)
 	{
@@ -450,8 +512,6 @@ int
 can_mult_highpart_p (machine_mode mode, bool uns_p)
 {
   optab op;
-  unsigned char *sel;
-  unsigned i, nunits;
 
   op = uns_p ? umul_highpart_optab : smul_highpart_optab;
   if (optab_handler (op, mode) != CODE_FOR_nothing)
@@ -461,8 +521,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
   if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
     return 0;
 
-  nunits = GET_MODE_NUNITS (mode);
-  sel = XALLOCAVEC (unsigned char, nunits);
+  poly_int64 nunits = GET_MODE_NUNITS (mode);
 
   op = uns_p ? vec_widen_umult_even_optab : vec_widen_smult_even_optab;
   if (optab_handler (op, mode) != CODE_FOR_nothing)
@@ -470,9 +529,14 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
       op = uns_p ? vec_widen_umult_odd_optab : vec_widen_smult_odd_optab;
       if (optab_handler (op, mode) != CODE_FOR_nothing)
 	{
-	  for (i = 0; i < nunits; ++i)
-	    sel[i] = !BYTES_BIG_ENDIAN + (i & ~1) + ((i & 1) ? nunits : 0);
-	  if (can_vec_perm_p (mode, false, sel))
+	  /* The encoding has 2 interleaved stepped patterns.  */
+	  vec_perm_builder sel (nunits, 2, 3);
+	  for (unsigned int i = 0; i < 6; ++i)
+	    sel.quick_push (!BYTES_BIG_ENDIAN
+			    + (i & ~1)
+			    + ((i & 1) ? nunits : 0));
+	  vec_perm_indices indices (sel, 2, nunits);
+	  if (can_vec_perm_const_p (mode, indices))
 	    return 2;
 	}
     }
@@ -483,9 +547,12 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
       op = uns_p ? vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
       if (optab_handler (op, mode) != CODE_FOR_nothing)
 	{
-	  for (i = 0; i < nunits; ++i)
-	    sel[i] = 2 * i + (BYTES_BIG_ENDIAN ? 0 : 1);
-	  if (can_vec_perm_p (mode, false, sel))
+	  /* The encoding has a single stepped pattern.  */
+	  vec_perm_builder sel (nunits, 1, 3);
+	  for (unsigned int i = 0; i < 3; ++i)
+	    sel.quick_push (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
+	  vec_perm_indices indices (sel, 2, nunits);
+	  if (can_vec_perm_const_p (mode, indices))
 	    return 3;
 	}
     }
@@ -502,7 +569,6 @@ can_vec_mask_load_store_p (machine_mode mode,
 {
   optab op = is_load ? maskload_optab : maskstore_optab;
   machine_mode vmode;
-  unsigned int vector_sizes;
 
   /* If mode is vector mode, check it directly.  */
   if (VECTOR_MODE_P (mode))
@@ -513,29 +579,30 @@ can_vec_mask_load_store_p (machine_mode mode,
 
   /* See if there is any chance the mask load or store might be
      vectorized.  If not, punt.  */
-  vmode = targetm.vectorize.preferred_simd_mode (mode);
+  scalar_mode smode;
+  if (!is_a <scalar_mode> (mode, &smode))
+    return false;
+
+  vmode = targetm.vectorize.preferred_simd_mode (smode);
   if (!VECTOR_MODE_P (vmode))
     return false;
 
-  mask_mode = targetm.vectorize.get_mask_mode (GET_MODE_NUNITS (vmode),
-					       GET_MODE_SIZE (vmode));
-  if (mask_mode == VOIDmode)
-    return false;
-
-  if (convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
+  if ((targetm.vectorize.get_mask_mode
+       (GET_MODE_NUNITS (vmode), GET_MODE_SIZE (vmode)).exists (&mask_mode))
+      && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
     return true;
 
-  vector_sizes = targetm.vectorize.autovectorize_vector_sizes ();
-  while (vector_sizes != 0)
+  auto_vector_sizes vector_sizes;
+  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+  for (unsigned int i = 0; i < vector_sizes.length (); ++i)
     {
-      unsigned int cur = 1 << floor_log2 (vector_sizes);
-      vector_sizes &= ~cur;
-      if (cur <= GET_MODE_SIZE (mode))
+      poly_uint64 cur = vector_sizes[i];
+      poly_uint64 nunits;
+      if (!multiple_p (cur, GET_MODE_SIZE (smode), &nunits))
 	continue;
-      vmode = mode_for_vector (mode, cur / GET_MODE_SIZE (mode));
-      mask_mode = targetm.vectorize.get_mask_mode (GET_MODE_NUNITS (vmode),
-						   cur);
-      if (VECTOR_MODE_P (vmode)
+      if (mode_for_vector (smode, nunits).exists (&vmode)
+	  && VECTOR_MODE_P (vmode)
+	  && targetm.vectorize.get_mask_mode (nunits, cur).exists (&mask_mode)
 	  && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
 	return true;
     }
@@ -600,7 +667,7 @@ can_atomic_load_p (machine_mode mode)
   /* If the size of the object is greater than word size on this target,
      then we assume that a load will not be atomic.  Also see
      expand_atomic_load.  */
-  return GET_MODE_PRECISION (mode) <= BITS_PER_WORD;
+  return known_le (GET_MODE_PRECISION (mode), BITS_PER_WORD);
 }
 
 /* Determine whether "1 << x" is relatively cheap in word_mode.  */
@@ -629,3 +696,50 @@ lshift_cheap_p (bool speed_p)
 
   return cheap[speed_p];
 }
+
+/* Return true if optab OP supports at least one mode.  */
+
+static bool
+supports_at_least_one_mode_p (optab op)
+{
+  for (int i = 0; i < NUM_MACHINE_MODES; ++i)
+    if (direct_optab_handler (op, (machine_mode) i) != CODE_FOR_nothing)
+      return true;
+
+  return false;
+}
+
+/* Return true if vec_gather_load is available for at least one vector
+   mode.  */
+
+bool
+supports_vec_gather_load_p ()
+{
+  if (this_fn_optabs->supports_vec_gather_load_cached)
+    return this_fn_optabs->supports_vec_gather_load;
+
+  this_fn_optabs->supports_vec_gather_load_cached = true;
+
+  this_fn_optabs->supports_vec_gather_load
+    = supports_at_least_one_mode_p (gather_load_optab);
+
+  return this_fn_optabs->supports_vec_gather_load;
+}
+
+/* Return true if vec_scatter_store is available for at least one vector
+   mode.  */
+
+bool
+supports_vec_scatter_store_p ()
+{
+  if (this_fn_optabs->supports_vec_scatter_store_cached)
+    return this_fn_optabs->supports_vec_scatter_store;
+
+  this_fn_optabs->supports_vec_scatter_store_cached = true;
+
+  this_fn_optabs->supports_vec_scatter_store
+    = supports_at_least_one_mode_p (scatter_store_optab);
+
+  return this_fn_optabs->supports_vec_scatter_store;
+}
+

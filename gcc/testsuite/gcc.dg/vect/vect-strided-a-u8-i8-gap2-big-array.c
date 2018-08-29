@@ -16,8 +16,6 @@ typedef struct {
    unsigned char h;
 } s;
 
-volatile int y = 0;
-
 __attribute__ ((noinline)) int
 main1 ()
 {
@@ -47,8 +45,7 @@ main1 ()
       check_res[i].h = arr[i].f;
       check_res[i].g = arr[i].f - arr[i].a;
 
-      if (y) /* Avoid vectorization.  */
-        abort ();
+      asm volatile ("" ::: "memory");
     }
 
   for (i = 0; i < N; i++)

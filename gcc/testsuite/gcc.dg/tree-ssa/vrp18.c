@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdump-tree-evrp" } */
 
 static int blocksize = 4096;
 
@@ -30,4 +30,4 @@ void foo (void)
     eof_reached = 1;
 }
 
-/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "evrp" } } */

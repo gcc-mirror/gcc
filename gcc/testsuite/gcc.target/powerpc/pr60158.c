@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } { "*" } { "" } } */
+/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } } */
 /* { dg-options "-mcpu=8548 -mno-spe -mfloat-gprs=double -Os -fdata-sections -fpic -mrelocatable" } */
 
 #define NULL 0

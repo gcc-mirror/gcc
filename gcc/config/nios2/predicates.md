@@ -1,5 +1,5 @@
 ;; Predicate definitions for Altera Nios II.
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by Chung-Lin Tang <cltang@codesourcery.com>
 ;;
 ;; This file is part of GCC.
@@ -146,6 +146,8 @@
         return (REG_P (XEXP (addr, 0))
                 && CONST_INT_P (XEXP (addr, 1))
                 && SMALL_INT12 (INTVAL (XEXP (addr, 1))));
+      else if (CONST_INT_P (addr))
+        return SMALL_INT12 (INTVAL (addr));
       return false;
     }
   return memory_operand (op, mode);

@@ -18,9 +18,12 @@ B::m_fn2 () const
     bool
     m_fn1 () const
     {
+      return true;
     }
     C () {}
   };
+
+  return 0;
 }
 void
 fn1 (A &p1)

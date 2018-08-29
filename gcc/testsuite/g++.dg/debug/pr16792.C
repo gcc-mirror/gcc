@@ -1,7 +1,7 @@
 // { dg-do compile }
 
 struct S { S(); };
-int foo (S b, double j) { };
+int foo (S b, double j) { return 0; };
 
 int main ()
 {

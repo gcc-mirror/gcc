@@ -15,6 +15,14 @@
 #  error "__cpp_exceptions != 199711"
 #endif
 
+//  C++11 features allowed in C++98:
+
+#ifndef __cpp_threadsafe_static_init
+#  error "__cpp_threadsafe_static_init"
+#elif __cpp_threadsafe_static_init != 200806
+#  error "__cpp_threadsafe_static_init != 200806"
+#endif
+
 //  C++14 features allowed in C++98 in non-ANSI modes:
 
 #ifndef __cpp_binary_literals

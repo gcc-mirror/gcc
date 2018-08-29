@@ -20,18 +20,18 @@ program main
   b = conjg(transpose(b))
   d = a
   d = transpose(conjg(d))
-  if (any (b /= d)) call abort ()
+  if (any (b /= d)) STOP 1
 !
   d = matmul (b,  a )
-  if (any (d /= matmul (transpose(conjg(a)), a))) call abort ()
-  if (any (d /= matmul (conjg(transpose(a)), a))) call abort ()
+  if (any (d /= matmul (transpose(conjg(a)), a))) STOP 2
+  if (any (d /= matmul (conjg(transpose(a)), a))) STOP 3
 !
   c = (0.0,1.0)
   b = conjg(transpose(a + c))
   d = transpose(conjg(a + c))
-  if (any (b /= d)) call abort ()
+  if (any (b /= d)) STOP 4
 !
   d = matmul (b,  a + c)
-  if (any (d /= matmul (transpose(conjg(a + c)), a + c))) call abort ()
-  if (any (d /= matmul (conjg(transpose(a + c)), a + c))) call abort ()
+  if (any (d /= matmul (transpose(conjg(a + c)), a + c))) STOP 5
+  if (any (d /= matmul (conjg(transpose(a + c)), a + c))) STOP 6
  END program main

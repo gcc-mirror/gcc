@@ -32,7 +32,7 @@ contains
         
         write(s1, fmt1) r
         write(s2, fmt2) r
-        if (s1 /= s2) call abort
+        if (s1 /= s2) STOP 1
         !if (s1 /= s2) print "(6a)", trim(fmt1), ": '", trim(s1), "' /= '", trim(s2), "'"
 	!print "(6a)", trim(fmt1), ": '", trim(s1), "' /= '", trim(s2), "'"
     end subroutine check_equal

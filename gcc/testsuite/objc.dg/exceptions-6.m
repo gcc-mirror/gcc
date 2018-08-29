@@ -11,8 +11,8 @@ void test (id object)
   @throw object;   /* Ok */
   @throw;          /* { dg-error ".@throw. .rethrow. used outside of a @catch block" } */
   @throw (object); /* Ok.  */
-  @throw (id)0
-}                  /* { dg-error "expected" } */
+  @throw (id)0     /* { dg-error "expected" } */
+}
 
 void test2 (id object)
 {

@@ -3,8 +3,8 @@
       integer k, l(3) /2*2,1/   ! { dg-warning "" }
       real pi /3.1416/, e       ! { dg-warning "" }
 
-      if (j /= 1) call abort ()
-      if (g /= 2) call abort ()
-      if (any(l /= (/2,2,1/))) call abort ()
-      if (pi /= 3.1416) call abort ()
+      if (j /= 1) STOP 1
+      if (g /= 2) STOP 2
+      if (any(l /= (/2,2,1/))) STOP 3
+      if (pi /= 3.1416) STOP 4
       end

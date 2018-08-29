@@ -1,5 +1,5 @@
 /* Target macros for the FRV port of GCC.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Red Hat Inc.
 
    This file is part of GCC.
@@ -349,20 +349,6 @@
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
-/* If defined, a C expression to compute the alignment given to a constant that
-   is being placed in memory.  CONSTANT is the constant and ALIGN is the
-   alignment that the object would ordinarily have.  The value of this macro is
-   used instead of that alignment to align the object.
-
-   If this macro is not defined, then ALIGN is used.
-
-   The typical use of this macro is to increase alignment for string constants
-   to be word aligned so that `strcpy' calls that copy constants can be done
-   inline.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
 /* Define this macro to be the value 1 if instructions will fail to work if
@@ -747,86 +733,6 @@
 }
 
 
-/* How Values Fit in Registers.  */
-
-/* A C expression for the number of consecutive hard registers, starting at
-   register number REGNO, required to hold a value of mode MODE.
-
-   On a machine where all registers are exactly one word, a suitable definition
-   of this macro is
-
-        #define HARD_REGNO_NREGS(REGNO, MODE)            \
-           ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)  \
-            / UNITS_PER_WORD))  */
-
-/* On the FRV, make the CC modes take 3 words in the integer registers, so that
-   we can build the appropriate instructions to properly reload the values.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) frv_hard_regno_nregs (REGNO, MODE)
-
-/* A C expression that is nonzero if it is permissible to store a value of mode
-   MODE in hard register number REGNO (or in several registers starting with
-   that one).  For a machine where all registers are equivalent, a suitable
-   definition is
-
-        #define HARD_REGNO_MODE_OK(REGNO, MODE) 1
-
-   It is not necessary for this macro to check for the numbers of fixed
-   registers, because the allocation mechanism considers them to be always
-   occupied.
-
-   On some machines, double-precision values must be kept in even/odd register
-   pairs.  The way to implement that is to define this macro to reject odd
-   register numbers for such modes.
-
-   The minimum requirement for a mode to be OK in a register is that the
-   `movMODE' instruction pattern support moves between the register and any
-   other hard register for which the mode is OK; and that moving a value into
-   the register and back out not alter it.
-
-   Since the same instruction used to move `SImode' will work for all narrower
-   integer modes, it is not necessary on any machine for `HARD_REGNO_MODE_OK'
-   to distinguish between these modes, provided you define patterns `movhi',
-   etc., to take advantage of this.  This is useful because of the interaction
-   between `HARD_REGNO_MODE_OK' and `MODES_TIEABLE_P'; it is very desirable for
-   all integer modes to be tieable.
-
-   Many machines have special registers for floating point arithmetic.  Often
-   people assume that floating point machine modes are allowed only in floating
-   point registers.  This is not true.  Any registers that can hold integers
-   can safely *hold* a floating point machine mode, whether or not floating
-   arithmetic can be done on it in those registers.  Integer move instructions
-   can be used to move the values.
-
-   On some machines, though, the converse is true: fixed-point machine modes
-   may not go in floating registers.  This is true if the floating registers
-   normalize any value stored in them, because storing a non-floating value
-   there would garble it.  In this case, `HARD_REGNO_MODE_OK' should reject
-   fixed-point machine modes in floating registers.  But if the floating
-   registers do not automatically normalize, if you can store any bit pattern
-   in one and retrieve it unchanged without a trap, then any machine mode may
-   go in a floating register, so you can define this macro to say so.
-
-   The primary significance of special floating registers is rather that they
-   are the registers acceptable in floating point arithmetic instructions.
-   However, this is of no concern to `HARD_REGNO_MODE_OK'.  You handle it by
-   writing the proper constraints for those instructions.
-
-   On some machines, the floating registers are especially slow to access, so
-   that it is better to store a value in a stack frame than in such a register
-   if floating point arithmetic is not being done.  As long as the floating
-   registers are not in class `GENERAL_REGS', they will not be used unless some
-   pattern's constraint asks for one.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE) frv_hard_regno_mode_ok (REGNO, MODE)
-
-/* A C expression that is nonzero if it is desirable to choose register
-   allocation so as to avoid move instructions between a value of mode MODE1
-   and a value of mode MODE2.
-
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R, MODE2)' are
-   ever different for any R, then `MODES_TIEABLE_P (MODE1, MODE2)' must be
-   zero.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) (MODE1 == MODE2)
-
 /* Define this macro if the compiler should avoid copies to/from CCmode
    registers.  You should only define this macro if support fo copying to/from
    CCmode is incomplete.  */
@@ -994,17 +900,6 @@ extern enum reg_class regno_reg_class[];
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X) \
   frv_secondary_reload_class (CLASS, MODE, X)
 
-/* A C expression for the maximum number of consecutive registers of
-   class CLASS needed to hold a value of mode MODE.
-
-   This is closely related to the macro `HARD_REGNO_NREGS'.  In fact, the value
-   of the macro `CLASS_MAX_NREGS (CLASS, MODE)' should be the maximum value of
-   `HARD_REGNO_NREGS (REGNO, MODE)' for all REGNO values in the class CLASS.
-
-   This macro helps control the handling of multiple-word values in
-   the reload pass.
-
-   This declaration is required.  */
 #define CLASS_MAX_NREGS(CLASS, MODE) frv_class_max_nregs (CLASS, MODE)
 
 #define ZERO_P(x) (x == CONST0_RTX (GET_MODE (x)))
@@ -1070,14 +965,6 @@ typedef struct frv_stack {
 /* Define this macro to nonzero if the addresses of local variable slots
    are at negative offsets from the frame pointer.  */
 #define FRAME_GROWS_DOWNWARD 1
-
-/* Offset from the frame pointer to the first local variable slot to be
-   allocated.
-
-   If `FRAME_GROWS_DOWNWARD', find the next slot's offset by subtracting the
-   first slot's length from `STARTING_FRAME_OFFSET'.  Otherwise, it is found by
-   adding the length of the first slot to the value `STARTING_FRAME_OFFSET'.  */
-#define STARTING_FRAME_OFFSET 0
 
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  If not specified, the default value of zero
@@ -1903,18 +1790,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 /* The maximum number of bytes that a single instruction can move quickly from
    memory to memory.  */
 #define MOVE_MAX 8
-
-/* A C expression which is nonzero if on this machine it is safe to "convert"
-   an integer of INPREC bits to one of OUTPREC bits (where OUTPREC is smaller
-   than INPREC) by merely operating on it as if it had only OUTPREC bits.
-
-   On many machines, this expression can be 1.
-
-   When `TRULY_NOOP_TRUNCATION' returns 1 for a pair of sizes for modes for
-   which `MODES_TIEABLE_P' is 0, suboptimal code can result.  If this is the
-   case, making `TRULY_NOOP_TRUNCATION' return 0 in such cases may improve
-   things.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* An alias for the machine mode for pointers.  On most machines, define this
    to be the integer mode corresponding to the width of a hardware pointer;

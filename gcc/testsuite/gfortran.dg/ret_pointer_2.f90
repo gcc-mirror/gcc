@@ -7,11 +7,11 @@ program a
 
     print *, x(3)  ! { dg-output " *1  *2  *3" }
 
-    if (ssum(x(3)) /= 6) call abort()
+    if (ssum(x(3)) /= 6) STOP 1
 
     s = 0
     s = x(3)
-    if (any(s /= (/1, 2, 3/))) call abort()
+    if (any(s /= (/1, 2, 3/))) STOP 2
 
 contains
 

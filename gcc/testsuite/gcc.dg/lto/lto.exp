@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2017 Free Software Foundation, Inc.
+# Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@ if $tracelevel then {
 # Load procedures from common libraries. 
 load_lib standard.exp
 load_lib gcc.exp
-load_lib mpx-dg.exp
 
 # Load the language-independent compabibility support procedures.
 load_lib lto.exp
@@ -42,7 +41,6 @@ if { ![check_effective_target_lto] } {
 
 gcc_init
 lto_init no-mathlib
-mpx_init
 
 # Define an identifier for use with this suite to avoid name conflicts
 # with other lto tests running at the same time.

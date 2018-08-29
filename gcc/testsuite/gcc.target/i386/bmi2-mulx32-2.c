@@ -1,4 +1,4 @@
-/* { dg-do run { target { bmi2 && { ia32 } } } } */
+/* { dg-do run { target { bmi2 && ia32 } } } */
 /* { dg-options "-mbmi2 -O2" } */
 
 #include <x86intrin.h>

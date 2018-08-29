@@ -11,5 +11,5 @@ fetch_data (unsigned short offset, vector signed short *datap)
 {
   vector signed short data = *datap;
 
-  return __builtin_vec_vexturx (offset, data);	/* { dg-error "Builtin function __builtin_altivec_vextuhrx requires" } */
+  return __builtin_vec_vexturx (offset, data);	/* { dg-error "builtin function '__builtin_altivec_vextuhrx' requires" } */
 }

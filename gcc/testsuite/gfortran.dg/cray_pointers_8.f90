@@ -59,5 +59,5 @@ program main
     x = x + dx
   end do
   z = euler(0.0,1.0,0.0005,fcn)
-  if (abs (y - z) .gt. 1e-6) call abort
+  if (abs (y - z) .gt. 1e-6) STOP 1
 end

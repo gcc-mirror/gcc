@@ -20,11 +20,11 @@ contains
     logical(c_bool), intent(in),    value    :: is_present
     integer(c_int),  intent(inout), optional :: var
     if (is_present) then
-      if (.not. present (var)) call abort ()
-      if (var /= 43) call abort ()
+      if (.not. present (var)) STOP 1
+      if (var /= 43) STOP 2
       var = -45
     else
-      if (present (var)) call abort ()
+      if (present (var)) STOP 3
     end if
   end subroutine subtest
 end module m
@@ -37,5 +37,5 @@ program test
   val = 4
   call c_proc (.false._c_bool)
   call c_proc (.true._c_bool, val)
-  if (val /= 7) call abort ()
+  if (val /= 7) STOP 4
 end program test

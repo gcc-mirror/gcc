@@ -17,7 +17,7 @@
 #endif
 
 extern _Bool Exited (uint32_t *w)
-  __asm__ (GOSYM_PREFIX "syscall.Exited.N18_syscall.WaitStatus");
+  __asm__ (GOSYM_PREFIX "syscall.WaitStatus.Exited");
 
 _Bool
 Exited (uint32_t *w)
@@ -26,7 +26,7 @@ Exited (uint32_t *w)
 }
 
 extern _Bool Signaled (uint32_t *w)
-  __asm__ (GOSYM_PREFIX "syscall.Signaled.N18_syscall.WaitStatus");
+  __asm__ (GOSYM_PREFIX "syscall.WaitStatus.Signaled");
 
 _Bool
 Signaled (uint32_t *w)
@@ -35,7 +35,7 @@ Signaled (uint32_t *w)
 }
 
 extern _Bool Stopped (uint32_t *w)
-  __asm__ (GOSYM_PREFIX "syscall.Stopped.N18_syscall.WaitStatus");
+  __asm__ (GOSYM_PREFIX "syscall.WaitStatus.Stopped");
 
 _Bool
 Stopped (uint32_t *w)
@@ -44,7 +44,7 @@ Stopped (uint32_t *w)
 }
 
 extern _Bool Continued (uint32_t *w)
-  __asm__ (GOSYM_PREFIX "syscall.Continued.N18_syscall.WaitStatus");
+  __asm__ (GOSYM_PREFIX "syscall.WaitStatus.Continued");
 
 _Bool
 Continued (uint32_t *w)
@@ -53,7 +53,7 @@ Continued (uint32_t *w)
 }
 
 extern _Bool CoreDump (uint32_t *w)
-  __asm__ (GOSYM_PREFIX "syscall.CoreDump.N18_syscall.WaitStatus");
+  __asm__ (GOSYM_PREFIX "syscall.WaitStatus.CoreDump");
 
 _Bool
 CoreDump (uint32_t *w)
@@ -62,7 +62,7 @@ CoreDump (uint32_t *w)
 }
 
 extern int ExitStatus (uint32_t *w)
-  __asm__ (GOSYM_PREFIX "syscall.ExitStatus.N18_syscall.WaitStatus");
+  __asm__ (GOSYM_PREFIX "syscall.WaitStatus.ExitStatus");
 
 int
 ExitStatus (uint32_t *w)
@@ -73,7 +73,7 @@ ExitStatus (uint32_t *w)
 }
 
 extern int Signal (uint32_t *w)
-  __asm__ (GOSYM_PREFIX "syscall.Signal.N18_syscall.WaitStatus");
+  __asm__ (GOSYM_PREFIX "syscall.WaitStatus.Signal");
 
 int
 Signal (uint32_t *w)
@@ -84,7 +84,7 @@ Signal (uint32_t *w)
 }
 
 extern int StopSignal (uint32_t *w)
-  __asm__ (GOSYM_PREFIX "syscall.StopSignal.N18_syscall.WaitStatus");
+  __asm__ (GOSYM_PREFIX "syscall.WaitStatus.StopSignal");
 
 int
 StopSignal (uint32_t *w)
@@ -95,7 +95,7 @@ StopSignal (uint32_t *w)
 }
 
 extern int TrapCause (uint32_t *w)
-  __asm__ (GOSYM_PREFIX "syscall.TrapCause.N18_syscall.WaitStatus");
+  __asm__ (GOSYM_PREFIX "syscall.WaitStatus.TrapCause");
 
 int
 TrapCause (uint32_t *w __attribute__ ((unused)))

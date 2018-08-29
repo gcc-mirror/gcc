@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Xilinx MicroBlaze.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -24,6 +24,7 @@
 
 #ifdef RTX_CODE
 extern int pic_address_needs_scratch (rtx);
+extern bool microblaze_constant_address_p (rtx x);
 extern void expand_block_move        (rtx *);
 extern void microblaze_expand_prologue (void);
 extern void microblaze_expand_epilogue (void);
@@ -33,7 +34,7 @@ extern bool microblaze_expand_move (machine_mode, rtx *);
 extern bool microblaze_expand_block_move (rtx, rtx, rtx, rtx);
 extern void microblaze_expand_divide (rtx *);
 extern void microblaze_expand_conditional_branch (machine_mode, rtx *);
-extern void microblaze_expand_conditional_branch_reg (enum machine_mode, rtx *);
+extern void microblaze_expand_conditional_branch_reg (machine_mode, rtx *);
 extern void microblaze_expand_conditional_branch_sf (rtx *); 
 extern int microblaze_can_use_return_insn (void);
 extern void print_operand (FILE *, rtx, int);

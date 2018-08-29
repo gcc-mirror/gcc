@@ -9,7 +9,7 @@ program test
   integer, allocatable :: c3(:,:,:)
 
   allocate (a1(5))
-  if (.not.allocated (a1)) call abort()
+  if (.not.allocated (a1)) STOP 1
 
   a1 = 10
 
@@ -21,16 +21,16 @@ program test
   a1(5) = 5
   !$acc end parallel
 
-  if (a1(1) .ne. 1) call abort
-  if (a1(2) .ne. 2) call abort
-  if (a1(3) .ne. 3) call abort
-  if (a1(4) .ne. 4) call abort
-  if (a1(5) .ne. 5) call abort
+  if (a1(1) .ne. 1) STOP 1
+  if (a1(2) .ne. 2) STOP 2
+  if (a1(3) .ne. 3) STOP 3
+  if (a1(4) .ne. 4) STOP 4
+  if (a1(5) .ne. 5) STOP 5
 
   deallocate(a1)
 
   allocate (a1(0:4))
-  if (.not.allocated (a1)) call abort()
+  if (.not.allocated (a1)) STOP 2
 
   a1 = 10
 
@@ -42,16 +42,16 @@ program test
   a1(4) = 5
   !$acc end parallel
 
-  if (a1(0) .ne. 1) call abort
-  if (a1(1) .ne. 2) call abort
-  if (a1(2) .ne. 3) call abort
-  if (a1(3) .ne. 4) call abort
-  if (a1(4) .ne. 5) call abort
+  if (a1(0) .ne. 1) STOP 6
+  if (a1(1) .ne. 2) STOP 7
+  if (a1(2) .ne. 3) STOP 8
+  if (a1(3) .ne. 4) STOP 9
+  if (a1(4) .ne. 5) STOP 10
 
   deallocate(a1)
 
   allocate (b2(5,5))
-  if (.not.allocated (b2)) call abort()
+  if (.not.allocated (b2)) STOP 3
 
   b2 = 11
 
@@ -63,16 +63,16 @@ program test
   b2(5,5) = 5
   !$acc end parallel
 
-  if (b2(1,1) .ne. 1) call abort
-  if (b2(2,2) .ne. 2) call abort
-  if (b2(3,3) .ne. 3) call abort
-  if (b2(4,4) .ne. 4) call abort
-  if (b2(5,5) .ne. 5) call abort
+  if (b2(1,1) .ne. 1) STOP 11
+  if (b2(2,2) .ne. 2) STOP 12
+  if (b2(3,3) .ne. 3) STOP 13
+  if (b2(4,4) .ne. 4) STOP 14
+  if (b2(5,5) .ne. 5) STOP 15
 
   deallocate(b2)
 
   allocate (b2(0:4,0:4))
-  if (.not.allocated (b2)) call abort()
+  if (.not.allocated (b2)) STOP 4
 
   b2 = 11
 
@@ -84,16 +84,16 @@ program test
   b2(4,4) = 5
   !$acc end parallel
 
-  if (b2(0,0) .ne. 1) call abort
-  if (b2(1,1) .ne. 2) call abort
-  if (b2(2,2) .ne. 3) call abort
-  if (b2(3,3) .ne. 4) call abort
-  if (b2(4,4) .ne. 5) call abort
+  if (b2(0,0) .ne. 1) STOP 16
+  if (b2(1,1) .ne. 2) STOP 17
+  if (b2(2,2) .ne. 3) STOP 18
+  if (b2(3,3) .ne. 4) STOP 19
+  if (b2(4,4) .ne. 5) STOP 20
 
   deallocate(b2)
 
   allocate (c3(5,5,5))
-  if (.not.allocated (c3)) call abort()
+  if (.not.allocated (c3)) STOP 5
 
   c3 = 12
 
@@ -105,16 +105,16 @@ program test
   c3(5,5,5) = 5
   !$acc end parallel
 
-  if (c3(1,1,1) .ne. 1) call abort
-  if (c3(2,2,2) .ne. 2) call abort
-  if (c3(3,3,3) .ne. 3) call abort
-  if (c3(4,4,4) .ne. 4) call abort
-  if (c3(5,5,5) .ne. 5) call abort
+  if (c3(1,1,1) .ne. 1) STOP 21
+  if (c3(2,2,2) .ne. 2) STOP 22
+  if (c3(3,3,3) .ne. 3) STOP 23
+  if (c3(4,4,4) .ne. 4) STOP 24
+  if (c3(5,5,5) .ne. 5) STOP 25
 
   deallocate(c3)
 
   allocate (c3(0:4,0:4,0:4))
-  if (.not.allocated (c3)) call abort()
+  if (.not.allocated (c3)) STOP 6
 
   c3 = 12
 
@@ -126,22 +126,22 @@ program test
   c3(4,4,4) = 5
   !$acc end parallel
 
-  if (c3(0,0,0) .ne. 1) call abort
-  if (c3(1,1,1) .ne. 2) call abort
-  if (c3(2,2,2) .ne. 3) call abort
-  if (c3(3,3,3) .ne. 4) call abort
-  if (c3(4,4,4) .ne. 5) call abort
+  if (c3(0,0,0) .ne. 1) STOP 26
+  if (c3(1,1,1) .ne. 2) STOP 27
+  if (c3(2,2,2) .ne. 3) STOP 28
+  if (c3(3,3,3) .ne. 4) STOP 29
+  if (c3(4,4,4) .ne. 5) STOP 30
 
   deallocate(c3)
 
   allocate (a1(5))
-  if (.not.allocated (a1)) call abort()
+  if (.not.allocated (a1)) STOP 7
 
   allocate (b1(5))
-  if (.not.allocated (b1)) call abort()
+  if (.not.allocated (b1)) STOP 8
 
   allocate (c1(5))
-  if (.not.allocated (c1)) call abort()
+  if (.not.allocated (c1)) STOP 9
 
   a1 = 10
   b1 = 3
@@ -161,24 +161,24 @@ program test
   b1(5) = c1(5)
   !$acc end parallel
 
-  if (b1(1) .ne. 10) call abort
-  if (b1(2) .ne. 10) call abort
-  if (b1(3) .ne. 10) call abort
-  if (b1(4) .ne. 10) call abort
-  if (b1(5) .ne. 10) call abort
+  if (b1(1) .ne. 10) STOP 31
+  if (b1(2) .ne. 10) STOP 32
+  if (b1(3) .ne. 10) STOP 33
+  if (b1(4) .ne. 10) STOP 34
+  if (b1(5) .ne. 10) STOP 35
 
   deallocate(a1)
   deallocate(b1)
   deallocate(c1)
 
   allocate (a1(0:4))
-  if (.not.allocated (a1)) call abort()
+  if (.not.allocated (a1)) STOP 10
 
   allocate (b1(0:4))
-  if (.not.allocated (b1)) call abort()
+  if (.not.allocated (b1)) STOP 11
 
   allocate (c1(0:4))
-  if (.not.allocated (c1)) call abort()
+  if (.not.allocated (c1)) STOP 12
 
   a1 = 10
   b1 = 3
@@ -198,18 +198,18 @@ program test
   b1(4) = c1(4)
   !$acc end parallel
 
-  if (b1(0) .ne. 10) call abort
-  if (b1(1) .ne. 10) call abort
-  if (b1(2) .ne. 10) call abort
-  if (b1(3) .ne. 10) call abort
-  if (b1(4) .ne. 10) call abort
+  if (b1(0) .ne. 10) STOP 36
+  if (b1(1) .ne. 10) STOP 37
+  if (b1(2) .ne. 10) STOP 38
+  if (b1(3) .ne. 10) STOP 39
+  if (b1(4) .ne. 10) STOP 40
 
   deallocate(a1)
   deallocate(b1)
   deallocate(c1)
 
   allocate (a1(5))
-  if (.not.allocated (a1)) call abort()
+  if (.not.allocated (a1)) STOP 13
 
   a1 = 10
 
@@ -218,11 +218,11 @@ program test
   a1(3) = 3
   !$acc end parallel
 
-  if (a1(1) .ne. 10) call abort
-  if (a1(2) .ne. 2) call abort
-  if (a1(3) .ne. 3) call abort
-  if (a1(4) .ne. 10) call abort
-  if (a1(5) .ne. 10) call abort
+  if (a1(1) .ne. 10) STOP 41
+  if (a1(2) .ne. 2) STOP 42
+  if (a1(3) .ne. 3) STOP 43
+  if (a1(4) .ne. 10) STOP 44
+  if (a1(5) .ne. 10) STOP 45
 
   deallocate(a1)
 

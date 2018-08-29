@@ -77,7 +77,7 @@ namespace N2
 {
   struct U
   {
-    #pragma omp declare reduction (bar: S: omp_out.s *= omp_in.s)	// { dg-error "with" }
+    #pragma omp declare reduction (bar: S: omp_out.s *= omp_in.s)	// { dg-message "previous" }
     #pragma omp declare reduction (bar: S: omp_out.s += omp_in.s)	// { dg-error "cannot be overloaded" }
   };
 }
@@ -109,9 +109,9 @@ namespace N4
   struct U
   {
     #pragma omp declare reduction (bar: T: omp_out.t += omp_in.t)
-    #pragma omp declare reduction (bar: S: omp_out.s *= omp_in.s)	// { dg-error "with" }
+    #pragma omp declare reduction (bar: S: omp_out.s *= omp_in.s)	// { dg-message "previous" }
     #pragma omp declare reduction (bar: S: omp_out.s += omp_in.s)	// { dg-error "cannot be overloaded" }
-    #pragma omp declare reduction (bar: long: omp_out += omp_in)	// { dg-error "with" }
+    #pragma omp declare reduction (bar: long: omp_out += omp_in)	// { dg-message "previous" }
     #pragma omp declare reduction (bar: long int: omp_out += omp_in)	// { dg-error "cannot be overloaded" }
     #pragma omp declare reduction (bar: short unsigned: omp_out += omp_in)
     #pragma omp declare reduction (bar: short int: omp_out += omp_in)
@@ -132,7 +132,7 @@ namespace N5
   template <typename T>
   struct U
   {
-    #pragma omp declare reduction (bar: T: omp_out.s *= omp_in.s)	// { dg-error "with" }
+    #pragma omp declare reduction (bar: T: omp_out.s *= omp_in.s)	// { dg-message "previous" }
     #pragma omp declare reduction (bar: T: omp_out.s += omp_in.s)	// { dg-error "cannot be overloaded" }
   };
   U<S> u;
@@ -159,9 +159,9 @@ namespace N6
   {
     typedef V V2;
     #pragma omp declare reduction (bar: T: omp_out.t += omp_in.t)
-    #pragma omp declare reduction (bar: V: omp_out.s *= omp_in.s)	// { dg-error "with" }
+    #pragma omp declare reduction (bar: V: omp_out.s *= omp_in.s)	// { dg-message "previous" }
     #pragma omp declare reduction (bar: V2: omp_out.s += omp_in.s)	// { dg-error "cannot be overloaded" }
-    #pragma omp declare reduction (bar: long: omp_out += omp_in)	// { dg-error "with" }
+    #pragma omp declare reduction (bar: long: omp_out += omp_in)	// { dg-message "previous" }
     #pragma omp declare reduction (bar: long int: omp_out += omp_in)	// { dg-error "cannot be overloaded" }
     #pragma omp declare reduction (bar: short unsigned: omp_out += omp_in)
     #pragma omp declare reduction (bar: short int: omp_out += omp_in)

@@ -13,7 +13,7 @@ contains
     integer :: x(:,:)
     b(1,:) = 99
     b(2,:) = x(:,1)
-    if (any (b(:,1) /= [99, 1]).or.any (b(:,2) /= [99, 3])) call abort()
+    if (any (b(:,1) /= [99, 1]).or.any (b(:,2) /= [99, 3])) STOP 1
   end subroutine msub
   subroutine pure_msub(x, y)
     integer, intent(in) :: x(:,:)
@@ -34,9 +34,9 @@ contains
   subroutine purity
     integer :: c(2,3)
     call pure_sub(transpose(a), c)
-    if (any (c .ne. a)) call abort
+    if (any (c .ne. a)) STOP 1
     call pure_msub(transpose(b), c)
-    if (any (c .ne. b)) call abort
+    if (any (c .ne. b)) STOP 2
   end subroutine purity
 !
 ! sub and msub both need temporaries to avoid aliasing.
@@ -49,7 +49,7 @@ contains
     integer :: x(:,:)
     a(1,:) = 88
     a(2,:) = x(:,1)
-    if (any (a(:,1) /= [88, 1]).or.any (a(:,2) /= [88, 3])) call abort()
+    if (any (a(:,1) /= [88, 1]).or.any (a(:,2) /= [88, 3])) STOP 2
   end subroutine sub
   subroutine pure_sub(x, y)
     integer, intent(in) :: x(:,:)

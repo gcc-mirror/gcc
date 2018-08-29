@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for HPs running
    HPUX using the 64bit runtime model.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -106,7 +106,7 @@ along with GCC; see the file COPYING3.  If not see
 /* The libgcc_stub.a and milli.a libraries need to come last.  */
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC "\
-  %G %L %G %{!nostdlib:%{!nodefaultlibs:%{!shared:-lgcc_stub}\
+  %G %{!nolibc:%L} %G %{!nostdlib:%{!nodefaultlibs:%{!shared:-lgcc_stub}\
   milli.a%s}}"
 
 /* Under hpux11, the normal location of the `ld' and `as' programs is the
@@ -245,8 +245,18 @@ do {								\
 
 /* We need to use the HP style for internal labels.  */
 #undef ASM_GENERATE_INTERNAL_LABEL
-#define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
-  sprintf (LABEL, "*%c$%s%04ld", (PREFIX)[0], (PREFIX) + 1, (long)(NUM))
+#define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)		\
+  do								\
+    {								\
+      char *__p;						\
+      (LABEL)[0] = '*';						\
+      (LABEL)[1] = (PREFIX)[0];					\
+      (LABEL)[2] = '$';						\
+      __p = stpcpy (&(LABEL)[3], &(PREFIX)[1]);			\
+      sprint_ul (__p, (unsigned long) (NUM));			\
+    }								\
+  while (0)
+
 
 #else /* USING_ELFOS_H */
 

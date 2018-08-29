@@ -363,15 +363,18 @@ continue\n\
     switch (result)
       {
       case PASS:
-	fprintf (stderr, "PASS: " GUALITY_TEST ": %s is %lli\n", name, value);
+	fprintf (stderr, "PASS: " GUALITY_TEST ": %s is %lli\n", name,
+		 (long long int) value);
 	break;
       case INCORRECT:
-	fprintf (stderr, "FAIL: " GUALITY_TEST ": %s is %lli, not %lli\n", name, xvalue, value);
+	fprintf (stderr, "FAIL: " GUALITY_TEST ": %s is %lli, not %lli\n", name,
+		 (long long int) xvalue, (long long int) value);
 	break;
       case INCOMPLETE:
 	fprintf (stderr, "%s: " GUALITY_TEST ": %s is %s, expected %lli\n",
 		 unknown_ok ? "UNRESOLVED" : "FAIL", name,
-		 unavailable < 0 ? "not computable" : "optimized away", value);
+		 unavailable < 0 ? "not computable" : "optimized away",
+		 (long long int) value);
 	result = unknown_ok ? INCOMPLETE : INCORRECT;
 	break;
       default:

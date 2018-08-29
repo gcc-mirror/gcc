@@ -1,5 +1,5 @@
 /* IPA reference lists.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -32,8 +32,7 @@ enum GTY(()) ipa_ref_use
   IPA_REF_LOAD,
   IPA_REF_STORE,
   IPA_REF_ADDR,
-  IPA_REF_ALIAS,
-  IPA_REF_CHKP
+  IPA_REF_ALIAS
 };
 
 /* Record of reference in callgraph or varpool.  */

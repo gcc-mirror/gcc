@@ -1,5 +1,5 @@
 /* ARC ARCH architectures.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -40,15 +40,15 @@
 
 ARC_ARCH ("arcem", em, FL_MPYOPT_1_6 | FL_DIVREM | FL_CD | FL_NORM	\
 	  | FL_BS | FL_SWAP | FL_FPUS | FL_SPFP | FL_DPFP		\
-	  | FL_SIMD | FL_FPUDA | FL_QUARK, 0)
+	  | FL_SIMD | FL_FPUDA | FL_QUARK | FL_RF16, 0)
 ARC_ARCH ("archs", hs, FL_MPYOPT_7_9 | FL_DIVREM | FL_NORM | FL_CD	\
 	  | FL_ATOMIC | FL_LL64 | FL_BS | FL_SWAP			\
-	  | FL_FPUS | FL_FPUD,						\
+	  | FL_FPUS | FL_FPUD | FL_RF16,				\
 	  FL_CD | FL_ATOMIC | FL_BS | FL_NORM | FL_SWAP)
 ARC_ARCH ("arc6xx", 6xx, FL_BS | FL_NORM | FL_SWAP | FL_MUL64 | FL_MUL32x16 \
-	  | FL_SPFP | FL_ARGONAUT | FL_DPFP, 0)
+	  | FL_SPFP | FL_ARGONAUT | FL_DPFP | FL_RF16, 0)
 ARC_ARCH ("arc700", 700, FL_ATOMIC | FL_BS | FL_NORM | FL_SWAP | FL_EA \
-	  | FL_SIMD | FL_SPFP | FL_ARGONAUT | FL_DPFP,		       \
+	  | FL_SIMD | FL_SPFP | FL_ARGONAUT | FL_DPFP | FL_RF16,       \
 	  FL_BS | FL_NORM | FL_SWAP)
 
 /* Local Variables: */

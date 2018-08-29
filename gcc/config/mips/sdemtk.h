@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    MIPS SDE version, for use with the SDE C library rather than newlib.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -70,7 +70,7 @@ extern void mips_sync_icache (void *beg, unsigned long len);
 #undef MIPS_ICACHE_SYNC
 #define MIPS_ICACHE_SYNC(ADDR, SIZE)					\
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mips_cache_flush_func),	\
-		     LCT_NORMAL, VOIDmode, 2, ADDR, Pmode,		\
+		     LCT_NORMAL, VOIDmode, ADDR, Pmode,			\
 		     SIZE, TYPE_MODE (sizetype))
 
 /* This version of _mcount does not pop 2 words from the stack.  */

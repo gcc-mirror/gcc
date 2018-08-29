@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-options "-mcpu=power8 -O3 -funroll-loops" } */
@@ -140,7 +140,7 @@ pr_ff (t_coupl_rec * tcr, real time, t_idef * idef, t_commrec * cr, int nfile,
 									   malloc
 									   (__len);
 									   __retval;}
-	    )):	    __strdup (eoNames[i])));
+	    )):	    strdup (eoNames[i])));
 	      raleg[j++] =
 		(__extension__
 		 (__builtin_constant_p (buf)
@@ -165,7 +165,7 @@ pr_ff (t_coupl_rec * tcr, real time, t_idef * idef, t_commrec * cr, int nfile,
 									   malloc
 									   (__len);
 									   __retval;}
-	    )):	    __strdup (buf)));
+	    )):	    strdup (buf)));
 	    }
 	}
       if (tcr->nLJ)

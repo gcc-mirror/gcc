@@ -1,6 +1,6 @@
 /* { dg-do run { target { powerpc*-*-linux* } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
-/* { dg-skip-if "" { powerpc*-*-*spe* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
+/* { dg-skip-if "" { powerpc*-*-*spe* } } */
 /* { dg-require-effective-target dfp_hw } */
 /* { dg-options "-O2 -mhard-dfp" } */
 

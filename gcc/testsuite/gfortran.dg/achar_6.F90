@@ -26,28 +26,28 @@ subroutine test (s1, s4, i, i1, i2, i3, i4)
   character(kind=4,len=1) :: s4
   integer :: i, i1, i2, i3, i4
 
-  if (i /= i1) call abort
-  if (i /= i2) call abort
-  if (i /= i3) call abort
-  if (i /= i4) call abort
+  if (i /= i1) STOP 1
+  if (i /= i2) STOP 2
+  if (i /= i3) STOP 3
+  if (i /= i4) STOP 4
 
-  if (iachar (s1) /= i) call abort
-  if (iachar (s4) /= i) call abort
+  if (iachar (s1) /= i) STOP 5
+  if (iachar (s4) /= i) STOP 6
   
-  if (ichar (s1) /= i) call abort
-  if (ichar (s4) /= i) call abort
+  if (ichar (s1) /= i) STOP 7
+  if (ichar (s4) /= i) STOP 8
   
-  if (achar(i, kind=1) /= s1) call abort
-  if (achar(i, kind=4) /= s4) call abort
+  if (achar(i, kind=1) /= s1) STOP 9
+  if (achar(i, kind=4) /= s4) STOP 10
 
-  if (char(i, kind=1) /= s1) call abort
-  if (char(i, kind=4) /= s4) call abort
+  if (char(i, kind=1) /= s1) STOP 11
+  if (char(i, kind=4) /= s4) STOP 12
 
-  if (iachar(achar(i, kind=1)) /= i) call abort
-  if (iachar(achar(i, kind=4)) /= i) call abort
+  if (iachar(achar(i, kind=1)) /= i) STOP 13
+  if (iachar(achar(i, kind=4)) /= i) STOP 14
 
-  if (ichar(char(i, kind=1)) /= i) call abort
-  if (ichar(char(i, kind=4)) /= i) call abort
+  if (ichar(char(i, kind=1)) /= i) STOP 15
+  if (ichar(char(i, kind=4)) /= i) STOP 16
 
 end subroutine test
 
@@ -55,15 +55,15 @@ subroutine test_bis (s4, i, i2, i4)
   character(kind=4,len=1) :: s4
   integer :: i, i2, i4
 
-  if (i /= i2) call abort
-  if (i /= i4) call abort
+  if (i /= i2) STOP 17
+  if (i /= i4) STOP 18
 
-  if (iachar (s4) /= i) call abort
-  if (ichar (s4) /= i) call abort
-  if (achar(i, kind=4) /= s4) call abort
-  if (char(i, kind=4) /= s4) call abort
-  if (iachar(achar(i, kind=4)) /= i) call abort
-  if (ichar(char(i, kind=4)) /= i) call abort
+  if (iachar (s4) /= i) STOP 19
+  if (ichar (s4) /= i) STOP 20
+  if (achar(i, kind=4) /= s4) STOP 21
+  if (char(i, kind=4) /= s4) STOP 22
+  if (iachar(achar(i, kind=4)) /= i) STOP 23
+  if (ichar(char(i, kind=4)) /= i) STOP 24
 
 end subroutine test_bis
 

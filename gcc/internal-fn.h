@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -107,6 +107,8 @@ internal_fn_name (enum internal_fn fn)
   return internal_fn_name_array[(int) fn];
 }
 
+extern internal_fn lookup_internal_fn (const char *);
+
 /* Return the ECF_* flags for function FN.  */
 
 extern const int internal_fn_flags_array[];
@@ -158,6 +160,17 @@ direct_internal_fn_p (internal_fn fn)
   return direct_internal_fn_array[fn].type0 >= -1;
 }
 
+/* Return true if FN is a direct internal function that can be vectorized by
+   converting the return type and all argument types to vectors of the same
+   number of elements.  E.g. we can vectorize an IFN_SQRT on floats as an
+   IFN_SQRT on vectors of N floats.  */
+
+inline bool
+vectorizable_internal_fn_p (internal_fn fn)
+{
+  return direct_internal_fn_array[fn].vectorizable;
+}
+
 /* Return optab information about internal function FN.  Only meaningful
    if direct_internal_fn_p (FN).  */
 
@@ -174,10 +187,44 @@ extern bool direct_internal_fn_supported_p (internal_fn, tree_pair,
 					    optimization_type);
 extern bool direct_internal_fn_supported_p (internal_fn, tree,
 					    optimization_type);
+
+/* Return true if FN is supported for types TYPE0 and TYPE1 when the
+   optimization type is OPT_TYPE.  The types are those associated with
+   the "type0" and "type1" fields of FN's direct_internal_fn_info
+   structure.  */
+
+inline bool
+direct_internal_fn_supported_p (internal_fn fn, tree type0, tree type1,
+				optimization_type opt_type)
+{
+  return direct_internal_fn_supported_p (fn, tree_pair (type0, type1),
+					 opt_type);
+}
+
+extern int first_commutative_argument (internal_fn);
+
 extern bool set_edom_supported_p (void);
+
+extern internal_fn get_conditional_internal_fn (tree_code);
+extern internal_fn get_conditional_internal_fn (internal_fn);
+extern tree_code conditional_internal_fn_code (internal_fn);
+extern internal_fn get_unconditional_internal_fn (internal_fn);
+extern bool can_interpret_as_conditional_op_p (gimple *, tree *,
+					       tree_code *, tree (&)[3],
+					       tree *);
+
+extern bool internal_load_fn_p (internal_fn);
+extern bool internal_store_fn_p (internal_fn);
+extern bool internal_gather_scatter_fn_p (internal_fn);
+extern int internal_fn_mask_index (internal_fn);
+extern int internal_fn_stored_value_index (internal_fn);
+extern bool internal_gather_scatter_fn_supported_p (internal_fn, tree,
+						    tree, signop, int);
 
 extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);
 extern void expand_PHI (internal_fn, gcall *);
+
+extern bool vectorized_internal_fn_supported_p (internal_fn, tree);
 
 #endif

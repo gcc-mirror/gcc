@@ -29,6 +29,6 @@ program main
   type(show_producer) :: executive_producer
 
   allocate(kernel1, kernel2,mold=executive_producer%create_show ())
-  if (kernel1%variable .ne. -1) call abort
-  if (kernel2%variable .ne. -1) call abort
+  if (kernel1%variable .ne. -1) STOP 1
+  if (kernel2%variable .ne. -1) STOP 2
 end program

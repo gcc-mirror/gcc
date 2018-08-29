@@ -39,5 +39,5 @@ program main
    use TransferBug
    character(len=100) :: str
    call BytesToString( StringToBytes('Hi'), str )
-   if (trim(str) .ne. "Hi") call abort ()
+   if (trim(str) .ne. "Hi") STOP 1
 end program

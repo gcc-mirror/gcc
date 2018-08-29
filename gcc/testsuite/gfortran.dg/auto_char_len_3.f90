@@ -21,5 +21,5 @@ program TestStringTools
         (/(char(i+64),char(i+96), i = 1,26)/)
   txt = chararray2string(chararr)
   if (txt .ne. "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz") &
-        call abort ()
+        STOP 1
 end program TestStringTools

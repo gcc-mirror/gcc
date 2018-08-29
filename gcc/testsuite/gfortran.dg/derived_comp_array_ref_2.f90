@@ -12,7 +12,7 @@ MODULE cdf_aux_mod
 CONTAINS
   SUBROUTINE set_bound(arg_name, test)
     INTEGER, INTENT (IN) :: arg_name, test
-    if (arg_name .ne. test) call abort ()
+    if (arg_name .ne. test) STOP 1
   END SUBROUTINE set_bound
 END MODULE cdf_aux_mod
 

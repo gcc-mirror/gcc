@@ -10,10 +10,10 @@ program main
 
   forall (i = 1:2, j = 1:5) a(i)%field(j) = i * 100 + j
   calls = 0
-  if (sum (a%field(foo(calls))) .ne. 304) call abort
-  if (calls .ne. 1) call abort
-  if (sum (a(foo(calls))%field) .ne. 1015) call abort
-  if (calls .ne. 2) call abort
+  if (sum (a%field(foo(calls))) .ne. 304) STOP 1
+  if (calls .ne. 1) STOP 2
+  if (sum (a(foo(calls))%field) .ne. 1015) STOP 3
+  if (calls .ne. 2) STOP 4
 contains
   function foo (calls)
     integer :: calls, foo

@@ -1,5 +1,5 @@
 /* Control flow graph manipulation code header file.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -71,6 +71,13 @@ struct GTY(()) control_flow_graph {
   /* Maximal number of entities in the single jumptable.  Used to estimate
      final flowgraph size.  */
   int max_jumptable_ents;
+
+  /* Maximal count of BB in function.  */
+  profile_count count_max;
+
+  /* Dynamically allocated edge/bb flags.  */
+  int edge_flags_allocated;
+  int bb_flags_allocated;
 };
 
 
@@ -103,10 +110,10 @@ extern void debug_bb (basic_block);
 extern basic_block debug_bb_n (int);
 extern void dump_bb_info (FILE *, basic_block, int, dump_flags_t, bool, bool);
 extern void brief_dump_cfg (FILE *, dump_flags_t);
-extern void update_bb_profile_for_threading (basic_block, int, gcov_type, edge);
-extern void scale_bbs_frequencies_int (basic_block *, int, int, int);
-extern void scale_bbs_frequencies_gcov_type (basic_block *, int, gcov_type,
-					     gcov_type);
+extern void update_bb_profile_for_threading (basic_block, profile_count, edge);
+extern void scale_bbs_frequencies_profile_count (basic_block *, int,
+					     profile_count, profile_count);
+extern void scale_bbs_frequencies (basic_block *, int, profile_probability);
 extern void initialize_original_copy_tables (void);
 extern void reset_original_copy_tables (void);
 extern void free_original_copy_tables (void);
@@ -117,5 +124,61 @@ extern void set_bb_copy (basic_block, basic_block);
 extern basic_block get_bb_copy (basic_block);
 void set_loop_copy (struct loop *, struct loop *);
 struct loop *get_loop_copy (struct loop *);
+
+/* Generic RAII class to allocate a bit from storage of integer type T.
+   The allocated bit is accessible as mask with the single bit set
+   via the conversion operator to T.  */
+
+template <class T>
+class auto_flag
+{
+public:
+  /* static assert T is integer type of max HOST_WIDE_INT precision.  */
+  auto_flag (T *sptr)
+    {
+      m_sptr = sptr;
+      int free_bit = ffs_hwi (~*sptr);
+      /* If there are no unset bits... */
+      if (free_bit == 0)
+	gcc_unreachable ();
+      m_flag = HOST_WIDE_INT_1U << (free_bit - 1);
+      /* ...or if T is signed and thus the complement is sign-extended,
+         check if we ran out of bits.  We could spare us this bit
+	 if we could use C++11 std::make_unsigned<T>::type to pass
+	 ~*sptr to ffs_hwi.  */
+      if (m_flag == 0)
+	gcc_unreachable ();
+      gcc_checking_assert ((*sptr & m_flag) == 0);
+      *sptr |= m_flag;
+    }
+  ~auto_flag ()
+    {
+      gcc_checking_assert ((*m_sptr & m_flag) == m_flag);
+      *m_sptr &= ~m_flag;
+    }
+  operator T () const { return m_flag; }
+private:
+  T *m_sptr;
+  T m_flag;
+};
+
+/* RAII class to allocate an edge flag for temporary use.  You have
+   to clear the flag from all edges when you are finished using it.  */
+
+class auto_edge_flag : public auto_flag<int>
+{
+public:
+  auto_edge_flag (function *fun)
+    : auto_flag (&fun->cfg->edge_flags_allocated) {}
+};
+
+/* RAII class to allocate a bb flag for temporary use.  You have
+   to clear the flag from all edges when you are finished using it.  */
+class auto_bb_flag : public auto_flag<int>
+{
+public:
+  auto_bb_flag (function *fun)
+    : auto_flag (&fun->cfg->bb_flags_allocated) {}
+};
 
 #endif /* GCC_CFG_H */

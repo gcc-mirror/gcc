@@ -11,4 +11,4 @@ struct cStdDev
 struct cWeightedStdDev : public cStdDev {
     virtual int netPack();
 };
-int cWeightedStdDev::netPack() { }
+int cWeightedStdDev::netPack() { return 0; }

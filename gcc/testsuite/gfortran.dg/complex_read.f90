@@ -11,7 +11,7 @@ program complex_read
   write (10, *) " ( 0.99  ,  9.9  )"
   rewind (10)
   read (10,*) a
-  if (a.ne.(0.99, 9.90)) call abort ()
+  if (a.ne.(0.99, 9.90)) STOP 1
 
 ! Test a new record after the.comma (the original bug).
 
@@ -20,7 +20,7 @@ program complex_read
   write (10, *) "   999.0  )"
   rewind (10)
   read (10,*) a
-  if (a.ne.(99.0, 999.0)) call abort ()
+  if (a.ne.(99.0, 999.0)) STOP 2
 
 ! Test a new record before the.comma 
 
@@ -29,7 +29,7 @@ program complex_read
   write (10, *) " , 9.9  )"
   rewind (10)
   read (10,*) a
-  if (a.ne.(0.99, 9.90)) call abort ()
+  if (a.ne.(0.99, 9.90)) STOP 3
 
 ! Test a new records before and after the.comma 
 
@@ -39,7 +39,7 @@ program complex_read
   write (10, *) "  999.0  )"
   rewind (10)
   read (10,*) a
-  if (a.ne.(99.0, 999.0)) call abort ()
+  if (a.ne.(99.0, 999.0)) STOP 4
 
 ! Test a new records and blank records before and after the.comma 
 
@@ -51,7 +51,7 @@ program complex_read
   write (10, *) "  9.9    )"
   rewind (10)
   read (10,*) a
-  if (a.ne.(0.99, 9.9)) call abort ()
+  if (a.ne.(0.99, 9.9)) STOP 5
 
   close (10)
 end program complex_read

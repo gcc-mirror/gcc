@@ -1,5 +1,5 @@
 /* Specialized bits of code needed for the offloading tables.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -17,5 +17,5 @@ program test
    implicit none
    character*5 c
    c = bobo(5)
-   if (c .ne. "12345") call abort
+   if (c .ne. "12345") STOP 1
 end program test

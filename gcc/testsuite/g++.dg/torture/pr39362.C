@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-return-type" } */
 
 void *fastMalloc (int n);
 void fastFree (void *p);

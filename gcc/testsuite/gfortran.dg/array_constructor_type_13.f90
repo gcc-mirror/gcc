@@ -10,5 +10,5 @@ real :: a(3)
 integer :: j(3)
 a = (/ integer :: 1.4, 2.2, 3.33  /) ! { dg-error "Fortran 2003" }
 j = (/ 1.4, 2.2, 3.33  /)
-if( any(a /= j )) call abort()
+if( any(a /= j )) STOP 1
 end

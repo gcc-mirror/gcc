@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,6 +23,7 @@
 
 #include <ext/random>
 #include <testsuite_hooks.h>
+#include <testsuite_common_types.h>
 
 void
 test01()
@@ -35,9 +36,17 @@ test01()
   __gnu_cxx::uniform_inside_sphere_distribution<5, float> u5;
 }
 
+void
+test02()
+{
+  __gnu_test::implicitly_default_constructible test;
+  test.operator()<__gnu_cxx::uniform_inside_sphere_distribution<2>>();
+  test.operator()<__gnu_cxx::uniform_inside_sphere_distribution<2>::param_type>();
+}
+
 int
 main()
 {
   test01();
-  return 0;
+  test02();
 }

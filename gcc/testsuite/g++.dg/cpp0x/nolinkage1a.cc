@@ -12,4 +12,4 @@ static void g()
   A<B> a;
 }
 
-int dummy() { g(); f(0); }
+int dummy() { g(); f(0); return 0; }

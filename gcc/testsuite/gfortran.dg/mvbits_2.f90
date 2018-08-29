@@ -6,11 +6,11 @@
   integer(kind=2) :: i2 = 0
   integer(kind=1) :: i1 = 0
   call mvbits (1_1, 0, 8, i1, 0)
-  if (i1 /= 1) call abort
+  if (i1 /= 1) STOP 1
   call mvbits (1_2, 0, 16, i2, 0)
-  if (i2 /= 1) call abort
+  if (i2 /= 1) STOP 2
   call mvbits (1_4, 0, 16, i4, 0)
-  if (i4 /= 1) call abort
+  if (i4 /= 1) STOP 3
   call mvbits (1_8, 0, 16, i8, 0)
-  if (i8 /= 1) call abort
+  if (i8 /= 1) STOP 4
   end

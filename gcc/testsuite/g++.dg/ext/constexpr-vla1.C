@@ -27,4 +27,4 @@ fn_not_ok (int n)
 }
 
 constexpr int n1 = fn_ok (3);
-constexpr int n2 = fn_not_ok (3); // { dg-error "array subscript" }
+constexpr int n2 = fn_not_ok (3); // { dg-error "array subscript|in .constexpr. expansion of " }

@@ -6,4 +6,3 @@ module h5global
   integer :: h5p_default_f, h5p_flags
   equivalence(h5p_flags, h5p_default_f)
 end module h5global
-! { dg-final { cleanup-modules "h5global" } }

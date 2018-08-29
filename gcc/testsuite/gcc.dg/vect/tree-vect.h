@@ -75,3 +75,13 @@ check_vect (void)
 #endif
   signal (SIGILL, SIG_DFL);
 }
+
+#if defined (__ARM_FEATURE_SVE)
+#  if __ARM_FEATURE_SVE_BITS == 0
+#    define VECTOR_BITS 1024
+#  else
+#    define VECTOR_BITS __ARM_FEATURE_SVE_BITS
+#  endif
+#else
+#  define VECTOR_BITS 128
+#endif

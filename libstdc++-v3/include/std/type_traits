@@ -1,6 +1,6 @@
 // C++11 <type_traits> -*- C++ -*-
 
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,18 +37,6 @@
 
 #include <bits/c++config.h>
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-# if defined (__UINT_LEAST16_TYPE__) && defined(__UINT_LEAST32_TYPE__)
-namespace std
-{
-  typedef __UINT_LEAST16_TYPE__ uint_least16_t;
-  typedef __UINT_LEAST32_TYPE__ uint_least32_t;
-}
-# else
-#  include <cstdint>
-# endif
-#endif
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -71,12 +59,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr _Tp                  value = __v;
       typedef _Tp                           value_type;
       typedef integral_constant<_Tp, __v>   type;
-      constexpr operator value_type() const { return value; }
+      constexpr operator value_type() const noexcept { return value; }
 #if __cplusplus > 201103L
 
 #define __cpp_lib_integral_constant_callable 201304
 
-      constexpr value_type operator()() const { return value; }
+      constexpr value_type operator()() const noexcept { return value; }
 #endif
     };
 
@@ -151,10 +139,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Pp>
     struct __not_
-    : public integral_constant<bool, !_Pp::value>
+    : public __bool_constant<!bool(_Pp::value)>
     { };
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
+
+  template<typename... _Bn>
+    inline constexpr bool __or_v = __or_<_Bn...>::value;
+  template<typename... _Bn>
+    inline constexpr bool __and_v = __and_<_Bn...>::value;
 
 #define __cpp_lib_logical_traits 201510
 
@@ -174,18 +167,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   template<typename... _Bn>
-    inline constexpr bool conjunction_v
-    = conjunction<_Bn...>::value;
+    inline constexpr bool conjunction_v = conjunction<_Bn...>::value;
 
   template<typename... _Bn>
-    inline constexpr bool disjunction_v
-    = disjunction<_Bn...>::value;
+    inline constexpr bool disjunction_v = disjunction<_Bn...>::value;
 
   template<typename _Pp>
-    inline constexpr bool negation_v
-    = negation<_Pp>::value;
+    inline constexpr bool negation_v = negation<_Pp>::value;
 
-#endif
+#endif // C++17
 
   // For several sfinae-friendly trait implementations we transport both the
   // result information (as the member type) and the failure information (no
@@ -411,7 +401,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Cp>
     struct __is_member_object_pointer_helper<_Tp _Cp::*>
-    : public integral_constant<bool, !is_function<_Tp>::value> { };
+    : public __not_<is_function<_Tp>>::type { };
 
   /// is_member_object_pointer
   template<typename _Tp>
@@ -426,7 +416,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Cp>
     struct __is_member_function_pointer_helper<_Tp _Cp::*>
-    : public integral_constant<bool, is_function<_Tp>::value> { };
+    : public is_function<_Tp>::type { };
 
   /// is_member_function_pointer
   template<typename _Tp>
@@ -618,7 +608,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_compound
   template<typename _Tp>
     struct is_compound
-    : public integral_constant<bool, !is_fundamental<_Tp>::value> { };
+    : public __not_<is_fundamental<_Tp>>::type { };
 
   template<typename _Tp>
     struct __is_member_pointer_helper
@@ -754,15 +744,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Destructible and constructible type properties.
 
-  template<typename>
-    struct add_rvalue_reference;
-
   /**
    *  @brief  Utility to simplify expressions used in unevaluated operands
    *  @ingroup utilities
    */
+
+  template<typename _Tp, typename _Up = _Tp&&>
+    _Up
+    __declval(int);
+
   template<typename _Tp>
-    typename add_rvalue_reference<_Tp>::type declval() noexcept;
+    _Tp
+    __declval(long);
+
+  template<typename _Tp>
+    auto declval() noexcept -> decltype(__declval<_Tp>(0));
 
   template<typename, unsigned = 0>
     struct extent;
@@ -835,8 +831,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __do_is_nt_destructible_impl
   {
     template<typename _Tp>
-      static integral_constant<bool, noexcept(declval<_Tp&>().~_Tp())>
-        __test(int);
+      static __bool_constant<noexcept(declval<_Tp&>().~_Tp())>
+      __test(int);
 
     template<typename>
       static false_type __test(...);
@@ -1168,21 +1164,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_implicitly_default_constructible_impl
-      : public __do_is_implicitly_default_constructible_impl
-  {
-    typedef decltype(__test(declval<_Tp>())) type;
-  };
+    : public __do_is_implicitly_default_constructible_impl
+    {
+      typedef decltype(__test(declval<_Tp>())) type;
+    };
 
   template<typename _Tp>
     struct __is_implicitly_default_constructible_safe
-      : public __is_implicitly_default_constructible_impl<_Tp>::type
-  { };
+    : public __is_implicitly_default_constructible_impl<_Tp>::type
+    { };
 
   template <typename _Tp>
     struct __is_implicitly_default_constructible
-      : public __and_<is_default_constructible<_Tp>,
-                      __is_implicitly_default_constructible_safe<_Tp>>
-  { };
+    : public __and_<is_default_constructible<_Tp>,
+		    __is_implicitly_default_constructible_safe<_Tp>>
+    { };
 
   /// is_trivially_copy_constructible
 
@@ -1243,9 +1239,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_trivially_copy_assignable_impl<_Tp, true>
-    : public __and_<is_copy_assignable<_Tp>,
-		    integral_constant<bool,
-			__is_trivially_assignable(_Tp&, const _Tp&)>>
+    : public __bool_constant<__is_trivially_assignable(_Tp&, const _Tp&)>
     { };
 
   template<typename _Tp>
@@ -1264,9 +1258,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_trivially_move_assignable_impl<_Tp, true>
-    : public __and_<is_move_assignable<_Tp>,
-		    integral_constant<bool,
-			__is_trivially_assignable(_Tp&, _Tp&&)>>
+    : public __bool_constant<__is_trivially_assignable(_Tp&, _Tp&&)>
     { };
 
   template<typename _Tp>
@@ -1277,8 +1269,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_trivially_destructible
   template<typename _Tp>
     struct is_trivially_destructible
-    : public __and_<is_destructible<_Tp>, integral_constant<bool,
-			      __has_trivial_destructor(_Tp)>>
+    : public __and_<is_destructible<_Tp>,
+		    __bool_constant<__has_trivial_destructor(_Tp)>>
     { };
 
 
@@ -1350,13 +1342,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
            bool = __or_<is_void<_From>, is_function<_To>,
                         is_array<_To>>::value>
     struct __is_convertible_helper
-    { typedef typename is_void<_To>::type type; };
+    {
+      typedef typename is_void<_To>::type type;
+#if __cplusplus > 201703L
+      typedef type __is_nothrow_type;
+#endif
+    };
 
   template<typename _From, typename _To>
     class __is_convertible_helper<_From, _To, false>
     {
-       template<typename _To1>
-	static void __test_aux(_To1);
+      template<typename _To1>
+	static void __test_aux(_To1) noexcept;
 
       template<typename _From1, typename _To1,
 	       typename = decltype(__test_aux<_To1>(std::declval<_From1>()))>
@@ -1367,8 +1364,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static false_type
 	__test(...);
 
+#if __cplusplus > 201703L
+      template<typename _From1, typename _To1,
+	       bool _NoEx = noexcept(__test_aux<_To1>(std::declval<_From1>()))>
+	static __bool_constant<_NoEx>
+	__test_nothrow(int);
+
+      template<typename, typename>
+	static false_type
+	__test_nothrow(...);
+#endif
+
     public:
       typedef decltype(__test<_From, _To>(0)) type;
+
+#if __cplusplus > 201703L
+      typedef decltype(__test_nothrow<_From, _To>(0)) __is_nothrow_type;
+#endif
     };
 
 
@@ -1378,6 +1390,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_convertible_helper<_From, _To>::type
     { };
 
+#if __cplusplus > 201703L
+  /// is_nothrow_convertible
+  template<typename _From, typename _To>
+    struct is_nothrow_convertible
+    : public __is_convertible_helper<_From, _To>::__is_nothrow_type
+    { };
+
+  /// is_nothrow_convertible_v
+  template<typename _From, typename _To>
+    inline constexpr bool is_nothrow_convertible_v
+      = is_nothrow_convertible<_From, _To>::value;
+#endif // C++2a
 
   // Const-volatile modifications.
 
@@ -1573,12 +1597,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_unsigned<long long>
     { typedef unsigned long long __type; };
 
-#if defined(_GLIBCXX_USE_WCHAR_T) && !defined(__WCHAR_UNSIGNED__)
-  template<>
-    struct __make_unsigned<wchar_t> : __make_unsigned<__WCHAR_TYPE__>
-    { };
-#endif
-
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_0>
@@ -1609,36 +1627,77 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class __make_unsigned_selector<_Tp, true, false>
     {
-      typedef __make_unsigned<typename remove_cv<_Tp>::type> __unsignedt;
-      typedef typename __unsignedt::__type __unsigned_type;
-      typedef __match_cv_qualifiers<_Tp, __unsigned_type> __cv_unsigned;
+      using __unsigned_type
+	= typename __make_unsigned<typename remove_cv<_Tp>::type>::__type;
 
     public:
-      typedef typename __cv_unsigned::__type __type;
+      using __type
+	= typename __match_cv_qualifiers<_Tp, __unsigned_type>::__type;
     };
 
+  class __make_unsigned_selector_base
+  {
+  protected:
+    template<typename...> struct _List { };
+
+    template<typename _Tp, typename... _Up>
+      struct _List<_Tp, _Up...> : _List<_Up...>
+      { static constexpr size_t __size = sizeof(_Tp); };
+
+    template<size_t _Sz, typename _Tp, bool = (_Sz <= _Tp::__size)>
+      struct __select;
+
+    template<size_t _Sz, typename _Uint, typename... _UInts>
+      struct __select<_Sz, _List<_Uint, _UInts...>, true>
+      { using __type = _Uint; };
+
+    template<size_t _Sz, typename _Uint, typename... _UInts>
+      struct __select<_Sz, _List<_Uint, _UInts...>, false>
+      : __select<_Sz, _List<_UInts...>>
+      { };
+  };
+
+  // Choose unsigned integer type with the smallest rank and same size as _Tp
   template<typename _Tp>
     class __make_unsigned_selector<_Tp, false, true>
+    : __make_unsigned_selector_base
     {
       // With -fshort-enums, an enum may be as small as a char.
-      typedef unsigned char __smallest;
-      static const bool __b0 = sizeof(_Tp) <= sizeof(__smallest);
-      static const bool __b1 = sizeof(_Tp) <= sizeof(unsigned short);
-      static const bool __b2 = sizeof(_Tp) <= sizeof(unsigned int);
-      static const bool __b3 = sizeof(_Tp) <= sizeof(unsigned long);
-      typedef conditional<__b3, unsigned long, unsigned long long> __cond3;
-      typedef typename __cond3::type __cond3_type;
-      typedef conditional<__b2, unsigned int, __cond3_type> __cond2;
-      typedef typename __cond2::type __cond2_type;
-      typedef conditional<__b1, unsigned short, __cond2_type> __cond1;
-      typedef typename __cond1::type __cond1_type;
+      using _UInts = _List<unsigned char, unsigned short, unsigned int,
+			   unsigned long, unsigned long long>;
 
-      typedef typename conditional<__b0, __smallest, __cond1_type>::type
-	__unsigned_type;
-      typedef __match_cv_qualifiers<_Tp, __unsigned_type> __cv_unsigned;
+      using __unsigned_type = typename __select<sizeof(_Tp), _UInts>::__type;
 
     public:
-      typedef typename __cv_unsigned::__type __type;
+      using __type
+	= typename __match_cv_qualifiers<_Tp, __unsigned_type>::__type;
+    };
+
+  // wchar_t, char16_t and char32_t are integral types but are neither
+  // signed integer types nor unsigned integer types, so must be
+  // transformed to the unsigned integer type with the smallest rank.
+  // Use the partial specialization for enumeration types to do that.
+#if defined(_GLIBCXX_USE_WCHAR_T)
+  template<>
+    struct __make_unsigned<wchar_t>
+    {
+      using __type
+	= typename __make_unsigned_selector<wchar_t, false, true>::__type;
+    };
+#endif
+
+  template<>
+    struct __make_unsigned<char16_t>
+    {
+      using __type
+	= typename __make_unsigned_selector<char16_t, false, true>::__type;
+    };
+
+  template<>
+    struct __make_unsigned<char32_t>
+    {
+      using __type
+	= typename __make_unsigned_selector<char32_t, false, true>::__type;
     };
 
   // Given an integral/enum type, return the corresponding unsigned
@@ -1683,21 +1742,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_signed<unsigned long long>
     { typedef signed long long __type; };
 
-#if defined(_GLIBCXX_USE_WCHAR_T) && defined(__WCHAR_UNSIGNED__)
-  template<>
-    struct __make_signed<wchar_t> : __make_signed<__WCHAR_TYPE__>
-    { };
-#endif
-
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-  template<>
-    struct __make_signed<char16_t> : __make_signed<uint_least16_t>
-    { };
-  template<>
-    struct __make_signed<char32_t> : __make_signed<uint_least32_t>
-    { };
-#endif
-
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_0>
@@ -1728,14 +1772,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class __make_signed_selector<_Tp, true, false>
     {
-      typedef __make_signed<typename remove_cv<_Tp>::type> __signedt;
-      typedef typename __signedt::__type __signed_type;
-      typedef __match_cv_qualifiers<_Tp, __signed_type> __cv_signed;
+      using __signed_type
+	= typename __make_signed<typename remove_cv<_Tp>::type>::__type;
 
     public:
-      typedef typename __cv_signed::__type __type;
+      using __type
+	= typename __match_cv_qualifiers<_Tp, __signed_type>::__type;
     };
 
+  // Choose signed integer type with the smallest rank and same size as _Tp
   template<typename _Tp>
     class __make_signed_selector<_Tp, false, true>
     {
@@ -1743,6 +1788,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       typedef typename __make_signed_selector<__unsigned_type>::__type __type;
+    };
+
+  // wchar_t, char16_t and char32_t are integral types but are neither
+  // signed integer types nor unsigned integer types, so must be
+  // transformed to the signed integer type with the smallest rank.
+  // Use the partial specialization for enumeration types to do that.
+#if defined(_GLIBCXX_USE_WCHAR_T)
+  template<>
+    struct __make_signed<wchar_t>
+    {
+      using __type
+	= typename __make_signed_selector<wchar_t, false, true>::__type;
+    };
+#endif
+
+  template<>
+    struct __make_signed<char16_t>
+    {
+      using __type
+	= typename __make_signed_selector<char16_t, false, true>::__type;
+    };
+
+  template<>
+    struct __make_signed<char32_t>
+    {
+      using __type
+	= typename __make_signed_selector<char32_t, false, true>::__type;
     };
 
   // Given an integral/enum type, return the corresponding signed
@@ -2079,17 +2151,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __declval_protector
     {
       static const bool __stop = false;
-      static typename add_rvalue_reference<_Tp>::type __delegate();
     };
 
   template<typename _Tp>
-    inline typename add_rvalue_reference<_Tp>::type
-    declval() noexcept
+    auto declval() noexcept -> decltype(__declval<_Tp>(0))
     {
       static_assert(__declval_protector<_Tp>::__stop,
 		    "declval() must not be used!");
-      return __declval_protector<_Tp>::__delegate();
+      return __declval<_Tp>(0);
     }
+
+  // __remove_cvref_t (std::remove_cvref_t for C++11).
+  template<typename _Tp>
+    using __remove_cvref_t
+     = typename remove_cv<typename remove_reference<_Tp>::type>::type;
 
   /// result_of
   template<typename _Signature>
@@ -2192,8 +2267,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename _Class, typename _Arg>
     struct __result_of_memobj<_Res _Class::*, _Arg>
     {
-      typedef typename remove_cv<typename remove_reference<
-        _Arg>::type>::type _Argval;
+      typedef __remove_cvref_t<_Arg> _Argval;
       typedef _Res _Class::* _MemPtr;
       typedef typename conditional<__or_<is_same<_Argval, _Class>,
         is_base_of<_Class, _Argval>>::value,
@@ -2208,8 +2282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename _Class, typename _Arg, typename... _Args>
     struct __result_of_memfun<_Res _Class::*, _Arg, _Args...>
     {
-      typedef typename remove_cv<typename remove_reference<
-        _Arg>::type>::type _Argval;
+      typedef __remove_cvref_t<_Arg> _Argval;
       typedef _Res _Class::* _MemPtr;
       typedef typename conditional<__or_<is_same<_Argval, _Class>,
         is_base_of<_Class, _Argval>>::value,
@@ -2291,7 +2364,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __invoke_result<_Functor, _ArgTypes...>
     { };
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
   /// Alias template for aligned_storage
   template<size_t _Len, size_t _Align =
 	    __alignof__(typename __aligned_storage_msa<_Len>::__type)>
@@ -2323,11 +2396,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Alias template for result_of
   template<typename _Tp>
     using result_of_t = typename result_of<_Tp>::type;
-#endif
+#endif // C++14
 
+  // __enable_if_t (std::enable_if_t for C++11)
+  template<bool _Cond, typename _Tp = void>
+    using __enable_if_t = typename enable_if<_Cond, _Tp>::type;
+
+  // __void_t (std::void_t for C++11)
   template<typename...> using __void_t = void;
 
-#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+#if __cplusplus >= 201703L || !defined(__STRICT_ANSI__) // c++17 or gnu++11
 #define __cpp_lib_void_t 201411
   /// A metafunction that always yields void, used for detecting valid types.
   template<typename...> using void_t = void;
@@ -2398,8 +2476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Internal type trait that allows us to sfinae-protect tuple_cat.
   template<typename _Tp>
     struct __is_tuple_like
-    : public __is_tuple_like_impl<typename remove_cv<
-      typename remove_reference<_Tp>::type>::type>::type
+    : public __is_tuple_like_impl<__remove_cvref_t<_Tp>>::type
     { };
 
   template<typename _Tp>
@@ -2655,7 +2732,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void operator=(__nonesuch const&) = delete;
   };
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # define __cpp_lib_is_invocable 201703
 
   /// std::invoke_result
@@ -2687,10 +2764,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
              __call_is_nothrow_<_Fn, _ArgTypes...>>::type
     { };
 
+  template<typename _Result, typename _Ret, typename = void>
+    struct __is_nt_invocable_impl : false_type { };
+
+  template<typename _Result, typename _Ret>
+    struct __is_nt_invocable_impl<_Result, _Ret,
+				  __void_t<typename _Result::type>>
+    : __or_<is_void<_Ret>,
+	    __and_<is_convertible<typename _Result::type, _Ret>,
+		   is_nothrow_constructible<_Ret, typename _Result::type>>>
+    { };
+
   /// std::is_nothrow_invocable_r
   template<typename _Ret, typename _Fn, typename... _ArgTypes>
     struct is_nothrow_invocable_r
-    : __and_<__is_invocable_impl<__invoke_result<_Fn, _ArgTypes...>, _Ret>,
+    : __and_<__is_nt_invocable_impl<__invoke_result<_Fn, _ArgTypes...>, _Ret>,
              __call_is_nothrow_<_Fn, _ArgTypes...>>::type
     { };
 
@@ -2714,7 +2802,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       = is_nothrow_invocable_r<_Fn, _Args...>::value;
 #endif // C++17
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # define __cpp_lib_type_trait_variable_templates 201510L
 template <typename _Tp>
   inline constexpr bool is_void_v = is_void<_Tp>::value;
@@ -2873,14 +2961,7 @@ template <typename _Base, typename _Derived>
 template <typename _From, typename _To>
   inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
 
-#ifdef __has_builtin
-# if !__has_builtin(__has_unique_object_representations)
-// Try not to break non-GNU compilers that don't support the built-in:
-#  define _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP 1
-# endif
-#endif
-
-#ifndef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
+#ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 # define __cpp_lib_has_unique_object_representations 201606
   /// has_unique_object_representations
   template<typename _Tp>
@@ -2889,20 +2970,14 @@ template <typename _From, typename _To>
       remove_cv_t<remove_all_extents_t<_Tp>>
       )>
     { };
-#endif
-#undef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
 
-#if __GNUC__ >= 7
-# define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
-#elif defined __has_builtin
-// For non-GNU compilers:
-# if __has_builtin(__is_aggregate)
-#  define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
-# endif
+  template<typename _Tp>
+    inline constexpr bool has_unique_object_representations_v
+      = has_unique_object_representations<_Tp>::value;
 #endif
 
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
-#define __cpp_lib_is_aggregate 201703
+# define __cpp_lib_is_aggregate 201703
   /// is_aggregate
   template<typename _Tp>
     struct is_aggregate
@@ -2912,9 +2987,35 @@ template <typename _From, typename _To>
   template<typename _Tp>
     inline constexpr bool is_aggregate_v = is_aggregate<_Tp>::value;
 #endif
-#undef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
-
 #endif // C++17
+
+#if __cplusplus > 201703L
+  /// Byte order
+  enum class endian
+  {
+    little = __ORDER_LITTLE_ENDIAN__,
+    big    = __ORDER_BIG_ENDIAN__,
+    native = __BYTE_ORDER__
+  };
+
+  /// Remove references and cv-qualifiers.
+  template<typename _Tp>
+    struct remove_cvref
+    {
+      using type = __remove_cvref_t<_Tp>;
+    };
+
+  template<typename _Tp>
+    using remove_cvref_t = __remove_cvref_t<_Tp>;
+
+  /// Identity metafunction.
+  template<typename _Tp>
+    struct type_identity { using type = _Tp; };
+
+  template<typename _Tp>
+    using type_identity_t = typename type_identity<_Tp>::type;
+
+#endif // C++2a
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

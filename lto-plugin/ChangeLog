@@ -1,3 +1,28 @@
+2018-05-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto-plugin.c: (non_claimed_files): New static var.
+	(linker_ouput_known): New static var.
+	(all_symbols_read_handler): When user specifies linker output do not
+	imply it; output warning when nonlto-rel mode is forced.
+	(claim_file_header): Record number of nonclaimed files.
+	(process_option): Remember if linker output is known
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-07-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR lto/81487
+	* lto-plugin.c (claim_file_handler): Use xasprintf instead of
+	asprintf.
+	[hi!=0]: Swap hi and lo arguments supplied to xasprintf.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
@@ -631,7 +656,7 @@
 	(onload): Don't create the temporary directory.
 
 2009-11-04  Richard Guenther  <rguenther@suse.de>
-            Rafael Avila de Espindola  <espindola@google.com>
+	    Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-plugin.c (plugin_file_info): Remove temp field.
 	(cleanup_handler): Don't delete temporary objects.
@@ -667,9 +692,9 @@
 
 2009-10-19  Rafael Avila de Espindola  <espindola@google.com>
     
-        PR40790
-        * configure: Regenerate.
-        * configure.ac: Add AC_TYPE_UINT64_T.
+	PR40790
+	* configure: Regenerate.
+	* configure.ac: Add AC_TYPE_UINT64_T.
 
 2009-10-16  Rafael Avila de Espindola  <espindola@google.com>
 
@@ -910,7 +935,7 @@
 
 2008-09-23  Rafael Espindola  <espindola@google.com>
 
-        * plugin-api.h: Moved to include.
+	* plugin-api.h: Moved to include.
 
 2008-09-23 Rafael Espindola  <espindola@google.com>
 

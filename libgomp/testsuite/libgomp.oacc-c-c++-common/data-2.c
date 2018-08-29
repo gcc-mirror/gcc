@@ -1,6 +1,7 @@
 /* Test 'acc enter/exit data' regions.  */
 
 /* { dg-do run } */
+/* { dg-xfail-run-if "TODO" { openacc_nvidia_accel_selected } } */
 
 #include <stdlib.h>
 
@@ -33,6 +34,32 @@ main (int argc, char **argv)
     b[i] = a[i];
 
 #pragma acc exit data copyout (a[0:N]) copyout (b[0:N]) wait async
+#pragma acc wait
+
+  for (i = 0; i < N; i++)
+    {
+      if (a[i] != 3.0)
+	abort ();
+
+      if (b[i] != 3.0)
+	abort ();
+    }
+
+  for (i = 0; i < N; i++)
+    {
+      a[i] = 3.0;
+      b[i] = 0.0;
+    }
+
+#pragma acc enter data copyin (a[0:N]) async 
+#pragma acc enter data copyin (b[0:N]) async wait
+#pragma acc enter data copyin (N) async wait
+#pragma acc parallel async wait
+#pragma acc loop
+  for (i = 0; i < N; i++)
+    b[i] = a[i];
+
+#pragma acc exit data copyout (a[0:N]) copyout (b[0:N]) delete (N) wait async
 #pragma acc wait
 
   for (i = 0; i < N; i++)

@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,6 +45,8 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#define _IsUnused __attribute__ ((__unused__))
 
   template<typename _CharT, typename _Traits>
     streamsize
@@ -158,6 +160,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  istreambuf_iterator<_CharT2> >::__type
         find(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
 	     const _CharT2&);
+
+      template<typename _CharT2, typename _Distance>
+        friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
+					       void>::__type
+        advance(istreambuf_iterator<_CharT2>&, _Distance);
 
       template<typename _CharT2, typename _Traits2>
         friend basic_istream<_CharT2, _Traits2>&
@@ -573,7 +580,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @note  Base class version does nothing.
       */
       virtual void
-      imbue(const locale& __loc)
+      imbue(const locale& __loc _IsUnused)
       { }
 
       // [27.5.2.4.2] buffer management and positioning
@@ -721,7 +728,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @note  Base class version does nothing, returns eof().
       */
       virtual int_type
-      pbackfail(int_type __c  = traits_type::eof())
+      pbackfail(int_type __c _IsUnused  = traits_type::eof())
       { return traits_type::eof(); }
 
       // Put area:
@@ -765,11 +772,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @note  Base class version does nothing, returns eof().
       */
       virtual int_type
-      overflow(int_type __c  = traits_type::eof())
+      overflow(int_type __c _IsUnused  = traits_type::eof())
       { return traits_type::eof(); }
 
-#if _GLIBCXX_USE_DEPRECATED
-    // Annex D.6
+#if _GLIBCXX_USE_DEPRECATED && __cplusplus <= 201402L
+    // Annex D.6 (removed in C++17)
     public:
       /**
        *  @brief  Tosses a character.
@@ -779,6 +786,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  See http://gcc.gnu.org/ml/libstdc++/2002-05/msg00168.html
        */
+#if __cplusplus >= 201103L
+      [[__deprecated__("stossc is deprecated, use sbumpc instead")]]
+#endif
       void
       stossc()
       {
@@ -843,6 +853,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __copy_streambufs_eof(basic_streambuf<wchar_t>* __sbin,
 			  basic_streambuf<wchar_t>* __sbout, bool& __ineof);
 #endif
+
+#undef _IsUnused
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

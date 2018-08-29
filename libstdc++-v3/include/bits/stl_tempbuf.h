@@ -1,6 +1,6 @@
 // Temporary buffer implementation -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -88,10 +88,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__gnu_cxx::__numeric_traits<ptrdiff_t>::__max / sizeof(_Tp);
       if (__len > __max)
 	__len = __max;
-      
-      while (__len > 0) 
+
+      while (__len > 0)
 	{
-	  _Tp* __tmp = static_cast<_Tp*>(::operator new(__len * sizeof(_Tp), 
+	  _Tp* __tmp = static_cast<_Tp*>(::operator new(__len * sizeof(_Tp),
 							std::nothrow));
 	  if (__tmp != 0)
 	    return std::pair<_Tp*, ptrdiff_t>(__tmp, __len);
@@ -110,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     inline void
     return_temporary_buffer(_Tp* __p)
-    { ::operator delete(__p, std::nothrow); }
+    { ::operator delete(__p); }
 
 
   /**
@@ -158,9 +158,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * Constructs a temporary buffer of a size somewhere between
-       * zero and the size of the given range.
+       * zero and the given length.
        */
-      _Temporary_buffer(_ForwardIterator __first, _ForwardIterator __last);
+      _Temporary_buffer(_ForwardIterator __seed, size_type __original_len);
 
       ~_Temporary_buffer()
       {
@@ -241,9 +241,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _ForwardIterator, typename _Tp>
     _Temporary_buffer<_ForwardIterator, _Tp>::
-    _Temporary_buffer(_ForwardIterator __first, _ForwardIterator __last)
-    : _M_original_len(std::distance(__first, __last)),
-      _M_len(0), _M_buffer(0)
+    _Temporary_buffer(_ForwardIterator __seed, size_type __original_len)
+    : _M_original_len(__original_len), _M_len(0), _M_buffer(0)
     {
       __try
 	{
@@ -253,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_len = __p.second;
 	  if (_M_buffer)
 	    std::__uninitialized_construct_buf(_M_buffer, _M_buffer + _M_len,
-					       __first);
+					       __seed);
 	}
       __catch(...)
 	{
@@ -268,4 +267,3 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif /* _STL_TEMPBUF_H */
-

@@ -40,26 +40,26 @@ contains
      case (real_kinds(size(real_kinds)))
       sz = storage_size(r4)*2
     end select
-    if (sz .eq. 0) call abort()
+    if (sz .eq. 0) STOP 1
 
-    if (storage_size(o) /= sz) call abort()
+    if (storage_size(o) /= sz) STOP 2
 
 ! Break up the SELECT TYPE to pre-empt collisions in the value of 'cn'
     select type (o)
       type is (complex(c1))
-        if (storage_size(o) /= sz) call abort()
+        if (storage_size(o) /= sz) STOP 3
     end select
     select type (o)
       type is (complex(c2))
-        if (storage_size(o) /= sz) call abort()
+        if (storage_size(o) /= sz) STOP 4
     end select
     select type (o)
       type is (complex(c3))
-        if (storage_size(o) /= sz) call abort()
+        if (storage_size(o) /= sz) STOP 5
      end select
     select type (o)
      type is (complex(c4))
-        if (storage_size(o) /= sz) call abort()
+        if (storage_size(o) /= sz) STOP 6
     end select
   end subroutine s
 end module m

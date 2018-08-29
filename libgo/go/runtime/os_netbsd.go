@@ -15,7 +15,7 @@ type mOS struct {
 
 //go:noescape
 //extern lwp_park
-func lwp_park(abstime *timespec, unpark int32, hint, unparkhint unsafe.Pointer) int32
+func lwp_park(ts int32, rel int32, abstime *timespec, unpark int32, hint, unparkhint unsafe.Pointer) int32
 
 //go:noescape
 //extern lwp_unpark
@@ -31,10 +31,9 @@ func semasleep(ns int64) int32 {
 
 	// Compute sleep deadline.
 	var tsp *timespec
+	var ts timespec
 	if ns >= 0 {
-		var ts timespec
 		var nsec int32
-		ns += nanotime()
 		ts.set_sec(int64(timediv(ns, 1000000000, &nsec)))
 		ts.set_nsec(nsec)
 		tsp = &ts
@@ -50,9 +49,18 @@ func semasleep(ns int64) int32 {
 		}
 
 		// Sleep until unparked by semawakeup or timeout.
-		ret := lwp_park(tsp, 0, unsafe.Pointer(&_g_.m.mos.waitsemacount), nil)
+		ret := lwp_park(_CLOCK_MONOTONIC, _TIMER_RELTIME, tsp, 0, unsafe.Pointer(&_g_.m.waitsemacount), nil)
 		if ret == _ETIMEDOUT {
 			return -1
+		} else if ret == _EINTR && ns >= 0 {
+			// Avoid sleeping forever if we keep getting
+			// interrupted (for example by the profiling
+			// timer). It would be if tsp upon return had the
+			// remaining time to sleep, but this is good enough.
+			var nsec int32
+			ns /= 2
+			ts.set_sec(timediv(ns, 1000000000, &nsec))
+			ts.set_nsec(nsec)
 		}
 	}
 }

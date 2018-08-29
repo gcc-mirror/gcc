@@ -10,12 +10,12 @@ public:
 
 int &f()
 {
-  A a;				// { dg-warning "local" }
-  return a.second;
+  A a;
+  return a.second;		// { dg-warning "local" }
 }
 
 int &g()
 {
-  int ar[42];			// { dg-warning "local" }
-  return ar[20];
+  int ar[42];
+  return ar[20];		// { dg-warning "local" }
 }

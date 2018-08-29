@@ -1,6 +1,6 @@
 /* Utility functions for reading gcda files into in-memory
    gcov_info structures and offline profile processing. */
-/* Copyright (C) 2014-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Rong Xu <xur@google.com>.
 
 This file is part of GCC.
@@ -930,24 +930,13 @@ compute_one_gcov (const struct gcov_info *gcov_info1,
   {
     for (f_ix = 0; f_ix < gcov_info->n_functions; f_ix++)
       {
-        unsigned t_ix;
         const struct gcov_fn_info *gfi_ptr = gcov_info->functions[f_ix];
         if (!gfi_ptr || gfi_ptr->key != gcov_info)
           continue;
         const struct gcov_ctr_info *ci_ptr = gfi_ptr->ctrs;
-        for (t_ix = 0; t_ix < GCOV_COUNTERS_SUMMABLE; t_ix++)
-          {
-            unsigned c_num;
-
-            if (!gcov_info->merge[t_ix])
-              continue;
-
-            for (c_num = 0; c_num < ci_ptr->num; c_num++)
-              {
-                cum_1 += ci_ptr->values[c_num] / sum;
-              }
-            ci_ptr++;
-          }
+	unsigned c_num;
+	for (c_num = 0; c_num < ci_ptr->num; c_num++)
+	  cum_1 += ci_ptr->values[c_num] / sum;
       }
     *cum_p = cum_1;
     return 0.0;
@@ -955,7 +944,6 @@ compute_one_gcov (const struct gcov_info *gcov_info1,
 
   for (f_ix = 0; f_ix < gcov_info1->n_functions; f_ix++)
     {
-      unsigned t_ix;
       double func_cum_1 = 0.0;
       double func_cum_2 = 0.0;
       double func_val = 0.0;
@@ -971,32 +959,24 @@ compute_one_gcov (const struct gcov_info *gcov_info1,
 
       const struct gcov_ctr_info *ci_ptr1 = gfi_ptr1->ctrs;
       const struct gcov_ctr_info *ci_ptr2 = gfi_ptr2->ctrs;
-      for (t_ix = 0; t_ix < GCOV_COUNTERS_SUMMABLE; t_ix++)
-        {
-          unsigned c_num;
+      unsigned c_num;
+      for (c_num = 0; c_num < ci_ptr1->num; c_num++)
+	{
+	  if (ci_ptr1->values[c_num] | ci_ptr2->values[c_num])
+	    {
+	      func_val += calculate_2_entries (ci_ptr1->values[c_num],
+					       ci_ptr2->values[c_num],
+					       sum_1, sum_2);
 
-          if (!gcov_info1->merge[t_ix])
-            continue;
+	      func_cum_1 += ci_ptr1->values[c_num] / sum_1;
+	      func_cum_2 += ci_ptr2->values[c_num] / sum_2;
+	      nonzero = 1;
+	      if (ci_ptr1->values[c_num] / sum_1 >= overlap_hot_threshold
+		  || ci_ptr2->values[c_num] / sum_2 >= overlap_hot_threshold)
+		hot = 1;
+	    }
+	}
 
-          for (c_num = 0; c_num < ci_ptr1->num; c_num++)
-            {
-              if (ci_ptr1->values[c_num] | ci_ptr2->values[c_num])
-                {
-                  func_val += calculate_2_entries (ci_ptr1->values[c_num],
-                                          ci_ptr2->values[c_num],
-                                          sum_1, sum_2);
-
-                  func_cum_1 += ci_ptr1->values[c_num] / sum_1;
-                  func_cum_2 += ci_ptr2->values[c_num] / sum_2;
-                  nonzero = 1;
-                  if (ci_ptr1->values[c_num] / sum_1 >= overlap_hot_threshold ||
-                      ci_ptr2->values[c_num] / sum_2 >= overlap_hot_threshold)
-                    hot = 1;
-                }
-            }
-          ci_ptr1++;
-          ci_ptr2++;
-        }
       ret += func_val;
       cum_1 += func_cum_1;
       cum_2 += func_cum_2;
@@ -1023,26 +1003,14 @@ gcov_info_count_all_cold (const struct gcov_info *gcov_info,
 
   for (f_ix = 0; f_ix < gcov_info->n_functions; f_ix++)
     {
-      unsigned t_ix;
       const struct gcov_fn_info *gfi_ptr = gcov_info->functions[f_ix];
 
       if (!gfi_ptr || gfi_ptr->key != gcov_info)
         continue;
       const struct gcov_ctr_info *ci_ptr = gfi_ptr->ctrs;
-      for (t_ix = 0; t_ix < GCOV_COUNTERS_SUMMABLE; t_ix++)
-        {
-          unsigned c_num;
-
-          if (!gcov_info->merge[t_ix])
-            continue;
-
-          for (c_num = 0; c_num < ci_ptr->num; c_num++)
-            {
-              if (ci_ptr->values[c_num] > threshold)
-                return false;
-            }
-          ci_ptr++;
-        }
+      for (unsigned c_num = 0; c_num < ci_ptr->num; c_num++)
+	if (ci_ptr->values[c_num] > threshold)
+	  return false;
     }
 
   return true;
@@ -1234,7 +1202,7 @@ matched_gcov_info (const struct gcov_info *info1, const struct gcov_info *info2)
 
 /* Defined in libgcov-driver.c.  */
 extern gcov_unsigned_t compute_summary (struct gcov_info *,
-                 struct gcov_summary *, size_t *);
+					struct gcov_summary *);
 
 /* Compute the overlap score of two profiles with the head of GCOV_LIST1 and
    GCOV_LIST1. Return a number ranging from [0.0, 1.0], with 0.0 meaning no
@@ -1247,18 +1215,17 @@ calculate_overlap (struct gcov_info *gcov_list1,
   struct gcov_summary this_prg;
   unsigned list1_cnt = 0, list2_cnt= 0, all_cnt;
   unsigned int i, j;
-  size_t max_length;
   const struct gcov_info *gi_ptr;
   struct overlap_t *all_infos;
 
-  compute_summary (gcov_list1, &this_prg, &max_length);
-  overlap_sum_1 = (double) (this_prg.ctrs[0].sum_all);
-  p1_sum_all = this_prg.ctrs[0].sum_all;
-  p1_run_max = this_prg.ctrs[0].run_max;
-  compute_summary (gcov_list2, &this_prg, &max_length);
-  overlap_sum_2 = (double) (this_prg.ctrs[0].sum_all);
-  p2_sum_all = this_prg.ctrs[0].sum_all;
-  p2_run_max = this_prg.ctrs[0].run_max;
+  compute_summary (gcov_list1, &this_prg);
+  overlap_sum_1 = (double) (this_prg.sum_all);
+  p1_sum_all = this_prg.sum_all;
+  p1_run_max = this_prg.run_max;
+  compute_summary (gcov_list2, &this_prg);
+  overlap_sum_2 = (double) (this_prg.sum_all);
+  p2_sum_all = this_prg.sum_all;
+  p2_run_max = this_prg.run_max;
 
   for (gi_ptr = gcov_list1; gi_ptr; gi_ptr = gi_ptr->next)
     list1_cnt++;

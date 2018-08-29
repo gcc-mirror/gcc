@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,6 +27,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 
 static void prune_options (struct cl_decoded_option **, unsigned int *);
+
+/* An option that is undocumented, that takes a joined argument, and
+   that doesn't fit any of the classes of uses (language/common,
+   driver, target) is assumed to be a prefix used to catch
+   e.g. negated options, and stop them from being further shortened to
+   a prefix that could use the negated option as an argument.  For
+   example, we want -gno-statement-frontiers to be taken as a negation
+   of -gstatement-frontiers, but without catching the gno- prefix and
+   signaling it's to be used for option remapping, it would end up
+   backtracked to g with no-statemnet-frontiers as the debug level.  */
+
+static bool
+remapping_prefix_p (const struct cl_option *opt)
+{
+  return opt->flags & CL_UNDOCUMENTED
+    && opt->flags & CL_JOINED
+    && !(opt->flags & (CL_DRIVER | CL_TARGET | CL_COMMON | CL_LANG_ALL));
+}
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and
@@ -98,6 +116,9 @@ find_opt (const char *input, unsigned int lang_mask)
 	  if (opt->flags & lang_mask)
 	    return mn;
 
+	  if (remapping_prefix_p (opt))
+	    return OPT_SPECIAL_unknown;
+
 	  /* If we haven't remembered a prior match, remember this
 	     one.  Any prior match is necessarily better.  */
 	  if (match_wrong_lang == OPT_SPECIAL_unknown)
@@ -148,32 +169,95 @@ find_opt (const char *input, unsigned int lang_mask)
   return match_wrong_lang;
 }
 
-/* If ARG is a non-negative decimal or hexadecimal integer, return its
-   value, otherwise return -1.  */
+/* If ARG is a non-negative decimal or hexadecimal integer representable
+   in HOST_WIDE_INT return its value, otherwise return -1.  If ERR is not
+   null set *ERR to zero on success or to EINVAL or to the value of errno
+   otherwise.  */
 
-int
-integral_argument (const char *arg)
+HOST_WIDE_INT
+integral_argument (const char *arg, int *err, bool byte_size_suffix)
 {
-  const char *p = arg;
+  if (!err)
+    err = &errno;
 
-  while (*p && ISDIGIT (*p))
-    p++;
-
-  if (*p == '\0')
-    return atoi (arg);
-
-  /* It wasn't a decimal number - try hexadecimal.  */
-  if (arg[0] == '0' && (arg[1] == 'x' || arg[1] == 'X'))
+  if (!ISDIGIT (*arg))
     {
-      p = arg + 2;
-      while (*p && ISXDIGIT (*p))
-	p++;
-
-      if (p != arg + 2 && *p == '\0')
-	return strtol (arg, NULL, 16);
+      *err = EINVAL;
+      return -1;
     }
 
-  return -1;
+  *err = 0;
+  errno = 0;
+
+  char *end = NULL;
+  unsigned HOST_WIDE_INT unit = 1;
+  unsigned HOST_WIDE_INT value = strtoull (arg, &end, 10);
+
+  /* If the value is too large to be represented use the maximum
+     representable value that strtoull sets VALUE to (setting
+     errno to ERANGE).  */
+
+  if (end && *end)
+    {
+      if (!byte_size_suffix)
+	{
+	  errno = 0;
+	  value = strtoull (arg, &end, 0);
+	  if (*end)
+	    {
+	      /* errno is most likely EINVAL here.  */
+	      *err = errno;
+	      return -1;
+	    }
+
+	  return value;
+	}
+
+      /* Numeric option arguments are at most INT_MAX.  Make it
+	 possible to specify a larger value by accepting common
+	 suffixes.  */
+      if (!strcmp (end, "kB"))
+	unit = 1000;
+      else if (!strcasecmp (end, "KiB") || !strcmp (end, "KB"))
+	unit = 1024;
+      else if (!strcmp (end, "MB"))
+	unit = HOST_WIDE_INT_UC (1000) * 1000;
+      else if (!strcasecmp (end, "MiB"))
+	unit = HOST_WIDE_INT_UC (1024) * 1024;
+      else if (!strcasecmp (end, "GB"))
+	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000;
+      else if (!strcasecmp (end, "GiB"))
+	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024;
+      else if (!strcasecmp (end, "TB"))
+	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000;
+      else if (!strcasecmp (end, "TiB"))
+	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024;
+      else if (!strcasecmp (end, "PB"))
+	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000 * 1000;
+      else if (!strcasecmp (end, "PiB"))
+	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024 * 1024;
+      else if (!strcasecmp (end, "EB"))
+	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000 * 1000
+	  * 1000;
+      else if (!strcasecmp (end, "EiB"))
+	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024 * 1024
+	  * 1024;
+      else
+	{
+	  /* This could mean an unknown suffix or a bad prefix, like
+	     "+-1".  */
+	  *err = EINVAL;
+	  return -1;
+	}
+    }
+
+  if (unit)
+    {
+      unsigned HOST_WIDE_INT prod = value * unit;
+      value = prod < value ? HOST_WIDE_INT_M1U : prod;
+    }
+
+  return value;
 }
 
 /* Return whether OPTION is OK for the language given by
@@ -209,7 +293,8 @@ enum_arg_ok_for_language (const struct cl_enum_arg *enum_arg,
 
 static bool
 enum_arg_to_value (const struct cl_enum_arg *enum_args,
-		   const char *arg, int *value, unsigned int lang_mask)
+		   const char *arg, HOST_WIDE_INT *value,
+		   unsigned int lang_mask)
 {
   unsigned int i;
 
@@ -229,15 +314,22 @@ enum_arg_to_value (const struct cl_enum_arg *enum_args,
    and returning false without modifying *VALUE if not found.  */
 
 bool
-opt_enum_arg_to_value (size_t opt_index, const char *arg, int *value,
-		       unsigned int lang_mask)
+opt_enum_arg_to_value (size_t opt_index, const char *arg,
+		       int *value, unsigned int lang_mask)
 {
   const struct cl_option *option = &cl_options[opt_index];
 
   gcc_assert (option->var_type == CLVC_ENUM);
 
-  return enum_arg_to_value (cl_enums[option->var_enum].values, arg,
-			    value, lang_mask);
+  HOST_WIDE_INT wideval;
+  if (enum_arg_to_value (cl_enums[option->var_enum].values, arg,
+			 &wideval, lang_mask))
+    {
+      *value = wideval;
+      return true;
+    }
+
+  return false;
 }
 
 /* Look of VALUE in ENUM_ARGS for language LANG_MASK and store the
@@ -278,7 +370,8 @@ enum_value_to_arg (const struct cl_enum_arg *enum_args,
    described by OPT_INDEX, ARG and VALUE.  */
 
 static void
-generate_canonical_option (size_t opt_index, const char *arg, int value,
+generate_canonical_option (size_t opt_index, const char *arg,
+			   HOST_WIDE_INT value,
 			   struct cl_decoded_option *decoded)
 {
   const struct cl_option *option = &cl_options[opt_index];
@@ -286,7 +379,8 @@ generate_canonical_option (size_t opt_index, const char *arg, int value,
 
   if (value == 0
       && !option->cl_reject_negative
-      && (opt_text[1] == 'W' || opt_text[1] == 'f' || opt_text[1] == 'm'))
+      && (opt_text[1] == 'W' || opt_text[1] == 'f'
+	  || opt_text[1] == 'g' || opt_text[1] == 'm'))
     {
       char *t = XOBNEWVEC (&opts_obstack, char, option->opt_len + 5);
       t[0] = '-';
@@ -349,6 +443,7 @@ static const struct option_map option_map[] =
   {
     { "-Wno-", NULL, "-W", false, true },
     { "-fno-", NULL, "-f", false, true },
+    { "-gno-", NULL, "-g", false, true },
     { "-mno-", NULL, "-m", false, true },
     { "--debug=", NULL, "-g", false, false },
     { "--machine-", NULL, "-m", true, false },
@@ -394,6 +489,8 @@ add_misspelling_candidates (auto_vec<char *> *candidates,
   gcc_assert (candidates);
   gcc_assert (option);
   gcc_assert (opt_text);
+  if (remapping_prefix_p (option))
+    return;
   candidates->safe_push (xstrdup (opt_text + 1));
   for (unsigned i = 0; i < ARRAY_SIZE (option_map); i++)
     {
@@ -424,7 +521,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 {
   size_t opt_index;
   const char *arg = 0;
-  int value = 1;
+  HOST_WIDE_INT value = 1;
   unsigned int result = 1, i, extra_args, separate_args = 0;
   int adjust_len = 0;
   size_t total_len;
@@ -495,6 +592,11 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       goto done;
     }
 
+  /* Clear the initial value for size options (it will be overwritten
+     later based on the Init(value) specification in the opt file.  */
+  if (option->var_type == CLVC_SIZE)
+    value = 0;
+
   result = extra_args + 1;
   warn_message = option->warn_message;
 
@@ -561,13 +663,13 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     {
       size_t new_opt_index = option->alias_target;
 
-      if (new_opt_index == OPT_SPECIAL_ignore)
+      if (new_opt_index == OPT_SPECIAL_ignore
+	  || new_opt_index == OPT_SPECIAL_deprecated)
 	{
 	  gcc_assert (option->alias_arg == NULL);
 	  gcc_assert (option->neg_alias_arg == NULL);
 	  opt_index = new_opt_index;
 	  arg = NULL;
-	  value = 1;
 	}
       else
 	{
@@ -655,12 +757,18 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       arg = arg_lower;
     }
 
-  /* If the switch takes an integer, convert it.  */
-  if (arg && option->cl_uinteger)
+  /* If the switch takes an integer argument, convert it.  */
+  if (arg && (option->cl_uinteger || option->cl_host_wide_int))
     {
-      value = integral_argument (arg);
-      if (value == -1)
+      int error = 0;
+      value = *arg ? integral_argument (arg, &error, option->cl_byte_size) : 0;
+      if (error)
 	errors |= CL_ERR_UINT_ARG;
+
+      /* Reject value out of a range.  */
+      if (option->range_max != -1
+	  && (value < option->range_min || value > option->range_max))
+	errors |= CL_ERR_INT_RANGE_ARG;
     }
 
   /* If the switch takes an enumerated argument, convert it.  */
@@ -711,7 +819,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       else
 	decoded->canonical_option[i] = NULL;
     }
-  if (opt_index != OPT_SPECIAL_unknown && opt_index != OPT_SPECIAL_ignore)
+  if (opt_index != OPT_SPECIAL_unknown && opt_index != OPT_SPECIAL_ignore
+      && opt_index != OPT_SPECIAL_deprecated)
     {
       generate_canonical_option (opt_index, arg, value, decoded);
       if (separate_args > 1)
@@ -889,6 +998,7 @@ prune_options (struct cl_decoded_option **decoded_options,
 	{
 	case OPT_SPECIAL_unknown:
 	case OPT_SPECIAL_ignore:
+	case OPT_SPECIAL_deprecated:
 	case OPT_SPECIAL_program_name:
 	case OPT_SPECIAL_input_file:
 	  goto keep;
@@ -974,7 +1084,7 @@ handle_option (struct gcc_options *opts,
 {
   size_t opt_index = decoded->opt_index;
   const char *arg = decoded->arg;
-  int value = decoded->value;
+  HOST_WIDE_INT value = decoded->value;
   const struct cl_option *option = &cl_options[opt_index];
   void *flag_var = option_flag_var (opt_index, opts);
   size_t i;
@@ -988,7 +1098,8 @@ handle_option (struct gcc_options *opts,
       {
 	if (!handlers->handlers[i].handler (opts, opts_set, decoded,
 					    lang_mask, kind, loc,
-					    handlers, dc))
+					    handlers, dc,
+					    handlers->target_option_override_hook))
 	  return false;
       }
   
@@ -1003,7 +1114,7 @@ handle_option (struct gcc_options *opts,
 bool
 handle_generated_option (struct gcc_options *opts,
 			 struct gcc_options *opts_set,
-			 size_t opt_index, const char *arg, int value,
+			 size_t opt_index, const char *arg, HOST_WIDE_INT value,
 			 unsigned int lang_mask, int kind, location_t loc,
 			 const struct cl_option_handlers *handlers,
 			 bool generated_p, diagnostic_context *dc)
@@ -1020,7 +1131,7 @@ handle_generated_option (struct gcc_options *opts,
    compiler generates options internally.  */
 
 void
-generate_option (size_t opt_index, const char *arg, int value,
+generate_option (size_t opt_index, const char *arg, HOST_WIDE_INT value,
 		 unsigned int lang_mask, struct cl_decoded_option *decoded)
 {
   const struct cl_option *option = &cl_options[opt_index];
@@ -1132,8 +1243,20 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
 
   if (errors & CL_ERR_UINT_ARG)
     {
-      error_at (loc, "argument to %qs should be a non-negative integer",
-		option->opt_text);
+      if (option->cl_byte_size)
+	error_at (loc, "argument to %qs should be a non-negative integer "
+		  "optionally followed by a size unit",
+		  option->opt_text);
+      else
+	error_at (loc, "argument to %qs should be a non-negative integer",
+		  option->opt_text);
+      return true;
+    }
+
+  if (errors & CL_ERR_INT_RANGE_ARG)
+    {
+      error_at (loc, "argument to %qs is not between %d and %d",
+		option->opt_text, option->range_min, option->range_max);
       return true;
     }
 
@@ -1143,6 +1266,7 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
       unsigned int i;
       char *s;
 
+      auto_diagnostic_group d;
       if (e->unknown_error)
 	error_at (loc, e->unknown_error, arg);
       else
@@ -1199,6 +1323,14 @@ read_cmdline_option (struct gcc_options *opts,
   if (decoded->opt_index == OPT_SPECIAL_ignore)
     return;
 
+  if (decoded->opt_index == OPT_SPECIAL_deprecated)
+    {
+      /* Warn only about positive ignored options.  */
+      if (decoded->value)
+	warning_at (loc, 0, "switch %qs is no longer supported", opt);
+      return;
+    }
+
   option = &cl_options[decoded->opt_index];
 
   if (decoded->errors
@@ -1226,7 +1358,7 @@ read_cmdline_option (struct gcc_options *opts,
 
 void
 set_option (struct gcc_options *opts, struct gcc_options *opts_set,
-	    int opt_index, int value, const char *arg, int kind,
+	    int opt_index, HOST_WIDE_INT value, const char *arg, int kind,
 	    location_t loc, diagnostic_context *dc)
 {
   const struct cl_option *option = &cl_options[opt_index];
@@ -1245,22 +1377,54 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
   switch (option->var_type)
     {
     case CLVC_BOOLEAN:
-	*(int *) flag_var = value;
-	if (set_flag_var)
-	  *(int *) set_flag_var = 1;
+	if (option->cl_host_wide_int)
+	  {
+	    *(HOST_WIDE_INT *) flag_var = value;
+	    if (set_flag_var)
+	      *(HOST_WIDE_INT *) set_flag_var = 1;
+	  }
+	else
+	  {
+	    *(int *) flag_var = value;
+	    if (set_flag_var)
+	      *(int *) set_flag_var = 1;
+	  }
+
+	break;
+
+    case CLVC_SIZE:
+	if (option->cl_host_wide_int)
+	  {
+	    *(HOST_WIDE_INT *) flag_var = value;
+	    if (set_flag_var)
+	      *(HOST_WIDE_INT *) set_flag_var = value;
+	  }
+	else
+	  {
+	    *(int *) flag_var = value;
+	    if (set_flag_var)
+	      *(int *) set_flag_var = value;
+	  }
+
 	break;
 
     case CLVC_EQUAL:
-	if (option->cl_host_wide_int) 
-	  *(HOST_WIDE_INT *) flag_var = (value
-					 ? option->var_value
-					 : !option->var_value);
+	if (option->cl_host_wide_int)
+	  {
+	    *(HOST_WIDE_INT *) flag_var = (value
+					   ? option->var_value
+					   : !option->var_value);
+	    if (set_flag_var)
+	      *(HOST_WIDE_INT *) set_flag_var = 1;
+	  }
 	else
-	  *(int *) flag_var = (value
-			       ? option->var_value
-			       : !option->var_value);
-	if (set_flag_var)
-	  *(int *) set_flag_var = 1;
+	  {
+	    *(int *) flag_var = (value
+				 ? option->var_value
+				 : !option->var_value);
+	    if (set_flag_var)
+	      *(int *) set_flag_var = 1;
+	  }
 	break;
 
     case CLVC_BIT_CLEAR:
@@ -1347,7 +1511,10 @@ option_enabled (int opt_idx, void *opts)
     switch (option->var_type)
       {
       case CLVC_BOOLEAN:
-	return *(int *) flag_var != 0;
+	if (option->cl_host_wide_int)
+	  return *(HOST_WIDE_INT *) flag_var != 0;
+	else
+	  return *(int *) flag_var != 0;
 
       case CLVC_EQUAL:
 	if (option->cl_host_wide_int) 
@@ -1366,6 +1533,12 @@ option_enabled (int opt_idx, void *opts)
 	  return (*(HOST_WIDE_INT *) flag_var & option->var_value) != 0;
 	else 
 	  return (*(int *) flag_var & option->var_value) != 0;
+
+      case CLVC_SIZE:
+	if (option->cl_host_wide_int)
+	  return *(HOST_WIDE_INT *) flag_var != -1;
+	else
+	  return *(int *) flag_var != -1;
 
       case CLVC_STRING:
       case CLVC_ENUM:
@@ -1391,6 +1564,7 @@ get_option_state (struct gcc_options *opts, int option,
     {
     case CLVC_BOOLEAN:
     case CLVC_EQUAL:
+    case CLVC_SIZE:
       state->data = flag_var;
       state->size = (cl_options[option].cl_host_wide_int
 		     ? sizeof (HOST_WIDE_INT)
@@ -1446,7 +1620,7 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
 	arg = cl_options[opt_index].alias_arg;
       opt_index = cl_options[opt_index].alias_target;
     }
-  if (opt_index == OPT_SPECIAL_ignore)
+  if (opt_index == OPT_SPECIAL_ignore || opt_index == OPT_SPECIAL_deprecated)
     return;
   if (dc)
     diagnostic_classify_diagnostic (dc, opt_index, (diagnostic_t) kind, loc);
@@ -1455,9 +1629,11 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
       const struct cl_option *option = &cl_options[opt_index];
 
       /* -Werror=foo implies -Wfoo.  */
-      if (option->var_type == CLVC_BOOLEAN || option->var_type == CLVC_ENUM)
+      if (option->var_type == CLVC_BOOLEAN
+	  || option->var_type == CLVC_ENUM
+	  || option->var_type == CLVC_SIZE)
 	{
-	  int value = 1;
+	  HOST_WIDE_INT value = 1;
 
 	  if (arg && *arg == '\0' && !option->cl_missing_ok)
 	    arg = NULL;
@@ -1469,11 +1645,13 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
 	      return;
 	    }
 
-	  /* If the switch takes an integer, convert it.  */
-	  if (arg && option->cl_uinteger)
+	  /* If the switch takes an integer argument, convert it.  */
+	  if (arg && (option->cl_uinteger || option->cl_host_wide_int))
 	    {
-	      value = integral_argument (arg);
-	      if (value == -1)
+	      int error = 0;
+	      value = *arg ? integral_argument (arg, &error,
+						option->cl_byte_size) : 0;
+	      if (error)
 		{
 		  cmdline_handle_error (loc, option, option->opt_text, arg,
 					CL_ERR_UINT_ARG, lang_mask);

@@ -10,10 +10,10 @@ program chkdata
     mychar(3) = k4_"ghi9012"
     buffer = ""
     write(buffer,'(3(a))') mychar(2:3), mychar(1)
-    if (buffer /= "def5678ghi9012abc1234") call abort
+    if (buffer /= "def5678ghi9012abc1234") STOP 1
     write(buffer,'(3(a))') mychar
-    if (buffer /= "abc1234def5678ghi9012") call abort
+    if (buffer /= "abc1234def5678ghi9012") STOP 2
     mychar = ""
     read(buffer,'(3(a))') mychar
-    if (any(mychar.ne.[ k4_"abc1234",k4_"def5678",k4_"ghi9012" ])) call abort
+    if (any(mychar.ne.[ k4_"abc1234",k4_"def5678",k4_"ghi9012" ])) STOP 3
 end program chkdata

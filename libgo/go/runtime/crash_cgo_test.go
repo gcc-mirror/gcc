@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -24,7 +25,10 @@ func TestCgoCrashHandler(t *testing.T) {
 }
 
 func TestCgoSignalDeadlock(t *testing.T) {
-	t.Parallel()
+	// Don't call t.Parallel, since too much work going on at the
+	// same time can cause the testprogcgo code to overrun its
+	// timeouts (issue #18598).
+
 	if testing.Short() && runtime.GOOS == "windows" {
 		t.Skip("Skipping in short mode") // takes up to 64 seconds
 	}
@@ -110,7 +114,7 @@ func TestCgoExternalThreadSIGPROF(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := testEnv(exec.Command(exe, "CgoExternalThreadSIGPROF")).CombinedOutput()
+	got, err := testenv.CleanCmdEnv(exec.Command(exe, "CgoExternalThreadSIGPROF")).CombinedOutput()
 	if err != nil {
 		t.Fatalf("exit status: %v\n%s", err, got)
 	}
@@ -133,7 +137,7 @@ func TestCgoExternalThreadSignal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := testEnv(exec.Command(exe, "CgoExternalThreadSIGPROF")).CombinedOutput()
+	got, err := testenv.CleanCmdEnv(exec.Command(exe, "CgoExternalThreadSIGPROF")).CombinedOutput()
 	if err != nil {
 		t.Fatalf("exit status: %v\n%s", err, got)
 	}
@@ -200,14 +204,14 @@ func TestCgoCheckBytes(t *testing.T) {
 	const tries = 10
 	var tot1, tot2 time.Duration
 	for i := 0; i < tries; i++ {
-		cmd := testEnv(exec.Command(exe, "CgoCheckBytes"))
+		cmd := testenv.CleanCmdEnv(exec.Command(exe, "CgoCheckBytes"))
 		cmd.Env = append(cmd.Env, "GODEBUG=cgocheck=0", fmt.Sprintf("GO_CGOCHECKBYTES_TRY=%d", i))
 
 		start := time.Now()
 		cmd.Run()
 		d1 := time.Since(start)
 
-		cmd = testEnv(exec.Command(exe, "CgoCheckBytes"))
+		cmd = testenv.CleanCmdEnv(exec.Command(exe, "CgoCheckBytes"))
 		cmd.Env = append(cmd.Env, fmt.Sprintf("GO_CGOCHECKBYTES_TRY=%d", i))
 
 		start = time.Now()
@@ -248,8 +252,11 @@ func TestCgoCCodeSIGPROF(t *testing.T) {
 
 func TestCgoCrashTraceback(t *testing.T) {
 	t.Parallel()
-	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
+	if runtime.GOOS != "linux" || (runtime.GOARCH != "amd64" && runtime.GOARCH != "ppc64le") {
 		t.Skipf("not yet supported on %s/%s", runtime.GOOS, runtime.GOARCH)
+	}
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not have SetCgoTraceback")
 	}
 	got := runTestProg(t, "testprogcgo", "CrashTraceback")
 	for i := 1; i <= 3; i++ {
@@ -261,6 +268,9 @@ func TestCgoCrashTraceback(t *testing.T) {
 
 func TestCgoTracebackContext(t *testing.T) {
 	t.Parallel()
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not have SetCgoTraceback")
+	}
 	got := runTestProg(t, "testprogcgo", "TracebackContext")
 	want := "OK\n"
 	if got != want {
@@ -270,8 +280,11 @@ func TestCgoTracebackContext(t *testing.T) {
 
 func testCgoPprof(t *testing.T, buildArg, runArg string) {
 	t.Parallel()
-	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
+	if runtime.GOOS != "linux" || (runtime.GOARCH != "amd64" && runtime.GOARCH != "ppc64le") {
 		t.Skipf("not yet supported on %s/%s", runtime.GOOS, runtime.GOARCH)
+	}
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not have SetCgoTraceback")
 	}
 	testenv.MustHaveGoRun(t)
 
@@ -280,35 +293,45 @@ func testCgoPprof(t *testing.T, buildArg, runArg string) {
 		t.Fatal(err)
 	}
 
-	got, err := testEnv(exec.Command(exe, runArg)).CombinedOutput()
+	got, err := testenv.CleanCmdEnv(exec.Command(exe, runArg)).CombinedOutput()
 	if err != nil {
+		if testenv.Builder() == "linux-amd64-alpine" {
+			// See Issue 18243 and Issue 19938.
+			t.Skipf("Skipping failing test on Alpine (golang.org/issue/18243). Ignoring error: %v", err)
+		}
 		t.Fatal(err)
 	}
 	fn := strings.TrimSpace(string(got))
 	defer os.Remove(fn)
 
-	cmd := testEnv(exec.Command(testenv.GoToolPath(t), "tool", "pprof", "-top", "-nodecount=1", exe, fn))
-
-	found := false
-	for i, e := range cmd.Env {
-		if strings.HasPrefix(e, "PPROF_TMPDIR=") {
-			cmd.Env[i] = "PPROF_TMPDIR=" + os.TempDir()
-			found = true
-			break
+	for try := 0; try < 2; try++ {
+		cmd := testenv.CleanCmdEnv(exec.Command(testenv.GoToolPath(t), "tool", "pprof", "-top", "-nodecount=1"))
+		// Check that pprof works both with and without explicit executable on command line.
+		if try == 0 {
+			cmd.Args = append(cmd.Args, exe, fn)
+		} else {
+			cmd.Args = append(cmd.Args, fn)
 		}
-	}
-	if !found {
-		cmd.Env = append(cmd.Env, "PPROF_TMPDIR="+os.TempDir())
-	}
 
-	top, err := cmd.CombinedOutput()
-	t.Logf("%s", top)
-	if err != nil {
-		t.Fatal(err)
-	}
+		found := false
+		for i, e := range cmd.Env {
+			if strings.HasPrefix(e, "PPROF_TMPDIR=") {
+				cmd.Env[i] = "PPROF_TMPDIR=" + os.TempDir()
+				found = true
+				break
+			}
+		}
+		if !found {
+			cmd.Env = append(cmd.Env, "PPROF_TMPDIR="+os.TempDir())
+		}
 
-	if !bytes.Contains(top, []byte("cpuHog")) {
-		t.Error("missing cpuHog in pprof output")
+		top, err := cmd.CombinedOutput()
+		t.Logf("%s:\n%s", cmd.Args, top)
+		if err != nil {
+			t.Error(err)
+		} else if !bytes.Contains(top, []byte("cpuHog")) {
+			t.Error("missing cpuHog in pprof output")
+		}
 	}
 }
 
@@ -317,7 +340,7 @@ func TestCgoPprof(t *testing.T) {
 }
 
 func TestCgoPprofPIE(t *testing.T) {
-	testCgoPprof(t, "-ldflags=-extldflags=-pie", "CgoPprof")
+	testCgoPprof(t, "-buildmode=pie", "CgoPprof")
 }
 
 func TestCgoPprofThread(t *testing.T) {
@@ -331,6 +354,9 @@ func TestCgoPprofThreadNoTraceback(t *testing.T) {
 func TestRaceProf(t *testing.T) {
 	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 		t.Skipf("not yet supported on %s/%s", runtime.GOOS, runtime.GOARCH)
+	}
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not have SetCgoTraceback")
 	}
 
 	testenv.MustHaveGoRun(t)
@@ -346,7 +372,7 @@ func TestRaceProf(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := testEnv(exec.Command(exe, "CgoRaceprof")).CombinedOutput()
+	got, err := testenv.CleanCmdEnv(exec.Command(exe, "CgoRaceprof")).CombinedOutput()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -375,7 +401,7 @@ func TestRaceSignal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := testEnv(exec.Command(exe, "CgoRaceSignal")).CombinedOutput()
+	got, err := testenv.CleanCmdEnv(exec.Command(exe, "CgoRaceSignal")).CombinedOutput()
 	if err != nil {
 		t.Logf("%s\n", got)
 		t.Fatal(err)
@@ -383,5 +409,108 @@ func TestRaceSignal(t *testing.T) {
 	want := "OK\n"
 	if string(got) != want {
 		t.Errorf("expected %q got %s", want, got)
+	}
+}
+
+func TestCgoNumGoroutine(t *testing.T) {
+	switch runtime.GOOS {
+	case "windows", "plan9":
+		t.Skipf("skipping numgoroutine test on %s", runtime.GOOS)
+	}
+	t.Parallel()
+	got := runTestProg(t, "testprogcgo", "NumGoroutine")
+	want := "OK\n"
+	if got != want {
+		t.Errorf("expected %q got %v", want, got)
+	}
+}
+
+func TestCatchPanic(t *testing.T) {
+	t.Parallel()
+	switch runtime.GOOS {
+	case "plan9", "windows":
+		t.Skipf("no signals on %s", runtime.GOOS)
+	case "darwin":
+		if runtime.GOARCH == "amd64" {
+			t.Skipf("crash() on darwin/amd64 doesn't raise SIGABRT")
+		}
+	}
+
+	testenv.MustHaveGoRun(t)
+
+	exe, err := buildTestProg(t, "testprogcgo")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, early := range []bool{true, false} {
+		cmd := testenv.CleanCmdEnv(exec.Command(exe, "CgoCatchPanic"))
+		// Make sure a panic results in a crash.
+		cmd.Env = append(cmd.Env, "GOTRACEBACK=crash")
+		if early {
+			// Tell testprogcgo to install an early signal handler for SIGABRT
+			cmd.Env = append(cmd.Env, "CGOCATCHPANIC_EARLY_HANDLER=1")
+		}
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Errorf("testprogcgo CgoCatchPanic failed: %v\n%s", err, out)
+		}
+	}
+}
+
+func TestCgoLockOSThreadExit(t *testing.T) {
+	switch runtime.GOOS {
+	case "plan9", "windows":
+		t.Skipf("no pthreads on %s", runtime.GOOS)
+	}
+	t.Parallel()
+	testLockOSThreadExit(t, "testprogcgo")
+}
+
+func TestWindowsStackMemoryCgo(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("skipping windows specific test")
+	}
+	testenv.SkipFlaky(t, 22575)
+	o := runTestProg(t, "testprogcgo", "StackMemory")
+	stackUsage, err := strconv.Atoi(o)
+	if err != nil {
+		t.Fatalf("Failed to read stack usage: %v", err)
+	}
+	if expected, got := 100<<10, stackUsage; got > expected {
+		t.Fatalf("expected < %d bytes of memory per thread, got %d", expected, got)
+	}
+}
+
+func TestSigStackSwapping(t *testing.T) {
+	switch runtime.GOOS {
+	case "plan9", "windows":
+		t.Skipf("no sigaltstack on %s", runtime.GOOS)
+	}
+	t.Parallel()
+	got := runTestProg(t, "testprogcgo", "SigStack")
+	want := "OK\n"
+	if got != want {
+		t.Errorf("expected %q got %v", want, got)
+	}
+}
+
+func TestCgoTracebackSigpanic(t *testing.T) {
+	// Test unwinding over a sigpanic in C code without a C
+	// symbolizer. See issue #23576.
+	if runtime.GOOS == "windows" {
+		// On Windows if we get an exception in C code, we let
+		// the Windows exception handler unwind it, rather
+		// than injecting a sigpanic.
+		t.Skip("no sigpanic in C on windows")
+	}
+	t.Parallel()
+	got := runTestProg(t, "testprogcgo", "TracebackSigpanic")
+	want := "runtime.sigpanic"
+	if !strings.Contains(got, want) {
+		t.Fatalf("want failure containing %q. output:\n%s\n", want, got)
+	}
+	nowant := "unexpected return pc"
+	if strings.Contains(got, nowant) {
+		t.Fatalf("failure incorrectly contains %q. output:\n%s\n", nowant, got)
 	}
 }

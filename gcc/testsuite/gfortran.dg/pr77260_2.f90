@@ -23,4 +23,3 @@ program test
    implicit none
    print *,f2()
 end program
-! { dg-final { cleanup-modules "foo" } }

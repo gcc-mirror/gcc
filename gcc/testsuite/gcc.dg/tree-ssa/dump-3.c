@@ -263,8 +263,8 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "string_0 = \"\";" "optimized" } } */
-/* { dg-final { scan-tree-dump "string_4 = \"\\\\4\";" "optimized" } } */
+/* { dg-final { scan-tree-dump "string_0 = \"\\\\x00\";" "optimized" } } */
+/* { dg-final { scan-tree-dump "string_4 = \"\\\\x04\";" "optimized" } } */
 /* { dg-final { scan-tree-dump "string_28 = \"\\\\x1c\";" "optimized" } } */
 /* { dg-final { scan-tree-dump "string_51 = \"3\";" "optimized" } } */
 /* { dg-final { scan-tree-dump "string_255 = \"\\\\xff\";" "optimized" } } */

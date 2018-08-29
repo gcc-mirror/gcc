@@ -10,7 +10,7 @@ program test2
    type(c_ptr) cp1, cp2
 
    x = 42
-   if (.not. c_associated(c_loc(x(3)),point(x(::2)))) call abort
+   if (.not. c_associated(c_loc(x(3)),point(x(::2)))) STOP 1
 contains
   function point(x)
     use iso_c_binding

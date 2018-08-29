@@ -31,10 +31,13 @@ X foo() {
     return x;
 }
 
+int
 main() {
     X x = foo();
     if (did_it)
 	abort ();
     else
 	printf ("PASS\n");
+
+    return 0;
 }

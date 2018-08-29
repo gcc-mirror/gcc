@@ -16,6 +16,12 @@
 
 namespace __sanitizer {
 
+enum HandleSignalMode {
+  kHandleSignalNo,
+  kHandleSignalYes,
+  kHandleSignalExclusive,
+};
+
 struct CommonFlags {
 #define COMMON_FLAG(Type, Name, DefaultValue, Description) Type Name;
 #include "sanitizer_flags.inc"

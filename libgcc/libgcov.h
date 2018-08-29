@@ -1,5 +1,5 @@
 /* Header file for libgcov-*.c.
-   Copyright (C) 1996-2017 Free Software Foundation, Inc.
+   Copyright (C) 1996-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -38,6 +38,7 @@
 /* This path will be used by libgcov runtime.  */
 
 #include "tconfig.h"
+#include "auto-target.h"
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"

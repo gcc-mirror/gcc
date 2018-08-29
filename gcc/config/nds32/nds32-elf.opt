@@ -1,0 +1,16 @@
+mcmodel=
+Target RejectNegative Joined Enum(nds32_cmodel_type) Var(nds32_cmodel_option) Init(CMODEL_MEDIUM)
+Specify the address generation strategy for code model.
+
+Enum
+Name(nds32_cmodel_type) Type(enum nds32_cmodel_type)
+Known cmodel types (for use with the -mcmodel= option):
+
+EnumValue
+Enum(nds32_cmodel_type) String(small) Value(CMODEL_SMALL)
+
+EnumValue
+Enum(nds32_cmodel_type) String(medium) Value(CMODEL_MEDIUM)
+
+EnumValue
+Enum(nds32_cmodel_type) String(large) Value(CMODEL_LARGE)

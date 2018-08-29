@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -277,6 +277,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __niter_base(_Iterator __it)
     { return __it; }
 
+  // Reverse the __niter_base transformation to get a
+  // __normal_iterator back again (this assumes that __normal_iterator
+  // is only used to wrap random access iterators, like pointers).
+  template<typename _From, typename _To>
+    inline _From
+    __niter_wrap(_From __from, _To __res)
+    { return __from + (__res - std::__niter_base(__from)); }
+
+  // No need to wrap, iterator already has the right type.
+  template<typename _Iterator>
+    inline _Iterator
+    __niter_wrap(const _Iterator&, _Iterator __res)
+    { return __res; }
+
   // All of these auxiliary structs serve two purposes.  (1) Replace
   // calls to copy with memmove whenever possible.  (Memmove, not memcpy,
   // because the input and output ranges are permitted to overlap.)
@@ -377,7 +391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename iterator_traits<_II>::value_type _ValueTypeI;
       typedef typename iterator_traits<_OI>::value_type _ValueTypeO;
       typedef typename iterator_traits<_II>::iterator_category _Category;
-      const bool __simple = (__is_trivial(_ValueTypeI)
+      const bool __simple = (__is_trivially_copyable(_ValueTypeI)
 			     && __is_pointer<_II>::__value
 			     && __is_pointer<_OI>::__value
 			     && __are_same<_ValueTypeI, _ValueTypeO>::__value);
@@ -419,9 +433,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _OI
     __copy_move_a2(_II __first, _II __last, _OI __result)
     {
-      return _OI(std::__copy_move_a<_IsMove>(std::__niter_base(__first),
-					     std::__niter_base(__last),
-					     std::__niter_base(__result)));
+      return std::__niter_wrap(__result,
+		std::__copy_move_a<_IsMove>(std::__niter_base(__first),
+					    std::__niter_base(__last),
+					    std::__niter_base(__result)));
     }
 
   /**
@@ -449,11 +464,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_InputIteratorConcept<_II>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OI,
 	    typename iterator_traits<_II>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_can_increment_range(__first, __last, __result);
 
-      return (std::__copy_move_a2<__is_move_iterator<_II>::__value>
-	      (std::__miter_base(__first), std::__miter_base(__last),
-	       __result));
+      return std::__copy_move_a2<__is_move_iterator<_II>::__value>
+	     (std::__miter_base(__first), std::__miter_base(__last), __result);
     }
 
 #if __cplusplus >= 201103L
@@ -482,7 +496,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_InputIteratorConcept<_II>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OI,
 	    typename iterator_traits<_II>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_can_increment_range(__first, __last, __result);
 
       return std::__copy_move_a2<true>(std::__miter_base(__first),
 				       std::__miter_base(__last), __result);
@@ -579,7 +593,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename iterator_traits<_BI1>::value_type _ValueType1;
       typedef typename iterator_traits<_BI2>::value_type _ValueType2;
       typedef typename iterator_traits<_BI1>::iterator_category _Category;
-      const bool __simple = (__is_trivial(_ValueType1)
+      const bool __simple = (__is_trivially_copyable(_ValueType1)
 			     && __is_pointer<_BI1>::__value
 			     && __is_pointer<_BI2>::__value
 			     && __are_same<_ValueType1, _ValueType2>::__value);
@@ -594,7 +608,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _BI2
     __copy_move_backward_a2(_BI1 __first, _BI1 __last, _BI2 __result)
     {
-      return _BI2(std::__copy_move_backward_a<_IsMove>
+      return std::__niter_wrap(__result,
+		std::__copy_move_backward_a<_IsMove>
 		  (std::__niter_base(__first), std::__niter_base(__last),
 		   std::__niter_base(__result)));
     }
@@ -627,11 +642,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_ConvertibleConcept<
 	    typename iterator_traits<_BI1>::value_type,
 	    typename iterator_traits<_BI2>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_can_decrement_range(__first, __last, __result);
 
-      return (std::__copy_move_backward_a2<__is_move_iterator<_BI1>::__value>
-	      (std::__miter_base(__first), std::__miter_base(__last),
-	       __result));
+      return std::__copy_move_backward_a2<__is_move_iterator<_BI1>::__value>
+	     (std::__miter_base(__first), std::__miter_base(__last), __result);
     }
 
 #if __cplusplus >= 201103L
@@ -663,7 +677,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_ConvertibleConcept<
 	    typename iterator_traits<_BI1>::value_type,
 	    typename iterator_traits<_BI2>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_requires_can_decrement_range(__first, __last, __result);
 
       return std::__copy_move_backward_a2<true>(std::__miter_base(__first),
 						std::__miter_base(__last),
@@ -738,7 +752,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
       for (__decltype(__n + 0) __niter = __n;
-	   __niter > 0; --__niter, ++__first)
+	   __niter > 0; --__niter, (void) ++__first)
 	*__first = __value;
       return __first;
     }
@@ -750,7 +764,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       const _Tp __tmp = __value;
       for (__decltype(__n + 0) __niter = __n;
-	   __niter > 0; --__niter, ++__first)
+	   __niter > 0; --__niter, (void) ++__first)
 	*__first = __tmp;
       return __first;
     }
@@ -785,8 +799,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // concept requirements
       __glibcxx_function_requires(_OutputIteratorConcept<_OI, _Tp>)
+      __glibcxx_requires_can_increment(__first, __n);
 
-      return _OI(std::__fill_n_a(std::__niter_base(__first), __n, __value));
+      return std::__niter_wrap(__first,
+		std::__fill_n_a(std::__niter_base(__first), __n, __value));
     }
 
   template<bool _BoolType>
@@ -796,7 +812,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static bool
 	equal(_II1 __first1, _II1 __last1, _II2 __first2)
 	{
-	  for (; __first1 != __last1; ++__first1, (void)++__first2)
+	  for (; __first1 != __last1; ++__first1, (void) ++__first2)
 	    if (!(*__first1 == *__first2))
 	      return false;
 	  return true;
@@ -1020,8 +1036,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __lg(unsigned long long __n)
   { return sizeof(long long) * __CHAR_BIT__ - 1 - __builtin_clzll(__n); }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
 _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
   /**
@@ -1046,7 +1060,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_function_requires(_EqualOpConcept<
 	    typename iterator_traits<_II1>::value_type,
 	    typename iterator_traits<_II2>::value_type>)
-      __glibcxx_requires_valid_range(__first1, __last1);
+      __glibcxx_requires_can_increment_range(__first1, __last1, __first2);
 
       return std::__equal_aux(std::__niter_base(__first1),
 			      std::__niter_base(__last1),
@@ -1084,6 +1098,60 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       return true;
     }
 
+#if __cplusplus >= 201103L
+  // 4-iterator version of std::equal<It1, It2> for use in C++11.
+  template<typename _II1, typename _II2>
+    inline bool
+    __equal4(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
+    {
+      using _RATag = random_access_iterator_tag;
+      using _Cat1 = typename iterator_traits<_II1>::iterator_category;
+      using _Cat2 = typename iterator_traits<_II2>::iterator_category;
+      using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
+      if (_RAIters())
+	{
+	  auto __d1 = std::distance(__first1, __last1);
+	  auto __d2 = std::distance(__first2, __last2);
+	  if (__d1 != __d2)
+	    return false;
+	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2);
+	}
+
+      for (; __first1 != __last1 && __first2 != __last2;
+	  ++__first1, (void)++__first2)
+	if (!(*__first1 == *__first2))
+	  return false;
+      return __first1 == __last1 && __first2 == __last2;
+    }
+
+  // 4-iterator version of std::equal<It1, It2, BinaryPred> for use in C++11.
+  template<typename _II1, typename _II2, typename _BinaryPredicate>
+    inline bool
+    __equal4(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2,
+	     _BinaryPredicate __binary_pred)
+    {
+      using _RATag = random_access_iterator_tag;
+      using _Cat1 = typename iterator_traits<_II1>::iterator_category;
+      using _Cat2 = typename iterator_traits<_II2>::iterator_category;
+      using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
+      if (_RAIters())
+	{
+	  auto __d1 = std::distance(__first1, __last1);
+	  auto __d2 = std::distance(__first2, __last2);
+	  if (__d1 != __d2)
+	    return false;
+	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2,
+				       __binary_pred);
+	}
+
+      for (; __first1 != __last1 && __first2 != __last2;
+	  ++__first1, (void)++__first2)
+	if (!bool(__binary_pred(*__first1, *__first2)))
+	  return false;
+      return __first1 == __last1 && __first2 == __last2;
+    }
+#endif // C++11
+
 #if __cplusplus > 201103L
 
 #define __cpp_lib_robust_nonmodifying_seq_ops 201304
@@ -1114,24 +1182,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      using _RATag = random_access_iterator_tag;
-      using _Cat1 = typename iterator_traits<_II1>::iterator_category;
-      using _Cat2 = typename iterator_traits<_II2>::iterator_category;
-      using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
-      if (_RAIters())
-	{
-	  auto __d1 = std::distance(__first1, __last1);
-	  auto __d2 = std::distance(__first2, __last2);
-	  if (__d1 != __d2)
-	    return false;
-	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2);
-	}
-
-      for (; __first1 != __last1 && __first2 != __last2;
-	  ++__first1, (void)++__first2)
-	if (!(*__first1 == *__first2))
-	  return false;
-      return __first1 == __last1 && __first2 == __last2;
+      return _GLIBCXX_STD_A::__equal4(__first1, __last1, __first2, __last2);
     }
 
   /**
@@ -1161,27 +1212,10 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      using _RATag = random_access_iterator_tag;
-      using _Cat1 = typename iterator_traits<_IIter1>::iterator_category;
-      using _Cat2 = typename iterator_traits<_IIter2>::iterator_category;
-      using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
-      if (_RAIters())
-	{
-	  auto __d1 = std::distance(__first1, __last1);
-	  auto __d2 = std::distance(__first2, __last2);
-	  if (__d1 != __d2)
-	    return false;
-	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2,
-				       __binary_pred);
-	}
-
-      for (; __first1 != __last1 && __first2 != __last2;
-	  ++__first1, (void)++__first2)
-	if (!bool(__binary_pred(*__first1, *__first2)))
-	  return false;
-      return __first1 == __last1 && __first2 == __last2;
+      return _GLIBCXX_STD_A::__equal4(__first1, __last1, __first2, __last2,
+				      __binary_pred);
     }
-#endif
+#endif // C++14
 
   /**
    *  @brief Performs @b dictionary comparison on ranges.
@@ -1411,6 +1445,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 #endif
 
 _GLIBCXX_END_NAMESPACE_ALGO
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 // NB: This file is included within many other C++ includes, as a way

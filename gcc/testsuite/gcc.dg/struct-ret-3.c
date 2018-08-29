@@ -2,7 +2,8 @@
 /* Origin: Peeter Joot <peeterj@ca.ibm.com> */
 
 /* { dg-do run { target *-*-linux* *-*-gnu* } } */
-
+/* { dg-add-options stack_size } */
+ 
 #include <sys/mman.h>
 #include <string.h>
 #include <stdio.h>

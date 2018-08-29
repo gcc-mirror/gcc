@@ -1,5 +1,5 @@
 /* Frv prototypes.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -67,15 +67,13 @@ extern void frv_ifcvt_modify_tests	(struct ce_if_block *, rtx *, rtx *);
 extern void frv_ifcvt_modify_multiple_tests
 					(struct ce_if_block *, basic_block,
 					 rtx *, rtx *);
-extern rtx frv_ifcvt_modify_insn	(struct ce_if_block *, rtx, rtx);
+extern rtx frv_ifcvt_modify_insn	(struct ce_if_block *, rtx, rtx_insn *);
 extern void frv_ifcvt_modify_final	(struct ce_if_block *);
 extern void frv_ifcvt_modify_cancel	(struct ce_if_block *);
 #endif
 extern enum reg_class frv_secondary_reload_class
 					(enum reg_class,
 					 machine_mode, rtx);
-extern int frv_hard_regno_mode_ok	(int, machine_mode);
-extern int frv_hard_regno_nregs		(int, machine_mode);
 extern int frv_class_max_nregs		(enum reg_class rclass,
 					 machine_mode mode);
 extern machine_mode frv_select_cc_mode (enum rtx_code, rtx, rtx);

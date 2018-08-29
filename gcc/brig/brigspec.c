@@ -1,5 +1,5 @@
 /* brigspec.c -- Specific flags and argument handling of the gcc BRIG front end.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "opt-suggestions.h"
 #include "gcc.h"
 #include "opts.h"
 

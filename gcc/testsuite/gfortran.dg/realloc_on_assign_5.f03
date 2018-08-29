@@ -8,11 +8,11 @@ program main
   implicit none
   character(:), allocatable :: a, b
   a = 'a'
-  if (a .ne. 'a') call abort
+  if (a .ne. 'a') STOP 1
   a = a // 'x'
-  if (a .ne. 'ax') call abort
-  if (len (a) .ne. 2) call abort
+  if (a .ne. 'ax') STOP 2
+  if (len (a) .ne. 2) STOP 3
   a = (a(2:2))
-  if (a .ne. 'x') call abort
-  if (len (a) .ne. 1) call abort
+  if (a .ne. 'x') STOP 4
+  if (len (a) .ne. 1) STOP 5
 end program main

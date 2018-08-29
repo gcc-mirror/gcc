@@ -4,8 +4,8 @@ subroutine test (c)
    character(len(c)) d
 
    d = c
-   if (len(d) .ne. 20) call abort
-   if (d .ne. "Longer Test String") call abort
+   if (len(d) .ne. 20) STOP 1
+   if (d .ne. "Longer Test String") STOP 2
    c = "Hello World"
 end subroutine
 
@@ -14,8 +14,8 @@ subroutine test2 (c)
    character(len(c)) d
 
    d = c
-   if (len(d) .ne. 6) call abort
-   if (d .ne. "Foobar") call abort
+   if (len(d) .ne. 6) STOP 3
+   if (d .ne. "Foobar") STOP 4
 end subroutine
 
 program strlen
@@ -27,8 +27,8 @@ program strlen
    c = "Longer Test String"
    call test (c)
 
-   if (len(c) .ne. 20) call abort
-   if (len_trim(c) .ne. 11) call abort
+   if (len(c) .ne. 20) STOP 5
+   if (len_trim(c) .ne. 11) STOP 6
 
    call test2 ("Foobar");
 end program

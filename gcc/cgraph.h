@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -21,8 +21,17 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CGRAPH_H
 #define GCC_CGRAPH_H
 
+#include "profile-count.h"
 #include "ipa-ref.h"
 #include "plugin-api.h"
+
+extern void debuginfo_early_init (void);
+extern void debuginfo_init (void);
+extern void debuginfo_fini (void);
+extern void debuginfo_start (void);
+extern void debuginfo_stop (void);
+extern void debuginfo_early_start (void);
+extern void debuginfo_early_stop (void);
 
 class ipa_opt_pass_d;
 typedef ipa_opt_pass_d *ipa_opt_pass;
@@ -96,6 +105,8 @@ class GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
   symtab_node
 {
 public:
+  friend class symbol_table;
+
   /* Return name.  */
   const char *name () const;
 
@@ -327,6 +338,9 @@ public:
      or abstract function kept for debug info purposes only.  */
   bool real_symbol_p (void);
 
+  /* Return true when the symbol needs to be output to the LTO symbol table.  */
+  bool output_to_lto_symbol_table_p (void);
+
   /* Determine if symbol declaration is needed.  That is, visible to something
      either outside this translation unit, something magic in the system
      configury. This function is used just during symbol creation.  */
@@ -526,6 +540,9 @@ public:
   /* Set when symbol can be streamed into bytecode for offloading.  */
   unsigned offloadable : 1;
 
+  /* Set when symbol is an IFUNC resolver.  */
+  unsigned ifunc_resolver : 1;
+
 
   /* Ordering of all symtab entries.  */
   int order;
@@ -628,17 +645,48 @@ extern const char * const cgraph_availability_names[];
 extern const char * const ld_plugin_symbol_resolution_names[];
 extern const char * const tls_model_names[];
 
-/* Information about thunk, used only for same body aliases.  */
+/* Sub-structure of cgraph_node.  Holds information about thunk, used only for
+   same body aliases.
+
+   Thunks are basically wrappers around methods which are introduced in case
+   of multiple inheritance in order to adjust the value of the "this" pointer
+   or of the returned value.
+
+   In the case of this-adjusting thunks, each back-end can override the
+   can_output_mi_thunk/output_mi_thunk target hooks to generate a minimal thunk
+   (with a tail call for instance) directly as assembly.  For the default hook
+   or for the case where the can_output_mi_thunk hooks return false, the thunk
+   is gimplified and lowered using the regular machinery.  */
 
 struct GTY(()) cgraph_thunk_info {
-  /* Information about the thunk.  */
+  /* Offset used to adjust "this".  */
   HOST_WIDE_INT fixed_offset;
+
+  /* Offset in the virtual table to get the offset to adjust "this".  Valid iff
+     VIRTUAL_OFFSET_P is true.  */
   HOST_WIDE_INT virtual_value;
+
+  /* Thunk target, i.e. the method that this thunk wraps.  Depending on the
+     TARGET_USE_LOCAL_THUNK_ALIAS_P macro, this may have to be a new alias.  */
   tree alias;
+
+  /* Nonzero for a "this" adjusting thunk and zero for a result adjusting
+     thunk.  */
   bool this_adjusting;
+
+  /* If true, this thunk is what we call a virtual thunk.  In this case:
+     * for this-adjusting thunks, after the FIXED_OFFSET based adjustment is
+       done, add to the result the offset found in the vtable at:
+	 vptr + VIRTUAL_VALUE
+     * for result-adjusting thunks, the FIXED_OFFSET adjustment is done after
+       the virtual one.  */
   bool virtual_offset_p;
+
+  /* ??? True for special kind of thunks, seems related to instrumentation.  */
   bool add_pointer_bounds_args;
-  /* Set to true when alias node is thunk.  */
+
+  /* Set to true when alias node (the cgraph_node to which this struct belong)
+     is a thunk.  Access to any other fields is invalid if this is false.  */
   bool thunk_p;
 };
 
@@ -791,9 +839,6 @@ struct GTY(()) cgraph_simd_clone {
      otherwise false.  */
   unsigned int inbranch : 1;
 
-  /* True if this is a Cilk Plus variant.  */
-  unsigned int cilk_elemental : 1;
-
   /* Doubly linked list of SIMD clones.  */
   cgraph_node *prev_clone, *next_clone;
 
@@ -858,6 +903,8 @@ struct cgraph_edge_hasher : ggc_ptr_hash<cgraph_edge>
 
 struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node {
 public:
+  friend class symbol_table;
+
   /* Remove the node from cgraph and all inline clones inlined into it.
      Skip however removal of FORBIDDEN_NODE and return true if it needs to be
      removed.  This allows to call the function from outer loop walking clone
@@ -910,7 +957,7 @@ public:
      All hooks will see this in node's global.inlined_to, when invoked.
      Can be NULL if the node is not inlined.  SUFFIX is string that is appended
      to the original name.  */
-  cgraph_node *create_clone (tree decl, gcov_type count, int freq,
+  cgraph_node *create_clone (tree decl, profile_count count,
 			     bool update_original,
 			     vec<cgraph_edge *> redirect_callers,
 			     bool call_duplication_hook,
@@ -982,7 +1029,7 @@ public:
 
   /* Add thunk alias into callgraph.  The alias declaration is ALIAS and it
      aliases DECL with an adjustments made into the first parameter.
-     See comments in thunk_adjust for detail on the parameters.  */
+     See comments in struct cgraph_thunk_info for detail on the parameters.  */
   cgraph_node * create_thunk (tree alias, tree, bool this_adjusting,
 			      HOST_WIDE_INT fixed_offset,
 			      HOST_WIDE_INT virtual_value,
@@ -1078,14 +1125,13 @@ public:
 
   /* Create edge from a given function to CALLEE in the cgraph.  */
   cgraph_edge *create_edge (cgraph_node *callee,
-			    gcall *call_stmt, gcov_type count,
-			    int freq);
+			    gcall *call_stmt, profile_count count);
 
   /* Create an indirect edge with a yet-undetermined callee where the call
      statement destination is a formal parameter of the caller with index
      PARAM_INDEX. */
   cgraph_edge *create_indirect_edge (gcall *call_stmt, int ecf_flags,
-				     gcov_type count, int freq,
+				     profile_count count,
 				     bool compute_indirect_info = true);
 
   /* Like cgraph_create_edge walk the clone tree and update all clones sharing
@@ -1093,8 +1139,7 @@ public:
    update the edge same way as cgraph_set_call_stmt_including_clones does.  */
   void create_edge_including_clones (cgraph_node *callee,
 				     gimple *old_stmt, gcall *stmt,
-				     gcov_type count,
-				     int freq,
+				     profile_count count,
 				     cgraph_inline_failed_t reason);
 
   /* Return the callgraph edge representing the GIMPLE_CALL statement
@@ -1118,6 +1163,10 @@ public:
   /* Set TREE_NOTHROW on cgraph_node's decl and on aliases of the node
      if any to NOTHROW.  */
   bool set_nothrow_flag (bool nothrow);
+
+  /* SET DECL_IS_MALLOC on cgraph_node's decl and on aliases of the node
+     if any.  */
+  bool set_malloc_flag (bool malloc_p);
 
   /* If SET_CONST is true, mark function, aliases and thunks to be ECF_CONST.
     If SET_CONST if false, clear the flag.
@@ -1234,13 +1283,19 @@ public:
     dump_cgraph (stderr);
   }
 
+  /* Get unique identifier of the node.  */
+  inline int get_uid ()
+  {
+    return m_uid;
+  }
+
   /* Record that DECL1 and DECL2 are semantically identical function
      versions.  */
   static void record_function_versions (tree decl1, tree decl2);
 
   /* Remove the cgraph_function_version_info and cgraph_node for DECL.  This
      DECL is a duplicate declaration.  */
-  static void delete_function_version (tree decl);
+  static void delete_function_version_by_decl (tree decl);
 
   /* Add the function FNDECL to the call graph.
      Unlike finalize_function, this function is intended to be used
@@ -1325,13 +1380,6 @@ public:
   cgraph_node *prev_sibling_clone;
   cgraph_node *clones;
   cgraph_node *clone_of;
-  /* If instrumentation_clone is 1 then instrumented_version points
-     to the original function used to make instrumented version.
-     Otherwise points to instrumented version of the function.  */
-  cgraph_node *instrumented_version;
-  /* If instrumentation_clone is 1 then orig_decl is the original
-     function declaration.  */
-  tree orig_decl;
   /* For functions with many calls sites it holds map from call expression
      to the edge to speed up cgraph_edge function.  */
   hash_table<cgraph_edge_hasher> *GTY(()) call_site_hash;
@@ -1356,14 +1404,10 @@ public:
   cgraph_thunk_info thunk;
 
   /* Expected number of executions: calculated in profile.c.  */
-  gcov_type count;
+  profile_count count;
   /* How to scale counts at materialization time; used to merge
      LTO units with different number of profile runs.  */
   int count_materialization_scale;
-  /* Unique id of the node.  */
-  int uid;
-  /* Summary unique id of the node.  */
-  int summary_uid;
   /* ID assigned by the profiling.  */
   unsigned int profile_id;
   /* Time profiler: first run of function.  */
@@ -1396,9 +1440,6 @@ public:
   unsigned calls_comdat_local : 1;
   /* True if node has been created by merge operation in IPA-ICF.  */
   unsigned icf_merged: 1;
-  /* True when function is clone created for Pointer Bounds Checker
-     instrumentation.  */
-  unsigned instrumentation_clone : 1;
   /* True if call to node can't result in a call to free, munmap or
      other operation that could make previously non-trapping memory
      accesses trapping.  */
@@ -1413,6 +1454,9 @@ public:
   unsigned indirect_call_target : 1;
 
 private:
+  /* Unique id of the node.  */
+  int m_uid;
+
   /* Worker for call_for_symbol_and_aliases.  */
   bool call_for_symbol_and_aliases_1 (bool (*callback) (cgraph_node *,
 						        void *),
@@ -1601,6 +1645,7 @@ struct GTY(()) cgraph_indirect_call_info
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
 	    for_user)) cgraph_edge {
   friend class cgraph_node;
+  friend class symbol_table;
 
   /* Remove the edge in the cgraph.  */
   void remove (void);
@@ -1629,8 +1674,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Turn edge into speculative call calling N2. Update
      the profile so the direct call is taken COUNT times
      with FREQUENCY.  */
-  cgraph_edge *make_speculative (cgraph_node *n2, gcov_type direct_count,
-				 int direct_frequency);
+  cgraph_edge *make_speculative (cgraph_node *n2, profile_count direct_count);
 
    /* Given speculative call edge, return all three components.  */
   void speculative_call_info (cgraph_edge *&direct, cgraph_edge *&indirect,
@@ -1648,10 +1692,11 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Create clone of edge in the node N represented
      by CALL_EXPR the callgraph.  */
   cgraph_edge * clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
-		       gcov_type count_scale, int freq_scale, bool update_original);
+		       profile_count num, profile_count den,
+		       bool update_original);
 
   /* Verify edge count and frequency.  */
-  bool verify_count_and_frequency ();
+  bool verify_count ();
 
   /* Return true when call of edge can not lead to return from caller
      and thus it is safe to ignore its side effects for IPA analysis
@@ -1664,6 +1709,12 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Return true if the call can be hot.  */
   bool maybe_hot_p (void);
 
+  /* Get unique identifier of the edge.  */
+  inline int get_uid ()
+  {
+    return m_uid;
+  }
+
   /* Rebuild cgraph edges for current function node.  This needs to be run after
      passes that don't update the cgraph.  */
   static unsigned int rebuild_edges (void);
@@ -1673,7 +1724,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   static void rebuild_references (void);
 
   /* Expected number of executions: calculated in profile.c.  */
-  gcov_type count;
+  profile_count count;
   cgraph_node *caller;
   cgraph_node *callee;
   cgraph_edge *prev_caller;
@@ -1691,12 +1742,6 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* The stmt_uid of call_stmt.  This is used by LTO to recover the call_stmt
      when the function is serialized in.  */
   unsigned int lto_stmt_uid;
-  /* Expected frequency of executions within the function.
-     When set to CGRAPH_FREQ_BASE, the edge is expected to be called once
-     per function call.  The range is 0 to CGRAPH_FREQ_MAX.  */
-  int frequency;
-  /* Unique id of the edge.  */
-  int uid;
   /* Whether this edge was made direct by indirect inlining.  */
   unsigned int indirect_inlining_edge : 1;
   /* Whether this edge describes an indirect call with an undetermined
@@ -1732,7 +1777,17 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Return true if call must bind to current definition.  */
   bool binds_to_current_def_p ();
 
+  /* Expected frequency of executions within the function.
+     When set to CGRAPH_FREQ_BASE, the edge is expected to be called once
+     per function call.  The range is 0 to CGRAPH_FREQ_MAX.  */
+  int frequency ();
+
+  /* Expected frequency of executions within the function.  */
+  sreal sreal_frequency ();
 private:
+  /* Unique id of the edge.  */
+  int m_uid;
+
   /* Remove the edge from the list of the callers of the callee.  */
   void remove_caller (void);
 
@@ -1983,7 +2038,7 @@ public:
   friend class cgraph_node;
   friend class cgraph_edge;
 
-  symbol_table (): cgraph_max_summary_uid (1)
+  symbol_table (): cgraph_max_uid (1), edges_max_uid (1)
   {
   }
 
@@ -2043,9 +2098,8 @@ public:
   /* Allocate new callgraph node and insert it into basic data structures.  */
   cgraph_node *create_empty (void);
 
-  /* Release a callgraph NODE with UID and put in to the list
-     of free nodes.  */
-  void release_symbol (cgraph_node *node, int uid);
+  /* Release a callgraph NODE.  */
+  void release_symbol (cgraph_node *node);
 
   /* Output all variables enqueued to be assembled.  */
   bool output_variables (void);
@@ -2185,10 +2239,7 @@ public:
   void dump (FILE *f);
 
   /* Dump symbol table to stderr.  */
-  inline DEBUG_FUNCTION void debug (void)
-  {
-    dump (stderr);
-  }
+  void DEBUG_FUNCTION debug (void);
 
   /* Return true if assembler names NAME1 and NAME2 leads to the same symbol
      name.  */
@@ -2196,7 +2247,6 @@ public:
 
   int cgraph_count;
   int cgraph_max_uid;
-  int cgraph_max_summary_uid;
 
   int edges_count;
   int edges_max_uid;
@@ -2250,7 +2300,7 @@ private:
      parameters of which only CALLEE can be NULL (when creating an indirect call
      edge).  */
   cgraph_edge *create_edge (cgraph_node *caller, cgraph_node *callee,
-			    gcall *call_stmt, gcov_type count, int freq,
+			    gcall *call_stmt, profile_count count,
 			    bool indir_unknown_callee);
 
   /* Put the edge onto the free list.  */
@@ -2321,7 +2371,7 @@ void cgraphunit_c_finalize (void);
 
 /*  Initialize datastructures so DECL is a function in lowered gimple form.
     IN_SSA is true if the gimple is in SSA.  */
-basic_block init_lowered_empty_function (tree, bool, gcov_type);
+basic_block init_lowered_empty_function (tree, bool, profile_count);
 
 tree thunk_adjust (gimple_stmt_iterator *, tree, bool, HOST_WIDE_INT, tree);
 /* In cgraphclones.c  */
@@ -2348,9 +2398,6 @@ bool ipa_discover_readonly_nonaddressable_vars (void);
 
 /* In varpool.c  */
 tree ctor_for_folding (tree);
-
-/* In tree-chkp.c  */
-extern bool chkp_function_instrumented_p (tree fndecl);
 
 /* In ipa-inline-analysis.c  */
 void initialize_inline_failed (struct cgraph_edge *);
@@ -2412,8 +2459,6 @@ symtab_node::get_alias_target (void)
 {
   ipa_ref *ref = NULL;
   iterate_reference (0, ref);
-  if (ref->use == IPA_REF_CHKP)
-    iterate_reference (1, ref);
   gcc_checking_assert (ref->use == IPA_REF_ALIAS);
   return ref->referred;
 }
@@ -2564,7 +2609,7 @@ symbol_table::unregister (symtab_node *node)
 /* Release a callgraph NODE with UID and put in to the list of free nodes.  */
 
 inline void
-symbol_table::release_symbol (cgraph_node *node, int uid)
+symbol_table::release_symbol (cgraph_node *node)
 {
   cgraph_count--;
 
@@ -2572,7 +2617,6 @@ symbol_table::release_symbol (cgraph_node *node, int uid)
      list.  */
   memset (node, 0, sizeof (*node));
   node->type = SYMTAB_FUNCTION;
-  node->uid = uid;
   SET_NEXT_FREE_NODE (node, free_nodes);
   free_nodes = node;
 }
@@ -2590,12 +2634,9 @@ symbol_table::allocate_cgraph_symbol (void)
       free_nodes = NEXT_FREE_NODE (node);
     }
   else
-    {
-      node = ggc_cleared_alloc<cgraph_node> ();
-      node->uid = cgraph_max_uid++;
-    }
+    node = ggc_cleared_alloc<cgraph_node> ();
 
-  node->summary_uid = cgraph_max_summary_uid++;
+  node->m_uid = cgraph_max_uid++;
   return node;
 }
 
@@ -2852,6 +2893,7 @@ cgraph_node::only_called_directly_or_aliased_p (void)
 {
   gcc_assert (!global.inlined_to);
   return (!force_output && !address_taken
+	  && !ifunc_resolver
 	  && !used_from_other_partition
 	  && !DECL_VIRTUAL_P (decl)
 	  && !DECL_STATIC_CONSTRUCTOR (decl)
@@ -2867,12 +2909,6 @@ inline bool
 cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
 {
   gcc_checking_assert (!global.inlined_to);
-  /* Instrumentation clones should not be removed before
-     instrumentation happens.  New callers may appear after
-     instrumentation.  */
-  if (instrumentation_clone
-      && !chkp_function_instrumented_p (decl))
-    return false;
   /* Extern inlines can always go, we will use the external definition.  */
   if (DECL_EXTERNAL (decl))
     return true;
@@ -3074,6 +3110,19 @@ cgraph_edge::binds_to_current_def_p ()
     return false;
 }
 
+/* Expected frequency of executions within the function.
+   When set to CGRAPH_FREQ_BASE, the edge is expected to be called once
+   per function call.  The range is 0 to CGRAPH_FREQ_MAX.  */
+
+inline int
+cgraph_edge::frequency ()
+{
+  return count.to_cgraph_frequency (caller->global.inlined_to
+				    ? caller->global.inlined_to->count
+				    : caller->count);
+}
+
+
 /* Return true if the TM_CLONE bit is set for a given FNDECL.  */
 static inline bool
 decl_is_tm_clone (const_tree fndecl)
@@ -3265,18 +3314,6 @@ inline bool
 ipa_polymorphic_call_context::useless_p () const
 {
   return (!outer_type && !speculative_outer_type);
-}
-
-/* Return true if NODE is local.  Instrumentation clones are counted as local
-   only when original function is local.  */
-
-static inline bool
-cgraph_local_p (cgraph_node *node)
-{
-  if (!node->instrumentation_clone || !node->instrumented_version)
-    return node->local.local;
-
-  return node->local.local && node->instrumented_version->local.local;
 }
 
 /* When using fprintf (or similar), problems can arise with

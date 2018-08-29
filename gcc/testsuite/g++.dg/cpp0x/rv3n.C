@@ -124,6 +124,7 @@ int test3_128()
 
     sink_3_128(va);		// { dg-error "" }
     sink_3_128(cva);		// { dg-error "" }
+    return 0;
 }
 
 one   sink_3_134(               A&);

@@ -12,10 +12,10 @@ program iotest
    real :: a1, a2, a3, a4
 
    read(inp2,*,iostat=ios) a1, a2, a3, a4
-   if (ios /= 0) call abort ()
+   if (ios /= 0) STOP 1
 
    read(inp,*,iostat=ios) a1, a2, a3, a4
-   if (ios == 0) call abort ()
+   if (ios == 0) STOP 2
 !   write(*,*) 'IOSTAT=',ios
 end program iotest
 

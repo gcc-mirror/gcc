@@ -1,5 +1,5 @@
 /* Target definitions for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
    This file is part of GCC.
@@ -148,16 +148,14 @@ extern int darwin_emit_branch_islands;
 
 /* Pad the outgoing args area to 16 bytes instead of the usual 8.  */
 
-#undef STARTING_FRAME_OFFSET
-#define STARTING_FRAME_OFFSET						\
-  (FRAME_GROWS_DOWNWARD							\
-   ? 0									\
-   : (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
-      + RS6000_SAVE_AREA))
+#undef RS6000_STARTING_FRAME_OFFSET
+#define RS6000_STARTING_FRAME_OFFSET					\
+  (RS6000_ALIGN (crtl->outgoing_args_size, 16)				\
+   + RS6000_SAVE_AREA)
 
 #undef STACK_DYNAMIC_OFFSET
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
+  (RS6000_ALIGN (crtl->outgoing_args_size.to_constant (), 16)		\
    + (STACK_POINTER_OFFSET))
 
 /* Darwin uses a function call if everything needs to be saved/restored.  */
@@ -344,7 +342,7 @@ extern int darwin_emit_branch_islands;
    registers and memory.  FIRST is nonzero if this is the only
    element.  */
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (!(FIRST) ? upward : FUNCTION_ARG_PADDING (MODE, TYPE))
+  (!(FIRST) ? PAD_UPWARD : targetm.calls.function_arg_padding (MODE, TYPE))
 
 #define DOUBLE_INT_ASM_OP "\t.quad\t"
 

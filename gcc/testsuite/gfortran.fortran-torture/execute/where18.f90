@@ -13,7 +13,7 @@ program where_18
      c = 3
    endwhere
    if (any (a .ne. (/1, 2, 2, 2/))) &
-     call abort
+     STOP 1
 
    a = (/1, 1, 1, 1/)
    where (c .eq. 1)
@@ -22,5 +22,5 @@ program where_18
      b = 3
    endwhere
    if (any (a .ne. (/2, 2, 2, 1/))) &
-     call abort
+     STOP 2
 end program

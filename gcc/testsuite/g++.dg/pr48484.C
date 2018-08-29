@@ -65,6 +65,8 @@ bool
 	jump = 0;
       }
     }
+
+  return false;
 }
 
 bool
@@ -102,4 +104,5 @@ bool
 	}
     }
 
+  return true;
 }

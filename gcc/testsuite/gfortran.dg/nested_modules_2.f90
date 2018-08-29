@@ -33,5 +33,5 @@ program testfoobar
   call sub1 (l)
   i = 1
   call sub2 (l)
-  if (any (l.ne.(/84,42,0/))) call abort ()
+  if (any (l.ne.(/84,42,0/))) STOP 1
 end program testfoobar

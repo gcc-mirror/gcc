@@ -6,4 +6,4 @@ typedef int int128_t __attribute__((mode(TI)));
 NOMIPS16 int64_t foo (int64_t x, int64_t y) { return ((int128_t) x * y) >> 64; }
 /* ??? A highpart pattern would be a better choice, but we currently
    don't use them.  */
-/* { dg-final { scan-assembler "[concat {\tdmult\t\$[45],\$[45][^\n]+mulditi3[^\n]+\n\tmflo\t\$3\n\tmfhi\t\$2\n}]" } } */
+/* { dg-final { scan-assembler "[concat {\tdmult\t\$[45],\$[45][^\n]+mulditi3_r4000\n\tmflo\t\$3\n\tmfhi\t\$2\n}]" } } */

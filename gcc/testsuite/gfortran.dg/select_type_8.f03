@@ -37,7 +37,7 @@
     i = 4
   end select
   print *,i
-  if (i /= 3) call abort()
+  if (i /= 3) STOP 1
 
   cp => a
   select type (cp)
@@ -49,7 +49,7 @@
     i = 3
   end select
   print *,i
-  if (i /= 1) call abort()
+  if (i /= 1) STOP 2
 
   cp => b
   select type (cp)
@@ -63,7 +63,7 @@
     i = 5
   end select
   print *,i
-  if (i /= 4) call abort()
+  if (i /= 4) STOP 3
 
   cp => b
   select type (cp)
@@ -77,7 +77,7 @@
     i = 3
   end select
   print *,i
-  if (i /= 4) call abort()
+  if (i /= 4) STOP 4
 
   cp => a
   select type (cp)
@@ -93,6 +93,6 @@
     i = 5
   end select
   print *,i
-  if (i /= 3) call abort()
+  if (i /= 3) STOP 5
 
 end

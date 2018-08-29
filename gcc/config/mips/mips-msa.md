@@ -1,7 +1,7 @@
 ;; Machine Description for MIPS MSA ASE
 ;; Based on the MIPS MSA spec Revision 1.11 8/4/2014
 ;;
-;; Copyright (C) 2015-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -231,7 +231,7 @@
    (V4SI  "uimm5")
    (V2DI  "uimm6")])
 
-(define_expand "vec_init<mode>"
+(define_expand "vec_init<mode><unitmode>"
   [(match_operand:MSA 0 "register_operand")
    (match_operand:MSA 1 "")]
   "ISA_HAS_MSA"
@@ -311,7 +311,7 @@
   DONE;
 })
 
-(define_expand "vec_extract<mode>"
+(define_expand "vec_extract<mode><unitmode>"
   [(match_operand:<UNITMODE> 0 "register_operand")
    (match_operand:IMSA 1 "register_operand")
    (match_operand 2 "const_<indeximm>_operand")]
@@ -329,7 +329,7 @@
   DONE;
 })
 
-(define_expand "vec_extract<mode>"
+(define_expand "vec_extract<mode><unitmode>"
   [(match_operand:<UNITMODE> 0 "register_operand")
    (match_operand:FMSA 1 "register_operand")
    (match_operand 2 "const_<indeximm>_operand")]
@@ -557,19 +557,6 @@
 }
   [(set_attr "type" "simd_copy")
    (set_attr "mode" "<MODE>")])
-
-(define_expand "vec_perm_const<mode>"
-  [(match_operand:MSA 0 "register_operand")
-   (match_operand:MSA 1 "register_operand")
-   (match_operand:MSA 2 "register_operand")
-   (match_operand:<VIMODE> 3 "")]
-  "ISA_HAS_MSA"
-{
-  if (mips_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
 
 (define_expand "abs<mode>2"
   [(match_operand:IMSA 0 "register_operand" "=f")

@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -425,6 +425,13 @@ _mm512_cvtepi16_epi8 (__m512i __A)
 						  (__mmask32) -1);
 }
 
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtepi16_storeu_epi8 (void * __P, __mmask32 __M, __m512i __A)
+{
+  __builtin_ia32_pmovwb512mem_mask ((__v32qi *) __P, (__v32hi) __A, __M);
+}
+
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_cvtepi16_epi8 (__m256i __O, __mmask32 __M, __m512i __A)
@@ -450,6 +457,13 @@ _mm512_cvtsepi16_epi8 (__m512i __A)
   return (__m256i) __builtin_ia32_pmovswb512_mask ((__v32hi) __A,
 						   (__v32qi)_mm256_undefined_si256(),
 						   (__mmask32) -1);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtsepi16_storeu_epi8 (void * __P, __mmask32 __M, __m512i __A)
+{
+  __builtin_ia32_pmovswb512mem_mask ((__v32qi *) __P, (__v32hi) __A, __M);
 }
 
 extern __inline __m256i
@@ -487,6 +501,13 @@ _mm512_mask_cvtusepi16_epi8 (__m256i __O, __mmask32 __M, __m512i __A)
   return (__m256i) __builtin_ia32_pmovuswb512_mask ((__v32hi) __A,
 						    (__v32qi) __O,
 						    __M);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtusepi16_storeu_epi8 (void * __P, __mmask32 __M, __m512i __A)
+{
+  __builtin_ia32_pmovuswb512mem_mask ((__v32qi *) __P, (__v32hi) __A, __M);
 }
 
 extern __inline __m256i
@@ -3022,7 +3043,7 @@ _mm512_cmp_epi16_mask (__m512i __X, __m512i __Y, const int __P)
 
 extern __inline __mmask64
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_cmp_epi8_mask (__mmask32 __U, __m512i __X, __m512i __Y,
+_mm512_mask_cmp_epi8_mask (__mmask64 __U, __m512i __X, __m512i __Y,
 			   const int __P)
 {
   return (__mmask64) __builtin_ia32_cmpb512_mask ((__v64qi) __X,
@@ -3060,7 +3081,7 @@ _mm512_cmp_epu16_mask (__m512i __X, __m512i __Y, const int __P)
 
 extern __inline __mmask64
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_cmp_epu8_mask (__mmask32 __U, __m512i __X, __m512i __Y,
+_mm512_mask_cmp_epu8_mask (__mmask64 __U, __m512i __X, __m512i __Y,
 			   const int __P)
 {
   return (__mmask64) __builtin_ia32_ucmpb512_mask ((__v64qi) __X,

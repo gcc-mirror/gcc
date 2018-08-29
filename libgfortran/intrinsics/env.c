@@ -1,6 +1,6 @@
 /* Implementation of the GETENV g77, and
    GET_ENVIRONMENT_VARIABLE F2003, intrinsics. 
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -93,7 +93,8 @@ get_environment_variable_i4 (char *name, char *value, GFC_INTEGER_4 *length,
 			     gfc_charlen_type name_len,
 			     gfc_charlen_type value_len)
 {
-  int stat = GFC_SUCCESS, res_len = 0;
+  int stat = GFC_SUCCESS;
+  gfc_charlen_type res_len = 0;
   char *name_nt;
   char *res;
 

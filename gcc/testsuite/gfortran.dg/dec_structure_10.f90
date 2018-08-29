@@ -97,23 +97,23 @@ j = (r) .ne. i        ! <intrinsic> ne(r, i)
 
 ! Nested access: struct has a member eq which has a member i
 j =  struct .eq. i    ! struct%eq%i
-if ( j .ne. struct%eq%i ) call abort()
+if ( j .ne. struct%eq%i ) STOP 1
 
 ! User op: struct is compared to i with eq_func
 j = (struct) .eq. i   ! eq_func(struct, i) -> struct%eq%i + i
-if ( j .ne. struct%eq%i + i ) call abort()
+if ( j .ne. struct%eq%i + i ) STOP 2
 
 ! User op: struct has a member test which has a member i, but test is a uop
 j =  struct .test. i  ! tstfunc(struct, i) -> struct%i + i
-if ( j .ne. struct%i + i ) call abort()
+if ( j .ne. struct%i + i ) STOP 3
 
 ! User op: struct is compared to i with eq_func
 j = (struct) .test. i ! tstfunc(struct, i) -> struct%i + i
-if ( j .ne. struct%i + i ) call abort()
+if ( j .ne. struct%i + i ) STOP 4
 
 ! Deep nested access tests
 r7.r6.r5.r4.r3.r2.i = 1337
 j = r7.r6.r5.r4.r3.r2.i
-if ( j .ne. 1337 ) call abort()
+if ( j .ne. 1337 ) STOP 5
 
 end

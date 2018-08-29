@@ -14,14 +14,14 @@ CONTAINS
   CONTAINS
     SUBROUTINE upper
      y = x(3,1)
-     if (int(y) .ne. 3) call abort
+     if (int(y) .ne. 3) STOP 1
     END SUBROUTINE
     FUNCTION x(n, m)
        x = m*n
     END FUNCTION
     SUBROUTINE lower
      y = x(2,1)
-     if (int(y) .ne. 2) call abort
+     if (int(y) .ne. 2) STOP 2
     END SUBROUTINE
   END SUBROUTINE
 END MODULE

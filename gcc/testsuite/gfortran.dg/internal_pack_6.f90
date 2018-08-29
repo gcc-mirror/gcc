@@ -19,7 +19,7 @@ CONTAINS
    do j = 1, i
      subsum = subsum + data(j)
    end do
-   if (abs(subsum - chksum) > 1e-6) call abort
+   if (abs(subsum - chksum) > 1e-6) STOP 1
  END SUBROUTINE S1
 END MODULE
 

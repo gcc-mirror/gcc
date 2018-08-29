@@ -1,5 +1,5 @@
 /* Output Go language descriptions of types.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "wide-int-print.h"
 #include "diagnostic-core.h"
 #include "debug.h"
 #include "stor-layout.h"
@@ -504,7 +503,8 @@ static void
 go_early_global_decl (tree decl)
 {
   go_decl (decl);
-  real_debug_hooks->early_global_decl (decl);
+  if (TREE_CODE (decl) != FUNCTION_DECL || DECL_STRUCT_FUNCTION (decl) != NULL)
+    real_debug_hooks->early_global_decl (decl);
 }
 
 /* A global variable decl.  */
@@ -1159,7 +1159,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_UNSIGNED,
 		      tree_to_uhwi (TREE_VALUE (element)));
 	  else
-	    print_hex (element, buf);
+	    print_hex (wi::to_wide (element), buf);
 
 	  mhval->value = xstrdup (buf);
 	  *slot = mhval;

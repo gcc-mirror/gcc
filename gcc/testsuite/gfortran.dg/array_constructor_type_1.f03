@@ -12,6 +12,6 @@ PROGRAM test
 
   IF (array(1) /= 18 .OR. array(2) /= 12 .OR. &
       array(3) /= 31 .OR. array(4) /=  3 .OR. array(5) /= 42) THEN
-      CALL abort()
+      STOP 1
   END IF
 END PROGRAM test

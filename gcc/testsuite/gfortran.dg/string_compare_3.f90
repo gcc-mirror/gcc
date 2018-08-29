@@ -17,5 +17,5 @@ print *, c0lst(:)(1:1) == char(96+i)
 tmp = c1lst(:)(1:1) == char(96+i)
 print *, tmp
 print *, c1lst(:)(1:1) == 'e'
-if (any(tmp .neqv. (c0lst(:)(1:1) == char(96+i)))) call abort()
+if (any(tmp .neqv. (c0lst(:)(1:1) == char(96+i)))) STOP 1
 end

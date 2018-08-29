@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *              Copyright (C) 2016, Free Software Foundation, Inc.          *
+ *              Copyright (C) 2016-2018, Free Software Foundation, Inc.     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -30,10 +30,10 @@
  ****************************************************************************/
 
 /* crtbegin kind of file for ehframe registration/deregistration
-   purposes on VxWorks.  This variant exposes the ctor/dtor functions
-   as visible entities so they're picked by the WRS muncher.  */
+   purposes on VxWorks.  This variant exposes just the ctor/dtor functions
+   without any particular attribute.  */
 
-#define CDTOR_VISIBILITY
+#define CTOR_ATTRIBUTE
+#define DTOR_ATTRIBUTE
+
 #include "vx_crtbegin.inc"
-
-

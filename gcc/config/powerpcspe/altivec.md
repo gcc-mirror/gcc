@@ -1,5 +1,5 @@
 ;; AltiVec patterns.
-;; Copyright (C) 2002-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2002-2018 Free Software Foundation, Inc.
 ;; Contributed by Aldy Hernandez (aldy@quesejoda.com)
 
 ;; This file is part of GCC.
@@ -301,7 +301,7 @@
   for (i = 0; i < num_elements; i++)
     RTVEC_ELT (v, i) = constm1_rtx;
 
-  emit_insn (gen_vec_initv4si (dest, gen_rtx_PARALLEL (mode, v)));
+  emit_insn (gen_vec_initv4sisi (dest, gen_rtx_PARALLEL (mode, v)));
   emit_insn (gen_rtx_SET (dest, gen_rtx_ASHIFT (mode, dest, dest)));
   DONE;
 })
@@ -352,12 +352,10 @@
   HOST_WIDE_INT val = const_vector_elt_as_int (op1, elt);
   rtx rtx_val = GEN_INT (val);
   int shift = vspltis_shifted (op1);
-  int nunits = GET_MODE_NUNITS (<MODE>mode);
-  int i;
 
   gcc_assert (shift != 0);
   operands[2] = gen_reg_rtx (<MODE>mode);
-  operands[3] = gen_rtx_CONST_VECTOR (<MODE>mode, rtvec_alloc (nunits));
+  operands[3] = gen_const_vec_duplicate (<MODE>mode, rtx_val);
   operands[4] = gen_reg_rtx (<MODE>mode);
 
   if (shift < 0)
@@ -370,10 +368,6 @@
       operands[5] = CONST0_RTX (<MODE>mode);
       operands[6] = GEN_INT (shift);
     }
-
-  /* Populate the constant vectors.  */
-  for (i = 0; i < nunits; i++)
-    XVECEXP (operands[3], 0, i) = rtx_val;
 })
 
 (define_insn "get_vrsave_internal"
@@ -2086,19 +2080,6 @@
   }
 })
 
-(define_expand "vec_perm_constv16qi"
-  [(match_operand:V16QI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")
-   (match_operand:V16QI 2 "register_operand" "")
-   (match_operand:V16QI 3 "" "")]
-  "TARGET_ALTIVEC"
-{
-  if (altivec_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
-
 (define_insn "*altivec_vpermr_<mode>_internal"
   [(set (match_operand:VM 0 "register_operand" "=v,?wo")
 	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wo")
@@ -2222,7 +2203,7 @@
   RTVEC_ELT (v, 2) = GEN_INT (mask_val);
   RTVEC_ELT (v, 3) = GEN_INT (mask_val);
 
-  emit_insn (gen_vec_initv4si (mask, gen_rtx_PARALLEL (V4SImode, v)));
+  emit_insn (gen_vec_initv4sisi (mask, gen_rtx_PARALLEL (V4SImode, v)));
   emit_insn (gen_vector_select_v4sf (operands[0], operands[1], operands[2],
 				     gen_lowpart (V4SFmode, mask)));
   DONE;
@@ -2462,13 +2443,10 @@
     emit_insn (gen_altivec_lvsl_direct (operands[0], operands[1]));
   else
     {
-      int i;
-      rtx mask, perm[16], constv, vperm;
+      rtx mask, constv, vperm;
       mask = gen_reg_rtx (V16QImode);
       emit_insn (gen_altivec_lvsl_direct (mask, operands[1]));
-      for (i = 0; i < 16; ++i)
-        perm[i] = GEN_INT (i);
-      constv = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm));
+      constv = gen_const_vec_series (V16QImode, const0_rtx, const1_rtx);
       constv = force_reg (V16QImode, constv);
       vperm = gen_rtx_UNSPEC (V16QImode, gen_rtvec (3, mask, mask, constv),
                               UNSPEC_VPERM);
@@ -2494,13 +2472,10 @@
     emit_insn (gen_altivec_lvsr_direct (operands[0], operands[1]));
   else
     {
-      int i;
-      rtx mask, perm[16], constv, vperm;
+      rtx mask, constv, vperm;
       mask = gen_reg_rtx (V16QImode);
       emit_insn (gen_altivec_lvsr_direct (mask, operands[1]));
-      for (i = 0; i < 16; ++i)
-        perm[i] = GEN_INT (i);
-      constv = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm));
+      constv = gen_const_vec_series (V16QImode, const0_rtx, const1_rtx);
       constv = force_reg (V16QImode, constv);
       vperm = gen_rtx_UNSPEC (V16QImode, gen_rtvec (3, mask, mask, constv),
                               UNSPEC_VPERM);
@@ -2752,15 +2727,8 @@
         (smax:VI2 (match_dup 1) (match_dup 4)))]
   "<VI_unit>"
 {
-  int i, n_elt = GET_MODE_NUNITS (<MODE>mode);
-  rtvec v = rtvec_alloc (n_elt);
-
-  /* Create an all 0 constant.  */
-  for (i = 0; i < n_elt; ++i)
-    RTVEC_ELT (v, i) = const0_rtx;
-
   operands[2] = gen_reg_rtx (<MODE>mode);
-  operands[3] = gen_rtx_CONST_VECTOR (<MODE>mode, v);
+  operands[3] = CONST0_RTX (<MODE>mode);
   operands[4] = gen_reg_rtx (<MODE>mode);
 })
 
@@ -2777,17 +2745,8 @@
         (smin:VI2 (match_dup 1) (match_dup 4)))]
   "<VI_unit>"
 {
-  int i;
-  int n_elt = GET_MODE_NUNITS (<MODE>mode);
-
-  rtvec v = rtvec_alloc (n_elt);
-
-  /* Create an all 0 constant.  */
-  for (i = 0; i < n_elt; ++i)
-    RTVEC_ELT (v, i) = const0_rtx;
-
   operands[2] = gen_reg_rtx (<MODE>mode);
-  operands[3] = gen_rtx_CONST_VECTOR (<MODE>mode, v);
+  operands[3] = CONST0_RTX (<MODE>mode);
   operands[4] = gen_reg_rtx (<MODE>mode);
 })
 
@@ -3014,7 +2973,7 @@
   RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 16 :  0);
   RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ?  7 : 16);
 
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v16qiv8hi (operands[0], operands[1], vzero, mask));
   DONE;
 }")
@@ -3050,7 +3009,7 @@
   RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ?  6 : 17);
   RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ?  7 : 16);
 
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v8hiv4si (operands[0], operands[1], vzero, mask));
   DONE;
 }")
@@ -3086,7 +3045,7 @@
   RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 16 :  8);
   RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ? 15 : 16);
 
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v16qiv8hi (operands[0], operands[1], vzero, mask));
   DONE;
 }")
@@ -3122,7 +3081,7 @@
   RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 14 : 17);
   RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ? 15 : 16);
 
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v8hiv4si (operands[0], operands[1], vzero, mask));
   DONE;
 }")
@@ -3363,7 +3322,7 @@
      = gen_rtx_CONST_INT (QImode, BYTES_BIG_ENDIAN ? 2 * i + 17 : 15 - 2 * i);
   }
 
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_altivec_vmulesb (even, operands[1], operands[2]));
   emit_insn (gen_altivec_vmulosb (odd, operands[1], operands[2]));
   emit_insn (gen_altivec_vperm_v8hiv16qi (operands[0], even, odd, mask));

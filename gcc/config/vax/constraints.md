@@ -1,5 +1,5 @@
 ;; Constraints for the DEC VAX port.
-;; Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -25,32 +25,32 @@
 (define_constraint "U06"
    "unsigned 6 bit value (0..63)"
    (and (match_code "const_int")
-	(match_test "0 <= ival && ival < 64")))
+	(match_test "ival >= 0 && ival < 64")))
 
 (define_constraint "U08"
    "Unsigned 8 bit value"
    (and (match_code "const_int")
-	(match_test "0 <= ival && ival < 256")))
+	(match_test "ival >= 0 && ival < 256")))
 
 (define_constraint "U16"
    "Unsigned 16 bit value"
    (and (match_code "const_int")
-	(match_test "0 <= ival && ival < 65536")))
+	(match_test "ival >= 0 && ival < 65536")))
 
 (define_constraint "CN6"
    "negative 6 bit value (-63..-1)"
    (and (match_code "const_int")
-	(match_test "-63 <= ival && ival < 0")))
+	(match_test "ival >= -63 && ival < 0")))
 
 (define_constraint "S08"
    "signed 8 bit value [old]"
    (and (match_code "const_int")
-	(match_test "-128 <= ival && ival < 128")))
+	(match_test "ival >= -128 && ival < 128")))
 
 (define_constraint "S16"
    "signed 16 bit value [old]"
    (and (match_code "const_int")
-	(match_test "-32768 <= ival && ival < 32768")))
+	(match_test "ival >= -32768 && ival < 32768")))
 
 (define_constraint "I"
    "Match a CONST_INT of 0 [old]"

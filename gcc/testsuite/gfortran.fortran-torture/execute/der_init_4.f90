@@ -10,6 +10,6 @@ contains
 subroutine foo(a)
   type (t), intent(in) :: a
 
-  if (a%i .ne. 5) call abort
+  if (a%i .ne. 5) STOP 1
 end subroutine
 end program

@@ -116,9 +116,9 @@ contains
     class(t2), intent(inout) :: this
     character(32), dimension(:), allocatable :: md5
     allocate (md5 (this%n), source=this%md5)
-    if (md5(1) /= "tst                             ") call abort()
-    if (md5(2) /= "                                ") call abort()
-    if (md5(3) /= "fooblabar                       ") call abort()
+    if (md5(1) /= "tst                             ") STOP 1
+    if (md5(2) /= "                                ") STOP 2
+    if (md5(3) /= "fooblabar                       ") STOP 3
   end subroutine t2_init
 end module foo2
 
@@ -136,14 +136,14 @@ program test
 
   call sel%init([2., 0., 3., 0., 4.])
 
-  if (any(sel%map /= [1, 3, 5])) call abort()
-  if (any(abs(sel%weight - [2., 3., 4.] / 9.) > 1E-6)) call abort()
+  if (any(sel%map /= [1, 3, 5])) STOP 4
+  if (any(abs(sel%weight - [2., 3., 4.] / 9.) > 1E-6)) STOP 5
 
   phs_config%n_in = 2
   allocate (phs_config%flv (phs_config%n_in, 1))
   call phs_base_init (phs, phs_config)
 
-  if (any(abs(phs%m_in - [42.0, 42.0]) > 1E-6)) call abort()
+  if (any(abs(phs%m_in - [42.0, 42.0]) > 1E-6)) STOP 6
 
   o%n = 2
   allocate (o%val(0:1,4))

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"internal/testenv"
 	"io"
+	"os"
 	"reflect"
 	"runtime"
 	"sync"
@@ -32,28 +33,28 @@ func BenchmarkTCP4PersistentTimeout(b *testing.B) {
 }
 
 func BenchmarkTCP6OneShot(b *testing.B) {
-	if !supportsIPv6 {
+	if !supportsIPv6() {
 		b.Skip("ipv6 is not supported")
 	}
 	benchmarkTCP(b, false, false, "[::1]:0")
 }
 
 func BenchmarkTCP6OneShotTimeout(b *testing.B) {
-	if !supportsIPv6 {
+	if !supportsIPv6() {
 		b.Skip("ipv6 is not supported")
 	}
 	benchmarkTCP(b, false, true, "[::1]:0")
 }
 
 func BenchmarkTCP6Persistent(b *testing.B) {
-	if !supportsIPv6 {
+	if !supportsIPv6() {
 		b.Skip("ipv6 is not supported")
 	}
 	benchmarkTCP(b, true, false, "[::1]:0")
 }
 
 func BenchmarkTCP6PersistentTimeout(b *testing.B) {
-	if !supportsIPv6 {
+	if !supportsIPv6() {
 		b.Skip("ipv6 is not supported")
 	}
 	benchmarkTCP(b, true, true, "[::1]:0")
@@ -163,7 +164,7 @@ func BenchmarkTCP4ConcurrentReadWrite(b *testing.B) {
 }
 
 func BenchmarkTCP6ConcurrentReadWrite(b *testing.B) {
-	if !supportsIPv6 {
+	if !supportsIPv6() {
 		b.Skip("ipv6 is not supported")
 	}
 	benchmarkTCPConcurrentReadWrite(b, "[::1]:0")
@@ -372,7 +373,7 @@ func TestTCPListenerName(t *testing.T) {
 func TestIPv6LinkLocalUnicastTCP(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
 
-	if !supportsIPv6 {
+	if !supportsIPv6() {
 		t.Skip("IPv6 is not supported")
 	}
 
@@ -725,5 +726,76 @@ func TestTCPBig(t *testing.T) {
 			c.Close()
 			<-done
 		})
+	}
+}
+
+func TestCopyPipeIntoTCP(t *testing.T) {
+	ln, err := newLocalListener("tcp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+
+	errc := make(chan error, 1)
+	defer func() {
+		if err := <-errc; err != nil {
+			t.Error(err)
+		}
+	}()
+	go func() {
+		c, err := ln.Accept()
+		if err != nil {
+			errc <- err
+			return
+		}
+		defer c.Close()
+
+		buf := make([]byte, 100)
+		n, err := io.ReadFull(c, buf)
+		if err != io.ErrUnexpectedEOF || n != 2 {
+			errc <- fmt.Errorf("got err=%q n=%v; want err=%q n=2", err, n, io.ErrUnexpectedEOF)
+			return
+		}
+
+		errc <- nil
+	}()
+
+	c, err := Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+
+	errc2 := make(chan error, 1)
+	defer func() {
+		if err := <-errc2; err != nil {
+			t.Error(err)
+		}
+	}()
+
+	defer w.Close()
+
+	go func() {
+		_, err := io.Copy(c, r)
+		errc2 <- err
+	}()
+
+	// Split write into 2 packets. That makes Windows TransmitFile
+	// drop second packet.
+	packet := make([]byte, 1)
+	_, err = w.Write(packet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(100 * time.Millisecond)
+	_, err = w.Write(packet)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

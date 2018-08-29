@@ -168,14 +168,14 @@ GLIBCXX_ENABLE_LONG_LONG([yes])
 GLIBCXX_ENABLE_WCHAR_T([yes])
 GLIBCXX_ENABLE_C99([yes])
 GLIBCXX_ENABLE_CONCEPT_CHECKS([no])
-GLIBCXX_ENABLE_DEBUG_FLAGS(["-gdwarf-4 -g3 -O0"])
+GLIBCXX_ENABLE_DEBUG_FLAGS(["-gdwarf-4 -g3 -O0 -D_GLIBCXX_ASSERTIONS"])
 GLIBCXX_ENABLE_DEBUG([no])
 GLIBCXX_ENABLE_PARALLEL([yes])
 GLIBCXX_ENABLE_CXX_FLAGS
 GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 GLIBCXX_ENABLE_EXTERN_TEMPLATE([yes])
 GLIBCXX_ENABLE_PYTHON
-GLIBCXX_ENABLE_WERROR([yes])
+GLIBCXX_ENABLE_WERROR([no])
 GLIBCXX_ENABLE_VTABLE_VERIFY([no])
 
 # Checks for operating systems support that doesn't require linking.
@@ -237,7 +237,13 @@ AC_CHECK_HEADERS([endian.h execinfo.h float.h fp.h ieeefp.h inttypes.h \
 locale.h machine/endian.h machine/param.h nan.h stdint.h stdlib.h string.h \
 strings.h sys/ipc.h sys/isa_defs.h sys/machine.h sys/param.h \
 sys/resource.h sys/sem.h sys/stat.h sys/time.h sys/types.h unistd.h \
-wchar.h wctype.h linux/random.h])
+wchar.h wctype.h linux/types.h])
+
+AC_CHECK_HEADERS([linux/random.h], [], [],
+[[#ifdef HAVE_LINUX_TYPES_H
+# include <linux/types.h>
+#endif
+]])
 
 # Only do link tests if native. Else, hardcode.
 if $GLIBCXX_IS_NATIVE; then
@@ -257,6 +263,7 @@ if $GLIBCXX_IS_NATIVE; then
 
   AC_CHECK_FUNCS(__cxa_thread_atexit_impl __cxa_thread_atexit)
   AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
+  AC_CHECK_FUNCS(_wfopen)
 
   # For iconv support.
   AM_ICONV
@@ -467,6 +474,12 @@ AM_CONDITIONAL(BUILD_PDF,
 	       test $ac_cv_prog_DBLATEX = "yes" &&
 	       test $ac_cv_prog_PDFLATEX = "yes")
 
+case "$build" in
+ *-*-darwin* ) glibcxx_include_dir_notparallel=yes ;;
+ * ) glibcxx_include_dir_notparallel=no ;;
+esac
+AM_CONDITIONAL(INCLUDE_DIR_NOTPARALLEL,
+               test $glibcxx_include_dir_notparallel = "yes")
 
 # Propagate the target-specific source directories through the build chain.
 ATOMICITY_SRCDIR=config/${atomicity_dir}
@@ -488,6 +501,13 @@ AC_SUBST(ERROR_CONSTANTS_SRCDIR)
 AC_SUBST(CPU_OPT_EXT_RANDOM)
 AC_SUBST(CPU_OPT_BITS_RANDOM)
 
+
+# Add CET specific flags if Intel CET is enabled.
+GCC_CET_FLAGS(CET_FLAGS)
+EXTRA_CXX_FLAGS="$EXTRA_CXX_FLAGS $CET_FLAGS"
+EXTRA_CFLAGS="$EXTRA_CFLAGS $CET_FLAGS"
+AC_SUBST(EXTRA_CFLAGS)
+AC_SUBST(EXTRA_CXX_FLAGS)
 
 # Determine cross-compile flags and AM_CONDITIONALs.
 #AC_SUBST(GLIBCXX_IS_NATIVE)

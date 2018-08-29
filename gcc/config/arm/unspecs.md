@@ -1,5 +1,5 @@
 ;; Unspec defintions.
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -168,6 +168,7 @@
   VUNSPEC_MCRR2		; Represent the coprocessor mcrr2 instruction.
   VUNSPEC_MRRC		; Represent the coprocessor mrrc instruction.
   VUNSPEC_MRRC2		; Represent the coprocessor mrrc2 instruction.
+  VUNSPEC_SPECULATION_BARRIER ; Represents an unconditional speculation barrier.
 ])
 
 ;; Enumerators for NEON unspecs.
@@ -410,4 +411,8 @@
   UNSPEC_VRNDN
   UNSPEC_VRNDP
   UNSPEC_VRNDX
+  UNSPEC_DOT_S
+  UNSPEC_DOT_U
+  UNSPEC_VFML_LO
+  UNSPEC_VFML_HI
 ])

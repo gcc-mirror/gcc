@@ -1,6 +1,6 @@
 // { dg-do compile { target c++14 } }
 
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,4 +35,22 @@ void test01()
   short&&  t3one __attribute__((unused)) = std::get<short>(std::move(t3));
   int&&    t3two __attribute__((unused)) = std::get<int>(std::move(t3));
   double&& t3thr __attribute__((unused)) = std::get<double>(std::move(t3));
+
+  const std::tuple<int> ct1;
+
+  const int&&   ct1one __attribute__((unused)) = std::get<int>(std::move(ct1));
+
+  const std::tuple<float, int> ct2;
+
+  const float&& ct2one __attribute__((unused)) = std::get<0>(std::move(ct2));
+  const int&&   ct2two __attribute__((unused)) = std::get<int>(std::move(ct2));
+
+  const std::tuple<short, int, double> ct3;
+
+  const short&&  ct3one __attribute__((unused)) =
+    std::get<short>(std::move(ct3));
+  const int&&    ct3two __attribute__((unused)) =
+    std::get<int>(std::move(ct3));
+  const double&& ct3thr __attribute__((unused)) =
+    std::get<double>(std::move(ct3));
 }

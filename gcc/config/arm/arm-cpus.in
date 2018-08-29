@@ -1,6 +1,6 @@
 # CPU, FPU and architecture specifications for ARM.
 #
-# Copyright (C) 2011-2017 Free Software Foundation, Inc.
+# Copyright (C) 2011-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -40,66 +40,248 @@
 # names in the final compiler.  The order within each group is preserved and
 # forms the order for the list within the compiler.
 
+# Most objects in this file support forward references.  The major
+# exception is feature groups, which may only refer to previously
+# defined features or feature groups.  This is done to avoid the risk
+# of feature groups recursively referencing each other and causing
+# the parser to hang.
+
+# Features - general convention: all lower case.
+
+# Architecture rel 4
+define feature armv4
+
+# Thumb aware.
+define feature thumb
+
+# Architecture rel 5t.
+define feature armv5t
+
+# Architecture rel 5te.
+define feature armv5te
+
+# XScale.
+define feature xscale
+
+# Architecture rel 6.
+define feature armv6
+
+# Architecture rel 6k.
+define feature armv6k
+
+# Thumb-2.
+define feature thumb2
+
+# Instructions not present in 'M' profile.
+define feature notm
+
+# Architecture uses be8 mode in big-endian.
+define feature be8
+
+# Thumb division instructions.
+define feature tdiv
+
+# Architecture rel 7e-m.
+define feature armv7em
+
+# Architecture rel 7.
+define feature armv7
+
+# ARM division instructions.
+define feature adiv
+
+# Architecture rel 8.
+define feature armv8
+
+# ARMv8 CRC32 instructions.
+define feature crc32
+
+# XScale v2 (Wireless MMX).
+define feature iwmmxt
+
+# XScale Wireless MMX2.
+define feature iwmmxt2
+
+# Architecture rel 8.1.
+define feature armv8_1
+
+# Architecture rel 8.2.
+define feature armv8_2
+
+# Architecture rel 8.3.
+define feature armv8_3
+
+# Architecture rel 8.4.
+define feature armv8_4
+
+# M-Profile security extensions.
+define feature cmse
+
+# Floating point and Neon extensions.
+# VFPv1 is not supported in GCC.
+
+# Vector floating point v2.
+define feature vfpv2
+
+# Vector floating point v3.
+define feature vfpv3
+
+# Vector floating point v4.
+define feature vfpv4
+
+# Floating point v5.
+define feature fpv5
+
+# ARMv7-A LPAE.
+define feature lpae
+
+# Advanced SIMD instructions.
+define feature neon
+
+# Conversions to/from fp16 (VFPv3 extension).
+define feature fp16conv
+
+# Double precision operations supported.
+define feature fp_dbl
+
+# 32 Double precision registers.
+define feature fp_d32
+
+# Crypto extension to ARMv8.
+define feature crypto
+
+# FP16 data processing (half-precision float).
+define feature fp16
+
+# Dot Product instructions extension to ARMv8.2-a.
+define feature dotprod
+
+# Half-precision floating-point instructions in ARMv8.4-A.
+define feature fp16fml
+
+# ISA Quirks (errata?).  Don't forget to add this to the fgroup
+# ALL_QUIRKS below.
+
+# No volatile memory in IT blocks.
+define feature quirk_no_volatile_ce
+
+# Previously mis-identified by GCC.
+define feature quirk_armv6kz
+
+# Cortex-M3 LDRD quirk.
+define feature quirk_cm3_ldrd
+
+# (Very) slow multiply operations.  Should probably be a tuning bit.
+define feature smallmul
+
+# Feature groups.  Conventionally all (or mostly) upper case.
+# ALL_FPU lists all the feature bits associated with the floating-point
+# unit; these will all be removed if the floating-point unit is disabled
+# (eg -mfloat-abi=soft).  ALL_FPU_INTERNAL must ONLY contain features that
+# form part of a named -mfpu option; it is used to map the capabilities
+# back to a named FPU for the benefit of the assembler.
+#
+# ALL_SIMD_INTERNAL and ALL_SIMD are similarly defined to help with the
+# construction of ALL_FPU and ALL_FPU_INTERNAL; they describe the SIMD
+# extensions that are either part of a named FPU or optional extensions
+# respectively.
+
+
+# List of all cryptographic extensions to stripout if crypto is
+# disabled.  Currently, that's trivial, but we define it anyway for
+# consistency with the SIMD and FP disable lists.
+define fgroup ALL_CRYPTO	crypto
+
+# List of all SIMD bits to strip out if SIMD is disabled.  This does
+# strip off 32 D-registers, but does not remove support for
+# double-precision FP.
+define fgroup ALL_SIMD_INTERNAL	fp_d32 neon ALL_CRYPTO
+define fgroup ALL_SIMD	ALL_SIMD_INTERNAL dotprod fp16fml
+
+# List of all FPU bits to strip out if -mfpu is used to override the
+# default.  fp16 is deliberately missing from this list.
+define fgroup ALL_FPU_INTERNAL	vfpv2 vfpv3 vfpv4 fpv5 fp16conv fp_dbl ALL_SIMD_INTERNAL
+
+# Similarly, but including fp16 and other extensions that aren't part of
+# -mfpu support.
+define fgroup ALL_FP	fp16 ALL_FPU_INTERNAL
+
+define fgroup ARMv4       armv4 notm
+define fgroup ARMv4t      ARMv4 thumb
+define fgroup ARMv5t      ARMv4t armv5t
+define fgroup ARMv5te     ARMv5t armv5te
+define fgroup ARMv5tej    ARMv5te
+define fgroup ARMv6       ARMv5te armv6 be8
+define fgroup ARMv6j      ARMv6
+define fgroup ARMv6k      ARMv6 armv6k
+define fgroup ARMv6z      ARMv6
+define fgroup ARMv6kz     ARMv6k quirk_armv6kz
+define fgroup ARMv6zk     ARMv6k
+define fgroup ARMv6t2     ARMv6 thumb2
+# This is suspect.  ARMv6-m doesn't really pull in any useful features
+# from ARMv5* or ARMv6.
+define fgroup ARMv6m      armv4 thumb armv5t armv5te armv6 be8
+# This is suspect, the 'common' ARMv7 subset excludes the thumb2 'DSP' and
+# integer SIMD instructions that are in ARMv6T2.  */
+define fgroup ARMv7       ARMv6m thumb2 armv7
+
+define fgroup ARMv7a      ARMv7 notm armv6k
+define fgroup ARMv7ve     ARMv7a adiv tdiv lpae
+define fgroup ARMv7r      ARMv7a tdiv
+define fgroup ARMv7m      ARMv7 tdiv
+define fgroup ARMv7em     ARMv7m armv7em
+define fgroup ARMv8a      ARMv7ve armv8
+define fgroup ARMv8_1a    ARMv8a crc32 armv8_1
+define fgroup ARMv8_2a    ARMv8_1a armv8_2
+define fgroup ARMv8_3a    ARMv8_2a armv8_3
+define fgroup ARMv8_4a    ARMv8_3a armv8_4
+define fgroup ARMv8m_base ARMv6m armv8 cmse tdiv
+define fgroup ARMv8m_main ARMv7m armv8 cmse
+define fgroup ARMv8r      ARMv8a
+
+# Useful combinations.
+define fgroup VFPv2	vfpv2
+define fgroup VFPv3	VFPv2 vfpv3
+define fgroup VFPv4	VFPv3 vfpv4 fp16conv
+define fgroup FPv5	VFPv4 fpv5
+
+define fgroup FP_DBL	fp_dbl
+define fgroup FP_D32	FP_DBL fp_d32
+define fgroup FP_ARMv8	FPv5 FP_D32
+define fgroup NEON	FP_D32 neon
+define fgroup CRYPTO	NEON crypto
+define fgroup DOTPROD	NEON dotprod
+
+# List of all quirk bits to strip out when comparing CPU features with
+# architectures.
+# xscale isn't really a 'quirk', but it isn't an architecture either and we
+# need to ignore it for matching purposes.
+define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd xscale
+
 # Architecture entries
 # format:
 # begin arch <name>
 #   tune for <cpu>
 #   [tune flags <list>]
 #   base <name>
+#   [profile <A|R|M>]
 #   isa <isa-flags-list>
 # end arch <name>
 #
-
-begin arch armv2
- tune for arm2
- tune flags CO_PROC NO_MODE32
- base 2
- isa ARMv2 bit_mode26
-end arch armv2
-
-begin arch armv2a
- tune for arm2
- tune flags CO_PROC NO_MODE32
- base 2
- isa ARMv2 bit_mode26
-end arch armv2a
-
-begin arch armv3
- tune for arm6
- tune flags CO_PROC
- base 3
- isa ARMv3 bit_mode26
-end arch armv3
-
-begin arch armv3m
- tune for arm7m
- tune flags CO_PROC
- base 3M
- isa ARMv3m bit_mode26
-end arch armv3m
 
 begin arch armv4
  tune for arm7tdmi
  tune flags CO_PROC
  base 4
- isa ARMv4 bit_mode26
+ isa ARMv4
 end arch armv4
 
-# Strictly, bit_mode26 is a permitted option for v4t, but there are no
-# implementations that support it, so we will leave it out for now.
 begin arch armv4t
  tune for arm7tdmi
  tune flags CO_PROC
  base 4T
  isa ARMv4t
 end arch armv4t
-
-begin arch armv5
- tune for arm10tdmi
- tune flags CO_PROC
- base 5
- isa ARMv5
-end arch armv5
 
 begin arch armv5t
  tune for arm10tdmi
@@ -108,18 +290,14 @@ begin arch armv5t
  isa ARMv5t
 end arch armv5t
 
-begin arch armv5e
- tune for arm1026ej-s
- tune flags CO_PROC
- base 5E
- isa ARMv5e
-end arch armv5e
-
 begin arch armv5te
  tune for arm1026ej-s
  tune flags CO_PROC
  base 5TE
  isa ARMv5te
+ option fp add VFPv2 FP_DBL
+ optalias vfpv2 fp
+ option nofp remove ALL_FP
 end arch armv5te
 
 begin arch armv5tej
@@ -127,6 +305,9 @@ begin arch armv5tej
  tune flags CO_PROC
  base 5TEJ
  isa ARMv5tej
+ option fp add VFPv2 FP_DBL
+ optalias vfpv2 fp
+ option nofp remove ALL_FP
 end arch armv5tej
 
 begin arch armv6
@@ -134,6 +315,9 @@ begin arch armv6
  tune flags CO_PROC
  base 6
  isa ARMv6
+ option fp add VFPv2 FP_DBL
+ optalias vfpv2 fp
+ option nofp remove ALL_FP
 end arch armv6
 
 begin arch armv6j
@@ -141,6 +325,9 @@ begin arch armv6j
  tune flags CO_PROC
  base 6J
  isa ARMv6j
+ option fp add VFPv2 FP_DBL
+ optalias vfpv2 fp
+ option nofp remove ALL_FP
 end arch armv6j
 
 begin arch armv6k
@@ -148,6 +335,9 @@ begin arch armv6k
  tune flags CO_PROC
  base 6K
  isa ARMv6k
+ option fp add VFPv2 FP_DBL
+ optalias vfpv2 fp
+ option nofp remove ALL_FP
 end arch armv6k
 
 begin arch armv6z
@@ -155,6 +345,9 @@ begin arch armv6z
  tune flags CO_PROC
  base 6Z
  isa ARMv6z
+ option fp add VFPv2 FP_DBL
+ optalias vfpv2 fp
+ option nofp remove ALL_FP
 end arch armv6z
 
 begin arch armv6kz
@@ -162,6 +355,9 @@ begin arch armv6kz
  tune flags CO_PROC
  base 6KZ
  isa ARMv6kz
+ option fp add VFPv2 FP_DBL
+ optalias vfpv2 fp
+ option nofp remove ALL_FP
 end arch armv6kz
 
 begin arch armv6zk
@@ -169,6 +365,9 @@ begin arch armv6zk
  tune flags CO_PROC
  base 6KZ
  isa ARMv6kz
+ option fp add VFPv2 FP_DBL
+ optalias vfpv2 fp
+ option nofp remove ALL_FP
 end arch armv6zk
 
 begin arch armv6t2
@@ -176,17 +375,24 @@ begin arch armv6t2
  tune flags CO_PROC
  base 6T2
  isa ARMv6t2
+ option fp add VFPv2 FP_DBL
+ optalias vfpv2 fp
+ option nofp remove ALL_FP
 end arch armv6t2
 
 begin arch armv6-m
  tune for cortex-m1
  base 6M
+ profile M
  isa ARMv6m
 end arch armv6-m
 
+# This is now equivalent to armv6-m, but we keep it because some
+# versions of GAS still distinguish between the two.
 begin arch armv6s-m
  tune for cortex-m1
  base 6M
+ profile M
  isa ARMv6m
 end arch armv6s-m
 
@@ -195,81 +401,171 @@ begin arch armv7
  tune flags CO_PROC
  base 7
  isa ARMv7
+# fp => VFPv3-d16 (only useful for the A+R profile subset).
+ option fp add VFPv3 FP_DBL
+ optalias vfpv3-d16 fp
+ option nofp remove ALL_FP
 end arch armv7
 
 begin arch armv7-a
  tune for cortex-a8
  tune flags CO_PROC
  base 7A
+ profile A
  isa ARMv7a
+# fp => VFPv3-d16, simd => neon-vfpv3
+ option fp	       add VFPv3 FP_DBL
+ optalias vfpv3-d16    fp
+ option vfpv3	       add VFPv3 FP_D32
+ option vfpv3-d16-fp16 add VFPv3 FP_DBL fp16conv
+ option vfpv3-fp16     add VFPv3 FP_DBL FP_D32 fp16conv
+ option vfpv4-d16      add VFPv4 FP_DBL
+ option vfpv4	       add VFPv4 FP_D32
+ option simd	       add VFPv3 NEON
+ optalias neon	       simd
+ optalias neon-vfpv3   simd
+ option neon-fp16      add VFPv3 NEON fp16conv
+ option neon-vfpv4     add VFPv4 NEON
+ option nosimd	    remove ALL_SIMD
+ option nofp	    remove ALL_FP
 end arch armv7-a
 
 begin arch armv7ve
  tune for cortex-a8
  tune flags CO_PROC
  base 7A
+ profile A
  isa ARMv7ve
+# fp => VFPv4-d16, simd => neon-vfpv4
+ option vfpv3-d16      add VFPv3 FP_DBL
+ option vfpv3 	       add VFPv3 FP_D32
+ option vfpv3-d16-fp16 add VFPv3 FP_DBL fp16conv
+ option vfpv3-fp16     add VFPv3 FP_DBL FP_D32 fp16conv
+ option fp 	       add VFPv4 FP_DBL
+ optalias vfpv4-d16    fp
+ option vfpv4 	       add VFPv4 FP_D32
+ option neon 	       add VFPv3 NEON
+ optalias neon-vfpv3   neon
+ option neon-fp16      add VFPv3 NEON fp16conv
+ option simd 	       add VFPv4 NEON
+ optalias neon-vfpv4   simd
+ option nosimd	    remove ALL_SIMD
+ option nofp	    remove ALL_FP
 end arch armv7ve
 
 begin arch armv7-r
  tune for cortex-r4
  tune flags CO_PROC
  base 7R
+ profile R
  isa ARMv7r
+# ARMv7-r uses VFPv3-d16
+ option fp.sp add VFPv3
+ optalias vfpv3xd fp.sp
+ option fp add VFPv3 FP_DBL
+ optalias vfpv3-d16 fp
+ option idiv add adiv
+ option nofp remove ALL_FP
+ option noidiv remove adiv
 end arch armv7-r
 
 begin arch armv7-m
  tune for cortex-m3
  tune flags CO_PROC
  base 7M
+ profile M
  isa ARMv7m
+# In theory FP is permitted in v7-m, but in practice no implementations exist.
+# leave it out for now.
 end arch armv7-m
 
 begin arch armv7e-m
  tune for cortex-m4
  tune flags CO_PROC
  base 7EM
+ profile M
  isa ARMv7em
+# fp => VFPv4-sp-d16; fpv5 => FPv5-sp-d16; fp.dp => FPv5-d16
+ option fp add VFPv4
+ optalias vfpv4-sp-d16 fp
+ option fpv5 add FPv5
+ option fp.dp add FPv5 FP_DBL
+ optalias fpv5-d16 fp.dp
+ option nofp remove ALL_FP
 end arch armv7e-m
 
 begin arch armv8-a
  tune for cortex-a53
  tune flags CO_PROC
  base 8A
+ profile A
  isa ARMv8a
+ option crc add crc32
+ option simd add FP_ARMv8 NEON
+ option crypto add FP_ARMv8 CRYPTO
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
 end arch armv8-a
-
-begin arch armv8-a+crc
- tune for cortex-a53
- tune flags CO_PROC
- base 8A
- isa ARMv8a bit_crc32
-end arch armv8-a+crc
 
 begin arch armv8.1-a
  tune for cortex-a53
  tune flags CO_PROC
  base 8A
+ profile A
  isa ARMv8_1a
+ option simd add FP_ARMv8 NEON
+ option crypto add FP_ARMv8 CRYPTO
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
 end arch armv8.1-a
 
 begin arch armv8.2-a
  tune for cortex-a53
  tune flags CO_PROC
  base 8A
+ profile A
  isa ARMv8_2a
+ option simd add FP_ARMv8 NEON
+ option fp16 add fp16 FP_ARMv8 NEON
+ option fp16fml add fp16fml fp16 FP_ARMv8 NEON
+ option crypto add FP_ARMv8 CRYPTO
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+ option dotprod add FP_ARMv8 DOTPROD
 end arch armv8.2-a
 
-begin arch armv8.2-a+fp16
+begin arch armv8.3-a
  tune for cortex-a53
  tune flags CO_PROC
  base 8A
- isa ARMv8_2a bit_fp16
-end arch armv8.2-a+fp16
+ profile A
+ isa ARMv8_3a
+ option simd add FP_ARMv8 NEON
+ option fp16 add fp16 FP_ARMv8 NEON
+ option fp16fml add fp16fml fp16 FP_ARMv8 NEON
+ option crypto add FP_ARMv8 CRYPTO
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+ option dotprod add FP_ARMv8 DOTPROD
+end arch armv8.3-a
+
+begin arch armv8.4-a
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 8A
+ profile A
+ isa ARMv8_4a
+ option simd add FP_ARMv8 DOTPROD
+ option fp16 add fp16 fp16fml FP_ARMv8 DOTPROD
+ option crypto add FP_ARMv8 CRYPTO DOTPROD
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+end arch armv8.4-a
 
 begin arch armv8-m.base
  tune for cortex-m23
  base 8M_BASE
+ profile M
  isa ARMv8m_base
 end arch armv8-m.base
 
@@ -277,28 +573,44 @@ begin arch armv8-m.main
  tune for cortex-m7
  tune flags CO_PROC
  base 8M_MAIN
+ profile M
  isa ARMv8m_main
+ option dsp add armv7em
+# fp => FPv5-sp-d16; fp.dp => FPv5-d16
+ option fp add FPv5
+ option fp.dp add FPv5 FP_DBL
+ option nofp remove ALL_FP
+ option nodsp remove armv7em
 end arch armv8-m.main
 
-begin arch armv8-m.main+dsp
- tune for cortex-m33
+begin arch armv8-r
+ tune for cortex-r52
  tune flags CO_PROC
- base 8M_MAIN
- isa ARMv8m_main bit_ARMv7em
-end arch armv8-m.main+dsp
+ base 8R
+ profile R
+ isa ARMv8r
+ option crc add crc32
+# fp.sp => fp-armv8 (d16); simd => simd + fp-armv8 + d32 + double precision
+# note: no fp option for fp-armv8 (d16) + double precision at the moment
+ option fp.sp add FPv5
+ option simd add FP_ARMv8 NEON
+ option crypto add FP_ARMv8 CRYPTO
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+end arch armv8-r
 
 begin arch iwmmxt
  tune for iwmmxt
  tune flags LDSCHED STRONG XSCALE
  base 5TE
- isa ARMv5te bit_xscale bit_iwmmxt
+ isa ARMv5te xscale iwmmxt
 end arch iwmmxt
 
 begin arch iwmmxt2
  tune for iwmmxt2
  tune flags LDSCHED STRONG XSCALE
  base 5TE
- isa ARMv5te bit_xscale bit_iwmmxt bit_iwmmxt2
+ isa ARMv5te xscale iwmmxt iwmmxt2
 end arch iwmmxt2
 
 # CPU entries
@@ -308,164 +620,29 @@ end arch iwmmxt2
 #   [tune for <cpu-name>]
 #   [tune flags <list>]
 #   architecture <name>
-#   [fpu <name>]
 #   [isa <additional-isa-flags-list>]
+#   [option <name> add|remove <isa-list>]*
+#   [optalias <name> <optname>]*
 #   [costs <name>]
+#   [vendor <vendor-id>
+#    [part <part-id> [minrev [maxrev]]]
 # end cpu <name>
 #
 # If omitted, cname is formed from transforming the cpuname to convert
 # non-valid punctuation characters to '_'.
 # If specified, tune for specifies a CPU target to use for tuning this core.
 # isa flags are appended to those defined by the architecture.
-
-
-# V2/V2A Architecture Processors
-begin cpu arm2
- tune flags CO_PROC NO_MODE32
- architecture armv2
- costs slowmul
-end cpu arm2
-
-begin cpu arm250
- tune flags CO_PROC NO_MODE32
- architecture armv2
- costs slowmul
-end cpu arm250
-
-begin cpu arm3
- tune flags CO_PROC NO_MODE32
- architecture armv2
- costs slowmul
-end cpu arm3
-
-
-# V3 Architecture Processors
-begin cpu arm6
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm6
-
-begin cpu arm60
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm60
-
-begin cpu arm600
- tune flags CO_PROC WBUF
- architecture armv3
- costs slowmul
-end cpu arm600
-
-begin cpu arm610
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm610
-
-begin cpu arm620
- tune flags CO_PROC WBUF
- architecture armv3
- costs slowmul
-end cpu arm620
-
-begin cpu arm7
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm7
-
-begin cpu arm7d
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm7d
-
-begin cpu arm7di
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm7di
-
-begin cpu arm70
- tune flags CO_PROC
- architecture armv3
- costs slowmul
-end cpu arm70
-
-begin cpu arm700
- tune flags CO_PROC WBUF
- architecture armv3
- costs slowmul
-end cpu arm700
-
-begin cpu arm700i
- tune flags CO_PROC WBUF
- architecture armv3
- costs slowmul
-end cpu arm700i
-
-begin cpu arm710
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm710
-
-begin cpu arm720
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm720
-
-begin cpu arm710c
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm710c
-
-begin cpu arm7100
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm7100
-
-begin cpu arm7500
- tune flags WBUF
- architecture armv3
- costs slowmul
-end cpu arm7500
-
-# Doesn't have an external co-proc, but does have embedded FPA
-# (the FPA part is no-longer supported).
-begin cpu arm7500fe
- tune flags CO_PROC WBUF
- architecture armv3
- costs slowmul
-end cpu arm7500fe
-
-
-# V3M Architecture Processors
-# arm7m doesn't exist on its own, but only with "D", (and "I"), but
-# those don't alter the code, so arm7m is sometimes used.
-begin cpu arm7m
- tune flags CO_PROC
- architecture armv3m
- costs fastmul
-end cpu arm7m
-
-begin cpu arm7dm
- tune flags CO_PROC
- architecture armv3m
- costs fastmul
-end cpu arm7dm
-
-begin cpu arm7dmi
- tune flags CO_PROC
- architecture armv3m
- costs fastmul
-end cpu arm7dmi
-
+# Each add option must have a distinct feature set and each remove
+# option must similarly have a distinct feature set.  Option aliases can be
+# added with the optalias statement.
+# Vendor, part and revision information is used for native CPU and architecture
+# detection.  All values must be in hex (lower case) with the leading '0x'
+# omitted.  For example the cortex-a9 will have vendor 41 and part c09.
+# Revision information is used to match a subrange of part
+# revisions: minrev <= detected <= maxrev.
+# If a minrev or maxrev are omitted then minrev defaults to zero and maxrev
+# to infinity.
+# Revision information is not implemented yet; no part uses it.
 
 # V4 Architecture Processors
 begin cpu arm8
@@ -593,6 +770,7 @@ end cpu ep9312
 
 
 # V5T Architecture Processors
+# These used VFPv1 which isn't supported by GCC
 begin cpu arm10tdmi
  tune flags LDSCHED
  architecture armv5t
@@ -609,53 +787,60 @@ end cpu arm1020t
 # V5TE Architecture Processors
 begin cpu arm9e
  tune flags LDSCHED
- architecture armv5te
+ architecture armv5te+fp
+ option nofp remove ALL_FP
  costs 9e
 end cpu arm9e
 
 begin cpu arm946e-s
  cname arm946es
  tune flags LDSCHED
- architecture armv5te
+ architecture armv5te+fp
+ option nofp remove ALL_FP
  costs 9e
 end cpu arm946e-s
 
 begin cpu arm966e-s
  cname arm966es
  tune flags LDSCHED
- architecture armv5te
+ architecture armv5te+fp
+ option nofp remove ALL_FP
  costs 9e
 end cpu arm966e-s
 
 begin cpu arm968e-s
  cname arm968es
  tune flags LDSCHED
- architecture armv5te
+ architecture armv5te+fp
+ option nofp remove ALL_FP
  costs 9e
 end cpu arm968e-s
 
 begin cpu arm10e
  tune flags LDSCHED
- architecture armv5te
+ architecture armv5te+fp
+ option nofp remove ALL_FP
  costs fastmul
 end cpu arm10e
 
 begin cpu arm1020e
  tune flags LDSCHED
- architecture armv5te
+ architecture armv5te+fp
+ option nofp remove ALL_FP
  costs fastmul
 end cpu arm1020e
 
 begin cpu arm1022e
  tune flags LDSCHED
- architecture armv5te
+ architecture armv5te+fp
+ option nofp remove ALL_FP
  costs fastmul
 end cpu arm1022e
 
 begin cpu xscale
  tune flags LDSCHED XSCALE
  architecture armv5te
- isa bit_xscale
+ isa xscale
  costs xscale
 end cpu xscale
 
@@ -700,15 +885,21 @@ end cpu fa726te
 begin cpu arm926ej-s
  cname arm926ejs
  tune flags LDSCHED
- architecture armv5tej
+ architecture armv5tej+fp
+ option nofp remove ALL_FP
  costs 9e
+ vendor 41
+ part 926
 end cpu arm926ej-s
 
 begin cpu arm1026ej-s
  cname arm1026ejs
  tune flags LDSCHED
- architecture armv5tej
+ architecture armv5tej+fp
+ option nofp remove ALL_FP
  costs 9e
+ vendor 41
+ part a26
 end cpu arm1026ej-s
 
 
@@ -723,9 +914,10 @@ end cpu arm1136j-s
 begin cpu arm1136jf-s
  cname arm1136jfs
  tune flags LDSCHED
- architecture armv6j
- fpu vfpv2
+ architecture armv6j+fp
  costs 9e
+ vendor 41
+ part b36
 end cpu arm1136jf-s
 
 begin cpu arm1176jz-s
@@ -738,9 +930,10 @@ end cpu arm1176jz-s
 begin cpu arm1176jzf-s
  cname arm1176jzfs
  tune flags LDSCHED
- architecture armv6kz
- fpu vfpv2
+ architecture armv6kz+fp
  costs 9e
+ vendor 41
+ part b76
 end cpu arm1176jzf-s
 
 begin cpu mpcorenovfp
@@ -751,9 +944,10 @@ end cpu mpcorenovfp
 
 begin cpu mpcore
  tune flags LDSCHED
- architecture armv6k
- fpu vfpv2
+ architecture armv6k+fp
  costs 9e
+ vendor 41
+ part b02
 end cpu mpcore
 
 begin cpu arm1156t2-s
@@ -766,9 +960,10 @@ end cpu arm1156t2-s
 begin cpu arm1156t2f-s
  cname arm1156t2fs
  tune flags LDSCHED
- architecture armv6t2
- fpu vfpv2
+ architecture armv6t2+fp
  costs v6t2
+ vendor 41
+ part b56
 end cpu arm1156t2f-s
 
 
@@ -776,21 +971,25 @@ end cpu arm1156t2f-s
 begin cpu cortex-m1
  cname cortexm1
  tune flags LDSCHED
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
+ vendor 41
+ part c21
 end cpu cortex-m1
 
 begin cpu cortex-m0
  cname cortexm0
  tune flags LDSCHED
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
+ vendor 41
+ part c20
 end cpu cortex-m0
 
 begin cpu cortex-m0plus
  cname cortexm0plus
  tune flags LDSCHED
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
 end cpu cortex-m0plus
 
@@ -800,7 +999,7 @@ begin cpu cortex-m1.small-multiply
  cname cortexm1smallmultiply
  tune for cortex-m1
  tune flags LDSCHED SMALLMUL
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
 end cpu cortex-m1.small-multiply
 
@@ -808,7 +1007,7 @@ begin cpu cortex-m0.small-multiply
  cname cortexm0smallmultiply
  tune for cortex-m0
  tune flags LDSCHED SMALLMUL
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
 end cpu cortex-m0.small-multiply
 
@@ -816,7 +1015,7 @@ begin cpu cortex-m0plus.small-multiply
  cname cortexm0plussmallmultiply
  tune for cortex-m0plus
  tune flags LDSCHED SMALLMUL
- architecture armv6-m
+ architecture armv6s-m
  costs v6m
 end cpu cortex-m0plus.small-multiply
 
@@ -825,58 +1024,95 @@ end cpu cortex-m0plus.small-multiply
 begin cpu generic-armv7-a
  cname genericv7a
  tune flags LDSCHED
- architecture armv7-a
+ architecture armv7-a+fp
+ option vfpv3-d16 add VFPv3 FP_DBL
+ option vfpv3 add VFPv3 FP_D32
+ option vfpv3-d16-fp16 add VFPv3 FP_DBL fp16conv
+ option vfpv3-fp16 add VFPv3 FP_D32 fp16conv
+ option vfpv4-d16 add VFPv4 FP_DBL
+ option vfpv4 add VFPv4 FP_D32
+ option simd add VFPv3 NEON
+ optalias neon simd
+ optalias neon-vfpv3 simd
+ option neon-fp16 add VFPv3 NEON fp16conv
+ option neon-vfpv4 add VFPv4 NEON
+ option nosimd remove ALL_SIMD
+ option nofp remove ALL_FP
  costs cortex
 end cpu generic-armv7-a
 
 begin cpu cortex-a5
  cname cortexa5
  tune flags LDSCHED
- architecture armv7-a
+ architecture armv7-a+neon-fp16
+ option nosimd remove ALL_SIMD
+ option nofp remove ALL_FP
  costs cortex_a5
+ vendor 41
+ part c05
 end cpu cortex-a5
 
 begin cpu cortex-a7
  cname cortexa7
  tune flags LDSCHED
- architecture armv7ve
+ architecture armv7ve+simd
+ option nosimd remove ALL_SIMD
+ option nofp remove ALL_FP
  costs cortex_a7
+ vendor 41
+ part c07
 end cpu cortex-a7
 
 begin cpu cortex-a8
  cname cortexa8
  tune flags LDSCHED
- architecture armv7-a
+ architecture armv7-a+simd
+ option nofp remove ALL_FP
  costs cortex_a8
+ vendor 41
+ part c08
 end cpu cortex-a8
 
 begin cpu cortex-a9
  cname cortexa9
  tune flags LDSCHED
- architecture armv7-a
+ architecture armv7-a+neon-fp16
+ option nosimd remove ALL_SIMD
+ option nofp remove ALL_FP
  costs cortex_a9
+ vendor 41
+ part c09
 end cpu cortex-a9
 
 begin cpu cortex-a12
  cname cortexa12
  tune for cortex-a17
  tune flags LDSCHED
- architecture armv7ve
+ architecture armv7ve+simd
+ option nofp remove ALL_FP
  costs cortex_a12
+ vendor 41
+ part c0d
 end cpu cortex-a12
 
 begin cpu cortex-a15
  cname cortexa15
  tune flags LDSCHED
- architecture armv7ve
+ architecture armv7ve+simd
+ option nofp remove ALL_FP
  costs cortex_a15
+ vendor 41
+ part c0f
 end cpu cortex-a15
 
 begin cpu cortex-a17
  cname cortexa17
  tune flags LDSCHED
- architecture armv7ve
+ architecture armv7ve+simd
+ option nofp remove ALL_FP
  costs cortex_a12
+ vendor 41
+ part c0e
 end cpu cortex-a17
 
 begin cpu cortex-r4
@@ -889,48 +1125,62 @@ end cpu cortex-r4
 begin cpu cortex-r4f
  cname cortexr4f
  tune flags LDSCHED
- architecture armv7-r
+ architecture armv7-r+fp
  costs cortex
+ vendor 41
+ part c14
 end cpu cortex-r4f
 
 begin cpu cortex-r5
  cname cortexr5
  tune flags LDSCHED
- architecture armv7-r
- isa bit_adiv
+ architecture armv7-r+idiv+fp
+ option nofp.dp remove FP_DBL
+ option nofp remove ALL_FP
  costs cortex
+ vendor 41
+ part c15
 end cpu cortex-r5
 
 begin cpu cortex-r7
  cname cortexr7
  tune flags LDSCHED
- architecture armv7-r
- isa bit_adiv
+ architecture armv7-r+idiv+fp
+ option nofp remove ALL_FP
  costs cortex
+ vendor 41
+ part c17
 end cpu cortex-r7
 
 begin cpu cortex-r8
  cname cortexr8
  tune for cortex-r7
  tune flags LDSCHED
- architecture armv7-r
- isa bit_adiv
+ architecture armv7-r+idiv+fp
+ option nofp remove ALL_FP
  costs cortex
+ vendor 41
+ part c18
 end cpu cortex-r8
 
 begin cpu cortex-m7
  cname cortexm7
  tune flags LDSCHED
- architecture armv7e-m
+ architecture armv7e-m+fp.dp
  isa quirk_no_volatile_ce
+ option nofp.dp remove FP_DBL
+ option nofp remove ALL_FP
  costs cortex_m7
 end cpu cortex-m7
 
 begin cpu cortex-m4
  cname cortexm4
  tune flags LDSCHED
- architecture armv7e-m
+ architecture armv7e-m+fp
+ option nofp remove ALL_FP
  costs v7m
+ vendor 41
+ part c24
 end cpu cortex-m4
 
 begin cpu cortex-m3
@@ -939,6 +1189,8 @@ begin cpu cortex-m3
  architecture armv7-m
  isa quirk_cm3_ldrd
  costs v7m
+ vendor 41
+ part c23
 end cpu cortex-m3
 
 begin cpu marvell-pj4
@@ -953,7 +1205,8 @@ begin cpu cortex-a15.cortex-a7
  cname cortexa15cortexa7
  tune for cortex-a7
  tune flags LDSCHED
- architecture armv7ve
+ architecture armv7ve+simd
+ option nofp remove ALL_FP
  costs cortex_a15
 end cpu cortex-a15.cortex-a7
 
@@ -961,7 +1214,8 @@ begin cpu cortex-a17.cortex-a7
  cname cortexa17cortexa7
  tune for cortex-a7
  tune flags LDSCHED
- architecture armv7ve
+ architecture armv7ve+simd
+ option nofp remove ALL_FP
  costs cortex_a12
 end cpu cortex-a17.cortex-a7
 
@@ -971,82 +1225,91 @@ begin cpu cortex-a32
  cname cortexa32
  tune for cortex-a53
  tune flags LDSCHED
- architecture armv8-a+crc
+ architecture armv8-a+crc+simd
+ option crypto add FP_ARMv8 CRYPTO
+ option nofp remove ALL_FP
  costs cortex_a35
+ vendor 41
+ part d01
 end cpu cortex-a32
 
 begin cpu cortex-a35
  cname cortexa35
  tune for cortex-a53
  tune flags LDSCHED
- architecture armv8-a+crc
+ architecture armv8-a+crc+simd
+ option crypto add FP_ARMv8 CRYPTO
+ option nofp remove ALL_FP
  costs cortex_a35
+ vendor 41
+ part d04
 end cpu cortex-a35
 
 begin cpu cortex-a53
  cname cortexa53
  tune flags LDSCHED
- architecture armv8-a+crc
+ architecture armv8-a+crc+simd
+ option crypto add FP_ARMv8 CRYPTO
+ option nofp remove ALL_FP
  costs cortex_a53
+ vendor 41
+ part d03
 end cpu cortex-a53
 
 begin cpu cortex-a57
  cname cortexa57
  tune flags LDSCHED
- architecture armv8-a+crc
+ architecture armv8-a+crc+simd
+ option crypto add FP_ARMv8 CRYPTO
  costs cortex_a57
+ vendor 41
+ part d07
 end cpu cortex-a57
 
 begin cpu cortex-a72
  cname cortexa72
  tune for cortex-a57
  tune flags LDSCHED
- architecture armv8-a+crc
+ architecture armv8-a+crc+simd
+ option crypto add FP_ARMv8 CRYPTO
  costs cortex_a57
+ vendor 41
+ part d08
 end cpu cortex-a72
 
 begin cpu cortex-a73
  cname cortexa73
  tune for cortex-a57
  tune flags LDSCHED
- architecture armv8-a+crc
+ architecture armv8-a+crc+simd
+ option crypto add FP_ARMv8 CRYPTO
  costs cortex_a73
+ vendor 41
+ part d09
 end cpu cortex-a73
 
 begin cpu exynos-m1
  cname exynosm1
  tune flags LDSCHED
- architecture armv8-a+crc
+ architecture armv8-a+crc+simd
+ option crypto add FP_ARMv8 CRYPTO
  costs exynosm1
 end cpu exynos-m1
 
-begin cpu falkor
- tune for cortex-a57
- tune flags LDSCHED
- architecture armv8-a+crc
- costs qdf24xx
-end cpu falkor
-
-begin cpu qdf24xx
- tune for cortex-a57
- tune flags LDSCHED
- architecture armv8-a+crc
- costs qdf24xx
-end cpu qdf24xx
-
 begin cpu xgene1
  tune flags LDSCHED
- architecture armv8-a
+ architecture armv8-a+simd
+ option crypto add FP_ARMv8 CRYPTO
  costs xgene1
 end cpu xgene1
-
 
 # V8 A-profile big.LITTLE implementations
 begin cpu cortex-a57.cortex-a53
  cname cortexa57cortexa53
  tune for cortex-a53
  tune flags LDSCHED
- architecture armv8-a+crc
+ architecture armv8-a+crc+simd
+ option crypto add FP_ARMv8 CRYPTO
  costs cortex_a57
 end cpu cortex-a57.cortex-a53
 
@@ -1054,7 +1317,8 @@ begin cpu cortex-a72.cortex-a53
  cname cortexa72cortexa53
  tune for cortex-a53
  tune flags LDSCHED
- architecture armv8-a+crc
+ architecture armv8-a+crc+simd
+ option crypto add FP_ARMv8 CRYPTO
  costs cortex_a57
 end cpu cortex-a72.cortex-a53
 
@@ -1062,7 +1326,8 @@ begin cpu cortex-a73.cortex-a35
  cname cortexa73cortexa35
  tune for cortex-a53
  tune flags LDSCHED
- architecture armv8-a+crc
+ architecture armv8-a+crc+simd
+ option crypto add FP_ARMv8 CRYPTO
  costs cortex_a73
 end cpu cortex-a73.cortex-a35
 
@@ -1070,10 +1335,65 @@ begin cpu cortex-a73.cortex-a53
  cname cortexa73cortexa53
  tune for cortex-a53
  tune flags LDSCHED
- architecture armv8-a+crc
+ architecture armv8-a+crc+simd
+ option crypto add FP_ARMv8 CRYPTO
  costs cortex_a73
 end cpu cortex-a73.cortex-a53
 
+
+# ARMv8.2 A-profile Architecture Processors
+begin cpu cortex-a55
+ cname cortexa55
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod+simd
+ option crypto add FP_ARMv8 CRYPTO
+ option nofp remove ALL_FP
+ costs cortex_a53
+ vendor 41
+ part d05
+end cpu cortex-a55
+
+begin cpu cortex-a75
+ cname cortexa75
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod+simd
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a73
+ vendor 41
+ part d0a
+end cpu cortex-a75
+
+begin cpu cortex-a76
+ cname cortexa76
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod+simd
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+ vendor 41
+ part d0b
+end cpu cortex-a76
+
+# ARMv8.2 A-profile ARM DynamIQ big.LITTLE implementations
+begin cpu cortex-a75.cortex-a55
+ cname cortexa75cortexa55
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod+simd
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a73
+end cpu cortex-a75.cortex-a55
+
+begin cpu cortex-a76.cortex-a55
+ cname cortexa76cortexa55
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod+simd
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+end cpu cortex-a76.cortex-a55
 
 # V8 M-profile implementations.
 begin cpu cortex-m23
@@ -1086,9 +1406,22 @@ end cpu cortex-m23
 begin cpu cortex-m33
  cname cortexm33
  tune flags LDSCHED
- architecture armv8-m.main+dsp
+ architecture armv8-m.main+dsp+fp
+ option nofp remove ALL_FP
+ option nodsp remove armv7em
  costs v7m
 end cpu cortex-m33
+
+# V8 R-profile implementations.
+begin cpu cortex-r52
+ cname cortexr52
+ tune flags LDSCHED
+ architecture armv8-r+crc+simd
+ option nofp.dp remove FP_DBL ALL_SIMD
+ costs cortex
+ vendor 41
+ part d13
+end cpu cortex-r52
 
 # FPU entries
 # format:
@@ -1109,7 +1442,7 @@ begin fpu vfpv3
 end fpu vfpv3
 
 begin fpu vfpv3-fp16
- isa VFPv3 FP_D32 bit_fp16conv
+ isa VFPv3 FP_D32 fp16conv
 end fpu vfpv3-fp16
 
 begin fpu vfpv3-d16
@@ -1117,7 +1450,7 @@ begin fpu vfpv3-d16
 end fpu vfpv3-d16
 
 begin fpu vfpv3-d16-fp16
- isa VFPv3 FP_DBL bit_fp16conv
+ isa VFPv3 FP_DBL fp16conv
 end fpu vfpv3-d16-fp16
 
 begin fpu vfpv3xd
@@ -1125,7 +1458,7 @@ begin fpu vfpv3xd
 end fpu vfpv3xd
 
 begin fpu vfpv3xd-fp16
- isa VFPv3 bit_fp16conv
+ isa VFPv3 fp16conv
 end fpu vfpv3xd-fp16
 
 begin fpu neon
@@ -1137,7 +1470,7 @@ begin fpu neon-vfpv3
 end fpu neon-vfpv3
 
 begin fpu neon-fp16
- isa VFPv3 NEON bit_fp16conv
+ isa VFPv3 NEON fp16conv
 end fpu neon-fp16
 
 begin fpu vfpv4
@@ -1165,7 +1498,7 @@ begin fpu fpv5-d16
 end fpu fpv5-d16
 
 begin fpu fp-armv8
- isa FP_ARMv8 FP_D32
+ isa FP_ARMv8
 end fpu fp-armv8
 
 begin fpu neon-fp-armv8

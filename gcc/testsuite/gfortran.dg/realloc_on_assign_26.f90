@@ -7,6 +7,6 @@ program test
   name="./a.out"
   if (index(name,"/")  /=  0) THEN
     name=name(3:)
-    if (name .ne. "a.out") call abort
+    if (name .ne. "a.out") STOP 1
   endif
 end program

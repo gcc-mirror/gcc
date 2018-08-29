@@ -7,8 +7,8 @@ PROGRAM test
     character(30) :: astring
     WRITE(astring, 10) i
  10 FORMAT('i =',I2:' this should not print')
-    if (astring.ne."i = 1") call abort
+    if (astring.ne."i = 1") STOP 1
     write(astring, 20) i, i
  20 format('i =',I2:' this should print',I2)
-    if (astring.ne."i = 1 this should print 1") call abort
+    if (astring.ne."i = 1 this should print 1") STOP 2
 END PROGRAM test

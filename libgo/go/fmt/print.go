@@ -172,6 +172,13 @@ func (p *pp) Write(b []byte) (ret int, err error) {
 	return len(b), nil
 }
 
+// Implement WriteString so that we can call io.WriteString
+// on a pp (through state), for efficiency.
+func (p *pp) WriteString(s string) (ret int, err error) {
+	p.buf.WriteString(s)
+	return len(s), nil
+}
+
 // These routines end in 'f' and take a format string.
 
 // Fprintf formats according to a format specifier and writes to w.
@@ -684,8 +691,6 @@ func (p *pp) printArg(arg interface{}, verb rune) {
 	}
 }
 
-var byteType = reflect.TypeOf(byte(0))
-
 // printValue is similar to printArg but starts with a reflect value, not an interface{} value.
 // It does not handle 'p' and 'T' verbs because these should have been already handled by printArg.
 func (p *pp) printValue(value reflect.Value, verb rune, depth int) {
@@ -839,7 +844,7 @@ func (p *pp) printValue(value reflect.Value, verb rune, depth int) {
 			p.buf.WriteByte(']')
 		}
 	case reflect.Ptr:
-		// pointer to array or slice or struct?  ok at top level
+		// pointer to array or slice or struct? ok at top level
 		// but not embedded (avoid loops)
 		if depth == 0 && f.Pointer() != 0 {
 			switch a := f.Elem(); a.Kind() {
@@ -1069,8 +1074,11 @@ formatLoop:
 			break
 		}
 
-		verb, w := utf8.DecodeRuneInString(format[i:])
-		i += w
+		verb, size := rune(format[i]), 1
+		if verb >= utf8.RuneSelf {
+			verb, size = utf8.DecodeRuneInString(format[i:])
+		}
+		i += size
 
 		switch {
 		case verb == '%': // Percent does not absorb operands and ignores f.wid and f.prec.

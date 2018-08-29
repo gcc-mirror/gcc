@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.  */
+/* Copyright (C) 2000-2017 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 /* { dg-options "-pedantic -std=gnu99" } */
@@ -21,14 +21,14 @@
 
 #define ;			/* { dg-error "identifier" } */
 #define SEMI;			/* { dg-warning "space" } */
-#define foo(X			/* { dg-error "missing" } */
+#define foo(X			/* { dg-error "expected" } */
 #define foo\
 (X,)				/* { dg-error "parameter name" } */
 #define foo(, X)		/* { dg-error "parameter name" } */
 #define foo(X, X)		/* { dg-error "duplicate" } */
-#define foo(X Y)		/* { dg-error "comma" } */
-#define foo(()			/* { dg-error "may not appear" } */
-#define foo(..., X)		/* { dg-error "missing" } */
+#define foo(X Y)		/* { dg-error "expected" } */
+#define foo(()			/* { dg-error "parameter name" } */
+#define foo(..., X)		/* { dg-error "expected" } */
 #define foo \
 __VA_ARGS__			/* { dg-warning "__VA_ARGS__" } */
 #define goo(__VA_ARGS__)	/* { dg-warning "__VA_ARGS__" } */
@@ -51,15 +51,15 @@ one(ichi\
 two(ichi)			/* { dg-error "requires 2" } */
 var0()				/* OK.  */
 var0(ichi)			/* OK.  */
-var1()				/* { dg-warning "requires at least one" } */
-var1(ichi)			/* { dg-warning "requires at least one" } */
+var1()				/* { dg-bogus "requires at least one" } */
+var1(ichi)			/* { dg-bogus "requires at least one" } */
 var1(ichi, ni)			/* OK.  */
 
 /* This tests two oddities of GNU rest args - omitting a comma is OK,
    and backtracking a token on pasting an empty rest args.  */
 #define rest(x, y...) x ## y	/* { dg-warning "ISO C" } */
 rest(ichi,)			/* OK.  */
-rest(ichi)			/* { dg-warning "requires at least one" } */
+rest(ichi)			/* { dg-bogus "requires at least one" } */
 #if 23 != rest(2, 3)		/* OK, no warning.  */
 #error 23 != 23 !!
 #endif

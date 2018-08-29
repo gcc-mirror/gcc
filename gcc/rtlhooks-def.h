@@ -1,5 +1,5 @@
 /* Default macros to initialize an rtl_hooks data structure.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,13 +38,11 @@ along with GCC; see the file COPYING3.  If not see
 }
 
 extern rtx gen_lowpart_general (machine_mode, rtx);
-extern rtx reg_nonzero_bits_general (const_rtx, machine_mode, const_rtx,
-				     machine_mode,
-				     unsigned HOST_WIDE_INT,
+extern rtx reg_nonzero_bits_general (const_rtx, scalar_int_mode,
+				     scalar_int_mode,
 				     unsigned HOST_WIDE_INT *);
-extern rtx reg_num_sign_bit_copies_general (const_rtx, machine_mode, const_rtx,
-					    machine_mode,
-					    unsigned int, unsigned int *);
+extern rtx reg_num_sign_bit_copies_general (const_rtx, scalar_int_mode,
+					    scalar_int_mode, unsigned int *);
 extern bool reg_truncated_to_mode_general (machine_mode, const_rtx);
 
 #endif /* GCC_RTL_HOOKS_DEF_H */

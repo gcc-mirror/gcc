@@ -1,6 +1,6 @@
 /* Machine settings for software floating-point emulation
    of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GNU C Library.
@@ -75,6 +75,25 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
       }								\
     R##_c = FP_CLS_NAN;						\
   } while (0)
+
+#ifdef NDS32_ABI_2FP_PLUS
+#define FP_RND_NEAREST		0x0
+#define FP_RND_PINF		0x1
+#define FP_RND_MINF		0x2
+#define FP_RND_ZERO		0x3
+#define FP_RND_MASK		0x3
+
+#define _FP_DECL_EX \
+  unsigned long int _fcsr __attribute__ ((unused)) = FP_RND_NEAREST
+
+#define FP_INIT_ROUNDMODE			\
+  do {						\
+    _fcsr = __builtin_nds32_fmfcsr ();		\
+  } while (0)
+
+#define FP_ROUNDMODE (_fcsr & FP_RND_MASK)
+
+#endif
 
 /* Not checked.  */
 #define _FP_TININESS_AFTER_ROUNDING 0

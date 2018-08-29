@@ -10,7 +10,7 @@ int foo(int x, int y, unsigned u)
 {
   /* A *_DIV_EXPR is non-negative if both operands are.  */
 
-  if (u < ((x=-22)/33)) /* { dg-warning "signed and unsigned" "DIV_EXPR" } */
+  if (u < ((x=-22)/33)) /* { dg-warning "different signedness" "DIV_EXPR" } */
     return x;
 
   if (u < ((x=22)/33))
@@ -25,7 +25,7 @@ int foo(int x, int y, unsigned u)
 
   /* A *_MOD_EXPR is non-negative if the first operand is.  */
 
-  if (u < ((x=-22)%33)) /* { dg-warning "signed and unsigned" "MOD_EXPR" } */
+  if (u < ((x=-22)%33)) /* { dg-warning "different signedness" "MOD_EXPR" } */
     return x;
 
   if (u < ((x=22)%-33))

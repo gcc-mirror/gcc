@@ -17,11 +17,11 @@ contains
     integer, dimension (3:) :: values
     integer :: order, i
 
-    if (size (values, dim = 1) .ne. order * 3) call abort
+    if (size (values, dim = 1) .ne. order * 3) STOP 1
     do i = 1, order
-      if (values (i * 3) .ne. i) call abort
-      if (values (i * 3 + 1) .ne. i) call abort
-      if (values (i * 3 + 2) .ne. i * 2) call abort
+      if (values (i * 3) .ne. i) STOP 2
+      if (values (i * 3 + 1) .ne. i) STOP 3
+      if (values (i * 3 + 2) .ne. i * 2) STOP 4
     end do
   end subroutine test
 end program main

@@ -1,6 +1,6 @@
 /* GCC option-handling definitions for the Synopsys DesignWare ARC architecture.
 
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -24,7 +24,7 @@
 enum processor_type
 {
   PROCESSOR_NONE = 0,
-#define ARC_CPU(NAME, ARCH, FLAGS, TUNE)  PROCESSOR_##NAME,
+#define ARC_CPU(NAME, ARCH, FLAGS, EXTRA, TUNE)  PROCESSOR_##NAME,
 #include "arc-cpus.def"
 #undef ARC_CPU
   PROCESSOR_generic

@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -fdump-tree-optimized-raw" } */
 
 int f(int a, int b, int c){
-  c |= 1; // c cannot be 0
+  if (c == 0) __builtin_unreachable();
   a *= c;
   b *= c;
   return a == b;

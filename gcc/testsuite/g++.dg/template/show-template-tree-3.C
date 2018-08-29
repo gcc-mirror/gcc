@@ -9,6 +9,7 @@
    for that in this case).  */
 
 // { dg-options "-fdiagnostics-show-template-tree" }
+// { dg-additional-options "-Wno-return-type" }
 
 #include <map>
 #include <vector>

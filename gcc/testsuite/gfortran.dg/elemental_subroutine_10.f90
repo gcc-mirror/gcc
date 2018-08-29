@@ -64,5 +64,5 @@ program main
   name = 'test'
   call ast%assertion_array_character ( name, 5 )
   call ast%write (line)
-  if (line(2:len (line)) .ne. "testtesttesttesttest") call abort
+  if (line(2:len (line)) .ne. "testtesttesttesttest") STOP 1
 end program main

@@ -39,7 +39,7 @@
      print*, 'adjustr(s1) = "', adjustr(s1(i)), '"'
      if (adjustr(s1(i)).ne.s2(i)) then
          print*,'fail'
-         call abort
+         STOP 1
      endif
   enddo
    

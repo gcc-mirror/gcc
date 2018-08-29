@@ -10,6 +10,7 @@ void my_unexpected() {
 
 template <class T> void foo(T) throw (T) { throw "Hi"; }	// { dg-warning "deprecated" "" { target c++11 } }
 
+int
 main() {
   std::set_unexpected (my_unexpected);
   try {

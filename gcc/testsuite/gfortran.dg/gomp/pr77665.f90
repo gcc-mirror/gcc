@@ -11,7 +11,7 @@ program pr77665
   !$omp declare reduction (+:t: omp_out%a = omp_out%a + omp_in%a)
   !$omp simd reduction(+:x)
   do i = 1, 8
-    if (abs(i) < 5) call abort
+    if (abs(i) < 5) STOP 1
     x%a = x%a + 1
   end do
   print *, x%a

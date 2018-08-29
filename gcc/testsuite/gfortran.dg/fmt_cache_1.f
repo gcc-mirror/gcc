@@ -24,10 +24,10 @@
       rewind 10
       teststring = ""
       read(10,'(a)') teststring
-      if (teststring.ne."   arlxca =   0.00000     arlxcc =")call abort
+      if (teststring.ne."   arlxca =   0.00000     arlxcc =")STOP 1
       teststring = ""
       read(10,'(a)') teststring
-      if (teststring.ne."   arlxca =   0.00000     arlxcc =")call abort
+      if (teststring.ne."   arlxca =   0.00000     arlxcc =")STOP 2
       close(10, status='delete')
       end program astap
 

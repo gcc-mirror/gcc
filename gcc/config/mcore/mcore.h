@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Motorola M*CORE Processor.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -148,12 +148,6 @@ extern char * mcore_current_function_name;
    is GET_MODE_SIZE(DImode).  */
 #define MAX_FIXED_MODE_SIZE 32
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
@@ -238,27 +232,6 @@ extern char * mcore_current_function_name;
 #define REG_ALLOC_ORDER  \
  /* r7  r6  r5  r4  r3  r2  r15 r14 r13 r12 r11 r10  r9  r8  r1  r0  ap  c   fp x19*/ \
   {  7,  6,  5,  4,  3,  2,  15, 14, 13, 12, 11, 10,  9,  8,  1,  0, 16, 17, 18, 19}
-
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On the MCore regs are UNITS_PER_WORD bits wide; */
-#define HARD_REGNO_NREGS(REGNO, MODE)  \
-   (((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   We may keep double values in even registers.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)  \
-  ((TARGET_8ALIGN && GET_MODE_SIZE (MODE) > UNITS_PER_WORD) ? (((REGNO) & 1) == 0) : (REGNO < 18))
-
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  ((MODE1) == (MODE2) || GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
 
 /* Definitions for register eliminations.
 
@@ -417,12 +390,6 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
 
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET  0
-
 /* If defined, the maximum amount of space required for outgoing arguments
    will be computed and placed into the variable
    `crtl->outgoing_args_size'.  No space will be pushed
@@ -569,9 +536,6 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    5-bits, so we can not define SHIFT_COUNT_TRUNCATED to true for this
    target.  */
 #define SHIFT_COUNT_TRUNCATED 0
-
-/* All integers have the same format so truncation is easy.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC,INPREC)  1
 
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
@@ -720,7 +684,7 @@ extern long mcore_current_compilation_timestamp;
   do								\
     {								\
       if (mcore_dllexport_name_p (NAME))			\
-	MCORE_EXPORT_NAME (FILE, NAME)				\
+	MCORE_EXPORT_NAME (FILE, NAME);				\
       if (! mcore_dllimport_name_p (NAME))			\
         {							\
           fputs ("\t.comm\t", FILE);				\

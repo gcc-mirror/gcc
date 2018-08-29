@@ -1,7 +1,7 @@
 /* Miscellaneous utilities for GIMPLE streaming.  Things that are used
    in both input and output are here.
 
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -43,6 +43,8 @@ static bool lto_obstack_initialized;
 const char *section_name_prefix = LTO_SECTION_NAME_PREFIX;
 /* Set when streaming LTO for offloading compiler.  */
 bool lto_stream_offload_p;
+
+FILE *streamer_dump_file;
 
 /* Return a string representing LTO tag TAG.  */
 

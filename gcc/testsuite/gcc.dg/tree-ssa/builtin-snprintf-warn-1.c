@@ -17,7 +17,7 @@ typedef struct
 char buffer[1024];
 #define buffer(size) (buffer + sizeof buffer - size)
 
-int value_range (int min, int max)
+static int value_range (int min, int max)
 {
   extern int value (void);
   int val = value ();

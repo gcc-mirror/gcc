@@ -1,0 +1,6 @@
+comma=,
+MULTILIB_OPTIONS = $(subst lp64,mabi=lp64,$(subst ilp32,mabi=ilp32,$(subst rv,march=rv,$(subst $(comma), ,$(TM_MULTILIB_CONFIG)))))
+MULTILIB_DIRNAMES = $(patsubst rv32%,lib32,$(patsubst rv64%,lib64,$(subst $(comma), ,$(TM_MULTILIB_CONFIG))))
+MULTILIB_OSDIRNAMES = $(subst lib,../lib,$(MULTILIB_DIRNAMES))
+MULTILIB_REQUIRED   = $(subst lp64,mabi=lp64,$(subst ilp32,mabi=ilp32,$(subst rv,march=rv,$(subst $(comma),/,$(TM_MULTILIB_CONFIG)))))
+MULTILIB_REUSE =

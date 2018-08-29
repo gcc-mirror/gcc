@@ -1,9 +1,11 @@
-/* { dg-do run { target openacc_nvidia_accel_selected } } */
-/* { dg-additional-options "-lcuda" } */
+/* { dg-do run } */
+/* { dg-additional-options "-lcuda" { target openacc_nvidia_accel_selected } } */
 
 #include <openacc.h>
 #include <stdlib.h>
+#if defined ACC_DEVICE_TYPE_nvidia
 #include "cuda.h"
+#endif
 
 #include <stdio.h>
 #include <sys/time.h>
@@ -11,14 +13,18 @@
 int
 main (int argc, char **argv)
 {
+#if defined ACC_DEVICE_TYPE_nvidia
     CUresult r;
     CUstream stream1;
+#endif
     int N = 128; //1024 * 1024;
     float *a, *b, *c, *d, *e;
     int i;
     int nbytes;
 
+#if defined ACC_DEVICE_TYPE_nvidia
     acc_init (acc_device_nvidia);
+#endif
 
     nbytes = N * sizeof (float);
 
@@ -210,6 +216,7 @@ main (int argc, char **argv)
     }
 
 
+#if defined ACC_DEVICE_TYPE_nvidia
     r = cuStreamCreate (&stream1, CU_STREAM_NON_BLOCKING);
     if (r != CUDA_SUCCESS)
     {
@@ -218,6 +225,7 @@ main (int argc, char **argv)
     }
 
     acc_set_cuda_stream (1, stream1);
+#endif
 
     for (i = 0; i < N; i++)
     {
@@ -642,6 +650,7 @@ main (int argc, char **argv)
     }
 
 
+#if defined ACC_DEVICE_TYPE_nvidia
     r = cuStreamCreate (&stream1, CU_STREAM_NON_BLOCKING);
     if (r != CUDA_SUCCESS)
     {
@@ -650,6 +659,7 @@ main (int argc, char **argv)
     }
 
     acc_set_cuda_stream (1, stream1);
+#endif
 
     for (i = 0; i < N; i++)
     {
@@ -892,7 +902,9 @@ main (int argc, char **argv)
             abort ();
     }
 
+#if defined ACC_DEVICE_TYPE_nvidia
     acc_shutdown (acc_device_nvidia);
+#endif
 
     return 0;
 }

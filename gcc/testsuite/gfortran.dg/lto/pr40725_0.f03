@@ -9,7 +9,7 @@ contains
     type(my_c_type_1) :: my_type
     integer(c_int), value :: expected_j
     if (my_type%j .ne. expected_j) then
-       call abort ()
+       STOP 1
     end if
   end subroutine sub0
 end module bind_c_dts_2

@@ -1,15 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_arch_v8m_base_ok } */
-/* { dg-add-options arm_arch_v8m_base } */
 /* { dg-options "-mcmse" } */
 
-int __attribute__ ((cmse_nonsecure_call)) (*bar) (float, double);
-
-int
-foo (int a)
-{
-  return bar (1.0f, 2.0) + a + 1;
-}
+#include "../cmse-13.x"
 
 /* Checks for saving and clearing prior to function call.  */
 /* { dg-final { scan-assembler "lsrs\tr4, r4, #1" } } */

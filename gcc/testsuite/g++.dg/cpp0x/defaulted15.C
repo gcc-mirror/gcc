@@ -48,8 +48,7 @@ struct F
 
 struct G: public F
 {
-  // Can't be const because F copy ctor isn't.
-  G(const G&) = default;	// { dg-error "const" }
+  G(const G&) = default;
 };
 
 struct H

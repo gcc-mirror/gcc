@@ -31,7 +31,7 @@ contains
     integer :: b(n)
 
     b = five(a, nonopt2=i, opt2=opt)
-    if (any(b /= 5)) call abort
+    if (any(b /= 5)) STOP 1
   end subroutine do_test
 
 end

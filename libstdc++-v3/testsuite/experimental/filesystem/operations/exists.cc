@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-lstdc++fs" }
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
@@ -28,16 +28,18 @@ using std::experimental::filesystem::path;
 void
 test01()
 {
-  VERIFY( exists(path{"/"}) );
-  VERIFY( exists(path{"/."}) );
+  const path root = __gnu_test::root_path();
+
+  VERIFY( exists(root) );
+  VERIFY( exists(root/".") );
   VERIFY( exists(path{"."}) );
   VERIFY( exists(path{".."}) );
   VERIFY( exists(std::experimental::filesystem::current_path()) );
 
   std::error_code ec = std::make_error_code(std::errc::invalid_argument);
-  VERIFY( exists(path{"/"}, ec) );
+  VERIFY( exists(root, ec) );
   VERIFY( !ec );
-  VERIFY( exists(path{"/."}, ec) );
+  VERIFY( exists(root/".", ec) );
   VERIFY( !ec );
   VERIFY( exists(path{"."}, ec) );
   VERIFY( !ec );

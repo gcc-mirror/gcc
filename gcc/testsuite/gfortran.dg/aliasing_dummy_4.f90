@@ -20,17 +20,17 @@ program  test_f90
 
     call test_sub(s%a(1, 1), 1000) ! Test the original problem.
 
-    if ( any (s(1, 1)%a(:, :) /= reshape ([1111, 112, 121, 122], [2, 2]))) call abort ()
-    if ( any (s(1, 2)%a(:, :) /= reshape ([1121, 122, 141, 142], [2, 2]))) call abort ()
-    if ( any (s(2, 1)%a(:, :) /= reshape ([1112, 114, 122, 124], [2, 2]))) call abort ()
-    if ( any (s(2, 2)%a(:, :) /= reshape ([1122, 124, 142, 144], [2, 2]))) call abort ()
+    if ( any (s(1, 1)%a(:, :) /= reshape ([1111, 112, 121, 122], [2, 2]))) STOP 1
+    if ( any (s(1, 2)%a(:, :) /= reshape ([1121, 122, 141, 142], [2, 2]))) STOP 2
+    if ( any (s(2, 1)%a(:, :) /= reshape ([1112, 114, 122, 124], [2, 2]))) STOP 3
+    if ( any (s(2, 2)%a(:, :) /= reshape ([1122, 124, 142, 144], [2, 2]))) STOP 4
 
     call test_sub(s(1, 1)%a(:, :), 1000)  ! Check "normal" references.
 
-    if ( any (s(1, 1)%a(:, :) /= reshape ([2111,1112,1121,1122], [2, 2]))) call abort ()
-    if ( any (s(1, 2)%a(:, :) /= reshape ([1121, 122, 141, 142], [2, 2]))) call abort ()
-    if ( any (s(2, 1)%a(:, :) /= reshape ([1112, 114, 122, 124], [2, 2]))) call abort ()
-    if ( any (s(2, 2)%a(:, :) /= reshape ([1122, 124, 142, 144], [2, 2]))) call abort ()
+    if ( any (s(1, 1)%a(:, :) /= reshape ([2111,1112,1121,1122], [2, 2]))) STOP 5
+    if ( any (s(1, 2)%a(:, :) /= reshape ([1121, 122, 141, 142], [2, 2]))) STOP 6
+    if ( any (s(2, 1)%a(:, :) /= reshape ([1112, 114, 122, 124], [2, 2]))) STOP 7
+    if ( any (s(2, 2)%a(:, :) /= reshape ([1122, 124, 142, 144], [2, 2]))) STOP 8
 contains
   subroutine test_sub(array, offset)
     integer array(:, :), offset

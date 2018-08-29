@@ -19,7 +19,7 @@ contains
     real :: diff, p(N)
     do i = 1, N
       diff = p(i) - (i + 2.0) * (i - 3.0)
-      if (diff > EPS .or. -diff > EPS) call abort
+      if (diff > EPS .or. -diff > EPS) STOP 1
     end do
   end subroutine
 
@@ -29,7 +29,7 @@ contains
     real :: p(N), v1(N), v2(N)
     call init (v1, v2, N)
     !$omp target if(N > THRESHOLD1) map(to: v1,v2) map(from: p)
-      if (omp_is_initial_device ()) call abort
+      if (omp_is_initial_device ()) STOP 2
       !$omp parallel do if(N > THRESHOLD2)
       do i = 1, N
         p(i) = v1(i) * v2(i)

@@ -57,4 +57,3 @@ contains
 end SUBMODULE foo_interface_daughter
 
 end
-! { dg-final { cleanup-submodules "foo_interface@foo_interface_daughter" } }

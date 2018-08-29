@@ -15,13 +15,13 @@ m(1,:) = (/ 1, 2, 3, 4 /)
 m(2,:) = (/ 5, 6, 0, 0 /)
 
 ! check that reshape does the right thing while constant folding
-if (any(i /= k)) call abort()
-if (any(j /= m)) call abort()
+if (any(i /= k)) STOP 1
+if (any(j /= m)) STOP 2
 
 ! check that reshape does the right thing at runtime
 n = reshape ((/1,2,3,4,5,6/), (/2,3/))
-if (any(n /= k)) call abort()
+if (any(n /= k)) STOP 3
 o = reshape ((/1,2,3,4,5,6/), (/2,4/), (/0,0/), (/2,1/))
-if (any(o /= m)) call abort()
+if (any(o /= m)) STOP 4
 end 
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,9 +55,9 @@ package body Get_Targ is
       return 8;
    end Get_Char_Size;
 
-   -----------------
-   -- Get_Wchar_T --
-   -----------------
+   ----------------------
+   -- Get_Wchar_T_Size --
+   ----------------------
 
    function Get_Wchar_T_Size return Pos is
    begin

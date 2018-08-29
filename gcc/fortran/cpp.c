@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -683,14 +683,14 @@ gfc_cpp_add_include_path (char *path, bool user_supplied)
      include path. Fortran does not define any system include paths.  */
   int cxx_aware = 0;
 
-  add_path (path, BRACKET, cxx_aware, user_supplied);
+  add_path (path, INC_BRACKET, cxx_aware, user_supplied);
 }
 
 void
 gfc_cpp_add_include_path_after (char *path, bool user_supplied)
 {
   int cxx_aware = 0;
-  add_path (path, AFTER, cxx_aware, user_supplied);
+  add_path (path, INC_AFTER, cxx_aware, user_supplied);
 }
 
 void
@@ -881,10 +881,7 @@ cb_file_change (cpp_reader * ARG_UNUSED (pfile), const line_map_ordinary *map)
 	{
 	  /* Bring current file to correct line when entering a new file.  */
 	  if (map->reason == LC_ENTER)
-	    {
-	      const line_map_ordinary *from = INCLUDED_FROM (line_table, map);
-	      maybe_print_line (LAST_SOURCE_LINE_LOCATION (from));
-	    }
+	    maybe_print_line (linemap_included_from (map));
 	  if (map->reason == LC_ENTER)
 	    flags = " 1";
 	  else if (map->reason == LC_LEAVE)
@@ -993,7 +990,7 @@ cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 static int
 dump_macro (cpp_reader *pfile, cpp_hashnode *node, void *v ATTRIBUTE_UNUSED)
 {
-  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
+  if (cpp_user_macro_p (node))
     {
       fputs ("#define ", print.outf);
       fputs ((const char *) cpp_macro_definition (pfile, node),

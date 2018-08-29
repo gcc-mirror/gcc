@@ -1,5 +1,5 @@
 /* Language-dependent hooks for C++.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-objcp-common.h"
 
 enum c_language_kind c_language = clk_cxx;
-static void cp_init_ts (void);
 static const char * cxx_dwarf_name (tree t, int verbosity);
 static enum classify_record cp_classify_record (tree type);
 static tree cp_eh_personality (void);
@@ -71,13 +70,18 @@ static tree cxx_enum_underlying_base_type (const_tree);
 #undef LANG_HOOKS_DWARF_NAME
 #define LANG_HOOKS_DWARF_NAME cxx_dwarf_name
 #undef LANG_HOOKS_INIT_TS
-#define LANG_HOOKS_INIT_TS cp_init_ts
+#define LANG_HOOKS_INIT_TS cp_common_init_ts
 #undef LANG_HOOKS_EH_PERSONALITY
 #define LANG_HOOKS_EH_PERSONALITY cp_eh_personality
 #undef LANG_HOOKS_EH_RUNTIME_TYPE
 #define LANG_HOOKS_EH_RUNTIME_TYPE build_eh_type_type
 #undef LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE cxx_enum_underlying_base_type
+
+#if CHECKING_P
+#undef LANG_HOOKS_RUN_LANG_SELFTESTS
+#define LANG_HOOKS_RUN_LANG_SELFTESTS selftest::run_cp_tests
+#endif /* #if CHECKING_P */
 
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -95,14 +99,6 @@ objcp_tsubst_copy_and_build (tree /*t*/,
 			     bool /*function_p*/)
 {
   return NULL_TREE;
-}
-
-static void
-cp_init_ts (void)
-{
-  cp_common_init_ts ();
-
-  init_shadowed_var_for_decl ();
 }
 
 static const char *
@@ -228,6 +224,27 @@ tree cxx_enum_underlying_base_type (const_tree type)
 
   return underlying_type;
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Implementation of LANG_HOOKS_RUN_LANG_SELFTESTS for the C++ frontend.  */
+
+void
+run_cp_tests (void)
+{
+  /* Run selftests shared within the C family.  */
+  c_family_tests ();
+
+  /* Additional C++-specific tests.  */
+  cp_pt_c_tests ();
+  cp_tree_c_tests ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */
 
 
 #include "gt-cp-cp-lang.h"

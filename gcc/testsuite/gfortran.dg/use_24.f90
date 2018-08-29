@@ -37,7 +37,7 @@ contains
   use mod1
   type(t1) :: a
   call a%get(j)
-  if (j /= 2) call abort
+  if (j /= 2) STOP 1
  end subroutine test1
 
  subroutine test2()
@@ -45,7 +45,7 @@ contains
   use mod2
   type(t1) :: a
   call a%get(j)
-  if (j /= 2) call abort
+  if (j /= 2) STOP 2
  end subroutine test2
 end
 

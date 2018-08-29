@@ -6,7 +6,7 @@
 
 procedure(integer),pointer :: p
 p => foo()
-if (p(-1)/=1) call abort
+if (p(-1)/=1) STOP 1
 contains
   function foo() result(bar)
     procedure(integer),pointer :: bar

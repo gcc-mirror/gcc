@@ -9,6 +9,6 @@ program readstrlist
   ver(1) = '285 383'
   ver(2) = '985'
   read( ver, *) a, b, c
-  if (a /= 285 .or. b /= 383 .or. c /= 985) call abort
+  if (a /= 285 .or. b /= 383 .or. c /= 985) STOP 1
   !write ( *, *) a, b, c
 end

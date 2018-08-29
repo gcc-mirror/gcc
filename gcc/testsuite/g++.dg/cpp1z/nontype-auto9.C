@@ -1,5 +1,5 @@
 // PR c++/79556
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template <auto> struct A;
 template <auto...> struct B;

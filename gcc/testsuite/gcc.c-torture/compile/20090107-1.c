@@ -1,3 +1,5 @@
+/* { dg-skip-if "Array too big" { "pdp11-*-*" } { "-mint32" } } */
+
 /* Verify that we don't ICE by forming invalid addresses for unaligned
    doubleword loads (originally for PPC64).  */
 

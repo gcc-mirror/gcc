@@ -59,9 +59,9 @@ main ()
   return 0;
 }
 
-/* { dg-final { gdb-test 31 "error" "0x12345670" } } */
-/* { dg-final { gdb-test 31 "frame->ip" "0x12345671" } } */
-/* { dg-final { gdb-test 31 "frame->cs" "0x12345672" } } */
-/* { dg-final { gdb-test 31 "frame->flags" "0x12345673" } } */
-/* { dg-final { gdb-test 31 "frame->sp" "0x12345674" } } */
-/* { dg-final { gdb-test 31 "frame->ss" "0x12345675" } } */
+/* { dg-final { gdb-test 33 "error" "0x12345670" } } */
+/* { dg-final { gdb-test 33 "frame->ip" "0x12345671" } } */
+/* { dg-final { gdb-test 33 "frame->cs" "0x12345672" } } */
+/* { dg-final { gdb-test 33 "frame->flags" "0x12345673" } } */
+/* { dg-final { gdb-test 33 "frame->sp" "0x12345674" } } */
+/* { dg-final { gdb-test 33 "frame->ss" "0x12345675" } } */

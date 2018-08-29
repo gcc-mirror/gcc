@@ -45,17 +45,6 @@ func (check *Checker) ident(x *operand, e *ast.Ident, def *Named, path []*TypeNa
 		delete(check.unusedDotImports[scope], pkg)
 	}
 
-	// Alias-related code. Keep for now.
-	// An alias stands for the original object; use that one instead.
-	// TODO(gri) We should be able to factor out the Typ[Invalid] test.
-	// if alias, _ := obj.(*Alias); alias != nil {
-	// 	obj = original(obj)
-	// 	if obj == nil || typ == Typ[Invalid] {
-	// 		return
-	// 	}
-	// 	assert(typ == obj.Type())
-	// }
-
 	switch obj := obj.(type) {
 	case *PkgName:
 		check.errorf(e.Pos(), "use of package %s not in selector", obj.name)
@@ -97,6 +86,9 @@ func (check *Checker) ident(x *operand, e *ast.Ident, def *Named, path []*TypeNa
 		}
 
 	case *Var:
+		// It's ok to mark non-local variables, but ignore variables
+		// from other packages to avoid potential race conditions with
+		// dot-imported variables.
 		if obj.pkg == check.pkg {
 			obj.used = true
 		}
@@ -154,6 +146,7 @@ func (check *Checker) typ(e ast.Expr) Type {
 // funcType type-checks a function or method type.
 func (check *Checker) funcType(sig *Signature, recvPar *ast.FieldList, ftyp *ast.FuncType) {
 	scope := NewScope(check.scope, token.NoPos, token.NoPos, "function")
+	scope.isFunc = true
 	check.recordScope(ftyp, scope)
 
 	recvList, _ := check.collectParams(scope, recvPar, false)
@@ -550,6 +543,9 @@ func (check *Checker) interfaceType(iface *Interface, ityp *ast.InterfaceType, d
 		}
 		iface.embeddeds = append(iface.embeddeds, named)
 		// collect embedded methods
+		if embed.allMethods == nil {
+			check.errorf(pos, "internal error: incomplete embedded interface %s (issue #18395)", named)
+		}
 		for _, m := range embed.allMethods {
 			if check.declareInSet(&mset, pos, m) {
 				iface.allMethods = append(iface.allMethods, m)
@@ -589,7 +585,11 @@ func (check *Checker) interfaceType(iface *Interface, ityp *ast.InterfaceType, d
 	// claim source order in the future. Revisit.
 	sort.Sort(byUniqueTypeName(iface.embeddeds))
 
-	sort.Sort(byUniqueMethodName(iface.allMethods))
+	if iface.allMethods == nil {
+		iface.allMethods = make([]*Func, 0) // mark interface as complete
+	} else {
+		sort.Sort(byUniqueMethodName(iface.allMethods))
+	}
 }
 
 // byUniqueTypeName named type lists can be sorted by their unique type names.
@@ -634,7 +634,7 @@ func (check *Checker) structType(styp *Struct, e *ast.StructType, path []*TypeNa
 	// current field typ and tag
 	var typ Type
 	var tag string
-	add := func(field *ast.Field, ident *ast.Ident, anonymous bool, pos token.Pos) {
+	add := func(ident *ast.Ident, anonymous bool, pos token.Pos) {
 		if tag != "" && tags == nil {
 			tags = make([]string, len(fields))
 		}
@@ -657,51 +657,45 @@ func (check *Checker) structType(styp *Struct, e *ast.StructType, path []*TypeNa
 		if len(f.Names) > 0 {
 			// named fields
 			for _, name := range f.Names {
-				add(f, name, false, name.Pos())
+				add(name, false, name.Pos())
 			}
 		} else {
 			// anonymous field
-			name := anonymousFieldIdent(f.Type)
+			// spec: "An embedded type must be specified as a type name T or as a pointer
+			// to a non-interface type name *T, and T itself may not be a pointer type."
 			pos := f.Type.Pos()
+			name := anonymousFieldIdent(f.Type)
+			if name == nil {
+				check.invalidAST(pos, "anonymous field type %s has no name", f.Type)
+				continue
+			}
 			t, isPtr := deref(typ)
-			switch t := t.(type) {
+			// Because we have a name, typ must be of the form T or *T, where T is the name
+			// of a (named or alias) type, and t (= deref(typ)) must be the type of T.
+			switch t := t.Underlying().(type) {
 			case *Basic:
 				if t == Typ[Invalid] {
 					// error was reported before
 					continue
 				}
+
 				// unsafe.Pointer is treated like a regular pointer
 				if t.kind == UnsafePointer {
 					check.errorf(pos, "anonymous field type cannot be unsafe.Pointer")
 					continue
 				}
-				add(f, name, true, pos)
 
-			case *Named:
-				// spec: "An embedded type must be specified as a type name
-				// T or as a pointer to a non-interface type name *T, and T
-				// itself may not be a pointer type."
-				switch u := t.underlying.(type) {
-				case *Basic:
-					// unsafe.Pointer is treated like a regular pointer
-					if u.kind == UnsafePointer {
-						check.errorf(pos, "anonymous field type cannot be unsafe.Pointer")
-						continue
-					}
-				case *Pointer:
-					check.errorf(pos, "anonymous field type cannot be a pointer")
+			case *Pointer:
+				check.errorf(pos, "anonymous field type cannot be a pointer")
+				continue
+
+			case *Interface:
+				if isPtr {
+					check.errorf(pos, "anonymous field type cannot be a pointer to an interface")
 					continue
-				case *Interface:
-					if isPtr {
-						check.errorf(pos, "anonymous field type cannot be a pointer to an interface")
-						continue
-					}
 				}
-				add(f, name, true, pos)
-
-			default:
-				check.invalidAST(pos, "anonymous field type %s must be named", typ)
 			}
+			add(name, true, pos)
 		}
 	}
 
@@ -714,7 +708,10 @@ func anonymousFieldIdent(e ast.Expr) *ast.Ident {
 	case *ast.Ident:
 		return e
 	case *ast.StarExpr:
-		return anonymousFieldIdent(e.X)
+		// *T is valid, but **T is not
+		if _, ok := e.X.(*ast.StarExpr); !ok {
+			return anonymousFieldIdent(e.X)
+		}
 	case *ast.SelectorExpr:
 		return e.Sel
 	}

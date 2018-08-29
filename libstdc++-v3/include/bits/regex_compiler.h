@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2017 Free Software Foundation, Inc.
+// Copyright (C) 2010-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,12 +37,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     class regex_traits;
 
 _GLIBCXX_END_NAMESPACE_CXX11
-_GLIBCXX_END_NAMESPACE_VERSION
 
 namespace __detail
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   /**
    * @addtogroup regex-detail
    * @{
@@ -157,42 +154,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp>
-    struct __has_contiguous_iter : std::false_type { };
-
-  template<typename _Ch, typename _Tr, typename _Alloc>
-    struct __has_contiguous_iter<std::basic_string<_Ch, _Tr, _Alloc>>
-    : std::true_type
-    { };
-
-  template<typename _Tp, typename _Alloc>
-    struct __has_contiguous_iter<std::vector<_Tp, _Alloc>>
-    : std::true_type
-    { };
-
-  template<typename _Tp>
-    struct __is_contiguous_normal_iter : std::false_type { };
-
-  template<typename _CharT>
-    struct __is_contiguous_normal_iter<_CharT*> : std::true_type { };
+    struct __is_contiguous_iter : is_pointer<_Tp>::type { };
 
   template<typename _Tp, typename _Cont>
     struct
-    __is_contiguous_normal_iter<__gnu_cxx::__normal_iterator<_Tp, _Cont>>
-    : __has_contiguous_iter<_Cont>::type
-    { };
+    __is_contiguous_iter<__gnu_cxx::__normal_iterator<_Tp*, _Cont>>
+    : true_type { };
 
   template<typename _Iter, typename _TraitsT>
-    using __enable_if_contiguous_normal_iter
-      = typename enable_if< __is_contiguous_normal_iter<_Iter>::value,
-                           std::shared_ptr<const _NFA<_TraitsT>> >::type;
+    using __enable_if_contiguous_iter
+      = __enable_if_t< __is_contiguous_iter<_Iter>::value,
+                       std::shared_ptr<const _NFA<_TraitsT>> >;
 
   template<typename _Iter, typename _TraitsT>
-    using __disable_if_contiguous_normal_iter
-      = typename enable_if< !__is_contiguous_normal_iter<_Iter>::value,
-                           std::shared_ptr<const _NFA<_TraitsT>> >::type;
+    using __disable_if_contiguous_iter
+      = __enable_if_t< !__is_contiguous_iter<_Iter>::value,
+                       std::shared_ptr<const _NFA<_TraitsT>> >;
 
-  template<typename _FwdIter, typename _TraitsT>
-    inline __enable_if_contiguous_normal_iter<_FwdIter, _TraitsT>
+  template<typename _TraitsT, typename _FwdIter>
+    inline __enable_if_contiguous_iter<_FwdIter, _TraitsT>
     __compile_nfa(_FwdIter __first, _FwdIter __last,
 		  const typename _TraitsT::locale_type& __loc,
 		  regex_constants::syntax_option_type __flags)
@@ -203,15 +183,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Cmplr(__cfirst, __cfirst + __len, __loc, __flags)._M_get_nfa();
     }
 
-  template<typename _FwdIter, typename _TraitsT>
-    inline __disable_if_contiguous_normal_iter<_FwdIter, _TraitsT>
+  template<typename _TraitsT, typename _FwdIter>
+    inline __disable_if_contiguous_iter<_FwdIter, _TraitsT>
     __compile_nfa(_FwdIter __first, _FwdIter __last,
 		  const typename _TraitsT::locale_type& __loc,
 		  regex_constants::syntax_option_type __flags)
     {
-      basic_string<typename _TraitsT::char_type> __str(__first, __last);
-      return __compile_nfa(__str.data(), __str.data() + __str.size(), __loc,
-          __flags);
+      const basic_string<typename _TraitsT::char_type> __str(__first, __last);
+      return __compile_nfa<_TraitsT>(__str.data(), __str.data() + __str.size(),
+				     __loc, __flags);
     }
 
   // [28.13.14]
@@ -530,14 +510,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename std::is_same<_CharT, char>::type _UseCache;
 
       static constexpr size_t
-      _S_cache_size()
-      {
-	return 1ul << (sizeof(_CharT) * __CHAR_BIT__ * int(_UseCache::value));
-      }
+      _S_cache_size =
+	1ul << (sizeof(_CharT) * __CHAR_BIT__ * int(_UseCache::value));
 
       struct _Dummy { };
       typedef typename std::conditional<_UseCache::value,
-					std::bitset<_S_cache_size()>,
+					std::bitset<_S_cache_size>,
 					_Dummy>::type _CacheT;
       typedef typename std::make_unsigned<_CharT>::type _UnsignedCharT;
 
@@ -575,8 +553,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
  //@} regex-detail
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __detail
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #include <bits/regex_compiler.tcc>

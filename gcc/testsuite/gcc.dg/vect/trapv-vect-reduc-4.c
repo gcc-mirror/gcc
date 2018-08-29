@@ -46,5 +46,8 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Detected reduction\\." 2 "vect"  } } */
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target { ! vect_no_int_min_max } } } } */
+/* We can't handle the first loop with variable-length vectors and so
+   fall back to the fixed-length mininum instead.  */
+/* { dg-final { scan-tree-dump-times "Detected reduction\\." 3 "vect" { xfail vect_variable_length } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { target { ! vect_no_int_min_max } } } } */
+/* { dg-final { scan-tree-dump-times {using an in-order \(fold-left\) reduction} 1 "vect" } } */

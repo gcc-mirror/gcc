@@ -1,5 +1,5 @@
 /* Definitions for 64-bit PowerPC running FreeBSD using the ELF format
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -225,7 +225,7 @@ extern int dot_symbols;
    registers and memory.  FIRST is nonzero if this is the only
    element.  */
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (!(FIRST) ? upward : FUNCTION_ARG_PADDING (MODE, TYPE))
+  (!(FIRST) ? PAD_UPWARD : targetm.calls.function_arg_padding (MODE, TYPE))
 
 /* FreeBSD doesn't support saving and restoring 64-bit regs with a 32-bit
    kernel. This is supported when running on a 64-bit kernel with

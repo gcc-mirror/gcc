@@ -6,7 +6,7 @@
       write (10,'(2A)') '1', achar(13)
       rewind (10)
       read (10,*) i
-      if (i .ne. 1) call abort
+      if (i .ne. 1) STOP 1
       close (10)
 
       open (10,status='scratch')
@@ -15,5 +15,5 @@
       rewind (10)
       read (10,'(I4)') i
       read (10,'(I5)') j
-      if ((i .ne. 1) .or. (j .ne. 2)) call abort
+      if ((i .ne. 1) .or. (j .ne. 2)) STOP 2
       end

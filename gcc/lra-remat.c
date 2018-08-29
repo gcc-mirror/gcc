@@ -1,5 +1,5 @@
 /* Rematerialize pseudos values.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -367,8 +367,7 @@ operand_to_remat (rtx_insn *insn)
 	    if (reg2->type == OP_OUT
 		&& reg->regno <= reg2->regno
 		&& (reg2->regno
-		    < (reg->regno
-		       + hard_regno_nregs[reg->regno][reg->biggest_mode])))
+		    < (int) end_hard_regno (reg->biggest_mode, reg->regno)))
 	      return -1;
       }
   /* Check hard coded insn registers.  */
@@ -668,7 +667,7 @@ reg_overlap_for_remat_p (lra_insn_reg *reg, rtx_insn *insn)
   if (regno >= FIRST_PSEUDO_REGISTER)
     nregs = 1;
   else
-    nregs = hard_regno_nregs[regno][reg->biggest_mode];
+    nregs = hard_regno_nregs (regno, reg->biggest_mode);
 
   struct lra_insn_reg *reg2;
 
@@ -684,10 +683,10 @@ reg_overlap_for_remat_p (lra_insn_reg *reg, rtx_insn *insn)
 
 	if (regno2 >= FIRST_PSEUDO_REGISTER && reg_renumber[regno2] >= 0)
 	  regno2 = reg_renumber[regno2];
-	if (regno >= FIRST_PSEUDO_REGISTER)
+	if (regno2 >= FIRST_PSEUDO_REGISTER)
 	  nregs2 = 1;
 	else
-	  nregs2 = hard_regno_nregs[regno2][reg->biggest_mode];
+	  nregs2 = hard_regno_nregs (regno2, reg->biggest_mode);
 
 	if ((regno2 + nregs2 - 1 >= regno && regno2 < regno + nregs)
 	    || (regno + nregs - 1 >= regno2 && regno < regno2 + nregs2))
@@ -709,7 +708,7 @@ call_used_input_regno_present_p (rtx_insn *insn)
     for (reg = (iter == 0 ? id->regs : static_id->hard_regs);
 	 reg != NULL;
 	 reg = reg->next)
-      if (reg->type == OP_IN && reg->regno <= FIRST_PSEUDO_REGISTER
+      if (reg->type == OP_IN && reg->regno < FIRST_PSEUDO_REGISTER
 	  && TEST_HARD_REG_BIT (call_used_reg_set, reg->regno))
 	return true;
   return false;
@@ -995,7 +994,7 @@ calculate_global_remat_bb_data (void)
 
 /* Setup sp offset attribute to SP_OFFSET for all INSNS.  */
 static void
-change_sp_offset (rtx_insn *insns, HOST_WIDE_INT sp_offset)
+change_sp_offset (rtx_insn *insns, poly_int64 sp_offset)
 {
   for (rtx_insn *insn = insns; insn != NULL; insn = NEXT_INSN (insn))
     eliminate_regs_in_insn (insn, false, false, sp_offset);
@@ -1012,7 +1011,7 @@ get_hard_regs (struct lra_insn_reg *reg, int &nregs)
   int hard_regno = regno < FIRST_PSEUDO_REGISTER ? regno : reg_renumber[regno];
 
   if (hard_regno >= 0)
-    nregs = hard_regno_nregs[hard_regno][reg->biggest_mode];
+    nregs = hard_regno_nregs (hard_regno, reg->biggest_mode);
   return hard_regno;
 }
 
@@ -1119,7 +1118,7 @@ do_remat (void)
 	  int i, hard_regno, nregs;
 	  int dst_hard_regno, dst_nregs;
 	  rtx_insn *remat_insn = NULL;
-	  HOST_WIDE_INT cand_sp_offset = 0;
+	  poly_int64 cand_sp_offset = 0;
 	  if (cand != NULL)
 	    {
 	      lra_insn_recog_data_t cand_id
@@ -1136,7 +1135,7 @@ do_remat (void)
 		? dst_regno : reg_renumber[dst_regno];
 	      gcc_assert (dst_hard_regno >= 0);
 	      machine_mode mode = GET_MODE (SET_DEST (set));
-	      dst_nregs = hard_regno_nregs[dst_hard_regno][mode];
+	      dst_nregs = hard_regno_nregs (dst_hard_regno, mode);
 
 	      for (reg = cand_id->regs; reg != NULL; reg = reg->next)
 		if (reg->type != OP_IN && reg->regno != ignore_regno)
@@ -1242,8 +1241,8 @@ do_remat (void)
 
 	  if (remat_insn != NULL)
 	    {
-	      HOST_WIDE_INT sp_offset_change = cand_sp_offset - id->sp_offset;
-	      if (sp_offset_change != 0)
+	      poly_int64 sp_offset_change = cand_sp_offset - id->sp_offset;
+	      if (maybe_ne (sp_offset_change, 0))
 		change_sp_offset (remat_insn, sp_offset_change);
 	      update_scratch_ops (remat_insn);
 	      lra_process_new_insns (insn, remat_insn, NULL,

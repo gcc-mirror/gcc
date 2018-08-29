@@ -39,5 +39,3 @@ contains
   subroutine s5            ! { dg-warning "defined but not used" }
   end subroutine
 end
-
-! { dg-final { cleanup-modules "m" } }

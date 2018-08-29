@@ -134,5 +134,5 @@ program main
 !  print *, "Before qsort: ", A%disp()
  call qsort(A)
 !  print *, "After qsort:  ", A%disp()
- if (any (A%disp() .ne. [2,3,4,5,7])) call abort
+ if (any (A%disp() .ne. [2,3,4,5,7])) STOP 1
 end program main

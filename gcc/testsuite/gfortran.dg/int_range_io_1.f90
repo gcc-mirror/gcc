@@ -12,23 +12,23 @@ program int_range
 
   read(inputline,100) test
 100 format(1i11)
-  if (test /= -2147483648) call abort
+  if (test /= -2147483648) STOP 1
   inputline(1:1) = " "
   read(inputline, 100, iostat=st) test
-  if (st == 0) call abort
+  if (st == 0) STOP 2
   inputline(11:11) = "7"
   read(inputline, 100) test
-  if (test /= 2147483647) call abort
+  if (test /= 2147483647) STOP 3
 
   ! Same as above but with list-formatted IO
   inputline = "-2147483648"
   read(inputline, *) test
-  if (test /= -2147483648) call abort
+  if (test /= -2147483648) STOP 4
   inputline(1:1) = " "
   read(inputline, *, iostat=st) test
-  if (st == 0) call abort
+  if (st == 0) STOP 5
   inputline(11:11) = "7"
   read(inputline, *) test
-  if (test /= 2147483647) call abort
+  if (test /= 2147483647) STOP 6
 
 end program int_range

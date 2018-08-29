@@ -114,12 +114,12 @@ end module func_derived_3a
   
   rewind (10)
   read (10, '(80a)') line
-  if (trim (line).ne."derived =     2") call abort ()
+  if (trim (line).ne."derived =     2") STOP 1
   read (10,  '(80a)') line
-  if (trim (line).ne."simple  =     1") call abort ()
+  if (trim (line).ne."simple  =     1") STOP 2
   read (10,  '(80a)') line
-  if (trim (line).ne."simple  =     1") call abort ()
+  if (trim (line).ne."simple  =     1") STOP 3
   read (10,  '(80a)') line
-  if (trim (line).ne."simple  =     1") call abort ()
+  if (trim (line).ne."simple  =     1") STOP 4
   close (10)
 end program

@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -82,6 +82,13 @@ hook_bool_mode_true (machine_mode)
   return true;
 }
 
+/* Generic hook that takes (machine_mode, machine_mode) and returns true.  */
+bool
+hook_bool_mode_mode_true (machine_mode, machine_mode)
+{
+  return true;
+}
+
 /* Generic hook that takes (machine_mode, const_rtx) and returns false.  */
 bool
 hook_bool_mode_const_rtx_false (machine_mode, const_rtx)
@@ -124,6 +131,27 @@ bool
 hook_bool_mode_uhwi_false (machine_mode, unsigned HOST_WIDE_INT)
 {
   return false;
+}
+
+/* Generic hook that takes (poly_uint64, poly_uint64) and returns true.  */
+bool
+hook_bool_puint64_puint64_true (poly_uint64, poly_uint64)
+{
+  return true;
+}
+
+/* Generic hook that takes (unsigned int, machine_mode) and returns false.  */
+bool
+hook_bool_uint_mode_false (unsigned int, machine_mode)
+{
+  return false;
+}
+
+/* Generic hook that takes (unsigned int, machine_mode) and returns true.  */
+bool
+hook_bool_uint_mode_true (unsigned int, machine_mode)
+{
+  return true;
 }
 
 /* Generic hook that takes (FILE *, const char *) and does nothing.  */
@@ -208,6 +236,12 @@ hook_int_rtx_1 (rtx)
 }
 
 int
+hook_int_rtx_insn_0 (rtx_insn *)
+{
+  return 0;
+}
+
+int
 hook_int_rtx_insn_unreachable (rtx_insn *)
 {
   gcc_unreachable ();
@@ -227,6 +261,12 @@ hook_int_rtx_mode_as_bool_0 (rtx, machine_mode, addr_space_t, bool)
 
 unsigned int
 hook_uint_void_0 (void)
+{
+  return 0;
+}
+
+HOST_WIDE_INT
+hook_hwi_void_0 (void)
 {
   return 0;
 }
@@ -474,3 +514,28 @@ hook_bool_reg_class_t_false (reg_class_t regclass ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* Generic hook that takes 2 machine_modes and a register class and
+   returns true.  */
+bool
+hook_bool_mode_mode_reg_class_t_true (machine_mode, machine_mode, reg_class_t)
+{
+  return true;
+}
+
+/* Generic hook that takes a machine_mode and 2 register classes
+   and returns false.  */
+bool
+hook_bool_mode_reg_class_t_reg_class_t_false (machine_mode, reg_class_t,
+					      reg_class_t)
+{
+  return false;
+}
+
+/* Generic hook that takes a mode and an unsigned HOST_WIDE_INT and
+   returns no mode.  */
+
+opt_machine_mode
+hook_optmode_mode_uhwi_none (machine_mode, unsigned HOST_WIDE_INT)
+{
+  return opt_machine_mode ();
+}

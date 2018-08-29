@@ -21,6 +21,6 @@ program cp_bug
     ! v2 should get value in u (0)
     v2 = v1
 
-    if(v2 /= u) call abort()
+    if(v2 /= u) STOP 1
 
 end program

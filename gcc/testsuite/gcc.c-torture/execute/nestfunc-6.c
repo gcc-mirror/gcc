@@ -1,7 +1,7 @@
+/* { dg-require-effective-target trampolines } */
+
 /* Test that the GP gets properly restored, either by the nonlocal
    receiver or the nested function.  */
-
-#ifndef NO_TRAMPOLINES
 
 typedef __SIZE_TYPE__ size_t;
 extern void abort (void);
@@ -23,7 +23,3 @@ int main ()
  nonlocal:
   exit (0);
 }
-
-#else
-int main() { return 0; }
-#endif

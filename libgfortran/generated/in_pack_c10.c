@@ -1,5 +1,5 @@
 /* Helper function for repacking arrays.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -43,7 +43,6 @@ internal_pack_c10 (gfc_array_c10 * source)
   const GFC_COMPLEX_10 *src;
   GFC_COMPLEX_10 * restrict dest;
   GFC_COMPLEX_10 *destptr;
-  int n;
   int packed;
 
   /* TODO: Investigate how we can figure out if this is a temporary
@@ -52,7 +51,7 @@ internal_pack_c10 (gfc_array_c10 * source)
   dim = GFC_DESCRIPTOR_RANK (source);
   ssize = 1;
   packed = 1;
-  for (n = 0; n < dim; n++)
+  for (index_type n = 0; n < dim; n++)
     {
       count[n] = 0;
       stride[n] = GFC_DESCRIPTOR_STRIDE(source,n);
@@ -88,7 +87,7 @@ internal_pack_c10 (gfc_array_c10 * source)
       src += stride0;
       count[0]++;
       /* Advance to the next source element.  */
-      n = 0;
+      index_type n = 0;
       while (count[n] == extent[n])
         {
           /* When we get to the end of a dimension, reset it and increment

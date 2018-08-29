@@ -1,6 +1,6 @@
 // PR debug/53235
 // { dg-options "-gdwarf-4 -fdebug-types-section" }
-// { dg-final { scan-assembler-times "debug_types" 2 { xfail { powerpc-ibm-aix* || { *-*-darwin* || { *-*-solaris2.1[1-9]* && { ! gas } } } } } } }
+// { dg-final { scan-assembler-times "debug_types" 2 { xfail { powerpc-ibm-aix* || { *-*-darwin* || { *-*-solaris2.* && { comdat_group && { ! gas } } } } } } } }
 
 namespace E {
   class O {};

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -210,6 +210,11 @@ package body Bindusg is
       Write_Line
         ("  -P        Generate binder file suitable for CodePeer");
 
+      --  Line for Q switch
+
+      Write_Line
+        ("  -Qnnn     Generate nnn default-sized secondary stacks");
+
       --  Line for -r switch
 
       Write_Line
@@ -308,8 +313,6 @@ package body Bindusg is
 
       Write_Line
         ("  -z        No main subprogram (zero main)");
-
-      --  Line for --RTS
 
       --  Line for -Z switch
 

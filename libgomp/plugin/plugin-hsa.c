@@ -1,6 +1,6 @@
 /* Plugin for HSAIL execution.
 
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
    Contributed by Martin Jambor <mjambor@suse.cz> and
    Martin Liska <mliska@suse.cz>.
@@ -39,32 +39,7 @@
 #include <dlfcn.h>
 #include "libgomp-plugin.h"
 #include "gomp-constants.h"
-
-/* Secure getenv() which returns NULL if running as SUID/SGID.  */
-#ifndef HAVE_SECURE_GETENV
-#ifdef HAVE___SECURE_GETENV
-#define secure_getenv __secure_getenv
-#elif defined (HAVE_UNISTD_H) && defined(HAVE_GETUID) && defined(HAVE_GETEUID) \
-  && defined(HAVE_GETGID) && defined(HAVE_GETEGID)
-
-#include <unistd.h>
-
-/* Implementation of secure_getenv() for targets where it is not provided but
-   we have at least means to test real and effective IDs. */
-
-static char *
-secure_getenv (const char *name)
-{
-  if ((getuid () == geteuid ()) && (getgid () == getegid ()))
-    return getenv (name);
-  else
-    return NULL;
-}
-
-#else
-#define secure_getenv getenv
-#endif
-#endif
+#include "secure_getenv.h"
 
 /* As an HSA runtime is dlopened, following structure defines function
    pointers utilized by the HSA plug-in.  */
@@ -286,7 +261,7 @@ init_enviroment_variables (void)
 	fprintf (stderr, __VA_ARGS__); \
       } \
   } \
-  while (false);
+  while (false)
 
 /* Print a debugging message to stderr.  */
 
@@ -1266,7 +1241,7 @@ init_single_kernel (struct kernel_info *kernel, unsigned *max_omp_data_size)
       if (dependency->dependencies_count > 0)
 	{
 	  HSA_DEBUG ("HSA does not allow kernel dispatching code with "
-		     "a depth bigger than one\n")
+		     "a depth bigger than one\n");
 	  goto failure;
 	}
 
@@ -1689,7 +1664,7 @@ GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
 {
   pthread_t pt;
   struct async_run_info *info;
-  HSA_DEBUG ("GOMP_OFFLOAD_async_run invoked\n")
+  HSA_DEBUG ("GOMP_OFFLOAD_async_run invoked\n");
   info = GOMP_PLUGIN_malloc (sizeof (struct async_run_info));
 
   info->device = device;

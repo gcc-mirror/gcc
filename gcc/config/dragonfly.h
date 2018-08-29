@@ -1,5 +1,5 @@
 /* Base configuration file for all DragonFly targets.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by John Marino <gnugcc@marino.st>
 
 This file is part of GCC.
@@ -103,10 +103,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* All DragonFly Architectures support the ELF object file format.  */
 #undef  OBJECT_FORMAT_ELF
 #define OBJECT_FORMAT_ELF
-
-/* Don't assume anything about the header files.  */
-#undef  NO_IMPLICIT_EXTERN_C
-#define NO_IMPLICIT_EXTERN_C	1
 
 /* Follow DragonFly's standard headers (<machine/stdint.h>, etc...).  */
 

@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -112,6 +112,11 @@ public:
 
   rvalue *
   new_string_literal (const char *value);
+
+  rvalue *
+  new_rvalue_from_vector (location *loc,
+			  type *type,
+			  const auto_vec<rvalue *> &elements);
 
   rvalue *
   new_unary_op (location *loc,
@@ -392,6 +397,7 @@ public:
   }
 
   type *get_aligned (size_t alignment_in_bytes) const;
+  type *get_vector (size_t num_units) const;
 
 private:
   tree m_inner;
@@ -441,6 +447,9 @@ public:
 
   block*
   new_block (const char *name);
+
+  rvalue *
+  get_address (location *loc);
 
   void
   build_stmt_list ();

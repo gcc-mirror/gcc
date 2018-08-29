@@ -5,4 +5,4 @@
 
 int i;
 
-/* { dg-error "-fsanitize=all option is not valid" "" { target *-*-* } 0 } */
+/* { dg-error ".-fsanitize=all. option is not valid" "" { target *-*-* } 0 } */

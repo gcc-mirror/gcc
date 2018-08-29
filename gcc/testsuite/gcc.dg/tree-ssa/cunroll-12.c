@@ -7,5 +7,5 @@ t(struct a *a)
   for (int i=0;a->a[i];i++)
     a->a[i]++;
 }
-/* { dg-final { scan-tree-dump-times "loop with 7 iterations completely unrolled" 1 "cunroll" } } */
+/* { dg-final { scan-tree-dump-times "loop with 6 iterations completely unrolled" 1 "cunroll" } } */
 /* { dg-final { scan-tree-dump-not "Invalid sum" "cunroll" } } */

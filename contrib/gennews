@@ -3,7 +3,7 @@
 # Script to generate the NEWS file from online release notes.
 # Contributed by Joseph Myers <jsm28@cam.ac.uk>.
 #
-# Copyright (C) 2000-2017 Free Software Foundation, Inc.
+# Copyright (C) 2000-2018 Free Software Foundation, Inc.
 # This file is part of GCC.
 #
 # GCC is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 
 website=http://gcc.gnu.org/
 files="
+    gcc-8/index.html gcc-8/changes.html
     gcc-7/index.html gcc-7/changes.html
     gcc-6/index.html gcc-6/changes.html
     gcc-5/index.html gcc-5/changes.html

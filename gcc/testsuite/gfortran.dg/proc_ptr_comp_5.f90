@@ -27,11 +27,11 @@ integer :: j = 0
 
 x%c%s => is
 call x%c%s
-if (j/=5) call abort
+if (j/=5) STOP 1
 
 x%c%f => if
 j=x%c%f()
-if (j/=42) call abort
+if (j/=42) STOP 2
 
 contains
 

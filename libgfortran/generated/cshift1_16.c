@@ -1,5 +1,5 @@
 /* Implementation of the CSHIFT intrinsic
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Feng Wang <wf_cs@yahoo.com>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -61,12 +61,13 @@ cshift1 (gfc_array_char * const restrict ret,
   GFC_INTEGER_16 sh;
   index_type arraysize;
   index_type size;
-
+  index_type type_size;
+  
   if (pwhich)
     which = *pwhich - 1;
   else
     which = 0;
-
+ 
   if (which < 0 || (which + 1) > GFC_DESCRIPTOR_RANK (array))
     runtime_error ("Argument 'DIM' is out of range in call to 'CSHIFT'");
 
@@ -76,12 +77,10 @@ cshift1 (gfc_array_char * const restrict ret,
 
   if (ret->base_addr == NULL)
     {
-      int i;
-
       ret->base_addr = xmallocarray (arraysize, size);
       ret->offset = 0;
-      ret->dtype = array->dtype;
-      for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
+      GFC_DTYPE_COPY(ret,array);
+      for (index_type i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
 	  index_type ub, str;
 
@@ -111,6 +110,97 @@ cshift1 (gfc_array_char * const restrict ret,
   if (arraysize == 0)
     return;
 
+  /* See if we should dispatch to a helper function.  */
+
+  type_size = GFC_DTYPE_TYPE_SIZE (array);
+
+  switch (type_size)
+  {
+    case GFC_DTYPE_LOGICAL_1:
+    case GFC_DTYPE_INTEGER_1:
+      cshift1_16_i1 ((gfc_array_i1 *)ret, (gfc_array_i1 *) array,
+      			h, pwhich);
+      return;
+ 
+    case GFC_DTYPE_LOGICAL_2:
+    case GFC_DTYPE_INTEGER_2:
+      cshift1_16_i2 ((gfc_array_i2 *)ret, (gfc_array_i2 *) array,
+      			h, pwhich);
+      return;
+ 
+    case GFC_DTYPE_LOGICAL_4:
+    case GFC_DTYPE_INTEGER_4:
+      cshift1_16_i4 ((gfc_array_i4 *)ret, (gfc_array_i4 *) array,
+      			h, pwhich);
+      return;
+
+    case GFC_DTYPE_LOGICAL_8:
+    case GFC_DTYPE_INTEGER_8:
+      cshift1_16_i8 ((gfc_array_i8 *)ret, (gfc_array_i8 *) array,
+      			h, pwhich);
+      return;
+
+#if defined (HAVE_INTEGER_16)
+    case GFC_DTYPE_LOGICAL_16:
+    case GFC_DTYPE_INTEGER_16:
+      cshift1_16_i16 ((gfc_array_i16 *)ret, (gfc_array_i16 *) array,
+      			h, pwhich);
+      return;
+#endif
+
+    case GFC_DTYPE_REAL_4:
+      cshift1_16_r4 ((gfc_array_r4 *)ret, (gfc_array_r4 *) array,
+      			h, pwhich);
+      return;
+
+    case GFC_DTYPE_REAL_8:
+      cshift1_16_r8 ((gfc_array_r8 *)ret, (gfc_array_r8 *) array,
+      			h, pwhich);
+      return;
+
+#if defined (HAVE_REAL_10)
+    case GFC_DTYPE_REAL_10:
+      cshift1_16_r10 ((gfc_array_r10 *)ret, (gfc_array_r10 *) array,
+      			h, pwhich);
+      return;
+#endif
+
+#if defined (HAVE_REAL_16)
+    case GFC_DTYPE_REAL_16:
+      cshift1_16_r16 ((gfc_array_r16 *)ret, (gfc_array_r16 *) array,
+      			h, pwhich);
+      return;
+#endif
+
+    case GFC_DTYPE_COMPLEX_4:
+      cshift1_16_c4 ((gfc_array_c4 *)ret, (gfc_array_c4 *) array,
+      			h, pwhich);
+      return;
+
+    case GFC_DTYPE_COMPLEX_8:
+      cshift1_16_c8 ((gfc_array_c8 *)ret, (gfc_array_c8 *) array,
+      			h, pwhich);
+      return;
+
+#if defined (HAVE_COMPLEX_10)
+    case GFC_DTYPE_COMPLEX_10:
+      cshift1_16_c10 ((gfc_array_c10 *)ret, (gfc_array_c10 *) array,
+      			h, pwhich);
+      return;
+#endif
+
+#if defined (HAVE_COMPLEX_16)
+    case GFC_DTYPE_COMPLEX_16:
+      cshift1_16_c16 ((gfc_array_c16 *)ret, (gfc_array_c16 *) array,
+      			h, pwhich);
+      return;
+#endif
+
+    default:
+      break;
+    
+  }
+  
   extent[0] = 1;
   count[0] = 0;
   n = 0;
@@ -162,22 +252,41 @@ cshift1 (gfc_array_char * const restrict ret,
     {
       /* Do the shift for this dimension.  */
       sh = *hptr;
-      sh = (div (sh, len)).rem;
+      /* Normal case should be -len < sh < len; try to
+         avoid the expensive remainder operation if possible.  */
       if (sh < 0)
         sh += len;
+      if (unlikely (sh >= len || sh < 0))
+        {
+	  sh = sh % len;
+	  if (sh < 0)
+	    sh += len;
+	}
 
       src = &sptr[sh * soffset];
       dest = rptr;
-
-      for (n = 0; n < len; n++)
+      if (soffset == size && roffset == size)
+      {
+        size_t len1 = sh * size;
+	size_t len2 = (len - sh) * size;
+	memcpy (rptr, sptr + len1, len2);
+	memcpy (rptr + len2, sptr, len1);
+      }
+      else
         {
-          memcpy (dest, src, size);
-          dest += roffset;
-          if (n == len - sh - 1)
-            src = sptr;
-          else
-            src += soffset;
-        }
+	  for (n = 0; n < len - sh; n++)
+            {
+	      memcpy (dest, src, size);
+	      dest += roffset;
+	      src += soffset;
+	    }
+	    for (src = sptr, n = 0; n < sh; n++)
+	      {
+		memcpy (dest, src, size);
+		dest += roffset;
+		src += soffset;
+	      }
+	  }
 
       /* Advance to the next section.  */
       rptr += rstride0;

@@ -18,11 +18,11 @@ PROGRAM test_prog
  ppt%f => triple
  f => ppt%f
  tres = f(2,[2.,4.])
- if (abs(tres(1)-6.)>1E-3) call abort()
- if (abs(tres(2)-12.)>1E-3) call abort()
+ if (abs(tres(1)-6.)>1E-3) STOP 1
+ if (abs(tres(2)-12.)>1E-3) STOP 2
  tres = ppt%f(2,[3.,5.])
- if (abs(tres(1)-9.)>1E-3) call abort()
- if (abs(tres(2)-15.)>1E-3) call abort()
+ if (abs(tres(1)-9.)>1E-3) STOP 3
+ if (abs(tres(2)-15.)>1E-3) STOP 4
 
 CONTAINS
 

@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-additional-options "-std=gnu++11" }
+// { dg-additional-options "-std=gnu++11 -Wno-return-type" }
 
 enum class nsresult;
 class A;

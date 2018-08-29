@@ -1,4 +1,4 @@
-/* { dg-xfail-run-if "" { lax_strtofp } "*" "" } */
+/* { dg-xfail-run-if "" { lax_strtofp } } */
 /* { dg-options "-w" } */
 
 /* This test assumes IEEE float and double.  */

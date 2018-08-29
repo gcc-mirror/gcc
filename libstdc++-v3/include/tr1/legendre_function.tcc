@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2017 Free Software Foundation, Inc.
+// Copyright (C) 2006-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,6 +48,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
 # define _GLIBCXX_MATH_NS ::std
 #elif defined(_GLIBCXX_TR1_CMATH)
@@ -62,10 +64,8 @@ namespace tr1
   // Implementation-space details.
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     /**
-     *   @brief  Return the Legendre polynomial by recursion on order
+     *   @brief  Return the Legendre polynomial by recursion on degree
      *           @f$ l @f$.
      * 
      *   The Legendre function of @f$ l @f$ and @f$ x @f$,
@@ -74,7 +74,7 @@ namespace tr1
      *     P_l(x) = \frac{1}{2^l l!}\frac{d^l}{dx^l}(x^2 - 1)^{l}
      *   @f]
      * 
-     *   @param  l  The order of the Legendre polynomial.  @f$l >= 0@f$.
+     *   @param  l  The degree of the Legendre polynomial.  @f$l >= 0@f$.
      *   @param  x  The argument of the Legendre polynomial.  @f$|x| <= 1@f$.
      */
     template<typename _Tp>
@@ -127,16 +127,19 @@ namespace tr1
      *     P_l^m(x) = (1 - x^2)^{m/2}\frac{d^m}{dx^m}P_l(x)
      *   @f]
      * 
-     *   @param  l  The order of the associated Legendre function.
+     *   @param  l  The degree of the associated Legendre function.
      *              @f$ l >= 0 @f$.
      *   @param  m  The order of the associated Legendre function.
      *              @f$ m <= l @f$.
      *   @param  x  The argument of the associated Legendre function.
      *              @f$ |x| <= 1 @f$.
+     *   @param  phase  The phase of the associated Legendre function.
+     *                  Use -1 for the Condon-Shortley phase convention.
      */
     template<typename _Tp>
     _Tp
-    __assoc_legendre_p(unsigned int __l, unsigned int __m, _Tp __x)
+    __assoc_legendre_p(unsigned int __l, unsigned int __m, _Tp __x,
+		       _Tp __phase = _Tp(+1))
     {
 
       if (__x < _Tp(-1) || __x > _Tp(+1))
@@ -160,7 +163,7 @@ namespace tr1
               _Tp __fact = _Tp(1);
               for (unsigned int __i = 1; __i <= __m; ++__i)
                 {
-                  __p_mm *= -__fact * __root;
+                  __p_mm *= __phase * __fact * __root;
                   __fact += _Tp(2);
                 }
             }
@@ -205,8 +208,10 @@ namespace tr1
      *   but this factor is rather large for large @f$ l @f$ and @f$ m @f$
      *   and so this function is stable for larger differences of @f$ l @f$
      *   and @f$ m @f$.
+     *   @note Unlike the case for __assoc_legendre_p the Condon-Shortley
+     *   phase factor @f$ (-1)^m @f$ is present here.
      * 
-     *   @param  l  The order of the spherical associated Legendre function.
+     *   @param  l  The degree of the spherical associated Legendre function.
      *              @f$ l >= 0 @f$.
      *   @param  m  The order of the spherical associated Legendre function.
      *              @f$ m <= l @f$.
@@ -265,25 +270,21 @@ namespace tr1
           const _Tp __lnpre_val =
                     -_Tp(0.25L) * __numeric_constants<_Tp>::__lnpi()
                     + _Tp(0.5L) * (__lnpoch + __m * __lncirc);
-          _Tp __sr = std::sqrt((_Tp(2) + _Tp(1) / __m)
-                   / (_Tp(4) * __numeric_constants<_Tp>::__pi()));
+          const _Tp __sr = std::sqrt((_Tp(2) + _Tp(1) / __m)
+                         / (_Tp(4) * __numeric_constants<_Tp>::__pi()));
           _Tp __y_mm = __sgn * __sr * std::exp(__lnpre_val);
           _Tp __y_mp1m = __y_mp1m_factor * __y_mm;
 
           if (__l == __m)
-            {
-              return __y_mm;
-            }
+            return __y_mm;
           else if (__l == __m + 1)
-            {
-              return __y_mp1m;
-            }
+            return __y_mp1m;
           else
             {
               _Tp __y_lm = _Tp(0);
 
               // Compute Y_l^m, l > m+1, upward recursion on l.
-              for ( int __ll = __m + 2; __ll <= __l; ++__ll)
+              for (unsigned int __ll = __m + 2; __ll <= __l; ++__ll)
                 {
                   const _Tp __rat1 = _Tp(__ll - __m) / _Tp(__ll + __m);
                   const _Tp __rat2 = _Tp(__ll - __m - 1) / _Tp(__ll + __m - 1);
@@ -301,13 +302,13 @@ namespace tr1
             }
         }
     }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 #undef _GLIBCXX_MATH_NS
 #if ! _GLIBCXX_USE_STD_SPEC_FUNCS && defined(_GLIBCXX_TR1_CMATH)
 } // namespace tr1
 #endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #endif // _GLIBCXX_TR1_LEGENDRE_FUNCTION_TCC

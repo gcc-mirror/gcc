@@ -7,15 +7,15 @@
        open(unit=11,status='scratch', form='unformatted')
        write(11)data
        read(11,end=        1000 )data
-       call abort()
+       STOP 1
  1000  continue
        backspace 11
        backspace 11
        data = 0
        read(11)data
-       if (.not. all(data == -1)) call abort()
+       if (.not. all(data == -1)) STOP 2
        read(11,end=        1002 )data
-       call abort()
+       STOP 3
  1002  continue
        close(11)
        end

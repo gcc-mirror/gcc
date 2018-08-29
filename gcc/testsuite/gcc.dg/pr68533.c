@@ -28,8 +28,8 @@ f2 (
 
 void
 f3 (
-  const void
-   )		/* { dg-error "'void' as only parameter may not be qualified" } */
+  const void	/* { dg-error "'void' as only parameter may not be qualified" } */
+   )
 {
 }
 
@@ -54,8 +54,8 @@ void
 f6 (
    int
    x,
-   void
-   )		/* { dg-error "'void' must be the only parameter" } */
+   void	/* { dg-error "'void' must be the only parameter" } */
+   )
 {
 }
 

@@ -15,8 +15,6 @@
 
 #include "quadmath-imp.h"
 
-static const __float128 huge = 1.0e4930Q;
-
 __float128
 floorq (__float128 x)
 {
@@ -25,19 +23,16 @@ floorq (__float128 x)
 	GET_FLT128_WORDS64(i0,i1,x);
 	j0 = ((i0>>48)&0x7fff)-0x3fff;
 	if(j0<48) {
-	    if(j0<0) { 	/* raise inexact if x != 0 */
-		if(huge+x>0.0) {/* return 0*sign(x) if |x|<1 */
-		    if(i0>=0) {i0=i1=0;}
-		    else if(((i0&0x7fffffffffffffffLL)|i1)!=0)
-			{ i0=0xbfff000000000000ULL;i1=0;}
-		}
+	    if(j0<0) {
+		/* return 0*sign(x) if |x|<1 */
+		if(i0>=0) {i0=i1=0;}
+		else if(((i0&0x7fffffffffffffffLL)|i1)!=0)
+		    { i0=0xbfff000000000000ULL;i1=0;}
 	    } else {
 		i = (0x0000ffffffffffffULL)>>j0;
 		if(((i0&i)|i1)==0) return x; /* x is integral */
-		if(huge+x>0.0) {	/* raise inexact flag */
-		    if(i0<0) i0 += (0x0001000000000000LL)>>j0;
-		    i0 &= (~i); i1=0;
-		}
+		if(i0<0) i0 += (0x0001000000000000LL)>>j0;
+		i0 &= (~i); i1=0;
 	    }
 	} else if (j0>111) {
 	    if(j0==0x4000) return x+x;	/* inf or NaN */
@@ -45,17 +40,15 @@ floorq (__float128 x)
 	} else {
 	    i = -1ULL>>(j0-48);
 	    if((i1&i)==0) return x;	/* x is integral */
-	    if(huge+x>0.0) { 		/* raise inexact flag */
-		if(i0<0) {
-		    if(j0==48) i0+=1;
-		    else {
-			j = i1+(1LL<<(112-j0));
-			if(j<i1) i0 +=1 ; 	/* got a carry */
-			i1=j;
-		    }
+	    if(i0<0) {
+		if(j0==48) i0+=1;
+		else {
+		    j = i1+(1LL<<(112-j0));
+		    if(j<i1) i0 +=1 ; 	/* got a carry */
+		    i1=j;
 		}
-		i1 &= (~i);
 	    }
+	    i1 &= (~i);
 	}
 	SET_FLT128_WORDS64(x,i0,i1);
 	return x;

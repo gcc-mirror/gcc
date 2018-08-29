@@ -4,7 +4,7 @@
 /* { dg-options "-g -std=gnu89" } */
 
 int
-foo (int __attribute__ ((__mode__ (vector_size(8)))) i) /* { dg-warning "'__mode__' attribute ignored" } */
+foo (int __attribute__ ((__mode__ (vector_size(8)))) i) /* { dg-warning "'mode' attribute ignored" } */
 {
   return (long long) i;
 }

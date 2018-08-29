@@ -14,7 +14,7 @@ real,dimension(-1:2) ::  z
 call sub(x(:))
 call sub(y(:))
 call sub(z(:))
-call sub(w(:)) ! { dg-warning "too few elements" }
+call sub(w(:)) ! { dg-error "too few elements" }
 
 contains
   subroutine sub(a)

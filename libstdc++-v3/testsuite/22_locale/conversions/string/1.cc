@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,6 +22,7 @@
 #include <locale>
 #include <string>
 #include <testsuite_hooks.h>
+#include <testsuite_common_types.h>
 
 template<typename Elem>
 struct cvt : std::codecvt<Elem, char, std::mbstate_t> { };
@@ -43,6 +44,9 @@ void test01()
   string roundtrip = c.to_bytes(output);
   VERIFY( input == roundtrip );
   VERIFY( c.converted() == roundtrip.length() );
+
+  __gnu_test::implicitly_default_constructible test;
+  test.operator()<sc>(); // P0935R0
 }
 
 void test02()
@@ -64,6 +68,9 @@ void test02()
   VERIFY( c.to_bytes(output[0]) == input.substr(0, 1) );
   VERIFY( c.to_bytes(output.c_str()) == input );
   VERIFY( c.to_bytes(output.data(), output.data()+output.size()) == input );
+
+  __gnu_test::implicitly_default_constructible test;
+  test.operator()<wsc>(); // P0935R0
 }
 
 int main()

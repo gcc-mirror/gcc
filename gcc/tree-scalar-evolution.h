@@ -1,5 +1,5 @@
 /* Scalar evolution detector.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -30,7 +30,7 @@ extern void scev_reset (void);
 extern void scev_reset_htab (void);
 extern void scev_finalize (void);
 extern tree analyze_scalar_evolution (struct loop *, tree);
-extern tree instantiate_scev (basic_block, struct loop *, tree);
+extern tree instantiate_scev (edge, struct loop *, tree);
 extern tree resolve_mixers (struct loop *, tree, bool *);
 extern void gather_stats_on_scev_database (void);
 extern void final_value_replacement_loop (struct loop *);
@@ -60,7 +60,7 @@ block_before_loop (loop_p loop)
 static inline tree
 instantiate_parameters (struct loop *loop, tree chrec)
 {
-  return instantiate_scev (block_before_loop (loop), loop, chrec);
+  return instantiate_scev (loop_preheader_edge (loop), loop, chrec);
 }
 
 /* Returns the loop of the polynomial chrec CHREC.  */

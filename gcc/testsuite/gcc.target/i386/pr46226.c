@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-Os -fomit-frame-pointer -mno-accumulate-outgoing-args -fno-asynchronous-unwind-tables" } */
-/* { dg-options "-Os -fomit-frame-pointer -fno-asynchronous-unwind-tables" { target *-*-mingw* *-*-cygwin* } } */
+/* { dg-options "-Os -fomit-frame-pointer -fno-asynchronous-unwind-tables" } */
+/* { dg-additional-options "-mno-accumulate-outgoing-args" { target { ! { *-*-mingw* *-*-cygwin* } } } } */
 
 extern void abort(void);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,12 @@ with Debug;    use Debug;
 with Fmap;
 with Namet;    use Namet;
 with Opt;      use Opt;
+
 with Osint;    use Osint;
+--  Note that we use low-level routines in Osint to read command-line
+--  arguments. We cannot depend on Ada.Command_Line, because it contains modern
+--  Ada features that would break bootstrapping with old base compilers.
+
 with Osint.B;  use Osint.B;
 with Output;   use Output;
 with Rident;   use Rident;
@@ -47,9 +52,8 @@ with Targparm; use Targparm;
 with Types;    use Types;
 
 with System.Case_Util; use System.Case_Util;
+with System.Response_File;
 with System.OS_Lib;    use System.OS_Lib;
-
-with Ada.Command_Line.Response_File; use Ada.Command_Line;
 
 procedure Gnatbind is
 
@@ -163,55 +167,61 @@ procedure Gnatbind is
       --  -r switch is used. Not all restrictions are output for the reasons
       --  given below in the list, and this array is used to test whether
       --  the corresponding pragma should be listed. True means that it
-      --  should not be listed.
+      --  should be listed.
 
-      No_Restriction_List : constant array (All_Restrictions) of Boolean :=
-        (No_Standard_Allocators_After_Elaboration => True,
+      Restrictions_To_List : constant array (All_Restrictions) of Boolean :=
+        (No_Standard_Allocators_After_Elaboration => False,
          --  This involves run-time conditions not checkable at compile time
 
-         No_Anonymous_Allocators         => True,
+         No_Anonymous_Allocators         => False,
          --  Premature, since we have not implemented this yet
 
-         No_Exception_Propagation        => True,
+         No_Exception_Propagation        => False,
          --  Modifies code resulting in different exception semantics
 
-         No_Exceptions                   => True,
+         No_Exceptions                   => False,
          --  Has unexpected Suppress (All_Checks) effect
 
-         No_Implicit_Conditionals        => True,
+         No_Implicit_Conditionals        => False,
          --  This could modify and pessimize generated code
 
-         No_Implicit_Dynamic_Code        => True,
+         No_Implicit_Dynamic_Code        => False,
          --  This could modify and pessimize generated code
 
-         No_Implicit_Loops               => True,
+         No_Implicit_Loops               => False,
          --  This could modify and pessimize generated code
 
-         No_Recursion                    => True,
+         No_Recursion                    => False,
          --  Not checkable at compile time
 
-         No_Reentrancy                   => True,
+         No_Reentrancy                   => False,
          --  Not checkable at compile time
 
-         Max_Entry_Queue_Length           => True,
+         Max_Entry_Queue_Length          => False,
          --  Not checkable at compile time
 
-         Max_Storage_At_Blocking         => True,
+         Max_Storage_At_Blocking         => False,
          --  Not checkable at compile time
+
+         No_Implementation_Restrictions  => False,
+         --  Listing this one would cause a chicken&egg problem; the program
+         --  doesn't use implementation-defined restrictions, but after
+         --  applying the listed restrictions, it probably WILL use them,
+         --  so No_Implementation_Restrictions will cause an error.
 
          --  The following three should not be partition-wide, so the
          --  following tests are junk to be removed eventually ???
 
-         No_Specification_Of_Aspect      => True,
+         No_Specification_Of_Aspect      => False,
          --  Requires a parameter value, not a count
 
-         No_Use_Of_Attribute             => True,
+         No_Use_Of_Attribute             => False,
          --  Requires a parameter value, not a count
 
-         No_Use_Of_Pragma                => True,
+         No_Use_Of_Pragma                => False,
          --  Requires a parameter value, not a count
 
-         others                          => False);
+         others                          => True);
 
       Additional_Restrictions_Listed : Boolean := False;
       --  Set True if we have listed header for restrictions
@@ -275,14 +285,14 @@ procedure Gnatbind is
       --  Loop through restrictions
 
       for R in All_Restrictions loop
-         if not No_Restriction_List (R)
+         if Restrictions_To_List (R)
            and then Restriction_Could_Be_Set (R)
          then
             if not Additional_Restrictions_Listed then
                Write_Eol;
                Write_Line
-                 ("The following additional restrictions may be applied to "
-                  & "this partition:");
+                 ("--  The following additional restrictions may be applied "
+                  & "to this partition:");
                Additional_Restrictions_Listed := True;
             end if;
 
@@ -326,9 +336,7 @@ procedure Gnatbind is
       then
          Output_File_Name_Seen := True;
 
-         if Argv'Length = 0
-           or else (Argv'Length >= 1 and then Argv (1) = '-')
-         then
+         if Argv'Length = 0 or else Argv (1) = '-' then
             Fail ("output File_Name missing after -o");
 
          else
@@ -505,8 +513,6 @@ procedure Gnatbind is
       Next_Arg : Positive := 1;
 
    begin
-      --  Use low level argument routines to avoid dragging in secondary stack
-
       while Next_Arg < Arg_Count loop
          declare
             Next_Argv : String (1 .. Len_Arg (Next_Arg));
@@ -519,11 +525,11 @@ procedure Gnatbind is
                   if Next_Argv'Length > 1 then
                      declare
                         Arguments : constant Argument_List :=
-                                      Response_File.Arguments_From
-                                        (Response_File_Name        =>
-                                           Next_Argv (2 .. Next_Argv'Last),
-                                         Recursive                 => True,
-                                         Ignore_Non_Existing_Files => True);
+                          System.Response_File.Arguments_From
+                            (Response_File_Name        =>
+                               Next_Argv (2 .. Next_Argv'Last),
+                             Recursive                 => True,
+                             Ignore_Non_Existing_Files => True);
                      begin
                         for J in Arguments'Range loop
                            Action (Arguments (J).all);
@@ -598,7 +604,13 @@ begin
    Scan_Bind_Args;
 
    if Verbose_Mode then
-      Write_Str (Command_Name);
+      declare
+         Command_Name : String (1 .. Len_Arg (0));
+      begin
+         Fill_Arg (Command_Name'Address, 0);
+         Write_Str (Command_Name);
+      end;
+
       Put_Bind_Args;
       Write_Eol;
    end if;
@@ -669,7 +681,7 @@ begin
    --  Output usage information if no arguments
 
    if not More_Lib_Files then
-      if Argument_Count = 0 then
+      if Arg_Count = 0 then
          Bindusg.Display;
       else
          Write_Line ("try ""gnatbind --help"" for more information.");

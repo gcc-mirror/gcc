@@ -21,12 +21,12 @@ program pr28174
 
 ! Make sure that variable substring references work.
   call foo (a(:)(m:m+5), c(:)(n:m+2), d(:)(5:9))
-  if (any (a .ne. teststring)) call abort ()
-  if (any (b .ne. teststring)) call abort ()
+  if (any (a .ne. teststring)) STOP 1
+  if (any (b .ne. teststring)) STOP 2
   if (any (c .ne. (/"ab456789#hij", &
-                    "kl7654321rst"/))) call abort ()
+                    "kl7654321rst"/))) STOP 3
   if (any (d .ne. (/"abc 23456hij", &
-                    "klm 98765rst"/))) call abort ()
+                    "klm 98765rst"/))) STOP 4
 contains
   subroutine foo (w, x, y)
     character(len=*), intent(in) :: w(:)
@@ -36,7 +36,7 @@ contains
                                           "$#9876543210"/)
 ! This next is not required by the standard but tests the
 ! functioning of the gfortran implementation.
-!   if (all (x(:)(3:7) .eq. y)) call abort ()
+!   if (all (x(:)(3:7) .eq. y)) STOP 5
     x = foostring (:)(5 : 4 + len (x))
     y = foostring (:)(3 : 2 + len (y))
   end subroutine foo

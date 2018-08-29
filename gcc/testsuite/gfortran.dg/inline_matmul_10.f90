@@ -24,12 +24,12 @@ implicit none
           +286, -294, +240, -254, &
           +422, -430, +352, -370  ]
   !print *,c
-  if (any(c /= reshape(res, shape(c)))) call abort
+  if (any(c /= reshape(res, shape(c)))) STOP 1
   c(:,v) = matmul(a, b)
-  if (any(c(:,v) /= reshape(res, shape(c)))) call abort
+  if (any(c(:,v) /= reshape(res, shape(c)))) STOP 2
   c(v,:) = matmul(a, b)
-  if (any(c(v,:) /= reshape(res, shape(c)))) call abort
+  if (any(c(v,:) /= reshape(res, shape(c)))) STOP 3
 
   c = matmul(a(:,v),b(v,:))
-  if (any(c /= reshape(res, shape(c)))) call abort
+  if (any(c /= reshape(res, shape(c)))) STOP 4
 end

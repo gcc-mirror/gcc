@@ -23,7 +23,7 @@ program fibonacci
    call fib_ref (a_ref, N)
 
    do i = 0, N-1
-     if (a(i) .ne. a_ref(i)) call abort ()
+     if (a(i) .ne. a_ref(i)) STOP 1
    end do
 
 end program

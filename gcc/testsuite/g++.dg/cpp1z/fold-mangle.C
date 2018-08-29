@@ -1,5 +1,5 @@
 // PR c++/71711
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template < int > struct A {};
 template < int ... N > void unary_left (A < (... + N) >);

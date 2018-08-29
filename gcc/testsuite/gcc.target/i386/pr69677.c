@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ia32 } } } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -mno-avx -march=corei7 -fdump-rtl-final" } */
 
 extern const unsigned int a[];

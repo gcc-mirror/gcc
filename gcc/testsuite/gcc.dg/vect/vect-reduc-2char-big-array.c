@@ -4,7 +4,6 @@
 #include "tree-vect.h"
 
 #define N 256
-volatile int y = 0;
 
 __attribute__ ((noinline))
 void main1 (signed char x, signed char max_result, signed char min_result)
@@ -30,9 +29,7 @@ void main1 (signed char x, signed char max_result, signed char min_result)
       max_result = c[i];
     if (c[i] < min_result)
       min_result = c[i];
-    /* Avoid vectorization.  */
-    if (y)
-      abort ();
+    asm volatile ("" ::: "memory");
   }
 
   for (i = 0; i < N; i++) {

@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O -std=c++1z -gdwarf-5 -dA -gno-strict-dwarf" }
+// { dg-options "-O -std=c++17 -gdwarf-5 -dA -gno-strict-dwarf" }
 // { dg-require-weak "" }
 // { dg-final { scan-assembler-not "DW_TAG_member" { xfail *-*-aix* } } }
 

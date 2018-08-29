@@ -10,11 +10,11 @@ program a
   type(cat) z
   integer :: i = 0, j(4,3,2) = 0
   call string_comp(i)
-  if (i /= 3) call abort
+  if (i /= 3) STOP 1
   call string_comp(z%i)
-  if (z%i /= 3) call abort
+  if (z%i /= 3) STOP 2
   call string_comp(j(1,2,1))
-  if (j(1,2,1) /= 3) call abort
+  if (j(1,2,1) /= 3) STOP 3
 end program a
 
 subroutine string_comp(i)

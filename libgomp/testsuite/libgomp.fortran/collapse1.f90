@@ -22,5 +22,5 @@ program collapse1
       end do
     end do
   !$omp end parallel do
-  if (l) call abort
+  if (l) STOP 1
 end program collapse1

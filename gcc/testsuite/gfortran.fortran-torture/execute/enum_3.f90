@@ -21,37 +21,37 @@ program main
   end enum
 
 
- if (red /= 0 ) call abort
- if (yellow /= 255) call abort
- if (blue /= 256) call abort
+ if (red /= 0 ) STOP 1
+ if (yellow /= 255) STOP 2
+ if (blue /= 256) STOP 3
   
- if (r /= 0 ) call abort
- if (y /= 32767) call abort
- if (b /= 32768) call abort
+ if (r /= 0 ) STOP 4
+ if (y /= 32767) STOP 5
+ if (b /= 32768) STOP 6
 
- if (kind (red) /= 4) call abort
- if (kind (yellow) /= 4) call abort
- if (kind (blue) /= 4) call abort
+ if (kind (red) /= 4) STOP 7
+ if (kind (yellow) /= 4) STOP 8
+ if (kind (blue) /= 4) STOP 9
 
- if (kind(r) /= 4 ) call abort
- if (kind(y) /= 4) call abort
- if (kind(b) /= 4) call abort
+ if (kind(r) /= 4 ) STOP 10
+ if (kind(y) /= 4) STOP 11
+ if (kind(b) /= 4) STOP 12
 
- if (aa /= 0 ) call abort
- if (bb /= 65535) call abort
- if (cc /= 65536) call abort
+ if (aa /= 0 ) STOP 13
+ if (bb /= 65535) STOP 14
+ if (cc /= 65536) STOP 15
 
- if (kind (aa) /= 4 ) call abort
- if (kind (bb) /= 4) call abort
- if (kind (cc) /= 4) call abort
+ if (kind (aa) /= 4 ) STOP 16
+ if (kind (bb) /= 4) STOP 17
+ if (kind (cc) /= 4) STOP 18
 
 
- if (m /= 0 ) call abort
- if (n /= 2147483645) call abort
- if (o /= 2147483646) call abort
+ if (m /= 0 ) STOP 19
+ if (n /= 2147483645) STOP 20
+ if (o /= 2147483646) STOP 21
 
- if (kind (m) /= 4 ) call abort
- if (kind (n) /= 4) call abort
- if (kind (o) /= 4) call abort
+ if (kind (m) /= 4 ) STOP 22
+ if (kind (n) /= 4) STOP 23
+ if (kind (o) /= 4) STOP 24
 
 end program main

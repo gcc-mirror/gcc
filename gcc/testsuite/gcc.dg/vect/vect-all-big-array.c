@@ -78,8 +78,6 @@ char cb[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
 char ca[N];
 short sa[N];
 
-volatile int y = 0;
-
 /* All of the loops below are currently vectorizable, except
    initialization ones.  */
 
@@ -101,8 +99,7 @@ main1 ()
       fmul_results[i] = b[i] * c[i];
       fresults1[i] = 0;
       fresults2[i] = 0;
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   /* Test 1: copy chars.  */
@@ -142,15 +139,13 @@ main1 ()
     {
       fresults1[i] = a[i];
       fresults2[i] = e[i];
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
   for (i = 0; i < N/2; i++)
     {
       fresults1[i] = b[i+N/2] * c[i+N/2] - b[i] * c[i];
       fresults2[i+N/2] = b[i] * c[i+N/2] + b[i+N/2] * c[i];
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
   /* Test 4: access with offset.  */
   for (i = 0; i < N/2; i++)

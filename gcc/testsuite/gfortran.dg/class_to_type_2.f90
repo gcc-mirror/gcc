@@ -37,12 +37,12 @@ contains
 
   subroutine subpr2 (x)
     type(foo) :: x
-    if (x%i /= 55) call abort ()
+    if (x%i /= 55) STOP 1
   end subroutine
 
   subroutine subpr2_array (x)
     type(foo) :: x(:)
-    if (any(x(:)%i /= 55)) call abort ()
+    if (any(x(:)%i /= 55)) STOP 2
   end subroutine
 
   function f ()
@@ -66,30 +66,30 @@ program prog
   allocate (foo_1 :: xx)
   xx%i = 33
   call subpr (xx)
-  if (xx%i /= 3) call abort ()
+  if (xx%i /= 3) STOP 3
 
   xx%i = 33
   call subpr_elem (xx)
-  if (xx%i /= 3) call abort ()
+  if (xx%i /= 3) STOP 4
 
   call subpr (f ())
 
   allocate (foo_1 :: yy(2))
   yy(:)%i = 33
   call subpr_elem (yy)
-  if (any (yy%i /= 3)) call abort ()
+  if (any (yy%i /= 3)) STOP 5
 
   yy(:)%i = 33
   call subpr_elem (yy(1))
-  if (yy(1)%i /= 3) call abort ()
+  if (yy(1)%i /= 3) STOP 6
 
   yy(:)%i = 33
   call subpr_array (yy)
-  if (any (yy%i /= 3)) call abort ()
+  if (any (yy%i /= 3)) STOP 7
 
   yy(:)%i = 33
   call subpr_array (yy(1:2))
-  if (any (yy(1:2)%i /= 3)) call abort ()
+  if (any (yy(1:2)%i /= 3)) STOP 8
 
  call subpr2_array (g ())
 end program

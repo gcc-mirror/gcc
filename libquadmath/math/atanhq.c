@@ -55,7 +55,11 @@ atanhq (__float128 x)
 	    else
 	      return (x-x)/(x-x);
 	  }
-	if(ix<0x3fc60000 && (huge+x)>zero) return x;	/* x < 2^-57 */
+	if(ix<0x3fc60000 && (huge+x)>zero)	/* x < 2^-57 */
+	  {
+	    math_check_force_underflow (x);
+	    return x;
+	  }
 
 	if(ix<0x3ffe0000) {		/* x < 0.5 */
 	    t = u.value+u.value;

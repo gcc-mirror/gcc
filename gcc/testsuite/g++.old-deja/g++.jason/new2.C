@@ -7,7 +7,9 @@ struct A {
   A() { i = 2; }
 };
  
+int
 main()
 {
   A *p = new A ();
+  return 0;
 }

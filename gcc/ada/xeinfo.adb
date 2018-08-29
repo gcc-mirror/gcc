@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -151,6 +151,7 @@ procedure XEinfo is
    Lastinlined : Boolean;
 
    procedure Badfunc;
+   pragma No_Return (Badfunc);
    --  Signal bad function in body
 
    function Getlin return VString;

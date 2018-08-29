@@ -82,21 +82,36 @@ func TestAfterStress(t *testing.T) {
 }
 
 func benchmark(b *testing.B, bench func(n int)) {
-	garbage := make([]*Timer, 1<<17)
-	for i := 0; i < len(garbage); i++ {
-		garbage[i] = AfterFunc(Hour, nil)
-	}
-	b.ResetTimer()
 
+	// Create equal number of garbage timers on each P before starting
+	// the benchmark.
+	var wg sync.WaitGroup
+	garbageAll := make([][]*Timer, runtime.GOMAXPROCS(0))
+	for i := range garbageAll {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			garbage := make([]*Timer, 1<<15)
+			for j := range garbage {
+				garbage[j] = AfterFunc(Hour, nil)
+			}
+			garbageAll[i] = garbage
+		}(i)
+	}
+	wg.Wait()
+
+	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			bench(1000)
 		}
 	})
-
 	b.StopTimer()
-	for i := 0; i < len(garbage); i++ {
-		garbage[i].Stop()
+
+	for _, garbage := range garbageAll {
+		for _, t := range garbage {
+			t.Stop()
+		}
 	}
 }
 
@@ -155,6 +170,30 @@ func BenchmarkStartStop(b *testing.B) {
 		for i := 0; i < n; i++ {
 			timers[i].Stop()
 		}
+	})
+}
+
+func BenchmarkReset(b *testing.B) {
+	benchmark(b, func(n int) {
+		t := NewTimer(Hour)
+		for i := 0; i < n; i++ {
+			t.Reset(Hour)
+		}
+		t.Stop()
+	})
+}
+
+func BenchmarkSleep(b *testing.B) {
+	benchmark(b, func(n int) {
+		var wg sync.WaitGroup
+		wg.Add(n)
+		for i := 0; i < n; i++ {
+			go func() {
+				Sleep(Nanosecond)
+				wg.Done()
+			}()
+		}
+		wg.Wait()
 	})
 }
 
@@ -227,7 +266,7 @@ func TestAfterQueuing(t *testing.T) {
 	err := errors.New("!=nil")
 	for i := 0; i < attempts && err != nil; i++ {
 		delta := Duration(20+i*50) * Millisecond
-		if err = testAfterQueuing(t, delta); err != nil {
+		if err = testAfterQueuing(delta); err != nil {
 			t.Logf("attempt %v failed: %v", i, err)
 		}
 	}
@@ -248,7 +287,7 @@ func await(slot int, result chan<- afterResult, ac <-chan Time) {
 	result <- afterResult{slot, <-ac}
 }
 
-func testAfterQueuing(t *testing.T, delta Duration) error {
+func testAfterQueuing(delta Duration) error {
 	// make the result channel buffered because we don't want
 	// to depend on channel queueing semantics that might
 	// possibly change in the future.

@@ -22,7 +22,7 @@ contains
 
   subroutine do_something(this)
     class(abc_type),intent(in)::this
-    if (this%abc_function() .ne. "hello") call abort
+    if (this%abc_function() .ne. "hello") STOP 1
   end subroutine do_something
 
 end module abc

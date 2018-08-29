@@ -93,7 +93,7 @@ program test_pr58586
   call add_t(static_t_init())
   ! temp = t_init() ! <-- This derefs a null-pointer currently
   ! Filed as pr66775
-  if (allocated (temp)) call abort()
+  if (allocated (temp)) STOP 1
 
   allocate(od)
   call add_c(od%init())

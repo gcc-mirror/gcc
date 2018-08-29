@@ -1,6 +1,6 @@
 // Components for manipulating non-owning sequences of characters -*- C++ -*-
 
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,16 +36,14 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201402L
-# include <bits/c++17_warning.h>
-#else
+#if __cplusplus >= 201703L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find(const _CharT* __str, size_type __pos, size_type __n) const noexcept
     {
@@ -66,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find(_CharT __c, size_type __pos) const noexcept
     {
@@ -82,7 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     rfind(const _CharT* __str, size_type __pos, size_type __n) const noexcept
     {
@@ -102,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     rfind(_CharT __c, size_type __pos) const noexcept
     {
@@ -119,9 +117,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
-    find_first_of(const _CharT* __str, size_type __pos, size_type __n) const
+    find_first_of(const _CharT* __str, size_type __pos,
+		  size_type __n) const noexcept
     {
       __glibcxx_requires_string_len(__str, __n);
       for (; __n && __pos < this->_M_len; ++__pos)
@@ -135,9 +134,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
-    find_last_of(const _CharT* __str, size_type __pos, size_type __n) const
+    find_last_of(const _CharT* __str, size_type __pos,
+		 size_type __n) const noexcept
     {
       __glibcxx_requires_string_len(__str, __n);
       size_type __size = this->size();
@@ -156,9 +156,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
-    find_first_not_of(const _CharT* __str, size_type __pos, size_type __n) const
+    find_first_not_of(const _CharT* __str, size_type __pos,
+		      size_type __n) const noexcept
     {
       __glibcxx_requires_string_len(__str, __n);
       for (; __pos < this->_M_len; ++__pos)
@@ -168,7 +169,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find_first_not_of(_CharT __c, size_type __pos) const noexcept
     {
@@ -179,9 +180,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
-    find_last_not_of(const _CharT* __str, size_type __pos, size_type __n) const
+    find_last_not_of(const _CharT* __str, size_type __pos,
+		     size_type __n) const noexcept
     {
       __glibcxx_requires_string_len(__str, __n);
       size_type __size = this->_M_len;
@@ -200,7 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find_last_not_of(_CharT __c, size_type __pos) const noexcept
     {

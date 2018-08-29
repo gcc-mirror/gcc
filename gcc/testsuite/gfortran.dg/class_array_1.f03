@@ -21,14 +21,14 @@
   call display(x, [1], [4], t2 = [(type2(i,42.0 + float (i)), i = 1, 4)])
   call display(x, [1], [4], t2 = [(type2(111,99.0), i = 1, 4)])
 
-  if (any (disp (x) .ne. [99.0,99.0,99.0,99.0])) call abort
+  if (any (disp (x) .ne. [99.0,99.0,99.0,99.0])) STOP 1
 
   if (allocated (x)) deallocate (x)
 
   allocate(x(1:4), source = type1(42))
   call display(x, [1], [4], t1 = [(type1(42), i = 1, 4)])
   call display(x, [1], [4], t1 = [type1(42),type1(99),type1(42),type1(42)])
-  if (any (disp (x) .ne. [0.0,0.0,0.0,0.0])) call abort
+  if (any (disp (x) .ne. [0.0,0.0,0.0,0.0])) STOP 2
 
 contains
   subroutine display(x, lower, upper, t1, t2)
@@ -39,17 +39,17 @@ contains
     select type (x)
       type is (type1)
         if (present (t1)) then
-          if (any (x%i .ne. t1%i)) call abort
+          if (any (x%i .ne. t1%i)) STOP 3
         else
-          call abort
+          STOP 4
         end if
         x(2)%i = 99
       type is (type2)
         if (present (t2)) then
-          if (any (x%i .ne. t2%i)) call abort
-          if (any (x%r .ne. t2%r)) call abort
+          if (any (x%i .ne. t2%i)) STOP 5
+          if (any (x%r .ne. t2%r)) STOP 6
         else
-          call abort
+          STOP 7
         end if
         x%i = 111
         x%r = 99.0
@@ -59,8 +59,8 @@ contains
   subroutine bounds (x, lower, upper)
     class(type1), allocatable, dimension (:) :: x
     integer, dimension (:) :: lower, upper
-    if (any (lower .ne. lbound (x))) call abort
-    if (any (upper .ne. ubound (x))) call abort
+    if (any (lower .ne. lbound (x))) STOP 8
+    if (any (upper .ne. ubound (x))) STOP 9
   end subroutine
   elemental function disp(y) result(ans)
     class(type1), intent(in) :: y

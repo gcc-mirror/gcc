@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=armv8.2-a+nofp16 -fpermitted-flt-eval-methods=c11" } */
+/* { dg-skip-if "" { *-*-* } { "-mcpu=*" } { "" } } */
 
 #pragma GCC target ("arch=armv8.2-a+nofp16")
 

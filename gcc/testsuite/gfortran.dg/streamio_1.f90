@@ -11,8 +11,8 @@ PROGRAM stream_io_1
   WRITE(11) 1234567
   write(11) 3.14159_8
   read(11, pos=12)i
-  if (i.ne.1234567) call abort()
+  if (i.ne.1234567) STOP 1
   read(11) r
-  if (r-3.14159 .gt. 0.00001) call abort()
+  if (r-3.14159 .gt. 0.00001) STOP 2
   CLOSE(UNIT=11, status="delete")
 END PROGRAM stream_io_1

@@ -1,6 +1,7 @@
 // PR c++/69487
 // { dg-do run }
 // { dg-options -Wno-vla }
+// { dg-require-effective-target alloca }
 
 int size = 6;
 

@@ -1,4 +1,3 @@
-! { dg-options "-fopenmp" }
       program condinc1
       logical l
       l = .false.

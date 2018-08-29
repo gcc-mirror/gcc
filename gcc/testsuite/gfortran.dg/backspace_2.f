@@ -8,12 +8,12 @@
       rewind 11
       write(11) dat
       read(11,end=1008) dat
-      call abort()
+      STOP 1
  1008 continue
       backspace 11
       write(11) dat
       read(11,end=1011) dat
-      call abort()
+      STOP 2
  1011 continue
       backspace 11
       backspace 11

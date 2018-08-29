@@ -34,7 +34,7 @@ subroutine test()
    integer, dimension (a%i()) :: y              ! #2
    integer, dimension (a_const%i()) :: z        ! #3
 
-   if (size (x) /= 13 .or. size(y) /= 13 .or. size(z) /= 13) call abort()
+   if (size (x) /= 13 .or. size(y) /= 13 .or. size(z) /= 13) STOP 1
 !   print *, size (x), size(y), size(z)
 end subroutine test
 

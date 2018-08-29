@@ -23,6 +23,7 @@ var transitionFunc = [...]func(context, []byte) (context, int){
 	stateRCDATA:      tSpecialTagEnd,
 	stateAttr:        tAttr,
 	stateURL:         tURL,
+	stateSrcset:      tURL,
 	stateJS:          tJS,
 	stateJSDqStr:     tJSDelimited,
 	stateJSSqStr:     tJSDelimited,
@@ -106,7 +107,7 @@ func tTag(c context, s []byte) (context, int) {
 		}, len(s)
 	}
 
-	attrName := string(s[i:j])
+	attrName := strings.ToLower(string(s[i:j]))
 	if c.element == elementScript && attrName == "type" {
 		attr = attrScriptType
 	} else {
@@ -117,6 +118,8 @@ func tTag(c context, s []byte) (context, int) {
 			attr = attrStyle
 		case contentTypeJS:
 			attr = attrScript
+		case contentTypeSrcset:
+			attr = attrSrcset
 		}
 	}
 
@@ -161,6 +164,7 @@ var attrStartStates = [...]state{
 	attrScriptType: stateAttr,
 	attrStyle:      stateCSS,
 	attrURL:        stateURL,
+	attrSrcset:     stateSrcset,
 }
 
 // tBeforeValue is the context transition function for stateBeforeValue.
@@ -246,7 +250,7 @@ func tAttr(c context, s []byte) (context, int) {
 
 // tURL is the context transition function for the URL state.
 func tURL(c context, s []byte) (context, int) {
-	if bytes.IndexAny(s, "#?") >= 0 {
+	if bytes.ContainsAny(s, "#?") {
 		c.urlPart = urlPartQueryOrFrag
 	} else if len(s) != eatWhiteSpace(s, 0) && c.urlPart == urlPartNone {
 		// HTML5 uses "Valid URL potentially surrounded by spaces" for

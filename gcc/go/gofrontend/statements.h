@@ -899,10 +899,9 @@ class Select_clauses
       Named_object* var, Named_object* closedvar, bool is_default,
       Block* statements, Location location)
   {
-    int index = static_cast<int>(this->clauses_.size());
-    this->clauses_.push_back(Select_clause(index, is_send, channel, val,
-					   closed, var, closedvar, is_default,
-					   statements, location));
+    this->clauses_.push_back(Select_clause(is_send, channel, val, closed, var,
+					   closedvar, is_default, statements,
+					   location));
   }
 
   size_t
@@ -950,20 +949,14 @@ class Select_clauses
 	is_default_(false)
     { }
 
-    Select_clause(int index, bool is_send, Expression* channel,
-		  Expression* val, Expression* closed, Named_object* var,
+    Select_clause(bool is_send, Expression* channel, Expression* val,
+		  Expression* closed, Named_object* var,
 		  Named_object* closedvar, bool is_default, Block* statements,
 		  Location location)
-      : index_(index), channel_(channel), val_(val), closed_(closed),
-	var_(var), closedvar_(closedvar), statements_(statements),
-	location_(location), is_send_(is_send), is_default_(is_default),
-	is_lowered_(false)
+      : channel_(channel), val_(val), closed_(closed), var_(var),
+	closedvar_(closedvar), statements_(statements), location_(location),
+	is_send_(is_send), is_default_(is_default), is_lowered_(false)
     { go_assert(is_default ? channel == NULL : channel != NULL); }
-
-    // Return the index of this clause.
-    int
-    index() const
-    { return this->index_; }
 
     // Traverse the select clause.
     int
@@ -1025,17 +1018,14 @@ class Select_clauses
 
    private:
     void
-    lower_default(Block*, Expression*, Expression*);
+    lower_default(Block*, Expression*);
 
     void
-    lower_send(Block*, Expression*, Expression*, Expression*);
+    lower_send(Block*, Expression*, Expression*);
 
     void
-    lower_recv(Gogo*, Named_object*, Block*, Expression*, Expression*,
-	       Expression*);
+    lower_recv(Gogo*, Named_object*, Block*, Expression*, Expression*);
 
-    // The index of this case in the generated switch statement.
-    int index_;
     // The channel.
     Expression* channel_;
     // The value to send or the lvalue to receive into.

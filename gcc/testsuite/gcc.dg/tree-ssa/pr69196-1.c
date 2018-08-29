@@ -1,4 +1,4 @@
-/* { dg-do compile { target sparc*-*-* x86_64-*-* } } */
+/* { dg-do compile { target sparc*-*-* i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -fdump-tree-thread1-details -fdisable-tree-ethread" } */
 
 /* { dg-final { scan-tree-dump "FSM did not thread around loop and would copy too many statements" "thread1" } } */

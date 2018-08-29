@@ -1,6 +1,6 @@
 ! { dg-do run { target fd_truncate } }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "NaN not supported" { spu-*-* } }
 !
 ! PR fortran/34427
 !
@@ -25,10 +25,10 @@
   READ (10, NML = nl)
   close (10)
 
-  if(infinity /= 1) call abort()
+  if(infinity /= 1) STOP 1
   if(any(foo(1:3) /= [5.0, 5.0, 5.0]) .or. .not.isnan(foo(4)) &
      .or. foo(5) <= huge(foo) .or. any(foo(6:11) /= -1.0)) &
-    call abort()
+    STOP 2
 ! Works too:
   foo = -1.0
   infinity = -1
@@ -41,8 +41,8 @@
   READ (10, NML = nl)
   CLOSE (10)
 
-  if(infinity /= 1) call abort()
+  if(infinity /= 1) STOP 3
   if(any(foo(1:3) /= [5.0, 5.0, 5.0]) .or. .not.isnan(foo(4)) &
      .or. foo(5) <= huge(foo) .or. any(foo(6:11) /= -1.0)) &
-    call abort()
+    STOP 4
  END PROGRAM TEST

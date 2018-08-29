@@ -4,7 +4,7 @@
 struct S {
   virtual ~S();
 };
-int f() transaction_safe {
+void f() transaction_safe {
   S s;		     // { dg-error "unsafe" "invocation of unsafe destructor" }
 }
 

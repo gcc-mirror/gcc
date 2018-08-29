@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -66,10 +66,9 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_LOOPS	        XCHAL_HAVE_LOOPS
 #define TARGET_WINDOWED_ABI	(XSHAL_ABI == XTHAL_ABI_WINDOWED)
 #define TARGET_DEBUG		XCHAL_HAVE_DEBUG
+#define TARGET_L32R		XCHAL_HAVE_L32R
 
-#define TARGET_DEFAULT \
-  ((XCHAL_HAVE_L32R	? 0 : MASK_CONST16) |				\
-   MASK_SERIALIZE_VOLATILE)
+#define TARGET_DEFAULT (MASK_SERIALIZE_VOLATILE)
 
 #ifndef HAVE_AS_TLS
 #define HAVE_AS_TLS 0
@@ -169,17 +168,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Imitate the way many other C compilers handle alignment of
    bitfields and the structures that contain them.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
-
-/* Align string constants and constructors to at least a word boundary.
-   The typical use of this macro is to increase alignment for string
-   constants to be word aligned so that 'strcpy' calls that copy
-   constants can be done inline.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  (!optimize_size &&							\
-   (TREE_CODE (EXP) == STRING_CST || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD						\
-	? BITS_PER_WORD							\
-	: (ALIGN))
 
 /* Align arrays, unions and records to at least a word boundary.
    One use of this macro is to increase alignment of medium-size
@@ -322,30 +310,6 @@ extern int leaf_function;
 #define FP_REG_P(REGNO) ((unsigned) ((REGNO) - FP_REG_FIRST) < FP_REG_NUM)
 #define ACC_REG_P(REGNO) ((unsigned) ((REGNO) - ACC_REG_FIRST) < ACC_REG_NUM)
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (FP_REG_P (REGNO) ?							\
-	((GET_MODE_SIZE (MODE) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG) : \
-	((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode
-   MODE.  */
-extern char xtensa_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  xtensa_hard_regno_mode_ok[(int) (MODE)][(REGNO)]
-
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)					\
-  ((GET_MODE_CLASS (MODE1) == MODE_FLOAT ||				\
-    GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)			\
-   == (GET_MODE_CLASS (MODE2) == MODE_FLOAT ||				\
-       GET_MODE_CLASS (MODE2) == MODE_COMPLEX_FLOAT))
-
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 1)
 
@@ -361,6 +325,12 @@ extern char xtensa_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM (GP_REG_FIRST + 17)
+
+/* Hard frame pointer is neither frame nor arg pointer.
+   The definitions are here because actual hard frame pointer register
+   definition is not a preprocessor constant.  */
+#define HARD_FRAME_POINTER_IS_FRAME_POINTER 0
+#define HARD_FRAME_POINTER_IS_ARG_POINTER 0
 
 /* For now we don't try to use the full set of boolean registers.  Without
    software pipelining of FP operations, there's not much to gain and it's
@@ -460,11 +430,8 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD 1
 
-#define FRAME_GROWS_DOWNWARD flag_stack_protect
-
-/* Offset within stack frame to start allocating local variables at.  */
-#define STARTING_FRAME_OFFSET						\
-  (FRAME_GROWS_DOWNWARD ? 0 : crtl->outgoing_args_size)
+#define FRAME_GROWS_DOWNWARD (flag_stack_protect \
+			      || (flag_sanitize & SANITIZE_ADDRESS) != 0)
 
 /* The ARG_POINTER and FRAME_POINTER are not real Xtensa registers, so
    they are eliminated to either the stack pointer or hard frame pointer.  */
@@ -687,10 +654,6 @@ typedef struct xtensa_args
 
 /* Shift instructions ignore all but the low-order few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = -1, 1)

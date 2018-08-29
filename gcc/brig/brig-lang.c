@@ -1,5 +1,5 @@
 /* brig-lang.c -- brig (HSAIL) input gcc interface.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -51,7 +51,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "brig-c.h"
 #include "brig-builtins.h"
 
-/* This file is based on Go frontent'd go-lang.c and gogo-tree.cc.  */
+static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
+static tree handle_const_attribute (tree *, tree, tree, int, bool *);
+static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
+static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
+
+/* This file is based on Go frontend's go-lang.c and gogo-tree.cc.  */
 
 /* If -v set.  */
 
@@ -117,7 +123,7 @@ brig_langhook_init_options_struct (struct gcc_options *opts)
   /* If we set this to one, the whole program optimizations internalize
      all global variables, making them invisible to the dyn loader (and
      thus the HSA runtime implementation).  */
-  opts->x_flag_whole_program = 0;
+  opts->x_flag_whole_program = 1;
 
   /* The builtin math functions should not set errno.  */
   opts->x_flag_errno_math = 0;
@@ -128,6 +134,10 @@ brig_langhook_init_options_struct (struct gcc_options *opts)
 
   opts->x_flag_finite_math_only = 0;
   opts->x_flag_signed_zeros = 1;
+
+  opts->x_optimize = 3;
+
+  flag_no_builtin = 1;
 }
 
 /* Handle Brig specific options.  Return 0 if we didn't do anything.  */
@@ -135,7 +145,7 @@ brig_langhook_init_options_struct (struct gcc_options *opts)
 static bool
 brig_langhook_handle_option
   (size_t scode, const char *arg ATTRIBUTE_UNUSED,
-  int value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
+  HOST_WIDE_INT value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
   location_t loc ATTRIBUTE_UNUSED,
   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
@@ -159,9 +169,15 @@ brig_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
 
-  /* gccbrig casts pointers around like crazy, TBAA produces
-	   broken code if not force disabling it.  */
-  flag_strict_aliasing = 0;
+  /* gccbrig casts pointers around like crazy, TBAA might produce broken
+     code if not disabling it by default.  Some PRM conformance tests such
+     as prm/core/memory/ordinary/ld/ld_u16 fail currently with strict
+     aliasing (to fix).  It can be enabled from the command line for cases
+     that are known not to break the C style aliasing requirements.  */
+  if (!global_options_set.x_flag_strict_aliasing)
+    flag_strict_aliasing = 0;
+  else
+    flag_strict_aliasing = global_options.x_flag_strict_aliasing;
 
   /* Returning false means that the backend should be used.  */
   return false;
@@ -182,6 +198,8 @@ brig_langhook_parse_file (void)
 {
   brig_to_generic brig_to_gen;
 
+  std::vector <char*> brig_blobs;
+
   for (unsigned int i = 0; i < num_in_fnames; ++i)
     {
 
@@ -194,11 +212,22 @@ brig_langhook_parse_file (void)
 	  error ("could not read the BRIG file");
 	  exit (1);
 	}
-      brig_to_gen.parse (brig_blob);
       fclose (f);
+
+      brig_to_gen.analyze (brig_blob);
+      brig_blobs.push_back (brig_blob);
+    }
+
+  for (size_t i = 0; i < brig_blobs.size(); ++i)
+    {
+      char *brig_blob = brig_blobs.at(i);
+      brig_to_gen.parse (brig_blob);
     }
 
   brig_to_gen.write_globals ();
+
+  for (size_t i = 0; i < brig_blobs.size (); ++i)
+    delete brig_blobs[i];
 }
 
 static tree
@@ -241,7 +270,7 @@ brig_langhook_type_for_size (unsigned int bits,
 }
 
 static tree
-brig_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
+brig_langhook_type_for_mode (machine_mode mode, int unsignedp)
 {
   if (mode == TYPE_MODE (void_type_node))
     return void_type_node;
@@ -257,10 +286,11 @@ brig_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
       return NULL_TREE;
     }
 
-  enum mode_class mc = GET_MODE_CLASS (mode);
-  if (mc == MODE_FLOAT)
+  scalar_int_mode imode;
+  scalar_float_mode fmode;
+  if (is_float_mode (mode, &fmode))
     {
-      switch (GET_MODE_BITSIZE (mode))
+      switch (GET_MODE_BITSIZE (fmode))
 	{
 	case 32:
 	  return float_type_node;
@@ -269,15 +299,15 @@ brig_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
 	default:
 	  /* We have to check for long double in order to support
 	     i386 excess precision.  */
-	  if (mode == TYPE_MODE (long_double_type_node))
+	  if (fmode == TYPE_MODE (long_double_type_node))
 	    return long_double_type_node;
 
 	  gcc_unreachable ();
 	  return NULL_TREE;
 	}
     }
-  else if (mc == MODE_INT)
-    return brig_langhook_type_for_size(GET_MODE_BITSIZE(mode), unsignedp);
+  else if (is_int_mode (mode, &imode))
+    return brig_langhook_type_for_size (GET_MODE_BITSIZE (imode), unsignedp);
   else
     {
       /* E.g., build_common_builtin_nodes () asks for modes/builtins
@@ -419,6 +449,124 @@ brig_localize_identifier (const char *ident)
   return identifier_to_locale (ident);
 }
 
+/* Define supported attributes and their handlers. Code copied from
+   lto-lang.c */
+
+/* Table of machine-independent attributes supported in GIMPLE.  */
+const struct attribute_spec brig_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "leaf",		      0, 0, true,  false, false, false,
+			      handle_leaf_attribute, NULL },
+  { "const",                  0, 0, true,  false, false, false,
+			      handle_const_attribute, NULL },
+  { "pure",                   0, 0, true,  false, false, false,
+			      handle_pure_attribute, NULL },
+  { "nothrow",                0, 0, true,  false, false, false,
+			      handle_nothrow_attribute, NULL },
+  { "returns_twice",          0, 0, true,  false, false, false,
+			      handle_returns_twice_attribute, NULL },
+  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
+};
+
+/* Attribute handlers.  */
+/* Handle a "leaf" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_leaf_attribute (tree *node, tree name,
+		       tree ARG_UNUSED (args),
+		       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  if (!TREE_PUBLIC (*node))
+    {
+      warning (OPT_Wattributes,
+	       "%qE attribute has no effect on unit local functions", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "const" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_const_attribute (tree *node, tree ARG_UNUSED (name),
+			tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			bool * ARG_UNUSED (no_add_attrs))
+{
+  tree type = TREE_TYPE (*node);
+
+  /* See FIXME comment on noreturn in c_common_attribute_table.  */
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    TREE_READONLY (*node) = 1;
+  else if (TREE_CODE (type) == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
+    TREE_TYPE (*node)
+      = build_pointer_type
+	(build_type_variant (TREE_TYPE (type), 1,
+			     TREE_THIS_VOLATILE (TREE_TYPE (type))));
+  else
+    gcc_unreachable ();
+
+  return NULL_TREE;
+}
+
+/* Handle a "pure" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_pure_attribute (tree *node, tree ARG_UNUSED (name),
+		       tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+		       bool * ARG_UNUSED (no_add_attrs))
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    DECL_PURE_P (*node) = 1;
+  else
+    gcc_unreachable ();
+
+  return NULL_TREE;
+}
+
+/* Handle a "nothrow" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_nothrow_attribute (tree *node, tree ARG_UNUSED (name),
+			  tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			  bool * ARG_UNUSED (no_add_attrs))
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    TREE_NOTHROW (*node) = 1;
+  else
+    gcc_unreachable ();
+
+  return NULL_TREE;
+}
+
+/* Handle a "returns_twice" attribute.  */
+
+static tree
+handle_returns_twice_attribute (tree *node, tree ARG_UNUSED (name),
+				tree ARG_UNUSED (args),
+				int ARG_UNUSED (flags),
+				bool * ARG_UNUSED (no_add_attrs))
+{
+  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+
+  DECL_IS_RETURNS_TWICE (*node) = 1;
+
+  return NULL_TREE;
+}
+
+
 /* Built-in initialization code cribbed from lto-lang.c which cribbed it
    from c-common.c.  */
 
@@ -489,9 +637,11 @@ builtin_type_for_size (int size, bool unsignedp)
 
 static void
 def_builtin_1 (enum built_in_function fncode, const char *name,
-	       enum built_in_class fnclass, tree fntype, tree libtype,
-	       bool both_p, bool fallback_p, bool nonansi_p,
-	       tree fnattrs, bool implicit_p)
+	       enum built_in_class fnclass ATTRIBUTE_UNUSED,
+	       tree fntype, tree libtype ATTRIBUTE_UNUSED,
+	       bool both_p ATTRIBUTE_UNUSED, bool fallback_p,
+	       bool nonansi_p ATTRIBUTE_UNUSED, tree fnattrs,
+	       bool implicit_p)
 {
   tree decl;
   const char *libname;
@@ -503,12 +653,6 @@ def_builtin_1 (enum built_in_function fncode, const char *name,
   decl = add_builtin_function (name, fntype, fncode, fnclass,
 			       (fallback_p ? libname : NULL),
 			       fnattrs);
-
-  if (both_p
-      && !flag_no_builtin
-      && !(nonansi_p && flag_no_nonansi_builtin))
-    add_builtin_function (libname, libtype, fncode, fnclass,
-			  NULL, fnattrs);
 
   set_builtin_decl (fncode, decl, implicit_p);
 }
@@ -800,6 +944,10 @@ brig_langhook_init (void)
 #define LANG_HOOKS_GETDECLS brig_langhook_getdecls
 #define LANG_HOOKS_GIMPLIFY_EXPR brig_langhook_gimplify_expr
 #define LANG_HOOKS_EH_PERSONALITY brig_langhook_eh_personality
+
+/* Attribute hooks.  */
+#undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
+#define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE brig_attribute_table
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

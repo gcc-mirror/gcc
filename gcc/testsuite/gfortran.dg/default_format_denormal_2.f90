@@ -14,7 +14,7 @@ include "default_format_2.inc"
 program main
   use test_default_format
 
-  if (test (tiny(0.0_kl), -1) /= 0) call abort
-  if (test (-tiny(0.0_kl), 1) /= 0) call abort
+  if (test (tiny(0.0_kl), -1) /= 0) STOP 1
+  if (test (-tiny(0.0_kl), 1) /= 0) STOP 2
 end program main
 !

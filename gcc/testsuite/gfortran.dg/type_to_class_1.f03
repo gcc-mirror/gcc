@@ -13,12 +13,12 @@ type(t) :: y(10)
 integer :: i
 
 allocate(x(10))
-if (size (x) /= 10) call abort ()
+if (size (x) /= 10) STOP 1
 x = [(t(a=-i, B=[1*i,2*i,3*i,4*i]), i = 1, 10)]
 do i = 1, 10
   if (x(i)%a /= -i .or. size (x(i)%b) /= 4 &
       .or. any (x(i)%b /= [1*i,2*i,3*i,4*i])) then
-      call abort()
+      STOP 2
   end if
 end do
 
@@ -34,15 +34,15 @@ contains
     class(t), intent(in) :: z(:)
     select type(z)
      type is(t)
-      if (size (z) /= 10) call abort ()
+      if (size (z) /= 10) STOP 3
       do i = 1, 10
         if (z(i)%a /= -i .or. size (z(i)%b) /= 4 &
             .or. any (z(i)%b /= [1*i,2*i,3*i,4*i])) then
-            call abort()
+            STOP 4
         end if
       end do
       class default
-        call abort()
+        STOP 5
     end select
   end subroutine class
   subroutine classExplicit(u, n)
@@ -50,15 +50,15 @@ contains
     class(t), intent(in) :: u(n)
     select type(u)
      type is(t)
-      if (size (u) /= 10) call abort ()
+      if (size (u) /= 10) STOP 6
       do i = 1, 10
         if (u(i)%a /= -i .or. size (u(i)%b) /= 4 &
             .or. any (u(i)%b /= [1*i,2*i,3*i,4*i])) then
-            call abort()
+            STOP 7
         end if
       end do
       class default
-        call abort()
+        STOP 8
     end select
   end subroutine classExplicit
 end

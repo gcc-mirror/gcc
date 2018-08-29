@@ -1,13 +1,20 @@
-/* { dg-do run { target { powerpc64le-*-* } } } */
+/* { dg-do run { target { powerpc*-*-* } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-options "-mcpu=power8 " } */
 
 #include <altivec.h>
 
+#ifdef DEBUG 
+#include <stdio.h>
+#endif
+
 void abort (void);
 
 int main ()
 {
+  vector int inta = {27, -1, 4, 9};
+  vector unsigned int uinta = {9, 0, 7, 222};
+
   vector long long sa = {27L, -14L};
   vector long long sb = {-9L, -2L};
 
@@ -44,5 +51,42 @@ int main ()
       || sg[0] != 27L || sg[1] != -14L || ug[0] != 27L || ug[1] != 14L)
     abort ();
 
+  vector float fa = vec_ctf (inta, 5);
+  if (fa[0] != 0.843750 || fa[1] != -0.031250 || fa[2] != 0.125000 || fa[3] != 0.281250)
+#ifdef DEBUG
+    printf("fa[0] = %f, fa[1] = %f, fa[2] = %f, fa[3] = %f\n",
+           fa[0], fa[1], fa[2], fa[3]);
+#else  
+    abort ();
+#endif
+
+  vector int sa2 = vec_cts (fa, 5);
+  if (sa2[0] != 27 || sa2[1] != -1 || sa2[2] != 4 || sa2[3] != 9)
+#ifdef DEBUG
+    printf("sa2[0] = %d, sa2[1] = %d, sa2[2] = %d, sa2[3] = %d\n",
+           sa2[0], sa2[1], sa2[2], sa2[3]);
+#else  
+    abort ();
+#endif
+     
+  vector float fb = vec_ctf (uinta, 2);
+
+  if (fb[0] != 2.250000 || fb[1] != 0.0 || fb[2] != 1.750000 || fb[3] != 55.500000)
+#ifdef DEBUG
+    printf("fb[0] = %f, fb[1] = %f, fb[2] = %f, fb[3] = %f\n",
+		 fb[0], fb[1], fb[2], fb[3]);
+#else  
+    abort ();
+#endif
+
+  vector unsigned int ua2 = vec_ctu (fb, 2);
+  if (ua2[0] != 9 || ua2[1] != 0 || ua2[2] != 7 || ua2[3] != 222)
+#ifdef DEBUG
+    printf("ua2[0] = %d, ua2[1] = %d, ua2[2] = %d, ua2[3] = %d\n",
+           ua2[0], ua2[1], ua2[2], ua2[3]);
+#else  
+    abort ();
+#endif
+     
   return 0;
 }

@@ -13,13 +13,13 @@ fn2 (int x, int y)
 {
   if (y)
     {
-      fn1 (x);		/* { dg-final { gdb-test 17 "x" "6" } } */
-      fn1 (x);		/* { dg-final { gdb-test 17 "y" "25" } } */
+      fn1 (x);		/* { dg-final { gdb-test .+1 "x" "6" } } */
+      fn1 (x);		/* { dg-final { gdb-test . "y" "25" } } */
       fn1 (x);
       fn1 (x);
       y = -2 + x;
       y = y * y * y + y;
-      fn1 (x + y);	/* { dg-final { gdb-test 22 "y" "68" } } */
+      fn1 (x + y);	/* { dg-final { gdb-test . "y" "68" } } */
     }
   return x;
 }

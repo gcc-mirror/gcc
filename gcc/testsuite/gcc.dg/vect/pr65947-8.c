@@ -42,4 +42,4 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" } } */
-/* { dg-final { scan-tree-dump "multiple types in double reduction or condition reduction" "vect" { xfail { ! vect_max_reduc } } } } */
+/* { dg-final { scan-tree-dump "multiple types in double reduction or condition reduction" "vect" } } */

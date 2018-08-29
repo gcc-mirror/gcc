@@ -6,7 +6,7 @@ struct s { int a[1]; };
 void
 foo5 (void)
 {
-	  ((struct s) { { 0 } }).a[0] = 1;
+  int i = ((struct s) { { 0 } }).a[0];
 }
 
 

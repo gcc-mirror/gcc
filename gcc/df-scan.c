@@ -1,5 +1,5 @@
 /* Scanning of rtl for dataflow analysis.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "dumpfile.h"
+#include "calls.h"
 
 
 /* The set of hard registers in eliminables[i].from. */
@@ -2623,24 +2624,6 @@ df_ref_record (enum df_ref_class cl,
 }
 
 
-/* A set to a non-paradoxical SUBREG for which the number of word_mode units
-   covered by the outer mode is smaller than that covered by the inner mode,
-   is a read-modify-write operation.
-   This function returns true iff the SUBREG X is such a SUBREG.  */
-
-bool
-df_read_modify_subreg_p (rtx x)
-{
-  unsigned int isize, osize;
-  if (GET_CODE (x) != SUBREG)
-    return false;
-  isize = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
-  osize = GET_MODE_SIZE (GET_MODE (x));
-  return isize > osize
-	 && isize > REGMODE_NATURAL_SIZE (GET_MODE (SUBREG_REG (x)));
-}
-
-
 /* Process all the registers defined in the rtx pointed by LOC.
    Autoincrement/decrement definitions will be picked up by df_uses_record.
    Any change here has to be matched in df_find_hard_reg_defs_1.  */
@@ -2696,7 +2679,7 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
     }
   else if (GET_CODE (dst) == SUBREG && REG_P (SUBREG_REG (dst)))
     {
-      if (df_read_modify_subreg_p (dst))
+      if (read_modify_subreg_p (dst))
 	flags |= DF_REF_READ_WRITE | DF_REF_PARTIAL;
 
       flags |= DF_REF_SUBREG;
@@ -2795,6 +2778,7 @@ df_find_hard_reg_defs (rtx x, HARD_REG_SET *defs)
       break;
 
     case CLOBBER:
+    case CLOBBER_HIGH:
       df_find_hard_reg_defs_1 (XEXP (x, 0), defs);
       break;
 
@@ -2854,6 +2838,10 @@ df_uses_record (struct df_collection_rec *collection_rec,
       /* If we're clobbering a REG then we have a def so ignore.  */
       return;
 
+    case CLOBBER_HIGH:
+      gcc_assert (REG_P (XEXP (x, 0)));
+      return;
+
     case MEM:
       df_uses_record (collection_rec,
 		      &XEXP (x, 0), DF_REF_REG_MEM_LOAD,
@@ -2910,7 +2898,7 @@ df_uses_record (struct df_collection_rec *collection_rec,
 	switch (GET_CODE (dst))
 	  {
 	    case SUBREG:
-	      if (df_read_modify_subreg_p (dst))
+	      if (read_modify_subreg_p (dst))
 		{
 		  df_uses_record (collection_rec, &SUBREG_REG (dst),
 				  DF_REF_REG_USE, bb, insn_info,
@@ -3150,6 +3138,7 @@ df_get_call_refs (struct df_collection_rec *collection_rec,
   for (note = CALL_INSN_FUNCTION_USAGE (insn_info->insn); note;
        note = XEXP (note, 1))
     {
+      gcc_assert (GET_CODE (XEXP (note, 0)) != CLOBBER_HIGH);
       if (GET_CODE (XEXP (note, 0)) == USE)
         df_uses_record (collection_rec, &XEXP (XEXP (note, 0), 0),
 			DF_REF_REG_USE, bb, insn_info, flags);
@@ -3223,17 +3212,6 @@ df_insn_refs_collect (struct df_collection_rec *collection_rec,
      uses from CALL_INSN_FUNCTION_USAGE. */
   if (CALL_P (insn_info->insn))
     df_get_call_refs (collection_rec, bb, insn_info, flags);
-
-  if (asm_noperands (PATTERN (insn_info->insn)) >= 0)
-    for (unsigned i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (global_regs[i])
-       {
-         /* As with calls, asm statements reference all global regs. */
-         df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-                        NULL, bb, insn_info, DF_REF_REG_USE, flags);
-         df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-                        NULL, bb, insn_info, DF_REF_REG_DEF, flags);
-       }
 
   /* Record other defs.  These should be mostly for DF_REF_REGULAR, so
      that a qsort on the defs is unnecessary in most cases.  */
@@ -3536,7 +3514,7 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
 
   /* If the function has an incoming STATIC_CHAIN, it has to show up
      in the entry def set.  */
-  r = targetm.calls.static_chain (current_function_decl, true);
+  r = rtx_for_static_chain (current_function_decl, true);
   if (r && REG_P (r))
     bitmap_set_bit (entry_block_defs, REGNO (r));
 

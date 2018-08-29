@@ -1,5 +1,5 @@
 /* brig-cmp-inst-handler.cc -- brig cmp instruction handling
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -180,17 +180,17 @@ brig_cmp_inst_handler::operator () (const BrigBase *base)
 	 results, we must now truncate the result vector to S16s so it
 	 fits to the destination register.  We can build the target vector
 	 type from the f16 storage type (unsigned ints).  */
-      expr = add_temp_var ("wide_cmp_result", expr);
+      expr = m_parent.m_cf->add_temp_var ("wide_cmp_result", expr);
       tree_stl_vec wide_elements;
       tree_stl_vec shrunk_elements;
-      unpack (expr, wide_elements);
+      m_parent.m_cf->unpack (expr, wide_elements);
       for (size_t i = 0; i < wide_elements.size (); ++i)
 	{
 	  tree wide = wide_elements.at (i);
 	  shrunk_elements.push_back
 	    (convert_to_integer (short_integer_type_node, wide));
 	}
-      expr = pack (shrunk_elements);
+      expr = m_parent.m_cf->pack (shrunk_elements);
     }
   build_output_assignment (*inst_base, operands[0], expr);
 

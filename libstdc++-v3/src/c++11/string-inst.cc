@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,6 +34,14 @@
 // by another file which defines _GLIBCXX_USE_CXX11_ABI=0.
 # define _GLIBCXX_USE_CXX11_ABI 1
 #endif
+
+// Prevent the basic_string(const _CharT*, const _Alloc&) and
+// basic_string(size_type, _CharT, const _Alloc&) constructors from being
+// replaced by constrained function templates, so that we instantiate the
+// pre-C++17 definitions.
+// This also causes the instantiation of the non-standard C++0x-era
+// insert(iterator, initializer_list<C>) overload, see PR libstdc++/83328
+#define _GLIBCXX_DEFINING_STRING_INSTANTIATIONS 1
 
 #include <string>
 

@@ -1,5 +1,5 @@
 /* Subroutine declarations for Altera Nios II target support.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com).
    Contributed by Mentor Graphics, Inc.
 
@@ -30,6 +30,11 @@ extern bool nios2_expand_return (void);
 extern void nios2_function_profiler (FILE *, int);
 
 #ifdef RTX_CODE
+extern bool nios2_large_constant_p (rtx);
+extern bool nios2_large_constant_memory_operand_p (rtx);
+
+extern rtx nios2_split_large_constant (rtx, rtx);
+extern rtx nios2_split_large_constant_memory_operand (rtx);
 extern bool nios2_emit_move_sequence (rtx *, machine_mode);
 extern void nios2_emit_expensive_div (rtx *, machine_mode);
 extern void nios2_adjust_call_address (rtx *, rtx);
@@ -47,6 +52,7 @@ extern const char * nios2_add_insn_asm (rtx_insn *, rtx *);
 
 extern bool nios2_legitimate_pic_operand_p (rtx);
 extern bool gprel_constant_p (rtx);
+extern bool r0rel_constant_p (rtx);
 extern bool nios2_regno_ok_for_base_p (int, bool);
 extern bool nios2_unspec_reloc_p (rtx);
 
@@ -59,14 +65,8 @@ extern bool gen_ldstwm_peep (bool, int, rtx, rtx *);
 
 extern void nios2_adjust_reg_alloc_order (void);
 
-#ifdef TREE_CODE
-#ifdef ARGS_SIZE_RTX
-/* expr.h defines both ARGS_SIZE_RTX and `enum direction' */
-extern enum direction nios2_function_arg_padding (machine_mode, const_tree);
-extern enum direction nios2_block_reg_padding (machine_mode, tree, int);
-#endif /* ARGS_SIZE_RTX */
+extern pad_direction nios2_block_reg_padding (machine_mode, tree, int);
 
-#endif /* TREE_CODE */
 #endif /* RTX_CODE */
 
 #endif /* GCC_NIOS2_PROTOS_H */

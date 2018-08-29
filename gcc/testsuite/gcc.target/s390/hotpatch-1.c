@@ -3,6 +3,13 @@
 /* { dg-do compile } */
 /* { dg-options "-mzarch" } */
 
+/* Without optimization extra NOPs will be added just to attach
+   location info to it.  Don't run the test in that case.  The torture
+   framework always appears to run the testcase without -O option
+   first.  */
+
+/* { dg-skip-if "" { *-*-* } { "*" } { "-O*" } } */
+
 #include <stdio.h>
 
 void hp1(void)

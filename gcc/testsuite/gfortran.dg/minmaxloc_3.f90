@@ -112,7 +112,7 @@ contains
 subroutine check(n, i,j)
   integer, value, intent(in) :: i,j,n
   if(i /= j) then
-     call abort()
+     STOP 1
 !    print *, 'ERROR: Test',n,' expected ',i,' received ', j
   end if
 end subroutine check

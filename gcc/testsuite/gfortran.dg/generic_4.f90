@@ -24,5 +24,5 @@ use foo
 integer :: y(3), z(3)
 y = (/1,2,3/)
 call baz(y,z)
-if (any (y /= z)) call abort ()
+if (any (y /= z)) STOP 1
 end

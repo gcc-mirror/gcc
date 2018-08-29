@@ -1,6 +1,6 @@
 // Debugging deque implementation -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +31,11 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Tp, typename _Allocator> class deque;
+} } // namespace std::__debug
+
 #include <deque>
 #include <debug/safe_sequence.h>
 #include <debug/safe_container.h>
@@ -55,6 +60,9 @@ namespace __debug
       typedef typename _Base::const_iterator	_Base_const_iterator;
       typedef typename _Base::iterator		_Base_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
+
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
 
     public:
       typedef typename _Base::reference			reference;
@@ -130,8 +138,8 @@ namespace __debug
 #endif
 	deque(_InputIterator __first, _InputIterator __last,
 	      const _Allocator& __a = _Allocator())
-	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
-								     __last)),
+	: _Base(__gnu_debug::__base(
+		  __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last), __a)
 	{ }
 
@@ -623,6 +631,16 @@ namespace __debug
       const _Base&
       _M_base() const _GLIBCXX_NOEXCEPT	{ return *this; }
     };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename _InputIterator, typename _ValT
+	     = typename iterator_traits<_InputIterator>::value_type,
+	   typename _Allocator = allocator<_ValT>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    deque(_InputIterator, _InputIterator, _Allocator = _Allocator())
+      -> deque<_ValT, _Allocator>;
+#endif
 
   template<typename _Tp, typename _Alloc>
     inline bool

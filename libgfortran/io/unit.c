@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "fbuf.h"
 #include "format.h"
 #include "unix.h"
+#include "async.h"
 #include <string.h>
 #include <assert.h>
 
@@ -89,24 +90,16 @@ static int newunit_size; /* Total number of elements in the newunits array.  */
    units are allocated, above and equal to the LWI there may be both
    allocated and free units. */
 static int newunit_lwi;
-static void newunit_free (int);
 
 /* Unit numbers assigned with NEWUNIT start from here.  */
 #define NEWUNIT_START -10
 
-
-#define NEWUNIT_STACK_SIZE 16
-
-/* A stack to save previously used newunit-assigned unit numbers to
-   allow them to be reused without reallocating the gfc_unit structure
-   which is still in the treap.  */
-static gfc_saved_unit newunit_stack[NEWUNIT_STACK_SIZE];
-static int newunit_tos = 0; /* Index to Top of Stack.  */
-
-
 #define CACHE_SIZE 3
 static gfc_unit *unit_cache[CACHE_SIZE];
+
 gfc_offset max_offset;
+gfc_offset default_recl;
+
 gfc_unit *unit_root;
 #ifdef __GTHREAD_MUTEX_INIT
 __gthread_mutex_t unit_lock = __GTHREAD_MUTEX_INIT;
@@ -239,6 +232,7 @@ insert_unit (int n)
 {
   gfc_unit *u = xcalloc (1, sizeof (gfc_unit));
   u->unit_number = n;
+  u->internal_unit_kind = 0;
 #ifdef __GTHREAD_MUTEX_INIT
   {
     __gthread_mutex_t tmp = __GTHREAD_MUTEX_INIT;
@@ -247,7 +241,7 @@ insert_unit (int n)
 #else
   __GTHREAD_MUTEX_INIT_FUNCTION (&u->lock);
 #endif
-  __gthread_mutex_lock (&u->lock);
+  LOCK (&u->lock);
   u->priority = pseudo_random ();
   unit_root = insert (u, unit_root);
   return u;
@@ -334,7 +328,9 @@ get_gfc_unit (int n, int do_create)
   gfc_unit *p;
   int c, created = 0;
 
-  __gthread_mutex_lock (&unit_lock);
+  NOTE ("Unit n=%d, do_create = %d", n, do_create);
+  LOCK (&unit_lock);
+
 retry:
   for (c = 0; c < CACHE_SIZE; c++)
     if (unit_cache[c] != NULL && unit_cache[c]->unit_number == n)
@@ -373,7 +369,7 @@ retry:
     {
       /* Newly created units have their lock held already
 	 from insert_unit.  Just unlock UNIT_LOCK and return.  */
-      __gthread_mutex_unlock (&unit_lock);
+      UNLOCK (&unit_lock);
       return p;
     }
 
@@ -381,10 +377,10 @@ found:
   if (p != NULL && (p->child_dtio == 0))
     {
       /* Fast path.  */
-      if (! __gthread_mutex_trylock (&p->lock))
+      if (! TRYLOCK (&p->lock))
 	{
 	  /* assert (p->closed == 0); */
-	  __gthread_mutex_unlock (&unit_lock);
+	  UNLOCK (&unit_lock);
 	  return p;
 	}
 
@@ -392,15 +388,15 @@ found:
     }
 
 
-  __gthread_mutex_unlock (&unit_lock);
+  UNLOCK (&unit_lock);
 
   if (p != NULL && (p->child_dtio == 0))
     {
-      __gthread_mutex_lock (&p->lock);
+      LOCK (&p->lock);
       if (p->closed)
 	{
-	  __gthread_mutex_lock (&unit_lock);
-	  __gthread_mutex_unlock (&p->lock);
+	  LOCK (&unit_lock);
+	  UNLOCK (&p->lock);
 	  if (predec_waiting_locked (p) == 0)
 	    destroy_unit_mutex (p);
 	  goto retry;
@@ -439,10 +435,9 @@ is_trim_ok (st_parameter_dt *dtp)
   if (dtp->common.flags & IOPARM_DT_HAS_FORMAT)
     {
       char *p = dtp->format;
-      off_t i;
       if (dtp->common.flags & IOPARM_DT_HAS_BLANK)
 	return false;
-      for (i = 0; i < dtp->format_len; i++)
+      for (gfc_charlen_type i = 0; i < dtp->format_len; i++)
 	{
 	  if (p[i] == '/') return false;
 	  if (p[i] == 'b' || p[i] == 'B')
@@ -538,22 +533,6 @@ set_internal_unit (st_parameter_dt *dtp, gfc_unit *iunit, int kind)
 }
 
 
-/* stash_internal_unit()-- Push the internal unit number onto the
-   avaialble stack.  */
-void
-stash_internal_unit (st_parameter_dt *dtp)
-{
-  __gthread_mutex_lock (&unit_lock);
-  newunit_tos++;
-  if (newunit_tos >= NEWUNIT_STACK_SIZE)
-    internal_error (&dtp->common, "stash_internal_unit(): Stack Size Exceeded");
-  newunit_stack[newunit_tos].unit_number = dtp->common.unit;
-  newunit_stack[newunit_tos].unit = dtp->u.p.current_unit;
-  __gthread_mutex_unlock (&unit_lock);
-}
-
-
-
 /* get_unit()-- Returns the unit structure associated with the integer
    unit or the internal file.  */
 
@@ -572,41 +551,11 @@ get_unit (st_parameter_dt *dtp, int do_create)
       else
 	internal_error (&dtp->common, "get_unit(): Bad internal unit KIND");
 
-      if ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) != 0)
-	{
-	  dtp->u.p.unit_is_internal = 1;
-	  dtp->common.unit = newunit_alloc ();
-	  unit = get_gfc_unit (dtp->common.unit, do_create);
-	  set_internal_unit (dtp, unit, kind);
-	  fbuf_init (unit, 128);
-	  return unit;
-	}
-      else
-	{
-	  if (newunit_tos)
-	    {
-	      dtp->common.unit = newunit_stack[newunit_tos].unit_number;
-	      unit = newunit_stack[newunit_tos--].unit;
-	      unit->fbuf->act = unit->fbuf->pos = 0;
-	    }
-	  else
-	    {
-	      dtp->common.unit = newunit_alloc ();
-	      unit = xcalloc (1, sizeof (gfc_unit));
-	      fbuf_init (unit, 128);
-	    }
-	  set_internal_unit (dtp, unit, kind);
-	  return unit;
-	}
-    }
-
-  /* If an internal unit number is passed from the parent to the child
-     it should have been stashed on the newunit_stack ready to be used.
-     Check for it now and return the internal unit if found.  */
-  if (newunit_tos && (dtp->common.unit <= NEWUNIT_START)
-      && (dtp->common.unit == newunit_stack[newunit_tos].unit_number))
-    {
-      unit = newunit_stack[newunit_tos--].unit;
+      dtp->u.p.unit_is_internal = 1;
+      dtp->common.unit = newunit_alloc ();
+      unit = get_gfc_unit (dtp->common.unit, do_create);
+      set_internal_unit (dtp, unit, kind);
+      fbuf_init (unit, 128);
       return unit;
     }
 
@@ -619,7 +568,11 @@ get_unit (st_parameter_dt *dtp, int do_create)
      is not allowed, such units must be created with
      OPEN(NEWUNIT=...).  */
   if (dtp->common.unit < 0)
-    return get_gfc_unit (dtp->common.unit, 0);
+    {
+      if (dtp->common.unit > NEWUNIT_START) /* Reserved units.  */
+	return NULL;
+      return get_gfc_unit (dtp->common.unit, 0);
+    }
 
   return get_gfc_unit (dtp->common.unit, do_create);
 }
@@ -632,7 +585,6 @@ void
 init_units (void)
 {
   gfc_unit *u;
-  unsigned int i;
 
 #ifdef HAVE_NEWLOCALE
   c_locale = newlocale (0, "C", 0);
@@ -645,6 +597,22 @@ init_units (void)
 #ifndef __GTHREAD_MUTEX_INIT
   __GTHREAD_MUTEX_INIT_FUNCTION (&unit_lock);
 #endif
+
+  if (sizeof (max_offset) == 8)
+    {
+      max_offset = GFC_INTEGER_8_HUGE;
+      /* Why this weird value? Because if the recl specifier in the
+	 inquire statement is a 4 byte value, u->recl is truncated,
+	 and this trick ensures it becomes HUGE(0) rather than -1.
+	 The full 8 byte value of default_recl is still 0.99999999 *
+	 max_offset which is large enough for all practical
+	 purposes.  */
+      default_recl = max_offset & ~(1LL<<31);
+    }
+  else if (sizeof (max_offset) == 4)
+    max_offset = default_recl = GFC_INTEGER_4_HUGE;
+  else
+    internal_error (NULL, "sizeof (max_offset) must be 4 or 8");
 
   if (options.stdin_unit >= 0)
     {				/* STDIN */
@@ -668,14 +636,14 @@ init_units (void)
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
-      u->recl = options.default_recl;
+      u->recl = default_recl;
       u->endfile = NO_ENDFILE;
 
       u->filename = strdup (stdin_name);
 
       fbuf_init (u, 0);
 
-      __gthread_mutex_unlock (&u->lock);
+      UNLOCK (&u->lock);
     }
 
   if (options.stdout_unit >= 0)
@@ -699,14 +667,14 @@ init_units (void)
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
-      u->recl = options.default_recl;
+      u->recl = default_recl;
       u->endfile = AT_ENDFILE;
 
       u->filename = strdup (stdout_name);
 
       fbuf_init (u, 0);
 
-      __gthread_mutex_unlock (&u->lock);
+      UNLOCK (&u->lock);
     }
 
   if (options.stderr_unit >= 0)
@@ -729,7 +697,7 @@ init_units (void)
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
-      u->recl = options.default_recl;
+      u->recl = default_recl;
       u->endfile = AT_ENDFILE;
 
       u->filename = strdup (stderr_name);
@@ -737,19 +705,13 @@ init_units (void)
       fbuf_init (u, 256);  /* 256 bytes should be enough, probably not doing
                               any kind of exotic formatting to stderr.  */
 
-      __gthread_mutex_unlock (&u->lock);
+      UNLOCK (&u->lock);
     }
-
-  /* Calculate the maximum file offset in a portable manner.
-     max will be the largest signed number for the type gfc_offset.
-     set a 1 in the LSB and keep a running sum, stopping at MSB-1 bit.  */
-  max_offset = 0;
-  for (i = 0; i < sizeof (max_offset) * 8 - 1; i++)
-    max_offset = max_offset + ((gfc_offset) 1 << i);
-
-  /* Initialize the newunit stack.  */
-  memset (newunit_stack, 0, NEWUNIT_STACK_SIZE * sizeof(gfc_saved_unit));
-  newunit_tos = 0;
+  /* The default internal units.  */
+  u = insert_unit (GFC_INTERNAL_UNIT);
+  UNLOCK (&u->lock);
+  u = insert_unit (GFC_INTERNAL_UNIT4);
+  UNLOCK (&u->lock);
 }
 
 
@@ -757,6 +719,9 @@ static int
 close_unit_1 (gfc_unit *u, int locked)
 {
   int i, rc;
+
+  if (ASYNC_IO && u->au)
+    async_close (u->au);
 
   /* If there are previously written bytes from a write with ADVANCE="no"
      Reposition the buffer before closing.  */
@@ -767,7 +732,7 @@ close_unit_1 (gfc_unit *u, int locked)
 
   u->closed = 1;
   if (!locked)
-    __gthread_mutex_lock (&unit_lock);
+    LOCK (&unit_lock);
 
   for (i = 0; i < CACHE_SIZE; i++)
     if (unit_cache[i] == u)
@@ -785,7 +750,7 @@ close_unit_1 (gfc_unit *u, int locked)
     newunit_free (u->unit_number);
 
   if (!locked)
-    __gthread_mutex_unlock (&u->lock);
+    UNLOCK (&u->lock);
 
   /* If there are any threads waiting in find_unit for this unit,
      avoid freeing the memory, the last such thread will free it
@@ -794,7 +759,7 @@ close_unit_1 (gfc_unit *u, int locked)
     destroy_unit_mutex (u);
 
   if (!locked)
-    __gthread_mutex_unlock (&unit_lock);
+    UNLOCK (&unit_lock);
 
   return rc;
 }
@@ -802,7 +767,9 @@ close_unit_1 (gfc_unit *u, int locked)
 void
 unlock_unit (gfc_unit *u)
 {
-  __gthread_mutex_unlock (&u->lock);
+  NOTE ("unlock_unit = %d", u->unit_number);
+  UNLOCK (&u->lock);
+  NOTE ("unlock_unit done");
 }
 
 /* close_unit()-- Close a unit.  The stream is closed, and any memory
@@ -826,18 +793,10 @@ close_unit (gfc_unit *u)
 void
 close_units (void)
 {
-  __gthread_mutex_lock (&unit_lock);
+  LOCK (&unit_lock);
   while (unit_root != NULL)
     close_unit_1 (unit_root, 1);
-  __gthread_mutex_unlock (&unit_lock);
-
-  while (newunit_tos != 0)
-    if (newunit_stack[newunit_tos].unit)
-      {
-	fbuf_destroy (newunit_stack[newunit_tos].unit);
-	free (newunit_stack[newunit_tos].unit->s);
-	free (newunit_stack[newunit_tos--].unit);
-      }
+  UNLOCK (&unit_lock);
 
   free (newunits);
 
@@ -944,7 +903,7 @@ finish_last_advance_record (gfc_unit *u)
 int
 newunit_alloc (void)
 {
-  __gthread_mutex_lock (&unit_lock);
+  LOCK (&unit_lock);
   if (!newunits)
     {
       newunits = xcalloc (16, 1);
@@ -958,7 +917,7 @@ newunit_alloc (void)
         {
           newunits[ii] = true;
           newunit_lwi = ii + 1;
-	  __gthread_mutex_unlock (&unit_lock);
+	  UNLOCK (&unit_lock);
           return -ii + NEWUNIT_START;
         }
     }
@@ -971,7 +930,7 @@ newunit_alloc (void)
   memset (newunits + old_size, 0, old_size);
   newunits[old_size] = true;
   newunit_lwi = old_size + 1;
-    __gthread_mutex_unlock (&unit_lock);
+    UNLOCK (&unit_lock);
   return -old_size + NEWUNIT_START;
 }
 
@@ -979,7 +938,7 @@ newunit_alloc (void)
 /* Free a previously allocated newunit= unit number.  unit_lock must
    be held when calling.  */
 
-static void
+void
 newunit_free (int unit)
 {
   int ind = -unit + NEWUNIT_START;

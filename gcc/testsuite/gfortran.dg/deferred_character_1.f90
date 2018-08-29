@@ -23,7 +23,7 @@ contains
 !    print '(3a)', '>',str(1),'<'
 !    print '(3a)', '>',str(2),'<'
 !    print '(3a)', '>',str(3),'<'
-    if (any (str .ne. const)) call abort
+    if (any (str .ne. const)) STOP 1
   end subroutine test
   subroutine doit()
     str = const
@@ -35,6 +35,6 @@ contains
     character(:), allocatable, dimension(:) :: array
     array = (/'xx', 'yy', 'zz'/)
 !    print *, 'array=', array, len(array(1)), size(array)
-    if (any (array .ne. ["xx", "yy", "zz"])) call abort
+    if (any (array .ne. ["xx", "yy", "zz"])) STOP 2
   end subroutine
 end

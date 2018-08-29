@@ -16,7 +16,7 @@ type queue struct {
 	dense  []entry
 }
 
-// A entry is an entry on a queue.
+// An entry is an entry on a queue.
 // It holds both the instruction pc and the actual thread.
 // Some queue entries are just place holders so that the machine
 // knows it has considered that pc. Such entries have t == nil.
@@ -309,12 +309,14 @@ func (m *machine) add(q *queue, pc uint32, pos int, cap []int, cond syntax.Empty
 // onepass runs the machine over the input starting at pos.
 // It reports whether a match was found.
 // If so, m.matchcap holds the submatch information.
-func (m *machine) onepass(i input, pos int) bool {
+// ncap is the number of captures.
+func (m *machine) onepass(i input, pos, ncap int) bool {
 	startCond := m.re.cond
 	if startCond == ^syntax.EmptyOp(0) { // impossible
 		return false
 	}
 	m.matched = false
+	m.matchcap = m.matchcap[:ncap]
 	for i := range m.matchcap {
 		m.matchcap[i] = -1
 	}
@@ -336,15 +338,14 @@ func (m *machine) onepass(i input, pos int) bool {
 	if pos == 0 && syntax.EmptyOp(inst.Arg)&^flag == 0 &&
 		len(m.re.prefix) > 0 && i.canCheckPrefix() {
 		// Match requires literal prefix; fast search for it.
-		if i.hasPrefix(m.re) {
-			pos += len(m.re.prefix)
-			r, width = i.step(pos)
-			r1, width1 = i.step(pos + width)
-			flag = i.context(pos)
-			pc = int(m.re.prefixEnd)
-		} else {
+		if !i.hasPrefix(m.re) {
 			return m.matched
 		}
+		pos += len(m.re.prefix)
+		r, width = i.step(pos)
+		r1, width1 = i.step(pos + width)
+		flag = i.context(pos)
+		pc = int(m.re.prefixEnd)
 	}
 	for {
 		inst = m.op.Inst[pc]
@@ -428,7 +429,7 @@ func (re *Regexp) doExecute(r io.RuneReader, b []byte, s string, pos int, ncap i
 		size = len(s)
 	}
 	if m.op != notOnePass {
-		if !m.onepass(i, pos) {
+		if !m.onepass(i, pos, ncap) {
 			re.put(m)
 			return nil
 		}

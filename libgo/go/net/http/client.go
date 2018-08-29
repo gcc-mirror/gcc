@@ -38,20 +38,20 @@ import (
 // When following redirects, the Client will forward all headers set on the
 // initial Request except:
 //
-//	* when forwarding sensitive headers like "Authorization",
-//	  "WWW-Authenticate", and "Cookie" to untrusted targets.
-//	  These headers will be ignored when following a redirect to a domain
-//	  that is not a subdomain match or exact match of the initial domain.
-//	  For example, a redirect from "foo.com" to either "foo.com" or "sub.foo.com"
-//	  will forward the sensitive headers, but a redirect to "bar.com" will not.
+// • when forwarding sensitive headers like "Authorization",
+// "WWW-Authenticate", and "Cookie" to untrusted targets.
+// These headers will be ignored when following a redirect to a domain
+// that is not a subdomain match or exact match of the initial domain.
+// For example, a redirect from "foo.com" to either "foo.com" or "sub.foo.com"
+// will forward the sensitive headers, but a redirect to "bar.com" will not.
 //
-//	* when forwarding the "Cookie" header with a non-nil cookie Jar.
-//	  Since each redirect may mutate the state of the cookie jar,
-//	  a redirect may possibly alter a cookie set in the initial request.
-//	  When forwarding the "Cookie" header, any mutated cookies will be omitted,
-//	  with the expectation that the Jar will insert those mutated cookies
-//	  with the updated values (assuming the origin matches).
-//	  If Jar is nil, the initial cookies are forwarded without change.
+// • when forwarding the "Cookie" header with a non-nil cookie Jar.
+// Since each redirect may mutate the state of the cookie jar,
+// a redirect may possibly alter a cookie set in the initial request.
+// When forwarding the "Cookie" header, any mutated cookies will be omitted,
+// with the expectation that the Jar will insert those mutated cookies
+// with the updated values (assuming the origin matches).
+// If Jar is nil, the initial cookies are forwarded without change.
 //
 type Client struct {
 	// Transport specifies the mechanism by which individual
@@ -127,7 +127,10 @@ type RoundTripper interface {
 	// authentication, or cookies.
 	//
 	// RoundTrip should not modify the request, except for
-	// consuming and closing the Request's Body.
+	// consuming and closing the Request's Body. RoundTrip may
+	// read fields of the request in a separate goroutine. Callers
+	// should not mutate the request until the Response's Body has
+	// been closed.
 	//
 	// RoundTrip must always close the body, including on errors,
 	// but depending on the implementation may do so in a separate
@@ -494,17 +497,21 @@ func (c *Client) Do(req *Request) (*Response, error) {
 	}
 
 	var (
-		deadline    = c.deadline()
-		reqs        []*Request
-		resp        *Response
-		copyHeaders = c.makeHeadersCopier(req)
+		deadline      = c.deadline()
+		reqs          []*Request
+		resp          *Response
+		copyHeaders   = c.makeHeadersCopier(req)
+		reqBodyClosed = false // have we closed the current req.Body?
 
 		// Redirect behavior:
 		redirectMethod string
 		includeBody    bool
 	)
 	uerr := func(err error) error {
-		req.closeBody()
+		// the body may have been closed already by c.send()
+		if !reqBodyClosed {
+			req.closeBody()
+		}
 		method := valueOrDefault(reqs[0].Method, "GET")
 		var urlStr string
 		if resp != nil && resp.Request != nil {
@@ -524,11 +531,22 @@ func (c *Client) Do(req *Request) (*Response, error) {
 		if len(reqs) > 0 {
 			loc := resp.Header.Get("Location")
 			if loc == "" {
+				resp.closeBody()
 				return nil, uerr(fmt.Errorf("%d response missing Location header", resp.StatusCode))
 			}
 			u, err := req.URL.Parse(loc)
 			if err != nil {
+				resp.closeBody()
 				return nil, uerr(fmt.Errorf("failed to parse Location header %q: %v", loc, err))
+			}
+			host := ""
+			if req.Host != "" && req.Host != req.URL.Host {
+				// If the caller specified a custom Host header and the
+				// redirect location is relative, preserve the Host header
+				// through the redirect. See issue #22233.
+				if u, _ := url.Parse(loc); u != nil && !u.IsAbs() {
+					host = req.Host
+				}
 			}
 			ireq := reqs[0]
 			req = &Request{
@@ -536,12 +554,14 @@ func (c *Client) Do(req *Request) (*Response, error) {
 				Response: resp,
 				URL:      u,
 				Header:   make(Header),
+				Host:     host,
 				Cancel:   ireq.Cancel,
 				ctx:      ireq.ctx,
 			}
 			if includeBody && ireq.GetBody != nil {
 				req.Body, err = ireq.GetBody()
 				if err != nil {
+					resp.closeBody()
 					return nil, uerr(err)
 				}
 				req.ContentLength = ireq.ContentLength
@@ -593,6 +613,8 @@ func (c *Client) Do(req *Request) (*Response, error) {
 		var err error
 		var didTimeout func() bool
 		if resp, didTimeout, err = c.send(req, deadline); err != nil {
+			// c.send() always closes req.Body
+			reqBodyClosed = true
 			if !deadline.IsZero() && didTimeout() {
 				err = &httpError{
 					err:     err.Error() + " (Client.Timeout exceeded while awaiting headers)",
@@ -741,7 +763,7 @@ func PostForm(url string, data url.Values) (resp *Response, err error) {
 // with data's keys and values URL-encoded as the request body.
 //
 // The Content-Type header is set to application/x-www-form-urlencoded.
-// To set other headers, use NewRequest and DefaultClient.Do.
+// To set other headers, use NewRequest and Client.Do.
 //
 // When err is nil, resp always contains a non-nil resp.Body.
 // Caller should close resp.Body when done reading from it.
@@ -834,16 +856,8 @@ func shouldCopyHeaderOnRedirect(headerKey string, initial, dest *url.URL) bool {
 		// directly, we don't know their scope, so we assume
 		// it's for *.domain.com.
 
-		// TODO(bradfitz): once issue 16142 is fixed, make
-		// this code use those URL accessors, and consider
-		// "http://foo.com" and "http://foo.com:80" as
-		// equivalent?
-
-		// TODO(bradfitz): better hostname canonicalization,
-		// at least once we figure out IDNA/Punycode (issue
-		// 13835).
-		ihost := strings.ToLower(initial.Host)
-		dhost := strings.ToLower(dest.Host)
+		ihost := canonicalAddr(initial)
+		dhost := canonicalAddr(dest)
 		return isDomainOrSubdomain(dhost, ihost)
 	}
 	// All other headers are copied:

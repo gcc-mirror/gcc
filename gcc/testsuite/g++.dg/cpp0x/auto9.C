@@ -103,15 +103,15 @@ auto fnlate2 () -> auto *;			// { dg-error "invalid use of|expected" "" { target
 
 void
 badthrow () throw (auto)			// { dg-error "invalid use of" }
-{						// { dg-error "dynamic exception specification" "" { target c++1z } .-1 }
-}						// { dg-warning "deprecated" "" { target { ! c++1z } } .-2 }
+{						// { dg-error "dynamic exception specification" "" { target c++17 } .-1 }
+}						// { dg-warning "deprecated" "" { target { ! c++17 } } .-2 }
 
 void
 badthrow2 () throw (auto &)			// { dg-error "invalid use of|expected" }
-{						// { dg-error "dynamic exception specification" "" { target c++1z } .-1 }
-}						// { dg-warning "deprecated" "" { target { ! c++1z } } .-2 }
+{						// { dg-error "dynamic exception specification" "" { target c++17 } .-1 }
+}						// { dg-warning "deprecated" "" { target { ! c++17 } } .-2 }
 
-template <auto V = 4> struct G {};		// { dg-error "auto" "" { target { ! c++1z } } }
+template <auto V = 4> struct G {};		// { dg-error "auto" "" { target { ! c++17 } } }
 
 template <typename T> struct H { H (); ~H (); };
 H<auto> h;					// { dg-error "invalid|initializer" }

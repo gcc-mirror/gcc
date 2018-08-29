@@ -7,7 +7,6 @@
 #ifndef GO_PARSE_H
 #define GO_PARSE_H
 
-class Set_iota_traverse;
 class Lex;
 class Gogo;
 class Named_object;
@@ -127,7 +126,7 @@ class Parse
   struct Enclosing_var_comparison
   {
     bool
-    operator()(const Enclosing_var&, const Enclosing_var&);
+    operator()(const Enclosing_var&, const Enclosing_var&) const;
   };
 
   // A set of Enclosing_var entries.
@@ -182,14 +181,14 @@ class Parse
   void method_spec(Typed_identifier_list*);
   void declaration();
   bool declaration_may_start_here();
-  void decl(void (Parse::*)(void*), void*);
-  void list(void (Parse::*)(void*), void*, bool);
+  void decl(void (Parse::*)(void*, unsigned int), void*, unsigned int pragmas);
+  void list(void (Parse::*)(void*, unsigned int), void*, bool);
   void const_decl();
-  void const_spec(Type**, Expression_list**);
-  void type_decl();
-  void type_spec(void*);
+  void const_spec(int, Type**, Expression_list**);
+  void type_decl(unsigned int pragmas);
+  void type_spec(void*, unsigned int pragmas);
   void var_decl();
-  void var_spec(void*);
+  void var_spec(void*, unsigned int pragmas);
   void init_vars(const Typed_identifier_list*, Type*, Expression_list*,
 		 bool is_coloneq, Location);
   bool init_vars_from_call(const Typed_identifier_list*, Type*, Expression*,
@@ -278,11 +277,7 @@ class Parse
   void goto_stat();
   void package_clause();
   void import_decl();
-  void import_spec(void*);
-
-  void reset_iota();
-  int iota_value();
-  void increment_iota();
+  void import_spec(void*, unsigned int pragmas);
 
   // Skip past an error looking for a semicolon or OP.  Return true if
   // all is well, false if we found EOF.
@@ -319,8 +314,6 @@ class Parse
   Bc_stack* break_stack_;
   // A stack of statements for which continue may be used.
   Bc_stack* continue_stack_;
-  // The current iota value.
-  int iota_;
   // References from the local function to variables defined in
   // enclosing functions.
   Enclosing_vars enclosing_vars_;

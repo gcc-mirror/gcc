@@ -1,6 +1,6 @@
 // 2005-12-01  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005-2017 Free Software Foundation, Inc.
+// Copyright (C) 2005-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,7 +19,13 @@
 
 // { dg-do compile }
 
-#include <string>
+#if _GLIBCXX_DEBUG
+# include <debug/string>
+using namespace __gnu_debug;
+#else
+# include <string>
+using namespace std;
+#endif
 
 namespace N
 {
@@ -36,7 +42,7 @@ namespace N
 
 int main()
 { 
-  std::basic_string<N::X> s(5, N::X());
+  basic_string<N::X> s(5, N::X());
 
   s.erase(s.begin());
   s.erase(s.begin(), s.end());

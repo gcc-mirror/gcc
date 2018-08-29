@@ -16,12 +16,12 @@ logical(1) :: d
 
 call atomic_define(a(1), 7_2)
 call atomic_ref(b, a(1))
-if (b /= a(1)) call abort()
+if (b /= a(1)) STOP 1
 
 call atomic_define(c, .false.)
 call atomic_ref(d, c[this_image()])
-if (d .neqv. .false.) call abort()
+if (d .neqv. .false.) STOP 2
 call atomic_define(c[this_image()], .true.)
 call atomic_ref(d, c)
-if (d .neqv. .true.) call abort()
+if (d .neqv. .true.) STOP 3
 end

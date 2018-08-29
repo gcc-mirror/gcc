@@ -5,8 +5,6 @@
 
 #define N 128
 
-volatile int y = 0;
-
 __attribute__ ((noinline))
 int main1 ()
 {
@@ -17,8 +15,7 @@ int main1 ()
   for (i = 0; i <N; i++)
     {
       b[i] = i*3;
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   /* Not vectorizable yet (reverse access and forward access).  */

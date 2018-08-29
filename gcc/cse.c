@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -559,9 +559,10 @@ static struct table_elt *insert_with_costs (rtx, struct table_elt *, unsigned,
 static struct table_elt *insert (rtx, struct table_elt *, unsigned,
 				 machine_mode);
 static void merge_equiv_classes (struct table_elt *, struct table_elt *);
+static void invalidate_reg (rtx, bool);
 static void invalidate (rtx, machine_mode);
 static void remove_invalid_refs (unsigned int);
-static void remove_invalid_subreg_refs (unsigned int, unsigned int,
+static void remove_invalid_subreg_refs (unsigned int, poly_uint64,
 					machine_mode);
 static void rehash_using_reg (rtx);
 static void invalidate_memory (void);
@@ -720,13 +721,14 @@ preferable (int cost_a, int regcost_a, int cost_b, int regcost_b)
 static int
 notreg_cost (rtx x, machine_mode mode, enum rtx_code outer, int opno)
 {
+  scalar_int_mode int_mode, inner_mode;
   return ((GET_CODE (x) == SUBREG
 	   && REG_P (SUBREG_REG (x))
-	   && GET_MODE_CLASS (mode) == MODE_INT
-	   && GET_MODE_CLASS (GET_MODE (SUBREG_REG (x))) == MODE_INT
-	   && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+	   && is_int_mode (mode, &int_mode)
+	   && is_int_mode (GET_MODE (SUBREG_REG (x)), &inner_mode)
+	   && GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (inner_mode)
 	   && subreg_lowpart_p (x)
-	   && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (SUBREG_REG (x))))
+	   && TRULY_NOOP_TRUNCATION_MODES_P (int_mode, inner_mode))
 	  ? 0
 	  : rtx_cost (x, mode, outer, opno, optimize_this_for_speed_p) * 2);
 }
@@ -1817,7 +1819,85 @@ check_dependence (const_rtx x, rtx exp, machine_mode mode, rtx addr)
     }
   return false;
 }
-
+
+/* Remove from the hash table, or mark as invalid, all expressions whose
+   values could be altered by storing in register X.
+
+   CLOBBER_HIGH is set if X was part of a CLOBBER_HIGH expression.  */
+
+static void
+invalidate_reg (rtx x, bool clobber_high)
+{
+  gcc_assert (GET_CODE (x) == REG);
+
+  /* If X is a register, dependencies on its contents are recorded
+     through the qty number mechanism.  Just change the qty number of
+     the register, mark it as invalid for expressions that refer to it,
+     and remove it itself.  */
+  unsigned int regno = REGNO (x);
+  unsigned int hash = HASH (x, GET_MODE (x));
+
+  /* Remove REGNO from any quantity list it might be on and indicate
+     that its value might have changed.  If it is a pseudo, remove its
+     entry from the hash table.
+
+     For a hard register, we do the first two actions above for any
+     additional hard registers corresponding to X.  Then, if any of these
+     registers are in the table, we must remove any REG entries that
+     overlap these registers.  */
+
+  delete_reg_equiv (regno);
+  REG_TICK (regno)++;
+  SUBREG_TICKED (regno) = -1;
+
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    {
+      gcc_assert (!clobber_high);
+      remove_pseudo_from_table (x, hash);
+    }
+  else
+    {
+      HOST_WIDE_INT in_table = TEST_HARD_REG_BIT (hard_regs_in_table, regno);
+      unsigned int endregno = END_REGNO (x);
+      unsigned int rn;
+      struct table_elt *p, *next;
+
+      CLEAR_HARD_REG_BIT (hard_regs_in_table, regno);
+
+      for (rn = regno + 1; rn < endregno; rn++)
+	{
+	  in_table |= TEST_HARD_REG_BIT (hard_regs_in_table, rn);
+	  CLEAR_HARD_REG_BIT (hard_regs_in_table, rn);
+	  delete_reg_equiv (rn);
+	  REG_TICK (rn)++;
+	  SUBREG_TICKED (rn) = -1;
+	}
+
+      if (in_table)
+	for (hash = 0; hash < HASH_SIZE; hash++)
+	  for (p = table[hash]; p; p = next)
+	    {
+	      next = p->next_same_hash;
+
+	      if (!REG_P (p->exp) || REGNO (p->exp) >= FIRST_PSEUDO_REGISTER)
+		continue;
+
+	      if (clobber_high)
+		{
+		  if (reg_is_clobbered_by_clobber_high (p->exp, x))
+		    remove_from_table (p, hash);
+		}
+	      else
+		{
+		  unsigned int tregno = REGNO (p->exp);
+		  unsigned int tendregno = END_REGNO (p->exp);
+		  if (tendregno > regno && tregno < endregno)
+		    remove_from_table (p, hash);
+		}
+	    }
+    }
+}
+
 /* Remove from the hash table, or mark as invalid, all expressions whose
    values could be altered by storing in X.  X is a register, a subreg, or
    a memory reference with nonvarying address (because, when a memory
@@ -1840,65 +1920,7 @@ invalidate (rtx x, machine_mode full_mode)
   switch (GET_CODE (x))
     {
     case REG:
-      {
-	/* If X is a register, dependencies on its contents are recorded
-	   through the qty number mechanism.  Just change the qty number of
-	   the register, mark it as invalid for expressions that refer to it,
-	   and remove it itself.  */
-	unsigned int regno = REGNO (x);
-	unsigned int hash = HASH (x, GET_MODE (x));
-
-	/* Remove REGNO from any quantity list it might be on and indicate
-	   that its value might have changed.  If it is a pseudo, remove its
-	   entry from the hash table.
-
-	   For a hard register, we do the first two actions above for any
-	   additional hard registers corresponding to X.  Then, if any of these
-	   registers are in the table, we must remove any REG entries that
-	   overlap these registers.  */
-
-	delete_reg_equiv (regno);
-	REG_TICK (regno)++;
-	SUBREG_TICKED (regno) = -1;
-
-	if (regno >= FIRST_PSEUDO_REGISTER)
-	  remove_pseudo_from_table (x, hash);
-	else
-	  {
-	    HOST_WIDE_INT in_table
-	      = TEST_HARD_REG_BIT (hard_regs_in_table, regno);
-	    unsigned int endregno = END_REGNO (x);
-	    unsigned int tregno, tendregno, rn;
-	    struct table_elt *p, *next;
-
-	    CLEAR_HARD_REG_BIT (hard_regs_in_table, regno);
-
-	    for (rn = regno + 1; rn < endregno; rn++)
-	      {
-		in_table |= TEST_HARD_REG_BIT (hard_regs_in_table, rn);
-		CLEAR_HARD_REG_BIT (hard_regs_in_table, rn);
-		delete_reg_equiv (rn);
-		REG_TICK (rn)++;
-		SUBREG_TICKED (rn) = -1;
-	      }
-
-	    if (in_table)
-	      for (hash = 0; hash < HASH_SIZE; hash++)
-		for (p = table[hash]; p; p = next)
-		  {
-		    next = p->next_same_hash;
-
-		    if (!REG_P (p->exp)
-			|| REGNO (p->exp) >= FIRST_PSEUDO_REGISTER)
-		      continue;
-
-		    tregno = REGNO (p->exp);
-		    tendregno = END_REGNO (p->exp);
-		    if (tendregno > regno && tregno < endregno)
-		      remove_from_table (p, hash);
-		  }
-	  }
-      }
+      invalidate_reg (x, false);
       return;
 
     case SUBREG:
@@ -1993,12 +2015,11 @@ remove_invalid_refs (unsigned int regno)
 /* Likewise for a subreg with subreg_reg REGNO, subreg_byte OFFSET,
    and mode MODE.  */
 static void
-remove_invalid_subreg_refs (unsigned int regno, unsigned int offset,
+remove_invalid_subreg_refs (unsigned int regno, poly_uint64 offset,
 			    machine_mode mode)
 {
   unsigned int i;
   struct table_elt *p, *next;
-  unsigned int end = offset + (GET_MODE_SIZE (mode) - 1);
 
   for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = next)
@@ -2010,9 +2031,9 @@ remove_invalid_subreg_refs (unsigned int regno, unsigned int offset,
 	    && (GET_CODE (exp) != SUBREG
 		|| !REG_P (SUBREG_REG (exp))
 		|| REGNO (SUBREG_REG (exp)) != regno
-		|| (((SUBREG_BYTE (exp)
-		      + (GET_MODE_SIZE (GET_MODE (exp)) - 1)) >= offset)
-		    && SUBREG_BYTE (exp) <= end))
+		|| ranges_maybe_overlap_p (SUBREG_BYTE (exp),
+					   GET_MODE_SIZE (GET_MODE (exp)),
+					   offset, GET_MODE_SIZE (mode)))
 	    && refers_to_regno_p (regno, p->exp))
 	  remove_from_table (p, i);
       }
@@ -2306,7 +2327,8 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	  {
 	    hash += (((unsigned int) SUBREG << 7)
 		     + REGNO (SUBREG_REG (x))
-		     + (SUBREG_BYTE (x) / UNITS_PER_WORD));
+		     + (constant_lower_bound (SUBREG_BYTE (x))
+			/ UNITS_PER_WORD));
 	    return hash;
 	  }
 	break;
@@ -2321,6 +2343,15 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
       for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
 	hash += CONST_WIDE_INT_ELT (x, i);
       return hash;
+
+    case CONST_POLY_INT:
+      {
+	inchash::hash h;
+	h.add_int (hash);
+	for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	  h.add_wide_int (CONST_POLY_INT_COEFFS (x)[i]);
+	return h.end ();
+      }
 
     case CONST_DOUBLE:
       /* This is like the general case, except that it only counts
@@ -2343,11 +2374,11 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	int units;
 	rtx elt;
 
-	units = CONST_VECTOR_NUNITS (x);
+	units = const_vector_encoded_nelts (x);
 
 	for (i = 0; i < units; ++i)
 	  {
-	    elt = CONST_VECTOR_ELT (x, i);
+	    elt = CONST_VECTOR_ENCODED_ELT (x, i);
 	    hash += hash_rtx_cb (elt, GET_MODE (elt),
                                  do_not_record_p, hash_arg_in_memory_p,
                                  have_reg_qty, cb);
@@ -2514,6 +2545,10 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 
 	case 'i':
 	  hash += (unsigned int) XINT (x, i);
+	  break;
+
+	case 'p':
+	  hash += constant_lower_bound (SUBREG_BYTE (x));
 	  break;
 
 	case '0': case 't':
@@ -2763,6 +2798,11 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
 
 	case 'w':
 	  if (XWINT (x, i) != XWINT (y, i))
+	    return 0;
+	  break;
+
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
 	    return 0;
 	  break;
 
@@ -3093,6 +3133,7 @@ fold_rtx (rtx x, rtx_insn *insn)
   int i;
   rtx new_rtx = 0;
   int changed = 0;
+  poly_int64 xval;
 
   /* Operands of X.  */
   /* Workaround -Wmaybe-uninitialized false positive during
@@ -3573,12 +3614,11 @@ fold_rtx (rtx x, rtx_insn *insn)
 	case MINUS:
 	  /* If we have (MINUS Y C), see if Y is known to be (PLUS Z C2).
 	     If so, produce (PLUS Z C2-C).  */
-	  if (const_arg1 != 0 && CONST_INT_P (const_arg1))
+	  if (const_arg1 != 0 && poly_int_rtx_p (const_arg1, &xval))
 	    {
 	      rtx y = lookup_as_function (XEXP (x, 0), PLUS);
-	      if (y && CONST_INT_P (XEXP (y, 1)))
-		return fold_rtx (plus_constant (mode, copy_rtx (y),
-						-INTVAL (const_arg1)),
+	      if (y && poly_int_rtx_p (XEXP (y, 1)))
+		return fold_rtx (plus_constant (mode, copy_rtx (y), -xval),
 				 NULL);
 	    }
 
@@ -3606,13 +3646,13 @@ fold_rtx (rtx x, rtx_insn *insn)
 	      enum rtx_code associate_code;
 
 	      if (is_shift
-		  && (INTVAL (const_arg1) >= GET_MODE_PRECISION (mode)
+		  && (INTVAL (const_arg1) >= GET_MODE_UNIT_PRECISION (mode)
 		      || INTVAL (const_arg1) < 0))
 		{
 		  if (SHIFT_COUNT_TRUNCATED)
-		    canon_const_arg1 = GEN_INT (INTVAL (const_arg1)
-						& (GET_MODE_BITSIZE (mode)
-						   - 1));
+		    canon_const_arg1 = gen_int_shift_amount
+		      (mode, (INTVAL (const_arg1)
+			      & (GET_MODE_UNIT_BITSIZE (mode) - 1)));
 		  else
 		    break;
 		}
@@ -3655,12 +3695,13 @@ fold_rtx (rtx x, rtx_insn *insn)
                 break;
 
 	      if (is_shift
-		  && (INTVAL (inner_const) >= GET_MODE_PRECISION (mode)
+		  && (INTVAL (inner_const) >= GET_MODE_UNIT_PRECISION (mode)
 		      || INTVAL (inner_const) < 0))
 		{
 		  if (SHIFT_COUNT_TRUNCATED)
-		    inner_const = GEN_INT (INTVAL (inner_const)
-					   & (GET_MODE_BITSIZE (mode) - 1));
+		    inner_const = gen_int_shift_amount
+		      (mode, (INTVAL (inner_const)
+			      & (GET_MODE_UNIT_BITSIZE (mode) - 1)));
 		  else
 		    break;
 		}
@@ -3685,12 +3726,13 @@ fold_rtx (rtx x, rtx_insn *insn)
 
 	      if (is_shift
 		  && CONST_INT_P (new_const)
-		  && INTVAL (new_const) >= GET_MODE_PRECISION (mode))
+		  && INTVAL (new_const) >= GET_MODE_UNIT_PRECISION (mode))
 		{
 		  /* As an exception, we can turn an ASHIFTRT of this
 		     form into a shift of the number of bits - 1.  */
 		  if (code == ASHIFTRT)
-		    new_const = GEN_INT (GET_MODE_BITSIZE (mode) - 1);
+		    new_const = gen_int_shift_amount
+		      (mode, GET_MODE_UNIT_BITSIZE (mode) - 1);
 		  else if (!side_effects_p (XEXP (y, 0)))
 		    return CONST0_RTX (mode);
 		  else
@@ -3778,17 +3820,20 @@ equiv_constant (rtx x)
       /* See if we previously assigned a constant value to this SUBREG.  */
       if ((new_rtx = lookup_as_function (x, CONST_INT)) != 0
 	  || (new_rtx = lookup_as_function (x, CONST_WIDE_INT)) != 0
+	  || (NUM_POLY_INT_COEFFS > 1
+	      && (new_rtx = lookup_as_function (x, CONST_POLY_INT)) != 0)
           || (new_rtx = lookup_as_function (x, CONST_DOUBLE)) != 0
           || (new_rtx = lookup_as_function (x, CONST_FIXED)) != 0)
         return new_rtx;
 
       /* If we didn't and if doing so makes sense, see if we previously
 	 assigned a constant value to the enclosing word mode SUBREG.  */
-      if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (word_mode)
-	  && GET_MODE_SIZE (word_mode) < GET_MODE_SIZE (imode))
+      if (known_lt (GET_MODE_SIZE (mode), UNITS_PER_WORD)
+	  && known_lt (UNITS_PER_WORD, GET_MODE_SIZE (imode)))
 	{
-	  int byte = SUBREG_BYTE (x) - subreg_lowpart_offset (mode, word_mode);
-	  if (byte >= 0 && (byte % UNITS_PER_WORD) == 0)
+	  poly_int64 byte = (SUBREG_BYTE (x)
+			     - subreg_lowpart_offset (mode, word_mode));
+	  if (known_ge (byte, 0) && multiple_p (byte, UNITS_PER_WORD))
 	    {
 	      rtx y = gen_rtx_SUBREG (word_mode, SUBREG_REG (x), byte);
 	      new_rtx = lookup_as_function (y, CONST_INT);
@@ -3802,7 +3847,7 @@ equiv_constant (rtx x)
 	 the subreg.  Note that the upper bits of paradoxical subregs
 	 are undefined, so they cannot be said to equal anything.  */
       if (REG_P (SUBREG_REG (x))
-	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (imode)
+	  && !paradoxical_subreg_p (x)
 	  && (new_rtx = equiv_constant (SUBREG_REG (x))) != 0)
         return simplify_subreg (mode, new_rtx, imode, SUBREG_BYTE (x));
 
@@ -3952,10 +3997,9 @@ record_jump_cond (enum rtx_code code, machine_mode mode, rtx op0,
      if we test MODE instead, we can get an infinite recursion
      alternating between two modes each wider than MODE.  */
 
-  if (code == NE && GET_CODE (op0) == SUBREG
-      && subreg_lowpart_p (op0)
-      && (GET_MODE_SIZE (GET_MODE (op0))
-	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))))
+  if (code == NE
+      && partial_subreg_p (op0)
+      && subreg_lowpart_p (op0))
     {
       machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
       rtx tem = record_jump_cond_subreg (inner_mode, op1);
@@ -3964,10 +4008,9 @@ record_jump_cond (enum rtx_code code, machine_mode mode, rtx op0,
 			  reversed_nonequality);
     }
 
-  if (code == NE && GET_CODE (op1) == SUBREG
-      && subreg_lowpart_p (op1)
-      && (GET_MODE_SIZE (GET_MODE (op1))
-	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op1)))))
+  if (code == NE
+      && partial_subreg_p (op1)
+      && subreg_lowpart_p (op1))
     {
       machine_mode inner_mode = GET_MODE (SUBREG_REG (op1));
       rtx tem = record_jump_cond_subreg (inner_mode, op0);
@@ -4234,6 +4277,15 @@ try_back_substitute_reg (rtx set, rtx_insn *insn)
 		  && (reg_mentioned_p (dest, XEXP (note, 0))
 		      || rtx_equal_p (src, XEXP (note, 0))))
 		remove_note (insn, note);
+
+	      /* If INSN has a REG_ARGS_SIZE note, move it to PREV.  */
+	      note = find_reg_note (insn, REG_ARGS_SIZE, NULL_RTX);
+	      if (note != 0)
+		{
+		  remove_note (insn, note);
+		  gcc_assert (!find_reg_note (prev, REG_ARGS_SIZE, NULL_RTX));
+		  set_unique_reg_note (prev, REG_ARGS_SIZE, XEXP (note, 0));
+		}
 	    }
 	}
     }
@@ -4368,6 +4420,8 @@ canonicalize_insn (rtx_insn *insn, struct set **psets, int n_sets)
       if (MEM_P (XEXP (x, 0)))
 	canon_reg (XEXP (x, 0), insn);
     }
+  else if (GET_CODE (x) == CLOBBER_HIGH)
+    gcc_assert (REG_P (XEXP (x, 0)));
   else if (GET_CODE (x) == USE
 	   && ! (REG_P (XEXP (x, 0))
 		 && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER))
@@ -4399,6 +4453,8 @@ canonicalize_insn (rtx_insn *insn, struct set **psets, int n_sets)
 	      if (MEM_P (XEXP (y, 0)))
 		canon_reg (XEXP (y, 0), insn);
 	    }
+	  else if (GET_CODE (y) == CLOBBER_HIGH)
+	    gcc_assert (REG_P (XEXP (y, 0)));
 	  else if (GET_CODE (y) == USE
 		   && ! (REG_P (XEXP (y, 0))
 			 && REGNO (XEXP (y, 0)) < FIRST_PSEUDO_REGISTER))
@@ -4551,14 +4607,17 @@ cse_insn (rtx_insn *insn)
 	       && CONST_INT_P (XEXP (SET_DEST (sets[0].rtl), 2)))
 	{
 	  rtx dest_reg = XEXP (SET_DEST (sets[0].rtl), 0);
+	  /* This is the mode of XEXP (tem, 0) as well.  */
+	  scalar_int_mode dest_mode
+	    = as_a <scalar_int_mode> (GET_MODE (dest_reg));
 	  rtx width = XEXP (SET_DEST (sets[0].rtl), 1);
 	  rtx pos = XEXP (SET_DEST (sets[0].rtl), 2);
 	  HOST_WIDE_INT val = INTVAL (XEXP (tem, 0));
 	  HOST_WIDE_INT mask;
 	  unsigned int shift;
 	  if (BITS_BIG_ENDIAN)
-	    shift = GET_MODE_PRECISION (GET_MODE (dest_reg))
-	      - INTVAL (pos) - INTVAL (width);
+	    shift = (GET_MODE_PRECISION (dest_mode)
+		     - INTVAL (pos) - INTVAL (width));
 	  else
 	    shift = INTVAL (pos);
 	  if (INTVAL (width) == HOST_BITS_PER_WIDE_INT)
@@ -4603,6 +4662,7 @@ cse_insn (rtx_insn *insn)
       /* Set nonzero if we need to call force_const_mem on with the
 	 contents of src_folded before using it.  */
       int src_folded_force_flag = 0;
+      scalar_int_mode int_mode;
 
       dest = SET_DEST (sets[i].rtl);
       src = SET_SRC (sets[i].rtl);
@@ -4840,17 +4900,16 @@ cse_insn (rtx_insn *insn)
 	 wider mode.  */
 
       if (src_const && src_related == 0 && CONST_INT_P (src_const)
-	  && GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_PRECISION (mode) < BITS_PER_WORD)
+	  && is_int_mode (mode, &int_mode)
+	  && GET_MODE_PRECISION (int_mode) < BITS_PER_WORD)
 	{
-	  machine_mode wider_mode;
-
-	  for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	       wider_mode != VOIDmode
-	       && GET_MODE_PRECISION (wider_mode) <= BITS_PER_WORD
-	       && src_related == 0;
-	       wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+	  opt_scalar_int_mode wider_mode_iter;
+	  FOR_EACH_WIDER_MODE (wider_mode_iter, int_mode)
 	    {
+	      scalar_int_mode wider_mode = wider_mode_iter.require ();
+	      if (GET_MODE_PRECISION (wider_mode) > BITS_PER_WORD)
+		break;
+
 	      struct table_elt *const_elt
 		= lookup (src_const, HASH (src_const, wider_mode), wider_mode);
 
@@ -4861,9 +4920,12 @@ cse_insn (rtx_insn *insn)
 		   const_elt; const_elt = const_elt->next_same_value)
 		if (REG_P (const_elt->exp))
 		  {
-		    src_related = gen_lowpart (mode, const_elt->exp);
+		    src_related = gen_lowpart (int_mode, const_elt->exp);
 		    break;
 		  }
+
+	      if (src_related != 0)
+		break;
 	    }
 	}
 
@@ -4874,16 +4936,19 @@ cse_insn (rtx_insn *insn)
 	 value.  */
 
       if (flag_expensive_optimizations && ! src_related
+	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && GET_CODE (src) == AND && CONST_INT_P (XEXP (src, 1))
-	  && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+	  && GET_MODE_SIZE (int_mode) < UNITS_PER_WORD)
 	{
-	  machine_mode tmode;
+	  opt_scalar_int_mode tmode_iter;
 	  rtx new_and = gen_rtx_AND (VOIDmode, NULL_RTX, XEXP (src, 1));
 
-	  for (tmode = GET_MODE_WIDER_MODE (mode);
-	       GET_MODE_SIZE (tmode) <= UNITS_PER_WORD;
-	       tmode = GET_MODE_WIDER_MODE (tmode))
+	  FOR_EACH_WIDER_MODE (tmode_iter, int_mode)
 	    {
+	      scalar_int_mode tmode = tmode_iter.require ();
+	      if (GET_MODE_SIZE (tmode) > UNITS_PER_WORD)
+		break;
+
 	      rtx inner = gen_lowpart (tmode, XEXP (src, 0));
 	      struct table_elt *larger_elt;
 
@@ -4900,7 +4965,7 @@ cse_insn (rtx_insn *insn)
 		    if (REG_P (larger_elt->exp))
 		      {
 			src_related
-			  = gen_lowpart (mode, larger_elt->exp);
+			  = gen_lowpart (int_mode, larger_elt->exp);
 			break;
 		      }
 
@@ -4918,11 +4983,11 @@ cse_insn (rtx_insn *insn)
       rtx_code extend_op;
       if (flag_expensive_optimizations && src_related == 0
 	  && MEM_P (src) && ! do_not_record
-	  && (extend_op = load_extend_op (mode)) != UNKNOWN)
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && (extend_op = load_extend_op (int_mode)) != UNKNOWN)
 	{
 	  struct rtx_def memory_extend_buf;
 	  rtx memory_extend_rtx = &memory_extend_buf;
-	  machine_mode tmode;
 
 	  /* Set what we are trying to extend and the operation it might
 	     have been extended with.  */
@@ -4930,11 +4995,14 @@ cse_insn (rtx_insn *insn)
 	  PUT_CODE (memory_extend_rtx, extend_op);
 	  XEXP (memory_extend_rtx, 0) = src;
 
-	  for (tmode = GET_MODE_WIDER_MODE (mode);
-	       GET_MODE_SIZE (tmode) <= UNITS_PER_WORD;
-	       tmode = GET_MODE_WIDER_MODE (tmode))
+	  opt_scalar_int_mode tmode_iter;
+	  FOR_EACH_WIDER_MODE (tmode_iter, int_mode)
 	    {
 	      struct table_elt *larger_elt;
+
+	      scalar_int_mode tmode = tmode_iter.require ();
+	      if (GET_MODE_SIZE (tmode) > UNITS_PER_WORD)
+		break;
 
 	      PUT_MODE (memory_extend_rtx, tmode);
 	      larger_elt = lookup (memory_extend_rtx,
@@ -4946,7 +5014,7 @@ cse_insn (rtx_insn *insn)
 		   larger_elt; larger_elt = larger_elt->next_same_value)
 		if (REG_P (larger_elt->exp))
 		  {
-		    src_related = gen_lowpart (mode, larger_elt->exp);
+		    src_related = gen_lowpart (int_mode, larger_elt->exp);
 		    break;
 		  }
 
@@ -5000,8 +5068,8 @@ cse_insn (rtx_insn *insn)
 	      && ! (src != 0
 		    && GET_CODE (src) == SUBREG
 		    && GET_MODE (src) == GET_MODE (p->exp)
-		    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
-			< GET_MODE_SIZE (GET_MODE (SUBREG_REG (p->exp))))))
+		    && partial_subreg_p (GET_MODE (SUBREG_REG (src)),
+					 GET_MODE (SUBREG_REG (p->exp)))))
 	    continue;
 
 	  if (src && GET_CODE (src) == code && rtx_equal_p (src, p->exp))
@@ -5111,8 +5179,8 @@ cse_insn (rtx_insn *insn)
 	      && ! (src != 0
 		    && GET_CODE (src) == SUBREG
 		    && GET_MODE (src) == GET_MODE (elt->exp)
-		    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
-			< GET_MODE_SIZE (GET_MODE (SUBREG_REG (elt->exp))))))
+		    && partial_subreg_p (GET_MODE (SUBREG_REG (src)),
+					 GET_MODE (SUBREG_REG (elt->exp)))))
 	    {
 	      elt = elt->next_same_value;
 	      continue;
@@ -5197,8 +5265,9 @@ cse_insn (rtx_insn *insn)
 	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 1))
 	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 2))
 	      && REG_P (XEXP (SET_DEST (sets[i].rtl), 0))
-	      && (GET_MODE_PRECISION (GET_MODE (SET_DEST (sets[i].rtl)))
-		  >= INTVAL (XEXP (SET_DEST (sets[i].rtl), 1)))
+	      && (known_ge
+		  (GET_MODE_PRECISION (GET_MODE (SET_DEST (sets[i].rtl))),
+		   INTVAL (XEXP (SET_DEST (sets[i].rtl), 1))))
 	      && ((unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 1))
 		  + (unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 2))
 		  <= HOST_BITS_PER_WIDE_INT))
@@ -5223,8 +5292,11 @@ cse_insn (rtx_insn *insn)
 		  HOST_WIDE_INT val = INTVAL (dest_cst);
 		  HOST_WIDE_INT mask;
 		  unsigned int shift;
+		  /* This is the mode of DEST_CST as well.  */
+		  scalar_int_mode dest_mode
+		    = as_a <scalar_int_mode> (GET_MODE (dest_reg));
 		  if (BITS_BIG_ENDIAN)
-		    shift = GET_MODE_PRECISION (GET_MODE (dest_reg))
+		    shift = GET_MODE_PRECISION (dest_mode)
 			    - INTVAL (pos) - INTVAL (width);
 		  else
 		    shift = INTVAL (pos);
@@ -5234,7 +5306,7 @@ cse_insn (rtx_insn *insn)
 		    mask = (HOST_WIDE_INT_1 << INTVAL (width)) - 1;
 		  val &= ~(mask << shift);
 		  val |= (INTVAL (trial) & mask) << shift;
-		  val = trunc_int_for_mode (val, GET_MODE (dest_reg));
+		  val = trunc_int_for_mode (val, dest_mode);
 		  validate_unshare_change (insn, &SET_DEST (sets[i].rtl),
 					   dest_reg, 1);
 		  validate_unshare_change (insn, &SET_SRC (sets[i].rtl),
@@ -5948,11 +6020,11 @@ cse_insn (rtx_insn *insn)
 	   already entered SRC and DEST of the SET in the table.  */
 
 	if (GET_CODE (dest) == SUBREG
-	    && (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) - 1)
-		 / UNITS_PER_WORD)
-		== (GET_MODE_SIZE (GET_MODE (dest)) - 1) / UNITS_PER_WORD)
-	    && (GET_MODE_SIZE (GET_MODE (dest))
-		>= GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))))
+	    && (known_equal_after_align_down
+		(GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) - 1,
+		 GET_MODE_SIZE (GET_MODE (dest)) - 1,
+		 UNITS_PER_WORD))
+	    && !partial_subreg_p (dest)
 	    && sets[i].src_elt != 0)
 	  {
 	    machine_mode new_mode = GET_MODE (SUBREG_REG (dest));
@@ -5964,7 +6036,6 @@ cse_insn (rtx_insn *insn)
 		rtx new_src = 0;
 		unsigned src_hash;
 		struct table_elt *src_elt;
-		int byte = 0;
 
 		/* Ignore invalid entries.  */
 		if (!REG_P (elt->exp)
@@ -5977,13 +6048,8 @@ cse_insn (rtx_insn *insn)
 		  new_src = elt->exp;
 		else
 		  {
-		    /* Calculate big endian correction for the SUBREG_BYTE.
-		       We have already checked that M1 (GET_MODE (dest))
-		       is not narrower than M2 (new_mode).  */
-		    if (BYTES_BIG_ENDIAN)
-		      byte = (GET_MODE_SIZE (GET_MODE (dest))
-			      - GET_MODE_SIZE (new_mode));
-
+		    poly_uint64 byte
+		      = subreg_lowpart_offset (new_mode, GET_MODE (dest));
 		    new_src = simplify_gen_subreg (new_mode, elt->exp,
 					           GET_MODE (dest), byte);
 		  }
@@ -6089,6 +6155,12 @@ invalidate_from_clobbers (rtx_insn *insn)
 	    invalidate (XEXP (ref, 0), GET_MODE (ref));
 	}
     }
+  if (GET_CODE (x) == CLOBBER_HIGH)
+    {
+      rtx ref = XEXP (x, 0);
+      gcc_assert (REG_P (ref));
+      invalidate_reg (ref, true);
+    }
   else if (GET_CODE (x) == PARALLEL)
     {
       int i;
@@ -6104,6 +6176,12 @@ invalidate_from_clobbers (rtx_insn *insn)
 	      else if (GET_CODE (ref) == STRICT_LOW_PART
 		       || GET_CODE (ref) == ZERO_EXTRACT)
 		invalidate (XEXP (ref, 0), GET_MODE (ref));
+	    }
+	  else if (GET_CODE (y) == CLOBBER_HIGH)
+	    {
+	      rtx ref = XEXP (y, 0);
+	      gcc_assert (REG_P (ref));
+	      invalidate_reg (ref, true);
 	    }
 	}
     }
@@ -6122,8 +6200,17 @@ invalidate_from_sets_and_clobbers (rtx_insn *insn)
   if (CALL_P (insn))
     {
       for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
-	if (GET_CODE (XEXP (tem, 0)) == CLOBBER)
-	  invalidate (SET_DEST (XEXP (tem, 0)), VOIDmode);
+	{
+	  rtx temx = XEXP (tem, 0);
+	  if (GET_CODE (temx) == CLOBBER)
+	    invalidate (SET_DEST (temx), VOIDmode);
+	  else if (GET_CODE (temx) == CLOBBER_HIGH)
+	    {
+	      rtx temref = XEXP (temx, 0);
+	      gcc_assert (REG_P (temref));
+	      invalidate_reg (temref, true);
+	    }
+	}
     }
 
   /* Ensure we invalidate the destination register of a CALL insn.
@@ -6149,6 +6236,12 @@ invalidate_from_sets_and_clobbers (rtx_insn *insn)
 	      else if (GET_CODE (clobbered) == STRICT_LOW_PART
 		       || GET_CODE (clobbered) == ZERO_EXTRACT)
 		invalidate (XEXP (clobbered, 0), GET_MODE (clobbered));
+	    }
+	  else if (GET_CODE (y) == CLOBBER_HIGH)
+	    {
+	      rtx ref = XEXP (y, 0);
+	      gcc_assert (REG_P (ref));
+	      invalidate_reg (ref, true);
 	    }
 	  else if (GET_CODE (y) == SET && GET_CODE (SET_SRC (y)) == CALL)
 	    invalidate (SET_DEST (y), VOIDmode);
@@ -6640,6 +6733,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	 equivalences due to the condition being tested.  */
       insn = BB_END (bb);
       if (path_entry < path_size - 1
+	  && EDGE_COUNT (bb->succs) == 2
 	  && JUMP_P (insn)
 	  && single_set (insn)
 	  && any_condjump_p (insn))
@@ -6808,6 +6902,10 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
 	count_reg_usage (XEXP (XEXP (x, 0), 0), counts, NULL_RTX, incr);
       return;
 
+    case CLOBBER_HIGH:
+      gcc_assert (REG_P ((XEXP (x, 0))));
+      return;
+
     case SET:
       /* Unless we are setting a REG, count everything in SET_DEST.  */
       if (!REG_P (SET_DEST (x)))
@@ -6860,7 +6958,8 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
 	  || (REG_NOTE_KIND (x) != REG_NONNEG && GET_CODE (XEXP (x,0)) == USE)
 	  /* FUNCTION_USAGE expression lists may include (CLOBBER (mem /u)),
 	     involving registers in the address.  */
-	  || GET_CODE (XEXP (x, 0)) == CLOBBER)
+	  || GET_CODE (XEXP (x, 0)) == CLOBBER
+	  || GET_CODE (XEXP (x, 0)) == CLOBBER_HIGH)
 	count_reg_usage (XEXP (x, 0), counts, NULL_RTX, incr);
 
       count_reg_usage (XEXP (x, 1), counts, NULL_RTX, incr);
@@ -6944,7 +7043,9 @@ insn_live_p (rtx_insn *insn, int *counts)
 	      if (set_live_p (elt, insn, counts))
 		return true;
 	    }
-	  else if (GET_CODE (elt) != CLOBBER && GET_CODE (elt) != USE)
+	  else if (GET_CODE (elt) != CLOBBER
+		   && GET_CODE (elt) != CLOBBER_HIGH
+		   && GET_CODE (elt) != USE)
 	    return true;
 	}
       return false;
@@ -6953,10 +7054,17 @@ insn_live_p (rtx_insn *insn, int *counts)
     {
       rtx_insn *next;
 
+      if (DEBUG_MARKER_INSN_P (insn))
+	return true;
+
       for (next = NEXT_INSN (insn); next; next = NEXT_INSN (next))
 	if (NOTE_P (next))
 	  continue;
 	else if (!DEBUG_INSN_P (next))
+	  return true;
+	/* If we find an inspection point, such as a debug begin stmt,
+	   we want to keep the earlier debug insn.  */
+	else if (DEBUG_MARKER_INSN_P (next))
 	  return true;
 	else if (INSN_VAR_LOCATION_DECL (insn) == INSN_VAR_LOCATION_DECL (next))
 	  return false;
@@ -7040,11 +7148,11 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 
   timevar_push (TV_DELETE_TRIVIALLY_DEAD);
   /* First count the number of times each register is used.  */
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       counts = XCNEWVEC (int, nreg * 3);
       for (insn = insns; insn; insn = NEXT_INSN (insn))
-	if (DEBUG_INSN_P (insn))
+	if (DEBUG_BIND_INSN_P (insn))
 	  count_reg_usage (INSN_VAR_LOCATION_LOC (insn), counts + nreg,
 			   NULL_RTX, 1);
 	else if (INSN_P (insn))
@@ -7102,12 +7210,15 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
       if (! live_insn && dbg_cnt (delete_trivial_dead))
 	{
 	  if (DEBUG_INSN_P (insn))
-	    count_reg_usage (INSN_VAR_LOCATION_LOC (insn), counts + nreg,
-			     NULL_RTX, -1);
+	    {
+	      if (DEBUG_BIND_INSN_P (insn))
+		count_reg_usage (INSN_VAR_LOCATION_LOC (insn), counts + nreg,
+				 NULL_RTX, -1);
+	    }
 	  else
 	    {
 	      rtx set;
-	      if (MAY_HAVE_DEBUG_INSNS
+	      if (MAY_HAVE_DEBUG_BIND_INSNS
 		  && (set = single_set (insn)) != NULL_RTX
 		  && is_dead_reg (SET_DEST (set), counts)
 		  /* Used at least once in some DEBUG_INSN.  */
@@ -7147,10 +7258,10 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 	}
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
-	if (DEBUG_INSN_P (insn))
+	if (DEBUG_BIND_INSN_P (insn))
 	  {
 	    /* If this debug insn references a dead register that wasn't replaced
 	       with an DEBUG_EXPR, reset the DEBUG_INSN.  */

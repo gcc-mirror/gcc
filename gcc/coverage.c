@@ -1,5 +1,5 @@
 /* Read and write coverage files, and associated functionality.
-   Copyright (C) 1990-2017 Free Software Foundation, Inc.
+   Copyright (C) 1990-2018 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -73,7 +73,7 @@ struct counts_entry : pointer_hash <counts_entry>
   unsigned lineno_checksum;
   unsigned cfg_checksum;
   gcov_type *counts;
-  struct gcov_ctr_summary summary;
+  gcov_summary summary;
 
   /* hash_table support.  */
   static inline hashval_t hash (const counts_entry *);
@@ -143,8 +143,8 @@ static void coverage_obj_finish (vec<constructor_elt, va_gc> *);
 tree
 get_gcov_type (void)
 {
-  machine_mode mode
-    = smallest_mode_for_size (LONG_LONG_TYPE_SIZE > 32 ? 64 : 32, MODE_INT);
+  scalar_int_mode mode
+    = smallest_int_mode_for_size (LONG_LONG_TYPE_SIZE > 32 ? 64 : 32);
   return lang_hooks.types.type_for_mode (mode, false);
 }
 
@@ -153,7 +153,7 @@ get_gcov_type (void)
 static tree
 get_gcov_unsigned_t (void)
 {
-  machine_mode mode = smallest_mode_for_size (32, MODE_INT);
+  scalar_int_mode mode = smallest_int_mode_for_size (32);
   return lang_hooks.types.type_for_mode (mode, true);
 }
 
@@ -185,7 +185,7 @@ static void
 read_counts_file (void)
 {
   gcov_unsigned_t fn_ident = 0;
-  struct gcov_summary summary;
+  gcov_summary summary;
   unsigned new_summary = 1;
   gcov_unsigned_t tag;
   int is_error = 0;
@@ -241,27 +241,21 @@ read_counts_file (void)
       else if (tag == GCOV_TAG_PROGRAM_SUMMARY)
 	{
 	  struct gcov_summary sum;
-	  unsigned ix;
 
 	  if (new_summary)
 	    memset (&summary, 0, sizeof (summary));
 
 	  gcov_read_summary (&sum);
-	  for (ix = 0; ix != GCOV_COUNTERS_SUMMABLE; ix++)
-	    {
-	      summary.ctrs[ix].runs += sum.ctrs[ix].runs;
-	      summary.ctrs[ix].sum_all += sum.ctrs[ix].sum_all;
-	      if (summary.ctrs[ix].run_max < sum.ctrs[ix].run_max)
-		summary.ctrs[ix].run_max = sum.ctrs[ix].run_max;
-	      summary.ctrs[ix].sum_max += sum.ctrs[ix].sum_max;
-	    }
+	  summary.runs += sum.runs;
+	  summary.sum_all += sum.sum_all;
+	  if (summary.run_max < sum.run_max)
+	    summary.run_max = sum.run_max;
+	  summary.sum_max += sum.sum_max;
           if (new_summary)
-            memcpy (summary.ctrs[GCOV_COUNTER_ARCS].histogram,
-                    sum.ctrs[GCOV_COUNTER_ARCS].histogram,
-                    sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+	    memcpy (summary.histogram, sum.histogram,
+		sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
           else
-            gcov_histogram_merge (summary.ctrs[GCOV_COUNTER_ARCS].histogram,
-                                  sum.ctrs[GCOV_COUNTER_ARCS].histogram);
+	    gcov_histogram_merge (summary.histogram, sum.histogram);
 	  new_summary = 0;
 	}
       else if (GCOV_TAG_IS_COUNTER (tag) && fn_ident)
@@ -282,8 +276,8 @@ read_counts_file (void)
 	      entry->ctr = elt.ctr;
 	      entry->lineno_checksum = lineno_checksum;
 	      entry->cfg_checksum = cfg_checksum;
-              if (elt.ctr < GCOV_COUNTERS_SUMMABLE)
-                entry->summary = summary.ctrs[elt.ctr];
+	      if (elt.ctr == GCOV_COUNTER_ARCS)
+		entry->summary = summary;
               entry->summary.num = n_counts;
 	      entry->counts = XCNEWVEC (gcov_type, n_counts);
 	    }
@@ -306,23 +300,16 @@ read_counts_file (void)
 	      counts_hash = NULL;
 	      break;
 	    }
-	  else if (elt.ctr >= GCOV_COUNTERS_SUMMABLE)
-	    {
-	      error ("cannot merge separate %s counters for function %u",
-		     ctr_names[elt.ctr], fn_ident);
-	      goto skip_merge;
-	    }
 	  else
 	    {
-	      entry->summary.runs += summary.ctrs[elt.ctr].runs;
-	      entry->summary.sum_all += summary.ctrs[elt.ctr].sum_all;
-	      if (entry->summary.run_max < summary.ctrs[elt.ctr].run_max)
-		entry->summary.run_max = summary.ctrs[elt.ctr].run_max;
-	      entry->summary.sum_max += summary.ctrs[elt.ctr].sum_max;
+	      entry->summary.runs += summary.runs;
+	      entry->summary.sum_all += summary.sum_all;
+	      if (entry->summary.run_max < summary.run_max)
+		entry->summary.run_max = summary.run_max;
+	      entry->summary.sum_max += summary.sum_max;
 	    }
 	  for (ix = 0; ix != n_counts; ix++)
 	    entry->counts[ix] += gcov_read_counter ();
-	skip_merge:;
 	}
       gcov_sync (offset, length);
       if ((is_error = gcov_is_error ()))
@@ -345,7 +332,7 @@ read_counts_file (void)
 gcov_type *
 get_coverage_counts (unsigned counter, unsigned expected,
                      unsigned cfg_checksum, unsigned lineno_checksum,
-		     const struct gcov_ctr_summary **summary)
+		     const gcov_summary **summary)
 {
   counts_entry *entry, elt;
 
@@ -355,12 +342,16 @@ get_coverage_counts (unsigned counter, unsigned expected,
       static int warned = 0;
 
       if (!warned++ && dump_enabled_p ())
-	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
-                         (flag_guess_branch_prob
-                          ? "file %s not found, execution counts estimated\n"
-                          : "file %s not found, execution counts assumed to "
-                            "be zero\n"),
-                         da_file_name);
+	{
+	  dump_user_location_t loc
+	    = dump_user_location_t::from_location_t (input_location);
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			   (flag_guess_branch_prob
+			    ? "file %s not found, execution counts estimated\n"
+			    : "file %s not found, execution counts assumed to "
+			    "be zero\n"),
+			   da_file_name);
+	}
       return NULL;
     }
   if (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID))
@@ -391,7 +382,9 @@ get_coverage_counts (unsigned counter, unsigned expected,
 		    "its profile data (counter %qs)", id, ctr_names[counter]);
       if (warning_printed && dump_enabled_p ())
 	{
-          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
+	  dump_user_location_t loc
+	    = dump_user_location_t::from_location_t (input_location);
+          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
                            "use -Wno-error=coverage-mismatch to tolerate "
                            "the mismatch but performance may drop if the "
                            "function is hot\n");
@@ -399,7 +392,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
 	  if (!seen_error ()
 	      && !warned++)
 	    {
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
                                "coverage mismatch ignored\n");
 	      dump_printf (MSG_OPTIMIZED_LOCATIONS,
                            flag_guess_branch_prob
@@ -663,8 +656,16 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   gcov_write_unsigned (cfg_checksum);
   gcov_write_string (IDENTIFIER_POINTER
 		     (DECL_ASSEMBLER_NAME (current_function_decl)));
-  gcov_write_string (xloc.file);
+  gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl)
+		       && !DECL_FUNCTION_VERSIONED (current_function_decl));
+  gcov_write_filename (xloc.file);
   gcov_write_unsigned (xloc.line);
+  gcov_write_unsigned (xloc.column);
+
+  expanded_location endloc = expand_location (cfun->function_end_locus);
+
+  /* Function can start in a single file and end in another one.  */
+  gcov_write_unsigned (endloc.file == xloc.file ? endloc.line : xloc.line);
   gcov_write_length (offset);
 
   return !gcov_is_error ();
@@ -1220,8 +1221,24 @@ coverage_init (const char *filename)
     g->get_passes ()->get_pass_profile ()->static_pass_number;
   g->get_dumps ()->dump_start (profile_pass_num, NULL);
 
-  if (!profile_data_prefix && !IS_ABSOLUTE_PATH (filename))
-    profile_data_prefix = getpwd ();
+  if (!IS_ABSOLUTE_PATH (filename))
+    {
+      /* When a profile_data_prefix is provided, then mangle full path
+	 of filename in order to prevent file path clashing.  */
+      if (profile_data_prefix)
+	{
+#if HAVE_DOS_BASED_FILE_SYSTEM
+	  const char *separator = "\\";
+#else
+	  const char *separator = "/";
+#endif
+	  filename = concat (getpwd (), separator, filename, NULL);
+	  filename = mangle_path (filename);
+	  len = strlen (filename);
+	}
+      else
+	profile_data_prefix = getpwd ();
+    }
 
   if (profile_data_prefix)
     prefix_len = strlen (profile_data_prefix);
@@ -1262,6 +1279,10 @@ coverage_init (const char *filename)
 	  gcov_write_unsigned (GCOV_NOTE_MAGIC);
 	  gcov_write_unsigned (GCOV_VERSION);
 	  gcov_write_unsigned (bbg_file_stamp);
+	  gcov_write_string (getpwd ());
+
+	  /* Do not support has_unexecuted_blocks for Ada.  */
+	  gcov_write_unsigned (strcmp (lang_hooks.name, "GNU Ada") != 0);
 	}
     }
 

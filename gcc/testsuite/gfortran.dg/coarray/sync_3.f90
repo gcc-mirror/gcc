@@ -25,11 +25,11 @@ sync all (errmsg=str)
 
 n = 5
 sync all (stat=n)
-if (n /= 0) call abort()
+if (n /= 0) STOP 1
 
 n = 5
 sync all (stat=n,errmsg=str)
-if (n /= 0) call abort()
+if (n /= 0) STOP 2
 
 
 !
@@ -41,11 +41,11 @@ sync memory (errmsg=str)
 
 n = 5
 sync memory (stat=n)
-if (n /= 0) call abort()
+if (n /= 0) STOP 3
 
 n = 5
 sync memory (errmsg=str,stat=n)
-if (n /= 0) call abort()
+if (n /= 0) STOP 4
 
 
 !
@@ -60,11 +60,11 @@ end if
 
 n = 5
 sync images (*, stat=n)
-if (n /= 0) call abort()
+if (n /= 0) STOP 5
 
 n = 5
 sync images (*,errmsg=str,stat=n)
-if (n /= 0) call abort()
+if (n /= 0) STOP 6
 
 n = -1
 sync images ( num_images() )

@@ -1,3 +1,127 @@
+2018-08-17  Jojo  <jijie_rong@c-sky.com>
+	    Huibin Wang  <huibin_wang@c-sky.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Andrew Jenner  <andrew@codesourcery.com>
+
+	C-SKY port: Configury
+
+	* config-list.mk (LIST): Add csky-elf and csky-linux-gnu.
+
+2018-07-13  Tom de Vries  <tdevries@suse.de>
+
+	* maintainers-verify.sh: New file.
+
+2018-07-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* compare_tests: Print number of tests in each category.
+
+2018-06-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	* vim-gcc-dev/README: New file.
+	* vim-gcc-dev/ftdetect/gcc-dev.vim: New file.
+	* vim-gcc-dev/syntax/gcc-match.vim: New file.
+	* gimple.vim: Move under vim-gcc-dev/syntax/.
+	* gcc-rtl.vim: Likewise.
+
+2018-06-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-rtl.vim: New file.
+
+2018-06-12  Jeff Law  <law@redhat.com>
+
+	* config-list.mk (LIST): Remove alpha-freebsd6.
+
+2018-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85571
+	* compare-lto: New script derived from compare-debug.
+
+2018-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 8.
+
+2018-05-01  Jim Wilson  <jimw@sifive.com>
+
+	* gcc_update: Check for .git as a file.
+
+2018-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* test_summary: Match possible single quotes in configure path.
+
+2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* update-copyright.py: Remove "libcilkrts" reference.
+
+2018-02-19  Yury Gribov  <tetra2005@gmail.com>
+
+	* compare_tests: Use TMPDIR when set.
+	* dg-cmp-results.sh: Ditto.
+	* warn_summary: Ditto.
+
+2018-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* download_prerequisites: Use shasum for FreeBSD and DragonFly.
+
+2018-01-19  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Support new format that can be easily
+	parsed. Add new column to report.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Skip pdt-5.f03 in gfortran.dg subdir.
+
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* contrib/gcc_update: Ditto.
+
+2017-11-08  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Fix abbreviations for SI units.
+
+2017-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Handle libbacktrace.
+
+2017-09-18  Richard Biener  <rguenther@suse.de>
+
+	* download_prerequisites (isl): Bump version to 0.18.
+
+2017-08-02  Yury Gribov  <tetra2005@gmail.com>
+
+	* mklog: Added new implementation.
+
+2017-08-02  Yury Gribov  <tetra2005@gmail.com>
+
+	* mklog: Rename to ...
+	* mklog.pl: this.
+
+2017-07-17  Yury Gribov  <tetra2005@gmail.com>
+
+	* mklog: Fix extraction of changed file name.
+
+2017-07-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc_update (files_and_dependencies)
+	[gcc/config/avr/avr-tables.opt]: Remove dead entry.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	* gcc.doxy: Add default location for filters and output folder.
+	* filter_gcc_for_doxygen_new: Rename to filter_gcc_for_doxygen.
+	* filter_params.pl: Remove.
+
+2017-06-21  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* dg-cmp-results.sh: Restore filtering on target variant.
+
+2017-06-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* dg-cmp-results.sh: Keep test result lines rather than throwing
+	header and summary to support sum files with multiple tools.
+
 2017-05-31  Martin Liska  <mliska@suse.cz>
 
 	* filter_params.py:
@@ -59,8 +183,8 @@
 
 2017-04-11  Damian Rouson  <damian@sourceryinstitute.org>
 
-        * download_prerequisites (md5_check): New function emulates Linux
-        'md5 --check' on macOS.  Modified script for macOS compatibility.
+	* download_prerequisites (md5_check): New function emulates Linux
+	'md5 --check' on macOS.  Modified script for macOS compatibility.
 
 2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
 
@@ -159,7 +283,7 @@
 2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* compare_tests: Take ERROR messages into account when
-          comparing.
+	  comparing.
 
 2016-08-17  Martin Liska  <mliska@suse.cz>
 

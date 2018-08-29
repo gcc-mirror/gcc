@@ -1,5 +1,5 @@
 ;; Constraint definitions for RS6000
-;; Copyright (C) 2006-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -156,11 +156,6 @@
 (define_memory_constraint "wF"
   "Memory operand suitable for power9 fusion load/stores"
   (match_operand 0 "fusion_addis_mem_combo_load"))
-
-;; Fusion gpr load.
-(define_memory_constraint "wG"
-  "Memory operand suitable for TOC fusion memory references"
-  (match_operand 0 "toc_fusion_mem_wrapped"))
 
 (define_register_constraint "wH" "rs6000_constraints[RS6000_CONSTRAINT_wH]"
   "Altivec register to hold 32-bit integers or NO_REGS.")

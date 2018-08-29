@@ -1,5 +1,5 @@
 /* Target definitions for GCC for Intel 80386 running Solaris 2
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com).
 
 This file is part of GCC.
@@ -51,9 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_SUN_TLS
 #define TARGET_SUN_TLS 1
 
-/* Solaris 2/Intel as chokes on #line directives before Solaris 10.  */
 #undef CPP_SPEC
-#define CPP_SPEC "%{,assembler-with-cpp:-P} %(cpp_subtarget)"
+#define CPP_SPEC "%(cpp_subtarget)"
 
 /* GNU as understands --32 and --64, but the native Solaris
    assembler requires -xarch=generic or -xarch=generic64 instead.  */
@@ -65,8 +64,16 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_CPU64_DEFAULT_SPEC "-xarch=generic64"
 #endif
 
+/* Since Studio 12.6, as needs -xbrace_comment=no so its AVX512 syntax is
+   fully compatible with gas.  */
+#ifdef HAVE_AS_XBRACE_COMMENT_OPTION
+#define ASM_XBRACE_COMMENT_SPEC "-xbrace_comment=no"
+#else
+#define ASM_XBRACE_COMMENT_SPEC ""
+#endif
+
 #undef ASM_CPU_SPEC
-#define ASM_CPU_SPEC "%(asm_cpu_default)"
+#define ASM_CPU_SPEC "%(asm_cpu_default) " ASM_XBRACE_COMMENT_SPEC
 
 /* Don't include ASM_PIC_SPEC.  While the Solaris 10+ assembler accepts -K PIC,
    it gives many warnings: 
@@ -245,9 +252,3 @@ along with GCC; see the file COPYING3.  If not see
 /* We do not need NT_VERSION notes.  */
 #undef X86_FILE_START_VERSION_DIRECTIVE
 #define X86_FILE_START_VERSION_DIRECTIVE false
-
-/* Only recent versions of Solaris 11 ld properly support hidden .gnu.linkonce
-   sections, so don't use them.  */
-#ifndef USE_GLD
-#define USE_HIDDEN_LINKONCE 0
-#endif

@@ -1,5 +1,5 @@
 ;; PowerPC paired single and double hummer description
-;; Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;; Contributed by David Edelsohn <edelsohn@gnu.org> and Revital Eres
 ;; <eres@il.ibm.com>
 
@@ -313,19 +313,6 @@
   "ps_merge11 %0, %1, %2"
   [(set_attr "type" "fp")])
 
-(define_expand "vec_perm_constv2sf"
-  [(match_operand:V2SF 0 "gpc_reg_operand" "")
-   (match_operand:V2SF 1 "gpc_reg_operand" "")
-   (match_operand:V2SF 2 "gpc_reg_operand" "")
-   (match_operand:V2SI 3 "" "")]
-  "TARGET_PAIRED_FLOAT"
-{
-  if (rs6000_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
-
 (define_insn "paired_sum0"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
 	(vec_concat:V2SF (plus:SF (vec_select:SF
@@ -377,7 +364,7 @@
   "ps_muls1 %0, %1, %2"
   [(set_attr "type" "fp")])
 
-(define_expand "vec_initv2sf"
+(define_expand "vec_initv2sfsf"
   [(match_operand:V2SF 0 "gpc_reg_operand" "=f")
    (match_operand 1 "" "")]
   "TARGET_PAIRED_FLOAT"

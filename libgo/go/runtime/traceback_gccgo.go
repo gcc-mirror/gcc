@@ -9,16 +9,8 @@ package runtime
 
 import (
 	"runtime/internal/sys"
-	_ "unsafe" // for go:linkname
+	"unsafe"
 )
-
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
-// These are temporary for C runtime code to call.
-//go:linkname traceback runtime.traceback
-//go:linkname printtrace runtime.printtrace
-//go:linkname goroutineheader runtime.goroutineheader
-//go:linkname printcreatedby runtime.printcreatedby
 
 func printcreatedby(gp *g) {
 	// Show what created goroutine, except main goroutine (goid 1).
@@ -54,13 +46,14 @@ type location struct {
 	lineno   int
 }
 
+//go:noescape
 //extern runtime_callers
 func c_callers(skip int32, locbuf *location, max int32, keepThunks bool) int32
 
 // callers returns a stack trace of the current goroutine.
 // The gc version of callers takes []uintptr, but we take []location.
 func callers(skip int, locbuf []location) int {
-	n := c_callers(int32(skip), &locbuf[0], int32(len(locbuf)), false)
+	n := c_callers(int32(skip)+1, &locbuf[0], int32(len(locbuf)), false)
 	return int(n)
 }
 
@@ -71,13 +64,18 @@ func traceback(skip int32) {
 	var locbuf [100]location
 	c := c_callers(skip+1, &locbuf[0], int32(len(locbuf)), false)
 	printtrace(locbuf[:c], getg())
+	printcreatedby(getg())
 }
 
 // printtrace prints a traceback from locbuf.
 func printtrace(locbuf []location, gp *g) {
 	for i := range locbuf {
 		if showframe(locbuf[i].function, gp) {
-			print(locbuf[i].function, "\n\t", locbuf[i].filename, ":", locbuf[i].lineno, "\n")
+			name := locbuf[i].function
+			if name == "runtime.gopanic" {
+				name = "panic"
+			}
+			print(name, "\n\t", locbuf[i].filename, ":", locbuf[i].lineno, "\n")
 		}
 	}
 }
@@ -94,7 +92,7 @@ func showframe(name string, gp *g) bool {
 	// We want to print those in the traceback.
 	// But unless GOTRACEBACK > 1 (checked below), still skip
 	// internal C functions and cgo-generated functions.
-	if !contains(name, ".") && !hasprefix(name, "__go_") && !hasprefix(name, "_cgo_") {
+	if name != "" && !contains(name, ".") && !hasprefix(name, "__go_") && !hasprefix(name, "_cgo_") {
 		return true
 	}
 
@@ -159,7 +157,7 @@ func goroutineheader(gp *g) {
 	if waitfor >= 1 {
 		print(", ", waitfor, " minutes")
 	}
-	if gp.lockedm != nil {
+	if gp.lockedm != 0 {
 		print(", locked to thread")
 	}
 	print("]:\n")
@@ -188,7 +186,7 @@ func tracebackothers(me *g) {
 	if gp != nil && gp != me {
 		print("\n")
 		goroutineheader(gp)
-		gp.traceback = &tb
+		gp.traceback = (*tracebackg)(noescape(unsafe.Pointer(&tb)))
 		getTraceback(me, gp)
 		printtrace(tb.locbuf[:tb.c], nil)
 		printcreatedby(gp)
@@ -222,7 +220,7 @@ func tracebackothers(me *g) {
 			print("\tgoroutine in C code; stack unavailable\n")
 			printcreatedby(gp)
 		} else {
-			gp.traceback = &tb
+			gp.traceback = (*tracebackg)(noescape(unsafe.Pointer(&tb)))
 			getTraceback(me, gp)
 			printtrace(tb.locbuf[:tb.c], nil)
 			printcreatedby(gp)

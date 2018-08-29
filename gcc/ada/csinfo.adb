@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -218,7 +218,6 @@ begin
    Set (Special, "Has_Dynamic_Range_Check",          True);
    Set (Special, "Has_Dynamic_Length_Check",         True);
    Set (Special, "Has_Private_View",                 True);
-   Set (Special, "Implicit_With_From_Instantiation", True);
    Set (Special, "Is_Controlling_Actual",            True);
    Set (Special, "Is_Overloaded",                    True);
    Set (Special, "Is_Static_Expression",             True);

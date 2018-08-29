@@ -14,5 +14,5 @@ subroutine foo
   !$omp end target
 
   !$omp target update from(var_x)
-  if (var_x /= 20) call abort
+  if (var_x /= 20) STOP 1
 end subroutine foo

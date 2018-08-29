@@ -27,6 +27,6 @@ write(31, '(a)') "adjoint%screen_io_fs_ntime%begin = 42"
 write(31, '(a)') "/"
 rewind(31)
 read(31,nml=info_adjoint)
-if (adjoint%solver_type /= 'direct') call abort
-if (adjoint%screen_io_fs_ntime%begin /= 42) call abort
+if (adjoint%solver_type /= 'direct') STOP 1
+if (adjoint%screen_io_fs_ntime%begin /= 42) STOP 2
 end program gfortran_error_2

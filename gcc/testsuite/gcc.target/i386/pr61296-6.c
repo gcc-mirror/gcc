@@ -1,5 +1,5 @@
 /* PR target/61296 */
-/* { dg-do compile { target { *-*-linux* } } } */
+/* { dg-do compile { target *-*-linux* } } */
 /* { dg-options "-O2 -malign-data=cacheline -malign-data=compat" } */
 
 struct foo

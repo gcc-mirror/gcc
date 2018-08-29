@@ -8,7 +8,7 @@ import (
 	"unsafe"
 )
 
-// Temporary for C code to call:
+// For C code to call:
 //go:linkname minit runtime.minit
 
 func goenvs() {
@@ -32,6 +32,7 @@ func minit() {
 
 // Called from dropm to undo the effect of an minit.
 //go:nosplit
+//go:nowritebarrierrec
 func unminit() {
 	unminitSignals()
 }

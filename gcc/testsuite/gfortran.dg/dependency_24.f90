@@ -49,10 +49,10 @@ contains
     where (l)
       a = p%i         ! Comment #1 of PR38863 concerned WHERE assignment
     end where
-    if (any (a%j .ne. [101, 102, 103])) call abort
+    if (any (a%j .ne. [101, 102, 103])) STOP 1
 
     a = p%i           ! Ordinary assignment was wrong too.
-    if (any (a%j .ne. [101, 102, 103])) call abort
+    if (any (a%j .ne. [101, 102, 103])) STOP 2
   end subroutine
 
   subroutine test_ti
@@ -72,9 +72,9 @@ contains
     where (l)
       a = p%i
     end where
-    if (any (a%j .ne. 99)) call abort
+    if (any (a%j .ne. 99)) STOP 3
 
     a = p%i
-    if (any (a%j .ne. 99)) call abort
+    if (any (a%j .ne. 99)) STOP 4
   end subroutine
 end

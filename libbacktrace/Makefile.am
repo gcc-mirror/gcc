@@ -1,5 +1,5 @@
 # Makefile.am -- Backtrace Makefile.
-# Copyright (C) 2012-2017 Free Software Foundation, Inc.
+# Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -57,7 +57,8 @@ BACKTRACE_FILES = \
 FORMAT_FILES = \
 	elf.c \
 	pecoff.c \
-	unknown.c
+	unknown.c \
+	xcoff.c
 
 VIEW_FILES = \
 	read.c \
@@ -89,7 +90,7 @@ TESTS = $(check_PROGRAMS)
 
 if NATIVE
 
-btest_SOURCES = btest.c
+btest_SOURCES = btest.c testlib.c
 btest_CFLAGS = $(AM_CFLAGS) -g -O
 btest_LDADD = libbacktrace.la
 
@@ -100,7 +101,18 @@ stest_LDADD = libbacktrace.la
 
 check_PROGRAMS += stest
 
-edtest_SOURCES = edtest.c edtest2_build.c
+ztest_SOURCES = ztest.c testlib.c
+ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
+ztest_LDADD = libbacktrace.la
+
+if HAVE_ZLIB
+ztest_LDADD += -lz
+endif
+ztest_LDADD += $(CLOCK_GETTIME_LINK)
+
+check_PROGRAMS += ztest
+
+edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 edtest_LDADD = libbacktrace.la
 
 check_PROGRAMS += edtest
@@ -110,6 +122,42 @@ gen_edtest2_build: $(srcdir)/edtest2.c
 	cat $(srcdir)/edtest2.c > tmp-edtest2_build.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-edtest2_build.c edtest2_build.c
 	echo timestamp > $@
+
+if HAVE_PTHREAD
+
+check_PROGRAMS += ttest
+
+ttest_SOURCES = ttest.c testlib.c
+ttest_CFLAGS = $(AM_CFLAGS) -pthread
+ttest_LDADD = libbacktrace.la
+
+endif HAVE_PTHREAD
+
+if HAVE_OBJCOPY_DEBUGLINK
+
+TESTS += dtest
+
+dtest: btest
+	$(OBJCOPY) --only-keep-debug btest btest.debug
+	$(OBJCOPY) --strip-debug --add-gnu-debuglink=btest.debug btest dtest
+
+endif HAVE_OBJCOPY_DEBUGLINK
+
+if HAVE_COMPRESSED_DEBUG
+
+ctestg_SOURCES = btest.c testlib.c
+ctestg_CFLAGS = $(AM_CFLAGS) -g
+ctestg_LDFLAGS = -Wl,--compress-debug-sections=zlib-gnu
+ctestg_LDADD = libbacktrace.la
+
+ctesta_SOURCES = btest.c testlib.c
+ctesta_CFLAGS = $(AM_CFLAGS) -g
+ctesta_LDFLAGS = -Wl,--compress-debug-sections=zlib-gabi
+ctesta_LDADD = libbacktrace.la
+
+check_PROGRAMS += ctestg ctesta
+
+endif
 
 endif NATIVE
 
@@ -145,3 +193,5 @@ sort.lo: config.h backtrace.h internal.h
 stest.lo: config.h backtrace.h internal.h
 state.lo: config.h backtrace.h backtrace-supported.h internal.h
 unknown.lo: config.h backtrace.h internal.h
+xcoff.lo: config.h backtrace.h internal.h
+

@@ -6,7 +6,7 @@
 !
 program test
   implicit none
-  intrinsic co_max ! { dg-error "is not available in the current standard settings but new in TS 29113/TS 18508." }
-  intrinsic co_min ! { dg-error "is not available in the current standard settings but new in TS 29113/TS 18508." }
-  intrinsic co_sum ! { dg-error "is not available in the current standard settings but new in TS 29113/TS 18508." }
+  intrinsic co_max ! { dg-error "is not available in the current standard settings but new in Fortran 2018." }
+  intrinsic co_min ! { dg-error "is not available in the current standard settings but new in Fortran 2018." }
+  intrinsic co_sum ! { dg-error "is not available in the current standard settings but new in Fortran 2018." }
 end program test

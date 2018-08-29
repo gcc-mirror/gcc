@@ -12,9 +12,9 @@ __attribute__((noinline, noclone)) void
 foo (int a, int b)
 {
   int c = a;
-  char d[b];	/* { dg-final { gdb-test 17 "a" "5" } } */
-  bar (d, 2);	/* { dg-final { gdb-test 17 "b" "6" } } */
-  bar (d, 4);	/* { dg-final { gdb-test 17 "c" "5" } } */
+  char d[b];	/* { dg-final { gdb-test .+2 "a" "5" } } */
+  bar (d, 2);	/* { dg-final { gdb-test .+1 "b" "6" } } */
+  bar (d, 4);	/* { dg-final { gdb-test . "c" "5" } } */
 }
 
 int

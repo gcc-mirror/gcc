@@ -22,7 +22,7 @@ template <typename T>
 void
 large_array_template1(int n)
 {
-  new T[n] // { dg-error "size of array is too large" }
+  new T[n] // { dg-error "size of unnamed array is too large" }
     [(1ULL << (sizeof(void *) * 4)) / sizeof(T)]
     [1ULL << (sizeof(void *) * 4)];
 }
@@ -31,7 +31,7 @@ template <typename T>
 void
 large_array_template2(int n)
 {
-  new T[n] // { dg-error "size of array is too large" }
+  new T[n] // { dg-error "size of unnamed array is too large" }
     [(1ULL << (sizeof(void *) * 4)) / sizeof(T)]
     [1ULL << (sizeof(void *) * 4)];
 }
@@ -40,7 +40,7 @@ template <typename T>
 void
 large_array_template3(int n)
 {
-  new T[n] // { dg-error "size of array is too large" }
+  new T[n] // { dg-error "size of unnamed array is too large" }
     [(1ULL << (sizeof(void *) * 4)) / sizeof(T)]
     [1ULL << (sizeof(void *) * 4)];
 }

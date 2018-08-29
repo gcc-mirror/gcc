@@ -6,7 +6,7 @@ class A {
 
 public:
   template <typename _Functor, typename = _Requires<_Functor, void>>
-  A(_Functor);
+  A(_Functor) { }
 };
 template <class T> class B {
   A f = [](T) {};

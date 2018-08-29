@@ -1,5 +1,5 @@
 ;; Constraint definitions for Renesas RX.
-;; Copyright (C) 2008-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2008-2018 Free Software Foundation, Inc.
 ;; Contributed by Red Hat.
 ;;
 ;; This file is part of GCC.
@@ -105,4 +105,10 @@
 	    (match_code "unspec" "1")
        )
   )
+)
+
+(define_constraint "CALL_OP_SYMBOL_REF"
+"constraint for call instructions using symbol ref"
+(and (match_test "!TARGET_JSR")
+     (match_code "symbol_ref"))
 )

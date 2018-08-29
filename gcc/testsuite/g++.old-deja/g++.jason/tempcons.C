@@ -4,5 +4,5 @@
 template <class T>
 struct A {
   int i;
-  Blarg () : i(0) { }		// { dg-error "" } 
+  Blarg () : i(0) { return 0; }		// { dg-error "" } 
 };

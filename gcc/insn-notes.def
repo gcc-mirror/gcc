@@ -1,5 +1,5 @@
 /* Insn note definitions.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -65,8 +65,12 @@ INSN_NOTE (EH_REGION_END)
 /* The location of a variable.  */
 INSN_NOTE (VAR_LOCATION)
 
-/* The values passed to callee.  */
-INSN_NOTE (CALL_ARG_LOCATION)
+/* The beginning of a statement.  */
+INSN_NOTE (BEGIN_STMT)
+
+/* The entry point for an inlined function.  Its NOTE_BLOCK references
+   the lexical block whose abstract origin is the inlined function.  */
+INSN_NOTE (INLINE_ENTRY)
 
 /* Record the struct for the following basic block.  Uses
    NOTE_BASIC_BLOCK.  FIXME: Redundant with the basic block pointer

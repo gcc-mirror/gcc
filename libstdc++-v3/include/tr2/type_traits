@@ -1,6 +1,6 @@
 // TR2 <type_traits> -*- C++ -*-
 
-// Copyright (C) 2011-2017 Free Software Foundation, Inc.
+// Copyright (C) 2011-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,10 +35,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr2
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr2
+{
   /**
    * @addtogroup metaprogramming
    * @{
@@ -98,9 +98,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// @} group metaprogramming
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 #endif // _GLIBCXX_TR2_TYPE_TRAITS

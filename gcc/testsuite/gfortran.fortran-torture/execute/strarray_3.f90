@@ -14,7 +14,7 @@ subroutine foo1(a)
   implicit none
   character(len=5), dimension(2)  :: a
 
-  if ((a(1) .ne. "Hello") .or. (a(2) .ne. "World")) call abort
+  if ((a(1) .ne. "Hello") .or. (a(2) .ne. "World")) STOP 1
 end subroutine
 
 subroutine foo2(a, m)
@@ -22,7 +22,7 @@ subroutine foo2(a, m)
   integer  m
   character(len=5), dimension(m)  :: a
 
-  if ((a(1) .ne. "Hello") .or. (a(2) .ne. "World")) call abort
+  if ((a(1) .ne. "Hello") .or. (a(2) .ne. "World")) STOP 2
 end subroutine
 
 subroutine foo3(a, n)
@@ -30,7 +30,7 @@ subroutine foo3(a, n)
   integer n
   character(len=n), dimension(:)  :: a
 
-  if ((a(1) .ne. "Hello") .or. (a(2) .ne. "World")) call abort
+  if ((a(1) .ne. "Hello") .or. (a(2) .ne. "World")) STOP 3
 end subroutine
 
 subroutine foo4(a, n, m)
@@ -38,13 +38,13 @@ subroutine foo4(a, n, m)
   integer n, m
   character(len=n), dimension(m)  :: a
 
-  if ((a(1) .ne. "Hello") .or. (a(2) .ne. "World")) call abort
+  if ((a(1) .ne. "Hello") .or. (a(2) .ne. "World")) STOP 4
 end subroutine
 
 subroutine foo5(a)
   implicit none
   character(len=2), dimension(5)  :: a
 
-  if ((a(1) .ne. "Wo") .or. (a(3) .ne. "dH") .or. (a(5) .ne. "lo")) call abort
+  if ((a(1) .ne. "Wo") .or. (a(3) .ne. "dH") .or. (a(5) .ne. "lo")) STOP 5
 end subroutine
 end program

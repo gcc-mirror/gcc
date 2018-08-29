@@ -12,5 +12,5 @@ PROGRAM test
   fileNames = (/ "file1", "file2" /)
   fullNames = SPREAD(TRIM(pathName),1,2) // fileNames
   if (fullNames(1) /= '/dir1/dir2/file1' .or. &
-       & fullnames(2) /= '/dir1/dir2/file2') call abort
+       & fullnames(2) /= '/dir1/dir2/file2') STOP 1
 END PROGRAM test

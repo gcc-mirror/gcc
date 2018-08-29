@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,10 @@ with GNAT.Heap_Sort_G;
 
 package body Atree is
 
+   Ignored_Ghost_Recording_Proc : Ignored_Ghost_Record_Proc := null;
+   --  This soft link captures the procedure invoked during the creation of an
+   --  ignored Ghost node or entity.
+
    Locked : Boolean := False;
    --  Compiling with assertions enabled, node contents modifications are
    --  permitted only when this switch is set to False; compiling without
@@ -55,6 +59,9 @@ package body Atree is
 
    Reporting_Proc : Report_Proc := null;
    --  Record argument to last call to Set_Reporting_Proc
+
+   Rewriting_Proc : Rewrite_Proc := null;
+   --  This soft link captures the procedure invoked during a node rewrite
 
    ---------------
    -- Debugging --
@@ -73,11 +80,12 @@ package body Atree is
    --     ww := 12345
    --  and set a breakpoint on New_Node_Breakpoint (nickname "nn"). Continue.
 
-   --  Either way, gnat1 will stop when node 12345 is created
+   --  Either way, gnat1 will stop when node 12345 is created, or certain other
+   --  interesting operations are performed, such as Rewrite. To see exactly
+   --  which operations, search for "pragma Debug" below.
 
-   --  The second method is much faster
-
-   --  Similarly, rr and rrd allow breaking on rewriting of a given node
+   --  The second method is much faster if the amount of Ada code being
+   --  compiled is large.
 
    ww : Node_Id'Base := Node_Id'First - 1;
    pragma Export (Ada, ww); --  trick the optimizer
@@ -103,24 +111,8 @@ package body Atree is
    --  If Node = Watch_Node, this prints out the new node and calls
    --  New_Node_Breakpoint. Otherwise, does nothing.
 
-   procedure rr;
-   pragma Export (Ada, rr);
-   procedure Rewrite_Breakpoint renames rr;
-   --  This doesn't do anything interesting; it's just for setting breakpoint
-   --  on as explained above.
-
-   procedure rrd (Old_Node, New_Node : Node_Id);
-   pragma Export (Ada, rrd);
-   procedure Rewrite_Debugging_Output
-     (Old_Node, New_Node : Node_Id) renames rrd;
-   --  For debugging. If debugging is turned on, Rewrite calls this. If debug
-   --  flag N is turned on, this prints out the new node.
-   --
-   --  If Old_Node = Watch_Node, this prints out the old and new nodes and
-   --  calls Rewrite_Breakpoint. Otherwise, does nothing.
-
    procedure Node_Debug_Output (Op : String; N : Node_Id);
-   --  Common code for nnd and rrd, writes Op followed by information about N
+   --  Called by nnd; writes Op followed by information about N
 
    procedure Print_Statistics;
    pragma Export (Ada, Print_Statistics);
@@ -695,12 +687,21 @@ package body Atree is
    -----------------
 
    procedure Change_Node (N : Node_Id; New_Node_Kind : Node_Kind) is
-      Save_Sloc    : constant Source_Ptr := Sloc (N);
+
+      --  Flags table attributes
+
+      Save_CA     : constant Boolean := Flags.Table (N).Check_Actuals;
+      Save_Is_IGN : constant Boolean := Flags.Table (N).Is_Ignored_Ghost_Node;
+
+      --  Nodes table attributes
+
+      Save_CFS     : constant Boolean    := Nodes.Table (N).Comes_From_Source;
       Save_In_List : constant Boolean    := Nodes.Table (N).In_List;
       Save_Link    : constant Union_Id   := Nodes.Table (N).Link;
-      Save_CFS     : constant Boolean    := Nodes.Table (N).Comes_From_Source;
       Save_Posted  : constant Boolean    := Nodes.Table (N).Error_Posted;
-      Par_Count    : Nat                 := 0;
+      Save_Sloc    : constant Source_Ptr := Sloc (N);
+
+      Par_Count : Nat := 0;
 
    begin
       if Nkind (N) in N_Subexpr then
@@ -715,7 +716,9 @@ package body Atree is
       Nodes.Table (N).Nkind             := New_Node_Kind;
       Nodes.Table (N).Error_Posted      := Save_Posted;
 
-      Flags.Table (N) := Default_Flags;
+      Flags.Table (N)                       := Default_Flags;
+      Flags.Table (N).Check_Actuals         := Save_CA;
+      Flags.Table (N).Is_Ignored_Ghost_Node := Save_Is_IGN;
 
       if New_Node_Kind in N_Subexpr then
          Set_Paren_Count (N, Par_Count);
@@ -751,6 +754,9 @@ package body Atree is
       Save_Link    : constant Union_Id := Nodes.Table (Destination).Link;
 
    begin
+      pragma Debug (New_Node_Debugging_Output (Source));
+      pragma Debug (New_Node_Debugging_Output (Destination));
+
       Nodes.Table (Destination)         := Nodes.Table (Source);
       Nodes.Table (Destination).In_List := Save_In_List;
       Nodes.Table (Destination).Link    := Save_Link;
@@ -1319,16 +1325,6 @@ package body Atree is
         Ekind_In (Ekind (E), V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11);
    end Ekind_In;
 
-   ------------------------
-   -- Set_Reporting_Proc --
-   ------------------------
-
-   procedure Set_Reporting_Proc (P : Report_Proc) is
-   begin
-      pragma Assert (Reporting_Proc = null);
-      Reporting_Proc := P;
-   end Set_Reporting_Proc;
-
    ------------------
    -- Error_Posted --
    ------------------
@@ -1348,6 +1344,9 @@ package body Atree is
       Temp_Flg : Flags_Byte;
 
    begin
+      pragma Debug (New_Node_Debugging_Output (E1));
+      pragma Debug (New_Node_Debugging_Output (E2));
+
       pragma Assert (True
         and then Has_Extension (E1)
         and then Has_Extension (E2)
@@ -1420,8 +1419,10 @@ package body Atree is
 
    begin
       pragma Assert (not (Has_Extension (Node)));
+
       Result := Allocate_Initialize_Node (Node, With_Extension => True);
       pragma Debug (Debug_Extend_Node);
+
       return Result;
    end Extend_Node;
 
@@ -1620,6 +1621,13 @@ package body Atree is
          end if;
 
          Set_Is_Ignored_Ghost_Node (N);
+
+         --  Record the ignored Ghost node or entity in order to eliminate it
+         --  from the tree later.
+
+         if Ignored_Ghost_Recording_Proc /= null then
+            Ignored_Ghost_Recording_Proc.all (N);
+         end if;
       end if;
    end Mark_New_Ghost_Node;
 
@@ -1643,8 +1651,8 @@ package body Atree is
       if Source > Empty_Or_Error then
          New_Id := Allocate_Initialize_Node (Source, Has_Extension (Source));
 
-         Nodes.Table (New_Id).Link := Empty_List_Or_Node;
          Nodes.Table (New_Id).In_List := False;
+         Nodes.Table (New_Id).Link    := Empty_List_Or_Node;
 
          --  If the original is marked as a rewrite insertion, then unmark the
          --  copy, since we inserted the original, not the copy.
@@ -1695,8 +1703,8 @@ package body Atree is
          Current_Error_Node := Ent;
       end if;
 
-      Nodes.Table (Ent).Nkind  := New_Node_Kind;
-      Nodes.Table (Ent).Sloc   := New_Sloc;
+      Nodes.Table (Ent).Nkind := New_Node_Kind;
+      Nodes.Table (Ent).Sloc  := New_Sloc;
       pragma Debug (New_Node_Debugging_Output (Ent));
 
       --  Mark the new entity as Ghost depending on the current Ghost region
@@ -1718,6 +1726,7 @@ package body Atree is
 
    begin
       pragma Assert (New_Node_Kind not in N_Entity);
+
       Nod := Allocate_Initialize_Node (Empty, With_Extension => False);
       Nodes.Table (Nod).Nkind := New_Node_Kind;
       Nodes.Table (Nod).Sloc  := New_Sloc;
@@ -1746,7 +1755,6 @@ package body Atree is
    begin
       Write_Str ("Watched node ");
       Write_Int (Int (Watch_Node));
-      Write_Str (" created");
       Write_Eol;
    end nn;
 
@@ -1759,7 +1767,7 @@ package body Atree is
 
    begin
       if Debug_Flag_N or else Node_Is_Watched then
-         Node_Debug_Output ("Allocate", N);
+         Node_Debug_Output ("Node", N);
 
          if Node_Is_Watched then
             New_Node_Breakpoint;
@@ -1878,6 +1886,42 @@ package body Atree is
    is
    begin
       return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8, V9);
+   end Nkind_In;
+
+   function Nkind_In
+     (N   : Node_Id;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind) return Boolean
+   is
+   begin
+      return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8, V9, V10);
+   end Nkind_In;
+
+   function Nkind_In
+     (N   : Node_Id;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind;
+      V11 : Node_Kind) return Boolean
+   is
+   begin
+      return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8, V9, V10,
+                                  V11);
    end Nkind_In;
 
    --------
@@ -2142,7 +2186,7 @@ package body Atree is
       --  If the node being relocated was a rewriting of some original node,
       --  then the relocated node has the same original node.
 
-      if Orig_Nodes.Table (Source) /= Source then
+      if Is_Rewrite_Substitution (Source) then
          Orig_Nodes.Table (New_Node) := Orig_Nodes.Table (Source);
       end if;
 
@@ -2163,6 +2207,9 @@ package body Atree is
         (not Has_Extension (Old_Node)
           and not Has_Extension (New_Node)
           and not Nodes.Table (New_Node).In_List);
+
+      pragma Debug (New_Node_Debugging_Output (Old_Node));
+      pragma Debug (New_Node_Debugging_Output (New_Node));
 
       --  Do copy, preserving link and in list status and required flags
 
@@ -2193,16 +2240,24 @@ package body Atree is
    -------------
 
    procedure Rewrite (Old_Node, New_Node : Node_Id) is
-      Old_Error_P : constant Boolean  := Nodes.Table (Old_Node).Error_Posted;
-      --  This field is always preserved in the new node
 
-      Old_Has_Aspects : constant Boolean := Nodes.Table (Old_Node).Has_Aspects;
-      --  This field is always preserved in the new node
+      --  Flags table attributes
 
-      Old_Paren_Count     : Nat;
+      Old_CA     : constant Boolean := Flags.Table (Old_Node).Check_Actuals;
+      Old_Is_IGN : constant Boolean :=
+                     Flags.Table (Old_Node).Is_Ignored_Ghost_Node;
+
+      --  Nodes table attributes
+
+      Old_Error_Posted : constant Boolean :=
+                           Nodes.Table (Old_Node).Error_Posted;
+      Old_Has_Aspects  : constant Boolean :=
+                           Nodes.Table (Old_Node).Has_Aspects;
+
       Old_Must_Not_Freeze : Boolean;
-      --  These fields are preserved in the new node only if the new node
-      --  and the old node are both subexpression nodes.
+      Old_Paren_Count     : Nat;
+      --  These fields are preserved in the new node only if the new node and
+      --  the old node are both subexpression nodes.
 
       --  Note: it is a violation of abstraction levels for Must_Not_Freeze
       --  to be referenced like this. ???
@@ -2214,14 +2269,16 @@ package body Atree is
         (not Has_Extension (Old_Node)
           and not Has_Extension (New_Node)
           and not Nodes.Table (New_Node).In_List);
-      pragma Debug (Rewrite_Debugging_Output (Old_Node, New_Node));
+
+      pragma Debug (New_Node_Debugging_Output (Old_Node));
+      pragma Debug (New_Node_Debugging_Output (New_Node));
 
       if Nkind (Old_Node) in N_Subexpr then
-         Old_Paren_Count     := Paren_Count (Old_Node);
          Old_Must_Not_Freeze := Must_Not_Freeze (Old_Node);
+         Old_Paren_Count     := Paren_Count (Old_Node);
       else
-         Old_Paren_Count     := 0;
          Old_Must_Not_Freeze := False;
+         Old_Paren_Count     := 0;
       end if;
 
       --  Allocate a new node, to be used to preserve the original contents
@@ -2247,8 +2304,11 @@ package body Atree is
       --  Copy substitute node into place, preserving old fields as required
 
       Copy_Node (Source => New_Node, Destination => Old_Node);
-      Nodes.Table (Old_Node).Error_Posted := Old_Error_P;
+      Nodes.Table (Old_Node).Error_Posted := Old_Error_Posted;
       Nodes.Table (Old_Node).Has_Aspects  := Old_Has_Aspects;
+
+      Flags.Table (Old_Node).Check_Actuals         := Old_CA;
+      Flags.Table (Old_Node).Is_Ignored_Ghost_Node := Old_Is_IGN;
 
       if Nkind (New_Node) in N_Subexpr then
          Set_Paren_Count     (Old_Node, Old_Paren_Count);
@@ -2262,37 +2322,13 @@ package body Atree is
       if Reporting_Proc /= null then
          Reporting_Proc.all (Target => Old_Node, Source => New_Node);
       end if;
-   end Rewrite;
 
-   -------------------------
-   -- Rewrite_Breakpoint --
-   -------------------------
+      --  Invoke the rewriting procedure (if available)
 
-   procedure rr is
-   begin
-      Write_Str ("Watched node ");
-      Write_Int (Int (Watch_Node));
-      Write_Str (" rewritten");
-      Write_Eol;
-   end rr;
-
-   ------------------------------
-   -- Rewrite_Debugging_Output --
-   ------------------------------
-
-   procedure rrd (Old_Node, New_Node : Node_Id) is
-      Node_Is_Watched : constant Boolean := Old_Node = Watch_Node;
-
-   begin
-      if Debug_Flag_N or else Node_Is_Watched then
-         Node_Debug_Output ("Rewrite", Old_Node);
-         Node_Debug_Output ("into",    New_Node);
-
-         if Node_Is_Watched then
-            Rewrite_Breakpoint;
-         end if;
+      if Rewriting_Proc /= null then
+         Rewriting_Proc.all (Target => Old_Node, Source => New_Node);
       end if;
-   end rrd;
+   end Rewrite;
 
    ------------------
    -- Set_Analyzed --
@@ -2366,6 +2402,18 @@ package body Atree is
       Nodes.Table (N).Has_Aspects := Val;
    end Set_Has_Aspects;
 
+   --------------------------------------
+   -- Set_Ignored_Ghost_Recording_Proc --
+   --------------------------------------
+
+   procedure Set_Ignored_Ghost_Recording_Proc
+     (Proc : Ignored_Ghost_Record_Proc)
+   is
+   begin
+      pragma Assert (Ignored_Ghost_Recording_Proc = null);
+      Ignored_Ghost_Recording_Proc := Proc;
+   end Set_Ignored_Ghost_Recording_Proc;
+
    -------------------------------
    -- Set_Is_Ignored_Ghost_Node --
    -------------------------------
@@ -2429,6 +2477,16 @@ package body Atree is
       Nodes.Table (N).Link := Union_Id (Val);
    end Set_Parent;
 
+   ------------------------
+   -- Set_Reporting_Proc --
+   ------------------------
+
+   procedure Set_Reporting_Proc (Proc : Report_Proc) is
+   begin
+      pragma Assert (Reporting_Proc = null);
+      Reporting_Proc := Proc;
+   end Set_Reporting_Proc;
+
    --------------
    -- Set_Sloc --
    --------------
@@ -2438,6 +2496,16 @@ package body Atree is
       pragma Assert (not Locked);
       Nodes.Table (N).Sloc := Val;
    end Set_Sloc;
+
+   ------------------------
+   -- Set_Rewriting_Proc --
+   ------------------------
+
+   procedure Set_Rewriting_Proc (Proc : Rewrite_Proc) is
+   begin
+      pragma Assert (Rewriting_Proc = null);
+      Rewriting_Proc := Proc;
+   end Set_Rewriting_Proc;
 
    ----------
    -- Sloc --
@@ -3384,6 +3452,17 @@ package body Atree is
             return Elist_Id (Value);
          end if;
       end Elist29;
+
+      function Elist30 (N : Node_Id) return Elist_Id is
+         pragma Assert (Nkind (N) in N_Entity);
+         Value : constant Union_Id := Nodes.Table (N + 5).Field6;
+      begin
+         if Value = 0 then
+            return No_Elist;
+         else
+            return Elist_Id (Value);
+         end if;
+      end Elist30;
 
       function Elist36 (N : Node_Id) return Elist_Id is
          pragma Assert (Nkind (N) in N_Entity);
@@ -6294,6 +6373,13 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          Nodes.Table (N + 4).Field11 := Union_Id (Val);
       end Set_Elist29;
+
+      procedure Set_Elist30 (N : Node_Id; Val : Elist_Id) is
+      begin
+         pragma Assert (not Locked);
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field6 := Union_Id (Val);
+      end Set_Elist30;
 
       procedure Set_Elist36 (N : Node_Id; Val : Elist_Id) is
       begin

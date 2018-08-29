@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,6 +38,7 @@
 
 #include <bits/cxxabi_forced.h>
 #include <bits/move.h>   // for swap
+#include <cerrno>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -207,6 +208,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __ret;
     }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+  template<typename _CharT, typename _Traits>
+    basic_filebuf<_CharT, _Traits>*
+    basic_filebuf<_CharT, _Traits>::
+    open(const wchar_t* __s, ios_base::openmode __mode)
+    {
+      __filebuf_type *__ret = 0;
+      if (!this->is_open())
+	{
+	  _M_file.open(__s, __mode);
+	  if (this->is_open())
+	    {
+	      _M_allocate_internal_buffer();
+	      _M_mode = __mode;
+
+	      // Setup initial buffer to 'uncommitted' mode.
+	      _M_reading = false;
+	      _M_writing = false;
+	      _M_set_buffer(-1);
+
+	      // Reset to initial state.
+	      _M_state_last = _M_state_cur = _M_state_beg;
+
+	      // 27.8.1.3,4
+	      if ((__mode & ios_base::ate)
+		  && this->seekoff(0, ios_base::end, __mode)
+		  == pos_type(off_type(-1)))
+		this->close();
+	      else
+		__ret = this;
+	    }
+	}
+      return __ret;
+    }
+#endif // HAVE__WFOPEN && USE_WCHAR_T
+
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::__filebuf_type*
     basic_filebuf<_CharT, _Traits>::
@@ -239,13 +276,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (!_M_terminate_output())
 	      __testfail = true;
 	  }
-	__catch(__cxxabiv1::__forced_unwind&)
+	__catch(...)
 	  {
 	    _M_file.close();
 	    __throw_exception_again;
 	  }
-	__catch(...)
-	  { __testfail = true; }
       }
 
       if (!_M_file.close())
@@ -437,7 +472,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				"invalid byte sequence in file"));
 	  else
 	    __throw_ios_failure(__N("basic_filebuf::underflow "
-				"error reading the file"));
+				"error reading the file"), errno);
 	}
       return __ret;
     }
@@ -649,11 +684,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else if (_M_writing)
 	{
- 	  if (overflow() == traits_type::eof())
- 	    return __ret;
- 	  _M_set_buffer(-1);
- 	  _M_writing = false;
- 	}
+	  if (overflow() == traits_type::eof())
+	    return __ret;
+	  _M_set_buffer(-1);
+	  _M_writing = false;
+	}
  
       // Optimization in the always_noconv() case, to be generalized in the
       // future: when __n > __buflen we read directly instead of using the
@@ -662,57 +697,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const streamsize __buflen = _M_buf_size > 1 ? _M_buf_size - 1 : 1;
  
       if (__n > __buflen && __check_facet(_M_codecvt).always_noconv()
- 	   && __testin)
- 	 {
- 	   // First, copy the chars already present in the buffer.
- 	   const streamsize __avail = this->egptr() - this->gptr();
- 	   if (__avail != 0)
- 	     {
-	       traits_type::copy(__s, this->gptr(), __avail);
- 	       __s += __avail;
-	       this->setg(this->eback(), this->gptr() + __avail,
-			  this->egptr());
-	       __ret += __avail;
-	       __n -= __avail;
- 	     }
+	  && __testin)
+	{
+	  // First, copy the chars already present in the buffer.
+	  const streamsize __avail = this->egptr() - this->gptr();
+	  if (__avail != 0)
+	    {
+	      traits_type::copy(__s, this->gptr(), __avail);
+	      __s += __avail;
+	      this->setg(this->eback(), this->gptr() + __avail, this->egptr());
+	      __ret += __avail;
+	      __n -= __avail;
+	    }
  
- 	   // Need to loop in case of short reads (relatively common
- 	   // with pipes).
- 	   streamsize __len;
- 	   for (;;)
- 	     {
- 	       __len = _M_file.xsgetn(reinterpret_cast<char*>(__s),
- 				      __n);
- 	       if (__len == -1)
- 		 __throw_ios_failure(__N("basic_filebuf::xsgetn "
- 					 "error reading the file"));
- 	       if (__len == 0)
- 		 break;
+	  // Need to loop in case of short reads (relatively common
+	  // with pipes).
+	  streamsize __len;
+	  for (;;)
+	    {
+	      __len = _M_file.xsgetn(reinterpret_cast<char*>(__s), __n);
+	      if (__len == -1)
+		__throw_ios_failure(__N("basic_filebuf::xsgetn "
+					"error reading the file"), errno);
+	      if (__len == 0)
+		break;
  
- 	       __n -= __len;
- 	       __ret += __len;
- 	       if (__n == 0)
- 		 break;
- 
- 	       __s += __len;
- 	     }
- 
- 	   if (__n == 0)
- 	     {
- 	       _M_set_buffer(0);
- 	       _M_reading = true;
- 	     }
- 	   else if (__len == 0)
- 	     {
- 	       // If end of file is reached, set 'uncommitted'
- 	       // mode, thus allowing an immediate write without
- 	       // an intervening seek.
- 	       _M_set_buffer(-1);
- 	       _M_reading = false;
- 	     }
- 	 }
+	      __n -= __len;
+	      __ret += __len;
+	      if (__n == 0)
+		break;
+
+	      __s += __len;
+	    }
+
+	  if (__n == 0)
+	    {
+	      // Set _M_reading. Buffer is already in initial 'read' mode.
+	      _M_reading = true;
+	    }
+	  else if (__len == 0)
+	    {
+	      // If end of file is reached, set 'uncommitted'
+	      // mode, thus allowing an immediate write without
+	      // an intervening seek.
+	      _M_set_buffer(-1);
+	      _M_reading = false;
+	    }
+	}
       else
- 	 __ret += __streambuf_type::xsgetn(__s, __n);
+	__ret += __streambuf_type::xsgetn(__s, __n);
  
       return __ret;
     }
@@ -729,7 +762,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const bool __testout = (_M_mode & ios_base::out
 			      || _M_mode & ios_base::app);
       if (__check_facet(_M_codecvt).always_noconv()
- 	   && __testout && !_M_reading)
+	  && __testout && !_M_reading)
 	{
 	  // Measurement would reveal the best choice.
 	  const streamsize __chunk = 1ul << 10;
@@ -839,8 +872,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (_M_writing)
 		__computed_off = this->pptr() - this->pbase();
 	      
- 	      off_type __file_off = _M_file.seekoff(0, ios_base::cur);
- 	      if (__file_off != off_type(-1))
+	      off_type __file_off = _M_file.seekoff(0, ios_base::cur);
+	      if (__file_off != off_type(-1))
 		{
 		  __ret = __file_off + __computed_off;
 		  __ret.state(__state);

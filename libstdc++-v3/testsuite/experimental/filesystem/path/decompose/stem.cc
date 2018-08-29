@@ -1,8 +1,8 @@
-// { dg-options "-lstdc++fs" }
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@ test01()
   path p = "foo.bar.baz.tar";
   std::vector<std::string> v;
   for (; !p.extension().empty(); p = p.stem())
-    v.push_back(p.extension().native());
+    v.push_back(p.extension().string());
   VERIFY( v.at(0) == ".tar" );
   VERIFY( v.at(1) == ".baz" );
   VERIFY( v.at(2) == ".bar" );

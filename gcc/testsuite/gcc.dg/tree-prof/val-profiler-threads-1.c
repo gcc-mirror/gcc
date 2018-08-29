@@ -35,9 +35,9 @@ int main(int argc, char *argv[])
        }
      }
 
-   int retval;
+   void *retval;
    for(t=0;t<NUM_THREADS;t++)
-     pthread_join (threads[t], (void**)&retval);
+     pthread_join (threads[t], &retval);
 
    return buffer[10];
 }

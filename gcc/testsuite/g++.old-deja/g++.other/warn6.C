@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-W -Wall" }
+// { dg-options "-W -Wall -Wno-deprecated-copy" }
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 2 Mar 2001 <nathan@codesourcery.com>

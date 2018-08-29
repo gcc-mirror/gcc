@@ -604,6 +604,7 @@ LIBOBJS
 get_gcc_base_ver
 GENINSRC_FALSE
 GENINSRC_TRUE
+XCFLAGS
 BUILD_LIBQUADMATH_FALSE
 BUILD_LIBQUADMATH_TRUE
 LIBQUAD_USE_SYMVER_SUN_FALSE
@@ -750,6 +751,7 @@ with_gnu_ld
 enable_libtool_lock
 enable_maintainer_mode
 enable_symvers
+enable_cet
 enable_generated_files_in_srcdir
 with_gcc_major_version_only
 '
@@ -1396,6 +1398,7 @@ Optional Features:
   --enable-maintainer-mode  enable make rules and dependencies not useful
 			  (and sometimes confusing) to the casual installer
   --disable-symvers       disable symbol versioning for libquadmath
+  --enable-cet            enable Intel CET in target libraries [default=no]
   --enable-generated-files-in-srcdir
                           put copies of generated files in source dir intended
                           for creating source tarballs for users without
@@ -10572,7 +10575,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10575 "configure"
+#line 10578 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10678,7 +10681,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10681 "configure"
+#line 10684 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12516,7 +12519,11 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+    #if (!defined(_ARCH_PPC)) || defined(__LONG_DOUBLE_IEEE128__)
     typedef _Complex float __attribute__((mode(TC))) __complex128;
+    #else
+    typedef _Complex float __attribute__((mode(KC))) __complex128;
+    #endif
 
     __float128 foo (__float128 x)
     {
@@ -12563,7 +12570,11 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+    #if (!defined(_ARCH_PPC)) || defined(__LONG_DOUBLE_IEEE128__)
     typedef _Complex float __attribute__((mode(TC))) __complex128;
+    #else
+    typedef _Complex float __attribute__((mode(KC))) __complex128;
+    #endif
 
     __float128 foo (__float128 x)
     {
@@ -12811,6 +12822,91 @@ $as_echo "#define USE_I18N_NUMBER_H 1" >>confdefs.h
 
 fi
 
+# Add CET specific flags if CET is enabled
+ # Check whether --enable-cet was given.
+if test "${enable_cet+set}" = set; then :
+  enableval=$enable_cet;
+      case "$enableval" in
+       yes|no|auto) ;;
+       *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_cet=no
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
+$as_echo_n "checking for CET support... " >&6; }
+
+case "$host" in
+  i[34567]86-*-linux* | x86_64-*-linux*)
+    case "$enable_cet" in
+      auto)
+	# Check if target supports multi-byte NOPs
+	# and if assembler supports CET insn.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+#if !defined(__SSE2__)
+#error target does not support multi-byte NOPs
+#else
+asm ("setssbsy");
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  enable_cet=yes
+else
+  enable_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+      yes)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  as_fn_error "assembler with CET support is required for --enable-cet" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+    esac
+    ;;
+  *)
+    enable_cet=no
+    ;;
+esac
+if test x$enable_cet = xyes; then
+  CET_FLAGS="-fcf-protection -mshstk"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+XCFLAGS="$XCFLAGS $CET_FLAGS"
+
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -12929,7 +13025,7 @@ fi
 # Check whether --with-gcc-major-version-only was given.
 if test "${with_gcc_major_version_only+set}" = set; then :
   withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
-        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
       fi
 
 fi

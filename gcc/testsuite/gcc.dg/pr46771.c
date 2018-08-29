@@ -1,7 +1,7 @@
 /* PR debug/46771 */
 /* { dg-do compile } */
 /* { dg-options "-O -ftree-vectorize -fcompare-debug" } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } } */
 
 unsigned char v[1600];
 

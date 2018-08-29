@@ -87,16 +87,14 @@
    type (foo), dimension(:), allocatable :: arg
 
    arg = array1(bar) ! typebound call
-   if (any (arg%greeting .ne. ["adieu, world!   ", "adieu, world!   "])) call abort
+   if (any (arg%greeting .ne. ["adieu, world!   ", "adieu, world!   "])) STOP 1
    deallocate (arg)
-   if (trim (array2 (bar, arg)) .ne. "adieu, people!") call abort
+   if (trim (array2 (bar, arg)) .ne. "adieu, people!") STOP 2
    deallocate (arg)
    call array3 (bar, arg) ! typebound call
-   if (any (arg%greeting .ne. ["adieu, world!   ", "adieu, world!   "])) call abort
+   if (any (arg%greeting .ne. ["adieu, world!   ", "adieu, world!   "])) STOP 3
    deallocate (arg)
    call array4 (bar, arg) ! typebound call
-   if (any (arg%greeting .ne. ["adieu, people!", "adieu, people!"])) call abort
+   if (any (arg%greeting .ne. ["adieu, people!", "adieu, people!"])) STOP 4
  contains
  end program
-! { dg-final { cleanup-submodules "foo_interface@foo_interface_son" } }
-! { dg-final { cleanup-submodules "foo_interface@foo_interface_daughter" } }

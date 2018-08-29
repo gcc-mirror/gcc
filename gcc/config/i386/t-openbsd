@@ -1,4 +1,0 @@
-# gdb gets confused if pic code is linked with non pic
-# We cope by building variants of libgcc.
-MULTILIB_OPTIONS = fpic
-MULTILIB_MATCHES=fpic=fPIC

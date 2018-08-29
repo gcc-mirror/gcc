@@ -82,17 +82,17 @@ contains
 
   subroutine check_equal_r (a, b)
     real, intent(in) :: a, b
-    if (abs(a - b) > 1.e-5 * abs(b)) call abort
+    if (abs(a - b) > 1.e-5 * abs(b)) STOP 1
   end subroutine check_equal_r
 
   subroutine check_equal_c (a, b)
     complex, intent(in) :: a, b
-    if (abs(a - b) > 1.e-5 * abs(b)) call abort
+    if (abs(a - b) > 1.e-5 * abs(b)) STOP 2
   end subroutine check_equal_c
 
   subroutine check_equal_i (a, b)
     integer, intent(in) :: a, b
-    if (a /= b) call abort
+    if (a /= b) STOP 3
   end subroutine check_equal_i
 
 end subroutine run_me

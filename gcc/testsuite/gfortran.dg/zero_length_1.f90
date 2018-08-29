@@ -6,7 +6,7 @@ program test
   character(len=20) :: s
   
   write(s,'(A,I1)') foo(), 0
-  if (trim(s) /= "0") call abort
+  if (trim(s) /= "0") STOP 1
 
 contains
 

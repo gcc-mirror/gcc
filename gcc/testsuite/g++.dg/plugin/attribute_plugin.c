@@ -26,7 +26,7 @@ handle_user_attribute (tree *node, tree name, tree args,
 /* Attribute definition */
 
 static struct attribute_spec user_attr =
-  { "user", 1, 1, false,  false, false, handle_user_attribute, false };
+  { "user", 1, 1, false,  false, false, false, handle_user_attribute, NULL };
 
 /* Plugin callback called during attribute registration */
 

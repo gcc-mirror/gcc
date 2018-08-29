@@ -38,7 +38,7 @@ foo ()
         }
     }
 
-  /* Not vectorizable.  */
+  /* Only vectorizable with masked stores.  */
   for (i = 0; i < N; i++)
     {
       c = in1[i].b;
@@ -82,4 +82,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { xfail { { vect_no_align && { ! vect_hw_misalign } } || { ! vect_strided2 } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { ! vect_masked_store } xfail { { vect_no_align && { ! vect_hw_misalign } } || { ! vect_strided2 } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target { vect_masked_store } } } } */

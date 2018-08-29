@@ -7,7 +7,7 @@
 static int
 id (int i)
 {
-  asm ("": "+Xr" (i));
+  asm ("": "+r" (i));
   return i;
 }
 

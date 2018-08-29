@@ -15,4 +15,4 @@ bar ()
   return __builtin_bswap32 (x);
 }
 
-/* { dg-final { scan-assembler-times "movbe\[ \t\]" 2 } } */
+/* { dg-final { scan-assembler-times "movbel\[ \t\]" 2 } } */

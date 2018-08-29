@@ -51,14 +51,14 @@ end module
   a%right%ia = 5
 
 ! Checksum OK?
-  if (foo(a) .ne. 15) call abort
+  if (foo(a) .ne. 15) STOP 1
 
 ! Return pointer to tree item that is present.
   b => bar (a, 3)
-  if (.not.associated (b) .or. (b%ia .ne. 3)) call abort
+  if (.not.associated (b) .or. (b%ia .ne. 3)) STOP 2
 ! Return NULL to tree item that is not present.
   b => bar (a, 6)
-  if (associated (b)) call abort
+  if (associated (b)) STOP 3
 
 ! Deallocate to check that there are no memory leaks.
   deallocate (a)

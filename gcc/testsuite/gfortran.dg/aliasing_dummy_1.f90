@@ -27,14 +27,14 @@ program test_lex
 
 ! Test 1D with assumed shape (original bug) and assumed size.
   call bar (table, 2, 4)
-  if (any (table%list%word.ne.(/"one  ","i=  2","three","i=  4"/))) call abort ()
+  if (any (table%list%word.ne.(/"one  ","i=  2","three","i=  4"/))) STOP 1
 
   elist = reshape (table%list, (/2,2/))
 
 ! Check 2D is OK with assumed shape and assumed size.
   call foo3 (elist%word, 1)
   call foo1 (elist%word, 3)
-  if (any (elist%word.ne.reshape ((/"i=  1","i=  2","i=  3","i=  4"/), (/2,2/)))) call abort ()
+  if (any (elist%word.ne.reshape ((/"i=  1","i=  2","i=  3","i=  4"/), (/2,2/)))) STOP 2
 
 contains
 

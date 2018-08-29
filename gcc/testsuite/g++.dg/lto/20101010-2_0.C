@@ -1,5 +1,8 @@
 // { dg-lto-do link }
 
+/* "WARNING: lto.exp does not support dg-additional-options" */
+#pragma GCC diagnostic ignored "-Wreturn-type"
+
 typedef int size_t;
 template < size_t _Nw > struct _Base_bitset
 {

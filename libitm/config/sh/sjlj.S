@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2018 Free Software Foundation, Inc.
 
    This file is part of the GNU Transactional Memory Library (libitm).
 
@@ -53,7 +53,7 @@ _ITM_beginTransaction:
 #else
 	cfi_def_cfa_offset (4*10)
 #endif
-#if defined HAVE_ATTRIBUTE_VISIBILITY || !defined __PIC__
+#if !defined __PIC__
 	mov.l	.Lbegin, r1
 	jsr	@r1
 	 mov	r15, r5
@@ -78,7 +78,7 @@ _ITM_beginTransaction:
 
 	.align  2
 .Lbegin:
-#if defined HAVE_ATTRIBUTE_VISIBILITY || !defined __PIC__
+#if !defined __PIC__
 	.long	GTM_begin_transaction
 #else
 	.long	GTM_begin_transaction@PCREL-(.Lbegin0-.)

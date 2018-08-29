@@ -3,7 +3,7 @@
 // { dg-options "-gdwarf-2 -dA" }
 // { dg-do compile }
 // { dg-final { scan-assembler "DW_TAG_template_type_param" } }
-// { dg-final { scan-assembler "U.*DW_AT_name" } }
+// { dg-final { scan-assembler "U\[^\n\r]* DW_AT_name" } }
 
 template <class U>
 U

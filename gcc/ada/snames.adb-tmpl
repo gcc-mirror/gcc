@@ -134,8 +134,6 @@ package body Snames is
          return Attribute_Dispatching_Domain;
       elsif N = Name_Interrupt_Priority then
          return Attribute_Interrupt_Priority;
-      elsif N = Name_Secondary_Stack_Size then
-         return Attribute_Secondary_Stack_Size;
       else
          return Attribute_Id'Val (N - First_Attribute_Name);
       end if;

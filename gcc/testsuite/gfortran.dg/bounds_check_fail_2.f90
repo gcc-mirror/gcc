@@ -20,12 +20,12 @@ contains
     integer          , intent(in), optional :: ivec(:)
     integer                                 :: ivec_(2)
     call set_optional(ivec_,(/1,2/))
-    if (any (ivec_ /= (/1,2/))) call abort
+    if (any (ivec_ /= (/1,2/))) STOP 1
     call set_optional(ivec_,(/1,2/),ivec)
     if (present (ivec)) then
-      if (any (ivec_ /= ivec)) call abort
+      if (any (ivec_ /= ivec)) STOP 2
     else
-      if (any (ivec_ /= (/1,2/))) call abort
+      if (any (ivec_ /= (/1,2/))) STOP 3
     end if
   end subroutine sub
 end module sub_mod

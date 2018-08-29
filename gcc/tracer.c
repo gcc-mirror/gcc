@@ -1,7 +1,7 @@
 /* The tracer pass for the GNU compiler.
    Contributed by Jan Hubicka, SuSE Labs.
    Adapted to work on GIMPLE instead of RTL by Robert Kidd, UIUC.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -132,12 +132,8 @@ count_insns (basic_block bb)
 static bool
 better_p (const_edge e1, const_edge e2)
 {
-  if (e1->count != e2->count)
-    return e1->count > e2->count;
-  if (e1->src->frequency * e1->probability !=
-      e2->src->frequency * e2->probability)
-    return (e1->src->frequency * e1->probability
-	    > e2->src->frequency * e2->probability);
+  if ((e1->count () > e2->count ()) || (e1->count () < e2->count ()))
+    return e1->count () > e2->count ();
   /* This is needed to avoid changes in the decision after
      CFG is modified.  */
   if (e1->src != e2->src)
@@ -155,11 +151,16 @@ find_best_successor (basic_block bb)
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (!best || better_p (e, best))
-      best = e;
+    {
+      if (!e->count ().initialized_p ())
+	return NULL;
+      if (!best || better_p (e, best))
+	best = e;
+    }
   if (!best || ignore_bb_p (best->dest))
     return NULL;
-  if (best->probability <= probability_cutoff)
+  if (!best->probability.initialized_p ()
+      || best->probability.to_reg_br_prob_base () <= probability_cutoff)
     return NULL;
   return best;
 }
@@ -174,12 +175,17 @@ find_best_predecessor (basic_block bb)
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->preds)
-    if (!best || better_p (e, best))
-      best = e;
+    {
+      if (!e->count ().initialized_p ())
+	return NULL;
+      if (!best || better_p (e, best))
+	best = e;
+    }
   if (!best || ignore_bb_p (best->src))
     return NULL;
-  if (EDGE_FREQUENCY (best) * REG_BR_PROB_BASE
-      < bb->frequency * branch_ratio_cutoff)
+  if (bb->count.initialized_p ()
+      && (best->count ().to_frequency (cfun) * REG_BR_PROB_BASE
+	  < bb->count.to_frequency (cfun) * branch_ratio_cutoff))
     return NULL;
   return best;
 }
@@ -194,7 +200,7 @@ find_trace (basic_block bb, basic_block *trace)
   edge e;
 
   if (dump_file)
-    fprintf (dump_file, "Trace seed %i [%i]", bb->index, bb->frequency);
+    fprintf (dump_file, "Trace seed %i [%i]", bb->index, bb->count.to_frequency (cfun));
 
   while ((e = find_best_predecessor (bb)) != NULL)
     {
@@ -203,11 +209,11 @@ find_trace (basic_block bb, basic_block *trace)
 	  || find_best_successor (bb2) != e)
 	break;
       if (dump_file)
-	fprintf (dump_file, ",%i [%i]", bb->index, bb->frequency);
+	fprintf (dump_file, ",%i [%i]", bb->index, bb->count.to_frequency (cfun));
       bb = bb2;
     }
   if (dump_file)
-    fprintf (dump_file, " forward %i [%i]", bb->index, bb->frequency);
+    fprintf (dump_file, " forward %i [%i]", bb->index, bb->count.to_frequency (cfun));
   trace[i++] = bb;
 
   /* Follow the trace in forward direction.  */
@@ -218,7 +224,7 @@ find_trace (basic_block bb, basic_block *trace)
 	  || find_best_predecessor (bb) != e)
 	break;
       if (dump_file)
-	fprintf (dump_file, ",%i [%i]", bb->index, bb->frequency);
+	fprintf (dump_file, ",%i [%i]", bb->index, bb->count.to_frequency (cfun));
       trace[i++] = bb;
     }
   if (dump_file)
@@ -269,7 +275,7 @@ tail_duplicate (void)
   bitmap_clear (bb_seen);
   initialize_original_copy_tables ();
 
-  if (profile_info && flag_branch_probabilities)
+  if (profile_info && profile_status_for_fn (cfun) == PROFILE_READ)
     probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY_FEEDBACK);
   else
     probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY);
@@ -282,14 +288,14 @@ tail_duplicate (void)
     {
       int n = count_insns (bb);
       if (!ignore_bb_p (bb))
-	blocks[bb->index] = heap.insert (-bb->frequency, bb);
+	blocks[bb->index] = heap.insert (-bb->count.to_frequency (cfun), bb);
 
       counts [bb->index] = n;
       ninsns += n;
-      weighted_insns += n * bb->frequency;
+      weighted_insns += n * bb->count.to_frequency (cfun);
     }
 
-  if (profile_info && flag_branch_probabilities)
+  if (profile_info && profile_status_for_fn (cfun) == PROFILE_READ)
     cover_insns = PARAM_VALUE (TRACER_DYNAMIC_COVERAGE_FEEDBACK);
   else
     cover_insns = PARAM_VALUE (TRACER_DYNAMIC_COVERAGE);
@@ -314,7 +320,7 @@ tail_duplicate (void)
       n = find_trace (bb, trace);
 
       bb = trace[0];
-      traced_insns += bb->frequency * counts [bb->index];
+      traced_insns += bb->count.to_frequency (cfun) * counts [bb->index];
       if (blocks[bb->index])
 	{
 	  heap.delete_node (blocks[bb->index]);
@@ -330,7 +336,7 @@ tail_duplicate (void)
 	      heap.delete_node (blocks[bb2->index]);
 	      blocks[bb2->index] = NULL;
 	    }
-	  traced_insns += bb2->frequency * counts [bb2->index];
+	  traced_insns += bb2->count.to_frequency (cfun) * counts [bb2->index];
 	  if (EDGE_COUNT (bb2->preds) > 1
 	      && can_duplicate_block_p (bb2)
 	      /* We have the tendency to duplicate the loop header
@@ -345,11 +351,11 @@ tail_duplicate (void)
 	      /* Reconsider the original copy of block we've duplicated.
 	         Removing the most common predecessor may make it to be
 	         head.  */
-	      blocks[bb2->index] = heap.insert (-bb2->frequency, bb2);
+	      blocks[bb2->index] = heap.insert (-bb2->count.to_frequency (cfun), bb2);
 
 	      if (dump_file)
 		fprintf (dump_file, "Duplicated %i as %i [%i]\n",
-			 bb2->index, copy->index, copy->frequency);
+			 bb2->index, copy->index, copy->count.to_frequency (cfun));
 
 	      bb2 = copy;
 	      changed = true;

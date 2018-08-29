@@ -17,11 +17,11 @@ program main
   aptr => a
   
   call foo
-  if (.not. associated (aptr, a)) call abort () ! reallocated to same size - remains associated
+  if (.not. associated (aptr, a)) STOP 1 ! reallocated to same size - remains associated
   call bar
-  if (.not. associated (aptr, a)) call abort () ! reallocated to smaller size - remains associated
+  if (.not. associated (aptr, a)) STOP 2 ! reallocated to smaller size - remains associated
   call foobar
-  if (associated (aptr, a)) call abort () ! reallocated to larger size - disassociates
+  if (associated (aptr, a)) STOP 3 ! reallocated to larger size - disassociates
 
   call pr48746
 contains
@@ -39,8 +39,8 @@ contains
 
     a = matmul( matmul( a, b ), b )
     delta = (a - reshape ([1d0, 2d0, 3d0, 4d0, 5d0, 6d0, 7d0, 8d0, 9d0], [3,3]))**2
-    if (any (delta > 1d-12)) call abort
-    if (any (lbound (a) .ne. [1, 1])) call abort
+    if (any (delta > 1d-12)) STOP 1
+    if (any (lbound (a) .ne. [1, 1])) STOP 2
   end subroutine
 !
 ! Check that all is well when the shape of 'a' changes.
@@ -55,8 +55,8 @@ contains
     a = matmul( a, matmul( a, b ) )
 
     delta = (a - reshape ([198d0, 243d0, 288d0], [3,1]))**2
-    if (any (delta > 1d-12)) call abort
-    if (any (lbound (a) .ne. [1, 1])) call abort
+    if (any (delta > 1d-12)) STOP 3
+    if (any (lbound (a) .ne. [1, 1])) STOP 4
   end subroutine
   subroutine foobar
     integer :: i
@@ -77,8 +77,8 @@ contains
     call random_number(a)
     call random_number(b)
     tmp = matmul(a,b)
-    if (any (lbound (tmp) .ne. [1,1])) call abort
-    if (any (ubound (tmp) .ne. [10,12])) call abort
+    if (any (lbound (tmp) .ne. [1,1])) STOP 5
+    if (any (ubound (tmp) .ne. [10,12])) STOP 6
   end subroutine
 end program main
 

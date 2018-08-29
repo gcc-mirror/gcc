@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-O3 --save-temps -ffast-math" } */
 
+#pragma GCC target "+nosve"
+
 #include <arm_neon.h>
 
 extern void abort (void);

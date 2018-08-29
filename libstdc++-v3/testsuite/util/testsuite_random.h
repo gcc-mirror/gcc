@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2011-2017 Free Software Foundation, Inc.
+// Copyright (C) 2011-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -113,7 +113,10 @@ namespace __gnu_test
   discrete_pdf(int k, std::initializer_list<double> wl)
   {
     if (!wl.size())
-      wl = { 1.0 };
+      {
+	static std::initializer_list<double> one = { 1.0 };
+	wl = one;
+      }
 
     if (k < 0 || (std::size_t)k >= wl.size())
       return 0.0;

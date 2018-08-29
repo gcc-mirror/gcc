@@ -193,9 +193,6 @@ func FDZero(set *FdSet) {
 //sysnb	Dup2(oldfd int, newfd int) (err error)
 //dup2(oldfd _C_int, newfd _C_int) _C_int
 
-//sys	Exit(code int)
-//exit(code _C_int)
-
 //sys	Fchdir(fd int) (err error)
 //fchdir(fd _C_int) _C_int
 

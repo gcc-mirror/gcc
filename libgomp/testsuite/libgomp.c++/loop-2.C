@@ -15,6 +15,7 @@ void parloop (int *a)
     a[i] = i + 3;
 }
 
+int
 main()
 {
   int i, a[N];

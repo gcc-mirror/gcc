@@ -4,7 +4,7 @@
 !
 ! { dg-options "-fno-range-check" }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "NaN not supported" { spu-*-* } }
 
   implicit none
   real, parameter :: inf = 2 * huge(inf)

@@ -26,21 +26,21 @@ program test
   type(dict_entry_type) :: t
   call dict_put(t, "foo", 42)
 
-  if (.NOT. allocated(t%key)) call abort()
+  if (.NOT. allocated(t%key)) STOP 1
   select type (x => t%key)
     type is (CHARACTER(*))
-      if (x /= "foo") call abort()
+      if (x /= "foo") STOP 2
     class default
-      call abort()
+      STOP 3
   end select
   deallocate(t%key)
 
-  if (.NOT. allocated(t%val)) call abort()
+  if (.NOT. allocated(t%val)) STOP 4
   select type (x => t%val)
     type is (INTEGER)
-      if (x /= 42) call abort()
+      if (x /= 42) STOP 5
     class default
-      call abort()
+      STOP 6
   end select
   deallocate(t%val)
 end

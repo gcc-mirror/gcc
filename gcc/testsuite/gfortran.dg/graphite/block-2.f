@@ -1,3 +1,5 @@
+! { dg-do compile }
+! { dg-additional-options "-std=legacy" }
       SUBROUTINE MATRIX_MUL_UNROLLED (A, B, C, L, M, N)
       DIMENSION A(L,M), B(M,N), C(L,N)
 

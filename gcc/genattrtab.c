@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -563,6 +563,7 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 	      break;
 
 	    default:
+	      /* Don't need to handle 'p' for attributes.  */
 	      gcc_unreachable ();
 	    }
 	}
@@ -4703,8 +4704,8 @@ gen_insn_reserv (md_rtx_info *info)
   struct insn_reserv *decl = oballoc (struct insn_reserv);
   rtx def = info->def;
 
-  struct attr_desc attr;
-  memset (&attr, 0, sizeof (attr));
+  struct attr_desc attr = { };
+
   attr.name = DEF_ATTR_STRING (XSTR (def, 0));
   attr.loc = info->loc;
 
@@ -5072,6 +5073,7 @@ write_header (FILE *outf)
   fprintf (outf, "/* Generated automatically by the program `genattrtab'\n"
 	         "   from the machine description file `md'.  */\n\n");
 
+  fprintf (outf, "#define IN_TARGET_CODE 1\n");
   fprintf (outf, "#include \"config.h\"\n");
   fprintf (outf, "#include \"system.h\"\n");
   fprintf (outf, "#include \"coretypes.h\"\n");

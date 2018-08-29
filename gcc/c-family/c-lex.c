@@ -1,5 +1,5 @@
 /* Mainly the interface between cpplib and the C front ends.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "c-pragma.h"
 #include "debug.h"
+#include "file-prefix-map.h" /* remap_macro_filename()  */
 
 #include "attribs.h"
 
@@ -82,6 +83,7 @@ init_c_lex (void)
   cb->has_attribute = c_common_has_attribute;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
   cb->get_suggestion = cb_get_suggestion;
+  cb->remap_filename = remap_macro_filename;
 
   /* Set the debug callbacks if we can use them.  */
   if ((debug_info_level == DINFO_LEVEL_VERBOSE
@@ -101,9 +103,9 @@ get_fileinfo (const char *name)
   struct c_fileinfo *fi;
 
   if (!file_info_tree)
-    file_info_tree = splay_tree_new ((splay_tree_compare_fn) strcmp,
+    file_info_tree = splay_tree_new (splay_tree_compare_strings,
 				     0,
-				     (splay_tree_delete_value_fn) free);
+				     splay_tree_delete_pointers);
 
   n = splay_tree_lookup (file_info_tree, (splay_tree_key) name);
   if (n)
@@ -197,14 +199,14 @@ fe_file_change (const line_map_ordinary *new_map)
 	 we already did in compile_file.  */
       if (!MAIN_FILE_P (new_map))
 	{
-	  unsigned int included_at = LAST_SOURCE_LINE_LOCATION (new_map - 1);
+	  location_t included_at = linemap_included_from (new_map);
 	  int line = 0;
 	  if (included_at > BUILTINS_LOCATION)
 	    line = SOURCE_LINE (new_map - 1, included_at);
 
 	  input_location = new_map->start_location;
 	  (*debug_hooks->start_source_file) (line, LINEMAP_FILE (new_map));
-#ifndef NO_IMPLICIT_EXTERN_C
+#ifdef SYSTEM_IMPLICIT_EXTERN_C
 	  if (c_header_level)
 	    ++c_header_level;
 	  else if (LINEMAP_SYSP (new_map) == 2)
@@ -217,7 +219,7 @@ fe_file_change (const line_map_ordinary *new_map)
     }
   else if (new_map->reason == LC_LEAVE)
     {
-#ifndef NO_IMPLICIT_EXTERN_C
+#ifdef SYSTEM_IMPLICIT_EXTERN_C
       if (c_header_level && --c_header_level == 0)
 	{
 	  if (LINEMAP_SYSP (new_map) == 2)
@@ -316,6 +318,7 @@ c_common_has_attribute (cpp_reader *pfile)
     {
       attr_name = get_identifier ((const char *)
 				  cpp_token_as_text (pfile, token));
+      attr_name = canonicalize_attr_name (attr_name);
       if (c_dialect_cxx ())
 	{
 	  int idx = 0;
@@ -987,7 +990,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
     }
 
   if (type != const_type)
-    value = build1 (EXCESS_PRECISION_EXPR, type, value);
+    value = build1_loc (token->src_loc, EXCESS_PRECISION_EXPR, type, value);
 
   return value;
 }
@@ -1109,7 +1112,7 @@ interpret_fixed (const cpp_token *token, unsigned int flags)
   memcpy (copy, token->val.str.text, copylen);
   copy[copylen] = '\0';
 
-  fixed_from_string (&fixed, copy, TYPE_MODE (type));
+  fixed_from_string (&fixed, copy, SCALAR_TYPE_MODE (type));
 
   /* Create a node with determined type and value.  */
   value = build_fixed (type, fixed);

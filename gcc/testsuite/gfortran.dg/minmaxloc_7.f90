@@ -12,10 +12,10 @@ program test
   call sub2 (minloc(A),11)
   call sub2 (maxloc(A, mask=mask),9)
   A = minloc(A)
-  if (size (A) /= 1 .or. A(1) /= 11) call abort ()
+  if (size (A) /= 1 .or. A(1) /= 11) STOP 1
 contains
   subroutine sub2(A,n)
     integer :: A(:),n
-    if (A(1) /= n .or. size (A) /= 1) call abort ()
+    if (A(1) /= n .or. size (A) /= 1) STOP 2
   end subroutine sub2
 end program test

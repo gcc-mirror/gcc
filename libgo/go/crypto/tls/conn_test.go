@@ -21,6 +21,12 @@ func TestRoundUp(t *testing.T) {
 	}
 }
 
+// will be initialized with {0, 255, 255, ..., 255}
+var padding255Bad = [256]byte{}
+
+// will be initialized with {255, 255, 255, ..., 255}
+var padding255Good = [256]byte{255}
+
 var paddingTests = []struct {
 	in          []byte
 	good        bool
@@ -36,9 +42,15 @@ var paddingTests = []struct {
 	{[]byte{1, 4, 4, 4, 4, 4}, true, 1},
 	{[]byte{5, 5, 5, 5, 5, 5}, true, 0},
 	{[]byte{6, 6, 6, 6, 6, 6}, false, 0},
+	{padding255Bad[:], false, 0},
+	{padding255Good[:], true, 0},
 }
 
 func TestRemovePadding(t *testing.T) {
+	for i := 1; i < len(padding255Bad); i++ {
+		padding255Bad[i] = 255
+		padding255Good[i] = 255
+	}
 	for i, test := range paddingTests {
 		paddingLen, good := extractPadding(test.in)
 		expectedGood := byte(255)
@@ -138,7 +150,7 @@ func runDynamicRecordSizingTest(t *testing.T, config *Config) {
 
 		tlsConn := Client(clientConn, config)
 		if err := tlsConn.Handshake(); err != nil {
-			t.Errorf("Error from client handshake: %s", err)
+			t.Errorf("Error from client handshake: %v", err)
 			return
 		}
 
@@ -147,12 +159,12 @@ func runDynamicRecordSizingTest(t *testing.T, config *Config) {
 		var recordSizes []int
 
 		for {
-			n, err := clientConn.Read(recordHeader[:])
+			n, err := io.ReadFull(clientConn, recordHeader[:])
 			if err == io.EOF {
 				break
 			}
 			if err != nil || n != len(recordHeader) {
-				t.Errorf("Error from client read: %s", err)
+				t.Errorf("io.ReadFull = %d, %v", n, err)
 				return
 			}
 
@@ -161,9 +173,9 @@ func runDynamicRecordSizingTest(t *testing.T, config *Config) {
 				record = make([]byte, length)
 			}
 
-			n, err = clientConn.Read(record[:length])
+			n, err = io.ReadFull(clientConn, record[:length])
 			if err != nil || n != length {
-				t.Errorf("Error from client read: %s", err)
+				t.Errorf("io.ReadFull = %d, %v", n, err)
 				return
 			}
 
@@ -240,4 +252,35 @@ func TestDynamicRecordSizingWithAEAD(t *testing.T) {
 	config := testConfig.Clone()
 	config.CipherSuites = []uint16{TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256}
 	runDynamicRecordSizingTest(t, config)
+}
+
+// hairpinConn is a net.Conn that makes a “hairpin” call when closed, back into
+// the tls.Conn which is calling it.
+type hairpinConn struct {
+	net.Conn
+	tlsConn *Conn
+}
+
+func (conn *hairpinConn) Close() error {
+	conn.tlsConn.ConnectionState()
+	return nil
+}
+
+func TestHairpinInClose(t *testing.T) {
+	// This tests that the underlying net.Conn can call back into the
+	// tls.Conn when being closed without deadlocking.
+	client, server := net.Pipe()
+	defer server.Close()
+	defer client.Close()
+
+	conn := &hairpinConn{client, nil}
+	tlsConn := Server(conn, &Config{
+		GetCertificate: func(*ClientHelloInfo) (*Certificate, error) {
+			panic("unreachable")
+		},
+	})
+	conn.tlsConn = tlsConn
+
+	// This call should not deadlock.
+	tlsConn.Close()
 }

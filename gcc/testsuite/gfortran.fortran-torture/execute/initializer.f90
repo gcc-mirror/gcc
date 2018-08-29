@@ -16,11 +16,11 @@ program intializer
    character(15) :: d = "Teststring"
    integer, dimension(3) :: a = 1
 
-   if (any (a .ne. 1)) call abort
-   if (test(11) .ne. 42) call abort
+   if (any (a .ne. 1)) STOP 1
+   if (test(11) .ne. 42) STOP 2
    ! The second call should return
-   if (test(0) .ne. 11) call abort
+   if (test(0) .ne. 11) STOP 3
 
-   if (c .ne. "Hello World") call abort
-   if (d .ne. "Teststring") call abort
+   if (c .ne. "Hello World") STOP 4
+   if (d .ne. "Teststring") STOP 5
 end program

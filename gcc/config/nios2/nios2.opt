@@ -1,5 +1,5 @@
 ; Options for the Altera Nios II port of the compiler.
-; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ; Contributed by Altera and Mentor Graphics, Inc.
 ;
 ; This file is part of GCC.
@@ -586,3 +586,11 @@ Enable generation of R2 BMX instructions.
 mcdx
 Target Report Mask(HAS_CDX)
 Enable generation of R2 CDX instructions.
+
+mgprel-sec=
+Target RejectNegative Joined Var(nios2_gprel_sec) Init(NULL)
+Regular expression matching additional GP-addressible section names.
+
+mr0rel-sec=
+Target RejectNegative Joined Var(nios2_r0rel_sec) Init(NULL)
+Regular expression matching section names for r0-relative addressing.

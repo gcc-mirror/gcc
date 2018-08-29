@@ -51,4 +51,4 @@ int bar2 ()
 /* Dont optimize 972195717 % 0 in function bar.  */
 /* { dg-final { scan-tree-dump-times "972195717 % " 1 "evrp" } } */
 /* May optimize in function bar2, but EVRP doesn't perform this yet.  */
-/* { dg-final { scan-tree-dump-times "972195715 % " 0 "evrp" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "972195715 % " 0 "evrp" } } */

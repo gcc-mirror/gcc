@@ -9,9 +9,9 @@ subroutine foo (z)
   real(8) x, y, z
   common i(8)
   equivalence (x, i(3)),(y,i(7))
-  if ((i(1) .ne. 42) .or. (i(5) .ne. 43)) call abort
-  if ((i(2) .ne. 0) .or. (i(2) .ne. 0)) call abort
-  if ((x .ne. z) .or. (y .ne. z)) call abort
+  if ((i(1) .ne. 42) .or. (i(5) .ne. 43)) STOP 1
+  if ((i(2) .ne. 0) .or. (i(2) .ne. 0)) STOP 2
+  if ((x .ne. z) .or. (y .ne. z)) STOP 3
 end subroutine
 
 subroutine bar

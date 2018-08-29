@@ -7,7 +7,7 @@
       program main
       character*3 str1, str2
       call setval(str1, str2)
-      if (str1 == str2) call abort
+      if (str1 == str2) STOP 1
       end
 
       subroutine setval(str1, str2)

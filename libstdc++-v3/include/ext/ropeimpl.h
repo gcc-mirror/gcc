@@ -1,6 +1,6 @@
 // SGI's rope class implementation -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -844,7 +844,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       
       _Rope_flatten_char_consumer(_CharT* __buffer)
-      { _M_buf_ptr = __buffer; };
+      { _M_buf_ptr = __buffer; }
 
       ~_Rope_flatten_char_consumer() {}
       
@@ -897,8 +897,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Insert_ostream& _M_o;
     public:
       _Rope_insert_char_consumer(_Insert_ostream& __writer)
-	: _M_o(__writer) {};
-      ~_Rope_insert_char_consumer() { };
+	: _M_o(__writer) {}
+      ~_Rope_insert_char_consumer() { }
       // Caller is presumed to own the ostream
       bool operator() (const _CharT* __leaf, size_t __n);
       // Returns true to continue traversal.
@@ -1139,7 +1139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else
 	{
-	  char* __kind;
+	  const char* __kind;
 	  
 	  switch (__r->_M_tag)
 	    {

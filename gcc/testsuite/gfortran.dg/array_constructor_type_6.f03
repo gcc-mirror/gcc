@@ -14,17 +14,17 @@ program test
 
   a =  (/ character(len=7) :: trim(b(1)), trim(b(2)), trim(b(3)) /)
   if (a(1) /= 'Takata' .or. a(2) /= 'Tanaka' .or. a(3) /= 'Hayashi') then
-    call abort ()
+    STOP 1
   end if
 
   a =  (/ character(len=2) :: trim(b(1)), trim(b(2)), trim(b(3)) /)
   if (a(1) /= 'Ta' .or. a(2) /= 'Ta' .or. a(3) /= 'Ha') then
-    call abort ()
+    STOP 2
   end if
 
   a =  (/ character(len=8) :: trim(b(1)), trim(b(2)), trim(b(3)) /)
   if (a(1) /= 'Takata' .or. a(2) /= 'Tanaka' .or. a(3) /= 'Hayashi') then
-    call abort ()
+    STOP 3
   end if
 
 end program test

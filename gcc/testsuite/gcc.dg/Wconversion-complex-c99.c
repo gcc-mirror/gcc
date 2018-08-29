@@ -5,7 +5,7 @@
    Likewise, the magic value 16777217.  */
 
 /* { dg-do compile } */
-/* { dg-skip-if "doubles are floats,ints are 16bits" { "avr-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "doubles are floats,ints are 16bits" { "avr-*-*" } } */
 /* { dg-options " -std=c99 -pedantic -Wconversion " } */
 /* { dg-require-effective-target int32plus } */
 /* { dg-require-effective-target double64plus } */

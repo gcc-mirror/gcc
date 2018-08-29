@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
-/* { dg-skip-if "" { powerpc*le-*-* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
+/* { dg-skip-if "" { powerpc*le-*-* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 /* { dg-options "-O3 -mcpu=power7 -mabi=altivec -ffast-math -fno-unroll-loops" } */

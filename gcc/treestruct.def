@@ -1,7 +1,7 @@
 /* This file contains the definitions for the tree structure
    enumeration used in GCC.
 
-Copyright (C) 2005-2017 Free Software Foundation, Inc.
+Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,6 +34,7 @@ DEFTREESTRUCT(TS_BASE, "base")
 DEFTREESTRUCT(TS_TYPED, "typed")
 DEFTREESTRUCT(TS_COMMON, "common")
 DEFTREESTRUCT(TS_INT_CST, "integer cst")
+DEFTREESTRUCT(TS_POLY_INT_CST, "poly_int_cst")
 DEFTREESTRUCT(TS_REAL_CST, "real cst")
 DEFTREESTRUCT(TS_FIXED_CST, "fixed cst")
 DEFTREESTRUCT(TS_VECTOR, "vector")

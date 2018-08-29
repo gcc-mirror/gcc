@@ -1,6 +1,6 @@
 // { dg-do assemble  }
 char *stuff() {
-   char array[10]; // { dg-warning "" } 
+   char array[10];
 
-   return array;
+   return array;		// { dg-warning "" } 
 }

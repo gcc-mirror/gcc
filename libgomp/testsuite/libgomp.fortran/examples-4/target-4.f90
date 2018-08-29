@@ -17,7 +17,7 @@ contains
     real, pointer, dimension(:) :: p
     do i = 1, N
       diff = p(i) - (i + 2.0) * (i - 3.0)
-      if (diff > EPS .or. -diff > EPS) call abort
+      if (diff > EPS .or. -diff > EPS) STOP 1
     end do
   end subroutine
 

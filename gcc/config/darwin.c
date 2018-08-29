@@ -1,5 +1,5 @@
 /* Functions for generic Darwin as target machine for GNU C compiler.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -31,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "insn-config.h"
 #include "emit-rtl.h"
 #include "cgraph.h"
@@ -821,8 +824,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 
   /* First handle a simple SYMBOL_REF or LABEL_REF */
   if (GET_CODE (orig) == LABEL_REF
-      || (GET_CODE (orig) == SYMBOL_REF
-	  ))
+      || GET_CODE (orig) == SYMBOL_REF)
     {
       /* addr(foo) = &func+(foo-func) */
       orig = machopic_indirect_data_reference (orig, reg);
@@ -1021,10 +1023,6 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
           return pic_ref;
         }
     }
-
-  else if (GET_CODE (orig) == SYMBOL_REF)
-    return orig;
-
   else if (GET_CODE (orig) == PLUS
 	   && (GET_CODE (XEXP (orig, 0)) == MEM
 	       || GET_CODE (XEXP (orig, 0)) == SYMBOL_REF
@@ -1054,12 +1052,10 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	}
       /* Likewise, should we set special REG_NOTEs here?  */
     }
-
   else if (GET_CODE (orig) == CONST)
     {
       return machopic_legitimize_pic_address (XEXP (orig, 0), Pmode, reg);
     }
-
   else if (GET_CODE (orig) == MEM
 	   && GET_CODE (XEXP (orig, 0)) == SYMBOL_REF)
     {
@@ -1318,13 +1314,13 @@ darwin_mergeable_constant_section (tree exp,
 
       if (TREE_CODE (size) == INTEGER_CST)
 	{
-	  if (wi::eq_p (size, 4))
+	  if (wi::to_wide (size) == 4)
 	    return darwin_sections[literal4_section];
-	  else if (wi::eq_p (size, 8))
+	  else if (wi::to_wide (size) == 8)
 	    return darwin_sections[literal8_section];
 	  else if (HAVE_GAS_LITERAL16
 		   && TARGET_64BIT
-		   && wi::eq_p (size, 16))
+		   && wi::to_wide (size) == 16)
 	    return darwin_sections[literal16_section];
 	}
     }
@@ -1930,6 +1926,7 @@ static GTY (()) vec<darwin_lto_section_e, va_gc> *lto_section_names;
    in darwin_end_file.  */
 static FILE *lto_asm_out_file, *saved_asm_out_file;
 static char *lto_asm_out_name;
+static enum debug_info_levels saved_debug_info_level;
 
 /* Prepare asm_out_file for LTO output.  For darwin, this means hiding
    asm_out_file and switching to an alternative output file.  */
@@ -1938,6 +1935,8 @@ darwin_asm_lto_start (void)
 {
   gcc_assert (! saved_asm_out_file);
   saved_asm_out_file = asm_out_file;
+  saved_debug_info_level = debug_info_level;
+  debug_info_level = DINFO_LEVEL_NONE;
   if (! lto_asm_out_name)
     lto_asm_out_name = make_temp_file (".lto.s");
   lto_asm_out_file = fopen (lto_asm_out_name, "a");
@@ -1956,10 +1955,12 @@ darwin_asm_lto_end (void)
   fclose (lto_asm_out_file);
   asm_out_file = saved_asm_out_file;
   saved_asm_out_file = NULL;
+  debug_info_level = saved_debug_info_level;
 }
 
 static void
-darwin_asm_dwarf_section (const char *name, unsigned int flags, tree decl);
+darwin_asm_dwarf_section (const char *name, unsigned int flags,
+			  tree decl, bool is_for_lto);
 
 /*  Called for the TARGET_ASM_NAMED_SECTION hook.  */
 
@@ -2001,7 +2002,9 @@ darwin_asm_named_section (const char *name,
       vec_safe_push (lto_section_names, e);
    }
   else if (strncmp (name, "__DWARF,", 8) == 0)
-    darwin_asm_dwarf_section (name, flags, decl);
+    darwin_asm_dwarf_section (name, flags, decl, false);
+  else if (strncmp (name, "__GNU_DWARF_LTO,", 16) == 0)
+    darwin_asm_dwarf_section (name, flags, decl, true);
   else
     fprintf (asm_out_file, "\t.section %s\n", name);
 }
@@ -2783,19 +2786,37 @@ static GTY (()) vec<dwarf_sect_used_entry, va_gc> *dwarf_sect_names_table;
 
 static void
 darwin_asm_dwarf_section (const char *name, unsigned int flags,
-			  tree ARG_UNUSED (decl))
+			  tree ARG_UNUSED (decl), bool is_for_lto)
 {
   unsigned i;
-  int namelen;
-  const char * sname;
+  int namelen, extra = 0;
+  const char *sect, *lto_add = "";
+  char sname[64];
   dwarf_sect_used_entry *ref;
   bool found = false;
-  gcc_assert ((flags & (SECTION_DEBUG | SECTION_NAMED))
-		    == (SECTION_DEBUG | SECTION_NAMED));
-  /* We know that the name starts with __DWARF,  */
-  sname = name + 8;
-  namelen = strchr (sname, ',') - sname;
-  gcc_assert (namelen);
+
+  gcc_checking_assert ((flags & (SECTION_DEBUG | SECTION_NAMED))
+			== (SECTION_DEBUG | SECTION_NAMED));
+
+  /* We know that the name starts with __DWARF, or __GNU_DAWRF_LTO  */
+  sect = strchr (name, ',') + 1;
+  namelen = strchr (sect, ',') - sect;
+  gcc_checking_assert (namelen);
+
+  /* The section switch is output as written...  */
+  fprintf (asm_out_file, "\t.section %s\n", name);
+
+  /* ... but the string we keep to make section start labels needs
+     adjustment for lto cases.  */
+  if (is_for_lto)
+    {
+      lto_add = "_lto";
+      extra = 4;
+    }
+
+  snprintf (sname, 64, "%.*s%.*s", namelen, sect, extra, lto_add);
+  namelen += extra;
+
   if (dwarf_sect_names_table == NULL)
     vec_alloc (dwarf_sect_names_table, 16);
   else
@@ -2813,7 +2834,6 @@ darwin_asm_dwarf_section (const char *name, unsigned int flags,
 	  }
       }
 
-  fprintf (asm_out_file, "\t.section %s\n", name);
   if (!found)
     {
       dwarf_sect_used_entry e;
@@ -2866,14 +2886,24 @@ darwin_asm_output_dwarf_offset (FILE *file, int size, const char * lab,
 				HOST_WIDE_INT offset, section *base)
 {
   char sname[64];
-  int namelen;
+  int namelen, extra = 0;
+  bool is_for_lto;
+  const char *lto_add = "";
 
-  gcc_assert (base->common.flags & SECTION_NAMED);
-  gcc_assert (strncmp (base->named.name, "__DWARF,", 8) == 0);
-  gcc_assert (strchr (base->named.name + 8, ','));
+  gcc_checking_assert (base->common.flags & SECTION_NAMED);
+  is_for_lto = strncmp (base->named.name, "__GNU_DWARF_LTO,", 16) == 0;
+  gcc_checking_assert (is_for_lto
+		       || strncmp (base->named.name, "__DWARF,", 8) == 0);
+  const char *name = strchr (base->named.name, ',') + 1;
+  gcc_checking_assert (name);
 
-  namelen = strchr (base->named.name + 8, ',') - (base->named.name + 8);
-  sprintf (sname, "*Lsection%.*s", namelen, base->named.name + 8);
+  namelen = strchr (name, ',') - (name);
+  if (is_for_lto)
+    {
+      lto_add = "_lto";
+      extra = 4;
+    }
+  snprintf (sname, 64, "*Lsection%.*s%.*s", namelen, name, extra, lto_add);
   darwin_asm_output_dwarf_delta (file, size, lab, sname, offset);
 }
 
@@ -3138,6 +3168,14 @@ darwin_override_options (void)
     dwarf_strict = 1;
   if (!global_options_set.x_dwarf_version)
     dwarf_version = 2;
+
+  if (global_options_set.x_dwarf_split_debug_info)
+    {
+      inform (input_location,
+	      "-gsplit-dwarf is not supported on this platform, ignored");
+      dwarf_split_debug_info = 0;
+      global_options_set.x_dwarf_split_debug_info = 0;
+    }
 
   /* Do not allow unwind tables to be generated by default for m32.  
      fnon-call-exceptions will override this, regardless of what we do.  */
@@ -3672,23 +3710,6 @@ darwin_function_section (tree decl, enum node_frequency freq,
 default_function_sections:
   return (use_coal) ? darwin_sections[text_coal_section]
 		    : text_section;
-}
-
-/* When a function is partitioned between sections, we need to insert a label
-   at the start of each new chunk - so that it may become a valid 'atom' for
-   eh and debug purposes.  Without this the linker will emit warnings if one 
-   tries to add line location information (since the switched fragment will 
-   be anonymous).  */
-
-void
-darwin_function_switched_text_sections (FILE *fp, tree decl, bool new_is_cold)
-{
-  char buf[128];
-  snprintf (buf, 128, "%s%s",new_is_cold?"__cold_sect_of_":"__hot_sect_of_",
-	    IDENTIFIER_POINTER (DECL_NAME (decl)));
-  /* Make sure we pick up all the relevant quotes etc.  */
-  assemble_name_raw (fp, (const char *) buf);
-  fputs (":\n", fp);
 }
 
 #include "gt-darwin.h"

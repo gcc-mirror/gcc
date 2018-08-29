@@ -4,5 +4,5 @@
 
 #define A x######x
 int A = 1;
-#define A x######x	/* { dg-message "previous definition" } */
-#define A x##x		/* { dg-warning "redefined" } */
+#define A x######x	/* { dg-message "-:previous definition" } */
+#define A x##x		/* { dg-warning "-:redefined" } */

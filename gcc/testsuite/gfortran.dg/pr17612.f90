@@ -15,7 +15,7 @@ program prog
   ! A full arrays.
   c = (/"ab","cd","ef","gh"/)
   call n(p)
-  if (any (c /= p%els)) call abort
+  if (any (c /= p%els)) STOP 1
   ! An array section that needs a new array descriptor.
   v%s(1) = "hello"
   v%s(2) = "world"
@@ -30,7 +30,7 @@ contains
 
   subroutine test(s)
     character(len=*) :: s(:)
-    if ((len (s) .ne. 5) .or. (any (s .ne. (/"hello", "world"/)))) call abort
+    if ((len (s) .ne. 5) .or. (any (s .ne. (/"hello", "world"/)))) STOP 2
   end subroutine
 end program
   

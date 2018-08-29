@@ -1,6 +1,6 @@
 // Uses-allocator Construction -*- C++ -*-
 
-// Copyright (C) 2010-2017 Free Software Foundation, Inc.
+// Copyright (C) 2010-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,11 +36,15 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  // This is used for std::experimental::erased_type from Library Fundamentals.
   struct __erased_type { };
 
+  // This also supports the "type-erased allocator" protocol from the
+  // Library Fundamentals TS, where allocator_type is erased_type.
+  // The second condition will always be false for types not using the TS.
   template<typename _Alloc, typename _Tp>
     using __is_erased_or_convertible
-      = __or_<is_same<_Tp, __erased_type>, is_convertible<_Alloc, _Tp>>;
+      = __or_<is_convertible<_Alloc, _Tp>, is_same<_Tp, __erased_type>>;
 
   /// [allocator.tag]
   struct allocator_arg_t { explicit allocator_arg_t() = default; };
@@ -109,6 +113,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ret._M_a = std::__addressof(__a);
       return __ret;
     }
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+    void
+    __use_alloc(const _Alloc&&) = delete;
+
 #if __cplusplus > 201402L
   template <typename _Tp, typename _Alloc>
     inline constexpr bool uses_allocator_v =
@@ -170,8 +179,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void __uses_allocator_construct(const _Alloc& __a, _Tp* __ptr,
 				    _Args&&... __args)
     {
-      __uses_allocator_construct_impl(__use_alloc<_Tp, _Alloc, _Args...>(__a),
-				      __ptr, std::forward<_Args>(__args)...);
+      std::__uses_allocator_construct_impl(
+	  std::__use_alloc<_Tp, _Alloc, _Args...>(__a), __ptr,
+	  std::forward<_Args>(__args)...);
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

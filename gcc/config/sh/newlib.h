@@ -1,5 +1,5 @@
 /* Definitions of target machine for gcc for Super-H using sh-superh-elf.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,7 +23,3 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef LIB_SPEC
 #define LIB_SPEC "-lc -lgloss"
-
-#undef  NO_IMPLICIT_EXTERN_C
-#define NO_IMPLICIT_EXTERN_C 1
-

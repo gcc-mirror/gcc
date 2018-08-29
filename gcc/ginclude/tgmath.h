@@ -1,4 +1,4 @@
-/* Copyright (C) 2004-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Apple, Inc.
 
 This file is part of GCC.
@@ -38,68 +38,24 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    __TGMATH_CPLX*, __TGMATH_REAL*, and __TGMATH_CPLX_ONLY.  _CPLX
    means the generic argument(s) may be real or complex, _REAL means
    real only, _CPLX means complex only.  If there is no suffix, we are
-   defining a function of one generic argument.  If the suffix is _n
-   it is a function of n generic arguments.  If the suffix is _m_n it
-   is a function of n arguments, the first m of which are generic.  We
-   only define these macros for values of n and/or m that are needed. */
+   defining a function of one argument.  If the suffix is _n
+   it is a function of n arguments.  We only define these macros for
+   values of n that are needed. */
 
-/* The general rules for generic macros are given in 7.22 paragraphs 1 and 2.
-   If any generic parameter is complex, we use a complex version.  Otherwise
-   we use a real version.  If the real part of any generic parameter is long
-   double, we use the long double version.  Otherwise if the real part of any
-   generic parameter is double or of integer type, we use the double version.
-   Otherwise we use the float version. */
+#define __TGMATH_CPLX(z,R,C)				\
+  __builtin_tgmath (R##f, R, R##l, C##f, C, C##l, (z))
 
-#define __tg_cplx(expr) \
-  __builtin_classify_type(expr) == 9
-
-#define __tg_ldbl(expr) \
-  __builtin_types_compatible_p(__typeof__(expr), long double)
-
-#define __tg_dbl(expr)                                       \
-  (__builtin_types_compatible_p(__typeof__(expr), double)    \
-   || __builtin_classify_type(expr) == 1)
-
-#define __tg_choose(x,f,d,l)                                  \
-  __builtin_choose_expr(__tg_ldbl(x), l,                      \
-                        __builtin_choose_expr(__tg_dbl(x), d, \
-                                              f))
-
-#define __tg_choose_2(x,y,f,d,l)                                             \
-  __builtin_choose_expr(__tg_ldbl(x) || __tg_ldbl(y), l,                     \
-                        __builtin_choose_expr(__tg_dbl(x) || __tg_dbl(y), d, \
-                                              f))
-
-#define __tg_choose_3(x,y,z,f,d,l)                                        \
-   __builtin_choose_expr(__tg_ldbl(x) || __tg_ldbl(y) || __tg_ldbl(z), l, \
-                        __builtin_choose_expr(__tg_dbl(x) || __tg_dbl(y)  \
-                                              || __tg_dbl(z), d,          \
-                                              f))
-
-#define __TGMATH_CPLX(z,R,C)                                                  \
-  __builtin_choose_expr (__tg_cplx(z),                                        \
-                         __tg_choose (__real__(z), C##f(z), (C)(z), C##l(z)), \
-                         __tg_choose (z, R##f(z), (R)(z), R##l(z)))
-
-#define __TGMATH_CPLX_2(z1,z2,R,C)                                             \
-  __builtin_choose_expr (__tg_cplx(z1) || __tg_cplx(z2),                       \
-                         __tg_choose_2 (__real__(z1), __real__(z2),            \
-                                        C##f(z1,z2), (C)(z1,z2), C##l(z1,z2)), \
-                         __tg_choose_2 (z1, z2,                                \
-                                        R##f(z1,z2), (R)(z1,z2), R##l(z1,z2)))
+#define __TGMATH_CPLX_2(z1,z2,R,C)				\
+  __builtin_tgmath (R##f, R, R##l, C##f, C, C##l, (z1), (z2))
 
 #define __TGMATH_REAL(x,R) \
-  __tg_choose (x, R##f(x), (R)(x), R##l(x))
+  __builtin_tgmath (R##f, R, R##l, (x))
 #define __TGMATH_REAL_2(x,y,R) \
-  __tg_choose_2 (x, y, R##f(x,y), (R)(x,y), R##l(x,y))
+  __builtin_tgmath (R##f, R, R##l, (x), (y))
 #define __TGMATH_REAL_3(x,y,z,R) \
-  __tg_choose_3 (x, y, z, R##f(x,y,z), (R)(x,y,z), R##l(x,y,z))
-#define __TGMATH_REAL_1_2(x,y,R) \
-  __tg_choose (x, R##f(x,y), (R)(x,y), R##l(x,y))
-#define __TGMATH_REAL_2_3(x,y,z,R) \
-  __tg_choose_2 (x, y, R##f(x,y,z), (R)(x,y,z), R##l(x,y,z))
+  __builtin_tgmath (R##f, R, R##l, (x), (y), (z))
 #define __TGMATH_CPLX_ONLY(z,C) \
-  __tg_choose (__real__(z), C##f(z), (C)(z), C##l(z))
+  __builtin_tgmath (C##f, C, C##l, (z))
 
 /* Functions defined in both <math.h> and <complex.h> (7.22p4) */
 #define acos(z)          __TGMATH_CPLX(z, acos, cacos)
@@ -135,10 +91,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define fmax(x,y)        __TGMATH_REAL_2(x, y, fmax)
 #define fmin(x,y)        __TGMATH_REAL_2(x, y, fmin)
 #define fmod(x,y)        __TGMATH_REAL_2(x, y, fmod)
-#define frexp(x,y)       __TGMATH_REAL_1_2(x, y, frexp)
+#define frexp(x,y)       __TGMATH_REAL_2(x, y, frexp)
 #define hypot(x,y)       __TGMATH_REAL_2(x, y, hypot)
 #define ilogb(x)         __TGMATH_REAL(x, ilogb)
-#define ldexp(x,y)       __TGMATH_REAL_1_2(x, y, ldexp)
+#define ldexp(x,y)       __TGMATH_REAL_2(x, y, ldexp)
 #define lgamma(x)        __TGMATH_REAL(x, lgamma)
 #define llrint(x)        __TGMATH_REAL(x, llrint)
 #define llround(x)       __TGMATH_REAL(x, llround)
@@ -150,13 +106,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define lround(x)        __TGMATH_REAL(x, lround)
 #define nearbyint(x)     __TGMATH_REAL(x, nearbyint)
 #define nextafter(x,y)   __TGMATH_REAL_2(x, y, nextafter)
-#define nexttoward(x,y)  __TGMATH_REAL_1_2(x, y, nexttoward)
+#define nexttoward(x,y)  __TGMATH_REAL_2(x, y, nexttoward)
 #define remainder(x,y)   __TGMATH_REAL_2(x, y, remainder)
-#define remquo(x,y,z)    __TGMATH_REAL_2_3(x, y, z, remquo)
+#define remquo(x,y,z)    __TGMATH_REAL_3(x, y, z, remquo)
 #define rint(x)          __TGMATH_REAL(x, rint)
 #define round(x)         __TGMATH_REAL(x, round)
-#define scalbn(x,y)      __TGMATH_REAL_1_2(x, y, scalbn)
-#define scalbln(x,y)     __TGMATH_REAL_1_2(x, y, scalbln)
+#define scalbn(x,y)      __TGMATH_REAL_2(x, y, scalbn)
+#define scalbln(x,y)     __TGMATH_REAL_2(x, y, scalbln)
 #define tgamma(x)        __TGMATH_REAL(x, tgamma)
 #define trunc(x)         __TGMATH_REAL(x, trunc)
 

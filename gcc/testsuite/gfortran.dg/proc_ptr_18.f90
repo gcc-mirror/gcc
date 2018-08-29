@@ -10,7 +10,7 @@ PROGRAM test_prog
   PROCEDURE(triple), POINTER :: f
 
   f => triple
-  if (sum(f(2.,4.)-triple(2.,4.))>1E-3) call abort()
+  if (sum(f(2.,4.)-triple(2.,4.))>1E-3) STOP 1
 
 CONTAINS
 

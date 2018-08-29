@@ -8,7 +8,7 @@ class String {
    operator UnspecifiedBoolTypeA() const;
    operator UnspecifiedBoolTypeB() const;
 };
-inline bool equalIgnoringCase(const String& a, const String& b) { }
+inline bool equalIgnoringCase(const String& a, const String& b) { return true; }
 inline bool equalPossiblyIgnoringCase(const String& a, 
                                       const String& b,
                                       bool ignoreCase) {

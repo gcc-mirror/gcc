@@ -17,6 +17,17 @@ import (
 	"strings"
 )
 
+// seekStart, seekCurrent, seekEnd are copies of
+// io.SeekStart, io.SeekCurrent, and io.SeekEnd.
+// We can't use the ones from package io because
+// we want this code to build with Go 1.4 during
+// cmd/dist bootstrap.
+const (
+	seekStart   int = 0
+	seekCurrent int = 1
+	seekEnd     int = 2
+)
+
 // TODO: error reporting detail
 
 /*
@@ -269,7 +280,7 @@ func NewFile(r io.ReaderAt) (*File, error) {
 	switch f.Class {
 	case ELFCLASS32:
 		hdr := new(Header32)
-		sr.Seek(0, io.SeekStart)
+		sr.Seek(0, seekStart)
 		if err := binary.Read(sr, f.ByteOrder, hdr); err != nil {
 			return nil, err
 		}
@@ -288,7 +299,7 @@ func NewFile(r io.ReaderAt) (*File, error) {
 		shstrndx = int(hdr.Shstrndx)
 	case ELFCLASS64:
 		hdr := new(Header64)
-		sr.Seek(0, io.SeekStart)
+		sr.Seek(0, seekStart)
 		if err := binary.Read(sr, f.ByteOrder, hdr); err != nil {
 			return nil, err
 		}
@@ -315,7 +326,7 @@ func NewFile(r io.ReaderAt) (*File, error) {
 	f.Progs = make([]*Prog, phnum)
 	for i := 0; i < phnum; i++ {
 		off := phoff + int64(i)*int64(phentsize)
-		sr.Seek(off, io.SeekStart)
+		sr.Seek(off, seekStart)
 		p := new(Prog)
 		switch f.Class {
 		case ELFCLASS32:
@@ -359,7 +370,7 @@ func NewFile(r io.ReaderAt) (*File, error) {
 	names := make([]uint32, shnum)
 	for i := 0; i < shnum; i++ {
 		off := shoff + int64(i)*int64(shentsize)
-		sr.Seek(off, io.SeekStart)
+		sr.Seek(off, seekStart)
 		s := new(Section)
 		switch f.Class {
 		case ELFCLASS32:
@@ -600,8 +611,12 @@ func (f *File) applyRelocations(dst []byte, rels []byte) error {
 		return f.applyRelocationsMIPS64(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_S390:
 		return f.applyRelocationss390x(dst, rels)
+	case f.Class == ELFCLASS32 && (f.Machine == EM_SPARC || f.Machine == EM_SPARC32PLUS):
+		return f.applyRelocationsSPARC(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_SPARCV9:
 		return f.applyRelocationsSPARC64(dst, rels)
+	case f.Class == ELFCLASS64 && f.Machine == EM_ALPHA:
+		return f.applyRelocationsALPHA(dst, rels)
 	default:
 		return errors.New("applyRelocations: not implemented")
 	}
@@ -1004,6 +1019,46 @@ func (f *File) applyRelocationss390x(dst []byte, rels []byte) error {
 	return nil
 }
 
+func (f *File) applyRelocationsSPARC(dst []byte, rels []byte) error {
+	// 12 is the size of Rela32.
+	if len(rels)%12 != 0 {
+		return errors.New("length of relocation section is not a multiple of 12")
+	}
+
+	symbols, _, err := f.getSymbols(SHT_SYMTAB)
+	if err != nil {
+		return err
+	}
+
+	b := bytes.NewReader(rels)
+	var rela Rela32
+
+	for b.Len() > 0 {
+		binary.Read(b, f.ByteOrder, &rela)
+		symNo := rela.Info >> 32
+		t := R_SPARC(rela.Info & 0xff)
+
+		if symNo == 0 || symNo > uint32(len(symbols)) {
+			continue
+		}
+		sym := &symbols[symNo-1]
+		if SymType(sym.Info&0xf) != STT_SECTION {
+			// We don't handle non-section relocations for now.
+			continue
+		}
+
+		switch t {
+		case R_SPARC_32, R_SPARC_UA32:
+			if rela.Off+4 >= uint32(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], uint32(rela.Addend))
+		}
+	}
+
+	return nil
+}
+
 func (f *File) applyRelocationsSPARC64(dst []byte, rels []byte) error {
 	// 24 is the size of Rela64.
 	if len(rels)%24 != 0 {
@@ -1039,6 +1094,55 @@ func (f *File) applyRelocationsSPARC64(dst []byte, rels []byte) error {
 			}
 			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], uint64(rela.Addend))
 		case R_SPARC_32, R_SPARC_UA32:
+			if rela.Off+4 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], uint32(rela.Addend))
+		}
+	}
+
+	return nil
+}
+
+func (f *File) applyRelocationsALPHA(dst []byte, rels []byte) error {
+	// 24 is the size of Rela64.
+	if len(rels)%24 != 0 {
+		return errors.New("length of relocation section is not a multiple of 24")
+	}
+
+	symbols, _, err := f.getSymbols(SHT_SYMTAB)
+	if err != nil {
+		return err
+	}
+
+	b := bytes.NewReader(rels)
+	var rela Rela64
+
+	for b.Len() > 0 {
+		binary.Read(b, f.ByteOrder, &rela)
+		symNo := rela.Info >> 32
+		t := R_ALPHA(rela.Info & 0xffff)
+
+		if symNo == 0 || symNo > uint64(len(symbols)) {
+			continue
+		}
+		sym := &symbols[symNo-1]
+		if SymType(sym.Info&0xf) != STT_SECTION {
+			// We don't handle non-section relocations for now.
+			continue
+		}
+
+		// There are relocations, so this must be a normal
+		// object file, and we only look at section symbols,
+		// so we assume that the symbol value is 0.
+
+		switch t {
+		case R_ALPHA_REFQUAD:
+			if rela.Off+8 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], uint64(rela.Addend))
+		case R_ALPHA_REFLONG:
 			if rela.Off+4 >= uint64(len(dst)) || rela.Addend < 0 {
 				continue
 			}

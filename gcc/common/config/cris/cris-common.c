@@ -1,5 +1,5 @@
 /* Common hooks for CRIS.
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,14 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-
-static const struct default_options cris_option_optimization_table[] =
-  {
-    { OPT_LEVELS_2_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 /* TARGET_HANDLE_OPTION worker.  We just store the values into local
    variables here.  Checks for correct semantics are in
@@ -98,7 +90,5 @@ cris_handle_option (struct gcc_options *opts,
 #define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | CRIS_SUBTARGET_DEFAULT)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION cris_handle_option
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE cris_option_optimization_table
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

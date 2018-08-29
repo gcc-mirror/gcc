@@ -1,5 +1,5 @@
 /* Definitions of target machine for Altera Nios II.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com), 
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
@@ -92,10 +92,6 @@
 #define PREFERRED_STACK_BOUNDARY 32
 #define MAX_FIXED_MODE_SIZE 64
 
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)                          \
-  ((TREE_CODE (EXP) == STRING_CST)                              \
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 #define LABEL_ALIGN(LABEL) nios2_label_align (LABEL)
 
 /* Layout of source language data types.  */
@@ -172,11 +168,6 @@
 /*  30 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1,     \
   }
 
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 1
-#define HARD_REGNO_NREGS(REGNO, MODE)            \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 /* Order in which to allocate registers.  Each register must be
    listed once.  This is the default ordering for R1 and non-CDX R2
    code.  For CDX, we overwrite this in ADJUST_REG_ALLOC_ORDER.  */
@@ -230,7 +221,7 @@ enum reg_class
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 #define CDX_REG_P(REGNO)						\
-  ((REGNO) == 16 || (REGNO) == 17 || (2 <= (REGNO) && (REGNO) <= 7))
+  ((REGNO) == 16 || (REGNO) == 17 || ((REGNO) >= 2 && (REGNO) <= 7))
 
 /* Tests for various kinds of constants used in the Nios II port.  */
 
@@ -261,7 +252,7 @@ enum reg_class
 
 /* Stack layout.  */
 #define STACK_GROWS_DOWNWARD 1
-#define STARTING_FRAME_OFFSET 0
+#define FRAME_GROWS_DOWNWARD 1
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
 /* Before the prologue, RA lives in r31.  */
@@ -296,11 +287,8 @@ typedef struct nios2_args
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
   do { (CUM).regs_used = 0; } while (0)
 
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-  (nios2_function_arg_padding ((MODE), (TYPE)))
-
 #define PAD_VARARGS_DOWN \
-  (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
+  (targetm.calls.function_arg_padding (TYPE_MODE (type), type) == PAD_DOWNWARD)
 
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
   (nios2_block_reg_padding ((MODE), (TYPE), (FIRST)))
@@ -443,7 +431,7 @@ typedef struct nios2_args
 /* Output before 'small' uninitialized data.  */
 #define SBSS_SECTION_ASM_OP "\t.section\t.sbss"
 
-#ifndef IN_LIBGCC2
+#ifndef USED_FOR_TARGET
 /* Default the definition of "small data" to 8 bytes.  */
 extern unsigned HOST_WIDE_INT nios2_section_threshold;
 #endif
@@ -522,8 +510,6 @@ do {                                                                    \
 #define FUNCTION_MODE QImode
 
 #define CASE_VECTOR_MODE Pmode
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define LOAD_EXTEND_OP(MODE) (ZERO_EXTEND)
 

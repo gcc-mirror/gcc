@@ -1,5 +1,5 @@
 /* Inline functions to test validity of reg classes for addressing modes.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,14 +31,15 @@ base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
 		enum rtx_code index_code ATTRIBUTE_UNUSED)
 {
 #ifdef MODE_CODE_BASE_REG_CLASS
-  return MODE_CODE_BASE_REG_CLASS (mode, as, outer_code, index_code);
+  return MODE_CODE_BASE_REG_CLASS (MACRO_MODE (mode), as, outer_code,
+				   index_code);
 #else
 #ifdef MODE_BASE_REG_REG_CLASS
   if (index_code == REG)
-    return MODE_BASE_REG_REG_CLASS (mode);
+    return MODE_BASE_REG_REG_CLASS (MACRO_MODE (mode));
 #endif
 #ifdef MODE_BASE_REG_CLASS
-  return MODE_BASE_REG_CLASS (mode);
+  return MODE_BASE_REG_CLASS (MACRO_MODE (mode));
 #else
   return BASE_REG_CLASS;
 #endif
@@ -58,15 +59,15 @@ ok_for_base_p_1 (unsigned regno ATTRIBUTE_UNUSED,
 		 enum rtx_code index_code ATTRIBUTE_UNUSED)
 {
 #ifdef REGNO_MODE_CODE_OK_FOR_BASE_P
-  return REGNO_MODE_CODE_OK_FOR_BASE_P (regno, mode, as,
+  return REGNO_MODE_CODE_OK_FOR_BASE_P (regno, MACRO_MODE (mode), as,
 					outer_code, index_code);
 #else
 #ifdef REGNO_MODE_OK_FOR_REG_BASE_P
   if (index_code == REG)
-    return REGNO_MODE_OK_FOR_REG_BASE_P (regno, mode);
+    return REGNO_MODE_OK_FOR_REG_BASE_P (regno, MACRO_MODE (mode));
 #endif
 #ifdef REGNO_MODE_OK_FOR_BASE_P
-  return REGNO_MODE_OK_FOR_BASE_P (regno, mode);
+  return REGNO_MODE_OK_FOR_BASE_P (regno, MACRO_MODE (mode));
 #else
   return REGNO_OK_FOR_BASE_P (regno);
 #endif

@@ -28,6 +28,6 @@ struct D
   baz () { bar<F, B<>>; }
   template <bool, bool, bool> struct F
   {
-    static B<> baz () { foo<E<0, 0, 0>> (0, 0); }
+    static B<> baz () { foo<E<0, 0, 0>> (0, 0); return B<>(); }
   };
 };

@@ -1,5 +1,5 @@
 `/* Helper function for repacking arrays.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -42,7 +42,6 @@ internal_unpack_'rtype_ccode` ('rtype` * d, const 'rtype_name` * src)
   index_type dim;
   index_type dsize;
   'rtype_name` * restrict dest;
-  int n;
 
   dest = d->base_addr;
   if (src == dest || !src)
@@ -50,7 +49,7 @@ internal_unpack_'rtype_ccode` ('rtype` * d, const 'rtype_name` * src)
 
   dim = GFC_DESCRIPTOR_RANK (d);
   dsize = 1;
-  for (n = 0; n < dim; n++)
+  for (index_type n = 0; n < dim; n++)
     {
       count[n] = 0;
       stride[n] = GFC_DESCRIPTOR_STRIDE(d,n);
@@ -80,7 +79,7 @@ internal_unpack_'rtype_ccode` ('rtype` * d, const 'rtype_name` * src)
       dest += stride0;
       count[0]++;
       /* Advance to the next source element.  */
-      n = 0;
+      index_type n = 0;
       while (count[n] == extent[n])
         {
           /* When we get to the end of a dimension, reset it and increment

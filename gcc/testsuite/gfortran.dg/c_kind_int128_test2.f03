@@ -10,7 +10,7 @@ program c_kind_int128
   integer(c_int_least128_t) :: b  
 ! integer(c_int_fast128_t) :: c
     
-  if (sizeof (a) /= 16) call abort 
-  if (sizeof (b) /= 16) call abort 
-!  if (sizeof (c) /= 16) call abort 
+  if (sizeof (a) /= 16) STOP 1
+  if (sizeof (b) /= 16) STOP 2
+!  if (sizeof (c) /= 16) STOP 3
 end program c_kind_int128

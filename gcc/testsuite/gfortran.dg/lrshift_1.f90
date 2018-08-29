@@ -11,8 +11,8 @@ program test_rshift_lshift
 
   do n = 1, size(i)
     do j = -30, 30
-      if (lshift(i(n),j) /= c_lshift(i(n),j)) call abort
-      if (rshift(i(n),j) /= c_rshift(i(n),j)) call abort
+      if (lshift(i(n),j) /= c_lshift(i(n),j)) STOP 1
+      if (rshift(i(n),j) /= c_rshift(i(n),j)) STOP 2
     end do
   end do
 end program test_rshift_lshift

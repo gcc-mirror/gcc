@@ -20,7 +20,7 @@ module testmod
       r(k,k) = a(k, k - 1) * dj
     enddo
 
-    if (r(0,0) .ne. -2.) call abort
+    if (r(0,0) .ne. -2.) STOP 1
 
   end subroutine
 

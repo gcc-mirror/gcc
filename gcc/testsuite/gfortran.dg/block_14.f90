@@ -17,5 +17,5 @@ program main
       end block
     end block
   end block
-  if (s /= 9) call abort
+  if (s /= 9) STOP 1
 end program main

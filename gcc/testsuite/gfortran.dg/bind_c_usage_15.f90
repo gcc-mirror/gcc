@@ -25,5 +25,5 @@ program main
   integer(c_int) :: x
   x = -44
   call gen(x)
-  if(x /= 17) call abort()
+  if(x /= 17) STOP 1
 end program main

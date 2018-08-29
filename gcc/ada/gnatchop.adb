@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -599,7 +599,7 @@ procedure Gnatchop is
       Chop_Name   : constant String_Access   := File.Table (Num).Name;
       Save_Stdout : constant File_Descriptor := dup (Standout);
       Offset_Name : Temp_File_Name;
-      Offset_FD   : File_Descriptor;
+      Offset_FD   : File_Descriptor := Invalid_FD;
       Buffer      : String_Access;
       Success     : Boolean;
       Failure     : exception;
@@ -685,10 +685,12 @@ procedure Gnatchop is
 
    exception
       when Failure | Types.Terminate_Program =>
-         Close (Offset_FD);
+         if Offset_FD /= Invalid_FD then
+            Close (Offset_FD);
+         end if;
+
          Delete_File (Offset_Name'Address, Success);
          return False;
-
    end Parse_File;
 
    -----------------------

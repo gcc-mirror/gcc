@@ -2,7 +2,7 @@
 /* { dg-require-effective-target arm_arch_v5te_ok } */
 /* { dg-require-effective-target arm_arm_ok } */
 /* { dg-skip-if "do not override -mfloat-abi" { *-*-* } { "-mfloat-abi=*" } {"-mfloat-abi=soft" } } */
-/* { dg-options "-march=armv5te -marm  -mtune=xscale -mfloat-abi=soft -O1" } */
+/* { dg-options "-march=armv5te -marm  -mtune=xscale -mfloat-abi=soft -O1 -Wno-return-type" } */
 
 typedef unsigned int size_t;
 __extension__

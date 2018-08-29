@@ -36,7 +36,7 @@
 
         allocate (foobar(2))
         foobar = [bar(1), bar(2)]
-        if (any(foobar%i /= [1, 2])) call abort
+        if (any(foobar%i /= [1, 2])) STOP 1
       end program
 
 ! { dg-final { scan-tree-dump-not "_gfortran_internal_pack" "original" } }

@@ -8,7 +8,7 @@
 !$ACC PARALLEL                                                          &
 !$ACC& COPYIN(ARGC) ! { dg-error "directive cannot be specified within" }
       IF (ARGC .NE. 0) THEN
-         CALL ABORT
+         STOP 1
       END IF
 !$ACC END PARALLEL
 !$OMP END PARALLEL

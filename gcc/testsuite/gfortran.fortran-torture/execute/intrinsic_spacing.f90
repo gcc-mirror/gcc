@@ -19,7 +19,7 @@ subroutine test_real4(orig)
   t = tiny(x)
   x = spacing(x)
   if ((abs (x - y) .gt. abs(x * 1e-6)) &
-    .and. (abs (x - t) .gt. abs(x * 1e-6)))call abort
+    .and. (abs (x - t) .gt. abs(x * 1e-6)))STOP 1
 end
 
 subroutine test_real8(orig)
@@ -31,5 +31,5 @@ subroutine test_real8(orig)
   t = tiny (x)
   x = spacing(x)
   if ((abs (x - y) .gt. abs(x * 1e-6)) &
-    .and. (abs (x - t) .gt. abs(x * 1e-6)))call abort
+    .and. (abs (x - t) .gt. abs(x * 1e-6)))STOP 2
 end

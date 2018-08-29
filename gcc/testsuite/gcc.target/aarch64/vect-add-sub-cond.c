@@ -3,6 +3,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize" } */
 
+#pragma GCC target "+nosve"
+
 #define COUNT1(X) if (X) count += 1
 #define COUNT2(X) if (X) count -= 1
 #define COUNT3(X) count += (X)

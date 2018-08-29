@@ -56,7 +56,7 @@ end MODULE error_stack_module
 module b_module
   implicit none
   type::b_type
-     class(not_yet_defined_type_type),pointer::b_component  ! { dg-error "is a type that has not been declared" }
+     class(not_yet_defined_type_type),pointer::b_component  ! { dg-error "has not been declared" }
   end type b_type
 end module b_module
  

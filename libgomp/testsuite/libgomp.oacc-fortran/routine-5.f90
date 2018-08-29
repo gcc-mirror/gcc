@@ -10,7 +10,7 @@ program main
       n = func (n)
     !$acc end parallel
 
-    if (n .ne. 6) call abort
+    if (n .ne. 6) STOP 1
 
 contains
 

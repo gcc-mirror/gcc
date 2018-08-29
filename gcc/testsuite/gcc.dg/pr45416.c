@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "Skip for Thumb1." { { arm*-*-* } && { arm_thumb1_ok } } { "*" } { "" } } */
+/* { dg-skip-if "Skip for Thumb1." { { arm*-*-* } && { arm_thumb1_ok } } } */
 /* { dg-options "-O2" } */
 
 int foo(long long a)

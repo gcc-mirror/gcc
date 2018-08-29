@@ -1,6 +1,6 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@
 #include <cstring>		// std::memcpy, std::memcmp
 #include <bits/stl_algobase.h>	// std::min
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1086,7 +1085,12 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
     reinterpret_cast<char16_t*>(__to),
     reinterpret_cast<char16_t*>(__to_end)
   };
-  auto res = ucs2_in(from, to, _M_maxcode, _M_mode);
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  codecvt_mode mode = {};
+#else
+  codecvt_mode mode = little_endian;
+#endif
+  auto res = ucs2_in(from, to, _M_maxcode, mode);
 #elif __SIZEOF_WCHAR_T__ == 4
   range<char32_t> to{
     reinterpret_cast<char32_t*>(__to),
@@ -1634,4 +1638,3 @@ template class codecvt_byname<char32_t, char, mbstate_t>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }
-#endif // _GLIBCXX_USE_C99_STDINT_TR1

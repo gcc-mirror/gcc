@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-skip-if "" { powerpc*le-*-* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*le-*-* } } */
 /* { dg-options "-O -maltivec -mno-vsx" } */
 
 typedef unsigned char V __attribute__((vector_size(16)));

@@ -1,5 +1,5 @@
 /* Source locations within string literals.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -77,16 +77,40 @@ class substring_loc
 /* Functions for emitting a warning about a format string.  */
 
 extern bool format_warning_va (const substring_loc &fmt_loc,
-			       const source_range *param_range,
+			       const range_label *fmt_label,
+			       location_t param_loc,
+			       const range_label *param_label,
 			       const char *corrected_substring,
 			       int opt, const char *gmsgid, va_list *ap)
-  ATTRIBUTE_GCC_DIAG (5,0);
+  ATTRIBUTE_GCC_DIAG (7, 0);
+
+extern bool format_warning_n_va (const substring_loc &fmt_loc,
+				 const range_label *fmt_label,
+				 location_t param_loc,
+				 const range_label *param_label,
+				 const char *corrected_substring,
+				 int opt, unsigned HOST_WIDE_INT n,
+				 const char *singular_gmsgid,
+				 const char *plural_gmsgid, va_list *ap)
+  ATTRIBUTE_GCC_DIAG (8, 0) ATTRIBUTE_GCC_DIAG (9, 0);
 
 extern bool format_warning_at_substring (const substring_loc &fmt_loc,
-					 const source_range *param_range,
+					 const range_label *fmt_label,
+					 location_t param_loc,
+					 const range_label *param_label,
 					 const char *corrected_substring,
 					 int opt, const char *gmsgid, ...)
-  ATTRIBUTE_GCC_DIAG (5,0);
+  ATTRIBUTE_GCC_DIAG (7, 8);
+
+extern bool format_warning_at_substring_n (const substring_loc &fmt_loc,
+					   const range_label *fmt_label,
+					   location_t param_loc,
+					   const range_label *param_label,
+					   const char *corrected_substring,
+					   int opt, unsigned HOST_WIDE_INT n,
+					   const char *singular_gmsgid,
+					   const char *plural_gmsgid, ...)
+  ATTRIBUTE_GCC_DIAG (8, 10) ATTRIBUTE_GCC_DIAG (9, 10);
 
 /* Implementation detail, for use when implementing
    LANG_HOOKS_GET_SUBSTRING_LOCATION.  */

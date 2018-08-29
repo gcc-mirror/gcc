@@ -75,9 +75,10 @@ var (
 // If ServeHTTP panics, the server (the caller of ServeHTTP) assumes
 // that the effect of the panic was isolated to the active request.
 // It recovers the panic, logs a stack trace to the server error log,
-// and hangs up the connection. To abort a handler so the client sees
-// an interrupted response but the server doesn't log an error, panic
-// with the value ErrAbortHandler.
+// and either closes the network connection or sends an HTTP/2
+// RST_STREAM, depending on the HTTP protocol. To abort a handler so
+// the client sees an interrupted response but the server doesn't log
+// an error, panic with the value ErrAbortHandler.
 type Handler interface {
 	ServeHTTP(ResponseWriter, *Request)
 }
@@ -131,12 +132,20 @@ type ResponseWriter interface {
 	// possible to maximize compatibility.
 	Write([]byte) (int, error)
 
-	// WriteHeader sends an HTTP response header with status code.
+	// WriteHeader sends an HTTP response header with the provided
+	// status code.
+	//
 	// If WriteHeader is not called explicitly, the first call to Write
 	// will trigger an implicit WriteHeader(http.StatusOK).
 	// Thus explicit calls to WriteHeader are mainly used to
 	// send error codes.
-	WriteHeader(int)
+	//
+	// The provided code must be a valid HTTP 1xx-5xx status code.
+	// Only one header may be written. Go does not currently
+	// support sending user-defined 1xx informational headers,
+	// with the exception of 100-continue response header that the
+	// Server sends automatically when the Request.Body is read.
+	WriteHeader(statusCode int)
 }
 
 // The Flusher interface is implemented by ResponseWriters that allow
@@ -177,6 +186,9 @@ type Hijacker interface {
 	//
 	// The returned bufio.Reader may contain unprocessed buffered
 	// data from the client.
+	//
+	// After a call to Hijack, the original Request.Body must
+	// not be used.
 	Hijack() (net.Conn, *bufio.ReadWriter, error)
 }
 
@@ -439,9 +451,10 @@ type response struct {
 
 	handlerDone atomicBool // set true when the handler exits
 
-	// Buffers for Date and Content-Length
-	dateBuf [len(TimeFormat)]byte
-	clenBuf [10]byte
+	// Buffers for Date, Content-Length, and status code
+	dateBuf   [len(TimeFormat)]byte
+	clenBuf   [10]byte
+	statusBuf [3]byte
 
 	// closeNotifyCh is the channel returned by CloseNotify.
 	// TODO(bradfitz): this is currently (for Go 1.8) always
@@ -622,7 +635,6 @@ type connReader struct {
 	mu      sync.Mutex // guards following
 	hasByte bool
 	byteBuf [1]byte
-	bgErr   error // non-nil means error happened on background read
 	cond    *sync.Cond
 	inRead  bool
 	aborted bool  // set true before conn.rwc deadline is set to past
@@ -725,16 +737,14 @@ func (cr *connReader) Read(p []byte) (n int, err error) {
 	cr.lock()
 	if cr.inRead {
 		cr.unlock()
+		if cr.conn.hijacked() {
+			panic("invalid Body.Read call. After hijacked, the original Request must not be used")
+		}
 		panic("invalid concurrent Body.Read call")
 	}
 	if cr.hitReadLimit() {
 		cr.unlock()
 		return 0, io.EOF
-	}
-	if cr.bgErr != nil {
-		err = cr.bgErr
-		cr.unlock()
-		return 0, err
 	}
 	if len(p) == 0 {
 		cr.unlock()
@@ -839,7 +849,7 @@ func (srv *Server) initialReadLimitSize() int64 {
 	return int64(srv.maxHeaderBytes()) + 4096 // bufio slop
 }
 
-// wrapper around io.ReaderCloser which on first read, sends an
+// wrapper around io.ReadCloser which on first read, sends an
 // HTTP/1.1 100 Continue header
 type expectContinueReader struct {
 	resp       *response
@@ -948,7 +958,7 @@ func (c *conn) readRequest(ctx context.Context) (w *response, err error) {
 
 	hosts, haveHost := req.Header["Host"]
 	isH2Upgrade := req.isH2Upgrade()
-	if req.ProtoAtLeast(1, 1) && (!haveHost || len(hosts) == 0) && !isH2Upgrade {
+	if req.ProtoAtLeast(1, 1) && (!haveHost || len(hosts) == 0) && !isH2Upgrade && req.Method != "CONNECT" {
 		return nil, badRequestError("missing required Host header")
 	}
 	if len(hosts) > 1 {
@@ -1044,6 +1054,23 @@ func (w *response) Header() Header {
 // well read them)
 const maxPostHandlerReadBytes = 256 << 10
 
+func checkWriteHeaderCode(code int) {
+	// Issue 22880: require valid WriteHeader status codes.
+	// For now we only enforce that it's three digits.
+	// In the future we might block things over 599 (600 and above aren't defined
+	// at http://httpwg.org/specs/rfc7231.html#status.codes)
+	// and we might block under 200 (once we have more mature 1xx support).
+	// But for now any three digits.
+	//
+	// We used to send "HTTP/1.1 000 0" on the wire in responses but there's
+	// no equivalent bogus thing we can realistically send in HTTP/2,
+	// so we'll consistently panic instead and help people find their bugs
+	// early. (We can't return an error from WriteHeader even if we wanted to.)
+	if code < 100 || code > 999 {
+		panic(fmt.Sprintf("invalid WriteHeader code %v", code))
+	}
+}
+
 func (w *response) WriteHeader(code int) {
 	if w.conn.hijacked() {
 		w.conn.server.logf("http: response.WriteHeader on hijacked connection")
@@ -1053,6 +1080,7 @@ func (w *response) WriteHeader(code int) {
 		w.conn.server.logf("http: multiple response.WriteHeader calls")
 		return
 	}
+	checkWriteHeaderCode(code)
 	w.wroteHeader = true
 	w.status = code
 
@@ -1211,7 +1239,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 		}
 	}
 
-	// Check for a explicit (and valid) Content-Length header.
+	// Check for an explicit (and valid) Content-Length header.
 	hasCL := w.contentLength != -1
 
 	if w.wants10KeepAlive && (isHEAD || hasCL || !bodyAllowedForStatus(w.status)) {
@@ -1309,7 +1337,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 	if bodyAllowedForStatus(code) {
 		// If no content type, apply sniffing algorithm to body.
 		_, haveType := header["Content-Type"]
-		if !haveType && !hasTE {
+		if !haveType && !hasTE && len(p) > 0 {
 			setHeader.contentType = DetectContentType(p)
 		}
 	} else {
@@ -1338,7 +1366,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 	} else if hasCL {
 		delHeader("Transfer-Encoding")
 	} else if w.req.ProtoAtLeast(1, 1) {
-		// HTTP/1.1 or greater: Transfer-Encoding has been set to identity,  and no
+		// HTTP/1.1 or greater: Transfer-Encoding has been set to identity, and no
 		// content-length has been provided. The connection must be closed after the
 		// reply is written, and no chunking is to be done. This is the setup
 		// recommended in the Server-Sent Events candidate recommendation 11,
@@ -1379,7 +1407,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 		}
 	}
 
-	w.conn.bufw.WriteString(statusLine(w.req, code))
+	writeStatusLine(w.conn.bufw, w.req.ProtoAtLeast(1, 1), code, w.statusBuf[:])
 	cw.header.WriteSubset(w.conn.bufw, excludeHeader)
 	setHeader.Write(w.conn.bufw)
 	w.conn.bufw.Write(crlf)
@@ -1403,49 +1431,25 @@ func foreachHeaderElement(v string, fn func(string)) {
 	}
 }
 
-// statusLines is a cache of Status-Line strings, keyed by code (for
-// HTTP/1.1) or negative code (for HTTP/1.0). This is faster than a
-// map keyed by struct of two fields. This map's max size is bounded
-// by 2*len(statusText), two protocol types for each known official
-// status code in the statusText map.
-var (
-	statusMu    sync.RWMutex
-	statusLines = make(map[int]string)
-)
-
-// statusLine returns a response Status-Line (RFC 2616 Section 6.1)
-// for the given request and response status code.
-func statusLine(req *Request, code int) string {
-	// Fast path:
-	key := code
-	proto11 := req.ProtoAtLeast(1, 1)
-	if !proto11 {
-		key = -key
+// writeStatusLine writes an HTTP/1.x Status-Line (RFC 2616 Section 6.1)
+// to bw. is11 is whether the HTTP request is HTTP/1.1. false means HTTP/1.0.
+// code is the response status code.
+// scratch is an optional scratch buffer. If it has at least capacity 3, it's used.
+func writeStatusLine(bw *bufio.Writer, is11 bool, code int, scratch []byte) {
+	if is11 {
+		bw.WriteString("HTTP/1.1 ")
+	} else {
+		bw.WriteString("HTTP/1.0 ")
 	}
-	statusMu.RLock()
-	line, ok := statusLines[key]
-	statusMu.RUnlock()
-	if ok {
-		return line
+	if text, ok := statusText[code]; ok {
+		bw.Write(strconv.AppendInt(scratch[:0], int64(code), 10))
+		bw.WriteByte(' ')
+		bw.WriteString(text)
+		bw.WriteString("\r\n")
+	} else {
+		// don't worry about performance
+		fmt.Fprintf(bw, "%03d status code %d\r\n", code, code)
 	}
-
-	// Slow path:
-	proto := "HTTP/1.0"
-	if proto11 {
-		proto = "HTTP/1.1"
-	}
-	codestring := fmt.Sprintf("%03d", code)
-	text, ok := statusText[code]
-	if !ok {
-		text = "status code " + codestring
-	}
-	line = proto + " " + codestring + " " + text + "\r\n"
-	if ok {
-		statusMu.Lock()
-		defer statusMu.Unlock()
-		statusLines[key] = line
-	}
-	return line
 }
 
 // bodyAllowed reports whether a Write is allowed for this response type.
@@ -1714,6 +1718,7 @@ func isCommonNetReadError(err error) bool {
 // Serve a new connection.
 func (c *conn) serve(ctx context.Context) {
 	c.remoteAddr = c.rwc.RemoteAddr().String()
+	ctx = context.WithValue(ctx, LocalAddrContextKey, c.rwc.LocalAddr())
 	defer func() {
 		if err := recover(); err != nil && err != ErrAbortHandler {
 			const size = 64 << 10
@@ -1973,8 +1978,12 @@ func StripPrefix(prefix string, h Handler) Handler {
 	}
 	return HandlerFunc(func(w ResponseWriter, r *Request) {
 		if p := strings.TrimPrefix(r.URL.Path, prefix); len(p) < len(r.URL.Path) {
-			r.URL.Path = p
-			h.ServeHTTP(w, r)
+			r2 := new(Request)
+			*r2 = *r
+			r2.URL = new(url.URL)
+			*r2.URL = *r.URL
+			r2.URL.Path = p
+			h.ServeHTTP(w, r2)
 		} else {
 			NotFound(w, r)
 		}
@@ -1986,8 +1995,9 @@ func StripPrefix(prefix string, h Handler) Handler {
 //
 // The provided code should be in the 3xx range and is usually
 // StatusMovedPermanently, StatusFound or StatusSeeOther.
-func Redirect(w ResponseWriter, r *Request, urlStr string, code int) {
-	if u, err := url.Parse(urlStr); err == nil {
+func Redirect(w ResponseWriter, r *Request, url string, code int) {
+	// parseURL is just url.Parse (url is shadowed for godoc).
+	if u, err := parseURL(url); err == nil {
 		// If url was relative, make absolute by
 		// combining with request path.
 		// The browser would probably do this for us,
@@ -2011,38 +2021,45 @@ func Redirect(w ResponseWriter, r *Request, urlStr string, code int) {
 			}
 
 			// no leading http://server
-			if urlStr == "" || urlStr[0] != '/' {
+			if url == "" || url[0] != '/' {
 				// make relative path absolute
 				olddir, _ := path.Split(oldpath)
-				urlStr = olddir + urlStr
+				url = olddir + url
 			}
 
 			var query string
-			if i := strings.Index(urlStr, "?"); i != -1 {
-				urlStr, query = urlStr[:i], urlStr[i:]
+			if i := strings.Index(url, "?"); i != -1 {
+				url, query = url[:i], url[i:]
 			}
 
 			// clean up but preserve trailing slash
-			trailing := strings.HasSuffix(urlStr, "/")
-			urlStr = path.Clean(urlStr)
-			if trailing && !strings.HasSuffix(urlStr, "/") {
-				urlStr += "/"
+			trailing := strings.HasSuffix(url, "/")
+			url = path.Clean(url)
+			if trailing && !strings.HasSuffix(url, "/") {
+				url += "/"
 			}
-			urlStr += query
+			url += query
 		}
 	}
 
-	w.Header().Set("Location", hexEscapeNonASCII(urlStr))
+	w.Header().Set("Location", hexEscapeNonASCII(url))
+	if r.Method == "GET" || r.Method == "HEAD" {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	}
 	w.WriteHeader(code)
 
 	// RFC 2616 recommends that a short note "SHOULD" be included in the
 	// response because older user agents may not understand 301/307.
 	// Shouldn't send the response for POST or HEAD; that leaves GET.
 	if r.Method == "GET" {
-		note := "<a href=\"" + htmlEscape(urlStr) + "\">" + statusText[code] + "</a>.\n"
+		note := "<a href=\"" + htmlEscape(url) + "\">" + statusText[code] + "</a>.\n"
 		fmt.Fprintln(w, note)
 	}
 }
+
+// parseURL is just url.Parse. It exists only so that url.Parse can be called
+// in places where url is shadowed for godoc. See https://golang.org/cl/49930.
+var parseURL = url.Parse
 
 var htmlReplacer = strings.NewReplacer(
 	"&", "&amp;",
@@ -2120,9 +2137,8 @@ type ServeMux struct {
 }
 
 type muxEntry struct {
-	explicit bool
-	h        Handler
-	pattern  string
+	h       Handler
+	pattern string
 }
 
 // NewServeMux allocates and returns a new ServeMux.
@@ -2163,9 +2179,29 @@ func cleanPath(p string) string {
 	return np
 }
 
-// Find a handler on a handler map given a path string
-// Most-specific (longest) pattern wins
+// stripHostPort returns h without any trailing ":<port>".
+func stripHostPort(h string) string {
+	// If no port on host, return unchanged
+	if strings.IndexByte(h, ':') == -1 {
+		return h
+	}
+	host, _, err := net.SplitHostPort(h)
+	if err != nil {
+		return h // on error, return unchanged
+	}
+	return host
+}
+
+// Find a handler on a handler map given a path string.
+// Most-specific (longest) pattern wins.
 func (mux *ServeMux) match(path string) (h Handler, pattern string) {
+	// Check for exact match first.
+	v, ok := mux.m[path]
+	if ok {
+		return v.h, v.pattern
+	}
+
+	// Check for longest valid match.
 	var n = 0
 	for k, v := range mux.m {
 		if !pathMatch(k, path) {
@@ -2180,11 +2216,52 @@ func (mux *ServeMux) match(path string) (h Handler, pattern string) {
 	return
 }
 
+// redirectToPathSlash determines if the given path needs appending "/" to it.
+// This occurs when a handler for path + "/" was already registered, but
+// not for path itself. If the path needs appending to, it creates a new
+// URL, setting the path to u.Path + "/" and returning true to indicate so.
+func (mux *ServeMux) redirectToPathSlash(host, path string, u *url.URL) (*url.URL, bool) {
+	if !mux.shouldRedirect(host, path) {
+		return u, false
+	}
+	path = path + "/"
+	u = &url.URL{Path: path, RawQuery: u.RawQuery}
+	return u, true
+}
+
+// shouldRedirect reports whether the given path and host should be redirected to
+// path+"/". This should happen if a handler is registered for path+"/" but
+// not path -- see comments at ServeMux.
+func (mux *ServeMux) shouldRedirect(host, path string) bool {
+	p := []string{path, host + path}
+
+	for _, c := range p {
+		if _, exist := mux.m[c]; exist {
+			return false
+		}
+	}
+
+	n := len(path)
+	if n == 0 {
+		return false
+	}
+	for _, c := range p {
+		if _, exist := mux.m[c+"/"]; exist {
+			return path[n-1] != '/'
+		}
+	}
+
+	return false
+}
+
 // Handler returns the handler to use for the given request,
 // consulting r.Method, r.Host, and r.URL.Path. It always returns
 // a non-nil handler. If the path is not in its canonical form, the
 // handler will be an internally-generated handler that redirects
-// to the canonical path.
+// to the canonical path. If the host contains a port, it is ignored
+// when matching handlers.
+//
+// The path and host are used unchanged for CONNECT requests.
 //
 // Handler also returns the registered pattern that matches the
 // request or, in the case of internally-generated redirects,
@@ -2193,16 +2270,38 @@ func (mux *ServeMux) match(path string) (h Handler, pattern string) {
 // If there is no registered handler that applies to the request,
 // Handler returns a ``page not found'' handler and an empty pattern.
 func (mux *ServeMux) Handler(r *Request) (h Handler, pattern string) {
-	if r.Method != "CONNECT" {
-		if p := cleanPath(r.URL.Path); p != r.URL.Path {
-			_, pattern = mux.handler(r.Host, p)
-			url := *r.URL
-			url.Path = p
-			return RedirectHandler(url.String(), StatusMovedPermanently), pattern
+
+	// CONNECT requests are not canonicalized.
+	if r.Method == "CONNECT" {
+		// If r.URL.Path is /tree and its handler is not registered,
+		// the /tree -> /tree/ redirect applies to CONNECT requests
+		// but the path canonicalization does not.
+		if u, ok := mux.redirectToPathSlash(r.URL.Host, r.URL.Path, r.URL); ok {
+			return RedirectHandler(u.String(), StatusMovedPermanently), u.Path
 		}
+
+		return mux.handler(r.Host, r.URL.Path)
 	}
 
-	return mux.handler(r.Host, r.URL.Path)
+	// All other requests have any port stripped and path cleaned
+	// before passing to mux.handler.
+	host := stripHostPort(r.Host)
+	path := cleanPath(r.URL.Path)
+
+	// If the given path is /tree and its handler is not registered,
+	// redirect for /tree/.
+	if u, ok := mux.redirectToPathSlash(host, path, r.URL); ok {
+		return RedirectHandler(u.String(), StatusMovedPermanently), u.Path
+	}
+
+	if path != r.URL.Path {
+		_, pattern = mux.handler(host, path)
+		url := *r.URL
+		url.Path = path
+		return RedirectHandler(url.String(), StatusMovedPermanently), pattern
+	}
+
+	return mux.handler(host, r.URL.Path)
 }
 
 // handler is the main implementation of Handler.
@@ -2245,39 +2344,22 @@ func (mux *ServeMux) Handle(pattern string, handler Handler) {
 	defer mux.mu.Unlock()
 
 	if pattern == "" {
-		panic("http: invalid pattern " + pattern)
+		panic("http: invalid pattern")
 	}
 	if handler == nil {
 		panic("http: nil handler")
 	}
-	if mux.m[pattern].explicit {
+	if _, exist := mux.m[pattern]; exist {
 		panic("http: multiple registrations for " + pattern)
 	}
 
 	if mux.m == nil {
 		mux.m = make(map[string]muxEntry)
 	}
-	mux.m[pattern] = muxEntry{explicit: true, h: handler, pattern: pattern}
+	mux.m[pattern] = muxEntry{h: handler, pattern: pattern}
 
 	if pattern[0] != '/' {
 		mux.hosts = true
-	}
-
-	// Helpful behavior:
-	// If pattern is /tree/, insert an implicit permanent redirect for /tree.
-	// It can be overridden by an explicit registration.
-	n := len(pattern)
-	if n > 0 && pattern[n-1] == '/' && !mux.m[pattern[0:n-1]].explicit {
-		// If pattern contains a host name, strip it and use remaining
-		// path for redirect.
-		path := pattern
-		if pattern[0] != '/' {
-			// In pattern, at least the last character is a '/', so
-			// strings.Index can't be -1.
-			path = pattern[strings.Index(pattern, "/"):]
-		}
-		url := &url.URL{Path: path}
-		mux.m[pattern[0:n-1]] = muxEntry{h: RedirectHandler(url.String(), StatusMovedPermanently), pattern: pattern}
 	}
 }
 
@@ -2307,12 +2389,35 @@ func Serve(l net.Listener, handler Handler) error {
 	return srv.Serve(l)
 }
 
+// ServeTLS accepts incoming HTTPS connections on the listener l,
+// creating a new service goroutine for each. The service goroutines
+// read requests and then call handler to reply to them.
+//
+// Handler is typically nil, in which case the DefaultServeMux is used.
+//
+// Additionally, files containing a certificate and matching private key
+// for the server must be provided. If the certificate is signed by a
+// certificate authority, the certFile should be the concatenation
+// of the server's certificate, any intermediates, and the CA's certificate.
+func ServeTLS(l net.Listener, handler Handler, certFile, keyFile string) error {
+	srv := &Server{Handler: handler}
+	return srv.ServeTLS(l, certFile, keyFile)
+}
+
 // A Server defines parameters for running an HTTP server.
 // The zero value for Server is a valid configuration.
 type Server struct {
-	Addr      string      // TCP address to listen on, ":http" if empty
-	Handler   Handler     // handler to invoke, http.DefaultServeMux if nil
-	TLSConfig *tls.Config // optional TLS config, used by ListenAndServeTLS
+	Addr    string  // TCP address to listen on, ":http" if empty
+	Handler Handler // handler to invoke, http.DefaultServeMux if nil
+
+	// TLSConfig optionally provides a TLS configuration for use
+	// by ServeTLS and ListenAndServeTLS. Note that this value is
+	// cloned by ServeTLS and ListenAndServeTLS, so it's not
+	// possible to modify the configuration with methods like
+	// tls.Config.SetSessionTicketKeys. To use
+	// SetSessionTicketKeys, use Server.Serve with a TLS Listener
+	// instead.
+	TLSConfig *tls.Config
 
 	// ReadTimeout is the maximum duration for reading the entire
 	// request, including the body.
@@ -2338,7 +2443,7 @@ type Server struct {
 	// IdleTimeout is the maximum amount of time to wait for the
 	// next request when keep-alives are enabled. If IdleTimeout
 	// is zero, the value of ReadTimeout is used. If both are
-	// zero, there is no timeout.
+	// zero, ReadHeaderTimeout is used.
 	IdleTimeout time.Duration
 
 	// MaxHeaderBytes controls the maximum number of bytes the
@@ -2365,9 +2470,9 @@ type Server struct {
 	ConnState func(net.Conn, ConnState)
 
 	// ErrorLog specifies an optional logger for errors accepting
-	// connections and unexpected behavior from handlers.
-	// If nil, logging goes to os.Stderr via the log package's
-	// standard logger.
+	// connections, unexpected behavior from handlers, and
+	// underlying FileSystem errors.
+	// If nil, logging is done via the log package's standard logger.
 	ErrorLog *log.Logger
 
 	disableKeepAlives int32     // accessed atomically.
@@ -2379,6 +2484,7 @@ type Server struct {
 	listeners  map[net.Listener]struct{}
 	activeConn map[*conn]struct{}
 	doneChan   chan struct{}
+	onShutdown []func()
 }
 
 func (s *Server) getDoneChan() <-chan struct{} {
@@ -2441,12 +2547,18 @@ var shutdownPollInterval = 500 * time.Millisecond
 // listeners, then closing all idle connections, and then waiting
 // indefinitely for connections to return to idle and then shut down.
 // If the provided context expires before the shutdown is complete,
-// then the context's error is returned.
+// Shutdown returns the context's error, otherwise it returns any
+// error returned from closing the Server's underlying Listener(s).
+//
+// When Shutdown is called, Serve, ListenAndServe, and
+// ListenAndServeTLS immediately return ErrServerClosed. Make sure the
+// program doesn't exit and waits instead for Shutdown to return.
 //
 // Shutdown does not attempt to close nor wait for hijacked
 // connections such as WebSockets. The caller of Shutdown should
 // separately notify such long-lived connections of shutdown and wait
-// for them to close, if desired.
+// for them to close, if desired. See RegisterOnShutdown for a way to
+// register shutdown notification functions.
 func (srv *Server) Shutdown(ctx context.Context) error {
 	atomic.AddInt32(&srv.inShutdown, 1)
 	defer atomic.AddInt32(&srv.inShutdown, -1)
@@ -2454,6 +2566,9 @@ func (srv *Server) Shutdown(ctx context.Context) error {
 	srv.mu.Lock()
 	lnerr := srv.closeListenersLocked()
 	srv.closeDoneChanLocked()
+	for _, f := range srv.onShutdown {
+		go f()
+	}
 	srv.mu.Unlock()
 
 	ticker := time.NewTicker(shutdownPollInterval)
@@ -2468,6 +2583,17 @@ func (srv *Server) Shutdown(ctx context.Context) error {
 		case <-ticker.C:
 		}
 	}
+}
+
+// RegisterOnShutdown registers a function to call on Shutdown.
+// This can be used to gracefully shutdown connections that have
+// undergone NPN/ALPN protocol upgrade or that have been hijacked.
+// This function should start protocol-specific graceful shutdown,
+// but should not wait for shutdown to complete.
+func (srv *Server) RegisterOnShutdown(f func()) {
+	srv.mu.Lock()
+	srv.onShutdown = append(srv.onShutdown, f)
+	srv.mu.Unlock()
 }
 
 // closeIdleConns closes all idle connections and reports whether the
@@ -2609,6 +2735,8 @@ func (srv *Server) shouldConfigureHTTP2ForServe() bool {
 	return strSliceContains(srv.TLSConfig.NextProtos, http2NextProtoTLS)
 }
 
+// ErrServerClosed is returned by the Server's Serve, ServeTLS, ListenAndServe,
+// and ListenAndServeTLS methods after a call to Shutdown or Close.
 var ErrServerClosed = errors.New("http: Server closed")
 
 // Serve accepts incoming connections on the Listener l, creating a
@@ -2638,7 +2766,6 @@ func (srv *Server) Serve(l net.Listener) error {
 
 	baseCtx := context.Background() // base is always background, per Issue 16220
 	ctx := context.WithValue(baseCtx, ServerContextKey, srv)
-	ctx = context.WithValue(ctx, LocalAddrContextKey, l.Addr())
 	for {
 		rw, e := l.Accept()
 		if e != nil {
@@ -2667,6 +2794,49 @@ func (srv *Server) Serve(l net.Listener) error {
 		c.setState(c.rwc, StateNew) // before Serve can return
 		go c.serve(ctx)
 	}
+}
+
+// ServeTLS accepts incoming connections on the Listener l, creating a
+// new service goroutine for each. The service goroutines read requests and
+// then call srv.Handler to reply to them.
+//
+// Additionally, files containing a certificate and matching private key for
+// the server must be provided if neither the Server's TLSConfig.Certificates
+// nor TLSConfig.GetCertificate are populated.. If the certificate is signed by
+// a certificate authority, the certFile should be the concatenation of the
+// server's certificate, any intermediates, and the CA's certificate.
+//
+// For HTTP/2 support, srv.TLSConfig should be initialized to the
+// provided listener's TLS Config before calling ServeTLS. If
+// srv.TLSConfig is non-nil and doesn't include the string "h2" in
+// Config.NextProtos, HTTP/2 support is not enabled.
+//
+// ServeTLS always returns a non-nil error. After Shutdown or Close, the
+// returned error is ErrServerClosed.
+func (srv *Server) ServeTLS(l net.Listener, certFile, keyFile string) error {
+	// Setup HTTP/2 before srv.Serve, to initialize srv.TLSConfig
+	// before we clone it and create the TLS Listener.
+	if err := srv.setupHTTP2_ServeTLS(); err != nil {
+		return err
+	}
+
+	config := cloneTLSConfig(srv.TLSConfig)
+	if !strSliceContains(config.NextProtos, "http/1.1") {
+		config.NextProtos = append(config.NextProtos, "http/1.1")
+	}
+
+	configHasCert := len(config.Certificates) > 0 || config.GetCertificate != nil
+	if !configHasCert || certFile != "" || keyFile != "" {
+		var err error
+		config.Certificates = make([]tls.Certificate, 1)
+		config.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile)
+		if err != nil {
+			return err
+		}
+	}
+
+	tlsListener := tls.NewListener(l, config)
+	return srv.Serve(tlsListener)
 }
 
 func (s *Server) trackListener(ln net.Listener, add bool) {
@@ -2748,6 +2918,18 @@ func (srv *Server) SetKeepAlivesEnabled(v bool) {
 
 func (s *Server) logf(format string, args ...interface{}) {
 	if s.ErrorLog != nil {
+		s.ErrorLog.Printf(format, args...)
+	} else {
+		log.Printf(format, args...)
+	}
+}
+
+// logf prints to the ErrorLog of the *Server associated with request r
+// via ServerContextKey. If there's no associated server, or if ErrorLog
+// is nil, logging is done via the log package's standard logger.
+func logf(r *Request, format string, args ...interface{}) {
+	s, _ := r.Context().Value(ServerContextKey).(*Server)
+	if s != nil && s.ErrorLog != nil {
 		s.ErrorLog.Printf(format, args...)
 	} else {
 		log.Printf(format, args...)
@@ -2840,47 +3022,27 @@ func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 		addr = ":https"
 	}
 
-	// Setup HTTP/2 before srv.Serve, to initialize srv.TLSConfig
-	// before we clone it and create the TLS Listener.
-	if err := srv.setupHTTP2_ListenAndServeTLS(); err != nil {
-		return err
-	}
-
-	config := cloneTLSConfig(srv.TLSConfig)
-	if !strSliceContains(config.NextProtos, "http/1.1") {
-		config.NextProtos = append(config.NextProtos, "http/1.1")
-	}
-
-	configHasCert := len(config.Certificates) > 0 || config.GetCertificate != nil
-	if !configHasCert || certFile != "" || keyFile != "" {
-		var err error
-		config.Certificates = make([]tls.Certificate, 1)
-		config.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile)
-		if err != nil {
-			return err
-		}
-	}
-
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
 
-	tlsListener := tls.NewListener(tcpKeepAliveListener{ln.(*net.TCPListener)}, config)
-	return srv.Serve(tlsListener)
+	defer ln.Close()
+
+	return srv.ServeTLS(tcpKeepAliveListener{ln.(*net.TCPListener)}, certFile, keyFile)
 }
 
-// setupHTTP2_ListenAndServeTLS conditionally configures HTTP/2 on
+// setupHTTP2_ServeTLS conditionally configures HTTP/2 on
 // srv and returns whether there was an error setting it up. If it is
 // not configured for policy reasons, nil is returned.
-func (srv *Server) setupHTTP2_ListenAndServeTLS() error {
+func (srv *Server) setupHTTP2_ServeTLS() error {
 	srv.nextProtoOnce.Do(srv.onceSetNextProtoDefaults)
 	return srv.nextProtoErr
 }
 
 // setupHTTP2_Serve is called from (*Server).Serve and conditionally
 // configures HTTP/2 on srv using a more conservative policy than
-// setupHTTP2_ListenAndServeTLS because Serve may be called
+// setupHTTP2_ServeTLS because Serve may be called
 // concurrently.
 //
 // The tests named TestTransportAutomaticHTTP2* and
@@ -2907,7 +3069,10 @@ func (srv *Server) onceSetNextProtoDefaults() {
 	// Enable HTTP/2 by default if the user hasn't otherwise
 	// configured their TLSNextProto map.
 	if srv.TLSNextProto == nil {
-		srv.nextProtoErr = http2ConfigureServer(srv, nil)
+		conf := &http2Server{
+			NewWriteScheduler: func() http2WriteScheduler { return http2NewPriorityWriteScheduler(nil) },
+		}
+		srv.nextProtoErr = http2ConfigureServer(srv, conf)
 	}
 }
 
@@ -2939,9 +3104,9 @@ type timeoutHandler struct {
 	body    string
 	dt      time.Duration
 
-	// When set, no timer will be created and this channel will
+	// When set, no context will be created and this context will
 	// be used instead.
-	testTimeout <-chan time.Time
+	testContext context.Context
 }
 
 func (h *timeoutHandler) errorBody() string {
@@ -2952,22 +3117,31 @@ func (h *timeoutHandler) errorBody() string {
 }
 
 func (h *timeoutHandler) ServeHTTP(w ResponseWriter, r *Request) {
-	var t *time.Timer
-	timeout := h.testTimeout
-	if timeout == nil {
-		t = time.NewTimer(h.dt)
-		timeout = t.C
+	ctx := h.testContext
+	if ctx == nil {
+		var cancelCtx context.CancelFunc
+		ctx, cancelCtx = context.WithTimeout(r.Context(), h.dt)
+		defer cancelCtx()
 	}
+	r = r.WithContext(ctx)
 	done := make(chan struct{})
 	tw := &timeoutWriter{
 		w: w,
 		h: make(Header),
 	}
+	panicChan := make(chan interface{}, 1)
 	go func() {
+		defer func() {
+			if p := recover(); p != nil {
+				panicChan <- p
+			}
+		}()
 		h.handler.ServeHTTP(tw, r)
 		close(done)
 	}()
 	select {
+	case p := <-panicChan:
+		panic(p)
 	case <-done:
 		tw.mu.Lock()
 		defer tw.mu.Unlock()
@@ -2980,10 +3154,7 @@ func (h *timeoutHandler) ServeHTTP(w ResponseWriter, r *Request) {
 		}
 		w.WriteHeader(tw.code)
 		w.Write(tw.wbuf.Bytes())
-		if t != nil {
-			t.Stop()
-		}
-	case <-timeout:
+	case <-ctx.Done():
 		tw.mu.Lock()
 		defer tw.mu.Unlock()
 		w.WriteHeader(StatusServiceUnavailable)
@@ -3019,6 +3190,7 @@ func (tw *timeoutWriter) Write(p []byte) (int, error) {
 }
 
 func (tw *timeoutWriter) WriteHeader(code int) {
+	checkWriteHeaderCode(code)
 	tw.mu.Lock()
 	defer tw.mu.Unlock()
 	if tw.timedOut || tw.wroteHeader {
@@ -3040,10 +3212,10 @@ type tcpKeepAliveListener struct {
 	*net.TCPListener
 }
 
-func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
+func (ln tcpKeepAliveListener) Accept() (net.Conn, error) {
 	tc, err := ln.AcceptTCP()
 	if err != nil {
-		return
+		return nil, err
 	}
 	tc.SetKeepAlive(true)
 	tc.SetKeepAlivePeriod(3 * time.Minute)

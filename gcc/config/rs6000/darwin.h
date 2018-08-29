@@ -1,5 +1,5 @@
 /* Target definitions for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
    This file is part of GCC.
@@ -119,6 +119,13 @@ extern int darwin_emit_branch_islands;
    mcpu=G5:ppc970;				\
    :ppc}}"
 
+/* We need to jam the crt to 10.5 for 10.6 (Rosetta) use.  */
+#undef DARWIN_CRT1_SPEC
+#define DARWIN_CRT1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -lcrt1.o)		\
+   %:version-compare(>< 10.5 10.7 mmacosx-version-min= -lcrt1.10.5.o)	\
+   %{fgnu-tm: -lcrttms.o}"
+
 /* crt2.o is at least partially required for 10.3.x and earlier.  */
 #define DARWIN_CRT2_SPEC \
   "%{!m64:%:version-compare(!> 10.4 mmacosx-version-min= crt2.o%s)}"
@@ -129,6 +136,12 @@ extern int darwin_emit_branch_islands;
   { "darwin_arch", DARWIN_ARCH_SPEC },		\
   { "darwin_crt2", DARWIN_CRT2_SPEC },		\
   { "darwin_subarch", DARWIN_SUBARCH_SPEC },
+
+/* We need to jam the dylib crt to 10.5 for 10.6 (Rosetta) use.  */
+#undef DARWIN_DYLIB1_SPEC
+#define DARWIN_DYLIB1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
+   %:version-compare(>< 10.5 10.7 mmacosx-version-min= -ldylib1.10.5.o)"
 
 /* Output a .machine directive.  */
 #undef TARGET_ASM_FILE_START
@@ -148,16 +161,14 @@ extern int darwin_emit_branch_islands;
 
 /* Pad the outgoing args area to 16 bytes instead of the usual 8.  */
 
-#undef STARTING_FRAME_OFFSET
-#define STARTING_FRAME_OFFSET						\
-  (FRAME_GROWS_DOWNWARD							\
-   ? 0									\
-   : (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
-      + RS6000_SAVE_AREA))
+#undef RS6000_STARTING_FRAME_OFFSET
+#define RS6000_STARTING_FRAME_OFFSET					\
+  (RS6000_ALIGN (crtl->outgoing_args_size, 16)				\
+   + RS6000_SAVE_AREA)
 
 #undef STACK_DYNAMIC_OFFSET
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
+  (RS6000_ALIGN (crtl->outgoing_args_size.to_constant (), 16)		\
    + (STACK_POINTER_OFFSET))
 
 /* Darwin uses a function call if everything needs to be saved/restored.  */
@@ -192,13 +203,8 @@ extern int darwin_emit_branch_islands;
     "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",             \
     "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31",             \
     "vrsave", "vscr",							\
-    "spe_acc", "spefscr",                                               \
     "sfp",								\
-    "tfhar", "tfiar", "texasr",						\
-    "rh0",  "rh1",  "rh2",  "rh3",  "rh4",  "rh5",  "rh6",  "rh7",	\
-    "rh8",  "rh9",  "rh10", "rh11", "rh12", "rh13", "rh14", "rh15",	\
-    "rh16", "rh17", "rh18", "rh19", "rh20", "rh21", "rh22", "rh23",	\
-    "rh24", "rh25", "rh26", "rh27", "rh28", "rh29", "rh30", "rh31"	\
+    "tfhar", "tfiar", "texasr"						\
 }
 
 /* This outputs NAME to FILE.  */
@@ -279,6 +285,9 @@ extern int darwin_emit_branch_islands;
 #undef  TARGET_IEEEQUAD
 #define TARGET_IEEEQUAD 0
 
+#undef  TARGET_IEEEQUAD_DEFAULT
+#define TARGET_IEEEQUAD_DEFAULT 0
+
 /* Since Darwin doesn't do TOCs, stub this out.  */
 
 #define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)  ((void)X, (void)MODE, 0)
@@ -344,7 +353,7 @@ extern int darwin_emit_branch_islands;
    registers and memory.  FIRST is nonzero if this is the only
    element.  */
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (!(FIRST) ? upward : FUNCTION_ARG_PADDING (MODE, TYPE))
+  (!(FIRST) ? PAD_UPWARD : targetm.calls.function_arg_padding (MODE, TYPE))
 
 #define DOUBLE_INT_ASM_OP "\t.quad\t"
 

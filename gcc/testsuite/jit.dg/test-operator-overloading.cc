@@ -272,8 +272,7 @@ make_test_quadratic (quadratic_test &testcase)
 void
 create_code (gcc_jit_context *ctxt, void *user_data)
 {
-  struct quadratic_test testcase;
-  memset (&testcase, 0, sizeof (testcase));
+  struct quadratic_test testcase = {};
   testcase.ctxt = ctxt;
   make_types (testcase);
   make_sqrt (testcase);

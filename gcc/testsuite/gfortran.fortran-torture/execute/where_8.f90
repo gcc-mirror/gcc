@@ -21,8 +21,8 @@ program where_8
     end where
   end forall
 
-  if (any(v(1)%p(:) .ne. (/21, 10, 0, 0, 0, 0, 0, 0/))) call abort
-  if (any(v(2)%p(:) .ne. (/1, 2, 3, 4, 21, 21, 21, 21/))) call abort
-  if (any(v(4)%p(:) .ne. (/21, 21, 21, 21, 21, 21, 19, 20/))) call abort
-  if (any(v(5)%p(:) .ne. (/21, 21, 0, 0, 0, 0, 0, 0/))) call abort
+  if (any(v(1)%p(:) .ne. (/21, 10, 0, 0, 0, 0, 0, 0/))) STOP 1
+  if (any(v(2)%p(:) .ne. (/1, 2, 3, 4, 21, 21, 21, 21/))) STOP 2
+  if (any(v(4)%p(:) .ne. (/21, 21, 21, 21, 21, 21, 19, 20/))) STOP 3
+  if (any(v(5)%p(:) .ne. (/21, 21, 0, 0, 0, 0, 0, 0/))) STOP 4
 end program

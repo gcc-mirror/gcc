@@ -12,7 +12,7 @@ dokk: do kk=1,3
       enddo dokk
 115   continue
   !$acc end parallel
-  if (any(a(1:3,1:3,1:3).ne.1)) call abort
+  if (any(a(1:3,1:3,1:3).ne.1)) STOP 1
 
   !$acc parallel
   !$acc loop collapse(3)
@@ -24,5 +24,5 @@ doll: do ll=1,3
       enddo doll
 120 end do dol
   !$acc end parallel
-  if (any(a(1:3,1:3,1:3).ne.2)) call abort
+  if (any(a(1:3,1:3,1:3).ne.2)) STOP 2
 end program collapse3

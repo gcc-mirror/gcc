@@ -2,7 +2,7 @@
 // { dg-options "-g -O0" }
 // { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
-// Copyright (C) 2011-2017 Free Software Foundation, Inc.
+// Copyright (C) 2011-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,7 +19,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// Type printers only recognize the old std::string for now.
+// GDB can't find global variables using the abi_tag attribute.
+// https://sourceware.org/bugzilla/show_bug.cgi?id=19436
 #define _GLIBCXX_USE_CXX11_ABI 0
 
 #include <string>
@@ -48,8 +49,6 @@ struct holder
 {
   T *f;
 };
-
-typedef std::basic_string<unsigned char> ustring;
 
 // This test is written in a somewhat funny way.
 // Each type under test is used twice: first, to form a pointer type,
@@ -165,14 +164,6 @@ std::knuth_b *knuth_b_ptr;
 holder<std::knuth_b> knuth_b_holder;
 // { dg-final { whatis-test knuth_b_holder "holder<std::knuth_b>" } }
 
-ustring *ustring_ptr;
-holder<ustring> ustring_holder;
-// { dg-final { whatis-test ustring_holder "holder<std::basic_string<unsigned char> >" } }
-
-std::basic_string<signed char> *sstring_ptr;
-holder< std::basic_string<signed char> > sstring_holder;
-// { dg-final { whatis-test sstring_holder "holder<std::basic_string<signed char> >" } }
-
 std::vector<std::deque<std::unique_ptr<char>>> *seq1_ptr;
 holder< std::vector<std::deque<std::unique_ptr<char>>> > seq1_holder;
 // { dg-final { whatis-test seq1_holder "holder<std::vector<std::deque<std::unique_ptr<char>>> >" } }
@@ -271,10 +262,6 @@ main()
   placeholder(&ranlux48_holder);
   placeholder(&knuth_b_ptr);
   placeholder(&knuth_b_holder);
-  placeholder(&ustring_ptr);
-  placeholder(&ustring_holder);
-  placeholder(&sstring_ptr);
-  placeholder(&sstring_holder);
   placeholder(&seq1_ptr);
   placeholder(&seq1_holder);
   placeholder(&seq2_ptr);

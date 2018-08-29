@@ -1,3 +1,4 @@
+/* { dg-require-effective-target trampolines } */
 
 extern long foo (long, long, long (*) (long, long));
 extern long use (long (*) (long, long), long, long);
@@ -5,7 +6,6 @@ extern long use (long (*) (long, long), long, long);
 int
 main (void)
 {
-#ifndef NO_TRAMPOLINES
   long sum = 0;
   long i;
 
@@ -42,7 +42,6 @@ main (void)
 
   if ((sum & 0xffffffff) != 0xbecfcbf5)
     abort ();
-#endif
 
   exit (0);
 }

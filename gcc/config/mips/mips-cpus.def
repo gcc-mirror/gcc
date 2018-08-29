@@ -1,5 +1,5 @@
 /* MIPS CPU names.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -171,3 +171,5 @@ MIPS_CPU ("xlp", PROCESSOR_XLP, 65, PTF_AVOID_BRANCHLIKELY_SPEED)
 
 /* MIPS64 Release 6 processors.  */
 MIPS_CPU ("i6400", PROCESSOR_I6400, 69, 0)
+MIPS_CPU ("i6500", PROCESSOR_I6400, 69, 0)
+MIPS_CPU ("p6600", PROCESSOR_P6600, 69, 0)

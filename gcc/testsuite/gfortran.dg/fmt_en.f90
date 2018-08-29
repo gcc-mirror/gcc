@@ -148,7 +148,7 @@ use ISO_FORTRAN_ENV
     call checkfmt("(en15.6)", -2.9296875E-03,"  -2.929688E-03")
 
     ! print *, n_tst, n_cnt, n_skip
-    if (n_cnt /= 0) call abort
+    if (n_cnt /= 0) STOP 1
     if (all(.not. l_skip)) write (10, *) "All kinds rounded to nearest"
     close (10)
 

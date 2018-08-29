@@ -29,7 +29,7 @@ addsig() {
     echo "	$1: $2,"
     # Get the signal number and add it to SIGLIST
     signum=`grep "const $1 = " gen-sysinfo.go | sed -e 's/.* = //'`
-    if echo "$signum" | grep -q '^_SIG[A-Z0-9_]*$'; then
+    if echo "$signum" | grep '^_SIG[A-Z0-9_]*$' >/dev/null 2>&1; then
         # Recurse once to obtain signal number
         # This is needed for some MIPS signals defined as aliases of other signals
         signum=`grep "const $signum = " gen-sysinfo.go | sed -e 's/.* = //'`
@@ -107,6 +107,19 @@ if test "${GOOS}" = "aix"; then
     nsig=`expr $nsig + 1`
 else
     nsig=`grep 'const _*NSIG = [0-9]*$' gen-sysinfo.go | sed -e 's/.* = \([0-9]*\)/\1/'`
+    if test -z "$nsig"; then
+	if grep 'const _*NSIG = [ (]*_*SIGRTMAX + 1[ )]*' gen-sysinfo.go >/dev/null 2>&1; then
+	    rtmax=`grep 'const _*SIGRTMAX = [0-9]*$' gen-sysinfo.go | sed -e 's/.* = \([0-9]*\)/\1/'`
+	    if test -n "$rtmax"; then
+		nsig=`expr $rtmax + 1`
+	    fi
+	fi
+    fi
+fi
+
+if test -z "$nsig"; then
+    echo 1>&2 "could not determine number of signals"
+    exit 1
 fi
 
 i=1

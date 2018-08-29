@@ -7,11 +7,11 @@
   do i = 2147483636, 2147483646
     j = j + 1
   end do
-  if (j.ne.11) call abort
+  if (j.ne.11) STOP 1
   j = 0
 !$omp parallel do reduction(+:j)
   do i = -2147483637, -2147483647, -1
     j = j + 1
   end do
-  if (j.ne.11) call abort
+  if (j.ne.11) STOP 2
 end

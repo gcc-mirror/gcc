@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@
 package Make is
 
    procedure Gnatmake;
+   pragma No_Return (Gnatmake);
    --  The driver of gnatmake. For more information on gnatmake and its
    --  precise usage please refer to the gnat documentation.
 

@@ -8,11 +8,12 @@
       external proc
       integer proc
       character*(*) chr
-      if (proc (chr) .ne. 6) call abort ()
+      if (proc (chr) .ne. 6) STOP 1
       end subroutine sub
 
       implicit none
       integer i
+      intrinsic len
       i = len ("123")
       call sub (len, "abcdef")
       end

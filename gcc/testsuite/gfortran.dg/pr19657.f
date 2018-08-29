@@ -15,7 +15,7 @@ c Based on example provided by fuyuki@ccsr.u-tokyo.ac.jp
       rewind (10)
       do ctr = 1,3
         read (10,nm,end=190)
-        if (i.ne.ctr) call abort ()
+        if (i.ne.ctr) STOP 1
       enddo
  190  continue 
       end

@@ -16,4 +16,4 @@ void set (struct S *s, int i)
   s->i = i;
 }
 
-/* { dg-final { scan-assembler-times "movbe\[ \t\]" 2 } } */
+/* { dg-final { scan-assembler-times "movbel\[ \t\]" 2 } } */

@@ -24,8 +24,8 @@ contains
   subroutine test3
     integer :: i
     common /c/ i
-    if (i .lt. 0 .or. i .ge. 4) call abort
-    if (i + 10 .ne. vari) call abort
+    if (i .lt. 0 .or. i .ge. 4) STOP 1
+    if (i + 10 .ne. vari) STOP 2
   end subroutine test3
   subroutine test4
     use omp_lib

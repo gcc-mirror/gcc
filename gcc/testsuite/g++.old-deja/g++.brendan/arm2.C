@@ -8,12 +8,12 @@
 
 class X {
 public:
-  int foo();            // { dg-error "with" }
+  int foo();            // { dg-message "previous" }
   static int foo();	// error: redeclaration// { dg-error "overloaded" } .*
 };
 
 class Y {
 public:
-   static int foo();    // { dg-error "with" }
+   static int foo();    // { dg-message "previous" }
   int foo();		// error: redeclaration// { dg-error "overloaded" } .*
 };

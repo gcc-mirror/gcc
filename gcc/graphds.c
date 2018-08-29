@@ -1,5 +1,5 @@
 /* Graph representation and manipulation functions.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -81,6 +81,7 @@ add_edge (struct graph *g, int f, int t)
   e->succ_next = vf->succ;
   vf->succ = e;
 
+  e->data = NULL;
   return e;
 }
 
@@ -133,20 +134,28 @@ dfs_edge_dest (struct graph_edge *e, bool forward)
 }
 
 /* Helper function for graphds_dfs.  Returns the first edge after E (including
-   E), in the graph direction given by FORWARD, that belongs to SUBGRAPH.  */
+   E), in the graph direction given by FORWARD, that belongs to SUBGRAPH.  If
+   SKIP_EDGE_P is not NULL, it points to a callback function.  Edge E will be
+   skipped if callback function returns true.  */
 
 static inline struct graph_edge *
-foll_in_subgraph (struct graph_edge *e, bool forward, bitmap subgraph)
+foll_in_subgraph (struct graph_edge *e, bool forward, bitmap subgraph,
+		  skip_edge_callback skip_edge_p)
 {
   int d;
 
-  if (!subgraph)
+  if (!e)
+    return e;
+
+  if (!subgraph && (!skip_edge_p || !skip_edge_p (e)))
     return e;
 
   while (e)
     {
       d = dfs_edge_dest (e, forward);
-      if (bitmap_bit_p (subgraph, d))
+      /* Return edge if it belongs to subgraph and shouldn't be skipped.  */
+      if ((!subgraph || bitmap_bit_p (subgraph, d))
+	  && (!skip_edge_p || !skip_edge_p (e)))
 	return e;
 
       e = forward ? e->succ_next : e->pred_next;
@@ -156,36 +165,45 @@ foll_in_subgraph (struct graph_edge *e, bool forward, bitmap subgraph)
 }
 
 /* Helper function for graphds_dfs.  Select the first edge from V in G, in the
-   direction given by FORWARD, that belongs to SUBGRAPH.  */
+   direction given by FORWARD, that belongs to SUBGRAPH.  If SKIP_EDGE_P is not
+   NULL, it points to a callback function.  Edge E will be skipped if callback
+   function returns true.  */
 
 static inline struct graph_edge *
-dfs_fst_edge (struct graph *g, int v, bool forward, bitmap subgraph)
+dfs_fst_edge (struct graph *g, int v, bool forward, bitmap subgraph,
+	      skip_edge_callback skip_edge_p)
 {
   struct graph_edge *e;
 
   e = (forward ? g->vertices[v].succ : g->vertices[v].pred);
-  return foll_in_subgraph (e, forward, subgraph);
+  return foll_in_subgraph (e, forward, subgraph, skip_edge_p);
 }
 
 /* Helper function for graphds_dfs.  Returns the next edge after E, in the
-   graph direction given by FORWARD, that belongs to SUBGRAPH.  */
+   graph direction given by FORWARD, that belongs to SUBGRAPH.  If SKIP_EDGE_P
+   is not NULL, it points to a callback function.  Edge E will be skipped if
+   callback function returns true.  */
 
 static inline struct graph_edge *
-dfs_next_edge (struct graph_edge *e, bool forward, bitmap subgraph)
+dfs_next_edge (struct graph_edge *e, bool forward, bitmap subgraph,
+	       skip_edge_callback skip_edge_p)
 {
   return foll_in_subgraph (forward ? e->succ_next : e->pred_next,
-			   forward, subgraph);
+			   forward, subgraph, skip_edge_p);
 }
 
 /* Runs dfs search over vertices of G, from NQ vertices in queue QS.
    The vertices in postorder are stored into QT.  If FORWARD is false,
    backward dfs is run.  If SUBGRAPH is not NULL, it specifies the
    subgraph of G to run DFS on.  Returns the number of the components
-   of the graph (number of the restarts of DFS).  */
+   of the graph (number of the restarts of DFS).  If SKIP_EDGE_P is not
+   NULL, it points to a callback function.  Edge E will be skipped if
+   callback function returns true.  */
 
 int
 graphds_dfs (struct graph *g, int *qs, int nq, vec<int> *qt,
-	     bool forward, bitmap subgraph)
+	     bool forward, bitmap subgraph,
+	     skip_edge_callback skip_edge_p)
 {
   int i, tick = 0, v, comp = 0, top;
   struct graph_edge *e;
@@ -217,7 +235,7 @@ graphds_dfs (struct graph *g, int *qs, int nq, vec<int> *qt,
 	continue;
 
       g->vertices[v].component = comp++;
-      e = dfs_fst_edge (g, v, forward, subgraph);
+      e = dfs_fst_edge (g, v, forward, subgraph, skip_edge_p);
       top = 0;
 
       while (1)
@@ -227,7 +245,7 @@ graphds_dfs (struct graph *g, int *qs, int nq, vec<int> *qt,
 	      if (g->vertices[dfs_edge_dest (e, forward)].component
 		  == -1)
 		break;
-	      e = dfs_next_edge (e, forward, subgraph);
+	      e = dfs_next_edge (e, forward, subgraph, skip_edge_p);
 	    }
 
 	  if (!e)
@@ -241,13 +259,13 @@ graphds_dfs (struct graph *g, int *qs, int nq, vec<int> *qt,
 
 	      e = stack[--top];
 	      v = dfs_edge_src (e, forward);
-	      e = dfs_next_edge (e, forward, subgraph);
+	      e = dfs_next_edge (e, forward, subgraph, skip_edge_p);
 	      continue;
 	    }
 
 	  stack[top++] = e;
 	  v = dfs_edge_dest (e, forward);
-	  e = dfs_fst_edge (g, v, forward, subgraph);
+	  e = dfs_fst_edge (g, v, forward, subgraph, skip_edge_p);
 	  g->vertices[v].component = comp - 1;
 	}
     }
@@ -262,14 +280,16 @@ graphds_dfs (struct graph *g, int *qs, int nq, vec<int> *qt,
    then run the dfs on the original graph in the order given by decreasing
    numbers assigned by the previous pass.  If SUBGRAPH is not NULL, it
    specifies the subgraph of G whose strongly connected components we want
-   to determine.
+   to determine.  If SKIP_EDGE_P is not NULL, it points to a callback function.
+   Edge E will be skipped if callback function returns true.
 
    After running this function, v->component is the number of the strongly
    connected component for each vertex of G.  Returns the number of the
    sccs of G.  */
 
 int
-graphds_scc (struct graph *g, bitmap subgraph)
+graphds_scc (struct graph *g, bitmap subgraph,
+	     skip_edge_callback skip_edge_p)
 {
   int *queue = XNEWVEC (int, g->n_vertices);
   vec<int> postorder = vNULL;
@@ -292,12 +312,12 @@ graphds_scc (struct graph *g, bitmap subgraph)
       nq = g->n_vertices;
     }
 
-  graphds_dfs (g, queue, nq, &postorder, false, subgraph);
+  graphds_dfs (g, queue, nq, &postorder, false, subgraph, skip_edge_p);
   gcc_assert (postorder.length () == (unsigned) nq);
 
   for (i = 0; i < nq; i++)
     queue[i] = postorder[nq - i - 1];
-  comp = graphds_dfs (g, queue, nq, NULL, true, subgraph);
+  comp = graphds_dfs (g, queue, nq, NULL, true, subgraph, skip_edge_p);
 
   free (queue);
   postorder.release ();
@@ -305,17 +325,17 @@ graphds_scc (struct graph *g, bitmap subgraph)
   return comp;
 }
 
-/* Runs CALLBACK for all edges in G.  */
+/* Runs CALLBACK for all edges in G.  DATA is private data for CALLBACK.  */
 
 void
-for_each_edge (struct graph *g, graphds_edge_callback callback)
+for_each_edge (struct graph *g, graphds_edge_callback callback, void *data)
 {
   struct graph_edge *e;
   int i;
 
   for (i = 0; i < g->n_vertices; i++)
     for (e = g->vertices[i].succ; e; e = e->succ_next)
-      callback (g, e);
+      callback (g, e, data);
 }
 
 /* Releases the memory occupied by G.  */

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2017 Free Software Foundation, Inc.
+// Copyright (C) 2005-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -402,6 +402,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   struct condition_base
   {
+#if __cplusplus >= 201103L
+    condition_base() = default;
+    condition_base(const condition_base&) = default;
+    condition_base& operator=(const condition_base&) = default;
+#endif
     virtual ~condition_base() { };
   };
 
@@ -477,7 +482,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   };
 
-
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /**
    *  @brief Base class for random probability control and throw.
    */
@@ -591,7 +596,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _S_e;
     }
   };
-
+#endif // _GLIBCXX_USE_C99_STDINT_TR1
 
   /**
    *  @brief Class with exception generation control. Intended to be
@@ -747,6 +752,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   };
 
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /// Type throwing via random condition.
   struct throw_value_random : public throw_value_base<random_condition>
   {
@@ -777,7 +783,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator=(throw_value_random&&) = default;
 #endif
   };
-
+#endif // _GLIBCXX_USE_C99_STDINT_TR1
 
   /**
    *  @brief Allocator class with logging and exception generation control.
@@ -915,6 +921,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~throw_allocator_limit() _GLIBCXX_USE_NOEXCEPT { }
     };
 
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /// Allocator throwing via random condition.
   template<typename _Tp>
     struct throw_allocator_random
@@ -935,6 +942,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ~throw_allocator_random() _GLIBCXX_USE_NOEXCEPT { }
     };
+#endif // _GLIBCXX_USE_C99_STDINT_TR1
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
@@ -960,6 +968,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
       }
     };
 
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /// Explicit specialization of std::hash for __gnu_cxx::throw_value_random.
   template<>
     struct hash<__gnu_cxx::throw_value_random>
@@ -974,6 +983,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	return __result;
       }
     };
+#endif
 } // end namespace std
 #endif
 

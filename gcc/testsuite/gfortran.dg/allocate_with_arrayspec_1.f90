@@ -23,7 +23,7 @@ PROGRAM example
    USE mo_test
    INTEGER, ALLOCATABLE :: query_buf(:)
    ALLOCATE(query_buf(nquery()))
-   if (n /= 1 .or. size(query_buf) /= n) call abort()
+   if (n /= 1 .or. size(query_buf) /= n) STOP 1
 END PROGRAM example
 
 ! { dg-final { scan-tree-dump-times "nquery" 5 "original" } }

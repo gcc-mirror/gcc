@@ -33,7 +33,7 @@ program asyncwait
   !$acc end parallel
 
   do i = 1, N
-    if (c(i) .ne. 2.0) call abort
+    if (c(i) .ne. 2.0) STOP 1
   end do
 
   !$acc kernels async (0)
@@ -60,7 +60,7 @@ program asyncwait
   !$acc end kernels
 
   do i = 1, N
-    if (c(i) .ne. 2.0) call abort
+    if (c(i) .ne. 2.0) STOP 2
   end do
   
   deallocate (a)

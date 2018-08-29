@@ -114,6 +114,9 @@
 /* Define to 1 if you have the <linux/netlink.h> header file. */
 #undef HAVE_LINUX_NETLINK_H
 
+/* Define to 1 if you have the <linux/ptrace.h> header file. */
+#undef HAVE_LINUX_PTRACE_H
+
 /* Define to 1 if you have the <linux/reboot.h> header file. */
 #undef HAVE_LINUX_REBOOT_H
 
@@ -339,9 +342,6 @@
 
 /* Define to 1 if you have the `unshare' function. */
 #undef HAVE_UNSHARE
-
-/* Define to 1 if you have the <ustat.h> header file and it works. */
-#undef HAVE_USTAT_H
 
 /* Define to 1 if you have the `utimensat' function. */
 #undef HAVE_UTIMENSAT

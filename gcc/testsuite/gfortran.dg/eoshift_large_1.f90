@@ -12,95 +12,95 @@ program intrinsic_eoshift
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, 1_k, 99_k, 1_k)
    if (any (a .ne. reshape ((/2_k, 3_k, 99_k, 5_k, 6_k, 99_k, 8_k, 9_k, 99_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 1
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, 9999_k, 99_k, 1_k)
-   if (any (a .ne. 99_k)) call abort
+   if (any (a .ne. 99_k)) STOP 2
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, -2_k, dim = 2_k)
    if (any (a .ne. reshape ((/0_k, 0_k, 0_k, 0_k, 0_k, 0_k, 1_k, 2_k, 3_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 3
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, -9999_k, 99_k, 1_k)
-   if (any (a .ne. 99_k)) call abort
+   if (any (a .ne. 99_k)) STOP 4
 
    ! Array shift and scalar bound.
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, (/1_k, 0_k, -1_k/), 99_k, 1_k)
    if (any (a .ne. reshape ((/2_k, 3_k, 99_k, 4_k, 5_k, 6_k, 99_k, 7_k, 8_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 5
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, (/9999_k, 0_k, -9999_k/), 99_k, 1_k)
    if (any (a .ne. reshape ((/99_k, 99_k, 99_k, 4_k, 5_k, 6_k, 99_k, 99_k, 99_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 6
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, (/2_k, -2_k, 0_k/), dim = 2_k)
    if (any (a .ne. reshape ((/7_k, 0_k, 3_k, 0_k, 0_k, 6_k, 0_k, 2_k, 9_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 7
 
    ! Scalar shift and array bound.
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, 1_k, (/99_k, -1_k, 42_k/), 1_k)
    if (any (a .ne. reshape ((/2_k, 3_k, 99_k, 5_k, 6_k, -1_k, 8_k, 9_k, 42_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 8
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, 9999_k, (/99_k, -1_k, 42_k/), 1_k)
    if (any (a .ne. reshape ((/99_k, 99_k, 99_k, -1_k, -1_k, -1_k, 42_k, 42_k, 42_k/), &
-       (/3_k, 3_k/)))) call abort
+       (/3_k, 3_k/)))) STOP 9
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, -9999_k, (/99_k, -1_k, 42_k/), 1_k)
    if (any (a .ne. reshape ((/99_k, 99_k, 99_k, -1_k, -1_k, -1_k, 42_k, 42_k, 42_k/), &
-       (/3_k, 3_k/)))) call abort
+       (/3_k, 3_k/)))) STOP 10
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, -2_k, (/99_k, -1_k, 42_k/), 2_k)
    if (any (a .ne. reshape ((/99_k, -1_k, 42_k, 99_k, -1_k, 42_k, 1_k, 2_k, 3_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 11
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    bo = (/99_k, -1_k, 42_k/)
    a = eoshift (a, -2_k, bo, 2_k)
    if (any (a .ne. reshape ((/99_k, -1_k, 42_k, 99_k, -1_k, 42_k, 1_k, 2_k, 3_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 12
 
    ! Array shift and array bound.
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, (/1_k, 0_k, -1_k/), (/99_k, -1_k, 42_k/), 1_k)
    if (any (a .ne. reshape ((/2_k, 3_k, 99_k, 4_k, 5_k, 6_k, 42_k, 7_k, 8_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 13
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, (/2_k, -2_k, 0_k/), (/99_k, -1_k, 42_k/), 2_k)
    if (any (a .ne. reshape ((/7_k, -1_k, 3_k, 99_k, -1_k, 6_k, 99_k, 2_k, 9_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 14
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    sh = (/ 3_k, -1_k, -3_k /)
    bo = (/-999_k, -99_k, -9_k /)
    a = eoshift(a, shift=sh, boundary=bo)
    if (any (a .ne. reshape ((/ -999_k, -999_k, -999_k, -99_k, 4_k, 5_k, -9_k, -9_k, -9_k /), &
-        shape(a)))) call abort
+        shape(a)))) STOP 15
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, (/9999_k, -9999_k, 0_k/), (/99_k, -1_k, 42_k/), 2_k)
    if (any (a .ne. reshape ((/99_k, -1_k, 3_k, 99_k, -1_k, 6_k, 99_k, -1_k, 9_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 16
 
    ! Test arrays > rank 2
    b(:, :, 1_k) = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    b(:, :, 2_k) = 10_k + reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    b = eoshift (b, 1_k, 99_k, 1_k)
    if (any (b(:, :, 1_k) .ne. reshape ((/2_k, 3_k, 99_k, 5_k, 6_k, 99_k, 8_k, 9_k, 99_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 17
    if (any (b(:, :, 2_k) .ne. reshape ((/12_k, 13_k, 99_k, 15_k, 16_k, 99_k, 18_k, 19_k, 99_k/), (/3_k, 3_k/)))) &
-      call abort
+      STOP 18
 
    ! TODO: Test array sections
 end program

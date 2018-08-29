@@ -23,6 +23,6 @@
       close(4)
 
 !      write(*,*) nfp
-      if (nfp /= 5) call abort()
+      if (nfp /= 5) STOP 1
 
       end

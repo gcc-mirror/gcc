@@ -3,7 +3,7 @@
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008-2017 Free Software Foundation, Inc.
+// Copyright (C) 2008-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,11 +20,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.4.8.2.2 Class template binomial_distribution [rand.dist.bern.bin]
-// 26.4.2.4 Concept RandomNumberDistribution [rand.concept.dist]
+// C++11
+// 26.5.8.3.2 Class template binomial_distribution [rand.dist.bern.bin]
+// 26.5.1.6 random number distribution requirements [rand.req.dist]
 
 #include <random>
 #include <testsuite_hooks.h>
+#include <testsuite_common_types.h>
 
 void
 test01()
@@ -36,8 +38,16 @@ test01()
   VERIFY( u.max() == u.t() );
 }
 
+void
+test02()
+{
+  __gnu_test::implicitly_default_constructible test;
+  test.operator()<std::binomial_distribution<>>();
+  test.operator()<std::binomial_distribution<>::param_type>();
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

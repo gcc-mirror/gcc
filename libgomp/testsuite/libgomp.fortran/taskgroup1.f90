@@ -18,7 +18,7 @@
 	end do
       !$omp end taskgroup
       do i = 1, 16
-	if (v(i).ne.(i + 1)) call abort
+	if (v(i).ne.(i + 1)) STOP 1
       end do
       !$omp taskgroup
 	do i = 1, 16, 2
@@ -34,7 +34,7 @@
 	end do
       !$omp endtaskgroup
       do i = 1, 16
-	if (v(i).ne.(i + 2)) call abort
+	if (v(i).ne.(i + 2)) STOP 2
       end do
       !$omp taskgroup
 	do i = 1, 16, 2
@@ -53,8 +53,8 @@
 	end do
       !$omp end taskgroup
       do i = 1, 16, 2
-	if (v(i).ne.(i + 3)) call abort
-	if (v(i + 1).ne.(i + 5)) call abort
+	if (v(i).ne.(i + 3)) STOP 3
+	if (v(i + 1).ne.(i + 5)) STOP 4
       end do
       !$omp taskgroup
 	do i = 1, 16, 2
@@ -66,14 +66,14 @@
 	      v(i + 1) = v(i + 1) + 1
 	    !$omp end task
 	  !$omp end taskgroup
-	  if (v(i).ne.(i + 4).or.v(i + 1).ne.(i + 6)) call abort
+	  if (v(i).ne.(i + 4).or.v(i + 1).ne.(i + 6)) STOP 5
 	  !$omp task
 	    v(i) = v(i) + 1
 	  !$omp end task
 	end do
       !$omp end taskgroup
       do i = 1, 16
-	if (v(i).ne.(i + 5)) call abort
+	if (v(i).ne.(i + 5)) STOP 6
       end do
     !$omp end single
   !$omp end parallel

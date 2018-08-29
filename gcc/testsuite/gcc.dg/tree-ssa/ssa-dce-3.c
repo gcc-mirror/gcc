@@ -26,9 +26,6 @@ int main(void)
    by marking the j % 7 condition as useful.  See PR45178.  */
 
 /* We should eliminate the inner condition, but the loop must be preserved
-   as it is infinite.  Therefore there should be just one phi node (for i):  */
-/* { dg-final { scan-tree-dump-times "PHI " 1 "cddce1" { xfail *-*-* } } } */
-
-/* And one if (for the exit condition of the loop):  */
-/* { dg-final { scan-tree-dump-times "if " 1 "cddce1" } } */
-
+   as it is infinite.  Therefore there should be just one goto and no PHI.  */
+/* { dg-final { scan-tree-dump-times "PHI " 0 "cddce1" } } */
+/* { dg-final { scan-tree-dump-times "goto" 1 "cddce1" } } */

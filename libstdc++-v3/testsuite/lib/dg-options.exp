@@ -1,6 +1,6 @@
 # Handlers for additional dg-xxx keywords in tests.
 
-# Copyright (C) 2004-2017 Free Software Foundation, Inc.
+# Copyright (C) 2004-2018 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,6 +45,15 @@ proc dg-require-profile-mode { args } {
 
 proc dg-require-normal-mode { args } {
     if { ![ check_v3_target_normal_mode ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
+proc dg-require-normal-namespace { args } {
+    if { ![ check_v3_target_normal_namespace ] } {
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
 	return

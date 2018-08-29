@@ -1,4 +1,4 @@
-#   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+#   Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,10 +79,14 @@ proc list-module-names { files } {
 
 proc list-module-names-1 { file } {
     set result {}
-    set tmp [grep $file "^\[ \t\]*((#)?\[ \t\]*include|\[mM\]\[oO\]\[dD\]\[uU\]\[lL\]\[eE\](?!\[ \t\]+\[pP\]\[rR\]\[oO\]\[cC\]\[eE\]\[dD\]\[uU\]\[rR\]\[eE\]\[ \t\]+))\[ \t\]+.*" line]
+    if {[file isdirectory $file]} {return}
+    # Find lines containing INCLUDE, MODULE, and SUBMODULE, excluding the lines containing
+    # MODULE [PURE|(IMPURE\s+)?ELEMENTAL|RECURSIVE] (PROCEDURE|FUNCTION|SUBROUTINE)
+    set pat {^\s*((#)?\s*include|(sub)?module(?!\s+((pure|(impure\s+)?elemental|recursive)\s+)?(procedure|function|subroutine)[:\s]+))\s*.*}
+    set tmp [igrep $file $pat line]
     if {![string match "" $tmp]} {
 	foreach i $tmp {
-	    regexp "(\[0-9\]+)\[ \t\]+(?:(?:#)?\[ \t\]*include\[ \t\]+)\[\"\](\[^\"\]*)\[\"\]" $i dummy lineno include_file
+	    regexp -nocase {(\d+)\s+#?\s*include\s+["']([^"']*)["']} $i dummy lineno include_file
 	    if {[info exists include_file]} {
 		set dir [file dirname $file]
 		set inc "$dir/$include_file"
@@ -99,10 +103,16 @@ proc list-module-names-1 { file } {
 		}
 		continue
 	    }
-	    regexp "(\[0-9\]+)\[ \t\]+(?:(\[mM\]\[oO\]\[dD\]\[uU\]\[lL\]\[eE\]\[ \t\]+(?!\[pP\]\[rR\]\[oO\]\[cC\]\[eE\]\[dD\]\[uU\]\[rR\]\[eE\]\[ \t\]+)))(\[^ \t;\]*)" $i i lineno keyword mod
-	    if {![info exists lineno]} {
+	    regexp -nocase {(\d+)\s+(module|submodule)\s*([^;]*)} $i i lineno keyword mod
+	    if {![info exists mod]} {
 		continue
 	    }
+	    # Generates the file name mod_name@submod_name from
+	    # (\s*mod_name[:submod_name]\s*)\s*submod_name\s*[! comment]
+	    regsub {\s*!.*} $mod "" mod
+	    regsub {:[^)]*} $mod "" mod
+	    regsub {\(\s*} $mod "" mod
+	    regsub {\s*\)\s*} $mod "@" mod
 	    verbose "Line $lineno mentions module `$mod'" 3
 	    if {[lsearch $result $mod] < 0} {
 		lappend result $mod
@@ -110,4 +120,55 @@ proc list-module-names-1 { file } {
 	}
     }
     return $result
+}
+
+# Looks for case insensitive occurrences of a string in a file.
+#     return:list of lines that matched or NULL if none match.
+#     args:  first arg is the filename,
+#            second is the pattern,
+#            third are any options.
+#     Options: line  - puts line numbers of match in list
+#
+proc igrep { args } {
+
+    set file [lindex $args 0]
+    set pattern [lindex $args 1]
+
+    verbose "Grepping $file for the pattern \"$pattern\"" 3
+
+    set argc [llength $args]
+    if { $argc > 2 } {
+        for { set i 2 } { $i < $argc } { incr i } {
+            append options [lindex $args $i]
+            append options " "
+        }
+    } else {
+        set options ""
+    }
+
+    set i 0
+    set fd [open $file r]
+    while { [gets $fd cur_line]>=0 } {
+        incr i
+        if {[regexp -nocase -- "$pattern" $cur_line match]} {
+            if {![string match "" $options]} {
+                foreach opt $options {
+                    switch $opt {
+                        "line" {
+                            lappend grep_out [concat $i $match]
+                        }
+                    }
+                }
+            } else {
+                lappend grep_out $match
+            }
+        }
+    }
+    close $fd
+    unset fd
+    unset i
+    if {![info exists grep_out]} {
+        set grep_out ""
+    }
+    return $grep_out
 }

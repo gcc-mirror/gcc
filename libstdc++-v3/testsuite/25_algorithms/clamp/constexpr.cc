@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do compile }
 
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,5 +27,5 @@
 # error "Feature-test macro for clamp has wrong value"
 #endif
 
-static_assert(std::clamp(2, 0, 1) == 1, "");
-static_assert(std::clamp(2, 0, 1, std::greater<int>()) == 0, "");
+static_assert(std::clamp(2, 0, 1) == 1);
+static_assert(std::clamp(2, 1, 0, std::greater<int>()) == 1);

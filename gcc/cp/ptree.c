@@ -1,5 +1,5 @@
 /* Prints out trees in human readable form.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -151,9 +151,6 @@ cxx_print_type (FILE *file, tree node, int indent)
     fputs (" delete[]", file);
   if (TYPE_HAS_COPY_ASSIGN (node))
     fputs (" this=(X&)", file);
-  if (CLASSTYPE_SORTED_FIELDS (node))
-    fprintf (file, " sorted-fields %p",
-	     (void *) CLASSTYPE_SORTED_FIELDS (node));
 
   if (TREE_CODE (node) == RECORD_TYPE)
     {
@@ -178,9 +175,8 @@ cxx_print_identifier (FILE *file, tree node, int indent)
     fprintf (file, " ");
   else
     indent_to (file, indent + 4);
-  fprintf (file, "local bindings <%p>", (void *) IDENTIFIER_BINDING (node));
-  print_node (file, "label", IDENTIFIER_LABEL_VALUE (node), indent + 4);
-  print_node (file, "template", IDENTIFIER_TEMPLATE (node), indent + 4);
+  fprintf (file, "%s local bindings <%p>", get_identifier_kind_name (node),
+	   (void *) IDENTIFIER_BINDING (node));
 }
 
 void
@@ -207,8 +203,6 @@ cxx_print_lambda_node (FILE *file, tree node, int indent)
   fprintf (file, "] ");
   print_node (file, "capture_list", LAMBDA_EXPR_CAPTURE_LIST (node), indent + 4);
   print_node (file, "this_capture", LAMBDA_EXPR_THIS_CAPTURE (node), indent + 4);
-  print_node (file, "return_type", LAMBDA_EXPR_RETURN_TYPE (node), indent + 4);
-  print_node (file, "closure", LAMBDA_EXPR_CLOSURE (node), indent + 4);
 }
 
 void
@@ -221,6 +215,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "binfo", BASELINK_BINFO (node), indent + 4);
       print_node (file, "access_binfo", BASELINK_ACCESS_BINFO (node),
 		  indent + 4);
+      print_node (file, "optype", BASELINK_OPTYPE (node), indent + 4);
       break;
     case OVERLOAD:
       print_node (file, "function", OVL_FUNCTION (node), indent+4);

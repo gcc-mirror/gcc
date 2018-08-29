@@ -18,10 +18,10 @@ INTEGER :: k = 0
 
 ptr1 => foo
 call s_in(ptr1,k)
-if (k /= 6) call abort()
+if (k /= 6) STOP 1
 
 call s_out(ptr2)
-if (ptr2(-3.0) /= 3.0) call abort()
+if (ptr2(-3.0) /= 3.0) STOP 2
 
 contains
 

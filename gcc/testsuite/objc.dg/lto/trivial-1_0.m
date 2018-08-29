@@ -1,5 +1,5 @@
 /* { dg-lto-do run } */
-/* { dg-skip-if "" { "*-*-darwin*" && lp64 } { "*" } { "" } } */
+/* { dg-skip-if "" { "*-*-darwin*" && lp64 } } */
 extern int printf (char *,...) ;
 
 typedef struct objc_class *Class;

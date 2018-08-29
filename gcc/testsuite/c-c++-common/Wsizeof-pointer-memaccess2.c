@@ -1,7 +1,7 @@
 /* Test -Wsizeof-pointer-memaccess warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-Wall -O2 -Wno-sizeof-array-argument -ftrack-macro-expansion=0" } */
-/* { dg-options "-Wall -O2 -Wno-sizeof-array-argument -Wno-c++-compat -ftrack-macro-expansion=0" {target c} } */
+/* { dg-options "-Wall -O2 -Wno-array-bounds -Wno-sizeof-array-argument -Wno-stringop-truncation -ftrack-macro-expansion=0" } */
+/* { dg-options "-Wall -O2 -Wno-array-bounds -Wno-sizeof-array-argument -Wno-stringop-truncation -Wno-c++-compat -ftrack-macro-expansion=0" {target c} } */
 /* { dg-require-effective-target alloca } */
 
 #define bos(ptr) __builtin_object_size (ptr, 1)
@@ -473,12 +473,15 @@ f4 (char *x, char **y, int z, char w[64])
   strncat (w, s2, sizeof (w));		    /* { dg-warning "call is the same expression as the destination; did you mean to provide an explicit length" } */
   stpncpy (w, s1, sizeof (w));		    /* { dg-warning "call is the same expression as the destination; did you mean to provide an explicit length" } */
 
-  /* These are correct, no warning.  */
+  /* These are pointless when the destination is large enough, and
+     cause overflow otherwise.  If the copies are guaranteed to be
+     safe the calls might as well be replaced by strcat(), strcpy(),
+     or memcpy().  */
   const char s3[] = "foobarbaz";
   const char s4[] = "abcde12345678";
-  strncpy (x, s3, sizeof (s3));
-  strncat (x, s4, sizeof (s4));
-  stpncpy (x, s3, sizeof (s3));
+  strncpy (x, s3, sizeof (s3));             /* { dg-warning "call is the same expression as the source; did you mean to use the size of the destination?" } */
+  strncat (x, s4, sizeof (s4));             /* { dg-warning "call is the same expression as the source; did you mean to use the size of the destination?" } */
+  stpncpy (x, s3, sizeof (s3));             /* { dg-warning "call is the same expression as the source; did you mean to use the size of the destination?" } */
 }
 
 /* { dg-prune-output "\[\n\r\]*writing\[\n\r\]*" } */

@@ -55,19 +55,16 @@ do
   esac
 done
 
-if [ $# -eq 0 ] ; then
-  set -- fixincl.x
-fi
-
 AG="autogen $AG"
 set -e
 
 if [ -z "`${AG} -v | fgrep ' 5.'`" ]
 then
   echo "AutoGen appears to be out of date or not correctly installed."
-  echo "Please download and install:"
-  echo "   ftp://gcc.gnu.org/pub/gcc/infrastructure/autogen.tar.gz"
+  echo "Please download and install from:"
+  echo "   https://ftp.gnu.org/gnu/autogen/"
   touch fixincl.x
+  exit 1
 else
   echo AutoGen-ing fixincl.x
   $AG inclhack.def

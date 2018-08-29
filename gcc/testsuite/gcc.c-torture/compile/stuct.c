@@ -1,3 +1,5 @@
+/* { dg-add-options stack_size } */
+
 #ifdef STACK_SIZE
 #define SIZE STACK_SIZE / 8
 #else

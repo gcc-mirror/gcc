@@ -1,5 +1,5 @@
 ;; IA-64 machine description for vector operations.
-;; Copyright (C) 2004-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -1015,7 +1015,7 @@
 }
   [(set_attr "itanium_class" "mmshf")])
 
-(define_expand "vec_initv2si"
+(define_expand "vec_initv2sisi"
   [(match_operand:V2SI 0 "gr_register_operand" "")
    (match_operand 1 "" "")]
   ""
@@ -1138,8 +1138,7 @@
 		  (match_operand:V2SF 2 "fr_register_operand" "")))]
   ""
 {
-  rtvec v = gen_rtvec (2, CONST1_RTX (SFmode), CONST1_RTX (SFmode));
-  operands[3] = force_reg (V2SFmode, gen_rtx_CONST_VECTOR (V2SFmode, v));
+  operands[3] = force_reg (V2SFmode, CONST1_RTX (V2SFmode));
 })
 
 (define_expand "subv2sf3"
@@ -1150,8 +1149,7 @@
 	  (neg:V2SF (match_operand:V2SF 2 "fr_register_operand" ""))))]
   ""
 {
-  rtvec v = gen_rtvec (2, CONST1_RTX (SFmode), CONST1_RTX (SFmode));
-  operands[3] = force_reg (V2SFmode, gen_rtx_CONST_VECTOR (V2SFmode, v));
+  operands[3] = force_reg (V2SFmode, CONST1_RTX (V2SFmode));
 })
 
 (define_insn "mulv2sf3"
@@ -1299,7 +1297,7 @@
   "fselect %0 = %F2, %F3, %1"
   [(set_attr "itanium_class" "fmisc")])
 
-(define_expand "vec_initv2sf"
+(define_expand "vec_initv2sfsf"
   [(match_operand:V2SF 0 "fr_register_operand" "")
    (match_operand 1 "" "")]
   ""
@@ -1483,7 +1481,7 @@
   operands[1] = gen_rtx_REG (SFmode, REGNO (operands[1]));
 })
 
-(define_expand "vec_extractv2sf"
+(define_expand "vec_extractv2sfsf"
   [(set (match_operand:SF 0 "register_operand" "")
 	(unspec:SF [(match_operand:V2SF 1 "register_operand" "")
 		    (match_operand:DI 2 "const_int_operand" "")]
@@ -1549,19 +1547,6 @@
   rtx op2 = gen_lowpart (V4HImode, operands[2]);
   ia64_expand_vec_perm_even_odd (operands[0], op1, op2, TARGET_BIG_ENDIAN);
   DONE;
-})
-
-(define_expand "vec_perm_const<mode>"
-  [(match_operand:VEC 0 "register_operand" "")
-   (match_operand:VEC 1 "register_operand" "")
-   (match_operand:VEC 2 "register_operand" "")
-   (match_operand:<vecint> 3 "" "")]
-  ""
-{
-  if (ia64_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
 })
 
 ;; Missing operations

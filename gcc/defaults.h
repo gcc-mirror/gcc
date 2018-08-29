@@ -1,5 +1,5 @@
 /* Definitions of various defaults for tm.h macros.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
 This file is part of GCC.
@@ -170,7 +170,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   do {							\
     fputs (user_label_prefix, (FILE));			\
     fputs ((NAME), (FILE));				\
-  } while (0);
+  } while (0)
 #endif
 
 /* Allow target to print debug info labels specially.  This is useful for
@@ -863,6 +863,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
+/* Decide whether target supports aliases.  */
+#ifndef TARGET_SUPPORTS_ALIASES
+#ifdef ASM_OUTPUT_DEF
+#define TARGET_SUPPORTS_ALIASES 1
+#else
+#define TARGET_SUPPORTS_ALIASES 0
+#endif
+#endif
+
 /* Select a format to encode pointers in exception handling data.  We
    prefer those that result in fewer dynamic relocations.  Assume no
    special support here and encode direct references.  */
@@ -885,14 +894,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DEFAULT_GDB_EXTENSIONS 1
 #endif
 
-#ifndef SDB_DEBUGGING_INFO
-#define SDB_DEBUGGING_INFO 0
-#endif
-
 /* If more than one debugging type is supported, you must define
    PREFERRED_DEBUGGING_TYPE to choose the default.  */
 
-#if 1 < (defined (DBX_DEBUGGING_INFO) + (SDB_DEBUGGING_INFO) \
+#if 1 < (defined (DBX_DEBUGGING_INFO) \
          + defined (DWARF2_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO) \
          + defined (VMS_DEBUGGING_INFO))
 #ifndef PREFERRED_DEBUGGING_TYPE
@@ -903,9 +908,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    here so other code needn't care.  */
 #elif defined DBX_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#elif SDB_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
 
 #elif defined DWARF2_DEBUGGING_INFO || defined DWARF2_LINENO_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
@@ -1161,10 +1163,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ATTRIBUTE_ALIGNED_VALUE BIGGEST_ALIGNMENT
 #endif
 
-#ifndef SLOW_UNALIGNED_ACCESS
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) STRICT_ALIGNMENT
-#endif
-
 /* For most ports anything that evaluates to a constant symbolic
    or integer value is acceptable as a constant address.  */
 #ifndef CONSTANT_ADDRESS_P
@@ -1260,10 +1258,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LOAD_EXTEND_OP(M) UNKNOWN
 #endif
 
-#ifndef CONSTANT_ALIGNMENT
-#define CONSTANT_ALIGNMENT(EXP, ALIGN) ALIGN
-#endif
-
 #ifndef INITIAL_FRAME_ADDRESS_RTX
 #define INITIAL_FRAME_ADDRESS_RTX NULL
 #endif
@@ -1286,6 +1280,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef TARGET_PECOFF
 #define TARGET_PECOFF 0
+#endif
+
+#ifndef TARGET_COFF
+#define TARGET_COFF 0
 #endif
 
 #ifndef EH_RETURN_HANDLER_RTX
@@ -1344,24 +1342,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    or libcall instead.  */
 #ifndef SET_RATIO
 #define SET_RATIO(speed) MOVE_RATIO (speed)
-#endif
-
-/* Supply a default definition for FUNCTION_ARG_PADDING:
-   usually pad upward, but pad short args downward on
-   big-endian machines.  */
-
-#define DEFAULT_FUNCTION_ARG_PADDING(MODE, TYPE)			\
-  (! BYTES_BIG_ENDIAN							\
-   ? upward								\
-   : (((MODE) == BLKmode						\
-       ? ((TYPE) && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST		\
-	  && int_size_in_bytes (TYPE) < (PARM_BOUNDARY / BITS_PER_UNIT)) \
-       : GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY)			\
-      ? downward : upward))
-
-#ifndef FUNCTION_ARG_PADDING
-#define FUNCTION_ARG_PADDING(MODE, TYPE)	\
-  DEFAULT_FUNCTION_ARG_PADDING ((MODE), (TYPE))
 #endif
 
 /* Supply a default definition of STACK_SAVEAREA_MODE for emit_stack_save.

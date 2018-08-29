@@ -22,7 +22,7 @@ do i = 1,2
 
     if ( neqv_out .neqv. lxor_out ) then
       print *, "(",in1,in2,") .neqv.: ",neqv_out,"  .xor.: ",lxor_out
-      call abort()
+      STOP 1
     endif
 
     ! make sure we didn't break xor() intrinsic
@@ -31,7 +31,7 @@ do i = 1,2
 
     if ( ixor_out .ne. ieor_out ) then
       print *, "(",in1,in2,") ieor(): ",ieor_out,"  xor(): ",ixor_out
-      call abort()
+      STOP 2
     endif
 
   enddo

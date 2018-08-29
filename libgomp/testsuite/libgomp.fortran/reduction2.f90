@@ -31,10 +31,10 @@
     ma(1) = .true.
   end if
 !$omp end parallel
-  if (v) call abort
+  if (v) STOP 1
   if (cnt .eq. 3) then
-    if (l .or. any (la .neqv. (/.true., .false., .false., .false./))) call abort
-    if (.not. m .or. any (ma .neqv. (/.true., .true., .false., .true./))) call abort
+    if (l .or. any (la .neqv. (/.true., .false., .false., .false./))) STOP 2
+    if (.not. m .or. any (ma .neqv. (/.true., .true., .false., .true./))) STOP 3
   end if
 
   l = .true.
@@ -64,10 +64,10 @@
     ma(1) = .true.
   end if
 !$omp end parallel
-  if (v) call abort
+  if (v) STOP 4
   if (cnt .eq. 3) then
-    if (.not. l .or. any (la .neqv. (/.true., .false., .true., .false./))) call abort
-    if (.not. m .or. any (ma .neqv. (/.false., .true., .false., .true./))) call abort
+    if (.not. l .or. any (la .neqv. (/.true., .false., .true., .false./))) STOP 5
+    if (.not. m .or. any (ma .neqv. (/.false., .true., .false., .true./))) STOP 6
   end if
 
 end

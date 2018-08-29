@@ -39,8 +39,8 @@ void h (void)
   vfloat = vdouble; /* { dg-warning "conversion from .double. to .float. may change value" } */
   ffloat (vlongdouble); /* { dg-warning "conversion from .long double. to .float. may change value" } */
   vfloat = vlongdouble; /* { dg-warning "conversion from .long double. to .float. may change value" } */
-  fdouble (vlongdouble); /* { dg-warning "conversion from .long double. to .double. may change value" } */
-  vdouble = vlongdouble; /* { dg-warning "conversion from .long double. to .double. may change value" } */
+  fdouble (vlongdouble); /* { dg-warning "conversion from .long double. to .double. may change value" "" { target large_long_double } } */
+  vdouble = vlongdouble; /* { dg-warning "conversion from .long double. to .double. may change value" "" { target large_long_double } } */
 
   fsi (3.1f); /* { dg-warning "conversion from .float. to .int. changes value" } */
   si = 3.1f; /* { dg-warning "conversion from .float. to .int. changes value" } */

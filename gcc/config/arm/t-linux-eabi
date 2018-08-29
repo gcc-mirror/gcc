@@ -1,4 +1,4 @@
-# Copyright (C) 2005-2017 Free Software Foundation, Inc.
+# Copyright (C) 2005-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,6 +22,10 @@
 # MULTILIB_DEFAULTS in linux-elf.h.
 MULTILIB_OPTIONS	=
 MULTILIB_DIRNAMES	=
+MULTILIB_EXCEPTIONS	=
+MULTILIB_REUSE		=
+MULTILIB_MATCHES	=
+MULTILIB_REQUIRED	=
 
 #MULTILIB_OPTIONS     += mcpu=fa606te/mcpu=fa626te/mcpu=fmp626/mcpu=fa726te
 #MULTILIB_DIRNAMES    += fa606te fa626te fmp626 fa726te

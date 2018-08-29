@@ -49,10 +49,13 @@ enum
   MAKE_CHAN_OUT_OF_BOUNDS = 9,
 
   /* Integer division by zero.  */
-  DIVISION_BY_ZERO = 10
+  DIVISION_BY_ZERO = 10,
+
+  /* Go statement with nil function.  */
+  GO_NIL = 11
 };
 
-extern void __go_runtime_error () __attribute__ ((noreturn));
+extern void __go_runtime_error (int32) __attribute__ ((noreturn));
 
 void
 __go_runtime_error (int32 i)
@@ -83,6 +86,12 @@ __go_runtime_error (int32 i)
 
     case DIVISION_BY_ZERO:
       runtime_panicstring ("integer divide by zero");
+
+    case GO_NIL:
+      /* This one is a throw, rather than a panic.  Set throwing to
+	 not dump full stacks.  */
+      runtime_g()->m->throwing = -1;
+      runtime_throw ("go of nil func value");
 
     default:
       runtime_panicstring ("unknown runtime error");

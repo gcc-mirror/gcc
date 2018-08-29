@@ -68,7 +68,8 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/enable.m4 \
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
@@ -106,18 +107,19 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-am__objects_1 = tsan_clock.lo tsan_debugging.lo tsan_fd.lo \
-	tsan_flags.lo tsan_ignoreset.lo tsan_interceptors.lo \
-	tsan_interceptors_mac.lo tsan_interface_ann.lo \
-	tsan_interface_atomic.lo tsan_interface.lo \
-	tsan_interface_java.lo tsan_libdispatch_mac.lo \
-	tsan_malloc_mac.lo tsan_md5.lo tsan_mman.lo tsan_mutex.lo \
-	tsan_mutexset.lo tsan_new_delete.lo tsan_platform_linux.lo \
-	tsan_platform_mac.lo tsan_platform_posix.lo \
-	tsan_platform_windows.lo tsan_report.lo tsan_rtl.lo \
-	tsan_rtl_mutex.lo tsan_rtl_proc.lo tsan_rtl_report.lo \
-	tsan_rtl_thread.lo tsan_stack_trace.lo tsan_stat.lo \
-	tsan_suppressions.lo tsan_symbolize.lo tsan_sync.lo
+am__objects_1 = tsan_clock.lo tsan_debugging.lo tsan_external.lo \
+	tsan_fd.lo tsan_flags.lo tsan_ignoreset.lo \
+	tsan_interceptors.lo tsan_interceptors_mac.lo \
+	tsan_interface_ann.lo tsan_interface_atomic.lo \
+	tsan_interface.lo tsan_interface_java.lo \
+	tsan_libdispatch_mac.lo tsan_malloc_mac.lo tsan_md5.lo \
+	tsan_mman.lo tsan_mutex.lo tsan_mutexset.lo tsan_new_delete.lo \
+	tsan_platform_linux.lo tsan_platform_mac.lo \
+	tsan_platform_posix.lo tsan_platform_windows.lo tsan_report.lo \
+	tsan_rtl.lo tsan_rtl_mutex.lo tsan_rtl_proc.lo \
+	tsan_rtl_report.lo tsan_rtl_thread.lo tsan_stack_trace.lo \
+	tsan_stat.lo tsan_suppressions.lo tsan_symbolize.lo \
+	tsan_sync.lo
 am_libtsan_la_OBJECTS = $(am__objects_1)
 libtsan_la_OBJECTS = $(am_libtsan_la_OBJECTS)
 libtsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -192,6 +194,9 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+EXTRA_ASFLAGS = @EXTRA_ASFLAGS@
+EXTRA_CFLAGS = @EXTRA_CFLAGS@
+EXTRA_CXXFLAGS = @EXTRA_CXXFLAGS@
 FGREP = @FGREP@
 FORMAT_FILE = @FORMAT_FILE@
 GREP = @GREP@
@@ -312,13 +317,14 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-Wno-long-long -fPIC -fno-builtin -fno-exceptions -fno-rtti \
 	-fomit-frame-pointer -funwind-tables -fvisibility=hidden \
 	-Wno-variadic-macros $(LIBSTDCXX_RAW_CXX_CXXFLAGS) \
-	-std=gnu++11
+	-std=gnu++11 $(EXTRA_CXXFLAGS)
 ACLOCAL_AMFLAGS = -I m4
 toolexeclib_LTLIBRARIES = libtsan.la
 nodist_toolexeclib_HEADERS = libtsan_preinit.o
 tsan_files = \
 	tsan_clock.cc \
 	tsan_debugging.cc \
+	tsan_external.cc \
 	tsan_fd.cc \
 	tsan_flags.cc \
 	tsan_ignoreset.cc \
@@ -480,6 +486,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_clock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_debugging.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_external.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_fd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_ignoreset.Plo@am__quote@

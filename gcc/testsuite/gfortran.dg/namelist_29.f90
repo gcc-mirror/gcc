@@ -6,7 +6,7 @@
 ! Contributed by Joost VandeVondele <jv244@cam.ac.uk>
 !
   character(80) :: buffer
-  if (f1 (buffer) .ne. 42) call abort ()
+  if (f1 (buffer) .ne. 42) STOP 1
 CONTAINS
    INTEGER FUNCTION F1 (buffer)
      NAMELIST /mynml/ F1

@@ -246,7 +246,7 @@ AC_DEFUN([GCC_BASE_VER],
   [AS_HELP_STRING([--with-gcc-major-version-only], [use only GCC major number in filesystem paths])],
   [if test x$with_gcc_major_version_only = xyes ; then
     changequote(,)dnl
-    get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+    get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
     changequote([,])dnl
   fi
   ])

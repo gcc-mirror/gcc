@@ -50,7 +50,7 @@ contains
     a(:,:) = b(:,:)
     caf2(:,:)[this_image()] = caf(:,:)[num_images()]
     if (any (a /= caf2)) then
-      call abort()
+      STOP 1
     end if
     sync all
 
@@ -75,7 +75,7 @@ contains
       end do
     end do
     if (any (a /= caf2)) then
-      call abort()
+      STOP 2
     end if
     sync all
 
@@ -101,7 +101,7 @@ contains
                     caf2(i:i_e:i_s*i_sgn1, j:j_e:j_s*i_sgn2)[this_image()] &
                          = caf(i:i_e:i_s*i_sgn1, j:j_e:j_s*i_sgn2)[num_images()]
                     if (any (caf2 /= a)) then
-                      call abort()
+                      STOP 3
                     end if
                     sync all
                   end do
@@ -136,7 +136,7 @@ contains
     a(:,:) = b(:,:)
     caf2(:,:)[this_image()] = caf(:,:)[num_images()]
     if (any (a /= caf2)) then
-      call abort()
+      STOP 4
     end if
     sync all
 
@@ -161,7 +161,7 @@ contains
       end do
     end do
     if (any (a /= caf2)) then
-      call abort()
+      STOP 5
     end if
     sync all
 
@@ -187,7 +187,7 @@ contains
                     caf2(i:i_e:i_s*i_sgn1, j:j_e:j_s*i_sgn2)[this_image()] &
                          = caf(i:i_e:i_s*i_sgn1, j:j_e:j_s*i_sgn2)[num_images()]
                     if (any (caf2 /= a)) then
-                      call abort()
+                      STOP 6
                     end if
                     sync all
                   end do
@@ -222,7 +222,7 @@ contains
     a(:,:) = b(:,:)
     caf2(:,:)[this_image()] = caf(:,:)[num_images()]
     if (any (a /= caf2)) then
-      call abort()
+      STOP 7
     end if
     sync all
 
@@ -247,7 +247,7 @@ contains
       end do
     end do
     if (any (a /= caf2)) then
-      call abort()
+      STOP 8
     end if
     sync all
 
@@ -273,7 +273,7 @@ contains
                     caf2(i:i_e:i_s*i_sgn1, j:j_e:j_s*i_sgn2)[this_image()] &
                          = caf(i:i_e:i_s*i_sgn1, j:j_e:j_s*i_sgn2)[num_images()]
                     if (any (caf2 /= a)) then
-                      call abort()
+                      STOP 9
                     end if
                     sync all
                   end do

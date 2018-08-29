@@ -1,5 +1,5 @@
 /* Implementation of the MATMUL intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -307,22 +307,27 @@ matmul_c16_avx (gfc_array_c16 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
 
       /* Adjust size of t1 to what is needed.  */
-      index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      index_type t1_dim, a_sz;
+      if (aystride == 1)
+        a_sz = rystride;
+      else
+        a_sz = a_dim1;
+
+      t1_dim = a_sz * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_COMPLEX_16));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
 
       /* Start turning the crank. */
       i1 = n;
@@ -859,22 +864,27 @@ matmul_c16_avx2 (gfc_array_c16 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
 
       /* Adjust size of t1 to what is needed.  */
-      index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      index_type t1_dim, a_sz;
+      if (aystride == 1)
+        a_sz = rystride;
+      else
+        a_sz = a_dim1;
+
+      t1_dim = a_sz * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_COMPLEX_16));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
 
       /* Start turning the crank. */
       i1 = n;
@@ -1411,22 +1421,27 @@ matmul_c16_avx512f (gfc_array_c16 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
 
       /* Adjust size of t1 to what is needed.  */
-      index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      index_type t1_dim, a_sz;
+      if (aystride == 1)
+        a_sz = rystride;
+      else
+        a_sz = a_dim1;
+
+      t1_dim = a_sz * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_COMPLEX_16));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
 
       /* Start turning the crank. */
       i1 = n;
@@ -1977,22 +1992,27 @@ matmul_c16_vanilla (gfc_array_c16 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
 
       /* Adjust size of t1 to what is needed.  */
-      index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      index_type t1_dim, a_sz;
+      if (aystride == 1)
+        a_sz = rystride;
+      else
+        a_sz = a_dim1;
+
+      t1_dim = a_sz * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_COMPLEX_16));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
 
       /* Start turning the crank. */
       i1 = n;
@@ -2603,22 +2623,27 @@ matmul_c16 (gfc_array_c16 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
 
       /* Adjust size of t1 to what is needed.  */
-      index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      index_type t1_dim, a_sz;
+      if (aystride == 1)
+        a_sz = rystride;
+      else
+        a_sz = a_dim1;
+
+      t1_dim = a_sz * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_COMPLEX_16));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_COMPLEX_16)0;
 
       /* Start turning the crank. */
       i1 = n;

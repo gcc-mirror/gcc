@@ -1,8 +1,8 @@
-// { dg-options "-lstdc++fs" }
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,18 +34,18 @@ test01()
 
   path pp = p;
   pp += p;
-  VERIFY( pp.native() == "/foo/bar/foo/bar" );
+  VERIFY( pp.string() == "/foo/bar/foo/bar" );
   VERIFY( std::distance(pp.begin(), pp.end()) == 5 );
 
   path q("foo/bar");
 
   path qq = q;
   qq += q;
-  VERIFY( qq.native() == "foo/barfoo/bar" );
+  VERIFY( qq.string() == "foo/barfoo/bar" );
   VERIFY( std::distance(qq.begin(), qq.end()) == 3 );
 
   q += p;
-  VERIFY( q.native() == "foo/bar/foo/bar" );
+  VERIFY( q.string() == "foo/bar/foo/bar" );
   VERIFY( std::distance(q.begin(), q.end()) == 4 );
 }
 

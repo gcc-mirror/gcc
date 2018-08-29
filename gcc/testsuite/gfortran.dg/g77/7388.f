@@ -8,5 +8,5 @@ C { dg-options "-fbounds-check" }
       m2 = 7
       buff(i) = 'tcase0a'
       write(line,*) buff(i)(m1:m2)
-      if (line .ne. ' tcase0a') call abort
+      if (line .ne. ' tcase0a') STOP 1
       end

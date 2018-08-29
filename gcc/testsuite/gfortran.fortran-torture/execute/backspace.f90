@@ -9,6 +9,6 @@
         read(10,*)C
         backspace(10) 
         read(10,*) C
-        if (C.ne.'a') call abort
+        if (C.ne.'a') STOP 1
         close(10,STATUS='DELETE')
         end

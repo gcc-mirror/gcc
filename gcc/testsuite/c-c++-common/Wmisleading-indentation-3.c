@@ -68,7 +68,7 @@ void fn_14 (void)
 
 /* { dg-begin-multiline-output "" }
    for ((VAR) = (START); (VAR) < (STOP); (VAR++))
-   ^
+   ^~~
    { dg-end-multiline-output "" } */
 /* { dg-begin-multiline-output "" }
    FOR_EACH (i, 0, 10)

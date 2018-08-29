@@ -29,5 +29,5 @@ end module gd_calc
   forall (i = 1:ndim) outputs_(i)%signal_number = ndim + 1 - i
   used_ = (/.true., .false., .true., .true./)
   call activate_gd_calcs (used_, outputs_)
-  if (any (outputs_(ndim:1:-1)%used .neqv. used_)) call abort ()
+  if (any (outputs_(ndim:1:-1)%used .neqv. used_)) STOP 1
 end

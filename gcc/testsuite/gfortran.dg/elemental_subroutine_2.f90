@@ -47,18 +47,18 @@ program test_assign
   forall (j = 1:2, k = 1:2)
     i(j, k) = i_from_itype (x (j, k))
   end forall
-  if (any(reshape (i, (/4/)).ne.(/1,2,3,4/))) call abort ()
+  if (any(reshape (i, (/4/)).ne.(/1,2,3,4/))) STOP 1
 
 ! Check the interface assignment (not part of the patch).
   x = reshape ((/(itype (j**2, "b"), j = 1,4)/), (/2,2/))
   i = x
-  if (any(reshape (i, (/4/)).ne.(/1,4,9,16/))) call abort ()
+  if (any(reshape (i, (/4/)).ne.(/1,4,9,16/))) STOP 2
 
 ! Use the interface assignment within a forall block.
   x = reshape ((/(itype (j**3, "c"), j = 1,4)/), (/2,2/))
   forall (j = 1:2, k = 1:2)
     i(j, k) = x (j, k)
   end forall
-  if (any(reshape (i, (/4/)).ne.(/1,8,27,64/))) call abort ()
+  if (any(reshape (i, (/4/)).ne.(/1,8,27,64/))) STOP 3
 
 end program test_assign

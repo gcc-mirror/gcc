@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 // Make sure that we check partial concept ids
 // with variable concepts.

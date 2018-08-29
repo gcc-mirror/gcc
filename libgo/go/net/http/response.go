@@ -27,6 +27,9 @@ var respExcludeHeader = map[string]bool{
 
 // Response represents the response from an HTTP request.
 //
+// The Client and Transport return Responses from servers once
+// the response headers have been received. The response body
+// is streamed on demand as the Body field is read.
 type Response struct {
 	Status     string // e.g. "200 OK"
 	StatusCode int    // e.g. 200
@@ -37,22 +40,26 @@ type Response struct {
 	// Header maps header keys to values. If the response had multiple
 	// headers with the same key, they may be concatenated, with comma
 	// delimiters.  (Section 4.2 of RFC 2616 requires that multiple headers
-	// be semantically equivalent to a comma-delimited sequence.) Values
-	// duplicated by other fields in this struct (e.g., ContentLength) are
-	// omitted from Header.
+	// be semantically equivalent to a comma-delimited sequence.) When
+	// Header values are duplicated by other fields in this struct (e.g.,
+	// ContentLength, TransferEncoding, Trailer), the field values are
+	// authoritative.
 	//
 	// Keys in the map are canonicalized (see CanonicalHeaderKey).
 	Header Header
 
 	// Body represents the response body.
 	//
+	// The response body is streamed on demand as the Body field
+	// is read. If the network connection fails or the server
+	// terminates the response, Body.Read calls return an error.
+	//
 	// The http Client and Transport guarantee that Body is always
 	// non-nil, even on responses without a body or responses with
 	// a zero-length body. It is the caller's responsibility to
-	// close Body. The default HTTP client's Transport does not
-	// attempt to reuse HTTP/1.0 or HTTP/1.1 TCP connections
-	// ("keep-alive") unless the Body is read to completion and is
-	// closed.
+	// close Body. The default HTTP client's Transport may not
+	// reuse HTTP/1.x "keep-alive" TCP connections if the Body is
+	// not read to completion and closed.
 	//
 	// The Body is automatically dechunked if the server replied
 	// with a "chunked" Transfer-Encoding.
@@ -152,23 +159,23 @@ func ReadResponse(r *bufio.Reader, req *Request) (*Response, error) {
 		}
 		return nil, err
 	}
-	f := strings.SplitN(line, " ", 3)
-	if len(f) < 2 {
+	if i := strings.IndexByte(line, ' '); i == -1 {
 		return nil, &badStringError{"malformed HTTP response", line}
+	} else {
+		resp.Proto = line[:i]
+		resp.Status = strings.TrimLeft(line[i+1:], " ")
 	}
-	reasonPhrase := ""
-	if len(f) > 2 {
-		reasonPhrase = f[2]
+	statusCode := resp.Status
+	if i := strings.IndexByte(resp.Status, ' '); i != -1 {
+		statusCode = resp.Status[:i]
 	}
-	if len(f[1]) != 3 {
-		return nil, &badStringError{"malformed HTTP status code", f[1]}
+	if len(statusCode) != 3 {
+		return nil, &badStringError{"malformed HTTP status code", statusCode}
 	}
-	resp.StatusCode, err = strconv.Atoi(f[1])
+	resp.StatusCode, err = strconv.Atoi(statusCode)
 	if err != nil || resp.StatusCode < 0 {
-		return nil, &badStringError{"malformed HTTP status code", f[1]}
+		return nil, &badStringError{"malformed HTTP status code", statusCode}
 	}
-	resp.Status = f[1] + " " + reasonPhrase
-	resp.Proto = f[0]
 	var ok bool
 	if resp.ProtoMajor, resp.ProtoMinor, ok = ParseHTTPVersion(resp.Proto); !ok {
 		return nil, &badStringError{"malformed HTTP version", resp.Proto}
@@ -319,4 +326,10 @@ func (r *Response) Write(w io.Writer) error {
 
 	// Success
 	return nil
+}
+
+func (r *Response) closeBody() {
+	if r.Body != nil {
+		r.Body.Close()
+	}
 }

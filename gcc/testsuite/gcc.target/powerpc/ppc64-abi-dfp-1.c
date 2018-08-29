@@ -1,5 +1,5 @@
 /* { dg-do run { target { powerpc64-*-* && { lp64 && dfprt } } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-options "-std=gnu99 -O2 -fno-strict-aliasing" } */
 
 /* Testcase to check for ABI compliance of parameter passing

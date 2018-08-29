@@ -1,6 +1,6 @@
 // Debugging vector implementation -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,6 +30,11 @@
 #define _GLIBCXX_DEBUG_VECTOR 1
 
 #pragma GCC system_header
+
+#include <bits/c++config.h>
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Tp, typename _Allocator> class vector;
+} } // namespace std::__debug
 
 #include <vector>
 #include <utility>
@@ -127,6 +132,9 @@ namespace __debug
       typedef typename _Base::const_iterator	_Base_const_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
 
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
+
     public:
       typedef typename _Base::reference			reference;
       typedef typename _Base::const_reference		const_reference;
@@ -182,8 +190,8 @@ namespace __debug
 #endif
 	vector(_InputIterator __first, _InputIterator __last,
 	       const _Allocator& __a = _Allocator())
-	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
-								     __last)),
+	: _Base(__gnu_debug::__base(
+		  __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last), __a) { }
 
 #if __cplusplus < 201103L
@@ -199,6 +207,8 @@ namespace __debug
       : _Base(__x, __a) { }
 
       vector(vector&& __x, const allocator_type& __a)
+	noexcept( noexcept(
+	  _Base(std::declval<_Base&&>()), std::declval<const allocator_type&>()) )
       : _Safe(std::move(__x._M_safe()), __a),
 	_Base(std::move(__x._M_base()), __a),
 	_Safe_vector(std::move(__x)) { }
@@ -757,7 +767,19 @@ namespace __debug
     _GLIBCXX_NOEXCEPT_IF(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
 
+#if __cpp_deduction_guides >= 201606
+  template<typename _InputIterator, typename _ValT
+	     = typename iterator_traits<_InputIterator>::value_type,
+	   typename _Allocator = allocator<_ValT>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    vector(_InputIterator, _InputIterator, _Allocator = _Allocator())
+      -> vector<_ValT, _Allocator>;
+#endif
+
 } // namespace __debug
+
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
   // DR 1182.
@@ -772,6 +794,14 @@ namespace __debug
     };
 #endif
 
+ template<typename _Iterator, typename _Container, typename _Sequence>
+    _Iterator
+    __niter_base(const __gnu_debug::_Safe_iterator<
+		 __gnu_cxx::__normal_iterator<_Iterator, _Container>,
+		 _Sequence, std::random_access_iterator_tag>& __it)
+    { return std::__niter_base(__it.base()); }
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 namespace __gnu_debug

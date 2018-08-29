@@ -1,4 +1,4 @@
-#   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #   calling print on it in gdb. When asking for the type it is
 #   the literal string with extra whitespace removed.
 # Argument 3 handles expected failures and the like
-proc gdb-test { args } {
+proc gdb-test { useline args } {
     if { ![isnative] || [is_remote target] } { return }
 
     if { [llength $args] >= 4 } {
@@ -54,13 +54,20 @@ proc gdb-test { args } {
 	set var $arg1
     }
 
+    set line [lindex $args 0]
+    if { [string range $line 0 0] == "@" } {
+	set line [string range $line 1 end]
+    } else {
+	set line [get-absolute-line $useline $line]
+    }
+
     set gdb_name $::env(GUALITY_GDB_NAME)
-    set testname "$testcase line [lindex $args 0] [lindex $args 1] == [lindex $args 2]"
+    set testname "$testcase line $line [lindex $args 1] == [lindex $args 2]"
     set output_file "[file rootname [file tail $prog]].exe"
     set cmd_file "[file rootname [file tail $prog]].gdb"
 
     set fd [open $cmd_file "w"]
-    puts $fd "break [lindex $args 0]"
+    puts $fd "break $line"
     puts $fd "run"
     puts $fd "$command $var"
     if { $command == "print" } {
@@ -138,4 +145,39 @@ proc gdb-test { args } {
     remote_close target
     file delete $cmd_file
     return
+}
+
+# Report the gdb path and version log the .log file
+# Argument 0 is the gdb path
+# Argument 1 is the location where gdb is used
+# 
+proc report_gdb { gdb loc } {
+    if { [catch { exec which $gdb } msg] } {
+	send_log "gdb not found in $loc: $msg\n"
+	return
+    }
+    set gdb [exec which $gdb]
+    send_log "gdb used in $loc: $gdb\n"
+
+    send_log "gdb used in $loc: "
+    if { [catch { exec $gdb -v } gdb_version] } {
+	send_log "getting version failed:\n"
+    } else {
+	send_log "version:\n"
+    }
+    send_log -- "---\n$gdb_version\n---\n"
+}
+
+# Argument 0 is the option list.
+# Return the option list, ensuring that at least -Og is present.
+
+proc guality_minimal_options { args } {
+    set options [lindex $args 0]
+    foreach opt $options {
+	if { [regexp -- "-Og" $opt] } {
+	    return $options
+	}
+    }
+    
+    return [lappend options "-Og"]
 }

@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-O2" }
-! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
+! { dg-skip-if "NaN not supported" { spu-*-* } }
 ! Tests that the PRs caused by the lack of gfc_simplify_transfer are
 ! now fixed. These were brought together in the meta-bug PR31237
 ! (TRANSFER intrinsic).
@@ -25,7 +25,7 @@ contains
     type (t), parameter :: u = t (42)
     integer,  parameter :: idx_list(1) = (/ 1 /)
     integer             :: j(1) = transfer (u,  idx_list)
-    if (j(1) .ne. 42) call abort ()
+    if (j(1) .ne. 42) STOP 1
   end subroutine pr18769
 
   subroutine pr30881 ()
@@ -38,17 +38,17 @@ contains
     SELECT CASE(I)
       CASE(TRANSFER(.TRUE.,K))
       CASE(TRANSFER(.FALSE.,K))
-        CALL ABORT()
+        STOP 2
       CASE DEFAULT
-        CALL ABORT()
+        STOP 3
     END SELECT
     I=TRANSFER(.FALSE.,K)
     SELECT CASE(I)
       CASE(TRANSFER(.TRUE.,K))
-        CALL ABORT()
+        STOP 4
       CASE(TRANSFER(.FALSE.,K))
       CASE DEFAULT
-      CALL ABORT()
+      STOP 5
     END SELECT
   END subroutine pr30881
 
@@ -58,7 +58,7 @@ contains
 !
     real(kind(0d0)) :: NaN = transfer(ishft(int(z'FFF80000',8),32),0d0)
     write (buffer,'(e12.5)') NaN
-    if (buffer(10:12) .ne. "NaN") call abort ()
+    if (buffer(10:12) .ne. "NaN") STOP 6
   end subroutine pr31194
 
   subroutine pr31216 ()
@@ -73,7 +73,7 @@ contains
     SELECT CASE(I)
       CASE (TRANSFER(1.0/3.0,1))
       CASE DEFAULT
-        CALL ABORT()
+        STOP 7
     END SELECT
   END subroutine pr31216
 
@@ -83,6 +83,6 @@ contains
 !
     INTEGER(KIND=1) :: i(1)
     i = (/ TRANSFER("a", 0_1) /)
-    if (i(1) .ne. ichar ("a")) call abort ()
+    if (i(1) .ne. ichar ("a")) STOP 8
   END subroutine pr31427
 end program simplify_transfer

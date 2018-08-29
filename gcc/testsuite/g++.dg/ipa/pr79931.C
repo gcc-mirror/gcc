@@ -21,4 +21,5 @@ NodeImpl *AttrImpl::insertBefore(NodeImpl *newChild, NodeImpl *refChild) {
   NodeImpl *oldparent = newChild->getParentNode();
   oldparent->removeChild(newChild);
   this->getOwnerDocument()->getRanges();
+  return 0;
 }

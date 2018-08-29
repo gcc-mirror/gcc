@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 template<typename T1, typename T2>
 concept bool C1 = true;

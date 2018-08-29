@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -16,6 +16,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -57,6 +59,7 @@ static const struct cpu_names {
   { "UltraSPARC-T2+",	"niagara2" },
   { "SPARC-T3",		"niagara3" },
   { "SPARC-T4",		"niagara4" },
+  { "SPARC-T5",		"niagara4" },
 #else
   { "SuperSparc",	"supersparc" },
   { "HyperSparc",	"hypersparc" },
@@ -73,10 +76,12 @@ static const struct cpu_names {
   { "UltraSparc T2",	"niagara2" },
   { "UltraSparc T3",	"niagara3" },
   { "UltraSparc T4",	"niagara4" },
+  { "UltraSparc T5",	"niagara4" },
   { "LEON",		"leon3" },
 #endif
   { "SPARC-M7",		"niagara7" },
   { "SPARC-S7",		"niagara7" },
+  { "SPARC-M8",		"m8" },
   { NULL,	NULL }
   };
 

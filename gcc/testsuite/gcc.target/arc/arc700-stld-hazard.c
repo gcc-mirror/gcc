@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=arc700" } */
+/* { dg-options "-mcpu=arc700 -mno-sdata" } */
 
 volatile int a;
 volatile int b;

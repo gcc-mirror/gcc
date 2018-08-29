@@ -35,17 +35,17 @@
 	i = 2
 	j = 6
 	ret = f1 (str, i, j)
-	if ((i .ne. 2) .or. (j .ne. 6)) call abort ()
-	if (ret .ne. 'BCDEF') call abort ()
+	if ((i .ne. 2) .or. (j .ne. 6)) STOP 1
+	if (ret .ne. 'BCDEF') STOP 2
 	ret = e1 (str, i, j)
-	if ((i .ne. 3) .or. (j .ne. 5)) call abort ()
-	if (ret .ne. 'CDE') call abort ()
+	if ((i .ne. 3) .or. (j .ne. 5)) STOP 3
+	if (ret .ne. 'CDE') STOP 4
 	ret = e2 (str, i, j)
-	if ((i .ne. 3) .or. (j .ne. 4)) call abort ()
-	if (ret .ne. 'CD') call abort ()
-	if (f3 () .ne. 'ABCDE') call abort ()
-	if (e3 (1) .ne. 'abcde') call abort ()
-	if (e4 (1) .ne. 'abcde') call abort ()
-	if (e3 (0) .ne. 'UVWXY') call abort ()
-	if (e4 (0) .ne. 'UVWXY') call abort ()
+	if ((i .ne. 3) .or. (j .ne. 4)) STOP 5
+	if (ret .ne. 'CD') STOP 6
+	if (f3 () .ne. 'ABCDE') STOP 7
+	if (e3 (1) .ne. 'abcde') STOP 8
+	if (e4 (1) .ne. 'abcde') STOP 9
+	if (e3 (0) .ne. 'UVWXY') STOP 10
+	if (e4 (0) .ne. 'UVWXY') STOP 11
 	end program

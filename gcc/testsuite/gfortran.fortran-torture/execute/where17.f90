@@ -11,5 +11,5 @@ program where_17
    elsewhere (a .le. 3)
      a = 4
    endwhere
-   if (any (a .ne. (/2, 3, 4/))) call abort
+   if (any (a .ne. (/2, 3, 4/))) STOP 1
 end program

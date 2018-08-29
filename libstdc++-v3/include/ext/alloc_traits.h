@@ -1,6 +1,6 @@
 // Allocator traits -*- C++ -*-
 
-// Copyright (C) 2011-2017 Free Software Foundation, Inc.
+// Copyright (C) 2011-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  * @brief  Uniform interface to C++98 and C++11 allocators.
  * @ingroup allocators
 */
-template<typename _Alloc>
+template<typename _Alloc, typename = typename _Alloc::value_type>
   struct __alloc_traits
 #if __cplusplus >= 201103L
   : std::allocator_traits<_Alloc>
@@ -81,7 +81,7 @@ template<typename _Alloc>
       static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
       construct(_Alloc& __a, _Ptr __p, _Args&&... __args)
       {
-	_Base_type::construct(__a, std::addressof(*__p),
+	_Base_type::construct(__a, std::__to_address(__p),
 			      std::forward<_Args>(__args)...);
       }
 
@@ -89,7 +89,7 @@ template<typename _Alloc>
     template<typename _Ptr>
       static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
       destroy(_Alloc& __a, _Ptr __p)
-      { _Base_type::destroy(__a, std::addressof(*__p)); }
+      { _Base_type::destroy(__a, std::__to_address(__p)); }
 
     static _Alloc _S_select_on_copy(const _Alloc& __a)
     { return _Base_type::select_on_container_copy_construction(__a); }

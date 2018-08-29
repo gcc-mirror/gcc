@@ -1,11 +1,8 @@
-/* This code uses nvptx inline assembly guarded with acc_on_device, which is
-   not optimized away at -O0, and then confuses the target assembler.
-   { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
-
 /* { dg-additional-options "-fopenacc-dim=32" } */
 
 #include <stdio.h>
 #include <openacc.h>
+#include <gomp-constants.h>
 
 static int check (const int *ary, int size, int gp, int wp, int vp)
 {
@@ -79,13 +76,13 @@ static int __attribute__((noinline)) place ()
 {
   int r = 0;
 
-  if (acc_on_device (acc_device_nvidia))
+  if (acc_on_device (acc_device_not_host))
     {
-      int g = 0, w = 0, v = 0;
+      int g, w, v;
 
-      __asm__ volatile ("mov.u32 %0,%%ctaid.x;" : "=r" (g));
-      __asm__ volatile ("mov.u32 %0,%%tid.y;" : "=r" (w));
-      __asm__ volatile ("mov.u32 %0,%%tid.x;" : "=r" (v));
+      g = __builtin_goacc_parlevel_id (GOMP_DIM_GANG);
+      w = __builtin_goacc_parlevel_id (GOMP_DIM_WORKER);
+      v = __builtin_goacc_parlevel_id (GOMP_DIM_VECTOR);
       r = (g << 16) | (w << 8) | v;
     }
   return r;

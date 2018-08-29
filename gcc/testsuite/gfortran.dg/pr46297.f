@@ -17,9 +17,9 @@
       real r1(5), r2(5), r3(5)
       real s1(2), s2(2), s3(2)
       double precision d1, d2, d3
-      if (s1(1) .ne. 1.) call abort
-      if (s3(1) .ne. 3.) call abort
-      if (r3(1) .ne. 3.) call abort
-      if (d3 .ne. 30.) call abort
-      if (i3 .ne. 3) call abort
+      if (s1(1) .ne. 1.) STOP 1
+      if (s3(1) .ne. 3.) STOP 2
+      if (r3(1) .ne. 3.) STOP 3
+      if (d3 .ne. 30.) STOP 4
+      if (i3 .ne. 3) STOP 5
       end

@@ -13,5 +13,5 @@ program blank_common
   complex z
   a = 999.0_4
   b = -999.0_4
-  if (z.ne.cmplx (a,b)) call abort ()
+  if (z.ne.cmplx (a,b)) STOP 1
 end program blank_common

@@ -8,4 +8,4 @@ struct A
                 int z[1];
 };
 
-A a = { z:{} }; // { dg-message "unimplemented" }
+A a = { z:{} };

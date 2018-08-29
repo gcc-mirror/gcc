@@ -13,5 +13,5 @@ program main
   a2(1)%entry = 1
   a1(1:1) = pack (a2(1:1), mask = [.true.])
   deallocate (a2(1)%entry)
-  if (a1(1)%entry .ne. 1) call abort
+  if (a1(1)%entry .ne. 1) STOP 1
 end program main

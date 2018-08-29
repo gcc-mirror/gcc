@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -67,6 +67,7 @@ VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI */
 VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI */
 VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */
 VECTOR_MODES (FLOAT, 16);     /*       V8HF V4SF V2DF */
+VECTOR_MODE (FLOAT, HF, 2);   /*                 V2HF */
 
 /* Fraction and accumulator vector modes.  */
 VECTOR_MODES (FRACT, 4);      /* V4QQ  V2HQ */

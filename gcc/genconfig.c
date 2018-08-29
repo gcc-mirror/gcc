@@ -1,6 +1,6 @@
 /* Generate from machine description:
    - some #define configuration flags.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -72,6 +72,7 @@ walk_insn_part (rtx part, int recog_p, int non_pc_set_src)
   switch (code)
     {
     case CLOBBER:
+    case CLOBBER_HIGH:
       clobbers_seen_this_insn++;
       break;
 

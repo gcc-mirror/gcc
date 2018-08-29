@@ -26,7 +26,7 @@ int64_t
 SwapInt64 (int64_t *addr, int64_t new)
 {
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   return __atomic_exchange_n (addr, new, __ATOMIC_SEQ_CST);
 }
 
@@ -48,7 +48,7 @@ uint64_t
 SwapUint64 (uint64_t *addr, uint64_t new)
 {
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   return __atomic_exchange_n (addr, new, __ATOMIC_SEQ_CST);
 }
 
@@ -58,16 +58,6 @@ uintptr_t SwapUintptr (uintptr_t *, uintptr_t)
 
 uintptr_t
 SwapUintptr (uintptr_t *addr, uintptr_t new)
-{
-  return __atomic_exchange_n (addr, new, __ATOMIC_SEQ_CST);
-}
-
-void *SwapPointer (void **, void *)
-  __asm__ (GOSYM_PREFIX "sync_atomic.SwapPointer")
-  __attribute__ ((no_split_stack));
-
-void *
-SwapPointer (void **addr, void *new)
 {
   return __atomic_exchange_n (addr, new, __ATOMIC_SEQ_CST);
 }
@@ -122,16 +112,6 @@ _Bool CompareAndSwapUintptr (uintptr_t *, uintptr_t, uintptr_t)
 
 _Bool
 CompareAndSwapUintptr (uintptr_t *val, uintptr_t old, uintptr_t new)
-{
-  return __sync_bool_compare_and_swap (val, old, new);
-}
-
-_Bool CompareAndSwapPointer (void **, void *, void *)
-  __asm__ (GOSYM_PREFIX "sync_atomic.CompareAndSwapPointer")
-  __attribute__ ((no_split_stack));
-
-_Bool
-CompareAndSwapPointer (void **val, void *old, void *new)
 {
   return __sync_bool_compare_and_swap (val, old, new);
 }
@@ -215,7 +195,7 @@ LoadInt64 (int64_t *addr)
   int64_t v;
 
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   v = *addr;
   while (! __sync_bool_compare_and_swap (addr, v, v))
     v = *addr;
@@ -247,7 +227,7 @@ LoadUint64 (uint64_t *addr)
   uint64_t v;
 
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   v = *addr;
   while (! __sync_bool_compare_and_swap (addr, v, v))
     v = *addr;
@@ -308,7 +288,7 @@ StoreInt64 (int64_t *addr, int64_t val)
   int64_t v;
 
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   v = *addr;
   while (! __sync_bool_compare_and_swap (addr, v, val))
     v = *addr;
@@ -338,7 +318,7 @@ StoreUint64 (uint64_t *addr, uint64_t val)
   uint64_t v;
 
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   v = *addr;
   while (! __sync_bool_compare_and_swap (addr, v, val))
     v = *addr;
@@ -352,20 +332,6 @@ void
 StoreUintptr (uintptr_t *addr, uintptr_t val)
 {
   uintptr_t v;
-
-  v = *addr;
-  while (! __sync_bool_compare_and_swap (addr, v, val))
-    v = *addr;
-}
-
-void StorePointer (void **addr, void *val)
-  __asm__ (GOSYM_PREFIX "sync_atomic.StorePointer")
-  __attribute__ ((no_split_stack));
-
-void
-StorePointer (void **addr, void *val)
-{
-  void *v;
 
   v = *addr;
   while (! __sync_bool_compare_and_swap (addr, v, val))

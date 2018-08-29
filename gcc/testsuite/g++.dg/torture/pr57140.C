@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
 
 namespace std {
     typedef long unsigned int size_t;

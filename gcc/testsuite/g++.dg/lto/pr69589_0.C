@@ -1,5 +1,5 @@
 // { dg-lto-do link }
-// { dg-lto-options "-O2 -rdynamic" }
+// { dg-lto-options { "-O2 -rdynamic -Wno-return-type" } }
 // { dg-extra-ld-options "-r -nostdlib" }
 // { dg-require-effective-target rdynamic }
 

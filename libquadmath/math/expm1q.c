@@ -35,7 +35,7 @@
  *
  */
 
-/* Copyright 2001 by Stephen L. Moshier 
+/* Copyright 2001 by Stephen L. Moshier
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -82,8 +82,6 @@ static const __float128
 
   C1 = 6.93145751953125E-1Q,
   C2 = 1.428606820309417232121458176568075500134E-6Q,
-/* ln (2^16384 * (1 - 2^-113)) */
-  maxlog = 1.1356523406294143949491931077970764891253E4Q,
 /* ln 2^-114 */
   minarg = -7.9018778583833765273564461846232128760607E1Q;
 
@@ -108,32 +106,29 @@ expm1q (__float128 x)
     }
   if (ix >= 0x7fff0000)
     {
-      /* Infinity. */
+      /* Infinity (which must be negative infinity). */
       if (((ix & 0xffff) | u.words32.w1 | u.words32.w2 | u.words32.w3) == 0)
-	{
-	  if (sign)
-	    return -1.0Q;
-	  else
-	    return x;
-	}
-      /* NaN. No invalid exception. */
-      return x;
+	return -1.0Q;
+      /* NaN.  Invalid exception if signaling.  */
+      return x + x;
     }
 
   /* expm1(+- 0) = +- 0.  */
   if ((ix == 0) && (u.words32.w1 | u.words32.w2 | u.words32.w3) == 0)
     return x;
 
-  /* Overflow.  */
-  if (x > maxlog)
-    {
-      errno = ERANGE;
-      return (HUGE_VALQ * HUGE_VALQ);
-    }
-
   /* Minimum value.  */
   if (x < minarg)
     return (4.0/HUGE_VALQ - 1.0Q);
+
+  /* Avoid internal underflow when result does not underflow, while
+     ensuring underflow (without returning a zero of the wrong sign)
+     when the result does underflow.  */
+  if (fabsq (x) < 0x1p-113Q)
+    {
+      math_check_force_underflow (x);
+      return x;
+    }
 
   /* Express x = ln 2 (k + remainder), remainder not exceeding 1/2. */
   xx = C1 + C2;			/* ln 2. */

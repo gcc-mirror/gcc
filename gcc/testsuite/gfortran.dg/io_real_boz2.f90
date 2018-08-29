@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-shouldfail "Real BOZ not allowed" }
-! { dg-options "-fall-intrinsics -std=f2003" }
+! { dg-options "-std=f2003" }
 ! Test for invalid (F95/F2003) writing of real with octal edit descriptor
 ! PR fortran/29625
 program real_boz

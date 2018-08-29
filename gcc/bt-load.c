@@ -1,5 +1,5 @@
 /* Perform branch target register load optimizations.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -185,7 +185,7 @@ static int first_btr, last_btr;
 static int
 basic_block_freq (const_basic_block bb)
 {
-  return bb->frequency;
+  return bb->count.to_frequency (cfun);
 }
 
 /* If the rtx at *XP references (sets or reads) any branch target
@@ -1391,10 +1391,10 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
       for (i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); i++)
 	{
 	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
-	  fprintf (dump_file,
-		   "Basic block %d: count = %" PRId64
-		   " loop-depth = %d idom = %d\n",
-		   i, (int64_t) bb->count, bb_loop_depth (bb),
+	  fprintf (dump_file, "Basic block %d: count = ", i);
+	  bb->count.dump (dump_file);
+	  fprintf (dump_file, " loop-depth = %d idom = %d\n",
+		   bb_loop_depth (bb),
 		   get_immediate_dominator (CDI_DOMINATORS, bb)->index);
 	}
     }

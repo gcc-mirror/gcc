@@ -1,5 +1,5 @@
 /* RISC-V-specific code for C family languages.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
 
 This file is part of GCC.
@@ -17,6 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -37,6 +39,9 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   if (TARGET_RVC)
     builtin_define ("__riscv_compressed");
   
+  if (TARGET_RVE)
+    builtin_define ("__riscv_32e");
+
   if (TARGET_ATOMIC)
     builtin_define ("__riscv_atomic");
   
@@ -60,6 +65,7 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   switch (riscv_abi)
     {
     case ABI_ILP32:
+    case ABI_ILP32E:
     case ABI_LP64:
       builtin_define ("__riscv_float_abi_soft");
       break;

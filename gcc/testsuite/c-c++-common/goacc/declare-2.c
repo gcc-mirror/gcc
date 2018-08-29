@@ -29,13 +29,7 @@ int v6;
 #pragma acc declare present_or_copy(v6) /* { dg-error "at file scope" } */
 
 int v7;
-#pragma acc declare present_or_copyin(v7) /* { dg-error "at file scope" } */
-
-int v8;
-#pragma acc declare present_or_copyout(v8) /* { dg-error "at file scope" } */
-
-int v9;
-#pragma acc declare present_or_create(v9) /* { dg-error "at file scope" } */
+#pragma acc declare present_or_copyout(v7) /* { dg-error "at file scope" } */
 
 int va10;
 #pragma acc declare create (va10)
@@ -67,13 +61,7 @@ f (void)
 #pragma acc declare present_or_copy(ve3) /* { dg-error "invalid use of" } */
 
   extern int ve4;
-#pragma acc declare present_or_copyin(ve4) /* { dg-error "invalid use of" } */
+#pragma acc declare present_or_copyout(ve4) /* { dg-error "invalid use of" } */
 
-  extern int ve5;
-#pragma acc declare present_or_copyout(ve5) /* { dg-error "invalid use of" } */
-
-  extern int ve6;
-#pragma acc declare present_or_create(ve6) /* { dg-error "invalid use of" } */
-
-#pragma acc declare present (v9) /* { dg-error "invalid use of" } */
+#pragma acc declare present (v2) /* { dg-error "invalid use of" } */
 }

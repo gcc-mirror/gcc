@@ -9,6 +9,6 @@ program foo
   real(kind=8) d
   s = "-.18774312893273    "
   read(unit=s, fmt='(g20.14)') d
-  if (d + 0.18774312893273d0 .gt. 1d-13) call abort
+  if (d + 0.18774312893273d0 .gt. 1d-13) STOP 1
 end program
 

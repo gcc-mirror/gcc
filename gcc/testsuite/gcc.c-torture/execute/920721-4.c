@@ -1,4 +1,5 @@
-#ifndef NO_LABEL_VALUES
+/* { dg-require-effective-target label_values } */
+
 int try (int num) {
   __label__ lab1, lab2, lab3, lab4, lab5, lab6, default_lab;
 
@@ -55,6 +56,3 @@ main()
     }
   exit(0);
 }
-#else
-main(){ exit (0); }
-#endif

@@ -39,4 +39,4 @@ F::m_fn2 ()
     else
       D ();
   A b;
-}
+}	// { dg-warning "control reaches end of non-void function" }

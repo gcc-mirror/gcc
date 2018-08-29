@@ -1,5 +1,5 @@
 /* Implementation of the MAXLOC intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -24,19 +24,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
+#include <assert.h>
 
 
 #if defined (HAVE_GFC_REAL_4) && defined (HAVE_GFC_INTEGER_4)
 
+#define HAVE_BACK_ARG 1
+
 
 extern void maxloc1_4_r4 (gfc_array_i4 * const restrict, 
-	gfc_array_r4 * const restrict, const index_type * const restrict);
+	gfc_array_r4 * const restrict, const index_type * const restrict, GFC_LOGICAL_4 back);
 export_proto(maxloc1_4_r4);
 
 void
 maxloc1_4_r4 (gfc_array_i4 * const restrict retarray, 
 	gfc_array_r4 * const restrict array, 
-	const index_type * const restrict pdim)
+	const index_type * const restrict pdim, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -52,8 +55,15 @@ maxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
   int continue_loop;
 
   /* Make dim zero based to avoid confusion.  */
-  dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+  dim = (*pdim) - 1;
+
+  if (unlikely (dim < 0 || dim > rank))
+    {
+      runtime_error ("Dim argument incorrect in MAXLOC intrinsic: "
+ 		     "is %ld, should be between 1 and %ld",
+		     (long int) dim + 1, (long int) rank + 1);
+    }
 
   len = GFC_DESCRIPTOR_EXTENT(array,dim);
   if (len < 0)
@@ -93,7 +103,7 @@ maxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      retarray->dtype.rank = rank;
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
@@ -149,10 +159,14 @@ maxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 	  *dest = 0;
 	else
 	  {
+#if ! defined HAVE_BACK_ARG
 	    for (n = 0; n < len; n++, src += delta)
 	      {
+#endif
 
 #if defined (GFC_REAL_4_QUIET_NAN)
+     	     for (n = 0; n < len; n++, src += delta)
+	       {
 		if (*src >= maxval)
 		  {
 		    maxval = *src;
@@ -160,10 +174,12 @@ maxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 		    break;
 		  }
 	      }
+#else
+	    n = 0;
+#endif
 	    for (; n < len; n++, src += delta)
 	      {
-#endif
-		if (*src > maxval)
+		if (back ? *src >= maxval : *src > maxval)
 		  {
 		    maxval = *src;
 		    result = (GFC_INTEGER_4)n + 1;
@@ -207,14 +223,14 @@ maxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 
 extern void mmaxloc1_4_r4 (gfc_array_i4 * const restrict, 
 	gfc_array_r4 * const restrict, const index_type * const restrict,
-	gfc_array_l1 * const restrict);
+	gfc_array_l1 * const restrict, GFC_LOGICAL_4 back);
 export_proto(mmaxloc1_4_r4);
 
 void
 mmaxloc1_4_r4 (gfc_array_i4 * const restrict retarray, 
 	gfc_array_r4 * const restrict array, 
 	const index_type * const restrict pdim, 
-	gfc_array_l1 * const restrict mask)
+	gfc_array_l1 * const restrict mask, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -224,8 +240,8 @@ mmaxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
   GFC_INTEGER_4 * restrict dest;
   const GFC_REAL_4 * restrict base;
   const GFC_LOGICAL_1 * restrict mbase;
-  int rank;
-  int dim;
+  index_type rank;
+  index_type dim;
   index_type n;
   index_type len;
   index_type delta;
@@ -234,6 +250,14 @@ mmaxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+
+
+  if (unlikely (dim < 0 || dim > rank))
+    {
+      runtime_error ("Dim argument incorrect in MAXLOC intrinsic: "
+ 		     "is %ld, should be between 1 and %ld",
+		     (long int) dim + 1, (long int) rank + 1);
+    }
 
   len = GFC_DESCRIPTOR_EXTENT(array,dim);
   if (len <= 0)
@@ -293,7 +317,7 @@ mmaxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      retarray->dtype.rank = rank;
 
       if (alloc_size == 0)
 	{
@@ -371,13 +395,23 @@ mmaxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 	      result = result2;
 	    else
 #endif
-	    for (; n < len; n++, src += delta, msrc += mdelta)
-	      {
-		if (*msrc && *src > maxval)
-		  {
-		    maxval = *src;
-		    result = (GFC_INTEGER_4)n + 1;
-		  }
+	    if (back)
+	      for (; n < len; n++, src += delta, msrc += mdelta)
+	      	{
+		  if (*msrc && unlikely (*src >= maxval))
+		    {
+		      maxval = *src;
+		      result = (GFC_INTEGER_4)n + 1;
+		    }
+		}
+	    else
+	      for (; n < len; n++, src += delta, msrc += mdelta)
+	        {
+		  if (*msrc && unlikely (*src > maxval))
+		    {
+		      maxval = *src;
+		      result = (GFC_INTEGER_4)n + 1;
+		    }
 	  }
 	*dest = result;
       }
@@ -418,14 +452,14 @@ mmaxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 
 extern void smaxloc1_4_r4 (gfc_array_i4 * const restrict, 
 	gfc_array_r4 * const restrict, const index_type * const restrict,
-	GFC_LOGICAL_4 *);
+	GFC_LOGICAL_4 *, GFC_LOGICAL_4 back);
 export_proto(smaxloc1_4_r4);
 
 void
 smaxloc1_4_r4 (gfc_array_i4 * const restrict retarray, 
 	gfc_array_r4 * const restrict array, 
 	const index_type * const restrict pdim, 
-	GFC_LOGICAL_4 * mask)
+	GFC_LOGICAL_4 * mask, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -438,12 +472,23 @@ smaxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 
   if (*mask)
     {
+#ifdef HAVE_BACK_ARG
+      maxloc1_4_r4 (retarray, array, pdim, back);
+#else
       maxloc1_4_r4 (retarray, array, pdim);
+#endif
       return;
     }
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+
+  if (unlikely (dim < 0 || dim > rank))
+    {
+      runtime_error ("Dim argument incorrect in MAXLOC intrinsic: "
+ 		     "is %ld, should be between 1 and %ld",
+		     (long int) dim + 1, (long int) rank + 1);
+    }
 
   for (n = 0; n < dim; n++)
     {
@@ -478,7 +523,7 @@ smaxloc1_4_r4 (gfc_array_i4 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      retarray->dtype.rank = rank;
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 

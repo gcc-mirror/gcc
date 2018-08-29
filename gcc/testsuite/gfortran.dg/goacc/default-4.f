@@ -8,7 +8,7 @@
       REAL, DIMENSION (2) :: F1_B
 
 !$ACC DATA COPYIN (F1_A) COPYOUT (F1_B)
-! { dg-final { scan-tree-dump-times "omp target oacc_data map\\(force_to:f1_a \[^\\)\]+\\) map\\(force_from:f1_b" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_data map\\(to:f1_a \[^\\)\]+\\) map\\(from:f1_b" 1 "gimple" } }
 !$ACC KERNELS
 ! { dg-final { scan-tree-dump-times "omp target oacc_kernels map\\(tofrom:f1_b \[^\\)\]+\\) map\\(tofrom:f1_a" 1 "gimple" } }
       F1_B(1) = F1_A;
@@ -26,7 +26,7 @@
       REAL, DIMENSION (2) :: F2_B
 
 !$ACC DATA COPYIN (F2_A) COPYOUT (F2_B)
-! { dg-final { scan-tree-dump-times "omp target oacc_data map\\(force_to:f2_a \[^\\)\]+\\) map\\(force_from:f2_b" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_data map\\(to:f2_a \[^\\)\]+\\) map\\(from:f2_b" 1 "gimple" } }
 !$ACC KERNELS DEFAULT (NONE)
 ! { dg-final { scan-tree-dump-times "omp target oacc_kernels default\\(none\\) map\\(tofrom:f2_b \[^\\)\]+\\) map\\(tofrom:f2_a" 1 "gimple" } }
       F2_B(1) = F2_A;
@@ -44,7 +44,7 @@
       REAL, DIMENSION (2) :: F3_B
 
 !$ACC DATA COPYIN (F3_A) COPYOUT (F3_B)
-! { dg-final { scan-tree-dump-times "omp target oacc_data map\\(force_to:f3_a \[^\\)\]+\\) map\\(force_from:f3_b" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_data map\\(to:f3_a \[^\\)\]+\\) map\\(from:f3_b" 1 "gimple" } }
 !$ACC KERNELS DEFAULT (PRESENT)
 ! { dg-final { scan-tree-dump-times "omp target oacc_kernels default\\(present\\) map\\(tofrom:f3_b \[^\\)\]+\\) map\\(tofrom:f3_a" 1 "gimple" } }
       F3_B(1) = F3_A;

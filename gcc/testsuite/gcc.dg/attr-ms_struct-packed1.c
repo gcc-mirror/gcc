@@ -1,5 +1,5 @@
 /* Test for MS structure with packed attribute.  */
-/* { dg-do run { target *-*-mingw* *-*-cygwin* i?86-*-darwin* } }
+/* { dg-do run { target i?86-*-* x86_64-*-* } }
 /* { dg-options "-std=gnu99" } */
 
 extern void abort ();

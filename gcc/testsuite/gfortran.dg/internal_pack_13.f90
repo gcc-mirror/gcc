@@ -29,6 +29,6 @@ contains
   subroutine bar(x)
     type(t) :: x(*)
     print *,x(1:4)%i
-    if (any (x(1:4)%i /= [1, 9, 3, 11])) call abort()
+    if (any (x(1:4)%i /= [1, 9, 3, 11])) STOP 1
   end subroutine
 end

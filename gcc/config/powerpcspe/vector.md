@@ -3,7 +3,7 @@
 ;; expander, and the actual vector instructions will be in altivec.md and
 ;; vsx.md
 
-;; Copyright (C) 2009-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2018 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -73,6 +73,16 @@
 			    (V2DF  "DF")
 			    (V1TI  "TI")
 			    (TI    "TI")])
+
+;; As above, but in lower case
+(define_mode_attr VEC_base_l [(V16QI "qi")
+			      (V8HI  "hi")
+			      (V4SI  "si")
+			      (V2DI  "di")
+			      (V4SF  "sf")
+			      (V2DF  "df")
+			      (V1TI  "ti")
+			      (TI    "ti")])
 
 ;; Same size integer type for floating point data
 (define_mode_attr VEC_int [(V4SF  "v4si")
@@ -1017,7 +1027,7 @@
 
 
 ;; Vector initialization, set, extract
-(define_expand "vec_init<mode>"
+(define_expand "vec_init<mode><VEC_base_l>"
   [(match_operand:VEC_E 0 "vlogical_operand" "")
    (match_operand:VEC_E 1 "" "")]
   "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
@@ -1036,7 +1046,7 @@
   DONE;
 })
 
-(define_expand "vec_extract<mode>"
+(define_expand "vec_extract<mode><VEC_base_l>"
   [(match_operand:<VEC_base> 0 "register_operand" "")
    (match_operand:VEC_E 1 "vlogical_operand" "")
    (match_operand 2 "const_int_operand" "")]

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the EPIPHANY cpu.
-   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -29,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "optabs.h"
 #include "emit-rtl.h"
 #include "recog.h"
@@ -169,6 +172,15 @@ static rtx_insn *frame_insn (rtx);
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK epiphany_hard_regno_mode_ok
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT epiphany_constant_alignment
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET epiphany_starting_frame_offset
 
 bool
 epiphany_is_interrupt_p (tree decl)
@@ -269,7 +281,7 @@ get_epiphany_condition_code (rtx comparison)
 {
   switch (GET_MODE (XEXP (comparison, 0)))
     {
-    case CCmode:
+    case E_CCmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ  : return 0;
@@ -285,28 +297,28 @@ get_epiphany_condition_code (rtx comparison)
 
 	default : gcc_unreachable ();
 	}
-    case CC_N_NEmode:
+    case E_CC_N_NEmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ: return 6;
 	case NE: return 7;
 	default: gcc_unreachable ();
 	}
-    case CC_C_LTUmode:
+    case E_CC_C_LTUmode:
       switch (GET_CODE (comparison))
 	{
 	case GEU: return 2;
 	case LTU: return 3;
 	default: gcc_unreachable ();
 	}
-    case CC_C_GTUmode:
+    case E_CC_C_GTUmode:
       switch (GET_CODE (comparison))
 	{
 	case LEU: return 3;
 	case GTU: return 2;
 	default: gcc_unreachable ();
 	}
-    case CC_FPmode:
+    case E_CC_FPmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ: return 10;
@@ -315,14 +327,14 @@ get_epiphany_condition_code (rtx comparison)
 	case LE: return 13;
 	default: gcc_unreachable ();
 	}
-    case CC_FP_EQmode:
+    case E_CC_FP_EQmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ: return 0;
 	case NE: return 1;
 	default: gcc_unreachable ();
 	}
-    case CC_FP_GTEmode:
+    case E_CC_FP_GTEmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ: return 0;
@@ -333,14 +345,14 @@ get_epiphany_condition_code (rtx comparison)
 	case UNLT : return 7;
 	default: gcc_unreachable ();
 	}
-    case CC_FP_ORDmode:
+    case E_CC_FP_ORDmode:
       switch (GET_CODE (comparison))
 	{
 	case ORDERED: return 9;
 	case UNORDERED: return 8;
 	default: gcc_unreachable ();
 	}
-    case CC_FP_UNEQmode:
+    case E_CC_FP_UNEQmode:
       switch (GET_CODE (comparison))
 	{
 	case UNEQ: return 9;
@@ -354,14 +366,15 @@ get_epiphany_condition_code (rtx comparison)
 }
 
 
-/* Return 1 if hard register REGNO can hold a value of machine_mode MODE.  */
-int
-hard_regno_mode_ok (int regno, machine_mode mode)
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+epiphany_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     return (regno & 1) == 0 && GPR_P (regno);
   else
-    return 1;
+    return true;
 }
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
@@ -449,13 +462,16 @@ epiphany_init_reg_tables (void)
 
 static const struct attribute_spec epiphany_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt",  0, 9, true,  false, false, epiphany_handle_interrupt_attribute, true },
-  { "forwarder_section", 1, 1, true, false, false, epiphany_handle_forwarder_attribute, false },
-  { "long_call",  0, 0, false, true, true, NULL, false },
-  { "short_call", 0, 0, false, true, true, NULL, false },
-  { "disinterrupt", 0, 0, false, true, true, NULL, true },
-  { NULL,         0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt",  0, 9, true,  false, false, true,
+    epiphany_handle_interrupt_attribute, NULL },
+  { "forwarder_section", 1, 1, true, false, false, false,
+    epiphany_handle_forwarder_attribute, NULL },
+  { "long_call",  0, 0, false, true, true, false, NULL, NULL },
+  { "short_call", 0, 0, false, true, true, false, NULL, NULL },
+  { "disinterrupt", 0, 0, false, true, true, true, NULL, NULL },
+  { NULL,         0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Handle an "interrupt" attribute; arguments as in
@@ -802,9 +818,9 @@ epiphany_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	{
 	/* There are a number of single-insn combiner patterns that use
 	   the flag side effects of arithmetic.  */
-	case CC_N_NEmode:
-	case CC_C_LTUmode:
-	case CC_C_GTUmode:
+	case E_CC_N_NEmode:
+	case E_CC_C_LTUmode:
+	case E_CC_C_GTUmode:
 	  return true;
 	default:
 	  return false;
@@ -2773,7 +2789,7 @@ epiphany_min_divisions_for_recip_mul (machine_mode mode)
 }
 
 static machine_mode
-epiphany_preferred_simd_mode (machine_mode mode ATTRIBUTE_UNUSED)
+epiphany_preferred_simd_mode (scalar_mode mode ATTRIBUTE_UNUSED)
 {
   return TARGET_VECT_DOUBLE ? DImode : SImode;
 }
@@ -3007,6 +3023,25 @@ epiphany_start_function (FILE *file, const char *name, tree decl)
     }
   switch_to_section (function_section (decl));
   ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
+}
+
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+epiphany_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST)
+    return MAX (align, FASTEST_ALIGNMENT);
+  return align;
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+
+static HOST_WIDE_INT
+epiphany_starting_frame_offset (void)
+{
+  return epiphany_stack_offset;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

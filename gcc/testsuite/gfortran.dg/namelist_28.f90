@@ -51,7 +51,7 @@ contains
           return
        end if
     end do
-    if (k.gt.10) call abort
+    if (k.gt.10) STOP 1
   end subroutine position_nml
 
   subroutine read_report (unit, status)
@@ -78,14 +78,14 @@ contains
        call position_nml (unit, "REPORT", status)
        if (stat /= 0) then
           ios = status
-          if (iuse /= 2) call abort()
+          if (iuse /= 2) STOP 1
           return
        end if
        read (unit, nml=REPORT, iostat=ios)
        if (ios /= 0) exit
        iuse = iuse + 1
     end do
-    if (k.gt.10) call abort
+    if (k.gt.10) STOP 2
     status = ios
   end subroutine read_report
 

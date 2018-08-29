@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in nvptx.c.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -41,6 +41,7 @@ extern void nvptx_function_end (FILE *);
 extern void nvptx_output_skip (FILE *, unsigned HOST_WIDE_INT);
 extern void nvptx_output_ascii (FILE *, const char *, unsigned HOST_WIDE_INT);
 extern void nvptx_register_pragmas (void);
+extern unsigned int nvptx_data_alignment (const_tree, unsigned int);
 
 #ifdef RTX_CODE
 extern void nvptx_expand_oacc_fork (unsigned);

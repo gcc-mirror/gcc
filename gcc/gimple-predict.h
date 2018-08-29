@@ -1,6 +1,6 @@
 /* Gimple prediction routines.
 
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -78,6 +78,14 @@ gimple_build_predict (enum br_predictor predictor, enum prediction outcome)
   gimple_predict_set_predictor (p, predictor);
   gimple_predict_set_outcome (p, outcome);
   return p;
+}
+
+/* Return true if GS is a GIMPLE_PREDICT statement.  */
+
+static inline bool
+is_gimple_predict (const gimple *gs)
+{
+  return gimple_code (gs) == GIMPLE_PREDICT;
 }
 
 #endif  /* GCC_GIMPLE_PREDICT_H */

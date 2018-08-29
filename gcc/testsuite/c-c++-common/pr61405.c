@@ -16,6 +16,7 @@ fn0 (struct S *s)
     case B:
       return 2;
     }
+  return 3;
 }
 
 int
@@ -28,4 +29,5 @@ fn1 (TS *s)
     case B:
       return 2;
     }
+  return 3;
 }

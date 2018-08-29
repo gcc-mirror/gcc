@@ -9,7 +9,7 @@ void my_terminate_handler() {
 }
 
 void throw_an_unexpected_exception() throw() {
-  throw 1;	// { dg-warning "throw will always call terminate" "" { target c++1z } }
+  throw 1;	// { dg-warning "throw will always call terminate" "" { target c++17 } }
 }
 
 int main() {

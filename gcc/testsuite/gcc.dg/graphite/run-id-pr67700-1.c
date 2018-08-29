@@ -45,4 +45,3 @@ int main()
   assert (obj->elem1[8] == 45);
   return 0;
 }
-

@@ -8,9 +8,9 @@ class(*), allocatable :: val(:)
 call get_value (val)
 select type (val)
 type is (character(*))
-  if (size (val) .ne. 2) call abort
-  if (len(val) .ne. 3) call abort
-  if (any (val .ne. ['foo','bar'])) call abort
+  if (size (val) .ne. 2) STOP 1
+  if (len(val) .ne. 3) STOP 2
+  if (any (val .ne. ['foo','bar'])) STOP 3
 end select
 contains
   subroutine get_value (value)

@@ -1,5 +1,5 @@
 /* A splay-tree datatype.  
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
    This file is part of GCC.
@@ -147,7 +147,9 @@ extern splay_tree_node splay_tree_max (splay_tree);
 extern splay_tree_node splay_tree_min (splay_tree);
 extern int splay_tree_foreach (splay_tree, splay_tree_foreach_fn, void*);
 extern int splay_tree_compare_ints (splay_tree_key, splay_tree_key);
-extern int splay_tree_compare_pointers (splay_tree_key,	splay_tree_key);
+extern int splay_tree_compare_pointers (splay_tree_key, splay_tree_key);
+extern int splay_tree_compare_strings (splay_tree_key, splay_tree_key);
+extern void splay_tree_delete_pointers (splay_tree_value);
 
 #ifdef __cplusplus
 }

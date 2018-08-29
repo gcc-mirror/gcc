@@ -13,8 +13,8 @@ PROGRAM TST
   CALL S(A)
   CALL T(A)
   CALL U(A)
-  if ( ALL(A.ne.(/2,2,3,4/))) CALL ABORT ()
-  if ( ALL(F().ne.(/2.0,2.0/))) CALL ABORT()
+  if ( ALL(A.ne.(/2,2,3,4/))) STOP 1
+  if ( ALL(F().ne.(/2.0,2.0/))) STOP 2
 
 CONTAINS
   SUBROUTINE S(A)

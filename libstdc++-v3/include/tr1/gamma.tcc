@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2017 Free Software Foundation, Inc.
+// Copyright (C) 2006-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,6 +50,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
 # define _GLIBCXX_MATH_NS ::std
 #elif defined(_GLIBCXX_TR1_CMATH)
@@ -62,8 +64,6 @@ namespace tr1
   // Implementation-space details.
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     /**
      *   @brief This returns Bernoulli numbers from a table or by summation
      *          for larger values.
@@ -466,13 +466,13 @@ namespace tr1
           return __result;
         }
     }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 #undef _GLIBCXX_MATH_NS
 #if ! _GLIBCXX_USE_STD_SPEC_FUNCS && defined(_GLIBCXX_TR1_CMATH)
 } // namespace tr1
 #endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // _GLIBCXX_TR1_GAMMA_TCC

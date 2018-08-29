@@ -24,9 +24,9 @@ program testdirect
   do j=1,100
     read(unit=15, rec=a(j), iostat=ier) k
     if (ier.ne.0) then
-      call abort()
+      STOP 1
     else
-      if (a(j) /= k) call abort()
+      if (a(j) /= k) STOP 2
     endif
   enddo
   close(unit=15, status="delete")

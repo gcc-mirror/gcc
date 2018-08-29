@@ -52,7 +52,7 @@ c     test driver
 
       call bug1(expnt)
       if ((zeta(1).ne.1) .or. (zeta(2).ne.2) .or. (zeta(3).ne.3)) then
-        call abort
+        STOP 1
       endif
 
       end

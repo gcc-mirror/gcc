@@ -19,8 +19,8 @@ C { dg-options "-dA -gno-strict-dwarf" }
       subroutine c
       integer*4 a_i, c_i
       common /block/a_i, c_i
-      if (a_i .ne. 2) call abort
-      if (c_i .ne. 5) call abort
+      if (a_i .ne. 2) STOP 1
+      if (c_i .ne. 5) STOP 2
       end subroutine c
       program abc
       call a

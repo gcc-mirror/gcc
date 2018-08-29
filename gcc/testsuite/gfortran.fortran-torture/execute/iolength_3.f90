@@ -10,6 +10,6 @@ program iolength_3
   real(dp) :: c
   inquire (iolength = iol) a, b, c
   if ( 16 /= iol) then
-     call abort
+     STOP 1
   end if
 end program iolength_3

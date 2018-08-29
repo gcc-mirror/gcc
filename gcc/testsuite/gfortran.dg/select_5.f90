@@ -7,18 +7,18 @@ program select_5
 
     ! kind = 4, reachable
     case (1_4)
-      if (i /=  1_4) call abort
+      if (i /=  1_4) STOP 1
 
     ! kind = 8, reachable
     case (2_8)
-      if (i /= 2_8) call abort
+      if (i /= 2_8) STOP 2
 
     ! kind = 4, unreachable because of range of i
     case (200)                       ! { dg-warning "not in the range" }
-      call abort
+      STOP 3
 
     case default
-      if (i /= 3) call abort
+      if (i /= 3) STOP 4
     end select
   end do
 end program select_5

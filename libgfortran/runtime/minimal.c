@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught and Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -39,13 +39,6 @@ stupid_function_name_for_static_linking (void)
 }
 
 options_t options;
-
-/* This will be 0 for little-endian
-   machines and 1 for big-endian machines.
-
-   Currently minimal libgfortran only runs on little-endian devices
-   which don't support constructors so this is just a constant.  */
-int big_endian = 0;
 
 static int argc_save;
 static char **argv_save;
@@ -193,4 +186,94 @@ sys_abort (void)
     }
 
   abort();
+}
+
+
+/* runtime/stop.c */
+
+#undef report_exception
+#define report_exception() do {} while (0)
+#undef st_printf
+#define st_printf printf
+#undef estr_write
+#define estr_write printf
+/* Map "exit" to "abort"; see PR85463 '[nvptx] "exit" in offloaded region
+   doesn't terminate process'.  */
+#undef exit
+#define exit(...) do { abort (); } while (0)
+#undef exit_error
+#define exit_error(...) do { abort (); } while (0)
+
+/* A numeric STOP statement.  */
+
+extern _Noreturn void stop_numeric (int, bool);
+export_proto(stop_numeric);
+
+void
+stop_numeric (int code, bool quiet)
+{
+  if (!quiet)
+    {
+      report_exception ();
+      st_printf ("STOP %d\n", code);
+    }
+  exit (code);
+}
+
+
+/* A character string or blank STOP statement.  */
+
+void
+stop_string (const char *string, size_t len, bool quiet)
+{
+  if (!quiet)
+    {
+      report_exception ();
+      if (string)
+	{
+	  estr_write ("STOP ");
+	  (void) write (STDERR_FILENO, string, len);
+	  estr_write ("\n");
+	}
+    }
+  exit (0);
+}
+
+
+/* Per Fortran 2008, section 8.4:  "Execution of a STOP statement initiates
+   normal termination of execution. Execution of an ERROR STOP statement
+   initiates error termination of execution."  Thus, error_stop_string returns
+   a nonzero exit status code.  */
+
+extern _Noreturn void error_stop_string (const char *, size_t, bool);
+export_proto(error_stop_string);
+
+void
+error_stop_string (const char *string, size_t len, bool quiet)
+{
+  if (!quiet)
+    {
+      report_exception ();
+      estr_write ("ERROR STOP ");
+      (void) write (STDERR_FILENO, string, len);
+      estr_write ("\n");
+    }
+  exit_error (1);
+}
+
+
+/* A numeric ERROR STOP statement.  */
+
+extern _Noreturn void error_stop_numeric (int, bool);
+export_proto(error_stop_numeric);
+
+void
+error_stop_numeric (int code, bool quiet)
+{
+  if (!quiet)
+    {
+      report_exception ();
+      st_printf ("ERROR STOP %d\n", code);
+    }
+  exit_error (code);
 }

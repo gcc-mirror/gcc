@@ -1,5 +1,5 @@
 /* Core data structures for the 'tree' type.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -93,6 +93,9 @@ struct die_struct;
 /* Nonzero if this is an indirect call by descriptor.  */
 #define ECF_BY_DESCRIPTOR	  (1 << 14)
 
+/* Nonzero if this is a cold function.  */
+#define ECF_COLD		  (1 << 15)
+
 /* Call argument flags.  */
 /* Nonzero if the argument is not dereferenced recursively, thus only
    directly reachable memory is read or written.  */
@@ -162,16 +165,6 @@ enum built_in_class {
 #define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) ENUM,
 enum built_in_function {
 #include "builtins.def"
-
-  BEGIN_CHKP_BUILTINS,
-
-#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND)
-#define DEF_BUILTIN_CHKP(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
-  ENUM##_CHKP = ENUM + BEGIN_CHKP_BUILTINS + 1,
-#include "builtins.def"
-
-  END_CHKP_BUILTINS = BEGIN_CHKP_BUILTINS * 2 + 1,
-
   /* Complex division routines in libgcc.  These are done via builtins
      because emit_library_call_value can't handle complex values.  */
   BUILT_IN_COMPLEX_MUL_MIN,
@@ -207,10 +200,6 @@ enum combined_fn {
   CFN_##ENUM = int (ENUM),
 #include "builtins.def"
 
-#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND)
-#define DEF_BUILTIN_CHKP(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
-  CFN_##ENUM##_CHKP = int (ENUM##_CHKP),
-#include "builtins.def"
 
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
   CFN_##CODE = int (END_BUILTINS) + int (IFN_##CODE),
@@ -442,10 +431,6 @@ enum omp_clause_code {
      loop or not.  */
   OMP_CLAUSE__SIMT_,
 
-  /* Internally used only clause, holding _Cilk_for # of iterations
-     on OMP_PARALLEL.  */
-  OMP_CLAUSE__CILK_FOR_COUNT_,
-
   /* OpenACC clause: independent.  */
   OMP_CLAUSE_INDEPENDENT,
 
@@ -469,7 +454,13 @@ enum omp_clause_code {
 
   /* OpenMP internal-only clause to specify grid dimensions of a gridified
      kernel.  */
-  OMP_CLAUSE__GRIDDIM_
+  OMP_CLAUSE__GRIDDIM_,
+
+  /* OpenACC clause: if_present.  */
+  OMP_CLAUSE_IF_PRESENT,
+
+  /* OpenACC clause: finalize.  */
+  OMP_CLAUSE_FINALIZE
 };
 
 #undef DEFTREESTRUCT
@@ -486,7 +477,6 @@ enum omp_clause_schedule_kind {
   OMP_CLAUSE_SCHEDULE_GUIDED,
   OMP_CLAUSE_SCHEDULE_AUTO,
   OMP_CLAUSE_SCHEDULE_RUNTIME,
-  OMP_CLAUSE_SCHEDULE_CILKFOR,
   OMP_CLAUSE_SCHEDULE_MASK = (1 << 3) - 1,
   OMP_CLAUSE_SCHEDULE_MONOTONIC = (1 << 3),
   OMP_CLAUSE_SCHEDULE_NONMONOTONIC = (1 << 4),
@@ -624,9 +614,11 @@ enum tree_index {
   TI_BOOLEAN_TYPE,
   TI_FILEPTR_TYPE,
   TI_CONST_TM_PTR_TYPE,
+  TI_FENV_T_PTR_TYPE,
+  TI_CONST_FENV_T_PTR_TYPE,
+  TI_FEXCEPT_T_PTR_TYPE,
+  TI_CONST_FEXCEPT_T_PTR_TYPE,
   TI_POINTER_SIZED_TYPE,
-
-  TI_POINTER_BOUNDS_TYPE,
 
   TI_DFLOAT32_TYPE,
   TI_DFLOAT64_TYPE,
@@ -844,8 +836,10 @@ enum tree_node_kind {
 
 enum annot_expr_kind {
   annot_expr_ivdep_kind,
+  annot_expr_unroll_kind,
   annot_expr_no_vector_kind,
   annot_expr_vector_kind,
+  annot_expr_parallel_kind,
   annot_expr_kind_last
 };
 
@@ -968,8 +962,23 @@ struct GTY(()) tree_base {
     /* VEC length.  This field is only used with TREE_VEC.  */
     int length;
 
+    /* This field is only used with VECTOR_CST.  */
+    struct {
+      /* The value of VECTOR_CST_LOG2_NPATTERNS.  */
+      unsigned int log2_npatterns : 8;
+
+      /* The value of VECTOR_CST_NELTS_PER_PATTERN.  */
+      unsigned int nelts_per_pattern : 8;
+
+      /* For future expansion.  */
+      unsigned int unused : 16;
+    } vector_cst;
+
     /* SSA version number.  This field is only used with SSA_NAME.  */
     unsigned int version;
+
+    /* CHREC_VARIABLE.  This field is only used with POLYNOMIAL_CHREC.  */
+    unsigned int chrec_var;
 
     /* Internal function code.  */
     enum internal_fn ifn;
@@ -1097,6 +1106,9 @@ struct GTY(()) tree_base {
        SSA_NAME_IS_VIRTUAL_OPERAND in
 	   SSA_NAME
 
+       EXPR_LOCATION_WRAPPER_P in
+	   NON_LVALUE_EXPR, VIEW_CONVERT_EXPR
+
    private_flag:
 
        TREE_PRIVATE in
@@ -1194,10 +1206,6 @@ struct GTY(()) tree_base {
 
        SSA_NAME_OCCURS_IN_ABNORMAL_PHI in
            SSA_NAME
-
-       EXPR_CILK_SPAWN in
-           CALL_EXPR
-           AGGR_INIT_EXPR
 
    used_flag:
 
@@ -1319,7 +1327,12 @@ struct GTY(()) tree_complex {
 
 struct GTY(()) tree_vector {
   struct tree_typed typed;
-  tree GTY ((length ("TYPE_VECTOR_SUBPARTS (TREE_TYPE ((tree)&%h))"))) elts[1];
+  tree GTY ((length ("vector_cst_encoded_nelts ((tree) &%h)"))) elts[1];
+};
+
+struct GTY(()) tree_poly_int_cst {
+  struct tree_typed typed;
+  tree coeffs[NUM_POLY_INT_COEFFS];
 };
 
 struct GTY(()) tree_identifier {
@@ -1516,15 +1529,16 @@ struct GTY(()) tree_type_common {
      so we need to store the value 32 (not 31, as we need the zero
      as well), hence six bits.  */
   unsigned align : 6;
+  unsigned warn_if_not_align : 6;
   unsigned typeless_storage : 1;
-  unsigned spare : 24;
+  unsigned empty_flag : 1;
+  unsigned spare : 17;
 
   alias_set_type alias_set;
   tree pointer_to;
   tree reference_to;
   union tree_type_symtab {
     int GTY ((tag ("TYPE_SYMTAB_IS_ADDRESS"))) address;
-    const char * GTY ((tag ("TYPE_SYMTAB_IS_POINTER"))) pointer;
     struct die_struct * GTY ((tag ("TYPE_SYMTAB_IS_DIE"))) die;
   } GTY ((desc ("debug_hooks->tree_type_symtab_field"))) symtab;
   tree canonical;
@@ -1545,7 +1559,7 @@ struct GTY(()) tree_type_non_common {
   tree values;
   tree minval;
   tree maxval;
-  tree binfo;
+  tree lang_1;
 };
 
 struct GTY (()) tree_binfo {
@@ -1596,7 +1610,8 @@ struct GTY(()) tree_decl_common {
   unsigned lang_flag_7 : 1;
   unsigned lang_flag_8 : 1;
 
-  /* In VAR_DECL and PARM_DECL, this is DECL_REGISTER.  */
+  /* In VAR_DECL and PARM_DECL, this is DECL_REGISTER
+     IN TRANSLATION_UNIT_DECL, this is TRANSLATION_UNIT_WARN_EMPTY_P.  */
   unsigned decl_flag_0 : 1;
   /* In FIELD_DECL, this is DECL_BIT_FIELD
      In VAR_DECL and FUNCTION_DECL, this is DECL_EXTERNAL.
@@ -1606,7 +1621,7 @@ struct GTY(()) tree_decl_common {
      In VAR_DECL, PARM_DECL and RESULT_DECL, this is
      DECL_HAS_VALUE_EXPR_P.  */
   unsigned decl_flag_2 : 1;
-  /* 1 bit unused.  */
+  /* In FIELD_DECL, this is DECL_PADDING_P.  */
   unsigned decl_flag_3 : 1;
   /* Logically, these two would go in a theoretical base shared by var and
      parm decl. */
@@ -1624,7 +1639,11 @@ struct GTY(()) tree_decl_common {
   /* DECL_ALIGN.  It should have the same size as TYPE_ALIGN.  */
   unsigned int align : 6;
 
-  /* 20 bits unused.  */
+  /* DECL_WARN_IF_NOT_ALIGN.  It should have the same size as
+     TYPE_WARN_IF_NOT_ALIGN.  */
+  unsigned int warn_if_not_align : 6;
+
+  /* 14 bits unused.  */
 
   /* UID for points-to sets, stable over copying from inlining.  */
   unsigned int pt_uid;
@@ -1842,6 +1861,7 @@ union GTY ((ptr_alias (union lang_tree_node),
   struct tree_typed GTY ((tag ("TS_TYPED"))) typed;
   struct tree_common GTY ((tag ("TS_COMMON"))) common;
   struct tree_int_cst GTY ((tag ("TS_INT_CST"))) int_cst;
+  struct tree_poly_int_cst GTY ((tag ("TS_POLY_INT_CST"))) poly_int_cst;
   struct tree_real_cst GTY ((tag ("TS_REAL_CST"))) real_cst;
   struct tree_fixed_cst GTY ((tag ("TS_FIXED_CST"))) fixed_cst;
   struct tree_vector GTY ((tag ("TS_VECTOR"))) vector;
@@ -1908,24 +1928,38 @@ struct attribute_spec {
      and from a function return type (which is not itself a function
      pointer type) to the function type.  */
   bool function_type_required;
+  /* Specifies if attribute affects type's identity.  */
+  bool affects_type_identity;
   /* Function to handle this attribute.  NODE points to the node to which
      the attribute is to be applied.  If a DECL, it should be modified in
-     place; if a TYPE, a copy should be created.  NAME is the name of the
-     attribute (possibly with leading or trailing __).  ARGS is the TREE_LIST
-     of the arguments (which may be NULL).  FLAGS gives further information
-     about the context of the attribute.  Afterwards, the attributes will
-     be added to the DECL_ATTRIBUTES or TYPE_ATTRIBUTES, as appropriate,
-     unless *NO_ADD_ATTRS is set to true (which should be done on error,
-     as well as in any other cases when the attributes should not be added
-     to the DECL or TYPE).  Depending on FLAGS, any attributes to be
+     place; if a TYPE, a copy should be created.  NAME is the canonicalized
+     name of the attribute i.e. without any leading or trailing underscores.
+     ARGS is the TREE_LIST of the arguments (which may be NULL).  FLAGS gives
+     further information about the context of the attribute.  Afterwards, the
+     attributes will be added to the DECL_ATTRIBUTES or TYPE_ATTRIBUTES, as
+     appropriate, unless *NO_ADD_ATTRS is set to true (which should be done on
+     error, as well as in any other cases when the attributes should not be
+     added to the DECL or TYPE).  Depending on FLAGS, any attributes to be
      applied to another type or DECL later may be returned;
      otherwise the return value should be NULL_TREE.  This pointer may be
      NULL if no special handling is required beyond the checks implied
      by the rest of this structure.  */
   tree (*handler) (tree *node, tree name, tree args,
 		   int flags, bool *no_add_attrs);
-  /* Specifies if attribute affects type's identity.  */
-  bool affects_type_identity;
+
+  /* Specifies the name of an attribute that's mutually exclusive with
+     this one, and whether the relationship applies to the function,
+     variable, or type form of the attribute.  */
+  struct exclusions {
+    const char *name;
+    bool function;
+    bool variable;
+    bool type;
+  };
+
+  /* An array of attribute exclusions describing names of other attributes
+     that this attribute is mutually exclusive with.  */
+  const exclusions *exclude;
 };
 
 /* These functions allow a front-end to perform a manual layout of a
@@ -2040,7 +2074,7 @@ struct floatn_type_info {
                                 Global variables
 ---------------------------------------------------------------------------*/
 /* Matrix describing the structures contained in a given tree code.  */
-extern unsigned char tree_contains_struct[MAX_TREE_CODES][64];
+extern bool tree_contains_struct[MAX_TREE_CODES][64];
 
 /* Class of tree given its code.  */
 extern const enum tree_code_class tree_code_type[];
@@ -2079,8 +2113,8 @@ extern GTY(()) tree integer_types[itk_none];
 extern GTY(()) tree sizetype_tab[(int) stk_type_kind_last];
 
 /* Arrays for keeping track of tree node statistics.  */
-extern int tree_node_counts[];
-extern int tree_node_sizes[];
+extern uint64_t tree_node_counts[];
+extern uint64_t tree_node_sizes[];
 
 /* True if we are in gimple form and the actions of the folders need to
    be restricted.  False if we are not in gimple form and folding is not

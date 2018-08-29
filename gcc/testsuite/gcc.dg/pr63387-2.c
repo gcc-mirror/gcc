@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-optimized" } */
+/* { dg-skip-if "using short-double" { avr-*-* } } */
 
 int f(double aaa, double bbb){
   int xa = !__builtin_isunordered(aaa, aaa);

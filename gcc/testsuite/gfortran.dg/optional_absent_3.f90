@@ -45,9 +45,9 @@ contains
     logical, value :: ll
     integer, value :: val
     integer, value, optional :: x
-    if (ll .neqv. present(x)) call abort
+    if (ll .neqv. present(x)) STOP 1
     if (present(x)) then
-      if (x /= val) call abort ()
+      if (x /= val) STOP 1
     endif
   end subroutine int_test
 
@@ -55,9 +55,9 @@ contains
     logical, value :: ll
     real, value :: val
     real, value, optional :: x
-    if (ll .neqv. present(x)) call abort
+    if (ll .neqv. present(x)) STOP 2
     if (present(x)) then
-      if (x /= val) call abort ()
+      if (x /= val) STOP 2
     endif
   end subroutine real_test
 
@@ -65,9 +65,9 @@ contains
     logical, value :: ll
     complex, value :: val
     complex, value, optional :: x
-    if (ll .neqv. present(x)) call abort
+    if (ll .neqv. present(x)) STOP 3
     if (present(x)) then
-      if (x /= val) call abort ()
+      if (x /= val) STOP 3
     endif
   end subroutine cmplx_test
 
@@ -75,9 +75,9 @@ contains
     logical, value :: ll
     logical, value :: val
     logical, value, optional :: x
-    if (ll .neqv. present(x)) call abort
+    if (ll .neqv. present(x)) STOP 4
     if (present(x)) then
-      if (x .neqv. val) call abort ()
+      if (x .neqv. val) STOP 4
     endif
   end subroutine bool_test
 end program main

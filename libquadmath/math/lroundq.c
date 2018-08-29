@@ -1,8 +1,8 @@
 /* Round __float128 value to long int.
-   Copyright (C) 1997, 1999, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1997-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997 and
-   		  Jakub Jelinek <jj@ultra.linux.cz>, 1999.
+		  Jakub Jelinek <jj@ultra.linux.cz>, 1999.
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -36,19 +36,26 @@ lroundq (__float128 x)
   i0 &= 0x0000ffffffffffffLL;
   i0 |= 0x0001000000000000LL;
 
-  if (j0 < 48)
+  if (j0 < (int32_t) (8 * sizeof (long int)) - 1)
     {
-      if (j0 < 0)
-	return j0 < -1 ? 0 : sign;
-      else
+      if (j0 < 48)
 	{
-	  i0 += 0x0000800000000000LL >> j0;
-	  result = i0 >> (48 - j0);
+	  if (j0 < 0)
+	    return j0 < -1 ? 0 : sign;
+	  else
+	    {
+	      i0 += 0x0000800000000000LL >> j0;
+	      result = i0 >> (48 - j0);
+#if defined FE_INVALID && defined USE_FENV_H
+	      if (sizeof (long int) == 4
+		  && sign == 1
+		  && result == LONG_MIN)
+		/* Rounding brought the value out of range.  */
+		feraiseexcept (FE_INVALID);
+#endif
+	    }
 	}
-    }
-  else if (j0 < (int32_t) (8 * sizeof (long int)) - 1)
-    {
-      if (j0 >= 112)
+      else if (j0 >= 112)
 	result = ((long int) i0 << (j0 - 48)) | (i1 << (j0 - 112));
       else
 	{
@@ -59,13 +66,34 @@ lroundq (__float128 x)
 	  if (j0 == 48)
 	    result = (long int) i0;
 	  else
-	    result = ((long int) i0 << (j0 - 48)) | (j >> (112 - j0));
+	    {
+	      result = ((long int) i0 << (j0 - 48)) | (j >> (112 - j0));
+#if defined FE_INVALID && defined USE_FENV_H
+	      if (sizeof (long int) == 8
+		  && sign == 1
+		  && result == LONG_MIN)
+		/* Rounding brought the value out of range.  */
+		feraiseexcept (FE_INVALID);
+#endif
+	    }
 	}
     }
   else
     {
-      /* The number is too large.  It is left implementation defined
-	 what happens.  */
+      /* The number is too large.  Unless it rounds to LONG_MIN,
+	 FE_INVALID must be raised and the return value is
+	 unspecified.  */
+#ifdef FE_INVALID
+      if (x <= (__float128) LONG_MIN - 0.5Q)
+	{
+	  /* If truncation produces LONG_MIN, the cast will not raise
+	     the exception, but may raise "inexact".  */
+#ifdef USE_FENV_H
+	  feraiseexcept (FE_INVALID);
+#endif
+	  return LONG_MIN;
+	}
+#endif
       return (long int) x;
     }
 

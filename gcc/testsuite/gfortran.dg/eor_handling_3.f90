@@ -6,8 +6,8 @@ program main
   write (77,'(A)') '123','456'
   rewind(77)
   read(77,'(2I2)',advance='no',eor=100) i1,i2
-  call abort
+  STOP 1
 100 continue
-  if (i1 /= 12 .or. i2 /= 3) call abort
+  if (i1 /= 12 .or. i2 /= 3) STOP 2
   close(77)
 end program main

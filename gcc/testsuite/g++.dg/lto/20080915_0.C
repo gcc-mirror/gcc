@@ -1,4 +1,5 @@
 // { dg-lto-do assemble }
+
 struct Foo {
  static const int dummy;
 
@@ -16,7 +17,7 @@ int func(const Bar& b) {
 }
 
 struct Baz {
- Bar& operator*() {}
+ Bar& operator*() { static Bar a; return a; }
 };
 
 void func1(Baz baz, int i, Bar bar) {

@@ -1,5 +1,5 @@
 // Test for composite pointer type.
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 typedef void (*P)();
 typedef void (*NP)() noexcept;

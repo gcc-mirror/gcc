@@ -93,7 +93,7 @@ AM_CONDITIONAL(TSAN_SUPPORTED, [test "x$TSAN_SUPPORTED" = "xyes"])
 AM_CONDITIONAL(LSAN_SUPPORTED, [test "x$LSAN_SUPPORTED" = "xyes"])
 
 # Check for functions needed.
-AC_CHECK_FUNCS(clock_getres clock_gettime clock_settime)
+AC_CHECK_FUNCS(clock_getres clock_gettime clock_settime lstat readlink)
 
 # Common libraries that we need to link against for all sanitizer libs.
 link_sanitizer_common='-lpthread -lm'
@@ -379,5 +379,14 @@ AC_SUBST([SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS])
 
 # Determine what GCC version number to use in filesystem paths.
 GCC_BASE_VER
+
+# Add CET specific flags if Intel CET is enabled.
+GCC_CET_FLAGS(CET_FLAGS)
+EXTRA_CFLAGS="$EXTRA_CFLAGS $CET_FLAGS"
+EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS $CET_FLAGS"
+EXTRA_ASFLAGS=$CET_FLAGS
+AC_SUBST(EXTRA_ASFLAGS)
+AC_SUBST(EXTRA_CFLAGS)
+AC_SUBST(EXTRA_CXXFLAGS)
 
 AC_OUTPUT

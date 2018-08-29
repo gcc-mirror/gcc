@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,6 +22,7 @@
 #include <locale>
 #include <sstream>
 #include <testsuite_hooks.h>
+#include <testsuite_common_types.h>
 
 template<typename Elem>
 struct cvt : std::codecvt<Elem, char, std::mbstate_t> { };
@@ -42,6 +43,9 @@ void test01()
   VERIFY( buf.rdbuf(&sbuf) == nullptr );
   VERIFY( buf.rdbuf() == &sbuf );
   VERIFY( buf.rdbuf(nullptr) == &sbuf );
+
+  __gnu_test::implicitly_default_constructible test;
+  test.operator()<buf_conv<wchar_t>>(); // P0935R0
 }
 
 void test02()

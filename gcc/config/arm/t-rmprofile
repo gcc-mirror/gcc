@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Free Software Foundation, Inc.
+# Copyright (C) 2016-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -27,131 +27,42 @@
 
 # Arch and FPU variants to build libraries with
 
-MULTI_ARCH_OPTS_RM      = march=armv6s-m/march=armv7-m/march=armv7e-m/march=armv7/march=armv8-m.base/march=armv8-m.main
-MULTI_ARCH_DIRS_RM      = v6-m v7-m v7e-m v7-ar v8-m.base v8-m.main
+MULTI_ARCH_OPTS_RM	= march=armv6s-m/march=armv7-m/march=armv7e-m/march=armv7e-m+fp/march=armv7e-m+fp.dp/march=armv8-m.base/march=armv8-m.main/march=armv8-m.main+fp/march=armv8-m.main+fp.dp
+MULTI_ARCH_DIRS_RM	= v6-m v7-m v7e-m v7e-m+fp v7e-m+dp v8-m.base v8-m.main v8-m.main+fp v8-m.main+dp
 
-MULTI_FPU_OPTS_RM       = mfpu=vfpv3-d16/mfpu=fpv4-sp-d16/mfpu=fpv5-sp-d16/mfpu=fpv5-d16
-MULTI_FPU_DIRS_RM       = fpv3 fpv4-sp fpv5-sp fpv5
+# Base M-profile (no fp)
+MULTILIB_REQUIRED	+= mthumb/march=armv6s-m/mfloat-abi=soft
+MULTILIB_REQUIRED	+= mthumb/march=armv7-m/mfloat-abi=soft
+MULTILIB_REQUIRED	+= mthumb/march=armv7e-m/mfloat-abi=soft
+MULTILIB_REQUIRED	+= mthumb/march=armv8-m.base/mfloat-abi=soft
+MULTILIB_REQUIRED	+= mthumb/march=armv8-m.main/mfloat-abi=soft
 
+# ARMv7e-M with FP (single and double precision variants)
+MULTILIB_REQUIRED	+= mthumb/march=armv7e-m+fp/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mthumb/march=armv7e-m+fp/mfloat-abi=softfp
+MULTILIB_REQUIRED	+= mthumb/march=armv7e-m+fp.dp/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mthumb/march=armv7e-m+fp.dp/mfloat-abi=softfp
 
-# Option combinations to build library with
-
-# Default CPU/Arch
-MULTILIB_REQUIRED      += mthumb
-MULTILIB_REQUIRED      += mfloat-abi=hard
-
-# ARMv6-M
-MULTILIB_REQUIRED      += mthumb/march=armv6s-m
-
-# ARMv8-M Baseline
-MULTILIB_REQUIRED      += mthumb/march=armv8-m.base
-
-# ARMv7-M
-MULTILIB_REQUIRED      += mthumb/march=armv7-m
-
-# ARMv7E-M
-MULTILIB_REQUIRED      += mthumb/march=armv7e-m
-MULTILIB_REQUIRED      += mthumb/march=armv7e-m/mfpu=fpv4-sp-d16/mfloat-abi=softfp
-MULTILIB_REQUIRED      += mthumb/march=armv7e-m/mfpu=fpv4-sp-d16/mfloat-abi=hard
-MULTILIB_REQUIRED      += mthumb/march=armv7e-m/mfpu=fpv5-d16/mfloat-abi=softfp
-MULTILIB_REQUIRED      += mthumb/march=armv7e-m/mfpu=fpv5-d16/mfloat-abi=hard
-MULTILIB_REQUIRED      += mthumb/march=armv7e-m/mfpu=fpv5-sp-d16/mfloat-abi=softfp
-MULTILIB_REQUIRED      += mthumb/march=armv7e-m/mfpu=fpv5-sp-d16/mfloat-abi=hard
-
-# ARMv8-M Mainline
-MULTILIB_REQUIRED      += mthumb/march=armv8-m.main
-MULTILIB_REQUIRED      += mthumb/march=armv8-m.main/mfpu=fpv5-d16/mfloat-abi=softfp
-MULTILIB_REQUIRED      += mthumb/march=armv8-m.main/mfpu=fpv5-d16/mfloat-abi=hard
-MULTILIB_REQUIRED      += mthumb/march=armv8-m.main/mfpu=fpv5-sp-d16/mfloat-abi=softfp
-MULTILIB_REQUIRED      += mthumb/march=armv8-m.main/mfpu=fpv5-sp-d16/mfloat-abi=hard
-
-# ARMv7-R as well as ARMv7-A and ARMv8-A if aprofile was not specified
-MULTILIB_REQUIRED      += mthumb/march=armv7
-MULTILIB_REQUIRED      += mthumb/march=armv7/mfpu=vfpv3-d16/mfloat-abi=softfp
-MULTILIB_REQUIRED      += mthumb/march=armv7/mfpu=vfpv3-d16/mfloat-abi=hard
+# ARMv8-M with FP (single and double precision variants)
+MULTILIB_REQUIRED	+= mthumb/march=armv8-m.main+fp/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mthumb/march=armv8-m.main+fp/mfloat-abi=softfp
+MULTILIB_REQUIRED	+= mthumb/march=armv8-m.main+fp.dp/mfloat-abi=hard
+MULTILIB_REQUIRED	+= mthumb/march=armv8-m.main+fp.dp/mfloat-abi=softfp
 
 
-# Matches
-
-# CPU Matches
-MULTILIB_MATCHES       += march?armv6s-m=mcpu?cortex-m0
-MULTILIB_MATCHES       += march?armv6s-m=mcpu?cortex-m0.small-multiply
-MULTILIB_MATCHES       += march?armv6s-m=mcpu?cortex-m0plus
-MULTILIB_MATCHES       += march?armv6s-m=mcpu?cortex-m0plus.small-multiply
-MULTILIB_MATCHES       += march?armv6s-m=mcpu?cortex-m1
-MULTILIB_MATCHES       += march?armv6s-m=mcpu?cortex-m1.small-multiply
-MULTILIB_MATCHES       += march?armv7-m=mcpu?cortex-m3
-MULTILIB_MATCHES       += march?armv7e-m=mcpu?cortex-m4
-MULTILIB_MATCHES       += march?armv7e-m=mcpu?cortex-m7
-MULTILIB_MATCHES       += march?armv8-m.base=mcpu?cortex-m23
-MULTILIB_MATCHES       += march?armv8-m.main=mcpu?cortex-m33
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-r4
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-r4f
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-r5
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-r7
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-r8
-MULTILIB_MATCHES       += march?armv7=mcpu?marvell-pj4
-MULTILIB_MATCHES       += march?armv7=mcpu?generic-armv7-a
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a8
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a9
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a5
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a7
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a15
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a12
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a17
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a15.cortex-a7
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a17.cortex-a7
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a32
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a35
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a53
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a57
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a57.cortex-a53
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a72
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a72.cortex-a53
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a73
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a73.cortex-a35
-MULTILIB_MATCHES       += march?armv7=mcpu?cortex-a73.cortex-a53
-MULTILIB_MATCHES       += march?armv7=mcpu?exynos-m1
-MULTILIB_MATCHES       += march?armv7=mcpu?qdf24xx
-MULTILIB_MATCHES       += march?armv7=mcpu?xgene1
 
 # Arch Matches
-MULTILIB_MATCHES       += march?armv6s-m=march?armv6-m
-MULTILIB_MATCHES       += march?armv8-m.main=march?armv8-m.main+dsp
-MULTILIB_MATCHES       += march?armv7=march?armv7-r
-ifeq (,$(HAS_APROFILE))
-MULTILIB_MATCHES       += march?armv7=march?armv7-a
-MULTILIB_MATCHES       += march?armv7=march?armv7ve
-MULTILIB_MATCHES       += march?armv7=march?armv8-a
-MULTILIB_MATCHES       += march?armv7=march?armv8-a+crc
-MULTILIB_MATCHES       += march?armv7=march?armv8.1-a
-MULTILIB_MATCHES       += march?armv7=march?armv8.1-a+crc
-MULTILIB_MATCHES       += march?armv7=march?armv8.2-a
-MULTILIB_MATCHES       += march?armv7=march?armv8.2-a+fp16
-endif
+MULTILIB_MATCHES	+= march?armv6s-m=march?armv6-m
 
-# FPU matches
-ifeq (,$(HAS_APROFILE))
-MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3
-MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3-fp16
-MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3-d16-fp16
-MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?neon
-MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?neon-fp16
-MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv4
-MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv4-d16
-MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?neon-vfpv4
-MULTILIB_MATCHES       += mfpu?fpv5-d16=mfpu?fp-armv8
-MULTILIB_MATCHES       += mfpu?fpv5-d16=mfpu?neon-fp-armv8
-MULTILIB_MATCHES       += mfpu?fpv5-d16=mfpu?crypto-neon-fp-armv8
-endif
+# Map all v8-m.main+dsp FP variants down the the variant without DSP.
+MULTILIB_MATCHES	+= march?armv8-m.main=march?armv8-m.main+dsp \
+			   $(foreach FP, +fp +fp.dp, \
+			     march?armv8-m.main$(FP)=march?armv8-m.main+dsp$(FP))
 
+# For single-precision only fpv5, use the base fp libraries
+MULTILIB_MATCHES	+= march?armv7e-m+fp=march?armv7e-m+fpv5
 
-# We map all requests for ARMv7-R or ARMv7-A in ARM mode to Thumb mode and
-# any FPU to VFPv3-d16 if possible.
-MULTILIB_REUSE         += mthumb/march.armv7=march.armv7
-MULTILIB_REUSE         += mthumb/march.armv7/mfpu.vfpv3-d16/mfloat-abi.softfp=march.armv7/mfpu.vfpv3-d16/mfloat-abi.softfp
-MULTILIB_REUSE         += mthumb/march.armv7/mfpu.vfpv3-d16/mfloat-abi.hard=march.armv7/mfpu.vfpv3-d16/mfloat-abi.hard
-MULTILIB_REUSE         += mthumb/march.armv7/mfpu.vfpv3-d16/mfloat-abi.softfp=march.armv7/mfpu.fpv5-d16/mfloat-abi.softfp
-MULTILIB_REUSE         += mthumb/march.armv7/mfpu.vfpv3-d16/mfloat-abi.hard=march.armv7/mfpu.fpv5-d16/mfloat-abi.hard
-MULTILIB_REUSE         += mthumb/march.armv7/mfpu.vfpv3-d16/mfloat-abi.softfp=mthumb/march.armv7/mfpu.fpv5-d16/mfloat-abi.softfp
-MULTILIB_REUSE         += mthumb/march.armv7/mfpu.vfpv3-d16/mfloat-abi.hard=mthumb/march.armv7/mfpu.fpv5-d16/mfloat-abi.hard
+# Softfp but no FP.  Use the soft-float libraries.
+MULTILIB_REUSE		+= $(foreach ARCH, armv6s-m armv7-m armv7e-m armv8-m\.base armv8-m\.main, \
+			     mthumb/march.$(ARCH)/mfloat-abi.soft=mthumb/march.$(ARCH)/mfloat-abi.softfp)
+

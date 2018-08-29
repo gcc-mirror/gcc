@@ -1,6 +1,6 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -201,6 +201,7 @@ static enum lto_mode_d lto_mode = LTO_MODE_NONE;
 bool helpflag;			/* true if --help */
 
 static int shared_obj;			/* true if -shared */
+static int static_obj;			/* true if -static */
 
 static const char *c_file;		/* <xxx>.c for constructor/destructor list.  */
 static const char *o_file;		/* <xxx>.o for constructor/destructor list.  */
@@ -255,6 +256,7 @@ bool may_unlink_output_file = false;
 #ifdef COLLECT_EXPORT_LIST
 /* Lists to keep libraries to be scanned for global constructors/destructors.  */
 static struct head libs;                    /* list of libraries */
+static struct head static_libs;             /* list of statically linked libraries */
 static struct path_prefix cmdline_lib_dirs; /* directories specified with -L */
 static struct path_prefix libpath_lib_dirs; /* directories in LIBPATH */
 static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
@@ -320,9 +322,7 @@ static void write_c_file_glob (FILE *, const char *);
 static void scan_libraries (const char *);
 #endif
 #ifdef COLLECT_EXPORT_LIST
-#if 0
 static int is_in_list (const char *, struct id *);
-#endif
 static void write_aix_file (FILE *, struct id *);
 static char *resolve_lib_name (const char *);
 #endif
@@ -614,7 +614,7 @@ static const char *const target_machine = TARGET_MACHINE;
 
    Return 0 if not found, otherwise return its name, allocated with malloc.  */
 
-#ifdef OBJECT_FORMAT_NONE
+#if defined (OBJECT_FORMAT_NONE) || defined (OBJECT_FORMAT_COFF)
 
 /* Add an entry for the object file NAME to object file list LIST.
    New entries are added at the end of the list. The original pointer
@@ -634,7 +634,7 @@ add_lto_object (struct lto_object_list *list, const char *name)
 
   list->last = n;
 }
-#endif /* OBJECT_FORMAT_NONE */
+#endif
 
 
 /* Perform a link-time recompilation and relink if any of the object
@@ -911,6 +911,9 @@ main (int argc, char **argv)
   int first_file;
   int num_c_args;
   char **old_argv;
+#ifdef COLLECT_EXPORT_LIST
+  bool is_static = false;
+#endif
   int i;
 
   for (i = 0; i < USE_LD_MAX; i++)
@@ -1241,6 +1244,8 @@ main (int argc, char **argv)
 	*c_ptr++ = xstrdup (q);
       if (strcmp (q, "-shared") == 0)
 	shared_obj = 1;
+      if (strcmp (q, "-static") == 0)
+	static_obj = 1;
       if (*q == '-' && q[1] == 'B')
 	{
 	  *c_ptr++ = xstrdup (q);
@@ -1269,6 +1274,9 @@ main (int argc, char **argv)
   /* Parse arguments.  Remember output file spec, pass the rest to ld.  */
   /* After the first file, put in the c++ rt0.  */
 
+#ifdef COLLECT_EXPORT_LIST
+  is_static = static_obj;
+#endif
   first_file = 1;
   while ((arg = *++argv) != (char *) 0)
     {
@@ -1374,6 +1382,18 @@ main (int argc, char **argv)
 #endif
               break;
 
+#ifdef COLLECT_EXPORT_LIST
+	    case 'b':
+	      if (!strcmp (arg, "-bstatic"))
+		{
+		  is_static = true;
+		}
+	      else if (!strcmp (arg, "-bdynamic") || !strcmp (arg, "-bshared"))
+		{
+		  is_static = false;
+		}
+	      break;
+#endif
 	    case 'l':
 	      if (first_file)
 		{
@@ -1390,6 +1410,8 @@ main (int argc, char **argv)
 
 		/* Saving a full library name.  */
 		add_to_list (&libs, s);
+		if (is_static)
+		    add_to_list (&static_libs, s);
 	      }
 #endif
 	      break;
@@ -1490,6 +1512,8 @@ main (int argc, char **argv)
 	    {
 	      /* Saving a full library name.  */
 	      add_to_list (&libs, arg);
+	      if (is_static)
+		add_to_list (&static_libs, arg);
 	    }
 #endif
 	}
@@ -1501,6 +1525,8 @@ main (int argc, char **argv)
     {
       fprintf (stderr, "List of libraries:\n");
       dump_list (stderr, "\t", libs.first);
+      fprintf (stderr, "List of statically linked libraries:\n");
+      dump_list (stderr, "\t", static_libs.first);
     }
 
   /* The AIX linker will discard static constructors in object files if
@@ -1525,9 +1551,11 @@ main (int argc, char **argv)
       this_filter &= ~SCAN_DWEH;
 #endif
 
+    /* Scan object files.  */
     while (export_object_lst < object)
       scan_prog_file (*export_object_lst++, PASS_OBJ, this_filter);
 
+    /* Scan libraries.  */
     for (; list; list = list->next)
       scan_prog_file (list->name, PASS_FIRST, this_filter);
 
@@ -1975,7 +2003,6 @@ write_list (FILE *stream, const char *prefix, struct id *list)
 
 #ifdef COLLECT_EXPORT_LIST
 /* This function is really used only on AIX, but may be useful.  */
-#if 0
 static int
 is_in_list (const char *prefix, struct id *list)
 {
@@ -1986,7 +2013,6 @@ is_in_list (const char *prefix, struct id *list)
     }
     return 0;
 }
-#endif
 #endif /* COLLECT_EXPORT_LIST */
 
 /* Added for debugging purpose.  */
@@ -2641,17 +2667,6 @@ scan_libraries (const char *prog_name)
 
 #ifdef OBJECT_FORMAT_COFF
 
-#if defined (EXTENDED_COFF)
-
-#   define GCC_SYMBOLS(X)	(SYMHEADER (X).isymMax + SYMHEADER (X).iextMax)
-#   define GCC_SYMENT		SYMR
-#   define GCC_OK_SYMBOL(X)	((X).st == stProc || (X).st == stGlobal)
-#   define GCC_SYMINC(X)	(1)
-#   define GCC_SYMZERO(X)	(SYMHEADER (X).isymMax)
-#   define GCC_CHECK_HDR(X)	(PSYMTAB (X) != 0)
-
-#else
-
 #   define GCC_SYMBOLS(X)	(HEADER (ldptr).f_nsyms)
 #   define GCC_SYMENT		SYMENT
 #   if defined (C_WEAKEXT)
@@ -2688,8 +2703,6 @@ scan_libraries (const char *prog_name)
      (((HEADER (X).f_magic == U802TOCMAGIC && ! aix64_flag) \
        || (HEADER (X).f_magic == 0757 && aix64_flag)) \
       && !(HEADER (X).f_flags & F_LOADONLY))
-#endif
-
 #endif
 
 #ifdef COLLECT_EXPORT_LIST
@@ -2750,8 +2763,10 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
   LDFILE *ldptr = NULL;
   int sym_index, sym_count;
   int is_shared = 0;
+  int found_lto = 0;
 
-  if (which_pass != PASS_FIRST && which_pass != PASS_OBJ)
+  if (which_pass != PASS_FIRST && which_pass != PASS_OBJ
+      && which_pass != PASS_LTOINFO)
     return;
 
 #ifdef COLLECT_EXPORT_LIST
@@ -2764,6 +2779,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
      eliminate scan_libraries() function.  */
   do
     {
+      found_lto = 0;
 #endif
       /* Some platforms (e.g. OSF4) declare ldopen as taking a
 	 non-const char * filename parameter, even though it will not
@@ -2806,6 +2822,19 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 			++name;
 #endif
 
+                      if (which_pass == PASS_LTOINFO)
+                        {
+			  if (found_lto)
+			    continue;
+			  if (strncmp (name, "__gnu_lto_v1", 12) == 0)
+			    {
+			      add_lto_object (&lto_objects, prog_name);
+			      found_lto = 1;
+			      break;
+			    }
+			  continue;
+			}
+
 		      switch (is_ctor_dtor (name))
 			{
 #if TARGET_AIX_VERSION
@@ -2815,7 +2844,12 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 			case SYM_AIXI:
 			  if (! (filter & SCAN_CTOR))
 			    break;
-			  if (is_shared && !aixlazy_flag)
+			  if (is_shared && !aixlazy_flag
+#ifdef COLLECT_EXPORT_LIST
+			      && ! static_obj
+			      && ! is_in_list (prog_name, static_libs.first)
+#endif
+			      )
 			    add_to_list (&constructors, name);
 			  break;
 
@@ -2904,16 +2938,10 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 			}
 
 		      if (debug)
-#if !defined(EXTENDED_COFF)
 			fprintf (stderr, "\tsec=%d class=%d type=%s%o %s\n",
 				 symbol.n_scnum, symbol.n_sclass,
 				 (symbol.n_type ? "0" : ""), symbol.n_type,
 				 name);
-#else
-			fprintf (stderr,
-				 "\tiss = %5d, value = %5ld, index = %5d, name = %s\n",
-				 symbol.iss, (long) symbol.value, symbol.index, name);
-#endif
 		    }
 		}
 	    }

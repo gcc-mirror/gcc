@@ -1,6 +1,6 @@
 /* PR middle-end/79223 - missing -Wstringop-overflow on a memmove overflow
    { dg-do compile }
-   { dg-additional-options "-O2 -Wall -std=gnu99" }  */
+   { dg-additional-options "-O2 -Wall -Wno-array-bounds -std=gnu99" }  */
 
 typedef __SIZE_TYPE__ size_t;
 

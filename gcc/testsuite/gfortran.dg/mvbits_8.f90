@@ -22,8 +22,8 @@ PROGRAM main
 
   CALL foobar (var, 1, 2)
 
-  IF (ANY (var%comp%i /= (/ 1, 2 /))) CALL abort ()
-  IF (ANY (var%comp%j /= (/ 3, 4 /))) CALL abort ()
+  IF (ANY (var%comp%i /= (/ 1, 2 /))) STOP 1
+  IF (ANY (var%comp%j /= (/ 3, 4 /))) STOP 2
 
 CONTAINS
 

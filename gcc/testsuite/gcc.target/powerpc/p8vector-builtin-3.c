@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-options "-mcpu=power8 -O3 -ftree-vectorize -fvect-cost-model=dynamic" } */
@@ -33,7 +33,12 @@ vi_sign vi_pack_2 (vll_sign a, vll_sign b)
   return vec_pack (a, b);
 }
 
-vi_sign vi_pack_3 (vll_sign a, vll_sign b)
+vi_uns vi_pack_3 (vll_uns a, vll_uns b)
+{
+  return vec_pack (a, b);
+}
+
+vi_sign vi_pack_4 (vll_sign a, vll_sign b)
 {
   return vec_vpkudum (a, b);
 }
@@ -98,7 +103,7 @@ vll_sign vll_unpack_lo_3 (vi_sign a)
   return vec_vupklsw (a);
 }
 
-/* { dg-final { scan-assembler-times "vpkudum" 3 } } */
+/* { dg-final { scan-assembler-times "vpkudum" 4 } } */
 /* { dg-final { scan-assembler-times "vpkuwum" 3 } } */
 /* { dg-final { scan-assembler-times "vpkuhum" 3 } } */
 /* { dg-final { scan-assembler-times "vupklsw" 3 } } */

@@ -28,12 +28,12 @@ C     CORRECT FOR THE ZERO DIMENSIONED TERM TO ALLOW AN EASIER VERIFY
 
       DO J1 = 1,7
       IVAL = 3-J1
-      IF (ILA1(J1) .NE. IVAL) call abort ()
+      IF (ILA1(J1) .NE. IVAL) STOP 1
   100 ENDDO
 
       DO J1 = 1,7
       IVAL = 2+J1
-      IF (ILA2(J1) .NE. IVAL) call abort ()
+      IF (ILA2(J1) .NE. IVAL) STOP 2
   101 ENDDO
 
       END SUBROUTINE

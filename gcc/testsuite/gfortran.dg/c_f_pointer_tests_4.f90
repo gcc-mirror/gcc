@@ -10,6 +10,6 @@ contains
      type(c_ptr), intent(in) :: cptr
      integer, dimension(:,:,:), pointer :: table_tmp
      call c_f_pointer (cptr, table_tmp, (/2,1,2/))
-     if (any(table_tmp /= table)) call abort
+     if (any(table_tmp /= table)) STOP 1
    end subroutine set_table
 end program main

@@ -138,6 +138,7 @@ noinst_HEADERS = \
 	src/or1k/ffitarget.h						\
 	src/pa/ffitarget.h						\
 	src/powerpc/ffitarget.h src/powerpc/asm.h src/powerpc/ffi_powerpc.h \
+	src/riscv/ffitarget.h			  			\
 	src/s390/ffitarget.h						\
 	src/sh/ffitarget.h						\
 	src/sh64/ffitarget.h						\
@@ -173,6 +174,7 @@ EXTRA_libffi_la_SOURCES = \
 	 src/powerpc/linux64_closure.S src/powerpc/ppc_closure.S	\
 	 src/powerpc/aix.S src/powerpc/darwin.S src/powerpc/aix_closure.S \
 	 src/powerpc/darwin_closure.S src/powerpc/ffi_darwin.c		\
+	src/riscv/ffi.c src/riscv/sysv.S				\
 	src/s390/ffi.c src/s390/sysv.S					\
 	src/sh/ffi.c src/sh/sysv.S					\
 	src/sh64/ffi.c src/sh64/sysv.S					\

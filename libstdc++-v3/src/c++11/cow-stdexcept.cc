@@ -1,6 +1,6 @@
 // Methods for Exception Support for -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,20 +53,53 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  // Copy constructors and assignment operators defined using COW std::string
+  // Copy/move constructors and assignment operators defined using COW string.
+  // These operations are noexcept even though copying a COW string is not,
+  // but we know that the string member in an exception has not been "leaked"
+  // so copying is a simple reference count increment.
+  // For the fully dynamic string moves are not noexcept (due to needing to
+  // allocate an empty string) so we just define the moves as copies here.
 
   logic_error::logic_error(const logic_error& e) noexcept
-  : _M_msg(e._M_msg) { }
+  : exception(e), _M_msg(e._M_msg) { }
 
   logic_error& logic_error::operator=(const logic_error& e) noexcept
   { _M_msg = e._M_msg; return *this; }
 
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
+  logic_error::logic_error(logic_error&& e) noexcept = default;
+
+  logic_error&
+  logic_error::operator=(logic_error&& e) noexcept = default;
+#else
+  logic_error::logic_error(logic_error&& e) noexcept
+  : exception(e), _M_msg(e._M_msg) { }
+
+  logic_error&
+  logic_error::operator=(logic_error&& e) noexcept
+  { _M_msg = e._M_msg; return *this; }
+#endif
+
   runtime_error::runtime_error(const runtime_error& e) noexcept
-  : _M_msg(e._M_msg) { }
+  : exception(e), _M_msg(e._M_msg) { }
 
   runtime_error&
   runtime_error::operator=(const runtime_error& e) noexcept
   { _M_msg = e._M_msg; return *this; }
+
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
+  runtime_error::runtime_error(runtime_error&& e) noexcept = default;
+
+  runtime_error&
+  runtime_error::operator=(runtime_error&& e) noexcept = default;
+#else
+  runtime_error::runtime_error(runtime_error&& e) noexcept
+  : exception(e), _M_msg(e._M_msg) { }
+
+  runtime_error&
+  runtime_error::operator=(runtime_error&& e) noexcept
+  { _M_msg = e._M_msg; return *this; }
+#endif
 
   // New C++11 constructors:
 
@@ -185,6 +218,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 // declared transaction-safe, so we just don't provide transactional clones
 // in this case.
 #if _GLIBCXX_USE_WEAK_REF
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
 extern "C" {
 
@@ -443,4 +477,5 @@ CTORDTOR(15underflow_error, std::underflow_error, runtime_error)
 
 }
 
+#endif  // _GLIBCXX_USE_C99_STDINT_TR1
 #endif  // _GLIBCXX_USE_WEAK_REF

@@ -39,10 +39,10 @@ end module
   t1%b(1)=1d0
   t1%b(2)=2d0
   t2=-t1
-  if (t2%a .ne. -0.5d0) call abort
-  if (any(t2%b .ne. [-1d0, -2d0])) call abort
+  if (t2%a .ne. -0.5d0) STOP 1
+  if (any(t2%b .ne. [-1d0, -2d0])) STOP 2
 
   t1=-t1
-  if (t1%a .ne. -0.5d0) call abort
-  if (any(t1%b .ne. [-1d0, -2d0])) call abort
+  if (t1%a .ne. -0.5d0) STOP 3
+  if (any(t1%b .ne. [-1d0, -2d0])) STOP 4
 end

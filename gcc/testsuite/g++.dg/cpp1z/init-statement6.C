@@ -1,5 +1,5 @@
 // Testcase from P0305R1
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 #include <string>
 #include <map>

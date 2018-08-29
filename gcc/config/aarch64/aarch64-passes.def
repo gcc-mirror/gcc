@@ -1,5 +1,5 @@
 /* AArch64-specific passes declarations.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -19,3 +19,4 @@
    <http://www.gnu.org/licenses/>.  */
 
 INSERT_PASS_AFTER (pass_regrename, 1, pass_fma_steering);
+INSERT_PASS_BEFORE (pass_reorder_blocks, 1, pass_track_speculation);

@@ -6,6 +6,6 @@
       write (10,'(3X, A, T1, A,/)') 'aa', 'bb'
       rewind(10)
       read (10,'(A2,1X,A2)') b,a
-      if (a /= 'aa' .or. b /= 'bb') call abort
+      if (a /= 'aa' .or. b /= 'bb') STOP 1
       close(10,status="delete")
       end

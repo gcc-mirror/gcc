@@ -31,7 +31,7 @@ GCC_SRC_DIR=../../gcc
 
 # v850e1-elf is rejected by config.sub
 LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
-  alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
+  alpha-linux-gnu alpha-netbsd alpha-openbsd \
   alpha64-dec-vms alpha-dec-vms \
   arc-elf32OPT-with-cpu=arc600 arc-elf32OPT-with-cpu=arc700 \
   arc-linux-uclibcOPT-with-cpu=arc700 arceb-linux-uclibcOPT-with-cpu=arc700 \
@@ -40,6 +40,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   arm-symbianelf avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
   c6x-elf c6x-uclinux cr16-elf cris-elf cris-linux crisv32-elf crisv32-linux \
+  csky-elf csky-linux-gnu \
   epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \
   fr30-elf frv-elf frv-linux ft32-elf h8300-elf hppa-linux-gnu \
   hppa-linux-gnuOPT-enable-sjlj-exceptions=yes hppa64-linux-gnu \
@@ -75,7 +76,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   powerpc-eabispe powerpc-eabisimaltivec powerpc-eabisim ppc-elf \
   powerpc-eabialtivec powerpc-xilinx-eabi powerpc-eabi \
   powerpc-rtems powerpc-linux_spe \
-  powerpc-linux_paired powerpc64-linux_altivec \
+  powerpc64-linux_altivec \
   powerpc-wrs-vxworks powerpc-wrs-vxworksae powerpc-wrs-vxworksmils \
   powerpc-lynxos powerpcle-elf \
   powerpcle-eabisim powerpcle-eabi \

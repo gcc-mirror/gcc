@@ -120,7 +120,7 @@ enum STATES FMS( u8 **in , u32 *transitions) {
    profile estimation stage. But the number of inconsistencies should not
    increase much.  */
 /* { dg-final { scan-tree-dump "Jumps threaded: 1\[1-9\]" "thread1" } } */
-/* { dg-final { scan-tree-dump-times "Invalid sum" 2 "thread1" } } */
+/* { dg-final { scan-tree-dump-times "Invalid sum" 3 "thread1" } } */
 /* { dg-final { scan-tree-dump-not "not considered" "thread1" } } */
 /* { dg-final { scan-tree-dump-not "not considered" "thread2" } } */
 /* { dg-final { scan-tree-dump-not "not considered" "thread3" } } */

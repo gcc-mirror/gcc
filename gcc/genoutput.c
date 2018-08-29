@@ -1,5 +1,5 @@
 /* Generate code from to output assembler insns as recognized from rtl.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -127,7 +127,7 @@ struct operand_data
 
 static struct operand_data null_operand =
 {
-  0, 0, "", "", VOIDmode, 0, 0, 0, 0, 0
+  0, 0, "", "", E_VOIDmode, 0, 0, 0, 0, 0
 };
 
 static struct operand_data *odata = &null_operand;
@@ -203,6 +203,7 @@ output_prologue (void)
   printf ("/* Generated automatically by the program `genoutput'\n\
    from the machine description file `md'.  */\n\n");
 
+  printf ("#define IN_TARGET_CODE 1\n");
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
   printf ("#include \"coretypes.h\"\n");
@@ -253,7 +254,7 @@ output_operand_data (void)
 
       printf ("    \"%s\",\n", d->constraint ? d->constraint : "");
 
-      printf ("    %smode,\n", GET_MODE_NAME (d->mode));
+      printf ("    E_%smode,\n", GET_MODE_NAME (d->mode));
 
       printf ("    %d,\n", d->strict_low);
 

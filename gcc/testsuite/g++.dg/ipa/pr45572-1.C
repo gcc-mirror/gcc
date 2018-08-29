@@ -11,18 +11,22 @@ typedef struct
 extern __inline __attribute__ ((__gnu_inline__)) int
 fgetc_unlocked (FILE *__fp)
 {
+  return 0;
 }
 extern __inline __attribute__ ((__gnu_inline__)) int
 putc_unlocked (int __c, FILE *__stream)
 {
+  return 0;
 }
 extern __inline __attribute__ ((__gnu_inline__)) __ssize_t
 getline (char **__lineptr, size_t *__n, FILE *__stream)
 {
+  return 0;
 }
 extern __inline __attribute__ ((__gnu_inline__)) int
 ferror_unlocked (FILE *__stream) throw ()
 {
+  return 0;
 }
 }
 typedef struct

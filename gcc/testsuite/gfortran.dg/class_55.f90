@@ -5,7 +5,7 @@
 ! Contributed by Sylwester Arabas <slayoo@staszic.waw.pl>
 
   type :: mpdata_t
-    class(bcd_t), pointer :: bcx, bcy   ! { dg-error "is a type that has not been declared" }
+    class(bcd_t), pointer :: bcx, bcy   ! { dg-error "has not been declared" }
   end type
   type(mpdata_t) :: this
   call this%bcx%fill_halos()            ! { dg-error "is being used before it is defined" }

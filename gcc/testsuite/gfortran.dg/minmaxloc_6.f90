@@ -4,8 +4,8 @@
   dda = (/(J1,J1=1,100)/)
 
   IDS = MAXLOC(DDA,1)
-  if (ids.ne.100) call abort  !expect 100
+  if (ids.ne.100) STOP 1!expect 100
   IDS = MAXLOC(DDA,1, (/(J1,J1=1,100)/) > 50)
-  if (ids.ne.100) call abort  !expect 100
+  if (ids.ne.100) STOP 2!expect 100
 
   END

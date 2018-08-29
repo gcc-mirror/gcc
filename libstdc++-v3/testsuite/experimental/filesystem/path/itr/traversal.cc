@@ -1,8 +1,8 @@
-// { dg-options "-lstdc++fs" }
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,9 +79,27 @@ test02()
   }
 }
 
+void
+test03()
+{
+  path paths[] = { "single", "multiple/elements" };
+  for (const path& p : paths)
+    for (auto iter = p.begin(); iter != p.end(); ++iter)
+    {
+      auto iter2 = iter;
+      ++iter;
+      iter2++;
+      VERIFY( iter2 == iter );
+      --iter;
+      iter2--;
+      VERIFY( iter2 == iter );
+    }
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

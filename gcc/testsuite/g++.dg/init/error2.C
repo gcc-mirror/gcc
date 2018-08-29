@@ -5,7 +5,7 @@ template<int> struct A
 {
   static int a[1];
 };
-template<int N> int A<N>::a[1] = { X:0 }; /* { dg-error "does not allow designated|was not declared|designated initializer for an array" } */
+template<int N> int A<N>::a[1] = { X:0 }; /* { dg-error "does not allow GNU designated|was not declared|designated initializer for an array" } */
 
 void foo()
 {

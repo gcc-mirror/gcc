@@ -1,4 +1,4 @@
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 struct derived;
 struct base {
@@ -8,5 +8,5 @@ private:
 };
 struct derived : base {};
 
-derived d1{};			// { dg-error "" "" { target c++1z } }
+derived d1{};			// { dg-error "" "" { target c++17 } }
 derived d2;			// still OK

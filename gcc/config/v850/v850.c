@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for NEC V850 series
-   Copyright (C) 1996-2017 Free Software Foundation, Inc.
+   Copyright (C) 1996-2018 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -29,6 +31,7 @@
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "insn-config.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -64,8 +67,6 @@ data_area_stack_element * data_area_stack = NULL;
 /* True if we don't need to check any more if the current
    function is an interrupt handler.  */
 static int v850_interrupt_cache_p = FALSE;
-
-rtx v850_compare_op0, v850_compare_op1;
 
 /* Whether current function is an interrupt handler.  */
 static int v850_interrupt_p = FALSE;
@@ -269,19 +270,19 @@ const_double_split (rtx x, HOST_WIDE_INT * p_high, HOST_WIDE_INT * p_low)
 
       switch (GET_MODE (x))
 	{
-	case DFmode:
+	case E_DFmode:
 	  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), t);
 	  *p_high = t[1];	/* since v850 is little endian */
 	  *p_low = t[0];	/* high is second word */
 	  return;
 
-	case SFmode:
+	case E_SFmode:
 	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), *p_high);
 	  *p_low = 0;
 	  return;
 
-	case VOIDmode:
-	case DImode:
+	case E_VOIDmode:
+	case E_DImode:
 	  *p_high = CONST_DOUBLE_HIGH (x);
 	  *p_low  = CONST_DOUBLE_LOW (x);
 	  return;
@@ -415,7 +416,9 @@ v850_print_operand (FILE * file, rtx x, int code)
     case 'b':
     case 'B':
     case 'C':
-      switch ((code == 'B' || code == 'C')
+    case 'd':
+    case 'D':
+      switch ((code == 'B' || code == 'C' || code == 'D')
 	      ? reverse_condition (GET_CODE (x)) : GET_CODE (x))
 	{
 	  case NE:
@@ -431,7 +434,10 @@ v850_print_operand (FILE * file, rtx x, int code)
 	      fprintf (file, "e");
 	    break;
 	  case GE:
-	    fprintf (file, "ge");
+	    if (code == 'D' || code == 'd')
+	      fprintf (file, "p");
+	    else
+	      fprintf (file, "ge");
 	    break;
 	  case GT:
 	    fprintf (file, "gt");
@@ -440,7 +446,10 @@ v850_print_operand (FILE * file, rtx x, int code)
 	    fprintf (file, "le");
 	    break;
 	  case LT:
-	    fprintf (file, "lt");
+	    if (code == 'D' || code == 'd')
+	      fprintf (file, "n");
+	    else
+	      fprintf (file, "lt");
 	    break;
 	  case GEU:
 	    fprintf (file, "nl");
@@ -593,10 +602,10 @@ v850_print_operand (FILE * file, rtx x, int code)
 	default:
 	  gcc_unreachable ();
 
-	case QImode: fputs (".b", file); break;
-	case HImode: fputs (".h", file); break;
-	case SImode: fputs (".w", file); break;
-	case SFmode: fputs (".w", file); break;
+	case E_QImode: fputs (".b", file); break;
+	case E_HImode: fputs (".h", file); break;
+	case E_SImode: fputs (".w", file); break;
+	case E_SFmode: fputs (".w", file); break;
 	}
       break;
     case '.':			/* Register r0.  */
@@ -902,7 +911,7 @@ output_move_single (rtx * operands)
 }
 
 machine_mode
-v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1 ATTRIBUTE_UNUSED)
+v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1)
 {
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
     {
@@ -924,11 +933,20 @@ v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1 ATTRIBUTE_UNUSED)
 	  gcc_unreachable ();
 	}
     }
+
+  if (op1 == const0_rtx
+      && (cond == EQ || cond == NE || cond == LT || cond == GE)
+      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
+	  || GET_CODE (op0) == NEG || GET_CODE (op0) == AND
+	  || GET_CODE (op0) == IOR || GET_CODE (op0) == XOR
+	  || GET_CODE (op0) == NOT || GET_CODE (op0) == ASHIFT))
+    return CCNZmode;
+
   return CCmode;
 }
 
 machine_mode
-v850_gen_float_compare (enum rtx_code cond, machine_mode mode ATTRIBUTE_UNUSED, rtx op0, rtx op1)
+v850_gen_float_compare (enum rtx_code cond, machine_mode mode, rtx op0, rtx op1)
 {
   if (GET_MODE (op0) == DFmode)
     {
@@ -957,7 +975,7 @@ v850_gen_float_compare (enum rtx_code cond, machine_mode mode ATTRIBUTE_UNUSED, 
 	  gcc_unreachable ();
 	}
     }
-  else if (GET_MODE (v850_compare_op0) == SFmode)
+  else if (mode == SFmode)
     {
       switch (cond)
 	{
@@ -990,25 +1008,6 @@ v850_gen_float_compare (enum rtx_code cond, machine_mode mode ATTRIBUTE_UNUSED, 
   return v850_select_cc_mode (cond, op0, op1);
 }
 
-rtx
-v850_gen_compare (enum rtx_code cond, machine_mode mode, rtx op0, rtx op1)
-{
-  if (GET_MODE_CLASS(GET_MODE (op0)) != MODE_FLOAT)
-    {
-      emit_insn (gen_cmpsi_insn (op0, op1));
-      return gen_rtx_fmt_ee (cond, mode, gen_rtx_REG(CCmode, CC_REGNUM), const0_rtx);
-    }
-  else
-    {
-      rtx cc_reg;
-      mode = v850_gen_float_compare (cond, mode, op0, op1);
-      cc_reg = gen_rtx_REG (mode, CC_REGNUM);
-      emit_insn (gen_rtx_SET (cc_reg, gen_rtx_REG (mode, FCC_REGNUM)));
-
-      return gen_rtx_fmt_ee (cond, mode, cc_reg, const0_rtx);
-    }
-}
-
 /* Return maximum offset supported for a short EP memory reference of mode
    MODE and signedness UNSIGNEDP.  */
 
@@ -1019,7 +1018,7 @@ ep_memory_offset (machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       if (TARGET_SMALL_SLD)
 	max_offset = (1 << 4);
       else if ((TARGET_V850E_UP)
@@ -1029,7 +1028,7 @@ ep_memory_offset (machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
 	max_offset = (1 << 7);
       break;
 
-    case HImode:
+    case E_HImode:
       if (TARGET_SMALL_SLD)
 	max_offset = (1 << 5);
       else if ((TARGET_V850E_UP)
@@ -1039,8 +1038,8 @@ ep_memory_offset (machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
 	max_offset = (1 << 8);
       break;
 
-    case SImode:
-    case SFmode:
+    case E_SImode:
+    case E_SFmode:
       max_offset = (1 << 8);
       break;
       
@@ -1375,12 +1374,11 @@ v850_reorg (void)
 		 for the register */
 	      if (GET_CODE (dest) == REG)
 		{
-		  machine_mode mode = GET_MODE (dest);
 		  int regno;
 		  int endregno;
 
 		  regno = REGNO (dest);
-		  endregno = regno + HARD_REGNO_NREGS (regno, mode);
+		  endregno = END_REGNO (dest);
 
 		  if (!use_ep)
 		    {
@@ -1572,7 +1570,7 @@ compute_register_save_size (long * p_reg_saved)
   -------------------------- ---- ------------------   V */
 
 int
-compute_frame_size (int size, long * p_reg_saved)
+compute_frame_size (poly_int64 size, long * p_reg_saved)
 {
   return (size
 	  + compute_register_save_size (p_reg_saved)
@@ -1633,7 +1631,7 @@ increment_stack (signed int amount, bool in_prologue)
       inc = reg;
     }
 
-  inc = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, inc));
+  inc = emit_insn (gen_addsi3_clobber_flags (stack_pointer_rtx, stack_pointer_rtx, inc));
   if (in_prologue)
     F (inc);
 }
@@ -1710,7 +1708,7 @@ expand_prologue (void)
 
 	  save_all = gen_rtx_PARALLEL
 	    (VOIDmode,
-	     rtvec_alloc (num_save + 1
+	     rtvec_alloc (num_save + 2
 			  + (TARGET_DISABLE_CALLT ? (TARGET_LONG_CALLS ? 2 : 1) : 0)));
 
 	  XVECEXP (save_all, 0, 0)
@@ -1729,13 +1727,16 @@ expand_prologue (void)
 			       save_regs[i]);
 	    }
 
+	  XVECEXP (save_all, 0, num_save + 1)
+	    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, CC_REGNUM));
+
 	  if (TARGET_DISABLE_CALLT)
 	    {
-	      XVECEXP (save_all, 0, num_save + 1)
+	      XVECEXP (save_all, 0, num_save + 2)
 		= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 10));
 
 	      if (TARGET_LONG_CALLS)
-		XVECEXP (save_all, 0, num_save + 2)
+		XVECEXP (save_all, 0, num_save + 3)
 		  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 11));
 	    }
 
@@ -1983,55 +1984,6 @@ expand_epilogue (void)
   v850_interrupt_p = FALSE;
 }
 
-/* Update the condition code from the insn.  */
-void
-notice_update_cc (rtx body, rtx_insn *insn)
-{
-  switch (get_attr_cc (insn))
-    {
-    case CC_NONE:
-      /* Insn does not affect CC at all.  */
-      break;
-
-    case CC_NONE_0HIT:
-      /* Insn does not change CC, but the 0'th operand has been changed.  */
-      if (cc_status.value1 != 0
-	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value1))
-	cc_status.value1 = 0;
-      break;
-
-    case CC_SET_ZN:
-      /* Insn sets the Z,N flags of CC to recog_data.operand[0].
-	 V,C is in an unusable state.  */
-      CC_STATUS_INIT;
-      cc_status.flags |= CC_OVERFLOW_UNUSABLE | CC_NO_CARRY;
-      cc_status.value1 = recog_data.operand[0];
-      break;
-
-    case CC_SET_ZNV:
-      /* Insn sets the Z,N,V flags of CC to recog_data.operand[0].
-  	 C is in an unusable state.  */
-      CC_STATUS_INIT;
-      cc_status.flags |= CC_NO_CARRY;
-      cc_status.value1 = recog_data.operand[0];
-      break;
-
-    case CC_COMPARE:
-      /* The insn is a compare instruction.  */
-      CC_STATUS_INIT;
-      cc_status.value1 = SET_SRC (body);
-      break;
-
-    case CC_CLOBBER:
-      /* Insn doesn't leave CC in a usable state.  */
-      CC_STATUS_INIT;
-      break;
-
-    default:
-      break;
-    }
-}
-
 /* Retrieve the data area that has been chosen for the given decl.  */
 
 v850_data_area
@@ -2072,8 +2024,7 @@ v850_set_data_area (tree decl, v850_data_area data_area)
 /* Handle an "interrupt" attribute; arguments as in
    struct attribute_spec.handler.  */
 static tree
-v850_handle_interrupt_attribute (tree * node,
-                                 tree name,
+v850_handle_interrupt_attribute (tree *node, tree name,
                                  tree args ATTRIBUTE_UNUSED,
                                  int flags ATTRIBUTE_UNUSED,
                                  bool * no_add_attrs)
@@ -2091,8 +2042,7 @@ v850_handle_interrupt_attribute (tree * node,
 /* Handle a "sda", "tda" or "zda" attribute; arguments as in
    struct attribute_spec.handler.  */
 static tree
-v850_handle_data_area_attribute (tree* node,
-                                 tree name,
+v850_handle_data_area_attribute (tree *node, tree name,
                                  tree args ATTRIBUTE_UNUSED,
                                  int flags ATTRIBUTE_UNUSED,
                                  bool * no_add_attrs)
@@ -2379,7 +2329,7 @@ construct_save_jarl (rtx op)
   stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1));
 
   /* Each push will put 4 bytes from the stack....  */
-  stack_bytes += (count - (TARGET_LONG_CALLS ? 3 : 2)) * 4;
+  stack_bytes += (count - (TARGET_LONG_CALLS ? 4 : 3)) * 4;
 
   /* Make sure that the amount we are popping either 0 or 16 bytes.  */
   if (stack_bytes != 0)
@@ -2390,7 +2340,7 @@ construct_save_jarl (rtx op)
 
   /* Now compute the bit mask of registers to push.  */
   mask = 0;
-  for (i = 1; i < count - (TARGET_LONG_CALLS ? 2 : 1); i++)
+  for (i = 1; i < count - (TARGET_LONG_CALLS ? 3 : 2); i++)
     {
       rtx vector_element = XVECEXP (op, 0, i);
       
@@ -3129,7 +3079,10 @@ v850_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
     return true;
   if (GET_CODE (x) == PLUS
       && v850_rtx_ok_for_base_p (XEXP (x, 0), strict_p)
-      && constraint_satisfied_p (XEXP (x,1), CONSTRAINT_K)
+      && (constraint_satisfied_p (XEXP (x, 1), CONSTRAINT_K)
+	  || (TARGET_V850E2V3_UP
+	      && (mode == SImode || mode == HImode || mode == QImode)
+	      && constraint_satisfied_p (XEXP (x, 1), CONSTRAINT_W)))
       && ((mode == QImode || INTVAL (XEXP (x, 1)) % 2 == 0)
 	   && CONST_OK_FOR_K (INTVAL (XEXP (x, 1))
 			      + (GET_MODE_NUNITS (mode) * UNITS_PER_WORD))))
@@ -3187,19 +3140,19 @@ v850_adjust_insn_length (rtx_insn *insn, int length)
 
 static const struct attribute_spec v850_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "interrupt_handler", 0, 0, true,  false, false,
-    v850_handle_interrupt_attribute, false },
-  { "interrupt",         0, 0, true,  false, false,
-    v850_handle_interrupt_attribute, false },
-  { "sda",               0, 0, true,  false, false,
-    v850_handle_data_area_attribute, false },
-  { "tda",               0, 0, true,  false, false,
-    v850_handle_data_area_attribute, false },
-  { "zda",               0, 0, true,  false, false,
-    v850_handle_data_area_attribute, false },
-  { NULL,                0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt_handler", 0, 0, true,  false, false, false,
+    v850_handle_interrupt_attribute, NULL },
+  { "interrupt",         0, 0, true,  false, false, false,
+    v850_handle_interrupt_attribute, NULL },
+  { "sda",               0, 0, true,  false, false, false,
+    v850_handle_data_area_attribute, NULL },
+  { "tda",               0, 0, true,  false, false, false,
+    v850_handle_data_area_attribute, NULL },
+  { "zda",               0, 0, true,  false, false, false,
+    v850_handle_data_area_attribute, NULL },
+  { NULL,                0, 0, false, false, false, false, NULL, NULL }
 };
 
 static void
@@ -3245,6 +3198,23 @@ v850_gen_movdi (rtx * operands)
     return "st.w %1, %0 ; st.w %R1, %R0 ";
   
   return "st.dw %1, %0";
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+v850_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return GET_MODE_SIZE (mode) <= 4 || ((regno & 1) == 0 && regno != 0);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+v850_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || (GET_MODE_SIZE (mode1) <= 4 && GET_MODE_SIZE (mode2) <= 4));
 }
 
 /* Initialize the GCC target structure.  */
@@ -3342,14 +3312,23 @@ v850_gen_movdi (rtx * operands)
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P v850_legitimate_constant_p
 
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
-
 #undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P v850_legitimate_address_p
 
 #undef  TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
+
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK v850_hard_regno_mode_ok
+
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P v850_modes_tieable_p
+
+#undef TARGET_FLAGS_REGNUM
+#define TARGET_FLAGS_REGNUM 32
+
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

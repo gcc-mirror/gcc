@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -64,9 +64,7 @@ extern void rs6000_expand_vector_extract (rtx, rtx, rtx);
 extern void rs6000_split_vec_extract_var (rtx, rtx, rtx, rtx, rtx);
 extern rtx rs6000_adjust_vec_address (rtx, rtx, rtx, rtx, machine_mode);
 extern void rs6000_split_v4si_init (rtx []);
-extern bool altivec_expand_vec_perm_const (rtx op[4]);
 extern void altivec_expand_vec_perm_le (rtx op[4]);
-extern bool rs6000_expand_vec_perm_const (rtx op[4]);
 extern void altivec_expand_lvx_be (rtx, rtx, machine_mode, unsigned);
 extern void altivec_expand_stvx_be (rtx, rtx, machine_mode, unsigned);
 extern void altivec_expand_stvex_be (rtx, rtx, machine_mode, unsigned);
@@ -109,12 +107,6 @@ extern enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx,
 extern enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
 							    machine_mode,
 							    rtx);
-extern bool (*rs6000_secondary_memory_needed_ptr) (enum reg_class,
-						   enum reg_class,
-						   machine_mode);
-extern bool (*rs6000_cannot_change_mode_class_ptr) (machine_mode,
-						    machine_mode,
-						    enum reg_class);
 extern void rs6000_secondary_reload_inner (rtx, rtx, rtx, bool);
 extern void rs6000_secondary_reload_gpr (rtx, rtx, rtx, bool);
 extern int paired_emit_vector_cond_expr (rtx, rtx, rtx,
@@ -154,7 +146,6 @@ extern void rs6000_emit_le_vsx_move (rtx, rtx, machine_mode);
 extern bool valid_sf_si_move (rtx, rtx, machine_mode);
 extern void rs6000_emit_move (rtx, rtx, machine_mode);
 extern rtx rs6000_secondary_memory_needed_rtx (machine_mode);
-extern machine_mode rs6000_secondary_memory_needed_mode (machine_mode);
 extern rtx (*rs6000_legitimize_reload_address_ptr) (rtx, machine_mode,
 						    int, int, int, int *);
 extern bool rs6000_legitimate_offset_address_p (machine_mode, rtx,
@@ -171,7 +162,7 @@ extern rtx rs6000_machopic_legitimize_pic_address (rtx, machine_mode,
 extern rtx rs6000_address_for_fpconvert (rtx);
 extern rtx rs6000_address_for_altivec (rtx);
 extern rtx rs6000_allocate_stack_temp (machine_mode, bool, bool);
-extern int rs6000_loop_align (rtx);
+extern align_flags rs6000_loop_align (rtx);
 extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
 #endif /* RTX_CODE */
 
@@ -196,10 +187,6 @@ extern void rs6000_xcoff_asm_output_aligned_decl_common (FILE *, tree,
 							 unsigned HOST_WIDE_INT);
 extern void rs6000_elf_declare_function_name (FILE *, const char *, tree);
 extern bool rs6000_elf_in_small_data_p (const_tree);
-#ifdef ARGS_SIZE_RTX
-/* expr.h defines ARGS_SIZE_RTX and `enum direction' */
-extern enum direction function_arg_padding (machine_mode, const_tree);
-#endif /* ARGS_SIZE_RTX */
 
 #endif /* TREE_CODE */
 
@@ -254,7 +241,6 @@ const char * rs6000_xcoff_strip_dollar (const char *);
 
 void rs6000_final_prescan_insn (rtx_insn *, rtx *operand, int num_operands);
 
-extern bool rs6000_hard_regno_mode_ok_p[][FIRST_PSEUDO_REGISTER];
 extern unsigned char rs6000_class_max_nregs[][LIM_REG_CLASSES];
 extern unsigned char rs6000_hard_regno_nregs[][FIRST_PSEUDO_REGISTER];
 

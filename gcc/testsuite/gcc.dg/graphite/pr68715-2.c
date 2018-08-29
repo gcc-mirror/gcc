@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -floop-interchange" } */
+/* { dg-options "-Ofast -floop-nest-optimize" } */
 
 int a, b, c, d, f, g;
 int e[1], h[1];

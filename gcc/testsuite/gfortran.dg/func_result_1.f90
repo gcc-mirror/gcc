@@ -2,7 +2,7 @@
 ! From PR 19673 : We didn't dereference the result from POINTER
 ! functions with a RESULT clause
 program ret_ptr
-  if (foo(99) /= bar(99)) call abort ()
+  if (foo(99) /= bar(99)) STOP 1
 contains
   function foo (arg) result(ptr)
     integer :: arg

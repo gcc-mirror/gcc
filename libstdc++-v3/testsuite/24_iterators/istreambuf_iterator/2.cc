@@ -1,6 +1,6 @@
 // 1999-06-28 bkoz
 
-// Copyright (C) 1999-2017 Free Software Foundation, Inc.
+// Copyright (C) 1999-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,9 +25,7 @@
 
 void test02(void)
 {
-
   typedef std::istreambuf_iterator<char> cistreambuf_iter;
-  typedef cistreambuf_iter::streambuf_type cstreambuf_type;
   const char slit01[] = "playa hermosa, liberia, guanacaste";
   std::string str01(slit01);
   std::istringstream istrs00(str01);
@@ -35,9 +33,13 @@ void test02(void)
 
   // ctor sanity checks
   cistreambuf_iter istrb_it01(istrs00);
-  cistreambuf_iter istrb_it02;
-  std::string tmp(istrb_it01, istrb_it02); 
+  cistreambuf_iter istrb_eos;
+  VERIFY( istrb_it01 != istrb_eos );
+
+  std::string tmp(istrb_it01, istrb_eos);
   VERIFY( tmp == str01 );
+
+  VERIFY( istrb_it01 == istrb_eos );
 
   cistreambuf_iter istrb_it03(0);
   cistreambuf_iter istrb_it04;

@@ -1,6 +1,6 @@
 // Compatibility symbols for previous versions, C++0x bits -*- C++ -*-
 
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,10 +38,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   namespace chrono
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     // NB: Default configuration was no realtime.
     struct system_clock
     {
@@ -84,9 +84,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	     (__from(chrono::seconds(__sec)));
 #endif
     }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace chrono
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // _GLIBCXX_USE_C99_STDINT_TR1

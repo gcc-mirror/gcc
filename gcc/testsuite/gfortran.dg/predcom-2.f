@@ -1,7 +1,7 @@
 ! PR 32220, ICE when the loop is not unrolled enough to eliminate all 
 !   register copies
 ! { dg-do compile }
-! { dg-options "-O3" }
+! { dg-options "-O3 -std=legacy" }
 
       subroutine derv (b,cosxy,thick)
 c

@@ -34,13 +34,13 @@ const (
 	// span base.
 	maxObletBytes = 128 << 10
 
-	// idleCheckThreshold specifies how many units of work to do
-	// between run queue checks in an idle worker. Assuming a scan
+	// drainCheckThreshold specifies how many units of work to do
+	// between self-preemption checks in gcDrain. Assuming a scan
 	// rate of 1 MB/ms, this is ~100 µs. Lower values have higher
 	// overhead in the scan loop (the scheduler check may perform
 	// a syscall, so its overhead is nontrivial). Higher values
 	// make the system less responsive to incoming work.
-	idleCheckThreshold = 100000
+	drainCheckThreshold = 100000
 )
 
 // gcMarkRootPrepare queues root scanning jobs (stacks, globals, and
@@ -93,21 +93,24 @@ func gcMarkRootPrepare() {
 		// termination, allglen isn't changing, so we'll scan
 		// all Gs.
 		work.nStackRoots = int(atomic.Loaduintptr(&allglen))
-		work.nRescanRoots = 0
 	} else {
 		// We've already scanned span roots and kept the scan
 		// up-to-date during concurrent mark.
 		work.nSpanRoots = 0
 
-		// On the second pass of markroot, we're just scanning
-		// dirty stacks. It's safe to access rescan since the
-		// world is stopped.
+		// The hybrid barrier ensures that stacks can't
+		// contain pointers to unmarked objects, so on the
+		// second markroot, there's no need to scan stacks.
 		work.nStackRoots = 0
-		work.nRescanRoots = len(work.rescan.list)
+
+		if debug.gcrescanstacks > 0 {
+			// Scan stacks anyway for debugging.
+			work.nStackRoots = int(atomic.Loaduintptr(&allglen))
+		}
 	}
 
 	work.markrootNext = 0
-	work.markrootJobs = uint32(fixedRootCount + work.nFlushCacheRoots + work.nDataRoots + work.nSpanRoots + work.nStackRoots + work.nRescanRoots)
+	work.markrootJobs = uint32(fixedRootCount + work.nFlushCacheRoots + work.nDataRoots + work.nSpanRoots + work.nStackRoots)
 }
 
 // gcMarkRootCheck checks that all roots have been scanned. It is
@@ -165,8 +168,7 @@ func markroot(gcw *gcWork, i uint32) {
 	baseData := baseFlushCache + uint32(work.nFlushCacheRoots)
 	baseSpans := baseData + uint32(work.nDataRoots)
 	baseStacks := baseSpans + uint32(work.nSpanRoots)
-	baseRescan := baseStacks + uint32(work.nStackRoots)
-	end := baseRescan + uint32(work.nRescanRoots)
+	end := baseStacks + uint32(work.nStackRoots)
 
 	// Note: if you add a case here, please also update heapdump.go:dumproots.
 	switch {
@@ -186,6 +188,11 @@ func markroot(gcw *gcWork, i uint32) {
 		}
 
 	case i == fixedRootFinalizers:
+		// Only do this once per GC cycle since we don't call
+		// queuefinalizer during marking.
+		if work.markrootDone {
+			break
+		}
 		for fb := allfin; fb != nil; fb = fb.alllink {
 			cnt := uintptr(atomic.Load(&fb.cnt))
 			scanblock(uintptr(unsafe.Pointer(&fb.fin[0])), cnt*unsafe.Sizeof(fb.fin[0]), &finptrmask[0], gcw)
@@ -201,15 +208,8 @@ func markroot(gcw *gcWork, i uint32) {
 	default:
 		// the rest is scanning goroutine stacks
 		var gp *g
-		if baseStacks <= i && i < baseRescan {
+		if baseStacks <= i && i < end {
 			gp = allgs[i-baseStacks]
-		} else if baseRescan <= i && i < end {
-			gp = work.rescan.list[i-baseRescan].ptr()
-			if gp.gcRescan != int32(i-baseRescan) {
-				// Looking for issue #17099.
-				println("runtime: gp", gp, "found at rescan index", i-baseRescan, "but should be at", gp.gcRescan)
-				throw("bad g rescan index")
-			}
 		} else {
 			throw("markroot: bad index")
 		}
@@ -352,6 +352,7 @@ func gcAssistAlloc(gp *g) {
 		return
 	}
 
+	traced := false
 retry:
 	// Compute the amount of scan work we need to do to make the
 	// balance positive. When the required amount of work is low,
@@ -387,8 +388,16 @@ retry:
 		if scanWork == 0 {
 			// We were able to steal all of the credit we
 			// needed.
+			if traced {
+				traceGCMarkAssistDone()
+			}
 			return
 		}
+	}
+
+	if trace.enabled && !traced {
+		traced = true
+		traceGCMarkAssistStart()
 	}
 
 	// Perform assist work
@@ -432,6 +441,9 @@ retry:
 
 		// At this point either background GC has satisfied
 		// this G's assist debt, or the GC cycle is over.
+	}
+	if traced {
+		traceGCMarkAssistDone()
 	}
 }
 
@@ -656,10 +668,6 @@ func doscanstack(*g, *gcWork)
 
 // scanstack scans gp's stack, greying all pointers found on the stack.
 //
-// During mark phase, it also installs stack barriers while traversing
-// gp's stack. During mark termination, it stops scanning when it
-// reaches an unhit stack barrier.
-//
 // scanstack is marked go:systemstack because it must not be preempted
 // while using a workbuf.
 //
@@ -699,82 +707,7 @@ func scanstack(gp *g, gcw *gcWork) {
 	scanstackblock(uintptr(unsafe.Pointer(&gp.gcregs)), unsafe.Sizeof(gp.gcregs), gcw)
 	scanstackblock(uintptr(unsafe.Pointer(&gp.context)), unsafe.Sizeof(gp.context), gcw)
 
-	if gcphase == _GCmark {
-		// gp may have added itself to the rescan list between
-		// when GC started and now. It's clean now, so remove
-		// it. This isn't safe during mark termination because
-		// mark termination is consuming this list, but it's
-		// also not necessary.
-		dequeueRescan(gp)
-	}
 	gp.gcscanvalid = true
-}
-
-// queueRescan adds gp to the stack rescan list and clears
-// gp.gcscanvalid. The caller must own gp and ensure that gp isn't
-// already on the rescan list.
-func queueRescan(gp *g) {
-	if debug.gcrescanstacks == 0 {
-		// Clear gcscanvalid to keep assertions happy.
-		//
-		// TODO: Remove gcscanvalid entirely when we remove
-		// stack rescanning.
-		gp.gcscanvalid = false
-		return
-	}
-
-	if gcphase == _GCoff {
-		gp.gcscanvalid = false
-		return
-	}
-	if gp.gcRescan != -1 {
-		throw("g already on rescan list")
-	}
-
-	lock(&work.rescan.lock)
-	gp.gcscanvalid = false
-
-	// Recheck gcphase under the lock in case there was a phase change.
-	if gcphase == _GCoff {
-		unlock(&work.rescan.lock)
-		return
-	}
-	if len(work.rescan.list) == cap(work.rescan.list) {
-		throw("rescan list overflow")
-	}
-	n := len(work.rescan.list)
-	gp.gcRescan = int32(n)
-	work.rescan.list = work.rescan.list[:n+1]
-	work.rescan.list[n].set(gp)
-	unlock(&work.rescan.lock)
-}
-
-// dequeueRescan removes gp from the stack rescan list, if gp is on
-// the rescan list. The caller must own gp.
-func dequeueRescan(gp *g) {
-	if debug.gcrescanstacks == 0 {
-		return
-	}
-
-	if gp.gcRescan == -1 {
-		return
-	}
-	if gcphase == _GCoff {
-		gp.gcRescan = -1
-		return
-	}
-
-	lock(&work.rescan.lock)
-	if work.rescan.list[gp.gcRescan].ptr() != gp {
-		throw("bad dequeueRescan")
-	}
-	// Careful: gp may itself be the last G on the list.
-	last := work.rescan.list[len(work.rescan.list)-1]
-	work.rescan.list[gp.gcRescan] = last
-	last.ptr().gcRescan = gp.gcRescan
-	gp.gcRescan = -1
-	work.rescan.list = work.rescan.list[:len(work.rescan.list)-1]
-	unlock(&work.rescan.lock)
 }
 
 type gcDrainFlags int
@@ -784,6 +717,7 @@ const (
 	gcDrainNoBlock
 	gcDrainFlushBgCredit
 	gcDrainIdle
+	gcDrainFractional
 
 	// gcDrainBlock means neither gcDrainUntilPreempt or
 	// gcDrainNoBlock. It is the default, but callers should use
@@ -799,6 +733,10 @@ const (
 //
 // If flags&gcDrainIdle != 0, gcDrain returns when there is other work
 // to do. This implies gcDrainNoBlock.
+//
+// If flags&gcDrainFractional != 0, gcDrain self-preempts when
+// pollFractionalWorkerExit() returns true. This implies
+// gcDrainNoBlock.
 //
 // If flags&gcDrainNoBlock != 0, gcDrain returns as soon as it is
 // unable to get more work. Otherwise, it will block until all
@@ -816,14 +754,24 @@ func gcDrain(gcw *gcWork, flags gcDrainFlags) {
 
 	gp := getg().m.curg
 	preemptible := flags&gcDrainUntilPreempt != 0
-	blocking := flags&(gcDrainUntilPreempt|gcDrainIdle|gcDrainNoBlock) == 0
+	blocking := flags&(gcDrainUntilPreempt|gcDrainIdle|gcDrainFractional|gcDrainNoBlock) == 0
 	flushBgCredit := flags&gcDrainFlushBgCredit != 0
 	idle := flags&gcDrainIdle != 0
 
 	initScanWork := gcw.scanWork
-	// idleCheck is the scan work at which to perform the next
-	// idle check with the scheduler.
-	idleCheck := initScanWork + idleCheckThreshold
+
+	// checkWork is the scan work before performing the next
+	// self-preempt check.
+	checkWork := int64(1<<63 - 1)
+	var check func() bool
+	if flags&(gcDrainIdle|gcDrainFractional) != 0 {
+		checkWork = initScanWork + drainCheckThreshold
+		if idle {
+			check = pollWork
+		} else if flags&gcDrainFractional != 0 {
+			check = pollFractionalWorkerExit
+		}
+	}
 
 	// Drain root marking jobs.
 	if work.markrootNext < work.markrootJobs {
@@ -833,7 +781,7 @@ func gcDrain(gcw *gcWork, flags gcDrainFlags) {
 				break
 			}
 			markroot(gcw, job)
-			if idle && pollWork() {
+			if check != nil && check() {
 				goto done
 			}
 		}
@@ -874,12 +822,12 @@ func gcDrain(gcw *gcWork, flags gcDrainFlags) {
 				gcFlushBgCredit(gcw.scanWork - initScanWork)
 				initScanWork = 0
 			}
-			idleCheck -= gcw.scanWork
+			checkWork -= gcw.scanWork
 			gcw.scanWork = 0
 
-			if idle && idleCheck <= 0 {
-				idleCheck += idleCheckThreshold
-				if pollWork() {
+			if checkWork <= 0 {
+				checkWork += drainCheckThreshold
+				if check != nil && check() {
 					break
 				}
 			}
@@ -1052,7 +1000,7 @@ func scanobject(b uintptr, gcw *gcWork) {
 			// paths), in which case we must *not* enqueue
 			// oblets since their bitmaps will be
 			// uninitialized.
-			if !hbits.hasPointers(n) {
+			if s.spanclass.noscan() {
 				// Bypass the whole scan.
 				gcw.bytesMarked += uint64(n)
 				return
@@ -1158,6 +1106,9 @@ func shade(b uintptr) {
 // obj is the start of an object with mark mbits.
 // If it isn't already marked, mark it and enqueue into gcw.
 // base and off are for debugging only and could be removed.
+//
+// See also wbBufFlush1, which partially duplicates this logic.
+//
 //go:nowritebarrierrec
 func greyobject(obj, base, off uintptr, hbits heapBits, span *mspan, gcw *gcWork, objIndex uintptr, forStack bool) {
 	// obj should be start of allocation, and so must be at least pointer-aligned.
@@ -1185,6 +1136,7 @@ func greyobject(obj, base, off uintptr, hbits heapBits, span *mspan, gcw *gcWork
 			// Dump the object
 			gcDumpObject("obj", obj, ^uintptr(0))
 
+			getg().m.traceback = 2
 			throw("checkmark found unmarked object")
 		}
 		if hbits.isCheckmarked(span.elemsize) {
@@ -1206,6 +1158,7 @@ func greyobject(obj, base, off uintptr, hbits heapBits, span *mspan, gcw *gcWork
 			print("runtime: marking free object ", hex(obj), " found at *(", hex(base), "+", hex(off), ")\n")
 			gcDumpObject("base", base, off)
 			gcDumpObject("obj", obj, ^uintptr(0))
+			getg().m.traceback = 2
 			throw("marking free object")
 		}
 
@@ -1217,7 +1170,7 @@ func greyobject(obj, base, off uintptr, hbits heapBits, span *mspan, gcw *gcWork
 		atomic.Or8(mbits.bytep, mbits.mask)
 		// If this is a noscan object, fast-track it to black
 		// instead of greying it.
-		if !hbits.hasPointers(span.elemsize) {
+		if span.spanclass.noscan() {
 			gcw.bytesMarked += uint64(span.elemsize)
 			return
 		}
@@ -1250,7 +1203,7 @@ func gcDumpObject(label string, obj, off uintptr) {
 		print(" s=nil\n")
 		return
 	}
-	print(" s.base()=", hex(s.base()), " s.limit=", hex(s.limit), " s.sizeclass=", s.sizeclass, " s.elemsize=", s.elemsize, " s.state=")
+	print(" s.base()=", hex(s.base()), " s.limit=", hex(s.limit), " s.spanclass=", s.spanclass, " s.elemsize=", s.elemsize, " s.state=")
 	if 0 <= s.state && int(s.state) < len(mSpanStateNames) {
 		print(mSpanStateNames[s.state], "\n")
 	} else {
@@ -1259,7 +1212,7 @@ func gcDumpObject(label string, obj, off uintptr) {
 
 	skipped := false
 	size := s.elemsize
-	if s.state == _MSpanStack && size == 0 {
+	if s.state == _MSpanManual && size == 0 {
 		// We're printing something from a stack frame. We
 		// don't know how big it is, so just show up to an
 		// including off.
@@ -1314,10 +1267,7 @@ func gcmarknewobject(obj, size, scanSize uintptr) {
 //
 // The world must be stopped.
 func gcMarkTinyAllocs() {
-	for _, p := range &allp {
-		if p == nil || p.status == _Pdead {
-			break
-		}
+	for _, p := range allp {
 		c := p.mcache
 		if c == nil || c.tiny == 0 {
 			continue

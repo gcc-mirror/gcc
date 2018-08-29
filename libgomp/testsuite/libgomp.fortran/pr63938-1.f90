@@ -10,5 +10,5 @@ program pr63938_1
     x(1) = x(1) + 1
   end do
 !$omp end parallel do
-  if (x(1) .ne. 1000) call abort
+  if (x(1) .ne. 1000) STOP 1
 end program pr63938_1

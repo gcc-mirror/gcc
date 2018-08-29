@@ -22,7 +22,6 @@ subroutine p
    s = [character([1.]) :: 'x', 'y']      ! { dg-error "INTEGER expression expected" }
    s = [character([1d1]) :: 'x', 'y']     ! { dg-error "INTEGER expression expected" }
    s = [character([(0.,1.)]) :: 'x', 'y'] ! { dg-error "INTEGER expression expected" }
-   s = [character([null()]) :: 'x', 'y']  ! { dg-error "INTEGER expression expected" }
    s =  [character(null()) :: 'x', 'y']   ! { dg-error "INTEGER expression expected" }
    call foo(s)
 end subroutine p

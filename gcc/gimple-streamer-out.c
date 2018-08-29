@@ -1,6 +1,6 @@
 /* Routines for emitting GIMPLE to a file stream.
 
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "cgraph.h"
 #include "value-prof.h"
+#include "gimple-pretty-print.h"
 
 /* Output PHI function PHI to the main stream in OB.  */
 
@@ -209,9 +210,9 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
 				: LTO_bb0);
 
   streamer_write_uhwi (ob, bb->index);
-  streamer_write_gcov_count (ob, bb->count);
-  streamer_write_hwi (ob, bb->frequency);
+  bb->count.stream_out (ob);
   streamer_write_hwi (ob, bb->flags);
+  streamer_write_hwi (ob, bb->discriminator);
 
   if (!gsi_end_p (bsi) || phi_nodes (bb))
     {
@@ -221,6 +222,11 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
 	{
 	  int region;
 	  gimple *stmt = gsi_stmt (bsi);
+	  if (streamer_dump_file)
+	    {
+	      fprintf (streamer_dump_file, "  Streaming gimple stmt ");
+	      print_gimple_stmt (streamer_dump_file, stmt, 0, TDF_SLIM);
+	    }
 
 	  output_gimple_stmt (ob, stmt);
 

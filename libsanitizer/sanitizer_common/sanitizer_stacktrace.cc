@@ -78,14 +78,21 @@ void BufferedStackTrace::FastUnwindStack(uptr pc, uptr bp, uptr stack_top,
          IsAligned((uptr)frame, sizeof(*frame)) &&
          size < max_depth) {
 #ifdef __powerpc__
-    // PowerPC ABIs specify that the return address is saved at offset
-    // 16 of the *caller's* stack frame.  Thus we must dereference the
-    // back chain to find the caller frame before extracting it.
+    // PowerPC ABIs specify that the return address is saved on the
+    // *caller's* stack frame.  Thus we must dereference the back chain
+    // to find the caller frame before extracting it.
     uhwptr *caller_frame = (uhwptr*)frame[0];
     if (!IsValidFrame((uptr)caller_frame, stack_top, bottom) ||
         !IsAligned((uptr)caller_frame, sizeof(uhwptr)))
       break;
+    // For most ABIs the offset where the return address is saved is two
+    // register sizes.  The exception is the SVR4 ABI, which uses an
+    // offset of only one register size.
+#ifdef _CALL_SYSV
+    uhwptr pc1 = caller_frame[1];
+#else
     uhwptr pc1 = caller_frame[2];
+#endif
 #elif defined(__s390__)
     uhwptr pc1 = frame[14];
 #else
@@ -104,10 +111,6 @@ void BufferedStackTrace::FastUnwindStack(uptr pc, uptr bp, uptr stack_top,
   }
 }
 
-static bool MatchPc(uptr cur_pc, uptr trace_pc, uptr threshold) {
-  return cur_pc - trace_pc <= threshold || trace_pc - cur_pc <= threshold;
-}
-
 void BufferedStackTrace::PopStackFrames(uptr count) {
   CHECK_LT(count, size);
   size -= count;
@@ -116,15 +119,14 @@ void BufferedStackTrace::PopStackFrames(uptr count) {
   }
 }
 
+static uptr Distance(uptr a, uptr b) { return a < b ? b - a : a - b; }
+
 uptr BufferedStackTrace::LocatePcInTrace(uptr pc) {
-  // Use threshold to find PC in stack trace, as PC we want to unwind from may
-  // slightly differ from return address in the actual unwinded stack trace.
-  const int kPcThreshold = 350;
-  for (uptr i = 0; i < size; ++i) {
-    if (MatchPc(pc, trace[i], kPcThreshold))
-      return i;
+  uptr best = 0;
+  for (uptr i = 1; i < size; ++i) {
+    if (Distance(trace[i], pc) < Distance(trace[best], pc)) best = i;
   }
-  return 0;
+  return best;
 }
 
 }  // namespace __sanitizer

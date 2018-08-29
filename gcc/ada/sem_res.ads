@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,13 +85,16 @@ package Sem_Res is
    --  The parameter T is the Typ for the corresponding resolve call.
 
    procedure Preanalyze_And_Resolve (N : Node_Id; T : Entity_Id);
-   --  Performs a pre-analysis of expression node N. During pre-analysis, N is
+   --  Performs a preanalysis of expression node N. During preanalysis, N is
    --  analyzed and then resolved against type T, but no expansion is carried
-   --  out for N or its children. For more info on pre-analysis read the spec
+   --  out for N or its children. For more info on preanalysis read the spec
    --  of Sem.
 
    procedure Preanalyze_And_Resolve (N : Node_Id);
    --  Same, but use type of node because context does not impose a single type
+
+   procedure Preanalyze_With_Freezing_And_Resolve (N : Node_Id; T : Entity_Id);
+   --  Same, but perform freezing of static expressions of N or its children.
 
    procedure Resolve (N : Node_Id; Typ : Entity_Id);
    procedure Resolve (N : Node_Id; Typ : Entity_Id; Suppress : Check_Id);

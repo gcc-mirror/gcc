@@ -1,5 +1,5 @@
-/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-do run { target { powerpc*-*-* && lp64 } } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2" } */
 
@@ -15,9 +15,14 @@
 static int errors = 0;
 #endif
 
-union args {
+union args_d {
   double scalar[2];
   vector double vect;
+};
+
+union args_f {
+  float scalar[4];
+  vector float vect;
 };
 
 union largs {
@@ -26,10 +31,27 @@ union largs {
 };
 
 static void
-do_test (union args *expected, union args *got, const char *name)
+do_test_d (union args_d *expected, union args_d *got, const char *name)
 {
   if (expected->scalar[0] != got->scalar[0]
       || expected->scalar[1] != got->scalar[1])
+    {
+#ifdef DEBUG
+      printf ("%s failed!\n", name);
+      errors++;
+#else
+      abort ();
+#endif
+    }
+}
+
+static void
+do_test_f (union args_f *expected, union args_f *got, const char *name)
+{
+  if (expected->scalar[0] != got->scalar[0]
+      || expected->scalar[1] != got->scalar[1]
+      || expected->scalar[2] != got->scalar[2]
+      || expected->scalar[3] != got->scalar[3])
     {
 #ifdef DEBUG
       printf ("%s failed!\n", name);
@@ -64,87 +86,177 @@ vabs (vector double arg)
 }
 
 static vector double
-vceil (vector double arg)
+vceil_d (vector double arg)
+{
+  return vec_ceil (arg);
+}
+
+static vector float
+vceil_f (vector float arg)
 {
   return vec_ceil (arg);
 }
 
 static vector double
-vfloor (vector double arg)
+vfloor_d (vector double arg)
+{
+  return vec_floor (arg);
+}
+
+static vector float
+vfloor_f (vector float arg)
 {
   return vec_floor (arg);
 }
 
 static vector double
-vnearbyint (vector double arg)
+vnearbyint_d (vector double arg)
 {
   return vec_nearbyint (arg);
 }
 
-static vector double
-vrint (vector double arg)
+static vector float
+vnearbyint_f (vector float arg)
+{
+  return vec_nearbyint (arg);
+}
+
+static vector float
+vrint_f (vector float arg)
 {
   return vec_rint (arg);
 }
 
 static vector double
-vsqrt (vector double arg)
+vrint_d (vector double arg)
+{
+  return vec_rint (arg);
+}
+
+static vector float
+vsqrt_f (vector float arg)
 {
   return vec_sqrt (arg);
 }
 
-/* Single argument tests.  */
+static vector double
+vsqrt_d (vector double arg)
+{
+  return vec_sqrt (arg);
+}
+
+/* Single argument tests with double args  */
 static struct
 {
-  union args result;
-  union args input;
+  union args_d result;
+  union args_d input;
   vector double (*func) (vector double);
   const char *name;
-} arg1_tests[] = {
+} arg1_tests_d[] = {
   /* result		input			function	name */
   { {  1.0,  2.0 },	{ -1.0,  2.0 },		vabs,		"vabs" },
   { {  1.0,  2.0 },	{  1.0, -2.0 },		vabs,		"vabs" },
-  { {  2.0,  2.0 },	{  1.1,  1.7 },		vceil,		"vceil" },
-  { { -1.0, -1.0 },	{ -1.1, -1.7 },		vceil,		"vceil" },
-  { { -1.0,  2.0 },	{ -1.5,  1.5 },		vceil,		"vceil" },
-  { {  1.0,  1.0 },	{  1.1,  1.7 },		vfloor,		"vfloor" },
-  { { -2.0, -2.0 },	{ -1.1, -1.7 },		vfloor,		"vfloor" },
-  { { -2.0,  1.0 },	{ -1.5,  1.5 },		vfloor,		"vfloor" },
-  { {  1.0,  2.0 },	{  1.1,  1.7 },		vnearbyint,	"vnearbyint" },
-  { { -1.0, -2.0 },	{ -1.1, -1.7 },		vnearbyint,	"vnearbyint" },
-  { { -2.0,  2.0 },	{ -1.5,  1.5 },		vnearbyint,	"vnearbyint" },
-  { {  1.0,  2.0 },	{  1.1,  1.7 },		vrint,		"vrint" },
-  { { -1.0, -2.0 },	{ -1.1, -1.7 },		vrint,		"vrint" },
-  { { -2.0,  2.0 },	{ -1.5,  1.5 },		vrint,		"vrint" },
-  { {  2.0,  4.0 },	{  4.0, 16.0 },		vsqrt,		"vsqrt" },
+  { {  2.0,  2.0 },	{  1.1,  1.7 },		vceil_d,	"vceil_d" },
+  { { -1.0, -1.0 },	{ -1.1, -1.7 },		vceil_d,	"vceil_d" },
+  { { -1.0,  2.0 },	{ -1.5,  1.5 },		vceil_d,	"vceil_d" },
+  { {  1.0,  1.0 },	{  1.1,  1.7 },		vfloor_d,	"vfloor_d" },
+  { { -2.0, -2.0 },	{ -1.1, -1.7 },		vfloor_d,	"vfloor_d" },
+  { { -2.0,  1.0 },	{ -1.5,  1.5 },		vfloor_d,	"vfloor_d" },
+  { {  1.0,  2.0 },	{  1.1,  1.7 },		vnearbyint_d,	"vnearbyint_d" },
+  { { -1.0, -2.0 },	{ -1.1, -1.7 },		vnearbyint_d,	"vnearbyint_d" },
+  { { -2.0,  2.0 },	{ -1.5,  1.5 },		vnearbyint_d,	"vnearbyint_d" },
+  { {  1.0,  2.0 },	{  1.1,  1.7 },		vrint_d,	"vrint_d" },
+  { { -1.0, -2.0 },	{ -1.1, -1.7 },		vrint_d,	"vrint_d" },
+  { { -2.0,  2.0 },	{ -1.5,  1.5 },		vrint_d,	"vrint_d" },
+
+  { {  2.0,  4.0 },	{  4.0, 16.0 },		vsqrt_d,	"vsqrt_d" },
 };
 
 static void
-test_arg1 (void)
+test_arg1_d (void)
 {
   unsigned i;
 
 #ifdef DEBUG
-  printf ("Single argument tests:\n");
+  printf ("\nSingle argument tests with double args:\n");
 #endif
 
-  for (i = 0; i < sizeof (arg1_tests) / sizeof (arg1_tests[0]); i++)
+  for (i = 0; i < sizeof (arg1_tests_d) / sizeof (arg1_tests_d[0]); i++)
     {
-      union args u;
-      u.vect = arg1_tests[i].func (arg1_tests[i].input.vect);
+      union args_d u;
+      u.vect = arg1_tests_d[i].func (arg1_tests_d[i].input.vect);
 
 #ifdef DEBUG
       printf ("test %-16s: expected { %4g, %4g }, got { %4g, %4g }, input { %4g, %4g }\n",
-	      arg1_tests[i].name,
-	      arg1_tests[i].result.scalar[0],
-	      arg1_tests[i].result.scalar[1],
+	      arg1_tests_d[i].name,
+	      arg1_tests_d[i].result.scalar[0],
+	      arg1_tests_d[i].result.scalar[1],
 	      u.scalar[0],
 	      u.scalar[1],
-	      arg1_tests[i].input.scalar[0],
-	      arg1_tests[i].input.scalar[1]);
+	      arg1_tests_d[i].input.scalar[0],
+	      arg1_tests_d[i].input.scalar[1]);
 #endif
 
-      do_test (&arg1_tests[i].result, &u, arg1_tests[i].name);
+      do_test_d (&arg1_tests_d[i].result, &u, arg1_tests_d[i].name);
+    }
+
+  return;
+}
+
+/* Single argument tests with float args.  */
+static struct
+{
+  union args_f result;
+  union args_f input;
+  vector float (*func) (vector float);
+  const char *name;
+} arg1_tests_f[] = {
+  /* result			input				function	name */
+  { { 2.0, 2.0, 3.0, 3.0 },     { 1.05, 1.1, 2.2, 2.3 },	vceil_f,	"vceil_f" },
+  { { -1.0, -1.0, -2.0, -2.0 },	{ -1.1, -1.7, -2.1, -2.4 },	vceil_f,	"vceil_f" },
+  { { 1.0, 1.0, 2.0, 2.0 },     { 1.05, 1.1, 2.2, 2.3 },	vfloor_f,	"vfloor_f" },
+  { { -2.0, -2.0, -3.0, -3.0 },	{ -1.1, -1.7, -2.1, -2.4 },	vfloor_f,	"vfloor_f" },
+  { {  1.0,  2.0, -3.0, 3.0 },	{  1.1,  1.7, -3.1, 3.1 },	vnearbyint_f,	"vnearbyint_f" },
+  { { -1.0, -2.0, -3.0, 3.0 },	{ -1.1, -1.7, -2.9, 2.9 },	vnearbyint_f,	"vnearbyint_f" },
+  { { -2.0,  2.0, -3.0, 3.0 },	{ -1.5,  1.5, -2.55, 3.49 },	vnearbyint_f,	"vnearbyint_f" },
+  { {  10.0,  18.0, 30.0, 40.0 }, {  10.1,  17.7, 30.0, 40.01 }, vrint_f,	"vrint_f" },
+  { { -11.0, -18.0, -30.0, -40.0 }, { -11.1, -17.7, -30.0, -40.01 }, vrint_f,	"vrint_f" },
+  
+  { {  2.0,  4.0 },	{  4.0, 16.0 },		vsqrt_f,	"vsqrt_f" },
+};
+
+static void
+test_arg1_f (void)
+{
+  unsigned i;
+
+#ifdef DEBUG
+  printf ("\nSingle argument tests with float args:\n");
+#endif
+
+  for (i = 0; i < sizeof (arg1_tests_f) / sizeof (arg1_tests_f[0]); i++)
+    {
+      union args_f u;
+      u.vect = arg1_tests_f[i].func (arg1_tests_f[i].input.vect);
+
+#ifdef DEBUG
+      printf ("test %-16s: expected { %4g, %4g, %4g, %4g }, got { %4g, %4g, %4g, %4g }, input { %4g, %4g, %4g, %4g }\n",
+	      arg1_tests_f[i].name,
+	      arg1_tests_f[i].result.scalar[0],
+	      arg1_tests_f[i].result.scalar[1],
+	      arg1_tests_f[i].result.scalar[2],
+	      arg1_tests_f[i].result.scalar[3],
+	      u.scalar[0],
+	      u.scalar[1],
+	      u.scalar[2],
+	      u.scalar[3],
+	      arg1_tests_f[i].input.scalar[0],
+	      arg1_tests_f[i].input.scalar[1],
+	      arg1_tests_f[i].input.scalar[2],
+	      arg1_tests_f[i].input.scalar[3]);
+#endif
+
+      do_test_f (&arg1_tests_f[i].result, &u, arg1_tests_f[i].name);
     }
 
   return;
@@ -215,8 +327,8 @@ vmin (vector double arg1, vector double arg2)
 /* 2 argument tests.  */
 static struct
 {
-  union args result;
-  union args input[2];
+  union args_d result;
+  union args_d input[2];
   vector double (*func) (vector double, vector double);
   const char *name;
 } arg2_tests[] = {
@@ -250,7 +362,7 @@ test_arg2 (void)
 
   for (i = 0; i < sizeof (arg2_tests) / sizeof (arg2_tests[0]); i++)
     {
-      union args u;
+      union args_d u;
       u.vect = arg2_tests[i].func (arg2_tests[i].input[0].vect,
 				   arg2_tests[i].input[1].vect);
 
@@ -267,7 +379,7 @@ test_arg2 (void)
 	      arg2_tests[i].input[1].scalar[1]);
 #endif
 
-      do_test (&arg2_tests[i].result, &u, arg2_tests[i].name);
+      do_test_d (&arg2_tests[i].result, &u, arg2_tests[i].name);
     }
 
   return;
@@ -312,7 +424,7 @@ vcmpge (vector double arg1, vector double arg2)
 static struct
 {
   union largs result;
-  union args input[2];
+  union args_d input[2];
   vector bool long (*func) (vector double, vector double);
   const char *name;
 } argcmp_tests[] = {
@@ -374,7 +486,8 @@ test_argcmp (void)
 int
 main (int argc, char *argv[])
 {
-  test_arg1 ();
+  test_arg1_f ();
+  test_arg1_d ();
   test_arg2 ();
   test_argcmp ();
 

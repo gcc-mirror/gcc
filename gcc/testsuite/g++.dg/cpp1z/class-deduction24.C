@@ -1,5 +1,5 @@
 // PR c++/78894
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 struct A
 {

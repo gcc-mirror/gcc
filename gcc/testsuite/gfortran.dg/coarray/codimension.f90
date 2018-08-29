@@ -25,10 +25,10 @@ contains
     call expl (y)
     i = lcobound(x, dim=1)
     j = ucobound(x, dim=1)
-    if (i /= 1 .or. j /= num_images()) call abort()
+    if (i /= 1 .or. j /= num_images()) STOP 1
     i = lcobound(y, dim=1)
     j = ucobound(y, dim=1)
-    if (i /= 1 .or. j /= num_images()) call abort()
+    if (i /= 1 .or. j /= num_images()) STOP 2
   end subroutine foo
 
   subroutine bar(y)
@@ -36,7 +36,7 @@ contains
     integer :: i, j
     i = lcobound(y, dim=1)
     j = ucobound(y, dim=1)
-    if (i /= 1 .or. j /= num_images()) call abort()
+    if (i /= 1 .or. j /= num_images()) STOP 3
   end subroutine bar
 
   subroutine expl(z)
@@ -44,6 +44,6 @@ contains
     integer :: i, j
     i = lcobound(z, dim=1)
     j = ucobound(z, dim=1)
-    if (i /= 1 .or. j /= num_images()) call abort()
+    if (i /= 1 .or. j /= num_images()) STOP 4
   end subroutine expl
 end program test_caf

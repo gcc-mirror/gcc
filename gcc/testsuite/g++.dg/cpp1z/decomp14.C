@@ -18,13 +18,13 @@ struct M : virtual J, L {};
 void
 foo (C &c, F &f, G &g, H &h, I &i, K &k, M &m)
 {
-  auto [ ci ] = c;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+  auto [ ci ] = c;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
   auto [ fi ] = f;		// { dg-error "cannot decompose class type 'F': both it and its base class 'A' have non-static data members" }
-				// { dg-warning "decomposition declaration only available with" "" { target c++14_down } .-1 }
+				// { dg-warning "structured bindings only available with" "" { target c++14_down } .-1 }
   auto [ gi ] = g;		// { dg-error "cannot decompose class type 'G': its base classes 'A' and 'E' have non-static data members" }
-				// { dg-warning "decomposition declaration only available with" "" { target c++14_down } .-1 }
-  auto [ hi ] = h;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+				// { dg-warning "structured bindings only available with" "" { target c++14_down } .-1 }
+  auto [ hi ] = h;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
   auto [ ki ] = k;		// { dg-error "'B' is an ambiguous base of 'K'" }
-				// { dg-warning "decomposition declaration only available with" "" { target c++14_down } .-1 }
-  auto [ mi ] = m;		// { dg-warning "decomposition declaration only available with" "" { target c++14_down } }
+				// { dg-warning "structured bindings only available with" "" { target c++14_down } .-1 }
+  auto [ mi ] = m;		// { dg-warning "structured bindings only available with" "" { target c++14_down } }
 }

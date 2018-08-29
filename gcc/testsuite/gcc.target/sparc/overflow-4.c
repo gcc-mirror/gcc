@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O" } */
+/* { dg-options "-O -mno-vis3" } */
 /* { dg-require-effective-target lp64 } */
 
 #include <stdbool.h>

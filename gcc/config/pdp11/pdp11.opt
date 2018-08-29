@@ -1,6 +1,6 @@
 ; Options for the PDP11 port of the compiler.
 
-; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -34,25 +34,13 @@ mac0
 Target Report Mask(AC0)
 Return floating-point results in ac0 (fr0 in Unix assembler syntax).
 
-mbcopy
-Target RejectNegative Report Mask(BCOPY)
-Do not use inline patterns for copying memory.
-
-mbcopy-builtin
-Target RejectNegative Report InverseMask(BCOPY, BCOPY_BUILTIN)
-Use inline patterns for copying memory.
-
-mbranch-cheap
-Target RejectNegative Report InverseMask(BRANCH_EXPENSIVE, BRANCH_CHEAP)
-Do not pretend that branches are expensive.
-
-mbranch-expensive
-Target RejectNegative Report Mask(BRANCH_EXPENSIVE)
-Pretend that branches are expensive.
-
 mdec-asm
-Target RejectNegative Report InverseMask(UNIX_ASM)
+Target RejectNegative Report Mask(DEC_ASM) Negative(mgnu-asm)
 Use the DEC assembler syntax.
+
+mgnu-asm
+Target RejectNegative Report Mask(GNU_ASM) Negative(munix-asm)
+Use the GNU assembler syntax.
 
 mfloat32
 Target Report Mask(FLOAT32)
@@ -83,5 +71,5 @@ Target Report Mask(SPLIT)
 Target has split I&D.
 
 munix-asm
-Target RejectNegative Report Mask(UNIX_ASM)
+Target RejectNegative Report Mask(UNIX_ASM) Negative(mdec-asm)
 Use UNIX assembler syntax.

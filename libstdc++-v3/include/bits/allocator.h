@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -105,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @tparam  _Tp  Type of allocated object.
    */
   template<typename _Tp>
-    class allocator: public __allocator_base<_Tp>
+    class allocator : public __allocator_base<_Tp>
     {
    public:
       typedef size_t     size_type;
@@ -128,15 +128,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef true_type is_always_equal;
 #endif
 
-      allocator() throw() { }
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3035. std::allocator's constructors should be constexpr
+      _GLIBCXX20_CONSTEXPR
+      allocator() _GLIBCXX_NOTHROW { }
 
-      allocator(const allocator& __a) throw()
+      _GLIBCXX20_CONSTEXPR
+      allocator(const allocator& __a) _GLIBCXX_NOTHROW
       : __allocator_base<_Tp>(__a) { }
 
-      template<typename _Tp1>
-	allocator(const allocator<_Tp1>&) throw() { }
+#if __cplusplus >= 201103L
+      // Avoid implicit deprecation.
+      allocator& operator=(const allocator&) = default;
+#endif
 
-      ~allocator() throw() { }
+      template<typename _Tp1>
+	_GLIBCXX20_CONSTEXPR
+	allocator(const allocator<_Tp1>&) _GLIBCXX_NOTHROW { }
+
+      ~allocator() _GLIBCXX_NOTHROW { }
 
       // Inherit everything else.
     };
@@ -144,26 +154,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _T1, typename _T2>
     inline bool
     operator==(const allocator<_T1>&, const allocator<_T2>&)
-    _GLIBCXX_USE_NOEXCEPT
+    _GLIBCXX_NOTHROW
     { return true; }
 
   template<typename _Tp>
     inline bool
     operator==(const allocator<_Tp>&, const allocator<_Tp>&)
-    _GLIBCXX_USE_NOEXCEPT
+    _GLIBCXX_NOTHROW
     { return true; }
 
   template<typename _T1, typename _T2>
     inline bool
     operator!=(const allocator<_T1>&, const allocator<_T2>&)
-    _GLIBCXX_USE_NOEXCEPT
+    _GLIBCXX_NOTHROW
     { return false; }
 
   template<typename _Tp>
     inline bool
     operator!=(const allocator<_Tp>&, const allocator<_Tp>&)
-    _GLIBCXX_USE_NOEXCEPT
+    _GLIBCXX_NOTHROW
     { return false; }
+
+  // Invalid allocator<cv T> partial specializations.
+  // allocator_traits::rebind_alloc can be used to form a valid allocator type.
+  template<typename _Tp>
+    class allocator<const _Tp>
+    {
+    public:
+      typedef _Tp value_type;
+      template<typename _Up> allocator(const allocator<_Up>&) { }
+    };
+
+  template<typename _Tp>
+    class allocator<volatile _Tp>
+    {
+    public:
+      typedef _Tp value_type;
+      template<typename _Up> allocator(const allocator<_Up>&) { }
+    };
+
+  template<typename _Tp>
+    class allocator<const volatile _Tp>
+    {
+    public:
+      typedef _Tp value_type;
+      template<typename _Up> allocator(const allocator<_Up>&) { }
+    };
 
   /// @} group allocator
 

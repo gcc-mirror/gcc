@@ -1,5 +1,5 @@
 /* brig-label-handler.cc -- brig label directive handling
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -31,7 +31,10 @@ brig_directive_label_handler::operator () (const BrigBase *base)
   std::string label_str ((const char *) (label_name->bytes),
 			 label_name->byteCount);
 
+  m_parent.m_cf->start_new_bb ();
+
   tree stmt = build_stmt (LABEL_EXPR, m_parent.m_cf->label (label_str));
   m_parent.m_cf->append_statement (stmt);
+
   return base->byteCount;
 }

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { *-*-linux* } } } */
+/* { dg-do compile { target *-*-linux* } } */
 /* { dg-options "-Wno-pedantic" } */
 
 struct S {

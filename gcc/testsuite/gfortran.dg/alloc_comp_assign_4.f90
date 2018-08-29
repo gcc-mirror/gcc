@@ -31,7 +31,7 @@
   y(2) = y(1)
 
   if (any((/((y(2)%at(i)%ch(j),j=1,4),i=1,2)/) .ne. &
-          (/chr1, chr2/))) call abort ()
+          (/chr1, chr2/))) STOP 1
 
   call test_ab6 ()
 
@@ -56,7 +56,7 @@ contains
     p = c((/b(a((/"Mary","Lamb"/)))/))
     bv = p%b(1)
 
-    if (any ((bv%a%ch(:)) .ne. (/"Mary","Lamb"/))) call abort ()
+    if (any ((bv%a%ch(:)) .ne. (/"Mary","Lamb"/))) STOP 2
 
 end subroutine test_ab6
 

@@ -1,7 +1,7 @@
 /* crti.s for __init, __fini
    This file supplies the prologue for __init and __fini routines 
 
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -23,6 +23,12 @@
    a copy of the GCC Runtime Library Exception along with this program;
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
+
+/* An executable stack is *not* required for these functions.  */
+#ifdef __linux__
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
 
     .section .init, "ax"
     .global __init

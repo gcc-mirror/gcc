@@ -1,6 +1,6 @@
 // 2003-05-27 Brendan Kehoe  <brendan@zen.org>
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,6 @@ int main()
     = std::use_facet<std::money_get<wchar_t> >(liffey.getloc());
 
   typedef std::istreambuf_iterator<wchar_t> iterator_type;
-  iterator_type is(liffey);
   iterator_type end;
 
   std::ios_base::iostate err01 = std::ios_base::goodbit;
@@ -50,7 +49,7 @@ int main()
 
   // Feed it 1 digit too many, which should fail.
   liffey.str(L"12.3456");
-  greed.get(is, end, false, liffey, err01, coins);
+  greed.get(liffey, end, false, liffey, err01, coins);
   if (! (err01 & std::ios_base::failbit ))
     fails |= 0x01;
 
@@ -58,7 +57,7 @@ int main()
 
   // Feed it exactly what it wants, which should succeed.
   liffey.str(L"12.345");
-  greed.get(is, end, false, liffey, err01, coins);
+  greed.get(liffey, end, false, liffey, err01, coins);
   if ( err01 & std::ios_base::failbit )
     fails |= 0x02;
 
@@ -66,7 +65,7 @@ int main()
 
   // Feed it 1 digit too few, which should fail.
   liffey.str(L"12.34");
-  greed.get(is, end, false, liffey, err01, coins);
+  greed.get(liffey, end, false, liffey, err01, coins);
   if (! ( err01 & std::ios_base::failbit ))
     fails |= 0x04;
 
@@ -74,7 +73,7 @@ int main()
 
   // Feed it only a decimal-point, which should fail.
   liffey.str(L"12.");
-  greed.get(is, end, false, liffey, err01, coins);
+  greed.get(liffey, end, false, liffey, err01, coins);
   if (! (err01 & std::ios_base::failbit ))
     fails |= 0x08;
 
@@ -82,7 +81,7 @@ int main()
 
   // Feed it no decimal-point at all, which should succeed.
   liffey.str(L"12");
-  greed.get(is, end, false, liffey, err01, coins);
+  greed.get(liffey, end, false, liffey, err01, coins);
   if ( err01 & std::ios_base::failbit )
     fails |= 0x10;
 

@@ -49,7 +49,7 @@ contains
       double precision :: diff, a(*), b(*)
       do i = 1, n
         diff = a(i) - b(i)
-        if (diff > EPS .or. -diff > EPS) call abort
+        if (diff > EPS .or. -diff > EPS) STOP 1
       end do
   end subroutine
 end module

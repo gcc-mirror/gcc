@@ -22,5 +22,5 @@ program main
   write (buf1, '(20i4)')  foo
   write (buf2, '(20i4)')  (foo(i)%x, (foo(i)%y(j), j=1,3), foo(i)%z, i=1,4)
 
-  if (buf1.ne.buf2) call abort
+  if (buf1.ne.buf2) STOP 1
 end program main

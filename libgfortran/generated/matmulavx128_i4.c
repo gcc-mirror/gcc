@@ -1,5 +1,5 @@
 /* Implementation of the MATMUL intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Thomas Koenig <tkoenig@gcc.gnu.org>.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -272,22 +272,27 @@ matmul_i4_avx128_fma3 (gfc_array_i4 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_INTEGER_4)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
 
       /* Adjust size of t1 to what is needed.  */
-      index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      index_type t1_dim, a_sz;
+      if (aystride == 1)
+        a_sz = rystride;
+      else
+        a_sz = a_dim1;
+
+      t1_dim = a_sz * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_INTEGER_4));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_INTEGER_4)0;
 
       /* Start turning the crank. */
       i1 = n;
@@ -825,22 +830,27 @@ matmul_i4_avx128_fma4 (gfc_array_i4 * const restrict retarray,
       b_offset = 1 + b_dim1;
       b -= b_offset;
 
+      /* Empty c first.  */
+      for (j=1; j<=n; j++)
+	for (i=1; i<=m; i++)
+	  c[i + j * c_dim1] = (GFC_INTEGER_4)0;
+
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
 	return;
 
       /* Adjust size of t1 to what is needed.  */
-      index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      index_type t1_dim, a_sz;
+      if (aystride == 1)
+        a_sz = rystride;
+      else
+        a_sz = a_dim1;
+
+      t1_dim = a_sz * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
       t1 = malloc (t1_dim * sizeof(GFC_INTEGER_4));
-
-      /* Empty c first.  */
-      for (j=1; j<=n; j++)
-	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_INTEGER_4)0;
 
       /* Start turning the crank. */
       i1 = n;

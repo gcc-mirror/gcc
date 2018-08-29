@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-lstdc++fs" }
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
@@ -27,14 +27,15 @@ void
 test01()
 {
   using namespace std::experimental::filesystem;
-  const std::string s = "abc";
+  using string_type = std::basic_string<path::value_type>;
+  const string_type s{ 'a', 'b', 'c' };
   path p(s);
 
   VERIFY( p.native() == s );
   VERIFY( p.c_str() == s );
-  VERIFY( static_cast<std::string>(p) == s );
+  VERIFY( static_cast<string_type>(p) == s );
 
-  std::string s2 = p; // implicit conversion
+  string_type s2 = p; // implicit conversion
   VERIFY( s2 == p.native() );
 }
 

@@ -13,6 +13,6 @@
       r = 0
       str = '1.0q0'
       read(str, *, iostat=i) r
-      if (r /= 1.0 .or. i /= 0) call abort()
+      if (r /= 1.0 .or. i /= 0) STOP 1
       !print *, r
       end

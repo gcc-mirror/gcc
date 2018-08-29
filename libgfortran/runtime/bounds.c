@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Thomas Koenig
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -40,9 +40,8 @@ bounds_iforeach_return (array_t *retarray, array_t *array, const char *name)
 
   ret_rank = GFC_DESCRIPTOR_RANK (retarray);
 
-  if (ret_rank != 1)
-    runtime_error ("Incorrect rank of return array in %s intrinsic:"
-		   "is %ld, should be 1", name, (long int) ret_rank);
+  /* ret_rank should always be 1, otherwise there is an internal error */
+  GFC_ASSERT(ret_rank == 1);
 
   rank = GFC_DESCRIPTOR_RANK (array);
   ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,0);
@@ -63,7 +62,6 @@ bounds_ifunction_return (array_t * a, const index_type * extent,
 			 const char * a_name, const char * intrinsic)
 {
   int empty;
-  int n;
   int rank;
   index_type a_size;
 
@@ -71,7 +69,7 @@ bounds_ifunction_return (array_t * a, const index_type * extent,
   a_size = size0 (a);
 
   empty = 0;
-  for (n = 0; n < rank; n++)
+  for (index_type n = 0; n < rank; n++)
     {
       if (extent[n] == 0)
 	empty = 1;
@@ -90,7 +88,7 @@ bounds_ifunction_return (array_t * a, const index_type * extent,
 		       " intrinsic: should not be zero-sized",
 		       a_name, intrinsic);
 
-      for (n = 0; n < rank; n++)
+      for (index_type n = 0; n < rank; n++)
 	{
 	  index_type a_extent;
 	  a_extent = GFC_DESCRIPTOR_EXTENT(a, n);

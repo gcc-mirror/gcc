@@ -1,5 +1,5 @@
 /* Library interface to C++ front end.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.  As it interacts with GDB through libcc1,
    they all become a single program as regards the GNU GPL's requirements.
@@ -422,12 +422,6 @@ supplement_binding (cxx_binding *binding, tree decl)
       region to refer only to the namespace to which it already
       refers.  */
     ok = false;
-  else if (maybe_remove_implicit_alias (bval))
-    {
-      /* There was a mangling compatibility alias using this mangled name,
-	 but now we have a real decl that wants to use it instead.  */
-      binding->value = decl;
-    }
   else
     {
       // _1: diagnose_name_conflict (decl, bval);
@@ -1321,7 +1315,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	      opcode = ARRAY_REF;
 	      break;
 	    case CHARS2 ('c', 'v'): // operator <T> (conversion operator)
-	      identifier = mangle_conv_op_name_for_type (TREE_TYPE (sym_type));
+	      identifier = make_conv_op_name (TREE_TYPE (sym_type));
 	      break;
 	      // C++11-only:
 	    case CHARS2 ('l', 'i'): // operator "" <id>
@@ -1352,12 +1346,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	    }
 
 	  if (opcode != ERROR_MARK)
-	    {
-	      if (assop)
-		identifier = cp_assignment_operator_id (opcode);
-	      else
-		identifier = cp_operator_id (opcode);
-	    }
+	    identifier = ovl_op_identifier (assop, opcode);
 	}
       decl = build_lang_decl_loc (loc, code, identifier, sym_type);
       /* FIXME: current_lang_name is lang_name_c while compiling an
@@ -1366,7 +1355,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	 overloading.  */
       SET_DECL_LANGUAGE (decl, lang_cplusplus);
       if (TREE_CODE (sym_type) == METHOD_TYPE)
-	DECL_ARGUMENTS (decl) = build_this_parm (current_class_type,
+	DECL_ARGUMENTS (decl) = build_this_parm (decl, current_class_type,
 						 cp_type_quals (sym_type));
       for (tree arg = TREE_CODE (sym_type) == METHOD_TYPE
 	     ? TREE_CHAIN (TYPE_ARG_TYPES (sym_type))
@@ -1374,7 +1363,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	   arg && arg != void_list_node;
 	   arg = TREE_CHAIN (arg))
 	{
-	  tree parm = cp_build_parm_decl (NULL_TREE, TREE_VALUE (arg));
+	  tree parm = cp_build_parm_decl (decl, NULL_TREE, TREE_VALUE (arg));
 	  DECL_CHAIN (parm) = DECL_ARGUMENTS (decl);
 	  DECL_ARGUMENTS (decl) = parm;
 	}
@@ -1416,21 +1405,14 @@ plugin_build_decl (cc1_plugin::connection *self,
 	  DECL_DECLARED_INLINE_P (decl) = 1;
 	  DECL_INITIAL (decl) = error_mark_node;
 	}
-      if (ctor || dtor)
-	{
-	  if (ctor)
-	    DECL_CONSTRUCTOR_P (decl) = 1;
-	  if (dtor)
-	    DECL_DESTRUCTOR_P (decl) = 1;
-	}
-      else
-	{
-	  if ((sym_flags & GCC_CP_FLAG_SPECIAL_FUNCTION)
-	      && opcode != ERROR_MARK)
-	    SET_OVERLOADED_OPERATOR_CODE (decl, opcode);
-	  if (assop)
-	    DECL_ASSIGNMENT_OPERATOR_P (decl) = true;
-	}
+
+      if (ctor)
+	DECL_CXX_CONSTRUCTOR_P (decl) = 1;
+      else if (dtor)
+	DECL_CXX_DESTRUCTOR_P (decl) = 1;
+      else if ((sym_flags & GCC_CP_FLAG_SPECIAL_FUNCTION)
+	       && opcode != ERROR_MARK)
+	DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op_mapping[opcode];
     }
   else if (RECORD_OR_UNION_CODE_P (code))
     {
@@ -1558,7 +1540,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 
   if ((ctor || dtor)
       /* Don't crash after a duplicate declaration of a cdtor.  */
-      && TYPE_METHODS (current_class_type) == decl)
+      && TYPE_FIELDS (current_class_type) == decl)
     {
       /* ctors and dtors clones are chained after DECL.
 	 However, we create the clones before TYPE_METHODS is
@@ -1570,9 +1552,9 @@ plugin_build_decl (cc1_plugin::connection *self,
       tree save = DECL_CHAIN (decl);
       DECL_CHAIN (decl) = NULL_TREE;
       clone_function_decl (decl, /*update_methods=*/true);
-      gcc_assert (TYPE_METHODS (current_class_type) == decl);
-      TYPE_METHODS (current_class_type)
-	= nreverse (TYPE_METHODS (current_class_type));
+      gcc_assert (TYPE_FIELDS (current_class_type) == decl);
+      TYPE_FIELDS (current_class_type)
+	= nreverse (TYPE_FIELDS (current_class_type));
       DECL_CHAIN (decl) = save;
     }
 
@@ -1889,7 +1871,7 @@ plugin_build_field (cc1_plugin::connection *,
 	= c_build_bitfield_integer_type (bitsize, TYPE_UNSIGNED (field_type));
     }
 
-  DECL_MODE (decl) = TYPE_MODE (TREE_TYPE (decl));
+  SET_DECL_MODE (decl, TYPE_MODE (TREE_TYPE (decl)));
 
   // There's no way to recover this from DWARF.
   SET_DECL_OFFSET_ALIGN (decl, TYPE_PRECISION (pointer_sized_int_node));
@@ -2624,7 +2606,7 @@ plugin_build_dependent_expr (cc1_plugin::connection *self,
 	  break;
 	case CHARS2 ('c', 'v'): // operator <T> (conversion operator)
 	  convop = true;
-	  identifier = mangle_conv_op_name_for_type (conv_type);
+	  identifier = make_conv_op_name (conv_type);
 	  break;
 	  // C++11-only:
 	case CHARS2 ('l', 'i'): // operator "" <id>
@@ -2657,12 +2639,7 @@ plugin_build_dependent_expr (cc1_plugin::connection *self,
       gcc_assert (convop || !conv_type);
 
       if (opcode != ERROR_MARK)
-	{
-	  if (assop)
-	    identifier = cp_assignment_operator_id (opcode);
-	  else
-	    identifier = cp_operator_id (opcode);
-	}
+	identifier = ovl_op_identifier (assop, opcode);
 
       gcc_assert (identifier);
     }
@@ -3069,7 +3046,8 @@ plugin_build_unary_type_expr (cc1_plugin::connection *self,
       break;
 
     default:
-      result = cxx_sizeof_or_alignof_type (type, opcode, true);
+      /* Use the C++11 alignof semantics.  */
+      result = cxx_sizeof_or_alignof_type (type, opcode, true, true);
     }
 
   if (template_dependent_p)

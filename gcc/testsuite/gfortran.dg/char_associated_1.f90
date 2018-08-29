@@ -4,5 +4,5 @@ program main
   character (len = 5), dimension (:), pointer :: ptr
   character (len = 5), dimension (2), target :: a = (/ 'abcde', 'fghij' /)
   ptr => a
-  if (.not. associated (ptr, a)) call abort
+  if (.not. associated (ptr, a)) STOP 1
 end program main

@@ -1,6 +1,6 @@
 /* OpenACC Runtime Library User-facing Declarations
 
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -108,6 +108,12 @@ void *acc_hostptr (void *) __GOACC_NOTHROW;
 int acc_is_present (void *, size_t) __GOACC_NOTHROW;
 void acc_memcpy_to_device (void *, void *, size_t) __GOACC_NOTHROW;
 void acc_memcpy_from_device (void *, void *, size_t) __GOACC_NOTHROW;
+
+/* Finalize versions of copyout/delete functions, specified in OpenACC 2.5.  */
+void acc_copyout_finalize (void *, size_t) __GOACC_NOTHROW;
+void acc_copyout_finalize_async (void *, size_t, int) __GOACC_NOTHROW;
+void acc_delete_finalize (void *, size_t) __GOACC_NOTHROW;
+void acc_delete_finalize_async (void *, size_t, int) __GOACC_NOTHROW;
 
 /* CUDA-specific routines.  */
 void *acc_get_current_cuda_device (void) __GOACC_NOTHROW;

@@ -32,9 +32,9 @@ program main
   !$acc end kernels
 
   do i = 0, n - 1
-     if (a(i) .ne. i * 2) call abort
-     if (b(i) .ne. i * 4) call abort
-     if (c(i) .ne. a(i) + b(i)) call abort
+     if (a(i) .ne. i * 2) STOP 1
+     if (b(i) .ne. i * 4) STOP 2
+     if (c(i) .ne. a(i) + b(i)) STOP 3
   end do
 
 end program main

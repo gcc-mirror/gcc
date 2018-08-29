@@ -6,15 +6,15 @@ implicit none
 
 intrinsic :: atomic_define
 intrinsic :: atomic_ref
-intrinsic :: atomic_cas ! { dg-error "not available in the current standard settings but new in TS 29113/TS 18508." }
-intrinsic :: atomic_add ! { dg-error "not available in the current standard settings but new in TS 29113/TS 18508." }
-intrinsic :: atomic_and ! { dg-error "not available in the current standard settings but new in TS 29113/TS 18508." }
-intrinsic :: atomic_or ! { dg-error "not available in the current standard settings but new in TS 29113/TS 18508." }
-intrinsic :: atomic_xor ! { dg-error "not available in the current standard settings but new in TS 29113/TS 18508." }
-intrinsic :: atomic_fetch_add ! { dg-error "not available in the current standard settings but new in TS 29113/TS 18508." }
-intrinsic :: atomic_fetch_and ! { dg-error "not available in the current standard settings but new in TS 29113/TS 18508." }
-intrinsic :: atomic_fetch_or ! { dg-error "not available in the current standard settings but new in TS 29113/TS 18508." }
-intrinsic :: atomic_fetch_xor ! { dg-error "not available in the current standard settings but new in TS 29113/TS 18508." }
+intrinsic :: atomic_cas ! { dg-error "not available in the current standard settings but new in Fortran 2018." }
+intrinsic :: atomic_add ! { dg-error "not available in the current standard settings but new in Fortran 2018." }
+intrinsic :: atomic_and ! { dg-error "not available in the current standard settings but new in Fortran 2018." }
+intrinsic :: atomic_or ! { dg-error "not available in the current standard settings but new in Fortran 2018." }
+intrinsic :: atomic_xor ! { dg-error "not available in the current standard settings but new in Fortran 2018." }
+intrinsic :: atomic_fetch_add ! { dg-error "not available in the current standard settings but new in Fortran 2018." }
+intrinsic :: atomic_fetch_and ! { dg-error "not available in the current standard settings but new in Fortran 2018." }
+intrinsic :: atomic_fetch_or ! { dg-error "not available in the current standard settings but new in Fortran 2018." }
+intrinsic :: atomic_fetch_xor ! { dg-error "not available in the current standard settings but new in Fortran 2018." }
 integer(atomic_int_kind) :: caf[*], var
 logical(atomic_logical_kind) :: caf_log[*], var2
 integer :: stat

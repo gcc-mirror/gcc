@@ -18,15 +18,15 @@ subroutine common_pass
    real (kind=8) b(5), c(5)
    common /com1/b,c
    equivalence (a(1), b(2))
-   if (any (a .ne. (/100,100,100,100,200,200,200,200/))) call abort
+   if (any (a .ne. (/100,100,100,100,200,200,200,200/))) STOP 1
 end subroutine
 
 ! Common variables as argument
 subroutine common_par (a, b, c)
    real (kind=8) a(8), b(5), c(5)
-   if (any (a .ne. (/100,100,100,100,200,200,200,200/))) call abort
-   if (any (b .ne. (/100,100,100,100,100/))) call abort
-   if (any (c .ne. (/200,200,200,200,200/))) call abort
+   if (any (a .ne. (/100,100,100,100,200,200,200,200/))) STOP 2
+   if (any (b .ne. (/100,100,100,100,100/))) STOP 3
+   if (any (c .ne. (/200,200,200,200,200/))) STOP 4
 end subroutine
 
 ! Global equivalence
@@ -39,8 +39,8 @@ subroutine global_equiv
    c = 200
    y = 300
    z = 400
-   if (any (a .ne. (/100,100,100,100,200,200,200,200/))) call abort
-   if (any (x .ne. (/200,200,200,300,300,300,300,400/))) call abort 
+   if (any (a .ne. (/100,100,100,100,200,200,200,200/))) STOP 5
+   if (any (x .ne. (/200,200,200,300,300,300,300,400/))) STOP 6
 end
 
 ! Local equivalence
@@ -49,5 +49,5 @@ subroutine local_equiv
   equivalence (a(1), b(3))
   b(1:5) = 100
   b(6:10) = 200
-  if (any (a .ne. (/100,100,100,200,200,200,200,200/))) call abort
+  if (any (a .ne. (/100,100,100,200,200,200,200,200/))) STOP 7
 end subroutine

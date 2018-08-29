@@ -1,5 +1,5 @@
 /* Target Definitions for TI C6X.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Andrew Jenner <andrew@codesourcery.com>
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
@@ -181,19 +181,6 @@ extern c6x_cpu_t c6x_arch;
     REG_A1, REG_A2, REG_B0, REG_B1, REG_B2, REG_ILC			\
   }
 
-#define HARD_REGNO_NREGS(regno, mode)		\
-  ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)  \
-   / UNITS_PER_WORD)
-
-#define HARD_REGNO_MODE_OK(reg, mode) (GET_MODE_SIZE (mode) <= UNITS_PER_WORD \
-				       ? 1 : ((reg) & 1) == 0)
-
-#define MODES_TIEABLE_P(mode1, mode2)	       \
-  ((mode1) == (mode2) ||		       \
-   (GET_MODE_SIZE (mode1) <= UNITS_PER_WORD && \
-    GET_MODE_SIZE (mode2) <= UNITS_PER_WORD))
-
-
 /* Register Classes.  */
 
 enum reg_class
@@ -311,7 +298,6 @@ enum reg_class
 #define STACK_POINTER_OFFSET 4
 /* Likewise for AP (which is the incoming stack pointer).  */
 #define FIRST_PARM_OFFSET(fundecl) 4
-#define STARTING_FRAME_OFFSET 0
 #define FRAME_GROWS_DOWNWARD 1
 #define STACK_GROWS_DOWNWARD 1
 
@@ -353,7 +339,7 @@ struct c6x_args {
   c6x_init_cumulative_args (&cum, fntype, libname, n_named_args)
 
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (c6x_block_reg_pad_upward (MODE, TYPE, FIRST) ? upward : downward)
+  (c6x_block_reg_pad_upward (MODE, TYPE, FIRST) ? PAD_UPWARD : PAD_DOWNWARD)
 
 #define FUNCTION_ARG_REGNO_P(r) \
     (((r) >= REG_A4 && (r) <= REG_A13) || ((r) >= REG_B4 && (r) <= REG_B13))
@@ -609,7 +595,6 @@ do {									\
 #define CASE_VECTOR_MODE SImode
 #define MOVE_MAX 4
 #define MOVE_RATIO(SPEED) 4
-#define TRULY_NOOP_TRUNCATION(outprec, inprec) 1
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
 #define Pmode SImode
 #define FUNCTION_MODE QImode

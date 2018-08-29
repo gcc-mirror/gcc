@@ -19,7 +19,7 @@ CONTAINS
     CHARACTER(MAX (80, nb)) :: bad_rec(1)
 
     bad_rec(1)(1:2) = 'abc'
-    IF (bad_rec(1)(1:2) /= 'ab') CALL abort ()
+    IF (bad_rec(1)(1:2) /= 'ab') STOP 1
   END SUBROUTINE s
 
 END PROGRAM main

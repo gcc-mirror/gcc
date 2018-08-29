@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,24 +45,26 @@ gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] \
 
 if {[check_effective_target_arm_arch_v8m_base_ok]} then {
     # Baseline only
+    set BASELINE_FLAGS [add_options_for_arm_arch_v8m_base ""]
     gcc-dg-runtest [lsort [glob $srcdir/$subdir/baseline/*.c]] \
-	    "" $DEFAULT_CFLAGS
+	    "$BASELINE_FLAGS" $DEFAULT_CFLAGS
 }
 
 if {[check_effective_target_arm_arch_v8m_main_ok]} then {
+    set MAINLINE_FLAGS [add_options_for_arm_arch_v8m_main ""]
     gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/*.c]] \
-	    "" $DEFAULT_CFLAGS
+	    "$MAINLINE_FLAGS" $DEFAULT_CFLAGS
     # Mainline -mfloat-abi=soft
     gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/soft/*.c]] \
-	    "-mfloat-abi=soft" $DEFAULT_CFLAGS
+	    "$MAINLINE_FLAGS -mfloat-abi=soft" $DEFAULT_CFLAGS
     gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/softfp/*.c]] \
-	    "" $DEFAULT_CFLAGS
+	    "$MAINLINE_FLAGS" $DEFAULT_CFLAGS
     gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/softfp-sp/*.c]] \
-	    "" $DEFAULT_CFLAGS
+	    "$MAINLINE_FLAGS" $DEFAULT_CFLAGS
     gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/hard/*.c]] \
-	    "" $DEFAULT_CFLAGS
+	    "$MAINLINE_FLAGS" $DEFAULT_CFLAGS
     gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/hard-sp/*.c]] \
-	    "" $DEFAULT_CFLAGS
+	    "$MAINLINE_FLAGS" $DEFAULT_CFLAGS
 }
 
 set LTO_TORTURE_OPTIONS ${saved-lto_torture_options}

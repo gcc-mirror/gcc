@@ -154,8 +154,11 @@ func (check *Checker) assignVar(lhs ast.Expr, x *operand) Type {
 	var v_used bool
 	if ident != nil {
 		if _, obj := check.scope.LookupParent(ident.Name, token.NoPos); obj != nil {
-			v, _ = obj.(*Var)
-			if v != nil {
+			// It's ok to mark non-local variables, but ignore variables
+			// from other packages to avoid potential race conditions with
+			// dot-imported variables.
+			if w, _ := obj.(*Var); w != nil && w.pkg == check.pkg {
+				v = w
 				v_used = v.used
 			}
 		}
@@ -219,7 +222,7 @@ func (check *Checker) initVars(lhs []*Var, rhs []ast.Expr, returnPos token.Pos) 
 			check.errorf(returnPos, "wrong number of return values (want %d, got %d)", l, r)
 			return
 		}
-		check.errorf(rhs[0].Pos(), "assignment count mismatch (%d vs %d)", l, r)
+		check.errorf(rhs[0].Pos(), "cannot initialize %d variables with %d values", l, r)
 		return
 	}
 
@@ -249,11 +252,12 @@ func (check *Checker) assignVars(lhs, rhs []ast.Expr) {
 	l := len(lhs)
 	get, r, commaOk := unpack(func(x *operand, i int) { check.multiExpr(x, rhs[i]) }, len(rhs), l == 2)
 	if get == nil {
+		check.useLHS(lhs...)
 		return // error reported by unpack
 	}
 	if l != r {
 		check.useGetter(get, r)
-		check.errorf(rhs[0].Pos(), "assignment count mismatch (%d vs %d)", l, r)
+		check.errorf(rhs[0].Pos(), "cannot assign %d values to %d variables", r, l)
 		return
 	}
 

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ia32 } } } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -msse2" } */
 
 long a, c, e;

@@ -16,5 +16,3 @@ contains
     call c_f_pointer(cPtr, myArrayPtr) ! { dg-error "Expected SHAPE argument to C_F_POINTER with array FPTR" }
   end subroutine test_0
 end module c_f_pointer_shape_test
-
-! { dg-final { cleanup-modules "c_f_pointer_shape_test" } }

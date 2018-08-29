@@ -8,6 +8,6 @@ program intrinsic_dprod
    r = 2e30
    s = 4e30
    dp = dprod (r, s)
-   if ((dp .gt. 8.001d60) .or. (dp .lt. 7.999d60)) call abort
+   if ((dp .gt. 8.001d60) .or. (dp .lt. 7.999d60)) STOP 1
 end program
 

@@ -1,6 +1,6 @@
 // Deque implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,6 +58,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
@@ -290,7 +291,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		    std::input_iterator_tag)
       {
         iterator __cur = begin();
-        for (; __first != __last && __cur != end(); ++__cur, ++__first)
+        for (; __first != __last && __cur != end(); ++__cur, (void)++__first)
           *__cur = *__first;
         if (__first == __last)
           _M_erase_at_end(__cur);
@@ -442,7 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
                           std::forward_iterator_tag)
       {
         const size_type __n = std::distance(__first, __last);
-        this->_M_initialize_map(__n);
+        this->_M_initialize_map(_S_check_init_len(__n, _M_get_Tp_allocator()));
 
         _Map_pointer __cur_node;
         __try
@@ -483,6 +484,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_push_back_aux(const value_type& __t)
 #endif
       {
+	if (size() == max_size())
+	  __throw_length_error(
+	      __N("cannot create std::deque larger than max_size()"));
+
 	_M_reserve_map_at_back();
 	*(this->_M_impl._M_finish._M_node + 1) = this->_M_allocate_node();
 	__try
@@ -518,6 +523,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_push_front_aux(const value_type& __t)
 #endif
       {
+	if (size() == max_size())
+	  __throw_length_error(
+	      __N("cannot create std::deque larger than max_size()"));
+
 	_M_reserve_map_at_front();
 	*(this->_M_impl._M_start._M_node - 1) = this->_M_allocate_node();
 	__try
@@ -1107,6 +1116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif

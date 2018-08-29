@@ -1,6 +1,6 @@
 // Class filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,13 +55,14 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 namespace filesystem
 {
 inline namespace v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 #if __cplusplus == 201402L
@@ -71,15 +72,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 
   /**
-   * @ingroup filesystem
+   * @ingroup filesystem-ts
    * @{
    */
 
   /// A filesystem path.
   class path
   {
-    template<typename _CharT>
-      struct __is_encoded_char : std::false_type { };
+    template<typename _CharT,
+	     typename _Ch = typename remove_const<_CharT>::type>
+      using __is_encoded_char
+	= __or_<is_same<_Ch, char>, is_same<_Ch, wchar_t>,
+		is_same<_Ch, char16_t>, is_same<_Ch, char32_t>>;
 
     template<typename _Iter,
 	     typename _Iter_traits = std::iterator_traits<_Iter>>
@@ -160,8 +164,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     template<typename _Tp,
 	     typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
 	     typename _Val = typename std::iterator_traits<_Iter>::value_type>
-      using __value_type_is_char
-	= typename std::enable_if<std::is_same<_Val, char>::value>::type;
+      using __value_type_is_char = typename std::enable_if<
+	std::is_same<typename std::remove_const<_Val>::type, char>::value
+	>::type;
 
   public:
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
@@ -377,6 +382,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     iterator begin() const;
     iterator end() const;
 
+    // Create a basic_string by reading until a null character.
+    template<typename _InputIterator,
+	     typename _Traits = std::iterator_traits<_InputIterator>,
+	     typename _CharT
+	       = typename std::remove_cv<typename _Traits::value_type>::type>
+      static std::basic_string<_CharT>
+      _S_string_from_iter(_InputIterator __source)
+      {
+	std::basic_string<_CharT> __str;
+	for (_CharT __ch = *__source; __ch != _CharT(); __ch = *++__source)
+	  __str.push_back(__ch);
+	return __str;
+      }
+
   private:
     enum class _Type : unsigned char {
 	_Multi, _Root_name, _Root_dir, _Filename
@@ -426,11 +445,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       static string_type
       _S_convert(_InputIterator __src, __null_terminated)
       {
-	using _Tp = typename std::iterator_traits<_InputIterator>::value_type;
-	std::basic_string<typename remove_cv<_Tp>::type> __tmp;
-	for (; *__src != _Tp{}; ++__src)
-	  __tmp.push_back(*__src);
-	return _S_convert(__tmp.c_str(), __tmp.c_str() + __tmp.size());
+	auto __s = _S_string_from_iter(__src);
+	return _S_convert(__s.c_str(), __s.c_str() + __s.size());
       }
 
     static string_type
@@ -450,10 +466,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _S_convert_loc(_InputIterator __src, __null_terminated,
 		     const std::locale& __loc)
       {
-	std::string __tmp;
-	while (*__src != '\0')
-	  __tmp.push_back(*__src++);
-	return _S_convert_loc(__tmp.data(), __tmp.data()+__tmp.size(), __loc);
+	std::string __s = _S_string_from_iter(__src);
+	return _S_convert_loc(__s.data(), __s.data() + __s.size(), __loc);
       }
 
     bool _S_is_dir_sep(value_type __ch)
@@ -509,7 +523,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /// Append one path to another
   inline path operator/(const path& __lhs, const path& __rhs)
-  { return path(__lhs) /= __rhs; }
+  {
+    path __result(__lhs);
+    __result /= __rhs;
+    return __result;
+  }
 
   /// Write a path to a stream
   template<typename _CharT, typename _Traits>
@@ -519,7 +537,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       auto __tmp = __p.string<_CharT, _Traits>();
       using __quoted_string
 	= std::__detail::_Quoted_string<decltype(__tmp)&, _CharT>;
-      __os << __quoted_string{__tmp, '"', '\\'};
+      __os << __quoted_string{__tmp, _CharT('"'), _CharT('\\')};
       return __os;
     }
 
@@ -531,7 +549,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string<_CharT, _Traits> __tmp;
       using __quoted_string
 	= std::__detail::_Quoted_string<decltype(__tmp)&, _CharT>;
-      if (__is >> __quoted_string{ __tmp, '"', '\\' })
+      if (__is >> __quoted_string{ __tmp, _CharT('"'), _CharT('\\') })
 	__p = std::move(__tmp);
       return __is;
     }
@@ -588,25 +606,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     path _M_path2;
     std::string _M_what = _M_gen_what();
   };
-
-  template<>
-    struct path::__is_encoded_char<char> : std::true_type
-    { using value_type = char; };
-
-  template<>
-    struct path::__is_encoded_char<wchar_t> : std::true_type
-    { using value_type = wchar_t; };
-
-  template<>
-    struct path::__is_encoded_char<char16_t> : std::true_type
-    { using value_type = char16_t; };
-
-  template<>
-    struct path::__is_encoded_char<char32_t> : std::true_type
-    { using value_type = char32_t; };
-
-  template<typename _Tp>
-    struct path::__is_encoded_char<const _Tp> : __is_encoded_char<_Tp> { };
 
   struct path::_Cmpt : path
   {
@@ -724,10 +723,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     pointer   operator->() const { return std::__addressof(**this); }
 
     iterator& operator++();
-    iterator  operator++(int) { auto __tmp = *this; ++_M_cur; return __tmp; }
+    iterator  operator++(int) { auto __tmp = *this; ++*this; return __tmp; }
 
     iterator& operator--();
-    iterator  operator--(int) { auto __tmp = *this; --_M_cur; return __tmp; }
+    iterator  operator--(int) { auto __tmp = *this; --*this; return __tmp; }
 
     friend bool operator==(const iterator& __lhs, const iterator& __rhs)
     { return __lhs._M_equals(__rhs); }
@@ -998,7 +997,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   path::is_absolute() const
   {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    return has_root_name();
+    return has_root_name() && has_root_directory();
 #else
     return has_root_directory();
 #endif
@@ -1078,12 +1077,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return _M_at_end == __rhs._M_at_end;
   }
 
-  // @} group filesystem
+  // @} group filesystem-ts
 _GLIBCXX_END_NAMESPACE_CXX11
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace v1
 } // namespace filesystem
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

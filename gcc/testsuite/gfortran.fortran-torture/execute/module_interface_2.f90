@@ -11,14 +11,14 @@ contains
 subroutine bar (r)
   real r
 
-  if (r .ne. 1.0) call abort ()
+  if (r .ne. 1.0) STOP 1
 end subroutine
 end module
 
 subroutine myfoo (i)
   integer i
 
-  if (i .ne. 42) call abort ()
+  if (i .ne. 42) STOP 2
 end subroutine
 
 program test

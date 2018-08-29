@@ -5,10 +5,12 @@
 FLOAT128_HW_INSNS	= -DFLOAT128_HW_INSNS
 
 # New functions for hardware support
-fp128_hw_funcs		= float128-hw
-fp128_hw_src		= $(srcdir)/config/rs6000/float128-hw.c
-fp128_hw_static_obj	= float128-hw$(objext)
-fp128_hw_shared_obj	= float128-hw_s$(objext)
+fp128_hardfp_src	= _mulkc3-hw.c _divkc3-hw.c
+fp128_hw_funcs		= float128-hw _mulkc3-hw _divkc3-hw _powikf2-hw
+fp128_hw_src		= $(srcdir)/config/rs6000/float128-hw.c _mulkc3-hw.c \
+			  _divkc3-hw.c _powikf2-hw.c
+fp128_hw_static_obj	= $(addsuffix $(objext),$(fp128_hw_funcs))
+fp128_hw_shared_obj	= $(addsuffix _s$(objext),$(fp128_hw_funcs))
 fp128_hw_obj		= $(fp128_hw_static_obj) $(fp128_hw_shared_obj)
 
 fp128_ifunc_funcs	= float128-ifunc
@@ -23,7 +25,7 @@ fp128_sed_hw		= -hw
 # Build the hardware support functions with appropriate hardware support
 FP128_CFLAGS_HW		 = -Wno-type-limits -mvsx -mfloat128 \
 			   -mpower8-vector -mpower9-vector \
-			   -mfloat128-hardware \
+			   -mfloat128-hardware -mno-gnu-attribute \
 			   -I$(srcdir)/soft-fp \
 			   -I$(srcdir)/config/rs6000 \
 			   $(FLOAT128_HW_INSNS)
@@ -33,3 +35,15 @@ $(fp128_hw_obj)		 : $(srcdir)/config/rs6000/t-float128-hw
 
 $(fp128_ifunc_obj)	 : INTERNAL_CFLAGS += $(FP128_CFLAGS_SW)
 $(fp128_ifunc_obj)	 : $(srcdir)/config/rs6000/t-float128-hw
+
+_mulkc3-hw.c: $(srcdir)/config/rs6000/_mulkc3.c
+	(echo "#define __mulkc3 __mulkc3_hw"; \
+	 cat $(srcdir)/config/rs6000/_mulkc3.c) > _mulkc3-hw.c
+
+_divkc3-hw.c: $(srcdir)/config/rs6000/_divkc3.c
+	(echo "#define __divkc3 __divkc3_hw"; \
+	 cat $(srcdir)/config/rs6000/_divkc3.c) > _divkc3-hw.c
+
+_powikf2-hw.c: $(srcdir)/config/rs6000/_powikf2.c
+	(echo "#define __powikf2 __powikf2_hw"; \
+	 cat $(srcdir)/config/rs6000/_powikf2.c) > _powikf2-hw.c

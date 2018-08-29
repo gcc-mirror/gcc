@@ -7,5 +7,5 @@
 !
   character(LEN=2) :: a(2) 
   data ((a(I)(k:k),I=1,2),k=1,2) /2*'a',2*'z'/ 
-  IF (ANY(a.NE."az")) CALL ABORT() 
+  IF (ANY(a.NE."az")) STOP 1 
   END 

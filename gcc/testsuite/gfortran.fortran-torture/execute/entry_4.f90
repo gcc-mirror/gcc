@@ -49,16 +49,16 @@
 	double precision e1, g4
 	logical e2, e3, f4
 	complex f2, g3
-	if (f1 (6) .ne. 21) call abort ()
-	if (e1 (7) .ne. 49) call abort ()
-	if (f2 (0) .ne. 45) call abort ()
-	if (.not. e2 (45)) call abort ()
-	if (e2 (46)) call abort ()
-	if (f3 (17) .ne. 32) call abort ()
-	if (.not. e3 (42)) call abort ()
-	if (e3 (41)) call abort ()
-	if (g3 (12) .ne. 23) call abort ()
-	if (.not. f4 (-5)) call abort ()
-	if (e4 (0) .ne. 16) call abort ()
-	if (g4 (2) .ne. 19) call abort ()
+	if (f1 (6) .ne. 21) STOP 1
+	if (e1 (7) .ne. 49) STOP 2
+	if (f2 (0) .ne. 45) STOP 3
+	if (.not. e2 (45)) STOP 4
+	if (e2 (46)) STOP 5
+	if (f3 (17) .ne. 32) STOP 6
+	if (.not. e3 (42)) STOP 7
+	if (e3 (41)) STOP 8
+	if (g3 (12) .ne. 23) STOP 9
+	if (.not. f4 (-5)) STOP 10
+	if (e4 (0) .ne. 16) STOP 11
+	if (g4 (2) .ne. 19) STOP 12
 	end

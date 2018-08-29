@@ -60,4 +60,4 @@ bool visit_ref_for_mod_analysis (gimple stmt __attribute__ ((__unused__)),
       ((void)(__builtin_expect(!(index >= 0), 0) ? __builtin_unreachable(), 0 : 0));
       ipa_set_param_used (info, index, true);
     }
-}
+}	// { dg-warning "control reaches end of non-void function" }

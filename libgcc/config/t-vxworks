@@ -2,13 +2,16 @@
 LIBGCC2_DEBUG_CFLAGS =
 
 # Extra libgcc2 modules used by gthr-vxworks.h functions
-LIB2ADD = $(srcdir)/config/vxlib.c $(srcdir)/config/vxlib-tls.c
+LIB2ADDEH += $(srcdir)/config/vxlib.c $(srcdir)/config/vxlib-tls.c
 
-# This ensures that the correct target headers are used; some
-# VxWorks system headers have names that collide with GCC's
-# internal (host) headers, e.g. regs.h.
-LIBGCC2_INCLUDES = -nostdinc -I \
+# This ensures that the correct target headers are used; some VxWorks
+# system headers have names that collide with GCC's internal (host)
+# headers, e.g. regs.h. Make sure the local libgcc headers still
+# prevail (e.g. unwind.h), and that gcc provided header files intended
+# to be user visible eventually are visible as well.
+LIBGCC2_INCLUDES = -nostdinc -I. \
+  -I$(MULTIBUILDTOP)../../gcc/include \
   `case "/$(MULTIDIR)" in \
-     */mrtp*) echo $(WIND_USR)/h ;; \
-     *) echo $(WIND_BASE)/target/h ;; \
+     */mrtp*) echo -I$(WIND_USR)/h -I$(WIND_USR)/h/wrn/coreip ;; \
+     *) echo -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/wrn/coreip ;; \
    esac`

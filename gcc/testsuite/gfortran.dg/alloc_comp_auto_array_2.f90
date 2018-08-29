@@ -18,10 +18,10 @@ contains
     type(grid_index_region),allocatable :: iregion(:)
     allocate (iregion(npiece + 1))
     call read_iregion(npiece,iregion)
-    if (size(iregion) .ne. npiece + 1) call abort
-    if (.not.allocated (iregion(npiece)%lons)) call abort
-    if (allocated (iregion(npiece+1)%lons)) call abort
-    if (any (iregion(npiece)%lons .ne. [(i, i = 1, npiece)])) call abort
+    if (size(iregion) .ne. npiece + 1) STOP 1
+    if (.not.allocated (iregion(npiece)%lons)) STOP 2
+    if (allocated (iregion(npiece+1)%lons)) STOP 3
+    if (any (iregion(npiece)%lons .ne. [(i, i = 1, npiece)])) STOP 4
     deallocate (iregion)
   end subroutine read_grid_header
 

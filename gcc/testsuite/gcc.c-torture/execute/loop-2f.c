@@ -1,5 +1,5 @@
 /* { dg-require-effective-target mmap } */
-/* { dg-skip-if "the executable is at the same position the test tries to remap" { m68k-*-linux* } { "*" } { "" } } */
+/* { dg-skip-if "the executable is at the same position the test tries to remap" { m68k-*-linux* } } */
 
 #include <limits.h>
 

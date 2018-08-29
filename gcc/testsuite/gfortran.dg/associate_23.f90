@@ -15,7 +15,7 @@ program test_this
     write (buffer, *) should_work(5:14)
   END ASSOCIATE
 
-  if (trim (buffer) .ne. "  succesful") call abort
+  if (trim (buffer) .ne. "  succesful") STOP 1
 
 ! Found to be failing during debugging
   ASSOCIATE(should_work=>char_var_dim)
@@ -23,14 +23,14 @@ program test_this
     write (buffer, *) should_work(:)(5:14)
   END ASSOCIATE
 
-  if (trim (buffer) .ne. "  SUCCESFUL_SUCCESFUL.SUCCESFUL") call abort
+  if (trim (buffer) .ne. "  SUCCESFUL_SUCCESFUL.SUCCESFUL") STOP 2
 
 ! Found to be failing during debugging
   ASSOCIATE(should_work=>char_var_dim(1:2))
-    should_work = ["test SUCCESFUL", "test_SUCCESFUL", "test.SUCCESFUL"]
+    should_work = ["test SUCCESFUL", "test_SUCCESFUL"]
     write (buffer, *) should_work(:)(5:14)
   END ASSOCIATE
 
-  if (trim (buffer) .ne. "  SUCCESFUL_SUCCESFUL") call abort
+  if (trim (buffer) .ne. "  SUCCESFUL_SUCCESFUL") STOP 3
 
 end program

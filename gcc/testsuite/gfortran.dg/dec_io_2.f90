@@ -48,7 +48,7 @@ subroutine check_cc (cc, fname, expected)
     print *, expected
     deallocate(buf)
     close(unit=fd)
-    call abort()
+    STOP 1
   else
     deallocate(buf)
     close(unit=fd, status='delete')

@@ -1,5 +1,5 @@
 /* Tail call optimization on trees.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -289,8 +289,7 @@ process_assignment (gassign *stmt,
 	     type is smaller than mode's precision,
 	     reduce_to_bit_field_precision would generate additional code.  */
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (dest))
-	      && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (dest)))
-		  > TYPE_PRECISION (TREE_TYPE (dest))))
+	      && !type_has_mode_precision_p (TREE_TYPE (dest)))
 	    return FAIL;
 	}
 
@@ -421,6 +420,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       if (gimple_code (stmt) == GIMPLE_LABEL
 	  || gimple_code (stmt) == GIMPLE_RETURN
 	  || gimple_code (stmt) == GIMPLE_NOP
+	  || gimple_code (stmt) == GIMPLE_PREDICT
 	  || gimple_clobber_p (stmt)
 	  || is_gimple_debug (stmt))
 	continue;
@@ -476,12 +476,12 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   tail_recursion = false;
   func = gimple_call_fndecl (call);
   if (func
-      && !DECL_BUILT_IN (func)
+      && !fndecl_built_in_p (func)
       && recursive_call_p (current_function_decl, func))
     {
       tree arg;
 
-      for (param = DECL_ARGUMENTS (func), idx = 0;
+      for (param = DECL_ARGUMENTS (current_function_decl), idx = 0;
 	   param && idx < gimple_call_num_args (call);
 	   param = DECL_CHAIN (param), idx ++)
 	{
@@ -555,6 +555,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
       if (gimple_code (stmt) == GIMPLE_LABEL
 	  || gimple_code (stmt) == GIMPLE_NOP
+	  || gimple_code (stmt) == GIMPLE_PREDICT
 	  || gimple_clobber_p (stmt)
 	  || is_gimple_debug (stmt))
 	continue;
@@ -570,6 +571,11 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       else if (ret == TRY_MOVE)
 	{
 	  if (! tail_recursion)
+	    return;
+	  /* Do not deal with checking dominance, the real fix is to
+	     do path isolation for the transform phase anyway, removing
+	     the need to compute the accumulators with new stmts.  */
+	  if (abb != bb)
 	    return;
 	  for (unsigned opno = 1; opno < gimple_num_ops (stmt); ++opno)
 	    {
@@ -799,24 +805,14 @@ adjust_return_value (basic_block bb, tree m, tree a)
 /* Subtract COUNT and FREQUENCY from the basic block and it's
    outgoing edge.  */
 static void
-decrease_profile (basic_block bb, gcov_type count, int frequency)
+decrease_profile (basic_block bb, profile_count count)
 {
-  edge e;
-  bb->count -= count;
-  if (bb->count < 0)
-    bb->count = 0;
-  bb->frequency -= frequency;
-  if (bb->frequency < 0)
-    bb->frequency = 0;
+  bb->count = bb->count - count;
   if (!single_succ_p (bb))
     {
       gcc_assert (!EDGE_COUNT (bb->succs));
       return;
     }
-  e = single_succ_edge (bb);
-  e->count -= count;
-  if (e->count < 0)
-    e->count = 0;
 }
 
 /* Returns true if argument PARAM of the tail recursive call needs to be copied
@@ -893,11 +889,18 @@ eliminate_tail_call (struct tailcall *t)
 
   /* Number of executions of function has reduced by the tailcall.  */
   e = single_succ_edge (gsi_bb (t->call_gsi));
-  decrease_profile (EXIT_BLOCK_PTR_FOR_FN (cfun), e->count, EDGE_FREQUENCY (e));
-  decrease_profile (ENTRY_BLOCK_PTR_FOR_FN (cfun), e->count,
-		    EDGE_FREQUENCY (e));
+
+  profile_count count = e->count ();
+
+  /* When profile is inconsistent and the recursion edge is more frequent
+     than number of executions of functions, scale it down, so we do not end
+     up with 0 executions of entry block.  */
+  if (count >= ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)
+    count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale (7, 8);
+  decrease_profile (EXIT_BLOCK_PTR_FOR_FN (cfun), count);
+  decrease_profile (ENTRY_BLOCK_PTR_FOR_FN (cfun), count);
   if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
-    decrease_profile (e->dest, e->count, EDGE_FREQUENCY (e));
+    decrease_profile (e->dest, count);
 
   /* Replace the call by a jump to the start of function.  */
   e = redirect_edge_and_branch (single_succ_edge (gsi_bb (t->call_gsi)),

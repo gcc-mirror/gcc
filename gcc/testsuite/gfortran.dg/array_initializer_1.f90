@@ -21,15 +21,15 @@
   character(4), parameter :: chrt(2) = (/chr(2:2)(2:3), chr(ii-1)(3:ii)/)
   character(2), parameter :: chrx(2) = (/(chr(i)(i:i+1), i=2,3)/)
 
-  if (any (y .ne. (/5., 6., 15., 16./))) call abort ()
-  if (any (z .ne. (/11., 12./))) call abort ()
-  if (any (r .ne. (/1., 2., 6., 7., 11., 12./))) call abort ()
+  if (any (y .ne. (/5., 6., 15., 16./))) STOP 1
+  if (any (z .ne. (/11., 12./))) STOP 2
+  if (any (r .ne. (/1., 2., 6., 7., 11., 12./))) STOP 3
   if (any (s .ne. (/11., 7., 3., 16., 12., 8., 4., &
-                    11., 7.,     16., 12., 8. /))) call abort ()
+                    11., 7.,     16., 12., 8. /))) STOP 4
 
-  if (any (t .ne. (/11., 12., 8., 6., 11., 12., 27., 15. /))) call abort ()
+  if (any (t .ne. (/11., 12., 8., 6., 11., 12., 27., 15. /))) STOP 5
 
-  if (chrs .ne. "noef") call abort ()
-  if (any (chrt .ne. (/"fg", "kl"/))) call abort ()
-  if (any (chrx .ne. (/"fg", "kl"/))) call abort ()
+  if (chrs .ne. "noef") STOP 6
+  if (any (chrt .ne. (/"fg", "kl"/))) STOP 7
+  if (any (chrx .ne. (/"fg", "kl"/))) STOP 8
 end

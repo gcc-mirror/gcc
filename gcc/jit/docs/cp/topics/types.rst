@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2017 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -107,6 +107,20 @@ Pointers, `const`, and `volatile`
 
    Given type "T", get type "T[N]" (for a constant N).
    Param "loc" is optional.
+
+
+Vector types
+------------
+
+.. function::  gccjit::type gccjit::type::get_vector (size_t num_units)
+
+   Given type "T", get type:
+
+   .. code-block:: c
+
+      T  __attribute__ ((vector_size (sizeof(T) * num_units))
+
+   T must be integral or floating point; num_units must be a power of two.
 
 
 Structures and unions

@@ -81,19 +81,19 @@ struct G : public F, F1 {};
 struct H : private E {};
 struct A
 {
-  virtual void foo() throw();             // { dg-error "" } overriding 
+  virtual void foo() throw();             // { dg-message "" } overridden
   virtual void baz() throw(double, int);
   virtual void bar();
   virtual void qux() throw(E);
-  virtual void qux(int) throw(E const *); // { dg-error "" } overriding (pedantically)
-  virtual void quux() throw(F);           // { dg-error "" } overriding 
-  virtual void quux(int) throw(F *);      // { dg-error "" } overriding 
-  virtual void wibble() throw(E);         // { dg-error "" } overriding 
-  virtual void wobble() throw(E *);       // { dg-error "" } overriding 
-  virtual void wobble(int) throw(E *);    // { dg-error "" } overriding 
+  virtual void qux(int) throw(E const *); // { dg-message "" } overridden (pedantically)
+  virtual void quux() throw(F);           // { dg-message "" } overridden
+  virtual void quux(int) throw(F *);      // { dg-message "" } overridden
+  virtual void wibble() throw(E);         // { dg-message "" } overridden
+  virtual void wobble() throw(E *);       // { dg-message "" } overridden
+  virtual void wobble(int) throw(E *);    // { dg-message "" } overridden
   virtual void wabble(int) throw(E *);
   virtual void wubble(int) throw(E *, H *);
-  virtual ~A() throw();                   // { dg-error "" } overriding
+  virtual ~A() throw();                   // { dg-message "" } overriding
 };
 
 struct B : A
@@ -115,7 +115,7 @@ struct B : A
 struct A1
 {
   virtual void foo() throw(int);
-  virtual void bar() throw();       // { dg-error "" } overriding 
+  virtual void bar() throw();       // { dg-message "" } overridden
   virtual ~A1() throw(int);
 };
 

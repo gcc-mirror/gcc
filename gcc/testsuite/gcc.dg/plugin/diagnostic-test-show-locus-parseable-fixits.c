@@ -55,3 +55,17 @@ void test_fixit_insert_newline (void)
 /* { dg-regexp "fix-it:.*\\{52:1-52:1\\}:.*\\n" } */
 #endif
 }
+
+/* Unit test for mutually-exclusive suggestions.  */
+
+void test_mutually_exclusive_suggestions (void)
+{
+#if 0
+  original; /* { dg-warning "warning 1" } */
+/* { dg-warning "warning 2" "" { target *-*-* } .-1 } */
+/* We should print the mutually-incompatible fix-it hints within
+   -fdiagnostics-parseable-fixits; verify that they are printed.  */
+/* { dg-regexp "fix-it:.*\\{64:3-64:11}:.*\\n" } */
+/* { dg-regexp "fix-it:.*\\{64:3-64:11}:.*\\n" } */
+#endif
+}

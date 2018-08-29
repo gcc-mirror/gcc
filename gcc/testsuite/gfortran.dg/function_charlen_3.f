@@ -14,5 +14,5 @@ C had a label.
       END FUNCTION t
 
       character t
-      if (t() .ne. "q") call abort ()
+      if (t() .ne. "q") STOP 1
       end

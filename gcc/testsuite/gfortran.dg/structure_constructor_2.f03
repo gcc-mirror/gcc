@@ -17,13 +17,13 @@ PROGRAM test
   basics = basics_t (42, -1.5, c=(.5, .5), l=.FALSE.)
   IF (basics%i /= 42 .OR. basics%r /= -1.5 &
       .OR. basics%c /= (.5, .5) .OR. basics%l) THEN
-    CALL abort()
+    STOP 1
   END IF
 
   basics = basics_t (r=-1.5, i=42, l=.FALSE., c=(.5, .5))
   IF (basics%i /= 42 .OR. basics%r /= -1.5 &
       .OR. basics%c /= (.5, .5) .OR. basics%l) THEN
-    CALL abort()
+    STOP 2
   END IF
 
 END PROGRAM test

@@ -5,7 +5,7 @@ class one
 {
 public:
   virtual void
-  test(void* value);  // { dg-error "overriding" }
+  test(void* value);  // { dg-message "overridden" }
 };
 
 class two : public one

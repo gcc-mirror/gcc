@@ -1,6 +1,6 @@
 #!/bin/sh 
 # Generates multilib.h.
-#   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -186,8 +186,7 @@ fi
 EOF
 chmod +x tmpmultilib
 
-combination_space=`initial=/ ./tmpmultilib ${options}`
-combinations="$combination_space"
+combinations=`initial=/ ./tmpmultilib ${options}`
 
 # If there exceptions, weed them out now
 if [ -n "${exceptions}" ]; then
@@ -460,20 +459,29 @@ done
 echo "NULL"
 echo "};"
 
+# Generate a regular expression to validate option combinations.
+options_re=
+for set in ${options}; do
+  for opt in `echo ${set} | sed -e 's_[/|]_ _g' -e 's/+/./g' `; do
+    options_re="${options_re}${options_re:+|}${opt}"
+  done
+done
+options_re="^/((${options_re})/)*\$"
+
 # Output rules used for multilib reuse.
 echo ""
 echo "static const char *const multilib_reuse_raw[] = {"
 for rrule in ${multilib_reuse}; do
   # The left part of the rule are the options we used to build multilib.
   # The right part of the rule are the options that can reuse this multilib.
-  combo=`echo ${rrule} | sed -e 's/=.*$//' -e 's/\./=/g'`
-  copts=`echo ${rrule} | sed -e 's/^.*=//' -e 's/\./=/g'`
+  combo=`echo ${rrule} | sed -e 's/=.*$//' -e 's/\([^\\]\)\./\1=/g' -e 's/\\\././g'`
+  copts=`echo ${rrule} | sed -e 's/^.*=//' -e 's/\([^\\]\)\./\1=/g' -e 's/\\\././g'`
   # The variable ${combinations} are the option combinations we will build
   # multilib from.  If the combination in the left part of reuse rule isn't
   # in this variable, it means no multilib will be built for current reuse
   # rule.  Thus the reuse purpose specified by current rule is meaningless.
   if expr "${combinations} " : ".*/${combo}/.*" > /dev/null; then
-    if expr "${combination_space} " : ".*/${copts}/.*" > /dev/null; then
+    if echo "/${copts}/" | grep -E "${options_re}" > /dev/null; then
       combo="/${combo}/"
       dirout=`./tmpmultilib3 "${combo}" "${todirnames}" "${toosdirnames}" "${enable_multilib}"`
       copts="/${copts}/"

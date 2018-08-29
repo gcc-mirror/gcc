@@ -28,7 +28,7 @@ int test_macro (union u *ptr)
 
 /* { dg-begin-multiline-output "" }
  #define FIELD colour
-               ^
+               ^~~~~~
    { dg-end-multiline-output "" } */
 
 /* { dg-begin-multiline-output "" }

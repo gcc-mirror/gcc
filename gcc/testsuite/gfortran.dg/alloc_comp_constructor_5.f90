@@ -18,12 +18,12 @@ Program test_constructor
     type (thytype), allocatable :: bar(:)
     type (mytype) :: x, y
     x = mytype(yy, bar)
-    if (allocated (x%a) .or. allocated (x%q)) call abort
+    if (allocated (x%a) .or. allocated (x%q)) STOP 1
     allocate (yy(2,2))
     allocate (bar(2))
     yy = reshape ([10,20,30,40],[2,2])
     bar = thytype (reshape ([1,2,3,4],[2,2]))
     ! Check that unallocated allocatables work
     y = mytype(yy, bar)
-    if (.not.allocated (y%a) .or. .not.allocated (y%q)) call abort
+    if (.not.allocated (y%a) .or. .not.allocated (y%q)) STOP 2
 end program test_constructor

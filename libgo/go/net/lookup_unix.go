@@ -16,28 +16,31 @@ var onceReadProtocols sync.Once
 // readProtocols loads contents of /etc/protocols into protocols map
 // for quick access.
 func readProtocols() {
-	if file, err := open("/etc/protocols"); err == nil {
-		for line, ok := file.readLine(); ok; line, ok = file.readLine() {
-			// tcp    6   TCP    # transmission control protocol
-			if i := byteIndex(line, '#'); i >= 0 {
-				line = line[0:i]
+	file, err := open("/etc/protocols")
+	if err != nil {
+		return
+	}
+	defer file.close()
+
+	for line, ok := file.readLine(); ok; line, ok = file.readLine() {
+		// tcp    6   TCP    # transmission control protocol
+		if i := byteIndex(line, '#'); i >= 0 {
+			line = line[0:i]
+		}
+		f := getFields(line)
+		if len(f) < 2 {
+			continue
+		}
+		if proto, _, ok := dtoi(f[1]); ok {
+			if _, ok := protocols[f[0]]; !ok {
+				protocols[f[0]] = proto
 			}
-			f := getFields(line)
-			if len(f) < 2 {
-				continue
-			}
-			if proto, _, ok := dtoi(f[1]); ok {
-				if _, ok := protocols[f[0]]; !ok {
-					protocols[f[0]] = proto
-				}
-				for _, alias := range f[2:] {
-					if _, ok := protocols[alias]; !ok {
-						protocols[alias] = proto
-					}
+			for _, alias := range f[2:] {
+				if _, ok := protocols[alias]; !ok {
+					protocols[alias] = proto
 				}
 			}
 		}
-		file.close()
 	}
 }
 
@@ -46,6 +49,29 @@ func readProtocols() {
 func lookupProtocol(_ context.Context, name string) (int, error) {
 	onceReadProtocols.Do(readProtocols)
 	return lookupProtocolMap(name)
+}
+
+func (r *Resolver) dial(ctx context.Context, network, server string) (dnsConn, error) {
+	// Calling Dial here is scary -- we have to be sure not to
+	// dial a name that will require a DNS lookup, or Dial will
+	// call back here to translate it. The DNS config parser has
+	// already checked that all the cfg.servers are IP
+	// addresses, which Dial will use without a DNS lookup.
+	var c Conn
+	var err error
+	if r.Dial != nil {
+		c, err = r.Dial(ctx, network, server)
+	} else {
+		var d Dialer
+		c, err = d.DialContext(ctx, network, server)
+	}
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	if _, ok := c.(PacketConn); ok {
+		return &dnsPacketConn{c}, nil
+	}
+	return &dnsStreamConn{c}, nil
 }
 
 func (r *Resolver) lookupHost(ctx context.Context, host string) (addrs []string, err error) {
@@ -57,12 +83,12 @@ func (r *Resolver) lookupHost(ctx context.Context, host string) (addrs []string,
 		// cgo not available (or netgo); fall back to Go's DNS resolver
 		order = hostLookupFilesDNS
 	}
-	return goLookupHostOrder(ctx, host, order)
+	return r.goLookupHostOrder(ctx, host, order)
 }
 
 func (r *Resolver) lookupIP(ctx context.Context, host string) (addrs []IPAddr, err error) {
 	if r.PreferGo {
-		return goLookupIP(ctx, host)
+		return r.goLookupIP(ctx, host)
 	}
 	order := systemConf().hostLookupOrder(host)
 	if order == hostLookupCgo {
@@ -72,7 +98,7 @@ func (r *Resolver) lookupIP(ctx context.Context, host string) (addrs []IPAddr, e
 		// cgo not available (or netgo); fall back to Go's DNS resolver
 		order = hostLookupFilesDNS
 	}
-	addrs, _, err = goLookupIPCNAMEOrder(ctx, host, order)
+	addrs, _, err = r.goLookupIPCNAMEOrder(ctx, host, order)
 	return
 }
 
@@ -98,17 +124,17 @@ func (r *Resolver) lookupCNAME(ctx context.Context, name string) (string, error)
 			return cname, err
 		}
 	}
-	return goLookupCNAME(ctx, name)
+	return r.goLookupCNAME(ctx, name)
 }
 
-func (*Resolver) lookupSRV(ctx context.Context, service, proto, name string) (string, []*SRV, error) {
+func (r *Resolver) lookupSRV(ctx context.Context, service, proto, name string) (string, []*SRV, error) {
 	var target string
 	if service == "" && proto == "" {
 		target = name
 	} else {
 		target = "_" + service + "._" + proto + "." + name
 	}
-	cname, rrs, err := lookup(ctx, target, dnsTypeSRV)
+	cname, rrs, err := r.lookup(ctx, target, dnsTypeSRV)
 	if err != nil {
 		return "", nil, err
 	}
@@ -121,8 +147,8 @@ func (*Resolver) lookupSRV(ctx context.Context, service, proto, name string) (st
 	return cname, srvs, nil
 }
 
-func (*Resolver) lookupMX(ctx context.Context, name string) ([]*MX, error) {
-	_, rrs, err := lookup(ctx, name, dnsTypeMX)
+func (r *Resolver) lookupMX(ctx context.Context, name string) ([]*MX, error) {
+	_, rrs, err := r.lookup(ctx, name, dnsTypeMX)
 	if err != nil {
 		return nil, err
 	}
@@ -135,8 +161,8 @@ func (*Resolver) lookupMX(ctx context.Context, name string) ([]*MX, error) {
 	return mxs, nil
 }
 
-func (*Resolver) lookupNS(ctx context.Context, name string) ([]*NS, error) {
-	_, rrs, err := lookup(ctx, name, dnsTypeNS)
+func (r *Resolver) lookupNS(ctx context.Context, name string) ([]*NS, error) {
+	_, rrs, err := r.lookup(ctx, name, dnsTypeNS)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +174,7 @@ func (*Resolver) lookupNS(ctx context.Context, name string) ([]*NS, error) {
 }
 
 func (r *Resolver) lookupTXT(ctx context.Context, name string) ([]string, error) {
-	_, rrs, err := lookup(ctx, name, dnsTypeTXT)
+	_, rrs, err := r.lookup(ctx, name, dnsTypeTXT)
 	if err != nil {
 		return nil, err
 	}
@@ -165,5 +191,5 @@ func (r *Resolver) lookupAddr(ctx context.Context, addr string) ([]string, error
 			return ptrs, err
 		}
 	}
-	return goLookupPTR(ctx, addr)
+	return r.goLookupPTR(ctx, addr)
 }

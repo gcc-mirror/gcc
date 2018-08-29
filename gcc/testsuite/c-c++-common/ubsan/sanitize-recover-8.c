@@ -3,4 +3,4 @@
 
 int i;
 
-/* { dg-error "-fsanitize=leak is incompatible with -fsanitize=thread" "" { target *-*-* } 0 } */
+/* { dg-error ".-fsanitize=leak. is incompatible with .-fsanitize=thread." "" { target *-*-* } 0 } */

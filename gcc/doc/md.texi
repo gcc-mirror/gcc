@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -115,25 +115,36 @@ A @code{define_insn} is an RTL expression containing four or five operands:
 
 @enumerate
 @item
-An optional name.  The presence of a name indicate that this instruction
-pattern can perform a certain standard job for the RTL-generation
-pass of the compiler.  This pass knows certain names and will use
-the instruction patterns with those names, if the names are defined
-in the machine description.
+An optional name @var{n}.  When a name is present, the compiler
+automically generates a C++ function @samp{gen_@var{n}} that takes
+the operands of the instruction as arguments and returns the instruction's
+rtx pattern.  The compiler also assigns the instruction a unique code
+@samp{CODE_FOR_@var{n}}, with all such codes belonging to an enum
+called @code{insn_code}.
+
+These names serve one of two purposes.  The first is to indicate that the
+instruction performs a certain standard job for the RTL-generation
+pass of the compiler, such as a move, an addition, or a conditional
+jump.  The second is to help the target generate certain target-specific
+operations, such as when implementing target-specific intrinsic functions.
+
+It is better to prefix target-specific names with the name of the
+target, to avoid any clash with current or future standard names.
 
 The absence of a name is indicated by writing an empty string
 where the name should go.  Nameless instruction patterns are never
 used for generating RTL code, but they may permit several simpler insns
 to be combined later on.
 
-Names that are not thus known and used in RTL-generation have no
-effect; they are equivalent to no name at all.
-
 For the purpose of debugging the compiler, you may also specify a
 name beginning with the @samp{*} character.  Such a name is used only
 for identifying the instruction in RTL dumps; it is equivalent to having
 a nameless pattern for all other purposes.  Names beginning with the
 @samp{*} character are not required to be unique.
+
+The name may also have the form @samp{@@@var{n}}.  This has the same
+effect as a name @samp{@var{n}}, but in addition tells the compiler to
+generate further helper functions; see @ref{Parameterized Names} for details.
 
 @item
 The @dfn{RTL template}: This is a vector of incomplete RTL expressions
@@ -166,9 +177,21 @@ individual insn, and only after the insn has matched the pattern's
 recognition template.  The insn's operands may be found in the vector
 @code{operands}.
 
-For an insn where the condition has once matched, it
-cannot later be used to control register allocation by excluding
-certain register or value combinations.
+An instruction condition cannot become more restrictive as compilation
+progresses.  If the condition accepts a particular RTL instruction at
+one stage of compilation, it must continue to accept that instruction
+until the final pass.  For example, @samp{!reload_completed} and
+@samp{can_create_pseudo_p ()} are both invalid instruction conditions,
+because they are true during the earlier RTL passes and false during
+the later ones.  For the same reason, if a condition accepts an
+instruction before register allocation, it cannot later try to control
+register allocation by excluding certain register or value combinations.
+
+Although a condition cannot become more restrictive as compilation
+progresses, the condition for a nameless pattern @emph{can} become
+more permissive.  For example, a nameless instruction can require
+@samp{reload_completed} to be true, in which case it only matches
+after register allocation.
 
 @item
 The @dfn{output template} or @dfn{output statement}: This is either
@@ -561,6 +584,11 @@ already defined, then you can simply use @code{#} as the output template
 instead of writing an output template that emits the multiple assembler
 instructions.
 
+Note that @code{#} only has an effect while generating assembly code;
+it does not affect whether a split occurs earlier.  An associated
+@code{define_split} must exist and it must be suitable for use after
+register allocation.
+
 If the macro @code{ASSEMBLER_DIALECT} is defined, you can use construct
 of the form @samp{@{option0|option1|option2@}} in the templates.  These
 describe multiple variants of assembler language syntax.
@@ -850,7 +878,7 @@ hardware's requirements explicitly.
 @defun push_operand
 This predicate allows a memory reference suitable for pushing a value
 onto the stack.  This will be a @code{MEM} which refers to
-@code{stack_pointer_rtx}, with a side-effect in its address expression
+@code{stack_pointer_rtx}, with a side effect in its address expression
 (@pxref{Incdec}); which one is determined by the
 @code{STACK_PUSH_CODE} macro (@pxref{Frame Layout}).
 @end defun
@@ -858,7 +886,7 @@ onto the stack.  This will be a @code{MEM} which refers to
 @defun pop_operand
 This predicate allows a memory reference suitable for popping a value
 off the stack.  Again, this will be a @code{MEM} referring to
-@code{stack_pointer_rtx}, with a side-effect in its address
+@code{stack_pointer_rtx}, with a side effect in its address
 expression.  However, this time @code{STACK_POP_CODE} is expected.
 @end defun
 
@@ -1074,7 +1102,7 @@ operand may be an immediate constant, and which possible values it may
 have.  Constraints can also require two operands to match.
 Side-effects aren't allowed in operands of inline @code{asm}, unless
 @samp{<} or @samp{>} constraints are used, because there is no guarantee
-that the side-effects will happen exactly once in an instruction that can update
+that the side effects will happen exactly once in an instruction that can update
 the addressing register.
 
 @ifset INTERNALS
@@ -1155,9 +1183,9 @@ would fit the @samp{m} constraint but not the @samp{o} constraint.
 A memory operand with autodecrement addressing (either predecrement or
 postdecrement) is allowed.  In inline @code{asm} this constraint is only
 allowed if the operand is used exactly once in an instruction that can
-handle the side-effects.  Not using an operand with @samp{<} in constraint
+handle the side effects.  Not using an operand with @samp{<} in constraint
 string in the inline @code{asm} pattern at all or using it in multiple
-instructions isn't valid, because the side-effects wouldn't be performed
+instructions isn't valid, because the side effects wouldn't be performed
 or would be performed more than once.  Furthermore, on some targets
 the operand with @samp{<} in constraint string must be accompanied by
 special instruction suffixes like @code{%U0} instruction suffix on PowerPC
@@ -1718,7 +1746,13 @@ the meanings of that architecture's constraints.
 The stack pointer register (@code{SP})
 
 @item w
-Floating point or SIMD vector register
+Floating point register, Advanced SIMD vector register or SVE vector register
+
+@item Upl
+One of the low eight SVE predicate registers (@code{P0} to @code{P7})
+
+@item Upa
+Any of the SVE predicate registers (@code{P0} to @code{P15})
 
 @item I
 Integer constant that is valid as an immediate operand in an @code{ADD}
@@ -2097,6 +2131,42 @@ Check for 64 bits wide constants for add/sub instructions
 @item G
 Floating point constant that is legal for store immediate
 @end table
+
+@item C-SKY---@file{config/csky/constraints.md}
+@table @code
+
+@item a
+The mini registers r0 - r7.
+
+@item b
+The low registers r0 - r15.
+
+@item c
+C register.
+
+@item y
+HI and LO registers.
+
+@item l
+LO register.
+
+@item h
+HI register.
+
+@item v
+Vector registers.
+
+@item z
+Stack pointer register (SP).
+@end table
+
+@ifset INTERNALS
+The C-SKY back end supports a large set of additional constraints
+that are only useful for instruction selection or splitting rather
+than inline asm, such as constraints representing constant integer
+ranges accepted by particular instruction encodings.
+Refer to the source code for details.
+@end ifset
 
 @item Epiphany---@file{config/epiphany/constraints.md}
 @table @code
@@ -2943,11 +3013,19 @@ memory with a single instruction.
 Odd numbered general registers (R1, R3, R5).  These are used for
 16-bit multiply operations.
 
+@item D
+A memory reference that is encoded within the opcode, but not
+auto-increment or auto-decrement.
+
 @item f
 Any of the floating point registers (AC0 through AC5).
 
 @item G
 Floating point constant 0.
+
+@item h
+Floating point registers AC4 and AC5.  These cannot be loaded from/to
+memory with a single instruction.
 
 @item I
 An integer constant that fits in 16 bits.
@@ -2969,7 +3047,7 @@ The integer constant @minus{}1.
 The integer constant 0.
 
 @item O
-Integer constants @minus{}4 through @minus{}1 and 1 through 4; shifts by these
+Integer constants 0 through 3; shifts by these
 amounts are handled as multiple single-bit shifts rather than a single
 variable-length shift.
 
@@ -4166,12 +4244,6 @@ VSIB address operand.
 @item Ts
 Address operand without segment register.
 
-@item Ti
-MPX address operand without index.
-
-@item Tb
-MPX address operand without base.
-
 @end table
 
 @item Xstormy16---@file{config/stormy16/stormy16.h}
@@ -4714,7 +4786,7 @@ it is unsafe to call @code{gen_reg_rtx} to allocate a new pseudo.
 
 The constraints on a @samp{mov@var{m}} must permit moving any hard
 register to any other hard register provided that
-@code{HARD_REGNO_MODE_OK} permits mode @var{m} in both registers and
+@code{TARGET_HARD_REGNO_MODE_OK} permits mode @var{m} in both registers and
 @code{TARGET_REGISTER_MOVE_COST} applied to their classes returns a value
 of 2.
 
@@ -4727,7 +4799,7 @@ point members.
 There may also be a need to support fixed point @samp{mov@var{m}}
 instructions in and out of floating point registers.  Unfortunately, I
 have forgotten why this was so, and I don't know whether it is still
-true.  If @code{HARD_REGNO_MODE_OK} rejects fixed point values in
+true.  If @code{TARGET_HARD_REGNO_MODE_OK} rejects fixed point values in
 floating point registers, then the constraints of the fixed point
 @samp{mov@var{m}} instructions must be designed to avoid ever trying to
 reload into a floating point register.
@@ -4832,6 +4904,26 @@ loads for vectors of mode @var{n}.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{vec_mask_load_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_mask_load_lanes@var{m}@var{n}}
+Like @samp{vec_load_lanes@var{m}@var{n}}, but takes an additional
+mask operand (operand 2) that specifies which elements of the destination
+vectors should be loaded.  Other elements of the destination
+vectors are set to zero.  The operation is equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
+  if (operand2[j])
+    for (i = 0; i < c; i++)
+      operand0[i][j] = operand1[j * c + i];
+  else
+    for (i = 0; i < c; i++)
+      operand0[i][j] = 0;
+@end smallexample
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{vec_store_lanes@var{m}@var{n}} instruction pattern
 @item @samp{vec_store_lanes@var{m}@var{n}}
 Equivalent to @samp{vec_load_lanes@var{m}@var{n}}, with the memory
@@ -4849,20 +4941,138 @@ for a memory operand 0 and register operand 1.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{vec_mask_store_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_mask_store_lanes@var{m}@var{n}}
+Like @samp{vec_store_lanes@var{m}@var{n}}, but takes an additional
+mask operand (operand 2) that specifies which elements of the source
+vectors should be stored.  The operation is equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
+  if (operand2[j])
+    for (i = 0; i < c; i++)
+      operand0[j * c + i] = operand1[i][j];
+@end smallexample
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{gather_load@var{m}} instruction pattern
+@item @samp{gather_load@var{m}}
+Load several separate memory locations into a vector of mode @var{m}.
+Operand 1 is a scalar base address and operand 2 is a vector of
+offsets from that base.  Operand 0 is a destination vector with the
+same number of elements as the offset.  For each element index @var{i}:
+
+@itemize @bullet
+@item
+extend the offset element @var{i} to address width, using zero
+extension if operand 3 is 1 and sign extension if operand 3 is zero;
+@item
+multiply the extended offset by operand 4;
+@item
+add the result to the base; and
+@item
+load the value at that address into element @var{i} of operand 0.
+@end itemize
+
+The value of operand 3 does not matter if the offsets are already
+address width.
+
+@cindex @code{mask_gather_load@var{m}} instruction pattern
+@item @samp{mask_gather_load@var{m}}
+Like @samp{gather_load@var{m}}, but takes an extra mask operand as
+operand 5.  Bit @var{i} of the mask is set if element @var{i}
+of the result should be loaded from memory and clear if element @var{i}
+of the result should be set to zero.
+
+@cindex @code{scatter_store@var{m}} instruction pattern
+@item @samp{scatter_store@var{m}}
+Store a vector of mode @var{m} into several distinct memory locations.
+Operand 0 is a scalar base address and operand 1 is a vector of offsets
+from that base.  Operand 4 is the vector of values that should be stored,
+which has the same number of elements as the offset.  For each element
+index @var{i}:
+
+@itemize @bullet
+@item
+extend the offset element @var{i} to address width, using zero
+extension if operand 2 is 1 and sign extension if operand 2 is zero;
+@item
+multiply the extended offset by operand 3;
+@item
+add the result to the base; and
+@item
+store element @var{i} of operand 4 to that address.
+@end itemize
+
+The value of operand 2 does not matter if the offsets are already
+address width.
+
+@cindex @code{mask_scatter_store@var{m}} instruction pattern
+@item @samp{mask_scatter_store@var{m}}
+Like @samp{scatter_store@var{m}}, but takes an extra mask operand as
+operand 5.  Bit @var{i} of the mask is set if element @var{i}
+of the result should be stored to memory.
+
 @cindex @code{vec_set@var{m}} instruction pattern
 @item @samp{vec_set@var{m}}
 Set given field in the vector value.  Operand 0 is the vector to modify,
 operand 1 is new value of field and operand 2 specify the field index.
 
-@cindex @code{vec_extract@var{m}} instruction pattern
-@item @samp{vec_extract@var{m}}
+@cindex @code{vec_extract@var{m}@var{n}} instruction pattern
+@item @samp{vec_extract@var{m}@var{n}}
 Extract given field from the vector value.  Operand 1 is the vector, operand 2
-specify field index and operand 0 place to store value into.
+specify field index and operand 0 place to store value into.  The
+@var{n} mode is the mode of the field or vector of fields that should be
+extracted, should be either element mode of the vector mode @var{m}, or
+a vector mode with the same element mode and smaller number of elements.
+If @var{n} is a vector mode, the index is counted in units of that mode.
 
-@cindex @code{vec_init@var{m}} instruction pattern
-@item @samp{vec_init@var{m}}
+@cindex @code{vec_init@var{m}@var{n}} instruction pattern
+@item @samp{vec_init@var{m}@var{n}}
 Initialize the vector to given values.  Operand 0 is the vector to initialize
-and operand 1 is parallel containing values for individual fields.
+and operand 1 is parallel containing values for individual fields.  The
+@var{n} mode is the mode of the elements, should be either element mode of
+the vector mode @var{m}, or a vector mode with the same element mode and
+smaller number of elements.
+
+@cindex @code{vec_duplicate@var{m}} instruction pattern
+@item @samp{vec_duplicate@var{m}}
+Initialize vector output operand 0 so that each element has the value given
+by scalar input operand 1.  The vector has mode @var{m} and the scalar has
+the mode appropriate for one element of @var{m}.
+
+This pattern only handles duplicates of non-constant inputs.  Constant
+vectors go through the @code{mov@var{m}} pattern instead.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{vec_series@var{m}} instruction pattern
+@item @samp{vec_series@var{m}}
+Initialize vector output operand 0 so that element @var{i} is equal to
+operand 1 plus @var{i} times operand 2.  In other words, create a linear
+series whose base value is operand 1 and whose step is operand 2.
+
+The vector output has mode @var{m} and the scalar inputs have the mode
+appropriate for one element of @var{m}.  This pattern is not used for
+floating-point vectors, in order to avoid having to specify the
+rounding behavior for @var{i} > 1.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{while_ult@var{m}@var{n}} instruction pattern
+@item @code{while_ult@var{m}@var{n}}
+Set operand 0 to a mask that is true while incrementing operand 1
+gives a value that is less than operand 2.  Operand 0 has mode @var{n}
+and operands 1 and 2 are scalar integers of mode @var{m}.
+The operation is equivalent to:
+
+@smallexample
+operand0[0] = operand1 < operand2;
+for (i = 1; i < GET_MODE_NUNITS (@var{n}); i++)
+  operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
+@end smallexample
 
 @cindex @code{vec_cmp@var{m}@var{n}} instruction pattern
 @item @samp{vec_cmp@var{m}@var{n}}
@@ -4948,20 +5158,8 @@ where @var{q} is a vector of @code{QImode} of the same width as @var{m},
 the middle-end will lower the mode @var{m} @code{VEC_PERM_EXPR} to
 mode @var{q}.
 
-@cindex @code{vec_perm_const@var{m}} instruction pattern
-@item @samp{vec_perm_const@var{m}}
-Like @samp{vec_perm} except that the permutation is a compile-time
-constant.  That is, operand 3, the @dfn{selector}, is a @code{CONST_VECTOR}.
-
-Some targets cannot perform a permutation with a variable selector,
-but can efficiently perform a constant permutation.  Further, the
-target hook @code{vec_perm_ok} is queried to determine if the 
-specific constant permutation is available efficiently; the named
-pattern is never expanded without @code{vec_perm_ok} returning true.
-
-There is no need for a target to supply both @samp{vec_perm@var{m}}
-and @samp{vec_perm_const@var{m}} if the former can trivially implement
-the operation with, say, the vector constant loaded into a register.
+See also @code{TARGET_VECTORIZER_VEC_PERM_CONST}, which performs
+the analogous operation for constant selectors.
 
 @cindex @code{push@var{m}1} instruction pattern
 @item @samp{push@var{m}1}
@@ -5117,6 +5315,42 @@ Compute the sum of the elements of a vector. The vector is operand 1, and
 operand 0 is the scalar result, with mode equal to the mode of the elements of
 the input vector.
 
+@cindex @code{reduc_and_scal_@var{m}} instruction pattern
+@item @samp{reduc_and_scal_@var{m}}
+@cindex @code{reduc_ior_scal_@var{m}} instruction pattern
+@itemx @samp{reduc_ior_scal_@var{m}}
+@cindex @code{reduc_xor_scal_@var{m}} instruction pattern
+@itemx @samp{reduc_xor_scal_@var{m}}
+Compute the bitwise @code{AND}/@code{IOR}/@code{XOR} reduction of the elements
+of a vector of mode @var{m}.  Operand 1 is the vector input and operand 0
+is the scalar result.  The mode of the scalar result is the same as one
+element of @var{m}.
+
+@cindex @code{extract_last_@var{m}} instruction pattern
+@item @code{extract_last_@var{m}}
+Find the last set bit in mask operand 1 and extract the associated element
+of vector operand 2.  Store the result in scalar operand 0.  Operand 2
+has vector mode @var{m} while operand 0 has the mode appropriate for one
+element of @var{m}.  Operand 1 has the usual mask mode for vectors of mode
+@var{m}; see @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
+@cindex @code{fold_extract_last_@var{m}} instruction pattern
+@item @code{fold_extract_last_@var{m}}
+If any bits of mask operand 2 are set, find the last set bit, extract
+the associated element from vector operand 3, and store the result
+in operand 0.  Store operand 1 in operand 0 otherwise.  Operand 3
+has mode @var{m} and operands 0 and 1 have the mode appropriate for
+one element of @var{m}.  Operand 2 has the usual mask mode for vectors
+of mode @var{m}; see @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
+@cindex @code{fold_left_plus_@var{m}} instruction pattern
+@item @code{fold_left_plus_@var{m}}
+Take scalar operand 1 and successively add each element from vector
+operand 2.  Store the result in scalar operand 0.  The vector has
+mode @var{m} and the scalars have the mode appropriate for one
+element of @var{m}.  The operation is strictly in-order: there is
+no reassociation.
+
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
 @cindex @code{udot_prod@var{m}} instruction pattern
@@ -5145,6 +5379,14 @@ Operands 0 and 2 are of the same mode, which is wider than the mode of
 operand 1. Add operand 1 to operand 2 and place the widened result in
 operand 0. (This is used express accumulation of elements into an accumulator
 of a wider mode.)
+
+@cindex @code{vec_shl_insert_@var{m}} instruction pattern
+@item @samp{vec_shl_insert_@var{m}}
+Shift the elements in vector input operand 1 left one element (i.e.
+away from element 0) and fill the vacated element 0 with the scalar
+in operand 2.  Store the result in vector output operand 0.  Operands
+0 and 1 have mode @var{m} and operand 2 has the mode appropriate for
+one element of @var{m}.
 
 @cindex @code{vec_shr_@var{m}} instruction pattern
 @item @samp{vec_shr_@var{m}}
@@ -5178,6 +5420,14 @@ of two vectors.  Operands 1 and 2 are vectors of the same mode having N
 floating point elements of size S@.  Operand 0 is the resulting vector
 in which 2*N elements of size N/2 are concatenated.
 
+@cindex @code{vec_packs_float_@var{m}} instruction pattern
+@cindex @code{vec_packu_float_@var{m}} instruction pattern
+@item @samp{vec_packs_float_@var{m}}, @samp{vec_packu_float_@var{m}}
+Narrow, convert to floating point type and merge the elements
+of two vectors.  Operands 1 and 2 are vectors of the same mode having N
+signed/unsigned integral elements of size S@.  Operand 0 is the resulting vector
+in which 2*N elements of size N/2 are concatenated.
+
 @cindex @code{vec_unpacks_hi_@var{m}} instruction pattern
 @cindex @code{vec_unpacks_lo_@var{m}} instruction pattern
 @item @samp{vec_unpacks_hi_@var{m}}, @samp{vec_unpacks_lo_@var{m}}
@@ -5205,6 +5455,20 @@ Extract, convert to floating point type and widen the high/low part of a
 vector of signed/unsigned integral elements.  The input vector (operand 1)
 has N elements of size S@.  Convert the high/low elements of the vector using
 floating point conversion and place the resulting N/2 values of size 2*S in
+the output vector (operand 0).
+
+@cindex @code{vec_unpack_sfix_trunc_hi_@var{m}} instruction pattern
+@cindex @code{vec_unpack_sfix_trunc_lo_@var{m}} instruction pattern
+@cindex @code{vec_unpack_ufix_trunc_hi_@var{m}} instruction pattern
+@cindex @code{vec_unpack_ufix_trunc_lo_@var{m}} instruction pattern
+@item @samp{vec_unpack_sfix_trunc_hi_@var{m}},
+@itemx @samp{vec_unpack_sfix_trunc_lo_@var{m}}
+@itemx @samp{vec_unpack_ufix_trunc_hi_@var{m}}
+@itemx @samp{vec_unpack_ufix_trunc_lo_@var{m}}
+Extract, convert to signed/unsigned integer type and widen the high/low part of a
+vector of floating point elements.  The input vector (operand 1)
+has N elements of size S@.  Convert the high/low elements of the vector
+to integers and place the resulting N/2 values of size 2*S in
 the output vector (operand 0).
 
 @cindex @code{vec_widen_umult_hi_@var{m}} instruction pattern
@@ -5381,6 +5645,34 @@ Other shift and rotate instructions, analogous to the
 @item @samp{vashl@var{m}3}, @samp{vashr@var{m}3}, @samp{vlshr@var{m}3}, @samp{vrotl@var{m}3}, @samp{vrotr@var{m}3}
 Vector shift and rotate instructions that take vectors as operand 2
 instead of a scalar type.
+
+@cindex @code{avg@var{m}3_floor} instruction pattern
+@cindex @code{uavg@var{m}3_floor} instruction pattern
+@item @samp{avg@var{m}3_floor}
+@itemx @samp{uavg@var{m}3_floor}
+Signed and unsigned average instructions.  These instructions add
+operands 1 and 2 without truncation, divide the result by 2,
+round towards -Inf, and store the result in operand 0.  This is
+equivalent to the C code:
+@smallexample
+narrow op0, op1, op2;
+@dots{}
+op0 = (narrow) (((wide) op1 + (wide) op2) >> 1);
+@end smallexample
+where the sign of @samp{narrow} determines whether this is a signed
+or unsigned operation.
+
+@cindex @code{avg@var{m}3_ceil} instruction pattern
+@cindex @code{uavg@var{m}3_ceil} instruction pattern
+@item @samp{avg@var{m}3_ceil}
+@itemx @samp{uavg@var{m}3_ceil}
+Like @samp{avg@var{m}3_floor} and @samp{uavg@var{m}3_floor}, but round
+towards +Inf.  This is equivalent to the C code:
+@smallexample
+narrow op0, op1, op2;
+@dots{}
+op0 = (narrow) (((wide) op1 + (wide) op2 + 1) >> 1);
+@end smallexample
 
 @cindex @code{bswap@var{m}2} instruction pattern
 @item @samp{bswap@var{m}2}
@@ -6138,6 +6430,78 @@ move operand 2 or (operands 2 + operand 3) into operand 0 according to the
 comparison in operand 1.  If the comparison is false, operand 2 is moved into
 operand 0, otherwise (operand 2 + operand 3) is moved.
 
+@cindex @code{cond_add@var{mode}} instruction pattern
+@cindex @code{cond_sub@var{mode}} instruction pattern
+@cindex @code{cond_mul@var{mode}} instruction pattern
+@cindex @code{cond_div@var{mode}} instruction pattern
+@cindex @code{cond_udiv@var{mode}} instruction pattern
+@cindex @code{cond_mod@var{mode}} instruction pattern
+@cindex @code{cond_umod@var{mode}} instruction pattern
+@cindex @code{cond_and@var{mode}} instruction pattern
+@cindex @code{cond_ior@var{mode}} instruction pattern
+@cindex @code{cond_xor@var{mode}} instruction pattern
+@cindex @code{cond_smin@var{mode}} instruction pattern
+@cindex @code{cond_smax@var{mode}} instruction pattern
+@cindex @code{cond_umin@var{mode}} instruction pattern
+@cindex @code{cond_umax@var{mode}} instruction pattern
+@item @samp{cond_add@var{mode}}
+@itemx @samp{cond_sub@var{mode}}
+@itemx @samp{cond_mul@var{mode}}
+@itemx @samp{cond_div@var{mode}}
+@itemx @samp{cond_udiv@var{mode}}
+@itemx @samp{cond_mod@var{mode}}
+@itemx @samp{cond_umod@var{mode}}
+@itemx @samp{cond_and@var{mode}}
+@itemx @samp{cond_ior@var{mode}}
+@itemx @samp{cond_xor@var{mode}}
+@itemx @samp{cond_smin@var{mode}}
+@itemx @samp{cond_smax@var{mode}}
+@itemx @samp{cond_umin@var{mode}}
+@itemx @samp{cond_umax@var{mode}}
+When operand 1 is true, perform an operation on operands 2 and 3 and
+store the result in operand 0, otherwise store operand 4 in operand 0.
+The operation works elementwise if the operands are vectors.
+
+The scalar case is equivalent to:
+
+@smallexample
+op0 = op1 ? op2 @var{op} op3 : op4;
+@end smallexample
+
+while the vector case is equivalent to:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op4[i];
+@end smallexample
+
+where, for example, @var{op} is @code{+} for @samp{cond_add@var{mode}}.
+
+When defined for floating-point modes, the contents of @samp{op3[i]}
+are not interpreted if @var{op1[i]} is false, just like they would not
+be in a normal C @samp{?:} condition.
+
+Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
+integer if @var{m} is scalar, otherwise it has the mode returned by
+@code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
+@cindex @code{cond_fma@var{mode}} instruction pattern
+@cindex @code{cond_fms@var{mode}} instruction pattern
+@cindex @code{cond_fnma@var{mode}} instruction pattern
+@cindex @code{cond_fnms@var{mode}} instruction pattern
+@item @samp{cond_fma@var{mode}}
+@itemx @samp{cond_fms@var{mode}}
+@itemx @samp{cond_fnma@var{mode}}
+@itemx @samp{cond_fnms@var{mode}}
+Like @samp{cond_add@var{m}}, except that the conditional operation
+takes 3 operands rather than two.  For example, the vector form of
+@samp{cond_fma@var{mode}} is equivalent to:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
+@end smallexample
+
 @cindex @code{neg@var{mode}cc} instruction pattern
 @item @samp{neg@var{mode}cc}
 Similar to @samp{mov@var{mode}cc} but for conditional negation.  Conditionally
@@ -6380,17 +6744,6 @@ table it uses.  Its assembler code normally has no need to use the
 second operand, but you should incorporate it in the RTL pattern so
 that the jump optimizer will not delete the table as unreachable code.
 
-
-@cindex @code{decrement_and_branch_until_zero} instruction pattern
-@item @samp{decrement_and_branch_until_zero}
-Conditional branch instruction that decrements a register and
-jumps if the register is nonzero.  Operand 0 is the register to
-decrement and test; operand 1 is the label to jump to if the
-register is nonzero.  @xref{Looping Patterns}.
-
-This optional instruction pattern is only used by the combiner,
-typically for loops reversed by the loop optimizer when strength
-reduction is enabled.
 
 @cindex @code{doloop_end} instruction pattern
 @item @samp{doloop_end}
@@ -6710,12 +7063,36 @@ scheduler and other passes from moving instructions and using register
 equivalences across the boundary defined by the blockage insn.
 This needs to be an UNSPEC_VOLATILE pattern or a volatile ASM.
 
+@cindex @code{memory_blockage} instruction pattern
+@item @samp{memory_blockage}
+This pattern, if defined, represents a compiler memory barrier, and will be
+placed at points across which RTL passes may not propagate memory accesses.
+This instruction needs to read and write volatile BLKmode memory.  It does
+not need to generate any machine instruction.  If this pattern is not defined,
+the compiler falls back to emitting an instruction corresponding
+to @code{asm volatile ("" ::: "memory")}.
+
 @cindex @code{memory_barrier} instruction pattern
 @item @samp{memory_barrier}
 If the target memory model is not fully synchronous, then this pattern
 should be defined to an instruction that orders both loads and stores
 before the instruction with respect to loads and stores after the instruction.
 This pattern has no operands.
+
+@cindex @code{speculation_barrier} instruction pattern
+@item @samp{speculation_barrier}
+If the target can support speculative execution, then this pattern should
+be defined to an instruction that will block subsequent execution until
+any prior speculation conditions has been resolved.  The pattern must also
+ensure that the compiler cannot move memory operations past the barrier,
+so it needs to be an UNSPEC_VOLATILE pattern.  The pattern has no
+operands.
+
+If this pattern is not defined then the default expansion of
+@code{__builtin_speculation_safe_value} will emit a warning.  You can
+suppress this warning by defining this pattern with a final condition
+of @code{0} (zero), which tells the compiler that a speculation
+barrier is not needed for this target.
 
 @cindex @code{sync_compare_and_swap@var{mode}} instruction pattern
 @item @samp{sync_compare_and_swap@var{mode}}
@@ -7020,27 +7397,20 @@ If these patterns are not defined, attempts will be made to use
 counterparts.  If none of these are available a compare-and-swap
 loop will be used.
 
-@cindex @code{mem_thread_fence@var{mode}} instruction pattern
-@item @samp{mem_thread_fence@var{mode}}
+@cindex @code{mem_thread_fence} instruction pattern
+@item @samp{mem_thread_fence}
 This pattern emits code required to implement a thread fence with
 memory model semantics.  Operand 0 is the memory model to be used.
 
-If this pattern is not specified, all memory models except
-@code{__ATOMIC_RELAXED} will result in issuing a @code{sync_synchronize}
-barrier pattern.
+For the @code{__ATOMIC_RELAXED} model no instructions need to be issued
+and this expansion is not invoked.
 
-@cindex @code{mem_signal_fence@var{mode}} instruction pattern
-@item @samp{mem_signal_fence@var{mode}}
-This pattern emits code required to implement a signal fence with
-memory model semantics.  Operand 0 is the memory model to be used.
+The compiler always emits a compiler memory barrier regardless of what
+expanding this pattern produced.
 
-This pattern should impact the compiler optimizers the same way that
-mem_signal_fence does, but it does not need to issue any barrier
-instructions.
-
-If this pattern is not specified, all memory models except
-@code{__ATOMIC_RELAXED} will result in issuing a @code{sync_synchronize}
-barrier pattern.
+If this pattern is not defined, the compiler falls back to expanding the
+@code{memory_barrier} pattern, then to emitting @code{__sync_synchronize}
+library call, and finally to just placing a compiler memory barrier.
 
 @cindex @code{get_thread_pointer@var{mode}} instruction pattern
 @cindex @code{set_thread_pointer@var{mode}} instruction pattern
@@ -7213,66 +7583,11 @@ iterations.  This avoids the need for fetching and executing a
 @samp{dbra}-like instruction and avoids pipeline stalls associated with
 the jump.
 
-GCC has three special named patterns to support low overhead looping.
-They are @samp{decrement_and_branch_until_zero}, @samp{doloop_begin},
-and @samp{doloop_end}.  The first pattern,
-@samp{decrement_and_branch_until_zero}, is not emitted during RTL
-generation but may be emitted during the instruction combination phase.
-This requires the assistance of the loop optimizer, using information
-collected during strength reduction, to reverse a loop to count down to
-zero.  Some targets also require the loop optimizer to add a
-@code{REG_NONNEG} note to indicate that the iteration count is always
-positive.  This is needed if the target performs a signed loop
-termination test.  For example, the 68000 uses a pattern similar to the
-following for its @code{dbra} instruction:
-
-@smallexample
-@group
-(define_insn "decrement_and_branch_until_zero"
-  [(set (pc)
-        (if_then_else
-          (ge (plus:SI (match_operand:SI 0 "general_operand" "+d*am")
-                       (const_int -1))
-              (const_int 0))
-          (label_ref (match_operand 1 "" ""))
-          (pc)))
-   (set (match_dup 0)
-        (plus:SI (match_dup 0)
-                 (const_int -1)))]
-  "find_reg_note (insn, REG_NONNEG, 0)"
-  "@dots{}")
-@end group
-@end smallexample
-
-Note that since the insn is both a jump insn and has an output, it must
-deal with its own reloads, hence the `m' constraints.  Also note that
-since this insn is generated by the instruction combination phase
-combining two sequential insns together into an implicit parallel insn,
-the iteration counter needs to be biased by the same amount as the
-decrement operation, in this case @minus{}1.  Note that the following similar
-pattern will not be matched by the combiner.
-
-@smallexample
-@group
-(define_insn "decrement_and_branch_until_zero"
-  [(set (pc)
-        (if_then_else
-          (ge (match_operand:SI 0 "general_operand" "+d*am")
-              (const_int 1))
-          (label_ref (match_operand 1 "" ""))
-          (pc)))
-   (set (match_dup 0)
-        (plus:SI (match_dup 0)
-                 (const_int -1)))]
-  "find_reg_note (insn, REG_NONNEG, 0)"
-  "@dots{}")
-@end group
-@end smallexample
-
-The other two special looping patterns, @samp{doloop_begin} and
-@samp{doloop_end}, are emitted by the loop optimizer for certain
-well-behaved loops with a finite number of loop iterations using
-information collected during strength reduction.
+GCC has two special named patterns to support low overhead looping.
+They are @samp{doloop_begin} and @samp{doloop_end}.  These are emitted
+by the loop optimizer for certain well-behaved loops with a finite
+number of loop iterations using information collected during strength
+reduction.
 
 The @samp{doloop_end} pattern describes the actual looping instruction
 (or the implicit looping operation) and the @samp{doloop_begin} pattern
@@ -7292,14 +7607,64 @@ desired special iteration counter register was not allocated, this
 machine dependent reorg pass could emit a traditional compare and jump
 instruction pair.
 
-The essential difference between the
-@samp{decrement_and_branch_until_zero} and the @samp{doloop_end}
-patterns is that the loop optimizer allocates an additional pseudo
-register for the latter as an iteration counter.  This pseudo register
-cannot be used within the loop (i.e., general induction variables cannot
-be derived from it), however, in many cases the loop induction variable
-may become redundant and removed by the flow pass.
+For the @samp{doloop_end} pattern, the loop optimizer allocates an
+additional pseudo register as an iteration counter.  This pseudo
+register cannot be used within the loop (i.e., general induction
+variables cannot be derived from it), however, in many cases the loop
+induction variable may become redundant and removed by the flow pass.
 
+The @samp{doloop_end} pattern must have a specific structure to be
+handled correctly by GCC.  The example below is taken (slightly
+simplified) from the PDP-11 target:
+
+@smallexample
+@group
+(define_insn "doloop_end"
+  [(set (pc)
+        (if_then_else
+         (ne (match_operand:HI 0 "nonimmediate_operand" "+r,!m")
+             (const_int 1))
+         (label_ref (match_operand 1 "" ""))
+         (pc)))
+   (set (match_dup 0)
+        (plus:HI (match_dup 0)
+              (const_int -1)))]
+  ""
+  
+  @{
+    if (which_alternative == 0)
+      return "sob %0,%l1";
+
+    /* emulate sob */
+    output_asm_insn ("dec %0", operands);
+    return "bne %l1";
+  @})
+@end group
+@end smallexample
+
+The first part of the pattern describes the branch condition.  GCC
+supports three cases for the way the target machine handles the loop
+counter:
+@itemize @bullet
+@item Loop terminates when the loop register decrements to zero.  This
+is represented by a @code{ne} comparison of the register (its old value)
+with constant 1 (as in the example above).
+@item Loop terminates when the loop register decrements to @minus{}1.
+This is represented by a @code{ne} comparison of the register with
+constant zero.
+@item Loop terminates when the loop register decrements to a negative
+value.  This is represented by a @code{ge} comparison of the register
+with constant zero.  For this case, GCC will attach a @code{REG_NONNEG}
+note to the @code{doloop_end} insn if it can determine that the register
+will be non-negative.
+@end itemize
+
+Since the @code{doloop_end} insn is a jump insn that also has an output,
+the reload pass does not handle the output operand.  Therefore, the
+constraint must allow for that operand to be in memory rather than a
+register.  In the example shown above, that is handled by using a loop
+instruction sequence that can handle memory operands when the memory
+alternative appears.
 
 @end ifset
 @ifset INTERNALS
@@ -7758,6 +8123,30 @@ those in @code{define_expand}, however, these statements must not
 generate any new pseudo-registers.  Once reload has completed, they also
 must not allocate any space in the stack frame.
 
+There are two special macros defined for use in the preparation statements:
+@code{DONE} and @code{FAIL}.  Use them with a following semicolon,
+as a statement.
+
+@table @code
+
+@findex DONE
+@item DONE
+Use the @code{DONE} macro to end RTL generation for the splitter.  The
+only RTL insns generated as replacement for the matched input insn will
+be those already emitted by explicit calls to @code{emit_insn} within
+the preparation statements; the replacement pattern is not used.
+
+@findex FAIL
+@item FAIL
+Make the @code{define_split} fail on this occasion.  When a @code{define_split}
+fails, it means that the splitter was not truly available for the inputs
+it was given, and the input insn will not be split.
+@end table
+
+If the preparation falls through (invokes neither @code{DONE} nor
+@code{FAIL}), then the @code{define_split} uses the replacement
+template.
+
 Patterns are matched against @var{insn-pattern} in two different
 circumstances.  If an insn needs to be split for delay slot scheduling
 or insn scheduling, the insn is already known to be valid, which means
@@ -7864,7 +8253,7 @@ are not valid.
 
 The splitter is allowed to split jump instructions into sequence of
 jumps or create new jumps in while splitting non-jump instructions.  As
-the central flowgraph and branch prediction information needs to be updated,
+the control flow graph and branch prediction information needs to be updated,
 several restriction apply.
 
 Splitting of jump instruction into sequence that over by another jump
@@ -8312,6 +8701,33 @@ so here's a silly made-up example:
    (set (match_dup 3) (match_dup 4))]
   "")
 @end smallexample
+
+There are two special macros defined for use in the preparation statements:
+@code{DONE} and @code{FAIL}.  Use them with a following semicolon,
+as a statement.
+
+@table @code
+
+@findex DONE
+@item DONE
+Use the @code{DONE} macro to end RTL generation for the peephole.  The
+only RTL insns generated as replacement for the matched input insn will
+be those already emitted by explicit calls to @code{emit_insn} within
+the preparation statements; the replacement pattern is not used.
+
+@findex FAIL
+@item FAIL
+Make the @code{define_peephole2} fail on this occasion.  When a @code{define_peephole2}
+fails, it means that the replacement was not truly available for the
+particular inputs it was given.  In that case, GCC may still apply a
+later @code{define_peephole2} that also matches the given insn pattern.
+(Note that this is different from @code{define_split}, where @code{FAIL}
+prevents the input insn from being split at all.)
+@end table
+
+If the preparation falls through (invokes neither @code{DONE} nor
+@code{FAIL}), then the @code{define_peephole2} uses the replacement
+template.
 
 @noindent
 If we had not added the @code{(match_dup 4)} in the middle of the input
@@ -9591,7 +10007,7 @@ their result is ready in two cycles.  The simple integer insns are
 issued into the first pipeline unless it is reserved, otherwise they
 are issued into the second pipeline.  Integer division and
 multiplication insns can be executed only in the second integer
-pipeline and their results are ready correspondingly in 8 and 4
+pipeline and their results are ready correspondingly in 9 and 4
 cycles.  The integer division is not pipelined, i.e.@: the subsequent
 integer division insn can not be issued until the current division
 insn finished.  Floating point insns are fully pipelined and their
@@ -9608,7 +10024,7 @@ incurred.  To describe all of this we could specify
 (define_insn_reservation "mult" 4 (eq_attr "type" "mult")
                          "i1_pipeline, nothing*2, (port0 | port1)")
 
-(define_insn_reservation "div" 8 (eq_attr "type" "div")
+(define_insn_reservation "div" 9 (eq_attr "type" "div")
                          "i1_pipeline, div*7, div + (port0 | port1)")
 
 (define_insn_reservation "float" 3 (eq_attr "type" "float")
@@ -9910,7 +10326,11 @@ the expression from the original pattern, which matched
 @code{match_operand N} from the input pattern.  As a consequence,
 @code{match_dup} cannot be used to point to @code{match_operand}s from
 the output pattern, it should always refer to a @code{match_operand}
-from the input pattern.
+from the input pattern.  If a @code{match_dup N} occurs more than once
+in the output template, its first occurrence is replaced with the
+expression from the original pattern, and the subsequent expressions
+are replaced with @code{match_dup N}, i.e., a reference to the first
+expression.
 
 In the output template one can refer to the expressions from the
 original pattern and create new ones.  For instance, some operands could
@@ -10118,6 +10538,7 @@ facilities to make this process easier.
 * Code Iterators::         Doing the same for codes.
 * Int Iterators::          Doing the same for integers.
 * Subst Iterators::	   Generating variations of patterns for define_subst.
+* Parameterized Names::	   Specifying iterator values in C++ code.
 @end menu
 
 @node Mode Iterators
@@ -10512,5 +10933,102 @@ replaced in the first copy of the original RTL-template.
 
 @var{subst-applied-value} is a value with which subst-attribute would be
 replaced in the second copy of the original RTL-template.
+
+@node Parameterized Names
+@subsection Parameterized Names
+@cindex @samp{@@} in instruction pattern names
+Ports sometimes need to apply iterators using C++ code, in order to
+get the code or RTL pattern for a specific instruction.  For example,
+suppose we have the @samp{neon_vq<absneg><mode>} pattern given above:
+
+@smallexample
+(define_int_iterator QABSNEG [UNSPEC_VQABS UNSPEC_VQNEG])
+
+(define_int_attr absneg [(UNSPEC_VQABS "abs") (UNSPEC_VQNEG "neg")])
+
+(define_insn "neon_vq<absneg><mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
+	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")
+		       (match_operand:SI 2 "immediate_operand" "i")]
+		      QABSNEG))]
+  @dots{}
+)
+@end smallexample
+
+A port might need to generate this pattern for a variable
+@samp{QABSNEG} value and a variable @samp{VDQIW} mode.  There are two
+ways of doing this.  The first is to build the rtx for the pattern
+directly from C++ code; this is a valid technique and avoids any risk
+of combinatorial explosion.  The second is to prefix the instruction
+name with the special character @samp{@@}, which tells GCC to generate
+the four additional functions below.  In each case, @var{name} is the
+name of the instruction without the leading @samp{@@} character,
+without the @samp{<@dots{}>} placeholders, and with any underscore
+before a @samp{<@dots{}>} placeholder removed if keeping it would
+lead to a double or trailing underscore.
+
+@table @samp
+@item insn_code maybe_code_for_@var{name} (@var{i1}, @var{i2}, @dots{})
+See whether replacing the first @samp{<@dots{}>} placeholder with
+iterator value @var{i1}, the second with iterator value @var{i2}, and
+so on, gives a valid instruction.  Return its code if so, otherwise
+return @code{CODE_FOR_nothing}.
+
+@item insn_code code_for_@var{name} (@var{i1}, @var{i2}, @dots{})
+Same, but abort the compiler if the requested instruction does not exist.
+
+@item rtx maybe_gen_@var{name} (@var{i1}, @var{i2}, @dots{}, @var{op0}, @var{op1}, @dots{})
+Check for a valid instruction in the same way as
+@code{maybe_code_for_@var{name}}.  If the instruction exists,
+generate an instance of it using the operand values given by @var{op0},
+@var{op1}, and so on, otherwise return null.
+
+@item rtx gen_@var{name} (@var{i1}, @var{i2}, @dots{}, @var{op0}, @var{op1}, @dots{})
+Same, but abort the compiler if the requested instruction does not exist,
+or if the instruction generator invoked the @code{FAIL} macro.
+@end table
+
+For example, changing the pattern above to:
+
+@smallexample
+(define_insn "@@neon_vq<absneg><mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
+	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")
+		       (match_operand:SI 2 "immediate_operand" "i")]
+		      QABSNEG))]
+  @dots{}
+)
+@end smallexample
+
+would define the same patterns as before, but in addition would generate
+the four functions below:
+
+@smallexample
+insn_code maybe_code_for_neon_vq (int, machine_mode);
+insn_code code_for_neon_vq (int, machine_mode);
+rtx maybe_gen_neon_vq (int, machine_mode, rtx, rtx, rtx);
+rtx gen_neon_vq (int, machine_mode, rtx, rtx, rtx);
+@end smallexample
+
+Calling @samp{code_for_neon_vq (UNSPEC_VQABS, V8QImode)}
+would then give @code{CODE_FOR_neon_vqabsv8qi}.
+
+It is possible to have multiple @samp{@@} patterns with the same
+name and same types of iterator.  For example:
+
+@smallexample
+(define_insn "@@some_arithmetic_op<mode>"
+  [(set (match_operand:INTEGER_MODES 0 "register_operand") @dots{})]
+  @dots{}
+)
+
+(define_insn "@@some_arithmetic_op<mode>"
+  [(set (match_operand:FLOAT_MODES 0 "register_operand") @dots{})]
+  @dots{}
+)
+@end smallexample
+
+would produce a single set of functions that handles both
+@code{INTEGER_MODES} and @code{FLOAT_MODES}.
 
 @end ifset

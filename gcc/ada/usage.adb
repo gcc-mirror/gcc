@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,6 +302,11 @@ begin
    Write_Switch_Char ("h");
    Write_Line ("Output this usage (help) information");
 
+   --  Line for -gnatH switch
+
+   Write_Switch_Char ("H");
+   Write_Line ("Legacy elaboration checking mode enabled");
+
    --  Line for -gnati switch
 
    Write_Switch_Char ("i?");
@@ -316,6 +321,11 @@ begin
 
    Write_Switch_Char ("jnn");
    Write_Line ("Format error and warning messages to fit nn character lines");
+
+   --  Line for -gnatJ switch
+
+   Write_Switch_Char ("J");
+   Write_Line ("Relaxed elaboration checking mode enabled");
 
    --  Line for -gnatk switch
 
@@ -342,7 +352,7 @@ begin
    --  Line for -gnatn switch
 
    Write_Switch_Char ("n[?]");
-   Write_Line ("Enable pragma Inline (both within and across units, ?=1/2)");
+   Write_Line ("Enable pragma Inline across units (?=1/2 for moderate/full)");
 
    --  Line for -gnato switch
 
@@ -392,7 +402,9 @@ begin
 
    Write_Switch_Char ("R?");
    Write_Line
-     ("List rep info (?=0/1/2/3/m for none/types/all/variable/mechanisms)");
+     ("List rep info (?=0/1/2/3/e/m for none/types/all/symbolic/ext/mech)");
+   Write_Switch_Char ("R?j");
+   Write_Line ("List rep info in the JSON data interchange format");
    Write_Switch_Char ("R?s");
    Write_Line ("List rep info to file.rep instead of standard output");
 
@@ -449,6 +461,7 @@ begin
    Write_Line ("        I    turn off checking for in params");
    Write_Line ("        m    turn on checking for in out params");
    Write_Line ("        M    turn off checking for in out params");
+   Write_Line ("        n    turn off all validity checks (including RM)");
    Write_Line ("        o    turn on checking for operators/attributes");
    Write_Line ("        O    turn off checking for operators/attributes");
    Write_Line ("        p    turn on checking for parameters");
@@ -459,7 +472,6 @@ begin
    Write_Line ("        S    turn off checking for subscripts");
    Write_Line ("        t    turn on checking for tests");
    Write_Line ("        T    turn off checking for tests");
-   Write_Line ("        n    turn off all validity checks (including RM)");
 
    --  Lines for -gnatw switch
 
@@ -549,6 +561,10 @@ begin
                                                   "missing parenthesis");
    Write_Line ("        Q    turn off warnings for questionable " &
                                                   "missing parenthesis");
+   Write_Line ("        .q+  turn on warnings for questionable layout of " &
+                                                  "record types");
+   Write_Line ("        .Q*  turn off warnings for questionable layout of " &
+                                                  "record types");
    Write_Line ("        r+   turn on warnings for redundant construct");
    Write_Line ("        R*   turn off warnings for redundant construct");
    Write_Line ("        .r+  turn on warnings for object renaming function");

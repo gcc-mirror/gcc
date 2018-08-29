@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,6 +17,7 @@
 
 // { dg-options "-faligned-new" }
 // { dg-do run { target c++11 } }
+// { dg-require-cstdint "" }
 
 #include <ext/mt_allocator.h>
 #include <cstddef>

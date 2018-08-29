@@ -13,10 +13,10 @@
 ! Original PR
   ptr(:, :) = u + spread ((/1.0, 2.0/), 2, size(u, 2))
   if (any (ptr .ne. &
-        reshape ((/1.25, 2.50, 1.75, 3.00/), (/2, 2/)))) call abort ()
+        reshape ((/1.25, 2.50, 1.75, 3.00/), (/2, 2/)))) STOP 1
 
 ! Check that the fix works correctly with the source shape after ncopies
   ptr(:, :) = u + spread ((/2.0, 3.0/), 1, size (u, 1))
   if (any (ptr .ne. &
-        reshape ((/2.25, 2.50, 3.75, 4.00/), (/2,2/)))) call abort ()
+        reshape ((/2.25, 2.50, 3.75, 4.00/), (/2,2/)))) STOP 2
 end

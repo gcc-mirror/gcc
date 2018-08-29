@@ -12,28 +12,28 @@ program pr25307
    i = 0
    j = 0
    read( str, *, end=10 ) i,j
-   call abort()
+   STOP 1
 10 continue
-   if (i.ne.123) call abort()
-   if (j.ne.0) call abort()
+   if (i.ne.123) STOP 2
+   if (j.ne.0) STOP 3
 ! Check file unit
    i = 0
    open(10, status="scratch")
    write(10,'(a)') "123"
    rewind(10)
    read(10, *, end=20) i,j
-   call abort()
+   STOP 4
 20 continue
-   if (i.ne.123) call abort()
-   if (j.ne.0) call abort()
+   if (i.ne.123) STOP 5
+   if (j.ne.0) STOP 6
 ! Check internal array unit
    i = 0
    j = 0
    k = 0
    read(a(1:5:2),*, end=30)i,j,k
-   call abort()
+   STOP 7
 30 continue
-   if (i.ne.123) call abort()
-   if (j.ne.234) call abort()
-   if (k.ne.0) call abort()
+   if (i.ne.123) STOP 8
+   if (j.ne.234) STOP 9
+   if (k.ne.0) STOP 10
 end program pr25307

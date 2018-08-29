@@ -1,8 +1,9 @@
+/* { dg-require-effective-target label_values } */
+
 /* As a quality of implementation issue, we should not prevent inlining
    of function explicitly marked inline just because a label therein had
    its address taken.  */
 
-#ifndef NO_LABEL_VALUES
 static void *ptr1, *ptr2;
 static int i = 1;
 
@@ -44,7 +45,3 @@ int main()
 }
 
 void bar(void) { }
-
-#else /* NO_LABEL_VALUES */
-int main() { exit(0); }
-#endif

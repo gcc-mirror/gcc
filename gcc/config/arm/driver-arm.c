@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,57 +17,28 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
 #include "configargs.h"
 
-struct vendor_cpu {
+struct vendor_cpu
+{
   const char *part_no;
   const char *arch_name;
   const char *cpu_name;
 };
 
-static struct vendor_cpu arm_cpu_table[] = {
-    {"0x926", "armv5te", "arm926ej-s"},
-    {"0xa26", "armv5te", "arm1026ej-s"},
-    {"0xb02", "armv6k", "mpcore"},
-    {"0xb36", "armv6j", "arm1136j-s"},
-    {"0xb56", "armv6t2", "arm1156t2-s"},
-    /* armv6kz is the correct spelling for ARMv6KZ but may not be supported in
-       the version of binutils used.  The incorrect spelling is supported in
-       legacy and current binutils so that is used instead.  */
-    {"0xb76", "armv6zk", "arm1176jz-s"},
-    {"0xc05", "armv7-a", "cortex-a5"},
-    {"0xc07", "armv7ve", "cortex-a7"},
-    {"0xc08", "armv7-a", "cortex-a8"},
-    {"0xc09", "armv7-a", "cortex-a9"},
-    {"0xc0d", "armv7ve", "cortex-a12"},
-    {"0xc0e", "armv7ve", "cortex-a17"},
-    {"0xc0f", "armv7ve", "cortex-a15"},
-    {"0xd01", "armv8-a+crc", "cortex-a32"},
-    {"0xd04", "armv8-a+crc", "cortex-a35"},
-    {"0xd03", "armv8-a+crc", "cortex-a53"},
-    {"0xd07", "armv8-a+crc", "cortex-a57"},
-    {"0xd08", "armv8-a+crc", "cortex-a72"},
-    {"0xd09", "armv8-a+crc", "cortex-a73"},
-    {"0xc14", "armv7-r", "cortex-r4"},
-    {"0xc15", "armv7-r", "cortex-r5"},
-    {"0xc20", "armv6-m", "cortex-m0"},
-    {"0xc21", "armv6-m", "cortex-m1"},
-    {"0xc23", "armv7-m", "cortex-m3"},
-    {"0xc24", "armv7e-m", "cortex-m4"},
-    {NULL, NULL, NULL}
-};
-
-static struct {
+struct vendor
+{
   const char *vendor_no;
   const struct vendor_cpu *vendor_parts;
-} vendors[] = {
-    {"0x41", arm_cpu_table},
-    {NULL, NULL}
 };
+
+#include "arm-native.h"
 
 /* This will be called by the spec parser in gcc.c when it sees
    a %:local_cpu_detect(args) construct.  Currently it will be called
@@ -104,14 +75,14 @@ host_detect_local_cpu (int argc, const char **argv)
 
   while (fgets (buf, sizeof (buf), f) != NULL)
     {
-      /* Ensure that CPU implementer is ARM (0x41).  */
+      /* Find the vendor table associated with this implementer.  */
       if (strncmp (buf, "CPU implementer", sizeof ("CPU implementer") - 1) == 0)
 	{
 	  int i;
-	  for (i = 0; vendors[i].vendor_no != NULL; i++)
-	    if (strstr (buf, vendors[i].vendor_no) != NULL)
+	  for (i = 0; vendors_table[i].vendor_no != NULL; i++)
+	    if (strstr (buf, vendors_table[i].vendor_no) != NULL)
 	      {
-		cpu_table = vendors[i].vendor_parts;
+		cpu_table = vendors_table[i].vendor_parts;
 		break;
 	      }
 	}

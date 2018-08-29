@@ -34,25 +34,25 @@ program power
   real(d), parameter :: eps_d = 1.e-10_d
   real(e), parameter :: eps_e = 1.e-10_e
 
-  if (abs(ris - 4) > eps_s) call abort
-  if (abs(rid - 4) > eps_d) call abort
-  if (abs(rie - 4) > eps_e) call abort
-  if (abs(real(cis, s) - 3) > eps_s .or. abs(aimag(cis) - 4) > eps_s) call abort
-  if (abs(real(cid, d) - 3) > eps_d .or. abs(aimag(cid) - 4) > eps_d) call abort
-  if (abs(real(cie, e) - 3) > eps_e .or. abs(aimag(cie) - 4) > eps_e) call abort
+  if (abs(ris - 4) > eps_s) STOP 1
+  if (abs(rid - 4) > eps_d) STOP 2
+  if (abs(rie - 4) > eps_e) STOP 3
+  if (abs(real(cis, s) - 3) > eps_s .or. abs(aimag(cis) - 4) > eps_s) STOP 4
+  if (abs(real(cid, d) - 3) > eps_d .or. abs(aimag(cid) - 4) > eps_d) STOP 5
+  if (abs(real(cie, e) - 3) > eps_e .or. abs(aimag(cie) - 4) > eps_e) STOP 6
 
-  if (abs(rrs - 4) > eps_s) call abort
-  if (abs(rrd - 4) > eps_d) call abort
-  if (abs(rre - 4) > eps_e) call abort
-  if (abs(real(crs, s) - 3) > eps_s .or. abs(aimag(crs) - 4) > eps_s) call abort
-  if (abs(real(crd, d) - 3) > eps_d .or. abs(aimag(crd) - 4) > eps_d) call abort
-  if (abs(real(cre, e) - 3) > eps_e .or. abs(aimag(cre) - 4) > eps_e) call abort
+  if (abs(rrs - 4) > eps_s) STOP 7
+  if (abs(rrd - 4) > eps_d) STOP 8
+  if (abs(rre - 4) > eps_e) STOP 9
+  if (abs(real(crs, s) - 3) > eps_s .or. abs(aimag(crs) - 4) > eps_s) STOP 10
+  if (abs(real(crd, d) - 3) > eps_d .or. abs(aimag(crd) - 4) > eps_d) STOP 11
+  if (abs(real(cre, e) - 3) > eps_e .or. abs(aimag(cre) - 4) > eps_e) STOP 12
 
-  if (abs(rds - 4) > eps_s) call abort
-  if (abs(rdd - 4) > eps_d) call abort
-  if (abs(rde - 4) > eps_e) call abort
-  if (abs(real(cds, s) - 3) > eps_s .or. abs(aimag(cds) - 4) > eps_s) call abort
-  if (abs(real(cdd, d) - 3) > eps_d .or. abs(aimag(cdd) - 4) > eps_d) call abort
-  if (abs(real(cde, e) - 3) > eps_e .or. abs(aimag(cde) - 4) > eps_e) call abort
+  if (abs(rds - 4) > eps_s) STOP 13
+  if (abs(rdd - 4) > eps_d) STOP 14
+  if (abs(rde - 4) > eps_e) STOP 15
+  if (abs(real(cds, s) - 3) > eps_s .or. abs(aimag(cds) - 4) > eps_s) STOP 16
+  if (abs(real(cdd, d) - 3) > eps_d .or. abs(aimag(cdd) - 4) > eps_d) STOP 17
+  if (abs(real(cde, e) - 3) > eps_e .or. abs(aimag(cde) - 4) > eps_e) STOP 18
 
 end program power

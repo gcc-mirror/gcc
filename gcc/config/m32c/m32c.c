@@ -1,5 +1,5 @@
 /* Target Code for R8C/M16C/M32C
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -25,6 +27,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
@@ -89,6 +93,8 @@ static rtx m32c_libcall_value (machine_mode, const_rtx);
 
 /* Returns true if an address is specified, else false.  */
 static bool m32c_get_pragma_address (const char *varname, unsigned *addr);
+
+static bool m32c_hard_regno_mode_ok (unsigned int, machine_mode);
 
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION    (SYMBOL_FLAG_MACH_DEP << 0)
 
@@ -368,7 +374,7 @@ class_can_hold_mode (reg_class_t rclass, machine_mode mode)
       results[rclass][mode] = 1;
       for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
 	if (in_hard_reg_set_p (reg_class_contents[(int) rclass], mode, r)
-	    && HARD_REGNO_MODE_OK (r, mode))
+	    && m32c_hard_regno_mode_ok (r, mode))
 	  {
 	    results[rclass][mode] = 2;
 	    break;
@@ -511,7 +517,7 @@ m32c_conditional_register_usage (void)
 {
   int i;
 
-  if (0 <= target_memregs && target_memregs <= 16)
+  if (target_memregs >= 0 && target_memregs <= 16)
     {
       /* The command line option is bytes, but our "registers" are
 	 16-bit words.  */
@@ -535,11 +541,11 @@ m32c_conditional_register_usage (void)
 
 /* How Values Fit in Registers */
 
-/* Implements HARD_REGNO_NREGS.  This is complicated by the fact that
+/* Implements TARGET_HARD_REGNO_NREGS.  This is complicated by the fact that
    different registers are different sizes from each other, *and* may
    be different sizes in different chip families.  */
-static int
-m32c_hard_regno_nregs_1 (int regno, machine_mode mode)
+static unsigned int
+m32c_hard_regno_nregs_1 (unsigned int regno, machine_mode mode)
 {
   if (regno == FLG_REGNO && mode == CCmode)
     return 1;
@@ -564,26 +570,26 @@ m32c_hard_regno_nregs_1 (int regno, machine_mode mode)
   return 0;
 }
 
-int
-m32c_hard_regno_nregs (int regno, machine_mode mode)
+static unsigned int
+m32c_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
-  int rv = m32c_hard_regno_nregs_1 (regno, mode);
+  unsigned int rv = m32c_hard_regno_nregs_1 (regno, mode);
   return rv ? rv : 1;
 }
 
-/* Implements HARD_REGNO_MODE_OK.  The above function does the work
+/* Implement TARGET_HARD_REGNO_MODE_OK.  The above function does the work
    already; just test its return value.  */
-int
-m32c_hard_regno_ok (int regno, machine_mode mode)
+static bool
+m32c_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   return m32c_hard_regno_nregs_1 (regno, mode) != 0;
 }
 
-/* Implements MODES_TIEABLE_P.  In general, modes aren't tieable since
+/* Implement TARGET_MODES_TIEABLE_P.  In general, modes aren't tieable since
    registers are all different sizes.  However, since most modes are
    bigger than our registers anyway, it's easier to implement this
    function that way, leaving QImode as the only unique case.  */
-int
+static bool
 m32c_modes_tieable_p (machine_mode m1, machine_mode m2)
 {
   if (GET_MODE_SIZE (m1) == GET_MODE_SIZE (m2))
@@ -664,7 +670,7 @@ m32c_preferred_reload_class (rtx x, reg_class_t rclass)
     {
       switch (GET_MODE (x))
 	{
-	case QImode:
+	case E_QImode:
 	  newclass = HL_REGS;
 	  break;
 	default:
@@ -795,17 +801,17 @@ m32c_class_max_nregs (reg_class_t regclass, machine_mode mode)
   return max;
 }
 
-/* Implements CANNOT_CHANGE_MODE_CLASS.  Only r0 and r1 can change to
+/* Implements TARGET_CAN_CHANGE_MODE_CLASS.  Only r0 and r1 can change to
    QI (r0l, r1l) because the chip doesn't support QI ops on other
    registers (well, it does on a0/a1 but if we let gcc do that, reload
    suffers).  Otherwise, we allow changes to larger modes.  */
-int
-m32c_cannot_change_mode_class (machine_mode from,
-			       machine_mode to, int rclass)
+static bool
+m32c_can_change_mode_class (machine_mode from,
+			    machine_mode to, reg_class_t rclass)
 {
   int rn;
 #if DEBUG0
-  fprintf (stderr, "cannot change from %s to %s in %s\n",
+  fprintf (stderr, "can change from %s to %s in %s\n",
 	   mode_name[from], mode_name[to], class_names[rclass]);
 #endif
 
@@ -813,19 +819,19 @@ m32c_cannot_change_mode_class (machine_mode from,
      can't allow the change.  */
   for (rn = 0; rn < FIRST_PSEUDO_REGISTER; rn++)
     if (class_contents[rclass][0] & (1 << rn))
-      if (! m32c_hard_regno_ok (rn, to))
-	return 1;
+      if (! m32c_hard_regno_mode_ok (rn, to))
+	return false;
 
   if (to == QImode)
-    return (class_contents[rclass][0] & 0x1ffa);
+    return (class_contents[rclass][0] & 0x1ffa) == 0;
 
   if (class_contents[rclass][0] & 0x0005	/* r0, r1 */
       && GET_MODE_SIZE (from) > 1)
-    return 0;
+    return true;
   if (GET_MODE_SIZE (from) > 2)	/* all other regs */
-    return 0;
+    return true;
 
-  return 1;
+  return false;
 }
 
 /* Helpers for the rest of the file.  */
@@ -1284,8 +1290,8 @@ m32c_initial_elimination_offset (int from, int to)
 
 /* Implements PUSH_ROUNDING.  The R8C and M16C have byte stacks, the
    M32C has word stacks.  */
-unsigned int
-m32c_push_rounding (int n)
+poly_int64
+m32c_push_rounding (poly_int64 n)
 {
   if (TARGET_R8C || TARGET_M16C)
     return n;
@@ -1435,7 +1441,7 @@ m32c_function_arg_regno_p (int r)
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE m32c_valid_pointer_mode
 static bool
-m32c_valid_pointer_mode (machine_mode mode)
+m32c_valid_pointer_mode (scalar_int_mode mode)
 {
   if (mode == HImode
       || mode == PSImode
@@ -1928,7 +1934,7 @@ m32c_legitimize_reload_address (rtx * x,
 /* Return the appropriate mode for a named address pointer.  */
 #undef TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE m32c_addr_space_pointer_mode
-static machine_mode
+static scalar_int_mode
 m32c_addr_space_pointer_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -1945,7 +1951,7 @@ m32c_addr_space_pointer_mode (addr_space_t addrspace)
 /* Return the appropriate mode for a named address address.  */
 #undef TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE m32c_addr_space_address_mode
-static machine_mode
+static scalar_int_mode
 m32c_addr_space_address_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -2302,9 +2308,9 @@ m32c_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
       i = INTVAL (addr);
       if (i == 0)
 	return COSTS_N_INSNS(1);
-      if (0 < i && i <= 255)
+      if (i > 0 && i <= 255)
 	return COSTS_N_INSNS(2);
-      if (0 < i && i <= 65535)
+      if (i > 0 && i <= 65535)
 	return COSTS_N_INSNS(3);
       return COSTS_N_INSNS(4);
     case SYMBOL_REF:
@@ -2317,9 +2323,9 @@ m32c_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
 	  i = INTVAL (XEXP (addr, 1));
 	  if (i == 0)
 	    return COSTS_N_INSNS(1);
-	  if (0 < i && i <= 255)
+	  if (i > 0 && i <= 255)
 	    return COSTS_N_INSNS(2);
-	  if (0 < i && i <= 65535)
+	  if (i > 0 && i <= 65535)
 	    return COSTS_N_INSNS(3);
 	}
       return COSTS_N_INSNS(4);
@@ -2996,12 +3002,15 @@ current_function_special_page_vector (rtx x)
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE m32c_attribute_table
 static const struct attribute_spec m32c_attribute_table[] = {
-  {"interrupt", 0, 0, false, false, false, interrupt_handler, false},
-  {"bank_switch", 0, 0, false, false, false, interrupt_handler, false},
-  {"fast_interrupt", 0, 0, false, false, false, interrupt_handler, false},
-  {"function_vector", 1, 1, true,  false, false, function_vector_handler,
-   false},
-  {0, 0, 0, 0, 0, 0, 0, false}
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, false, false, false, false, interrupt_handler, NULL },
+  { "bank_switch", 0, 0, false, false, false, false, interrupt_handler, NULL },
+  { "fast_interrupt", 0, 0, false, false, false, false,
+    interrupt_handler, NULL },
+  { "function_vector", 1, 1, true,  false, false, false,
+    function_vector_handler, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES
@@ -4484,6 +4493,16 @@ m32c_output_compare (rtx_insn *insn, rtx *operands)
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED hook_bool_void_true
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS m32c_hard_regno_nregs
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK m32c_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P m32c_modes_tieable_p
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS m32c_can_change_mode_class
 
 /* The Global `targetm' Variable. */
 

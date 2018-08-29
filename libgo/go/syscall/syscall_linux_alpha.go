@@ -8,38 +8,6 @@ package syscall
 
 import "unsafe"
 
-type PtraceRegs struct {
-	R0      uint64
-	R1      uint64
-	R2      uint64
-	R3      uint64
-	R4      uint64
-	R5      uint64
-	R6      uint64
-	R7      uint64
-	R8      uint64
-	R19     uint64
-	R20     uint64
-	R21     uint64
-	R22     uint64
-	R23     uint64
-	R24     uint64
-	R25     uint64
-	R26     uint64
-	R27     uint64
-	R28     uint64
-	Hae     uint64
-	Trap_a0 uint64
-	Trap_a1 uint64
-	Trap_a2 uint64
-	Ps      uint64
-	Pc      uint64
-	Gp      uint64
-	R16     uint64
-	R17     uint64
-	R18     uint64
-}
-
 func (r *PtraceRegs) PC() uint64 {
 	return r.Pc
 }

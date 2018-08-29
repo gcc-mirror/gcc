@@ -1,5 +1,5 @@
 /* Dump a gcov file, for debugging use.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
 
 Gcov is free software; you can redistribute it and/or modify
@@ -39,7 +39,7 @@ static void tag_lines (const char *, unsigned, unsigned, unsigned);
 static void tag_counters (const char *, unsigned, unsigned, unsigned);
 static void tag_summary (const char *, unsigned, unsigned, unsigned);
 static void dump_working_sets (const char *filename ATTRIBUTE_UNUSED,
-			       const struct gcov_ctr_summary *summary,
+			       const gcov_summary *summary,
 			       unsigned depth);
 extern int main (int, char **);
 
@@ -148,7 +148,7 @@ static void
 print_version (void)
 {
   printf ("gcov-dump %s%s\n", pkgversion_string, version_string);
-  printf ("Copyright (C) 2017 Free Software Foundation, Inc.\n");
+  printf ("Copyright (C) 2018 Free Software Foundation, Inc.\n");
   printf ("This is free software; see the source for copying conditions.\n"
   	  "There is NO warranty; not even for MERCHANTABILITY or \n"
 	  "FITNESS FOR A PARTICULAR PURPOSE.\n\n");
@@ -170,6 +170,7 @@ dump_gcov_file (const char *filename)
 {
   unsigned tags[4];
   unsigned depth = 0;
+  bool is_data_type;
 
   if (!gcov_open (filename, 1))
     {
@@ -181,14 +182,13 @@ dump_gcov_file (const char *filename)
   {
     unsigned magic = gcov_read_unsigned ();
     unsigned version;
-    const char *type = NULL;
     int endianness = 0;
     char m[4], v[4];
 
     if ((endianness = gcov_magic (magic, GCOV_DATA_MAGIC)))
-      type = "data";
+      is_data_type = true;
     else if ((endianness = gcov_magic (magic, GCOV_NOTE_MAGIC)))
-      type = "note";
+      is_data_type = false;
     else
       {
 	printf ("%s:not a gcov file\n", filename);
@@ -199,7 +199,8 @@ dump_gcov_file (const char *filename)
     GCOV_UNSIGNED2STRING (v, version);
     GCOV_UNSIGNED2STRING (m, magic);
 
-    printf ("%s:%s:magic `%.4s':version `%.4s'%s\n", filename, type,
+    printf ("%s:%s:magic `%.4s':version `%.4s'%s\n", filename,
+	    is_data_type ? "data" : "note",
  	    m, v, endianness < 0 ? " (swapped endianness)" : "");
     if (version != GCOV_VERSION)
       {
@@ -216,6 +217,16 @@ dump_gcov_file (const char *filename)
 
     printf ("%s:stamp %lu\n", filename, (unsigned long)stamp);
   }
+
+  if (!is_data_type)
+    {
+      printf ("%s:cwd: %s\n", filename, gcov_read_string ());
+
+      /* Support for unexecuted basic blocks.  */
+      unsigned support_unexecuted_blocks = gcov_read_unsigned ();
+      if (!support_unexecuted_blocks)
+	printf ("%s: has_unexecuted_block is not supported\n", filename);
+    }
 
   while (1)
     {
@@ -308,9 +319,15 @@ tag_function (const char *filename ATTRIBUTE_UNUSED,
 	  
 	  name = gcov_read_string ();
 	  printf (", `%s'", name ? name : "NULL");
+	  unsigned artificial = gcov_read_unsigned ();
 	  name = gcov_read_string ();
 	  printf (" %s", name ? name : "NULL");
-	  printf (":%u", gcov_read_unsigned ());
+	  unsigned line_start = gcov_read_unsigned ();
+	  unsigned column_start = gcov_read_unsigned ();
+	  unsigned line_end = gcov_read_unsigned ();
+	  printf (":%u:%u:%u", line_start, column_start, line_end);
+	  if (artificial)
+	    printf (", artificial");
 	}
     }
 }
@@ -450,52 +467,47 @@ tag_summary (const char *filename ATTRIBUTE_UNUSED,
 	     unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED,
 	     unsigned depth)
 {
-  struct gcov_summary summary;
-  unsigned ix, h_ix;
+  gcov_summary summary;
+  unsigned h_ix;
   gcov_bucket_type *histo_bucket;
 
   gcov_read_summary (&summary);
   printf (" checksum=0x%08x", summary.checksum);
 
-  for (ix = 0; ix != GCOV_COUNTERS_SUMMABLE; ix++)
-    {
-      printf ("\n");
-      print_prefix (filename, depth, 0);
-      printf (VALUE_PADDING_PREFIX "counts=%u, runs=%u",
-	      summary.ctrs[ix].num, summary.ctrs[ix].runs);
+  printf ("\n");
+  print_prefix (filename, depth, 0);
+  printf (VALUE_PADDING_PREFIX "counts=%u, runs=%u",
+	  summary.num, summary.runs);
 
-      printf (", sum_all=%" PRId64,
-	      (int64_t)summary.ctrs[ix].sum_all);
-      printf (", run_max=%" PRId64,
-	      (int64_t)summary.ctrs[ix].run_max);
-      printf (", sum_max=%" PRId64,
-	      (int64_t)summary.ctrs[ix].sum_max);
-      if (ix != GCOV_COUNTER_ARCS)
-        continue;
+  printf (", sum_all=%" PRId64,
+	  (int64_t)summary.sum_all);
+  printf (", run_max=%" PRId64,
+	  (int64_t)summary.run_max);
+  printf (", sum_max=%" PRId64,
+	  (int64_t)summary.sum_max);
+  printf ("\n");
+  print_prefix (filename, depth, 0);
+  printf (VALUE_PADDING_PREFIX "counter histogram:");
+  for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
+    {
+      histo_bucket = &summary.histogram[h_ix];
+      if (!histo_bucket->num_counters)
+	continue;
       printf ("\n");
       print_prefix (filename, depth, 0);
-      printf (VALUE_PADDING_PREFIX "counter histogram:");
-      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-        {
-	  histo_bucket = &summary.ctrs[ix].histogram[h_ix];
-	  if (!histo_bucket->num_counters)
-	    continue;
-	  printf ("\n");
-	  print_prefix (filename, depth, 0);
-	  printf (VALUE_PADDING_PREFIX VALUE_PREFIX "num counts=%u, "
-		  "min counter=%" PRId64 ", cum_counter=%" PRId64,
-		  h_ix, histo_bucket->num_counters,
-		  (int64_t)histo_bucket->min_value,
-		  (int64_t)histo_bucket->cum_value);
-        }
-      if (flag_dump_working_sets)
-	dump_working_sets (filename, &summary.ctrs[ix], depth);
+      printf (VALUE_PADDING_PREFIX VALUE_PREFIX "num counts=%u, "
+	      "min counter=%" PRId64 ", cum_counter=%" PRId64,
+	      h_ix, histo_bucket->num_counters,
+	      (int64_t)histo_bucket->min_value,
+	      (int64_t)histo_bucket->cum_value);
     }
+  if (flag_dump_working_sets)
+    dump_working_sets (filename, &summary, depth);
 }
 
 static void
 dump_working_sets (const char *filename ATTRIBUTE_UNUSED,
-		   const struct gcov_ctr_summary *summary,
+		   const gcov_summary *summary,
 		   unsigned depth)
 {
   gcov_working_set_t gcov_working_sets[NUM_GCOV_WORKING_SETS];

@@ -1,4 +1,4 @@
-/* { dg-skip-if "requires io" { freestanding } { "*" } { "" } }  */
+/* { dg-skip-if "requires io" { freestanding } }  */
 
 #include <stdio.h>
 #include <stdlib.h>

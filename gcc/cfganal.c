@@ -1,5 +1,5 @@
 /* Control flow graph analysis code for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -610,7 +610,9 @@ connect_infinite_loops_to_exit (void)
 	break;
 
       basic_block deadend_block = dfs_find_deadend (unvisited_block);
-      make_edge (deadend_block, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
+      edge e = make_edge (deadend_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
+			  EDGE_FAKE);
+      e->probability = profile_probability::never ();
       dfs.add_bb (deadend_block);
     }
 }
@@ -734,23 +736,24 @@ post_order_compute (int *post_order, bool include_entry_exit,
 basic_block
 dfs_find_deadend (basic_block bb)
 {
-  bitmap visited = BITMAP_ALLOC (NULL);
+  auto_bitmap visited;
+  basic_block next = bb;
 
   for (;;)
     {
-      if (EDGE_COUNT (bb->succs) == 0
-	  || ! bitmap_set_bit (visited, bb->index))
-        {
-          BITMAP_FREE (visited);
-          return bb;
-        }
+      if (EDGE_COUNT (next->succs) == 0)
+	return next;
 
+      if (! bitmap_set_bit (visited, next->index))
+	return bb;
+
+      bb = next;
       /* If we are in an analyzed cycle make sure to try exiting it.
          Note this is a heuristic only and expected to work when loop
 	 fixup is needed as well.  */
       if (! bb->loop_father
 	  || ! loop_outer (bb->loop_father))
-	bb = EDGE_SUCC (bb, 0)->dest;
+	next = EDGE_SUCC (bb, 0)->dest;
       else
 	{
 	  edge_iterator ei;
@@ -758,7 +761,7 @@ dfs_find_deadend (basic_block bb)
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (loop_exit_edge_p (bb->loop_father, e))
 	      break;
-	  bb = e ? e->dest : EDGE_SUCC (bb, 0)->dest;
+	  next = e ? e->dest : EDGE_SUCC (bb, 0)->dest;
 	}
     }
 
@@ -1054,8 +1057,121 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
   return pre_order_num;
 }
 
+/* Unlike pre_and_rev_post_order_compute we fill rev_post_order backwards
+   so iterating in RPO order needs to start with rev_post_order[n - 1]
+   going to rev_post_order[0].  If FOR_ITERATION is true then try to
+   make CFG cycles fit into small contiguous regions of the RPO order.
+   When FOR_ITERATION is true this requires up-to-date loop structures.  */
+
+int
+rev_post_order_and_mark_dfs_back_seme (struct function *fn, edge entry,
+				       bitmap exit_bbs, bool for_iteration,
+				       int *rev_post_order)
+{
+  int pre_order_num = 0;
+  int rev_post_order_num = 0;
+
+  /* Allocate stack for back-tracking up CFG.  Worst case we need
+     O(n^2) edges but the following should suffice in practice without
+     a need to re-allocate.  */
+  auto_vec<edge, 20> stack (2 * n_basic_blocks_for_fn (fn));
+
+  int *pre = XNEWVEC (int, 2 * last_basic_block_for_fn (fn));
+  int *post = pre + last_basic_block_for_fn (fn);
+
+  /* BB flag to track nodes that have been visited.  */
+  auto_bb_flag visited (fn);
+  /* BB flag to track which nodes have post[] assigned to avoid
+     zeroing post.  */
+  auto_bb_flag post_assigned (fn);
+
+  /* Push the first edge on to the stack.  */
+  stack.quick_push (entry);
+
+  while (!stack.is_empty ())
+    {
+      basic_block src;
+      basic_block dest;
+
+      /* Look at the edge on the top of the stack.  */
+      int idx = stack.length () - 1;
+      edge e = stack[idx];
+      src = e->src;
+      dest = e->dest;
+      e->flags &= ~EDGE_DFS_BACK;
+
+      /* Check if the edge destination has been visited yet.  */
+      if (! bitmap_bit_p (exit_bbs, dest->index)
+	  && ! (dest->flags & visited))
+	{
+	  /* Mark that we have visited the destination.  */
+	  dest->flags |= visited;
+
+	  pre[dest->index] = pre_order_num++;
+
+	  if (EDGE_COUNT (dest->succs) > 0)
+	    {
+	      /* Since the DEST node has been visited for the first
+		 time, check its successors.  */
+	      /* Push the edge vector in reverse to match previous behavior.  */
+	      stack.reserve (EDGE_COUNT (dest->succs));
+	      for (int i = EDGE_COUNT (dest->succs) - 1; i >= 0; --i)
+		stack.quick_push (EDGE_SUCC (dest, i));
+	      /* Generalize to handle more successors?  */
+	      if (for_iteration
+		  && EDGE_COUNT (dest->succs) == 2)
+		{
+		  edge &e1 = stack[stack.length () - 2];
+		  if (loop_exit_edge_p (e1->src->loop_father, e1))
+		    std::swap (e1, stack.last ());
+		}
+	    }
+	  else
+	    {
+	      /* There are no successors for the DEST node so assign
+		 its reverse completion number.  */
+	      post[dest->index] = rev_post_order_num;
+	      dest->flags |= post_assigned;
+	      rev_post_order[rev_post_order_num] = dest->index;
+	      rev_post_order_num++;
+	    }
+	}
+      else
+	{
+	  if (dest->flags & visited
+	      && src != entry->src
+	      && pre[src->index] >= pre[dest->index]
+	      && !(dest->flags & post_assigned))
+	    e->flags |= EDGE_DFS_BACK;
+
+	  if (idx != 0 && stack[idx - 1]->src != src)
+	    {
+	      /* There are no more successors for the SRC node
+		 so assign its reverse completion number.  */
+	      post[src->index] = rev_post_order_num;
+	      src->flags |= post_assigned;
+	      rev_post_order[rev_post_order_num] = src->index;
+	      rev_post_order_num++;
+	    }
+
+	  stack.pop ();
+	}
+    }
+
+  XDELETEVEC (pre);
+
+  /* Clear the temporarily allocated flags.  */
+  for (int i = 0; i < rev_post_order_num; ++i)
+    BASIC_BLOCK_FOR_FN (fn, rev_post_order[i])->flags
+      &= ~(post_assigned|visited);
+
+  return rev_post_order_num;
+}
+
+
+
 /* Compute the depth first search order on the _reverse_ graph and
-   store in the array DFS_ORDER, marking the nodes visited in VISITED.
+   store it in the array DFS_ORDER, marking the nodes visited in VISITED.
    Returns the number of nodes visited.
 
    The computation is split into three pieces:
@@ -1142,41 +1258,12 @@ dfs_enumerate_from (basic_block bb, int reverse,
 {
   basic_block *st, lbb;
   int sp = 0, tv = 0;
-  unsigned size;
 
-  /* A bitmap to keep track of visited blocks.  Allocating it each time
-     this function is called is not possible, since dfs_enumerate_from
-     is often used on small (almost) disjoint parts of cfg (bodies of
-     loops), and allocating a large sbitmap would lead to quadratic
-     behavior.  */
-  static sbitmap visited;
-  static unsigned v_size;
+  auto_bb_flag visited (cfun);
 
-#define MARK_VISITED(BB) (bitmap_set_bit (visited, (BB)->index))
-#define UNMARK_VISITED(BB) (bitmap_clear_bit (visited, (BB)->index))
-#define VISITED_P(BB) (bitmap_bit_p (visited, (BB)->index))
-
-  /* Resize the VISITED sbitmap if necessary.  */
-  size = last_basic_block_for_fn (cfun);
-  if (size < 10)
-    size = 10;
-
-  if (!visited)
-    {
-
-      visited = sbitmap_alloc (size);
-      bitmap_clear (visited);
-      v_size = size;
-    }
-  else if (v_size < size)
-    {
-      /* Ensure that we increase the size of the sbitmap exponentially.  */
-      if (2 * v_size > size)
-	size = 2 * v_size;
-
-      visited = sbitmap_resize (visited, size, 0);
-      v_size = size;
-    }
+#define MARK_VISITED(BB) ((BB)->flags |= visited)
+#define UNMARK_VISITED(BB) ((BB)->flags &= ~visited)
+#define VISITED_P(BB) (((BB)->flags & visited) != 0)
 
   st = XNEWVEC (basic_block, rslt_max);
   rslt[tv++] = st[sp++] = bb;
@@ -1550,4 +1637,43 @@ single_pred_before_succ_order (void)
 
 #undef MARK_VISITED
 #undef VISITED_P
+}
+
+/* Ignoring loop backedges, if BB has precisely one incoming edge then
+   return that edge.  Otherwise return NULL.
+
+   When IGNORE_NOT_EXECUTABLE is true, also ignore edges that are not marked
+   as executable.  */
+
+edge
+single_pred_edge_ignoring_loop_edges (basic_block bb,
+				      bool ignore_not_executable)
+{
+  edge retval = NULL;
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      /* A loop back edge can be identified by the destination of
+	 the edge dominating the source of the edge.  */
+      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+	continue;
+
+      /* We can safely ignore edges that are not executable.  */
+      if (ignore_not_executable
+	  && (e->flags & EDGE_EXECUTABLE) == 0)
+	continue;
+
+      /* If we have already seen a non-loop edge, then we must have
+	 multiple incoming non-loop edges and thus we return NULL.  */
+      if (retval)
+	return NULL;
+
+      /* This is the first non-loop incoming edge we have found.  Record
+	 it.  */
+      retval = e;
+    }
+
+  return retval;
 }

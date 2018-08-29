@@ -5,5 +5,5 @@
       character*20 line
       line = '1234567890ABCDEFGHIJ'
       write (line, '(A$)') 'asdf'
-      if (line.ne.'asdf') call abort()
+      if (line.ne.'asdf') STOP 1
       end

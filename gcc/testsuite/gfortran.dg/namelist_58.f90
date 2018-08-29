@@ -19,7 +19,7 @@ program test
   write(10,'(a)')"/"
   rewind(10)
   read (10, nml = params)
-  if (any(plot_page%size .ne. (/ 5, 2 /))) call abort
+  if (any(plot_page%size .ne. (/ 5, 2 /))) STOP 1
   close (10)
 end program
 

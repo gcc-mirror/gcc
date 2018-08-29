@@ -10,7 +10,7 @@
        read (10, pos=50000) b
        read (10, pos=25474) c
        close (10, status="delete")
-       if (a /= "a") call abort
-       if (b /= "b") call abort
-       if (c /= " ") call abort
+       if (a /= "a") STOP 1
+       if (b /= "b") STOP 2
+       if (c /= " ") STOP 3
        end
