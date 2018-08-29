@@ -474,12 +474,16 @@ vuse_ssa_val (tree x)
 
   do
     {
-      tree tem = SSA_VAL (x);
-      /* stmt walking can walk over a backedge and reach code we didn't
-	 value-number yet.  */
-      if (tem == VN_TOP)
+      if (SSA_NAME_IS_DEFAULT_DEF (x))
 	return x;
-      x = tem;
+      vn_ssa_aux_t tem
+	= vn_ssa_aux_hash->find_with_hash (x, SSA_NAME_VERSION (x));
+      /* For region-based VN this makes walk_non_aliased_vuses stop walking
+	 when we are about to look at a def outside of the region.  */
+      if (!tem || !tem->visited)
+	return NULL_TREE;
+      gcc_assert (tem->valnum != VN_TOP);
+      x = tem->valnum;
     }
   while (SSA_NAME_IN_FREE_LIST (x));
 
@@ -5751,11 +5755,6 @@ rpo_vn_valueize (tree name)
   if (TREE_CODE (name) == SSA_NAME)
     {
       vn_ssa_aux_t val = VN_INFO (name);
-      /* For region-based VN this makes walk_non_aliased_vuses stop walking
-	 when we are about to look at a def outside of the region.  */
-      if (SSA_NAME_IS_VIRTUAL_OPERAND (name)
-	  && !val->visited)
-	return NULL_TREE;
       if (val)
 	{
 	  tree tem = val->valnum;
