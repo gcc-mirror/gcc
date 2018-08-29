@@ -1,3 +1,8 @@
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87095
+	* g++.dg/ubsan/vptr-13.C: New test.
+
 2018-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/85265
