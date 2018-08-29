@@ -1743,6 +1743,13 @@ extern tree maybe_wrap_with_location (tree, location_t);
 #define SSA_NAME_IS_DEFAULT_DEF(NODE) \
     SSA_NAME_CHECK (NODE)->base.default_def_flag
 
+/* Nonzero if this SSA_NAME is known to point to memory that may not
+   be written to.  This is set for default defs of function parameters
+   that have a corresponding r or R specification in the functions
+   fn spec attribute.  This is used by alias analysis.  */
+#define SSA_NAME_POINTS_TO_READONLY_MEMORY(NODE) \
+    SSA_NAME_CHECK (NODE)->base.deprecated_flag
+
 /* Attributes for SSA_NAMEs for pointer-type variables.  */
 #define SSA_NAME_PTR_INFO(N) \
    SSA_NAME_CHECK (N)->ssa_name.info.ptr_info

@@ -133,7 +133,6 @@ along with GCC; see the file COPYING3.  If not see
 static tree *last_vuse_ptr;
 static vn_lookup_kind vn_walk_kind;
 static vn_lookup_kind default_vn_walk_kind;
-bitmap const_parms;
 
 /* vn_nary_op hashtable helpers.  */
 
@@ -1862,18 +1861,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
   ao_ref lhs_ref;
   bool lhs_ref_ok = false;
   poly_int64 copy_size;
-
-  /* If the reference is based on a parameter that was determined as
-     pointing to readonly memory it doesn't change.  */
-  if (TREE_CODE (base) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
-      && SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (base, 0))
-      && bitmap_bit_p (const_parms,
-		       SSA_NAME_VERSION (TREE_OPERAND (base, 0))))
-    {
-      *disambiguate_only = true;
-      return NULL;
-    }
 
   /* First try to disambiguate after value-replacing in the definitions LHS.  */
   if (is_gimple_assign (def_stmt))
@@ -4514,37 +4501,6 @@ set_hashtable_value_ids (void)
     set_value_id_for_result (vr->result, &vr->value_id);
 }
 
-
-/* Allocate and initialize CONST_PARAMS, a bitmap of parameter default defs
-   we know point to readonly memory.  */
-
-static void
-init_const_parms ()
-{
-  /* Collect pointers we know point to readonly memory.  */
-  const_parms = BITMAP_ALLOC (NULL);
-  tree fnspec = lookup_attribute ("fn spec",
-				  TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)));
-  if (fnspec)
-    {
-      fnspec = TREE_VALUE (TREE_VALUE (fnspec));
-      unsigned i = 1;
-      for (tree arg = DECL_ARGUMENTS (cfun->decl);
-	   arg; arg = DECL_CHAIN (arg), ++i)
-	{
-	  if (i >= (unsigned) TREE_STRING_LENGTH (fnspec))
-	    break;
-	  if (TREE_STRING_POINTER (fnspec)[i]  == 'R'
-	      || TREE_STRING_POINTER (fnspec)[i] == 'r')
-	    {
-	      tree name = ssa_default_def (cfun, arg);
-	      if (name)
-		bitmap_set_bit (const_parms, SSA_NAME_VERSION (name));
-	    }
-	}
-    }
-}
-
 /* Return the maximum value id we have ever seen.  */
 
 unsigned int
@@ -5606,8 +5562,6 @@ free_rpo_vn (void)
   obstack_free (&vn_tables_obstack, NULL);
   obstack_free (&vn_tables_insert_obstack, NULL);
 
-  BITMAP_FREE (const_parms);
-
   vn_ssa_aux_iterator_type it;
   vn_ssa_aux_t info;
   FOR_EACH_HASH_TABLE_ELEMENT (*vn_ssa_aux_hash, info, vn_ssa_aux_t, it)
@@ -6326,7 +6280,6 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
   unsigned region_size = (((unsigned HOST_WIDE_INT)n * num_ssa_names)
 			  / (n_basic_blocks_for_fn (fn) - NUM_FIXED_BLOCKS));
   VN_TOP = create_tmp_var_raw (void_type_node, "vn_top");
-  init_const_parms ();
 
   vn_ssa_aux_hash = new hash_table <vn_ssa_aux_hasher> (region_size * 2);
   gcc_obstack_init (&vn_ssa_aux_obstack);
