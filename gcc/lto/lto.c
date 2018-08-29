@@ -2923,8 +2923,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   FOR_EACH_SYMBOL (snode)
     if (snode->externally_visible && snode->real_symbol_p ()
 	&& snode->lto_file_data && snode->lto_file_data->resolution_map
-	&& !(TREE_CODE (snode->decl) != FUNCTION_DECL
-	     || fndecl_built_in_p (snode->decl))
+	&& !(TREE_CODE (snode->decl) == FUNCTION_DECL
+	     && fndecl_built_in_p (snode->decl))
 	&& !(VAR_P (snode->decl) && DECL_HARD_REGISTER (snode->decl)))
       {
 	ld_plugin_symbol_resolution_t *res;
