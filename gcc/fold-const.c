@@ -13779,7 +13779,7 @@ fold_read_from_constant_string (tree exp)
       location_t loc = EXPR_LOCATION (exp);
 
       if (TREE_CODE (exp) == INDIRECT_REF)
-	string = string_constant (exp1, &index);
+	string = string_constant (exp1, &index, NULL, NULL);
       else
 	{
 	  tree low_bound = array_ref_low_bound (exp);
@@ -14592,7 +14592,7 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strlen /* = NULL */,
   if (strlen)
     *strlen = 0;
 
-  src = string_constant (src, &offset_node);
+  src = string_constant (src, &offset_node, NULL, NULL);
   if (src == 0)
     return NULL;
 

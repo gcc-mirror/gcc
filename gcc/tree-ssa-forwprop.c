@@ -1290,7 +1290,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	      lhs1 = gimple_call_lhs (stmt1);
 	      if (!tree_fits_uhwi_p (len1))
 		break;
-	      str1 = string_constant (src1, &off1);
+	      str1 = string_constant (src1, &off1, NULL, NULL);
 	      if (str1 == NULL_TREE)
 		break;
 	      if (!tree_fits_uhwi_p (off1)

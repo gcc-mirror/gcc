@@ -1,3 +1,13 @@
+2018-08-29  Martin Sebor  <msebor@redhat.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR tree-optimization/86714
+	PR tree-optimization/86711
+	* gcc.c-torture/execute/memchr-1.c: New test.
+	* gcc.c-torture/execute/pr86714.c: New test.
+	* gcc.c-torture/execute/widechar-3.c: New test.
+	* gcc.dg/strlenopt-58.c: New test.
+
 2018-08-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87132

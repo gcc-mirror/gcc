@@ -589,7 +589,7 @@ c_strlen (tree src, int only_value, unsigned eltsize)
   /* Offset from the beginning of the string in bytes.  */
   tree byteoff;
   tree memsize;
-  src = string_constant (src, &byteoff, &memsize);
+  src = string_constant (src, &byteoff, &memsize, NULL);
   if (src == 0)
     return NULL_TREE;
 

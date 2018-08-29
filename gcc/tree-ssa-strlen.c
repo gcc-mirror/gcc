@@ -336,7 +336,7 @@ get_stridx (tree exp)
 	return idx;
     }
 
-  s = string_constant (exp, &o);
+  s = string_constant (exp, &o, NULL, NULL);
   if (s != NULL_TREE
       && (o == NULL_TREE || tree_fits_shwi_p (o))
       && TREE_STRING_LENGTH (s) > 0)
