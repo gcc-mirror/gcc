@@ -1,3 +1,8 @@
+2018-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85265
+	* g++.dg/concepts/pr85265.C: New.
+
 2018-08-29  Martin Sebor  <msebor@redhat.com>
 	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 

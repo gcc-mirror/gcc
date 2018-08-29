@@ -1,3 +1,11 @@
+2018-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85265
+	* parser.c (cp_parser_introduction_list): If cp_parser_identifier
+	returns error_mark_node early exit the loop.
+	(cp_parser_template_introduction): Improve error-recovery, remove
+	error call about empty introduction-list.
+
 2018-08-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/85110

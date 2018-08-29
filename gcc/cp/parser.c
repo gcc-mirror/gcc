@@ -15242,11 +15242,15 @@ cp_parser_introduction_list (cp_parser *parser)
       if (is_pack)
 	cp_lexer_consume_token (parser->lexer);
 
+      tree identifier = cp_parser_identifier (parser);
+      if (identifier == error_mark_node)
+	break;
+
       /* Build placeholder. */
       tree parm = build_nt (WILDCARD_DECL);
       DECL_SOURCE_LOCATION (parm)
 	= cp_lexer_peek_token (parser->lexer)->location;
-      DECL_NAME (parm) = cp_parser_identifier (parser);
+      DECL_NAME (parm) = identifier;
       WILDCARD_PACK_P (parm) = is_pack;
       vec_safe_push (introduction_vec, parm);
 
@@ -27178,17 +27182,17 @@ cp_parser_template_introduction (cp_parser* parser, bool member_p)
      matching identifiers.  */
   tree introduction_list = cp_parser_introduction_list (parser);
 
+  /* Look for closing brace for introduction.  */
+  if (!braces.require_close (parser))
+    return true;
+
   /* The introduction-list shall not be empty.  */
   int nargs = TREE_VEC_LENGTH (introduction_list);
   if (nargs == 0)
     {
-      error ("empty introduction-list");
+      /* In cp_parser_introduction_list we have already issued an error.  */
       return true;
     }
-
-  /* Look for closing brace for introduction.  */
-  if (!braces.require_close (parser))
-    return true;
 
   if (tmpl_decl == error_mark_node)
     {
