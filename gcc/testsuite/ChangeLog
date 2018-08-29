@@ -1,3 +1,8 @@
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87122
+	* g++.dg/cpp1z/decomp47.C: New test.
+
 2018-08-27  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86914

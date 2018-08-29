@@ -16816,6 +16816,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    RANGE_FOR_IVDEP (stmt) = RANGE_FOR_IVDEP (t);
 	    RANGE_FOR_UNROLL (stmt) = RANGE_FOR_UNROLL (t);
 	    finish_range_for_decl (stmt, decl, expr);
+	    if (decomp_first && decl != error_mark_node)
+	      cp_finish_decomp (decl, decomp_first, decomp_cnt);
 	  }
 	else
 	  {
