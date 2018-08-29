@@ -769,7 +769,6 @@ static void
 lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
 					  struct data_in *data_in, tree expr)
 {
-  DECL_VINDEX (expr) = stream_read_tree (ib, data_in);
   /* DECL_STRUCT_FUNCTION is loaded on demand by cgraph_get_body.  */
   DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree (ib, data_in);
 #ifndef ACCEL_COMPILER
