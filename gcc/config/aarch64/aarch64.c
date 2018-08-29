@@ -325,7 +325,7 @@ static const struct cpu_addrcost_table qdf24xx_addrcost_table =
   1, /* pre_modify  */
   1, /* post_modify  */
   3, /* register_offset  */
-  4, /* register_sextend  */
+  3, /* register_sextend  */
   3, /* register_zextend  */
   2, /* imm_offset  */
 };
