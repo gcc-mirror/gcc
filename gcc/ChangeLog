@@ -39,7 +39,7 @@
 	* genpreds.c (write_predicate_subfunction): Also add ATTRIBUTE_UNUSED
 	to OP parmeter of generated function.
 
-2018-08-28 MCC CS <deswurstes@users.noreply.github.com>
+2018-08-28  MCC CS  <deswurstes@users.noreply.github.com>
 
 	PR tree-optimization/87009
 	* match.pd: Add boolean optimizations.
