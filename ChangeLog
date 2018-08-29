@@ -1,3 +1,7 @@
+2018-08-29  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* MAINTAINERS (write after approval): Add myself.
+
 2018-08-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* MAINTAINERS: Add self to global reviewers list.
