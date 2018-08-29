@@ -1,5 +1,12 @@
 2018-08-29  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (vuse_ssa_val): Return NULL for unvisited
+	virtual operands that are not default defs to honor region
+	boundaries.
+	(rpo_vn_valueize): Remove ineffective code here.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87132
 	* tree-ssa-alias.c (get_continuation_for_phi): Do not translate
 	when skipping defs reachable over backedges.
