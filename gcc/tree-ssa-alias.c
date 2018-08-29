@@ -1483,6 +1483,16 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 				 ao_ref_alias_set (ref2)))
     return false;
 
+  /* If the reference is based on a pointer that points to memory
+     that may not be written to then the other reference cannot possibly
+     clobber it.  */
+  if ((TREE_CODE (TREE_OPERAND (base2, 0)) == SSA_NAME
+       && SSA_NAME_POINTS_TO_READONLY_MEMORY (TREE_OPERAND (base2, 0)))
+      || (ind1_p
+	  && TREE_CODE (TREE_OPERAND (base1, 0)) == SSA_NAME
+	  && SSA_NAME_POINTS_TO_READONLY_MEMORY (TREE_OPERAND (base1, 0))))
+    return false;
+
   /* Dispatch to the pointer-vs-decl or pointer-vs-pointer disambiguators.  */
   if (var1_p && ind2_p)
     return indirect_ref_may_alias_decl_p (ref2->ref, base2,
@@ -1989,6 +1999,14 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref)
 	 treat as may-def.  */
       && (TREE_READONLY (base)
 	  || !is_global_var (base)))
+    return false;
+
+  /* If the reference is based on a pointer that points to memory
+     that may not be written to then the call cannot possibly clobber it.  */
+  if ((TREE_CODE (base) == MEM_REF
+       || TREE_CODE (base) == TARGET_MEM_REF)
+      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
+      && SSA_NAME_POINTS_TO_READONLY_MEMORY (TREE_OPERAND (base, 0)))
     return false;
 
   callee = gimple_call_fndecl (call);

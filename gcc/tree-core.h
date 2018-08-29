@@ -1238,6 +1238,9 @@ struct GTY(()) tree_base {
        IDENTIFIER_TRANSPARENT_ALIAS in
            IDENTIFIER_NODE
 
+       SSA_NAME_POINTS_TO_READONLY_MEMORY in
+	   SSA_NAME
+
    visited:
 
        TREE_VISITED in

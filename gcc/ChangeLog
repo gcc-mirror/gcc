@@ -1,3 +1,17 @@
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-core.h: Document use of deprecated_flag in SSA_NAME.
+	* tree.h (SSA_NAME_POINTS_TO_READONLY_MEMORY): Define.
+	* tree-into-ssa.c (pass_build_ssa::execute): Initialize
+	function parameters SSA_NAME_POINTS_TO_READONLY_MEMORY from fnspec.
+	* tree-ssa-sccvn.c (const_parms, init_const_parms): Remove.
+	(vn_reference_lookup_3): Remove use of const_parms.
+	(free_rpo_vn): Do not free const_parms.
+	(do_rpo_vn): Do not call init_const_parms.
+	* tree-ssa-alias.c (refs_may_alias_p_1): Honor
+	SSA_NAME_POINTS_TO_READONLY_MEMORY.
+	(call_may_clobber_ref_p_1): Likewise.
+
 2018-08-29  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR other/86726
