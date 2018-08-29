@@ -1,3 +1,11 @@
+2018-08-28  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/pic.md: Rewrite.
+	* config/riscv/riscv.c (riscv_address_insns): Return cost of 3 for
+	invalid address.
+	* config/riscv/riscv.md (ZERO_EXTEND_LOAD): Delete.
+	(SOFTF, default_load, softload, softstore): New.
+
 2018-08-28  Jeff Law  <law@redhat.com>
 
 	* fold-const.c (fold_binary_loc): Remove recently added assert.
