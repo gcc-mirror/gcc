@@ -5339,12 +5339,7 @@ free_lang_data_in_decl (tree decl)
 	       (DECL_CONTEXT (DECL_ABSTRACT_ORIGIN (decl))))
 	DECL_ABSTRACT_ORIGIN (decl) = NULL_TREE;
 
-      /* Sometimes the C++ frontend doesn't manage to transform a temporary
-         DECL_VINDEX referring to itself into a vtable slot number as it
-	 should.  Happens with functions that are copied and then forgotten
-	 about.  Just clear it, it won't matter anymore.  */
-      if (DECL_VINDEX (decl) && !tree_fits_shwi_p (DECL_VINDEX (decl)))
-	DECL_VINDEX (decl) = NULL_TREE;
+      DECL_VINDEX (decl) = NULL_TREE;
     }
   else if (VAR_P (decl))
     {
@@ -8989,7 +8984,7 @@ decl_function_context (const_tree decl)
 
      C++ should really be fixed to use DECL_CONTEXT for the real context,
      and use something else for the "virtual context".  */
-  else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VINDEX (decl))
+  else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))
     context
       = TYPE_MAIN_VARIANT
 	(TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl)))));
