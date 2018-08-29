@@ -3432,10 +3432,11 @@ equal_functions (tree fn1, tree fn2)
   return fn1 == fn2;
 }
 
-/* Print information about a candidate being rejected due to INFO.  */
+/* Print information about a candidate FN being rejected due to INFO.  */
 
 static void
-print_conversion_rejection (location_t loc, struct conversion_info *info)
+print_conversion_rejection (location_t loc, struct conversion_info *info,
+			    tree fn)
 {
   tree from = info->from;
   if (!TYPE_P (from))
@@ -3466,8 +3467,12 @@ print_conversion_rejection (location_t loc, struct conversion_info *info)
     inform (loc, "  no known conversion from %qH to %qI",
 	    from, info->to_type);
   else
-    inform (loc, "  no known conversion for argument %d from %qH to %qI",
-	    info->n_arg + 1, from, info->to_type);
+    {
+      if (TREE_CODE (fn) == FUNCTION_DECL)
+	loc = get_fndecl_argument_location (fn, info->n_arg);
+      inform (loc, "  no known conversion for argument %d from %qH to %qI",
+	      info->n_arg + 1, from, info->to_type);
+    }
 }
 
 /* Print information about a candidate with WANT parameters and we found
@@ -3542,10 +3547,10 @@ print_z_candidate (location_t loc, const char *msgstr,
 				   r->u.arity.expected);
 	  break;
 	case rr_arg_conversion:
-	  print_conversion_rejection (cloc, &r->u.conversion);
+	  print_conversion_rejection (cloc, &r->u.conversion, fn);
 	  break;
 	case rr_bad_arg_conversion:
-	  print_conversion_rejection (cloc, &r->u.bad_conversion);
+	  print_conversion_rejection (cloc, &r->u.bad_conversion, fn);
 	  break;
 	case rr_explicit_conversion:
 	  inform (cloc, "  return type %qT of explicit conversion function "
