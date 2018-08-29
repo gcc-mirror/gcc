@@ -1,3 +1,10 @@
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87122
+	* pt.c (tsubst_expr) <case RANGE_FOR_STMT>: If
+	processing_template_decl and decl is structured binding decl, call
+	cp_finish_decomp.
+
 2018-08-17  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
