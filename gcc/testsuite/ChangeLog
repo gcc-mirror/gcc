@@ -1,3 +1,8 @@
+2018-08-29  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/simd/vect_su_add_sub.c: Use 32 and 64-bit types
+	where appropriate.
+
 2018-08-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87117
