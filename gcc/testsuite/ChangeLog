@@ -1,3 +1,8 @@
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87122
+	* g++.dg/cpp1z/decomp47.C: New test.
+
 2018-08-29  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* gcc.target/aarch64/simd/vect_su_add_sub.c: Use 32 and 64-bit types
@@ -13,7 +18,7 @@
 	PR tree-optimization/87126
 	* gcc.dg/tree-ssa/pr87126.c: New testcase.
 
-2018-08-28 MCC CS <deswurstes@users.noreply.github.com>
+2018-08-28  MCC CS  <deswurstes@users.noreply.github.com>
 
 	PR tree-optimization/87009
 	* gcc.dg/pr87009.c: New test.
