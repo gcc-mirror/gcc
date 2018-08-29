@@ -1,3 +1,10 @@
+2018-08-29  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR other/86726
+	* invoke.texi (Optimization Options): List -ftree-scev-cprop.
+	(-O): Ditto.
+	(-ftree-scev-cprop): Document.
+
 2018-08-29  Jan Hubicka  <jh@suse.cz>
 
 	* sreal.h (normalize, normalize_up, normalize_down): Add new_sig/new_exp
