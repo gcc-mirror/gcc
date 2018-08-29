@@ -1,3 +1,10 @@
+2018-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Update expected
+	output to reflect underlining of pertinent parameter in decl
+	for "no known conversion" messages.
+
 2018-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87122
