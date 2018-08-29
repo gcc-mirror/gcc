@@ -45,9 +45,9 @@ public:
   sreal () : m_sig (-1), m_exp (-1) {}
 
   /* Construct a sreal.  */
-  sreal (int64_t sig, int exp = 0) : m_sig (sig), m_exp (exp)
+  sreal (int64_t sig, int exp = 0)
   {
-    normalize ();
+    normalize (sig, exp);
   }
 
   void dump (FILE *) const;
@@ -130,9 +130,9 @@ public:
   }
 
 private:
-  inline void normalize ();
-  inline void normalize_up ();
-  inline void normalize_down ();
+  inline void normalize (int64_t new_sig, signed int new_exp);
+  inline void normalize_up (int64_t new_sig, signed int new_exp);
+  inline void normalize_down (int64_t new_sig, signed int new_exp);
   void shift_right (int amount);
   static sreal signedless_plus (const sreal &a, const sreal &b, bool negative);
   static sreal signedless_minus (const sreal &a, const sreal &b, bool negative);
@@ -199,23 +199,24 @@ inline sreal operator>> (const sreal &a, int exp)
    Make this separate method so inliner can handle hot path better.  */
 
 inline void
-sreal::normalize_up ()
+sreal::normalize_up (int64_t new_sig, signed int new_exp)
 {
-  unsigned HOST_WIDE_INT sig = absu_hwi (m_sig);
+  unsigned HOST_WIDE_INT sig = absu_hwi (new_sig);
   int shift = SREAL_PART_BITS - 2 - floor_log2 (sig);
 
   gcc_checking_assert (shift > 0);
   sig <<= shift;
-  m_exp -= shift;
+  new_exp -= shift;
   gcc_checking_assert (sig <= SREAL_MAX_SIG && sig >= SREAL_MIN_SIG);
 
   /* Check underflow.  */
-  if (m_exp < -SREAL_MAX_EXP)
+  if (new_exp < -SREAL_MAX_EXP)
     {
-      m_exp = -SREAL_MAX_EXP;
+      new_exp = -SREAL_MAX_EXP;
       sig = 0;
     }
-  if (SREAL_SIGN (m_sig) == -1)
+  m_exp = new_exp;
+  if (SREAL_SIGN (new_sig) == -1)
     m_sig = -sig;
   else
     m_sig = sig;
@@ -226,16 +227,16 @@ sreal::normalize_up ()
    Make this separate method so inliner can handle hot path better.  */
 
 inline void
-sreal::normalize_down ()
+sreal::normalize_down (int64_t new_sig, signed int new_exp)
 {
   int last_bit;
-  unsigned HOST_WIDE_INT sig = absu_hwi (m_sig);
+  unsigned HOST_WIDE_INT sig = absu_hwi (new_sig);
   int shift = floor_log2 (sig) - SREAL_PART_BITS + 2;
 
   gcc_checking_assert (shift > 0);
   last_bit = (sig >> (shift-1)) & 1;
   sig >>= shift;
-  m_exp += shift;
+  new_exp += shift;
   gcc_checking_assert (sig <= SREAL_MAX_SIG && sig >= SREAL_MIN_SIG);
 
   /* Round the number.  */
@@ -243,16 +244,17 @@ sreal::normalize_down ()
   if (sig > SREAL_MAX_SIG)
     {
       sig >>= 1;
-      m_exp++;
+      new_exp++;
     }
 
   /* Check overflow.  */
-  if (m_exp > SREAL_MAX_EXP)
+  if (new_exp > SREAL_MAX_EXP)
     {
-      m_exp = SREAL_MAX_EXP;
+      new_exp = SREAL_MAX_EXP;
       sig = SREAL_MAX_SIG;
     }
-  if (SREAL_SIGN (m_sig) == -1)
+  m_exp = new_exp;
+  if (SREAL_SIGN (new_sig) == -1)
     m_sig = -sig;
   else
     m_sig = sig;
@@ -261,16 +263,24 @@ sreal::normalize_down ()
 /* Normalize *this; the hot path.  */
 
 inline void
-sreal::normalize ()
+sreal::normalize (int64_t new_sig, signed int new_exp)
 {
-  unsigned HOST_WIDE_INT sig = absu_hwi (m_sig);
+  unsigned HOST_WIDE_INT sig = absu_hwi (new_sig);
 
   if (sig == 0)
-    m_exp = -SREAL_MAX_EXP;
+    {
+      m_sig = 0;
+      m_exp = -SREAL_MAX_EXP;
+    }
   else if (sig > SREAL_MAX_SIG)
-    normalize_down ();
+    normalize_down (new_sig, new_exp);
   else if (sig < SREAL_MIN_SIG)
-    normalize_up ();
+    normalize_up (new_sig, new_exp);
+  else
+    {
+      m_sig = new_sig;
+      m_exp = new_exp;
+    }
 }
 
 #endif

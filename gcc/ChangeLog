@@ -1,3 +1,11 @@
+2018-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* sreal.h (normalize, normalize_up, normalize_down): Add new_sig/new_exp
+	parameters.
+	(sreal constructor): Update.
+	* sreal.c (sreal:operator+, sreal:operator-, sreal:operator*,
+	sreal:operator/): Update.
+
 2018-08-29  Martin Liska  <mliska@suse.cz>
 
 	* tree-switch-conversion.c (switch_conversion::expand):
