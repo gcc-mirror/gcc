@@ -2696,7 +2696,17 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
      but save a lookup if we deal with already inserted refs here.  */
   if (*slot)
     {
-      gcc_assert (operand_equal_p ((*slot)->result, vr1->result, 0));
+      /* We cannot assert that we have the same value either because
+         when disentangling an irreducible region we may end up visiting
+	 a use before the corresponding def.  That's a missed optimization
+	 only though.  See gcc.dg/tree-ssa/pr87126.c for example.  */
+      if (dump_file && (dump_flags & TDF_DETAILS)
+	  && !operand_equal_p ((*slot)->result, vr1->result, 0))
+	{
+	  fprintf (dump_file, "Keeping old value ");
+	  print_generic_expr (dump_file, (*slot)->result);
+	  fprintf (dump_file, " because of collision\n");
+	}
       free_reference (vr1);
       obstack_free (&vn_tables_obstack, vr1);
       return;

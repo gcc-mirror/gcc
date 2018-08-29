@@ -1,3 +1,8 @@
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87126
+	* tree-ssa-sccvn.c (vn_reference_insert): Remove assert.
+
 2018-08-28  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/pic.md: Rewrite.
