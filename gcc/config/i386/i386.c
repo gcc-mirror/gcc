@@ -3479,7 +3479,7 @@ ix86_option_override_internal (bool main_args_p,
     | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
   const wide_int_bitmask PTA_NEHALEM = PTA_CORE2 | PTA_SSE4_1 | PTA_SSE4_2
     | PTA_POPCNT;
-  const wide_int_bitmask PTA_WESTMERE = PTA_NEHALEM | PTA_AES | PTA_PCLMUL;
+  const wide_int_bitmask PTA_WESTMERE = PTA_NEHALEM | PTA_PCLMUL;
   const wide_int_bitmask PTA_SANDYBRIDGE = PTA_WESTMERE | PTA_AVX | PTA_XSAVE
     | PTA_XSAVEOPT;
   const wide_int_bitmask PTA_IVYBRIDGE = PTA_SANDYBRIDGE | PTA_FSGSBASE
@@ -3488,7 +3488,7 @@ ix86_option_override_internal (bool main_args_p,
     | PTA_BMI2 | PTA_LZCNT | PTA_FMA | PTA_MOVBE | PTA_HLE;
   const wide_int_bitmask PTA_BROADWELL = PTA_HASWELL | PTA_ADX | PTA_PRFCHW
     | PTA_RDSEED;
-  const wide_int_bitmask PTA_SKYLAKE = PTA_BROADWELL | PTA_CLFLUSHOPT
+  const wide_int_bitmask PTA_SKYLAKE = PTA_BROADWELL | PTA_AES | PTA_CLFLUSHOPT
     | PTA_XSAVEC | PTA_XSAVES | PTA_SGX;
   const wide_int_bitmask PTA_SKYLAKE_AVX512 = PTA_SKYLAKE | PTA_AVX512F
     | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
@@ -3505,7 +3505,7 @@ ix86_option_override_internal (bool main_args_p,
     | PTA_AVX512F | PTA_AVX512CD;
   const wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;
   const wide_int_bitmask PTA_SILVERMONT = PTA_WESTMERE | PTA_MOVBE | PTA_RDRND;
-  const wide_int_bitmask PTA_GOLDMONT = PTA_SILVERMONT | PTA_SHA | PTA_XSAVE
+  const wide_int_bitmask PTA_GOLDMONT = PTA_SILVERMONT | PTA_AES | PTA_SHA | PTA_XSAVE
     | PTA_RDSEED | PTA_XSAVEC | PTA_XSAVES | PTA_CLFLUSHOPT | PTA_XSAVEOPT
     | PTA_FSGSBASE;
   const wide_int_bitmask PTA_GOLDMONT_PLUS = PTA_GOLDMONT | PTA_RDPID
