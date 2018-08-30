@@ -1,3 +1,10 @@
+2018-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/pointer.h (_Pointer_adapter): Define operators for
+	pointer arithmetic using long long offsets.
+	* testsuite/ext/ext_pointer/1.cc: Test pointer arithmetic using
+	long long values.
+
 2018-08-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/31413
