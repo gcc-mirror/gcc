@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp-slim" } */
+/* { dg-options "-O2 -fdump-tree-evrp-slim -fdelete-null-pointer-checks" } */
 
 void f(void *d, const void *s, __SIZE_TYPE__ n)
 {
