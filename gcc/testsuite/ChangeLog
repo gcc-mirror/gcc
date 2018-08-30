@@ -1,3 +1,10 @@
+2018-08-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR 86519
+	gcc.dg/strcmpopt_6.c: Remove.
+	gcc.target/aarch64/strcmpopt_6.c: New testcase.
+	gcc.target/i386/strcmpopt_6.c: Likewise.
+
 2018-08-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87147
