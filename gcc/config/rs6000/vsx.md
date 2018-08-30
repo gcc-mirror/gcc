@@ -1412,7 +1412,7 @@
     }
 })
 
-(define_insn "*vsx_ld_elemrev_v16qi_internal"
+(define_insn "vsx_ld_elemrev_v16qi_internal"
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
         (vec_select:V16QI
           (match_operand:V16QI 1 "memory_operand" "Z")
@@ -5049,6 +5049,22 @@
 	 UNSPEC_VCMPNEZB))]
   "TARGET_P9_VECTOR"
   "vcmpnezb %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Compare Not Equal or Zero Byte predicate or record-form
+(define_insn "vcmpnezb_p"
+  [(set (reg:CC CR6_REGNO)
+	(unspec:CC
+	 [(match_operand:V16QI 1 "altivec_register_operand" "v")
+	  (match_operand:V16QI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCMPNEZB))
+   (set (match_operand:V16QI 0 "altivec_register_operand" "=v")
+	(unspec:V16QI
+	 [(match_dup 1)
+	  (match_dup 2)]
+	 UNSPEC_VCMPNEZB))]
+  "TARGET_P9_VECTOR"
+  "vcmpnezb. %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
 ;; Vector Compare Not Equal Half Word (specified/not+eq:)

@@ -1,3 +1,19 @@
+2018-08-30  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_eq<mode>): Remove star.
+	(altivec_vcmpequ<VI_char>_p): Remove star.
+	* config/rs6000/rs6000-string.c (do_load_for_compare): Support
+	vector load modes.
+	(expand_strncmp_vec_sequence): New function.
+	(emit_final_str_compare_vec): New function.
+	(expand_strn_compare): Add support for vector strncmp.
+	* config/rs6000/rs6000.opt (-mstring-compare-inline-limit): Change
+	length specification to bytes.
+	* config/rs6000/vsx.md (vsx_ld_elemrev_v16qi_internal): Remove star.
+	(vcmpnezb_p): New pattern.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Update documentation
+	for option -mstring-compare-inline-limit.
+
 2018-08-30  Thiago Macieira  <thiago.macieira@intel.com>
 
 	* config/i386/i386.c (PTA_WESTMERE): Remove PTA_AES.
