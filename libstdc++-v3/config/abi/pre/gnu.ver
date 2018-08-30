@@ -2049,6 +2049,11 @@ GLIBCXX_3.4.26 {
     # std::__throw_ios_failure(const char*, int);
     _ZSt19__throw_ios_failurePKci;
 
+    # std::wistream::ignore(long long, unsigned short)
+    _ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreExt;
+    # std::basic_filebuf::open(const wchar_t*, openmode)
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openEPKwSt13_Ios_Openmode;
+
 } GLIBCXX_3.4.25;
 
 # Symbols in the support library (libsupc++) have their own tag.
