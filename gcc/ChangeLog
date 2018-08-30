@@ -1,5 +1,11 @@
 2018-08-29  Jan Hubicka  <jh@suse.cz>
 
+	PR lto/86517
+	* lto-opts.c (lto_write_options): Always stream PIC/PIE mode.
+	* lto-wrapper.c (merge_and_complain): Fix merging of PIC/PIE.
+
+2018-08-29  Jan Hubicka  <jh@suse.cz>
+
 	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not follow
 	TYPE_STUB_DECL.
 	(hash_tree): Do not visit TYPE_STUB_DECL.
