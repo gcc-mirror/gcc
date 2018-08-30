@@ -1,3 +1,8 @@
+2018-08-30  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gimple-parser.c (c_parser_gimple_binary_expression): Accept infix
+	"__MULT_HIGHPART" for MULT_HIGHPART_EXPR.
+
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87091
