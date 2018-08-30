@@ -1239,7 +1239,7 @@ define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
   putchar_unlocked putc_unlocked)
 AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
-	gettimeofday mbstowcs wcswidth mmap posix_fallocate setlocale \
+	gettimeofday mbstowcs wcswidth mmap memrchr posix_fallocate setlocale \
 	gcc_UNLOCKED_FUNCS madvise execv)
 
 if test x$ac_cv_func_mbstowcs = xyes; then
@@ -1262,6 +1262,10 @@ fi
 
 AC_CHECK_TYPE(ssize_t, int)
 AC_CHECK_TYPE(caddr_t, char *)
+AC_CHECK_TYPE(sighander_t,
+  AC_DEFINE(HAVE_SIGHANDLER_T, 1,
+    [Define if <sys/signal.h> defines sighandler_t]),
+    ,signal.h)
 
 GCC_AC_FUNC_MMAP_BLACKLIST
 

@@ -61,7 +61,10 @@ ifeq ($(DEVPHASE_c),experimental)
 # We want to rebuild module if the source dir changes
 cp/module.o : $(srcdir)/cp
 version.o : $(srcdir)/cp/module.c
-MODULE_STAMP := $(shell date -r $(srcdir)/cp '+%Y%m%d-%H%M')
+# Some date's don't grok 'r', if so, simply use today's
+# date (don't bootstrap at midnight).
+MODULE_STAMP := $(shell date -r $(srcdir)/cp '+%Y%m%d-%H%M' 2>/dev/null || \
+	date '+%Y%m%d' 2>/dev/null || echo 0)
 ifneq ($(REVISION_s),"\"\"")
 # Wedge the MODULE_STAMP into REVISION_s so that it turns up in -v invocations
 # Remember, Make thinks of REVISION_s as a set of space-separated words
@@ -115,7 +118,7 @@ endif
 CXX_MAPPER_OBJS := cp/cxx-mapper.o
 cxx-mapper$(exeext): $(CXX_MAPPER_OBJS) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	$(CXX_MAPPER_OBJS) version.o $(LIBIBERTY) $(LIBBACKTRACE)
+	$(CXX_MAPPER_OBJS) version.o $(LIBIBERTY) $(LIBINTL)
 
 # Language-specific object files for C++.
 CXX_OBJS = cp/cp-lang.o c-family/stub-objc.o $(CXX_AND_OBJCXX_OBJS)

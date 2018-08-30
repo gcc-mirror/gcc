@@ -198,6 +198,23 @@ Classes used:
 #endif
 #endif
 
+#ifndef HAVE_MEMRCHR
+/* Some unfortunate souls do not have memrchr.
+   Everyone is fighting a struggle you know nothing about.  */
+static void *
+memrchr (void *s_, int c, size_t n)
+{
+  unsigned char *s = (unsigned char *)s_;
+  while (n--)
+    if (s[n] == c)
+      return &s[n];
+  return NULL;
+}
+#endif
+#ifndef HAVE_SIGHANDLER_T
+typedef void (*sighandler_t) (int);
+#endif
+
 /* Id for dumping module information.  */
 int module_dump_id;
 

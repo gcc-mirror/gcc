@@ -67,6 +67,23 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
+#ifndef HAVE_MEMRCHR
+/* Some unfortunate souls do not have memrchr.
+   Everyone is fighting a struggle you know nothing about.  */
+static void *
+memrchr (void *s_, int c, size_t n)
+{
+  unsigned char *s = (unsigned char *)s_;
+  while (n--)
+    if (s[n] == c)
+      return &s[n];
+  return NULL;
+}
+#endif
+#ifndef HAVE_SIGHANDLER_T
+typedef void (*sighandler_t) (int);
+#endif
+
 /* MODULE_STAMP is a #define passed in from the Makefile.  When
    present, it is used for version stamping the binary files, and
    indicates experimentalness of the module system.  It is very
@@ -1375,9 +1392,9 @@ server (bool ip6, int sock_fd, const char *cookie)
 
 	  if (ip6)
 	    {
-	      char name[INET6_ADDRSTRLEN];
 	      const char *str = NULL;
 #if HAVE_INET_NTOP
+	      char name[INET6_ADDRSTRLEN];
 	      str = inet_ntop (addr.sin6_family, &addr.sin6_addr,
 			       name, sizeof (name));
 #endif
@@ -1781,9 +1798,9 @@ main (int argc, char *argv[])
 		    {
 		      if (flag_noisy)
 			{
-			  char name[INET6_ADDRSTRLEN];
 			  const char *str = NULL;
 #if HAVE_INET_NTOP
+			  char name[INET6_ADDRSTRLEN];
 			  sockaddr_in6 *in6 = (sockaddr_in6 *)next->ai_addr;
 			  str = inet_ntop (in6->sin6_family, &in6->sin6_addr,
 					   name, sizeof (name));

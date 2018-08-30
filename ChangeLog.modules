@@ -1,5 +1,16 @@
 2018-08-30  Nathan Sidwell  <nathan@acm.org>
 
+	AIX build
+	gcc/
+	* configure.ac: Check sighandler_t, memrchr.
+	* config.in, configure: Rebuilt.
+	gcc/cp/
+	* Make-lang.in (MODULE_STAMP): Protect against non--r capable
+	date.
+	(cxx-mapper): Add LIBINTL, not LIBBACKTRACE.
+	* module.c (memrchr, sighandler_t): Provide fallback.
+	* cxx-mapper.cc (memrchr, sighandler_t): Provide fallback.
+
 	* Merge trunk r263974.
 
 2018-08-29  Nathan Sidwell  <nathan@acm.org>

@@ -1709,6 +1709,12 @@
 #endif
 
 
+/* Define to 1 if you have the `memrchr' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_MEMRCHR
+#endif
+
+
 /* Define to 1 if you have the `mmap' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_MMAP
@@ -1784,6 +1790,12 @@
 /* Define to 1 if you have the `setrlimit' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_SETRLIMIT
+#endif
+
+
+/* Define if <sys/signal.h> defines sighandler_t */
+#ifndef USED_FOR_TARGET
+#undef HAVE_SIGHANDLER_T
 #endif
 
 
