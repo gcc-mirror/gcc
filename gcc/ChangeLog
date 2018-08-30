@@ -1,5 +1,11 @@
 2018-08-29  Jan Hubicka  <jh@suse.cz>
 
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not walk
+	DECL_VINDEX.
+	(hash_tree): Likewise.
+
+2018-08-29  Jan Hubicka  <jh@suse.cz>
+
 	* tree.c (find_decls_types_r): Walk also TYPE_NEXT_PTR_TO
 	and TYPE_NEXT_REF_TO.
 
