@@ -857,7 +857,9 @@ DFS::DFS_write_tree_body (struct output_block *ob,
       DFS_follow_tree_edge (TYPE_CONTEXT (expr));
       /* TYPE_CANONICAL is re-computed during type merging, so no need
 	 to follow it here.  */
-      DFS_follow_tree_edge (TYPE_STUB_DECL (expr));
+      /* Do not stream TYPE_STUB_DECL; it is not needed by LTO but currently
+	 it can not be freed by free_lang_data without triggering ICEs in
+	 langhooks.  */
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
@@ -1269,7 +1271,6 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	;
       else
 	visit (TYPE_CONTEXT (t));
-      visit (TYPE_STUB_DECL (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
