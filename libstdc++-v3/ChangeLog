@@ -1,5 +1,12 @@
 2018-08-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/hashtable_policy.h (__clp2): Fix calculation for LLP64
+	targets where sizeof(size_t) > sizeof(long). Avoid undefined shifts
+	of the number of bits in the type.
+	* include/std/bit (__ceil2): Avoid undefined shifts.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Test values with
+	the most signifiant bit set.
+
 	* config/abi/pre/gnu.ver: Add missing exports for mingw.
 
 	* include/ext/pointer.h (_Pointer_adapter): Define operators for

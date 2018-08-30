@@ -511,8 +511,11 @@ namespace __detail
     // Equivalent to return __n ? std::ceil2(__n) : 0;
     if (__n < 2)
       return __n;
-    return 1ul << (numeric_limits<unsigned long>::digits
-		    - __builtin_clzl(__n - 1ul));
+    const unsigned __lz = sizeof(size_t) > sizeof(long)
+      ? __builtin_clzll(__n - 1ull)
+      : __builtin_clzl(__n - 1ul);
+    // Doing two shifts avoids undefined behaviour when __lz == 0.
+    return (size_t(1) << (numeric_limits<size_t>::digits - __lz - 1)) << 1;
   }
 
   /// Rehash policy providing power of 2 bucket numbers. Avoids modulo
