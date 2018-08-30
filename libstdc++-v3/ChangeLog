@@ -1,3 +1,8 @@
+2018-08-30  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/experimental/propagate_const/observers/1.cc: Make
+	dependence on -fdelete-null-pointer-checks explicit.
+
 2018-08-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/hashtable_policy.h (__clp2): Fix calculation for LLP64

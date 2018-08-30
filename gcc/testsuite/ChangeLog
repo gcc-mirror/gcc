@@ -1,3 +1,20 @@
+2018-08-30  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/cpp0x/noexcept30.C: Make dependence on
+	-fdelete-null-pointer-checks explicit.
+	* g++.dg/cpp1y/constexpr-82218.C: Likewise.
+	* g++.dg/expr/pmf-3.C: Likewise.
+	* g++.dg/ext/attr-returns-nonnull.C: Likewise.
+	* g++.dg/tree-ssa/lifetime-dse1.C: Likewise.
+	* g++.dg/tree-ssa/pr61034.C: Likewise.
+	* gcc.dg/addr_equal-1.c: Likewise.
+	* gcc.dg/ipa/pr85734.c: Likewise.
+	* gcc.dg/ipa/propmalloc-1.c: Likewise.
+	* gcc.dg/ipa/propmalloc-2.c: Likewise.
+	* gcc.dg/ipa/propmalloc-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr78154.c: Likewise.
+	* gcc.dg/tree-ssa/pr83648.c: Likewise.
+
 2018-08-30  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/87158
