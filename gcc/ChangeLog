@@ -1,3 +1,10 @@
+2018-08-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* cfg.h (class auto_edge_flag): Spell out the template-id of the
+	base class in the initializer list.  This is a workaround for
+	building with older GCC.
+	(class auto_bb_flag): Likewise.
+
 2018-08-30  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/altivec.md (altivec_eq<mode>): Remove star.
