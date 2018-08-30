@@ -2632,7 +2632,7 @@ struct GTY ((tag ("false"))) spewing : public slurping {
 
 /* State of a particular module. */
 
-class GTY(()) module_state {
+class GTY((chain_next ("%h.parent"), for_user)) module_state {
  public:
   /* We always import & export ourselves.  */
   bitmap imports;	/* Transitive modules we're importing.  */
@@ -2831,9 +2831,11 @@ class GTY(()) module_state {
 };
 
 /* Hash module state by name.  This cannot be a member of
-   module_state, because of GTY restrictions.  */
+   module_state, because of GTY restrictions.  We never delete from
+   the hash table, but ggc_ptr_hash doesn't support that
+   simplification.  */
 
-struct module_state_hash : nodel_ptr_hash<module_state> {
+struct module_state_hash : ggc_ptr_hash<module_state> {
   typedef std::pair<tree,module_state *> compare_type; /* identifer/parent */
 
   static inline hashval_t hash (const value_type m);
@@ -2933,8 +2935,8 @@ static int lazy_open;	 /* Remaining limit for unfrozen loaders.   */
 /* Vector of module state.  Indexed by OWNER.  Has at least 2 slots.  */
 static GTY(()) vec<module_state *, va_gc> *modules;
 
-/* Hash of module state, findable by NAME. */
-static hash_table<module_state_hash> *modules_hash;
+/* Hash of module state, findable by {name, parent}. */
+static GTY(()) hash_table<module_state_hash> *modules_hash;
 
 /* Mapper to query and inform of modular compilations.  This is a
    singleton.  It contains both FILE and fd entities.  The PEX
@@ -11286,7 +11288,7 @@ init_module_processing ()
 	     module_legacy_name ? "legacy headers" : "preamble parsing");
     }
 
-  modules_hash = new hash_table<module_state_hash> (30);
+  modules_hash = hash_table<module_state_hash>::create_ggc (31);
 
   vec_safe_reserve (modules, 20);
   for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
@@ -11353,6 +11355,14 @@ init_module_processing ()
     TREE_VISITED ((*fixed_trees)[ix]) = false;
 
   dump.pop (0);
+
+  if (!flag_module_lazy)
+    /* Get the mapper now, if we're not being lazy.  */
+    module_mapper::get (BUILTINS_LOCATION);
+
+  /* Collect here to make sure things are tagged correctly (when
+     aggressively GC'd).  */
+  ggc_collect ();
 }
 
 /* Finished parsing, write the BMI, if we're a module interface.  */
@@ -11362,10 +11372,6 @@ finish_module_parse (cpp_reader *reader, line_maps *lmaps)
 {
   if (modules_legacy_p ())
     pop_module_export (0);
-
-  /* No need to lookup modules anymore.  */
-  delete modules_hash;
-  modules_hash = NULL;
 
   module_state *state = (*modules)[MODULE_PURVIEW];
   if (!state || !state->exported)
@@ -11425,6 +11431,9 @@ finish_module_processing ()
 
   for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
     (*modules)[ix]->release ();
+
+  /* No need to lookup modules anymore.  */
+  modules_hash = NULL;
 }
 
 /* Try and exec ourselves to repeat the preamble scan with

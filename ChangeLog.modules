@@ -1,5 +1,17 @@
 2018-08-30  Nathan Sidwell  <nathan@acm.org>
 
+	Fix more GC
+	gcc/cp/
+	* module.c (module_state): Tag for_user.
+	(module_state_hash): Defive from ggc_ptr_hash.
+	(init_module_processing): GGC alloc hash table.  get mapper when
+	not lazy, add ggc_collect.
+	(finish_module_parse): Don't zap hash table here ...
+	(finish_module_processing): ... do it here instead.
+	gcc/testsuite/
+	* g++.dg/modules/gc-2_a.C: New.
+	* g++.dg/modules/gc-2.map: New.
+
 	AIX build
 	gcc/
 	* configure.ac: Check sighandler_t, memrchr.
