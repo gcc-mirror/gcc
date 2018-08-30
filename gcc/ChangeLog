@@ -1,3 +1,11 @@
+2018-08-30  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* target.def (custom_function_descriptors): Improve documentation.
+	* doc/tm.texi.in (Trampolines): Expand discussion of function
+	descriptors and move TARGET_CUSTOM_FUNCTION_DESCRIPTORS to the
+	beginning of the section.
+	* doc/tm.texi: Regenerated.
+
 2018-08-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* cfg.h (class auto_edge_flag): Spell out the template-id of the
