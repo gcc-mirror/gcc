@@ -1,3 +1,7 @@
+2018-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+ 	* gcc.target/aarch64/large_struct_copy_2.c: New.
+
 2018-08-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/87053
