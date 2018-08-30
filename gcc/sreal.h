@@ -20,8 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SREAL_H
 #define GCC_SREAL_H
 
-/* SREAL_PART_BITS has to be an even number.  */
-#define SREAL_PART_BITS 32
+#define SREAL_PART_BITS 31
 
 #define UINT64_BITS	64
 
@@ -137,7 +136,7 @@ private:
   static sreal signedless_plus (const sreal &a, const sreal &b, bool negative);
   static sreal signedless_minus (const sreal &a, const sreal &b, bool negative);
 
-  int64_t m_sig;			/* Significant.  */
+  int32_t m_sig;			/* Significant.  */
   signed int m_exp;			/* Exponent.  */
 };
 
