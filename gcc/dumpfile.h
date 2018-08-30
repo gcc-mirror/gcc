@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
    format codes (see pretty-print.c), with additional codes for middle-end
    specific entities (see dumpfile.c).  */
 
-#if GCC_VERSION >= 3005
+#if GCC_VERSION >= 9000
 #define ATTRIBUTE_GCC_DUMP_PRINTF(m, n) \
   __attribute__ ((__format__ (__gcc_dump_printf__, m ,n))) \
   ATTRIBUTE_NONNULL(m)

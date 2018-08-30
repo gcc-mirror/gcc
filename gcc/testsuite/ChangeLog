@@ -1,3 +1,139 @@
+2018-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+ 	* gcc.target/aarch64/large_struct_copy_2.c: New.
+
+2018-08-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/87053
+	* gcc.c-torture/execute/pr87053.c: New test.
+
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87095
+	* g++.dg/ubsan/vptr-13.C: New test.
+
+2018-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85265
+	* g++.dg/concepts/pr85265.C: New.
+
+2018-08-29  Martin Sebor  <msebor@redhat.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR tree-optimization/86714
+	PR tree-optimization/86711
+	* gcc.c-torture/execute/memchr-1.c: New test.
+	* gcc.c-torture/execute/pr86714.c: New test.
+	* gcc.c-torture/execute/widechar-3.c: New test.
+	* gcc.dg/strlenopt-58.c: New test.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87132
+	* gcc.dg/torture/pr87132.c: New testcase.
+
+2018-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Update expected
+	output to reflect underlining of pertinent parameter in decl
+	for "no known conversion" messages.
+
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87122
+	* g++.dg/cpp1z/decomp47.C: New test.
+
+2018-08-29  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/simd/vect_su_add_sub.c: Use 32 and 64-bit types
+	where appropriate.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* gfortran.dg/pr87117.f90: New testcase.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87126
+	* gcc.dg/tree-ssa/pr87126.c: New testcase.
+
+2018-08-28  MCC CS  <deswurstes@users.noreply.github.com>
+
+	PR tree-optimization/87009
+	* gcc.dg/pr87009.c: New test.
+
+2018-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/86631
+	* g++.dg/Walloca1.C: Adjust.
+
+2018-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/86546
+	* g++.dg/other/switch4.C: New.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87124
+	* g++.dg/torture/pr87124.C: New testcase.
+
+2017-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80477
+	* gfortran.dg/class_result_7.f90: New test.
+	* gfortran.dg/class_result_8.f90: New test.
+	* gfortran.dg/class_result_9.f90: New test.
+
+	PR fortran/86481
+	* gfortran.dg/allocate_with_source_25.f90: New test.
+
+2018-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87099
+	* gcc.dg/pr87099.c: New test.
+
+2018-08-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/87078
+	* gcc.dg/vect/slp-37.c: Restrict scan tests to vect_hw_misalign.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* gcc.dg/pr87117-1.c: New testcase.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* gcc.dg/pr87117-2.c: New testcase.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* gcc.dg/lvalue-5.c: New testcase.
+
+2018-08-27  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/87110
+	* gcc.c-torture/compile/pr87110.c: New test.
+
+2018-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86914
+	* gcc.dg/strlenopt-57.c: New test.
+
+2018-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87112
+	* gcc.dg/pr87112.c: New test.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/63392
+	* g++.dg/diagnostic/missing-typename.C: New test.
+
 2018-08-27  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/dse.c: New test.

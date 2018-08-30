@@ -1,3 +1,46 @@
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87095
+	* decl.c (begin_destructor_body): If current_class_type has
+	virtual bases and the primary base is nearly empty virtual base,
+	voidify clearing of vptr and make it conditional on in-charge
+	argument.
+
+2018-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85265
+	* parser.c (cp_parser_introduction_list): If cp_parser_identifier
+	returns error_mark_node early exit the loop.
+	(cp_parser_template_introduction): Improve error-recovery, remove
+	error call about empty introduction-list.
+
+2018-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* call.c (print_conversion_rejection): Add "fn" param and use it
+	for "no known conversion" messages to underline the pertinent
+	param.
+	(print_z_candidate): Supply "fn" to the new param above.
+
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87122
+	* pt.c (tsubst_expr) <case RANGE_FOR_STMT>: If
+	processing_template_decl and decl is structured binding decl, call
+	cp_finish_decomp.
+
+2018-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/86546
+	* decl.c (finish_case_label): If the type is erroneous early
+	return error_mark_node.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/63392
+	* parser.c (cp_parser_diagnose_invalid_type_name): Add fix-it
+	hint.
+
 2018-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86993

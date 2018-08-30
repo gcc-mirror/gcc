@@ -567,7 +567,7 @@ string_length (const void *ptr, unsigned eltsize, unsigned maxelts)
 tree
 c_strlen (tree src, int only_value, unsigned eltsize)
 {
-  gcc_assert (eltsize == 1 || eltsize == 2 || eltsize == 4);
+  gcc_checking_assert (eltsize == 1 || eltsize == 2 || eltsize == 4);
   STRIP_NOPS (src);
   if (TREE_CODE (src) == COND_EXPR
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
@@ -589,7 +589,7 @@ c_strlen (tree src, int only_value, unsigned eltsize)
   /* Offset from the beginning of the string in bytes.  */
   tree byteoff;
   tree memsize;
-  src = string_constant (src, &byteoff, &memsize);
+  src = string_constant (src, &byteoff, &memsize, NULL);
   if (src == 0)
     return NULL_TREE;
 
@@ -656,10 +656,10 @@ c_strlen (tree src, int only_value, unsigned eltsize)
      a null character if we can represent it as a single HOST_WIDE_INT.  */
   if (byteoff == 0)
     eltoff = 0;
-  else if (! tree_fits_shwi_p (byteoff))
+  else if (! tree_fits_uhwi_p (byteoff) || tree_to_uhwi (byteoff) % eltsize)
     eltoff = -1;
   else
-    eltoff = tree_to_shwi (byteoff) / eltsize;
+    eltoff = tree_to_uhwi (byteoff) / eltsize;
 
   /* If the offset is known to be out of bounds, warn, and call strlen at
      runtime.  */
@@ -690,6 +690,11 @@ c_strlen (tree src, int only_value, unsigned eltsize)
      calculation is needed.  */
   unsigned len = string_length (ptr + eltoff * eltsize, eltsize,
 				strelts - eltoff);
+
+  /* Don't know what to return if there was no zero termination. 
+     Ideally this would turn into a gcc_checking_assert over time.  */
+  if (len > maxelts - eltoff)
+    return NULL_TREE;
 
   return ssize_int (len);
 }
@@ -2970,6 +2975,10 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
   tree func = get_callee_fndecl (exp);
 
   tree len = c_strlen (src, 0);
+  /* FIXME: Change c_strlen() to return sizetype instead of ssizetype
+     so these conversions aren't necessary.  */
+  if (len)
+    len = fold_convert_loc (loc, TREE_TYPE (bound), len);
 
   if (TREE_CODE (bound) == INTEGER_CST)
     {
@@ -2984,7 +2993,6 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
       if (!len || TREE_CODE (len) != INTEGER_CST)
 	return NULL_RTX;
 
-      len = fold_convert_loc (loc, size_type_node, len);
       len = fold_build2_loc (loc, MIN_EXPR, size_type_node, len, bound);
       return expand_expr (len, target, target_mode, EXPAND_NORMAL);
     }

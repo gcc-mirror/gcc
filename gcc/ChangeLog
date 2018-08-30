@@ -1,3 +1,209 @@
+2018-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_movmem): Set TImode max.
+
+2018-08-30  Vlad Lazar  <vlad.lazar@arm.com>
+
+	PR middle-end/86995
+	* expmed.c (canonicalize_comparison): Use wi::sub instead of wi::add
+	if to_add is negative.
+
+2018-08-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/87053
+	* builtins.c (c_strlen): Improve range checks.
+
+2018-08-29  Martin Sebor  <msebor@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/86714
+	PR tree-optimization/86711
+	* builtins.c (c_strlen): Add arguments to call to string_constant.
+	* expr.c (string_constant): Add argument.  Detect missing nul
+	terminator and outermost declaration it's missing in.
+	* expr.h (string_constant): Add argument.
+	* fold-const.c (read_from_constant_string): Add arguments to call to
+	string_constant.
+	(c_getstr): Likewise.
+	* tree-ssa-forwprop.c (simplify_builtin_call): Likewise.
+	to string_constant.
+	* tree-ssa-strlen.c (get_stridx): Likewise.
+
+2018-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* tree-streamer-in.c (lto_input_ts_function_decl_tree_pointers):
+	Do not stream DECL_VINDEX.
+	* tree-streamer-out.c (write_ts_function_decl_tree_pointers): Likewise.
+	* tree.c (free_lang_data_in_decl): Clear DECL_VINDEX.
+	(decl_function_context): Use DECL_VIRTUAL_P rather than DECL_VINDEX.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vuse_ssa_val): Return NULL for unvisited
+	virtual operands that are not default defs to honor region
+	boundaries.
+	(rpo_vn_valueize): Remove ineffective code here.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87132
+	* tree-ssa-alias.c (get_continuation_for_phi): Do not translate
+	when skipping defs reachable over backedges.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-core.h: Document use of deprecated_flag in SSA_NAME.
+	* tree.h (SSA_NAME_POINTS_TO_READONLY_MEMORY): Define.
+	* tree-into-ssa.c (pass_build_ssa::execute): Initialize
+	function parameters SSA_NAME_POINTS_TO_READONLY_MEMORY from fnspec.
+	* tree-ssa-sccvn.c (const_parms, init_const_parms): Remove.
+	(vn_reference_lookup_3): Remove use of const_parms.
+	(free_rpo_vn): Do not free const_parms.
+	(do_rpo_vn): Do not call init_const_parms.
+	* tree-ssa-alias.c (refs_may_alias_p_1): Honor
+	SSA_NAME_POINTS_TO_READONLY_MEMORY.
+	(call_may_clobber_ref_p_1): Likewise.
+
+2018-08-29  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR other/86726
+	* invoke.texi (Optimization Options): List -ftree-scev-cprop.
+	(-O): Ditto.
+	(-ftree-scev-cprop): Document.
+
+2018-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* sreal.h (normalize, normalize_up, normalize_down): Add new_sig/new_exp
+	parameters.
+	(sreal constructor): Update.
+	* sreal.c (sreal:operator+, sreal:operator-, sreal:operator*,
+	sreal:operator/): Update.
+
+2018-08-29  Martin Liska  <mliska@suse.cz>
+
+	* tree-switch-conversion.c (switch_conversion::expand):
+	Strenghten assumption about gswitch statements.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt): Only
+	re-value-number released SSA VDEFs.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87126
+	* tree-ssa-sccvn.c (vn_reference_insert): Remove assert.
+
+2018-08-28  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/pic.md: Rewrite.
+	* config/riscv/riscv.c (riscv_address_insns): Return cost of 3 for
+	invalid address.
+	* config/riscv/riscv.md (ZERO_EXTEND_LOAD): Delete.
+	(SOFTF, default_load, softload, softstore): New.
+
+2018-08-28  Jeff Law  <law@redhat.com>
+
+	* fold-const.c (fold_binary_loc): Remove recently added assert.
+
+2018-08-28  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	* genpreds.c (write_predicate_subfunction): Also add ATTRIBUTE_UNUSED
+	to OP parmeter of generated function.
+
+2018-08-28  MCC CS  <deswurstes@users.noreply.github.com>
+
+	PR tree-optimization/87009
+	* match.pd: Add boolean optimizations.
+
+2018-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/86631
+	* calls.c (alloc_max_size): Treat HOST_WIDE_INT special.
+	* gimple-ssa-warn-alloca.c (adjusted_warn_limit): New function.
+	(pass_walloca::gate): Use it.
+	(alloca_call_type): Same.
+	(pass_walloca::execute): Same.
+	* stor-layout.c (layout_decl): Treat HOST_WIDE_INT special.
+
+2018-08-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.h (ATTRIBUTE_GCC_DUMP_PRINTF): Change version check on
+	GCC_VERSION for usage of "__gcc_dump_printf__" format from
+	>= 3005 to >= 9000.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87124
+	* tree-ssa-sccvn.c (vn_lookup_simplify_result): Guard against
+	constants before looking up avail.
+
+2018-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87099
+	* calls.c (maybe_warn_nonstring_arg): Punt early if
+	warn_stringop_overflow is zero.  Don't call get_range_strlen
+	on 3rd argument, keep iterating until lenrng[1] is INTEGER_CST.
+	Swap comparison operands to have constants on rhs.  Only use
+	lenrng[1] if non-NULL and INTEGER_CST.  Don't uselessly
+	increment lenrng[0].
+
+2018-08-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Fix unguarded
+	use of tree_to_shwi.  Remove duplicated test for the size being
+	a whole number of bytes.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_cleanup):
+	Handle removed stmt without LHS (GIMPLE_NOP).
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Exclude
+	void which is is_gimple_reg_type by checking for COMPLETE_TYPE_P.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* tree-ssa-pre.c (compute_avail): Do not make expressions
+	with predicated values available.
+	(get_expr_value_id): Assert we do not run into predicated value
+	expressions.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* tree-ssa-operands.c (add_stmt_operand): STRING_CST may
+	get virtual operands.
+	(get_expr_operands): Handle STRING_CST like other decls.
+
+2018-08-28  Martin Liska  <mliska@suse.cz>
+
+	* tree.h: Update documentation of fndecl_built_in_p
+	functions.
+
+
+2018-08-27  Jeff Law  <law@redhat.com>
+	PR tree-optimization/87110
+	* tree-ssa-dse.c (compute_trims): Handle non-constant
+	TYPE_SIZE_UNIT.
+
+2018-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86914
+	* tree-ssa-strlen.c (maybe_set_strlen_range): Avoid MEM_REF.
+
+2018-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87112
+	* builtins.c (expand_builtin_strnlen): Convert c_strlen result to
+	the type of the bound argument.
+
 2018-08-27  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dse.c (compute_trims): Handle case where the reference's

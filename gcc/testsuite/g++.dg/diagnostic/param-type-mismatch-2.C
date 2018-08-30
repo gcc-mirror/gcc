@@ -82,7 +82,10 @@ int test_4 (int first, const char *second, float third)
                         ^~~~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "no known conversion for argument 2 from 'const char\\*' to 'const char\\*\\*'" "" { target *-*-* } s4_member_1 }
-  // TODO: underline the pertinent param
+  /* { dg-begin-multiline-output "" } 
+ struct s4 { static int member_1 (int one, const char **two, float three); };
+                                           ~~~~~~~~~~~~~^~~
+     { dg-end-multiline-output "" } */
 }
 
 /* non-static member, with argname.  */
@@ -103,7 +106,10 @@ int test_5 (int first, const char *second, float third)
                  ^~~~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "no known conversion for argument 2 from 'const char\\*' to 'const char\\*\\*'" "" { target *-*-* } s5_member_1 }
-  // TODO: underline the pertinent param
+  /* { dg-begin-multiline-output "" } 
+ struct s5 { int member_1 (int one, const char **two, float three); };
+                                    ~~~~~~~~~~~~~^~~
+     { dg-end-multiline-output "" } */
 }
 
 /* non-static member, with argname, via a ptr.  */
@@ -123,7 +129,10 @@ int test_6 (int first, const char *second, float third, s6 *ptr)
                  ^~~~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "no known conversion for argument 2 from 'const char\\*' to 'const char\\*\\*'" "" { target *-*-* } s6_member_1 }
-  // TODO: underline the pertinent param
+  /* { dg-begin-multiline-output "" } 
+ struct s6 { int member_1 (int one, const char **two, float three); };
+                                    ~~~~~~~~~~~~~^~~
+     { dg-end-multiline-output "" } */
 }
 
 /* Template function.  */
@@ -170,7 +179,10 @@ int test_8 (int first, const char *second, float third)
                         ^~~~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "no known conversion for argument 2 from 'const char\\*' to 'const char\\*\\*'" "" { target *-*-* } s8_member_1 }
-  // TODO: underline the pertinent param
+  /* { dg-begin-multiline-output "" }
+ struct s8 { static int member_1 (int one, T two, float three); };
+                                           ~~^~~
+     { dg-end-multiline-output "" } */
 }
 
 /* Template class, non-static function.  */
@@ -192,5 +204,8 @@ int test_9 (int first, const char *second, float third)
                  ^~~~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "no known conversion for argument 2 from 'const char\\*' to 'const char\\*\\*'" "" { target *-*-* } s9_member_1 }
-  // TODO: underline the pertinent param
+  /* { dg-begin-multiline-output "" }
+ struct s9 { int member_1 (int one, T two, float three); };
+                                    ~~^~~
+     { dg-end-multiline-output "" } */
 }

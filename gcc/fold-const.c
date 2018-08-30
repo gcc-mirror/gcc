@@ -9326,14 +9326,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
   if (kind == tcc_comparison || code == MIN_EXPR || code == MAX_EXPR)
     {
-      if (code == MIN_EXPR || code == MAX_EXPR)
-	{
-	  tree typ0 = TREE_TYPE (arg0);
-	  tree typ1 = TREE_TYPE (arg1);
-	  gcc_assert (TYPE_SIGN (typ0) == TYPE_SIGN (typ1)
-		      && TYPE_MODE (typ0) == TYPE_MODE (typ1));
-	}
-
       STRIP_SIGN_NOPS (arg0);
       STRIP_SIGN_NOPS (arg1);
     }
@@ -13787,7 +13779,7 @@ fold_read_from_constant_string (tree exp)
       location_t loc = EXPR_LOCATION (exp);
 
       if (TREE_CODE (exp) == INDIRECT_REF)
-	string = string_constant (exp1, &index);
+	string = string_constant (exp1, &index, NULL, NULL);
       else
 	{
 	  tree low_bound = array_ref_low_bound (exp);
@@ -14600,7 +14592,7 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strlen /* = NULL */,
   if (strlen)
     *strlen = 0;
 
-  src = string_constant (src, &offset_node);
+  src = string_constant (src, &offset_node, NULL, NULL);
   if (src == 0)
     return NULL;
 

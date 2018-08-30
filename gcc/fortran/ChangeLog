@@ -1,3 +1,27 @@
+2017-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80477
+	* trans-expr.c (gfc_conv_procedure_call): Allocatable class
+	scalar results being passed to a derived type formal argument
+	are finalized if possible. Otherwise, rely on existing code for
+	deallocation. Make the deallocation of allocatable result
+	components conditional on finalization not taking place. Make
+	the freeing of data components after finalization conditional
+	on the data being NULL.
+	(gfc_trans_arrayfunc_assign): Change the gcc_assert to a
+	condition to return NULL_TREE.
+	(gfc_trans_assignment_1): If the assignment is class to class
+	and the rhs expression must be finalized but the assignment
+	is not marked as a polymorphic assignment, use the vptr copy
+	function instead of gfc_trans_scalar_assign.
+
+	PR fortran/86481
+	* trans-expr.c (gfc_conv_expr_reference): Do not add the post
+	block to the pre block if the expression is to be finalized.
+	* trans-stmt.c (gfc_trans_allocate): If the expr3 must be
+	finalized, load the post block into a finalization block and
+	add it right at the end of the allocation block.
+
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87091

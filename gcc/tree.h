@@ -1749,6 +1749,13 @@ extern tree maybe_wrap_with_location (tree, location_t);
 #define SSA_NAME_IS_DEFAULT_DEF(NODE) \
     SSA_NAME_CHECK (NODE)->base.default_def_flag
 
+/* Nonzero if this SSA_NAME is known to point to memory that may not
+   be written to.  This is set for default defs of function parameters
+   that have a corresponding r or R specification in the functions
+   fn spec attribute.  This is used by alias analysis.  */
+#define SSA_NAME_POINTS_TO_READONLY_MEMORY(NODE) \
+    SSA_NAME_CHECK (NODE)->base.deprecated_flag
+
 /* Attributes for SSA_NAMEs for pointer-type variables.  */
 #define SSA_NAME_PTR_INFO(N) \
    SSA_NAME_CHECK (N)->ssa_name.info.ptr_info
@@ -5840,16 +5847,11 @@ type_has_mode_precision_p (const_tree t)
   return known_eq (TYPE_PRECISION (t), GET_MODE_PRECISION (TYPE_MODE (t)));
 }
 
-/* For a FUNCTION_DECL NODE, nonzero means a built in function of a
-   standard library or more generally a built in function that is
-   recognized by optimizers and expanders.
+/* Return true if a FUNCTION_DECL NODE is a GCC built-in function.
 
    Note that it is different from the DECL_IS_BUILTIN accessor.  For
    instance, user declared prototypes of C library functions are not
-   DECL_IS_BUILTIN but may be DECL_BUILT_IN.
-
-   When a NULL argument is pass or tree code of the NODE is not FUNCTION_DECL
-   false is returned.  */
+   DECL_IS_BUILTIN but may be DECL_BUILT_IN.  */
 
 inline bool
 fndecl_built_in_p (const_tree node)
@@ -5857,8 +5859,8 @@ fndecl_built_in_p (const_tree node)
   return (DECL_BUILT_IN_CLASS (node) != NOT_BUILT_IN);
 }
 
-/* For a FUNCTION_DECL NODE, return true when a function is
-   a built-in of class KLASS.  */
+/* Return true if a FUNCTION_DECL NODE is a GCC built-in function
+   of class KLASS.  */
 
 inline bool
 fndecl_built_in_p (const_tree node, built_in_class klass)
@@ -5866,8 +5868,8 @@ fndecl_built_in_p (const_tree node, built_in_class klass)
   return (fndecl_built_in_p (node) && DECL_BUILT_IN_CLASS (node) == klass);
 }
 
-/* For a FUNCTION_DECL NODE, return true when a function is
-   a built-in of class KLASS with name equal to NAME.  */
+/* Return true if a FUNCTION_DECL NODE is a GCC built-in function
+   of class KLASS with name equal to NAME.  */
 
 inline bool
 fndecl_built_in_p (const_tree node, int name, built_in_class klass)
@@ -5875,8 +5877,8 @@ fndecl_built_in_p (const_tree node, int name, built_in_class klass)
   return (fndecl_built_in_p (node, klass) && DECL_FUNCTION_CODE (node) == name);
 }
 
-/* For a FUNCTION_DECL NODE, return true when a function is
-   a built-in of class BUILT_IN_NORMAL class with name equal to NAME.  */
+/* Return true if a FUNCTION_DECL NODE is a GCC built-in function
+   of BUILT_IN_NORMAL class with name equal to NAME.  */
 
 inline bool
 fndecl_built_in_p (const_tree node, built_in_function name)

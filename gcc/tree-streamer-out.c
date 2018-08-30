@@ -657,7 +657,6 @@ static void
 write_ts_function_decl_tree_pointers (struct output_block *ob, tree expr,
 				      bool ref_p)
 {
-  stream_write_tree (ob, DECL_VINDEX (expr), ref_p);
   /* DECL_STRUCT_FUNCTION is handled by lto_output_function.  */
   stream_write_tree (ob, DECL_FUNCTION_PERSONALITY (expr), ref_p);
   /* Don't stream these when passing things to a different target.  */

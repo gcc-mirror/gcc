@@ -133,7 +133,6 @@ along with GCC; see the file COPYING3.  If not see
 static tree *last_vuse_ptr;
 static vn_lookup_kind vn_walk_kind;
 static vn_lookup_kind default_vn_walk_kind;
-bitmap const_parms;
 
 /* vn_nary_op hashtable helpers.  */
 
@@ -475,12 +474,16 @@ vuse_ssa_val (tree x)
 
   do
     {
-      tree tem = SSA_VAL (x);
-      /* stmt walking can walk over a backedge and reach code we didn't
-	 value-number yet.  */
-      if (tem == VN_TOP)
+      if (SSA_NAME_IS_DEFAULT_DEF (x))
 	return x;
-      x = tem;
+      vn_ssa_aux_t tem
+	= vn_ssa_aux_hash->find_with_hash (x, SSA_NAME_VERSION (x));
+      /* For region-based VN this makes walk_non_aliased_vuses stop walking
+	 when we are about to look at a def outside of the region.  */
+      if (!tem || !tem->visited)
+	return NULL_TREE;
+      gcc_assert (tem->valnum != VN_TOP);
+      x = tem->valnum;
     }
   while (SSA_NAME_IN_FREE_LIST (x));
 
@@ -1408,16 +1411,17 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 
   /* Simplify reads from constants or constant initializers.  */
   else if (BITS_PER_UNIT == 8
-	   && is_gimple_reg_type (ref->type)
-	   && (!INTEGRAL_TYPE_P (ref->type)
-	       || TYPE_PRECISION (ref->type) % BITS_PER_UNIT == 0))
+	   && COMPLETE_TYPE_P (ref->type)
+	   && is_gimple_reg_type (ref->type))
     {
       poly_int64 off = 0;
       HOST_WIDE_INT size;
       if (INTEGRAL_TYPE_P (ref->type))
 	size = TYPE_PRECISION (ref->type);
-      else
+      else if (tree_fits_shwi_p (TYPE_SIZE (ref->type)))
 	size = tree_to_shwi (TYPE_SIZE (ref->type));
+      else
+	return NULL_TREE;
       if (size % BITS_PER_UNIT != 0
 	  || size > MAX_BITSIZE_MODE_ANY_MODE)
 	return NULL_TREE;
@@ -1861,18 +1865,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
   ao_ref lhs_ref;
   bool lhs_ref_ok = false;
   poly_int64 copy_size;
-
-  /* If the reference is based on a parameter that was determined as
-     pointing to readonly memory it doesn't change.  */
-  if (TREE_CODE (base) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
-      && SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (base, 0))
-      && bitmap_bit_p (const_parms,
-		       SSA_NAME_VERSION (TREE_OPERAND (base, 0))))
-    {
-      *disambiguate_only = true;
-      return NULL;
-    }
 
   /* First try to disambiguate after value-replacing in the definitions LHS.  */
   if (is_gimple_assign (def_stmt))
@@ -2695,7 +2687,17 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
      but save a lookup if we deal with already inserted refs here.  */
   if (*slot)
     {
-      gcc_assert (operand_equal_p ((*slot)->result, vr1->result, 0));
+      /* We cannot assert that we have the same value either because
+         when disentangling an irreducible region we may end up visiting
+	 a use before the corresponding def.  That's a missed optimization
+	 only though.  See gcc.dg/tree-ssa/pr87126.c for example.  */
+      if (dump_file && (dump_flags & TDF_DETAILS)
+	  && !operand_equal_p ((*slot)->result, vr1->result, 0))
+	{
+	  fprintf (dump_file, "Keeping old value ");
+	  print_generic_expr (dump_file, (*slot)->result);
+	  fprintf (dump_file, " because of collision\n");
+	}
       free_reference (vr1);
       obstack_free (&vn_tables_obstack, vr1);
       return;
@@ -4503,37 +4505,6 @@ set_hashtable_value_ids (void)
     set_value_id_for_result (vr->result, &vr->value_id);
 }
 
-
-/* Allocate and initialize CONST_PARAMS, a bitmap of parameter default defs
-   we know point to readonly memory.  */
-
-static void
-init_const_parms ()
-{
-  /* Collect pointers we know point to readonly memory.  */
-  const_parms = BITMAP_ALLOC (NULL);
-  tree fnspec = lookup_attribute ("fn spec",
-				  TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)));
-  if (fnspec)
-    {
-      fnspec = TREE_VALUE (TREE_VALUE (fnspec));
-      unsigned i = 1;
-      for (tree arg = DECL_ARGUMENTS (cfun->decl);
-	   arg; arg = DECL_CHAIN (arg), ++i)
-	{
-	  if (i >= (unsigned) TREE_STRING_LENGTH (fnspec))
-	    break;
-	  if (TREE_STRING_POINTER (fnspec)[i]  == 'R'
-	      || TREE_STRING_POINTER (fnspec)[i] == 'r')
-	    {
-	      tree name = ssa_default_def (cfun, arg);
-	      if (name)
-		bitmap_set_bit (const_parms, SSA_NAME_VERSION (name));
-	    }
-	}
-    }
-}
-
 /* Return the maximum value id we have ever seen.  */
 
 unsigned int
@@ -4978,8 +4949,14 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	  propagate_tree_value_into_stmt (gsi, sprime);
 	  stmt = gsi_stmt (*gsi);
 	  update_stmt (stmt);
+	  /* In case the VDEF on the original stmt was released, value-number
+	     it to the VUSE.  This is to make vuse_ssa_val able to skip
+	     released virtual operands.  */
 	  if (vdef != gimple_vdef (stmt))
-	    VN_INFO (vdef)->valnum = vuse;
+	    {
+	      gcc_assert (SSA_NAME_IN_FREE_LIST (vdef));
+	      VN_INFO (vdef)->valnum = vuse;
+	    }
 
 	  /* If we removed EH side-effects from the statement, clean
 	     its EH information.  */
@@ -5257,7 +5234,10 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	    fprintf (dump_file, "  Removed AB side-effects.\n");
 	}
       update_stmt (stmt);
-      if (vdef != gimple_vdef (stmt))
+      /* In case the VDEF on the original stmt was released, value-number
+         it to the VUSE.  This is to make vuse_ssa_val able to skip
+	 released virtual operands.  */
+      if (vdef && SSA_NAME_IN_FREE_LIST (vdef))
 	VN_INFO (vdef)->valnum = vuse;
     }
 
@@ -5424,31 +5404,28 @@ eliminate_dom_walker::eliminate_cleanup (bool region_p)
 		  do_release_defs = false;
 		}
 	    }
-	  else
-	    {
-	      tree lhs = gimple_get_lhs (stmt);
-	      if (TREE_CODE (lhs) == SSA_NAME
-		  && !has_zero_uses (lhs))
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file, "Keeping eliminated stmt live "
-			     "as copy because of out-of-region uses\n");
-		  tree sprime = eliminate_avail (gimple_bb (stmt), lhs);
-		  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-		  if (is_gimple_assign (stmt))
-		    {
-		      gimple_assign_set_rhs_from_tree (&gsi, sprime);
-		      update_stmt (gsi_stmt (gsi));
-		      continue;
-		    }
-		  else
-		    {
-		      gimple *copy = gimple_build_assign (lhs, sprime);
-		      gsi_insert_before (&gsi, copy, GSI_SAME_STMT);
-		      do_release_defs = false;
-		    }
-		}
-	    }
+	  else if (tree lhs = gimple_get_lhs (stmt))
+	    if (TREE_CODE (lhs) == SSA_NAME
+		&& !has_zero_uses (lhs))
+	      {
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  fprintf (dump_file, "Keeping eliminated stmt live "
+			   "as copy because of out-of-region uses\n");
+		tree sprime = eliminate_avail (gimple_bb (stmt), lhs);
+		gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+		if (is_gimple_assign (stmt))
+		  {
+		    gimple_assign_set_rhs_from_tree (&gsi, sprime);
+		    update_stmt (gsi_stmt (gsi));
+		    continue;
+		  }
+		else
+		  {
+		    gimple *copy = gimple_build_assign (lhs, sprime);
+		    gsi_insert_before (&gsi, copy, GSI_SAME_STMT);
+		    do_release_defs = false;
+		  }
+	      }
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5589,8 +5566,6 @@ free_rpo_vn (void)
   obstack_free (&vn_tables_obstack, NULL);
   obstack_free (&vn_tables_insert_obstack, NULL);
 
-  BITMAP_FREE (const_parms);
-
   vn_ssa_aux_iterator_type it;
   vn_ssa_aux_t info;
   FOR_EACH_HASH_TABLE_ELEMENT (*vn_ssa_aux_hash, info, vn_ssa_aux_t, it)
@@ -5669,7 +5644,7 @@ vn_lookup_simplify_result (gimple_match_op *res_op)
 				       res_op->type, ops, &vnresult);
   /* If this is used from expression simplification make sure to
      return an available expression.  */
-  if (res && mprts_hook && rpo_avail)
+  if (res && TREE_CODE (res) == SSA_NAME && mprts_hook && rpo_avail)
     res = rpo_avail->eliminate_avail (vn_context_bb, res);
   return res;
 }
@@ -5780,11 +5755,6 @@ rpo_vn_valueize (tree name)
   if (TREE_CODE (name) == SSA_NAME)
     {
       vn_ssa_aux_t val = VN_INFO (name);
-      /* For region-based VN this makes walk_non_aliased_vuses stop walking
-	 when we are about to look at a def outside of the region.  */
-      if (SSA_NAME_IS_VIRTUAL_OPERAND (name)
-	  && !val->visited)
-	return NULL_TREE;
       if (val)
 	{
 	  tree tem = val->valnum;
@@ -6309,7 +6279,6 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
   unsigned region_size = (((unsigned HOST_WIDE_INT)n * num_ssa_names)
 			  / (n_basic_blocks_for_fn (fn) - NUM_FIXED_BLOCKS));
   VN_TOP = create_tmp_var_raw (void_type_node, "vn_top");
-  init_const_parms ();
 
   vn_ssa_aux_hash = new hash_table <vn_ssa_aux_hasher> (region_size * 2);
   gcc_obstack_init (&vn_ssa_aux_obstack);
