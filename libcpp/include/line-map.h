@@ -61,20 +61,14 @@ inline int compare (linenum_type lhs, linenum_type rhs)
   return 0;
 }
 
-/* Reason for creating a new line map with linemap_add.  LC_ENTER is
-   when including a new file, e.g. a #include directive in C.
-   LC_LEAVE is when reaching a file's end.  LC_RENAME is when a file
-   name or line number changes for neither of the above reasons
-   (e.g. a #line directive in C); LC_RENAME_VERBATIM is like LC_RENAME
-   but a filename of "" is not specially interpreted as standard
-   input. LC_ENTER_MACRO is when a macro expansion is about to start.  */
+/* Reason for creating a new line map with linemap_add.  */
 enum lc_reason
 {
-  LC_ENTER = 0,
-  LC_LEAVE,
-  LC_RENAME,
-  LC_RENAME_VERBATIM,
-  LC_ENTER_MACRO,
+  LC_ENTER = 0,		/* Begin #include.  */
+  LC_LEAVE,		/* Return to including file.  */
+  LC_RENAME,		/* Other reason for name change.  */
+  LC_RENAME_VERBATIM,	/* Likewise, but "" != stdin.  */
+  LC_ENTER_MACRO,	/* Begin macro expansion.  */
   /* FIXME: add support for stringize and paste.  */
   LC_HWM /* High Water Mark.  */
 };
@@ -777,8 +771,7 @@ struct GTY(()) line_maps {
      may require allocating a new line_map.  */
   unsigned int max_column_hint;
 
-  /* If non-null, the allocator to use when resizing 'maps'.  If null,
-     xrealloc is used.  */
+  /* The allocator to use when resizing 'maps', defaults to xrealloc.  */
   line_map_realloc reallocator;
 
   /* The allocators' function used to know the actual size it
