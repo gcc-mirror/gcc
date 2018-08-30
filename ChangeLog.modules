@@ -1,5 +1,10 @@
 2018-08-30  Nathan Sidwell  <nathan@acm.org>
 
+	AIXify tests
+	fcc/testsuite/
+	* fn-inline-1_[abc].C: Adjust regexps.
+	* sym-subst-2_a.C: Don't add -fat-lto option, use scan-assembler instead.
+
 	Fix AIX
 	gcc/cp/
 	* cxx-mapper.cc (buffer::get_request): Reinit pos.

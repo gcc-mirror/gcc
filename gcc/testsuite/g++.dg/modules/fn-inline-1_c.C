@@ -12,4 +12,4 @@ int main ()
 }
 
 // { dg-final { scan-assembler "_Z4frobi:" } }
-// { dg-final { scan-assembler ".text._Z4frobi,.*,_Z4frobi,comdat" } }
+// { dg-final { scan-assembler ".weak\[\t ]*_Z4frobi" } }

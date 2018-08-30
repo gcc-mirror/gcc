@@ -1,3 +1,4 @@
+// { dg-require-weak "" } 
 
 export module bob;
 // { dg-module-bmi "bob" }
