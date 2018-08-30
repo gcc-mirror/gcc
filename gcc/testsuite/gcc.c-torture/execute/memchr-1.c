@@ -139,9 +139,9 @@ void test_wide (void)
   A (memchr (ws1, 0, sizeof ws1) == pws1 + 0);
 
   A (memchr (&ws4[0], 0, nb) == pws4 + 0);
-  A (memchr (&ws4[1], 0, nb - 1 * nwb) == pws4 + 1 * nwb + 0);
-  A (memchr (&ws4[2], 0, nb - 2 * nwb) == pws4 + 2 * nwb + 1);
-  A (memchr (&ws4[3], 0, nb - 3 * nwb) == pws4 + 3 * nwb + 2);
+  A (memchr (&ws4[1], 0, nb - 1 * nwb) == pws4 + 1 * nwb + 1);
+  A (memchr (&ws4[2], 0, nb - 2 * nwb) == pws4 + 2 * nwb + 2);
+  A (memchr (&ws4[3], 0, nb - 3 * nwb) == pws4 + 3 * nwb + 3);
 #endif
 }
 
