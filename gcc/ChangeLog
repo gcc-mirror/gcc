@@ -1,3 +1,9 @@
+2018-08-30  Thiago Macieira  <thiago.macieira@intel.com>
+
+	* config/i386/i386.c (PTA_WESTMERE): Remove PTA_AES.
+	(PTA_SKYLAKE): Add PTA_AES.
+	(PTA_GOLDMONT): Likewise.
+
 2018-08-29  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/86517
