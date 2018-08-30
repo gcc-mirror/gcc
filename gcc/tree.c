@@ -5519,9 +5519,14 @@ find_decls_types_r (tree *tp, int *ws, void *data)
       fld_worklist_push (TYPE_POINTER_TO (t), fld);
       fld_worklist_push (TYPE_REFERENCE_TO (t), fld);
       fld_worklist_push (TYPE_NAME (t), fld);
-      /* Do not walk TYPE_NEXT_PTR_TO or TYPE_NEXT_REF_TO.  We do not stream
-	 them and thus do not and want not to reach unused pointer types
-	 this way.  */
+      /* While we do not stream TYPE_POINTER_TO and TYPE_REFERENCE_TO
+	 lists, we may look types up in these lists and use them while
+	 optimizing the function body.  Thus we need to free lang data
+	 in them.  */
+      if (TREE_CODE (t) == POINTER_TYPE)
+        fld_worklist_push (TYPE_NEXT_PTR_TO (t), fld);
+      if (TREE_CODE (t) == REFERENCE_TYPE)
+        fld_worklist_push (TYPE_NEXT_REF_TO (t), fld);
       if (!POINTER_TYPE_P (t))
 	fld_worklist_push (TYPE_MIN_VALUE_RAW (t), fld);
       /* TYPE_MAX_VALUE_RAW is TYPE_BINFO for record types.  */
