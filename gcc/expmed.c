@@ -6239,7 +6239,13 @@ canonicalize_comparison (machine_mode mode, enum rtx_code *code, rtx *imm)
      wrapping around in the case of unsigned values.  If any occur
      cancel the optimization.  */
   wi::overflow_type overflow = wi::OVF_NONE;
-  wide_int imm_modif = wi::add (imm_val, to_add, sgn, &overflow);
+  wide_int imm_modif;
+
+  if (to_add == 1)
+    imm_modif = wi::add (imm_val, 1, sgn, &overflow);
+  else
+    imm_modif = wi::sub (imm_val, 1, sgn, &overflow);
+
   if (overflow)
     return;
 
