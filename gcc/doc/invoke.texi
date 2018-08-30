@@ -24556,12 +24556,10 @@ target-specific.
 
 @item -mstring-compare-inline-limit=@var{num}
 @opindex mstring-compare-inline-limit
-Generate at most @var{num} pairs of load instructions to compare the
-string inline. If the difference or end of string is not found at the
+Compare at most @var{num} string bytes with inline code.
+If the difference or end of string is not found at the
 end of the inline compare a call to @code{strcmp} or @code{strncmp} will
-take care of the rest of the comparison. The default is 8 pairs of
-loads, which will compare 64 bytes on a 64-bit target and 32 bytes on a
-32-bit target.
+take care of the rest of the comparison. The default is 64 bytes.
 
 @item -G @var{num}
 @opindex G
