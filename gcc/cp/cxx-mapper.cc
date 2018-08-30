@@ -617,6 +617,7 @@ buffer::get_request (unsigned id, FILE *file)
       off += strlen (buf + off);
     }
   while (off && buf[off - 1] != '\n');
+  pos = buf;
   end = buf + off;
   *--end = 0;
 
