@@ -1,3 +1,8 @@
+2018-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87147
+	* gcc.dg/torture/pr87147.c: New testcase.
+
 2018-08-30  Tamar Christina  <tamar.christina@arm.com>
 
  	* gcc.target/aarch64/large_struct_copy_2.c: New.

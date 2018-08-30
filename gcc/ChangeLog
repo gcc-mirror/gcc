@@ -1,3 +1,11 @@
+2018-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87147
+	* tree-ssa-sccvn.c (SSA_VISITED): New function.
+	(visit_phi): When the degenerate result is from the backedge and
+	we didn't visit its definition yet drop to VARYING.
+	(do_rpo_vn): Properly mark blocks with incoming backedges as executable.
+
 2018-08-29  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not walk

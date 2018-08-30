@@ -462,6 +462,15 @@ SSA_VAL (tree x)
   return tem && tem->visited ? tem->valnum : x;
 }
 
+/* Return whether X was visited.  */
+
+inline bool
+SSA_VISITED (tree x)
+{
+  vn_ssa_aux_t tem = vn_ssa_aux_hash->find_with_hash (x, SSA_NAME_VERSION (x));
+  return tem && tem->visited;
+}
+
 /* Return the SSA value of the VUSE x, supporting released VDEFs
    during elimination which will value-number the VDEF to the
    associated VUSE (but not substitute in the whole lattice).  */
@@ -4100,6 +4109,7 @@ static bool
 visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 {
   tree result, sameval = VN_TOP, seen_undef = NULL_TREE;
+  tree backedge_name = NULL_TREE;
   tree sameval_base = NULL_TREE;
   poly_int64 soff, doff;
   unsigned n_executable = 0;
@@ -4126,9 +4136,13 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
 
 	++n_executable;
-	if (TREE_CODE (def) == SSA_NAME
-	    && (!backedges_varying_p || !(e->flags & EDGE_DFS_BACK)))
-	  def = SSA_VAL (def);
+	if (TREE_CODE (def) == SSA_NAME)
+	  {
+	    if (e->flags & EDGE_DFS_BACK)
+	      backedge_name = def;
+	    if (!backedges_varying_p || !(e->flags & EDGE_DFS_BACK))
+	      def = SSA_VAL (def);
+	  }
 	if (def == VN_TOP)
 	  ;
 	/* Ignore undefined defs for sameval but record one.  */
@@ -4162,10 +4176,15 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	  }
       }
 
-
+  /* If the value we want to use is the backedge and that wasn't visited
+     yet drop to VARYING.  */ 
+  if (backedge_name
+      && sameval == backedge_name
+      && !SSA_VISITED (backedge_name))
+    result = PHI_RESULT (phi);
   /* If none of the edges was executable keep the value-number at VN_TOP,
      if only a single edge is exectuable use its value.  */
-  if (n_executable <= 1)
+  else if (n_executable <= 1)
     result = seen_undef ? seen_undef : sameval;
   /* If we saw only undefined values and VN_TOP use one of the
      undefined values.  */
@@ -6298,6 +6317,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
       rpo_state[i].visited = 0;
+      bb->flags &= ~BB_EXECUTABLE;
       bool has_backedges = false;
       edge e;
       edge_iterator ei;
@@ -6306,12 +6326,17 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	  if (e->flags & EDGE_DFS_BACK)
 	    has_backedges = true;
 	  if (! iterate && (e->flags & EDGE_DFS_BACK))
-	    e->flags |= EDGE_EXECUTABLE;
+	    {
+	      e->flags |= EDGE_EXECUTABLE;
+	      /* ???  Strictly speaking we only need to unconditionally
+		 process a block when it is in an irreducible region,
+		 thus when it may be reachable via the backedge only.  */
+	      bb->flags |= BB_EXECUTABLE;
+	    }
 	  else
 	    e->flags &= ~EDGE_EXECUTABLE;
 	}
       rpo_state[i].iterate = iterate && has_backedges;
-      bb->flags &= ~BB_EXECUTABLE;
     }
   entry->flags |= EDGE_EXECUTABLE;
   entry->dest->flags |= BB_EXECUTABLE;
