@@ -1,5 +1,17 @@
 2018-08-29  Jan Hubicka  <jh@suse.cz>
 
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not follow
+	TYPE_STUB_DECL.
+	(hash_tree): Do not visit TYPE_STUB_DECL.
+	* tree-streamer-out.c (write_ts_type_common_tree_pointers): Do not
+	stream TYPE_STUB_DECL.
+	* tree-streamer-in.c (lto_input_ts_type_common_tree_pointers): Likewise.
+	* ipa-utils.h (type_with_linkage_p): Do not rely on TYPE_STUB_DECL
+	after free_lang_data.
+	(type_in_anonymous_namespace_p): Likewise.
+
+2018-08-29  Jan Hubicka  <jh@suse.cz>
+
 	* sreal.h (SREAL_PART_BITS): Change to 31; remove seemingly unnecessary
 	comment that it has to be even number.
 	(class sreal): Change m_sig type to int32_t.
