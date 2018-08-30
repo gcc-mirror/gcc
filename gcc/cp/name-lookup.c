@@ -3653,7 +3653,8 @@ set_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
   if (export_tail)
     {
       *mslot = stat_hack (value, NULL_TREE);
-      STAT_EXPORTS (*mslot) = export_tail;
+      /* Static cast needed to trigger mc_slot's conversion operator.  */
+      STAT_EXPORTS (static_cast <tree> (*mslot)) = export_tail;
     }
   else
     *mslot = value;
