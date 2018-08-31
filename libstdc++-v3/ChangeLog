@@ -1,3 +1,64 @@
+2018-08-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/10.cc:
+	Add dg-require-fileio.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/11.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/5.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/wchar_t/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/4.cc:
+	Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/11543.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-1.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-3.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-4.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-1.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-4.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/open/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/get/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/5.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/sstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/sstream.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/open/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/objects/wchar_t/10.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-2.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-3.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-4.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-5.cc: Likewise.
+	* testsuite/experimental/string_view/inserters/wchar_t/2.cc:
+	Likewise.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/1.cc: Likewise.
+
 2018-08-30  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* testsuite/experimental/propagate_const/observers/1.cc: Make

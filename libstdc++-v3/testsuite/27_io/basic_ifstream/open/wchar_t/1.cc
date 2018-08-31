@@ -18,6 +18,7 @@
 // 30.9.3.1 basic_ifstream constructors [ifstream.cons]
 
 // { dg-do run { target *-*-mingw* } }
+// { dg-require-fileio "" }
 
 #include <fstream>
 #include <testsuite_hooks.h>

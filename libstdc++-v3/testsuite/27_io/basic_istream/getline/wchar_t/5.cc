@@ -18,6 +18,7 @@
 // 27.6.1.3 unformatted input functions
 
 // { dg-options "-DMAX_LENGTH=7" { target simulator } }
+// { dg-require-fileio "" }
 
 #ifndef MAX_LENGTH
 #define MAX_LENGTH 777
