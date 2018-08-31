@@ -391,7 +391,7 @@ funcs="$funcs setproctitle"
 vars="sys_errlist sys_nerr sys_siglist"
 
 checkfuncs="__fsetlocking canonicalize_file_name dup3 getrlimit getrusage \
- getsysinfo gettimeofday on_exit psignal pstat_getdynamic pstat_getstatic \
+ getsysinfo gettimeofday on_exit pipe2 psignal pstat_getdynamic pstat_getstatic \
  realpath setrlimit sbrk spawnve spawnvpe strerror strsignal sysconf sysctl \
  sysmp table times wait3 wait4"
 
@@ -407,7 +407,7 @@ if test "x" = "y"; then
     index insque \
     memchr memcmp memcpy memmem memmove memset mkstemps \
     on_exit \
-    psignal pstat_getdynamic pstat_getstatic putenv \
+    pipe2 psignal pstat_getdynamic pstat_getstatic putenv \
     random realpath rename rindex \
     sbrk setenv setproctitle setrlimit sigsetmask snprintf spawnve spawnvpe \
      stpcpy stpncpy strcasecmp strchr strdup \

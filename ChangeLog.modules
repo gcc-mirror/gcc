@@ -1,3 +1,10 @@
+2018-08-31  Nathan Sidwell  <nathan@acm.org>
+
+	libiberty/
+	* configure.ac (checkfuncs, AC_CHECK_FUNCS): Add pipe2.
+	* configure, config.in: Regenerated.
+	* pex-unix.c (pex_unix_execute): Use pipe to transfer child failure.
+
 2018-08-30  Nathan Sidwell  <nathan@acm.org>
 
 	AIXify tests

@@ -60,9 +60,9 @@ extern int errno;
 #endif
 
 #ifdef vfork /* Autoconf may define this to fork for us. */
-# define VFORK_IS_FORK 1
+# define IS_FAKE_VFORK 1
 #else
-# define VFORK_IS_FORK 0
+# define IS_FAKE_VFORK 0
 #endif
 #ifdef HAVE_VFORK_H
 #include <vfork.h>
@@ -569,6 +569,38 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 		     int toclose, const char **errmsg, int *err)
 {
   pid_t pid = -1;
+  /* Tuple to comminicate error from child to parent.  We can safely
+     transfer string literal pointers as both run with identical
+     address mappings.  */
+  struct fn_err 
+  {
+    const char *fn;
+    int err;
+  };
+  volatile int do_pipe = 0;
+  volatile int pipes[2]; /* [0]:reader,[1]:writer.  */
+#ifdef O_CLOEXEC
+  do_pipe = 1;
+#endif
+  if (do_pipe)
+    {
+#ifdef HAVE_PIPE2
+      if (pipe2 ((int *)pipes, O_CLOEXEC))
+	do_pipe = 0;
+#else
+      if (pipe ((int *)pipes))
+	do_pipe = 0;
+      else
+	{
+	  if (fcntl (pipes[1], F_SETFD, FD_CLOEXEC) == -1)
+	    {
+	      close (pipes[0]);
+	      close (pipes[1]);
+	      do_pipe = 0;
+	    }
+	}
+#endif
+    }
 
   /* We declare these to be volatile to avoid warnings from gcc about
      them being clobbered by vfork.  */
@@ -583,14 +615,6 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
      dead variable and therefore clobber where ever it is stored.  */
   char **volatile save_environ = environ;
 
-  /* If we are using a true vfork, these allow the child to convey an
-     error to the parent immediately -- rather than discover it later
-     when trying to communicate.  Notice we're already in undefined
-     territory by not immediately calling execv[p] or _exit in the
-     child. */
-  volatile int child_errno = 0;
-  const char *volatile child_bad_fn = NULL;
-
   for (retries = 0; retries < 4; ++retries)
     {
       pid = vfork ();
@@ -603,42 +627,45 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
   switch (pid)
     {
     case 0:
-      /* Child process.  */
       {
-	const char *bad_fn = NULL;
+	struct fn_err failed;
+	failed.fn = NULL;
 
-	if (!bad_fn && in != STDIN_FILE_NO)
+	/* Child process.  */
+	if (do_pipe)
+	  close (pipes[0]);
+	if (!failed.fn && in != STDIN_FILE_NO)
 	  {
 	    if (dup2 (in, STDIN_FILE_NO) < 0)
-	      bad_fn = "dup2";
+	      failed.fn = "dup2", failed.err = errno;
 	    else if (close (in) < 0)
-	      bad_fn = "close";
+	      failed.fn = "close", failed.err = errno;
 	  }
-	if (!bad_fn && out != STDOUT_FILE_NO)
+	if (!failed.fn && out != STDOUT_FILE_NO)
 	  {
 	    if (dup2 (out, STDOUT_FILE_NO) < 0)
-	      bad_fn = "dup2";
+	      failed.fn = "dup2", failed.err = errno;
 	    else if (close (out) < 0)
-	      bad_fn = "close";
+	      failed.fn = "close", failed.err = errno;
 	  }
-	if (!bad_fn && errdes != STDERR_FILE_NO)
+	if (!failed.fn && errdes != STDERR_FILE_NO)
 	  {
 	    if (dup2 (errdes, STDERR_FILE_NO) < 0)
-	      bad_fn = "dup2";
+	      failed.fn = "dup2", failed.err = errno;
 	    else if (close (errdes) < 0)
-	      bad_fn = "close";
+	      failed.fn = "close", failed.err = errno;
 	  }
-	if (!bad_fn && toclose >= 0)
+	if (!failed.fn && toclose >= 0)
 	  {
 	    if (close (toclose) < 0)
-	      bad_fn = "close";
+	      failed.fn = "close", failed.err = errno;
 	  }
-	if (!bad_fn && (flags & PEX_STDERR_TO_STDOUT) != 0)
+	if (!failed.fn && (flags & PEX_STDERR_TO_STDOUT) != 0)
 	  {
 	    if (dup2 (STDOUT_FILE_NO, STDERR_FILE_NO) < 0)
-	      bad_fn = "dup2";
+	      failed.fn = "dup2", failed.err = errno;
 	  }
-	if (!bad_fn)
+	if (!failed.fn)
 	  {
 	    if (env)
 	      /* NOTE: In a standard vfork implementation this clobbers
@@ -648,34 +675,34 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	    if ((flags & PEX_SEARCH) != 0)
 	      {
 		execvp (executable, to_ptr32 (argv));
-		bad_fn = "execvp";
+		failed.fn = "execvp", failed.err = errno;
 	      }
 	    else
 	      {
 		execv (executable, to_ptr32 (argv));
-		bad_fn = "execv";
+		failed.fn = "execv", failed.err = errno;
 	      }
 	  }
 
-	int eno = errno;
-	
-	/* Something failed.  */
-	int retval = -1;
-	if (VFORK_IS_FORK)
+	/* Something failed, report an error.  We don't use stdio
+	   routines, because we might be here due to a vfork call.  */
+	ssize_t retval = 0;
+
+	if (!do_pipe
+	    || write (pipes[1], &failed, sizeof (failed)) != sizeof (failed))
 	  {
-	    /* We really forked.  We cannot tell the parent the error,
-	       but we can use stdio.  */
-	    if (fprintf (stderr, "%s: error trying to exec '%s': %s: %s\n",
-			 obj->pname, executable, bad_fn, xstrerror (errno)) < 0
-		|| fflush (stderr) != 0)
-	      retval = -2;
-	  }
-	else
-	  {
-	    /* We used vfork, therefore running in the same address
-	       space as the parent.  Tell it we failed.  */
-	    child_bad_fn = bad_fn;
-	    child_errno = errno;
+	    /* The parent will not see our scream above, so write to
+	       stdout.  */
+#define writeerr(s) (retval |= write (STDERR_FILE_NO, s, strlen (s)))
+	    writeerr (obj->pname);
+	    writeerr (": error trying to exec '");
+	    writeerr (executable);
+	    writeerr ("': ");
+	    writeerr (failed.fn);
+	    writeerr (": ");
+	    writeerr (xstrerror (failed.err));
+	    writeerr ("\n");
+#undef writeerr
 	  }
 
 	_exit (retval);
@@ -684,16 +711,18 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
       return (pid_t) -1;
 
     case -1:
-      /* Failed to (v)fork.  */
-      child_bad_fn = VFORK_IS_FORK ? "fork" : "vfork";
-      /* Don't need to save errno.  */
-      /* FALLTHROUGH */
+      if (do_pipe)
+	{
+	  close (pipes[0]);
+	  close (pipes[1]);
+	}
+      *err = errno;
+      *errmsg = IS_FAKE_VFORK ? "fork" : "vfork";
+      return (pid_t) -1;
 
     default:
       /* Parent process.  */
       {
-	const char *bad_fn = child_bad_fn;
-
 	/* Restore environ.  Note that the parent either doesn't run
 	   until the child execs/exits (standard vfork behaviour), or
 	   if it does run then vfork is behaving more like fork.  In
@@ -701,28 +730,31 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	   copy of environ.  */
 	environ = save_environ;
 
-	if (!VFORK_IS_FORK)
+	struct fn_err failed;
+	failed.fn = NULL;
+	if (do_pipe)
 	  {
-	    int e = child_errno;
-	    if (e)
-	      /* The child managed to give us an error, before failing to
-		 start.  Use that.  */
-	      errno = e;
+	    close (pipes[1]);
+	    ssize_t len = read (pipes[0], &failed, sizeof (failed));
+	    if (len < 0)
+	      failed.fn = NULL;
+	    close (pipes[0]);
 	  }
-	if (!bad_fn && in != STDIN_FILE_NO)
-	  if (close (in) < 0)
-	    bad_fn = "close";
-	if (!bad_fn && out != STDOUT_FILE_NO)
-	  if (close (out) < 0)
-	    bad_fn = "close";
-	if (!bad_fn && errdes != STDERR_FILE_NO)
-	  if (close (errdes) < 0)
-	    bad_fn = "close";
 
-	if (bad_fn)
+	if (!failed.fn && in != STDIN_FILE_NO)
+	  if (close (in) < 0)
+	    failed.fn = "close", failed.err = errno;
+	if (!failed.fn && out != STDOUT_FILE_NO)
+	  if (close (out) < 0)
+	    failed.fn = "close", failed.err = errno;
+	if (!failed.fn && errdes != STDERR_FILE_NO)
+	  if (close (errdes) < 0)
+	    failed.fn = "close", failed.err = errno;
+
+	if (failed.fn)
 	  {
-	    *err = errno;
-	    *errmsg = bad_fn;
+	    *err = failed.err;
+	    *errmsg = failed.fn;
 	    return (pid_t) -1;
 	  }
       }
