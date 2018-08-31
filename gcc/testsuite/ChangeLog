@@ -1,3 +1,36 @@
+2018-08-31  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86927
+	* gcc.dg/vect/pr86927.c: New testcase.
+
+	2018-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87024
+	* gcc.dg/pr87024.c: New testcase.
+
+	2018-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86945
+	* gcc.dg/torture/pr86945.c: New testcase.
+
+	2018-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86505
+	* gcc.dg/torture/pr86505.c: New testcase.
+
+	2018-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86816
+	* g++.dg/torture/pr86816.C: New testcase.
+
+	2018-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86456
+	* g++.dg/debug/dwarf2/pr86456.C: New testcase.
+
 2018-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87122
