@@ -2910,7 +2910,7 @@ estimate_local_effects (struct cgraph_node *node)
 		     "known contexts, code not going to grow.\n");
 	}
       else if (good_cloning_opportunity_p (node,
-					   MAX ((base_time - time).to_int (),
+					   MIN ((base_time - time).to_int (),
 						65536),
 					   stats.freq_sum, stats.count_sum,
 					   size))
