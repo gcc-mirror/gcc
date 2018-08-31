@@ -1,3 +1,10 @@
+2018-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87168
+	* tree-ssa-sccvn.c (SSA_VAL): Add visited output parameter.
+	(rpo_elim::eliminate_avail): When OP was not visited it must
+	be available.
+
 2018-08-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* tree-vrp.c (copy_value_range): Convert param "from" from

@@ -456,9 +456,11 @@ VN_INFO (tree name)
 /* Return the SSA value of X.  */
 
 inline tree
-SSA_VAL (tree x)
+SSA_VAL (tree x, bool *visited = NULL)
 {
   vn_ssa_aux_t tem = vn_ssa_aux_hash->find_with_hash (x, SSA_NAME_VERSION (x));
+  if (visited)
+    *visited = tem && tem->visited;
   return tem && tem->visited ? tem->valnum : x;
 }
 
@@ -5681,7 +5683,12 @@ rpo_elim::~rpo_elim ()
 tree
 rpo_elim::eliminate_avail (basic_block bb, tree op)
 {
-  tree valnum = SSA_VAL (op);
+  bool visited;
+  tree valnum = SSA_VAL (op, &visited);
+  /* If we didn't visit OP then it must be defined outside of the
+     region we process and also dominate it.  So it is available.  */
+  if (!visited)
+    return op;
   if (TREE_CODE (valnum) == SSA_NAME)
     {
       if (SSA_NAME_IS_DEFAULT_DEF (valnum))
