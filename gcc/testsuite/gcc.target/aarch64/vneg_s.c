@@ -75,6 +75,18 @@ extern void abort (void);
       }									\
   }
 
+#define RUN_TEST_SCALAR(test_val, answ_val, a, b)     \
+  {                                                   \
+    int64_t res;                                      \
+    INHIB_OPTIMIZATION;                               \
+    a = test_val;                                     \
+    b = answ_val;                                     \
+    force_simd (b);                                   \
+    force_simd (a);                                   \
+    res = vnegd_s64 (a);                              \
+    force_simd (res);                                 \
+  }
+
 int
 test_vneg_s8 ()
 {
@@ -177,7 +189,24 @@ test_vneg_s64 ()
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "neg\\td\[0-9\]+, d\[0-9\]+" 8 } } */
+int
+test_vnegd_s64 ()
+{
+  int64_t a, b;
+
+  RUN_TEST_SCALAR (TEST0, ANSW0, a, b);
+  RUN_TEST_SCALAR (TEST1, ANSW1, a, b);
+  RUN_TEST_SCALAR (TEST2, ANSW2, a, b);
+  RUN_TEST_SCALAR (TEST3, ANSW3, a, b);
+  RUN_TEST_SCALAR (TEST4, ANSW4, a, b);
+  RUN_TEST_SCALAR (TEST5, ANSW5, a, b);
+  RUN_TEST_SCALAR (LLONG_MAX, LLONG_MIN + 1, a, b);
+  RUN_TEST_SCALAR (LLONG_MIN, LLONG_MIN, a, b);
+
+  return 0;
+}
+
+/* { dg-final { scan-assembler-times "neg\\td\[0-9\]+, d\[0-9\]+" 16 } } */
 
 int
 test_vnegq_s8 ()
@@ -281,6 +310,9 @@ main (int argc, char **argv)
     abort ();
 
   if (test_vneg_s64 ())
+    abort ();
+
+  if (test_vnegd_s64 ())
     abort ();
 
   if (test_vnegq_s8 ())

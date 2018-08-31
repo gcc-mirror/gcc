@@ -1,3 +1,8 @@
+2018-08-31  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* config/aarch64/arm_neon.h (vabsd_s64): New.
+	(vnegd_s64): Likewise.
+
 2018-08-31  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (estimate_local_effects): Replace wrong MAX with MIN.
