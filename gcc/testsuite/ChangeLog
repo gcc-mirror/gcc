@@ -1,3 +1,8 @@
+2018-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87168
+	* gcc.dg/torture/pr87168.c: New testcase.
+
 2018-08-31  Vlad Lazar  <vlad.lazar@arm.com>
 
 	* gcc.target/aarch64/scalar_intrinsics.c (test_vnegd_s64): New.
