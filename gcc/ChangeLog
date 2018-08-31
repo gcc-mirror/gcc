@@ -1,3 +1,8 @@
+2018-08-31  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/extend.texi (Backwards Compatibility): Remove implicit
+	extern C leeway of () being (...).
+
 2018-08-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* ipa-inline.c (can_inline_edge_by_limits_p): Fix typos in comment.

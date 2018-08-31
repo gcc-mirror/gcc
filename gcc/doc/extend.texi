@@ -23685,9 +23685,9 @@ deprecated.   @xref{Deprecated Features}.
 @item Implicit C language
 Old C system header files did not contain an @code{extern "C" @{@dots{}@}}
 scope to set the language.  On such systems, all system header files are
-implicitly scoped inside a C language scope.  Also, an empty prototype
-@code{()} is treated as an unspecified number of arguments, rather
-than no arguments, as C++ demands.
+implicitly scoped inside a C language scope.  Such headers must
+correctly prototype function argument types, there is no leeway for
+@code{()} to indicate an unspecified set of arguments.
 
 @end table
 

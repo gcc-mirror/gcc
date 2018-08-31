@@ -1,3 +1,10 @@
+2018-08-31  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (decls_match): Remove SYSTEM_IMPLICIT_EXTERN_C matching
+	of return types and parms.
+	* parser.c (cp_parser_parameter_declaration_clause): Likewise,
+	'()' always means '(void)'.
+
 2018-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87095
