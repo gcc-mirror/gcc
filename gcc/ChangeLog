@@ -1,3 +1,7 @@
+2018-08-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* ipa-inline.c (can_inline_edge_by_limits_p): Fix typos in comment.
+
 2018-08-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/86684
