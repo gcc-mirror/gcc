@@ -1,3 +1,7 @@
+2018-08-31  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (estimate_local_effects): Replace wrong MAX with MIN.
+
 2018-08-31  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sem_item::add_type): Use
