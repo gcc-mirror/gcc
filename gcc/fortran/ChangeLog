@@ -1,3 +1,13 @@
+2018-08-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86328
+	PR fortran/86760
+	* trans-array.c (gfc_conv_scalarized_array_ref): Do not fix
+	info->descriptor but pass it directly to gfc_build_array_ref.
+	(gfc_conv_array_ref): Likewise for se->expr.
+	* trans.c (gfc_build_array_ref): If 'decl' is a COMPONENT_REF
+	obtain the span field directly from it.
+
 2017-08-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80477
