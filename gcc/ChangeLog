@@ -1,3 +1,43 @@
+2018-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-vrp.c (copy_value_range): Convert param "from" from
+	"value_range *" to "const value_range *".
+	(range_is_null): Likewise for param "vr".
+	(range_int_cst_p): Likewise.
+	(range_int_cst_singleton_p): Likewise.
+	(symbolic_range_p): Likewise.
+	(value_ranges_intersect_p): Likewise for both params.
+	(value_range_nonnegative_p): Likewise for param "vr".
+	(value_range_constant_singleton): Likewise.
+	(vrp_set_zero_nonzero_bits): Likewise for param "ar".
+	(extract_range_into_wide_ints): Likewise for param "vr".
+	(extract_range_from_multiplicative_op): Likewise for params "vr0"
+	and "vr1".
+	(vrp_can_optimize_bit_op): Likewise.
+	(extract_range_from_binary_expr_1): Likewise for params "vr0_" and
+	"vr1_".
+	(extract_range_from_unary_expr): Likewise.
+	(debug_value_range): Likewise for param "vr".
+	(value_range::dump): Add "const" qualifier.
+	(vrp_prop::check_array_ref): Convert local "vr" from
+	"value_range *" to "const value_range *".
+	(vrp_prop::check_mem_ref): Likewise.
+	(vrp_prop::visit_stmt): Likewise for local "old_vr".
+	(vrp_intersect_ranges_1): Likewise for param "vr_1".
+	(vrp_intersect_ranges): Likewise.
+	(simplify_stmt_for_jump_threading): Likewise for local "vr".
+	(vrp_prop::vrp_finalize): Likewise.
+	* tree-vrp.h (value_range::dump): Add "const" qualifier.
+	(vrp_intersect_ranges): Add "const" qualifier to params as above.
+	(extract_range_from_unary_expr): Likewise.
+	(value_range_constant_singleton): Likewise.
+	(symbolic_range_p): Likewise.
+	(copy_value_range): Likewise.
+	(extract_range_from_binary_expr_1): Likewise.
+	(range_int_cst_p): Likewise.
+	(vrp_set_zero_nonzero_bits): Likewise.
+	(range_int_cst_singleton_p): Likewise.
+
 2018-08-31  Vlad Lazar  <vlad.lazar@arm.com>
 
 	* config/aarch64/arm_neon.h (vabsd_s64): New.
