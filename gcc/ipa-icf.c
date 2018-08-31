@@ -227,6 +227,8 @@ void sem_item::set_hash (hashval_t hash)
   m_hash_set = true;
 }
 
+hash_map<const_tree, hashval_t> sem_item::m_type_hash_cache;
+
 /* Semantic function constructor that uses STACK as bitmap memory stack.  */
 
 sem_function::sem_function (bitmap_obstack *stack)
@@ -1587,7 +1589,7 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
 	  return;
 	}
 
-      hashval_t *val = optimizer->m_type_hash_cache.get (type);
+      hashval_t *val = m_type_hash_cache.get (type);
 
       if (!val)
 	{
@@ -1607,7 +1609,7 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
 	  hstate2.add_int (nf);
 	  hash = hstate2.end ();
 	  hstate.add_hwi (hash);
-	  optimizer->m_type_hash_cache.put (type, hash);
+	  m_type_hash_cache.put (type, hash);
 	}
       else
         hstate.add_hwi (*val);

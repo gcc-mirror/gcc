@@ -1,3 +1,10 @@
+2018-08-31  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_item::add_type): Use
+	sem_item::m_type_hash_cache.
+	* ipa-icf.h: Move the cache from sem_item_optimizer
+	to sem_item.
+
 2018-08-31  Nathan Sidwell  <nathan@acm.org>
 
 	* doc/extend.texi (Backwards Compatibility): Remove implicit
