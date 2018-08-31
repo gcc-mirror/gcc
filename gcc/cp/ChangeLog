@@ -1,5 +1,10 @@
 2018-08-31  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/87155
+	PR c++/84707
+	* name-lookup.c (name_lookup::search_namespace): Don't look at
+	inlines when searching for NULL names.
+
 	* decl.c (decls_match): Remove SYSTEM_IMPLICIT_EXTERN_C matching
 	of return types and parms.
 	* parser.c (cp_parser_parameter_declaration_clause): Likewise,
