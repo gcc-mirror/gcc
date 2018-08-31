@@ -2,7 +2,10 @@
 // { dg-do compile { target c++11 } }
 
 inline namespace {
-  namespace {}
+	 namespace {} // not this one
+	 void a ();
 }
 
-namespace {} // { dg-error "conflicts" }
+namespace {
+  int a (); // { dg-error "ambiguating" "" }
+}
