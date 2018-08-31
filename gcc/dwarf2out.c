@@ -28472,7 +28472,7 @@ init_sections_and_labels (bool early_lto_debug)
       debug_str_section = get_section (DEBUG_LTO_STR_SECTION,
 				       DEBUG_STR_SECTION_FLAGS
 				       | SECTION_EXCLUDE, NULL);
-      if (!dwarf_split_debug_info && !output_asm_line_debug_info ())
+      if (!dwarf_split_debug_info)
 	debug_line_str_section
 	  = get_section (DEBUG_LTO_LINE_STR_SECTION,
 			 DEBUG_STR_SECTION_FLAGS | SECTION_EXCLUDE, NULL);
@@ -31074,6 +31074,11 @@ dwarf2out_finish (const char *)
 
       /* Remove indirect string decisions.  */
       debug_str_hash->traverse<void *, reset_indirect_string> (NULL);
+      if (debug_line_str_hash)
+	{
+	  debug_line_str_hash->traverse<void *, reset_indirect_string> (NULL);
+	  debug_line_str_hash = NULL;
+	}
     }
 
 #if ENABLE_ASSERT_CHECKING
@@ -31330,8 +31335,8 @@ dwarf2out_finish (const char *)
       switch_to_section (debug_loc_section);
       if (dwarf_version >= 5)
 	{
-	  ASM_GENERATE_INTERNAL_LABEL (l1, DEBUG_LOC_SECTION_LABEL, 1);
-	  ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_LOC_SECTION_LABEL, 2);
+	  ASM_GENERATE_INTERNAL_LABEL (l1, DEBUG_LOC_SECTION_LABEL, 2);
+	  ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_LOC_SECTION_LABEL, 3);
 	  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
 	    dw2_asm_output_data (4, 0xffffffff,
 				 "Initial length escape value indicating "
@@ -31950,6 +31955,13 @@ dwarf2out_early_finish (const char *filename)
   /* If we emitted any indirect strings, output the string table too.  */
   if (debug_str_hash || skeleton_debug_str_hash)
     output_indirect_strings ();
+  if (debug_line_str_hash)
+    {
+      switch_to_section (debug_line_str_section);
+      const enum dwarf_form form = DW_FORM_line_strp;
+      debug_line_str_hash->traverse<enum dwarf_form,
+				    output_indirect_string> (form);
+    }
 
   /* Switch back to the text section.  */
   switch_to_section (text_section);

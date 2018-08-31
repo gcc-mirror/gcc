@@ -1,3 +1,48 @@
+2018-08-31  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86927
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Properly
+	use const cond reduction code.
+
+	2018-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87024
+	* tree-inline.c (copy_bb): Drop unused __builtin_va_arg_pack_len
+	calls.
+
+	2018-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86945
+	* tree-cfg.c (generate_range_test): Use unsigned arithmetic.
+
+	2018-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86505
+	* tree-inline.c (copy_bb): When inlining __builtin_va_arg_pack_len ()
+	across a va-arg-pack using call adjust its return value accordingly.
+
+	2018-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86816
+	* tree-ssa-tail-merge.c (tail_merge_valueize): New function
+	which checks for value availability before querying it.
+	(gvn_uses_equal): Use it.
+	(same_succ_hash): Likewise.
+	(gimple_equal_p): Likewise.
+
+	2018-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86456
+	* dwarf2out.c (init_sections_and_labels): Always generate
+	a debug_line_str_section for early LTO debug.
+	(dwarf2out_finish): Reset debug_line_str_hash output early.
+	Bump counter for extra dwarf5 .debug_loc labels to not conflict
+	with fat LTO part.
+	(dwarf2out_early_finish): Output debug_line_str.
+
 2018-08-29  Luis Machado  <luis.machado@linaro.org>
 
 	* config/aarch64/aarch64.c (qdf24xx_vector_cost): New static global.
