@@ -1,3 +1,12 @@
+2018-08-31  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vnegd_s64): New.
+	* gcc.target/aarch64/vneg_s.c (RUN_TEST_SCALAR): New.
+	(test_vnegd_s64): Likewise.
+	* gcc.target/aarch64/vnegd_64.c: New.
+	* gcc.target/aarch64/vabsd_64.c: New.
+	* gcc.tartget/aarch64/vabs_intrinsic_3.c: New.
+
 2018-08-31  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/87155
