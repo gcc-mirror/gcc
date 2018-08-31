@@ -1,3 +1,8 @@
+2018-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87138
+	* gcc.target/i386/avx512bw-pr87138.c: New test.
+
 2018-08-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/86328
