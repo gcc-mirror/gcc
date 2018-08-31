@@ -560,11 +560,14 @@ name_lookup::search_namespace (tree scope)
 
   /* Look in exactly namespace. */
   bool found = search_namespace_only (scope);
-  
-  /* Recursively look in its inline children.  */
-  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
-    for (unsigned ix = inlinees->length (); ix--;)
-      found |= search_namespace ((*inlinees)[ix]);
+
+  /* Don't look into inline children, if we're looking for an
+     anonymous name -- it must be in the current scope, if anywhere.  */
+  if (name)
+    /* Recursively look in its inline children.  */
+    if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+      for (unsigned ix = inlinees->length (); ix--;)
+	found |= search_namespace ((*inlinees)[ix]);
 
   if (found)
     mark_found (scope);

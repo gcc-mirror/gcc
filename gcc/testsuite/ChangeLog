@@ -1,3 +1,10 @@
+2018-08-31  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87155
+	PR c++/84707
+	* g++.dg/cpp0x/pr87155.C: New.
+	* g++.dg/cpp0x/inline-ns10.C: Adjust.
+
 2018-08-31  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

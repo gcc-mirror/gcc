@@ -1,3 +1,10 @@
+2018-08-31  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87155
+	PR c++/84707
+	* name-lookup.c (name_lookup::search_namespace): Don't look at
+	inlines when searching for NULL names.
+
 2018-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87122
