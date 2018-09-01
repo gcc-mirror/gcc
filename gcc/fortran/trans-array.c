@@ -3414,11 +3414,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   if (is_pointer_array (info->descriptor))
     {
       if (TREE_CODE (info->descriptor) == COMPONENT_REF)
-	{
-	  decl = gfc_evaluate_now (info->descriptor, &se->pre);
-	  GFC_DECL_PTR_ARRAY_P (decl) = 1;
-	  TREE_USED (decl) = 1;
-	}
+	decl = info->descriptor;
       else if (TREE_CODE (info->descriptor) == INDIRECT_REF)
 	decl = TREE_OPERAND (info->descriptor, 0);
 
@@ -3659,11 +3655,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
       && is_pointer_array (se->expr))
     {
       if (TREE_CODE (se->expr) == COMPONENT_REF)
-	{
-	  decl = gfc_evaluate_now (se->expr, &se->pre);
-	  GFC_DECL_PTR_ARRAY_P (decl) = 1;
-	  TREE_USED (decl) = 1;
-	}
+	decl = se->expr;
       else if (TREE_CODE (se->expr) == INDIRECT_REF)
 	decl = TREE_OPERAND (se->expr, 0);
       else
