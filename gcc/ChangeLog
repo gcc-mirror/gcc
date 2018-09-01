@@ -6,6 +6,11 @@
 
 2018-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/generic.texi (OpenMP): Adjust link to openmp.org.
+	* doc/invoke.texi (C Dialect Options): Ditto.
+
+2018-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/install.texi (Prerequisites): Adjust link mpfr.org.
 
 2018-08-31  Richard Biener  <rguenther@suse.de>

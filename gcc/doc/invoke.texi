@@ -2179,7 +2179,7 @@ can be omitted, to use a target-specific default value.
 Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
 @code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
 compiler generates parallel code according to the OpenMP Application
-Program Interface v4.5 @w{@uref{http://www.openmp.org/}}.  This option
+Program Interface v4.5 @w{@uref{https://www.openmp.org}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}. @option{-fopenmp} implies
 @option{-fopenmp-simd}.
