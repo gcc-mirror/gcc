@@ -1,3 +1,7 @@
+2018-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Prerequisites): Update link for MPC.
+
 2018-09-01  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/87074
