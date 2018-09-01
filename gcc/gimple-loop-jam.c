@@ -161,7 +161,7 @@ bb_prevents_fusion_p (basic_block bb)
   gimple_stmt_iterator gsi;
   /* BB is duplicated by outer unrolling and then all N-1 first copies
      move into the body of the fused inner loop.  If BB exits the outer loop
-     the last copy still doess so, and the first N-1 copies are cancelled
+     the last copy still does so, and the first N-1 copies are cancelled
      by loop unrolling, so also after fusion it's the exit block.
      But there might be other reasons that prevent fusion:
        * stores or unknown side-effects prevent fusion
@@ -227,6 +227,33 @@ unroll_jam_possible_p (struct loop *outer, struct loop *loop)
       || !expr_invariant_in_loop_p (outer, niter.niter))
     return false;
 
+  /* If the inner loop produces any values that are used inside the
+     outer loop (except the virtual op) then it can flow
+     back (perhaps indirectly) into the inner loop.  This prevents
+     fusion: without fusion the value at the last iteration is used,
+     with fusion the value after the initial iteration is used.
+
+     If all uses are outside the outer loop this doesn't prevent fusion;
+     the value of the last iteration is still used (and the values from
+     all intermediate iterations are dead).  */
+  gphi_iterator psi;
+  for (psi = gsi_start_phis (single_exit (loop)->dest);
+       !gsi_end_p (psi); gsi_next (&psi))
+    {
+      imm_use_iterator imm_iter;
+      use_operand_p use_p;
+      tree op = gimple_phi_result (psi.phi ());
+      if (virtual_operand_p (op))
+	continue;
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, op)
+	{
+	  gimple *use_stmt = USE_STMT (use_p);
+	  if (!is_gimple_debug (use_stmt)
+	      && flow_bb_inside_loop_p (outer, gimple_bb (use_stmt)))
+	    return false;
+	}
+    }
+
   /* And check blocks belonging to just outer loop.  */
   bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   n = get_loop_body_with_size (outer, bbs, n_basic_blocks_for_fn (cfun));
@@ -245,7 +272,6 @@ unroll_jam_possible_p (struct loop *outer, struct loop *loop)
      body would be the after-iter value of the first body) if it's over
      an associative and commutative operation.  We wouldn't
      be able to handle unknown cycles.  */
-  gphi_iterator psi;
   for (psi = gsi_start_phis (loop->header); !gsi_end_p (psi); gsi_next (&psi))
     {
       affine_iv iv;

@@ -1,3 +1,10 @@
+2018-09-01  Michael Matz  <matz@suse.de>
+
+	Backport from mainline
+	PR tree-optimization/87074
+	* gimple-loop-jam.c (unroll_jam_possible_p): Check loop exit
+	PHIs for outer-loop uses.
+
 2018-08-31  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
