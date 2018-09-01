@@ -26,7 +26,7 @@
   various components at interesting entry/exit points to/from the standard
   library.  Process trace, recognize suboptimal patterns, give advice.
   For details, see the
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ieeexplore.ieee.org/document/4907670/">Perflint
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://ieeexplore.ieee.org/document/4907670/">Perflint
   paper presented at CGO 2009</link>.
   </para>
   <para>
@@ -328,7 +328,7 @@ vector-size: improvement = 3: call stack = 0x804842c ...
 
   <para>
   For details, see
-   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ieeexplore.ieee.org/document/4907670/">paper presented at
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://ieeexplore.ieee.org/document/4907670/">paper presented at
    CGO 2009</link>.
   </para>
 </section>
@@ -1403,7 +1403,7 @@ foo.cc:1: advice: Change "list" to "forward_list".
   See papers:
   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://dl.acm.org/citation.cfm?doid=1065944.1065981">
   A framework for adaptive algorithm selection in STAPL</link> and
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ieeexplore.ieee.org/document/4228227/">
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://ieeexplore.ieee.org/document/4228227/">
   Optimizing Sorting with Machine Learning Algorithms</link>.
   </para></listitem>
   <listitem><para><emphasis>Sample runtime reduction:</emphasis>60%.

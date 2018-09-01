@@ -1,3 +1,8 @@
+2018-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/profile_mode.xml: Update three ieeexplore.ieee.org
+	references.
+
 2018-08-31  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/10.cc:
