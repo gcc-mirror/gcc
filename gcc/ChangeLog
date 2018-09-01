@@ -1,3 +1,9 @@
+2018-09-01  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/87074
+	* gimple-loop-jam.c (unroll_jam_possible_p): Check loop exit
+	PHIs for outer-loop uses.
+
 2018-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Prerequisites): Adjust link mpfr.org.
