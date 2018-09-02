@@ -1,4 +1,9 @@
 2018-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* caf/multi.c (_gfortran_caf_sync_images): Handle
+	SYNC IMAGGES (*) correctly.
+
+2018-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	    Nicolas Koenig <koenigni@gcc.gnu.org>
 
 	* caf/multi.c: Some cleanup.

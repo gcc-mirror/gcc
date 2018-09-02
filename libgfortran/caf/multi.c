@@ -226,21 +226,24 @@ cond_signal (cond_t *cond)
 #define A(i,j) (sim[(i) + caf_num_images * (j)])
 
 void
-_gfortran_caf_sync_images (int count __attribute__ ((unused)),
-			   int images[] __attribute__ ((unused)),
-			   int *stat,
+_gfortran_caf_sync_images (int count, int *images,
+			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   size_t errmsg_len __attribute__ ((unused)))
 {
   pthread_mutex_t *my_mutex;
 
+  if (count < 0)
+    count = caf_num_images;
+
   for (int i=0; i < count; i++)
     {
-      if (images[i] - 1 != _gfortrani_caf_this_image)
+      int other_img = images == NULL ? i : images[i] - 1;
+      if (other_img != _gfortrani_caf_this_image)
 	{
-	  cond_t *other_thread = cim + images[i] - 1;
+	  cond_t *other_thread = cim + other_img;
 	  pthread_mutex_lock (&other_thread->mutex);
-	  A(_gfortrani_caf_this_image, images[i] - 1) ++;
+	  A(_gfortrani_caf_this_image, other_img) ++;
 	  cond_signal(other_thread);
 	}
     }
@@ -255,10 +258,11 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
 
       for (int i = 0; i < count; i++)
 	{
-	  if (images[i] - 1 != _gfortrani_caf_this_image)
+	  int other_img = images == NULL ? i : images[i] - 1;
+	  if (other_img != _gfortrani_caf_this_image)
 	    {
-	      x = A(images[i] - 1,_gfortrani_caf_this_image)
-		< A(_gfortrani_caf_this_image, images[i] - 1);
+	      x = A(other_img, _gfortrani_caf_this_image)
+		< A(_gfortrani_caf_this_image, other_img);
 	      if (x)
 		{
 		  do_wait = 1;
