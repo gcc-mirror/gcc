@@ -8542,39 +8542,28 @@ maybe_add_include_fixit (rich_location *richloc, const char *header,
 }
 
 /* Attempt to convert a braced array initializer list CTOR for array
-   TYPE into a STRING_CST for convenience and efficiency.  When non-null,
-   use EVAL to attempt to evalue constants (used by C++).  Return
-   the converted string on success or null on failure.  */
+   TYPE into a STRING_CST for convenience and efficiency.  Return
+   the converted string on success or the original ctor on failure.  */
 
 tree
-braced_list_to_string (tree type, tree ctor, tree (*eval)(tree, tree))
+braced_list_to_string (tree type, tree ctor)
 {
-  unsigned HOST_WIDE_INT nelts = CONSTRUCTOR_NELTS (ctor);
+  if (!tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
+    return ctor;
 
   /* If the array has an explicit bound, use it to constrain the size
      of the string.  If it doesn't, be sure to create a string that's
      as long as implied by the index of the last zero specified via
      a designator, as in:
        const char a[] = { [7] = 0 };  */
-  unsigned HOST_WIDE_INT maxelts = HOST_WIDE_INT_M1U;
-  if (tree size = TYPE_SIZE_UNIT (type))
-    {
-      if (tree_fits_uhwi_p (size))
-	{
-	  maxelts = tree_to_uhwi (size);
-	  maxelts /= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
+  unsigned HOST_WIDE_INT maxelts = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+  maxelts /= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
 
-	  /* Avoid converting initializers for zero-length arrays.  */
-	  if (!maxelts)
-	    return NULL_TREE;
-	}
-    }
-  else if (!nelts)
-    /* Avoid handling the undefined/erroneous case of an empty
-       initializer for an arrays with unspecified bound.  */
-    return NULL_TREE;
+  /* Avoid converting initializers for zero-length arrays.  */
+  if (!maxelts)
+    return ctor;
 
-  tree eltype = TREE_TYPE (type);
+  unsigned HOST_WIDE_INT nelts = CONSTRUCTOR_NELTS (ctor);
 
   auto_vec<char> str;
   str.reserve (nelts + 1);
@@ -8584,19 +8573,21 @@ braced_list_to_string (tree type, tree ctor, tree (*eval)(tree, tree))
 
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), i, index, value)
     {
-      unsigned HOST_WIDE_INT idx = index ? tree_to_uhwi (index) : i;
+      unsigned HOST_WIDE_INT idx = i;
+      if (index)
+	{
+	  if (!tree_fits_uhwi_p (index))
+	    return ctor;
+	  idx = tree_to_uhwi (index);
+	}
 
       /* auto_vec is limited to UINT_MAX elements.  */
       if (idx > UINT_MAX)
-	return NULL_TREE;
+	return ctor;
 
-      /* Attempt to evaluate constants.  */
-      if (eval)
-	value = eval (eltype, value);
-
-      /* Avoid non-constant initializers.  */
+     /* Avoid non-constant initializers.  */
      if (!tree_fits_shwi_p (value))
-	return NULL_TREE;
+	return ctor;
 
       /* Skip over embedded nuls except the last one (initializer
 	 elements are in ascending order of indices).  */
@@ -8604,11 +8595,14 @@ braced_list_to_string (tree type, tree ctor, tree (*eval)(tree, tree))
       if (!val && i + 1 < nelts)
 	continue;
 
+      if (idx < str.length())
+	return ctor;
+
       /* Bail if the CTOR has a block of more than 256 embedded nuls
 	 due to implicitly initialized elements.  */
       unsigned nchars = (idx - str.length ()) + 1;
       if (nchars > 256)
-	return NULL_TREE;
+	return ctor;
 
       if (nchars > 1)
 	{
@@ -8616,18 +8610,17 @@ braced_list_to_string (tree type, tree ctor, tree (*eval)(tree, tree))
 	  str.quick_grow_cleared (idx);
 	}
 
-      if (idx > maxelts)
-	return NULL_TREE;
+      if (idx >= maxelts)
+	return ctor;
 
       str.safe_insert (idx, val);
     }
 
-  if (!nelts)
-    /* Append a nul for the empty initializer { }.  */
+  /* Append a nul string termination.  */
+  if (str.length () < maxelts)
     str.safe_push (0);
 
-  /* Build a STRING_CST with the same type as the array, which
-     may be an array of unknown bound.  */
+  /* Build a STRING_CST with the same type as the array.  */
   tree res = build_string (str.length (), str.begin ());
   TREE_TYPE (res) = type;
   return res;

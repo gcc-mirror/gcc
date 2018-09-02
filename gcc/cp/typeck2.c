@@ -807,6 +807,11 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
     /* Digest the specified initializer into an expression.  */
     value = digest_init_flags (type, init, flags, tf_warning_or_error);
 
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_STRING_FLAG (TREE_TYPE (type))
+      && TREE_CODE (value) == CONSTRUCTOR)
+    value = braced_list_to_string (type, value);
+
   value = extend_ref_init_temps (decl, value, cleanups);
 
   /* In C++11 constant expression is a semantic, not syntactic, property.
@@ -1058,9 +1063,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
 
 	  if (TYPE_PRECISION (typ1) == BITS_PER_UNIT)
 	    {
-	      if (char_type != char_type_node
-		  && char_type != signed_char_type_node
-		  && char_type != unsigned_char_type_node)
+	      if (char_type != char_type_node)
 		{
 		  if (complain & tf_error)
 		    error_at (loc, "char-array initialized from wide string");

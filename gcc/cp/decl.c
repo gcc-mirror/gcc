@@ -6283,30 +6283,6 @@ build_aggr_init_full_exprs (tree decl, tree init, int flags)
   return build_aggr_init (decl, init, flags, tf_warning_or_error);
 }
 
-/* Attempt to determine the constant VALUE of integral type and convert
-   it to TYPE, issuing narrowing warnings/errors as necessary.  Return
-   the constant result or null on failure.  Callback for
-   braced_list_to_string.  */
-
-static tree
-eval_check_narrowing (tree type, tree value)
-{
-  if (tree valtype = TREE_TYPE (value))
-    {
-      if (TREE_CODE (valtype) != INTEGER_TYPE)
-	return NULL_TREE;
-    }
-  else
-    return NULL_TREE;
-
-  value = scalar_constant_value (value);
-  if (!value)
-    return NULL_TREE;
-
-  check_narrowing (type, value, tf_warning_or_error);
-  return value;
-}
-
 /* Verify INIT (the initializer for DECL), and record the
    initialization in DECL_INITIAL, if appropriate.  CLEANUP is as for
    grok_reference_init.
@@ -6422,17 +6398,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	    }
 	  else
 	    {
-	      /* Try to convert a string CONSTRUCTOR into a STRING_CST.  */
-	      tree valtype = TREE_TYPE (decl);
-	      if (TREE_CODE (valtype) == ARRAY_TYPE
-		  && TYPE_STRING_FLAG (TREE_TYPE (valtype))
-		  && BRACE_ENCLOSED_INITIALIZER_P (init))
-		if (tree str = braced_list_to_string (valtype, init,
-						      eval_check_narrowing))
-		  init = str;
-
-	      if (TREE_CODE (init) != STRING_CST)
-		init = reshape_init (type, init, tf_warning_or_error);
+	      init = reshape_init (type, init, tf_warning_or_error);
 	      flags |= LOOKUP_NO_NARROWING;
 	    }
 	}

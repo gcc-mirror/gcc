@@ -1,3 +1,8 @@
+2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-c++-common/array-init.c: New test.
+	* g++.dg/init/string2.C: Remove selector.
+
 2018-09-01  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/87074

@@ -1,3 +1,8 @@
+2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-decl.c (finish_decl): Call braced_list_to_string here ...
+	* c-parser.c (c_parser_declaration_or_fndef): ... instead of here.
+
 2018-08-30  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gimple-parser.c (c_parser_gimple_binary_expression): Accept infix
