@@ -1,3 +1,7 @@
+2018-09-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/standards.texi (Standards): Update Objective-C reference.
+
 2018-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Prerequisites): Update link for MPC.
