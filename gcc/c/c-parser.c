@@ -2127,15 +2127,6 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      if (d != error_mark_node)
 		{
 		  maybe_warn_string_init (init_loc, TREE_TYPE (d), init);
-
-		  /* Try to convert a string CONSTRUCTOR into a STRING_CST.  */
-		  tree valtype = TREE_TYPE (init.value);
-		  if (TREE_CODE (init.value) == CONSTRUCTOR
-		      && TREE_CODE (valtype) == ARRAY_TYPE
-		      && TYPE_STRING_FLAG (TREE_TYPE (valtype)))
-		    if (tree str = braced_list_to_string (valtype, init.value))
-		      init.value = str;
-
 		  finish_decl (d, init_loc, init.value,
 			       init.original_type, asm_name);
 		}
